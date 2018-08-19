@@ -2996,16 +2996,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ExpandAll((-2*x^3+4*x-5)*((-2*x^3+4*x-5)*(a)^(-1)-2*x))",
 				"25/a+10*x+(-40*x)/a-8*x^2+(16*x^2)/a+(20*x^3)/a+4*x^4+(-16*x^4)/a+(4*x^6)/a");
 		check("ExpandAll((-(-2*x^3+4*x-5)*(-(-2*x^3+4*x-5)*(3*x^2+2)^(-1)-2*x)*(3*x^2+2)^(-1)+x^2-2))",
-				"-2+x^2+(-10*x)/(2+3*x^2)+(8*x^2)/(2+3*x^2)+(-4*x^4)/(2+3*x^2)+25/(4+12*x^2+9*x^4)+(\n" + 
-				"-40*x)/(4+12*x^2+9*x^4)+(16*x^2)/(4+12*x^2+9*x^4)+(20*x^3)/(4+12*x^2+9*x^4)+(-16*x^\n" + 
-				"4)/(4+12*x^2+9*x^4)+(4*x^6)/(4+12*x^2+9*x^4)");
+				"-2+x^2+(-10*x)/(2+3*x^2)+(8*x^2)/(2+3*x^2)+(-4*x^4)/(2+3*x^2)+25/(4+12*x^2+9*x^4)+(\n"
+						+ "-40*x)/(4+12*x^2+9*x^4)+(16*x^2)/(4+12*x^2+9*x^4)+(20*x^3)/(4+12*x^2+9*x^4)+(-16*x^\n"
+						+ "4)/(4+12*x^2+9*x^4)+(4*x^6)/(4+12*x^2+9*x^4)");
 		check("ExpandAll(Sqrt((1 + x)^2))", //
 				"Sqrt(1+2*x+x^2)");
 
 		// TODO return a ^ 2 / (c ^ 2 + 2 c d + d ^ 2) + 2 a b / (c ^ 2 + 2 c d
 		// + d ^ 2) + b ^ 2 / (c ^ 2 + 2 c d + d ^ 2)
-		check("ExpandAll((a + b) ^ 2 / (c + d)^2)", 
-				"a^2/(c^2+2*c*d+d^2)+(2*a*b)/(c^2+2*c*d+d^2)+b^2/(c^2+2*c*d+d^2)");
+		check("ExpandAll((a + b) ^ 2 / (c + d)^2)", "a^2/(c^2+2*c*d+d^2)+(2*a*b)/(c^2+2*c*d+d^2)+b^2/(c^2+2*c*d+d^2)");
 		check("ExpandAll((a + Sin(x*(1 + y)))^2)", "a^2+2*a*Sin(x+x*y)+Sin(x+x*y)^2");
 		check("ExpandAll(((1 + x)*(1 + y))[x])", "(1+x+y+x*y)[x]");
 	}
@@ -3781,6 +3780,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFullForm() {
+		// FullForm[Hold[(#1[[1]]*#1[[2]] & )[SignOfFactor[NormalizeSumFactors /@ u]]]]
+		check("Hold(Function(#[[1]]*#[[2]])[SignOfFactor(Map(NormalizeSumFactors,u))]) // FullForm", //
+				"Hold(Function(Times(Part(Slot(1), 1), Part(Slot(1), 2)))[signoffactor(Map(normalizesumfactors, u))])");
 		check("FullForm(a:=b)", "Null");
 	}
 
@@ -9427,9 +9429,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// y, z}, Integers)", "");
 
 		check("Solve((k*Q*q)/r^2+1/r^4==E,r)", //
-				"{{r->Sqrt((k*q*Q)/E+Sqrt(4*E+k^2*q^2*Q^2)/E)/Sqrt(2)},{r->-Sqrt((k*q*Q)/E+Sqrt(4*E+k^\n" + 
-				"2*q^2*Q^2)/E)/Sqrt(2)},{r->(-I*Sqrt((-k*q*Q)/E+Sqrt(4*E+k^2*q^2*Q^2)/E))/Sqrt(2)},{r->(I*Sqrt((-k*q*Q)/E+Sqrt(\n" + 
-				"4*E+k^2*q^2*Q^2)/E))/Sqrt(2)}}");
+				"{{r->Sqrt((k*q*Q)/E+Sqrt(4*E+k^2*q^2*Q^2)/E)/Sqrt(2)},{r->-Sqrt((k*q*Q)/E+Sqrt(4*E+k^\n"
+						+ "2*q^2*Q^2)/E)/Sqrt(2)},{r->(-I*Sqrt((-k*q*Q)/E+Sqrt(4*E+k^2*q^2*Q^2)/E))/Sqrt(2)},{r->(I*Sqrt((-k*q*Q)/E+Sqrt(\n"
+						+ "4*E+k^2*q^2*Q^2)/E))/Sqrt(2)}}");
 		// issue #120
 		check("Solve(Sin(x)*x==0, x)", //
 				"{{x->0}}");
@@ -9443,9 +9445,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Solve((k*Q*q)/r^2==E,r)", //
 				"{{r->Sqrt(E*k*q*Q)/E},{r->-Sqrt(E*k*q*Q)/E}}");
 		check("Solve((k*Q*q)/r^2+1/r^4==E,r)", //
-				"{{r->Sqrt((k*q*Q)/E+Sqrt(4*E+k^2*q^2*Q^2)/E)/Sqrt(2)},{r->-Sqrt((k*q*Q)/E+Sqrt(4*E+k^\n" + 
-				"2*q^2*Q^2)/E)/Sqrt(2)},{r->(-I*Sqrt((-k*q*Q)/E+Sqrt(4*E+k^2*q^2*Q^2)/E))/Sqrt(2)},{r->(I*Sqrt((-k*q*Q)/E+Sqrt(\n" + 
-				"4*E+k^2*q^2*Q^2)/E))/Sqrt(2)}}");
+				"{{r->Sqrt((k*q*Q)/E+Sqrt(4*E+k^2*q^2*Q^2)/E)/Sqrt(2)},{r->-Sqrt((k*q*Q)/E+Sqrt(4*E+k^\n"
+						+ "2*q^2*Q^2)/E)/Sqrt(2)},{r->(-I*Sqrt((-k*q*Q)/E+Sqrt(4*E+k^2*q^2*Q^2)/E))/Sqrt(2)},{r->(I*Sqrt((-k*q*Q)/E+Sqrt(\n"
+						+ "4*E+k^2*q^2*Q^2)/E))/Sqrt(2)}}");
 		check("Solve((k*Q*q)/r^2+1/r^4==0,r)", //
 				"{{r->(-I*Sqrt(k*q*Q))/(k*q*Q)},{r->(I*Sqrt(k*q*Q))/(k*q*Q)}}");
 		check("Solve(Abs(x-1) ==1,{x})", //
@@ -10705,9 +10707,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("TrigExpand(Tanh(a+b))", //
 				"Tanh(a)/(1+Tanh(a)*Tanh(b))+Tanh(b)/(1+Tanh(a)*Tanh(b))");
 		check("TrigExpand(Tanh(a+b+c))",
-				"Tanh(a)/(1+(Tanh(a)*Tanh(b))/(1+Tanh(b)*Tanh(c))+(Tanh(a)*Tanh(c))/(1+Tanh(b)*Tanh(c)))+Tanh(b)/((\n" + 
-				"1+Tanh(b)*Tanh(c))*(1+(Tanh(a)*Tanh(b))/(1+Tanh(b)*Tanh(c))+(Tanh(a)*Tanh(c))/(1+Tanh(b)*Tanh(c))))+Tanh(c)/((\n" + 
-				"1+Tanh(b)*Tanh(c))*(1+(Tanh(a)*Tanh(b))/(1+Tanh(b)*Tanh(c))+(Tanh(a)*Tanh(c))/(1+Tanh(b)*Tanh(c))))");
+				"Tanh(a)/(1+(Tanh(a)*Tanh(b))/(1+Tanh(b)*Tanh(c))+(Tanh(a)*Tanh(c))/(1+Tanh(b)*Tanh(c)))+Tanh(b)/((\n"
+						+ "1+Tanh(b)*Tanh(c))*(1+(Tanh(a)*Tanh(b))/(1+Tanh(b)*Tanh(c))+(Tanh(a)*Tanh(c))/(1+Tanh(b)*Tanh(c))))+Tanh(c)/((\n"
+						+ "1+Tanh(b)*Tanh(c))*(1+(Tanh(a)*Tanh(b))/(1+Tanh(b)*Tanh(c))+(Tanh(a)*Tanh(c))/(1+Tanh(b)*Tanh(c))))");
 
 		check("TrigExpand(Csc(a+b+c))",
 				"1/(Cos(b)*Cos(c)*Sin(a)+Cos(a)*Cos(c)*Sin(b)+Cos(a)*Cos(b)*Sin(c)-Sin(a)*Sin(b)*Sin(c))");

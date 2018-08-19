@@ -83,7 +83,6 @@ import org.matheclipse.core.patternmatching.PatternMap;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.math.DoubleMath;
-import com.sun.xml.internal.stream.events.DummyEvent;
 
 import ch.ethz.idsc.tensor.QuantityParser;
 import edu.jas.kern.ComputerThreads;
