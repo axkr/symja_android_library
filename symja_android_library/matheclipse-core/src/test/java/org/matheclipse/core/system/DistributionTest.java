@@ -69,9 +69,9 @@ public class DistributionTest extends AbstractTestCase {
 		check("CDF(NormalDistribution(n,m), x)", //
 				"Erfc((n-x)/(Sqrt(2)*m))/2");
 		check("PDF(NormalDistribution( ), x)", //
-				"1/(Sqrt(2)*E^(x^2/2)*Sqrt(Pi))");
+				"1/(E^(x^2/2)*Sqrt(2*Pi))");
 		check("PDF(NormalDistribution(m, s), x)", //
-				"1/(Sqrt(2)*E^((-m+x)^2/(2*s^2))*Sqrt(Pi)*s)");
+				"1/(E^((-m+x)^2/(2*s^2))*Sqrt(2*Pi)*s)");
 
 		check("StandardDeviation(NormalDistribution(m, s))", //
 				"s");

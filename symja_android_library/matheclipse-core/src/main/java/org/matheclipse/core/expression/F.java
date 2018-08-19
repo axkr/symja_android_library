@@ -3009,6 +3009,8 @@ public class F {
 	public final static IPattern C_DEFAULT = new Pattern(CSymbol, null, true);
 	public final static IPattern F_DEFAULT = new Pattern(FSymbol, null, true);
 	public final static IPattern G_DEFAULT = new Pattern(GSymbol, null, true);
+	public final static IPattern P_DEFAULT = new Pattern(PSymbol, null, true);
+	public final static IPattern Q_DEFAULT = new Pattern(QSymbol, null, true);
 	/**
 	 * Constant integer &quot;0&quot;
 	 */

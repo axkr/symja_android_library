@@ -3087,14 +3087,14 @@ public final class Arithmetic {
 						// (a * b * c)^n => a^n * b^n * c^n
 						return astArg1.mapThread(Power(null, exponent), 1);
 					}
-					if (exponent.isNumber()) {
-						final IAST f0 = astArg1;
-
-						if ((f0.size() > 1) && (f0.arg1().isNumber())) {
-							return Times(Power(f0.arg1(), exponent),
-									Power(F.ast(f0, F.Times, true, 2, f0.size()), exponent));
-						}
-					}
+//					if (exponent.isNumber()) {
+//						final IAST f0 = astArg1;
+//
+//						if ((f0.size() > 1) && (f0.arg1().isNumber())) {
+//							return Times(Power(f0.arg1(), exponent),
+//									Power(F.ast(f0, F.Times, true, 2, f0.size()), exponent));
+//						}
+//					}
 				} else if (astArg1.isPower()) {
 					if (astArg1.arg2().isReal() && exponent.isReal()) {
 						IExpr temp = astArg1.arg2().times(exponent);

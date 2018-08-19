@@ -567,6 +567,9 @@ public class Symbol implements ISymbol, Serializable {
 			if ('A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E') {
 				return fSymbolName + "Symbol";
 			}
+			if ('P' == ch || ch == 'Q') {
+				return fSymbolName + "Symbol";
+			}
 		}
 		if (Config.RUBI_CONVERT_SYMBOLS) {
 			if (fSymbolName.length() == 2 && '§' == fSymbolName.charAt(0)
@@ -651,16 +654,18 @@ public class Symbol implements ISymbol, Serializable {
 		if (isConstant()) {
 			return true;
 		}
-		return variables.exists(x -> this.equals(x));
+		return true;
+		// return variables.exists(x -> this.equals(x));
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPolynomial(IExpr variable) {
-		if (variable == null) {
-			return true;
-		}
-		return this.equals(variable);
+		return true;
+		// if (variable == null) {
+		// return true;
+		// }
+		// return this.equals(variable);
 	}
 
 	/** {@inheritDoc} */

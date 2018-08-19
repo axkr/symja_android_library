@@ -1499,13 +1499,13 @@ public class Algebra {
 				IAST list = (IAST) ast.arg1();
 				return list.mapThread(F.ListAlloc(list.size()), ast, 1);
 			}
-			
+
 			IExpr result = F.REMEMBER_AST_CACHE.getIfPresent(ast);
 			if (result != null) {
 				return result;
 			}
 			VariablesSet eVar = new VariablesSet(ast.arg1());
-			
+
 			IExpr expr = ast.arg1();
 			if (ast.isAST1()) {
 				expr = F.Together.of(engine, ast.arg1());
@@ -2343,11 +2343,17 @@ public class Algebra {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST2()) {
-				IAST temp = engine.evalArgs(ast, ISymbol.NOATTRIBUTE).orElse(ast);
-				return F.bool(temp.arg1().isPolynomial(temp.arg2().orNewList()));
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				IExpr arg2 = engine.evaluate(ast.arg2());
+				return F.bool(arg1.isPolynomial(arg2.orNewList()));
 			}
-			Validate.checkSize(ast, 3);
-			return F.NIL;
+			return F.False;
+			// if (ast.isAST2()) {
+			// IAST temp = engine.evalArgs(ast, ISymbol.NOATTRIBUTE).orElse(ast);
+			// return F.bool(temp.arg1().isPolynomial(temp.arg2().orNewList()));
+			// }
+			// Validate.checkSize(ast, 3);
+			// return F.NIL;
 		}
 
 		@Override

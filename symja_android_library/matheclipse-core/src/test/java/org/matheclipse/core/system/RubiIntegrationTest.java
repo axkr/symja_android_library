@@ -370,15 +370,15 @@ public class RubiIntegrationTest extends AbstractTestCase {
 	}
 
 	public void testArcSin() {
-		
+
 		check("Integrate(ArcSin(x),x)", "Sqrt(1-x^2)+x*ArcSin(x)");
 		check("Integrate(ArcCos(x),x)", "-Sqrt(1-x^2)+x*ArcCos(x)");
 
-		 check("Integrate(ArcSin(x+1),x)", //
-		 "I*Sqrt(2*x+x^2)+x*ArcSin(1+x)-I*2*ArcTanh(x/Sqrt(2*x+x^2))");
+		check("Integrate(ArcSin(x+1),x)", //
+				"Sqrt(-2*x-x^2)+ArcSin(1+x)+x*ArcSin(1+x)");
 
-		 check("Integrate(ArcCos(x+1),x)", //
-		 "-I*Sqrt(2*x+x^2)+x*ArcCos(1+x)+I*2*ArcTanh(x/Sqrt(2*x+x^2))");
+		check("Integrate(ArcCos(x+1),x)", //
+				"-Sqrt(-2*x-x^2)+x*ArcCos(1+x)-ArcSin(1+x)");
 	}
 
 	public void testSystemIntegrate() {
@@ -495,10 +495,10 @@ public class RubiIntegrationTest extends AbstractTestCase {
 				"(2*EllipticE(-Pi/4+x/2,2)*Sqrt(a*Sin(x)))/Sqrt(Sin(x))");
 
 		check("Integrate(Sin(b*x^2),x)", //
-				"(Sqrt(Pi)*FresnelS((Sqrt(2)*Sqrt(b)*x)/Sqrt(Pi)))/(Sqrt(2)*Sqrt(b))");
+				"(Sqrt(Pi/2)*FresnelS(Sqrt(b)*Sqrt(2/Pi)*x))/Sqrt(b)");
 
 		check("Integrate(Sin(x)/Sqrt(x),x)", //
-				"Sqrt(2)*Sqrt(Pi)*FresnelS((Sqrt(2)*Sqrt(x))/Sqrt(Pi))");
+				"2*Sqrt(Pi/2)*FresnelS(Sqrt(2/Pi)*Sqrt(x))");
 	}
 
 	public void testRationalFunction001() {
@@ -592,7 +592,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		check("ExpandAll(-(2-x)^(-1)*x^(-2))", //
 				"1/(-2*x^2+x^3)");
 		check("integrate(1/(-2*x^2+x^3),x)", //
-				"1/(2*x)+Log(2-x)/4-Log(x)/4");
+				"1/(2*x)-Log(x)/4+Log(-8+4*x)/4");
 		check("integrate(1/(x^2*(x-2)),x)", //
 				"1/(2*x)-Log(x)/4+Log(-8+4*x)/4");
 		check("Expand(-(2-x)^(-1)*x^(-2))", //
@@ -608,7 +608,8 @@ public class RubiIntegrationTest extends AbstractTestCase {
 	}
 
 	public void testIssue82() {
-		check("Integrate(Sin(a^4)*a,a)", "(Sqrt(Pi)*FresnelS((Sqrt(2)*a^2)/Sqrt(Pi)))/(2*Sqrt(2))");
+		check("Integrate(Sin(a^4)*a,a)", //
+				"1/2*Sqrt(Pi/2)*FresnelS(a^2*Sqrt(2/Pi))");
 		check("Integrate(Sin(a^4)*a,{a,0,2.0})", "0.37357");
 	}
 

@@ -53,15 +53,12 @@ public class UtilityFunctionCtors {
 	public final static ISymbol Z = initFinalHiddenSymbol("Z");
 
 	public static ISymbol Dist = org.matheclipse.core.expression.F.$rubi(INTEGRATE_PREFIX + "Dist");
-	public static ISymbol IntegerPowerQ = org.matheclipse.core.expression.F
-			.$rubi(INTEGRATE_PREFIX + "IntegerPowerQ");
+	public static ISymbol IntegerPowerQ = org.matheclipse.core.expression.F.$rubi(INTEGRATE_PREFIX + "IntegerPowerQ");
 	public static ISymbol FractionalPowerQ = org.matheclipse.core.expression.F
 			.$rubi(INTEGRATE_PREFIX + "FractionalPowerQ");
 
-	public static ISymbol AbortRubi = org.matheclipse.core.expression.F
-			.$rubi(INTEGRATE_PREFIX + "AbortRubi");
-	public static ISymbol ReapList = org.matheclipse.core.expression.F
-			.$rubi(INTEGRATE_PREFIX + "ReapList");
+	public static ISymbol AbortRubi = org.matheclipse.core.expression.F.$rubi(INTEGRATE_PREFIX + "AbortRubi");
+	public static ISymbol ReapList = org.matheclipse.core.expression.F.$rubi(INTEGRATE_PREFIX + "ReapList");
 
 	static ISymbol FalseQ = F.$rubi(INTEGRATE_PREFIX + "FalseQ", new AbstractCoreFunctionEvaluator() {
 		@Override
@@ -73,69 +70,73 @@ public class UtilityFunctionCtors {
 		}
 	});
 
-	static ISymbol FractionQ = F.$rubi(INTEGRATE_PREFIX + "FractionQ",
-			new AbstractCoreFunctionEvaluator() {
-				@Override
-				public IExpr evaluate(IAST ast, EvalEngine engine) {
-					if (ast.size() == 2) {
-						return ast.arg1().isFraction() ? F.True : F.False;
-					}
-					if (ast.size() > 2) {
-						return ast.forAll(x -> x.isFraction(), 1) ? F.True : F.False;
-					}
-					return F.False;
-				}
-			});
+	static ISymbol FractionQ = F.$rubi(INTEGRATE_PREFIX + "FractionQ", new AbstractCoreFunctionEvaluator() {
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			if (ast.size() == 2) {
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				return arg1.isFraction() ? F.True : F.False;
+			}
+			if (ast.size() > 2) {
+				return ast.forAll(x -> engine.evaluate(x).isFraction(), 1) ? F.True : F.False;
+			}
+			return F.False;
+		}
+	});
 
-	static ISymbol IntegersQ = F.$rubi(INTEGRATE_PREFIX + "IntegersQ",
-			new AbstractCoreFunctionEvaluator() {
-				@Override
-				public IExpr evaluate(IAST ast, EvalEngine engine) {
-					if (ast.size() == 2) {
-						return ast.arg1().isInteger() ? F.True : F.False;
-					}
-					if (ast.size() > 2) {
-						return ast.forAll(x -> x.isInteger(), 1) ? F.True : F.False;
-					}
-					return F.False;
-				}
-			});
+	static ISymbol IntegersQ = F.$rubi(INTEGRATE_PREFIX + "IntegersQ", new AbstractCoreFunctionEvaluator() {
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			if (ast.size() == 2) {
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				return arg1.isInteger() ? F.True : F.False;
+			}
+			if (ast.size() > 2) {
+				return ast.forAll(x -> engine.evaluate(x).isInteger(), 1) ? F.True : F.False;
+			}
+			return F.False;
+		}
+	});
 
-	static ISymbol ComplexNumberQ = F.$rubi(INTEGRATE_PREFIX + "ComplexNumberQ",
-			new AbstractCoreFunctionEvaluator() {
-				@Override
-				public IExpr evaluate(IAST ast, EvalEngine engine) {
-					if (ast.size() == 2) {
-						return ast.arg1().isComplex() || ast.arg1().isComplexNumeric() ? F.True : F.False;
-					} 
-					return F.False;
-				}
-			});
+	static ISymbol ComplexNumberQ = F.$rubi(INTEGRATE_PREFIX + "ComplexNumberQ", new AbstractCoreFunctionEvaluator() {
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			if (ast.size() == 2) {
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				return arg1.isComplex() || arg1.isComplexNumeric() ? F.True : F.False;
+			}
+			return F.False;
+		}
+	});
 
 	static ISymbol PowerQ = F.$rubi(INTEGRATE_PREFIX + "PowerQ", new AbstractCoreFunctionEvaluator() {
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			if (ast.size() == 2) {
-				return ast.arg1().head().equals(F.Power) ? F.True : F.False;
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				return arg1.head().equals(F.Power) ? F.True : F.False;
 			}
 			return F.False;
 		}
 	});
-	static ISymbol ProductQ = F.$rubi(INTEGRATE_PREFIX + "ProductQ",
-			new AbstractCoreFunctionEvaluator() {
-				@Override
-				public IExpr evaluate(IAST ast, EvalEngine engine) {
-					if (ast.size() == 2) {
-						return ast.arg1().head().equals(F.Times) ? F.True : F.False;
-					}
-					return F.False;
-				}
-			});
+
+	static ISymbol ProductQ = F.$rubi(INTEGRATE_PREFIX + "ProductQ", new AbstractCoreFunctionEvaluator() {
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			if (ast.size() == 2) {
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				return arg1.head().equals(F.Times) ? F.True : F.False;
+			}
+			return F.False;
+		}
+	});
+
 	static ISymbol SumQ = F.$rubi(INTEGRATE_PREFIX + "SumQ", new AbstractCoreFunctionEvaluator() {
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			if (ast.size() == 2) {
-				return ast.arg1().head().equals(F.Plus) ? F.True : F.False;
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				return arg1.head().equals(F.Plus) ? F.True : F.False;
 			}
 			return F.False;
 		}
@@ -144,7 +145,8 @@ public class UtilityFunctionCtors {
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			if (ast.size() == 2) {
-				return ast.arg1().head().equals(F.Plus) ? F.False : F.True;
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				return arg1.head().equals(F.Plus) ? F.False : F.True;
 			}
 			return F.False;
 		}
@@ -1731,7 +1733,7 @@ public class UtilityFunctionCtors {
 	public static IAST StopFunctionQ(final IExpr a0) {
 		return unaryAST1(F.$rubi(INTEGRATE_PREFIX + "StopFunctionQ"), a0);
 	}
-	
+
 	public static IAST Subst(final IExpr a0, final IExpr a1) {
 		return binaryAST2(F.$rubi(INTEGRATE_PREFIX + "Subst"), a0, a1);
 	}

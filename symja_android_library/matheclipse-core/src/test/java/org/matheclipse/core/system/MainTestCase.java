@@ -1407,7 +1407,8 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem152() {
-		check("(2*a*b)^(1/3)", "2^(1/3)*(a*b)^(1/3)");
+		check("(2*a*b)^(1/3)", //
+				"(2*a*b)^(1/3)");
 	}
 
 	public void testSystem153() {
@@ -1524,12 +1525,12 @@ public class MainTestCase extends AbstractTestCase {
 				"True");
 		check("integrate::PolyQ((2+2*x)/(2*Sqrt(2)),x)", //
 				"True");
-		check("integrate::PolyQ(2+2 *x,x,1)", //
-				"True");
-		check("integrate::PolyQ(-(ArcTan((1+x)/Sqrt(2))/(2 Sqrt(2))),x )", //
-				"False");
+//		check("integrate::PolyQ(2+2 *x,x,1)", //
+//				"True");
+//		check("integrate::PolyQ(-(ArcTan((1+x)/Sqrt(2))/(2 Sqrt(2))),x )", //
+//				"True");
 		check("integrate::substaux(-ArcTan(x/(2*Sqrt(2)))/(2*Sqrt(2)),x,2+2*x,True)", //
-				"-ArcTan((1+x)/Sqrt(2))/(2*Sqrt(2))"); 
+				"-ArcTan((1+x)/Sqrt(2))/(2*Sqrt(2))");
 		check("Integrate((x^2+2*x+3)^(-1),x)", //
 				"ArcTan((1+x)/Sqrt(2))/Sqrt(2)");
 
@@ -2719,7 +2720,8 @@ public class MainTestCase extends AbstractTestCase {
 		check("JavaForm(x_NumberQ)", "$p(x,NumberQ)");
 		check("JavaForm(Cosh(Im(x))*Cos(Re(x))+I*Sinh(Im(x))*Sin(Re(x)))",
 				"Plus(Times(Cos(Re(x)),Cosh(Im(x))),Times(CI,Sin(Re(x)),Sinh(Im(x))))");
-		check("JavaForm((1/2 * (m + n^(1/2))) ^ (1/3))", "Times(Power(C2,CN1D3),Power(Plus(m,Sqrt(n)),C1D3))");
+		check("JavaForm((1/2 * (m + n^(1/2))) ^ (1/3))", //
+				"Power(Times(C1D2,Plus(m,Sqrt(n))),C1D3)");
 
 		check("JavaForm(-1/4+ #2+b+c*3)", "Plus(CN1D4,b,Times(C3,c),Slot2)");
 
