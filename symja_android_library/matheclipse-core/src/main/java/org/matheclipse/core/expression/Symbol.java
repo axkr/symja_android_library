@@ -591,11 +591,6 @@ public class Symbol implements ISymbol, Serializable {
 				return alias;
 			}
 		}
-		if (fSymbolName.contains("::")) {
-			if (Config.RUBI_CONVERT_SYMBOLS) {
-				return "$rubi(\"" + fSymbolName + "\")";
-			}
-		}
 		return "$s(\"" + fSymbolName + "\")";
 	}
 

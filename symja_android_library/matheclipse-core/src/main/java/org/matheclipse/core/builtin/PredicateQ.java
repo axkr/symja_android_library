@@ -905,20 +905,25 @@ public class PredicateQ {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST1()) {
-				IExpr arg1 = ast.arg1();
+				IExpr arg1 = engine.evaluate(ast.arg1());
 				if (arg1.isNumber()) {
+					if (arg1.isComplex() || arg1.isComplexNumeric()) {
+						return F.False;
+					}
 					return F.bool(arg1.isReal());
 				}
-				IExpr temp = engine.evaluate(arg1);
-				if (temp.isReal()) {
-					return F.True;
-				}
-				if (temp.isNumericFunction()) {
-					temp = engine.evalN(arg1);
-					if (temp.isReal()) {
-						return F.True;
-					}
-				}
+
+				// CAUTION: the following can not be used because Rubi uses another definition
+				// IExpr temp = engine.evaluate(arg1);
+				// if (temp.isReal()) {
+				// return F.True;
+				// }
+				// if (temp.isNumericFunction()) {
+				// temp = engine.evalN(arg1);
+				// if (temp.isReal()) {
+				// return F.True;
+				// }
+				// }
 				return F.False;
 			}
 			Validate.checkSize(ast, 2);
