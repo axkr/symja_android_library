@@ -9684,12 +9684,26 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSqrt() {
-		check("Sqrt(4)", "2");
-		check("Sqrt(5)", "Sqrt(5)");
-		check("Sqrt(5) // N", "2.23607");
-		check("Sqrt(a)^2", "a");
-		check("Sqrt(-4)", "I*2");
-		check("I == Sqrt(-1)", "True");
+		check("(-3/4)/Sqrt(-3/4)", //
+				"I*1/2*Sqrt(3)");
+		check("(3/4)/Sqrt(3/4)", //
+				"Sqrt(3)/2");
+		check("(-3)/Sqrt(-3)", //
+				"I*Sqrt(3)");
+		check("3/Sqrt(3)", //
+				"Sqrt(3)");
+		check("Sqrt(4)", //
+				"2");
+		check("Sqrt(5)", //
+				"Sqrt(5)");
+		check("Sqrt(5) // N", //
+				"2.23607");
+		check("Sqrt(a)^2", //
+				"a");
+		check("Sqrt(-4)", //
+				"I*2");
+		check("I == Sqrt(-1)", //
+				"True");
 		// TODO use ExprParser#getReal() if apfloat problems are fixed
 		// check("N(Sqrt(2), 50)",
 		// "1.41421356237309504880168872420969807856967187537694");

@@ -4661,39 +4661,53 @@ public final class Arithmetic {
 		/**
 		 * Try simplifying <code>arg0 * ( power1Arg1 ^ power1Arg2 )</code>
 		 * 
-		 * @param arg0
-		 * @param power1Arg1
-		 * @param power1Arg2
+		 * @param arg1
+		 * @param base2
+		 * @param exponent2
 		 * @return
 		 */
-		private IExpr timesArgPower(final IExpr arg0, IExpr power1Arg1, IExpr power1Arg2) {
-			if (power1Arg1.equals(arg0)) {
-				if (power1Arg2.isNumber() && !arg0.isRational()) {
-					// avoid reevaluation of a root of a rational number (example: 2*Sqrt(2) )
-					return arg0.power(power1Arg2.inc());
-				} else if (!power1Arg2.isNumber()) {
-					return arg0.power(power1Arg2.inc());
+		private IExpr timesArgPower(final IExpr arg1, IExpr base2, IExpr exponent2) {
+			if (arg1.isExactNumber() && base2.isRational() && exponent2.isNegative() && exponent2.isFraction()) {
+				// arg0_ * base2_ ^exponent2_ /; expoennt2 negative fraction; base rational; arg1 IRational or IComplex
+				IRational rat = ((INumber) arg1).rationalFactor();
+				if (rat != null) {
+					if (base2.equals(rat.numerator())) {
+						if (rat.isNegative()) {
+							rat = rat.negate();
+						}
+						IExpr factor = ((INumber) arg1).divide(rat.numerator());
+						return F.Times(factor, F.Power(rat.numerator(), F.C1.add((IRational) exponent2)));
+					}
 				}
-				// } else if (arg0.isPlus() && power1Arg1.equals(arg0.negate()))
+			}
+
+			if (base2.equals(arg1)) {
+				if (exponent2.isNumber() && !arg1.isRational()) {
+					// avoid reevaluation of a root of a rational number (example: 2*Sqrt(2) )
+					return arg1.power(exponent2.inc());
+				} else if (!exponent2.isNumber()) {
+					return arg1.power(exponent2.inc());
+				}
+				// } else if (arg1.isPlus() && power1Arg1.equals(arg1.negate()))
 				// {
 				// // Issue#128
 				// if (power1Arg2.isInteger()) {
-				// return arg0.power(power1Arg2.inc()).negate();
+				// return arg1.power(power1Arg2.inc()).negate();
 				// } else if (!power1Arg2.isNumber()) {
-				// return arg0.power(power1Arg2.inc()).negate();
+				// return arg1.power(power1Arg2.inc()).negate();
 				// }
-			} else if (power1Arg2.isFraction()) {
-				if (power1Arg1.isMinusOne()) {
-					if (arg0.isImaginaryUnit()) {
+			} else if (exponent2.isFraction()) {
+				if (base2.isMinusOne()) {
+					if (arg1.isImaginaryUnit()) {
 						// I * power1Arg1 ^ power1Arg2 -> (-1) ^ (power1Arg2 + (1/2))
-						return F.Power(F.CN1, power1Arg2.plus(F.C1D2));
+						return F.Power(F.CN1, exponent2.plus(F.C1D2));
 					}
-					if (arg0.isNegativeImaginaryUnit()) {
+					if (arg1.isNegativeImaginaryUnit()) {
 						// (-I) * power1Arg1 ^ power1Arg2 -> (-1) * (-1) ^ (power1Arg2 + (1/2))
-						return F.Times(F.CN1, F.Power(F.CN1, power1Arg2.plus(F.C1D2)));
+						return F.Times(F.CN1, F.Power(F.CN1, exponent2.plus(F.C1D2)));
 					}
 				}
-				if (arg0.isRational()) {
+				if (arg1.isRational()) {
 					// if (power1Arg1.isInteger()) {
 					// // example: 1/9 * 3^(1/2) -> 1/3 * 3^(-1/2)
 					//
@@ -4720,21 +4734,21 @@ public final class Arithmetic {
 					// }
 					// }
 					// } else
-					if ((power1Arg1.isRational())) {
+					if ((base2.isRational())) {
 
-						if (power1Arg2.isNegative()) {
-							IExpr temp = timesPowerPower(((IRational) arg0).numerator(),
-									((IRational) arg0).denominator(), F.C1, //
-									((IRational) power1Arg1).denominator(), ((IRational) power1Arg1).numerator(),
-									(IFraction) power1Arg2.negate());
+						if (exponent2.isNegative()) {
+							IExpr temp = timesPowerPower(((IRational) arg1).numerator(),
+									((IRational) arg1).denominator(), F.C1, //
+									((IRational) base2).denominator(), ((IRational) base2).numerator(),
+									(IFraction) exponent2.negate());
 							if (temp.isPresent()) {
 								return temp;
 							}
 						} else {
-							IExpr temp = timesPowerPower(((IRational) arg0).numerator(),
-									((IRational) arg0).denominator(), F.C1, //
-									((IRational) power1Arg1).numerator(), ((IRational) power1Arg1).denominator(),
-									(IFraction) power1Arg2);
+							IExpr temp = timesPowerPower(((IRational) arg1).numerator(),
+									((IRational) arg1).denominator(), F.C1, //
+									((IRational) base2).numerator(), ((IRational) base2).denominator(),
+									(IFraction) exponent2);
 							if (temp.isPresent()) {
 								return temp;
 							}
