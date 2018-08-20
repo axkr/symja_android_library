@@ -5113,8 +5113,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testLimit() {
 		// adjust LimitRules.m if these 2 tests fails
-//		check("Limit(x*(Sqrt(2*Pi*x)/(x!))^(1/x), x->Infinity)", //
-//				"E");
+		check("Limit(x*(Sqrt(2*Pi*x)/(x!))^(1/x), x->Infinity)", //
+				"E");
 		check("Limit(x/((x!)^(1/x)), x->Infinity)", //
 				"E");
 

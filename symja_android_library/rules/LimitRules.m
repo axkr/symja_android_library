@@ -1,5 +1,5 @@
 {
- Limit(x_*(Sqrt(2)*Sqrt(Pi*x_)/(x_!))^(1/x_), x_Symbol->Infinity):= E,
+ Limit(x_*(Sqrt(2*Pi*x_)/(x_!))^(1/x_), x_Symbol->Infinity):= E,
  Limit(x_*((x_!)^(-1*x_^(-1))), x_Symbol->Infinity):= E,
  Limit(x_^m_RealNumberQ, x_Symbol->Infinity):= If(m<0, 0, Infinity),
  Limit(m_NumberQ^x_, x_Symbol->Infinity):= If(m>1, Infinity, If(m==1, 1, 0)) /; Positive(m),

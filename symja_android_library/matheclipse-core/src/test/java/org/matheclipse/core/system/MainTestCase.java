@@ -105,7 +105,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("x^(-I*3.0)", "1/x^(I*3.0)");
 		check("Sin(3/10*Pi)", "1/4*(1+Sqrt(5))");
 
-		check("Sin(Pi/5)", "Sqrt(5-Sqrt(5))/(2*Sqrt(2))");
+		check("Sin(Pi/5)", "Sqrt(1/2*(5-Sqrt(5)))/2");
 		check("Sin({a,b,c})", "{Sin(a),Sin(b),Sin(c)}");
 		check("2^(-1)", "1/2");
 		check("x^3+x^2+x+42", "42+x+x^2+x^3");
