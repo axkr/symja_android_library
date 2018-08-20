@@ -905,6 +905,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 						return temp;
 					}
 				} catch (RecursionLimitExceeded rle) {
+					engine.printMessage("Integrate Rubi recursion limit " + Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT
+							+ " exceeded: " + ast.toString());
 					engine.setRecursionLimit(limit);
 					if (secondTry.isPresent()) {
 						return integrateByRubiRules(secondTry, F.NIL);
@@ -913,6 +915,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 					if (Config.SHOW_STACKTRACE) {
 						rex.printStackTrace();
 					}
+					engine.printMessage("Integrate Rubi RuntimeException: " + ast.toString());
 					engine.setRecursionLimit(limit);
 					if (secondTry.isPresent()) {
 						return integrateByRubiRules(secondTry, F.NIL);
