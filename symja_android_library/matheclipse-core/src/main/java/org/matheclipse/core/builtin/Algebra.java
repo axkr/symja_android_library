@@ -1563,6 +1563,9 @@ public class Algebra {
 				}
 			} catch (RuntimeException rex) {
 				// System.out.println("Factor failed: " + expr.toString());
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
 				return expr;
 			}
 			IASTAppendable result = F.TimesAlloc(map.size() + 1);

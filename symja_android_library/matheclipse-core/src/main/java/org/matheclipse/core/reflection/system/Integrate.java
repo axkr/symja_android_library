@@ -1290,14 +1290,14 @@ public class Integrate extends AbstractFunctionEvaluator {
 				F.List(F.ArcSinh, F.ArcCosh, F.ArcTanh, F.ArcCoth, F.ArcSech, F.ArcCsch));
 		F.ISet(F.$s("§$calculusfunctions"),
 				F.List(F.D, Integrate, F.Sum, F.Product, F.Integrate,
-						$s(UtilityFunctionCtors.INTEGRATE_PREFIX + "Unintegrable"),
-						$s(UtilityFunctionCtors.INTEGRATE_PREFIX + "CannotIntegrate"),
-						$s(UtilityFunctionCtors.INTEGRATE_PREFIX + "Dif"),
-						$s(UtilityFunctionCtors.INTEGRATE_PREFIX + "Subst")));
+						F.$rubi(UtilityFunctionCtors.INTEGRATE_PREFIX + "Unintegrable"),
+						F.$rubi(UtilityFunctionCtors.INTEGRATE_PREFIX + "CannotIntegrate"),
+						F.$rubi(UtilityFunctionCtors.INTEGRATE_PREFIX + "Dif"),
+						F.$rubi(UtilityFunctionCtors.INTEGRATE_PREFIX + "Subst")));
 		F.ISet(F.$s("§$stopfunctions"),
 				F.List(F.Hold, F.HoldForm, F.Defer, F.Pattern, F.If, F.Integrate,
-						$s(UtilityFunctionCtors.INTEGRATE_PREFIX + "Unintegrable"),
-						$s(UtilityFunctionCtors.INTEGRATE_PREFIX + "CannotIntegrate")));
+						F.$rubi(UtilityFunctionCtors.INTEGRATE_PREFIX + "Unintegrable"),
+						F.$rubi(UtilityFunctionCtors.INTEGRATE_PREFIX + "CannotIntegrate")));
 		F.ISet(F.$s("§$heldfunctions"), F.List(F.Hold, F.HoldForm, F.Defer, F.Pattern));
 
 		F.ISet(UtilityFunctionCtors.IntegerPowerQ, //

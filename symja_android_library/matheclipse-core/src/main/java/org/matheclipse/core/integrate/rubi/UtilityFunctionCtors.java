@@ -1912,9 +1912,9 @@ public class UtilityFunctionCtors {
 		return binaryAST2(F.$rubi(INTEGRATE_PREFIX + "UnifyTerms"), a0, a1);
 	}
 
-	// public static IAST Unintegrable(final IExpr a0, final IExpr a1) {
-	// return binaryAST2(F.$rubi(INTEGRATE_PREFIX + "Unintegrable"), a0, a1);
-	// }
+	public static IAST Unintegrable(final IExpr a0, final IExpr a1) {
+		return binaryAST2(F.$rubi(INTEGRATE_PREFIX + "Unintegrable"), a0, a1);
+	}
 
 	public static IAST UnifyInertTrigFunction(final IExpr a0, final IExpr a1) {
 		return binaryAST2(F.$rubi(INTEGRATE_PREFIX + "UnifyInertTrigFunction"), a0, a1);
