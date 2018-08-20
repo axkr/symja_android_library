@@ -1,9 +1,14 @@
 package org.matheclipse.core.rubi;
 
-// Int[1/((2+3x)(52-54x+27x^2)^(1/3)),x] 
 public class RubiIssue76 extends AbstractRubiTestCase {
 	public RubiIssue76(String name) {
 		super(name, false);
+	}
+
+	public void test0001() {
+		check("Integrate[F^(a+b/(c+d*x)^3)*(c+d*x),x]",
+				"(F^a*(c+d*x)^2*Gamma[-2/3,(-b*Log[F])/(c+d*x)^3]*((-b*Log[F])/(c+d*x)^3)^(2/3))/(\n" + //
+						"3*d)");
 	}
 
 	public void test0072() {

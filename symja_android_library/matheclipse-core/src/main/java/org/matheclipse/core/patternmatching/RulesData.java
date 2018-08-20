@@ -690,7 +690,7 @@ public class RulesData implements Serializable {
 		return fEqualUpRules;
 	}
 
-	private Set<IPatternMatcher> getPatternDownRules() {
+	public Set<IPatternMatcher> getPatternDownRules() {
 		if (fPatternDownRules == null) {
 			// fPatternDownRules = new TreeSet<IPatternMatcher>();
 			fPatternDownRules = new TreeSet<IPatternMatcher>(IPatternMatcher.EQUIVALENCE_COMPARATOR);
@@ -705,7 +705,7 @@ public class RulesData implements Serializable {
 		return fSimpleOrderlesPatternDownRules;
 	}
 
-	private OpenIntToSet<IPatternMatcher> getSimplePatternDownRules() {
+	public OpenIntToSet<IPatternMatcher> getSimplePatternDownRules() {
 		if (fSimplePatternDownRules == null) {
 			fSimplePatternDownRules = new OpenIntToSet<IPatternMatcher>(IPatternMatcher.EQUIVALENCE_COMPARATOR);
 		}

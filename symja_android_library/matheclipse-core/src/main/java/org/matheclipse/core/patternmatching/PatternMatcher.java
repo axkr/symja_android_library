@@ -676,7 +676,6 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				// }
 				return false;
 			}
-
 			if (lhsPatternHead.isSymbol() && lhsEvalHead.isSymbol()) {
 				if (!lhsPatternHead.equals(lhsEvalHead)) {
 					return false;
@@ -1104,43 +1103,45 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	 */
 	private IExpr matchOptionalArgumentsAST(ISymbol symbolWithDefaultValue, IAST lhsPatternAST, IAST lhsEvalAST) {
 		int lhsSize = lhsEvalAST.size();
+		IExpr head = lhsEvalAST.head();
 		IASTAppendable cloned = F.ast(lhsPatternAST.head(), lhsPatternAST.size(), false);
-		final boolean[] defaultValueMatched = new boolean[] { false };
-		if (lhsPatternAST.exists((temp, i) -> {
-			if (temp.isPatternDefault()) {
-				IPattern pattern = (IPattern) temp;
-				if (i < lhsSize) {
+		boolean defaultValueMatched = false;
+		for (int i = 1; i < lhsPatternAST.size(); i++) {
+			if (lhsPatternAST.get(i).isPatternDefault()) {
+				IPattern pattern = (IPattern) lhsPatternAST.get(i);
+				if (i < lhsSize && symbolWithDefaultValue.equals(head)) {
 					cloned.append(pattern);
-					return false;
+					continue;
 				}
 				IExpr positionDefaultValue = pattern.getDefaultValue();
 				if (positionDefaultValue == null) {
 					positionDefaultValue = symbolWithDefaultValue.getDefaultValue(i);
 				}
 				if (positionDefaultValue != null) {
-					if (!((IPatternObject) temp).matchPattern(positionDefaultValue, fPatternMap)) {
-						return true;
+					if (!((IPatternObject) lhsPatternAST.get(i)).matchPattern(positionDefaultValue, fPatternMap)) {
+						return F.NIL;
 					}
-					defaultValueMatched[0] = true;
-					return false;
+					defaultValueMatched = true;
+					continue;
 				} else {
+					if (i < lhsSize) {
+						cloned.append(pattern);
+						continue;
+					}
 					IExpr commonDefaultValue = symbolWithDefaultValue.getDefaultValue();
 					if (commonDefaultValue != null) {
-						if (!((IPatternObject) temp).matchPattern(commonDefaultValue, fPatternMap)) {
-							return true;
+						if (!((IPatternObject) lhsPatternAST.get(i)).matchPattern(commonDefaultValue, fPatternMap)) {
+							return F.NIL;
 						}
-						defaultValueMatched[0] = true;
-						return false;
+						defaultValueMatched = true;
+						continue;
 					}
 				}
 
 			}
-			cloned.append(temp);
-			return false;
-		})) {
-			return F.NIL;
+			cloned.append(lhsPatternAST.get(i));
 		}
-		if (defaultValueMatched[0]) {
+		if (defaultValueMatched) {
 			if (cloned.isOneIdentityAST1()) {
 				return cloned.arg1();
 			}

@@ -59,17 +59,22 @@ import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Quadratic
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.RemoveContent;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Simp;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.SimpFixFactor;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Subst;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.SubstAux;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.SubstForFractionalPowerOfLinear;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.TrigSimplifyAux;
 
+import javax.script.ScriptException;
+
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.util.OpenIntToSet;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.core.patternmatching.RulesData;
 
 /**
  * Tests for the Java port of the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based integrator</a>.
@@ -83,6 +88,49 @@ public class RubiIntegrationTest extends AbstractTestCase {
 	@Override
 	public void check(String evalString, String expectedResult) {
 		check(fScriptEngine, evalString, expectedResult, -1);
+	}
+
+	public void testRubiRule001() {
+		// check("Int[(F_)^((a_.) + (b_.)*((c_.) + (d_.)*(x_))^(n_))*((e_.) + (f_.)*(x_))^(m_.), x_Symbol] :=
+		// {F,a,b,c,d,x,n,m}", //
+		// "Null");
+		// check("Int[F^(a+b/(c+d*x)^3)*(c+d*x),x]", //
+		// "");
+		try {
+			// fScriptEngine.se
+			fScriptEngine.put("RETURN_OBJECT", Boolean.TRUE);
+			IExpr expr = (IExpr) fScriptEngine.eval(
+					"myfunction[(e_.+f_.*x_)^m_., x_] := {e,f,m,x}");
+			IExpr lhsEval = (IExpr) fScriptEngine.eval("myfunction[c+d*x ,x]");
+			assertEquals(lhsEval.toString(), "{c,d,1,x}");
+//			ISymbol s = (ISymbol) fScriptEngine.eval("myfunction");
+//			RulesData rd = s.getRulesData();
+//			IExpr result = rd.evalDownRule(lhsEval, EvalEngine.get());
+//			// OpenIntToSet<IPatternMatcher> set = rd.getSimplePatternDownRules();
+//			System.out.println(result.toString());
+		} catch (ScriptException e) {
+			e.printStackTrace();
+		}
+		// RulesData rulesData = new
+	}
+	
+	public void testRubiRule002() {
+		// check("Int[(F_)^((a_.) + (b_.)*((c_.) + (d_.)*(x_))^(n_))*((e_.) + (f_.)*(x_))^(m_.), x_Symbol] :=
+		// {F,a,b,c,d,x,n,m}", //
+		// "Null");
+		// check("Int[F^(a+b/(c+d*x)^3)*(c+d*x),x]", //
+		// "");
+		try {
+			// fScriptEngine.se
+			fScriptEngine.put("RETURN_OBJECT", Boolean.TRUE);
+			IExpr expr = (IExpr) fScriptEngine.eval(
+					"myfunction[(F_)^((a_.) + (b_.)*((c_.) + (d_.)*(x_))^(n_))*((e_.) + (f_.)*(x_))^(m_.), x_Symbol] := {F,a,b,c,d,x,n,m}");
+			IExpr lhsEval = (IExpr) fScriptEngine.eval("myfunction[F^(a+b/(c+d*x)^3)*(c+d*x),x]");
+			assertEquals(lhsEval.toString(), "{F,a,b,c,d,x,-3,1}");
+		} catch (ScriptException e) {
+			e.printStackTrace();
+		}
+		// RulesData rulesData = new
 	}
 
 	public void testRubi001() {
