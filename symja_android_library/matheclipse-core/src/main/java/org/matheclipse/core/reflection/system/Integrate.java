@@ -915,7 +915,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 					if (Config.SHOW_STACKTRACE) {
 						rex.printStackTrace();
 					}
-					engine.printMessage("Integrate Rubi RuntimeException: " + ast.toString());
+					engine.printMessage("Integrate Rubi recursion limit " + Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT
+							+ " RuntimeException: " + ast.toString());
 					engine.setRecursionLimit(limit);
 					if (secondTry.isPresent()) {
 						return integrateByRubiRules(secondTry, F.NIL);
