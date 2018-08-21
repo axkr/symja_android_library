@@ -1118,7 +1118,7 @@ public final class PatternMatching {
 				final EvalEngine engine) throws RuleCreationError {
 			if (leftHandSide.isAST()
 					&& (((IAST) leftHandSide).getEvalFlags() & IAST.IS_FLATTENED_OR_SORTED_MASK) == IAST.NO_FLAG) {
-				leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
+				leftHandSide = engine.evalLHSPattern((IAST) leftHandSide);
 			}
 			return setDelayedDownRule(leftHandSide, rightHandSide, packageMode);
 		}

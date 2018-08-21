@@ -259,7 +259,7 @@ public class EvalEngine implements Serializable {
 
 	static public int MAX_THREADS_COUNT = 10;
 	final ExecutorService executor;
-	
+
 	public ExecutorService getExecutorService() {
 		return executor;
 	}
@@ -1020,6 +1020,24 @@ public class EvalEngine implements Serializable {
 		} finally {
 			fEvalLHSMode = evalLHSMode;
 		}
+	}
+
+	public IExpr evalLHSPattern(IAST ast) {
+		boolean evalLHSMode = fEvalLHSMode;
+		try {
+			fEvalLHSMode = true;
+			IExpr temp = evalAttributes(ast.topHead(),ast);
+			if (temp.isPresent()) {
+				return temp;
+			}
+		} catch (RuntimeException rex) {
+			if (Config.SHOW_STACKTRACE) {
+				rex.printStackTrace();
+			}
+		} finally {
+			fEvalLHSMode = evalLHSMode;
+		}
+		return ast;
 	}
 
 	/**
