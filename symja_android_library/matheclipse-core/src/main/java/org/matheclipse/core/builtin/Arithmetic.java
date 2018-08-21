@@ -3087,14 +3087,14 @@ public final class Arithmetic {
 						// (a * b * c)^n => a^n * b^n * c^n
 						return astArg1.mapThread(Power(null, exponent), 1);
 					}
-//					if (exponent.isNumber()) {
-//						final IAST f0 = astArg1;
-//
-//						if ((f0.size() > 1) && (f0.arg1().isNumber())) {
-//							return Times(Power(f0.arg1(), exponent),
-//									Power(F.ast(f0, F.Times, true, 2, f0.size()), exponent));
-//						}
-//					}
+					// if (exponent.isNumber()) {
+					// final IAST f0 = astArg1;
+					//
+					// if ((f0.size() > 1) && (f0.arg1().isNumber())) {
+					// return Times(Power(f0.arg1(), exponent),
+					// Power(F.ast(f0, F.Times, true, 2, f0.size()), exponent));
+					// }
+					// }
 				} else if (astArg1.isPower()) {
 					if (astArg1.arg2().isReal() && exponent.isReal()) {
 						IExpr temp = astArg1.arg2().times(exponent);
@@ -4826,6 +4826,15 @@ public final class Arithmetic {
 						&& power0Arg1.isReal() && power1Arg1.isReal()) {
 					// a^(c)*b^(c) => (a*b) ^c
 					return power0Arg1.times(power1Arg1).power(power0Arg2);
+				}
+				if (power0Arg2.negate().equals(power1Arg2) && power0Arg1.isPositive() && power1Arg1.isPositive()
+						&& power0Arg1.isReal() && power1Arg1.isReal()) {
+					// a^(c)*b^(-c) => (a/b)^c
+					if (power0Arg2.isNegative()) {
+						return power1Arg1.divide(power0Arg1).power(power1Arg2);
+					} else {
+						return power0Arg1.divide(power1Arg1).power(power0Arg2);
+					}
 				}
 				if (power0Arg1.isFraction() && power0Arg2.isFraction() && power1Arg1.isFraction()
 						&& power1Arg2.isFraction()) {
