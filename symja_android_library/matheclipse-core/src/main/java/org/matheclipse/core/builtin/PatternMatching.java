@@ -644,10 +644,14 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3);
+			Validate.checkRange(ast, 2, 3);
 			if (ast.arg1().isPattern()) {
 				IPattern patt = (IPattern) ast.arg1();
 				return F.$p(patt.getSymbol(), patt.getCondition(), ast.arg2());
+			}
+			if (ast.arg1().isBlank()) {
+				IPattern patt = (IPattern) ast.arg1();
+				return F.$b(patt.getCondition(), ast.arg2());
 			}
 			return F.NIL;
 		}

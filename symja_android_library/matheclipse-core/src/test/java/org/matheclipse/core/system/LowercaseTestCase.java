@@ -3782,6 +3782,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFullForm() {
+		check("( _. ) // FullForm", //
+				"Optional(Blank())");
+		check("Optional(Blank())", //
+				"_.");
+		check("( _:2 ) // FullForm", //
+				"Optional(Blank(),2)");
+		check("Optional(Blank(),2)", //
+				"_:2");
+		check("( x_. ) // FullForm", //
+				"Optional(Pattern(x, Blank()))"); 
+		check("Optional(Pattern(x, Blank()))", //
+				"x_.");
+		check("( x_:2 ) // FullForm", //
+				"Optional(Pattern(x, Blank()),2)");
+		check("Optional(Pattern(x,Blank()),2)", //
+				"x_:2");
 		// FullForm[Hold[(#1[[1]]*#1[[2]] & )[SignOfFactor[NormalizeSumFactors /@ u]]]]
 		check("Hold(Function(#[[1]]*#[[2]])[SignOfFactor(Map(NormalizeSumFactors,u))]) // FullForm", //
 				"Hold(Function(Times(Part(Slot(1), 1), Part(Slot(1), 2)))[signoffactor(Map(normalizesumfactors, u))])");
@@ -10418,7 +10434,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTimes() {
-
+		check("1/(sq(a)*sq(b))//FullForm", //
+				"Times(Power(sq(a), -1), Power(sq(b), -1))");
 		check("(-Infinity)/Sin(-2)", "Infinity");
 		check("(-Infinity)/(-2)", "Infinity");
 		check("(-Infinity)/Log(2)", "-Infinity");

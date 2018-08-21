@@ -184,6 +184,14 @@ public class Pattern extends Blank {
 	@Override
 	public String fullFormString() {
 		StringBuilder buf = new StringBuilder();
+		if (fDefaultValue!=null||fDefault) {
+			buf.append("Optional");
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				buf.append('(');
+			} else {
+				buf.append('[');
+			}
+		}
 		buf.append("Pattern");
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			buf.append('(');
@@ -206,7 +214,21 @@ public class Pattern extends Blank {
 		} else {
 			buf.append("]]");
 		}
-
+		if (fDefaultValue!=null) {
+			buf.append(",");
+			buf.append(fDefaultValue.fullFormString());
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				buf.append(")");
+			} else {
+				buf.append("]");
+			}
+		} else if (fDefault) {
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				buf.append(")");
+			} else {
+				buf.append("]");
+			}
+		}
 		return buf.toString();
 	}
 
