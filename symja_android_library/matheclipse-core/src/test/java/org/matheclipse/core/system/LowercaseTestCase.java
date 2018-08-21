@@ -4162,6 +4162,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHoldPattern() {
+		check("HoldPattern( 1/(sq(a_)*sq(b_)) ) //FullForm", //
+				"HoldPattern(Power(Times(sq(Pattern(a, Blank())), sq(Pattern(b, Blank()))), -1))");
+		check(" 1/(sq(a_)*sq(b_)) //FullForm", //
+				"Times(Power(sq(Pattern(a, Blank())), -1), Power(sq(Pattern(b, Blank())), -1))");
+		
 		check("HoldPattern( Sqrt(2*Pi*x_) )", //
 				"HoldPattern(Sqrt(2*Pi*x_))");
 		check("MatchQ(And(x, y, z), p__)", //

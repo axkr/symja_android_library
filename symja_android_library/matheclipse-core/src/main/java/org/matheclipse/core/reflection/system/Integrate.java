@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.$s;
 import static org.matheclipse.core.expression.F.ArcTan;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
@@ -17,16 +16,22 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Times;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
+import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
+import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
@@ -36,6 +41,8 @@ import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.polynomials.PartialFractionIntegrateGenerator;
@@ -45,6 +52,10 @@ import edu.jas.arith.BigRational;
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.Monomial;
+import edu.jas.ufd.FactorAbstract;
+import edu.jas.ufd.FactorFactory;
+import edu.jas.ufd.SquarefreeAbstract;
+import edu.jas.ufd.SquarefreeFactory;
 
 /**
  * <pre>
@@ -203,17 +214,15 @@ public class Integrate extends AbstractFunctionEvaluator {
 					// issue #91
 					return F.NIL;
 				}
-				// if (astArg1.isTimes()) {
-				// IAST freeTimes = F.Times();
-				// IAST restTimes = F.Times();
-				// collectFreeTerms(astArg1, x, freeTimes, restTimes);
+				// if (arg1.isTimes()) {
+				// IASTAppendable freeTimes = F.TimesAlloc(arg1.size());
+				// IASTAppendable restTimes = F.TimesAlloc(arg1.size());
+				// collectFreeTerms((IAST)arg1, x, freeTimes, restTimes);
 				// IExpr free = freeTimes.getOneIdentity(F.C1);
 				// IExpr rest = restTimes.getOneIdentity(F.C1);
 				// if (!free.isOne()) {
-				// // Integrate[free_ * rest_,x_Symbol] ->
-				// free*Integrate[rest, x] /; FreeQ[free,y]
-				// // IExpr result = integrateByRubiRules(Integrate(rest,
-				// x));
+				// // Integrate[free_ * rest_,x_Symbol] -> free*Integrate[rest, x] /; FreeQ[free,y]
+				// // IExpr result = integrateByRubiRules(Integrate(rest, x));
 				// // if (result != null) {
 				// // return Times(free, result);
 				// // }
@@ -641,8 +650,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 	// {
 	// try {
 	// IAST variableList = F.List(x);
-	// IExpr exprNumerator = F.evalExpandAll(parts[0], true, false);
-	// IExpr exprDenominator = F.evalExpandAll(parts[1], true, false);
+	// IExpr exprNumerator = F.expandAll(parts[0], true, false);
+	// IExpr exprDenominator = F.expandAll(parts[1], true, false);
 	// ASTRange r = new ASTRange(variableList, 1);
 	// List<IExpr> varList = r.toList();
 	//
@@ -1014,7 +1023,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * @param restTimes
 	 *            the non-polynomil terms part
 	 */
-	private static void collectFreeTerms(final IAST timesAST, ISymbol x, IASTAppendable freeTimes,
+	private static void collectFreeTerms(final IAST timesAST, IExpr x, IASTAppendable freeTimes,
 			IASTAppendable restTimes) {
 		IExpr temp;
 		for (int i = 1; i < timesAST.size(); i++) {

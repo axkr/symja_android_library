@@ -76,11 +76,13 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST0()) {
-				return F.$b();
-			}
-			if (ast.isAST1()) {
-				return F.$b(ast.arg1());
+			if (ast.head().equals(F.Blank)) {
+				if (ast.isAST0()) {
+					return F.$b();
+				}
+				if (ast.isAST1()) {
+					return F.$b(ast.arg1());
+				}
 			}
 			return F.NIL;
 		}
@@ -644,14 +646,31 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-			if (ast.arg1().isPattern()) {
-				IPattern patt = (IPattern) ast.arg1();
-				return F.$p(patt.getSymbol(), patt.getCondition(), ast.arg2());
-			}
-			if (ast.arg1().isBlank()) {
-				IPattern patt = (IPattern) ast.arg1();
-				return F.$b(patt.getCondition(), ast.arg2());
+			if (ast.head().equals(F.Optional)) {
+
+				if (ast.size() == 2) {
+					IExpr arg1 = engine.evaluate(ast.arg1());
+					if (arg1.isBlank()) {
+						IPattern patt = (IPattern) arg1;
+						return F.$b(patt.getCondition(), true);
+					}
+					if (arg1.isPattern()) {
+						IPattern patt = (IPattern) arg1;
+						return F.$p(patt.getSymbol(), patt.getCondition(), true);
+					}
+				}
+				if (ast.size() == 3) {
+					IExpr arg1 = engine.evaluate(ast.arg1());
+					IExpr arg2 = engine.evaluate(ast.arg2());
+					if (arg1.isBlank()) {
+						IPattern patt = (IPattern) arg1;
+						return F.$b(patt.getCondition(), arg2);
+					}
+					if (arg1.isPattern()) {
+						IPattern patt = (IPattern) arg1;
+						return F.$p(patt.getSymbol(), patt.getCondition(), arg2);
+					}
+				}
 			}
 			return F.NIL;
 		}
@@ -670,19 +689,23 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
+			if (ast.head().equals(F.Pattern)) {
+				Validate.checkSize(ast, 3);
 
-			if (ast.arg1().isSymbol()) {
-				if (ast.arg2().isBlank()) {
-					IPatternObject blank = (IPatternObject) ast.arg2();
-					return F.$p((ISymbol) ast.arg1(), blank.getCondition());
+				if (ast.size() == 3) {
+					if (ast.arg1().isSymbol()) {
+						if (ast.arg2().isBlank()) {
+							IPatternObject blank = (IPatternObject) ast.arg2();
+							return F.$p((ISymbol) ast.arg1(), blank.getCondition());
+						}
+						// if (ast.arg2().isPattern()) {
+						// IPattern blank = (IPattern) ast.arg2();
+						// // if (blank.isBlank()) {
+						// return F.$p((ISymbol) ast.arg1(), blank.getCondition());
+						// // }
+						// }
+					}
 				}
-				// if (ast.arg2().isPattern()) {
-				// IPattern blank = (IPattern) ast.arg2();
-				// // if (blank.isBlank()) {
-				// return F.$p((ISymbol) ast.arg1(), blank.getCondition());
-				// // }
-				// }
 			}
 			return F.NIL;
 		}

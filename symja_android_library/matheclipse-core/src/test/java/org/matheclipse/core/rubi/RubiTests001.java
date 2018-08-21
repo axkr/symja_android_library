@@ -15,7099 +15,7127 @@ public class RubiTests001 extends AbstractRubiTestCase {
 		check(evalString, expectedResult, -1);
 	}
 
-//	// {Sqrt(1+2*x), x, 1, (1+2*x)^(3/2)/3}
-//	public void test00001() {
-//		check("Integrate(Sqrt(1+2*x), x)", "(1+2*x)^(3/2)/3");
-//
-//	}
-//
-//	// {(1+x)/(2+2*x+x^2)^3, x, 1, -1/(4*(2+2*x+x^2)^2)}
-//	public void test00002() {
-//		check("Integrate((1+x)/(2+2*x+x^2)^3, x)", "-1/(4*(2+2*x+x^2)^2)");
-//
-//	}
-//
-//	// {x^5/Sqrt(1-x^6), x, 1, -Sqrt(1-x^6)/3}
-//	public void test00003() {
-//		check("Integrate(x^5/Sqrt(1-x^6), x)", "-Sqrt(1-x^6)/3");
-//
-//	}
-//
-//	// {(1+x^2)^(-3/2), x, 1, x/Sqrt(1+x^2)}
-//	public void test00004() {
-//		check("Integrate((1+x^2)^(-3/2), x)", "x/Sqrt(1+x^2)");
-//
-//	}
-//
-//	// {x^2*(27+8*x^3)^(2/3), x, 1, (27+8*x^3)^(5/3)/40}
-//	public void test00005() {
-//		check("Integrate(x^2*(27+8*x^3)^(2/3), x)", "(27+8*x^3)^(5/3)/40");
-//
-//	}
-//
-//	// {(Cos(x)+Sin(x))/(-Cos(x)+Sin(x))^(1/3), x, 1, (3*(-Cos(x)+Sin(x))^(2/3))/2}
-//	public void test00006() {
-//		check("Integrate((Cos(x)+Sin(x))/(-Cos(x)+Sin(x))^(1/3), x)", "(3*(-Cos(x)+Sin(x))^(2/3))/2");
-//
-//	}
-//
-//	// {x/(Sqrt(1+x^2)*Sqrt(1+Sqrt(1+x^2))), x, 1, 2*Sqrt(1+Sqrt(1+x^2))}
-//	public void test00007() {
-//		check("Integrate(x/(Sqrt(1+x^2)*Sqrt(1+Sqrt(1+x^2))), x)", "2*Sqrt(1+Sqrt(1+x^2))");
-//
-//	}
-//
-//	// {x*Sqrt(1+x^2), x, 1, (1+x^2)^(3/2)/3}
-//	public void test00008() {
-//		check("Integrate(x*Sqrt(1+x^2), x)", "(1+x^2)^(3/2)/3");
-//
-//	}
-//
-//	// {x*(-1+x^2)^9, x, 1, (1-x^2)^10/20}
-//	public void test00009() {
-//		check("Integrate(x*(-1+x^2)^9, x)", "(1-x^2)^10/20");
-//
-//	}
-//
-//	// {(3+2*x)/(7+6*x)^3, x, 1, -(3+2*x)^2/(8*(7+6*x)^2)}
-//	public void test00010() {
-//		check("Integrate((3+2*x)/(7+6*x)^3, x)", "-(3+2*x)^2/(8*(7+6*x)^2)");
-//
-//	}
-//
-//	// {x^4*(1+x^5)^5, x, 1, (1+x^5)^6/30}
-//	public void test00011() {
-//		check("Integrate(x^4*(1+x^5)^5, x)", "(1+x^5)^6/30");
-//
-//	}
-//
-//	// {x*Cos(x^2)*Sin(x^2), x, 1, Sin(x^2)^2/4}
-//	public void test00012() {
-//		check("Integrate(x*Cos(x^2)*Sin(x^2), x)", "Sin(x^2)^2/4");
-//
-//	}
-//
-//	// {(2+3*x)^(-1), x, 1, Log(2+3*x)/3}
-//	public void test00013() {
-//		check("Integrate((2+3*x)^(-1), x)", "Log(2+3*x)/3");
-//
-//	}
-//
-//	// {x*Log(x), x, 1, -x^2/4+(x^2*Log(x))/2}
-//	public void test00014() {
-//		check("Integrate(x*Log(x), x)", "-x^2/4+(x^2*Log(x))/2");
-//	}
-//
-//	// {(1+t)^(-1), t, 1, Log(1+t)}
-//	public void test00015() {
-//		check("Integrate((1+t)^(-1), t)", "Log(1+t)");
-//
-//	}
-//
-//	// {Cot(x), x, 1, Log(Sin(x))}
-//	public void test00016() {
-//		check("Integrate(Cot(x), x)", "Log(Sin(x))");
-//
-//	}
-//
-//	// {x^n*Log(a*x), x, 1, -(x^(1+n)/(1+n)^2)+(x^(1+n)*Log(a*x))/(1+n)}
-//	public void test00017() {
-//		check("Integrate(x^n*Log(a*x), x)", "-(x^(1+n)/(1+n)^2)+(x^(1+n)*Log(a*x))/(1+n)");
-//
-//	}
-//
-//	// {E^x^3*x^2, x, 1, E^x^3/3}
-//	public void test00018() {
-//		check("Integrate(E^x^3*x^2, x)", "E^x^3/3");
-//
-//	}
-//
-//	// {2^Sqrt(x)/Sqrt(x), x, 1, 2^(1+Sqrt(x))/Log(2)}
-//	public void test00019() {
-//		check("Integrate(2^Sqrt(x)/Sqrt(x), x)", "2^(1+Sqrt(x))/Log(2)");
-//
-//	}
-//
-//	// {E^x*Sin(x), x, 1, -(E^x*Cos(x))/2+(E^x*Sin(x))/2}
-//	public void test00020() {
-//		check("Integrate(E^x*Sin(x), x)", "-(E^x*Cos(x))/2+(E^x*Sin(x))/2");
-//
-//	}
-//
-//	// {E^x*Cos(x), x, 1, (E^x*Cos(x))/2+(E^x*Sin(x))/2}
-//	public void test00021() {
-//		check("Integrate(E^x*Cos(x), x)", "(E^x*Cos(x))/2+(E^x*Sin(x))/2");
-//
-//	}
-//
-//	// {E^(a*x)*Cos(b*x), x, 1, (a*E^(a*x)*Cos(b*x))/(a^2+b^2)+(b*E^(a*x)*Sin(b*x))/(a^2+b^2)}
-//	public void test00022() {
-//		check("Integrate(E^(a*x)*Cos(b*x), x)", "(a*E^(a*x)*Cos(b*x))/(a^2+b^2)+(b*E^(a*x)*Sin(b*x))/(a^2+b^2)");
-//
-//	}
-//
-//	// {E^(a*x)*Sin(b*x), x, 1, -((b*E^(a*x)*Cos(b*x))/(a^2+b^2))+(a*E^(a*x)*Sin(b*x))/(a^2+b^2)}
-//	public void test00023() {
-//		check("Integrate(E^(a*x)*Sin(b*x), x)", "-((b*E^(a*x)*Cos(b*x))/(a^2+b^2))+(a*E^(a*x)*Sin(b*x))/(a^2+b^2)");
-//
-//	}
-//
-//	// {(a^2+x^2)^(-1), x, 1, ArcTan(x/a)/a}
-//	public void test00024() {
-//		check("Integrate((a^2+x^2)^(-1), x)", "ArcTan(x/a)/a");
-//
-//	}
-//
-//	// {(a+b*x^2)^(-1), x, 1, ArcTan((Sqrt(b)*x)/Sqrt(a))/(Sqrt(a)*Sqrt(b))}
-//	public void test00025() {
-//		check("Integrate((a+b*x^2)^(-1), x)", "ArcTan((Sqrt(b)*x)/Sqrt(a))/(Sqrt(a)*Sqrt(b))");
-//
-//	}
-//
-//	// {ArcTan(Sqrt(x))/(Sqrt(x)*(1+x)), x, 1, ArcTan(Sqrt(x))^2}
-//	public void test00026() {
-//		check("Integrate(ArcTan(Sqrt(x))/(Sqrt(x)*(1+x)), x)", "ArcTan(Sqrt(x))^2");
-//
-//	}
-//
-//	// {(E^ArcTan(x)*x)/(1+x^2)^(3/2), x, 1, -(E^ArcTan(x)*(1-x))/(2*Sqrt(1+x^2))}
-//	public void test00027() {
-//		check("Integrate((E^ArcTan(x)*x)/(1+x^2)^(3/2), x)", "-(E^ArcTan(x)*(1-x))/(2*Sqrt(1+x^2))");
-//
-//	}
-//
-//	// {E^ArcTan(x)/(1+x^2)^(3/2), x, 1, (E^ArcTan(x)*(1+x))/(2*Sqrt(1+x^2))}
-//	public void test00028() {
-//		check("Integrate(E^ArcTan(x)/(1+x^2)^(3/2), x)", "(E^ArcTan(x)*(1+x))/(2*Sqrt(1+x^2))");
-//
-//	}
-//
-//	// {(-1+4*x^5)/(1+x+x^5)^2, x, 1, -(x/(1+x+x^5))}
-//	public void test00029() {
-//		check("Integrate((-1+4*x^5)/(1+x+x^5)^2, x)", "-x/(1+x+x^5)");
-//
-//	}
-//
-//	// {(1+Cos(x)/2)^(-1), x, 1, (2*x)/Sqrt(3)-(4*ArcTan(Sin(x)/(2+Sqrt(3)+Cos(x))))/Sqrt(3)}
-//	public void test00030() {
-//		check("Integrate((1+Cos(x)/2)^(-1), x)", "(2*x)/Sqrt(3)-(4*ArcTan(Sin(x)/(2+Sqrt(3)+Cos(x))))/Sqrt(3)");
-//
-//	}
-//
-//	// {(b*Cos(x)+a*Sin(x))^(-2), x, 1, Sin(x)/(b*(b*Cos(x)+a*Sin(x)))}
-//	public void test00031() {
-//		check("Integrate((b*Cos(x)+a*Sin(x))^(-2), x)", "Sin(x)/(b*(b*Cos(x)+a*Sin(x)))");
-//
-//	}
-//
-//	// {x/Sqrt(3-x^2), x, 1, -Sqrt(3-x^2)}
-//	public void test00032() {
-//		check("Integrate(x/Sqrt(3-x^2), x)", "-Sqrt(3-x^2)");
-//
-//	}
-//
-//	// {E^t/t, t, 1, ExpIntegralEi(t)}
-//	public void test00033() {
-//		check("Integrate(E^t/t, t)", "ExpIntegralEi(t)");
-//
-//	}
-//
-//	// {E^(a*t)/t, t, 1, ExpIntegralEi(a*t)}
-//	public void test00034() {
-//		check("Integrate(E^(a*t)/t, t)", "ExpIntegralEi(a*t)");
-//
-//	}
-//
-//	// {1/(E^t*(-1-a+t)), t, 1, E^(-1-a)*ExpIntegralEi(1+a-t)}
-//	public void test00035() {
-//		check("Integrate(1/(E^t*(-1-a+t)), t)", "E^(-1-a)*ExpIntegralEi(1+a-t)");
-//
-//	}
-//
-//	// {(b1*Cos(x)+a1*Sin(x))/(b*Cos(x)+a*Sin(x)), x, 1, ((a*a1+b*b1)*x)/(a^2+b^2)-((a1*b-a*b1)*Log(b*Cos(x)
-//	// +a*Sin(x)))/(a^2+b^2)}
-//	public void test00036() {
-//		check("Integrate((b1*Cos(x)+a1*Sin(x))/(b*Cos(x)+a*Sin(x)), x)",
-//				"((a*a1+b*b1)*x)/(a^2+b^2)-((a1*b-a*b1)*Log(b*Cos(x)+a*Sin(x)))/(a^2+b^2)");
-//
-//	}
-//
-//	// {Log(t)^(-1), t, 1, LogIntegral(t)}
-//	public void test00037() {
-//		check("Integrate(Log(t)^(-1), t)", "LogIntegral(t)");
-//
-//	}
-//
-//	// {E^(2*t)/(-1+t), t, 1, E^2*ExpIntegralEi(-2*(1-t))}
-//	public void test00038() {
-//		check("Integrate(E^(2*t)/(-1+t), t)", "E^2*ExpIntegralEi(-2*(1-t))");
-//
-//	}
-//
-//	// {1/Sqrt(1+t^3), t, 1, (2*Sqrt(2+Sqrt(3))*(1+t)*Sqrt((1-t+t^2)/(1+Sqrt(3)+t)^2)*EllipticF(ArcSin((1
-//	// -Sqrt(3)+t)/(1+Sqrt(3)+t)), -7-4*Sqrt(3)))/(3^(1/4)*Sqrt((1+t)/(1+Sqrt(3)+t)^2)*Sqrt(1+t^3))}
-//	public void test00039() {
-//		check("Integrate(1/Sqrt(1+t^3), t)",
-//				"(2*Sqrt(2+Sqrt(3))*(1+t)*Sqrt((1-t+t^2)/(1+Sqrt(3)+t)^2)*EllipticF(ArcSin((1-Sqrt(3)+t)/(1+Sqrt(3)+t)), -7-4*Sqrt(3)))/(3^(1/4)*Sqrt((1+t)/(1+Sqrt(3)+t)^2)*Sqrt(1+t^3))");
-//
-//	}
-//
-//	// {(Sqrt(2)+Cos(z)+Sin(z))^(-1), z, 1, -((1-Sqrt(2)*Sin(z))/(Cos(z)-Sin(z)))}
-//	public void test00040() {
-//		check("Integrate((Sqrt(2)+Cos(z)+Sin(z))^(-1), z)", "-((1-Sqrt(2)*Sin(z))/(Cos(z)-Sin(z)))");
-//
-//	}
-//
-//	// {(1+x^2)^(-1), x, 1, ArcTan(x)}
-//	public void test00041() {
-//		check("Integrate((1+x^2)^(-1), x)", "ArcTan(x)");
-//
-//	}
-//
-//	// {Sin(x)/x, x, 1, SinIntegral(x)}
-//	public void test00042() {
-//		check("Integrate(Sin(x)/x, x)", "SinIntegral(x)");
-//
-//	}
-//
-//	// {(6-3*x^2+x^4)/(4+5*x^2-5*x^4+x^6), x, 1, -ArcTan(Sqrt(3)-2*x)+ArcTan(Sqrt(3)+2*x)+ArcTan((x*(1
-//	// -3*x^2+x^4))/2)}
-//	public void test00043() {
-//		check("Integrate((6-3*x^2+x^4)/(4+5*x^2-5*x^4+x^6), x)",
-//				"-ArcTan(Sqrt(3)-2*x)+ArcTan(Sqrt(3)+2*x)+ArcTan((x*(1-3*x^2+x^4))/2)");
-//
-//	}
-//
-//	// {1+x+x^2, x, 1, x+x^2/2+x^3/3}
-//	public void test00044() {
-//		check("Integrate(1+x+x^2, x)", "x+x^2/2+x^3/3");
-//
-//	}
-//
-//	// {x^(-1), x, 1, Log(x)}
-//	public void test00045() {
-//		check("Integrate(x^(-1), x)", "Log(x)");
-//
-//	}
-//
-//	// {(a+b*x)^p, x, 1, (a+b*x)^(1+p)/(b*(1+p))}
-//	public void test00046() {
-//		check("Integrate((a+b*x)^p, x)", "(a+b*x)^(1+p)/(b*(1+p))");
-//
-//	}
-//
-//	// {(a+b*x)^(-1), x, 1, Log(a+b*x)/b}
-//	public void test00047() {
-//		check("Integrate((a+b*x)^(-1), x)", "Log(a+b*x)/b");
-//
-//	}
-//
-//	// {(a+b*x)^(-2), x, 1, -(1/(b*(a+b*x)))}
-//	public void test00048() {
-//		check("Integrate((a+b*x)^(-2), x)", "-(1/(b*(a+b*x)))");
-//
-//	}
-//
-//	// {(c^2+x^2)^(-1), x, 1, ArcTan(x/c)/c}
-//	public void test00049() {
-//		check("Integrate((c^2+x^2)^(-1), x)", "ArcTan(x/c)/c");
-//
-//	}
-//
-//	// {(c^2-x^2)^(-1), x, 1, ArcTanh(x/c)/c}
-//	public void test00050() {
-//		check("Integrate((c^2-x^2)^(-1), x)", "ArcTanh(x/c)/c");
-//
-//	}
-//
-//	// {Log(x), x, 1, -x+x*Log(x)}
-//	public void test00051() {
-//		check("Integrate(Log(x), x)", "-x+x*Log(x)");
-//
-//	}
-//
-//	// {x*Log(x), x, 1, -x^2/4+(x^2*Log(x))/2}
-//	public void test00052() {
-//		check("Integrate(x*Log(x), x)", "-x^2/4+(x^2*Log(x))/2");
-//
-//	}
-//
-//	// {x^2*Log(x), x, 1, -x^3/9+(x^3*Log(x))/3}
-//	public void test00053() {
-//		check("Integrate(x^2*Log(x), x)", "-x^3/9+(x^3*Log(x))/3");
-//
-//	}
-//
-//	// {x^p*Log(x), x, 1, -(x^(1+p)/(1+p)^2)+(x^(1+p)*Log(x))/(1+p)}
-//	public void test00054() {
-//		check("Integrate(x^p*Log(x), x)", "-(x^(1+p)/(1+p)^2)+(x^(1+p)*Log(x))/(1+p)");
-//
-//	}
-//
-//	// {Log(x)^(-1), x, 1, LogIntegral(x)}
-//	public void test00055() {
-//		check("Integrate(Log(x)^(-1), x)", "LogIntegral(x)");
-//
-//	}
-//
-//	// {Sin(x), x, 1, -Cos(x)}
-//	public void test00056() {
-//		check("Integrate(Sin(x), x)", "-Cos(x)");
-//
-//	}
-//
-//	// {Cos(x), x, 1, Sin(x)}
-//	public void test00057() {
-//		check("Integrate(Cos(x), x)", "Sin(x)");
-//
-//	}
-//
-//	// {Tan(x), x, 1, -Log(Cos(x))}
-//	public void test00058() {
-//		check("Integrate(Tan(x), x)", "-Log(Cos(x))");
-//
-//	}
-//
-//	// {Cot(x), x, 1, Log(Sin(x))}
-//	public void test00059() {
-//		check("Integrate(Cot(x), x)", "Log(Sin(x))");
-//
-//	}
-//
-//	// {Sec(x), x, 1, ArcTanh(Sin(x))}
-//	public void test00060() {
-//		check("Integrate(Sec(x), x)", "ArcTanh(Sin(x))");
-//
-//	}
-//
-//	// {Csc(x), x, 1, -ArcTanh(Cos(x))}
-//	public void test00061() {
-//		check("Integrate(Csc(x), x)", "-ArcTanh(Cos(x))");
-//
-//	}
-//
-//	// {Sin(x)^p, x, 1, (Cos(x)*Hypergeometric2F1(1/2, (1+p)/2, (3+p)/2, Sin(x)^2)*Sin(x)^(1+p))/((1 +
-//	// p)*Sqrt(Cos(x)^2))}
-//	public void test00062() {
-//		check("Integrate(Sin(x)^p, x)",
-//				"(Cos(x)*Hypergeometric2F1(1/2, (1+p)/2, (3+p)/2, Sin(x)^2)*Sin(x)^(1+p))/((1+p)*Sqrt(Cos(x)^2))");
-//
-//	}
-//
-//	// {Sin(x)*Sin(2*x), x, 1, Sin(x)/2-Sin(3*x)/6}
-//	public void test00063() {
-//		check("Integrate(Sin(x)*Sin(2*x), x)", "Sin(x)/2-Sin(3*x)/6");
-//
-//	}
-//
-//	// {Sin(x)/x, x, 1, SinIntegral(x)}
-//	public void test00064() {
-//		check("Integrate(Sin(x)/x, x)", "SinIntegral(x)");
-//
-//	}
-//
-//	// {Cos(x)/x, x, 1, CosIntegral(x)}
-//	public void test00065() {
-//		check("Integrate(Cos(x)/x, x)", "CosIntegral(x)");
-//
-//	}
-//
-//	// {Sin(a+b*x), x, 1, -(Cos(a+b*x)/b)}
-//	public void test00066() {
-//		check("Integrate(Sin(a+b*x), x)", "-(Cos(a+b*x)/b)");
-//
-//	}
-//
-//	// {Cos(a+b*x), x, 1, Sin(a+b*x)/b}
-//	public void test00067() {
-//		check("Integrate(Cos(a+b*x), x)", "Sin(a+b*x)/b");
-//
-//	}
-//
-//	// {Tan(a+b*x), x, 1, -(Log(Cos(a+b*x))/b)}
-//	public void test00068() {
-//		check("Integrate(Tan(a+b*x), x)", "-(Log(Cos(a+b*x))/b)");
-//
-//	}
-//
-//	// {Cot(a+b*x), x, 1, Log(Sin(a+b*x))/b}
-//	public void test00069() {
-//		check("Integrate(Cot(a+b*x), x)", "Log(Sin(a+b*x))/b");
-//
-//	}
-//
-//	// {Csc(a+b*x), x, 1, -(ArcTanh(Cos(a+b*x))/b)}
-//	public void test00070() {
-//		check("Integrate(Csc(a+b*x), x)", "-(ArcTanh(Cos(a+b*x))/b)");
-//
-//	}
-//
-//	// {Sec(a+b*x), x, 1, ArcTanh(Sin(a+b*x))/b}
-//	public void test00071() {
-//		check("Integrate(Sec(a+b*x), x)", "ArcTanh(Sin(a+b*x))/b");
-//
-//	}
-//
-//	// {(1+Cos(x))^(-1), x, 1, Sin(x)/(1+Cos(x))}
-//	public void test00072() {
-//		check("Integrate((1+Cos(x))^(-1), x)", "Sin(x)/(1+Cos(x))");
-//
-//	}
-//
-//	// {(1-Cos(x))^(-1), x, 1, -(Sin(x)/(1-Cos(x)))}
-//	public void test00073() {
-//		check("Integrate((1-Cos(x))^(-1), x)", "-(Sin(x)/(1-Cos(x)))");
-//
-//	}
-//
-//	// {(1+Sin(x))^(-1), x, 1, -(Cos(x)/(1+Sin(x)))}
-//	public void test00074() {
-//		check("Integrate((1+Sin(x))^(-1), x)", "-(Cos(x)/(1+Sin(x)))");
-//
-//	}
-//
-//	// {(1-Sin(x))^(-1), x, 1, Cos(x)/(1-Sin(x))}
-//	public void test00075() {
-//		check("Integrate((1-Sin(x))^(-1), x)", "Cos(x)/(1-Sin(x))");
-//
-//	}
-//
-//	// {Cos(x)*Cos(2*x), x, 1, Sin(x)/2+Sin(3*x)/6}
-//	public void test00076() {
-//		check("Integrate(Cos(x)*Cos(2*x), x)", "Sin(x)/2+Sin(3*x)/6");
-//
-//	}
-//
-//	// {Cos(3*x)*Sin(2*x), x, 1, Cos(x)/2-Cos(5*x)/10}
-//	public void test00077() {
-//		check("Integrate(Cos(3*x)*Sin(2*x), x)", "Cos(x)/2-Cos(5*x)/10");
-//
-//	}
-//
-//	// {d^x*Sin(x), x, 1, -((d^x*Cos(x))/(1+Log(d)^2))+(d^x*Log(d)*Sin(x))/(1+Log(d)^2)}
-//	public void test00078() {
-//		check("Integrate(d^x*Sin(x), x)", "-((d^x*Cos(x))/(1+Log(d)^2))+(d^x*Log(d)*Sin(x))/(1+Log(d)^2)");
-//
-//	}
-//
-//	// {d^x*Cos(x), x, 1, (d^x*Cos(x)*Log(d))/(1+Log(d)^2)+(d^x*Sin(x))/(1+Log(d)^2)}
-//	public void test00079() {
-//		check("Integrate(d^x*Cos(x), x)", "(d^x*Cos(x)*Log(d))/(1+Log(d)^2)+(d^x*Sin(x))/(1+Log(d)^2)");
-//
-//	}
-//
-//	// {Sin(Log(x)), x, 1, -(x*Cos(Log(x)))/2+(x*Sin(Log(x)))/2}
-//	public void test00080() {
-//		check("Integrate(Sin(Log(x)), x)", "-(x*Cos(Log(x)))/2+(x*Sin(Log(x)))/2");
-//
-//	}
-//
-//	// {Cos(Log(x)), x, 1, (x*Cos(Log(x)))/2+(x*Sin(Log(x)))/2}
-//	public void test00081() {
-//		check("Integrate(Cos(Log(x)), x)", "(x*Cos(Log(x)))/2+(x*Sin(Log(x)))/2");
-//
-//	}
-//
-//	// {E^x, x, 1, E^x}
-//	public void test00082() {
-//		check("Integrate(E^x, x)", "E^x");
-//
-//	}
-//
-//	// {a^x, x, 1, a^x/Log(a)}
-//	public void test00083() {
-//		check("Integrate(a^x, x)", "a^x/Log(a)");
-//
-//	}
-//
-//	// {E^(a*x), x, 1, E^(a*x)/a}
-//	public void test00084() {
-//		check("Integrate(E^(a*x), x)", "E^(a*x)/a");
-//
-//	}
-//
-//	// {E^(a*x)/x, x, 1, ExpIntegralEi(a*x)}
-//	public void test00085() {
-//		check("Integrate(E^(a*x)/x, x)", "ExpIntegralEi(a*x)");
-//
-//	}
-//
-//	// {(E^(a*x)*x)/(1+a*x)^2, x, 1, E^(a*x)/(a^2*(1+a*x))}
-//	public void test00086() {
-//		check("Integrate((E^(a*x)*x)/(1+a*x)^2, x)", "E^(a*x)/(a^2*(1+a*x))");
-//
-//	}
-//
-//	// {k^x^2*x, x, 1, k^x^2/(2*Log(k))}
-//	public void test00087() {
-//		check("Integrate(k^x^2*x, x)", "k^x^2/(2*Log(k))");
-//
-//	}
-//
-//	// {E^x^2, x, 1, (Sqrt(Pi)*Erfi(x))/2}
-//	public void test00088() {
-//		check("Integrate(E^x^2, x)", "(Sqrt(Pi)*Erfi(x))/2");
-//
-//	}
-//
-//	// {E^x^2*x, x, 1, E^x^2/2}
-//	public void test00089() {
-//		check("Integrate(E^x^2*x, x)", "E^x^2/2");
-//
-//	}
-//
-//	// {E^E^E^E^x, x, 1, CannotIntegrate(E^E^E^E^x, x)}
-//	public void test00090() {
-//		check("Integrate(E^E^E^E^x, x)", "CannotIntegrate(E^E^E^E^x, x)");
-//
-//	}
-//
-//	// {2*x+Sqrt(2)*x^2, x, 1, x^2+(Sqrt(2)*x^3)/3}
-//	public void test00091() {
-//		check("Integrate(2*x+Sqrt(2)*x^2, x)", "x^2+(Sqrt(2)*x^3)/3");
-//
-//	}
-//
-//	// {Sqrt(a+b*x), x, 1, (2*(a+b*x)^(3/2))/(3*b)}
-//	public void test00092() {
-//		check("Integrate(Sqrt(a+b*x), x)", "(2*(a+b*x)^(3/2))/(3*b)");
-//
-//	}
-//
-//	// {1/Sqrt(a+b*x), x, 1, (2*Sqrt(a+b*x))/b}
-//	public void test00093() {
-//		check("Integrate(1/Sqrt(a+b*x), x)", "(2*Sqrt(a+b*x))/b");
-//
-//	}
-//
-//	// {(a+b*x)^(p/2), x, 1, (2*(a+b*x)^((2+p)/2))/(b*(2+p))}
-//	public void test00094() {
-//		check("Integrate((a+b*x)^(p/2), x)", "(2*(a+b*x)^((2+p)/2))/(b*(2+p))");
-//
-//	}
-//
-//	// {x/(1-x^2)^(9/8), x, 1, 4/(1-x^2)^(1/8)}
-//	public void test00095() {
-//		check("Integrate(x/(1-x^2)^(9/8), x)", "4/(1-x^2)^(1/8)");
-//
-//	}
-//
-//	// {(1+x)/((1-x)^2*Sqrt(1+x^2)), x, 1, Sqrt(1+x^2)/(1-x)}
-//	public void test00096() {
-//		check("Integrate((1+x)/((1-x)^2*Sqrt(1+x^2)), x)", "Sqrt(1+x^2)/(1-x)");
-//
-//	}
-//
-//	// {1/Sqrt(1+x^2), x, 1, ArcSinh(x)}
-//	public void test00097() {
-//		check("Integrate(1/Sqrt(1+x^2), x)", "ArcSinh(x)");
-//
-//	}
-//
-//	// {r/Sqrt(-alpha^2+2*e*r^2), r, 1, Sqrt(-alpha^2+2*e*r^2)/(2*e)}
-//	public void test00098() {
-//		check("Integrate(r/Sqrt(-alpha^2+2*e*r^2), r)", "Sqrt(-alpha^2+2*e*r^2)/(2*e)");
-//
-//	}
-//
-//	// {r/Sqrt(-alpha^2-epsilon^2+2*e*r^2), r, 1, Sqrt(-alpha^2-epsilon^2+2*e*r^2)/(2*e)}
-//	public void test00099() {
-//		check("Integrate(r/Sqrt(-alpha^2-epsilon^2+2*e*r^2), r)", "Sqrt(-alpha^2-epsilon^2+2*e*r^2)/(2*e)");
-//
-//	}
-//
-//	// {Log(x^2)/x^3, x, 1, -1/(2*x^2)-Log(x^2)/(2*x^2)}
-//	public void test00100() {
-//		check("Integrate(Log(x^2)/x^3, x)", "-1/(2*x^2)-Log(x^2)/(2*x^2)");
-//
-//	}
-//
-//	// {(-1+(1-x)*Log(x))/(E^x*Log(x)^2), x, 1, x/(E^x*Log(x))}
-//	public void test00101() {
-//		check("Integrate((-1+(1-x)*Log(x))/(E^x*Log(x)^2), x)", "x/(E^x*Log(x))");
-//
-//	}
-//
-//	// {Tanh(2*x), x, 1, Log(Cosh(2*x))/2}
-//	public void test00102() {
-//		check("Integrate(Tanh(2*x), x)", "Log(Cosh(2*x))/2");
-//
-//	}
-//
-//	// {(-1+I*eps*Sinh(x))/(I*a-x+I*eps*Cosh(x)), x, 1, Log(a+I*x+eps*Cosh(x))}
-//	public void test00103() {
-//		check("Integrate((-1+I*eps*Sinh(x))/(I*a-x+I*eps*Cosh(x)), x)", "Log(a+I*x+eps*Cosh(x))");
-//
-//	}
-//
-//	// {Sqrt(1+Sin(x)), x, 1, (-2*Cos(x))/Sqrt(1+Sin(x))}
-//	public void test00104() {
-//		check("Integrate(Sqrt(1+Sin(x)), x)", "(-2*Cos(x))/Sqrt(1+Sin(x))");
-//
-//	}
-//
-//	// {Sqrt(1-Sin(x)), x, 1, (2*Cos(x))/Sqrt(1-Sin(x))}
-//	public void test00105() {
-//		check("Integrate(Sqrt(1-Sin(x)), x)", "(2*Cos(x))/Sqrt(1-Sin(x))");
-//
-//	}
-//
-//	// {Sqrt(1+Cos(x)), x, 1, (2*Sin(x))/Sqrt(1+Cos(x))}
-//	public void test00106() {
-//		check("Integrate(Sqrt(1+Cos(x)), x)", "(2*Sin(x))/Sqrt(1+Cos(x))");
-//
-//	}
-//
-//	// {Sqrt(1-Cos(x)), x, 1, (-2*Sin(x))/Sqrt(1-Cos(x))}
-//	public void test00107() {
-//		check("Integrate(Sqrt(1-Cos(x)), x)", "(-2*Sin(x))/Sqrt(1-Cos(x))");
-//
-//	}
-//
-//	// {Cot(x), x, 1, Log(Sin(x))}
-//	public void test00108() {
-//		check("Integrate(Cot(x), x)", "Log(Sin(x))");
-//
-//	}
-//
-//	// {Tanh(x), x, 1, Log(Cosh(x))}
-//	public void test00109() {
-//		check("Integrate(Tanh(x), x)", "Log(Cosh(x))");
-//
-//	}
-//
-//	// {Coth(x), x, 1, Log(Sinh(x))}
-//	public void test00110() {
-//		check("Integrate(Coth(x), x)", "Log(Sinh(x))");
-//
-//	}
-//
-//	// {b^x, x, 1, b^x/Log(b)}
-//	public void test00111() {
-//		check("Integrate(b^x, x)", "b^x/Log(b)");
-//
-//	}
-//
-//	// {(-3+x)^(-4), x, 1, 1/(3*(3-x)^3)}
-//	public void test00112() {
-//		check("Integrate((-3+x)^(-4), x)", "1/(3*(3-x)^3)");
-//
-//	}
-//
-//	// {1/Sqrt(1+x^2), x, 1, ArcSinh(x)}
-//	public void test00113() {
-//		check("Integrate(1/Sqrt(1+x^2), x)", "ArcSinh(x)");
-//
-//	}
-//
-//	// {1/Sqrt(9+4*x^2), x, 1, ArcSinh((2*x)/3)/2}
-//	public void test00114() {
-//		check("Integrate(1/Sqrt(9+4*x^2), x)", "ArcSinh((2*x)/3)/2");
-//
-//	}
-//
-//	// {1/Sqrt(4+x^2), x, 1, ArcSinh(x/2)}
-//	public void test00115() {
-//		check("Integrate(1/Sqrt(4+x^2), x)", "ArcSinh(x/2)");
-//
-//	}
-//
-//	// {Erf(x), x, 1, 1/(E^x^2*Sqrt(Pi))+x*Erf(x)}
-//	public void test00116() {
-//		check("Integrate(Erf(x), x)", "1/(E^x^2*Sqrt(Pi))+x*Erf(x)");
-//
-//	}
-//
-//	// {Erf(a+x), x, 1, 1/(E^(a+x)^2*Sqrt(Pi))+(a+x)*Erf(a+x)}
-//	public void test00117() {
-//		check("Integrate(Erf(a+x), x)", "1/(E^(a+x)^2*Sqrt(Pi))+(a+x)*Erf(a+x)");
-//
-//	}
-//
-//	// {(x*(-Sqrt(-4+x^2)+x^2*Sqrt(-4+x^2)-4*Sqrt(-1+x^2)+x^2*Sqrt(-1+x^2)))/((4-5*x^2+x^4)*(1 +
-//	// Sqrt(-4+x^2)+Sqrt(-1+x^2))), x, 1, Log(1+Sqrt(-4+x^2)+Sqrt(-1+x^2))}
-//	public void test00118() {
-//		check("Integrate((x*(-Sqrt(-4+x^2)+x^2*Sqrt(-4+x^2)-4*Sqrt(-1+x^2)+x^2*Sqrt(-1+x^2)))/((4-5*x^2+x^4)*(1+Sqrt(-4+x^2)+Sqrt(-1+x^2))), x)",
-//				"Log(1+Sqrt(-4+x^2)+Sqrt(-1+x^2))");
-//
-//	}
-//
-//	// {Sqrt(9-4*Sqrt(2))*x-Sqrt(2)*Sqrt(1+4*x+2*x^2+x^4), x, 1, (Sqrt(9-4*Sqrt(2))*x^2)/2 -
-//	// Sqrt(2)*CannotIntegrate(Sqrt(1+4*x+2*x^2+x^4), x)}
-//	public void test00119() {
-//		check("Integrate(Sqrt(9-4*Sqrt(2))*x-Sqrt(2)*Sqrt(1+4*x+2*x^2+x^4), x)",
-//				"(Sqrt(9-4*Sqrt(2))*x^2)/2-Sqrt(2)*CannotIntegrate(Sqrt(1+4*x+2*x^2+x^4), x)");
-//
-//	}
-//
-//	// {(E^(1+Log(x)^(-1))*(-1+Log(x)^2))/Log(x)^2, x, 1, E^(1+Log(x)^(-1))*x}
-//	public void test00120() {
-//		check("Integrate((E^(1+Log(x)^(-1))*(-1+Log(x)^2))/Log(x)^2, x)", "E^(1+Log(x)^(-1))*x");
-//
-//	}
-//
-//	// {Cos(x), x, 1, Sin(x)}
-//	public void test00121() {
-//		check("Integrate(Cos(x), x)", "Sin(x)");
-//
-//	}
-//
-//	// {E^x^2*x, x, 1, E^x^2/2}
-//	public void test00122() {
-//		check("Integrate(E^x^2*x, x)", "E^x^2/2");
-//
-//	}
-//
-//	// {x*Sqrt(1+x^2), x, 1, (1+x^2)^(3/2)/3}
-//	public void test00123() {
-//		check("Integrate(x*Sqrt(1+x^2), x)", "(1+x^2)^(3/2)/3");
-//
-//	}
-//
-//	// {E^x*Sin(x), x, 1, -(E^x*Cos(x))/2+(E^x*Sin(x))/2}
-//	public void test00124() {
-//		check("Integrate(E^x*Sin(x), x)", "-(E^x*Cos(x))/2+(E^x*Sin(x))/2");
-//
-//	}
-//
-//	// {Sin(y)/y, y, 1, SinIntegral(y)}
-//	public void test00125() {
-//		check("Integrate(Sin(y)/y, y)", "SinIntegral(y)");
-//
-//	}
-//
-//	// {E^x^2*x, x, 1, E^x^2/2}
-//	public void test00126() {
-//		check("Integrate(E^x^2*x, x)", "E^x^2/2");
-//
-//	}
-//
-//	// {x*Sqrt(1+x^2), x, 1, (1+x^2)^(3/2)/3}
-//	public void test00127() {
-//		check("Integrate(x*Sqrt(1+x^2), x)", "(1+x^2)^(3/2)/3");
-//
-//	}
-//
-//	// {x^(3/2), x, 1, (2*x^(5/2))/5}
-//	public void test00128() {
-//		check("Integrate(x^(3/2), x)", "(2*x^(5/2))/5");
-//
-//	}
-//
-//	// {Cos(3+2*x), x, 1, Sin(3+2*x)/2}
-//	public void test00129() {
-//		check("Integrate(Cos(3+2*x), x)", "Sin(3+2*x)/2");
-//
-//	}
-//
-//	// {(10*E)^x, x, 1, (10*E)^x/(1+Log(10))}
-//	public void test00130() {
-//		check("Integrate((10*E)^x, x)", "(10*E)^x/(1+Log(10))");
-//
-//	}
-//
-//	// {(1+Cos(x))^(-1), x, 1, Sin(x)/(1+Cos(x))}
-//	public void test00131() {
-//		check("Integrate((1+Cos(x))^(-1), x)", "Sin(x)/(1+Cos(x))");
-//
-//	}
-//
-//	// {(E^x*x)/(1+x)^2, x, 1, E^x/(1+x)}
-//	public void test00132() {
-//		check("Integrate((E^x*x)/(1+x)^2, x)", "E^x/(1+x)");
-//
-//	}
-//
-//	// {E^x^2, x, 1, (Sqrt(Pi)*Erfi(x))/2}
-//	public void test00133() {
-//		check("Integrate(E^x^2, x)", "(Sqrt(Pi)*Erfi(x))/2");
-//
-//	}
-//
-//	// {E^x/x, x, 1, ExpIntegralEi(x)}
-//	public void test00134() {
-//		check("Integrate(E^x/x, x)", "ExpIntegralEi(x)");
-//
-//	}
-//
-//	// {(A^4-A^2*B^2+(-A^2+B^2)*x^2)^(-1), x, 1, ArcTanh(x/A)/(A*(A^2-B^2))}
-//	public void test00135() {
-//		check("Integrate((A^4-A^2*B^2+(-A^2+B^2)*x^2)^(-1), x)", "ArcTanh(x/A)/(A*(A^2-B^2))");
-//
-//	}
-//
-//	// {x*Log(x), x, 1, -x^2/4+(x^2*Log(x))/2}
-//	public void test00136() {
-//		check("Integrate(x*Log(x), x)", "-x^2/4+(x^2*Log(x))/2");
-//
-//	}
-//
-//	// {Log(x)^(-1), x, 1, LogIntegral(x)}
-//	public void test00137() {
-//		check("Integrate(Log(x)^(-1), x)", "LogIntegral(x)");
-//
-//	}
-//
-//	// {E^(-1-x), x, 1, -E^(-1-x)}
-//	public void test00138() {
-//		check("Integrate(E^(-1-x), x)", "-E^(-1-x)");
-//
-//	}
-//
-//	// {E^x*Sin(x), x, 1, -(E^x*Cos(x))/2+(E^x*Sin(x))/2}
-//	public void test00139() {
-//		check("Integrate(E^x*Sin(x), x)", "-(E^x*Cos(x))/2+(E^x*Sin(x))/2");
-//
-//	}
-//
-//	// {x^(-1), x, 1, Log(x)}
-//	public void test00140() {
-//		check("Integrate(x^(-1), x)", "Log(x)");
-//
-//	}
-//
-//	// {(1-Cos(x))^(-1), x, 1, -(Sin(x)/(1-Cos(x)))}
-//	public void test00141() {
-//		check("Integrate((1-Cos(x))^(-1), x)", "-(Sin(x)/(1-Cos(x)))");
-//
-//	}
-//
-//	// {x*Log(x), x, 1, -x^2/4+(x^2*Log(x))/2}
-//	public void test00142() {
-//		check("Integrate(x*Log(x), x)", "-x^2/4+(x^2*Log(x))/2");
-//
-//	}
-//
-//	// {1/(r*Sqrt(-a^2+2*H*r^2)), x, 1, x/(r*Sqrt(-a^2+2*H*r^2))}
-//	public void test00143() {
-//		check("Integrate(1/(r*Sqrt(-a^2+2*H*r^2)), x)", "x/(r*Sqrt(-a^2+2*H*r^2))");
-//
-//	}
-//
-//	// {1/(r*Sqrt(-a^2-e^2+2*H*r^2)), x, 1, x/(r*Sqrt(-a^2-e^2+2*H*r^2))}
-//	public void test00144() {
-//		check("Integrate(1/(r*Sqrt(-a^2-e^2+2*H*r^2)), x)", "x/(r*Sqrt(-a^2-e^2+2*H*r^2))");
-//
-//	}
-//
-//	// {1/(r*Sqrt(-a^2+2*H*r^2-2*K*r^4)), x, 1, x/(r*Sqrt(-a^2+2*H*r^2-2*K*r^4))}
-//	public void test00145() {
-//		check("Integrate(1/(r*Sqrt(-a^2+2*H*r^2-2*K*r^4)), x)", "x/(r*Sqrt(-a^2+2*H*r^2-2*K*r^4))");
-//
-//	}
-//
-//	// {1/(r*Sqrt(-a^2-e^2+2*H*r^2-2*K*r^4)), x, 1, x/(r*Sqrt(-a^2-e^2+2*H*r^2-2*K*r^4))}
-//	public void test00146() {
-//		check("Integrate(1/(r*Sqrt(-a^2-e^2+2*H*r^2-2*K*r^4)), x)", "x/(r*Sqrt(-a^2-e^2+2*H*r^2-2*K*r^4))");
-//
-//	}
-//
-//	// {1/(r*Sqrt(-a^2-2*K*r+2*H*r^2)), x, 1, x/(r*Sqrt(-a^2-2*r*(K-H*r)))}
-//	public void test00147() {
-//		check("Integrate(1/(r*Sqrt(-a^2-2*K*r+2*H*r^2)), x)", "x/(r*Sqrt(-a^2-2*r*(K-H*r)))");
-//
-//	}
-//
-//	// {1/(r*Sqrt(-a^2-e^2-2*K*r+2*H*r^2)), x, 1, x/(r*Sqrt(-a^2-e^2-2*r*(K-H*r)))}
-//	public void test00148() {
-//		check("Integrate(1/(r*Sqrt(-a^2-e^2-2*K*r+2*H*r^2)), x)", "x/(r*Sqrt(-a^2-e^2-2*r*(K-H*r)))");
-//
-//	}
-//
-//	// {r/Sqrt(-a^2+2*E*r^2), x, 1, (r*x)/Sqrt(-a^2+2*E*r^2)}
-//	public void test00149() {
-//		check("Integrate(r/Sqrt(-a^2+2*E*r^2), x)", "(r*x)/Sqrt(-a^2+2*E*r^2)");
-//
-//	}
-//
-//	// {r/Sqrt(-a^2-e^2+2*E*r^2), x, 1, (r*x)/Sqrt(-a^2-e^2+2*E*r^2)}
-//	public void test00150() {
-//		check("Integrate(r/Sqrt(-a^2-e^2+2*E*r^2), x)", "(r*x)/Sqrt(-a^2-e^2+2*E*r^2)");
-//
-//	}
-//
-//	// {r/Sqrt(-a^2+2*E*r^2-2*K*r^4), x, 1, (r*x)/Sqrt(-a^2+2*E*r^2-2*K*r^4)}
-//	public void test00151() {
-//		check("Integrate(r/Sqrt(-a^2+2*E*r^2-2*K*r^4), x)", "(r*x)/Sqrt(-a^2+2*E*r^2-2*K*r^4)");
-//
-//	}
-//
-//	// {r/Sqrt(-a^2-e^2+2*E*r^2-2*K*r^4), x, 1, (r*x)/Sqrt(-a^2-e^2+2*E*r^2-2*K*r^4)}
-//	public void test00152() {
-//		check("Integrate(r/Sqrt(-a^2-e^2+2*E*r^2-2*K*r^4), x)", "(r*x)/Sqrt(-a^2-e^2+2*E*r^2-2*K*r^4)");
-//
-//	}
-//
-//	// {r/Sqrt(-a^2-e^2-2*K*r+2*H*r^2), x, 1, (r*x)/Sqrt(-a^2-e^2-2*r*(K-H*r))}
-//	public void test00153() {
-//		check("Integrate(r/Sqrt(-a^2-e^2-2*K*r+2*H*r^2), x)", "(r*x)/Sqrt(-a^2-e^2-2*r*(K-H*r))");
-//
-//	}
-//
-//	// {x^n, x, 1, x^(1+n)/(1+n)}
-//	public void test00154() {
-//		check("Integrate(x^n, x)", "x^(1+n)/(1+n)");
-//
-//	}
-//
-//	// {E^x, x, 1, E^x}
-//	public void test00155() {
-//		check("Integrate(E^x, x)", "E^x");
-//
-//	}
-//
-//	// {x^(-1), x, 1, Log(x)}
-//	public void test00156() {
-//		check("Integrate(x^(-1), x)", "Log(x)");
-//
-//	}
-//
-//	// {a^x, x, 1, a^x/Log(a)}
-//	public void test00157() {
-//		check("Integrate(a^x, x)", "a^x/Log(a)");
-//
-//	}
-//
-//	// {Sin(x), x, 1, -Cos(x)}
-//	public void test00158() {
-//		check("Integrate(Sin(x), x)", "-Cos(x)");
-//
-//	}
-//
-//	// {Cos(x), x, 1, Sin(x)}
-//	public void test00159() {
-//		check("Integrate(Cos(x), x)", "Sin(x)");
-//
-//	}
-//
-//	// {Sinh(x), x, 1, Cosh(x)}
-//	public void test00160() {
-//		check("Integrate(Sinh(x), x)", "Cosh(x)");
-//
-//	}
-//
-//	// {Cosh(x), x, 1, Sinh(x)}
-//	public void test00161() {
-//		check("Integrate(Cosh(x), x)", "Sinh(x)");
-//
-//	}
-//
-//	// {Tan(x), x, 1, -Log(Cos(x))}
-//	public void test00162() {
-//		check("Integrate(Tan(x), x)", "-Log(Cos(x))");
-//
-//	}
-//
-//	// {Cot(x), x, 1, Log(Sin(x))}
-//	public void test00163() {
-//		check("Integrate(Cot(x), x)", "Log(Sin(x))");
-//
-//	}
-//
-//	// {Log(x), x, 1, -x+x*Log(x)}
-//	public void test00164() {
-//		check("Integrate(Log(x), x)", "-x+x*Log(x)");
-//
-//	}
-//
-//	// {E^x*Sin(x), x, 1, -(E^x*Cos(x))/2+(E^x*Sin(x))/2}
-//	public void test00165() {
-//		check("Integrate(E^x*Sin(x), x)", "-(E^x*Cos(x))/2+(E^x*Sin(x))/2");
-//
-//	}
-//
-//	// {x*Log(x), x, 1, -x^2/4+(x^2*Log(x))/2}
-//	public void test00166() {
-//		check("Integrate(x*Log(x), x)", "-x^2/4+(x^2*Log(x))/2");
-//
-//	}
-//
-//	// {t^2*Log(t), t, 1, -t^3/9+(t^3*Log(t))/3}
-//	public void test00167() {
-//		check("Integrate(t^2*Log(t), t)", "-t^3/9+(t^3*Log(t))/3");
-//
-//	}
-//
-//	// {E^(2*t)*Sin(3*t), t, 1, (-3*E^(2*t)*Cos(3*t))/13+(2*E^(2*t)*Sin(3*t))/13}
-//	public void test00168() {
-//		check("Integrate(E^(2*t)*Sin(3*t), t)", "(-3*E^(2*t)*Cos(3*t))/13+(2*E^(2*t)*Sin(3*t))/13");
-//
-//	}
-//
-//	// {Cos(3*t)/E^t, t, 1, -Cos(3*t)/(10*E^t)+(3*Sin(3*t))/(10*E^t)}
-//	public void test00169() {
-//		check("Integrate(Cos(3*t)/E^t, t)", "-Cos(3*t)/(10*E^t)+(3*Sin(3*t))/(10*E^t)");
-//
-//	}
-//
-//	// {Sqrt(t)*Log(t), t, 1, (-4*t^(3/2))/9+(2*t^(3/2)*Log(t))/3}
-//	public void test00170() {
-//		check("Integrate(Sqrt(t)*Log(t), t)", "(-4*t^(3/2))/9+(2*t^(3/2)*Log(t))/3");
-//
-//	}
-//
-//	// {Cos(5*x)*Sin(3*x), x, 1, Cos(2*x)/4-Cos(8*x)/16}
-//	public void test00171() {
-//		check("Integrate(Cos(5*x)*Sin(3*x), x)", "Cos(2*x)/4-Cos(8*x)/16");
-//
-//	}
-//
-//	// {Sin(2*x)*Sin(4*x), x, 1, Sin(2*x)/4-Sin(6*x)/12}
-//	public void test00172() {
-//		check("Integrate(Sin(2*x)*Sin(4*x), x)", "Sin(2*x)/4-Sin(6*x)/12");
-//
-//	}
-//
-//	// {Cos(Log(x)), x, 1, (x*Cos(Log(x)))/2+(x*Sin(Log(x)))/2}
-//	public void test00173() {
-//		check("Integrate(Cos(Log(x)), x)", "(x*Cos(Log(x)))/2+(x*Sin(Log(x)))/2");
-//
-//	}
-//
-//	// {Log(Sqrt(x)), x, 1, -x/2+x*Log(Sqrt(x))}
-//	public void test00174() {
-//		check("Integrate(Log(Sqrt(x)), x)", "-x/2+x*Log(Sqrt(x))");
-//
-//	}
-//
-//	// {Sin(Log(x)), x, 1, -(x*Cos(Log(x)))/2+(x*Sin(Log(x)))/2}
-//	public void test00175() {
-//		check("Integrate(Sin(Log(x)), x)", "-(x*Cos(Log(x)))/2+(x*Sin(Log(x)))/2");
-//
-//	}
-//
-//	// {Sqrt(x)*Log(x), x, 1, (-4*x^(3/2))/9+(2*x^(3/2)*Log(x))/3}
-//	public void test00176() {
-//		check("Integrate(Sqrt(x)*Log(x), x)", "(-4*x^(3/2))/9+(2*x^(3/2)*Log(x))/3");
-//
-//	}
-//
-//	// {(1-Sin(2*x))^2, x, 1, (3*x)/2+Cos(2*x)-(Cos(2*x)*Sin(2*x))/4}
-//	public void test00177() {
-//		check("Integrate((1-Sin(2*x))^2, x)", "(3*x)/2+Cos(2*x)-(Cos(2*x)*Sin(2*x))/4");
-//
-//	}
-//
-//	// {(1-Sin(x))^(-1), x, 1, Cos(x)/(1-Sin(x))}
-//	public void test00178() {
-//		check("Integrate((1-Sin(x))^(-1), x)", "Cos(x)/(1-Sin(x))");
-//
-//	}
-//
-//	// {Csc(x), x, 1, -ArcTanh(Cos(x))}
-//	public void test00179() {
-//		check("Integrate(Csc(x), x)", "-ArcTanh(Cos(x))");
-//
-//	}
-//
-//	// {Sin(2*x)*Sin(5*x), x, 1, Sin(3*x)/6-Sin(7*x)/14}
-//	public void test00180() {
-//		check("Integrate(Sin(2*x)*Sin(5*x), x)", "Sin(3*x)/6-Sin(7*x)/14");
-//
-//	}
-//
-//	// {Cos(x)*Sin(3*x), x, 1, -Cos(2*x)/4-Cos(4*x)/8}
-//	public void test00181() {
-//		check("Integrate(Cos(x)*Sin(3*x), x)", "-Cos(2*x)/4-Cos(4*x)/8");
-//
-//	}
-//
-//	// {Cos(3*x)*Cos(4*x), x, 1, Sin(x)/2+Sin(7*x)/14}
-//	public void test00182() {
-//		check("Integrate(Cos(3*x)*Cos(4*x), x)", "Sin(x)/2+Sin(7*x)/14");
-//
-//	}
-//
-//	// {Sin(3*x)*Sin(6*x), x, 1, Sin(3*x)/6-Sin(9*x)/18}
-//	public void test00183() {
-//		check("Integrate(Sin(3*x)*Sin(6*x), x)", "Sin(3*x)/6-Sin(9*x)/18");
-//
-//	}
-//
-//	// {1/(x^2*Sqrt(4+x^2)), x, 1, -Sqrt(4+x^2)/(4*x)}
-//	public void test00184() {
-//		check("Integrate(1/(x^2*Sqrt(4+x^2)), x)", "-Sqrt(4+x^2)/(4*x)");
-//
-//	}
-//
-//	// {x/Sqrt(4+x^2), x, 1, Sqrt(4+x^2)}
-//	public void test00185() {
-//		check("Integrate(x/Sqrt(4+x^2), x)", "Sqrt(4+x^2)");
-//
-//	}
-//
-//	// {1/(x^2*Sqrt(1-x^2)), x, 1, -(Sqrt(1-x^2)/x)}
-//	public void test00186() {
-//		check("Integrate(1/(x^2*Sqrt(1-x^2)), x)", "-(Sqrt(1-x^2)/x)");
-//
-//	}
-//
-//	// {x/Sqrt(1-x^2), x, 1, -Sqrt(1-x^2)}
-//	public void test00187() {
-//		check("Integrate(x/Sqrt(1-x^2), x)", "-Sqrt(1-x^2)");
-//
-//	}
-//
-//	// {x*Sqrt(4-x^2), x, 1, -(4-x^2)^(3/2)/3}
-//	public void test00188() {
-//		check("Integrate(x*Sqrt(4-x^2), x)", "-(4-x^2)^(3/2)/3");
-//
-//	}
-//
-//	// {1/Sqrt(9+x^2), x, 1, ArcSinh(x/3)}
-//	public void test00189() {
-//		check("Integrate(1/Sqrt(9+x^2), x)", "ArcSinh(x/3)");
-//
-//	}
-//
-//	// {Sqrt(-a^2+x^2)/x^4, x, 1, (-a^2+x^2)^(3/2)/(3*a^2*x^3)}
-//	public void test00190() {
-//		check("Integrate(Sqrt(-a^2+x^2)/x^4, x)", "(-a^2+x^2)^(3/2)/(3*a^2*x^3)");
-//
-//	}
-//
-//	// {1/(x^2*Sqrt(-9+16*x^2)), x, 1, Sqrt(-9+16*x^2)/(9*x)}
-//	public void test00191() {
-//		check("Integrate(1/(x^2*Sqrt(-9+16*x^2)), x)", "Sqrt(-9+16*x^2)/(9*x)");
-//
-//	}
-//
-//	// {x/(4+x^2)^(5/2), x, 1, -1/(3*(4+x^2)^(3/2))}
-//	public void test00192() {
-//		check("Integrate(x/(4+x^2)^(5/2), x)", "-1/(3*(4+x^2)^(3/2))");
-//
-//	}
-//
-//	// {(-25+4*x^2)^(-3/2), x, 1, -x/(25*Sqrt(-25+4*x^2))}
-//	public void test00193() {
-//		check("Integrate((-25+4*x^2)^(-3/2), x)", "-x/(25*Sqrt(-25+4*x^2))");
-//
-//	}
-//
-//	// {(2*x+x^2)/(4+3*x^2+x^3), x, 1, Log(4+3*x^2+x^3)/3}
-//	public void test00194() {
-//		check("Integrate((2*x+x^2)/(4+3*x^2+x^3), x)", "Log(4+3*x^2+x^3)/3");
-//
-//	}
-//
-//	// {(-x+2*x^3)/(1-x^2+x^4), x, 1, Log(1-x^2+x^4)/2}
-//	public void test00195() {
-//		check("Integrate((-x+2*x^3)/(1-x^2+x^4), x)", "Log(1-x^2+x^4)/2");
-//
-//	}
-//
-//	// {x/(-1+x^2), x, 1, Log(1-x^2)/2}
-//	public void test00196() {
-//		check("Integrate(x/(-1+x^2), x)", "Log(1-x^2)/2");
-//	}
-//
-//	// {(1-Cos(x))^(-1), x, 1, -(Sin(x)/(1-Cos(x)))}
-//	public void test00197() {
-//		check("Integrate((1-Cos(x))^(-1), x)", "-(Sin(x)/(1-Cos(x)))");
-//
-//	}
-//
-//	// {(-Cos(x)+Sin(x))/(Cos(x)+Sin(x)), x, 1, -Log(Cos(x)+Sin(x))}
-//	public void test00198() {
-//		check("Integrate((-Cos(x)+Sin(x))/(Cos(x)+Sin(x)), x)", "-Log(Cos(x)+Sin(x))");
-//
-//	}
-//
-//	// {x/Sqrt(1-x^2), x, 1, -Sqrt(1-x^2)}
-//	public void test00199() {
-//		check("Integrate(x/Sqrt(1-x^2), x)", "-Sqrt(1-x^2)");
-//
-//	}
-//
-//	// {x^3*Log(x), x, 1, -x^4/16+(x^4*Log(x))/4}
-//	public void test00200() {
-//		check("Integrate(x^3*Log(x), x)", "-x^4/16+(x^4*Log(x))/4");
-//
-//	}
-//
-//	// {(1+x+x^3)/(4*x+2*x^2+x^4), x, 1, Log(4*x+2*x^2+x^4)/4}
-//	public void test00201() {
-//		check("Integrate((1+x+x^3)/(4*x+2*x^2+x^4), x)", "Log(4*x+2*x^2+x^4)/4");
-//
-//	}
-//
-//	// {Sin(Pi*x), x, 1, -(Cos(Pi*x)/Pi)}
-//	public void test00202() {
-//		check("Integrate(Sin(Pi*x), x)", "-(Cos(Pi*x)/Pi)");
-//
-//	}
-//
-//	// {E^(3*x)*Cos(5*x), x, 1, (3*E^(3*x)*Cos(5*x))/34+(5*E^(3*x)*Sin(5*x))/34}
-//	public void test00203() {
-//		check("Integrate(E^(3*x)*Cos(5*x), x)", "(3*E^(3*x)*Cos(5*x))/34+(5*E^(3*x)*Sin(5*x))/34");
-//
-//	}
-//
-//	// {Cos(3*x)*Cos(5*x), x, 1, Sin(2*x)/4+Sin(8*x)/16}
-//	public void test00204() {
-//		check("Integrate(Cos(3*x)*Cos(5*x), x)", "Sin(2*x)/4+Sin(8*x)/16");
-//
-//	}
-//
-//	// {Csc(x)*Log(Tan(x))*Sec(x), x, 1, Log(Tan(x))^2/2}
-//	public void test00205() {
-//		check("Integrate(Csc(x)*Log(Tan(x))*Sec(x), x)", "Log(Tan(x))^2/2");
-//
-//	}
-//
-//	// {-2*x+x^2+x^3, x, 1, -x^2+x^3/3+x^4/4}
-//	public void test00206() {
-//		check("Integrate(-2*x+x^2+x^3, x)", "-x^2+x^3/3+x^4/4");
-//
-//	}
-//
-//	// {1/Sqrt(16-x^2), x, 1, ArcSin(x/4)}
-//	public void test00207() {
-//		check("Integrate(1/Sqrt(16-x^2), x)", "ArcSin(x/4)");
-//
-//	}
-//
-//	// {E^ArcTan(x)/(1+x^2), x, 1, E^ArcTan(x)}
-//	public void test00208() {
-//		check("Integrate(E^ArcTan(x)/(1+x^2), x)", "E^ArcTan(x)");
-//
-//	}
-//
-//	// {Log(x/2), x, 1, -x+x*Log(x/2)}
-//	public void test00209() {
-//		check("Integrate(Log(x/2), x)", "-x+x*Log(x/2)");
-//
-//	}
-//
-//	// {x*(5+x^2)^8, x, 1, (5+x^2)^9/18}
-//	public void test00210() {
-//		check("Integrate(x*(5+x^2)^8, x)", "(5+x^2)^9/18");
-//
-//	}
-//
-//	// {Cos(4*x)/E^(3*x), x, 1, (-3*Cos(4*x))/(25*E^(3*x))+(4*Sin(4*x))/(25*E^(3*x))}
-//	public void test00211() {
-//		check("Integrate(Cos(4*x)/E^(3*x), x)", "(-3*Cos(4*x))/(25*E^(3*x))+(4*Sin(4*x))/(25*E^(3*x))");
-//
-//	}
-//
-//	// {E^x*Cos(4+3*x), x, 1, (E^x*Cos(4+3*x))/10+(3*E^x*Sin(4+3*x))/10}
-//	public void test00212() {
-//		check("Integrate(E^x*Cos(4+3*x), x)", "(E^x*Cos(4+3*x))/10+(3*E^x*Sin(4+3*x))/10");
-//
-//	}
-//
-//	// {x^2*(1+x^3)^4, x, 1, (1+x^3)^5/15}
-//	public void test00213() {
-//		check("Integrate(x^2*(1+x^3)^4, x)", "(1+x^3)^5/15");
-//
-//	}
-//
-//	// {(a^2-b^2*x^2)^(-1), x, 1, ArcTanh((b*x)/a)/(a*b)}
-//	public void test00214() {
-//		check("Integrate((a^2-b^2*x^2)^(-1), x)", "ArcTanh((b*x)/a)/(a*b)");
-//
-//	}
-//
-//	// {(a^2+b^2*x^2)^(-1), x, 1, ArcTan((b*x)/a)/(a*b)}
-//	public void test00215() {
-//		check("Integrate((a^2+b^2*x^2)^(-1), x)", "ArcTan((b*x)/a)/(a*b)");
-//
-//	}
-//
-//	// {Sec(2*a*x), x, 1, ArcTanh(Sin(2*a*x))/(2*a)}
-//	public void test00216() {
-//		check("Integrate(Sec(2*a*x), x)", "ArcTanh(Sin(2*a*x))/(2*a)");
-//
-//	}
-//
-//	// {-Sec(Pi/4+2*x), x, 1, -ArcTanh(Sin(Pi/4+2*x))/2}
-//	public void test00217() {
-//		check("Integrate(-Sec(Pi/4+2*x), x)", "-ArcTanh(Sin(Pi/4+2*x))/2");
-//
-//	}
-//
-//	// {(1+Cos(x))^(-1), x, 1, Sin(x)/(1+Cos(x))}
-//	public void test00218() {
-//		check("Integrate((1+Cos(x))^(-1), x)", "Sin(x)/(1+Cos(x))");
-//
-//	}
-//
-//	// {(1-Cos(x))^(-1), x, 1, -(Sin(x)/(1-Cos(x)))}
-//	public void test00219() {
-//		check("Integrate((1-Cos(x))^(-1), x)", "-(Sin(x)/(1-Cos(x)))");
-//
-//	}
-//
-//	// {Sin(x/4)*Sin(x), x, 1, (2*Sin((3*x)/4))/3-(2*Sin((5*x)/4))/5}
-//	public void test00220() {
-//		check("Integrate(Sin(x/4)*Sin(x), x)", "(2*Sin((3*x)/4))/3-(2*Sin((5*x)/4))/5");
-//
-//	}
-//
-//	// {Cos(3*x)*Cos(4*x), x, 1, Sin(x)/2+Sin(7*x)/14}
-//	public void test00221() {
-//		check("Integrate(Cos(3*x)*Cos(4*x), x)", "Sin(x)/2+Sin(7*x)/14");
-//
-//	}
-//
-//	// {ArcTan(x)^n/(1+x^2), x, 1, ArcTan(x)^(1+n)/(1+n)}
-//	public void test00222() {
-//		check("Integrate(ArcTan(x)^n/(1+x^2), x)", "ArcTan(x)^(1+n)/(1+n)");
-//
-//	}
-//
-//	// {1/(Sqrt(1-x^2)*ArcCos(x)^3), x, 1, 1/(2*ArcCos(x)^2)}
-//	public void test00223() {
-//		check("Integrate(1/(Sqrt(1-x^2)*ArcCos(x)^3), x)", "1/(2*ArcCos(x)^2)");
-//
-//	}
-//
-//	// {Log(x)/x^5, x, 1, -1/(16*x^4)-Log(x)/(4*x^4)}
-//	public void test00224() {
-//		check("Integrate(Log(x)/x^5, x)", "-1/(16*x^4)-Log(x)/(4*x^4)");
-//
-//	}
-//
-//	// {Sin(x)/E^x, x, 1, -Cos(x)/(2*E^x)-Sin(x)/(2*E^x)}
-//	public void test00225() {
-//		check("Integrate(Sin(x)/E^x, x)", "-Cos(x)/(2*E^x)-Sin(x)/(2*E^x)");
-//
-//	}
-//
-//	// {E^(2*x)*Sin(3*x), x, 1, (-3*E^(2*x)*Cos(3*x))/13+(2*E^(2*x)*Sin(3*x))/13}
-//	public void test00226() {
-//		check("Integrate(E^(2*x)*Sin(3*x), x)", "(-3*E^(2*x)*Cos(3*x))/13+(2*E^(2*x)*Sin(3*x))/13");
-//
-//	}
-//
-//	// {a^x*Cos(x), x, 1, (a^x*Cos(x)*Log(a))/(1+Log(a)^2)+(a^x*Sin(x))/(1+Log(a)^2)}
-//	public void test00227() {
-//		check("Integrate(a^x*Cos(x), x)", "(a^x*Cos(x)*Log(a))/(1+Log(a)^2)+(a^x*Sin(x))/(1+Log(a)^2)");
-//
-//	}
-//
-//	// {Cos(Log(x)), x, 1, (x*Cos(Log(x)))/2+(x*Sin(Log(x)))/2}
-//	public void test00228() {
-//		check("Integrate(Cos(Log(x)), x)", "(x*Cos(Log(x)))/2+(x*Sin(Log(x)))/2");
-//
-//	}
-//
-//	// {x^(-1+k)*(a+b*x^k)^n, x, 1, (a+b*x^k)^(1+n)/(b*k*(1+n))}
-//	public void test00229() {
-//		check("Integrate(x^(-1+k)*(a+b*x^k)^n, x)", "(a+b*x^k)^(1+n)/(b*k*(1+n))");
-//
-//	}
-//
-//	// {x^2/(a^3+x^3), x, 1, Log(a^3+x^3)/3}
-//	public void test00230() {
-//		check("Integrate(x^2/(a^3+x^3), x)", "Log(a^3+x^3)/3");
-//
-//	}
-//
-//	// {1/(x^m*(a^3+x^3)), x, 1, (x^(1-m)*Hypergeometric2F1(1, (1-m)/3, (4-m)/3, -(x^3/a^3)))/(a^3*(1-m))}
-//	public void test00231() {
-//		check("Integrate(1/(x^m*(a^3+x^3)), x)",
-//				"(x^(1-m)*Hypergeometric2F1(1, (1-m)/3, (4-m)/3, -(x^3/a^3)))/(a^3*(1-m))");
-//
-//	}
-//
-//	// {1/(x^m*(a^4-x^4)), x, 1, (x^(1-m)*Hypergeometric2F1(1, (1-m)/4, (5-m)/4, x^4/a^4))/(a^4*(1-m))}
-//	public void test00232() {
-//		check("Integrate(1/(x^m*(a^4-x^4)), x)",
-//				"(x^(1-m)*Hypergeometric2F1(1, (1-m)/4, (5-m)/4, x^4/a^4))/(a^4*(1-m))");
-//
-//	}
-//
-//	// {x^4/(a^5+x^5), x, 1, Log(a^5+x^5)/5}
-//	public void test00233() {
-//		check("Integrate(x^4/(a^5+x^5), x)", "Log(a^5+x^5)/5");
-//
-//	}
-//
-//	// {1/(x^m*(a^5+x^5)), x, 1, (x^(1-m)*Hypergeometric2F1(1, (1-m)/5, (6-m)/5, -(x^5/a^5)))/(a^5*(1-m))}
-//	public void test00234() {
-//		check("Integrate(1/(x^m*(a^5+x^5)), x)",
-//				"(x^(1-m)*Hypergeometric2F1(1, (1-m)/5, (6-m)/5, -(x^5/a^5)))/(a^5*(1-m))");
-//
-//	}
-//
-//	// {x^3/(a^4+x^4)^3, x, 1, -1/(8*(a^4+x^4)^2)}
-//	public void test00235() {
-//		check("Integrate(x^3/(a^4+x^4)^3, x)", "-1/(8*(a^4+x^4)^2)");
-//
-//	}
-//
-//	// {(1+x+x^2)^(-3/2), x, 1, (2*(1+2*x))/(3*Sqrt(1+x+x^2))}
-//	public void test00236() {
-//		check("Integrate((1+x+x^2)^(-3/2), x)", "(2*(1+2*x))/(3*Sqrt(1+x+x^2))");
-//
-//	}
-//
-//	// {x/(1+x+x^2)^(3/2), x, 1, (-2*(2+x))/(3*Sqrt(1+x+x^2))}
-//	public void test00237() {
-//		check("Integrate(x/(1+x+x^2)^(3/2), x)", "(-2*(2+x))/(3*Sqrt(1+x+x^2))");
-//
-//	}
-//
-//	// {1/((1-3/x)^(4/3)*x^2), x, 1, -(1-3/x)^(-1/3)}
-//	public void test00238() {
-//		check("Integrate(1/((1-3/x)^(4/3)*x^2), x)", "-(1-3/x)^(-1/3)");
-//
-//	}
-//
-//	// {x^6*(1+x^7)^(1/3), x, 1, (3*(1+x^7)^(4/3))/28}
-//	public void test00239() {
-//		check("Integrate(x^6*(1+x^7)^(1/3), x)", "(3*(1+x^7)^(4/3))/28");
-//
-//	}
-//
-//	// {x^6/(1+x^7)^(5/3), x, 1, -3/(14*(1+x^7)^(2/3))}
-//	public void test00240() {
-//		check("Integrate(x^6/(1+x^7)^(5/3), x)", "-3/(14*(1+x^7)^(2/3))");
-//
-//	}
-//
-//	// {(-3*x+2*x^3)*(-3*x^2+x^4)^(3/5), x, 1, (5*(-3*x^2+x^4)^(8/5))/16}
-//	public void test00241() {
-//		check("Integrate((-3*x+2*x^3)*(-3*x^2+x^4)^(3/5), x)", "(5*(-3*x^2+x^4)^(8/5))/16");
-//
-//	}
-//
-//	// {(-1+x^4)/(x^2*Sqrt(1+x^2+x^4)), x, 1, Sqrt(1+x^2+x^4)/x}
-//	public void test00242() {
-//		check("Integrate((-1+x^4)/(x^2*Sqrt(1+x^2+x^4)), x)", "Sqrt(1+x^2+x^4)/x");
-//
-//	}
-//
-//	// {(1-x^2)/((1+2*a*x+x^2)*Sqrt(1+2*a*x+2*b*x^2+2*a*x^3+x^4)), x, 1, ArcTan((a+2*(1+a^2-b)*x +
-//	// a*x^2)/(Sqrt(2)*Sqrt(1-b)*Sqrt(1+2*a*x+2*b*x^2+2*a*x^3+x^4)))/(Sqrt(2)*Sqrt(1-b))}
-//	public void test00243() {
-//		check("Integrate((1-x^2)/((1+2*a*x+x^2)*Sqrt(1+2*a*x+2*b*x^2+2*a*x^3+x^4)), x)",
-//				"ArcTan((a+2*(1+a^2-b)*x+a*x^2)/(Sqrt(2)*Sqrt(1-b)*Sqrt(1+2*a*x+2*b*x^2+2*a*x^3+x^4)))/(Sqrt(2)*Sqrt(1-b))");
-//
-//	}
-//
-//	// {Cos(x)^(2*m)*Sin(x)^(2*m), x, 1, (Cos(x)^(-1+2*m)*(Cos(x)^2)^(1/2-m)*Hypergeometric2F1((1-2*m)/2, (1 +
-//	// 2*m)/2, (3+2*m)/2, Sin(x)^2)*Sin(x)^(1+2*m))/(1+2*m)}
-//	public void test00244() {
-//		check("Integrate(Cos(x)^(2*m)*Sin(x)^(2*m), x)",
-//				"(Cos(x)^(-1+2*m)*(Cos(x)^2)^(1/2-m)*Hypergeometric2F1((1-2*m)/2, (1+2*m)/2, (3+2*m)/2, Sin(x)^2)*Sin(x)^(1+2*m))/(1+2*m)");
-//
-//	}
-//
-//	// {Cos(x)*Cos(4*x), x, 1, Sin(3*x)/6+Sin(5*x)/10}
-//	public void test00245() {
-//		check("Integrate(Cos(x)*Cos(4*x), x)", "Sin(3*x)/6+Sin(5*x)/10");
-//
-//	}
-//
-//	// {Sqrt(1+Sin(2*x)), x, 1, -(Cos(2*x)/Sqrt(1+Sin(2*x)))}
-//	public void test00246() {
-//		check("Integrate(Sqrt(1+Sin(2*x)), x)", "-(Cos(2*x)/Sqrt(1+Sin(2*x)))");
-//
-//	}
-//
-//	// {Sqrt(1-Sin(2*x)), x, 1, Cos(2*x)/Sqrt(1-Sin(2*x))}
-//	public void test00247() {
-//		check("Integrate(Sqrt(1-Sin(2*x)), x)", "Cos(2*x)/Sqrt(1-Sin(2*x))");
-//
-//	}
-//
-//	// {Sin(x)/Sqrt(Sin(2*x)), x, 1, -ArcSin(Cos(x)-Sin(x))/2-Log(Cos(x)+Sin(x)+Sqrt(Sin(2*x)))/2}
-//	public void test00248() {
-//		check("Integrate(Sin(x)/Sqrt(Sin(2*x)), x)", "-ArcSin(Cos(x)-Sin(x))/2-Log(Cos(x)+Sin(x)+Sqrt(Sin(2*x)))/2");
-//
-//	}
-//
-//	// {Cos(x)/Sqrt(Sin(2*x)), x, 1, -ArcSin(Cos(x)-Sin(x))/2+Log(Cos(x)+Sin(x)+Sqrt(Sin(2*x)))/2}
-//	public void test00249() {
-//		check("Integrate(Cos(x)/Sqrt(Sin(2*x)), x)", "-ArcSin(Cos(x)-Sin(x))/2+Log(Cos(x)+Sin(x)+Sqrt(Sin(2*x)))/2");
-//
-//	}
-//
-//	// {Csc(x)^5*Sin(2*x)^(3/2), x, 1, -(Csc(x)^5*Sin(2*x)^(5/2))/5}
-//	public void test00250() {
-//		check("Integrate(Csc(x)^5*Sin(2*x)^(3/2), x)", "-(Csc(x)^5*Sin(2*x)^(5/2))/5");
-//
-//	}
-//
-//	// {Sin(x)/Cos(2*x)^(5/2), x, 1, -Cos(3*x)/(3*Cos(2*x)^(3/2))}
-//	public void test00251() {
-//		check("Integrate(Sin(x)/Cos(2*x)^(5/2), x)", "-Cos(3*x)/(3*Cos(2*x)^(3/2))");
-//
-//	}
-//
-//	// {x^(1+2*n), x, 1, x^(2*(1+n))/(2*(1+n))}
-//	public void test00252() {
-//		check("Integrate(x^(1+2*n), x)", "x^(2*(1+n))/(2*(1+n))");
-//
-//	}
-//
-//	// {(E^x*(1-x-x^2))/Sqrt(1-x^2), x, 1, E^x*Sqrt(1-x^2)}
-//	public void test00253() {
-//		check("Integrate((E^x*(1-x-x^2))/Sqrt(1-x^2), x)", "E^x*Sqrt(1-x^2)");
-//
-//	}
-//
-//	// {Cos(2*x)/E^(3*x), x, 1, (-3*Cos(2*x))/(13*E^(3*x))+(2*Sin(2*x))/(13*E^(3*x))}
-//	public void test00254() {
-//		check("Integrate(Cos(2*x)/E^(3*x), x)", "(-3*Cos(2*x))/(13*E^(3*x))+(2*Sin(2*x))/(13*E^(3*x))");
-//
-//	}
-//
-//	// {E^(m*x)*Csc(x)^2, x, 1, (-4*E^((2*I+m)*x)*Hypergeometric2F1(2, 1-(I/2)*m, 2-(I/2)*m, E^((2*I)*x)))/(2*I +
-//	// m)}
-//	public void test00255() {
-//		check("Integrate(E^(m*x)*Csc(x)^2, x)",
-//				"(-4*E^((2*I+m)*x)*Hypergeometric2F1(2, 1-(I/2)*m, 2-(I/2)*m, E^((2*I)*x)))/(2*I+m)");
-//
-//	}
-//
-//	// {(E^x*(1-Sin(x)))/(1-Cos(x)), x, 1, -((E^x*Sin(x))/(1-Cos(x)))}
-//	public void test00256() {
-//		check("Integrate((E^x*(1-Sin(x)))/(1-Cos(x)), x)", "-((E^x*Sin(x))/(1-Cos(x)))");
-//
-//	}
-//
-//	// {(E^x*(1+Sin(x)))/(1+Cos(x)), x, 1, (E^x*Sin(x))/(1+Cos(x))}
-//	public void test00257() {
-//		check("Integrate((E^x*(1+Sin(x)))/(1+Cos(x)), x)", "(E^x*Sin(x))/(1+Cos(x))");
-//
-//	}
-//
-//	// {(E^x*(1+Cos(x)))/(1-Sin(x)), x, 1, (E^x*Cos(x))/(1-Sin(x))}
-//	public void test00258() {
-//		check("Integrate((E^x*(1+Cos(x)))/(1-Sin(x)), x)", "(E^x*Cos(x))/(1-Sin(x))");
-//
-//	}
-//
-//	// {(E^x*(1-Cos(x)))/(1+Sin(x)), x, 1, -((E^x*Cos(x))/(1+Sin(x)))}
-//	public void test00259() {
-//		check("Integrate((E^x*(1-Cos(x)))/(1+Sin(x)), x)", "-((E^x*Cos(x))/(1+Sin(x)))");
-//
-//	}
-//
-//	// {Cosh(x), x, 1, Sinh(x)}
-//	public void test00260() {
-//		check("Integrate(Cosh(x), x)", "Sinh(x)");
-//
-//	}
-//
-//	// {Sinh(x), x, 1, Cosh(x)}
-//	public void test00261() {
-//		check("Integrate(Sinh(x), x)", "Cosh(x)");
-//
-//	}
-//
-//	// {Tanh(x), x, 1, Log(Cosh(x))}
-//	public void test00262() {
-//		check("Integrate(Tanh(x), x)", "Log(Cosh(x))");
-//
-//	}
-//
-//	// {Coth(x), x, 1, Log(Sinh(x))}
-//	public void test00263() {
-//		check("Integrate(Coth(x), x)", "Log(Sinh(x))");
-//
-//	}
-//
-//	// {Sech(x), x, 1, ArcTan(Sinh(x))}
-//	public void test00264() {
-//		check("Integrate(Sech(x), x)", "ArcTan(Sinh(x))");
-//
-//	}
-//
-//	// {Csch(x), x, 1, -ArcTanh(Cosh(x))}
-//	public void test00265() {
-//		check("Integrate(Csch(x), x)", "-ArcTanh(Cosh(x))");
-//
-//	}
-//
-//	// {x^m*Log(x), x, 1, -(x^(1+m)/(1+m)^2)+(x^(1+m)*Log(x))/(1+m)}
-//	public void test00266() {
-//		check("Integrate(x^m*Log(x), x)", "-(x^(1+m)/(1+m)^2)+(x^(1+m)*Log(x))/(1+m)");
-//
-//	}
-//
-//	// {Log(Log(x))/x, x, 1, -Log(x)+Log(x)*Log(Log(x))}
-//	public void test00267() {
-//		check("Integrate(Log(Log(x))/x, x)", "-Log(x)+Log(x)*Log(Log(x))");
-//
-//	}
-//
-//	// {1/Sqrt(1-a*x), x, 1, (-2*Sqrt(1-a*x))/a}
-//	public void test00268() {
-//		check("Integrate(1/Sqrt(1-a*x), x)", "(-2*Sqrt(1-a*x))/a");
-//
-//	}
-//
-//	// {(1-x^3)^(-1/3), x, 1, -(ArcTan((1-(2*x)/(1-x^3)^(1/3))/Sqrt(3))/Sqrt(3))+Log(x+(1-x^3)^(1/3))/2}
-//	public void test00269() {
-//		check("Integrate((1-x^3)^(-1/3), x)",
-//				"-(ArcTan((1-(2*x)/(1-x^3)^(1/3))/Sqrt(3))/Sqrt(3))+Log(x+(1-x^3)^(1/3))/2");
-//
-//	}
-//
-//	// {(3-3*x+30*x^2+160*x^3)/(9+24*x-12*x^2+80*x^3+320*x^4), x, 1, Log(9+24*x-12*x^2+80*x^3 +
-//	// 320*x^4)/8}
-//	public void test00270() {
-//		check("Integrate((3-3*x+30*x^2+160*x^3)/(9+24*x-12*x^2+80*x^3+320*x^4), x)",
-//				"Log(9+24*x-12*x^2+80*x^3+320*x^4)/8");
-//
-//	}
-//
-//	// {(3+12*x+20*x^2)/(9+24*x-12*x^2+80*x^3+320*x^4), x, 1, -ArcTan((7-40*x)/(5*Sqrt(11)))/(2*Sqrt(11))
-//	// +ArcTan((57+30*x-40*x^2+800*x^3)/(6*Sqrt(11)))/(2*Sqrt(11))}
-//	public void test00271() {
-//		check("Integrate((3+12*x+20*x^2)/(9+24*x-12*x^2+80*x^3+320*x^4), x)",
-//				"-ArcTan((7-40*x)/(5*Sqrt(11)))/(2*Sqrt(11))+ArcTan((57+30*x-40*x^2+800*x^3)/(6*Sqrt(11)))/(2*Sqrt(11))");
-//
-//	}
-//
-//	// {Sqrt(1-x^4)/(1+x^4), x, 1, ArcTan((x*(1+x^2))/Sqrt(1-x^4))/2+ArcTanh((x*(1-x^2))/Sqrt(1-x^4))/2}
-//	public void test00272() {
-//		check("Integrate(Sqrt(1-x^4)/(1+x^4), x)",
-//				"ArcTan((x*(1+x^2))/Sqrt(1-x^4))/2+ArcTanh((x*(1-x^2))/Sqrt(1-x^4))/2");
-//
-//	}
-//
-//	// {Sqrt(1+p*x^2-x^4)/(1+x^4), x, 1, -(Sqrt(p+Sqrt(4+p^2))*ArcTan((Sqrt(p+Sqrt(4+p^2))*x*(p-Sqrt(4 +
-//	// p^2)-2*x^2))/(2*Sqrt(2)*Sqrt(1+p*x^2-x^4))))/(2*Sqrt(2))+(Sqrt(-p+Sqrt(4+p^2))*ArcTanh((Sqrt(-p +
-//	// Sqrt(4+p^2))*x*(p+Sqrt(4+p^2)-2*x^2))/(2*Sqrt(2)*Sqrt(1+p*x^2-x^4))))/(2*Sqrt(2))}
-//	public void test00273() {
-//		check("Integrate(Sqrt(1+p*x^2-x^4)/(1+x^4), x)",
-//				"-(Sqrt(p+Sqrt(4+p^2))*ArcTan((Sqrt(p+Sqrt(4+p^2))*x*(p-Sqrt(4+p^2)-2*x^2))/(2*Sqrt(2)*Sqrt(1+p*x^2-x^4))))/(2*Sqrt(2))+(Sqrt(-p+Sqrt(4+p^2))*ArcTanh((Sqrt(-p+Sqrt(4+p^2))*x*(p+Sqrt(4+p^2)-2*x^2))/(2*Sqrt(2)*Sqrt(1+p*x^2-x^4))))/(2*Sqrt(2))");
-//
-//	}
-//
-//	// {x/(Sqrt(1-x^3)*(4-x^3)), x, 1, -ArcTan((Sqrt(3)*(1-2^(1/3)*x))/Sqrt(1-x^3))/(3*2^(2/3)*Sqrt(3)) +
-//	// ArcTan(Sqrt(1-x^3)/Sqrt(3))/(3*2^(2/3)*Sqrt(3))-ArcTanh((1+2^(1/3)*x)/Sqrt(1-x^3))/(3*2^(2/3)) +
-//	// ArcTanh(Sqrt(1-x^3))/(9*2^(2/3))}
-//	public void test00274() {
-//		check("Integrate(x/(Sqrt(1-x^3)*(4-x^3)), x)",
-//				"-ArcTan((Sqrt(3)*(1-2^(1/3)*x))/Sqrt(1-x^3))/(3*2^(2/3)*Sqrt(3))+ArcTan(Sqrt(1-x^3)/Sqrt(3))/(3*2^(2/3)*Sqrt(3))-ArcTanh((1+2^(1/3)*x)/Sqrt(1-x^3))/(3*2^(2/3))+ArcTanh(Sqrt(1-x^3))/(9*2^(2/3))");
-//
-//	}
-//
-//	// {x/((4-d*x^3)*Sqrt(-1+d*x^3)), x, 1, -ArcTan((1+2^(1/3)*d^(1/3)*x)/Sqrt(-1+d*x^3))/(3*2^(2/3)*d^(2/3)) -
-//	// ArcTan(Sqrt(-1+d*x^3))/(9*2^(2/3)*d^(2/3))-ArcTanh((Sqrt(3)*(1-2^(1/3)*d^(1/3)*x))/Sqrt(-1 +
-//	// d*x^3))/(3*2^(2/3)*Sqrt(3)*d^(2/3))-ArcTanh(Sqrt(-1+d*x^3)/Sqrt(3))/(3*2^(2/3)*Sqrt(3)*d^(2/3))}
-//	public void test00275() {
-//		check("Integrate(x/((4-d*x^3)*Sqrt(-1+d*x^3)), x)",
-//				"-ArcTan((1+2^(1/3)*d^(1/3)*x)/Sqrt(-1+d*x^3))/(3*2^(2/3)*d^(2/3))-ArcTan(Sqrt(-1+d*x^3))/(9*2^(2/3)*d^(2/3))-ArcTanh((Sqrt(3)*(1-2^(1/3)*d^(1/3)*x))/Sqrt(-1+d*x^3))/(3*2^(2/3)*Sqrt(3)*d^(2/3))-ArcTanh(Sqrt(-1+d*x^3)/Sqrt(3))/(3*2^(2/3)*Sqrt(3)*d^(2/3))");
-//
-//	}
-//
-//	// {1/((1-3*x^2)^(1/3)*(3-x^2)), x, 1, ArcTan((1-(1-3*x^2)^(1/3))/x)/4+ArcTanh(x/Sqrt(3))/(4*Sqrt(3)) -
-//	// ArcTanh((1-(1-3*x^2)^(1/3))^2/(3*Sqrt(3)*x))/(4*Sqrt(3))}
-//	public void test00276() {
-//		check("Integrate(1/((1-3*x^2)^(1/3)*(3-x^2)), x)",
-//				"ArcTan((1-(1-3*x^2)^(1/3))/x)/4+ArcTanh(x/Sqrt(3))/(4*Sqrt(3))-ArcTanh((1-(1-3*x^2)^(1/3))^2/(3*Sqrt(3)*x))/(4*Sqrt(3))");
-//
-//	}
-//
-//	// {1/((3+x^2)*(1+3*x^2)^(1/3)), x, 1, ArcTan(x/Sqrt(3))/(4*Sqrt(3))+ArcTan((1-(1 +
-//	// 3*x^2)^(1/3))^2/(3*Sqrt(3)*x))/(4*Sqrt(3))-ArcTanh((1-(1+3*x^2)^(1/3))/x)/4}
-//	public void test00277() {
-//		check("Integrate(1/((3+x^2)*(1+3*x^2)^(1/3)), x)",
-//				"ArcTan(x/Sqrt(3))/(4*Sqrt(3))+ArcTan((1-(1+3*x^2)^(1/3))^2/(3*Sqrt(3)*x))/(4*Sqrt(3))-ArcTanh((1-(1+3*x^2)^(1/3))/x)/4");
-//
-//	}
-//
-//	// {1/((1-x^2)^(1/3)*(3+x^2)), x, 1, ArcTan(Sqrt(3)/x)/(2*2^(2/3)*Sqrt(3))+ArcTan((Sqrt(3)*(1-2^(1/3)*(1 -
-//	// x^2)^(1/3)))/x)/(2*2^(2/3)*Sqrt(3))-ArcTanh(x)/(6*2^(2/3))+ArcTanh(x/(1+2^(1/3)*(1 -
-//	// x^2)^(1/3)))/(2*2^(2/3))}
-//	public void test00278() {
-//		check("Integrate(1/((1-x^2)^(1/3)*(3+x^2)), x)",
-//				"ArcTan(Sqrt(3)/x)/(2*2^(2/3)*Sqrt(3))+ArcTan((Sqrt(3)*(1-2^(1/3)*(1-x^2)^(1/3)))/x)/(2*2^(2/3)*Sqrt(3))-ArcTanh(x)/(6*2^(2/3))+ArcTanh(x/(1+2^(1/3)*(1-x^2)^(1/3)))/(2*2^(2/3))");
-//
-//	}
-//
-//	// {1/((3-x^2)*(1+x^2)^(1/3)), x, 1, -ArcTan(x)/(6*2^(2/3))+ArcTan(x/(1+2^(1/3)*(1 +
-//	// x^2)^(1/3)))/(2*2^(2/3))-ArcTanh(Sqrt(3)/x)/(2*2^(2/3)*Sqrt(3))-ArcTanh((Sqrt(3)*(1-2^(1/3)*(1 +
-//	// x^2)^(1/3)))/x)/(2*2^(2/3)*Sqrt(3))}
-//	public void test00279() {
-//		check("Integrate(1/((3-x^2)*(1+x^2)^(1/3)), x)",
-//				"-ArcTan(x)/(6*2^(2/3))+ArcTan(x/(1+2^(1/3)*(1+x^2)^(1/3)))/(2*2^(2/3))-ArcTanh(Sqrt(3)/x)/(2*2^(2/3)*Sqrt(3))-ArcTanh((Sqrt(3)*(1-2^(1/3)*(1+x^2)^(1/3)))/x)/(2*2^(2/3)*Sqrt(3))");
-//
-//	}
-//
-//	// {x/(Sqrt(1+x^3)*(10+6*Sqrt(3)+x^3)), x, 1, -((2-Sqrt(3))*ArcTan((3^(1/4)*(1+Sqrt(3))*(1 +
-//	// x))/(Sqrt(2)*Sqrt(1+x^3))))/(2*Sqrt(2)*3^(3/4))-((2-Sqrt(3))*ArcTan(((1-Sqrt(3))*Sqrt(1 +
-//	// x^3))/(Sqrt(2)*3^(3/4))))/(3*Sqrt(2)*3^(3/4))-((2-Sqrt(3))*ArcTanh((3^(1/4)*(1+Sqrt(3) -
-//	// 2*x))/(Sqrt(2)*Sqrt(1+x^3))))/(3*Sqrt(2)*3^(1/4))-((2-Sqrt(3))*ArcTanh((3^(1/4)*(1-Sqrt(3))*(1 +
-//	// x))/(Sqrt(2)*Sqrt(1+x^3))))/(6*Sqrt(2)*3^(1/4))}
-//	public void test00280() {
-//		check("Integrate(x/(Sqrt(1+x^3)*(10+6*Sqrt(3)+x^3)), x)",
-//				"-((2-Sqrt(3))*ArcTan((3^(1/4)*(1+Sqrt(3))*(1+x))/(Sqrt(2)*Sqrt(1+x^3))))/(2*Sqrt(2)*3^(3/4))-((2-Sqrt(3))*ArcTan(((1-Sqrt(3))*Sqrt(1+x^3))/(Sqrt(2)*3^(3/4))))/(3*Sqrt(2)*3^(3/4))-((2-Sqrt(3))*ArcTanh((3^(1/4)*(1+Sqrt(3)-2*x))/(Sqrt(2)*Sqrt(1+x^3))))/(3*Sqrt(2)*3^(1/4))-((2-Sqrt(3))*ArcTanh((3^(1/4)*(1-Sqrt(3))*(1+x))/(Sqrt(2)*Sqrt(1+x^3))))/(6*Sqrt(2)*3^(1/4))");
-//
-//	}
-//
-//	// {x/(Sqrt(1+x^3)*(10-6*Sqrt(3)+x^3)), x, 1, -((2+Sqrt(3))*ArcTan((3^(1/4)*(1-Sqrt(3) -
-//	// 2*x))/(Sqrt(2)*Sqrt(1+x^3))))/(3*Sqrt(2)*3^(1/4))-((2+Sqrt(3))*ArcTan((3^(1/4)*(1+Sqrt(3))*(1 +
-//	// x))/(Sqrt(2)*Sqrt(1+x^3))))/(6*Sqrt(2)*3^(1/4))+((2+Sqrt(3))*ArcTanh((3^(1/4)*(1-Sqrt(3))*(1 +
-//	// x))/(Sqrt(2)*Sqrt(1+x^3))))/(2*Sqrt(2)*3^(3/4))+((2+Sqrt(3))*ArcTanh(((1+Sqrt(3))*Sqrt(1 +
-//	// x^3))/(Sqrt(2)*3^(3/4))))/(3*Sqrt(2)*3^(3/4))}
-//	public void test00281() {
-//		check("Integrate(x/(Sqrt(1+x^3)*(10-6*Sqrt(3)+x^3)), x)",
-//				"-((2+Sqrt(3))*ArcTan((3^(1/4)*(1-Sqrt(3)-2*x))/(Sqrt(2)*Sqrt(1+x^3))))/(3*Sqrt(2)*3^(1/4))-((2+Sqrt(3))*ArcTan((3^(1/4)*(1+Sqrt(3))*(1+x))/(Sqrt(2)*Sqrt(1+x^3))))/(6*Sqrt(2)*3^(1/4))+((2+Sqrt(3))*ArcTanh((3^(1/4)*(1-Sqrt(3))*(1+x))/(Sqrt(2)*Sqrt(1+x^3))))/(2*Sqrt(2)*3^(3/4))+((2+Sqrt(3))*ArcTanh(((1+Sqrt(3))*Sqrt(1+x^3))/(Sqrt(2)*3^(3/4))))/(3*Sqrt(2)*3^(3/4))");
-//
-//	}
-//
-//	// {x/(Sqrt(-1+x^3)*(-10-6*Sqrt(3)+x^3)), x, 1, ((2-Sqrt(3))*ArcTan((3^(1/4)*(1-Sqrt(3))*(1 -
-//	// x))/(Sqrt(2)*Sqrt(-1+x^3))))/(6*Sqrt(2)*3^(1/4))+((2-Sqrt(3))*ArcTan((3^(1/4)*(1+Sqrt(3) +
-//	// 2*x))/(Sqrt(2)*Sqrt(-1+x^3))))/(3*Sqrt(2)*3^(1/4))+((2-Sqrt(3))*ArcTanh((3^(1/4)*(1+Sqrt(3))*(1 -
-//	// x))/(Sqrt(2)*Sqrt(-1+x^3))))/(2*Sqrt(2)*3^(3/4))-((2-Sqrt(3))*ArcTanh(((1-Sqrt(3))*Sqrt(-1 +
-//	// x^3))/(Sqrt(2)*3^(3/4))))/(3*Sqrt(2)*3^(3/4))}
-//	public void test00282() {
-//		check("Integrate(x/(Sqrt(-1+x^3)*(-10-6*Sqrt(3)+x^3)), x)",
-//				"((2-Sqrt(3))*ArcTan((3^(1/4)*(1-Sqrt(3))*(1-x))/(Sqrt(2)*Sqrt(-1+x^3))))/(6*Sqrt(2)*3^(1/4))+((2-Sqrt(3))*ArcTan((3^(1/4)*(1+Sqrt(3)+2*x))/(Sqrt(2)*Sqrt(-1+x^3))))/(3*Sqrt(2)*3^(1/4))+((2-Sqrt(3))*ArcTanh((3^(1/4)*(1+Sqrt(3))*(1-x))/(Sqrt(2)*Sqrt(-1+x^3))))/(2*Sqrt(2)*3^(3/4))-((2-Sqrt(3))*ArcTanh(((1-Sqrt(3))*Sqrt(-1+x^3))/(Sqrt(2)*3^(3/4))))/(3*Sqrt(2)*3^(3/4))");
-//
-//	}
-//
-//	// {x/(Sqrt(-1+x^3)*(-10+6*Sqrt(3)+x^3)), x, 1, -((2+Sqrt(3))*ArcTan((3^(1/4)*(1-Sqrt(3))*(1 -
-//	// x))/(Sqrt(2)*Sqrt(-1+x^3))))/(2*Sqrt(2)*3^(3/4))+((2+Sqrt(3))*ArcTan(((1+Sqrt(3))*Sqrt(-1 +
-//	// x^3))/(Sqrt(2)*3^(3/4))))/(3*Sqrt(2)*3^(3/4))+((2+Sqrt(3))*ArcTanh((3^(1/4)*(1+Sqrt(3))*(1 -
-//	// x))/(Sqrt(2)*Sqrt(-1+x^3))))/(6*Sqrt(2)*3^(1/4))+((2+Sqrt(3))*ArcTanh((3^(1/4)*(1-Sqrt(3) +
-//	// 2*x))/(Sqrt(2)*Sqrt(-1+x^3))))/(3*Sqrt(2)*3^(1/4))}
-//	public void test00283() {
-//		check("Integrate(x/(Sqrt(-1+x^3)*(-10+6*Sqrt(3)+x^3)), x)",
-//				"-((2+Sqrt(3))*ArcTan((3^(1/4)*(1-Sqrt(3))*(1-x))/(Sqrt(2)*Sqrt(-1+x^3))))/(2*Sqrt(2)*3^(3/4))+((2+Sqrt(3))*ArcTan(((1+Sqrt(3))*Sqrt(-1+x^3))/(Sqrt(2)*3^(3/4))))/(3*Sqrt(2)*3^(3/4))+((2+Sqrt(3))*ArcTanh((3^(1/4)*(1+Sqrt(3))*(1-x))/(Sqrt(2)*Sqrt(-1+x^3))))/(6*Sqrt(2)*3^(1/4))+((2+Sqrt(3))*ArcTanh((3^(1/4)*(1-Sqrt(3)+2*x))/(Sqrt(2)*Sqrt(-1+x^3))))/(3*Sqrt(2)*3^(1/4))");
-//
-//	}
-//
-//	// {(-1+x)/((1+x)*(2+x^3)^(1/3)), x, 1, Sqrt(3)*ArcTan((1+(2*(2+x))/(2+x^3)^(1/3))/Sqrt(3))+Log(1+x)
-//	// -(3*Log(2+x-(2+x^3)^(1/3)))/2}
-//	public void test00284() {
-//		check("Integrate((-1+x)/((1+x)*(2+x^3)^(1/3)), x)",
-//				"Sqrt(3)*ArcTan((1+(2*(2+x))/(2+x^3)^(1/3))/Sqrt(3))+Log(1+x)-(3*Log(2+x-(2+x^3)^(1/3)))/2");
-//
-//	}
-//
-//	// {0, x, 1, 0}
-//	public void test00285() {
-//		check("Integrate(0, x)", "0");
-//
-//	}
-//
-//	// {1, x, 1, x}
-//	public void test00286() {
-//		check("Integrate(1, x)", "x");
-//
-//	}
-//
-//	// {5, x, 1, 5*x}
-//	public void test00287() {
-//		check("Integrate(5, x)", "5*x");
-//
-//	}
-//
-//	// {-2, x, 1, -2*x}
-//	public void test00288() {
-//		check("Integrate(-2, x)", "-2*x");
-//
-//	}
-//
-//	// {-3/2, x, 1, (-3*x)/2}
-//	public void test00289() {
-//		check("Integrate(-3/2, x)", "(-3*x)/2");
-//
-//	}
-//
-//	// {Pi, x, 1, Pi*x}
-//	public void test00290() {
-//		check("Integrate(Pi, x)", "Pi*x");
-//
-//	}
-//
-//	// {a, x, 1, a*x}
-//	public void test00291() {
-//		check("Integrate(a, x)", "a*x");
-//
-//	}
-//
-//	// {3*a, x, 1, 3*a*x}
-//	public void test00292() {
-//		check("Integrate(3*a, x)", "3*a*x");
-//
-//	}
-//
-//	// {Pi/Sqrt(16-E^2), x, 1, (Pi*x)/Sqrt(16-E^2)}
-//	public void test00293() {
-//		check("Integrate(Pi/Sqrt(16-E^2), x)", "(Pi*x)/Sqrt(16-E^2)");
-//
-//	}
-//
-//	// {x^100, x, 1, x^101/101}
-//	public void test00294() {
-//		check("Integrate(x^100, x)", "x^101/101");
-//
-//	}
-//
-//	// {x^3, x, 1, x^4/4}
-//	public void test00295() {
-//		check("Integrate(x^3, x)", "x^4/4");
-//
-//	}
-//
-//	// {x^2, x, 1, x^3/3}
-//	public void test00296() {
-//		check("Integrate(x^2, x)", "x^3/3");
-//
-//	}
-//
-//	// {x, x, 1, x^2/2}
-//	public void test00297() {
-//		check("Integrate(x, x)", "x^2/2");
-//
-//	}
-//
-//	// {1, x, 1, x}
-//	public void test00298() {
-//		check("Integrate(1, x)", "x");
-//
-//	}
-//
-//	// {x^(-1), x, 1, Log(x)}
-//	public void test00299() {
-//		check("Integrate(x^(-1), x)", "Log(x)");
-//
-//	}
-//
-//	// {x^(-2), x, 1, -x^(-1)}
-//	public void test00300() {
-//		check("Integrate(x^(-2), x)", "-x^(-1)");
-//
-//	}
-//
-//	// {x^(-3), x, 1, -1/(2*x^2)}
-//	public void test00301() {
-//		check("Integrate(x^(-3), x)", "-1/(2*x^2)");
-//
-//	}
-//
-//	// {x^(-4), x, 1, -1/(3*x^3)}
-//	public void test00302() {
-//		check("Integrate(x^(-4), x)", "-1/(3*x^3)");
-//
-//	}
-//
-//	// {x^(-100), x, 1, -1/(99*x^99)}
-//	public void test00303() {
-//		check("Integrate(x^(-100), x)", "-1/(99*x^99)");
-//
-//	}
-//
-//	// {x^(5/2), x, 1, (2*x^(7/2))/7}
-//	public void test00304() {
-//		check("Integrate(x^(5/2), x)", "(2*x^(7/2))/7");
-//
-//	}
-//
-//	// {x^(3/2), x, 1, (2*x^(5/2))/5}
-//	public void test00305() {
-//		check("Integrate(x^(3/2), x)", "(2*x^(5/2))/5");
-//
-//	}
-//
-//	// {Sqrt(x), x, 1, (2*x^(3/2))/3}
-//	public void test00306() {
-//		check("Integrate(Sqrt(x), x)", "(2*x^(3/2))/3");
-//
-//	}
-//
-//	// {1/Sqrt(x), x, 1, 2*Sqrt(x)}
-//	public void test00307() {
-//		check("Integrate(1/Sqrt(x), x)", "2*Sqrt(x)");
-//
-//	}
-//
-//	// {x^(-3/2), x, 1, -2/Sqrt(x)}
-//	public void test00308() {
-//		check("Integrate(x^(-3/2), x)", "-2/Sqrt(x)");
-//
-//	}
-//
-//	// {x^(-5/2), x, 1, -2/(3*x^(3/2))}
-//	public void test00309() {
-//		check("Integrate(x^(-5/2), x)", "-2/(3*x^(3/2))");
-//
-//	}
-//
-//	// {x^(5/3), x, 1, (3*x^(8/3))/8}
-//	public void test00310() {
-//		check("Integrate(x^(5/3), x)", "(3*x^(8/3))/8");
-//
-//	}
-//
-//	// {x^(4/3), x, 1, (3*x^(7/3))/7}
-//	public void test00311() {
-//		check("Integrate(x^(4/3), x)", "(3*x^(7/3))/7");
-//
-//	}
-//
-//	// {x^(2/3), x, 1, (3*x^(5/3))/5}
-//	public void test00312() {
-//		check("Integrate(x^(2/3), x)", "(3*x^(5/3))/5");
-//
-//	}
-//
-//	// {x^(1/3), x, 1, (3*x^(4/3))/4}
-//	public void test00313() {
-//		check("Integrate(x^(1/3), x)", "(3*x^(4/3))/4");
-//
-//	}
-//
-//	// {x^(-1/3), x, 1, (3*x^(2/3))/2}
-//	public void test00314() {
-//		check("Integrate(x^(-1/3), x)", "(3*x^(2/3))/2");
-//
-//	}
-//
-//	// {x^(-2/3), x, 1, 3*x^(1/3)}
-//	public void test00315() {
-//		check("Integrate(x^(-2/3), x)", "3*x^(1/3)");
-//
-//	}
-//
-//	// {x^(-4/3), x, 1, -3/x^(1/3)}
-//	public void test00316() {
-//		check("Integrate(x^(-4/3), x)", "-3/x^(1/3)");
-//
-//	}
-//
-//	// {x^(-5/3), x, 1, -3/(2*x^(2/3))}
-//	public void test00317() {
-//		check("Integrate(x^(-5/3), x)", "-3/(2*x^(2/3))");
-//
-//	}
-//
-//	// {x^n, x, 1, x^(1+n)/(1+n)}
-//	public void test00318() {
-//		check("Integrate(x^n, x)", "x^(1+n)/(1+n)");
-//
-//	}
-//
-//	// {(b*x)^n, x, 1, (b*x)^(1+n)/(b*(1+n))}
-//	public void test00319() {
-//		check("Integrate((b*x)^n, x)", "(b*x)^(1+n)/(b*(1+n))");
-//
-//	}
-//
-//	// {a+b*x, x, 1, a*x+(b*x^2)/2}
-//	public void test00320() {
-//		check("Integrate(a+b*x, x)", "a*x+(b*x^2)/2");
-//
-//	}
-//
-//	// {(a+b*x)/x^3, x, 1, -(a+b*x)^2/(2*a*x^2)}
-//	public void test00321() {
-//		check("Integrate((a+b*x)/x^3, x)", "-(a+b*x)^2/(2*a*x^2)");
-//
-//	}
-//
-//	// {(a+b*x)^2, x, 1, (a+b*x)^3/(3*b)}
-//	public void test00322() {
-//		check("Integrate((a+b*x)^2, x)", "(a+b*x)^3/(3*b)");
-//
-//	}
-//
-//	// {(a+b*x)^2/x^4, x, 1, -(a+b*x)^3/(3*a*x^3)}
-//	public void test00323() {
-//		check("Integrate((a+b*x)^2/x^4, x)", "-(a+b*x)^3/(3*a*x^3)");
-//
-//	}
-//
-//	// {(a+b*x)^3, x, 1, (a+b*x)^4/(4*b)}
-//	public void test00324() {
-//		check("Integrate((a+b*x)^3, x)", "(a+b*x)^4/(4*b)");
-//
-//	}
-//
-//	// {(a+b*x)^3/x^5, x, 1, -(a+b*x)^4/(4*a*x^4)}
-//	public void test00325() {
-//		check("Integrate((a+b*x)^3/x^5, x)", "-(a+b*x)^4/(4*a*x^4)");
-//
-//	}
-//
-//	// {(a+b*x)^5, x, 1, (a+b*x)^6/(6*b)}
-//	public void test00326() {
-//		check("Integrate((a+b*x)^5, x)", "(a+b*x)^6/(6*b)");
-//
-//	}
-//
-//	// {(a+b*x)^5/x^7, x, 1, -(a+b*x)^6/(6*a*x^6)}
-//	public void test00327() {
-//		check("Integrate((a+b*x)^5/x^7, x)", "-(a+b*x)^6/(6*a*x^6)");
-//
-//	}
-//
-//	// {(a+b*x)^7, x, 1, (a+b*x)^8/(8*b)}
-//	public void test00328() {
-//		check("Integrate((a+b*x)^7, x)", "(a+b*x)^8/(8*b)");
-//
-//	}
-//
-//	// {(a+b*x)^7/x^9, x, 1, -(a+b*x)^8/(8*a*x^8)}
-//	public void test00329() {
-//		check("Integrate((a+b*x)^7/x^9, x)", "-(a+b*x)^8/(8*a*x^8)");
-//
-//	}
-//
-//	// {(a+b*x)^10, x, 1, (a+b*x)^11/(11*b)}
-//	public void test00330() {
-//		check("Integrate((a+b*x)^10, x)", "(a+b*x)^11/(11*b)");
-//
-//	}
-//
-//	// {(a+b*x)^10/x^12, x, 1, -(a+b*x)^11/(11*a*x^11)}
-//	public void test00331() {
-//		check("Integrate((a+b*x)^10/x^12, x)", "-(a+b*x)^11/(11*a*x^11)");
-//
-//	}
-//
-//	// {c*(a+b*x), x, 1, (c*(a+b*x)^2)/(2*b)}
-//	public void test00332() {
-//		check("Integrate(c*(a+b*x), x)", "(c*(a+b*x)^2)/(2*b)");
-//
-//	}
-//
-//	// {((c+d)*(a+b*x))/e, x, 1, ((c+d)*(a+b*x)^2)/(2*b*e)}
-//	public void test00333() {
-//		check("Integrate(((c+d)*(a+b*x))/e, x)", "((c+d)*(a+b*x)^2)/(2*b*e)");
-//
-//	}
-//
-//	// {(a+b*x)^(-1), x, 1, Log(a+b*x)/b}
-//	public void test00334() {
-//		check("Integrate((a+b*x)^(-1), x)", "Log(a+b*x)/b");
-//
-//	}
-//
-//	// {(a+b*x)^(-2), x, 1, -(1/(b*(a+b*x)))}
-//	public void test00335() {
-//		check("Integrate((a+b*x)^(-2), x)", "-(1/(b*(a+b*x)))");
-//
-//	}
-//
-//	// {x/(a+b*x)^3, x, 1, x^2/(2*a*(a+b*x)^2)}
-//	public void test00336() {
-//		check("Integrate(x/(a+b*x)^3, x)", "x^2/(2*a*(a+b*x)^2)");
-//
-//	}
-//
-//	// {(a+b*x)^(-3), x, 1, -1/(2*b*(a+b*x)^2)}
-//	public void test00337() {
-//		check("Integrate((a+b*x)^(-3), x)", "-1/(2*b*(a+b*x)^2)");
-//
-//	}
-//
-//	// {x^2/(a+b*x)^4, x, 1, x^3/(3*a*(a+b*x)^3)}
-//	public void test00338() {
-//		check("Integrate(x^2/(a+b*x)^4, x)", "x^3/(3*a*(a+b*x)^3)");
-//
-//	}
-//
-//	// {(a+b*x)^(-4), x, 1, -1/(3*b*(a+b*x)^3)}
-//	public void test00339() {
-//		check("Integrate((a+b*x)^(-4), x)", "-1/(3*b*(a+b*x)^3)");
-//
-//	}
-//
-//	// {x^5/(a+b*x)^7, x, 1, x^6/(6*a*(a+b*x)^6)}
-//	public void test00340() {
-//		check("Integrate(x^5/(a+b*x)^7, x)", "x^6/(6*a*(a+b*x)^6)");
-//
-//	}
-//
-//	// {(a+b*x)^(-7), x, 1, -1/(6*b*(a+b*x)^6)}
-//	public void test00341() {
-//		check("Integrate((a+b*x)^(-7), x)", "-1/(6*b*(a+b*x)^6)");
-//
-//	}
-//
-//	// {x^8/(a+b*x)^10, x, 1, x^9/(9*a*(a+b*x)^9)}
-//	public void test00342() {
-//		check("Integrate(x^8/(a+b*x)^10, x)", "x^9/(9*a*(a+b*x)^9)");
-//
-//	}
-//
-//	// {(a+b*x)^(-10), x, 1, -1/(9*b*(a+b*x)^9)}
-//	public void test00343() {
-//		check("Integrate((a+b*x)^(-10), x)", "-1/(9*b*(a+b*x)^9)");
-//
-//	}
-//
-//	// {(a+b*x)^8/x^10, x, 1, -(a+b*x)^9/(9*a*x^9)}
-//	public void test00344() {
-//		check("Integrate((a+b*x)^8/x^10, x)", "-(a+b*x)^9/(9*a*x^9)");
-//
-//	}
-//
-//	// {x^(-10), x, 1, -1/(9*x^9)}
-//	public void test00345() {
-//		check("Integrate(x^(-10), x)", "-1/(9*x^9)");
-//
-//	}
-//
-//	// {(2+2*x)^(-1), x, 1, Log(1+x)/2}
-//	public void test00346() {
-//		check("Integrate((2+2*x)^(-1), x)", "Log(1+x)/2");
-//
-//	}
-//
-//	// {(4-6*x)^(-1), x, 1, -Log(2-3*x)/6}
-//	public void test00347() {
-//		check("Integrate((4-6*x)^(-1), x)", "-Log(2-3*x)/6");
-//
-//	}
-//
-//	// {(a+Sqrt(a)*x)^(-1), x, 1, Log(Sqrt(a)+x)/Sqrt(a)}
-//	public void test00348() {
-//		check("Integrate((a+Sqrt(a)*x)^(-1), x)", "Log(Sqrt(a)+x)/Sqrt(a)");
-//
-//	}
-//
-//	// {(a+Sqrt(-a)*x)^(-1), x, 1, Log(a+Sqrt(-a)*x)/Sqrt(-a)}
-//	public void test00349() {
-//		check("Integrate((a+Sqrt(-a)*x)^(-1), x)", "Log(a+Sqrt(-a)*x)/Sqrt(-a)");
-//
-//	}
-//
-//	// {(a^2+Sqrt(-a)*x)^(-1), x, 1, Log(a^2+Sqrt(-a)*x)/Sqrt(-a)}
-//	public void test00350() {
-//		check("Integrate((a^2+Sqrt(-a)*x)^(-1), x)", "Log(a^2+Sqrt(-a)*x)/Sqrt(-a)");
-//
-//	}
-//
-//	// {(a^3+Sqrt(-a)*x)^(-1), x, 1, Log(a^3+Sqrt(-a)*x)/Sqrt(-a)}
-//	public void test00351() {
-//		check("Integrate((a^3+Sqrt(-a)*x)^(-1), x)", "Log(a^3+Sqrt(-a)*x)/Sqrt(-a)");
-//
-//	}
-//
-//	// {(a^(-1)+Sqrt(-a)*x)^(-1), x, 1, Log(1-(-a)^(3/2)*x)/Sqrt(-a)}
-//	public void test00352() {
-//		check("Integrate((a^(-1)+Sqrt(-a)*x)^(-1), x)", "Log(1-(-a)^(3/2)*x)/Sqrt(-a)");
-//
-//	}
-//
-//	// {(a^(-2)+Sqrt(-a)*x)^(-1), x, 1, Log(1+(-a)^(5/2)*x)/Sqrt(-a)}
-//	public void test00353() {
-//		check("Integrate((a^(-2)+Sqrt(-a)*x)^(-1), x)", "Log(1+(-a)^(5/2)*x)/Sqrt(-a)");
-//
-//	}
-//
-//	// {Sqrt(a+b*x), x, 1, (2*(a+b*x)^(3/2))/(3*b)}
-//	public void test00354() {
-//		check("Integrate(Sqrt(a+b*x), x)", "(2*(a+b*x)^(3/2))/(3*b)");
-//
-//	}
-//
-//	// {(a+b*x)^(3/2), x, 1, (2*(a+b*x)^(5/2))/(5*b)}
-//	public void test00355() {
-//		// check("{a,b,c}[[5]]", "{a,b,c}[[5]]");
-////		check("Integrate(x*Sqrt(a+b*x), x)", "");
-//		check("Integrate((a+b*x)^(3/2), x)", //
-//				"(2*(a+b*x)^(5/2))/(5*b)");
-//
-//	}
-//
-//	// {(a+b*x)^(5/2), x, 1, (2*(a+b*x)^(7/2))/(7*b)}
-//	public void test00356() {
-//		check("Integrate((a+b*x)^(5/2), x)", "(2*(a+b*x)^(7/2))/(7*b)");
-//
-//	}
-//
-//	// {(a+b*x)^(9/2), x, 1, (2*(a+b*x)^(11/2))/(11*b)}
-//	public void test00357() {
-//		check("Integrate((a+b*x)^(9/2), x)", "(2*(a+b*x)^(11/2))/(11*b)");
-//
-//	}
-//
-//	// {1/Sqrt(a+b*x), x, 1, (2*Sqrt(a+b*x))/b}
-//	public void test00358() {
-//		check("Integrate(1/Sqrt(a+b*x), x)", "(2*Sqrt(a+b*x))/b");
-//
-//	}
-//
-//	// {(a+b*x)^(-3/2), x, 1, -2/(b*Sqrt(a+b*x))}
-//	public void test00359() {
-//		check("Integrate((a+b*x)^(-3/2), x)", "-2/(b*Sqrt(a+b*x))");
-//
-//	}
-//
-//	// {(a+b*x)^(-5/2), x, 1, -2/(3*b*(a+b*x)^(3/2))}
-//	public void test00360() {
-//		check("Integrate((a+b*x)^(-5/2), x)", "-2/(3*b*(a+b*x)^(3/2))");
-//
-//	}
-//
-//	// {(a+b*x)^(1/3), x, 1, (3*(a+b*x)^(4/3))/(4*b)}
-//	public void test00361() {
-//		check("Integrate((a+b*x)^(1/3), x)", "(3*(a+b*x)^(4/3))/(4*b)");
-//
-//	}
-//
-//	// {(a+b*x)^(2/3), x, 1, (3*(a+b*x)^(5/3))/(5*b)}
-//	public void test00362() {
-//		check("Integrate((a+b*x)^(2/3), x)", "(3*(a+b*x)^(5/3))/(5*b)");
-//
-//	}
-//
-//	// {(a+b*x)^(4/3), x, 1, (3*(a+b*x)^(7/3))/(7*b)}
-//	public void test00363() {
-//		check("Integrate((a+b*x)^(4/3), x)", "(3*(a+b*x)^(7/3))/(7*b)");
-//
-//	}
-//
-//	// {(a+b*x)^(-1/3), x, 1, (3*(a+b*x)^(2/3))/(2*b)}
-//	public void test00364() {
-//		check("Integrate((a+b*x)^(-1/3), x)", "(3*(a+b*x)^(2/3))/(2*b)");
-//
-//	}
-//
-//	// {(-a+b*x)^(-1/3), x, 1, (3*(-a+b*x)^(2/3))/(2*b)}
-//	public void test00365() {
-//		check("Integrate((-a+b*x)^(-1/3), x)", "(3*(-a+b*x)^(2/3))/(2*b)");
-//
-//	}
-//
-//	// {(a+b*x)^(-2/3), x, 1, (3*(a+b*x)^(1/3))/b}
-//	public void test00366() {
-//		check("Integrate((a+b*x)^(-2/3), x)", "(3*(a+b*x)^(1/3))/b");
-//
-//	}
-//
-//	// {(a+b*x)^(-4/3), x, 1, -3/(b*(a+b*x)^(1/3))}
-//	public void test00367() {
-//		check("Integrate((a+b*x)^(-4/3), x)", "-3/(b*(a+b*x)^(1/3))");
-//
-//	}
-//
-//	// {Sqrt(a+b*x)/x^(5/2), x, 1, (-2*(a+b*x)^(3/2))/(3*a*x^(3/2))}
-//	public void test00368() {
-//		check("Integrate(Sqrt(a+b*x)/x^(5/2), x)", "(-2*(a+b*x)^(3/2))/(3*a*x^(3/2))");
-//
-//	}
-//
-//	// {Sqrt(a-b*x)/x^(5/2), x, 1, (-2*(a-b*x)^(3/2))/(3*a*x^(3/2))}
-//	public void test00369() {
-//		check("Integrate(Sqrt(a-b*x)/x^(5/2), x)", "(-2*(a-b*x)^(3/2))/(3*a*x^(3/2))");
-//
-//	}
-//
-//	// {Sqrt(2+b*x)/x^(5/2), x, 1, -(2+b*x)^(3/2)/(3*x^(3/2))}
-//	public void test00370() {
-//		check("Integrate(Sqrt(2+b*x)/x^(5/2), x)", "-(2+b*x)^(3/2)/(3*x^(3/2))");
-//
-//	}
-//
-//	// {Sqrt(2-b*x)/x^(5/2), x, 1, -(2-b*x)^(3/2)/(3*x^(3/2))}
-//	public void test00371() {
-//		check("Integrate(Sqrt(2-b*x)/x^(5/2), x)", "-(2-b*x)^(3/2)/(3*x^(3/2))");
-//
-//	}
-//
-//	// {1/(x^(3/2)*Sqrt(a+b*x)), x, 1, (-2*Sqrt(a+b*x))/(a*Sqrt(x))}
-//	public void test00372() {
-//		check("Integrate(1/(x^(3/2)*Sqrt(a+b*x)), x)", "(-2*Sqrt(a+b*x))/(a*Sqrt(x))");
-//
-//	}
-//
-//	// {1/(Sqrt(x)*(a+b*x)^(3/2)), x, 1, (2*Sqrt(x))/(a*Sqrt(a+b*x))}
-//	public void test00373() {
-//		check("Integrate(1/(Sqrt(x)*(a+b*x)^(3/2)), x)", "(2*Sqrt(x))/(a*Sqrt(a+b*x))");
-//
-//	}
-//
-//	// {Sqrt(x)/(a+b*x)^(5/2), x, 1, (2*x^(3/2))/(3*a*(a+b*x)^(3/2))}
-//	public void test00374() {
-//		check("Integrate(Sqrt(x)/(a+b*x)^(5/2), x)", "(2*x^(3/2))/(3*a*(a+b*x)^(3/2))");
-//
-//	}
-//
-//	// {1/(x^(3/2)*Sqrt(a-b*x)), x, 1, (-2*Sqrt(a-b*x))/(a*Sqrt(x))}
-//	public void test00375() {
-//		check("Integrate(1/(x^(3/2)*Sqrt(a-b*x)), x)", "(-2*Sqrt(a-b*x))/(a*Sqrt(x))");
-//
-//	}
-//
-//	// {1/(Sqrt(x)*(a-b*x)^(3/2)), x, 1, (2*Sqrt(x))/(a*Sqrt(a-b*x))}
-//	public void test00376() {
-//		check("Integrate(1/(Sqrt(x)*(a-b*x)^(3/2)), x)", "(2*Sqrt(x))/(a*Sqrt(a-b*x))");
-//
-//	}
-//
-//	// {Sqrt(x)/(a-b*x)^(5/2), x, 1, (2*x^(3/2))/(3*a*(a-b*x)^(3/2))}
-//	public void test00377() {
-//		check("Integrate(Sqrt(x)/(a-b*x)^(5/2), x)", "(2*x^(3/2))/(3*a*(a-b*x)^(3/2))");
-//
-//	}
-//
-//	// {1/(x^(3/2)*Sqrt(2+b*x)), x, 1, -(Sqrt(2+b*x)/Sqrt(x))}
-//	public void test00378() {
-//		check("Integrate(1/(x^(3/2)*Sqrt(2+b*x)), x)", "-(Sqrt(2+b*x)/Sqrt(x))");
-//
-//	}
-//
-//	// {1/(Sqrt(x)*(2+b*x)^(3/2)), x, 1, Sqrt(x)/Sqrt(2+b*x)}
-//	public void test00379() {
-//		check("Integrate(1/(Sqrt(x)*(2+b*x)^(3/2)), x)", "Sqrt(x)/Sqrt(2+b*x)");
-//
-//	}
-//
-//	// {Sqrt(x)/(2+b*x)^(5/2), x, 1, x^(3/2)/(3*(2+b*x)^(3/2))}
-//	public void test00380() {
-//		check("Integrate(Sqrt(x)/(2+b*x)^(5/2), x)", "x^(3/2)/(3*(2+b*x)^(3/2))");
-//
-//	}
-//
-//	// {1/(x^(3/2)*Sqrt(2-b*x)), x, 1, -(Sqrt(2-b*x)/Sqrt(x))}
-//	public void test00381() {
-//		check("Integrate(1/(x^(3/2)*Sqrt(2-b*x)), x)", "-(Sqrt(2-b*x)/Sqrt(x))");
-//
-//	}
-//
-//	// {1/(Sqrt(x)*(2-b*x)^(3/2)), x, 1, Sqrt(x)/Sqrt(2-b*x)}
-//	public void test00382() {
-//		check("Integrate(1/(Sqrt(x)*(2-b*x)^(3/2)), x)", "Sqrt(x)/Sqrt(2-b*x)");
-//
-//	}
-//
-//	// {Sqrt(x)/(2-b*x)^(5/2), x, 1, x^(3/2)/(3*(2-b*x)^(3/2))}
-//	public void test00383() {
-//		check("Integrate(Sqrt(x)/(2-b*x)^(5/2), x)", "x^(3/2)/(3*(2-b*x)^(3/2))");
-//
-//	}
-//
-//	// {x^m/(a+b*x), x, 1, (x^(1+m)*Hypergeometric2F1(1, 1+m, 2+m, -((b*x)/a)))/(a*(1+m))}
-//	public void test00384() {
-//		check("Integrate(x^m/(a+b*x), x)", "(x^(1+m)*Hypergeometric2F1(1, 1+m, 2+m, -((b*x)/a)))/(a*(1+m))");
-//
-//	}
-//
-//	// {x^m/(a+b*x)^2, x, 1, (x^(1+m)*Hypergeometric2F1(2, 1+m, 2+m, -((b*x)/a)))/(a^2*(1+m))}
-//	public void test00385() {
-//		check("Integrate(x^m/(a+b*x)^2, x)", "(x^(1+m)*Hypergeometric2F1(2, 1+m, 2+m, -((b*x)/a)))/(a^2*(1+m))");
-//
-//	}
-//
-//	// {x^m/(a+b*x)^3, x, 1, (x^(1+m)*Hypergeometric2F1(3, 1+m, 2+m, -((b*x)/a)))/(a^3*(1+m))}
-//	public void test00386() {
-//		check("Integrate(x^m/(a+b*x)^3, x)", "(x^(1+m)*Hypergeometric2F1(3, 1+m, 2+m, -((b*x)/a)))/(a^3*(1+m))");
-//
-//	}
-//
-//	// {x^m/Sqrt(2+3*x), x, 1, (x^(1+m)*Hypergeometric2F1(1/2, 1+m, 2+m, (-3*x)/2))/(Sqrt(2)*(1+m))}
-//	public void test00387() {
-//		check("Integrate(x^m/Sqrt(2+3*x), x)", "(x^(1+m)*Hypergeometric2F1(1/2, 1+m, 2+m, (-3*x)/2))/(Sqrt(2)*(1+m))");
-//
-//	}
-//
-//	// {x^m/Sqrt(2-3*x), x, 1, (x^(1+m)*Hypergeometric2F1(1/2, 1+m, 2+m, (3*x)/2))/(Sqrt(2)*(1+m))}
-//	public void test00388() {
-//		check("Integrate(x^m/Sqrt(2-3*x), x)", "(x^(1+m)*Hypergeometric2F1(1/2, 1+m, 2+m, (3*x)/2))/(Sqrt(2)*(1+m))");
-//
-//	}
-//
-//	// {x^m/Sqrt(-2+3*x), x, 1, (3/2)^(-1-m)*Sqrt(-2+3*x)*Hypergeometric2F1(1/2, -m, 3/2, 1-(3*x)/2)}
-//	public void test00389() {
-//		check("Integrate(x^m/Sqrt(-2+3*x), x)", "(3/2)^(-1-m)*Sqrt(-2+3*x)*Hypergeometric2F1(1/2, -m, 3/2, 1-(3*x)/2)");
-//
-//	}
-//
-//	// {(-x)^m/Sqrt(2+3*x), x, 1, -(((-x)^(1+m)*Hypergeometric2F1(1/2, 1+m, 2+m, (-3*x)/2))/(Sqrt(2)*(1+m)))}
-//	public void test00390() {
-//		check("Integrate((-x)^m/Sqrt(2+3*x), x)",
-//				"-(((-x)^(1+m)*Hypergeometric2F1(1/2, 1+m, 2+m, (-3*x)/2))/(Sqrt(2)*(1+m)))");
-//
-//	}
-//
-//	// {(-x)^m/Sqrt(2-3*x), x, 1, -(((-x)^(1+m)*Hypergeometric2F1(1/2, 1+m, 2+m, (3*x)/2))/(Sqrt(2)*(1+m)))}
-//	public void test00391() {
-//		check("Integrate((-x)^m/Sqrt(2-3*x), x)",
-//				"-(((-x)^(1+m)*Hypergeometric2F1(1/2, 1+m, 2+m, (3*x)/2))/(Sqrt(2)*(1+m)))");
-//
-//	}
-//
-//	// {(-x)^m/Sqrt(-2-3*x), x, 1, -((3/2)^(-1-m)*Sqrt(-2-3*x)*Hypergeometric2F1(1/2, -m, 3/2, 1+(3*x)/2))}
-//	public void test00392() {
-//		check("Integrate((-x)^m/Sqrt(-2-3*x), x)",
-//				"-((3/2)^(-1-m)*Sqrt(-2-3*x)*Hypergeometric2F1(1/2, -m, 3/2, 1+(3*x)/2))");
-//
-//	}
-//
-//	// {x^n/Sqrt(1-x), x, 1, -2*Sqrt(1-x)*Hypergeometric2F1(1/2, -n, 3/2, 1-x)}
-//	public void test00393() {
-//		check("Integrate(x^n/Sqrt(1-x), x)", "-2*Sqrt(1-x)*Hypergeometric2F1(1/2, -n, 3/2, 1-x)");
-//
-//	}
-//
-//	// {x^n/Sqrt(a-a*x), x, 1, (-2*Sqrt(a-a*x)*Hypergeometric2F1(1/2, -n, 3/2, 1-x))/a}
-//	public void test00394() {
-//		check("Integrate(x^n/Sqrt(a-a*x), x)", "(-2*Sqrt(a-a*x)*Hypergeometric2F1(1/2, -n, 3/2, 1-x))/a");
-//
-//	}
-//
-//	// {(a+b*x)^n, x, 1, (a+b*x)^(1+n)/(b*(1+n))}
-//	public void test00395() {
-//		check("Integrate((a+b*x)^n, x)", "(a+b*x)^(1+n)/(b*(1+n))");
-//
-//	}
-//
-//	// {(a+b*x)^n/x, x, 1, -(((a+b*x)^(1+n)*Hypergeometric2F1(1, 1+n, 2+n, 1+(b*x)/a))/(a*(1+n)))}
-//	public void test00396() {
-//		check("Integrate((a+b*x)^n/x, x)", "-(((a+b*x)^(1+n)*Hypergeometric2F1(1, 1+n, 2+n, 1+(b*x)/a))/(a*(1+n)))");
-//
-//	}
-//
-//	// {(a+b*x)^n/x^2, x, 1, (b*(a+b*x)^(1+n)*Hypergeometric2F1(2, 1+n, 2+n, 1+(b*x)/a))/(a^2*(1+n))}
-//	public void test00397() {
-//		check("Integrate((a+b*x)^n/x^2, x)", "(b*(a+b*x)^(1+n)*Hypergeometric2F1(2, 1+n, 2+n, 1+(b*x)/a))/(a^2*(1+n))");
-//
-//	}
-//
-//	// {(a+b*x)^n/x^3, x, 1, -((b^2*(a+b*x)^(1+n)*Hypergeometric2F1(3, 1+n, 2+n, 1+(b*x)/a))/(a^3*(1+n)))}
-//	public void test00398() {
-//		check("Integrate((a+b*x)^n/x^3, x)",
-//				"-((b^2*(a+b*x)^(1+n)*Hypergeometric2F1(3, 1+n, 2+n, 1+(b*x)/a))/(a^3*(1+n)))");
-//
-//	}
-//
-//	// {x^(-2+n)/(a+b*x)^n, x, 1, -((x^(-1+n)*(a+b*x)^(1-n))/(a*(1-n)))}
-//	public void test00399() {
-//		check("Integrate(x^(-2+n)/(a+b*x)^n, x)", "-((x^(-1+n)*(a+b*x)^(1-n))/(a*(1-n)))");
-//
-//	}
-//
-//	// {(b*x)^m*(2+d*x)^n, x, 1, (2^n*(b*x)^(1+m)*Hypergeometric2F1(1+m, -n, 2+m, -(d*x)/2))/(b*(1+m))}
-//	public void test00400() {
-//		check("Integrate((b*x)^m*(2+d*x)^n, x)",
-//				"(2^n*(b*x)^(1+m)*Hypergeometric2F1(1+m, -n, 2+m, -(d*x)/2))/(b*(1+m))");
-//
-//	}
-//
-//	// {(b*x)^m*(c-b*c*x)^n, x, 1, -(((c-b*c*x)^(1+n)*Hypergeometric2F1(-m, 1+n, 2+n, 1-b*x))/(b*c*(1 +
-//	// n)))}
-//	public void test00401() {
-//		check("Integrate((b*x)^m*(c-b*c*x)^n, x)",
-//				"-(((c-b*c*x)^(1+n)*Hypergeometric2F1(-m, 1+n, 2+n, 1-b*x))/(b*c*(1+n)))");
-//
-//	}
-//
-//	// {x^(-1+n)*(a+b*x)^(-1-n), x, 1, x^n/(a*n*(a+b*x)^n)}
-//	public void test00402() {
-//		check("Integrate(x^(-1+n)*(a+b*x)^(-1-n), x)", "x^n/(a*n*(a+b*x)^n)");
-//
-//	}
-//
-//	// {a+b*x, x, 1, a*x+(b*x^2)/2}
-//	public void test00403() {
-//		check("Integrate(a+b*x, x)", "a*x+(b*x^2)/2");
-//
-//	}
-//
-//	// {(a+b*x)/(a*c-b*c*x)^3, x, 1, x/(c^3*(a-b*x)^2)}
-//	public void test00404() {
-//		check("Integrate((a+b*x)/(a*c-b*c*x)^3, x)", "x/(c^3*(a-b*x)^2)");
-//
-//	}
-//
-//	// {(a+b*x)^2, x, 1, (a+b*x)^3/(3*b)}
-//	public void test00405() {
-//		check("Integrate((a+b*x)^2, x)", "(a+b*x)^3/(3*b)");
-//
-//	}
-//
-//	// {(a+b*x)^2/(a*c-b*c*x)^4, x, 1, (a+b*x)^3/(6*a*b*c^4*(a-b*x)^3)}
-//	public void test00406() {
-//		check("Integrate((a+b*x)^2/(a*c-b*c*x)^4, x)", "(a+b*x)^3/(6*a*b*c^4*(a-b*x)^3)");
-//
-//	}
-//
-//	// {(a+b*x)^(-1), x, 1, Log(a+b*x)/b}
-//	public void test00407() {
-//		check("Integrate((a+b*x)^(-1), x)", "Log(a+b*x)/b");
-//
-//	}
-//
-//	// {(a+b*x)^(-2), x, 1, -(1/(b*(a+b*x)))}
-//	public void test00408() {
-//		check("Integrate((a+b*x)^(-2), x)", "-(1/(b*(a+b*x)))");
-//
-//	}
-//
-//	// {Sqrt(1+x)/(1-x)^(5/2), x, 1, (1+x)^(3/2)/(3*(1-x)^(3/2))}
-//	public void test00409() {
-//		check("Integrate(Sqrt(1+x)/(1-x)^(5/2), x)", "(1+x)^(3/2)/(3*(1-x)^(3/2))");
-//
-//	}
-//
-//	// {(1+x)^(3/2)/(1-x)^(7/2), x, 1, (1+x)^(5/2)/(5*(1-x)^(5/2))}
-//	public void test00410() {
-//		check("Integrate((1+x)^(3/2)/(1-x)^(7/2), x)", "(1+x)^(5/2)/(5*(1-x)^(5/2))");
-//
-//	}
-//
-//	// {(1+x)^(5/2)/(1-x)^(9/2), x, 1, (1+x)^(7/2)/(7*(1-x)^(7/2))}
-//	public void test00411() {
-//		check("Integrate((1+x)^(5/2)/(1-x)^(9/2), x)", "(1+x)^(7/2)/(7*(1-x)^(7/2))");
-//
-//	}
-//
-//	// {1/((1-x)^(3/2)*Sqrt(1+x)), x, 1, Sqrt(1+x)/Sqrt(1-x)}
-//	public void test00412() {
-//		check("Integrate(1/((1-x)^(3/2)*Sqrt(1+x)), x)", "Sqrt(1+x)/Sqrt(1-x)");
-//
-//	}
-//
-//	// {1/(Sqrt(1-x)*(1+x)^(3/2)), x, 1, -(Sqrt(1-x)/Sqrt(1+x))}
-//	public void test00413() {
-//		check("Integrate(1/(Sqrt(1-x)*(1+x)^(3/2)), x)", "-(Sqrt(1-x)/Sqrt(1+x))");
-//
-//	}
-//
-//	// {1/((1-x)^(3/2)*(1+x)^(3/2)), x, 1, x/(Sqrt(1-x)*Sqrt(1+x))}
-//	public void test00414() {
-//		check("Integrate(1/((1-x)^(3/2)*(1+x)^(3/2)), x)", "x/(Sqrt(1-x)*Sqrt(1+x))");
-//
-//	}
-//
-//	// {Sqrt(1-x)/(1+x)^(5/2), x, 1, -(1-x)^(3/2)/(3*(1+x)^(3/2))}
-//	public void test00415() {
-//		check("Integrate(Sqrt(1-x)/(1+x)^(5/2), x)", "-(1-x)^(3/2)/(3*(1+x)^(3/2))");
-//
-//	}
-//
-//	// {1/((a+a*x)^(3/2)*(c-c*x)^(3/2)), x, 1, x/(a*c*Sqrt(a+a*x)*Sqrt(c-c*x))}
-//	public void test00416() {
-//		check("Integrate(1/((a+a*x)^(3/2)*(c-c*x)^(3/2)), x)", "x/(a*c*Sqrt(a+a*x)*Sqrt(c-c*x))");
-//
-//	}
-//
-//	// {1/((a+b*x)^(3/2)*(a*c-b*c*x)^(3/2)), x, 1, x/(a^2*c*Sqrt(a+b*x)*Sqrt(a*c-b*c*x))}
-//	public void test00417() {
-//		check("Integrate(1/((a+b*x)^(3/2)*(a*c-b*c*x)^(3/2)), x)", "x/(a^2*c*Sqrt(a+b*x)*Sqrt(a*c-b*c*x))");
-//
-//	}
-//
-//	// {1/((3-6*x)^(3/2)*(2+4*x)^(3/2)), x, 1, x/(6*Sqrt(6)*Sqrt(1-2*x)*Sqrt(1+2*x))}
-//	public void test00418() {
-//		check("Integrate(1/((3-6*x)^(3/2)*(2+4*x)^(3/2)), x)", "x/(6*Sqrt(6)*Sqrt(1-2*x)*Sqrt(1+2*x))");
-//
-//	}
-//
-//	// {1/((3-x)^(3/2)*(3+x)^(3/2)), x, 1, x/(9*Sqrt(3-x)*Sqrt(3+x))}
-//	public void test00419() {
-//		check("Integrate(1/((3-x)^(3/2)*(3+x)^(3/2)), x)", "x/(9*Sqrt(3-x)*Sqrt(3+x))");
-//
-//	}
-//
-//	// {1/((3-b*x)^(3/2)*(3+b*x)^(3/2)), x, 1, x/(9*Sqrt(3-b*x)*Sqrt(3+b*x))}
-//	public void test00420() {
-//		check("Integrate(1/((3-b*x)^(3/2)*(3+b*x)^(3/2)), x)", "x/(9*Sqrt(3-b*x)*Sqrt(3+b*x))");
-//
-//	}
-//
-//	// {1/((6-2*x)^(3/2)*(3+x)^(3/2)), x, 1, x/(18*Sqrt(2)*Sqrt(3-x)*Sqrt(3+x))}
-//	public void test00421() {
-//		check("Integrate(1/((6-2*x)^(3/2)*(3+x)^(3/2)), x)", "x/(18*Sqrt(2)*Sqrt(3-x)*Sqrt(3+x))");
-//
-//	}
-//
-//	// {1/((6-2*b*x)^(3/2)*(3+b*x)^(3/2)), x, 1, x/(18*Sqrt(2)*Sqrt(3-b*x)*Sqrt(3+b*x))}
-//	public void test00422() {
-//		check("Integrate(1/((6-2*b*x)^(3/2)*(3+b*x)^(3/2)), x)", "x/(18*Sqrt(2)*Sqrt(3-b*x)*Sqrt(3+b*x))");
-//
-//	}
-//
-//	// {1/((a-I*a*x)^(7/4)*(a+I*a*x)^(1/4)), x, 1, (((-2*I)/3)*(a+I*a*x)^(3/4))/(a^2*(a-I*a*x)^(3/4))}
-//	public void test00423() {
-//		check("Integrate(1/((a-I*a*x)^(7/4)*(a+I*a*x)^(1/4)), x)",
-//				"(((-2*I)/3)*(a+I*a*x)^(3/4))/(a^2*(a-I*a*x)^(3/4))");
-//
-//	}
-//
-//	// {1/((a-I*a*x)^(5/4)*(a+I*a*x)^(3/4)), x, 1, ((-2*I)*(a+I*a*x)^(1/4))/(a^2*(a-I*a*x)^(1/4))}
-//	public void test00424() {
-//		check("Integrate(1/((a-I*a*x)^(5/4)*(a+I*a*x)^(3/4)), x)", "((-2*I)*(a+I*a*x)^(1/4))/(a^2*(a-I*a*x)^(1/4))");
-//
-//	}
-//
-//	// {1/((a-I*a*x)^(1/4)*(a+I*a*x)^(7/4)), x, 1, (((2*I)/3)*(a-I*a*x)^(3/4))/(a^2*(a+I*a*x)^(3/4))}
-//	public void test00425() {
-//		check("Integrate(1/((a-I*a*x)^(1/4)*(a+I*a*x)^(7/4)), x)", "(((2*I)/3)*(a-I*a*x)^(3/4))/(a^2*(a+I*a*x)^(3/4))");
-//
-//	}
-//
-//	// {1/((a-I*a*x)^(3/4)*(a+I*a*x)^(5/4)), x, 1, ((2*I)*(a-I*a*x)^(1/4))/(a^2*(a+I*a*x)^(1/4))}
-//	public void test00426() {
-//		check("Integrate(1/((a-I*a*x)^(3/4)*(a+I*a*x)^(5/4)), x)", "((2*I)*(a-I*a*x)^(1/4))/(a^2*(a+I*a*x)^(1/4))");
-//
-//	}
-//
-//	// {(a-I*a*x)^(1/4)/(a+I*a*x)^(9/4), x, 1, (((2*I)/5)*(a-I*a*x)^(5/4))/(a^2*(a+I*a*x)^(5/4))}
-//	public void test00427() {
-//		check("Integrate((a-I*a*x)^(1/4)/(a+I*a*x)^(9/4), x)", "(((2*I)/5)*(a-I*a*x)^(5/4))/(a^2*(a+I*a*x)^(5/4))");
-//
-//	}
-//
-//	// {(a*c-b*c*x)^n/(a+b*x), x, 1, -((a*c-b*c*x)^(1+n)*Hypergeometric2F1(1, 1+n, 2+n, (a -
-//	// b*x)/(2*a)))/(2*a*b*c*(1+n))}
-//	public void test00428() {
-//		check("Integrate((a*c-b*c*x)^n/(a+b*x), x)",
-//				"-((a*c-b*c*x)^(1+n)*Hypergeometric2F1(1, 1+n, 2+n, (a-b*x)/(2*a)))/(2*a*b*c*(1+n))");
-//
-//	}
-//
-//	// {(a*c-b*c*x)^n/(a+b*x)^2, x, 1, -((a*c-b*c*x)^(1+n)*Hypergeometric2F1(2, 1+n, 2+n, (a -
-//	// b*x)/(2*a)))/(4*a^2*b*c*(1+n))}
-//	public void test00429() {
-//		check("Integrate((a*c-b*c*x)^n/(a+b*x)^2, x)",
-//				"-((a*c-b*c*x)^(1+n)*Hypergeometric2F1(2, 1+n, 2+n, (a-b*x)/(2*a)))/(4*a^2*b*c*(1+n))");
-//
-//	}
-//
-//	// {c+d*x, x, 1, c*x+(d*x^2)/2}
-//	public void test00430() {
-//		check("Integrate(c+d*x, x)", "c*x+(d*x^2)/2");
-//
-//	}
-//
-//	// {(c+d*x)/(a+b*x)^3, x, 1, -(c+d*x)^2/(2*(b*c-a*d)*(a+b*x)^2)}
-//	public void test00431() {
-//		check("Integrate((c+d*x)/(a+b*x)^3, x)", "-(c+d*x)^2/(2*(b*c-a*d)*(a+b*x)^2)");
-//
-//	}
-//
-//	// {(c+d*x)^2, x, 1, (c+d*x)^3/(3*d)}
-//	public void test00432() {
-//		check("Integrate((c+d*x)^2, x)", "(c+d*x)^3/(3*d)");
-//
-//	}
-//
-//	// {(c+d*x)^2/(a+b*x)^4, x, 1, -(c+d*x)^3/(3*(b*c-a*d)*(a+b*x)^3)}
-//	public void test00433() {
-//		check("Integrate((c+d*x)^2/(a+b*x)^4, x)", "-(c+d*x)^3/(3*(b*c-a*d)*(a+b*x)^3)");
-//
-//	}
-//
-//	// {(c+d*x)^3, x, 1, (c+d*x)^4/(4*d)}
-//	public void test00434() {
-//		check("Integrate((c+d*x)^3, x)", "(c+d*x)^4/(4*d)");
-//
-//	}
-//
-//	// {(c+d*x)^3/(a+b*x)^5, x, 1, -(c+d*x)^4/(4*(b*c-a*d)*(a+b*x)^4)}
-//	public void test00435() {
-//		check("Integrate((c+d*x)^3/(a+b*x)^5, x)", "-(c+d*x)^4/(4*(b*c-a*d)*(a+b*x)^4)");
-//
-//	}
-//
-//	// {(c+d*x)^7, x, 1, (c+d*x)^8/(8*d)}
-//	public void test00436() {
-//		check("Integrate((c+d*x)^7, x)", "(c+d*x)^8/(8*d)");
-//
-//	}
-//
-//	// {(c+d*x)^7/(a+b*x)^9, x, 1, -(c+d*x)^8/(8*(b*c-a*d)*(a+b*x)^8)}
-//	public void test00437() {
-//		check("Integrate((c+d*x)^7/(a+b*x)^9, x)", "-(c+d*x)^8/(8*(b*c-a*d)*(a+b*x)^8)");
-//
-//	}
-//
-//	// {(c+d*x)^10, x, 1, (c+d*x)^11/(11*d)}
-//	public void test00438() {
-//		check("Integrate((c+d*x)^10, x)", "(c+d*x)^11/(11*d)");
-//
-//	}
-//
-//	// {(c+d*x)^10/(a+b*x)^12, x, 1, -(c+d*x)^11/(11*(b*c-a*d)*(a+b*x)^11)}
-//	public void test00439() {
-//		check("Integrate((c+d*x)^10/(a+b*x)^12, x)", "-(c+d*x)^11/(11*(b*c-a*d)*(a+b*x)^11)");
-//
-//	}
-//
-//	// {(c+d*x)^(-1), x, 1, Log(c+d*x)/d}
-//	public void test00440() {
-//		check("Integrate((c+d*x)^(-1), x)", "Log(c+d*x)/d");
-//
-//	}
-//
-//	// {(c+d*x)^(-2), x, 1, -(1/(d*(c+d*x)))}
-//	public void test00441() {
-//		check("Integrate((c+d*x)^(-2), x)", "-(1/(d*(c+d*x)))");
-//
-//	}
-//
-//	// {(a+b*x)/(c+d*x)^3, x, 1, (a+b*x)^2/(2*(b*c-a*d)*(c+d*x)^2)}
-//	public void test00442() {
-//		check("Integrate((a+b*x)/(c+d*x)^3, x)", "(a+b*x)^2/(2*(b*c-a*d)*(c+d*x)^2)");
-//
-//	}
-//
-//	// {(c+d*x)^(-3), x, 1, -1/(2*d*(c+d*x)^2)}
-//	public void test00443() {
-//		check("Integrate((c+d*x)^(-3), x)", "-1/(2*d*(c+d*x)^2)");
-//
-//	}
-//
-//	// {(a+b*x)^6/(c+d*x)^8, x, 1, (a+b*x)^7/(7*(b*c-a*d)*(c+d*x)^7)}
-//	public void test00444() {
-//		check("Integrate((a+b*x)^6/(c+d*x)^8, x)", "(a+b*x)^7/(7*(b*c-a*d)*(c+d*x)^7)");
-//
-//	}
-//
-//	// {(c+d*x)^(-8), x, 1, -1/(7*d*(c+d*x)^7)}
-//	public void test00445() {
-//		check("Integrate((c+d*x)^(-8), x)", "-1/(7*d*(c+d*x)^7)");
-//
-//	}
-//
-//	// {Sqrt(c+d*x), x, 1, (2*(c+d*x)^(3/2))/(3*d)}
-//	public void test00446() {
-//		check("Integrate(Sqrt(c+d*x), x)", "(2*(c+d*x)^(3/2))/(3*d)");
-//
-//	}
-//
-//	// {(c+d*x)^(3/2), x, 1, (2*(c+d*x)^(5/2))/(5*d)}
-//	public void test00447() {
-//		check("Integrate((c+d*x)^(3/2), x)", "(2*(c+d*x)^(5/2))/(5*d)");
-//
-//	}
-//
-//	// {(c+d*x)^(5/2), x, 1, (2*(c+d*x)^(7/2))/(7*d)}
-//	public void test00448() {
-//		check("Integrate((c+d*x)^(5/2), x)", "(2*(c+d*x)^(7/2))/(7*d)");
-//
-//	}
-//
-//	// {1/Sqrt(c+d*x), x, 1, (2*Sqrt(c+d*x))/d}
-//	public void test00449() {
-//		check("Integrate(1/Sqrt(c+d*x), x)", "(2*Sqrt(c+d*x))/d");
-//
-//	}
-//
-//	// {(c+d*x)^(-3/2), x, 1, -2/(d*Sqrt(c+d*x))}
-//	public void test00450() {
-//		check("Integrate((c+d*x)^(-3/2), x)", "-2/(d*Sqrt(c+d*x))");
-//
-//	}
-//
-//	// {(c+d*x)^(-5/2), x, 1, -2/(3*d*(c+d*x)^(3/2))}
-//	public void test00451() {
-//		check("Integrate((c+d*x)^(-5/2), x)", "-2/(3*d*(c+d*x)^(3/2))");
-//
-//	}
-//
-//	// {Sqrt(c+d*x)/(a+b*x)^(5/2), x, 1, (-2*(c+d*x)^(3/2))/(3*(b*c-a*d)*(a+b*x)^(3/2))}
-//	public void test00452() {
-//		check("Integrate(Sqrt(c+d*x)/(a+b*x)^(5/2), x)", "(-2*(c+d*x)^(3/2))/(3*(b*c-a*d)*(a+b*x)^(3/2))");
-//
-//	}
-//
-//	// {(c+d*x)^(3/2)/(a+b*x)^(7/2), x, 1, (-2*(c+d*x)^(5/2))/(5*(b*c-a*d)*(a+b*x)^(5/2))}
-//	public void test00453() {
-//		check("Integrate((c+d*x)^(3/2)/(a+b*x)^(7/2), x)", "(-2*(c+d*x)^(5/2))/(5*(b*c-a*d)*(a+b*x)^(5/2))");
-//
-//	}
-//
-//	// {(c+d*x)^(5/2)/(a+b*x)^(9/2), x, 1, (-2*(c+d*x)^(7/2))/(7*(b*c-a*d)*(a+b*x)^(7/2))}
-//	public void test00454() {
-//		check("Integrate((c+d*x)^(5/2)/(a+b*x)^(9/2), x)", "(-2*(c+d*x)^(7/2))/(7*(b*c-a*d)*(a+b*x)^(7/2))");
-//
-//	}
-//
-//	// {1/((a+b*x)^(3/2)*Sqrt(c+d*x)), x, 1, (-2*Sqrt(c+d*x))/((b*c-a*d)*Sqrt(a+b*x))}
-//	public void test00455() {
-//		check("Integrate(1/((a+b*x)^(3/2)*Sqrt(c+d*x)), x)", "(-2*Sqrt(c+d*x))/((b*c-a*d)*Sqrt(a+b*x))");
-//
-//	}
-//
-//	// {1/(Sqrt(a+b*x)*(c+d*x)^(3/2)), x, 1, (2*Sqrt(a+b*x))/((b*c-a*d)*Sqrt(c+d*x))}
-//	public void test00456() {
-//		check("Integrate(1/(Sqrt(a+b*x)*(c+d*x)^(3/2)), x)", "(2*Sqrt(a+b*x))/((b*c-a*d)*Sqrt(c+d*x))");
-//
-//	}
-//
-//	// {Sqrt(a+b*x)/(c+d*x)^(5/2), x, 1, (2*(a+b*x)^(3/2))/(3*(b*c-a*d)*(c+d*x)^(3/2))}
-//	public void test00457() {
-//		check("Integrate(Sqrt(a+b*x)/(c+d*x)^(5/2), x)", "(2*(a+b*x)^(3/2))/(3*(b*c-a*d)*(c+d*x)^(3/2))");
-//
-//	}
-//
-//	// {1/(Sqrt(-2+b*x)*Sqrt(2+b*x)), x, 1, ArcCosh((b*x)/2)/b}
-//	public void test00458() {
-//		check("Integrate(1/(Sqrt(-2+b*x)*Sqrt(2+b*x)), x)", "ArcCosh((b*x)/2)/b");
-//
-//	}
-//
-//	// {(2+b*x)^(-1), x, 1, Log(2+b*x)/b}
-//	public void test00459() {
-//		check("Integrate((2+b*x)^(-1), x)", "Log(2+b*x)/b");
-//
-//	}
-//
-//	// {1/(Sqrt(-2+b*x)*Sqrt(2+b*x)), x, 1, ArcCosh((b*x)/2)/b}
-//	public void test00460() {
-//		check("Integrate(1/(Sqrt(-2+b*x)*Sqrt(2+b*x)), x)", "ArcCosh((b*x)/2)/b");
-//
-//	}
-//
-//	// {(2-b*x)^(-1), x, 1, -(Log(2-b*x)/b)}
-//	public void test00461() {
-//		check("Integrate((2-b*x)^(-1), x)", "-(Log(2-b*x)/b)");
-//
-//	}
-//
-//	// {1/(Sqrt(-2-b*x)*Sqrt(2-b*x)), x, 1, -(ArcCosh(-(b*x)/2)/b)}
-//	public void test00462() {
-//		check("Integrate(1/(Sqrt(-2-b*x)*Sqrt(2-b*x)), x)", "-(ArcCosh(-(b*x)/2)/b)");
-//
-//	}
-//
-//	// {1/(Sqrt(-4+b*x)*Sqrt(4+b*x)), x, 1, ArcCosh((b*x)/4)/b}
-//	public void test00463() {
-//		check("Integrate(1/(Sqrt(-4+b*x)*Sqrt(4+b*x)), x)", "ArcCosh((b*x)/4)/b");
-//
-//	}
-//
-//	// {(c+d*x)^(1/3)/(a+b*x)^(7/3), x, 1, (-3*(c+d*x)^(4/3))/(4*(b*c-a*d)*(a+b*x)^(4/3))}
-//	public void test00464() {
-//		check("Integrate((c+d*x)^(1/3)/(a+b*x)^(7/3), x)", "(-3*(c+d*x)^(4/3))/(4*(b*c-a*d)*(a+b*x)^(4/3))");
-//
-//	}
-//
-//	// {1/((a+b*x)^(2/3)*(c+d*x)^(1/3)), x, 1, -((Sqrt(3)*ArcTan(1/Sqrt(3)+(2*b^(1/3)*(c +
-//	// d*x)^(1/3))/(Sqrt(3)*d^(1/3)*(a+b*x)^(1/3))))/(b^(2/3)*d^(1/3)))-Log(a+b*x)/(2*b^(2/3)*d^(1/3))-(3*Log(-1
-//	// +(b^(1/3)*(c+d*x)^(1/3))/(d^(1/3)*(a+b*x)^(1/3))))/(2*b^(2/3)*d^(1/3))}
-//	public void test00465() {
-//		check("Integrate(1/((a+b*x)^(2/3)*(c+d*x)^(1/3)), x)",
-//				"-((Sqrt(3)*ArcTan(1/Sqrt(3)+(2*b^(1/3)*(c+d*x)^(1/3))/(Sqrt(3)*d^(1/3)*(a+b*x)^(1/3))))/(b^(2/3)*d^(1/3)))-Log(a+b*x)/(2*b^(2/3)*d^(1/3))-(3*Log(-1+(b^(1/3)*(c+d*x)^(1/3))/(d^(1/3)*(a+b*x)^(1/3))))/(2*b^(2/3)*d^(1/3))");
-//
-//	}
-//
-//	// {1/((a+b*x)^(5/3)*(c+d*x)^(1/3)), x, 1, (-3*(c+d*x)^(2/3))/(2*(b*c-a*d)*(a+b*x)^(2/3))}
-//	public void test00466() {
-//		check("Integrate(1/((a+b*x)^(5/3)*(c+d*x)^(1/3)), x)", "(-3*(c+d*x)^(2/3))/(2*(b*c-a*d)*(a+b*x)^(2/3))");
-//
-//	}
-//
-//	// {1/((a+b*x)^(1/3)*(c+d*x)^(2/3)), x, 1, -((Sqrt(3)*ArcTan(1/Sqrt(3)+(2*d^(1/3)*(a +
-//	// b*x)^(1/3))/(Sqrt(3)*b^(1/3)*(c+d*x)^(1/3))))/(b^(1/3)*d^(2/3)))-Log(c+d*x)/(2*b^(1/3)*d^(2/3))-(3*Log(-1
-//	// +(d^(1/3)*(a+b*x)^(1/3))/(b^(1/3)*(c+d*x)^(1/3))))/(2*b^(1/3)*d^(2/3))}
-//	public void test00467() {
-//		check("Integrate(1/((a+b*x)^(1/3)*(c+d*x)^(2/3)), x)",
-//				"-((Sqrt(3)*ArcTan(1/Sqrt(3)+(2*d^(1/3)*(a+b*x)^(1/3))/(Sqrt(3)*b^(1/3)*(c+d*x)^(1/3))))/(b^(1/3)*d^(2/3)))-Log(c+d*x)/(2*b^(1/3)*d^(2/3))-(3*Log(-1+(d^(1/3)*(a+b*x)^(1/3))/(b^(1/3)*(c+d*x)^(1/3))))/(2*b^(1/3)*d^(2/3))");
-//
-//	}
-//
-//	// {1/((a+b*x)^(4/3)*(c+d*x)^(2/3)), x, 1, (-3*(c+d*x)^(1/3))/((b*c-a*d)*(a+b*x)^(1/3))}
-//	public void test00468() {
-//		check("Integrate(1/((a+b*x)^(4/3)*(c+d*x)^(2/3)), x)", "(-3*(c+d*x)^(1/3))/((b*c-a*d)*(a+b*x)^(1/3))");
-//
-//	}
-//
-//	// {1/((a+b*x)^(2/3)*(c+d*x)^(4/3)), x, 1, (3*(a+b*x)^(1/3))/((b*c-a*d)*(c+d*x)^(1/3))}
-//	public void test00469() {
-//		check("Integrate(1/((a+b*x)^(2/3)*(c+d*x)^(4/3)), x)", "(3*(a+b*x)^(1/3))/((b*c-a*d)*(c+d*x)^(1/3))");
-//
-//	}
-//
-//	// {(c+d*x)^(5/4)/(a+b*x)^(13/4), x, 1, (-4*(c+d*x)^(9/4))/(9*(b*c-a*d)*(a+b*x)^(9/4))}
-//	public void test00470() {
-//		check("Integrate((c+d*x)^(5/4)/(a+b*x)^(13/4), x)", "(-4*(c+d*x)^(9/4))/(9*(b*c-a*d)*(a+b*x)^(9/4))");
-//
-//	}
-//
-//	// {1/((a+b*x)^(7/4)*(c+d*x)^(1/4)), x, 1, (-4*(c+d*x)^(3/4))/(3*(b*c-a*d)*(a+b*x)^(3/4))}
-//	public void test00471() {
-//		check("Integrate(1/((a+b*x)^(7/4)*(c+d*x)^(1/4)), x)", "(-4*(c+d*x)^(3/4))/(3*(b*c-a*d)*(a+b*x)^(3/4))");
-//
-//	}
-//
-//	// {1/((a+b*x)^(5/4)*(c+d*x)^(3/4)), x, 1, (-4*(c+d*x)^(1/4))/((b*c-a*d)*(a+b*x)^(1/4))}
-//	public void test00472() {
-//		check("Integrate(1/((a+b*x)^(5/4)*(c+d*x)^(3/4)), x)", "(-4*(c+d*x)^(1/4))/((b*c-a*d)*(a+b*x)^(1/4))");
-//
-//	}
-//
-//	// {1/((a+b*x)^(3/4)*(c+d*x)^(5/4)), x, 1, (4*(a+b*x)^(1/4))/((b*c-a*d)*(c+d*x)^(1/4))}
-//	public void test00473() {
-//		check("Integrate(1/((a+b*x)^(3/4)*(c+d*x)^(5/4)), x)", "(4*(a+b*x)^(1/4))/((b*c-a*d)*(c+d*x)^(1/4))");
-//
-//	}
-//
-//	// {(a+b*x)^(1/6)/(c+d*x)^(13/6), x, 1, (6*(a+b*x)^(7/6))/(7*(b*c-a*d)*(c+d*x)^(7/6))}
-//	public void test00474() {
-//		check("Integrate((a+b*x)^(1/6)/(c+d*x)^(13/6), x)", "(6*(a+b*x)^(7/6))/(7*(b*c-a*d)*(c+d*x)^(7/6))");
-//
-//	}
-//
-//	// {(a+b*x)^(5/6)/(c+d*x)^(17/6), x, 1, (6*(a+b*x)^(11/6))/(11*(b*c-a*d)*(c+d*x)^(11/6))}
-//	public void test00475() {
-//		check("Integrate((a+b*x)^(5/6)/(c+d*x)^(17/6), x)", "(6*(a+b*x)^(11/6))/(11*(b*c-a*d)*(c+d*x)^(11/6))");
-//
-//	}
-//
-//	// {(a+b*x)^(7/6)/(c+d*x)^(19/6), x, 1, (6*(a+b*x)^(13/6))/(13*(b*c-a*d)*(c+d*x)^(13/6))}
-//	public void test00476() {
-//		check("Integrate((a+b*x)^(7/6)/(c+d*x)^(19/6), x)", "(6*(a+b*x)^(13/6))/(13*(b*c-a*d)*(c+d*x)^(13/6))");
-//
-//	}
-//
-//	// {1/((a+b*x)^(1/6)*(c+d*x)^(11/6)), x, 1, (6*(a+b*x)^(5/6))/(5*(b*c-a*d)*(c+d*x)^(5/6))}
-//	public void test00477() {
-//		check("Integrate(1/((a+b*x)^(1/6)*(c+d*x)^(11/6)), x)", "(6*(a+b*x)^(5/6))/(5*(b*c-a*d)*(c+d*x)^(5/6))");
-//
-//	}
-//
-//	// {1/((a+b*x)^(5/6)*(c+d*x)^(7/6)), x, 1, (6*(a+b*x)^(1/6))/((b*c-a*d)*(c+d*x)^(1/6))}
-//	public void test00478() {
-//		check("Integrate(1/((a+b*x)^(5/6)*(c+d*x)^(7/6)), x)", "(6*(a+b*x)^(1/6))/((b*c-a*d)*(c+d*x)^(1/6))");
-//
-//	}
-//
-//	// {1/((a+b*x)^(7/6)*(c+d*x)^(5/6)), x, 1, (-6*(c+d*x)^(1/6))/((b*c-a*d)*(a+b*x)^(1/6))}
-//	public void test00479() {
-//		check("Integrate(1/((a+b*x)^(7/6)*(c+d*x)^(5/6)), x)", "(-6*(c+d*x)^(1/6))/((b*c-a*d)*(a+b*x)^(1/6))");
-//
-//	}
-//
-//	// {(a+b*x)^m/(c+d*x), x, 1, ((a+b*x)^(1+m)*Hypergeometric2F1(1, 1+m, 2+m, -((d*(a+b*x))/(b*c -
-//	// a*d))))/((b*c-a*d)*(1+m))}
-//	public void test00480() {
-//		check("Integrate((a+b*x)^m/(c+d*x), x)",
-//				"((a+b*x)^(1+m)*Hypergeometric2F1(1, 1+m, 2+m, -((d*(a+b*x))/(b*c-a*d))))/((b*c-a*d)*(1+m))");
-//
-//	}
-//
-//	// {(a+b*x)^m/(c+d*x)^2, x, 1, (b*(a+b*x)^(1+m)*Hypergeometric2F1(2, 1+m, 2+m, -((d*(a+b*x))/(b*c -
-//	// a*d))))/((b*c-a*d)^2*(1+m))}
-//	public void test00481() {
-//		check("Integrate((a+b*x)^m/(c+d*x)^2, x)",
-//				"(b*(a+b*x)^(1+m)*Hypergeometric2F1(2, 1+m, 2+m, -((d*(a+b*x))/(b*c-a*d))))/((b*c-a*d)^2*(1+m))");
-//
-//	}
-//
-//	// {(a+b*x)^m/(c+d*x)^3, x, 1, (b^2*(a+b*x)^(1+m)*Hypergeometric2F1(3, 1+m, 2+m, -((d*(a+b*x))/(b*c -
-//	// a*d))))/((b*c-a*d)^3*(1+m))}
-//	public void test00482() {
-//		check("Integrate((a+b*x)^m/(c+d*x)^3, x)",
-//				"(b^2*(a+b*x)^(1+m)*Hypergeometric2F1(3, 1+m, 2+m, -((d*(a+b*x))/(b*c-a*d))))/((b*c-a*d)^3*(1+m))");
-//
-//	}
-//
-//	// {(c+d*x)^n, x, 1, (c+d*x)^(1+n)/(d*(1+n))}
-//	public void test00483() {
-//		check("Integrate((c+d*x)^n, x)", "(c+d*x)^(1+n)/(d*(1+n))");
-//
-//	}
-//
-//	// {(c+d*x)^n/(a+b*x), x, 1, -(((c+d*x)^(1+n)*Hypergeometric2F1(1, 1+n, 2+n, (b*(c+d*x))/(b*c -
-//	// a*d)))/((b*c-a*d)*(1+n)))}
-//	public void test00484() {
-//		check("Integrate((c+d*x)^n/(a+b*x), x)",
-//				"-(((c+d*x)^(1+n)*Hypergeometric2F1(1, 1+n, 2+n, (b*(c+d*x))/(b*c-a*d)))/((b*c-a*d)*(1+n)))");
-//
-//	}
-//
-//	// {(c+d*x)^n/(a+b*x)^2, x, 1, (d*(c+d*x)^(1+n)*Hypergeometric2F1(2, 1+n, 2+n, (b*(c+d*x))/(b*c -
-//	// a*d)))/((b*c-a*d)^2*(1+n))}
-//	public void test00485() {
-//		check("Integrate((c+d*x)^n/(a+b*x)^2, x)",
-//				"(d*(c+d*x)^(1+n)*Hypergeometric2F1(2, 1+n, 2+n, (b*(c+d*x))/(b*c-a*d)))/((b*c-a*d)^2*(1+n))");
-//
-//	}
-//
-//	// {(c+d*x)^n/(a+b*x)^3, x, 1, -((d^2*(c+d*x)^(1+n)*Hypergeometric2F1(3, 1+n, 2+n, (b*(c+d*x))/(b*c -
-//	// a*d)))/((b*c-a*d)^3*(1+n)))}
-//	public void test00486() {
-//		check("Integrate((c+d*x)^n/(a+b*x)^3, x)",
-//				"-((d^2*(c+d*x)^(1+n)*Hypergeometric2F1(3, 1+n, 2+n, (b*(c+d*x))/(b*c-a*d)))/((b*c-a*d)^3*(1+n)))");
-//
-//	}
-//
-//	// {(a+b*x)^(-2+n)/(c+d*x)^n, x, 1, -(((a+b*x)^(-1+n)*(c+d*x)^(1-n))/((b*c-a*d)*(1-n)))}
-//	public void test00487() {
-//		check("Integrate((a+b*x)^(-2+n)/(c+d*x)^n, x)", "-(((a+b*x)^(-1+n)*(c+d*x)^(1-n))/((b*c-a*d)*(1-n)))");
-//
-//	}
-//
-//	// {(a+b*x)^(-2-n)*(c+d*x)^n, x, 1, -(((a+b*x)^(-1-n)*(c+d*x)^(1+n))/((b*c-a*d)*(1+n)))}
-//	public void test00488() {
-//		check("Integrate((a+b*x)^(-2-n)*(c+d*x)^n, x)", "-(((a+b*x)^(-1-n)*(c+d*x)^(1+n))/((b*c-a*d)*(1+n)))");
-//
-//	}
-//
-//	// {(a+b*x)^n*(c+d*x)^(-2-n), x, 1, ((a+b*x)^(1+n)*(c+d*x)^(-1-n))/((b*c-a*d)*(1+n))}
-//	public void test00489() {
-//		check("Integrate((a+b*x)^n*(c+d*x)^(-2-n), x)", "((a+b*x)^(1+n)*(c+d*x)^(-1-n))/((b*c-a*d)*(1+n))");
-//
-//	}
-//
-//	// {(1-x)^n/Sqrt(1+x), x, 1, 2^(1+n)*Sqrt(1+x)*Hypergeometric2F1(1/2, -n, 3/2, (1+x)/2)}
-//	public void test00490() {
-//		check("Integrate((1-x)^n/Sqrt(1+x), x)", "2^(1+n)*Sqrt(1+x)*Hypergeometric2F1(1/2, -n, 3/2, (1+x)/2)");
-//
-//	}
-//
-//	// {(1+x)^n/Sqrt(1-x), x, 1, -(2^(1+n)*Sqrt(1-x)*Hypergeometric2F1(1/2, -n, 3/2, (1-x)/2))}
-//	public void test00491() {
-//		check("Integrate((1+x)^n/Sqrt(1-x), x)", "-(2^(1+n)*Sqrt(1-x)*Hypergeometric2F1(1/2, -n, 3/2, (1-x)/2))");
-//
-//	}
-//
-//	// {(1-x)^n*(1+x)^(7/3), x, 1, (3*2^(-1+n)*(1+x)^(10/3)*Hypergeometric2F1(10/3, -n, 13/3, (1+x)/2))/5}
-//	public void test00492() {
-//		check("Integrate((1-x)^n*(1+x)^(7/3), x)",
-//				"(3*2^(-1+n)*(1+x)^(10/3)*Hypergeometric2F1(10/3, -n, 13/3, (1+x)/2))/5");
-//
-//	}
-//
-//	// {(1-x)^(7/3)*(1+x)^n, x, 1, (-3*2^(-1+n)*(1-x)^(10/3)*Hypergeometric2F1(10/3, -n, 13/3, (1-x)/2))/5}
-//	public void test00493() {
-//		check("Integrate((1-x)^(7/3)*(1+x)^n, x)",
-//				"(-3*2^(-1+n)*(1-x)^(10/3)*Hypergeometric2F1(10/3, -n, 13/3, (1-x)/2))/5");
-//
-//	}
-//
-//	// {(2+3*x)^m/(1+2*x)^m, x, 1, (2^(-1-m)*(1+2*x)^(1-m)*Hypergeometric2F1(1-m, -m, 2-m, -3*(1 +
-//	// 2*x)))/(1-m)}
-//	public void test00494() {
-//		check("Integrate((2+3*x)^m/(1+2*x)^m, x)",
-//				"(2^(-1-m)*(1+2*x)^(1-m)*Hypergeometric2F1(1-m, -m, 2-m, -3*(1+2*x)))/(1-m)");
-//
-//	}
-//
-//	// {a+b*x+c*x^2+d*x^3, x, 1, a*x+(b*x^2)/2+(c*x^3)/3+(d*x^4)/4}
-//	public void test00495() {
-//		check("Integrate(a+b*x+c*x^2+d*x^3, x)", "a*x+(b*x^2)/2+(c*x^3)/3+(d*x^4)/4");
-//
-//	}
-//
-//	// {-x^3+x^4, x, 1, -x^4/4+x^5/5}
-//	public void test00496() {
-//		check("Integrate(-x^3+x^4, x)", "-x^4/4+x^5/5");
-//
-//	}
-//
-//	// {-1+x^5, x, 1, -x+x^6/6}
-//	public void test00497() {
-//		check("Integrate(-1+x^5, x)", "-x+x^6/6");
-//
-//	}
-//
-//	// {7+4*x, x, 1, 7*x+2*x^2}
-//	public void test00498() {
-//		check("Integrate(7+4*x, x)", "7*x+2*x^2");
-//
-//	}
-//
-//	// {4*x+Pi*x^3, x, 1, 2*x^2+(Pi*x^4)/4}
-//	public void test00499() {
-//		check("Integrate(4*x+Pi*x^3, x)", "2*x^2+(Pi*x^4)/4");
-//
-//	}
-//
-//	// {2*x+5*x^2, x, 1, x^2+(5*x^3)/3}
-//	public void test00500() {
-//		check("Integrate(2*x+5*x^2, x)", "x^2+(5*x^3)/3");
-//
-//	}
-//
-//	// {x^2/2+x^3/3, x, 1, x^3/6+x^4/12}
-//	public void test00501() {
-//		check("Integrate(x^2/2+x^3/3, x)", "x^3/6+x^4/12");
-//
-//	}
-//
-//	// {3-5*x+2*x^2, x, 1, 3*x-(5*x^2)/2+(2*x^3)/3}
-//	public void test00502() {
-//		check("Integrate(3-5*x+2*x^2, x)", "3*x-(5*x^2)/2+(2*x^3)/3");
-//
-//	}
-//
-//	// {-2*x+x^2+x^3, x, 1, -x^2+x^3/3+x^4/4}
-//	public void test00503() {
-//		check("Integrate(-2*x+x^2+x^3, x)", "-x^2+x^3/3+x^4/4");
-//
-//	}
-//
-//	// {1-x^2-3*x^5, x, 1, x-x^3/3-x^6/2}
-//	public void test00504() {
-//		check("Integrate(1-x^2-3*x^5, x)", "x-x^3/3-x^6/2");
-//
-//	}
-//
-//	// {5+2*x+3*x^2+4*x^3, x, 1, 5*x+x^2+x^3+x^4}
-//	public void test00505() {
-//		check("Integrate(5+2*x+3*x^2+4*x^3, x)", "5*x+x^2+x^3+x^4");
-//
-//	}
-//
-//	// {a+d/x^3+c/x^2+b/x, x, 1, -d/(2*x^2)-c/x+a*x+b*Log(x)}
-//	public void test00506() {
-//		check("Integrate(a+d/x^3+c/x^2+b/x, x)", "-d/(2*x^2)-c/x+a*x+b*Log(x)");
-//
-//	}
-//
-//	// {x^(-5)+x+x^5, x, 1, -1/(4*x^4)+x^2/2+x^6/6}
-//	public void test00507() {
-//		check("Integrate(x^(-5)+x+x^5, x)", "-1/(4*x^4)+x^2/2+x^6/6");
-//
-//	}
-//
-//	// {x^(-3)+x^(-2)+x^(-1), x, 1, -1/(2*x^2)-x^(-1)+Log(x)}
-//	public void test00508() {
-//		check("Integrate(x^(-3)+x^(-2)+x^(-1), x)", "-1/(2*x^2)-x^(-1)+Log(x)");
-//
-//	}
-//
-//	// {-2/x^2+3/x, x, 1, 2/x+3*Log(x)}
-//	public void test00509() {
-//		check("Integrate(-2/x^2+3/x, x)", "2/x+3*Log(x)");
-//
-//	}
-//
-//	// {-1/(7*x^6)+x^6, x, 1, 1/(35*x^5)+x^7/7}
-//	public void test00510() {
-//		check("Integrate(-1/(7*x^6)+x^6, x)", "1/(35*x^5)+x^7/7");
-//
-//	}
-//
-//	// {1+x^(-1)+x, x, 1, x+x^2/2+Log(x)}
-//	public void test00511() {
-//		check("Integrate(1+x^(-1)+x, x)", "x+x^2/2+Log(x)");
-//
-//	}
-//
-//	// {-3/x^3+4/x^2, x, 1, 3/(2*x^2)-4/x}
-//	public void test00512() {
-//		check("Integrate(-3/x^3+4/x^2, x)", "3/(2*x^2)-4/x");
-//
-//	}
-//
-//	// {x^(-1)+2*x+x^2, x, 1, x^2+x^3/3+Log(x)}
-//	public void test00513() {
-//		check("Integrate(x^(-1)+2*x+x^2, x)", "x^2+x^3/3+Log(x)");
-//
-//	}
-//
-//	// {x^(5/6)-x^3, x, 1, (6*x^(11/6))/11-x^4/4}
-//	public void test00514() {
-//		check("Integrate(x^(5/6)-x^3, x)", "(6*x^(11/6))/11-x^4/4");
-//
-//	}
-//
-//	// {33+x^(1/33), x, 1, 33*x+(33*x^(34/33))/34}
-//	public void test00515() {
-//		check("Integrate(33+x^(1/33), x)", "33*x+(33*x^(34/33))/34");
-//
-//	}
-//
-//	// {1/(2*Sqrt(x))+2*Sqrt(x), x, 1, Sqrt(x)+(4*x^(3/2))/3}
-//	public void test00516() {
-//		check("Integrate(1/(2*Sqrt(x))+2*Sqrt(x), x)", "Sqrt(x)+(4*x^(3/2))/3");
-//
-//	}
-//
-//	// {-x^(-2)+10/x+6*Sqrt(x), x, 1, x^(-1)+4*x^(3/2)+10*Log(x)}
-//	public void test00517() {
-//		check("Integrate(-x^(-2)+10/x+6*Sqrt(x), x)", "x^(-1)+4*x^(3/2)+10*Log(x)");
-//
-//	}
-//
-//	// {x^(-3/2)+x^(3/2), x, 1, -2/Sqrt(x)+(2*x^(5/2))/5}
-//	public void test00518() {
-//		check("Integrate(x^(-3/2)+x^(3/2), x)", "-2/Sqrt(x)+(2*x^(5/2))/5");
-//
-//	}
-//
-//	// {-5*x^(3/2)+7*x^(5/2), x, 1, -2*x^(5/2)+2*x^(7/2)}
-//	public void test00519() {
-//		check("Integrate(-5*x^(3/2)+7*x^(5/2), x)", "-2*x^(5/2)+2*x^(7/2)");
-//
-//	}
-//
-//	// {2/Sqrt(x)+Sqrt(x)-x/2, x, 1, 4*Sqrt(x)+(2*x^(3/2))/3-x^2/4}
-//	public void test00520() {
-//		check("Integrate(2/Sqrt(x)+Sqrt(x)-x/2, x)", "4*Sqrt(x)+(2*x^(3/2))/3-x^2/4");
-//
-//	}
-//
-//	// {-2/x+Sqrt(x)/5+x^(3/2), x, 1, (2*x^(3/2))/15+(2*x^(5/2))/5-2*Log(x)}
-//	public void test00521() {
-//		check("Integrate(-2/x+Sqrt(x)/5+x^(3/2), x)", "(2*x^(3/2))/15+(2*x^(5/2))/5-2*Log(x)");
-//
-//	}
-//
-//	// {((a+b*x)*(a*c-b*c*x)^3)/x^3, x, 1, -(c^3*(a-b*x)^4)/(2*x^2)}
-//	public void test00522() {
-//		check("Integrate(((a+b*x)*(a*c-b*c*x)^3)/x^3, x)", "-(c^3*(a-b*x)^4)/(2*x^2)");
-//
-//	}
-//
-//	// {((a+b*x)*(a*c-b*c*x)^5)/x^4, x, 1, -(c^5*(a-b*x)^6)/(3*x^3)}
-//	public void test00523() {
-//		check("Integrate(((a+b*x)*(a*c-b*c*x)^5)/x^4, x)", "-(c^5*(a-b*x)^6)/(3*x^3)");
-//
-//	}
-//
-//	// {x^2*(2+x)^5*(2+3*x), x, 1, (x^3*(2+x)^6)/3}
-//	public void test00524() {
-//		check("Integrate(x^2*(2+x)^5*(2+3*x), x)", "(x^3*(2+x)^6)/3");
-//
-//	}
-//
-//	// {(A+B*x)/(a+b*x)^3, x, 1, -(A+B*x)^2/(2*(A*b-a*B)*(a+b*x)^2)}
-//	public void test00525() {
-//		check("Integrate((A+B*x)/(a+b*x)^3, x)", "-(A+B*x)^2/(2*(A*b-a*B)*(a+b*x)^2)");
-//
-//	}
-//
-//	// {Sqrt(a+b*x)/(c+d*x)^(5/2), x, 1, (2*(a+b*x)^(3/2))/(3*(b*c-a*d)*(c+d*x)^(3/2))}
-//	public void test00526() {
-//		check("Integrate(Sqrt(a+b*x)/(c+d*x)^(5/2), x)", "(2*(a+b*x)^(3/2))/(3*(b*c-a*d)*(c+d*x)^(3/2))");
-//
-//	}
-//
-//	// {1/(Sqrt(a+b*x)*(c+d*x)^(3/2)), x, 1, (2*Sqrt(a+b*x))/((b*c-a*d)*Sqrt(c+d*x))}
-//	public void test00527() {
-//		check("Integrate(1/(Sqrt(a+b*x)*(c+d*x)^(3/2)), x)", "(2*Sqrt(a+b*x))/((b*c-a*d)*Sqrt(c+d*x))");
-//
-//	}
-//
-//	// {Sqrt(1+x)/(1-x)^(5/2), x, 1, (1+x)^(3/2)/(3*(1-x)^(3/2))}
-//	public void test00528() {
-//		check("Integrate(Sqrt(1+x)/(1-x)^(5/2), x)", "(1+x)^(3/2)/(3*(1-x)^(3/2))");
-//
-//	}
-//
-//	// {Sqrt(1+x)/(-1+x)^(5/2), x, 1, -(1+x)^(3/2)/(3*(-1+x)^(3/2))}
-//	public void test00529() {
-//		check("Integrate(Sqrt(1+x)/(-1+x)^(5/2), x)", "-(1+x)^(3/2)/(3*(-1+x)^(3/2))");
-//
-//	}
-//
-//	// {x/(Sqrt(-1+x)*Sqrt(1+x)), x, 1, Sqrt(-1+x)*Sqrt(1+x)}
-//	public void test00530() {
-//		check("Integrate(x/(Sqrt(-1+x)*Sqrt(1+x)), x)", "Sqrt(-1+x)*Sqrt(1+x)");
-//
-//	}
-//
-//	// {1/(Sqrt(-1+x)*Sqrt(1+x)), x, 1, ArcCosh(x)}
-//	public void test00531() {
-//		check("Integrate(1/(Sqrt(-1+x)*Sqrt(1+x)), x)", "ArcCosh(x)");
-//
-//	}
-//
-//	// {1/(Sqrt(-1+x)*x^2*Sqrt(1+x)), x, 1, (Sqrt(-1+x)*Sqrt(1+x))/x}
-//	public void test00532() {
-//		check("Integrate(1/(Sqrt(-1+x)*x^2*Sqrt(1+x)), x)", "(Sqrt(-1+x)*Sqrt(1+x))/x");
-//
-//	}
-//
-//	// {Sqrt(-1+x)*x*Sqrt(1+x), x, 1, ((-1+x)^(3/2)*(1+x)^(3/2))/3}
-//	public void test00533() {
-//		check("Integrate(Sqrt(-1+x)*x*Sqrt(1+x), x)", "((-1+x)^(3/2)*(1+x)^(3/2))/3");
-//
-//	}
-//
-//	// {Sqrt(1-x)*x*Sqrt(1+x), x, 1, -((1-x)^(3/2)*(1+x)^(3/2))/3}
-//	public void test00534() {
-//		check("Integrate(Sqrt(1-x)*x*Sqrt(1+x), x)", "-((1-x)^(3/2)*(1+x)^(3/2))/3");
-//
-//	}
-//
-//	// {1/(Sqrt(x)*Sqrt(2-b*x)*Sqrt(2+b*x)), x, 1, (Sqrt(2)*EllipticF(ArcSin((Sqrt(b)*Sqrt(x))/Sqrt(2)),
-//	// -1))/Sqrt(b)}
-//	public void test00535() {
-//		check("Integrate(1/(Sqrt(x)*Sqrt(2-b*x)*Sqrt(2+b*x)), x)",
-//				"(Sqrt(2)*EllipticF(ArcSin((Sqrt(b)*Sqrt(x))/Sqrt(2)), -1))/Sqrt(b)");
-//
-//	}
-//
-//	// {1/(Sqrt(-x)*Sqrt(2-b*x)*Sqrt(2+b*x)), x, 1, -((Sqrt(2)*EllipticF(ArcSin((Sqrt(b)*Sqrt(-x))/Sqrt(2)),
-//	// -1))/Sqrt(b))}
-//	public void test00536() {
-//		check("Integrate(1/(Sqrt(-x)*Sqrt(2-b*x)*Sqrt(2+b*x)), x)",
-//				"-((Sqrt(2)*EllipticF(ArcSin((Sqrt(b)*Sqrt(-x))/Sqrt(2)), -1))/Sqrt(b))");
-//
-//	}
-//
-//	// {1/(Sqrt(e*x)*Sqrt(2-b*x)*Sqrt(2+b*x)), x, 1,
-//	// (Sqrt(2)*EllipticF(ArcSin((Sqrt(b)*Sqrt(e*x))/(Sqrt(2)*Sqrt(e))), -1))/(Sqrt(b)*Sqrt(e))}
-//	public void test00537() {
-//		check("Integrate(1/(Sqrt(e*x)*Sqrt(2-b*x)*Sqrt(2+b*x)), x)",
-//				"(Sqrt(2)*EllipticF(ArcSin((Sqrt(b)*Sqrt(e*x))/(Sqrt(2)*Sqrt(e))), -1))/(Sqrt(b)*Sqrt(e))");
-//
-//	}
-//
-//	// {1/(Sqrt(2-3*x)*Sqrt(x)*Sqrt(2+3*x)), x, 1, Sqrt(2/3)*EllipticF(ArcSin(Sqrt(3/2)*Sqrt(x)), -1)}
-//	public void test00538() {
-//		check("Integrate(1/(Sqrt(2-3*x)*Sqrt(x)*Sqrt(2+3*x)), x)",
-//				"Sqrt(2/3)*EllipticF(ArcSin(Sqrt(3/2)*Sqrt(x)), -1)");
-//
-//	}
-//
-//	// {1/(Sqrt(2-3*x)*Sqrt(-x)*Sqrt(2+3*x)), x, 1, -(Sqrt(2/3)*EllipticF(ArcSin(Sqrt(3/2)*Sqrt(-x)), -1))}
-//	public void test00539() {
-//		check("Integrate(1/(Sqrt(2-3*x)*Sqrt(-x)*Sqrt(2+3*x)), x)",
-//				"-(Sqrt(2/3)*EllipticF(ArcSin(Sqrt(3/2)*Sqrt(-x)), -1))");
-//
-//	}
-//
-//	// {1/(Sqrt(2-3*x)*Sqrt(e*x)*Sqrt(2+3*x)), x, 1, (Sqrt(2/3)*EllipticF(ArcSin((Sqrt(3/2)*Sqrt(e*x))/Sqrt(e)),
-//	// -1))/Sqrt(e)}
-//	public void test00540() {
-//		check("Integrate(1/(Sqrt(2-3*x)*Sqrt(e*x)*Sqrt(2+3*x)), x)",
-//				"(Sqrt(2/3)*EllipticF(ArcSin((Sqrt(3/2)*Sqrt(e*x))/Sqrt(e)), -1))/Sqrt(e)");
-//
-//	}
-//
-//	// {1/(Sqrt(1-x)*Sqrt(x)*Sqrt(1+x)), x, 1, 2*EllipticF(ArcSin(Sqrt(x)), -1)}
-//	public void test00541() {
-//		check("Integrate(1/(Sqrt(1-x)*Sqrt(x)*Sqrt(1+x)), x)", "2*EllipticF(ArcSin(Sqrt(x)), -1)");
-//
-//	}
-//
-//	// {1/(Sqrt(b*x)*Sqrt(1-c*x)*Sqrt(1+c*x)), x, 1, (2*EllipticF(ArcSin((Sqrt(c)*Sqrt(b*x))/Sqrt(b)),
-//	// -1))/(Sqrt(b)*Sqrt(c))}
-//	public void test00542() {
-//		check("Integrate(1/(Sqrt(b*x)*Sqrt(1-c*x)*Sqrt(1+c*x)), x)",
-//				"(2*EllipticF(ArcSin((Sqrt(c)*Sqrt(b*x))/Sqrt(b)), -1))/(Sqrt(b)*Sqrt(c))");
-//
-//	}
-//
-//	// {1/(Sqrt(b*x)*Sqrt(1-c*x)*Sqrt(1+d*x)), x, 1, (2*EllipticF(ArcSin((Sqrt(c)*Sqrt(b*x))/Sqrt(b)),
-//	// -(d/c)))/(Sqrt(b)*Sqrt(c))}
-//	public void test00543() {
-//		check("Integrate(1/(Sqrt(b*x)*Sqrt(1-c*x)*Sqrt(1+d*x)), x)",
-//				"(2*EllipticF(ArcSin((Sqrt(c)*Sqrt(b*x))/Sqrt(b)), -(d/c)))/(Sqrt(b)*Sqrt(c))");
-//
-//	}
-//
-//	// {Sqrt(1+x)/(Sqrt(1-x)*Sqrt(x)), x, 1, 2*EllipticE(ArcSin(Sqrt(x)), -1)}
-//	public void test00544() {
-//		check("Integrate(Sqrt(1+x)/(Sqrt(1-x)*Sqrt(x)), x)", "2*EllipticE(ArcSin(Sqrt(x)), -1)");
-//
-//	}
-//
-//	// {Sqrt(1+c*x)/(Sqrt(b*x)*Sqrt(1-c*x)), x, 1, (2*EllipticE(ArcSin((Sqrt(c)*Sqrt(b*x))/Sqrt(b)),
-//	// -1))/(Sqrt(b)*Sqrt(c))}
-//	public void test00545() {
-//		check("Integrate(Sqrt(1+c*x)/(Sqrt(b*x)*Sqrt(1-c*x)), x)",
-//				"(2*EllipticE(ArcSin((Sqrt(c)*Sqrt(b*x))/Sqrt(b)), -1))/(Sqrt(b)*Sqrt(c))");
-//
-//	}
-//
-//	// {Sqrt(1+c*x)/(Sqrt(b*x)*Sqrt(1-d*x)), x, 1, (2*EllipticE(ArcSin((Sqrt(d)*Sqrt(b*x))/Sqrt(b)),
-//	// -(c/d)))/(Sqrt(b)*Sqrt(d))}
-//	public void test00546() {
-//		check("Integrate(Sqrt(1+c*x)/(Sqrt(b*x)*Sqrt(1-d*x)), x)",
-//				"(2*EllipticE(ArcSin((Sqrt(d)*Sqrt(b*x))/Sqrt(b)), -(c/d)))/(Sqrt(b)*Sqrt(d))");
-//
-//	}
-//
-//	// {Sqrt(1-c*x)/(Sqrt(b*x)*Sqrt(1+c*x)), x, 1, (-2*EllipticE(ArcSin((Sqrt(c)*Sqrt(b*x))/Sqrt(-b)),
-//	// -1))/(Sqrt(-b)*Sqrt(c))}
-//	public void test00547() {
-//		check("Integrate(Sqrt(1-c*x)/(Sqrt(b*x)*Sqrt(1+c*x)), x)",
-//				"(-2*EllipticE(ArcSin((Sqrt(c)*Sqrt(b*x))/Sqrt(-b)), -1))/(Sqrt(-b)*Sqrt(c))");
-//
-//	}
-//
-//	// {Sqrt(1-c*x)/(Sqrt(b*x)*Sqrt(1+d*x)), x, 1, (-2*EllipticE(ArcSin((Sqrt(d)*Sqrt(b*x))/Sqrt(-b)),
-//	// -(c/d)))/(Sqrt(-b)*Sqrt(d))}
-//	public void test00548() {
-//		check("Integrate(Sqrt(1-c*x)/(Sqrt(b*x)*Sqrt(1+d*x)), x)",
-//				"(-2*EllipticE(ArcSin((Sqrt(d)*Sqrt(b*x))/Sqrt(-b)), -(c/d)))/(Sqrt(-b)*Sqrt(d))");
-//
-//	}
-//
-//	// {1/((1-x)^(1/3)*(2-x)^(1/3)*x), x, 1, -(Sqrt(3)*ArcTan(1/Sqrt(3)+(2^(1/3)*(2-x)^(2/3))/(Sqrt(3)*(1 -
-//	// x)^(1/3))))/(2*2^(1/3))+(3*Log(-(1-x)^(1/3)+(2-x)^(2/3)/2^(2/3)))/(4*2^(1/3))-Log(x)/(2*2^(1/3))}
-//	public void test00549() {
-//		check("Integrate(1/((1-x)^(1/3)*(2-x)^(1/3)*x), x)",
-//				"-(Sqrt(3)*ArcTan(1/Sqrt(3)+(2^(1/3)*(2-x)^(2/3))/(Sqrt(3)*(1-x)^(1/3))))/(2*2^(1/3))+(3*Log(-(1-x)^(1/3)+(2-x)^(2/3)/2^(2/3)))/(4*2^(1/3))-Log(x)/(2*2^(1/3))");
-//
-//	}
-//
-//	// {1/((1-x)^(1/4)*(e*x)^(5/2)*(1+x)^(1/4)), x, 1, (-2*(1-x)^(3/4)*(1+x)^(3/4))/(3*e*(e*x)^(3/2))}
-//	public void test00550() {
-//		check("Integrate(1/((1-x)^(1/4)*(e*x)^(5/2)*(1+x)^(1/4)), x)",
-//				"(-2*(1-x)^(3/4)*(1+x)^(3/4))/(3*e*(e*x)^(3/2))");
-//
-//	}
-//
-//	// {x^(1+2*n)*(a+b*x)^n*(2*a+3*b*x), x, 1, (x^(2*(1+n))*(a+b*x)^(1+n))/(1+n)}
-//	public void test00551() {
-//		check("Integrate(x^(1+2*n)*(a+b*x)^n*(2*a+3*b*x), x)", "(x^(2*(1+n))*(a+b*x)^(1+n))/(1+n)");
-//
-//	}
-//
-//	// {(a+b*x)^n/(c+d*x), x, 1, ((a+b*x)^(1+n)*Hypergeometric2F1(1, 1+n, 2+n, -((d*(a+b*x))/(b*c -
-//	// a*d))))/((b*c-a*d)*(1+n))}
-//	public void test00552() {
-//		check("Integrate((a+b*x)^n/(c+d*x), x)",
-//				"((a+b*x)^(1+n)*Hypergeometric2F1(1, 1+n, 2+n, -((d*(a+b*x))/(b*c-a*d))))/((b*c-a*d)*(1+n))");
-//
-//	}
-//
-//	// {(a+b*x)^n/(c+d*x)^2, x, 1, (b*(a+b*x)^(1+n)*Hypergeometric2F1(2, 1+n, 2+n, -((d*(a+b*x))/(b*c -
-//	// a*d))))/((b*c-a*d)^2*(1+n))}
-//	public void test00553() {
-//		check("Integrate((a+b*x)^n/(c+d*x)^2, x)",
-//				"(b*(a+b*x)^(1+n)*Hypergeometric2F1(2, 1+n, 2+n, -((d*(a+b*x))/(b*c-a*d))))/((b*c-a*d)^2*(1+n))");
-//
-//	}
-//
-//	// {(b*x)^m*(Pi+d*x)^n*(E+f*x)^p, x, 1, (E^p*Pi^n*(b*x)^(1+m)*AppellF1(1+m, -n, -p, 2+m, -((d*x)/Pi),
-//	// -((f*x)/E)))/(b*(1+m))}
-//	public void test00554() {
-//		check("Integrate((b*x)^m*(Pi+d*x)^n*(E+f*x)^p, x)",
-//				"(E^p*Pi^n*(b*x)^(1+m)*AppellF1(1+m, -n, -p, 2+m, -((d*x)/Pi), -((f*x)/E)))/(b*(1+m))");
-//
-//	}
-//
-//	// {(b*x)^(5/2)*(Pi+d*x)^n*(E+f*x)^p, x, 1, (2*E^p*Pi^n*(b*x)^(7/2)*AppellF1(7/2, -n, -p, 9/2, -((d*x)/Pi),
-//	// -((f*x)/E)))/(7*b)}
-//	public void test00555() {
-//		check("Integrate((b*x)^(5/2)*(Pi+d*x)^n*(E+f*x)^p, x)",
-//				"(2*E^p*Pi^n*(b*x)^(7/2)*AppellF1(7/2, -n, -p, 9/2, -((d*x)/Pi), -((f*x)/E)))/(7*b)");
-//
-//	}
-//
-//	// {(a+b*x)^n/(x^2*(c+d*x)^n), x, 1, ((b*c-a*d)*(a+b*x)^(1+n)*(c+d*x)^(-1-n)*Hypergeometric2F1(2, 1 +
-//	// n, 2+n, (c*(a+b*x))/(a*(c+d*x))))/(a^2*(1+n))}
-//	public void test00556() {
-//		check("Integrate((a+b*x)^n/(x^2*(c+d*x)^n), x)",
-//				"((b*c-a*d)*(a+b*x)^(1+n)*(c+d*x)^(-1-n)*Hypergeometric2F1(2, 1+n, 2+n, (c*(a+b*x))/(a*(c+d*x))))/(a^2*(1+n))");
-//
-//	}
-//
-//	// {(1-x)^n/(1+x)^n, x, 1, -(((1-x)^(1+n)*Hypergeometric2F1(n, 1+n, 2+n, (1-x)/2))/(2^n*(1+n)))}
-//	public void test00557() {
-//		check("Integrate((1-x)^n/(1+x)^n, x)", "-(((1-x)^(1+n)*Hypergeometric2F1(n, 1+n, 2+n, (1-x)/2))/(2^n*(1+n)))");
-//
-//	}
-//
-//	// {(1-x)^n/(x^2*(1+x)^n), x, 1, (-2*(1-x)^(1+n)*(1+x)^(-1-n)*Hypergeometric2F1(2, 1+n, 2+n, (1 -
-//	// x)/(1+x)))/(1+n)}
-//	public void test00558() {
-//		check("Integrate((1-x)^n/(x^2*(1+x)^n), x)",
-//				"(-2*(1-x)^(1+n)*(1+x)^(-1-n)*Hypergeometric2F1(2, 1+n, 2+n, (1-x)/(1+x)))/(1+n)");
-//
-//	}
-//
-//	// {((1-x)^(-1/2+p)*(1+x)^(1/2+p))/(c*x)^(2*(1+p)), x, 1, -((4^(1+p)*(1-x)^(1/2+p)*(x/(1+x))^(2*(1
-//	// +p))*(1+x)^(3/2+p)*Hypergeometric2F1(1/2+p, 2*(1+p), 3/2+p, (1-x)/(1+x)))/((1+2*p)*(c*x)^(2*(1 +
-//	// p))))}
-//	public void test00559() {
-//		check("Integrate(((1-x)^(-1/2+p)*(1+x)^(1/2+p))/(c*x)^(2*(1+p)), x)",
-//				"-((4^(1+p)*(1-x)^(1/2+p)*(x/(1+x))^(2*(1+p))*(1+x)^(3/2+p)*Hypergeometric2F1(1/2+p, 2*(1+p), 3/2+p, (1-x)/(1+x)))/((1+2*p)*(c*x)^(2*(1+p))))");
-//
-//	}
-//
-//	// {(1+x/a)^(n/2)/(x^2*(1-x/a)^(n/2)), x, 1, (-4*(1-x/a)^(1-n/2)*(1+x/a)^((-2+n)/2)*Hypergeometric2F1(2,
-//	// 1-n/2, 2-n/2, (a-x)/(a+x)))/(a*(2-n))}
-//	public void test00560() {
-//		check("Integrate((1+x/a)^(n/2)/(x^2*(1-x/a)^(n/2)), x)",
-//				"(-4*(1-x/a)^(1-n/2)*(1+x/a)^((-2+n)/2)*Hypergeometric2F1(2, 1-n/2, 2-n/2, (a-x)/(a+x)))/(a*(2-n))");
-//
-//	}
-//
-//	// {x^2/((1-a*x)^7*(1+a*x)^4), x, 1, -(1-3*a*x)/(24*a^3*(1-a*x)^6*(1+a*x)^3)}
-//	public void test00561() {
-//		check("Integrate(x^2/((1-a*x)^7*(1+a*x)^4), x)", "-(1-3*a*x)/(24*a^3*(1-a*x)^6*(1+a*x)^3)");
-//
-//	}
-//
-//	// {x^2/((1-a*x)^11*(1+a*x)^7), x, 1, -(1-4*a*x)/(60*a^3*(1-a*x)^10*(1+a*x)^6)}
-//	public void test00562() {
-//		check("Integrate(x^2/((1-a*x)^11*(1+a*x)^7), x)", "-(1-4*a*x)/(60*a^3*(1-a*x)^10*(1+a*x)^6)");
-//
-//	}
-//
-//	// {x^2/((1-a*x)^16*(1+a*x)^11), x, 1, -(1-5*a*x)/(120*a^3*(1-a*x)^15*(1+a*x)^10)}
-//	public void test00563() {
-//		check("Integrate(x^2/((1-a*x)^16*(1+a*x)^11), x)", "-(1-5*a*x)/(120*a^3*(1-a*x)^15*(1+a*x)^10)");
-//
-//	}
-//
-//	// {x^2*(1-a*x)^(-1-(n*(1+n))/2)*(1+a*x)^(-1-((-1+n)*n)/2), x, 1, ((1+a*x)^(((1-n)*n)/2)*(1 -
-//	// a*n*x))/(a^3*n*(1-n^2)*(1-a*x)^((n*(1+n))/2))}
-//	public void test00564() {
-//		check("Integrate(x^2*(1-a*x)^(-1-(n*(1+n))/2)*(1+a*x)^(-1-((-1+n)*n)/2), x)",
-//				"((1+a*x)^(((1-n)*n)/2)*(1-a*n*x))/(a^3*n*(1-n^2)*(1-a*x)^((n*(1+n))/2))");
-//
-//	}
-//
-//	// {(A+B*x)/(a+b*x)^3, x, 1, -(A+B*x)^2/(2*(A*b-a*B)*(a+b*x)^2)}
-//	public void test00565() {
-//		check("Integrate((A+B*x)/(a+b*x)^3, x)", "-(A+B*x)^2/(2*(A*b-a*B)*(a+b*x)^2)");
-//
-//	}
-//
-//	// {(5-2*x)^6*(2+3*x)^3*(-16+33*x), x, 1, -((5-2*x)^7*(2+3*x)^4)/2}
-//	public void test00566() {
-//		check("Integrate((5-2*x)^6*(2+3*x)^3*(-16+33*x), x)", "-((5-2*x)^7*(2+3*x)^4)/2");
-//
-//	}
-//
-//	// {(1-2*x)/(3+5*x)^3, x, 1, -(1-2*x)^2/(22*(3+5*x)^2)}
-//	public void test00567() {
-//		check("Integrate((1-2*x)/(3+5*x)^3, x)", "-(1-2*x)^2/(22*(3+5*x)^2)");
-//
-//	}
-//
-//	// {(3+5*x)/(1-2*x)^3, x, 1, (3+5*x)^2/(22*(1-2*x)^2)}
-//	public void test00568() {
-//		check("Integrate((3+5*x)/(1-2*x)^3, x)", "(3+5*x)^2/(22*(1-2*x)^2)");
-//
-//	}
-//
-//	// {Sqrt(1-2*x)/(3+5*x)^(5/2), x, 1, (-2*(1-2*x)^(3/2))/(33*(3+5*x)^(3/2))}
-//	public void test00569() {
-//		check("Integrate(Sqrt(1-2*x)/(3+5*x)^(5/2), x)", "(-2*(1-2*x)^(3/2))/(33*(3+5*x)^(3/2))");
-//
-//	}
-//
-//	// {1/(Sqrt(1-2*x)*(3+5*x)^(3/2)), x, 1, (-2*Sqrt(1-2*x))/(11*Sqrt(3+5*x))}
-//	public void test00570() {
-//		check("Integrate(1/(Sqrt(1-2*x)*(3+5*x)^(3/2)), x)", "(-2*Sqrt(1-2*x))/(11*Sqrt(3+5*x))");
-//
-//	}
-//
-//	// {1/((1-2*x)^(3/2)*Sqrt(3+5*x)), x, 1, (2*Sqrt(3+5*x))/(11*Sqrt(1-2*x))}
-//	public void test00571() {
-//		check("Integrate(1/((1-2*x)^(3/2)*Sqrt(3+5*x)), x)", "(2*Sqrt(3+5*x))/(11*Sqrt(1-2*x))");
-//
-//	}
-//
-//	// {Sqrt(3+5*x)/(1-2*x)^(5/2), x, 1, (2*(3+5*x)^(3/2))/(33*(1-2*x)^(3/2))}
-//	public void test00572() {
-//		check("Integrate(Sqrt(3+5*x)/(1-2*x)^(5/2), x)", "(2*(3+5*x)^(3/2))/(33*(1-2*x)^(3/2))");
-//
-//	}
-//
-//	// {1/(Sqrt(a+b*x)*Sqrt(c+(b*(-1+c)*x)/a)*Sqrt(e+(b*(-1+e)*x)/a)), x, 1,
-//	// (2*Sqrt(a)*EllipticF(ArcSin((Sqrt(1-c)*Sqrt(a+b*x))/Sqrt(a)), (1-e)/(1-c)))/(b*Sqrt(1-c))}
-//	public void test00573() {
-//		check("Integrate(1/(Sqrt(a+b*x)*Sqrt(c+(b*(-1+c)*x)/a)*Sqrt(e+(b*(-1+e)*x)/a)), x)",
-//				"(2*Sqrt(a)*EllipticF(ArcSin((Sqrt(1-c)*Sqrt(a+b*x))/Sqrt(a)), (1-e)/(1-c)))/(b*Sqrt(1-c))");
-//
-//	}
-//
-//	// {Sqrt(e+(b*(-1+e)*x)/a)/(Sqrt(a+b*x)*Sqrt(c+(b*(-1+c)*x)/a)), x, 1, (2*Sqrt(a)*EllipticE(ArcSin((Sqrt(1
-//	// -c)*Sqrt(a+b*x))/Sqrt(a)), (1-e)/(1-c)))/(b*Sqrt(1-c))}
-//	public void test00574() {
-//		check("Integrate(Sqrt(e+(b*(-1+e)*x)/a)/(Sqrt(a+b*x)*Sqrt(c+(b*(-1+c)*x)/a)), x)",
-//				"(2*Sqrt(a)*EllipticE(ArcSin((Sqrt(1-c)*Sqrt(a+b*x))/Sqrt(a)), (1-e)/(1-c)))/(b*Sqrt(1-c))");
-//
-//	}
-//
-//	// {Sqrt(1-2*x)/(Sqrt(-3-5*x)*Sqrt(2+3*x)), x, 1, (2*Sqrt(7/5)*EllipticE(ArcSin(Sqrt(5)*Sqrt(2+3*x)),
-//	// 2/35))/3}
-//	public void test00575() {
-//		check("Integrate(Sqrt(1-2*x)/(Sqrt(-3-5*x)*Sqrt(2+3*x)), x)",
-//				"(2*Sqrt(7/5)*EllipticE(ArcSin(Sqrt(5)*Sqrt(2+3*x)), 2/35))/3");
-//
-//	}
-//
-//	// {Sqrt(3+5*x)/(Sqrt(1-2*x)*Sqrt(2+3*x)), x, 1, -(Sqrt(11/3)*EllipticE(ArcSin(Sqrt(3/7)*Sqrt(1-2*x)),
-//	// 35/33))}
-//	public void test00576() {
-//		check("Integrate(Sqrt(3+5*x)/(Sqrt(1-2*x)*Sqrt(2+3*x)), x)",
-//				"-(Sqrt(11/3)*EllipticE(ArcSin(Sqrt(3/7)*Sqrt(1-2*x)), 35/33))");
-//
-//	}
-//
-//	// {1/(Sqrt(1+x)*Sqrt(2+x)*Sqrt(3+x)), x, 1, -2*EllipticF(ArcSin(1/Sqrt(3+x)), 2)}
-//	public void test00577() {
-//		check("Integrate(1/(Sqrt(1+x)*Sqrt(2+x)*Sqrt(3+x)), x)", "-2*EllipticF(ArcSin(1/Sqrt(3+x)), 2)");
-//
-//	}
-//
-//	// {1/(Sqrt(3-x)*Sqrt(1+x)*Sqrt(2+x)), x, 1, 2*EllipticF(ArcSin(Sqrt(1+x)/2), -4)}
-//	public void test00578() {
-//		check("Integrate(1/(Sqrt(3-x)*Sqrt(1+x)*Sqrt(2+x)), x)", "2*EllipticF(ArcSin(Sqrt(1+x)/2), -4)");
-//
-//	}
-//
-//	// {1/(Sqrt(2-x)*Sqrt(1+x)*Sqrt(3+x)), x, 1, Sqrt(2)*EllipticF(ArcSin(Sqrt(1+x)/Sqrt(3)), -3/2)}
-//	public void test00579() {
-//		check("Integrate(1/(Sqrt(2-x)*Sqrt(1+x)*Sqrt(3+x)), x)", "Sqrt(2)*EllipticF(ArcSin(Sqrt(1+x)/Sqrt(3)), -3/2)");
-//
-//	}
-//
-//	// {1/(Sqrt(2-x)*Sqrt(3-x)*Sqrt(1+x)), x, 1, EllipticF(ArcSin(Sqrt(1+x)/Sqrt(3)), 3/4)}
-//	public void test00580() {
-//		check("Integrate(1/(Sqrt(2-x)*Sqrt(3-x)*Sqrt(1+x)), x)", "EllipticF(ArcSin(Sqrt(1+x)/Sqrt(3)), 3/4)");
-//
-//	}
-//
-//	// {1/(Sqrt(1-x)*Sqrt(2+x)*Sqrt(3+x)), x, 1, 2*EllipticF(ArcSin(Sqrt(2+x)/Sqrt(3)), -3)}
-//	public void test00581() {
-//		check("Integrate(1/(Sqrt(1-x)*Sqrt(2+x)*Sqrt(3+x)), x)", "2*EllipticF(ArcSin(Sqrt(2+x)/Sqrt(3)), -3)");
-//
-//	}
-//
-//	// {1/(Sqrt(1-x)*Sqrt(3-x)*Sqrt(2+x)), x, 1, (2*EllipticF(ArcSin(Sqrt(2+x)/Sqrt(3)), 3/5))/Sqrt(5)}
-//	public void test00582() {
-//		check("Integrate(1/(Sqrt(1-x)*Sqrt(3-x)*Sqrt(2+x)), x)",
-//				"(2*EllipticF(ArcSin(Sqrt(2+x)/Sqrt(3)), 3/5))/Sqrt(5)");
-//
-//	}
-//
-//	// {1/(Sqrt(1-x)*Sqrt(2-x)*Sqrt(3+x)), x, 1, (2*EllipticF(ArcSin(Sqrt(3+x)/2), 4/5))/Sqrt(5)}
-//	public void test00583() {
-//		check("Integrate(1/(Sqrt(1-x)*Sqrt(2-x)*Sqrt(3+x)), x)", "(2*EllipticF(ArcSin(Sqrt(3+x)/2), 4/5))/Sqrt(5)");
-//
-//	}
-//
-//	// {1/(Sqrt(1-x)*Sqrt(2-x)*Sqrt(3-x)), x, 1, 2*EllipticF(ArcSin(1/Sqrt(3-x)), 2)}
-//	public void test00584() {
-//		check("Integrate(1/(Sqrt(1-x)*Sqrt(2-x)*Sqrt(3-x)), x)", "2*EllipticF(ArcSin(1/Sqrt(3-x)), 2)");
-//
-//	}
-//
-//	// {1/(Sqrt(-3+x)*Sqrt(-2+x)*Sqrt(-1+x)), x, 1, -2*EllipticF(ArcSin(1/Sqrt(-1+x)), 2)}
-//	public void test00585() {
-//		check("Integrate(1/(Sqrt(-3+x)*Sqrt(-2+x)*Sqrt(-1+x)), x)", "-2*EllipticF(ArcSin(1/Sqrt(-1+x)), 2)");
-//
-//	}
-//
-//	// {1/(Sqrt(-3-x)*Sqrt(-2-x)*Sqrt(-1-x)), x, 1, 2*EllipticF(ArcSin(1/Sqrt(-1-x)), 2)}
-//	public void test00586() {
-//		check("Integrate(1/(Sqrt(-3-x)*Sqrt(-2-x)*Sqrt(-1-x)), x)", "2*EllipticF(ArcSin(1/Sqrt(-1-x)), 2)");
-//
-//	}
-//
-//	// {Sqrt(2+3*x)/(Sqrt(1-2*x)*Sqrt(3+5*x)), x, 1, -(Sqrt(7/5)*EllipticE(ArcSin(Sqrt(5/11)*Sqrt(1-2*x)),
-//	// 33/35))}
-//	public void test00587() {
-//		check("Integrate(Sqrt(2+3*x)/(Sqrt(1-2*x)*Sqrt(3+5*x)), x)",
-//				"-(Sqrt(7/5)*EllipticE(ArcSin(Sqrt(5/11)*Sqrt(1-2*x)), 33/35))");
-//
-//	}
-//
-//	// {1/(Sqrt(1-2*x)*Sqrt(2+3*x)*Sqrt(3+5*x)), x, 1, (-2*EllipticF(ArcSin(Sqrt(3/7)*Sqrt(1-2*x)),
-//	// 35/33))/Sqrt(33)}
-//	public void test00588() {
-//		check("Integrate(1/(Sqrt(1-2*x)*Sqrt(2+3*x)*Sqrt(3+5*x)), x)",
-//				"(-2*EllipticF(ArcSin(Sqrt(3/7)*Sqrt(1-2*x)), 35/33))/Sqrt(33)");
-//
-//	}
-//
-//	// {1/(Sqrt(4-x)*Sqrt(5-x)*Sqrt(-3+x)), x, 1, Sqrt(2)*EllipticF(ArcSin(Sqrt(-3+x)), 1/2)}
-//	public void test00589() {
-//		check("Integrate(1/(Sqrt(4-x)*Sqrt(5-x)*Sqrt(-3+x)), x)", "Sqrt(2)*EllipticF(ArcSin(Sqrt(-3+x)), 1/2)");
-//
-//	}
-//
-//	// {1/(Sqrt(6-x)*Sqrt(-2+x)*Sqrt(-1+x)), x, 1, 2*EllipticF(ArcSin(Sqrt(-2+x)/2), -4)}
-//	public void test00590() {
-//		check("Integrate(1/(Sqrt(6-x)*Sqrt(-2+x)*Sqrt(-1+x)), x)", "2*EllipticF(ArcSin(Sqrt(-2+x)/2), -4)");
-//
-//	}
-//
-//	// {1/((a+b*x)^(1/3)*(c+d*x)^(2/3)), x, 1, -((Sqrt(3)*ArcTan(1/Sqrt(3)+(2*d^(1/3)*(a +
-//	// b*x)^(1/3))/(Sqrt(3)*b^(1/3)*(c+d*x)^(1/3))))/(b^(1/3)*d^(2/3)))-Log(c+d*x)/(2*b^(1/3)*d^(2/3))-(3*Log(-1
-//	// +(d^(1/3)*(a+b*x)^(1/3))/(b^(1/3)*(c+d*x)^(1/3))))/(2*b^(1/3)*d^(2/3))}
-//	public void test00591() {
-//		check("Integrate(1/((a+b*x)^(1/3)*(c+d*x)^(2/3)), x)",
-//				"-((Sqrt(3)*ArcTan(1/Sqrt(3)+(2*d^(1/3)*(a+b*x)^(1/3))/(Sqrt(3)*b^(1/3)*(c+d*x)^(1/3))))/(b^(1/3)*d^(2/3)))-Log(c+d*x)/(2*b^(1/3)*d^(2/3))-(3*Log(-1+(d^(1/3)*(a+b*x)^(1/3))/(b^(1/3)*(c+d*x)^(1/3))))/(2*b^(1/3)*d^(2/3))");
-//
-//	}
-//
-//	// {1/((a+b*x)^(1/3)*(c+d*x)^(2/3)*(e+f*x)), x, 1, -((Sqrt(3)*ArcTan(1/Sqrt(3)+(2*(d*e-c*f)^(1/3)*(a +
-//	// b*x)^(1/3))/(Sqrt(3)*(b*e-a*f)^(1/3)*(c+d*x)^(1/3))))/((b*e-a*f)^(1/3)*(d*e-c*f)^(2/3)))+Log(e +
-//	// f*x)/(2*(b*e-a*f)^(1/3)*(d*e-c*f)^(2/3))-(3*Log(((d*e-c*f)^(1/3)*(a+b*x)^(1/3))/(b*e-a*f)^(1/3)-(c
-//	// +d*x)^(1/3)))/(2*(b*e-a*f)^(1/3)*(d*e-c*f)^(2/3))}
-//	public void test00592() {
-//		check("Integrate(1/((a+b*x)^(1/3)*(c+d*x)^(2/3)*(e+f*x)), x)",
-//				"-((Sqrt(3)*ArcTan(1/Sqrt(3)+(2*(d*e-c*f)^(1/3)*(a+b*x)^(1/3))/(Sqrt(3)*(b*e-a*f)^(1/3)*(c+d*x)^(1/3))))/((b*e-a*f)^(1/3)*(d*e-c*f)^(2/3)))+Log(e+f*x)/(2*(b*e-a*f)^(1/3)*(d*e-c*f)^(2/3))-(3*Log(((d*e-c*f)^(1/3)*(a+b*x)^(1/3))/(b*e-a*f)^(1/3)-(c+d*x)^(1/3)))/(2*(b*e-a*f)^(1/3)*(d*e-c*f)^(2/3))");
-//
-//	}
-//
-//	// {1/((a+b*x)*(c+d*x)^(1/3)*(b*c+a*d+2*b*d*x)^(1/3)), x, 1, -(Sqrt(3)*ArcTan(1/Sqrt(3)+(2*b^(2/3)*(c +
-//	// d*x)^(2/3))/(Sqrt(3)*(b*c-a*d)^(1/3)*(b*c+a*d+2*b*d*x)^(1/3))))/(2*b^(2/3)*(b*c-a*d)^(2/3))-Log(a +
-//	// b*x)/(2*b^(2/3)*(b*c-a*d)^(2/3))+(3*Log((b^(2/3)*(c+d*x)^(2/3))/(b*c-a*d)^(1/3)-(b*c+a*d +
-//	// 2*b*d*x)^(1/3)))/(4*b^(2/3)*(b*c-a*d)^(2/3))}
-//	public void test00593() {
-//		check("Integrate(1/((a+b*x)*(c+d*x)^(1/3)*(b*c+a*d+2*b*d*x)^(1/3)), x)",
-//				"-(Sqrt(3)*ArcTan(1/Sqrt(3)+(2*b^(2/3)*(c+d*x)^(2/3))/(Sqrt(3)*(b*c-a*d)^(1/3)*(b*c+a*d+2*b*d*x)^(1/3))))/(2*b^(2/3)*(b*c-a*d)^(2/3))-Log(a+b*x)/(2*b^(2/3)*(b*c-a*d)^(2/3))+(3*Log((b^(2/3)*(c+d*x)^(2/3))/(b*c-a*d)^(1/3)-(b*c+a*d+2*b*d*x)^(1/3)))/(4*b^(2/3)*(b*c-a*d)^(2/3))");
-//
-//	}
-//
-//	// {(a+b*x)/((c+d*x)^(1/3)*(b*c+a*d+2*b*d*x)^(4/3)), x, 1, (3*(c+d*x)^(2/3))/(2*d^2*(b*c+a*d +
-//	// 2*b*d*x)^(1/3))}
-//	public void test00594() {
-//		check("Integrate((a+b*x)/((c+d*x)^(1/3)*(b*c+a*d+2*b*d*x)^(4/3)), x)",
-//				"(3*(c+d*x)^(2/3))/(2*d^2*(b*c+a*d+2*b*d*x)^(1/3))");
-//
-//	}
-//
-//	// {1/((d-3*e*x)^(1/3)*(d+e*x)*(d+3*e*x)^(1/3)), x, 1, (Sqrt(3)*ArcTan(1/Sqrt(3)-(d -
-//	// 3*e*x)^(2/3)/(Sqrt(3)*d^(1/3)*(d+3*e*x)^(1/3))))/(4*d^(2/3)*e)+Log(d+e*x)/(4*d^(2/3)*e)-(3*Log(-(d -
-//	// 3*e*x)^(2/3)/(2*d^(1/3))-(d+3*e*x)^(1/3)))/(8*d^(2/3)*e)}
-//	public void test00595() {
-//		check("Integrate(1/((d-3*e*x)^(1/3)*(d+e*x)*(d+3*e*x)^(1/3)), x)",
-//				"(Sqrt(3)*ArcTan(1/Sqrt(3)-(d-3*e*x)^(2/3)/(Sqrt(3)*d^(1/3)*(d+3*e*x)^(1/3))))/(4*d^(2/3)*e)+Log(d+e*x)/(4*d^(2/3)*e)-(3*Log(-(d-3*e*x)^(2/3)/(2*d^(1/3))-(d+3*e*x)^(1/3)))/(8*d^(2/3)*e)");
-//
-//	}
-//
-//	// {(a+b*x)^m/((c+d*x)^m*(e+f*x)^2), x, 1, ((b*c-a*d)*(a+b*x)^(1+m)*(c+d*x)^(-1 -
-//	// m)*Hypergeometric2F1(2, 1+m, 2+m, ((d*e-c*f)*(a+b*x))/((b*e-a*f)*(c+d*x))))/((b*e-a*f)^2*(1+m))}
-//	public void test00596() {
-//		check("Integrate((a+b*x)^m/((c+d*x)^m*(e+f*x)^2), x)",
-//				"((b*c-a*d)*(a+b*x)^(1+m)*(c+d*x)^(-1-m)*Hypergeometric2F1(2, 1+m, 2+m, ((d*e-c*f)*(a+b*x))/((b*e-a*f)*(c+d*x))))/((b*e-a*f)^2*(1+m))");
-//
-//	}
-//
-//	// {((a+b*x)^m*(c+d*x)^(-1-m))/(e+f*x), x, 1, ((a+b*x)^(1+m)*(c+d*x)^(-1-m)*Hypergeometric2F1(1, 1 +
-//	// m, 2+m, ((d*e-c*f)*(a+b*x))/((b*e-a*f)*(c+d*x))))/((b*e-a*f)*(1+m))}
-//	public void test00597() {
-//		check("Integrate(((a+b*x)^m*(c+d*x)^(-1-m))/(e+f*x), x)",
-//				"((a+b*x)^(1+m)*(c+d*x)^(-1-m)*Hypergeometric2F1(1, 1+m, 2+m, ((d*e-c*f)*(a+b*x))/((b*e-a*f)*(c+d*x))))/((b*e-a*f)*(1+m))");
-//
-//	}
-//
-//	// {(a+b*x)^m*(c+d*x)^(-2-m), x, 1, ((a+b*x)^(1+m)*(c+d*x)^(-1-m))/((b*c-a*d)*(1+m))}
-//	public void test00598() {
-//		check("Integrate((a+b*x)^m*(c+d*x)^(-2-m), x)", "((a+b*x)^(1+m)*(c+d*x)^(-1-m))/((b*c-a*d)*(1+m))");
-//
-//	}
-//
-//	// {((a+b*x)^m*(c+d*x)^(1-m))/(e+f*x)^3, x, 1, ((b*c-a*d)^2*(a+b*x)^(1+m)*(c+d*x)^(-1 -
-//	// m)*Hypergeometric2F1(3, 1+m, 2+m, ((d*e-c*f)*(a+b*x))/((b*e-a*f)*(c+d*x))))/((b*e-a*f)^3*(1+m))}
-//	public void test00599() {
-//		check("Integrate(((a+b*x)^m*(c+d*x)^(1-m))/(e+f*x)^3, x)",
-//				"((b*c-a*d)^2*(a+b*x)^(1+m)*(c+d*x)^(-1-m)*Hypergeometric2F1(3, 1+m, 2+m, ((d*e-c*f)*(a+b*x))/((b*e-a*f)*(c+d*x))))/((b*e-a*f)^3*(1+m))");
-//
-//	}
-//
-//	// {((a+b*x)^m*(c+d*x)^(2-m))/(e+f*x)^4, x, 1, ((b*c-a*d)^3*(a+b*x)^(1+m)*(c+d*x)^(-1 -
-//	// m)*Hypergeometric2F1(4, 1+m, 2+m, ((d*e-c*f)*(a+b*x))/((b*e-a*f)*(c+d*x))))/((b*e-a*f)^4*(1+m))}
-//	public void test00600() {
-//		check("Integrate(((a+b*x)^m*(c+d*x)^(2-m))/(e+f*x)^4, x)",
-//				"((b*c-a*d)^3*(a+b*x)^(1+m)*(c+d*x)^(-1-m)*Hypergeometric2F1(4, 1+m, 2+m, ((d*e-c*f)*(a+b*x))/((b*e-a*f)*(c+d*x))))/((b*e-a*f)^4*(1+m))");
-//
-//	}
-//
-//	// {(a+b*x)^m*(c+d*x)^(-m-n)*(e+f*x)^(-2+n), x, 1, ((a+b*x)^(1+m)*(c+d*x)^(-m-n)*(((b*e-a*f)*(c
-//	// +d*x))/((b*c-a*d)*(e+f*x)))^(m+n)*(e+f*x)^(-1+n)*Hypergeometric2F1(1+m, m+n, 2+m, -(((d*e -
-//	// c*f)*(a+b*x))/((b*c-a*d)*(e+f*x)))))/((b*e-a*f)*(1+m))}
-//	public void test00601() {
-//		check("Integrate((a+b*x)^m*(c+d*x)^(-m-n)*(e+f*x)^(-2+n), x)",
-//				"((a+b*x)^(1+m)*(c+d*x)^(-m-n)*(((b*e-a*f)*(c+d*x))/((b*c-a*d)*(e+f*x)))^(m+n)*(e+f*x)^(-1+n)*Hypergeometric2F1(1+m, m+n, 2+m, -(((d*e-c*f)*(a+b*x))/((b*c-a*d)*(e+f*x)))))/((b*e-a*f)*(1+m))");
-//
-//	}
-//
-//	// {(a+b*x)^m*(c+d*x)^n*((b*c*f+a*d*f+a*d*f*m+b*c*f*n)/(b*d*(2+m+n))+f*x)^(-3-m-n), x, 1,
-//	// (b*d*(2+m+n)*(a+b*x)^(1+m)*(c+d*x)^(1+n)*((f*(a*d*(1+m)+b*c*(1+n)))/(b*d*(2+m+n)) +
-//	// f*x)^(-2-m-n))/((b*c-a*d)^2*f*(1+m)*(1+n))}
-//	public void test00602() {
-//		check("Integrate((a+b*x)^m*(c+d*x)^n*((b*c*f+a*d*f+a*d*f*m+b*c*f*n)/(b*d*(2+m+n))+f*x)^(-3-m-n), x)",
-//				"(b*d*(2+m+n)*(a+b*x)^(1+m)*(c+d*x)^(1+n)*((f*(a*d*(1+m)+b*c*(1+n)))/(b*d*(2+m+n))+f*x)^(-2-m-n))/((b*c-a*d)^2*f*(1+m)*(1+n))");
-//
-//	}
-//
-//	// {(a+b*x)^m*(c+d*x)^(-1-(d*(b*e-a*f)*(1+m))/(b*(d*e-c*f)))*(e+f*x)^(-1+((b*c-a*d)*f*(1 +
-//	// m))/(b*(d*e-c*f))), x, 1, (b*(a+b*x)^(1+m)*(e+f*x)^(((b*c-a*d)*f*(1+m))/(b*(d*e-c*f))))/((b*c -
-//	// a*d)*(b*e-a*f)*(1+m)*(c+d*x)^((d*(b*e-a*f)*(1+m))/(b*(d*e-c*f))))}
-//	public void test00603() {
-//		check("Integrate((a+b*x)^m*(c+d*x)^(-1-(d*(b*e-a*f)*(1+m))/(b*(d*e-c*f)))*(e+f*x)^(-1+((b*c-a*d)*f*(1+m))/(b*(d*e-c*f))), x)",
-//				"(b*(a+b*x)^(1+m)*(e+f*x)^(((b*c-a*d)*f*(1+m))/(b*(d*e-c*f))))/((b*c-a*d)*(b*e-a*f)*(1+m)*(c+d*x)^((d*(b*e-a*f)*(1+m))/(b*(d*e-c*f))))");
-//
-//	}
-//
-//	// {(a+b*x)^m*(c+d*x)^n*(e+f*x)^(-2-m-n), x, 1, ((a+b*x)^(1+m)*(c+d*x)^n*(e+f*x)^(-1-m -
-//	// n)*Hypergeometric2F1(1+m, -n, 2+m, -(((d*e-c*f)*(a+b*x))/((b*c-a*d)*(e+f*x)))))/((b*e-a*f)*(1 +
-//	// m)*(((b*e-a*f)*(c+d*x))/((b*c-a*d)*(e+f*x)))^n)}
-//	public void test00604() {
-//		check("Integrate((a+b*x)^m*(c+d*x)^n*(e+f*x)^(-2-m-n), x)",
-//				"((a+b*x)^(1+m)*(c+d*x)^n*(e+f*x)^(-1-m-n)*Hypergeometric2F1(1+m, -n, 2+m, -(((d*e-c*f)*(a+b*x))/((b*c-a*d)*(e+f*x)))))/((b*e-a*f)*(1+m)*(((b*e-a*f)*(c+d*x))/((b*c-a*d)*(e+f*x)))^n)");
-//
-//	}
-//
-//	// {(3+4*x)^n/(Sqrt(1-x)*Sqrt(1+x)), x, 1, -(Sqrt(2)*7^n*Sqrt(1-x)*AppellF1(1/2, 1/2, -n, 3/2, (1-x)/2,
-//	// (4*(1-x))/7))}
-//	public void test00605() {
-//		check("Integrate((3+4*x)^n/(Sqrt(1-x)*Sqrt(1+x)), x)",
-//				"-(Sqrt(2)*7^n*Sqrt(1-x)*AppellF1(1/2, 1/2, -n, 3/2, (1-x)/2, (4*(1-x))/7))");
-//
-//	}
-//
-//	// {(3-4*x)^n/(Sqrt(1-x)*Sqrt(1+x)), x, 1, Sqrt(2)*7^n*Sqrt(1+x)*AppellF1(1/2, -n, 1/2, 3/2, (4*(1+x))/7,
-//	// (1+x)/2)}
-//	public void test00606() {
-//		check("Integrate((3-4*x)^n/(Sqrt(1-x)*Sqrt(1+x)), x)",
-//				"Sqrt(2)*7^n*Sqrt(1+x)*AppellF1(1/2, -n, 1/2, 3/2, (4*(1+x))/7, (1+x)/2)");
-//
-//	}
-//
-//	// {(-3+4*x)^n/(Sqrt(1-x)*Sqrt(1+x)), x, 1, -(Sqrt(2)*Sqrt(1-x)*AppellF1(1/2, 1/2, -n, 3/2, (1-x)/2, 4*(1
-//	// -x)))}
-//	public void test00607() {
-//		check("Integrate((-3+4*x)^n/(Sqrt(1-x)*Sqrt(1+x)), x)",
-//				"-(Sqrt(2)*Sqrt(1-x)*AppellF1(1/2, 1/2, -n, 3/2, (1-x)/2, 4*(1-x)))");
-//
-//	}
-//
-//	// {(-3-4*x)^n/(Sqrt(1-x)*Sqrt(1+x)), x, 1, Sqrt(2)*Sqrt(1+x)*AppellF1(1/2, -n, 1/2, 3/2, 4*(1+x), (1 +
-//	// x)/2)}
-//	public void test00608() {
-//		check("Integrate((-3-4*x)^n/(Sqrt(1-x)*Sqrt(1+x)), x)",
-//				"Sqrt(2)*Sqrt(1+x)*AppellF1(1/2, -n, 1/2, 3/2, 4*(1+x), (1+x)/2)");
-//
-//	}
-//
-//	// {(a+b*x)^m/(e+f*x)^2, x, 1, (b*(a+b*x)^(1+m)*Hypergeometric2F1(2, 1+m, 2+m, -((f*(a+b*x))/(b*e -
-//	// a*f))))/((b*e-a*f)^2*(1+m))}
-//	public void test00609() {
-//		check("Integrate((a+b*x)^m/(e+f*x)^2, x)",
-//				"(b*(a+b*x)^(1+m)*Hypergeometric2F1(2, 1+m, 2+m, -((f*(a+b*x))/(b*e-a*f))))/((b*e-a*f)^2*(1+m))");
-//
-//	}
-//
-//	// {a+b*x^2, x, 1, a*x+(b*x^3)/3}
-//	public void test00610() {
-//		check("Integrate(a+b*x^2, x)", "a*x+(b*x^3)/3");
-//
-//	}
-//
-//	// {x*(a+b*x^2)^2, x, 1, (a+b*x^2)^3/(6*b)}
-//	public void test00611() {
-//		check("Integrate(x*(a+b*x^2)^2, x)", "(a+b*x^2)^3/(6*b)");
-//
-//	}
-//
-//	// {(a+b*x^2)^2/x^7, x, 1, -(a+b*x^2)^3/(6*a*x^6)}
-//	public void test00612() {
-//		check("Integrate((a+b*x^2)^2/x^7, x)", "-(a+b*x^2)^3/(6*a*x^6)");
-//
-//	}
-//
-//	// {x*(a+b*x^2)^3, x, 1, (a+b*x^2)^4/(8*b)}
-//	public void test00613() {
-//		check("Integrate(x*(a+b*x^2)^3, x)", "(a+b*x^2)^4/(8*b)");
-//
-//	}
-//
-//	// {(a+b*x^2)^3/x^9, x, 1, -(a+b*x^2)^4/(8*a*x^8)}
-//	public void test00614() {
-//		check("Integrate((a+b*x^2)^3/x^9, x)", "-(a+b*x^2)^4/(8*a*x^8)");
-//
-//	}
-//
-//	// {x*(a+b*x^2)^5, x, 1, (a+b*x^2)^6/(12*b)}
-//	public void test00615() {
-//		check("Integrate(x*(a+b*x^2)^5, x)", "(a+b*x^2)^6/(12*b)");
-//
-//	}
-//
-//	// {(a+b*x^2)^5/x^13, x, 1, -(a+b*x^2)^6/(12*a*x^12)}
-//	public void test00616() {
-//		check("Integrate((a+b*x^2)^5/x^13, x)", "-(a+b*x^2)^6/(12*a*x^12)");
-//
-//	}
-//
-//	// {x*(a+b*x^2)^8, x, 1, (a+b*x^2)^9/(18*b)}
-//	public void test00617() {
-//		check("Integrate(x*(a+b*x^2)^8, x)", "(a+b*x^2)^9/(18*b)");
-//
-//	}
-//
-//	// {(a+b*x^2)^8/x^19, x, 1, -(a+b*x^2)^9/(18*a*x^18)}
-//	public void test00618() {
-//		check("Integrate((a+b*x^2)^8/x^19, x)", "-(a+b*x^2)^9/(18*a*x^18)");
-//
-//	}
-//
-//	// {x/(a+b*x^2), x, 1, Log(a+b*x^2)/(2*b)}
-//	public void test00619() {
-//		check("Integrate(x/(a+b*x^2), x)", "Log(a+b*x^2)/(2*b)");
-//
-//	}
-//
-//	// {(a+b*x^2)^(-1), x, 1, ArcTan((Sqrt(b)*x)/Sqrt(a))/(Sqrt(a)*Sqrt(b))}
-//	public void test00620() {
-//		check("Integrate((a+b*x^2)^(-1), x)", "ArcTan((Sqrt(b)*x)/Sqrt(a))/(Sqrt(a)*Sqrt(b))");
-//
-//	}
-//
-//	// {x/(a+b*x^2)^2, x, 1, -1/(2*b*(a+b*x^2))}
-//	public void test00621() {
-//		check("Integrate(x/(a+b*x^2)^2, x)", "-1/(2*b*(a+b*x^2))");
-//
-//	}
-//
-//	// {x^3/(a+b*x^2)^3, x, 1, x^4/(4*a*(a+b*x^2)^2)}
-//	public void test00622() {
-//		check("Integrate(x^3/(a+b*x^2)^3, x)", "x^4/(4*a*(a+b*x^2)^2)");
-//
-//	}
-//
-//	// {x/(a+b*x^2)^3, x, 1, -1/(4*b*(a+b*x^2)^2)}
-//	public void test00623() {
-//		check("Integrate(x/(a+b*x^2)^3, x)", "-1/(4*b*(a+b*x^2)^2)");
-//
-//	}
-//
-//	// {x^17/(a+b*x^2)^10, x, 1, x^18/(18*a*(a+b*x^2)^9)}
-//	public void test00624() {
-//		check("Integrate(x^17/(a+b*x^2)^10, x)", "x^18/(18*a*(a+b*x^2)^9)");
-//
-//	}
-//
-//	// {x/(a+b*x^2)^10, x, 1, -1/(18*b*(a+b*x^2)^9)}
-//	public void test00625() {
-//		check("Integrate(x/(a+b*x^2)^10, x)", "-1/(18*b*(a+b*x^2)^9)");
-//
-//	}
-//
-//	// {x/(a-b*x^2), x, 1, -Log(a-b*x^2)/(2*b)}
-//	public void test00626() {
-//		check("Integrate(x/(a-b*x^2), x)", "-Log(a-b*x^2)/(2*b)");
-//
-//	}
-//
-//	// {(a-b*x^2)^(-1), x, 1, ArcTanh((Sqrt(b)*x)/Sqrt(a))/(Sqrt(a)*Sqrt(b))}
-//	public void test00627() {
-//		check("Integrate((a-b*x^2)^(-1), x)", "ArcTanh((Sqrt(b)*x)/Sqrt(a))/(Sqrt(a)*Sqrt(b))");
-//
-//	}
-//
-//	// {x/(a-b*x^2)^2, x, 1, 1/(2*b*(a-b*x^2))}
-//	public void test00628() {
-//		check("Integrate(x/(a-b*x^2)^2, x)", "1/(2*b*(a-b*x^2))");
-//
-//	}
-//
-//	// {x^3/(a-b*x^2)^3, x, 1, x^4/(4*a*(a-b*x^2)^2)}
-//	public void test00629() {
-//		check("Integrate(x^3/(a-b*x^2)^3, x)", "x^4/(4*a*(a-b*x^2)^2)");
-//
-//	}
-//
-//	// {x/(a-b*x^2)^3, x, 1, 1/(4*b*(a-b*x^2)^2)}
-//	public void test00630() {
-//		check("Integrate(x/(a-b*x^2)^3, x)", "1/(4*b*(a-b*x^2)^2)");
-//
-//	}
-//
-//	// {x/(a-b*x^2)^5, x, 1, 1/(8*b*(a-b*x^2)^4)}
-//	public void test00631() {
-//		check("Integrate(x/(a-b*x^2)^5, x)", "1/(8*b*(a-b*x^2)^4)");
-//
-//	}
-//
-//	// {(-1+a+a*x^2)^(-1), x, 1, -(ArcTanh((Sqrt(a)*x)/Sqrt(1-a))/Sqrt((1-a)*a))}
-//	public void test00632() {
-//		check("Integrate((-1+a+a*x^2)^(-1), x)", "-(ArcTanh((Sqrt(a)*x)/Sqrt(1-a))/Sqrt((1-a)*a))");
-//
-//	}
-//
-//	// {(-c-d+(c-d)*x^2)^(-1), x, 1, -(ArcTanh((Sqrt(c-d)*x)/Sqrt(c+d))/(Sqrt(c-d)*Sqrt(c+d)))}
-//	public void test00633() {
-//		check("Integrate((-c-d+(c-d)*x^2)^(-1), x)", "-(ArcTanh((Sqrt(c-d)*x)/Sqrt(c+d))/(Sqrt(c-d)*Sqrt(c+d)))");
-//
-//	}
-//
-//	// {(a+(b-a*c)*x^2)^(-1), x, 1, ArcTan((Sqrt(b-a*c)*x)/Sqrt(a))/(Sqrt(a)*Sqrt(b-a*c))}
-//	public void test00634() {
-//		check("Integrate((a+(b-a*c)*x^2)^(-1), x)", "ArcTan((Sqrt(b-a*c)*x)/Sqrt(a))/(Sqrt(a)*Sqrt(b-a*c))");
-//
-//	}
-//
-//	// {(a-(b-a*c)*x^2)^(-1), x, 1, ArcTanh((Sqrt(b-a*c)*x)/Sqrt(a))/(Sqrt(a)*Sqrt(b-a*c))}
-//	public void test00635() {
-//		check("Integrate((a-(b-a*c)*x^2)^(-1), x)", "ArcTanh((Sqrt(b-a*c)*x)/Sqrt(a))/(Sqrt(a)*Sqrt(b-a*c))");
-//
-//	}
-//
-//	// {(c*(a-d)-(b-c)*x^2)^(-1), x, 1, ArcTanh((Sqrt(b-c)*x)/(Sqrt(c)*Sqrt(a-d)))/(Sqrt(b-c)*Sqrt(c)*Sqrt(a
-//	// -d))}
-//	public void test00636() {
-//		check("Integrate((c*(a-d)-(b-c)*x^2)^(-1), x)",
-//				"ArcTanh((Sqrt(b-c)*x)/(Sqrt(c)*Sqrt(a-d)))/(Sqrt(b-c)*Sqrt(c)*Sqrt(a-d))");
-//
-//	}
-//
-//	// {x^m/(a+b*x^2), x, 1, (x^(1+m)*Hypergeometric2F1(1, (1+m)/2, (3+m)/2, -((b*x^2)/a)))/(a*(1+m))}
-//	public void test00637() {
-//		check("Integrate(x^m/(a+b*x^2), x)",
-//				"(x^(1+m)*Hypergeometric2F1(1, (1+m)/2, (3+m)/2, -((b*x^2)/a)))/(a*(1+m))");
-//
-//	}
-//
-//	// {x^m/(a+b*x^2)^2, x, 1, (x^(1+m)*Hypergeometric2F1(2, (1+m)/2, (3+m)/2, -((b*x^2)/a)))/(a^2*(1+m))}
-//	public void test00638() {
-//		check("Integrate(x^m/(a+b*x^2)^2, x)",
-//				"(x^(1+m)*Hypergeometric2F1(2, (1+m)/2, (3+m)/2, -((b*x^2)/a)))/(a^2*(1+m))");
-//
-//	}
-//
-//	// {x^m/(a+b*x^2)^3, x, 1, (x^(1+m)*Hypergeometric2F1(3, (1+m)/2, (3+m)/2, -((b*x^2)/a)))/(a^3*(1+m))}
-//	public void test00639() {
-//		check("Integrate(x^m/(a+b*x^2)^3, x)",
-//				"(x^(1+m)*Hypergeometric2F1(3, (1+m)/2, (3+m)/2, -((b*x^2)/a)))/(a^3*(1+m))");
-//
-//	}
-//
-//	// {(c*x)^(1+m)/(a+b*x^2), x, 1, ((c*x)^(2+m)*Hypergeometric2F1(1, (2+m)/2, (4+m)/2,
-//	// -((b*x^2)/a)))/(a*c*(2+m))}
-//	public void test00640() {
-//		check("Integrate((c*x)^(1+m)/(a+b*x^2), x)",
-//				"((c*x)^(2+m)*Hypergeometric2F1(1, (2+m)/2, (4+m)/2, -((b*x^2)/a)))/(a*c*(2+m))");
-//
-//	}
-//
-//	// {(c*x)^m/(a+b*x^2), x, 1, ((c*x)^(1+m)*Hypergeometric2F1(1, (1+m)/2, (3+m)/2, -((b*x^2)/a)))/(a*c*(1 +
-//	// m))}
-//	public void test00641() {
-//		check("Integrate((c*x)^m/(a+b*x^2), x)",
-//				"((c*x)^(1+m)*Hypergeometric2F1(1, (1+m)/2, (3+m)/2, -((b*x^2)/a)))/(a*c*(1+m))");
-//
-//	}
-//
-//	// {(c*x)^(-1+m)/(a+b*x^2), x, 1, ((c*x)^m*Hypergeometric2F1(1, m/2, (2+m)/2, -((b*x^2)/a)))/(a*c*m)}
-//	public void test00642() {
-//		check("Integrate((c*x)^(-1+m)/(a+b*x^2), x)",
-//				"((c*x)^m*Hypergeometric2F1(1, m/2, (2+m)/2, -((b*x^2)/a)))/(a*c*m)");
-//
-//	}
-//
-//	// {(c*x)^(-2+m)/(a+b*x^2), x, 1, -(((c*x)^(-1+m)*Hypergeometric2F1(1, (-1+m)/2, (1+m)/2,
-//	// -((b*x^2)/a)))/(a*c*(1-m)))}
-//	public void test00643() {
-//		check("Integrate((c*x)^(-2+m)/(a+b*x^2), x)",
-//				"-(((c*x)^(-1+m)*Hypergeometric2F1(1, (-1+m)/2, (1+m)/2, -((b*x^2)/a)))/(a*c*(1-m)))");
-//
-//	}
-//
-//	// {(c*x)^(-3+m)/(a+b*x^2), x, 1, -(((c*x)^(-2+m)*Hypergeometric2F1(1, (-2+m)/2, m/2, -((b*x^2)/a)))/(a*c*(2
-//	// -m)))}
-//	public void test00644() {
-//		check("Integrate((c*x)^(-3+m)/(a+b*x^2), x)",
-//				"-(((c*x)^(-2+m)*Hypergeometric2F1(1, (-2+m)/2, m/2, -((b*x^2)/a)))/(a*c*(2-m)))");
-//
-//	}
-//
-//	// {x^m/(1+(a*x^2)/b)^2, x, 1, (x^(1+m)*Hypergeometric2F1(2, (1+m)/2, (3+m)/2, -((a*x^2)/b)))/(1+m)}
-//	public void test00645() {
-//		check("Integrate(x^m/(1+(a*x^2)/b)^2, x)",
-//				"(x^(1+m)*Hypergeometric2F1(2, (1+m)/2, (3+m)/2, -((a*x^2)/b)))/(1+m)");
-//
-//	}
-//
-//	// {x*Sqrt(a+b*x^2), x, 1, (a+b*x^2)^(3/2)/(3*b)}
-//	public void test00646() {
-//		check("Integrate(x*Sqrt(a+b*x^2), x)", "(a+b*x^2)^(3/2)/(3*b)");
-//
-//	}
-//
-//	// {Sqrt(a+b*x^2)/x^4, x, 1, -(a+b*x^2)^(3/2)/(3*a*x^3)}
-//	public void test00647() {
-//		check("Integrate(Sqrt(a+b*x^2)/x^4, x)", "-(a+b*x^2)^(3/2)/(3*a*x^3)");
-//
-//	}
-//
-//	// {x*(a+b*x^2)^(3/2), x, 1, (a+b*x^2)^(5/2)/(5*b)}
-//	public void test00648() {
-//		check("Integrate(x*(a+b*x^2)^(3/2), x)", "(a+b*x^2)^(5/2)/(5*b)");
-//
-//	}
-//
-//	// {(a+b*x^2)^(3/2)/x^6, x, 1, -(a+b*x^2)^(5/2)/(5*a*x^5)}
-//	public void test00649() {
-//		check("Integrate((a+b*x^2)^(3/2)/x^6, x)", "-(a+b*x^2)^(5/2)/(5*a*x^5)");
-//
-//	}
-//
-//	// {x*(a+b*x^2)^(5/2), x, 1, (a+b*x^2)^(7/2)/(7*b)}
-//	public void test00650() {
-//		check("Integrate(x*(a+b*x^2)^(5/2), x)", "(a+b*x^2)^(7/2)/(7*b)");
-//
-//	}
-//
-//	// {(a+b*x^2)^(5/2)/x^8, x, 1, -(a+b*x^2)^(7/2)/(7*a*x^7)}
-//	public void test00651() {
-//		check("Integrate((a+b*x^2)^(5/2)/x^8, x)", "-(a+b*x^2)^(7/2)/(7*a*x^7)");
-//
-//	}
-//
-//	// {x*(a+b*x^2)^(9/2), x, 1, (a+b*x^2)^(11/2)/(11*b)}
-//	public void test00652() {
-//		check("Integrate(x*(a+b*x^2)^(9/2), x)", "(a+b*x^2)^(11/2)/(11*b)");
-//
-//	}
-//
-//	// {(a+b*x^2)^(9/2)/x^12, x, 1, -(a+b*x^2)^(11/2)/(11*a*x^11)}
-//	public void test00653() {
-//		check("Integrate((a+b*x^2)^(9/2)/x^12, x)", "-(a+b*x^2)^(11/2)/(11*a*x^11)");
-//
-//	}
-//
-//	// {x*Sqrt(9+4*x^2), x, 1, (9+4*x^2)^(3/2)/12}
-//	public void test00654() {
-//		check("Integrate(x*Sqrt(9+4*x^2), x)", "(9+4*x^2)^(3/2)/12");
-//
-//	}
-//
-//	// {Sqrt(9+4*x^2)/x^4, x, 1, -(9+4*x^2)^(3/2)/(27*x^3)}
-//	public void test00655() {
-//		check("Integrate(Sqrt(9+4*x^2)/x^4, x)", "-(9+4*x^2)^(3/2)/(27*x^3)");
-//
-//	}
-//
-//	// {x*Sqrt(9-4*x^2), x, 1, -(9-4*x^2)^(3/2)/12}
-//	public void test00656() {
-//		check("Integrate(x*Sqrt(9-4*x^2), x)", "-(9-4*x^2)^(3/2)/12");
-//
-//	}
-//
-//	// {Sqrt(9-4*x^2)/x^4, x, 1, -(9-4*x^2)^(3/2)/(27*x^3)}
-//	public void test00657() {
-//		check("Integrate(Sqrt(9-4*x^2)/x^4, x)", "-(9-4*x^2)^(3/2)/(27*x^3)");
-//
-//	}
-//
-//	// {x*Sqrt(-9+4*x^2), x, 1, (-9+4*x^2)^(3/2)/12}
-//	public void test00658() {
-//		check("Integrate(x*Sqrt(-9+4*x^2), x)", "(-9+4*x^2)^(3/2)/12");
-//
-//	}
-//
-//	// {Sqrt(-9+4*x^2)/x^4, x, 1, (-9+4*x^2)^(3/2)/(27*x^3)}
-//	public void test00659() {
-//		check("Integrate(Sqrt(-9+4*x^2)/x^4, x)", "(-9+4*x^2)^(3/2)/(27*x^3)");
-//
-//	}
-//
-//	// {x*Sqrt(-9-4*x^2), x, 1, -(-9-4*x^2)^(3/2)/12}
-//	public void test00660() {
-//		check("Integrate(x*Sqrt(-9-4*x^2), x)", "-(-9-4*x^2)^(3/2)/12");
-//
-//	}
-//
-//	// {Sqrt(-9-4*x^2)/x^4, x, 1, (-9-4*x^2)^(3/2)/(27*x^3)}
-//	public void test00661() {
-//		check("Integrate(Sqrt(-9-4*x^2)/x^4, x)", "(-9-4*x^2)^(3/2)/(27*x^3)");
-//
-//	}
-//
-//	// {x/Sqrt(a+b*x^2), x, 1, Sqrt(a+b*x^2)/b}
-//	public void test00662() {
-//		check("Integrate(x/Sqrt(a+b*x^2), x)", "Sqrt(a+b*x^2)/b");
-//
-//	}
-//
-//	// {1/(x^2*Sqrt(a+b*x^2)), x, 1, -(Sqrt(a+b*x^2)/(a*x))}
-//	public void test00663() {
-//		check("Integrate(1/(x^2*Sqrt(a+b*x^2)), x)", "-(Sqrt(a+b*x^2)/(a*x))");
-//
-//	}
-//
-//	// {x/(a+b*x^2)^(3/2), x, 1, -(1/(b*Sqrt(a+b*x^2)))}
-//	public void test00664() {
-//		check("Integrate(x/(a+b*x^2)^(3/2), x)", "-(1/(b*Sqrt(a+b*x^2)))");
-//
-//	}
-//
-//	// {(a+b*x^2)^(-3/2), x, 1, x/(a*Sqrt(a+b*x^2))}
-//	public void test00665() {
-//		check("Integrate((a+b*x^2)^(-3/2), x)", "x/(a*Sqrt(a+b*x^2))");
-//
-//	}
-//
-//	// {x^2/(a+b*x^2)^(5/2), x, 1, x^3/(3*a*(a+b*x^2)^(3/2))}
-//	public void test00666() {
-//		check("Integrate(x^2/(a+b*x^2)^(5/2), x)", "x^3/(3*a*(a+b*x^2)^(3/2))");
-//
-//	}
-//
-//	// {x/(a+b*x^2)^(5/2), x, 1, -1/(3*b*(a+b*x^2)^(3/2))}
-//	public void test00667() {
-//		check("Integrate(x/(a+b*x^2)^(5/2), x)", "-1/(3*b*(a+b*x^2)^(3/2))");
-//
-//	}
-//
-//	// {x^6/(a+b*x^2)^(9/2), x, 1, x^7/(7*a*(a+b*x^2)^(7/2))}
-//	public void test00668() {
-//		check("Integrate(x^6/(a+b*x^2)^(9/2), x)", "x^7/(7*a*(a+b*x^2)^(7/2))");
-//
-//	}
-//
-//	// {x/(a+b*x^2)^(9/2), x, 1, -1/(7*b*(a+b*x^2)^(7/2))}
-//	public void test00669() {
-//		check("Integrate(x/(a+b*x^2)^(9/2), x)", "-1/(7*b*(a+b*x^2)^(7/2))");
-//
-//	}
-//
-//	// {x/Sqrt(9+4*x^2), x, 1, Sqrt(9+4*x^2)/4}
-//	public void test00670() {
-//		check("Integrate(x/Sqrt(9+4*x^2), x)", "Sqrt(9+4*x^2)/4");
-//
-//	}
-//
-//	// {1/Sqrt(9+4*x^2), x, 1, ArcSinh((2*x)/3)/2}
-//	public void test00671() {
-//		check("Integrate(1/Sqrt(9+4*x^2), x)", "ArcSinh((2*x)/3)/2");
-//
-//	}
-//
-//	// {1/(x^2*Sqrt(9+4*x^2)), x, 1, -Sqrt(9+4*x^2)/(9*x)}
-//	public void test00672() {
-//		check("Integrate(1/(x^2*Sqrt(9+4*x^2)), x)", "-Sqrt(9+4*x^2)/(9*x)");
-//
-//	}
-//
-//	// {x/Sqrt(9-4*x^2), x, 1, -Sqrt(9-4*x^2)/4}
-//	public void test00673() {
-//		check("Integrate(x/Sqrt(9-4*x^2), x)", "-Sqrt(9-4*x^2)/4");
-//
-//	}
-//
-//	// {1/Sqrt(9-4*x^2), x, 1, ArcSin((2*x)/3)/2}
-//	public void test00674() {
-//		check("Integrate(1/Sqrt(9-4*x^2), x)", "ArcSin((2*x)/3)/2");
-//
-//	}
-//
-//	// {1/(x^2*Sqrt(9-4*x^2)), x, 1, -Sqrt(9-4*x^2)/(9*x)}
-//	public void test00675() {
-//		check("Integrate(1/(x^2*Sqrt(9-4*x^2)), x)", "-Sqrt(9-4*x^2)/(9*x)");
-//
-//	}
-//
-//	// {x/Sqrt(-9+4*x^2), x, 1, Sqrt(-9+4*x^2)/4}
-//	public void test00676() {
-//		check("Integrate(x/Sqrt(-9+4*x^2), x)", "Sqrt(-9+4*x^2)/4");
-//
-//	}
-//
-//	// {1/(x^2*Sqrt(-9+4*x^2)), x, 1, Sqrt(-9+4*x^2)/(9*x)}
-//	public void test00677() {
-//		check("Integrate(1/(x^2*Sqrt(-9+4*x^2)), x)", "Sqrt(-9+4*x^2)/(9*x)");
-//
-//	}
-//
-//	// {x/Sqrt(-9-4*x^2), x, 1, -Sqrt(-9-4*x^2)/4}
-//	public void test00678() {
-//		check("Integrate(x/Sqrt(-9-4*x^2), x)", "-Sqrt(-9-4*x^2)/4");
-//
-//	}
-//
-//	// {1/(x^2*Sqrt(-9-4*x^2)), x, 1, Sqrt(-9-4*x^2)/(9*x)}
-//	public void test00679() {
-//		check("Integrate(1/(x^2*Sqrt(-9-4*x^2)), x)", "Sqrt(-9-4*x^2)/(9*x)");
-//
-//	}
-//
-//	// {1/Sqrt(9+b*x^2), x, 1, ArcSinh((Sqrt(b)*x)/3)/Sqrt(b)}
-//	public void test00680() {
-//		check("Integrate(1/Sqrt(9+b*x^2), x)", "ArcSinh((Sqrt(b)*x)/3)/Sqrt(b)");
-//
-//	}
-//
-//	// {1/Sqrt(9-b*x^2), x, 1, ArcSin((Sqrt(b)*x)/3)/Sqrt(b)}
-//	public void test00681() {
-//		check("Integrate(1/Sqrt(9-b*x^2), x)", "ArcSin((Sqrt(b)*x)/3)/Sqrt(b)");
-//
-//	}
-//
-//	// {1/Sqrt(Pi+b*x^2), x, 1, ArcSinh((Sqrt(b)*x)/Sqrt(Pi))/Sqrt(b)}
-//	public void test00682() {
-//		check("Integrate(1/Sqrt(Pi+b*x^2), x)", "ArcSinh((Sqrt(b)*x)/Sqrt(Pi))/Sqrt(b)");
-//
-//	}
-//
-//	// {1/Sqrt(Pi-b*x^2), x, 1, ArcSin((Sqrt(b)*x)/Sqrt(Pi))/Sqrt(b)}
-//	public void test00683() {
-//		check("Integrate(1/Sqrt(Pi-b*x^2), x)", "ArcSin((Sqrt(b)*x)/Sqrt(Pi))/Sqrt(b)");
-//
-//	}
-//
-//	// {(x^(1+m)*(a*(2+m)+b*(3+m)*x^2))/Sqrt(a+b*x^2), x, 1, x^(2+m)*Sqrt(a+b*x^2)}
-//	public void test00684() {
-//		check("Integrate((x^(1+m)*(a*(2+m)+b*(3+m)*x^2))/Sqrt(a+b*x^2), x)", "x^(2+m)*Sqrt(a+b*x^2)");
-//
-//	}
-//
-//	// {(x^(-1+m)*(a*m+b*(-1+m)*x^2))/(a+b*x^2)^(3/2), x, 1, x^m/Sqrt(a+b*x^2)}
-//	public void test00685() {
-//		check("Integrate((x^(-1+m)*(a*m+b*(-1+m)*x^2))/(a+b*x^2)^(3/2), x)", "x^m/Sqrt(a+b*x^2)");
-//
-//	}
-//
-//	// {x*(a+b*x^2)^(1/3), x, 1, (3*(a+b*x^2)^(4/3))/(8*b)}
-//	public void test00686() {
-//		check("Integrate(x*(a+b*x^2)^(1/3), x)", "(3*(a+b*x^2)^(4/3))/(8*b)");
-//
-//	}
-//
-//	// {x*(a+b*x^2)^(2/3), x, 1, (3*(a+b*x^2)^(5/3))/(10*b)}
-//	public void test00687() {
-//		check("Integrate(x*(a+b*x^2)^(2/3), x)", "(3*(a+b*x^2)^(5/3))/(10*b)");
-//
-//	}
-//
-//	// {x*(a+b*x^2)^(4/3), x, 1, (3*(a+b*x^2)^(7/3))/(14*b)}
-//	public void test00688() {
-//		check("Integrate(x*(a+b*x^2)^(4/3), x)", "(3*(a+b*x^2)^(7/3))/(14*b)");
-//
-//	}
-//
-//	// {x*(-1+x^2)^(7/3), x, 1, (3*(-1+x^2)^(10/3))/20}
-//	public void test00689() {
-//		check("Integrate(x*(-1+x^2)^(7/3), x)", "(3*(-1+x^2)^(10/3))/20");
-//
-//	}
-//
-//	// {x/(a+b*x^2)^(1/3), x, 1, (3*(a+b*x^2)^(2/3))/(4*b)}
-//	public void test00690() {
-//		check("Integrate(x/(a+b*x^2)^(1/3), x)", "(3*(a+b*x^2)^(2/3))/(4*b)");
-//
-//	}
-//
-//	// {x/(a+b*x^2)^(2/3), x, 1, (3*(a+b*x^2)^(1/3))/(2*b)}
-//	public void test00691() {
-//		check("Integrate(x/(a+b*x^2)^(2/3), x)", "(3*(a+b*x^2)^(1/3))/(2*b)");
-//
-//	}
-//
-//	// {x/(a+b*x^2)^(4/3), x, 1, -3/(2*b*(a+b*x^2)^(1/3))}
-//	public void test00692() {
-//		check("Integrate(x/(a+b*x^2)^(4/3), x)", "-3/(2*b*(a+b*x^2)^(1/3))");
-//
-//	}
-//
-//	// {(a+b*x^2)^(1/3)/(c*x)^(11/3), x, 1, (-3*(a+b*x^2)^(4/3))/(8*a*c*(c*x)^(8/3))}
-//	public void test00693() {
-//		check("Integrate((a+b*x^2)^(1/3)/(c*x)^(11/3), x)", "(-3*(a+b*x^2)^(4/3))/(8*a*c*(c*x)^(8/3))");
-//
-//	}
-//
-//	// {(a+b*x^2)^(4/3)/(c*x)^(17/3), x, 1, (-3*(a+b*x^2)^(7/3))/(14*a*c*(c*x)^(14/3))}
-//	public void test00694() {
-//		check("Integrate((a+b*x^2)^(4/3)/(c*x)^(17/3), x)", "(-3*(a+b*x^2)^(7/3))/(14*a*c*(c*x)^(14/3))");
-//
-//	}
-//
-//	// {1/((c*x)^(5/3)*(a+b*x^2)^(2/3)), x, 1, (-3*(a+b*x^2)^(1/3))/(2*a*c*(c*x)^(2/3))}
-//	public void test00695() {
-//		check("Integrate(1/((c*x)^(5/3)*(a+b*x^2)^(2/3)), x)", "(-3*(a+b*x^2)^(1/3))/(2*a*c*(c*x)^(2/3))");
-//
-//	}
-//
-//	// {(2-3*x^2)^(-1/4), x, 1, (2*2^(1/4)*EllipticE(ArcSin(Sqrt(3/2)*x)/2, 2))/Sqrt(3)}
-//	public void test00696() {
-//		check("Integrate((2-3*x^2)^(-1/4), x)", "(2*2^(1/4)*EllipticE(ArcSin(Sqrt(3/2)*x)/2, 2))/Sqrt(3)");
-//
-//	}
-//
-//	// {(2+3*x^2)^(-3/4), x, 1, (2^(3/4)*EllipticF(ArcTan(Sqrt(3/2)*x)/2, 2))/Sqrt(3)}
-//	public void test00697() {
-//		check("Integrate((2+3*x^2)^(-3/4), x)", "(2^(3/4)*EllipticF(ArcTan(Sqrt(3/2)*x)/2, 2))/Sqrt(3)");
-//
-//	}
-//
-//	// {(2-3*x^2)^(-3/4), x, 1, (2^(3/4)*EllipticF(ArcSin(Sqrt(3/2)*x)/2, 2))/Sqrt(3)}
-//	public void test00698() {
-//		check("Integrate((2-3*x^2)^(-3/4), x)", "(2^(3/4)*EllipticF(ArcSin(Sqrt(3/2)*x)/2, 2))/Sqrt(3)");
-//
-//	}
-//
-//	// {(a+b*x^2)^(1/4)/(c*x)^(7/2), x, 1, (-2*(a+b*x^2)^(5/4))/(5*a*c*(c*x)^(5/2))}
-//	public void test00699() {
-//		check("Integrate((a+b*x^2)^(1/4)/(c*x)^(7/2), x)", "(-2*(a+b*x^2)^(5/4))/(5*a*c*(c*x)^(5/2))");
-//
-//	}
-//
-//	// {(a-b*x^2)^(1/4)/(c*x)^(7/2), x, 1, (-2*(a-b*x^2)^(5/4))/(5*a*c*(c*x)^(5/2))}
-//	public void test00700() {
-//		check("Integrate((a-b*x^2)^(1/4)/(c*x)^(7/2), x)", "(-2*(a-b*x^2)^(5/4))/(5*a*c*(c*x)^(5/2))");
-//
-//	}
-//
-//	// {1/((c*x)^(5/2)*(a+b*x^2)^(1/4)), x, 1, (-2*(a+b*x^2)^(3/4))/(3*a*c*(c*x)^(3/2))}
-//	public void test00701() {
-//		check("Integrate(1/((c*x)^(5/2)*(a+b*x^2)^(1/4)), x)", "(-2*(a+b*x^2)^(3/4))/(3*a*c*(c*x)^(3/2))");
-//
-//	}
-//
-//	// {1/((c*x)^(5/2)*(a-b*x^2)^(1/4)), x, 1, (-2*(a-b*x^2)^(3/4))/(3*a*c*(c*x)^(3/2))}
-//	public void test00702() {
-//		check("Integrate(1/((c*x)^(5/2)*(a-b*x^2)^(1/4)), x)", "(-2*(a-b*x^2)^(3/4))/(3*a*c*(c*x)^(3/2))");
-//
-//	}
-//
-//	// {1/((c*x)^(3/2)*(a+b*x^2)^(3/4)), x, 1, (-2*(a+b*x^2)^(1/4))/(a*c*Sqrt(c*x))}
-//	public void test00703() {
-//		check("Integrate(1/((c*x)^(3/2)*(a+b*x^2)^(3/4)), x)", "(-2*(a+b*x^2)^(1/4))/(a*c*Sqrt(c*x))");
-//
-//	}
-//
-//	// {1/((c*x)^(3/2)*(a-b*x^2)^(3/4)), x, 1, (-2*(a-b*x^2)^(1/4))/(a*c*Sqrt(c*x))}
-//	public void test00704() {
-//		check("Integrate(1/((c*x)^(3/2)*(a-b*x^2)^(3/4)), x)", "(-2*(a-b*x^2)^(1/4))/(a*c*Sqrt(c*x))");
-//
-//	}
-//
-//	// {1/(Sqrt(c*x)*(a+b*x^2)^(5/4)), x, 1, (2*Sqrt(c*x))/(a*c*(a+b*x^2)^(1/4))}
-//	public void test00705() {
-//		check("Integrate(1/(Sqrt(c*x)*(a+b*x^2)^(5/4)), x)", "(2*Sqrt(c*x))/(a*c*(a+b*x^2)^(1/4))");
-//
-//	}
-//
-//	// {x*(a+b*x^2)^p, x, 1, (a+b*x^2)^(1+p)/(2*b*(1+p))}
-//	public void test00706() {
-//		check("Integrate(x*(a+b*x^2)^p, x)", "(a+b*x^2)^(1+p)/(2*b*(1+p))");
-//
-//	}
-//
-//	// {x^(-3-2*p)*(a+b*x^2)^p, x, 1, -(a+b*x^2)^(1+p)/(2*a*(1+p)*x^(2*(1+p)))}
-//	public void test00707() {
-//		check("Integrate(x^(-3-2*p)*(a+b*x^2)^p, x)", "-(a+b*x^2)^(1+p)/(2*a*(1+p)*x^(2*(1+p)))");
-//
-//	}
-//
-//	// {(a+b*x^2)^(-3/2), x, 1, x/(a*Sqrt(a+b*x^2))}
-//	public void test00708() {
-//		check("Integrate((a+b*x^2)^(-3/2), x)", "x/(a*Sqrt(a+b*x^2))");
-//
-//	}
-//
-//	// {1/((a-b*x^2)^(1/3)*(3*a+b*x^2)), x, 1,
-//	// ArcTan((Sqrt(3)*Sqrt(a))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*a^(5/6)*Sqrt(b))+ArcTan((Sqrt(3)*a^(1/6)*(a^(1/3) -
-//	// 2^(1/3)*(a-b*x^2)^(1/3)))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*a^(5/6)*Sqrt(b)) -
-//	// ArcTanh((Sqrt(b)*x)/Sqrt(a))/(6*2^(2/3)*a^(5/6)*Sqrt(b))+ArcTanh((Sqrt(b)*x)/(a^(1/6)*(a^(1/3)+2^(1/3)*(a -
-//	// b*x^2)^(1/3))))/(2*2^(2/3)*a^(5/6)*Sqrt(b))}
-//	public void test00709() {
-//		check("Integrate(1/((a-b*x^2)^(1/3)*(3*a+b*x^2)), x)",
-//				"ArcTan((Sqrt(3)*Sqrt(a))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*a^(5/6)*Sqrt(b))+ArcTan((Sqrt(3)*a^(1/6)*(a^(1/3)-2^(1/3)*(a-b*x^2)^(1/3)))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*a^(5/6)*Sqrt(b))-ArcTanh((Sqrt(b)*x)/Sqrt(a))/(6*2^(2/3)*a^(5/6)*Sqrt(b))+ArcTanh((Sqrt(b)*x)/(a^(1/6)*(a^(1/3)+2^(1/3)*(a-b*x^2)^(1/3))))/(2*2^(2/3)*a^(5/6)*Sqrt(b))");
-//
-//	}
-//
-//	// {1/((-3*a-b*x^2)*(-a+b*x^2)^(1/3)), x, 1,
-//	// -ArcTan((Sqrt(3)*Sqrt(a))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*(-a)^(1/3)*Sqrt(a)*Sqrt(b)) -
-//	// ArcTan((Sqrt(3)*Sqrt(a)*((-a)^(1/3)-2^(1/3)*(-a +
-//	// b*x^2)^(1/3)))/((-a)^(1/3)*Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*(-a)^(1/3)*Sqrt(a)*Sqrt(b)) +
-//	// ArcTanh((Sqrt(b)*x)/Sqrt(a))/(6*2^(2/3)*(-a)^(1/3)*Sqrt(a)*Sqrt(b)) -
-//	// ArcTanh(((-a)^(1/3)*Sqrt(b)*x)/(Sqrt(a)*((-a)^(1/3)+2^(1/3)*(-a +
-//	// b*x^2)^(1/3))))/(2*2^(2/3)*(-a)^(1/3)*Sqrt(a)*Sqrt(b))}
-//	public void test00710() {
-//		check("Integrate(1/((-3*a-b*x^2)*(-a+b*x^2)^(1/3)), x)",
-//				"-ArcTan((Sqrt(3)*Sqrt(a))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*(-a)^(1/3)*Sqrt(a)*Sqrt(b))-ArcTan((Sqrt(3)*Sqrt(a)*((-a)^(1/3)-2^(1/3)*(-a+b*x^2)^(1/3)))/((-a)^(1/3)*Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*(-a)^(1/3)*Sqrt(a)*Sqrt(b))+ArcTanh((Sqrt(b)*x)/Sqrt(a))/(6*2^(2/3)*(-a)^(1/3)*Sqrt(a)*Sqrt(b))-ArcTanh(((-a)^(1/3)*Sqrt(b)*x)/(Sqrt(a)*((-a)^(1/3)+2^(1/3)*(-a+b*x^2)^(1/3))))/(2*2^(2/3)*(-a)^(1/3)*Sqrt(a)*Sqrt(b))");
-//
-//	}
-//
-//	// {1/((3*a-b*x^2)*(a+b*x^2)^(1/3)), x, 1, -ArcTan((Sqrt(b)*x)/Sqrt(a))/(6*2^(2/3)*a^(5/6)*Sqrt(b)) +
-//	// ArcTan((Sqrt(b)*x)/(a^(1/6)*(a^(1/3)+2^(1/3)*(a+b*x^2)^(1/3))))/(2*2^(2/3)*a^(5/6)*Sqrt(b)) -
-//	// ArcTanh((Sqrt(3)*Sqrt(a))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*a^(5/6)*Sqrt(b))-ArcTanh((Sqrt(3)*a^(1/6)*(a^(1/3) -
-//	// 2^(1/3)*(a+b*x^2)^(1/3)))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*a^(5/6)*Sqrt(b))}
-//	public void test00711() {
-//		check("Integrate(1/((3*a-b*x^2)*(a+b*x^2)^(1/3)), x)",
-//				"-ArcTan((Sqrt(b)*x)/Sqrt(a))/(6*2^(2/3)*a^(5/6)*Sqrt(b))+ArcTan((Sqrt(b)*x)/(a^(1/6)*(a^(1/3)+2^(1/3)*(a+b*x^2)^(1/3))))/(2*2^(2/3)*a^(5/6)*Sqrt(b))-ArcTanh((Sqrt(3)*Sqrt(a))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*a^(5/6)*Sqrt(b))-ArcTanh((Sqrt(3)*a^(1/6)*(a^(1/3)-2^(1/3)*(a+b*x^2)^(1/3)))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*a^(5/6)*Sqrt(b))");
-//
-//	}
-//
-//	// {1/((c-d*x^2)*(c+3*d*x^2)^(1/3)), x, 1,
-//	// -ArcTan((Sqrt(3)*Sqrt(d)*x)/Sqrt(c))/(2*2^(2/3)*Sqrt(3)*c^(5/6)*Sqrt(d)) +
-//	// (Sqrt(3)*ArcTan((Sqrt(3)*Sqrt(d)*x)/(c^(1/6)*(c^(1/3)+2^(1/3)*(c +
-//	// 3*d*x^2)^(1/3)))))/(2*2^(2/3)*c^(5/6)*Sqrt(d))-ArcTanh(Sqrt(c)/(Sqrt(d)*x))/(2*2^(2/3)*c^(5/6)*Sqrt(d)) -
-//	// ArcTanh((c^(1/6)*(c^(1/3)-2^(1/3)*(c+3*d*x^2)^(1/3)))/(Sqrt(d)*x))/(2*2^(2/3)*c^(5/6)*Sqrt(d))}
-//	public void test00712() {
-//		check("Integrate(1/((c-d*x^2)*(c+3*d*x^2)^(1/3)), x)",
-//				"-ArcTan((Sqrt(3)*Sqrt(d)*x)/Sqrt(c))/(2*2^(2/3)*Sqrt(3)*c^(5/6)*Sqrt(d))+(Sqrt(3)*ArcTan((Sqrt(3)*Sqrt(d)*x)/(c^(1/6)*(c^(1/3)+2^(1/3)*(c+3*d*x^2)^(1/3)))))/(2*2^(2/3)*c^(5/6)*Sqrt(d))-ArcTanh(Sqrt(c)/(Sqrt(d)*x))/(2*2^(2/3)*c^(5/6)*Sqrt(d))-ArcTanh((c^(1/6)*(c^(1/3)-2^(1/3)*(c+3*d*x^2)^(1/3)))/(Sqrt(d)*x))/(2*2^(2/3)*c^(5/6)*Sqrt(d))");
-//
-//	}
-//
-//	// {1/((a-b*x^2)^(1/3)*(3*a+b*x^2)), x, 1,
-//	// ArcTan((Sqrt(3)*Sqrt(a))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*a^(5/6)*Sqrt(b))+ArcTan((Sqrt(3)*a^(1/6)*(a^(1/3) -
-//	// 2^(1/3)*(a-b*x^2)^(1/3)))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*a^(5/6)*Sqrt(b)) -
-//	// ArcTanh((Sqrt(b)*x)/Sqrt(a))/(6*2^(2/3)*a^(5/6)*Sqrt(b))+ArcTanh((Sqrt(b)*x)/(a^(1/6)*(a^(1/3)+2^(1/3)*(a -
-//	// b*x^2)^(1/3))))/(2*2^(2/3)*a^(5/6)*Sqrt(b))}
-//	public void test00713() {
-//		check("Integrate(1/((a-b*x^2)^(1/3)*(3*a+b*x^2)), x)",
-//				"ArcTan((Sqrt(3)*Sqrt(a))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*a^(5/6)*Sqrt(b))+ArcTan((Sqrt(3)*a^(1/6)*(a^(1/3)-2^(1/3)*(a-b*x^2)^(1/3)))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*a^(5/6)*Sqrt(b))-ArcTanh((Sqrt(b)*x)/Sqrt(a))/(6*2^(2/3)*a^(5/6)*Sqrt(b))+ArcTanh((Sqrt(b)*x)/(a^(1/6)*(a^(1/3)+2^(1/3)*(a-b*x^2)^(1/3))))/(2*2^(2/3)*a^(5/6)*Sqrt(b))");
-//
-//	}
-//
-//	// {1/((c-3*d*x^2)^(1/3)*(c+d*x^2)), x, 1, ArcTan(Sqrt(c)/(Sqrt(d)*x))/(2*2^(2/3)*c^(5/6)*Sqrt(d)) +
-//	// ArcTan((c^(1/6)*(c^(1/3)-2^(1/3)*(c-3*d*x^2)^(1/3)))/(Sqrt(d)*x))/(2*2^(2/3)*c^(5/6)*Sqrt(d)) -
-//	// ArcTanh((Sqrt(3)*Sqrt(d)*x)/Sqrt(c))/(2*2^(2/3)*Sqrt(3)*c^(5/6)*Sqrt(d)) +
-//	// (Sqrt(3)*ArcTanh((Sqrt(3)*Sqrt(d)*x)/(c^(1/6)*(c^(1/3)+2^(1/3)*(c -
-//	// 3*d*x^2)^(1/3)))))/(2*2^(2/3)*c^(5/6)*Sqrt(d))}
-//	public void test00714() {
-//		check("Integrate(1/((c-3*d*x^2)^(1/3)*(c+d*x^2)), x)",
-//				"ArcTan(Sqrt(c)/(Sqrt(d)*x))/(2*2^(2/3)*c^(5/6)*Sqrt(d))+ArcTan((c^(1/6)*(c^(1/3)-2^(1/3)*(c-3*d*x^2)^(1/3)))/(Sqrt(d)*x))/(2*2^(2/3)*c^(5/6)*Sqrt(d))-ArcTanh((Sqrt(3)*Sqrt(d)*x)/Sqrt(c))/(2*2^(2/3)*Sqrt(3)*c^(5/6)*Sqrt(d))+(Sqrt(3)*ArcTanh((Sqrt(3)*Sqrt(d)*x)/(c^(1/6)*(c^(1/3)+2^(1/3)*(c-3*d*x^2)^(1/3)))))/(2*2^(2/3)*c^(5/6)*Sqrt(d))");
-//
-//	}
-//
-//	// {1/((1-x^2)^(1/3)*(3+x^2)), x, 1, ArcTan(Sqrt(3)/x)/(2*2^(2/3)*Sqrt(3))+ArcTan((Sqrt(3)*(1-2^(1/3)*(1 -
-//	// x^2)^(1/3)))/x)/(2*2^(2/3)*Sqrt(3))-ArcTanh(x)/(6*2^(2/3))+ArcTanh(x/(1+2^(1/3)*(1 -
-//	// x^2)^(1/3)))/(2*2^(2/3))}
-//	public void test00715() {
-//		check("Integrate(1/((1-x^2)^(1/3)*(3+x^2)), x)",
-//				"ArcTan(Sqrt(3)/x)/(2*2^(2/3)*Sqrt(3))+ArcTan((Sqrt(3)*(1-2^(1/3)*(1-x^2)^(1/3)))/x)/(2*2^(2/3)*Sqrt(3))-ArcTanh(x)/(6*2^(2/3))+ArcTanh(x/(1+2^(1/3)*(1-x^2)^(1/3)))/(2*2^(2/3))");
-//
-//	}
-//
-//	// {1/((3-x^2)*(1+x^2)^(1/3)), x, 1, -ArcTan(x)/(6*2^(2/3))+ArcTan(x/(1+2^(1/3)*(1 +
-//	// x^2)^(1/3)))/(2*2^(2/3))-ArcTanh(Sqrt(3)/x)/(2*2^(2/3)*Sqrt(3))-ArcTanh((Sqrt(3)*(1-2^(1/3)*(1 +
-//	// x^2)^(1/3)))/x)/(2*2^(2/3)*Sqrt(3))}
-//	public void test00716() {
-//		check("Integrate(1/((3-x^2)*(1+x^2)^(1/3)), x)",
-//				"-ArcTan(x)/(6*2^(2/3))+ArcTan(x/(1+2^(1/3)*(1+x^2)^(1/3)))/(2*2^(2/3))-ArcTanh(Sqrt(3)/x)/(2*2^(2/3)*Sqrt(3))-ArcTanh((Sqrt(3)*(1-2^(1/3)*(1+x^2)^(1/3)))/x)/(2*2^(2/3)*Sqrt(3))");
-//
-//	}
-//
-//	// {(3-x)/((1-x^2)^(1/3)*(3+x^2)), x, 1, -((Sqrt(3)*ArcTan(1/Sqrt(3)-(2^(2/3)*(1+x)^(2/3))/(Sqrt(3)*(1 -
-//	// x)^(1/3))))/2^(2/3))-Log(3+x^2)/(2*2^(2/3))+(3*Log(2^(1/3)*(1-x)^(1/3)+(1+x)^(2/3)))/(2*2^(2/3))}
-//	public void test00717() {
-//		check("Integrate((3-x)/((1-x^2)^(1/3)*(3+x^2)), x)",
-//				"-((Sqrt(3)*ArcTan(1/Sqrt(3)-(2^(2/3)*(1+x)^(2/3))/(Sqrt(3)*(1-x)^(1/3))))/2^(2/3))-Log(3+x^2)/(2*2^(2/3))+(3*Log(2^(1/3)*(1-x)^(1/3)+(1+x)^(2/3)))/(2*2^(2/3))");
-//
-//	}
-//
-//	// {(3+x)/((1-x^2)^(1/3)*(3+x^2)), x, 1, (Sqrt(3)*ArcTan(1/Sqrt(3)-(2^(2/3)*(1-x)^(2/3))/(Sqrt(3)*(1 +
-//	// x)^(1/3))))/2^(2/3)+Log(3+x^2)/(2*2^(2/3))-(3*Log((1-x)^(2/3)+2^(1/3)*(1+x)^(1/3)))/(2*2^(2/3))}
-//	public void test00718() {
-//		check("Integrate((3+x)/((1-x^2)^(1/3)*(3+x^2)), x)",
-//				"(Sqrt(3)*ArcTan(1/Sqrt(3)-(2^(2/3)*(1-x)^(2/3))/(Sqrt(3)*(1+x)^(1/3))))/2^(2/3)+Log(3+x^2)/(2*2^(2/3))-(3*Log((1-x)^(2/3)+2^(1/3)*(1+x)^(1/3)))/(2*2^(2/3))");
-//
-//	}
-//
-//	// {1/((a+b*x^2)^(1/3)*((9*a*d)/b+d*x^2)), x, 1, (Sqrt(b)*ArcTan((Sqrt(b)*x)/(3*Sqrt(a))))/(12*a^(5/6)*d) +
-//	// (Sqrt(b)*ArcTan((a^(1/3)-(a+b*x^2)^(1/3))^2/(3*a^(1/6)*Sqrt(b)*x)))/(12*a^(5/6)*d) -
-//	// (Sqrt(b)*ArcTanh((Sqrt(3)*a^(1/6)*(a^(1/3)-(a+b*x^2)^(1/3)))/(Sqrt(b)*x)))/(4*Sqrt(3)*a^(5/6)*d)}
-//	public void test00719() {
-//		check("Integrate(1/((a+b*x^2)^(1/3)*((9*a*d)/b+d*x^2)), x)",
-//				"(Sqrt(b)*ArcTan((Sqrt(b)*x)/(3*Sqrt(a))))/(12*a^(5/6)*d)+(Sqrt(b)*ArcTan((a^(1/3)-(a+b*x^2)^(1/3))^2/(3*a^(1/6)*Sqrt(b)*x)))/(12*a^(5/6)*d)-(Sqrt(b)*ArcTanh((Sqrt(3)*a^(1/6)*(a^(1/3)-(a+b*x^2)^(1/3)))/(Sqrt(b)*x)))/(4*Sqrt(3)*a^(5/6)*d)");
-//
-//	}
-//
-//	// {1/((a-b*x^2)^(1/3)*((-9*a*d)/b+d*x^2)), x, 1, -(Sqrt(b)*ArcTan((Sqrt(3)*a^(1/6)*(a^(1/3)-(a -
-//	// b*x^2)^(1/3)))/(Sqrt(b)*x)))/(4*Sqrt(3)*a^(5/6)*d)-(Sqrt(b)*ArcTanh((Sqrt(b)*x)/(3*Sqrt(a))))/(12*a^(5/6)*d) +
-//	// (Sqrt(b)*ArcTanh((a^(1/3)-(a-b*x^2)^(1/3))^2/(3*a^(1/6)*Sqrt(b)*x)))/(12*a^(5/6)*d)}
-//	public void test00720() {
-//		check("Integrate(1/((a-b*x^2)^(1/3)*((-9*a*d)/b+d*x^2)), x)",
-//				"-(Sqrt(b)*ArcTan((Sqrt(3)*a^(1/6)*(a^(1/3)-(a-b*x^2)^(1/3)))/(Sqrt(b)*x)))/(4*Sqrt(3)*a^(5/6)*d)-(Sqrt(b)*ArcTanh((Sqrt(b)*x)/(3*Sqrt(a))))/(12*a^(5/6)*d)+(Sqrt(b)*ArcTanh((a^(1/3)-(a-b*x^2)^(1/3))^2/(3*a^(1/6)*Sqrt(b)*x)))/(12*a^(5/6)*d)");
-//
-//	}
-//
-//	// {1/((-a+b*x^2)^(1/3)*((-9*a*d)/b+d*x^2)), x, 1, (Sqrt(b)*ArcTan((Sqrt(3)*a^(1/6)*(a^(1/3)+(-a +
-//	// b*x^2)^(1/3)))/(Sqrt(b)*x)))/(4*Sqrt(3)*a^(5/6)*d)+(Sqrt(b)*ArcTanh((Sqrt(b)*x)/(3*Sqrt(a))))/(12*a^(5/6)*d) -
-//	// (Sqrt(b)*ArcTanh((a^(1/3)+(-a+b*x^2)^(1/3))^2/(3*a^(1/6)*Sqrt(b)*x)))/(12*a^(5/6)*d)}
-//	public void test00721() {
-//		check("Integrate(1/((-a+b*x^2)^(1/3)*((-9*a*d)/b+d*x^2)), x)",
-//				"(Sqrt(b)*ArcTan((Sqrt(3)*a^(1/6)*(a^(1/3)+(-a+b*x^2)^(1/3)))/(Sqrt(b)*x)))/(4*Sqrt(3)*a^(5/6)*d)+(Sqrt(b)*ArcTanh((Sqrt(b)*x)/(3*Sqrt(a))))/(12*a^(5/6)*d)-(Sqrt(b)*ArcTanh((a^(1/3)+(-a+b*x^2)^(1/3))^2/(3*a^(1/6)*Sqrt(b)*x)))/(12*a^(5/6)*d)");
-//
-//	}
-//
-//	// {1/((-a-b*x^2)^(1/3)*((9*a*d)/b+d*x^2)), x, 1, -(Sqrt(b)*ArcTan((Sqrt(b)*x)/(3*Sqrt(a))))/(12*a^(5/6)*d) -
-//	// (Sqrt(b)*ArcTan((a^(1/3)+(-a-b*x^2)^(1/3))^2/(3*a^(1/6)*Sqrt(b)*x)))/(12*a^(5/6)*d) +
-//	// (Sqrt(b)*ArcTanh((Sqrt(3)*a^(1/6)*(a^(1/3)+(-a-b*x^2)^(1/3)))/(Sqrt(b)*x)))/(4*Sqrt(3)*a^(5/6)*d)}
-//	public void test00722() {
-//		check("Integrate(1/((-a-b*x^2)^(1/3)*((9*a*d)/b+d*x^2)), x)",
-//				"-(Sqrt(b)*ArcTan((Sqrt(b)*x)/(3*Sqrt(a))))/(12*a^(5/6)*d)-(Sqrt(b)*ArcTan((a^(1/3)+(-a-b*x^2)^(1/3))^2/(3*a^(1/6)*Sqrt(b)*x)))/(12*a^(5/6)*d)+(Sqrt(b)*ArcTanh((Sqrt(3)*a^(1/6)*(a^(1/3)+(-a-b*x^2)^(1/3)))/(Sqrt(b)*x)))/(4*Sqrt(3)*a^(5/6)*d)");
-//
-//	}
-//
-//	// {1/((2+b*x^2)^(1/3)*((18*d)/b+d*x^2)), x, 1, (Sqrt(b)*ArcTan((Sqrt(b)*x)/(3*Sqrt(2))))/(12*2^(5/6)*d) +
-//	// (Sqrt(b)*ArcTan((2^(1/3)-(2+b*x^2)^(1/3))^2/(3*2^(1/6)*Sqrt(b)*x)))/(12*2^(5/6)*d) -
-//	// (Sqrt(b)*ArcTanh((2^(1/6)*Sqrt(3)*(2^(1/3)-(2+b*x^2)^(1/3)))/(Sqrt(b)*x)))/(4*2^(5/6)*Sqrt(3)*d)}
-//	public void test00723() {
-//		check("Integrate(1/((2+b*x^2)^(1/3)*((18*d)/b+d*x^2)), x)",
-//				"(Sqrt(b)*ArcTan((Sqrt(b)*x)/(3*Sqrt(2))))/(12*2^(5/6)*d)+(Sqrt(b)*ArcTan((2^(1/3)-(2+b*x^2)^(1/3))^2/(3*2^(1/6)*Sqrt(b)*x)))/(12*2^(5/6)*d)-(Sqrt(b)*ArcTanh((2^(1/6)*Sqrt(3)*(2^(1/3)-(2+b*x^2)^(1/3)))/(Sqrt(b)*x)))/(4*2^(5/6)*Sqrt(3)*d)");
-//
-//	}
-//
-//	// {1/((-2+b*x^2)^(1/3)*((-18*d)/b+d*x^2)), x, 1, (Sqrt(b)*ArcTan((2^(1/6)*Sqrt(3)*(2^(1/3)+(-2 +
-//	// b*x^2)^(1/3)))/(Sqrt(b)*x)))/(4*2^(5/6)*Sqrt(3)*d)+(Sqrt(b)*ArcTanh((Sqrt(b)*x)/(3*Sqrt(2))))/(12*2^(5/6)*d) -
-//	// (Sqrt(b)*ArcTanh((2^(1/3)+(-2+b*x^2)^(1/3))^2/(3*2^(1/6)*Sqrt(b)*x)))/(12*2^(5/6)*d)}
-//	public void test00724() {
-//		check("Integrate(1/((-2+b*x^2)^(1/3)*((-18*d)/b+d*x^2)), x)",
-//				"(Sqrt(b)*ArcTan((2^(1/6)*Sqrt(3)*(2^(1/3)+(-2+b*x^2)^(1/3)))/(Sqrt(b)*x)))/(4*2^(5/6)*Sqrt(3)*d)+(Sqrt(b)*ArcTanh((Sqrt(b)*x)/(3*Sqrt(2))))/(12*2^(5/6)*d)-(Sqrt(b)*ArcTanh((2^(1/3)+(-2+b*x^2)^(1/3))^2/(3*2^(1/6)*Sqrt(b)*x)))/(12*2^(5/6)*d)");
-//
-//	}
-//
-//	// {1/((2+3*x^2)^(1/3)*(6*d+d*x^2)), x, 1, ArcTan(x/Sqrt(6))/(4*2^(5/6)*Sqrt(3)*d)+ArcTan((2^(1/3)-(2 +
-//	// 3*x^2)^(1/3))^2/(3*2^(1/6)*Sqrt(3)*x))/(4*2^(5/6)*Sqrt(3)*d)-ArcTanh((2^(1/6)*(2^(1/3)-(2 +
-//	// 3*x^2)^(1/3)))/x)/(4*2^(5/6)*d)}
-//	public void test00725() {
-//		check("Integrate(1/((2+3*x^2)^(1/3)*(6*d+d*x^2)), x)",
-//				"ArcTan(x/Sqrt(6))/(4*2^(5/6)*Sqrt(3)*d)+ArcTan((2^(1/3)-(2+3*x^2)^(1/3))^2/(3*2^(1/6)*Sqrt(3)*x))/(4*2^(5/6)*Sqrt(3)*d)-ArcTanh((2^(1/6)*(2^(1/3)-(2+3*x^2)^(1/3)))/x)/(4*2^(5/6)*d)");
-//
-//	}
-//
-//	// {1/((2-3*x^2)^(1/3)*(-6*d+d*x^2)), x, 1, -ArcTan((2^(1/6)*(2^(1/3)-(2-3*x^2)^(1/3)))/x)/(4*2^(5/6)*d) -
-//	// ArcTanh(x/Sqrt(6))/(4*2^(5/6)*Sqrt(3)*d)+ArcTanh((2^(1/3)-(2 -
-//	// 3*x^2)^(1/3))^2/(3*2^(1/6)*Sqrt(3)*x))/(4*2^(5/6)*Sqrt(3)*d)}
-//	public void test00726() {
-//		check("Integrate(1/((2-3*x^2)^(1/3)*(-6*d+d*x^2)), x)",
-//				"-ArcTan((2^(1/6)*(2^(1/3)-(2-3*x^2)^(1/3)))/x)/(4*2^(5/6)*d)-ArcTanh(x/Sqrt(6))/(4*2^(5/6)*Sqrt(3)*d)+ArcTanh((2^(1/3)-(2-3*x^2)^(1/3))^2/(3*2^(1/6)*Sqrt(3)*x))/(4*2^(5/6)*Sqrt(3)*d)");
-//
-//	}
-//
-//	// {1/((-2+3*x^2)^(1/3)*(-6*d+d*x^2)), x, 1, ArcTan((2^(1/6)*(2^(1/3)+(-2+3*x^2)^(1/3)))/x)/(4*2^(5/6)*d) +
-//	// ArcTanh(x/Sqrt(6))/(4*2^(5/6)*Sqrt(3)*d)-ArcTanh((2^(1/3)+(-2 +
-//	// 3*x^2)^(1/3))^2/(3*2^(1/6)*Sqrt(3)*x))/(4*2^(5/6)*Sqrt(3)*d)}
-//	public void test00727() {
-//		check("Integrate(1/((-2+3*x^2)^(1/3)*(-6*d+d*x^2)), x)",
-//				"ArcTan((2^(1/6)*(2^(1/3)+(-2+3*x^2)^(1/3)))/x)/(4*2^(5/6)*d)+ArcTanh(x/Sqrt(6))/(4*2^(5/6)*Sqrt(3)*d)-ArcTanh((2^(1/3)+(-2+3*x^2)^(1/3))^2/(3*2^(1/6)*Sqrt(3)*x))/(4*2^(5/6)*Sqrt(3)*d)");
-//
-//	}
-//
-//	// {1/((-2-3*x^2)^(1/3)*(6*d+d*x^2)), x, 1, -ArcTan(x/Sqrt(6))/(4*2^(5/6)*Sqrt(3)*d)-ArcTan((2^(1/3)+(-2 -
-//	// 3*x^2)^(1/3))^2/(3*2^(1/6)*Sqrt(3)*x))/(4*2^(5/6)*Sqrt(3)*d)+ArcTanh((2^(1/6)*(2^(1/3)+(-2 -
-//	// 3*x^2)^(1/3)))/x)/(4*2^(5/6)*d)}
-//	public void test00728() {
-//		check("Integrate(1/((-2-3*x^2)^(1/3)*(6*d+d*x^2)), x)",
-//				"-ArcTan(x/Sqrt(6))/(4*2^(5/6)*Sqrt(3)*d)-ArcTan((2^(1/3)+(-2-3*x^2)^(1/3))^2/(3*2^(1/6)*Sqrt(3)*x))/(4*2^(5/6)*Sqrt(3)*d)+ArcTanh((2^(1/6)*(2^(1/3)+(-2-3*x^2)^(1/3)))/x)/(4*2^(5/6)*d)");
-//
-//	}
-//
-//	// {1/((1+x^2)^(1/3)*(9+x^2)), x, 1, ArcTan(x/3)/12+ArcTan((1-(1+x^2)^(1/3))^2/(3*x))/12 -
-//	// ArcTanh((Sqrt(3)*(1-(1+x^2)^(1/3)))/x)/(4*Sqrt(3))}
-//	public void test00729() {
-//		check("Integrate(1/((1+x^2)^(1/3)*(9+x^2)), x)",
-//				"ArcTan(x/3)/12+ArcTan((1-(1+x^2)^(1/3))^2/(3*x))/12-ArcTanh((Sqrt(3)*(1-(1+x^2)^(1/3)))/x)/(4*Sqrt(3))");
-//
-//	}
-//
-//	// {1/((1+b*x^2)^(1/3)*(9+b*x^2)), x, 1, ArcTan((Sqrt(b)*x)/3)/(12*Sqrt(b))+ArcTan((1-(1 +
-//	// b*x^2)^(1/3))^2/(3*Sqrt(b)*x))/(12*Sqrt(b))-ArcTanh((Sqrt(3)*(1-(1 +
-//	// b*x^2)^(1/3)))/(Sqrt(b)*x))/(4*Sqrt(3)*Sqrt(b))}
-//	public void test00730() {
-//		check("Integrate(1/((1+b*x^2)^(1/3)*(9+b*x^2)), x)",
-//				"ArcTan((Sqrt(b)*x)/3)/(12*Sqrt(b))+ArcTan((1-(1+b*x^2)^(1/3))^2/(3*Sqrt(b)*x))/(12*Sqrt(b))-ArcTanh((Sqrt(3)*(1-(1+b*x^2)^(1/3)))/(Sqrt(b)*x))/(4*Sqrt(3)*Sqrt(b))");
-//
-//	}
-//
-//	// {1/((1-x^2)^(1/3)*(9-x^2)), x, 1, ArcTan((Sqrt(3)*(1-(1-x^2)^(1/3)))/x)/(4*Sqrt(3))+ArcTanh(x/3)/12 -
-//	// ArcTanh((1-(1-x^2)^(1/3))^2/(3*x))/12}
-//	public void test00731() {
-//		check("Integrate(1/((1-x^2)^(1/3)*(9-x^2)), x)",
-//				"ArcTan((Sqrt(3)*(1-(1-x^2)^(1/3)))/x)/(4*Sqrt(3))+ArcTanh(x/3)/12-ArcTanh((1-(1-x^2)^(1/3))^2/(3*x))/12");
-//
-//	}
-//
-//	// {Sqrt(c+d*x^2)/(a+b*x^2)^(3/2), x, 1, (Sqrt(c+d*x^2)*EllipticE(ArcTan((Sqrt(b)*x)/Sqrt(a)), 1 -
-//	// (a*d)/(b*c)))/(Sqrt(a)*Sqrt(b)*Sqrt(a+b*x^2)*Sqrt((a*(c+d*x^2))/(c*(a+b*x^2))))}
-//	public void test00732() {
-//		check("Integrate(Sqrt(c+d*x^2)/(a+b*x^2)^(3/2), x)",
-//				"(Sqrt(c+d*x^2)*EllipticE(ArcTan((Sqrt(b)*x)/Sqrt(a)), 1-(a*d)/(b*c)))/(Sqrt(a)*Sqrt(b)*Sqrt(a+b*x^2)*Sqrt((a*(c+d*x^2))/(c*(a+b*x^2))))");
-//
-//	}
-//
-//	// {Sqrt(1-x^2)/Sqrt(2-3*x^2), x, 1, EllipticE(ArcSin(Sqrt(3/2)*x), 2/3)/Sqrt(3)}
-//	public void test00733() {
-//		check("Integrate(Sqrt(1-x^2)/Sqrt(2-3*x^2), x)", "EllipticE(ArcSin(Sqrt(3/2)*x), 2/3)/Sqrt(3)");
-//
-//	}
-//
-//	// {Sqrt(4-x^2)/Sqrt(2-3*x^2), x, 1, (2*EllipticE(ArcSin(Sqrt(3/2)*x), 1/6))/Sqrt(3)}
-//	public void test00734() {
-//		check("Integrate(Sqrt(4-x^2)/Sqrt(2-3*x^2), x)", "(2*EllipticE(ArcSin(Sqrt(3/2)*x), 1/6))/Sqrt(3)");
-//
-//	}
-//
-//	// {Sqrt(1-4*x^2)/Sqrt(2-3*x^2), x, 1, EllipticE(ArcSin(Sqrt(3/2)*x), 8/3)/Sqrt(3)}
-//	public void test00735() {
-//		check("Integrate(Sqrt(1-4*x^2)/Sqrt(2-3*x^2), x)", "EllipticE(ArcSin(Sqrt(3/2)*x), 8/3)/Sqrt(3)");
-//
-//	}
-//
-//	// {Sqrt(1+x^2)/Sqrt(1-x^2), x, 1, EllipticE(ArcSin(x), -1)}
-//	public void test00736() {
-//		check("Integrate(Sqrt(1+x^2)/Sqrt(1-x^2), x)", "EllipticE(ArcSin(x), -1)");
-//
-//	}
-//
-//	// {Sqrt(1+x^2)/Sqrt(2-3*x^2), x, 1, EllipticE(ArcSin(Sqrt(3/2)*x), -2/3)/Sqrt(3)}
-//	public void test00737() {
-//		check("Integrate(Sqrt(1+x^2)/Sqrt(2-3*x^2), x)", "EllipticE(ArcSin(Sqrt(3/2)*x), -2/3)/Sqrt(3)");
-//
-//	}
-//
-//	// {Sqrt(4+x^2)/Sqrt(2-3*x^2), x, 1, (2*EllipticE(ArcSin(Sqrt(3/2)*x), -1/6))/Sqrt(3)}
-//	public void test00738() {
-//		check("Integrate(Sqrt(4+x^2)/Sqrt(2-3*x^2), x)", "(2*EllipticE(ArcSin(Sqrt(3/2)*x), -1/6))/Sqrt(3)");
-//
-//	}
-//
-//	// {Sqrt(1+4*x^2)/Sqrt(2-3*x^2), x, 1, EllipticE(ArcSin(Sqrt(3/2)*x), -8/3)/Sqrt(3)}
-//	public void test00739() {
-//		check("Integrate(Sqrt(1+4*x^2)/Sqrt(2-3*x^2), x)", "EllipticE(ArcSin(Sqrt(3/2)*x), -8/3)/Sqrt(3)");
-//
-//	}
-//
-//	// {1/(Sqrt(a+b*x^2)*Sqrt(c+d*x^2)), x, 1, (Sqrt(c)*Sqrt(a+b*x^2)*EllipticF(ArcTan((Sqrt(d)*x)/Sqrt(c)), 1 -
-//	// (b*c)/(a*d)))/(a*Sqrt(d)*Sqrt((c*(a+b*x^2))/(a*(c+d*x^2)))*Sqrt(c+d*x^2))}
-//	public void test00740() {
-//		check("Integrate(1/(Sqrt(a+b*x^2)*Sqrt(c+d*x^2)), x)",
-//				"(Sqrt(c)*Sqrt(a+b*x^2)*EllipticF(ArcTan((Sqrt(d)*x)/Sqrt(c)), 1-(b*c)/(a*d)))/(a*Sqrt(d)*Sqrt((c*(a+b*x^2))/(a*(c+d*x^2)))*Sqrt(c+d*x^2))");
-//
-//	}
-//
-//	// {Sqrt(a+b*x^2)/(c+d*x^2)^(3/2), x, 1, (Sqrt(a+b*x^2)*EllipticE(ArcTan((Sqrt(d)*x)/Sqrt(c)), 1 -
-//	// (b*c)/(a*d)))/(Sqrt(c)*Sqrt(d)*Sqrt((c*(a+b*x^2))/(a*(c+d*x^2)))*Sqrt(c+d*x^2))}
-//	public void test00741() {
-//		check("Integrate(Sqrt(a+b*x^2)/(c+d*x^2)^(3/2), x)",
-//				"(Sqrt(a+b*x^2)*EllipticE(ArcTan((Sqrt(d)*x)/Sqrt(c)), 1-(b*c)/(a*d)))/(Sqrt(c)*Sqrt(d)*Sqrt((c*(a+b*x^2))/(a*(c+d*x^2)))*Sqrt(c+d*x^2))");
-//
-//	}
-//
-//	// {1/(Sqrt(a+b*x^2)*Sqrt(c+d*x^2)), x, 1, (Sqrt(c)*Sqrt(a+b*x^2)*EllipticF(ArcTan((Sqrt(d)*x)/Sqrt(c)), 1 -
-//	// (b*c)/(a*d)))/(a*Sqrt(d)*Sqrt((c*(a+b*x^2))/(a*(c+d*x^2)))*Sqrt(c+d*x^2))}
-//	public void test00742() {
-//		check("Integrate(1/(Sqrt(a+b*x^2)*Sqrt(c+d*x^2)), x)",
-//				"(Sqrt(c)*Sqrt(a+b*x^2)*EllipticF(ArcTan((Sqrt(d)*x)/Sqrt(c)), 1-(b*c)/(a*d)))/(a*Sqrt(d)*Sqrt((c*(a+b*x^2))/(a*(c+d*x^2)))*Sqrt(c+d*x^2))");
-//
-//	}
-//
-//	// {1/(Sqrt(1-x^2)*Sqrt(2+5*x^2)), x, 1, EllipticF(ArcSin(x), -5/2)/Sqrt(2)}
-//	public void test00743() {
-//		check("Integrate(1/(Sqrt(1-x^2)*Sqrt(2+5*x^2)), x)", "EllipticF(ArcSin(x), -5/2)/Sqrt(2)");
-//
-//	}
-//
-//	// {1/(Sqrt(1-x^2)*Sqrt(2+4*x^2)), x, 1, EllipticF(ArcSin(x), -2)/Sqrt(2)}
-//	public void test00744() {
-//		check("Integrate(1/(Sqrt(1-x^2)*Sqrt(2+4*x^2)), x)", "EllipticF(ArcSin(x), -2)/Sqrt(2)");
-//
-//	}
-//
-//	// {1/(Sqrt(1-x^2)*Sqrt(2+3*x^2)), x, 1, EllipticF(ArcSin(x), -3/2)/Sqrt(2)}
-//	public void test00745() {
-//		check("Integrate(1/(Sqrt(1-x^2)*Sqrt(2+3*x^2)), x)", "EllipticF(ArcSin(x), -3/2)/Sqrt(2)");
-//
-//	}
-//
-//	// {1/(Sqrt(1-x^2)*Sqrt(2+x^2)), x, 1, EllipticF(ArcSin(x), -1/2)/Sqrt(2)}
-//	public void test00746() {
-//		check("Integrate(1/(Sqrt(1-x^2)*Sqrt(2+x^2)), x)", "EllipticF(ArcSin(x), -1/2)/Sqrt(2)");
-//
-//	}
-//
-//	// {1/(Sqrt(1-x^2)*Sqrt(2-x^2)), x, 1, EllipticF(ArcSin(x), 1/2)/Sqrt(2)}
-//	public void test00747() {
-//		check("Integrate(1/(Sqrt(1-x^2)*Sqrt(2-x^2)), x)", "EllipticF(ArcSin(x), 1/2)/Sqrt(2)");
-//
-//	}
-//
-//	// {1/(Sqrt(2-3*x^2)*Sqrt(1-x^2)), x, 1, EllipticF(ArcSin(x), 3/2)/Sqrt(2)}
-//	public void test00748() {
-//		check("Integrate(1/(Sqrt(2-3*x^2)*Sqrt(1-x^2)), x)", "EllipticF(ArcSin(x), 3/2)/Sqrt(2)");
-//
-//	}
-//
-//	// {1/(Sqrt(2-4*x^2)*Sqrt(1-x^2)), x, 1, EllipticF(ArcSin(x), 2)/Sqrt(2)}
-//	public void test00749() {
-//		check("Integrate(1/(Sqrt(2-4*x^2)*Sqrt(1-x^2)), x)", "EllipticF(ArcSin(x), 2)/Sqrt(2)");
-//
-//	}
-//
-//	// {1/(Sqrt(2-5*x^2)*Sqrt(1-x^2)), x, 1, EllipticF(ArcSin(x), 5/2)/Sqrt(2)}
-//	public void test00750() {
-//		check("Integrate(1/(Sqrt(2-5*x^2)*Sqrt(1-x^2)), x)", "EllipticF(ArcSin(x), 5/2)/Sqrt(2)");
-//
-//	}
-//
-//	// {1/(Sqrt(1+x^2)*Sqrt(2+5*x^2)), x, 1, (Sqrt(2+5*x^2)*EllipticF(ArcTan(x), -3/2))/(Sqrt(2)*Sqrt(1 +
-//	// x^2)*Sqrt((2+5*x^2)/(1+x^2)))}
-//	public void test00751() {
-//		check("Integrate(1/(Sqrt(1+x^2)*Sqrt(2+5*x^2)), x)",
-//				"(Sqrt(2+5*x^2)*EllipticF(ArcTan(x), -3/2))/(Sqrt(2)*Sqrt(1+x^2)*Sqrt((2+5*x^2)/(1+x^2)))");
-//
-//	}
-//
-//	// {1/(Sqrt(1+x^2)*Sqrt(2+4*x^2)), x, 1, (Sqrt(1+2*x^2)*EllipticF(ArcTan(x), -1))/(Sqrt(2)*Sqrt(1 +
-//	// x^2)*Sqrt((1+2*x^2)/(1+x^2)))}
-//	public void test00752() {
-//		check("Integrate(1/(Sqrt(1+x^2)*Sqrt(2+4*x^2)), x)",
-//				"(Sqrt(1+2*x^2)*EllipticF(ArcTan(x), -1))/(Sqrt(2)*Sqrt(1+x^2)*Sqrt((1+2*x^2)/(1+x^2)))");
-//
-//	}
-//
-//	// {1/(Sqrt(1+x^2)*Sqrt(2+3*x^2)), x, 1, (Sqrt(2+3*x^2)*EllipticF(ArcTan(x), -1/2))/(Sqrt(2)*Sqrt(1 +
-//	// x^2)*Sqrt((2+3*x^2)/(1+x^2)))}
-//	public void test00753() {
-//		check("Integrate(1/(Sqrt(1+x^2)*Sqrt(2+3*x^2)), x)",
-//				"(Sqrt(2+3*x^2)*EllipticF(ArcTan(x), -1/2))/(Sqrt(2)*Sqrt(1+x^2)*Sqrt((2+3*x^2)/(1+x^2)))");
-//
-//	}
-//
-//	// {1/(Sqrt(1+x^2)*Sqrt(2+x^2)), x, 1, (Sqrt(2+x^2)*EllipticF(ArcTan(x), 1/2))/(Sqrt(2)*Sqrt(1+x^2)*Sqrt((2
-//	// +x^2)/(1+x^2)))}
-//	public void test00754() {
-//		check("Integrate(1/(Sqrt(1+x^2)*Sqrt(2+x^2)), x)",
-//				"(Sqrt(2+x^2)*EllipticF(ArcTan(x), 1/2))/(Sqrt(2)*Sqrt(1+x^2)*Sqrt((2+x^2)/(1+x^2)))");
-//
-//	}
-//
-//	// {1/(Sqrt(2-x^2)*Sqrt(1+x^2)), x, 1, EllipticF(ArcSin(x/Sqrt(2)), -2)}
-//	public void test00755() {
-//		check("Integrate(1/(Sqrt(2-x^2)*Sqrt(1+x^2)), x)", "EllipticF(ArcSin(x/Sqrt(2)), -2)");
-//
-//	}
-//
-//	// {1/(Sqrt(2-3*x^2)*Sqrt(1+x^2)), x, 1, EllipticF(ArcSin(Sqrt(3/2)*x), -2/3)/Sqrt(3)}
-//	public void test00756() {
-//		check("Integrate(1/(Sqrt(2-3*x^2)*Sqrt(1+x^2)), x)", "EllipticF(ArcSin(Sqrt(3/2)*x), -2/3)/Sqrt(3)");
-//
-//	}
-//
-//	// {1/(Sqrt(2-4*x^2)*Sqrt(1+x^2)), x, 1, EllipticF(ArcSin(Sqrt(2)*x), -1/2)/2}
-//	public void test00757() {
-//		check("Integrate(1/(Sqrt(2-4*x^2)*Sqrt(1+x^2)), x)", "EllipticF(ArcSin(Sqrt(2)*x), -1/2)/2");
-//
-//	}
-//
-//	// {1/(Sqrt(2-5*x^2)*Sqrt(1+x^2)), x, 1, EllipticF(ArcSin(Sqrt(5/2)*x), -2/5)/Sqrt(5)}
-//	public void test00758() {
-//		check("Integrate(1/(Sqrt(2-5*x^2)*Sqrt(1+x^2)), x)", "EllipticF(ArcSin(Sqrt(5/2)*x), -2/5)/Sqrt(5)");
-//
-//	}
-//
-//	// {1/(Sqrt(2-x^2)*Sqrt(-1+x^2)), x, 1, -EllipticF(ArcCos(x/Sqrt(2)), 2)}
-//	public void test00759() {
-//		check("Integrate(1/(Sqrt(2-x^2)*Sqrt(-1+x^2)), x)", "-EllipticF(ArcCos(x/Sqrt(2)), 2)");
-//
-//	}
-//
-//	// {1/(Sqrt(-1-x^2)*Sqrt(2+5*x^2)), x, 1, (Sqrt(2+5*x^2)*EllipticF(ArcTan(x), -3/2))/(Sqrt(2)*Sqrt(-1 -
-//	// x^2)*Sqrt((2+5*x^2)/(1+x^2)))}
-//	public void test00760() {
-//		check("Integrate(1/(Sqrt(-1-x^2)*Sqrt(2+5*x^2)), x)",
-//				"(Sqrt(2+5*x^2)*EllipticF(ArcTan(x), -3/2))/(Sqrt(2)*Sqrt(-1-x^2)*Sqrt((2+5*x^2)/(1+x^2)))");
-//
-//	}
-//
-//	// {1/(Sqrt(-1-x^2)*Sqrt(2+4*x^2)), x, 1, (Sqrt(1+2*x^2)*EllipticF(ArcTan(x), -1))/(Sqrt(2)*Sqrt(-1 -
-//	// x^2)*Sqrt((1+2*x^2)/(1+x^2)))}
-//	public void test00761() {
-//		check("Integrate(1/(Sqrt(-1-x^2)*Sqrt(2+4*x^2)), x)",
-//				"(Sqrt(1+2*x^2)*EllipticF(ArcTan(x), -1))/(Sqrt(2)*Sqrt(-1-x^2)*Sqrt((1+2*x^2)/(1+x^2)))");
-//
-//	}
-//
-//	// {1/(Sqrt(-1-x^2)*Sqrt(2+3*x^2)), x, 1, (Sqrt(2+3*x^2)*EllipticF(ArcTan(x), -1/2))/(Sqrt(2)*Sqrt(-1 -
-//	// x^2)*Sqrt((2+3*x^2)/(1+x^2)))}
-//	public void test00762() {
-//		check("Integrate(1/(Sqrt(-1-x^2)*Sqrt(2+3*x^2)), x)",
-//				"(Sqrt(2+3*x^2)*EllipticF(ArcTan(x), -1/2))/(Sqrt(2)*Sqrt(-1-x^2)*Sqrt((2+3*x^2)/(1+x^2)))");
-//
-//	}
-//
-//	// {1/(Sqrt(-1-x^2)*Sqrt(2+x^2)), x, 1, (Sqrt(2+x^2)*EllipticF(ArcTan(x), 1/2))/(Sqrt(2)*Sqrt(-1 -
-//	// x^2)*Sqrt((2+x^2)/(1+x^2)))}
-//	public void test00763() {
-//		check("Integrate(1/(Sqrt(-1-x^2)*Sqrt(2+x^2)), x)",
-//				"(Sqrt(2+x^2)*EllipticF(ArcTan(x), 1/2))/(Sqrt(2)*Sqrt(-1-x^2)*Sqrt((2+x^2)/(1+x^2)))");
-//
-//	}
-//
-//	// {1/(Sqrt(2+b*x^2)*Sqrt(3+d*x^2)), x, 1, (Sqrt(2+b*x^2)*EllipticF(ArcTan((Sqrt(d)*x)/Sqrt(3)), 1 -
-//	// (3*b)/(2*d)))/(Sqrt(2)*Sqrt(d)*Sqrt((2+b*x^2)/(3+d*x^2))*Sqrt(3+d*x^2))}
-//	public void test00764() {
-//		check("Integrate(1/(Sqrt(2+b*x^2)*Sqrt(3+d*x^2)), x)",
-//				"(Sqrt(2+b*x^2)*EllipticF(ArcTan((Sqrt(d)*x)/Sqrt(3)), 1-(3*b)/(2*d)))/(Sqrt(2)*Sqrt(d)*Sqrt((2+b*x^2)/(3+d*x^2))*Sqrt(3+d*x^2))");
-//
-//	}
-//
-//	// {1/(Sqrt(4+x^2)*Sqrt(c+d*x^2)), x, 1, (Sqrt(c+d*x^2)*EllipticF(ArcTan(x/2), 1-(4*d)/c))/(c*Sqrt(4 +
-//	// x^2)*Sqrt((c+d*x^2)/(c*(4+x^2))))}
-//	public void test00765() {
-//		check("Integrate(1/(Sqrt(4+x^2)*Sqrt(c+d*x^2)), x)",
-//				"(Sqrt(c+d*x^2)*EllipticF(ArcTan(x/2), 1-(4*d)/c))/(c*Sqrt(4+x^2)*Sqrt((c+d*x^2)/(c*(4+x^2))))");
-//
-//	}
-//
-//	// {1/(Sqrt(1-x^2)*Sqrt(-1+2*x^2)), x, 1, -EllipticF(ArcCos(x), 2)}
-//	public void test00766() {
-//		check("Integrate(1/(Sqrt(1-x^2)*Sqrt(-1+2*x^2)), x)", "-EllipticF(ArcCos(x), 2)");
-//
-//	}
-//
-//	// {Sqrt(-1+3*x^2)/Sqrt(2-3*x^2), x, 1, -(EllipticE(ArcCos(Sqrt(3/2)*x), 2)/Sqrt(3))}
-//	public void test00767() {
-//		check("Integrate(Sqrt(-1+3*x^2)/Sqrt(2-3*x^2), x)", "-(EllipticE(ArcCos(Sqrt(3/2)*x), 2)/Sqrt(3))");
-//
-//	}
-//
-//	// {Sqrt(1+(2*c*x^2)/(b-Sqrt(b^2-4*a*c)))/Sqrt(1-(2*c*x^2)/(b+Sqrt(b^2-4*a*c))), x, 1, (Sqrt(b +
-//	// Sqrt(b^2-4*a*c))*EllipticE(ArcSin((Sqrt(2)*Sqrt(c)*x)/Sqrt(b+Sqrt(b^2-4*a*c))), -((b+Sqrt(b^2 -
-//	// 4*a*c))/(b-Sqrt(b^2-4*a*c)))))/(Sqrt(2)*Sqrt(c))}
-//	public void test00768() {
-//		check("Integrate(Sqrt(1+(2*c*x^2)/(b-Sqrt(b^2-4*a*c)))/Sqrt(1-(2*c*x^2)/(b+Sqrt(b^2-4*a*c))), x)",
-//				"(Sqrt(b+Sqrt(b^2-4*a*c))*EllipticE(ArcSin((Sqrt(2)*Sqrt(c)*x)/Sqrt(b+Sqrt(b^2-4*a*c))), -((b+Sqrt(b^2-4*a*c))/(b-Sqrt(b^2-4*a*c)))))/(Sqrt(2)*Sqrt(c))");
-//
-//	}
-//
-//	// {Sqrt(1-(2*c*x^2)/(b-Sqrt(b^2-4*a*c)))/Sqrt(1-(2*c*x^2)/(b+Sqrt(b^2-4*a*c))), x, 1, (Sqrt(b +
-//	// Sqrt(b^2-4*a*c))*EllipticE(ArcSin((Sqrt(2)*Sqrt(c)*x)/Sqrt(b+Sqrt(b^2-4*a*c))), (b+Sqrt(b^2-4*a*c))/(b
-//	// -Sqrt(b^2-4*a*c))))/(Sqrt(2)*Sqrt(c))}
-//	public void test00769() {
-//		check("Integrate(Sqrt(1-(2*c*x^2)/(b-Sqrt(b^2-4*a*c)))/Sqrt(1-(2*c*x^2)/(b+Sqrt(b^2-4*a*c))), x)",
-//				"(Sqrt(b+Sqrt(b^2-4*a*c))*EllipticE(ArcSin((Sqrt(2)*Sqrt(c)*x)/Sqrt(b+Sqrt(b^2-4*a*c))), (b+Sqrt(b^2-4*a*c))/(b-Sqrt(b^2-4*a*c))))/(Sqrt(2)*Sqrt(c))");
-//
-//	}
-//
-//	// {1/(Sqrt(3-3*Sqrt(3)+2*Sqrt(3)*x^2)*Sqrt(3+(-3+Sqrt(3))*x^2)), x, 1, -(Sqrt(3 +
-//	// Sqrt(3))*EllipticF(ArcCos(Sqrt((3-Sqrt(3))/3)*x), (1+Sqrt(3))/2))/6}
-//	public void test00770() {
-//		check("Integrate(1/(Sqrt(3-3*Sqrt(3)+2*Sqrt(3)*x^2)*Sqrt(3+(-3+Sqrt(3))*x^2)), x)",
-//				"-(Sqrt(3+Sqrt(3))*EllipticF(ArcCos(Sqrt((3-Sqrt(3))/3)*x), (1+Sqrt(3))/2))/6");
-//
-//	}
-//
-//	// {1/((2+3*x^2)^(1/4)*(4+3*x^2)), x, 1, -ArcTan((2*2^(3/4)+2*2^(1/4)*Sqrt(2+3*x^2))/(2*Sqrt(3)*x*(2 +
-//	// 3*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(3))-ArcTanh((2*2^(3/4)-2*2^(1/4)*Sqrt(2+3*x^2))/(2*Sqrt(3)*x*(2 +
-//	// 3*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(3))}
-//	public void test00771() {
-//		check("Integrate(1/((2+3*x^2)^(1/4)*(4+3*x^2)), x)",
-//				"-ArcTan((2*2^(3/4)+2*2^(1/4)*Sqrt(2+3*x^2))/(2*Sqrt(3)*x*(2+3*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(3))-ArcTanh((2*2^(3/4)-2*2^(1/4)*Sqrt(2+3*x^2))/(2*Sqrt(3)*x*(2+3*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(3))");
-//
-//	}
-//
-//	// {1/((2-3*x^2)^(1/4)*(4-3*x^2)), x, 1, ArcTan((2-Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2 -
-//	// 3*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(3))+ArcTanh((2+Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2 -
-//	// 3*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(3))}
-//	public void test00772() {
-//		check("Integrate(1/((2-3*x^2)^(1/4)*(4-3*x^2)), x)",
-//				"ArcTan((2-Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2-3*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(3))+ArcTanh((2+Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2-3*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(3))");
-//
-//	}
-//
-//	// {1/((2+b*x^2)^(1/4)*(4+b*x^2)), x, 1, -ArcTan((2*2^(3/4)+2*2^(1/4)*Sqrt(2+b*x^2))/(2*Sqrt(b)*x*(2 +
-//	// b*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(b))-ArcTanh((2*2^(3/4)-2*2^(1/4)*Sqrt(2+b*x^2))/(2*Sqrt(b)*x*(2 +
-//	// b*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(b))}
-//	public void test00773() {
-//		check("Integrate(1/((2+b*x^2)^(1/4)*(4+b*x^2)), x)",
-//				"-ArcTan((2*2^(3/4)+2*2^(1/4)*Sqrt(2+b*x^2))/(2*Sqrt(b)*x*(2+b*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(b))-ArcTanh((2*2^(3/4)-2*2^(1/4)*Sqrt(2+b*x^2))/(2*Sqrt(b)*x*(2+b*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(b))");
-//
-//	}
-//
-//	// {1/((2-b*x^2)^(1/4)*(4-b*x^2)), x, 1, ArcTan((2-Sqrt(2)*Sqrt(2-b*x^2))/(2^(1/4)*Sqrt(b)*x*(2 -
-//	// b*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(b))+ArcTanh((2+Sqrt(2)*Sqrt(2-b*x^2))/(2^(1/4)*Sqrt(b)*x*(2 -
-//	// b*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(b))}
-//	public void test00774() {
-//		check("Integrate(1/((2-b*x^2)^(1/4)*(4-b*x^2)), x)",
-//				"ArcTan((2-Sqrt(2)*Sqrt(2-b*x^2))/(2^(1/4)*Sqrt(b)*x*(2-b*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(b))+ArcTanh((2+Sqrt(2)*Sqrt(2-b*x^2))/(2^(1/4)*Sqrt(b)*x*(2-b*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(b))");
-//
-//	}
-//
-//	// {1/((a+3*x^2)^(1/4)*(2*a+3*x^2)), x, 1, -ArcTan((a^(3/4)*(1+Sqrt(a+3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a +
-//	// 3*x^2)^(1/4)))/(2*Sqrt(3)*a^(3/4))-ArcTanh((a^(3/4)*(1-Sqrt(a+3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a +
-//	// 3*x^2)^(1/4)))/(2*Sqrt(3)*a^(3/4))}
-//	public void test00775() {
-//		check("Integrate(1/((a+3*x^2)^(1/4)*(2*a+3*x^2)), x)",
-//				"-ArcTan((a^(3/4)*(1+Sqrt(a+3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a+3*x^2)^(1/4)))/(2*Sqrt(3)*a^(3/4))-ArcTanh((a^(3/4)*(1-Sqrt(a+3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a+3*x^2)^(1/4)))/(2*Sqrt(3)*a^(3/4))");
-//
-//	}
-//
-//	// {1/((a-3*x^2)^(1/4)*(2*a-3*x^2)), x, 1, ArcTan((a^(3/4)*(1-Sqrt(a-3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a -
-//	// 3*x^2)^(1/4)))/(2*Sqrt(3)*a^(3/4))+ArcTanh((a^(3/4)*(1+Sqrt(a-3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a -
-//	// 3*x^2)^(1/4)))/(2*Sqrt(3)*a^(3/4))}
-//	public void test00776() {
-//		check("Integrate(1/((a-3*x^2)^(1/4)*(2*a-3*x^2)), x)",
-//				"ArcTan((a^(3/4)*(1-Sqrt(a-3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a-3*x^2)^(1/4)))/(2*Sqrt(3)*a^(3/4))+ArcTanh((a^(3/4)*(1+Sqrt(a-3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a-3*x^2)^(1/4)))/(2*Sqrt(3)*a^(3/4))");
-//
-//	}
-//
-//	// {1/((a+b*x^2)^(1/4)*(2*a+b*x^2)), x, 1, -ArcTan((a^(3/4)*(1+Sqrt(a+b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a +
-//	// b*x^2)^(1/4)))/(2*a^(3/4)*Sqrt(b))-ArcTanh((a^(3/4)*(1-Sqrt(a+b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a +
-//	// b*x^2)^(1/4)))/(2*a^(3/4)*Sqrt(b))}
-//	public void test00777() {
-//		check("Integrate(1/((a+b*x^2)^(1/4)*(2*a+b*x^2)), x)",
-//				"-ArcTan((a^(3/4)*(1+Sqrt(a+b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a+b*x^2)^(1/4)))/(2*a^(3/4)*Sqrt(b))-ArcTanh((a^(3/4)*(1-Sqrt(a+b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a+b*x^2)^(1/4)))/(2*a^(3/4)*Sqrt(b))");
-//
-//	}
-//
-//	// {1/((a-b*x^2)^(1/4)*(2*a-b*x^2)), x, 1, ArcTan((a^(3/4)*(1-Sqrt(a-b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a -
-//	// b*x^2)^(1/4)))/(2*a^(3/4)*Sqrt(b))+ArcTanh((a^(3/4)*(1+Sqrt(a-b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a -
-//	// b*x^2)^(1/4)))/(2*a^(3/4)*Sqrt(b))}
-//	public void test00778() {
-//		check("Integrate(1/((a-b*x^2)^(1/4)*(2*a-b*x^2)), x)",
-//				"ArcTan((a^(3/4)*(1-Sqrt(a-b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a-b*x^2)^(1/4)))/(2*a^(3/4)*Sqrt(b))+ArcTanh((a^(3/4)*(1+Sqrt(a-b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a-b*x^2)^(1/4)))/(2*a^(3/4)*Sqrt(b))");
-//
-//	}
-//
-//	// {1/((-2+3*x^2)*(-1+3*x^2)^(1/4)), x, 1, -ArcTan((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(2*Sqrt(6)) -
-//	// ArcTanh((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(2*Sqrt(6))}
-//	public void test00779() {
-//		check("Integrate(1/((-2+3*x^2)*(-1+3*x^2)^(1/4)), x)",
-//				"-ArcTan((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(2*Sqrt(6))-ArcTanh((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(2*Sqrt(6))");
-//
-//	}
-//
-//	// {1/((-2-3*x^2)*(-1-3*x^2)^(1/4)), x, 1, -ArcTan((Sqrt(3/2)*x)/(-1-3*x^2)^(1/4))/(2*Sqrt(6)) -
-//	// ArcTanh((Sqrt(3/2)*x)/(-1-3*x^2)^(1/4))/(2*Sqrt(6))}
-//	public void test00780() {
-//		check("Integrate(1/((-2-3*x^2)*(-1-3*x^2)^(1/4)), x)",
-//				"-ArcTan((Sqrt(3/2)*x)/(-1-3*x^2)^(1/4))/(2*Sqrt(6))-ArcTanh((Sqrt(3/2)*x)/(-1-3*x^2)^(1/4))/(2*Sqrt(6))");
-//
-//	}
-//
-//	// {1/((-2+b*x^2)*(-1+b*x^2)^(1/4)), x, 1, -ArcTan((Sqrt(b)*x)/(Sqrt(2)*(-1+b*x^2)^(1/4)))/(2*Sqrt(2)*Sqrt(b))
-//	// -ArcTanh((Sqrt(b)*x)/(Sqrt(2)*(-1+b*x^2)^(1/4)))/(2*Sqrt(2)*Sqrt(b))}
-//	public void test00781() {
-//		check("Integrate(1/((-2+b*x^2)*(-1+b*x^2)^(1/4)), x)",
-//				"-ArcTan((Sqrt(b)*x)/(Sqrt(2)*(-1+b*x^2)^(1/4)))/(2*Sqrt(2)*Sqrt(b))-ArcTanh((Sqrt(b)*x)/(Sqrt(2)*(-1+b*x^2)^(1/4)))/(2*Sqrt(2)*Sqrt(b))");
-//
-//	}
-//
-//	// {1/((-2-b*x^2)*(-1-b*x^2)^(1/4)), x, 1, -ArcTan((Sqrt(b)*x)/(Sqrt(2)*(-1-b*x^2)^(1/4)))/(2*Sqrt(2)*Sqrt(b))
-//	// -ArcTanh((Sqrt(b)*x)/(Sqrt(2)*(-1-b*x^2)^(1/4)))/(2*Sqrt(2)*Sqrt(b))}
-//	public void test00782() {
-//		check("Integrate(1/((-2-b*x^2)*(-1-b*x^2)^(1/4)), x)",
-//				"-ArcTan((Sqrt(b)*x)/(Sqrt(2)*(-1-b*x^2)^(1/4)))/(2*Sqrt(2)*Sqrt(b))-ArcTanh((Sqrt(b)*x)/(Sqrt(2)*(-1-b*x^2)^(1/4)))/(2*Sqrt(2)*Sqrt(b))");
-//
-//	}
-//
-//	// {1/((-2*a+3*x^2)*(-a+3*x^2)^(1/4)), x, 1, -ArcTan((Sqrt(3/2)*x)/(a^(1/4)*(-a +
-//	// 3*x^2)^(1/4)))/(2*Sqrt(6)*a^(3/4))-ArcTanh((Sqrt(3/2)*x)/(a^(1/4)*(-a+3*x^2)^(1/4)))/(2*Sqrt(6)*a^(3/4))}
-//	public void test00783() {
-//		check("Integrate(1/((-2*a+3*x^2)*(-a+3*x^2)^(1/4)), x)",
-//				"-ArcTan((Sqrt(3/2)*x)/(a^(1/4)*(-a+3*x^2)^(1/4)))/(2*Sqrt(6)*a^(3/4))-ArcTanh((Sqrt(3/2)*x)/(a^(1/4)*(-a+3*x^2)^(1/4)))/(2*Sqrt(6)*a^(3/4))");
-//
-//	}
-//
-//	// {1/((-2*a-3*x^2)*(-a-3*x^2)^(1/4)), x, 1, -ArcTan((Sqrt(3/2)*x)/(a^(1/4)*(-a -
-//	// 3*x^2)^(1/4)))/(2*Sqrt(6)*a^(3/4))-ArcTanh((Sqrt(3/2)*x)/(a^(1/4)*(-a-3*x^2)^(1/4)))/(2*Sqrt(6)*a^(3/4))}
-//	public void test00784() {
-//		check("Integrate(1/((-2*a-3*x^2)*(-a-3*x^2)^(1/4)), x)",
-//				"-ArcTan((Sqrt(3/2)*x)/(a^(1/4)*(-a-3*x^2)^(1/4)))/(2*Sqrt(6)*a^(3/4))-ArcTanh((Sqrt(3/2)*x)/(a^(1/4)*(-a-3*x^2)^(1/4)))/(2*Sqrt(6)*a^(3/4))");
-//
-//	}
-//
-//	// {1/((-2*a+b*x^2)*(-a+b*x^2)^(1/4)), x, 1, -ArcTan((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a +
-//	// b*x^2)^(1/4)))/(2*Sqrt(2)*a^(3/4)*Sqrt(b))-ArcTanh((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a +
-//	// b*x^2)^(1/4)))/(2*Sqrt(2)*a^(3/4)*Sqrt(b))}
-//	public void test00785() {
-//		check("Integrate(1/((-2*a+b*x^2)*(-a+b*x^2)^(1/4)), x)",
-//				"-ArcTan((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a+b*x^2)^(1/4)))/(2*Sqrt(2)*a^(3/4)*Sqrt(b))-ArcTanh((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a+b*x^2)^(1/4)))/(2*Sqrt(2)*a^(3/4)*Sqrt(b))");
-//
-//	}
-//
-//	// {1/((-2*a-b*x^2)*(-a-b*x^2)^(1/4)), x, 1, -ArcTan((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a -
-//	// b*x^2)^(1/4)))/(2*Sqrt(2)*a^(3/4)*Sqrt(b))-ArcTanh((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a -
-//	// b*x^2)^(1/4)))/(2*Sqrt(2)*a^(3/4)*Sqrt(b))}
-//	public void test00786() {
-//		check("Integrate(1/((-2*a-b*x^2)*(-a-b*x^2)^(1/4)), x)",
-//				"-ArcTan((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a-b*x^2)^(1/4)))/(2*Sqrt(2)*a^(3/4)*Sqrt(b))-ArcTanh((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a-b*x^2)^(1/4)))/(2*Sqrt(2)*a^(3/4)*Sqrt(b))");
-//
-//	}
-//
-//	// {1/((2-x^2)*(-1+x^2)^(1/4)), x, 1, ArcTan(x/(Sqrt(2)*(-1+x^2)^(1/4)))/(2*Sqrt(2))+ArcTanh(x/(Sqrt(2)*(-1
-//	// +x^2)^(1/4)))/(2*Sqrt(2))}
-//	public void test00787() {
-//		check("Integrate(1/((2-x^2)*(-1+x^2)^(1/4)), x)",
-//				"ArcTan(x/(Sqrt(2)*(-1+x^2)^(1/4)))/(2*Sqrt(2))+ArcTanh(x/(Sqrt(2)*(-1+x^2)^(1/4)))/(2*Sqrt(2))");
-//
-//	}
-//
-//	// {(a+b*x^2)^(-1-(b*c)/(2*b*c-2*a*d))*(c+d*x^2)^(-1+(a*d)/(2*b*c-2*a*d)), x, 1, (x*(c +
-//	// d*x^2)^((a*d)/(2*b*c-2*a*d)))/(a*c*(a+b*x^2)^((b*c)/(2*b*c-2*a*d)))}
-//	public void test00788() {
-//		check("Integrate((a+b*x^2)^(-1-(b*c)/(2*b*c-2*a*d))*(c+d*x^2)^(-1+(a*d)/(2*b*c-2*a*d)), x)",
-//				"(x*(c+d*x^2)^((a*d)/(2*b*c-2*a*d)))/(a*c*(a+b*x^2)^((b*c)/(2*b*c-2*a*d)))");
-//
-//	}
-//
-//	// {(1+x^2)/(-1+x^2)^2, x, 1, x/(1-x^2)}
-//	public void test00789() {
-//		check("Integrate((1+x^2)/(-1+x^2)^2, x)", "x/(1-x^2)");
-//
-//	}
-//
-//	// {(1-x^2)/(1+x^2)^2, x, 1, x/(1+x^2)}
-//	public void test00790() {
-//		check("Integrate((1-x^2)/(1+x^2)^2, x)", "x/(1+x^2)");
-//
-//	}
-//
-//	// {(a+b*x^2)/(-a+b*x^2)^2, x, 1, x/(a-b*x^2)}
-//	public void test00791() {
-//		check("Integrate((a+b*x^2)/(-a+b*x^2)^2, x)", "x/(a-b*x^2)");
-//
-//	}
-//
-//	// {(a+b*x^2)/(a-b*x^2)^2, x, 1, x/(a-b*x^2)}
-//	public void test00792() {
-//		check("Integrate((a+b*x^2)/(a-b*x^2)^2, x)", "x/(a-b*x^2)");
-//
-//	}
-//
-//	// {(1+2*x^2)/(x^5*(1+x^2)^3), x, 1, -1/(4*x^4*(1+x^2)^2)}
-//	public void test00793() {
-//		check("Integrate((1+2*x^2)/(x^5*(1+x^2)^3), x)", "-1/(4*x^4*(1+x^2)^2)");
-//
-//	}
-//
-//	// {1/((1-x^2)^(1/3)*(3+x^2)), x, 1, ArcTan(Sqrt(3)/x)/(2*2^(2/3)*Sqrt(3))+ArcTan((Sqrt(3)*(1-2^(1/3)*(1 -
-//	// x^2)^(1/3)))/x)/(2*2^(2/3)*Sqrt(3))-ArcTanh(x)/(6*2^(2/3))+ArcTanh(x/(1+2^(1/3)*(1 -
-//	// x^2)^(1/3)))/(2*2^(2/3))}
-//	public void test00794() {
-//		check("Integrate(1/((1-x^2)^(1/3)*(3+x^2)), x)",
-//				"ArcTan(Sqrt(3)/x)/(2*2^(2/3)*Sqrt(3))+ArcTan((Sqrt(3)*(1-2^(1/3)*(1-x^2)^(1/3)))/x)/(2*2^(2/3)*Sqrt(3))-ArcTanh(x)/(6*2^(2/3))+ArcTanh(x/(1+2^(1/3)*(1-x^2)^(1/3)))/(2*2^(2/3))");
-//
-//	}
-//
-//	// {x/((2-3*x^2)^(1/4)*(4-3*x^2)), x, 1, ArcTan((Sqrt(2)-Sqrt(2-3*x^2))/(2^(3/4)*(2 -
-//	// 3*x^2)^(1/4)))/(3*2^(3/4))+ArcTanh((Sqrt(2)+Sqrt(2-3*x^2))/(2^(3/4)*(2-3*x^2)^(1/4)))/(3*2^(3/4))}
-//	public void test00795() {
-//		check("Integrate(x/((2-3*x^2)^(1/4)*(4-3*x^2)), x)",
-//				"ArcTan((Sqrt(2)-Sqrt(2-3*x^2))/(2^(3/4)*(2-3*x^2)^(1/4)))/(3*2^(3/4))+ArcTanh((Sqrt(2)+Sqrt(2-3*x^2))/(2^(3/4)*(2-3*x^2)^(1/4)))/(3*2^(3/4))");
-//
-//	}
-//
-//	// {1/((2-3*x^2)^(1/4)*(4-3*x^2)), x, 1, ArcTan((2-Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2 -
-//	// 3*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(3))+ArcTanh((2+Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2 -
-//	// 3*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(3))}
-//	public void test00796() {
-//		check("Integrate(1/((2-3*x^2)^(1/4)*(4-3*x^2)), x)",
-//				"ArcTan((2-Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2-3*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(3))+ArcTanh((2+Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2-3*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(3))");
-//
-//	}
-//
-//	// {1/((-2+3*x^2)*(-1+3*x^2)^(1/4)), x, 1, -ArcTan((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(2*Sqrt(6)) -
-//	// ArcTanh((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(2*Sqrt(6))}
-//	public void test00797() {
-//		check("Integrate(1/((-2+3*x^2)*(-1+3*x^2)^(1/4)), x)",
-//				"-ArcTan((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(2*Sqrt(6))-ArcTanh((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(2*Sqrt(6))");
-//
-//	}
-//
-//	// {x^2/((2+3*x^2)^(3/4)*(4+3*x^2)), x, 1, -ArcTan((2*2^(3/4)+2*2^(1/4)*Sqrt(2+3*x^2))/(2*Sqrt(3)*x*(2 +
-//	// 3*x^2)^(1/4)))/(3*2^(1/4)*Sqrt(3))+ArcTanh((2*2^(3/4)-2*2^(1/4)*Sqrt(2+3*x^2))/(2*Sqrt(3)*x*(2 +
-//	// 3*x^2)^(1/4)))/(3*2^(1/4)*Sqrt(3))}
-//	public void test00798() {
-//		check("Integrate(x^2/((2+3*x^2)^(3/4)*(4+3*x^2)), x)",
-//				"-ArcTan((2*2^(3/4)+2*2^(1/4)*Sqrt(2+3*x^2))/(2*Sqrt(3)*x*(2+3*x^2)^(1/4)))/(3*2^(1/4)*Sqrt(3))+ArcTanh((2*2^(3/4)-2*2^(1/4)*Sqrt(2+3*x^2))/(2*Sqrt(3)*x*(2+3*x^2)^(1/4)))/(3*2^(1/4)*Sqrt(3))");
-//
-//	}
-//
-//	// {x^2/((2-3*x^2)^(3/4)*(4-3*x^2)), x, 1, ArcTan((2-Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2 -
-//	// 3*x^2)^(1/4)))/(3*2^(1/4)*Sqrt(3))-ArcTanh((2+Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2 -
-//	// 3*x^2)^(1/4)))/(3*2^(1/4)*Sqrt(3))}
-//	public void test00799() {
-//		check("Integrate(x^2/((2-3*x^2)^(3/4)*(4-3*x^2)), x)",
-//				"ArcTan((2-Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2-3*x^2)^(1/4)))/(3*2^(1/4)*Sqrt(3))-ArcTanh((2+Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2-3*x^2)^(1/4)))/(3*2^(1/4)*Sqrt(3))");
-//
-//	}
-//
-//	// {x^2/((2+b*x^2)^(3/4)*(4+b*x^2)), x, 1, -(ArcTan((2*2^(3/4)+2*2^(1/4)*Sqrt(2+b*x^2))/(2*Sqrt(b)*x*(2 +
-//	// b*x^2)^(1/4)))/(2^(1/4)*b^(3/2)))+ArcTanh((2*2^(3/4)-2*2^(1/4)*Sqrt(2+b*x^2))/(2*Sqrt(b)*x*(2 +
-//	// b*x^2)^(1/4)))/(2^(1/4)*b^(3/2))}
-//	public void test00800() {
-//		check("Integrate(x^2/((2+b*x^2)^(3/4)*(4+b*x^2)), x)",
-//				"-(ArcTan((2*2^(3/4)+2*2^(1/4)*Sqrt(2+b*x^2))/(2*Sqrt(b)*x*(2+b*x^2)^(1/4)))/(2^(1/4)*b^(3/2)))+ArcTanh((2*2^(3/4)-2*2^(1/4)*Sqrt(2+b*x^2))/(2*Sqrt(b)*x*(2+b*x^2)^(1/4)))/(2^(1/4)*b^(3/2))");
-//
-//	}
-//
-//	// {x^2/((2-b*x^2)^(3/4)*(4-b*x^2)), x, 1, ArcTan((2-Sqrt(2)*Sqrt(2-b*x^2))/(2^(1/4)*Sqrt(b)*x*(2 -
-//	// b*x^2)^(1/4)))/(2^(1/4)*b^(3/2))-ArcTanh((2+Sqrt(2)*Sqrt(2-b*x^2))/(2^(1/4)*Sqrt(b)*x*(2 -
-//	// b*x^2)^(1/4)))/(2^(1/4)*b^(3/2))}
-//	public void test00801() {
-//		check("Integrate(x^2/((2-b*x^2)^(3/4)*(4-b*x^2)), x)",
-//				"ArcTan((2-Sqrt(2)*Sqrt(2-b*x^2))/(2^(1/4)*Sqrt(b)*x*(2-b*x^2)^(1/4)))/(2^(1/4)*b^(3/2))-ArcTanh((2+Sqrt(2)*Sqrt(2-b*x^2))/(2^(1/4)*Sqrt(b)*x*(2-b*x^2)^(1/4)))/(2^(1/4)*b^(3/2))");
-//
-//	}
-//
-//	// {x^2/((a+3*x^2)^(3/4)*(2*a+3*x^2)), x, 1, -ArcTan((a^(3/4)*(1+Sqrt(a+3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a +
-//	// 3*x^2)^(1/4)))/(3*Sqrt(3)*a^(1/4))+ArcTanh((a^(3/4)*(1-Sqrt(a+3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a +
-//	// 3*x^2)^(1/4)))/(3*Sqrt(3)*a^(1/4))}
-//	public void test00802() {
-//		check("Integrate(x^2/((a+3*x^2)^(3/4)*(2*a+3*x^2)), x)",
-//				"-ArcTan((a^(3/4)*(1+Sqrt(a+3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a+3*x^2)^(1/4)))/(3*Sqrt(3)*a^(1/4))+ArcTanh((a^(3/4)*(1-Sqrt(a+3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a+3*x^2)^(1/4)))/(3*Sqrt(3)*a^(1/4))");
-//
-//	}
-//
-//	// {x^2/((a-3*x^2)^(3/4)*(2*a-3*x^2)), x, 1, ArcTan((a^(3/4)*(1-Sqrt(a-3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a -
-//	// 3*x^2)^(1/4)))/(3*Sqrt(3)*a^(1/4))-ArcTanh((a^(3/4)*(1+Sqrt(a-3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a -
-//	// 3*x^2)^(1/4)))/(3*Sqrt(3)*a^(1/4))}
-//	public void test00803() {
-//		check("Integrate(x^2/((a-3*x^2)^(3/4)*(2*a-3*x^2)), x)",
-//				"ArcTan((a^(3/4)*(1-Sqrt(a-3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a-3*x^2)^(1/4)))/(3*Sqrt(3)*a^(1/4))-ArcTanh((a^(3/4)*(1+Sqrt(a-3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a-3*x^2)^(1/4)))/(3*Sqrt(3)*a^(1/4))");
-//
-//	}
-//
-//	// {x^2/((a+b*x^2)^(3/4)*(2*a+b*x^2)), x, 1, -(ArcTan((a^(3/4)*(1+Sqrt(a+b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a +
-//	// b*x^2)^(1/4)))/(a^(1/4)*b^(3/2)))+ArcTanh((a^(3/4)*(1-Sqrt(a+b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a +
-//	// b*x^2)^(1/4)))/(a^(1/4)*b^(3/2))}
-//	public void test00804() {
-//		check("Integrate(x^2/((a+b*x^2)^(3/4)*(2*a+b*x^2)), x)",
-//				"-(ArcTan((a^(3/4)*(1+Sqrt(a+b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a+b*x^2)^(1/4)))/(a^(1/4)*b^(3/2)))+ArcTanh((a^(3/4)*(1-Sqrt(a+b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a+b*x^2)^(1/4)))/(a^(1/4)*b^(3/2))");
-//
-//	}
-//
-//	// {x^2/((a-b*x^2)^(3/4)*(2*a-b*x^2)), x, 1, ArcTan((a^(3/4)*(1-Sqrt(a-b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a -
-//	// b*x^2)^(1/4)))/(a^(1/4)*b^(3/2))-ArcTanh((a^(3/4)*(1+Sqrt(a-b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a -
-//	// b*x^2)^(1/4)))/(a^(1/4)*b^(3/2))}
-//	public void test00805() {
-//		check("Integrate(x^2/((a-b*x^2)^(3/4)*(2*a-b*x^2)), x)",
-//				"ArcTan((a^(3/4)*(1-Sqrt(a-b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a-b*x^2)^(1/4)))/(a^(1/4)*b^(3/2))-ArcTanh((a^(3/4)*(1+Sqrt(a-b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a-b*x^2)^(1/4)))/(a^(1/4)*b^(3/2))");
-//
-//	}
-//
-//	// {x^2/((2-3*x^2)^(3/4)*(4-3*x^2)), x, 1, ArcTan((2-Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2 -
-//	// 3*x^2)^(1/4)))/(3*2^(1/4)*Sqrt(3))-ArcTanh((2+Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2 -
-//	// 3*x^2)^(1/4)))/(3*2^(1/4)*Sqrt(3))}
-//	public void test00806() {
-//		check("Integrate(x^2/((2-3*x^2)^(3/4)*(4-3*x^2)), x)",
-//				"ArcTan((2-Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2-3*x^2)^(1/4)))/(3*2^(1/4)*Sqrt(3))-ArcTanh((2+Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2-3*x^2)^(1/4)))/(3*2^(1/4)*Sqrt(3))");
-//
-//	}
-//
-//	// {x^2/((-2+3*x^2)*(-1+3*x^2)^(3/4)), x, 1, ArcTan((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(3*Sqrt(6)) -
-//	// ArcTanh((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(3*Sqrt(6))}
-//	public void test00807() {
-//		check("Integrate(x^2/((-2+3*x^2)*(-1+3*x^2)^(3/4)), x)",
-//				"ArcTan((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(3*Sqrt(6))-ArcTanh((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(3*Sqrt(6))");
-//
-//	}
-//
-//	// {x^2/((-2-3*x^2)*(-1-3*x^2)^(3/4)), x, 1, ArcTan((Sqrt(3/2)*x)/(-1-3*x^2)^(1/4))/(3*Sqrt(6)) -
-//	// ArcTanh((Sqrt(3/2)*x)/(-1-3*x^2)^(1/4))/(3*Sqrt(6))}
-//	public void test00808() {
-//		check("Integrate(x^2/((-2-3*x^2)*(-1-3*x^2)^(3/4)), x)",
-//				"ArcTan((Sqrt(3/2)*x)/(-1-3*x^2)^(1/4))/(3*Sqrt(6))-ArcTanh((Sqrt(3/2)*x)/(-1-3*x^2)^(1/4))/(3*Sqrt(6))");
-//
-//	}
-//
-//	// {x^2/((-2+b*x^2)*(-1+b*x^2)^(3/4)), x, 1, ArcTan((Sqrt(b)*x)/(Sqrt(2)*(-1+b*x^2)^(1/4)))/(Sqrt(2)*b^(3/2))
-//	// -ArcTanh((Sqrt(b)*x)/(Sqrt(2)*(-1+b*x^2)^(1/4)))/(Sqrt(2)*b^(3/2))}
-//	public void test00809() {
-//		check("Integrate(x^2/((-2+b*x^2)*(-1+b*x^2)^(3/4)), x)",
-//				"ArcTan((Sqrt(b)*x)/(Sqrt(2)*(-1+b*x^2)^(1/4)))/(Sqrt(2)*b^(3/2))-ArcTanh((Sqrt(b)*x)/(Sqrt(2)*(-1+b*x^2)^(1/4)))/(Sqrt(2)*b^(3/2))");
-//
-//	}
-//
-//	// {x^2/((-2-b*x^2)*(-1-b*x^2)^(3/4)), x, 1, ArcTan((Sqrt(b)*x)/(Sqrt(2)*(-1-b*x^2)^(1/4)))/(Sqrt(2)*b^(3/2))
-//	// -ArcTanh((Sqrt(b)*x)/(Sqrt(2)*(-1-b*x^2)^(1/4)))/(Sqrt(2)*b^(3/2))}
-//	public void test00810() {
-//		check("Integrate(x^2/((-2-b*x^2)*(-1-b*x^2)^(3/4)), x)",
-//				"ArcTan((Sqrt(b)*x)/(Sqrt(2)*(-1-b*x^2)^(1/4)))/(Sqrt(2)*b^(3/2))-ArcTanh((Sqrt(b)*x)/(Sqrt(2)*(-1-b*x^2)^(1/4)))/(Sqrt(2)*b^(3/2))");
-//
-//	}
-//
-//	// {x^2/((-2*a+3*x^2)*(-a+3*x^2)^(3/4)), x, 1, ArcTan((Sqrt(3/2)*x)/(a^(1/4)*(-a +
-//	// 3*x^2)^(1/4)))/(3*Sqrt(6)*a^(1/4))-ArcTanh((Sqrt(3/2)*x)/(a^(1/4)*(-a+3*x^2)^(1/4)))/(3*Sqrt(6)*a^(1/4))}
-//	public void test00811() {
-//		check("Integrate(x^2/((-2*a+3*x^2)*(-a+3*x^2)^(3/4)), x)",
-//				"ArcTan((Sqrt(3/2)*x)/(a^(1/4)*(-a+3*x^2)^(1/4)))/(3*Sqrt(6)*a^(1/4))-ArcTanh((Sqrt(3/2)*x)/(a^(1/4)*(-a+3*x^2)^(1/4)))/(3*Sqrt(6)*a^(1/4))");
-//
-//	}
-//
-//	// {x^2/((-2*a-3*x^2)*(-a-3*x^2)^(3/4)), x, 1, ArcTan((Sqrt(3/2)*x)/(a^(1/4)*(-a -
-//	// 3*x^2)^(1/4)))/(3*Sqrt(6)*a^(1/4))-ArcTanh((Sqrt(3/2)*x)/(a^(1/4)*(-a-3*x^2)^(1/4)))/(3*Sqrt(6)*a^(1/4))}
-//	public void test00812() {
-//		check("Integrate(x^2/((-2*a-3*x^2)*(-a-3*x^2)^(3/4)), x)",
-//				"ArcTan((Sqrt(3/2)*x)/(a^(1/4)*(-a-3*x^2)^(1/4)))/(3*Sqrt(6)*a^(1/4))-ArcTanh((Sqrt(3/2)*x)/(a^(1/4)*(-a-3*x^2)^(1/4)))/(3*Sqrt(6)*a^(1/4))");
-//
-//	}
-//
-//	// {x^2/((-2*a+b*x^2)*(-a+b*x^2)^(3/4)), x, 1, ArcTan((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a +
-//	// b*x^2)^(1/4)))/(Sqrt(2)*a^(1/4)*b^(3/2))-ArcTanh((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a +
-//	// b*x^2)^(1/4)))/(Sqrt(2)*a^(1/4)*b^(3/2))}
-//	public void test00813() {
-//		check("Integrate(x^2/((-2*a+b*x^2)*(-a+b*x^2)^(3/4)), x)",
-//				"ArcTan((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a+b*x^2)^(1/4)))/(Sqrt(2)*a^(1/4)*b^(3/2))-ArcTanh((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a+b*x^2)^(1/4)))/(Sqrt(2)*a^(1/4)*b^(3/2))");
-//
-//	}
-//
-//	// {x^2/((-2*a-b*x^2)*(-a-b*x^2)^(3/4)), x, 1, ArcTan((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a -
-//	// b*x^2)^(1/4)))/(Sqrt(2)*a^(1/4)*b^(3/2))-ArcTanh((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a -
-//	// b*x^2)^(1/4)))/(Sqrt(2)*a^(1/4)*b^(3/2))}
-//	public void test00814() {
-//		check("Integrate(x^2/((-2*a-b*x^2)*(-a-b*x^2)^(3/4)), x)",
-//				"ArcTan((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a-b*x^2)^(1/4)))/(Sqrt(2)*a^(1/4)*b^(3/2))-ArcTanh((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a-b*x^2)^(1/4)))/(Sqrt(2)*a^(1/4)*b^(3/2))");
-//
-//	}
-//
-//	// {x^2/((-2+3*x^2)*(-1+3*x^2)^(3/4)), x, 1, ArcTan((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(3*Sqrt(6)) -
-//	// ArcTanh((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(3*Sqrt(6))}
-//	public void test00815() {
-//		check("Integrate(x^2/((-2+3*x^2)*(-1+3*x^2)^(3/4)), x)",
-//				"ArcTan((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(3*Sqrt(6))-ArcTanh((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(3*Sqrt(6))");
-//
-//	}
-//
-//	// {Sqrt(e+f*x^2)/((a+b*x^2)*Sqrt(c+d*x^2)), x, 1, (e^(3/2)*Sqrt(c+d*x^2)*EllipticPi(1-(b*e)/(a*f),
-//	// ArcTan((Sqrt(f)*x)/Sqrt(e)), 1-(d*e)/(c*f)))/(a*c*Sqrt(f)*Sqrt((e*(c+d*x^2))/(c*(e+f*x^2)))*Sqrt(e +
-//	// f*x^2))}
-//	public void test00816() {
-//		check("Integrate(Sqrt(e+f*x^2)/((a+b*x^2)*Sqrt(c+d*x^2)), x)",
-//				"(e^(3/2)*Sqrt(c+d*x^2)*EllipticPi(1-(b*e)/(a*f), ArcTan((Sqrt(f)*x)/Sqrt(e)), 1-(d*e)/(c*f)))/(a*c*Sqrt(f)*Sqrt((e*(c+d*x^2))/(c*(e+f*x^2)))*Sqrt(e+f*x^2))");
-//
-//	}
-//
-//	// {Sqrt(c+d*x^2)/((a+b*x^2)*Sqrt(e+f*x^2)), x, 1, (c^(3/2)*Sqrt(e+f*x^2)*EllipticPi(1-(b*c)/(a*d),
-//	// ArcTan((Sqrt(d)*x)/Sqrt(c)), 1-(c*f)/(d*e)))/(a*Sqrt(d)*e*Sqrt(c+d*x^2)*Sqrt((c*(e+f*x^2))/(e*(c +
-//	// d*x^2))))}
-//	public void test00817() {
-//		check("Integrate(Sqrt(c+d*x^2)/((a+b*x^2)*Sqrt(e+f*x^2)), x)",
-//				"(c^(3/2)*Sqrt(e+f*x^2)*EllipticPi(1-(b*c)/(a*d), ArcTan((Sqrt(d)*x)/Sqrt(c)), 1-(c*f)/(d*e)))/(a*Sqrt(d)*e*Sqrt(c+d*x^2)*Sqrt((c*(e+f*x^2))/(e*(c+d*x^2))))");
-//
-//	}
-//
-//	// {Sqrt(2+x^2)/(Sqrt(1+x^2)*(a+b*x^2)), x, 1, (2*Sqrt(1+x^2)*EllipticPi(1-(2*b)/a, ArcTan(x/Sqrt(2)),
-//	// -1))/(a*Sqrt((1+x^2)/(2+x^2))*Sqrt(2+x^2))}
-//	public void test00818() {
-//		check("Integrate(Sqrt(2+x^2)/(Sqrt(1+x^2)*(a+b*x^2)), x)",
-//				"(2*Sqrt(1+x^2)*EllipticPi(1-(2*b)/a, ArcTan(x/Sqrt(2)), -1))/(a*Sqrt((1+x^2)/(2+x^2))*Sqrt(2+x^2))");
-//
-//	}
-//
-//	// {Sqrt(2+d*x^2)/((a+b*x^2)*Sqrt(3+f*x^2)), x, 1, (2*Sqrt(3+f*x^2)*EllipticPi(1-(2*b)/(a*d),
-//	// ArcTan((Sqrt(d)*x)/Sqrt(2)), 1-(2*f)/(3*d)))/(Sqrt(3)*a*Sqrt(d)*Sqrt(2+d*x^2)*Sqrt((3+f*x^2)/(2+d*x^2)))}
-//	public void test00819() {
-//		check("Integrate(Sqrt(2+d*x^2)/((a+b*x^2)*Sqrt(3+f*x^2)), x)",
-//				"(2*Sqrt(3+f*x^2)*EllipticPi(1-(2*b)/(a*d), ArcTan((Sqrt(d)*x)/Sqrt(2)), 1-(2*f)/(3*d)))/(Sqrt(3)*a*Sqrt(d)*Sqrt(2+d*x^2)*Sqrt((3+f*x^2)/(2+d*x^2)))");
-//
-//	}
-//
-//	// {1/((a+b*x^2)*Sqrt(2+d*x^2)*Sqrt(3+f*x^2)), x, 1, EllipticPi((2*b)/(a*d), ArcSin((Sqrt(-d)*x)/Sqrt(2)),
-//	// (2*f)/(3*d))/(Sqrt(3)*a*Sqrt(-d))}
-//	public void test00820() {
-//		check("Integrate(1/((a+b*x^2)*Sqrt(2+d*x^2)*Sqrt(3+f*x^2)), x)",
-//				"EllipticPi((2*b)/(a*d), ArcSin((Sqrt(-d)*x)/Sqrt(2)), (2*f)/(3*d))/(Sqrt(3)*a*Sqrt(-d))");
-//
-//	}
-//
-//	// {(A+B*x)/(a+b*x^2)^(3/2), x, 1, -((a*B-A*b*x)/(a*b*Sqrt(a+b*x^2)))}
-//	public void test00821() {
-//		check("Integrate((A+B*x)/(a+b*x^2)^(3/2), x)", "-((a*B-A*b*x)/(a*b*Sqrt(a+b*x^2)))");
-//
-//	}
-//
-//	// {Sqrt(b*x), x, 1, (2*(b*x)^(3/2))/(3*b)}
-//	public void test00822() {
-//		check("Integrate(Sqrt(b*x), x)", "(2*(b*x)^(3/2))/(3*b)");
-//
-//	}
-//
-//	// {(b*x)^(3/2), x, 1, (2*(b*x)^(5/2))/(5*b)}
-//	public void test00823() {
-//		check("Integrate((b*x)^(3/2), x)", "(2*(b*x)^(5/2))/(5*b)");
-//
-//	}
-//
-//	// {1/Sqrt(b*x), x, 1, (2*Sqrt(b*x))/b}
-//	public void test00824() {
-//		check("Integrate(1/Sqrt(b*x), x)", "(2*Sqrt(b*x))/b");
-//
-//	}
-//
-//	// {(b*x)^(-3/2), x, 1, -2/(b*Sqrt(b*x))}
-//	public void test00825() {
-//		check("Integrate((b*x)^(-3/2), x)", "-2/(b*Sqrt(b*x))");
-//
-//	}
-//
-//	// {(b*x)^(1/3), x, 1, (3*(b*x)^(4/3))/(4*b)}
-//	public void test00826() {
-//		check("Integrate((b*x)^(1/3), x)", "(3*(b*x)^(4/3))/(4*b)");
-//
-//	}
-//
-//	// {(b*x)^(2/3), x, 1, (3*(b*x)^(5/3))/(5*b)}
-//	public void test00827() {
-//		check("Integrate((b*x)^(2/3), x)", "(3*(b*x)^(5/3))/(5*b)");
-//
-//	}
-//
-//	// {(b*x)^(-1/3), x, 1, (3*(b*x)^(2/3))/(2*b)}
-//	public void test00828() {
-//		check("Integrate((b*x)^(-1/3), x)", "(3*(b*x)^(2/3))/(2*b)");
-//
-//	}
-//
-//	// {(b*x)^(-2/3), x, 1, (3*(b*x)^(1/3))/b}
-//	public void test00829() {
-//		check("Integrate((b*x)^(-2/3), x)", "(3*(b*x)^(1/3))/b");
-//
-//	}
-//
-//	// {a+b*x^3, x, 1, a*x+(b*x^4)/4}
-//	public void test00830() {
-//		check("Integrate(a+b*x^3, x)", "a*x+(b*x^4)/4");
-//
-//	}
-//
-//	// {x^2*(a+b*x^3)^2, x, 1, (a+b*x^3)^3/(9*b)}
-//	public void test00831() {
-//		check("Integrate(x^2*(a+b*x^3)^2, x)", "(a+b*x^3)^3/(9*b)");
-//
-//	}
-//
-//	// {(a+b*x^3)^2/x^10, x, 1, -(a+b*x^3)^3/(9*a*x^9)}
-//	public void test00832() {
-//		check("Integrate((a+b*x^3)^2/x^10, x)", "-(a+b*x^3)^3/(9*a*x^9)");
-//
-//	}
-//
-//	// {x^2*(a+b*x^3)^3, x, 1, (a+b*x^3)^4/(12*b)}
-//	public void test00833() {
-//		check("Integrate(x^2*(a+b*x^3)^3, x)", "(a+b*x^3)^4/(12*b)");
-//
-//	}
-//
-//	// {(a+b*x^3)^3/x^13, x, 1, -(a+b*x^3)^4/(12*a*x^12)}
-//	public void test00834() {
-//		check("Integrate((a+b*x^3)^3/x^13, x)", "-(a+b*x^3)^4/(12*a*x^12)");
-//
-//	}
-//
-//	// {x^2*(a+b*x^3)^5, x, 1, (a+b*x^3)^6/(18*b)}
-//	public void test00835() {
-//		check("Integrate(x^2*(a+b*x^3)^5, x)", "(a+b*x^3)^6/(18*b)");
-//
-//	}
-//
-//	// {(a+b*x^3)^5/x^19, x, 1, -(a+b*x^3)^6/(18*a*x^18)}
-//	public void test00836() {
-//		check("Integrate((a+b*x^3)^5/x^19, x)", "-(a+b*x^3)^6/(18*a*x^18)");
-//
-//	}
-//
-//	// {x^2*(a+b*x^3)^8, x, 1, (a+b*x^3)^9/(27*b)}
-//	public void test00837() {
-//		check("Integrate(x^2*(a+b*x^3)^8, x)", "(a+b*x^3)^9/(27*b)");
-//
-//	}
-//
-//	// {(a+b*x^3)^8/x^28, x, 1, -(a+b*x^3)^9/(27*a*x^27)}
-//	public void test00838() {
-//		check("Integrate((a+b*x^3)^8/x^28, x)", "-(a+b*x^3)^9/(27*a*x^27)");
-//
-//	}
-//
-//	// {x^2/(a+b*x^3), x, 1, Log(a+b*x^3)/(3*b)}
-//	public void test00839() {
-//		check("Integrate(x^2/(a+b*x^3), x)", "Log(a+b*x^3)/(3*b)");
-//
-//	}
-//
-//	// {x^2/(a+b*x^3)^2, x, 1, -1/(3*b*(a+b*x^3))}
-//	public void test00840() {
-//		check("Integrate(x^2/(a+b*x^3)^2, x)", "-1/(3*b*(a+b*x^3))");
-//
-//	}
-//
-//	// {x^5/(a+b*x^3)^3, x, 1, x^6/(6*a*(a+b*x^3)^2)}
-//	public void test00841() {
-//		check("Integrate(x^5/(a+b*x^3)^3, x)", "x^6/(6*a*(a+b*x^3)^2)");
-//
-//	}
-//
-//	// {x^2/(a+b*x^3)^3, x, 1, -1/(6*b*(a+b*x^3)^2)}
-//	public void test00842() {
-//		check("Integrate(x^2/(a+b*x^3)^3, x)", "-1/(6*b*(a+b*x^3)^2)");
-//
-//	}
-//
-//	// {x^2/(a-b*x^3), x, 1, -Log(a-b*x^3)/(3*b)}
-//	public void test00843() {
-//		check("Integrate(x^2/(a-b*x^3), x)", "-Log(a-b*x^3)/(3*b)");
-//
-//	}
-//
-//	// {x^2*Sqrt(a+b*x^3), x, 1, (2*(a+b*x^3)^(3/2))/(9*b)}
-//	public void test00844() {
-//		check("Integrate(x^2*Sqrt(a+b*x^3), x)", "(2*(a+b*x^3)^(3/2))/(9*b)");
-//
-//	}
-//
-//	// {x^2*(a+b*x^3)^(3/2), x, 1, (2*(a+b*x^3)^(5/2))/(15*b)}
-//	public void test00845() {
-//		check("Integrate(x^2*(a+b*x^3)^(3/2), x)", "(2*(a+b*x^3)^(5/2))/(15*b)");
-//
-//	}
-//
-//	// {x^2/Sqrt(a+b*x^3), x, 1, (2*Sqrt(a+b*x^3))/(3*b)}
-//	public void test00846() {
-//		check("Integrate(x^2/Sqrt(a+b*x^3), x)", "(2*Sqrt(a+b*x^3))/(3*b)");
-//
-//	}
-//
-//	// {1/Sqrt(a+b*x^3), x, 1, (2*Sqrt(2+Sqrt(3))*(a^(1/3)+b^(1/3)*x)*Sqrt((a^(2/3)-a^(1/3)*b^(1/3)*x +
-//	// b^(2/3)*x^2)/((1+Sqrt(3))*a^(1/3)+b^(1/3)*x)^2)*EllipticF(ArcSin(((1-Sqrt(3))*a^(1/3)+b^(1/3)*x)/((1 +
-//	// Sqrt(3))*a^(1/3)+b^(1/3)*x)), -7-4*Sqrt(3)))/(3^(1/4)*b^(1/3)*Sqrt((a^(1/3)*(a^(1/3)+b^(1/3)*x))/((1 +
-//	// Sqrt(3))*a^(1/3)+b^(1/3)*x)^2)*Sqrt(a+b*x^3))}
-//	public void test00847() {
-//		check("Integrate(1/Sqrt(a+b*x^3), x)",
-//				"(2*Sqrt(2+Sqrt(3))*(a^(1/3)+b^(1/3)*x)*Sqrt((a^(2/3)-a^(1/3)*b^(1/3)*x+b^(2/3)*x^2)/((1+Sqrt(3))*a^(1/3)+b^(1/3)*x)^2)*EllipticF(ArcSin(((1-Sqrt(3))*a^(1/3)+b^(1/3)*x)/((1+Sqrt(3))*a^(1/3)+b^(1/3)*x)), -7-4*Sqrt(3)))/(3^(1/4)*b^(1/3)*Sqrt((a^(1/3)*(a^(1/3)+b^(1/3)*x))/((1+Sqrt(3))*a^(1/3)+b^(1/3)*x)^2)*Sqrt(a+b*x^3))");
-//
-//	}
-//
-//	// {x^2/(a+b*x^3)^(3/2), x, 1, -2/(3*b*Sqrt(a+b*x^3))}
-//	public void test00848() {
-//		check("Integrate(x^2/(a+b*x^3)^(3/2), x)", "-2/(3*b*Sqrt(a+b*x^3))");
-//
-//	}
-//
-//	// {x^2/Sqrt(1+x^3), x, 1, (2*Sqrt(1+x^3))/3}
-//	public void test00849() {
-//		check("Integrate(x^2/Sqrt(1+x^3), x)", "(2*Sqrt(1+x^3))/3");
-//
-//	}
-//
-//	// {1/Sqrt(1+x^3), x, 1, (2*Sqrt(2+Sqrt(3))*(1+x)*Sqrt((1-x+x^2)/(1+Sqrt(3)+x)^2)*EllipticF(ArcSin((1
-//	// -Sqrt(3)+x)/(1+Sqrt(3)+x)), -7-4*Sqrt(3)))/(3^(1/4)*Sqrt((1+x)/(1+Sqrt(3)+x)^2)*Sqrt(1+x^3))}
-//	public void test00850() {
-//		check("Integrate(1/Sqrt(1+x^3), x)",
-//				"(2*Sqrt(2+Sqrt(3))*(1+x)*Sqrt((1-x+x^2)/(1+Sqrt(3)+x)^2)*EllipticF(ArcSin((1-Sqrt(3)+x)/(1+Sqrt(3)+x)), -7-4*Sqrt(3)))/(3^(1/4)*Sqrt((1+x)/(1+Sqrt(3)+x)^2)*Sqrt(1+x^3))");
-//
-//	}
-//
-//	// {x^2/Sqrt(1-x^3), x, 1, (-2*Sqrt(1-x^3))/3}
-//	public void test00851() {
-//		check("Integrate(x^2/Sqrt(1-x^3), x)", "(-2*Sqrt(1-x^3))/3");
-//
-//	}
-//
-//	// {1/Sqrt(1-x^3), x, 1, (-2*Sqrt(2+Sqrt(3))*(1-x)*Sqrt((1+x+x^2)/(1+Sqrt(3)-x)^2)*EllipticF(ArcSin((1
-//	// -Sqrt(3)-x)/(1+Sqrt(3)-x)), -7-4*Sqrt(3)))/(3^(1/4)*Sqrt((1-x)/(1+Sqrt(3)-x)^2)*Sqrt(1-x^3))}
-//	public void test00852() {
-//		check("Integrate(1/Sqrt(1-x^3), x)",
-//				"(-2*Sqrt(2+Sqrt(3))*(1-x)*Sqrt((1+x+x^2)/(1+Sqrt(3)-x)^2)*EllipticF(ArcSin((1-Sqrt(3)-x)/(1+Sqrt(3)-x)), -7-4*Sqrt(3)))/(3^(1/4)*Sqrt((1-x)/(1+Sqrt(3)-x)^2)*Sqrt(1-x^3))");
-//
-//	}
-//
-//	// {x^2/Sqrt(-1+x^3), x, 1, (2*Sqrt(-1+x^3))/3}
-//	public void test00853() {
-//		check("Integrate(x^2/Sqrt(-1+x^3), x)", "(2*Sqrt(-1+x^3))/3");
-//
-//	}
-//
-//	// {1/Sqrt(-1+x^3), x, 1, (-2*Sqrt(2-Sqrt(3))*(1-x)*Sqrt((1+x+x^2)/(1-Sqrt(3) -
-//	// x)^2)*EllipticF(ArcSin((1+Sqrt(3)-x)/(1-Sqrt(3)-x)), -7+4*Sqrt(3)))/(3^(1/4)*Sqrt(-((1-x)/(1 -
-//	// Sqrt(3)-x)^2))*Sqrt(-1+x^3))}
-//	public void test00854() {
-//		check("Integrate(1/Sqrt(-1+x^3), x)",
-//				"(-2*Sqrt(2-Sqrt(3))*(1-x)*Sqrt((1+x+x^2)/(1-Sqrt(3)-x)^2)*EllipticF(ArcSin((1+Sqrt(3)-x)/(1-Sqrt(3)-x)), -7+4*Sqrt(3)))/(3^(1/4)*Sqrt(-((1-x)/(1-Sqrt(3)-x)^2))*Sqrt(-1+x^3))");
-//
-//	}
-//
-//	// {x^2/Sqrt(-1-x^3), x, 1, (-2*Sqrt(-1-x^3))/3}
-//	public void test00855() {
-//		check("Integrate(x^2/Sqrt(-1-x^3), x)", "(-2*Sqrt(-1-x^3))/3");
-//
-//	}
-//
-//	// {1/Sqrt(-1-x^3), x, 1, (2*Sqrt(2-Sqrt(3))*(1+x)*Sqrt((1-x+x^2)/(1-Sqrt(3)+x)^2)*EllipticF(ArcSin((1
-//	// +Sqrt(3)+x)/(1-Sqrt(3)+x)), -7+4*Sqrt(3)))/(3^(1/4)*Sqrt(-((1+x)/(1-Sqrt(3)+x)^2))*Sqrt(-1 -
-//	// x^3))}
-//	public void test00856() {
-//		check("Integrate(1/Sqrt(-1-x^3), x)",
-//				"(2*Sqrt(2-Sqrt(3))*(1+x)*Sqrt((1-x+x^2)/(1-Sqrt(3)+x)^2)*EllipticF(ArcSin((1+Sqrt(3)+x)/(1-Sqrt(3)+x)), -7+4*Sqrt(3)))/(3^(1/4)*Sqrt(-((1+x)/(1-Sqrt(3)+x)^2))*Sqrt(-1-x^3))");
-//
-//	}
-//
-//	// {x^2*(a+b*x^3)^(1/3), x, 1, (a+b*x^3)^(4/3)/(4*b)}
-//	public void test00857() {
-//		check("Integrate(x^2*(a+b*x^3)^(1/3), x)", "(a+b*x^3)^(4/3)/(4*b)");
-//
-//	}
-//
-//	// {(a+b*x^3)^(1/3)/x^5, x, 1, -(a+b*x^3)^(4/3)/(4*a*x^4)}
-//	public void test00858() {
-//		check("Integrate((a+b*x^3)^(1/3)/x^5, x)", "-(a+b*x^3)^(4/3)/(4*a*x^4)");
-//
-//	}
-//
-//	// {x^2*(a+b*x^3)^(2/3), x, 1, (a+b*x^3)^(5/3)/(5*b)}
-//	public void test00859() {
-//		check("Integrate(x^2*(a+b*x^3)^(2/3), x)", "(a+b*x^3)^(5/3)/(5*b)");
-//
-//	}
-//
-//	// {(a+b*x^3)^(2/3)/x^6, x, 1, -(a+b*x^3)^(5/3)/(5*a*x^5)}
-//	public void test00860() {
-//		check("Integrate((a+b*x^3)^(2/3)/x^6, x)", "-(a+b*x^3)^(5/3)/(5*a*x^5)");
-//
-//	}
-//
-//	// {x^2/(a+b*x^3)^(1/3), x, 1, (a+b*x^3)^(2/3)/(2*b)}
-//	public void test00861() {
-//		check("Integrate(x^2/(a+b*x^3)^(1/3), x)", "(a+b*x^3)^(2/3)/(2*b)");
-//
-//	}
-//
-//	// {(a+b*x^3)^(-1/3), x, 1, ArcTan((1+(2*b^(1/3)*x)/(a+b*x^3)^(1/3))/Sqrt(3))/(Sqrt(3)*b^(1/3)) -
-//	// Log(-(b^(1/3)*x)+(a+b*x^3)^(1/3))/(2*b^(1/3))}
-//	public void test00862() {
-//		check("Integrate((a+b*x^3)^(-1/3), x)",
-//				"ArcTan((1+(2*b^(1/3)*x)/(a+b*x^3)^(1/3))/Sqrt(3))/(Sqrt(3)*b^(1/3))-Log(-(b^(1/3)*x)+(a+b*x^3)^(1/3))/(2*b^(1/3))");
-//
-//	}
-//
-//	// {1/(x^3*(a+b*x^3)^(1/3)), x, 1, -(a+b*x^3)^(2/3)/(2*a*x^2)}
-//	public void test00863() {
-//		check("Integrate(1/(x^3*(a+b*x^3)^(1/3)), x)", "-(a+b*x^3)^(2/3)/(2*a*x^2)");
-//
-//	}
-//
-//	// {x^2/(a+b*x^3)^(2/3), x, 1, (a+b*x^3)^(1/3)/b}
-//	public void test00864() {
-//		check("Integrate(x^2/(a+b*x^3)^(2/3), x)", "(a+b*x^3)^(1/3)/b");
-//
-//	}
-//
-//	// {1/(x^2*(a+b*x^3)^(2/3)), x, 1, -((a+b*x^3)^(1/3)/(a*x))}
-//	public void test00865() {
-//		check("Integrate(1/(x^2*(a+b*x^3)^(2/3)), x)", "-((a+b*x^3)^(1/3)/(a*x))");
-//
-//	}
-//
-//	// {(a-b*x^3)^(-1/3), x, 1, -(ArcTan((1-(2*b^(1/3)*x)/(a-b*x^3)^(1/3))/Sqrt(3))/(Sqrt(3)*b^(1/3))) +
-//	// Log(b^(1/3)*x+(a-b*x^3)^(1/3))/(2*b^(1/3))}
-//	public void test00866() {
-//		check("Integrate((a-b*x^3)^(-1/3), x)",
-//				"-(ArcTan((1-(2*b^(1/3)*x)/(a-b*x^3)^(1/3))/Sqrt(3))/(Sqrt(3)*b^(1/3)))+Log(b^(1/3)*x+(a-b*x^3)^(1/3))/(2*b^(1/3))");
-//
-//	}
-//
-//	// {(2+x^3)^(-1/3), x, 1, ArcTan((1+(2*x)/(2+x^3)^(1/3))/Sqrt(3))/Sqrt(3)-Log(-x+(2+x^3)^(1/3))/2}
-//	public void test00867() {
-//		check("Integrate((2+x^3)^(-1/3), x)",
-//				"ArcTan((1+(2*x)/(2+x^3)^(1/3))/Sqrt(3))/Sqrt(3)-Log(-x+(2+x^3)^(1/3))/2");
-//
-//	}
-//
-//	// {x^2/(2+x^3)^(1/4), x, 1, (4*(2+x^3)^(3/4))/9}
-//	public void test00868() {
-//		check("Integrate(x^2/(2+x^3)^(1/4), x)", "(4*(2+x^3)^(3/4))/9");
-//
-//	}
-//
-//	// {x^m/(a+b*x^3), x, 1, (x^(1+m)*Hypergeometric2F1(1, (1+m)/3, (4+m)/3, -((b*x^3)/a)))/(a*(1+m))}
-//	public void test00869() {
-//		check("Integrate(x^m/(a+b*x^3), x)",
-//				"(x^(1+m)*Hypergeometric2F1(1, (1+m)/3, (4+m)/3, -((b*x^3)/a)))/(a*(1+m))");
-//
-//	}
-//
-//	// {x^m/(a+b*x^3)^2, x, 1, (x^(1+m)*Hypergeometric2F1(2, (1+m)/3, (4+m)/3, -((b*x^3)/a)))/(a^2*(1+m))}
-//	public void test00870() {
-//		check("Integrate(x^m/(a+b*x^3)^2, x)",
-//				"(x^(1+m)*Hypergeometric2F1(2, (1+m)/3, (4+m)/3, -((b*x^3)/a)))/(a^2*(1+m))");
-//
-//	}
-//
-//	// {x^m/(a+b*x^3)^3, x, 1, (x^(1+m)*Hypergeometric2F1(3, (1+m)/3, (4+m)/3, -((b*x^3)/a)))/(a^3*(1+m))}
-//	public void test00871() {
-//		check("Integrate(x^m/(a+b*x^3)^3, x)",
-//				"(x^(1+m)*Hypergeometric2F1(3, (1+m)/3, (4+m)/3, -((b*x^3)/a)))/(a^3*(1+m))");
-//
-//	}
-//
-//	// {x^2*(a+b*x^3)^p, x, 1, (a+b*x^3)^(1+p)/(3*b*(1+p))}
-//	public void test00872() {
-//		check("Integrate(x^2*(a+b*x^3)^p, x)", "(a+b*x^3)^(1+p)/(3*b*(1+p))");
-//
-//	}
-//
-//	// {a+b*x^4, x, 1, a*x+(b*x^5)/5}
-//	public void test00873() {
-//		check("Integrate(a+b*x^4, x)", "a*x+(b*x^5)/5");
-//
-//	}
-//
-//	// {x^3*(a+b*x^4)^2, x, 1, (a+b*x^4)^3/(12*b)}
-//	public void test00874() {
-//		check("Integrate(x^3*(a+b*x^4)^2, x)", "(a+b*x^4)^3/(12*b)");
-//
-//	}
-//
-//	// {x^3*(a+b*x^4)^3, x, 1, (a+b*x^4)^4/(16*b)}
-//	public void test00875() {
-//		check("Integrate(x^3*(a+b*x^4)^3, x)", "(a+b*x^4)^4/(16*b)");
-//
-//	}
-//
-//	// {x^3/(a+c*x^4), x, 1, Log(a+c*x^4)/(4*c)}
-//	public void test00876() {
-//		check("Integrate(x^3/(a+c*x^4), x)", "Log(a+c*x^4)/(4*c)");
-//
-//	}
-//
-//	// {x^3/(a+c*x^4)^2, x, 1, -1/(4*c*(a+c*x^4))}
-//	public void test00877() {
-//		check("Integrate(x^3/(a+c*x^4)^2, x)", "-1/(4*c*(a+c*x^4))");
-//
-//	}
-//
-//	// {x^7/(a+c*x^4)^3, x, 1, x^8/(8*a*(a+c*x^4)^2)}
-//	public void test00878() {
-//		check("Integrate(x^7/(a+c*x^4)^3, x)", "x^8/(8*a*(a+c*x^4)^2)");
-//
-//	}
-//
-//	// {x^3/(a+c*x^4)^3, x, 1, -1/(8*c*(a+c*x^4)^2)}
-//	public void test00879() {
-//		check("Integrate(x^3/(a+c*x^4)^3, x)", "-1/(8*c*(a+c*x^4)^2)");
-//
-//	}
-//
-//	// {x^3/(2+3*x^4), x, 1, Log(2+3*x^4)/12}
-//	public void test00880() {
-//		check("Integrate(x^3/(2+3*x^4), x)", "Log(2+3*x^4)/12");
-//
-//	}
-//
-//	// {x^3/(2+3*x^4)^2, x, 1, -1/(12*(2+3*x^4))}
-//	public void test00881() {
-//		check("Integrate(x^3/(2+3*x^4)^2, x)", "-1/(12*(2+3*x^4))");
-//
-//	}
-//
-//	// {x^3/(2*a+2*b+x^4), x, 1, Log(2*(a+b)+x^4)/4}
-//	public void test00882() {
-//		check("Integrate(x^3/(2*a+2*b+x^4), x)", "Log(2*(a+b)+x^4)/4");
-//
-//	}
-//
-//	// {x^3/(2*(a+b)+x^4), x, 1, Log(2*(a+b)+x^4)/4}
-//	public void test00883() {
-//		check("Integrate(x^3/(2*(a+b)+x^4), x)", "Log(2*(a+b)+x^4)/4");
-//
-//	}
-//
-//	// {x^3*Sqrt(a+c*x^4), x, 1, (a+c*x^4)^(3/2)/(6*c)}
-//	public void test00884() {
-//		check("Integrate(x^3*Sqrt(a+c*x^4), x)", "(a+c*x^4)^(3/2)/(6*c)");
-//
-//	}
-//
-//	// {Sqrt(a+c*x^4)/x^7, x, 1, -(a+c*x^4)^(3/2)/(6*a*x^6)}
-//	public void test00885() {
-//		check("Integrate(Sqrt(a+c*x^4)/x^7, x)", "-(a+c*x^4)^(3/2)/(6*a*x^6)");
-//
-//	}
-//
-//	// {x^3*(a+c*x^4)^(3/2), x, 1, (a+c*x^4)^(5/2)/(10*c)}
-//	public void test00886() {
-//		check("Integrate(x^3*(a+c*x^4)^(3/2), x)", "(a+c*x^4)^(5/2)/(10*c)");
-//
-//	}
-//
-//	// {(a+c*x^4)^(3/2)/x^11, x, 1, -(a+c*x^4)^(5/2)/(10*a*x^10)}
-//	public void test00887() {
-//		check("Integrate((a+c*x^4)^(3/2)/x^11, x)", "-(a+c*x^4)^(5/2)/(10*a*x^10)");
-//
-//	}
-//
-//	// {x^3*Sqrt(5+x^4), x, 1, (5+x^4)^(3/2)/6}
-//	public void test00888() {
-//		check("Integrate(x^3*Sqrt(5+x^4), x)", "(5+x^4)^(3/2)/6");
-//
-//	}
-//
-//	// {x^3/Sqrt(a+b*x^4), x, 1, Sqrt(a+b*x^4)/(2*b)}
-//	public void test00889() {
-//		check("Integrate(x^3/Sqrt(a+b*x^4), x)", "Sqrt(a+b*x^4)/(2*b)");
-//
-//	}
-//
-//	// {1/(x^3*Sqrt(a+b*x^4)), x, 1, -Sqrt(a+b*x^4)/(2*a*x^2)}
-//	public void test00890() {
-//		check("Integrate(1/(x^3*Sqrt(a+b*x^4)), x)", "-Sqrt(a+b*x^4)/(2*a*x^2)");
-//
-//	}
-//
-//	// {1/Sqrt(a+b*x^4), x, 1, ((Sqrt(a)+Sqrt(b)*x^2)*Sqrt((a+b*x^4)/(Sqrt(a) +
-//	// Sqrt(b)*x^2)^2)*EllipticF(2*ArcTan((b^(1/4)*x)/a^(1/4)), 1/2))/(2*a^(1/4)*b^(1/4)*Sqrt(a+b*x^4))}
-//	public void test00891() {
-//		check("Integrate(1/Sqrt(a+b*x^4), x)",
-//				"((Sqrt(a)+Sqrt(b)*x^2)*Sqrt((a+b*x^4)/(Sqrt(a)+Sqrt(b)*x^2)^2)*EllipticF(2*ArcTan((b^(1/4)*x)/a^(1/4)), 1/2))/(2*a^(1/4)*b^(1/4)*Sqrt(a+b*x^4))");
-//
-//	}
-//
-//	// {x^3/Sqrt(a-b*x^4), x, 1, -Sqrt(a-b*x^4)/(2*b)}
-//	public void test00892() {
-//		check("Integrate(x^3/Sqrt(a-b*x^4), x)", "-Sqrt(a-b*x^4)/(2*b)");
-//
-//	}
-//
-//	// {1/(x^3*Sqrt(a-b*x^4)), x, 1, -Sqrt(a-b*x^4)/(2*a*x^2)}
-//	public void test00893() {
-//		check("Integrate(1/(x^3*Sqrt(a-b*x^4)), x)", "-Sqrt(a-b*x^4)/(2*a*x^2)");
-//
-//	}
-//
-//	// {x^3/(a+b*x^4)^(3/2), x, 1, -1/(2*b*Sqrt(a+b*x^4))}
-//	public void test00894() {
-//		check("Integrate(x^3/(a+b*x^4)^(3/2), x)", "-1/(2*b*Sqrt(a+b*x^4))");
-//
-//	}
-//
-//	// {x/(a+b*x^4)^(3/2), x, 1, x^2/(2*a*Sqrt(a+b*x^4))}
-//	public void test00895() {
-//		check("Integrate(x/(a+b*x^4)^(3/2), x)", "x^2/(2*a*Sqrt(a+b*x^4))");
-//
-//	}
-//
-//	// {x^3/Sqrt(1-x^4), x, 1, -Sqrt(1-x^4)/2}
-//	public void test00896() {
-//		check("Integrate(x^3/Sqrt(1-x^4), x)", "-Sqrt(1-x^4)/2");
-//
-//	}
-//
-//	// {1/(x^3*Sqrt(1-x^4)), x, 1, -Sqrt(1-x^4)/(2*x^2)}
-//	public void test00897() {
-//		check("Integrate(1/(x^3*Sqrt(1-x^4)), x)", "-Sqrt(1-x^4)/(2*x^2)");
-//
-//	}
-//
-//	// {1/Sqrt(1-x^4), x, 1, EllipticF(ArcSin(x), -1)}
-//	public void test00898() {
-//		check("Integrate(1/Sqrt(1-x^4), x)", "EllipticF(ArcSin(x), -1)");
-//
-//	}
-//
-//	// {x^3/(1-x^4)^(3/2), x, 1, 1/(2*Sqrt(1-x^4))}
-//	public void test00899() {
-//		check("Integrate(x^3/(1-x^4)^(3/2), x)", "1/(2*Sqrt(1-x^4))");
-//
-//	}
-//
-//	// {x/(1-x^4)^(3/2), x, 1, x^2/(2*Sqrt(1-x^4))}
-//	public void test00900() {
-//		check("Integrate(x/(1-x^4)^(3/2), x)", "x^2/(2*Sqrt(1-x^4))");
-//
-//	}
-//
-//	// {x^3/Sqrt(1+x^4), x, 1, Sqrt(1+x^4)/2}
-//	public void test00901() {
-//		check("Integrate(x^3/Sqrt(1+x^4), x)", "Sqrt(1+x^4)/2");
-//
-//	}
-//
-//	// {1/(x^3*Sqrt(1+x^4)), x, 1, -Sqrt(1+x^4)/(2*x^2)}
-//	public void test00902() {
-//		check("Integrate(1/(x^3*Sqrt(1+x^4)), x)", "-Sqrt(1+x^4)/(2*x^2)");
-//
-//	}
-//
-//	// {1/Sqrt(1+x^4), x, 1, ((1+x^2)*Sqrt((1+x^4)/(1+x^2)^2)*EllipticF(2*ArcTan(x), 1/2))/(2*Sqrt(1+x^4))}
-//	public void test00903() {
-//		check("Integrate(1/Sqrt(1+x^4), x)",
-//				"((1+x^2)*Sqrt((1+x^4)/(1+x^2)^2)*EllipticF(2*ArcTan(x), 1/2))/(2*Sqrt(1+x^4))");
-//
-//	}
-//
-//	// {x^3/(1+x^4)^(3/2), x, 1, -1/(2*Sqrt(1+x^4))}
-//	public void test00904() {
-//		check("Integrate(x^3/(1+x^4)^(3/2), x)", "-1/(2*Sqrt(1+x^4))");
-//
-//	}
-//
-//	// {x/(1+x^4)^(3/2), x, 1, x^2/(2*Sqrt(1+x^4))}
-//	public void test00905() {
-//		check("Integrate(x/(1+x^4)^(3/2), x)", "x^2/(2*Sqrt(1+x^4))");
-//
-//	}
-//
-//	// {x^3/Sqrt(16-x^4), x, 1, -Sqrt(16-x^4)/2}
-//	public void test00906() {
-//		check("Integrate(x^3/Sqrt(16-x^4), x)", "-Sqrt(16-x^4)/2");
-//
-//	}
-//
-//	// {1/(x^3*Sqrt(16-x^4)), x, 1, -Sqrt(16-x^4)/(32*x^2)}
-//	public void test00907() {
-//		check("Integrate(1/(x^3*Sqrt(16-x^4)), x)", "-Sqrt(16-x^4)/(32*x^2)");
-//
-//	}
-//
-//	// {1/Sqrt(16-x^4), x, 1, EllipticF(ArcSin(x/2), -1)/2}
-//	public void test00908() {
-//		check("Integrate(1/Sqrt(16-x^4), x)", "EllipticF(ArcSin(x/2), -1)/2");
-//
-//	}
-//
-//	// {1/Sqrt(-1+x^4), x, 1, (Sqrt(-1+x^2)*Sqrt(1+x^2)*EllipticF(ArcSin((Sqrt(2)*x)/Sqrt(-1+x^2)),
-//	// 1/2))/(Sqrt(2)*Sqrt(-1+x^4))}
-//	public void test00909() {
-//		check("Integrate(1/Sqrt(-1+x^4), x)",
-//				"(Sqrt(-1+x^2)*Sqrt(1+x^2)*EllipticF(ArcSin((Sqrt(2)*x)/Sqrt(-1+x^2)), 1/2))/(Sqrt(2)*Sqrt(-1+x^4))");
-//
-//	}
-//
-//	// {x^3/(1+x^4)^(4/3), x, 1, -3/(4*(1+x^4)^(1/3))}
-//	public void test00910() {
-//		check("Integrate(x^3/(1+x^4)^(4/3), x)", "-3/(4*(1+x^4)^(1/3))");
-//
-//	}
-//
-//	// {x^3/(1+x^4)^(1/3), x, 1, (3*(1+x^4)^(2/3))/8}
-//	public void test00911() {
-//		check("Integrate(x^3/(1+x^4)^(1/3), x)", "(3*(1+x^4)^(2/3))/8");
-//
-//	}
-//
-//	// {x^3*(a+b*x^4)^(1/4), x, 1, (a+b*x^4)^(5/4)/(5*b)}
-//	public void test00912() {
-//		check("Integrate(x^3*(a+b*x^4)^(1/4), x)", "(a+b*x^4)^(5/4)/(5*b)");
-//
-//	}
-//
-//	// {(a+b*x^4)^(1/4)/x^6, x, 1, -(a+b*x^4)^(5/4)/(5*a*x^5)}
-//	public void test00913() {
-//		check("Integrate((a+b*x^4)^(1/4)/x^6, x)", "-(a+b*x^4)^(5/4)/(5*a*x^5)");
-//
-//	}
-//
-//	// {x^3*(a+b*x^4)^(3/4), x, 1, (a+b*x^4)^(7/4)/(7*b)}
-//	public void test00914() {
-//		check("Integrate(x^3*(a+b*x^4)^(3/4), x)", "(a+b*x^4)^(7/4)/(7*b)");
-//
-//	}
-//
-//	// {(a+b*x^4)^(3/4)/x^8, x, 1, -(a+b*x^4)^(7/4)/(7*a*x^7)}
-//	public void test00915() {
-//		check("Integrate((a+b*x^4)^(3/4)/x^8, x)", "-(a+b*x^4)^(7/4)/(7*a*x^7)");
-//
-//	}
-//
-//	// {x^3*(a+b*x^4)^(5/4), x, 1, (a+b*x^4)^(9/4)/(9*b)}
-//	public void test00916() {
-//		check("Integrate(x^3*(a+b*x^4)^(5/4), x)", "(a+b*x^4)^(9/4)/(9*b)");
-//
-//	}
-//
-//	// {(a+b*x^4)^(5/4)/x^10, x, 1, -(a+b*x^4)^(9/4)/(9*a*x^9)}
-//	public void test00917() {
-//		check("Integrate((a+b*x^4)^(5/4)/x^10, x)", "-(a+b*x^4)^(9/4)/(9*a*x^9)");
-//
-//	}
-//
-//	// {x^3/(a+b*x^4)^(1/4), x, 1, (a+b*x^4)^(3/4)/(3*b)}
-//	public void test00918() {
-//		check("Integrate(x^3/(a+b*x^4)^(1/4), x)", "(a+b*x^4)^(3/4)/(3*b)");
-//
-//	}
-//
-//	// {1/(x^4*(a+b*x^4)^(1/4)), x, 1, -(a+b*x^4)^(3/4)/(3*a*x^3)}
-//	public void test00919() {
-//		check("Integrate(1/(x^4*(a+b*x^4)^(1/4)), x)", "-(a+b*x^4)^(3/4)/(3*a*x^3)");
-//
-//	}
-//
-//	// {x^3/(a+b*x^4)^(3/4), x, 1, (a+b*x^4)^(1/4)/b}
-//	public void test00920() {
-//		check("Integrate(x^3/(a+b*x^4)^(3/4), x)", "(a+b*x^4)^(1/4)/b");
-//
-//	}
-//
-//	// {1/(x^2*(a+b*x^4)^(3/4)), x, 1, -((a+b*x^4)^(1/4)/(a*x))}
-//	public void test00921() {
-//		check("Integrate(1/(x^2*(a+b*x^4)^(3/4)), x)", "-((a+b*x^4)^(1/4)/(a*x))");
-//
-//	}
-//
-//	// {x^3/(a+b*x^4)^(5/4), x, 1, -(1/(b*(a+b*x^4)^(1/4)))}
-//	public void test00922() {
-//		check("Integrate(x^3/(a+b*x^4)^(5/4), x)", "-(1/(b*(a+b*x^4)^(1/4)))");
-//
-//	}
-//
-//	// {(a+b*x^4)^(-5/4), x, 1, x/(a*(a+b*x^4)^(1/4))}
-//	public void test00923() {
-//		check("Integrate((a+b*x^4)^(-5/4), x)", "x/(a*(a+b*x^4)^(1/4))");
-//
-//	}
-//
-//	// {x^3*(a-b*x^4)^(1/4), x, 1, -(a-b*x^4)^(5/4)/(5*b)}
-//	public void test00924() {
-//		check("Integrate(x^3*(a-b*x^4)^(1/4), x)", "-(a-b*x^4)^(5/4)/(5*b)");
-//
-//	}
-//
-//	// {(a-b*x^4)^(1/4)/x^6, x, 1, -(a-b*x^4)^(5/4)/(5*a*x^5)}
-//	public void test00925() {
-//		check("Integrate((a-b*x^4)^(1/4)/x^6, x)", "-(a-b*x^4)^(5/4)/(5*a*x^5)");
-//
-//	}
-//
-//	// {x^3/(a-b*x^4)^(1/4), x, 1, -(a-b*x^4)^(3/4)/(3*b)}
-//	public void test00926() {
-//		check("Integrate(x^3/(a-b*x^4)^(1/4), x)", "-(a-b*x^4)^(3/4)/(3*b)");
-//
-//	}
-//
-//	// {1/(x^4*(a-b*x^4)^(1/4)), x, 1, -(a-b*x^4)^(3/4)/(3*a*x^3)}
-//	public void test00927() {
-//		check("Integrate(1/(x^4*(a-b*x^4)^(1/4)), x)", "-(a-b*x^4)^(3/4)/(3*a*x^3)");
-//
-//	}
-//
-//	// {x^3/(a-b*x^4)^(3/4), x, 1, -((a-b*x^4)^(1/4)/b)}
-//	public void test00928() {
-//		check("Integrate(x^3/(a-b*x^4)^(3/4), x)", "-((a-b*x^4)^(1/4)/b)");
-//
-//	}
-//
-//	// {1/(x^2*(a-b*x^4)^(3/4)), x, 1, -((a-b*x^4)^(1/4)/(a*x))}
-//	public void test00929() {
-//		check("Integrate(1/(x^2*(a-b*x^4)^(3/4)), x)", "-((a-b*x^4)^(1/4)/(a*x))");
-//
-//	}
-//
-//	// {x^3*(a+b*x^4)^p, x, 1, (a+b*x^4)^(1+p)/(4*b*(1+p))}
-//	public void test00930() {
-//		check("Integrate(x^3*(a+b*x^4)^p, x)", "(a+b*x^4)^(1+p)/(4*b*(1+p))");
-//
-//	}
-//
-//	// {x^4/(a+b*x^5), x, 1, Log(a+b*x^5)/(5*b)}
-//	public void test00931() {
-//		check("Integrate(x^4/(a+b*x^5), x)", "Log(a+b*x^5)/(5*b)");
-//
-//	}
-//
-//	// {x^4/(a+b*x^5)^2, x, 1, -1/(5*b*(a+b*x^5))}
-//	public void test00932() {
-//		check("Integrate(x^4/(a+b*x^5)^2, x)", "-1/(5*b*(a+b*x^5))");
-//
-//	}
-//
-//	// {x^4/(2*b+b*x^5), x, 1, Log(2+x^5)/(5*b)}
-//	public void test00933() {
-//		check("Integrate(x^4/(2*b+b*x^5), x)", "Log(2+x^5)/(5*b)");
-//
-//	}
-//
-//	// {x^4/(3+b*x^5), x, 1, Log(3+b*x^5)/(5*b)}
-//	public void test00934() {
-//		check("Integrate(x^4/(3+b*x^5), x)", "Log(3+b*x^5)/(5*b)");
-//
-//	}
-//
-//	// {x^4/(1+x^5), x, 1, Log(1+x^5)/5}
-//	public void test00935() {
-//		check("Integrate(x^4/(1+x^5), x)", "Log(1+x^5)/5");
-//
-//	}
-//
-//	// {1/(x^(7/2)*Sqrt(a+b*x^5)), x, 1, (-2*Sqrt(a+b*x^5))/(5*a*x^(5/2))}
-//	public void test00936() {
-//		check("Integrate(1/(x^(7/2)*Sqrt(a+b*x^5)), x)", "(-2*Sqrt(a+b*x^5))/(5*a*x^(5/2))");
-//
-//	}
-//
-//	// {1/(x^(7/2)*Sqrt(1+x^5)), x, 1, (-2*Sqrt(1+x^5))/(5*x^(5/2))}
-//	public void test00937() {
-//		check("Integrate(1/(x^(7/2)*Sqrt(1+x^5)), x)", "(-2*Sqrt(1+x^5))/(5*x^(5/2))");
-//
-//	}
-//
-//	// {x^5/(a+b*x^6), x, 1, Log(a+b*x^6)/(6*b)}
-//	public void test00938() {
-//		check("Integrate(x^5/(a+b*x^6), x)", "Log(a+b*x^6)/(6*b)");
-//
-//	}
-//
-//	// {x^5/(a+b*x^6)^2, x, 1, -1/(6*b*(a+b*x^6))}
-//	public void test00939() {
-//		check("Integrate(x^5/(a+b*x^6)^2, x)", "-1/(6*b*(a+b*x^6))");
-//
-//	}
-//
-//	// {x^5/(1-x^6), x, 1, -Log(1-x^6)/6}
-//	public void test00940() {
-//		check("Integrate(x^5/(1-x^6), x)", "-Log(1-x^6)/6");
-//
-//	}
-//
-//	// {x^5/(1+x^6), x, 1, Log(1+x^6)/6}
-//	public void test00941() {
-//		check("Integrate(x^5/(1+x^6), x)", "Log(1+x^6)/6");
-//
-//	}
-//
-//	// {x^5*Sqrt(a^6-x^6), x, 1, -(a^6-x^6)^(3/2)/9}
-//	public void test00942() {
-//		check("Integrate(x^5*Sqrt(a^6-x^6), x)", "-(a^6-x^6)^(3/2)/9");
-//
-//	}
-//
-//	// {x^5/Sqrt(2+x^6), x, 1, Sqrt(2+x^6)/3}
-//	public void test00943() {
-//		check("Integrate(x^5/Sqrt(2+x^6), x)", "Sqrt(2+x^6)/3");
-//
-//	}
-//
-//	// {1/(x^4*Sqrt(2+x^6)), x, 1, -Sqrt(2+x^6)/(6*x^3)}
-//	public void test00944() {
-//		check("Integrate(1/(x^4*Sqrt(2+x^6)), x)", "-Sqrt(2+x^6)/(6*x^3)");
-//
-//	}
-//
-//	// {1/Sqrt(2+x^6), x, 1, (x*(2^(1/3)+x^2)*Sqrt((2^(2/3)-2^(1/3)*x^2+x^4)/(2^(1/3)+(1 +
-//	// Sqrt(3))*x^2)^2)*EllipticF(ArcCos((2^(1/3)+(1-Sqrt(3))*x^2)/(2^(1/3)+(1+Sqrt(3))*x^2)), (2 +
-//	// Sqrt(3))/4))/(2*2^(1/3)*3^(1/4)*Sqrt((x^2*(2^(1/3)+x^2))/(2^(1/3)+(1+Sqrt(3))*x^2)^2)*Sqrt(2+x^6))}
-//	public void test00945() {
-//		check("Integrate(1/Sqrt(2+x^6), x)",
-//				"(x*(2^(1/3)+x^2)*Sqrt((2^(2/3)-2^(1/3)*x^2+x^4)/(2^(1/3)+(1+Sqrt(3))*x^2)^2)*EllipticF(ArcCos((2^(1/3)+(1-Sqrt(3))*x^2)/(2^(1/3)+(1+Sqrt(3))*x^2)), (2+Sqrt(3))/4))/(2*2^(1/3)*3^(1/4)*Sqrt((x^2*(2^(1/3)+x^2))/(2^(1/3)+(1+Sqrt(3))*x^2)^2)*Sqrt(2+x^6))");
-//
-//	}
-//
-//	// {x^5/(2+x^6)^(3/2), x, 1, -1/(3*Sqrt(2+x^6))}
-//	public void test00946() {
-//		check("Integrate(x^5/(2+x^6)^(3/2), x)", "-1/(3*Sqrt(2+x^6))");
-//
-//	}
-//
-//	// {x^2/(2+x^6)^(3/2), x, 1, x^3/(6*Sqrt(2+x^6))}
-//	public void test00947() {
-//		check("Integrate(x^2/(2+x^6)^(3/2), x)", "x^3/(6*Sqrt(2+x^6))");
-//
-//	}
-//
-//	// {x^m/(a+b*x^7), x, 1, (x^(1+m)*Hypergeometric2F1(1, (1+m)/7, (8+m)/7, -((b*x^7)/a)))/(a*(1+m))}
-//	public void test00948() {
-//		check("Integrate(x^m/(a+b*x^7), x)",
-//				"(x^(1+m)*Hypergeometric2F1(1, (1+m)/7, (8+m)/7, -((b*x^7)/a)))/(a*(1+m))");
-//
-//	}
-//
-//	// {x^6/(a+b*x^7), x, 1, Log(a+b*x^7)/(7*b)}
-//	public void test00949() {
-//		check("Integrate(x^6/(a+b*x^7), x)", "Log(a+b*x^7)/(7*b)");
-//
-//	}
-//
-//	// {x^m/(a-b*x^7), x, 1, (x^(1+m)*Hypergeometric2F1(1, (1+m)/7, (8+m)/7, (b*x^7)/a))/(a*(1+m))}
-//	public void test00950() {
-//		check("Integrate(x^m/(a-b*x^7), x)", "(x^(1+m)*Hypergeometric2F1(1, (1+m)/7, (8+m)/7, (b*x^7)/a))/(a*(1+m))");
-//
-//	}
-//
-//	// {x^6/(a-b*x^7), x, 1, -Log(a-b*x^7)/(7*b)}
-//	public void test00951() {
-//		check("Integrate(x^6/(a-b*x^7), x)", "-Log(a-b*x^7)/(7*b)");
-//
-//	}
-//
-//	// {x^7/(a+b*x^8), x, 1, Log(a+b*x^8)/(8*b)}
-//	public void test00952() {
-//		check("Integrate(x^7/(a+b*x^8), x)", "Log(a+b*x^8)/(8*b)");
-//
-//	}
-//
-//	// {x^7/(1-x^8), x, 1, -Log(1-x^8)/8}
-//	public void test00953() {
-//		check("Integrate(x^7/(1-x^8), x)", "-Log(1-x^8)/8");
-//
-//	}
-//
-//	// {x^7/(1+x^8), x, 1, Log(1+x^8)/8}
-//	public void test00954() {
-//		check("Integrate(x^7/(1+x^8), x)", "Log(1+x^8)/8");
-//
-//	}
-//
-//	// {x^7/Sqrt(1+x^8), x, 1, Sqrt(1+x^8)/4}
-//	public void test00955() {
-//		check("Integrate(x^7/Sqrt(1+x^8), x)", "Sqrt(1+x^8)/4");
-//
-//	}
-//
-//	// {1/(x^5*Sqrt(1+x^8)), x, 1, -Sqrt(1+x^8)/(4*x^4)}
-//	public void test00956() {
-//		check("Integrate(1/(x^5*Sqrt(1+x^8)), x)", "-Sqrt(1+x^8)/(4*x^4)");
-//
-//	}
-//
-//	// {x^6/Sqrt(1+x^8), x, 1, (x^7*Hypergeometric2F1(1/2, 7/8, 15/8, -x^8))/7}
-//	public void test00957() {
-//		check("Integrate(x^6/Sqrt(1+x^8), x)", "(x^7*Hypergeometric2F1(1/2, 7/8, 15/8, -x^8))/7");
-//
-//	}
-//
-//	// {x^4/Sqrt(1+x^8), x, 1, (x^5*Hypergeometric2F1(1/2, 5/8, 13/8, -x^8))/5}
-//	public void test00958() {
-//		check("Integrate(x^4/Sqrt(1+x^8), x)", "(x^5*Hypergeometric2F1(1/2, 5/8, 13/8, -x^8))/5");
-//
-//	}
-//
-//	// {a+b/x, x, 1, a*x+b*Log(x)}
-//	public void test00959() {
-//		check("Integrate(a+b/x, x)", "a*x+b*Log(x)");
-//
-//	}
-//
-//	// {(a+b/x)^2/x^2, x, 1, -(a+b/x)^3/(3*b)}
-//	public void test00960() {
-//		check("Integrate((a+b/x)^2/x^2, x)", "-(a+b/x)^3/(3*b)");
-//
-//	}
-//
-//	// {(a+b/x)^3/x^2, x, 1, -(a+b/x)^4/(4*b)}
-//	public void test00961() {
-//		check("Integrate((a+b/x)^3/x^2, x)", "-(a+b/x)^4/(4*b)");
-//
-//	}
-//
-//	// {(a+b/x)^8/x^2, x, 1, -(a+b/x)^9/(9*b)}
-//	public void test00962() {
-//		check("Integrate((a+b/x)^8/x^2, x)", "-(a+b/x)^9/(9*b)");
-//
-//	}
-//
-//	// {1/((a+b/x)*x^2), x, 1, -(Log(a+b/x)/b)}
-//	public void test00963() {
-//		check("Integrate(1/((a+b/x)*x^2), x)", "-(Log(a+b/x)/b)");
-//
-//	}
-//
-//	// {1/((a+b/x)^2*x^2), x, 1, 1/(b*(a+b/x))}
-//	public void test00964() {
-//		check("Integrate(1/((a+b/x)^2*x^2), x)", "1/(b*(a+b/x))");
-//
-//	}
-//
-//	// {1/((a+b/x)^3*x^2), x, 1, 1/(2*b*(a+b/x)^2)}
-//	public void test00965() {
-//		check("Integrate(1/((a+b/x)^3*x^2), x)", "1/(2*b*(a+b/x)^2)");
-//
-//	}
-//
-//	// {Sqrt(a+b/x)/x^2, x, 1, (-2*(a+b/x)^(3/2))/(3*b)}
-//	public void test00966() {
-//		check("Integrate(Sqrt(a+b/x)/x^2, x)", "(-2*(a+b/x)^(3/2))/(3*b)");
-//
-//	}
-//
-//	// {(a+b/x)^(3/2)/x^2, x, 1, (-2*(a+b/x)^(5/2))/(5*b)}
-//	public void test00967() {
-//		check("Integrate((a+b/x)^(3/2)/x^2, x)", "(-2*(a+b/x)^(5/2))/(5*b)");
-//
-//	}
-//
-//	// {(a+b/x)^(5/2)/x^2, x, 1, (-2*(a+b/x)^(7/2))/(7*b)}
-//	public void test00968() {
-//		check("Integrate((a+b/x)^(5/2)/x^2, x)", "(-2*(a+b/x)^(7/2))/(7*b)");
-//
-//	}
-//
-//	// {1/(Sqrt(a+b/x)*x^2), x, 1, (-2*Sqrt(a+b/x))/b}
-//	public void test00969() {
-//		check("Integrate(1/(Sqrt(a+b/x)*x^2), x)", "(-2*Sqrt(a+b/x))/b");
-//
-//	}
-//
-//	// {1/((a+b/x)^(3/2)*x^2), x, 1, 2/(b*Sqrt(a+b/x))}
-//	public void test00970() {
-//		check("Integrate(1/((a+b/x)^(3/2)*x^2), x)", "2/(b*Sqrt(a+b/x))");
-//
-//	}
-//
-//	// {1/((a+b/x)^(5/2)*x^2), x, 1, 2/(3*b*(a+b/x)^(3/2))}
-//	public void test00971() {
-//		check("Integrate(1/((a+b/x)^(5/2)*x^2), x)", "2/(3*b*(a+b/x)^(3/2))");
-//
-//	}
-//
-//	// {Sqrt(a+b/x)*Sqrt(x), x, 1, (2*(a+b/x)^(3/2)*x^(3/2))/(3*a)}
-//	public void test00972() {
-//		check("Integrate(Sqrt(a+b/x)*Sqrt(x), x)", "(2*(a+b/x)^(3/2)*x^(3/2))/(3*a)");
-//
-//	}
-//
-//	// {(a+b/x)^(3/2)*x^(3/2), x, 1, (2*(a+b/x)^(5/2)*x^(5/2))/(5*a)}
-//	public void test00973() {
-//		check("Integrate((a+b/x)^(3/2)*x^(3/2), x)", "(2*(a+b/x)^(5/2)*x^(5/2))/(5*a)");
-//
-//	}
-//
-//	// {(a+b/x)^(5/2)*x^(5/2), x, 1, (2*(a+b/x)^(7/2)*x^(7/2))/(7*a)}
-//	public void test00974() {
-//		check("Integrate((a+b/x)^(5/2)*x^(5/2), x)", "(2*(a+b/x)^(7/2)*x^(7/2))/(7*a)");
-//
-//	}
-//
-//	// {1/(Sqrt(a+b/x)*Sqrt(x)), x, 1, (2*Sqrt(a+b/x)*Sqrt(x))/a}
-//	public void test00975() {
-//		check("Integrate(1/(Sqrt(a+b/x)*Sqrt(x)), x)", "(2*Sqrt(a+b/x)*Sqrt(x))/a");
-//
-//	}
-//
-//	// {1/((a+b/x)^(3/2)*x^(3/2)), x, 1, -2/(a*Sqrt(a+b/x)*Sqrt(x))}
-//	public void test00976() {
-//		check("Integrate(1/((a+b/x)^(3/2)*x^(3/2)), x)", "-2/(a*Sqrt(a+b/x)*Sqrt(x))");
-//
-//	}
-//
-//	// {1/((a+b/x)^(5/2)*x^(5/2)), x, 1, -2/(3*a*(a+b/x)^(3/2)*x^(3/2))}
-//	public void test00977() {
-//		check("Integrate(1/((a+b/x)^(5/2)*x^(5/2)), x)", "-2/(3*a*(a+b/x)^(3/2)*x^(3/2))");
-//
-//	}
-//
-//	// {a+b/x^2, x, 1, -(b/x)+a*x}
-//	public void test00978() {
-//		check("Integrate(a+b/x^2, x)", "-(b/x)+a*x");
-//
-//	}
-//
-//	// {(a+b/x^2)^2/x^3, x, 1, -(a+b/x^2)^3/(6*b)}
-//	public void test00979() {
-//		check("Integrate((a+b/x^2)^2/x^3, x)", "-(a+b/x^2)^3/(6*b)");
-//
-//	}
-//
-//	// {(a+b/x^2)^3/x^3, x, 1, -(a+b/x^2)^4/(8*b)}
-//	public void test00980() {
-//		check("Integrate((a+b/x^2)^3/x^3, x)", "-(a+b/x^2)^4/(8*b)");
-//
-//	}
-//
-//	// {1/((a+b/x^2)*x^3), x, 1, -Log(a+b/x^2)/(2*b)}
-//	public void test00981() {
-//		check("Integrate(1/((a+b/x^2)*x^3), x)", "-Log(a+b/x^2)/(2*b)");
-//
-//	}
-//
-//	// {1/((a+b/x^2)^2*x^3), x, 1, 1/(2*b*(a+b/x^2))}
-//	public void test00982() {
-//		check("Integrate(1/((a+b/x^2)^2*x^3), x)", "1/(2*b*(a+b/x^2))");
-//
-//	}
-//
-//	// {1/((a+b/x^2)^3*x^3), x, 1, 1/(4*b*(a+b/x^2)^2)}
-//	public void test00983() {
-//		check("Integrate(1/((a+b/x^2)^3*x^3), x)", "1/(4*b*(a+b/x^2)^2)");
-//
-//	}
-//
-//	// {Sqrt(a+b/x^2)*x^2, x, 1, ((a+b/x^2)^(3/2)*x^3)/(3*a)}
-//	public void test00984() {
-//		check("Integrate(Sqrt(a+b/x^2)*x^2, x)", "((a+b/x^2)^(3/2)*x^3)/(3*a)");
-//
-//	}
-//
-//	// {Sqrt(a+b/x^2)/x^3, x, 1, -(a+b/x^2)^(3/2)/(3*b)}
-//	public void test00985() {
-//		check("Integrate(Sqrt(a+b/x^2)/x^3, x)", "-(a+b/x^2)^(3/2)/(3*b)");
-//
-//	}
-//
-//	// {(a+b/x^2)^(3/2)/x^3, x, 1, -(a+b/x^2)^(5/2)/(5*b)}
-//	public void test00986() {
-//		check("Integrate((a+b/x^2)^(3/2)/x^3, x)", "-(a+b/x^2)^(5/2)/(5*b)");
-//
-//	}
-//
-//	// {(a+b/x^2)^(5/2)/x^3, x, 1, -(a+b/x^2)^(7/2)/(7*b)}
-//	public void test00987() {
-//		check("Integrate((a+b/x^2)^(5/2)/x^3, x)", "-(a+b/x^2)^(7/2)/(7*b)");
-//
-//	}
-//
-//	// {1/(Sqrt(a+b/x^2)*x^3), x, 1, -(Sqrt(a+b/x^2)/b)}
-//	public void test00988() {
-//		check("Integrate(1/(Sqrt(a+b/x^2)*x^3), x)", "-(Sqrt(a+b/x^2)/b)");
-//
-//	}
-//
-//	// {1/Sqrt(a+b/x^2), x, 1, (Sqrt(a+b/x^2)*x)/a}
-//	public void test00989() {
-//		check("Integrate(1/Sqrt(a+b/x^2), x)", "(Sqrt(a+b/x^2)*x)/a");
-//
-//	}
-//
-//	// {1/((a+b/x^2)^(3/2)*x^3), x, 1, 1/(b*Sqrt(a+b/x^2))}
-//	public void test00990() {
-//		check("Integrate(1/((a+b/x^2)^(3/2)*x^3), x)", "1/(b*Sqrt(a+b/x^2))");
-//
-//	}
-//
-//	// {1/((a+b/x^2)^(3/2)*x^2), x, 1, -(1/(a*Sqrt(a+b/x^2)*x))}
-//	public void test00991() {
-//		check("Integrate(1/((a+b/x^2)^(3/2)*x^2), x)", "-(1/(a*Sqrt(a+b/x^2)*x))");
-//
-//	}
-//
-//	// {1/((a+b/x^2)^(5/2)*x^3), x, 1, 1/(3*b*(a+b/x^2)^(3/2))}
-//	public void test00992() {
-//		check("Integrate(1/((a+b/x^2)^(5/2)*x^3), x)", "1/(3*b*(a+b/x^2)^(3/2))");
-//
-//	}
-//
-//	// {1/((a+b/x^2)^(5/2)*x^4), x, 1, -1/(3*a*(a+b/x^2)^(3/2)*x^3)}
-//	public void test00993() {
-//		check("Integrate(1/((a+b/x^2)^(5/2)*x^4), x)", "-1/(3*a*(a+b/x^2)^(3/2)*x^3)");
-//
-//	}
-//
-//	// {(1+x^(-2))^(1/3)/x^3, x, 1, (-3*(1+x^(-2))^(4/3))/8}
-//	public void test00994() {
-//		check("Integrate((1+x^(-2))^(1/3)/x^3, x)", "(-3*(1+x^(-2))^(4/3))/8");
-//
-//	}
-//
-//	// {(1+x^(-2))^(5/3)/x^3, x, 1, (-3*(1+x^(-2))^(8/3))/16}
-//	public void test00995() {
-//		check("Integrate((1+x^(-2))^(5/3)/x^3, x)", "(-3*(1+x^(-2))^(8/3))/16");
-//
-//	}
-//
-//	// {1/((a+b/x^3)*x^4), x, 1, -Log(a+b/x^3)/(3*b)}
-//	public void test00996() {
-//		check("Integrate(1/((a+b/x^3)*x^4), x)", "-Log(a+b/x^3)/(3*b)");
-//
-//	}
-//
-//	// {1/((a+b/x^3)^2*x^4), x, 1, 1/(3*b*(a+b/x^3))}
-//	public void test00997() {
-//		check("Integrate(1/((a+b/x^3)^2*x^4), x)", "1/(3*b*(a+b/x^3))");
-//
-//	}
-//
-//	// {Sqrt(a+b/x^3)/x^4, x, 1, (-2*(a+b/x^3)^(3/2))/(9*b)}
-//	public void test00998() {
-//		check("Integrate(Sqrt(a+b/x^3)/x^4, x)", "(-2*(a+b/x^3)^(3/2))/(9*b)");
-//
-//	}
-//
-//	// {(a+b/x^3)^(3/2)/x^4, x, 1, (-2*(a+b/x^3)^(5/2))/(15*b)}
-//	public void test00999() {
-//		check("Integrate((a+b/x^3)^(3/2)/x^4, x)", "(-2*(a+b/x^3)^(5/2))/(15*b)");
-//
-//	}
-//
-//	// {1/(Sqrt(a+b/x^3)*x^4), x, 1, (-2*Sqrt(a+b/x^3))/(3*b)}
-//	public void test01000() {
-//		check("Integrate(1/(Sqrt(a+b/x^3)*x^4), x)", "(-2*Sqrt(a+b/x^3))/(3*b)");
-//
-//	}
-//
-//	// {1/((a+b/x^3)^(3/2)*x^4), x, 1, 2/(3*b*Sqrt(a+b/x^3))}
-//	public void test01001() {
-//		check("Integrate(1/((a+b/x^3)^(3/2)*x^4), x)", "2/(3*b*Sqrt(a+b/x^3))");
-//
-//	}
-//
-//	// {x/Sqrt(a+b/x^4), x, 1, (Sqrt(a+b/x^4)*x^2)/(2*a)}
-//	public void test01002() {
-//		check("Integrate(x/Sqrt(a+b/x^4), x)", "(Sqrt(a+b/x^4)*x^2)/(2*a)");
-//
-//	}
-//
-//	// {1/((a+b/x^4)^(3/2)*x^3), x, 1, -1/(2*a*Sqrt(a+b/x^4)*x^2)}
-//	public void test01003() {
-//		check("Integrate(1/((a+b/x^4)^(3/2)*x^3), x)", "-1/(2*a*Sqrt(a+b/x^4)*x^2)");
-//
-//	}
-//
-//	// {a+b*Sqrt(x), x, 1, a*x+(2*b*x^(3/2))/3}
-//	public void test01004() {
-//		check("Integrate(a+b*Sqrt(x), x)", "a*x+(2*b*x^(3/2))/3");
-//
-//	}
-//
-//	// {(a+b*Sqrt(x))^3/x^3, x, 1, -(a+b*Sqrt(x))^4/(2*a*x^2)}
-//	public void test01005() {
-//		check("Integrate((a+b*Sqrt(x))^3/x^3, x)", "-(a+b*Sqrt(x))^4/(2*a*x^2)");
-//
-//	}
-//
-//	// {(a+b*Sqrt(x))^5/x^4, x, 1, -(a+b*Sqrt(x))^6/(3*a*x^3)}
-//	public void test01006() {
-//		check("Integrate((a+b*Sqrt(x))^5/x^4, x)", "-(a+b*Sqrt(x))^6/(3*a*x^3)");
-//
-//	}
-//
-//	// {(a+b*Sqrt(x))^15/x^9, x, 1, -(a+b*Sqrt(x))^16/(8*a*x^8)}
-//	public void test01007() {
-//		check("Integrate((a+b*Sqrt(x))^15/x^9, x)", "-(a+b*Sqrt(x))^16/(8*a*x^8)");
-//
-//	}
-//
-//	// {x/(a+b*Sqrt(x))^5, x, 1, x^2/(2*a*(a+b*Sqrt(x))^4)}
-//	public void test01008() {
-//		check("Integrate(x/(a+b*Sqrt(x))^5, x)", "x^2/(2*a*(a+b*Sqrt(x))^4)");
-//
-//	}
-//
-//	// {(a+b*Sqrt(x))^n/Sqrt(x), x, 1, (2*(a+b*Sqrt(x))^(1+n))/(b*(1+n))}
-//	public void test01009() {
-//		check("Integrate((a+b*Sqrt(x))^n/Sqrt(x), x)", "(2*(a+b*Sqrt(x))^(1+n))/(b*(1+n))");
-//
-//	}
-//
-//	// {(1+Sqrt(x))^2/Sqrt(x), x, 1, (2*(1+Sqrt(x))^3)/3}
-//	public void test01010() {
-//		check("Integrate((1+Sqrt(x))^2/Sqrt(x), x)", "(2*(1+Sqrt(x))^3)/3");
-//
-//	}
-//
-//	// {(1+Sqrt(x))^3/Sqrt(x), x, 1, (1+Sqrt(x))^4/2}
-//	public void test01011() {
-//		check("Integrate((1+Sqrt(x))^3/Sqrt(x), x)", "(1+Sqrt(x))^4/2");
-//
-//	}
-//
-//	// {1/((1+Sqrt(x))*Sqrt(x)), x, 1, 2*Log(1+Sqrt(x))}
-//	public void test01012() {
-//		check("Integrate(1/((1+Sqrt(x))*Sqrt(x)), x)", "2*Log(1+Sqrt(x))");
-//
-//	}
-//
-//	// {1/((1+Sqrt(x))^2*Sqrt(x)), x, 1, -2/(1+Sqrt(x))}
-//	public void test01013() {
-//		check("Integrate(1/((1+Sqrt(x))^2*Sqrt(x)), x)", "-2/(1+Sqrt(x))");
-//
-//	}
-//
-//	// {1/((1+Sqrt(x))^3*Sqrt(x)), x, 1, -(1+Sqrt(x))^(-2)}
-//	public void test01014() {
-//		check("Integrate(1/((1+Sqrt(x))^3*Sqrt(x)), x)", "-(1+Sqrt(x))^(-2)");
-//
-//	}
-//
-//	// {Sqrt(1+Sqrt(x))/Sqrt(x), x, 1, (4*(1+Sqrt(x))^(3/2))/3}
-//	public void test01015() {
-//		check("Integrate(Sqrt(1+Sqrt(x))/Sqrt(x), x)", "(4*(1+Sqrt(x))^(3/2))/3");
-//
-//	}
-//
-//	// {Sqrt(x)/(1+x^(3/2)), x, 1, (2*Log(1+x^(3/2)))/3}
-//	public void test01016() {
-//		check("Integrate(Sqrt(x)/(1+x^(3/2)), x)", "(2*Log(1+x^(3/2)))/3");
-//
-//	}
-//
-//	// {a+b*x^(1/3), x, 1, a*x+(3*b*x^(4/3))/4}
-//	public void test01017() {
-//		check("Integrate(a+b*x^(1/3), x)", "a*x+(3*b*x^(4/3))/4");
-//
-//	}
-//
-//	// {(a+b*x^(1/3))^2/x^2, x, 1, -((a+b*x^(1/3))^3/(a*x))}
-//	public void test01018() {
-//		check("Integrate((a+b*x^(1/3))^2/x^2, x)", "-((a+b*x^(1/3))^3/(a*x))");
-//
-//	}
-//
-//	// {(a+b*x^(1/3))^5/x^3, x, 1, -(a+b*x^(1/3))^6/(2*a*x^2)}
-//	public void test01019() {
-//		check("Integrate((a+b*x^(1/3))^5/x^3, x)", "-(a+b*x^(1/3))^6/(2*a*x^2)");
-//
-//	}
-//
-//	// {1/((1+x^(2/3))*x^(1/3)), x, 1, (3*Log(1+x^(2/3)))/2}
-//	public void test01020() {
-//		check("Integrate(1/((1+x^(2/3))*x^(1/3)), x)", "(3*Log(1+x^(2/3)))/2");
-//
-//	}
-//
-//	// {Sqrt(-1+x^(2/3))/x^(1/3), x, 1, (-1+x^(2/3))^(3/2)}
-//	public void test01021() {
-//		check("Integrate(Sqrt(-1+x^(2/3))/x^(1/3), x)", "(-1+x^(2/3))^(3/2)");
-//
-//	}
-//
-//	// {(1+x^(2/3))^(3/2)/x^(1/3), x, 1, (3*(1+x^(2/3))^(5/2))/5}
-//	public void test01022() {
-//		check("Integrate((1+x^(2/3))^(3/2)/x^(1/3), x)", "(3*(1+x^(2/3))^(5/2))/5");
-//
-//	}
-//
-//	// {a+b/x^(1/3), x, 1, (3*b*x^(2/3))/2+a*x}
-//	public void test01023() {
-//		check("Integrate(a+b/x^(1/3), x)", "(3*b*x^(2/3))/2+a*x");
-//
-//	}
-//
-//	// {x^(2/3)*(1+x^(5/3))^(2/3), x, 1, (9*(1+x^(5/3))^(5/3))/25}
-//	public void test01024() {
-//		check("Integrate(x^(2/3)*(1+x^(5/3))^(2/3), x)", "(9*(1+x^(5/3))^(5/3))/25");
-//
-//	}
-//
-//	// {x^(7/3)*(a^(10/3)-x^(10/3))^(19/7), x, 1, (-21*(a^(10/3)-x^(10/3))^(26/7))/260}
-//	public void test01025() {
-//		check("Integrate(x^(7/3)*(a^(10/3)-x^(10/3))^(19/7), x)", "(-21*(a^(10/3)-x^(10/3))^(26/7))/260");
-//
-//	}
-//
-//	// {1/(Sqrt(1+x^(4/5))*x^(1/5)), x, 1, (5*Sqrt(1+x^(4/5)))/2}
-//	public void test01026() {
-//		check("Integrate(1/(Sqrt(1+x^(4/5))*x^(1/5)), x)", "(5*Sqrt(1+x^(4/5)))/2");
-//
-//	}
-//
-//	// {(a+b/x^(3/5))^(2/3), x, 1, ((a+b/x^(3/5))^(5/3)*x)/a}
-//	public void test01027() {
-//		check("Integrate((a+b/x^(3/5))^(2/3), x)", "((a+b/x^(3/5))^(5/3)*x)/a");
-//
-//	}
-//
-//	// {a+b*x^n, x, 1, a*x+(b*x^(1+n))/(1+n)}
-//	public void test01028() {
-//		check("Integrate(a+b*x^n, x)", "a*x+(b*x^(1+n))/(1+n)");
-//
-//	}
-//
-//	// {x/(a+b*x^n), x, 1, (x^2*Hypergeometric2F1(1, 2/n, (2+n)/n, -((b*x^n)/a)))/(2*a)}
-//	public void test01029() {
-//		check("Integrate(x/(a+b*x^n), x)", "(x^2*Hypergeometric2F1(1, 2/n, (2+n)/n, -((b*x^n)/a)))/(2*a)");
-//
-//	}
-//
-//	// {(a+b*x^n)^(-1), x, 1, (x*Hypergeometric2F1(1, n^(-1), 1+n^(-1), -((b*x^n)/a)))/a}
-//	public void test01030() {
-//		check("Integrate((a+b*x^n)^(-1), x)", "(x*Hypergeometric2F1(1, n^(-1), 1+n^(-1), -((b*x^n)/a)))/a");
-//
-//	}
-//
-//	// {1/(x^2*(a+b*x^n)), x, 1, -(Hypergeometric2F1(1, -n^(-1), -((1-n)/n), -((b*x^n)/a))/(a*x))}
-//	public void test01031() {
-//		check("Integrate(1/(x^2*(a+b*x^n)), x)", "-(Hypergeometric2F1(1, -n^(-1), -((1-n)/n), -((b*x^n)/a))/(a*x))");
-//
-//	}
-//
-//	// {1/(x^3*(a+b*x^n)), x, 1, -Hypergeometric2F1(1, -2/n, -((2-n)/n), -((b*x^n)/a))/(2*a*x^2)}
-//	public void test01032() {
-//		check("Integrate(1/(x^3*(a+b*x^n)), x)", "-Hypergeometric2F1(1, -2/n, -((2-n)/n), -((b*x^n)/a))/(2*a*x^2)");
-//
-//	}
-//
-//	// {x/(a+b*x^n)^2, x, 1, (x^2*Hypergeometric2F1(2, 2/n, (2+n)/n, -((b*x^n)/a)))/(2*a^2)}
-//	public void test01033() {
-//		check("Integrate(x/(a+b*x^n)^2, x)", "(x^2*Hypergeometric2F1(2, 2/n, (2+n)/n, -((b*x^n)/a)))/(2*a^2)");
-//
-//	}
-//
-//	// {(a+b*x^n)^(-2), x, 1, (x*Hypergeometric2F1(2, n^(-1), 1+n^(-1), -((b*x^n)/a)))/a^2}
-//	public void test01034() {
-//		check("Integrate((a+b*x^n)^(-2), x)", "(x*Hypergeometric2F1(2, n^(-1), 1+n^(-1), -((b*x^n)/a)))/a^2");
-//
-//	}
-//
-//	// {1/(x^2*(a+b*x^n)^2), x, 1, -(Hypergeometric2F1(2, -n^(-1), -((1-n)/n), -((b*x^n)/a))/(a^2*x))}
-//	public void test01035() {
-//		check("Integrate(1/(x^2*(a+b*x^n)^2), x)",
-//				"-(Hypergeometric2F1(2, -n^(-1), -((1-n)/n), -((b*x^n)/a))/(a^2*x))");
-//
-//	}
-//
-//	// {1/(x^3*(a+b*x^n)^2), x, 1, -Hypergeometric2F1(2, -2/n, -((2-n)/n), -((b*x^n)/a))/(2*a^2*x^2)}
-//	public void test01036() {
-//		check("Integrate(1/(x^3*(a+b*x^n)^2), x)", "-Hypergeometric2F1(2, -2/n, -((2-n)/n), -((b*x^n)/a))/(2*a^2*x^2)");
-//
-//	}
-//
-//	// {x/(a+b*x^n)^3, x, 1, (x^2*Hypergeometric2F1(3, 2/n, (2+n)/n, -((b*x^n)/a)))/(2*a^3)}
-//	public void test01037() {
-//		check("Integrate(x/(a+b*x^n)^3, x)", "(x^2*Hypergeometric2F1(3, 2/n, (2+n)/n, -((b*x^n)/a)))/(2*a^3)");
-//
-//	}
-//
-//	// {(a+b*x^n)^(-3), x, 1, (x*Hypergeometric2F1(3, n^(-1), 1+n^(-1), -((b*x^n)/a)))/a^3}
-//	public void test01038() {
-//		check("Integrate((a+b*x^n)^(-3), x)", "(x*Hypergeometric2F1(3, n^(-1), 1+n^(-1), -((b*x^n)/a)))/a^3");
-//
-//	}
-//
-//	// {1/(x^2*(a+b*x^n)^3), x, 1, -(Hypergeometric2F1(3, -n^(-1), -((1-n)/n), -((b*x^n)/a))/(a^3*x))}
-//	public void test01039() {
-//		check("Integrate(1/(x^2*(a+b*x^n)^3), x)",
-//				"-(Hypergeometric2F1(3, -n^(-1), -((1-n)/n), -((b*x^n)/a))/(a^3*x))");
-//
-//	}
-//
-//	// {1/(x^3*(a+b*x^n)^3), x, 1, -Hypergeometric2F1(3, -2/n, -((2-n)/n), -((b*x^n)/a))/(2*a^3*x^2)}
-//	public void test01040() {
-//		check("Integrate(1/(x^3*(a+b*x^n)^3), x)", "-Hypergeometric2F1(3, -2/n, -((2-n)/n), -((b*x^n)/a))/(2*a^3*x^2)");
-//
-//	}
-//
-//	// {x^(-1+n)*(a+b*x^n)^2, x, 1, (a+b*x^n)^3/(3*b*n)}
-//	public void test01041() {
-//		check("Integrate(x^(-1+n)*(a+b*x^n)^2, x)", "(a+b*x^n)^3/(3*b*n)");
-//
-//	}
-//
-//	// {x^(-1-3*n)*(a+b*x^n)^2, x, 1, -(a+b*x^n)^3/(3*a*n*x^(3*n))}
-//	public void test01042() {
-//		check("Integrate(x^(-1-3*n)*(a+b*x^n)^2, x)", "-(a+b*x^n)^3/(3*a*n*x^(3*n))");
-//
-//	}
-//
-//	// {x^(-1+n)*(a+b*x^n)^3, x, 1, (a+b*x^n)^4/(4*b*n)}
-//	public void test01043() {
-//		check("Integrate(x^(-1+n)*(a+b*x^n)^3, x)", "(a+b*x^n)^4/(4*b*n)");
-//
-//	}
-//
-//	// {x^(-1-4*n)*(a+b*x^n)^3, x, 1, -(a+b*x^n)^4/(4*a*n*x^(4*n))}
-//	public void test01044() {
-//		check("Integrate(x^(-1-4*n)*(a+b*x^n)^3, x)", "-(a+b*x^n)^4/(4*a*n*x^(4*n))");
-//
-//	}
-//
-//	// {x^(-1+n)*(a+b*x^n)^5, x, 1, (a+b*x^n)^6/(6*b*n)}
-//	public void test01045() {
-//		check("Integrate(x^(-1+n)*(a+b*x^n)^5, x)", "(a+b*x^n)^6/(6*b*n)");
-//
-//	}
-//
-//	// {x^(-1-6*n)*(a+b*x^n)^5, x, 1, -(a+b*x^n)^6/(6*a*n*x^(6*n))}
-//	public void test01046() {
-//		check("Integrate(x^(-1-6*n)*(a+b*x^n)^5, x)", "-(a+b*x^n)^6/(6*a*n*x^(6*n))");
-//
-//	}
-//
-//	// {x^(-1+n)*(a+b*x^n)^8, x, 1, (a+b*x^n)^9/(9*b*n)}
-//	public void test01047() {
-//		check("Integrate(x^(-1+n)*(a+b*x^n)^8, x)", "(a+b*x^n)^9/(9*b*n)");
-//
-//	}
-//
-//	// {x^(-1-9*n)*(a+b*x^n)^8, x, 1, -(a+b*x^n)^9/(9*a*n*x^(9*n))}
-//	public void test01048() {
-//		check("Integrate(x^(-1-9*n)*(a+b*x^n)^8, x)", "-(a+b*x^n)^9/(9*a*n*x^(9*n))");
-//
-//	}
-//
-//	// {x^(-1+n)*(a+b*x^n)^16, x, 1, (a+b*x^n)^17/(17*b*n)}
-//	public void test01049() {
-//		check("Integrate(x^(-1+n)*(a+b*x^n)^16, x)", "(a+b*x^n)^17/(17*b*n)");
-//
-//	}
-//
-//	// {x^12*(a+b*x^13)^12, x, 1, (a+b*x^13)^13/(169*b)}
-//	public void test01050() {
-//		check("Integrate(x^12*(a+b*x^13)^12, x)", "(a+b*x^13)^13/(169*b)");
-//
-//	}
-//
-//	// {x^24*(a+b*x^25)^12, x, 1, (a+b*x^25)^13/(325*b)}
-//	public void test01051() {
-//		check("Integrate(x^24*(a+b*x^25)^12, x)", "(a+b*x^25)^13/(325*b)");
-//
-//	}
-//
-//	// {x^36*(a+b*x^37)^12, x, 1, (a+b*x^37)^13/(481*b)}
-//	public void test01052() {
-//		check("Integrate(x^36*(a+b*x^37)^12, x)", "(a+b*x^37)^13/(481*b)");
-//
-//	}
-//
-//	// {x^(12*m)*(a+b*x^(1+12*m))^12, x, 1, (a+b*x^(1+12*m))^13/(13*b*(1+12*m))}
-//	public void test01053() {
-//		check("Integrate(x^(12*m)*(a+b*x^(1+12*m))^12, x)", "(a+b*x^(1+12*m))^13/(13*b*(1+12*m))");
-//
-//	}
-//
-//	// {x^(12+12*(-1+m))*(a+b*x^(1+12*m))^12, x, 1, (a+b*x^(1+12*m))^13/(13*b*(1+12*m))}
-//	public void test01054() {
-//		check("Integrate(x^(12+12*(-1+m))*(a+b*x^(1+12*m))^12, x)", "(a+b*x^(1+12*m))^13/(13*b*(1+12*m))");
-//
-//	}
-//
-//	// {x^(-1+n)/(a+b*x^n), x, 1, Log(a+b*x^n)/(b*n)}
-//	public void test01055() {
-//		check("Integrate(x^(-1+n)/(a+b*x^n), x)", "Log(a+b*x^n)/(b*n)");
-//
-//	}
-//
-//	// {x^(-1+n)/(a+b*x^n), x, 1, Log(a+b*x^n)/(b*n)}
-//	public void test01056() {
-//		check("Integrate(x^(-1+n)/(a+b*x^n), x)", "Log(a+b*x^n)/(b*n)");
-//
-//	}
-//
-//	// {x^(-1+n)/(2+b*x^n), x, 1, Log(2+b*x^n)/(b*n)}
-//	public void test01057() {
-//		check("Integrate(x^(-1+n)/(2+b*x^n), x)", "Log(2+b*x^n)/(b*n)");
-//
-//	}
-//
-//	// {x^(-1+n)/(a+b*x^n)^2, x, 1, -(1/(b*n*(a+b*x^n)))}
-//	public void test01058() {
-//		check("Integrate(x^(-1+n)/(a+b*x^n)^2, x)", "-(1/(b*n*(a+b*x^n)))");
-//
-//	}
-//
-//	// {x^(-1+2*n)/(a+b*x^n)^3, x, 1, x^(2*n)/(2*a*n*(a+b*x^n)^2)}
-//	public void test01059() {
-//		check("Integrate(x^(-1+2*n)/(a+b*x^n)^3, x)", "x^(2*n)/(2*a*n*(a+b*x^n)^2)");
-//
-//	}
-//
-//	// {x^(-1+n)/(a+b*x^n)^3, x, 1, -1/(2*b*n*(a+b*x^n)^2)}
-//	public void test01060() {
-//		check("Integrate(x^(-1+n)/(a+b*x^n)^3, x)", "-1/(2*b*n*(a+b*x^n)^2)");
-//
-//	}
-//
-//	// {x^(-1+n)*Sqrt(a+b*x^n), x, 1, (2*(a+b*x^n)^(3/2))/(3*b*n)}
-//	public void test01061() {
-//		check("Integrate(x^(-1+n)*Sqrt(a+b*x^n), x)", "(2*(a+b*x^n)^(3/2))/(3*b*n)");
-//
-//	}
-//
-//	// {x^(-1+n)/Sqrt(a+b*x^n), x, 1, (2*Sqrt(a+b*x^n))/(b*n)}
-//	public void test01062() {
-//		check("Integrate(x^(-1+n)/Sqrt(a+b*x^n), x)", "(2*Sqrt(a+b*x^n))/(b*n)");
-//
-//	}
-//
-//	// {x^m/(a+b*x^n), x, 1, (x^(1+m)*Hypergeometric2F1(1, (1+m)/n, (1+m+n)/n, -((b*x^n)/a)))/(a*(1+m))}
-//	public void test01063() {
-//		check("Integrate(x^m/(a+b*x^n), x)",
-//				"(x^(1+m)*Hypergeometric2F1(1, (1+m)/n, (1+m+n)/n, -((b*x^n)/a)))/(a*(1+m))");
-//
-//	}
-//
-//	// {x^m/(a+b*x^n)^2, x, 1, (x^(1+m)*Hypergeometric2F1(2, (1+m)/n, (1+m+n)/n, -((b*x^n)/a)))/(a^2*(1+m))}
-//	public void test01064() {
-//		check("Integrate(x^m/(a+b*x^n)^2, x)",
-//				"(x^(1+m)*Hypergeometric2F1(2, (1+m)/n, (1+m+n)/n, -((b*x^n)/a)))/(a^2*(1+m))");
-//
-//	}
-//
-//	// {x^m/(a+b*x^n)^3, x, 1, (x^(1+m)*Hypergeometric2F1(3, (1+m)/n, (1+m+n)/n, -((b*x^n)/a)))/(a^3*(1+m))}
-//	public void test01065() {
-//		check("Integrate(x^m/(a+b*x^n)^3, x)",
-//				"(x^(1+m)*Hypergeometric2F1(3, (1+m)/n, (1+m+n)/n, -((b*x^n)/a)))/(a^3*(1+m))");
-//
-//	}
-//
-//	// {x^(-1-n/2)/Sqrt(a+b*x^n), x, 1, (-2*Sqrt(a+b*x^n))/(a*n*x^(n/2))}
-//	public void test01066() {
-//		check("Integrate(x^(-1-n/2)/Sqrt(a+b*x^n), x)", "(-2*Sqrt(a+b*x^n))/(a*n*x^(n/2))");
-//
-//	}
-//
-//	// {(a+b*x^n)^(-1-n^(-1)), x, 1, x/(a*(a+b*x^n)^n^(-1))}
-//	public void test01067() {
-//		check("Integrate((a+b*x^n)^(-1-n^(-1)), x)", "x/(a*(a+b*x^n)^n^(-1))");
-//
-//	}
-//
-//	// {x^(-1+n)*(a+b*x^n)^p, x, 1, (a+b*x^n)^(1+p)/(b*n*(1+p))}
-//	public void test01068() {
-//		check("Integrate(x^(-1+n)*(a+b*x^n)^p, x)", "(a+b*x^n)^(1+p)/(b*n*(1+p))");
-//
-//	}
-//
-//	// {x^(-1-n-n*p)*(a+b*x^n)^p, x, 1, -((a+b*x^n)^(1+p)/(a*n*(1+p)*x^(n*(1+p))))}
-//	public void test01069() {
-//		check("Integrate(x^(-1-n-n*p)*(a+b*x^n)^p, x)", "-((a+b*x^n)^(1+p)/(a*n*(1+p)*x^(n*(1+p))))");
-//
-//	}
-//
-//	// {x^(-1-9*n)*(a+b*x^n)^8, x, 1, -(a+b*x^n)^9/(9*a*n*x^(9*n))}
-//	public void test01070() {
-//		check("Integrate(x^(-1-9*n)*(a+b*x^n)^8, x)", "-(a+b*x^n)^9/(9*a*n*x^(9*n))");
-//
-//	}
-//
-//	// {x^(-4-3*p)*(a+b*x^3)^p, x, 1, -(a+b*x^3)^(1+p)/(3*a*(1+p)*x^(3*(1+p)))}
-//	public void test01071() {
-//		check("Integrate(x^(-4-3*p)*(a+b*x^3)^p, x)", "-(a+b*x^3)^(1+p)/(3*a*(1+p)*x^(3*(1+p)))");
-//
-//	}
-//
-//	// {(a+b*x^3)^8/x^28, x, 1, -(a+b*x^3)^9/(27*a*x^27)}
-//	public void test01072() {
-//		check("Integrate((a+b*x^3)^8/x^28, x)", "-(a+b*x^3)^9/(27*a*x^27)");
-//
-//	}
-//
-//	// {(a+b*x^n)^(-((1+n)/n)), x, 1, x/(a*(a+b*x^n)^n^(-1))}
-//	public void test01073() {
-//		check("Integrate((a+b*x^n)^(-((1+n)/n)), x)", "x/(a*(a+b*x^n)^n^(-1))");
-//
-//	}
-//
-//	// {x^m/(a+b*x^(1+m)), x, 1, Log(a+b*x^(1+m))/(b*(1+m))}
-//	public void test01074() {
-//		check("Integrate(x^m/(a+b*x^(1+m)), x)", "Log(a+b*x^(1+m))/(b*(1+m))");
-//
-//	}
-//
-//	// {x^m*(a+b*x^(1+m))^n, x, 1, (a+b*x^(1+m))^(1+n)/(b*(1+m)*(1+n))}
-//	public void test01075() {
-//		check("Integrate(x^m*(a+b*x^(1+m))^n, x)", "(a+b*x^(1+m))^(1+n)/(b*(1+m)*(1+n))");
-//
-//	}
-//
-//	// {x^m/(a+b*x^(2+2*m))^(3/2), x, 1, x^(1+m)/(a*(1+m)*Sqrt(a+b*x^(2*(1+m))))}
-//	public void test01076() {
-//		check("Integrate(x^m/(a+b*x^(2+2*m))^(3/2), x)", "x^(1+m)/(a*(1+m)*Sqrt(a+b*x^(2*(1+m))))");
-//
-//	}
-//
-//	// {x^n*Sqrt(1+x^(1+n)), x, 1, (2*(1+x^(1+n))^(3/2))/(3*(1+n))}
-//	public void test01077() {
-//		check("Integrate(x^n*Sqrt(1+x^(1+n)), x)", "(2*(1+x^(1+n))^(3/2))/(3*(1+n))");
-//
-//	}
-//
-//	// {x^n*Sqrt(a^2+x^(1+n)), x, 1, (2*(a^2+x^(1+n))^(3/2))/(3*(1+n))}
-//	public void test01078() {
-//		check("Integrate(x^n*Sqrt(a^2+x^(1+n)), x)", "(2*(a^2+x^(1+n))^(3/2))/(3*(1+n))");
-//
-//	}
-//
-//	// {(c*x)^(4+n)/(a+b*x^n), x, 1, ((c*x)^(5+n)*Hypergeometric2F1(1, (5+n)/n, 2+5/n, -((b*x^n)/a)))/(a*c*(5
-//	// +n))}
-//	public void test01079() {
-//		check("Integrate((c*x)^(4+n)/(a+b*x^n), x)",
-//				"((c*x)^(5+n)*Hypergeometric2F1(1, (5+n)/n, 2+5/n, -((b*x^n)/a)))/(a*c*(5+n))");
-//
-//	}
-//
-//	// {(c*x)^(3+n)/(a+b*x^n), x, 1, ((c*x)^(4+n)*Hypergeometric2F1(1, (4+n)/n, 2*(1+2/n),
-//	// -((b*x^n)/a)))/(a*c*(4+n))}
-//	public void test01080() {
-//		check("Integrate((c*x)^(3+n)/(a+b*x^n), x)",
-//				"((c*x)^(4+n)*Hypergeometric2F1(1, (4+n)/n, 2*(1+2/n), -((b*x^n)/a)))/(a*c*(4+n))");
-//
-//	}
-//
-//	// {(c*x)^(2+n)/(a+b*x^n), x, 1, ((c*x)^(3+n)*Hypergeometric2F1(1, (3+n)/n, 2+3/n, -((b*x^n)/a)))/(a*c*(3
-//	// +n))}
-//	public void test01081() {
-//		check("Integrate((c*x)^(2+n)/(a+b*x^n), x)",
-//				"((c*x)^(3+n)*Hypergeometric2F1(1, (3+n)/n, 2+3/n, -((b*x^n)/a)))/(a*c*(3+n))");
-//
-//	}
-//
-//	// {(c*x)^(1+n)/(a+b*x^n), x, 1, ((c*x)^(2+n)*Hypergeometric2F1(1, (2+n)/n, 2*(1+n^(-1)),
-//	// -((b*x^n)/a)))/(a*c*(2+n))}
-//	public void test01082() {
-//		check("Integrate((c*x)^(1+n)/(a+b*x^n), x)",
-//				"((c*x)^(2+n)*Hypergeometric2F1(1, (2+n)/n, 2*(1+n^(-1)), -((b*x^n)/a)))/(a*c*(2+n))");
-//
-//	}
-//
-//	// {(c*x)^n/(a+b*x^n), x, 1, ((c*x)^(1+n)*Hypergeometric2F1(1, 1+n^(-1), 2+n^(-1), -((b*x^n)/a)))/(a*c*(1 +
-//	// n))}
-//	public void test01083() {
-//		check("Integrate((c*x)^n/(a+b*x^n), x)",
-//				"((c*x)^(1+n)*Hypergeometric2F1(1, 1+n^(-1), 2+n^(-1), -((b*x^n)/a)))/(a*c*(1+n))");
-//
-//	}
-//
-//	// {(c*x)^(-2+n)/(a+b*x^n), x, 1, -(((c*x)^(-1+n)*Hypergeometric2F1(1, -((1-n)/n), 2-n^(-1),
-//	// -((b*x^n)/a)))/(a*c*(1-n)))}
-//	public void test01084() {
-//		check("Integrate((c*x)^(-2+n)/(a+b*x^n), x)",
-//				"-(((c*x)^(-1+n)*Hypergeometric2F1(1, -((1-n)/n), 2-n^(-1), -((b*x^n)/a)))/(a*c*(1-n)))");
-//
-//	}
-//
-//	// {(c*x)^(-3+n)/(a+b*x^n), x, 1, -(((c*x)^(-2+n)*Hypergeometric2F1(1, -((2-n)/n), 2*(1-n^(-1)),
-//	// -((b*x^n)/a)))/(a*c*(2-n)))}
-//	public void test01085() {
-//		check("Integrate((c*x)^(-3+n)/(a+b*x^n), x)",
-//				"-(((c*x)^(-2+n)*Hypergeometric2F1(1, -((2-n)/n), 2*(1-n^(-1)), -((b*x^n)/a)))/(a*c*(2-n)))");
-//
-//	}
-//
-//	// {(c*x)^(-1+n)/(a+b*x^n)^2, x, 1, (c*x)^n/(a*c*n*(a+b*x^n))}
-//	public void test01086() {
-//		check("Integrate((c*x)^(-1+n)/(a+b*x^n)^2, x)", "(c*x)^n/(a*c*n*(a+b*x^n))");
-//
-//	}
-//
-//	// {(c*x)^(-1-n/2)/Sqrt(a+b*x^n), x, 1, (-2*Sqrt(a+b*x^n))/(a*c*n*(c*x)^(n/2))}
-//	public void test01087() {
-//		check("Integrate((c*x)^(-1-n/2)/Sqrt(a+b*x^n), x)", "(-2*Sqrt(a+b*x^n))/(a*c*n*(c*x)^(n/2))");
-//
-//	}
-//
-//	// {(c*x)^(-1-n-n*p)*(a+b*x^n)^p, x, 1, -((a+b*x^n)^(1+p)/(a*c*n*(1+p)*(c*x)^(n*(1+p))))}
-//	public void test01088() {
-//		check("Integrate((c*x)^(-1-n-n*p)*(a+b*x^n)^p, x)", "-((a+b*x^n)^(1+p)/(a*c*n*(1+p)*(c*x)^(n*(1+p))))");
-//
-//	}
-//
-//	// {(2+x)/(1+(2+x)^2), x, 1, Log(1+(2+x)^2)/2}
-//	public void test01089() {
-//		check("Integrate((2+x)/(1+(2+x)^2), x)", "Log(1+(2+x)^2)/2");
-//
-//	}
-//
-//	// {(2+x)/(1+(2+x)^2)^2, x, 1, -1/(2*(1+(2+x)^2))}
-//	public void test01090() {
-//		check("Integrate((2+x)/(1+(2+x)^2)^2, x)", "-1/(2*(1+(2+x)^2))");
-//
-//	}
-//
-//	// {(2+x)/(1+(2+x)^2)^3, x, 1, -1/(4*(1+(2+x)^2)^2)}
-//	public void test01091() {
-//		check("Integrate((2+x)/(1+(2+x)^2)^3, x)", "-1/(4*(1+(2+x)^2)^2)");
-//
-//	}
-//
-//	// {(c+d*x)*(a+b*(c+d*x)^2)^p, x, 1, (a+b*(c+d*x)^2)^(1+p)/(2*b*d*(1+p))}
-//	public void test01092() {
-//		check("Integrate((c+d*x)*(a+b*(c+d*x)^2)^p, x)", "(a+b*(c+d*x)^2)^(1+p)/(2*b*d*(1+p))");
-//
-//	}
-//
-//	// {(c+d*x)^2/(a+b*(c+d*x)^3), x, 1, Log(a+b*(c+d*x)^3)/(3*b*d)}
-//	public void test01093() {
-//		check("Integrate((c+d*x)^2/(a+b*(c+d*x)^3), x)", "Log(a+b*(c+d*x)^3)/(3*b*d)");
-//
-//	}
-//
-//	// {(c+d*x)^2/(a+b*(c+d*x)^3)^2, x, 1, -1/(3*b*d*(a+b*(c+d*x)^3))}
-//	public void test01094() {
-//		check("Integrate((c+d*x)^2/(a+b*(c+d*x)^3)^2, x)", "-1/(3*b*d*(a+b*(c+d*x)^3))");
-//
-//	}
-//
-//	// {(c+d*x)^2/(a+b*(c+d*x)^3)^3, x, 1, -1/(6*b*d*(a+b*(c+d*x)^3)^2)}
-//	public void test01095() {
-//		check("Integrate((c+d*x)^2/(a+b*(c+d*x)^3)^3, x)", "-1/(6*b*d*(a+b*(c+d*x)^3)^2)");
-//
-//	}
-//
-//	// {(c*e+d*e*x)^2/(a+b*(c+d*x)^3), x, 1, (e^2*Log(a+b*(c+d*x)^3))/(3*b*d)}
-//	public void test01096() {
-//		check("Integrate((c*e+d*e*x)^2/(a+b*(c+d*x)^3), x)", "(e^2*Log(a+b*(c+d*x)^3))/(3*b*d)");
-//
-//	}
-//
-//	// {(c*e+d*e*x)^2/(a+b*(c+d*x)^3)^2, x, 1, -e^2/(3*b*d*(a+b*(c+d*x)^3))}
-//	public void test01097() {
-//		check("Integrate((c*e+d*e*x)^2/(a+b*(c+d*x)^3)^2, x)", "-e^2/(3*b*d*(a+b*(c+d*x)^3))");
-//
-//	}
-//
-//	// {(c*e+d*e*x)^2/(a+b*(c+d*x)^3)^3, x, 1, -e^2/(6*b*d*(a+b*(c+d*x)^3)^2)}
-//	public void test01098() {
-//		check("Integrate((c*e+d*e*x)^2/(a+b*(c+d*x)^3)^3, x)", "-e^2/(6*b*d*(a+b*(c+d*x)^3)^2)");
-//
-//	}
-//
-//	// {(c+d*x)^3*(a+b*(c+d*x)^4)^p, x, 1, (a+b*(c+d*x)^4)^(1+p)/(4*b*d*(1+p))}
-//	public void test01099() {
-//		check("Integrate((c+d*x)^3*(a+b*(c+d*x)^4)^p, x)", "(a+b*(c+d*x)^4)^(1+p)/(4*b*d*(1+p))");
-//
-//	}
+	// // {Sqrt(1+2*x), x, 1, (1+2*x)^(3/2)/3}
+	// public void test00001() {
+	// check("Integrate(Sqrt(1+2*x), x)", "(1+2*x)^(3/2)/3");
+	//
+	// }
+	//
+	// // {(1+x)/(2+2*x+x^2)^3, x, 1, -1/(4*(2+2*x+x^2)^2)}
+	// public void test00002() {
+	// check("Integrate((1+x)/(2+2*x+x^2)^3, x)", "-1/(4*(2+2*x+x^2)^2)");
+	//
+	// }
+	//
+	// // {x^5/Sqrt(1-x^6), x, 1, -Sqrt(1-x^6)/3}
+	// public void test00003() {
+	// check("Integrate(x^5/Sqrt(1-x^6), x)", "-Sqrt(1-x^6)/3");
+	//
+	// }
+	//
+	// // {(1+x^2)^(-3/2), x, 1, x/Sqrt(1+x^2)}
+	// public void test00004() {
+	// check("Integrate((1+x^2)^(-3/2), x)", "x/Sqrt(1+x^2)");
+	//
+	// }
+	//
+	// // {x^2*(27+8*x^3)^(2/3), x, 1, (27+8*x^3)^(5/3)/40}
+	// public void test00005() {
+	// check("Integrate(x^2*(27+8*x^3)^(2/3), x)", "(27+8*x^3)^(5/3)/40");
+	//
+	// }
+	//
+	// // {(Cos(x)+Sin(x))/(-Cos(x)+Sin(x))^(1/3), x, 1, (3*(-Cos(x)+Sin(x))^(2/3))/2}
+	// public void test00006() {
+	// check("Integrate((Cos(x)+Sin(x))/(-Cos(x)+Sin(x))^(1/3), x)", "(3*(-Cos(x)+Sin(x))^(2/3))/2");
+	//
+	// }
+	//
+	// // {x/(Sqrt(1+x^2)*Sqrt(1+Sqrt(1+x^2))), x, 1, 2*Sqrt(1+Sqrt(1+x^2))}
+	// public void test00007() {
+	// check("Integrate(x/(Sqrt(1+x^2)*Sqrt(1+Sqrt(1+x^2))), x)", "2*Sqrt(1+Sqrt(1+x^2))");
+	//
+	// }
+	//
+	// // {x*Sqrt(1+x^2), x, 1, (1+x^2)^(3/2)/3}
+	// public void test00008() {
+	// check("Integrate(x*Sqrt(1+x^2), x)", "(1+x^2)^(3/2)/3");
+	//
+	// }
+	//
+	// // {x*(-1+x^2)^9, x, 1, (1-x^2)^10/20}
+	// public void test00009() {
+	// check("Integrate(x*(-1+x^2)^9, x)", "(1-x^2)^10/20");
+	//
+	// }
+	//
+	// // {(3+2*x)/(7+6*x)^3, x, 1, -(3+2*x)^2/(8*(7+6*x)^2)}
+	// public void test00010() {
+	// check("Integrate((3+2*x)/(7+6*x)^3, x)", "-(3+2*x)^2/(8*(7+6*x)^2)");
+	//
+	// }
+	//
+	// // {x^4*(1+x^5)^5, x, 1, (1+x^5)^6/30}
+	// public void test00011() {
+	// check("Integrate(x^4*(1+x^5)^5, x)", "(1+x^5)^6/30");
+	//
+	// }
+	//
+	// // {x*Cos(x^2)*Sin(x^2), x, 1, Sin(x^2)^2/4}
+	// public void test00012() {
+	// check("Integrate(x*Cos(x^2)*Sin(x^2), x)", "Sin(x^2)^2/4");
+	//
+	// }
+	//
+	// // {(2+3*x)^(-1), x, 1, Log(2+3*x)/3}
+	// public void test00013() {
+	// check("Integrate((2+3*x)^(-1), x)", "Log(2+3*x)/3");
+	//
+	// }
+	//
+	// // {x*Log(x), x, 1, -x^2/4+(x^2*Log(x))/2}
+	// public void test00014() {
+	// check("Integrate(x*Log(x), x)", "-x^2/4+(x^2*Log(x))/2");
+	// }
+	//
+	// // {(1+t)^(-1), t, 1, Log(1+t)}
+	// public void test00015() {
+	// check("Integrate((1+t)^(-1), t)", "Log(1+t)");
+	//
+	// }
+	//
+	// // {Cot(x), x, 1, Log(Sin(x))}
+	// public void test00016() {
+	// check("Integrate(Cot(x), x)", "Log(Sin(x))");
+	//
+	// }
+	//
+	// // {x^n*Log(a*x), x, 1, -(x^(1+n)/(1+n)^2)+(x^(1+n)*Log(a*x))/(1+n)}
+	// public void test00017() {
+	// check("Integrate(x^n*Log(a*x), x)", "-(x^(1+n)/(1+n)^2)+(x^(1+n)*Log(a*x))/(1+n)");
+	//
+	// }
+	//
+	// // {E^x^3*x^2, x, 1, E^x^3/3}
+	// public void test00018() {
+	// check("Integrate(E^x^3*x^2, x)", "E^x^3/3");
+	//
+	// }
+	//
+	// // {2^Sqrt(x)/Sqrt(x), x, 1, 2^(1+Sqrt(x))/Log(2)}
+	// public void test00019() {
+	// check("Integrate(2^Sqrt(x)/Sqrt(x), x)", "2^(1+Sqrt(x))/Log(2)");
+	//
+	// }
+	//
+	// // {E^x*Sin(x), x, 1, -(E^x*Cos(x))/2+(E^x*Sin(x))/2}
+	// public void test00020() {
+	// check("Integrate(E^x*Sin(x), x)", "-(E^x*Cos(x))/2+(E^x*Sin(x))/2");
+	//
+	// }
+	//
+	// // {E^x*Cos(x), x, 1, (E^x*Cos(x))/2+(E^x*Sin(x))/2}
+	// public void test00021() {
+	// check("Integrate(E^x*Cos(x), x)", "(E^x*Cos(x))/2+(E^x*Sin(x))/2");
+	//
+	// }
+	//
+	// // {E^(a*x)*Cos(b*x), x, 1, (a*E^(a*x)*Cos(b*x))/(a^2+b^2)+(b*E^(a*x)*Sin(b*x))/(a^2+b^2)}
+	// public void test00022() {
+	// check("Integrate(E^(a*x)*Cos(b*x), x)", "(a*E^(a*x)*Cos(b*x))/(a^2+b^2)+(b*E^(a*x)*Sin(b*x))/(a^2+b^2)");
+	//
+	// }
+	//
+	// // {E^(a*x)*Sin(b*x), x, 1, -((b*E^(a*x)*Cos(b*x))/(a^2+b^2))+(a*E^(a*x)*Sin(b*x))/(a^2+b^2)}
+	// public void test00023() {
+	// check("Integrate(E^(a*x)*Sin(b*x), x)", "-((b*E^(a*x)*Cos(b*x))/(a^2+b^2))+(a*E^(a*x)*Sin(b*x))/(a^2+b^2)");
+	//
+	// }
+	//
+	// // {(a^2+x^2)^(-1), x, 1, ArcTan(x/a)/a}
+	// public void test00024() {
+	// check("Integrate((a^2+x^2)^(-1), x)", "ArcTan(x/a)/a");
+	//
+	// }
+	//
+	// // {(a+b*x^2)^(-1), x, 1, ArcTan((Sqrt(b)*x)/Sqrt(a))/(Sqrt(a)*Sqrt(b))}
+	// public void test00025() {
+	// check("Integrate((a+b*x^2)^(-1), x)", "ArcTan((Sqrt(b)*x)/Sqrt(a))/(Sqrt(a)*Sqrt(b))");
+	//
+	// }
+	//
+	// // {ArcTan(Sqrt(x))/(Sqrt(x)*(1+x)), x, 1, ArcTan(Sqrt(x))^2}
+	// public void test00026() {
+	// check("Integrate(ArcTan(Sqrt(x))/(Sqrt(x)*(1+x)), x)", "ArcTan(Sqrt(x))^2");
+	//
+	// }
+	//
+	// // {(E^ArcTan(x)*x)/(1+x^2)^(3/2), x, 1, -(E^ArcTan(x)*(1-x))/(2*Sqrt(1+x^2))}
+	// public void test00027() {
+	// check("Integrate((E^ArcTan(x)*x)/(1+x^2)^(3/2), x)", "-(E^ArcTan(x)*(1-x))/(2*Sqrt(1+x^2))");
+	//
+	// }
+	//
+	// // {E^ArcTan(x)/(1+x^2)^(3/2), x, 1, (E^ArcTan(x)*(1+x))/(2*Sqrt(1+x^2))}
+	// public void test00028() {
+	// check("Integrate(E^ArcTan(x)/(1+x^2)^(3/2), x)", "(E^ArcTan(x)*(1+x))/(2*Sqrt(1+x^2))");
+	//
+	// }
+	//
+	// // {(-1+4*x^5)/(1+x+x^5)^2, x, 1, -(x/(1+x+x^5))}
+	// public void test00029() {
+	// check("Integrate((-1+4*x^5)/(1+x+x^5)^2, x)", "-x/(1+x+x^5)");
+	//
+	// }
+	//
+	// // {(1+Cos(x)/2)^(-1), x, 1, (2*x)/Sqrt(3)-(4*ArcTan(Sin(x)/(2+Sqrt(3)+Cos(x))))/Sqrt(3)}
+	// public void test00030() {
+	// check("Integrate((1+Cos(x)/2)^(-1), x)", "(2*x)/Sqrt(3)-(4*ArcTan(Sin(x)/(2+Sqrt(3)+Cos(x))))/Sqrt(3)");
+	//
+	// }
+	//
+	// // {(b*Cos(x)+a*Sin(x))^(-2), x, 1, Sin(x)/(b*(b*Cos(x)+a*Sin(x)))}
+	// public void test00031() {
+	// check("Integrate((b*Cos(x)+a*Sin(x))^(-2), x)", "Sin(x)/(b*(b*Cos(x)+a*Sin(x)))");
+	//
+	// }
+	//
+	// // {x/Sqrt(3-x^2), x, 1, -Sqrt(3-x^2)}
+	// public void test00032() {
+	// check("Integrate(x/Sqrt(3-x^2), x)", "-Sqrt(3-x^2)");
+	//
+	// }
+	//
+	// // {E^t/t, t, 1, ExpIntegralEi(t)}
+	// public void test00033() {
+	// check("Integrate(E^t/t, t)", "ExpIntegralEi(t)");
+	//
+	// }
+	//
+	// // {E^(a*t)/t, t, 1, ExpIntegralEi(a*t)}
+	// public void test00034() {
+	// check("Integrate(E^(a*t)/t, t)", "ExpIntegralEi(a*t)");
+	//
+	// }
+	//
+	// // {1/(E^t*(-1-a+t)), t, 1, E^(-1-a)*ExpIntegralEi(1+a-t)}
+	// public void test00035() {
+	// check("Integrate(1/(E^t*(-1-a+t)), t)", "E^(-1-a)*ExpIntegralEi(1+a-t)");
+	//
+	// }
+	//
+	// // {(b1*Cos(x)+a1*Sin(x))/(b*Cos(x)+a*Sin(x)), x, 1, ((a*a1+b*b1)*x)/(a^2+b^2)-((a1*b-a*b1)*Log(b*Cos(x)
+	// // +a*Sin(x)))/(a^2+b^2)}
+	// public void test00036() {
+	// check("Integrate((b1*Cos(x)+a1*Sin(x))/(b*Cos(x)+a*Sin(x)), x)",
+	// "((a*a1+b*b1)*x)/(a^2+b^2)-((a1*b-a*b1)*Log(b*Cos(x)+a*Sin(x)))/(a^2+b^2)");
+	//
+	// }
+	//
+	// // {Log(t)^(-1), t, 1, LogIntegral(t)}
+	// public void test00037() {
+	// check("Integrate(Log(t)^(-1), t)", "LogIntegral(t)");
+	//
+	// }
+	//
+	// // {E^(2*t)/(-1+t), t, 1, E^2*ExpIntegralEi(-2*(1-t))}
+	// public void test00038() {
+	// check("Integrate(E^(2*t)/(-1+t), t)", "E^2*ExpIntegralEi(-2*(1-t))");
+	//
+	// }
+	//
+	// // {1/Sqrt(1+t^3), t, 1, (2*Sqrt(2+Sqrt(3))*(1+t)*Sqrt((1-t+t^2)/(1+Sqrt(3)+t)^2)*EllipticF(ArcSin((1
+	// // -Sqrt(3)+t)/(1+Sqrt(3)+t)), -7-4*Sqrt(3)))/(3^(1/4)*Sqrt((1+t)/(1+Sqrt(3)+t)^2)*Sqrt(1+t^3))}
+	// public void test00039() {
+	// check("Integrate(1/Sqrt(1+t^3), t)",
+	// "(2*Sqrt(2+Sqrt(3))*(1+t)*Sqrt((1-t+t^2)/(1+Sqrt(3)+t)^2)*EllipticF(ArcSin((1-Sqrt(3)+t)/(1+Sqrt(3)+t)),
+	// -7-4*Sqrt(3)))/(3^(1/4)*Sqrt((1+t)/(1+Sqrt(3)+t)^2)*Sqrt(1+t^3))");
+	//
+	// }
+	//
+	// // {(Sqrt(2)+Cos(z)+Sin(z))^(-1), z, 1, -((1-Sqrt(2)*Sin(z))/(Cos(z)-Sin(z)))}
+	// public void test00040() {
+	// check("Integrate((Sqrt(2)+Cos(z)+Sin(z))^(-1), z)", "-((1-Sqrt(2)*Sin(z))/(Cos(z)-Sin(z)))");
+	//
+	// }
+	//
+	// // {(1+x^2)^(-1), x, 1, ArcTan(x)}
+	// public void test00041() {
+	// check("Integrate((1+x^2)^(-1), x)", "ArcTan(x)");
+	//
+	// }
+	//
+	// // {Sin(x)/x, x, 1, SinIntegral(x)}
+	// public void test00042() {
+	// check("Integrate(Sin(x)/x, x)", "SinIntegral(x)");
+	//
+	// }
+	//
+	// // {(6-3*x^2+x^4)/(4+5*x^2-5*x^4+x^6), x, 1, -ArcTan(Sqrt(3)-2*x)+ArcTan(Sqrt(3)+2*x)+ArcTan((x*(1
+	// // -3*x^2+x^4))/2)}
+	// public void test00043() {
+	// check("Integrate((6-3*x^2+x^4)/(4+5*x^2-5*x^4+x^6), x)",
+	// "-ArcTan(Sqrt(3)-2*x)+ArcTan(Sqrt(3)+2*x)+ArcTan((x*(1-3*x^2+x^4))/2)");
+	//
+	// }
+	//
+	// // {1+x+x^2, x, 1, x+x^2/2+x^3/3}
+	// public void test00044() {
+	// check("Integrate(1+x+x^2, x)", "x+x^2/2+x^3/3");
+	//
+	// }
+	//
+	// // {x^(-1), x, 1, Log(x)}
+	// public void test00045() {
+	// check("Integrate(x^(-1), x)", "Log(x)");
+	//
+	// }
+	//
+	// // {(a+b*x)^p, x, 1, (a+b*x)^(1+p)/(b*(1+p))}
+	// public void test00046() {
+	// check("Integrate((a+b*x)^p, x)", "(a+b*x)^(1+p)/(b*(1+p))");
+	//
+	// }
+	//
+	// // {(a+b*x)^(-1), x, 1, Log(a+b*x)/b}
+	// public void test00047() {
+	// check("Integrate((a+b*x)^(-1), x)", "Log(a+b*x)/b");
+	//
+	// }
+	//
+	// // {(a+b*x)^(-2), x, 1, -(1/(b*(a+b*x)))}
+	// public void test00048() {
+	// check("Integrate((a+b*x)^(-2), x)", "-(1/(b*(a+b*x)))");
+	//
+	// }
+	//
+	// // {(c^2+x^2)^(-1), x, 1, ArcTan(x/c)/c}
+	// public void test00049() {
+	// check("Integrate((c^2+x^2)^(-1), x)", "ArcTan(x/c)/c");
+	//
+	// }
+	//
+	// // {(c^2-x^2)^(-1), x, 1, ArcTanh(x/c)/c}
+	// public void test00050() {
+	// check("Integrate((c^2-x^2)^(-1), x)", "ArcTanh(x/c)/c");
+	//
+	// }
+	//
+	// // {Log(x), x, 1, -x+x*Log(x)}
+	// public void test00051() {
+	// check("Integrate(Log(x), x)", "-x+x*Log(x)");
+	//
+	// }
+	//
+	// // {x*Log(x), x, 1, -x^2/4+(x^2*Log(x))/2}
+	// public void test00052() {
+	// check("Integrate(x*Log(x), x)", "-x^2/4+(x^2*Log(x))/2");
+	//
+	// }
+	//
+	// // {x^2*Log(x), x, 1, -x^3/9+(x^3*Log(x))/3}
+	// public void test00053() {
+	// check("Integrate(x^2*Log(x), x)", "-x^3/9+(x^3*Log(x))/3");
+	//
+	// }
+	//
+	// // {x^p*Log(x), x, 1, -(x^(1+p)/(1+p)^2)+(x^(1+p)*Log(x))/(1+p)}
+	// public void test00054() {
+	// check("Integrate(x^p*Log(x), x)", "-(x^(1+p)/(1+p)^2)+(x^(1+p)*Log(x))/(1+p)");
+	//
+	// }
+	//
+	// // {Log(x)^(-1), x, 1, LogIntegral(x)}
+	// public void test00055() {
+	// check("Integrate(Log(x)^(-1), x)", "LogIntegral(x)");
+	//
+	// }
+	//
+	// // {Sin(x), x, 1, -Cos(x)}
+	// public void test00056() {
+	// check("Integrate(Sin(x), x)", "-Cos(x)");
+	//
+	// }
+	//
+	// // {Cos(x), x, 1, Sin(x)}
+	// public void test00057() {
+	// check("Integrate(Cos(x), x)", "Sin(x)");
+	//
+	// }
+	//
+	// // {Tan(x), x, 1, -Log(Cos(x))}
+	// public void test00058() {
+	// check("Integrate(Tan(x), x)", "-Log(Cos(x))");
+	//
+	// }
+	//
+	// // {Cot(x), x, 1, Log(Sin(x))}
+	// public void test00059() {
+	// check("Integrate(Cot(x), x)", "Log(Sin(x))");
+	//
+	// }
+	//
+	// // {Sec(x), x, 1, ArcTanh(Sin(x))}
+	// public void test00060() {
+	// check("Integrate(Sec(x), x)", "ArcTanh(Sin(x))");
+	//
+	// }
+	//
+	// // {Csc(x), x, 1, -ArcTanh(Cos(x))}
+	// public void test00061() {
+	// check("Integrate(Csc(x), x)", "-ArcTanh(Cos(x))");
+	//
+	// }
+	//
+	// // {Sin(x)^p, x, 1, (Cos(x)*Hypergeometric2F1(1/2, (1+p)/2, (3+p)/2, Sin(x)^2)*Sin(x)^(1+p))/((1 +
+	// // p)*Sqrt(Cos(x)^2))}
+	// public void test00062() {
+	// check("Integrate(Sin(x)^p, x)",
+	// "(Cos(x)*Hypergeometric2F1(1/2, (1+p)/2, (3+p)/2, Sin(x)^2)*Sin(x)^(1+p))/((1+p)*Sqrt(Cos(x)^2))");
+	//
+	// }
+	//
+	// // {Sin(x)*Sin(2*x), x, 1, Sin(x)/2-Sin(3*x)/6}
+	// public void test00063() {
+	// check("Integrate(Sin(x)*Sin(2*x), x)", "Sin(x)/2-Sin(3*x)/6");
+	//
+	// }
+	//
+	// // {Sin(x)/x, x, 1, SinIntegral(x)}
+	// public void test00064() {
+	// check("Integrate(Sin(x)/x, x)", "SinIntegral(x)");
+	//
+	// }
+	//
+	// // {Cos(x)/x, x, 1, CosIntegral(x)}
+	// public void test00065() {
+	// check("Integrate(Cos(x)/x, x)", "CosIntegral(x)");
+	//
+	// }
+	//
+	// // {Sin(a+b*x), x, 1, -(Cos(a+b*x)/b)}
+	// public void test00066() {
+	// check("Integrate(Sin(a+b*x), x)", "-(Cos(a+b*x)/b)");
+	//
+	// }
+	//
+	// // {Cos(a+b*x), x, 1, Sin(a+b*x)/b}
+	// public void test00067() {
+	// check("Integrate(Cos(a+b*x), x)", "Sin(a+b*x)/b");
+	//
+	// }
+	//
+	// // {Tan(a+b*x), x, 1, -(Log(Cos(a+b*x))/b)}
+	// public void test00068() {
+	// check("Integrate(Tan(a+b*x), x)", "-(Log(Cos(a+b*x))/b)");
+	//
+	// }
+	//
+	// // {Cot(a+b*x), x, 1, Log(Sin(a+b*x))/b}
+	// public void test00069() {
+	// check("Integrate(Cot(a+b*x), x)", "Log(Sin(a+b*x))/b");
+	//
+	// }
+	//
+	// // {Csc(a+b*x), x, 1, -(ArcTanh(Cos(a+b*x))/b)}
+	// public void test00070() {
+	// check("Integrate(Csc(a+b*x), x)", "-(ArcTanh(Cos(a+b*x))/b)");
+	//
+	// }
+	//
+	// // {Sec(a+b*x), x, 1, ArcTanh(Sin(a+b*x))/b}
+	// public void test00071() {
+	// check("Integrate(Sec(a+b*x), x)", "ArcTanh(Sin(a+b*x))/b");
+	//
+	// }
+	//
+	// // {(1+Cos(x))^(-1), x, 1, Sin(x)/(1+Cos(x))}
+	// public void test00072() {
+	// check("Integrate((1+Cos(x))^(-1), x)", "Sin(x)/(1+Cos(x))");
+	//
+	// }
+	//
+	// // {(1-Cos(x))^(-1), x, 1, -(Sin(x)/(1-Cos(x)))}
+	// public void test00073() {
+	// check("Integrate((1-Cos(x))^(-1), x)", "-(Sin(x)/(1-Cos(x)))");
+	//
+	// }
+	//
+	// // {(1+Sin(x))^(-1), x, 1, -(Cos(x)/(1+Sin(x)))}
+	// public void test00074() {
+	// check("Integrate((1+Sin(x))^(-1), x)", "-(Cos(x)/(1+Sin(x)))");
+	//
+	// }
+	//
+	// // {(1-Sin(x))^(-1), x, 1, Cos(x)/(1-Sin(x))}
+	// public void test00075() {
+	// check("Integrate((1-Sin(x))^(-1), x)", "Cos(x)/(1-Sin(x))");
+	//
+	// }
+	//
+	// // {Cos(x)*Cos(2*x), x, 1, Sin(x)/2+Sin(3*x)/6}
+	// public void test00076() {
+	// check("Integrate(Cos(x)*Cos(2*x), x)", "Sin(x)/2+Sin(3*x)/6");
+	//
+	// }
+	//
+	// // {Cos(3*x)*Sin(2*x), x, 1, Cos(x)/2-Cos(5*x)/10}
+	// public void test00077() {
+	// check("Integrate(Cos(3*x)*Sin(2*x), x)", "Cos(x)/2-Cos(5*x)/10");
+	//
+	// }
+	//
+	// // {d^x*Sin(x), x, 1, -((d^x*Cos(x))/(1+Log(d)^2))+(d^x*Log(d)*Sin(x))/(1+Log(d)^2)}
+	// public void test00078() {
+	// check("Integrate(d^x*Sin(x), x)", "-((d^x*Cos(x))/(1+Log(d)^2))+(d^x*Log(d)*Sin(x))/(1+Log(d)^2)");
+	//
+	// }
+	//
+	// // {d^x*Cos(x), x, 1, (d^x*Cos(x)*Log(d))/(1+Log(d)^2)+(d^x*Sin(x))/(1+Log(d)^2)}
+	// public void test00079() {
+	// check("Integrate(d^x*Cos(x), x)", "(d^x*Cos(x)*Log(d))/(1+Log(d)^2)+(d^x*Sin(x))/(1+Log(d)^2)");
+	//
+	// }
+	//
+	// // {Sin(Log(x)), x, 1, -(x*Cos(Log(x)))/2+(x*Sin(Log(x)))/2}
+	// public void test00080() {
+	// check("Integrate(Sin(Log(x)), x)", "-(x*Cos(Log(x)))/2+(x*Sin(Log(x)))/2");
+	//
+	// }
+	//
+	// // {Cos(Log(x)), x, 1, (x*Cos(Log(x)))/2+(x*Sin(Log(x)))/2}
+	// public void test00081() {
+	// check("Integrate(Cos(Log(x)), x)", "(x*Cos(Log(x)))/2+(x*Sin(Log(x)))/2");
+	//
+	// }
+	//
+	// // {E^x, x, 1, E^x}
+	// public void test00082() {
+	// check("Integrate(E^x, x)", "E^x");
+	//
+	// }
+	//
+	// // {a^x, x, 1, a^x/Log(a)}
+	// public void test00083() {
+	// check("Integrate(a^x, x)", "a^x/Log(a)");
+	//
+	// }
+	//
+	// // {E^(a*x), x, 1, E^(a*x)/a}
+	// public void test00084() {
+	// check("Integrate(E^(a*x), x)", "E^(a*x)/a");
+	//
+	// }
+	//
+	// // {E^(a*x)/x, x, 1, ExpIntegralEi(a*x)}
+	// public void test00085() {
+	// check("Integrate(E^(a*x)/x, x)", "ExpIntegralEi(a*x)");
+	//
+	// }
+	//
+	// // {(E^(a*x)*x)/(1+a*x)^2, x, 1, E^(a*x)/(a^2*(1+a*x))}
+	// public void test00086() {
+	// check("Integrate((E^(a*x)*x)/(1+a*x)^2, x)", "E^(a*x)/(a^2*(1+a*x))");
+	//
+	// }
+	//
+	// // {k^x^2*x, x, 1, k^x^2/(2*Log(k))}
+	// public void test00087() {
+	// check("Integrate(k^x^2*x, x)", "k^x^2/(2*Log(k))");
+	//
+	// }
+	//
+	// // {E^x^2, x, 1, (Sqrt(Pi)*Erfi(x))/2}
+	// public void test00088() {
+	// check("Integrate(E^x^2, x)", "(Sqrt(Pi)*Erfi(x))/2");
+	//
+	// }
+	//
+	// // {E^x^2*x, x, 1, E^x^2/2}
+	// public void test00089() {
+	// check("Integrate(E^x^2*x, x)", "E^x^2/2");
+	//
+	// }
+	//
+	// // {E^E^E^E^x, x, 1, CannotIntegrate(E^E^E^E^x, x)}
+	// public void test00090() {
+	// check("Integrate(E^E^E^E^x, x)", "CannotIntegrate(E^E^E^E^x, x)");
+	//
+	// }
+	//
+	// // {2*x+Sqrt(2)*x^2, x, 1, x^2+(Sqrt(2)*x^3)/3}
+	// public void test00091() {
+	// check("Integrate(2*x+Sqrt(2)*x^2, x)", "x^2+(Sqrt(2)*x^3)/3");
+	//
+	// }
+	//
+	// // {Sqrt(a+b*x), x, 1, (2*(a+b*x)^(3/2))/(3*b)}
+	// public void test00092() {
+	// check("Integrate(Sqrt(a+b*x), x)", "(2*(a+b*x)^(3/2))/(3*b)");
+	//
+	// }
+	//
+	// // {1/Sqrt(a+b*x), x, 1, (2*Sqrt(a+b*x))/b}
+	// public void test00093() {
+	// check("Integrate(1/Sqrt(a+b*x), x)", "(2*Sqrt(a+b*x))/b");
+	//
+	// }
+	//
+	// // {(a+b*x)^(p/2), x, 1, (2*(a+b*x)^((2+p)/2))/(b*(2+p))}
+	// public void test00094() {
+	// check("Integrate((a+b*x)^(p/2), x)", "(2*(a+b*x)^((2+p)/2))/(b*(2+p))");
+	//
+	// }
+	//
+	// // {x/(1-x^2)^(9/8), x, 1, 4/(1-x^2)^(1/8)}
+	// public void test00095() {
+	// check("Integrate(x/(1-x^2)^(9/8), x)", "4/(1-x^2)^(1/8)");
+	//
+	// }
+	//
+	// // {(1+x)/((1-x)^2*Sqrt(1+x^2)), x, 1, Sqrt(1+x^2)/(1-x)}
+	// public void test00096() {
+	// check("Integrate((1+x)/((1-x)^2*Sqrt(1+x^2)), x)", "Sqrt(1+x^2)/(1-x)");
+	//
+	// }
+	//
+	// // {1/Sqrt(1+x^2), x, 1, ArcSinh(x)}
+	// public void test00097() {
+	// check("Integrate(1/Sqrt(1+x^2), x)", "ArcSinh(x)");
+	//
+	// }
+	//
+	// // {r/Sqrt(-alpha^2+2*e*r^2), r, 1, Sqrt(-alpha^2+2*e*r^2)/(2*e)}
+	// public void test00098() {
+	// check("Integrate(r/Sqrt(-alpha^2+2*e*r^2), r)", "Sqrt(-alpha^2+2*e*r^2)/(2*e)");
+	//
+	// }
+	//
+	// // {r/Sqrt(-alpha^2-epsilon^2+2*e*r^2), r, 1, Sqrt(-alpha^2-epsilon^2+2*e*r^2)/(2*e)}
+	// public void test00099() {
+	// check("Integrate(r/Sqrt(-alpha^2-epsilon^2+2*e*r^2), r)", "Sqrt(-alpha^2-epsilon^2+2*e*r^2)/(2*e)");
+	//
+	// }
+	//
+	// // {Log(x^2)/x^3, x, 1, -1/(2*x^2)-Log(x^2)/(2*x^2)}
+	// public void test00100() {
+	// check("Integrate(Log(x^2)/x^3, x)", "-1/(2*x^2)-Log(x^2)/(2*x^2)");
+	//
+	// }
+	//
+	// // {(-1+(1-x)*Log(x))/(E^x*Log(x)^2), x, 1, x/(E^x*Log(x))}
+	// public void test00101() {
+	// check("Integrate((-1+(1-x)*Log(x))/(E^x*Log(x)^2), x)", "x/(E^x*Log(x))");
+	//
+	// }
+	//
+	// // {Tanh(2*x), x, 1, Log(Cosh(2*x))/2}
+	// public void test00102() {
+	// check("Integrate(Tanh(2*x), x)", "Log(Cosh(2*x))/2");
+	//
+	// }
+	//
+	// // {(-1+I*eps*Sinh(x))/(I*a-x+I*eps*Cosh(x)), x, 1, Log(a+I*x+eps*Cosh(x))}
+	// public void test00103() {
+	// check("Integrate((-1+I*eps*Sinh(x))/(I*a-x+I*eps*Cosh(x)), x)", "Log(a+I*x+eps*Cosh(x))");
+	//
+	// }
+	//
+	// // {Sqrt(1+Sin(x)), x, 1, (-2*Cos(x))/Sqrt(1+Sin(x))}
+	// public void test00104() {
+	// check("Integrate(Sqrt(1+Sin(x)), x)", "(-2*Cos(x))/Sqrt(1+Sin(x))");
+	//
+	// }
+	//
+	// // {Sqrt(1-Sin(x)), x, 1, (2*Cos(x))/Sqrt(1-Sin(x))}
+	// public void test00105() {
+	// check("Integrate(Sqrt(1-Sin(x)), x)", "(2*Cos(x))/Sqrt(1-Sin(x))");
+	//
+	// }
+	//
+	// // {Sqrt(1+Cos(x)), x, 1, (2*Sin(x))/Sqrt(1+Cos(x))}
+	// public void test00106() {
+	// check("Integrate(Sqrt(1+Cos(x)), x)", "(2*Sin(x))/Sqrt(1+Cos(x))");
+	//
+	// }
+	//
+	// // {Sqrt(1-Cos(x)), x, 1, (-2*Sin(x))/Sqrt(1-Cos(x))}
+	// public void test00107() {
+	// check("Integrate(Sqrt(1-Cos(x)), x)", "(-2*Sin(x))/Sqrt(1-Cos(x))");
+	//
+	// }
+	//
+	// // {Cot(x), x, 1, Log(Sin(x))}
+	// public void test00108() {
+	// check("Integrate(Cot(x), x)", "Log(Sin(x))");
+	//
+	// }
+	//
+	// // {Tanh(x), x, 1, Log(Cosh(x))}
+	// public void test00109() {
+	// check("Integrate(Tanh(x), x)", "Log(Cosh(x))");
+	//
+	// }
+	//
+	// // {Coth(x), x, 1, Log(Sinh(x))}
+	// public void test00110() {
+	// check("Integrate(Coth(x), x)", "Log(Sinh(x))");
+	//
+	// }
+	//
+	// // {b^x, x, 1, b^x/Log(b)}
+	// public void test00111() {
+	// check("Integrate(b^x, x)", "b^x/Log(b)");
+	//
+	// }
+	//
+	// // {(-3+x)^(-4), x, 1, 1/(3*(3-x)^3)}
+	// public void test00112() {
+	// check("Integrate((-3+x)^(-4), x)", "1/(3*(3-x)^3)");
+	//
+	// }
+	//
+	// // {1/Sqrt(1+x^2), x, 1, ArcSinh(x)}
+	// public void test00113() {
+	// check("Integrate(1/Sqrt(1+x^2), x)", "ArcSinh(x)");
+	//
+	// }
+	//
+	// // {1/Sqrt(9+4*x^2), x, 1, ArcSinh((2*x)/3)/2}
+	// public void test00114() {
+	// check("Integrate(1/Sqrt(9+4*x^2), x)", "ArcSinh((2*x)/3)/2");
+	//
+	// }
+	//
+	// // {1/Sqrt(4+x^2), x, 1, ArcSinh(x/2)}
+	// public void test00115() {
+	// check("Integrate(1/Sqrt(4+x^2), x)", "ArcSinh(x/2)");
+	//
+	// }
+	//
+	// // {Erf(x), x, 1, 1/(E^x^2*Sqrt(Pi))+x*Erf(x)}
+	// public void test00116() {
+	// check("Integrate(Erf(x), x)", "1/(E^x^2*Sqrt(Pi))+x*Erf(x)");
+	//
+	// }
+	//
+	// // {Erf(a+x), x, 1, 1/(E^(a+x)^2*Sqrt(Pi))+(a+x)*Erf(a+x)}
+	// public void test00117() {
+	// check("Integrate(Erf(a+x), x)", "1/(E^(a+x)^2*Sqrt(Pi))+(a+x)*Erf(a+x)");
+	//
+	// }
+	//
+	// // {(x*(-Sqrt(-4+x^2)+x^2*Sqrt(-4+x^2)-4*Sqrt(-1+x^2)+x^2*Sqrt(-1+x^2)))/((4-5*x^2+x^4)*(1 +
+	// // Sqrt(-4+x^2)+Sqrt(-1+x^2))), x, 1, Log(1+Sqrt(-4+x^2)+Sqrt(-1+x^2))}
+	// public void test00118() {
+	// check("Integrate((x*(-Sqrt(-4+x^2)+x^2*Sqrt(-4+x^2)-4*Sqrt(-1+x^2)+x^2*Sqrt(-1+x^2)))/((4-5*x^2+x^4)*(1+Sqrt(-4+x^2)+Sqrt(-1+x^2))),
+	// x)",
+	// "Log(1+Sqrt(-4+x^2)+Sqrt(-1+x^2))");
+	//
+	// }
+	//
+	// // {Sqrt(9-4*Sqrt(2))*x-Sqrt(2)*Sqrt(1+4*x+2*x^2+x^4), x, 1, (Sqrt(9-4*Sqrt(2))*x^2)/2 -
+	// // Sqrt(2)*CannotIntegrate(Sqrt(1+4*x+2*x^2+x^4), x)}
+	// public void test00119() {
+	// check("Integrate(Sqrt(9-4*Sqrt(2))*x-Sqrt(2)*Sqrt(1+4*x+2*x^2+x^4), x)",
+	// "(Sqrt(9-4*Sqrt(2))*x^2)/2-Sqrt(2)*CannotIntegrate(Sqrt(1+4*x+2*x^2+x^4), x)");
+	//
+	// }
+	//
+	// // {(E^(1+Log(x)^(-1))*(-1+Log(x)^2))/Log(x)^2, x, 1, E^(1+Log(x)^(-1))*x}
+	// public void test00120() {
+	// check("Integrate((E^(1+Log(x)^(-1))*(-1+Log(x)^2))/Log(x)^2, x)", "E^(1+Log(x)^(-1))*x");
+	//
+	// }
+	//
+	// // {Cos(x), x, 1, Sin(x)}
+	// public void test00121() {
+	// check("Integrate(Cos(x), x)", "Sin(x)");
+	//
+	// }
+	//
+	// // {E^x^2*x, x, 1, E^x^2/2}
+	// public void test00122() {
+	// check("Integrate(E^x^2*x, x)", "E^x^2/2");
+	//
+	// }
+	//
+	// // {x*Sqrt(1+x^2), x, 1, (1+x^2)^(3/2)/3}
+	// public void test00123() {
+	// check("Integrate(x*Sqrt(1+x^2), x)", "(1+x^2)^(3/2)/3");
+	//
+	// }
+	//
+	// // {E^x*Sin(x), x, 1, -(E^x*Cos(x))/2+(E^x*Sin(x))/2}
+	// public void test00124() {
+	// check("Integrate(E^x*Sin(x), x)", "-(E^x*Cos(x))/2+(E^x*Sin(x))/2");
+	//
+	// }
+	//
+	// // {Sin(y)/y, y, 1, SinIntegral(y)}
+	// public void test00125() {
+	// check("Integrate(Sin(y)/y, y)", "SinIntegral(y)");
+	//
+	// }
+	//
+	// // {E^x^2*x, x, 1, E^x^2/2}
+	// public void test00126() {
+	// check("Integrate(E^x^2*x, x)", "E^x^2/2");
+	//
+	// }
+	//
+	// // {x*Sqrt(1+x^2), x, 1, (1+x^2)^(3/2)/3}
+	// public void test00127() {
+	// check("Integrate(x*Sqrt(1+x^2), x)", "(1+x^2)^(3/2)/3");
+	//
+	// }
+	//
+	// // {x^(3/2), x, 1, (2*x^(5/2))/5}
+	// public void test00128() {
+	// check("Integrate(x^(3/2), x)", "(2*x^(5/2))/5");
+	//
+	// }
+	//
+	// // {Cos(3+2*x), x, 1, Sin(3+2*x)/2}
+	// public void test00129() {
+	// check("Integrate(Cos(3+2*x), x)", "Sin(3+2*x)/2");
+	//
+	// }
+	//
+	// // {(10*E)^x, x, 1, (10*E)^x/(1+Log(10))}
+	// public void test00130() {
+	// check("Integrate((10*E)^x, x)", "(10*E)^x/(1+Log(10))");
+	//
+	// }
+	//
+	// // {(1+Cos(x))^(-1), x, 1, Sin(x)/(1+Cos(x))}
+	// public void test00131() {
+	// check("Integrate((1+Cos(x))^(-1), x)", "Sin(x)/(1+Cos(x))");
+	//
+	// }
+	//
+	// // {(E^x*x)/(1+x)^2, x, 1, E^x/(1+x)}
+	// public void test00132() {
+	// check("Integrate((E^x*x)/(1+x)^2, x)", "E^x/(1+x)");
+	//
+	// }
+	//
+	// // {E^x^2, x, 1, (Sqrt(Pi)*Erfi(x))/2}
+	// public void test00133() {
+	// check("Integrate(E^x^2, x)", "(Sqrt(Pi)*Erfi(x))/2");
+	//
+	// }
+	//
+	// // {E^x/x, x, 1, ExpIntegralEi(x)}
+	// public void test00134() {
+	// check("Integrate(E^x/x, x)", "ExpIntegralEi(x)");
+	//
+	// }
+	//
+	// // {(A^4-A^2*B^2+(-A^2+B^2)*x^2)^(-1), x, 1, ArcTanh(x/A)/(A*(A^2-B^2))}
+	// public void test00135() {
+	// check("Integrate((A^4-A^2*B^2+(-A^2+B^2)*x^2)^(-1), x)", "ArcTanh(x/A)/(A*(A^2-B^2))");
+	//
+	// }
+	//
+	// // {x*Log(x), x, 1, -x^2/4+(x^2*Log(x))/2}
+	// public void test00136() {
+	// check("Integrate(x*Log(x), x)", "-x^2/4+(x^2*Log(x))/2");
+	//
+	// }
+	//
+	// // {Log(x)^(-1), x, 1, LogIntegral(x)}
+	// public void test00137() {
+	// check("Integrate(Log(x)^(-1), x)", "LogIntegral(x)");
+	//
+	// }
+	//
+	// // {E^(-1-x), x, 1, -E^(-1-x)}
+	// public void test00138() {
+	// check("Integrate(E^(-1-x), x)", "-E^(-1-x)");
+	//
+	// }
+	//
+	// // {E^x*Sin(x), x, 1, -(E^x*Cos(x))/2+(E^x*Sin(x))/2}
+	// public void test00139() {
+	// check("Integrate(E^x*Sin(x), x)", "-(E^x*Cos(x))/2+(E^x*Sin(x))/2");
+	//
+	// }
+	//
+	// // {x^(-1), x, 1, Log(x)}
+	// public void test00140() {
+	// check("Integrate(x^(-1), x)", "Log(x)");
+	//
+	// }
+	//
+	// // {(1-Cos(x))^(-1), x, 1, -(Sin(x)/(1-Cos(x)))}
+	// public void test00141() {
+	// check("Integrate((1-Cos(x))^(-1), x)", "-(Sin(x)/(1-Cos(x)))");
+	//
+	// }
+	//
+	// // {x*Log(x), x, 1, -x^2/4+(x^2*Log(x))/2}
+	// public void test00142() {
+	// check("Integrate(x*Log(x), x)", "-x^2/4+(x^2*Log(x))/2");
+	//
+	// }
+	//
+	// // {1/(r*Sqrt(-a^2+2*H*r^2)), x, 1, x/(r*Sqrt(-a^2+2*H*r^2))}
+	// public void test00143() {
+	// check("Integrate(1/(r*Sqrt(-a^2+2*H*r^2)), x)", "x/(r*Sqrt(-a^2+2*H*r^2))");
+	//
+	// }
+	//
+	// // {1/(r*Sqrt(-a^2-e^2+2*H*r^2)), x, 1, x/(r*Sqrt(-a^2-e^2+2*H*r^2))}
+	// public void test00144() {
+	// check("Integrate(1/(r*Sqrt(-a^2-e^2+2*H*r^2)), x)", "x/(r*Sqrt(-a^2-e^2+2*H*r^2))");
+	//
+	// }
+	//
+	// // {1/(r*Sqrt(-a^2+2*H*r^2-2*K*r^4)), x, 1, x/(r*Sqrt(-a^2+2*H*r^2-2*K*r^4))}
+	// public void test00145() {
+	// check("Integrate(1/(r*Sqrt(-a^2+2*H*r^2-2*K*r^4)), x)", "x/(r*Sqrt(-a^2+2*H*r^2-2*K*r^4))");
+	//
+	// }
+	//
+	// // {1/(r*Sqrt(-a^2-e^2+2*H*r^2-2*K*r^4)), x, 1, x/(r*Sqrt(-a^2-e^2+2*H*r^2-2*K*r^4))}
+	// public void test00146() {
+	// check("Integrate(1/(r*Sqrt(-a^2-e^2+2*H*r^2-2*K*r^4)), x)", "x/(r*Sqrt(-a^2-e^2+2*H*r^2-2*K*r^4))");
+	//
+	// }
+	//
+	// // {1/(r*Sqrt(-a^2-2*K*r+2*H*r^2)), x, 1, x/(r*Sqrt(-a^2-2*r*(K-H*r)))}
+	// public void test00147() {
+	// check("Integrate(1/(r*Sqrt(-a^2-2*K*r+2*H*r^2)), x)", "x/(r*Sqrt(-a^2-2*r*(K-H*r)))");
+	//
+	// }
+	//
+	// // {1/(r*Sqrt(-a^2-e^2-2*K*r+2*H*r^2)), x, 1, x/(r*Sqrt(-a^2-e^2-2*r*(K-H*r)))}
+	// public void test00148() {
+	// check("Integrate(1/(r*Sqrt(-a^2-e^2-2*K*r+2*H*r^2)), x)", "x/(r*Sqrt(-a^2-e^2-2*r*(K-H*r)))");
+	//
+	// }
+	//
+	// // {r/Sqrt(-a^2+2*E*r^2), x, 1, (r*x)/Sqrt(-a^2+2*E*r^2)}
+	// public void test00149() {
+	// check("Integrate(r/Sqrt(-a^2+2*E*r^2), x)", "(r*x)/Sqrt(-a^2+2*E*r^2)");
+	//
+	// }
+	//
+	// // {r/Sqrt(-a^2-e^2+2*E*r^2), x, 1, (r*x)/Sqrt(-a^2-e^2+2*E*r^2)}
+	// public void test00150() {
+	// check("Integrate(r/Sqrt(-a^2-e^2+2*E*r^2), x)", "(r*x)/Sqrt(-a^2-e^2+2*E*r^2)");
+	//
+	// }
+	//
+	// // {r/Sqrt(-a^2+2*E*r^2-2*K*r^4), x, 1, (r*x)/Sqrt(-a^2+2*E*r^2-2*K*r^4)}
+	// public void test00151() {
+	// check("Integrate(r/Sqrt(-a^2+2*E*r^2-2*K*r^4), x)", "(r*x)/Sqrt(-a^2+2*E*r^2-2*K*r^4)");
+	//
+	// }
+	//
+	// // {r/Sqrt(-a^2-e^2+2*E*r^2-2*K*r^4), x, 1, (r*x)/Sqrt(-a^2-e^2+2*E*r^2-2*K*r^4)}
+	// public void test00152() {
+	// check("Integrate(r/Sqrt(-a^2-e^2+2*E*r^2-2*K*r^4), x)", "(r*x)/Sqrt(-a^2-e^2+2*E*r^2-2*K*r^4)");
+	//
+	// }
+	//
+	// // {r/Sqrt(-a^2-e^2-2*K*r+2*H*r^2), x, 1, (r*x)/Sqrt(-a^2-e^2-2*r*(K-H*r))}
+	// public void test00153() {
+	// check("Integrate(r/Sqrt(-a^2-e^2-2*K*r+2*H*r^2), x)", "(r*x)/Sqrt(-a^2-e^2-2*r*(K-H*r))");
+	//
+	// }
+	//
+	// // {x^n, x, 1, x^(1+n)/(1+n)}
+	// public void test00154() {
+	// check("Integrate(x^n, x)", "x^(1+n)/(1+n)");
+	//
+	// }
+	//
+	// // {E^x, x, 1, E^x}
+	// public void test00155() {
+	// check("Integrate(E^x, x)", "E^x");
+	//
+	// }
+	//
+	// // {x^(-1), x, 1, Log(x)}
+	// public void test00156() {
+	// check("Integrate(x^(-1), x)", "Log(x)");
+	//
+	// }
+	//
+	// // {a^x, x, 1, a^x/Log(a)}
+	// public void test00157() {
+	// check("Integrate(a^x, x)", "a^x/Log(a)");
+	//
+	// }
+	//
+	// // {Sin(x), x, 1, -Cos(x)}
+	// public void test00158() {
+	// check("Integrate(Sin(x), x)", "-Cos(x)");
+	//
+	// }
+	//
+	// // {Cos(x), x, 1, Sin(x)}
+	// public void test00159() {
+	// check("Integrate(Cos(x), x)", "Sin(x)");
+	//
+	// }
+	//
+	// // {Sinh(x), x, 1, Cosh(x)}
+	// public void test00160() {
+	// check("Integrate(Sinh(x), x)", "Cosh(x)");
+	//
+	// }
+	//
+	// // {Cosh(x), x, 1, Sinh(x)}
+	// public void test00161() {
+	// check("Integrate(Cosh(x), x)", "Sinh(x)");
+	//
+	// }
+	//
+	// // {Tan(x), x, 1, -Log(Cos(x))}
+	// public void test00162() {
+	// check("Integrate(Tan(x), x)", "-Log(Cos(x))");
+	//
+	// }
+	//
+	// // {Cot(x), x, 1, Log(Sin(x))}
+	// public void test00163() {
+	// check("Integrate(Cot(x), x)", "Log(Sin(x))");
+	//
+	// }
+	//
+	// // {Log(x), x, 1, -x+x*Log(x)}
+	// public void test00164() {
+	// check("Integrate(Log(x), x)", "-x+x*Log(x)");
+	//
+	// }
+	//
+	// // {E^x*Sin(x), x, 1, -(E^x*Cos(x))/2+(E^x*Sin(x))/2}
+	// public void test00165() {
+	// check("Integrate(E^x*Sin(x), x)", "-(E^x*Cos(x))/2+(E^x*Sin(x))/2");
+	//
+	// }
+	//
+	// // {x*Log(x), x, 1, -x^2/4+(x^2*Log(x))/2}
+	// public void test00166() {
+	// check("Integrate(x*Log(x), x)", "-x^2/4+(x^2*Log(x))/2");
+	//
+	// }
+	//
+	// // {t^2*Log(t), t, 1, -t^3/9+(t^3*Log(t))/3}
+	// public void test00167() {
+	// check("Integrate(t^2*Log(t), t)", "-t^3/9+(t^3*Log(t))/3");
+	//
+	// }
+	//
+	// // {E^(2*t)*Sin(3*t), t, 1, (-3*E^(2*t)*Cos(3*t))/13+(2*E^(2*t)*Sin(3*t))/13}
+	// public void test00168() {
+	// check("Integrate(E^(2*t)*Sin(3*t), t)", "(-3*E^(2*t)*Cos(3*t))/13+(2*E^(2*t)*Sin(3*t))/13");
+	//
+	// }
+	//
+	// // {Cos(3*t)/E^t, t, 1, -Cos(3*t)/(10*E^t)+(3*Sin(3*t))/(10*E^t)}
+	// public void test00169() {
+	// check("Integrate(Cos(3*t)/E^t, t)", "-Cos(3*t)/(10*E^t)+(3*Sin(3*t))/(10*E^t)");
+	//
+	// }
+	//
+	// // {Sqrt(t)*Log(t), t, 1, (-4*t^(3/2))/9+(2*t^(3/2)*Log(t))/3}
+	// public void test00170() {
+	// check("Integrate(Sqrt(t)*Log(t), t)", "(-4*t^(3/2))/9+(2*t^(3/2)*Log(t))/3");
+	//
+	// }
+	//
+	// // {Cos(5*x)*Sin(3*x), x, 1, Cos(2*x)/4-Cos(8*x)/16}
+	// public void test00171() {
+	// check("Integrate(Cos(5*x)*Sin(3*x), x)", "Cos(2*x)/4-Cos(8*x)/16");
+	//
+	// }
+	//
+	// // {Sin(2*x)*Sin(4*x), x, 1, Sin(2*x)/4-Sin(6*x)/12}
+	// public void test00172() {
+	// check("Integrate(Sin(2*x)*Sin(4*x), x)", "Sin(2*x)/4-Sin(6*x)/12");
+	//
+	// }
+	//
+	// // {Cos(Log(x)), x, 1, (x*Cos(Log(x)))/2+(x*Sin(Log(x)))/2}
+	// public void test00173() {
+	// check("Integrate(Cos(Log(x)), x)", "(x*Cos(Log(x)))/2+(x*Sin(Log(x)))/2");
+	//
+	// }
+	//
+	// // {Log(Sqrt(x)), x, 1, -x/2+x*Log(Sqrt(x))}
+	// public void test00174() {
+	// check("Integrate(Log(Sqrt(x)), x)", "-x/2+x*Log(Sqrt(x))");
+	//
+	// }
+	//
+	// // {Sin(Log(x)), x, 1, -(x*Cos(Log(x)))/2+(x*Sin(Log(x)))/2}
+	// public void test00175() {
+	// check("Integrate(Sin(Log(x)), x)", "-(x*Cos(Log(x)))/2+(x*Sin(Log(x)))/2");
+	//
+	// }
+	//
+	// // {Sqrt(x)*Log(x), x, 1, (-4*x^(3/2))/9+(2*x^(3/2)*Log(x))/3}
+	// public void test00176() {
+	// check("Integrate(Sqrt(x)*Log(x), x)", "(-4*x^(3/2))/9+(2*x^(3/2)*Log(x))/3");
+	//
+	// }
+	//
+	// // {(1-Sin(2*x))^2, x, 1, (3*x)/2+Cos(2*x)-(Cos(2*x)*Sin(2*x))/4}
+	// public void test00177() {
+	// check("Integrate((1-Sin(2*x))^2, x)", "(3*x)/2+Cos(2*x)-(Cos(2*x)*Sin(2*x))/4");
+	//
+	// }
+	//
+	// // {(1-Sin(x))^(-1), x, 1, Cos(x)/(1-Sin(x))}
+	// public void test00178() {
+	// check("Integrate((1-Sin(x))^(-1), x)", "Cos(x)/(1-Sin(x))");
+	//
+	// }
+	//
+	// // {Csc(x), x, 1, -ArcTanh(Cos(x))}
+	// public void test00179() {
+	// check("Integrate(Csc(x), x)", "-ArcTanh(Cos(x))");
+	//
+	// }
+	//
+	// // {Sin(2*x)*Sin(5*x), x, 1, Sin(3*x)/6-Sin(7*x)/14}
+	// public void test00180() {
+	// check("Integrate(Sin(2*x)*Sin(5*x), x)", "Sin(3*x)/6-Sin(7*x)/14");
+	//
+	// }
+	//
+	// // {Cos(x)*Sin(3*x), x, 1, -Cos(2*x)/4-Cos(4*x)/8}
+	// public void test00181() {
+	// check("Integrate(Cos(x)*Sin(3*x), x)", "-Cos(2*x)/4-Cos(4*x)/8");
+	//
+	// }
+	//
+	// // {Cos(3*x)*Cos(4*x), x, 1, Sin(x)/2+Sin(7*x)/14}
+	// public void test00182() {
+	// check("Integrate(Cos(3*x)*Cos(4*x), x)", "Sin(x)/2+Sin(7*x)/14");
+	//
+	// }
+	//
+	// // {Sin(3*x)*Sin(6*x), x, 1, Sin(3*x)/6-Sin(9*x)/18}
+	// public void test00183() {
+	// check("Integrate(Sin(3*x)*Sin(6*x), x)", "Sin(3*x)/6-Sin(9*x)/18");
+	//
+	// }
+	//
+	// // {1/(x^2*Sqrt(4+x^2)), x, 1, -Sqrt(4+x^2)/(4*x)}
+	// public void test00184() {
+	// check("Integrate(1/(x^2*Sqrt(4+x^2)), x)", "-Sqrt(4+x^2)/(4*x)");
+	//
+	// }
+	//
+	// // {x/Sqrt(4+x^2), x, 1, Sqrt(4+x^2)}
+	// public void test00185() {
+	// check("Integrate(x/Sqrt(4+x^2), x)", "Sqrt(4+x^2)");
+	//
+	// }
+	//
+	// // {1/(x^2*Sqrt(1-x^2)), x, 1, -(Sqrt(1-x^2)/x)}
+	// public void test00186() {
+	// check("Integrate(1/(x^2*Sqrt(1-x^2)), x)", "-(Sqrt(1-x^2)/x)");
+	//
+	// }
+	//
+	// // {x/Sqrt(1-x^2), x, 1, -Sqrt(1-x^2)}
+	// public void test00187() {
+	// check("Integrate(x/Sqrt(1-x^2), x)", "-Sqrt(1-x^2)");
+	//
+	// }
+	//
+	// // {x*Sqrt(4-x^2), x, 1, -(4-x^2)^(3/2)/3}
+	// public void test00188() {
+	// check("Integrate(x*Sqrt(4-x^2), x)", "-(4-x^2)^(3/2)/3");
+	//
+	// }
+	//
+	// // {1/Sqrt(9+x^2), x, 1, ArcSinh(x/3)}
+	// public void test00189() {
+	// check("Integrate(1/Sqrt(9+x^2), x)", "ArcSinh(x/3)");
+	//
+	// }
+	//
+	// // {Sqrt(-a^2+x^2)/x^4, x, 1, (-a^2+x^2)^(3/2)/(3*a^2*x^3)}
+	// public void test00190() {
+	// check("Integrate(Sqrt(-a^2+x^2)/x^4, x)", "(-a^2+x^2)^(3/2)/(3*a^2*x^3)");
+	//
+	// }
+	//
+	// // {1/(x^2*Sqrt(-9+16*x^2)), x, 1, Sqrt(-9+16*x^2)/(9*x)}
+	// public void test00191() {
+	// check("Integrate(1/(x^2*Sqrt(-9+16*x^2)), x)", "Sqrt(-9+16*x^2)/(9*x)");
+	//
+	// }
+	//
+	// // {x/(4+x^2)^(5/2), x, 1, -1/(3*(4+x^2)^(3/2))}
+	// public void test00192() {
+	// check("Integrate(x/(4+x^2)^(5/2), x)", "-1/(3*(4+x^2)^(3/2))");
+	//
+	// }
+	//
+	// // {(-25+4*x^2)^(-3/2), x, 1, -x/(25*Sqrt(-25+4*x^2))}
+	// public void test00193() {
+	// check("Integrate((-25+4*x^2)^(-3/2), x)", "-x/(25*Sqrt(-25+4*x^2))");
+	//
+	// }
+	//
+	// // {(2*x+x^2)/(4+3*x^2+x^3), x, 1, Log(4+3*x^2+x^3)/3}
+	// public void test00194() {
+	// check("Integrate((2*x+x^2)/(4+3*x^2+x^3), x)", "Log(4+3*x^2+x^3)/3");
+	//
+	// }
+	//
+	// // {(-x+2*x^3)/(1-x^2+x^4), x, 1, Log(1-x^2+x^4)/2}
+	// public void test00195() {
+	// check("Integrate((-x+2*x^3)/(1-x^2+x^4), x)", "Log(1-x^2+x^4)/2");
+	//
+	// }
+	//
+	// // {x/(-1+x^2), x, 1, Log(1-x^2)/2}
+	// public void test00196() {
+	// check("Integrate(x/(-1+x^2), x)", "Log(1-x^2)/2");
+	// }
+	//
+	// // {(1-Cos(x))^(-1), x, 1, -(Sin(x)/(1-Cos(x)))}
+	// public void test00197() {
+	// check("Integrate((1-Cos(x))^(-1), x)", "-(Sin(x)/(1-Cos(x)))");
+	//
+	// }
+	//
+	// // {(-Cos(x)+Sin(x))/(Cos(x)+Sin(x)), x, 1, -Log(Cos(x)+Sin(x))}
+	// public void test00198() {
+	// check("Integrate((-Cos(x)+Sin(x))/(Cos(x)+Sin(x)), x)", "-Log(Cos(x)+Sin(x))");
+	//
+	// }
+	//
+	// // {x/Sqrt(1-x^2), x, 1, -Sqrt(1-x^2)}
+	// public void test00199() {
+	// check("Integrate(x/Sqrt(1-x^2), x)", "-Sqrt(1-x^2)");
+	//
+	// }
+	//
+	// // {x^3*Log(x), x, 1, -x^4/16+(x^4*Log(x))/4}
+	// public void test00200() {
+	// check("Integrate(x^3*Log(x), x)", "-x^4/16+(x^4*Log(x))/4");
+	//
+	// }
+	//
+	// // {(1+x+x^3)/(4*x+2*x^2+x^4), x, 1, Log(4*x+2*x^2+x^4)/4}
+	// public void test00201() {
+	// check("Integrate((1+x+x^3)/(4*x+2*x^2+x^4), x)", "Log(4*x+2*x^2+x^4)/4");
+	//
+	// }
+	//
+	// // {Sin(Pi*x), x, 1, -(Cos(Pi*x)/Pi)}
+	// public void test00202() {
+	// check("Integrate(Sin(Pi*x), x)", "-(Cos(Pi*x)/Pi)");
+	//
+	// }
+	//
+	// // {E^(3*x)*Cos(5*x), x, 1, (3*E^(3*x)*Cos(5*x))/34+(5*E^(3*x)*Sin(5*x))/34}
+	// public void test00203() {
+	// check("Integrate(E^(3*x)*Cos(5*x), x)", "(3*E^(3*x)*Cos(5*x))/34+(5*E^(3*x)*Sin(5*x))/34");
+	//
+	// }
+	//
+	// // {Cos(3*x)*Cos(5*x), x, 1, Sin(2*x)/4+Sin(8*x)/16}
+	// public void test00204() {
+	// check("Integrate(Cos(3*x)*Cos(5*x), x)", "Sin(2*x)/4+Sin(8*x)/16");
+	//
+	// }
+	//
+	// // {Csc(x)*Log(Tan(x))*Sec(x), x, 1, Log(Tan(x))^2/2}
+	// public void test00205() {
+	// check("Integrate(Csc(x)*Log(Tan(x))*Sec(x), x)", "Log(Tan(x))^2/2");
+	//
+	// }
+	//
+	// // {-2*x+x^2+x^3, x, 1, -x^2+x^3/3+x^4/4}
+	// public void test00206() {
+	// check("Integrate(-2*x+x^2+x^3, x)", "-x^2+x^3/3+x^4/4");
+	//
+	// }
+	//
+	// // {1/Sqrt(16-x^2), x, 1, ArcSin(x/4)}
+	// public void test00207() {
+	// check("Integrate(1/Sqrt(16-x^2), x)", "ArcSin(x/4)");
+	//
+	// }
+	//
+	// // {E^ArcTan(x)/(1+x^2), x, 1, E^ArcTan(x)}
+	// public void test00208() {
+	// check("Integrate(E^ArcTan(x)/(1+x^2), x)", "E^ArcTan(x)");
+	//
+	// }
+	//
+	// // {Log(x/2), x, 1, -x+x*Log(x/2)}
+	// public void test00209() {
+	// check("Integrate(Log(x/2), x)", "-x+x*Log(x/2)");
+	//
+	// }
+	//
+	// // {x*(5+x^2)^8, x, 1, (5+x^2)^9/18}
+	// public void test00210() {
+	// check("Integrate(x*(5+x^2)^8, x)", "(5+x^2)^9/18");
+	//
+	// }
+	//
+	// // {Cos(4*x)/E^(3*x), x, 1, (-3*Cos(4*x))/(25*E^(3*x))+(4*Sin(4*x))/(25*E^(3*x))}
+	// public void test00211() {
+	// check("Integrate(Cos(4*x)/E^(3*x), x)", "(-3*Cos(4*x))/(25*E^(3*x))+(4*Sin(4*x))/(25*E^(3*x))");
+	//
+	// }
+	//
+	// // {E^x*Cos(4+3*x), x, 1, (E^x*Cos(4+3*x))/10+(3*E^x*Sin(4+3*x))/10}
+	// public void test00212() {
+	// check("Integrate(E^x*Cos(4+3*x), x)", "(E^x*Cos(4+3*x))/10+(3*E^x*Sin(4+3*x))/10");
+	//
+	// }
+	//
+	// // {x^2*(1+x^3)^4, x, 1, (1+x^3)^5/15}
+	// public void test00213() {
+	// check("Integrate(x^2*(1+x^3)^4, x)", "(1+x^3)^5/15");
+	//
+	// }
+	//
+	// // {(a^2-b^2*x^2)^(-1), x, 1, ArcTanh((b*x)/a)/(a*b)}
+	// public void test00214() {
+	// check("Integrate((a^2-b^2*x^2)^(-1), x)", "ArcTanh((b*x)/a)/(a*b)");
+	//
+	// }
+	//
+	// // {(a^2+b^2*x^2)^(-1), x, 1, ArcTan((b*x)/a)/(a*b)}
+	// public void test00215() {
+	// check("Integrate((a^2+b^2*x^2)^(-1), x)", "ArcTan((b*x)/a)/(a*b)");
+	//
+	// }
+	//
+	// // {Sec(2*a*x), x, 1, ArcTanh(Sin(2*a*x))/(2*a)}
+	// public void test00216() {
+	// check("Integrate(Sec(2*a*x), x)", "ArcTanh(Sin(2*a*x))/(2*a)");
+	//
+	// }
+	//
+	// // {-Sec(Pi/4+2*x), x, 1, -ArcTanh(Sin(Pi/4+2*x))/2}
+	// public void test00217() {
+	// check("Integrate(-Sec(Pi/4+2*x), x)", "-ArcTanh(Sin(Pi/4+2*x))/2");
+	//
+	// }
+	//
+	// // {(1+Cos(x))^(-1), x, 1, Sin(x)/(1+Cos(x))}
+	// public void test00218() {
+	// check("Integrate((1+Cos(x))^(-1), x)", "Sin(x)/(1+Cos(x))");
+	//
+	// }
+	//
+	// // {(1-Cos(x))^(-1), x, 1, -(Sin(x)/(1-Cos(x)))}
+	// public void test00219() {
+	// check("Integrate((1-Cos(x))^(-1), x)", "-(Sin(x)/(1-Cos(x)))");
+	//
+	// }
+	//
+	// // {Sin(x/4)*Sin(x), x, 1, (2*Sin((3*x)/4))/3-(2*Sin((5*x)/4))/5}
+	// public void test00220() {
+	// check("Integrate(Sin(x/4)*Sin(x), x)", "(2*Sin((3*x)/4))/3-(2*Sin((5*x)/4))/5");
+	//
+	// }
+	//
+	// // {Cos(3*x)*Cos(4*x), x, 1, Sin(x)/2+Sin(7*x)/14}
+	// public void test00221() {
+	// check("Integrate(Cos(3*x)*Cos(4*x), x)", "Sin(x)/2+Sin(7*x)/14");
+	//
+	// }
+	//
+	// // {ArcTan(x)^n/(1+x^2), x, 1, ArcTan(x)^(1+n)/(1+n)}
+	// public void test00222() {
+	// check("Integrate(ArcTan(x)^n/(1+x^2), x)", "ArcTan(x)^(1+n)/(1+n)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(1-x^2)*ArcCos(x)^3), x, 1, 1/(2*ArcCos(x)^2)}
+	// public void test00223() {
+	// check("Integrate(1/(Sqrt(1-x^2)*ArcCos(x)^3), x)", "1/(2*ArcCos(x)^2)");
+	//
+	// }
+	//
+	// // {Log(x)/x^5, x, 1, -1/(16*x^4)-Log(x)/(4*x^4)}
+	// public void test00224() {
+	// check("Integrate(Log(x)/x^5, x)", "-1/(16*x^4)-Log(x)/(4*x^4)");
+	//
+	// }
+	//
+	// // {Sin(x)/E^x, x, 1, -Cos(x)/(2*E^x)-Sin(x)/(2*E^x)}
+	// public void test00225() {
+	// check("Integrate(Sin(x)/E^x, x)", "-Cos(x)/(2*E^x)-Sin(x)/(2*E^x)");
+	//
+	// }
+	//
+	// // {E^(2*x)*Sin(3*x), x, 1, (-3*E^(2*x)*Cos(3*x))/13+(2*E^(2*x)*Sin(3*x))/13}
+	// public void test00226() {
+	// check("Integrate(E^(2*x)*Sin(3*x), x)", "(-3*E^(2*x)*Cos(3*x))/13+(2*E^(2*x)*Sin(3*x))/13");
+	//
+	// }
+	//
+	// // {a^x*Cos(x), x, 1, (a^x*Cos(x)*Log(a))/(1+Log(a)^2)+(a^x*Sin(x))/(1+Log(a)^2)}
+	// public void test00227() {
+	// check("Integrate(a^x*Cos(x), x)", "(a^x*Cos(x)*Log(a))/(1+Log(a)^2)+(a^x*Sin(x))/(1+Log(a)^2)");
+	//
+	// }
+	//
+	// // {Cos(Log(x)), x, 1, (x*Cos(Log(x)))/2+(x*Sin(Log(x)))/2}
+	// public void test00228() {
+	// check("Integrate(Cos(Log(x)), x)", "(x*Cos(Log(x)))/2+(x*Sin(Log(x)))/2");
+	//
+	// }
+	//
+	// // {x^(-1+k)*(a+b*x^k)^n, x, 1, (a+b*x^k)^(1+n)/(b*k*(1+n))}
+	// public void test00229() {
+	// check("Integrate(x^(-1+k)*(a+b*x^k)^n, x)", "(a+b*x^k)^(1+n)/(b*k*(1+n))");
+	//
+	// }
+	//
+	// // {x^2/(a^3+x^3), x, 1, Log(a^3+x^3)/3}
+	// public void test00230() {
+	// check("Integrate(x^2/(a^3+x^3), x)", "Log(a^3+x^3)/3");
+	//
+	// }
+	//
+	// // {1/(x^m*(a^3+x^3)), x, 1, (x^(1-m)*Hypergeometric2F1(1, (1-m)/3, (4-m)/3, -(x^3/a^3)))/(a^3*(1-m))}
+	// public void test00231() {
+	// check("Integrate(1/(x^m*(a^3+x^3)), x)",
+	// "(x^(1-m)*Hypergeometric2F1(1, (1-m)/3, (4-m)/3, -(x^3/a^3)))/(a^3*(1-m))");
+	//
+	// }
+	//
+	// // {1/(x^m*(a^4-x^4)), x, 1, (x^(1-m)*Hypergeometric2F1(1, (1-m)/4, (5-m)/4, x^4/a^4))/(a^4*(1-m))}
+	// public void test00232() {
+	// check("Integrate(1/(x^m*(a^4-x^4)), x)",
+	// "(x^(1-m)*Hypergeometric2F1(1, (1-m)/4, (5-m)/4, x^4/a^4))/(a^4*(1-m))");
+	//
+	// }
+	//
+	// // {x^4/(a^5+x^5), x, 1, Log(a^5+x^5)/5}
+	// public void test00233() {
+	// check("Integrate(x^4/(a^5+x^5), x)", "Log(a^5+x^5)/5");
+	//
+	// }
+	//
+	// // {1/(x^m*(a^5+x^5)), x, 1, (x^(1-m)*Hypergeometric2F1(1, (1-m)/5, (6-m)/5, -(x^5/a^5)))/(a^5*(1-m))}
+	// public void test00234() {
+	// check("Integrate(1/(x^m*(a^5+x^5)), x)",
+	// "(x^(1-m)*Hypergeometric2F1(1, (1-m)/5, (6-m)/5, -(x^5/a^5)))/(a^5*(1-m))");
+	//
+	// }
+	//
+	// // {x^3/(a^4+x^4)^3, x, 1, -1/(8*(a^4+x^4)^2)}
+	// public void test00235() {
+	// check("Integrate(x^3/(a^4+x^4)^3, x)", "-1/(8*(a^4+x^4)^2)");
+	//
+	// }
+	//
+	// // {(1+x+x^2)^(-3/2), x, 1, (2*(1+2*x))/(3*Sqrt(1+x+x^2))}
+	// public void test00236() {
+	// check("Integrate((1+x+x^2)^(-3/2), x)", "(2*(1+2*x))/(3*Sqrt(1+x+x^2))");
+	//
+	// }
+	//
+	// // {x/(1+x+x^2)^(3/2), x, 1, (-2*(2+x))/(3*Sqrt(1+x+x^2))}
+	// public void test00237() {
+	// check("Integrate(x/(1+x+x^2)^(3/2), x)", "(-2*(2+x))/(3*Sqrt(1+x+x^2))");
+	//
+	// }
+	//
+	// // {1/((1-3/x)^(4/3)*x^2), x, 1, -(1-3/x)^(-1/3)}
+	// public void test00238() {
+	// check("Integrate(1/((1-3/x)^(4/3)*x^2), x)", "-(1-3/x)^(-1/3)");
+	//
+	// }
+	//
+	// // {x^6*(1+x^7)^(1/3), x, 1, (3*(1+x^7)^(4/3))/28}
+	// public void test00239() {
+	// check("Integrate(x^6*(1+x^7)^(1/3), x)", "(3*(1+x^7)^(4/3))/28");
+	//
+	// }
+	//
+	// // {x^6/(1+x^7)^(5/3), x, 1, -3/(14*(1+x^7)^(2/3))}
+	// public void test00240() {
+	// check("Integrate(x^6/(1+x^7)^(5/3), x)", "-3/(14*(1+x^7)^(2/3))");
+	//
+	// }
+	//
+	// // {(-3*x+2*x^3)*(-3*x^2+x^4)^(3/5), x, 1, (5*(-3*x^2+x^4)^(8/5))/16}
+	// public void test00241() {
+	// check("Integrate((-3*x+2*x^3)*(-3*x^2+x^4)^(3/5), x)", "(5*(-3*x^2+x^4)^(8/5))/16");
+	//
+	// }
+	//
+	// // {(-1+x^4)/(x^2*Sqrt(1+x^2+x^4)), x, 1, Sqrt(1+x^2+x^4)/x}
+	// public void test00242() {
+	// check("Integrate((-1+x^4)/(x^2*Sqrt(1+x^2+x^4)), x)", "Sqrt(1+x^2+x^4)/x");
+	//
+	// }
+	//
+	// // {(1-x^2)/((1+2*a*x+x^2)*Sqrt(1+2*a*x+2*b*x^2+2*a*x^3+x^4)), x, 1, ArcTan((a+2*(1+a^2-b)*x +
+	// // a*x^2)/(Sqrt(2)*Sqrt(1-b)*Sqrt(1+2*a*x+2*b*x^2+2*a*x^3+x^4)))/(Sqrt(2)*Sqrt(1-b))}
+	// public void test00243() {
+	// check("Integrate((1-x^2)/((1+2*a*x+x^2)*Sqrt(1+2*a*x+2*b*x^2+2*a*x^3+x^4)), x)",
+	// "ArcTan((a+2*(1+a^2-b)*x+a*x^2)/(Sqrt(2)*Sqrt(1-b)*Sqrt(1+2*a*x+2*b*x^2+2*a*x^3+x^4)))/(Sqrt(2)*Sqrt(1-b))");
+	//
+	// }
+	//
+	// // {Cos(x)^(2*m)*Sin(x)^(2*m), x, 1, (Cos(x)^(-1+2*m)*(Cos(x)^2)^(1/2-m)*Hypergeometric2F1((1-2*m)/2, (1 +
+	// // 2*m)/2, (3+2*m)/2, Sin(x)^2)*Sin(x)^(1+2*m))/(1+2*m)}
+	// public void test00244() {
+	// check("Integrate(Cos(x)^(2*m)*Sin(x)^(2*m), x)",
+	// "(Cos(x)^(-1+2*m)*(Cos(x)^2)^(1/2-m)*Hypergeometric2F1((1-2*m)/2, (1+2*m)/2, (3+2*m)/2,
+	// Sin(x)^2)*Sin(x)^(1+2*m))/(1+2*m)");
+	//
+	// }
+	//
+	// // {Cos(x)*Cos(4*x), x, 1, Sin(3*x)/6+Sin(5*x)/10}
+	// public void test00245() {
+	// check("Integrate(Cos(x)*Cos(4*x), x)", "Sin(3*x)/6+Sin(5*x)/10");
+	//
+	// }
+	//
+	// // {Sqrt(1+Sin(2*x)), x, 1, -(Cos(2*x)/Sqrt(1+Sin(2*x)))}
+	// public void test00246() {
+	// check("Integrate(Sqrt(1+Sin(2*x)), x)", "-(Cos(2*x)/Sqrt(1+Sin(2*x)))");
+	//
+	// }
+	//
+	// // {Sqrt(1-Sin(2*x)), x, 1, Cos(2*x)/Sqrt(1-Sin(2*x))}
+	// public void test00247() {
+	// check("Integrate(Sqrt(1-Sin(2*x)), x)", "Cos(2*x)/Sqrt(1-Sin(2*x))");
+	//
+	// }
+	//
+	// // {Sin(x)/Sqrt(Sin(2*x)), x, 1, -ArcSin(Cos(x)-Sin(x))/2-Log(Cos(x)+Sin(x)+Sqrt(Sin(2*x)))/2}
+	// public void test00248() {
+	// check("Integrate(Sin(x)/Sqrt(Sin(2*x)), x)", "-ArcSin(Cos(x)-Sin(x))/2-Log(Cos(x)+Sin(x)+Sqrt(Sin(2*x)))/2");
+	//
+	// }
+	//
+	// // {Cos(x)/Sqrt(Sin(2*x)), x, 1, -ArcSin(Cos(x)-Sin(x))/2+Log(Cos(x)+Sin(x)+Sqrt(Sin(2*x)))/2}
+	// public void test00249() {
+	// check("Integrate(Cos(x)/Sqrt(Sin(2*x)), x)", "-ArcSin(Cos(x)-Sin(x))/2+Log(Cos(x)+Sin(x)+Sqrt(Sin(2*x)))/2");
+	//
+	// }
+	//
+	// // {Csc(x)^5*Sin(2*x)^(3/2), x, 1, -(Csc(x)^5*Sin(2*x)^(5/2))/5}
+	// public void test00250() {
+	// check("Integrate(Csc(x)^5*Sin(2*x)^(3/2), x)", "-(Csc(x)^5*Sin(2*x)^(5/2))/5");
+	//
+	// }
+	//
+	// // {Sin(x)/Cos(2*x)^(5/2), x, 1, -Cos(3*x)/(3*Cos(2*x)^(3/2))}
+	// public void test00251() {
+	// check("Integrate(Sin(x)/Cos(2*x)^(5/2), x)", "-Cos(3*x)/(3*Cos(2*x)^(3/2))");
+	//
+	// }
+	//
+	// // {x^(1+2*n), x, 1, x^(2*(1+n))/(2*(1+n))}
+	// public void test00252() {
+	// check("Integrate(x^(1+2*n), x)", "x^(2*(1+n))/(2*(1+n))");
+	//
+	// }
+	//
+	// // {(E^x*(1-x-x^2))/Sqrt(1-x^2), x, 1, E^x*Sqrt(1-x^2)}
+	// public void test00253() {
+	// check("Integrate((E^x*(1-x-x^2))/Sqrt(1-x^2), x)", "E^x*Sqrt(1-x^2)");
+	//
+	// }
+	//
+	// // {Cos(2*x)/E^(3*x), x, 1, (-3*Cos(2*x))/(13*E^(3*x))+(2*Sin(2*x))/(13*E^(3*x))}
+	// public void test00254() {
+	// check("Integrate(Cos(2*x)/E^(3*x), x)", "(-3*Cos(2*x))/(13*E^(3*x))+(2*Sin(2*x))/(13*E^(3*x))");
+	//
+	// }
+	//
+	// // {E^(m*x)*Csc(x)^2, x, 1, (-4*E^((2*I+m)*x)*Hypergeometric2F1(2, 1-(I/2)*m, 2-(I/2)*m, E^((2*I)*x)))/(2*I +
+	// // m)}
+	// public void test00255() {
+	// check("Integrate(E^(m*x)*Csc(x)^2, x)",
+	// "(-4*E^((2*I+m)*x)*Hypergeometric2F1(2, 1-(I/2)*m, 2-(I/2)*m, E^((2*I)*x)))/(2*I+m)");
+	//
+	// }
+	//
+	// // {(E^x*(1-Sin(x)))/(1-Cos(x)), x, 1, -((E^x*Sin(x))/(1-Cos(x)))}
+	// public void test00256() {
+	// check("Integrate((E^x*(1-Sin(x)))/(1-Cos(x)), x)", "-((E^x*Sin(x))/(1-Cos(x)))");
+	//
+	// }
+	//
+	// // {(E^x*(1+Sin(x)))/(1+Cos(x)), x, 1, (E^x*Sin(x))/(1+Cos(x))}
+	// public void test00257() {
+	// check("Integrate((E^x*(1+Sin(x)))/(1+Cos(x)), x)", "(E^x*Sin(x))/(1+Cos(x))");
+	//
+	// }
+	//
+	// // {(E^x*(1+Cos(x)))/(1-Sin(x)), x, 1, (E^x*Cos(x))/(1-Sin(x))}
+	// public void test00258() {
+	// check("Integrate((E^x*(1+Cos(x)))/(1-Sin(x)), x)", "(E^x*Cos(x))/(1-Sin(x))");
+	//
+	// }
+	//
+	// // {(E^x*(1-Cos(x)))/(1+Sin(x)), x, 1, -((E^x*Cos(x))/(1+Sin(x)))}
+	// public void test00259() {
+	// check("Integrate((E^x*(1-Cos(x)))/(1+Sin(x)), x)", "-((E^x*Cos(x))/(1+Sin(x)))");
+	//
+	// }
+	//
+	// // {Cosh(x), x, 1, Sinh(x)}
+	// public void test00260() {
+	// check("Integrate(Cosh(x), x)", "Sinh(x)");
+	//
+	// }
+	//
+	// // {Sinh(x), x, 1, Cosh(x)}
+	// public void test00261() {
+	// check("Integrate(Sinh(x), x)", "Cosh(x)");
+	//
+	// }
+	//
+	// // {Tanh(x), x, 1, Log(Cosh(x))}
+	// public void test00262() {
+	// check("Integrate(Tanh(x), x)", "Log(Cosh(x))");
+	//
+	// }
+	//
+	// // {Coth(x), x, 1, Log(Sinh(x))}
+	// public void test00263() {
+	// check("Integrate(Coth(x), x)", "Log(Sinh(x))");
+	//
+	// }
+	//
+	// // {Sech(x), x, 1, ArcTan(Sinh(x))}
+	// public void test00264() {
+	// check("Integrate(Sech(x), x)", "ArcTan(Sinh(x))");
+	//
+	// }
+	//
+	// // {Csch(x), x, 1, -ArcTanh(Cosh(x))}
+	// public void test00265() {
+	// check("Integrate(Csch(x), x)", "-ArcTanh(Cosh(x))");
+	//
+	// }
+	//
+	// // {x^m*Log(x), x, 1, -(x^(1+m)/(1+m)^2)+(x^(1+m)*Log(x))/(1+m)}
+	// public void test00266() {
+	// check("Integrate(x^m*Log(x), x)", "-(x^(1+m)/(1+m)^2)+(x^(1+m)*Log(x))/(1+m)");
+	//
+	// }
+	//
+	// // {Log(Log(x))/x, x, 1, -Log(x)+Log(x)*Log(Log(x))}
+	// public void test00267() {
+	// check("Integrate(Log(Log(x))/x, x)", "-Log(x)+Log(x)*Log(Log(x))");
+	//
+	// }
+	//
+	// // {1/Sqrt(1-a*x), x, 1, (-2*Sqrt(1-a*x))/a}
+	// public void test00268() {
+	// check("Integrate(1/Sqrt(1-a*x), x)", "(-2*Sqrt(1-a*x))/a");
+	//
+	// }
+	//
+	// // {(1-x^3)^(-1/3), x, 1, -(ArcTan((1-(2*x)/(1-x^3)^(1/3))/Sqrt(3))/Sqrt(3))+Log(x+(1-x^3)^(1/3))/2}
+	// public void test00269() {
+	// check("Integrate((1-x^3)^(-1/3), x)",
+	// "-(ArcTan((1-(2*x)/(1-x^3)^(1/3))/Sqrt(3))/Sqrt(3))+Log(x+(1-x^3)^(1/3))/2");
+	//
+	// }
+	//
+	// // {(3-3*x+30*x^2+160*x^3)/(9+24*x-12*x^2+80*x^3+320*x^4), x, 1, Log(9+24*x-12*x^2+80*x^3 +
+	// // 320*x^4)/8}
+	// public void test00270() {
+	// check("Integrate((3-3*x+30*x^2+160*x^3)/(9+24*x-12*x^2+80*x^3+320*x^4), x)",
+	// "Log(9+24*x-12*x^2+80*x^3+320*x^4)/8");
+	//
+	// }
+	//
+	// // {(3+12*x+20*x^2)/(9+24*x-12*x^2+80*x^3+320*x^4), x, 1, -ArcTan((7-40*x)/(5*Sqrt(11)))/(2*Sqrt(11))
+	// // +ArcTan((57+30*x-40*x^2+800*x^3)/(6*Sqrt(11)))/(2*Sqrt(11))}
+	// public void test00271() {
+	// check("Integrate((3+12*x+20*x^2)/(9+24*x-12*x^2+80*x^3+320*x^4), x)",
+	// "-ArcTan((7-40*x)/(5*Sqrt(11)))/(2*Sqrt(11))+ArcTan((57+30*x-40*x^2+800*x^3)/(6*Sqrt(11)))/(2*Sqrt(11))");
+	//
+	// }
+	//
+	// // {Sqrt(1-x^4)/(1+x^4), x, 1, ArcTan((x*(1+x^2))/Sqrt(1-x^4))/2+ArcTanh((x*(1-x^2))/Sqrt(1-x^4))/2}
+	// public void test00272() {
+	// check("Integrate(Sqrt(1-x^4)/(1+x^4), x)",
+	// "ArcTan((x*(1+x^2))/Sqrt(1-x^4))/2+ArcTanh((x*(1-x^2))/Sqrt(1-x^4))/2");
+	//
+	// }
+	//
+	// // {Sqrt(1+p*x^2-x^4)/(1+x^4), x, 1, -(Sqrt(p+Sqrt(4+p^2))*ArcTan((Sqrt(p+Sqrt(4+p^2))*x*(p-Sqrt(4 +
+	// // p^2)-2*x^2))/(2*Sqrt(2)*Sqrt(1+p*x^2-x^4))))/(2*Sqrt(2))+(Sqrt(-p+Sqrt(4+p^2))*ArcTanh((Sqrt(-p +
+	// // Sqrt(4+p^2))*x*(p+Sqrt(4+p^2)-2*x^2))/(2*Sqrt(2)*Sqrt(1+p*x^2-x^4))))/(2*Sqrt(2))}
+	// public void test00273() {
+	// check("Integrate(Sqrt(1+p*x^2-x^4)/(1+x^4), x)",
+	// "-(Sqrt(p+Sqrt(4+p^2))*ArcTan((Sqrt(p+Sqrt(4+p^2))*x*(p-Sqrt(4+p^2)-2*x^2))/(2*Sqrt(2)*Sqrt(1+p*x^2-x^4))))/(2*Sqrt(2))+(Sqrt(-p+Sqrt(4+p^2))*ArcTanh((Sqrt(-p+Sqrt(4+p^2))*x*(p+Sqrt(4+p^2)-2*x^2))/(2*Sqrt(2)*Sqrt(1+p*x^2-x^4))))/(2*Sqrt(2))");
+	//
+	// }
+	//
+	// // {x/(Sqrt(1-x^3)*(4-x^3)), x, 1, -ArcTan((Sqrt(3)*(1-2^(1/3)*x))/Sqrt(1-x^3))/(3*2^(2/3)*Sqrt(3)) +
+	// // ArcTan(Sqrt(1-x^3)/Sqrt(3))/(3*2^(2/3)*Sqrt(3))-ArcTanh((1+2^(1/3)*x)/Sqrt(1-x^3))/(3*2^(2/3)) +
+	// // ArcTanh(Sqrt(1-x^3))/(9*2^(2/3))}
+	// public void test00274() {
+	// check("Integrate(x/(Sqrt(1-x^3)*(4-x^3)), x)",
+	// "-ArcTan((Sqrt(3)*(1-2^(1/3)*x))/Sqrt(1-x^3))/(3*2^(2/3)*Sqrt(3))+ArcTan(Sqrt(1-x^3)/Sqrt(3))/(3*2^(2/3)*Sqrt(3))-ArcTanh((1+2^(1/3)*x)/Sqrt(1-x^3))/(3*2^(2/3))+ArcTanh(Sqrt(1-x^3))/(9*2^(2/3))");
+	//
+	// }
+	//
+	// // {x/((4-d*x^3)*Sqrt(-1+d*x^3)), x, 1, -ArcTan((1+2^(1/3)*d^(1/3)*x)/Sqrt(-1+d*x^3))/(3*2^(2/3)*d^(2/3)) -
+	// // ArcTan(Sqrt(-1+d*x^3))/(9*2^(2/3)*d^(2/3))-ArcTanh((Sqrt(3)*(1-2^(1/3)*d^(1/3)*x))/Sqrt(-1 +
+	// // d*x^3))/(3*2^(2/3)*Sqrt(3)*d^(2/3))-ArcTanh(Sqrt(-1+d*x^3)/Sqrt(3))/(3*2^(2/3)*Sqrt(3)*d^(2/3))}
+	// public void test00275() {
+	// check("Integrate(x/((4-d*x^3)*Sqrt(-1+d*x^3)), x)",
+	// "-ArcTan((1+2^(1/3)*d^(1/3)*x)/Sqrt(-1+d*x^3))/(3*2^(2/3)*d^(2/3))-ArcTan(Sqrt(-1+d*x^3))/(9*2^(2/3)*d^(2/3))-ArcTanh((Sqrt(3)*(1-2^(1/3)*d^(1/3)*x))/Sqrt(-1+d*x^3))/(3*2^(2/3)*Sqrt(3)*d^(2/3))-ArcTanh(Sqrt(-1+d*x^3)/Sqrt(3))/(3*2^(2/3)*Sqrt(3)*d^(2/3))");
+	//
+	// }
+	//
+	// // {1/((1-3*x^2)^(1/3)*(3-x^2)), x, 1, ArcTan((1-(1-3*x^2)^(1/3))/x)/4+ArcTanh(x/Sqrt(3))/(4*Sqrt(3)) -
+	// // ArcTanh((1-(1-3*x^2)^(1/3))^2/(3*Sqrt(3)*x))/(4*Sqrt(3))}
+	// public void test00276() {
+	// check("Integrate(1/((1-3*x^2)^(1/3)*(3-x^2)), x)",
+	// "ArcTan((1-(1-3*x^2)^(1/3))/x)/4+ArcTanh(x/Sqrt(3))/(4*Sqrt(3))-ArcTanh((1-(1-3*x^2)^(1/3))^2/(3*Sqrt(3)*x))/(4*Sqrt(3))");
+	//
+	// }
+	//
+	// // {1/((3+x^2)*(1+3*x^2)^(1/3)), x, 1, ArcTan(x/Sqrt(3))/(4*Sqrt(3))+ArcTan((1-(1 +
+	// // 3*x^2)^(1/3))^2/(3*Sqrt(3)*x))/(4*Sqrt(3))-ArcTanh((1-(1+3*x^2)^(1/3))/x)/4}
+	// public void test00277() {
+	// check("Integrate(1/((3+x^2)*(1+3*x^2)^(1/3)), x)",
+	// "ArcTan(x/Sqrt(3))/(4*Sqrt(3))+ArcTan((1-(1+3*x^2)^(1/3))^2/(3*Sqrt(3)*x))/(4*Sqrt(3))-ArcTanh((1-(1+3*x^2)^(1/3))/x)/4");
+	//
+	// }
+	//
+	// // {1/((1-x^2)^(1/3)*(3+x^2)), x, 1, ArcTan(Sqrt(3)/x)/(2*2^(2/3)*Sqrt(3))+ArcTan((Sqrt(3)*(1-2^(1/3)*(1 -
+	// // x^2)^(1/3)))/x)/(2*2^(2/3)*Sqrt(3))-ArcTanh(x)/(6*2^(2/3))+ArcTanh(x/(1+2^(1/3)*(1 -
+	// // x^2)^(1/3)))/(2*2^(2/3))}
+	// public void test00278() {
+	// check("Integrate(1/((1-x^2)^(1/3)*(3+x^2)), x)",
+	// "ArcTan(Sqrt(3)/x)/(2*2^(2/3)*Sqrt(3))+ArcTan((Sqrt(3)*(1-2^(1/3)*(1-x^2)^(1/3)))/x)/(2*2^(2/3)*Sqrt(3))-ArcTanh(x)/(6*2^(2/3))+ArcTanh(x/(1+2^(1/3)*(1-x^2)^(1/3)))/(2*2^(2/3))");
+	//
+	// }
+	//
+	// // {1/((3-x^2)*(1+x^2)^(1/3)), x, 1, -ArcTan(x)/(6*2^(2/3))+ArcTan(x/(1+2^(1/3)*(1 +
+	// // x^2)^(1/3)))/(2*2^(2/3))-ArcTanh(Sqrt(3)/x)/(2*2^(2/3)*Sqrt(3))-ArcTanh((Sqrt(3)*(1-2^(1/3)*(1 +
+	// // x^2)^(1/3)))/x)/(2*2^(2/3)*Sqrt(3))}
+	// public void test00279() {
+	// check("Integrate(1/((3-x^2)*(1+x^2)^(1/3)), x)",
+	// "-ArcTan(x)/(6*2^(2/3))+ArcTan(x/(1+2^(1/3)*(1+x^2)^(1/3)))/(2*2^(2/3))-ArcTanh(Sqrt(3)/x)/(2*2^(2/3)*Sqrt(3))-ArcTanh((Sqrt(3)*(1-2^(1/3)*(1+x^2)^(1/3)))/x)/(2*2^(2/3)*Sqrt(3))");
+	//
+	// }
+	//
+	// // {x/(Sqrt(1+x^3)*(10+6*Sqrt(3)+x^3)), x, 1, -((2-Sqrt(3))*ArcTan((3^(1/4)*(1+Sqrt(3))*(1 +
+	// // x))/(Sqrt(2)*Sqrt(1+x^3))))/(2*Sqrt(2)*3^(3/4))-((2-Sqrt(3))*ArcTan(((1-Sqrt(3))*Sqrt(1 +
+	// // x^3))/(Sqrt(2)*3^(3/4))))/(3*Sqrt(2)*3^(3/4))-((2-Sqrt(3))*ArcTanh((3^(1/4)*(1+Sqrt(3) -
+	// // 2*x))/(Sqrt(2)*Sqrt(1+x^3))))/(3*Sqrt(2)*3^(1/4))-((2-Sqrt(3))*ArcTanh((3^(1/4)*(1-Sqrt(3))*(1 +
+	// // x))/(Sqrt(2)*Sqrt(1+x^3))))/(6*Sqrt(2)*3^(1/4))}
+	// public void test00280() {
+	// check("Integrate(x/(Sqrt(1+x^3)*(10+6*Sqrt(3)+x^3)), x)",
+	// "-((2-Sqrt(3))*ArcTan((3^(1/4)*(1+Sqrt(3))*(1+x))/(Sqrt(2)*Sqrt(1+x^3))))/(2*Sqrt(2)*3^(3/4))-((2-Sqrt(3))*ArcTan(((1-Sqrt(3))*Sqrt(1+x^3))/(Sqrt(2)*3^(3/4))))/(3*Sqrt(2)*3^(3/4))-((2-Sqrt(3))*ArcTanh((3^(1/4)*(1+Sqrt(3)-2*x))/(Sqrt(2)*Sqrt(1+x^3))))/(3*Sqrt(2)*3^(1/4))-((2-Sqrt(3))*ArcTanh((3^(1/4)*(1-Sqrt(3))*(1+x))/(Sqrt(2)*Sqrt(1+x^3))))/(6*Sqrt(2)*3^(1/4))");
+	//
+	// }
+	//
+	// // {x/(Sqrt(1+x^3)*(10-6*Sqrt(3)+x^3)), x, 1, -((2+Sqrt(3))*ArcTan((3^(1/4)*(1-Sqrt(3) -
+	// // 2*x))/(Sqrt(2)*Sqrt(1+x^3))))/(3*Sqrt(2)*3^(1/4))-((2+Sqrt(3))*ArcTan((3^(1/4)*(1+Sqrt(3))*(1 +
+	// // x))/(Sqrt(2)*Sqrt(1+x^3))))/(6*Sqrt(2)*3^(1/4))+((2+Sqrt(3))*ArcTanh((3^(1/4)*(1-Sqrt(3))*(1 +
+	// // x))/(Sqrt(2)*Sqrt(1+x^3))))/(2*Sqrt(2)*3^(3/4))+((2+Sqrt(3))*ArcTanh(((1+Sqrt(3))*Sqrt(1 +
+	// // x^3))/(Sqrt(2)*3^(3/4))))/(3*Sqrt(2)*3^(3/4))}
+	// public void test00281() {
+	// check("Integrate(x/(Sqrt(1+x^3)*(10-6*Sqrt(3)+x^3)), x)",
+	// "-((2+Sqrt(3))*ArcTan((3^(1/4)*(1-Sqrt(3)-2*x))/(Sqrt(2)*Sqrt(1+x^3))))/(3*Sqrt(2)*3^(1/4))-((2+Sqrt(3))*ArcTan((3^(1/4)*(1+Sqrt(3))*(1+x))/(Sqrt(2)*Sqrt(1+x^3))))/(6*Sqrt(2)*3^(1/4))+((2+Sqrt(3))*ArcTanh((3^(1/4)*(1-Sqrt(3))*(1+x))/(Sqrt(2)*Sqrt(1+x^3))))/(2*Sqrt(2)*3^(3/4))+((2+Sqrt(3))*ArcTanh(((1+Sqrt(3))*Sqrt(1+x^3))/(Sqrt(2)*3^(3/4))))/(3*Sqrt(2)*3^(3/4))");
+	//
+	// }
+	//
+	// // {x/(Sqrt(-1+x^3)*(-10-6*Sqrt(3)+x^3)), x, 1, ((2-Sqrt(3))*ArcTan((3^(1/4)*(1-Sqrt(3))*(1 -
+	// // x))/(Sqrt(2)*Sqrt(-1+x^3))))/(6*Sqrt(2)*3^(1/4))+((2-Sqrt(3))*ArcTan((3^(1/4)*(1+Sqrt(3) +
+	// // 2*x))/(Sqrt(2)*Sqrt(-1+x^3))))/(3*Sqrt(2)*3^(1/4))+((2-Sqrt(3))*ArcTanh((3^(1/4)*(1+Sqrt(3))*(1 -
+	// // x))/(Sqrt(2)*Sqrt(-1+x^3))))/(2*Sqrt(2)*3^(3/4))-((2-Sqrt(3))*ArcTanh(((1-Sqrt(3))*Sqrt(-1 +
+	// // x^3))/(Sqrt(2)*3^(3/4))))/(3*Sqrt(2)*3^(3/4))}
+	// public void test00282() {
+	// check("Integrate(x/(Sqrt(-1+x^3)*(-10-6*Sqrt(3)+x^3)), x)",
+	// "((2-Sqrt(3))*ArcTan((3^(1/4)*(1-Sqrt(3))*(1-x))/(Sqrt(2)*Sqrt(-1+x^3))))/(6*Sqrt(2)*3^(1/4))+((2-Sqrt(3))*ArcTan((3^(1/4)*(1+Sqrt(3)+2*x))/(Sqrt(2)*Sqrt(-1+x^3))))/(3*Sqrt(2)*3^(1/4))+((2-Sqrt(3))*ArcTanh((3^(1/4)*(1+Sqrt(3))*(1-x))/(Sqrt(2)*Sqrt(-1+x^3))))/(2*Sqrt(2)*3^(3/4))-((2-Sqrt(3))*ArcTanh(((1-Sqrt(3))*Sqrt(-1+x^3))/(Sqrt(2)*3^(3/4))))/(3*Sqrt(2)*3^(3/4))");
+	//
+	// }
+	//
+	// // {x/(Sqrt(-1+x^3)*(-10+6*Sqrt(3)+x^3)), x, 1, -((2+Sqrt(3))*ArcTan((3^(1/4)*(1-Sqrt(3))*(1 -
+	// // x))/(Sqrt(2)*Sqrt(-1+x^3))))/(2*Sqrt(2)*3^(3/4))+((2+Sqrt(3))*ArcTan(((1+Sqrt(3))*Sqrt(-1 +
+	// // x^3))/(Sqrt(2)*3^(3/4))))/(3*Sqrt(2)*3^(3/4))+((2+Sqrt(3))*ArcTanh((3^(1/4)*(1+Sqrt(3))*(1 -
+	// // x))/(Sqrt(2)*Sqrt(-1+x^3))))/(6*Sqrt(2)*3^(1/4))+((2+Sqrt(3))*ArcTanh((3^(1/4)*(1-Sqrt(3) +
+	// // 2*x))/(Sqrt(2)*Sqrt(-1+x^3))))/(3*Sqrt(2)*3^(1/4))}
+	// public void test00283() {
+	// check("Integrate(x/(Sqrt(-1+x^3)*(-10+6*Sqrt(3)+x^3)), x)",
+	// "-((2+Sqrt(3))*ArcTan((3^(1/4)*(1-Sqrt(3))*(1-x))/(Sqrt(2)*Sqrt(-1+x^3))))/(2*Sqrt(2)*3^(3/4))+((2+Sqrt(3))*ArcTan(((1+Sqrt(3))*Sqrt(-1+x^3))/(Sqrt(2)*3^(3/4))))/(3*Sqrt(2)*3^(3/4))+((2+Sqrt(3))*ArcTanh((3^(1/4)*(1+Sqrt(3))*(1-x))/(Sqrt(2)*Sqrt(-1+x^3))))/(6*Sqrt(2)*3^(1/4))+((2+Sqrt(3))*ArcTanh((3^(1/4)*(1-Sqrt(3)+2*x))/(Sqrt(2)*Sqrt(-1+x^3))))/(3*Sqrt(2)*3^(1/4))");
+	//
+	// }
+	//
+	// // {(-1+x)/((1+x)*(2+x^3)^(1/3)), x, 1, Sqrt(3)*ArcTan((1+(2*(2+x))/(2+x^3)^(1/3))/Sqrt(3))+Log(1+x)
+	// // -(3*Log(2+x-(2+x^3)^(1/3)))/2}
+	// public void test00284() {
+	// check("Integrate((-1+x)/((1+x)*(2+x^3)^(1/3)), x)",
+	// "Sqrt(3)*ArcTan((1+(2*(2+x))/(2+x^3)^(1/3))/Sqrt(3))+Log(1+x)-(3*Log(2+x-(2+x^3)^(1/3)))/2");
+	//
+	// }
+	//
+	// // {0, x, 1, 0}
+	// public void test00285() {
+	// check("Integrate(0, x)", "0");
+	//
+	// }
+	//
+	// // {1, x, 1, x}
+	// public void test00286() {
+	// check("Integrate(1, x)", "x");
+	//
+	// }
+	//
+	// // {5, x, 1, 5*x}
+	// public void test00287() {
+	// check("Integrate(5, x)", "5*x");
+	//
+	// }
+	//
+	// // {-2, x, 1, -2*x}
+	// public void test00288() {
+	// check("Integrate(-2, x)", "-2*x");
+	//
+	// }
+	//
+	// // {-3/2, x, 1, (-3*x)/2}
+	// public void test00289() {
+	// check("Integrate(-3/2, x)", "(-3*x)/2");
+	//
+	// }
+	//
+	// // {Pi, x, 1, Pi*x}
+	// public void test00290() {
+	// check("Integrate(Pi, x)", "Pi*x");
+	//
+	// }
+	//
+	// // {a, x, 1, a*x}
+	// public void test00291() {
+	// check("Integrate(a, x)", "a*x");
+	//
+	// }
+	//
+	// // {3*a, x, 1, 3*a*x}
+	// public void test00292() {
+	// check("Integrate(3*a, x)", "3*a*x");
+	//
+	// }
+	//
+	// // {Pi/Sqrt(16-E^2), x, 1, (Pi*x)/Sqrt(16-E^2)}
+	// public void test00293() {
+	// check("Integrate(Pi/Sqrt(16-E^2), x)", "(Pi*x)/Sqrt(16-E^2)");
+	//
+	// }
+	//
+	// // {x^100, x, 1, x^101/101}
+	// public void test00294() {
+	// check("Integrate(x^100, x)", "x^101/101");
+	//
+	// }
+	//
+	// // {x^3, x, 1, x^4/4}
+	// public void test00295() {
+	// check("Integrate(x^3, x)", "x^4/4");
+	//
+	// }
+	//
+	// // {x^2, x, 1, x^3/3}
+	// public void test00296() {
+	// check("Integrate(x^2, x)", "x^3/3");
+	//
+	// }
+	//
+	// // {x, x, 1, x^2/2}
+	// public void test00297() {
+	// check("Integrate(x, x)", "x^2/2");
+	//
+	// }
+	//
+	// // {1, x, 1, x}
+	// public void test00298() {
+	// check("Integrate(1, x)", "x");
+	//
+	// }
+	//
+	// // {x^(-1), x, 1, Log(x)}
+	// public void test00299() {
+	// check("Integrate(x^(-1), x)", "Log(x)");
+	//
+	// }
+	//
+	// // {x^(-2), x, 1, -x^(-1)}
+	// public void test00300() {
+	// check("Integrate(x^(-2), x)", "-x^(-1)");
+	//
+	// }
+	//
+	// // {x^(-3), x, 1, -1/(2*x^2)}
+	// public void test00301() {
+	// check("Integrate(x^(-3), x)", "-1/(2*x^2)");
+	//
+	// }
+	//
+	// // {x^(-4), x, 1, -1/(3*x^3)}
+	// public void test00302() {
+	// check("Integrate(x^(-4), x)", "-1/(3*x^3)");
+	//
+	// }
+	//
+	// // {x^(-100), x, 1, -1/(99*x^99)}
+	// public void test00303() {
+	// check("Integrate(x^(-100), x)", "-1/(99*x^99)");
+	//
+	// }
+	//
+	// // {x^(5/2), x, 1, (2*x^(7/2))/7}
+	// public void test00304() {
+	// check("Integrate(x^(5/2), x)", "(2*x^(7/2))/7");
+	//
+	// }
+	//
+	// // {x^(3/2), x, 1, (2*x^(5/2))/5}
+	// public void test00305() {
+	// check("Integrate(x^(3/2), x)", "(2*x^(5/2))/5");
+	//
+	// }
+	//
+	// // {Sqrt(x), x, 1, (2*x^(3/2))/3}
+	// public void test00306() {
+	// check("Integrate(Sqrt(x), x)", "(2*x^(3/2))/3");
+	//
+	// }
+	//
+	// // {1/Sqrt(x), x, 1, 2*Sqrt(x)}
+	// public void test00307() {
+	// check("Integrate(1/Sqrt(x), x)", "2*Sqrt(x)");
+	//
+	// }
+	//
+	// // {x^(-3/2), x, 1, -2/Sqrt(x)}
+	// public void test00308() {
+	// check("Integrate(x^(-3/2), x)", "-2/Sqrt(x)");
+	//
+	// }
+	//
+	// // {x^(-5/2), x, 1, -2/(3*x^(3/2))}
+	// public void test00309() {
+	// check("Integrate(x^(-5/2), x)", "-2/(3*x^(3/2))");
+	//
+	// }
+	//
+	// // {x^(5/3), x, 1, (3*x^(8/3))/8}
+	// public void test00310() {
+	// check("Integrate(x^(5/3), x)", "(3*x^(8/3))/8");
+	//
+	// }
+	//
+	// // {x^(4/3), x, 1, (3*x^(7/3))/7}
+	// public void test00311() {
+	// check("Integrate(x^(4/3), x)", "(3*x^(7/3))/7");
+	//
+	// }
+	//
+	// // {x^(2/3), x, 1, (3*x^(5/3))/5}
+	// public void test00312() {
+	// check("Integrate(x^(2/3), x)", "(3*x^(5/3))/5");
+	//
+	// }
+	//
+	// // {x^(1/3), x, 1, (3*x^(4/3))/4}
+	// public void test00313() {
+	// check("Integrate(x^(1/3), x)", "(3*x^(4/3))/4");
+	//
+	// }
+	//
+	// // {x^(-1/3), x, 1, (3*x^(2/3))/2}
+	// public void test00314() {
+	// check("Integrate(x^(-1/3), x)", "(3*x^(2/3))/2");
+	//
+	// }
+	//
+	// // {x^(-2/3), x, 1, 3*x^(1/3)}
+	// public void test00315() {
+	// check("Integrate(x^(-2/3), x)", "3*x^(1/3)");
+	//
+	// }
+	//
+	// // {x^(-4/3), x, 1, -3/x^(1/3)}
+	// public void test00316() {
+	// check("Integrate(x^(-4/3), x)", "-3/x^(1/3)");
+	//
+	// }
+	//
+	// // {x^(-5/3), x, 1, -3/(2*x^(2/3))}
+	// public void test00317() {
+	// check("Integrate(x^(-5/3), x)", "-3/(2*x^(2/3))");
+	//
+	// }
+	//
+	// // {x^n, x, 1, x^(1+n)/(1+n)}
+	// public void test00318() {
+	// check("Integrate(x^n, x)", "x^(1+n)/(1+n)");
+	//
+	// }
+	//
+	// // {(b*x)^n, x, 1, (b*x)^(1+n)/(b*(1+n))}
+	// public void test00319() {
+	// check("Integrate((b*x)^n, x)", "(b*x)^(1+n)/(b*(1+n))");
+	//
+	// }
+	//
+	// // {a+b*x, x, 1, a*x+(b*x^2)/2}
+	// public void test00320() {
+	// check("Integrate(a+b*x, x)", "a*x+(b*x^2)/2");
+	//
+	// }
+	//
+	// // {(a+b*x)/x^3, x, 1, -(a+b*x)^2/(2*a*x^2)}
+	// public void test00321() {
+	// check("Integrate((a+b*x)/x^3, x)", "-(a+b*x)^2/(2*a*x^2)");
+	//
+	// }
+	//
+	// // {(a+b*x)^2, x, 1, (a+b*x)^3/(3*b)}
+	// public void test00322() {
+	// check("Integrate((a+b*x)^2, x)", "(a+b*x)^3/(3*b)");
+	//
+	// }
+	//
+	// // {(a+b*x)^2/x^4, x, 1, -(a+b*x)^3/(3*a*x^3)}
+	// public void test00323() {
+	// check("Integrate((a+b*x)^2/x^4, x)", "-(a+b*x)^3/(3*a*x^3)");
+	//
+	// }
+	//
+	// // {(a+b*x)^3, x, 1, (a+b*x)^4/(4*b)}
+	// public void test00324() {
+	// check("Integrate((a+b*x)^3, x)", "(a+b*x)^4/(4*b)");
+	//
+	// }
+	//
+	// // {(a+b*x)^3/x^5, x, 1, -(a+b*x)^4/(4*a*x^4)}
+	// public void test00325() {
+	// check("Integrate((a+b*x)^3/x^5, x)", "-(a+b*x)^4/(4*a*x^4)");
+	//
+	// }
+	//
+	// // {(a+b*x)^5, x, 1, (a+b*x)^6/(6*b)}
+	// public void test00326() {
+	// check("Integrate((a+b*x)^5, x)", "(a+b*x)^6/(6*b)");
+	//
+	// }
+	//
+	// // {(a+b*x)^5/x^7, x, 1, -(a+b*x)^6/(6*a*x^6)}
+	// public void test00327() {
+	// check("Integrate((a+b*x)^5/x^7, x)", "-(a+b*x)^6/(6*a*x^6)");
+	//
+	// }
+	//
+	// // {(a+b*x)^7, x, 1, (a+b*x)^8/(8*b)}
+	// public void test00328() {
+	// check("Integrate((a+b*x)^7, x)", "(a+b*x)^8/(8*b)");
+	//
+	// }
+	//
+	// // {(a+b*x)^7/x^9, x, 1, -(a+b*x)^8/(8*a*x^8)}
+	// public void test00329() {
+	// check("Integrate((a+b*x)^7/x^9, x)", "-(a+b*x)^8/(8*a*x^8)");
+	//
+	// }
+	//
+	// // {(a+b*x)^10, x, 1, (a+b*x)^11/(11*b)}
+	// public void test00330() {
+	// check("Integrate((a+b*x)^10, x)", "(a+b*x)^11/(11*b)");
+	//
+	// }
+	//
+	// // {(a+b*x)^10/x^12, x, 1, -(a+b*x)^11/(11*a*x^11)}
+	// public void test00331() {
+	// check("Integrate((a+b*x)^10/x^12, x)", "-(a+b*x)^11/(11*a*x^11)");
+	//
+	// }
+	//
+	// // {c*(a+b*x), x, 1, (c*(a+b*x)^2)/(2*b)}
+	// public void test00332() {
+	// check("Integrate(c*(a+b*x), x)", "(c*(a+b*x)^2)/(2*b)");
+	//
+	// }
+	//
+	// // {((c+d)*(a+b*x))/e, x, 1, ((c+d)*(a+b*x)^2)/(2*b*e)}
+	// public void test00333() {
+	// check("Integrate(((c+d)*(a+b*x))/e, x)", "((c+d)*(a+b*x)^2)/(2*b*e)");
+	//
+	// }
+	//
+	// // {(a+b*x)^(-1), x, 1, Log(a+b*x)/b}
+	// public void test00334() {
+	// check("Integrate((a+b*x)^(-1), x)", "Log(a+b*x)/b");
+	//
+	// }
+	//
+	// // {(a+b*x)^(-2), x, 1, -(1/(b*(a+b*x)))}
+	// public void test00335() {
+	// check("Integrate((a+b*x)^(-2), x)", "-(1/(b*(a+b*x)))");
+	//
+	// }
+	//
+	// // {x/(a+b*x)^3, x, 1, x^2/(2*a*(a+b*x)^2)}
+	// public void test00336() {
+	// check("Integrate(x/(a+b*x)^3, x)", "x^2/(2*a*(a+b*x)^2)");
+	//
+	// }
+	//
+	// // {(a+b*x)^(-3), x, 1, -1/(2*b*(a+b*x)^2)}
+	// public void test00337() {
+	// check("Integrate((a+b*x)^(-3), x)", "-1/(2*b*(a+b*x)^2)");
+	//
+	// }
+	//
+	// // {x^2/(a+b*x)^4, x, 1, x^3/(3*a*(a+b*x)^3)}
+	// public void test00338() {
+	// check("Integrate(x^2/(a+b*x)^4, x)", "x^3/(3*a*(a+b*x)^3)");
+	//
+	// }
+	//
+	// // {(a+b*x)^(-4), x, 1, -1/(3*b*(a+b*x)^3)}
+	// public void test00339() {
+	// check("Integrate((a+b*x)^(-4), x)", "-1/(3*b*(a+b*x)^3)");
+	//
+	// }
+	//
+	// // {x^5/(a+b*x)^7, x, 1, x^6/(6*a*(a+b*x)^6)}
+	// public void test00340() {
+	// check("Integrate(x^5/(a+b*x)^7, x)", "x^6/(6*a*(a+b*x)^6)");
+	//
+	// }
+	//
+	// // {(a+b*x)^(-7), x, 1, -1/(6*b*(a+b*x)^6)}
+	// public void test00341() {
+	// check("Integrate((a+b*x)^(-7), x)", "-1/(6*b*(a+b*x)^6)");
+	//
+	// }
+	//
+	// // {x^8/(a+b*x)^10, x, 1, x^9/(9*a*(a+b*x)^9)}
+	// public void test00342() {
+	// check("Integrate(x^8/(a+b*x)^10, x)", "x^9/(9*a*(a+b*x)^9)");
+	//
+	// }
+	//
+	// // {(a+b*x)^(-10), x, 1, -1/(9*b*(a+b*x)^9)}
+	// public void test00343() {
+	// check("Integrate((a+b*x)^(-10), x)", "-1/(9*b*(a+b*x)^9)");
+	//
+	// }
+	//
+	// // {(a+b*x)^8/x^10, x, 1, -(a+b*x)^9/(9*a*x^9)}
+	// public void test00344() {
+	// check("Integrate((a+b*x)^8/x^10, x)", "-(a+b*x)^9/(9*a*x^9)");
+	//
+	// }
+	//
+	// // {x^(-10), x, 1, -1/(9*x^9)}
+	// public void test00345() {
+	// check("Integrate(x^(-10), x)", "-1/(9*x^9)");
+	//
+	// }
+	//
+	// // {(2+2*x)^(-1), x, 1, Log(1+x)/2}
+	// public void test00346() {
+	// check("Integrate((2+2*x)^(-1), x)", "Log(1+x)/2");
+	//
+	// }
+	//
+	// // {(4-6*x)^(-1), x, 1, -Log(2-3*x)/6}
+	// public void test00347() {
+	// check("Integrate((4-6*x)^(-1), x)", "-Log(2-3*x)/6");
+	//
+	// }
+	//
+	// // {(a+Sqrt(a)*x)^(-1), x, 1, Log(Sqrt(a)+x)/Sqrt(a)}
+	// public void test00348() {
+	// check("Integrate((a+Sqrt(a)*x)^(-1), x)", "Log(Sqrt(a)+x)/Sqrt(a)");
+	//
+	// }
+	//
+	// // {(a+Sqrt(-a)*x)^(-1), x, 1, Log(a+Sqrt(-a)*x)/Sqrt(-a)}
+	// public void test00349() {
+	// check("Integrate((a+Sqrt(-a)*x)^(-1), x)", "Log(a+Sqrt(-a)*x)/Sqrt(-a)");
+	//
+	// }
+	//
+	// // {(a^2+Sqrt(-a)*x)^(-1), x, 1, Log(a^2+Sqrt(-a)*x)/Sqrt(-a)}
+	// public void test00350() {
+	// check("Integrate((a^2+Sqrt(-a)*x)^(-1), x)", "Log(a^2+Sqrt(-a)*x)/Sqrt(-a)");
+	//
+	// }
+	//
+	// // {(a^3+Sqrt(-a)*x)^(-1), x, 1, Log(a^3+Sqrt(-a)*x)/Sqrt(-a)}
+	// public void test00351() {
+	// check("Integrate((a^3+Sqrt(-a)*x)^(-1), x)", "Log(a^3+Sqrt(-a)*x)/Sqrt(-a)");
+	//
+	// }
+	//
+	// // {(a^(-1)+Sqrt(-a)*x)^(-1), x, 1, Log(1-(-a)^(3/2)*x)/Sqrt(-a)}
+	// public void test00352() {
+	// check("Integrate((a^(-1)+Sqrt(-a)*x)^(-1), x)", "Log(1-(-a)^(3/2)*x)/Sqrt(-a)");
+	//
+	// }
+	//
+	// // {(a^(-2)+Sqrt(-a)*x)^(-1), x, 1, Log(1+(-a)^(5/2)*x)/Sqrt(-a)}
+	// public void test00353() {
+	// check("Integrate((a^(-2)+Sqrt(-a)*x)^(-1), x)", "Log(1+(-a)^(5/2)*x)/Sqrt(-a)");
+	//
+	// }
+	//
+	// // {Sqrt(a+b*x), x, 1, (2*(a+b*x)^(3/2))/(3*b)}
+	// public void test00354() {
+	// check("Integrate(Sqrt(a+b*x), x)", "(2*(a+b*x)^(3/2))/(3*b)");
+	//
+	// }
+	//
+	// // {(a+b*x)^(3/2), x, 1, (2*(a+b*x)^(5/2))/(5*b)}
+	// public void test00355() {
+	// // check("{a,b,c}[[5]]", "{a,b,c}[[5]]");
+	//// check("Integrate(x*Sqrt(a+b*x), x)", "");
+	// check("Integrate((a+b*x)^(3/2), x)", //
+	// "(2*(a+b*x)^(5/2))/(5*b)");
+	//
+	// }
+	//
+	// // {(a+b*x)^(5/2), x, 1, (2*(a+b*x)^(7/2))/(7*b)}
+	// public void test00356() {
+	// check("Integrate((a+b*x)^(5/2), x)", "(2*(a+b*x)^(7/2))/(7*b)");
+	//
+	// }
+	//
+	// // {(a+b*x)^(9/2), x, 1, (2*(a+b*x)^(11/2))/(11*b)}
+	// public void test00357() {
+	// check("Integrate((a+b*x)^(9/2), x)", "(2*(a+b*x)^(11/2))/(11*b)");
+	//
+	// }
+	//
+	// // {1/Sqrt(a+b*x), x, 1, (2*Sqrt(a+b*x))/b}
+	// public void test00358() {
+	// check("Integrate(1/Sqrt(a+b*x), x)", "(2*Sqrt(a+b*x))/b");
+	//
+	// }
+	//
+	// // {(a+b*x)^(-3/2), x, 1, -2/(b*Sqrt(a+b*x))}
+	// public void test00359() {
+	// check("Integrate((a+b*x)^(-3/2), x)", "-2/(b*Sqrt(a+b*x))");
+	//
+	// }
+	//
+	// // {(a+b*x)^(-5/2), x, 1, -2/(3*b*(a+b*x)^(3/2))}
+	// public void test00360() {
+	// check("Integrate((a+b*x)^(-5/2), x)", "-2/(3*b*(a+b*x)^(3/2))");
+	//
+	// }
+	//
+	// // {(a+b*x)^(1/3), x, 1, (3*(a+b*x)^(4/3))/(4*b)}
+	// public void test00361() {
+	// check("Integrate((a+b*x)^(1/3), x)", "(3*(a+b*x)^(4/3))/(4*b)");
+	//
+	// }
+	//
+	// // {(a+b*x)^(2/3), x, 1, (3*(a+b*x)^(5/3))/(5*b)}
+	// public void test00362() {
+	// check("Integrate((a+b*x)^(2/3), x)", "(3*(a+b*x)^(5/3))/(5*b)");
+	//
+	// }
+	//
+	// // {(a+b*x)^(4/3), x, 1, (3*(a+b*x)^(7/3))/(7*b)}
+	// public void test00363() {
+	// check("Integrate((a+b*x)^(4/3), x)", "(3*(a+b*x)^(7/3))/(7*b)");
+	//
+	// }
+	//
+	// // {(a+b*x)^(-1/3), x, 1, (3*(a+b*x)^(2/3))/(2*b)}
+	// public void test00364() {
+	// check("Integrate((a+b*x)^(-1/3), x)", "(3*(a+b*x)^(2/3))/(2*b)");
+	//
+	// }
+	//
+	// // {(-a+b*x)^(-1/3), x, 1, (3*(-a+b*x)^(2/3))/(2*b)}
+	// public void test00365() {
+	// check("Integrate((-a+b*x)^(-1/3), x)", "(3*(-a+b*x)^(2/3))/(2*b)");
+	//
+	// }
+	//
+	// // {(a+b*x)^(-2/3), x, 1, (3*(a+b*x)^(1/3))/b}
+	// public void test00366() {
+	// check("Integrate((a+b*x)^(-2/3), x)", "(3*(a+b*x)^(1/3))/b");
+	//
+	// }
+	//
+	// // {(a+b*x)^(-4/3), x, 1, -3/(b*(a+b*x)^(1/3))}
+	// public void test00367() {
+	// check("Integrate((a+b*x)^(-4/3), x)", "-3/(b*(a+b*x)^(1/3))");
+	//
+	// }
+	//
+	// // {Sqrt(a+b*x)/x^(5/2), x, 1, (-2*(a+b*x)^(3/2))/(3*a*x^(3/2))}
+	// public void test00368() {
+	// check("Integrate(Sqrt(a+b*x)/x^(5/2), x)", "(-2*(a+b*x)^(3/2))/(3*a*x^(3/2))");
+	//
+	// }
+	//
+	// // {Sqrt(a-b*x)/x^(5/2), x, 1, (-2*(a-b*x)^(3/2))/(3*a*x^(3/2))}
+	// public void test00369() {
+	// check("Integrate(Sqrt(a-b*x)/x^(5/2), x)", "(-2*(a-b*x)^(3/2))/(3*a*x^(3/2))");
+	//
+	// }
+	//
+	// // {Sqrt(2+b*x)/x^(5/2), x, 1, -(2+b*x)^(3/2)/(3*x^(3/2))}
+	// public void test00370() {
+	// check("Integrate(Sqrt(2+b*x)/x^(5/2), x)", "-(2+b*x)^(3/2)/(3*x^(3/2))");
+	//
+	// }
+	//
+	// // {Sqrt(2-b*x)/x^(5/2), x, 1, -(2-b*x)^(3/2)/(3*x^(3/2))}
+	// public void test00371() {
+	// check("Integrate(Sqrt(2-b*x)/x^(5/2), x)", "-(2-b*x)^(3/2)/(3*x^(3/2))");
+	//
+	// }
+	//
+	// // {1/(x^(3/2)*Sqrt(a+b*x)), x, 1, (-2*Sqrt(a+b*x))/(a*Sqrt(x))}
+	// public void test00372() {
+	// check("Integrate(1/(x^(3/2)*Sqrt(a+b*x)), x)", "(-2*Sqrt(a+b*x))/(a*Sqrt(x))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(x)*(a+b*x)^(3/2)), x, 1, (2*Sqrt(x))/(a*Sqrt(a+b*x))}
+	// public void test00373() {
+	// check("Integrate(1/(Sqrt(x)*(a+b*x)^(3/2)), x)", "(2*Sqrt(x))/(a*Sqrt(a+b*x))");
+	//
+	// }
+	//
+	// // {Sqrt(x)/(a+b*x)^(5/2), x, 1, (2*x^(3/2))/(3*a*(a+b*x)^(3/2))}
+	// public void test00374() {
+	// check("Integrate(Sqrt(x)/(a+b*x)^(5/2), x)", "(2*x^(3/2))/(3*a*(a+b*x)^(3/2))");
+	//
+	// }
+	//
+	// // {1/(x^(3/2)*Sqrt(a-b*x)), x, 1, (-2*Sqrt(a-b*x))/(a*Sqrt(x))}
+	// public void test00375() {
+	// check("Integrate(1/(x^(3/2)*Sqrt(a-b*x)), x)", "(-2*Sqrt(a-b*x))/(a*Sqrt(x))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(x)*(a-b*x)^(3/2)), x, 1, (2*Sqrt(x))/(a*Sqrt(a-b*x))}
+	// public void test00376() {
+	// check("Integrate(1/(Sqrt(x)*(a-b*x)^(3/2)), x)", "(2*Sqrt(x))/(a*Sqrt(a-b*x))");
+	//
+	// }
+	//
+	// // {Sqrt(x)/(a-b*x)^(5/2), x, 1, (2*x^(3/2))/(3*a*(a-b*x)^(3/2))}
+	// public void test00377() {
+	// check("Integrate(Sqrt(x)/(a-b*x)^(5/2), x)", "(2*x^(3/2))/(3*a*(a-b*x)^(3/2))");
+	//
+	// }
+	//
+	// // {1/(x^(3/2)*Sqrt(2+b*x)), x, 1, -(Sqrt(2+b*x)/Sqrt(x))}
+	// public void test00378() {
+	// check("Integrate(1/(x^(3/2)*Sqrt(2+b*x)), x)", "-(Sqrt(2+b*x)/Sqrt(x))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(x)*(2+b*x)^(3/2)), x, 1, Sqrt(x)/Sqrt(2+b*x)}
+	// public void test00379() {
+	// check("Integrate(1/(Sqrt(x)*(2+b*x)^(3/2)), x)", "Sqrt(x)/Sqrt(2+b*x)");
+	//
+	// }
+	//
+	// // {Sqrt(x)/(2+b*x)^(5/2), x, 1, x^(3/2)/(3*(2+b*x)^(3/2))}
+	// public void test00380() {
+	// check("Integrate(Sqrt(x)/(2+b*x)^(5/2), x)", "x^(3/2)/(3*(2+b*x)^(3/2))");
+	//
+	// }
+	//
+	// // {1/(x^(3/2)*Sqrt(2-b*x)), x, 1, -(Sqrt(2-b*x)/Sqrt(x))}
+	// public void test00381() {
+	// check("Integrate(1/(x^(3/2)*Sqrt(2-b*x)), x)", "-(Sqrt(2-b*x)/Sqrt(x))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(x)*(2-b*x)^(3/2)), x, 1, Sqrt(x)/Sqrt(2-b*x)}
+	// public void test00382() {
+	// check("Integrate(1/(Sqrt(x)*(2-b*x)^(3/2)), x)", "Sqrt(x)/Sqrt(2-b*x)");
+	//
+	// }
+	//
+	// // {Sqrt(x)/(2-b*x)^(5/2), x, 1, x^(3/2)/(3*(2-b*x)^(3/2))}
+	// public void test00383() {
+	// check("Integrate(Sqrt(x)/(2-b*x)^(5/2), x)", "x^(3/2)/(3*(2-b*x)^(3/2))");
+	//
+	// }
+	//
+	// // {x^m/(a+b*x), x, 1, (x^(1+m)*Hypergeometric2F1(1, 1+m, 2+m, -((b*x)/a)))/(a*(1+m))}
+	// public void test00384() {
+	// check("Integrate(x^m/(a+b*x), x)", "(x^(1+m)*Hypergeometric2F1(1, 1+m, 2+m, -((b*x)/a)))/(a*(1+m))");
+	//
+	// }
+	//
+	// // {x^m/(a+b*x)^2, x, 1, (x^(1+m)*Hypergeometric2F1(2, 1+m, 2+m, -((b*x)/a)))/(a^2*(1+m))}
+	// public void test00385() {
+	// check("Integrate(x^m/(a+b*x)^2, x)", "(x^(1+m)*Hypergeometric2F1(2, 1+m, 2+m, -((b*x)/a)))/(a^2*(1+m))");
+	//
+	// }
+	//
+	// // {x^m/(a+b*x)^3, x, 1, (x^(1+m)*Hypergeometric2F1(3, 1+m, 2+m, -((b*x)/a)))/(a^3*(1+m))}
+	// public void test00386() {
+	// check("Integrate(x^m/(a+b*x)^3, x)", "(x^(1+m)*Hypergeometric2F1(3, 1+m, 2+m, -((b*x)/a)))/(a^3*(1+m))");
+	//
+	// }
+	//
+	// // {x^m/Sqrt(2+3*x), x, 1, (x^(1+m)*Hypergeometric2F1(1/2, 1+m, 2+m, (-3*x)/2))/(Sqrt(2)*(1+m))}
+	// public void test00387() {
+	// check("Integrate(x^m/Sqrt(2+3*x), x)", "(x^(1+m)*Hypergeometric2F1(1/2, 1+m, 2+m, (-3*x)/2))/(Sqrt(2)*(1+m))");
+	//
+	// }
+	//
+	// // {x^m/Sqrt(2-3*x), x, 1, (x^(1+m)*Hypergeometric2F1(1/2, 1+m, 2+m, (3*x)/2))/(Sqrt(2)*(1+m))}
+	// public void test00388() {
+	// check("Integrate(x^m/Sqrt(2-3*x), x)", "(x^(1+m)*Hypergeometric2F1(1/2, 1+m, 2+m, (3*x)/2))/(Sqrt(2)*(1+m))");
+	//
+	// }
+	//
+	// // {x^m/Sqrt(-2+3*x), x, 1, (3/2)^(-1-m)*Sqrt(-2+3*x)*Hypergeometric2F1(1/2, -m, 3/2, 1-(3*x)/2)}
+	// public void test00389() {
+	// check("Integrate(x^m/Sqrt(-2+3*x), x)", "(3/2)^(-1-m)*Sqrt(-2+3*x)*Hypergeometric2F1(1/2, -m, 3/2, 1-(3*x)/2)");
+	//
+	// }
+	//
+	// // {(-x)^m/Sqrt(2+3*x), x, 1, -(((-x)^(1+m)*Hypergeometric2F1(1/2, 1+m, 2+m, (-3*x)/2))/(Sqrt(2)*(1+m)))}
+	// public void test00390() {
+	// check("Integrate((-x)^m/Sqrt(2+3*x), x)",
+	// "-(((-x)^(1+m)*Hypergeometric2F1(1/2, 1+m, 2+m, (-3*x)/2))/(Sqrt(2)*(1+m)))");
+	//
+	// }
+	//
+	// // {(-x)^m/Sqrt(2-3*x), x, 1, -(((-x)^(1+m)*Hypergeometric2F1(1/2, 1+m, 2+m, (3*x)/2))/(Sqrt(2)*(1+m)))}
+	// public void test00391() {
+	// check("Integrate((-x)^m/Sqrt(2-3*x), x)",
+	// "-(((-x)^(1+m)*Hypergeometric2F1(1/2, 1+m, 2+m, (3*x)/2))/(Sqrt(2)*(1+m)))");
+	//
+	// }
+	//
+	// // {(-x)^m/Sqrt(-2-3*x), x, 1, -((3/2)^(-1-m)*Sqrt(-2-3*x)*Hypergeometric2F1(1/2, -m, 3/2, 1+(3*x)/2))}
+	// public void test00392() {
+	// check("Integrate((-x)^m/Sqrt(-2-3*x), x)",
+	// "-((3/2)^(-1-m)*Sqrt(-2-3*x)*Hypergeometric2F1(1/2, -m, 3/2, 1+(3*x)/2))");
+	//
+	// }
+	//
+	// // {x^n/Sqrt(1-x), x, 1, -2*Sqrt(1-x)*Hypergeometric2F1(1/2, -n, 3/2, 1-x)}
+	// public void test00393() {
+	// check("Integrate(x^n/Sqrt(1-x), x)", "-2*Sqrt(1-x)*Hypergeometric2F1(1/2, -n, 3/2, 1-x)");
+	//
+	// }
+	//
+	// // {x^n/Sqrt(a-a*x), x, 1, (-2*Sqrt(a-a*x)*Hypergeometric2F1(1/2, -n, 3/2, 1-x))/a}
+	// public void test00394() {
+	// check("Integrate(x^n/Sqrt(a-a*x), x)", "(-2*Sqrt(a-a*x)*Hypergeometric2F1(1/2, -n, 3/2, 1-x))/a");
+	//
+	// }
+	//
+	// // {(a+b*x)^n, x, 1, (a+b*x)^(1+n)/(b*(1+n))}
+	// public void test00395() {
+	// check("Integrate((a+b*x)^n, x)", "(a+b*x)^(1+n)/(b*(1+n))");
+	//
+	// }
+	//
+	// // {(a+b*x)^n/x, x, 1, -(((a+b*x)^(1+n)*Hypergeometric2F1(1, 1+n, 2+n, 1+(b*x)/a))/(a*(1+n)))}
+	// public void test00396() {
+	// check("Integrate((a+b*x)^n/x, x)", "-(((a+b*x)^(1+n)*Hypergeometric2F1(1, 1+n, 2+n, 1+(b*x)/a))/(a*(1+n)))");
+	//
+	// }
+	//
+	// // {(a+b*x)^n/x^2, x, 1, (b*(a+b*x)^(1+n)*Hypergeometric2F1(2, 1+n, 2+n, 1+(b*x)/a))/(a^2*(1+n))}
+	// public void test00397() {
+	// check("Integrate((a+b*x)^n/x^2, x)", "(b*(a+b*x)^(1+n)*Hypergeometric2F1(2, 1+n, 2+n, 1+(b*x)/a))/(a^2*(1+n))");
+	//
+	// }
+	//
+	// // {(a+b*x)^n/x^3, x, 1, -((b^2*(a+b*x)^(1+n)*Hypergeometric2F1(3, 1+n, 2+n, 1+(b*x)/a))/(a^3*(1+n)))}
+	// public void test00398() {
+	// check("Integrate((a+b*x)^n/x^3, x)",
+	// "-((b^2*(a+b*x)^(1+n)*Hypergeometric2F1(3, 1+n, 2+n, 1+(b*x)/a))/(a^3*(1+n)))");
+	//
+	// }
+	//
+	// // {x^(-2+n)/(a+b*x)^n, x, 1, -((x^(-1+n)*(a+b*x)^(1-n))/(a*(1-n)))}
+	// public void test00399() {
+	// check("Integrate(x^(-2+n)/(a+b*x)^n, x)", "-((x^(-1+n)*(a+b*x)^(1-n))/(a*(1-n)))");
+	//
+	// }
+	//
+	// // {(b*x)^m*(2+d*x)^n, x, 1, (2^n*(b*x)^(1+m)*Hypergeometric2F1(1+m, -n, 2+m, -(d*x)/2))/(b*(1+m))}
+	// public void test00400() {
+	// check("Integrate((b*x)^m*(2+d*x)^n, x)",
+	// "(2^n*(b*x)^(1+m)*Hypergeometric2F1(1+m, -n, 2+m, -(d*x)/2))/(b*(1+m))");
+	//
+	// }
+	//
+	// // {(b*x)^m*(c-b*c*x)^n, x, 1, -(((c-b*c*x)^(1+n)*Hypergeometric2F1(-m, 1+n, 2+n, 1-b*x))/(b*c*(1 +
+	// // n)))}
+	// public void test00401() {
+	// check("Integrate((b*x)^m*(c-b*c*x)^n, x)",
+	// "-(((c-b*c*x)^(1+n)*Hypergeometric2F1(-m, 1+n, 2+n, 1-b*x))/(b*c*(1+n)))");
+	//
+	// }
+	//
+	// // {x^(-1+n)*(a+b*x)^(-1-n), x, 1, x^n/(a*n*(a+b*x)^n)}
+	// public void test00402() {
+	// check("Integrate(x^(-1+n)*(a+b*x)^(-1-n), x)", "x^n/(a*n*(a+b*x)^n)");
+	//
+	// }
+	//
+	// // {a+b*x, x, 1, a*x+(b*x^2)/2}
+	// public void test00403() {
+	// check("Integrate(a+b*x, x)", "a*x+(b*x^2)/2");
+	//
+	// }
+	//
+	// // {(a+b*x)/(a*c-b*c*x)^3, x, 1, x/(c^3*(a-b*x)^2)}
+	// public void test00404() {
+	// check("Integrate((a+b*x)/(a*c-b*c*x)^3, x)", "x/(c^3*(a-b*x)^2)");
+	//
+	// }
+	//
+	// // {(a+b*x)^2, x, 1, (a+b*x)^3/(3*b)}
+	// public void test00405() {
+	// check("Integrate((a+b*x)^2, x)", "(a+b*x)^3/(3*b)");
+	//
+	// }
+	//
+	// // {(a+b*x)^2/(a*c-b*c*x)^4, x, 1, (a+b*x)^3/(6*a*b*c^4*(a-b*x)^3)}
+	// public void test00406() {
+	// check("Integrate((a+b*x)^2/(a*c-b*c*x)^4, x)", "(a+b*x)^3/(6*a*b*c^4*(a-b*x)^3)");
+	//
+	// }
+	//
+	// // {(a+b*x)^(-1), x, 1, Log(a+b*x)/b}
+	// public void test00407() {
+	// check("Integrate((a+b*x)^(-1), x)", "Log(a+b*x)/b");
+	//
+	// }
+	//
+	// // {(a+b*x)^(-2), x, 1, -(1/(b*(a+b*x)))}
+	// public void test00408() {
+	// check("Integrate((a+b*x)^(-2), x)", "-(1/(b*(a+b*x)))");
+	//
+	// }
+	//
+	// // {Sqrt(1+x)/(1-x)^(5/2), x, 1, (1+x)^(3/2)/(3*(1-x)^(3/2))}
+	// public void test00409() {
+	// check("Integrate(Sqrt(1+x)/(1-x)^(5/2), x)", "(1+x)^(3/2)/(3*(1-x)^(3/2))");
+	//
+	// }
+	//
+	// // {(1+x)^(3/2)/(1-x)^(7/2), x, 1, (1+x)^(5/2)/(5*(1-x)^(5/2))}
+	// public void test00410() {
+	// check("Integrate((1+x)^(3/2)/(1-x)^(7/2), x)", "(1+x)^(5/2)/(5*(1-x)^(5/2))");
+	//
+	// }
+	//
+	// // {(1+x)^(5/2)/(1-x)^(9/2), x, 1, (1+x)^(7/2)/(7*(1-x)^(7/2))}
+	// public void test00411() {
+	// check("Integrate((1+x)^(5/2)/(1-x)^(9/2), x)", "(1+x)^(7/2)/(7*(1-x)^(7/2))");
+	//
+	// }
+	//
+	// // {1/((1-x)^(3/2)*Sqrt(1+x)), x, 1, Sqrt(1+x)/Sqrt(1-x)}
+	// public void test00412() {
+	// check("Integrate(1/((1-x)^(3/2)*Sqrt(1+x)), x)", "Sqrt(1+x)/Sqrt(1-x)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(1-x)*(1+x)^(3/2)), x, 1, -(Sqrt(1-x)/Sqrt(1+x))}
+	// public void test00413() {
+	// check("Integrate(1/(Sqrt(1-x)*(1+x)^(3/2)), x)", "-(Sqrt(1-x)/Sqrt(1+x))");
+	//
+	// }
+	//
+	// // {1/((1-x)^(3/2)*(1+x)^(3/2)), x, 1, x/(Sqrt(1-x)*Sqrt(1+x))}
+	// public void test00414() {
+	// check("Integrate(1/((1-x)^(3/2)*(1+x)^(3/2)), x)", "x/(Sqrt(1-x)*Sqrt(1+x))");
+	//
+	// }
+	//
+	// // {Sqrt(1-x)/(1+x)^(5/2), x, 1, -(1-x)^(3/2)/(3*(1+x)^(3/2))}
+	// public void test00415() {
+	// check("Integrate(Sqrt(1-x)/(1+x)^(5/2), x)", "-(1-x)^(3/2)/(3*(1+x)^(3/2))");
+	//
+	// }
+	//
+	// // {1/((a+a*x)^(3/2)*(c-c*x)^(3/2)), x, 1, x/(a*c*Sqrt(a+a*x)*Sqrt(c-c*x))}
+	// public void test00416() {
+	// check("Integrate(1/((a+a*x)^(3/2)*(c-c*x)^(3/2)), x)", "x/(a*c*Sqrt(a+a*x)*Sqrt(c-c*x))");
+	//
+	// }
+	//
+	// // {1/((a+b*x)^(3/2)*(a*c-b*c*x)^(3/2)), x, 1, x/(a^2*c*Sqrt(a+b*x)*Sqrt(a*c-b*c*x))}
+	// public void test00417() {
+	// check("Integrate(1/((a+b*x)^(3/2)*(a*c-b*c*x)^(3/2)), x)", "x/(a^2*c*Sqrt(a+b*x)*Sqrt(a*c-b*c*x))");
+	//
+	// }
+	//
+	// // {1/((3-6*x)^(3/2)*(2+4*x)^(3/2)), x, 1, x/(6*Sqrt(6)*Sqrt(1-2*x)*Sqrt(1+2*x))}
+	// public void test00418() {
+	// check("Integrate(1/((3-6*x)^(3/2)*(2+4*x)^(3/2)), x)", "x/(6*Sqrt(6)*Sqrt(1-2*x)*Sqrt(1+2*x))");
+	//
+	// }
+	//
+	// // {1/((3-x)^(3/2)*(3+x)^(3/2)), x, 1, x/(9*Sqrt(3-x)*Sqrt(3+x))}
+	// public void test00419() {
+	// check("Integrate(1/((3-x)^(3/2)*(3+x)^(3/2)), x)", "x/(9*Sqrt(3-x)*Sqrt(3+x))");
+	//
+	// }
+	//
+	// // {1/((3-b*x)^(3/2)*(3+b*x)^(3/2)), x, 1, x/(9*Sqrt(3-b*x)*Sqrt(3+b*x))}
+	// public void test00420() {
+	// check("Integrate(1/((3-b*x)^(3/2)*(3+b*x)^(3/2)), x)", "x/(9*Sqrt(3-b*x)*Sqrt(3+b*x))");
+	//
+	// }
+	//
+	// // {1/((6-2*x)^(3/2)*(3+x)^(3/2)), x, 1, x/(18*Sqrt(2)*Sqrt(3-x)*Sqrt(3+x))}
+	// public void test00421() {
+	// check("Integrate(1/((6-2*x)^(3/2)*(3+x)^(3/2)), x)", "x/(18*Sqrt(2)*Sqrt(3-x)*Sqrt(3+x))");
+	//
+	// }
+	//
+	// // {1/((6-2*b*x)^(3/2)*(3+b*x)^(3/2)), x, 1, x/(18*Sqrt(2)*Sqrt(3-b*x)*Sqrt(3+b*x))}
+	// public void test00422() {
+	// check("Integrate(1/((6-2*b*x)^(3/2)*(3+b*x)^(3/2)), x)", "x/(18*Sqrt(2)*Sqrt(3-b*x)*Sqrt(3+b*x))");
+	//
+	// }
+	//
+	// // {1/((a-I*a*x)^(7/4)*(a+I*a*x)^(1/4)), x, 1, (((-2*I)/3)*(a+I*a*x)^(3/4))/(a^2*(a-I*a*x)^(3/4))}
+	// public void test00423() {
+	// check("Integrate(1/((a-I*a*x)^(7/4)*(a+I*a*x)^(1/4)), x)",
+	// "(((-2*I)/3)*(a+I*a*x)^(3/4))/(a^2*(a-I*a*x)^(3/4))");
+	//
+	// }
+	//
+	// // {1/((a-I*a*x)^(5/4)*(a+I*a*x)^(3/4)), x, 1, ((-2*I)*(a+I*a*x)^(1/4))/(a^2*(a-I*a*x)^(1/4))}
+	// public void test00424() {
+	// check("Integrate(1/((a-I*a*x)^(5/4)*(a+I*a*x)^(3/4)), x)", "((-2*I)*(a+I*a*x)^(1/4))/(a^2*(a-I*a*x)^(1/4))");
+	//
+	// }
+	//
+	// // {1/((a-I*a*x)^(1/4)*(a+I*a*x)^(7/4)), x, 1, (((2*I)/3)*(a-I*a*x)^(3/4))/(a^2*(a+I*a*x)^(3/4))}
+	// public void test00425() {
+	// check("Integrate(1/((a-I*a*x)^(1/4)*(a+I*a*x)^(7/4)), x)", "(((2*I)/3)*(a-I*a*x)^(3/4))/(a^2*(a+I*a*x)^(3/4))");
+	//
+	// }
+	//
+	// // {1/((a-I*a*x)^(3/4)*(a+I*a*x)^(5/4)), x, 1, ((2*I)*(a-I*a*x)^(1/4))/(a^2*(a+I*a*x)^(1/4))}
+	// public void test00426() {
+	// check("Integrate(1/((a-I*a*x)^(3/4)*(a+I*a*x)^(5/4)), x)", "((2*I)*(a-I*a*x)^(1/4))/(a^2*(a+I*a*x)^(1/4))");
+	//
+	// }
+	//
+	// // {(a-I*a*x)^(1/4)/(a+I*a*x)^(9/4), x, 1, (((2*I)/5)*(a-I*a*x)^(5/4))/(a^2*(a+I*a*x)^(5/4))}
+	// public void test00427() {
+	// check("Integrate((a-I*a*x)^(1/4)/(a+I*a*x)^(9/4), x)", "(((2*I)/5)*(a-I*a*x)^(5/4))/(a^2*(a+I*a*x)^(5/4))");
+	//
+	// }
+	//
+	// // {(a*c-b*c*x)^n/(a+b*x), x, 1, -((a*c-b*c*x)^(1+n)*Hypergeometric2F1(1, 1+n, 2+n, (a -
+	// // b*x)/(2*a)))/(2*a*b*c*(1+n))}
+	// public void test00428() {
+	// check("Integrate((a*c-b*c*x)^n/(a+b*x), x)",
+	// "-((a*c-b*c*x)^(1+n)*Hypergeometric2F1(1, 1+n, 2+n, (a-b*x)/(2*a)))/(2*a*b*c*(1+n))");
+	//
+	// }
+	//
+	// // {(a*c-b*c*x)^n/(a+b*x)^2, x, 1, -((a*c-b*c*x)^(1+n)*Hypergeometric2F1(2, 1+n, 2+n, (a -
+	// // b*x)/(2*a)))/(4*a^2*b*c*(1+n))}
+	// public void test00429() {
+	// check("Integrate((a*c-b*c*x)^n/(a+b*x)^2, x)",
+	// "-((a*c-b*c*x)^(1+n)*Hypergeometric2F1(2, 1+n, 2+n, (a-b*x)/(2*a)))/(4*a^2*b*c*(1+n))");
+	//
+	// }
+	//
+	// // {c+d*x, x, 1, c*x+(d*x^2)/2}
+	// public void test00430() {
+	// check("Integrate(c+d*x, x)", "c*x+(d*x^2)/2");
+	//
+	// }
+	//
+	// // {(c+d*x)/(a+b*x)^3, x, 1, -(c+d*x)^2/(2*(b*c-a*d)*(a+b*x)^2)}
+	// public void test00431() {
+	// check("Integrate((c+d*x)/(a+b*x)^3, x)", "-(c+d*x)^2/(2*(b*c-a*d)*(a+b*x)^2)");
+	//
+	// }
+	//
+	// // {(c+d*x)^2, x, 1, (c+d*x)^3/(3*d)}
+	// public void test00432() {
+	// check("Integrate((c+d*x)^2, x)", "(c+d*x)^3/(3*d)");
+	//
+	// }
+	//
+	// // {(c+d*x)^2/(a+b*x)^4, x, 1, -(c+d*x)^3/(3*(b*c-a*d)*(a+b*x)^3)}
+	// public void test00433() {
+	// check("Integrate((c+d*x)^2/(a+b*x)^4, x)", "-(c+d*x)^3/(3*(b*c-a*d)*(a+b*x)^3)");
+	//
+	// }
+	//
+	// // {(c+d*x)^3, x, 1, (c+d*x)^4/(4*d)}
+	// public void test00434() {
+	// check("Integrate((c+d*x)^3, x)", "(c+d*x)^4/(4*d)");
+	//
+	// }
+	//
+	// // {(c+d*x)^3/(a+b*x)^5, x, 1, -(c+d*x)^4/(4*(b*c-a*d)*(a+b*x)^4)}
+	// public void test00435() {
+	// check("Integrate((c+d*x)^3/(a+b*x)^5, x)", "-(c+d*x)^4/(4*(b*c-a*d)*(a+b*x)^4)");
+	//
+	// }
+	//
+	// // {(c+d*x)^7, x, 1, (c+d*x)^8/(8*d)}
+	// public void test00436() {
+	// check("Integrate((c+d*x)^7, x)", "(c+d*x)^8/(8*d)");
+	//
+	// }
+	//
+	// // {(c+d*x)^7/(a+b*x)^9, x, 1, -(c+d*x)^8/(8*(b*c-a*d)*(a+b*x)^8)}
+	// public void test00437() {
+	// check("Integrate((c+d*x)^7/(a+b*x)^9, x)", "-(c+d*x)^8/(8*(b*c-a*d)*(a+b*x)^8)");
+	//
+	// }
+	//
+	// // {(c+d*x)^10, x, 1, (c+d*x)^11/(11*d)}
+	// public void test00438() {
+	// check("Integrate((c+d*x)^10, x)", "(c+d*x)^11/(11*d)");
+	//
+	// }
+	//
+	// // {(c+d*x)^10/(a+b*x)^12, x, 1, -(c+d*x)^11/(11*(b*c-a*d)*(a+b*x)^11)}
+	// public void test00439() {
+	// check("Integrate((c+d*x)^10/(a+b*x)^12, x)", "-(c+d*x)^11/(11*(b*c-a*d)*(a+b*x)^11)");
+	//
+	// }
+	//
+	// // {(c+d*x)^(-1), x, 1, Log(c+d*x)/d}
+	// public void test00440() {
+	// check("Integrate((c+d*x)^(-1), x)", "Log(c+d*x)/d");
+	//
+	// }
+	//
+	// // {(c+d*x)^(-2), x, 1, -(1/(d*(c+d*x)))}
+	// public void test00441() {
+	// check("Integrate((c+d*x)^(-2), x)", "-(1/(d*(c+d*x)))");
+	//
+	// }
+	//
+	// // {(a+b*x)/(c+d*x)^3, x, 1, (a+b*x)^2/(2*(b*c-a*d)*(c+d*x)^2)}
+	// public void test00442() {
+	// check("Integrate((a+b*x)/(c+d*x)^3, x)", "(a+b*x)^2/(2*(b*c-a*d)*(c+d*x)^2)");
+	//
+	// }
+	//
+	// // {(c+d*x)^(-3), x, 1, -1/(2*d*(c+d*x)^2)}
+	// public void test00443() {
+	// check("Integrate((c+d*x)^(-3), x)", "-1/(2*d*(c+d*x)^2)");
+	//
+	// }
+	//
+	// // {(a+b*x)^6/(c+d*x)^8, x, 1, (a+b*x)^7/(7*(b*c-a*d)*(c+d*x)^7)}
+	// public void test00444() {
+	// check("Integrate((a+b*x)^6/(c+d*x)^8, x)", "(a+b*x)^7/(7*(b*c-a*d)*(c+d*x)^7)");
+	//
+	// }
+	//
+	// // {(c+d*x)^(-8), x, 1, -1/(7*d*(c+d*x)^7)}
+	// public void test00445() {
+	// check("Integrate((c+d*x)^(-8), x)", "-1/(7*d*(c+d*x)^7)");
+	//
+	// }
+	//
+	// // {Sqrt(c+d*x), x, 1, (2*(c+d*x)^(3/2))/(3*d)}
+	// public void test00446() {
+	// check("Integrate(Sqrt(c+d*x), x)", "(2*(c+d*x)^(3/2))/(3*d)");
+	//
+	// }
+	//
+	// // {(c+d*x)^(3/2), x, 1, (2*(c+d*x)^(5/2))/(5*d)}
+	// public void test00447() {
+	// check("Integrate((c+d*x)^(3/2), x)", "(2*(c+d*x)^(5/2))/(5*d)");
+	//
+	// }
+	//
+	// // {(c+d*x)^(5/2), x, 1, (2*(c+d*x)^(7/2))/(7*d)}
+	// public void test00448() {
+	// check("Integrate((c+d*x)^(5/2), x)", "(2*(c+d*x)^(7/2))/(7*d)");
+	//
+	// }
+	//
+	// // {1/Sqrt(c+d*x), x, 1, (2*Sqrt(c+d*x))/d}
+	// public void test00449() {
+	// check("Integrate(1/Sqrt(c+d*x), x)", "(2*Sqrt(c+d*x))/d");
+	//
+	// }
+	//
+	// // {(c+d*x)^(-3/2), x, 1, -2/(d*Sqrt(c+d*x))}
+	// public void test00450() {
+	// check("Integrate((c+d*x)^(-3/2), x)", "-2/(d*Sqrt(c+d*x))");
+	//
+	// }
+	//
+	// // {(c+d*x)^(-5/2), x, 1, -2/(3*d*(c+d*x)^(3/2))}
+	// public void test00451() {
+	// check("Integrate((c+d*x)^(-5/2), x)", "-2/(3*d*(c+d*x)^(3/2))");
+	//
+	// }
+	//
+	// // {Sqrt(c+d*x)/(a+b*x)^(5/2), x, 1, (-2*(c+d*x)^(3/2))/(3*(b*c-a*d)*(a+b*x)^(3/2))}
+	// public void test00452() {
+	// check("Integrate(Sqrt(c+d*x)/(a+b*x)^(5/2), x)", "(-2*(c+d*x)^(3/2))/(3*(b*c-a*d)*(a+b*x)^(3/2))");
+	//
+	// }
+	//
+	// // {(c+d*x)^(3/2)/(a+b*x)^(7/2), x, 1, (-2*(c+d*x)^(5/2))/(5*(b*c-a*d)*(a+b*x)^(5/2))}
+	// public void test00453() {
+	// check("Integrate((c+d*x)^(3/2)/(a+b*x)^(7/2), x)", "(-2*(c+d*x)^(5/2))/(5*(b*c-a*d)*(a+b*x)^(5/2))");
+	//
+	// }
+	//
+	// // {(c+d*x)^(5/2)/(a+b*x)^(9/2), x, 1, (-2*(c+d*x)^(7/2))/(7*(b*c-a*d)*(a+b*x)^(7/2))}
+	// public void test00454() {
+	// check("Integrate((c+d*x)^(5/2)/(a+b*x)^(9/2), x)", "(-2*(c+d*x)^(7/2))/(7*(b*c-a*d)*(a+b*x)^(7/2))");
+	//
+	// }
+	//
+	// // {1/((a+b*x)^(3/2)*Sqrt(c+d*x)), x, 1, (-2*Sqrt(c+d*x))/((b*c-a*d)*Sqrt(a+b*x))}
+	// public void test00455() {
+	// check("Integrate(1/((a+b*x)^(3/2)*Sqrt(c+d*x)), x)", "(-2*Sqrt(c+d*x))/((b*c-a*d)*Sqrt(a+b*x))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(a+b*x)*(c+d*x)^(3/2)), x, 1, (2*Sqrt(a+b*x))/((b*c-a*d)*Sqrt(c+d*x))}
+	// public void test00456() {
+	// check("Integrate(1/(Sqrt(a+b*x)*(c+d*x)^(3/2)), x)", "(2*Sqrt(a+b*x))/((b*c-a*d)*Sqrt(c+d*x))");
+	//
+	// }
+	//
+	// // {Sqrt(a+b*x)/(c+d*x)^(5/2), x, 1, (2*(a+b*x)^(3/2))/(3*(b*c-a*d)*(c+d*x)^(3/2))}
+	// public void test00457() {
+	// check("Integrate(Sqrt(a+b*x)/(c+d*x)^(5/2), x)", "(2*(a+b*x)^(3/2))/(3*(b*c-a*d)*(c+d*x)^(3/2))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(-2+b*x)*Sqrt(2+b*x)), x, 1, ArcCosh((b*x)/2)/b}
+	// public void test00458() {
+	// check("Integrate(1/(Sqrt(-2+b*x)*Sqrt(2+b*x)), x)", "ArcCosh((b*x)/2)/b");
+	//
+	// }
+	//
+	// // {(2+b*x)^(-1), x, 1, Log(2+b*x)/b}
+	// public void test00459() {
+	// check("Integrate((2+b*x)^(-1), x)", "Log(2+b*x)/b");
+	//
+	// }
+	//
+	// // {1/(Sqrt(-2+b*x)*Sqrt(2+b*x)), x, 1, ArcCosh((b*x)/2)/b}
+	// public void test00460() {
+	// check("Integrate(1/(Sqrt(-2+b*x)*Sqrt(2+b*x)), x)", "ArcCosh((b*x)/2)/b");
+	//
+	// }
+	//
+	// // {(2-b*x)^(-1), x, 1, -(Log(2-b*x)/b)}
+	// public void test00461() {
+	// check("Integrate((2-b*x)^(-1), x)", "-(Log(2-b*x)/b)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(-2-b*x)*Sqrt(2-b*x)), x, 1, -(ArcCosh(-(b*x)/2)/b)}
+	// public void test00462() {
+	// check("Integrate(1/(Sqrt(-2-b*x)*Sqrt(2-b*x)), x)", "-(ArcCosh(-(b*x)/2)/b)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(-4+b*x)*Sqrt(4+b*x)), x, 1, ArcCosh((b*x)/4)/b}
+	// public void test00463() {
+	// check("Integrate(1/(Sqrt(-4+b*x)*Sqrt(4+b*x)), x)", "ArcCosh((b*x)/4)/b");
+	//
+	// }
+	//
+	// // {(c+d*x)^(1/3)/(a+b*x)^(7/3), x, 1, (-3*(c+d*x)^(4/3))/(4*(b*c-a*d)*(a+b*x)^(4/3))}
+	// public void test00464() {
+	// check("Integrate((c+d*x)^(1/3)/(a+b*x)^(7/3), x)", "(-3*(c+d*x)^(4/3))/(4*(b*c-a*d)*(a+b*x)^(4/3))");
+	//
+	// }
+	//
+	// // {1/((a+b*x)^(2/3)*(c+d*x)^(1/3)), x, 1, -((Sqrt(3)*ArcTan(1/Sqrt(3)+(2*b^(1/3)*(c +
+	// // d*x)^(1/3))/(Sqrt(3)*d^(1/3)*(a+b*x)^(1/3))))/(b^(2/3)*d^(1/3)))-Log(a+b*x)/(2*b^(2/3)*d^(1/3))-(3*Log(-1
+	// // +(b^(1/3)*(c+d*x)^(1/3))/(d^(1/3)*(a+b*x)^(1/3))))/(2*b^(2/3)*d^(1/3))}
+	// public void test00465() {
+	// check("Integrate(1/((a+b*x)^(2/3)*(c+d*x)^(1/3)), x)",
+	// "-((Sqrt(3)*ArcTan(1/Sqrt(3)+(2*b^(1/3)*(c+d*x)^(1/3))/(Sqrt(3)*d^(1/3)*(a+b*x)^(1/3))))/(b^(2/3)*d^(1/3)))-Log(a+b*x)/(2*b^(2/3)*d^(1/3))-(3*Log(-1+(b^(1/3)*(c+d*x)^(1/3))/(d^(1/3)*(a+b*x)^(1/3))))/(2*b^(2/3)*d^(1/3))");
+	//
+	// }
+	//
+	// // {1/((a+b*x)^(5/3)*(c+d*x)^(1/3)), x, 1, (-3*(c+d*x)^(2/3))/(2*(b*c-a*d)*(a+b*x)^(2/3))}
+	// public void test00466() {
+	// check("Integrate(1/((a+b*x)^(5/3)*(c+d*x)^(1/3)), x)", "(-3*(c+d*x)^(2/3))/(2*(b*c-a*d)*(a+b*x)^(2/3))");
+	//
+	// }
+	//
+	// // {1/((a+b*x)^(1/3)*(c+d*x)^(2/3)), x, 1, -((Sqrt(3)*ArcTan(1/Sqrt(3)+(2*d^(1/3)*(a +
+	// // b*x)^(1/3))/(Sqrt(3)*b^(1/3)*(c+d*x)^(1/3))))/(b^(1/3)*d^(2/3)))-Log(c+d*x)/(2*b^(1/3)*d^(2/3))-(3*Log(-1
+	// // +(d^(1/3)*(a+b*x)^(1/3))/(b^(1/3)*(c+d*x)^(1/3))))/(2*b^(1/3)*d^(2/3))}
+	// public void test00467() {
+	// check("Integrate(1/((a+b*x)^(1/3)*(c+d*x)^(2/3)), x)",
+	// "-((Sqrt(3)*ArcTan(1/Sqrt(3)+(2*d^(1/3)*(a+b*x)^(1/3))/(Sqrt(3)*b^(1/3)*(c+d*x)^(1/3))))/(b^(1/3)*d^(2/3)))-Log(c+d*x)/(2*b^(1/3)*d^(2/3))-(3*Log(-1+(d^(1/3)*(a+b*x)^(1/3))/(b^(1/3)*(c+d*x)^(1/3))))/(2*b^(1/3)*d^(2/3))");
+	//
+	// }
+	//
+	// // {1/((a+b*x)^(4/3)*(c+d*x)^(2/3)), x, 1, (-3*(c+d*x)^(1/3))/((b*c-a*d)*(a+b*x)^(1/3))}
+	// public void test00468() {
+	// check("Integrate(1/((a+b*x)^(4/3)*(c+d*x)^(2/3)), x)", "(-3*(c+d*x)^(1/3))/((b*c-a*d)*(a+b*x)^(1/3))");
+	//
+	// }
+	//
+	// // {1/((a+b*x)^(2/3)*(c+d*x)^(4/3)), x, 1, (3*(a+b*x)^(1/3))/((b*c-a*d)*(c+d*x)^(1/3))}
+	// public void test00469() {
+	// check("Integrate(1/((a+b*x)^(2/3)*(c+d*x)^(4/3)), x)", "(3*(a+b*x)^(1/3))/((b*c-a*d)*(c+d*x)^(1/3))");
+	//
+	// }
+	//
+	// // {(c+d*x)^(5/4)/(a+b*x)^(13/4), x, 1, (-4*(c+d*x)^(9/4))/(9*(b*c-a*d)*(a+b*x)^(9/4))}
+	// public void test00470() {
+	// check("Integrate((c+d*x)^(5/4)/(a+b*x)^(13/4), x)", "(-4*(c+d*x)^(9/4))/(9*(b*c-a*d)*(a+b*x)^(9/4))");
+	//
+	// }
+	//
+	// // {1/((a+b*x)^(7/4)*(c+d*x)^(1/4)), x, 1, (-4*(c+d*x)^(3/4))/(3*(b*c-a*d)*(a+b*x)^(3/4))}
+	// public void test00471() {
+	// check("Integrate(1/((a+b*x)^(7/4)*(c+d*x)^(1/4)), x)", "(-4*(c+d*x)^(3/4))/(3*(b*c-a*d)*(a+b*x)^(3/4))");
+	//
+	// }
+	//
+	// // {1/((a+b*x)^(5/4)*(c+d*x)^(3/4)), x, 1, (-4*(c+d*x)^(1/4))/((b*c-a*d)*(a+b*x)^(1/4))}
+	// public void test00472() {
+	// check("Integrate(1/((a+b*x)^(5/4)*(c+d*x)^(3/4)), x)", "(-4*(c+d*x)^(1/4))/((b*c-a*d)*(a+b*x)^(1/4))");
+	//
+	// }
+	//
+	// // {1/((a+b*x)^(3/4)*(c+d*x)^(5/4)), x, 1, (4*(a+b*x)^(1/4))/((b*c-a*d)*(c+d*x)^(1/4))}
+	// public void test00473() {
+	// check("Integrate(1/((a+b*x)^(3/4)*(c+d*x)^(5/4)), x)", "(4*(a+b*x)^(1/4))/((b*c-a*d)*(c+d*x)^(1/4))");
+	//
+	// }
+	//
+	// // {(a+b*x)^(1/6)/(c+d*x)^(13/6), x, 1, (6*(a+b*x)^(7/6))/(7*(b*c-a*d)*(c+d*x)^(7/6))}
+	// public void test00474() {
+	// check("Integrate((a+b*x)^(1/6)/(c+d*x)^(13/6), x)", "(6*(a+b*x)^(7/6))/(7*(b*c-a*d)*(c+d*x)^(7/6))");
+	//
+	// }
+	//
+	// // {(a+b*x)^(5/6)/(c+d*x)^(17/6), x, 1, (6*(a+b*x)^(11/6))/(11*(b*c-a*d)*(c+d*x)^(11/6))}
+	// public void test00475() {
+	// check("Integrate((a+b*x)^(5/6)/(c+d*x)^(17/6), x)", "(6*(a+b*x)^(11/6))/(11*(b*c-a*d)*(c+d*x)^(11/6))");
+	//
+	// }
+	//
+	// // {(a+b*x)^(7/6)/(c+d*x)^(19/6), x, 1, (6*(a+b*x)^(13/6))/(13*(b*c-a*d)*(c+d*x)^(13/6))}
+	// public void test00476() {
+	// check("Integrate((a+b*x)^(7/6)/(c+d*x)^(19/6), x)", "(6*(a+b*x)^(13/6))/(13*(b*c-a*d)*(c+d*x)^(13/6))");
+	//
+	// }
+	//
+	// // {1/((a+b*x)^(1/6)*(c+d*x)^(11/6)), x, 1, (6*(a+b*x)^(5/6))/(5*(b*c-a*d)*(c+d*x)^(5/6))}
+	// public void test00477() {
+	// check("Integrate(1/((a+b*x)^(1/6)*(c+d*x)^(11/6)), x)", "(6*(a+b*x)^(5/6))/(5*(b*c-a*d)*(c+d*x)^(5/6))");
+	//
+	// }
+	//
+	// // {1/((a+b*x)^(5/6)*(c+d*x)^(7/6)), x, 1, (6*(a+b*x)^(1/6))/((b*c-a*d)*(c+d*x)^(1/6))}
+	// public void test00478() {
+	// check("Integrate(1/((a+b*x)^(5/6)*(c+d*x)^(7/6)), x)", "(6*(a+b*x)^(1/6))/((b*c-a*d)*(c+d*x)^(1/6))");
+	//
+	// }
+	//
+	// // {1/((a+b*x)^(7/6)*(c+d*x)^(5/6)), x, 1, (-6*(c+d*x)^(1/6))/((b*c-a*d)*(a+b*x)^(1/6))}
+	// public void test00479() {
+	// check("Integrate(1/((a+b*x)^(7/6)*(c+d*x)^(5/6)), x)", "(-6*(c+d*x)^(1/6))/((b*c-a*d)*(a+b*x)^(1/6))");
+	//
+	// }
+	//
+	// // {(a+b*x)^m/(c+d*x), x, 1, ((a+b*x)^(1+m)*Hypergeometric2F1(1, 1+m, 2+m, -((d*(a+b*x))/(b*c -
+	// // a*d))))/((b*c-a*d)*(1+m))}
+	// public void test00480() {
+	// check("Integrate((a+b*x)^m/(c+d*x), x)",
+	// "((a+b*x)^(1+m)*Hypergeometric2F1(1, 1+m, 2+m, -((d*(a+b*x))/(b*c-a*d))))/((b*c-a*d)*(1+m))");
+	//
+	// }
+	//
+	// // {(a+b*x)^m/(c+d*x)^2, x, 1, (b*(a+b*x)^(1+m)*Hypergeometric2F1(2, 1+m, 2+m, -((d*(a+b*x))/(b*c -
+	// // a*d))))/((b*c-a*d)^2*(1+m))}
+	// public void test00481() {
+	// check("Integrate((a+b*x)^m/(c+d*x)^2, x)",
+	// "(b*(a+b*x)^(1+m)*Hypergeometric2F1(2, 1+m, 2+m, -((d*(a+b*x))/(b*c-a*d))))/((b*c-a*d)^2*(1+m))");
+	//
+	// }
+	//
+	// // {(a+b*x)^m/(c+d*x)^3, x, 1, (b^2*(a+b*x)^(1+m)*Hypergeometric2F1(3, 1+m, 2+m, -((d*(a+b*x))/(b*c -
+	// // a*d))))/((b*c-a*d)^3*(1+m))}
+	// public void test00482() {
+	// check("Integrate((a+b*x)^m/(c+d*x)^3, x)",
+	// "(b^2*(a+b*x)^(1+m)*Hypergeometric2F1(3, 1+m, 2+m, -((d*(a+b*x))/(b*c-a*d))))/((b*c-a*d)^3*(1+m))");
+	//
+	// }
+	//
+	// // {(c+d*x)^n, x, 1, (c+d*x)^(1+n)/(d*(1+n))}
+	// public void test00483() {
+	// check("Integrate((c+d*x)^n, x)", "(c+d*x)^(1+n)/(d*(1+n))");
+	//
+	// }
+	//
+	// // {(c+d*x)^n/(a+b*x), x, 1, -(((c+d*x)^(1+n)*Hypergeometric2F1(1, 1+n, 2+n, (b*(c+d*x))/(b*c -
+	// // a*d)))/((b*c-a*d)*(1+n)))}
+	// public void test00484() {
+	// check("Integrate((c+d*x)^n/(a+b*x), x)",
+	// "-(((c+d*x)^(1+n)*Hypergeometric2F1(1, 1+n, 2+n, (b*(c+d*x))/(b*c-a*d)))/((b*c-a*d)*(1+n)))");
+	//
+	// }
+	//
+	// // {(c+d*x)^n/(a+b*x)^2, x, 1, (d*(c+d*x)^(1+n)*Hypergeometric2F1(2, 1+n, 2+n, (b*(c+d*x))/(b*c -
+	// // a*d)))/((b*c-a*d)^2*(1+n))}
+	// public void test00485() {
+	// check("Integrate((c+d*x)^n/(a+b*x)^2, x)",
+	// "(d*(c+d*x)^(1+n)*Hypergeometric2F1(2, 1+n, 2+n, (b*(c+d*x))/(b*c-a*d)))/((b*c-a*d)^2*(1+n))");
+	//
+	// }
+	//
+	// // {(c+d*x)^n/(a+b*x)^3, x, 1, -((d^2*(c+d*x)^(1+n)*Hypergeometric2F1(3, 1+n, 2+n, (b*(c+d*x))/(b*c -
+	// // a*d)))/((b*c-a*d)^3*(1+n)))}
+	// public void test00486() {
+	// check("Integrate((c+d*x)^n/(a+b*x)^3, x)",
+	// "-((d^2*(c+d*x)^(1+n)*Hypergeometric2F1(3, 1+n, 2+n, (b*(c+d*x))/(b*c-a*d)))/((b*c-a*d)^3*(1+n)))");
+	//
+	// }
+	//
+	// // {(a+b*x)^(-2+n)/(c+d*x)^n, x, 1, -(((a+b*x)^(-1+n)*(c+d*x)^(1-n))/((b*c-a*d)*(1-n)))}
+	// public void test00487() {
+	// check("Integrate((a+b*x)^(-2+n)/(c+d*x)^n, x)", "-(((a+b*x)^(-1+n)*(c+d*x)^(1-n))/((b*c-a*d)*(1-n)))");
+	//
+	// }
+	//
+	// // {(a+b*x)^(-2-n)*(c+d*x)^n, x, 1, -(((a+b*x)^(-1-n)*(c+d*x)^(1+n))/((b*c-a*d)*(1+n)))}
+	// public void test00488() {
+	// check("Integrate((a+b*x)^(-2-n)*(c+d*x)^n, x)", "-(((a+b*x)^(-1-n)*(c+d*x)^(1+n))/((b*c-a*d)*(1+n)))");
+	//
+	// }
+	//
+	// // {(a+b*x)^n*(c+d*x)^(-2-n), x, 1, ((a+b*x)^(1+n)*(c+d*x)^(-1-n))/((b*c-a*d)*(1+n))}
+	// public void test00489() {
+	// check("Integrate((a+b*x)^n*(c+d*x)^(-2-n), x)", "((a+b*x)^(1+n)*(c+d*x)^(-1-n))/((b*c-a*d)*(1+n))");
+	//
+	// }
+	//
+	// // {(1-x)^n/Sqrt(1+x), x, 1, 2^(1+n)*Sqrt(1+x)*Hypergeometric2F1(1/2, -n, 3/2, (1+x)/2)}
+	// public void test00490() {
+	// check("Integrate((1-x)^n/Sqrt(1+x), x)", "2^(1+n)*Sqrt(1+x)*Hypergeometric2F1(1/2, -n, 3/2, (1+x)/2)");
+	//
+	// }
+	//
+	// // {(1+x)^n/Sqrt(1-x), x, 1, -(2^(1+n)*Sqrt(1-x)*Hypergeometric2F1(1/2, -n, 3/2, (1-x)/2))}
+	// public void test00491() {
+	// check("Integrate((1+x)^n/Sqrt(1-x), x)", "-(2^(1+n)*Sqrt(1-x)*Hypergeometric2F1(1/2, -n, 3/2, (1-x)/2))");
+	//
+	// }
+	//
+	// // {(1-x)^n*(1+x)^(7/3), x, 1, (3*2^(-1+n)*(1+x)^(10/3)*Hypergeometric2F1(10/3, -n, 13/3, (1+x)/2))/5}
+	// public void test00492() {
+	// check("Integrate((1-x)^n*(1+x)^(7/3), x)",
+	// "(3*2^(-1+n)*(1+x)^(10/3)*Hypergeometric2F1(10/3, -n, 13/3, (1+x)/2))/5");
+	//
+	// }
+	//
+	// // {(1-x)^(7/3)*(1+x)^n, x, 1, (-3*2^(-1+n)*(1-x)^(10/3)*Hypergeometric2F1(10/3, -n, 13/3, (1-x)/2))/5}
+	// public void test00493() {
+	// check("Integrate((1-x)^(7/3)*(1+x)^n, x)",
+	// "(-3*2^(-1+n)*(1-x)^(10/3)*Hypergeometric2F1(10/3, -n, 13/3, (1-x)/2))/5");
+	//
+	// }
+	//
+	// // {(2+3*x)^m/(1+2*x)^m, x, 1, (2^(-1-m)*(1+2*x)^(1-m)*Hypergeometric2F1(1-m, -m, 2-m, -3*(1 +
+	// // 2*x)))/(1-m)}
+	// public void test00494() {
+	// check("Integrate((2+3*x)^m/(1+2*x)^m, x)",
+	// "(2^(-1-m)*(1+2*x)^(1-m)*Hypergeometric2F1(1-m, -m, 2-m, -3*(1+2*x)))/(1-m)");
+	//
+	// }
+	//
+	// // {a+b*x+c*x^2+d*x^3, x, 1, a*x+(b*x^2)/2+(c*x^3)/3+(d*x^4)/4}
+	// public void test00495() {
+	// check("Integrate(a+b*x+c*x^2+d*x^3, x)", "a*x+(b*x^2)/2+(c*x^3)/3+(d*x^4)/4");
+	//
+	// }
+	//
+	// // {-x^3+x^4, x, 1, -x^4/4+x^5/5}
+	// public void test00496() {
+	// check("Integrate(-x^3+x^4, x)", "-x^4/4+x^5/5");
+	//
+	// }
+	//
+	// // {-1+x^5, x, 1, -x+x^6/6}
+	// public void test00497() {
+	// check("Integrate(-1+x^5, x)", "-x+x^6/6");
+	//
+	// }
+	//
+	// // {7+4*x, x, 1, 7*x+2*x^2}
+	// public void test00498() {
+	// check("Integrate(7+4*x, x)", "7*x+2*x^2");
+	//
+	// }
+	//
+	// // {4*x+Pi*x^3, x, 1, 2*x^2+(Pi*x^4)/4}
+	// public void test00499() {
+	// check("Integrate(4*x+Pi*x^3, x)", "2*x^2+(Pi*x^4)/4");
+	//
+	// }
+	//
+	// // {2*x+5*x^2, x, 1, x^2+(5*x^3)/3}
+	// public void test00500() {
+	// check("Integrate(2*x+5*x^2, x)", "x^2+(5*x^3)/3");
+	//
+	// }
+	//
+	// // {x^2/2+x^3/3, x, 1, x^3/6+x^4/12}
+	// public void test00501() {
+	// check("Integrate(x^2/2+x^3/3, x)", "x^3/6+x^4/12");
+	//
+	// }
+	//
+	// // {3-5*x+2*x^2, x, 1, 3*x-(5*x^2)/2+(2*x^3)/3}
+	// public void test00502() {
+	// check("Integrate(3-5*x+2*x^2, x)", "3*x-(5*x^2)/2+(2*x^3)/3");
+	//
+	// }
+	//
+	// // {-2*x+x^2+x^3, x, 1, -x^2+x^3/3+x^4/4}
+	// public void test00503() {
+	// check("Integrate(-2*x+x^2+x^3, x)", "-x^2+x^3/3+x^4/4");
+	//
+	// }
+	//
+	// // {1-x^2-3*x^5, x, 1, x-x^3/3-x^6/2}
+	// public void test00504() {
+	// check("Integrate(1-x^2-3*x^5, x)", "x-x^3/3-x^6/2");
+	//
+	// }
+	//
+	// // {5+2*x+3*x^2+4*x^3, x, 1, 5*x+x^2+x^3+x^4}
+	// public void test00505() {
+	// check("Integrate(5+2*x+3*x^2+4*x^3, x)", "5*x+x^2+x^3+x^4");
+	//
+	// }
+	//
+	// // {a+d/x^3+c/x^2+b/x, x, 1, -d/(2*x^2)-c/x+a*x+b*Log(x)}
+	// public void test00506() {
+	// check("Integrate(a+d/x^3+c/x^2+b/x, x)", "-d/(2*x^2)-c/x+a*x+b*Log(x)");
+	//
+	// }
+	//
+	// // {x^(-5)+x+x^5, x, 1, -1/(4*x^4)+x^2/2+x^6/6}
+	// public void test00507() {
+	// check("Integrate(x^(-5)+x+x^5, x)", "-1/(4*x^4)+x^2/2+x^6/6");
+	//
+	// }
+	//
+	// // {x^(-3)+x^(-2)+x^(-1), x, 1, -1/(2*x^2)-x^(-1)+Log(x)}
+	// public void test00508() {
+	// check("Integrate(x^(-3)+x^(-2)+x^(-1), x)", "-1/(2*x^2)-x^(-1)+Log(x)");
+	//
+	// }
+	//
+	// // {-2/x^2+3/x, x, 1, 2/x+3*Log(x)}
+	// public void test00509() {
+	// check("Integrate(-2/x^2+3/x, x)", "2/x+3*Log(x)");
+	//
+	// }
+	//
+	// // {-1/(7*x^6)+x^6, x, 1, 1/(35*x^5)+x^7/7}
+	// public void test00510() {
+	// check("Integrate(-1/(7*x^6)+x^6, x)", "1/(35*x^5)+x^7/7");
+	//
+	// }
+	//
+	// // {1+x^(-1)+x, x, 1, x+x^2/2+Log(x)}
+	// public void test00511() {
+	// check("Integrate(1+x^(-1)+x, x)", "x+x^2/2+Log(x)");
+	//
+	// }
+	//
+	// // {-3/x^3+4/x^2, x, 1, 3/(2*x^2)-4/x}
+	// public void test00512() {
+	// check("Integrate(-3/x^3+4/x^2, x)", "3/(2*x^2)-4/x");
+	//
+	// }
+	//
+	// // {x^(-1)+2*x+x^2, x, 1, x^2+x^3/3+Log(x)}
+	// public void test00513() {
+	// check("Integrate(x^(-1)+2*x+x^2, x)", "x^2+x^3/3+Log(x)");
+	//
+	// }
+	//
+	// // {x^(5/6)-x^3, x, 1, (6*x^(11/6))/11-x^4/4}
+	// public void test00514() {
+	// check("Integrate(x^(5/6)-x^3, x)", "(6*x^(11/6))/11-x^4/4");
+	//
+	// }
+	//
+	// // {33+x^(1/33), x, 1, 33*x+(33*x^(34/33))/34}
+	// public void test00515() {
+	// check("Integrate(33+x^(1/33), x)", "33*x+(33*x^(34/33))/34");
+	//
+	// }
+	//
+	// // {1/(2*Sqrt(x))+2*Sqrt(x), x, 1, Sqrt(x)+(4*x^(3/2))/3}
+	// public void test00516() {
+	// check("Integrate(1/(2*Sqrt(x))+2*Sqrt(x), x)", "Sqrt(x)+(4*x^(3/2))/3");
+	//
+	// }
+	//
+	// // {-x^(-2)+10/x+6*Sqrt(x), x, 1, x^(-1)+4*x^(3/2)+10*Log(x)}
+	// public void test00517() {
+	// check("Integrate(-x^(-2)+10/x+6*Sqrt(x), x)", "x^(-1)+4*x^(3/2)+10*Log(x)");
+	//
+	// }
+	//
+	// // {x^(-3/2)+x^(3/2), x, 1, -2/Sqrt(x)+(2*x^(5/2))/5}
+	// public void test00518() {
+	// check("Integrate(x^(-3/2)+x^(3/2), x)", "-2/Sqrt(x)+(2*x^(5/2))/5");
+	//
+	// }
+	//
+	// // {-5*x^(3/2)+7*x^(5/2), x, 1, -2*x^(5/2)+2*x^(7/2)}
+	// public void test00519() {
+	// check("Integrate(-5*x^(3/2)+7*x^(5/2), x)", "-2*x^(5/2)+2*x^(7/2)");
+	//
+	// }
+	//
+	// // {2/Sqrt(x)+Sqrt(x)-x/2, x, 1, 4*Sqrt(x)+(2*x^(3/2))/3-x^2/4}
+	// public void test00520() {
+	// check("Integrate(2/Sqrt(x)+Sqrt(x)-x/2, x)", "4*Sqrt(x)+(2*x^(3/2))/3-x^2/4");
+	//
+	// }
+	//
+	// // {-2/x+Sqrt(x)/5+x^(3/2), x, 1, (2*x^(3/2))/15+(2*x^(5/2))/5-2*Log(x)}
+	// public void test00521() {
+	// check("Integrate(-2/x+Sqrt(x)/5+x^(3/2), x)", "(2*x^(3/2))/15+(2*x^(5/2))/5-2*Log(x)");
+	//
+	// }
+	//
+	// // {((a+b*x)*(a*c-b*c*x)^3)/x^3, x, 1, -(c^3*(a-b*x)^4)/(2*x^2)}
+	// public void test00522() {
+	// check("Integrate(((a+b*x)*(a*c-b*c*x)^3)/x^3, x)", "-(c^3*(a-b*x)^4)/(2*x^2)");
+	//
+	// }
+	//
+	// // {((a+b*x)*(a*c-b*c*x)^5)/x^4, x, 1, -(c^5*(a-b*x)^6)/(3*x^3)}
+	// public void test00523() {
+	// check("Integrate(((a+b*x)*(a*c-b*c*x)^5)/x^4, x)", "-(c^5*(a-b*x)^6)/(3*x^3)");
+	//
+	// }
+	//
+	// // {x^2*(2+x)^5*(2+3*x), x, 1, (x^3*(2+x)^6)/3}
+	// public void test00524() {
+	// check("Integrate(x^2*(2+x)^5*(2+3*x), x)", "(x^3*(2+x)^6)/3");
+	//
+	// }
+	//
+	// // {(A+B*x)/(a+b*x)^3, x, 1, -(A+B*x)^2/(2*(A*b-a*B)*(a+b*x)^2)}
+	// public void test00525() {
+	// check("Integrate((A+B*x)/(a+b*x)^3, x)", "-(A+B*x)^2/(2*(A*b-a*B)*(a+b*x)^2)");
+	//
+	// }
+	//
+	// // {Sqrt(a+b*x)/(c+d*x)^(5/2), x, 1, (2*(a+b*x)^(3/2))/(3*(b*c-a*d)*(c+d*x)^(3/2))}
+	// public void test00526() {
+	// check("Integrate(Sqrt(a+b*x)/(c+d*x)^(5/2), x)", "(2*(a+b*x)^(3/2))/(3*(b*c-a*d)*(c+d*x)^(3/2))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(a+b*x)*(c+d*x)^(3/2)), x, 1, (2*Sqrt(a+b*x))/((b*c-a*d)*Sqrt(c+d*x))}
+	// public void test00527() {
+	// check("Integrate(1/(Sqrt(a+b*x)*(c+d*x)^(3/2)), x)", "(2*Sqrt(a+b*x))/((b*c-a*d)*Sqrt(c+d*x))");
+	//
+	// }
+	//
+	// // {Sqrt(1+x)/(1-x)^(5/2), x, 1, (1+x)^(3/2)/(3*(1-x)^(3/2))}
+	// public void test00528() {
+	// check("Integrate(Sqrt(1+x)/(1-x)^(5/2), x)", "(1+x)^(3/2)/(3*(1-x)^(3/2))");
+	//
+	// }
+	//
+	// // {Sqrt(1+x)/(-1+x)^(5/2), x, 1, -(1+x)^(3/2)/(3*(-1+x)^(3/2))}
+	// public void test00529() {
+	// check("Integrate(Sqrt(1+x)/(-1+x)^(5/2), x)", "-(1+x)^(3/2)/(3*(-1+x)^(3/2))");
+	//
+	// }
+	//
+	// // {x/(Sqrt(-1+x)*Sqrt(1+x)), x, 1, Sqrt(-1+x)*Sqrt(1+x)}
+	// public void test00530() {
+	// check("Integrate(x/(Sqrt(-1+x)*Sqrt(1+x)), x)", "Sqrt(-1+x)*Sqrt(1+x)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(-1+x)*Sqrt(1+x)), x, 1, ArcCosh(x)}
+	// public void test00531() {
+	// check("Integrate(1/(Sqrt(-1+x)*Sqrt(1+x)), x)", "ArcCosh(x)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(-1+x)*x^2*Sqrt(1+x)), x, 1, (Sqrt(-1+x)*Sqrt(1+x))/x}
+	// public void test00532() {
+	// check("Integrate(1/(Sqrt(-1+x)*x^2*Sqrt(1+x)), x)", "(Sqrt(-1+x)*Sqrt(1+x))/x");
+	//
+	// }
+	//
+	// // {Sqrt(-1+x)*x*Sqrt(1+x), x, 1, ((-1+x)^(3/2)*(1+x)^(3/2))/3}
+	// public void test00533() {
+	// check("Integrate(Sqrt(-1+x)*x*Sqrt(1+x), x)", "((-1+x)^(3/2)*(1+x)^(3/2))/3");
+	//
+	// }
+	//
+	// // {Sqrt(1-x)*x*Sqrt(1+x), x, 1, -((1-x)^(3/2)*(1+x)^(3/2))/3}
+	// public void test00534() {
+	// check("Integrate(Sqrt(1-x)*x*Sqrt(1+x), x)", "-((1-x)^(3/2)*(1+x)^(3/2))/3");
+	//
+	// }
+	//
+	// // {1/(Sqrt(x)*Sqrt(2-b*x)*Sqrt(2+b*x)), x, 1, (Sqrt(2)*EllipticF(ArcSin((Sqrt(b)*Sqrt(x))/Sqrt(2)),
+	// // -1))/Sqrt(b)}
+	// public void test00535() {
+	// check("Integrate(1/(Sqrt(x)*Sqrt(2-b*x)*Sqrt(2+b*x)), x)",
+	// "(Sqrt(2)*EllipticF(ArcSin((Sqrt(b)*Sqrt(x))/Sqrt(2)), -1))/Sqrt(b)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(-x)*Sqrt(2-b*x)*Sqrt(2+b*x)), x, 1, -((Sqrt(2)*EllipticF(ArcSin((Sqrt(b)*Sqrt(-x))/Sqrt(2)),
+	// // -1))/Sqrt(b))}
+	// public void test00536() {
+	// check("Integrate(1/(Sqrt(-x)*Sqrt(2-b*x)*Sqrt(2+b*x)), x)",
+	// "-((Sqrt(2)*EllipticF(ArcSin((Sqrt(b)*Sqrt(-x))/Sqrt(2)), -1))/Sqrt(b))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(e*x)*Sqrt(2-b*x)*Sqrt(2+b*x)), x, 1,
+	// // (Sqrt(2)*EllipticF(ArcSin((Sqrt(b)*Sqrt(e*x))/(Sqrt(2)*Sqrt(e))), -1))/(Sqrt(b)*Sqrt(e))}
+	// public void test00537() {
+	// check("Integrate(1/(Sqrt(e*x)*Sqrt(2-b*x)*Sqrt(2+b*x)), x)",
+	// "(Sqrt(2)*EllipticF(ArcSin((Sqrt(b)*Sqrt(e*x))/(Sqrt(2)*Sqrt(e))), -1))/(Sqrt(b)*Sqrt(e))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(2-3*x)*Sqrt(x)*Sqrt(2+3*x)), x, 1, Sqrt(2/3)*EllipticF(ArcSin(Sqrt(3/2)*Sqrt(x)), -1)}
+	// public void test00538() {
+	// check("Integrate(1/(Sqrt(2-3*x)*Sqrt(x)*Sqrt(2+3*x)), x)",
+	// "Sqrt(2/3)*EllipticF(ArcSin(Sqrt(3/2)*Sqrt(x)), -1)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(2-3*x)*Sqrt(-x)*Sqrt(2+3*x)), x, 1, -(Sqrt(2/3)*EllipticF(ArcSin(Sqrt(3/2)*Sqrt(-x)), -1))}
+	// public void test00539() {
+	// check("Integrate(1/(Sqrt(2-3*x)*Sqrt(-x)*Sqrt(2+3*x)), x)",
+	// "-(Sqrt(2/3)*EllipticF(ArcSin(Sqrt(3/2)*Sqrt(-x)), -1))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(2-3*x)*Sqrt(e*x)*Sqrt(2+3*x)), x, 1, (Sqrt(2/3)*EllipticF(ArcSin((Sqrt(3/2)*Sqrt(e*x))/Sqrt(e)),
+	// // -1))/Sqrt(e)}
+	// public void test00540() {
+	// check("Integrate(1/(Sqrt(2-3*x)*Sqrt(e*x)*Sqrt(2+3*x)), x)",
+	// "(Sqrt(2/3)*EllipticF(ArcSin((Sqrt(3/2)*Sqrt(e*x))/Sqrt(e)), -1))/Sqrt(e)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(1-x)*Sqrt(x)*Sqrt(1+x)), x, 1, 2*EllipticF(ArcSin(Sqrt(x)), -1)}
+	// public void test00541() {
+	// check("Integrate(1/(Sqrt(1-x)*Sqrt(x)*Sqrt(1+x)), x)", "2*EllipticF(ArcSin(Sqrt(x)), -1)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(b*x)*Sqrt(1-c*x)*Sqrt(1+c*x)), x, 1, (2*EllipticF(ArcSin((Sqrt(c)*Sqrt(b*x))/Sqrt(b)),
+	// // -1))/(Sqrt(b)*Sqrt(c))}
+	// public void test00542() {
+	// check("Integrate(1/(Sqrt(b*x)*Sqrt(1-c*x)*Sqrt(1+c*x)), x)",
+	// "(2*EllipticF(ArcSin((Sqrt(c)*Sqrt(b*x))/Sqrt(b)), -1))/(Sqrt(b)*Sqrt(c))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(b*x)*Sqrt(1-c*x)*Sqrt(1+d*x)), x, 1, (2*EllipticF(ArcSin((Sqrt(c)*Sqrt(b*x))/Sqrt(b)),
+	// // -(d/c)))/(Sqrt(b)*Sqrt(c))}
+	// public void test00543() {
+	// check("Integrate(1/(Sqrt(b*x)*Sqrt(1-c*x)*Sqrt(1+d*x)), x)",
+	// "(2*EllipticF(ArcSin((Sqrt(c)*Sqrt(b*x))/Sqrt(b)), -(d/c)))/(Sqrt(b)*Sqrt(c))");
+	//
+	// }
+	//
+	// // {Sqrt(1+x)/(Sqrt(1-x)*Sqrt(x)), x, 1, 2*EllipticE(ArcSin(Sqrt(x)), -1)}
+	// public void test00544() {
+	// check("Integrate(Sqrt(1+x)/(Sqrt(1-x)*Sqrt(x)), x)", "2*EllipticE(ArcSin(Sqrt(x)), -1)");
+	//
+	// }
+	//
+	// // {Sqrt(1+c*x)/(Sqrt(b*x)*Sqrt(1-c*x)), x, 1, (2*EllipticE(ArcSin((Sqrt(c)*Sqrt(b*x))/Sqrt(b)),
+	// // -1))/(Sqrt(b)*Sqrt(c))}
+	// public void test00545() {
+	// check("Integrate(Sqrt(1+c*x)/(Sqrt(b*x)*Sqrt(1-c*x)), x)",
+	// "(2*EllipticE(ArcSin((Sqrt(c)*Sqrt(b*x))/Sqrt(b)), -1))/(Sqrt(b)*Sqrt(c))");
+	//
+	// }
+	//
+	// // {Sqrt(1+c*x)/(Sqrt(b*x)*Sqrt(1-d*x)), x, 1, (2*EllipticE(ArcSin((Sqrt(d)*Sqrt(b*x))/Sqrt(b)),
+	// // -(c/d)))/(Sqrt(b)*Sqrt(d))}
+	// public void test00546() {
+	// check("Integrate(Sqrt(1+c*x)/(Sqrt(b*x)*Sqrt(1-d*x)), x)",
+	// "(2*EllipticE(ArcSin((Sqrt(d)*Sqrt(b*x))/Sqrt(b)), -(c/d)))/(Sqrt(b)*Sqrt(d))");
+	//
+	// }
+	//
+	// // {Sqrt(1-c*x)/(Sqrt(b*x)*Sqrt(1+c*x)), x, 1, (-2*EllipticE(ArcSin((Sqrt(c)*Sqrt(b*x))/Sqrt(-b)),
+	// // -1))/(Sqrt(-b)*Sqrt(c))}
+	// public void test00547() {
+	// check("Integrate(Sqrt(1-c*x)/(Sqrt(b*x)*Sqrt(1+c*x)), x)",
+	// "(-2*EllipticE(ArcSin((Sqrt(c)*Sqrt(b*x))/Sqrt(-b)), -1))/(Sqrt(-b)*Sqrt(c))");
+	//
+	// }
+	//
+	// // {Sqrt(1-c*x)/(Sqrt(b*x)*Sqrt(1+d*x)), x, 1, (-2*EllipticE(ArcSin((Sqrt(d)*Sqrt(b*x))/Sqrt(-b)),
+	// // -(c/d)))/(Sqrt(-b)*Sqrt(d))}
+	// public void test00548() {
+	// check("Integrate(Sqrt(1-c*x)/(Sqrt(b*x)*Sqrt(1+d*x)), x)",
+	// "(-2*EllipticE(ArcSin((Sqrt(d)*Sqrt(b*x))/Sqrt(-b)), -(c/d)))/(Sqrt(-b)*Sqrt(d))");
+	//
+	// }
+	//
+	// // {1/((1-x)^(1/3)*(2-x)^(1/3)*x), x, 1, -(Sqrt(3)*ArcTan(1/Sqrt(3)+(2^(1/3)*(2-x)^(2/3))/(Sqrt(3)*(1 -
+	// // x)^(1/3))))/(2*2^(1/3))+(3*Log(-(1-x)^(1/3)+(2-x)^(2/3)/2^(2/3)))/(4*2^(1/3))-Log(x)/(2*2^(1/3))}
+	// public void test00549() {
+	// check("Integrate(1/((1-x)^(1/3)*(2-x)^(1/3)*x), x)",
+	// "-(Sqrt(3)*ArcTan(1/Sqrt(3)+(2^(1/3)*(2-x)^(2/3))/(Sqrt(3)*(1-x)^(1/3))))/(2*2^(1/3))+(3*Log(-(1-x)^(1/3)+(2-x)^(2/3)/2^(2/3)))/(4*2^(1/3))-Log(x)/(2*2^(1/3))");
+	//
+	// }
+	//
+	// // {1/((1-x)^(1/4)*(e*x)^(5/2)*(1+x)^(1/4)), x, 1, (-2*(1-x)^(3/4)*(1+x)^(3/4))/(3*e*(e*x)^(3/2))}
+	// public void test00550() {
+	// check("Integrate(1/((1-x)^(1/4)*(e*x)^(5/2)*(1+x)^(1/4)), x)",
+	// "(-2*(1-x)^(3/4)*(1+x)^(3/4))/(3*e*(e*x)^(3/2))");
+	//
+	// }
+	//
+	// // {x^(1+2*n)*(a+b*x)^n*(2*a+3*b*x), x, 1, (x^(2*(1+n))*(a+b*x)^(1+n))/(1+n)}
+	// public void test00551() {
+	// check("Integrate(x^(1+2*n)*(a+b*x)^n*(2*a+3*b*x), x)", "(x^(2*(1+n))*(a+b*x)^(1+n))/(1+n)");
+	//
+	// }
+	//
+	// // {(a+b*x)^n/(c+d*x), x, 1, ((a+b*x)^(1+n)*Hypergeometric2F1(1, 1+n, 2+n, -((d*(a+b*x))/(b*c -
+	// // a*d))))/((b*c-a*d)*(1+n))}
+	// public void test00552() {
+	// check("Integrate((a+b*x)^n/(c+d*x), x)",
+	// "((a+b*x)^(1+n)*Hypergeometric2F1(1, 1+n, 2+n, -((d*(a+b*x))/(b*c-a*d))))/((b*c-a*d)*(1+n))");
+	//
+	// }
+	//
+	// // {(a+b*x)^n/(c+d*x)^2, x, 1, (b*(a+b*x)^(1+n)*Hypergeometric2F1(2, 1+n, 2+n, -((d*(a+b*x))/(b*c -
+	// // a*d))))/((b*c-a*d)^2*(1+n))}
+	// public void test00553() {
+	// check("Integrate((a+b*x)^n/(c+d*x)^2, x)",
+	// "(b*(a+b*x)^(1+n)*Hypergeometric2F1(2, 1+n, 2+n, -((d*(a+b*x))/(b*c-a*d))))/((b*c-a*d)^2*(1+n))");
+	//
+	// }
+	//
+	// // {(b*x)^m*(Pi+d*x)^n*(E+f*x)^p, x, 1, (E^p*Pi^n*(b*x)^(1+m)*AppellF1(1+m, -n, -p, 2+m, -((d*x)/Pi),
+	// // -((f*x)/E)))/(b*(1+m))}
+	// public void test00554() {
+	// check("Integrate((b*x)^m*(Pi+d*x)^n*(E+f*x)^p, x)",
+	// "(E^p*Pi^n*(b*x)^(1+m)*AppellF1(1+m, -n, -p, 2+m, -((d*x)/Pi), -((f*x)/E)))/(b*(1+m))");
+	//
+	// }
+	//
+	// // {(b*x)^(5/2)*(Pi+d*x)^n*(E+f*x)^p, x, 1, (2*E^p*Pi^n*(b*x)^(7/2)*AppellF1(7/2, -n, -p, 9/2, -((d*x)/Pi),
+	// // -((f*x)/E)))/(7*b)}
+	// public void test00555() {
+	// check("Integrate((b*x)^(5/2)*(Pi+d*x)^n*(E+f*x)^p, x)",
+	// "(2*E^p*Pi^n*(b*x)^(7/2)*AppellF1(7/2, -n, -p, 9/2, -((d*x)/Pi), -((f*x)/E)))/(7*b)");
+	//
+	// }
+	//
+	// // {(a+b*x)^n/(x^2*(c+d*x)^n), x, 1, ((b*c-a*d)*(a+b*x)^(1+n)*(c+d*x)^(-1-n)*Hypergeometric2F1(2, 1 +
+	// // n, 2+n, (c*(a+b*x))/(a*(c+d*x))))/(a^2*(1+n))}
+	// public void test00556() {
+	// check("Integrate((a+b*x)^n/(x^2*(c+d*x)^n), x)",
+	// "((b*c-a*d)*(a+b*x)^(1+n)*(c+d*x)^(-1-n)*Hypergeometric2F1(2, 1+n, 2+n, (c*(a+b*x))/(a*(c+d*x))))/(a^2*(1+n))");
+	//
+	// }
+	//
+	// // {(1-x)^n/(1+x)^n, x, 1, -(((1-x)^(1+n)*Hypergeometric2F1(n, 1+n, 2+n, (1-x)/2))/(2^n*(1+n)))}
+	// public void test00557() {
+	// check("Integrate((1-x)^n/(1+x)^n, x)", "-(((1-x)^(1+n)*Hypergeometric2F1(n, 1+n, 2+n, (1-x)/2))/(2^n*(1+n)))");
+	//
+	// }
+	//
+	// // {(1-x)^n/(x^2*(1+x)^n), x, 1, (-2*(1-x)^(1+n)*(1+x)^(-1-n)*Hypergeometric2F1(2, 1+n, 2+n, (1 -
+	// // x)/(1+x)))/(1+n)}
+	// public void test00558() {
+	// check("Integrate((1-x)^n/(x^2*(1+x)^n), x)",
+	// "(-2*(1-x)^(1+n)*(1+x)^(-1-n)*Hypergeometric2F1(2, 1+n, 2+n, (1-x)/(1+x)))/(1+n)");
+	//
+	// }
+	//
+	// // {((1-x)^(-1/2+p)*(1+x)^(1/2+p))/(c*x)^(2*(1+p)), x, 1, -((4^(1+p)*(1-x)^(1/2+p)*(x/(1+x))^(2*(1
+	// // +p))*(1+x)^(3/2+p)*Hypergeometric2F1(1/2+p, 2*(1+p), 3/2+p, (1-x)/(1+x)))/((1+2*p)*(c*x)^(2*(1 +
+	// // p))))}
+	// public void test00559() {
+	// check("Integrate(((1-x)^(-1/2+p)*(1+x)^(1/2+p))/(c*x)^(2*(1+p)), x)",
+	// "-((4^(1+p)*(1-x)^(1/2+p)*(x/(1+x))^(2*(1+p))*(1+x)^(3/2+p)*Hypergeometric2F1(1/2+p, 2*(1+p), 3/2+p,
+	// (1-x)/(1+x)))/((1+2*p)*(c*x)^(2*(1+p))))");
+	//
+	// }
+	//
+	// // {(1+x/a)^(n/2)/(x^2*(1-x/a)^(n/2)), x, 1, (-4*(1-x/a)^(1-n/2)*(1+x/a)^((-2+n)/2)*Hypergeometric2F1(2,
+	// // 1-n/2, 2-n/2, (a-x)/(a+x)))/(a*(2-n))}
+	// public void test00560() {
+	// check("Integrate((1+x/a)^(n/2)/(x^2*(1-x/a)^(n/2)), x)",
+	// "(-4*(1-x/a)^(1-n/2)*(1+x/a)^((-2+n)/2)*Hypergeometric2F1(2, 1-n/2, 2-n/2, (a-x)/(a+x)))/(a*(2-n))");
+	//
+	// }
+	//
+	// // {x^2/((1-a*x)^7*(1+a*x)^4), x, 1, -(1-3*a*x)/(24*a^3*(1-a*x)^6*(1+a*x)^3)}
+	// public void test00561() {
+	// check("Integrate(x^2/((1-a*x)^7*(1+a*x)^4), x)", "-(1-3*a*x)/(24*a^3*(1-a*x)^6*(1+a*x)^3)");
+	//
+	// }
+	//
+	// // {x^2/((1-a*x)^11*(1+a*x)^7), x, 1, -(1-4*a*x)/(60*a^3*(1-a*x)^10*(1+a*x)^6)}
+	// public void test00562() {
+	// check("Integrate(x^2/((1-a*x)^11*(1+a*x)^7), x)", "-(1-4*a*x)/(60*a^3*(1-a*x)^10*(1+a*x)^6)");
+	//
+	// }
+	//
+	// // {x^2/((1-a*x)^16*(1+a*x)^11), x, 1, -(1-5*a*x)/(120*a^3*(1-a*x)^15*(1+a*x)^10)}
+	// public void test00563() {
+	// check("Integrate(x^2/((1-a*x)^16*(1+a*x)^11), x)", "-(1-5*a*x)/(120*a^3*(1-a*x)^15*(1+a*x)^10)");
+	//
+	// }
+	//
+	// // {x^2*(1-a*x)^(-1-(n*(1+n))/2)*(1+a*x)^(-1-((-1+n)*n)/2), x, 1, ((1+a*x)^(((1-n)*n)/2)*(1 -
+	// // a*n*x))/(a^3*n*(1-n^2)*(1-a*x)^((n*(1+n))/2))}
+	// public void test00564() {
+	// check("Integrate(x^2*(1-a*x)^(-1-(n*(1+n))/2)*(1+a*x)^(-1-((-1+n)*n)/2), x)",
+	// "((1+a*x)^(((1-n)*n)/2)*(1-a*n*x))/(a^3*n*(1-n^2)*(1-a*x)^((n*(1+n))/2))");
+	//
+	// }
+	//
+	// // {(A+B*x)/(a+b*x)^3, x, 1, -(A+B*x)^2/(2*(A*b-a*B)*(a+b*x)^2)}
+	// public void test00565() {
+	// check("Integrate((A+B*x)/(a+b*x)^3, x)", "-(A+B*x)^2/(2*(A*b-a*B)*(a+b*x)^2)");
+	//
+	// }
+	//
+	// // {(5-2*x)^6*(2+3*x)^3*(-16+33*x), x, 1, -((5-2*x)^7*(2+3*x)^4)/2}
+	// public void test00566() {
+	// check("Integrate((5-2*x)^6*(2+3*x)^3*(-16+33*x), x)", "-((5-2*x)^7*(2+3*x)^4)/2");
+	//
+	// }
+	//
+	// // {(1-2*x)/(3+5*x)^3, x, 1, -(1-2*x)^2/(22*(3+5*x)^2)}
+	// public void test00567() {
+	// check("Integrate((1-2*x)/(3+5*x)^3, x)", "-(1-2*x)^2/(22*(3+5*x)^2)");
+	//
+	// }
+	//
+	// // {(3+5*x)/(1-2*x)^3, x, 1, (3+5*x)^2/(22*(1-2*x)^2)}
+	// public void test00568() {
+	// check("Integrate((3+5*x)/(1-2*x)^3, x)", "(3+5*x)^2/(22*(1-2*x)^2)");
+	//
+	// }
+	//
+	// // {Sqrt(1-2*x)/(3+5*x)^(5/2), x, 1, (-2*(1-2*x)^(3/2))/(33*(3+5*x)^(3/2))}
+	// public void test00569() {
+	// check("Integrate(Sqrt(1-2*x)/(3+5*x)^(5/2), x)", "(-2*(1-2*x)^(3/2))/(33*(3+5*x)^(3/2))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(1-2*x)*(3+5*x)^(3/2)), x, 1, (-2*Sqrt(1-2*x))/(11*Sqrt(3+5*x))}
+	// public void test00570() {
+	// check("Integrate(1/(Sqrt(1-2*x)*(3+5*x)^(3/2)), x)", "(-2*Sqrt(1-2*x))/(11*Sqrt(3+5*x))");
+	//
+	// }
+	//
+	// // {1/((1-2*x)^(3/2)*Sqrt(3+5*x)), x, 1, (2*Sqrt(3+5*x))/(11*Sqrt(1-2*x))}
+	// public void test00571() {
+	// check("Integrate(1/((1-2*x)^(3/2)*Sqrt(3+5*x)), x)", "(2*Sqrt(3+5*x))/(11*Sqrt(1-2*x))");
+	//
+	// }
+	//
+	// // {Sqrt(3+5*x)/(1-2*x)^(5/2), x, 1, (2*(3+5*x)^(3/2))/(33*(1-2*x)^(3/2))}
+	// public void test00572() {
+	// check("Integrate(Sqrt(3+5*x)/(1-2*x)^(5/2), x)", "(2*(3+5*x)^(3/2))/(33*(1-2*x)^(3/2))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(a+b*x)*Sqrt(c+(b*(-1+c)*x)/a)*Sqrt(e+(b*(-1+e)*x)/a)), x, 1,
+	// // (2*Sqrt(a)*EllipticF(ArcSin((Sqrt(1-c)*Sqrt(a+b*x))/Sqrt(a)), (1-e)/(1-c)))/(b*Sqrt(1-c))}
+	// public void test00573() {
+	// check("Integrate(1/(Sqrt(a+b*x)*Sqrt(c+(b*(-1+c)*x)/a)*Sqrt(e+(b*(-1+e)*x)/a)), x)",
+	// "(2*Sqrt(a)*EllipticF(ArcSin((Sqrt(1-c)*Sqrt(a+b*x))/Sqrt(a)), (1-e)/(1-c)))/(b*Sqrt(1-c))");
+	//
+	// }
+	//
+	// // {Sqrt(e+(b*(-1+e)*x)/a)/(Sqrt(a+b*x)*Sqrt(c+(b*(-1+c)*x)/a)), x, 1, (2*Sqrt(a)*EllipticE(ArcSin((Sqrt(1
+	// // -c)*Sqrt(a+b*x))/Sqrt(a)), (1-e)/(1-c)))/(b*Sqrt(1-c))}
+	// public void test00574() {
+	// check("Integrate(Sqrt(e+(b*(-1+e)*x)/a)/(Sqrt(a+b*x)*Sqrt(c+(b*(-1+c)*x)/a)), x)",
+	// "(2*Sqrt(a)*EllipticE(ArcSin((Sqrt(1-c)*Sqrt(a+b*x))/Sqrt(a)), (1-e)/(1-c)))/(b*Sqrt(1-c))");
+	//
+	// }
+	//
+	// // {Sqrt(1-2*x)/(Sqrt(-3-5*x)*Sqrt(2+3*x)), x, 1, (2*Sqrt(7/5)*EllipticE(ArcSin(Sqrt(5)*Sqrt(2+3*x)),
+	// // 2/35))/3}
+	// public void test00575() {
+	// check("Integrate(Sqrt(1-2*x)/(Sqrt(-3-5*x)*Sqrt(2+3*x)), x)",
+	// "(2*Sqrt(7/5)*EllipticE(ArcSin(Sqrt(5)*Sqrt(2+3*x)), 2/35))/3");
+	//
+	// }
+	//
+	// // {Sqrt(3+5*x)/(Sqrt(1-2*x)*Sqrt(2+3*x)), x, 1, -(Sqrt(11/3)*EllipticE(ArcSin(Sqrt(3/7)*Sqrt(1-2*x)),
+	// // 35/33))}
+	// public void test00576() {
+	// check("Integrate(Sqrt(3+5*x)/(Sqrt(1-2*x)*Sqrt(2+3*x)), x)",
+	// "-(Sqrt(11/3)*EllipticE(ArcSin(Sqrt(3/7)*Sqrt(1-2*x)), 35/33))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(1+x)*Sqrt(2+x)*Sqrt(3+x)), x, 1, -2*EllipticF(ArcSin(1/Sqrt(3+x)), 2)}
+	// public void test00577() {
+	// check("Integrate(1/(Sqrt(1+x)*Sqrt(2+x)*Sqrt(3+x)), x)", "-2*EllipticF(ArcSin(1/Sqrt(3+x)), 2)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(3-x)*Sqrt(1+x)*Sqrt(2+x)), x, 1, 2*EllipticF(ArcSin(Sqrt(1+x)/2), -4)}
+	// public void test00578() {
+	// check("Integrate(1/(Sqrt(3-x)*Sqrt(1+x)*Sqrt(2+x)), x)", "2*EllipticF(ArcSin(Sqrt(1+x)/2), -4)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(2-x)*Sqrt(1+x)*Sqrt(3+x)), x, 1, Sqrt(2)*EllipticF(ArcSin(Sqrt(1+x)/Sqrt(3)), -3/2)}
+	// public void test00579() {
+	// check("Integrate(1/(Sqrt(2-x)*Sqrt(1+x)*Sqrt(3+x)), x)", "Sqrt(2)*EllipticF(ArcSin(Sqrt(1+x)/Sqrt(3)), -3/2)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(2-x)*Sqrt(3-x)*Sqrt(1+x)), x, 1, EllipticF(ArcSin(Sqrt(1+x)/Sqrt(3)), 3/4)}
+	// public void test00580() {
+	// check("Integrate(1/(Sqrt(2-x)*Sqrt(3-x)*Sqrt(1+x)), x)", "EllipticF(ArcSin(Sqrt(1+x)/Sqrt(3)), 3/4)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(1-x)*Sqrt(2+x)*Sqrt(3+x)), x, 1, 2*EllipticF(ArcSin(Sqrt(2+x)/Sqrt(3)), -3)}
+	// public void test00581() {
+	// check("Integrate(1/(Sqrt(1-x)*Sqrt(2+x)*Sqrt(3+x)), x)", "2*EllipticF(ArcSin(Sqrt(2+x)/Sqrt(3)), -3)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(1-x)*Sqrt(3-x)*Sqrt(2+x)), x, 1, (2*EllipticF(ArcSin(Sqrt(2+x)/Sqrt(3)), 3/5))/Sqrt(5)}
+	// public void test00582() {
+	// check("Integrate(1/(Sqrt(1-x)*Sqrt(3-x)*Sqrt(2+x)), x)",
+	// "(2*EllipticF(ArcSin(Sqrt(2+x)/Sqrt(3)), 3/5))/Sqrt(5)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(1-x)*Sqrt(2-x)*Sqrt(3+x)), x, 1, (2*EllipticF(ArcSin(Sqrt(3+x)/2), 4/5))/Sqrt(5)}
+	// public void test00583() {
+	// check("Integrate(1/(Sqrt(1-x)*Sqrt(2-x)*Sqrt(3+x)), x)", "(2*EllipticF(ArcSin(Sqrt(3+x)/2), 4/5))/Sqrt(5)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(1-x)*Sqrt(2-x)*Sqrt(3-x)), x, 1, 2*EllipticF(ArcSin(1/Sqrt(3-x)), 2)}
+	// public void test00584() {
+	// check("Integrate(1/(Sqrt(1-x)*Sqrt(2-x)*Sqrt(3-x)), x)", "2*EllipticF(ArcSin(1/Sqrt(3-x)), 2)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(-3+x)*Sqrt(-2+x)*Sqrt(-1+x)), x, 1, -2*EllipticF(ArcSin(1/Sqrt(-1+x)), 2)}
+	// public void test00585() {
+	// check("Integrate(1/(Sqrt(-3+x)*Sqrt(-2+x)*Sqrt(-1+x)), x)", "-2*EllipticF(ArcSin(1/Sqrt(-1+x)), 2)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(-3-x)*Sqrt(-2-x)*Sqrt(-1-x)), x, 1, 2*EllipticF(ArcSin(1/Sqrt(-1-x)), 2)}
+	// public void test00586() {
+	// check("Integrate(1/(Sqrt(-3-x)*Sqrt(-2-x)*Sqrt(-1-x)), x)", "2*EllipticF(ArcSin(1/Sqrt(-1-x)), 2)");
+	//
+	// }
+	//
+	// // {Sqrt(2+3*x)/(Sqrt(1-2*x)*Sqrt(3+5*x)), x, 1, -(Sqrt(7/5)*EllipticE(ArcSin(Sqrt(5/11)*Sqrt(1-2*x)),
+	// // 33/35))}
+	// public void test00587() {
+	// check("Integrate(Sqrt(2+3*x)/(Sqrt(1-2*x)*Sqrt(3+5*x)), x)",
+	// "-(Sqrt(7/5)*EllipticE(ArcSin(Sqrt(5/11)*Sqrt(1-2*x)), 33/35))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(1-2*x)*Sqrt(2+3*x)*Sqrt(3+5*x)), x, 1, (-2*EllipticF(ArcSin(Sqrt(3/7)*Sqrt(1-2*x)),
+	// // 35/33))/Sqrt(33)}
+	// public void test00588() {
+	// check("Integrate(1/(Sqrt(1-2*x)*Sqrt(2+3*x)*Sqrt(3+5*x)), x)",
+	// "(-2*EllipticF(ArcSin(Sqrt(3/7)*Sqrt(1-2*x)), 35/33))/Sqrt(33)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(4-x)*Sqrt(5-x)*Sqrt(-3+x)), x, 1, Sqrt(2)*EllipticF(ArcSin(Sqrt(-3+x)), 1/2)}
+	// public void test00589() {
+	// check("Integrate(1/(Sqrt(4-x)*Sqrt(5-x)*Sqrt(-3+x)), x)", "Sqrt(2)*EllipticF(ArcSin(Sqrt(-3+x)), 1/2)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(6-x)*Sqrt(-2+x)*Sqrt(-1+x)), x, 1, 2*EllipticF(ArcSin(Sqrt(-2+x)/2), -4)}
+	// public void test00590() {
+	// check("Integrate(1/(Sqrt(6-x)*Sqrt(-2+x)*Sqrt(-1+x)), x)", "2*EllipticF(ArcSin(Sqrt(-2+x)/2), -4)");
+	//
+	// }
+	//
+	// // {1/((a+b*x)^(1/3)*(c+d*x)^(2/3)), x, 1, -((Sqrt(3)*ArcTan(1/Sqrt(3)+(2*d^(1/3)*(a +
+	// // b*x)^(1/3))/(Sqrt(3)*b^(1/3)*(c+d*x)^(1/3))))/(b^(1/3)*d^(2/3)))-Log(c+d*x)/(2*b^(1/3)*d^(2/3))-(3*Log(-1
+	// // +(d^(1/3)*(a+b*x)^(1/3))/(b^(1/3)*(c+d*x)^(1/3))))/(2*b^(1/3)*d^(2/3))}
+	// public void test00591() {
+	// check("Integrate(1/((a+b*x)^(1/3)*(c+d*x)^(2/3)), x)",
+	// "-((Sqrt(3)*ArcTan(1/Sqrt(3)+(2*d^(1/3)*(a+b*x)^(1/3))/(Sqrt(3)*b^(1/3)*(c+d*x)^(1/3))))/(b^(1/3)*d^(2/3)))-Log(c+d*x)/(2*b^(1/3)*d^(2/3))-(3*Log(-1+(d^(1/3)*(a+b*x)^(1/3))/(b^(1/3)*(c+d*x)^(1/3))))/(2*b^(1/3)*d^(2/3))");
+	//
+	// }
+	//
+	// // {1/((a+b*x)^(1/3)*(c+d*x)^(2/3)*(e+f*x)), x, 1, -((Sqrt(3)*ArcTan(1/Sqrt(3)+(2*(d*e-c*f)^(1/3)*(a +
+	// // b*x)^(1/3))/(Sqrt(3)*(b*e-a*f)^(1/3)*(c+d*x)^(1/3))))/((b*e-a*f)^(1/3)*(d*e-c*f)^(2/3)))+Log(e +
+	// // f*x)/(2*(b*e-a*f)^(1/3)*(d*e-c*f)^(2/3))-(3*Log(((d*e-c*f)^(1/3)*(a+b*x)^(1/3))/(b*e-a*f)^(1/3)-(c
+	// // +d*x)^(1/3)))/(2*(b*e-a*f)^(1/3)*(d*e-c*f)^(2/3))}
+	// public void test00592() {
+	// check("Integrate(1/((a+b*x)^(1/3)*(c+d*x)^(2/3)*(e+f*x)), x)",
+	// "-((Sqrt(3)*ArcTan(1/Sqrt(3)+(2*(d*e-c*f)^(1/3)*(a+b*x)^(1/3))/(Sqrt(3)*(b*e-a*f)^(1/3)*(c+d*x)^(1/3))))/((b*e-a*f)^(1/3)*(d*e-c*f)^(2/3)))+Log(e+f*x)/(2*(b*e-a*f)^(1/3)*(d*e-c*f)^(2/3))-(3*Log(((d*e-c*f)^(1/3)*(a+b*x)^(1/3))/(b*e-a*f)^(1/3)-(c+d*x)^(1/3)))/(2*(b*e-a*f)^(1/3)*(d*e-c*f)^(2/3))");
+	//
+	// }
+	//
+	// // {1/((a+b*x)*(c+d*x)^(1/3)*(b*c+a*d+2*b*d*x)^(1/3)), x, 1, -(Sqrt(3)*ArcTan(1/Sqrt(3)+(2*b^(2/3)*(c +
+	// // d*x)^(2/3))/(Sqrt(3)*(b*c-a*d)^(1/3)*(b*c+a*d+2*b*d*x)^(1/3))))/(2*b^(2/3)*(b*c-a*d)^(2/3))-Log(a +
+	// // b*x)/(2*b^(2/3)*(b*c-a*d)^(2/3))+(3*Log((b^(2/3)*(c+d*x)^(2/3))/(b*c-a*d)^(1/3)-(b*c+a*d +
+	// // 2*b*d*x)^(1/3)))/(4*b^(2/3)*(b*c-a*d)^(2/3))}
+	// public void test00593() {
+	// check("Integrate(1/((a+b*x)*(c+d*x)^(1/3)*(b*c+a*d+2*b*d*x)^(1/3)), x)",
+	// "-(Sqrt(3)*ArcTan(1/Sqrt(3)+(2*b^(2/3)*(c+d*x)^(2/3))/(Sqrt(3)*(b*c-a*d)^(1/3)*(b*c+a*d+2*b*d*x)^(1/3))))/(2*b^(2/3)*(b*c-a*d)^(2/3))-Log(a+b*x)/(2*b^(2/3)*(b*c-a*d)^(2/3))+(3*Log((b^(2/3)*(c+d*x)^(2/3))/(b*c-a*d)^(1/3)-(b*c+a*d+2*b*d*x)^(1/3)))/(4*b^(2/3)*(b*c-a*d)^(2/3))");
+	//
+	// }
+	//
+	// // {(a+b*x)/((c+d*x)^(1/3)*(b*c+a*d+2*b*d*x)^(4/3)), x, 1, (3*(c+d*x)^(2/3))/(2*d^2*(b*c+a*d +
+	// // 2*b*d*x)^(1/3))}
+	// public void test00594() {
+	// check("Integrate((a+b*x)/((c+d*x)^(1/3)*(b*c+a*d+2*b*d*x)^(4/3)), x)",
+	// "(3*(c+d*x)^(2/3))/(2*d^2*(b*c+a*d+2*b*d*x)^(1/3))");
+	//
+	// }
+	//
+	// // {1/((d-3*e*x)^(1/3)*(d+e*x)*(d+3*e*x)^(1/3)), x, 1, (Sqrt(3)*ArcTan(1/Sqrt(3)-(d -
+	// // 3*e*x)^(2/3)/(Sqrt(3)*d^(1/3)*(d+3*e*x)^(1/3))))/(4*d^(2/3)*e)+Log(d+e*x)/(4*d^(2/3)*e)-(3*Log(-(d -
+	// // 3*e*x)^(2/3)/(2*d^(1/3))-(d+3*e*x)^(1/3)))/(8*d^(2/3)*e)}
+	// public void test00595() {
+	// check("Integrate(1/((d-3*e*x)^(1/3)*(d+e*x)*(d+3*e*x)^(1/3)), x)",
+	// "(Sqrt(3)*ArcTan(1/Sqrt(3)-(d-3*e*x)^(2/3)/(Sqrt(3)*d^(1/3)*(d+3*e*x)^(1/3))))/(4*d^(2/3)*e)+Log(d+e*x)/(4*d^(2/3)*e)-(3*Log(-(d-3*e*x)^(2/3)/(2*d^(1/3))-(d+3*e*x)^(1/3)))/(8*d^(2/3)*e)");
+	//
+	// }
+	//
+	// // {(a+b*x)^m/((c+d*x)^m*(e+f*x)^2), x, 1, ((b*c-a*d)*(a+b*x)^(1+m)*(c+d*x)^(-1 -
+	// // m)*Hypergeometric2F1(2, 1+m, 2+m, ((d*e-c*f)*(a+b*x))/((b*e-a*f)*(c+d*x))))/((b*e-a*f)^2*(1+m))}
+	// public void test00596() {
+	// check("Integrate((a+b*x)^m/((c+d*x)^m*(e+f*x)^2), x)",
+	// "((b*c-a*d)*(a+b*x)^(1+m)*(c+d*x)^(-1-m)*Hypergeometric2F1(2, 1+m, 2+m,
+	// ((d*e-c*f)*(a+b*x))/((b*e-a*f)*(c+d*x))))/((b*e-a*f)^2*(1+m))");
+	//
+	// }
+	//
+	// // {((a+b*x)^m*(c+d*x)^(-1-m))/(e+f*x), x, 1, ((a+b*x)^(1+m)*(c+d*x)^(-1-m)*Hypergeometric2F1(1, 1 +
+	// // m, 2+m, ((d*e-c*f)*(a+b*x))/((b*e-a*f)*(c+d*x))))/((b*e-a*f)*(1+m))}
+	// public void test00597() {
+	// check("Integrate(((a+b*x)^m*(c+d*x)^(-1-m))/(e+f*x), x)",
+	// "((a+b*x)^(1+m)*(c+d*x)^(-1-m)*Hypergeometric2F1(1, 1+m, 2+m,
+	// ((d*e-c*f)*(a+b*x))/((b*e-a*f)*(c+d*x))))/((b*e-a*f)*(1+m))");
+	//
+	// }
+	//
+	// // {(a+b*x)^m*(c+d*x)^(-2-m), x, 1, ((a+b*x)^(1+m)*(c+d*x)^(-1-m))/((b*c-a*d)*(1+m))}
+	// public void test00598() {
+	// check("Integrate((a+b*x)^m*(c+d*x)^(-2-m), x)", "((a+b*x)^(1+m)*(c+d*x)^(-1-m))/((b*c-a*d)*(1+m))");
+	//
+	// }
+	//
+	// // {((a+b*x)^m*(c+d*x)^(1-m))/(e+f*x)^3, x, 1, ((b*c-a*d)^2*(a+b*x)^(1+m)*(c+d*x)^(-1 -
+	// // m)*Hypergeometric2F1(3, 1+m, 2+m, ((d*e-c*f)*(a+b*x))/((b*e-a*f)*(c+d*x))))/((b*e-a*f)^3*(1+m))}
+	// public void test00599() {
+	// check("Integrate(((a+b*x)^m*(c+d*x)^(1-m))/(e+f*x)^3, x)",
+	// "((b*c-a*d)^2*(a+b*x)^(1+m)*(c+d*x)^(-1-m)*Hypergeometric2F1(3, 1+m, 2+m,
+	// ((d*e-c*f)*(a+b*x))/((b*e-a*f)*(c+d*x))))/((b*e-a*f)^3*(1+m))");
+	//
+	// }
+	//
+	// // {((a+b*x)^m*(c+d*x)^(2-m))/(e+f*x)^4, x, 1, ((b*c-a*d)^3*(a+b*x)^(1+m)*(c+d*x)^(-1 -
+	// // m)*Hypergeometric2F1(4, 1+m, 2+m, ((d*e-c*f)*(a+b*x))/((b*e-a*f)*(c+d*x))))/((b*e-a*f)^4*(1+m))}
+	// public void test00600() {
+	// check("Integrate(((a+b*x)^m*(c+d*x)^(2-m))/(e+f*x)^4, x)",
+	// "((b*c-a*d)^3*(a+b*x)^(1+m)*(c+d*x)^(-1-m)*Hypergeometric2F1(4, 1+m, 2+m,
+	// ((d*e-c*f)*(a+b*x))/((b*e-a*f)*(c+d*x))))/((b*e-a*f)^4*(1+m))");
+	//
+	// }
+	//
+	// // {(a+b*x)^m*(c+d*x)^(-m-n)*(e+f*x)^(-2+n), x, 1, ((a+b*x)^(1+m)*(c+d*x)^(-m-n)*(((b*e-a*f)*(c
+	// // +d*x))/((b*c-a*d)*(e+f*x)))^(m+n)*(e+f*x)^(-1+n)*Hypergeometric2F1(1+m, m+n, 2+m, -(((d*e -
+	// // c*f)*(a+b*x))/((b*c-a*d)*(e+f*x)))))/((b*e-a*f)*(1+m))}
+	// public void test00601() {
+	// check("Integrate((a+b*x)^m*(c+d*x)^(-m-n)*(e+f*x)^(-2+n), x)",
+	// "((a+b*x)^(1+m)*(c+d*x)^(-m-n)*(((b*e-a*f)*(c+d*x))/((b*c-a*d)*(e+f*x)))^(m+n)*(e+f*x)^(-1+n)*Hypergeometric2F1(1+m,
+	// m+n, 2+m, -(((d*e-c*f)*(a+b*x))/((b*c-a*d)*(e+f*x)))))/((b*e-a*f)*(1+m))");
+	//
+	// }
+	//
+	// // {(a+b*x)^m*(c+d*x)^n*((b*c*f+a*d*f+a*d*f*m+b*c*f*n)/(b*d*(2+m+n))+f*x)^(-3-m-n), x, 1,
+	// // (b*d*(2+m+n)*(a+b*x)^(1+m)*(c+d*x)^(1+n)*((f*(a*d*(1+m)+b*c*(1+n)))/(b*d*(2+m+n)) +
+	// // f*x)^(-2-m-n))/((b*c-a*d)^2*f*(1+m)*(1+n))}
+	// public void test00602() {
+	// check("Integrate((a+b*x)^m*(c+d*x)^n*((b*c*f+a*d*f+a*d*f*m+b*c*f*n)/(b*d*(2+m+n))+f*x)^(-3-m-n), x)",
+	// "(b*d*(2+m+n)*(a+b*x)^(1+m)*(c+d*x)^(1+n)*((f*(a*d*(1+m)+b*c*(1+n)))/(b*d*(2+m+n))+f*x)^(-2-m-n))/((b*c-a*d)^2*f*(1+m)*(1+n))");
+	//
+	// }
+	//
+	// // {(a+b*x)^m*(c+d*x)^(-1-(d*(b*e-a*f)*(1+m))/(b*(d*e-c*f)))*(e+f*x)^(-1+((b*c-a*d)*f*(1 +
+	// // m))/(b*(d*e-c*f))), x, 1, (b*(a+b*x)^(1+m)*(e+f*x)^(((b*c-a*d)*f*(1+m))/(b*(d*e-c*f))))/((b*c -
+	// // a*d)*(b*e-a*f)*(1+m)*(c+d*x)^((d*(b*e-a*f)*(1+m))/(b*(d*e-c*f))))}
+	// public void test00603() {
+	// check("Integrate((a+b*x)^m*(c+d*x)^(-1-(d*(b*e-a*f)*(1+m))/(b*(d*e-c*f)))*(e+f*x)^(-1+((b*c-a*d)*f*(1+m))/(b*(d*e-c*f))),
+	// x)",
+	// "(b*(a+b*x)^(1+m)*(e+f*x)^(((b*c-a*d)*f*(1+m))/(b*(d*e-c*f))))/((b*c-a*d)*(b*e-a*f)*(1+m)*(c+d*x)^((d*(b*e-a*f)*(1+m))/(b*(d*e-c*f))))");
+	//
+	// }
+	//
+	// // {(a+b*x)^m*(c+d*x)^n*(e+f*x)^(-2-m-n), x, 1, ((a+b*x)^(1+m)*(c+d*x)^n*(e+f*x)^(-1-m -
+	// // n)*Hypergeometric2F1(1+m, -n, 2+m, -(((d*e-c*f)*(a+b*x))/((b*c-a*d)*(e+f*x)))))/((b*e-a*f)*(1 +
+	// // m)*(((b*e-a*f)*(c+d*x))/((b*c-a*d)*(e+f*x)))^n)}
+	// public void test00604() {
+	// check("Integrate((a+b*x)^m*(c+d*x)^n*(e+f*x)^(-2-m-n), x)",
+	// "((a+b*x)^(1+m)*(c+d*x)^n*(e+f*x)^(-1-m-n)*Hypergeometric2F1(1+m, -n, 2+m,
+	// -(((d*e-c*f)*(a+b*x))/((b*c-a*d)*(e+f*x)))))/((b*e-a*f)*(1+m)*(((b*e-a*f)*(c+d*x))/((b*c-a*d)*(e+f*x)))^n)");
+	//
+	// }
+	//
+	// // {(3+4*x)^n/(Sqrt(1-x)*Sqrt(1+x)), x, 1, -(Sqrt(2)*7^n*Sqrt(1-x)*AppellF1(1/2, 1/2, -n, 3/2, (1-x)/2,
+	// // (4*(1-x))/7))}
+	// public void test00605() {
+	// check("Integrate((3+4*x)^n/(Sqrt(1-x)*Sqrt(1+x)), x)",
+	// "-(Sqrt(2)*7^n*Sqrt(1-x)*AppellF1(1/2, 1/2, -n, 3/2, (1-x)/2, (4*(1-x))/7))");
+	//
+	// }
+	//
+	// // {(3-4*x)^n/(Sqrt(1-x)*Sqrt(1+x)), x, 1, Sqrt(2)*7^n*Sqrt(1+x)*AppellF1(1/2, -n, 1/2, 3/2, (4*(1+x))/7,
+	// // (1+x)/2)}
+	// public void test00606() {
+	// check("Integrate((3-4*x)^n/(Sqrt(1-x)*Sqrt(1+x)), x)",
+	// "Sqrt(2)*7^n*Sqrt(1+x)*AppellF1(1/2, -n, 1/2, 3/2, (4*(1+x))/7, (1+x)/2)");
+	//
+	// }
+	//
+	// // {(-3+4*x)^n/(Sqrt(1-x)*Sqrt(1+x)), x, 1, -(Sqrt(2)*Sqrt(1-x)*AppellF1(1/2, 1/2, -n, 3/2, (1-x)/2, 4*(1
+	// // -x)))}
+	// public void test00607() {
+	// check("Integrate((-3+4*x)^n/(Sqrt(1-x)*Sqrt(1+x)), x)",
+	// "-(Sqrt(2)*Sqrt(1-x)*AppellF1(1/2, 1/2, -n, 3/2, (1-x)/2, 4*(1-x)))");
+	//
+	// }
+	//
+	// // {(-3-4*x)^n/(Sqrt(1-x)*Sqrt(1+x)), x, 1, Sqrt(2)*Sqrt(1+x)*AppellF1(1/2, -n, 1/2, 3/2, 4*(1+x), (1 +
+	// // x)/2)}
+	// public void test00608() {
+	// check("Integrate((-3-4*x)^n/(Sqrt(1-x)*Sqrt(1+x)), x)",
+	// "Sqrt(2)*Sqrt(1+x)*AppellF1(1/2, -n, 1/2, 3/2, 4*(1+x), (1+x)/2)");
+	//
+	// }
+	//
+	// // {(a+b*x)^m/(e+f*x)^2, x, 1, (b*(a+b*x)^(1+m)*Hypergeometric2F1(2, 1+m, 2+m, -((f*(a+b*x))/(b*e -
+	// // a*f))))/((b*e-a*f)^2*(1+m))}
+	// public void test00609() {
+	// check("Integrate((a+b*x)^m/(e+f*x)^2, x)",
+	// "(b*(a+b*x)^(1+m)*Hypergeometric2F1(2, 1+m, 2+m, -((f*(a+b*x))/(b*e-a*f))))/((b*e-a*f)^2*(1+m))");
+	//
+	// }
+	//
+	// // {a+b*x^2, x, 1, a*x+(b*x^3)/3}
+	// public void test00610() {
+	// check("Integrate(a+b*x^2, x)", "a*x+(b*x^3)/3");
+	//
+	// }
+	//
+	// // {x*(a+b*x^2)^2, x, 1, (a+b*x^2)^3/(6*b)}
+	// public void test00611() {
+	// check("Integrate(x*(a+b*x^2)^2, x)", "(a+b*x^2)^3/(6*b)");
+	//
+	// }
+	//
+	// // {(a+b*x^2)^2/x^7, x, 1, -(a+b*x^2)^3/(6*a*x^6)}
+	// public void test00612() {
+	// check("Integrate((a+b*x^2)^2/x^7, x)", "-(a+b*x^2)^3/(6*a*x^6)");
+	//
+	// }
+	//
+	// // {x*(a+b*x^2)^3, x, 1, (a+b*x^2)^4/(8*b)}
+	// public void test00613() {
+	// check("Integrate(x*(a+b*x^2)^3, x)", "(a+b*x^2)^4/(8*b)");
+	//
+	// }
+	//
+	// // {(a+b*x^2)^3/x^9, x, 1, -(a+b*x^2)^4/(8*a*x^8)}
+	// public void test00614() {
+	// check("Integrate((a+b*x^2)^3/x^9, x)", "-(a+b*x^2)^4/(8*a*x^8)");
+	//
+	// }
+	//
+	// // {x*(a+b*x^2)^5, x, 1, (a+b*x^2)^6/(12*b)}
+	// public void test00615() {
+	// check("Integrate(x*(a+b*x^2)^5, x)", "(a+b*x^2)^6/(12*b)");
+	//
+	// }
+	//
+	// // {(a+b*x^2)^5/x^13, x, 1, -(a+b*x^2)^6/(12*a*x^12)}
+	// public void test00616() {
+	// check("Integrate((a+b*x^2)^5/x^13, x)", "-(a+b*x^2)^6/(12*a*x^12)");
+	//
+	// }
+	//
+	// // {x*(a+b*x^2)^8, x, 1, (a+b*x^2)^9/(18*b)}
+	// public void test00617() {
+	// check("Integrate(x*(a+b*x^2)^8, x)", "(a+b*x^2)^9/(18*b)");
+	//
+	// }
+	//
+	// // {(a+b*x^2)^8/x^19, x, 1, -(a+b*x^2)^9/(18*a*x^18)}
+	// public void test00618() {
+	// check("Integrate((a+b*x^2)^8/x^19, x)", "-(a+b*x^2)^9/(18*a*x^18)");
+	//
+	// }
+	//
+	// // {x/(a+b*x^2), x, 1, Log(a+b*x^2)/(2*b)}
+	// public void test00619() {
+	// check("Integrate(x/(a+b*x^2), x)", "Log(a+b*x^2)/(2*b)");
+	//
+	// }
+	//
+	// // {(a+b*x^2)^(-1), x, 1, ArcTan((Sqrt(b)*x)/Sqrt(a))/(Sqrt(a)*Sqrt(b))}
+	// public void test00620() {
+	// check("Integrate((a+b*x^2)^(-1), x)", "ArcTan((Sqrt(b)*x)/Sqrt(a))/(Sqrt(a)*Sqrt(b))");
+	//
+	// }
+	//
+	// // {x/(a+b*x^2)^2, x, 1, -1/(2*b*(a+b*x^2))}
+	// public void test00621() {
+	// check("Integrate(x/(a+b*x^2)^2, x)", "-1/(2*b*(a+b*x^2))");
+	//
+	// }
+	//
+	// // {x^3/(a+b*x^2)^3, x, 1, x^4/(4*a*(a+b*x^2)^2)}
+	// public void test00622() {
+	// check("Integrate(x^3/(a+b*x^2)^3, x)", "x^4/(4*a*(a+b*x^2)^2)");
+	//
+	// }
+	//
+	// // {x/(a+b*x^2)^3, x, 1, -1/(4*b*(a+b*x^2)^2)}
+	// public void test00623() {
+	// check("Integrate(x/(a+b*x^2)^3, x)", "-1/(4*b*(a+b*x^2)^2)");
+	//
+	// }
+	//
+	// // {x^17/(a+b*x^2)^10, x, 1, x^18/(18*a*(a+b*x^2)^9)}
+	// public void test00624() {
+	// check("Integrate(x^17/(a+b*x^2)^10, x)", "x^18/(18*a*(a+b*x^2)^9)");
+	//
+	// }
+	//
+	// // {x/(a+b*x^2)^10, x, 1, -1/(18*b*(a+b*x^2)^9)}
+	// public void test00625() {
+	// check("Integrate(x/(a+b*x^2)^10, x)", "-1/(18*b*(a+b*x^2)^9)");
+	//
+	// }
+	//
+	// // {x/(a-b*x^2), x, 1, -Log(a-b*x^2)/(2*b)}
+	// public void test00626() {
+	// check("Integrate(x/(a-b*x^2), x)", "-Log(a-b*x^2)/(2*b)");
+	//
+	// }
+	//
+	// // {(a-b*x^2)^(-1), x, 1, ArcTanh((Sqrt(b)*x)/Sqrt(a))/(Sqrt(a)*Sqrt(b))}
+	// public void test00627() {
+	// check("Integrate((a-b*x^2)^(-1), x)", "ArcTanh((Sqrt(b)*x)/Sqrt(a))/(Sqrt(a)*Sqrt(b))");
+	//
+	// }
+	//
+	// // {x/(a-b*x^2)^2, x, 1, 1/(2*b*(a-b*x^2))}
+	// public void test00628() {
+	// check("Integrate(x/(a-b*x^2)^2, x)", "1/(2*b*(a-b*x^2))");
+	//
+	// }
+	//
+	// // {x^3/(a-b*x^2)^3, x, 1, x^4/(4*a*(a-b*x^2)^2)}
+	// public void test00629() {
+	// check("Integrate(x^3/(a-b*x^2)^3, x)", "x^4/(4*a*(a-b*x^2)^2)");
+	//
+	// }
+	//
+	// // {x/(a-b*x^2)^3, x, 1, 1/(4*b*(a-b*x^2)^2)}
+	// public void test00630() {
+	// check("Integrate(x/(a-b*x^2)^3, x)", "1/(4*b*(a-b*x^2)^2)");
+	//
+	// }
+	//
+	// // {x/(a-b*x^2)^5, x, 1, 1/(8*b*(a-b*x^2)^4)}
+	// public void test00631() {
+	// check("Integrate(x/(a-b*x^2)^5, x)", "1/(8*b*(a-b*x^2)^4)");
+	//
+	// }
+	//
+	// // {(-1+a+a*x^2)^(-1), x, 1, -(ArcTanh((Sqrt(a)*x)/Sqrt(1-a))/Sqrt((1-a)*a))}
+	// public void test00632() {
+	// check("Integrate((-1+a+a*x^2)^(-1), x)", "-(ArcTanh((Sqrt(a)*x)/Sqrt(1-a))/Sqrt((1-a)*a))");
+	//
+	// }
+	//
+	// // {(-c-d+(c-d)*x^2)^(-1), x, 1, -(ArcTanh((Sqrt(c-d)*x)/Sqrt(c+d))/(Sqrt(c-d)*Sqrt(c+d)))}
+	// public void test00633() {
+	// check("Integrate((-c-d+(c-d)*x^2)^(-1), x)", "-(ArcTanh((Sqrt(c-d)*x)/Sqrt(c+d))/(Sqrt(c-d)*Sqrt(c+d)))");
+	//
+	// }
+	//
+	// // {(a+(b-a*c)*x^2)^(-1), x, 1, ArcTan((Sqrt(b-a*c)*x)/Sqrt(a))/(Sqrt(a)*Sqrt(b-a*c))}
+	// public void test00634() {
+	// check("Integrate((a+(b-a*c)*x^2)^(-1), x)", "ArcTan((Sqrt(b-a*c)*x)/Sqrt(a))/(Sqrt(a)*Sqrt(b-a*c))");
+	//
+	// }
+	//
+	// // {(a-(b-a*c)*x^2)^(-1), x, 1, ArcTanh((Sqrt(b-a*c)*x)/Sqrt(a))/(Sqrt(a)*Sqrt(b-a*c))}
+	// public void test00635() {
+	// check("Integrate((a-(b-a*c)*x^2)^(-1), x)", "ArcTanh((Sqrt(b-a*c)*x)/Sqrt(a))/(Sqrt(a)*Sqrt(b-a*c))");
+	//
+	// }
+	//
+	// // {(c*(a-d)-(b-c)*x^2)^(-1), x, 1, ArcTanh((Sqrt(b-c)*x)/(Sqrt(c)*Sqrt(a-d)))/(Sqrt(b-c)*Sqrt(c)*Sqrt(a
+	// // -d))}
+	// public void test00636() {
+	// check("Integrate((c*(a-d)-(b-c)*x^2)^(-1), x)",
+	// "ArcTanh((Sqrt(b-c)*x)/(Sqrt(c)*Sqrt(a-d)))/(Sqrt(b-c)*Sqrt(c)*Sqrt(a-d))");
+	//
+	// }
+	//
+	// // {x^m/(a+b*x^2), x, 1, (x^(1+m)*Hypergeometric2F1(1, (1+m)/2, (3+m)/2, -((b*x^2)/a)))/(a*(1+m))}
+	// public void test00637() {
+	// check("Integrate(x^m/(a+b*x^2), x)",
+	// "(x^(1+m)*Hypergeometric2F1(1, (1+m)/2, (3+m)/2, -((b*x^2)/a)))/(a*(1+m))");
+	//
+	// }
+	//
+	// // {x^m/(a+b*x^2)^2, x, 1, (x^(1+m)*Hypergeometric2F1(2, (1+m)/2, (3+m)/2, -((b*x^2)/a)))/(a^2*(1+m))}
+	// public void test00638() {
+	// check("Integrate(x^m/(a+b*x^2)^2, x)",
+	// "(x^(1+m)*Hypergeometric2F1(2, (1+m)/2, (3+m)/2, -((b*x^2)/a)))/(a^2*(1+m))");
+	//
+	// }
+	//
+	// // {x^m/(a+b*x^2)^3, x, 1, (x^(1+m)*Hypergeometric2F1(3, (1+m)/2, (3+m)/2, -((b*x^2)/a)))/(a^3*(1+m))}
+	// public void test00639() {
+	// check("Integrate(x^m/(a+b*x^2)^3, x)",
+	// "(x^(1+m)*Hypergeometric2F1(3, (1+m)/2, (3+m)/2, -((b*x^2)/a)))/(a^3*(1+m))");
+	//
+	// }
+	//
+	// // {(c*x)^(1+m)/(a+b*x^2), x, 1, ((c*x)^(2+m)*Hypergeometric2F1(1, (2+m)/2, (4+m)/2,
+	// // -((b*x^2)/a)))/(a*c*(2+m))}
+	// public void test00640() {
+	// check("Integrate((c*x)^(1+m)/(a+b*x^2), x)",
+	// "((c*x)^(2+m)*Hypergeometric2F1(1, (2+m)/2, (4+m)/2, -((b*x^2)/a)))/(a*c*(2+m))");
+	//
+	// }
+	//
+	// // {(c*x)^m/(a+b*x^2), x, 1, ((c*x)^(1+m)*Hypergeometric2F1(1, (1+m)/2, (3+m)/2, -((b*x^2)/a)))/(a*c*(1 +
+	// // m))}
+	// public void test00641() {
+	// check("Integrate((c*x)^m/(a+b*x^2), x)",
+	// "((c*x)^(1+m)*Hypergeometric2F1(1, (1+m)/2, (3+m)/2, -((b*x^2)/a)))/(a*c*(1+m))");
+	//
+	// }
+	//
+	// // {(c*x)^(-1+m)/(a+b*x^2), x, 1, ((c*x)^m*Hypergeometric2F1(1, m/2, (2+m)/2, -((b*x^2)/a)))/(a*c*m)}
+	// public void test00642() {
+	// check("Integrate((c*x)^(-1+m)/(a+b*x^2), x)",
+	// "((c*x)^m*Hypergeometric2F1(1, m/2, (2+m)/2, -((b*x^2)/a)))/(a*c*m)");
+	//
+	// }
+	//
+	// // {(c*x)^(-2+m)/(a+b*x^2), x, 1, -(((c*x)^(-1+m)*Hypergeometric2F1(1, (-1+m)/2, (1+m)/2,
+	// // -((b*x^2)/a)))/(a*c*(1-m)))}
+	// public void test00643() {
+	// check("Integrate((c*x)^(-2+m)/(a+b*x^2), x)",
+	// "-(((c*x)^(-1+m)*Hypergeometric2F1(1, (-1+m)/2, (1+m)/2, -((b*x^2)/a)))/(a*c*(1-m)))");
+	//
+	// }
+	//
+	// // {(c*x)^(-3+m)/(a+b*x^2), x, 1, -(((c*x)^(-2+m)*Hypergeometric2F1(1, (-2+m)/2, m/2, -((b*x^2)/a)))/(a*c*(2
+	// // -m)))}
+	// public void test00644() {
+	// check("Integrate((c*x)^(-3+m)/(a+b*x^2), x)",
+	// "-(((c*x)^(-2+m)*Hypergeometric2F1(1, (-2+m)/2, m/2, -((b*x^2)/a)))/(a*c*(2-m)))");
+	//
+	// }
+	//
+	// // {x^m/(1+(a*x^2)/b)^2, x, 1, (x^(1+m)*Hypergeometric2F1(2, (1+m)/2, (3+m)/2, -((a*x^2)/b)))/(1+m)}
+	// public void test00645() {
+	// check("Integrate(x^m/(1+(a*x^2)/b)^2, x)",
+	// "(x^(1+m)*Hypergeometric2F1(2, (1+m)/2, (3+m)/2, -((a*x^2)/b)))/(1+m)");
+	//
+	// }
+	//
+	// // {x*Sqrt(a+b*x^2), x, 1, (a+b*x^2)^(3/2)/(3*b)}
+	// public void test00646() {
+	// check("Integrate(x*Sqrt(a+b*x^2), x)", "(a+b*x^2)^(3/2)/(3*b)");
+	//
+	// }
+	//
+	// // {Sqrt(a+b*x^2)/x^4, x, 1, -(a+b*x^2)^(3/2)/(3*a*x^3)}
+	// public void test00647() {
+	// check("Integrate(Sqrt(a+b*x^2)/x^4, x)", "-(a+b*x^2)^(3/2)/(3*a*x^3)");
+	//
+	// }
+	//
+	// // {x*(a+b*x^2)^(3/2), x, 1, (a+b*x^2)^(5/2)/(5*b)}
+	// public void test00648() {
+	// check("Integrate(x*(a+b*x^2)^(3/2), x)", "(a+b*x^2)^(5/2)/(5*b)");
+	//
+	// }
+	//
+	// // {(a+b*x^2)^(3/2)/x^6, x, 1, -(a+b*x^2)^(5/2)/(5*a*x^5)}
+	// public void test00649() {
+	// check("Integrate((a+b*x^2)^(3/2)/x^6, x)", "-(a+b*x^2)^(5/2)/(5*a*x^5)");
+	//
+	// }
+	//
+	// // {x*(a+b*x^2)^(5/2), x, 1, (a+b*x^2)^(7/2)/(7*b)}
+	// public void test00650() {
+	// check("Integrate(x*(a+b*x^2)^(5/2), x)", "(a+b*x^2)^(7/2)/(7*b)");
+	//
+	// }
+	//
+	// // {(a+b*x^2)^(5/2)/x^8, x, 1, -(a+b*x^2)^(7/2)/(7*a*x^7)}
+	// public void test00651() {
+	// check("Integrate((a+b*x^2)^(5/2)/x^8, x)", "-(a+b*x^2)^(7/2)/(7*a*x^7)");
+	//
+	// }
+	//
+	// // {x*(a+b*x^2)^(9/2), x, 1, (a+b*x^2)^(11/2)/(11*b)}
+	// public void test00652() {
+	// check("Integrate(x*(a+b*x^2)^(9/2), x)", "(a+b*x^2)^(11/2)/(11*b)");
+	//
+	// }
+	//
+	// // {(a+b*x^2)^(9/2)/x^12, x, 1, -(a+b*x^2)^(11/2)/(11*a*x^11)}
+	// public void test00653() {
+	// check("Integrate((a+b*x^2)^(9/2)/x^12, x)", "-(a+b*x^2)^(11/2)/(11*a*x^11)");
+	//
+	// }
+	//
+	// // {x*Sqrt(9+4*x^2), x, 1, (9+4*x^2)^(3/2)/12}
+	// public void test00654() {
+	// check("Integrate(x*Sqrt(9+4*x^2), x)", "(9+4*x^2)^(3/2)/12");
+	//
+	// }
+	//
+	// // {Sqrt(9+4*x^2)/x^4, x, 1, -(9+4*x^2)^(3/2)/(27*x^3)}
+	// public void test00655() {
+	// check("Integrate(Sqrt(9+4*x^2)/x^4, x)", "-(9+4*x^2)^(3/2)/(27*x^3)");
+	//
+	// }
+	//
+	// // {x*Sqrt(9-4*x^2), x, 1, -(9-4*x^2)^(3/2)/12}
+	// public void test00656() {
+	// check("Integrate(x*Sqrt(9-4*x^2), x)", "-(9-4*x^2)^(3/2)/12");
+	//
+	// }
+	//
+	// // {Sqrt(9-4*x^2)/x^4, x, 1, -(9-4*x^2)^(3/2)/(27*x^3)}
+	// public void test00657() {
+	// check("Integrate(Sqrt(9-4*x^2)/x^4, x)", "-(9-4*x^2)^(3/2)/(27*x^3)");
+	//
+	// }
+	//
+	// // {x*Sqrt(-9+4*x^2), x, 1, (-9+4*x^2)^(3/2)/12}
+	// public void test00658() {
+	// check("Integrate(x*Sqrt(-9+4*x^2), x)", "(-9+4*x^2)^(3/2)/12");
+	//
+	// }
+	//
+	// // {Sqrt(-9+4*x^2)/x^4, x, 1, (-9+4*x^2)^(3/2)/(27*x^3)}
+	// public void test00659() {
+	// check("Integrate(Sqrt(-9+4*x^2)/x^4, x)", "(-9+4*x^2)^(3/2)/(27*x^3)");
+	//
+	// }
+	//
+	// // {x*Sqrt(-9-4*x^2), x, 1, -(-9-4*x^2)^(3/2)/12}
+	// public void test00660() {
+	// check("Integrate(x*Sqrt(-9-4*x^2), x)", "-(-9-4*x^2)^(3/2)/12");
+	//
+	// }
+	//
+	// // {Sqrt(-9-4*x^2)/x^4, x, 1, (-9-4*x^2)^(3/2)/(27*x^3)}
+	// public void test00661() {
+	// check("Integrate(Sqrt(-9-4*x^2)/x^4, x)", "(-9-4*x^2)^(3/2)/(27*x^3)");
+	//
+	// }
+	//
+	// // {x/Sqrt(a+b*x^2), x, 1, Sqrt(a+b*x^2)/b}
+	// public void test00662() {
+	// check("Integrate(x/Sqrt(a+b*x^2), x)", "Sqrt(a+b*x^2)/b");
+	//
+	// }
+	//
+	// // {1/(x^2*Sqrt(a+b*x^2)), x, 1, -(Sqrt(a+b*x^2)/(a*x))}
+	// public void test00663() {
+	// check("Integrate(1/(x^2*Sqrt(a+b*x^2)), x)", "-(Sqrt(a+b*x^2)/(a*x))");
+	//
+	// }
+	//
+	// // {x/(a+b*x^2)^(3/2), x, 1, -(1/(b*Sqrt(a+b*x^2)))}
+	// public void test00664() {
+	// check("Integrate(x/(a+b*x^2)^(3/2), x)", "-(1/(b*Sqrt(a+b*x^2)))");
+	//
+	// }
+	//
+	// // {(a+b*x^2)^(-3/2), x, 1, x/(a*Sqrt(a+b*x^2))}
+	// public void test00665() {
+	// check("Integrate((a+b*x^2)^(-3/2), x)", "x/(a*Sqrt(a+b*x^2))");
+	//
+	// }
+	//
+	// // {x^2/(a+b*x^2)^(5/2), x, 1, x^3/(3*a*(a+b*x^2)^(3/2))}
+	// public void test00666() {
+	// check("Integrate(x^2/(a+b*x^2)^(5/2), x)", "x^3/(3*a*(a+b*x^2)^(3/2))");
+	//
+	// }
+	//
+	// // {x/(a+b*x^2)^(5/2), x, 1, -1/(3*b*(a+b*x^2)^(3/2))}
+	// public void test00667() {
+	// check("Integrate(x/(a+b*x^2)^(5/2), x)", "-1/(3*b*(a+b*x^2)^(3/2))");
+	//
+	// }
+	//
+	// // {x^6/(a+b*x^2)^(9/2), x, 1, x^7/(7*a*(a+b*x^2)^(7/2))}
+	// public void test00668() {
+	// check("Integrate(x^6/(a+b*x^2)^(9/2), x)", "x^7/(7*a*(a+b*x^2)^(7/2))");
+	//
+	// }
+	//
+	// // {x/(a+b*x^2)^(9/2), x, 1, -1/(7*b*(a+b*x^2)^(7/2))}
+	// public void test00669() {
+	// check("Integrate(x/(a+b*x^2)^(9/2), x)", "-1/(7*b*(a+b*x^2)^(7/2))");
+	//
+	// }
+	//
+	// // {x/Sqrt(9+4*x^2), x, 1, Sqrt(9+4*x^2)/4}
+	// public void test00670() {
+	// check("Integrate(x/Sqrt(9+4*x^2), x)", "Sqrt(9+4*x^2)/4");
+	//
+	// }
+	//
+	// // {1/Sqrt(9+4*x^2), x, 1, ArcSinh((2*x)/3)/2}
+	// public void test00671() {
+	// check("Integrate(1/Sqrt(9+4*x^2), x)", "ArcSinh((2*x)/3)/2");
+	//
+	// }
+	//
+	// // {1/(x^2*Sqrt(9+4*x^2)), x, 1, -Sqrt(9+4*x^2)/(9*x)}
+	// public void test00672() {
+	// check("Integrate(1/(x^2*Sqrt(9+4*x^2)), x)", "-Sqrt(9+4*x^2)/(9*x)");
+	//
+	// }
+	//
+	// // {x/Sqrt(9-4*x^2), x, 1, -Sqrt(9-4*x^2)/4}
+	// public void test00673() {
+	// check("Integrate(x/Sqrt(9-4*x^2), x)", "-Sqrt(9-4*x^2)/4");
+	//
+	// }
+	//
+	// // {1/Sqrt(9-4*x^2), x, 1, ArcSin((2*x)/3)/2}
+	// public void test00674() {
+	// check("Integrate(1/Sqrt(9-4*x^2), x)", "ArcSin((2*x)/3)/2");
+	//
+	// }
+	//
+	// // {1/(x^2*Sqrt(9-4*x^2)), x, 1, -Sqrt(9-4*x^2)/(9*x)}
+	// public void test00675() {
+	// check("Integrate(1/(x^2*Sqrt(9-4*x^2)), x)", "-Sqrt(9-4*x^2)/(9*x)");
+	//
+	// }
+	//
+	// // {x/Sqrt(-9+4*x^2), x, 1, Sqrt(-9+4*x^2)/4}
+	// public void test00676() {
+	// check("Integrate(x/Sqrt(-9+4*x^2), x)", "Sqrt(-9+4*x^2)/4");
+	//
+	// }
+	//
+	// // {1/(x^2*Sqrt(-9+4*x^2)), x, 1, Sqrt(-9+4*x^2)/(9*x)}
+	// public void test00677() {
+	// check("Integrate(1/(x^2*Sqrt(-9+4*x^2)), x)", "Sqrt(-9+4*x^2)/(9*x)");
+	//
+	// }
+	//
+	// // {x/Sqrt(-9-4*x^2), x, 1, -Sqrt(-9-4*x^2)/4}
+	// public void test00678() {
+	// check("Integrate(x/Sqrt(-9-4*x^2), x)", "-Sqrt(-9-4*x^2)/4");
+	//
+	// }
+	//
+	// // {1/(x^2*Sqrt(-9-4*x^2)), x, 1, Sqrt(-9-4*x^2)/(9*x)}
+	// public void test00679() {
+	// check("Integrate(1/(x^2*Sqrt(-9-4*x^2)), x)", "Sqrt(-9-4*x^2)/(9*x)");
+	//
+	// }
+	//
+	// // {1/Sqrt(9+b*x^2), x, 1, ArcSinh((Sqrt(b)*x)/3)/Sqrt(b)}
+	// public void test00680() {
+	// check("Integrate(1/Sqrt(9+b*x^2), x)", "ArcSinh((Sqrt(b)*x)/3)/Sqrt(b)");
+	//
+	// }
+	//
+	// // {1/Sqrt(9-b*x^2), x, 1, ArcSin((Sqrt(b)*x)/3)/Sqrt(b)}
+	// public void test00681() {
+	// check("Integrate(1/Sqrt(9-b*x^2), x)", "ArcSin((Sqrt(b)*x)/3)/Sqrt(b)");
+	//
+	// }
+	//
+	// // {1/Sqrt(Pi+b*x^2), x, 1, ArcSinh((Sqrt(b)*x)/Sqrt(Pi))/Sqrt(b)}
+	// public void test00682() {
+	// check("Integrate(1/Sqrt(Pi+b*x^2), x)", "ArcSinh((Sqrt(b)*x)/Sqrt(Pi))/Sqrt(b)");
+	//
+	// }
+	//
+	// // {1/Sqrt(Pi-b*x^2), x, 1, ArcSin((Sqrt(b)*x)/Sqrt(Pi))/Sqrt(b)}
+	// public void test00683() {
+	// check("Integrate(1/Sqrt(Pi-b*x^2), x)", "ArcSin((Sqrt(b)*x)/Sqrt(Pi))/Sqrt(b)");
+	//
+	// }
+	//
+	// // {(x^(1+m)*(a*(2+m)+b*(3+m)*x^2))/Sqrt(a+b*x^2), x, 1, x^(2+m)*Sqrt(a+b*x^2)}
+	// public void test00684() {
+	// check("Integrate((x^(1+m)*(a*(2+m)+b*(3+m)*x^2))/Sqrt(a+b*x^2), x)", "x^(2+m)*Sqrt(a+b*x^2)");
+	//
+	// }
+	//
+	// // {(x^(-1+m)*(a*m+b*(-1+m)*x^2))/(a+b*x^2)^(3/2), x, 1, x^m/Sqrt(a+b*x^2)}
+	// public void test00685() {
+	// check("Integrate((x^(-1+m)*(a*m+b*(-1+m)*x^2))/(a+b*x^2)^(3/2), x)", "x^m/Sqrt(a+b*x^2)");
+	//
+	// }
+	//
+	// // {x*(a+b*x^2)^(1/3), x, 1, (3*(a+b*x^2)^(4/3))/(8*b)}
+	// public void test00686() {
+	// check("Integrate(x*(a+b*x^2)^(1/3), x)", "(3*(a+b*x^2)^(4/3))/(8*b)");
+	//
+	// }
+	//
+	// // {x*(a+b*x^2)^(2/3), x, 1, (3*(a+b*x^2)^(5/3))/(10*b)}
+	// public void test00687() {
+	// check("Integrate(x*(a+b*x^2)^(2/3), x)", "(3*(a+b*x^2)^(5/3))/(10*b)");
+	//
+	// }
+	//
+	// // {x*(a+b*x^2)^(4/3), x, 1, (3*(a+b*x^2)^(7/3))/(14*b)}
+	// public void test00688() {
+	// check("Integrate(x*(a+b*x^2)^(4/3), x)", "(3*(a+b*x^2)^(7/3))/(14*b)");
+	//
+	// }
+	//
+	// // {x*(-1+x^2)^(7/3), x, 1, (3*(-1+x^2)^(10/3))/20}
+	// public void test00689() {
+	// check("Integrate(x*(-1+x^2)^(7/3), x)", "(3*(-1+x^2)^(10/3))/20");
+	//
+	// }
+	//
+	// // {x/(a+b*x^2)^(1/3), x, 1, (3*(a+b*x^2)^(2/3))/(4*b)}
+	// public void test00690() {
+	// check("Integrate(x/(a+b*x^2)^(1/3), x)", "(3*(a+b*x^2)^(2/3))/(4*b)");
+	//
+	// }
+	//
+	// // {x/(a+b*x^2)^(2/3), x, 1, (3*(a+b*x^2)^(1/3))/(2*b)}
+	// public void test00691() {
+	// check("Integrate(x/(a+b*x^2)^(2/3), x)", "(3*(a+b*x^2)^(1/3))/(2*b)");
+	//
+	// }
+	//
+	// // {x/(a+b*x^2)^(4/3), x, 1, -3/(2*b*(a+b*x^2)^(1/3))}
+	// public void test00692() {
+	// check("Integrate(x/(a+b*x^2)^(4/3), x)", "-3/(2*b*(a+b*x^2)^(1/3))");
+	//
+	// }
+	//
+	// // {(a+b*x^2)^(1/3)/(c*x)^(11/3), x, 1, (-3*(a+b*x^2)^(4/3))/(8*a*c*(c*x)^(8/3))}
+	// public void test00693() {
+	// check("Integrate((a+b*x^2)^(1/3)/(c*x)^(11/3), x)", "(-3*(a+b*x^2)^(4/3))/(8*a*c*(c*x)^(8/3))");
+	//
+	// }
+	//
+	// // {(a+b*x^2)^(4/3)/(c*x)^(17/3), x, 1, (-3*(a+b*x^2)^(7/3))/(14*a*c*(c*x)^(14/3))}
+	// public void test00694() {
+	// check("Integrate((a+b*x^2)^(4/3)/(c*x)^(17/3), x)", "(-3*(a+b*x^2)^(7/3))/(14*a*c*(c*x)^(14/3))");
+	//
+	// }
+	//
+	// // {1/((c*x)^(5/3)*(a+b*x^2)^(2/3)), x, 1, (-3*(a+b*x^2)^(1/3))/(2*a*c*(c*x)^(2/3))}
+	// public void test00695() {
+	// check("Integrate(1/((c*x)^(5/3)*(a+b*x^2)^(2/3)), x)", "(-3*(a+b*x^2)^(1/3))/(2*a*c*(c*x)^(2/3))");
+	//
+	// }
+	//
+	// // {(2-3*x^2)^(-1/4), x, 1, (2*2^(1/4)*EllipticE(ArcSin(Sqrt(3/2)*x)/2, 2))/Sqrt(3)}
+	// public void test00696() {
+	// check("Integrate((2-3*x^2)^(-1/4), x)", "(2*2^(1/4)*EllipticE(ArcSin(Sqrt(3/2)*x)/2, 2))/Sqrt(3)");
+	//
+	// }
+	//
+	// // {(2+3*x^2)^(-3/4), x, 1, (2^(3/4)*EllipticF(ArcTan(Sqrt(3/2)*x)/2, 2))/Sqrt(3)}
+	// public void test00697() {
+	// check("Integrate((2+3*x^2)^(-3/4), x)", "(2^(3/4)*EllipticF(ArcTan(Sqrt(3/2)*x)/2, 2))/Sqrt(3)");
+	//
+	// }
+	//
+	// // {(2-3*x^2)^(-3/4), x, 1, (2^(3/4)*EllipticF(ArcSin(Sqrt(3/2)*x)/2, 2))/Sqrt(3)}
+	// public void test00698() {
+	// check("Integrate((2-3*x^2)^(-3/4), x)", "(2^(3/4)*EllipticF(ArcSin(Sqrt(3/2)*x)/2, 2))/Sqrt(3)");
+	//
+	// }
+	//
+	// // {(a+b*x^2)^(1/4)/(c*x)^(7/2), x, 1, (-2*(a+b*x^2)^(5/4))/(5*a*c*(c*x)^(5/2))}
+	// public void test00699() {
+	// check("Integrate((a+b*x^2)^(1/4)/(c*x)^(7/2), x)", "(-2*(a+b*x^2)^(5/4))/(5*a*c*(c*x)^(5/2))");
+	//
+	// }
+	//
+	// // {(a-b*x^2)^(1/4)/(c*x)^(7/2), x, 1, (-2*(a-b*x^2)^(5/4))/(5*a*c*(c*x)^(5/2))}
+	// public void test00700() {
+	// check("Integrate((a-b*x^2)^(1/4)/(c*x)^(7/2), x)", "(-2*(a-b*x^2)^(5/4))/(5*a*c*(c*x)^(5/2))");
+	//
+	// }
+	//
+	// // {1/((c*x)^(5/2)*(a+b*x^2)^(1/4)), x, 1, (-2*(a+b*x^2)^(3/4))/(3*a*c*(c*x)^(3/2))}
+	// public void test00701() {
+	// check("Integrate(1/((c*x)^(5/2)*(a+b*x^2)^(1/4)), x)", "(-2*(a+b*x^2)^(3/4))/(3*a*c*(c*x)^(3/2))");
+	//
+	// }
+	//
+	// // {1/((c*x)^(5/2)*(a-b*x^2)^(1/4)), x, 1, (-2*(a-b*x^2)^(3/4))/(3*a*c*(c*x)^(3/2))}
+	// public void test00702() {
+	// check("Integrate(1/((c*x)^(5/2)*(a-b*x^2)^(1/4)), x)", "(-2*(a-b*x^2)^(3/4))/(3*a*c*(c*x)^(3/2))");
+	//
+	// }
+	//
+	// // {1/((c*x)^(3/2)*(a+b*x^2)^(3/4)), x, 1, (-2*(a+b*x^2)^(1/4))/(a*c*Sqrt(c*x))}
+	// public void test00703() {
+	// check("Integrate(1/((c*x)^(3/2)*(a+b*x^2)^(3/4)), x)", "(-2*(a+b*x^2)^(1/4))/(a*c*Sqrt(c*x))");
+	//
+	// }
+	//
+	// // {1/((c*x)^(3/2)*(a-b*x^2)^(3/4)), x, 1, (-2*(a-b*x^2)^(1/4))/(a*c*Sqrt(c*x))}
+	// public void test00704() {
+	// check("Integrate(1/((c*x)^(3/2)*(a-b*x^2)^(3/4)), x)", "(-2*(a-b*x^2)^(1/4))/(a*c*Sqrt(c*x))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(c*x)*(a+b*x^2)^(5/4)), x, 1, (2*Sqrt(c*x))/(a*c*(a+b*x^2)^(1/4))}
+	// public void test00705() {
+	// check("Integrate(1/(Sqrt(c*x)*(a+b*x^2)^(5/4)), x)", "(2*Sqrt(c*x))/(a*c*(a+b*x^2)^(1/4))");
+	//
+	// }
+	//
+	// // {x*(a+b*x^2)^p, x, 1, (a+b*x^2)^(1+p)/(2*b*(1+p))}
+	// public void test00706() {
+	// check("Integrate(x*(a+b*x^2)^p, x)", "(a+b*x^2)^(1+p)/(2*b*(1+p))");
+	//
+	// }
+	//
+	// // {x^(-3-2*p)*(a+b*x^2)^p, x, 1, -(a+b*x^2)^(1+p)/(2*a*(1+p)*x^(2*(1+p)))}
+	// public void test00707() {
+	// check("Integrate(x^(-3-2*p)*(a+b*x^2)^p, x)", "-(a+b*x^2)^(1+p)/(2*a*(1+p)*x^(2*(1+p)))");
+	//
+	// }
+	//
+	// // {(a+b*x^2)^(-3/2), x, 1, x/(a*Sqrt(a+b*x^2))}
+	// public void test00708() {
+	// check("Integrate((a+b*x^2)^(-3/2), x)", "x/(a*Sqrt(a+b*x^2))");
+	//
+	// }
+	//
+	// // {1/((a-b*x^2)^(1/3)*(3*a+b*x^2)), x, 1,
+	// // ArcTan((Sqrt(3)*Sqrt(a))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*a^(5/6)*Sqrt(b))+ArcTan((Sqrt(3)*a^(1/6)*(a^(1/3) -
+	// // 2^(1/3)*(a-b*x^2)^(1/3)))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*a^(5/6)*Sqrt(b)) -
+	// // ArcTanh((Sqrt(b)*x)/Sqrt(a))/(6*2^(2/3)*a^(5/6)*Sqrt(b))+ArcTanh((Sqrt(b)*x)/(a^(1/6)*(a^(1/3)+2^(1/3)*(a -
+	// // b*x^2)^(1/3))))/(2*2^(2/3)*a^(5/6)*Sqrt(b))}
+	// public void test00709() {
+	// check("Integrate(1/((a-b*x^2)^(1/3)*(3*a+b*x^2)), x)",
+	// "ArcTan((Sqrt(3)*Sqrt(a))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*a^(5/6)*Sqrt(b))+ArcTan((Sqrt(3)*a^(1/6)*(a^(1/3)-2^(1/3)*(a-b*x^2)^(1/3)))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*a^(5/6)*Sqrt(b))-ArcTanh((Sqrt(b)*x)/Sqrt(a))/(6*2^(2/3)*a^(5/6)*Sqrt(b))+ArcTanh((Sqrt(b)*x)/(a^(1/6)*(a^(1/3)+2^(1/3)*(a-b*x^2)^(1/3))))/(2*2^(2/3)*a^(5/6)*Sqrt(b))");
+	//
+	// }
+	//
+	// // {1/((-3*a-b*x^2)*(-a+b*x^2)^(1/3)), x, 1,
+	// // -ArcTan((Sqrt(3)*Sqrt(a))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*(-a)^(1/3)*Sqrt(a)*Sqrt(b)) -
+	// // ArcTan((Sqrt(3)*Sqrt(a)*((-a)^(1/3)-2^(1/3)*(-a +
+	// // b*x^2)^(1/3)))/((-a)^(1/3)*Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*(-a)^(1/3)*Sqrt(a)*Sqrt(b)) +
+	// // ArcTanh((Sqrt(b)*x)/Sqrt(a))/(6*2^(2/3)*(-a)^(1/3)*Sqrt(a)*Sqrt(b)) -
+	// // ArcTanh(((-a)^(1/3)*Sqrt(b)*x)/(Sqrt(a)*((-a)^(1/3)+2^(1/3)*(-a +
+	// // b*x^2)^(1/3))))/(2*2^(2/3)*(-a)^(1/3)*Sqrt(a)*Sqrt(b))}
+	// public void test00710() {
+	// check("Integrate(1/((-3*a-b*x^2)*(-a+b*x^2)^(1/3)), x)",
+	// "-ArcTan((Sqrt(3)*Sqrt(a))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*(-a)^(1/3)*Sqrt(a)*Sqrt(b))-ArcTan((Sqrt(3)*Sqrt(a)*((-a)^(1/3)-2^(1/3)*(-a+b*x^2)^(1/3)))/((-a)^(1/3)*Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*(-a)^(1/3)*Sqrt(a)*Sqrt(b))+ArcTanh((Sqrt(b)*x)/Sqrt(a))/(6*2^(2/3)*(-a)^(1/3)*Sqrt(a)*Sqrt(b))-ArcTanh(((-a)^(1/3)*Sqrt(b)*x)/(Sqrt(a)*((-a)^(1/3)+2^(1/3)*(-a+b*x^2)^(1/3))))/(2*2^(2/3)*(-a)^(1/3)*Sqrt(a)*Sqrt(b))");
+	//
+	// }
+	//
+	// // {1/((3*a-b*x^2)*(a+b*x^2)^(1/3)), x, 1, -ArcTan((Sqrt(b)*x)/Sqrt(a))/(6*2^(2/3)*a^(5/6)*Sqrt(b)) +
+	// // ArcTan((Sqrt(b)*x)/(a^(1/6)*(a^(1/3)+2^(1/3)*(a+b*x^2)^(1/3))))/(2*2^(2/3)*a^(5/6)*Sqrt(b)) -
+	// // ArcTanh((Sqrt(3)*Sqrt(a))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*a^(5/6)*Sqrt(b))-ArcTanh((Sqrt(3)*a^(1/6)*(a^(1/3) -
+	// // 2^(1/3)*(a+b*x^2)^(1/3)))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*a^(5/6)*Sqrt(b))}
+	// public void test00711() {
+	// check("Integrate(1/((3*a-b*x^2)*(a+b*x^2)^(1/3)), x)",
+	// "-ArcTan((Sqrt(b)*x)/Sqrt(a))/(6*2^(2/3)*a^(5/6)*Sqrt(b))+ArcTan((Sqrt(b)*x)/(a^(1/6)*(a^(1/3)+2^(1/3)*(a+b*x^2)^(1/3))))/(2*2^(2/3)*a^(5/6)*Sqrt(b))-ArcTanh((Sqrt(3)*Sqrt(a))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*a^(5/6)*Sqrt(b))-ArcTanh((Sqrt(3)*a^(1/6)*(a^(1/3)-2^(1/3)*(a+b*x^2)^(1/3)))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*a^(5/6)*Sqrt(b))");
+	//
+	// }
+	//
+	// // {1/((c-d*x^2)*(c+3*d*x^2)^(1/3)), x, 1,
+	// // -ArcTan((Sqrt(3)*Sqrt(d)*x)/Sqrt(c))/(2*2^(2/3)*Sqrt(3)*c^(5/6)*Sqrt(d)) +
+	// // (Sqrt(3)*ArcTan((Sqrt(3)*Sqrt(d)*x)/(c^(1/6)*(c^(1/3)+2^(1/3)*(c +
+	// // 3*d*x^2)^(1/3)))))/(2*2^(2/3)*c^(5/6)*Sqrt(d))-ArcTanh(Sqrt(c)/(Sqrt(d)*x))/(2*2^(2/3)*c^(5/6)*Sqrt(d)) -
+	// // ArcTanh((c^(1/6)*(c^(1/3)-2^(1/3)*(c+3*d*x^2)^(1/3)))/(Sqrt(d)*x))/(2*2^(2/3)*c^(5/6)*Sqrt(d))}
+	// public void test00712() {
+	// check("Integrate(1/((c-d*x^2)*(c+3*d*x^2)^(1/3)), x)",
+	// "-ArcTan((Sqrt(3)*Sqrt(d)*x)/Sqrt(c))/(2*2^(2/3)*Sqrt(3)*c^(5/6)*Sqrt(d))+(Sqrt(3)*ArcTan((Sqrt(3)*Sqrt(d)*x)/(c^(1/6)*(c^(1/3)+2^(1/3)*(c+3*d*x^2)^(1/3)))))/(2*2^(2/3)*c^(5/6)*Sqrt(d))-ArcTanh(Sqrt(c)/(Sqrt(d)*x))/(2*2^(2/3)*c^(5/6)*Sqrt(d))-ArcTanh((c^(1/6)*(c^(1/3)-2^(1/3)*(c+3*d*x^2)^(1/3)))/(Sqrt(d)*x))/(2*2^(2/3)*c^(5/6)*Sqrt(d))");
+	//
+	// }
+	//
+	// // {1/((a-b*x^2)^(1/3)*(3*a+b*x^2)), x, 1,
+	// // ArcTan((Sqrt(3)*Sqrt(a))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*a^(5/6)*Sqrt(b))+ArcTan((Sqrt(3)*a^(1/6)*(a^(1/3) -
+	// // 2^(1/3)*(a-b*x^2)^(1/3)))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*a^(5/6)*Sqrt(b)) -
+	// // ArcTanh((Sqrt(b)*x)/Sqrt(a))/(6*2^(2/3)*a^(5/6)*Sqrt(b))+ArcTanh((Sqrt(b)*x)/(a^(1/6)*(a^(1/3)+2^(1/3)*(a -
+	// // b*x^2)^(1/3))))/(2*2^(2/3)*a^(5/6)*Sqrt(b))}
+	// public void test00713() {
+	// check("Integrate(1/((a-b*x^2)^(1/3)*(3*a+b*x^2)), x)",
+	// "ArcTan((Sqrt(3)*Sqrt(a))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*a^(5/6)*Sqrt(b))+ArcTan((Sqrt(3)*a^(1/6)*(a^(1/3)-2^(1/3)*(a-b*x^2)^(1/3)))/(Sqrt(b)*x))/(2*2^(2/3)*Sqrt(3)*a^(5/6)*Sqrt(b))-ArcTanh((Sqrt(b)*x)/Sqrt(a))/(6*2^(2/3)*a^(5/6)*Sqrt(b))+ArcTanh((Sqrt(b)*x)/(a^(1/6)*(a^(1/3)+2^(1/3)*(a-b*x^2)^(1/3))))/(2*2^(2/3)*a^(5/6)*Sqrt(b))");
+	//
+	// }
+	//
+	// // {1/((c-3*d*x^2)^(1/3)*(c+d*x^2)), x, 1, ArcTan(Sqrt(c)/(Sqrt(d)*x))/(2*2^(2/3)*c^(5/6)*Sqrt(d)) +
+	// // ArcTan((c^(1/6)*(c^(1/3)-2^(1/3)*(c-3*d*x^2)^(1/3)))/(Sqrt(d)*x))/(2*2^(2/3)*c^(5/6)*Sqrt(d)) -
+	// // ArcTanh((Sqrt(3)*Sqrt(d)*x)/Sqrt(c))/(2*2^(2/3)*Sqrt(3)*c^(5/6)*Sqrt(d)) +
+	// // (Sqrt(3)*ArcTanh((Sqrt(3)*Sqrt(d)*x)/(c^(1/6)*(c^(1/3)+2^(1/3)*(c -
+	// // 3*d*x^2)^(1/3)))))/(2*2^(2/3)*c^(5/6)*Sqrt(d))}
+	// public void test00714() {
+	// check("Integrate(1/((c-3*d*x^2)^(1/3)*(c+d*x^2)), x)",
+	// "ArcTan(Sqrt(c)/(Sqrt(d)*x))/(2*2^(2/3)*c^(5/6)*Sqrt(d))+ArcTan((c^(1/6)*(c^(1/3)-2^(1/3)*(c-3*d*x^2)^(1/3)))/(Sqrt(d)*x))/(2*2^(2/3)*c^(5/6)*Sqrt(d))-ArcTanh((Sqrt(3)*Sqrt(d)*x)/Sqrt(c))/(2*2^(2/3)*Sqrt(3)*c^(5/6)*Sqrt(d))+(Sqrt(3)*ArcTanh((Sqrt(3)*Sqrt(d)*x)/(c^(1/6)*(c^(1/3)+2^(1/3)*(c-3*d*x^2)^(1/3)))))/(2*2^(2/3)*c^(5/6)*Sqrt(d))");
+	//
+	// }
+	//
+	// // {1/((1-x^2)^(1/3)*(3+x^2)), x, 1, ArcTan(Sqrt(3)/x)/(2*2^(2/3)*Sqrt(3))+ArcTan((Sqrt(3)*(1-2^(1/3)*(1 -
+	// // x^2)^(1/3)))/x)/(2*2^(2/3)*Sqrt(3))-ArcTanh(x)/(6*2^(2/3))+ArcTanh(x/(1+2^(1/3)*(1 -
+	// // x^2)^(1/3)))/(2*2^(2/3))}
+	// public void test00715() {
+	// check("Integrate(1/((1-x^2)^(1/3)*(3+x^2)), x)",
+	// "ArcTan(Sqrt(3)/x)/(2*2^(2/3)*Sqrt(3))+ArcTan((Sqrt(3)*(1-2^(1/3)*(1-x^2)^(1/3)))/x)/(2*2^(2/3)*Sqrt(3))-ArcTanh(x)/(6*2^(2/3))+ArcTanh(x/(1+2^(1/3)*(1-x^2)^(1/3)))/(2*2^(2/3))");
+	//
+	// }
+	//
+	// // {1/((3-x^2)*(1+x^2)^(1/3)), x, 1, -ArcTan(x)/(6*2^(2/3))+ArcTan(x/(1+2^(1/3)*(1 +
+	// // x^2)^(1/3)))/(2*2^(2/3))-ArcTanh(Sqrt(3)/x)/(2*2^(2/3)*Sqrt(3))-ArcTanh((Sqrt(3)*(1-2^(1/3)*(1 +
+	// // x^2)^(1/3)))/x)/(2*2^(2/3)*Sqrt(3))}
+	// public void test00716() {
+	// check("Integrate(1/((3-x^2)*(1+x^2)^(1/3)), x)",
+	// "-ArcTan(x)/(6*2^(2/3))+ArcTan(x/(1+2^(1/3)*(1+x^2)^(1/3)))/(2*2^(2/3))-ArcTanh(Sqrt(3)/x)/(2*2^(2/3)*Sqrt(3))-ArcTanh((Sqrt(3)*(1-2^(1/3)*(1+x^2)^(1/3)))/x)/(2*2^(2/3)*Sqrt(3))");
+	//
+	// }
+	//
+	// // {(3-x)/((1-x^2)^(1/3)*(3+x^2)), x, 1, -((Sqrt(3)*ArcTan(1/Sqrt(3)-(2^(2/3)*(1+x)^(2/3))/(Sqrt(3)*(1 -
+	// // x)^(1/3))))/2^(2/3))-Log(3+x^2)/(2*2^(2/3))+(3*Log(2^(1/3)*(1-x)^(1/3)+(1+x)^(2/3)))/(2*2^(2/3))}
+	// public void test00717() {
+	// check("Integrate((3-x)/((1-x^2)^(1/3)*(3+x^2)), x)",
+	// "-((Sqrt(3)*ArcTan(1/Sqrt(3)-(2^(2/3)*(1+x)^(2/3))/(Sqrt(3)*(1-x)^(1/3))))/2^(2/3))-Log(3+x^2)/(2*2^(2/3))+(3*Log(2^(1/3)*(1-x)^(1/3)+(1+x)^(2/3)))/(2*2^(2/3))");
+	//
+	// }
+	//
+	// // {(3+x)/((1-x^2)^(1/3)*(3+x^2)), x, 1, (Sqrt(3)*ArcTan(1/Sqrt(3)-(2^(2/3)*(1-x)^(2/3))/(Sqrt(3)*(1 +
+	// // x)^(1/3))))/2^(2/3)+Log(3+x^2)/(2*2^(2/3))-(3*Log((1-x)^(2/3)+2^(1/3)*(1+x)^(1/3)))/(2*2^(2/3))}
+	// public void test00718() {
+	// check("Integrate((3+x)/((1-x^2)^(1/3)*(3+x^2)), x)",
+	// "(Sqrt(3)*ArcTan(1/Sqrt(3)-(2^(2/3)*(1-x)^(2/3))/(Sqrt(3)*(1+x)^(1/3))))/2^(2/3)+Log(3+x^2)/(2*2^(2/3))-(3*Log((1-x)^(2/3)+2^(1/3)*(1+x)^(1/3)))/(2*2^(2/3))");
+	//
+	// }
+	//
+	// // {1/((a+b*x^2)^(1/3)*((9*a*d)/b+d*x^2)), x, 1, (Sqrt(b)*ArcTan((Sqrt(b)*x)/(3*Sqrt(a))))/(12*a^(5/6)*d) +
+	// // (Sqrt(b)*ArcTan((a^(1/3)-(a+b*x^2)^(1/3))^2/(3*a^(1/6)*Sqrt(b)*x)))/(12*a^(5/6)*d) -
+	// // (Sqrt(b)*ArcTanh((Sqrt(3)*a^(1/6)*(a^(1/3)-(a+b*x^2)^(1/3)))/(Sqrt(b)*x)))/(4*Sqrt(3)*a^(5/6)*d)}
+	// public void test00719() {
+	// check("Integrate(1/((a+b*x^2)^(1/3)*((9*a*d)/b+d*x^2)), x)",
+	// "(Sqrt(b)*ArcTan((Sqrt(b)*x)/(3*Sqrt(a))))/(12*a^(5/6)*d)+(Sqrt(b)*ArcTan((a^(1/3)-(a+b*x^2)^(1/3))^2/(3*a^(1/6)*Sqrt(b)*x)))/(12*a^(5/6)*d)-(Sqrt(b)*ArcTanh((Sqrt(3)*a^(1/6)*(a^(1/3)-(a+b*x^2)^(1/3)))/(Sqrt(b)*x)))/(4*Sqrt(3)*a^(5/6)*d)");
+	//
+	// }
+	//
+	// // {1/((a-b*x^2)^(1/3)*((-9*a*d)/b+d*x^2)), x, 1, -(Sqrt(b)*ArcTan((Sqrt(3)*a^(1/6)*(a^(1/3)-(a -
+	// // b*x^2)^(1/3)))/(Sqrt(b)*x)))/(4*Sqrt(3)*a^(5/6)*d)-(Sqrt(b)*ArcTanh((Sqrt(b)*x)/(3*Sqrt(a))))/(12*a^(5/6)*d) +
+	// // (Sqrt(b)*ArcTanh((a^(1/3)-(a-b*x^2)^(1/3))^2/(3*a^(1/6)*Sqrt(b)*x)))/(12*a^(5/6)*d)}
+	// public void test00720() {
+	// check("Integrate(1/((a-b*x^2)^(1/3)*((-9*a*d)/b+d*x^2)), x)",
+	// "-(Sqrt(b)*ArcTan((Sqrt(3)*a^(1/6)*(a^(1/3)-(a-b*x^2)^(1/3)))/(Sqrt(b)*x)))/(4*Sqrt(3)*a^(5/6)*d)-(Sqrt(b)*ArcTanh((Sqrt(b)*x)/(3*Sqrt(a))))/(12*a^(5/6)*d)+(Sqrt(b)*ArcTanh((a^(1/3)-(a-b*x^2)^(1/3))^2/(3*a^(1/6)*Sqrt(b)*x)))/(12*a^(5/6)*d)");
+	//
+	// }
+	//
+	// // {1/((-a+b*x^2)^(1/3)*((-9*a*d)/b+d*x^2)), x, 1, (Sqrt(b)*ArcTan((Sqrt(3)*a^(1/6)*(a^(1/3)+(-a +
+	// // b*x^2)^(1/3)))/(Sqrt(b)*x)))/(4*Sqrt(3)*a^(5/6)*d)+(Sqrt(b)*ArcTanh((Sqrt(b)*x)/(3*Sqrt(a))))/(12*a^(5/6)*d) -
+	// // (Sqrt(b)*ArcTanh((a^(1/3)+(-a+b*x^2)^(1/3))^2/(3*a^(1/6)*Sqrt(b)*x)))/(12*a^(5/6)*d)}
+	// public void test00721() {
+	// check("Integrate(1/((-a+b*x^2)^(1/3)*((-9*a*d)/b+d*x^2)), x)",
+	// "(Sqrt(b)*ArcTan((Sqrt(3)*a^(1/6)*(a^(1/3)+(-a+b*x^2)^(1/3)))/(Sqrt(b)*x)))/(4*Sqrt(3)*a^(5/6)*d)+(Sqrt(b)*ArcTanh((Sqrt(b)*x)/(3*Sqrt(a))))/(12*a^(5/6)*d)-(Sqrt(b)*ArcTanh((a^(1/3)+(-a+b*x^2)^(1/3))^2/(3*a^(1/6)*Sqrt(b)*x)))/(12*a^(5/6)*d)");
+	//
+	// }
+	//
+	// // {1/((-a-b*x^2)^(1/3)*((9*a*d)/b+d*x^2)), x, 1, -(Sqrt(b)*ArcTan((Sqrt(b)*x)/(3*Sqrt(a))))/(12*a^(5/6)*d) -
+	// // (Sqrt(b)*ArcTan((a^(1/3)+(-a-b*x^2)^(1/3))^2/(3*a^(1/6)*Sqrt(b)*x)))/(12*a^(5/6)*d) +
+	// // (Sqrt(b)*ArcTanh((Sqrt(3)*a^(1/6)*(a^(1/3)+(-a-b*x^2)^(1/3)))/(Sqrt(b)*x)))/(4*Sqrt(3)*a^(5/6)*d)}
+	// public void test00722() {
+	// check("Integrate(1/((-a-b*x^2)^(1/3)*((9*a*d)/b+d*x^2)), x)",
+	// "-(Sqrt(b)*ArcTan((Sqrt(b)*x)/(3*Sqrt(a))))/(12*a^(5/6)*d)-(Sqrt(b)*ArcTan((a^(1/3)+(-a-b*x^2)^(1/3))^2/(3*a^(1/6)*Sqrt(b)*x)))/(12*a^(5/6)*d)+(Sqrt(b)*ArcTanh((Sqrt(3)*a^(1/6)*(a^(1/3)+(-a-b*x^2)^(1/3)))/(Sqrt(b)*x)))/(4*Sqrt(3)*a^(5/6)*d)");
+	//
+	// }
+	//
+	// // {1/((2+b*x^2)^(1/3)*((18*d)/b+d*x^2)), x, 1, (Sqrt(b)*ArcTan((Sqrt(b)*x)/(3*Sqrt(2))))/(12*2^(5/6)*d) +
+	// // (Sqrt(b)*ArcTan((2^(1/3)-(2+b*x^2)^(1/3))^2/(3*2^(1/6)*Sqrt(b)*x)))/(12*2^(5/6)*d) -
+	// // (Sqrt(b)*ArcTanh((2^(1/6)*Sqrt(3)*(2^(1/3)-(2+b*x^2)^(1/3)))/(Sqrt(b)*x)))/(4*2^(5/6)*Sqrt(3)*d)}
+	// public void test00723() {
+	// check("Integrate(1/((2+b*x^2)^(1/3)*((18*d)/b+d*x^2)), x)",
+	// "(Sqrt(b)*ArcTan((Sqrt(b)*x)/(3*Sqrt(2))))/(12*2^(5/6)*d)+(Sqrt(b)*ArcTan((2^(1/3)-(2+b*x^2)^(1/3))^2/(3*2^(1/6)*Sqrt(b)*x)))/(12*2^(5/6)*d)-(Sqrt(b)*ArcTanh((2^(1/6)*Sqrt(3)*(2^(1/3)-(2+b*x^2)^(1/3)))/(Sqrt(b)*x)))/(4*2^(5/6)*Sqrt(3)*d)");
+	//
+	// }
+	//
+	// // {1/((-2+b*x^2)^(1/3)*((-18*d)/b+d*x^2)), x, 1, (Sqrt(b)*ArcTan((2^(1/6)*Sqrt(3)*(2^(1/3)+(-2 +
+	// // b*x^2)^(1/3)))/(Sqrt(b)*x)))/(4*2^(5/6)*Sqrt(3)*d)+(Sqrt(b)*ArcTanh((Sqrt(b)*x)/(3*Sqrt(2))))/(12*2^(5/6)*d) -
+	// // (Sqrt(b)*ArcTanh((2^(1/3)+(-2+b*x^2)^(1/3))^2/(3*2^(1/6)*Sqrt(b)*x)))/(12*2^(5/6)*d)}
+	// public void test00724() {
+	// check("Integrate(1/((-2+b*x^2)^(1/3)*((-18*d)/b+d*x^2)), x)",
+	// "(Sqrt(b)*ArcTan((2^(1/6)*Sqrt(3)*(2^(1/3)+(-2+b*x^2)^(1/3)))/(Sqrt(b)*x)))/(4*2^(5/6)*Sqrt(3)*d)+(Sqrt(b)*ArcTanh((Sqrt(b)*x)/(3*Sqrt(2))))/(12*2^(5/6)*d)-(Sqrt(b)*ArcTanh((2^(1/3)+(-2+b*x^2)^(1/3))^2/(3*2^(1/6)*Sqrt(b)*x)))/(12*2^(5/6)*d)");
+	//
+	// }
+	//
+	// // {1/((2+3*x^2)^(1/3)*(6*d+d*x^2)), x, 1, ArcTan(x/Sqrt(6))/(4*2^(5/6)*Sqrt(3)*d)+ArcTan((2^(1/3)-(2 +
+	// // 3*x^2)^(1/3))^2/(3*2^(1/6)*Sqrt(3)*x))/(4*2^(5/6)*Sqrt(3)*d)-ArcTanh((2^(1/6)*(2^(1/3)-(2 +
+	// // 3*x^2)^(1/3)))/x)/(4*2^(5/6)*d)}
+	// public void test00725() {
+	// check("Integrate(1/((2+3*x^2)^(1/3)*(6*d+d*x^2)), x)",
+	// "ArcTan(x/Sqrt(6))/(4*2^(5/6)*Sqrt(3)*d)+ArcTan((2^(1/3)-(2+3*x^2)^(1/3))^2/(3*2^(1/6)*Sqrt(3)*x))/(4*2^(5/6)*Sqrt(3)*d)-ArcTanh((2^(1/6)*(2^(1/3)-(2+3*x^2)^(1/3)))/x)/(4*2^(5/6)*d)");
+	//
+	// }
+	//
+	// // {1/((2-3*x^2)^(1/3)*(-6*d+d*x^2)), x, 1, -ArcTan((2^(1/6)*(2^(1/3)-(2-3*x^2)^(1/3)))/x)/(4*2^(5/6)*d) -
+	// // ArcTanh(x/Sqrt(6))/(4*2^(5/6)*Sqrt(3)*d)+ArcTanh((2^(1/3)-(2 -
+	// // 3*x^2)^(1/3))^2/(3*2^(1/6)*Sqrt(3)*x))/(4*2^(5/6)*Sqrt(3)*d)}
+	// public void test00726() {
+	// check("Integrate(1/((2-3*x^2)^(1/3)*(-6*d+d*x^2)), x)",
+	// "-ArcTan((2^(1/6)*(2^(1/3)-(2-3*x^2)^(1/3)))/x)/(4*2^(5/6)*d)-ArcTanh(x/Sqrt(6))/(4*2^(5/6)*Sqrt(3)*d)+ArcTanh((2^(1/3)-(2-3*x^2)^(1/3))^2/(3*2^(1/6)*Sqrt(3)*x))/(4*2^(5/6)*Sqrt(3)*d)");
+	//
+	// }
+	//
+	// // {1/((-2+3*x^2)^(1/3)*(-6*d+d*x^2)), x, 1, ArcTan((2^(1/6)*(2^(1/3)+(-2+3*x^2)^(1/3)))/x)/(4*2^(5/6)*d) +
+	// // ArcTanh(x/Sqrt(6))/(4*2^(5/6)*Sqrt(3)*d)-ArcTanh((2^(1/3)+(-2 +
+	// // 3*x^2)^(1/3))^2/(3*2^(1/6)*Sqrt(3)*x))/(4*2^(5/6)*Sqrt(3)*d)}
+	// public void test00727() {
+	// check("Integrate(1/((-2+3*x^2)^(1/3)*(-6*d+d*x^2)), x)",
+	// "ArcTan((2^(1/6)*(2^(1/3)+(-2+3*x^2)^(1/3)))/x)/(4*2^(5/6)*d)+ArcTanh(x/Sqrt(6))/(4*2^(5/6)*Sqrt(3)*d)-ArcTanh((2^(1/3)+(-2+3*x^2)^(1/3))^2/(3*2^(1/6)*Sqrt(3)*x))/(4*2^(5/6)*Sqrt(3)*d)");
+	//
+	// }
+	//
+	// // {1/((-2-3*x^2)^(1/3)*(6*d+d*x^2)), x, 1, -ArcTan(x/Sqrt(6))/(4*2^(5/6)*Sqrt(3)*d)-ArcTan((2^(1/3)+(-2 -
+	// // 3*x^2)^(1/3))^2/(3*2^(1/6)*Sqrt(3)*x))/(4*2^(5/6)*Sqrt(3)*d)+ArcTanh((2^(1/6)*(2^(1/3)+(-2 -
+	// // 3*x^2)^(1/3)))/x)/(4*2^(5/6)*d)}
+	// public void test00728() {
+	// check("Integrate(1/((-2-3*x^2)^(1/3)*(6*d+d*x^2)), x)",
+	// "-ArcTan(x/Sqrt(6))/(4*2^(5/6)*Sqrt(3)*d)-ArcTan((2^(1/3)+(-2-3*x^2)^(1/3))^2/(3*2^(1/6)*Sqrt(3)*x))/(4*2^(5/6)*Sqrt(3)*d)+ArcTanh((2^(1/6)*(2^(1/3)+(-2-3*x^2)^(1/3)))/x)/(4*2^(5/6)*d)");
+	//
+	// }
+	//
+	// // {1/((1+x^2)^(1/3)*(9+x^2)), x, 1, ArcTan(x/3)/12+ArcTan((1-(1+x^2)^(1/3))^2/(3*x))/12 -
+	// // ArcTanh((Sqrt(3)*(1-(1+x^2)^(1/3)))/x)/(4*Sqrt(3))}
+	// public void test00729() {
+	// check("Integrate(1/((1+x^2)^(1/3)*(9+x^2)), x)",
+	// "ArcTan(x/3)/12+ArcTan((1-(1+x^2)^(1/3))^2/(3*x))/12-ArcTanh((Sqrt(3)*(1-(1+x^2)^(1/3)))/x)/(4*Sqrt(3))");
+	//
+	// }
+	//
+	// // {1/((1+b*x^2)^(1/3)*(9+b*x^2)), x, 1, ArcTan((Sqrt(b)*x)/3)/(12*Sqrt(b))+ArcTan((1-(1 +
+	// // b*x^2)^(1/3))^2/(3*Sqrt(b)*x))/(12*Sqrt(b))-ArcTanh((Sqrt(3)*(1-(1 +
+	// // b*x^2)^(1/3)))/(Sqrt(b)*x))/(4*Sqrt(3)*Sqrt(b))}
+	// public void test00730() {
+	// check("Integrate(1/((1+b*x^2)^(1/3)*(9+b*x^2)), x)",
+	// "ArcTan((Sqrt(b)*x)/3)/(12*Sqrt(b))+ArcTan((1-(1+b*x^2)^(1/3))^2/(3*Sqrt(b)*x))/(12*Sqrt(b))-ArcTanh((Sqrt(3)*(1-(1+b*x^2)^(1/3)))/(Sqrt(b)*x))/(4*Sqrt(3)*Sqrt(b))");
+	//
+	// }
+	//
+	// // {1/((1-x^2)^(1/3)*(9-x^2)), x, 1, ArcTan((Sqrt(3)*(1-(1-x^2)^(1/3)))/x)/(4*Sqrt(3))+ArcTanh(x/3)/12 -
+	// // ArcTanh((1-(1-x^2)^(1/3))^2/(3*x))/12}
+	// public void test00731() {
+	// check("Integrate(1/((1-x^2)^(1/3)*(9-x^2)), x)",
+	// "ArcTan((Sqrt(3)*(1-(1-x^2)^(1/3)))/x)/(4*Sqrt(3))+ArcTanh(x/3)/12-ArcTanh((1-(1-x^2)^(1/3))^2/(3*x))/12");
+	//
+	// }
+	//
+	// // {Sqrt(c+d*x^2)/(a+b*x^2)^(3/2), x, 1, (Sqrt(c+d*x^2)*EllipticE(ArcTan((Sqrt(b)*x)/Sqrt(a)), 1 -
+	// // (a*d)/(b*c)))/(Sqrt(a)*Sqrt(b)*Sqrt(a+b*x^2)*Sqrt((a*(c+d*x^2))/(c*(a+b*x^2))))}
+	// public void test00732() {
+	// check("Integrate(Sqrt(c+d*x^2)/(a+b*x^2)^(3/2), x)",
+	// "(Sqrt(c+d*x^2)*EllipticE(ArcTan((Sqrt(b)*x)/Sqrt(a)),
+	// 1-(a*d)/(b*c)))/(Sqrt(a)*Sqrt(b)*Sqrt(a+b*x^2)*Sqrt((a*(c+d*x^2))/(c*(a+b*x^2))))");
+	//
+	// }
+	//
+	// // {Sqrt(1-x^2)/Sqrt(2-3*x^2), x, 1, EllipticE(ArcSin(Sqrt(3/2)*x), 2/3)/Sqrt(3)}
+	// public void test00733() {
+	// check("Integrate(Sqrt(1-x^2)/Sqrt(2-3*x^2), x)", "EllipticE(ArcSin(Sqrt(3/2)*x), 2/3)/Sqrt(3)");
+	//
+	// }
+	//
+	// // {Sqrt(4-x^2)/Sqrt(2-3*x^2), x, 1, (2*EllipticE(ArcSin(Sqrt(3/2)*x), 1/6))/Sqrt(3)}
+	// public void test00734() {
+	// check("Integrate(Sqrt(4-x^2)/Sqrt(2-3*x^2), x)", "(2*EllipticE(ArcSin(Sqrt(3/2)*x), 1/6))/Sqrt(3)");
+	//
+	// }
+	//
+	// // {Sqrt(1-4*x^2)/Sqrt(2-3*x^2), x, 1, EllipticE(ArcSin(Sqrt(3/2)*x), 8/3)/Sqrt(3)}
+	// public void test00735() {
+	// check("Integrate(Sqrt(1-4*x^2)/Sqrt(2-3*x^2), x)", "EllipticE(ArcSin(Sqrt(3/2)*x), 8/3)/Sqrt(3)");
+	//
+	// }
+	//
+	// // {Sqrt(1+x^2)/Sqrt(1-x^2), x, 1, EllipticE(ArcSin(x), -1)}
+	// public void test00736() {
+	// check("Integrate(Sqrt(1+x^2)/Sqrt(1-x^2), x)", "EllipticE(ArcSin(x), -1)");
+	//
+	// }
+	//
+	// // {Sqrt(1+x^2)/Sqrt(2-3*x^2), x, 1, EllipticE(ArcSin(Sqrt(3/2)*x), -2/3)/Sqrt(3)}
+	// public void test00737() {
+	// check("Integrate(Sqrt(1+x^2)/Sqrt(2-3*x^2), x)", "EllipticE(ArcSin(Sqrt(3/2)*x), -2/3)/Sqrt(3)");
+	//
+	// }
+	//
+	// // {Sqrt(4+x^2)/Sqrt(2-3*x^2), x, 1, (2*EllipticE(ArcSin(Sqrt(3/2)*x), -1/6))/Sqrt(3)}
+	// public void test00738() {
+	// check("Integrate(Sqrt(4+x^2)/Sqrt(2-3*x^2), x)", "(2*EllipticE(ArcSin(Sqrt(3/2)*x), -1/6))/Sqrt(3)");
+	//
+	// }
+	//
+	// // {Sqrt(1+4*x^2)/Sqrt(2-3*x^2), x, 1, EllipticE(ArcSin(Sqrt(3/2)*x), -8/3)/Sqrt(3)}
+	// public void test00739() {
+	// check("Integrate(Sqrt(1+4*x^2)/Sqrt(2-3*x^2), x)", "EllipticE(ArcSin(Sqrt(3/2)*x), -8/3)/Sqrt(3)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(a+b*x^2)*Sqrt(c+d*x^2)), x, 1, (Sqrt(c)*Sqrt(a+b*x^2)*EllipticF(ArcTan((Sqrt(d)*x)/Sqrt(c)), 1 -
+	// // (b*c)/(a*d)))/(a*Sqrt(d)*Sqrt((c*(a+b*x^2))/(a*(c+d*x^2)))*Sqrt(c+d*x^2))}
+	// public void test00740() {
+	// check("Integrate(1/(Sqrt(a+b*x^2)*Sqrt(c+d*x^2)), x)",
+	// "(Sqrt(c)*Sqrt(a+b*x^2)*EllipticF(ArcTan((Sqrt(d)*x)/Sqrt(c)),
+	// 1-(b*c)/(a*d)))/(a*Sqrt(d)*Sqrt((c*(a+b*x^2))/(a*(c+d*x^2)))*Sqrt(c+d*x^2))");
+	//
+	// }
+	//
+	// // {Sqrt(a+b*x^2)/(c+d*x^2)^(3/2), x, 1, (Sqrt(a+b*x^2)*EllipticE(ArcTan((Sqrt(d)*x)/Sqrt(c)), 1 -
+	// // (b*c)/(a*d)))/(Sqrt(c)*Sqrt(d)*Sqrt((c*(a+b*x^2))/(a*(c+d*x^2)))*Sqrt(c+d*x^2))}
+	// public void test00741() {
+	// check("Integrate(Sqrt(a+b*x^2)/(c+d*x^2)^(3/2), x)",
+	// "(Sqrt(a+b*x^2)*EllipticE(ArcTan((Sqrt(d)*x)/Sqrt(c)),
+	// 1-(b*c)/(a*d)))/(Sqrt(c)*Sqrt(d)*Sqrt((c*(a+b*x^2))/(a*(c+d*x^2)))*Sqrt(c+d*x^2))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(a+b*x^2)*Sqrt(c+d*x^2)), x, 1, (Sqrt(c)*Sqrt(a+b*x^2)*EllipticF(ArcTan((Sqrt(d)*x)/Sqrt(c)), 1 -
+	// // (b*c)/(a*d)))/(a*Sqrt(d)*Sqrt((c*(a+b*x^2))/(a*(c+d*x^2)))*Sqrt(c+d*x^2))}
+	// public void test00742() {
+	// check("Integrate(1/(Sqrt(a+b*x^2)*Sqrt(c+d*x^2)), x)",
+	// "(Sqrt(c)*Sqrt(a+b*x^2)*EllipticF(ArcTan((Sqrt(d)*x)/Sqrt(c)),
+	// 1-(b*c)/(a*d)))/(a*Sqrt(d)*Sqrt((c*(a+b*x^2))/(a*(c+d*x^2)))*Sqrt(c+d*x^2))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(1-x^2)*Sqrt(2+5*x^2)), x, 1, EllipticF(ArcSin(x), -5/2)/Sqrt(2)}
+	// public void test00743() {
+	// check("Integrate(1/(Sqrt(1-x^2)*Sqrt(2+5*x^2)), x)", "EllipticF(ArcSin(x), -5/2)/Sqrt(2)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(1-x^2)*Sqrt(2+4*x^2)), x, 1, EllipticF(ArcSin(x), -2)/Sqrt(2)}
+	// public void test00744() {
+	// check("Integrate(1/(Sqrt(1-x^2)*Sqrt(2+4*x^2)), x)", "EllipticF(ArcSin(x), -2)/Sqrt(2)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(1-x^2)*Sqrt(2+3*x^2)), x, 1, EllipticF(ArcSin(x), -3/2)/Sqrt(2)}
+	// public void test00745() {
+	// check("Integrate(1/(Sqrt(1-x^2)*Sqrt(2+3*x^2)), x)", "EllipticF(ArcSin(x), -3/2)/Sqrt(2)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(1-x^2)*Sqrt(2+x^2)), x, 1, EllipticF(ArcSin(x), -1/2)/Sqrt(2)}
+	// public void test00746() {
+	// check("Integrate(1/(Sqrt(1-x^2)*Sqrt(2+x^2)), x)", "EllipticF(ArcSin(x), -1/2)/Sqrt(2)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(1-x^2)*Sqrt(2-x^2)), x, 1, EllipticF(ArcSin(x), 1/2)/Sqrt(2)}
+	// public void test00747() {
+	// check("Integrate(1/(Sqrt(1-x^2)*Sqrt(2-x^2)), x)", "EllipticF(ArcSin(x), 1/2)/Sqrt(2)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(2-3*x^2)*Sqrt(1-x^2)), x, 1, EllipticF(ArcSin(x), 3/2)/Sqrt(2)}
+	// public void test00748() {
+	// check("Integrate(1/(Sqrt(2-3*x^2)*Sqrt(1-x^2)), x)", "EllipticF(ArcSin(x), 3/2)/Sqrt(2)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(2-4*x^2)*Sqrt(1-x^2)), x, 1, EllipticF(ArcSin(x), 2)/Sqrt(2)}
+	// public void test00749() {
+	// check("Integrate(1/(Sqrt(2-4*x^2)*Sqrt(1-x^2)), x)", "EllipticF(ArcSin(x), 2)/Sqrt(2)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(2-5*x^2)*Sqrt(1-x^2)), x, 1, EllipticF(ArcSin(x), 5/2)/Sqrt(2)}
+	// public void test00750() {
+	// check("Integrate(1/(Sqrt(2-5*x^2)*Sqrt(1-x^2)), x)", "EllipticF(ArcSin(x), 5/2)/Sqrt(2)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(1+x^2)*Sqrt(2+5*x^2)), x, 1, (Sqrt(2+5*x^2)*EllipticF(ArcTan(x), -3/2))/(Sqrt(2)*Sqrt(1 +
+	// // x^2)*Sqrt((2+5*x^2)/(1+x^2)))}
+	// public void test00751() {
+	// check("Integrate(1/(Sqrt(1+x^2)*Sqrt(2+5*x^2)), x)",
+	// "(Sqrt(2+5*x^2)*EllipticF(ArcTan(x), -3/2))/(Sqrt(2)*Sqrt(1+x^2)*Sqrt((2+5*x^2)/(1+x^2)))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(1+x^2)*Sqrt(2+4*x^2)), x, 1, (Sqrt(1+2*x^2)*EllipticF(ArcTan(x), -1))/(Sqrt(2)*Sqrt(1 +
+	// // x^2)*Sqrt((1+2*x^2)/(1+x^2)))}
+	// public void test00752() {
+	// check("Integrate(1/(Sqrt(1+x^2)*Sqrt(2+4*x^2)), x)",
+	// "(Sqrt(1+2*x^2)*EllipticF(ArcTan(x), -1))/(Sqrt(2)*Sqrt(1+x^2)*Sqrt((1+2*x^2)/(1+x^2)))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(1+x^2)*Sqrt(2+3*x^2)), x, 1, (Sqrt(2+3*x^2)*EllipticF(ArcTan(x), -1/2))/(Sqrt(2)*Sqrt(1 +
+	// // x^2)*Sqrt((2+3*x^2)/(1+x^2)))}
+	// public void test00753() {
+	// check("Integrate(1/(Sqrt(1+x^2)*Sqrt(2+3*x^2)), x)",
+	// "(Sqrt(2+3*x^2)*EllipticF(ArcTan(x), -1/2))/(Sqrt(2)*Sqrt(1+x^2)*Sqrt((2+3*x^2)/(1+x^2)))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(1+x^2)*Sqrt(2+x^2)), x, 1, (Sqrt(2+x^2)*EllipticF(ArcTan(x), 1/2))/(Sqrt(2)*Sqrt(1+x^2)*Sqrt((2
+	// // +x^2)/(1+x^2)))}
+	// public void test00754() {
+	// check("Integrate(1/(Sqrt(1+x^2)*Sqrt(2+x^2)), x)",
+	// "(Sqrt(2+x^2)*EllipticF(ArcTan(x), 1/2))/(Sqrt(2)*Sqrt(1+x^2)*Sqrt((2+x^2)/(1+x^2)))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(2-x^2)*Sqrt(1+x^2)), x, 1, EllipticF(ArcSin(x/Sqrt(2)), -2)}
+	// public void test00755() {
+	// check("Integrate(1/(Sqrt(2-x^2)*Sqrt(1+x^2)), x)", "EllipticF(ArcSin(x/Sqrt(2)), -2)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(2-3*x^2)*Sqrt(1+x^2)), x, 1, EllipticF(ArcSin(Sqrt(3/2)*x), -2/3)/Sqrt(3)}
+	// public void test00756() {
+	// check("Integrate(1/(Sqrt(2-3*x^2)*Sqrt(1+x^2)), x)", "EllipticF(ArcSin(Sqrt(3/2)*x), -2/3)/Sqrt(3)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(2-4*x^2)*Sqrt(1+x^2)), x, 1, EllipticF(ArcSin(Sqrt(2)*x), -1/2)/2}
+	// public void test00757() {
+	// check("Integrate(1/(Sqrt(2-4*x^2)*Sqrt(1+x^2)), x)", "EllipticF(ArcSin(Sqrt(2)*x), -1/2)/2");
+	//
+	// }
+	//
+	// // {1/(Sqrt(2-5*x^2)*Sqrt(1+x^2)), x, 1, EllipticF(ArcSin(Sqrt(5/2)*x), -2/5)/Sqrt(5)}
+	// public void test00758() {
+	// check("Integrate(1/(Sqrt(2-5*x^2)*Sqrt(1+x^2)), x)", "EllipticF(ArcSin(Sqrt(5/2)*x), -2/5)/Sqrt(5)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(2-x^2)*Sqrt(-1+x^2)), x, 1, -EllipticF(ArcCos(x/Sqrt(2)), 2)}
+	// public void test00759() {
+	// check("Integrate(1/(Sqrt(2-x^2)*Sqrt(-1+x^2)), x)", "-EllipticF(ArcCos(x/Sqrt(2)), 2)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(-1-x^2)*Sqrt(2+5*x^2)), x, 1, (Sqrt(2+5*x^2)*EllipticF(ArcTan(x), -3/2))/(Sqrt(2)*Sqrt(-1 -
+	// // x^2)*Sqrt((2+5*x^2)/(1+x^2)))}
+	// public void test00760() {
+	// check("Integrate(1/(Sqrt(-1-x^2)*Sqrt(2+5*x^2)), x)",
+	// "(Sqrt(2+5*x^2)*EllipticF(ArcTan(x), -3/2))/(Sqrt(2)*Sqrt(-1-x^2)*Sqrt((2+5*x^2)/(1+x^2)))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(-1-x^2)*Sqrt(2+4*x^2)), x, 1, (Sqrt(1+2*x^2)*EllipticF(ArcTan(x), -1))/(Sqrt(2)*Sqrt(-1 -
+	// // x^2)*Sqrt((1+2*x^2)/(1+x^2)))}
+	// public void test00761() {
+	// check("Integrate(1/(Sqrt(-1-x^2)*Sqrt(2+4*x^2)), x)",
+	// "(Sqrt(1+2*x^2)*EllipticF(ArcTan(x), -1))/(Sqrt(2)*Sqrt(-1-x^2)*Sqrt((1+2*x^2)/(1+x^2)))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(-1-x^2)*Sqrt(2+3*x^2)), x, 1, (Sqrt(2+3*x^2)*EllipticF(ArcTan(x), -1/2))/(Sqrt(2)*Sqrt(-1 -
+	// // x^2)*Sqrt((2+3*x^2)/(1+x^2)))}
+	// public void test00762() {
+	// check("Integrate(1/(Sqrt(-1-x^2)*Sqrt(2+3*x^2)), x)",
+	// "(Sqrt(2+3*x^2)*EllipticF(ArcTan(x), -1/2))/(Sqrt(2)*Sqrt(-1-x^2)*Sqrt((2+3*x^2)/(1+x^2)))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(-1-x^2)*Sqrt(2+x^2)), x, 1, (Sqrt(2+x^2)*EllipticF(ArcTan(x), 1/2))/(Sqrt(2)*Sqrt(-1 -
+	// // x^2)*Sqrt((2+x^2)/(1+x^2)))}
+	// public void test00763() {
+	// check("Integrate(1/(Sqrt(-1-x^2)*Sqrt(2+x^2)), x)",
+	// "(Sqrt(2+x^2)*EllipticF(ArcTan(x), 1/2))/(Sqrt(2)*Sqrt(-1-x^2)*Sqrt((2+x^2)/(1+x^2)))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(2+b*x^2)*Sqrt(3+d*x^2)), x, 1, (Sqrt(2+b*x^2)*EllipticF(ArcTan((Sqrt(d)*x)/Sqrt(3)), 1 -
+	// // (3*b)/(2*d)))/(Sqrt(2)*Sqrt(d)*Sqrt((2+b*x^2)/(3+d*x^2))*Sqrt(3+d*x^2))}
+	// public void test00764() {
+	// check("Integrate(1/(Sqrt(2+b*x^2)*Sqrt(3+d*x^2)), x)",
+	// "(Sqrt(2+b*x^2)*EllipticF(ArcTan((Sqrt(d)*x)/Sqrt(3)),
+	// 1-(3*b)/(2*d)))/(Sqrt(2)*Sqrt(d)*Sqrt((2+b*x^2)/(3+d*x^2))*Sqrt(3+d*x^2))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(4+x^2)*Sqrt(c+d*x^2)), x, 1, (Sqrt(c+d*x^2)*EllipticF(ArcTan(x/2), 1-(4*d)/c))/(c*Sqrt(4 +
+	// // x^2)*Sqrt((c+d*x^2)/(c*(4+x^2))))}
+	// public void test00765() {
+	// check("Integrate(1/(Sqrt(4+x^2)*Sqrt(c+d*x^2)), x)",
+	// "(Sqrt(c+d*x^2)*EllipticF(ArcTan(x/2), 1-(4*d)/c))/(c*Sqrt(4+x^2)*Sqrt((c+d*x^2)/(c*(4+x^2))))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(1-x^2)*Sqrt(-1+2*x^2)), x, 1, -EllipticF(ArcCos(x), 2)}
+	// public void test00766() {
+	// check("Integrate(1/(Sqrt(1-x^2)*Sqrt(-1+2*x^2)), x)", "-EllipticF(ArcCos(x), 2)");
+	//
+	// }
+	//
+	// // {Sqrt(-1+3*x^2)/Sqrt(2-3*x^2), x, 1, -(EllipticE(ArcCos(Sqrt(3/2)*x), 2)/Sqrt(3))}
+	// public void test00767() {
+	// check("Integrate(Sqrt(-1+3*x^2)/Sqrt(2-3*x^2), x)", "-(EllipticE(ArcCos(Sqrt(3/2)*x), 2)/Sqrt(3))");
+	//
+	// }
+	//
+	// // {Sqrt(1+(2*c*x^2)/(b-Sqrt(b^2-4*a*c)))/Sqrt(1-(2*c*x^2)/(b+Sqrt(b^2-4*a*c))), x, 1, (Sqrt(b +
+	// // Sqrt(b^2-4*a*c))*EllipticE(ArcSin((Sqrt(2)*Sqrt(c)*x)/Sqrt(b+Sqrt(b^2-4*a*c))), -((b+Sqrt(b^2 -
+	// // 4*a*c))/(b-Sqrt(b^2-4*a*c)))))/(Sqrt(2)*Sqrt(c))}
+	// public void test00768() {
+	// check("Integrate(Sqrt(1+(2*c*x^2)/(b-Sqrt(b^2-4*a*c)))/Sqrt(1-(2*c*x^2)/(b+Sqrt(b^2-4*a*c))), x)",
+	// "(Sqrt(b+Sqrt(b^2-4*a*c))*EllipticE(ArcSin((Sqrt(2)*Sqrt(c)*x)/Sqrt(b+Sqrt(b^2-4*a*c))),
+	// -((b+Sqrt(b^2-4*a*c))/(b-Sqrt(b^2-4*a*c)))))/(Sqrt(2)*Sqrt(c))");
+	//
+	// }
+	//
+	// // {Sqrt(1-(2*c*x^2)/(b-Sqrt(b^2-4*a*c)))/Sqrt(1-(2*c*x^2)/(b+Sqrt(b^2-4*a*c))), x, 1, (Sqrt(b +
+	// // Sqrt(b^2-4*a*c))*EllipticE(ArcSin((Sqrt(2)*Sqrt(c)*x)/Sqrt(b+Sqrt(b^2-4*a*c))), (b+Sqrt(b^2-4*a*c))/(b
+	// // -Sqrt(b^2-4*a*c))))/(Sqrt(2)*Sqrt(c))}
+	// public void test00769() {
+	// check("Integrate(Sqrt(1-(2*c*x^2)/(b-Sqrt(b^2-4*a*c)))/Sqrt(1-(2*c*x^2)/(b+Sqrt(b^2-4*a*c))), x)",
+	// "(Sqrt(b+Sqrt(b^2-4*a*c))*EllipticE(ArcSin((Sqrt(2)*Sqrt(c)*x)/Sqrt(b+Sqrt(b^2-4*a*c))),
+	// (b+Sqrt(b^2-4*a*c))/(b-Sqrt(b^2-4*a*c))))/(Sqrt(2)*Sqrt(c))");
+	//
+	// }
+	//
+	// // {1/(Sqrt(3-3*Sqrt(3)+2*Sqrt(3)*x^2)*Sqrt(3+(-3+Sqrt(3))*x^2)), x, 1, -(Sqrt(3 +
+	// // Sqrt(3))*EllipticF(ArcCos(Sqrt((3-Sqrt(3))/3)*x), (1+Sqrt(3))/2))/6}
+	// public void test00770() {
+	// check("Integrate(1/(Sqrt(3-3*Sqrt(3)+2*Sqrt(3)*x^2)*Sqrt(3+(-3+Sqrt(3))*x^2)), x)",
+	// "-(Sqrt(3+Sqrt(3))*EllipticF(ArcCos(Sqrt((3-Sqrt(3))/3)*x), (1+Sqrt(3))/2))/6");
+	//
+	// }
+	//
+	// // {1/((2+3*x^2)^(1/4)*(4+3*x^2)), x, 1, -ArcTan((2*2^(3/4)+2*2^(1/4)*Sqrt(2+3*x^2))/(2*Sqrt(3)*x*(2 +
+	// // 3*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(3))-ArcTanh((2*2^(3/4)-2*2^(1/4)*Sqrt(2+3*x^2))/(2*Sqrt(3)*x*(2 +
+	// // 3*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(3))}
+	// public void test00771() {
+	// check("Integrate(1/((2+3*x^2)^(1/4)*(4+3*x^2)), x)",
+	// "-ArcTan((2*2^(3/4)+2*2^(1/4)*Sqrt(2+3*x^2))/(2*Sqrt(3)*x*(2+3*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(3))-ArcTanh((2*2^(3/4)-2*2^(1/4)*Sqrt(2+3*x^2))/(2*Sqrt(3)*x*(2+3*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(3))");
+	//
+	// }
+	//
+	// // {1/((2-3*x^2)^(1/4)*(4-3*x^2)), x, 1, ArcTan((2-Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2 -
+	// // 3*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(3))+ArcTanh((2+Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2 -
+	// // 3*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(3))}
+	// public void test00772() {
+	// check("Integrate(1/((2-3*x^2)^(1/4)*(4-3*x^2)), x)",
+	// "ArcTan((2-Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2-3*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(3))+ArcTanh((2+Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2-3*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(3))");
+	//
+	// }
+	//
+	// // {1/((2+b*x^2)^(1/4)*(4+b*x^2)), x, 1, -ArcTan((2*2^(3/4)+2*2^(1/4)*Sqrt(2+b*x^2))/(2*Sqrt(b)*x*(2 +
+	// // b*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(b))-ArcTanh((2*2^(3/4)-2*2^(1/4)*Sqrt(2+b*x^2))/(2*Sqrt(b)*x*(2 +
+	// // b*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(b))}
+	// public void test00773() {
+	// check("Integrate(1/((2+b*x^2)^(1/4)*(4+b*x^2)), x)",
+	// "-ArcTan((2*2^(3/4)+2*2^(1/4)*Sqrt(2+b*x^2))/(2*Sqrt(b)*x*(2+b*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(b))-ArcTanh((2*2^(3/4)-2*2^(1/4)*Sqrt(2+b*x^2))/(2*Sqrt(b)*x*(2+b*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(b))");
+	//
+	// }
+	//
+	// // {1/((2-b*x^2)^(1/4)*(4-b*x^2)), x, 1, ArcTan((2-Sqrt(2)*Sqrt(2-b*x^2))/(2^(1/4)*Sqrt(b)*x*(2 -
+	// // b*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(b))+ArcTanh((2+Sqrt(2)*Sqrt(2-b*x^2))/(2^(1/4)*Sqrt(b)*x*(2 -
+	// // b*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(b))}
+	// public void test00774() {
+	// check("Integrate(1/((2-b*x^2)^(1/4)*(4-b*x^2)), x)",
+	// "ArcTan((2-Sqrt(2)*Sqrt(2-b*x^2))/(2^(1/4)*Sqrt(b)*x*(2-b*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(b))+ArcTanh((2+Sqrt(2)*Sqrt(2-b*x^2))/(2^(1/4)*Sqrt(b)*x*(2-b*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(b))");
+	//
+	// }
+	//
+	// // {1/((a+3*x^2)^(1/4)*(2*a+3*x^2)), x, 1, -ArcTan((a^(3/4)*(1+Sqrt(a+3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a +
+	// // 3*x^2)^(1/4)))/(2*Sqrt(3)*a^(3/4))-ArcTanh((a^(3/4)*(1-Sqrt(a+3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a +
+	// // 3*x^2)^(1/4)))/(2*Sqrt(3)*a^(3/4))}
+	// public void test00775() {
+	// check("Integrate(1/((a+3*x^2)^(1/4)*(2*a+3*x^2)), x)",
+	// "-ArcTan((a^(3/4)*(1+Sqrt(a+3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a+3*x^2)^(1/4)))/(2*Sqrt(3)*a^(3/4))-ArcTanh((a^(3/4)*(1-Sqrt(a+3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a+3*x^2)^(1/4)))/(2*Sqrt(3)*a^(3/4))");
+	//
+	// }
+	//
+	// // {1/((a-3*x^2)^(1/4)*(2*a-3*x^2)), x, 1, ArcTan((a^(3/4)*(1-Sqrt(a-3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a -
+	// // 3*x^2)^(1/4)))/(2*Sqrt(3)*a^(3/4))+ArcTanh((a^(3/4)*(1+Sqrt(a-3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a -
+	// // 3*x^2)^(1/4)))/(2*Sqrt(3)*a^(3/4))}
+	// public void test00776() {
+	// check("Integrate(1/((a-3*x^2)^(1/4)*(2*a-3*x^2)), x)",
+	// "ArcTan((a^(3/4)*(1-Sqrt(a-3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a-3*x^2)^(1/4)))/(2*Sqrt(3)*a^(3/4))+ArcTanh((a^(3/4)*(1+Sqrt(a-3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a-3*x^2)^(1/4)))/(2*Sqrt(3)*a^(3/4))");
+	//
+	// }
+	//
+	// // {1/((a+b*x^2)^(1/4)*(2*a+b*x^2)), x, 1, -ArcTan((a^(3/4)*(1+Sqrt(a+b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a +
+	// // b*x^2)^(1/4)))/(2*a^(3/4)*Sqrt(b))-ArcTanh((a^(3/4)*(1-Sqrt(a+b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a +
+	// // b*x^2)^(1/4)))/(2*a^(3/4)*Sqrt(b))}
+	// public void test00777() {
+	// check("Integrate(1/((a+b*x^2)^(1/4)*(2*a+b*x^2)), x)",
+	// "-ArcTan((a^(3/4)*(1+Sqrt(a+b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a+b*x^2)^(1/4)))/(2*a^(3/4)*Sqrt(b))-ArcTanh((a^(3/4)*(1-Sqrt(a+b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a+b*x^2)^(1/4)))/(2*a^(3/4)*Sqrt(b))");
+	//
+	// }
+	//
+	// // {1/((a-b*x^2)^(1/4)*(2*a-b*x^2)), x, 1, ArcTan((a^(3/4)*(1-Sqrt(a-b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a -
+	// // b*x^2)^(1/4)))/(2*a^(3/4)*Sqrt(b))+ArcTanh((a^(3/4)*(1+Sqrt(a-b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a -
+	// // b*x^2)^(1/4)))/(2*a^(3/4)*Sqrt(b))}
+	// public void test00778() {
+	// check("Integrate(1/((a-b*x^2)^(1/4)*(2*a-b*x^2)), x)",
+	// "ArcTan((a^(3/4)*(1-Sqrt(a-b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a-b*x^2)^(1/4)))/(2*a^(3/4)*Sqrt(b))+ArcTanh((a^(3/4)*(1+Sqrt(a-b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a-b*x^2)^(1/4)))/(2*a^(3/4)*Sqrt(b))");
+	//
+	// }
+	//
+	// // {1/((-2+3*x^2)*(-1+3*x^2)^(1/4)), x, 1, -ArcTan((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(2*Sqrt(6)) -
+	// // ArcTanh((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(2*Sqrt(6))}
+	// public void test00779() {
+	// check("Integrate(1/((-2+3*x^2)*(-1+3*x^2)^(1/4)), x)",
+	// "-ArcTan((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(2*Sqrt(6))-ArcTanh((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(2*Sqrt(6))");
+	//
+	// }
+	//
+	// // {1/((-2-3*x^2)*(-1-3*x^2)^(1/4)), x, 1, -ArcTan((Sqrt(3/2)*x)/(-1-3*x^2)^(1/4))/(2*Sqrt(6)) -
+	// // ArcTanh((Sqrt(3/2)*x)/(-1-3*x^2)^(1/4))/(2*Sqrt(6))}
+	// public void test00780() {
+	// check("Integrate(1/((-2-3*x^2)*(-1-3*x^2)^(1/4)), x)",
+	// "-ArcTan((Sqrt(3/2)*x)/(-1-3*x^2)^(1/4))/(2*Sqrt(6))-ArcTanh((Sqrt(3/2)*x)/(-1-3*x^2)^(1/4))/(2*Sqrt(6))");
+	//
+	// }
+	//
+	// // {1/((-2+b*x^2)*(-1+b*x^2)^(1/4)), x, 1, -ArcTan((Sqrt(b)*x)/(Sqrt(2)*(-1+b*x^2)^(1/4)))/(2*Sqrt(2)*Sqrt(b))
+	// // -ArcTanh((Sqrt(b)*x)/(Sqrt(2)*(-1+b*x^2)^(1/4)))/(2*Sqrt(2)*Sqrt(b))}
+	// public void test00781() {
+	// check("Integrate(1/((-2+b*x^2)*(-1+b*x^2)^(1/4)), x)",
+	// "-ArcTan((Sqrt(b)*x)/(Sqrt(2)*(-1+b*x^2)^(1/4)))/(2*Sqrt(2)*Sqrt(b))-ArcTanh((Sqrt(b)*x)/(Sqrt(2)*(-1+b*x^2)^(1/4)))/(2*Sqrt(2)*Sqrt(b))");
+	//
+	// }
+	//
+	// // {1/((-2-b*x^2)*(-1-b*x^2)^(1/4)), x, 1, -ArcTan((Sqrt(b)*x)/(Sqrt(2)*(-1-b*x^2)^(1/4)))/(2*Sqrt(2)*Sqrt(b))
+	// // -ArcTanh((Sqrt(b)*x)/(Sqrt(2)*(-1-b*x^2)^(1/4)))/(2*Sqrt(2)*Sqrt(b))}
+	// public void test00782() {
+	// check("Integrate(1/((-2-b*x^2)*(-1-b*x^2)^(1/4)), x)",
+	// "-ArcTan((Sqrt(b)*x)/(Sqrt(2)*(-1-b*x^2)^(1/4)))/(2*Sqrt(2)*Sqrt(b))-ArcTanh((Sqrt(b)*x)/(Sqrt(2)*(-1-b*x^2)^(1/4)))/(2*Sqrt(2)*Sqrt(b))");
+	//
+	// }
+	//
+	// // {1/((-2*a+3*x^2)*(-a+3*x^2)^(1/4)), x, 1, -ArcTan((Sqrt(3/2)*x)/(a^(1/4)*(-a +
+	// // 3*x^2)^(1/4)))/(2*Sqrt(6)*a^(3/4))-ArcTanh((Sqrt(3/2)*x)/(a^(1/4)*(-a+3*x^2)^(1/4)))/(2*Sqrt(6)*a^(3/4))}
+	// public void test00783() {
+	// check("Integrate(1/((-2*a+3*x^2)*(-a+3*x^2)^(1/4)), x)",
+	// "-ArcTan((Sqrt(3/2)*x)/(a^(1/4)*(-a+3*x^2)^(1/4)))/(2*Sqrt(6)*a^(3/4))-ArcTanh((Sqrt(3/2)*x)/(a^(1/4)*(-a+3*x^2)^(1/4)))/(2*Sqrt(6)*a^(3/4))");
+	//
+	// }
+	//
+	// // {1/((-2*a-3*x^2)*(-a-3*x^2)^(1/4)), x, 1, -ArcTan((Sqrt(3/2)*x)/(a^(1/4)*(-a -
+	// // 3*x^2)^(1/4)))/(2*Sqrt(6)*a^(3/4))-ArcTanh((Sqrt(3/2)*x)/(a^(1/4)*(-a-3*x^2)^(1/4)))/(2*Sqrt(6)*a^(3/4))}
+	// public void test00784() {
+	// check("Integrate(1/((-2*a-3*x^2)*(-a-3*x^2)^(1/4)), x)",
+	// "-ArcTan((Sqrt(3/2)*x)/(a^(1/4)*(-a-3*x^2)^(1/4)))/(2*Sqrt(6)*a^(3/4))-ArcTanh((Sqrt(3/2)*x)/(a^(1/4)*(-a-3*x^2)^(1/4)))/(2*Sqrt(6)*a^(3/4))");
+	//
+	// }
+	//
+	// // {1/((-2*a+b*x^2)*(-a+b*x^2)^(1/4)), x, 1, -ArcTan((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a +
+	// // b*x^2)^(1/4)))/(2*Sqrt(2)*a^(3/4)*Sqrt(b))-ArcTanh((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a +
+	// // b*x^2)^(1/4)))/(2*Sqrt(2)*a^(3/4)*Sqrt(b))}
+	// public void test00785() {
+	// check("Integrate(1/((-2*a+b*x^2)*(-a+b*x^2)^(1/4)), x)",
+	// "-ArcTan((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a+b*x^2)^(1/4)))/(2*Sqrt(2)*a^(3/4)*Sqrt(b))-ArcTanh((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a+b*x^2)^(1/4)))/(2*Sqrt(2)*a^(3/4)*Sqrt(b))");
+	//
+	// }
+	//
+	// // {1/((-2*a-b*x^2)*(-a-b*x^2)^(1/4)), x, 1, -ArcTan((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a -
+	// // b*x^2)^(1/4)))/(2*Sqrt(2)*a^(3/4)*Sqrt(b))-ArcTanh((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a -
+	// // b*x^2)^(1/4)))/(2*Sqrt(2)*a^(3/4)*Sqrt(b))}
+	// public void test00786() {
+	// check("Integrate(1/((-2*a-b*x^2)*(-a-b*x^2)^(1/4)), x)",
+	// "-ArcTan((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a-b*x^2)^(1/4)))/(2*Sqrt(2)*a^(3/4)*Sqrt(b))-ArcTanh((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a-b*x^2)^(1/4)))/(2*Sqrt(2)*a^(3/4)*Sqrt(b))");
+	//
+	// }
+	//
+	// // {1/((2-x^2)*(-1+x^2)^(1/4)), x, 1, ArcTan(x/(Sqrt(2)*(-1+x^2)^(1/4)))/(2*Sqrt(2))+ArcTanh(x/(Sqrt(2)*(-1
+	// // +x^2)^(1/4)))/(2*Sqrt(2))}
+	// public void test00787() {
+	// check("Integrate(1/((2-x^2)*(-1+x^2)^(1/4)), x)",
+	// "ArcTan(x/(Sqrt(2)*(-1+x^2)^(1/4)))/(2*Sqrt(2))+ArcTanh(x/(Sqrt(2)*(-1+x^2)^(1/4)))/(2*Sqrt(2))");
+	//
+	// }
+	//
+	// // {(a+b*x^2)^(-1-(b*c)/(2*b*c-2*a*d))*(c+d*x^2)^(-1+(a*d)/(2*b*c-2*a*d)), x, 1, (x*(c +
+	// // d*x^2)^((a*d)/(2*b*c-2*a*d)))/(a*c*(a+b*x^2)^((b*c)/(2*b*c-2*a*d)))}
+	// public void test00788() {
+	// check("Integrate((a+b*x^2)^(-1-(b*c)/(2*b*c-2*a*d))*(c+d*x^2)^(-1+(a*d)/(2*b*c-2*a*d)), x)",
+	// "(x*(c+d*x^2)^((a*d)/(2*b*c-2*a*d)))/(a*c*(a+b*x^2)^((b*c)/(2*b*c-2*a*d)))");
+	//
+	// }
+	//
+	// // {(1+x^2)/(-1+x^2)^2, x, 1, x/(1-x^2)}
+	// public void test00789() {
+	// check("Integrate((1+x^2)/(-1+x^2)^2, x)", "x/(1-x^2)");
+	//
+	// }
+	//
+	// // {(1-x^2)/(1+x^2)^2, x, 1, x/(1+x^2)}
+	// public void test00790() {
+	// check("Integrate((1-x^2)/(1+x^2)^2, x)", "x/(1+x^2)");
+	//
+	// }
+	//
+	// // {(a+b*x^2)/(-a+b*x^2)^2, x, 1, x/(a-b*x^2)}
+	// public void test00791() {
+	// check("Integrate((a+b*x^2)/(-a+b*x^2)^2, x)", "x/(a-b*x^2)");
+	//
+	// }
+	//
+	// // {(a+b*x^2)/(a-b*x^2)^2, x, 1, x/(a-b*x^2)}
+	// public void test00792() {
+	// check("Integrate((a+b*x^2)/(a-b*x^2)^2, x)", "x/(a-b*x^2)");
+	//
+	// }
+	//
+	// // {(1+2*x^2)/(x^5*(1+x^2)^3), x, 1, -1/(4*x^4*(1+x^2)^2)}
+	// public void test00793() {
+	// check("Integrate((1+2*x^2)/(x^5*(1+x^2)^3), x)", "-1/(4*x^4*(1+x^2)^2)");
+	//
+	// }
+	//
+	// // {1/((1-x^2)^(1/3)*(3+x^2)), x, 1, ArcTan(Sqrt(3)/x)/(2*2^(2/3)*Sqrt(3))+ArcTan((Sqrt(3)*(1-2^(1/3)*(1 -
+	// // x^2)^(1/3)))/x)/(2*2^(2/3)*Sqrt(3))-ArcTanh(x)/(6*2^(2/3))+ArcTanh(x/(1+2^(1/3)*(1 -
+	// // x^2)^(1/3)))/(2*2^(2/3))}
+	// public void test00794() {
+	// check("Integrate(1/((1-x^2)^(1/3)*(3+x^2)), x)",
+	// "ArcTan(Sqrt(3)/x)/(2*2^(2/3)*Sqrt(3))+ArcTan((Sqrt(3)*(1-2^(1/3)*(1-x^2)^(1/3)))/x)/(2*2^(2/3)*Sqrt(3))-ArcTanh(x)/(6*2^(2/3))+ArcTanh(x/(1+2^(1/3)*(1-x^2)^(1/3)))/(2*2^(2/3))");
+	//
+	// }
+	//
+	// // {x/((2-3*x^2)^(1/4)*(4-3*x^2)), x, 1, ArcTan((Sqrt(2)-Sqrt(2-3*x^2))/(2^(3/4)*(2 -
+	// // 3*x^2)^(1/4)))/(3*2^(3/4))+ArcTanh((Sqrt(2)+Sqrt(2-3*x^2))/(2^(3/4)*(2-3*x^2)^(1/4)))/(3*2^(3/4))}
+	// public void test00795() {
+	// check("Integrate(x/((2-3*x^2)^(1/4)*(4-3*x^2)), x)",
+	// "ArcTan((Sqrt(2)-Sqrt(2-3*x^2))/(2^(3/4)*(2-3*x^2)^(1/4)))/(3*2^(3/4))+ArcTanh((Sqrt(2)+Sqrt(2-3*x^2))/(2^(3/4)*(2-3*x^2)^(1/4)))/(3*2^(3/4))");
+	//
+	// }
+	//
+	// // {1/((2-3*x^2)^(1/4)*(4-3*x^2)), x, 1, ArcTan((2-Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2 -
+	// // 3*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(3))+ArcTanh((2+Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2 -
+	// // 3*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(3))}
+	// public void test00796() {
+	// check("Integrate(1/((2-3*x^2)^(1/4)*(4-3*x^2)), x)",
+	// "ArcTan((2-Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2-3*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(3))+ArcTanh((2+Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2-3*x^2)^(1/4)))/(2*2^(3/4)*Sqrt(3))");
+	//
+	// }
+	//
+	// // {1/((-2+3*x^2)*(-1+3*x^2)^(1/4)), x, 1, -ArcTan((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(2*Sqrt(6)) -
+	// // ArcTanh((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(2*Sqrt(6))}
+	// public void test00797() {
+	// check("Integrate(1/((-2+3*x^2)*(-1+3*x^2)^(1/4)), x)",
+	// "-ArcTan((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(2*Sqrt(6))-ArcTanh((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(2*Sqrt(6))");
+	//
+	// }
+	//
+	// // {x^2/((2+3*x^2)^(3/4)*(4+3*x^2)), x, 1, -ArcTan((2*2^(3/4)+2*2^(1/4)*Sqrt(2+3*x^2))/(2*Sqrt(3)*x*(2 +
+	// // 3*x^2)^(1/4)))/(3*2^(1/4)*Sqrt(3))+ArcTanh((2*2^(3/4)-2*2^(1/4)*Sqrt(2+3*x^2))/(2*Sqrt(3)*x*(2 +
+	// // 3*x^2)^(1/4)))/(3*2^(1/4)*Sqrt(3))}
+	// public void test00798() {
+	// check("Integrate(x^2/((2+3*x^2)^(3/4)*(4+3*x^2)), x)",
+	// "-ArcTan((2*2^(3/4)+2*2^(1/4)*Sqrt(2+3*x^2))/(2*Sqrt(3)*x*(2+3*x^2)^(1/4)))/(3*2^(1/4)*Sqrt(3))+ArcTanh((2*2^(3/4)-2*2^(1/4)*Sqrt(2+3*x^2))/(2*Sqrt(3)*x*(2+3*x^2)^(1/4)))/(3*2^(1/4)*Sqrt(3))");
+	//
+	// }
+	//
+	// // {x^2/((2-3*x^2)^(3/4)*(4-3*x^2)), x, 1, ArcTan((2-Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2 -
+	// // 3*x^2)^(1/4)))/(3*2^(1/4)*Sqrt(3))-ArcTanh((2+Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2 -
+	// // 3*x^2)^(1/4)))/(3*2^(1/4)*Sqrt(3))}
+	// public void test00799() {
+	// check("Integrate(x^2/((2-3*x^2)^(3/4)*(4-3*x^2)), x)",
+	// "ArcTan((2-Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2-3*x^2)^(1/4)))/(3*2^(1/4)*Sqrt(3))-ArcTanh((2+Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2-3*x^2)^(1/4)))/(3*2^(1/4)*Sqrt(3))");
+	//
+	// }
+	//
+	// // {x^2/((2+b*x^2)^(3/4)*(4+b*x^2)), x, 1, -(ArcTan((2*2^(3/4)+2*2^(1/4)*Sqrt(2+b*x^2))/(2*Sqrt(b)*x*(2 +
+	// // b*x^2)^(1/4)))/(2^(1/4)*b^(3/2)))+ArcTanh((2*2^(3/4)-2*2^(1/4)*Sqrt(2+b*x^2))/(2*Sqrt(b)*x*(2 +
+	// // b*x^2)^(1/4)))/(2^(1/4)*b^(3/2))}
+	// public void test00800() {
+	// check("Integrate(x^2/((2+b*x^2)^(3/4)*(4+b*x^2)), x)",
+	// "-(ArcTan((2*2^(3/4)+2*2^(1/4)*Sqrt(2+b*x^2))/(2*Sqrt(b)*x*(2+b*x^2)^(1/4)))/(2^(1/4)*b^(3/2)))+ArcTanh((2*2^(3/4)-2*2^(1/4)*Sqrt(2+b*x^2))/(2*Sqrt(b)*x*(2+b*x^2)^(1/4)))/(2^(1/4)*b^(3/2))");
+	//
+	// }
+	//
+	// // {x^2/((2-b*x^2)^(3/4)*(4-b*x^2)), x, 1, ArcTan((2-Sqrt(2)*Sqrt(2-b*x^2))/(2^(1/4)*Sqrt(b)*x*(2 -
+	// // b*x^2)^(1/4)))/(2^(1/4)*b^(3/2))-ArcTanh((2+Sqrt(2)*Sqrt(2-b*x^2))/(2^(1/4)*Sqrt(b)*x*(2 -
+	// // b*x^2)^(1/4)))/(2^(1/4)*b^(3/2))}
+	// public void test00801() {
+	// check("Integrate(x^2/((2-b*x^2)^(3/4)*(4-b*x^2)), x)",
+	// "ArcTan((2-Sqrt(2)*Sqrt(2-b*x^2))/(2^(1/4)*Sqrt(b)*x*(2-b*x^2)^(1/4)))/(2^(1/4)*b^(3/2))-ArcTanh((2+Sqrt(2)*Sqrt(2-b*x^2))/(2^(1/4)*Sqrt(b)*x*(2-b*x^2)^(1/4)))/(2^(1/4)*b^(3/2))");
+	//
+	// }
+	//
+	// // {x^2/((a+3*x^2)^(3/4)*(2*a+3*x^2)), x, 1, -ArcTan((a^(3/4)*(1+Sqrt(a+3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a +
+	// // 3*x^2)^(1/4)))/(3*Sqrt(3)*a^(1/4))+ArcTanh((a^(3/4)*(1-Sqrt(a+3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a +
+	// // 3*x^2)^(1/4)))/(3*Sqrt(3)*a^(1/4))}
+	// public void test00802() {
+	// check("Integrate(x^2/((a+3*x^2)^(3/4)*(2*a+3*x^2)), x)",
+	// "-ArcTan((a^(3/4)*(1+Sqrt(a+3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a+3*x^2)^(1/4)))/(3*Sqrt(3)*a^(1/4))+ArcTanh((a^(3/4)*(1-Sqrt(a+3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a+3*x^2)^(1/4)))/(3*Sqrt(3)*a^(1/4))");
+	//
+	// }
+	//
+	// // {x^2/((a-3*x^2)^(3/4)*(2*a-3*x^2)), x, 1, ArcTan((a^(3/4)*(1-Sqrt(a-3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a -
+	// // 3*x^2)^(1/4)))/(3*Sqrt(3)*a^(1/4))-ArcTanh((a^(3/4)*(1+Sqrt(a-3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a -
+	// // 3*x^2)^(1/4)))/(3*Sqrt(3)*a^(1/4))}
+	// public void test00803() {
+	// check("Integrate(x^2/((a-3*x^2)^(3/4)*(2*a-3*x^2)), x)",
+	// "ArcTan((a^(3/4)*(1-Sqrt(a-3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a-3*x^2)^(1/4)))/(3*Sqrt(3)*a^(1/4))-ArcTanh((a^(3/4)*(1+Sqrt(a-3*x^2)/Sqrt(a)))/(Sqrt(3)*x*(a-3*x^2)^(1/4)))/(3*Sqrt(3)*a^(1/4))");
+	//
+	// }
+	//
+	// // {x^2/((a+b*x^2)^(3/4)*(2*a+b*x^2)), x, 1, -(ArcTan((a^(3/4)*(1+Sqrt(a+b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a +
+	// // b*x^2)^(1/4)))/(a^(1/4)*b^(3/2)))+ArcTanh((a^(3/4)*(1-Sqrt(a+b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a +
+	// // b*x^2)^(1/4)))/(a^(1/4)*b^(3/2))}
+	// public void test00804() {
+	// check("Integrate(x^2/((a+b*x^2)^(3/4)*(2*a+b*x^2)), x)",
+	// "-(ArcTan((a^(3/4)*(1+Sqrt(a+b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a+b*x^2)^(1/4)))/(a^(1/4)*b^(3/2)))+ArcTanh((a^(3/4)*(1-Sqrt(a+b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a+b*x^2)^(1/4)))/(a^(1/4)*b^(3/2))");
+	//
+	// }
+	//
+	// // {x^2/((a-b*x^2)^(3/4)*(2*a-b*x^2)), x, 1, ArcTan((a^(3/4)*(1-Sqrt(a-b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a -
+	// // b*x^2)^(1/4)))/(a^(1/4)*b^(3/2))-ArcTanh((a^(3/4)*(1+Sqrt(a-b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a -
+	// // b*x^2)^(1/4)))/(a^(1/4)*b^(3/2))}
+	// public void test00805() {
+	// check("Integrate(x^2/((a-b*x^2)^(3/4)*(2*a-b*x^2)), x)",
+	// "ArcTan((a^(3/4)*(1-Sqrt(a-b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a-b*x^2)^(1/4)))/(a^(1/4)*b^(3/2))-ArcTanh((a^(3/4)*(1+Sqrt(a-b*x^2)/Sqrt(a)))/(Sqrt(b)*x*(a-b*x^2)^(1/4)))/(a^(1/4)*b^(3/2))");
+	//
+	// }
+	//
+	// // {x^2/((2-3*x^2)^(3/4)*(4-3*x^2)), x, 1, ArcTan((2-Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2 -
+	// // 3*x^2)^(1/4)))/(3*2^(1/4)*Sqrt(3))-ArcTanh((2+Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2 -
+	// // 3*x^2)^(1/4)))/(3*2^(1/4)*Sqrt(3))}
+	// public void test00806() {
+	// check("Integrate(x^2/((2-3*x^2)^(3/4)*(4-3*x^2)), x)",
+	// "ArcTan((2-Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2-3*x^2)^(1/4)))/(3*2^(1/4)*Sqrt(3))-ArcTanh((2+Sqrt(2)*Sqrt(2-3*x^2))/(2^(1/4)*Sqrt(3)*x*(2-3*x^2)^(1/4)))/(3*2^(1/4)*Sqrt(3))");
+	//
+	// }
+	//
+	// // {x^2/((-2+3*x^2)*(-1+3*x^2)^(3/4)), x, 1, ArcTan((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(3*Sqrt(6)) -
+	// // ArcTanh((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(3*Sqrt(6))}
+	// public void test00807() {
+	// check("Integrate(x^2/((-2+3*x^2)*(-1+3*x^2)^(3/4)), x)",
+	// "ArcTan((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(3*Sqrt(6))-ArcTanh((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(3*Sqrt(6))");
+	//
+	// }
+	//
+	// // {x^2/((-2-3*x^2)*(-1-3*x^2)^(3/4)), x, 1, ArcTan((Sqrt(3/2)*x)/(-1-3*x^2)^(1/4))/(3*Sqrt(6)) -
+	// // ArcTanh((Sqrt(3/2)*x)/(-1-3*x^2)^(1/4))/(3*Sqrt(6))}
+	// public void test00808() {
+	// check("Integrate(x^2/((-2-3*x^2)*(-1-3*x^2)^(3/4)), x)",
+	// "ArcTan((Sqrt(3/2)*x)/(-1-3*x^2)^(1/4))/(3*Sqrt(6))-ArcTanh((Sqrt(3/2)*x)/(-1-3*x^2)^(1/4))/(3*Sqrt(6))");
+	//
+	// }
+	//
+	// // {x^2/((-2+b*x^2)*(-1+b*x^2)^(3/4)), x, 1, ArcTan((Sqrt(b)*x)/(Sqrt(2)*(-1+b*x^2)^(1/4)))/(Sqrt(2)*b^(3/2))
+	// // -ArcTanh((Sqrt(b)*x)/(Sqrt(2)*(-1+b*x^2)^(1/4)))/(Sqrt(2)*b^(3/2))}
+	// public void test00809() {
+	// check("Integrate(x^2/((-2+b*x^2)*(-1+b*x^2)^(3/4)), x)",
+	// "ArcTan((Sqrt(b)*x)/(Sqrt(2)*(-1+b*x^2)^(1/4)))/(Sqrt(2)*b^(3/2))-ArcTanh((Sqrt(b)*x)/(Sqrt(2)*(-1+b*x^2)^(1/4)))/(Sqrt(2)*b^(3/2))");
+	//
+	// }
+	//
+	// // {x^2/((-2-b*x^2)*(-1-b*x^2)^(3/4)), x, 1, ArcTan((Sqrt(b)*x)/(Sqrt(2)*(-1-b*x^2)^(1/4)))/(Sqrt(2)*b^(3/2))
+	// // -ArcTanh((Sqrt(b)*x)/(Sqrt(2)*(-1-b*x^2)^(1/4)))/(Sqrt(2)*b^(3/2))}
+	// public void test00810() {
+	// check("Integrate(x^2/((-2-b*x^2)*(-1-b*x^2)^(3/4)), x)",
+	// "ArcTan((Sqrt(b)*x)/(Sqrt(2)*(-1-b*x^2)^(1/4)))/(Sqrt(2)*b^(3/2))-ArcTanh((Sqrt(b)*x)/(Sqrt(2)*(-1-b*x^2)^(1/4)))/(Sqrt(2)*b^(3/2))");
+	//
+	// }
+	//
+	// // {x^2/((-2*a+3*x^2)*(-a+3*x^2)^(3/4)), x, 1, ArcTan((Sqrt(3/2)*x)/(a^(1/4)*(-a +
+	// // 3*x^2)^(1/4)))/(3*Sqrt(6)*a^(1/4))-ArcTanh((Sqrt(3/2)*x)/(a^(1/4)*(-a+3*x^2)^(1/4)))/(3*Sqrt(6)*a^(1/4))}
+	// public void test00811() {
+	// check("Integrate(x^2/((-2*a+3*x^2)*(-a+3*x^2)^(3/4)), x)",
+	// "ArcTan((Sqrt(3/2)*x)/(a^(1/4)*(-a+3*x^2)^(1/4)))/(3*Sqrt(6)*a^(1/4))-ArcTanh((Sqrt(3/2)*x)/(a^(1/4)*(-a+3*x^2)^(1/4)))/(3*Sqrt(6)*a^(1/4))");
+	//
+	// }
+	//
+	// // {x^2/((-2*a-3*x^2)*(-a-3*x^2)^(3/4)), x, 1, ArcTan((Sqrt(3/2)*x)/(a^(1/4)*(-a -
+	// // 3*x^2)^(1/4)))/(3*Sqrt(6)*a^(1/4))-ArcTanh((Sqrt(3/2)*x)/(a^(1/4)*(-a-3*x^2)^(1/4)))/(3*Sqrt(6)*a^(1/4))}
+	// public void test00812() {
+	// check("Integrate(x^2/((-2*a-3*x^2)*(-a-3*x^2)^(3/4)), x)",
+	// "ArcTan((Sqrt(3/2)*x)/(a^(1/4)*(-a-3*x^2)^(1/4)))/(3*Sqrt(6)*a^(1/4))-ArcTanh((Sqrt(3/2)*x)/(a^(1/4)*(-a-3*x^2)^(1/4)))/(3*Sqrt(6)*a^(1/4))");
+	//
+	// }
+	//
+	// // {x^2/((-2*a+b*x^2)*(-a+b*x^2)^(3/4)), x, 1, ArcTan((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a +
+	// // b*x^2)^(1/4)))/(Sqrt(2)*a^(1/4)*b^(3/2))-ArcTanh((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a +
+	// // b*x^2)^(1/4)))/(Sqrt(2)*a^(1/4)*b^(3/2))}
+	// public void test00813() {
+	// check("Integrate(x^2/((-2*a+b*x^2)*(-a+b*x^2)^(3/4)), x)",
+	// "ArcTan((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a+b*x^2)^(1/4)))/(Sqrt(2)*a^(1/4)*b^(3/2))-ArcTanh((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a+b*x^2)^(1/4)))/(Sqrt(2)*a^(1/4)*b^(3/2))");
+	//
+	// }
+	//
+	// // {x^2/((-2*a-b*x^2)*(-a-b*x^2)^(3/4)), x, 1, ArcTan((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a -
+	// // b*x^2)^(1/4)))/(Sqrt(2)*a^(1/4)*b^(3/2))-ArcTanh((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a -
+	// // b*x^2)^(1/4)))/(Sqrt(2)*a^(1/4)*b^(3/2))}
+	// public void test00814() {
+	// check("Integrate(x^2/((-2*a-b*x^2)*(-a-b*x^2)^(3/4)), x)",
+	// "ArcTan((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a-b*x^2)^(1/4)))/(Sqrt(2)*a^(1/4)*b^(3/2))-ArcTanh((Sqrt(b)*x)/(Sqrt(2)*a^(1/4)*(-a-b*x^2)^(1/4)))/(Sqrt(2)*a^(1/4)*b^(3/2))");
+	//
+	// }
+	//
+	// // {x^2/((-2+3*x^2)*(-1+3*x^2)^(3/4)), x, 1, ArcTan((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(3*Sqrt(6)) -
+	// // ArcTanh((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(3*Sqrt(6))}
+	// public void test00815() {
+	// check("Integrate(x^2/((-2+3*x^2)*(-1+3*x^2)^(3/4)), x)",
+	// "ArcTan((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(3*Sqrt(6))-ArcTanh((Sqrt(3/2)*x)/(-1+3*x^2)^(1/4))/(3*Sqrt(6))");
+	//
+	// }
+	//
+	// // {Sqrt(e+f*x^2)/((a+b*x^2)*Sqrt(c+d*x^2)), x, 1, (e^(3/2)*Sqrt(c+d*x^2)*EllipticPi(1-(b*e)/(a*f),
+	// // ArcTan((Sqrt(f)*x)/Sqrt(e)), 1-(d*e)/(c*f)))/(a*c*Sqrt(f)*Sqrt((e*(c+d*x^2))/(c*(e+f*x^2)))*Sqrt(e +
+	// // f*x^2))}
+	// public void test00816() {
+	// check("Integrate(Sqrt(e+f*x^2)/((a+b*x^2)*Sqrt(c+d*x^2)), x)",
+	// "(e^(3/2)*Sqrt(c+d*x^2)*EllipticPi(1-(b*e)/(a*f), ArcTan((Sqrt(f)*x)/Sqrt(e)),
+	// 1-(d*e)/(c*f)))/(a*c*Sqrt(f)*Sqrt((e*(c+d*x^2))/(c*(e+f*x^2)))*Sqrt(e+f*x^2))");
+	//
+	// }
+	//
+	// // {Sqrt(c+d*x^2)/((a+b*x^2)*Sqrt(e+f*x^2)), x, 1, (c^(3/2)*Sqrt(e+f*x^2)*EllipticPi(1-(b*c)/(a*d),
+	// // ArcTan((Sqrt(d)*x)/Sqrt(c)), 1-(c*f)/(d*e)))/(a*Sqrt(d)*e*Sqrt(c+d*x^2)*Sqrt((c*(e+f*x^2))/(e*(c +
+	// // d*x^2))))}
+	// public void test00817() {
+	// check("Integrate(Sqrt(c+d*x^2)/((a+b*x^2)*Sqrt(e+f*x^2)), x)",
+	// "(c^(3/2)*Sqrt(e+f*x^2)*EllipticPi(1-(b*c)/(a*d), ArcTan((Sqrt(d)*x)/Sqrt(c)),
+	// 1-(c*f)/(d*e)))/(a*Sqrt(d)*e*Sqrt(c+d*x^2)*Sqrt((c*(e+f*x^2))/(e*(c+d*x^2))))");
+	//
+	// }
+	//
+	// // {Sqrt(2+x^2)/(Sqrt(1+x^2)*(a+b*x^2)), x, 1, (2*Sqrt(1+x^2)*EllipticPi(1-(2*b)/a, ArcTan(x/Sqrt(2)),
+	// // -1))/(a*Sqrt((1+x^2)/(2+x^2))*Sqrt(2+x^2))}
+	// public void test00818() {
+	// check("Integrate(Sqrt(2+x^2)/(Sqrt(1+x^2)*(a+b*x^2)), x)",
+	// "(2*Sqrt(1+x^2)*EllipticPi(1-(2*b)/a, ArcTan(x/Sqrt(2)), -1))/(a*Sqrt((1+x^2)/(2+x^2))*Sqrt(2+x^2))");
+	//
+	// }
+	//
+	// // {Sqrt(2+d*x^2)/((a+b*x^2)*Sqrt(3+f*x^2)), x, 1, (2*Sqrt(3+f*x^2)*EllipticPi(1-(2*b)/(a*d),
+	// // ArcTan((Sqrt(d)*x)/Sqrt(2)), 1-(2*f)/(3*d)))/(Sqrt(3)*a*Sqrt(d)*Sqrt(2+d*x^2)*Sqrt((3+f*x^2)/(2+d*x^2)))}
+	// public void test00819() {
+	// check("Integrate(Sqrt(2+d*x^2)/((a+b*x^2)*Sqrt(3+f*x^2)), x)",
+	// "(2*Sqrt(3+f*x^2)*EllipticPi(1-(2*b)/(a*d), ArcTan((Sqrt(d)*x)/Sqrt(2)),
+	// 1-(2*f)/(3*d)))/(Sqrt(3)*a*Sqrt(d)*Sqrt(2+d*x^2)*Sqrt((3+f*x^2)/(2+d*x^2)))");
+	//
+	// }
+	//
+	// // {1/((a+b*x^2)*Sqrt(2+d*x^2)*Sqrt(3+f*x^2)), x, 1, EllipticPi((2*b)/(a*d), ArcSin((Sqrt(-d)*x)/Sqrt(2)),
+	// // (2*f)/(3*d))/(Sqrt(3)*a*Sqrt(-d))}
+	// public void test00820() {
+	// check("Integrate(1/((a+b*x^2)*Sqrt(2+d*x^2)*Sqrt(3+f*x^2)), x)",
+	// "EllipticPi((2*b)/(a*d), ArcSin((Sqrt(-d)*x)/Sqrt(2)), (2*f)/(3*d))/(Sqrt(3)*a*Sqrt(-d))");
+	//
+	// }
+	//
+	// // {(A+B*x)/(a+b*x^2)^(3/2), x, 1, -((a*B-A*b*x)/(a*b*Sqrt(a+b*x^2)))}
+	// public void test00821() {
+	// check("Integrate((A+B*x)/(a+b*x^2)^(3/2), x)", "-((a*B-A*b*x)/(a*b*Sqrt(a+b*x^2)))");
+	//
+	// }
+	//
+	// // {Sqrt(b*x), x, 1, (2*(b*x)^(3/2))/(3*b)}
+	// public void test00822() {
+	// check("Integrate(Sqrt(b*x), x)", "(2*(b*x)^(3/2))/(3*b)");
+	//
+	// }
+	//
+	// // {(b*x)^(3/2), x, 1, (2*(b*x)^(5/2))/(5*b)}
+	// public void test00823() {
+	// check("Integrate((b*x)^(3/2), x)", "(2*(b*x)^(5/2))/(5*b)");
+	//
+	// }
+	//
+	// // {1/Sqrt(b*x), x, 1, (2*Sqrt(b*x))/b}
+	// public void test00824() {
+	// check("Integrate(1/Sqrt(b*x), x)", "(2*Sqrt(b*x))/b");
+	//
+	// }
+	//
+	// // {(b*x)^(-3/2), x, 1, -2/(b*Sqrt(b*x))}
+	// public void test00825() {
+	// check("Integrate((b*x)^(-3/2), x)", "-2/(b*Sqrt(b*x))");
+	//
+	// }
+	//
+	// // {(b*x)^(1/3), x, 1, (3*(b*x)^(4/3))/(4*b)}
+	// public void test00826() {
+	// check("Integrate((b*x)^(1/3), x)", "(3*(b*x)^(4/3))/(4*b)");
+	//
+	// }
+	//
+	// // {(b*x)^(2/3), x, 1, (3*(b*x)^(5/3))/(5*b)}
+	// public void test00827() {
+	// check("Integrate((b*x)^(2/3), x)", "(3*(b*x)^(5/3))/(5*b)");
+	//
+	// }
+	//
+	// // {(b*x)^(-1/3), x, 1, (3*(b*x)^(2/3))/(2*b)}
+	// public void test00828() {
+	// check("Integrate((b*x)^(-1/3), x)", "(3*(b*x)^(2/3))/(2*b)");
+	//
+	// }
+	//
+	// // {(b*x)^(-2/3), x, 1, (3*(b*x)^(1/3))/b}
+	// public void test00829() {
+	// check("Integrate((b*x)^(-2/3), x)", "(3*(b*x)^(1/3))/b");
+	//
+	// }
+	//
+	// // {a+b*x^3, x, 1, a*x+(b*x^4)/4}
+	// public void test00830() {
+	// check("Integrate(a+b*x^3, x)", "a*x+(b*x^4)/4");
+	//
+	// }
+	//
+	// // {x^2*(a+b*x^3)^2, x, 1, (a+b*x^3)^3/(9*b)}
+	// public void test00831() {
+	// check("Integrate(x^2*(a+b*x^3)^2, x)", "(a+b*x^3)^3/(9*b)");
+	//
+	// }
+	//
+	// // {(a+b*x^3)^2/x^10, x, 1, -(a+b*x^3)^3/(9*a*x^9)}
+	// public void test00832() {
+	// check("Integrate((a+b*x^3)^2/x^10, x)", "-(a+b*x^3)^3/(9*a*x^9)");
+	//
+	// }
+	//
+	// // {x^2*(a+b*x^3)^3, x, 1, (a+b*x^3)^4/(12*b)}
+	// public void test00833() {
+	// check("Integrate(x^2*(a+b*x^3)^3, x)", "(a+b*x^3)^4/(12*b)");
+	//
+	// }
+	//
+	// // {(a+b*x^3)^3/x^13, x, 1, -(a+b*x^3)^4/(12*a*x^12)}
+	// public void test00834() {
+	// check("Integrate((a+b*x^3)^3/x^13, x)", "-(a+b*x^3)^4/(12*a*x^12)");
+	//
+	// }
+	//
+	// // {x^2*(a+b*x^3)^5, x, 1, (a+b*x^3)^6/(18*b)}
+	// public void test00835() {
+	// check("Integrate(x^2*(a+b*x^3)^5, x)", "(a+b*x^3)^6/(18*b)");
+	//
+	// }
+	//
+	// // {(a+b*x^3)^5/x^19, x, 1, -(a+b*x^3)^6/(18*a*x^18)}
+	// public void test00836() {
+	// check("Integrate((a+b*x^3)^5/x^19, x)", "-(a+b*x^3)^6/(18*a*x^18)");
+	//
+	// }
+	//
+	// // {x^2*(a+b*x^3)^8, x, 1, (a+b*x^3)^9/(27*b)}
+	// public void test00837() {
+	// check("Integrate(x^2*(a+b*x^3)^8, x)", "(a+b*x^3)^9/(27*b)");
+	//
+	// }
+	//
+	// // {(a+b*x^3)^8/x^28, x, 1, -(a+b*x^3)^9/(27*a*x^27)}
+	// public void test00838() {
+	// check("Integrate((a+b*x^3)^8/x^28, x)", "-(a+b*x^3)^9/(27*a*x^27)");
+	//
+	// }
+	//
+	// // {x^2/(a+b*x^3), x, 1, Log(a+b*x^3)/(3*b)}
+	// public void test00839() {
+	// check("Integrate(x^2/(a+b*x^3), x)", "Log(a+b*x^3)/(3*b)");
+	//
+	// }
+	//
+	// // {x^2/(a+b*x^3)^2, x, 1, -1/(3*b*(a+b*x^3))}
+	// public void test00840() {
+	// check("Integrate(x^2/(a+b*x^3)^2, x)", "-1/(3*b*(a+b*x^3))");
+	//
+	// }
+	//
+	// // {x^5/(a+b*x^3)^3, x, 1, x^6/(6*a*(a+b*x^3)^2)}
+	// public void test00841() {
+	// check("Integrate(x^5/(a+b*x^3)^3, x)", "x^6/(6*a*(a+b*x^3)^2)");
+	//
+	// }
+	//
+	// // {x^2/(a+b*x^3)^3, x, 1, -1/(6*b*(a+b*x^3)^2)}
+	// public void test00842() {
+	// check("Integrate(x^2/(a+b*x^3)^3, x)", "-1/(6*b*(a+b*x^3)^2)");
+	//
+	// }
+	//
+	// // {x^2/(a-b*x^3), x, 1, -Log(a-b*x^3)/(3*b)}
+	// public void test00843() {
+	// check("Integrate(x^2/(a-b*x^3), x)", "-Log(a-b*x^3)/(3*b)");
+	//
+	// }
+	//
+	// // {x^2*Sqrt(a+b*x^3), x, 1, (2*(a+b*x^3)^(3/2))/(9*b)}
+	// public void test00844() {
+	// check("Integrate(x^2*Sqrt(a+b*x^3), x)", "(2*(a+b*x^3)^(3/2))/(9*b)");
+	//
+	// }
+	//
+	// // {x^2*(a+b*x^3)^(3/2), x, 1, (2*(a+b*x^3)^(5/2))/(15*b)}
+	// public void test00845() {
+	// check("Integrate(x^2*(a+b*x^3)^(3/2), x)", "(2*(a+b*x^3)^(5/2))/(15*b)");
+	//
+	// }
+	//
+	// // {x^2/Sqrt(a+b*x^3), x, 1, (2*Sqrt(a+b*x^3))/(3*b)}
+	// public void test00846() {
+	// check("Integrate(x^2/Sqrt(a+b*x^3), x)", "(2*Sqrt(a+b*x^3))/(3*b)");
+	//
+	// }
+	//
+	// // {1/Sqrt(a+b*x^3), x, 1, (2*Sqrt(2+Sqrt(3))*(a^(1/3)+b^(1/3)*x)*Sqrt((a^(2/3)-a^(1/3)*b^(1/3)*x +
+	// // b^(2/3)*x^2)/((1+Sqrt(3))*a^(1/3)+b^(1/3)*x)^2)*EllipticF(ArcSin(((1-Sqrt(3))*a^(1/3)+b^(1/3)*x)/((1 +
+	// // Sqrt(3))*a^(1/3)+b^(1/3)*x)), -7-4*Sqrt(3)))/(3^(1/4)*b^(1/3)*Sqrt((a^(1/3)*(a^(1/3)+b^(1/3)*x))/((1 +
+	// // Sqrt(3))*a^(1/3)+b^(1/3)*x)^2)*Sqrt(a+b*x^3))}
+	// public void test00847() {
+	// check("Integrate(1/Sqrt(a+b*x^3), x)",
+	// "(2*Sqrt(2+Sqrt(3))*(a^(1/3)+b^(1/3)*x)*Sqrt((a^(2/3)-a^(1/3)*b^(1/3)*x+b^(2/3)*x^2)/((1+Sqrt(3))*a^(1/3)+b^(1/3)*x)^2)*EllipticF(ArcSin(((1-Sqrt(3))*a^(1/3)+b^(1/3)*x)/((1+Sqrt(3))*a^(1/3)+b^(1/3)*x)),
+	// -7-4*Sqrt(3)))/(3^(1/4)*b^(1/3)*Sqrt((a^(1/3)*(a^(1/3)+b^(1/3)*x))/((1+Sqrt(3))*a^(1/3)+b^(1/3)*x)^2)*Sqrt(a+b*x^3))");
+	//
+	// }
+	//
+	// // {x^2/(a+b*x^3)^(3/2), x, 1, -2/(3*b*Sqrt(a+b*x^3))}
+	// public void test00848() {
+	// check("Integrate(x^2/(a+b*x^3)^(3/2), x)", "-2/(3*b*Sqrt(a+b*x^3))");
+	//
+	// }
+	//
+	// // {x^2/Sqrt(1+x^3), x, 1, (2*Sqrt(1+x^3))/3}
+	// public void test00849() {
+	// check("Integrate(x^2/Sqrt(1+x^3), x)", "(2*Sqrt(1+x^3))/3");
+	//
+	// }
+	//
+	// // {1/Sqrt(1+x^3), x, 1, (2*Sqrt(2+Sqrt(3))*(1+x)*Sqrt((1-x+x^2)/(1+Sqrt(3)+x)^2)*EllipticF(ArcSin((1
+	// // -Sqrt(3)+x)/(1+Sqrt(3)+x)), -7-4*Sqrt(3)))/(3^(1/4)*Sqrt((1+x)/(1+Sqrt(3)+x)^2)*Sqrt(1+x^3))}
+	// public void test00850() {
+	// check("Integrate(1/Sqrt(1+x^3), x)",
+	// "(2*Sqrt(2+Sqrt(3))*(1+x)*Sqrt((1-x+x^2)/(1+Sqrt(3)+x)^2)*EllipticF(ArcSin((1-Sqrt(3)+x)/(1+Sqrt(3)+x)),
+	// -7-4*Sqrt(3)))/(3^(1/4)*Sqrt((1+x)/(1+Sqrt(3)+x)^2)*Sqrt(1+x^3))");
+	//
+	// }
+	//
+	// // {x^2/Sqrt(1-x^3), x, 1, (-2*Sqrt(1-x^3))/3}
+	// public void test00851() {
+	// check("Integrate(x^2/Sqrt(1-x^3), x)", "(-2*Sqrt(1-x^3))/3");
+	//
+	// }
+	//
+	// // {1/Sqrt(1-x^3), x, 1, (-2*Sqrt(2+Sqrt(3))*(1-x)*Sqrt((1+x+x^2)/(1+Sqrt(3)-x)^2)*EllipticF(ArcSin((1
+	// // -Sqrt(3)-x)/(1+Sqrt(3)-x)), -7-4*Sqrt(3)))/(3^(1/4)*Sqrt((1-x)/(1+Sqrt(3)-x)^2)*Sqrt(1-x^3))}
+	// public void test00852() {
+	// check("Integrate(1/Sqrt(1-x^3), x)",
+	// "(-2*Sqrt(2+Sqrt(3))*(1-x)*Sqrt((1+x+x^2)/(1+Sqrt(3)-x)^2)*EllipticF(ArcSin((1-Sqrt(3)-x)/(1+Sqrt(3)-x)),
+	// -7-4*Sqrt(3)))/(3^(1/4)*Sqrt((1-x)/(1+Sqrt(3)-x)^2)*Sqrt(1-x^3))");
+	//
+	// }
+	//
+	// // {x^2/Sqrt(-1+x^3), x, 1, (2*Sqrt(-1+x^3))/3}
+	// public void test00853() {
+	// check("Integrate(x^2/Sqrt(-1+x^3), x)", "(2*Sqrt(-1+x^3))/3");
+	//
+	// }
+	//
+	// // {1/Sqrt(-1+x^3), x, 1, (-2*Sqrt(2-Sqrt(3))*(1-x)*Sqrt((1+x+x^2)/(1-Sqrt(3) -
+	// // x)^2)*EllipticF(ArcSin((1+Sqrt(3)-x)/(1-Sqrt(3)-x)), -7+4*Sqrt(3)))/(3^(1/4)*Sqrt(-((1-x)/(1 -
+	// // Sqrt(3)-x)^2))*Sqrt(-1+x^3))}
+	// public void test00854() {
+	// check("Integrate(1/Sqrt(-1+x^3), x)",
+	// "(-2*Sqrt(2-Sqrt(3))*(1-x)*Sqrt((1+x+x^2)/(1-Sqrt(3)-x)^2)*EllipticF(ArcSin((1+Sqrt(3)-x)/(1-Sqrt(3)-x)),
+	// -7+4*Sqrt(3)))/(3^(1/4)*Sqrt(-((1-x)/(1-Sqrt(3)-x)^2))*Sqrt(-1+x^3))");
+	//
+	// }
+	//
+	// // {x^2/Sqrt(-1-x^3), x, 1, (-2*Sqrt(-1-x^3))/3}
+	// public void test00855() {
+	// check("Integrate(x^2/Sqrt(-1-x^3), x)", "(-2*Sqrt(-1-x^3))/3");
+	//
+	// }
+	//
+	// // {1/Sqrt(-1-x^3), x, 1, (2*Sqrt(2-Sqrt(3))*(1+x)*Sqrt((1-x+x^2)/(1-Sqrt(3)+x)^2)*EllipticF(ArcSin((1
+	// // +Sqrt(3)+x)/(1-Sqrt(3)+x)), -7+4*Sqrt(3)))/(3^(1/4)*Sqrt(-((1+x)/(1-Sqrt(3)+x)^2))*Sqrt(-1 -
+	// // x^3))}
+	// public void test00856() {
+	// check("Integrate(1/Sqrt(-1-x^3), x)",
+	// "(2*Sqrt(2-Sqrt(3))*(1+x)*Sqrt((1-x+x^2)/(1-Sqrt(3)+x)^2)*EllipticF(ArcSin((1+Sqrt(3)+x)/(1-Sqrt(3)+x)),
+	// -7+4*Sqrt(3)))/(3^(1/4)*Sqrt(-((1+x)/(1-Sqrt(3)+x)^2))*Sqrt(-1-x^3))");
+	//
+	// }
+	//
+	// // {x^2*(a+b*x^3)^(1/3), x, 1, (a+b*x^3)^(4/3)/(4*b)}
+	// public void test00857() {
+	// check("Integrate(x^2*(a+b*x^3)^(1/3), x)", "(a+b*x^3)^(4/3)/(4*b)");
+	//
+	// }
+	//
+	// // {(a+b*x^3)^(1/3)/x^5, x, 1, -(a+b*x^3)^(4/3)/(4*a*x^4)}
+	// public void test00858() {
+	// check("Integrate((a+b*x^3)^(1/3)/x^5, x)", "-(a+b*x^3)^(4/3)/(4*a*x^4)");
+	//
+	// }
+	//
+	// // {x^2*(a+b*x^3)^(2/3), x, 1, (a+b*x^3)^(5/3)/(5*b)}
+	// public void test00859() {
+	// check("Integrate(x^2*(a+b*x^3)^(2/3), x)", "(a+b*x^3)^(5/3)/(5*b)");
+	//
+	// }
+	//
+	// // {(a+b*x^3)^(2/3)/x^6, x, 1, -(a+b*x^3)^(5/3)/(5*a*x^5)}
+	// public void test00860() {
+	// check("Integrate((a+b*x^3)^(2/3)/x^6, x)", "-(a+b*x^3)^(5/3)/(5*a*x^5)");
+	//
+	// }
+	//
+	// // {x^2/(a+b*x^3)^(1/3), x, 1, (a+b*x^3)^(2/3)/(2*b)}
+	// public void test00861() {
+	// check("Integrate(x^2/(a+b*x^3)^(1/3), x)", "(a+b*x^3)^(2/3)/(2*b)");
+	//
+	// }
+	//
+	// // {(a+b*x^3)^(-1/3), x, 1, ArcTan((1+(2*b^(1/3)*x)/(a+b*x^3)^(1/3))/Sqrt(3))/(Sqrt(3)*b^(1/3)) -
+	// // Log(-(b^(1/3)*x)+(a+b*x^3)^(1/3))/(2*b^(1/3))}
+	// public void test00862() {
+	// check("Integrate((a+b*x^3)^(-1/3), x)",
+	// "ArcTan((1+(2*b^(1/3)*x)/(a+b*x^3)^(1/3))/Sqrt(3))/(Sqrt(3)*b^(1/3))-Log(-(b^(1/3)*x)+(a+b*x^3)^(1/3))/(2*b^(1/3))");
+	//
+	// }
+	//
+	// // {1/(x^3*(a+b*x^3)^(1/3)), x, 1, -(a+b*x^3)^(2/3)/(2*a*x^2)}
+	// public void test00863() {
+	// check("Integrate(1/(x^3*(a+b*x^3)^(1/3)), x)", "-(a+b*x^3)^(2/3)/(2*a*x^2)");
+	//
+	// }
+	//
+	// // {x^2/(a+b*x^3)^(2/3), x, 1, (a+b*x^3)^(1/3)/b}
+	// public void test00864() {
+	// check("Integrate(x^2/(a+b*x^3)^(2/3), x)", "(a+b*x^3)^(1/3)/b");
+	//
+	// }
+	//
+	// // {1/(x^2*(a+b*x^3)^(2/3)), x, 1, -((a+b*x^3)^(1/3)/(a*x))}
+	// public void test00865() {
+	// check("Integrate(1/(x^2*(a+b*x^3)^(2/3)), x)", "-((a+b*x^3)^(1/3)/(a*x))");
+	//
+	// }
+	//
+	// // {(a-b*x^3)^(-1/3), x, 1, -(ArcTan((1-(2*b^(1/3)*x)/(a-b*x^3)^(1/3))/Sqrt(3))/(Sqrt(3)*b^(1/3))) +
+	// // Log(b^(1/3)*x+(a-b*x^3)^(1/3))/(2*b^(1/3))}
+	// public void test00866() {
+	// check("Integrate((a-b*x^3)^(-1/3), x)",
+	// "-(ArcTan((1-(2*b^(1/3)*x)/(a-b*x^3)^(1/3))/Sqrt(3))/(Sqrt(3)*b^(1/3)))+Log(b^(1/3)*x+(a-b*x^3)^(1/3))/(2*b^(1/3))");
+	//
+	// }
+	//
+	// // {(2+x^3)^(-1/3), x, 1, ArcTan((1+(2*x)/(2+x^3)^(1/3))/Sqrt(3))/Sqrt(3)-Log(-x+(2+x^3)^(1/3))/2}
+	// public void test00867() {
+	// check("Integrate((2+x^3)^(-1/3), x)",
+	// "ArcTan((1+(2*x)/(2+x^3)^(1/3))/Sqrt(3))/Sqrt(3)-Log(-x+(2+x^3)^(1/3))/2");
+	//
+	// }
+	//
+	// // {x^2/(2+x^3)^(1/4), x, 1, (4*(2+x^3)^(3/4))/9}
+	// public void test00868() {
+	// check("Integrate(x^2/(2+x^3)^(1/4), x)", "(4*(2+x^3)^(3/4))/9");
+	//
+	// }
+	//
+	// // {x^m/(a+b*x^3), x, 1, (x^(1+m)*Hypergeometric2F1(1, (1+m)/3, (4+m)/3, -((b*x^3)/a)))/(a*(1+m))}
+	// public void test00869() {
+	// check("Integrate(x^m/(a+b*x^3), x)",
+	// "(x^(1+m)*Hypergeometric2F1(1, (1+m)/3, (4+m)/3, -((b*x^3)/a)))/(a*(1+m))");
+	//
+	// }
+	//
+	// // {x^m/(a+b*x^3)^2, x, 1, (x^(1+m)*Hypergeometric2F1(2, (1+m)/3, (4+m)/3, -((b*x^3)/a)))/(a^2*(1+m))}
+	// public void test00870() {
+	// check("Integrate(x^m/(a+b*x^3)^2, x)",
+	// "(x^(1+m)*Hypergeometric2F1(2, (1+m)/3, (4+m)/3, -((b*x^3)/a)))/(a^2*(1+m))");
+	//
+	// }
+	//
+	// // {x^m/(a+b*x^3)^3, x, 1, (x^(1+m)*Hypergeometric2F1(3, (1+m)/3, (4+m)/3, -((b*x^3)/a)))/(a^3*(1+m))}
+	// public void test00871() {
+	// check("Integrate(x^m/(a+b*x^3)^3, x)",
+	// "(x^(1+m)*Hypergeometric2F1(3, (1+m)/3, (4+m)/3, -((b*x^3)/a)))/(a^3*(1+m))");
+	//
+	// }
+	//
+	// // {x^2*(a+b*x^3)^p, x, 1, (a+b*x^3)^(1+p)/(3*b*(1+p))}
+	// public void test00872() {
+	// check("Integrate(x^2*(a+b*x^3)^p, x)", "(a+b*x^3)^(1+p)/(3*b*(1+p))");
+	//
+	// }
+	//
+	// // {a+b*x^4, x, 1, a*x+(b*x^5)/5}
+	// public void test00873() {
+	// check("Integrate(a+b*x^4, x)", "a*x+(b*x^5)/5");
+	//
+	// }
+	//
+	// // {x^3*(a+b*x^4)^2, x, 1, (a+b*x^4)^3/(12*b)}
+	// public void test00874() {
+	// check("Integrate(x^3*(a+b*x^4)^2, x)", "(a+b*x^4)^3/(12*b)");
+	//
+	// }
+	//
+	// // {x^3*(a+b*x^4)^3, x, 1, (a+b*x^4)^4/(16*b)}
+	// public void test00875() {
+	// check("Integrate(x^3*(a+b*x^4)^3, x)", "(a+b*x^4)^4/(16*b)");
+	//
+	// }
+	//
+	// // {x^3/(a+c*x^4), x, 1, Log(a+c*x^4)/(4*c)}
+	// public void test00876() {
+	// check("Integrate(x^3/(a+c*x^4), x)", "Log(a+c*x^4)/(4*c)");
+	//
+	// }
+	//
+	// // {x^3/(a+c*x^4)^2, x, 1, -1/(4*c*(a+c*x^4))}
+	// public void test00877() {
+	// check("Integrate(x^3/(a+c*x^4)^2, x)", "-1/(4*c*(a+c*x^4))");
+	//
+	// }
+	//
+	// // {x^7/(a+c*x^4)^3, x, 1, x^8/(8*a*(a+c*x^4)^2)}
+	// public void test00878() {
+	// check("Integrate(x^7/(a+c*x^4)^3, x)", "x^8/(8*a*(a+c*x^4)^2)");
+	//
+	// }
+	//
+	// // {x^3/(a+c*x^4)^3, x, 1, -1/(8*c*(a+c*x^4)^2)}
+	// public void test00879() {
+	// check("Integrate(x^3/(a+c*x^4)^3, x)", "-1/(8*c*(a+c*x^4)^2)");
+	//
+	// }
+	//
+	// // {x^3/(2+3*x^4), x, 1, Log(2+3*x^4)/12}
+	// public void test00880() {
+	// check("Integrate(x^3/(2+3*x^4), x)", "Log(2+3*x^4)/12");
+	//
+	// }
+	//
+	// // {x^3/(2+3*x^4)^2, x, 1, -1/(12*(2+3*x^4))}
+	// public void test00881() {
+	// check("Integrate(x^3/(2+3*x^4)^2, x)", "-1/(12*(2+3*x^4))");
+	//
+	// }
+	//
+	// // {x^3/(2*a+2*b+x^4), x, 1, Log(2*(a+b)+x^4)/4}
+	// public void test00882() {
+	// check("Integrate(x^3/(2*a+2*b+x^4), x)", "Log(2*(a+b)+x^4)/4");
+	//
+	// }
+	//
+	// // {x^3/(2*(a+b)+x^4), x, 1, Log(2*(a+b)+x^4)/4}
+	// public void test00883() {
+	// check("Integrate(x^3/(2*(a+b)+x^4), x)", "Log(2*(a+b)+x^4)/4");
+	//
+	// }
+	//
+	// // {x^3*Sqrt(a+c*x^4), x, 1, (a+c*x^4)^(3/2)/(6*c)}
+	// public void test00884() {
+	// check("Integrate(x^3*Sqrt(a+c*x^4), x)", "(a+c*x^4)^(3/2)/(6*c)");
+	//
+	// }
+	//
+	// // {Sqrt(a+c*x^4)/x^7, x, 1, -(a+c*x^4)^(3/2)/(6*a*x^6)}
+	// public void test00885() {
+	// check("Integrate(Sqrt(a+c*x^4)/x^7, x)", "-(a+c*x^4)^(3/2)/(6*a*x^6)");
+	//
+	// }
+	//
+	// // {x^3*(a+c*x^4)^(3/2), x, 1, (a+c*x^4)^(5/2)/(10*c)}
+	// public void test00886() {
+	// check("Integrate(x^3*(a+c*x^4)^(3/2), x)", "(a+c*x^4)^(5/2)/(10*c)");
+	//
+	// }
+	//
+	// // {(a+c*x^4)^(3/2)/x^11, x, 1, -(a+c*x^4)^(5/2)/(10*a*x^10)}
+	// public void test00887() {
+	// check("Integrate((a+c*x^4)^(3/2)/x^11, x)", "-(a+c*x^4)^(5/2)/(10*a*x^10)");
+	//
+	// }
+	//
+	// // {x^3*Sqrt(5+x^4), x, 1, (5+x^4)^(3/2)/6}
+	// public void test00888() {
+	// check("Integrate(x^3*Sqrt(5+x^4), x)", "(5+x^4)^(3/2)/6");
+	//
+	// }
+	//
+	// // {x^3/Sqrt(a+b*x^4), x, 1, Sqrt(a+b*x^4)/(2*b)}
+	// public void test00889() {
+	// check("Integrate(x^3/Sqrt(a+b*x^4), x)", "Sqrt(a+b*x^4)/(2*b)");
+	//
+	// }
+	//
+	// // {1/(x^3*Sqrt(a+b*x^4)), x, 1, -Sqrt(a+b*x^4)/(2*a*x^2)}
+	// public void test00890() {
+	// check("Integrate(1/(x^3*Sqrt(a+b*x^4)), x)", "-Sqrt(a+b*x^4)/(2*a*x^2)");
+	//
+	// }
+	//
+	// // {1/Sqrt(a+b*x^4), x, 1, ((Sqrt(a)+Sqrt(b)*x^2)*Sqrt((a+b*x^4)/(Sqrt(a) +
+	// // Sqrt(b)*x^2)^2)*EllipticF(2*ArcTan((b^(1/4)*x)/a^(1/4)), 1/2))/(2*a^(1/4)*b^(1/4)*Sqrt(a+b*x^4))}
+	// public void test00891() {
+	// check("Integrate(1/Sqrt(a+b*x^4), x)",
+	// "((Sqrt(a)+Sqrt(b)*x^2)*Sqrt((a+b*x^4)/(Sqrt(a)+Sqrt(b)*x^2)^2)*EllipticF(2*ArcTan((b^(1/4)*x)/a^(1/4)),
+	// 1/2))/(2*a^(1/4)*b^(1/4)*Sqrt(a+b*x^4))");
+	//
+	// }
+	//
+	// // {x^3/Sqrt(a-b*x^4), x, 1, -Sqrt(a-b*x^4)/(2*b)}
+	// public void test00892() {
+	// check("Integrate(x^3/Sqrt(a-b*x^4), x)", "-Sqrt(a-b*x^4)/(2*b)");
+	//
+	// }
+	//
+	// // {1/(x^3*Sqrt(a-b*x^4)), x, 1, -Sqrt(a-b*x^4)/(2*a*x^2)}
+	// public void test00893() {
+	// check("Integrate(1/(x^3*Sqrt(a-b*x^4)), x)", "-Sqrt(a-b*x^4)/(2*a*x^2)");
+	//
+	// }
+	//
+	// // {x^3/(a+b*x^4)^(3/2), x, 1, -1/(2*b*Sqrt(a+b*x^4))}
+	// public void test00894() {
+	// check("Integrate(x^3/(a+b*x^4)^(3/2), x)", "-1/(2*b*Sqrt(a+b*x^4))");
+	//
+	// }
+	//
+	// // {x/(a+b*x^4)^(3/2), x, 1, x^2/(2*a*Sqrt(a+b*x^4))}
+	// public void test00895() {
+	// check("Integrate(x/(a+b*x^4)^(3/2), x)", "x^2/(2*a*Sqrt(a+b*x^4))");
+	//
+	// }
+	//
+	// // {x^3/Sqrt(1-x^4), x, 1, -Sqrt(1-x^4)/2}
+	// public void test00896() {
+	// check("Integrate(x^3/Sqrt(1-x^4), x)", "-Sqrt(1-x^4)/2");
+	//
+	// }
+	//
+	// // {1/(x^3*Sqrt(1-x^4)), x, 1, -Sqrt(1-x^4)/(2*x^2)}
+	// public void test00897() {
+	// check("Integrate(1/(x^3*Sqrt(1-x^4)), x)", "-Sqrt(1-x^4)/(2*x^2)");
+	//
+	// }
+	//
+	// // {1/Sqrt(1-x^4), x, 1, EllipticF(ArcSin(x), -1)}
+	// public void test00898() {
+	// check("Integrate(1/Sqrt(1-x^4), x)", "EllipticF(ArcSin(x), -1)");
+	//
+	// }
+	//
+	// // {x^3/(1-x^4)^(3/2), x, 1, 1/(2*Sqrt(1-x^4))}
+	// public void test00899() {
+	// check("Integrate(x^3/(1-x^4)^(3/2), x)", "1/(2*Sqrt(1-x^4))");
+	//
+	// }
+	//
+	// // {x/(1-x^4)^(3/2), x, 1, x^2/(2*Sqrt(1-x^4))}
+	// public void test00900() {
+	// check("Integrate(x/(1-x^4)^(3/2), x)", "x^2/(2*Sqrt(1-x^4))");
+	//
+	// }
+	//
+	// // {x^3/Sqrt(1+x^4), x, 1, Sqrt(1+x^4)/2}
+	// public void test00901() {
+	// check("Integrate(x^3/Sqrt(1+x^4), x)", "Sqrt(1+x^4)/2");
+	//
+	// }
+	//
+	// // {1/(x^3*Sqrt(1+x^4)), x, 1, -Sqrt(1+x^4)/(2*x^2)}
+	// public void test00902() {
+	// check("Integrate(1/(x^3*Sqrt(1+x^4)), x)", "-Sqrt(1+x^4)/(2*x^2)");
+	//
+	// }
+	//
+	// // {1/Sqrt(1+x^4), x, 1, ((1+x^2)*Sqrt((1+x^4)/(1+x^2)^2)*EllipticF(2*ArcTan(x), 1/2))/(2*Sqrt(1+x^4))}
+	// public void test00903() {
+	// check("Integrate(1/Sqrt(1+x^4), x)",
+	// "((1+x^2)*Sqrt((1+x^4)/(1+x^2)^2)*EllipticF(2*ArcTan(x), 1/2))/(2*Sqrt(1+x^4))");
+	//
+	// }
+	//
+	// // {x^3/(1+x^4)^(3/2), x, 1, -1/(2*Sqrt(1+x^4))}
+	// public void test00904() {
+	// check("Integrate(x^3/(1+x^4)^(3/2), x)", "-1/(2*Sqrt(1+x^4))");
+	//
+	// }
+	//
+	// // {x/(1+x^4)^(3/2), x, 1, x^2/(2*Sqrt(1+x^4))}
+	// public void test00905() {
+	// check("Integrate(x/(1+x^4)^(3/2), x)", "x^2/(2*Sqrt(1+x^4))");
+	//
+	// }
+	//
+	// // {x^3/Sqrt(16-x^4), x, 1, -Sqrt(16-x^4)/2}
+	// public void test00906() {
+	// check("Integrate(x^3/Sqrt(16-x^4), x)", "-Sqrt(16-x^4)/2");
+	//
+	// }
+	//
+	// // {1/(x^3*Sqrt(16-x^4)), x, 1, -Sqrt(16-x^4)/(32*x^2)}
+	// public void test00907() {
+	// check("Integrate(1/(x^3*Sqrt(16-x^4)), x)", "-Sqrt(16-x^4)/(32*x^2)");
+	//
+	// }
+	//
+	// // {1/Sqrt(16-x^4), x, 1, EllipticF(ArcSin(x/2), -1)/2}
+	// public void test00908() {
+	// check("Integrate(1/Sqrt(16-x^4), x)", "EllipticF(ArcSin(x/2), -1)/2");
+	//
+	// }
+	//
+	// // {1/Sqrt(-1+x^4), x, 1, (Sqrt(-1+x^2)*Sqrt(1+x^2)*EllipticF(ArcSin((Sqrt(2)*x)/Sqrt(-1+x^2)),
+	// // 1/2))/(Sqrt(2)*Sqrt(-1+x^4))}
+	// public void test00909() {
+	// check("Integrate(1/Sqrt(-1+x^4), x)",
+	// "(Sqrt(-1+x^2)*Sqrt(1+x^2)*EllipticF(ArcSin((Sqrt(2)*x)/Sqrt(-1+x^2)), 1/2))/(Sqrt(2)*Sqrt(-1+x^4))");
+	//
+	// }
+	//
+	// // {x^3/(1+x^4)^(4/3), x, 1, -3/(4*(1+x^4)^(1/3))}
+	// public void test00910() {
+	// check("Integrate(x^3/(1+x^4)^(4/3), x)", "-3/(4*(1+x^4)^(1/3))");
+	//
+	// }
+	//
+	// // {x^3/(1+x^4)^(1/3), x, 1, (3*(1+x^4)^(2/3))/8}
+	// public void test00911() {
+	// check("Integrate(x^3/(1+x^4)^(1/3), x)", "(3*(1+x^4)^(2/3))/8");
+	//
+	// }
+	//
+	// // {x^3*(a+b*x^4)^(1/4), x, 1, (a+b*x^4)^(5/4)/(5*b)}
+	// public void test00912() {
+	// check("Integrate(x^3*(a+b*x^4)^(1/4), x)", "(a+b*x^4)^(5/4)/(5*b)");
+	//
+	// }
+	//
+	// // {(a+b*x^4)^(1/4)/x^6, x, 1, -(a+b*x^4)^(5/4)/(5*a*x^5)}
+	// public void test00913() {
+	// check("Integrate((a+b*x^4)^(1/4)/x^6, x)", "-(a+b*x^4)^(5/4)/(5*a*x^5)");
+	//
+	// }
+	//
+	// // {x^3*(a+b*x^4)^(3/4), x, 1, (a+b*x^4)^(7/4)/(7*b)}
+	// public void test00914() {
+	// check("Integrate(x^3*(a+b*x^4)^(3/4), x)", "(a+b*x^4)^(7/4)/(7*b)");
+	//
+	// }
+	//
+	// // {(a+b*x^4)^(3/4)/x^8, x, 1, -(a+b*x^4)^(7/4)/(7*a*x^7)}
+	// public void test00915() {
+	// check("Integrate((a+b*x^4)^(3/4)/x^8, x)", "-(a+b*x^4)^(7/4)/(7*a*x^7)");
+	//
+	// }
+	//
+	// // {x^3*(a+b*x^4)^(5/4), x, 1, (a+b*x^4)^(9/4)/(9*b)}
+	// public void test00916() {
+	// check("Integrate(x^3*(a+b*x^4)^(5/4), x)", "(a+b*x^4)^(9/4)/(9*b)");
+	//
+	// }
+	//
+	// // {(a+b*x^4)^(5/4)/x^10, x, 1, -(a+b*x^4)^(9/4)/(9*a*x^9)}
+	// public void test00917() {
+	// check("Integrate((a+b*x^4)^(5/4)/x^10, x)", "-(a+b*x^4)^(9/4)/(9*a*x^9)");
+	//
+	// }
+	//
+	// // {x^3/(a+b*x^4)^(1/4), x, 1, (a+b*x^4)^(3/4)/(3*b)}
+	// public void test00918() {
+	// check("Integrate(x^3/(a+b*x^4)^(1/4), x)", "(a+b*x^4)^(3/4)/(3*b)");
+	//
+	// }
+	//
+	// // {1/(x^4*(a+b*x^4)^(1/4)), x, 1, -(a+b*x^4)^(3/4)/(3*a*x^3)}
+	// public void test00919() {
+	// check("Integrate(1/(x^4*(a+b*x^4)^(1/4)), x)", "-(a+b*x^4)^(3/4)/(3*a*x^3)");
+	//
+	// }
+	//
+	// // {x^3/(a+b*x^4)^(3/4), x, 1, (a+b*x^4)^(1/4)/b}
+	// public void test00920() {
+	// check("Integrate(x^3/(a+b*x^4)^(3/4), x)", "(a+b*x^4)^(1/4)/b");
+	//
+	// }
+	//
+	// // {1/(x^2*(a+b*x^4)^(3/4)), x, 1, -((a+b*x^4)^(1/4)/(a*x))}
+	// public void test00921() {
+	// check("Integrate(1/(x^2*(a+b*x^4)^(3/4)), x)", "-((a+b*x^4)^(1/4)/(a*x))");
+	//
+	// }
+	//
+	// // {x^3/(a+b*x^4)^(5/4), x, 1, -(1/(b*(a+b*x^4)^(1/4)))}
+	// public void test00922() {
+	// check("Integrate(x^3/(a+b*x^4)^(5/4), x)", "-(1/(b*(a+b*x^4)^(1/4)))");
+	//
+	// }
+	//
+	// // {(a+b*x^4)^(-5/4), x, 1, x/(a*(a+b*x^4)^(1/4))}
+	// public void test00923() {
+	// check("Integrate((a+b*x^4)^(-5/4), x)", "x/(a*(a+b*x^4)^(1/4))");
+	//
+	// }
+	//
+	// // {x^3*(a-b*x^4)^(1/4), x, 1, -(a-b*x^4)^(5/4)/(5*b)}
+	// public void test00924() {
+	// check("Integrate(x^3*(a-b*x^4)^(1/4), x)", "-(a-b*x^4)^(5/4)/(5*b)");
+	//
+	// }
+	//
+	// // {(a-b*x^4)^(1/4)/x^6, x, 1, -(a-b*x^4)^(5/4)/(5*a*x^5)}
+	// public void test00925() {
+	// check("Integrate((a-b*x^4)^(1/4)/x^6, x)", "-(a-b*x^4)^(5/4)/(5*a*x^5)");
+	//
+	// }
+	//
+	// // {x^3/(a-b*x^4)^(1/4), x, 1, -(a-b*x^4)^(3/4)/(3*b)}
+	// public void test00926() {
+	// check("Integrate(x^3/(a-b*x^4)^(1/4), x)", "-(a-b*x^4)^(3/4)/(3*b)");
+	//
+	// }
+	//
+	// // {1/(x^4*(a-b*x^4)^(1/4)), x, 1, -(a-b*x^4)^(3/4)/(3*a*x^3)}
+	// public void test00927() {
+	// check("Integrate(1/(x^4*(a-b*x^4)^(1/4)), x)", "-(a-b*x^4)^(3/4)/(3*a*x^3)");
+	//
+	// }
+	//
+	// // {x^3/(a-b*x^4)^(3/4), x, 1, -((a-b*x^4)^(1/4)/b)}
+	// public void test00928() {
+	// check("Integrate(x^3/(a-b*x^4)^(3/4), x)", "-((a-b*x^4)^(1/4)/b)");
+	//
+	// }
+	//
+	// // {1/(x^2*(a-b*x^4)^(3/4)), x, 1, -((a-b*x^4)^(1/4)/(a*x))}
+	// public void test00929() {
+	// check("Integrate(1/(x^2*(a-b*x^4)^(3/4)), x)", "-((a-b*x^4)^(1/4)/(a*x))");
+	//
+	// }
+	//
+	// // {x^3*(a+b*x^4)^p, x, 1, (a+b*x^4)^(1+p)/(4*b*(1+p))}
+	// public void test00930() {
+	// check("Integrate(x^3*(a+b*x^4)^p, x)", "(a+b*x^4)^(1+p)/(4*b*(1+p))");
+	//
+	// }
+	//
+	// // {x^4/(a+b*x^5), x, 1, Log(a+b*x^5)/(5*b)}
+	// public void test00931() {
+	// check("Integrate(x^4/(a+b*x^5), x)", "Log(a+b*x^5)/(5*b)");
+	//
+	// }
+	//
+	// // {x^4/(a+b*x^5)^2, x, 1, -1/(5*b*(a+b*x^5))}
+	// public void test00932() {
+	// check("Integrate(x^4/(a+b*x^5)^2, x)", "-1/(5*b*(a+b*x^5))");
+	//
+	// }
+	//
+	// // {x^4/(2*b+b*x^5), x, 1, Log(2+x^5)/(5*b)}
+	// public void test00933() {
+	// check("Integrate(x^4/(2*b+b*x^5), x)", "Log(2+x^5)/(5*b)");
+	//
+	// }
+	//
+	// // {x^4/(3+b*x^5), x, 1, Log(3+b*x^5)/(5*b)}
+	// public void test00934() {
+	// check("Integrate(x^4/(3+b*x^5), x)", "Log(3+b*x^5)/(5*b)");
+	//
+	// }
+	//
+	// // {x^4/(1+x^5), x, 1, Log(1+x^5)/5}
+	// public void test00935() {
+	// check("Integrate(x^4/(1+x^5), x)", "Log(1+x^5)/5");
+	//
+	// }
+	//
+	// // {1/(x^(7/2)*Sqrt(a+b*x^5)), x, 1, (-2*Sqrt(a+b*x^5))/(5*a*x^(5/2))}
+	// public void test00936() {
+	// check("Integrate(1/(x^(7/2)*Sqrt(a+b*x^5)), x)", "(-2*Sqrt(a+b*x^5))/(5*a*x^(5/2))");
+	//
+	// }
+	//
+	// // {1/(x^(7/2)*Sqrt(1+x^5)), x, 1, (-2*Sqrt(1+x^5))/(5*x^(5/2))}
+	// public void test00937() {
+	// check("Integrate(1/(x^(7/2)*Sqrt(1+x^5)), x)", "(-2*Sqrt(1+x^5))/(5*x^(5/2))");
+	//
+	// }
+	//
+	// // {x^5/(a+b*x^6), x, 1, Log(a+b*x^6)/(6*b)}
+	// public void test00938() {
+	// check("Integrate(x^5/(a+b*x^6), x)", "Log(a+b*x^6)/(6*b)");
+	//
+	// }
+	//
+	// // {x^5/(a+b*x^6)^2, x, 1, -1/(6*b*(a+b*x^6))}
+	// public void test00939() {
+	// check("Integrate(x^5/(a+b*x^6)^2, x)", "-1/(6*b*(a+b*x^6))");
+	//
+	// }
+	//
+	// // {x^5/(1-x^6), x, 1, -Log(1-x^6)/6}
+	// public void test00940() {
+	// check("Integrate(x^5/(1-x^6), x)", "-Log(1-x^6)/6");
+	//
+	// }
+	//
+	// // {x^5/(1+x^6), x, 1, Log(1+x^6)/6}
+	// public void test00941() {
+	// check("Integrate(x^5/(1+x^6), x)", "Log(1+x^6)/6");
+	//
+	// }
+	//
+	// // {x^5*Sqrt(a^6-x^6), x, 1, -(a^6-x^6)^(3/2)/9}
+	// public void test00942() {
+	// check("Integrate(x^5*Sqrt(a^6-x^6), x)", "-(a^6-x^6)^(3/2)/9");
+	//
+	// }
+	//
+	// // {x^5/Sqrt(2+x^6), x, 1, Sqrt(2+x^6)/3}
+	// public void test00943() {
+	// check("Integrate(x^5/Sqrt(2+x^6), x)", "Sqrt(2+x^6)/3");
+	//
+	// }
+	//
+	// // {1/(x^4*Sqrt(2+x^6)), x, 1, -Sqrt(2+x^6)/(6*x^3)}
+	// public void test00944() {
+	// check("Integrate(1/(x^4*Sqrt(2+x^6)), x)", "-Sqrt(2+x^6)/(6*x^3)");
+	//
+	// }
+	//
+	// // {1/Sqrt(2+x^6), x, 1, (x*(2^(1/3)+x^2)*Sqrt((2^(2/3)-2^(1/3)*x^2+x^4)/(2^(1/3)+(1 +
+	// // Sqrt(3))*x^2)^2)*EllipticF(ArcCos((2^(1/3)+(1-Sqrt(3))*x^2)/(2^(1/3)+(1+Sqrt(3))*x^2)), (2 +
+	// // Sqrt(3))/4))/(2*2^(1/3)*3^(1/4)*Sqrt((x^2*(2^(1/3)+x^2))/(2^(1/3)+(1+Sqrt(3))*x^2)^2)*Sqrt(2+x^6))}
+	// public void test00945() {
+	// check("Integrate(1/Sqrt(2+x^6), x)",
+	// "(x*(2^(1/3)+x^2)*Sqrt((2^(2/3)-2^(1/3)*x^2+x^4)/(2^(1/3)+(1+Sqrt(3))*x^2)^2)*EllipticF(ArcCos((2^(1/3)+(1-Sqrt(3))*x^2)/(2^(1/3)+(1+Sqrt(3))*x^2)),
+	// (2+Sqrt(3))/4))/(2*2^(1/3)*3^(1/4)*Sqrt((x^2*(2^(1/3)+x^2))/(2^(1/3)+(1+Sqrt(3))*x^2)^2)*Sqrt(2+x^6))");
+	//
+	// }
+	//
+	// // {x^5/(2+x^6)^(3/2), x, 1, -1/(3*Sqrt(2+x^6))}
+	// public void test00946() {
+	// check("Integrate(x^5/(2+x^6)^(3/2), x)", "-1/(3*Sqrt(2+x^6))");
+	//
+	// }
+	//
+	// // {x^2/(2+x^6)^(3/2), x, 1, x^3/(6*Sqrt(2+x^6))}
+	// public void test00947() {
+	// check("Integrate(x^2/(2+x^6)^(3/2), x)", "x^3/(6*Sqrt(2+x^6))");
+	//
+	// }
+	//
+	// // {x^m/(a+b*x^7), x, 1, (x^(1+m)*Hypergeometric2F1(1, (1+m)/7, (8+m)/7, -((b*x^7)/a)))/(a*(1+m))}
+	// public void test00948() {
+	// check("Integrate(x^m/(a+b*x^7), x)",
+	// "(x^(1+m)*Hypergeometric2F1(1, (1+m)/7, (8+m)/7, -((b*x^7)/a)))/(a*(1+m))");
+	//
+	// }
+	//
+	// // {x^6/(a+b*x^7), x, 1, Log(a+b*x^7)/(7*b)}
+	// public void test00949() {
+	// check("Integrate(x^6/(a+b*x^7), x)", "Log(a+b*x^7)/(7*b)");
+	//
+	// }
+	//
+	// // {x^m/(a-b*x^7), x, 1, (x^(1+m)*Hypergeometric2F1(1, (1+m)/7, (8+m)/7, (b*x^7)/a))/(a*(1+m))}
+	// public void test00950() {
+	// check("Integrate(x^m/(a-b*x^7), x)", "(x^(1+m)*Hypergeometric2F1(1, (1+m)/7, (8+m)/7, (b*x^7)/a))/(a*(1+m))");
+	//
+	// }
+	//
+	// // {x^6/(a-b*x^7), x, 1, -Log(a-b*x^7)/(7*b)}
+	// public void test00951() {
+	// check("Integrate(x^6/(a-b*x^7), x)", "-Log(a-b*x^7)/(7*b)");
+	//
+	// }
+	//
+	// // {x^7/(a+b*x^8), x, 1, Log(a+b*x^8)/(8*b)}
+	// public void test00952() {
+	// check("Integrate(x^7/(a+b*x^8), x)", "Log(a+b*x^8)/(8*b)");
+	//
+	// }
+	//
+	// // {x^7/(1-x^8), x, 1, -Log(1-x^8)/8}
+	// public void test00953() {
+	// check("Integrate(x^7/(1-x^8), x)", "-Log(1-x^8)/8");
+	//
+	// }
+	//
+	// // {x^7/(1+x^8), x, 1, Log(1+x^8)/8}
+	// public void test00954() {
+	// check("Integrate(x^7/(1+x^8), x)", "Log(1+x^8)/8");
+	//
+	// }
+	//
+	// // {x^7/Sqrt(1+x^8), x, 1, Sqrt(1+x^8)/4}
+	// public void test00955() {
+	// check("Integrate(x^7/Sqrt(1+x^8), x)", "Sqrt(1+x^8)/4");
+	//
+	// }
+	//
+	// // {1/(x^5*Sqrt(1+x^8)), x, 1, -Sqrt(1+x^8)/(4*x^4)}
+	// public void test00956() {
+	// check("Integrate(1/(x^5*Sqrt(1+x^8)), x)", "-Sqrt(1+x^8)/(4*x^4)");
+	//
+	// }
+	//
+	// // {x^6/Sqrt(1+x^8), x, 1, (x^7*Hypergeometric2F1(1/2, 7/8, 15/8, -x^8))/7}
+	// public void test00957() {
+	// check("Integrate(x^6/Sqrt(1+x^8), x)", "(x^7*Hypergeometric2F1(1/2, 7/8, 15/8, -x^8))/7");
+	//
+	// }
+	//
+	// // {x^4/Sqrt(1+x^8), x, 1, (x^5*Hypergeometric2F1(1/2, 5/8, 13/8, -x^8))/5}
+	// public void test00958() {
+	// check("Integrate(x^4/Sqrt(1+x^8), x)", "(x^5*Hypergeometric2F1(1/2, 5/8, 13/8, -x^8))/5");
+	//
+	// }
+	//
+	// // {a+b/x, x, 1, a*x+b*Log(x)}
+	// public void test00959() {
+	// check("Integrate(a+b/x, x)", "a*x+b*Log(x)");
+	//
+	// }
+	//
+	// // {(a+b/x)^2/x^2, x, 1, -(a+b/x)^3/(3*b)}
+	// public void test00960() {
+	// check("Integrate((a+b/x)^2/x^2, x)", "-(a+b/x)^3/(3*b)");
+	//
+	// }
+	//
+	// // {(a+b/x)^3/x^2, x, 1, -(a+b/x)^4/(4*b)}
+	// public void test00961() {
+	// check("Integrate((a+b/x)^3/x^2, x)", "-(a+b/x)^4/(4*b)");
+	//
+	// }
+	//
+	// // {(a+b/x)^8/x^2, x, 1, -(a+b/x)^9/(9*b)}
+	// public void test00962() {
+	// check("Integrate((a+b/x)^8/x^2, x)", "-(a+b/x)^9/(9*b)");
+	//
+	// }
+	//
+	// // {1/((a+b/x)*x^2), x, 1, -(Log(a+b/x)/b)}
+	// public void test00963() {
+	// check("Integrate(1/((a+b/x)*x^2), x)", "-(Log(a+b/x)/b)");
+	//
+	// }
+	//
+	// // {1/((a+b/x)^2*x^2), x, 1, 1/(b*(a+b/x))}
+	// public void test00964() {
+	// check("Integrate(1/((a+b/x)^2*x^2), x)", "1/(b*(a+b/x))");
+	//
+	// }
+	//
+	// // {1/((a+b/x)^3*x^2), x, 1, 1/(2*b*(a+b/x)^2)}
+	// public void test00965() {
+	// check("Integrate(1/((a+b/x)^3*x^2), x)", "1/(2*b*(a+b/x)^2)");
+	//
+	// }
+	//
+	// // {Sqrt(a+b/x)/x^2, x, 1, (-2*(a+b/x)^(3/2))/(3*b)}
+	// public void test00966() {
+	// check("Integrate(Sqrt(a+b/x)/x^2, x)", "(-2*(a+b/x)^(3/2))/(3*b)");
+	//
+	// }
+	//
+	// // {(a+b/x)^(3/2)/x^2, x, 1, (-2*(a+b/x)^(5/2))/(5*b)}
+	// public void test00967() {
+	// check("Integrate((a+b/x)^(3/2)/x^2, x)", "(-2*(a+b/x)^(5/2))/(5*b)");
+	//
+	// }
+	//
+	// // {(a+b/x)^(5/2)/x^2, x, 1, (-2*(a+b/x)^(7/2))/(7*b)}
+	// public void test00968() {
+	// check("Integrate((a+b/x)^(5/2)/x^2, x)", "(-2*(a+b/x)^(7/2))/(7*b)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(a+b/x)*x^2), x, 1, (-2*Sqrt(a+b/x))/b}
+	// public void test00969() {
+	// check("Integrate(1/(Sqrt(a+b/x)*x^2), x)", "(-2*Sqrt(a+b/x))/b");
+	//
+	// }
+	//
+	// // {1/((a+b/x)^(3/2)*x^2), x, 1, 2/(b*Sqrt(a+b/x))}
+	// public void test00970() {
+	// check("Integrate(1/((a+b/x)^(3/2)*x^2), x)", "2/(b*Sqrt(a+b/x))");
+	//
+	// }
+	//
+	// // {1/((a+b/x)^(5/2)*x^2), x, 1, 2/(3*b*(a+b/x)^(3/2))}
+	// public void test00971() {
+	// check("Integrate(1/((a+b/x)^(5/2)*x^2), x)", "2/(3*b*(a+b/x)^(3/2))");
+	//
+	// }
+	//
+	// // {Sqrt(a+b/x)*Sqrt(x), x, 1, (2*(a+b/x)^(3/2)*x^(3/2))/(3*a)}
+	// public void test00972() {
+	// check("Integrate(Sqrt(a+b/x)*Sqrt(x), x)", "(2*(a+b/x)^(3/2)*x^(3/2))/(3*a)");
+	//
+	// }
+	//
+	// // {(a+b/x)^(3/2)*x^(3/2), x, 1, (2*(a+b/x)^(5/2)*x^(5/2))/(5*a)}
+	// public void test00973() {
+	// check("Integrate((a+b/x)^(3/2)*x^(3/2), x)", "(2*(a+b/x)^(5/2)*x^(5/2))/(5*a)");
+	//
+	// }
+	//
+	// // {(a+b/x)^(5/2)*x^(5/2), x, 1, (2*(a+b/x)^(7/2)*x^(7/2))/(7*a)}
+	// public void test00974() {
+	// check("Integrate((a+b/x)^(5/2)*x^(5/2), x)", "(2*(a+b/x)^(7/2)*x^(7/2))/(7*a)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(a+b/x)*Sqrt(x)), x, 1, (2*Sqrt(a+b/x)*Sqrt(x))/a}
+	// public void test00975() {
+	// check("Integrate(1/(Sqrt(a+b/x)*Sqrt(x)), x)", "(2*Sqrt(a+b/x)*Sqrt(x))/a");
+	//
+	// }
+	//
+	// // {1/((a+b/x)^(3/2)*x^(3/2)), x, 1, -2/(a*Sqrt(a+b/x)*Sqrt(x))}
+	// public void test00976() {
+	// check("Integrate(1/((a+b/x)^(3/2)*x^(3/2)), x)", "-2/(a*Sqrt(a+b/x)*Sqrt(x))");
+	//
+	// }
+	//
+	// // {1/((a+b/x)^(5/2)*x^(5/2)), x, 1, -2/(3*a*(a+b/x)^(3/2)*x^(3/2))}
+	// public void test00977() {
+	// check("Integrate(1/((a+b/x)^(5/2)*x^(5/2)), x)", "-2/(3*a*(a+b/x)^(3/2)*x^(3/2))");
+	//
+	// }
+	//
+	// // {a+b/x^2, x, 1, -(b/x)+a*x}
+	// public void test00978() {
+	// check("Integrate(a+b/x^2, x)", "-(b/x)+a*x");
+	//
+	// }
+	//
+	// // {(a+b/x^2)^2/x^3, x, 1, -(a+b/x^2)^3/(6*b)}
+	// public void test00979() {
+	// check("Integrate((a+b/x^2)^2/x^3, x)", "-(a+b/x^2)^3/(6*b)");
+	//
+	// }
+	//
+	// // {(a+b/x^2)^3/x^3, x, 1, -(a+b/x^2)^4/(8*b)}
+	// public void test00980() {
+	// check("Integrate((a+b/x^2)^3/x^3, x)", "-(a+b/x^2)^4/(8*b)");
+	//
+	// }
+	//
+	// // {1/((a+b/x^2)*x^3), x, 1, -Log(a+b/x^2)/(2*b)}
+	// public void test00981() {
+	// check("Integrate(1/((a+b/x^2)*x^3), x)", "-Log(a+b/x^2)/(2*b)");
+	//
+	// }
+	//
+	// // {1/((a+b/x^2)^2*x^3), x, 1, 1/(2*b*(a+b/x^2))}
+	// public void test00982() {
+	// check("Integrate(1/((a+b/x^2)^2*x^3), x)", "1/(2*b*(a+b/x^2))");
+	//
+	// }
+	//
+	// // {1/((a+b/x^2)^3*x^3), x, 1, 1/(4*b*(a+b/x^2)^2)}
+	// public void test00983() {
+	// check("Integrate(1/((a+b/x^2)^3*x^3), x)", "1/(4*b*(a+b/x^2)^2)");
+	//
+	// }
+	//
+	// // {Sqrt(a+b/x^2)*x^2, x, 1, ((a+b/x^2)^(3/2)*x^3)/(3*a)}
+	// public void test00984() {
+	// check("Integrate(Sqrt(a+b/x^2)*x^2, x)", "((a+b/x^2)^(3/2)*x^3)/(3*a)");
+	//
+	// }
+	//
+	// // {Sqrt(a+b/x^2)/x^3, x, 1, -(a+b/x^2)^(3/2)/(3*b)}
+	// public void test00985() {
+	// check("Integrate(Sqrt(a+b/x^2)/x^3, x)", "-(a+b/x^2)^(3/2)/(3*b)");
+	//
+	// }
+	//
+	// // {(a+b/x^2)^(3/2)/x^3, x, 1, -(a+b/x^2)^(5/2)/(5*b)}
+	// public void test00986() {
+	// check("Integrate((a+b/x^2)^(3/2)/x^3, x)", "-(a+b/x^2)^(5/2)/(5*b)");
+	//
+	// }
+	//
+	// // {(a+b/x^2)^(5/2)/x^3, x, 1, -(a+b/x^2)^(7/2)/(7*b)}
+	// public void test00987() {
+	// check("Integrate((a+b/x^2)^(5/2)/x^3, x)", "-(a+b/x^2)^(7/2)/(7*b)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(a+b/x^2)*x^3), x, 1, -(Sqrt(a+b/x^2)/b)}
+	// public void test00988() {
+	// check("Integrate(1/(Sqrt(a+b/x^2)*x^3), x)", "-(Sqrt(a+b/x^2)/b)");
+	//
+	// }
+	//
+	// // {1/Sqrt(a+b/x^2), x, 1, (Sqrt(a+b/x^2)*x)/a}
+	// public void test00989() {
+	// check("Integrate(1/Sqrt(a+b/x^2), x)", "(Sqrt(a+b/x^2)*x)/a");
+	//
+	// }
+	//
+	// // {1/((a+b/x^2)^(3/2)*x^3), x, 1, 1/(b*Sqrt(a+b/x^2))}
+	// public void test00990() {
+	// check("Integrate(1/((a+b/x^2)^(3/2)*x^3), x)", "1/(b*Sqrt(a+b/x^2))");
+	//
+	// }
+	//
+	// // {1/((a+b/x^2)^(3/2)*x^2), x, 1, -(1/(a*Sqrt(a+b/x^2)*x))}
+	// public void test00991() {
+	// check("Integrate(1/((a+b/x^2)^(3/2)*x^2), x)", "-(1/(a*Sqrt(a+b/x^2)*x))");
+	//
+	// }
+	//
+	// // {1/((a+b/x^2)^(5/2)*x^3), x, 1, 1/(3*b*(a+b/x^2)^(3/2))}
+	// public void test00992() {
+	// check("Integrate(1/((a+b/x^2)^(5/2)*x^3), x)", "1/(3*b*(a+b/x^2)^(3/2))");
+	//
+	// }
+	//
+	// // {1/((a+b/x^2)^(5/2)*x^4), x, 1, -1/(3*a*(a+b/x^2)^(3/2)*x^3)}
+	// public void test00993() {
+	// check("Integrate(1/((a+b/x^2)^(5/2)*x^4), x)", "-1/(3*a*(a+b/x^2)^(3/2)*x^3)");
+	//
+	// }
+	//
+	// // {(1+x^(-2))^(1/3)/x^3, x, 1, (-3*(1+x^(-2))^(4/3))/8}
+	// public void test00994() {
+	// check("Integrate((1+x^(-2))^(1/3)/x^3, x)", "(-3*(1+x^(-2))^(4/3))/8");
+	//
+	// }
+	//
+	// // {(1+x^(-2))^(5/3)/x^3, x, 1, (-3*(1+x^(-2))^(8/3))/16}
+	// public void test00995() {
+	// check("Integrate((1+x^(-2))^(5/3)/x^3, x)", "(-3*(1+x^(-2))^(8/3))/16");
+	//
+	// }
+	//
+	// // {1/((a+b/x^3)*x^4), x, 1, -Log(a+b/x^3)/(3*b)}
+	// public void test00996() {
+	// check("Integrate(1/((a+b/x^3)*x^4), x)", "-Log(a+b/x^3)/(3*b)");
+	//
+	// }
+	//
+	// // {1/((a+b/x^3)^2*x^4), x, 1, 1/(3*b*(a+b/x^3))}
+	// public void test00997() {
+	// check("Integrate(1/((a+b/x^3)^2*x^4), x)", "1/(3*b*(a+b/x^3))");
+	//
+	// }
+	//
+	// // {Sqrt(a+b/x^3)/x^4, x, 1, (-2*(a+b/x^3)^(3/2))/(9*b)}
+	// public void test00998() {
+	// check("Integrate(Sqrt(a+b/x^3)/x^4, x)", "(-2*(a+b/x^3)^(3/2))/(9*b)");
+	//
+	// }
+	//
+	// // {(a+b/x^3)^(3/2)/x^4, x, 1, (-2*(a+b/x^3)^(5/2))/(15*b)}
+	// public void test00999() {
+	// check("Integrate((a+b/x^3)^(3/2)/x^4, x)", "(-2*(a+b/x^3)^(5/2))/(15*b)");
+	//
+	// }
+	//
+	// // {1/(Sqrt(a+b/x^3)*x^4), x, 1, (-2*Sqrt(a+b/x^3))/(3*b)}
+	// public void test01000() {
+	// check("Integrate(1/(Sqrt(a+b/x^3)*x^4), x)", "(-2*Sqrt(a+b/x^3))/(3*b)");
+	//
+	// }
+	//
+	// // {1/((a+b/x^3)^(3/2)*x^4), x, 1, 2/(3*b*Sqrt(a+b/x^3))}
+	// public void test01001() {
+	// check("Integrate(1/((a+b/x^3)^(3/2)*x^4), x)", "2/(3*b*Sqrt(a+b/x^3))");
+	//
+	// }
+	//
+	// // {x/Sqrt(a+b/x^4), x, 1, (Sqrt(a+b/x^4)*x^2)/(2*a)}
+	// public void test01002() {
+	// check("Integrate(x/Sqrt(a+b/x^4), x)", "(Sqrt(a+b/x^4)*x^2)/(2*a)");
+	//
+	// }
+	//
+	// // {1/((a+b/x^4)^(3/2)*x^3), x, 1, -1/(2*a*Sqrt(a+b/x^4)*x^2)}
+	// public void test01003() {
+	// check("Integrate(1/((a+b/x^4)^(3/2)*x^3), x)", "-1/(2*a*Sqrt(a+b/x^4)*x^2)");
+	//
+	// }
+	//
+	// // {a+b*Sqrt(x), x, 1, a*x+(2*b*x^(3/2))/3}
+	// public void test01004() {
+	// check("Integrate(a+b*Sqrt(x), x)", "a*x+(2*b*x^(3/2))/3");
+	//
+	// }
+	//
+	// // {(a+b*Sqrt(x))^3/x^3, x, 1, -(a+b*Sqrt(x))^4/(2*a*x^2)}
+	// public void test01005() {
+	// check("Integrate((a+b*Sqrt(x))^3/x^3, x)", "-(a+b*Sqrt(x))^4/(2*a*x^2)");
+	//
+	// }
+	//
+	// // {(a+b*Sqrt(x))^5/x^4, x, 1, -(a+b*Sqrt(x))^6/(3*a*x^3)}
+	// public void test01006() {
+	// check("Integrate((a+b*Sqrt(x))^5/x^4, x)", "-(a+b*Sqrt(x))^6/(3*a*x^3)");
+	//
+	// }
+	//
+	// // {(a+b*Sqrt(x))^15/x^9, x, 1, -(a+b*Sqrt(x))^16/(8*a*x^8)}
+	// public void test01007() {
+	// check("Integrate((a+b*Sqrt(x))^15/x^9, x)", "-(a+b*Sqrt(x))^16/(8*a*x^8)");
+	//
+	// }
+	//
+	// // {x/(a+b*Sqrt(x))^5, x, 1, x^2/(2*a*(a+b*Sqrt(x))^4)}
+	// public void test01008() {
+	// check("Integrate(x/(a+b*Sqrt(x))^5, x)", "x^2/(2*a*(a+b*Sqrt(x))^4)");
+	//
+	// }
+	//
+	// // {(a+b*Sqrt(x))^n/Sqrt(x), x, 1, (2*(a+b*Sqrt(x))^(1+n))/(b*(1+n))}
+	// public void test01009() {
+	// check("Integrate((a+b*Sqrt(x))^n/Sqrt(x), x)", "(2*(a+b*Sqrt(x))^(1+n))/(b*(1+n))");
+	//
+	// }
+	//
+	// // {(1+Sqrt(x))^2/Sqrt(x), x, 1, (2*(1+Sqrt(x))^3)/3}
+	// public void test01010() {
+	// check("Integrate((1+Sqrt(x))^2/Sqrt(x), x)", "(2*(1+Sqrt(x))^3)/3");
+	//
+	// }
+	//
+	// // {(1+Sqrt(x))^3/Sqrt(x), x, 1, (1+Sqrt(x))^4/2}
+	// public void test01011() {
+	// check("Integrate((1+Sqrt(x))^3/Sqrt(x), x)", "(1+Sqrt(x))^4/2");
+	//
+	// }
+	//
+	// // {1/((1+Sqrt(x))*Sqrt(x)), x, 1, 2*Log(1+Sqrt(x))}
+	// public void test01012() {
+	// check("Integrate(1/((1+Sqrt(x))*Sqrt(x)), x)", "2*Log(1+Sqrt(x))");
+	//
+	// }
+	//
+	// // {1/((1+Sqrt(x))^2*Sqrt(x)), x, 1, -2/(1+Sqrt(x))}
+	// public void test01013() {
+	// check("Integrate(1/((1+Sqrt(x))^2*Sqrt(x)), x)", "-2/(1+Sqrt(x))");
+	//
+	// }
+	//
+	// // {1/((1+Sqrt(x))^3*Sqrt(x)), x, 1, -(1+Sqrt(x))^(-2)}
+	// public void test01014() {
+	// check("Integrate(1/((1+Sqrt(x))^3*Sqrt(x)), x)", "-(1+Sqrt(x))^(-2)");
+	//
+	// }
+	//
+	// // {Sqrt(1+Sqrt(x))/Sqrt(x), x, 1, (4*(1+Sqrt(x))^(3/2))/3}
+	// public void test01015() {
+	// check("Integrate(Sqrt(1+Sqrt(x))/Sqrt(x), x)", "(4*(1+Sqrt(x))^(3/2))/3");
+	//
+	// }
+	//
+	// // {Sqrt(x)/(1+x^(3/2)), x, 1, (2*Log(1+x^(3/2)))/3}
+	// public void test01016() {
+	// check("Integrate(Sqrt(x)/(1+x^(3/2)), x)", "(2*Log(1+x^(3/2)))/3");
+	//
+	// }
+	//
+	// // {a+b*x^(1/3), x, 1, a*x+(3*b*x^(4/3))/4}
+	// public void test01017() {
+	// check("Integrate(a+b*x^(1/3), x)", "a*x+(3*b*x^(4/3))/4");
+	//
+	// }
+	//
+	// // {(a+b*x^(1/3))^2/x^2, x, 1, -((a+b*x^(1/3))^3/(a*x))}
+	// public void test01018() {
+	// check("Integrate((a+b*x^(1/3))^2/x^2, x)", "-((a+b*x^(1/3))^3/(a*x))");
+	//
+	// }
+	//
+	// // {(a+b*x^(1/3))^5/x^3, x, 1, -(a+b*x^(1/3))^6/(2*a*x^2)}
+	// public void test01019() {
+	// check("Integrate((a+b*x^(1/3))^5/x^3, x)", "-(a+b*x^(1/3))^6/(2*a*x^2)");
+	//
+	// }
+	//
+	// // {1/((1+x^(2/3))*x^(1/3)), x, 1, (3*Log(1+x^(2/3)))/2}
+	// public void test01020() {
+	// check("Integrate(1/((1+x^(2/3))*x^(1/3)), x)", "(3*Log(1+x^(2/3)))/2");
+	//
+	// }
+	//
+	// // {Sqrt(-1+x^(2/3))/x^(1/3), x, 1, (-1+x^(2/3))^(3/2)}
+	// public void test01021() {
+	// check("Integrate(Sqrt(-1+x^(2/3))/x^(1/3), x)", "(-1+x^(2/3))^(3/2)");
+	//
+	// }
+	//
+	// // {(1+x^(2/3))^(3/2)/x^(1/3), x, 1, (3*(1+x^(2/3))^(5/2))/5}
+	// public void test01022() {
+	// check("Integrate((1+x^(2/3))^(3/2)/x^(1/3), x)", "(3*(1+x^(2/3))^(5/2))/5");
+	//
+	// }
+	//
+	// // {a+b/x^(1/3), x, 1, (3*b*x^(2/3))/2+a*x}
+	// public void test01023() {
+	// check("Integrate(a+b/x^(1/3), x)", "(3*b*x^(2/3))/2+a*x");
+	//
+	// }
+	//
+	// // {x^(2/3)*(1+x^(5/3))^(2/3), x, 1, (9*(1+x^(5/3))^(5/3))/25}
+	// public void test01024() {
+	// check("Integrate(x^(2/3)*(1+x^(5/3))^(2/3), x)", "(9*(1+x^(5/3))^(5/3))/25");
+	//
+	// }
+	//
+	// // {x^(7/3)*(a^(10/3)-x^(10/3))^(19/7), x, 1, (-21*(a^(10/3)-x^(10/3))^(26/7))/260}
+	// public void test01025() {
+	// check("Integrate(x^(7/3)*(a^(10/3)-x^(10/3))^(19/7), x)", "(-21*(a^(10/3)-x^(10/3))^(26/7))/260");
+	//
+	// }
+	//
+	// // {1/(Sqrt(1+x^(4/5))*x^(1/5)), x, 1, (5*Sqrt(1+x^(4/5)))/2}
+	// public void test01026() {
+	// check("Integrate(1/(Sqrt(1+x^(4/5))*x^(1/5)), x)", "(5*Sqrt(1+x^(4/5)))/2");
+	//
+	// }
+	//
+	// // {(a+b/x^(3/5))^(2/3), x, 1, ((a+b/x^(3/5))^(5/3)*x)/a}
+	// public void test01027() {
+	// check("Integrate((a+b/x^(3/5))^(2/3), x)", "((a+b/x^(3/5))^(5/3)*x)/a");
+	//
+	// }
+	//
+	// // {a+b*x^n, x, 1, a*x+(b*x^(1+n))/(1+n)}
+	// public void test01028() {
+	// check("Integrate(a+b*x^n, x)", "a*x+(b*x^(1+n))/(1+n)");
+	//
+	// }
+	//
+	// // {x/(a+b*x^n), x, 1, (x^2*Hypergeometric2F1(1, 2/n, (2+n)/n, -((b*x^n)/a)))/(2*a)}
+	// public void test01029() {
+	// check("Integrate(x/(a+b*x^n), x)", "(x^2*Hypergeometric2F1(1, 2/n, (2+n)/n, -((b*x^n)/a)))/(2*a)");
+	//
+	// }
+	//
+	// // {(a+b*x^n)^(-1), x, 1, (x*Hypergeometric2F1(1, n^(-1), 1+n^(-1), -((b*x^n)/a)))/a}
+	// public void test01030() {
+	// check("Integrate((a+b*x^n)^(-1), x)", "(x*Hypergeometric2F1(1, n^(-1), 1+n^(-1), -((b*x^n)/a)))/a");
+	//
+	// }
+	//
+	// // {1/(x^2*(a+b*x^n)), x, 1, -(Hypergeometric2F1(1, -n^(-1), -((1-n)/n), -((b*x^n)/a))/(a*x))}
+	// public void test01031() {
+	// check("Integrate(1/(x^2*(a+b*x^n)), x)", "-(Hypergeometric2F1(1, -n^(-1), -((1-n)/n), -((b*x^n)/a))/(a*x))");
+	//
+	// }
+	//
+	// // {1/(x^3*(a+b*x^n)), x, 1, -Hypergeometric2F1(1, -2/n, -((2-n)/n), -((b*x^n)/a))/(2*a*x^2)}
+	// public void test01032() {
+	// check("Integrate(1/(x^3*(a+b*x^n)), x)", "-Hypergeometric2F1(1, -2/n, -((2-n)/n), -((b*x^n)/a))/(2*a*x^2)");
+	//
+	// }
+	//
+	// // {x/(a+b*x^n)^2, x, 1, (x^2*Hypergeometric2F1(2, 2/n, (2+n)/n, -((b*x^n)/a)))/(2*a^2)}
+	// public void test01033() {
+	// check("Integrate(x/(a+b*x^n)^2, x)", "(x^2*Hypergeometric2F1(2, 2/n, (2+n)/n, -((b*x^n)/a)))/(2*a^2)");
+	//
+	// }
+	//
+	// // {(a+b*x^n)^(-2), x, 1, (x*Hypergeometric2F1(2, n^(-1), 1+n^(-1), -((b*x^n)/a)))/a^2}
+	// public void test01034() {
+	// check("Integrate((a+b*x^n)^(-2), x)", "(x*Hypergeometric2F1(2, n^(-1), 1+n^(-1), -((b*x^n)/a)))/a^2");
+	//
+	// }
+	//
+	// // {1/(x^2*(a+b*x^n)^2), x, 1, -(Hypergeometric2F1(2, -n^(-1), -((1-n)/n), -((b*x^n)/a))/(a^2*x))}
+	// public void test01035() {
+	// check("Integrate(1/(x^2*(a+b*x^n)^2), x)",
+	// "-(Hypergeometric2F1(2, -n^(-1), -((1-n)/n), -((b*x^n)/a))/(a^2*x))");
+	//
+	// }
+	//
+	// // {1/(x^3*(a+b*x^n)^2), x, 1, -Hypergeometric2F1(2, -2/n, -((2-n)/n), -((b*x^n)/a))/(2*a^2*x^2)}
+	// public void test01036() {
+	// check("Integrate(1/(x^3*(a+b*x^n)^2), x)", "-Hypergeometric2F1(2, -2/n, -((2-n)/n), -((b*x^n)/a))/(2*a^2*x^2)");
+	//
+	// }
+	//
+	// // {x/(a+b*x^n)^3, x, 1, (x^2*Hypergeometric2F1(3, 2/n, (2+n)/n, -((b*x^n)/a)))/(2*a^3)}
+	// public void test01037() {
+	// check("Integrate(x/(a+b*x^n)^3, x)", "(x^2*Hypergeometric2F1(3, 2/n, (2+n)/n, -((b*x^n)/a)))/(2*a^3)");
+	//
+	// }
+	//
+	// // {(a+b*x^n)^(-3), x, 1, (x*Hypergeometric2F1(3, n^(-1), 1+n^(-1), -((b*x^n)/a)))/a^3}
+	// public void test01038() {
+	// check("Integrate((a+b*x^n)^(-3), x)", "(x*Hypergeometric2F1(3, n^(-1), 1+n^(-1), -((b*x^n)/a)))/a^3");
+	//
+	// }
+	//
+	// // {1/(x^2*(a+b*x^n)^3), x, 1, -(Hypergeometric2F1(3, -n^(-1), -((1-n)/n), -((b*x^n)/a))/(a^3*x))}
+	// public void test01039() {
+	// check("Integrate(1/(x^2*(a+b*x^n)^3), x)",
+	// "-(Hypergeometric2F1(3, -n^(-1), -((1-n)/n), -((b*x^n)/a))/(a^3*x))");
+	//
+	// }
+	//
+	// // {1/(x^3*(a+b*x^n)^3), x, 1, -Hypergeometric2F1(3, -2/n, -((2-n)/n), -((b*x^n)/a))/(2*a^3*x^2)}
+	// public void test01040() {
+	// check("Integrate(1/(x^3*(a+b*x^n)^3), x)", "-Hypergeometric2F1(3, -2/n, -((2-n)/n), -((b*x^n)/a))/(2*a^3*x^2)");
+	//
+	// }
+	//
+	// // {x^(-1+n)*(a+b*x^n)^2, x, 1, (a+b*x^n)^3/(3*b*n)}
+	// public void test01041() {
+	// check("Integrate(x^(-1+n)*(a+b*x^n)^2, x)", "(a+b*x^n)^3/(3*b*n)");
+	//
+	// }
+	//
+	// // {x^(-1-3*n)*(a+b*x^n)^2, x, 1, -(a+b*x^n)^3/(3*a*n*x^(3*n))}
+	// public void test01042() {
+	// check("Integrate(x^(-1-3*n)*(a+b*x^n)^2, x)", "-(a+b*x^n)^3/(3*a*n*x^(3*n))");
+	//
+	// }
+	//
+	// // {x^(-1+n)*(a+b*x^n)^3, x, 1, (a+b*x^n)^4/(4*b*n)}
+	// public void test01043() {
+	// check("Integrate(x^(-1+n)*(a+b*x^n)^3, x)", "(a+b*x^n)^4/(4*b*n)");
+	//
+	// }
+	//
+	// // {x^(-1-4*n)*(a+b*x^n)^3, x, 1, -(a+b*x^n)^4/(4*a*n*x^(4*n))}
+	// public void test01044() {
+	// check("Integrate(x^(-1-4*n)*(a+b*x^n)^3, x)", "-(a+b*x^n)^4/(4*a*n*x^(4*n))");
+	//
+	// }
+	//
+	// // {x^(-1+n)*(a+b*x^n)^5, x, 1, (a+b*x^n)^6/(6*b*n)}
+	// public void test01045() {
+	// check("Integrate(x^(-1+n)*(a+b*x^n)^5, x)", "(a+b*x^n)^6/(6*b*n)");
+	//
+	// }
+	//
+	// // {x^(-1-6*n)*(a+b*x^n)^5, x, 1, -(a+b*x^n)^6/(6*a*n*x^(6*n))}
+	// public void test01046() {
+	// check("Integrate(x^(-1-6*n)*(a+b*x^n)^5, x)", "-(a+b*x^n)^6/(6*a*n*x^(6*n))");
+	//
+	// }
+	//
+	// // {x^(-1+n)*(a+b*x^n)^8, x, 1, (a+b*x^n)^9/(9*b*n)}
+	// public void test01047() {
+	// check("Integrate(x^(-1+n)*(a+b*x^n)^8, x)", "(a+b*x^n)^9/(9*b*n)");
+	//
+	// }
+	//
+	// // {x^(-1-9*n)*(a+b*x^n)^8, x, 1, -(a+b*x^n)^9/(9*a*n*x^(9*n))}
+	// public void test01048() {
+	// check("Integrate(x^(-1-9*n)*(a+b*x^n)^8, x)", "-(a+b*x^n)^9/(9*a*n*x^(9*n))");
+	//
+	// }
+	//
+	// // {x^(-1+n)*(a+b*x^n)^16, x, 1, (a+b*x^n)^17/(17*b*n)}
+	// public void test01049() {
+	// check("Integrate(x^(-1+n)*(a+b*x^n)^16, x)", "(a+b*x^n)^17/(17*b*n)");
+	//
+	// }
+	//
+	// // {x^12*(a+b*x^13)^12, x, 1, (a+b*x^13)^13/(169*b)}
+	// public void test01050() {
+	// check("Integrate(x^12*(a+b*x^13)^12, x)", "(a+b*x^13)^13/(169*b)");
+	//
+	// }
+	//
+	// // {x^24*(a+b*x^25)^12, x, 1, (a+b*x^25)^13/(325*b)}
+	// public void test01051() {
+	// check("Integrate(x^24*(a+b*x^25)^12, x)", "(a+b*x^25)^13/(325*b)");
+	//
+	// }
+	//
+	// // {x^36*(a+b*x^37)^12, x, 1, (a+b*x^37)^13/(481*b)}
+	// public void test01052() {
+	// check("Integrate(x^36*(a+b*x^37)^12, x)", "(a+b*x^37)^13/(481*b)");
+	//
+	// }
+	//
+	// // {x^(12*m)*(a+b*x^(1+12*m))^12, x, 1, (a+b*x^(1+12*m))^13/(13*b*(1+12*m))}
+	// public void test01053() {
+	// check("Integrate(x^(12*m)*(a+b*x^(1+12*m))^12, x)", "(a+b*x^(1+12*m))^13/(13*b*(1+12*m))");
+	//
+	// }
+	//
+	// // {x^(12+12*(-1+m))*(a+b*x^(1+12*m))^12, x, 1, (a+b*x^(1+12*m))^13/(13*b*(1+12*m))}
+	// public void test01054() {
+	// check("Integrate(x^(12+12*(-1+m))*(a+b*x^(1+12*m))^12, x)", "(a+b*x^(1+12*m))^13/(13*b*(1+12*m))");
+	//
+	// }
+	//
+	// // {x^(-1+n)/(a+b*x^n), x, 1, Log(a+b*x^n)/(b*n)}
+	// public void test01055() {
+	// check("Integrate(x^(-1+n)/(a+b*x^n), x)", "Log(a+b*x^n)/(b*n)");
+	//
+	// }
+	//
+	// // {x^(-1+n)/(a+b*x^n), x, 1, Log(a+b*x^n)/(b*n)}
+	// public void test01056() {
+	// check("Integrate(x^(-1+n)/(a+b*x^n), x)", "Log(a+b*x^n)/(b*n)");
+	//
+	// }
+	//
+	// // {x^(-1+n)/(2+b*x^n), x, 1, Log(2+b*x^n)/(b*n)}
+	// public void test01057() {
+	// check("Integrate(x^(-1+n)/(2+b*x^n), x)", "Log(2+b*x^n)/(b*n)");
+	//
+	// }
+	//
+	// // {x^(-1+n)/(a+b*x^n)^2, x, 1, -(1/(b*n*(a+b*x^n)))}
+	// public void test01058() {
+	// check("Integrate(x^(-1+n)/(a+b*x^n)^2, x)", "-(1/(b*n*(a+b*x^n)))");
+	//
+	// }
+	//
+	// // {x^(-1+2*n)/(a+b*x^n)^3, x, 1, x^(2*n)/(2*a*n*(a+b*x^n)^2)}
+	// public void test01059() {
+	// check("Integrate(x^(-1+2*n)/(a+b*x^n)^3, x)", "x^(2*n)/(2*a*n*(a+b*x^n)^2)");
+	//
+	// }
+	//
+	// // {x^(-1+n)/(a+b*x^n)^3, x, 1, -1/(2*b*n*(a+b*x^n)^2)}
+	// public void test01060() {
+	// check("Integrate(x^(-1+n)/(a+b*x^n)^3, x)", "-1/(2*b*n*(a+b*x^n)^2)");
+	//
+	// }
+	//
+	// // {x^(-1+n)*Sqrt(a+b*x^n), x, 1, (2*(a+b*x^n)^(3/2))/(3*b*n)}
+	// public void test01061() {
+	// check("Integrate(x^(-1+n)*Sqrt(a+b*x^n), x)", "(2*(a+b*x^n)^(3/2))/(3*b*n)");
+	//
+	// }
+	//
+	// // {x^(-1+n)/Sqrt(a+b*x^n), x, 1, (2*Sqrt(a+b*x^n))/(b*n)}
+	// public void test01062() {
+	// check("Integrate(x^(-1+n)/Sqrt(a+b*x^n), x)", "(2*Sqrt(a+b*x^n))/(b*n)");
+	//
+	// }
+	//
+	// // {x^m/(a+b*x^n), x, 1, (x^(1+m)*Hypergeometric2F1(1, (1+m)/n, (1+m+n)/n, -((b*x^n)/a)))/(a*(1+m))}
+	// public void test01063() {
+	// check("Integrate(x^m/(a+b*x^n), x)",
+	// "(x^(1+m)*Hypergeometric2F1(1, (1+m)/n, (1+m+n)/n, -((b*x^n)/a)))/(a*(1+m))");
+	//
+	// }
+	//
+	// // {x^m/(a+b*x^n)^2, x, 1, (x^(1+m)*Hypergeometric2F1(2, (1+m)/n, (1+m+n)/n, -((b*x^n)/a)))/(a^2*(1+m))}
+	// public void test01064() {
+	// check("Integrate(x^m/(a+b*x^n)^2, x)",
+	// "(x^(1+m)*Hypergeometric2F1(2, (1+m)/n, (1+m+n)/n, -((b*x^n)/a)))/(a^2*(1+m))");
+	//
+	// }
+	//
+	// // {x^m/(a+b*x^n)^3, x, 1, (x^(1+m)*Hypergeometric2F1(3, (1+m)/n, (1+m+n)/n, -((b*x^n)/a)))/(a^3*(1+m))}
+	// public void test01065() {
+	// check("Integrate(x^m/(a+b*x^n)^3, x)",
+	// "(x^(1+m)*Hypergeometric2F1(3, (1+m)/n, (1+m+n)/n, -((b*x^n)/a)))/(a^3*(1+m))");
+	//
+	// }
+	//
+	// // {x^(-1-n/2)/Sqrt(a+b*x^n), x, 1, (-2*Sqrt(a+b*x^n))/(a*n*x^(n/2))}
+	// public void test01066() {
+	// check("Integrate(x^(-1-n/2)/Sqrt(a+b*x^n), x)", "(-2*Sqrt(a+b*x^n))/(a*n*x^(n/2))");
+	//
+	// }
+	//
+	// // {(a+b*x^n)^(-1-n^(-1)), x, 1, x/(a*(a+b*x^n)^n^(-1))}
+	// public void test01067() {
+	// check("Integrate((a+b*x^n)^(-1-n^(-1)), x)", "x/(a*(a+b*x^n)^n^(-1))");
+	//
+	// }
+	//
+	// // {x^(-1+n)*(a+b*x^n)^p, x, 1, (a+b*x^n)^(1+p)/(b*n*(1+p))}
+	// public void test01068() {
+	// check("Integrate(x^(-1+n)*(a+b*x^n)^p, x)", "(a+b*x^n)^(1+p)/(b*n*(1+p))");
+	//
+	// }
+	//
+	// // {x^(-1-n-n*p)*(a+b*x^n)^p, x, 1, -((a+b*x^n)^(1+p)/(a*n*(1+p)*x^(n*(1+p))))}
+	// public void test01069() {
+	// check("Integrate(x^(-1-n-n*p)*(a+b*x^n)^p, x)", "-((a+b*x^n)^(1+p)/(a*n*(1+p)*x^(n*(1+p))))");
+	//
+	// }
+	//
+	// // {x^(-1-9*n)*(a+b*x^n)^8, x, 1, -(a+b*x^n)^9/(9*a*n*x^(9*n))}
+	// public void test01070() {
+	// check("Integrate(x^(-1-9*n)*(a+b*x^n)^8, x)", "-(a+b*x^n)^9/(9*a*n*x^(9*n))");
+	//
+	// }
+	//
+	// // {x^(-4-3*p)*(a+b*x^3)^p, x, 1, -(a+b*x^3)^(1+p)/(3*a*(1+p)*x^(3*(1+p)))}
+	// public void test01071() {
+	// check("Integrate(x^(-4-3*p)*(a+b*x^3)^p, x)", "-(a+b*x^3)^(1+p)/(3*a*(1+p)*x^(3*(1+p)))");
+	//
+	// }
+	//
+	// // {(a+b*x^3)^8/x^28, x, 1, -(a+b*x^3)^9/(27*a*x^27)}
+	// public void test01072() {
+	// check("Integrate((a+b*x^3)^8/x^28, x)", "-(a+b*x^3)^9/(27*a*x^27)");
+	//
+	// }
+	//
+	// // {(a+b*x^n)^(-((1+n)/n)), x, 1, x/(a*(a+b*x^n)^n^(-1))}
+	// public void test01073() {
+	// check("Integrate((a+b*x^n)^(-((1+n)/n)), x)", "x/(a*(a+b*x^n)^n^(-1))");
+	//
+	// }
+	//
+	// // {x^m/(a+b*x^(1+m)), x, 1, Log(a+b*x^(1+m))/(b*(1+m))}
+	// public void test01074() {
+	// check("Integrate(x^m/(a+b*x^(1+m)), x)", "Log(a+b*x^(1+m))/(b*(1+m))");
+	//
+	// }
+	//
+	// // {x^m*(a+b*x^(1+m))^n, x, 1, (a+b*x^(1+m))^(1+n)/(b*(1+m)*(1+n))}
+	// public void test01075() {
+	// check("Integrate(x^m*(a+b*x^(1+m))^n, x)", "(a+b*x^(1+m))^(1+n)/(b*(1+m)*(1+n))");
+	//
+	// }
+	//
+	// // {x^m/(a+b*x^(2+2*m))^(3/2), x, 1, x^(1+m)/(a*(1+m)*Sqrt(a+b*x^(2*(1+m))))}
+	// public void test01076() {
+	// check("Integrate(x^m/(a+b*x^(2+2*m))^(3/2), x)", "x^(1+m)/(a*(1+m)*Sqrt(a+b*x^(2*(1+m))))");
+	//
+	// }
+	//
+	// // {x^n*Sqrt(1+x^(1+n)), x, 1, (2*(1+x^(1+n))^(3/2))/(3*(1+n))}
+	// public void test01077() {
+	// check("Integrate(x^n*Sqrt(1+x^(1+n)), x)", "(2*(1+x^(1+n))^(3/2))/(3*(1+n))");
+	//
+	// }
+	//
+	// // {x^n*Sqrt(a^2+x^(1+n)), x, 1, (2*(a^2+x^(1+n))^(3/2))/(3*(1+n))}
+	// public void test01078() {
+	// check("Integrate(x^n*Sqrt(a^2+x^(1+n)), x)", "(2*(a^2+x^(1+n))^(3/2))/(3*(1+n))");
+	//
+	// }
+	//
+	// // {(c*x)^(4+n)/(a+b*x^n), x, 1, ((c*x)^(5+n)*Hypergeometric2F1(1, (5+n)/n, 2+5/n, -((b*x^n)/a)))/(a*c*(5
+	// // +n))}
+	// public void test01079() {
+	// check("Integrate((c*x)^(4+n)/(a+b*x^n), x)",
+	// "((c*x)^(5+n)*Hypergeometric2F1(1, (5+n)/n, 2+5/n, -((b*x^n)/a)))/(a*c*(5+n))");
+	//
+	// }
+	//
+	// // {(c*x)^(3+n)/(a+b*x^n), x, 1, ((c*x)^(4+n)*Hypergeometric2F1(1, (4+n)/n, 2*(1+2/n),
+	// // -((b*x^n)/a)))/(a*c*(4+n))}
+	// public void test01080() {
+	// check("Integrate((c*x)^(3+n)/(a+b*x^n), x)",
+	// "((c*x)^(4+n)*Hypergeometric2F1(1, (4+n)/n, 2*(1+2/n), -((b*x^n)/a)))/(a*c*(4+n))");
+	//
+	// }
+	//
+	// // {(c*x)^(2+n)/(a+b*x^n), x, 1, ((c*x)^(3+n)*Hypergeometric2F1(1, (3+n)/n, 2+3/n, -((b*x^n)/a)))/(a*c*(3
+	// // +n))}
+	// public void test01081() {
+	// check("Integrate((c*x)^(2+n)/(a+b*x^n), x)",
+	// "((c*x)^(3+n)*Hypergeometric2F1(1, (3+n)/n, 2+3/n, -((b*x^n)/a)))/(a*c*(3+n))");
+	//
+	// }
+	//
+	// // {(c*x)^(1+n)/(a+b*x^n), x, 1, ((c*x)^(2+n)*Hypergeometric2F1(1, (2+n)/n, 2*(1+n^(-1)),
+	// // -((b*x^n)/a)))/(a*c*(2+n))}
+	// public void test01082() {
+	// check("Integrate((c*x)^(1+n)/(a+b*x^n), x)",
+	// "((c*x)^(2+n)*Hypergeometric2F1(1, (2+n)/n, 2*(1+n^(-1)), -((b*x^n)/a)))/(a*c*(2+n))");
+	//
+	// }
+	//
+	// // {(c*x)^n/(a+b*x^n), x, 1, ((c*x)^(1+n)*Hypergeometric2F1(1, 1+n^(-1), 2+n^(-1), -((b*x^n)/a)))/(a*c*(1 +
+	// // n))}
+	// public void test01083() {
+	// check("Integrate((c*x)^n/(a+b*x^n), x)",
+	// "((c*x)^(1+n)*Hypergeometric2F1(1, 1+n^(-1), 2+n^(-1), -((b*x^n)/a)))/(a*c*(1+n))");
+	//
+	// }
+	//
+	// // {(c*x)^(-2+n)/(a+b*x^n), x, 1, -(((c*x)^(-1+n)*Hypergeometric2F1(1, -((1-n)/n), 2-n^(-1),
+	// // -((b*x^n)/a)))/(a*c*(1-n)))}
+	// public void test01084() {
+	// check("Integrate((c*x)^(-2+n)/(a+b*x^n), x)",
+	// "-(((c*x)^(-1+n)*Hypergeometric2F1(1, -((1-n)/n), 2-n^(-1), -((b*x^n)/a)))/(a*c*(1-n)))");
+	//
+	// }
+	//
+	// // {(c*x)^(-3+n)/(a+b*x^n), x, 1, -(((c*x)^(-2+n)*Hypergeometric2F1(1, -((2-n)/n), 2*(1-n^(-1)),
+	// // -((b*x^n)/a)))/(a*c*(2-n)))}
+	// public void test01085() {
+	// check("Integrate((c*x)^(-3+n)/(a+b*x^n), x)",
+	// "-(((c*x)^(-2+n)*Hypergeometric2F1(1, -((2-n)/n), 2*(1-n^(-1)), -((b*x^n)/a)))/(a*c*(2-n)))");
+	//
+	// }
+	//
+	// // {(c*x)^(-1+n)/(a+b*x^n)^2, x, 1, (c*x)^n/(a*c*n*(a+b*x^n))}
+	// public void test01086() {
+	// check("Integrate((c*x)^(-1+n)/(a+b*x^n)^2, x)", "(c*x)^n/(a*c*n*(a+b*x^n))");
+	//
+	// }
+	//
+	// // {(c*x)^(-1-n/2)/Sqrt(a+b*x^n), x, 1, (-2*Sqrt(a+b*x^n))/(a*c*n*(c*x)^(n/2))}
+	// public void test01087() {
+	// check("Integrate((c*x)^(-1-n/2)/Sqrt(a+b*x^n), x)", "(-2*Sqrt(a+b*x^n))/(a*c*n*(c*x)^(n/2))");
+	//
+	// }
+	//
+	// // {(c*x)^(-1-n-n*p)*(a+b*x^n)^p, x, 1, -((a+b*x^n)^(1+p)/(a*c*n*(1+p)*(c*x)^(n*(1+p))))}
+	// public void test01088() {
+	// check("Integrate((c*x)^(-1-n-n*p)*(a+b*x^n)^p, x)", "-((a+b*x^n)^(1+p)/(a*c*n*(1+p)*(c*x)^(n*(1+p))))");
+	//
+	// }
+	//
+	// // {(2+x)/(1+(2+x)^2), x, 1, Log(1+(2+x)^2)/2}
+	// public void test01089() {
+	// check("Integrate((2+x)/(1+(2+x)^2), x)", "Log(1+(2+x)^2)/2");
+	//
+	// }
+	//
+	// // {(2+x)/(1+(2+x)^2)^2, x, 1, -1/(2*(1+(2+x)^2))}
+	// public void test01090() {
+	// check("Integrate((2+x)/(1+(2+x)^2)^2, x)", "-1/(2*(1+(2+x)^2))");
+	//
+	// }
+	//
+	// // {(2+x)/(1+(2+x)^2)^3, x, 1, -1/(4*(1+(2+x)^2)^2)}
+	// public void test01091() {
+	// check("Integrate((2+x)/(1+(2+x)^2)^3, x)", "-1/(4*(1+(2+x)^2)^2)");
+	//
+	// }
+	//
+	// // {(c+d*x)*(a+b*(c+d*x)^2)^p, x, 1, (a+b*(c+d*x)^2)^(1+p)/(2*b*d*(1+p))}
+	// public void test01092() {
+	// check("Integrate((c+d*x)*(a+b*(c+d*x)^2)^p, x)", "(a+b*(c+d*x)^2)^(1+p)/(2*b*d*(1+p))");
+	//
+	// }
+	//
+	// // {(c+d*x)^2/(a+b*(c+d*x)^3), x, 1, Log(a+b*(c+d*x)^3)/(3*b*d)}
+	// public void test01093() {
+	// check("Integrate((c+d*x)^2/(a+b*(c+d*x)^3), x)", "Log(a+b*(c+d*x)^3)/(3*b*d)");
+	//
+	// }
+	//
+	// // {(c+d*x)^2/(a+b*(c+d*x)^3)^2, x, 1, -1/(3*b*d*(a+b*(c+d*x)^3))}
+	// public void test01094() {
+	// check("Integrate((c+d*x)^2/(a+b*(c+d*x)^3)^2, x)", "-1/(3*b*d*(a+b*(c+d*x)^3))");
+	//
+	// }
+	//
+	// // {(c+d*x)^2/(a+b*(c+d*x)^3)^3, x, 1, -1/(6*b*d*(a+b*(c+d*x)^3)^2)}
+	// public void test01095() {
+	// check("Integrate((c+d*x)^2/(a+b*(c+d*x)^3)^3, x)", "-1/(6*b*d*(a+b*(c+d*x)^3)^2)");
+	//
+	// }
+	//
+	// // {(c*e+d*e*x)^2/(a+b*(c+d*x)^3), x, 1, (e^2*Log(a+b*(c+d*x)^3))/(3*b*d)}
+	// public void test01096() {
+	// check("Integrate((c*e+d*e*x)^2/(a+b*(c+d*x)^3), x)", "(e^2*Log(a+b*(c+d*x)^3))/(3*b*d)");
+	//
+	// }
+	//
+	// // {(c*e+d*e*x)^2/(a+b*(c+d*x)^3)^2, x, 1, -e^2/(3*b*d*(a+b*(c+d*x)^3))}
+	// public void test01097() {
+	// check("Integrate((c*e+d*e*x)^2/(a+b*(c+d*x)^3)^2, x)", "-e^2/(3*b*d*(a+b*(c+d*x)^3))");
+	//
+	// }
+	//
+	// // {(c*e+d*e*x)^2/(a+b*(c+d*x)^3)^3, x, 1, -e^2/(6*b*d*(a+b*(c+d*x)^3)^2)}
+	// public void test01098() {
+	// check("Integrate((c*e+d*e*x)^2/(a+b*(c+d*x)^3)^3, x)", "-e^2/(6*b*d*(a+b*(c+d*x)^3)^2)");
+	//
+	// }
+	//
+	// // {(c+d*x)^3*(a+b*(c+d*x)^4)^p, x, 1, (a+b*(c+d*x)^4)^(1+p)/(4*b*d*(1+p))}
+	// public void test01099() {
+	// check("Integrate((c+d*x)^3*(a+b*(c+d*x)^4)^p, x)", "(a+b*(c+d*x)^4)^(1+p)/(4*b*d*(1+p))");
+	//
+	// }
 
 	// {(c+d*x)^3*(a+b*(c+d*x)^4), x, 1, (a+b*(c+d*x)^4)^2/(8*b*d)}
 	public void test01100() {
@@ -8132,7 +8160,8 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	// {Sqrt(1-x)/(Sqrt(-x)*Sqrt(1+x)), x, 1, -2*EllipticE(ArcSin(Sqrt(-x)), -1)}
 	public void test01245() {
-		check("Integrate(Sqrt(1-x)/(Sqrt(-x)*Sqrt(1+x)), x)", "-2*EllipticE(ArcSin(Sqrt(-x)), -1)");
+		check("Integrate(Sqrt(1-x)/(Sqrt(-x)*Sqrt(1+x)), x)", //
+				"-2*EllipticE(ArcSin(Sqrt(-x)), -1)");
 
 	}
 
@@ -8157,11 +8186,11 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	// {1/((d+e*x)*(d^2+3*e^2*x^2)^(1/3)), x, 1, -(ArcTan(1/Sqrt(3)+(2^(2/3)*(d-e*x))/(Sqrt(3)*d^(1/3)*(d^2 +
 	// 3*e^2*x^2)^(1/3)))/(2^(2/3)*Sqrt(3)*d^(2/3)*e))-Log(d+e*x)/(2*2^(2/3)*d^(2/3)*e)+Log(3*d*e^2-3*e^3*x -
 	// 3*2^(1/3)*d^(1/3)*e^2*(d^2+3*e^2*x^2)^(1/3))/(2*2^(2/3)*d^(2/3)*e)}
-	public void test01249() {
-		check("Integrate(1/((d+e*x)*(d^2+3*e^2*x^2)^(1/3)), x)",
-				"-(ArcTan(1/Sqrt(3)+(2^(2/3)*(d-e*x))/(Sqrt(3)*d^(1/3)*(d^2+3*e^2*x^2)^(1/3)))/(2^(2/3)*Sqrt(3)*d^(2/3)*e))-Log(d+e*x)/(2*2^(2/3)*d^(2/3)*e)+Log(3*d*e^2-3*e^3*x-3*2^(1/3)*d^(1/3)*e^2*(d^2+3*e^2*x^2)^(1/3))/(2*2^(2/3)*d^(2/3)*e)");
-
-	}
+	// public void test01249() {
+	// check("Integrate(1/((d+e*x)*(d^2+3*e^2*x^2)^(1/3)), x)",
+	// "-(ArcTan(1/Sqrt(3)+(2^(2/3)*(d-e*x))/(Sqrt(3)*d^(1/3)*(d^2+3*e^2*x^2)^(1/3)))/(2^(2/3)*Sqrt(3)*d^(2/3)*e))-Log(d+e*x)/(2*2^(2/3)*d^(2/3)*e)+Log(3*d*e^2-3*e^3*x-3*2^(1/3)*d^(1/3)*e^2*(d^2+3*e^2*x^2)^(1/3))/(2*2^(2/3)*d^(2/3)*e)");
+	//
+	// }
 
 	// {1/((2+3*x)*(4+27*x^2)^(1/3)), x, 1, -ArcTan(1/Sqrt(3)+(2^(1/3)*(2-3*x))/(Sqrt(3)*(4 +
 	// 27*x^2)^(1/3)))/(6*2^(1/3)*Sqrt(3))-Log(2+3*x)/(12*2^(1/3))+Log(54-81*x-27*2^(2/3)*(4 +
@@ -8789,20 +8818,20 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	// {1/((2+3*x)*(52-54*x+27*x^2)^(1/3)), x, 1, -ArcTan(1/Sqrt(3)+(2^(2/3)*(8-3*x))/(Sqrt(3)*5^(1/3)*(52 -
 	// 54*x+27*x^2)^(1/3)))/(3*Sqrt(3)*10^(2/3))-Log(2+3*x)/(6*10^(2/3))+Log(216-81*x-27*10^(1/3)*(52-54*x
 	// +27*x^2)^(1/3))/(6*10^(2/3))}
-	public void test01341() {
-		check("Integrate(1/((2+3*x)*(52-54*x+27*x^2)^(1/3)), x)",
-				"-ArcTan(1/Sqrt(3)+(2^(2/3)*(8-3*x))/(Sqrt(3)*5^(1/3)*(52-54*x+27*x^2)^(1/3)))/(3*Sqrt(3)*10^(2/3))-Log(2+3*x)/(6*10^(2/3))+Log(216-81*x-27*10^(1/3)*(52-54*x+27*x^2)^(1/3))/(6*10^(2/3))");
-
-	}
+	 public void test01341() {
+	 check("Integrate(1/((2+3*x)*(52-54*x+27*x^2)^(1/3)), x)",
+	 "-ArcTan(1/Sqrt(3)+(2^(2/3)*(8-3*x))/(Sqrt(3)*5^(1/3)*(52-54*x+27*x^2)^(1/3)))/(3*Sqrt(3)*10^(2/3))-Log(2+3*x)/(6*10^(2/3))+Log(216-81*x-27*10^(1/3)*(52-54*x+27*x^2)^(1/3))/(6*10^(2/3))");
+	
+	 }
 
 	// {1/((2+3*x)*(28+54*x+27*x^2)^(1/3)), x, 1, -ArcTan(1/Sqrt(3)+(2^(2/3)*(4+3*x))/(Sqrt(3)*(28+54*x +
 	// 27*x^2)^(1/3)))/(3*2^(2/3)*Sqrt(3))-Log(2+3*x)/(6*2^(2/3))+Log(-108-81*x+27*2^(1/3)*(28+54*x +
 	// 27*x^2)^(1/3))/(6*2^(2/3))}
-	public void test01342() {
-		check("Integrate(1/((2+3*x)*(28+54*x+27*x^2)^(1/3)), x)",
-				"-ArcTan(1/Sqrt(3)+(2^(2/3)*(4+3*x))/(Sqrt(3)*(28+54*x+27*x^2)^(1/3)))/(3*2^(2/3)*Sqrt(3))-Log(2+3*x)/(6*2^(2/3))+Log(-108-81*x+27*2^(1/3)*(28+54*x+27*x^2)^(1/3))/(6*2^(2/3))");
-
-	}
+	// public void test01342() {
+	// check("Integrate(1/((2+3*x)*(28+54*x+27*x^2)^(1/3)), x)",
+	// "-ArcTan(1/Sqrt(3)+(2^(2/3)*(4+3*x))/(Sqrt(3)*(28+54*x+27*x^2)^(1/3)))/(3*2^(2/3)*Sqrt(3))-Log(2+3*x)/(6*2^(2/3))+Log(-108-81*x+27*2^(1/3)*(28+54*x+27*x^2)^(1/3))/(6*2^(2/3))");
+	//
+	// }
 
 	// {1/((d+e*x)^(3/2)*(a+b*x+c*x^2)^(1/4)), x, 1, (2*(b-Sqrt(b^2-4*a*c)+2*c*x)*(((2*c*d-(b-Sqrt(b^2 -
 	// 4*a*c))*e)*(b+Sqrt(b^2-4*a*c)+2*c*x))/((2*c*d-(b+Sqrt(b^2-4*a*c))*e)*(b-Sqrt(b^2-4*a*c) +
@@ -9288,7 +9317,8 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	// {((a+b*x^2)*(-(a*d)+4*b*c*x+3*b*d*x^2))/(c+d*x)^2, x, 1, (a+b*x^2)^2/(c+d*x)}
 	public void test01411() {
-		check("Integrate(((a+b*x^2)*(-(a*d)+4*b*c*x+3*b*d*x^2))/(c+d*x)^2, x)", "(a+b*x^2)^2/(c+d*x)");
+		check("Integrate(((a+b*x^2)*(-(a*d)+4*b*c*x+3*b*d*x^2))/(c+d*x)^2, x)", //
+				"(a+b*x^2)^2/(c+d*x)");
 
 	}
 
@@ -10105,11 +10135,11 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	// {1/((a+b*x^2)*Sqrt(4-d*x^4)), x, 1, EllipticPi((-2*b)/(a*Sqrt(d)), ArcSin((d^(1/4)*x)/Sqrt(2)),
 	// -1)/(Sqrt(2)*a*d^(1/4))}
-	public void test01516() {
-		check("Integrate(1/((a+b*x^2)*Sqrt(4-d*x^4)), x)",
-				"EllipticPi((-2*b)/(a*Sqrt(d)), ArcSin((d^(1/4)*x)/Sqrt(2)), -1)/(Sqrt(2)*a*d^(1/4))");
-
-	}
+	// public void test01516() {
+	// check("Integrate(1/((a+b*x^2)*Sqrt(4-d*x^4)), x)",
+	// "EllipticPi((-2*b)/(a*Sqrt(d)), ArcSin((d^(1/4)*x)/Sqrt(2)), -1)/(Sqrt(2)*a*d^(1/4))");
+	//
+	// }
 
 	// {(1+b*x^4)^p, x, 1, x*Hypergeometric2F1(1/4, -p, 5/4, -(b*x^4))}
 	public void test01517() {
@@ -10176,8 +10206,9 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	// Sqrt(a)*e)^2/(4*Sqrt(a)*Sqrt(c)*d*e), 2*ArcTan((c^(1/4)*x)/a^(1/4)), (2 -
 	// b/(Sqrt(a)*Sqrt(c)))/4))/(4*a^(1/4)*c^(1/4)*d*e*Sqrt(a+b*x^2+c*x^4))}
 	public void test01525() {
-		check("Integrate((Sqrt(a)+Sqrt(c)*x^2)/((d+e*x^2)*Sqrt(a+b*x^2+c*x^4)), x)",
-				"-((Sqrt(c)*d-Sqrt(a)*e)*ArcTan((Sqrt(-b+(c*d)/e+(a*e)/d)*x)/Sqrt(a+b*x^2+c*x^4)))/(2*d*e*Sqrt(-b+(c*d)/e+(a*e)/d))+((Sqrt(c)*d+Sqrt(a)*e)*(Sqrt(a)+Sqrt(c)*x^2)*Sqrt((a+b*x^2+c*x^4)/(Sqrt(a)+Sqrt(c)*x^2)^2)*EllipticPi(-(Sqrt(c)*d-Sqrt(a)*e)^2/(4*Sqrt(a)*Sqrt(c)*d*e), 2*ArcTan((c^(1/4)*x)/a^(1/4)), (2-b/(Sqrt(a)*Sqrt(c)))/4))/(4*a^(1/4)*c^(1/4)*d*e*Sqrt(a+b*x^2+c*x^4))");
+		// check("Integrate((Sqrt(a)+Sqrt(c)*x^2)/((d+e*x^2)*Sqrt(a+b*x^2+c*x^4)), x)",
+		// "-((Sqrt(c)*d-Sqrt(a)*e)*ArcTan((Sqrt(-b+(c*d)/e+(a*e)/d)*x)/Sqrt(a+b*x^2+c*x^4)))/(2*d*e*Sqrt(-b+(c*d)/e+(a*e)/d))+((Sqrt(c)*d+Sqrt(a)*e)*(Sqrt(a)+Sqrt(c)*x^2)*Sqrt((a+b*x^2+c*x^4)/(Sqrt(a)+Sqrt(c)*x^2)^2)*EllipticPi(-(Sqrt(c)*d-Sqrt(a)*e)^2/(4*Sqrt(a)*Sqrt(c)*d*e),
+		// 2*ArcTan((c^(1/4)*x)/a^(1/4)), (2-b/(Sqrt(a)*Sqrt(c)))/4))/(4*a^(1/4)*c^(1/4)*d*e*Sqrt(a+b*x^2+c*x^4))");
 
 	}
 
@@ -10186,11 +10217,12 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	// Sqrt(c/a)*x^2)*Sqrt((a+b*x^2+c*x^4)/(a*(1+Sqrt(c/a)*x^2)^2))*EllipticPi(-(Sqrt(c/a)*d -
 	// e)^2/(4*Sqrt(c/a)*d*e), 2*ArcTan((c/a)^(1/4)*x), (2-(b*Sqrt(c/a))/c)/4))/(4*(c/a)^(1/4)*d*e*Sqrt(a+b*x^2 +
 	// c*x^4))}
-	public void test01526() {
-		check("Integrate((1+Sqrt(c/a)*x^2)/((d+e*x^2)*Sqrt(a+b*x^2+c*x^4)), x)",
-				"-((Sqrt(c/a)*d-e)*ArcTan((Sqrt(-b+(c*d)/e+(a*e)/d)*x)/Sqrt(a+b*x^2+c*x^4)))/(2*d*e*Sqrt(-b+(c*d)/e+(a*e)/d))+((Sqrt(c/a)*d+e)*(1+Sqrt(c/a)*x^2)*Sqrt((a+b*x^2+c*x^4)/(a*(1+Sqrt(c/a)*x^2)^2))*EllipticPi(-(Sqrt(c/a)*d-e)^2/(4*Sqrt(c/a)*d*e), 2*ArcTan((c/a)^(1/4)*x), (2-(b*Sqrt(c/a))/c)/4))/(4*(c/a)^(1/4)*d*e*Sqrt(a+b*x^2+c*x^4))");
-
-	}
+	// public void test01526() {
+	// check("Integrate((1+Sqrt(c/a)*x^2)/((d+e*x^2)*Sqrt(a+b*x^2+c*x^4)), x)",
+	// "-((Sqrt(c/a)*d-e)*ArcTan((Sqrt(-b+(c*d)/e+(a*e)/d)*x)/Sqrt(a+b*x^2+c*x^4)))/(2*d*e*Sqrt(-b+(c*d)/e+(a*e)/d))+((Sqrt(c/a)*d+e)*(1+Sqrt(c/a)*x^2)*Sqrt((a+b*x^2+c*x^4)/(a*(1+Sqrt(c/a)*x^2)^2))*EllipticPi(-(Sqrt(c/a)*d-e)^2/(4*Sqrt(c/a)*d*e),
+	// 2*ArcTan((c/a)^(1/4)*x), (2-(b*Sqrt(c/a))/c)/4))/(4*(c/a)^(1/4)*d*e*Sqrt(a+b*x^2+c*x^4))");
+	//
+	// }
 
 	// {(a*x^3+b*x^6)^(2/3), x, 1, (a*x^3+b*x^6)^(5/3)/(5*b*x^5)}
 	public void test01527() {
@@ -11201,20 +11233,20 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	// {(e*f-e*f*x^2)/((a*d+b*d*x+a*d*x^2)*Sqrt(a+b*x+c*x^2+b*x^3+a*x^4)), x, 1, (e*f*ArcTan((a*b+(4*a^2
 	// +b^2-2*a*c)*x+a*b*x^2)/(2*a*Sqrt(2*a-c)*Sqrt(a+b*x+c*x^2+b*x^3+a*x^4))))/(a*Sqrt(2*a-c)*d)}
-	public void test01686() {
-		check("Integrate((e*f-e*f*x^2)/((a*d+b*d*x+a*d*x^2)*Sqrt(a+b*x+c*x^2+b*x^3+a*x^4)), x)",
-				"(e*f*ArcTan((a*b+(4*a^2+b^2-2*a*c)*x+a*b*x^2)/(2*a*Sqrt(2*a-c)*Sqrt(a+b*x+c*x^2+b*x^3+a*x^4))))/(a*Sqrt(2*a-c)*d)");
-
-	}
+	// public void test01686() {
+	// check("Integrate((e*f-e*f*x^2)/((a*d+b*d*x+a*d*x^2)*Sqrt(a+b*x+c*x^2+b*x^3+a*x^4)), x)",
+	// "(e*f*ArcTan((a*b+(4*a^2+b^2-2*a*c)*x+a*b*x^2)/(2*a*Sqrt(2*a-c)*Sqrt(a+b*x+c*x^2+b*x^3+a*x^4))))/(a*Sqrt(2*a-c)*d)");
+	//
+	// }
 
 	// {(e*f-e*f*x^2)/((-(a*d)+b*d*x-a*d*x^2)*Sqrt(-a+b*x+c*x^2+b*x^3-a*x^4)), x, 1, (e*f*ArcTanh((a*b -
 	// (4*a^2+b^2+2*a*c)*x+a*b*x^2)/(2*a*Sqrt(2*a+c)*Sqrt(-a+b*x+c*x^2+b*x^3-a*x^4))))/(a*Sqrt(2*a +
 	// c)*d)}
-	public void test01687() {
-		check("Integrate((e*f-e*f*x^2)/((-(a*d)+b*d*x-a*d*x^2)*Sqrt(-a+b*x+c*x^2+b*x^3-a*x^4)), x)",
-				"(e*f*ArcTanh((a*b-(4*a^2+b^2+2*a*c)*x+a*b*x^2)/(2*a*Sqrt(2*a+c)*Sqrt(-a+b*x+c*x^2+b*x^3-a*x^4))))/(a*Sqrt(2*a+c)*d)");
-
-	}
+	// public void test01687() {
+	// check("Integrate((e*f-e*f*x^2)/((-(a*d)+b*d*x-a*d*x^2)*Sqrt(-a+b*x+c*x^2+b*x^3-a*x^4)), x)",
+	// "(e*f*ArcTanh((a*b-(4*a^2+b^2+2*a*c)*x+a*b*x^2)/(2*a*Sqrt(2*a+c)*Sqrt(-a+b*x+c*x^2+b*x^3-a*x^4))))/(a*Sqrt(2*a+c)*d)");
+	//
+	// }
 
 	// {x+(1-x^2)/(1+x), x, 1, x}
 	public void test01688() {
@@ -11345,99 +11377,100 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {1/((a+b*(F^(g*(e+f*x)))^n)*(c+d*x)), x, 1, Unintegrable(1/((a+b*(F^(e*g+f*g*x))^n)*(c+d*x)), x)}
+	// {1/((a+b*(F^(g*(e+f*x)))^n)*(c+d*x)), x, 1, Integrate::Unintegrable(1/((a+b*(F^(e*g+f*g*x))^n)*(c+d*x)), x)}
 	public void test01706() {
 		check("Integrate(1/((a+b*(F^(g*(e+f*x)))^n)*(c+d*x)), x)",
-				"Unintegrable(1/((a+b*(F^(e*g+f*g*x))^n)*(c+d*x)), x)");
+				"Integrate::Unintegrable(1/((a+b*(F^(e*g+f*g*x))^n)*(c+d*x)), x)");
 
 	}
 
-	// {1/((a+b*(F^(g*(e+f*x)))^n)*(c+d*x)^2), x, 1, Unintegrable(1/((a+b*(F^(e*g+f*g*x))^n)*(c+d*x)^2), x)}
+	// {1/((a+b*(F^(g*(e+f*x)))^n)*(c+d*x)^2), x, 1, Integrate::Unintegrable(1/((a+b*(F^(e*g+f*g*x))^n)*(c+d*x)^2), x)}
 	public void test01707() {
 		check("Integrate(1/((a+b*(F^(g*(e+f*x)))^n)*(c+d*x)^2), x)",
-				"Unintegrable(1/((a+b*(F^(e*g+f*g*x))^n)*(c+d*x)^2), x)");
+				"Integrate::Unintegrable(1/((a+b*(F^(e*g+f*g*x))^n)*(c+d*x)^2), x)");
 
 	}
 
-	// {1/((a+b*(F^(g*(e+f*x)))^n)^2*(c+d*x)), x, 1, Unintegrable(1/((a+b*(F^(e*g+f*g*x))^n)^2*(c+d*x)), x)}
+	// {1/((a+b*(F^(g*(e+f*x)))^n)^2*(c+d*x)), x, 1, Integrate::Unintegrable(1/((a+b*(F^(e*g+f*g*x))^n)^2*(c+d*x)), x)}
 	public void test01708() {
 		check("Integrate(1/((a+b*(F^(g*(e+f*x)))^n)^2*(c+d*x)), x)",
-				"Unintegrable(1/((a+b*(F^(e*g+f*g*x))^n)^2*(c+d*x)), x)");
+				"Integrate::Unintegrable(1/((a+b*(F^(e*g+f*g*x))^n)^2*(c+d*x)), x)");
 
 	}
 
-	// {1/((a+b*(F^(g*(e+f*x)))^n)^2*(c+d*x)^2), x, 1, Unintegrable(1/((a+b*(F^(e*g+f*g*x))^n)^2*(c+d*x)^2),
+	// {1/((a+b*(F^(g*(e+f*x)))^n)^2*(c+d*x)^2), x, 1, Integrate::Unintegrable(1/((a+b*(F^(e*g+f*g*x))^n)^2*(c+d*x)^2),
 	// x)}
 	public void test01709() {
 		check("Integrate(1/((a+b*(F^(g*(e+f*x)))^n)^2*(c+d*x)^2), x)",
-				"Unintegrable(1/((a+b*(F^(e*g+f*g*x))^n)^2*(c+d*x)^2), x)");
+				"Integrate::Unintegrable(1/((a+b*(F^(e*g+f*g*x))^n)^2*(c+d*x)^2), x)");
 
 	}
 
-	// {1/((a+b*(F^(g*(e+f*x)))^n)^3*(c+d*x)), x, 1, Unintegrable(1/((a+b*(F^(e*g+f*g*x))^n)^3*(c+d*x)), x)}
+	// {1/((a+b*(F^(g*(e+f*x)))^n)^3*(c+d*x)), x, 1, Integrate::Unintegrable(1/((a+b*(F^(e*g+f*g*x))^n)^3*(c+d*x)), x)}
 	public void test01710() {
 		check("Integrate(1/((a+b*(F^(g*(e+f*x)))^n)^3*(c+d*x)), x)",
-				"Unintegrable(1/((a+b*(F^(e*g+f*g*x))^n)^3*(c+d*x)), x)");
+				"Integrate::Unintegrable(1/((a+b*(F^(e*g+f*g*x))^n)^3*(c+d*x)), x)");
 
 	}
 
-	// {1/((a+b*(F^(g*(e+f*x)))^n)^3*(c+d*x)^2), x, 1, Unintegrable(1/((a+b*(F^(e*g+f*g*x))^n)^3*(c+d*x)^2),
+	// {1/((a+b*(F^(g*(e+f*x)))^n)^3*(c+d*x)^2), x, 1, Integrate::Unintegrable(1/((a+b*(F^(e*g+f*g*x))^n)^3*(c+d*x)^2),
 	// x)}
 	public void test01711() {
 		check("Integrate(1/((a+b*(F^(g*(e+f*x)))^n)^3*(c+d*x)^2), x)",
-				"Unintegrable(1/((a+b*(F^(e*g+f*g*x))^n)^3*(c+d*x)^2), x)");
+				"Integrate::Unintegrable(1/((a+b*(F^(e*g+f*g*x))^n)^3*(c+d*x)^2), x)");
 
 	}
 
-	// {(c+d*x)^m/(a+b*(F^(g*(e+f*x)))^n), x, 1, Unintegrable((c+d*x)^m/(a+b*(F^(e*g+f*g*x))^n), x)}
+	// {(c+d*x)^m/(a+b*(F^(g*(e+f*x)))^n), x, 1, Integrate::Unintegrable((c+d*x)^m/(a+b*(F^(e*g+f*g*x))^n), x)}
 	public void test01712() {
-		check("Integrate((c+d*x)^m/(a+b*(F^(g*(e+f*x)))^n), x)", "Unintegrable((c+d*x)^m/(a+b*(F^(e*g+f*g*x))^n), x)");
+		check("Integrate((c+d*x)^m/(a+b*(F^(g*(e+f*x)))^n), x)",
+				"Integrate::Unintegrable((c+d*x)^m/(a+b*(F^(e*g+f*g*x))^n), x)");
 
 	}
 
-	// {(c+d*x)^m/(a+b*(F^(g*(e+f*x)))^n)^2, x, 1, Unintegrable((c+d*x)^m/(a+b*(F^(e*g+f*g*x))^n)^2, x)}
+	// {(c+d*x)^m/(a+b*(F^(g*(e+f*x)))^n)^2, x, 1, Integrate::Unintegrable((c+d*x)^m/(a+b*(F^(e*g+f*g*x))^n)^2, x)}
 	public void test01713() {
 		check("Integrate((c+d*x)^m/(a+b*(F^(g*(e+f*x)))^n)^2, x)",
-				"Unintegrable((c+d*x)^m/(a+b*(F^(e*g+f*g*x))^n)^2, x)");
+				"Integrate::Unintegrable((c+d*x)^m/(a+b*(F^(e*g+f*g*x))^n)^2, x)");
 
 	}
 
-	// {(a+b*(F^(g*(e+f*x)))^n)^p*(c+d*x)^m, x, 1, Unintegrable((a+b*(F^(e*g+f*g*x))^n)^p*(c+d*x)^m, x)}
+	// {(a+b*(F^(g*(e+f*x)))^n)^p*(c+d*x)^m, x, 1, Integrate::Unintegrable((a+b*(F^(e*g+f*g*x))^n)^p*(c+d*x)^m, x)}
 	public void test01714() {
 		check("Integrate((a+b*(F^(g*(e+f*x)))^n)^p*(c+d*x)^m, x)",
-				"Unintegrable((a+b*(F^(e*g+f*g*x))^n)^p*(c+d*x)^m, x)");
+				"Integrate::Unintegrable((a+b*(F^(e*g+f*g*x))^n)^p*(c+d*x)^m, x)");
 
 	}
 
-	// {F^(c+d*x)/((a+b*F^(c+d*x))^2*x), x, 1, -(1/(b*d*(a+b*F^(c+d*x))*x*Log(F)))-Unintegrable(1/((a +
+	// {F^(c+d*x)/((a+b*F^(c+d*x))^2*x), x, 1, -(1/(b*d*(a+b*F^(c+d*x))*x*Log(F)))-Integrate::Unintegrable(1/((a +
 	// b*F^(c+d*x))*x^2), x)/(b*d*Log(F))}
 	public void test01715() {
 		check("Integrate(F^(c+d*x)/((a+b*F^(c+d*x))^2*x), x)",
-				"-(1/(b*d*(a+b*F^(c+d*x))*x*Log(F)))-Unintegrable(1/((a+b*F^(c+d*x))*x^2), x)/(b*d*Log(F))");
+				"-(1/(b*d*(a+b*F^(c+d*x))*x*Log(F)))-Integrate::Unintegrable(1/((a+b*F^(c+d*x))*x^2), x)/(b*d*Log(F))");
 
 	}
 
-	// {F^(c+d*x)/((a+b*F^(c+d*x))^2*x^2), x, 1, -(1/(b*d*(a+b*F^(c+d*x))*x^2*Log(F)))-(2*Unintegrable(1/((a
+	// {F^(c+d*x)/((a+b*F^(c+d*x))^2*x^2), x, 1, -(1/(b*d*(a+b*F^(c+d*x))*x^2*Log(F)))-(2*Integrate::Unintegrable(1/((a
 	// +b*F^(c+d*x))*x^3), x))/(b*d*Log(F))}
 	public void test01716() {
 		check("Integrate(F^(c+d*x)/((a+b*F^(c+d*x))^2*x^2), x)",
-				"-(1/(b*d*(a+b*F^(c+d*x))*x^2*Log(F)))-(2*Unintegrable(1/((a+b*F^(c+d*x))*x^3), x))/(b*d*Log(F))");
+				"-(1/(b*d*(a+b*F^(c+d*x))*x^2*Log(F)))-(2*Integrate::Unintegrable(1/((a+b*F^(c+d*x))*x^3), x))/(b*d*Log(F))");
 
 	}
 
-	// {F^(c+d*x)/((a+b*F^(c+d*x))^3*x), x, 1, -1/(2*b*d*(a+b*F^(c+d*x))^2*x*Log(F))-Unintegrable(1/((a +
+	// {F^(c+d*x)/((a+b*F^(c+d*x))^3*x), x, 1, -1/(2*b*d*(a+b*F^(c+d*x))^2*x*Log(F))-Integrate::Unintegrable(1/((a +
 	// b*F^(c+d*x))^2*x^2), x)/(2*b*d*Log(F))}
 	public void test01717() {
 		check("Integrate(F^(c+d*x)/((a+b*F^(c+d*x))^3*x), x)",
-				"-1/(2*b*d*(a+b*F^(c+d*x))^2*x*Log(F))-Unintegrable(1/((a+b*F^(c+d*x))^2*x^2), x)/(2*b*d*Log(F))");
+				"-1/(2*b*d*(a+b*F^(c+d*x))^2*x*Log(F))-Integrate::Unintegrable(1/((a+b*F^(c+d*x))^2*x^2), x)/(2*b*d*Log(F))");
 
 	}
 
-	// {F^(c+d*x)/((a+b*F^(c+d*x))^3*x^2), x, 1, -1/(2*b*d*(a+b*F^(c+d*x))^2*x^2*Log(F))-Unintegrable(1/((a
+	// {F^(c+d*x)/((a+b*F^(c+d*x))^3*x^2), x, 1, -1/(2*b*d*(a+b*F^(c+d*x))^2*x^2*Log(F))-Integrate::Unintegrable(1/((a
 	// +b*F^(c+d*x))^2*x^3), x)/(b*d*Log(F))}
 	public void test01718() {
 		check("Integrate(F^(c+d*x)/((a+b*F^(c+d*x))^3*x^2), x)",
-				"-1/(2*b*d*(a+b*F^(c+d*x))^2*x^2*Log(F))-Unintegrable(1/((a+b*F^(c+d*x))^2*x^3), x)/(b*d*Log(F))");
+				"-1/(2*b*d*(a+b*F^(c+d*x))^2*x^2*Log(F))-Integrate::Unintegrable(1/((a+b*F^(c+d*x))^2*x^3), x)/(b*d*Log(F))");
 
 	}
 
@@ -11889,11 +11922,11 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {f^(c*(a+b*x)^2)*x^m, x, 1, Unintegrable(f^(a^2*c+2*a*b*c*x+b^2*c*x^2)*x^m, x)}
-	public void test01791() {
-		check("Integrate(f^(c*(a+b*x)^2)*x^m, x)", "Unintegrable(f^(a^2*c+2*a*b*c*x+b^2*c*x^2)*x^m, x)");
-
-	}
+	// {f^(c*(a+b*x)^2)*x^m, x, 1, Integrate::Unintegrable(f^(a^2*c+2*a*b*c*x+b^2*c*x^2)*x^m, x)}
+	// public void test01791() {
+	// check("Integrate(f^(c*(a+b*x)^2)*x^m, x)", "Integrate::Unintegrable(f^(a^2*c+2*a*b*c*x+b^2*c*x^2)*x^m, x)");
+	//
+	// }
 
 	// {f^(c*(a+b*x))*x^m, x, 1, (f^(a*c)*x^m*Gamma(1+m, -(b*c*x*Log(f))))/(b*c*Log(f)*(-(b*c*x*Log(f)))^m)}
 	public void test01792() {
@@ -11932,10 +11965,11 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	}
 
 	// {F^(a+b*(c+d*x)^2)*(c+d*x), x, 1, F^(a+b*(c+d*x)^2)/(2*b*d*Log(F))}
-	public void test01797() {
-		check("Integrate(F^(a+b*(c+d*x)^2)*(c+d*x), x)", "F^(a+b*(c+d*x)^2)/(2*b*d*Log(F))");
-
-	}
+	// public void test01797() {
+	// check("Integrate(F^(a+b*(c+d*x)^2)*(c+d*x), x)",
+	// "F^(a+b*(c+d*x)^2)/(2*b*d*Log(F))");
+	//
+	// }
 
 	// {F^(a+b*(c+d*x)^2)/(c+d*x), x, 1, (F^a*ExpIntegralEi(b*(c+d*x)^2*Log(F)))/(2*d)}
 	public void test01798() {
@@ -12053,11 +12087,11 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	// {F^(a+b*(c+d*x)^3)*(c+d*x), x, 1, -(F^a*(c+d*x)^2*Gamma(2/3, -(b*(c+d*x)^3*Log(F))))/(3*d*(-(b*(c +
 	// d*x)^3*Log(F)))^(2/3))}
-	public void test01814() {
-		check("Integrate(F^(a+b*(c+d*x)^3)*(c+d*x), x)",
-				"-(F^a*(c+d*x)^2*Gamma(2/3, -(b*(c+d*x)^3*Log(F))))/(3*d*(-(b*(c+d*x)^3*Log(F)))^(2/3))");
-
-	}
+	// public void test01814() {
+	// check("Integrate(F^(a+b*(c+d*x)^3)*(c+d*x), x)",
+	// "-(F^a*(c+d*x)^2*Gamma(2/3, -(b*(c+d*x)^3*Log(F))))/(3*d*(-(b*(c+d*x)^3*Log(F)))^(2/3))");
+	//
+	// }
 
 	// {F^(a+b*(c+d*x)^3), x, 1, -(F^a*(c+d*x)*Gamma(1/3, -(b*(c+d*x)^3*Log(F))))/(3*d*(-(b*(c +
 	// d*x)^3*Log(F)))^(1/3))}
@@ -12273,11 +12307,13 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	// {F^(a+b/(c+d*x)^3)*(c+d*x), x, 1, (F^a*(c+d*x)^2*Gamma(-2/3, -((b*Log(F))/(c+d*x)^3))*(-((b*Log(F))/(c
 	// +d*x)^3))^(2/3))/(3*d)}
-	public void test01845() {
-		check("Integrate(F^(a+b/(c+d*x)^3)*(c+d*x), x)",
-				"(F^a*(c+d*x)^2*Gamma(-2/3, -((b*Log(F))/(c+d*x)^3))*(-((b*Log(F))/(c+d*x)^3))^(2/3))/(3*d)");
-
-	}
+	// public void test01845() {
+	// check("integrate::expandlinearproduct(F^(a+b/(c+d*x)^3),c+d*x,c,d,x)", //
+	// "F^(a+b/(c+d*x)^3)*(c+d*x)");
+	// check("Integrate(F^(a+b/(c+d*x)^3)*(c+d*x), x)",
+	// "(F^a*(c+d*x)^2*Gamma(-2/3, -((b*Log(F))/(c+d*x)^3))*(-((b*Log(F))/(c+d*x)^3))^(2/3))/(3*d)");
+	//
+	// }
 
 	// {F^(a+b/(c+d*x)^3), x, 1, (F^a*(c+d*x)*Gamma(-1/3, -((b*Log(F))/(c+d*x)^3))*(-((b*Log(F))/(c +
 	// d*x)^3))^(1/3))/(3*d)}
@@ -12337,11 +12373,11 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	// {F^(a+b*(c+d*x)^n)*(c+d*x), x, 1, -((F^a*(c+d*x)^2*Gamma(2/n, -(b*(c+d*x)^n*Log(F))))/(d*n*(-(b*(c +
 	// d*x)^n*Log(F)))^(2/n)))}
-	public void test01853() {
-		check("Integrate(F^(a+b*(c+d*x)^n)*(c+d*x), x)",
-				"-((F^a*(c+d*x)^2*Gamma(2/n, -(b*(c+d*x)^n*Log(F))))/(d*n*(-(b*(c+d*x)^n*Log(F)))^(2/n)))");
-
-	}
+	// public void test01853() {
+	// check("Integrate(F^(a+b*(c+d*x)^n)*(c+d*x), x)",
+	// "-((F^a*(c+d*x)^2*Gamma(2/n, -(b*(c+d*x)^n*Log(F))))/(d*n*(-(b*(c+d*x)^n*Log(F)))^(2/n)))");
+	//
+	// }
 
 	// {F^(a+b*(c+d*x)^n), x, 1, -((F^a*(c+d*x)*Gamma(n^(-1), -(b*(c+d*x)^n*Log(F))))/(d*n*(-(b*(c +
 	// d*x)^n*Log(F)))^n^(-1)))}
@@ -12441,10 +12477,10 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {E^((a+b*x)*(c+d*x))/x, x, 1, Unintegrable(E^(a*c+(b*c+a*d)*x+b*d*x^2)/x, x)}
+	// {E^((a+b*x)*(c+d*x))/x, x, 1, Integrate::Unintegrable(E^(a*c+(b*c+a*d)*x+b*d*x^2)/x, x)}
 	public void test01868() {
-		check("Integrate(E^((a+b*x)*(c+d*x))/x, x)", "Unintegrable(E^(a*c+(b*c+a*d)*x+b*d*x^2)/x, x)");
-
+		check("Integrate(E^((a+b*x)*(c+d*x))/x, x)",
+				"Integrate::Unintegrable(E^(a*c+(b*c+a*d)*x+b*d*x^2)/x, x)");
 	}
 
 	// {f^(a+b*x+c*x^2)*(b+2*c*x), x, 1, f^(a+b*x+c*x^2)/Log(f)}
@@ -12660,19 +12696,19 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {Sqrt(a+b*Log(c*x^n))/(d+e*x)^2, x, 1, (x*Sqrt(a+b*Log(c*x^n)))/(d*(d+e*x))-(b*n*Unintegrable(1/((d +
+	// {Sqrt(a+b*Log(c*x^n))/(d+e*x)^2, x, 1, (x*Sqrt(a+b*Log(c*x^n)))/(d*(d+e*x))-(b*n*Integrate::Unintegrable(1/((d +
 	// e*x)*Sqrt(a+b*Log(c*x^n))), x))/(2*d)}
 	public void test01903() {
 		check("Integrate(Sqrt(a+b*Log(c*x^n))/(d+e*x)^2, x)",
-				"(x*Sqrt(a+b*Log(c*x^n)))/(d*(d+e*x))-(b*n*Unintegrable(1/((d+e*x)*Sqrt(a+b*Log(c*x^n))), x))/(2*d)");
+				"(x*Sqrt(a+b*Log(c*x^n)))/(d*(d+e*x))-(b*n*Integrate::Unintegrable(1/((d+e*x)*Sqrt(a+b*Log(c*x^n))), x))/(2*d)");
 
 	}
 
-	// {Sqrt(a+b*Log(c*x^n))/(d+e*x)^3, x, 1, -Sqrt(a+b*Log(c*x^n))/(2*e*(d+e*x)^2)+(b*n*Unintegrable(1/(x*(d
+	// {Sqrt(a+b*Log(c*x^n))/(d+e*x)^3, x, 1, -Sqrt(a+b*Log(c*x^n))/(2*e*(d+e*x)^2)+(b*n*Integrate::Unintegrable(1/(x*(d
 	// +e*x)^2*Sqrt(a+b*Log(c*x^n))), x))/(4*e)}
 	public void test01904() {
 		check("Integrate(Sqrt(a+b*Log(c*x^n))/(d+e*x)^3, x)",
-				"-Sqrt(a+b*Log(c*x^n))/(2*e*(d+e*x)^2)+(b*n*Unintegrable(1/(x*(d+e*x)^2*Sqrt(a+b*Log(c*x^n))), x))/(4*e)");
+				"-Sqrt(a+b*Log(c*x^n))/(2*e*(d+e*x)^2)+(b*n*Integrate::Unintegrable(1/(x*(d+e*x)^2*Sqrt(a+b*Log(c*x^n))), x))/(4*e)");
 
 	}
 
@@ -12853,10 +12889,10 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	}
 
 	// {PolyLog(k, e*x^q)/(x*(a+b*Log(c*x^n))^2), x, 1, -(PolyLog(k, e*x^q)/(b*n*(a+b*Log(c*x^n)))) +
-	// (q*Unintegrable(PolyLog(-1+k, e*x^q)/(x*(a+b*Log(c*x^n))), x))/(b*n)}
+	// (q*Integrate::Unintegrable(PolyLog(-1+k, e*x^q)/(x*(a+b*Log(c*x^n))), x))/(b*n)}
 	public void test01932() {
 		check("Integrate(PolyLog(k, e*x^q)/(x*(a+b*Log(c*x^n))^2), x)",
-				"-(PolyLog(k, e*x^q)/(b*n*(a+b*Log(c*x^n))))+(q*Unintegrable(PolyLog(-1+k, e*x^q)/(x*(a+b*Log(c*x^n))), x))/(b*n)");
+				"-(PolyLog(k, e*x^q)/(b*n*(a+b*Log(c*x^n))))+(q*Integrate::Unintegrable(PolyLog(-1+k, e*x^q)/(x*(a+b*Log(c*x^n))), x))/(b*n)");
 
 	}
 
@@ -12879,74 +12915,74 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	}
 
 	// {Sqrt(a+b*Log(c*(d+e*x)^n))/(f+g*x)^2, x, 1, ((d+e*x)*Sqrt(a+b*Log(c*(d+e*x)^n)))/((e*f-d*g)*(f +
-	// g*x))-(b*e*n*Unintegrable(1/((f+g*x)*Sqrt(a+b*Log(c*(d+e*x)^n))), x))/(2*(e*f-d*g))}
+	// g*x))-(b*e*n*Integrate::Unintegrable(1/((f+g*x)*Sqrt(a+b*Log(c*(d+e*x)^n))), x))/(2*(e*f-d*g))}
 	public void test01936() {
 		check("Integrate(Sqrt(a+b*Log(c*(d+e*x)^n))/(f+g*x)^2, x)",
-				"((d+e*x)*Sqrt(a+b*Log(c*(d+e*x)^n)))/((e*f-d*g)*(f+g*x))-(b*e*n*Unintegrable(1/((f+g*x)*Sqrt(a+b*Log(c*(d+e*x)^n))), x))/(2*(e*f-d*g))");
+				"((d+e*x)*Sqrt(a+b*Log(c*(d+e*x)^n)))/((e*f-d*g)*(f+g*x))-(b*e*n*Integrate::Unintegrable(1/((f+g*x)*Sqrt(a+b*Log(c*(d+e*x)^n))), x))/(2*(e*f-d*g))");
 
 	}
 
 	// {Sqrt(a+b*Log(c*(d+e*x)^n))/(f+g*x)^3, x, 1, -Sqrt(a+b*Log(c*(d+e*x)^n))/(2*g*(f+g*x)^2) +
-	// (b*e*n*Unintegrable(1/((d+e*x)*(f+g*x)^2*Sqrt(a+b*Log(c*(d+e*x)^n))), x))/(4*g)}
+	// (b*e*n*Integrate::Unintegrable(1/((d+e*x)*(f+g*x)^2*Sqrt(a+b*Log(c*(d+e*x)^n))), x))/(4*g)}
 	public void test01937() {
 		check("Integrate(Sqrt(a+b*Log(c*(d+e*x)^n))/(f+g*x)^3, x)",
-				"-Sqrt(a+b*Log(c*(d+e*x)^n))/(2*g*(f+g*x)^2)+(b*e*n*Unintegrable(1/((d+e*x)*(f+g*x)^2*Sqrt(a+b*Log(c*(d+e*x)^n))), x))/(4*g)");
+				"-Sqrt(a+b*Log(c*(d+e*x)^n))/(2*g*(f+g*x)^2)+(b*e*n*Integrate::Unintegrable(1/((d+e*x)*(f+g*x)^2*Sqrt(a+b*Log(c*(d+e*x)^n))), x))/(4*g)");
 
 	}
 
 	// {(a+b*Log(c*(d+e*x)^n))^(3/2)/(f+g*x)^2, x, 1, ((d+e*x)*(a+b*Log(c*(d+e*x)^n))^(3/2))/((e*f-d*g)*(f
-	// +g*x))-(3*b*e*n*Unintegrable(Sqrt(a+b*Log(c*(d+e*x)^n))/(f+g*x), x))/(2*(e*f-d*g))}
+	// +g*x))-(3*b*e*n*Integrate::Unintegrable(Sqrt(a+b*Log(c*(d+e*x)^n))/(f+g*x), x))/(2*(e*f-d*g))}
 	public void test01938() {
 		check("Integrate((a+b*Log(c*(d+e*x)^n))^(3/2)/(f+g*x)^2, x)",
-				"((d+e*x)*(a+b*Log(c*(d+e*x)^n))^(3/2))/((e*f-d*g)*(f+g*x))-(3*b*e*n*Unintegrable(Sqrt(a+b*Log(c*(d+e*x)^n))/(f+g*x), x))/(2*(e*f-d*g))");
+				"((d+e*x)*(a+b*Log(c*(d+e*x)^n))^(3/2))/((e*f-d*g)*(f+g*x))-(3*b*e*n*Integrate::Unintegrable(Sqrt(a+b*Log(c*(d+e*x)^n))/(f+g*x), x))/(2*(e*f-d*g))");
 
 	}
 
 	// {(a+b*Log(c*(d+e*x)^n))^(3/2)/(f+g*x)^3, x, 1, -(a+b*Log(c*(d+e*x)^n))^(3/2)/(2*g*(f+g*x)^2) +
-	// (3*b*e*n*Unintegrable(Sqrt(a+b*Log(c*(d+e*x)^n))/((d+e*x)*(f+g*x)^2), x))/(4*g)}
+	// (3*b*e*n*Integrate::Unintegrable(Sqrt(a+b*Log(c*(d+e*x)^n))/((d+e*x)*(f+g*x)^2), x))/(4*g)}
 	public void test01939() {
 		check("Integrate((a+b*Log(c*(d+e*x)^n))^(3/2)/(f+g*x)^3, x)",
-				"-(a+b*Log(c*(d+e*x)^n))^(3/2)/(2*g*(f+g*x)^2)+(3*b*e*n*Unintegrable(Sqrt(a+b*Log(c*(d+e*x)^n))/((d+e*x)*(f+g*x)^2), x))/(4*g)");
+				"-(a+b*Log(c*(d+e*x)^n))^(3/2)/(2*g*(f+g*x)^2)+(3*b*e*n*Integrate::Unintegrable(Sqrt(a+b*Log(c*(d+e*x)^n))/((d+e*x)*(f+g*x)^2), x))/(4*g)");
 
 	}
 
 	// {(a+b*Log(c*(d+e*x)^n))^(5/2)/(f+g*x)^2, x, 1, ((d+e*x)*(a+b*Log(c*(d+e*x)^n))^(5/2))/((e*f-d*g)*(f
-	// +g*x))-(5*b*e*n*Unintegrable((a+b*Log(c*(d+e*x)^n))^(3/2)/(f+g*x), x))/(2*(e*f-d*g))}
+	// +g*x))-(5*b*e*n*Integrate::Unintegrable((a+b*Log(c*(d+e*x)^n))^(3/2)/(f+g*x), x))/(2*(e*f-d*g))}
 	public void test01940() {
 		check("Integrate((a+b*Log(c*(d+e*x)^n))^(5/2)/(f+g*x)^2, x)",
-				"((d+e*x)*(a+b*Log(c*(d+e*x)^n))^(5/2))/((e*f-d*g)*(f+g*x))-(5*b*e*n*Unintegrable((a+b*Log(c*(d+e*x)^n))^(3/2)/(f+g*x), x))/(2*(e*f-d*g))");
+				"((d+e*x)*(a+b*Log(c*(d+e*x)^n))^(5/2))/((e*f-d*g)*(f+g*x))-(5*b*e*n*Integrate::Unintegrable((a+b*Log(c*(d+e*x)^n))^(3/2)/(f+g*x), x))/(2*(e*f-d*g))");
 
 	}
 
 	// {(a+b*Log(c*(d+e*x)^n))^(5/2)/(f+g*x)^3, x, 1, -(a+b*Log(c*(d+e*x)^n))^(5/2)/(2*g*(f+g*x)^2) +
-	// (5*b*e*n*Unintegrable((a+b*Log(c*(d+e*x)^n))^(3/2)/((d+e*x)*(f+g*x)^2), x))/(4*g)}
+	// (5*b*e*n*Integrate::Unintegrable((a+b*Log(c*(d+e*x)^n))^(3/2)/((d+e*x)*(f+g*x)^2), x))/(4*g)}
 	public void test01941() {
 		check("Integrate((a+b*Log(c*(d+e*x)^n))^(5/2)/(f+g*x)^3, x)",
-				"-(a+b*Log(c*(d+e*x)^n))^(5/2)/(2*g*(f+g*x)^2)+(5*b*e*n*Unintegrable((a+b*Log(c*(d+e*x)^n))^(3/2)/((d+e*x)*(f+g*x)^2), x))/(4*g)");
+				"-(a+b*Log(c*(d+e*x)^n))^(5/2)/(2*g*(f+g*x)^2)+(5*b*e*n*Integrate::Unintegrable((a+b*Log(c*(d+e*x)^n))^(3/2)/((d+e*x)*(f+g*x)^2), x))/(4*g)");
 
 	}
 
 	// {Sqrt(f+g*x)*Sqrt(a+b*Log(c*(d+e*x)^n)), x, 1, (2*(f+g*x)^(3/2)*Sqrt(a+b*Log(c*(d+e*x)^n)))/(3*g) -
-	// (b*e*n*Unintegrable((f+g*x)^(3/2)/((d+e*x)*Sqrt(a+b*Log(c*(d+e*x)^n))), x))/(3*g)}
+	// (b*e*n*Integrate::Unintegrable((f+g*x)^(3/2)/((d+e*x)*Sqrt(a+b*Log(c*(d+e*x)^n))), x))/(3*g)}
 	public void test01942() {
 		check("Integrate(Sqrt(f+g*x)*Sqrt(a+b*Log(c*(d+e*x)^n)), x)",
-				"(2*(f+g*x)^(3/2)*Sqrt(a+b*Log(c*(d+e*x)^n)))/(3*g)-(b*e*n*Unintegrable((f+g*x)^(3/2)/((d+e*x)*Sqrt(a+b*Log(c*(d+e*x)^n))), x))/(3*g)");
+				"(2*(f+g*x)^(3/2)*Sqrt(a+b*Log(c*(d+e*x)^n)))/(3*g)-(b*e*n*Integrate::Unintegrable((f+g*x)^(3/2)/((d+e*x)*Sqrt(a+b*Log(c*(d+e*x)^n))), x))/(3*g)");
 
 	}
 
 	// {Sqrt(a+b*Log(c*(d+e*x)^n))/Sqrt(f+g*x), x, 1, (2*Sqrt(f+g*x)*Sqrt(a+b*Log(c*(d+e*x)^n)))/g -
-	// (b*e*n*Unintegrable(Sqrt(f+g*x)/((d+e*x)*Sqrt(a+b*Log(c*(d+e*x)^n))), x))/g}
+	// (b*e*n*Integrate::Unintegrable(Sqrt(f+g*x)/((d+e*x)*Sqrt(a+b*Log(c*(d+e*x)^n))), x))/g}
 	public void test01943() {
 		check("Integrate(Sqrt(a+b*Log(c*(d+e*x)^n))/Sqrt(f+g*x), x)",
-				"(2*Sqrt(f+g*x)*Sqrt(a+b*Log(c*(d+e*x)^n)))/g-(b*e*n*Unintegrable(Sqrt(f+g*x)/((d+e*x)*Sqrt(a+b*Log(c*(d+e*x)^n))), x))/g");
+				"(2*Sqrt(f+g*x)*Sqrt(a+b*Log(c*(d+e*x)^n)))/g-(b*e*n*Integrate::Unintegrable(Sqrt(f+g*x)/((d+e*x)*Sqrt(a+b*Log(c*(d+e*x)^n))), x))/g");
 
 	}
 
 	// {Sqrt(a+b*Log(c*(d+e*x)^n))/(f+g*x)^(3/2), x, 1, (-2*Sqrt(a+b*Log(c*(d+e*x)^n)))/(g*Sqrt(f+g*x)) +
-	// (b*e*n*Unintegrable(1/((d+e*x)*Sqrt(f+g*x)*Sqrt(a+b*Log(c*(d+e*x)^n))), x))/g}
+	// (b*e*n*Integrate::Unintegrable(1/((d+e*x)*Sqrt(f+g*x)*Sqrt(a+b*Log(c*(d+e*x)^n))), x))/g}
 	public void test01944() {
 		check("Integrate(Sqrt(a+b*Log(c*(d+e*x)^n))/(f+g*x)^(3/2), x)",
-				"(-2*Sqrt(a+b*Log(c*(d+e*x)^n)))/(g*Sqrt(f+g*x))+(b*e*n*Unintegrable(1/((d+e*x)*Sqrt(f+g*x)*Sqrt(a+b*Log(c*(d+e*x)^n))), x))/g");
+				"(-2*Sqrt(a+b*Log(c*(d+e*x)^n)))/(g*Sqrt(f+g*x))+(b*e*n*Integrate::Unintegrable(1/((d+e*x)*Sqrt(f+g*x)*Sqrt(a+b*Log(c*(d+e*x)^n))), x))/g");
 
 	}
 
@@ -12983,27 +13019,28 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {Log(c*(a+b*x^2)^p)^3/x^2, x, 1, -(Log(c*(a+b*x^2)^p)^3/x)+6*b*p*Unintegrable(Log(c*(a+b*x^2)^p)^2/(a +
+	// {Log(c*(a+b*x^2)^p)^3/x^2, x, 1, -(Log(c*(a+b*x^2)^p)^3/x)+6*b*p*Integrate::Unintegrable(Log(c*(a+b*x^2)^p)^2/(a
+	// +
 	// b*x^2), x)}
 	public void test01949() {
 		check("Integrate(Log(c*(a+b*x^2)^p)^3/x^2, x)",
-				"-(Log(c*(a+b*x^2)^p)^3/x)+6*b*p*Unintegrable(Log(c*(a+b*x^2)^p)^2/(a+b*x^2), x)");
+				"-(Log(c*(a+b*x^2)^p)^3/x)+6*b*p*Integrate::Unintegrable(Log(c*(a+b*x^2)^p)^2/(a+b*x^2), x)");
 
 	}
 
 	// {(f*x)^m*Log(c*(d+e*x^2)^p)^3, x, 1, ((f*x)^(1+m)*Log(c*(d+e*x^2)^p)^3)/(f*(1+m)) -
-	// (6*e*p*Unintegrable(((f*x)^(2+m)*Log(c*(d+e*x^2)^p)^2)/(d+e*x^2), x))/(f^2*(1+m))}
+	// (6*e*p*Integrate::Unintegrable(((f*x)^(2+m)*Log(c*(d+e*x^2)^p)^2)/(d+e*x^2), x))/(f^2*(1+m))}
 	public void test01950() {
 		check("Integrate((f*x)^m*Log(c*(d+e*x^2)^p)^3, x)",
-				"((f*x)^(1+m)*Log(c*(d+e*x^2)^p)^3)/(f*(1+m))-(6*e*p*Unintegrable(((f*x)^(2+m)*Log(c*(d+e*x^2)^p)^2)/(d+e*x^2), x))/(f^2*(1+m))");
+				"((f*x)^(1+m)*Log(c*(d+e*x^2)^p)^3)/(f*(1+m))-(6*e*p*Integrate::Unintegrable(((f*x)^(2+m)*Log(c*(d+e*x^2)^p)^2)/(d+e*x^2), x))/(f^2*(1+m))");
 
 	}
 
 	// {(f*x)^m*Log(c*(d+e*x^2)^p)^2, x, 1, ((f*x)^(1+m)*Log(c*(d+e*x^2)^p)^2)/(f*(1+m)) -
-	// (4*e*p*Unintegrable(((f*x)^(2+m)*Log(c*(d+e*x^2)^p))/(d+e*x^2), x))/(f^2*(1+m))}
+	// (4*e*p*Integrate::Unintegrable(((f*x)^(2+m)*Log(c*(d+e*x^2)^p))/(d+e*x^2), x))/(f^2*(1+m))}
 	public void test01951() {
 		check("Integrate((f*x)^m*Log(c*(d+e*x^2)^p)^2, x)",
-				"((f*x)^(1+m)*Log(c*(d+e*x^2)^p)^2)/(f*(1+m))-(4*e*p*Unintegrable(((f*x)^(2+m)*Log(c*(d+e*x^2)^p))/(d+e*x^2), x))/(f^2*(1+m))");
+				"((f*x)^(1+m)*Log(c*(d+e*x^2)^p)^2)/(f*(1+m))-(4*e*p*Integrate::Unintegrable(((f*x)^(2+m)*Log(c*(d+e*x^2)^p))/(d+e*x^2), x))/(f^2*(1+m))");
 
 	}
 
@@ -13013,285 +13050,320 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {Log((a+b*x^n)/x^n)/(c+d*x), x, 1, Unintegrable(Log(b+a/x^n)/(c+d*x), x)}
+	// {Log((a+b*x^n)/x^n)/(c+d*x), x, 1, Integrate::Unintegrable(Log(b+a/x^n)/(c+d*x), x)}
 	public void test01953() {
-		check("Integrate(Log((a+b*x^n)/x^n)/(c+d*x), x)", "Unintegrable(Log(b+a/x^n)/(c+d*x), x)");
+		check("Integrate(Log((a+b*x^n)/x^n)/(c+d*x), x)",
+				"Integrate::Unintegrable(Log(b+a/x^n)/(c+d*x), x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e*Sqrt(x))))^p/x, x, 1, Unintegrable((a+b*Log(c*(d+e*Sqrt(x))))^p/x, x)}
+	// {(a+b*Log(c*(d+e*Sqrt(x))))^p/x, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e*Sqrt(x))))^p/x, x)}
 	public void test01954() {
-		check("Integrate((a+b*Log(c*(d+e*Sqrt(x))))^p/x, x)", "Unintegrable((a+b*Log(c*(d+e*Sqrt(x))))^p/x, x)");
+		check("Integrate((a+b*Log(c*(d+e*Sqrt(x))))^p/x, x)",
+				"Integrate::Unintegrable((a+b*Log(c*(d+e*Sqrt(x))))^p/x, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e*Sqrt(x))))^p/x^2, x, 1, Unintegrable((a+b*Log(c*(d+e*Sqrt(x))))^p/x^2, x)}
+	// {(a+b*Log(c*(d+e*Sqrt(x))))^p/x^2, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e*Sqrt(x))))^p/x^2, x)}
 	public void test01955() {
-		check("Integrate((a+b*Log(c*(d+e*Sqrt(x))))^p/x^2, x)", "Unintegrable((a+b*Log(c*(d+e*Sqrt(x))))^p/x^2, x)");
+		check("Integrate((a+b*Log(c*(d+e*Sqrt(x))))^p/x^2, x)",
+				"Integrate::Unintegrable((a+b*Log(c*(d+e*Sqrt(x))))^p/x^2, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e*Sqrt(x))^2))^p/x, x, 1, Unintegrable((a+b*Log(c*(d+e*Sqrt(x))^2))^p/x, x)}
+	// {(a+b*Log(c*(d+e*Sqrt(x))^2))^p/x, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e*Sqrt(x))^2))^p/x, x)}
 	public void test01956() {
-		check("Integrate((a+b*Log(c*(d+e*Sqrt(x))^2))^p/x, x)", "Unintegrable((a+b*Log(c*(d+e*Sqrt(x))^2))^p/x, x)");
+		check("Integrate((a+b*Log(c*(d+e*Sqrt(x))^2))^p/x, x)",
+				"Integrate::Unintegrable((a+b*Log(c*(d+e*Sqrt(x))^2))^p/x, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e*Sqrt(x))^2))^p/x^2, x, 1, Unintegrable((a+b*Log(c*(d+e*Sqrt(x))^2))^p/x^2, x)}
+	// {(a+b*Log(c*(d+e*Sqrt(x))^2))^p/x^2, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e*Sqrt(x))^2))^p/x^2, x)}
 	public void test01957() {
 		check("Integrate((a+b*Log(c*(d+e*Sqrt(x))^2))^p/x^2, x)",
-				"Unintegrable((a+b*Log(c*(d+e*Sqrt(x))^2))^p/x^2, x)");
+				"Integrate::Unintegrable((a+b*Log(c*(d+e*Sqrt(x))^2))^p/x^2, x)");
 
 	}
 
-	// {x*(a+b*Log(c*(d+e/Sqrt(x))))^p, x, 1, Unintegrable(x*(a+b*Log(c*(d+e/Sqrt(x))))^p, x)}
+	// {x*(a+b*Log(c*(d+e/Sqrt(x))))^p, x, 1, Integrate::Unintegrable(x*(a+b*Log(c*(d+e/Sqrt(x))))^p, x)}
 	public void test01958() {
-		check("Integrate(x*(a+b*Log(c*(d+e/Sqrt(x))))^p, x)", "Unintegrable(x*(a+b*Log(c*(d+e/Sqrt(x))))^p, x)");
+		check("Integrate(x*(a+b*Log(c*(d+e/Sqrt(x))))^p, x)",
+				"Integrate::Unintegrable(x*(a+b*Log(c*(d+e/Sqrt(x))))^p, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e/Sqrt(x))))^p, x, 1, Unintegrable((a+b*Log(c*(d+e/Sqrt(x))))^p, x)}
+	// {(a+b*Log(c*(d+e/Sqrt(x))))^p, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e/Sqrt(x))))^p, x)}
 	public void test01959() {
-		check("Integrate((a+b*Log(c*(d+e/Sqrt(x))))^p, x)", "Unintegrable((a+b*Log(c*(d+e/Sqrt(x))))^p, x)");
+		check("Integrate((a+b*Log(c*(d+e/Sqrt(x))))^p, x)",
+				"Integrate::Unintegrable((a+b*Log(c*(d+e/Sqrt(x))))^p, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e/Sqrt(x))))^p/x, x, 1, Unintegrable((a+b*Log(c*(d+e/Sqrt(x))))^p/x, x)}
+	// {(a+b*Log(c*(d+e/Sqrt(x))))^p/x, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e/Sqrt(x))))^p/x, x)}
 	public void test01960() {
-		check("Integrate((a+b*Log(c*(d+e/Sqrt(x))))^p/x, x)", "Unintegrable((a+b*Log(c*(d+e/Sqrt(x))))^p/x, x)");
+		check("Integrate((a+b*Log(c*(d+e/Sqrt(x))))^p/x, x)",
+				"Integrate::Unintegrable((a+b*Log(c*(d+e/Sqrt(x))))^p/x, x)");
 
 	}
 
-	// {x*(a+b*Log(c*(d+e/Sqrt(x))^2))^p, x, 1, Unintegrable(x*(a+b*Log(c*(d+e/Sqrt(x))^2))^p, x)}
+	// {x*(a+b*Log(c*(d+e/Sqrt(x))^2))^p, x, 1, Integrate::Unintegrable(x*(a+b*Log(c*(d+e/Sqrt(x))^2))^p, x)}
 	public void test01961() {
-		check("Integrate(x*(a+b*Log(c*(d+e/Sqrt(x))^2))^p, x)", "Unintegrable(x*(a+b*Log(c*(d+e/Sqrt(x))^2))^p, x)");
+		check("Integrate(x*(a+b*Log(c*(d+e/Sqrt(x))^2))^p, x)",
+				"Integrate::Unintegrable(x*(a+b*Log(c*(d+e/Sqrt(x))^2))^p, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e/Sqrt(x))^2))^p, x, 1, Unintegrable((a+b*Log(c*(d+e/Sqrt(x))^2))^p, x)}
+	// {(a+b*Log(c*(d+e/Sqrt(x))^2))^p, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e/Sqrt(x))^2))^p, x)}
 	public void test01962() {
-		check("Integrate((a+b*Log(c*(d+e/Sqrt(x))^2))^p, x)", "Unintegrable((a+b*Log(c*(d+e/Sqrt(x))^2))^p, x)");
+		check("Integrate((a+b*Log(c*(d+e/Sqrt(x))^2))^p, x)",
+				"Integrate::Unintegrable((a+b*Log(c*(d+e/Sqrt(x))^2))^p, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e/Sqrt(x))^2))^p/x, x, 1, Unintegrable((a+b*Log(c*(d+e/Sqrt(x))^2))^p/x, x)}
+	// {(a+b*Log(c*(d+e/Sqrt(x))^2))^p/x, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e/Sqrt(x))^2))^p/x, x)}
 	public void test01963() {
-		check("Integrate((a+b*Log(c*(d+e/Sqrt(x))^2))^p/x, x)", "Unintegrable((a+b*Log(c*(d+e/Sqrt(x))^2))^p/x, x)");
+		check("Integrate((a+b*Log(c*(d+e/Sqrt(x))^2))^p/x, x)",
+				"Integrate::Unintegrable((a+b*Log(c*(d+e/Sqrt(x))^2))^p/x, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e*x^(1/3))))^p/x, x, 1, Unintegrable((a+b*Log(c*(d+e*x^(1/3))))^p/x, x)}
+	// {(a+b*Log(c*(d+e*x^(1/3))))^p/x, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e*x^(1/3))))^p/x, x)}
 	public void test01964() {
-		check("Integrate((a+b*Log(c*(d+e*x^(1/3))))^p/x, x)", "Unintegrable((a+b*Log(c*(d+e*x^(1/3))))^p/x, x)");
+		check("Integrate((a+b*Log(c*(d+e*x^(1/3))))^p/x, x)",
+				"Integrate::Unintegrable((a+b*Log(c*(d+e*x^(1/3))))^p/x, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e*x^(1/3))))^p/x^2, x, 1, Unintegrable((a+b*Log(c*(d+e*x^(1/3))))^p/x^2, x)}
+	// {(a+b*Log(c*(d+e*x^(1/3))))^p/x^2, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e*x^(1/3))))^p/x^2, x)}
 	public void test01965() {
-		check("Integrate((a+b*Log(c*(d+e*x^(1/3))))^p/x^2, x)", "Unintegrable((a+b*Log(c*(d+e*x^(1/3))))^p/x^2, x)");
+		check("Integrate((a+b*Log(c*(d+e*x^(1/3))))^p/x^2, x)",
+				"Integrate::Unintegrable((a+b*Log(c*(d+e*x^(1/3))))^p/x^2, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e*x^(1/3))^2))^p/x, x, 1, Unintegrable((a+b*Log(c*(d+e*x^(1/3))^2))^p/x, x)}
+	// {(a+b*Log(c*(d+e*x^(1/3))^2))^p/x, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e*x^(1/3))^2))^p/x, x)}
 	public void test01966() {
-		check("Integrate((a+b*Log(c*(d+e*x^(1/3))^2))^p/x, x)", "Unintegrable((a+b*Log(c*(d+e*x^(1/3))^2))^p/x, x)");
+		check("Integrate((a+b*Log(c*(d+e*x^(1/3))^2))^p/x, x)",
+				"Integrate::Unintegrable((a+b*Log(c*(d+e*x^(1/3))^2))^p/x, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e*x^(1/3))^2))^p/x^2, x, 1, Unintegrable((a+b*Log(c*(d+e*x^(1/3))^2))^p/x^2, x)}
+	// {(a+b*Log(c*(d+e*x^(1/3))^2))^p/x^2, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e*x^(1/3))^2))^p/x^2, x)}
 	public void test01967() {
 		check("Integrate((a+b*Log(c*(d+e*x^(1/3))^2))^p/x^2, x)",
-				"Unintegrable((a+b*Log(c*(d+e*x^(1/3))^2))^p/x^2, x)");
+				"Integrate::Unintegrable((a+b*Log(c*(d+e*x^(1/3))^2))^p/x^2, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e*x^(2/3))))^p/x, x, 1, Unintegrable((a+b*Log(c*(d+e*x^(2/3))))^p/x, x)}
+	// {(a+b*Log(c*(d+e*x^(2/3))))^p/x, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e*x^(2/3))))^p/x, x)}
 	public void test01968() {
-		check("Integrate((a+b*Log(c*(d+e*x^(2/3))))^p/x, x)", "Unintegrable((a+b*Log(c*(d+e*x^(2/3))))^p/x, x)");
+		check("Integrate((a+b*Log(c*(d+e*x^(2/3))))^p/x, x)",
+				"Integrate::Unintegrable((a+b*Log(c*(d+e*x^(2/3))))^p/x, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e*x^(2/3))))^p/x^3, x, 1, Unintegrable((a+b*Log(c*(d+e*x^(2/3))))^p/x^3, x)}
+	// {(a+b*Log(c*(d+e*x^(2/3))))^p/x^3, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e*x^(2/3))))^p/x^3, x)}
 	public void test01969() {
-		check("Integrate((a+b*Log(c*(d+e*x^(2/3))))^p/x^3, x)", "Unintegrable((a+b*Log(c*(d+e*x^(2/3))))^p/x^3, x)");
+		check("Integrate((a+b*Log(c*(d+e*x^(2/3))))^p/x^3, x)",
+				"Integrate::Unintegrable((a+b*Log(c*(d+e*x^(2/3))))^p/x^3, x)");
 
 	}
 
-	// {x^2*(a+b*Log(c*(d+e*x^(2/3))))^p, x, 1, Unintegrable(x^2*(a+b*Log(c*(d+e*x^(2/3))))^p, x)}
+	// {x^2*(a+b*Log(c*(d+e*x^(2/3))))^p, x, 1, Integrate::Unintegrable(x^2*(a+b*Log(c*(d+e*x^(2/3))))^p, x)}
 	public void test01970() {
-		check("Integrate(x^2*(a+b*Log(c*(d+e*x^(2/3))))^p, x)", "Unintegrable(x^2*(a+b*Log(c*(d+e*x^(2/3))))^p, x)");
+		check("Integrate(x^2*(a+b*Log(c*(d+e*x^(2/3))))^p, x)",
+				"Integrate::Unintegrable(x^2*(a+b*Log(c*(d+e*x^(2/3))))^p, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e*x^(2/3))))^p, x, 1, Unintegrable((a+b*Log(c*(d+e*x^(2/3))))^p, x)}
+	// {(a+b*Log(c*(d+e*x^(2/3))))^p, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e*x^(2/3))))^p, x)}
 	public void test01971() {
-		check("Integrate((a+b*Log(c*(d+e*x^(2/3))))^p, x)", "Unintegrable((a+b*Log(c*(d+e*x^(2/3))))^p, x)");
+		check("Integrate((a+b*Log(c*(d+e*x^(2/3))))^p, x)",
+				"Integrate::Unintegrable((a+b*Log(c*(d+e*x^(2/3))))^p, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e*x^(2/3))))^p/x^2, x, 1, Unintegrable((a+b*Log(c*(d+e*x^(2/3))))^p/x^2, x)}
+	// {(a+b*Log(c*(d+e*x^(2/3))))^p/x^2, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e*x^(2/3))))^p/x^2, x)}
 	public void test01972() {
-		check("Integrate((a+b*Log(c*(d+e*x^(2/3))))^p/x^2, x)", "Unintegrable((a+b*Log(c*(d+e*x^(2/3))))^p/x^2, x)");
+		check("Integrate((a+b*Log(c*(d+e*x^(2/3))))^p/x^2, x)",
+				"Integrate::Unintegrable((a+b*Log(c*(d+e*x^(2/3))))^p/x^2, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e*x^(2/3))^2))^p/x, x, 1, Unintegrable((a+b*Log(c*(d+e*x^(2/3))^2))^p/x, x)}
+	// {(a+b*Log(c*(d+e*x^(2/3))^2))^p/x, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e*x^(2/3))^2))^p/x, x)}
 	public void test01973() {
-		check("Integrate((a+b*Log(c*(d+e*x^(2/3))^2))^p/x, x)", "Unintegrable((a+b*Log(c*(d+e*x^(2/3))^2))^p/x, x)");
+		check("Integrate((a+b*Log(c*(d+e*x^(2/3))^2))^p/x, x)",
+				"Integrate::Unintegrable((a+b*Log(c*(d+e*x^(2/3))^2))^p/x, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e*x^(2/3))^2))^p/x^3, x, 1, Unintegrable((a+b*Log(c*(d+e*x^(2/3))^2))^p/x^3, x)}
+	// {(a+b*Log(c*(d+e*x^(2/3))^2))^p/x^3, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e*x^(2/3))^2))^p/x^3, x)}
 	public void test01974() {
 		check("Integrate((a+b*Log(c*(d+e*x^(2/3))^2))^p/x^3, x)",
-				"Unintegrable((a+b*Log(c*(d+e*x^(2/3))^2))^p/x^3, x)");
+				"Integrate::Unintegrable((a+b*Log(c*(d+e*x^(2/3))^2))^p/x^3, x)");
 
 	}
 
-	// {x^2*(a+b*Log(c*(d+e*x^(2/3))^2))^p, x, 1, Unintegrable(x^2*(a+b*Log(c*(d+e*x^(2/3))^2))^p, x)}
+	// {x^2*(a+b*Log(c*(d+e*x^(2/3))^2))^p, x, 1, Integrate::Unintegrable(x^2*(a+b*Log(c*(d+e*x^(2/3))^2))^p, x)}
 	public void test01975() {
 		check("Integrate(x^2*(a+b*Log(c*(d+e*x^(2/3))^2))^p, x)",
-				"Unintegrable(x^2*(a+b*Log(c*(d+e*x^(2/3))^2))^p, x)");
+				"Integrate::Unintegrable(x^2*(a+b*Log(c*(d+e*x^(2/3))^2))^p, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e*x^(2/3))^2))^p, x, 1, Unintegrable((a+b*Log(c*(d+e*x^(2/3))^2))^p, x)}
+	// {(a+b*Log(c*(d+e*x^(2/3))^2))^p, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e*x^(2/3))^2))^p, x)}
 	public void test01976() {
-		check("Integrate((a+b*Log(c*(d+e*x^(2/3))^2))^p, x)", "Unintegrable((a+b*Log(c*(d+e*x^(2/3))^2))^p, x)");
+		check("Integrate((a+b*Log(c*(d+e*x^(2/3))^2))^p, x)",
+				"Integrate::Unintegrable((a+b*Log(c*(d+e*x^(2/3))^2))^p, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e*x^(2/3))^2))^p/x^2, x, 1, Unintegrable((a+b*Log(c*(d+e*x^(2/3))^2))^p/x^2, x)}
+	// {(a+b*Log(c*(d+e*x^(2/3))^2))^p/x^2, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e*x^(2/3))^2))^p/x^2, x)}
 	public void test01977() {
 		check("Integrate((a+b*Log(c*(d+e*x^(2/3))^2))^p/x^2, x)",
-				"Unintegrable((a+b*Log(c*(d+e*x^(2/3))^2))^p/x^2, x)");
+				"Integrate::Unintegrable((a+b*Log(c*(d+e*x^(2/3))^2))^p/x^2, x)");
 
 	}
 
-	// {x*(a+b*Log(c*(d+e/x^(1/3))))^p, x, 1, Unintegrable(x*(a+b*Log(c*(d+e/x^(1/3))))^p, x)}
+	// {x*(a+b*Log(c*(d+e/x^(1/3))))^p, x, 1, Integrate::Unintegrable(x*(a+b*Log(c*(d+e/x^(1/3))))^p, x)}
 	public void test01978() {
-		check("Integrate(x*(a+b*Log(c*(d+e/x^(1/3))))^p, x)", "Unintegrable(x*(a+b*Log(c*(d+e/x^(1/3))))^p, x)");
+		check("Integrate(x*(a+b*Log(c*(d+e/x^(1/3))))^p, x)",
+				"Integrate::Unintegrable(x*(a+b*Log(c*(d+e/x^(1/3))))^p, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e/x^(1/3))))^p, x, 1, Unintegrable((a+b*Log(c*(d+e/x^(1/3))))^p, x)}
+	// {(a+b*Log(c*(d+e/x^(1/3))))^p, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e/x^(1/3))))^p, x)}
 	public void test01979() {
-		check("Integrate((a+b*Log(c*(d+e/x^(1/3))))^p, x)", "Unintegrable((a+b*Log(c*(d+e/x^(1/3))))^p, x)");
+		check("Integrate((a+b*Log(c*(d+e/x^(1/3))))^p, x)",
+				"Integrate::Unintegrable((a+b*Log(c*(d+e/x^(1/3))))^p, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e/x^(1/3))))^p/x, x, 1, Unintegrable((a+b*Log(c*(d+e/x^(1/3))))^p/x, x)}
+	// {(a+b*Log(c*(d+e/x^(1/3))))^p/x, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e/x^(1/3))))^p/x, x)}
 	public void test01980() {
-		check("Integrate((a+b*Log(c*(d+e/x^(1/3))))^p/x, x)", "Unintegrable((a+b*Log(c*(d+e/x^(1/3))))^p/x, x)");
+		check("Integrate((a+b*Log(c*(d+e/x^(1/3))))^p/x, x)",
+				"Integrate::Unintegrable((a+b*Log(c*(d+e/x^(1/3))))^p/x, x)");
 
 	}
 
-	// {x*(a+b*Log(c*(d+e/x^(1/3))^2))^p, x, 1, Unintegrable(x*(a+b*Log(c*(d+e/x^(1/3))^2))^p, x)}
+	// {x*(a+b*Log(c*(d+e/x^(1/3))^2))^p, x, 1, Integrate::Unintegrable(x*(a+b*Log(c*(d+e/x^(1/3))^2))^p, x)}
 	public void test01981() {
-		check("Integrate(x*(a+b*Log(c*(d+e/x^(1/3))^2))^p, x)", "Unintegrable(x*(a+b*Log(c*(d+e/x^(1/3))^2))^p, x)");
+		check("Integrate(x*(a+b*Log(c*(d+e/x^(1/3))^2))^p, x)",
+				"Integrate::Unintegrable(x*(a+b*Log(c*(d+e/x^(1/3))^2))^p, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e/x^(1/3))^2))^p, x, 1, Unintegrable((a+b*Log(c*(d+e/x^(1/3))^2))^p, x)}
+	// {(a+b*Log(c*(d+e/x^(1/3))^2))^p, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e/x^(1/3))^2))^p, x)}
 	public void test01982() {
-		check("Integrate((a+b*Log(c*(d+e/x^(1/3))^2))^p, x)", "Unintegrable((a+b*Log(c*(d+e/x^(1/3))^2))^p, x)");
+		check("Integrate((a+b*Log(c*(d+e/x^(1/3))^2))^p, x)",
+				"Integrate::Unintegrable((a+b*Log(c*(d+e/x^(1/3))^2))^p, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e/x^(1/3))^2))^p/x, x, 1, Unintegrable((a+b*Log(c*(d+e/x^(1/3))^2))^p/x, x)}
+	// {(a+b*Log(c*(d+e/x^(1/3))^2))^p/x, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e/x^(1/3))^2))^p/x, x)}
 	public void test01983() {
-		check("Integrate((a+b*Log(c*(d+e/x^(1/3))^2))^p/x, x)", "Unintegrable((a+b*Log(c*(d+e/x^(1/3))^2))^p/x, x)");
+		check("Integrate((a+b*Log(c*(d+e/x^(1/3))^2))^p/x, x)",
+				"Integrate::Unintegrable((a+b*Log(c*(d+e/x^(1/3))^2))^p/x, x)");
 
 	}
 
-	// {x^3*(a+b*Log(c*(d+e/x^(2/3))))^p, x, 1, Unintegrable(x^3*(a+b*Log(c*(d+e/x^(2/3))))^p, x)}
+	// {x^3*(a+b*Log(c*(d+e/x^(2/3))))^p, x, 1, Integrate::Unintegrable(x^3*(a+b*Log(c*(d+e/x^(2/3))))^p, x)}
 	public void test01984() {
-		check("Integrate(x^3*(a+b*Log(c*(d+e/x^(2/3))))^p, x)", "Unintegrable(x^3*(a+b*Log(c*(d+e/x^(2/3))))^p, x)");
+		check("Integrate(x^3*(a+b*Log(c*(d+e/x^(2/3))))^p, x)",
+				"Integrate::Unintegrable(x^3*(a+b*Log(c*(d+e/x^(2/3))))^p, x)");
 
 	}
 
-	// {x^2*(a+b*Log(c*(d+e/x^(2/3))))^p, x, 1, Unintegrable(x^2*(a+b*Log(c*(d+e/x^(2/3))))^p, x)}
+	// {x^2*(a+b*Log(c*(d+e/x^(2/3))))^p, x, 1, Integrate::Unintegrable(x^2*(a+b*Log(c*(d+e/x^(2/3))))^p, x)}
 	public void test01985() {
-		check("Integrate(x^2*(a+b*Log(c*(d+e/x^(2/3))))^p, x)", "Unintegrable(x^2*(a+b*Log(c*(d+e/x^(2/3))))^p, x)");
+		check("Integrate(x^2*(a+b*Log(c*(d+e/x^(2/3))))^p, x)",
+				"Integrate::Unintegrable(x^2*(a+b*Log(c*(d+e/x^(2/3))))^p, x)");
 
 	}
 
-	// {x*(a+b*Log(c*(d+e/x^(2/3))))^p, x, 1, Unintegrable(x*(a+b*Log(c*(d+e/x^(2/3))))^p, x)}
+	// {x*(a+b*Log(c*(d+e/x^(2/3))))^p, x, 1, Integrate::Unintegrable(x*(a+b*Log(c*(d+e/x^(2/3))))^p, x)}
 	public void test01986() {
-		check("Integrate(x*(a+b*Log(c*(d+e/x^(2/3))))^p, x)", "Unintegrable(x*(a+b*Log(c*(d+e/x^(2/3))))^p, x)");
+		check("Integrate(x*(a+b*Log(c*(d+e/x^(2/3))))^p, x)",
+				"Integrate::Unintegrable(x*(a+b*Log(c*(d+e/x^(2/3))))^p, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e/x^(2/3))))^p, x, 1, Unintegrable((a+b*Log(c*(d+e/x^(2/3))))^p, x)}
+	// {(a+b*Log(c*(d+e/x^(2/3))))^p, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e/x^(2/3))))^p, x)}
 	public void test01987() {
-		check("Integrate((a+b*Log(c*(d+e/x^(2/3))))^p, x)", "Unintegrable((a+b*Log(c*(d+e/x^(2/3))))^p, x)");
+		check("Integrate((a+b*Log(c*(d+e/x^(2/3))))^p, x)",
+				"Integrate::Unintegrable((a+b*Log(c*(d+e/x^(2/3))))^p, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e/x^(2/3))))^p/x, x, 1, Unintegrable((a+b*Log(c*(d+e/x^(2/3))))^p/x, x)}
+	// {(a+b*Log(c*(d+e/x^(2/3))))^p/x, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e/x^(2/3))))^p/x, x)}
 	public void test01988() {
-		check("Integrate((a+b*Log(c*(d+e/x^(2/3))))^p/x, x)", "Unintegrable((a+b*Log(c*(d+e/x^(2/3))))^p/x, x)");
+		check("Integrate((a+b*Log(c*(d+e/x^(2/3))))^p/x, x)",
+				"Integrate::Unintegrable((a+b*Log(c*(d+e/x^(2/3))))^p/x, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e/x^(2/3))))^p/x^2, x, 1, Unintegrable((a+b*Log(c*(d+e/x^(2/3))))^p/x^2, x)}
+	// {(a+b*Log(c*(d+e/x^(2/3))))^p/x^2, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e/x^(2/3))))^p/x^2, x)}
 	public void test01989() {
-		check("Integrate((a+b*Log(c*(d+e/x^(2/3))))^p/x^2, x)", "Unintegrable((a+b*Log(c*(d+e/x^(2/3))))^p/x^2, x)");
+		check("Integrate((a+b*Log(c*(d+e/x^(2/3))))^p/x^2, x)",
+				"Integrate::Unintegrable((a+b*Log(c*(d+e/x^(2/3))))^p/x^2, x)");
 
 	}
 
-	// {x^3*(a+b*Log(c*(d+e/x^(2/3))^2))^p, x, 1, Unintegrable(x^3*(a+b*Log(c*(d+e/x^(2/3))^2))^p, x)}
+	// {x^3*(a+b*Log(c*(d+e/x^(2/3))^2))^p, x, 1, Integrate::Unintegrable(x^3*(a+b*Log(c*(d+e/x^(2/3))^2))^p, x)}
 	public void test01990() {
 		check("Integrate(x^3*(a+b*Log(c*(d+e/x^(2/3))^2))^p, x)",
-				"Unintegrable(x^3*(a+b*Log(c*(d+e/x^(2/3))^2))^p, x)");
+				"Integrate::Unintegrable(x^3*(a+b*Log(c*(d+e/x^(2/3))^2))^p, x)");
 
 	}
 
-	// {x^2*(a+b*Log(c*(d+e/x^(2/3))^2))^p, x, 1, Unintegrable(x^2*(a+b*Log(c*(d+e/x^(2/3))^2))^p, x)}
+	// {x^2*(a+b*Log(c*(d+e/x^(2/3))^2))^p, x, 1, Integrate::Unintegrable(x^2*(a+b*Log(c*(d+e/x^(2/3))^2))^p, x)}
 	public void test01991() {
 		check("Integrate(x^2*(a+b*Log(c*(d+e/x^(2/3))^2))^p, x)",
-				"Unintegrable(x^2*(a+b*Log(c*(d+e/x^(2/3))^2))^p, x)");
+				"Integrate::Unintegrable(x^2*(a+b*Log(c*(d+e/x^(2/3))^2))^p, x)");
 
 	}
 
-	// {x*(a+b*Log(c*(d+e/x^(2/3))^2))^p, x, 1, Unintegrable(x*(a+b*Log(c*(d+e/x^(2/3))^2))^p, x)}
+	// {x*(a+b*Log(c*(d+e/x^(2/3))^2))^p, x, 1, Integrate::Unintegrable(x*(a+b*Log(c*(d+e/x^(2/3))^2))^p, x)}
 	public void test01992() {
-		check("Integrate(x*(a+b*Log(c*(d+e/x^(2/3))^2))^p, x)", "Unintegrable(x*(a+b*Log(c*(d+e/x^(2/3))^2))^p, x)");
+		check("Integrate(x*(a+b*Log(c*(d+e/x^(2/3))^2))^p, x)",
+				"Integrate::Unintegrable(x*(a+b*Log(c*(d+e/x^(2/3))^2))^p, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e/x^(2/3))^2))^p, x, 1, Unintegrable((a+b*Log(c*(d+e/x^(2/3))^2))^p, x)}
+	// {(a+b*Log(c*(d+e/x^(2/3))^2))^p, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e/x^(2/3))^2))^p, x)}
 	public void test01993() {
-		check("Integrate((a+b*Log(c*(d+e/x^(2/3))^2))^p, x)", "Unintegrable((a+b*Log(c*(d+e/x^(2/3))^2))^p, x)");
+		check("Integrate((a+b*Log(c*(d+e/x^(2/3))^2))^p, x)",
+				"Integrate::Unintegrable((a+b*Log(c*(d+e/x^(2/3))^2))^p, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e/x^(2/3))^2))^p/x, x, 1, Unintegrable((a+b*Log(c*(d+e/x^(2/3))^2))^p/x, x)}
+	// {(a+b*Log(c*(d+e/x^(2/3))^2))^p/x, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e/x^(2/3))^2))^p/x, x)}
 	public void test01994() {
-		check("Integrate((a+b*Log(c*(d+e/x^(2/3))^2))^p/x, x)", "Unintegrable((a+b*Log(c*(d+e/x^(2/3))^2))^p/x, x)");
+		check("Integrate((a+b*Log(c*(d+e/x^(2/3))^2))^p/x, x)",
+				"Integrate::Unintegrable((a+b*Log(c*(d+e/x^(2/3))^2))^p/x, x)");
 
 	}
 
-	// {(a+b*Log(c*(d+e/x^(2/3))^2))^p/x^2, x, 1, Unintegrable((a+b*Log(c*(d+e/x^(2/3))^2))^p/x^2, x)}
+	// {(a+b*Log(c*(d+e/x^(2/3))^2))^p/x^2, x, 1, Integrate::Unintegrable((a+b*Log(c*(d+e/x^(2/3))^2))^p/x^2, x)}
 	public void test01995() {
 		check("Integrate((a+b*Log(c*(d+e/x^(2/3))^2))^p/x^2, x)",
-				"Unintegrable((a+b*Log(c*(d+e/x^(2/3))^2))^p/x^2, x)");
+				"Integrate::Unintegrable((a+b*Log(c*(d+e/x^(2/3))^2))^p/x^2, x)");
 
 	}
 
 	// {(a+b*Log(c*(d+e*x^m)^n))/(x*Log(f*x^p)^2), x, 1, -((a+b*Log(c*(d+e*x^m)^n))/(p*Log(f*x^p))) +
-	// (b*e*m*n*Unintegrable(x^(-1+m)/((d+e*x^m)*Log(f*x^p)), x))/p}
+	// (b*e*m*n*Integrate::Unintegrable(x^(-1+m)/((d+e*x^m)*Log(f*x^p)), x))/p}
 	public void test01996() {
 		check("Integrate((a+b*Log(c*(d+e*x^m)^n))/(x*Log(f*x^p)^2), x)",
-				"-((a+b*Log(c*(d+e*x^m)^n))/(p*Log(f*x^p)))+(b*e*m*n*Unintegrable(x^(-1+m)/((d+e*x^m)*Log(f*x^p)), x))/p");
+				"-((a+b*Log(c*(d+e*x^m)^n))/(p*Log(f*x^p)))+(b*e*m*n*Integrate::Unintegrable(x^(-1+m)/((d+e*x^m)*Log(f*x^p)), x))/p");
 
 	}
 
 	// {(a+b*Log(c*(d+e*x^m)^n))/(x*Log(f*x^p)^3), x, 1, -(a+b*Log(c*(d+e*x^m)^n))/(2*p*Log(f*x^p)^2) +
-	// (b*e*m*n*Unintegrable(x^(-1+m)/((d+e*x^m)*Log(f*x^p)^2), x))/(2*p)}
+	// (b*e*m*n*Integrate::Unintegrable(x^(-1+m)/((d+e*x^m)*Log(f*x^p)^2), x))/(2*p)}
 	public void test01997() {
 		check("Integrate((a+b*Log(c*(d+e*x^m)^n))/(x*Log(f*x^p)^3), x)",
-				"-(a+b*Log(c*(d+e*x^m)^n))/(2*p*Log(f*x^p)^2)+(b*e*m*n*Unintegrable(x^(-1+m)/((d+e*x^m)*Log(f*x^p)^2), x))/(2*p)");
+				"-(a+b*Log(c*(d+e*x^m)^n))/(2*p*Log(f*x^p)^2)+(b*e*m*n*Integrate::Unintegrable(x^(-1+m)/((d+e*x^m)*Log(f*x^p)^2), x))/(2*p)");
 
 	}
 
@@ -13428,11 +13500,11 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	}
 
 	// {Log(h*(f+g*x)^m)/((a+b*x)*(c+d*x)*Log(e*((a+b*x)/(c+d*x))^n)^2), x, 1, -(Log(h*(f+g*x)^m)/((b*c -
-	// a*d)*n*Log(e*((a+b*x)/(c+d*x))^n)))+(g*m*Unintegrable(1/((f+g*x)*Log(e*((a+b*x)/(c+d*x))^n)),
+	// a*d)*n*Log(e*((a+b*x)/(c+d*x))^n)))+(g*m*Integrate::Unintegrable(1/((f+g*x)*Log(e*((a+b*x)/(c+d*x))^n)),
 	// x))/((b*c-a*d)*n)}
 	public void test02015() {
 		check("Integrate(Log(h*(f+g*x)^m)/((a+b*x)*(c+d*x)*Log(e*((a+b*x)/(c+d*x))^n)^2), x)",
-				"-(Log(h*(f+g*x)^m)/((b*c-a*d)*n*Log(e*((a+b*x)/(c+d*x))^n)))+(g*m*Unintegrable(1/((f+g*x)*Log(e*((a+b*x)/(c+d*x))^n)), x))/((b*c-a*d)*n)");
+				"-(Log(h*(f+g*x)^m)/((b*c-a*d)*n*Log(e*((a+b*x)/(c+d*x))^n)))+(g*m*Integrate::Unintegrable(1/((f+g*x)*Log(e*((a+b*x)/(c+d*x))^n)), x))/((b*c-a*d)*n)");
 
 	}
 
@@ -14198,19 +14270,19 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {(e*x)^(-1+2*n)*(b*Sin(c+d*x^n))^p, x, 1, ((e*x)^(2*n)*Unintegrable(x^(-1+2*n)*(b*Sin(c+d*x^n))^p,
+	// {(e*x)^(-1+2*n)*(b*Sin(c+d*x^n))^p, x, 1, ((e*x)^(2*n)*Integrate::Unintegrable(x^(-1+2*n)*(b*Sin(c+d*x^n))^p,
 	// x))/(e*x^(2*n))}
 	public void test02118() {
 		check("Integrate((e*x)^(-1+2*n)*(b*Sin(c+d*x^n))^p, x)",
-				"((e*x)^(2*n)*Unintegrable(x^(-1+2*n)*(b*Sin(c+d*x^n))^p, x))/(e*x^(2*n))");
+				"((e*x)^(2*n)*Integrate::Unintegrable(x^(-1+2*n)*(b*Sin(c+d*x^n))^p, x))/(e*x^(2*n))");
 
 	}
 
-	// {(e*x)^(-1+2*n)*(a+b*Sin(c+d*x^n))^p, x, 1, ((e*x)^(2*n)*Unintegrable(x^(-1+2*n)*(a+b*Sin(c +
+	// {(e*x)^(-1+2*n)*(a+b*Sin(c+d*x^n))^p, x, 1, ((e*x)^(2*n)*Integrate::Unintegrable(x^(-1+2*n)*(a+b*Sin(c +
 	// d*x^n))^p, x))/(e*x^(2*n))}
 	public void test02119() {
 		check("Integrate((e*x)^(-1+2*n)*(a+b*Sin(c+d*x^n))^p, x)",
-				"((e*x)^(2*n)*Unintegrable(x^(-1+2*n)*(a+b*Sin(c+d*x^n))^p, x))/(e*x^(2*n))");
+				"((e*x)^(2*n)*Integrate::Unintegrable(x^(-1+2*n)*(a+b*Sin(c+d*x^n))^p, x))/(e*x^(2*n))");
 
 	}
 
@@ -14688,11 +14760,11 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {(c*(d*Sin(e+f*x))^p)^n*(a+b*Sin(e+f*x))^m, x, 1, ((c*(d*Sin(e+f*x))^p)^n*Unintegrable((d*Sin(e +
+	// {(c*(d*Sin(e+f*x))^p)^n*(a+b*Sin(e+f*x))^m, x, 1, ((c*(d*Sin(e+f*x))^p)^n*Integrate::Unintegrable((d*Sin(e +
 	// f*x))^(n*p)*(a+b*Sin(e+f*x))^m, x))/(d*Sin(e+f*x))^(n*p)}
 	public void test02182() {
 		check("Integrate((c*(d*Sin(e+f*x))^p)^n*(a+b*Sin(e+f*x))^m, x)",
-				"((c*(d*Sin(e+f*x))^p)^n*Unintegrable((d*Sin(e+f*x))^(n*p)*(a+b*Sin(e+f*x))^m, x))/(d*Sin(e+f*x))^(n*p)");
+				"((c*(d*Sin(e+f*x))^p)^n*Integrate::Unintegrable((d*Sin(e+f*x))^(n*p)*(a+b*Sin(e+f*x))^m, x))/(d*Sin(e+f*x))^(n*p)");
 
 	}
 
@@ -15091,18 +15163,18 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	}
 
 	// {x*Cos(a+b*x)^(3/2), x, 1, (4*Cos(a+b*x)^(3/2))/(9*b^2)+(2*x*Sqrt(Cos(a+b*x))*Sin(a+b*x))/(3*b) +
-	// Unintegrable(x/Sqrt(Cos(a+b*x)), x)/3}
+	// Integrate::Unintegrable(x/Sqrt(Cos(a+b*x)), x)/3}
 	public void test02235() {
 		check("Integrate(x*Cos(a+b*x)^(3/2), x)",
-				"(4*Cos(a+b*x)^(3/2))/(9*b^2)+(2*x*Sqrt(Cos(a+b*x))*Sin(a+b*x))/(3*b)+Unintegrable(x/Sqrt(Cos(a+b*x)), x)/3");
+				"(4*Cos(a+b*x)^(3/2))/(9*b^2)+(2*x*Sqrt(Cos(a+b*x))*Sin(a+b*x))/(3*b)+Integrate::Unintegrable(x/Sqrt(Cos(a+b*x)), x)/3");
 
 	}
 
 	// {Cos(x)^(3/2)/x^3, x, 1, -Cos(x)^(3/2)/(2*x^2)+(3*Sqrt(Cos(x))*Sin(x))/(4*x) +
-	// (3*Unintegrable(1/(x*Sqrt(Cos(x))), x))/8-(9*Unintegrable(Cos(x)^(3/2)/x, x))/8}
+	// (3*Integrate::Unintegrable(1/(x*Sqrt(Cos(x))), x))/8-(9*Integrate::Unintegrable(Cos(x)^(3/2)/x, x))/8}
 	public void test02236() {
 		check("Integrate(Cos(x)^(3/2)/x^3, x)",
-				"-Cos(x)^(3/2)/(2*x^2)+(3*Sqrt(Cos(x))*Sin(x))/(4*x)+(3*Unintegrable(1/(x*Sqrt(Cos(x))), x))/8-(9*Unintegrable(Cos(x)^(3/2)/x, x))/8");
+				"-Cos(x)^(3/2)/(2*x^2)+(3*Sqrt(Cos(x))*Sin(x))/(4*x)+(3*Integrate::Unintegrable(1/(x*Sqrt(Cos(x))), x))/8-(9*Integrate::Unintegrable(Cos(x)^(3/2)/x, x))/8");
 
 	}
 
@@ -15113,10 +15185,10 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	}
 
 	// {x/Cos(a+b*x)^(3/2), x, 1, (4*Sqrt(Cos(a+b*x)))/b^2+(2*x*Sin(a+b*x))/(b*Sqrt(Cos(a+b*x))) -
-	// Unintegrable(x*Sqrt(Cos(a+b*x)), x)}
+	// Integrate::Unintegrable(x*Sqrt(Cos(a+b*x)), x)}
 	public void test02238() {
 		check("Integrate(x/Cos(a+b*x)^(3/2), x)",
-				"(4*Sqrt(Cos(a+b*x)))/b^2+(2*x*Sin(a+b*x))/(b*Sqrt(Cos(a+b*x)))-Unintegrable(x*Sqrt(Cos(a+b*x)), x)");
+				"(4*Sqrt(Cos(a+b*x)))/b^2+(2*x*Sin(a+b*x))/(b*Sqrt(Cos(a+b*x)))-Integrate::Unintegrable(x*Sqrt(Cos(a+b*x)), x)");
 
 	}
 
@@ -15184,19 +15256,19 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {(e*x)^(-1+2*n)*(b*Cos(c+d*x^n))^p, x, 1, ((e*x)^(2*n)*Unintegrable(x^(-1+2*n)*(b*Cos(c+d*x^n))^p,
+	// {(e*x)^(-1+2*n)*(b*Cos(c+d*x^n))^p, x, 1, ((e*x)^(2*n)*Integrate::Unintegrable(x^(-1+2*n)*(b*Cos(c+d*x^n))^p,
 	// x))/(e*x^(2*n))}
 	public void test02249() {
 		check("Integrate((e*x)^(-1+2*n)*(b*Cos(c+d*x^n))^p, x)",
-				"((e*x)^(2*n)*Unintegrable(x^(-1+2*n)*(b*Cos(c+d*x^n))^p, x))/(e*x^(2*n))");
+				"((e*x)^(2*n)*Integrate::Unintegrable(x^(-1+2*n)*(b*Cos(c+d*x^n))^p, x))/(e*x^(2*n))");
 
 	}
 
-	// {(e*x)^(-1+2*n)*(a+b*Cos(c+d*x^n))^p, x, 1, ((e*x)^(2*n)*Unintegrable(x^(-1+2*n)*(a+b*Cos(c +
+	// {(e*x)^(-1+2*n)*(a+b*Cos(c+d*x^n))^p, x, 1, ((e*x)^(2*n)*Integrate::Unintegrable(x^(-1+2*n)*(a+b*Cos(c +
 	// d*x^n))^p, x))/(e*x^(2*n))}
 	public void test02250() {
 		check("Integrate((e*x)^(-1+2*n)*(a+b*Cos(c+d*x^n))^p, x)",
-				"((e*x)^(2*n)*Unintegrable(x^(-1+2*n)*(a+b*Cos(c+d*x^n))^p, x))/(e*x^(2*n))");
+				"((e*x)^(2*n)*Integrate::Unintegrable(x^(-1+2*n)*(a+b*Cos(c+d*x^n))^p, x))/(e*x^(2*n))");
 
 	}
 
@@ -15224,11 +15296,11 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {(a+b*Cos(e+f*x))^m*(g*Tan(e+f*x))^p, x, 1, (g*Cot(e+f*x))^p*(g*Tan(e+f*x))^p*Unintegrable((a+b*Cos(e
+	// {(a+b*Cos(e+f*x))^m*(g*Tan(e+f*x))^p, x, 1, (g*Cot(e+f*x))^p*(g*Tan(e+f*x))^p*Integrate::Unintegrable((a+b*Cos(e
 	// +f*x))^m/(g*Cot(e+f*x))^p, x)}
 	public void test02255() {
 		check("Integrate((a+b*Cos(e+f*x))^m*(g*Tan(e+f*x))^p, x)",
-				"(g*Cot(e+f*x))^p*(g*Tan(e+f*x))^p*Unintegrable((a+b*Cos(e+f*x))^m/(g*Cot(e+f*x))^p, x)");
+				"(g*Cot(e+f*x))^p*(g*Tan(e+f*x))^p*Integrate::Unintegrable((a+b*Cos(e+f*x))^m/(g*Cot(e+f*x))^p, x)");
 
 	}
 
@@ -15586,46 +15658,46 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	}
 
 	// {(c*Cos(e+f*x))^m*(a+b*Cos(e+f*x))^(3/2)*(A+B*Cos(e+f*x)), x, 1, (2*b*B*(c*Cos(e+f*x))^(1+m)*Sqrt(a
-	// +b*Cos(e+f*x))*Sin(e+f*x))/(c*f*(5+2*m))+(2*Unintegrable(((c*Cos(e+f*x))^m*((a*c*(2*b*B*(1+m) +
+	// +b*Cos(e+f*x))*Sin(e+f*x))/(c*f*(5+2*m))+(2*Integrate::Unintegrable(((c*Cos(e+f*x))^m*((a*c*(2*b*B*(1+m) +
 	// 2*a*A*(5/2+m)))/2+(c*(b^2*B*(3+2*m)+a*(2*A*b+a*B)*(5+2*m))*Cos(e+f*x))/2+(b*c*(2*a*B*(3+m) +
 	// A*b*(5+2*m))*Cos(e+f*x)^2)/2))/Sqrt(a+b*Cos(e+f*x)), x))/(c*(5+2*m))}
 	public void test02303() {
 		check("Integrate((c*Cos(e+f*x))^m*(a+b*Cos(e+f*x))^(3/2)*(A+B*Cos(e+f*x)), x)",
-				"(2*b*B*(c*Cos(e+f*x))^(1+m)*Sqrt(a+b*Cos(e+f*x))*Sin(e+f*x))/(c*f*(5+2*m))+(2*Unintegrable(((c*Cos(e+f*x))^m*((a*c*(2*b*B*(1+m)+2*a*A*(5/2+m)))/2+(c*(b^2*B*(3+2*m)+a*(2*A*b+a*B)*(5+2*m))*Cos(e+f*x))/2+(b*c*(2*a*B*(3+m)+A*b*(5+2*m))*Cos(e+f*x)^2)/2))/Sqrt(a+b*Cos(e+f*x)), x))/(c*(5+2*m))");
+				"(2*b*B*(c*Cos(e+f*x))^(1+m)*Sqrt(a+b*Cos(e+f*x))*Sin(e+f*x))/(c*f*(5+2*m))+(2*Integrate::Unintegrable(((c*Cos(e+f*x))^m*((a*c*(2*b*B*(1+m)+2*a*A*(5/2+m)))/2+(c*(b^2*B*(3+2*m)+a*(2*A*b+a*B)*(5+2*m))*Cos(e+f*x))/2+(b*c*(2*a*B*(3+m)+A*b*(5+2*m))*Cos(e+f*x)^2)/2))/Sqrt(a+b*Cos(e+f*x)), x))/(c*(5+2*m))");
 
 	}
 
 	// {((c*Cos(e+f*x))^m*(A+B*Cos(e+f*x)))/(a+b*Cos(e+f*x))^(3/2), x, 1, (2*b*(A*b-a*B)*(c*Cos(e+f*x))^(1
-	// +m)*Sin(e+f*x))/(a*(a^2-b^2)*c*f*Sqrt(a+b*Cos(e+f*x)))+(2*Unintegrable(((c*Cos(e+f*x))^m*((c*(a*(a*A
+	// +m)*Sin(e+f*x))/(a*(a^2-b^2)*c*f*Sqrt(a+b*Cos(e+f*x)))+(2*Integrate::Unintegrable(((c*Cos(e+f*x))^m*((c*(a*(a*A
 	// -b*B)+2*b*(A*b-a*B)*(1/2+m)))/2-(a*(A*b-a*B)*c*Cos(e+f*x))/2-(b*(A*b-a*B)*c*(3+2*m)*Cos(e +
 	// f*x)^2)/2))/Sqrt(a+b*Cos(e+f*x)), x))/(a*(a^2-b^2)*c)}
 	public void test02304() {
 		check("Integrate(((c*Cos(e+f*x))^m*(A+B*Cos(e+f*x)))/(a+b*Cos(e+f*x))^(3/2), x)",
-				"(2*b*(A*b-a*B)*(c*Cos(e+f*x))^(1+m)*Sin(e+f*x))/(a*(a^2-b^2)*c*f*Sqrt(a+b*Cos(e+f*x)))+(2*Unintegrable(((c*Cos(e+f*x))^m*((c*(a*(a*A-b*B)+2*b*(A*b-a*B)*(1/2+m)))/2-(a*(A*b-a*B)*c*Cos(e+f*x))/2-(b*(A*b-a*B)*c*(3+2*m)*Cos(e+f*x)^2)/2))/Sqrt(a+b*Cos(e+f*x)), x))/(a*(a^2-b^2)*c)");
+				"(2*b*(A*b-a*B)*(c*Cos(e+f*x))^(1+m)*Sin(e+f*x))/(a*(a^2-b^2)*c*f*Sqrt(a+b*Cos(e+f*x)))+(2*Integrate::Unintegrable(((c*Cos(e+f*x))^m*((c*(a*(a*A-b*B)+2*b*(A*b-a*B)*(1/2+m)))/2-(a*(A*b-a*B)*c*Cos(e+f*x))/2-(b*(A*b-a*B)*c*(3+2*m)*Cos(e+f*x)^2)/2))/Sqrt(a+b*Cos(e+f*x)), x))/(a*(a^2-b^2)*c)");
 
 	}
 
 	// {(a+b*Cos(e+f*x))^n*(A+B*Cos(e+f*x))*(c*Sec(e+f*x))^m, x, 1, (c*Cos(e+f*x))^m*(c*Sec(e +
-	// f*x))^m*Unintegrable(((a+b*Cos(e+f*x))^n*(A+B*Cos(e+f*x)))/(c*Cos(e+f*x))^m, x)}
+	// f*x))^m*Integrate::Unintegrable(((a+b*Cos(e+f*x))^n*(A+B*Cos(e+f*x)))/(c*Cos(e+f*x))^m, x)}
 	public void test02305() {
 		check("Integrate((a+b*Cos(e+f*x))^n*(A+B*Cos(e+f*x))*(c*Sec(e+f*x))^m, x)",
-				"(c*Cos(e+f*x))^m*(c*Sec(e+f*x))^m*Unintegrable(((a+b*Cos(e+f*x))^n*(A+B*Cos(e+f*x)))/(c*Cos(e+f*x))^m, x)");
+				"(c*Cos(e+f*x))^m*(c*Sec(e+f*x))^m*Integrate::Unintegrable(((a+b*Cos(e+f*x))^n*(A+B*Cos(e+f*x)))/(c*Cos(e+f*x))^m, x)");
 
 	}
 
 	// {Sqrt(a+b*Cos(e+f*x))*(A+B*Cos(e+f*x))*(c*Sec(e+f*x))^m, x, 1, (c*Cos(e+f*x))^m*(c*Sec(e +
-	// f*x))^m*Unintegrable((Sqrt(a+b*Cos(e+f*x))*(A+B*Cos(e+f*x)))/(c*Cos(e+f*x))^m, x)}
+	// f*x))^m*Integrate::Unintegrable((Sqrt(a+b*Cos(e+f*x))*(A+B*Cos(e+f*x)))/(c*Cos(e+f*x))^m, x)}
 	public void test02306() {
 		check("Integrate(Sqrt(a+b*Cos(e+f*x))*(A+B*Cos(e+f*x))*(c*Sec(e+f*x))^m, x)",
-				"(c*Cos(e+f*x))^m*(c*Sec(e+f*x))^m*Unintegrable((Sqrt(a+b*Cos(e+f*x))*(A+B*Cos(e+f*x)))/(c*Cos(e+f*x))^m, x)");
+				"(c*Cos(e+f*x))^m*(c*Sec(e+f*x))^m*Integrate::Unintegrable((Sqrt(a+b*Cos(e+f*x))*(A+B*Cos(e+f*x)))/(c*Cos(e+f*x))^m, x)");
 
 	}
 
 	// {((A+B*Cos(e+f*x))*(c*Sec(e+f*x))^m)/Sqrt(a+b*Cos(e+f*x)), x, 1, (c*Cos(e+f*x))^m*(c*Sec(e +
-	// f*x))^m*Unintegrable((A+B*Cos(e+f*x))/((c*Cos(e+f*x))^m*Sqrt(a+b*Cos(e+f*x))), x)}
+	// f*x))^m*Integrate::Unintegrable((A+B*Cos(e+f*x))/((c*Cos(e+f*x))^m*Sqrt(a+b*Cos(e+f*x))), x)}
 	public void test02307() {
 		check("Integrate(((A+B*Cos(e+f*x))*(c*Sec(e+f*x))^m)/Sqrt(a+b*Cos(e+f*x)), x)",
-				"(c*Cos(e+f*x))^m*(c*Sec(e+f*x))^m*Unintegrable((A+B*Cos(e+f*x))/((c*Cos(e+f*x))^m*Sqrt(a+b*Cos(e+f*x))), x)");
+				"(c*Cos(e+f*x))^m*(c*Sec(e+f*x))^m*Integrate::Unintegrable((A+B*Cos(e+f*x))/((c*Cos(e+f*x))^m*Sqrt(a+b*Cos(e+f*x))), x)");
 
 	}
 
@@ -16073,9 +16145,9 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {a+b*Tan(c+d*x^2), x, 1, a*x+b*Unintegrable(Tan(c+d*x^2), x)}
+	// {a+b*Tan(c+d*x^2), x, 1, a*x+b*Integrate::Unintegrable(Tan(c+d*x^2), x)}
 	public void test02366() {
-		check("Integrate(a+b*Tan(c+d*x^2), x)", "a*x+b*Unintegrable(Tan(c+d*x^2), x)");
+		check("Integrate(a+b*Tan(c+d*x^2), x)", "a*x+b*Integrate::Unintegrable(Tan(c+d*x^2), x)");
 
 	}
 
@@ -16247,27 +16319,27 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {(d*Cos(e+f*x))^m*(a+b*(c*Tan(e+f*x))^n)^p, x, 1, (d*Cos(e+f*x))^m*(Sec(e+f*x)/d)^m*Unintegrable((a +
+	// {(d*Cos(e+f*x))^m*(a+b*(c*Tan(e+f*x))^n)^p, x, 1, (d*Cos(e+f*x))^m*(Sec(e+f*x)/d)^m*Integrate::Unintegrable((a +
 	// b*(c*Tan(e+f*x))^n)^p/(Sec(e+f*x)/d)^m, x)}
 	public void test02390() {
 		check("Integrate((d*Cos(e+f*x))^m*(a+b*(c*Tan(e+f*x))^n)^p, x)",
-				"(d*Cos(e+f*x))^m*(Sec(e+f*x)/d)^m*Unintegrable((a+b*(c*Tan(e+f*x))^n)^p/(Sec(e+f*x)/d)^m, x)");
+				"(d*Cos(e+f*x))^m*(Sec(e+f*x)/d)^m*Integrate::Unintegrable((a+b*(c*Tan(e+f*x))^n)^p/(Sec(e+f*x)/d)^m, x)");
 
 	}
 
-	// {(d*Cot(e+f*x))^m*(a+b*(c*Tan(e+f*x))^n)^p, x, 1, (d*Cot(e+f*x))^m*(Tan(e+f*x)/d)^m*Unintegrable((a +
+	// {(d*Cot(e+f*x))^m*(a+b*(c*Tan(e+f*x))^n)^p, x, 1, (d*Cot(e+f*x))^m*(Tan(e+f*x)/d)^m*Integrate::Unintegrable((a +
 	// b*(c*Tan(e+f*x))^n)^p/(Tan(e+f*x)/d)^m, x)}
 	public void test02391() {
 		check("Integrate((d*Cot(e+f*x))^m*(a+b*(c*Tan(e+f*x))^n)^p, x)",
-				"(d*Cot(e+f*x))^m*(Tan(e+f*x)/d)^m*Unintegrable((a+b*(c*Tan(e+f*x))^n)^p/(Tan(e+f*x)/d)^m, x)");
+				"(d*Cot(e+f*x))^m*(Tan(e+f*x)/d)^m*Integrate::Unintegrable((a+b*(c*Tan(e+f*x))^n)^p/(Tan(e+f*x)/d)^m, x)");
 
 	}
 
-	// {(d*Csc(e+f*x))^m*(a+b*(c*Tan(e+f*x))^n)^p, x, 1, (d*Csc(e+f*x))^m*(Sin(e+f*x)/d)^m*Unintegrable((a +
+	// {(d*Csc(e+f*x))^m*(a+b*(c*Tan(e+f*x))^n)^p, x, 1, (d*Csc(e+f*x))^m*(Sin(e+f*x)/d)^m*Integrate::Unintegrable((a +
 	// b*(c*Tan(e+f*x))^n)^p/(Sin(e+f*x)/d)^m, x)}
 	public void test02392() {
 		check("Integrate((d*Csc(e+f*x))^m*(a+b*(c*Tan(e+f*x))^n)^p, x)",
-				"(d*Csc(e+f*x))^m*(Sin(e+f*x)/d)^m*Unintegrable((a+b*(c*Tan(e+f*x))^n)^p/(Sin(e+f*x)/d)^m, x)");
+				"(d*Csc(e+f*x))^m*(Sin(e+f*x)/d)^m*Integrate::Unintegrable((a+b*(c*Tan(e+f*x))^n)^p/(Sin(e+f*x)/d)^m, x)");
 
 	}
 
@@ -16373,9 +16445,10 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {(e*x)^m*(a+b*Sec(c+d*x^n))^p, x, 1, ((e*x)^m*Unintegrable(x^m*(a+b*Sec(c+d*x^n))^p, x))/x^m}
+	// {(e*x)^m*(a+b*Sec(c+d*x^n))^p, x, 1, ((e*x)^m*Integrate::Unintegrable(x^m*(a+b*Sec(c+d*x^n))^p, x))/x^m}
 	public void test02407() {
-		check("Integrate((e*x)^m*(a+b*Sec(c+d*x^n))^p, x)", "((e*x)^m*Unintegrable(x^m*(a+b*Sec(c+d*x^n))^p, x))/x^m");
+		check("Integrate((e*x)^m*(a+b*Sec(c+d*x^n))^p, x)",
+				"((e*x)^m*Integrate::Unintegrable(x^m*(a+b*Sec(c+d*x^n))^p, x))/x^m");
 
 	}
 
@@ -16606,37 +16679,37 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	}
 
 	// {(a+b*Sec(e+f*x))^(1/3)/(c+d*Sec(e+f*x))^(1/3), x, 1, ((d+c*Cos(e+f*x))^(1/3)*(a+b*Sec(e +
-	// f*x))^(1/3)*Unintegrable((b+a*Cos(e+f*x))^(1/3)/(d+c*Cos(e+f*x))^(1/3), x))/((b+a*Cos(e +
+	// f*x))^(1/3)*Integrate::Unintegrable((b+a*Cos(e+f*x))^(1/3)/(d+c*Cos(e+f*x))^(1/3), x))/((b+a*Cos(e +
 	// f*x))^(1/3)*(c+d*Sec(e+f*x))^(1/3))}
 	public void test02434() {
 		check("Integrate((a+b*Sec(e+f*x))^(1/3)/(c+d*Sec(e+f*x))^(1/3), x)",
-				"((d+c*Cos(e+f*x))^(1/3)*(a+b*Sec(e+f*x))^(1/3)*Unintegrable((b+a*Cos(e+f*x))^(1/3)/(d+c*Cos(e+f*x))^(1/3), x))/((b+a*Cos(e+f*x))^(1/3)*(c+d*Sec(e+f*x))^(1/3))");
+				"((d+c*Cos(e+f*x))^(1/3)*(a+b*Sec(e+f*x))^(1/3)*Integrate::Unintegrable((b+a*Cos(e+f*x))^(1/3)/(d+c*Cos(e+f*x))^(1/3), x))/((b+a*Cos(e+f*x))^(1/3)*(c+d*Sec(e+f*x))^(1/3))");
 
 	}
 
 	// {(a+b*Sec(e+f*x))^(2/3)/(c+d*Sec(e+f*x))^(2/3), x, 1, ((d+c*Cos(e+f*x))^(2/3)*(a+b*Sec(e +
-	// f*x))^(2/3)*Unintegrable((b+a*Cos(e+f*x))^(2/3)/(d+c*Cos(e+f*x))^(2/3), x))/((b+a*Cos(e +
+	// f*x))^(2/3)*Integrate::Unintegrable((b+a*Cos(e+f*x))^(2/3)/(d+c*Cos(e+f*x))^(2/3), x))/((b+a*Cos(e +
 	// f*x))^(2/3)*(c+d*Sec(e+f*x))^(2/3))}
 	public void test02435() {
 		check("Integrate((a+b*Sec(e+f*x))^(2/3)/(c+d*Sec(e+f*x))^(2/3), x)",
-				"((d+c*Cos(e+f*x))^(2/3)*(a+b*Sec(e+f*x))^(2/3)*Unintegrable((b+a*Cos(e+f*x))^(2/3)/(d+c*Cos(e+f*x))^(2/3), x))/((b+a*Cos(e+f*x))^(2/3)*(c+d*Sec(e+f*x))^(2/3))");
+				"((d+c*Cos(e+f*x))^(2/3)*(a+b*Sec(e+f*x))^(2/3)*Integrate::Unintegrable((b+a*Cos(e+f*x))^(2/3)/(d+c*Cos(e+f*x))^(2/3), x))/((b+a*Cos(e+f*x))^(2/3)*(c+d*Sec(e+f*x))^(2/3))");
 
 	}
 
 	// {(a+b*Sec(e+f*x))^(4/3)/(c+d*Sec(e+f*x))^(4/3), x, 1, ((d+c*Cos(e+f*x))^(4/3)*(a+b*Sec(e +
-	// f*x))^(4/3)*Unintegrable((b+a*Cos(e+f*x))^(4/3)/(d+c*Cos(e+f*x))^(4/3), x))/((b+a*Cos(e +
+	// f*x))^(4/3)*Integrate::Unintegrable((b+a*Cos(e+f*x))^(4/3)/(d+c*Cos(e+f*x))^(4/3), x))/((b+a*Cos(e +
 	// f*x))^(4/3)*(c+d*Sec(e+f*x))^(4/3))}
 	public void test02436() {
 		check("Integrate((a+b*Sec(e+f*x))^(4/3)/(c+d*Sec(e+f*x))^(4/3), x)",
-				"((d+c*Cos(e+f*x))^(4/3)*(a+b*Sec(e+f*x))^(4/3)*Unintegrable((b+a*Cos(e+f*x))^(4/3)/(d+c*Cos(e+f*x))^(4/3), x))/((b+a*Cos(e+f*x))^(4/3)*(c+d*Sec(e+f*x))^(4/3))");
+				"((d+c*Cos(e+f*x))^(4/3)*(a+b*Sec(e+f*x))^(4/3)*Integrate::Unintegrable((b+a*Cos(e+f*x))^(4/3)/(d+c*Cos(e+f*x))^(4/3), x))/((b+a*Cos(e+f*x))^(4/3)*(c+d*Sec(e+f*x))^(4/3))");
 
 	}
 
-	// {(c*(d*Sec(e+f*x))^p)^n*(a+b*Sec(e+f*x))^m, x, 1, ((c*(d*Sec(e+f*x))^p)^n*Unintegrable((d*Sec(e +
+	// {(c*(d*Sec(e+f*x))^p)^n*(a+b*Sec(e+f*x))^m, x, 1, ((c*(d*Sec(e+f*x))^p)^n*Integrate::Unintegrable((d*Sec(e +
 	// f*x))^(n*p)*(a+b*Sec(e+f*x))^m, x))/(d*Sec(e+f*x))^(n*p)}
 	public void test02437() {
 		check("Integrate((c*(d*Sec(e+f*x))^p)^n*(a+b*Sec(e+f*x))^m, x)",
-				"((c*(d*Sec(e+f*x))^p)^n*Unintegrable((d*Sec(e+f*x))^(n*p)*(a+b*Sec(e+f*x))^m, x))/(d*Sec(e+f*x))^(n*p)");
+				"((c*(d*Sec(e+f*x))^p)^n*Integrate::Unintegrable((d*Sec(e+f*x))^(n*p)*(a+b*Sec(e+f*x))^m, x))/(d*Sec(e+f*x))^(n*p)");
 
 	}
 
@@ -17021,9 +17094,10 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {(e*x)^m*(a+b*Csc(c+d*x^n))^p, x, 1, ((e*x)^m*Unintegrable(x^m*(a+b*Csc(c+d*x^n))^p, x))/x^m}
+	// {(e*x)^m*(a+b*Csc(c+d*x^n))^p, x, 1, ((e*x)^m*Integrate::Unintegrable(x^m*(a+b*Csc(c+d*x^n))^p, x))/x^m}
 	public void test02488() {
-		check("Integrate((e*x)^m*(a+b*Csc(c+d*x^n))^p, x)", "((e*x)^m*Unintegrable(x^m*(a+b*Csc(c+d*x^n))^p, x))/x^m");
+		check("Integrate((e*x)^m*(a+b*Csc(c+d*x^n))^p, x)",
+				"((e*x)^m*Integrate::Unintegrable(x^m*(a+b*Csc(c+d*x^n))^p, x))/x^m");
 
 	}
 
@@ -17149,87 +17223,98 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {(c+d*x)^m*Cot(a+b*x)^2*Csc(a+b*x), x, 1, -Unintegrable((c+d*x)^m*Csc(a+b*x), x)+Unintegrable((c +
+	// {(c+d*x)^m*Cot(a+b*x)^2*Csc(a+b*x), x, 1, -Integrate::Unintegrable((c+d*x)^m*Csc(a+b*x),
+	// x)+Integrate::Unintegrable((c +
 	// d*x)^m*Csc(a+b*x)^3, x)}
 	public void test02508() {
 		check("Integrate((c+d*x)^m*Cot(a+b*x)^2*Csc(a+b*x), x)",
-				"-Unintegrable((c+d*x)^m*Csc(a+b*x), x)+Unintegrable((c+d*x)^m*Csc(a+b*x)^3, x)");
+				"-Integrate::Unintegrable((c+d*x)^m*Csc(a+b*x), x)+Integrate::Unintegrable((c+d*x)^m*Csc(a+b*x)^3, x)");
 
 	}
 
-	// {(Cot(a+b*x)^2*Csc(a+b*x))/(c+d*x), x, 1, -Unintegrable(Csc(a+b*x)/(c+d*x), x)+Unintegrable(Csc(a +
+	// {(Cot(a+b*x)^2*Csc(a+b*x))/(c+d*x), x, 1, -Integrate::Unintegrable(Csc(a+b*x)/(c+d*x),
+	// x)+Integrate::Unintegrable(Csc(a +
 	// b*x)^3/(c+d*x), x)}
 	public void test02509() {
 		check("Integrate((Cot(a+b*x)^2*Csc(a+b*x))/(c+d*x), x)",
-				"-Unintegrable(Csc(a+b*x)/(c+d*x), x)+Unintegrable(Csc(a+b*x)^3/(c+d*x), x)");
+				"-Integrate::Unintegrable(Csc(a+b*x)/(c+d*x), x)+Integrate::Unintegrable(Csc(a+b*x)^3/(c+d*x), x)");
 
 	}
 
-	// {(Cot(a+b*x)^2*Csc(a+b*x))/(c+d*x)^2, x, 1, -Unintegrable(Csc(a+b*x)/(c+d*x)^2, x)+Unintegrable(Csc(a
+	// {(Cot(a+b*x)^2*Csc(a+b*x))/(c+d*x)^2, x, 1, -Integrate::Unintegrable(Csc(a+b*x)/(c+d*x)^2,
+	// x)+Integrate::Unintegrable(Csc(a
 	// +b*x)^3/(c+d*x)^2, x)}
 	public void test02510() {
 		check("Integrate((Cot(a+b*x)^2*Csc(a+b*x))/(c+d*x)^2, x)",
-				"-Unintegrable(Csc(a+b*x)/(c+d*x)^2, x)+Unintegrable(Csc(a+b*x)^3/(c+d*x)^2, x)");
+				"-Integrate::Unintegrable(Csc(a+b*x)/(c+d*x)^2, x)+Integrate::Unintegrable(Csc(a+b*x)^3/(c+d*x)^2, x)");
 
 	}
 
-	// {(Csc(a+b*x)*Sec(a+b*x))/(c+d*x), x, 1, 2*Unintegrable(Csc(2*a+2*b*x)/(c+d*x), x)}
+	// {(Csc(a+b*x)*Sec(a+b*x))/(c+d*x), x, 1, 2*Integrate::Unintegrable(Csc(2*a+2*b*x)/(c+d*x), x)}
 	public void test02511() {
-		check("Integrate((Csc(a+b*x)*Sec(a+b*x))/(c+d*x), x)", "2*Unintegrable(Csc(2*a+2*b*x)/(c+d*x), x)");
+		check("Integrate((Csc(a+b*x)*Sec(a+b*x))/(c+d*x), x)", "2*Integrate::Unintegrable(Csc(2*a+2*b*x)/(c+d*x), x)");
 
 	}
 
-	// {(Csc(a+b*x)*Sec(a+b*x))/(c+d*x)^2, x, 1, 2*Unintegrable(Csc(2*a+2*b*x)/(c+d*x)^2, x)}
+	// {(Csc(a+b*x)*Sec(a+b*x))/(c+d*x)^2, x, 1, 2*Integrate::Unintegrable(Csc(2*a+2*b*x)/(c+d*x)^2, x)}
 	public void test02512() {
-		check("Integrate((Csc(a+b*x)*Sec(a+b*x))/(c+d*x)^2, x)", "2*Unintegrable(Csc(2*a+2*b*x)/(c+d*x)^2, x)");
+		check("Integrate((Csc(a+b*x)*Sec(a+b*x))/(c+d*x)^2, x)",
+				"2*Integrate::Unintegrable(Csc(2*a+2*b*x)/(c+d*x)^2, x)");
 
 	}
 
-	// {(Csc(a+b*x)^2*Sec(a+b*x)^2)/(c+d*x), x, 1, 4*Unintegrable(Csc(2*a+2*b*x)^2/(c+d*x), x)}
+	// {(Csc(a+b*x)^2*Sec(a+b*x)^2)/(c+d*x), x, 1, 4*Integrate::Unintegrable(Csc(2*a+2*b*x)^2/(c+d*x), x)}
 	public void test02513() {
-		check("Integrate((Csc(a+b*x)^2*Sec(a+b*x)^2)/(c+d*x), x)", "4*Unintegrable(Csc(2*a+2*b*x)^2/(c+d*x), x)");
+		check("Integrate((Csc(a+b*x)^2*Sec(a+b*x)^2)/(c+d*x), x)",
+				"4*Integrate::Unintegrable(Csc(2*a+2*b*x)^2/(c+d*x), x)");
 
 	}
 
-	// {(Csc(a+b*x)^2*Sec(a+b*x)^2)/(c+d*x)^2, x, 1, 4*Unintegrable(Csc(2*a+2*b*x)^2/(c+d*x)^2, x)}
+	// {(Csc(a+b*x)^2*Sec(a+b*x)^2)/(c+d*x)^2, x, 1, 4*Integrate::Unintegrable(Csc(2*a+2*b*x)^2/(c+d*x)^2, x)}
 	public void test02514() {
-		check("Integrate((Csc(a+b*x)^2*Sec(a+b*x)^2)/(c+d*x)^2, x)", "4*Unintegrable(Csc(2*a+2*b*x)^2/(c+d*x)^2, x)");
+		check("Integrate((Csc(a+b*x)^2*Sec(a+b*x)^2)/(c+d*x)^2, x)",
+				"4*Integrate::Unintegrable(Csc(2*a+2*b*x)^2/(c+d*x)^2, x)");
 
 	}
 
-	// {(c+d*x)^m*Sec(a+b*x)*Tan(a+b*x)^2, x, 1, -Unintegrable((c+d*x)^m*Sec(a+b*x), x)+Unintegrable((c +
+	// {(c+d*x)^m*Sec(a+b*x)*Tan(a+b*x)^2, x, 1, -Integrate::Unintegrable((c+d*x)^m*Sec(a+b*x),
+	// x)+Integrate::Unintegrable((c +
 	// d*x)^m*Sec(a+b*x)^3, x)}
 	public void test02515() {
 		check("Integrate((c+d*x)^m*Sec(a+b*x)*Tan(a+b*x)^2, x)",
-				"-Unintegrable((c+d*x)^m*Sec(a+b*x), x)+Unintegrable((c+d*x)^m*Sec(a+b*x)^3, x)");
+				"-Integrate::Unintegrable((c+d*x)^m*Sec(a+b*x), x)+Integrate::Unintegrable((c+d*x)^m*Sec(a+b*x)^3, x)");
 
 	}
 
-	// {(Sec(a+b*x)*Tan(a+b*x)^2)/(c+d*x), x, 1, -Unintegrable(Sec(a+b*x)/(c+d*x), x)+Unintegrable(Sec(a +
+	// {(Sec(a+b*x)*Tan(a+b*x)^2)/(c+d*x), x, 1, -Integrate::Unintegrable(Sec(a+b*x)/(c+d*x),
+	// x)+Integrate::Unintegrable(Sec(a +
 	// b*x)^3/(c+d*x), x)}
 	public void test02516() {
 		check("Integrate((Sec(a+b*x)*Tan(a+b*x)^2)/(c+d*x), x)",
-				"-Unintegrable(Sec(a+b*x)/(c+d*x), x)+Unintegrable(Sec(a+b*x)^3/(c+d*x), x)");
+				"-Integrate::Unintegrable(Sec(a+b*x)/(c+d*x), x)+Integrate::Unintegrable(Sec(a+b*x)^3/(c+d*x), x)");
 
 	}
 
-	// {(Sec(a+b*x)*Tan(a+b*x)^2)/(c+d*x)^2, x, 1, -Unintegrable(Sec(a+b*x)/(c+d*x)^2, x)+Unintegrable(Sec(a
+	// {(Sec(a+b*x)*Tan(a+b*x)^2)/(c+d*x)^2, x, 1, -Integrate::Unintegrable(Sec(a+b*x)/(c+d*x)^2,
+	// x)+Integrate::Unintegrable(Sec(a
 	// +b*x)^3/(c+d*x)^2, x)}
 	public void test02517() {
 		check("Integrate((Sec(a+b*x)*Tan(a+b*x)^2)/(c+d*x)^2, x)",
-				"-Unintegrable(Sec(a+b*x)/(c+d*x)^2, x)+Unintegrable(Sec(a+b*x)^3/(c+d*x)^2, x)");
+				"-Integrate::Unintegrable(Sec(a+b*x)/(c+d*x)^2, x)+Integrate::Unintegrable(Sec(a+b*x)^3/(c+d*x)^2, x)");
 
 	}
 
-	// {(Csc(a+b*x)^3*Sec(a+b*x)^3)/(c+d*x), x, 1, 8*Unintegrable(Csc(2*a+2*b*x)^3/(c+d*x), x)}
+	// {(Csc(a+b*x)^3*Sec(a+b*x)^3)/(c+d*x), x, 1, 8*Integrate::Unintegrable(Csc(2*a+2*b*x)^3/(c+d*x), x)}
 	public void test02518() {
-		check("Integrate((Csc(a+b*x)^3*Sec(a+b*x)^3)/(c+d*x), x)", "8*Unintegrable(Csc(2*a+2*b*x)^3/(c+d*x), x)");
+		check("Integrate((Csc(a+b*x)^3*Sec(a+b*x)^3)/(c+d*x), x)",
+				"8*Integrate::Unintegrable(Csc(2*a+2*b*x)^3/(c+d*x), x)");
 
 	}
 
-	// {(Csc(a+b*x)^3*Sec(a+b*x)^3)/(c+d*x)^2, x, 1, 8*Unintegrable(Csc(2*a+2*b*x)^3/(c+d*x)^2, x)}
+	// {(Csc(a+b*x)^3*Sec(a+b*x)^3)/(c+d*x)^2, x, 1, 8*Integrate::Unintegrable(Csc(2*a+2*b*x)^3/(c+d*x)^2, x)}
 	public void test02519() {
-		check("Integrate((Csc(a+b*x)^3*Sec(a+b*x)^3)/(c+d*x)^2, x)", "8*Unintegrable(Csc(2*a+2*b*x)^3/(c+d*x)^2, x)");
+		check("Integrate((Csc(a+b*x)^3*Sec(a+b*x)^3)/(c+d*x)^2, x)",
+				"8*Integrate::Unintegrable(Csc(2*a+2*b*x)^3/(c+d*x)^2, x)");
 
 	}
 
@@ -17400,35 +17485,35 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {Csc(Sqrt(1-a*x)/Sqrt(1+a*x))/(1-a^2*x^2), x, 1, Unintegrable(Csc(Sqrt(1-a*x)/Sqrt(1+a*x))/((1 -
+	// {Csc(Sqrt(1-a*x)/Sqrt(1+a*x))/(1-a^2*x^2), x, 1, Integrate::Unintegrable(Csc(Sqrt(1-a*x)/Sqrt(1+a*x))/((1 -
 	// a*x)*(1+a*x)), x)}
 	public void test02542() {
 		check("Integrate(Csc(Sqrt(1-a*x)/Sqrt(1+a*x))/(1-a^2*x^2), x)",
-				"Unintegrable(Csc(Sqrt(1-a*x)/Sqrt(1+a*x))/((1-a*x)*(1+a*x)), x)");
+				"Integrate::Unintegrable(Csc(Sqrt(1-a*x)/Sqrt(1+a*x))/((1-a*x)*(1+a*x)), x)");
 
 	}
 
-	// {Csc(Sqrt(1-a*x)/Sqrt(1+a*x))^2/(1-a^2*x^2), x, 1, Unintegrable(Csc(Sqrt(1-a*x)/Sqrt(1+a*x))^2/((1 -
+	// {Csc(Sqrt(1-a*x)/Sqrt(1+a*x))^2/(1-a^2*x^2), x, 1, Integrate::Unintegrable(Csc(Sqrt(1-a*x)/Sqrt(1+a*x))^2/((1 -
 	// a*x)*(1+a*x)), x)}
 	public void test02543() {
 		check("Integrate(Csc(Sqrt(1-a*x)/Sqrt(1+a*x))^2/(1-a^2*x^2), x)",
-				"Unintegrable(Csc(Sqrt(1-a*x)/Sqrt(1+a*x))^2/((1-a*x)*(1+a*x)), x)");
+				"Integrate::Unintegrable(Csc(Sqrt(1-a*x)/Sqrt(1+a*x))^2/((1-a*x)*(1+a*x)), x)");
 
 	}
 
-	// {Sec(Sqrt(1-a*x)/Sqrt(1+a*x))/(1-a^2*x^2), x, 1, Unintegrable(Sec(Sqrt(1-a*x)/Sqrt(1+a*x))/((1 -
+	// {Sec(Sqrt(1-a*x)/Sqrt(1+a*x))/(1-a^2*x^2), x, 1, Integrate::Unintegrable(Sec(Sqrt(1-a*x)/Sqrt(1+a*x))/((1 -
 	// a*x)*(1+a*x)), x)}
 	public void test02544() {
 		check("Integrate(Sec(Sqrt(1-a*x)/Sqrt(1+a*x))/(1-a^2*x^2), x)",
-				"Unintegrable(Sec(Sqrt(1-a*x)/Sqrt(1+a*x))/((1-a*x)*(1+a*x)), x)");
+				"Integrate::Unintegrable(Sec(Sqrt(1-a*x)/Sqrt(1+a*x))/((1-a*x)*(1+a*x)), x)");
 
 	}
 
-	// {Sec(Sqrt(1-a*x)/Sqrt(1+a*x))^2/(1-a^2*x^2), x, 1, Unintegrable(Sec(Sqrt(1-a*x)/Sqrt(1+a*x))^2/((1 -
+	// {Sec(Sqrt(1-a*x)/Sqrt(1+a*x))^2/(1-a^2*x^2), x, 1, Integrate::Unintegrable(Sec(Sqrt(1-a*x)/Sqrt(1+a*x))^2/((1 -
 	// a*x)*(1+a*x)), x)}
 	public void test02545() {
 		check("Integrate(Sec(Sqrt(1-a*x)/Sqrt(1+a*x))^2/(1-a^2*x^2), x)",
-				"Unintegrable(Sec(Sqrt(1-a*x)/Sqrt(1+a*x))^2/((1-a*x)*(1+a*x)), x)");
+				"Integrate::Unintegrable(Sec(Sqrt(1-a*x)/Sqrt(1+a*x))^2/((1-a*x)*(1+a*x)), x)");
 
 	}
 
@@ -17728,26 +17813,27 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {1/(x*(a+b*Cos(x)*Sin(x))), x, 1, Unintegrable(1/(x*(a+(b*Sin(2*x))/2)), x)}
+	// {1/(x*(a+b*Cos(x)*Sin(x))), x, 1, Integrate::Unintegrable(1/(x*(a+(b*Sin(2*x))/2)), x)}
 	public void test02590() {
-		check("Integrate(1/(x*(a+b*Cos(x)*Sin(x))), x)", "Unintegrable(1/(x*(a+(b*Sin(2*x))/2)), x)");
+		check("Integrate(1/(x*(a+b*Cos(x)*Sin(x))), x)", "Integrate::Unintegrable(1/(x*(a+(b*Sin(2*x))/2)), x)");
 
 	}
 
 	// {((b*x)^(2-n)*Sin(a*x)^n)/(a*c*x*Cos(a*x)-c*Sin(a*x))^2, x, 1, (b*(b*x)^(1-n)*Sin(a*x)^(-1 +
-	// n))/(a^2*(a*c^2*x*Cos(a*x)-c^2*Sin(a*x)))+(b^2*(1-n)*Unintegrable(Sin(a*x)^(-2+n)/(b*x)^n, x))/(a^2*c^2)}
+	// n))/(a^2*(a*c^2*x*Cos(a*x)-c^2*Sin(a*x)))+(b^2*(1-n)*Integrate::Unintegrable(Sin(a*x)^(-2+n)/(b*x)^n,
+	// x))/(a^2*c^2)}
 	public void test02591() {
 		check("Integrate(((b*x)^(2-n)*Sin(a*x)^n)/(a*c*x*Cos(a*x)-c*Sin(a*x))^2, x)",
-				"(b*(b*x)^(1-n)*Sin(a*x)^(-1+n))/(a^2*(a*c^2*x*Cos(a*x)-c^2*Sin(a*x)))+(b^2*(1-n)*Unintegrable(Sin(a*x)^(-2+n)/(b*x)^n, x))/(a^2*c^2)");
+				"(b*(b*x)^(1-n)*Sin(a*x)^(-1+n))/(a^2*(a*c^2*x*Cos(a*x)-c^2*Sin(a*x)))+(b^2*(1-n)*Integrate::Unintegrable(Sin(a*x)^(-2+n)/(b*x)^n, x))/(a^2*c^2)");
 
 	}
 
 	// {((b*x)^(2-n)*Cos(a*x)^n)/(c*Cos(a*x)+a*c*x*Sin(a*x))^2, x, 1, -((b*(b*x)^(1-n)*Cos(a*x)^(-1 +
-	// n))/(a^2*(c^2*Cos(a*x)+a*c^2*x*Sin(a*x))))+(b^2*(1-n)*Unintegrable(Cos(a*x)^(-2+n)/(b*x)^n,
+	// n))/(a^2*(c^2*Cos(a*x)+a*c^2*x*Sin(a*x))))+(b^2*(1-n)*Integrate::Unintegrable(Cos(a*x)^(-2+n)/(b*x)^n,
 	// x))/(a^2*c^2)}
 	public void test02592() {
 		check("Integrate(((b*x)^(2-n)*Cos(a*x)^n)/(c*Cos(a*x)+a*c*x*Sin(a*x))^2, x)",
-				"-((b*(b*x)^(1-n)*Cos(a*x)^(-1+n))/(a^2*(c^2*Cos(a*x)+a*c^2*x*Sin(a*x))))+(b^2*(1-n)*Unintegrable(Cos(a*x)^(-2+n)/(b*x)^n, x))/(a^2*c^2)");
+				"-((b*(b*x)^(1-n)*Cos(a*x)^(-1+n))/(a^2*(c^2*Cos(a*x)+a*c^2*x*Sin(a*x))))+(b^2*(1-n)*Integrate::Unintegrable(Cos(a*x)^(-2+n)/(b*x)^n, x))/(a^2*c^2)");
 
 	}
 
@@ -17965,59 +18051,62 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {(b*x)^m*ArcSin(a*x)^4, x, 1, ((b*x)^(1+m)*ArcSin(a*x)^4)/(b*(1+m))-(4*a*Unintegrable(((b*x)^(1 +
+	// {(b*x)^m*ArcSin(a*x)^4, x, 1, ((b*x)^(1+m)*ArcSin(a*x)^4)/(b*(1+m))-(4*a*Integrate::Unintegrable(((b*x)^(1 +
 	// m)*ArcSin(a*x)^3)/Sqrt(1-a^2*x^2), x))/(b*(1+m))}
 	public void test02625() {
 		check("Integrate((b*x)^m*ArcSin(a*x)^4, x)",
-				"((b*x)^(1+m)*ArcSin(a*x)^4)/(b*(1+m))-(4*a*Unintegrable(((b*x)^(1+m)*ArcSin(a*x)^3)/Sqrt(1-a^2*x^2), x))/(b*(1+m))");
+				"((b*x)^(1+m)*ArcSin(a*x)^4)/(b*(1+m))-(4*a*Integrate::Unintegrable(((b*x)^(1+m)*ArcSin(a*x)^3)/Sqrt(1-a^2*x^2), x))/(b*(1+m))");
 
 	}
 
-	// {(b*x)^m*ArcSin(a*x)^3, x, 1, ((b*x)^(1+m)*ArcSin(a*x)^3)/(b*(1+m))-(3*a*Unintegrable(((b*x)^(1 +
+	// {(b*x)^m*ArcSin(a*x)^3, x, 1, ((b*x)^(1+m)*ArcSin(a*x)^3)/(b*(1+m))-(3*a*Integrate::Unintegrable(((b*x)^(1 +
 	// m)*ArcSin(a*x)^2)/Sqrt(1-a^2*x^2), x))/(b*(1+m))}
 	public void test02626() {
 		check("Integrate((b*x)^m*ArcSin(a*x)^3, x)",
-				"((b*x)^(1+m)*ArcSin(a*x)^3)/(b*(1+m))-(3*a*Unintegrable(((b*x)^(1+m)*ArcSin(a*x)^2)/Sqrt(1-a^2*x^2), x))/(b*(1+m))");
+				"((b*x)^(1+m)*ArcSin(a*x)^3)/(b*(1+m))-(3*a*Integrate::Unintegrable(((b*x)^(1+m)*ArcSin(a*x)^2)/Sqrt(1-a^2*x^2), x))/(b*(1+m))");
 
 	}
 
 	// {(d*x)^(3/2)*(a+b*ArcSin(c*x))^3, x, 1, (2*(d*x)^(5/2)*(a+b*ArcSin(c*x))^3)/(5*d) -
-	// (6*b*c*Unintegrable(((d*x)^(5/2)*(a+b*ArcSin(c*x))^2)/Sqrt(1-c^2*x^2), x))/(5*d)}
+	// (6*b*c*Integrate::Unintegrable(((d*x)^(5/2)*(a+b*ArcSin(c*x))^2)/Sqrt(1-c^2*x^2), x))/(5*d)}
 	public void test02627() {
 		check("Integrate((d*x)^(3/2)*(a+b*ArcSin(c*x))^3, x)",
-				"(2*(d*x)^(5/2)*(a+b*ArcSin(c*x))^3)/(5*d)-(6*b*c*Unintegrable(((d*x)^(5/2)*(a+b*ArcSin(c*x))^2)/Sqrt(1-c^2*x^2), x))/(5*d)");
+				"(2*(d*x)^(5/2)*(a+b*ArcSin(c*x))^3)/(5*d)-(6*b*c*Integrate::Unintegrable(((d*x)^(5/2)*(a+b*ArcSin(c*x))^2)/Sqrt(1-c^2*x^2), x))/(5*d)");
 
 	}
 
 	// {Sqrt(d*x)*(a+b*ArcSin(c*x))^3, x, 1, (2*(d*x)^(3/2)*(a+b*ArcSin(c*x))^3)/(3*d) -
-	// (2*b*c*Unintegrable(((d*x)^(3/2)*(a+b*ArcSin(c*x))^2)/Sqrt(1-c^2*x^2), x))/d}
+	// (2*b*c*Integrate::Unintegrable(((d*x)^(3/2)*(a+b*ArcSin(c*x))^2)/Sqrt(1-c^2*x^2), x))/d}
 	public void test02628() {
 		check("Integrate(Sqrt(d*x)*(a+b*ArcSin(c*x))^3, x)",
-				"(2*(d*x)^(3/2)*(a+b*ArcSin(c*x))^3)/(3*d)-(2*b*c*Unintegrable(((d*x)^(3/2)*(a+b*ArcSin(c*x))^2)/Sqrt(1-c^2*x^2), x))/d");
+				"(2*(d*x)^(3/2)*(a+b*ArcSin(c*x))^3)/(3*d)-(2*b*c*Integrate::Unintegrable(((d*x)^(3/2)*(a+b*ArcSin(c*x))^2)/Sqrt(1-c^2*x^2), x))/d");
 
 	}
 
-	// {(a+b*ArcSin(c*x))^3/Sqrt(d*x), x, 1, (2*Sqrt(d*x)*(a+b*ArcSin(c*x))^3)/d-(6*b*c*Unintegrable((Sqrt(d*x)*(a
+	// {(a+b*ArcSin(c*x))^3/Sqrt(d*x), x, 1,
+	// (2*Sqrt(d*x)*(a+b*ArcSin(c*x))^3)/d-(6*b*c*Integrate::Unintegrable((Sqrt(d*x)*(a
 	// +b*ArcSin(c*x))^2)/Sqrt(1-c^2*x^2), x))/d}
 	public void test02629() {
 		check("Integrate((a+b*ArcSin(c*x))^3/Sqrt(d*x), x)",
-				"(2*Sqrt(d*x)*(a+b*ArcSin(c*x))^3)/d-(6*b*c*Unintegrable((Sqrt(d*x)*(a+b*ArcSin(c*x))^2)/Sqrt(1-c^2*x^2), x))/d");
+				"(2*Sqrt(d*x)*(a+b*ArcSin(c*x))^3)/d-(6*b*c*Integrate::Unintegrable((Sqrt(d*x)*(a+b*ArcSin(c*x))^2)/Sqrt(1-c^2*x^2), x))/d");
 
 	}
 
-	// {(a+b*ArcSin(c*x))^3/(d*x)^(3/2), x, 1, (-2*(a+b*ArcSin(c*x))^3)/(d*Sqrt(d*x))+(6*b*c*Unintegrable((a +
+	// {(a+b*ArcSin(c*x))^3/(d*x)^(3/2), x, 1, (-2*(a+b*ArcSin(c*x))^3)/(d*Sqrt(d*x))+(6*b*c*Integrate::Unintegrable((a
+	// +
 	// b*ArcSin(c*x))^2/(Sqrt(d*x)*Sqrt(1-c^2*x^2)), x))/d}
 	public void test02630() {
 		check("Integrate((a+b*ArcSin(c*x))^3/(d*x)^(3/2), x)",
-				"(-2*(a+b*ArcSin(c*x))^3)/(d*Sqrt(d*x))+(6*b*c*Unintegrable((a+b*ArcSin(c*x))^2/(Sqrt(d*x)*Sqrt(1-c^2*x^2)), x))/d");
+				"(-2*(a+b*ArcSin(c*x))^3)/(d*Sqrt(d*x))+(6*b*c*Integrate::Unintegrable((a+b*ArcSin(c*x))^2/(Sqrt(d*x)*Sqrt(1-c^2*x^2)), x))/d");
 
 	}
 
-	// {(a+b*ArcSin(c*x))^3/(d*x)^(5/2), x, 1, (-2*(a+b*ArcSin(c*x))^3)/(3*d*(d*x)^(3/2))+(2*b*c*Unintegrable((a +
+	// {(a+b*ArcSin(c*x))^3/(d*x)^(5/2), x, 1,
+	// (-2*(a+b*ArcSin(c*x))^3)/(3*d*(d*x)^(3/2))+(2*b*c*Integrate::Unintegrable((a +
 	// b*ArcSin(c*x))^2/((d*x)^(3/2)*Sqrt(1-c^2*x^2)), x))/d}
 	public void test02631() {
 		check("Integrate((a+b*ArcSin(c*x))^3/(d*x)^(5/2), x)",
-				"(-2*(a+b*ArcSin(c*x))^3)/(3*d*(d*x)^(3/2))+(2*b*c*Unintegrable((a+b*ArcSin(c*x))^2/((d*x)^(3/2)*Sqrt(1-c^2*x^2)), x))/d");
+				"(-2*(a+b*ArcSin(c*x))^3)/(3*d*(d*x)^(3/2))+(2*b*c*Integrate::Unintegrable((a+b*ArcSin(c*x))^2/((d*x)^(3/2)*Sqrt(1-c^2*x^2)), x))/d");
 
 	}
 
@@ -18069,61 +18158,64 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {1/((c-a^2*c*x^2)*ArcSin(a*x)^2), x, 1, -(1/(a*c*Sqrt(1-a^2*x^2)*ArcSin(a*x)))+(a*Unintegrable(x/((1 -
+	// {1/((c-a^2*c*x^2)*ArcSin(a*x)^2), x, 1, -(1/(a*c*Sqrt(1-a^2*x^2)*ArcSin(a*x)))+(a*Integrate::Unintegrable(x/((1 -
 	// a^2*x^2)^(3/2)*ArcSin(a*x)), x))/c}
 	public void test02639() {
 		check("Integrate(1/((c-a^2*c*x^2)*ArcSin(a*x)^2), x)",
-				"-(1/(a*c*Sqrt(1-a^2*x^2)*ArcSin(a*x)))+(a*Unintegrable(x/((1-a^2*x^2)^(3/2)*ArcSin(a*x)), x))/c");
+				"-(1/(a*c*Sqrt(1-a^2*x^2)*ArcSin(a*x)))+(a*Integrate::Unintegrable(x/((1-a^2*x^2)^(3/2)*ArcSin(a*x)), x))/c");
 
 	}
 
 	// {1/((c-a^2*c*x^2)^2*ArcSin(a*x)^2), x, 1, -(1/(a*c^2*(1-a^2*x^2)^(3/2)*ArcSin(a*x))) +
-	// (3*a*Unintegrable(x/((1-a^2*x^2)^(5/2)*ArcSin(a*x)), x))/c^2}
+	// (3*a*Integrate::Unintegrable(x/((1-a^2*x^2)^(5/2)*ArcSin(a*x)), x))/c^2}
 	public void test02640() {
 		check("Integrate(1/((c-a^2*c*x^2)^2*ArcSin(a*x)^2), x)",
-				"-(1/(a*c^2*(1-a^2*x^2)^(3/2)*ArcSin(a*x)))+(3*a*Unintegrable(x/((1-a^2*x^2)^(5/2)*ArcSin(a*x)), x))/c^2");
+				"-(1/(a*c^2*(1-a^2*x^2)^(3/2)*ArcSin(a*x)))+(3*a*Integrate::Unintegrable(x/((1-a^2*x^2)^(5/2)*ArcSin(a*x)), x))/c^2");
 
 	}
 
 	// {Sqrt(1-c^2*x^2)/(x^2*(a+b*ArcSin(c*x))^2), x, 1, -((1-c^2*x^2)/(b*c*x^2*(a+b*ArcSin(c*x)))) -
-	// (2*Unintegrable(1/(x^3*(a+b*ArcSin(c*x))), x))/(b*c)}
+	// (2*Integrate::Unintegrable(1/(x^3*(a+b*ArcSin(c*x))), x))/(b*c)}
 	public void test02641() {
 		check("Integrate(Sqrt(1-c^2*x^2)/(x^2*(a+b*ArcSin(c*x))^2), x)",
-				"-((1-c^2*x^2)/(b*c*x^2*(a+b*ArcSin(c*x))))-(2*Unintegrable(1/(x^3*(a+b*ArcSin(c*x))), x))/(b*c)");
+				"-((1-c^2*x^2)/(b*c*x^2*(a+b*ArcSin(c*x))))-(2*Integrate::Unintegrable(1/(x^3*(a+b*ArcSin(c*x))), x))/(b*c)");
 
 	}
 
 	// {(1-c^2*x^2)^(3/2)/(x^2*(a+b*ArcSin(c*x))^2), x, 1, -((1-c^2*x^2)^2/(b*c*x^2*(a+b*ArcSin(c*x)))) -
-	// (2*Unintegrable((1-c^2*x^2)/(x^3*(a+b*ArcSin(c*x))), x))/(b*c)-(2*c*Unintegrable((1-c^2*x^2)/(x*(a +
+	// (2*Integrate::Unintegrable((1-c^2*x^2)/(x^3*(a+b*ArcSin(c*x))),
+	// x))/(b*c)-(2*c*Integrate::Unintegrable((1-c^2*x^2)/(x*(a +
 	// b*ArcSin(c*x))), x))/b}
 	public void test02642() {
 		check("Integrate((1-c^2*x^2)^(3/2)/(x^2*(a+b*ArcSin(c*x))^2), x)",
-				"-((1-c^2*x^2)^2/(b*c*x^2*(a+b*ArcSin(c*x))))-(2*Unintegrable((1-c^2*x^2)/(x^3*(a+b*ArcSin(c*x))), x))/(b*c)-(2*c*Unintegrable((1-c^2*x^2)/(x*(a+b*ArcSin(c*x))), x))/b");
+				"-((1-c^2*x^2)^2/(b*c*x^2*(a+b*ArcSin(c*x))))-(2*Integrate::Unintegrable((1-c^2*x^2)/(x^3*(a+b*ArcSin(c*x))), x))/(b*c)-(2*c*Integrate::Unintegrable((1-c^2*x^2)/(x*(a+b*ArcSin(c*x))), x))/b");
 
 	}
 
 	// {(1-c^2*x^2)^(3/2)/(x^4*(a+b*ArcSin(c*x))^2), x, 1, -((1-c^2*x^2)^2/(b*c*x^4*(a+b*ArcSin(c*x)))) -
-	// (4*Unintegrable((1-c^2*x^2)/(x^5*(a+b*ArcSin(c*x))), x))/(b*c)}
+	// (4*Integrate::Unintegrable((1-c^2*x^2)/(x^5*(a+b*ArcSin(c*x))), x))/(b*c)}
 	public void test02643() {
 		check("Integrate((1-c^2*x^2)^(3/2)/(x^4*(a+b*ArcSin(c*x))^2), x)",
-				"-((1-c^2*x^2)^2/(b*c*x^4*(a+b*ArcSin(c*x))))-(4*Unintegrable((1-c^2*x^2)/(x^5*(a+b*ArcSin(c*x))), x))/(b*c)");
+				"-((1-c^2*x^2)^2/(b*c*x^4*(a+b*ArcSin(c*x))))-(4*Integrate::Unintegrable((1-c^2*x^2)/(x^5*(a+b*ArcSin(c*x))), x))/(b*c)");
 
 	}
 
 	// {(1-c^2*x^2)^(5/2)/(x^2*(a+b*ArcSin(c*x))^2), x, 1, -((1-c^2*x^2)^3/(b*c*x^2*(a+b*ArcSin(c*x)))) -
-	// (2*Unintegrable((1-c^2*x^2)^2/(x^3*(a+b*ArcSin(c*x))), x))/(b*c)-(4*c*Unintegrable((1-c^2*x^2)^2/(x*(a +
+	// (2*Integrate::Unintegrable((1-c^2*x^2)^2/(x^3*(a+b*ArcSin(c*x))),
+	// x))/(b*c)-(4*c*Integrate::Unintegrable((1-c^2*x^2)^2/(x*(a +
 	// b*ArcSin(c*x))), x))/b}
 	public void test02644() {
 		check("Integrate((1-c^2*x^2)^(5/2)/(x^2*(a+b*ArcSin(c*x))^2), x)",
-				"-((1-c^2*x^2)^3/(b*c*x^2*(a+b*ArcSin(c*x))))-(2*Unintegrable((1-c^2*x^2)^2/(x^3*(a+b*ArcSin(c*x))), x))/(b*c)-(4*c*Unintegrable((1-c^2*x^2)^2/(x*(a+b*ArcSin(c*x))), x))/b");
+				"-((1-c^2*x^2)^3/(b*c*x^2*(a+b*ArcSin(c*x))))-(2*Integrate::Unintegrable((1-c^2*x^2)^2/(x^3*(a+b*ArcSin(c*x))), x))/(b*c)-(4*c*Integrate::Unintegrable((1-c^2*x^2)^2/(x*(a+b*ArcSin(c*x))), x))/b");
 
 	}
 
-	// {x^m/(Sqrt(1-c^2*x^2)*(a+b*ArcSin(c*x))^2), x, 1, -(x^m/(b*c*(a+b*ArcSin(c*x))))+(m*Unintegrable(x^(-1 +
+	// {x^m/(Sqrt(1-c^2*x^2)*(a+b*ArcSin(c*x))^2), x, 1, -(x^m/(b*c*(a+b*ArcSin(c*x))))+(m*Integrate::Unintegrable(x^(-1
+	// +
 	// m)/(a+b*ArcSin(c*x)), x))/(b*c)}
 	public void test02645() {
 		check("Integrate(x^m/(Sqrt(1-c^2*x^2)*(a+b*ArcSin(c*x))^2), x)",
-				"-(x^m/(b*c*(a+b*ArcSin(c*x))))+(m*Unintegrable(x^(-1+m)/(a+b*ArcSin(c*x)), x))/(b*c)");
+				"-(x^m/(b*c*(a+b*ArcSin(c*x))))+(m*Integrate::Unintegrable(x^(-1+m)/(a+b*ArcSin(c*x)), x))/(b*c)");
 
 	}
 
@@ -18133,43 +18225,44 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {1/(x*Sqrt(1-c^2*x^2)*(a+b*ArcSin(c*x))^2), x, 1, -(1/(b*c*x*(a+b*ArcSin(c*x))))-Unintegrable(1/(x^2*(a +
+	// {1/(x*Sqrt(1-c^2*x^2)*(a+b*ArcSin(c*x))^2), x, 1,
+	// -(1/(b*c*x*(a+b*ArcSin(c*x))))-Integrate::Unintegrable(1/(x^2*(a +
 	// b*ArcSin(c*x))), x)/(b*c)}
 	public void test02647() {
 		check("Integrate(1/(x*Sqrt(1-c^2*x^2)*(a+b*ArcSin(c*x))^2), x)",
-				"-(1/(b*c*x*(a+b*ArcSin(c*x))))-Unintegrable(1/(x^2*(a+b*ArcSin(c*x))), x)/(b*c)");
+				"-(1/(b*c*x*(a+b*ArcSin(c*x))))-Integrate::Unintegrable(1/(x^2*(a+b*ArcSin(c*x))), x)/(b*c)");
 
 	}
 
 	// {1/(x^2*Sqrt(1-c^2*x^2)*(a+b*ArcSin(c*x))^2), x, 1, -(1/(b*c*x^2*(a+b*ArcSin(c*x)))) -
-	// (2*Unintegrable(1/(x^3*(a+b*ArcSin(c*x))), x))/(b*c)}
+	// (2*Integrate::Unintegrable(1/(x^3*(a+b*ArcSin(c*x))), x))/(b*c)}
 	public void test02648() {
 		check("Integrate(1/(x^2*Sqrt(1-c^2*x^2)*(a+b*ArcSin(c*x))^2), x)",
-				"-(1/(b*c*x^2*(a+b*ArcSin(c*x))))-(2*Unintegrable(1/(x^3*(a+b*ArcSin(c*x))), x))/(b*c)");
+				"-(1/(b*c*x^2*(a+b*ArcSin(c*x))))-(2*Integrate::Unintegrable(1/(x^3*(a+b*ArcSin(c*x))), x))/(b*c)");
 
 	}
 
 	// {x^2/((1-c^2*x^2)^(3/2)*(a+b*ArcSin(c*x))^2), x, 1, -(x^2/(b*c*(1-c^2*x^2)*(a+b*ArcSin(c*x)))) +
-	// (2*Unintegrable(x/((1-c^2*x^2)^2*(a+b*ArcSin(c*x))), x))/(b*c)}
+	// (2*Integrate::Unintegrable(x/((1-c^2*x^2)^2*(a+b*ArcSin(c*x))), x))/(b*c)}
 	public void test02649() {
 		check("Integrate(x^2/((1-c^2*x^2)^(3/2)*(a+b*ArcSin(c*x))^2), x)",
-				"-(x^2/(b*c*(1-c^2*x^2)*(a+b*ArcSin(c*x))))+(2*Unintegrable(x/((1-c^2*x^2)^2*(a+b*ArcSin(c*x))), x))/(b*c)");
+				"-(x^2/(b*c*(1-c^2*x^2)*(a+b*ArcSin(c*x))))+(2*Integrate::Unintegrable(x/((1-c^2*x^2)^2*(a+b*ArcSin(c*x))), x))/(b*c)");
 
 	}
 
 	// {1/((1-c^2*x^2)^(3/2)*(a+b*ArcSin(c*x))^2), x, 1, -(1/(b*c*(1-c^2*x^2)*(a+b*ArcSin(c*x)))) +
-	// (2*c*Unintegrable(x/((1-c^2*x^2)^2*(a+b*ArcSin(c*x))), x))/b}
+	// (2*c*Integrate::Unintegrable(x/((1-c^2*x^2)^2*(a+b*ArcSin(c*x))), x))/b}
 	public void test02650() {
 		check("Integrate(1/((1-c^2*x^2)^(3/2)*(a+b*ArcSin(c*x))^2), x)",
-				"-(1/(b*c*(1-c^2*x^2)*(a+b*ArcSin(c*x))))+(2*c*Unintegrable(x/((1-c^2*x^2)^2*(a+b*ArcSin(c*x))), x))/b");
+				"-(1/(b*c*(1-c^2*x^2)*(a+b*ArcSin(c*x))))+(2*c*Integrate::Unintegrable(x/((1-c^2*x^2)^2*(a+b*ArcSin(c*x))), x))/b");
 
 	}
 
 	// {1/((1-c^2*x^2)^(5/2)*(a+b*ArcSin(c*x))^2), x, 1, -(1/(b*c*(1-c^2*x^2)^2*(a+b*ArcSin(c*x)))) +
-	// (4*c*Unintegrable(x/((1-c^2*x^2)^3*(a+b*ArcSin(c*x))), x))/b}
+	// (4*c*Integrate::Unintegrable(x/((1-c^2*x^2)^3*(a+b*ArcSin(c*x))), x))/b}
 	public void test02651() {
 		check("Integrate(1/((1-c^2*x^2)^(5/2)*(a+b*ArcSin(c*x))^2), x)",
-				"-(1/(b*c*(1-c^2*x^2)^2*(a+b*ArcSin(c*x))))+(4*c*Unintegrable(x/((1-c^2*x^2)^3*(a+b*ArcSin(c*x))), x))/b");
+				"-(1/(b*c*(1-c^2*x^2)^2*(a+b*ArcSin(c*x))))+(4*c*Integrate::Unintegrable(x/((1-c^2*x^2)^3*(a+b*ArcSin(c*x))), x))/b");
 
 	}
 
@@ -18180,78 +18273,78 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	}
 
 	// {Sqrt(ArcSin(a*x))/(c-a^2*c*x^2)^(3/2), x, 1, (x*Sqrt(ArcSin(a*x)))/(c*Sqrt(c-a^2*c*x^2))-(a*Sqrt(1 -
-	// a^2*x^2)*Unintegrable(x/((1-a^2*x^2)*Sqrt(ArcSin(a*x))), x))/(2*c*Sqrt(c-a^2*c*x^2))}
+	// a^2*x^2)*Integrate::Unintegrable(x/((1-a^2*x^2)*Sqrt(ArcSin(a*x))), x))/(2*c*Sqrt(c-a^2*c*x^2))}
 	public void test02653() {
 		check("Integrate(Sqrt(ArcSin(a*x))/(c-a^2*c*x^2)^(3/2), x)",
-				"(x*Sqrt(ArcSin(a*x)))/(c*Sqrt(c-a^2*c*x^2))-(a*Sqrt(1-a^2*x^2)*Unintegrable(x/((1-a^2*x^2)*Sqrt(ArcSin(a*x))), x))/(2*c*Sqrt(c-a^2*c*x^2))");
+				"(x*Sqrt(ArcSin(a*x)))/(c*Sqrt(c-a^2*c*x^2))-(a*Sqrt(1-a^2*x^2)*Integrate::Unintegrable(x/((1-a^2*x^2)*Sqrt(ArcSin(a*x))), x))/(2*c*Sqrt(c-a^2*c*x^2))");
 
 	}
 
 	// {ArcSin(a*x)^(3/2)/(c-a^2*c*x^2)^(3/2), x, 1, (x*ArcSin(a*x)^(3/2))/(c*Sqrt(c-a^2*c*x^2))-(3*a*Sqrt(1 -
-	// a^2*x^2)*Unintegrable((x*Sqrt(ArcSin(a*x)))/(1-a^2*x^2), x))/(2*c*Sqrt(c-a^2*c*x^2))}
+	// a^2*x^2)*Integrate::Unintegrable((x*Sqrt(ArcSin(a*x)))/(1-a^2*x^2), x))/(2*c*Sqrt(c-a^2*c*x^2))}
 	public void test02654() {
 		check("Integrate(ArcSin(a*x)^(3/2)/(c-a^2*c*x^2)^(3/2), x)",
-				"(x*ArcSin(a*x)^(3/2))/(c*Sqrt(c-a^2*c*x^2))-(3*a*Sqrt(1-a^2*x^2)*Unintegrable((x*Sqrt(ArcSin(a*x)))/(1-a^2*x^2), x))/(2*c*Sqrt(c-a^2*c*x^2))");
+				"(x*ArcSin(a*x)^(3/2))/(c*Sqrt(c-a^2*c*x^2))-(3*a*Sqrt(1-a^2*x^2)*Integrate::Unintegrable((x*Sqrt(ArcSin(a*x)))/(1-a^2*x^2), x))/(2*c*Sqrt(c-a^2*c*x^2))");
 
 	}
 
 	// {ArcSin(a*x)^(5/2)/(c-a^2*c*x^2)^(3/2), x, 1, (x*ArcSin(a*x)^(5/2))/(c*Sqrt(c-a^2*c*x^2))-(5*a*Sqrt(1 -
-	// a^2*x^2)*Unintegrable((x*ArcSin(a*x)^(3/2))/(1-a^2*x^2), x))/(2*c*Sqrt(c-a^2*c*x^2))}
+	// a^2*x^2)*Integrate::Unintegrable((x*ArcSin(a*x)^(3/2))/(1-a^2*x^2), x))/(2*c*Sqrt(c-a^2*c*x^2))}
 	public void test02655() {
 		check("Integrate(ArcSin(a*x)^(5/2)/(c-a^2*c*x^2)^(3/2), x)",
-				"(x*ArcSin(a*x)^(5/2))/(c*Sqrt(c-a^2*c*x^2))-(5*a*Sqrt(1-a^2*x^2)*Unintegrable((x*ArcSin(a*x)^(3/2))/(1-a^2*x^2), x))/(2*c*Sqrt(c-a^2*c*x^2))");
+				"(x*ArcSin(a*x)^(5/2))/(c*Sqrt(c-a^2*c*x^2))-(5*a*Sqrt(1-a^2*x^2)*Integrate::Unintegrable((x*ArcSin(a*x)^(3/2))/(1-a^2*x^2), x))/(2*c*Sqrt(c-a^2*c*x^2))");
 
 	}
 
 	// {Sqrt(ArcSin(x/a))/(a^2-x^2)^(3/2), x, 1, (x*Sqrt(ArcSin(x/a)))/(a^2*Sqrt(a^2-x^2))-(Sqrt(1 -
-	// x^2/a^2)*Unintegrable(x/((1-x^2/a^2)*Sqrt(ArcSin(x/a))), x))/(2*a^3*Sqrt(a^2-x^2))}
+	// x^2/a^2)*Integrate::Unintegrable(x/((1-x^2/a^2)*Sqrt(ArcSin(x/a))), x))/(2*a^3*Sqrt(a^2-x^2))}
 	public void test02656() {
 		check("Integrate(Sqrt(ArcSin(x/a))/(a^2-x^2)^(3/2), x)",
-				"(x*Sqrt(ArcSin(x/a)))/(a^2*Sqrt(a^2-x^2))-(Sqrt(1-x^2/a^2)*Unintegrable(x/((1-x^2/a^2)*Sqrt(ArcSin(x/a))), x))/(2*a^3*Sqrt(a^2-x^2))");
+				"(x*Sqrt(ArcSin(x/a)))/(a^2*Sqrt(a^2-x^2))-(Sqrt(1-x^2/a^2)*Integrate::Unintegrable(x/((1-x^2/a^2)*Sqrt(ArcSin(x/a))), x))/(2*a^3*Sqrt(a^2-x^2))");
 
 	}
 
 	// {ArcSin(x/a)^(3/2)/(a^2-x^2)^(3/2), x, 1, (x*ArcSin(x/a)^(3/2))/(a^2*Sqrt(a^2-x^2))-(3*Sqrt(1 -
-	// x^2/a^2)*Unintegrable((x*Sqrt(ArcSin(x/a)))/(1-x^2/a^2), x))/(2*a^3*Sqrt(a^2-x^2))}
+	// x^2/a^2)*Integrate::Unintegrable((x*Sqrt(ArcSin(x/a)))/(1-x^2/a^2), x))/(2*a^3*Sqrt(a^2-x^2))}
 	public void test02657() {
 		check("Integrate(ArcSin(x/a)^(3/2)/(a^2-x^2)^(3/2), x)",
-				"(x*ArcSin(x/a)^(3/2))/(a^2*Sqrt(a^2-x^2))-(3*Sqrt(1-x^2/a^2)*Unintegrable((x*Sqrt(ArcSin(x/a)))/(1-x^2/a^2), x))/(2*a^3*Sqrt(a^2-x^2))");
+				"(x*ArcSin(x/a)^(3/2))/(a^2*Sqrt(a^2-x^2))-(3*Sqrt(1-x^2/a^2)*Integrate::Unintegrable((x*Sqrt(ArcSin(x/a)))/(1-x^2/a^2), x))/(2*a^3*Sqrt(a^2-x^2))");
 
 	}
 
 	// {1/((c-a^2*c*x^2)^(3/2)*ArcSin(a*x)^(3/2)), x, 1, (-2*Sqrt(1-a^2*x^2))/(a*(c -
-	// a^2*c*x^2)^(3/2)*Sqrt(ArcSin(a*x)))+(4*a*Sqrt(1-a^2*x^2)*Unintegrable(x/((1-a^2*x^2)^2*Sqrt(ArcSin(a*x))),
+	// a^2*c*x^2)^(3/2)*Sqrt(ArcSin(a*x)))+(4*a*Sqrt(1-a^2*x^2)*Integrate::Unintegrable(x/((1-a^2*x^2)^2*Sqrt(ArcSin(a*x))),
 	// x))/(c*Sqrt(c-a^2*c*x^2))}
 	public void test02658() {
 		check("Integrate(1/((c-a^2*c*x^2)^(3/2)*ArcSin(a*x)^(3/2)), x)",
-				"(-2*Sqrt(1-a^2*x^2))/(a*(c-a^2*c*x^2)^(3/2)*Sqrt(ArcSin(a*x)))+(4*a*Sqrt(1-a^2*x^2)*Unintegrable(x/((1-a^2*x^2)^2*Sqrt(ArcSin(a*x))), x))/(c*Sqrt(c-a^2*c*x^2))");
+				"(-2*Sqrt(1-a^2*x^2))/(a*(c-a^2*c*x^2)^(3/2)*Sqrt(ArcSin(a*x)))+(4*a*Sqrt(1-a^2*x^2)*Integrate::Unintegrable(x/((1-a^2*x^2)^2*Sqrt(ArcSin(a*x))), x))/(c*Sqrt(c-a^2*c*x^2))");
 
 	}
 
 	// {1/((c-a^2*c*x^2)^(5/2)*ArcSin(a*x)^(3/2)), x, 1, (-2*Sqrt(1-a^2*x^2))/(a*(c -
-	// a^2*c*x^2)^(5/2)*Sqrt(ArcSin(a*x)))+(8*a*Sqrt(1-a^2*x^2)*Unintegrable(x/((1-a^2*x^2)^3*Sqrt(ArcSin(a*x))),
+	// a^2*c*x^2)^(5/2)*Sqrt(ArcSin(a*x)))+(8*a*Sqrt(1-a^2*x^2)*Integrate::Unintegrable(x/((1-a^2*x^2)^3*Sqrt(ArcSin(a*x))),
 	// x))/(c^2*Sqrt(c-a^2*c*x^2))}
 	public void test02659() {
 		check("Integrate(1/((c-a^2*c*x^2)^(5/2)*ArcSin(a*x)^(3/2)), x)",
-				"(-2*Sqrt(1-a^2*x^2))/(a*(c-a^2*c*x^2)^(5/2)*Sqrt(ArcSin(a*x)))+(8*a*Sqrt(1-a^2*x^2)*Unintegrable(x/((1-a^2*x^2)^3*Sqrt(ArcSin(a*x))), x))/(c^2*Sqrt(c-a^2*c*x^2))");
+				"(-2*Sqrt(1-a^2*x^2))/(a*(c-a^2*c*x^2)^(5/2)*Sqrt(ArcSin(a*x)))+(8*a*Sqrt(1-a^2*x^2)*Integrate::Unintegrable(x/((1-a^2*x^2)^3*Sqrt(ArcSin(a*x))), x))/(c^2*Sqrt(c-a^2*c*x^2))");
 
 	}
 
 	// {1/((c-a^2*c*x^2)^(3/2)*ArcSin(a*x)^(5/2)), x, 1, (-2*Sqrt(1-a^2*x^2))/(3*a*(c -
-	// a^2*c*x^2)^(3/2)*ArcSin(a*x)^(3/2))+(4*a*Sqrt(1-a^2*x^2)*Unintegrable(x/((1-a^2*x^2)^2*ArcSin(a*x)^(3/2)),
+	// a^2*c*x^2)^(3/2)*ArcSin(a*x)^(3/2))+(4*a*Sqrt(1-a^2*x^2)*Integrate::Unintegrable(x/((1-a^2*x^2)^2*ArcSin(a*x)^(3/2)),
 	// x))/(3*c*Sqrt(c-a^2*c*x^2))}
 	public void test02660() {
 		check("Integrate(1/((c-a^2*c*x^2)^(3/2)*ArcSin(a*x)^(5/2)), x)",
-				"(-2*Sqrt(1-a^2*x^2))/(3*a*(c-a^2*c*x^2)^(3/2)*ArcSin(a*x)^(3/2))+(4*a*Sqrt(1-a^2*x^2)*Unintegrable(x/((1-a^2*x^2)^2*ArcSin(a*x)^(3/2)), x))/(3*c*Sqrt(c-a^2*c*x^2))");
+				"(-2*Sqrt(1-a^2*x^2))/(3*a*(c-a^2*c*x^2)^(3/2)*ArcSin(a*x)^(3/2))+(4*a*Sqrt(1-a^2*x^2)*Integrate::Unintegrable(x/((1-a^2*x^2)^2*ArcSin(a*x)^(3/2)), x))/(3*c*Sqrt(c-a^2*c*x^2))");
 
 	}
 
 	// {1/((c-a^2*c*x^2)^(5/2)*ArcSin(a*x)^(5/2)), x, 1, (-2*Sqrt(1-a^2*x^2))/(3*a*(c -
-	// a^2*c*x^2)^(5/2)*ArcSin(a*x)^(3/2))+(8*a*Sqrt(1-a^2*x^2)*Unintegrable(x/((1-a^2*x^2)^3*ArcSin(a*x)^(3/2)),
+	// a^2*c*x^2)^(5/2)*ArcSin(a*x)^(3/2))+(8*a*Sqrt(1-a^2*x^2)*Integrate::Unintegrable(x/((1-a^2*x^2)^3*ArcSin(a*x)^(3/2)),
 	// x))/(3*c^2*Sqrt(c-a^2*c*x^2))}
 	public void test02661() {
 		check("Integrate(1/((c-a^2*c*x^2)^(5/2)*ArcSin(a*x)^(5/2)), x)",
-				"(-2*Sqrt(1-a^2*x^2))/(3*a*(c-a^2*c*x^2)^(5/2)*ArcSin(a*x)^(3/2))+(8*a*Sqrt(1-a^2*x^2)*Unintegrable(x/((1-a^2*x^2)^3*ArcSin(a*x)^(3/2)), x))/(3*c^2*Sqrt(c-a^2*c*x^2))");
+				"(-2*Sqrt(1-a^2*x^2))/(3*a*(c-a^2*c*x^2)^(5/2)*ArcSin(a*x)^(3/2))+(8*a*Sqrt(1-a^2*x^2)*Integrate::Unintegrable(x/((1-a^2*x^2)^3*ArcSin(a*x)^(3/2)), x))/(3*c^2*Sqrt(c-a^2*c*x^2))");
 
 	}
 
@@ -18262,54 +18355,55 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	}
 
 	// {(d+e*x)^m*(a+b*ArcSin(c*x))^2, x, 1, ((d+e*x)^(1+m)*(a+b*ArcSin(c*x))^2)/(e*(1+m)) -
-	// (2*b*c*Unintegrable(((d+e*x)^(1+m)*(a+b*ArcSin(c*x)))/Sqrt(1-c^2*x^2), x))/(e*(1+m))}
+	// (2*b*c*Integrate::Unintegrable(((d+e*x)^(1+m)*(a+b*ArcSin(c*x)))/Sqrt(1-c^2*x^2), x))/(e*(1+m))}
 	public void test02663() {
 		check("Integrate((d+e*x)^m*(a+b*ArcSin(c*x))^2, x)",
-				"((d+e*x)^(1+m)*(a+b*ArcSin(c*x))^2)/(e*(1+m))-(2*b*c*Unintegrable(((d+e*x)^(1+m)*(a+b*ArcSin(c*x)))/Sqrt(1-c^2*x^2), x))/(e*(1+m))");
+				"((d+e*x)^(1+m)*(a+b*ArcSin(c*x))^2)/(e*(1+m))-(2*b*c*Integrate::Unintegrable(((d+e*x)^(1+m)*(a+b*ArcSin(c*x)))/Sqrt(1-c^2*x^2), x))/(e*(1+m))");
 
 	}
 
-	// {1/(x*ArcSin(a+b*x)), x, 1, Unintegrable(1/(x*ArcSin(a+b*x)), x)}
+	// {1/(x*ArcSin(a+b*x)), x, 1, Integrate::Unintegrable(1/(x*ArcSin(a+b*x)), x)}
 	public void test02664() {
-		check("Integrate(1/(x*ArcSin(a+b*x)), x)", "Unintegrable(1/(x*ArcSin(a+b*x)), x)");
+		check("Integrate(1/(x*ArcSin(a+b*x)), x)", "Integrate::Unintegrable(1/(x*ArcSin(a+b*x)), x)");
 
 	}
 
-	// {1/(x*ArcSin(a+b*x)^2), x, 1, Unintegrable(1/(x*ArcSin(a+b*x)^2), x)}
+	// {1/(x*ArcSin(a+b*x)^2), x, 1, Integrate::Unintegrable(1/(x*ArcSin(a+b*x)^2), x)}
 	public void test02665() {
-		check("Integrate(1/(x*ArcSin(a+b*x)^2), x)", "Unintegrable(1/(x*ArcSin(a+b*x)^2), x)");
+		check("Integrate(1/(x*ArcSin(a+b*x)^2), x)", "Integrate::Unintegrable(1/(x*ArcSin(a+b*x)^2), x)");
 
 	}
 
-	// {1/(x*ArcSin(a+b*x)^3), x, 1, Unintegrable(1/(x*ArcSin(a+b*x)^3), x)}
+	// {1/(x*ArcSin(a+b*x)^3), x, 1, Integrate::Unintegrable(1/(x*ArcSin(a+b*x)^3), x)}
 	public void test02666() {
-		check("Integrate(1/(x*ArcSin(a+b*x)^3), x)", "Unintegrable(1/(x*ArcSin(a+b*x)^3), x)");
+		check("Integrate(1/(x*ArcSin(a+b*x)^3), x)", "Integrate::Unintegrable(1/(x*ArcSin(a+b*x)^3), x)");
 
 	}
 
-	// {x^m*(a+b*ArcSin(c+d*x))^n, x, 1, Unintegrable(x^m*(a+b*ArcSin(c+d*x))^n, x)}
+	// {x^m*(a+b*ArcSin(c+d*x))^n, x, 1, Integrate::Unintegrable(x^m*(a+b*ArcSin(c+d*x))^n, x)}
 	public void test02667() {
-		check("Integrate(x^m*(a+b*ArcSin(c+d*x))^n, x)", "Unintegrable(x^m*(a+b*ArcSin(c+d*x))^n, x)");
+		check("Integrate(x^m*(a+b*ArcSin(c+d*x))^n, x)", "Integrate::Unintegrable(x^m*(a+b*ArcSin(c+d*x))^n, x)");
 
 	}
 
-	// {(a+b*ArcSin(c+d*x))^n/x, x, 1, Unintegrable((a+b*ArcSin(c+d*x))^n/x, x)}
+	// {(a+b*ArcSin(c+d*x))^n/x, x, 1, Integrate::Unintegrable((a+b*ArcSin(c+d*x))^n/x, x)}
 	public void test02668() {
-		check("Integrate((a+b*ArcSin(c+d*x))^n/x, x)", "Unintegrable((a+b*ArcSin(c+d*x))^n/x, x)");
+		check("Integrate((a+b*ArcSin(c+d*x))^n/x, x)", "Integrate::Unintegrable((a+b*ArcSin(c+d*x))^n/x, x)");
 
 	}
 
-	// {(c*e+d*e*x)^m/(a+b*ArcSin(c+d*x)), x, 1, Unintegrable((e*(c+d*x))^m/(a+b*ArcSin(c+d*x)), x)}
+	// {(c*e+d*e*x)^m/(a+b*ArcSin(c+d*x)), x, 1, Integrate::Unintegrable((e*(c+d*x))^m/(a+b*ArcSin(c+d*x)), x)}
 	public void test02669() {
-		check("Integrate((c*e+d*e*x)^m/(a+b*ArcSin(c+d*x)), x)", "Unintegrable((e*(c+d*x))^m/(a+b*ArcSin(c+d*x)), x)");
+		check("Integrate((c*e+d*e*x)^m/(a+b*ArcSin(c+d*x)), x)",
+				"Integrate::Unintegrable((e*(c+d*x))^m/(a+b*ArcSin(c+d*x)), x)");
 
 	}
 
-	// {1/((1-a^2-2*a*b*x-b^2*x^2)^(3/2)*ArcSin(a+b*x)), x, 1, Unintegrable(1/((1-(a+b*x)^2)^(3/2)*ArcSin(a
+	// {1/((1-a^2-2*a*b*x-b^2*x^2)^(3/2)*ArcSin(a+b*x)), x, 1, Integrate::Unintegrable(1/((1-(a+b*x)^2)^(3/2)*ArcSin(a
 	// +b*x)), x)}
 	public void test02670() {
 		check("Integrate(1/((1-a^2-2*a*b*x-b^2*x^2)^(3/2)*ArcSin(a+b*x)), x)",
-				"Unintegrable(1/((1-(a+b*x)^2)^(3/2)*ArcSin(a+b*x)), x)");
+				"Integrate::Unintegrable(1/((1-(a+b*x)^2)^(3/2)*ArcSin(a+b*x)), x)");
 
 	}
 
@@ -18417,59 +18511,62 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {(b*x)^m*ArcCos(a*x)^4, x, 1, ((b*x)^(1+m)*ArcCos(a*x)^4)/(b*(1+m))+(4*a*Unintegrable(((b*x)^(1 +
+	// {(b*x)^m*ArcCos(a*x)^4, x, 1, ((b*x)^(1+m)*ArcCos(a*x)^4)/(b*(1+m))+(4*a*Integrate::Unintegrable(((b*x)^(1 +
 	// m)*ArcCos(a*x)^3)/Sqrt(1-a^2*x^2), x))/(b*(1+m))}
 	public void test02681() {
 		check("Integrate((b*x)^m*ArcCos(a*x)^4, x)",
-				"((b*x)^(1+m)*ArcCos(a*x)^4)/(b*(1+m))+(4*a*Unintegrable(((b*x)^(1+m)*ArcCos(a*x)^3)/Sqrt(1-a^2*x^2), x))/(b*(1+m))");
+				"((b*x)^(1+m)*ArcCos(a*x)^4)/(b*(1+m))+(4*a*Integrate::Unintegrable(((b*x)^(1+m)*ArcCos(a*x)^3)/Sqrt(1-a^2*x^2), x))/(b*(1+m))");
 
 	}
 
-	// {(b*x)^m*ArcCos(a*x)^3, x, 1, ((b*x)^(1+m)*ArcCos(a*x)^3)/(b*(1+m))+(3*a*Unintegrable(((b*x)^(1 +
+	// {(b*x)^m*ArcCos(a*x)^3, x, 1, ((b*x)^(1+m)*ArcCos(a*x)^3)/(b*(1+m))+(3*a*Integrate::Unintegrable(((b*x)^(1 +
 	// m)*ArcCos(a*x)^2)/Sqrt(1-a^2*x^2), x))/(b*(1+m))}
 	public void test02682() {
 		check("Integrate((b*x)^m*ArcCos(a*x)^3, x)",
-				"((b*x)^(1+m)*ArcCos(a*x)^3)/(b*(1+m))+(3*a*Unintegrable(((b*x)^(1+m)*ArcCos(a*x)^2)/Sqrt(1-a^2*x^2), x))/(b*(1+m))");
+				"((b*x)^(1+m)*ArcCos(a*x)^3)/(b*(1+m))+(3*a*Integrate::Unintegrable(((b*x)^(1+m)*ArcCos(a*x)^2)/Sqrt(1-a^2*x^2), x))/(b*(1+m))");
 
 	}
 
 	// {(d*x)^(3/2)*(a+b*ArcCos(c*x))^3, x, 1, (2*(d*x)^(5/2)*(a+b*ArcCos(c*x))^3)/(5*d) +
-	// (6*b*c*Unintegrable(((d*x)^(5/2)*(a+b*ArcCos(c*x))^2)/Sqrt(1-c^2*x^2), x))/(5*d)}
+	// (6*b*c*Integrate::Unintegrable(((d*x)^(5/2)*(a+b*ArcCos(c*x))^2)/Sqrt(1-c^2*x^2), x))/(5*d)}
 	public void test02683() {
 		check("Integrate((d*x)^(3/2)*(a+b*ArcCos(c*x))^3, x)",
-				"(2*(d*x)^(5/2)*(a+b*ArcCos(c*x))^3)/(5*d)+(6*b*c*Unintegrable(((d*x)^(5/2)*(a+b*ArcCos(c*x))^2)/Sqrt(1-c^2*x^2), x))/(5*d)");
+				"(2*(d*x)^(5/2)*(a+b*ArcCos(c*x))^3)/(5*d)+(6*b*c*Integrate::Unintegrable(((d*x)^(5/2)*(a+b*ArcCos(c*x))^2)/Sqrt(1-c^2*x^2), x))/(5*d)");
 
 	}
 
 	// {Sqrt(d*x)*(a+b*ArcCos(c*x))^3, x, 1, (2*(d*x)^(3/2)*(a+b*ArcCos(c*x))^3)/(3*d) +
-	// (2*b*c*Unintegrable(((d*x)^(3/2)*(a+b*ArcCos(c*x))^2)/Sqrt(1-c^2*x^2), x))/d}
+	// (2*b*c*Integrate::Unintegrable(((d*x)^(3/2)*(a+b*ArcCos(c*x))^2)/Sqrt(1-c^2*x^2), x))/d}
 	public void test02684() {
 		check("Integrate(Sqrt(d*x)*(a+b*ArcCos(c*x))^3, x)",
-				"(2*(d*x)^(3/2)*(a+b*ArcCos(c*x))^3)/(3*d)+(2*b*c*Unintegrable(((d*x)^(3/2)*(a+b*ArcCos(c*x))^2)/Sqrt(1-c^2*x^2), x))/d");
+				"(2*(d*x)^(3/2)*(a+b*ArcCos(c*x))^3)/(3*d)+(2*b*c*Integrate::Unintegrable(((d*x)^(3/2)*(a+b*ArcCos(c*x))^2)/Sqrt(1-c^2*x^2), x))/d");
 
 	}
 
-	// {(a+b*ArcCos(c*x))^3/Sqrt(d*x), x, 1, (2*Sqrt(d*x)*(a+b*ArcCos(c*x))^3)/d+(6*b*c*Unintegrable((Sqrt(d*x)*(a
+	// {(a+b*ArcCos(c*x))^3/Sqrt(d*x), x, 1,
+	// (2*Sqrt(d*x)*(a+b*ArcCos(c*x))^3)/d+(6*b*c*Integrate::Unintegrable((Sqrt(d*x)*(a
 	// +b*ArcCos(c*x))^2)/Sqrt(1-c^2*x^2), x))/d}
 	public void test02685() {
 		check("Integrate((a+b*ArcCos(c*x))^3/Sqrt(d*x), x)",
-				"(2*Sqrt(d*x)*(a+b*ArcCos(c*x))^3)/d+(6*b*c*Unintegrable((Sqrt(d*x)*(a+b*ArcCos(c*x))^2)/Sqrt(1-c^2*x^2), x))/d");
+				"(2*Sqrt(d*x)*(a+b*ArcCos(c*x))^3)/d+(6*b*c*Integrate::Unintegrable((Sqrt(d*x)*(a+b*ArcCos(c*x))^2)/Sqrt(1-c^2*x^2), x))/d");
 
 	}
 
-	// {(a+b*ArcCos(c*x))^3/(d*x)^(3/2), x, 1, (-2*(a+b*ArcCos(c*x))^3)/(d*Sqrt(d*x))-(6*b*c*Unintegrable((a +
+	// {(a+b*ArcCos(c*x))^3/(d*x)^(3/2), x, 1, (-2*(a+b*ArcCos(c*x))^3)/(d*Sqrt(d*x))-(6*b*c*Integrate::Unintegrable((a
+	// +
 	// b*ArcCos(c*x))^2/(Sqrt(d*x)*Sqrt(1-c^2*x^2)), x))/d}
 	public void test02686() {
 		check("Integrate((a+b*ArcCos(c*x))^3/(d*x)^(3/2), x)",
-				"(-2*(a+b*ArcCos(c*x))^3)/(d*Sqrt(d*x))-(6*b*c*Unintegrable((a+b*ArcCos(c*x))^2/(Sqrt(d*x)*Sqrt(1-c^2*x^2)), x))/d");
+				"(-2*(a+b*ArcCos(c*x))^3)/(d*Sqrt(d*x))-(6*b*c*Integrate::Unintegrable((a+b*ArcCos(c*x))^2/(Sqrt(d*x)*Sqrt(1-c^2*x^2)), x))/d");
 
 	}
 
-	// {(a+b*ArcCos(c*x))^3/(d*x)^(5/2), x, 1, (-2*(a+b*ArcCos(c*x))^3)/(3*d*(d*x)^(3/2))-(2*b*c*Unintegrable((a +
+	// {(a+b*ArcCos(c*x))^3/(d*x)^(5/2), x, 1,
+	// (-2*(a+b*ArcCos(c*x))^3)/(3*d*(d*x)^(3/2))-(2*b*c*Integrate::Unintegrable((a +
 	// b*ArcCos(c*x))^2/((d*x)^(3/2)*Sqrt(1-c^2*x^2)), x))/d}
 	public void test02687() {
 		check("Integrate((a+b*ArcCos(c*x))^3/(d*x)^(5/2), x)",
-				"(-2*(a+b*ArcCos(c*x))^3)/(3*d*(d*x)^(3/2))-(2*b*c*Unintegrable((a+b*ArcCos(c*x))^2/((d*x)^(3/2)*Sqrt(1-c^2*x^2)), x))/d");
+				"(-2*(a+b*ArcCos(c*x))^3)/(3*d*(d*x)^(3/2))-(2*b*c*Integrate::Unintegrable((a+b*ArcCos(c*x))^2/((d*x)^(3/2)*Sqrt(1-c^2*x^2)), x))/d");
 
 	}
 
@@ -18634,25 +18731,27 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {x^3/((c+a^2*c*x^2)*ArcTan(a*x)^2), x, 1, -(x^3/(a*c*ArcTan(a*x)))+(3*Unintegrable(x^2/ArcTan(a*x),
+	// {x^3/((c+a^2*c*x^2)*ArcTan(a*x)^2), x, 1, -(x^3/(a*c*ArcTan(a*x)))+(3*Integrate::Unintegrable(x^2/ArcTan(a*x),
 	// x))/(a*c)}
 	public void test02706() {
 		check("Integrate(x^3/((c+a^2*c*x^2)*ArcTan(a*x)^2), x)",
-				"-(x^3/(a*c*ArcTan(a*x)))+(3*Unintegrable(x^2/ArcTan(a*x), x))/(a*c)");
+				"-(x^3/(a*c*ArcTan(a*x)))+(3*Integrate::Unintegrable(x^2/ArcTan(a*x), x))/(a*c)");
 
 	}
 
-	// {x^2/((c+a^2*c*x^2)*ArcTan(a*x)^2), x, 1, -(x^2/(a*c*ArcTan(a*x)))+(2*Unintegrable(x/ArcTan(a*x), x))/(a*c)}
+	// {x^2/((c+a^2*c*x^2)*ArcTan(a*x)^2), x, 1, -(x^2/(a*c*ArcTan(a*x)))+(2*Integrate::Unintegrable(x/ArcTan(a*x),
+	// x))/(a*c)}
 	public void test02707() {
 		check("Integrate(x^2/((c+a^2*c*x^2)*ArcTan(a*x)^2), x)",
-				"-(x^2/(a*c*ArcTan(a*x)))+(2*Unintegrable(x/ArcTan(a*x), x))/(a*c)");
+				"-(x^2/(a*c*ArcTan(a*x)))+(2*Integrate::Unintegrable(x/ArcTan(a*x), x))/(a*c)");
 
 	}
 
-	// {x/((c+a^2*c*x^2)*ArcTan(a*x)^2), x, 1, -(x/(a*c*ArcTan(a*x)))+Unintegrable(ArcTan(a*x)^(-1), x)/(a*c)}
+	// {x/((c+a^2*c*x^2)*ArcTan(a*x)^2), x, 1, -(x/(a*c*ArcTan(a*x)))+Integrate::Unintegrable(ArcTan(a*x)^(-1),
+	// x)/(a*c)}
 	public void test02708() {
 		check("Integrate(x/((c+a^2*c*x^2)*ArcTan(a*x)^2), x)",
-				"-(x/(a*c*ArcTan(a*x)))+Unintegrable(ArcTan(a*x)^(-1), x)/(a*c)");
+				"-(x/(a*c*ArcTan(a*x)))+Integrate::Unintegrable(ArcTan(a*x)^(-1), x)/(a*c)");
 
 	}
 
@@ -18662,73 +18761,80 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {1/(x*(c+a^2*c*x^2)*ArcTan(a*x)^2), x, 1, -(1/(a*c*x*ArcTan(a*x)))-Unintegrable(1/(x^2*ArcTan(a*x)),
+	// {1/(x*(c+a^2*c*x^2)*ArcTan(a*x)^2), x, 1, -(1/(a*c*x*ArcTan(a*x)))-Integrate::Unintegrable(1/(x^2*ArcTan(a*x)),
 	// x)/(a*c)}
 	public void test02710() {
 		check("Integrate(1/(x*(c+a^2*c*x^2)*ArcTan(a*x)^2), x)",
-				"-(1/(a*c*x*ArcTan(a*x)))-Unintegrable(1/(x^2*ArcTan(a*x)), x)/(a*c)");
+				"-(1/(a*c*x*ArcTan(a*x)))-Integrate::Unintegrable(1/(x^2*ArcTan(a*x)), x)/(a*c)");
 
 	}
 
-	// {1/(x^2*(c+a^2*c*x^2)*ArcTan(a*x)^2), x, 1, -(1/(a*c*x^2*ArcTan(a*x)))-(2*Unintegrable(1/(x^3*ArcTan(a*x)),
+	// {1/(x^2*(c+a^2*c*x^2)*ArcTan(a*x)^2), x, 1,
+	// -(1/(a*c*x^2*ArcTan(a*x)))-(2*Integrate::Unintegrable(1/(x^3*ArcTan(a*x)),
 	// x))/(a*c)}
 	public void test02711() {
 		check("Integrate(1/(x^2*(c+a^2*c*x^2)*ArcTan(a*x)^2), x)",
-				"-(1/(a*c*x^2*ArcTan(a*x)))-(2*Unintegrable(1/(x^3*ArcTan(a*x)), x))/(a*c)");
+				"-(1/(a*c*x^2*ArcTan(a*x)))-(2*Integrate::Unintegrable(1/(x^3*ArcTan(a*x)), x))/(a*c)");
 
 	}
 
-	// {1/(x^3*(c+a^2*c*x^2)*ArcTan(a*x)^2), x, 1, -(1/(a*c*x^3*ArcTan(a*x)))-(3*Unintegrable(1/(x^4*ArcTan(a*x)),
+	// {1/(x^3*(c+a^2*c*x^2)*ArcTan(a*x)^2), x, 1,
+	// -(1/(a*c*x^3*ArcTan(a*x)))-(3*Integrate::Unintegrable(1/(x^4*ArcTan(a*x)),
 	// x))/(a*c)}
 	public void test02712() {
 		check("Integrate(1/(x^3*(c+a^2*c*x^2)*ArcTan(a*x)^2), x)",
-				"-(1/(a*c*x^3*ArcTan(a*x)))-(3*Unintegrable(1/(x^4*ArcTan(a*x)), x))/(a*c)");
+				"-(1/(a*c*x^3*ArcTan(a*x)))-(3*Integrate::Unintegrable(1/(x^4*ArcTan(a*x)), x))/(a*c)");
 
 	}
 
-	// {1/(x^4*(c+a^2*c*x^2)*ArcTan(a*x)^2), x, 1, -(1/(a*c*x^4*ArcTan(a*x)))-(4*Unintegrable(1/(x^5*ArcTan(a*x)),
+	// {1/(x^4*(c+a^2*c*x^2)*ArcTan(a*x)^2), x, 1,
+	// -(1/(a*c*x^4*ArcTan(a*x)))-(4*Integrate::Unintegrable(1/(x^5*ArcTan(a*x)),
 	// x))/(a*c)}
 	public void test02713() {
 		check("Integrate(1/(x^4*(c+a^2*c*x^2)*ArcTan(a*x)^2), x)",
-				"-(1/(a*c*x^4*ArcTan(a*x)))-(4*Unintegrable(1/(x^5*ArcTan(a*x)), x))/(a*c)");
+				"-(1/(a*c*x^4*ArcTan(a*x)))-(4*Integrate::Unintegrable(1/(x^5*ArcTan(a*x)), x))/(a*c)");
 
 	}
 
 	// {1/(x*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^2), x, 1, -(Sqrt(c+a^2*c*x^2)/(a*c*x*ArcTan(a*x))) -
-	// Unintegrable(1/(x^2*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)), x)/a}
+	// Integrate::Unintegrable(1/(x^2*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)), x)/a}
 	public void test02714() {
 		check("Integrate(1/(x*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^2), x)",
-				"-(Sqrt(c+a^2*c*x^2)/(a*c*x*ArcTan(a*x)))-Unintegrable(1/(x^2*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)), x)/a");
+				"-(Sqrt(c+a^2*c*x^2)/(a*c*x*ArcTan(a*x)))-Integrate::Unintegrable(1/(x^2*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)), x)/a");
 
 	}
 
-	// {x^m/((c+a^2*c*x^2)*ArcTan(a*x)^2), x, 1, -(x^m/(a*c*ArcTan(a*x)))+(m*Unintegrable(x^(-1+m)/ArcTan(a*x),
+	// {x^m/((c+a^2*c*x^2)*ArcTan(a*x)^2), x, 1,
+	// -(x^m/(a*c*ArcTan(a*x)))+(m*Integrate::Unintegrable(x^(-1+m)/ArcTan(a*x),
 	// x))/(a*c)}
 	public void test02715() {
 		check("Integrate(x^m/((c+a^2*c*x^2)*ArcTan(a*x)^2), x)",
-				"-(x^m/(a*c*ArcTan(a*x)))+(m*Unintegrable(x^(-1+m)/ArcTan(a*x), x))/(a*c)");
+				"-(x^m/(a*c*ArcTan(a*x)))+(m*Integrate::Unintegrable(x^(-1+m)/ArcTan(a*x), x))/(a*c)");
 
 	}
 
-	// {x^3/((c+a^2*c*x^2)*ArcTan(a*x)^3), x, 1, -x^3/(2*a*c*ArcTan(a*x)^2)+(3*Unintegrable(x^2/ArcTan(a*x)^2,
+	// {x^3/((c+a^2*c*x^2)*ArcTan(a*x)^3), x, 1,
+	// -x^3/(2*a*c*ArcTan(a*x)^2)+(3*Integrate::Unintegrable(x^2/ArcTan(a*x)^2,
 	// x))/(2*a*c)}
 	public void test02716() {
 		check("Integrate(x^3/((c+a^2*c*x^2)*ArcTan(a*x)^3), x)",
-				"-x^3/(2*a*c*ArcTan(a*x)^2)+(3*Unintegrable(x^2/ArcTan(a*x)^2, x))/(2*a*c)");
+				"-x^3/(2*a*c*ArcTan(a*x)^2)+(3*Integrate::Unintegrable(x^2/ArcTan(a*x)^2, x))/(2*a*c)");
 
 	}
 
-	// {x^2/((c+a^2*c*x^2)*ArcTan(a*x)^3), x, 1, -x^2/(2*a*c*ArcTan(a*x)^2)+Unintegrable(x/ArcTan(a*x)^2, x)/(a*c)}
+	// {x^2/((c+a^2*c*x^2)*ArcTan(a*x)^3), x, 1, -x^2/(2*a*c*ArcTan(a*x)^2)+Integrate::Unintegrable(x/ArcTan(a*x)^2,
+	// x)/(a*c)}
 	public void test02717() {
 		check("Integrate(x^2/((c+a^2*c*x^2)*ArcTan(a*x)^3), x)",
-				"-x^2/(2*a*c*ArcTan(a*x)^2)+Unintegrable(x/ArcTan(a*x)^2, x)/(a*c)");
+				"-x^2/(2*a*c*ArcTan(a*x)^2)+Integrate::Unintegrable(x/ArcTan(a*x)^2, x)/(a*c)");
 
 	}
 
-	// {x/((c+a^2*c*x^2)*ArcTan(a*x)^3), x, 1, -x/(2*a*c*ArcTan(a*x)^2)+Unintegrable(ArcTan(a*x)^(-2), x)/(2*a*c)}
+	// {x/((c+a^2*c*x^2)*ArcTan(a*x)^3), x, 1, -x/(2*a*c*ArcTan(a*x)^2)+Integrate::Unintegrable(ArcTan(a*x)^(-2),
+	// x)/(2*a*c)}
 	public void test02718() {
 		check("Integrate(x/((c+a^2*c*x^2)*ArcTan(a*x)^3), x)",
-				"-x/(2*a*c*ArcTan(a*x)^2)+Unintegrable(ArcTan(a*x)^(-2), x)/(2*a*c)");
+				"-x/(2*a*c*ArcTan(a*x)^2)+Integrate::Unintegrable(ArcTan(a*x)^(-2), x)/(2*a*c)");
 
 	}
 
@@ -18738,83 +18844,88 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {1/(x*(c+a^2*c*x^2)*ArcTan(a*x)^3), x, 1, -1/(2*a*c*x*ArcTan(a*x)^2)-Unintegrable(1/(x^2*ArcTan(a*x)^2),
+	// {1/(x*(c+a^2*c*x^2)*ArcTan(a*x)^3), x, 1,
+	// -1/(2*a*c*x*ArcTan(a*x)^2)-Integrate::Unintegrable(1/(x^2*ArcTan(a*x)^2),
 	// x)/(2*a*c)}
 	public void test02720() {
 		check("Integrate(1/(x*(c+a^2*c*x^2)*ArcTan(a*x)^3), x)",
-				"-1/(2*a*c*x*ArcTan(a*x)^2)-Unintegrable(1/(x^2*ArcTan(a*x)^2), x)/(2*a*c)");
+				"-1/(2*a*c*x*ArcTan(a*x)^2)-Integrate::Unintegrable(1/(x^2*ArcTan(a*x)^2), x)/(2*a*c)");
 
 	}
 
-	// {1/(x^2*(c+a^2*c*x^2)*ArcTan(a*x)^3), x, 1, -1/(2*a*c*x^2*ArcTan(a*x)^2)-Unintegrable(1/(x^3*ArcTan(a*x)^2),
+	// {1/(x^2*(c+a^2*c*x^2)*ArcTan(a*x)^3), x, 1,
+	// -1/(2*a*c*x^2*ArcTan(a*x)^2)-Integrate::Unintegrable(1/(x^3*ArcTan(a*x)^2),
 	// x)/(a*c)}
 	public void test02721() {
 		check("Integrate(1/(x^2*(c+a^2*c*x^2)*ArcTan(a*x)^3), x)",
-				"-1/(2*a*c*x^2*ArcTan(a*x)^2)-Unintegrable(1/(x^3*ArcTan(a*x)^2), x)/(a*c)");
+				"-1/(2*a*c*x^2*ArcTan(a*x)^2)-Integrate::Unintegrable(1/(x^3*ArcTan(a*x)^2), x)/(a*c)");
 
 	}
 
 	// {1/(x^3*(c+a^2*c*x^2)*ArcTan(a*x)^3), x, 1, -1/(2*a*c*x^3*ArcTan(a*x)^2) -
-	// (3*Unintegrable(1/(x^4*ArcTan(a*x)^2), x))/(2*a*c)}
+	// (3*Integrate::Unintegrable(1/(x^4*ArcTan(a*x)^2), x))/(2*a*c)}
 	public void test02722() {
 		check("Integrate(1/(x^3*(c+a^2*c*x^2)*ArcTan(a*x)^3), x)",
-				"-1/(2*a*c*x^3*ArcTan(a*x)^2)-(3*Unintegrable(1/(x^4*ArcTan(a*x)^2), x))/(2*a*c)");
+				"-1/(2*a*c*x^3*ArcTan(a*x)^2)-(3*Integrate::Unintegrable(1/(x^4*ArcTan(a*x)^2), x))/(2*a*c)");
 
 	}
 
 	// {1/(x^4*(c+a^2*c*x^2)*ArcTan(a*x)^3), x, 1, -1/(2*a*c*x^4*ArcTan(a*x)^2) -
-	// (2*Unintegrable(1/(x^5*ArcTan(a*x)^2), x))/(a*c)}
+	// (2*Integrate::Unintegrable(1/(x^5*ArcTan(a*x)^2), x))/(a*c)}
 	public void test02723() {
 		check("Integrate(1/(x^4*(c+a^2*c*x^2)*ArcTan(a*x)^3), x)",
-				"-1/(2*a*c*x^4*ArcTan(a*x)^2)-(2*Unintegrable(1/(x^5*ArcTan(a*x)^2), x))/(a*c)");
+				"-1/(2*a*c*x^4*ArcTan(a*x)^2)-(2*Integrate::Unintegrable(1/(x^5*ArcTan(a*x)^2), x))/(a*c)");
 
 	}
 
 	// {1/(x*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^3), x, 1, -Sqrt(c+a^2*c*x^2)/(2*a*c*x*ArcTan(a*x)^2) -
-	// Unintegrable(1/(x^2*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^2), x)/(2*a)}
+	// Integrate::Unintegrable(1/(x^2*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^2), x)/(2*a)}
 	public void test02724() {
 		check("Integrate(1/(x*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^3), x)",
-				"-Sqrt(c+a^2*c*x^2)/(2*a*c*x*ArcTan(a*x)^2)-Unintegrable(1/(x^2*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^2), x)/(2*a)");
+				"-Sqrt(c+a^2*c*x^2)/(2*a*c*x*ArcTan(a*x)^2)-Integrate::Unintegrable(1/(x^2*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^2), x)/(2*a)");
 
 	}
 
-	// {x^m/((c+a^2*c*x^2)*ArcTan(a*x)^3), x, 1, -x^m/(2*a*c*ArcTan(a*x)^2)+(m*Unintegrable(x^(-1 +
+	// {x^m/((c+a^2*c*x^2)*ArcTan(a*x)^3), x, 1, -x^m/(2*a*c*ArcTan(a*x)^2)+(m*Integrate::Unintegrable(x^(-1 +
 	// m)/ArcTan(a*x)^2, x))/(2*a*c)}
 	public void test02725() {
 		check("Integrate(x^m/((c+a^2*c*x^2)*ArcTan(a*x)^3), x)",
-				"-x^m/(2*a*c*ArcTan(a*x)^2)+(m*Unintegrable(x^(-1+m)/ArcTan(a*x)^2, x))/(2*a*c)");
+				"-x^m/(2*a*c*ArcTan(a*x)^2)+(m*Integrate::Unintegrable(x^(-1+m)/ArcTan(a*x)^2, x))/(2*a*c)");
 
 	}
 
-	// {x*(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)), x, 1, (c*(1+a^2*x^2)^2*Sqrt(ArcTan(a*x)))/(4*a^2)-Unintegrable((c +
+	// {x*(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)), x, 1, (c*(1+a^2*x^2)^2*Sqrt(ArcTan(a*x)))/(4*a^2)-Integrate::Unintegrable((c
+	// +
 	// a^2*c*x^2)/Sqrt(ArcTan(a*x)), x)/(8*a)}
 	public void test02726() {
 		check("Integrate(x*(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)), x)",
-				"(c*(1+a^2*x^2)^2*Sqrt(ArcTan(a*x)))/(4*a^2)-Unintegrable((c+a^2*c*x^2)/Sqrt(ArcTan(a*x)), x)/(8*a)");
+				"(c*(1+a^2*x^2)^2*Sqrt(ArcTan(a*x)))/(4*a^2)-Integrate::Unintegrable((c+a^2*c*x^2)/Sqrt(ArcTan(a*x)), x)/(8*a)");
 
 	}
 
-	// {x*(c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x)), x, 1, (c^2*(1+a^2*x^2)^3*Sqrt(ArcTan(a*x)))/(6*a^2)-Unintegrable((c +
+	// {x*(c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x)), x, 1,
+	// (c^2*(1+a^2*x^2)^3*Sqrt(ArcTan(a*x)))/(6*a^2)-Integrate::Unintegrable((c +
 	// a^2*c*x^2)^2/Sqrt(ArcTan(a*x)), x)/(12*a)}
 	public void test02727() {
 		check("Integrate(x*(c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x)), x)",
-				"(c^2*(1+a^2*x^2)^3*Sqrt(ArcTan(a*x)))/(6*a^2)-Unintegrable((c+a^2*c*x^2)^2/Sqrt(ArcTan(a*x)), x)/(12*a)");
+				"(c^2*(1+a^2*x^2)^3*Sqrt(ArcTan(a*x)))/(6*a^2)-Integrate::Unintegrable((c+a^2*c*x^2)^2/Sqrt(ArcTan(a*x)), x)/(12*a)");
 
 	}
 
-	// {x*(c+a^2*c*x^2)^3*Sqrt(ArcTan(a*x)), x, 1, (c^3*(1+a^2*x^2)^4*Sqrt(ArcTan(a*x)))/(8*a^2)-Unintegrable((c +
+	// {x*(c+a^2*c*x^2)^3*Sqrt(ArcTan(a*x)), x, 1,
+	// (c^3*(1+a^2*x^2)^4*Sqrt(ArcTan(a*x)))/(8*a^2)-Integrate::Unintegrable((c +
 	// a^2*c*x^2)^3/Sqrt(ArcTan(a*x)), x)/(16*a)}
 	public void test02728() {
 		check("Integrate(x*(c+a^2*c*x^2)^3*Sqrt(ArcTan(a*x)), x)",
-				"(c^3*(1+a^2*x^2)^4*Sqrt(ArcTan(a*x)))/(8*a^2)-Unintegrable((c+a^2*c*x^2)^3/Sqrt(ArcTan(a*x)), x)/(16*a)");
+				"(c^3*(1+a^2*x^2)^4*Sqrt(ArcTan(a*x)))/(8*a^2)-Integrate::Unintegrable((c+a^2*c*x^2)^3/Sqrt(ArcTan(a*x)), x)/(16*a)");
 
 	}
 
 	// {(x*Sqrt(ArcTan(a*x)))/(c+a^2*c*x^2), x, 1, (2*x*ArcTan(a*x)^(3/2))/(3*a*c) -
-	// (2*Unintegrable(ArcTan(a*x)^(3/2), x))/(3*a*c)}
+	// (2*Integrate::Unintegrable(ArcTan(a*x)^(3/2), x))/(3*a*c)}
 	public void test02729() {
 		check("Integrate((x*Sqrt(ArcTan(a*x)))/(c+a^2*c*x^2), x)",
-				"(2*x*ArcTan(a*x)^(3/2))/(3*a*c)-(2*Unintegrable(ArcTan(a*x)^(3/2), x))/(3*a*c)");
+				"(2*x*ArcTan(a*x)^(3/2))/(3*a*c)-(2*Integrate::Unintegrable(ArcTan(a*x)^(3/2), x))/(3*a*c)");
 
 	}
 
@@ -18825,109 +18936,113 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	}
 
 	// {Sqrt(ArcTan(a*x))/(x*(c+a^2*c*x^2)), x, 1, (((-2*I)/3)*ArcTan(a*x)^(3/2))/c +
-	// (I*Unintegrable(Sqrt(ArcTan(a*x))/(x*(I+a*x)), x))/c}
+	// (I*Integrate::Unintegrable(Sqrt(ArcTan(a*x))/(x*(I+a*x)), x))/c}
 	public void test02731() {
 		check("Integrate(Sqrt(ArcTan(a*x))/(x*(c+a^2*c*x^2)), x)",
-				"(((-2*I)/3)*ArcTan(a*x)^(3/2))/c+(I*Unintegrable(Sqrt(ArcTan(a*x))/(x*(I+a*x)), x))/c");
+				"(((-2*I)/3)*ArcTan(a*x)^(3/2))/c+(I*Integrate::Unintegrable(Sqrt(ArcTan(a*x))/(x*(I+a*x)), x))/c");
 
 	}
 
 	// {x*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)), x, 1, ((c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x)))/(3*a^2*c) -
-	// Unintegrable(Sqrt(c+a^2*c*x^2)/Sqrt(ArcTan(a*x)), x)/(6*a)}
+	// Integrate::Unintegrable(Sqrt(c+a^2*c*x^2)/Sqrt(ArcTan(a*x)), x)/(6*a)}
 	public void test02732() {
 		check("Integrate(x*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)), x)",
-				"((c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x)))/(3*a^2*c)-Unintegrable(Sqrt(c+a^2*c*x^2)/Sqrt(ArcTan(a*x)), x)/(6*a)");
+				"((c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x)))/(3*a^2*c)-Integrate::Unintegrable(Sqrt(c+a^2*c*x^2)/Sqrt(ArcTan(a*x)), x)/(6*a)");
 
 	}
 
 	// {x*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x)), x, 1, ((c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x)))/(5*a^2*c) -
-	// Unintegrable((c+a^2*c*x^2)^(3/2)/Sqrt(ArcTan(a*x)), x)/(10*a)}
+	// Integrate::Unintegrable((c+a^2*c*x^2)^(3/2)/Sqrt(ArcTan(a*x)), x)/(10*a)}
 	public void test02733() {
 		check("Integrate(x*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x)), x)",
-				"((c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x)))/(5*a^2*c)-Unintegrable((c+a^2*c*x^2)^(3/2)/Sqrt(ArcTan(a*x)), x)/(10*a)");
+				"((c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x)))/(5*a^2*c)-Integrate::Unintegrable((c+a^2*c*x^2)^(3/2)/Sqrt(ArcTan(a*x)), x)/(10*a)");
 
 	}
 
 	// {x*(c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x)), x, 1, ((c+a^2*c*x^2)^(7/2)*Sqrt(ArcTan(a*x)))/(7*a^2*c) -
-	// Unintegrable((c+a^2*c*x^2)^(5/2)/Sqrt(ArcTan(a*x)), x)/(14*a)}
+	// Integrate::Unintegrable((c+a^2*c*x^2)^(5/2)/Sqrt(ArcTan(a*x)), x)/(14*a)}
 	public void test02734() {
 		check("Integrate(x*(c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x)), x)",
-				"((c+a^2*c*x^2)^(7/2)*Sqrt(ArcTan(a*x)))/(7*a^2*c)-Unintegrable((c+a^2*c*x^2)^(5/2)/Sqrt(ArcTan(a*x)), x)/(14*a)");
+				"((c+a^2*c*x^2)^(7/2)*Sqrt(ArcTan(a*x)))/(7*a^2*c)-Integrate::Unintegrable((c+a^2*c*x^2)^(5/2)/Sqrt(ArcTan(a*x)), x)/(14*a)");
 
 	}
 
 	// {(x^2*Sqrt(ArcTan(a*x)))/Sqrt(c+a^2*c*x^2), x, 1, (x*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)))/(2*a^2*c) -
-	// Unintegrable(x/(Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x)/(4*a)-Unintegrable(Sqrt(ArcTan(a*x))/Sqrt(c +
+	// Integrate::Unintegrable(x/(Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))),
+	// x)/(4*a)-Integrate::Unintegrable(Sqrt(ArcTan(a*x))/Sqrt(c +
 	// a^2*c*x^2), x)/(2*a^2)}
 	public void test02735() {
 		check("Integrate((x^2*Sqrt(ArcTan(a*x)))/Sqrt(c+a^2*c*x^2), x)",
-				"(x*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)))/(2*a^2*c)-Unintegrable(x/(Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x)/(4*a)-Unintegrable(Sqrt(ArcTan(a*x))/Sqrt(c+a^2*c*x^2), x)/(2*a^2)");
+				"(x*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)))/(2*a^2*c)-Integrate::Unintegrable(x/(Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x)/(4*a)-Integrate::Unintegrable(Sqrt(ArcTan(a*x))/Sqrt(c+a^2*c*x^2), x)/(2*a^2)");
 
 	}
 
 	// {(x*Sqrt(ArcTan(a*x)))/Sqrt(c+a^2*c*x^2), x, 1, (Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)))/(a^2*c) -
-	// Unintegrable(1/(Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x)/(2*a)}
+	// Integrate::Unintegrable(1/(Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x)/(2*a)}
 	public void test02736() {
 		check("Integrate((x*Sqrt(ArcTan(a*x)))/Sqrt(c+a^2*c*x^2), x)",
-				"(Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)))/(a^2*c)-Unintegrable(1/(Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x)/(2*a)");
+				"(Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)))/(a^2*c)-Integrate::Unintegrable(1/(Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x)/(2*a)");
 
 	}
 
 	// {Sqrt(ArcTan(a*x))/(x^2*Sqrt(c+a^2*c*x^2)), x, 1, -((Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)))/(c*x)) +
-	// (a*Unintegrable(1/(x*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x))/2}
+	// (a*Integrate::Unintegrable(1/(x*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x))/2}
 	public void test02737() {
 		check("Integrate(Sqrt(ArcTan(a*x))/(x^2*Sqrt(c+a^2*c*x^2)), x)",
-				"-((Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)))/(c*x))+(a*Unintegrable(1/(x*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x))/2");
+				"-((Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)))/(c*x))+(a*Integrate::Unintegrable(1/(x*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x))/2");
 
 	}
 
 	// {Sqrt(ArcTan(a*x))/(x^3*Sqrt(c+a^2*c*x^2)), x, 1, -(Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)))/(2*c*x^2) +
-	// (a*Unintegrable(1/(x^2*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x))/4 -
-	// (a^2*Unintegrable(Sqrt(ArcTan(a*x))/(x*Sqrt(c+a^2*c*x^2)), x))/2}
+	// (a*Integrate::Unintegrable(1/(x^2*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x))/4 -
+	// (a^2*Integrate::Unintegrable(Sqrt(ArcTan(a*x))/(x*Sqrt(c+a^2*c*x^2)), x))/2}
 	public void test02738() {
 		check("Integrate(Sqrt(ArcTan(a*x))/(x^3*Sqrt(c+a^2*c*x^2)), x)",
-				"-(Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)))/(2*c*x^2)+(a*Unintegrable(1/(x^2*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x))/4-(a^2*Unintegrable(Sqrt(ArcTan(a*x))/(x*Sqrt(c+a^2*c*x^2)), x))/2");
+				"-(Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)))/(2*c*x^2)+(a*Integrate::Unintegrable(1/(x^2*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x))/4-(a^2*Integrate::Unintegrable(Sqrt(ArcTan(a*x))/(x*Sqrt(c+a^2*c*x^2)), x))/2");
 
 	}
 
-	// {x*(c+a^2*c*x^2)*ArcTan(a*x)^(3/2), x, 1, (c*(1+a^2*x^2)^2*ArcTan(a*x)^(3/2))/(4*a^2)-(3*Unintegrable((c +
+	// {x*(c+a^2*c*x^2)*ArcTan(a*x)^(3/2), x, 1,
+	// (c*(1+a^2*x^2)^2*ArcTan(a*x)^(3/2))/(4*a^2)-(3*Integrate::Unintegrable((c +
 	// a^2*c*x^2)*Sqrt(ArcTan(a*x)), x))/(8*a)}
 	public void test02739() {
 		check("Integrate(x*(c+a^2*c*x^2)*ArcTan(a*x)^(3/2), x)",
-				"(c*(1+a^2*x^2)^2*ArcTan(a*x)^(3/2))/(4*a^2)-(3*Unintegrable((c+a^2*c*x^2)*Sqrt(ArcTan(a*x)), x))/(8*a)");
+				"(c*(1+a^2*x^2)^2*ArcTan(a*x)^(3/2))/(4*a^2)-(3*Integrate::Unintegrable((c+a^2*c*x^2)*Sqrt(ArcTan(a*x)), x))/(8*a)");
 
 	}
 
 	// {(c+a^2*c*x^2)*ArcTan(a*x)^(3/2), x, 1, -(c*(1+a^2*x^2)*Sqrt(ArcTan(a*x)))/(4*a)+(c*x*(1 +
-	// a^2*x^2)*ArcTan(a*x)^(3/2))/3+(c*Unintegrable(1/Sqrt(ArcTan(a*x)), x))/8+(2*c*Unintegrable(ArcTan(a*x)^(3/2),
+	// a^2*x^2)*ArcTan(a*x)^(3/2))/3+(c*Integrate::Unintegrable(1/Sqrt(ArcTan(a*x)),
+	// x))/8+(2*c*Integrate::Unintegrable(ArcTan(a*x)^(3/2),
 	// x))/3}
 	public void test02740() {
 		check("Integrate((c+a^2*c*x^2)*ArcTan(a*x)^(3/2), x)",
-				"-(c*(1+a^2*x^2)*Sqrt(ArcTan(a*x)))/(4*a)+(c*x*(1+a^2*x^2)*ArcTan(a*x)^(3/2))/3+(c*Unintegrable(1/Sqrt(ArcTan(a*x)), x))/8+(2*c*Unintegrable(ArcTan(a*x)^(3/2), x))/3");
+				"-(c*(1+a^2*x^2)*Sqrt(ArcTan(a*x)))/(4*a)+(c*x*(1+a^2*x^2)*ArcTan(a*x)^(3/2))/3+(c*Integrate::Unintegrable(1/Sqrt(ArcTan(a*x)), x))/8+(2*c*Integrate::Unintegrable(ArcTan(a*x)^(3/2), x))/3");
 
 	}
 
-	// {x*(c+a^2*c*x^2)^2*ArcTan(a*x)^(3/2), x, 1, (c^2*(1+a^2*x^2)^3*ArcTan(a*x)^(3/2))/(6*a^2)-Unintegrable((c +
+	// {x*(c+a^2*c*x^2)^2*ArcTan(a*x)^(3/2), x, 1,
+	// (c^2*(1+a^2*x^2)^3*ArcTan(a*x)^(3/2))/(6*a^2)-Integrate::Unintegrable((c +
 	// a^2*c*x^2)^2*Sqrt(ArcTan(a*x)), x)/(4*a)}
 	public void test02741() {
 		check("Integrate(x*(c+a^2*c*x^2)^2*ArcTan(a*x)^(3/2), x)",
-				"(c^2*(1+a^2*x^2)^3*ArcTan(a*x)^(3/2))/(6*a^2)-Unintegrable((c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x)), x)/(4*a)");
+				"(c^2*(1+a^2*x^2)^3*ArcTan(a*x)^(3/2))/(6*a^2)-Integrate::Unintegrable((c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x)), x)/(4*a)");
 
 	}
 
 	// {x*(c+a^2*c*x^2)^3*ArcTan(a*x)^(3/2), x, 1, (c^3*(1+a^2*x^2)^4*ArcTan(a*x)^(3/2))/(8*a^2) -
-	// (3*Unintegrable((c+a^2*c*x^2)^3*Sqrt(ArcTan(a*x)), x))/(16*a)}
+	// (3*Integrate::Unintegrable((c+a^2*c*x^2)^3*Sqrt(ArcTan(a*x)), x))/(16*a)}
 	public void test02742() {
 		check("Integrate(x*(c+a^2*c*x^2)^3*ArcTan(a*x)^(3/2), x)",
-				"(c^3*(1+a^2*x^2)^4*ArcTan(a*x)^(3/2))/(8*a^2)-(3*Unintegrable((c+a^2*c*x^2)^3*Sqrt(ArcTan(a*x)), x))/(16*a)");
+				"(c^3*(1+a^2*x^2)^4*ArcTan(a*x)^(3/2))/(8*a^2)-(3*Integrate::Unintegrable((c+a^2*c*x^2)^3*Sqrt(ArcTan(a*x)), x))/(16*a)");
 
 	}
 
 	// {(x*ArcTan(a*x)^(3/2))/(c+a^2*c*x^2), x, 1, (2*x*ArcTan(a*x)^(5/2))/(5*a*c) -
-	// (2*Unintegrable(ArcTan(a*x)^(5/2), x))/(5*a*c)}
+	// (2*Integrate::Unintegrable(ArcTan(a*x)^(5/2), x))/(5*a*c)}
 	public void test02743() {
 		check("Integrate((x*ArcTan(a*x)^(3/2))/(c+a^2*c*x^2), x)",
-				"(2*x*ArcTan(a*x)^(5/2))/(5*a*c)-(2*Unintegrable(ArcTan(a*x)^(5/2), x))/(5*a*c)");
+				"(2*x*ArcTan(a*x)^(5/2))/(5*a*c)-(2*Integrate::Unintegrable(ArcTan(a*x)^(5/2), x))/(5*a*c)");
 
 	}
 
@@ -18938,76 +19053,77 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	}
 
 	// {ArcTan(a*x)^(3/2)/(x*(c+a^2*c*x^2)), x, 1, (((-2*I)/5)*ArcTan(a*x)^(5/2))/c +
-	// (I*Unintegrable(ArcTan(a*x)^(3/2)/(x*(I+a*x)), x))/c}
+	// (I*Integrate::Unintegrable(ArcTan(a*x)^(3/2)/(x*(I+a*x)), x))/c}
 	public void test02745() {
 		check("Integrate(ArcTan(a*x)^(3/2)/(x*(c+a^2*c*x^2)), x)",
-				"(((-2*I)/5)*ArcTan(a*x)^(5/2))/c+(I*Unintegrable(ArcTan(a*x)^(3/2)/(x*(I+a*x)), x))/c");
+				"(((-2*I)/5)*ArcTan(a*x)^(5/2))/c+(I*Integrate::Unintegrable(ArcTan(a*x)^(3/2)/(x*(I+a*x)), x))/c");
 
 	}
 
 	// {x*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(3/2), x, 1, ((c+a^2*c*x^2)^(3/2)*ArcTan(a*x)^(3/2))/(3*a^2*c) -
-	// Unintegrable(Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)), x)/(2*a)}
+	// Integrate::Unintegrable(Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)), x)/(2*a)}
 	public void test02746() {
 		check("Integrate(x*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(3/2), x)",
-				"((c+a^2*c*x^2)^(3/2)*ArcTan(a*x)^(3/2))/(3*a^2*c)-Unintegrable(Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)), x)/(2*a)");
+				"((c+a^2*c*x^2)^(3/2)*ArcTan(a*x)^(3/2))/(3*a^2*c)-Integrate::Unintegrable(Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)), x)/(2*a)");
 
 	}
 
 	// {Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(3/2), x, 1, (-3*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)))/(4*a)+(x*Sqrt(c +
-	// a^2*c*x^2)*ArcTan(a*x)^(3/2))/2+(3*c*Unintegrable(1/(Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x))/8 +
-	// (c*Unintegrable(ArcTan(a*x)^(3/2)/Sqrt(c+a^2*c*x^2), x))/2}
+	// a^2*c*x^2)*ArcTan(a*x)^(3/2))/2+(3*c*Integrate::Unintegrable(1/(Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x))/8 +
+	// (c*Integrate::Unintegrable(ArcTan(a*x)^(3/2)/Sqrt(c+a^2*c*x^2), x))/2}
 	public void test02747() {
 		check("Integrate(Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(3/2), x)",
-				"(-3*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)))/(4*a)+(x*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(3/2))/2+(3*c*Unintegrable(1/(Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x))/8+(c*Unintegrable(ArcTan(a*x)^(3/2)/Sqrt(c+a^2*c*x^2), x))/2");
+				"(-3*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)))/(4*a)+(x*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(3/2))/2+(3*c*Integrate::Unintegrable(1/(Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x))/8+(c*Integrate::Unintegrable(ArcTan(a*x)^(3/2)/Sqrt(c+a^2*c*x^2), x))/2");
 
 	}
 
 	// {x*(c+a^2*c*x^2)^(3/2)*ArcTan(a*x)^(3/2), x, 1, ((c+a^2*c*x^2)^(5/2)*ArcTan(a*x)^(3/2))/(5*a^2*c) -
-	// (3*Unintegrable((c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x)), x))/(10*a)}
+	// (3*Integrate::Unintegrable((c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x)), x))/(10*a)}
 	public void test02748() {
 		check("Integrate(x*(c+a^2*c*x^2)^(3/2)*ArcTan(a*x)^(3/2), x)",
-				"((c+a^2*c*x^2)^(5/2)*ArcTan(a*x)^(3/2))/(5*a^2*c)-(3*Unintegrable((c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x)), x))/(10*a)");
+				"((c+a^2*c*x^2)^(5/2)*ArcTan(a*x)^(3/2))/(5*a^2*c)-(3*Integrate::Unintegrable((c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x)), x))/(10*a)");
 
 	}
 
 	// {x*(c+a^2*c*x^2)^(5/2)*ArcTan(a*x)^(3/2), x, 1, ((c+a^2*c*x^2)^(7/2)*ArcTan(a*x)^(3/2))/(7*a^2*c) -
-	// (3*Unintegrable((c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x)), x))/(14*a)}
+	// (3*Integrate::Unintegrable((c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x)), x))/(14*a)}
 	public void test02749() {
 		check("Integrate(x*(c+a^2*c*x^2)^(5/2)*ArcTan(a*x)^(3/2), x)",
-				"((c+a^2*c*x^2)^(7/2)*ArcTan(a*x)^(3/2))/(7*a^2*c)-(3*Unintegrable((c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x)), x))/(14*a)");
+				"((c+a^2*c*x^2)^(7/2)*ArcTan(a*x)^(3/2))/(7*a^2*c)-(3*Integrate::Unintegrable((c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x)), x))/(14*a)");
 
 	}
 
 	// {(x*ArcTan(a*x)^(3/2))/Sqrt(c+a^2*c*x^2), x, 1, (Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(3/2))/(a^2*c) -
-	// (3*Unintegrable(Sqrt(ArcTan(a*x))/Sqrt(c+a^2*c*x^2), x))/(2*a)}
+	// (3*Integrate::Unintegrable(Sqrt(ArcTan(a*x))/Sqrt(c+a^2*c*x^2), x))/(2*a)}
 	public void test02750() {
 		check("Integrate((x*ArcTan(a*x)^(3/2))/Sqrt(c+a^2*c*x^2), x)",
-				"(Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(3/2))/(a^2*c)-(3*Unintegrable(Sqrt(ArcTan(a*x))/Sqrt(c+a^2*c*x^2), x))/(2*a)");
+				"(Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(3/2))/(a^2*c)-(3*Integrate::Unintegrable(Sqrt(ArcTan(a*x))/Sqrt(c+a^2*c*x^2), x))/(2*a)");
 
 	}
 
 	// {ArcTan(a*x)^(3/2)/(x^2*Sqrt(c+a^2*c*x^2)), x, 1, -((Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(3/2))/(c*x)) +
-	// (3*a*Unintegrable(Sqrt(ArcTan(a*x))/(x*Sqrt(c+a^2*c*x^2)), x))/2}
+	// (3*a*Integrate::Unintegrable(Sqrt(ArcTan(a*x))/(x*Sqrt(c+a^2*c*x^2)), x))/2}
 	public void test02751() {
 		check("Integrate(ArcTan(a*x)^(3/2)/(x^2*Sqrt(c+a^2*c*x^2)), x)",
-				"-((Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(3/2))/(c*x))+(3*a*Unintegrable(Sqrt(ArcTan(a*x))/(x*Sqrt(c+a^2*c*x^2)), x))/2");
+				"-((Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(3/2))/(c*x))+(3*a*Integrate::Unintegrable(Sqrt(ArcTan(a*x))/(x*Sqrt(c+a^2*c*x^2)), x))/2");
 
 	}
 
 	// {(c+a^2*c*x^2)*ArcTan(a*x)^(5/2), x, 1, (-5*c*(1+a^2*x^2)*ArcTan(a*x)^(3/2))/(12*a)+(c*x*(1 +
-	// a^2*x^2)*ArcTan(a*x)^(5/2))/3+(5*c*Unintegrable(Sqrt(ArcTan(a*x)), x))/8+(2*c*Unintegrable(ArcTan(a*x)^(5/2),
+	// a^2*x^2)*ArcTan(a*x)^(5/2))/3+(5*c*Integrate::Unintegrable(Sqrt(ArcTan(a*x)),
+	// x))/8+(2*c*Integrate::Unintegrable(ArcTan(a*x)^(5/2),
 	// x))/3}
 	public void test02752() {
 		check("Integrate((c+a^2*c*x^2)*ArcTan(a*x)^(5/2), x)",
-				"(-5*c*(1+a^2*x^2)*ArcTan(a*x)^(3/2))/(12*a)+(c*x*(1+a^2*x^2)*ArcTan(a*x)^(5/2))/3+(5*c*Unintegrable(Sqrt(ArcTan(a*x)), x))/8+(2*c*Unintegrable(ArcTan(a*x)^(5/2), x))/3");
+				"(-5*c*(1+a^2*x^2)*ArcTan(a*x)^(3/2))/(12*a)+(c*x*(1+a^2*x^2)*ArcTan(a*x)^(5/2))/3+(5*c*Integrate::Unintegrable(Sqrt(ArcTan(a*x)), x))/8+(2*c*Integrate::Unintegrable(ArcTan(a*x)^(5/2), x))/3");
 
 	}
 
 	// {(x*ArcTan(a*x)^(5/2))/(c+a^2*c*x^2), x, 1, (2*x*ArcTan(a*x)^(7/2))/(7*a*c) -
-	// (2*Unintegrable(ArcTan(a*x)^(7/2), x))/(7*a*c)}
+	// (2*Integrate::Unintegrable(ArcTan(a*x)^(7/2), x))/(7*a*c)}
 	public void test02753() {
 		check("Integrate((x*ArcTan(a*x)^(5/2))/(c+a^2*c*x^2), x)",
-				"(2*x*ArcTan(a*x)^(7/2))/(7*a*c)-(2*Unintegrable(ArcTan(a*x)^(7/2), x))/(7*a*c)");
+				"(2*x*ArcTan(a*x)^(7/2))/(7*a*c)-(2*Integrate::Unintegrable(ArcTan(a*x)^(7/2), x))/(7*a*c)");
 
 	}
 
@@ -19018,43 +19134,44 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	}
 
 	// {ArcTan(a*x)^(5/2)/(x*(c+a^2*c*x^2)), x, 1, (((-2*I)/7)*ArcTan(a*x)^(7/2))/c +
-	// (I*Unintegrable(ArcTan(a*x)^(5/2)/(x*(I+a*x)), x))/c}
+	// (I*Integrate::Unintegrable(ArcTan(a*x)^(5/2)/(x*(I+a*x)), x))/c}
 	public void test02755() {
 		check("Integrate(ArcTan(a*x)^(5/2)/(x*(c+a^2*c*x^2)), x)",
-				"(((-2*I)/7)*ArcTan(a*x)^(7/2))/c+(I*Unintegrable(ArcTan(a*x)^(5/2)/(x*(I+a*x)), x))/c");
+				"(((-2*I)/7)*ArcTan(a*x)^(7/2))/c+(I*Integrate::Unintegrable(ArcTan(a*x)^(5/2)/(x*(I+a*x)), x))/c");
 
 	}
 
 	// {Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(5/2), x, 1, (-5*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(3/2))/(4*a)+(x*Sqrt(c +
-	// a^2*c*x^2)*ArcTan(a*x)^(5/2))/2+(15*c*Unintegrable(Sqrt(ArcTan(a*x))/Sqrt(c+a^2*c*x^2), x))/8 +
-	// (c*Unintegrable(ArcTan(a*x)^(5/2)/Sqrt(c+a^2*c*x^2), x))/2}
+	// a^2*c*x^2)*ArcTan(a*x)^(5/2))/2+(15*c*Integrate::Unintegrable(Sqrt(ArcTan(a*x))/Sqrt(c+a^2*c*x^2), x))/8 +
+	// (c*Integrate::Unintegrable(ArcTan(a*x)^(5/2)/Sqrt(c+a^2*c*x^2), x))/2}
 	public void test02756() {
 		check("Integrate(Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(5/2), x)",
-				"(-5*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(3/2))/(4*a)+(x*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(5/2))/2+(15*c*Unintegrable(Sqrt(ArcTan(a*x))/Sqrt(c+a^2*c*x^2), x))/8+(c*Unintegrable(ArcTan(a*x)^(5/2)/Sqrt(c+a^2*c*x^2), x))/2");
+				"(-5*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(3/2))/(4*a)+(x*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(5/2))/2+(15*c*Integrate::Unintegrable(Sqrt(ArcTan(a*x))/Sqrt(c+a^2*c*x^2), x))/8+(c*Integrate::Unintegrable(ArcTan(a*x)^(5/2)/Sqrt(c+a^2*c*x^2), x))/2");
 
 	}
 
 	// {(x*ArcTan(a*x)^(5/2))/Sqrt(c+a^2*c*x^2), x, 1, (Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(5/2))/(a^2*c) -
-	// (5*Unintegrable(ArcTan(a*x)^(3/2)/Sqrt(c+a^2*c*x^2), x))/(2*a)}
+	// (5*Integrate::Unintegrable(ArcTan(a*x)^(3/2)/Sqrt(c+a^2*c*x^2), x))/(2*a)}
 	public void test02757() {
 		check("Integrate((x*ArcTan(a*x)^(5/2))/Sqrt(c+a^2*c*x^2), x)",
-				"(Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(5/2))/(a^2*c)-(5*Unintegrable(ArcTan(a*x)^(3/2)/Sqrt(c+a^2*c*x^2), x))/(2*a)");
+				"(Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(5/2))/(a^2*c)-(5*Integrate::Unintegrable(ArcTan(a*x)^(3/2)/Sqrt(c+a^2*c*x^2), x))/(2*a)");
 
 	}
 
 	// {ArcTan(a*x)^(5/2)/(x^2*Sqrt(c+a^2*c*x^2)), x, 1, -((Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(5/2))/(c*x)) +
-	// (5*a*Unintegrable(ArcTan(a*x)^(3/2)/(x*Sqrt(c+a^2*c*x^2)), x))/2}
+	// (5*a*Integrate::Unintegrable(ArcTan(a*x)^(3/2)/(x*Sqrt(c+a^2*c*x^2)), x))/2}
 	public void test02758() {
 		check("Integrate(ArcTan(a*x)^(5/2)/(x^2*Sqrt(c+a^2*c*x^2)), x)",
-				"-((Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(5/2))/(c*x))+(5*a*Unintegrable(ArcTan(a*x)^(3/2)/(x*Sqrt(c+a^2*c*x^2)), x))/2");
+				"-((Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(5/2))/(c*x))+(5*a*Integrate::Unintegrable(ArcTan(a*x)^(3/2)/(x*Sqrt(c+a^2*c*x^2)), x))/2");
 
 	}
 
-	// {x/((c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x, 1, (2*x*Sqrt(ArcTan(a*x)))/(a*c)-(2*Unintegrable(Sqrt(ArcTan(a*x)),
+	// {x/((c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x, 1,
+	// (2*x*Sqrt(ArcTan(a*x)))/(a*c)-(2*Integrate::Unintegrable(Sqrt(ArcTan(a*x)),
 	// x))/(a*c)}
 	public void test02759() {
 		check("Integrate(x/((c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x)",
-				"(2*x*Sqrt(ArcTan(a*x)))/(a*c)-(2*Unintegrable(Sqrt(ArcTan(a*x)), x))/(a*c)");
+				"(2*x*Sqrt(ArcTan(a*x)))/(a*c)-(2*Integrate::Unintegrable(Sqrt(ArcTan(a*x)), x))/(a*c)");
 
 	}
 
@@ -19064,19 +19181,20 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {x^m/((c+a^2*c*x^2)*ArcTan(a*x)^(3/2)), x, 1, (-2*x^m)/(a*c*Sqrt(ArcTan(a*x)))+(2*m*Unintegrable(x^(-1 +
+	// {x^m/((c+a^2*c*x^2)*ArcTan(a*x)^(3/2)), x, 1, (-2*x^m)/(a*c*Sqrt(ArcTan(a*x)))+(2*m*Integrate::Unintegrable(x^(-1
+	// +
 	// m)/Sqrt(ArcTan(a*x)), x))/(a*c)}
 	public void test02761() {
 		check("Integrate(x^m/((c+a^2*c*x^2)*ArcTan(a*x)^(3/2)), x)",
-				"(-2*x^m)/(a*c*Sqrt(ArcTan(a*x)))+(2*m*Unintegrable(x^(-1+m)/Sqrt(ArcTan(a*x)), x))/(a*c)");
+				"(-2*x^m)/(a*c*Sqrt(ArcTan(a*x)))+(2*m*Integrate::Unintegrable(x^(-1+m)/Sqrt(ArcTan(a*x)), x))/(a*c)");
 
 	}
 
 	// {x/((c+a^2*c*x^2)*ArcTan(a*x)^(3/2)), x, 1, (-2*x)/(a*c*Sqrt(ArcTan(a*x))) +
-	// (2*Unintegrable(1/Sqrt(ArcTan(a*x)), x))/(a*c)}
+	// (2*Integrate::Unintegrable(1/Sqrt(ArcTan(a*x)), x))/(a*c)}
 	public void test02762() {
 		check("Integrate(x/((c+a^2*c*x^2)*ArcTan(a*x)^(3/2)), x)",
-				"(-2*x)/(a*c*Sqrt(ArcTan(a*x)))+(2*Unintegrable(1/Sqrt(ArcTan(a*x)), x))/(a*c)");
+				"(-2*x)/(a*c*Sqrt(ArcTan(a*x)))+(2*Integrate::Unintegrable(1/Sqrt(ArcTan(a*x)), x))/(a*c)");
 
 	}
 
@@ -19087,160 +19205,173 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	}
 
 	// {1/(x*(c+a^2*c*x^2)*ArcTan(a*x)^(3/2)), x, 1, -2/(a*c*x*Sqrt(ArcTan(a*x))) -
-	// (2*Unintegrable(1/(x^2*Sqrt(ArcTan(a*x))), x))/(a*c)}
+	// (2*Integrate::Unintegrable(1/(x^2*Sqrt(ArcTan(a*x))), x))/(a*c)}
 	public void test02764() {
 		check("Integrate(1/(x*(c+a^2*c*x^2)*ArcTan(a*x)^(3/2)), x)",
-				"-2/(a*c*x*Sqrt(ArcTan(a*x)))-(2*Unintegrable(1/(x^2*Sqrt(ArcTan(a*x))), x))/(a*c)");
+				"-2/(a*c*x*Sqrt(ArcTan(a*x)))-(2*Integrate::Unintegrable(1/(x^2*Sqrt(ArcTan(a*x))), x))/(a*c)");
 
 	}
 
 	// {x^4/((c+a^2*c*x^2)^2*ArcTan(a*x)^(3/2)), x, 1, (-2*x^4)/(a*c^2*(1+a^2*x^2)*Sqrt(ArcTan(a*x))) +
-	// (8*Unintegrable(x^3/((c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x))/a+4*a*Unintegrable(x^5/((c +
+	// (8*Integrate::Unintegrable(x^3/((c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x))/a+4*a*Integrate::Unintegrable(x^5/((c +
 	// a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x)}
 	public void test02765() {
 		check("Integrate(x^4/((c+a^2*c*x^2)^2*ArcTan(a*x)^(3/2)), x)",
-				"(-2*x^4)/(a*c^2*(1+a^2*x^2)*Sqrt(ArcTan(a*x)))+(8*Unintegrable(x^3/((c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x))/a+4*a*Unintegrable(x^5/((c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x)");
+				"(-2*x^4)/(a*c^2*(1+a^2*x^2)*Sqrt(ArcTan(a*x)))+(8*Integrate::Unintegrable(x^3/((c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x))/a+4*a*Integrate::Unintegrable(x^5/((c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x)");
 
 	}
 
 	// {1/(x^2*(c+a^2*c*x^2)^2*ArcTan(a*x)^(3/2)), x, 1, -2/(a*c^2*x^2*(1+a^2*x^2)*Sqrt(ArcTan(a*x))) -
-	// (4*Unintegrable(1/(x^3*(c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x))/a-8*a*Unintegrable(1/(x*(c +
+	// (4*Integrate::Unintegrable(1/(x^3*(c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x))/a-8*a*Integrate::Unintegrable(1/(x*(c +
 	// a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x)}
 	public void test02766() {
 		check("Integrate(1/(x^2*(c+a^2*c*x^2)^2*ArcTan(a*x)^(3/2)), x)",
-				"-2/(a*c^2*x^2*(1+a^2*x^2)*Sqrt(ArcTan(a*x)))-(4*Unintegrable(1/(x^3*(c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x))/a-8*a*Unintegrable(1/(x*(c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x)");
+				"-2/(a*c^2*x^2*(1+a^2*x^2)*Sqrt(ArcTan(a*x)))-(4*Integrate::Unintegrable(1/(x^3*(c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x))/a-8*a*Integrate::Unintegrable(1/(x*(c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x)");
 
 	}
 
 	// {1/(x^3*(c+a^2*c*x^2)^2*ArcTan(a*x)^(3/2)), x, 1, -2/(a*c^2*x^3*(1+a^2*x^2)*Sqrt(ArcTan(a*x))) -
-	// (6*Unintegrable(1/(x^4*(c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x))/a-10*a*Unintegrable(1/(x^2*(c +
+	// (6*Integrate::Unintegrable(1/(x^4*(c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x))),
+	// x))/a-10*a*Integrate::Unintegrable(1/(x^2*(c +
 	// a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x)}
 	public void test02767() {
 		check("Integrate(1/(x^3*(c+a^2*c*x^2)^2*ArcTan(a*x)^(3/2)), x)",
-				"-2/(a*c^2*x^3*(1+a^2*x^2)*Sqrt(ArcTan(a*x)))-(6*Unintegrable(1/(x^4*(c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x))/a-10*a*Unintegrable(1/(x^2*(c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x)");
+				"-2/(a*c^2*x^3*(1+a^2*x^2)*Sqrt(ArcTan(a*x)))-(6*Integrate::Unintegrable(1/(x^4*(c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x))/a-10*a*Integrate::Unintegrable(1/(x^2*(c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x)");
 
 	}
 
 	// {1/(x^4*(c+a^2*c*x^2)^2*ArcTan(a*x)^(3/2)), x, 1, -2/(a*c^2*x^4*(1+a^2*x^2)*Sqrt(ArcTan(a*x))) -
-	// (8*Unintegrable(1/(x^5*(c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x))/a-12*a*Unintegrable(1/(x^3*(c +
+	// (8*Integrate::Unintegrable(1/(x^5*(c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x))),
+	// x))/a-12*a*Integrate::Unintegrable(1/(x^3*(c +
 	// a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x)}
 	public void test02768() {
 		check("Integrate(1/(x^4*(c+a^2*c*x^2)^2*ArcTan(a*x)^(3/2)), x)",
-				"-2/(a*c^2*x^4*(1+a^2*x^2)*Sqrt(ArcTan(a*x)))-(8*Unintegrable(1/(x^5*(c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x))/a-12*a*Unintegrable(1/(x^3*(c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x)");
+				"-2/(a*c^2*x^4*(1+a^2*x^2)*Sqrt(ArcTan(a*x)))-(8*Integrate::Unintegrable(1/(x^5*(c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x))/a-12*a*Integrate::Unintegrable(1/(x^3*(c+a^2*c*x^2)^2*Sqrt(ArcTan(a*x))), x)");
 
 	}
 
 	// {1/(x^2*(c+a^2*c*x^2)^3*ArcTan(a*x)^(3/2)), x, 1, -2/(a*c^3*x^2*(1+a^2*x^2)^2*Sqrt(ArcTan(a*x))) -
-	// (4*Unintegrable(1/(x^3*(c+a^2*c*x^2)^3*Sqrt(ArcTan(a*x))), x))/a-12*a*Unintegrable(1/(x*(c +
+	// (4*Integrate::Unintegrable(1/(x^3*(c+a^2*c*x^2)^3*Sqrt(ArcTan(a*x))), x))/a-12*a*Integrate::Unintegrable(1/(x*(c
+	// +
 	// a^2*c*x^2)^3*Sqrt(ArcTan(a*x))), x)}
 	public void test02769() {
 		check("Integrate(1/(x^2*(c+a^2*c*x^2)^3*ArcTan(a*x)^(3/2)), x)",
-				"-2/(a*c^3*x^2*(1+a^2*x^2)^2*Sqrt(ArcTan(a*x)))-(4*Unintegrable(1/(x^3*(c+a^2*c*x^2)^3*Sqrt(ArcTan(a*x))), x))/a-12*a*Unintegrable(1/(x*(c+a^2*c*x^2)^3*Sqrt(ArcTan(a*x))), x)");
+				"-2/(a*c^3*x^2*(1+a^2*x^2)^2*Sqrt(ArcTan(a*x)))-(4*Integrate::Unintegrable(1/(x^3*(c+a^2*c*x^2)^3*Sqrt(ArcTan(a*x))), x))/a-12*a*Integrate::Unintegrable(1/(x*(c+a^2*c*x^2)^3*Sqrt(ArcTan(a*x))), x)");
 
 	}
 
 	// {1/(x^3*(c+a^2*c*x^2)^3*ArcTan(a*x)^(3/2)), x, 1, -2/(a*c^3*x^3*(1+a^2*x^2)^2*Sqrt(ArcTan(a*x))) -
-	// (6*Unintegrable(1/(x^4*(c+a^2*c*x^2)^3*Sqrt(ArcTan(a*x))), x))/a-14*a*Unintegrable(1/(x^2*(c +
+	// (6*Integrate::Unintegrable(1/(x^4*(c+a^2*c*x^2)^3*Sqrt(ArcTan(a*x))),
+	// x))/a-14*a*Integrate::Unintegrable(1/(x^2*(c +
 	// a^2*c*x^2)^3*Sqrt(ArcTan(a*x))), x)}
 	public void test02770() {
 		check("Integrate(1/(x^3*(c+a^2*c*x^2)^3*ArcTan(a*x)^(3/2)), x)",
-				"-2/(a*c^3*x^3*(1+a^2*x^2)^2*Sqrt(ArcTan(a*x)))-(6*Unintegrable(1/(x^4*(c+a^2*c*x^2)^3*Sqrt(ArcTan(a*x))), x))/a-14*a*Unintegrable(1/(x^2*(c+a^2*c*x^2)^3*Sqrt(ArcTan(a*x))), x)");
+				"-2/(a*c^3*x^3*(1+a^2*x^2)^2*Sqrt(ArcTan(a*x)))-(6*Integrate::Unintegrable(1/(x^4*(c+a^2*c*x^2)^3*Sqrt(ArcTan(a*x))), x))/a-14*a*Integrate::Unintegrable(1/(x^2*(c+a^2*c*x^2)^3*Sqrt(ArcTan(a*x))), x)");
 
 	}
 
 	// {1/(x^4*(c+a^2*c*x^2)^3*ArcTan(a*x)^(3/2)), x, 1, -2/(a*c^3*x^4*(1+a^2*x^2)^2*Sqrt(ArcTan(a*x))) -
-	// (8*Unintegrable(1/(x^5*(c+a^2*c*x^2)^3*Sqrt(ArcTan(a*x))), x))/a-16*a*Unintegrable(1/(x^3*(c +
+	// (8*Integrate::Unintegrable(1/(x^5*(c+a^2*c*x^2)^3*Sqrt(ArcTan(a*x))),
+	// x))/a-16*a*Integrate::Unintegrable(1/(x^3*(c +
 	// a^2*c*x^2)^3*Sqrt(ArcTan(a*x))), x)}
 	public void test02771() {
 		check("Integrate(1/(x^4*(c+a^2*c*x^2)^3*ArcTan(a*x)^(3/2)), x)",
-				"-2/(a*c^3*x^4*(1+a^2*x^2)^2*Sqrt(ArcTan(a*x)))-(8*Unintegrable(1/(x^5*(c+a^2*c*x^2)^3*Sqrt(ArcTan(a*x))), x))/a-16*a*Unintegrable(1/(x^3*(c+a^2*c*x^2)^3*Sqrt(ArcTan(a*x))), x)");
+				"-2/(a*c^3*x^4*(1+a^2*x^2)^2*Sqrt(ArcTan(a*x)))-(8*Integrate::Unintegrable(1/(x^5*(c+a^2*c*x^2)^3*Sqrt(ArcTan(a*x))), x))/a-16*a*Integrate::Unintegrable(1/(x^3*(c+a^2*c*x^2)^3*Sqrt(ArcTan(a*x))), x)");
 
 	}
 
 	// {1/(x*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(3/2)), x, 1, (-2*Sqrt(c+a^2*c*x^2))/(a*c*x*Sqrt(ArcTan(a*x))) -
-	// (2*Unintegrable(1/(x^2*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x))/a}
+	// (2*Integrate::Unintegrable(1/(x^2*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x))/a}
 	public void test02772() {
 		check("Integrate(1/(x*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(3/2)), x)",
-				"(-2*Sqrt(c+a^2*c*x^2))/(a*c*x*Sqrt(ArcTan(a*x)))-(2*Unintegrable(1/(x^2*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x))/a");
+				"(-2*Sqrt(c+a^2*c*x^2))/(a*c*x*Sqrt(ArcTan(a*x)))-(2*Integrate::Unintegrable(1/(x^2*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))), x))/a");
 
 	}
 
 	// {x^3/((c+a^2*c*x^2)^(3/2)*ArcTan(a*x)^(3/2)), x, 1, (-2*x^3)/(a*c*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))) +
-	// (6*Unintegrable(x^2/((c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))), x))/a+4*a*Unintegrable(x^4/((c +
+	// (6*Integrate::Unintegrable(x^2/((c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))), x))/a+4*a*Integrate::Unintegrable(x^4/((c
+	// +
 	// a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))), x)}
 	public void test02773() {
 		check("Integrate(x^3/((c+a^2*c*x^2)^(3/2)*ArcTan(a*x)^(3/2)), x)",
-				"(-2*x^3)/(a*c*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)))+(6*Unintegrable(x^2/((c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))), x))/a+4*a*Unintegrable(x^4/((c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))), x)");
+				"(-2*x^3)/(a*c*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)))+(6*Integrate::Unintegrable(x^2/((c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))), x))/a+4*a*Integrate::Unintegrable(x^4/((c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))), x)");
 
 	}
 
 	// {1/(x^2*(c+a^2*c*x^2)^(3/2)*ArcTan(a*x)^(3/2)), x, 1, -2/(a*c*x^2*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))) -
-	// (4*Unintegrable(1/(x^3*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))), x))/a-6*a*Unintegrable(1/(x*(c +
+	// (4*Integrate::Unintegrable(1/(x^3*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))),
+	// x))/a-6*a*Integrate::Unintegrable(1/(x*(c +
 	// a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))), x)}
 	public void test02774() {
 		check("Integrate(1/(x^2*(c+a^2*c*x^2)^(3/2)*ArcTan(a*x)^(3/2)), x)",
-				"-2/(a*c*x^2*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)))-(4*Unintegrable(1/(x^3*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))), x))/a-6*a*Unintegrable(1/(x*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))), x)");
+				"-2/(a*c*x^2*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)))-(4*Integrate::Unintegrable(1/(x^3*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))), x))/a-6*a*Integrate::Unintegrable(1/(x*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))), x)");
 
 	}
 
 	// {1/(x^3*(c+a^2*c*x^2)^(3/2)*ArcTan(a*x)^(3/2)), x, 1, -2/(a*c*x^3*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))) -
-	// (6*Unintegrable(1/(x^4*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))), x))/a-8*a*Unintegrable(1/(x^2*(c +
+	// (6*Integrate::Unintegrable(1/(x^4*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))),
+	// x))/a-8*a*Integrate::Unintegrable(1/(x^2*(c +
 	// a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))), x)}
 	public void test02775() {
 		check("Integrate(1/(x^3*(c+a^2*c*x^2)^(3/2)*ArcTan(a*x)^(3/2)), x)",
-				"-2/(a*c*x^3*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)))-(6*Unintegrable(1/(x^4*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))), x))/a-8*a*Unintegrable(1/(x^2*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))), x)");
+				"-2/(a*c*x^3*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)))-(6*Integrate::Unintegrable(1/(x^4*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))), x))/a-8*a*Integrate::Unintegrable(1/(x^2*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))), x)");
 
 	}
 
 	// {1/(x^4*(c+a^2*c*x^2)^(3/2)*ArcTan(a*x)^(3/2)), x, 1, -2/(a*c*x^4*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x))) -
-	// (8*Unintegrable(1/(x^5*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))), x))/a-10*a*Unintegrable(1/(x^3*(c +
+	// (8*Integrate::Unintegrable(1/(x^5*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))),
+	// x))/a-10*a*Integrate::Unintegrable(1/(x^3*(c +
 	// a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))), x)}
 	public void test02776() {
 		check("Integrate(1/(x^4*(c+a^2*c*x^2)^(3/2)*ArcTan(a*x)^(3/2)), x)",
-				"-2/(a*c*x^4*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)))-(8*Unintegrable(1/(x^5*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))), x))/a-10*a*Unintegrable(1/(x^3*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))), x)");
+				"-2/(a*c*x^4*Sqrt(c+a^2*c*x^2)*Sqrt(ArcTan(a*x)))-(8*Integrate::Unintegrable(1/(x^5*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))), x))/a-10*a*Integrate::Unintegrable(1/(x^3*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))), x)");
 
 	}
 
 	// {1/(x^2*(c+a^2*c*x^2)^(5/2)*ArcTan(a*x)^(3/2)), x, 1, -2/(a*c*x^2*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))) -
-	// (4*Unintegrable(1/(x^3*(c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x))), x))/a-10*a*Unintegrable(1/(x*(c +
+	// (4*Integrate::Unintegrable(1/(x^3*(c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x))),
+	// x))/a-10*a*Integrate::Unintegrable(1/(x*(c +
 	// a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x))), x)}
 	public void test02777() {
 		check("Integrate(1/(x^2*(c+a^2*c*x^2)^(5/2)*ArcTan(a*x)^(3/2)), x)",
-				"-2/(a*c*x^2*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x)))-(4*Unintegrable(1/(x^3*(c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x))), x))/a-10*a*Unintegrable(1/(x*(c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x))), x)");
+				"-2/(a*c*x^2*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x)))-(4*Integrate::Unintegrable(1/(x^3*(c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x))), x))/a-10*a*Integrate::Unintegrable(1/(x*(c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x))), x)");
 
 	}
 
 	// {1/(x^3*(c+a^2*c*x^2)^(5/2)*ArcTan(a*x)^(3/2)), x, 1, -2/(a*c*x^3*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))) -
-	// (6*Unintegrable(1/(x^4*(c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x))), x))/a-12*a*Unintegrable(1/(x^2*(c +
+	// (6*Integrate::Unintegrable(1/(x^4*(c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x))),
+	// x))/a-12*a*Integrate::Unintegrable(1/(x^2*(c +
 	// a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x))), x)}
 	public void test02778() {
 		check("Integrate(1/(x^3*(c+a^2*c*x^2)^(5/2)*ArcTan(a*x)^(3/2)), x)",
-				"-2/(a*c*x^3*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x)))-(6*Unintegrable(1/(x^4*(c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x))), x))/a-12*a*Unintegrable(1/(x^2*(c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x))), x)");
+				"-2/(a*c*x^3*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x)))-(6*Integrate::Unintegrable(1/(x^4*(c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x))), x))/a-12*a*Integrate::Unintegrable(1/(x^2*(c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x))), x)");
 
 	}
 
 	// {1/(x^4*(c+a^2*c*x^2)^(5/2)*ArcTan(a*x)^(3/2)), x, 1, -2/(a*c*x^4*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x))) -
-	// (8*Unintegrable(1/(x^5*(c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x))), x))/a-14*a*Unintegrable(1/(x^3*(c +
+	// (8*Integrate::Unintegrable(1/(x^5*(c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x))),
+	// x))/a-14*a*Integrate::Unintegrable(1/(x^3*(c +
 	// a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x))), x)}
 	public void test02779() {
 		check("Integrate(1/(x^4*(c+a^2*c*x^2)^(5/2)*ArcTan(a*x)^(3/2)), x)",
-				"-2/(a*c*x^4*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x)))-(8*Unintegrable(1/(x^5*(c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x))), x))/a-14*a*Unintegrable(1/(x^3*(c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x))), x)");
+				"-2/(a*c*x^4*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcTan(a*x)))-(8*Integrate::Unintegrable(1/(x^5*(c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x))), x))/a-14*a*Integrate::Unintegrable(1/(x^3*(c+a^2*c*x^2)^(5/2)*Sqrt(ArcTan(a*x))), x)");
 
 	}
 
-	// {x^m/((c+a^2*c*x^2)*ArcTan(a*x)^(5/2)), x, 1, (-2*x^m)/(3*a*c*ArcTan(a*x)^(3/2))+(2*m*Unintegrable(x^(-1 +
+	// {x^m/((c+a^2*c*x^2)*ArcTan(a*x)^(5/2)), x, 1,
+	// (-2*x^m)/(3*a*c*ArcTan(a*x)^(3/2))+(2*m*Integrate::Unintegrable(x^(-1 +
 	// m)/ArcTan(a*x)^(3/2), x))/(3*a*c)}
 	public void test02780() {
 		check("Integrate(x^m/((c+a^2*c*x^2)*ArcTan(a*x)^(5/2)), x)",
-				"(-2*x^m)/(3*a*c*ArcTan(a*x)^(3/2))+(2*m*Unintegrable(x^(-1+m)/ArcTan(a*x)^(3/2), x))/(3*a*c)");
+				"(-2*x^m)/(3*a*c*ArcTan(a*x)^(3/2))+(2*m*Integrate::Unintegrable(x^(-1+m)/ArcTan(a*x)^(3/2), x))/(3*a*c)");
 
 	}
 
 	// {x/((c+a^2*c*x^2)*ArcTan(a*x)^(5/2)), x, 1, (-2*x)/(3*a*c*ArcTan(a*x)^(3/2)) +
-	// (2*Unintegrable(ArcTan(a*x)^(-3/2), x))/(3*a*c)}
+	// (2*Integrate::Unintegrable(ArcTan(a*x)^(-3/2), x))/(3*a*c)}
 	public void test02781() {
 		check("Integrate(x/((c+a^2*c*x^2)*ArcTan(a*x)^(5/2)), x)",
-				"(-2*x)/(3*a*c*ArcTan(a*x)^(3/2))+(2*Unintegrable(ArcTan(a*x)^(-3/2), x))/(3*a*c)");
+				"(-2*x)/(3*a*c*ArcTan(a*x)^(3/2))+(2*Integrate::Unintegrable(ArcTan(a*x)^(-3/2), x))/(3*a*c)");
 
 	}
 
@@ -19251,26 +19382,27 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	}
 
 	// {1/(x*(c+a^2*c*x^2)*ArcTan(a*x)^(5/2)), x, 1, -2/(3*a*c*x*ArcTan(a*x)^(3/2)) -
-	// (2*Unintegrable(1/(x^2*ArcTan(a*x)^(3/2)), x))/(3*a*c)}
+	// (2*Integrate::Unintegrable(1/(x^2*ArcTan(a*x)^(3/2)), x))/(3*a*c)}
 	public void test02783() {
 		check("Integrate(1/(x*(c+a^2*c*x^2)*ArcTan(a*x)^(5/2)), x)",
-				"-2/(3*a*c*x*ArcTan(a*x)^(3/2))-(2*Unintegrable(1/(x^2*ArcTan(a*x)^(3/2)), x))/(3*a*c)");
+				"-2/(3*a*c*x*ArcTan(a*x)^(3/2))-(2*Integrate::Unintegrable(1/(x^2*ArcTan(a*x)^(3/2)), x))/(3*a*c)");
 
 	}
 
 	// {1/(x*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(5/2)), x, 1, (-2*Sqrt(c+a^2*c*x^2))/(3*a*c*x*ArcTan(a*x)^(3/2)) -
-	// (2*Unintegrable(1/(x^2*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(3/2)), x))/(3*a)}
+	// (2*Integrate::Unintegrable(1/(x^2*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(3/2)), x))/(3*a)}
 	public void test02784() {
 		check("Integrate(1/(x*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(5/2)), x)",
-				"(-2*Sqrt(c+a^2*c*x^2))/(3*a*c*x*ArcTan(a*x)^(3/2))-(2*Unintegrable(1/(x^2*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(3/2)), x))/(3*a)");
+				"(-2*Sqrt(c+a^2*c*x^2))/(3*a*c*x*ArcTan(a*x)^(3/2))-(2*Integrate::Unintegrable(1/(x^2*Sqrt(c+a^2*c*x^2)*ArcTan(a*x)^(3/2)), x))/(3*a)");
 
 	}
 
-	// {(x*ArcTan(a*x)^n)/(c+a^2*c*x^2), x, 1, (x*ArcTan(a*x)^(1+n))/(a*c*(1+n))-Unintegrable(ArcTan(a*x)^(1 +
+	// {(x*ArcTan(a*x)^n)/(c+a^2*c*x^2), x, 1, (x*ArcTan(a*x)^(1+n))/(a*c*(1+n))-Integrate::Unintegrable(ArcTan(a*x)^(1
+	// +
 	// n), x)/(a*c*(1+n))}
 	public void test02785() {
 		check("Integrate((x*ArcTan(a*x)^n)/(c+a^2*c*x^2), x)",
-				"(x*ArcTan(a*x)^(1+n))/(a*c*(1+n))-Unintegrable(ArcTan(a*x)^(1+n), x)/(a*c*(1+n))");
+				"(x*ArcTan(a*x)^(1+n))/(a*c*(1+n))-Integrate::Unintegrable(ArcTan(a*x)^(1+n), x)/(a*c*(1+n))");
 
 	}
 
@@ -19280,47 +19412,49 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {(e+f*x)^m*(a+b*ArcTan(c+d*x))^2, x, 1, Unintegrable((e+f*x)^m*(a+b*ArcTan(c+d*x))^2, x)}
+	// {(e+f*x)^m*(a+b*ArcTan(c+d*x))^2, x, 1, Integrate::Unintegrable((e+f*x)^m*(a+b*ArcTan(c+d*x))^2, x)}
 	public void test02787() {
-		check("Integrate((e+f*x)^m*(a+b*ArcTan(c+d*x))^2, x)", "Unintegrable((e+f*x)^m*(a+b*ArcTan(c+d*x))^2, x)");
+		check("Integrate((e+f*x)^m*(a+b*ArcTan(c+d*x))^2, x)",
+				"Integrate::Unintegrable((e+f*x)^m*(a+b*ArcTan(c+d*x))^2, x)");
 
 	}
 
-	// {(e+f*x)^m*(a+b*ArcTan(c+d*x))^3, x, 1, Unintegrable((e+f*x)^m*(a+b*ArcTan(c+d*x))^3, x)}
+	// {(e+f*x)^m*(a+b*ArcTan(c+d*x))^3, x, 1, Integrate::Unintegrable((e+f*x)^m*(a+b*ArcTan(c+d*x))^3, x)}
 	public void test02788() {
-		check("Integrate((e+f*x)^m*(a+b*ArcTan(c+d*x))^3, x)", "Unintegrable((e+f*x)^m*(a+b*ArcTan(c+d*x))^3, x)");
+		check("Integrate((e+f*x)^m*(a+b*ArcTan(c+d*x))^3, x)",
+				"Integrate::Unintegrable((e+f*x)^m*(a+b*ArcTan(c+d*x))^3, x)");
 
 	}
 
-	// {ArcTan(a+b*x)/(1+a^2+2*a*b*x+b^2*x^2)^(1/3), x, 1, Unintegrable(ArcTan(a+b*x)/(1+(a+b*x)^2)^(1/3),
+	// {ArcTan(a+b*x)/(1+a^2+2*a*b*x+b^2*x^2)^(1/3), x, 1, Integrate::Unintegrable(ArcTan(a+b*x)/(1+(a+b*x)^2)^(1/3),
 	// x)}
 	public void test02789() {
 		check("Integrate(ArcTan(a+b*x)/(1+a^2+2*a*b*x+b^2*x^2)^(1/3), x)",
-				"Unintegrable(ArcTan(a+b*x)/(1+(a+b*x)^2)^(1/3), x)");
+				"Integrate::Unintegrable(ArcTan(a+b*x)/(1+(a+b*x)^2)^(1/3), x)");
 
 	}
 
-	// {ArcTan(a+b*x)/((1+a^2)*c+2*a*b*c*x+b^2*c*x^2)^(1/3), x, 1, Unintegrable(ArcTan(a+b*x)/(c+c*(a +
+	// {ArcTan(a+b*x)/((1+a^2)*c+2*a*b*c*x+b^2*c*x^2)^(1/3), x, 1, Integrate::Unintegrable(ArcTan(a+b*x)/(c+c*(a +
 	// b*x)^2)^(1/3), x)}
 	public void test02790() {
 		check("Integrate(ArcTan(a+b*x)/((1+a^2)*c+2*a*b*c*x+b^2*c*x^2)^(1/3), x)",
-				"Unintegrable(ArcTan(a+b*x)/(c+c*(a+b*x)^2)^(1/3), x)");
+				"Integrate::Unintegrable(ArcTan(a+b*x)/(c+c*(a+b*x)^2)^(1/3), x)");
 
 	}
 
-	// {((a+b*x)^2*ArcTan(a+b*x))/(1+a^2+2*a*b*x+b^2*x^2)^(1/3), x, 1, Unintegrable(((a+b*x)^2*ArcTan(a +
+	// {((a+b*x)^2*ArcTan(a+b*x))/(1+a^2+2*a*b*x+b^2*x^2)^(1/3), x, 1, Integrate::Unintegrable(((a+b*x)^2*ArcTan(a +
 	// b*x))/(1+(a+b*x)^2)^(1/3), x)}
 	public void test02791() {
 		check("Integrate(((a+b*x)^2*ArcTan(a+b*x))/(1+a^2+2*a*b*x+b^2*x^2)^(1/3), x)",
-				"Unintegrable(((a+b*x)^2*ArcTan(a+b*x))/(1+(a+b*x)^2)^(1/3), x)");
+				"Integrate::Unintegrable(((a+b*x)^2*ArcTan(a+b*x))/(1+(a+b*x)^2)^(1/3), x)");
 
 	}
 
-	// {((a+b*x)^2*ArcTan(a+b*x))/((1+a^2)*c+2*a*b*c*x+b^2*c*x^2)^(1/3), x, 1, Unintegrable(((a +
+	// {((a+b*x)^2*ArcTan(a+b*x))/((1+a^2)*c+2*a*b*c*x+b^2*c*x^2)^(1/3), x, 1, Integrate::Unintegrable(((a +
 	// b*x)^2*ArcTan(a+b*x))/(c+c*(a+b*x)^2)^(1/3), x)}
 	public void test02792() {
 		check("Integrate(((a+b*x)^2*ArcTan(a+b*x))/((1+a^2)*c+2*a*b*c*x+b^2*c*x^2)^(1/3), x)",
-				"Unintegrable(((a+b*x)^2*ArcTan(a+b*x))/(c+c*(a+b*x)^2)^(1/3), x)");
+				"Integrate::Unintegrable(((a+b*x)^2*ArcTan(a+b*x))/(c+c*(a+b*x)^2)^(1/3), x)");
 
 	}
 
@@ -19425,47 +19559,49 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {ArcCot(a+b*x)/(1+a^2+2*a*b*x+b^2*x^2)^(1/3), x, 1, Unintegrable(ArcCot(a+b*x)/(1+(a+b*x)^2)^(1/3),
+	// {ArcCot(a+b*x)/(1+a^2+2*a*b*x+b^2*x^2)^(1/3), x, 1, Integrate::Unintegrable(ArcCot(a+b*x)/(1+(a+b*x)^2)^(1/3),
 	// x)}
 	public void test02809() {
 		check("Integrate(ArcCot(a+b*x)/(1+a^2+2*a*b*x+b^2*x^2)^(1/3), x)",
-				"Unintegrable(ArcCot(a+b*x)/(1+(a+b*x)^2)^(1/3), x)");
+				"Integrate::Unintegrable(ArcCot(a+b*x)/(1+(a+b*x)^2)^(1/3), x)");
 
 	}
 
-	// {ArcCot(a+b*x)/((1+a^2)*c+2*a*b*c*x+b^2*c*x^2)^(1/3), x, 1, Unintegrable(ArcCot(a+b*x)/(c+c*(a +
+	// {ArcCot(a+b*x)/((1+a^2)*c+2*a*b*c*x+b^2*c*x^2)^(1/3), x, 1, Integrate::Unintegrable(ArcCot(a+b*x)/(c+c*(a +
 	// b*x)^2)^(1/3), x)}
 	public void test02810() {
 		check("Integrate(ArcCot(a+b*x)/((1+a^2)*c+2*a*b*c*x+b^2*c*x^2)^(1/3), x)",
-				"Unintegrable(ArcCot(a+b*x)/(c+c*(a+b*x)^2)^(1/3), x)");
+				"Integrate::Unintegrable(ArcCot(a+b*x)/(c+c*(a+b*x)^2)^(1/3), x)");
 
 	}
 
-	// {((a+b*x)^2*ArcCot(a+b*x))/(1+a^2+2*a*b*x+b^2*x^2)^(1/3), x, 1, Unintegrable(((a+b*x)^2*ArcCot(a +
+	// {((a+b*x)^2*ArcCot(a+b*x))/(1+a^2+2*a*b*x+b^2*x^2)^(1/3), x, 1, Integrate::Unintegrable(((a+b*x)^2*ArcCot(a +
 	// b*x))/(1+(a+b*x)^2)^(1/3), x)}
 	public void test02811() {
 		check("Integrate(((a+b*x)^2*ArcCot(a+b*x))/(1+a^2+2*a*b*x+b^2*x^2)^(1/3), x)",
-				"Unintegrable(((a+b*x)^2*ArcCot(a+b*x))/(1+(a+b*x)^2)^(1/3), x)");
+				"Integrate::Unintegrable(((a+b*x)^2*ArcCot(a+b*x))/(1+(a+b*x)^2)^(1/3), x)");
 
 	}
 
-	// {((a+b*x)^2*ArcCot(a+b*x))/((1+a^2)*c+2*a*b*c*x+b^2*c*x^2)^(1/3), x, 1, Unintegrable(((a +
+	// {((a+b*x)^2*ArcCot(a+b*x))/((1+a^2)*c+2*a*b*c*x+b^2*c*x^2)^(1/3), x, 1, Integrate::Unintegrable(((a +
 	// b*x)^2*ArcCot(a+b*x))/(c+c*(a+b*x)^2)^(1/3), x)}
 	public void test02812() {
 		check("Integrate(((a+b*x)^2*ArcCot(a+b*x))/((1+a^2)*c+2*a*b*c*x+b^2*c*x^2)^(1/3), x)",
-				"Unintegrable(((a+b*x)^2*ArcCot(a+b*x))/(c+c*(a+b*x)^2)^(1/3), x)");
+				"Integrate::Unintegrable(((a+b*x)^2*ArcCot(a+b*x))/(c+c*(a+b*x)^2)^(1/3), x)");
 
 	}
 
-	// {(e+f*x)^m*(a+b*ArcCot(c+d*x))^2, x, 1, Unintegrable((e+f*x)^m*(a+b*ArcCot(c+d*x))^2, x)}
+	// {(e+f*x)^m*(a+b*ArcCot(c+d*x))^2, x, 1, Integrate::Unintegrable((e+f*x)^m*(a+b*ArcCot(c+d*x))^2, x)}
 	public void test02813() {
-		check("Integrate((e+f*x)^m*(a+b*ArcCot(c+d*x))^2, x)", "Unintegrable((e+f*x)^m*(a+b*ArcCot(c+d*x))^2, x)");
+		check("Integrate((e+f*x)^m*(a+b*ArcCot(c+d*x))^2, x)",
+				"Integrate::Unintegrable((e+f*x)^m*(a+b*ArcCot(c+d*x))^2, x)");
 
 	}
 
-	// {(e+f*x)^m*(a+b*ArcCot(c+d*x))^3, x, 1, Unintegrable((e+f*x)^m*(a+b*ArcCot(c+d*x))^3, x)}
+	// {(e+f*x)^m*(a+b*ArcCot(c+d*x))^3, x, 1, Integrate::Unintegrable((e+f*x)^m*(a+b*ArcCot(c+d*x))^3, x)}
 	public void test02814() {
-		check("Integrate((e+f*x)^m*(a+b*ArcCot(c+d*x))^3, x)", "Unintegrable((e+f*x)^m*(a+b*ArcCot(c+d*x))^3, x)");
+		check("Integrate((e+f*x)^m*(a+b*ArcCot(c+d*x))^3, x)",
+				"Integrate::Unintegrable((e+f*x)^m*(a+b*ArcCot(c+d*x))^3, x)");
 
 	}
 
@@ -19488,50 +19624,50 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	}
 
 	// {Sinh(x)^(3/2)/x^3, x, 1, (-3*Cosh(x)*Sqrt(Sinh(x)))/(4*x)-Sinh(x)^(3/2)/(2*x^2) +
-	// (3*Unintegrable(1/(x*Sqrt(Sinh(x))), x))/8+(9*Unintegrable(Sinh(x)^(3/2)/x, x))/8}
+	// (3*Integrate::Unintegrable(1/(x*Sqrt(Sinh(x))), x))/8+(9*Integrate::Unintegrable(Sinh(x)^(3/2)/x, x))/8}
 	public void test02818() {
 		check("Integrate(Sinh(x)^(3/2)/x^3, x)",
-				"(-3*Cosh(x)*Sqrt(Sinh(x)))/(4*x)-Sinh(x)^(3/2)/(2*x^2)+(3*Unintegrable(1/(x*Sqrt(Sinh(x))), x))/8+(9*Unintegrable(Sinh(x)^(3/2)/x, x))/8");
+				"(-3*Cosh(x)*Sqrt(Sinh(x)))/(4*x)-Sinh(x)^(3/2)/(2*x^2)+(3*Integrate::Unintegrable(1/(x*Sqrt(Sinh(x))), x))/8+(9*Integrate::Unintegrable(Sinh(x)^(3/2)/x, x))/8");
 
 	}
 
-	// {(e*x)^m*Csch(a+b*x^2), x, 1, ((e*x)^m*Unintegrable(x^m*Csch(a+b*x^2), x))/x^m}
+	// {(e*x)^m*Csch(a+b*x^2), x, 1, ((e*x)^m*Integrate::Unintegrable(x^m*Csch(a+b*x^2), x))/x^m}
 	public void test02819() {
-		check("Integrate((e*x)^m*Csch(a+b*x^2), x)", "((e*x)^m*Unintegrable(x^m*Csch(a+b*x^2), x))/x^m");
+		check("Integrate((e*x)^m*Csch(a+b*x^2), x)", "((e*x)^m*Integrate::Unintegrable(x^m*Csch(a+b*x^2), x))/x^m");
 
 	}
 
-	// {(e*x)^m*Csch(a+b/x), x, 1, ((e*x)^m*Unintegrable(x^m*Csch(a+b/x), x))/x^m}
+	// {(e*x)^m*Csch(a+b/x), x, 1, ((e*x)^m*Integrate::Unintegrable(x^m*Csch(a+b/x), x))/x^m}
 	public void test02820() {
-		check("Integrate((e*x)^m*Csch(a+b/x), x)", "((e*x)^m*Unintegrable(x^m*Csch(a+b/x), x))/x^m");
+		check("Integrate((e*x)^m*Csch(a+b/x), x)", "((e*x)^m*Integrate::Unintegrable(x^m*Csch(a+b/x), x))/x^m");
 
 	}
 
-	// {(e*x)^m*Csch(a+b/x^2), x, 1, ((e*x)^m*Unintegrable(x^m*Csch(a+b/x^2), x))/x^m}
+	// {(e*x)^m*Csch(a+b/x^2), x, 1, ((e*x)^m*Integrate::Unintegrable(x^m*Csch(a+b/x^2), x))/x^m}
 	public void test02821() {
-		check("Integrate((e*x)^m*Csch(a+b/x^2), x)", "((e*x)^m*Unintegrable(x^m*Csch(a+b/x^2), x))/x^m");
+		check("Integrate((e*x)^m*Csch(a+b/x^2), x)", "((e*x)^m*Integrate::Unintegrable(x^m*Csch(a+b/x^2), x))/x^m");
 
 	}
 
-	// {(e*x)^(-1+2*n)*(b*Sinh(c+d*x^n))^p, x, 1, ((e*x)^(2*n)*Unintegrable(x^(-1+2*n)*(b*Sinh(c+d*x^n))^p,
+	// {(e*x)^(-1+2*n)*(b*Sinh(c+d*x^n))^p, x, 1, ((e*x)^(2*n)*Integrate::Unintegrable(x^(-1+2*n)*(b*Sinh(c+d*x^n))^p,
 	// x))/(e*x^(2*n))}
 	public void test02822() {
 		check("Integrate((e*x)^(-1+2*n)*(b*Sinh(c+d*x^n))^p, x)",
-				"((e*x)^(2*n)*Unintegrable(x^(-1+2*n)*(b*Sinh(c+d*x^n))^p, x))/(e*x^(2*n))");
+				"((e*x)^(2*n)*Integrate::Unintegrable(x^(-1+2*n)*(b*Sinh(c+d*x^n))^p, x))/(e*x^(2*n))");
 
 	}
 
-	// {(e*x)^(-1+2*n)*(a+b*Sinh(c+d*x^n))^p, x, 1, ((e*x)^(2*n)*Unintegrable(x^(-1+2*n)*(a+b*Sinh(c +
+	// {(e*x)^(-1+2*n)*(a+b*Sinh(c+d*x^n))^p, x, 1, ((e*x)^(2*n)*Integrate::Unintegrable(x^(-1+2*n)*(a+b*Sinh(c +
 	// d*x^n))^p, x))/(e*x^(2*n))}
 	public void test02823() {
 		check("Integrate((e*x)^(-1+2*n)*(a+b*Sinh(c+d*x^n))^p, x)",
-				"((e*x)^(2*n)*Unintegrable(x^(-1+2*n)*(a+b*Sinh(c+d*x^n))^p, x))/(e*x^(2*n))");
+				"((e*x)^(2*n)*Integrate::Unintegrable(x^(-1+2*n)*(a+b*Sinh(c+d*x^n))^p, x))/(e*x^(2*n))");
 
 	}
 
-	// {(e*x)^m*Csch(a+b*x^n)^2, x, 1, ((e*x)^m*Unintegrable(x^m*Csch(a+b*x^n)^2, x))/x^m}
+	// {(e*x)^m*Csch(a+b*x^n)^2, x, 1, ((e*x)^m*Integrate::Unintegrable(x^m*Csch(a+b*x^n)^2, x))/x^m}
 	public void test02824() {
-		check("Integrate((e*x)^m*Csch(a+b*x^n)^2, x)", "((e*x)^m*Unintegrable(x^m*Csch(a+b*x^n)^2, x))/x^m");
+		check("Integrate((e*x)^m*Csch(a+b*x^n)^2, x)", "((e*x)^m*Integrate::Unintegrable(x^m*Csch(a+b*x^n)^2, x))/x^m");
 
 	}
 
@@ -19675,19 +19811,19 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {Csch(Sqrt(1-a*x)/Sqrt(1+a*x))/(1-a^2*x^2), x, 1, Unintegrable(Csch(Sqrt(1-a*x)/Sqrt(1+a*x))/((1 -
+	// {Csch(Sqrt(1-a*x)/Sqrt(1+a*x))/(1-a^2*x^2), x, 1, Integrate::Unintegrable(Csch(Sqrt(1-a*x)/Sqrt(1+a*x))/((1 -
 	// a*x)*(1+a*x)), x)}
 	public void test02845() {
 		check("Integrate(Csch(Sqrt(1-a*x)/Sqrt(1+a*x))/(1-a^2*x^2), x)",
-				"Unintegrable(Csch(Sqrt(1-a*x)/Sqrt(1+a*x))/((1-a*x)*(1+a*x)), x)");
+				"Integrate::Unintegrable(Csch(Sqrt(1-a*x)/Sqrt(1+a*x))/((1-a*x)*(1+a*x)), x)");
 
 	}
 
-	// {Csch(Sqrt(1-a*x)/Sqrt(1+a*x))^2/(1-a^2*x^2), x, 1, Unintegrable(Csch(Sqrt(1-a*x)/Sqrt(1+a*x))^2/((1 -
+	// {Csch(Sqrt(1-a*x)/Sqrt(1+a*x))^2/(1-a^2*x^2), x, 1, Integrate::Unintegrable(Csch(Sqrt(1-a*x)/Sqrt(1+a*x))^2/((1 -
 	// a*x)*(1+a*x)), x)}
 	public void test02846() {
 		check("Integrate(Csch(Sqrt(1-a*x)/Sqrt(1+a*x))^2/(1-a^2*x^2), x)",
-				"Unintegrable(Csch(Sqrt(1-a*x)/Sqrt(1+a*x))^2/((1-a*x)*(1+a*x)), x)");
+				"Integrate::Unintegrable(Csch(Sqrt(1-a*x)/Sqrt(1+a*x))^2/((1-a*x)*(1+a*x)), x)");
 
 	}
 
@@ -19758,26 +19894,26 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	}
 
 	// {Cosh(x)^(3/2)/x^3, x, 1, -Cosh(x)^(3/2)/(2*x^2)-(3*Sqrt(Cosh(x))*Sinh(x))/(4*x) -
-	// (3*Unintegrable(1/(x*Sqrt(Cosh(x))), x))/8+(9*Unintegrable(Cosh(x)^(3/2)/x, x))/8}
+	// (3*Integrate::Unintegrable(1/(x*Sqrt(Cosh(x))), x))/8+(9*Integrate::Unintegrable(Cosh(x)^(3/2)/x, x))/8}
 	public void test02856() {
 		check("Integrate(Cosh(x)^(3/2)/x^3, x)",
-				"-Cosh(x)^(3/2)/(2*x^2)-(3*Sqrt(Cosh(x))*Sinh(x))/(4*x)-(3*Unintegrable(1/(x*Sqrt(Cosh(x))), x))/8+(9*Unintegrable(Cosh(x)^(3/2)/x, x))/8");
+				"-Cosh(x)^(3/2)/(2*x^2)-(3*Sqrt(Cosh(x))*Sinh(x))/(4*x)-(3*Integrate::Unintegrable(1/(x*Sqrt(Cosh(x))), x))/8+(9*Integrate::Unintegrable(Cosh(x)^(3/2)/x, x))/8");
 
 	}
 
-	// {(e*x)^(-1+2*n)*(b*Cosh(c+d*x^n))^p, x, 1, ((e*x)^(2*n)*Unintegrable(x^(-1+2*n)*(b*Cosh(c+d*x^n))^p,
+	// {(e*x)^(-1+2*n)*(b*Cosh(c+d*x^n))^p, x, 1, ((e*x)^(2*n)*Integrate::Unintegrable(x^(-1+2*n)*(b*Cosh(c+d*x^n))^p,
 	// x))/(e*x^(2*n))}
 	public void test02857() {
 		check("Integrate((e*x)^(-1+2*n)*(b*Cosh(c+d*x^n))^p, x)",
-				"((e*x)^(2*n)*Unintegrable(x^(-1+2*n)*(b*Cosh(c+d*x^n))^p, x))/(e*x^(2*n))");
+				"((e*x)^(2*n)*Integrate::Unintegrable(x^(-1+2*n)*(b*Cosh(c+d*x^n))^p, x))/(e*x^(2*n))");
 
 	}
 
-	// {(e*x)^(-1+2*n)*(a+b*Cosh(c+d*x^n))^p, x, 1, ((e*x)^(2*n)*Unintegrable(x^(-1+2*n)*(a+b*Cosh(c +
+	// {(e*x)^(-1+2*n)*(a+b*Cosh(c+d*x^n))^p, x, 1, ((e*x)^(2*n)*Integrate::Unintegrable(x^(-1+2*n)*(a+b*Cosh(c +
 	// d*x^n))^p, x))/(e*x^(2*n))}
 	public void test02858() {
 		check("Integrate((e*x)^(-1+2*n)*(a+b*Cosh(c+d*x^n))^p, x)",
-				"((e*x)^(2*n)*Unintegrable(x^(-1+2*n)*(a+b*Cosh(c+d*x^n))^p, x))/(e*x^(2*n))");
+				"((e*x)^(2*n)*Integrate::Unintegrable(x^(-1+2*n)*(a+b*Cosh(c+d*x^n))^p, x))/(e*x^(2*n))");
 
 	}
 
@@ -19863,19 +19999,19 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {Sech(Sqrt(1-a*x)/Sqrt(1+a*x))/(1-a^2*x^2), x, 1, Unintegrable(Sech(Sqrt(1-a*x)/Sqrt(1+a*x))/((1 -
+	// {Sech(Sqrt(1-a*x)/Sqrt(1+a*x))/(1-a^2*x^2), x, 1, Integrate::Unintegrable(Sech(Sqrt(1-a*x)/Sqrt(1+a*x))/((1 -
 	// a*x)*(1+a*x)), x)}
 	public void test02872() {
 		check("Integrate(Sech(Sqrt(1-a*x)/Sqrt(1+a*x))/(1-a^2*x^2), x)",
-				"Unintegrable(Sech(Sqrt(1-a*x)/Sqrt(1+a*x))/((1-a*x)*(1+a*x)), x)");
+				"Integrate::Unintegrable(Sech(Sqrt(1-a*x)/Sqrt(1+a*x))/((1-a*x)*(1+a*x)), x)");
 
 	}
 
-	// {Sech(Sqrt(1-a*x)/Sqrt(1+a*x))^2/(1-a^2*x^2), x, 1, Unintegrable(Sech(Sqrt(1-a*x)/Sqrt(1+a*x))^2/((1 -
+	// {Sech(Sqrt(1-a*x)/Sqrt(1+a*x))^2/(1-a^2*x^2), x, 1, Integrate::Unintegrable(Sech(Sqrt(1-a*x)/Sqrt(1+a*x))^2/((1 -
 	// a*x)*(1+a*x)), x)}
 	public void test02873() {
 		check("Integrate(Sech(Sqrt(1-a*x)/Sqrt(1+a*x))^2/(1-a^2*x^2), x)",
-				"Unintegrable(Sech(Sqrt(1-a*x)/Sqrt(1+a*x))^2/((1-a*x)*(1+a*x)), x)");
+				"Integrate::Unintegrable(Sech(Sqrt(1-a*x)/Sqrt(1+a*x))^2/((1-a*x)*(1+a*x)), x)");
 
 	}
 
@@ -19961,10 +20097,10 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {(e*x)^m*(a+b*Sech(c+d*x^n))^p, x, 1, ((e*x)^m*Unintegrable(x^m*(a+b*Sech(c+d*x^n))^p, x))/x^m}
+	// {(e*x)^m*(a+b*Sech(c+d*x^n))^p, x, 1, ((e*x)^m*Integrate::Unintegrable(x^m*(a+b*Sech(c+d*x^n))^p, x))/x^m}
 	public void test02886() {
 		check("Integrate((e*x)^m*(a+b*Sech(c+d*x^n))^p, x)",
-				"((e*x)^m*Unintegrable(x^m*(a+b*Sech(c+d*x^n))^p, x))/x^m");
+				"((e*x)^m*Integrate::Unintegrable(x^m*(a+b*Sech(c+d*x^n))^p, x))/x^m");
 
 	}
 
@@ -20007,18 +20143,18 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {Cosh(c+d*x)/((e+f*x)*(a+b*Csch(c+d*x))), x, 1, Unintegrable((Cosh(c+d*x)*Sinh(c+d*x))/((e+f*x)*(b
+	// {Cosh(c+d*x)/((e+f*x)*(a+b*Csch(c+d*x))), x, 1, Integrate::Unintegrable((Cosh(c+d*x)*Sinh(c+d*x))/((e+f*x)*(b
 	// +a*Sinh(c+d*x))), x)}
 	public void test02892() {
 		check("Integrate(Cosh(c+d*x)/((e+f*x)*(a+b*Csch(c+d*x))), x)",
-				"Unintegrable((Cosh(c+d*x)*Sinh(c+d*x))/((e+f*x)*(b+a*Sinh(c+d*x))), x)");
+				"Integrate::Unintegrable((Cosh(c+d*x)*Sinh(c+d*x))/((e+f*x)*(b+a*Sinh(c+d*x))), x)");
 
 	}
 
-	// {(e*x)^m*(a+b*Csch(c+d*x^n))^p, x, 1, ((e*x)^m*Unintegrable(x^m*(a+b*Csch(c+d*x^n))^p, x))/x^m}
+	// {(e*x)^m*(a+b*Csch(c+d*x^n))^p, x, 1, ((e*x)^m*Integrate::Unintegrable(x^m*(a+b*Csch(c+d*x^n))^p, x))/x^m}
 	public void test02893() {
 		check("Integrate((e*x)^m*(a+b*Csch(c+d*x^n))^p, x)",
-				"((e*x)^m*Unintegrable(x^m*(a+b*Csch(c+d*x^n))^p, x))/x^m");
+				"((e*x)^m*Integrate::Unintegrable(x^m*(a+b*Csch(c+d*x^n))^p, x))/x^m");
 
 	}
 
@@ -20112,26 +20248,29 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {x^m*Sech(a+b*x)*Tanh(a+b*x)^2, x, 1, Unintegrable(x^m*Sech(a+b*x), x)-Unintegrable(x^m*Sech(a+b*x)^3,
+	// {x^m*Sech(a+b*x)*Tanh(a+b*x)^2, x, 1, Integrate::Unintegrable(x^m*Sech(a+b*x),
+	// x)-Integrate::Unintegrable(x^m*Sech(a+b*x)^3,
 	// x)}
 	public void test02909() {
 		check("Integrate(x^m*Sech(a+b*x)*Tanh(a+b*x)^2, x)",
-				"Unintegrable(x^m*Sech(a+b*x), x)-Unintegrable(x^m*Sech(a+b*x)^3, x)");
+				"Integrate::Unintegrable(x^m*Sech(a+b*x), x)-Integrate::Unintegrable(x^m*Sech(a+b*x)^3, x)");
 
 	}
 
-	// {(Sech(a+b*x)*Tanh(a+b*x)^2)/x, x, 1, Unintegrable(Sech(a+b*x)/x, x)-Unintegrable(Sech(a+b*x)^3/x, x)}
+	// {(Sech(a+b*x)*Tanh(a+b*x)^2)/x, x, 1, Integrate::Unintegrable(Sech(a+b*x)/x,
+	// x)-Integrate::Unintegrable(Sech(a+b*x)^3/x, x)}
 	public void test02910() {
 		check("Integrate((Sech(a+b*x)*Tanh(a+b*x)^2)/x, x)",
-				"Unintegrable(Sech(a+b*x)/x, x)-Unintegrable(Sech(a+b*x)^3/x, x)");
+				"Integrate::Unintegrable(Sech(a+b*x)/x, x)-Integrate::Unintegrable(Sech(a+b*x)^3/x, x)");
 
 	}
 
-	// {(Sech(a+b*x)*Tanh(a+b*x)^2)/x^2, x, 1, Unintegrable(Sech(a+b*x)/x^2, x)-Unintegrable(Sech(a +
+	// {(Sech(a+b*x)*Tanh(a+b*x)^2)/x^2, x, 1, Integrate::Unintegrable(Sech(a+b*x)/x^2,
+	// x)-Integrate::Unintegrable(Sech(a +
 	// b*x)^3/x^2, x)}
 	public void test02911() {
 		check("Integrate((Sech(a+b*x)*Tanh(a+b*x)^2)/x^2, x)",
-				"Unintegrable(Sech(a+b*x)/x^2, x)-Unintegrable(Sech(a+b*x)^3/x^2, x)");
+				"Integrate::Unintegrable(Sech(a+b*x)/x^2, x)-Integrate::Unintegrable(Sech(a+b*x)^3/x^2, x)");
 
 	}
 
@@ -20141,62 +20280,65 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {x^m*Coth(a+b*x)^2*Csch(a+b*x), x, 1, Unintegrable(x^m*Csch(a+b*x), x)+Unintegrable(x^m*Csch(a+b*x)^3,
+	// {x^m*Coth(a+b*x)^2*Csch(a+b*x), x, 1, Integrate::Unintegrable(x^m*Csch(a+b*x),
+	// x)+Integrate::Unintegrable(x^m*Csch(a+b*x)^3,
 	// x)}
 	public void test02913() {
 		check("Integrate(x^m*Coth(a+b*x)^2*Csch(a+b*x), x)",
-				"Unintegrable(x^m*Csch(a+b*x), x)+Unintegrable(x^m*Csch(a+b*x)^3, x)");
+				"Integrate::Unintegrable(x^m*Csch(a+b*x), x)+Integrate::Unintegrable(x^m*Csch(a+b*x)^3, x)");
 
 	}
 
-	// {(Coth(a+b*x)^2*Csch(a+b*x))/x, x, 1, Unintegrable(Csch(a+b*x)/x, x)+Unintegrable(Csch(a+b*x)^3/x, x)}
+	// {(Coth(a+b*x)^2*Csch(a+b*x))/x, x, 1, Integrate::Unintegrable(Csch(a+b*x)/x,
+	// x)+Integrate::Unintegrable(Csch(a+b*x)^3/x, x)}
 	public void test02914() {
 		check("Integrate((Coth(a+b*x)^2*Csch(a+b*x))/x, x)",
-				"Unintegrable(Csch(a+b*x)/x, x)+Unintegrable(Csch(a+b*x)^3/x, x)");
+				"Integrate::Unintegrable(Csch(a+b*x)/x, x)+Integrate::Unintegrable(Csch(a+b*x)^3/x, x)");
 
 	}
 
-	// {(Coth(a+b*x)^2*Csch(a+b*x))/x^2, x, 1, Unintegrable(Csch(a+b*x)/x^2, x)+Unintegrable(Csch(a +
+	// {(Coth(a+b*x)^2*Csch(a+b*x))/x^2, x, 1, Integrate::Unintegrable(Csch(a+b*x)/x^2,
+	// x)+Integrate::Unintegrable(Csch(a +
 	// b*x)^3/x^2, x)}
 	public void test02915() {
 		check("Integrate((Coth(a+b*x)^2*Csch(a+b*x))/x^2, x)",
-				"Unintegrable(Csch(a+b*x)/x^2, x)+Unintegrable(Csch(a+b*x)^3/x^2, x)");
+				"Integrate::Unintegrable(Csch(a+b*x)/x^2, x)+Integrate::Unintegrable(Csch(a+b*x)^3/x^2, x)");
 
 	}
 
-	// {(Csch(a+b*x)*Sech(a+b*x))/x, x, 1, 2*Unintegrable(Csch(2*a+2*b*x)/x, x)}
+	// {(Csch(a+b*x)*Sech(a+b*x))/x, x, 1, 2*Integrate::Unintegrable(Csch(2*a+2*b*x)/x, x)}
 	public void test02916() {
-		check("Integrate((Csch(a+b*x)*Sech(a+b*x))/x, x)", "2*Unintegrable(Csch(2*a+2*b*x)/x, x)");
+		check("Integrate((Csch(a+b*x)*Sech(a+b*x))/x, x)", "2*Integrate::Unintegrable(Csch(2*a+2*b*x)/x, x)");
 
 	}
 
-	// {(Csch(a+b*x)*Sech(a+b*x))/x^2, x, 1, 2*Unintegrable(Csch(2*a+2*b*x)/x^2, x)}
+	// {(Csch(a+b*x)*Sech(a+b*x))/x^2, x, 1, 2*Integrate::Unintegrable(Csch(2*a+2*b*x)/x^2, x)}
 	public void test02917() {
-		check("Integrate((Csch(a+b*x)*Sech(a+b*x))/x^2, x)", "2*Unintegrable(Csch(2*a+2*b*x)/x^2, x)");
+		check("Integrate((Csch(a+b*x)*Sech(a+b*x))/x^2, x)", "2*Integrate::Unintegrable(Csch(2*a+2*b*x)/x^2, x)");
 
 	}
 
-	// {(Csch(a+b*x)^2*Sech(a+b*x)^2)/x, x, 1, 4*Unintegrable(Csch(2*a+2*b*x)^2/x, x)}
+	// {(Csch(a+b*x)^2*Sech(a+b*x)^2)/x, x, 1, 4*Integrate::Unintegrable(Csch(2*a+2*b*x)^2/x, x)}
 	public void test02918() {
-		check("Integrate((Csch(a+b*x)^2*Sech(a+b*x)^2)/x, x)", "4*Unintegrable(Csch(2*a+2*b*x)^2/x, x)");
+		check("Integrate((Csch(a+b*x)^2*Sech(a+b*x)^2)/x, x)", "4*Integrate::Unintegrable(Csch(2*a+2*b*x)^2/x, x)");
 
 	}
 
-	// {(Csch(a+b*x)^2*Sech(a+b*x)^2)/x^2, x, 1, 4*Unintegrable(Csch(2*a+2*b*x)^2/x^2, x)}
+	// {(Csch(a+b*x)^2*Sech(a+b*x)^2)/x^2, x, 1, 4*Integrate::Unintegrable(Csch(2*a+2*b*x)^2/x^2, x)}
 	public void test02919() {
-		check("Integrate((Csch(a+b*x)^2*Sech(a+b*x)^2)/x^2, x)", "4*Unintegrable(Csch(2*a+2*b*x)^2/x^2, x)");
+		check("Integrate((Csch(a+b*x)^2*Sech(a+b*x)^2)/x^2, x)", "4*Integrate::Unintegrable(Csch(2*a+2*b*x)^2/x^2, x)");
 
 	}
 
-	// {(Csch(a+b*x)^3*Sech(a+b*x)^3)/x, x, 1, 8*Unintegrable(Csch(2*a+2*b*x)^3/x, x)}
+	// {(Csch(a+b*x)^3*Sech(a+b*x)^3)/x, x, 1, 8*Integrate::Unintegrable(Csch(2*a+2*b*x)^3/x, x)}
 	public void test02920() {
-		check("Integrate((Csch(a+b*x)^3*Sech(a+b*x)^3)/x, x)", "8*Unintegrable(Csch(2*a+2*b*x)^3/x, x)");
+		check("Integrate((Csch(a+b*x)^3*Sech(a+b*x)^3)/x, x)", "8*Integrate::Unintegrable(Csch(2*a+2*b*x)^3/x, x)");
 
 	}
 
-	// {(Csch(a+b*x)^3*Sech(a+b*x)^3)/x^2, x, 1, 8*Unintegrable(Csch(2*a+2*b*x)^3/x^2, x)}
+	// {(Csch(a+b*x)^3*Sech(a+b*x)^3)/x^2, x, 1, 8*Integrate::Unintegrable(Csch(2*a+2*b*x)^3/x^2, x)}
 	public void test02921() {
-		check("Integrate((Csch(a+b*x)^3*Sech(a+b*x)^3)/x^2, x)", "8*Unintegrable(Csch(2*a+2*b*x)^3/x^2, x)");
+		check("Integrate((Csch(a+b*x)^3*Sech(a+b*x)^3)/x^2, x)", "8*Integrate::Unintegrable(Csch(2*a+2*b*x)^3/x^2, x)");
 
 	}
 
@@ -20414,9 +20556,9 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {1/(x*(a+b*Cosh(x)*Sinh(x))), x, 1, Unintegrable(1/(x*(a+(b*Sinh(2*x))/2)), x)}
+	// {1/(x*(a+b*Cosh(x)*Sinh(x))), x, 1, Integrate::Unintegrable(1/(x*(a+(b*Sinh(2*x))/2)), x)}
 	public void test02954() {
-		check("Integrate(1/(x*(a+b*Cosh(x)*Sinh(x))), x)", "Unintegrable(1/(x*(a+(b*Sinh(2*x))/2)), x)");
+		check("Integrate(1/(x*(a+b*Cosh(x)*Sinh(x))), x)", "Integrate::Unintegrable(1/(x*(a+(b*Sinh(2*x))/2)), x)");
 
 	}
 
@@ -20534,19 +20676,19 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {x^m*ArcSinh(a*x)^4, x, 1, (x^(1+m)*ArcSinh(a*x)^4)/(1+m)-(4*a*Unintegrable((x^(1 +
+	// {x^m*ArcSinh(a*x)^4, x, 1, (x^(1+m)*ArcSinh(a*x)^4)/(1+m)-(4*a*Integrate::Unintegrable((x^(1 +
 	// m)*ArcSinh(a*x)^3)/Sqrt(1+a^2*x^2), x))/(1+m)}
 	public void test02970() {
 		check("Integrate(x^m*ArcSinh(a*x)^4, x)",
-				"(x^(1+m)*ArcSinh(a*x)^4)/(1+m)-(4*a*Unintegrable((x^(1+m)*ArcSinh(a*x)^3)/Sqrt(1+a^2*x^2), x))/(1+m)");
+				"(x^(1+m)*ArcSinh(a*x)^4)/(1+m)-(4*a*Integrate::Unintegrable((x^(1+m)*ArcSinh(a*x)^3)/Sqrt(1+a^2*x^2), x))/(1+m)");
 
 	}
 
-	// {x^m*ArcSinh(a*x)^3, x, 1, (x^(1+m)*ArcSinh(a*x)^3)/(1+m)-(3*a*Unintegrable((x^(1 +
+	// {x^m*ArcSinh(a*x)^3, x, 1, (x^(1+m)*ArcSinh(a*x)^3)/(1+m)-(3*a*Integrate::Unintegrable((x^(1 +
 	// m)*ArcSinh(a*x)^2)/Sqrt(1+a^2*x^2), x))/(1+m)}
 	public void test02971() {
 		check("Integrate(x^m*ArcSinh(a*x)^3, x)",
-				"(x^(1+m)*ArcSinh(a*x)^3)/(1+m)-(3*a*Unintegrable((x^(1+m)*ArcSinh(a*x)^2)/Sqrt(1+a^2*x^2), x))/(1+m)");
+				"(x^(1+m)*ArcSinh(a*x)^3)/(1+m)-(3*a*Integrate::Unintegrable((x^(1+m)*ArcSinh(a*x)^2)/Sqrt(1+a^2*x^2), x))/(1+m)");
 
 	}
 
@@ -20589,61 +20731,65 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {1/((c+a^2*c*x^2)*ArcSinh(a*x)^2), x, 1, -(1/(a*c*Sqrt(1+a^2*x^2)*ArcSinh(a*x)))-(a*Unintegrable(x/((1 +
+	// {1/((c+a^2*c*x^2)*ArcSinh(a*x)^2), x, 1, -(1/(a*c*Sqrt(1+a^2*x^2)*ArcSinh(a*x)))-(a*Integrate::Unintegrable(x/((1
+	// +
 	// a^2*x^2)^(3/2)*ArcSinh(a*x)), x))/c}
 	public void test02978() {
 		check("Integrate(1/((c+a^2*c*x^2)*ArcSinh(a*x)^2), x)",
-				"-(1/(a*c*Sqrt(1+a^2*x^2)*ArcSinh(a*x)))-(a*Unintegrable(x/((1+a^2*x^2)^(3/2)*ArcSinh(a*x)), x))/c");
+				"-(1/(a*c*Sqrt(1+a^2*x^2)*ArcSinh(a*x)))-(a*Integrate::Unintegrable(x/((1+a^2*x^2)^(3/2)*ArcSinh(a*x)), x))/c");
 
 	}
 
 	// {1/((c+a^2*c*x^2)^2*ArcSinh(a*x)^2), x, 1, -(1/(a*c^2*(1+a^2*x^2)^(3/2)*ArcSinh(a*x))) -
-	// (3*a*Unintegrable(x/((1+a^2*x^2)^(5/2)*ArcSinh(a*x)), x))/c^2}
+	// (3*a*Integrate::Unintegrable(x/((1+a^2*x^2)^(5/2)*ArcSinh(a*x)), x))/c^2}
 	public void test02979() {
 		check("Integrate(1/((c+a^2*c*x^2)^2*ArcSinh(a*x)^2), x)",
-				"-(1/(a*c^2*(1+a^2*x^2)^(3/2)*ArcSinh(a*x)))-(3*a*Unintegrable(x/((1+a^2*x^2)^(5/2)*ArcSinh(a*x)), x))/c^2");
+				"-(1/(a*c^2*(1+a^2*x^2)^(3/2)*ArcSinh(a*x)))-(3*a*Integrate::Unintegrable(x/((1+a^2*x^2)^(5/2)*ArcSinh(a*x)), x))/c^2");
 
 	}
 
 	// {Sqrt(1+c^2*x^2)/(x^2*(a+b*ArcSinh(c*x))^2), x, 1, -((1+c^2*x^2)/(b*c*x^2*(a+b*ArcSinh(c*x)))) -
-	// (2*Unintegrable(1/(x^3*(a+b*ArcSinh(c*x))), x))/(b*c)}
+	// (2*Integrate::Unintegrable(1/(x^3*(a+b*ArcSinh(c*x))), x))/(b*c)}
 	public void test02980() {
 		check("Integrate(Sqrt(1+c^2*x^2)/(x^2*(a+b*ArcSinh(c*x))^2), x)",
-				"-((1+c^2*x^2)/(b*c*x^2*(a+b*ArcSinh(c*x))))-(2*Unintegrable(1/(x^3*(a+b*ArcSinh(c*x))), x))/(b*c)");
+				"-((1+c^2*x^2)/(b*c*x^2*(a+b*ArcSinh(c*x))))-(2*Integrate::Unintegrable(1/(x^3*(a+b*ArcSinh(c*x))), x))/(b*c)");
 
 	}
 
 	// {(1+c^2*x^2)^(3/2)/(x^2*(a+b*ArcSinh(c*x))^2), x, 1, -((1+c^2*x^2)^2/(b*c*x^2*(a+b*ArcSinh(c*x)))) -
-	// (2*Unintegrable((1+c^2*x^2)/(x^3*(a+b*ArcSinh(c*x))), x))/(b*c)+(2*c*Unintegrable((1+c^2*x^2)/(x*(a +
+	// (2*Integrate::Unintegrable((1+c^2*x^2)/(x^3*(a+b*ArcSinh(c*x))),
+	// x))/(b*c)+(2*c*Integrate::Unintegrable((1+c^2*x^2)/(x*(a +
 	// b*ArcSinh(c*x))), x))/b}
 	public void test02981() {
 		check("Integrate((1+c^2*x^2)^(3/2)/(x^2*(a+b*ArcSinh(c*x))^2), x)",
-				"-((1+c^2*x^2)^2/(b*c*x^2*(a+b*ArcSinh(c*x))))-(2*Unintegrable((1+c^2*x^2)/(x^3*(a+b*ArcSinh(c*x))), x))/(b*c)+(2*c*Unintegrable((1+c^2*x^2)/(x*(a+b*ArcSinh(c*x))), x))/b");
+				"-((1+c^2*x^2)^2/(b*c*x^2*(a+b*ArcSinh(c*x))))-(2*Integrate::Unintegrable((1+c^2*x^2)/(x^3*(a+b*ArcSinh(c*x))), x))/(b*c)+(2*c*Integrate::Unintegrable((1+c^2*x^2)/(x*(a+b*ArcSinh(c*x))), x))/b");
 
 	}
 
 	// {(1+c^2*x^2)^(3/2)/(x^4*(a+b*ArcSinh(c*x))^2), x, 1, -((1+c^2*x^2)^2/(b*c*x^4*(a+b*ArcSinh(c*x)))) -
-	// (4*Unintegrable((1+c^2*x^2)/(x^5*(a+b*ArcSinh(c*x))), x))/(b*c)}
+	// (4*Integrate::Unintegrable((1+c^2*x^2)/(x^5*(a+b*ArcSinh(c*x))), x))/(b*c)}
 	public void test02982() {
 		check("Integrate((1+c^2*x^2)^(3/2)/(x^4*(a+b*ArcSinh(c*x))^2), x)",
-				"-((1+c^2*x^2)^2/(b*c*x^4*(a+b*ArcSinh(c*x))))-(4*Unintegrable((1+c^2*x^2)/(x^5*(a+b*ArcSinh(c*x))), x))/(b*c)");
+				"-((1+c^2*x^2)^2/(b*c*x^4*(a+b*ArcSinh(c*x))))-(4*Integrate::Unintegrable((1+c^2*x^2)/(x^5*(a+b*ArcSinh(c*x))), x))/(b*c)");
 
 	}
 
 	// {(1+c^2*x^2)^(5/2)/(x^2*(a+b*ArcSinh(c*x))^2), x, 1, -((1+c^2*x^2)^3/(b*c*x^2*(a+b*ArcSinh(c*x)))) -
-	// (2*Unintegrable((1+c^2*x^2)^2/(x^3*(a+b*ArcSinh(c*x))), x))/(b*c)+(4*c*Unintegrable((1+c^2*x^2)^2/(x*(a +
+	// (2*Integrate::Unintegrable((1+c^2*x^2)^2/(x^3*(a+b*ArcSinh(c*x))),
+	// x))/(b*c)+(4*c*Integrate::Unintegrable((1+c^2*x^2)^2/(x*(a +
 	// b*ArcSinh(c*x))), x))/b}
 	public void test02983() {
 		check("Integrate((1+c^2*x^2)^(5/2)/(x^2*(a+b*ArcSinh(c*x))^2), x)",
-				"-((1+c^2*x^2)^3/(b*c*x^2*(a+b*ArcSinh(c*x))))-(2*Unintegrable((1+c^2*x^2)^2/(x^3*(a+b*ArcSinh(c*x))), x))/(b*c)+(4*c*Unintegrable((1+c^2*x^2)^2/(x*(a+b*ArcSinh(c*x))), x))/b");
+				"-((1+c^2*x^2)^3/(b*c*x^2*(a+b*ArcSinh(c*x))))-(2*Integrate::Unintegrable((1+c^2*x^2)^2/(x^3*(a+b*ArcSinh(c*x))), x))/(b*c)+(4*c*Integrate::Unintegrable((1+c^2*x^2)^2/(x*(a+b*ArcSinh(c*x))), x))/b");
 
 	}
 
-	// {x^m/(Sqrt(1+c^2*x^2)*(a+b*ArcSinh(c*x))^2), x, 1, -(x^m/(b*c*(a+b*ArcSinh(c*x))))+(m*Unintegrable(x^(-1
+	// {x^m/(Sqrt(1+c^2*x^2)*(a+b*ArcSinh(c*x))^2), x, 1,
+	// -(x^m/(b*c*(a+b*ArcSinh(c*x))))+(m*Integrate::Unintegrable(x^(-1
 	// +m)/(a+b*ArcSinh(c*x)), x))/(b*c)}
 	public void test02984() {
 		check("Integrate(x^m/(Sqrt(1+c^2*x^2)*(a+b*ArcSinh(c*x))^2), x)",
-				"-(x^m/(b*c*(a+b*ArcSinh(c*x))))+(m*Unintegrable(x^(-1+m)/(a+b*ArcSinh(c*x)), x))/(b*c)");
+				"-(x^m/(b*c*(a+b*ArcSinh(c*x))))+(m*Integrate::Unintegrable(x^(-1+m)/(a+b*ArcSinh(c*x)), x))/(b*c)");
 
 	}
 
@@ -20653,43 +20799,44 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {1/(x*Sqrt(1+c^2*x^2)*(a+b*ArcSinh(c*x))^2), x, 1, -(1/(b*c*x*(a+b*ArcSinh(c*x))))-Unintegrable(1/(x^2*(a
+	// {1/(x*Sqrt(1+c^2*x^2)*(a+b*ArcSinh(c*x))^2), x, 1,
+	// -(1/(b*c*x*(a+b*ArcSinh(c*x))))-Integrate::Unintegrable(1/(x^2*(a
 	// +b*ArcSinh(c*x))), x)/(b*c)}
 	public void test02986() {
 		check("Integrate(1/(x*Sqrt(1+c^2*x^2)*(a+b*ArcSinh(c*x))^2), x)",
-				"-(1/(b*c*x*(a+b*ArcSinh(c*x))))-Unintegrable(1/(x^2*(a+b*ArcSinh(c*x))), x)/(b*c)");
+				"-(1/(b*c*x*(a+b*ArcSinh(c*x))))-Integrate::Unintegrable(1/(x^2*(a+b*ArcSinh(c*x))), x)/(b*c)");
 
 	}
 
 	// {1/(x^2*Sqrt(1+c^2*x^2)*(a+b*ArcSinh(c*x))^2), x, 1, -(1/(b*c*x^2*(a+b*ArcSinh(c*x)))) -
-	// (2*Unintegrable(1/(x^3*(a+b*ArcSinh(c*x))), x))/(b*c)}
+	// (2*Integrate::Unintegrable(1/(x^3*(a+b*ArcSinh(c*x))), x))/(b*c)}
 	public void test02987() {
 		check("Integrate(1/(x^2*Sqrt(1+c^2*x^2)*(a+b*ArcSinh(c*x))^2), x)",
-				"-(1/(b*c*x^2*(a+b*ArcSinh(c*x))))-(2*Unintegrable(1/(x^3*(a+b*ArcSinh(c*x))), x))/(b*c)");
+				"-(1/(b*c*x^2*(a+b*ArcSinh(c*x))))-(2*Integrate::Unintegrable(1/(x^3*(a+b*ArcSinh(c*x))), x))/(b*c)");
 
 	}
 
 	// {x^2/((1+c^2*x^2)^(3/2)*(a+b*ArcSinh(c*x))^2), x, 1, -(x^2/(b*c*(1+c^2*x^2)*(a+b*ArcSinh(c*x)))) +
-	// (2*Unintegrable(x/((1+c^2*x^2)^2*(a+b*ArcSinh(c*x))), x))/(b*c)}
+	// (2*Integrate::Unintegrable(x/((1+c^2*x^2)^2*(a+b*ArcSinh(c*x))), x))/(b*c)}
 	public void test02988() {
 		check("Integrate(x^2/((1+c^2*x^2)^(3/2)*(a+b*ArcSinh(c*x))^2), x)",
-				"-(x^2/(b*c*(1+c^2*x^2)*(a+b*ArcSinh(c*x))))+(2*Unintegrable(x/((1+c^2*x^2)^2*(a+b*ArcSinh(c*x))), x))/(b*c)");
+				"-(x^2/(b*c*(1+c^2*x^2)*(a+b*ArcSinh(c*x))))+(2*Integrate::Unintegrable(x/((1+c^2*x^2)^2*(a+b*ArcSinh(c*x))), x))/(b*c)");
 
 	}
 
 	// {1/((1+c^2*x^2)^(3/2)*(a+b*ArcSinh(c*x))^2), x, 1, -(1/(b*c*(1+c^2*x^2)*(a+b*ArcSinh(c*x)))) -
-	// (2*c*Unintegrable(x/((1+c^2*x^2)^2*(a+b*ArcSinh(c*x))), x))/b}
+	// (2*c*Integrate::Unintegrable(x/((1+c^2*x^2)^2*(a+b*ArcSinh(c*x))), x))/b}
 	public void test02989() {
 		check("Integrate(1/((1+c^2*x^2)^(3/2)*(a+b*ArcSinh(c*x))^2), x)",
-				"-(1/(b*c*(1+c^2*x^2)*(a+b*ArcSinh(c*x))))-(2*c*Unintegrable(x/((1+c^2*x^2)^2*(a+b*ArcSinh(c*x))), x))/b");
+				"-(1/(b*c*(1+c^2*x^2)*(a+b*ArcSinh(c*x))))-(2*c*Integrate::Unintegrable(x/((1+c^2*x^2)^2*(a+b*ArcSinh(c*x))), x))/b");
 
 	}
 
 	// {1/((1+c^2*x^2)^(5/2)*(a+b*ArcSinh(c*x))^2), x, 1, -(1/(b*c*(1+c^2*x^2)^2*(a+b*ArcSinh(c*x)))) -
-	// (4*c*Unintegrable(x/((1+c^2*x^2)^3*(a+b*ArcSinh(c*x))), x))/b}
+	// (4*c*Integrate::Unintegrable(x/((1+c^2*x^2)^3*(a+b*ArcSinh(c*x))), x))/b}
 	public void test02990() {
 		check("Integrate(1/((1+c^2*x^2)^(5/2)*(a+b*ArcSinh(c*x))^2), x)",
-				"-(1/(b*c*(1+c^2*x^2)^2*(a+b*ArcSinh(c*x))))-(4*c*Unintegrable(x/((1+c^2*x^2)^3*(a+b*ArcSinh(c*x))), x))/b");
+				"-(1/(b*c*(1+c^2*x^2)^2*(a+b*ArcSinh(c*x))))-(4*c*Integrate::Unintegrable(x/((1+c^2*x^2)^3*(a+b*ArcSinh(c*x))), x))/b");
 
 	}
 
@@ -20700,78 +20847,78 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	}
 
 	// {Sqrt(ArcSinh(a*x))/(c+a^2*c*x^2)^(3/2), x, 1, (x*Sqrt(ArcSinh(a*x)))/(c*Sqrt(c+a^2*c*x^2))-(a*Sqrt(1 +
-	// a^2*x^2)*Unintegrable(x/((1+a^2*x^2)*Sqrt(ArcSinh(a*x))), x))/(2*c*Sqrt(c+a^2*c*x^2))}
+	// a^2*x^2)*Integrate::Unintegrable(x/((1+a^2*x^2)*Sqrt(ArcSinh(a*x))), x))/(2*c*Sqrt(c+a^2*c*x^2))}
 	public void test02992() {
 		check("Integrate(Sqrt(ArcSinh(a*x))/(c+a^2*c*x^2)^(3/2), x)",
-				"(x*Sqrt(ArcSinh(a*x)))/(c*Sqrt(c+a^2*c*x^2))-(a*Sqrt(1+a^2*x^2)*Unintegrable(x/((1+a^2*x^2)*Sqrt(ArcSinh(a*x))), x))/(2*c*Sqrt(c+a^2*c*x^2))");
+				"(x*Sqrt(ArcSinh(a*x)))/(c*Sqrt(c+a^2*c*x^2))-(a*Sqrt(1+a^2*x^2)*Integrate::Unintegrable(x/((1+a^2*x^2)*Sqrt(ArcSinh(a*x))), x))/(2*c*Sqrt(c+a^2*c*x^2))");
 
 	}
 
 	// {ArcSinh(a*x)^(3/2)/(c+a^2*c*x^2)^(3/2), x, 1, (x*ArcSinh(a*x)^(3/2))/(c*Sqrt(c+a^2*c*x^2))-(3*a*Sqrt(1 +
-	// a^2*x^2)*Unintegrable((x*Sqrt(ArcSinh(a*x)))/(1+a^2*x^2), x))/(2*c*Sqrt(c+a^2*c*x^2))}
+	// a^2*x^2)*Integrate::Unintegrable((x*Sqrt(ArcSinh(a*x)))/(1+a^2*x^2), x))/(2*c*Sqrt(c+a^2*c*x^2))}
 	public void test02993() {
 		check("Integrate(ArcSinh(a*x)^(3/2)/(c+a^2*c*x^2)^(3/2), x)",
-				"(x*ArcSinh(a*x)^(3/2))/(c*Sqrt(c+a^2*c*x^2))-(3*a*Sqrt(1+a^2*x^2)*Unintegrable((x*Sqrt(ArcSinh(a*x)))/(1+a^2*x^2), x))/(2*c*Sqrt(c+a^2*c*x^2))");
+				"(x*ArcSinh(a*x)^(3/2))/(c*Sqrt(c+a^2*c*x^2))-(3*a*Sqrt(1+a^2*x^2)*Integrate::Unintegrable((x*Sqrt(ArcSinh(a*x)))/(1+a^2*x^2), x))/(2*c*Sqrt(c+a^2*c*x^2))");
 
 	}
 
 	// {ArcSinh(a*x)^(5/2)/(c+a^2*c*x^2)^(3/2), x, 1, (x*ArcSinh(a*x)^(5/2))/(c*Sqrt(c+a^2*c*x^2))-(5*a*Sqrt(1 +
-	// a^2*x^2)*Unintegrable((x*ArcSinh(a*x)^(3/2))/(1+a^2*x^2), x))/(2*c*Sqrt(c+a^2*c*x^2))}
+	// a^2*x^2)*Integrate::Unintegrable((x*ArcSinh(a*x)^(3/2))/(1+a^2*x^2), x))/(2*c*Sqrt(c+a^2*c*x^2))}
 	public void test02994() {
 		check("Integrate(ArcSinh(a*x)^(5/2)/(c+a^2*c*x^2)^(3/2), x)",
-				"(x*ArcSinh(a*x)^(5/2))/(c*Sqrt(c+a^2*c*x^2))-(5*a*Sqrt(1+a^2*x^2)*Unintegrable((x*ArcSinh(a*x)^(3/2))/(1+a^2*x^2), x))/(2*c*Sqrt(c+a^2*c*x^2))");
+				"(x*ArcSinh(a*x)^(5/2))/(c*Sqrt(c+a^2*c*x^2))-(5*a*Sqrt(1+a^2*x^2)*Integrate::Unintegrable((x*ArcSinh(a*x)^(3/2))/(1+a^2*x^2), x))/(2*c*Sqrt(c+a^2*c*x^2))");
 
 	}
 
 	// {Sqrt(ArcSinh(x/a))/(a^2+x^2)^(3/2), x, 1, (x*Sqrt(ArcSinh(x/a)))/(a^2*Sqrt(a^2+x^2))-(Sqrt(1 +
-	// x^2/a^2)*Unintegrable(x/((1+x^2/a^2)*Sqrt(ArcSinh(x/a))), x))/(2*a^3*Sqrt(a^2+x^2))}
+	// x^2/a^2)*Integrate::Unintegrable(x/((1+x^2/a^2)*Sqrt(ArcSinh(x/a))), x))/(2*a^3*Sqrt(a^2+x^2))}
 	public void test02995() {
 		check("Integrate(Sqrt(ArcSinh(x/a))/(a^2+x^2)^(3/2), x)",
-				"(x*Sqrt(ArcSinh(x/a)))/(a^2*Sqrt(a^2+x^2))-(Sqrt(1+x^2/a^2)*Unintegrable(x/((1+x^2/a^2)*Sqrt(ArcSinh(x/a))), x))/(2*a^3*Sqrt(a^2+x^2))");
+				"(x*Sqrt(ArcSinh(x/a)))/(a^2*Sqrt(a^2+x^2))-(Sqrt(1+x^2/a^2)*Integrate::Unintegrable(x/((1+x^2/a^2)*Sqrt(ArcSinh(x/a))), x))/(2*a^3*Sqrt(a^2+x^2))");
 
 	}
 
 	// {ArcSinh(x/a)^(3/2)/(a^2+x^2)^(3/2), x, 1, (x*ArcSinh(x/a)^(3/2))/(a^2*Sqrt(a^2+x^2))-(3*Sqrt(1 +
-	// x^2/a^2)*Unintegrable((x*Sqrt(ArcSinh(x/a)))/(1+x^2/a^2), x))/(2*a^3*Sqrt(a^2+x^2))}
+	// x^2/a^2)*Integrate::Unintegrable((x*Sqrt(ArcSinh(x/a)))/(1+x^2/a^2), x))/(2*a^3*Sqrt(a^2+x^2))}
 	public void test02996() {
 		check("Integrate(ArcSinh(x/a)^(3/2)/(a^2+x^2)^(3/2), x)",
-				"(x*ArcSinh(x/a)^(3/2))/(a^2*Sqrt(a^2+x^2))-(3*Sqrt(1+x^2/a^2)*Unintegrable((x*Sqrt(ArcSinh(x/a)))/(1+x^2/a^2), x))/(2*a^3*Sqrt(a^2+x^2))");
+				"(x*ArcSinh(x/a)^(3/2))/(a^2*Sqrt(a^2+x^2))-(3*Sqrt(1+x^2/a^2)*Integrate::Unintegrable((x*Sqrt(ArcSinh(x/a)))/(1+x^2/a^2), x))/(2*a^3*Sqrt(a^2+x^2))");
 
 	}
 
 	// {1/((c+a^2*c*x^2)^(3/2)*ArcSinh(a*x)^(3/2)), x, 1, (-2*Sqrt(1+a^2*x^2))/(a*(c +
-	// a^2*c*x^2)^(3/2)*Sqrt(ArcSinh(a*x)))-(4*a*Sqrt(1+a^2*x^2)*Unintegrable(x/((1 +
+	// a^2*c*x^2)^(3/2)*Sqrt(ArcSinh(a*x)))-(4*a*Sqrt(1+a^2*x^2)*Integrate::Unintegrable(x/((1 +
 	// a^2*x^2)^2*Sqrt(ArcSinh(a*x))), x))/(c*Sqrt(c+a^2*c*x^2))}
 	public void test02997() {
 		check("Integrate(1/((c+a^2*c*x^2)^(3/2)*ArcSinh(a*x)^(3/2)), x)",
-				"(-2*Sqrt(1+a^2*x^2))/(a*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcSinh(a*x)))-(4*a*Sqrt(1+a^2*x^2)*Unintegrable(x/((1+a^2*x^2)^2*Sqrt(ArcSinh(a*x))), x))/(c*Sqrt(c+a^2*c*x^2))");
+				"(-2*Sqrt(1+a^2*x^2))/(a*(c+a^2*c*x^2)^(3/2)*Sqrt(ArcSinh(a*x)))-(4*a*Sqrt(1+a^2*x^2)*Integrate::Unintegrable(x/((1+a^2*x^2)^2*Sqrt(ArcSinh(a*x))), x))/(c*Sqrt(c+a^2*c*x^2))");
 
 	}
 
 	// {1/((c+a^2*c*x^2)^(5/2)*ArcSinh(a*x)^(3/2)), x, 1, (-2*Sqrt(1+a^2*x^2))/(a*(c +
-	// a^2*c*x^2)^(5/2)*Sqrt(ArcSinh(a*x)))-(8*a*Sqrt(1+a^2*x^2)*Unintegrable(x/((1 +
+	// a^2*c*x^2)^(5/2)*Sqrt(ArcSinh(a*x)))-(8*a*Sqrt(1+a^2*x^2)*Integrate::Unintegrable(x/((1 +
 	// a^2*x^2)^3*Sqrt(ArcSinh(a*x))), x))/(c^2*Sqrt(c+a^2*c*x^2))}
 	public void test02998() {
 		check("Integrate(1/((c+a^2*c*x^2)^(5/2)*ArcSinh(a*x)^(3/2)), x)",
-				"(-2*Sqrt(1+a^2*x^2))/(a*(c+a^2*c*x^2)^(5/2)*Sqrt(ArcSinh(a*x)))-(8*a*Sqrt(1+a^2*x^2)*Unintegrable(x/((1+a^2*x^2)^3*Sqrt(ArcSinh(a*x))), x))/(c^2*Sqrt(c+a^2*c*x^2))");
+				"(-2*Sqrt(1+a^2*x^2))/(a*(c+a^2*c*x^2)^(5/2)*Sqrt(ArcSinh(a*x)))-(8*a*Sqrt(1+a^2*x^2)*Integrate::Unintegrable(x/((1+a^2*x^2)^3*Sqrt(ArcSinh(a*x))), x))/(c^2*Sqrt(c+a^2*c*x^2))");
 
 	}
 
 	// {1/((c+a^2*c*x^2)^(3/2)*ArcSinh(a*x)^(5/2)), x, 1, (-2*Sqrt(1+a^2*x^2))/(3*a*(c +
-	// a^2*c*x^2)^(3/2)*ArcSinh(a*x)^(3/2))-(4*a*Sqrt(1+a^2*x^2)*Unintegrable(x/((1 +
+	// a^2*c*x^2)^(3/2)*ArcSinh(a*x)^(3/2))-(4*a*Sqrt(1+a^2*x^2)*Integrate::Unintegrable(x/((1 +
 	// a^2*x^2)^2*ArcSinh(a*x)^(3/2)), x))/(3*c*Sqrt(c+a^2*c*x^2))}
 	public void test02999() {
 		check("Integrate(1/((c+a^2*c*x^2)^(3/2)*ArcSinh(a*x)^(5/2)), x)",
-				"(-2*Sqrt(1+a^2*x^2))/(3*a*(c+a^2*c*x^2)^(3/2)*ArcSinh(a*x)^(3/2))-(4*a*Sqrt(1+a^2*x^2)*Unintegrable(x/((1+a^2*x^2)^2*ArcSinh(a*x)^(3/2)), x))/(3*c*Sqrt(c+a^2*c*x^2))");
+				"(-2*Sqrt(1+a^2*x^2))/(3*a*(c+a^2*c*x^2)^(3/2)*ArcSinh(a*x)^(3/2))-(4*a*Sqrt(1+a^2*x^2)*Integrate::Unintegrable(x/((1+a^2*x^2)^2*ArcSinh(a*x)^(3/2)), x))/(3*c*Sqrt(c+a^2*c*x^2))");
 
 	}
 
 	// {1/((c+a^2*c*x^2)^(5/2)*ArcSinh(a*x)^(5/2)), x, 1, (-2*Sqrt(1+a^2*x^2))/(3*a*(c +
-	// a^2*c*x^2)^(5/2)*ArcSinh(a*x)^(3/2))-(8*a*Sqrt(1+a^2*x^2)*Unintegrable(x/((1 +
+	// a^2*c*x^2)^(5/2)*ArcSinh(a*x)^(3/2))-(8*a*Sqrt(1+a^2*x^2)*Integrate::Unintegrable(x/((1 +
 	// a^2*x^2)^3*ArcSinh(a*x)^(3/2)), x))/(3*c^2*Sqrt(c+a^2*c*x^2))}
 	public void test03000() {
 		check("Integrate(1/((c+a^2*c*x^2)^(5/2)*ArcSinh(a*x)^(5/2)), x)",
-				"(-2*Sqrt(1+a^2*x^2))/(3*a*(c+a^2*c*x^2)^(5/2)*ArcSinh(a*x)^(3/2))-(8*a*Sqrt(1+a^2*x^2)*Unintegrable(x/((1+a^2*x^2)^3*ArcSinh(a*x)^(3/2)), x))/(3*c^2*Sqrt(c+a^2*c*x^2))");
+				"(-2*Sqrt(1+a^2*x^2))/(3*a*(c+a^2*c*x^2)^(5/2)*ArcSinh(a*x)^(3/2))-(8*a*Sqrt(1+a^2*x^2)*Integrate::Unintegrable(x/((1+a^2*x^2)^3*ArcSinh(a*x)^(3/2)), x))/(3*c^2*Sqrt(c+a^2*c*x^2))");
 
 	}
 
@@ -20782,55 +20929,55 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	}
 
 	// {(d+e*x)^m*(a+b*ArcSinh(c*x))^2, x, 1, ((d+e*x)^(1+m)*(a+b*ArcSinh(c*x))^2)/(e*(1+m)) -
-	// (2*b*c*Unintegrable(((d+e*x)^(1+m)*(a+b*ArcSinh(c*x)))/Sqrt(1+c^2*x^2), x))/(e*(1+m))}
+	// (2*b*c*Integrate::Unintegrable(((d+e*x)^(1+m)*(a+b*ArcSinh(c*x)))/Sqrt(1+c^2*x^2), x))/(e*(1+m))}
 	public void test03002() {
 		check("Integrate((d+e*x)^m*(a+b*ArcSinh(c*x))^2, x)",
-				"((d+e*x)^(1+m)*(a+b*ArcSinh(c*x))^2)/(e*(1+m))-(2*b*c*Unintegrable(((d+e*x)^(1+m)*(a+b*ArcSinh(c*x)))/Sqrt(1+c^2*x^2), x))/(e*(1+m))");
+				"((d+e*x)^(1+m)*(a+b*ArcSinh(c*x))^2)/(e*(1+m))-(2*b*c*Integrate::Unintegrable(((d+e*x)^(1+m)*(a+b*ArcSinh(c*x)))/Sqrt(1+c^2*x^2), x))/(e*(1+m))");
 
 	}
 
-	// {1/(x*ArcSinh(a+b*x)), x, 1, Unintegrable(1/(x*ArcSinh(a+b*x)), x)}
+	// {1/(x*ArcSinh(a+b*x)), x, 1, Integrate::Unintegrable(1/(x*ArcSinh(a+b*x)), x)}
 	public void test03003() {
-		check("Integrate(1/(x*ArcSinh(a+b*x)), x)", "Unintegrable(1/(x*ArcSinh(a+b*x)), x)");
+		check("Integrate(1/(x*ArcSinh(a+b*x)), x)", "Integrate::Unintegrable(1/(x*ArcSinh(a+b*x)), x)");
 
 	}
 
-	// {1/(x*ArcSinh(a+b*x)^2), x, 1, Unintegrable(1/(x*ArcSinh(a+b*x)^2), x)}
+	// {1/(x*ArcSinh(a+b*x)^2), x, 1, Integrate::Unintegrable(1/(x*ArcSinh(a+b*x)^2), x)}
 	public void test03004() {
-		check("Integrate(1/(x*ArcSinh(a+b*x)^2), x)", "Unintegrable(1/(x*ArcSinh(a+b*x)^2), x)");
+		check("Integrate(1/(x*ArcSinh(a+b*x)^2), x)", "Integrate::Unintegrable(1/(x*ArcSinh(a+b*x)^2), x)");
 
 	}
 
-	// {1/(x*ArcSinh(a+b*x)^3), x, 1, Unintegrable(1/(x*ArcSinh(a+b*x)^3), x)}
+	// {1/(x*ArcSinh(a+b*x)^3), x, 1, Integrate::Unintegrable(1/(x*ArcSinh(a+b*x)^3), x)}
 	public void test03005() {
-		check("Integrate(1/(x*ArcSinh(a+b*x)^3), x)", "Unintegrable(1/(x*ArcSinh(a+b*x)^3), x)");
+		check("Integrate(1/(x*ArcSinh(a+b*x)^3), x)", "Integrate::Unintegrable(1/(x*ArcSinh(a+b*x)^3), x)");
 
 	}
 
-	// {x^m*(a+b*ArcSinh(c+d*x))^n, x, 1, Unintegrable(x^m*(a+b*ArcSinh(c+d*x))^n, x)}
+	// {x^m*(a+b*ArcSinh(c+d*x))^n, x, 1, Integrate::Unintegrable(x^m*(a+b*ArcSinh(c+d*x))^n, x)}
 	public void test03006() {
-		check("Integrate(x^m*(a+b*ArcSinh(c+d*x))^n, x)", "Unintegrable(x^m*(a+b*ArcSinh(c+d*x))^n, x)");
+		check("Integrate(x^m*(a+b*ArcSinh(c+d*x))^n, x)", "Integrate::Unintegrable(x^m*(a+b*ArcSinh(c+d*x))^n, x)");
 
 	}
 
-	// {(a+b*ArcSinh(c+d*x))^n/x, x, 1, Unintegrable((a+b*ArcSinh(c+d*x))^n/x, x)}
+	// {(a+b*ArcSinh(c+d*x))^n/x, x, 1, Integrate::Unintegrable((a+b*ArcSinh(c+d*x))^n/x, x)}
 	public void test03007() {
-		check("Integrate((a+b*ArcSinh(c+d*x))^n/x, x)", "Unintegrable((a+b*ArcSinh(c+d*x))^n/x, x)");
+		check("Integrate((a+b*ArcSinh(c+d*x))^n/x, x)", "Integrate::Unintegrable((a+b*ArcSinh(c+d*x))^n/x, x)");
 
 	}
 
-	// {(c*e+d*e*x)^m/(a+b*ArcSinh(c+d*x)), x, 1, Unintegrable((e*(c+d*x))^m/(a+b*ArcSinh(c+d*x)), x)}
+	// {(c*e+d*e*x)^m/(a+b*ArcSinh(c+d*x)), x, 1, Integrate::Unintegrable((e*(c+d*x))^m/(a+b*ArcSinh(c+d*x)), x)}
 	public void test03008() {
 		check("Integrate((c*e+d*e*x)^m/(a+b*ArcSinh(c+d*x)), x)",
-				"Unintegrable((e*(c+d*x))^m/(a+b*ArcSinh(c+d*x)), x)");
+				"Integrate::Unintegrable((e*(c+d*x))^m/(a+b*ArcSinh(c+d*x)), x)");
 
 	}
 
-	// {1/((1+a^2+2*a*b*x+b^2*x^2)^(3/2)*ArcSinh(a+b*x)), x, 1, Unintegrable(1/((1+(a +
+	// {1/((1+a^2+2*a*b*x+b^2*x^2)^(3/2)*ArcSinh(a+b*x)), x, 1, Integrate::Unintegrable(1/((1+(a +
 	// b*x)^2)^(3/2)*ArcSinh(a+b*x)), x)}
 	public void test03009() {
 		check("Integrate(1/((1+a^2+2*a*b*x+b^2*x^2)^(3/2)*ArcSinh(a+b*x)), x)",
-				"Unintegrable(1/((1+(a+b*x)^2)^(3/2)*ArcSinh(a+b*x)), x)");
+				"Integrate::Unintegrable(1/((1+(a+b*x)^2)^(3/2)*ArcSinh(a+b*x)), x)");
 
 	}
 
@@ -20940,557 +21087,582 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {x^m*ArcCosh(a*x)^4, x, 1, (x^(1+m)*ArcCosh(a*x)^4)/(1+m)-(4*a*Unintegrable((x^(1 +
+	// {x^m*ArcCosh(a*x)^4, x, 1, (x^(1+m)*ArcCosh(a*x)^4)/(1+m)-(4*a*Integrate::Unintegrable((x^(1 +
 	// m)*ArcCosh(a*x)^3)/(Sqrt(-1+a*x)*Sqrt(1+a*x)), x))/(1+m)}
 	public void test03020() {
 		check("Integrate(x^m*ArcCosh(a*x)^4, x)",
-				"(x^(1+m)*ArcCosh(a*x)^4)/(1+m)-(4*a*Unintegrable((x^(1+m)*ArcCosh(a*x)^3)/(Sqrt(-1+a*x)*Sqrt(1+a*x)), x))/(1+m)");
+				"(x^(1+m)*ArcCosh(a*x)^4)/(1+m)-(4*a*Integrate::Unintegrable((x^(1+m)*ArcCosh(a*x)^3)/(Sqrt(-1+a*x)*Sqrt(1+a*x)), x))/(1+m)");
 
 	}
 
-	// {x^m*ArcCosh(a*x)^3, x, 1, (x^(1+m)*ArcCosh(a*x)^3)/(1+m)-(3*a*Unintegrable((x^(1 +
+	// {x^m*ArcCosh(a*x)^3, x, 1, (x^(1+m)*ArcCosh(a*x)^3)/(1+m)-(3*a*Integrate::Unintegrable((x^(1 +
 	// m)*ArcCosh(a*x)^2)/(Sqrt(-1+a*x)*Sqrt(1+a*x)), x))/(1+m)}
 	public void test03021() {
 		check("Integrate(x^m*ArcCosh(a*x)^3, x)",
-				"(x^(1+m)*ArcCosh(a*x)^3)/(1+m)-(3*a*Unintegrable((x^(1+m)*ArcCosh(a*x)^2)/(Sqrt(-1+a*x)*Sqrt(1+a*x)), x))/(1+m)");
+				"(x^(1+m)*ArcCosh(a*x)^3)/(1+m)-(3*a*Integrate::Unintegrable((x^(1+m)*ArcCosh(a*x)^2)/(Sqrt(-1+a*x)*Sqrt(1+a*x)), x))/(1+m)");
 
 	}
 
-	// {(f*x)^m*(d-c^2*d*x^2)^(5/2)*(a+b*ArcCosh(c*x))^2, x, 1, (d^2*Sqrt(d-c^2*d*x^2)*Unintegrable((f*x)^m*(-1 +
+	// {(f*x)^m*(d-c^2*d*x^2)^(5/2)*(a+b*ArcCosh(c*x))^2, x, 1,
+	// (d^2*Sqrt(d-c^2*d*x^2)*Integrate::Unintegrable((f*x)^m*(-1 +
 	// c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))^2, x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))}
 	public void test03022() {
 		check("Integrate((f*x)^m*(d-c^2*d*x^2)^(5/2)*(a+b*ArcCosh(c*x))^2, x)",
-				"(d^2*Sqrt(d-c^2*d*x^2)*Unintegrable((f*x)^m*(-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))^2, x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
+				"(d^2*Sqrt(d-c^2*d*x^2)*Integrate::Unintegrable((f*x)^m*(-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))^2, x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
 
 	}
 
-	// {(f*x)^m*(d-c^2*d*x^2)^(3/2)*(a+b*ArcCosh(c*x))^2, x, 1, -((d*Sqrt(d-c^2*d*x^2)*Unintegrable((f*x)^m*(-1 +
+	// {(f*x)^m*(d-c^2*d*x^2)^(3/2)*(a+b*ArcCosh(c*x))^2, x, 1,
+	// -((d*Sqrt(d-c^2*d*x^2)*Integrate::Unintegrable((f*x)^m*(-1 +
 	// c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))^2, x))/(Sqrt(-1+c*x)*Sqrt(1+c*x)))}
 	public void test03023() {
 		check("Integrate((f*x)^m*(d-c^2*d*x^2)^(3/2)*(a+b*ArcCosh(c*x))^2, x)",
-				"-((d*Sqrt(d-c^2*d*x^2)*Unintegrable((f*x)^m*(-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))^2, x))/(Sqrt(-1+c*x)*Sqrt(1+c*x)))");
+				"-((d*Sqrt(d-c^2*d*x^2)*Integrate::Unintegrable((f*x)^m*(-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))^2, x))/(Sqrt(-1+c*x)*Sqrt(1+c*x)))");
 
 	}
 
-	// {(f*x)^m*Sqrt(d-c^2*d*x^2)*(a+b*ArcCosh(c*x))^2, x, 1, (Sqrt(d-c^2*d*x^2)*Unintegrable((f*x)^m*Sqrt(-1 +
+	// {(f*x)^m*Sqrt(d-c^2*d*x^2)*(a+b*ArcCosh(c*x))^2, x, 1, (Sqrt(d-c^2*d*x^2)*Integrate::Unintegrable((f*x)^m*Sqrt(-1
+	// +
 	// c*x)*Sqrt(1+c*x)*(a+b*ArcCosh(c*x))^2, x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))}
 	public void test03024() {
 		check("Integrate((f*x)^m*Sqrt(d-c^2*d*x^2)*(a+b*ArcCosh(c*x))^2, x)",
-				"(Sqrt(d-c^2*d*x^2)*Unintegrable((f*x)^m*Sqrt(-1+c*x)*Sqrt(1+c*x)*(a+b*ArcCosh(c*x))^2, x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
+				"(Sqrt(d-c^2*d*x^2)*Integrate::Unintegrable((f*x)^m*Sqrt(-1+c*x)*Sqrt(1+c*x)*(a+b*ArcCosh(c*x))^2, x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
 
 	}
 
 	// {((f*x)^m*(a+b*ArcCosh(c*x))^2)/Sqrt(d-c^2*d*x^2), x, 1, (Sqrt(-1+c*x)*Sqrt(1 +
-	// c*x)*Unintegrable(((f*x)^m*(a+b*ArcCosh(c*x))^2)/(Sqrt(-1+c*x)*Sqrt(1+c*x)), x))/Sqrt(d-c^2*d*x^2)}
+	// c*x)*Integrate::Unintegrable(((f*x)^m*(a+b*ArcCosh(c*x))^2)/(Sqrt(-1+c*x)*Sqrt(1+c*x)), x))/Sqrt(d-c^2*d*x^2)}
 	public void test03025() {
 		check("Integrate(((f*x)^m*(a+b*ArcCosh(c*x))^2)/Sqrt(d-c^2*d*x^2), x)",
-				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(((f*x)^m*(a+b*ArcCosh(c*x))^2)/(Sqrt(-1+c*x)*Sqrt(1+c*x)), x))/Sqrt(d-c^2*d*x^2)");
+				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(((f*x)^m*(a+b*ArcCosh(c*x))^2)/(Sqrt(-1+c*x)*Sqrt(1+c*x)), x))/Sqrt(d-c^2*d*x^2)");
 
 	}
 
 	// {((f*x)^m*(a+b*ArcCosh(c*x))^2)/(d-c^2*d*x^2)^(3/2), x, 1, -((Sqrt(-1+c*x)*Sqrt(1 +
-	// c*x)*Unintegrable(((f*x)^m*(a+b*ArcCosh(c*x))^2)/((-1+c*x)^(3/2)*(1+c*x)^(3/2)), x))/(d*Sqrt(d -
+	// c*x)*Integrate::Unintegrable(((f*x)^m*(a+b*ArcCosh(c*x))^2)/((-1+c*x)^(3/2)*(1+c*x)^(3/2)), x))/(d*Sqrt(d -
 	// c^2*d*x^2)))}
 	public void test03026() {
 		check("Integrate(((f*x)^m*(a+b*ArcCosh(c*x))^2)/(d-c^2*d*x^2)^(3/2), x)",
-				"-((Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(((f*x)^m*(a+b*ArcCosh(c*x))^2)/((-1+c*x)^(3/2)*(1+c*x)^(3/2)), x))/(d*Sqrt(d-c^2*d*x^2)))");
+				"-((Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(((f*x)^m*(a+b*ArcCosh(c*x))^2)/((-1+c*x)^(3/2)*(1+c*x)^(3/2)), x))/(d*Sqrt(d-c^2*d*x^2)))");
 
 	}
 
 	// {((f*x)^m*(a+b*ArcCosh(c*x))^2)/(d-c^2*d*x^2)^(5/2), x, 1, (Sqrt(-1+c*x)*Sqrt(1 +
-	// c*x)*Unintegrable(((f*x)^m*(a+b*ArcCosh(c*x))^2)/((-1+c*x)^(5/2)*(1+c*x)^(5/2)), x))/(d^2*Sqrt(d -
+	// c*x)*Integrate::Unintegrable(((f*x)^m*(a+b*ArcCosh(c*x))^2)/((-1+c*x)^(5/2)*(1+c*x)^(5/2)), x))/(d^2*Sqrt(d -
 	// c^2*d*x^2))}
 	public void test03027() {
 		check("Integrate(((f*x)^m*(a+b*ArcCosh(c*x))^2)/(d-c^2*d*x^2)^(5/2), x)",
-				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(((f*x)^m*(a+b*ArcCosh(c*x))^2)/((-1+c*x)^(5/2)*(1+c*x)^(5/2)), x))/(d^2*Sqrt(d-c^2*d*x^2))");
+				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(((f*x)^m*(a+b*ArcCosh(c*x))^2)/((-1+c*x)^(5/2)*(1+c*x)^(5/2)), x))/(d^2*Sqrt(d-c^2*d*x^2))");
 
 	}
 
 	// {((f*x)^m*ArcCosh(c*x)^2)/Sqrt(1-c^2*x^2), x, 1, (Sqrt(-1+c*x)*Sqrt(1 +
-	// c*x)*Unintegrable(((f*x)^m*ArcCosh(c*x)^2)/(Sqrt(-1+c*x)*Sqrt(1+c*x)), x))/Sqrt(1-c^2*x^2)}
+	// c*x)*Integrate::Unintegrable(((f*x)^m*ArcCosh(c*x)^2)/(Sqrt(-1+c*x)*Sqrt(1+c*x)), x))/Sqrt(1-c^2*x^2)}
 	public void test03028() {
 		check("Integrate(((f*x)^m*ArcCosh(c*x)^2)/Sqrt(1-c^2*x^2), x)",
-				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(((f*x)^m*ArcCosh(c*x)^2)/(Sqrt(-1+c*x)*Sqrt(1+c*x)), x))/Sqrt(1-c^2*x^2)");
+				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(((f*x)^m*ArcCosh(c*x)^2)/(Sqrt(-1+c*x)*Sqrt(1+c*x)), x))/Sqrt(1-c^2*x^2)");
 
 	}
 
-	// {((f*x)^m*(a+b*ArcCosh(c*x))^3)/Sqrt(1-c^2*x^2), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(((f*x)^m*(a
+	// {((f*x)^m*(a+b*ArcCosh(c*x))^3)/Sqrt(1-c^2*x^2), x, 1,
+	// (Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(((f*x)^m*(a
 	// +b*ArcCosh(c*x))^3)/(Sqrt(-1+c*x)*Sqrt(1+c*x)), x))/Sqrt(1-c^2*x^2)}
 	public void test03029() {
 		check("Integrate(((f*x)^m*(a+b*ArcCosh(c*x))^3)/Sqrt(1-c^2*x^2), x)",
-				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(((f*x)^m*(a+b*ArcCosh(c*x))^3)/(Sqrt(-1+c*x)*Sqrt(1+c*x)), x))/Sqrt(1-c^2*x^2)");
+				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(((f*x)^m*(a+b*ArcCosh(c*x))^3)/(Sqrt(-1+c*x)*Sqrt(1+c*x)), x))/Sqrt(1-c^2*x^2)");
 
 	}
 
-	// {Sqrt(1-c^2*x^2)/(x^3*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(1-c^2*x^2)*Unintegrable((Sqrt(-1+c*x)*Sqrt(1 +
+	// {Sqrt(1-c^2*x^2)/(x^3*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(1-c^2*x^2)*Integrate::Unintegrable((Sqrt(-1+c*x)*Sqrt(1 +
 	// c*x))/(x^3*(a+b*ArcCosh(c*x))), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))}
 	public void test03030() {
 		check("Integrate(Sqrt(1-c^2*x^2)/(x^3*(a+b*ArcCosh(c*x))), x)",
-				"(Sqrt(1-c^2*x^2)*Unintegrable((Sqrt(-1+c*x)*Sqrt(1+c*x))/(x^3*(a+b*ArcCosh(c*x))), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
+				"(Sqrt(1-c^2*x^2)*Integrate::Unintegrable((Sqrt(-1+c*x)*Sqrt(1+c*x))/(x^3*(a+b*ArcCosh(c*x))), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
 
 	}
 
-	// {Sqrt(1-c^2*x^2)/(x^4*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(1-c^2*x^2)*Unintegrable((Sqrt(-1+c*x)*Sqrt(1 +
+	// {Sqrt(1-c^2*x^2)/(x^4*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(1-c^2*x^2)*Integrate::Unintegrable((Sqrt(-1+c*x)*Sqrt(1 +
 	// c*x))/(x^4*(a+b*ArcCosh(c*x))), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))}
 	public void test03031() {
 		check("Integrate(Sqrt(1-c^2*x^2)/(x^4*(a+b*ArcCosh(c*x))), x)",
-				"(Sqrt(1-c^2*x^2)*Unintegrable((Sqrt(-1+c*x)*Sqrt(1+c*x))/(x^4*(a+b*ArcCosh(c*x))), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
+				"(Sqrt(1-c^2*x^2)*Integrate::Unintegrable((Sqrt(-1+c*x)*Sqrt(1+c*x))/(x^4*(a+b*ArcCosh(c*x))), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
 
 	}
 
-	// {(1-c^2*x^2)^(3/2)/(x^3*(a+b*ArcCosh(c*x))), x, 1, -((Sqrt(1-c^2*x^2)*Unintegrable(((-1+c*x)^(3/2)*(1 +
+	// {(1-c^2*x^2)^(3/2)/(x^3*(a+b*ArcCosh(c*x))), x, 1, -((Sqrt(1-c^2*x^2)*Integrate::Unintegrable(((-1+c*x)^(3/2)*(1
+	// +
 	// c*x)^(3/2))/(x^3*(a+b*ArcCosh(c*x))), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x)))}
 	public void test03032() {
 		check("Integrate((1-c^2*x^2)^(3/2)/(x^3*(a+b*ArcCosh(c*x))), x)",
-				"-((Sqrt(1-c^2*x^2)*Unintegrable(((-1+c*x)^(3/2)*(1+c*x)^(3/2))/(x^3*(a+b*ArcCosh(c*x))), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x)))");
+				"-((Sqrt(1-c^2*x^2)*Integrate::Unintegrable(((-1+c*x)^(3/2)*(1+c*x)^(3/2))/(x^3*(a+b*ArcCosh(c*x))), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x)))");
 
 	}
 
-	// {(1-c^2*x^2)^(3/2)/(x^4*(a+b*ArcCosh(c*x))), x, 1, -((Sqrt(1-c^2*x^2)*Unintegrable(((-1+c*x)^(3/2)*(1 +
+	// {(1-c^2*x^2)^(3/2)/(x^4*(a+b*ArcCosh(c*x))), x, 1, -((Sqrt(1-c^2*x^2)*Integrate::Unintegrable(((-1+c*x)^(3/2)*(1
+	// +
 	// c*x)^(3/2))/(x^4*(a+b*ArcCosh(c*x))), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x)))}
 	public void test03033() {
 		check("Integrate((1-c^2*x^2)^(3/2)/(x^4*(a+b*ArcCosh(c*x))), x)",
-				"-((Sqrt(1-c^2*x^2)*Unintegrable(((-1+c*x)^(3/2)*(1+c*x)^(3/2))/(x^4*(a+b*ArcCosh(c*x))), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x)))");
+				"-((Sqrt(1-c^2*x^2)*Integrate::Unintegrable(((-1+c*x)^(3/2)*(1+c*x)^(3/2))/(x^4*(a+b*ArcCosh(c*x))), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x)))");
 
 	}
 
-	// {(1-c^2*x^2)^(5/2)/(x^3*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(1-c^2*x^2)*Unintegrable(((-1+c*x)^(5/2)*(1 +
+	// {(1-c^2*x^2)^(5/2)/(x^3*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(1-c^2*x^2)*Integrate::Unintegrable(((-1+c*x)^(5/2)*(1 +
 	// c*x)^(5/2))/(x^3*(a+b*ArcCosh(c*x))), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))}
 	public void test03034() {
 		check("Integrate((1-c^2*x^2)^(5/2)/(x^3*(a+b*ArcCosh(c*x))), x)",
-				"(Sqrt(1-c^2*x^2)*Unintegrable(((-1+c*x)^(5/2)*(1+c*x)^(5/2))/(x^3*(a+b*ArcCosh(c*x))), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
+				"(Sqrt(1-c^2*x^2)*Integrate::Unintegrable(((-1+c*x)^(5/2)*(1+c*x)^(5/2))/(x^3*(a+b*ArcCosh(c*x))), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
 
 	}
 
-	// {(1-c^2*x^2)^(5/2)/(x^4*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(1-c^2*x^2)*Unintegrable(((-1+c*x)^(5/2)*(1 +
+	// {(1-c^2*x^2)^(5/2)/(x^4*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(1-c^2*x^2)*Integrate::Unintegrable(((-1+c*x)^(5/2)*(1 +
 	// c*x)^(5/2))/(x^4*(a+b*ArcCosh(c*x))), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))}
 	public void test03035() {
 		check("Integrate((1-c^2*x^2)^(5/2)/(x^4*(a+b*ArcCosh(c*x))), x)",
-				"(Sqrt(1-c^2*x^2)*Unintegrable(((-1+c*x)^(5/2)*(1+c*x)^(5/2))/(x^4*(a+b*ArcCosh(c*x))), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
+				"(Sqrt(1-c^2*x^2)*Integrate::Unintegrable(((-1+c*x)^(5/2)*(1+c*x)^(5/2))/(x^4*(a+b*ArcCosh(c*x))), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
 
 	}
 
-	// {1/(x*Sqrt(1-a^2*x^2)*ArcCosh(a*x)), x, 1, (Sqrt(-1+a*x)*Sqrt(1+a*x)*Unintegrable(1/(x*Sqrt(-1 +
+	// {1/(x*Sqrt(1-a^2*x^2)*ArcCosh(a*x)), x, 1, (Sqrt(-1+a*x)*Sqrt(1+a*x)*Integrate::Unintegrable(1/(x*Sqrt(-1 +
 	// a*x)*Sqrt(1+a*x)*ArcCosh(a*x)), x))/Sqrt(1-a^2*x^2)}
 	public void test03036() {
 		check("Integrate(1/(x*Sqrt(1-a^2*x^2)*ArcCosh(a*x)), x)",
-				"(Sqrt(-1+a*x)*Sqrt(1+a*x)*Unintegrable(1/(x*Sqrt(-1+a*x)*Sqrt(1+a*x)*ArcCosh(a*x)), x))/Sqrt(1-a^2*x^2)");
+				"(Sqrt(-1+a*x)*Sqrt(1+a*x)*Integrate::Unintegrable(1/(x*Sqrt(-1+a*x)*Sqrt(1+a*x)*ArcCosh(a*x)), x))/Sqrt(1-a^2*x^2)");
 
 	}
 
-	// {1/(x^2*Sqrt(1-a^2*x^2)*ArcCosh(a*x)), x, 1, (Sqrt(-1+a*x)*Sqrt(1+a*x)*Unintegrable(1/(x^2*Sqrt(-1 +
+	// {1/(x^2*Sqrt(1-a^2*x^2)*ArcCosh(a*x)), x, 1, (Sqrt(-1+a*x)*Sqrt(1+a*x)*Integrate::Unintegrable(1/(x^2*Sqrt(-1 +
 	// a*x)*Sqrt(1+a*x)*ArcCosh(a*x)), x))/Sqrt(1-a^2*x^2)}
 	public void test03037() {
 		check("Integrate(1/(x^2*Sqrt(1-a^2*x^2)*ArcCosh(a*x)), x)",
-				"(Sqrt(-1+a*x)*Sqrt(1+a*x)*Unintegrable(1/(x^2*Sqrt(-1+a*x)*Sqrt(1+a*x)*ArcCosh(a*x)), x))/Sqrt(1-a^2*x^2)");
+				"(Sqrt(-1+a*x)*Sqrt(1+a*x)*Integrate::Unintegrable(1/(x^2*Sqrt(-1+a*x)*Sqrt(1+a*x)*ArcCosh(a*x)), x))/Sqrt(1-a^2*x^2)");
 
 	}
 
-	// {1/(x*Sqrt(1-c^2*x^2)*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(1/(x*Sqrt(-1 +
+	// {1/(x*Sqrt(1-c^2*x^2)*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(1/(x*Sqrt(-1 +
 	// c*x)*Sqrt(1+c*x)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)}
 	public void test03038() {
 		check("Integrate(1/(x*Sqrt(1-c^2*x^2)*(a+b*ArcCosh(c*x))), x)",
-				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(1/(x*Sqrt(-1+c*x)*Sqrt(1+c*x)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)");
+				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(1/(x*Sqrt(-1+c*x)*Sqrt(1+c*x)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)");
 
 	}
 
-	// {1/(x^2*Sqrt(1-c^2*x^2)*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(1/(x^2*Sqrt(-1
+	// {1/(x^2*Sqrt(1-c^2*x^2)*(a+b*ArcCosh(c*x))), x, 1,
+	// (Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(1/(x^2*Sqrt(-1
 	// +c*x)*Sqrt(1+c*x)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)}
 	public void test03039() {
 		check("Integrate(1/(x^2*Sqrt(1-c^2*x^2)*(a+b*ArcCosh(c*x))), x)",
-				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(1/(x^2*Sqrt(-1+c*x)*Sqrt(1+c*x)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)");
+				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(1/(x^2*Sqrt(-1+c*x)*Sqrt(1+c*x)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)");
 
 	}
 
-	// {x^2/((1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))), x, 1, -((Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x^2/((-1 +
+	// {x^2/((1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))), x, 1, -((Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x^2/((-1 +
 	// c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2))}
 	public void test03040() {
 		check("Integrate(x^2/((1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))), x)",
-				"-((Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x^2/((-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2))");
+				"-((Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x^2/((-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2))");
 
 	}
 
-	// {x/((1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))), x, 1, -((Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x/((-1 +
+	// {x/((1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))), x, 1, -((Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x/((-1 +
 	// c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2))}
 	public void test03041() {
 		check("Integrate(x/((1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))), x)",
-				"-((Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x/((-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2))");
+				"-((Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x/((-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2))");
 
 	}
 
-	// {1/((1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))), x, 1, -((Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(1/((-1 +
+	// {1/((1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))), x, 1, -((Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(1/((-1 +
 	// c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2))}
 	public void test03042() {
 		check("Integrate(1/((1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))), x)",
-				"-((Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(1/((-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2))");
+				"-((Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(1/((-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2))");
 
 	}
 
-	// {1/(x*(1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))), x, 1, -((Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(1/(x*(-1 +
+	// {1/(x*(1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))), x, 1, -((Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(1/(x*(-1 +
 	// c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2))}
 	public void test03043() {
 		check("Integrate(1/(x*(1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))), x)",
-				"-((Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(1/(x*(-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2))");
+				"-((Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(1/(x*(-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2))");
 
 	}
 
-	// {1/(x^2*(1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))), x, 1, -((Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(1/(x^2*(-1
+	// {1/(x^2*(1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))), x, 1,
+	// -((Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(1/(x^2*(-1
 	// +c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2))}
 	public void test03044() {
 		check("Integrate(1/(x^2*(1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))), x)",
-				"-((Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(1/(x^2*(-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2))");
+				"-((Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(1/(x^2*(-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2))");
 
 	}
 
-	// {x^2/((1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x^2/((-1 +
+	// {x^2/((1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x^2/((-1 +
 	// c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)}
 	public void test03045() {
 		check("Integrate(x^2/((1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))), x)",
-				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x^2/((-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)");
+				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x^2/((-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)");
 
 	}
 
-	// {x/((1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x/((-1 +
+	// {x/((1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x/((-1 +
 	// c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)}
 	public void test03046() {
 		check("Integrate(x/((1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))), x)",
-				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x/((-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)");
+				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x/((-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)");
 
 	}
 
-	// {1/((1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(1/((-1 +
+	// {1/((1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(1/((-1 +
 	// c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)}
 	public void test03047() {
 		check("Integrate(1/((1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))), x)",
-				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(1/((-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)");
+				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(1/((-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)");
 
 	}
 
-	// {1/(x*(1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(1/(x*(-1 +
+	// {1/(x*(1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(1/(x*(-1 +
 	// c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)}
 	public void test03048() {
 		check("Integrate(1/(x*(1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))), x)",
-				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(1/(x*(-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)");
+				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(1/(x*(-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)");
 
 	}
 
-	// {1/(x^2*(1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(1/(x^2*(-1 +
+	// {1/(x^2*(1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(1/(x^2*(-1
+	// +
 	// c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)}
 	public void test03049() {
 		check("Integrate(1/(x^2*(1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))), x)",
-				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(1/(x^2*(-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)");
+				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(1/(x^2*(-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)");
 
 	}
 
-	// {(x^m*(1-c^2*x^2)^(5/2))/(a+b*ArcCosh(c*x)), x, 1, (Sqrt(1-c^2*x^2)*Unintegrable((x^m*(-1+c*x)^(5/2)*(1 +
+	// {(x^m*(1-c^2*x^2)^(5/2))/(a+b*ArcCosh(c*x)), x, 1,
+	// (Sqrt(1-c^2*x^2)*Integrate::Unintegrable((x^m*(-1+c*x)^(5/2)*(1 +
 	// c*x)^(5/2))/(a+b*ArcCosh(c*x)), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))}
 	public void test03050() {
 		check("Integrate((x^m*(1-c^2*x^2)^(5/2))/(a+b*ArcCosh(c*x)), x)",
-				"(Sqrt(1-c^2*x^2)*Unintegrable((x^m*(-1+c*x)^(5/2)*(1+c*x)^(5/2))/(a+b*ArcCosh(c*x)), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
+				"(Sqrt(1-c^2*x^2)*Integrate::Unintegrable((x^m*(-1+c*x)^(5/2)*(1+c*x)^(5/2))/(a+b*ArcCosh(c*x)), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
 
 	}
 
-	// {(x^m*(1-c^2*x^2)^(3/2))/(a+b*ArcCosh(c*x)), x, 1, -((Sqrt(1-c^2*x^2)*Unintegrable((x^m*(-1+c*x)^(3/2)*(1
+	// {(x^m*(1-c^2*x^2)^(3/2))/(a+b*ArcCosh(c*x)), x, 1,
+	// -((Sqrt(1-c^2*x^2)*Integrate::Unintegrable((x^m*(-1+c*x)^(3/2)*(1
 	// +c*x)^(3/2))/(a+b*ArcCosh(c*x)), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x)))}
 	public void test03051() {
 		check("Integrate((x^m*(1-c^2*x^2)^(3/2))/(a+b*ArcCosh(c*x)), x)",
-				"-((Sqrt(1-c^2*x^2)*Unintegrable((x^m*(-1+c*x)^(3/2)*(1+c*x)^(3/2))/(a+b*ArcCosh(c*x)), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x)))");
+				"-((Sqrt(1-c^2*x^2)*Integrate::Unintegrable((x^m*(-1+c*x)^(3/2)*(1+c*x)^(3/2))/(a+b*ArcCosh(c*x)), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x)))");
 
 	}
 
-	// {(x^m*Sqrt(1-c^2*x^2))/(a+b*ArcCosh(c*x)), x, 1, (Sqrt(1-c^2*x^2)*Unintegrable((x^m*Sqrt(-1+c*x)*Sqrt(1 +
+	// {(x^m*Sqrt(1-c^2*x^2))/(a+b*ArcCosh(c*x)), x, 1,
+	// (Sqrt(1-c^2*x^2)*Integrate::Unintegrable((x^m*Sqrt(-1+c*x)*Sqrt(1 +
 	// c*x))/(a+b*ArcCosh(c*x)), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))}
 	public void test03052() {
 		check("Integrate((x^m*Sqrt(1-c^2*x^2))/(a+b*ArcCosh(c*x)), x)",
-				"(Sqrt(1-c^2*x^2)*Unintegrable((x^m*Sqrt(-1+c*x)*Sqrt(1+c*x))/(a+b*ArcCosh(c*x)), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
+				"(Sqrt(1-c^2*x^2)*Integrate::Unintegrable((x^m*Sqrt(-1+c*x)*Sqrt(1+c*x))/(a+b*ArcCosh(c*x)), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
 
 	}
 
-	// {x^m/(Sqrt(1-a^2*x^2)*ArcCosh(a*x)), x, 1, (Sqrt(-1+a*x)*Sqrt(1+a*x)*Unintegrable(x^m/(Sqrt(-1 +
+	// {x^m/(Sqrt(1-a^2*x^2)*ArcCosh(a*x)), x, 1, (Sqrt(-1+a*x)*Sqrt(1+a*x)*Integrate::Unintegrable(x^m/(Sqrt(-1 +
 	// a*x)*Sqrt(1+a*x)*ArcCosh(a*x)), x))/Sqrt(1-a^2*x^2)}
 	public void test03053() {
 		check("Integrate(x^m/(Sqrt(1-a^2*x^2)*ArcCosh(a*x)), x)",
-				"(Sqrt(-1+a*x)*Sqrt(1+a*x)*Unintegrable(x^m/(Sqrt(-1+a*x)*Sqrt(1+a*x)*ArcCosh(a*x)), x))/Sqrt(1-a^2*x^2)");
+				"(Sqrt(-1+a*x)*Sqrt(1+a*x)*Integrate::Unintegrable(x^m/(Sqrt(-1+a*x)*Sqrt(1+a*x)*ArcCosh(a*x)), x))/Sqrt(1-a^2*x^2)");
 
 	}
 
-	// {x^m/(Sqrt(1-c^2*x^2)*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x^m/(Sqrt(-1 +
+	// {x^m/(Sqrt(1-c^2*x^2)*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x^m/(Sqrt(-1 +
 	// c*x)*Sqrt(1+c*x)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)}
 	public void test03054() {
 		check("Integrate(x^m/(Sqrt(1-c^2*x^2)*(a+b*ArcCosh(c*x))), x)",
-				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x^m/(Sqrt(-1+c*x)*Sqrt(1+c*x)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)");
+				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x^m/(Sqrt(-1+c*x)*Sqrt(1+c*x)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)");
 
 	}
 
-	// {x^m/((1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))), x, 1, -((Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x^m/((-1 +
+	// {x^m/((1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))), x, 1, -((Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x^m/((-1 +
 	// c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2))}
 	public void test03055() {
 		check("Integrate(x^m/((1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))), x)",
-				"-((Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x^m/((-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2))");
+				"-((Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x^m/((-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2))");
 
 	}
 
-	// {x^m/((1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x^m/((-1 +
+	// {x^m/((1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x^m/((-1 +
 	// c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)}
 	public void test03056() {
 		check("Integrate(x^m/((1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))), x)",
-				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x^m/((-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)");
+				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x^m/((-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)");
 
 	}
 
 	// {1/((c-a^2*c*x^2)*ArcCosh(a*x)^2), x, 1, 1/(a*c*Sqrt(-1+a*x)*Sqrt(1+a*x)*ArcCosh(a*x)) +
-	// (a*Unintegrable(x/((-1+a*x)^(3/2)*(1+a*x)^(3/2)*ArcCosh(a*x)), x))/c}
+	// (a*Integrate::Unintegrable(x/((-1+a*x)^(3/2)*(1+a*x)^(3/2)*ArcCosh(a*x)), x))/c}
 	public void test03057() {
 		check("Integrate(1/((c-a^2*c*x^2)*ArcCosh(a*x)^2), x)",
-				"1/(a*c*Sqrt(-1+a*x)*Sqrt(1+a*x)*ArcCosh(a*x))+(a*Unintegrable(x/((-1+a*x)^(3/2)*(1+a*x)^(3/2)*ArcCosh(a*x)), x))/c");
+				"1/(a*c*Sqrt(-1+a*x)*Sqrt(1+a*x)*ArcCosh(a*x))+(a*Integrate::Unintegrable(x/((-1+a*x)^(3/2)*(1+a*x)^(3/2)*ArcCosh(a*x)), x))/c");
 
 	}
 
 	// {1/((c-a^2*c*x^2)^2*ArcCosh(a*x)^2), x, 1, -(1/(a*c^2*(-1+a*x)^(3/2)*(1+a*x)^(3/2)*ArcCosh(a*x))) -
-	// (3*a*Unintegrable(x/((-1+a*x)^(5/2)*(1+a*x)^(5/2)*ArcCosh(a*x)), x))/c^2}
+	// (3*a*Integrate::Unintegrable(x/((-1+a*x)^(5/2)*(1+a*x)^(5/2)*ArcCosh(a*x)), x))/c^2}
 	public void test03058() {
 		check("Integrate(1/((c-a^2*c*x^2)^2*ArcCosh(a*x)^2), x)",
-				"-(1/(a*c^2*(-1+a*x)^(3/2)*(1+a*x)^(3/2)*ArcCosh(a*x)))-(3*a*Unintegrable(x/((-1+a*x)^(5/2)*(1+a*x)^(5/2)*ArcCosh(a*x)), x))/c^2");
+				"-(1/(a*c^2*(-1+a*x)^(3/2)*(1+a*x)^(3/2)*ArcCosh(a*x)))-(3*a*Integrate::Unintegrable(x/((-1+a*x)^(5/2)*(1+a*x)^(5/2)*ArcCosh(a*x)), x))/c^2");
 
 	}
 
-	// {Sqrt(1-c^2*x^2)/(x^3*(a+b*ArcCosh(c*x))^2), x, 1, (Sqrt(1-c^2*x^2)*Unintegrable((Sqrt(-1+c*x)*Sqrt(1 +
+	// {Sqrt(1-c^2*x^2)/(x^3*(a+b*ArcCosh(c*x))^2), x, 1, (Sqrt(1-c^2*x^2)*Integrate::Unintegrable((Sqrt(-1+c*x)*Sqrt(1
+	// +
 	// c*x))/(x^3*(a+b*ArcCosh(c*x))^2), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))}
 	public void test03059() {
 		check("Integrate(Sqrt(1-c^2*x^2)/(x^3*(a+b*ArcCosh(c*x))^2), x)",
-				"(Sqrt(1-c^2*x^2)*Unintegrable((Sqrt(-1+c*x)*Sqrt(1+c*x))/(x^3*(a+b*ArcCosh(c*x))^2), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
+				"(Sqrt(1-c^2*x^2)*Integrate::Unintegrable((Sqrt(-1+c*x)*Sqrt(1+c*x))/(x^3*(a+b*ArcCosh(c*x))^2), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
 
 	}
 
-	// {Sqrt(1-c^2*x^2)/(x^4*(a+b*ArcCosh(c*x))^2), x, 1, (Sqrt(1-c^2*x^2)*Unintegrable((Sqrt(-1+c*x)*Sqrt(1 +
+	// {Sqrt(1-c^2*x^2)/(x^4*(a+b*ArcCosh(c*x))^2), x, 1, (Sqrt(1-c^2*x^2)*Integrate::Unintegrable((Sqrt(-1+c*x)*Sqrt(1
+	// +
 	// c*x))/(x^4*(a+b*ArcCosh(c*x))^2), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))}
 	public void test03060() {
 		check("Integrate(Sqrt(1-c^2*x^2)/(x^4*(a+b*ArcCosh(c*x))^2), x)",
-				"(Sqrt(1-c^2*x^2)*Unintegrable((Sqrt(-1+c*x)*Sqrt(1+c*x))/(x^4*(a+b*ArcCosh(c*x))^2), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
+				"(Sqrt(1-c^2*x^2)*Integrate::Unintegrable((Sqrt(-1+c*x)*Sqrt(1+c*x))/(x^4*(a+b*ArcCosh(c*x))^2), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
 
 	}
 
-	// {(1-c^2*x^2)^(3/2)/(x^3*(a+b*ArcCosh(c*x))^2), x, 1, -((Sqrt(1-c^2*x^2)*Unintegrable(((-1+c*x)^(3/2)*(1 +
+	// {(1-c^2*x^2)^(3/2)/(x^3*(a+b*ArcCosh(c*x))^2), x, 1,
+	// -((Sqrt(1-c^2*x^2)*Integrate::Unintegrable(((-1+c*x)^(3/2)*(1 +
 	// c*x)^(3/2))/(x^3*(a+b*ArcCosh(c*x))^2), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x)))}
 	public void test03061() {
 		check("Integrate((1-c^2*x^2)^(3/2)/(x^3*(a+b*ArcCosh(c*x))^2), x)",
-				"-((Sqrt(1-c^2*x^2)*Unintegrable(((-1+c*x)^(3/2)*(1+c*x)^(3/2))/(x^3*(a+b*ArcCosh(c*x))^2), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x)))");
+				"-((Sqrt(1-c^2*x^2)*Integrate::Unintegrable(((-1+c*x)^(3/2)*(1+c*x)^(3/2))/(x^3*(a+b*ArcCosh(c*x))^2), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x)))");
 
 	}
 
-	// {(1-c^2*x^2)^(3/2)/(x^5*(a+b*ArcCosh(c*x))^2), x, 1, -((Sqrt(1-c^2*x^2)*Unintegrable(((-1+c*x)^(3/2)*(1 +
+	// {(1-c^2*x^2)^(3/2)/(x^5*(a+b*ArcCosh(c*x))^2), x, 1,
+	// -((Sqrt(1-c^2*x^2)*Integrate::Unintegrable(((-1+c*x)^(3/2)*(1 +
 	// c*x)^(3/2))/(x^5*(a+b*ArcCosh(c*x))^2), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x)))}
 	public void test03062() {
 		check("Integrate((1-c^2*x^2)^(3/2)/(x^5*(a+b*ArcCosh(c*x))^2), x)",
-				"-((Sqrt(1-c^2*x^2)*Unintegrable(((-1+c*x)^(3/2)*(1+c*x)^(3/2))/(x^5*(a+b*ArcCosh(c*x))^2), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x)))");
+				"-((Sqrt(1-c^2*x^2)*Integrate::Unintegrable(((-1+c*x)^(3/2)*(1+c*x)^(3/2))/(x^5*(a+b*ArcCosh(c*x))^2), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x)))");
 
 	}
 
-	// {(1-c^2*x^2)^(5/2)/(x^3*(a+b*ArcCosh(c*x))^2), x, 1, (Sqrt(1-c^2*x^2)*Unintegrable(((-1+c*x)^(5/2)*(1 +
+	// {(1-c^2*x^2)^(5/2)/(x^3*(a+b*ArcCosh(c*x))^2), x, 1, (Sqrt(1-c^2*x^2)*Integrate::Unintegrable(((-1+c*x)^(5/2)*(1
+	// +
 	// c*x)^(5/2))/(x^3*(a+b*ArcCosh(c*x))^2), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))}
 	public void test03063() {
 		check("Integrate((1-c^2*x^2)^(5/2)/(x^3*(a+b*ArcCosh(c*x))^2), x)",
-				"(Sqrt(1-c^2*x^2)*Unintegrable(((-1+c*x)^(5/2)*(1+c*x)^(5/2))/(x^3*(a+b*ArcCosh(c*x))^2), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
+				"(Sqrt(1-c^2*x^2)*Integrate::Unintegrable(((-1+c*x)^(5/2)*(1+c*x)^(5/2))/(x^3*(a+b*ArcCosh(c*x))^2), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
 
 	}
 
-	// {(1-c^2*x^2)^(5/2)/(x^4*(a+b*ArcCosh(c*x))^2), x, 1, (Sqrt(1-c^2*x^2)*Unintegrable(((-1+c*x)^(5/2)*(1 +
+	// {(1-c^2*x^2)^(5/2)/(x^4*(a+b*ArcCosh(c*x))^2), x, 1, (Sqrt(1-c^2*x^2)*Integrate::Unintegrable(((-1+c*x)^(5/2)*(1
+	// +
 	// c*x)^(5/2))/(x^4*(a+b*ArcCosh(c*x))^2), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))}
 	public void test03064() {
 		check("Integrate((1-c^2*x^2)^(5/2)/(x^4*(a+b*ArcCosh(c*x))^2), x)",
-				"(Sqrt(1-c^2*x^2)*Unintegrable(((-1+c*x)^(5/2)*(1+c*x)^(5/2))/(x^4*(a+b*ArcCosh(c*x))^2), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
+				"(Sqrt(1-c^2*x^2)*Integrate::Unintegrable(((-1+c*x)^(5/2)*(1+c*x)^(5/2))/(x^4*(a+b*ArcCosh(c*x))^2), x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
 
 	}
 
-	// {x^3/((1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))^2), x, 1, -((Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x^3/((-1 +
+	// {x^3/((1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))^2), x, 1, -((Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x^3/((-1
+	// +
 	// c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2))}
 	public void test03065() {
 		check("Integrate(x^3/((1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))^2), x)",
-				"-((Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x^3/((-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2))");
+				"-((Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x^3/((-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2))");
 
 	}
 
-	// {x/((1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))^2), x, 1, -((Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x/((-1 +
+	// {x/((1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))^2), x, 1, -((Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x/((-1 +
 	// c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2))}
 	public void test03066() {
 		check("Integrate(x/((1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))^2), x)",
-				"-((Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x/((-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2))");
+				"-((Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x/((-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2))");
 
 	}
 
-	// {1/(x*(1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))^2), x, 1, -((Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(1/(x*(-1 +
+	// {1/(x*(1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))^2), x, 1, -((Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(1/(x*(-1
+	// +
 	// c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2))}
 	public void test03067() {
 		check("Integrate(1/(x*(1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))^2), x)",
-				"-((Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(1/(x*(-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2))");
+				"-((Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(1/(x*(-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2))");
 
 	}
 
 	// {1/(x^2*(1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))^2), x, 1, -((Sqrt(-1+c*x)*Sqrt(1 +
-	// c*x)*Unintegrable(1/(x^2*(-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2))}
+	// c*x)*Integrate::Unintegrable(1/(x^2*(-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2))}
 	public void test03068() {
 		check("Integrate(1/(x^2*(1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))^2), x)",
-				"-((Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(1/(x^2*(-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2))");
+				"-((Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(1/(x^2*(-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2))");
 
 	}
 
-	// {x^3/((1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))^2), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x^3/((-1 +
+	// {x^3/((1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))^2), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x^3/((-1 +
 	// c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2)}
 	public void test03069() {
 		check("Integrate(x^3/((1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))^2), x)",
-				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x^3/((-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2)");
+				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x^3/((-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2)");
 
 	}
 
-	// {x^2/((1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))^2), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x^2/((-1 +
+	// {x^2/((1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))^2), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x^2/((-1 +
 	// c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2)}
 	public void test03070() {
 		check("Integrate(x^2/((1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))^2), x)",
-				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x^2/((-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2)");
+				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x^2/((-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2)");
 
 	}
 
-	// {x/((1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))^2), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x/((-1 +
+	// {x/((1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))^2), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x/((-1 +
 	// c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2)}
 	public void test03071() {
 		check("Integrate(x/((1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))^2), x)",
-				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x/((-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2)");
+				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x/((-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2)");
 
 	}
 
-	// {1/(x*(1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))^2), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(1/(x*(-1 +
+	// {1/(x*(1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))^2), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(1/(x*(-1 +
 	// c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2)}
 	public void test03072() {
 		check("Integrate(1/(x*(1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))^2), x)",
-				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(1/(x*(-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2)");
+				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(1/(x*(-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2)");
 
 	}
 
-	// {1/(x^2*(1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))^2), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(1/(x^2*(-1
+	// {1/(x^2*(1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))^2), x, 1,
+	// (Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(1/(x^2*(-1
 	// +c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2)}
 	public void test03073() {
 		check("Integrate(1/(x^2*(1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))^2), x)",
-				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(1/(x^2*(-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2)");
+				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(1/(x^2*(-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2)");
 
 	}
 
-	// {(x^m*(1-c^2*x^2)^(5/2))/(a+b*ArcCosh(c*x))^2, x, 1, (Sqrt(1-c^2*x^2)*Unintegrable((x^m*(-1+c*x)^(5/2)*(1
+	// {(x^m*(1-c^2*x^2)^(5/2))/(a+b*ArcCosh(c*x))^2, x, 1,
+	// (Sqrt(1-c^2*x^2)*Integrate::Unintegrable((x^m*(-1+c*x)^(5/2)*(1
 	// +c*x)^(5/2))/(a+b*ArcCosh(c*x))^2, x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))}
 	public void test03074() {
 		check("Integrate((x^m*(1-c^2*x^2)^(5/2))/(a+b*ArcCosh(c*x))^2, x)",
-				"(Sqrt(1-c^2*x^2)*Unintegrable((x^m*(-1+c*x)^(5/2)*(1+c*x)^(5/2))/(a+b*ArcCosh(c*x))^2, x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
+				"(Sqrt(1-c^2*x^2)*Integrate::Unintegrable((x^m*(-1+c*x)^(5/2)*(1+c*x)^(5/2))/(a+b*ArcCosh(c*x))^2, x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
 
 	}
 
-	// {(x^m*(1-c^2*x^2)^(3/2))/(a+b*ArcCosh(c*x))^2, x, 1, -((Sqrt(1-c^2*x^2)*Unintegrable((x^m*(-1 +
+	// {(x^m*(1-c^2*x^2)^(3/2))/(a+b*ArcCosh(c*x))^2, x, 1, -((Sqrt(1-c^2*x^2)*Integrate::Unintegrable((x^m*(-1 +
 	// c*x)^(3/2)*(1+c*x)^(3/2))/(a+b*ArcCosh(c*x))^2, x))/(Sqrt(-1+c*x)*Sqrt(1+c*x)))}
 	public void test03075() {
 		check("Integrate((x^m*(1-c^2*x^2)^(3/2))/(a+b*ArcCosh(c*x))^2, x)",
-				"-((Sqrt(1-c^2*x^2)*Unintegrable((x^m*(-1+c*x)^(3/2)*(1+c*x)^(3/2))/(a+b*ArcCosh(c*x))^2, x))/(Sqrt(-1+c*x)*Sqrt(1+c*x)))");
+				"-((Sqrt(1-c^2*x^2)*Integrate::Unintegrable((x^m*(-1+c*x)^(3/2)*(1+c*x)^(3/2))/(a+b*ArcCosh(c*x))^2, x))/(Sqrt(-1+c*x)*Sqrt(1+c*x)))");
 
 	}
 
-	// {(x^m*Sqrt(1-c^2*x^2))/(a+b*ArcCosh(c*x))^2, x, 1, (Sqrt(1-c^2*x^2)*Unintegrable((x^m*Sqrt(-1+c*x)*Sqrt(1
+	// {(x^m*Sqrt(1-c^2*x^2))/(a+b*ArcCosh(c*x))^2, x, 1,
+	// (Sqrt(1-c^2*x^2)*Integrate::Unintegrable((x^m*Sqrt(-1+c*x)*Sqrt(1
 	// +c*x))/(a+b*ArcCosh(c*x))^2, x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))}
 	public void test03076() {
 		check("Integrate((x^m*Sqrt(1-c^2*x^2))/(a+b*ArcCosh(c*x))^2, x)",
-				"(Sqrt(1-c^2*x^2)*Unintegrable((x^m*Sqrt(-1+c*x)*Sqrt(1+c*x))/(a+b*ArcCosh(c*x))^2, x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
+				"(Sqrt(1-c^2*x^2)*Integrate::Unintegrable((x^m*Sqrt(-1+c*x)*Sqrt(1+c*x))/(a+b*ArcCosh(c*x))^2, x))/(Sqrt(-1+c*x)*Sqrt(1+c*x))");
 
 	}
 
-	// {x^m/((1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))^2), x, 1, -((Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x^m/((-1 +
+	// {x^m/((1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))^2), x, 1, -((Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x^m/((-1
+	// +
 	// c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2))}
 	public void test03077() {
 		check("Integrate(x^m/((1-c^2*x^2)^(3/2)*(a+b*ArcCosh(c*x))^2), x)",
-				"-((Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x^m/((-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2))");
+				"-((Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x^m/((-1+c*x)^(3/2)*(1+c*x)^(3/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2))");
 
 	}
 
-	// {x^m/((1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))^2), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x^m/((-1 +
+	// {x^m/((1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))^2), x, 1, (Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x^m/((-1 +
 	// c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2)}
 	public void test03078() {
 		check("Integrate(x^m/((1-c^2*x^2)^(5/2)*(a+b*ArcCosh(c*x))^2), x)",
-				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(x^m/((-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2)");
+				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(x^m/((-1+c*x)^(5/2)*(1+c*x)^(5/2)*(a+b*ArcCosh(c*x))^2), x))/Sqrt(1-c^2*x^2)");
 
 	}
 
 	// {(x^m*ArcCosh(a*x)^n)/Sqrt(1-a^2*x^2), x, 1, (Sqrt(-1+a*x)*Sqrt(1 +
-	// a*x)*Unintegrable((x^m*ArcCosh(a*x)^n)/(Sqrt(-1+a*x)*Sqrt(1+a*x)), x))/Sqrt(1-a^2*x^2)}
+	// a*x)*Integrate::Unintegrable((x^m*ArcCosh(a*x)^n)/(Sqrt(-1+a*x)*Sqrt(1+a*x)), x))/Sqrt(1-a^2*x^2)}
 	public void test03079() {
 		check("Integrate((x^m*ArcCosh(a*x)^n)/Sqrt(1-a^2*x^2), x)",
-				"(Sqrt(-1+a*x)*Sqrt(1+a*x)*Unintegrable((x^m*ArcCosh(a*x)^n)/(Sqrt(-1+a*x)*Sqrt(1+a*x)), x))/Sqrt(1-a^2*x^2)");
+				"(Sqrt(-1+a*x)*Sqrt(1+a*x)*Integrate::Unintegrable((x^m*ArcCosh(a*x)^n)/(Sqrt(-1+a*x)*Sqrt(1+a*x)), x))/Sqrt(1-a^2*x^2)");
 
 	}
 
-	// {ArcCosh(a*x)^n/(x*Sqrt(1-a^2*x^2)), x, 1, (Sqrt(-1+a*x)*Sqrt(1+a*x)*Unintegrable(ArcCosh(a*x)^n/(x*Sqrt(-1
+	// {ArcCosh(a*x)^n/(x*Sqrt(1-a^2*x^2)), x, 1,
+	// (Sqrt(-1+a*x)*Sqrt(1+a*x)*Integrate::Unintegrable(ArcCosh(a*x)^n/(x*Sqrt(-1
 	// +a*x)*Sqrt(1+a*x)), x))/Sqrt(1-a^2*x^2)}
 	public void test03080() {
 		check("Integrate(ArcCosh(a*x)^n/(x*Sqrt(1-a^2*x^2)), x)",
-				"(Sqrt(-1+a*x)*Sqrt(1+a*x)*Unintegrable(ArcCosh(a*x)^n/(x*Sqrt(-1+a*x)*Sqrt(1+a*x)), x))/Sqrt(1-a^2*x^2)");
+				"(Sqrt(-1+a*x)*Sqrt(1+a*x)*Integrate::Unintegrable(ArcCosh(a*x)^n/(x*Sqrt(-1+a*x)*Sqrt(1+a*x)), x))/Sqrt(1-a^2*x^2)");
 
 	}
 
 	// {ArcCosh(a*x)^n/(x^2*Sqrt(1-a^2*x^2)), x, 1, (Sqrt(-1+a*x)*Sqrt(1 +
-	// a*x)*Unintegrable(ArcCosh(a*x)^n/(x^2*Sqrt(-1+a*x)*Sqrt(1+a*x)), x))/Sqrt(1-a^2*x^2)}
+	// a*x)*Integrate::Unintegrable(ArcCosh(a*x)^n/(x^2*Sqrt(-1+a*x)*Sqrt(1+a*x)), x))/Sqrt(1-a^2*x^2)}
 	public void test03081() {
 		check("Integrate(ArcCosh(a*x)^n/(x^2*Sqrt(1-a^2*x^2)), x)",
-				"(Sqrt(-1+a*x)*Sqrt(1+a*x)*Unintegrable(ArcCosh(a*x)^n/(x^2*Sqrt(-1+a*x)*Sqrt(1+a*x)), x))/Sqrt(1-a^2*x^2)");
+				"(Sqrt(-1+a*x)*Sqrt(1+a*x)*Integrate::Unintegrable(ArcCosh(a*x)^n/(x^2*Sqrt(-1+a*x)*Sqrt(1+a*x)), x))/Sqrt(1-a^2*x^2)");
 
 	}
 
-	// {1/((c-a^2*c*x^2)^(3/2)*Sqrt(ArcCosh(a*x))), x, 1, -((Sqrt(-1+a*x)*Sqrt(1+a*x)*Unintegrable(1/((-1 +
+	// {1/((c-a^2*c*x^2)^(3/2)*Sqrt(ArcCosh(a*x))), x, 1, -((Sqrt(-1+a*x)*Sqrt(1+a*x)*Integrate::Unintegrable(1/((-1 +
 	// a*x)^(3/2)*(1+a*x)^(3/2)*Sqrt(ArcCosh(a*x))), x))/(c*Sqrt(c-a^2*c*x^2)))}
 	public void test03082() {
 		check("Integrate(1/((c-a^2*c*x^2)^(3/2)*Sqrt(ArcCosh(a*x))), x)",
-				"-((Sqrt(-1+a*x)*Sqrt(1+a*x)*Unintegrable(1/((-1+a*x)^(3/2)*(1+a*x)^(3/2)*Sqrt(ArcCosh(a*x))), x))/(c*Sqrt(c-a^2*c*x^2)))");
+				"-((Sqrt(-1+a*x)*Sqrt(1+a*x)*Integrate::Unintegrable(1/((-1+a*x)^(3/2)*(1+a*x)^(3/2)*Sqrt(ArcCosh(a*x))), x))/(c*Sqrt(c-a^2*c*x^2)))");
 
 	}
 
-	// {1/((c-a^2*c*x^2)^(5/2)*Sqrt(ArcCosh(a*x))), x, 1, (Sqrt(-1+a*x)*Sqrt(1+a*x)*Unintegrable(1/((-1 +
+	// {1/((c-a^2*c*x^2)^(5/2)*Sqrt(ArcCosh(a*x))), x, 1, (Sqrt(-1+a*x)*Sqrt(1+a*x)*Integrate::Unintegrable(1/((-1 +
 	// a*x)^(5/2)*(1+a*x)^(5/2)*Sqrt(ArcCosh(a*x))), x))/(c^2*Sqrt(c-a^2*c*x^2))}
 	public void test03083() {
 		check("Integrate(1/((c-a^2*c*x^2)^(5/2)*Sqrt(ArcCosh(a*x))), x)",
-				"(Sqrt(-1+a*x)*Sqrt(1+a*x)*Unintegrable(1/((-1+a*x)^(5/2)*(1+a*x)^(5/2)*Sqrt(ArcCosh(a*x))), x))/(c^2*Sqrt(c-a^2*c*x^2))");
+				"(Sqrt(-1+a*x)*Sqrt(1+a*x)*Integrate::Unintegrable(1/((-1+a*x)^(5/2)*(1+a*x)^(5/2)*Sqrt(ArcCosh(a*x))), x))/(c^2*Sqrt(c-a^2*c*x^2))");
 
 	}
 
 	// {(d+e*x)^m*(a+b*ArcCosh(c*x))^3, x, 1, ((d+e*x)^(1+m)*(a+b*ArcCosh(c*x))^3)/(e*(1+m)) -
-	// (3*b*c*Unintegrable(((d+e*x)^(1+m)*(a+b*ArcCosh(c*x))^2)/(Sqrt(-1+c*x)*Sqrt(1+c*x)), x))/(e*(1+m))}
+	// (3*b*c*Integrate::Unintegrable(((d+e*x)^(1+m)*(a+b*ArcCosh(c*x))^2)/(Sqrt(-1+c*x)*Sqrt(1+c*x)), x))/(e*(1+m))}
 	public void test03084() {
 		check("Integrate((d+e*x)^m*(a+b*ArcCosh(c*x))^3, x)",
-				"((d+e*x)^(1+m)*(a+b*ArcCosh(c*x))^3)/(e*(1+m))-(3*b*c*Unintegrable(((d+e*x)^(1+m)*(a+b*ArcCosh(c*x))^2)/(Sqrt(-1+c*x)*Sqrt(1+c*x)), x))/(e*(1+m))");
+				"((d+e*x)^(1+m)*(a+b*ArcCosh(c*x))^3)/(e*(1+m))-(3*b*c*Integrate::Unintegrable(((d+e*x)^(1+m)*(a+b*ArcCosh(c*x))^2)/(Sqrt(-1+c*x)*Sqrt(1+c*x)), x))/(e*(1+m))");
 
 	}
 
 	// {(d+e*x)^m*(a+b*ArcCosh(c*x))^2, x, 1, ((d+e*x)^(1+m)*(a+b*ArcCosh(c*x))^2)/(e*(1+m)) -
-	// (2*b*c*Unintegrable(((d+e*x)^(1+m)*(a+b*ArcCosh(c*x)))/(Sqrt(-1+c*x)*Sqrt(1+c*x)), x))/(e*(1+m))}
+	// (2*b*c*Integrate::Unintegrable(((d+e*x)^(1+m)*(a+b*ArcCosh(c*x)))/(Sqrt(-1+c*x)*Sqrt(1+c*x)), x))/(e*(1+m))}
 	public void test03085() {
 		check("Integrate((d+e*x)^m*(a+b*ArcCosh(c*x))^2, x)",
-				"((d+e*x)^(1+m)*(a+b*ArcCosh(c*x))^2)/(e*(1+m))-(2*b*c*Unintegrable(((d+e*x)^(1+m)*(a+b*ArcCosh(c*x)))/(Sqrt(-1+c*x)*Sqrt(1+c*x)), x))/(e*(1+m))");
+				"((d+e*x)^(1+m)*(a+b*ArcCosh(c*x))^2)/(e*(1+m))-(2*b*c*Integrate::Unintegrable(((d+e*x)^(1+m)*(a+b*ArcCosh(c*x)))/(Sqrt(-1+c*x)*Sqrt(1+c*x)), x))/(e*(1+m))");
 
 	}
 
 	// {((a+b*ArcCosh(c*x))^n*Log(h*(f+g*x)^m))/Sqrt(1-c^2*x^2), x, 1, (Sqrt(-1+c*x)*Sqrt(1 +
-	// c*x)*Unintegrable(((a+b*ArcCosh(c*x))^n*Log(h*(f+g*x)^m))/(Sqrt(-1+c*x)*Sqrt(1+c*x)), x))/Sqrt(1 -
+	// c*x)*Integrate::Unintegrable(((a+b*ArcCosh(c*x))^n*Log(h*(f+g*x)^m))/(Sqrt(-1+c*x)*Sqrt(1+c*x)), x))/Sqrt(1 -
 	// c^2*x^2)}
 	public void test03086() {
 		check("Integrate(((a+b*ArcCosh(c*x))^n*Log(h*(f+g*x)^m))/Sqrt(1-c^2*x^2), x)",
-				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(((a+b*ArcCosh(c*x))^n*Log(h*(f+g*x)^m))/(Sqrt(-1+c*x)*Sqrt(1+c*x)), x))/Sqrt(1-c^2*x^2)");
+				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(((a+b*ArcCosh(c*x))^n*Log(h*(f+g*x)^m))/(Sqrt(-1+c*x)*Sqrt(1+c*x)), x))/Sqrt(1-c^2*x^2)");
 
 	}
 
 	// {Log(h*(f+g*x)^m)/(Sqrt(1-c^2*x^2)*(a+b*ArcCosh(c*x))), x, 1, (Sqrt(-1+c*x)*Sqrt(1 +
-	// c*x)*Unintegrable(Log(h*(f+g*x)^m)/(Sqrt(-1+c*x)*Sqrt(1+c*x)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)}
+	// c*x)*Integrate::Unintegrable(Log(h*(f+g*x)^m)/(Sqrt(-1+c*x)*Sqrt(1+c*x)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)}
 	public void test03087() {
 		check("Integrate(Log(h*(f+g*x)^m)/(Sqrt(1-c^2*x^2)*(a+b*ArcCosh(c*x))), x)",
-				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Unintegrable(Log(h*(f+g*x)^m)/(Sqrt(-1+c*x)*Sqrt(1+c*x)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)");
+				"(Sqrt(-1+c*x)*Sqrt(1+c*x)*Integrate::Unintegrable(Log(h*(f+g*x)^m)/(Sqrt(-1+c*x)*Sqrt(1+c*x)*(a+b*ArcCosh(c*x))), x))/Sqrt(1-c^2*x^2)");
 
 	}
 
-	// {(c*e+d*e*x)^m/(a+b*ArcCosh(c+d*x)), x, 1, Unintegrable((e*(c+d*x))^m/(a+b*ArcCosh(c+d*x)), x)}
+	// {(c*e+d*e*x)^m/(a+b*ArcCosh(c+d*x)), x, 1, Integrate::Unintegrable((e*(c+d*x))^m/(a+b*ArcCosh(c+d*x)), x)}
 	public void test03088() {
 		check("Integrate((c*e+d*e*x)^m/(a+b*ArcCosh(c+d*x)), x)",
-				"Unintegrable((e*(c+d*x))^m/(a+b*ArcCosh(c+d*x)), x)");
+				"Integrate::Unintegrable((e*(c+d*x))^m/(a+b*ArcCosh(c+d*x)), x)");
 
 	}
 
@@ -21658,10 +21830,10 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {x/((1-a^2*x^2)*ArcTanh(a*x)^2), x, 1, -(x/(a*ArcTanh(a*x)))+Unintegrable(ArcTanh(a*x)^(-1), x)/a}
+	// {x/((1-a^2*x^2)*ArcTanh(a*x)^2), x, 1, -(x/(a*ArcTanh(a*x)))+Integrate::Unintegrable(ArcTanh(a*x)^(-1), x)/a}
 	public void test03108() {
 		check("Integrate(x/((1-a^2*x^2)*ArcTanh(a*x)^2), x)",
-				"-(x/(a*ArcTanh(a*x)))+Unintegrable(ArcTanh(a*x)^(-1), x)/a");
+				"-(x/(a*ArcTanh(a*x)))+Integrate::Unintegrable(ArcTanh(a*x)^(-1), x)/a");
 
 	}
 
@@ -21671,17 +21843,19 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {1/(x*(1-a^2*x^2)*ArcTanh(a*x)^2), x, 1, -(1/(a*x*ArcTanh(a*x)))-Unintegrable(1/(x^2*ArcTanh(a*x)), x)/a}
+	// {1/(x*(1-a^2*x^2)*ArcTanh(a*x)^2), x, 1, -(1/(a*x*ArcTanh(a*x)))-Integrate::Unintegrable(1/(x^2*ArcTanh(a*x)),
+	// x)/a}
 	public void test03110() {
 		check("Integrate(1/(x*(1-a^2*x^2)*ArcTanh(a*x)^2), x)",
-				"-(1/(a*x*ArcTanh(a*x)))-Unintegrable(1/(x^2*ArcTanh(a*x)), x)/a");
+				"-(1/(a*x*ArcTanh(a*x)))-Integrate::Unintegrable(1/(x^2*ArcTanh(a*x)), x)/a");
 
 	}
 
-	// {x/((1-a^2*x^2)*ArcTanh(a*x)^3), x, 1, -x/(2*a*ArcTanh(a*x)^2)+Unintegrable(ArcTanh(a*x)^(-2), x)/(2*a)}
+	// {x/((1-a^2*x^2)*ArcTanh(a*x)^3), x, 1, -x/(2*a*ArcTanh(a*x)^2)+Integrate::Unintegrable(ArcTanh(a*x)^(-2),
+	// x)/(2*a)}
 	public void test03111() {
 		check("Integrate(x/((1-a^2*x^2)*ArcTanh(a*x)^3), x)",
-				"-x/(2*a*ArcTanh(a*x)^2)+Unintegrable(ArcTanh(a*x)^(-2), x)/(2*a)");
+				"-x/(2*a*ArcTanh(a*x)^2)+Integrate::Unintegrable(ArcTanh(a*x)^(-2), x)/(2*a)");
 
 	}
 
@@ -21691,11 +21865,12 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {1/(x*(1-a^2*x^2)*ArcTanh(a*x)^3), x, 1, -1/(2*a*x*ArcTanh(a*x)^2)-Unintegrable(1/(x^2*ArcTanh(a*x)^2),
+	// {1/(x*(1-a^2*x^2)*ArcTanh(a*x)^3), x, 1,
+	// -1/(2*a*x*ArcTanh(a*x)^2)-Integrate::Unintegrable(1/(x^2*ArcTanh(a*x)^2),
 	// x)/(2*a)}
 	public void test03113() {
 		check("Integrate(1/(x*(1-a^2*x^2)*ArcTanh(a*x)^3), x)",
-				"-1/(2*a*x*ArcTanh(a*x)^2)-Unintegrable(1/(x^2*ArcTanh(a*x)^2), x)/(2*a)");
+				"-1/(2*a*x*ArcTanh(a*x)^2)-Integrate::Unintegrable(1/(x^2*ArcTanh(a*x)^2), x)/(2*a)");
 
 	}
 
@@ -21748,15 +21923,17 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {(e+f*x)^m*(a+b*ArcTanh(c+d*x))^3, x, 1, Unintegrable((e+f*x)^m*(a+b*ArcTanh(c+d*x))^3, x)}
+	// {(e+f*x)^m*(a+b*ArcTanh(c+d*x))^3, x, 1, Integrate::Unintegrable((e+f*x)^m*(a+b*ArcTanh(c+d*x))^3, x)}
 	public void test03121() {
-		check("Integrate((e+f*x)^m*(a+b*ArcTanh(c+d*x))^3, x)", "Unintegrable((e+f*x)^m*(a+b*ArcTanh(c+d*x))^3, x)");
+		check("Integrate((e+f*x)^m*(a+b*ArcTanh(c+d*x))^3, x)",
+				"Integrate::Unintegrable((e+f*x)^m*(a+b*ArcTanh(c+d*x))^3, x)");
 
 	}
 
-	// {(e+f*x)^m*(a+b*ArcTanh(c+d*x))^2, x, 1, Unintegrable((e+f*x)^m*(a+b*ArcTanh(c+d*x))^2, x)}
+	// {(e+f*x)^m*(a+b*ArcTanh(c+d*x))^2, x, 1, Integrate::Unintegrable((e+f*x)^m*(a+b*ArcTanh(c+d*x))^2, x)}
 	public void test03122() {
-		check("Integrate((e+f*x)^m*(a+b*ArcTanh(c+d*x))^2, x)", "Unintegrable((e+f*x)^m*(a+b*ArcTanh(c+d*x))^2, x)");
+		check("Integrate((e+f*x)^m*(a+b*ArcTanh(c+d*x))^2, x)",
+				"Integrate::Unintegrable((e+f*x)^m*(a+b*ArcTanh(c+d*x))^2, x)");
 
 	}
 
@@ -21990,15 +22167,17 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {(e+f*x)^m*(a+b*ArcCoth(c+d*x))^2, x, 1, Unintegrable((e+f*x)^m*(a+b*ArcCoth(c+d*x))^2, x)}
+	// {(e+f*x)^m*(a+b*ArcCoth(c+d*x))^2, x, 1, Integrate::Unintegrable((e+f*x)^m*(a+b*ArcCoth(c+d*x))^2, x)}
 	public void test03155() {
-		check("Integrate((e+f*x)^m*(a+b*ArcCoth(c+d*x))^2, x)", "Unintegrable((e+f*x)^m*(a+b*ArcCoth(c+d*x))^2, x)");
+		check("Integrate((e+f*x)^m*(a+b*ArcCoth(c+d*x))^2, x)",
+				"Integrate::Unintegrable((e+f*x)^m*(a+b*ArcCoth(c+d*x))^2, x)");
 
 	}
 
-	// {(e+f*x)^m*(a+b*ArcCoth(c+d*x))^3, x, 1, Unintegrable((e+f*x)^m*(a+b*ArcCoth(c+d*x))^3, x)}
+	// {(e+f*x)^m*(a+b*ArcCoth(c+d*x))^3, x, 1, Integrate::Unintegrable((e+f*x)^m*(a+b*ArcCoth(c+d*x))^3, x)}
 	public void test03156() {
-		check("Integrate((e+f*x)^m*(a+b*ArcCoth(c+d*x))^3, x)", "Unintegrable((e+f*x)^m*(a+b*ArcCoth(c+d*x))^3, x)");
+		check("Integrate((e+f*x)^m*(a+b*ArcCoth(c+d*x))^3, x)",
+				"Integrate::Unintegrable((e+f*x)^m*(a+b*ArcCoth(c+d*x))^3, x)");
 
 	}
 
@@ -22144,10 +22323,10 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	}
 
 	// {(d+e*x)^m*(a+b*ArcSech(c*x)), x, 1, ((d+e*x)^(1+m)*(a+b*ArcSech(c*x)))/(e*(1+m))+(b*Sqrt((1 +
-	// c*x)^(-1))*Sqrt(1+c*x)*Unintegrable((d+e*x)^(1+m)/(x*Sqrt(1-c^2*x^2)), x))/(e*(1+m))}
+	// c*x)^(-1))*Sqrt(1+c*x)*Integrate::Unintegrable((d+e*x)^(1+m)/(x*Sqrt(1-c^2*x^2)), x))/(e*(1+m))}
 	public void test03178() {
 		check("Integrate((d+e*x)^m*(a+b*ArcSech(c*x)), x)",
-				"((d+e*x)^(1+m)*(a+b*ArcSech(c*x)))/(e*(1+m))+(b*Sqrt((1+c*x)^(-1))*Sqrt(1+c*x)*Unintegrable((d+e*x)^(1+m)/(x*Sqrt(1-c^2*x^2)), x))/(e*(1+m))");
+				"((d+e*x)^(1+m)*(a+b*ArcSech(c*x)))/(e*(1+m))+(b*Sqrt((1+c*x)^(-1))*Sqrt(1+c*x)*Integrate::Unintegrable((d+e*x)^(1+m)/(x*Sqrt(1-c^2*x^2)), x))/(e*(1+m))");
 
 	}
 
@@ -22263,11 +22442,11 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {Erf(a+b*x)/(c+d*x)^2, x, 1, -(Erf(a+b*x)/(d*(c+d*x)))+(2*b*Unintegrable(1/(E^(a+b*x)^2*(c+d*x)),
+	// {Erf(a+b*x)/(c+d*x)^2, x, 1, -(Erf(a+b*x)/(d*(c+d*x)))+(2*b*Integrate::Unintegrable(1/(E^(a+b*x)^2*(c+d*x)),
 	// x))/(d*Sqrt(Pi))}
 	public void test03196() {
 		check("Integrate(Erf(a+b*x)/(c+d*x)^2, x)",
-				"-(Erf(a+b*x)/(d*(c+d*x)))+(2*b*Unintegrable(1/(E^(a+b*x)^2*(c+d*x)), x))/(d*Sqrt(Pi))");
+				"-(Erf(a+b*x)/(d*(c+d*x)))+(2*b*Integrate::Unintegrable(1/(E^(a+b*x)^2*(c+d*x)), x))/(d*Sqrt(Pi))");
 
 	}
 
@@ -22285,11 +22464,11 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {(E^(c+d*x^2)*Erf(a+b*x))/x^2, x, 1, -((E^(c+d*x^2)*Erf(a+b*x))/x)+(2*b*Unintegrable(E^(-a^2+c -
-	// 2*a*b*x+(-b^2+d)*x^2)/x, x))/Sqrt(Pi)+2*d*Unintegrable(E^(c+d*x^2)*Erf(a+b*x), x)}
+	// {(E^(c+d*x^2)*Erf(a+b*x))/x^2, x, 1, -((E^(c+d*x^2)*Erf(a+b*x))/x)+(2*b*Integrate::Unintegrable(E^(-a^2+c -
+	// 2*a*b*x+(-b^2+d)*x^2)/x, x))/Sqrt(Pi)+2*d*Integrate::Unintegrable(E^(c+d*x^2)*Erf(a+b*x), x)}
 	public void test03199() {
 		check("Integrate((E^(c+d*x^2)*Erf(a+b*x))/x^2, x)",
-				"-((E^(c+d*x^2)*Erf(a+b*x))/x)+(2*b*Unintegrable(E^(-a^2+c-2*a*b*x+(-b^2+d)*x^2)/x, x))/Sqrt(Pi)+2*d*Unintegrable(E^(c+d*x^2)*Erf(a+b*x), x)");
+				"-((E^(c+d*x^2)*Erf(a+b*x))/x)+(2*b*Integrate::Unintegrable(E^(-a^2+c-2*a*b*x+(-b^2+d)*x^2)/x, x))/Sqrt(Pi)+2*d*Integrate::Unintegrable(E^(c+d*x^2)*Erf(a+b*x), x)");
 
 	}
 
@@ -22305,19 +22484,19 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {Erfc(a+b*x)/(c+d*x)^2, x, 1, -(Erfc(a+b*x)/(d*(c+d*x)))-(2*b*Unintegrable(1/(E^(a+b*x)^2*(c+d*x)),
+	// {Erfc(a+b*x)/(c+d*x)^2, x, 1, -(Erfc(a+b*x)/(d*(c+d*x)))-(2*b*Integrate::Unintegrable(1/(E^(a+b*x)^2*(c+d*x)),
 	// x))/(d*Sqrt(Pi))}
 	public void test03202() {
 		check("Integrate(Erfc(a+b*x)/(c+d*x)^2, x)",
-				"-(Erfc(a+b*x)/(d*(c+d*x)))-(2*b*Unintegrable(1/(E^(a+b*x)^2*(c+d*x)), x))/(d*Sqrt(Pi))");
+				"-(Erfc(a+b*x)/(d*(c+d*x)))-(2*b*Integrate::Unintegrable(1/(E^(a+b*x)^2*(c+d*x)), x))/(d*Sqrt(Pi))");
 
 	}
 
-	// {(E^(c+d*x^2)*Erfc(a+b*x))/x^2, x, 1, -((E^(c+d*x^2)*Erfc(a+b*x))/x)-(2*b*Unintegrable(E^(-a^2+c -
-	// 2*a*b*x+(-b^2+d)*x^2)/x, x))/Sqrt(Pi)+2*d*Unintegrable(E^(c+d*x^2)*Erfc(a+b*x), x)}
+	// {(E^(c+d*x^2)*Erfc(a+b*x))/x^2, x, 1, -((E^(c+d*x^2)*Erfc(a+b*x))/x)-(2*b*Integrate::Unintegrable(E^(-a^2+c -
+	// 2*a*b*x+(-b^2+d)*x^2)/x, x))/Sqrt(Pi)+2*d*Integrate::Unintegrable(E^(c+d*x^2)*Erfc(a+b*x), x)}
 	public void test03203() {
 		check("Integrate((E^(c+d*x^2)*Erfc(a+b*x))/x^2, x)",
-				"-((E^(c+d*x^2)*Erfc(a+b*x))/x)-(2*b*Unintegrable(E^(-a^2+c-2*a*b*x+(-b^2+d)*x^2)/x, x))/Sqrt(Pi)+2*d*Unintegrable(E^(c+d*x^2)*Erfc(a+b*x), x)");
+				"-((E^(c+d*x^2)*Erfc(a+b*x))/x)-(2*b*Integrate::Unintegrable(E^(-a^2+c-2*a*b*x+(-b^2+d)*x^2)/x, x))/Sqrt(Pi)+2*d*Integrate::Unintegrable(E^(c+d*x^2)*Erfc(a+b*x), x)");
 
 	}
 
@@ -22339,11 +22518,11 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {Erfi(a+b*x)/(c+d*x)^2, x, 1, -(Erfi(a+b*x)/(d*(c+d*x)))+(2*b*Unintegrable(E^(a+b*x)^2/(c+d*x),
+	// {Erfi(a+b*x)/(c+d*x)^2, x, 1, -(Erfi(a+b*x)/(d*(c+d*x)))+(2*b*Integrate::Unintegrable(E^(a+b*x)^2/(c+d*x),
 	// x))/(d*Sqrt(Pi))}
 	public void test03207() {
 		check("Integrate(Erfi(a+b*x)/(c+d*x)^2, x)",
-				"-(Erfi(a+b*x)/(d*(c+d*x)))+(2*b*Unintegrable(E^(a+b*x)^2/(c+d*x), x))/(d*Sqrt(Pi))");
+				"-(Erfi(a+b*x)/(d*(c+d*x)))+(2*b*Integrate::Unintegrable(E^(a+b*x)^2/(c+d*x), x))/(d*Sqrt(Pi))");
 
 	}
 
@@ -22361,11 +22540,11 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {(E^(c+d*x^2)*Erfi(a+b*x))/x^2, x, 1, -((E^(c+d*x^2)*Erfi(a+b*x))/x)+(2*b*Unintegrable(E^(a^2+c +
-	// 2*a*b*x+(b^2+d)*x^2)/x, x))/Sqrt(Pi)+2*d*Unintegrable(E^(c+d*x^2)*Erfi(a+b*x), x)}
+	// {(E^(c+d*x^2)*Erfi(a+b*x))/x^2, x, 1, -((E^(c+d*x^2)*Erfi(a+b*x))/x)+(2*b*Integrate::Unintegrable(E^(a^2+c +
+	// 2*a*b*x+(b^2+d)*x^2)/x, x))/Sqrt(Pi)+2*d*Integrate::Unintegrable(E^(c+d*x^2)*Erfi(a+b*x), x)}
 	public void test03210() {
 		check("Integrate((E^(c+d*x^2)*Erfi(a+b*x))/x^2, x)",
-				"-((E^(c+d*x^2)*Erfi(a+b*x))/x)+(2*b*Unintegrable(E^(a^2+c+2*a*b*x+(b^2+d)*x^2)/x, x))/Sqrt(Pi)+2*d*Unintegrable(E^(c+d*x^2)*Erfi(a+b*x), x)");
+				"-((E^(c+d*x^2)*Erfi(a+b*x))/x)+(2*b*Integrate::Unintegrable(E^(a^2+c+2*a*b*x+(b^2+d)*x^2)/x, x))/Sqrt(Pi)+2*d*Integrate::Unintegrable(E^(c+d*x^2)*Erfi(a+b*x), x)");
 
 	}
 
@@ -22387,18 +22566,20 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {FresnelS(b*x)^2/x^2, x, 1, -(FresnelS(b*x)^2/x)+2*b*Unintegrable((FresnelS(b*x)*Sin((b^2*Pi*x^2)/2))/x, x)}
+	// {FresnelS(b*x)^2/x^2, x, 1,
+	// -(FresnelS(b*x)^2/x)+2*b*Integrate::Unintegrable((FresnelS(b*x)*Sin((b^2*Pi*x^2)/2))/x, x)}
 	public void test03214() {
 		check("Integrate(FresnelS(b*x)^2/x^2, x)",
-				"-(FresnelS(b*x)^2/x)+2*b*Unintegrable((FresnelS(b*x)*Sin((b^2*Pi*x^2)/2))/x, x)");
+				"-(FresnelS(b*x)^2/x)+2*b*Integrate::Unintegrable((FresnelS(b*x)*Sin((b^2*Pi*x^2)/2))/x, x)");
 
 	}
 
-	// {FresnelS(b*x)^2/x^3, x, 1, -FresnelS(b*x)^2/(2*x^2)+b*Unintegrable((FresnelS(b*x)*Sin((b^2*Pi*x^2)/2))/x^2,
+	// {FresnelS(b*x)^2/x^3, x, 1,
+	// -FresnelS(b*x)^2/(2*x^2)+b*Integrate::Unintegrable((FresnelS(b*x)*Sin((b^2*Pi*x^2)/2))/x^2,
 	// x)}
 	public void test03215() {
 		check("Integrate(FresnelS(b*x)^2/x^3, x)",
-				"-FresnelS(b*x)^2/(2*x^2)+b*Unintegrable((FresnelS(b*x)*Sin((b^2*Pi*x^2)/2))/x^2, x)");
+				"-FresnelS(b*x)^2/(2*x^2)+b*Integrate::Unintegrable((FresnelS(b*x)*Sin((b^2*Pi*x^2)/2))/x^2, x)");
 
 	}
 
@@ -22428,18 +22609,20 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {FresnelC(b*x)^2/x^2, x, 1, -(FresnelC(b*x)^2/x)+2*b*Unintegrable((Cos((b^2*Pi*x^2)/2)*FresnelC(b*x))/x, x)}
+	// {FresnelC(b*x)^2/x^2, x, 1,
+	// -(FresnelC(b*x)^2/x)+2*b*Integrate::Unintegrable((Cos((b^2*Pi*x^2)/2)*FresnelC(b*x))/x, x)}
 	public void test03220() {
 		check("Integrate(FresnelC(b*x)^2/x^2, x)",
-				"-(FresnelC(b*x)^2/x)+2*b*Unintegrable((Cos((b^2*Pi*x^2)/2)*FresnelC(b*x))/x, x)");
+				"-(FresnelC(b*x)^2/x)+2*b*Integrate::Unintegrable((Cos((b^2*Pi*x^2)/2)*FresnelC(b*x))/x, x)");
 
 	}
 
-	// {FresnelC(b*x)^2/x^3, x, 1, -FresnelC(b*x)^2/(2*x^2)+b*Unintegrable((Cos((b^2*Pi*x^2)/2)*FresnelC(b*x))/x^2,
+	// {FresnelC(b*x)^2/x^3, x, 1,
+	// -FresnelC(b*x)^2/(2*x^2)+b*Integrate::Unintegrable((Cos((b^2*Pi*x^2)/2)*FresnelC(b*x))/x^2,
 	// x)}
 	public void test03221() {
 		check("Integrate(FresnelC(b*x)^2/x^3, x)",
-				"-FresnelC(b*x)^2/(2*x^2)+b*Unintegrable((Cos((b^2*Pi*x^2)/2)*FresnelC(b*x))/x^2, x)");
+				"-FresnelC(b*x)^2/(2*x^2)+b*Integrate::Unintegrable((Cos((b^2*Pi*x^2)/2)*FresnelC(b*x))/x^2, x)");
 
 	}
 
@@ -22879,10 +23062,10 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	}
 
 	// {ExpIntegralE(2, a+b*x)/(c+d*x)^2, x, 1, -(ExpIntegralE(2, a+b*x)/(d*(c+d*x))) -
-	// (b*Unintegrable(ExpIntegralE(1, a+b*x)/(c+d*x), x))/d}
+	// (b*Integrate::Unintegrable(ExpIntegralE(1, a+b*x)/(c+d*x), x))/d}
 	public void test03288() {
 		check("Integrate(ExpIntegralE(2, a+b*x)/(c+d*x)^2, x)",
-				"-(ExpIntegralE(2, a+b*x)/(d*(c+d*x)))-(b*Unintegrable(ExpIntegralE(1, a+b*x)/(c+d*x), x))/d");
+				"-(ExpIntegralE(2, a+b*x)/(d*(c+d*x)))-(b*Integrate::Unintegrable(ExpIntegralE(1, a+b*x)/(c+d*x), x))/d");
 
 	}
 
@@ -22893,10 +23076,10 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	}
 
 	// {ExpIntegralE(3, a+b*x)/(c+d*x)^2, x, 1, -(ExpIntegralE(3, a+b*x)/(d*(c+d*x))) -
-	// (b*Unintegrable(ExpIntegralE(2, a+b*x)/(c+d*x), x))/d}
+	// (b*Integrate::Unintegrable(ExpIntegralE(2, a+b*x)/(c+d*x), x))/d}
 	public void test03290() {
 		check("Integrate(ExpIntegralE(3, a+b*x)/(c+d*x)^2, x)",
-				"-(ExpIntegralE(3, a+b*x)/(d*(c+d*x)))-(b*Unintegrable(ExpIntegralE(2, a+b*x)/(c+d*x), x))/d");
+				"-(ExpIntegralE(3, a+b*x)/(d*(c+d*x)))-(b*Integrate::Unintegrable(ExpIntegralE(2, a+b*x)/(c+d*x), x))/d");
 
 	}
 
@@ -22990,17 +23173,18 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {LogIntegral(a+b*x)/x^2, x, 1, -(LogIntegral(a+b*x)/x)+b*Unintegrable(1/(x*Log(a+b*x)), x)}
+	// {LogIntegral(a+b*x)/x^2, x, 1, -(LogIntegral(a+b*x)/x)+b*Integrate::Unintegrable(1/(x*Log(a+b*x)), x)}
 	public void test03305() {
-		check("Integrate(LogIntegral(a+b*x)/x^2, x)", "-(LogIntegral(a+b*x)/x)+b*Unintegrable(1/(x*Log(a+b*x)), x)");
+		check("Integrate(LogIntegral(a+b*x)/x^2, x)",
+				"-(LogIntegral(a+b*x)/x)+b*Integrate::Unintegrable(1/(x*Log(a+b*x)), x)");
 
 	}
 
-	// {(d*x)^m*LogIntegral(a+b*x), x, 1, ((d*x)^(1+m)*LogIntegral(a+b*x))/(d*(1+m))-(b*Unintegrable((d*x)^(1
+	// {(d*x)^m*LogIntegral(a+b*x), x, 1, ((d*x)^(1+m)*LogIntegral(a+b*x))/(d*(1+m))-(b*Integrate::Unintegrable((d*x)^(1
 	// +m)/Log(a+b*x), x))/(d*(1+m))}
 	public void test03306() {
 		check("Integrate((d*x)^m*LogIntegral(a+b*x), x)",
-				"((d*x)^(1+m)*LogIntegral(a+b*x))/(d*(1+m))-(b*Unintegrable((d*x)^(1+m)/Log(a+b*x), x))/(d*(1+m))");
+				"((d*x)^(1+m)*LogIntegral(a+b*x))/(d*(1+m))-(b*Integrate::Unintegrable((d*x)^(1+m)/Log(a+b*x), x))/(d*(1+m))");
 
 	}
 
@@ -23776,27 +23960,27 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {PolyGamma(n, a+b*x)/(c+d*x)^2, x, 1, -(PolyGamma(n, a+b*x)/(d*(c+d*x)))+(b*Unintegrable(PolyGamma(1 +
+	// {PolyGamma(n, a+b*x)/(c+d*x)^2, x, 1, -(PolyGamma(n, a+b*x)/(d*(c+d*x)))+(b*Integrate::Unintegrable(PolyGamma(1 +
 	// n, a+b*x)/(c+d*x), x))/d}
 	public void test03429() {
 		check("Integrate(PolyGamma(n, a+b*x)/(c+d*x)^2, x)",
-				"-(PolyGamma(n, a+b*x)/(d*(c+d*x)))+(b*Unintegrable(PolyGamma(1+n, a+b*x)/(c+d*x), x))/d");
+				"-(PolyGamma(n, a+b*x)/(d*(c+d*x)))+(b*Integrate::Unintegrable(PolyGamma(1+n, a+b*x)/(c+d*x), x))/d");
 
 	}
 
 	// {Sqrt(c+d*x)*PolyGamma(n, a+b*x), x, 1, (Sqrt(c+d*x)*PolyGamma(-1+n, a+b*x))/b -
-	// (d*Unintegrable(PolyGamma(-1+n, a+b*x)/Sqrt(c+d*x), x))/(2*b)}
+	// (d*Integrate::Unintegrable(PolyGamma(-1+n, a+b*x)/Sqrt(c+d*x), x))/(2*b)}
 	public void test03430() {
 		check("Integrate(Sqrt(c+d*x)*PolyGamma(n, a+b*x), x)",
-				"(Sqrt(c+d*x)*PolyGamma(-1+n, a+b*x))/b-(d*Unintegrable(PolyGamma(-1+n, a+b*x)/Sqrt(c+d*x), x))/(2*b)");
+				"(Sqrt(c+d*x)*PolyGamma(-1+n, a+b*x))/b-(d*Integrate::Unintegrable(PolyGamma(-1+n, a+b*x)/Sqrt(c+d*x), x))/(2*b)");
 
 	}
 
 	// {PolyGamma(n, a+b*x)/(c+d*x)^(3/2), x, 1, (-2*PolyGamma(n, a+b*x))/(d*Sqrt(c+d*x)) +
-	// (2*b*Unintegrable(PolyGamma(1+n, a+b*x)/Sqrt(c+d*x), x))/d}
+	// (2*b*Integrate::Unintegrable(PolyGamma(1+n, a+b*x)/Sqrt(c+d*x), x))/d}
 	public void test03431() {
 		check("Integrate(PolyGamma(n, a+b*x)/(c+d*x)^(3/2), x)",
-				"(-2*PolyGamma(n, a+b*x))/(d*Sqrt(c+d*x))+(2*b*Unintegrable(PolyGamma(1+n, a+b*x)/Sqrt(c+d*x), x))/d");
+				"(-2*PolyGamma(n, a+b*x))/(d*Sqrt(c+d*x))+(2*b*Integrate::Unintegrable(PolyGamma(1+n, a+b*x)/Sqrt(c+d*x), x))/d");
 
 	}
 
@@ -23812,9 +23996,9 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {Zeta(2, a+b*x)/x, x, 1, Unintegrable(PolyGamma(1, a+b*x)/x, x)}
+	// {Zeta(2, a+b*x)/x, x, 1, Integrate::Unintegrable(PolyGamma(1, a+b*x)/x, x)}
 	public void test03434() {
-		check("Integrate(Zeta(2, a+b*x)/x, x)", "Unintegrable(PolyGamma(1, a+b*x)/x, x)");
+		check("Integrate(Zeta(2, a+b*x)/x, x)", "Integrate::Unintegrable(PolyGamma(1, a+b*x)/x, x)");
 
 	}
 
@@ -23866,15 +24050,16 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	}
 
-	// {PolyLog(1/2, a*x), x, 1, x*PolyLog(1/2, a*x)-Unintegrable(PolyLog(-1/2, a*x), x)}
+	// {PolyLog(1/2, a*x), x, 1, x*PolyLog(1/2, a*x)-Integrate::Unintegrable(PolyLog(-1/2, a*x), x)}
 	public void test03443() {
-		check("Integrate(PolyLog(1/2, a*x), x)", "x*PolyLog(1/2, a*x)-Unintegrable(PolyLog(-1/2, a*x), x)");
+		check("Integrate(PolyLog(1/2, a*x), x)", "x*PolyLog(1/2, a*x)-Integrate::Unintegrable(PolyLog(-1/2, a*x), x)");
 
 	}
 
-	// {PolyLog(-3/2, a*x), x, 1, x*PolyLog(-1/2, a*x)-Unintegrable(PolyLog(-1/2, a*x), x)}
+	// {PolyLog(-3/2, a*x), x, 1, x*PolyLog(-1/2, a*x)-Integrate::Unintegrable(PolyLog(-1/2, a*x), x)}
 	public void test03444() {
-		check("Integrate(PolyLog(-3/2, a*x), x)", "x*PolyLog(-1/2, a*x)-Unintegrable(PolyLog(-1/2, a*x), x)");
+		check("Integrate(PolyLog(-3/2, a*x), x)",
+				"x*PolyLog(-1/2, a*x)-Integrate::Unintegrable(PolyLog(-1/2, a*x), x)");
 
 	}
 
