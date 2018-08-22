@@ -170,6 +170,31 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		}
 	}
 
+	// Int[(u_.)*((a_) + (b_.)*(x_) + (c_.)*(x_)^2)^(p_.), x_Symbol]
+	// := Int[u*Cancel[(b/2 + c*x)^(2*p)/c^p], x]
+	// /; FreeQ[{a, b, c}, x] && EqQ[b^2 - 4*a*c, 0] && IntegerQ[p]
+	public void testRuleNo027a() {
+		try {
+			fScriptEngine.put("RETURN_OBJECT", Boolean.TRUE);
+			IExpr expr = (IExpr) fScriptEngine
+					.eval("myfunction((u_.)*((a_) + (b_.)*(x_) + (c_.)*(x_)^2)^(p_.), x_Symbol) := {u,a,b,x,c,p}");
+			IExpr lhsEval = (IExpr) fScriptEngine.eval("myfunction(x/(c^2+2*c*d*x+d^2*x^2),x)");
+			assertEquals(lhsEval.toString(), "{x,c^2,2*c*d,x,d^2,-1}");
+		} catch (ScriptException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void testRuleNo027b() {
+		try {
+			fScriptEngine.put("RETURN_OBJECT", Boolean.TRUE);
+			IExpr lhsEval = (IExpr) fScriptEngine.eval("Integrate(x/(c^2+2*c*d*x+d^2*x^2),x)");
+			assertEquals(lhsEval.toString(), "c/(d^2*(c+d*x))+Log(c+d*x)/d^2");
+		} catch (ScriptException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public void testRubi001() {
 		IAST ast;
 		ast = LinearQ(Times(2, x), x);
@@ -460,10 +485,10 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		check("Integrate(ArcCos(x),x)", "-Sqrt(1-x^2)+x*ArcCos(x)");
 
 		check("Integrate(ArcSin(x+1),x)", //
-				"Sqrt(-2*x-x^2)+ArcSin(1+x)+x*ArcSin(1+x)");
+				"Sqrt(1-(1+x)^2)+(1+x)*ArcSin(1+x)");
 
 		check("Integrate(ArcCos(x+1),x)", //
-				"-Sqrt(-2*x-x^2)+x*ArcCos(1+x)-ArcSin(1+x)");
+				"-Sqrt(1-(1+x)^2)+(1+x)*ArcCos(1+x)");
 	}
 
 	public void testSystemIntegrate() {
@@ -616,7 +641,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		// +
 		// "1)+a*x^n)^m)","x^p*(a*x^n+b*x^(m*n+n+p+1))^m");
 		check("Integrate(x^24*(a*x+b*x^38)^12,x)", //
-				"(a*x+b*x^38)^13/(481*b*x^13)");
+				"(a+b*x^37)^13/(481*b)");
 		check("Integrate(x^p*(a*x^n+b*x^(m*n+n+p+1))^m,x)",
 				"((a+b*x^(1+m*n+p))*(a*x^n+b*x^(1+n+m*n+p))^m)/(b*(1+m)*(1+m*n+p)*x^(m*n))");
 
@@ -639,7 +664,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		// check("Integrate(1/(1+sec(a+b*x)), x)", "");
 
 		check("Integrate(Sin(x)*Cos(x),x)", //
-				"-Cos(x)^2/2");
+				"Sin(x)^2/2");
 		// try {
 		// Thread.wait(1000000000);
 		// } catch (InterruptedException e) {
@@ -647,8 +672,8 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		// e.printStackTrace();
 		// }
 		check("Integrate(Sin(x)*Cos(x)*Pi,x)", //
-				"-1/2*Pi*Cos(x)^2");
-		check("D((-1/2)*Pi*Cos(x)^2,x)", //
+				"1/2*Pi*Sin(x)^2");
+		check("D(1/2*Pi*Sin(x)^2,x)", //
 				"Pi*Cos(x)*Sin(x)");
 
 		check("Integrate(1/(1+sin(a+b*x)), x)", //

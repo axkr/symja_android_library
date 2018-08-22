@@ -1579,7 +1579,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("Integrate((2*x+5)/(x^2-2*x+5),x)", //
 				"-7/2*ArcTan(1/2*(1-x))+Log(5-2*x+x^2)");
 		check("Integrate((8*x+1)/(x^2+2*x+1),x)", //
-				"8/(1+x)-(1+x)/(1+2*x+x^2)+8*Log(1+x)");
+				"7/(1+x)+8*Log(1+x)");
 	}
 
 	public void testSystem171b() {

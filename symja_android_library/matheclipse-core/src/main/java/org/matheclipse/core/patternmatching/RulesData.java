@@ -788,6 +788,24 @@ public class RulesData implements Serializable {
 
 		if (PatternMap.DEFAULT_RULE_PRIORITY != priority) {
 			pmEvaluator.setLHSPriority(priority);
+			if (leftHandSide.isAST(F.Integrate)) {
+				// keep Integrate rules in order predefined by Rubi project
+				ArraySet<ISymbol> headerSymbols = new ArraySet<ISymbol>();
+				isComplicatedPatternRule(leftHandSide, headerSymbols);
+				// TODO test later, if this can be uncommented for speed performance:
+				// if (headerSymbols.size() > 0) {
+				// fSimpleOrderlesPatternDownRules = getSimpleOrderlessPatternDownRules();
+				// for (ISymbol head : headerSymbols) {
+				// fSimpleOrderlesPatternDownRules.put(head.hashCode(), pmEvaluator);
+				// }
+				// return pmEvaluator;
+				// }
+
+				fPatternDownRules = getPatternDownRules();
+				fPatternDownRules.add(pmEvaluator);
+				return pmEvaluator;
+			}
+
 		}
 		ArraySet<ISymbol> headerSymbols = new ArraySet<ISymbol>();
 		if (!isComplicatedPatternRule(leftHandSide, headerSymbols)) {

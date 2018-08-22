@@ -16,22 +16,16 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Times;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
-import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
-import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
@@ -41,21 +35,17 @@ import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IFraction;
-import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.polynomials.PartialFractionIntegrateGenerator;
+
+import com.google.common.cache.CacheBuilder;
 
 import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigRational;
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.Monomial;
-import edu.jas.ufd.FactorAbstract;
-import edu.jas.ufd.FactorFactory;
-import edu.jas.ufd.SquarefreeAbstract;
-import edu.jas.ufd.SquarefreeFactory;
 
 /**
  * <pre>
@@ -904,18 +894,31 @@ public class Integrate extends AbstractFunctionEvaluator {
 					// || INT_RUBI_FUNCTIONS.contains(head)
 					|| head.isBuiltInSymbol() || head.getSymbolName().startsWith("§")) {
 				// || head.getSymbolName().startsWith(UtilityFunctionCtors.INTEGRATE_PREFIX)) {
+				boolean newCache = false;
+				if (engine.REMEMBER_AST_CACHE != null) {
+					IExpr result = engine.REMEMBER_AST_CACHE.getIfPresent(ast);
+					if (result != null) {
+						// RecursionLimitExceeded.throwIt(engine.getRecursionCounter(), ast);
+						return F.NIL;
+					}
+				} else {
+					newCache = true;
+					engine.REMEMBER_AST_CACHE = CacheBuilder.newBuilder().maximumSize(50).build();
+				}
 				try {
 					if (limit <= 0 || limit > Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT) {
 						engine.setRecursionLimit(Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT);
 					}
+					engine.REMEMBER_AST_CACHE.put(ast, F.True);
 					// System.out.println(ast.toString());
 					IExpr temp = F.Integrate.evalDownRule(EvalEngine.get(), ast);
 					if (temp.isPresent()) {
 						return temp;
 					}
 				} catch (RecursionLimitExceeded rle) {
-					engine.printMessage("Integrate Rubi recursion limit " + Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT
-							+ " exceeded: " + ast.toString());
+					// engine.printMessage("Integrate(Rubi recursion): " + Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT
+					// + " exceeded: " + ast.toString());
+					engine.printMessage("Integrate(Rubi recursion): " + rle.getMessage());
 					engine.setRecursionLimit(limit);
 					if (secondTry.isPresent()) {
 						return integrateByRubiRules(secondTry, F.NIL);
@@ -932,6 +935,9 @@ public class Integrate extends AbstractFunctionEvaluator {
 					}
 				} finally {
 					engine.setRecursionLimit(limit);
+					if (newCache) {
+						engine.REMEMBER_AST_CACHE = null;
+					}
 				}
 			}
 		} catch (AbortException ae) {
@@ -1293,6 +1299,9 @@ public class Integrate extends AbstractFunctionEvaluator {
 		// hack for TimeConstrained time limit:
 
 		// F.ISet(F.$s("§timelimit"), F.integer(12));
+
+		F.ISet(F.$s("§simplifyflag"), F.False);
+
 		F.ISet(F.$s("§$timelimit"), F.ZZ(12));
 		F.ISet(F.$s("§$showsteps"), F.False);
 		UtilityFunctionCtors.ReapList.setAttributes(ISymbol.HOLDFIRST);

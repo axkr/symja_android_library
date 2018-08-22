@@ -907,24 +907,56 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCancel() {
-		check("Cancel(x / x ^ 2)", "1/x");
-		check("Cancel(x / x ^ 2 + y / y ^ 2)", "1/x+1/y");
-		check("Cancel(f(x) / x + x * f(x) / x ^ 2)", "(2*f(x))/x");
 
-		check("Cancel((x - a)/(x^2 - a^2) == 0 && (x^2 - 2*x + 1)/(x - 1) >= 0)", "1/(a+x)==0&&x>=1");
+		
+		// see rubi rule 27:
+		check("Cancel(d/(c*d+d^2*x))", //
+				"1/(c+d*x)");
+		check("Cancel((c*d+d^2*x)/d)", //
+				"c+d*x");
+		check("Cancel((c*d+d^2*x)^(-1)/(d^2)^(-1)  )", //
+				"d/(c+d*x)");
+		check("Cancel((c*d+d^2*x) /(d^2)   )", //
+				"(c+d*x)/d");
+		check("Cancel((c*d+d^2*x)^(-2)/(d^2)^(-1)  )", //
+				"1/(c+d*x)^2");
+		check("Cancel((c*d+d^2*x)^2/d^2 )", //
+				"(c+d*x)^2");
+		
+		
+		check("Cancel(x / x ^ 2)", //
+				"1/x");
+		check("Cancel(x / x ^ 2 + y / y ^ 2)", //
+				"1/x+1/y");
+		check("Cancel(f(x) / x + x * f(x) / x ^ 2)", //
+				"(2*f(x))/x");
+
+		check("Cancel((x - a)/(x^2 - a^2) == 0 && (x^2 - 2*x + 1)/(x - 1) >= 0)",//
+				"1/(a+x)==0&&x>=1");
 		check("9+3*x+x^2", "9+3*x+x^2");
-		check("(9+3*x+x^2)*(3+x)^(-1)", "(9+3*x+x^2)/(3+x)");
-		check("1+(9+3*x+x^2)*(3+x)^(-1)+x+(x+y)^(-1)", "1+x+(9+3*x+x^2)/(3+x)+1/(x+y)");
-
-		check("Cancel(x / x ^ 2)", "1/x");
-		check("Cancel(f(x) / x + x * f(x) / x ^ 2)", "(2*f(x))/x");
-		check("Cancel(x / x ^ 2 + y / y ^ 2)", "1/x+1/y");
-		check("Cancel((x^2 - 1)/(x - 1))", "1+x");
-		check("Cancel((x - y)/(x^2 - y^2) + (x^3 - 27)/(x^2 - 9) + (x^3 + 1)/(x^2 - x + 1))",
+		check("(9+3*x+x^2)*(3+x)^(-1)", //
+				"(9+3*x+x^2)/(3+x)");
+		check("1+(9+3*x+x^2)*(3+x)^(-1)+x+(x+y)^(-1)", //
 				"1+x+(9+3*x+x^2)/(3+x)+1/(x+y)");
-		check("cancel((x - 1)/(x^2 - 1) + (x - 2)/(x^2 - 4))", "1/(1+x)+1/(2+x)");
-		check("together((x - 1)/(x^2 - 1) + (x - 2)/(x^2 - 4))", "(3+2*x)/(2+3*x+x^2)");
 
+		check("Cancel(x / x ^ 2)", //
+				"1/x");
+		check("Cancel(f(x) / x + x * f(x) / x ^ 2)",//
+				"(2*f(x))/x");
+		check("Cancel(x / x ^ 2 + y / y ^ 2)",//
+				"1/x+1/y");
+		check("Cancel((x^2 - 1)/(x - 1))",//
+				"1+x");
+		check("Cancel((x - y)/(x^2 - y^2) + (x^3 - 27)/(x^2 - 9) + (x^3 + 1)/(x^2 - x + 1))",//
+				"1+x+(9+3*x+x^2)/(3+x)+1/(x+y)");
+		check("cancel((x - 1)/(x^2 - 1) + (x - 2)/(x^2 - 4))", //
+				"1/(1+x)+1/(2+x)");
+		check("together((x - 1)/(x^2 - 1) + (x - 2)/(x^2 - 4))", //
+				"(3+2*x)/(2+3*x+x^2)");
+
+
+		check("Cancel(x/(1+x^3))", //
+				"x/(1+x^3)");
 	}
 
 	public void testCarmichaelLambda() {
@@ -6828,8 +6860,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Orthogonalize({{2,3}, {2,7}, {4,5}})", //
 				"{{2/Sqrt(13),3/Sqrt(13)},{-3/Sqrt(13),2/Sqrt(13)},{0,0}}");
 		check("Orthogonalize({{1,2,3},{5,2,7},{3,5,1}})", //
-				"{{1/Sqrt(14),Sqrt(2/7),3/Sqrt(14)},{5/Sqrt(42),-2*Sqrt(2/21),1/Sqrt(42)},{1/Sqrt(\n" + 
-				"3),1/Sqrt(3),-1/Sqrt(3)}}");
+				"{{1/Sqrt(14),Sqrt(2/7),3/Sqrt(14)},{5/Sqrt(42),-2*Sqrt(2/21),1/Sqrt(42)},{1/Sqrt(\n"
+						+ "3),1/Sqrt(3),-1/Sqrt(3)}}");
 		check("Orthogonalize({{1,0,0},{0,0,1}})", //
 				"{{1,0,0},{0,0,1}}");
 	}
