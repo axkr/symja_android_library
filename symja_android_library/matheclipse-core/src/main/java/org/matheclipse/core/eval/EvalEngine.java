@@ -1747,6 +1747,7 @@ public class EvalEngine implements Serializable {
 		fSeconds = 0;
 		fModifiedVariablesList = new HashSet<ISymbol>();
 		fContextPath = new ContextPath();
+		fLocalVariableStackMap=null;
 	}
 
 	/**
@@ -1869,6 +1870,11 @@ public class EvalEngine implements Serializable {
 		return temp;
 	}
 
+	public void localStackRemove(final ISymbol symbol) {
+		Map<ISymbol, Deque<IExpr>> localVariableStackMap = getLocalVariableStackMap();
+		Deque<IExpr> temp = localVariableStackMap.remove(symbol);
+	}
+	
 	/**
 	 * Parse the given <code>expression String</code> into an IExpr without evaluation.
 	 * 

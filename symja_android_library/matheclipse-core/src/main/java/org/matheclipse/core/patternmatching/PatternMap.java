@@ -113,7 +113,7 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 		// avoid Arrays.copyOf because of Android version
 		final int length = fPatternValuesArray.length;
 		result.fPatternValuesArray = new IExpr[length];
-		System.arraycopy(fPatternValuesArray, 0, result.fPatternValuesArray, 0, length);
+		// System.arraycopy(fPatternValuesArray, 0, result.fPatternValuesArray, 0, length);
 
 		// don't clone the fSymbolsArray which is final after the #determinepatterns() method
 		result.fPriority = fPriority;

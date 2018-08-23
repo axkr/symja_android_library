@@ -1015,9 +1015,9 @@ public final class Programming {
 			final int moduleCounter = engine.incModuleCounter();
 			final String varAppend = "$" + moduleCounter;
 			java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables = new IdentityHashMap<ISymbol, IExpr>();
-
+			java.util.ArrayList<ISymbol> moduleSymbols = new java.util.ArrayList<ISymbol>();
 			try {
-				rememberModuleVariables(intializerList, varAppend, moduleVariables, engine);
+				rememberModuleVariables(intializerList, varAppend, moduleVariables, moduleSymbols, engine);
 				IExpr subst = arg2.accept(new ModuleReplaceAll(moduleVariables, engine));
 				if (subst.isPresent()) {
 					// IExpr temp= engine.evaluate(subst);
@@ -1027,8 +1027,9 @@ public final class Programming {
 				}
 				return arg2;
 			} finally {
+				removeUserVariables(engine, moduleSymbols);
+				moduleSymbols = null;
 				moduleVariables = null;
-				// removeUserVariables(moduleVariables);
 			}
 		}
 
@@ -2270,7 +2271,8 @@ public final class Programming {
 	 *            the evaluation engine
 	 */
 	private static void rememberModuleVariables(IAST variablesList, final String varAppend,
-			final java.util.Map<ISymbol, IExpr> variablesMap, final EvalEngine engine) {
+			final java.util.Map<ISymbol, IExpr> variablesMap, java.util.ArrayList<ISymbol> moduleSymbols,
+			final EvalEngine engine) {
 		ISymbol oldSymbol;
 		ISymbol newSymbol;
 		for (int i = 1; i < variablesList.size(); i++) {
@@ -2280,6 +2282,7 @@ public final class Programming {
 				// System.out.println(variablesList.toString());
 				// }
 				newSymbol = F.Dummy(oldSymbol.toString() + varAppend);// , engine);
+				moduleSymbols.add(newSymbol);
 				variablesMap.put(oldSymbol, newSymbol);
 				// newSymbol.pushLocalVariable();
 				engine.localStackCreate(newSymbol).push(F.NIL);
@@ -2289,6 +2292,7 @@ public final class Programming {
 					if (setFun.arg1().isSymbol()) {
 						oldSymbol = (ISymbol) setFun.arg1();
 						newSymbol = F.Dummy(oldSymbol.toString() + varAppend);// , engine);
+						moduleSymbols.add(newSymbol);
 						variablesMap.put(oldSymbol, newSymbol);
 						IExpr rightHandSide = setFun.arg2();
 						try {
@@ -2311,10 +2315,11 @@ public final class Programming {
 	 * 
 	 * @param moduleVariables
 	 */
-	public static void removeUserVariables(final Map<ISymbol, ISymbol> moduleVariables) {
+	public static void removeUserVariables(EvalEngine engine, java.util.ArrayList<ISymbol> moduleVariables) {
 		// remove all module variables from eval engine
-		for (ISymbol symbol : moduleVariables.values()) {
-			F.removeUserSymbol(symbol.toString());
+		for (ISymbol symbol : moduleVariables) {
+			engine.localStackRemove(symbol);
+			// F.removeUserSymbol(symbol.toString());
 		}
 	}
 
@@ -2332,9 +2337,9 @@ public final class Programming {
 			final int moduleCounter = engine.incModuleCounter();
 			final String varAppend = "$" + moduleCounter;
 			final java.util.Map<ISymbol, IExpr> moduleVariables = new IdentityHashMap<ISymbol, IExpr>();
-
+			java.util.ArrayList<ISymbol> moduleSymbols = new java.util.ArrayList<ISymbol>();
 			try {
-				rememberModuleVariables(intializerList, varAppend, moduleVariables, engine);
+				rememberModuleVariables(intializerList, varAppend, moduleVariables, moduleSymbols, engine);
 				IExpr result = F.subst(arg2, x -> {
 					IExpr temp = moduleVariables.get(x);
 					return temp != null ? temp : F.NIL;
@@ -2345,7 +2350,8 @@ public final class Programming {
 					return checkModuleOrWithCondition(result.first(), result.second(), engine);
 				}
 			} finally {
-				// removeUserVariables(moduleVariables);
+				removeUserVariables(engine, moduleSymbols);
+				moduleSymbols = null;
 			}
 		}
 		return true;

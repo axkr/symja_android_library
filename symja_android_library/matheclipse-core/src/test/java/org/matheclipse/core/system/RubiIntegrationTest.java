@@ -643,7 +643,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		check("Integrate(x^24*(a*x+b*x^38)^12,x)", //
 				"(a+b*x^37)^13/(481*b)");
 		check("Integrate(x^p*(a*x^n+b*x^(m*n+n+p+1))^m,x)",
-				"((a+b*x^(1+m*n+p))*(a*x^n+b*x^(1+n+m*n+p))^m)/(b*(1+m)*(1+m*n+p)*x^(m*n))");
+				"(a*x^n+b*x^(1+n+m*n+p))^(1+m)/(b*(1+m)*(1+m*n+p)*x^((1+m)*n))");
 
 	}
 

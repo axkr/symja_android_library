@@ -1050,7 +1050,6 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			// lhsEvalAST.toString());
 
 			if (lhsPatternAST.isAST1()) {
-				// TODO check for OneIdentity?
 				return matchExpr(lhsPatternAST.arg1(), lhsEvalAST, engine, stackMatcher);
 			}
 			for (int i = 1; i < lhsPatternSize; i++) {

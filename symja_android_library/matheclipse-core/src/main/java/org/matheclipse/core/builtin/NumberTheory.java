@@ -819,7 +819,7 @@ public final class NumberTheory {
 			} else if (arg1.isAST() || arg1.isSymbol() && arg1.isNumericFunction()) {
 				IExpr num = engine.evalN(arg1);
 				if (num instanceof INum) {
-					return realToCF(((INum) num), maxIterations, engine); 
+					return realToCF(((INum) num), maxIterations, engine);
 				}
 			}
 
