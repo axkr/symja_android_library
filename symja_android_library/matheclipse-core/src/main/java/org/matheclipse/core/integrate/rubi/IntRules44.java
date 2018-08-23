@@ -13,9 +13,9 @@ import org.matheclipse.core.interfaces.IAST;
  */
 public class IntRules44 { 
   public static IAST RULES = List( 
-IIntegrate(2201,Int(Times(Power(F_,Times(c_DEFAULT,Plus(a_DEFAULT,Times(b_DEFAULT,x_)))),Plus(e_,Times(h_DEFAULT,Plus(f_DEFAULT,Times(g_DEFAULT,x_)),Log(Times(d_DEFAULT,x_)))),Power(Log(Times(d_DEFAULT,x_)),n_DEFAULT)),x_Symbol),
+IIntegrate(2201,Int(Times(Power(Log(Times(d_DEFAULT,x_)),n_DEFAULT),Power(F_,Times(c_DEFAULT,Plus(a_DEFAULT,Times(b_DEFAULT,x_)))),Plus(e_,Times(Log(Times(d_DEFAULT,x_)),h_DEFAULT,Plus(f_DEFAULT,Times(g_DEFAULT,x_))))),x_Symbol),
     Condition(Simp(Times(e,x,Power(FSymbol,Times(c,Plus(a,Times(b,x)))),Power(Log(Times(d,x)),Plus(n,C1)),Power(Plus(n,C1),-1)),x),And(FreeQ(List(FSymbol,a,b,c,d,e,f,g,h,n),x),EqQ(Plus(e,Times(CN1,f,h,Plus(n,C1))),C0),EqQ(Plus(Times(g,h,Plus(n,C1)),Times(CN1,b,c,e,Log(FSymbol))),C0),NeQ(n,CN1)))),
-IIntegrate(2202,Int(Times(Power(F_,Times(c_DEFAULT,Plus(a_DEFAULT,Times(b_DEFAULT,x_)))),Power(x_,m_DEFAULT),Plus(e_,Times(h_DEFAULT,Plus(f_DEFAULT,Times(g_DEFAULT,x_)),Log(Times(d_DEFAULT,x_)))),Power(Log(Times(d_DEFAULT,x_)),n_DEFAULT)),x_Symbol),
+IIntegrate(2202,Int(Times(Power(Log(Times(d_DEFAULT,x_)),n_DEFAULT),Power(F_,Times(c_DEFAULT,Plus(a_DEFAULT,Times(b_DEFAULT,x_)))),Power(x_,m_DEFAULT),Plus(e_,Times(Log(Times(d_DEFAULT,x_)),h_DEFAULT,Plus(f_DEFAULT,Times(g_DEFAULT,x_))))),x_Symbol),
     Condition(Simp(Times(e,Power(x,Plus(m,C1)),Power(FSymbol,Times(c,Plus(a,Times(b,x)))),Power(Log(Times(d,x)),Plus(n,C1)),Power(Plus(n,C1),-1)),x),And(FreeQ(List(FSymbol,a,b,c,d,e,f,g,h,m,n),x),EqQ(Plus(Times(e,Plus(m,C1)),Times(CN1,f,h,Plus(n,C1))),C0),EqQ(Plus(Times(g,h,Plus(n,C1)),Times(CN1,b,c,e,Log(FSymbol))),C0),NeQ(n,CN1)))),
 IIntegrate(2203,Int(Power(F_,Plus(a_DEFAULT,Times(b_DEFAULT,Plus(c_DEFAULT,Times(d_DEFAULT,x_))))),x_Symbol),
     Condition(Simp(Times(Power(FSymbol,Plus(a,Times(b,Plus(c,Times(d,x))))),Power(Times(b,d,Log(FSymbol)),-1)),x),FreeQ(List(FSymbol,a,b,c,d),x))),
@@ -65,7 +65,7 @@ IIntegrate(2225,Int(Times(Power(F_,v_),Power(u_,m_DEFAULT)),x_Symbol),
     Condition(Int(Times(Power(ExpandToSum(u,x),m),Power(FSymbol,ExpandToSum(v,x))),x),And(FreeQ(List(FSymbol,m),x),LinearQ(u,x),BinomialQ(v,x),Not(And(LinearMatchQ(u,x),BinomialMatchQ(v,x)))))),
 IIntegrate(2226,Int(Times(Power(F_,Plus(a_DEFAULT,Times(b_DEFAULT,Power(Plus(c_DEFAULT,Times(d_DEFAULT,x_)),n_)))),u_),x_Symbol),
     Condition(Int(ExpandLinearProduct(Power(FSymbol,Plus(a,Times(b,Power(Plus(c,Times(d,x)),n)))),u,c,d,x),x),And(FreeQ(List(FSymbol,a,b,c,d,n),x),PolynomialQ(u,x)))),
-IIntegrate(2227,Int(Times(Power(F_,Plus(a_DEFAULT,Times(b_DEFAULT,v_))),u_DEFAULT),x_Symbol),
+IIntegrate(2227,Int(Times(u_DEFAULT,Power(F_,Plus(a_DEFAULT,Times(b_DEFAULT,v_)))),x_Symbol),
     Condition(Int(Times(u,Power(FSymbol,Plus(a,Times(b,NormalizePowerOfLinear(v,x))))),x),And(FreeQ(List(FSymbol,a,b),x),PolynomialQ(u,x),PowerOfLinearQ(v,x),Not(PowerOfLinearMatchQ(v,x))))),
 IIntegrate(2228,Int(Times(Power(F_,Plus(a_DEFAULT,Times(b_DEFAULT,Power(Plus(c_DEFAULT,Times(d_DEFAULT,x_)),-1)))),Power(Plus(e_DEFAULT,Times(f_DEFAULT,x_)),-1),Power(Plus(g_DEFAULT,Times(h_DEFAULT,x_)),-1)),x_Symbol),
     Condition(Negate(Dist(Times(d,Power(Times(f,Plus(Times(d,g),Times(CN1,c,h))),-1)),Subst(Int(Times(Power(FSymbol,Plus(a,Times(CN1,b,h,Power(Plus(Times(d,g),Times(CN1,c,h)),-1)),Times(d,b,x,Power(Plus(Times(d,g),Times(CN1,c,h)),-1)))),Power(x,-1)),x),x,Times(Plus(g,Times(h,x)),Power(Plus(c,Times(d,x)),-1))),x)),And(FreeQ(List(FSymbol,a,b,c,d,e,f),x),EqQ(Plus(Times(d,e),Times(CN1,c,f)),C0)))),

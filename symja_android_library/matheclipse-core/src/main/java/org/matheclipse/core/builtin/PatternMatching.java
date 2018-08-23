@@ -37,17 +37,22 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternObject;
+import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ISymbol.RuleType;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
+import org.matheclipse.parser.client.ast.Pattern2Node;
+import org.matheclipse.parser.client.ast.SymbolNode;
 
 public final class PatternMatching {
 
 	static {
 		F.Blank.setEvaluator(Blank.CONST);
+		F.BlankSequence.setEvaluator(BlankSequence.CONST);
+		F.BlankNullSequence.setEvaluator(BlankNullSequence.CONST);
 		F.Clear.setEvaluator(new Clear());
 		F.ClearAll.setEvaluator(new ClearAll());
 		F.Definition.setEvaluator(new Definition());
@@ -58,7 +63,7 @@ public final class PatternMatching {
 		F.Identity.setEvaluator(new Identity());
 		F.Information.setEvaluator(new Information());
 		F.MessageName.setEvaluator(new MessageName());
-		F.Optional.setEvaluator(new Optional());
+		F.Optional.setEvaluator(Optional.CONST);
 		F.Pattern.setEvaluator(Pattern.CONST);
 		F.Put.setEvaluator(new Put());
 		F.Rule.setEvaluator(new Rule());
@@ -77,6 +82,50 @@ public final class PatternMatching {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.head().equals(F.Blank)) {
+				if (ast.isAST0()) {
+					return F.$b();
+				}
+				if (ast.isAST1()) {
+					return F.$b(ast.arg1());
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
+	public static class BlankSequence extends AbstractCoreFunctionEvaluator {
+		public final static BlankSequence CONST = new BlankSequence();
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.head().equals(F.BlankSequence)) {
+				if (ast.isAST0()) {
+					return F.$b();
+				}
+				if (ast.isAST1()) {
+					return F.$b(ast.arg1());
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
+	public static class BlankNullSequence extends AbstractCoreFunctionEvaluator {
+		public final static BlankNullSequence CONST = new BlankNullSequence();
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.head().equals(F.BlankNullSequence)) {
 				if (ast.isAST0()) {
 					return F.$b();
 				}
@@ -642,7 +691,8 @@ public final class PatternMatching {
 	 * {a,1}
 	 * </pre>
 	 */
-	private static class Optional extends AbstractCoreFunctionEvaluator {
+	public static class Optional extends AbstractCoreFunctionEvaluator {
+		public final static Optional CONST = new Optional();
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -684,9 +734,6 @@ public final class PatternMatching {
 	public static class Pattern extends AbstractCoreFunctionEvaluator {
 		public final static Pattern CONST = new Pattern();
 
-		public Pattern() {
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.head().equals(F.Pattern)) {
@@ -698,12 +745,12 @@ public final class PatternMatching {
 							IPatternObject blank = (IPatternObject) ast.arg2();
 							return F.$p((ISymbol) ast.arg1(), blank.getCondition());
 						}
-						// if (ast.arg2().isPattern()) {
-						// IPattern blank = (IPattern) ast.arg2();
-						// // if (blank.isBlank()) {
-						// return F.$p((ISymbol) ast.arg1(), blank.getCondition());
-						// // }
-						// }
+						if (ast.arg2().isAST(F.BlankSequence, 1)) {
+							return F.$ps((ISymbol) ast.arg1(), null, false, false);
+						}
+						if (ast.arg2().isAST(F.BlankNullSequence, 1)) {
+							return F.$ps((ISymbol) ast.arg1(), null, false, true);
+						}
 					}
 				}
 			}

@@ -63,18 +63,18 @@ public class AST2Expr {
 			"ArrayPad", "ArrayReshape", "Arrays", "ArrayQ", "Assumptions", "AtomQ", "Attributes", "Begin",
 			"BeginPackage", "BellB", "BellY", "BernoulliB", "BernoulliDistribution", "BesselI", "BesselJ", "BesselK",
 			"BesselY", "Beta", "BetaRegularized", "BinCounts", "Binomial", "BinomialDistribution", "BitLength", "Blank",
-			"Block", "Boole", "BooleanQ", "BooleanConvert", "BooleanMinimize", "BooleanTable", "BooleanVariables",
-			"BrayCurtisDistance", "Break", "CanberraDistance", "Cancel", "CarmichaelLambda", "CartesianProduct",
-			"Cases", "CatalanNumber", "Catch", "Catenate", "CDF", "Ceiling", "CentralMoment", "CForm",
-			"CharacteristicPolynomial", "ChebyshevT", "ChebyshevU", "ChessboardDistance", "ChineseRemainder",
-			"CholeskyDecomposition", "Chop", "CirclePoints", "Clear", "ClearAll", "ClearAttributes", "Clip",
-			"Coefficient", "CoefficientList", "CoefficientRules", "Colon", "Collect", "Commonest", "CompatibleUnitQ",
-			"Complement", "Compile", "Complex", "ComplexExpand", "ComposeList", "ComposeSeries", "Composition",
-			"CompoundExpression", "Condition", "ConditionalExpression", "Conjugate", "ConjugateTranspose",
-			"ConstantArray", "Continue", "ContinuedFraction", "Convergents", "ConvexHullMesh", "CoprimeQ",
-			"Correlation", "Cos", "Cosh", "CosineDistance", "CosIntegral", "CoshIntegral", "Cot", "Coth", "Count",
-			"Covariance", "Cross", "Csc", "Csch", "CubeRoot", "Curl", "Cyclotomic", "Decrement", "Default", "Defer",
-			"Definition", "Delete", "DeleteCases", "DeleteDuplicates", "Denominator", "Depth", "Derivative",
+			"BlankSequence", "BlankNullSequence", "Block", "Boole", "BooleanQ", "BooleanConvert", "BooleanMinimize",
+			"BooleanTable", "BooleanVariables", "BrayCurtisDistance", "Break", "CanberraDistance", "Cancel",
+			"CarmichaelLambda", "CartesianProduct", "Cases", "CatalanNumber", "Catch", "Catenate", "CDF", "Ceiling",
+			"CentralMoment", "CForm", "CharacteristicPolynomial", "ChebyshevT", "ChebyshevU", "ChessboardDistance",
+			"ChineseRemainder", "CholeskyDecomposition", "Chop", "CirclePoints", "Clear", "ClearAll", "ClearAttributes",
+			"Clip", "Coefficient", "CoefficientList", "CoefficientRules", "Colon", "Collect", "Commonest",
+			"CompatibleUnitQ", "Complement", "Compile", "Complex", "ComplexExpand", "ComposeList", "ComposeSeries",
+			"Composition", "CompoundExpression", "Condition", "ConditionalExpression", "Conjugate",
+			"ConjugateTranspose", "ConstantArray", "Continue", "ContinuedFraction", "Convergents", "ConvexHullMesh",
+			"CoprimeQ", "Correlation", "Cos", "Cosh", "CosineDistance", "CosIntegral", "CoshIntegral", "Cot", "Coth",
+			"Count", "Covariance", "Cross", "Csc", "Csch", "CubeRoot", "Curl", "Cyclotomic", "Decrement", "Default",
+			"Defer", "Definition", "Delete", "DeleteCases", "DeleteDuplicates", "Denominator", "Depth", "Derivative",
 			"DesignMatrix", "Det", "Diagonal", "DiagonalMatrix", "DiceDissimilarity", "Differences", "DigitQ",
 			"Dimensions", "DiracDelta", "DiscreteDelta", "DiscreteUniformDistribution", "DirectedInfinity", "Direction",
 			"Discriminant", "Distribute", "Distributed", "Div", "Divide", "DivideBy", "Divisible", "Divisors",
@@ -383,6 +383,12 @@ public class AST2Expr {
 						return expr;
 					}
 					break;
+				case ID.Optional:
+					expr = PatternMatching.Optional.CONST.evaluate(ast, fEngine);
+					if (expr.isPresent()) {
+						return expr;
+					}
+					break;
 				case ID.Blank:
 					expr = PatternMatching.Blank.CONST.evaluate(ast, fEngine);
 					if (expr.isPresent()) {
@@ -425,8 +431,7 @@ public class AST2Expr {
 			final PatternNode pn = (PatternNode) node;
 			SymbolNode sn = pn.getSymbol();
 			if (sn == null) {
-				return F.$b(convertNode(pn.getConstraint())); // TODO ,
-																// p2n.isDefault());
+				return F.$b(convertNode(pn.getConstraint()), pn.isDefault()); 
 			}
 			ASTNode defaultValue = pn.getDefaultValue();
 			if (defaultValue != null) {

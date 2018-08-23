@@ -165,7 +165,6 @@ public class Integrate extends AbstractFunctionEvaluator {
 
 			final IASTAppendable ast = holdallAST.setAtClone(1, arg1);
 			ast.set(2, arg2);
-			// if (ast.arg2().isSymbol()) {
 			final IExpr x = ast.arg2();
 
 			if (arg1.isNumber()) {
@@ -253,172 +252,34 @@ public class Integrate extends AbstractFunctionEvaluator {
 					// return temp;
 					// }
 				}
-				if (INT_FUNCTIONS.contains(fx.head())) {
-					// if (fx.isAST1() && x.equals(fx.arg1())) {
-					// IExpr head = fx.head();
-					// IExpr temp = integrate1ArgumentFunctions(head, x);
-					// if (temp.isPresent()) {
-					// return temp;
-					// }
-					// }
-					if (!calledRubi) {
-						result = integrateByRubiRules(ast, F.NIL);
-						if (result.isPresent()) {
-							return result;
-						}
-					}
-				}
-				// >>>
-				if (fx.isTimes() || fx.isPower()) {
-					// deleted - Rubi seems to work w/o second try: result = integrateByRubiRules(ast,
-					// (IAST) fxExpanded);
-					if (!calledRubi) {
-						result = integrateByRubiRules(ast, F.NIL);
-						if (result.isPresent()) {
-							return result;
-						}
-						calledRubi = true;
-					}
-				}
-				// <<<
-				IExpr fxExpanded = F.expand(fx, false, false, false);
-				if (fxExpanded.isAST()) {
-					if (fxExpanded.isPlus()) {
-						// if (fxExpanded != fx) {
-						// if (fxExpanded.isPolynomial(x)) {
-						// if (fx.isTimes()||fx.isPower()) {
-						// // deleted - Rubi seems to work w/o second try: result = integrateByRubiRules(ast,
-						// // (IAST) fxExpanded);
-						// if (!calledRubi) {
-						// result = integrateByRubiRules(ast, F.NIL);
-						// if (result.isPresent()) {
-						// return result;
-						// }
-						// calledRubi = true;
-						// }
-						// }
-						// }
-						// }
-
-						// Integrate[a_+b_+...,x_] ->
-						// Integrate[a,x]+Integrate[b,x]+...
-						return ((IAST) fxExpanded).mapThread(F.Integrate(null, x), 1);
-					}
-
-					final IAST arg1AST = (IAST) fxExpanded;
-					// if (arg1AST.isAST1() && x.equals(arg1AST.arg1())) {
-					// IExpr head = arg1AST.head();
-					// IExpr temp = integrate1ArgumentFunctions(head, x);
-					// if (temp.isPresent()) {
-					// return temp;
-					// }
-					// }
-					// if (arg1AST.isPower()) {
-					// if (x.equals(arg1AST.arg1()) && arg1AST.isFreeAt(2,
-					// x)) {
-					// IExpr i = arg1AST.arg2();
-					// if (!i.isMinusOne()) {
-					// // Integrate[x_ ^ i_IntegerQ, x_Symbol] -> 1/(i+1) *
-					// x ^(i+1)
-					// i = Plus(i, C1);
-					// return F.Times(F.Power(i, F.CN1), F.Power(x, i));
-					// }
-					// }
-					// if (x.equals(arg1AST.arg2()) && arg1AST.isFreeAt(1,
-					// x)) {
-					// if (arg1AST.equalsAt(1, F.E)) {
-					// // E^x
-					// return arg1;
-					// }
-					// // a^x / Log(a)
-					// return F.Times(arg1AST,
-					// F.Power(F.Log(arg1AST.arg1()), F.CN1));
-					//
-					// }
-					// }
-
-					if (arg1AST.isTimes()) {
-						// Integrate[a_*y_,x_Symbol] -> a*Integrate[y,x] /; FreeQ[a,x]
-						IASTAppendable filterCollector = F.TimesAlloc(arg1AST.size());
-						IASTAppendable restCollector = F.TimesAlloc(arg1AST.size());
-						arg1AST.filter(filterCollector, restCollector, new Predicate<IExpr>() {
-							@Override
-							public boolean test(IExpr input) {
-								return input.isFree(x, true);
-							}
-						});
-						if (filterCollector.size() > 1) {
-							if (restCollector.size() > 1) {
-								filterCollector.append(F.Integrate(restCollector.getOneIdentity(F.C0), x));
-							}
-							return filterCollector;
-						}
-
-						// IExpr temp = integrateTimesTrigFunctions(arg1AST, x);
-						// if (temp.isPresent()) {
-						// return temp;
-						// }
-					}
-
-					// if (!ast.equalsAt(1, fxExpanded)) {
-					// return integrateByRubiRules(ast);
-					// }
-
-					final IExpr header = arg1AST.head();
-					if (arg1AST.size() >= 3) {
-						if (header == F.Times || header == F.Power) {
-							if (!arg1AST.isEvalFlagOn(IAST.IS_DECOMPOSED_PARTIAL_FRACTION) && ast.arg2().isSymbol()) {
-								IExpr[] parts = Algebra.fractionalParts(arg1, true);
-								if (parts != null) {
-									// try Rubi rules first
-									if (!parts[0].isPolynomial(x) || !parts[1].isPolynomial(x)) {
-										if (!calledRubi) {
-											result = integrateByRubiRules(ast, F.NIL);
-											if (result.isPresent()) {
-												return result;
-											}
-											calledRubi = true;
-										}
-									}
-
-									IExpr apartPlus = Algebra.partialFractionDecompositionRational(
-											new PartialFractionIntegrateGenerator(x), parts, x);
-
-									if (apartPlus.isPresent() && !apartPlus.isAST(F.Integrate)) {
-										if (ast.equals(apartPlus)) {
-											return returnIntegrate(ast, evaled);
-										}
-										return apartPlus;
-									}
-									if (parts[0].isPolynomial(x) && parts[1].isPolynomial(x)) {
-										if (!calledRubi) {
-											result = integrateByRubiRules(ast, F.NIL);
-											if (result.isPresent()) {
-												return result;
-											}
-											calledRubi = true;
-										}
-									}
-									// if (arg1AST.isTimes()) {
-									// result = integratePolynomialByParts(ast, arg1AST, x);
-									// if (result.isPresent()) {
-									// return result;
-									// }
-									// }
-								}
-							}
-						}
-					}
-				}
-
+				// if (INT_FUNCTIONS.contains(fx.head())) {
+				// if (fx.isAST1() && x.equals(fx.arg1())) {
+				// IExpr head = fx.head();
+				// IExpr temp = integrate1ArgumentFunctions(head, x);
+				// if (temp.isPresent()) {
+				// return temp;
+				// }
+				// }
 				if (!calledRubi) {
-					// return integrateByRubiRules(ast, F.NIL);
-					result = integrateByRubiRules(ast, F.NIL);
+					result = integrateByRubiRules(fx, x, ast);
 					if (result.isPresent()) {
 						return result;
 					}
-					calledRubi = true;
 				}
+				// }
+				// >>>
+				result = callRestIntegrate(fx, x, ast, calledRubi);
+				if (result.isPresent()) {
+					return result;
+				}
+				// if (!calledRubi) {
+				// // return integrateByRubiRules(ast, F.NIL);
+				// result = integrateByRubiRules(ast, F.NIL);
+				// if (result.isPresent()) {
+				// return result;
+				// }
+				// calledRubi = true;
+				// }
 			}
 			IExpr fx = engine.evaluate(F.Expand(ast.arg1()));
 			if (fx.isPlus()) {
@@ -431,6 +292,63 @@ public class Integrate extends AbstractFunctionEvaluator {
 		} finally {
 			engine.setNumericMode(numericMode);
 		}
+	}
+
+	private static IExpr callRestIntegrate(IAST arg1, final IExpr x, final IAST ast, boolean calledRubi) {
+		IExpr fxExpanded = F.expand(arg1, false, false, false);
+		if (fxExpanded.isAST()) {
+			if (fxExpanded.isPlus()) {
+				// Integrate[a_+b_+...,x_] ->
+				// Integrate[a,x]+Integrate[b,x]+...
+				return ((IAST) fxExpanded).mapThread(F.Integrate(null, x), 1);
+			}
+
+			final IAST arg1AST = (IAST) fxExpanded;
+			if (arg1AST.isTimes()) {
+				// Integrate[a_*y_,x_Symbol] -> a*Integrate[y,x] /; FreeQ[a,x]
+				IASTAppendable filterCollector = F.TimesAlloc(arg1AST.size());
+				IASTAppendable restCollector = F.TimesAlloc(arg1AST.size());
+				arg1AST.filter(filterCollector, restCollector, new Predicate<IExpr>() {
+					@Override
+					public boolean test(IExpr input) {
+						return input.isFree(x, true);
+					}
+				});
+				if (filterCollector.size() > 1) {
+					if (restCollector.size() > 1) {
+						filterCollector.append(F.Integrate(restCollector.getOneIdentity(F.C0), x));
+					}
+					return filterCollector;
+				}
+
+				IExpr temp = integrateTimesTrigFunctions(arg1AST, x);
+				if (temp.isPresent()) {
+					return temp;
+				}
+			}
+
+			final IExpr header = arg1AST.head();
+			if (arg1AST.size() >= 3) {
+				if (header == F.Times || header == F.Power) {
+					if (!arg1AST.isEvalFlagOn(IAST.IS_DECOMPOSED_PARTIAL_FRACTION) && ast.arg2().isSymbol()) {
+						IExpr[] parts = Algebra.fractionalParts(arg1, true);
+						if (parts != null) {
+
+							IExpr apartPlus = Algebra.partialFractionDecompositionRational(
+									new PartialFractionIntegrateGenerator(x), parts, x);
+
+							if (apartPlus.isPresent() && !apartPlus.isAST(F.Integrate)) {
+								if (ast.equals(apartPlus)) {
+									return ast;
+								}
+								return apartPlus;
+							}
+						}
+					}
+				}
+			}
+		}
+		return F.NIL;
 	}
 
 	private IExpr returnIntegrate(final IAST ast, boolean evaled) {
@@ -564,7 +482,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 *            the symbol to get the indefinite integral for.
 	 * @return <code>F.NIL</code> if no trigonometric funtion could be found.
 	 */
-	private IExpr integrateTimesTrigFunctions(final IAST timesAST, IExpr arg2) {
+	private static IExpr integrateTimesTrigFunctions(final IAST timesAST, IExpr arg2) {
 		Predicate<IExpr> isTrigFunction = Predicates.isAST(new ISymbol[] { F.Cos, F.Sin });
 		if (timesAST.isMember(isTrigFunction, false)) {
 			// use a symbol which is not in the symbols map
@@ -880,12 +798,10 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * expression.
 	 * 
 	 * @param ast
-	 * @param secondTry
-	 *            do a second attempt with an equivalent expression
 	 * @return
 	 */
-	private static IExpr integrateByRubiRules(IAST ast, IAST secondTry) {
-		ISymbol head = ast.arg1().topHead();
+	private static IExpr integrateByRubiRules(IAST arg1, IExpr x, IAST ast) {
+		ISymbol head = arg1.topHead();
 		EvalEngine engine = EvalEngine.get();
 		int limit = engine.getRecursionLimit();
 		try {
@@ -898,7 +814,11 @@ public class Integrate extends AbstractFunctionEvaluator {
 				if (engine.REMEMBER_AST_CACHE != null) {
 					IExpr result = engine.REMEMBER_AST_CACHE.getIfPresent(ast);
 					if (result != null) {
-						// RecursionLimitExceeded.throwIt(engine.getRecursionCounter(), ast);
+						result = callRestIntegrate(arg1, x, ast, true);
+						if (result.isPresent()) {
+							return result;
+						}
+						RecursionLimitExceeded.throwIt(engine.getRecursionCounter(), ast);
 						return F.NIL;
 					}
 				} else {
@@ -920,9 +840,9 @@ public class Integrate extends AbstractFunctionEvaluator {
 					// + " exceeded: " + ast.toString());
 					engine.printMessage("Integrate(Rubi recursion): " + rle.getMessage());
 					engine.setRecursionLimit(limit);
-					if (secondTry.isPresent()) {
-						return integrateByRubiRules(secondTry, F.NIL);
-					}
+					// if (secondTry.isPresent()) {
+					// return integrateByRubiRules(secondTry, F.NIL);
+					// }
 				} catch (RuntimeException rex) {
 					if (Config.SHOW_STACKTRACE) {
 						rex.printStackTrace();
@@ -930,9 +850,9 @@ public class Integrate extends AbstractFunctionEvaluator {
 					engine.printMessage("Integrate Rubi recursion limit " + Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT
 							+ " RuntimeException: " + ast.toString());
 					engine.setRecursionLimit(limit);
-					if (secondTry.isPresent()) {
-						return integrateByRubiRules(secondTry, F.NIL);
-					}
+					// if (secondTry.isPresent()) {
+					// return integrateByRubiRules(secondTry, F.NIL);
+					// }
 				} finally {
 					engine.setRecursionLimit(limit);
 					if (newCache) {
