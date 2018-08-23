@@ -2189,11 +2189,11 @@ public final class Programming {
 			// final int moduleCounter = engine.incModuleCounter();
 			// final String varAppend = "$" + moduleCounter;
 			final java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables = new IdentityHashMap<ISymbol, IExpr>();
-			final java.util.Set<IExpr> renamedVarsSet = new HashSet<IExpr>();
+			// final java.util.Set<IExpr> renamedVarsSet = new HashSet<IExpr>();
 			// java.util.IdentityHashMap<ISymbol, ISymbol> renamedVars = new IdentityHashMap<ISymbol, ISymbol>();
 
 			try {
-				rememberWithVariables(intializerList, moduleVariables, renamedVarsSet, engine);
+				rememberWithVariables(intializerList, moduleVariables, engine);
 				// for (IExpr expr : renamedVarsSet) {
 				// if (expr.isSymbol()) {
 				// renamedVars.put((ISymbol) expr, F.$s(expr.toString() + varAppend));
@@ -2226,7 +2226,7 @@ public final class Programming {
 	 *            the resulting module variables map
 	 */
 	private static void rememberWithVariables(IAST variablesList, final java.util.Map<ISymbol, IExpr> variablesMap,
-			final java.util.Set<IExpr> renamedVars, EvalEngine engine) {
+			EvalEngine engine) {
 		ISymbol oldSymbol;
 		for (int i = 1; i < variablesList.size(); i++) {
 			// if (variablesList.get(i).isSymbol()) {
@@ -2241,10 +2241,10 @@ public final class Programming {
 					IExpr rightHandSide = setFun.arg2();
 					try {
 						IExpr temp = engine.evaluate(rightHandSide);
-						VariablesSet.addVariables(renamedVars, temp);
+						// VariablesSet.addVariables(renamedVars, temp);
 						variablesMap.put(oldSymbol, temp);
 					} catch (MathException me) {
-						if (Config.DEBUG) {
+						if (Config.SHOW_STACKTRACE) {
 							me.printStackTrace();
 						}
 						variablesMap.put(oldSymbol, rightHandSide);
