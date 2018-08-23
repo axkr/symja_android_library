@@ -318,7 +318,6 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	public boolean checkCondition(EvalEngine engine) {
 
 		if (fPatternCondition != null) {
-			// final EvalEngine engine = EvalEngine.get();
 			boolean traceMode = false;
 			try {
 				traceMode = engine.isTraceMode();
@@ -331,8 +330,16 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			} finally {
 				engine.setTraceMode(traceMode);
 			}
+		} else {
+			boolean traceMode = false;
+			try {
+				traceMode = engine.isTraceMode();
+				engine.setTraceMode(false);
+				return checkRHSCondition(engine);
+			} finally {
+				engine.setTraceMode(traceMode);
+			}
 		}
-		return true;
 	}
 
 	/**
@@ -1048,7 +1055,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			}
 			for (int i = 1; i < lhsPatternSize; i++) {
 				IExpr temp = lhsPatternAST.get(i);
-				if (!(temp instanceof IPatternObject)) {
+				if (temp.isFreeOfPatterns()) {
 					final int index = i;
 					// try to find a matching sub-expression
 					return lhsEvalAST.exists((x, j) -> {
