@@ -1683,11 +1683,11 @@ public class Algebra {
 			}
 
 			Object[] objects = jas.factorTerms(polyRat);
-			GenPolynomial<edu.jas.arith.BigInteger> poly = (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
-			FactorAbstract<edu.jas.arith.BigInteger> factorAbstract = FactorFactory
-					.getImplementation(edu.jas.arith.BigInteger.ONE);
 			SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
 			try {
+				GenPolynomial<edu.jas.arith.BigInteger> poly = (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
+				FactorAbstract<edu.jas.arith.BigInteger> factorAbstract = FactorFactory
+						.getImplementation(edu.jas.arith.BigInteger.ONE);
 				if (factorSquareFree) {
 					map = factorAbstract.squarefreeFactors(poly);// factors(poly);
 				} else {
@@ -1854,17 +1854,19 @@ public class Algebra {
 			Object[] objects = jas.factorTerms(polyRat);
 			java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
 			java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
-			GenPolynomial<edu.jas.arith.BigInteger> poly = (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
-			FactorAbstract<edu.jas.arith.BigInteger> factorAbstract = FactorFactory
-					.getImplementation(edu.jas.arith.BigInteger.ONE);
 			SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
 			try {
+				GenPolynomial<edu.jas.arith.BigInteger> poly = (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
+				FactorAbstract<edu.jas.arith.BigInteger> factorAbstract = FactorFactory
+						.getImplementation(edu.jas.arith.BigInteger.ONE);
+
 				if (factorSquareFree) {
 					map = factorAbstract.squarefreeFactors(poly);// factors(poly);
 				} else {
 					map = factorAbstract.factors(poly);
 				}
 			} catch (RuntimeException rex) {
+				// JAS may throw RuntimeExceptions
 				return F.List(expr);
 			}
 			IASTAppendable result = F.ListAlloc(map.size() + 1);
@@ -4236,15 +4238,16 @@ public class Algebra {
 	 */
 	public static IAST factorModulus(JASModInteger jas, ModLongRing modIntegerRing, GenPolynomial<ModLong> poly,
 			boolean factorSquareFree) {
-		FactorAbstract<ModLong> factorAbstract = FactorFactory.getImplementation(modIntegerRing);
 		SortedMap<GenPolynomial<ModLong>, Long> map;
 		try {
+			FactorAbstract<ModLong> factorAbstract = FactorFactory.getImplementation(modIntegerRing);
 			if (factorSquareFree) {
 				map = factorAbstract.squarefreeFactors(poly);
 			} else {
 				map = factorAbstract.factors(poly);
 			}
 		} catch (RuntimeException rex) {
+			// JAS may throw RuntimeExceptions
 			return F.NIL;
 		}
 		IASTAppendable result = F.TimesAlloc(map.size());
@@ -4590,6 +4593,11 @@ public class Algebra {
 				return pf.getResult();
 			}
 		} catch (JASConversionException e) {
+			if (Config.DEBUG) {
+				e.printStackTrace();
+			}
+		} catch (RuntimeException e) {
+			// JAS may throw RuntimeExceptions
 			if (Config.DEBUG) {
 				e.printStackTrace();
 			}

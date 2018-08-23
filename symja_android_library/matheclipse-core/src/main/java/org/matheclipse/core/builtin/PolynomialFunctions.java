@@ -2363,6 +2363,7 @@ public class PolynomialFunctions {
 			result = QuarticSolver.createSet(result);
 			return result;
 		} catch (RuntimeException rex) {
+			// JAS may throw RuntimeExceptions
 			result = rootsOfExprPolynomial(expr, variables, true);
 		}
 		if (result.isPresent()) {

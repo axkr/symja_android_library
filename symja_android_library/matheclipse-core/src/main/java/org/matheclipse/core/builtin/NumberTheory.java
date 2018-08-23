@@ -3489,6 +3489,11 @@ public final class NumberTheory {
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
+			} catch (RuntimeException e) {
+				// JAS may throw RuntimeExceptions
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
 			}
 			return F.NIL;
 		}
