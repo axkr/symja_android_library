@@ -49,9 +49,6 @@ public interface ProductLogRules {
       oo),
     // ProductLog(ComplexInfinity)=Infinity
     ISet(ProductLog(CComplexInfinity),
-      oo),
-    // ProductLog(x_)*E^ProductLog(x_):=x
-    ISetDelayed(Times(Exp(ProductLog(x_)),ProductLog(x_)),
-      x)
+      oo)
   );
 }

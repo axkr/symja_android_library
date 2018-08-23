@@ -11,7 +11,6 @@ ProductLog(Infinity) = Infinity,
 ProductLog(-Infinity) = -Infinity,
 ProductLog(I*Infinity) = Infinity,
 ProductLog(-I*Infinity) = Infinity,
-ProductLog(ComplexInfinity) = Infinity,
-ProductLog(x_) * E^ProductLog(x_) := x
+ProductLog(ComplexInfinity) = Infinity
 
 }
