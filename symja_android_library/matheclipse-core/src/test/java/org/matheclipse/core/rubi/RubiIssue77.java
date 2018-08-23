@@ -1,9 +1,56 @@
-package org.matheclipse.core.rubi; 
+package org.matheclipse.core.rubi;
+
+import org.matheclipse.core.interfaces.IExpr;
 
 //Integrate[x*(2*c+3*d*x)*(a+c*x^2+d*x^3)^n,x]
+/**
+ * 
+ * <pre>
+ *   Int[(Pp_)*(Qq_)^(m_.), x_Symbol] := 
+ *       With[{p = Expon[Pp, x], q = Expon[Qq, x]}, Simp[(Coeff[Pp, x, p]*x^(p - q + 1)*Qq^(m + 1))/((p + m*q + 1)*Coeff[Qq, x, q]), x] 
+ *                 /; NeQ[p + m*q + 1, 0] && EqQ[(p + m*q + 1)*Coeff[Qq, x, q]*Pp, Coeff[Pp, x, p]*x^(p - q)*((p - q + 1)*Qq + (m + 1)*x*D[Qq, x])]] 
+ *       /; FreeQ[m, x] && PolyQ[Pp, x] && PolyQ[Qq, x] && NeQ[m, -1]
+ * </pre>
+ * 
+ * <pre>
+ * IIntegrate(1588,Int(Times($p("§pp"),Power($p("§qq"),m_DEFAULT)),x_Symbol),
+ *   Condition(With(List(Set(p,Expon($s("§pp"),x)),Set(q,Expon($s("§qq"),x))),
+ *              Condition(Simp(Times(Coeff($s("§pp"),x,p),Power(x,Plus(p,Negate(q),C1)),Power($s("§qq"),Plus(m,C1)),Power(Times(Plus(p,Times(m,q),C1),Coeff($s("§qq"),x,q)),-1)),x),And(NeQ(Plus(p,Times(m,q),C1),C0),EqQ(Times(Plus(p,Times(m,q),C1),Coeff($s("§qq"),x,q),$s("§pp")),Times(Coeff($s("§pp"),x,p),Power(x,Plus(p,Negate(q))),Plus(Times(Plus(p,Negate(q),C1),$s("§qq")),Times(Plus(m,C1),x,D($s("§qq"),x)))))))),And(FreeQ(m,x),PolyQ($s("§pp"),x),PolyQ($s("§qq"),x),NeQ(m,CN1)))),
+ * </pre>
+ */
 public class RubiIssue77 extends AbstractRubiTestCase {
 
-public RubiIssue77(String name) { super(name, false); }
+	public RubiIssue77(String name) {
+		super(name, false);
+	}
+
+	public void testRuleNo1588a() {
+		try {
+			// TODO this test should Print only 4 combinations but print 6 combinations
+			//
+			// {x,(2*c+3*d*x)*(a+c*x^2+d*x^3)^n,1}
+			// {2*c+3*d*x,x*(a+c*x^2+d*x^3)^n,1}
+			// {(a+c*x^2+d*x^3)^n,x*(2*c+3*d*x),1}
+			// {x*(2*c+3*d*x),a+c*x^2+d*x^3,n}
+			// {x*(a+c*x^2+d*x^3)^n,2*c+3*d*x,1}
+			// {(2*c+3*d*x)*(a+c*x^2+d*x^3)^n,x,1}
+			IExpr expr = (IExpr) fEvaluator
+					.eval("myfunction[(pp_)*(qq_)^(m_.), x_Symbol] := {pp,qq,m}/;Print[{pp,qq,m}]");
+			IExpr lhsEval = (IExpr) fEvaluator.eval("myfunction[x*(2*c+3*d*x)*(a+c*x^2+d*x^3)^n, x]");
+			assertEquals(lhsEval.toString(), "myfunction[x*(2*c+3*d*x)*(a+c*x^2+d*x^3)^n,x]");
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+
+	public void testRuleNo1588b() {
+		try {
+			IExpr lhsEval = (IExpr) fEvaluator.eval("Integrate[x*(2*c+3*d*x)*(a+c*x^2+d*x^3)^n,x]");
+			assertEquals(lhsEval.toString(), "(a+c*x^2+d*x^3)^(1+n)/(1+n)");
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
 
 	public void test0001() {
 		check("Integrate::Coeff[x*(2*c + 3*d*x), x, 2]", "3*d");
@@ -370,7 +417,8 @@ public RubiIssue77(String name) { super(name, false); }
 	}
 
 	public void test0092() {
-		check("Integrate::MergeFactors[(1 + n)^(-1), (a + c*x^2 + d*x^3)^(1 + n)]", "(a + c*x^2 + d*x^3)^(1 + n)/(1 + n)");
+		check("Integrate::MergeFactors[(1 + n)^(-1), (a + c*x^2 + d*x^3)^(1 + n)]",
+				"(a + c*x^2 + d*x^3)^(1 + n)/(1 + n)");
 	}
 
 	public void test0093() {
@@ -490,7 +538,8 @@ public RubiIssue77(String name) { super(name, false); }
 	}
 
 	public void test0122() {
-		check("Integrate::NormalizeSumFactors[(a + c*x^2 + d*x^3)^(1 + n)/(1 + n)]", "(a + c*x^2 + d*x^3)^(1 + n)/(1 + n)");
+		check("Integrate::NormalizeSumFactors[(a + c*x^2 + d*x^3)^(1 + n)/(1 + n)]",
+				"(a + c*x^2 + d*x^3)^(1 + n)/(1 + n)");
 	}
 
 	public void test0123() {
@@ -842,7 +891,8 @@ public RubiIssue77(String name) { super(name, false); }
 	}
 
 	public void test0210() {
-		check("Integrate::SignOfFactor[(a + c*x^2 + d*x^3)^(1 + n)/(1 + n)]", "{1, (a + c*x^2 + d*x^3)^(1 + n)/(1 + n)}");
+		check("Integrate::SignOfFactor[(a + c*x^2 + d*x^3)^(1 + n)/(1 + n)]",
+				"{1, (a + c*x^2 + d*x^3)^(1 + n)/(1 + n)}");
 	}
 
 	public void test0211() {
@@ -914,7 +964,8 @@ public RubiIssue77(String name) { super(name, false); }
 	}
 
 	public void test0228() {
-		check("Integrate::SimpHelp[(3*(a + c*x^2 + d*x^3)^(1 + n))/(3 + 3*n), x]", "(a + c*x^2 + d*x^3)^(1 + n)/(1 + n)");
+		check("Integrate::SimpHelp[(3*(a + c*x^2 + d*x^3)^(1 + n))/(3 + 3*n), x]",
+				"(a + c*x^2 + d*x^3)^(1 + n)/(1 + n)");
 	}
 
 	public void test0229() {
@@ -1060,4 +1111,33 @@ public RubiIssue77(String name) { super(name, false); }
 	public void test0264() {
 		check("Integrate::TrigQ[(a + c*x^2 + d*x^3)^(1 + n)]", "False");
 	}
+
+	public void test0265() {
+		check("PolynomialQ[(2*c+3*d*x)*(a+c*x^2+d*x^3)^n,x]", "False");
+		check("Integrate::PolyQ[(2*c+3*d*x)*(a+c*x^2+d*x^3)^n,x]", "False");
+	}
+
+	public void test0266() {
+		check("FreeQ[1,x]&&Integrate::PolyQ[(2*c+3*d*x)*(a+c*x^2+d*x^3)^n,x]&&Integrate::PolyQ[x,x]&&Integrate::NeQ[1,-1]",
+				"False");
+	}
+
+	public void test0268a() {
+		check("Integrate::Coeff[x,x,1]*x^(1+(-1)*1+(-1)*3)*((1+(-1)*1+(-1)*3+1)*(2*c+3*d*x)*(a+c*x^2+d*x^3)+(1+1)*x*(a+c*x^2+d*x^3)*D[2*c+3*d*x,x]+(1+n)*x*(2*c+3*d*x)*D[a+c*x^2+d*x^3,x])", //
+				"((1+n)*x*(2*c+3*d*x)*(2*c*x+3*d*x^2)+6*d*x*(a+c*x^2+d*x^3)-2*(2*c+3*d*x)*(a+c*x^\n" + "2+d*x^3))/x^3");
+
+		check("Integrate::EqQ[3*d^2*(3+3*n)*x,((1+n)*x*(2*c+3*d*x)*(2*c*x+3*d*x^2)+6*d*x*(a+c*x^2+d*x^3)-2*(2*c+3*d*x)*(a+c*x^2+d*x^3))/x^3]", //
+				"False");
+	}
+
+	public void test0268b() {
+		check("With[{a = 3}, True /; a > 1]", //
+				"True");
+	}
+
+	public void test0268c() {
+		check("D[2*c+3*d*x,x]+(1+n)*x*(2*c+3*d*x)*D[a+c*x^2+d*x^3,x]", //
+				"3*d+(1+n)*x*(2*c+3*d*x)*(2*c*x+3*d*x^2)");
+	}
+
 }
