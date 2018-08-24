@@ -23,7 +23,7 @@ import junit.framework.TestCase;
  */
 public abstract class AbstractRubiTestCase extends TestCase {
 
-	private ExprEvaluator fEvaluator;
+	protected ExprEvaluator fEvaluator;
 	/**
 	 * Timeout limit in seconds as the default value for Symja expression evaluation.
 	 */
@@ -157,7 +157,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
 	 * @param expectedResult The expected antiderivative that Rubi calculates
 	 */
 	public void check(String evalString, String expectedResult, int... ruleNumberUsed) {
-		// TODO: Axel needs to implement this
+		check(evalString, expectedResult);
 	}
 
 	/**
