@@ -154,8 +154,9 @@ public abstract class AbstractRubiTestCase extends TestCase {
 	 * Tests if in the evaluation of the integral the same rule is used as is used by Mathematica Rubi
 	 * @param evalString String of the form "Integrate(expr, x)
 	 * @param ruleNumberUsed The internal Rubi rule that was used to solve this problem
+	 * @param expectedResult The expected antiderivative that Rubi calculates
 	 */
-	public void check(String evalString, int ruleNumberUsed) {
+	public void check(String evalString, int ruleNumberUsed, String expectedResult) {
 		// TODO: Axel needs to implement this
 	}
 
