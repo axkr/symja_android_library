@@ -27,7 +27,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
 	/**
 	 * Timeout limit in seconds as the default value for Symja expression evaluation.
 	 */
-	private long fSeconds = 1000;
+	private long fSeconds = 10;
 	private boolean isRelaxedSyntax;
 
 	public AbstractRubiTestCase(String name, boolean isRelaxedSyntax) {
