@@ -186,7 +186,6 @@ public class RubiIssue72 extends AbstractRubiTestCase {
 	}
 
 	public void test0045() {
-		check("Together[(2 + 2*x)/(2*Sqrt[2])]", "(1+x)/Sqrt[2]");
 		check("ExpandAll[(1+x)/Sqrt[2] ]", "1/Sqrt(2)+x/Sqrt(2)");
 		check("Exponent[(1+x)/Sqrt[2],x]", "1");
 		check("Exponent[(1+x)/2,x, List]", "{0, 1}");

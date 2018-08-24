@@ -559,19 +559,25 @@ public class RulesData implements Serializable {
 									.println(" COMPLEX: " + pmEvaluator.getLHS().toString() + " := " + rhs.toString());
 						}
 					}
+					// if (pmEvaluator.getLHSPriority()==432) {
+					// continue;
+					// }
 					if (Config.SHOW_STACKTRACE) {
 						if (isShowPriority(pmEvaluator)) {
 							System.out.print("try: " + pmEvaluator.getLHSPriority() + " - ");
 						}
-						if (pmEvaluator.getLHSPriority()==4574) {
-							System.out.println("Debug from this line");
-						}
+						// if (pmEvaluator.getLHSPriority() == 432) {
+						// System.out.println(pmEvaluator.toString());
+						// System.out.println(expr);
+						// System.out.println("Debug from this line");
+						// }
 					}
 					result = pmEvaluator.eval(expr, engine);
 					if (result.isPresent()) {
 						if (Config.SHOW_STACKTRACE) {
 							if (isShowPriority(pmEvaluator)) {
-								System.out.println("matched: " + pmEvaluator.getLHSPriority()+": "+pmEvaluator.toString());
+								System.out.println(
+										"matched: " + pmEvaluator.getLHSPriority() + ": " + pmEvaluator.toString());
 							}
 						}
 						if (showSteps) {
@@ -586,10 +592,10 @@ public class RulesData implements Serializable {
 							}
 						}
 						return result;
-					}else {
+					} else {
 						if (Config.SHOW_STACKTRACE) {
 							if (isShowPriority(pmEvaluator)) {
-								System.out.print("not matched: " + pmEvaluator.getLHSPriority()+" ");
+								System.out.print("not matched: " + pmEvaluator.getLHSPriority() + " ");
 							}
 						}
 					}

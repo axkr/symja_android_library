@@ -963,9 +963,9 @@ public class MainTestCase extends AbstractTestCase {
 
 	public void testSystem081() {
 		check("Inverse(s*{{1,0,0},{0,1,0},{0,0,1}}-{{-1,1,1},{-4,-4,1},{1,1,1}})",
-				"{{(5-3*s-s^2)/(10-s-4*s^2-s^3),s/(-10+s+4*s^2+s^3),(5+s)/(-10+s+4*s^2+s^3)},\n"
-						+ " {(5-4*s)/(-10+s+4*s^2+s^3),(2-s^2)/(10-s-4*s^2-s^3),(-3+s)/(-10+s+4*s^2+s^3)},\n"
-						+ " {-s/(10-s-4*s^2-s^3),(-2-s)/(10-s-4*s^2-s^3),(8+5*s+s^2)/(-10+s+4*s^2+s^3)}}");
+				"{{(5-3*s-s^2)/(10-s-4*s^2-s^3),s/(-10+s+4*s^2+s^3),(5+s)/(-10+s+4*s^2+s^3)},\n" + 
+				" {(5-4*s)/(-10+s+4*s^2+s^3),(2-s^2)/(10-s-4*s^2-s^3),(-3+s)/(-10+s+4*s^2+s^3)},\n" + 
+				" {-s/(10-s-4*s^2-s^3),(-2-s)/(10-s-4*s^2-s^3),(8+5*s+s^2)/(-10+s+4*s^2+s^3)}}");
 		check("N(Inverse({{1,2.0},{3,4}}),50)", "{{-2,1},\n" + " {1.5,-5e-1}}");
 
 		check("Inverse({{1,2},{3,4}})", "{{-2,1},\n" + " {3/2,-1/2}}");
@@ -1590,7 +1590,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("Integrate(1/3*(2-x)*(x^2-x+1)^(-1)+1/3*(x+1)^(-1),x)", //
 				"Log(1+x)/3-Log(1-x+x^2)/6");
 		check("Integrate(E^x*(2-x^2),x)", //
-				"2*E^x-E^x*(2-2*x+x^2)");
+				"2*E^x*x-E^x*x^2");
 		check("D(2*E^x-Gamma(3,-x),x)", //
 				"2*E^x-2*E^x*(-1+x)-2*E^x*(1-x+x^2/2)");
 		check("Integrate((x^2+1)*Log(x),x)", //
@@ -1625,15 +1625,15 @@ public class MainTestCase extends AbstractTestCase {
 		check("Integrate(E^(a*x),x)", //
 				"E^(a*x)/a");
 		check("Integrate(x*E^(a*x),x)", //
-				"(-E^(a*x)*(1-a*x))/a^2");
+				"-E^(a*x)/a^2+(E^(a*x)*x)/a");
 		check("Integrate(x*E^x,x)", //
-				"-E^x*(1-x)");
+				"-E^x+E^x*x");
 		check("Integrate(x^2*E^x,x)", //
-				"E^x*(2-2*x+x^2)");
+				"2*E^x-2*E^x*x+E^x*x^2");
 		check("Integrate(x^2*E^(a*x),x)", //
-				"(E^(a*x)*(2-2*a*x+a^2*x^2))/a^3");
+				"(2*E^(a*x))/a^3+(-2*E^(a*x)*x)/a^2+(E^(a*x)*x^2)/a");
 		check("Integrate(x^3*E^(a*x),x)", //
-				"(-E^(a*x)*(6-6*a*x+3*a^2*x^2-a^3*x^3))/a^4");
+				"(-6*E^(a*x))/a^4+(6*E^(a*x)*x)/a^3+(-3*E^(a*x)*x^2)/a^2+(E^(a*x)*x^3)/a");
 		check("(-1.0)/48", //
 				"-0.02083");
 

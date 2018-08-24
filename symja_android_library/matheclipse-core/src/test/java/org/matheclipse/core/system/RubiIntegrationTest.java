@@ -653,7 +653,8 @@ public class RubiIntegrationTest extends AbstractTestCase {
 	}
 
 	public void testRationalFunction003() {
-		check("Integrate((b+2*c*x)*(a+b*x+c*x^2)^m, x)", "(a+b*x+c*x^2)^(1+m)/(1+m)");
+		check("Integrate((b+2*c*x)*(a+b*x+c*x^2)^m, x)", //
+				"(a+b*x+c*x^2)^(1+m)/(1+m)");
 		check("D((a+b*x+c*x^2)^13/13,x)", //
 				"(b+2*c*x)*(a+b*x+c*x^2)^12");
 		check("Integrate((b+2*c*x)*(a+b*x+c*x^2)^12, x)", //

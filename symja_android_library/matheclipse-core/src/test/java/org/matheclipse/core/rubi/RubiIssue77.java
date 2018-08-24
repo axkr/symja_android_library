@@ -26,14 +26,11 @@ public class RubiIssue77 extends AbstractRubiTestCase {
 
 	public void testRuleNo1588a() {
 		try {
-			// TODO this test should Print only 4 combinations but print 6 combinations
-			//
-			// {x,(2*c+3*d*x)*(a+c*x^2+d*x^3)^n,1}
-			// {2*c+3*d*x,x*(a+c*x^2+d*x^3)^n,1}
-			// {(a+c*x^2+d*x^3)^n,x*(2*c+3*d*x),1}
-			// {x*(2*c+3*d*x),a+c*x^2+d*x^3,n}
-			// {x*(a+c*x^2+d*x^3)^n,2*c+3*d*x,1}
+			// prints 4 combinations
 			// {(2*c+3*d*x)*(a+c*x^2+d*x^3)^n,x,1}
+			// {x*(a+c*x^2+d*x^3)^n,2*c+3*d*x,1}
+			// {x*(2*c+3*d*x),a+c*x^2+d*x^3,n}
+			// {x*(2*c+3*d*x),(a+c*x^2+d*x^3)^n,1}
 			IExpr expr = (IExpr) fEvaluator
 					.eval("myfunction[(pp_)*(qq_)^(m_.), x_Symbol] := {pp,qq,m}/;Print[{pp,qq,m}]");
 			IExpr lhsEval = (IExpr) fEvaluator.eval("myfunction[x*(2*c+3*d*x)*(a+c*x^2+d*x^3)^n, x]");

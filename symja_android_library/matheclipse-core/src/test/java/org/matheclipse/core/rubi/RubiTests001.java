@@ -12,7 +12,7 @@ public class RubiTests001 extends AbstractRubiTestCase {
 	@Override
 	public void check(String evalString, String expectedResult) {
 		System.out.println(getName());
-		check(evalString, expectedResult, -1);
+		super.check(evalString, expectedResult);
 	}
 
 	// // {Sqrt(1+2*x), x, 1, (1+2*x)^(3/2)/3}

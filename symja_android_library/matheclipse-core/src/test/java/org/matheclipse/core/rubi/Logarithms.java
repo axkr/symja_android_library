@@ -266,7 +266,8 @@ public class Logarithms extends AbstractRubiTestCase {
 	public void test0045() {
 		check(//
 				"Integrate[Log[(a*(1 - c) + b*(1 + c)*x)/(a + b*x)]/(a^2 - b^2*x^2), x]", //
-				"PolyLog[2, 1 - (a*(1 - c) + b*(1 + c)*x)/(a + b*x)]/(2*a*b)", //
+				"PolyLog[2, 1 - (a*(1 - c) + b*(1 + c)*x)/(a + b*x)]/(2*a*b)", // rubi
+				"PolyLog[2,(c*(a-b*x))/(a+b*x)]/(2*a*b)", // 
 				2447);
 	}
 

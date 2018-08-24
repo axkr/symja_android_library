@@ -37,13 +37,25 @@ public abstract class AbstractRubiTestCase extends TestCase {
 		Config.PARSER_USE_LOWERCASE_SYMBOLS = isRelaxedSyntax;
 	}
 
-	private String printResult(IExpr result, String expectedResult) throws IOException {
+	private String printResult(IExpr result, String expectedResult, String manuallyCheckedResult) throws IOException {
 		// if (result.equals(F.Null)) {
 		// return "";
 		// }
 		if (result.equals(F.$Aborted)) {
 			return "TIMEOUT";
 		}
+
+		if (manuallyCheckedResult != null) {
+			manuallyCheckedResult = manuallyCheckedResult.trim();
+			if (manuallyCheckedResult.length() > 0) {
+				IExpr expected = fEvaluator.eval(manuallyCheckedResult);
+				if (result.equals(expected)) {
+					// the expressions are structurally equal
+					return expectedResult;
+				}
+			}
+		}
+
 		expectedResult = expectedResult.trim();
 		if (expectedResult.length() > 0) {
 			IExpr expected = fEvaluator.eval(expectedResult);
@@ -67,7 +79,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
 	/**
 	 * Evaluates the given string-expression and returns the result in <code>OutputForm</code>
 	 */
-	public String interpreter(final String inputExpression, final String expectedResult) {
+	public String interpreter(final String inputExpression, final String expectedResult, String manuallyCheckedResult) {
 		IExpr result;
 		final StringWriter buf = new StringWriter();
 		try {
@@ -80,11 +92,11 @@ public abstract class AbstractRubiTestCase extends TestCase {
 						new EvalControlledCallable(fEvaluator.getEvalEngine()));
 			}
 			if (result != null) {
-				return printResult(result, expectedResult);
+				return printResult(result, expectedResult, manuallyCheckedResult);
 			}
 		} catch (final AbortException re) {
 			try {
-				return printResult(F.$Aborted, expectedResult);
+				return printResult(F.$Aborted, expectedResult, manuallyCheckedResult);
 			} catch (IOException e) {
 				Validate.printException(buf, e);
 				System.err.println(buf.toString());
@@ -127,16 +139,16 @@ public abstract class AbstractRubiTestCase extends TestCase {
 	}
 
 	public void check(String evalString, String expectedResult) {
-		checkLength(evalString, expectedResult, -1);
+		checkLength(evalString, expectedResult, null, -1);
 	}
 
-	public void checkLength(String evalString, String expectedResult, int resultLength) {
+	public void checkLength(String evalString, String expectedResult, String manuallyCheckedResult, int resultLength) {
 		try {
 			if (evalString.length() == 0 && expectedResult.length() == 0) {
 				return;
 			}
 			// scriptEngine.put("STEPWISE",Boolean.TRUE);
-			String evaledResult = interpreter(evalString, expectedResult);
+			String evaledResult = interpreter(evalString, expectedResult, manuallyCheckedResult);
 
 			if (resultLength > 0 && evaledResult.length() > resultLength) {
 				evaledResult = evaledResult.substring(0, resultLength) + "<<SHORT>>";
@@ -152,12 +164,20 @@ public abstract class AbstractRubiTestCase extends TestCase {
 
 	/**
 	 * Tests if in the evaluation of the integral the same rule is used as is used by Mathematica Rubi
-	 * @param evalString String of the form "Integrate(expr, x)
-	 * @param ruleNumberUsed The internal Rubi rule that was used to solve this problem
-	 * @param expectedResult The expected antiderivative that Rubi calculates
+	 * 
+	 * @param evalString
+	 *            String of the form "Integrate(expr, x)
+	 * @param ruleNumberUsed
+	 *            The internal Rubi rule that was used to solve this problem
+	 * @param expectedResult
+	 *            The expected antiderivative that Rubi calculates
 	 */
 	public void check(String evalString, String expectedResult, int... ruleNumberUsed) {
 		check(evalString, expectedResult);
+	}
+
+	public void check(String evalString, String expectedResult, String manuallyCheckedResult, int... ruleNumberUsed) {
+		checkLength(evalString, expectedResult, manuallyCheckedResult, -1);
 	}
 
 	/**

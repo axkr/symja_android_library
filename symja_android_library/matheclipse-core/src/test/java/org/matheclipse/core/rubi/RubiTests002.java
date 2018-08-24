@@ -8,9 +8,8 @@ public class RubiTests002 extends AbstractRubiTestCase {
 	@Override
 	public void check(String evalString, String expectedResult) {
 		System.out.println(getName());
-		check(evalString, expectedResult, -1);
+		super.check(evalString, expectedResult);
 	}
-
 
 	// {x/Sqrt(9+4*x^2), x, 1, Sqrt(9+4*x^2)/4}
 	public void test00670() {

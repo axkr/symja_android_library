@@ -1639,6 +1639,8 @@ public class Algebra {
 				return result;
 			}
 			VariablesSet eVar = new VariablesSet(ast.arg1());
+			// List<IExpr> varList = r;
+			List<IExpr> varList = eVar.getVarList().copyTo();
 
 			IExpr expr = ast.arg1();
 			if (ast.isAST1()) {
@@ -1646,25 +1648,28 @@ public class Algebra {
 				if (expr.isAST()) {
 					IExpr[] parts = Algebra.getNumeratorDenominator((IAST) expr, engine);
 					if (!parts[1].isOne()) {
-						return F.Divide(F.Factor(parts[0]), F.Factor(parts[1]));
+						try {
+							IExpr numerator = factorExpr(F.Factor(parts[0]), parts[0], varList);
+							IExpr denomimator = factorExpr(F.Factor(parts[1]), parts[1], varList);
+							return F.Divide(numerator, denomimator);
+						} catch (JASConversionException e) {
+							if (Config.DEBUG) {
+								e.printStackTrace();
+							}
+							return expr;
+						}
 					}
 				}
 			}
 
 			// ASTRange r = new ASTRange(eVar.getVarList(), 1);
 			try {
-				// List<IExpr> varList = r;
-				List<IExpr> varList = eVar.getVarList().copyTo();
 
 				if (ast.isAST2()) {
 					return factorWithOption(ast, expr, varList, false, engine);
 				}
-				if (expr.isAST()) {
-					IExpr temp = factor((IAST) expr, varList, false);
-					F.REMEMBER_AST_CACHE.put(ast, temp);
-					return temp;
-				}
-				return expr;
+
+				return factorExpr(ast, expr, varList);
 
 			} catch (JASConversionException e) {
 				if (Config.DEBUG) {
@@ -1674,8 +1679,21 @@ public class Algebra {
 			return expr;
 		}
 
+		private IExpr factorExpr(final IAST ast, IExpr expr, List<IExpr> varList) {
+			if (expr.isAST()) {
+				// System.out.println("leafCount " + expr.leafCount());
+				IExpr temp = factor((IAST) expr, varList, false);
+				F.REMEMBER_AST_CACHE.put(ast, temp);
+				return temp;
+			}
+			return expr;
+		}
+
 		public static IExpr factor(IAST expr, List<IExpr> varList, boolean factorSquareFree)
 				throws JASConversionException {
+			if (Config.MAX_FACTOR_LEAFCOUNT > 0 && expr.leafCount() > Config.MAX_FACTOR_LEAFCOUNT) {
+				return expr;
+			}
 			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
 			GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, false);
 			if (polyRat.length() <= 1) {
@@ -3364,11 +3382,16 @@ public class Algebra {
 					}
 
 					try {
-						temp = F.eval(F.Factor(expr));
-						count = fComplexityFunction.apply(temp);
-						if (count < minCounter) {
-							minCounter = count;
-							result = temp;
+						// System.out.println(expr.toString());
+						if (minCounter < 25) {
+							// Factor is not fast enough for large expressions!
+							// so restrict factoring to smaller expressions
+							temp = F.eval(F.Factor(expr));
+							count = fComplexityFunction.apply(temp);
+							if (count < minCounter) {
+								minCounter = count;
+								result = temp;
+							}
 						}
 					} catch (WrongArgumentType wat) {
 						//
@@ -3919,11 +3942,36 @@ public class Algebra {
 			if (list.isPresent()) {
 				return list;
 			}
+			return together(arg1, engine);
+		}
+
+		private IExpr together(IExpr arg1, EvalEngine engine) {
 			if (arg1.isPlusTimesPower()) {
+				if (arg1.isPower()) {
+					if (arg1.base().isAtom() && arg1.exponent().isAtom()) {
+						return arg1;
+					}
+					if (!arg1.exponent().isMinusOne()) {
+						if (arg1.base().isPlusTimesPower()) {
+							if (arg1.exponent().isNegative()) {
+								return F.Power(together(arg1.base().inverse(), engine), arg1.exponent().negate());
+							}
+							return F.Power(together(arg1.base(), engine), arg1.exponent());
+						}
+					}
+				} else if (arg1.isTimes()) {
+					if (arg1.first().isAtom()) {
+						IExpr times = ((IAST) arg1).removeAtClone(1).getOneIdentity(F.C0);
+						if (times.isPower()) {
+							return F.Times(arg1.first(), together(times, engine));
+						}
+					}
+				}
 				IExpr temp = togetherNull((IAST) arg1, engine).orElse(arg1);
 				if (temp.isPresent()) {
 					return reduceFactorConstant(temp, engine);
 				}
+
 			}
 			return reduceFactorConstant(arg1, engine);
 		}

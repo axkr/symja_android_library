@@ -3109,6 +3109,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testFactor() {
 		// TODO return (2 + 2 x + 3 x ^ 2 + x ^ 4) / ((1 + x) ^ 2 (1 + x ^ 2) ^
 		// 2)
+
 		check("Factor(x^2 - y^2)", "(x-y)*(x+y)");
 		check("Factor(1 / (x^2+2*x+1) + 1 / (x^4+2*x^2+1))", //
 				"(2+2*x+3*x^2+x^4)/((1+x)^2*(1+x^2)^2)");
@@ -9275,6 +9276,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSimplify() {
+		check("Simplify(-(b/(2*Sqrt(c))+Sqrt(c)*x)^24+(a+b*x+c*x^2)^12)", 
+				"-(b+2*c*x)^24/(16777216*c^12)+(a+b*x+c*x^2)^12");
 		check("Simplify(-ArcTan((1+x)/Sqrt(2))/(2*Sqrt(2)))", //
 				"-ArcTan((1+x)/Sqrt(2))/(2*Sqrt(2))");
 		check("Simplify(1 + 1/GoldenRatio - GoldenRatio)", "0");
@@ -10085,7 +10088,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Sum(c*(i-j+1), {j,i+1,n}, {i,1,n})",
 				"c*n*(-i+n)-1/2*c*n*(-i+n)*(1+i+n)+c*(1/2*n*(-i+n)+1/2*(-i+n)*n^2)");
-		check("Simplify(1/2*c*(n-i)*n^2-1/2*c*n*(n+i+1)*(n-i)+3/2*c*n*(n-i))", "1/2*c*(-2+i)*(i-n)*n");
+		check("Simplify(1/2*c*(n-i)*n^2-1/2*c*n*(n+i+1)*(n-i)+3/2*c*n*(n-i))", "-c*i*n+1/2*c*i^2*n+c*n^2-1/2*c*i*n^2");
 
 		check("Sum(c*(n-1), {j,i,n-1})", //
 				"-c*(-i+n)+c*n*(-i+n)");
@@ -10606,6 +10609,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTogether() {
+		check("Together[(2 + 2*x)/(2*Sqrt[2])]", //
+				"(1+x)/Sqrt(2)");
+		
+		check("Together((1+a/(c+d)+b/(c+d))/(a+b))", //
+				"(a+b+c+d)/((a+b)*(c+d))");
+		
+		check("Together((a+b*x+c*x^2)^13/13)",
+				"(a+b*x+c*x^2)^13/13");
 		check("Together(1/(a + b) + 1/(c + d) - a)", //
 				"(a+b+c-a^2*c-a*b*c+d-a^2*d-a*b*d)/(a*c+b*c+a*d+b*d)");
 		check("Together(1/a+1/b)", //
