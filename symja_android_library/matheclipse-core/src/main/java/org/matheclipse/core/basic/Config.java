@@ -35,6 +35,11 @@ public class Config {
 
 	private static final int MAX_EXPR_CACHE_SIZE = 10000;
 
+	/**
+	 * Maximum number for the leaf count of an expression so that <code>Factor()</code> will try a factoring
+	 */
+	public static final int MAX_FACTOR_LEAFCOUNT = 600;
+
 	static {
 		EXPR_CACHE = CacheBuilder.newBuilder().maximumSize(MAX_EXPR_CACHE_SIZE).weakKeys().weakValues().build();
 	}
