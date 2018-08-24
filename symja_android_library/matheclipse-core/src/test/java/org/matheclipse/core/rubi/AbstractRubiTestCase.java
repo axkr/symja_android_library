@@ -156,7 +156,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
 	 * @param ruleNumberUsed The internal Rubi rule that was used to solve this problem
 	 * @param expectedResult The expected antiderivative that Rubi calculates
 	 */
-	public void check(String evalString, int ruleNumberUsed, String expectedResult) {
+	public void check(String evalString, String expectedResult, int... ruleNumberUsed) {
 		// TODO: Axel needs to implement this
 	}
 
