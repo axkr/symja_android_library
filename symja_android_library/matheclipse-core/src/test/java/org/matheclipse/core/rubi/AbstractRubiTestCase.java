@@ -127,10 +127,10 @@ public abstract class AbstractRubiTestCase extends TestCase {
 	}
 
 	public void check(String evalString, String expectedResult) {
-		check(evalString, expectedResult, -1);
+		checkLength(evalString, expectedResult, -1);
 	}
 
-	public void check(String evalString, String expectedResult, int resultLength) {
+	public void checkLength(String evalString, String expectedResult, int resultLength) {
 		try {
 			if (evalString.length() == 0 && expectedResult.length() == 0) {
 				return;
