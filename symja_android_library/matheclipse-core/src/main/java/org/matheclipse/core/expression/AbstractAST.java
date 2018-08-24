@@ -50,6 +50,7 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternObject;
+import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -1844,8 +1845,7 @@ public abstract class AbstractAST implements IASTMutable {
 				addEvalFlags(((IAST) temp).getEvalFlags() & IAST.CONTAINS_PATTERN_EXPR);
 				continue;
 			} else if (temp instanceof IPatternObject) {
-				isFreeOfPatterns = false;
-				addEvalFlags(getEvalFlags());
+				isFreeOfPatterns = false;				
 			}
 		}
 		if (isFreeOfPatterns) {

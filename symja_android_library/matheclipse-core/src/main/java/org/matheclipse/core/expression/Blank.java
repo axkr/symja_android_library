@@ -111,7 +111,7 @@ public class Blank implements IPattern {
 	public int[] addPattern(PatternMap patternMap, Map<IExpr, Integer> patternIndexMap) {
 		patternMap.addPattern(patternIndexMap, this);
 		int[] result = new int[2];
-		if (isPatternDefault()) {
+		if (isPatternDefault() || isPatternOptional()) {
 			// the ast contains a pattern with default value (i.e. "x_." or
 			// "x_:")
 			result[0] = IAST.CONTAINS_DEFAULT_PATTERN;
@@ -121,7 +121,7 @@ public class Blank implements IPattern {
 			result[0] = IAST.CONTAINS_PATTERN;
 			result[1] = 5;
 		}
-		if (fCondition!=null) {
+		if (fCondition != null) {
 			result[1] += 2;
 		}
 		return result;
@@ -222,7 +222,7 @@ public class Blank implements IPattern {
 	@Override
 	public String fullFormString() {
 		StringBuilder buf = new StringBuilder();
-		if (fDefaultValue!=null||fDefault) {
+		if (fDefaultValue != null || fDefault) {
 			buf.append("Optional");
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 				buf.append('(');
@@ -244,7 +244,7 @@ public class Blank implements IPattern {
 		} else {
 			buf.append(']');
 		}
-		if (fDefaultValue!=null) {
+		if (fDefaultValue != null) {
 			buf.append(",");
 			buf.append(fDefaultValue.fullFormString());
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
@@ -252,7 +252,7 @@ public class Blank implements IPattern {
 			} else {
 				buf.append("]");
 			}
-		}else if (fDefault) {
+		} else if (fDefault) {
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 				buf.append(")");
 			} else {
@@ -312,12 +312,14 @@ public class Blank implements IPattern {
 	}
 
 	@Override
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators, boolean usePrefix, boolean noSymbolPrefix) {
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators, boolean usePrefix,
+			boolean noSymbolPrefix) {
 		String prefix = usePrefix ? "F." : "";
 		final StringBuilder buffer = new StringBuilder();
-		buffer.append(prefix+"$b(");
+		buffer.append(prefix + "$b(");
 		if (fCondition != null) {
-			buffer.append(fCondition.internalJavaString(symbolsAsFactoryMethod, 0, useOperators, usePrefix, noSymbolPrefix));
+			buffer.append(
+					fCondition.internalJavaString(symbolsAsFactoryMethod, 0, useOperators, usePrefix, noSymbolPrefix));
 		}
 		buffer.append(')');
 		return buffer.toString();

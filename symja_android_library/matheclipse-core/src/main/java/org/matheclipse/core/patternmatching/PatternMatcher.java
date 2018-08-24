@@ -611,7 +611,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			}
 		}
 		if (lhsEvalExpr instanceof IAST) {
-			if (!lhsPatternAST.isPatternExpr() && lhsPatternAST.equals(lhsEvalExpr)) {
+			if (lhsPatternAST.isFreeOfPatterns() && lhsPatternAST.equals(lhsEvalExpr)) {
 				return stackMatcher == null || stackMatcher.matchRest();
 			}
 

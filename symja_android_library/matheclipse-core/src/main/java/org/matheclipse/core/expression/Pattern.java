@@ -83,7 +83,7 @@ public class Pattern extends Blank {
 	public int[] addPattern(PatternMap patternMap, Map<IExpr, Integer> patternIndexMap) {
 		patternMap.addPattern(patternIndexMap, this);
 		int[] result = new int[2];
-		if (isPatternDefault()) {
+		if (isPatternDefault() || isPatternOptional()) {
 			// the ast contains a pattern with default value (i.e. "x_." or
 			// "x_:")
 			result[0] = IAST.CONTAINS_DEFAULT_PATTERN;
@@ -184,7 +184,7 @@ public class Pattern extends Blank {
 	@Override
 	public String fullFormString() {
 		StringBuilder buf = new StringBuilder();
-		if (fDefaultValue!=null||fDefault) {
+		if (fDefaultValue != null || fDefault) {
 			buf.append("Optional");
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 				buf.append('(');
@@ -214,7 +214,7 @@ public class Pattern extends Blank {
 		} else {
 			buf.append("]]");
 		}
-		if (fDefaultValue!=null) {
+		if (fDefaultValue != null) {
 			buf.append(",");
 			buf.append(fDefaultValue.fullFormString());
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
