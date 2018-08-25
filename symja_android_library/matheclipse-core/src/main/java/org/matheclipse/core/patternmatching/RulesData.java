@@ -559,8 +559,8 @@ public class RulesData implements Serializable {
 									.println(" COMPLEX: " + pmEvaluator.getLHS().toString() + " := " + rhs.toString());
 						}
 					}
-					// if (pmEvaluator.getLHSPriority()==432) {
-					// continue;
+					// if (pmEvaluator.getLHSPriority() == 2510) {
+					// System.out.println("Debug from this line");
 					// }
 					if (Config.SHOW_STACKTRACE) {
 						if (isShowPriority(pmEvaluator)) {

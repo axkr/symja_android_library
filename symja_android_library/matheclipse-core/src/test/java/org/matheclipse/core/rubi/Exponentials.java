@@ -67,6 +67,7 @@ public class Exponentials extends AbstractRubiTestCase {
 		check(//
 				"Integrate[10^(2 + 5*x), x]", //
 				"(2^(2 + 5*x)*5^(1 + 5*x))/Log[10]", //
+				"10^(2+5*x)/(5*Log[10])", //
 				2194);
 	}
 
@@ -1523,6 +1524,7 @@ public class Exponentials extends AbstractRubiTestCase {
 		check(//
 				"Integrate[10^Sqrt[x]/Sqrt[x], x]", //
 				"(2^(1 + Sqrt[x])*5^Sqrt[x])/Log[10]", //
+				"(2*10^Sqrt[x])/Log[10]",//
 				2209);
 	}
 

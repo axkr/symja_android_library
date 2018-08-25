@@ -49,12 +49,18 @@ public abstract class AbstractRubiTestCase extends TestCase {
 			if (manuallyCheckedResult != null) {
 				manuallyCheckedResult = manuallyCheckedResult.trim();
 				if (manuallyCheckedResult.length() > 0) {
+					if (manuallyCheckedResult.equals(result.toString())) {
+						// the expressions are textual equal
+						return expectedResult;
+					}
+					
 					IExpr expected = fEvaluator.eval(manuallyCheckedResult);
 					if (result.equals(expected)) {
 						// the expressions are structurally equal
 						return expectedResult;
 					}
 				}
+				
 			}
 
 			expectedResult = expectedResult.trim();
