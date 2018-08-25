@@ -45,9 +45,15 @@ public interface DerivativeRules {
     // ArcSech->-1/(#1*Sqrt(1-#1^2))
     Rule(ArcSech,
       Times(CN1,Power(Slot1,-1),Power(Plus(C1,Negate(Sqr(Slot1))),CN1D2))),
-    // Ceiling->0
+    // Ceiling->Piecewise({{0,#1<Ceiling(#1)}},Indeterminate)
     Rule(Ceiling,
-      C0),
+      Piecewise(List(List(C0,Less(Slot1,Ceiling(Slot1)))),Indeterminate)),
+    // EllipticE->(EllipticE(#1)-EllipticK(#1))/(2*#1)
+    Rule(EllipticE,
+      Times(C1D2,Plus(EllipticE(Slot1),Negate(EllipticK(Slot1))),Power(Slot1,-1))),
+    // EllipticK->(EllipticE(#1)-EllipticK(#1)*(1-#1))/(2*(1-#1)*#1)
+    Rule(EllipticK,
+      Times(C1D2,Power(Plus(C1,Negate(Slot1)),-1),Power(Slot1,-1),Plus(EllipticE(Slot1),Times(CN1,EllipticK(Slot1),Plus(C1,Negate(Slot1)))))),
     // Erf->2*1/(E^#1^2*Sqrt(Pi))
     Rule(Erf,
       Times(C2,Exp(Negate(Sqr(Slot1))),Power(Pi,CN1D2))),
@@ -57,9 +63,9 @@ public interface DerivativeRules {
     // Erfi->2*E^#1^2/Sqrt(Pi)
     Rule(Erfi,
       Times(C2,Exp(Sqr(Slot1)),Power(Pi,CN1D2))),
-    // Floor->0
+    // Floor->Piecewise({{0,#1>Floor(#1)}},Indeterminate)
     Rule(Floor,
-      C0),
+      Piecewise(List(List(C0,Greater(Slot1,Floor(Slot1)))),Indeterminate)),
     // FractionalPart->1
     Rule(FractionalPart,
       C1),
@@ -111,12 +117,15 @@ public interface DerivativeRules {
     // Csch->-Coth(#1)*Csch(#1)
     Rule(Csch,
       Times(CN1,Coth(Slot1),Csch(Slot1))),
-    // Round->0
+    // Round->Piecewise({{0,NotElement(-1/2+Re(#1),Integers)&&NotElement(-1/2+Im(#1),Integers)}},Indeterminate)
     Rule(Round,
-      C0),
+      Piecewise(List(List(C0,And(NotElement(Plus(CN1D2,Re(Slot1)),Integers),NotElement(Plus(CN1D2,Im(Slot1)),Integers)))),Indeterminate)),
     // Sin->Cos(#1)
     Rule(Sin,
       Cos(Slot1)),
+    // Sinc->-Sin(#1)/#1^2+Cos(#1)/#1
+    Rule(Sinc,
+      Plus(Times(CN1,Sin(Slot1),Power(Slot1,-2)),Times(Cos(Slot1),Power(Slot1,-1)))),
     // Sinh->Cosh(#1)
     Rule(Sinh,
       Cosh(Slot1)),

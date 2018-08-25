@@ -11,6 +11,7 @@ import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -19,6 +20,7 @@ public class AssumptionFunctions {
 	static {
 		F.Arrays.setEvaluator(new Arrays());
 		F.Element.setEvaluator(new Element());
+		F.NotElement.setEvaluator(new NotElement());
 		F.Refine.setEvaluator(new Refine());
 	}
 
@@ -102,7 +104,7 @@ public class AssumptionFunctions {
 						return truthValue;
 					}
 					break;
-				case ID.Arrays: 
+				case ID.Arrays:
 					truthValue = AbstractAssumptions.assumeArray(arg1);
 					if (truthValue != null) {
 						return truthValue;
@@ -143,6 +145,30 @@ public class AssumptionFunctions {
 				default:
 					break;
 				}
+			}
+			return F.NIL;
+		}
+
+	}
+
+	private static class NotElement extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+
+			final IExpr arg2 = engine.evaluate(ast.arg2());
+			if (arg2.isSymbol()) {
+				final IExpr arg1 = engine.evaluate(ast.arg1());
+				if (arg1.isAST(F.Alternatives)) {
+					IAST alternatives = (IAST) arg1;
+					IASTAppendable andList = F.And();
+					for (int i = 1; i < alternatives.size(); i++) {
+						andList.append(F.Not(F.Element(alternatives.get(i), (ISymbol) arg2)));
+					}
+					return andList;
+				}
+				return F.Not(F.Element(arg1, (ISymbol) arg2));
 			}
 			return F.NIL;
 		}

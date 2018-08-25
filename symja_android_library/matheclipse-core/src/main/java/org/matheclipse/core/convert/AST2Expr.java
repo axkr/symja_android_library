@@ -115,7 +115,7 @@ public class AST2Expr {
 			"MultiplicativeOrder", "NakagamiDistribution", "Names", "Nand", "NDSolve", "Nearest", "Negative", "Nest",
 			"NestList", "NestWhile", "NestWhileList", "NextPrime", "NFourierTransform", "NIntegrate", "NMaximize",
 			"NMinimize", "NonCommutativeMultiply", "NonNegative", "NonPositive", "NoneTrue", "Nor", "Normal",
-			"Normalize", "Norm", "NormalDistribution", "Not", "NotListQ", "NRoots", "NSolve", "NullSpace",
+			"Normalize", "Norm", "NormalDistribution", "Not", "NotElement", "NotListQ", "NRoots", "NSolve", "NullSpace",
 			"NumberFieldRootsOfUnity", "NumberQ", "Numerator", "NumericQ", "OddQ", "Operate", "OptimizeExpression",
 			"Optional", "Options", "Or", "Order", "Ordering", "OrderedQ", "Orthogonalize", "OrthogonalMatrixQ", "Out",
 			"Outer", "OutputForm", "Package", "PadLeft", "PadRight", "ParametricPlot", "Part", "Partition",
