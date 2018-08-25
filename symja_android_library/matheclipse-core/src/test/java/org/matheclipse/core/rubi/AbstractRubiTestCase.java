@@ -45,31 +45,38 @@ public abstract class AbstractRubiTestCase extends TestCase {
 			return "TIMEOUT";
 		}
 
-		if (manuallyCheckedResult != null) {
-			manuallyCheckedResult = manuallyCheckedResult.trim();
-			if (manuallyCheckedResult.length() > 0) {
-				IExpr expected = fEvaluator.eval(manuallyCheckedResult);
+		if (result.isFree(F.Integrate)) {
+			if (manuallyCheckedResult != null) {
+				manuallyCheckedResult = manuallyCheckedResult.trim();
+				if (manuallyCheckedResult.length() > 0) {
+					IExpr expected = fEvaluator.eval(manuallyCheckedResult);
+					if (result.equals(expected)) {
+						// the expressions are structurally equal
+						return expectedResult;
+					}
+				}
+			}
+
+			expectedResult = expectedResult.trim();
+			if (expectedResult.length() > 0) {
+				IExpr expected = fEvaluator.eval(expectedResult);
 				if (result.equals(expected)) {
 					// the expressions are structurally equal
 					return expectedResult;
 				}
-			}
-		}
 
-		expectedResult = expectedResult.trim();
-		if (expectedResult.length() > 0) {
-			IExpr expected = fEvaluator.eval(expectedResult);
-			if (result.equals(expected)) {
-				// the expressions are structurally equal
-				return expectedResult;
+				expected = fEvaluator.eval(F.PossibleZeroQ(F.Subtract(result, expected)));
+				if (expected.isTrue()) {
+					// the expressions are structurally equal
+					return expectedResult;
+				}
+				// IExpr resultTogether= F.Together.of(F.ExpandAll(result));
+				// IExpr expectedTogether = F.Together.of(F.ExpandAll(expected));
+				// if (resultTogether.equals(expectedTogether)) {
+				// // the expressions are structurally equal
+				// return expectedResult;
+				// }
 			}
-
-			// IExpr resultTogether= F.Together.of(F.ExpandAll(result));
-			// IExpr expectedTogether = F.Together.of(F.ExpandAll(expected));
-			// if (resultTogether.equals(expectedTogether)) {
-			// // the expressions are structurally equal
-			// return expectedResult;
-			// }
 		}
 		final StringWriter buf = new StringWriter();
 		OutputFormFactory.get(true).convert(buf, result);
