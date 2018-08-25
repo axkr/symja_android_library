@@ -14,6 +14,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.AST2;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
@@ -262,9 +263,32 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 	 * Check if <code>expr</code> is a pure imaginary number without a real part.
 	 * 
 	 * @param expr
-	 * @return <code>null</code>, if <code>expr</code> is not a pure imaginary number.
+	 * @return <code>F.NIL</code>, if <code>expr</code> is not a pure imaginary number.
 	 */
 	public static IExpr getPureImaginaryPart(final IExpr expr) {
+		IExpr temp = pureImaginaryPart(expr);
+		if (temp.isPresent()) {
+			return temp;
+		}
+		if (expr.isPlus()) {
+			IAST plus = ((IAST) expr);
+			IExpr arg = pureImaginaryPart(plus.arg1());
+			if (arg.isPresent()) {
+				IASTAppendable result = plus.setAtClone(1, arg);
+				for (int i = 2; i < plus.size(); i++) {
+					arg = pureImaginaryPart(plus.get(i));
+					if (!arg.isPresent()) {
+						return F.NIL;
+					}
+					result.set(i, arg);
+				}
+				return result;
+			}
+		}
+		return F.NIL;
+	}
+
+	private static IExpr pureImaginaryPart(final IExpr expr) {
 		if (expr.isComplex() && ((IComplex) expr).re().isZero()) {
 			IComplex compl = (IComplex) expr;
 			return compl.im();

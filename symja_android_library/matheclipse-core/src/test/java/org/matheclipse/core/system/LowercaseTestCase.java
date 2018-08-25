@@ -1720,6 +1720,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCos() {
+		check("Cos(I*a+I*b*x)/b", "Cosh(a+b*x)/b");
 		check("Cos(ArcSin(x))", "Sqrt(1-x^2)");
 		check("Cos(ArcTan(x))", "1/Sqrt(1+x^2)");
 		check("Cos(0)", "1");
