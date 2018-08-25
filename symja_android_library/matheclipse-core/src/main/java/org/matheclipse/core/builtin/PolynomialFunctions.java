@@ -80,6 +80,9 @@ import edu.jas.root.ComplexRootsAbstract;
 import edu.jas.root.ComplexRootsSturm;
 import edu.jas.root.InvalidBoundaryException;
 import edu.jas.root.Rectangle;
+import edu.jas.ufd.GCDFactory;
+import edu.jas.ufd.GreatestCommonDivisor;
+import edu.jas.ufd.GreatestCommonDivisorAbstract;
 import edu.jas.ufd.Squarefree;
 import edu.jas.ufd.SquarefreeFactory;
 
@@ -1059,11 +1062,7 @@ public class PolynomialFunctions {
 			ExprPolynomialRing ring = new ExprPolynomialRing(F.List(x));
 			try {
 				// check if a is a polynomial otherwise check ArithmeticException, ClassCastException
-				ring.create(a);
-			} catch (RuntimeException ex) {
-				throw new WrongArgumentType(ast, a, 1, "Polynomial expected!");
-			}
-			try {
+				ring.create(a); 
 				// check if b is a polynomial otherwise check ArithmeticException, ClassCastException
 				ring.create(b);
 				return F.Together(resultant(a, b, x, engine));
@@ -1072,7 +1071,7 @@ public class PolynomialFunctions {
 			}
 		}
 
-		public IExpr resultant(IExpr a, IExpr b, ISymbol x, EvalEngine engine) {
+		private IExpr resultant(IExpr a, IExpr b, ISymbol x, EvalEngine engine) {
 			IExpr aExp = F.Exponent.of(engine, a, x);
 			IExpr bExp = F.Exponent.of(engine, b, x);
 			if (b.isFree(x)) {
@@ -1090,6 +1089,48 @@ public class PolynomialFunctions {
 			}
 			return F.Times(F.Power(F.CN1, abExp), F.Power(F.Coefficient(b, x, bExp), F.Subtract(aExp, rExp)),
 					resultant(b, r, x, engine));
+		}
+		
+		private IExpr jasResultant(IExpr a, IExpr b, ISymbol x, EvalEngine engine) {
+			VariablesSet eVar = new VariablesSet();
+			eVar.addVarList(x);
+
+			try {
+				// ASTRange r = new ASTRange(eVar.getVarList(), 1);
+				List<IExpr> varList = eVar.getVarList().copyTo();
+				JASConvert<edu.jas.arith.BigInteger> jas = new JASConvert<edu.jas.arith.BigInteger>(varList,
+						edu.jas.arith.BigInteger.ZERO);
+				GenPolynomial<edu.jas.arith.BigInteger> poly = jas.expr2JAS(a, false);
+				GenPolynomial<edu.jas.arith.BigInteger> temp = jas.expr2JAS(b, false);
+				GreatestCommonDivisorAbstract<edu.jas.arith.BigInteger> factory = GCDFactory
+						.getImplementation(edu.jas.arith.BigInteger.ZERO);
+				poly = factory.resultant(poly, temp);
+				return jas.integerPoly2Expr(poly);
+			} catch (JASConversionException e) {
+				try {
+					if (eVar.size() == 0) {
+						return F.NIL;
+					}
+					IAST vars = eVar.getVarList();
+					ExprPolynomialRing ring = new ExprPolynomialRing(vars);
+					ExprPolynomial pol1 = ring.create(a);
+					ExprPolynomial pol2 = ring.create(b);
+					List<IExpr> varList = eVar.getVarList().copyTo();
+					JASIExpr jas = new JASIExpr(varList, true);
+					GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
+					GenPolynomial<IExpr> p2 = jas.expr2IExprJAS(pol2);
+
+					GreatestCommonDivisor<IExpr> factaory = GCDFactory.getImplementation(ExprRingFactory.CONST);
+					p1 = factaory.resultant(p1, p2);
+					return jas.exprPoly2Expr(p1);
+				} catch (RuntimeException rex) {
+					if (Config.DEBUG) {
+						e.printStackTrace();
+					}
+				}
+
+			}
+			return F.NIL;
 		}
 
 		// public static IExpr resultant(IAST result, IAST resultListDiff) {
