@@ -235,8 +235,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ArcCos(1)", "0");
 		check("Integrate(ArcCos(x), {x, -1, 1})", "Pi");
 
-		check("arccos(-11)", "-Pi+ArcCos(11)");
-		check("arccos(-x)", "-Pi+ArcCos(x)");
+		check("arccos(-11)", "ArcCos(-11)");
+		check("arccos(-x)", "ArcCos(-x)");
 		check("D(ArcCos(x),x)", "-1/Sqrt(1-x^2)");
 		check("diff(ArcCos(x),x)", "-1/Sqrt(1-x^2)");
 	}
@@ -257,8 +257,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("arccot(complexinfinity)", "0");
 		check("arccot(0)", "Pi/2");
-		check("arccot(-11)", "-Pi+ArcCot(11)");
-		check("arccot(-x)", "-Pi+ArcCot(x)");
+		check("arccot(-11)", "-ArcCot(11)");
+		check("arccot(-x)", "-ArcCot(x)");
 		check("D(ArcCot(x),x)", "1/(-1-x^2)");
 	}
 
@@ -3408,7 +3408,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("FindInstance({x^2-11==y, x+y==-9}, {x,y})", "{{x->-2,y->-7}}");
 
 		check("FindInstance(2*Sin(x)==1/2,x)", "{{x->ArcSin(1/4)}}");
-		check("FindInstance(3+2*Cos(x)==1/2,x)", "{{x->-Pi+ArcCos(5/4)}}");
+		check("FindInstance(3+2*Cos(x)==1/2,x)", "{{x->ArcCos(-5/4)}}");
 		check("FindInstance(Sin(x)==0,x)", "{{x->0}}");
 		check("FindInstance(Sin(x)==0.0,x)", "{{x->0}}");
 		check("FindInstance(Sin(x)==1/2,x)", "{{x->Pi/6}}");
@@ -5409,6 +5409,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Log(10, 10)", "1");
 		check("Log(0)", "-Infinity");
 		check("Log(1)", "0");
+		check("Log(-x)", "Log(-x)");
 		check("Log(-1)", "I*Pi");
 		check("Log(I)", "I*1/2*Pi");
 		check("Log(-I)", "-I*1/2*Pi");
@@ -9574,7 +9575,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Solve(2*Sin(x)==1/2,x)", //
 				"{{x->ArcSin(1/4)}}");
 		check("Solve(3+2*Cos(x)==1/2,x)", //
-				"{{x->-Pi+ArcCos(5/4)}}");
+				"{{x->ArcCos(-5/4)}}");
 		check("Solve(Sin(x)==0,x)", //
 				"{{x->0}}");
 		check("Solve(Sin(x)==0.0,x)", //

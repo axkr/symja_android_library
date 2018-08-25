@@ -184,6 +184,10 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
 
 	// {4818}
 	public void test0066() {
+		// rule 4818: Int[((a_.) + ArcCos[-1 + (d_.)*(x_)^2]*(b_.))^(-1), x_Symbol] := 
+		// Simp[(x*Sin[a/(2*b)]*CosIntegral[(a + b*ArcCos[-1 + d*x^2])/(2*b)])/(Sqrt[2]*b*Sqrt[d*x^2]), x] - Simp[(x*Cos[a/(2*b)]*SinIntegral[(a + b*ArcCos[-1 + d*x^2])/(2*b)])/(Sqrt[2]*b*Sqrt[d*x^2]), x] 
+		// /; FreeQ[{a, b, d}, x]
+
 		check(//
 				"Integrate[(a + b*ArcCos[-1 + d*x^2])^(-1), x]", //
 				"(x*CosIntegral[(a + b*ArcCos[-1 + d*x^2])/(2*b)]*Sin[a/(2*b)])/(Sqrt[2]*b*Sqrt[d*x^2]) - (x*Cos[a/(2*b)]*SinIntegral[(a + b*ArcCos[-1 + d*x^2])/(2*b)])/(Sqrt[2]*b*Sqrt[d*x^2])", //

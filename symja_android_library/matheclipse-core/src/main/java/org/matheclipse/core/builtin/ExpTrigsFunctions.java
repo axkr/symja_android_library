@@ -235,10 +235,11 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
-			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-			if (negExpr.isPresent()) {
-				return Plus(Negate(Pi), ArcCos(negExpr));
-			}
+			// don't simplify negative argument because it disturbs Rubi pattern matchin
+			// IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1, false);
+			// if (negExpr.isPresent()) {
+			// return Plus(Negate(Pi), ArcCos(negExpr));
+			// }
 			return F.NIL;
 		}
 
@@ -379,7 +380,7 @@ public class ExpTrigsFunctions {
 		public IExpr evaluateArg1(final IExpr arg1) {
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
-				return Plus(Negate(Pi), ArcCot(negExpr));
+				return Plus(Negate(ArcCot(negExpr)));
 			}
 			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 			if (imPart.isPresent()) {
@@ -822,8 +823,7 @@ public class ExpTrigsFunctions {
 			IExpr yUnitStep = y.unitStep();
 			if (x.isNumber() && yUnitStep.isInteger()) {
 				if (x.re().isNegative()) {
-					return F.Plus(F.ArcTan(F.Divide(y, x)),
-							F.Times(F.Subtract(F.Times(F.C2, yUnitStep), F.C1), F.Pi));
+					return F.Plus(F.ArcTan(F.Divide(y, x)), F.Times(F.Subtract(F.Times(F.C2, yUnitStep), F.C1), F.Pi));
 				}
 				IExpr argX = x.complexArg();
 				// -Pi/2 < Arg(x) <= Pi/2
@@ -1622,6 +1622,7 @@ public class ExpTrigsFunctions {
 				}
 
 			}
+
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(expr);
 			if (negExpr.isPresent()) {
 				if (negExpr.isPositiveResult()) {
