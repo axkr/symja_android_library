@@ -84,6 +84,11 @@ public class EllipticIntegrals {
 						engine.printMessage("EllipticE: " + rex.getMessage());
 					}
 				}
+				IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
+				if (negExpr.isPresent()) {
+					// EllipticE(-z,m) = -EllipticE(z,m)
+					return F.Negate(F.EllipticE(negExpr, m));
+				}
 				return F.NIL;
 			}
 
