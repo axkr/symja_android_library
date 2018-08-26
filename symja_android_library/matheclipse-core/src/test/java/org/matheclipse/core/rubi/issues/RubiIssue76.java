@@ -1,4 +1,6 @@
-package org.matheclipse.core.rubi;
+package org.matheclipse.core.rubi.issues;
+
+import org.matheclipse.core.rubi.AbstractRubiTestCase;
 
 public class RubiIssue76 extends AbstractRubiTestCase {
 	public RubiIssue76(String name) {

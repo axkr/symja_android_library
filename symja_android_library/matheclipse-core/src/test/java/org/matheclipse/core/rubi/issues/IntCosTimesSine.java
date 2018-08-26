@@ -1,4 +1,6 @@
-package org.matheclipse.core.rubi;
+package org.matheclipse.core.rubi.issues;
+
+import org.matheclipse.core.rubi.AbstractRubiTestCase;
 
 //Int[Cos[a*x]*Sin[b*x],x,x]
 public class IntCosTimesSine extends AbstractRubiTestCase {

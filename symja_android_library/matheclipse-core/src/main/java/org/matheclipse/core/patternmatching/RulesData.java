@@ -559,7 +559,7 @@ public class RulesData implements Serializable {
 									.println(" COMPLEX: " + pmEvaluator.getLHS().toString() + " := " + rhs.toString());
 						}
 					}
-					// if (pmEvaluator.getLHSPriority() == 2447) {
+					// if (pmEvaluator.getLHSPriority() == 2218) {
 					// System.out.println("Debug from this line");
 					// }
 					if (Config.SHOW_STACKTRACE) {

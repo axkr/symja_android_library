@@ -1,4 +1,6 @@
-package org.matheclipse.core.rubi;
+package org.matheclipse.core.rubi.issues;
+
+import org.matheclipse.core.rubi.AbstractRubiTestCase;
 
 // Integrate[ArcCos[x+1],x] 
 public class RubiIssue74 extends AbstractRubiTestCase {

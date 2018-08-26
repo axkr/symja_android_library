@@ -1608,6 +1608,13 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
 
 	// {6686}
 	public void test0205() {
+		// Int[(u_)*(y_)^(m_.), x_Symbol] :=
+		// With[{q = DerivativeDivides[y, u, x]}, Simp[(q*y^(m + 1))/(m + 1), x]
+		// /; !FalseQ[q]] /; FreeQ[m, x] && NeQ[m, -1]
+		
+		
+		// check("Integrate::DerivativeDivides[Log[Tan[x]]*Sec[x],Csc[x]*Sec[x]^((-1)*1+1),x]", //
+		// "");
 		check(//
 				"Integrate[Csc[x]*Log[Tan[x]]*Sec[x], x]", //
 				"Log[Tan[x]]^2/2", //

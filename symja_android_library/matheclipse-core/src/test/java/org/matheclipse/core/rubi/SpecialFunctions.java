@@ -5,7 +5,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
 	public SpecialFunctions(String name) {
 		super(name, false);
 	}
-
+	
 	// {6656}
 	public void test0001() {
 		check(//

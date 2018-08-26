@@ -1,4 +1,6 @@
-package org.matheclipse.core.rubi;
+package org.matheclipse.core.rubi.issues;
+
+import org.matheclipse.core.rubi.AbstractRubiTestCase;
 
 // Integrate((x^2+2*x+3)^(-1),x) gives wrong result. See https://github.com/axkr/symja_android_library/issues/72
 public class RubiIssue72 extends AbstractRubiTestCase {

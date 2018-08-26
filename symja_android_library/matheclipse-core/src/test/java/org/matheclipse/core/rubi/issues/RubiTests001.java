@@ -1,4 +1,6 @@
-package org.matheclipse.core.rubi;
+package org.matheclipse.core.rubi.issues;
+
+import org.matheclipse.core.rubi.AbstractRubiTestCase;
 
 /**
  * Tests for the Java port of the Rubi-rule-based integrator. Isn't used in Maven build process at the moment.

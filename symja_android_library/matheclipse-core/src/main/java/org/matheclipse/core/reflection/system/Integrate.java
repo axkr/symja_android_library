@@ -985,7 +985,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 	}
 
 	public static void getRuleASTStatic() {
-		INTEGRATE_RULES_DATA = F.Integrate.createRulesData(new int[] { 0, 5000 });
+		INTEGRATE_RULES_DATA = F.Integrate.createRulesData(new int[] { 0, 7000 });
 		getRuleASTRubi45();
 
 		// INT_FUNCTIONS.add(F.Times);

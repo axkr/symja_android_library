@@ -1538,6 +1538,7 @@ public class Exponentials extends AbstractRubiTestCase {
 
 	// {2218}
 	public void test0209() {
+		fSeconds=0;
 		check(//
 				"Integrate[E^x^n*x^m, x]", //
 				"-((x^(1 + m)*Gamma[(1 + m)/n, -x^n])/(n*(-x^n)^((1 + m)/n)))", //
