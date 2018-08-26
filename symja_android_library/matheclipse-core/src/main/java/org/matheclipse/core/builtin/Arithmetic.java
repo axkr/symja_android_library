@@ -1399,7 +1399,7 @@ public final class Arithmetic {
 
 		public IExpr e2ObjArg(final IExpr o0, final IExpr z) {
 			int n = o0.toIntDefault(Integer.MIN_VALUE);
-			if (n > 0) {
+			if (n > 0&&z.isNumericFunction()) {
 				//
 				// Gamma(n,z) = ((n - 1)! * Sum(z^k/k!, {k, 0, n - 1}))/E^z
 				//

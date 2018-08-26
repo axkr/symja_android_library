@@ -10,7 +10,9 @@ import java.util.Map.Entry;
 
 import javax.annotation.Nonnull;
 
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.EvalUtilities;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -339,7 +341,7 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 
 	public boolean isPatternTest(IExpr expr, IExpr patternTest, EvalEngine engine) {
 		IExpr temp = substitutePatternOrSymbols(expr);
-		if (temp == null) {
+		if (!temp.isPresent()) {
 			temp = expr;
 		}
 		IASTMutable test = (IASTMutable) F.unaryAST1(patternTest, null);
@@ -395,9 +397,9 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 	 * pattern values arrays
 	 * 
 	 * @param lhsPatternExpr
-	 *            left-hand-side expression which may containe pattern objects
+	 *            left-hand-side expression which may contain pattern objects
 	 * 
-	 * @return
+	 * @return <code>F.NIL</code> if substitutions isn't possible
 	 */
 	protected IExpr substitutePatternOrSymbols(final IExpr lhsPatternExpr) {
 		if (fPatternValuesArray != null) {
@@ -421,11 +423,18 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 					}
 				}
 				return F.NIL;
-			}
+			});
 
-			);
-
-			if (result != null) {
+			if (result.isPresent()) {
+				if (result.isFlatAST()) {
+					IExpr temp = EvalAttributes.flatten((IAST) result);
+					if (temp.isPresent()) {
+						result = temp;
+					}
+				}
+				if (result.isOrderlessAST()) {
+					EvalAttributes.sort((IASTMutable) result);
+				}
 				return result;
 			}
 		}

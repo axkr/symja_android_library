@@ -1447,6 +1447,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isFreeOfPatterns() {
 		return true;
 	}
+	
+	/**
+	 * Returns <code>true</code>, if <b>all of the elements</b> in the subexpressions or the expression itself, are no
+	 * pattern objects with "default values" (i.e. <code>x_.</code> or <code>x_:value</code>)
+	 * 
+	 * @return <code>true</code> if the expression contains no <code>IPatternObject</code> which has a "default pattern" defined.
+	 */
+	default boolean isFreeOfDefaultPatterns() {
+		return true;
+	}
 
 	/**
 	 * Test if this expression is a <code>Function( arg1 )</code> expression with at least 1 argument.

@@ -1592,11 +1592,11 @@ public class MainTestCase extends AbstractTestCase {
 		check("Integrate(E^x*(2-x^2),x)", //
 				"2*E^x*x-E^x*x^2");
 		check("D(2*E^x-Gamma(3,-x),x)", //
-				"2*E^x-2*E^x*(-1+x)-2*E^x*(1-x+x^2/2)");
+				"2*E^x-E^x*x^2");
 		check("Integrate((x^2+1)*Log(x),x)", //
 				"-x-x^3/9+1/3*(3*x+x^3)*Log(x)");
 		check("D(-x-Gamma(2,-3*Log(x))/9+x*Log(x),x)", //
-				"x^2/3-1/3*x^2*(1-3*Log(x))+Log(x)");
+				"Log(x)+x^2*Log(x)");
 
 		check("Apart(2*x^2/(x^3+1))", //
 				"2/(3+3*x)+(2*(-1+2*x))/(3-3*x+3*x^2)");

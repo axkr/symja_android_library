@@ -3891,6 +3891,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGamma() {
+		check("Gamma(3, a*x)", //
+				"Gamma(3,a*x)");
 		check("Gamma(0)", //
 				"ComplexInfinity");
 		check("Gamma(0.0+I*0.0)", //
@@ -8471,6 +8473,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testReplaceAll() {
+		check("a + b + c /. a + c -> p", "b+p");
+		// check("g(a + b + c + d, b + d) /. g(x_ + y_, x_) -> p(x, y)", "p(b+d,a+c)");
+
 		// TODO
 		// check("ReplaceAll({a, b, c}, {___, x__, ___} -> {x})", "{a}");
 		check("{g(1), Hold(g(1))} /. g(n_) -> n + 1", //
