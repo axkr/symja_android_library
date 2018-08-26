@@ -448,10 +448,9 @@ public class PatternSequence implements IPatternSequence {
 	}
 	
 	/** {@inheritDoc} */
-	@Override
-	public boolean isFreeOfDefaultPatterns() {
-		return true;
-	}
+//	public boolean isFreeOfDefaultPatterns() {
+//		return true;
+//	}
 
 	/** {@inheritDoc} */
 	@Override

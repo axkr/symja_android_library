@@ -373,13 +373,7 @@ public class Blank implements IPattern {
 	@Override
 	public boolean isFreeOfPatterns() {
 		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isFreeOfDefaultPatterns() {
-		return !fDefault && fDefaultValue == null;
-	}
+	} 
 
 	/** {@inheritDoc} */
 	@Override

@@ -1845,7 +1845,19 @@ public abstract class AbstractAST implements IASTMutable {
 				addEvalFlags(((IAST) temp).getEvalFlags() & IAST.CONTAINS_PATTERN_EXPR);
 				continue;
 			} else if (temp instanceof IPatternObject) {
-				isFreeOfPatterns = false;				
+				isFreeOfPatterns = false;
+				if (temp instanceof IPatternSequence) {
+					if (temp.isPatternDefault()) {
+						addEvalFlags(IAST.CONTAINS_DEFAULT_PATTERN);
+					}
+					addEvalFlags(IAST.CONTAINS_PATTERN_SEQUENCE);
+				} else {
+					if (temp.isPatternDefault()) {
+						addEvalFlags(IAST.CONTAINS_DEFAULT_PATTERN);
+					}
+					addEvalFlags(IAST.CONTAINS_PATTERN);
+				}
+				
 			}
 		}
 		if (isFreeOfPatterns) {
