@@ -2388,15 +2388,16 @@ public final class Arithmetic {
 
 			// ORDERLESS_MATCHER.setUpHashRule("Sin[x_]^2", "Cos[x_]^2", "a");
 			ORDERLESS_MATCHER.definePatternHashRule(Power(Sin(x_), C2), Power(Cos(x_), C2), C1);
-
+			ORDERLESS_MATCHER.definePatternHashRule(Power(F.Sech(x_), C2), Power(F.Tanh(x_), C2), C1);
+			
 			// ORDERLESS_MATCHER.setUpHashRule("a_*Sin[x_]^2", "a_*Cos[x_]^2", "a");
 			// ORDERLESS_MATCHER.defineHashRule(Times(a_, Power(Sin(x_), C2)), Times(a_,
 			// Power(Cos(x_), C2)), a);
 
 			// ORDERLESS_MATCHER.setUpHashRule("ArcSin[x_]", "ArcCos[x_]", "Pi/2");
-			ORDERLESS_MATCHER.defineHashRule(ArcSin(x_), ArcCos(x_), Times(C1D2, Pi));
+			ORDERLESS_MATCHER.defineHashRule(ArcSin(x_), ArcCos(x_),  F.CPiHalf);
 			// ORDERLESS_MATCHER.setUpHashRule("ArcTan[x_]", "ArcCot[x_]", "Pi/2");
-			ORDERLESS_MATCHER.defineHashRule(ArcTan(x_), ArcCot(x_), Times(C1D2, Pi));
+			ORDERLESS_MATCHER.defineHashRule(ArcTan(x_), ArcCot(x_),  F.CPiHalf);
 			// ORDERLESS_MATCHER.setUpHashRule("ArcTan[x_]", "ArcTan[y_]", "Pi/2",
 			// "Positive[x]&&(y==1/x)");
 			ORDERLESS_MATCHER.defineHashRule(ArcTan(x_), ArcTan(y_), //
