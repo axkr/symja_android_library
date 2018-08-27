@@ -18,6 +18,7 @@
   Erf->(2*E^(-#^(2))/Sqrt(Pi)),
   Erfc->(-2*E^(-#^(2))/Sqrt(Pi)),
   Erfi->(2*E^(#^(2))/Sqrt(Pi)),
+  ExpIntegralEi->E^#/#,
   Floor->Piecewise({{0, #>Floor(#)}}, Indeterminate),
   FractionalPart->1,
   FresnelC->Cos((Pi*#^2)/2),
@@ -45,7 +46,9 @@
   Sec->Sec(#)*Tan(#),
   Sech->(-1)*Tanh(#)*Sech(#),
   SinIntegral->Sinc(#),
-  CosIntegral->Cos(#)/#
+  SinhIntegral->Sinh(#)/#,
+  CosIntegral->Cos(#)/#,
+  CoshIntegral->Cosh(#)/#
 },
 {
   ArcSin->#*(1-#^2)^(-3/2),

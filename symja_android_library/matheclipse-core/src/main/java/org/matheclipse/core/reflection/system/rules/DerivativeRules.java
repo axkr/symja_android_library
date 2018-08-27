@@ -63,6 +63,9 @@ public interface DerivativeRules {
     // Erfi->2*E^#1^2/Sqrt(Pi)
     Rule(Erfi,
       Times(C2,Exp(Sqr(Slot1)),Power(Pi,CN1D2))),
+    // ExpIntegralEi->E^#1/#1
+    Rule(ExpIntegralEi,
+      Times(Exp(Slot1),Power(Slot1,-1))),
     // Floor->Piecewise({{0,#1>Floor(#1)}},Indeterminate)
     Rule(Floor,
       Piecewise(List(List(C0,Greater(Slot1,Floor(Slot1)))),Indeterminate)),
@@ -144,9 +147,15 @@ public interface DerivativeRules {
     // SinIntegral->Sinc(#1)
     Rule(SinIntegral,
       Sinc(Slot1)),
+    // SinhIntegral->Sinh(#1)/#1
+    Rule(SinhIntegral,
+      Times(Sinh(Slot1),Power(Slot1,-1))),
     // CosIntegral->Cos(#1)/#1
     Rule(CosIntegral,
-      Times(Cos(Slot1),Power(Slot1,-1)))
+      Times(Cos(Slot1),Power(Slot1,-1))),
+    // CoshIntegral->Cosh(#1)/#1
+    Rule(CoshIntegral,
+      Times(Cosh(Slot1),Power(Slot1,-1)))
   );
   final public static IAST RULES2 = List(
     // ArcSin->#1/(1-#1^2)^(3/2)
