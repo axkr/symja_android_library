@@ -3092,6 +3092,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Plus @@ ($numbers * $factors)", "2");
 	}
 
+	public void testExpIntegralE() {
+		check("ExpIntegralE(0,z)", //
+				"1/(E^z*z)");
+		check("ExpIntegralE(n,0)", //
+				"ExpIntegralE(n,0)");
+		check("ExpIntegralE(17,0)", //
+				"1/16");
+		check("ExpIntegralE(-17,0)", //
+				"ComplexInfinity");
+	}
+
 	public void testExpIntegralEi() {
 		check("ExpIntegralEi(I*Infinity)", "I*Pi");
 		check("ExpIntegralEi(-I*Infinity)", "-I*Pi");

@@ -84,6 +84,15 @@ public class HypergeometricFunctions {
 				// 1/(E^z*z)
 				return F.Power(F.Times(z, F.Power(F.E, z)), -1);
 			}
+			if (z.isZero()) {
+				if (n.re().greaterThan(F.C1).isTrue()) {
+					// 1/(n-1)
+					return F.Power(F.Plus(n, F.CN1), -1);
+				}
+				if (n.re().lessThan(F.C1).isTrue()) {
+					return F.CComplexInfinity;
+				}
+			}
 			return F.NIL;
 		}
 
