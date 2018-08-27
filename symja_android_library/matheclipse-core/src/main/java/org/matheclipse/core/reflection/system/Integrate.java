@@ -94,7 +94,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 */
 	public static boolean INITIALIZED = false;
 
-	public final static Set<ISymbol> INT_RUBI_FUNCTIONS = new HashSet<ISymbol>(64);
+//	public final static Set<ISymbol> INT_RUBI_FUNCTIONS = new HashSet<ISymbol>(64);
 	public final static Set<ISymbol> INT_FUNCTIONS = new HashSet<ISymbol>(64);
 
 	public final static Set<IExpr> DEBUG_EXPR = new HashSet<IExpr>(64);
@@ -1018,16 +1018,16 @@ public class Integrate extends AbstractFunctionEvaluator {
 		INT_FUNCTIONS.add(F.ArcSinh);
 		INT_FUNCTIONS.add(F.ArcTanh);
 
-		ISymbol[] rubiSymbols = { F.AppellF1, F.ArcCos, F.ArcCot, F.ArcCsc, F.ArcSec, F.ArcSin, F.ArcTan, F.ArcCosh,
-				F.ArcCoth, F.ArcCsch, F.ArcSech, F.ArcSinh, F.ArcTanh, F.Cos, F.Cosh, F.CosIntegral, F.CoshIntegral,
-				F.Cot, F.Coth, F.Csc, F.Csch, F.EllipticE, F.EllipticF, F.EllipticPi, F.Erf, F.Erfc, F.Erfi, F.Exp,
-				F.ExpIntegralE, F.ExpIntegralEi, F.FresnelC, F.FresnelS, F.Gamma, F.HypergeometricPFQ,
-				F.Hypergeometric2F1, F.HurwitzZeta, F.InverseErf, F.Log, F.LogGamma, F.LogIntegral, F.Piecewise, F.Plus,
-				F.PolyGamma, F.PolyLog, F.Power, F.ProductLog, F.Sec, F.Sech, F.Sin, F.Sinc, F.Sinh, F.SinIntegral,
-				F.SinhIntegral, F.Sqrt, F.Tan, F.Tanh, F.Times, F.Zeta };
-		for (int i = 0; i < rubiSymbols.length; i++) {
-			INT_RUBI_FUNCTIONS.add(rubiSymbols[i]);
-		}
+//		ISymbol[] rubiSymbols = { F.AppellF1, F.ArcCos, F.ArcCot, F.ArcCsc, F.ArcSec, F.ArcSin, F.ArcTan, F.ArcCosh,
+//				F.ArcCoth, F.ArcCsch, F.ArcSech, F.ArcSinh, F.ArcTanh, F.Cos, F.Cosh, F.CosIntegral, F.CoshIntegral,
+//				F.Cot, F.Coth, F.Csc, F.Csch, F.EllipticE, F.EllipticF, F.EllipticPi, F.Erf, F.Erfc, F.Erfi, F.Exp,
+//				F.ExpIntegralE, F.ExpIntegralEi, F.FresnelC, F.FresnelS, F.Gamma, F.HypergeometricPFQ,
+//				F.Hypergeometric2F1, F.HurwitzZeta, F.InverseErf, F.Log, F.LogGamma, F.LogIntegral, F.Piecewise, F.Plus,
+//				F.PolyGamma, F.PolyLog, F.Power, F.ProductLog, F.Sec, F.Sech, F.Sin, F.Sinc, F.Sinh, F.SinIntegral,
+//				F.SinhIntegral, F.Sqrt, F.Tan, F.Tanh, F.Times, F.Zeta };
+//		for (int i = 0; i < rubiSymbols.length; i++) {
+//			INT_RUBI_FUNCTIONS.add(rubiSymbols[i]);
+//		}
 	}
 
 	private static void getRuleASTRubi45() {
