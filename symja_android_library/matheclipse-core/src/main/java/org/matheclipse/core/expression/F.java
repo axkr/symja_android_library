@@ -3414,7 +3414,7 @@ public class F {
 						// if (ruleList != null) {
 						// engine.addRules(ruleList);
 						// }
-						org.matheclipse.core.reflection.system.Integrate.getRuleASTStatic();
+//						org.matheclipse.core.reflection.system.Integrate.getRuleASTStatic();
 						// if (ruleList != null) {
 						// engine.addRules(ruleList);
 						// }

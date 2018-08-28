@@ -121,13 +121,14 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
 			}
 			return result != null ? result : F.NIL;
 		}
-		if (fTypes.length != fPatternMap.size()) {
+		PatternMap patternMap=getPatternMap();
+		if (fTypes.length != patternMap.size()) {
 			return F.NIL;
 		}
-		fPatternMap.initPattern();
+		patternMap.initPattern();
 		if (matchExpr(fLhsPatternExpr, leftHandSide, engine)) {
 
-			List<IExpr> args = fPatternMap.getValuesAsList();
+			List<IExpr> args = patternMap.getValuesAsList();
 			try {
 				if (args != null) {
 					IExpr result = (IExpr) fMethod.invoke(fInstance, args.toArray());

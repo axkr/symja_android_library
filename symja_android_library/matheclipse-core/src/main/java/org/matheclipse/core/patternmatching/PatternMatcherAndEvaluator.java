@@ -67,10 +67,17 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	 */
 	public PatternMatcherAndEvaluator(final ISymbol.RuleType setSymbol, final IExpr leftHandSide,
 			final IExpr rightHandSide) {
-		super(leftHandSide);
+		this(setSymbol, leftHandSide, rightHandSide, true);
+	}
+
+	public PatternMatcherAndEvaluator(final ISymbol.RuleType setSymbol, final IExpr leftHandSide,
+			final IExpr rightHandSide, boolean initAll) {
+		super(leftHandSide, initAll);
 		fSetSymbol = setSymbol;
 		fRightHandSide = rightHandSide;
-		initRHSleafCountSimplify();
+		if (initAll) {
+			initRHSleafCountSimplify();
+		}
 	}
 
 	/**
@@ -155,10 +162,11 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 		if (!(fRightHandSide.isModuleOrWith() || fRightHandSide.isCondition())) {
 			return true;
 		}
-		if (!fPatternMap.isAllPatternsAssigned()) {
+		PatternMap patternMap= getPatternMap();
+		if (!patternMap.isAllPatternsAssigned()) {
 			return true;
 		}
-		IExpr substConditon = fPatternMap.substituteSymbols(fRightHandSide);
+		IExpr substConditon = patternMap.substituteSymbols(fRightHandSide);
 		if (substConditon.isCondition()) {
 			return Programming.checkCondition(substConditon.first(), substConditon.second(), engine);
 		} else if (substConditon.isModuleOrWith()) {
@@ -199,7 +207,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 			}
 		}
 
-		fPatternMap.initPattern();
+		PatternMap patternMap= getPatternMap();
+		patternMap.initPattern();
 		if (matchExpr(fLhsPatternExpr, leftHandSide, engine)) {
 
 			if (RulesData.showSteps) {
@@ -213,7 +222,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 				}
 			}
 
-			IExpr result = fPatternMap.substituteSymbols(fRightHandSide);
+			IExpr result = patternMap.substituteSymbols(fRightHandSide);
 			try {
 				// System.out.println(result.toString());
 				if (evaluate) {
@@ -229,7 +238,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 		}
 
 		if (fLhsPatternExpr.isAST() && leftHandSide.isAST()) {
-			fPatternMap.initPattern();
+			patternMap.initPattern();
 			return evalAST((IAST) fLhsPatternExpr, (IAST) leftHandSide, fRightHandSide, engine);
 		}
 		return F.NIL;
@@ -300,7 +309,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 							if (getRHSleafCountSimplify() > pm.getRHSleafCountSimplify()) {
 								return 1;
 							}
-							return equivalentRHS(fRightHandSide, pm.fRightHandSide, fPatternMap, pm.fPatternMap);
+							return equivalentRHS(fRightHandSide, pm.fRightHandSide, getPatternMap(), pm.getPatternMap());
 						}
 						return 1;
 					} else if (pm.fRightHandSide.isModuleOrWithCondition() || pm.fRightHandSide.isCondition()) {

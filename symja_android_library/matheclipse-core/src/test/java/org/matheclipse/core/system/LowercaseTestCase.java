@@ -1720,6 +1720,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCos() {
+		check("Cos(-Pi/2+z)",//
+				"Sin(z)");
+		check("Cos(e-Pi/2+f*x)",//
+				"Sin(e+f*x)");
+		check("Cos(e-3/2*Pi+f*x)",//
+				"-Sin(e+f*x)");
+		check("Cos(e-1+f*x)",//
+				"Cos(1-e-f*x)");
 		check("Cos(I*a+I*b*x)/b", "Cosh(a+b*x)/b");
 		check("Cos(ArcSin(x))", "Sqrt(1-x^2)");
 		check("Cos(ArcTan(x))", "1/Sqrt(1+x^2)");
@@ -9346,7 +9354,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSin() {
-		check("Sin(ArcCos(x))", "Sqrt(1-x^2)");
+		check("Sin(-Pi/2+z)",//
+				"-Cos(z)");
+		check("Sin(e-Pi/2+f*x)",//
+				"-Cos(e+f*x)");
+		check("Sin(e-3/2*Pi+f*x)",//
+				"Cos(e+f*x)");
+		check("Sin(e-1+f*x)",//
+				"-Sin(1-e-f*x)");
+		check("Sin(ArcCos(x))", //
+				"Sqrt(1-x^2)");
 		check("Sin(ArcTan(x))", "x/Sqrt(1+x^2)");
 
 		check("Sin(Pi/4)", "1/Sqrt(2)");

@@ -94,16 +94,19 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 */
 	public static boolean INITIALIZED = false;
 
-//	public final static Set<ISymbol> INT_RUBI_FUNCTIONS = new HashSet<ISymbol>(64);
+	// public final static Set<ISymbol> INT_RUBI_FUNCTIONS = new HashSet<ISymbol>(64);
 	public final static Set<ISymbol> INT_FUNCTIONS = new HashSet<ISymbol>(64);
 
 	public final static Set<IExpr> DEBUG_EXPR = new HashSet<IExpr>(64);
+
+	public static boolean INTEGRATE_RULES_READ = false;
 
 	public Integrate() {
 	}
 
 	@Override
 	public IExpr evaluate(final IAST holdallAST, EvalEngine engine) {
+		getRuleASTStatic();
 		boolean calledRubi = false;
 		boolean evaled = false;
 		IExpr result;
@@ -984,50 +987,54 @@ public class Integrate extends AbstractFunctionEvaluator {
 		return null;
 	}
 
-	public static void getRuleASTStatic() {
-		INTEGRATE_RULES_DATA = F.Integrate.createRulesData(new int[] { 0, 7000 });
-		getRuleASTRubi45();
+	public static synchronized void getRuleASTStatic() {
+		if (!INTEGRATE_RULES_READ) {
+			INTEGRATE_RULES_READ = true;
+			INTEGRATE_RULES_DATA = F.Integrate.createRulesData(new int[] { 0, 7000 });
+			getRuleASTRubi45();
 
-		// INT_FUNCTIONS.add(F.Times);
-		// INT_FUNCTIONS.add(F.Power);
-		INT_FUNCTIONS.add(F.Cos);
-		INT_FUNCTIONS.add(F.Cot);
-		INT_FUNCTIONS.add(F.Csc);
-		INT_FUNCTIONS.add(F.Sec);
-		INT_FUNCTIONS.add(F.Sin);
-		INT_FUNCTIONS.add(F.Tan);
+			// INT_FUNCTIONS.add(F.Times);
+			// INT_FUNCTIONS.add(F.Power);
+			INT_FUNCTIONS.add(F.Cos);
+			INT_FUNCTIONS.add(F.Cot);
+			INT_FUNCTIONS.add(F.Csc);
+			INT_FUNCTIONS.add(F.Sec);
+			INT_FUNCTIONS.add(F.Sin);
+			INT_FUNCTIONS.add(F.Tan);
 
-		INT_FUNCTIONS.add(F.ArcCos);
-		INT_FUNCTIONS.add(F.ArcCot);
-		INT_FUNCTIONS.add(F.ArcCsc);
-		INT_FUNCTIONS.add(F.ArcSec);
-		INT_FUNCTIONS.add(F.ArcSin);
-		INT_FUNCTIONS.add(F.ArcTan);
+			INT_FUNCTIONS.add(F.ArcCos);
+			INT_FUNCTIONS.add(F.ArcCot);
+			INT_FUNCTIONS.add(F.ArcCsc);
+			INT_FUNCTIONS.add(F.ArcSec);
+			INT_FUNCTIONS.add(F.ArcSin);
+			INT_FUNCTIONS.add(F.ArcTan);
 
-		INT_FUNCTIONS.add(F.Cosh);
-		INT_FUNCTIONS.add(F.Coth);
-		INT_FUNCTIONS.add(F.Csch);
-		INT_FUNCTIONS.add(F.Sech);
-		INT_FUNCTIONS.add(F.Sinh);
-		INT_FUNCTIONS.add(F.Tanh);
+			INT_FUNCTIONS.add(F.Cosh);
+			INT_FUNCTIONS.add(F.Coth);
+			INT_FUNCTIONS.add(F.Csch);
+			INT_FUNCTIONS.add(F.Sech);
+			INT_FUNCTIONS.add(F.Sinh);
+			INT_FUNCTIONS.add(F.Tanh);
 
-		INT_FUNCTIONS.add(F.ArcCosh);
-		INT_FUNCTIONS.add(F.ArcCoth);
-		INT_FUNCTIONS.add(F.ArcCsc);
-		INT_FUNCTIONS.add(F.ArcSec);
-		INT_FUNCTIONS.add(F.ArcSinh);
-		INT_FUNCTIONS.add(F.ArcTanh);
+			INT_FUNCTIONS.add(F.ArcCosh);
+			INT_FUNCTIONS.add(F.ArcCoth);
+			INT_FUNCTIONS.add(F.ArcCsc);
+			INT_FUNCTIONS.add(F.ArcSec);
+			INT_FUNCTIONS.add(F.ArcSinh);
+			INT_FUNCTIONS.add(F.ArcTanh);
 
-//		ISymbol[] rubiSymbols = { F.AppellF1, F.ArcCos, F.ArcCot, F.ArcCsc, F.ArcSec, F.ArcSin, F.ArcTan, F.ArcCosh,
-//				F.ArcCoth, F.ArcCsch, F.ArcSech, F.ArcSinh, F.ArcTanh, F.Cos, F.Cosh, F.CosIntegral, F.CoshIntegral,
-//				F.Cot, F.Coth, F.Csc, F.Csch, F.EllipticE, F.EllipticF, F.EllipticPi, F.Erf, F.Erfc, F.Erfi, F.Exp,
-//				F.ExpIntegralE, F.ExpIntegralEi, F.FresnelC, F.FresnelS, F.Gamma, F.HypergeometricPFQ,
-//				F.Hypergeometric2F1, F.HurwitzZeta, F.InverseErf, F.Log, F.LogGamma, F.LogIntegral, F.Piecewise, F.Plus,
-//				F.PolyGamma, F.PolyLog, F.Power, F.ProductLog, F.Sec, F.Sech, F.Sin, F.Sinc, F.Sinh, F.SinIntegral,
-//				F.SinhIntegral, F.Sqrt, F.Tan, F.Tanh, F.Times, F.Zeta };
-//		for (int i = 0; i < rubiSymbols.length; i++) {
-//			INT_RUBI_FUNCTIONS.add(rubiSymbols[i]);
-//		}
+			// ISymbol[] rubiSymbols = { F.AppellF1, F.ArcCos, F.ArcCot, F.ArcCsc, F.ArcSec, F.ArcSin, F.ArcTan,
+			// F.ArcCosh,
+			// F.ArcCoth, F.ArcCsch, F.ArcSech, F.ArcSinh, F.ArcTanh, F.Cos, F.Cosh, F.CosIntegral, F.CoshIntegral,
+			// F.Cot, F.Coth, F.Csc, F.Csch, F.EllipticE, F.EllipticF, F.EllipticPi, F.Erf, F.Erfc, F.Erfi, F.Exp,
+			// F.ExpIntegralE, F.ExpIntegralEi, F.FresnelC, F.FresnelS, F.Gamma, F.HypergeometricPFQ,
+			// F.Hypergeometric2F1, F.HurwitzZeta, F.InverseErf, F.Log, F.LogGamma, F.LogIntegral, F.Piecewise, F.Plus,
+			// F.PolyGamma, F.PolyLog, F.Power, F.ProductLog, F.Sec, F.Sech, F.Sin, F.Sinc, F.Sinh, F.SinIntegral,
+			// F.SinhIntegral, F.Sqrt, F.Tan, F.Tanh, F.Times, F.Zeta };
+			// for (int i = 0; i < rubiSymbols.length; i++) {
+			// INT_RUBI_FUNCTIONS.add(rubiSymbols[i]);
+			// }
+		}
 	}
 
 	private static void getRuleASTRubi45() {
@@ -1167,20 +1174,6 @@ public class Integrate extends AbstractFunctionEvaluator {
 		init = org.matheclipse.core.integrate.rubi.IntRules132.RULES;
 		init = org.matheclipse.core.integrate.rubi.IntRules133.RULES;
 		init = org.matheclipse.core.integrate.rubi.IntRules134.RULES;
-		// org.matheclipse.core.integrate.rubi45.IntRules135.RULES;
-		// org.matheclipse.core.integrate.rubi45.IntRules136.RULES;
-		// org.matheclipse.core.integrate.rubi45.IntRules137.RULES;
-		// org.matheclipse.core.integrate.rubi45.IntRules138.RULES;
-		// org.matheclipse.core.integrate.rubi45.IntRules139.RULES;
-
-		// org.matheclipse.core.integrate.rubi45.IntRules140.RULES;
-		// org.matheclipse.core.integrate.rubi45.IntRules141.RULES;
-		// org.matheclipse.core.integrate.rubi45.IntRules142.RULES;
-		// org.matheclipse.core.integrate.rubi45.IntRules143.RULES;
-		// org.matheclipse.core.integrate.rubi45.IntRules144.RULES;
-		// org.matheclipse.core.integrate.rubi45.IntRules145.RULES;
-
-		// org.matheclipse.integrate.rubi45.UtilityFunctions.init();
 	}
 
 	/**
@@ -1200,7 +1193,6 @@ public class Integrate extends AbstractFunctionEvaluator {
 		ast = org.matheclipse.core.integrate.rubi.UtilityFunctions4.RULES;
 		ast = org.matheclipse.core.integrate.rubi.UtilityFunctions5.RULES;
 		ast = org.matheclipse.core.integrate.rubi.UtilityFunctions6.RULES;
-
 		ast = org.matheclipse.core.integrate.rubi.UtilityFunctions7.RULES;
 		ast = org.matheclipse.core.integrate.rubi.UtilityFunctions8.RULES;
 
