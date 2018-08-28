@@ -7525,6 +7525,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "$Aborted");
 		// check("TimeConstrained(1^3^3^3, 10)", //
 		// "1");
+		check("Sqrt(Pi/b)",
+				"Sqrt(1/b)*Sqrt(Pi)");
 		check("(2*x*y)^n", //
 				"2^n*(x*y)^n");
 		check("(0.3333*x*y)^n", //

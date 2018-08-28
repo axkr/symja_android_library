@@ -3090,7 +3090,7 @@ public final class Arithmetic {
 					// if (exponent.isNumber()) {
 					// final IAST f0 = astArg1;
 					//
-					if ((base.size() > 1) && (base.first().isRealResult())) {
+					if ((base.size() > 2)) {
 						IASTAppendable filterAST = powBase.copyHead();
 						IASTAppendable restAST = powBase.copyHead();
 						powBase.forEach(x -> {

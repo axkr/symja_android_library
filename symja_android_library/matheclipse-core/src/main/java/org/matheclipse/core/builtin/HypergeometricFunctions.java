@@ -7,6 +7,7 @@ import static org.matheclipse.core.expression.F.Factorial;
 import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Times;
 
 import java.util.function.DoubleUnaryOperator;
@@ -28,6 +29,7 @@ import org.matheclipse.core.reflection.system.rules.Hypergeometric2F1Rules;
 public class HypergeometricFunctions {
 	static {
 		F.CosIntegral.setEvaluator(new CosIntegral());
+		F.CoshIntegral.setEvaluator(new CoshIntegral());
 		F.ExpIntegralE.setEvaluator(new ExpIntegralE());
 		F.ExpIntegralEi.setEvaluator(new ExpIntegralEi());
 		F.FresnelC.setEvaluator(new FresnelC());
@@ -38,7 +40,7 @@ public class HypergeometricFunctions {
 		F.Hypergeometric2F1.setEvaluator(new Hypergeometric2F1());
 		F.LogIntegral.setEvaluator(new LogIntegral());
 		F.SinIntegral.setEvaluator(new SinIntegral());
-
+		F.SinhIntegral.setEvaluator(new SinhIntegral());
 	}
 
 	private static class CosIntegral extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperator {
@@ -72,6 +74,20 @@ public class HypergeometricFunctions {
 		}
 	}
 
+	private static class CoshIntegral extends AbstractTrigArg1  {
+		 
+		@Override
+		public IExpr evaluateArg1(final IExpr arg1) {
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
+	
 	private static class ExpIntegralE extends AbstractFunctionEvaluator {
 
 		@Override
@@ -630,6 +646,10 @@ public class HypergeometricFunctions {
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
+			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+			if (negExpr.isPresent()) {
+				return Negate(F.SinIntegral(negExpr));
+			}
 			return F.NIL;
 		}
 
@@ -640,6 +660,24 @@ public class HypergeometricFunctions {
 		}
 	}
 
+	private static class SinhIntegral extends AbstractTrigArg1  {
+ 
+		@Override
+		public IExpr evaluateArg1(final IExpr arg1) {
+			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+			if (negExpr.isPresent()) {
+				return Negate(F.SinIntegral(negExpr));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
+	
 	private final static HypergeometricFunctions CONST = new HypergeometricFunctions();
 
 	public static HypergeometricFunctions initialize() {
