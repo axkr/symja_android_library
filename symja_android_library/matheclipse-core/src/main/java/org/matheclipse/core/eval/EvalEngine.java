@@ -1029,8 +1029,10 @@ public class EvalEngine implements Serializable {
 
 	public IExpr evalLHSPattern(IAST ast) {
 		boolean evalLHSMode = fEvalLHSMode;
+		boolean numericMode = fNumericMode;
 		try {
 			fEvalLHSMode = true;
+			numericMode = false;
 			IExpr temp = evalAttributes(ast.topHead(),ast);
 			if (temp.isPresent()) {
 				return temp;
@@ -1041,6 +1043,7 @@ public class EvalEngine implements Serializable {
 			}
 		} finally {
 			fEvalLHSMode = evalLHSMode;
+			fNumericMode = numericMode;
 		}
 		return ast;
 	}

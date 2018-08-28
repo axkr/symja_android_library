@@ -841,7 +841,7 @@ public final class PatternMatching {
 			Validate.checkSize(ast, 3);
 			IExpr leftHandSide = ast.arg1();
 			if (leftHandSide.isAST()) {
-				leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
+				leftHandSide = engine.evalLHSPattern((IAST) leftHandSide);
 			} else {
 				leftHandSide = engine.evaluate(leftHandSide);
 			}
@@ -881,7 +881,7 @@ public final class PatternMatching {
 			Validate.checkSize(ast, 3);
 			IExpr leftHandSide = ast.arg1();
 			if (leftHandSide.isAST()) {
-				leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
+				leftHandSide = engine.evalLHSPattern((IAST) leftHandSide);
 			} else {
 				leftHandSide = engine.evaluate(leftHandSide);
 			}
@@ -1071,7 +1071,7 @@ public final class PatternMatching {
 				final EvalEngine engine) throws RuleCreationError {
 
 			if (leftHandSide.isAST()) {
-				leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
+				leftHandSide = engine.evalLHSPattern((IAST) leftHandSide);
 			}
 			try {
 				rightHandSide = engine.evaluate(rightHandSide);
@@ -1382,7 +1382,7 @@ public final class PatternMatching {
 				throws RuleCreationError {
 
 			if (leftHandSide.isAST()) {
-				leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
+				leftHandSide = engine.evalLHSPattern((IAST) leftHandSide);
 			}
 			removeRule(leftHandSide, packageMode);
 		}
@@ -1447,7 +1447,7 @@ public final class PatternMatching {
 			final Object[] result = new Object[2];
 
 			if (leftHandSide.isAST()) {
-				leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
+				leftHandSide = engine.evalLHSPattern((IAST) leftHandSide);
 			}
 			try {
 				rightHandSide = engine.evaluate(rightHandSide);
@@ -1504,7 +1504,7 @@ public final class PatternMatching {
 
 			if (leftHandSide.isAST()
 					&& (((IAST) leftHandSide).getEvalFlags() & IAST.IS_FLATTENED_OR_SORTED_MASK) == IAST.NO_FLAG) {
-				leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
+				leftHandSide = engine.evalLHSPattern((IAST) leftHandSide);
 			}
 			result[0] = null;
 			result[1] = rightHandSide;

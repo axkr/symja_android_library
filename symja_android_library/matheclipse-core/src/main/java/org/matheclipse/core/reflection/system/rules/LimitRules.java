@@ -36,7 +36,7 @@ public interface LimitRules {
     ISetDelayed(Limit(Exp(x_),Rule(x_Symbol,oo)),
       oo),
     // Limit(E^x_,x_Symbol->-Infinity):=0
-    ISetDelayed(Limit(Exp(x_),Rule(x_Symbol,Negate(oo))),
+    ISetDelayed(Limit(Exp(x_),Rule(x_Symbol,Noo)),
       C0),
     // Limit(Log(x_),x_Symbol->0)=-Infinity
     ISet(Limit(Log(x_),Rule(x_Symbol,C0)),
@@ -45,7 +45,7 @@ public interface LimitRules {
     ISet(Limit(Log(x_),Rule(x_Symbol,oo)),
       oo),
     // Limit(Log(x_),x_Symbol->-Infinity)=Infinity
-    ISet(Limit(Log(x_),Rule(x_Symbol,Negate(oo))),
+    ISet(Limit(Log(x_),Rule(x_Symbol,Noo)),
       oo),
     // Limit((1+1/x_)^x_,x_Symbol->Infinity)=E
     ISet(Limit(Power(Plus(C1,Power(x_,-1)),x_),Rule(x_Symbol,oo)),
@@ -66,109 +66,109 @@ public interface LimitRules {
     ISet(Limit(ArcCos(x_),Rule(x_Symbol,oo)),
       DirectedInfinity(CI)),
     // Limit(ArcCos(x_),x_Symbol->-Infinity)=-I*Infinity
-    ISet(Limit(ArcCos(x_),Rule(x_Symbol,Negate(oo))),
+    ISet(Limit(ArcCos(x_),Rule(x_Symbol,Noo)),
       DirectedInfinity(CNI)),
     // Limit(ArcCot(x_),x_Symbol->Infinity)=0
     ISet(Limit(ArcCot(x_),Rule(x_Symbol,oo)),
       C0),
     // Limit(ArcCot(x_),x_Symbol->-Infinity)=0
-    ISet(Limit(ArcCot(x_),Rule(x_Symbol,Negate(oo))),
+    ISet(Limit(ArcCot(x_),Rule(x_Symbol,Noo)),
       C0),
     // Limit(ArcCsc(x_),x_Symbol->Infinity)=0
     ISet(Limit(ArcCsc(x_),Rule(x_Symbol,oo)),
       C0),
     // Limit(ArcCsc(x_),x_Symbol->-Infinity)=0
-    ISet(Limit(ArcCsc(x_),Rule(x_Symbol,Negate(oo))),
+    ISet(Limit(ArcCsc(x_),Rule(x_Symbol,Noo)),
       C0),
     // Limit(ArcSec(x_),x_Symbol->Infinity)=Pi/2
     ISet(Limit(ArcSec(x_),Rule(x_Symbol,oo)),
       Times(C1D2,Pi)),
     // Limit(ArcSec(x_),x_Symbol->-Infinity)=Pi/2
-    ISet(Limit(ArcSec(x_),Rule(x_Symbol,Negate(oo))),
+    ISet(Limit(ArcSec(x_),Rule(x_Symbol,Noo)),
       Times(C1D2,Pi)),
     // Limit(ArcSin(x_),x_Symbol->Infinity)=-I*Infinity
     ISet(Limit(ArcSin(x_),Rule(x_Symbol,oo)),
       DirectedInfinity(CNI)),
     // Limit(ArcSin(x_),x_Symbol->-Infinity)=I*Infinity
-    ISet(Limit(ArcSin(x_),Rule(x_Symbol,Negate(oo))),
+    ISet(Limit(ArcSin(x_),Rule(x_Symbol,Noo)),
       DirectedInfinity(CI)),
     // Limit(ArcTan(x_),x_Symbol->Infinity)=Pi/2
     ISet(Limit(ArcTan(x_),Rule(x_Symbol,oo)),
       Times(C1D2,Pi)),
     // Limit(ArcTan(x_),x_Symbol->-Infinity)=(-1)*1/2*Pi
-    ISet(Limit(ArcTan(x_),Rule(x_Symbol,Negate(oo))),
+    ISet(Limit(ArcTan(x_),Rule(x_Symbol,Noo)),
       Times(CN1D2,Pi)),
     // Limit(ArcCosh(x_),x_Symbol->Infinity)=Infinity
     ISet(Limit(ArcCosh(x_),Rule(x_Symbol,oo)),
       oo),
     // Limit(ArcCosh(x_),x_Symbol->-Infinity)=Infinity
-    ISet(Limit(ArcCosh(x_),Rule(x_Symbol,Negate(oo))),
+    ISet(Limit(ArcCosh(x_),Rule(x_Symbol,Noo)),
       oo),
     // Limit(ArcCoth(x_),x_Symbol->Infinity)=0
     ISet(Limit(ArcCoth(x_),Rule(x_Symbol,oo)),
       C0),
     // Limit(ArcCoth(x_),x_Symbol->-Infinity)=0
-    ISet(Limit(ArcCoth(x_),Rule(x_Symbol,Negate(oo))),
+    ISet(Limit(ArcCoth(x_),Rule(x_Symbol,Noo)),
       C0),
     // Limit(ArcCsch(x_),x_Symbol->Infinity)=0
     ISet(Limit(ArcCsch(x_),Rule(x_Symbol,oo)),
       C0),
     // Limit(ArcCsch(x_),x_Symbol->-Infinity)=0
-    ISet(Limit(ArcCsch(x_),Rule(x_Symbol,Negate(oo))),
+    ISet(Limit(ArcCsch(x_),Rule(x_Symbol,Noo)),
       C0),
     // Limit(ArcSech(x_),x_Symbol->Infinity)=I*Pi/2
     ISet(Limit(ArcSech(x_),Rule(x_Symbol,oo)),
       Times(CC(0L,1L,1L,2L),Pi)),
     // Limit(ArcSech(x_),x_Symbol->-Infinity)=I*Pi/2
-    ISet(Limit(ArcSech(x_),Rule(x_Symbol,Negate(oo))),
+    ISet(Limit(ArcSech(x_),Rule(x_Symbol,Noo)),
       Times(CC(0L,1L,1L,2L),Pi)),
     // Limit(ArcSinh(x_),x_Symbol->Infinity)=Infinity
     ISet(Limit(ArcSinh(x_),Rule(x_Symbol,oo)),
       oo),
     // Limit(ArcSinh(x_),x_Symbol->-Infinity)=-Infinity
-    ISet(Limit(ArcSinh(x_),Rule(x_Symbol,Negate(oo))),
+    ISet(Limit(ArcSinh(x_),Rule(x_Symbol,Noo)),
       Noo),
     // Limit(ArcTanh(x_),x_Symbol->Infinity)=-I*Pi/2
     ISet(Limit(ArcTanh(x_),Rule(x_Symbol,oo)),
       Times(CC(0L,1L,-1L,2L),Pi)),
     // Limit(ArcTanh(x_),x_Symbol->-Infinity)=I*Pi/2
-    ISet(Limit(ArcTanh(x_),Rule(x_Symbol,Negate(oo))),
+    ISet(Limit(ArcTanh(x_),Rule(x_Symbol,Noo)),
       Times(CC(0L,1L,1L,2L),Pi)),
     // Limit(Cosh(x_),x_Symbol->Infinity)=Infinity
     ISet(Limit(Cosh(x_),Rule(x_Symbol,oo)),
       oo),
     // Limit(Cosh(x_),x_Symbol->-Infinity)=Infinity
-    ISet(Limit(Cosh(x_),Rule(x_Symbol,Negate(oo))),
+    ISet(Limit(Cosh(x_),Rule(x_Symbol,Noo)),
       oo),
     // Limit(Coth(x_),x_Symbol->Infinity)=1
     ISet(Limit(Coth(x_),Rule(x_Symbol,oo)),
       C1),
     // Limit(Coth(x_),x_Symbol->-Infinity)=-1
-    ISet(Limit(Coth(x_),Rule(x_Symbol,Negate(oo))),
+    ISet(Limit(Coth(x_),Rule(x_Symbol,Noo)),
       CN1),
     // Limit(Csch(x_),x_Symbol->Infinity)=0
     ISet(Limit(Csch(x_),Rule(x_Symbol,oo)),
       C0),
     // Limit(Csch(x_),x_Symbol->-Infinity)=0
-    ISet(Limit(Csch(x_),Rule(x_Symbol,Negate(oo))),
+    ISet(Limit(Csch(x_),Rule(x_Symbol,Noo)),
       C0),
     // Limit(Sech(x_),x_Symbol->Infinity)=0
     ISet(Limit(Sech(x_),Rule(x_Symbol,oo)),
       C0),
     // Limit(Sech(x_),x_Symbol->-Infinity)=0
-    ISet(Limit(Sech(x_),Rule(x_Symbol,Negate(oo))),
+    ISet(Limit(Sech(x_),Rule(x_Symbol,Noo)),
       C0),
     // Limit(Sinh(x_),x_Symbol->Infinity)=Infinity
     ISet(Limit(Sinh(x_),Rule(x_Symbol,oo)),
       oo),
     // Limit(Sinh(x_),x_Symbol->-Infinity)=-Infinity
-    ISet(Limit(Sinh(x_),Rule(x_Symbol,Negate(oo))),
+    ISet(Limit(Sinh(x_),Rule(x_Symbol,Noo)),
       Noo),
     // Limit(Tanh(x_),x_Symbol->Infinity)=1
     ISet(Limit(Tanh(x_),Rule(x_Symbol,oo)),
       C1),
     // Limit(Tanh(x_),x_Symbol->-Infinity)=-1
-    ISet(Limit(Tanh(x_),Rule(x_Symbol,Negate(oo))),
+    ISet(Limit(Tanh(x_),Rule(x_Symbol,Noo)),
       CN1),
     // Limit(x_/Abs(x_),x_Symbol->0,Direction->1):=-1
     ISetDelayed(Limit(Times(x_,Power(Abs(x_),-1)),Rule(x_Symbol,C0),Rule(Direction,C1)),

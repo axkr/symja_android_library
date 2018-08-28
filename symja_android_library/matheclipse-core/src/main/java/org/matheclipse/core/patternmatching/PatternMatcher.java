@@ -250,20 +250,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			return false;
 		}
 		return patternExpr1.equals(patternExpr2);
-	}
-
-	/**
-	 * Transform the ast recursively, according to the attributes Flat, HoldAll, HoldFirst, HoldRest, Orderless for the
-	 * left-hand-side of a Set[] or SetDelayed[] expression. Delegates to
-	 * <code>EvalEngine#evalSetAttributes()</code>method
-	 * 
-	 * @param ast
-	 * @return <code>F.NIL</code> if evaluation is not possible
-	 * @deprecated use EvalEngine#evalHoldPattern(leftHandSide)
-	 */
-	public static IExpr evalLeftHandSide(final IAST leftHandSide, final EvalEngine engine) {
-		return engine.evalHoldPattern(leftHandSide);
-	}
+	} 
 
 	/**
 	 * priority of the left-hand-side of this matcher
@@ -943,7 +930,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 						// expression /; test
 						IExpr lhsTempPatternExpr = fPatternMap.substituteSymbols(lhsPatternAST);
 						if (lhsTempPatternExpr.isAST()) {
-							lhsTempPatternExpr = engine.evalHoldPattern((IAST) lhsTempPatternExpr);
+							lhsTempPatternExpr = engine.evalLHSPattern((IAST) lhsTempPatternExpr);
 						}
 						final PatternMatcher matcher = new PatternMatcherEvalEngine(lhsTempPatternExpr, engine);
 						if (matcher.test(lhsEvalExpr, engine)) {
