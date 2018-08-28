@@ -1065,9 +1065,9 @@ public class ExpTrigsFunctions {
 						}
 					}
 
-					if (rest.equals(C1D2)) {
+					if (rest.equals(F.C1D2)||rest.equals(F.CN1D2)) {
 						// Cos(z) == Sin(Pi/2 - z)
-						return Sin(Subtract(Divide(Pi, C2), arg1));
+						return Sin(Subtract(F.CPiHalf, arg1));
 					}
 				}
 				if (parts.arg2().isIntegerResult()) {
@@ -1956,7 +1956,11 @@ public class ExpTrigsFunctions {
 
 					if (rest.equals(C1D2)) {
 						// Sin(z) == Cos(Pi/2 - z)
-						return Cos(Subtract(Divide(Pi, C2), arg1));
+						return Cos(Subtract(F.CPiHalf, arg1));
+					}
+					if (rest.equals(F.CN1D2)) {
+						// Sin(z) == Cos(-Pi/2 - z)
+						return Negate(Cos(Subtract(F.CNPiHalf, arg1)));
 					}
 				}
 
