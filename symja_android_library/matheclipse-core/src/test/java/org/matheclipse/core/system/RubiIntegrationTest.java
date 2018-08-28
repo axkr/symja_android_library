@@ -602,7 +602,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		check("Integrate(Sqrt(a*Sin(x)^2),x)", //
 				"-Cot(x)*Sqrt(a*Sin(x)^2)");
 		check("Integrate(Sqrt(a*Sin(x)),x)", //
-				"(2*EllipticE(-Pi/4+x/2,2)*Sqrt(a*Sin(x)))/Sqrt(Sin(x))");
+				"(-2*EllipticE(Pi/4-x/2,2)*Sqrt(a*Sin(x)))/Sqrt(Sin(x))");
 
 		check("Integrate(Sin(b*x^2),x)", //
 				"(Sqrt(Pi/2)*FresnelS(Sqrt(b)*Sqrt(2/Pi)*x))/Sqrt(b)");

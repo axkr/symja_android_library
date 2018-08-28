@@ -212,13 +212,13 @@ public interface DRules {
     // D(Cos(x_),{x_,n_IntegerQ}):=Cos(x+1/2*n*Pi)/;n>=0
     ISetDelayed(D(Cos(x_),List(x_,$p(n,IntegerQ))),
       Condition(Cos(Plus(x,Times(C1D2,n,Pi))),GreaterEqual(n,C0))),
-    // D(Cot(x_),{x_,n_IntegerQ}):=-Csc(x)^2*KroneckerDelta(-1+n)+Cot(x)*KroneckerDelta(n)-n*Sum((((-1)^j*Binomial(-1+n,k))/(k+1)*2^(-2*k+n)*Binomial(2*k,j)*Sin(1/2*n*Pi+2*(-j+k)*x))/(Sin(x)^(2+2*k)*(-j+k)^(1-n)),{k,0,-1+n},{j,0,-1+k})/;n>=0
+    // D(Cot(x_),{x_,n_IntegerQ}):=-Csc(x)^2*KroneckerDelta(-1+n)+Cot(x)*KroneckerDelta(n)-n*Sum((((-1)^j*Binomial(-1+n,k))/(k+1)*Binomial(2*k,j)*Sin(1/2*n*Pi+2*(-j+k)*x))/(Sin(x)^(2+2*k)*2^(2*k-n)*(-j+k)^(1-n)),{k,0,-1+n},{j,0,-1+k})/;n>=0
     ISetDelayed(D(Cot(x_),List(x_,$p(n,IntegerQ))),
       Condition(Plus(Times(CN1,Sqr(Csc(x)),KroneckerDelta(Plus(CN1,n))),Times(Cot(x),KroneckerDelta(n)),Times(CN1,n,Sum(Times(Power(CN1,j),Power(Plus(k,C1),-1),Binomial(Plus(CN1,n),k),Power(Sin(x),Plus(CN2,Times(CN2,k))),Power(C2,Plus(Times(CN2,k),n)),Binomial(Times(C2,k),j),Power(Plus(Negate(j),k),Plus(CN1,n)),Sin(Plus(Times(C1D2,n,Pi),Times(C2,Plus(Negate(j),k),x)))),List(k,C0,Plus(CN1,n)),List(j,C0,Plus(CN1,k))))),GreaterEqual(n,C0))),
     // D(Sin(x_),{x_,n_IntegerQ}):=Sin(x+1/2*n*Pi)/;n>=0
     ISetDelayed(D(Sin(x_),List(x_,$p(n,IntegerQ))),
       Condition(Sin(Plus(x,Times(C1D2,n,Pi))),GreaterEqual(n,C0))),
-    // D(Tan(x_),{x_,n_IntegerQ}):=Tan(x)*KroneckerDelta(n)+Sec(x)^2*KroneckerDelta(-1+n)+n*Sum((((-1)^k*Binomial(-1+n,k))/(k+1)*2^(-2*k+n)*Binomial(2*k,j)*Sin(1/2*n*Pi+2*(-j+k)*x))/(Cos(x)^(2+2*k)*(-j+k)^(1-n)),{k,0,-1+n},{j,0,-1+k})/;n>=0
+    // D(Tan(x_),{x_,n_IntegerQ}):=Tan(x)*KroneckerDelta(n)+Sec(x)^2*KroneckerDelta(-1+n)+n*Sum((((-1)^k*Binomial(-1+n,k))/(k+1)*Binomial(2*k,j)*Sin(1/2*n*Pi+2*(-j+k)*x))/(Cos(x)^(2+2*k)*2^(2*k-n)*(-j+k)^(1-n)),{k,0,-1+n},{j,0,-1+k})/;n>=0
     ISetDelayed(D(Tan(x_),List(x_,$p(n,IntegerQ))),
       Condition(Plus(Times(Tan(x),KroneckerDelta(n)),Times(Sqr(Sec(x)),KroneckerDelta(Plus(CN1,n))),Times(n,Sum(Times(Power(CN1,k),Power(Plus(k,C1),-1),Binomial(Plus(CN1,n),k),Power(Cos(x),Plus(CN2,Times(CN2,k))),Power(C2,Plus(Times(CN2,k),n)),Binomial(Times(C2,k),j),Power(Plus(Negate(j),k),Plus(CN1,n)),Sin(Plus(Times(C1D2,n,Pi),Times(C2,Plus(Negate(j),k),x)))),List(k,C0,Plus(CN1,n)),List(j,C0,Plus(CN1,k))))),GreaterEqual(n,C0))),
     // D(Log(x_),{x_,n_IntegerQ}):=(-1+n)!/((-1)^(1-n)*x^n)/;n>=0

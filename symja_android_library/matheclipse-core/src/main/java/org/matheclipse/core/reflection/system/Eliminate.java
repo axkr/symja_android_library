@@ -376,7 +376,10 @@ public class Eliminate extends AbstractFunctionEvaluator {
 					if (plusClone.isAST0()) {
 						// no change for given expression
 						if (ast.size() == 3) {
-							return matchSpecialExpressions(ast, variable);
+							IExpr temp = matchSpecialExpressions(ast, exprWithoutVariable, variable);
+							if (temp.isPresent()) {
+								return temp;
+							}
 						}
 						return F.NIL;
 					}
@@ -445,18 +448,17 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	 * @param x
 	 * @return
 	 */
-	private static IExpr matchSpecialExpressions(IAST ast, IExpr x) {
-		final Matcher matcher = new Matcher();
-		// match a_.*variable^n_+b_.*variable^m_ to E^(((-I)*Pi + Log(a) - Log(b))/(m - n))
-		matcher.caseOf(F.Plus(F.Times(F.b_DEFAULT, F.Power(x, F.m_)), F.Times(F.a_DEFAULT, F.Power(x, F.n_))), //
-				F.Condition(
-						F.Exp(F.Times(F.Power(F.Plus(F.m, F.Negate(F.n)), -1),
-								F.Plus(F.Times(F.CNI, F.Pi), F.Log(F.a), F.Negate(F.Log(F.b))))),
-						F.And(F.FreeQ(F.a, x), F.FreeQ(F.b, x), F.FreeQ(F.n, x), F.FreeQ(F.m, x))));
-		IExpr result = matcher.replaceAll(ast);
-		if (result.isPresent()) {
-			// System.out.println(result.toString());
-			return result;
+	private static IExpr matchSpecialExpressions(IAST ast, IExpr exprWithoutVariable, IExpr x) {
+		if (exprWithoutVariable.isZero()) {
+			final Matcher matcher = new Matcher();
+			// match a_.*variable^n_.+b_.*variable^m_ to E^(((-I)*Pi + Log(a) - Log(b))/(m - n))
+			matcher.caseOf(
+					F.Plus(F.Times(F.b_DEFAULT, F.Power(x, F.m_)), F.Times(F.a_DEFAULT, F.Power(x, F.n_DEFAULT))), //
+					F.Condition(
+							F.Exp(F.Times(F.Power(F.Plus(F.m, F.Negate(F.n)), -1),
+									F.Plus(F.Times(F.CNI, F.Pi), F.Log(F.a), F.Negate(F.Log(F.b))))),
+							F.And(F.FreeQ(F.a, x), F.FreeQ(F.b, x), F.FreeQ(F.n, x), F.FreeQ(F.m, x))));
+			return matcher.replaceAll(ast);
 		}
 		return F.NIL;
 	}

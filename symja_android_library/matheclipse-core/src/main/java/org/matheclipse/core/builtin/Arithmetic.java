@@ -42,6 +42,7 @@ import static org.matheclipse.core.expression.F.y_;
 import java.util.function.DoubleFunction;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
@@ -71,8 +72,6 @@ import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.NumberUtil;
-import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
-import org.matheclipse.core.integrate.rubi.UtilityFunctions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -1399,7 +1398,7 @@ public final class Arithmetic {
 
 		public IExpr e2ObjArg(final IExpr o0, final IExpr z) {
 			int n = o0.toIntDefault(Integer.MIN_VALUE);
-			if (n > 0&&z.isNumericFunction()) {
+			if (n > 0 && z.isNumericFunction()) {
 				//
 				// Gamma(n,z) = ((n - 1)! * Sum(z^k/k!, {k, 0, n - 1}))/E^z
 				//
@@ -2389,15 +2388,15 @@ public final class Arithmetic {
 			// ORDERLESS_MATCHER.setUpHashRule("Sin[x_]^2", "Cos[x_]^2", "a");
 			ORDERLESS_MATCHER.definePatternHashRule(Power(Sin(x_), C2), Power(Cos(x_), C2), C1);
 			ORDERLESS_MATCHER.definePatternHashRule(Power(F.Sech(x_), C2), Power(F.Tanh(x_), C2), C1);
-			
+
 			// ORDERLESS_MATCHER.setUpHashRule("a_*Sin[x_]^2", "a_*Cos[x_]^2", "a");
 			// ORDERLESS_MATCHER.defineHashRule(Times(a_, Power(Sin(x_), C2)), Times(a_,
 			// Power(Cos(x_), C2)), a);
 
 			// ORDERLESS_MATCHER.setUpHashRule("ArcSin[x_]", "ArcCos[x_]", "Pi/2");
-			ORDERLESS_MATCHER.defineHashRule(ArcSin(x_), ArcCos(x_),  F.CPiHalf);
+			ORDERLESS_MATCHER.defineHashRule(ArcSin(x_), ArcCos(x_), F.CPiHalf);
 			// ORDERLESS_MATCHER.setUpHashRule("ArcTan[x_]", "ArcCot[x_]", "Pi/2");
-			ORDERLESS_MATCHER.defineHashRule(ArcTan(x_), ArcCot(x_),  F.CPiHalf);
+			ORDERLESS_MATCHER.defineHashRule(ArcTan(x_), ArcCot(x_), F.CPiHalf);
 			// ORDERLESS_MATCHER.setUpHashRule("ArcTan[x_]", "ArcTan[y_]", "Pi/2",
 			// "Positive[x]&&(y==1/x)");
 			ORDERLESS_MATCHER.defineHashRule(ArcTan(x_), ArcTan(y_), //
@@ -3045,9 +3044,9 @@ public final class Arithmetic {
 					} else {
 						IExpr o1negExpr = F.NIL;
 						if (exponent.isInteger() && ((IInteger) exponent).isEven()) {
-							o1negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(base, true);
+							o1negExpr = AbstractFunctionEvaluator.getPowerNegativeExpression(base, true);
 						} else {
-							o1negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(base, false);
+							o1negExpr = AbstractFunctionEvaluator.getPowerNegativeExpression(base, false);
 						}
 						if (o1negExpr.isPresent()) {
 							if (exponent.isMinusOne()) {
@@ -3082,38 +3081,56 @@ public final class Arithmetic {
 			}
 
 			if (base.isAST()) {
-				IAST astArg1 = (IAST) base;
-				if (astArg1.isTimes()) {
+				IAST powBase = (IAST) base;
+				if (powBase.isTimes()) {
 					if (exponent.isInteger() || exponent.isMinusOne()) {
 						// (a * b * c)^n => a^n * b^n * c^n
-						return astArg1.mapThread(Power(null, exponent), 1);
+						return powBase.mapThread(Power(null, exponent), 1);
 					}
 					// if (exponent.isNumber()) {
 					// final IAST f0 = astArg1;
 					//
-					// if ((f0.size() > 1) && (f0.arg1().isNumber())) {
-					// return Times(Power(f0.arg1(), exponent),
-					// Power(F.ast(f0, F.Times, true, 2, f0.size()), exponent));
-					// }
-					// }
-				} else if (astArg1.isPower()) {
-					if (astArg1.arg2().isReal() && exponent.isReal()) {
-						IExpr temp = astArg1.arg2().times(exponent);
-						if (temp.isOne()) {
-							if (astArg1.arg1().isNonNegativeResult()) {
-								return astArg1.arg1();
+					if ((base.size() > 1) && (base.first().isRealResult())) {
+						IASTAppendable filterAST = powBase.copyHead();
+						IASTAppendable restAST = powBase.copyHead();
+						powBase.forEach(x -> {
+							if (x.isRealResult()) {
+								if (x.isMinusOne()) {
+									restAST.append(x);
+								} else {
+									if (x.isNegativeResult()) {
+										filterAST.append(x.negate());
+										restAST.append(F.CN1);
+									} else {
+										filterAST.append(x);
+									}
+								}
+							} else {
+								restAST.append(x);
 							}
-							if (astArg1.arg1().isRealResult()) {
-								return F.Abs(astArg1.arg1());
+						});
+						if (filterAST.size() > 1 && restAST.size() > 1) {
+							return Times(Power(filterAST, exponent), Power(restAST, exponent));
+						}
+					}
+				} else if (base.isPower()) {
+					if (base.exponent().isReal() && exponent.isReal()) {
+						IExpr temp = base.exponent().times(exponent);
+						if (temp.isOne()) {
+							if (base.base().isNonNegativeResult()) {
+								return base.base();
+							}
+							if (base.base().isRealResult()) {
+								return F.Abs(base.base());
 							}
 						}
 					}
 					if (exponent.isInteger()) {
 						// (a ^ b )^n => a ^ (b * n)
-						if (astArg1.arg2().isNumber()) {
-							return F.Power(astArg1.arg1(), exponent.times(astArg1.arg2()));
+						if (base.exponent().isNumber()) {
+							return F.Power(base.base(), exponent.times(base.exponent()));
 						}
-						return F.Power(astArg1.arg1(), F.Times(exponent, astArg1.arg2()));
+						return F.Power(base.base(), F.Times(exponent, base.exponent()));
 					}
 				}
 			}
@@ -4805,6 +4822,7 @@ public final class Arithmetic {
 		protected ISymbol getFunctionSymbol() {
 			return F.TimesBy;
 		}
+
 	}
 
 	/**

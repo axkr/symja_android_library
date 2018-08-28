@@ -610,7 +610,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("BesselJ(-2.5, 1.333)", //
 				"1.6236");
 		check("BesselJ(-2.5, z)", //
-				"(0.79788*((3.0*Cos(4.71239+z))/z+(1.0-12.0/(2.0*z)^2.0)*Sin(4.71239+z)))/Sqrt(z)");
+				"(0.79788*((3.0*Cos(4.71239+z))/z+(1.0-3.0/z^2.0)*Sin(4.71239+z)))/Sqrt(z)");
 		check("BesselJ(-5/2, z)", //
 				"(Sqrt(2)*(-(1-3/z^2)*Cos(z)+(3*Sin(z))/z))/(Sqrt(Pi)*Sqrt(z))");
 		check("BesselJ(0, 5.2)", "-0.11029");
@@ -1720,13 +1720,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCos() {
-		check("Cos(-Pi/2+z)",//
+		check("Cos(-1/2*E+z)", //
+				"Cos(E/2-z)");
+		check("Cos(-Pi/2+z)", //
 				"Sin(z)");
-		check("Cos(e-Pi/2+f*x)",//
+		check("Cos(e-Pi/2+f*x)", //
 				"Sin(e+f*x)");
-		check("Cos(e-3/2*Pi+f*x)",//
+		check("Cos(e-3/2*Pi+f*x)", //
 				"-Sin(e+f*x)");
-		check("Cos(e-1+f*x)",//
+		check("Cos(e-1+f*x)", //
 				"Cos(1-e-f*x)");
 		check("Cos(I*a+I*b*x)/b", "Cosh(a+b*x)/b");
 		check("Cos(ArcSin(x))", "Sqrt(1-x^2)");
@@ -3423,7 +3425,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("FindInstance(Xor(a, b, c, d) && (a || b) && ! (c || d), {a, b, c, d}, Booleans)",
 				"{{a->False,b->True,c->False,d->False}}");
 
-		check("FindInstance(Sin((-3+x^2)/x) ==2,{x})", "{{x->ArcSin(2)/2-Sqrt(12+ArcSin(2)^2)/2}}");
+		check("FindInstance(Sin((-3+x^2)/x) ==2,{x})", //
+				"FindInstance(Sin((-3+x^2)/x)==2,{x})");
 		// check("FindInstance(Abs((-3+x^2)/x) ==2,{x})", "{{x->-3}}");
 		check("FindInstance({x^2-11==y, x+y==-9}, {x,y})", "{{x->-2,y->-7}}");
 
@@ -3985,9 +3988,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("GegenbauerC(5,z)", //
 				"2*z-8*z^3+32/5*z^5");
 		check("GegenbauerC(1/2,z)", //
-				"4*Sqrt(1/2*(1+z))");
+				"2*Sqrt(2)*Sqrt(1+z)");
 		check("GegenbauerC(-1/2,z)", //
-				"-4*Sqrt(1/2*(1+z))");
+				"-2*Sqrt(2)*Sqrt(1+z)");
 		check("GegenbauerC(v,0)", //
 				"(2*Cos(1/2*Pi*v))/v");
 		check("GegenbauerC(v,1)", //
@@ -4302,7 +4305,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testHypergeometric2F1() {
 
 		check("Hypergeometric2F1(1,2,3/2,x^2/9)", //
-				"(Sqrt(1-x^2/9)*Sqrt(x^2/9)+ArcSin(Sqrt(x^2/9)))/(2*(1-x^2/9)^(3/2)*Sqrt(x^2/9))");
+				"3/2*(1/3*Sqrt(1-x^2/9)*Sqrt(x^2)+ArcSin(Sqrt(x^2)/3))/((1-x^2/9)^(3/2)*Sqrt(x^2))");
 
 		// Hypergeometric2F1(1 - n, -n, 2, 1) == CatalanNumber(n)
 		check("Hypergeometric2F1(-3, -4, 2, 1)==CatalanNumber(4)", //
@@ -5193,10 +5196,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testLimit() {
 		// adjust LimitRules.m if these 2 tests fails
-		check("Limit(x*(Sqrt(2*Pi*x)/(x!))^(1/x), x->Infinity)", //
-				"E");
-		check("Limit(x/((x!)^(1/x)), x->Infinity)", //
-				"E");
+//		check("FullForm(x*(Sqrt(2*Pi*x)/(x!))^(1/x) )", //
+//				"Times(Power(Power(Times(2, Pi), Rational(1,2)), Power(x, -1)), x, Power(Times(Power(x, Rational(1,2)), Power(Factorial(x), -1)), Power(x, -1)))");
+//		check("Limit(x*(Sqrt(2*Pi*x)/(x!))^(1/x), x->Infinity)", //
+//				"E");
+//		check("Limit(x/((x!)^(1/x)), x->Infinity)", //
+//				"E");
 
 		check("Limit((1+k/x)^x, x->Infinity)", "E^k");
 		check("Limit((1-1/x)^x, x->Infinity)", "1/E");
@@ -7183,7 +7188,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PDF(GeometricDistribution(n),k)", //
 				"Piecewise({{(1-n)^k*n,k>=0}},0)");
 		check("PDF(GumbelDistribution(n, m),k)", //
-				"E^(-E^((k-n)/m)+(k-n)/m)/m");
+				"1/(E^(E^((k-n)/m)-(k-n)/m)*m)");
 		check("PDF(HypergeometricDistribution(n, ns, nt),k)", //
 				"Piecewise({{(Binomial(ns,k)*Binomial(-ns+nt,n-k))/Binomial(nt,n),0<=k<=n&&n+ns-nt<=k<=n&&\n"
 						+ "0<=k<=ns&&n+ns-nt<=k<=ns}},0)");
@@ -7192,7 +7197,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PDF(WeibullDistribution(n, m),k)", //
 				"Piecewise({{n/(E^(k/m)^n*m*(k/m)^(1-n)),k>0}},0)");
 		check("PDF(StudentTDistribution(4),k)", //
-				"3/8*(4/(4+k^2))^(5/2)");
+				"12*((1/(4+k^2)))^(5/2)");
 
 		check("PDF(DiscreteUniformDistribution({1, 5}), 3)", //
 				"1/5");
@@ -7520,6 +7525,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "$Aborted");
 		// check("TimeConstrained(1^3^3^3, 10)", //
 		// "1");
+		check("(2*x*y)^n", //
+				"2^n*(x*y)^n");
+		check("(0.3333*x*y)^n", //
+				"0.3333^n*(x*y)^n");
+		check("(a*3/4*E*x*y)^n", //
+				"(3/4*E)^n*(a*x*y)^n");
+		check("(a*42*(-Pi)*x*y)^n", //
+				"(42*Pi)^n*(-a*x*y)^n");
 		check("(-Infinity)^(42.0)", //
 				"Infinity");
 		check("(-Infinity)^(43.0)", //
@@ -9354,13 +9367,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSin() {
-		check("Sin(-Pi/2+z)",//
+		check("Sin( -3/x+x )", //
+				"-Sin(3/x-x)");
+		check("Sin((-3+x^2)/x)", //
+				"Sin((-3+x^2)/x)");
+		check("Sin(-Pi/2+z)", //
 				"-Cos(z)");
-		check("Sin(e-Pi/2+f*x)",//
+		check("Sin(e-Pi/2+f*x)", //
 				"-Cos(e+f*x)");
-		check("Sin(e-3/2*Pi+f*x)",//
+		check("Sin(e-3/2*Pi+f*x)", //
 				"Cos(e+f*x)");
-		check("Sin(e-1+f*x)",//
+		check("Sin(e-1+f*x)", //
 				"-Sin(1-e-f*x)");
 		check("Sin(ArcCos(x))", //
 				"Sqrt(1-x^2)");
@@ -9518,7 +9535,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Solve(x==2*Sqrt(y)*Sqrt(z),y)", //
 				"{{y->x^2/(4*z)}}");
 		check("Solve(x==2.0*Sqrt(y)*Sqrt(z),y)", //
-				"{{y->((0.5*x)/Sqrt(z))^2.0}}");
+				"{{y->0.25*(x/Sqrt(z))^2.0}}");
 
 		// Issue #155
 		check("Solve(x==2*Sqrt(y)*Sqrt(z),y)", //
@@ -9563,9 +9580,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// y, z}, Integers)", "");
 
 		check("Solve((k*Q*q)/r^2+1/r^4==E,r)", //
-				"{{r->-Sqrt((k*q*Q)/(2*E)-Sqrt(4*E+k^2*q^2*Q^2)/(2*E))},{r->Sqrt((k*q*Q)/(2*E)-Sqrt(\n"
-						+ "4*E+k^2*q^2*Q^2)/(2*E))},{r->-Sqrt((k*q*Q)/(2*E)+Sqrt(4*E+k^2*q^2*Q^2)/(2*E))},{r->Sqrt((k*q*Q)/(\n"
-						+ "2*E)+Sqrt(4*E+k^2*q^2*Q^2)/(2*E))}}");
+				"{{r->Sqrt(1/(2*E))*Sqrt(k*q*Q-Sqrt(4*E+k^2*q^2*Q^2))},{r->-Sqrt(1/(2*E))*Sqrt(k*q*Q-Sqrt(\n" + 
+				"4*E+k^2*q^2*Q^2))},{r->Sqrt(1/(2*E))*Sqrt(k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))},{r->-Sqrt(\n" + 
+				"1/(2*E))*Sqrt(k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))}}");
 		// issue #120
 		check("Solve(Sin(x)*x==0, x)", //
 				"{{x->0}}");
@@ -9577,11 +9594,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Solve(x^2+1==0, x)", //
 				"{{x->-I},{x->I}}");
 		check("Solve((k*Q*q)/r^2==E,r)", //
-				"{{r->Sqrt(E*k*q*Q)/E},{r->-Sqrt(E*k*q*Q)/E}}");
+				"{{r->Sqrt(k*q*Q)/Sqrt(E)},{r->-Sqrt(k*q*Q)/Sqrt(E)}}");
 		check("Solve((k*Q*q)/r^2+1/r^4==E,r)", //
-				"{{r->-Sqrt((k*q*Q)/(2*E)-Sqrt(4*E+k^2*q^2*Q^2)/(2*E))},{r->Sqrt((k*q*Q)/(2*E)-Sqrt(\n"
-						+ "4*E+k^2*q^2*Q^2)/(2*E))},{r->-Sqrt((k*q*Q)/(2*E)+Sqrt(4*E+k^2*q^2*Q^2)/(2*E))},{r->Sqrt((k*q*Q)/(\n"
-						+ "2*E)+Sqrt(4*E+k^2*q^2*Q^2)/(2*E))}}");
+				"{{r->Sqrt(1/(2*E))*Sqrt(k*q*Q-Sqrt(4*E+k^2*q^2*Q^2))},{r->-Sqrt(1/(2*E))*Sqrt(k*q*Q-Sqrt(\n" + 
+				"4*E+k^2*q^2*Q^2))},{r->Sqrt(1/(2*E))*Sqrt(k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))},{r->-Sqrt(\n" + 
+				"1/(2*E))*Sqrt(k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))}}");
 		check("Solve((k*Q*q)/r^2+1/r^4==0,r)", //
 				"{{r->Sqrt(-k*q*Q)/(k*q*Q)},{r->-Sqrt(-k*q*Q)/(k*q*Q)}}");
 		check("Solve(Abs(x-1) ==1,{x})", //
@@ -9590,8 +9607,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{x->-1},{x->1}}");
 		check("Solve(Xor(a, b, c, d) && (a || b) && ! (c || d), {a, b, c, d}, Booleans)", //
 				"{{a->False,b->True,c->False,d->False},{a->True,b->False,c->False,d->False}}");
-		check("Solve(Sin((-3+x^2)/x) ==2,{x})", //
-				"{{x->ArcSin(2)/2-Sqrt(12+ArcSin(2)^2)/2},{x->ArcSin(2)/2+Sqrt(12+ArcSin(2)^2)/2}}");
 		check("Solve({x^2-11==y, x+y==-9}, {x,y})", //
 				"{{x->-2,y->-7},{x->1,y->-10}}");
 
@@ -9891,8 +9906,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Standardize({6.5, 3.8, 6.6, 5.7, 6.0, 6.4, 5.3})", //
 				"{0.75705,-1.99453,0.85896,-0.05823,0.2475,0.65514,-0.46588}");
 		check("Standardize({{a,b},{c,d}})", //
-				"{{(a-(a+c)/2)/Sqrt(1/2*(a-c)*(Conjugate(a)-Conjugate(c))),(b-(b+d)/2)/Sqrt(1/2*(b-d)*(Conjugate(b)-Conjugate(d)))},\n"
-						+ " {(c-(a+c)/2)/Sqrt(1/2*(a-c)*(Conjugate(a)-Conjugate(c))),(d-(b+d)/2)/Sqrt(1/2*(b-d)*(Conjugate(b)-Conjugate(d)))}}");
+				"{{(Sqrt(2)*(a-(a+c)/2))/Sqrt((a-c)*(Conjugate(a)-Conjugate(c))),(Sqrt(2)*(b-(b+d)/\n" +// 
+				"2))/Sqrt((b-d)*(Conjugate(b)-Conjugate(d)))},\n" + //
+				" {(Sqrt(2)*(c-(a+c)/2))/Sqrt((a-c)*(Conjugate(a)-Conjugate(c))),(Sqrt(2)*(d-(b+d)/\n" + //
+				"2))/Sqrt((b-d)*(Conjugate(b)-Conjugate(d)))}}");
 	}
 
 	public void testStandardDeviation() {
@@ -9961,8 +9978,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("StruveH(-1+I,0)", "Indeterminate");
 		check("StruveH(-2+I,0)", "ComplexInfinity");
 		check("StruveH(1/2,x)", //
-				"Sqrt(2/(Pi*x))*(1-Cos(x))");
-		check("StruveH(-1/2,x)", "Sqrt(2/(Pi*x))*Sin(x)");
+				"Sqrt(2/Pi)*Sqrt(1/x)*(1-Cos(x))");
+		check("StruveH(-1/2,x)", "Sqrt(2/Pi)*Sqrt(1/x)*Sin(x)");
 		check("StruveH(a,-x)", "(-(-x)^a*StruveH(a,x))/x^a");
 	}
 
@@ -9972,9 +9989,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("StruveL(-1+I,0)", "Indeterminate");
 		check("StruveL(-2+I,0)", "ComplexInfinity");
 		check("StruveL(1/2,x)", //
-				"Sqrt(2/(Pi*x))*(-1+Cosh(x))");
-		check("StruveL(-1/2,x)", "Sqrt(2/(Pi*x))*Sinh(x)");
-		check("StruveL(a,-x)", "(-(-x)^a*StruveL(a,x))/x^a");
+				"Sqrt(2/Pi)*Sqrt(1/x)*(-1+Cosh(x))");
+		check("StruveL(-1/2,x)", //
+				"Sqrt(2/Pi)*Sqrt(1/x)*Sinh(x)");
+		check("StruveL(a,-x)", //
+				"(-(-x)^a*StruveL(a,x))/x^a");
 	}
 
 	public void testSubdivide() {
@@ -10423,10 +10442,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTaylor() {
-		check("Taylor(f(x),{x,a,2})", "f(a)+(-a+x)*f'(a)+1/2*(-a+x)^2*f''(a)");
-		check("Taylor(ArcSin(x),{x,0,10})", "x+x^3/6+3/40*x^5+5/112*x^7+35/1152*x^9");
-		check("Limit(ArcSin(x)/x,x->0)", "1");
-		check("(-0^2+1)^(-1/2)", "1");
+		check("Taylor(f(x),{x,a,2})", //
+				"f(a)+(-a+x)*f'(a)+1/2*(-a+x)^2*f''(a)");
+		check("Taylor(ArcSin(x),{x,0,10})", //
+				"x+x^3/6+3/40*x^5+5/112*x^7+35/1152*x^9");
+		check("Limit(ArcSin(x)/x,x->0)", //
+				"1");
+		check("(-0^2+1)^(-1/2)", //
+				"1");
 	}
 
 	public void testTensorDimensions() {
@@ -10635,7 +10658,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testTimeValue() {
 		if (ToggleFeature.FINANCE) {
 			check("TimeValue(Annuity(500,36,q), b, c)", //
-					"(500*(-1+((1+b)^q)^(36/q))*((1+b)^q)^(-36/q+c/q))/(-1+(1+b)^q)");
+					"(500*(-1+((1+b)^q)^(36/q)))/((-1+(1+b)^q)*((1+b)^q)^(36/q-c/q))");
 			check("TimeValue(AnnuityDue(500,36,q), b, c)", //
 					"(500*(-1+((1+b)^q)^(36/q))*((1+b)^q)^(1-36/q+c/q))/(-1+(1+b)^q)");
 			check("TimeValue(Annuity(100, 12), 6/100, 0)", //
@@ -10907,7 +10930,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("TrigReduce(Sin(x)*Tan(y))", "1/2*(Cos(x-y)-Cos(x+y))*Sec(y)");
 		check("TrigReduce(Cos(x)*Tan(y))", "-1/2*Sec(y)*(Sin(x-y)-Sin(x+y))");
 		check("TrigReduce(2*Cos(x)^2)", "1+Cos(2*x)");
-		check("TrigReduce(2*Cos(x)*Sin(y))", "Sin(-x+y)+Sin(x+y)");
+		check("TrigReduce(2*Cos(x)*Sin(y))", "-Sin(x-y)+Sin(x+y)");
 		check("TrigReduce(15*Sin(12*x)^2 + 12*Sin(15*x)^2)", //
 				"27/2-15/2*Cos(24*x)-6*Cos(30*x)");
 		check("TrigReduce(2*Sinh(u)*Cosh(v))", "Sinh(u-v)+Sinh(u+v)");
