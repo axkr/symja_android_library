@@ -228,33 +228,23 @@ public class SymjaRings {
 		} else if (expr.isInteger()) {
 			java.math.BigInteger javaBigInt = ((IInteger) expr).toBigNumerator();
 			return univariateRing.valueOfBigInteger(new BigInteger(javaBigInt));
-
-			// @SuppressWarnings("unchecked")
-			// UnivariatePolynomial<UnivariatePolynomial<Rational<BigInteger>>> poly = univariateRing.getgetZero();
-			// poly.addMonomial(coefficient, 1);
-			// return poly;
 		} else if (expr.isFraction()) {
 			Rational<BigInteger> fraction = new Rational<BigInteger>(Rings.Z,
 					new BigInteger(((IFraction) expr).toBigNumerator()),
 					new BigInteger(((IFraction) expr).toBigDenominator()));
 			return univariateRing.getOne().multiply(fraction);
-
-			// @SuppressWarnings("unchecked")
-			// UnivariatePolynomial<UnivariatePolynomial<Rational<BigInteger>>> poly = UnivariatePolynomial
-			// .create(univariateRing);
-			// poly.addMonomial(coefficient, 1);
-			// return poly;
 		}
 		return null;
 	}
 
-	private int[] exponents(ISymbol base, int exponent, int[] exponents) {
+	private int[] exponents(IExpr base, int exponent, int[] exponents) {
 		if (exponents == null) {
 			exponents = new int[numberOfVariables];
 		}
 		for (int i = 0; i < variables.size(); i++) {
-			if (base.getSymbolName().equals(variables.get(i))) {
+			if (base.toString().equals(variables.get(i))) {
 				exponents[i] = exponent;
+				return exponents;
 			}
 		}
 		return exponents;
