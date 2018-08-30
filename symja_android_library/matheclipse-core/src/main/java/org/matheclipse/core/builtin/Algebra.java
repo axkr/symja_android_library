@@ -39,6 +39,7 @@ import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.convert.rings.SymjaRings;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.PowerOp;
@@ -1682,7 +1683,8 @@ public class Algebra {
 		private IExpr factorExpr(final IAST ast, IExpr expr, List<IExpr> varList) {
 			if (expr.isAST()) {
 				// System.out.println("leafCount " + expr.leafCount());
-				IExpr temp = factor((IAST) expr, varList, false);
+//				IExpr temp = factor((IAST) expr, varList, false);
+				IExpr temp = SymjaRings.factor((IAST) expr,varList);//, false);
 				F.REMEMBER_AST_CACHE.put(ast, temp);
 				return temp;
 			}
@@ -2314,49 +2316,52 @@ public class Algebra {
 			if (ast.size() > 3 && ast.last().isRuleAST()) {
 				return gcdWithOption(ast, expr, eVar, engine);
 			}
-			try {
-				// ASTRange r = new ASTRange(eVar.getVarList(), 1);
-				List<IExpr> varList = eVar.getVarList().copyTo();
-				JASConvert<BigInteger> jas = new JASConvert<BigInteger>(varList, BigInteger.ZERO);
-				GenPolynomial<BigInteger> poly = jas.expr2JAS(expr, false);
-				GenPolynomial<BigInteger> temp;
-				GreatestCommonDivisorAbstract<BigInteger> factory = GCDFactory.getImplementation(BigInteger.ZERO);
-				for (int i = 2; i < ast.size(); i++) {
-					expr = F.evalExpandAll(ast.get(i), engine);
-					temp = jas.expr2JAS(expr, false);
-					poly = factory.gcd(poly, temp);
-				}
-				return jas.integerPoly2Expr(poly.monic());
-			} catch (JASConversionException e) {
-				try {
-					if (eVar.size() == 0) {
-						return F.NIL;
-					}
-					IAST vars = eVar.getVarList();
-					ExprPolynomialRing ring = new ExprPolynomialRing(vars);
-					ExprPolynomial pol1 = ring.create(expr);
-					ExprPolynomial pol2;
-					// ASTRange r = new ASTRange(eVar.getVarList(), 1);
-					List<IExpr> varList = eVar.getVarList().copyTo();
-					JASIExpr jas = new JASIExpr(varList, true);
-					GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
-					GenPolynomial<IExpr> p2;
-
-					GreatestCommonDivisor<IExpr> factaory = GCDFactory.getImplementation(ExprRingFactory.CONST);
-					for (int i = 2; i < ast.size(); i++) {
-						expr = F.evalExpandAll(ast.get(i), engine);
-						p2 = jas.expr2IExprJAS(expr);
-						p1 = factaory.gcd(p1, p2);
-					}
-					return jas.exprPoly2Expr(p1);
-				} catch (RuntimeException rex) {
-					if (Config.DEBUG) {
-						e.printStackTrace();
-					}
-				}
-
-			}
-			return F.NIL;
+			List<IExpr> varList = eVar.getVarList().copyTo();
+			return SymjaRings.gcd(ast, varList, engine);
+			 
+//			try {
+//				// ASTRange r = new ASTRange(eVar.getVarList(), 1);
+//				List<IExpr> varList = eVar.getVarList().copyTo();
+//				JASConvert<BigInteger> jas = new JASConvert<BigInteger>(varList, BigInteger.ZERO);
+//				GenPolynomial<BigInteger> poly = jas.expr2JAS(expr, false);
+//				GenPolynomial<BigInteger> temp;
+//				GreatestCommonDivisorAbstract<BigInteger> factory = GCDFactory.getImplementation(BigInteger.ZERO);
+//				for (int i = 2; i < ast.size(); i++) {
+//					expr = F.evalExpandAll(ast.get(i), engine);
+//					temp = jas.expr2JAS(expr, false);
+//					poly = factory.gcd(poly, temp);
+//				}
+//				return jas.integerPoly2Expr(poly.monic());
+//			} catch (JASConversionException e) {
+//				try {
+//					if (eVar.size() == 0) {
+//						return F.NIL;
+//					}
+//					IAST vars = eVar.getVarList();
+//					ExprPolynomialRing ring = new ExprPolynomialRing(vars);
+//					ExprPolynomial pol1 = ring.create(expr);
+//					ExprPolynomial pol2;
+//					// ASTRange r = new ASTRange(eVar.getVarList(), 1);
+//					List<IExpr> varList = eVar.getVarList().copyTo();
+//					JASIExpr jas = new JASIExpr(varList, true);
+//					GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
+//					GenPolynomial<IExpr> p2;
+//
+//					GreatestCommonDivisor<IExpr> factory = GCDFactory.getImplementation(ExprRingFactory.CONST);
+//					for (int i = 2; i < ast.size(); i++) {
+//						expr = F.evalExpandAll(ast.get(i), engine);
+//						p2 = jas.expr2IExprJAS(expr);
+//						p1 = factory.gcd(p1, p2);
+//					}
+//					return jas.exprPoly2Expr(p1);
+//				} catch (RuntimeException rex) {
+//					if (Config.DEBUG) {
+//						e.printStackTrace();
+//					}
+//				}
+//
+//			}
+//			return F.NIL;
 		}
 
 		private IExpr gcdWithOption(final IAST ast, IExpr expr, VariablesSet eVar, final EvalEngine engine) {

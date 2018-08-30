@@ -25,5 +25,10 @@
 	<classpathentry kind="lib" path="lib/slf4j-android-1.7.25.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-over-slf4j-1.7.25.jar"/>
 	<classpathentry kind="lib" path="lib/guava-26.0-android.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/rings"/>
+	<classpathentry kind="lib" path="/rings/lib/combinatorics-2.0.jar"/>
+	<classpathentry kind="lib" path="/rings/lib/commons-math3-3.2.jar"/>
+	<classpathentry kind="lib" path="/rings/lib/libdivide4j-1.1.jar"/>
+	<classpathentry kind="lib" path="/rings/lib/trove4j-3.0.3.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

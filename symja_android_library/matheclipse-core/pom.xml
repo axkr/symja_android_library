@@ -31,7 +31,7 @@
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
-		</dependency> 
+		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-android</artifactId>
@@ -99,6 +99,32 @@
 		<dependency>
 			<groupId>com.annimon</groupId>
 			<artifactId>stream</artifactId>
+		</dependency>
+
+
+		<dependency>
+			<groupId>cc.redberry</groupId>
+			<artifactId>rings</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>cc.redberry</groupId>
+			<artifactId>libdivide4j</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>cc.redberry</groupId>
+			<artifactId>combinatorics</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>net.sf.trove4j</groupId>
+			<artifactId>trove4j</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math3</artifactId>
 		</dependency>
 	</dependencies>
 
