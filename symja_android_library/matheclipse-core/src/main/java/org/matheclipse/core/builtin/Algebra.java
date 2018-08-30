@@ -2226,40 +2226,42 @@ public class Algebra {
 				}
 			}
 
-			try {
-				List<IExpr> varList = eVar.getVarList().copyTo();
-				JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
-				GenPolynomial<BigRational> poly1 = jas.expr2JAS(expr1, false);
-				GenPolynomial<BigRational> poly2 = jas.expr2JAS(expr2, false);
-				GenPolynomial<BigRational>[] result = poly1.egcd(poly2);
-				IASTAppendable list = F.ListAlloc(2);
-				list.append(jas.rationalPoly2Expr(result[0]));
-				IASTAppendable subList = F.ListAlloc(2);
-				subList.append(jas.rationalPoly2Expr(result[1]));
-				subList.append(jas.rationalPoly2Expr(result[2]));
-				list.append(subList);
-				return list;
-			} catch (JASConversionException e0) {
-				try {
-					List<IExpr> varList = eVar.getVarList().copyTo();
-					JASIExpr jas = new JASIExpr(varList, ExprRingFactory.CONST);
-					GenPolynomial<IExpr> poly1 = jas.expr2IExprJAS(expr1);
-					GenPolynomial<IExpr> poly2 = jas.expr2IExprJAS(expr2);
-					GenPolynomial<IExpr>[] result = poly1.egcd(poly2);
-					IASTAppendable list = F.ListAlloc(2);
-					list.append(jas.exprPoly2Expr(result[0], x));
-					IASTAppendable subList = F.ListAlloc(2);
-					subList.append(F.Together.of(engine, jas.exprPoly2Expr(result[1], x)));
-					subList.append(F.Together.of(engine, jas.exprPoly2Expr(result[2], x)));
-					list.append(subList);
-					return list;
-				} catch (JASConversionException e) {
-					if (Config.SHOW_STACKTRACE) {
-						e.printStackTrace();
-					}
-				}
-			}
-			return F.NIL;
+			List<IExpr> varList = eVar.getVarList().copyTo();
+			return SymjaRings.extendedGCD(expr1, expr2, varList, engine);
+//			try {
+//				List<IExpr> varList = eVar.getVarList().copyTo();
+//				JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
+//				GenPolynomial<BigRational> poly1 = jas.expr2JAS(expr1, false);
+//				GenPolynomial<BigRational> poly2 = jas.expr2JAS(expr2, false);
+//				GenPolynomial<BigRational>[] result = poly1.egcd(poly2);
+//				IASTAppendable list = F.ListAlloc(2);
+//				list.append(jas.rationalPoly2Expr(result[0]));
+//				IASTAppendable subList = F.ListAlloc(2);
+//				subList.append(jas.rationalPoly2Expr(result[1]));
+//				subList.append(jas.rationalPoly2Expr(result[2]));
+//				list.append(subList);
+//				return list;
+//			} catch (JASConversionException e0) {
+//				try {
+//					List<IExpr> varList = eVar.getVarList().copyTo();
+//					JASIExpr jas = new JASIExpr(varList, ExprRingFactory.CONST);
+//					GenPolynomial<IExpr> poly1 = jas.expr2IExprJAS(expr1);
+//					GenPolynomial<IExpr> poly2 = jas.expr2IExprJAS(expr2);
+//					GenPolynomial<IExpr>[] result = poly1.egcd(poly2);
+//					IASTAppendable list = F.ListAlloc(2);
+//					list.append(jas.exprPoly2Expr(result[0], x));
+//					IASTAppendable subList = F.ListAlloc(2);
+//					subList.append(F.Together.of(engine, jas.exprPoly2Expr(result[1], x)));
+//					subList.append(F.Together.of(engine, jas.exprPoly2Expr(result[2], x)));
+//					list.append(subList);
+//					return list;
+//				} catch (JASConversionException e) {
+//					if (Config.SHOW_STACKTRACE) {
+//						e.printStackTrace();
+//					}
+//				}
+//			}
+//			return F.NIL;
 		}
 
 		@Override

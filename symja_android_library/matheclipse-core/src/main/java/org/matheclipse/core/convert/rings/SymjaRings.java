@@ -19,13 +19,16 @@ import cc.redberry.rings.bigint.BigInteger;
 import cc.redberry.rings.poly.MultivariateRing;
 import cc.redberry.rings.poly.PolynomialFactorDecomposition;
 import cc.redberry.rings.poly.PolynomialMethods;
+import cc.redberry.rings.poly.UnivariateRing;
 import cc.redberry.rings.poly.multivar.Monomial;
 import cc.redberry.rings.poly.multivar.MonomialOrder;
 import cc.redberry.rings.poly.multivar.MultivariatePolynomial;
+import cc.redberry.rings.poly.univar.UnivariatePolynomial;
 
 public class SymjaRings {
 	final int numberOfVariables;
 	final MultivariateRing<MultivariatePolynomial<Rational<BigInteger>>> ring;
+	final UnivariateRing<UnivariatePolynomial<Rational<BigInteger>>> univariateRing;
 	final ArrayList<String> variables;
 	final List<IExpr> symbols;
 
@@ -37,6 +40,7 @@ public class SymjaRings {
 		}
 		numberOfVariables = variables.size();
 		ring = Rings.MultivariateRing(numberOfVariables, Rings.Q);
+		univariateRing = Rings.UnivariateRing(Rings.Q);
 	}
 
 	public IExpr toExpr(MultivariatePolynomial<MultivariatePolynomial<Rational<BigInteger>>> poly) {
@@ -61,6 +65,35 @@ public class SymjaRings {
 			}
 		}
 		return plus.getOneIdentity(F.C0);
+	}
+
+	public IExpr toExpr(UnivariatePolynomial<Rational<BigInteger>> poly) {
+		IASTAppendable subPlus = F.PlusAlloc(poly.size());
+		for (int j = 0; j < poly.size(); j++) {
+			Rational<BigInteger> coeff = poly.get(j);
+			if (!coeff.isZero()) {
+				int exponent = j;
+				Iterator<BigInteger> iter = coeff.stream().iterator();
+				BigInteger numerator = iter.next();
+				BigInteger denominator = iter.next();
+				IFraction coefficient = F.fraction(new java.math.BigInteger(numerator.toByteArray()),
+						new java.math.BigInteger(denominator.toByteArray()));
+				IASTAppendable times = F.TimesAlloc(2);
+				// if (!coeff.isOne()) {
+				times.append(coefficient);
+				// }
+				if (exponent != 0) {
+					if (exponent == 1) {
+						times.append(symbols.get(0));
+					} else {
+						times.append(F.Power(symbols.get(0), exponent));
+					}
+				}
+				subPlus.append(times.getOneIdentity(F.C0));
+			}
+
+		}
+		return subPlus.getOneIdentity(F.C0);
 	}
 
 	private IExpr toExprP(MultivariatePolynomial<Rational<BigInteger>> poly) {
@@ -158,6 +191,63 @@ public class SymjaRings {
 		return null;
 	}
 
+	public UnivariatePolynomial<Rational<BigInteger>> toUnivariatePolynomial(IExpr expr) {
+		if (expr.isPlus()) {
+			IAST plus = (IAST) expr;
+			UnivariatePolynomial<Rational<BigInteger>> poly = univariateRing.getZero();
+			for (int i = 1; i < plus.size(); i++) {
+				poly.add(toUnivariatePolynomial(plus.get(i)));
+			}
+			return poly;
+		} else if (expr.isTimes()) {
+			IAST times = (IAST) expr;
+			UnivariatePolynomial<Rational<BigInteger>> poly = univariateRing.getOne();
+			for (int i = 1; i < times.size(); i++) {
+				poly.multiply(toUnivariatePolynomial(times.get(i)));
+			}
+			return poly;
+		} else if (expr.isPower()) {
+			IAST power = (IAST) expr;
+			int exp = power.exponent().toIntDefault(Integer.MIN_VALUE);
+			IExpr symbol = power.base();
+			if (symbol.equals(symbols.get(0))) {
+				@SuppressWarnings("unchecked")
+				UnivariatePolynomial<Rational<BigInteger>> poly = univariateRing.getZero();
+				poly.addMonomial(Rings.Q.getOne(), exp);
+				return poly;
+			}
+			return null;
+		} else if (expr.isSymbol()) {
+			if (expr.equals(symbols.get(0))) {
+				@SuppressWarnings("unchecked")
+				UnivariatePolynomial<Rational<BigInteger>> poly = univariateRing.getZero();
+				poly.addMonomial(Rings.Q.getOne(), 1);
+				return poly;
+			}
+			return null;
+		} else if (expr.isInteger()) {
+			java.math.BigInteger javaBigInt = ((IInteger) expr).toBigNumerator();
+			return univariateRing.valueOfBigInteger(new BigInteger(javaBigInt));
+
+			// @SuppressWarnings("unchecked")
+			// UnivariatePolynomial<UnivariatePolynomial<Rational<BigInteger>>> poly = univariateRing.getgetZero();
+			// poly.addMonomial(coefficient, 1);
+			// return poly;
+		} else if (expr.isFraction()) {
+			Rational<BigInteger> fraction = new Rational<BigInteger>(Rings.Z,
+					new BigInteger(((IFraction) expr).toBigNumerator()),
+					new BigInteger(((IFraction) expr).toBigDenominator()));
+			return univariateRing.getOne().multiply(fraction);
+
+			// @SuppressWarnings("unchecked")
+			// UnivariatePolynomial<UnivariatePolynomial<Rational<BigInteger>>> poly = UnivariatePolynomial
+			// .create(univariateRing);
+			// poly.addMonomial(coefficient, 1);
+			// return poly;
+		}
+		return null;
+	}
+
 	private int[] exponents(ISymbol base, int exponent, int[] exponents) {
 		if (exponents == null) {
 			exponents = new int[numberOfVariables];
@@ -181,10 +271,29 @@ public class SymjaRings {
 				IExpr expr = F.evalExpandAll(ast.get(i + 1), engine);
 				polys[i] = formula.toPolynomial(expr);
 			}
-			MultivariatePolynomial<MultivariatePolynomial<Rational<BigInteger>>>  result = PolynomialMethods.PolynomialGCD(polys);
+			MultivariatePolynomial<MultivariatePolynomial<Rational<BigInteger>>> result = PolynomialMethods
+					.PolynomialGCD(polys);
 			System.out.println(result.toString());
 			System.out.println();
-			return formula.toExpr(result); 
+			return formula.toExpr(result);
+		} catch (RuntimeException rex) {
+			rex.printStackTrace();
+		}
+		return F.NIL;
+	}
+
+	public static IExpr extendedGCD(IExpr expr1, IExpr expr2, List<IExpr> varList, EvalEngine engine) {
+		try {
+			SymjaRings formula = new SymjaRings(varList);
+			UnivariatePolynomial<Rational<BigInteger>>[] result = PolynomialMethods.PolynomialExtendedGCD(
+					formula.toUnivariatePolynomial(expr1), formula.toUnivariatePolynomial(expr2));
+			IASTAppendable list = F.ListAlloc(2);
+			list.append(formula.toExpr(result[0]));
+			IASTAppendable subList = F.ListAlloc(2);
+			subList.append(formula.toExpr(result[1]));
+			subList.append(formula.toExpr(result[2]));
+			list.append(subList);
+			return list;
 		} catch (RuntimeException rex) {
 			rex.printStackTrace();
 		}
@@ -218,6 +327,6 @@ public class SymjaRings {
 			rex.printStackTrace();
 		}
 		return pExpr;
-	} 
+	}
 
 }
