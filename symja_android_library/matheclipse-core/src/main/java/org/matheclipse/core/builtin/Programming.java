@@ -1830,8 +1830,11 @@ public final class Programming {
 			Validate.checkRange(ast, 3, 4);
 
 			long s = engine.getSeconds();
-			if (s > 0 || Config.TIMECONSTARINED_NO_THREAD) {
+			if (s > 0 || Config.TIMECONSTRAINED_NO_THREAD) {
 				// no new thread should be spawned
+				if (ast.isAST3()) {
+					return ast.arg3();
+				}
 				return engine.evaluate(ast.arg1());
 			}
 

@@ -159,10 +159,15 @@ public class Config {
 	public static int INTEGRATE_BY_PARTS_RECURSION_LIMIT = 10;
 
 	/**
-	 * Define the recursion limit for <code>Integrate#integrateByParts()</code> method.
+	 * Define the recursion limit for <code>Integrate#integrateByRubiRules()</code> method.
 	 */
 	public static int INTEGRATE_RUBI_RULES_RECURSION_LIMIT = 75;
 
+	/**
+	 * Define the Rubi time limit for the <code>TimeConstrained()</code> function.
+	 */
+	public static int INTEGRATE_RUBI_TIMELIMIT = 12;
+	
 	/**
 	 * Define the recursion limit for <code>Limit#lHospitalesRule()</code> method.
 	 */
@@ -189,7 +194,7 @@ public class Config {
 	 * </p>
 	 * 
 	 */
-	public static boolean TIMECONSTARINED_NO_THREAD = false;
+	public static boolean TIMECONSTRAINED_NO_THREAD = false;
 
 	/**
 	 * An object that creates new threads on demand. Using thread factories removes hardwiring of calls to new Thread,

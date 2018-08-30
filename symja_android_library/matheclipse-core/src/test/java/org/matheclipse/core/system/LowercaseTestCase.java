@@ -5196,12 +5196,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testLimit() {
 		// adjust LimitRules.m if these 2 tests fails
-//		check("FullForm(x*(Sqrt(2*Pi*x)/(x!))^(1/x) )", //
-//				"Times(Power(Power(Times(2, Pi), Rational(1,2)), Power(x, -1)), x, Power(Times(Power(x, Rational(1,2)), Power(Factorial(x), -1)), Power(x, -1)))");
-//		check("Limit(x*(Sqrt(2*Pi*x)/(x!))^(1/x), x->Infinity)", //
-//				"E");
-//		check("Limit(x/((x!)^(1/x)), x->Infinity)", //
-//				"E");
+		// check("FullForm(x*(Sqrt(2*Pi*x)/(x!))^(1/x) )", //
+		// "Times(Power(Power(Times(2, Pi), Rational(1,2)), Power(x, -1)), x, Power(Times(Power(x, Rational(1,2)),
+		// Power(Factorial(x), -1)), Power(x, -1)))");
+		// check("Limit(x*(Sqrt(2*Pi*x)/(x!))^(1/x), x->Infinity)", //
+		// "E");
+		// check("Limit(x/((x!)^(1/x)), x->Infinity)", //
+		// "E");
 
 		check("Limit((1+k/x)^x, x->Infinity)", "E^k");
 		check("Limit((1-1/x)^x, x->Infinity)", "1/E");
@@ -7525,8 +7526,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "$Aborted");
 		// check("TimeConstrained(1^3^3^3, 10)", //
 		// "1");
-		check("Sqrt(Pi/b)",
-				"Sqrt(1/b)*Sqrt(Pi)");
+		check("Sqrt(Pi/b)", "Sqrt(1/b)*Sqrt(Pi)");
 		check("(2*x*y)^n", //
 				"2^n*(x*y)^n");
 		check("(0.3333*x*y)^n", //
@@ -9442,7 +9442,33 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSinIntegral() {
-		checkNumeric("SinIntegral(2.8)", "1.8320965890813214");
+		check("SinIntegral(Infinity)", //
+				"Pi/2");
+		check("SinIntegral(-Infinity)", //
+				"-Pi/2");
+		check("SinIntegral(I*Infinity)", //
+				"I*Infinity");
+		check("SinIntegral((-I)*Infinity)", //
+				"-I*Infinity");
+		check("SinIntegral(I*1/2*x)", //
+				"I*SinhIntegral(x/2)");
+		checkNumeric("SinIntegral(2.8)", //
+				"1.8320965890813214");
+	}
+	
+	public void testSinhIntegral() {
+		check("SinhIntegral(Infinity)", //
+				"Infinity");
+		check("SinhIntegral(-Infinity)", //
+				"-Infinity");
+		check("SinhIntegral(I*Infinity)", //
+				"I*1/2*Pi");
+		check("SinhIntegral(-I*Infinity)", //
+				"-I*1/2*Pi");
+		check("SinhIntegral(I*1/2*x)", //
+				"I*SinIntegral(x/2)");
+		checkNumeric("SinIntegral(2.8)", //
+				"1.8320965890813214");
 	}
 
 	public void testSkewness() {
@@ -9582,9 +9608,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// y, z}, Integers)", "");
 
 		check("Solve((k*Q*q)/r^2+1/r^4==E,r)", //
-				"{{r->Sqrt(1/(2*E))*Sqrt(k*q*Q-Sqrt(4*E+k^2*q^2*Q^2))},{r->-Sqrt(1/(2*E))*Sqrt(k*q*Q-Sqrt(\n" + 
-				"4*E+k^2*q^2*Q^2))},{r->Sqrt(1/(2*E))*Sqrt(k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))},{r->-Sqrt(\n" + 
-				"1/(2*E))*Sqrt(k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))}}");
+				"{{r->Sqrt(1/(2*E))*Sqrt(k*q*Q-Sqrt(4*E+k^2*q^2*Q^2))},{r->-Sqrt(1/(2*E))*Sqrt(k*q*Q-Sqrt(\n"
+						+ "4*E+k^2*q^2*Q^2))},{r->Sqrt(1/(2*E))*Sqrt(k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))},{r->-Sqrt(\n"
+						+ "1/(2*E))*Sqrt(k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))}}");
 		// issue #120
 		check("Solve(Sin(x)*x==0, x)", //
 				"{{x->0}}");
@@ -9598,9 +9624,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Solve((k*Q*q)/r^2==E,r)", //
 				"{{r->Sqrt(k*q*Q)/Sqrt(E)},{r->-Sqrt(k*q*Q)/Sqrt(E)}}");
 		check("Solve((k*Q*q)/r^2+1/r^4==E,r)", //
-				"{{r->Sqrt(1/(2*E))*Sqrt(k*q*Q-Sqrt(4*E+k^2*q^2*Q^2))},{r->-Sqrt(1/(2*E))*Sqrt(k*q*Q-Sqrt(\n" + 
-				"4*E+k^2*q^2*Q^2))},{r->Sqrt(1/(2*E))*Sqrt(k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))},{r->-Sqrt(\n" + 
-				"1/(2*E))*Sqrt(k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))}}");
+				"{{r->Sqrt(1/(2*E))*Sqrt(k*q*Q-Sqrt(4*E+k^2*q^2*Q^2))},{r->-Sqrt(1/(2*E))*Sqrt(k*q*Q-Sqrt(\n"
+						+ "4*E+k^2*q^2*Q^2))},{r->Sqrt(1/(2*E))*Sqrt(k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))},{r->-Sqrt(\n"
+						+ "1/(2*E))*Sqrt(k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))}}");
 		check("Solve((k*Q*q)/r^2+1/r^4==0,r)", //
 				"{{r->Sqrt(-k*q*Q)/(k*q*Q)},{r->-Sqrt(-k*q*Q)/(k*q*Q)}}");
 		check("Solve(Abs(x-1) ==1,{x})", //
@@ -9908,10 +9934,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Standardize({6.5, 3.8, 6.6, 5.7, 6.0, 6.4, 5.3})", //
 				"{0.75705,-1.99453,0.85896,-0.05823,0.2475,0.65514,-0.46588}");
 		check("Standardize({{a,b},{c,d}})", //
-				"{{(Sqrt(2)*(a-(a+c)/2))/Sqrt((a-c)*(Conjugate(a)-Conjugate(c))),(Sqrt(2)*(b-(b+d)/\n" +// 
-				"2))/Sqrt((b-d)*(Conjugate(b)-Conjugate(d)))},\n" + //
-				" {(Sqrt(2)*(c-(a+c)/2))/Sqrt((a-c)*(Conjugate(a)-Conjugate(c))),(Sqrt(2)*(d-(b+d)/\n" + //
-				"2))/Sqrt((b-d)*(Conjugate(b)-Conjugate(d)))}}");
+				"{{(Sqrt(2)*(a-(a+c)/2))/Sqrt((a-c)*(Conjugate(a)-Conjugate(c))),(Sqrt(2)*(b-(b+d)/\n" + //
+						"2))/Sqrt((b-d)*(Conjugate(b)-Conjugate(d)))},\n" + //
+						" {(Sqrt(2)*(c-(a+c)/2))/Sqrt((a-c)*(Conjugate(a)-Conjugate(c))),(Sqrt(2)*(d-(b+d)/\n" + //
+						"2))/Sqrt((b-d)*(Conjugate(b)-Conjugate(d)))}}");
 	}
 
 	public void testStandardDeviation() {

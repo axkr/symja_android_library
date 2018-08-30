@@ -141,30 +141,38 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 						result.set(1, arg1Negated);
 						for (int i = 2; i < plusAST.size(); i++) {
 							IExpr temp = plusAST.get(i);
-//							 if (!temp.isTimes() && !temp.isPower()) {
-//							 return F.NIL;
-//							 }
-							
-//							arg1Negated = getNormalizedNegativeExpression(temp, checkTimesPlus);
-//							if (arg1Negated.isPresent()) {
-//								result.set(i, arg1Negated);
-//							} else {
-							
-								// positiveElementsCounter++;
-								// if (positiveElementsCounter * 2 > plusAST.argSize()) {
-								// number of positive elements is greater
-								// than number of negative elements
-								// return F.NIL;
-								// }
-								result.set(i, temp.negate());
-								
-//							}
+							// if (!temp.isTimes() && !temp.isPower()) {
+							// return F.NIL;
+							// }
+
+							// arg1Negated = getNormalizedNegativeExpression(temp, checkTimesPlus);
+							// if (arg1Negated.isPresent()) {
+							// result.set(i, arg1Negated);
+							// } else {
+
+							// positiveElementsCounter++;
+							// if (positiveElementsCounter * 2 > plusAST.argSize()) {
+							// number of positive elements is greater
+							// than number of negative elements
+							// return F.NIL;
+							// }
+							result.set(i, temp.negate());
+
+							// }
 						}
 						return result;
 					}
 				}
-			} else if (expression.isNegativeInfinity()) {
-				return F.CInfinity;
+				// } else if (expression.isNegativeInfinity()) {
+				// return F.CInfinity;
+			} else if (expression.isDirectedInfinity() && expression.isAST1()) {
+				IExpr arg1 = expression.first();
+				if (arg1.isMinusOne()) {
+					return F.CInfinity;
+				}
+				if (arg1.isNegativeImaginaryUnit()) {
+					return F.DirectedInfinity(F.CI);
+				}
 			}
 		}
 		// if (expression.isNegativeResult()) {
@@ -294,8 +302,16 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 						return result;
 					}
 				}
-			} else if (expression.isNegativeInfinity()) {
-				return F.CInfinity;
+				// } else if (expression.isNegativeInfinity()) {
+				// return F.CInfinity;
+			} else if (expression.isDirectedInfinity() && expression.isAST1()) {
+				IExpr arg1 = expression.first();
+				if (arg1.isMinusOne()) {
+					return F.CInfinity;
+				}
+				if (arg1.isNegativeImaginaryUnit()) {
+					return F.DirectedInfinity(F.CI);
+				}
 			}
 		}
 		// if (expression.isNegativeResult()) {
