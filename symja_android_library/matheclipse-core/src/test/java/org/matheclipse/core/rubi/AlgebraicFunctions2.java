@@ -74,6 +74,54 @@ public class AlgebraicFunctions2 extends AbstractRubiTestCase {
 				1877);
 	}
 
+	// {860}
+		public void test1116() {
+			check(//
+					"Integrate[Sqrt[d + e*x]/((f + g*x)^(3/2)*Sqrt[a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2]), x]", //
+					"(2*Sqrt[a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2])/((c*d*f - a*e*g)*Sqrt[d + e*x]*Sqrt[f + g*x])", //
+					860);
+		}
+
+		// {860}
+		public void test1117() {
+			check(//
+					"Integrate[(d + e*x)^(3/2)/(Sqrt[f + g*x]*(a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2)^(3/2)), x]", //
+					"(-2*Sqrt[d + e*x]*Sqrt[f + g*x])/((c*d*f - a*e*g)*Sqrt[a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2])", //
+					860);
+		}
+
+		// {860}
+		public void test1118() {
+			check(//
+					"Integrate[((d + e*x)^(5/2)*Sqrt[f + g*x])/(a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2)^(5/2), x]", //
+					"(-2*(d + e*x)^(3/2)*(f + g*x)^(3/2))/(3*(c*d*f - a*e*g)*(a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2)^(3/2))", //
+					860);
+		}
+
+		// {860}
+		public void test1119() {
+			check(//
+					"Integrate[Sqrt[a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2]/(Sqrt[d + e*x]*(f + g*x)^(5/2)), x]", //
+					"(2*(a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2)^(3/2))/(3*(c*d*f - a*e*g)*(d + e*x)^(3/2)*(f + g*x)^(3/2))", //
+					860);
+		}
+
+		// {860}
+		public void test1120() {
+			check(//
+					"Integrate[(a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2)^(3/2)/((d + e*x)^(3/2)*(f + g*x)^(7/2)), x]", //
+					"(2*(a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2)^(5/2))/(5*(c*d*f - a*e*g)*(d + e*x)^(5/2)*(f + g*x)^(5/2))", //
+					860);
+		}
+
+		// {860}
+		public void test1121() {
+			check(//
+					"Integrate[(a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2)^(5/2)/((d + e*x)^(5/2)*(f + g*x)^(9/2)), x]", //
+					"(2*(a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2)^(7/2))/(7*(c*d*f - a*e*g)*(d + e*x)^(7/2)*(f + g*x)^(7/2))", //
+					860);
+		}
+		
 	// {1103}
 	public void test1160() {
 		check(//
