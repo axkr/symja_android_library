@@ -7,7 +7,6 @@ import static org.matheclipse.core.expression.F.Factorial;
 import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Times;
 
 import java.util.function.DoubleUnaryOperator;
@@ -19,6 +18,7 @@ import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -573,6 +573,12 @@ public class HypergeometricFunctions {
 			IExpr z = ast.arg4();
 			if (z.isZero()) {
 				return F.C1;
+			}
+			if (a.compareTo(b)>0) {
+				IASTMutable newAST=ast.copy();
+				newAST.set(1, b);
+				newAST.set(2, a);
+				return newAST;
 			}
 			if (a.isInteger() && a.isNegative() && z.isOne()) {
 				IInteger n = (IInteger) a.negate();

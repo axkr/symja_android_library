@@ -4321,7 +4321,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		// print message: Hypergeometric2F1: No convergence after 50000
 		// iterations! Limiting value: 9.789346
-		check("Hypergeometric2F1(0.5,0.333,0.666,1)", "Hypergeometric2F1(0.5,0.333,0.666,1.0)");
+		check("Hypergeometric2F1(0.5,0.333,0.666,1)",//
+				"Hypergeometric2F1(0.333,0.5,0.666,1.0)");
 	}
 
 	public void testI() {
