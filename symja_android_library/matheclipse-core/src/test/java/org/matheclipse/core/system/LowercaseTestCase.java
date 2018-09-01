@@ -3888,6 +3888,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFunctionExpand() {
+		check("FunctionExpand(Log(10*E))", //
+				"1+Log(10)");
 		check("FunctionExpand(PolyGamma(-2, 1))", //
 				"1/2*(Log(2)+Log(Pi))");
 		check("FunctionExpand(PolyGamma(-3, 1))", //
@@ -5998,11 +6000,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 				+ "  m\n" + "  );$gcd(18, 21)", "3");
 
 		check("{Module({x}, x), Module({x}, x)}", //
-				"{x$24,x$25}");
+				"{x$20,x$21}");
 		check("Module({e = Expand((1 + x)^5)}, Function(x, e))", //
-				"Function(x$27,e$26)");
+				"Function(x$23,e$22)");
 		check("Module({a,b}, Block({c}, c+a))", //
-				"a$28+c");
+				"a$24+c");
 
 		if (Config.SERVER_MODE == false) {
 			check("f(x0_) :=\n" + " Module({x = x0},\n" + "  While(x > 0, x = Log(x));\n" + "  x\n" + "  );f(2.0)",
