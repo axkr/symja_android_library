@@ -129,6 +129,11 @@ public class FunctionExpand extends AbstractEvaluator {
 		MATCHER.caseOf(F.GoldenRatio, //
 				// [$ 1/2*(1+Sqrt(5)) $]
 				F.Times(F.C1D2, F.Plus(F.C1, F.CSqrt5))); // $$);
+
+		MATCHER.caseOf(F.Log(F.Times(m_, n_)), //
+				// [$ (Log(m)+Log(n)) /; Positive(m)
+				// $]
+				F.Condition(F.Plus(F.Log(m), F.Log(n)), F.Positive(m))); // $$);
 	}
 
 	public FunctionExpand() {

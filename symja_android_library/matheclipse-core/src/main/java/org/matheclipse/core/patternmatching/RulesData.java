@@ -696,7 +696,7 @@ public class RulesData implements Serializable {
 		return F.NIL;
 	}
 
-	public IExpr getDefaultValue(int pos) {
+	final public IExpr getDefaultValue(int pos) {
 		if (fDefaultValues == null) {
 			return null;
 		}
@@ -706,7 +706,7 @@ public class RulesData implements Serializable {
 	/**
 	 * @return Returns the equalRules.
 	 */
-	public Map<IExpr, PatternMatcherEquals> getEqualDownRules() {
+	final public Map<IExpr, PatternMatcherEquals> getEqualDownRules() {
 		if (fEqualDownRules == null) {
 			fEqualDownRules = new HashMap<IExpr, PatternMatcherEquals>();
 		}
@@ -716,14 +716,14 @@ public class RulesData implements Serializable {
 	/**
 	 * @return Returns the equalRules.
 	 */
-	public Map<IExpr, PatternMatcherEquals> getEqualUpRules() {
+	final public Map<IExpr, PatternMatcherEquals> getEqualUpRules() {
 		if (fEqualUpRules == null) {
 			fEqualUpRules = new HashMap<IExpr, PatternMatcherEquals>();
 		}
 		return fEqualUpRules;
 	}
 
-	public Set<IPatternMatcher> getPatternDownRules() {
+	final public Set<IPatternMatcher> getPatternDownRules() {
 		if (fPatternDownRules == null) {
 			// fPatternDownRules = new TreeSet<IPatternMatcher>();
 			fPatternDownRules = new TreeSet<IPatternMatcher>(IPatternMatcher.EQUIVALENCE_COMPARATOR);
@@ -812,6 +812,12 @@ public class RulesData implements Serializable {
 		final PatternMatcherAndEvaluator pmEvaluator;
 		if (leftHandSide.isAST(F.Integrate)) {
 			pmEvaluator = new PatternMatcherAndEvaluator(setSymbol, leftHandSide, rightHandSide, false);
+			// keep Integrate rules in order predefined by Rubi project
+			pmEvaluator.setLHSPriority(priority);
+			
+			fPatternDownRules = getPatternDownRules();
+			fPatternDownRules.add(pmEvaluator);
+			return pmEvaluator;
 		} else {
 			pmEvaluator = new PatternMatcherAndEvaluator(setSymbol, leftHandSide, rightHandSide);
 			if (pmEvaluator.isRuleWithoutPatterns()) {
@@ -824,25 +830,8 @@ public class RulesData implements Serializable {
 
 		if (PatternMap.DEFAULT_RULE_PRIORITY != priority) {
 			pmEvaluator.setLHSPriority(priority);
-			if (leftHandSide.isAST(F.Integrate)) {
-				// keep Integrate rules in order predefined by Rubi project
-				ArraySet<ISymbol> headerSymbols = new ArraySet<ISymbol>();
-				isComplicatedPatternRule(leftHandSide, headerSymbols);
-				// TODO test later, if this can be uncommented for speed performance:
-				// if (headerSymbols.size() > 0) {
-				// fSimpleOrderlesPatternDownRules = getSimpleOrderlessPatternDownRules();
-				// for (ISymbol head : headerSymbols) {
-				// fSimpleOrderlesPatternDownRules.put(head.hashCode(), pmEvaluator);
-				// }
-				// return pmEvaluator;
-				// }
-
-				fPatternDownRules = getPatternDownRules();
-				fPatternDownRules.add(pmEvaluator);
-				return pmEvaluator;
-			}
-
 		}
+
 		ArraySet<ISymbol> headerSymbols = new ArraySet<ISymbol>();
 		if (!isComplicatedPatternRule(leftHandSide, headerSymbols)) {
 			fSimplePatternDownRules = getSimplePatternDownRules();

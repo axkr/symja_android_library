@@ -65,6 +65,8 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 	 */
 	public final static int DEFAULT_RULE_PRIORITY = Integer.MAX_VALUE;
 
+	private transient boolean evaluatedRHS = false;
+	
 	public PatternMap() {
 		this(EMPTY_ARRAY);
 	}
@@ -231,10 +233,14 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 	 * 
 	 * @return
 	 */
-	public int getPriority() {
+	public final int getPriority() {
 		return fPriority;
 	}
 
+	public final boolean getRHSEvaluated( ) {
+		return evaluatedRHS;
+	}
+	
 	/**
 	 * Return the matched value for the given <code>index</code> if possisble.
 	 * 
@@ -293,6 +299,7 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 	 * Set all pattern values to <code>null</code>;
 	 */
 	protected final void initPattern() {
+		evaluatedRHS = false;
 		Arrays.fill(fPatternValuesArray, null);
 	}
 
@@ -335,7 +342,8 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 	 * @param patternValuesArray
 	 * @see PatternMap#copyPattern()
 	 */
-	protected void resetPattern(IExpr[] patternValuesArray) {
+	protected final void resetPattern(IExpr[] patternValuesArray) {
+		evaluatedRHS = false;
 		System.arraycopy(patternValuesArray, 0, fPatternValuesArray, 0, fPatternValuesArray.length);
 	}
 
@@ -359,6 +367,10 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 		return true;
 	}
 
+	public final void setRHSEvaluated(boolean evaluated) {
+		evaluatedRHS = evaluated;
+	}
+	
 	public void setValue(IPatternObject pattern, IExpr expr) {
 		ISymbol sym = pattern.getSymbol();
 		IExpr temp = pattern;

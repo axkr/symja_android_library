@@ -66,7 +66,7 @@ public class EvalEngine implements Serializable {
 	static int fAnonymousCounter = 0;
 
 	public Cache<IAST, IExpr> REMEMBER_AST_CACHE = null;
-	
+
 	public final static boolean DEBUG = false;
 
 	transient private static final ThreadLocal<EvalEngine> instance = new ThreadLocal<EvalEngine>() {
@@ -691,6 +691,11 @@ public class EvalEngine implements Serializable {
 					result = ((IFunctionEvaluator) module).evaluate(ast, this);
 				}
 				if (result.isPresent()) {
+					// if (symbol.equals(F.Simplify) || symbol.equals(F.FullSimplify)) {
+					// System.out.println(ast.toString());
+					// System.out.println(result.toString());
+					// System.out.println();
+					// }
 					return result;
 				}
 				if (((ISymbol.DELAYED_RULE_EVALUATION & attr) == ISymbol.DELAYED_RULE_EVALUATION)) {
@@ -1033,7 +1038,7 @@ public class EvalEngine implements Serializable {
 		try {
 			fEvalLHSMode = true;
 			numericMode = false;
-			IExpr temp = evalAttributes(ast.topHead(),ast);
+			IExpr temp = evalAttributes(ast.topHead(), ast);
 			if (temp.isPresent()) {
 				return temp;
 			}
@@ -1750,7 +1755,7 @@ public class EvalEngine implements Serializable {
 		fSeconds = 0;
 		fModifiedVariablesList = new HashSet<ISymbol>();
 		fContextPath = new ContextPath();
-		fLocalVariableStackMap=null;
+		fLocalVariableStackMap = null;
 	}
 
 	/**
@@ -1877,7 +1882,7 @@ public class EvalEngine implements Serializable {
 		Map<ISymbol, Deque<IExpr>> localVariableStackMap = getLocalVariableStackMap();
 		Deque<IExpr> temp = localVariableStackMap.remove(symbol);
 	}
-	
+
 	/**
 	 * Parse the given <code>expression String</code> into an IExpr without evaluation.
 	 * 

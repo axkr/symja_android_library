@@ -159,20 +159,28 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	 */
 	@Override
 	public boolean checkRHSCondition(EvalEngine engine) {
+		PatternMap patternMap = getPatternMap();
+		if (patternMap.getRHSEvaluated()) {
+			return true;
+		}
+		boolean matched = false;
 		if (!(fRightHandSide.isModuleOrWith() || fRightHandSide.isCondition())) {
-			return true;
+			matched = true;
+		} else {
+			if (!patternMap.isAllPatternsAssigned()) {
+				matched = true;
+			} else {
+				IExpr substConditon = patternMap.substituteSymbols(fRightHandSide);
+				if (substConditon.isCondition()) {
+					matched = Programming.checkCondition(substConditon.first(), substConditon.second(), engine);
+				} else if (substConditon.isModuleOrWith()) {
+					matched = Programming.checkModuleOrWithCondition(substConditon.first(), substConditon.second(),
+							engine);
+				}
+			}
 		}
-		PatternMap patternMap= getPatternMap();
-		if (!patternMap.isAllPatternsAssigned()) {
-			return true;
-		}
-		IExpr substConditon = patternMap.substituteSymbols(fRightHandSide);
-		if (substConditon.isCondition()) {
-			return Programming.checkCondition(substConditon.first(), substConditon.second(), engine);
-		} else if (substConditon.isModuleOrWith()) {
-			return Programming.checkModuleOrWithCondition(substConditon.first(), substConditon.second(), engine);
-		}
-		return true;
+		patternMap.setRHSEvaluated(matched);
+		return matched;
 	}
 
 	/** {@inheritDoc} */
@@ -207,7 +215,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 			}
 		}
 
-		PatternMap patternMap= getPatternMap();
+		PatternMap patternMap = getPatternMap();
 		patternMap.initPattern();
 		if (matchExpr(fLhsPatternExpr, leftHandSide, engine)) {
 
@@ -309,7 +317,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 							if (getRHSleafCountSimplify() > pm.getRHSleafCountSimplify()) {
 								return 1;
 							}
-							return equivalentRHS(fRightHandSide, pm.fRightHandSide, getPatternMap(), pm.getPatternMap());
+							return equivalentRHS(fRightHandSide, pm.fRightHandSide, getPatternMap(),
+									pm.getPatternMap());
 						}
 						return 1;
 					} else if (pm.fRightHandSide.isModuleOrWithCondition() || pm.fRightHandSide.isCondition()) {
