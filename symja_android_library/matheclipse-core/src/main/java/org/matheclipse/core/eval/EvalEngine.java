@@ -691,7 +691,7 @@ public class EvalEngine implements Serializable {
 					result = ((IFunctionEvaluator) module).evaluate(ast, this);
 				}
 				if (result.isPresent()) {
-					// if (symbol.equals(F.Simplify)) {
+					// if (symbol.equals(F.Simplify) || symbol.equals(F.FullSimplify)) {
 					// System.out.println(ast.toString());
 					// System.out.println(result.toString());
 					// System.out.println();
