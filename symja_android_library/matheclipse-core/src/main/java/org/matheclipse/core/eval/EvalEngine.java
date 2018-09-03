@@ -1952,6 +1952,7 @@ public class EvalEngine implements Serializable {
 		fStopRequested = false;
 		fSeconds = 0;
 		fModifiedVariablesList = new HashSet<ISymbol>();
+		REMEMBER_AST_CACHE = null;
 	}
 
 	private void selectNumericMode(final int attr, final int nAttribute, boolean localNumericMode) {
