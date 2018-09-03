@@ -861,6 +861,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		private boolean convertTimesOperator(final StringBuilder buf, final IAST timesAST, final int precedence,
 				final boolean caller) {
 			int size = timesAST.size();
+			boolean noPrecedenceOpenCall = false;
 			if (size > 1) {
 				IExpr arg1 = timesAST.arg1();
 				if (arg1.isMinusOne()) {
@@ -870,6 +871,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 						fFactory.convert(buf, arg1, fPrecedence, false);
 					} else {
 						if (caller == MathMLFormFactory.NO_PLUS_CALL) {
+							noPrecedenceOpenCall = true;
 							fFactory.tagStart(buf, fFirstTag);
 							fFactory.tag(buf, "mo", "-");
 							if (size == 3) {
@@ -929,7 +931,9 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 					fFactory.tag(buf, "mo", fOperator);
 				}
 			}
-			precedenceClose(buf, precedence);
+			if (!noPrecedenceOpenCall) {
+				precedenceClose(buf, precedence);
+			}
 			fFactory.tagEnd(buf, fFirstTag);
 			return true;
 		}
@@ -1288,13 +1292,12 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 				}
 				// <!ENTITY ImaginaryI "&#x2148;"
 				tag(buf, "mi", "&#x2148;");
-				tagEnd(buf, "mrow");
 			} else {
 				tag(buf, "mo", "+");
 				// <!ENTITY ImaginaryI "&#x2148;"
 				tag(buf, "mi", "&#x2148;");
-				tagEnd(buf, "mrow");
 			}
+			tagEnd(buf, "mrow");
 		} else if (isImMinusOne) {
 			tagStart(buf, "mrow");
 			tag(buf, "mo", "-");
