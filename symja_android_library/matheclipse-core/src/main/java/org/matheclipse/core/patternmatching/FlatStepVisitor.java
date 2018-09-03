@@ -98,7 +98,7 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
 				}
 			}
 
-			if (stackMatcher != null && !stackMatcher.matchRest()) {
+			if (!stackMatcher.matchRest()) {
 				matched = false;
 				return false;
 			}

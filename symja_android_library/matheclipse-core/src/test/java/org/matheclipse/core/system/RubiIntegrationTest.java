@@ -547,11 +547,11 @@ public class RubiIntegrationTest extends AbstractTestCase {
 				"-Cos(a+b*x)/b+2/3*Cos(a+b*x)^3/b-Cos(a+b*x)^5/(5*b)");
 
 		check("Integrate(Sin(a + b*x)^(1/2),x)", //
-				"(2*EllipticE(1/2*(a-Pi/2+b*x),2))/b");
+				"(2*EllipticE(a/2-Pi/4+1/2*b*x,2))/b");
 		check("Integrate(Sin(a + b*x)^(3/2),x)",
-				"2/3*EllipticF(1/2*(a-Pi/2+b*x),2)/b-2/3*(Cos(a+b*x)*Sqrt(Sin(a+b*x)))/b");
+				"2/3*EllipticF(a/2-Pi/4+1/2*b*x,2)/b-2/3*(Cos(a+b*x)*Sqrt(Sin(a+b*x)))/b");
 		check("Integrate(Sin(a + b*x)^(5/2),x)",
-				"6/5*EllipticE(1/2*(a-Pi/2+b*x),2)/b-2/5*(Cos(a+b*x)*Sin(a+b*x)^(3/2))/b");
+				"6/5*EllipticE(a/2-Pi/4+1/2*b*x,2)/b-2/5*(Cos(a+b*x)*Sin(a+b*x)^(3/2))/b");
 
 		check("Integrate(x*Sin(a + b*x),x)", //
 				"(-x*Cos(a+b*x))/b+Sin(a+b*x)/b^2");
