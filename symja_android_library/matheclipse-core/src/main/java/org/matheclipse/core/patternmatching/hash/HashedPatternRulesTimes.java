@@ -52,7 +52,7 @@ public class HashedPatternRulesTimes extends HashedPatternRules {
 				} else {
 					// num1 < num2
 					diff = diff.negate();
-					return F.Times(e2.power(diff), temp.power(num2));
+					return F.Times(e2.power(diff), temp.power(num1));
 				}
 			}
 		}

@@ -4629,12 +4629,29 @@ public final class Arithmetic {
 			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(//
 					F.Sin(x_), //
 					F.Sec(x_), //
-					F.Tan(x), true));
+					F.Tan(x)));
 			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(//
 					F.Cos(x_), //
 					F.Csc(x_), //
-					F.Cot(x), true));
+					F.Cot(x)));
 
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(//
+					F.Cosh(x_), //
+					F.Tanh(x_), //
+					F.Sinh(x)));
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(//
+					F.Coth(x_), //
+					F.Sinh(x_), //
+					F.Cosh(x)));
+			
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(//
+					F.Csch(x_), //
+					F.Tanh(x_), //
+					F.Sech(x)));
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(//
+					F.Coth(x_), //
+					F.Sech(x_), //
+					F.Csch(x)));
 			super.setUp(newSymbol);
 		}
 
