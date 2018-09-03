@@ -24,5 +24,5 @@ See:
 1.1899423083962249E7
 
 >> !a! //FullForm
-"Not(Factorial(a))"
+Not(Factorial(a))
 ```

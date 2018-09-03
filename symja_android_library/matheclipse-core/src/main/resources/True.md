@@ -3,6 +3,7 @@
 ```
 True
 ```
+
 > the constant `True` represents the boolean value **true**
 
 See:  
@@ -13,4 +14,4 @@ See:
 ```
 >> Pi > E
 True
-``` 
+```
