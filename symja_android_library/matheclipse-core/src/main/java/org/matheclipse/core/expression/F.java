@@ -5968,7 +5968,6 @@ public class F {
 	}
 
 	public static IAST FreeQ(final IExpr a0, final IExpr a1) {
-
 		return binaryAST2(FreeQ, a0, a1);
 	}
 
@@ -8795,7 +8794,7 @@ public class F {
 	}
 
 	/**
-	 * Create a large integer number.
+	 * Create an integer number.
 	 * 
 	 * @param integerValue
 	 * @return
@@ -8852,7 +8851,7 @@ public class F {
 	}
 
 	/**
-	 * parses given string to an instance of {@link IExpr}
+	 * Parses a given string to an instance of {@link IExpr}
 	 * 
 	 * Examples:
 	 * 

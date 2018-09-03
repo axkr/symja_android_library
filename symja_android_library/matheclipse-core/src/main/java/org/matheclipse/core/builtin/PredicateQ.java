@@ -172,14 +172,12 @@ public class PredicateQ {
 	private static class ArrayQ extends AbstractCoreFunctionEvaluator {
 
 		/**
-		 * Determine the depth of the given expression <code>expr</code> which should be a full array of (possibly
-		 * nested) lists. Return <code>-1</code> if the expression isn't a full array.
+		 * Determine the depth of the given expression <code>expr</code> which should be a full array of (possibly nested) lists. Return
+		 * <code>-1</code> if the expression isn't a full array.
 		 * 
 		 * @param expr
-		 * @param depth
-		 *            start depth of the full array
-		 * @param predicate
-		 *            an optional <code>Predicate</code> which would be applied to all elements which aren't lists.
+		 * @param depth     start depth of the full array
+		 * @param predicate an optional <code>Predicate</code> which would be applied to all elements which aren't lists.
 		 * @return <code>-1</code> if the expression isn't a full array.
 		 */
 		private static int determineDepth(final IExpr expr, int depth, Predicate<IExpr> predicate) {
@@ -371,16 +369,14 @@ public class PredicateQ {
 	private static class FreeQ extends AbstractCoreFunctionEvaluator {
 
 		/**
-		 * Checks if <code>orderless1.size()</code> is greater or equal <code>orderless2.size()</code> and returns
-		 * <code>false</code>, if every argument in <code>orderless2</code> equals an argument in
-		 * <code>orderless1</code>. I.e. <code>orderless1</code> doesn't contain every argument of
-		 * <code>orderless2</code>.
+		 * Checks if <code>orderless1.size()</code> is greater or equal <code>orderless2.size()</code> and returns <code>false</code>, if
+		 * every argument in <code>orderless2</code> equals an argument in <code>orderless1</code>. I.e. <code>orderless1</code> doesn't
+		 * contain every argument of <code>orderless2</code>.
 		 * 
 		 * @param orderless1
 		 * @param orderless2
-		 * @return <code>false</code> if <code>orderless1.size()</code> is greater or equal
-		 *         <code>orderless2.size()</code> and if every argument in <code>orderless2</code> equals an argument in
-		 *         <code>orderless1</code>
+		 * @return <code>false</code> if <code>orderless1.size()</code> is greater or equal <code>orderless2.size()</code> and if every
+		 *         argument in <code>orderless2</code> equals an argument in <code>orderless1</code>
 		 */
 		private static boolean isFreeOrderless(IAST orderless1, IAST orderless2) {
 			if (orderless1.size() >= orderless2.size()) {
@@ -413,19 +409,24 @@ public class PredicateQ {
 			if (ast.isAST1()) {
 				return F.operatorFormAST1(ast);
 			}
-			Validate.checkSize(ast, 3);
-			final IExpr arg1 = engine.evaluate(ast.arg1());
-			final IExpr arg2 = engine.evalPattern(ast.arg2());
-			final IPatternMatcher matcher = new PatternMatcherEvalEngine(arg2, engine);
-			if (matcher.isRuleWithoutPatterns()) {
-				// special for FreeQ(), don't implemented in MemberQ()!
-				if (arg1.isOrderlessAST() && arg2.isOrderlessAST() && arg1.head().equals(arg2.head())) {
-					if (!isFreeOrderless((IAST) arg1, (IAST) arg1)) {
-						return F.False;
+			if (ast.size() == 3) {
+				final IExpr arg1 = engine.evaluate(ast.arg1());
+				final IExpr arg2 = engine.evalPattern(ast.arg2());
+				if (arg2.isSymbol() || arg2.isNumber() || arg2.isString()) {
+					return F.bool(arg1.isFree(arg2, true));
+				}
+				final IPatternMatcher matcher = new PatternMatcherEvalEngine(arg2, engine);
+				if (matcher.isRuleWithoutPatterns()) {
+					// special for FreeQ(), don't implemented in MemberQ()!
+					if (arg1.isOrderlessAST() && arg2.isOrderlessAST() && arg1.head().equals(arg2.head())) {
+						if (!isFreeOrderless((IAST) arg1, (IAST) arg1)) {
+							return F.False;
+						}
 					}
 				}
+				return F.bool(arg1.isFree(matcher, true));
 			}
-			return F.bool(arg1.isFree(matcher, true));
+			return F.NIL;
 		}
 	}
 
@@ -530,8 +531,8 @@ public class PredicateQ {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * only returns <code>True</code> if <code>f(x)</code> returns <code>True</code> for each element <code>x</code> of
-	 * the matrix <code>m</code>.
+	 * only returns <code>True</code> if <code>f(x)</code> returns <code>True</code> for each element <code>x</code> of the matrix
+	 * <code>m</code>.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -606,22 +607,25 @@ public class PredicateQ {
 			if (ast.isAST1()) {
 				return F.operatorFormAST1(ast);
 			}
-			Validate.checkRange(ast, 3, 5);
 
 			boolean heads = false;
 			if (ast.size() > 3) {
 				final Options options = new Options(ast.topHead(), ast, ast.argSize(), engine);
-				// IExpr option = options.getOption("Heads");
 				if (options.isOption("Heads")) {
 					heads = true;
+				} else {
+					Validate.checkSize(ast, 4);
 				}
 			}
-			final IExpr arg1 = engine.evaluate(ast.arg1());
-			final IExpr arg2 = engine.evaluate(ast.arg2());
-			if (arg1.isAST()) {
-				return F.bool(arg1.isMember(arg2, heads));
+			if (ast.size() == 3 || ast.size() == 4) {
+				final IExpr arg1 = engine.evaluate(ast.arg1());
+				final IExpr arg2 = engine.evaluate(ast.arg2());
+				if (arg1.isAST()) {
+					return F.bool(arg1.isMember(arg2, heads));
+				}
+				return F.False;
 			}
-			return F.False;
+			return F.NIL;
 		}
 
 	}
@@ -766,8 +770,8 @@ public class PredicateQ {
 	 * </blockquote>
 	 * <p>
 	 * For very large numbers, <code>PrimeQ</code> uses
-	 * <a href="https://en.wikipedia.org/wiki/Prime_number#Primality_testing_versus_primality_proving">probabilistic
-	 * prime testing</a>, so it might be wrong sometimes<br />
+	 * <a href="https://en.wikipedia.org/wiki/Prime_number#Primality_testing_versus_primality_proving">probabilistic prime testing</a>,
+	 * so it might be wrong sometimes<br />
 	 * (a number might be composite even though <code>PrimeQ</code> says it is prime).
 	 * </p>
 	 * <p>
@@ -1160,8 +1164,8 @@ public class PredicateQ {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns <code>True</code> if <code>v</code> is a vector and <code>f(x)</code> returns <code>True</code> for each
-	 * element <code>x</code> of <code>v</code>.
+	 * returns <code>True</code> if <code>v</code> is a vector and <code>f(x)</code> returns <code>True</code> for each element
+	 * <code>x</code> of <code>v</code>.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>

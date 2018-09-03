@@ -48,16 +48,6 @@ public abstract class AbstractCorePredicateEvaluator extends AbstractCoreFunctio
 			}
 			return F.bool(evalArg1Boole(arg1, engine));
 		}
-//		if (ast.isAST1()) {
-//			IExpr arg1 = engine.evaluate(ast.arg1());
-//			if (arg1.isList()) {
-//				// thread over list?
-//				if ((ast.topHead().getAttributes() & ISymbol.LISTABLE) == ISymbol.LISTABLE) {
-//					return ((IAST) arg1).mapThread(F.unaryAST1(fSymbol, null), 1);
-//				}
-//			}
-//			return F.bool(evalArg1Boole(arg1, engine));
-//		}
 		Validate.checkSize(ast, 2);
 		return F.NIL;
 	}
