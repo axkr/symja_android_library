@@ -3438,6 +3438,17 @@ public class Algebra {
 					}
 
 					try {
+						temp = F.eval(F.TrigExpand(expr));
+						count = fComplexityFunction.apply(temp);
+						if (count < minCounter) {
+							minCounter = count;
+							result = temp;
+						}
+					} catch (WrongArgumentType wat) {
+						//
+					}
+					
+					try {
 						temp = F.eval(F.Together(expr));
 						count = fComplexityFunction.apply(temp);
 						if (count < minCounter) {
