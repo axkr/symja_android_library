@@ -13,7 +13,7 @@ public interface CotRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 28, 2 };
+  final public static int[] SIZES = { 28, 6 };
 
   final public static IAST RULES = List(
     IInit(Cot, SIZES),
@@ -92,12 +92,24 @@ public interface CotRules {
     // Cot(Pi)=ComplexInfinity
     ISet(Cot(Pi),
       CComplexInfinity),
+    // Cot(ArcSin(x_)):=Sqrt(1-x^2)/x
+    ISetDelayed(Cot(ArcSin(x_)),
+      Times(Power(x,-1),Sqrt(Plus(C1,Negate(Sqr(x)))))),
     // Cot(ArcCos(x_)):=x/Sqrt(1-x^2)
     ISetDelayed(Cot(ArcCos(x_)),
       Times(x,Power(Plus(C1,Negate(Sqr(x))),CN1D2))),
-    // Cot(ArcSin(x_)):=Sqrt(1-x^2)/x
-    ISetDelayed(Cot(ArcSin(x_)),
-      Times(Sqrt(Plus(C1,Negate(Sqr(x)))),Power(x,-1))),
+    // Cot(ArcTan(x_)):=1/x
+    ISetDelayed(Cot(ArcTan(x_)),
+      Power(x,-1)),
+    // Cot(ArcCot(x_)):=x
+    ISetDelayed(Cot(ArcCot(x_)),
+      x),
+    // Cot(ArcCsc(x_)):=Sqrt(1-1/x^2)*x
+    ISetDelayed(Cot(ArcCsc(x_)),
+      Times(Sqrt(Plus(C1,Negate(Power(x,-2)))),x)),
+    // Cot(ArcSec(x_)):=1/(Sqrt(1-1/x^2)*x)
+    ISetDelayed(Cot(ArcSec(x_)),
+      Times(Power(Plus(C1,Negate(Power(x,-2))),CN1D2),Power(x,-1))),
     // Cot(I*Infinity)=-I
     ISet(Cot(DirectedInfinity(CI)),
       CNI),

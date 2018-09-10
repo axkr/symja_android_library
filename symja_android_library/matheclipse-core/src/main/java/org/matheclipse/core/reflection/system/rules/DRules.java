@@ -13,7 +13,7 @@ public interface DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 71 };
+  final public static int[] SIZES = { 0, 77 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -56,9 +56,9 @@ public interface DRules {
     // D(ArcSech(f_),x_NotListQ):=(D(f,x)*(-1))/(f*Sqrt(1-f^2))
     ISetDelayed(D(ArcSech(f_),$p(x,NotListQ)),
       Times(D(f,x),CN1,Power(f,-1),Power(Plus(C1,Negate(Sqr(f))),CN1D2))),
-    // D(Ceiling(f_),x_NotListQ):=0
+    // D(Ceiling(f_),x_NotListQ):=D(f,x)*Piecewise({{0,f<Ceiling(f)}},Indeterminate)
     ISetDelayed(D(Ceiling(f_),$p(x,NotListQ)),
-      C0),
+      Times(D(f,x),Piecewise(List(List(C0,Less(f,Ceiling(f)))),Indeterminate))),
     // D(Erf(f_),x_NotListQ):=D(f,x)*2*1/(E^f^2*Sqrt(Pi))
     ISetDelayed(D(Erf(f_),$p(x,NotListQ)),
       Times(D(f,x),C2,Exp(Negate(Sqr(f))),Power(Pi,CN1D2))),
@@ -68,9 +68,12 @@ public interface DRules {
     // D(Erfi(f_),x_NotListQ):=D(f,x)*2*E^f^2/Sqrt(Pi)
     ISetDelayed(D(Erfi(f_),$p(x,NotListQ)),
       Times(D(f,x),C2,Exp(Sqr(f)),Power(Pi,CN1D2))),
-    // D(Floor(f_),x_NotListQ):=0
+    // D(ExpIntegralEi(f_),x_NotListQ):=D(f,x)*E^f/f
+    ISetDelayed(D(ExpIntegralEi(f_),$p(x,NotListQ)),
+      Times(D(f,x),Exp(f),Power(f,-1))),
+    // D(Floor(f_),x_NotListQ):=D(f,x)*Piecewise({{0,f>Floor(f)}},Indeterminate)
     ISetDelayed(D(Floor(f_),$p(x,NotListQ)),
-      C0),
+      Times(D(f,x),Piecewise(List(List(C0,Greater(f,Floor(f)))),Indeterminate))),
     // D(FractionalPart(f_),x_NotListQ):=D(f,x)*1
     ISetDelayed(D(FractionalPart(f_),$p(x,NotListQ)),
       Times(D(f,x),C1)),
@@ -122,12 +125,15 @@ public interface DRules {
     // D(Csch(f_),x_NotListQ):=D(f,x)*(-1)*Coth(f)*Csch(f)
     ISetDelayed(D(Csch(f_),$p(x,NotListQ)),
       Times(D(f,x),CN1,Coth(f),Csch(f))),
-    // D(Round(f_),x_NotListQ):=0
+    // D(Round(f_),x_NotListQ):=D(f,x)*Piecewise({{0,NotElement(-1/2+Re(f),Integers)&&NotElement(-1/2+Im(f),Integers)}},Indeterminate)
     ISetDelayed(D(Round(f_),$p(x,NotListQ)),
-      C0),
+      Times(D(f,x),Piecewise(List(List(C0,And(NotElement(Plus(CN1D2,Re(f)),Integers),NotElement(Plus(CN1D2,Im(f)),Integers)))),Indeterminate))),
     // D(Sin(f_),x_NotListQ):=D(f,x)*Cos(f)
     ISetDelayed(D(Sin(f_),$p(x,NotListQ)),
       Times(D(f,x),Cos(f))),
+    // D(Sinc(f_),x_NotListQ):=D(f,x)*-Sin(f)/f^2+Cos(f)/f
+    ISetDelayed(D(Sinc(f_),$p(x,NotListQ)),
+      Plus(Times(D(f,x),CN1,Power(f,-2),Sin(f)),Times(Power(f,-1),Cos(f)))),
     // D(Sinh(f_),x_NotListQ):=D(f,x)*Cosh(f)
     ISetDelayed(D(Sinh(f_),$p(x,NotListQ)),
       Times(D(f,x),Cosh(f))),
@@ -143,6 +149,18 @@ public interface DRules {
     // D(Sech(f_),x_NotListQ):=D(f,x)*(-1)*Tanh(f)*Sech(f)
     ISetDelayed(D(Sech(f_),$p(x,NotListQ)),
       Times(D(f,x),CN1,Tanh(f),Sech(f))),
+    // D(CosIntegral(f_),x_NotListQ):=D(f,x)*(-1)*Cos(f)/f
+    ISetDelayed(D(CosIntegral(f_),$p(x,NotListQ)),
+      Times(D(f,x),CN1,Power(f,-1),Cos(f))),
+    // D(CoshIntegral(f_),x_NotListQ):=D(f,x)*Cosh(f)/f
+    ISetDelayed(D(CoshIntegral(f_),$p(x,NotListQ)),
+      Times(D(f,x),Power(f,-1),Cosh(f))),
+    // D(SinIntegral(f_),x_NotListQ):=D(f,x)*(-1)*Sinc(f)
+    ISetDelayed(D(SinIntegral(f_),$p(x,NotListQ)),
+      Times(D(f,x),CN1,Sinc(f))),
+    // D(SinhIntegral(f_),x_NotListQ):=D(f,x)*Sinh(f)/f
+    ISetDelayed(D(SinhIntegral(f_),$p(x,NotListQ)),
+      Times(D(f,x),Power(f,-1),Sinh(f))),
     // D(ArcCos(x_),{x_,2}):=-x/(1-x^2)^(3/2)
     ISetDelayed(D(ArcCos(x_),List(x_,C2)),
       Times(CN1,x,Power(Plus(C1,Negate(Sqr(x))),QQ(-3L,2L)))),

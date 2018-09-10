@@ -13,7 +13,7 @@ public interface SinRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 55, 4 };
+  final public static int[] SIZES = { 55, 7 };
 
   final public static IAST RULES = List(
     IInit(Sin, SIZES),
@@ -167,6 +167,9 @@ public interface SinRules {
     // Sin(I)=I*Sinh(1)
     ISet(Sin(CI),
       Times(CI,Sinh(C1))),
+    // Sin(x_NumberQ*Pi):=If(x<1,Sin((1-x)*Pi),If(x<2,-Sin((2-x)*Pi),Sin((x-2*Quotient(IntegerPart(x),2))*Pi)))/;x>=1/2
+    ISetDelayed(Sin(Times(Pi,$p(x,NumberQ))),
+      Condition(If(Less(x,C1),Sin(Times(Plus(C1,Negate(x)),Pi)),If(Less(x,C2),Negate(Sin(Times(Plus(C2,Negate(x)),Pi))),Sin(Times(Plus(x,Times(CN2,Quotient(IntegerPart(x),C2))),Pi)))),GreaterEqual(x,C1D2))),
     // Sin(ArcSin(x_)):=x
     ISetDelayed(Sin(ArcSin(x_)),
       x),
@@ -176,9 +179,15 @@ public interface SinRules {
     // Sin(ArcTan(x_)):=x/Sqrt(1+x^2)
     ISetDelayed(Sin(ArcTan(x_)),
       Times(x,Power(Plus(C1,Sqr(x)),CN1D2))),
-    // Sin(x_NumberQ*Pi):=If(x<1,Sin((1-x)*Pi),If(x<2,-Sin((2-x)*Pi),Sin((x-2*Quotient(IntegerPart(x),2))*Pi)))/;x>=1/2
-    ISetDelayed(Sin(Times(Pi,$p(x,NumberQ))),
-      Condition(If(Less(x,C1),Sin(Times(Plus(C1,Negate(x)),Pi)),If(Less(x,C2),Negate(Sin(Times(Plus(C2,Negate(x)),Pi))),Sin(Times(Plus(x,Times(CN2,Quotient(IntegerPart(x),C2))),Pi)))),GreaterEqual(x,C1D2))),
+    // Sin(ArcCot(x_)):=1/(x*Sqrt(1+1/x^2))
+    ISetDelayed(Sin(ArcCot(x_)),
+      Times(Power(x,-1),Power(Plus(C1,Power(x,-2)),CN1D2))),
+    // Sin(ArcCsc(x_)):=1/x
+    ISetDelayed(Sin(ArcCsc(x_)),
+      Power(x,-1)),
+    // Sin(ArcSec(x_)):=Sqrt(1-1/x^2)
+    ISetDelayed(Sin(ArcSec(x_)),
+      Sqrt(Plus(C1,Negate(Power(x,-2))))),
     // Sin(I*Infinity)=I*Infinity
     ISet(Sin(DirectedInfinity(CI)),
       DirectedInfinity(CI)),

@@ -13,7 +13,7 @@ public interface CscRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 43, 0 };
+  final public static int[] SIZES = { 43, 6 };
 
   final public static IAST RULES = List(
     IInit(Csc, SIZES),
@@ -137,6 +137,24 @@ public interface CscRules {
     // Csc(2*Pi)=ComplexInfinity
     ISet(Csc(Times(C2,Pi)),
       CComplexInfinity),
+    // Csc(ArcSin(x_)):=1/x
+    ISetDelayed(Csc(ArcSin(x_)),
+      Power(x,-1)),
+    // Csc(ArcCos(x_)):=1/Sqrt(1-x^2)
+    ISetDelayed(Csc(ArcCos(x_)),
+      Power(Plus(C1,Negate(Sqr(x))),CN1D2)),
+    // Csc(ArcTan(x_)):=Sqrt(1+x^2)/x
+    ISetDelayed(Csc(ArcTan(x_)),
+      Times(Power(x,-1),Sqrt(Plus(C1,Sqr(x))))),
+    // Csc(ArcCot(x_)):=Sqrt(1+1/x^2)*x
+    ISetDelayed(Csc(ArcCot(x_)),
+      Times(Sqrt(Plus(C1,Power(x,-2))),x)),
+    // Csc(ArcCsc(x_)):=x
+    ISetDelayed(Csc(ArcCsc(x_)),
+      x),
+    // Csc(ArcSec(x_)):=1/Sqrt(1-1/x^2)
+    ISetDelayed(Csc(ArcSec(x_)),
+      Power(Plus(C1,Negate(Power(x,-2))),CN1D2)),
     // Csc(I*Infinity)=0
     ISet(Csc(DirectedInfinity(CI)),
       C0),
