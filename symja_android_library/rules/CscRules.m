@@ -40,6 +40,13 @@
  Csc(23/12*Pi)=-2*Sqrt(2+Sqrt(3)), 
  Csc(2*Pi)=ComplexInfinity,
  
+ Csc(ArcSin(x_)):=1/x,
+ Csc(ArcCos(x_)):=(1-x^2)^(-1/2),
+ Csc(ArcTan(x_)):=x^(-1)*(1+x^2)^(1/2),
+ Csc(ArcCot(x_)):=(1+x^(-2))^(1/2)*x,
+ Csc(ArcCsc(x_)):=x,
+ Csc(ArcSec(x_)):=(1-x^(-2))^(-1/2),
+
  Csc(I*Infinity)=0,
  Csc(-I*Infinity)=0,
  Csc(ComplexInfinity)=Indeterminate

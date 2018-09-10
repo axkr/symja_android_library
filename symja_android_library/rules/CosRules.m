@@ -50,11 +50,17 @@ Cos(23/12*Pi)=(1+Sqrt(3))/(2*Sqrt(2)),
 Cos(2*Pi)=1,
 
 Cos(I)=Cosh(1),
-Cos(ArcTan(x_)):=(1+x^2)^(-1/2),
+
 Cos(Pi*x_NumberQ):=If(x<1,(-1)*Cos((1-x)*Pi),If(x<2,Cos((2-x)*Pi),Cos((x-2*Quotient(IntegerPart(x),2))*Pi)))/;x>=1/2,
-Cos(ArcCos(x_)):=x,
+
 Cos(ArcSin(x_)):=(1-x^2)^(1/2),
-Cos(Sqrt(x_^2)):=Cos(x),
+Cos(ArcCos(x_)):=x,
+Cos(ArcTan(x_)):=(1+x^2)^(-1/2),
+Cos(ArcCot(x_)):=(1+x^(-2))^(-1/2),
+Cos(ArcCsc(x_)):=(1-x^(-2))^(1/2),
+Cos(ArcSec(x_)):=x^(-1),
+
+Cos(Sqrt(x_^2)):=Cos(x),  
 	 
 Cos(I*Infinity)=Infinity,
 Cos(-I*Infinity)=Infinity,
