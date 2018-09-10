@@ -46,7 +46,7 @@ public class ExprParserFactory implements IParserFactory {
 		public IASTMutable createFunction(final IParserFactory factory, ExprParser parser, final IExpr lhs,
 				final IExpr rhs) {
 			if (fOperatorString.equals("@")) {
-				return F.unaryAST1(lhs, rhs);
+				return F.unary(lhs, rhs);
 			}
 			IASTAppendable fn = F.ast(F.Apply);
 			fn.append(lhs);

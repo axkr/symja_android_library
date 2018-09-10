@@ -703,7 +703,7 @@ public final class NumberTheory {
 				if (list.size() > 1) {
 					int size = list.argSize();
 					IASTAppendable resultList = F.ListAlloc(list.size());
-					IASTMutable plus = F.binaryAST2(F.Plus, F.C0, list.get(1));
+					IASTMutable plus = F.binary(F.Plus, F.C0, list.get(1));
 					IASTMutable result = plus;
 					for (int i = 2; i <= size; i++) {
 						IExpr temp;
@@ -713,7 +713,7 @@ public final class NumberTheory {
 							temp = engine.evaluate(result);
 						}
 						resultList.append(temp);
-						IASTMutable plusAST = F.binaryAST2(F.Plus, F.C0, list.get(i));
+						IASTMutable plusAST = F.binary(F.Plus, F.C0, list.get(i));
 						plus.set(1, F.Power(plusAST, F.CN1));
 						plus = plusAST;
 					}
