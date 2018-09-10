@@ -7,9 +7,11 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.DoubleUnaryOperator;
@@ -19,6 +21,7 @@ import javax.annotation.Nonnull;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
+import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.eval.exception.IllegalArgument;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
@@ -48,6 +51,8 @@ import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.parser.ExprParserFactory;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
+import org.matheclipse.core.patternmatching.RulesData;
+import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.parser.client.math.MathException;
 
 import com.google.common.cache.Cache;
@@ -65,7 +70,7 @@ public class EvalEngine implements Serializable {
 
 	static int fAnonymousCounter = 0;
 
-	public Cache<IAST, IExpr> REMEMBER_AST_CACHE = null;
+	public transient Cache<IAST, IExpr> REMEMBER_AST_CACHE = null;
 
 	public final static boolean DEBUG = false;
 
@@ -536,15 +541,19 @@ public class EvalEngine implements Serializable {
 	 * @return <code>F.NIL</code> if no evaluation happened
 	 */
 	public final IExpr evalAST(IAST ast) {
-		final IExpr head = ast.head();
-		if (ast.head().isCoreFunctionSymbol()) {
+		final IExpr head = ast.head(); 
+		if (head.isCoreFunctionSymbol()) {
 			IExpr temp = evalEvaluate(ast);
 			if (temp.isPresent()) {
 				return temp;
 			}
 			// evaluate a core function (without no rule definitions)
 			final ICoreFunctionEvaluator coreFunction = (ICoreFunctionEvaluator) ((IBuiltInSymbol) head).getEvaluator();
-			return fNumericMode ? coreFunction.numericEval(ast, this) : coreFunction.evaluate(ast, this);
+			if (isNumericMode()) {
+				return coreFunction.numericEval(ast, this);
+			} else {
+				return coreFunction.evaluate(ast, this);
+			}
 		}
 		final ISymbol symbol = ast.topHead();
 		// if (symbol.isBuiltInSymbol()) {
@@ -790,16 +799,6 @@ public class EvalEngine implements Serializable {
 
 	}
 
-	/**
-	 * Evaluate an expression for the given &quot;local variables list&quot;. If evaluation is not possible return the
-	 * input object.
-	 * 
-	 * @param expr
-	 *            the expression which should be evaluated
-	 * @param localVariablesList
-	 *            a list of symbols which should be used as local variables inside the block
-	 * @return the evaluated object
-	 */
 	public IExpr evalBlock(final IExpr expr, final IAST localVariablesList) {
 		final List<ISymbol> variables = new ArrayList<ISymbol>();
 
@@ -816,11 +815,9 @@ public class EvalEngine implements Serializable {
 						final IAST setFun = (IAST) x;
 						if (setFun.arg1().isSymbol()) {
 							ISymbol blockVariableSymbol = (ISymbol) setFun.arg1();
-							final Deque<IExpr> localVariableStack = localStackCreate(blockVariableSymbol);
-							localVariableStack.push(F.NIL);
 							// this evaluation step may throw an exception
 							IExpr temp = evaluate(setFun.arg2());
-							localVariableStack.remove();
+							final Deque<IExpr> localVariableStack = localStackCreate(blockVariableSymbol);
 							localVariableStack.push(temp);
 							variables.add(blockVariableSymbol);
 						}
@@ -1577,7 +1574,7 @@ public class EvalEngine implements Serializable {
 	public final IExpr evaluateNull(final IExpr expr) {
 		boolean numericMode = fNumericMode;
 		try {
-			return evalLoop(expr);
+			return evalLoopExpr(expr);
 		} finally {
 			fNumericMode = numericMode;
 		}
@@ -1593,7 +1590,11 @@ public class EvalEngine implements Serializable {
 	 * 
 	 */
 	public final IExpr evalWithoutNumericReset(final IExpr expr) {
-		return evalLoop(expr).orElse(expr);
+		return evalLoopExpr(expr).orElse(expr);
+	}
+
+	public final IExpr evalLoopExpr(final IExpr expr) {
+		return evalLoop(expr);
 	}
 
 	/**
@@ -1767,7 +1768,7 @@ public class EvalEngine implements Serializable {
 	 * @see ApfloatNum
 	 * @see ApcomplexNum
 	 */
-	public boolean isApfloat() {
+	public final boolean isApfloat() {
 		return fNumericPrecision > Config.MACHINE_PRECISION;
 	}
 
@@ -1776,18 +1777,18 @@ public class EvalEngine implements Serializable {
 	 * 
 	 * @return
 	 */
-	public boolean isEvalLHSMode() {
+	public final boolean isEvalLHSMode() {
 		return fEvalLHSMode;
 	}
 
-	public boolean isFileSystemEnabled() {
+	public final boolean isFileSystemEnabled() {
 		return fFileSystemEnabled;
 	}
 
 	/**
 	 * @return <code>true</code> if the EvalEngine runs in numeric mode.
 	 */
-	public boolean isNumericMode() {
+	public final boolean isNumericMode() {
 		return fNumericMode;
 	}
 
@@ -1798,11 +1799,11 @@ public class EvalEngine implements Serializable {
 	 * 
 	 * @return
 	 */
-	public boolean isOutListDisabled() {
+	public final boolean isOutListDisabled() {
 		return fOutListDisabled;
 	}
 
-	public boolean isPackageMode() {
+	public final boolean isPackageMode() {
 		return fPackageMode;
 	}
 
@@ -1813,29 +1814,29 @@ public class EvalEngine implements Serializable {
 	 * @return
 	 * @see org.matheclipse.core.builtin.function.Quiet
 	 */
-	public boolean isQuietMode() {
+	public final boolean isQuietMode() {
 		return fQuietMode;
 	}
 
 	/**
 	 * @return the fRelaxedSyntax
 	 */
-	public boolean isRelaxedSyntax() {
+	public final boolean isRelaxedSyntax() {
 		return fRelaxedSyntax;
 	}
 
 	/**
 	 * @return Returns the stopRequested.
 	 */
-	public boolean isStopRequested() {
+	public final boolean isStopRequested() {
 		return fStopRequested;
 	}
 
-	public boolean isThrowError() {
+	public final boolean isThrowError() {
 		return fThrowError;
 	}
 
-	public boolean isTogetherMode() {
+	public final boolean isTogetherMode() {
 		return fTogetherMode;
 	}
 
@@ -1845,7 +1846,7 @@ public class EvalEngine implements Serializable {
 	 * 
 	 * @return
 	 */
-	public boolean isTraceMode() {
+	public final boolean isTraceMode() {
 		return fTraceMode;
 	}
 
@@ -1952,7 +1953,7 @@ public class EvalEngine implements Serializable {
 		fStopRequested = false;
 		fSeconds = 0;
 		fModifiedVariablesList = new HashSet<ISymbol>();
-		REMEMBER_AST_CACHE = null;
+		REMEMBER_AST_CACHE = null; 
 	}
 
 	private void selectNumericMode(final int attr, final int nAttribute, boolean localNumericMode) {

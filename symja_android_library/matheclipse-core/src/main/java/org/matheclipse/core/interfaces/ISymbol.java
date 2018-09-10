@@ -2,7 +2,6 @@
 package org.matheclipse.core.interfaces;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.function.DoubleFunction;
 import java.util.function.Function;
 
@@ -178,7 +177,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * 
 	 * @return
 	 */
-	public List<IAST> definition();
+	public IAST definition();
 
 	/**
 	 * Return the rules associated to this symbol in <code>String</code> representation

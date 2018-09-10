@@ -98,10 +98,9 @@ public class F {
 
 	/**
 	 * <p>
-	 * In computing, memoization or memoisation is an optimization technique used primarily to speed up computer
-	 * programs by storing the results of expensive function calls and returning the cached result when the same inputs
-	 * occur again. This cache is especially useed for recursive integer functions to remember the results of the
-	 * recursive call.
+	 * In computing, memoization or memoisation is an optimization technique used primarily to speed up computer programs by storing the
+	 * results of expensive function calls and returning the cached result when the same inputs occur again. This cache is especially
+	 * useed for recursive integer functions to remember the results of the recursive call.
 	 * </p>
 	 * 
 	 * See: <a href="https://en.wikipedia.org/wiki/Memoization">Wikipedia - Memoization</a>
@@ -109,6 +108,7 @@ public class F {
 	public static Cache<IAST, IExpr> REMEMBER_INTEGER_CACHE = CacheBuilder.newBuilder().maximumSize(5000).build();
 
 	public static Cache<IAST, IExpr> REMEMBER_AST_CACHE = CacheBuilder.newBuilder().maximumSize(5000).build();
+
 	/**
 	 * Set to <code>true</code> at the start of initSymbols() method
 	 */
@@ -146,13 +146,13 @@ public class F {
 
 	/**
 	 * <p>
-	 * The constant object <code>NIL</code> (not in list) indicates in the evaluation process that no evaluation was
-	 * possible (i.e. no further definition was found to create a new expression from the existing one).
+	 * The constant object <code>NIL</code> (not in list) indicates in the evaluation process that no evaluation was possible (i.e. no
+	 * further definition was found to create a new expression from the existing one).
 	 * </p>
 	 * <p>
-	 * Almost every modifying method in this class throws an <tt>UnsupportedOperationException</tt>, almost every
-	 * predicate returns <code>false</code>. The main method to check if the object is valid is the
-	 * <code>isPresent()</code> method. The method is similar to <code>java.util.Optional#isPresent()</code>.
+	 * Almost every modifying method in this class throws an <tt>UnsupportedOperationException</tt>, almost every predicate returns
+	 * <code>false</code>. The main method to check if the object is valid is the <code>isPresent()</code> method. The method is similar
+	 * to <code>java.util.Optional#isPresent()</code>.
 	 * </p>
 	 * 
 	 * @see java.util.Optional#isPresent
@@ -184,8 +184,7 @@ public class F {
 	public final static IBuiltInSymbol All = F.initFinalSymbol("All", ID.All);
 
 	/**
-	 * AllTrue({expr1, expr2, ...}, test) - returns `True` if all applications of `test` to `expr1, expr2, ...` evaluate
-	 * to `True`.
+	 * AllTrue({expr1, expr2, ...}, test) - returns `True` if all applications of `test` to `expr1, expr2, ...` evaluate to `True`.
 	 */
 	public final static IBuiltInSymbol AllTrue = F.initFinalSymbol("AllTrue", ID.AllTrue);
 
@@ -193,8 +192,8 @@ public class F {
 	public final static IBuiltInSymbol Alternatives = F.initFinalSymbol("Alternatives", ID.Alternatives);
 
 	/**
-	 * And(expr1, expr2, ...) - `expr1 && expr2 && ...` evaluates each expression in turn, returning `False` as soon as
-	 * an expression evaluates to `False`. If all expressions evaluate to `True`, `And` returns `True`.
+	 * And(expr1, expr2, ...) - `expr1 && expr2 && ...` evaluates each expression in turn, returning `False` as soon as an expression
+	 * evaluates to `False`. If all expressions evaluate to `True`, `And` returns `True`.
 	 */
 	public final static IBuiltInSymbol And = F.initFinalSymbol("And", ID.And);
 
@@ -219,8 +218,7 @@ public class F {
 			ID.AntisymmetricMatrixQ);
 
 	/**
-	 * AnyTrue({expr1, expr2, ...}, test) - returns `True` if any application of `test` to `expr1, expr2, ...` evaluates
-	 * to `True`.
+	 * AnyTrue({expr1, expr2, ...}, test) - returns `True` if any application of `test` to `expr1, expr2, ...` evaluates to `True`.
 	 */
 	public final static IBuiltInSymbol AnyTrue = F.initFinalSymbol("AnyTrue", ID.AnyTrue);
 
@@ -295,8 +293,8 @@ public class F {
 	public final static IBuiltInSymbol ArrayQ = F.initFinalSymbol("ArrayQ", ID.ArrayQ);
 
 	/**
-	 * ArrayReshape(list-of-values, list-of-dimension) - returns the `list-of-values` elements reshaped as nested list
-	 * with dimensions according to the `list-of-dimension`.
+	 * ArrayReshape(list-of-values, list-of-dimension) - returns the `list-of-values` elements reshaped as nested list with dimensions
+	 * according to the `list-of-dimension`.
 	 */
 	public final static IBuiltInSymbol ArrayReshape = F.initFinalSymbol("ArrayReshape", ID.ArrayReshape);
 
@@ -307,8 +305,8 @@ public class F {
 	public final static IBuiltInSymbol Assumptions = F.initFinalSymbol("Assumptions", ID.Assumptions);
 
 	/**
-	 * AtomQ(x) - is true if `x` is an atom (an object such as a number or string, which cannot be divided into
-	 * subexpressions using 'Part').
+	 * AtomQ(x) - is true if `x` is an atom (an object such as a number or string, which cannot be divided into subexpressions using
+	 * 'Part').
 	 */
 	public final static IBuiltInSymbol AtomQ = F.initFinalSymbol("AtomQ", ID.AtomQ);
 
@@ -337,8 +335,7 @@ public class F {
 	public final static IBuiltInSymbol BeginPackage = F.initFinalSymbol("BeginPackage", ID.BeginPackage);
 
 	/**
-	 * BellB(n) - the Bell number function counts the number of different ways to partition a set that has exactly `n`
-	 * elements
+	 * BellB(n) - the Bell number function counts the number of different ways to partition a set that has exactly `n` elements
 	 */
 	public final static IBuiltInSymbol BellB = F.initFinalSymbol("BellB", ID.BellB);
 
@@ -371,8 +368,8 @@ public class F {
 	public final static IBuiltInSymbol BetaRegularized = F.initFinalSymbol("BetaRegularized", ID.BetaRegularized);
 
 	/**
-	 * BinCounts(list, width-of-bin) - count the number of elements, if `list`, is divided into successive bins with
-	 * width `width-of-bin`.
+	 * BinCounts(list, width-of-bin) - count the number of elements, if `list`, is divided into successive bins with width
+	 * `width-of-bin`.
 	 */
 	public final static IBuiltInSymbol BinCounts = F.initFinalSymbol("BinCounts", ID.BinCounts);
 
@@ -399,8 +396,8 @@ public class F {
 	public final static IBuiltInSymbol Block = F.initFinalSymbol("Block", ID.Block);
 
 	/**
-	 * Boole(expr) - returns `1` if `expr` evaluates to `True`; returns `0` if `expr` evaluates to `False`; and gives no
-	 * result otherwise.
+	 * Boole(expr) - returns `1` if `expr` evaluates to `True`; returns `0` if `expr` evaluates to `False`; and gives no result
+	 * otherwise.
 	 */
 	public final static IBuiltInSymbol Boole = F.initFinalSymbol("Boole", ID.Boole);
 
@@ -420,8 +417,8 @@ public class F {
 	public final static IBuiltInSymbol BooleanQ = F.initFinalSymbol("BooleanQ", ID.BooleanQ);
 
 	/**
-	 * BooleanTable(logical-expr, variables) - generate [truth values](https://en.wikipedia.org/wiki/Truth_table) from
-	 * the `logical-expr`
+	 * BooleanTable(logical-expr, variables) - generate [truth values](https://en.wikipedia.org/wiki/Truth_table) from the
+	 * `logical-expr`
 	 */
 	public final static IBuiltInSymbol BooleanTable = F.initFinalSymbol("BooleanTable", ID.BooleanTable);
 
@@ -445,8 +442,8 @@ public class F {
 	public final static IBuiltInSymbol CForm = F.initFinalSymbol("CForm", ID.CForm);
 
 	/**
-	 * CanberraDistance(u, v) - returns the canberra distance between `u` and `v`, which is a weighted version of the
-	 * Manhattan distance.
+	 * CanberraDistance(u, v) - returns the canberra distance between `u` and `v`, which is a weighted version of the Manhattan
+	 * distance.
 	 */
 	public final static IBuiltInSymbol CanberraDistance = F.initFinalSymbol("CanberraDistance", ID.CanberraDistance);
 
@@ -484,8 +481,7 @@ public class F {
 	public final static IBuiltInSymbol CharacterEncoding = F.initFinalSymbol("CharacterEncoding", ID.CharacterEncoding);
 
 	/**
-	 * CharacteristicPolynomial(matrix, var) - computes the characteristic polynomial of a `matrix` for the variable
-	 * `var`.
+	 * CharacteristicPolynomial(matrix, var) - computes the characteristic polynomial of a `matrix` for the variable `var`.
 	 */
 	public final static IBuiltInSymbol CharacteristicPolynomial = F.initFinalSymbol("CharacteristicPolynomial",
 			ID.CharacteristicPolynomial);
@@ -497,8 +493,8 @@ public class F {
 	public final static IBuiltInSymbol ChebyshevU = F.initFinalSymbol("ChebyshevU", ID.ChebyshevU);
 
 	/**
-	 * ChessboardDistance(u, v) - returns the chessboard distance (also known as Chebyshev distance) between `u` and
-	 * `v`, which is the number of moves a king on a chessboard needs to get from square `u` to square `v`.
+	 * ChessboardDistance(u, v) - returns the chessboard distance (also known as Chebyshev distance) between `u` and `v`, which is the
+	 * number of moves a king on a chessboard needs to get from square `u` to square `v`.
 	 */
 	public final static IBuiltInSymbol ChessboardDistance = F.initFinalSymbol("ChessboardDistance",
 			ID.ChessboardDistance);
@@ -507,15 +503,13 @@ public class F {
 	public final static IBuiltInSymbol ChineseRemainder = F.initFinalSymbol("ChineseRemainder", ID.ChineseRemainder);
 
 	/**
-	 * CholeskyDecomposition(matrix) - calculate the Cholesky decomposition of a hermitian, positive definite square
-	 * `matrix`.
+	 * CholeskyDecomposition(matrix) - calculate the Cholesky decomposition of a hermitian, positive definite square `matrix`.
 	 */
 	public final static IBuiltInSymbol CholeskyDecomposition = F.initFinalSymbol("CholeskyDecomposition",
 			ID.CholeskyDecomposition);
 
 	/**
-	 * Chop(numerical-expr) - replaces numerical values in the `numerical-expr` which are close to zero with symbolic
-	 * value `0`.
+	 * Chop(numerical-expr) - replaces numerical values in the `numerical-expr` which are close to zero with symbolic value `0`.
 	 */
 	public final static IBuiltInSymbol Chop = F.initFinalSymbol("Chop", ID.Chop);
 
@@ -532,8 +526,8 @@ public class F {
 	public final static IBuiltInSymbol ClearAttributes = F.initFinalSymbol("ClearAttributes", ID.ClearAttributes);
 
 	/**
-	 * Clip(expr) - returns `expr` in the range `-1` to `1`. Returns `-1` if `expr` is less than `-1`. Returns `1` if
-	 * `expr` is greater than `1`.
+	 * Clip(expr) - returns `expr` in the range `-1` to `1`. Returns `-1` if `expr` is less than `-1`. Returns `1` if `expr` is greater
+	 * than `1`.
 	 */
 	public final static IBuiltInSymbol Clip = F.initFinalSymbol("Clip", ID.Clip);
 
@@ -568,8 +562,7 @@ public class F {
 	public final static IBuiltInSymbol Complex = F.initFinalSymbol("Complex", ID.Complex);
 
 	/**
-	 * ComplexExpand(expr) - get the expanded `expr`. All variable symbols in `expr` are assumed to be non complex
-	 * numbers.
+	 * ComplexExpand(expr) - get the expanded `expr`. All variable symbols in `expr` are assumed to be non complex numbers.
 	 */
 	public final static IBuiltInSymbol ComplexExpand = F.initFinalSymbol("ComplexExpand", ID.ComplexExpand);
 
@@ -584,8 +577,7 @@ public class F {
 			ID.ComplexityFunction);
 
 	/**
-	 * ComposeList(list-of-symbols, variable) - creates a list of compositions of the symbols applied at the argument
-	 * `x`.
+	 * ComposeList(list-of-symbols, variable) - creates a list of compositions of the symbols applied at the argument `x`.
 	 */
 	public final static IBuiltInSymbol ComposeList = F.initFinalSymbol("ComposeList", ID.ComposeList);
 
@@ -600,8 +592,8 @@ public class F {
 			ID.CompoundExpression);
 
 	/**
-	 * Condition(pattern, expr) - places an additional constraint on `pattern` that only allows it to match if `expr`
-	 * evaluates to `True`.
+	 * Condition(pattern, expr) - places an additional constraint on `pattern` that only allows it to match if `expr` evaluates to
+	 * `True`.
 	 */
 	public final static IBuiltInSymbol Condition = F.initFinalSymbol("Condition", ID.Condition);
 
@@ -629,8 +621,7 @@ public class F {
 	public final static IBuiltInSymbol ContinuedFraction = F.initFinalSymbol("ContinuedFraction", ID.ContinuedFraction);
 
 	/**
-	 * Convergents({n1, n2, ...}) - return the list of convergents which represents the continued fraction list `{n1,
-	 * n2, ...}`.
+	 * Convergents({n1, n2, ...}) - return the list of convergents which represents the continued fraction list `{n1, n2, ...}`.
 	 */
 	public final static IBuiltInSymbol Convergents = F.initFinalSymbol("Convergents", ID.Convergents);
 
@@ -692,8 +683,7 @@ public class F {
 	public final static IBuiltInSymbol D = F.initFinalSymbol("D", ID.D);
 
 	/**
-	 * DSolve(equation, f(var), var) - attempts to solve a linear differential `equation` for the function `f(var)` and
-	 * variable `var`.
+	 * DSolve(equation, f(var), var) - attempts to solve a linear differential `equation` for the function `f(var)` and variable `var`.
 	 */
 	public final static IBuiltInSymbol DSolve = F.initFinalSymbol("DSolve", ID.DSolve);
 
@@ -743,9 +733,9 @@ public class F {
 	public final static IBuiltInSymbol DiagonalMatrix = F.initFinalSymbol("DiagonalMatrix", ID.DiagonalMatrix);
 
 	/**
-	 * DiceDissimilarity(u, v) - returns the Dice dissimilarity between the two boolean 1-D lists `u` and `v`, which is
-	 * defined as `(c_tf + c_ft) / (2 * c_tt + c_ft + c_tf)`, where n is `len(u)` and `c_ij` is the number of
-	 * occurrences of `u(k)=i` and `v(k)=j` for `k<n`.
+	 * DiceDissimilarity(u, v) - returns the Dice dissimilarity between the two boolean 1-D lists `u` and `v`, which is defined as
+	 * `(c_tf + c_ft) / (2 * c_tt + c_ft + c_tf)`, where n is `len(u)` and `c_ij` is the number of occurrences of `u(k)=i` and `v(k)=j`
+	 * for `k<n`.
 	 */
 	public final static IBuiltInSymbol DiceDissimilarity = F.initFinalSymbol("DiceDissimilarity", ID.DiceDissimilarity);
 
@@ -768,8 +758,7 @@ public class F {
 	public final static IBuiltInSymbol Direction = F.initFinalSymbol("Direction", ID.Direction);
 
 	/**
-	 * DiscreteDelta(n1, n2, n3, ...) - `DiscreteDelta` function returns `1` if all the `ni` are `0`. Returns `0`
-	 * otherwise.
+	 * DiscreteDelta(n1, n2, n3, ...) - `DiscreteDelta` function returns `1` if all the `ni` are `0`. Returns `0` otherwise.
 	 */
 	public final static IBuiltInSymbol DiscreteDelta = F.initFinalSymbol("DiscreteDelta", ID.DiscreteDelta);
 
@@ -840,8 +829,8 @@ public class F {
 	public final static IBuiltInSymbol ElementData = F.initFinalSymbol("ElementData", ID.ElementData);
 
 	/**
-	 * Eliminate(list-of-equations, list-of-variables) - attempts to eliminate the variables from the
-	 * `list-of-variables` in the `list-of-equations`.
+	 * Eliminate(list-of-equations, list-of-variables) - attempts to eliminate the variables from the `list-of-variables` in the
+	 * `list-of-equations`.
 	 */
 	public final static IBuiltInSymbol Eliminate = F.initFinalSymbol("Eliminate", ID.Eliminate);
 
@@ -864,15 +853,14 @@ public class F {
 	public final static IBuiltInSymbol EndPackage = F.initFinalSymbol("EndPackage", ID.EndPackage);
 
 	/**
-	 * Equal(x, y) - yields `True` if `x` and `y` are known to be equal, or `False` if `x` and `y` are known to be
-	 * unequal.
+	 * Equal(x, y) - yields `True` if `x` and `y` are known to be equal, or `False` if `x` and `y` are known to be unequal.
 	 */
 	public final static IBuiltInSymbol Equal = F.initFinalSymbol("Equal", ID.Equal);
 
 	/**
-	 * Equivalent(arg1, arg2, ...) - Equivalence relation. `Equivalent(A, B)` is `True` iff `A` and `B` are both `True`
-	 * or both `False`. Returns `True` if all of the arguments are logically equivalent. Returns `False` otherwise.
-	 * `Equivalent(arg1, arg2, ...)` is equivalent to `(arg1 && arg2 && ...) || (!arg1 && !arg2 && ...)`.
+	 * Equivalent(arg1, arg2, ...) - Equivalence relation. `Equivalent(A, B)` is `True` iff `A` and `B` are both `True` or both `False`.
+	 * Returns `True` if all of the arguments are logically equivalent. Returns `False` otherwise. `Equivalent(arg1, arg2, ...)` is
+	 * equivalent to `(arg1 && arg2 && ...) || (!arg1 && !arg2 && ...)`.
 	 */
 	public final static IBuiltInSymbol Equivalent = F.initFinalSymbol("Equivalent", ID.Equivalent);
 
@@ -932,8 +920,7 @@ public class F {
 	public final static IBuiltInSymbol ExpandAll = F.initFinalSymbol("ExpandAll", ID.ExpandAll);
 
 	/**
-	 * Expectation(pure-function, data-set) - returns the expected value of the `pure-function` for the given
-	 * `data-set`.
+	 * Expectation(pure-function, data-set) - returns the expected value of the `pure-function` for the given `data-set`.
 	 */
 	public final static IBuiltInSymbol Expectation = F.initFinalSymbol("Expectation", ID.Expectation);
 
@@ -984,20 +971,18 @@ public class F {
 	public final static IBuiltInSymbol Fibonacci = F.initFinalSymbol("Fibonacci", ID.Fibonacci);
 
 	/**
-	 * FindFit(list-of-data-points, function, parameters, variable) - solve a least squares problem using the
-	 * Levenberg-Marquardt algorithm.
+	 * FindFit(list-of-data-points, function, parameters, variable) - solve a least squares problem using the Levenberg-Marquardt
+	 * algorithm.
 	 */
 	public final static IBuiltInSymbol FindFit = F.initFinalSymbol("FindFit", ID.FindFit);
 
 	/**
-	 * FindInstance(equations, vars) - attempts to find one solution which solves the `equations` for the variables
-	 * `vars`.
+	 * FindInstance(equations, vars) - attempts to find one solution which solves the `equations` for the variables `vars`.
 	 */
 	public final static IBuiltInSymbol FindInstance = F.initFinalSymbol("FindInstance", ID.FindInstance);
 
 	/**
-	 * FindRoot(f, {x, xmin, xmax}) - searches for a numerical root of `f` for the variable `x`, in the range `xmin` to
-	 * `xmax`.
+	 * FindRoot(f, {x, xmin, xmax}) - searches for a numerical root of `f` for the variable `x`, in the range `xmin` to `xmax`.
 	 */
 	public final static IBuiltInSymbol FindRoot = F.initFinalSymbol("FindRoot", ID.FindRoot);
 
@@ -1005,14 +990,13 @@ public class F {
 	public final static IBuiltInSymbol First = F.initFinalSymbol("First", ID.First);
 
 	/**
-	 * Fit(list-of-data-points, degree, variable) - solve a least squares problem using the Levenberg-Marquardt
-	 * algorithm.
+	 * Fit(list-of-data-points, degree, variable) - solve a least squares problem using the Levenberg-Marquardt algorithm.
 	 */
 	public final static IBuiltInSymbol Fit = F.initFinalSymbol("Fit", ID.Fit);
 
 	/**
-	 * FiveNum({dataset}) - the Tuckey five-number summary is a set of descriptive statistics that provide information
-	 * about a `dataset`. It consists of the five most important sample percentiles:
+	 * FiveNum({dataset}) - the Tuckey five-number summary is a set of descriptive statistics that provide information about a
+	 * `dataset`. It consists of the five most important sample percentiles:
 	 */
 	public final static IBuiltInSymbol FiveNum = F.initFinalSymbol("FiveNum", ID.FiveNum);
 
@@ -1020,8 +1004,8 @@ public class F {
 	public final static IBuiltInSymbol FixedPoint = F.initFinalSymbol("FixedPoint", ID.FixedPoint);
 
 	/**
-	 * FixedPointList(f, expr) - starting with `expr`, iteratively applies `f` until the result no longer changes, and
-	 * returns a list of all intermediate results.
+	 * FixedPointList(f, expr) - starting with `expr`, iteratively applies `f` until the result no longer changes, and returns a list of
+	 * all intermediate results.
 	 */
 	public final static IBuiltInSymbol FixedPointList = F.initFinalSymbol("FixedPointList", ID.FixedPointList);
 
@@ -1046,8 +1030,7 @@ public class F {
 	public final static IBuiltInSymbol FoldList = F.initFinalSymbol("FoldList", ID.FoldList);
 
 	/**
-	 * For(start, test, incr, body) - evaluates `start`, and then iteratively `body` and `incr` as long as test
-	 * evaluates to `True`.
+	 * For(start, test, incr, body) - evaluates `start`, and then iteratively `body` and `incr` as long as test evaluates to `True`.
 	 */
 	public final static IBuiltInSymbol For = F.initFinalSymbol("For", ID.For);
 
@@ -1077,8 +1060,8 @@ public class F {
 	public final static IBuiltInSymbol FrobeniusNumber = F.initFinalSymbol("FrobeniusNumber", ID.FrobeniusNumber);
 
 	/**
-	 * FrobeniusSolve({a1, ... ,aN}, M) - get a list of solutions for the Frobenius equation given by the list of
-	 * integers `{a1, ... ,aN}` and the non-negative integer `M`.
+	 * FrobeniusSolve({a1, ... ,aN}, M) - get a list of solutions for the Frobenius equation given by the list of integers `{a1, ...
+	 * ,aN}` and the non-negative integer `M`.
 	 */
 	public final static IBuiltInSymbol FrobeniusSolve = F.initFinalSymbol("FrobeniusSolve", ID.FrobeniusSolve);
 
@@ -1086,8 +1069,7 @@ public class F {
 	public final static IBuiltInSymbol FromCharacterCode = F.initFinalSymbol("FromCharacterCode", ID.FromCharacterCode);
 
 	/**
-	 * FromContinuedFraction({n1, n2, ...}) - return the number which represents the continued fraction list `{n1, n2,
-	 * ...}`.
+	 * FromContinuedFraction({n1, n2, ...}) - return the number which represents the continued fraction list `{n1, n2, ...}`.
 	 */
 	public final static IBuiltInSymbol FromContinuedFraction = F.initFinalSymbol("FromContinuedFraction",
 			ID.FromContinuedFraction);
@@ -1103,8 +1085,7 @@ public class F {
 	public final static IBuiltInSymbol FullForm = F.initFinalSymbol("FullForm", ID.FullForm);
 
 	/**
-	 * FullSimplify(expr) - works like `Simplify` but additionally tries some `FunctionExpand` rule transformations to
-	 * simplify `expr`.
+	 * FullSimplify(expr) - works like `Simplify` but additionally tries some `FunctionExpand` rule transformations to simplify `expr`.
 	 */
 	public final static IBuiltInSymbol FullSimplify = F.initFinalSymbol("FullSimplify", ID.FullSimplify);
 
@@ -1164,8 +1145,7 @@ public class F {
 	public final static IBuiltInSymbol GreaterEqual = F.initFinalSymbol("GreaterEqual", ID.GreaterEqual);
 
 	/**
-	 * GroebnerBasis({polynomial-list},{variable-list}) - returns a Gröbner basis for the `polynomial-list` and
-	 * `variable-list`.
+	 * GroebnerBasis({polynomial-list},{variable-list}) - returns a Gröbner basis for the `polynomial-list` and `variable-list`.
 	 */
 	public final static IBuiltInSymbol GroebnerBasis = F.initFinalSymbol("GroebnerBasis", ID.GroebnerBasis);
 
@@ -1244,8 +1224,8 @@ public class F {
 			ID.HypergeometricPFQRegularized);
 
 	/**
-	 * I - Imaginary unit - internally converted to the complex number `0+1*i`. `I` represents the imaginary number
-	 * `Sqrt(-1)`. `I^2` will be evaluated to `-1`.
+	 * I - Imaginary unit - internally converted to the complex number `0+1*i`. `I` represents the imaginary number `Sqrt(-1)`. `I^2`
+	 * will be evaluated to `-1`.
 	 */
 	public final static IBuiltInSymbol I = F.initFinalSymbol("I", ID.I);
 
@@ -1262,9 +1242,9 @@ public class F {
 	public final static IBuiltInSymbol Im = F.initFinalSymbol("Im", ID.Im);
 
 	/**
-	 * Implies(arg1, arg2) - Logical implication. `Implies(A, B)` is equivalent to `!A || B`. `Implies(expr1, expr2)`
-	 * evaluates each argument in turn, returning `True` as soon as the first argument evaluates to `False`. If the
-	 * first argument evaluates to `True`, `Implies` returns the second argument.
+	 * Implies(arg1, arg2) - Logical implication. `Implies(A, B)` is equivalent to `!A || B`. `Implies(expr1, expr2)` evaluates each
+	 * argument in turn, returning `True` as soon as the first argument evaluates to `False`. If the first argument evaluates to `True`,
+	 * `Implies` returns the second argument.
 	 */
 	public final static IBuiltInSymbol Implies = F.initFinalSymbol("Implies", ID.Implies);
 
@@ -1290,8 +1270,8 @@ public class F {
 	public final static IBuiltInSymbol Information = F.initFinalSymbol("Information", ID.Information);
 
 	/**
-	 * Inner(f, x, y, g) - computes a generalised inner product of `x` and `y`, using a multiplication function `f` and
-	 * an addition function `g`.
+	 * Inner(f, x, y, g) - computes a generalised inner product of `x` and `y`, using a multiplication function `f` and an addition
+	 * function `g`.
 	 */
 	public final static IBuiltInSymbol Inner = F.initFinalSymbol("Inner", ID.Inner);
 
@@ -1326,14 +1306,12 @@ public class F {
 	public final static IBuiltInSymbol Integers = F.initFinalSymbol("Integers", ID.Integers);
 
 	/**
-	 * Integrate(f, x) - integrates `f` with respect to `x`. The result does not contain the additive integration
-	 * constant.
+	 * Integrate(f, x) - integrates `f` with respect to `x`. The result does not contain the additive integration constant.
 	 */
 	public final static IBuiltInSymbol Integrate = F.initFinalSymbol("Integrate", ID.Integrate);
 
 	/**
-	 * InterpolatingFunction(data-list) - get the representation for the given `data-list` as piecewise
-	 * `InterpolatingPolynomial`s.
+	 * InterpolatingFunction(data-list) - get the representation for the given `data-list` as piecewise `InterpolatingPolynomial`s.
 	 */
 	public final static IBuiltInSymbol InterpolatingFunction = F.initFinalSymbol("InterpolatingFunction",
 			ID.InterpolatingFunction);
@@ -1382,9 +1360,9 @@ public class F {
 	public final static IBuiltInSymbol InverseSeries = F.initFinalSymbol("InverseSeries", ID.InverseSeries);
 
 	/**
-	 * JaccardDissimilarity(u, v) - returns the Jaccard-Needham dissimilarity between the two boolean 1-D lists `u` and
-	 * `v`, which is defined as `(c_tf + c_ft) / (c_tt + c_ft + c_tf)`, where n is `len(u)` and `c_ij` is the number of
-	 * occurrences of `u(k)=i` and `v(k)=j` for `k<n`.
+	 * JaccardDissimilarity(u, v) - returns the Jaccard-Needham dissimilarity between the two boolean 1-D lists `u` and `v`, which is
+	 * defined as `(c_tf + c_ft) / (c_tt + c_ft + c_tf)`, where n is `len(u)` and `c_ij` is the number of occurrences of `u(k)=i` and
+	 * `v(k)=j` for `k<n`.
 	 */
 	public final static IBuiltInSymbol JaccardDissimilarity = F.initFinalSymbol("JaccardDissimilarity",
 			ID.JaccardDissimilarity);
@@ -1424,8 +1402,7 @@ public class F {
 			ID.KolmogorovSmirnovTest);
 
 	/**
-	 * KroneckerDelta(arg1, arg2, ... argN) - if all arguments `arg1` to `argN` are equal return `1`, otherwise return
-	 * `0`.
+	 * KroneckerDelta(arg1, arg2, ... argN) - if all arguments `arg1` to `argN` are equal return `1`, otherwise return `0`.
 	 */
 	public final static IBuiltInSymbol KroneckerDelta = F.initFinalSymbol("KroneckerDelta", ID.KroneckerDelta);
 
@@ -1489,10 +1466,9 @@ public class F {
 	public final static IBuiltInSymbol LinearModelFit = F.initFinalSymbol("LinearModelFit", ID.LinearModelFit);
 
 	/**
-	 * LinearProgramming(coefficientsOfLinearObjectiveFunction, constraintList, constraintRelationList) - the
-	 * `LinearProgramming` function provides an implementation of [George Dantzig's simplex
-	 * algorithm](http://en.wikipedia.org/wiki/Simplex_algorithm) for solving linear optimization problems with linear
-	 * equality and inequality constraints and implicit non-negative variables.
+	 * LinearProgramming(coefficientsOfLinearObjectiveFunction, constraintList, constraintRelationList) - the `LinearProgramming`
+	 * function provides an implementation of [George Dantzig's simplex algorithm](http://en.wikipedia.org/wiki/Simplex_algorithm) for
+	 * solving linear optimization problems with linear equality and inequality constraints and implicit non-negative variables.
 	 */
 	public final static IBuiltInSymbol LinearProgramming = F.initFinalSymbol("LinearProgramming", ID.LinearProgramming);
 
@@ -1502,8 +1478,7 @@ public class F {
 	public final static IBuiltInSymbol LinearRecurrence = F.initFinalSymbol("LinearRecurrence", ID.LinearRecurrence);
 
 	/**
-	 * LinearSolve(matrix, right) - solves the linear equation system 'matrix . x = right' and returns one corresponding
-	 * solution `x`.
+	 * LinearSolve(matrix, right) - solves the linear equation system 'matrix . x = right' and returns one corresponding solution `x`.
 	 */
 	public final static IBuiltInSymbol LinearSolve = F.initFinalSymbol("LinearSolve", ID.LinearSolve);
 
@@ -1534,8 +1509,7 @@ public class F {
 	public final static IBuiltInSymbol Log = F.initFinalSymbol("Log", ID.Log);
 
 	/**
-	 * Log10(z) - returns the base-`10` logarithm of `z`. `Log10(z)` will be converted to `Log(z)/Log(10)` in symbolic
-	 * mode.
+	 * Log10(z) - returns the base-`10` logarithm of `z`. `Log10(z)` will be converted to `Log(z)/Log(10)` in symbolic mode.
 	 */
 	public final static IBuiltInSymbol Log10 = F.initFinalSymbol("Log10", ID.Log10);
 
@@ -1577,8 +1551,8 @@ public class F {
 	public final static IBuiltInSymbol MangoldtLambda = F.initFinalSymbol("MangoldtLambda", ID.MangoldtLambda);
 
 	/**
-	 * ManhattanDistance(u, v) - returns the Manhattan distance between `u` and `v`, which is the number of horizontal
-	 * or vertical moves in the grid like Manhattan city layout to get from `u` to `v`.
+	 * ManhattanDistance(u, v) - returns the Manhattan distance between `u` and `v`, which is the number of horizontal or vertical moves
+	 * in the grid like Manhattan city layout to get from `u` to `v`.
 	 */
 	public final static IBuiltInSymbol ManhattanDistance = F.initFinalSymbol("ManhattanDistance", ID.ManhattanDistance);
 
@@ -1595,8 +1569,8 @@ public class F {
 	public final static IBuiltInSymbol MapAt = F.initFinalSymbol("MapAt", ID.MapAt);
 
 	/**
-	 * MapIndexed(f, expr) - applies `f` to each part on the first level of `expr` and appending the elements position
-	 * as a list in the second argument.
+	 * MapIndexed(f, expr) - applies `f` to each part on the first level of `expr` and appending the elements position as a list in the
+	 * second argument.
 	 */
 	public final static IBuiltInSymbol MapIndexed = F.initFinalSymbol("MapIndexed", ID.MapIndexed);
 
@@ -1607,9 +1581,8 @@ public class F {
 	public final static IBuiltInSymbol MatchQ = F.initFinalSymbol("MatchQ", ID.MatchQ);
 
 	/**
-	 * MatchingDissimilarity(u, v) - returns the Matching dissimilarity between the two boolean 1-D lists `u` and `v`,
-	 * which is defined as `(c_tf + c_ft) / n`, where `n` is `len(u)` and `c_ij` is the number of occurrences of
-	 * `u(k)=i` and `v(k)=j` for `k<n`.
+	 * MatchingDissimilarity(u, v) - returns the Matching dissimilarity between the two boolean 1-D lists `u` and `v`, which is defined
+	 * as `(c_tf + c_ft) / n`, where `n` is `len(u)` and `c_ij` is the number of occurrences of `u(k)=i` and `v(k)=j` for `k<n`.
 	 */
 	public final static IBuiltInSymbol MatchingDissimilarity = F.initFinalSymbol("MatchingDissimilarity",
 			ID.MatchingDissimilarity);
@@ -1621,8 +1594,7 @@ public class F {
 	public final static IBuiltInSymbol MatrixForm = F.initFinalSymbol("MatrixForm", ID.MatrixForm);
 
 	/**
-	 * MatrixMinimalPolynomial(matrix, var) - computes the matrix minimal polynomial of a `matrix` for the variable
-	 * `var`.
+	 * MatrixMinimalPolynomial(matrix, var) - computes the matrix minimal polynomial of a `matrix` for the variable `var`.
 	 */
 	public final static IBuiltInSymbol MatrixMinimalPolynomial = F.initFinalSymbol("MatrixMinimalPolynomial",
 			ID.MatrixMinimalPolynomial);
@@ -1665,8 +1637,8 @@ public class F {
 			ID.MersennePrimeExponent);
 
 	/**
-	 * MersennePrimeExponentQ(n) - returns `True` if `2^n - 1` is a prime number. Currently `0 <= n <= 45` can be
-	 * computed in reasonable time.
+	 * MersennePrimeExponentQ(n) - returns `True` if `2^n - 1` is a prime number. Currently `0 <= n <= 45` can be computed in reasonable
+	 * time.
 	 */
 	public final static IBuiltInSymbol MersennePrimeExponentQ = F.initFinalSymbol("MersennePrimeExponentQ",
 			ID.MersennePrimeExponentQ);
@@ -1699,8 +1671,7 @@ public class F {
 	public final static IBuiltInSymbol Mod = F.initFinalSymbol("Mod", ID.Mod);
 
 	/**
-	 * Module({list_of_local_variables}, expr ) - evaluates `expr` for the `list_of_local_variables` by renaming local
-	 * variables.
+	 * Module({list_of_local_variables}, expr ) - evaluates `expr` for the `list_of_local_variables` by renaming local variables.
 	 */
 	public final static IBuiltInSymbol Module = F.initFinalSymbol("Module", ID.Module);
 
@@ -1711,8 +1682,8 @@ public class F {
 	public final static IBuiltInSymbol MoebiusMu = F.initFinalSymbol("MoebiusMu", ID.MoebiusMu);
 
 	/**
-	 * MonomialList(polynomial, list-of-variables) - get the list of monomials of a `polynomial` expression, with
-	 * respect to the `list-of-variables`.
+	 * MonomialList(polynomial, list-of-variables) - get the list of monomials of a `polynomial` expression, with respect to the
+	 * `list-of-variables`.
 	 */
 	public final static IBuiltInSymbol MonomialList = F.initFinalSymbol("MonomialList", ID.MonomialList);
 
@@ -1745,22 +1716,21 @@ public class F {
 	public final static IBuiltInSymbol NHoldRest = F.initFinalSymbol("NHoldRest", ID.NHoldRest);
 
 	/**
-	 * NIntegrate(f, {x,a,b}) - computes the numerical univariate real integral of `f` with respect to `x` from `a` to
-	 * `b`.
+	 * NIntegrate(f, {x,a,b}) - computes the numerical univariate real integral of `f` with respect to `x` from `a` to `b`.
 	 */
 	public final static IBuiltInSymbol NIntegrate = F.initFinalSymbol("NIntegrate", ID.NIntegrate);
 
 	/**
-	 * NMaximize({maximize_function, constraints}, variables_list) - the `NMaximize` function provides an implementation
-	 * of [George Dantzig's simplex algorithm](http://en.wikipedia.org/wiki/Simplex_algorithm) for solving linear
-	 * optimization problems with linear equality and inequality constraints and implicit non-negative variables.
+	 * NMaximize({maximize_function, constraints}, variables_list) - the `NMaximize` function provides an implementation of [George
+	 * Dantzig's simplex algorithm](http://en.wikipedia.org/wiki/Simplex_algorithm) for solving linear optimization problems with linear
+	 * equality and inequality constraints and implicit non-negative variables.
 	 */
 	public final static IBuiltInSymbol NMaximize = F.initFinalSymbol("NMaximize", ID.NMaximize);
 
 	/**
-	 * NMinimize({maximize_function, constraints}, variables_list) - the `NMinimize` function provides an implementation
-	 * of [George Dantzig's simplex algorithm](http://en.wikipedia.org/wiki/Simplex_algorithm) for solving linear
-	 * optimization problems with linear equality and inequality constraints and implicit non-negative variables.
+	 * NMinimize({maximize_function, constraints}, variables_list) - the `NMinimize` function provides an implementation of [George
+	 * Dantzig's simplex algorithm](http://en.wikipedia.org/wiki/Simplex_algorithm) for solving linear optimization problems with linear
+	 * equality and inequality constraints and implicit non-negative variables.
 	 */
 	public final static IBuiltInSymbol NMinimize = F.initFinalSymbol("NMinimize", ID.NMinimize);
 
@@ -1778,8 +1748,8 @@ public class F {
 	public final static IBuiltInSymbol Names = F.initFinalSymbol("Names", ID.Names);
 
 	/**
-	 * Nand(arg1, arg2, ...)' - Logical NAND function. It evaluates its arguments in order, giving `True` immediately if
-	 * any of them are `False`, and `False` if they are all `True`.
+	 * Nand(arg1, arg2, ...)' - Logical NAND function. It evaluates its arguments in order, giving `True` immediately if any of them are
+	 * `False`, and `False` if they are all `True`.
 	 */
 	public final static IBuiltInSymbol Nand = F.initFinalSymbol("Nand", ID.Nand);
 
@@ -1793,14 +1763,13 @@ public class F {
 	public final static IBuiltInSymbol Nest = F.initFinalSymbol("Nest", ID.Nest);
 
 	/**
-	 * NestList(f, expr, n) - starting with `expr`, iteratively applies `f` `n` times and returns a list of all
-	 * intermediate results.
+	 * NestList(f, expr, n) - starting with `expr`, iteratively applies `f` `n` times and returns a list of all intermediate results.
 	 */
 	public final static IBuiltInSymbol NestList = F.initFinalSymbol("NestList", ID.NestList);
 
 	/**
-	 * NestWhile(f, expr, test) - applies a function `f` repeatedly on an expression `expr`, until applying `test` on
-	 * the result no longer yields `True`.
+	 * NestWhile(f, expr, test) - applies a function `f` repeatedly on an expression `expr`, until applying `test` on the result no
+	 * longer yields `True`.
 	 */
 	public final static IBuiltInSymbol NestWhile = F.initFinalSymbol("NestWhile", ID.NestWhile);
 
@@ -1824,8 +1793,7 @@ public class F {
 	public final static IBuiltInSymbol None = F.initFinalSymbol("None", ID.None);
 
 	/**
-	 * NoneTrue({expr1, expr2, ...}, test) - returns `True` if no application of `test` to `expr1, expr2, ...` evaluates
-	 * to `True`.
+	 * NoneTrue({expr1, expr2, ...}, test) - returns `True` if no application of `test` to `expr1, expr2, ...` evaluates to `True`.
 	 */
 	public final static IBuiltInSymbol NoneTrue = F.initFinalSymbol("NoneTrue", ID.NoneTrue);
 
@@ -1833,8 +1801,8 @@ public class F {
 	public final static IBuiltInSymbol Nonexistent = F.initFinalSymbol("Nonexistent", ID.Nonexistent);
 
 	/**
-	 * Nor(arg1, arg2, ...)' - Logical NOR function. It evaluates its arguments in order, giving `False` immediately if
-	 * any of them are `True`, and `True` if they are all `False`.
+	 * Nor(arg1, arg2, ...)' - Logical NOR function. It evaluates its arguments in order, giving `False` immediately if any of them are
+	 * `True`, and `True` if they are all `False`.
 	 */
 	public final static IBuiltInSymbol Nor = F.initFinalSymbol("Nor", ID.Nor);
 
@@ -1852,8 +1820,7 @@ public class F {
 	public final static IBuiltInSymbol Normalize = F.initFinalSymbol("Normalize", ID.Normalize);
 
 	/**
-	 * Not(expr) - Logical Not function (negation). Returns `True` if the statement is `False`. Returns `False` if the
-	 * `expr` is `True`
+	 * Not(expr) - Logical Not function (negation). Returns `True` if the statement is `False`. Returns `False` if the `expr` is `True`
 	 */
 	public final static IBuiltInSymbol Not = F.initFinalSymbol("Not", ID.Not);
 
@@ -1906,8 +1873,8 @@ public class F {
 	public final static IBuiltInSymbol Operate = F.initFinalSymbol("Operate", ID.Operate);
 
 	/**
-	 * OptimizeExpression(function) - common subexpressions elimination for a complicated `function` by generating
-	 * "dummy" variables for these subexpressions.
+	 * OptimizeExpression(function) - common subexpressions elimination for a complicated `function` by generating "dummy" variables for
+	 * these subexpressions.
 	 */
 	public final static IBuiltInSymbol OptimizeExpression = F.initFinalSymbol("OptimizeExpression",
 			ID.OptimizeExpression);
@@ -1921,8 +1888,8 @@ public class F {
 	public final static IBuiltInSymbol Options = F.initFinalSymbol("Options", ID.Options);
 
 	/**
-	 * Or(expr1, expr2, ...)' - `expr1 || expr2 || ...` evaluates each expression in turn, returning `True` as soon as
-	 * an expression evaluates to `True`. If all expressions evaluate to `False`, `Or` returns `False`.
+	 * Or(expr1, expr2, ...)' - `expr1 || expr2 || ...` evaluates each expression in turn, returning `True` as soon as an expression
+	 * evaluates to `True`. If all expressions evaluate to `False`, `Or` returns `False`.
 	 */
 	public final static IBuiltInSymbol Or = F.initFinalSymbol("Or", ID.Or);
 
@@ -1950,8 +1917,7 @@ public class F {
 	public final static IBuiltInSymbol Out = F.initFinalSymbol("Out", ID.Out);
 
 	/**
-	 * Outer(f, x, y) - computes a generalised outer product of `x` and `y`, using the function `f` in place of
-	 * multiplication.
+	 * Outer(f, x, y) - computes a generalised outer product of `x` and `y`, using the function `f` in place of multiplication.
 	 */
 	public final static IBuiltInSymbol Outer = F.initFinalSymbol("Outer", ID.Outer);
 
@@ -1989,20 +1955,19 @@ public class F {
 	public final static IBuiltInSymbol Pattern = F.initFinalSymbol("Pattern", ID.Pattern);
 
 	/**
-	 * PatternTest(pattern, test) - constrains `pattern` to match `expr` only if the evaluation of `test(expr)` yields
-	 * `True`.
+	 * PatternTest(pattern, test) - constrains `pattern` to match `expr` only if the evaluation of `test(expr)` yields `True`.
 	 */
 	public final static IBuiltInSymbol PatternTest = F.initFinalSymbol("PatternTest", ID.PatternTest);
 
 	/**
-	 * PerfectNumber(n) - returns the `n`th perfect number. In number theory, a perfect number is a positive integer
-	 * that is equal to the sum of its proper
+	 * PerfectNumber(n) - returns the `n`th perfect number. In number theory, a perfect number is a positive integer that is equal to
+	 * the sum of its proper
 	 */
 	public final static IBuiltInSymbol PerfectNumber = F.initFinalSymbol("PerfectNumber", ID.PerfectNumber);
 
 	/**
-	 * PerfectNumberQ(n) - returns `True` if `n` is a perfect number. In number theory, a perfect number is a positive
-	 * integer that is equal to the sum of its proper
+	 * PerfectNumberQ(n) - returns `True` if `n` is a perfect number. In number theory, a perfect number is a positive integer that is
+	 * equal to the sum of its proper
 	 */
 	public final static IBuiltInSymbol PerfectNumberQ = F.initFinalSymbol("PerfectNumberQ", ID.PerfectNumberQ);
 
@@ -2047,8 +2012,7 @@ public class F {
 	public final static IBuiltInSymbol Polygon = F.initFinalSymbol("Polygon", ID.Polygon);
 
 	/**
-	 * PolynomialExtendedGCD(p, q, x) - returns the extended GCD ('greatest common divisor') of the univariate
-	 * polynomials `p` and `q`.
+	 * PolynomialExtendedGCD(p, q, x) - returns the extended GCD ('greatest common divisor') of the univariate polynomials `p` and `q`.
 	 */
 	public final static IBuiltInSymbol PolynomialExtendedGCD = F.initFinalSymbol("PolynomialExtendedGCD",
 			ID.PolynomialExtendedGCD);
@@ -2065,22 +2029,20 @@ public class F {
 	public final static IBuiltInSymbol PolynomialQ = F.initFinalSymbol("PolynomialQ", ID.PolynomialQ);
 
 	/**
-	 * PolynomialQuotient(p, q, x) - returns the polynomial quotient of the polynomials `p` and `q` for the variable
-	 * `x`.
+	 * PolynomialQuotient(p, q, x) - returns the polynomial quotient of the polynomials `p` and `q` for the variable `x`.
 	 */
 	public final static IBuiltInSymbol PolynomialQuotient = F.initFinalSymbol("PolynomialQuotient",
 			ID.PolynomialQuotient);
 
 	/**
-	 * PolynomialQuotientRemainder(p, q, x) - returns a list with the polynomial quotient and remainder of the
-	 * polynomials `p` and `q` for the variable `x`.
+	 * PolynomialQuotientRemainder(p, q, x) - returns a list with the polynomial quotient and remainder of the polynomials `p` and `q`
+	 * for the variable `x`.
 	 */
 	public final static IBuiltInSymbol PolynomialQuotientRemainder = F.initFinalSymbol("PolynomialQuotientRemainder",
 			ID.PolynomialQuotientRemainder);
 
 	/**
-	 * PolynomialQuotient(p, q, x) - returns the polynomial remainder of the polynomials `p` and `q` for the variable
-	 * `x`.
+	 * PolynomialQuotient(p, q, x) - returns the polynomial remainder of the polynomials `p` and `q` for the variable `x`.
 	 */
 	public final static IBuiltInSymbol PolynomialRemainder = F.initFinalSymbol("PolynomialRemainder",
 			ID.PolynomialRemainder);
@@ -2168,8 +2130,8 @@ public class F {
 	public final static IBuiltInSymbol Projection = F.initFinalSymbol("Projection", ID.Projection);
 
 	/**
-	 * PseudoInverse(matrix) - computes the Moore-Penrose pseudoinverse of the `matrix`. If `matrix` is invertible, the
-	 * pseudoinverse equals the inverse.
+	 * PseudoInverse(matrix) - computes the Moore-Penrose pseudoinverse of the `matrix`. If `matrix` is invertible, the pseudoinverse
+	 * equals the inverse.
 	 */
 	public final static IBuiltInSymbol PseudoInverse = F.initFinalSymbol("PseudoInverse", ID.PseudoInverse);
 
@@ -2249,8 +2211,8 @@ public class F {
 	public final static IBuiltInSymbol Reals = F.initFinalSymbol("Reals", ID.Reals);
 
 	/**
-	 * Reap(expr) - gives the result of evaluating `expr`, together with all values sown during this evaluation. Values
-	 * sown with different tags are given in different lists.
+	 * Reap(expr) - gives the result of evaluating `expr`, together with all values sown during this evaluation. Values sown with
+	 * different tags are given in different lists.
 	 */
 	public final static IBuiltInSymbol Reap = F.initFinalSymbol("Reap", ID.Reap);
 
@@ -2291,8 +2253,8 @@ public class F {
 	public final static IBuiltInSymbol Rest = F.initFinalSymbol("Rest", ID.Rest);
 
 	/**
-	 * Resultant(polynomial1, polynomial2, var) - computes the resultant of the polynomials `polynomial1` and
-	 * `polynomial2` with respect to the variable `var`.
+	 * Resultant(polynomial1, polynomial2, var) - computes the resultant of the polynomials `polynomial1` and `polynomial2` with respect
+	 * to the variable `var`.
 	 */
 	public final static IBuiltInSymbol Resultant = F.initFinalSymbol("Resultant", ID.Resultant);
 
@@ -2306,9 +2268,9 @@ public class F {
 	public final static IBuiltInSymbol Riffle = F.initFinalSymbol("Riffle", ID.Riffle);
 
 	/**
-	 * RogersTanimotoDissimilarity(u, v) - returns the Rogers-Tanimoto dissimilarity between the two boolean 1-D lists
-	 * `u` and `v`, which is defined as `R / (c_tt + c_ff + R)` where n is `len(u)`, `c_ij` is the number of occurrences
-	 * of `u(k)=i` and `v(k)=j` for `k<n`, and `R = 2 * (c_tf + c_ft)`.
+	 * RogersTanimotoDissimilarity(u, v) - returns the Rogers-Tanimoto dissimilarity between the two boolean 1-D lists `u` and `v`,
+	 * which is defined as `R / (c_tt + c_ff + R)` where n is `len(u)`, `c_ij` is the number of occurrences of `u(k)=i` and `v(k)=j` for
+	 * `k<n`, and `R = 2 * (c_tf + c_ft)`.
 	 */
 	public final static IBuiltInSymbol RogersTanimotoDissimilarity = F.initFinalSymbol("RogersTanimotoDissimilarity",
 			ID.RogersTanimotoDissimilarity);
@@ -2323,8 +2285,7 @@ public class F {
 	public final static IBuiltInSymbol RootOf = F.initFinalSymbol("RootOf", ID.RootOf);
 
 	/**
-	 * Roots(polynomial-equation, var) - determine the roots of a univariate polynomial equation with respect to the
-	 * variable `var`.
+	 * Roots(polynomial-equation, var) - determine the roots of a univariate polynomial equation with respect to the variable `var`.
 	 */
 	public final static IBuiltInSymbol Roots = F.initFinalSymbol("Roots", ID.Roots);
 
@@ -2347,9 +2308,8 @@ public class F {
 	public final static IBuiltInSymbol RuleDelayed = F.initFinalSymbol("RuleDelayed", ID.RuleDelayed);
 
 	/**
-	 * RussellRaoDissimilarity(u, v) - returns the Russell-Rao dissimilarity between the two boolean 1-D lists `u` and
-	 * `v`, which is defined as `(n - c_tt) / c_tt` where `n` is `len(u)` and `c_ij` is the number of occurrences of
-	 * `u(k)=i` and `v(k)=j` for `k<n`.
+	 * RussellRaoDissimilarity(u, v) - returns the Russell-Rao dissimilarity between the two boolean 1-D lists `u` and `v`, which is
+	 * defined as `(n - c_tt) / c_tt` where `n` is `len(u)` and `c_ij` is the number of occurrences of `u(k)=i` and `v(k)=j` for `k<n`.
 	 */
 	public final static IBuiltInSymbol RussellRaoDissimilarity = F.initFinalSymbol("RussellRaoDissimilarity",
 			ID.RussellRaoDissimilarity);
@@ -2358,24 +2318,23 @@ public class F {
 	public final static IBuiltInSymbol SameQ = F.initFinalSymbol("SameQ", ID.SameQ);
 
 	/**
-	 * SatisfiabilityCount(boolean-expr) - test whether the `boolean-expr` is satisfiable by a combination of boolean
-	 * `False` and `True` values for the variables of the boolean expression and return the number of possible
-	 * combinations.
+	 * SatisfiabilityCount(boolean-expr) - test whether the `boolean-expr` is satisfiable by a combination of boolean `False` and `True`
+	 * values for the variables of the boolean expression and return the number of possible combinations.
 	 */
 	public final static IBuiltInSymbol SatisfiabilityCount = F.initFinalSymbol("SatisfiabilityCount",
 			ID.SatisfiabilityCount);
 
 	/**
-	 * SatisfiabilityInstances(boolean-expr, list-of-variables) - test whether the `boolean-expr` is satisfiable by a
-	 * combination of boolean `False` and `True` values for the `list-of-variables` and return exactly one instance of
-	 * `True, False` combinations if possible.
+	 * SatisfiabilityInstances(boolean-expr, list-of-variables) - test whether the `boolean-expr` is satisfiable by a combination of
+	 * boolean `False` and `True` values for the `list-of-variables` and return exactly one instance of `True, False` combinations if
+	 * possible.
 	 */
 	public final static IBuiltInSymbol SatisfiabilityInstances = F.initFinalSymbol("SatisfiabilityInstances",
 			ID.SatisfiabilityInstances);
 
 	/**
-	 * SatisfiableQ(boolean-expr, list-of-variables) - test whether the `boolean-expr` is satisfiable by a combination
-	 * of boolean `False` and `True` values for the `list-of-variables`.
+	 * SatisfiableQ(boolean-expr, list-of-variables) - test whether the `boolean-expr` is satisfiable by a combination of boolean
+	 * `False` and `True` values for the `list-of-variables`.
 	 */
 	public final static IBuiltInSymbol SatisfiableQ = F.initFinalSymbol("SatisfiableQ", ID.SatisfiableQ);
 
@@ -2404,8 +2363,8 @@ public class F {
 	public final static IBuiltInSymbol SeriesCoefficient = F.initFinalSymbol("SeriesCoefficient", ID.SeriesCoefficient);
 
 	/**
-	 * SeriesData(x, x0, {coeff0, coeff1, coeff2,...}, nMin, nMax, denominator}) - internal structure of a power series
-	 * at the point `x = x0` the `coeff`-i are coefficients of the power series.
+	 * SeriesData(x, x0, {coeff0, coeff1, coeff2,...}, nMin, nMax, denominator}) - internal structure of a power series at the point `x
+	 * = x0` the `coeff`-i are coefficients of the power series.
 	 */
 	public final static IBuiltInSymbol SeriesData = F.initFinalSymbol("SeriesData", ID.SeriesData);
 
@@ -2453,8 +2412,8 @@ public class F {
 	public final static IBuiltInSymbol SinhIntegral = F.initFinalSymbol("SinhIntegral", ID.SinhIntegral);
 
 	/**
-	 * Skewness(list) - gives Pearson's moment coefficient of skewness for `list` (a measure for estimating the symmetry
-	 * of a distribution).
+	 * Skewness(list) - gives Pearson's moment coefficient of skewness for `list` (a measure for estimating the symmetry of a
+	 * distribution).
 	 */
 	public final static IBuiltInSymbol Skewness = F.initFinalSymbol("Skewness", ID.Skewness);
 
@@ -2465,9 +2424,9 @@ public class F {
 	public final static IBuiltInSymbol SlotSequence = F.initFinalSymbol("SlotSequence", ID.SlotSequence);
 
 	/**
-	 * SokalSneathDissimilarity(u, v) - returns the Sokal-Sneath dissimilarity between the two boolean 1-D lists `u` and
-	 * `v`, which is defined as `R / (c_tt + R)` where n is `len(u)`, `c_ij` is the number of occurrences of `u(k)=i`
-	 * and `v(k)=j` for `k<n`, and `R = 2 * (c_tf + c_ft)`.
+	 * SokalSneathDissimilarity(u, v) - returns the Sokal-Sneath dissimilarity between the two boolean 1-D lists `u` and `v`, which is
+	 * defined as `R / (c_tt + R)` where n is `len(u)`, `c_ij` is the number of occurrences of `u(k)=i` and `v(k)=j` for `k<n`, and `R =
+	 * 2 * (c_tf + c_ft)`.
 	 */
 	public final static IBuiltInSymbol SokalSneathDissimilarity = F.initFinalSymbol("SokalSneathDissimilarity",
 			ID.SokalSneathDissimilarity);
@@ -2488,8 +2447,7 @@ public class F {
 	public final static IBuiltInSymbol Split = F.initFinalSymbol("Split", ID.Split);
 
 	/**
-	 * SplitBy(list, f) - splits `list` into collections of consecutive elements that give the same result when `f` is
-	 * applied.
+	 * SplitBy(list, f) - splits `list` into collections of consecutive elements that give the same result when `f` is applied.
 	 */
 	public final static IBuiltInSymbol SplitBy = F.initFinalSymbol("SplitBy", ID.SplitBy);
 
@@ -2507,8 +2465,8 @@ public class F {
 			ID.SquaredEuclideanDistance);
 
 	/**
-	 * StandardDeviation(list) - computes the standard deviation of `list`. `list` may consist of numerical values or
-	 * symbols. Numerical values may be real or complex.
+	 * StandardDeviation(list) - computes the standard deviation of `list`. `list` may consist of numerical values or symbols. Numerical
+	 * values may be real or complex.
 	 */
 	public final static IBuiltInSymbol StandardDeviation = F.initFinalSymbol("StandardDeviation", ID.StandardDeviation);
 
@@ -2525,8 +2483,8 @@ public class F {
 	public final static IBuiltInSymbol StirlingS1 = F.initFinalSymbol("StirlingS1", ID.StirlingS1);
 
 	/**
-	 * StirlingS2(n, k) - returns the Stirling numbers of the second kind. `StirlingS2(n,k)` is the number of ways of
-	 * partitioning an `n`-element set into `k` non-empty subsets.
+	 * StirlingS2(n, k) - returns the Stirling numbers of the second kind. `StirlingS2(n,k)` is the number of ways of partitioning an
+	 * `n`-element set into `k` non-empty subsets.
 	 */
 	public final static IBuiltInSymbol StirlingS2 = F.initFinalSymbol("StirlingS2", ID.StirlingS2);
 
@@ -2589,8 +2547,8 @@ public class F {
 	public final static IBuiltInSymbol SurfaceGraphics = F.initFinalSymbol("SurfaceGraphics", ID.SurfaceGraphics);
 
 	/**
-	 * Switch(expr, pattern1, value1, pattern2, value2, ...) - yields the first `value` for which `expr` matches the
-	 * corresponding pattern.
+	 * Switch(expr, pattern1, value1, pattern2, value2, ...) - yields the first `value` for which `expr` matches the corresponding
+	 * pattern.
 	 */
 	public final static IBuiltInSymbol Switch = F.initFinalSymbol("Switch", ID.Switch);
 
@@ -2634,8 +2592,8 @@ public class F {
 	public final static IBuiltInSymbol Tanh = F.initFinalSymbol("Tanh", ID.Tanh);
 
 	/**
-	 * TautologyQ(boolean-expr, list-of-variables) - test whether the `boolean-expr` is satisfiable by all combinations
-	 * of boolean `False` and `True` values for the `list-of-variables`.
+	 * TautologyQ(boolean-expr, list-of-variables) - test whether the `boolean-expr` is satisfiable by all combinations of boolean
+	 * `False` and `True` values for the `list-of-variables`.
 	 */
 	public final static IBuiltInSymbol TautologyQ = F.initFinalSymbol("TautologyQ", ID.TautologyQ);
 
@@ -2728,8 +2686,8 @@ public class F {
 	public final static IBuiltInSymbol TrigExpand = F.initFinalSymbol("TrigExpand", ID.TrigExpand);
 
 	/**
-	 * TrigReduce(expr) - rewrites products and powers of trigonometric functions in `expr` in terms of trigonometric
-	 * functions with combined arguments.
+	 * TrigReduce(expr) - rewrites products and powers of trigonometric functions in `expr` in terms of trigonometric functions with
+	 * combined arguments.
 	 */
 	public final static IBuiltInSymbol TrigReduce = F.initFinalSymbol("TrigReduce", ID.TrigReduce);
 
@@ -2749,8 +2707,7 @@ public class F {
 	public final static IBuiltInSymbol Undefined = F.initFinalSymbol("Undefined", ID.Undefined);
 
 	/**
-	 * Unequal(x, y) - yields `False` if `x` and `y` are known to be equal, or `True` if `x` and `y` are known to be
-	 * unequal.
+	 * Unequal(x, y) - yields `False` if `x` and `y` are known to be equal, or `True` if `x` and `y` are known to be unequal.
 	 */
 	public final static IBuiltInSymbol Unequal = F.initFinalSymbol("Unequal", ID.Unequal);
 
@@ -2819,8 +2776,8 @@ public class F {
 	public final static IBuiltInSymbol Variables = F.initFinalSymbol("Variables", ID.Variables);
 
 	/**
-	 * Variance(list) - computes the variance of `list`. `list` may consist of numerical values or symbols. Numerical
-	 * values may be real or complex.
+	 * Variance(list) - computes the variance of `list`. `list` may consist of numerical values or symbols. Numerical values may be real
+	 * or complex.
 	 */
 	public final static IBuiltInSymbol Variance = F.initFinalSymbol("Variance", ID.Variance);
 
@@ -2835,8 +2792,8 @@ public class F {
 			ID.WeibullDistribution);
 
 	/**
-	 * Which(cond1, expr1, cond2, expr2, ...) - yields `expr1` if `cond1` evaluates to `True`, `expr2` if `cond2`
-	 * evaluates to `True`, etc.
+	 * Which(cond1, expr1, cond2, expr2, ...) - yields `expr1` if `cond1` evaluates to `True`, `expr2` if `cond2` evaluates to `True`,
+	 * etc.
 	 */
 	public final static IBuiltInSymbol Which = F.initFinalSymbol("Which", ID.Which);
 
@@ -2847,22 +2804,21 @@ public class F {
 	public final static IBuiltInSymbol White = F.initFinalSymbol("White", ID.White);
 
 	/**
-	 * With({list_of_local_variables}, expr ) - evaluates `expr` for the `list_of_local_variables` by replacing the
-	 * local variables in `expr`.
+	 * With({list_of_local_variables}, expr ) - evaluates `expr` for the `list_of_local_variables` by replacing the local variables in
+	 * `expr`.
 	 */
 	public final static IBuiltInSymbol With = F.initFinalSymbol("With", ID.With);
 
 	/**
-	 * Xor(arg1, arg2, ...) - Logical XOR (exclusive OR) function. Returns `True` if an odd number of the arguments are
-	 * `True` and the rest are `False`. Returns `False` if an even number of the arguments are `True` and the rest are
-	 * `False`.
+	 * Xor(arg1, arg2, ...) - Logical XOR (exclusive OR) function. Returns `True` if an odd number of the arguments are `True` and the
+	 * rest are `False`. Returns `False` if an even number of the arguments are `True` and the rest are `False`.
 	 */
 	public final static IBuiltInSymbol Xor = F.initFinalSymbol("Xor", ID.Xor);
 
 	/**
-	 * YuleDissimilarity(u, v) - returns the Yule dissimilarity between the two boolean 1-D lists `u` and `v`, which is
-	 * defined as R / (c_tt * c_ff + R / 2) where n is `len(u)`, `c_ij` is the number of occurrences of `u(k)=i` and
-	 * `v(k)=j` for `k<n`, and `R = 2 * c_tf * c_ft`.
+	 * YuleDissimilarity(u, v) - returns the Yule dissimilarity between the two boolean 1-D lists `u` and `v`, which is defined as R /
+	 * (c_tt * c_ff + R / 2) where n is `len(u)`, `c_ij` is the number of occurrences of `u(k)=i` and `v(k)=j` for `k<n`, and `R = 2 *
+	 * c_tf * c_ft`.
 	 */
 	public final static IBuiltInSymbol YuleDissimilarity = F.initFinalSymbol("YuleDissimilarity", ID.YuleDissimilarity);
 
@@ -3414,7 +3370,7 @@ public class F {
 						// if (ruleList != null) {
 						// engine.addRules(ruleList);
 						// }
-//						org.matheclipse.core.reflection.system.Integrate.getRuleASTStatic();
+						org.matheclipse.core.reflection.system.Integrate.getRuleASTStatic();
 						// if (ruleList != null) {
 						// engine.addRules(ruleList);
 						// }
@@ -3731,9 +3687,8 @@ public class F {
 	/**
 	 * Create a new abstract syntax tree (AST).
 	 * 
-	 * @param head
-	 *            the header expression of the function. If the ast represents a function like
-	 *            <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
+	 * @param head the header expression of the function. If the ast represents a function like <code>f[x,y], Sin[x],...</code>, the
+	 *             <code>head</code> will be an instance of type ISymbol.
 	 * @param a
 	 * @return
 	 */
@@ -3744,9 +3699,8 @@ public class F {
 	/**
 	 * Create a new abstract syntax tree (AST).
 	 * 
-	 * @param head
-	 *            the header symbol of the function. If the ast represents a function like
-	 *            <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
+	 * @param head the header symbol of the function. If the ast represents a function like <code>f[x,y], Sin[x],...</code>, the
+	 *             <code>head</code> will be an instance of type ISymbol.
 	 * @param a
 	 * @return
 	 */
@@ -3757,8 +3711,7 @@ public class F {
 	/**
 	 * Create a <code>BlankSequence[condition]</code> pattern object for pattern-matching and term rewriting
 	 * 
-	 * @param condition
-	 *            additional condition which should be checked in pattern-matching
+	 * @param condition additional condition which should be checked in pattern-matching
 	 * @return IPattern
 	 */
 	public static PatternSequence $bs(final IExpr condition) {
@@ -3768,8 +3721,7 @@ public class F {
 	/**
 	 * Create a <code>BlankNullSequence[condition]</code> pattern object for pattern-matching and term rewriting
 	 * 
-	 * @param condition
-	 *            additional condition which should be checked in pattern-matching
+	 * @param condition additional condition which should be checked in pattern-matching
 	 * @return IPattern
 	 */
 	public static PatternSequence $bns(final IExpr condition) {
@@ -3788,8 +3740,7 @@ public class F {
 	/**
 	 * Create a <code>Blank[condition]</code> pattern object for pattern-matching and term rewriting
 	 * 
-	 * @param condition
-	 *            additional condition which should be checked in pattern-matching
+	 * @param condition additional condition which should be checked in pattern-matching
 	 * @return IPattern
 	 */
 	public static IPattern $b(final IExpr condition) {
@@ -3799,10 +3750,8 @@ public class F {
 	/**
 	 * Create a <code>Blank[condition]</code> pattern object for pattern-matching and term rewriting
 	 * 
-	 * @param condition
-	 *            additional condition which should be checked in pattern-matching
-	 * @param def
-	 *            if <code>true</code> use a default value in pattern-matching if an argument is optional
+	 * @param condition additional condition which should be checked in pattern-matching
+	 * @param def       if <code>true</code> use a default value in pattern-matching if an argument is optional
 	 * @return IPattern
 	 */
 	public static IPattern $b(final IExpr condition, boolean def) {
@@ -3812,10 +3761,8 @@ public class F {
 	/**
 	 * Create a <code>Blank[condition]</code> pattern object for pattern-matching and term rewriting
 	 * 
-	 * @param condition
-	 *            additional condition which should be checked in pattern-matching
-	 * @param defaultValue
-	 *            use this <code>defaultValue</code> in pattern-matching if an argument is optional
+	 * @param condition    additional condition which should be checked in pattern-matching
+	 * @param defaultValue use this <code>defaultValue</code> in pattern-matching if an argument is optional
 	 * @return IPattern
 	 */
 	public static IPattern $b(final IExpr condition, IExpr defaultValue) {
@@ -3836,8 +3783,7 @@ public class F {
 	 * Create a pattern for pattern-matching and term rewriting
 	 * 
 	 * @param symbol
-	 * @param def
-	 *            use a default value for this pattern if necessary
+	 * @param def    use a default value for this pattern if necessary
 	 * @return IPattern
 	 */
 	public static IPattern $p(final ISymbol symbol, boolean def) {
@@ -3848,8 +3794,7 @@ public class F {
 	 * Create a pattern for pattern-matching and term rewriting
 	 * 
 	 * @param symbol
-	 * @param check
-	 *            additional condition which should be checked in pattern-matching
+	 * @param check  additional condition which should be checked in pattern-matching
 	 * @return IPattern
 	 */
 	public static IPattern $p(final ISymbol symbol, final IExpr check) {
@@ -3860,11 +3805,9 @@ public class F {
 	 * Create a pattern for pattern-matching and term rewriting
 	 * 
 	 * @param symbol
-	 * @param check
-	 *            additional condition which should be checked in pattern-matching
-	 * @param def
-	 *            if <code>true</code>, the pattern can match to a default value associated with the AST's head the
-	 *            pattern is used in.
+	 * @param check  additional condition which should be checked in pattern-matching
+	 * @param def    if <code>true</code>, the pattern can match to a default value associated with the AST's head the pattern is used
+	 *               in.
 	 * @return IPattern
 	 */
 	public static IPattern $p(final ISymbol symbol, final IExpr check, final boolean def) {
@@ -3875,10 +3818,8 @@ public class F {
 	 * Create a pattern for pattern-matching and term rewriting
 	 * 
 	 * @param symbol
-	 * @param check
-	 *            additional condition which should be checked in pattern-matching
-	 * @param defaultValue
-	 *            use this <code>defaultValue</code> in pattern-matching if an argument is optional
+	 * @param check        additional condition which should be checked in pattern-matching
+	 * @param defaultValue use this <code>defaultValue</code> in pattern-matching if an argument is optional
 	 * @return IPattern
 	 */
 	public static IPattern $p(final ISymbol symbol, final IExpr check, final IExpr defaultValue) {
@@ -3902,8 +3843,7 @@ public class F {
 	 * Create a pattern for pattern-matching and term rewriting
 	 * 
 	 * @param symbolName
-	 * @param def
-	 *            use a default value for this pattern if necessary
+	 * @param def        use a default value for this pattern if necessary
 	 * @return IPattern
 	 */
 	public static IPattern $p(final String symbolName, boolean def) {
@@ -3914,8 +3854,7 @@ public class F {
 	 * Create a pattern for pattern-matching and term rewriting
 	 * 
 	 * @param symbolName
-	 * @param check
-	 *            additional condition which should be checked in pattern-matching
+	 * @param check      additional condition which should be checked in pattern-matching
 	 * @return IPattern
 	 */
 	public static IPattern $p(@Nonnull final String symbolName, final IExpr check) {
@@ -3929,10 +3868,8 @@ public class F {
 	 * Create a pattern for pattern-matching and term rewriting
 	 * 
 	 * @param symbolName
-	 * @param check
-	 *            additional condition which should be checked in pattern-matching
-	 * @param def
-	 *            use a default value for this pattern if necessary
+	 * @param check      additional condition which should be checked in pattern-matching
+	 * @param def        use a default value for this pattern if necessary
 	 * @return IPattern
 	 */
 	public static IPattern $p(@Nonnull final String symbolName, final IExpr check, boolean def) {
@@ -3953,11 +3890,9 @@ public class F {
 	 * Create a pattern for pattern-matching and term rewriting
 	 * 
 	 * @param symbol
-	 * @param check
-	 *            additional condition which should be checked in pattern-matching
-	 * @param def
-	 *            if <code>true</code>, the pattern can match to a default value associated with the AST's head the
-	 *            pattern is used in.
+	 * @param check  additional condition which should be checked in pattern-matching
+	 * @param def    if <code>true</code>, the pattern can match to a default value associated with the AST's head the pattern is used
+	 *               in.
 	 * @return IPattern
 	 */
 	public static IPattern pattern(final ISymbol symbol, final IExpr check, final boolean def) {
@@ -3968,10 +3903,8 @@ public class F {
 	 * Create a pattern for pattern-matching and term rewriting
 	 * 
 	 * @param symbol
-	 * @param check
-	 *            additional condition which should be checked in pattern-matching
-	 * @param defaultValue
-	 *            use this <code>defaultValue</code> in pattern-matching if an argument is optional
+	 * @param check        additional condition which should be checked in pattern-matching
+	 * @param defaultValue use this <code>defaultValue</code> in pattern-matching if an argument is optional
 	 * @return IPattern
 	 */
 	public static IPattern pattern(final ISymbol symbol, final IExpr check, final IExpr defaultValue) {
@@ -3982,10 +3915,8 @@ public class F {
 	 * Create a pattern for pattern-matching and term rewriting
 	 * 
 	 * @param symbolName
-	 * @param check
-	 *            additional condition which should be checked in pattern-matching
-	 * @param defaultValue
-	 *            use this <code>defaultValue</code> in pattern-matching if an argument is optional
+	 * @param check        additional condition which should be checked in pattern-matching
+	 * @param defaultValue use this <code>defaultValue</code> in pattern-matching if an argument is optional
 	 * @return IPattern
 	 */
 	public static IPattern $p(@Nonnull final String symbolName, final IExpr check, final IExpr defaultValue) {
@@ -4006,8 +3937,7 @@ public class F {
 	 * Create a pattern for pattern-matching and term rewriting
 	 * 
 	 * @param symbol
-	 * @param check
-	 *            additional condition which should be checked in pattern-matching
+	 * @param check  additional condition which should be checked in pattern-matching
 	 * @return IPattern
 	 */
 	public static IPatternSequence $ps(final ISymbol symbol, final IExpr check) {
@@ -4018,13 +3948,10 @@ public class F {
 	 * Create a pattern for pattern-matching and term rewriting
 	 * 
 	 * @param symbol
-	 * @param check
-	 *            additional condition which should be checked in pattern-matching
-	 * @param def
-	 *            if <code>true</code>, the pattern can match to a default value associated with the AST's head the
-	 *            pattern is used in.
-	 * @param zeroArgsAllowed
-	 *            if <code>true</code> 0 argument sequences are allowed for this pattern
+	 * @param check           additional condition which should be checked in pattern-matching
+	 * @param def             if <code>true</code>, the pattern can match to a default value associated with the AST's head the pattern
+	 *                        is used in.
+	 * @param zeroArgsAllowed if <code>true</code> 0 argument sequences are allowed for this pattern
 	 * @return IPattern
 	 */
 	public static IPatternSequence $ps(final ISymbol symbol, final IExpr check, final boolean def,
@@ -4035,8 +3962,7 @@ public class F {
 	/**
 	 * Create a pattern for pattern-matching and term rewriting
 	 * 
-	 * @param symbolName
-	 *            the name of the pattrn symbol
+	 * @param symbolName the name of the pattrn symbol
 	 * @return IPattern
 	 */
 	public static IPatternSequence $ps(final String symbolName) {
@@ -4045,15 +3971,14 @@ public class F {
 
 	/**
 	 * <p>
-	 * Get or create a global predefined symbol which is retrieved from the SYSTEM context map or created or retrieved
-	 * from the SYSTEM context variables map.
+	 * Get or create a global predefined symbol which is retrieved from the SYSTEM context map or created or retrieved from the SYSTEM
+	 * context variables map.
 	 * </p>
 	 * <p>
 	 * <b>Note:</b> user defined variables on the context path are defined with method <code>userSymbol()</code>
 	 * </p>
 	 * 
-	 * @param symbolName
-	 *            the name of the symbol
+	 * @param symbolName the name of the symbol
 	 * @return
 	 */
 	public static ISymbol $s(final String symbolName) {
@@ -4098,8 +4023,8 @@ public class F {
 	/**
 	 * Converts an arbitrary expression to a type that can be used inside Symja.
 	 * 
-	 * For example, it will convert Java <code>Integer</code> into instance of <code>IntegerSym</code>,
-	 * <code>Double</code> into instances of <code>Num</code>, etc.
+	 * For example, it will convert Java <code>Integer</code> into instance of <code>IntegerSym</code>, <code>Double</code> into
+	 * instances of <code>Num</code>, etc.
 	 * 
 	 * 
 	 * @param object
@@ -4111,17 +4036,15 @@ public class F {
 
 	/**
 	 * <p>
-	 * Get or create a global predefined symbol which is retrieved from the SYSTEM context map or created or retrieved
-	 * from the SYSTEM context variables map.
+	 * Get or create a global predefined symbol which is retrieved from the SYSTEM context map or created or retrieved from the SYSTEM
+	 * context variables map.
 	 * </p>
 	 * <p>
 	 * <b>Note:</b> user defined variables on the context path are defined with method <code>userSymbol()</code>
 	 * </p>
 	 * 
-	 * @param symbolName
-	 *            the name of the symbol
-	 * @param setEval
-	 *            if <code>true</code> determine and assign the built-in evaluator object to the symbol.
+	 * @param symbolName the name of the symbol
+	 * @param setEval    if <code>true</code> determine and assign the built-in evaluator object to the symbol.
 	 * @return
 	 */
 	private static ISymbol $s(final String symbolName, boolean setEval) {
@@ -4474,9 +4397,9 @@ public class F {
 	}
 
 	/**
-	 * Creates a new AST from the given <code>ast</code> and <code>head</code>. if <code>include</code> is set to
-	 * <code>true </code> all arguments from index first to last-1 are copied in the new list if <code>include</code> is
-	 * set to <code> false </code> all arguments excluded from index first to last-1 are copied in the new list
+	 * Creates a new AST from the given <code>ast</code> and <code>head</code>. if <code>include</code> is set to <code>true </code> all
+	 * arguments from index first to last-1 are copied in the new list if <code>include</code> is set to <code> false </code> all
+	 * arguments excluded from index first to last-1 are copied in the new list
 	 * 
 	 */
 	public static IAST ast(final IAST f, final IExpr head, final boolean include, final int first, final int last) {
@@ -4503,9 +4426,8 @@ public class F {
 	/**
 	 * Create a new abstract syntax tree (AST).
 	 * 
-	 * @param head
-	 *            the header expression of the function. If the ast represents a function like
-	 *            <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
+	 * @param head the header expression of the function. If the ast represents a function like <code>f[x,y], Sin[x],...</code>, the
+	 *             <code>head</code> will be an instance of type ISymbol.
 	 * 
 	 */
 	public final static IASTAppendable ast(final IExpr head) {
@@ -4515,13 +4437,10 @@ public class F {
 	/**
 	 * Create a new abstract syntax tree (AST).
 	 * 
-	 * @param head
-	 *            the header expression of the function. If the ast represents a function like
-	 *            <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
-	 * @param initialCapacity
-	 *            the initial capacity (i.e. number of arguments without the header element) of the list.
-	 * @param initNull
-	 *            initialize all elements with <code>null</code>.
+	 * @param head            the header expression of the function. If the ast represents a function like
+	 *                        <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
+	 * @param initialCapacity the initial capacity (i.e. number of arguments without the header element) of the list.
+	 * @param initNull        initialize all elements with <code>null</code>.
 	 * @return
 	 */
 	public static IASTAppendable ast(final IExpr head, final int initialCapacity, final boolean initNull) {
@@ -4535,13 +4454,10 @@ public class F {
 	}
 
 	/**
-	 * Create a new <code>List()</code> with <code>copies</code> number of arguments, which are set to
-	 * <code>value</code>.
+	 * Create a new <code>List()</code> with <code>copies</code> number of arguments, which are set to <code>value</code>.
 	 * 
-	 * @param value
-	 *            initialize all elements with <code>value</code>.
-	 * @param copies
-	 *            the initial capacity (i.e. number of arguments without the header element) of the list.
+	 * @param value  initialize all elements with <code>value</code>.
+	 * @param copies the initial capacity (i.e. number of arguments without the header element) of the list.
 	 * @return
 	 */
 	public static IASTAppendable constantArray(final IExpr value, final int copies) {
@@ -4549,16 +4465,13 @@ public class F {
 	}
 
 	/**
-	 * Create a new abstract syntax tree (AST) with a <code>head</code> and <code>copies</code> number of arguments,
-	 * which are set to <code>value</code>.
+	 * Create a new abstract syntax tree (AST) with a <code>head</code> and <code>copies</code> number of arguments, which are set to
+	 * <code>value</code>.
 	 * 
-	 * @param head
-	 *            the header expression of the function. If the ast represents a function like
-	 *            <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
-	 * @param value
-	 *            initialize all elements with <code>value</code>.
-	 * @param copies
-	 *            the initial capacity (i.e. number of arguments without the header element) of the list.
+	 * @param head   the header expression of the function. If the ast represents a function like <code>f[x,y], Sin[x],...</code>, the
+	 *               <code>head</code> will be an instance of type ISymbol.
+	 * @param value  initialize all elements with <code>value</code>.
+	 * @param copies the initial capacity (i.e. number of arguments without the header element) of the list.
 	 * @return
 	 */
 	public static IASTAppendable constantArray(final IExpr head, final IExpr value, final int copies) {
@@ -4569,9 +4482,8 @@ public class F {
 	 * Create a new abstract syntax tree (AST).
 	 * 
 	 * @param arr
-	 * @param head
-	 *            the header expression of the function. If the ast represents a function like
-	 *            <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
+	 * @param head the header expression of the function. If the ast represents a function like <code>f[x,y], Sin[x],...</code>, the
+	 *             <code>head</code> will be an instance of type ISymbol.
 	 * @return
 	 */
 	public static IASTAppendable ast(final IExpr[] arr, final IExpr head) {
@@ -4585,8 +4497,8 @@ public class F {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * is true if <code>x</code> is an atom (an object such as a number or string, which cannot be divided into
-	 * subexpressions using 'Part').
+	 * is true if <code>x</code> is an atom (an object such as a number or string, which cannot be divided into subexpressions using
+	 * 'Part').
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -4661,7 +4573,7 @@ public class F {
 	 * @param a1
 	 * @return
 	 */
-	public final static IASTMutable binaryAST2(final IExpr head, final IExpr a0, final IExpr a1) {
+	public final static IAST binaryAST2(final IExpr head, final IExpr a0, final IExpr a1) {
 		return new AST2(head, a0, a1);
 	}
 
@@ -4869,10 +4781,8 @@ public class F {
 	/**
 	 * Set real or imaginary parts of a numeric argument to zero, those absolute value is less than a delta.
 	 * 
-	 * @param arg
-	 *            a numeric number
-	 * @param delta
-	 *            the delta for which
+	 * @param arg   a numeric number
+	 * @param delta the delta for which
 	 * @return <code>arg</code> if the argument couldn't be chopped
 	 */
 	public static INumber chopNumber(INumber arg, double delta) {
@@ -4995,10 +4905,8 @@ public class F {
 	/**
 	 * Create a symbolic complex number
 	 * 
-	 * @param realPart
-	 *            the real double value part which should be converted to a complex number
-	 * @param imagPart
-	 *            the imaginary double value part which should be converted to a complex number
+	 * @param realPart the real double value part which should be converted to a complex number
+	 * @param imagPart the imaginary double value part which should be converted to a complex number
 	 * @return IFraction
 	 */
 	public static IComplex complex(final double realPart, final double imagPart) {
@@ -5008,10 +4916,8 @@ public class F {
 	/**
 	 * Create a symbolic complex number
 	 * 
-	 * @param realPart
-	 *            the real double value part which should be converted to a complex number
-	 * @param imagPart
-	 *            the imaginary double value part which should be converted to a complex number
+	 * @param realPart the real double value part which should be converted to a complex number
+	 * @param imagPart the imaginary double value part which should be converted to a complex number
 	 * @param epsilon
 	 * @return IFraction
 	 */
@@ -5083,8 +4989,7 @@ public class F {
 	/**
 	 * Create a complex numeric number with imaginary part = 0.0
 	 * 
-	 * @param r
-	 *            the real part of the number
+	 * @param r the real part of the number
 	 * @return
 	 */
 	public static IComplexNum complexNum(final double r) {
@@ -5094,10 +4999,8 @@ public class F {
 	/**
 	 * Create a complex numeric value
 	 * 
-	 * @param r
-	 *            real part
-	 * @param i
-	 *            imaginary part
+	 * @param r real part
+	 * @param i imaginary part
 	 * @return
 	 */
 	public static IComplexNum complexNum(final double r, final double i) {
@@ -5392,10 +5295,8 @@ public class F {
 	/**
 	 * The division <code>arg1 / arg2</code> will be represented by <code>arg1 * arg2^(-1)</code>.
 	 * 
-	 * @param arg1
-	 *            numerator
-	 * @param arg2
-	 *            denominator
+	 * @param arg1 numerator
+	 * @param arg2 denominator
 	 * @return
 	 */
 	public static IAST Divide(final IExpr arg1, final IExpr arg2) {
@@ -5489,8 +5390,7 @@ public class F {
 	/**
 	 * Evaluate an expression. If no evaluation was possible this method returns the given argument.
 	 * 
-	 * @param a
-	 *            the expression which should be evaluated
+	 * @param a the expression which should be evaluated
 	 * @return the evaluated expression
 	 * @see EvalEngine#evaluate(IExpr)
 	 */
@@ -5501,8 +5401,7 @@ public class F {
 	/**
 	 * Parse and evaluate a string expression.
 	 * 
-	 * @param str
-	 *            the string expression which should be parsed and evaluated
+	 * @param str the string expression which should be parsed and evaluated
 	 * @return the evaluated expression
 	 * @see EvalEngine#evaluate(IExpr)
 	 */
@@ -5528,8 +5427,7 @@ public class F {
 	/**
 	 * Evaluate <code>Expand()</code> for the given expression. returns the given argument.
 	 * 
-	 * @param a
-	 *            the expression which should be evaluated
+	 * @param a the expression which should be evaluated
 	 * @return the evaluated expression
 	 * @see EvalEngine#evaluate(IExpr)
 	 */
@@ -5554,11 +5452,10 @@ public class F {
 	}
 
 	/**
-	 * Apply <code>ExpandAll()</code> to the given expression if it's an <code>IAST</code>. If expanding wasn't possible
-	 * this method returns the given argument.
+	 * Apply <code>ExpandAll()</code> to the given expression if it's an <code>IAST</code>. If expanding wasn't possible this method
+	 * returns the given argument.
 	 * 
-	 * @param a
-	 *            the expression which should be evaluated
+	 * @param a the expression which should be evaluated
 	 * @return the evaluated expression
 	 * @see EvalEngine#evaluate(IExpr)
 	 */
@@ -5567,11 +5464,10 @@ public class F {
 	}
 
 	/**
-	 * Apply <code>ExpandAll()</code> to the given expression if it's an <code>IAST</code>. If expanding wasn't possible
-	 * this method returns the given argument.
+	 * Apply <code>ExpandAll()</code> to the given expression if it's an <code>IAST</code>. If expanding wasn't possible this method
+	 * returns the given argument.
 	 * 
-	 * @param a
-	 *            the expression which should be evaluated
+	 * @param a the expression which should be evaluated
 	 * @return the evaluated expression
 	 * @see EvalEngine#evaluate(IExpr)
 	 */
@@ -5592,11 +5488,10 @@ public class F {
 	}
 
 	/**
-	 * Evaluate an expression in &quot;quiet mode&quot;. If no evaluation was possible this method returns the given
-	 * argument. In &quot;quiet mode&quot; all warnings would be suppressed.
+	 * Evaluate an expression in &quot;quiet mode&quot;. If no evaluation was possible this method returns the given argument. In
+	 * &quot;quiet mode&quot; all warnings would be suppressed.
 	 * 
-	 * @param a
-	 *            the expression which should be evaluated
+	 * @param a the expression which should be evaluated
 	 * @return the evaluated expression
 	 * @see EvalEngine#evalQuiet(IExpr)
 	 * @deprecated use EvalEngine#evalQuiet();
@@ -5607,11 +5502,10 @@ public class F {
 	}
 
 	/**
-	 * Evaluate an expression in &quot;quiet mode&quot;. If evaluation is not possible return <code>null</code>. In
-	 * &quot;quiet mode&quot; all warnings would be suppressed.
+	 * Evaluate an expression in &quot;quiet mode&quot;. If evaluation is not possible return <code>null</code>. In &quot;quiet
+	 * mode&quot; all warnings would be suppressed.
 	 * 
-	 * @param expr
-	 *            the expression which should be evaluated
+	 * @param expr the expression which should be evaluated
 	 * @return the evaluated object or <code>F.NIL</code> if no evaluation was possible
 	 * @see EvalEngine#evalQuietNull(IExpr)
 	 * @deprecated use EvalEngine#evalQuietNull()
@@ -5700,14 +5594,11 @@ public class F {
 	}
 
 	/**
-	 * depending on the derived class of the given {@link Number}, the value is encoded as {@link IInteger},
-	 * {@link INum}
+	 * depending on the derived class of the given {@link Number}, the value is encoded as {@link IInteger}, {@link INum}
 	 * 
-	 * @param number
-	 *            non-null
+	 * @param number non-null
 	 * @return scalar with best possible accuracy to encode given number
-	 * @throws Exception
-	 *             if number is null, or instance of an unsupported type
+	 * @throws Exception if number is null, or instance of an unsupported type
 	 */
 	public static IExpr expr(Number number) {
 		if (number instanceof Integer || //
@@ -5736,17 +5627,13 @@ public class F {
 	}
 
 	/**
-	 * Apply <code>Expand()</code> to the given expression if it's an <code>IAST</code>. If expanding wasn't possible
-	 * this method returns the given argument.
+	 * Apply <code>Expand()</code> to the given expression if it's an <code>IAST</code>. If expanding wasn't possible this method
+	 * returns the given argument.
 	 * 
-	 * @param a
-	 *            the expression which should be evaluated
-	 * @param expandNegativePowers
-	 *            TODO
-	 * @param distributePlus
-	 *            TODO
-	 * @param evalParts
-	 *            evaluate the determined numerator and denominator parts
+	 * @param a                    the expression which should be evaluated
+	 * @param expandNegativePowers TODO
+	 * @param distributePlus       TODO
+	 * @param evalParts            evaluate the determined numerator and denominator parts
 	 * @return the evaluated expression
 	 * @see EvalEngine#evaluate(IExpr)
 	 */
@@ -5772,15 +5659,12 @@ public class F {
 	}
 
 	/**
-	 * Apply <code>ExpandAll()</code> to the given expression if it's an <code>IAST</code>. If expanding wasn't possible
-	 * this method returns the given argument.
+	 * Apply <code>ExpandAll()</code> to the given expression if it's an <code>IAST</code>. If expanding wasn't possible this method
+	 * returns the given argument.
 	 * 
-	 * @param a
-	 *            the expression which should be evaluated
-	 * @param expandNegativePowers
-	 *            TODO
-	 * @param distributePlus
-	 *            TODO
+	 * @param a                    the expression which should be evaluated
+	 * @param expandNegativePowers TODO
+	 * @param distributePlus       TODO
 	 * @return the evaluated expression
 	 * @see EvalEngine#evaluate(IExpr)
 	 */
@@ -5901,8 +5785,7 @@ public class F {
 	/**
 	 * Create a "fractional" number
 	 * 
-	 * @param value
-	 *            the rational value which should be converted to a fractional number
+	 * @param value the rational value which should be converted to a fractional number
 	 * @return IFraction
 	 */
 	public static IFraction fraction(final BigFraction value) {
@@ -5912,10 +5795,8 @@ public class F {
 	/**
 	 * Create a "fractional" number
 	 * 
-	 * @param numerator
-	 *            numerator of the fractional number
-	 * @param denominator
-	 *            denumerator of the fractional number
+	 * @param numerator   numerator of the fractional number
+	 * @param denominator denumerator of the fractional number
 	 * @return IFraction
 	 */
 	public static IFraction fraction(final BigInteger numerator, final BigInteger denominator) {
@@ -5925,8 +5806,7 @@ public class F {
 	/**
 	 * Create a "fractional" number
 	 * 
-	 * @param value
-	 *            the double value which should be converted to a fractional number
+	 * @param value the double value which should be converted to a fractional number
 	 * @return IFraction
 	 */
 	public static IFraction fraction(final double value) {
@@ -5940,10 +5820,8 @@ public class F {
 	/**
 	 * Create a "fractional" number
 	 * 
-	 * @param numerator
-	 *            numerator of the fractional number
-	 * @param denominator
-	 *            denumerator of the fractional number
+	 * @param numerator   numerator of the fractional number
+	 * @param denominator denumerator of the fractional number
 	 * @return IFraction
 	 */
 	public static IFraction fraction(final IInteger numerator, final IInteger denominator) {
@@ -5953,10 +5831,8 @@ public class F {
 	/**
 	 * Create a "fractional" number
 	 * 
-	 * @param numerator
-	 *            numerator of the fractional number
-	 * @param denominator
-	 *            denumerator of the fractional number
+	 * @param numerator   numerator of the fractional number
+	 * @param denominator denumerator of the fractional number
 	 * @return IFraction
 	 */
 	public static IRational fraction(final long numerator, final long denominator) {
@@ -6098,9 +5974,8 @@ public class F {
 	/**
 	 * Create a new abstract syntax tree (AST).
 	 * 
-	 * @param head
-	 *            the header expression of the function. If the ast represents a function like
-	 *            <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
+	 * @param head the header expression of the function. If the ast represents a function like <code>f[x,y], Sin[x],...</code>, the
+	 *             <code>head</code> will be an instance of type ISymbol.
 	 * 
 	 */
 	public final static IAST headAST0(final IExpr head) {
@@ -6219,12 +6094,11 @@ public class F {
 	}
 
 	/**
-	 * Convert the symbolName to lowercase (if <code>Config.PARSER_USE_LOWERCASE_SYMBOLS</code> is set) and insert a new
-	 * Symbol in the <code>PREDEFINED_SYMBOLS_MAP</code>. The symbol is created using the given upper case string to use
-	 * it as associated class name in package org.matheclipse.core.reflection.system.
+	 * Convert the symbolName to lowercase (if <code>Config.PARSER_USE_LOWERCASE_SYMBOLS</code> is set) and insert a new Symbol in the
+	 * <code>PREDEFINED_SYMBOLS_MAP</code>. The symbol is created using the given upper case string to use it as associated class name
+	 * in package org.matheclipse.core.reflection.system.
 	 * 
-	 * @param symbolName
-	 *            the predefined symbol name in upper-case form
+	 * @param symbolName the predefined symbol name in upper-case form
 	 * @return
 	 */
 	public static ISymbol initFinalHiddenSymbol(final String symbolName) {
@@ -6234,12 +6108,11 @@ public class F {
 	}
 
 	/**
-	 * Convert the symbolName to lowercase (if <code>Config.PARSER_USE_LOWERCASE_SYMBOLS</code> is set) and insert a new
-	 * Symbol in the <code>PREDEFINED_SYMBOLS_MAP</code>. The symbol is created using the given upper case string to use
-	 * it as associated class name in package org.matheclipse.core.reflection.system.
+	 * Convert the symbolName to lowercase (if <code>Config.PARSER_USE_LOWERCASE_SYMBOLS</code> is set) and insert a new Symbol in the
+	 * <code>PREDEFINED_SYMBOLS_MAP</code>. The symbol is created using the given upper case string to use it as associated class name
+	 * in package org.matheclipse.core.reflection.system.
 	 * 
-	 * @param symbolName
-	 *            the predefined symbol name in upper-case form
+	 * @param symbolName the predefined symbol name in upper-case form
 	 * @return
 	 */
 	// public static IBuiltInSymbol initFinalSymbol(final String symbolName) {
@@ -6278,10 +6151,8 @@ public class F {
 	/**
 	 * Insert a new Symbol in the <code>SYSTEM</code> context.
 	 * 
-	 * @param symbolName
-	 *            the predefined symbol name in upper-case form
-	 * @param evaluator
-	 *            defines the evaluation behaviour of the symbol
+	 * @param symbolName the predefined symbol name in upper-case form
+	 * @param evaluator  defines the evaluation behaviour of the symbol
 	 * @return
 	 */
 	// public static IBuiltInSymbol initFinalSymbol(final String symbolName, IEvaluator evaluator) {
@@ -6314,12 +6185,9 @@ public class F {
 	/**
 	 * Initialize the complete System
 	 * 
-	 * @param fileName
-	 *            <code>null</code> or optional text filename, which includes the preloaded system rules
-	 * @param symbolObserver
-	 *            the observer for newly created <code>ISymbols</code>
-	 * @param noPackageLoading
-	 *            don't load any package at start up
+	 * @param fileName         <code>null</code> or optional text filename, which includes the preloaded system rules
+	 * @param symbolObserver   the observer for newly created <code>ISymbols</code>
+	 * @param noPackageLoading don't load any package at start up
 	 */
 	public synchronized static void initSymbols(String fileName, ISymbolObserver symbolObserver,
 			boolean noPackageLoading) {
@@ -6391,10 +6259,8 @@ public class F {
 	/**
 	 * Create a large integer number.
 	 * 
-	 * @param integerString
-	 *            the integer number represented as a String
-	 * @param radix
-	 *            the radix to be used while parsing
+	 * @param integerString the integer number represented as a String
+	 * @param radix         the radix to be used while parsing
 	 * @return Object
 	 */
 	public static IInteger integer(final String integerString, final int radix) {
@@ -6458,10 +6324,8 @@ public class F {
 	/**
 	 * Create an "interval" expression: <code>Interval(List(from, to))</code>.
 	 * 
-	 * @param min
-	 *            minimum value of the interval
-	 * @param max
-	 *            maximum value of the interval
+	 * @param min minimum value of the interval
+	 * @param max maximum value of the interval
 	 * @return
 	 */
 	public static IAST Interval(final IExpr min, final IExpr max) {
@@ -6471,10 +6335,8 @@ public class F {
 	/**
 	 * Iterate over an integer range <code>from <= i <= to</code> with the step <code>step/code>.
 	 * 
-	 * @param head
-	 *            the header symbol of the result
-	 * @param function
-	 *            the function which should be applied on each iterator value
+	 * @param head     the header symbol of the result
+	 * @param function the function which should be applied on each iterator value
 	 * @param from
 	 * @param to
 	 * @param step
@@ -6535,10 +6397,8 @@ public class F {
 	 * 
 	 * <b>Note:</b> this method returns <code>F.NIL</code>.
 	 * 
-	 * @param lhs
-	 *            left-hand-side of the assignment
-	 * @param rhs
-	 *            right-hand-side of the assignment
+	 * @param lhs left-hand-side of the assignment
+	 * @param rhs right-hand-side of the assignment
 	 * @return <code>F.NIL</code>
 	 */
 	public static IAST ISet(final IExpr lhs, final IExpr rhs) {
@@ -6554,10 +6414,8 @@ public class F {
 	 * 
 	 * <b>Note:</b> this method returns <code>F.NIL</code>.
 	 * 
-	 * @param lhs
-	 *            left-hand-side of the assignment
-	 * @param rhs
-	 *            right-hand-side of the assignment
+	 * @param lhs left-hand-side of the assignment
+	 * @param rhs right-hand-side of the assignment
 	 * @return <code>F.NIL</code>
 	 */
 	public static IAST ISetDelayed(final IExpr lhs, final IExpr rhs) {
@@ -6777,8 +6635,7 @@ public class F {
 	/**
 	 * Create a new <code>List</code> with the given <code>capacity</code>.
 	 * 
-	 * @param capacity
-	 *            the assumed number of arguments (+ 1 for the header expression is added internally).
+	 * @param capacity the assumed number of arguments (+ 1 for the header expression is added internally).
 	 * @return
 	 */
 	public static IASTAppendable ListAlloc(int capacity) {
@@ -6797,8 +6654,8 @@ public class F {
 	}
 
 	/**
-	 * For positive n, add the first n elements of <code>numbers</code> to the list.For negative n, add the last n
-	 * elements of <code>numbers</code> to the list.
+	 * For positive n, add the first n elements of <code>numbers</code> to the list.For negative n, add the last n elements of
+	 * <code>numbers</code> to the list.
 	 * 
 	 * @param n
 	 * @param numbers
@@ -7209,12 +7066,11 @@ public class F {
 	}
 
 	/**
-	 * Multiplies the given argument by <code>-1</code>. The <code>IExpr#negate()</code> method does evaluations, which
-	 * don't agree with pattern matching assumptions (in left-hand-sige expressions). so it is only called called for
-	 * <code>INumber</code> objects, otherwis a <code>Times(CN1, x)</code> AST would be created.
+	 * Multiplies the given argument by <code>-1</code>. The <code>IExpr#negate()</code> method does evaluations, which don't agree with
+	 * pattern matching assumptions (in left-hand-sige expressions). so it is only called called for <code>INumber</code> objects,
+	 * otherwis a <code>Times(CN1, x)</code> AST would be created.
 	 * 
-	 * @param x
-	 *            the expression which should be negated.
+	 * @param x the expression which should be negated.
 	 * @return
 	 */
 	public static IExpr Negate(final IExpr x) {
@@ -7237,11 +7093,9 @@ public class F {
 	/**
 	 * Create a new abstract syntax tree (AST).
 	 * 
-	 * @param intialArgumentsCapacity
-	 *            the initial capacity of arguments of the AST.
-	 * @param head
-	 *            the header expression of the function. If the ast represents a function like
-	 *            <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
+	 * @param intialArgumentsCapacity the initial capacity of arguments of the AST.
+	 * @param head                    the header expression of the function. If the ast represents a function like
+	 *                                <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
 	 * @return
 	 */
 	public static IAST newInstance(final int intialArgumentsCapacity, final IExpr head) {
@@ -7319,8 +7173,7 @@ public class F {
 	/**
 	 * Create a numeric value from the input string.
 	 * 
-	 * @param valueString
-	 *            the numeric value represented as a string.
+	 * @param valueString the numeric value represented as a string.
 	 * @return
 	 */
 	public static INum num(final String valueString) {
@@ -7370,8 +7223,7 @@ public class F {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns <code>True</code> if <code>expr</code> is an explicit numeric expression, and <code>False</code>
-	 * otherwise.
+	 * returns <code>True</code> if <code>expr</code> is an explicit numeric expression, and <code>False</code> otherwise.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -7734,8 +7586,7 @@ public class F {
 	/**
 	 * Iterate over an integer range <code>from <= i <= to</code> and create a product of the created values.
 	 * 
-	 * @param function
-	 *            the function which should be applied on each iterator value
+	 * @param function the function which should be applied on each iterator value
 	 * @param from
 	 * @param to
 	 * @return
@@ -7759,10 +7610,8 @@ public class F {
 	/**
 	 * Create a "fractional" number
 	 * 
-	 * @param numerator
-	 *            numerator of the fractional number
-	 * @param fDenominator
-	 *            denumerator of the fractional number
+	 * @param numerator    numerator of the fractional number
+	 * @param fDenominator denumerator of the fractional number
 	 * @return IFraction
 	 */
 	public static IFraction QQ(final BigFraction frac) {
@@ -7772,10 +7621,8 @@ public class F {
 	/**
 	 * Create a "fractional" number
 	 * 
-	 * @param numerator
-	 *            numerator of the fractional number
-	 * @param denominator
-	 *            denumerator of the fractional number
+	 * @param numerator   numerator of the fractional number
+	 * @param denominator denumerator of the fractional number
 	 * @return IFraction
 	 */
 	public static IFraction QQ(final IInteger numerator, final IInteger denominator) {
@@ -7785,10 +7632,8 @@ public class F {
 	/**
 	 * Create a "fractional" number
 	 * 
-	 * @param numerator
-	 *            numerator of the fractional number
-	 * @param denominator
-	 *            denumerator of the fractional number
+	 * @param numerator   numerator of the fractional number
+	 * @param denominator denumerator of the fractional number
 	 * @return IFraction
 	 */
 	public static IFraction QQ(final long numerator, final long denominator) {
@@ -7911,8 +7756,7 @@ public class F {
 	/**
 	 * Get or create a user defined symbol which is retrieved from the evaluation engines context path.
 	 * 
-	 * @param symbolName
-	 *            the name of the symbol
+	 * @param symbolName the name of the symbol
 	 * @return the symbol object from the context path
 	 */
 	public static ISymbol symbol(final String symbolName) {
@@ -7922,10 +7766,8 @@ public class F {
 	/**
 	 * Get or create a user defined symbol which is retrieved from the evaluation engines context path.
 	 * 
-	 * @param symbolName
-	 *            the name of the symbol
-	 * @param engine
-	 *            the evaluation engine
+	 * @param symbolName the name of the symbol
+	 * @param engine     the evaluation engine
 	 * @return the symbol object from the context path
 	 */
 	public static ISymbol symbol(final String symbolName, EvalEngine engine) {
@@ -7933,15 +7775,13 @@ public class F {
 	}
 
 	/**
-	 * Get or create a user defined symbol which is retrieved from the evaluation engines context path. Additional set
-	 * assumptions to the engines global assumptions. Use <code>#1</code> or {@link F#Slot1} in the
-	 * <code>assumptionAST</code> expression for this symbol.
+	 * Get or create a user defined symbol which is retrieved from the evaluation engines context path. Additional set assumptions to
+	 * the engines global assumptions. Use <code>#1</code> or {@link F#Slot1} in the <code>assumptionAST</code> expression for this
+	 * symbol.
 	 * 
-	 * @param symbolName
-	 *            the name of the symbol
-	 * @param assumptionAST
-	 *            the assumptions which should be set for the symbol. Use <code>#1</code> or {@link F#Slot1} in the
-	 *            <code>assumptionAST</code> expression for this symbol.
+	 * @param symbolName    the name of the symbol
+	 * @param assumptionAST the assumptions which should be set for the symbol. Use <code>#1</code> or {@link F#Slot1} in the
+	 *                      <code>assumptionAST</code> expression for this symbol.
 	 * @return the symbol object from the context path
 	 */
 	public static ISymbol symbol(final String symbolName, IAST assumptionAST) {
@@ -7949,17 +7789,14 @@ public class F {
 	}
 
 	/**
-	 * Get or create a user defined symbol which is retrieved from the evaluation engines context path. Additional set
-	 * assumptions to the engines global assumptions. Use <code>#1</code> or {@link F#Slot1} in the
-	 * <code>assumptionAST</code> expression for this symbol.
+	 * Get or create a user defined symbol which is retrieved from the evaluation engines context path. Additional set assumptions to
+	 * the engines global assumptions. Use <code>#1</code> or {@link F#Slot1} in the <code>assumptionAST</code> expression for this
+	 * symbol.
 	 * 
-	 * @param symbolName
-	 *            the name of the symbol
-	 * @param assumptionAST
-	 *            the assumptions which should be set for the symbol. Use <code>#1</code> or {@link F#Slot1} in the
-	 *            <code>assumptionAST</code> expression for this symbol.
-	 * @param engine
-	 *            the evaluation engine
+	 * @param symbolName    the name of the symbol
+	 * @param assumptionAST the assumptions which should be set for the symbol. Use <code>#1</code> or {@link F#Slot1} in the
+	 *                      <code>assumptionAST</code> expression for this symbol.
+	 * @param engine        the evaluation engine
 	 * @return the symbol object from the context path
 	 */
 	public static ISymbol symbol(final String symbolName, IAST assumptionAST, EvalEngine engine) {
@@ -8007,8 +7844,7 @@ public class F {
 	/**
 	 * Get or create a user defined symbol which is retrieved from the evaluation engines context path.
 	 * 
-	 * @param symbolName
-	 *            the name of the symbol
+	 * @param symbolName the name of the symbol
 	 * @return the symbol object from the context path
 	 * @deprecated use {@link #symbol(String)}
 	 */
@@ -8019,10 +7855,8 @@ public class F {
 	/**
 	 * Get or create a user defined symbol which is retrieved from the evaluation engines context path.
 	 * 
-	 * @param symbolName
-	 *            the name of the symbol
-	 * @param engine
-	 *            the evaluation engine
+	 * @param symbolName the name of the symbol
+	 * @param engine     the evaluation engine
 	 * @return the symbol object from the context path
 	 * @deprecated use {@link #symbol(String, EvalEngine)}
 	 */
@@ -8033,10 +7867,8 @@ public class F {
 	/**
 	 * Create a unique dummy symbol which is retrieved from the evaluation engines context path.
 	 * 
-	 * @param symbolName
-	 *            the name of the symbol
-	 * @param engine
-	 *            the evaluation engine
+	 * @param symbolName the name of the symbol
+	 * @param engine     the evaluation engine
 	 * @return the symbol object from the context path
 	 */
 	public static ISymbol Dummy(final String symbolName) {
@@ -8096,11 +7928,9 @@ public class F {
 	}
 
 	/**
-	 * Remove a user-defined symbol from the eval engines context path. Doesn't remove predefined names from the System
-	 * Context.
+	 * Remove a user-defined symbol from the eval engines context path. Doesn't remove predefined names from the System Context.
 	 * 
-	 * @param symbolName
-	 *            the name of the symbol
+	 * @param symbolName the name of the symbol
 	 * @return the removed symbol or <code>null</code> if no symbol was found
 	 */
 	public static ISymbol removeUserSymbol(final String symbolName) {
@@ -8387,47 +8217,38 @@ public class F {
 	}
 
 	/**
-	 * Substitute all (sub-) expressions <code>x</code> with <code>y</code>. If no substitution matches, the method
-	 * returns the given <code>expr</code>.
+	 * Substitute all (sub-) expressions <code>x</code> with <code>y</code>. If no substitution matches, the method returns the given
+	 * <code>expr</code>.
 	 * 
-	 * @param expr
-	 *            the complete expresssion
-	 * @param x
-	 *            the subexpression which should be replaced
-	 * @param y
-	 *            the expression which replaces <code>x</code>
-	 * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or the substituted
-	 *         expression.
+	 * @param expr the complete expresssion
+	 * @param x    the subexpression which should be replaced
+	 * @param y    the expression which replaces <code>x</code>
+	 * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or the substituted expression.
 	 */
 	public static IExpr subs(final IExpr expr, final IExpr x, final IExpr y) {
 		return expr.replaceAll(F.Rule(x, y)).orElse(expr);
 	}
 
 	/**
-	 * Substitute all (sub-) expressions with the given unary function. If no substitution matches, the method returns
-	 * the given <code>expr</code>.
+	 * Substitute all (sub-) expressions with the given unary function. If no substitution matches, the method returns the given
+	 * <code>expr</code>.
 	 * 
 	 * @param expr
-	 * @param function
-	 *            if the unary functions <code>apply()</code> method returns <code>null</code> the expression isn't
-	 *            substituted.
-	 * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or the substituted
-	 *         expression.
+	 * @param function if the unary functions <code>apply()</code> method returns <code>null</code> the expression isn't substituted.
+	 * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or the substituted expression.
 	 */
 	public static IExpr subst(IExpr expr, final Function<IExpr, IExpr> function) {
 		return expr.replaceAll(function).orElse(expr);
 	}
 
 	/**
-	 * Substitute all (sub-) expressions with the given rule set. If no substitution matches, the method returns the
-	 * given <code>expr</code>.
+	 * Substitute all (sub-) expressions with the given rule set. If no substitution matches, the method returns the given
+	 * <code>expr</code>.
 	 * 
 	 * @param expr
-	 * @param astRules
-	 *            rules of the form <code>x-&gt;y</code> or <code>{a-&gt;b, c-&gt;d}</code>; the left-hand-side of the
-	 *            rule can contain pattern objects.
-	 * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or the substituted
-	 *         expression.
+	 * @param astRules rules of the form <code>x-&gt;y</code> or <code>{a-&gt;b, c-&gt;d}</code>; the left-hand-side of the rule can
+	 *                 contain pattern objects.
+	 * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or the substituted expression.
 	 */
 	public static IExpr subst(IExpr expr, final IAST list) {
 		if (list.isListOfLists()) {
@@ -8441,14 +8262,13 @@ public class F {
 	}
 
 	/**
-	 * Substitute all (sub-) expressions with the given replacement expression. If no (sub-) expression matches, the
-	 * method returns the given <code>expr</code>.
+	 * Substitute all (sub-) expressions with the given replacement expression. If no (sub-) expression matches, the method returns the
+	 * given <code>expr</code>.
 	 * 
 	 * @param expr
 	 * @param subExpr
 	 * @param replacementExpr
-	 * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or the substituted
-	 *         expression.
+	 * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or the substituted expression.
 	 */
 	public static IExpr subst(IExpr expr, IExpr subExpr, IExpr replacementExpr) {
 		return expr.replaceAll(Functors.rules(Rule(subExpr, replacementExpr), EvalEngine.get())).orElse(expr);
@@ -8561,7 +8381,7 @@ public class F {
 	 * @param a2
 	 * @return
 	 */
-	public final static IASTMutable ternaryAST3(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2) {
+	public final static IAST ternaryAST3(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST3(head, a0, a1, a2);
 	}
 
@@ -8638,10 +8458,10 @@ public class F {
 			}
 			if (a0.compareTo(a1) > 0) {
 				// swap arguments
-				return binaryAST2(Times, a1, a0);
+				return binary(Times, a1, a0);
 			}
 		}
-		return binaryAST2(Times, a0, a1);
+		return binary(Times, a0, a1);
 	}
 
 	public static IAST Times(final long num, final IExpr... a) {
@@ -8701,7 +8521,7 @@ public class F {
 	 * @param a0
 	 * @return
 	 */
-	public final static IASTMutable unaryAST1(final IExpr head, final IExpr a0) {
+	public final static IAST unaryAST1(final IExpr head, final IExpr a0) {
 		return new AST1(head, a0);
 	}
 
@@ -8814,10 +8634,8 @@ public class F {
 	 * Generate a <code>n x m</code> matrix.
 	 * 
 	 * @param biFunction
-	 * @param n
-	 *            the number of rows of the matrix.
-	 * @param m
-	 *            the number of elements in one row
+	 * @param n          the number of rows of the matrix.
+	 * @param m          the number of elements in one row
 	 * @return
 	 */
 	public static IAST matrix(BiFunction<Integer, Integer, ? extends IExpr> biFunction, int n, int m) {
@@ -8837,8 +8655,7 @@ public class F {
 	 * Generate a vector with <code>n</code> elements.
 	 * 
 	 * @param iFunction
-	 * @param n
-	 *            the number of elements of the vector.
+	 * @param n         the number of elements of the vector.
 	 * @return
 	 */
 	public static IAST vector(IntFunction<? extends IExpr> iFunction, int n) {
@@ -8862,8 +8679,7 @@ public class F {
 	 * "9.81[m*s^-2]" -> Quantity.of(9.81, "m*s^-2")
 	 * </pre>
 	 * 
-	 * If the parsing logic encounters an inconsistency, the return type is a {@link IStringX} that holds the input
-	 * string.
+	 * If the parsing logic encounters an inconsistency, the return type is a {@link IStringX} that holds the input string.
 	 * 
 	 * Scalar types that are not supported include {@link GaussScalar}.
 	 * 

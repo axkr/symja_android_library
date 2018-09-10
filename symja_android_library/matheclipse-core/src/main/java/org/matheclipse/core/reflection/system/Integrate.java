@@ -99,14 +99,13 @@ public class Integrate extends AbstractFunctionEvaluator {
 
 	public final static Set<IExpr> DEBUG_EXPR = new HashSet<IExpr>(64);
 
-	public static boolean INTEGRATE_RULES_READ = false;
+	private static boolean INTEGRATE_RULES_READ = false;
 
 	public Integrate() {
 	}
 
 	@Override
 	public IExpr evaluate(final IAST holdallAST, EvalEngine engine) {
-		getRuleASTStatic();
 		boolean calledRubi = false;
 		boolean evaled = false;
 		IExpr result;

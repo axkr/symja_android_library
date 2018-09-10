@@ -107,7 +107,7 @@ public interface DerivativeRules {
       Negate(Sqr(Csc(Slot1)))),
     // Coth->-1/Sinh(#1)^2
     Rule(Coth,
-      Negate(Power(Sinh(Slot1),-2))),
+      Negate(Sqr(Csch(Slot1)))),
     // Cos->-Sin(#1)
     Rule(Cos,
       Negate(Sin(Slot1))),

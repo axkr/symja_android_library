@@ -1643,7 +1643,7 @@ public class Algebra {
 			List<IExpr> varList = eVar.getVarList().copyTo();
 
 			IExpr expr = ast.arg1();
-			if (ast.isAST1()) {
+			if (ast.isAST1() && !ast.arg1().isTimes() && !ast.arg1().isPower()) {
 				expr = F.Together.of(engine, ast.arg1());
 				if (expr.isAST()) {
 					IExpr[] parts = Algebra.getNumeratorDenominator((IAST) expr, engine);
@@ -1681,8 +1681,30 @@ public class Algebra {
 
 		private IExpr factorExpr(final IAST ast, IExpr expr, List<IExpr> varList) {
 			if (expr.isAST()) {
-				// System.out.println("leafCount " + expr.leafCount());
-				IExpr temp = factor((IAST) expr, varList, false);
+				IExpr temp;
+				// if (expr.isPower()&&expr.base().isPlus()) {
+				//// System.out.println(ast.toString());
+				// temp = factorExpr(ast, expr.base(), varList);
+				// temp = F.Power(temp, expr.exponent());
+				// } else
+				if (expr.isTimes()) {
+					// System.out.println(ast.toString());
+					temp = ((IAST) expr).map(x -> {
+						if (x.isPlus()) {
+							return factorExpr(ast, x, varList);
+						}
+						if (x.isPower() && x.base().isPlus()) {
+							IExpr p = factorExpr(ast, x.base(), varList);
+							if (!p.equals(x.base())) {
+								return F.Power(p, x.exponent());
+							}
+						}
+						return F.NIL;
+					}, 1);
+				} else {
+					// System.out.println("leafCount " + expr.leafCount());
+					temp = factor((IAST) expr, varList, false);
+				}
 				F.REMEMBER_AST_CACHE.put(ast, temp);
 				return temp;
 			}
@@ -1723,18 +1745,27 @@ public class Algebra {
 			IASTAppendable result = F.TimesAlloc(map.size() + 1);
 			java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
 			java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
+			IRational f = F.C1;
 			if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
-				result.append(F.fraction(gcd, lcm));
+				f = F.fraction(gcd, lcm).normalize();
 			}
 			for (SortedMap.Entry<GenPolynomial<edu.jas.arith.BigInteger>, Long> entry : map.entrySet()) {
 				if (entry.getKey().isONE() && entry.getValue().equals(1L)) {
 					continue;
 				}
+				IExpr base = jas.integerPoly2Expr(entry.getKey());
 				if (entry.getValue() == 1L) {
-					result.append(jas.integerPoly2Expr(entry.getKey()));
+					if (f.isMinusOne() && base.isPlus()) {
+						base = ((IAST) base).map(x -> x.negate(), 1);
+						f = F.C1;
+					}
+					result.append(base);
 				} else {
-					result.append(F.Power(jas.integerPoly2Expr(entry.getKey()), F.integer(entry.getValue())));
+					result.append(F.Power(base, F.integer(entry.getValue())));
 				}
+			}
+			if (!f.isOne()) {
+				result.append(f);
 			}
 			// System.out.println("Factor: " + expr.toString() + " ==> " + result.toString());
 			return result.getOneIdentity(F.C0);
@@ -3420,8 +3451,7 @@ public class Algebra {
 			private IExpr tryTransformations(IExpr expr) {
 				IExpr result = F.NIL;
 				if (expr.isAST()) {
-					// try ExpandAll, Together, Apart, Factor to reduce the
-					// expression
+					// try ExpandAll, Together, Apart, Factor to reduce the expression
 					long minCounter = fComplexityFunction.apply(expr);
 					IExpr temp;
 					long count;
@@ -3447,7 +3477,7 @@ public class Algebra {
 					} catch (WrongArgumentType wat) {
 						//
 					}
-					
+
 					try {
 						temp = F.eval(F.Together(expr));
 						count = fComplexityFunction.apply(temp);
@@ -3455,15 +3485,41 @@ public class Algebra {
 							minCounter = count;
 							result = temp;
 						}
+						if (fFullSimplify) {
+							if (temp.isTimes()) {
+								IExpr[] parts = Algebra.getNumeratorDenominator((IAST) temp, EvalEngine.get());
+								if (!parts[1].isOne()) {
+									try {
+										IExpr numerator = parts[0];
+										IExpr denominator = parts[1];
+										if (denominator.isPlus() && !numerator.isPlusTimesPower()) {
+											IExpr test = ((IAST) denominator).map(x -> F.Divide(x, numerator), 1);
+											temp = F.eval(F.Divide(F.C1, test));
+											count = fComplexityFunction.apply(temp);
+											if (count < minCounter) {
+												minCounter = count;
+												result = temp;
+											}
+										}
+									} catch (JASConversionException e) {
+										if (Config.DEBUG) {
+											e.printStackTrace();
+										}
+										return expr;
+									}
+								}
+							}
+						}
 					} catch (WrongArgumentType wat) {
 						//
 					}
 
 					try {
 						// System.out.println(expr.toString());
+						// TODO: Factor is not fast enough for large expressions!
+						// Maybe restricting factoring to smaller expressions is necessary here
+						temp = F.NIL;
 						if (minCounter < 25) {
-							// Factor is not fast enough for large expressions!
-							// so restrict factoring to smaller expressions
 							temp = F.eval(F.Factor(expr));
 							count = fComplexityFunction.apply(temp);
 							if (count < minCounter) {
@@ -3471,6 +3527,15 @@ public class Algebra {
 								result = temp;
 							}
 						}
+						if (fFullSimplify && (minCounter >= 25 || !temp.equals(expr))) {
+							temp = F.eval(F.FactorSquareFree(expr));
+							count = fComplexityFunction.apply(temp);
+							if (count < minCounter) {
+								minCounter = count;
+								result = temp;
+							}
+						}
+
 					} catch (WrongArgumentType wat) {
 						//
 					}

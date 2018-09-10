@@ -17,6 +17,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ISymbol.RuleType;
+import org.matheclipse.core.patternmatching.PatternMatcher.StackMatcher;
 
 public class PatternMatcherAndEvaluator extends PatternMatcher implements Externalizable {
 
@@ -190,6 +191,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	}
 
 	final public IExpr replace(final IExpr leftHandSide, @Nonnull EvalEngine engine, boolean evaluate) {
+		PatternMap patternMap = null;
 		if (isRuleWithoutPatterns()) {
 			// no patterns found match equally:
 			if (fLhsPatternExpr.equals(leftHandSide)) {
@@ -210,44 +212,50 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 				if (!(fLhsPatternExpr.isFlatAST() && leftHandSide.isFlatAST())) {
 					return F.NIL;
 				}
-				// TODO implement equals matching for special cases, if the AST
-				// is Orderless or Flat
+				// replaceSubExpressionOrderlessFlat() below implements equals matching for
+				// special cases, if the AST is Orderless or Flat
 			}
-		}
-
-		PatternMap patternMap = getPatternMap();
-		patternMap.initPattern();
-		if (matchExpr(fLhsPatternExpr, leftHandSide, engine)) {
-
-			if (RulesData.showSteps) {
-				if (fLhsPatternExpr.head().equals(F.Integrate)) {
-					IExpr rhs = fRightHandSide;
-					if (!rhs.isPresent()) {
-						rhs = F.Null;
-					}
-					System.out.println("\nCOMPLEX: " + fLhsPatternExpr.toString() + " := " + rhs.toString());
-					System.out.println("\n>>>>> " + toString());
-				}
-			}
-
-			IExpr result = patternMap.substituteSymbols(fRightHandSide);
-			try {
-				// System.out.println(result.toString());
-				if (evaluate) {
-					result = F.eval(result);
-				}
-			} catch (final ConditionException e) {
-				logConditionFalse(leftHandSide, fLhsPatternExpr, fRightHandSide);
+			if (fLhsPatternExpr.size() == leftHandSide.size()) {
 				return F.NIL;
-			} catch (final ReturnException e) {
-				result = e.getValue();
 			}
-			return result;
+		} else {
+			patternMap = getPatternMap();
+			patternMap.initPattern();
+			if (matchExpr(fLhsPatternExpr, leftHandSide, engine, new StackMatcher(engine), true)) {
+
+				if (RulesData.showSteps) {
+					if (fLhsPatternExpr.head().equals(F.Integrate)) {
+						IExpr rhs = fRightHandSide;
+						if (!rhs.isPresent()) {
+							rhs = F.Null;
+						}
+						System.out.println("\nCOMPLEX: " + fLhsPatternExpr.toString() + " := " + rhs.toString());
+						System.out.println("\n>>>>> " + toString());
+					}
+				}
+
+				IExpr result = patternMap.substituteSymbols(fRightHandSide);
+				try {
+					// System.out.println(result.toString());
+					if (evaluate) {
+						result = F.eval(result);
+					}
+					return result;
+				} catch (final ConditionException e) {
+					logConditionFalse(leftHandSide, fLhsPatternExpr, fRightHandSide);
+					return F.NIL;
+				} catch (final ReturnException e) {
+					return e.getValue();
+				}
+
+			}
 		}
 
 		if (fLhsPatternExpr.isAST() && leftHandSide.isAST()) {
+			patternMap = getPatternMap();
 			patternMap.initPattern();
-			return evalAST((IAST) fLhsPatternExpr, (IAST) leftHandSide, fRightHandSide, engine);
+			return replaceSubExpressionOrderlessFlat((IAST) fLhsPatternExpr, (IAST) leftHandSide, fRightHandSide,
+					engine);
 		}
 		return F.NIL;
 	}
