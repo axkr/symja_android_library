@@ -337,9 +337,9 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
-//		if ((getEvalFlags() & IAST.DEFER_AST) == IAST.DEFER_AST) {
-//			return F.NIL;
-//		}
+		// if ((getEvalFlags() & IAST.DEFER_AST) == IAST.DEFER_AST) {
+		// return F.NIL;
+		// }
 		return F.NIL;
 	}
 
@@ -486,25 +486,7 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
 		this.fEvalFlags = objectInput.readShort();
-
-		int size;
-		byte attributeFlags = objectInput.readByte();
-		if (attributeFlags != 0) {
-			size = attributeFlags;
-			int exprIDSize = objectInput.readByte();
-			for (int i = 0; i < exprIDSize; i++) {
-				set(i, F.GLOBAL_IDS[objectInput.readShort()]);
-			}
-			for (int i = exprIDSize; i < size; i++) {
-				set(i, (IExpr) objectInput.readObject());
-			}
-			return;
-		}
-
-		size = objectInput.readInt();
-		for (int i = 0; i < size; i++) {
-			set(i, (IExpr) objectInput.readObject());
-		}
+		this.matrix = (RealMatrix)objectInput.readObject();
 	}
 
 	/**
@@ -639,52 +621,7 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeShort(fEvalFlags);
-
-		int size = size();
-		byte attributeFlags = (byte) 0;
-
-		ExprID temp = F.GLOBAL_IDS_MAP.get(head());
-		if (temp != null) {
-			short exprID = temp.getExprID();
-			if (exprID <= Short.MAX_VALUE) {
-				int exprIDSize = 1;
-				short[] exprIDArray = new short[size];
-				exprIDArray[0] = exprID;
-				for (int i = 1; i < size; i++) {
-					temp = F.GLOBAL_IDS_MAP.get(get(i));
-					if (temp == null) {
-						break;
-					}
-					exprID = temp.getExprID();
-					if (exprID <= Short.MAX_VALUE) {
-						exprIDArray[i] = exprID;
-						exprIDSize++;
-					} else {
-						break;
-					}
-				}
-				// optimized path
-				attributeFlags = (byte) size;
-				objectOutput.writeByte(attributeFlags);
-				objectOutput.writeByte((byte) exprIDSize);
-				for (int i = 0; i < exprIDSize; i++) {
-					objectOutput.writeShort(exprIDArray[i]);
-				}
-				for (int i = exprIDSize; i < size; i++) {
-					objectOutput.writeObject(get(i));
-				}
-				return;
-			}
-		}
-
-		objectOutput.writeByte(attributeFlags);
-		objectOutput.writeInt(size);
-		for (int i = 0; i < size; i++) {
-			objectOutput.writeObject(get(i));
-		}
+		objectOutput.writeObject(matrix);
 	}
 
-	private Object writeReplace() throws ObjectStreamException {
-		return optional(F.GLOBAL_IDS_MAP.get(this));
-	}
 }

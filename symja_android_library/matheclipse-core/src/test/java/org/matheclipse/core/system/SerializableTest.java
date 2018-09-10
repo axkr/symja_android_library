@@ -7,6 +7,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.ASTRealMatrix;
+import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
@@ -127,6 +129,19 @@ public class SerializableTest extends TestCase {
 		AbstractVisitor visitor = Share.createVisitor();
 		rulesData.accept(visitor);
 		equalsCopy(rulesData);
+	}
+
+	public void testASTRealMatrix() {
+		equalsCopy(new ASTRealMatrix(new double[][] {{ 1.0, 2.0, 3.0},{3.3, 4.4, 5.5} }, false));
+
+		// PseudoInverse({{1,2,3},{3,4,5}})
+		EvalEngine engine = EvalEngine.get();
+		IExpr result = engine.evaluate(F.PseudoInverse(F.List(F.List(F.C1, F.C2, F.C3), F.List(F.C4, F.C5, F.C6))));
+		equalsCopy(result);
+	}
+
+	public void testASTRealVector() {
+		equalsCopy(new ASTRealVector(new double[] { 1.0, 1.2, 3.4 }, false));
 	}
 
 	public void testPowerSeries() {
