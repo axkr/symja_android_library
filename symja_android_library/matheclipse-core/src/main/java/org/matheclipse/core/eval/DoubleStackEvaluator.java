@@ -23,8 +23,17 @@ public class DoubleStackEvaluator {
 		}
 		// slow evaluation path
 		final IExpr result = F.evaln(symbol);
-		if (result instanceof Num) {
-			return ((Num) result).doubleValue();
+		if (result.isReal()) {
+			return ((ISignedNumber) result).doubleValue();
+		}
+		if (result.isInfinity()) {
+			return Double.POSITIVE_INFINITY;
+		}
+		if (result.isNegativeInfinity()) {
+			return Double.NEGATIVE_INFINITY;
+		}
+		if (result.isIndeterminate()) {
+			return Double.NaN;
 		}
 		throw new UnsupportedOperationException("EvalDouble#evalSymbol() - no value assigned for symbol: " + symbol);
 	}
