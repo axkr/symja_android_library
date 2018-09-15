@@ -1060,10 +1060,10 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			IExpr[] patternValues = fPatternMap.copyPattern();
 
 			IExpr temp = fPatternMap.substitutePatternOrSymbols(lhsPattern);
-			if (!temp.isPresent()) {
-				temp = lhsPattern;
+			if (!temp.isPresent() && temp.isAST(lhsPattern.head())) {
+				lhsPattern = (IAST) temp;
 			}
-			IASTAppendable[] removed = removeOrderless(((IAST) temp), lhsEval);
+			IASTAppendable[] removed = removeOrderless(lhsPattern, lhsEval);
 			if (removed == null) {
 				return false;
 			}
@@ -1119,6 +1119,10 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			MultisetPartitionsIterator iter = new MultisetPartitionsIterator(visitor, lhsPattern.argSize());
 			return !iter.execute();
 		} else {
+			IExpr temp = fPatternMap.substitutePatternOrSymbols(lhsPattern);
+			if (!temp.isPresent() && temp.isAST(lhsPattern.head())) {
+				lhsPattern = (IAST) temp;
+			}
 			IASTAppendable[] removed = removeFlat(lhsPattern, lhsEval);
 			if (removed == null) {
 				return false;

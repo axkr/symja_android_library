@@ -90,6 +90,7 @@ import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcherPlus;
 import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcherTimes;
 import org.matheclipse.core.patternmatching.hash.HashedPatternRulesLog;
 import org.matheclipse.core.patternmatching.hash.HashedPatternRulesTimes;
+import org.matheclipse.core.patternmatching.hash.HashedPatternRulesTimesPower;
 import org.matheclipse.core.reflection.system.rules.AbsRules;
 import org.matheclipse.core.reflection.system.rules.ConjugateRules;
 import org.matheclipse.core.reflection.system.rules.GammaRules;
@@ -4646,7 +4647,17 @@ public final class Arithmetic {
 					F.Csc(x_), //
 					F.Tan(x_), //
 					F.Sec(x)));
-			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(//
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimesPower(//
+					F.Power(F.Csc(x_), F.m_), //
+					F.Power(F.Cot(x_), F.n_DEFAULT), //
+					F.Condition(F.Times(F.Power(F.Csc(F.x), F.Plus(F.m, F.n)), F.Power(F.Cos(F.x), F.n)),
+							F.And(F.SymbolQ(F.m), F.IntegerQ(F.n), F.Greater(F.n, F.C0)))));
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimesPower(//
+					F.Power(F.Sec(x_), F.m_), //
+					F.Power(F.Tan(x_), F.n_DEFAULT), //
+					F.Condition(F.Times(F.Power(F.Sec(F.x), F.Plus(F.m, F.n)), F.Power(F.Sin(F.x), F.n)),
+							F.And(F.SymbolQ(F.m), F.IntegerQ(F.n), F.Greater(F.n, F.C0)))));
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimesPower(//
 					F.ProductLog(x_), //
 					F.Power(F.E, F.ProductLog(x_)), //
 					x));

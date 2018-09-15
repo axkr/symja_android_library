@@ -1863,10 +1863,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCsc() {
-		check("Csc(3.5)", "-2.85076");
-		check("Csc(1.0+3.5*I)", "0.05083+I*(-0.03258)");
-		check("Csc(0)", "ComplexInfinity");
-		check("Csc(1)", "Csc(1)");
+		check("Csc(x)^m*Cot(x)", //
+				"Cos(x)*Csc(x)^(1+m)");
+		check("Csc(x)^m*Cot(x)^3", //
+				"Cos(x)^3*Csc(x)^(3+m)");
+		check("Csc(3.5)", //
+				"-2.85076");
+		check("Csc(1.0+3.5*I)", //
+				"0.05083+I*(-0.03258)");
+		check("Csc(0)", //
+				"ComplexInfinity");
+		check("Csc(1)", //
+				"Csc(1)");
 		check("Csc(1.)", "1.1884");
 		check("Csc(2/5*Pi)", "Sqrt(2-2/Sqrt(5))");
 		check("Csc(23/12*Pi)", "-2*Sqrt(2+Sqrt(3))");
@@ -9328,7 +9336,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSec() {
-		check("Sec(Pi/2+Pi*n)", "-Csc(n*Pi)");
+		check("Sec(e+f*x)^m*Tan(e+f*x)^2", //
+				"Sec(e+f*x)^(2+m)*Sin(e+f*x)^2");
+		check("Sec(e+f*x)^m*Tan(e+f*x)", //
+				"Sec(e+f*x)^(1+m)*Sin(e+f*x)");
+
+		check("Sec(Pi/2+Pi*n)", //
+				"-Csc(n*Pi)");
 		check("Sec(0)", "1");
 		check("Sec(1)", "Sec(1)");
 		checkNumeric("Sec(1.)", "1.8508157176809255");

@@ -367,7 +367,7 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 	}
 
 	public boolean isPatternTest(IExpr expr, IExpr patternTest, EvalEngine engine) {
-		IExpr temp = substitutePatternOrSymbols(expr);
+		IExpr temp = substitutePatternOrSymbols( expr);
 		if (!temp.isPresent()) {
 			temp = (IAST) expr;
 		}

@@ -29,6 +29,10 @@ public abstract class AbstractHashedPatternRules {
 	public AbstractHashedPatternRules(IExpr lhsPattern1, IExpr lhsPattern2, boolean defaultHashCode) {
 		fLHSPattern1 = lhsPattern1;
 		fLHSPattern2 = lhsPattern2;
+		hashValues(lhsPattern1, lhsPattern2, defaultHashCode);
+	}
+
+	public void hashValues(IExpr lhsPattern1, IExpr lhsPattern2, boolean defaultHashCode) {
 		if (defaultHashCode) {
 			hash1 = lhsPattern1.head().hashCode();
 			hash2 = lhsPattern2.head().hashCode();

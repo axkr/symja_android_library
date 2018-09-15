@@ -22,7 +22,7 @@ public class HashedOrderlessMatcherTimes extends HashedOrderlessMatcher {
 	protected void createHashValues(final IAST orderlessAST, int[] hashValues) {
 		for (int i = 0; i < hashValues.length; i++) {
 			IExpr temp = orderlessAST.get(i + 1);
-			if (temp.isPower() && temp.exponent().isInteger()) {
+			if (temp.isPower()) {// && temp.exponent().isInteger()) {
 				hashValues[i] = temp.base().head().hashCode();
 			} else {
 				hashValues[i] = temp.head().hashCode();
@@ -45,6 +45,16 @@ public class HashedOrderlessMatcherTimes extends HashedOrderlessMatcher {
 	@Override
 	protected boolean updateHashValues(IASTAppendable result, final IAST orderlessAST,
 			AbstractHashedPatternRules hashRule, int[] hashValues, int i, int j, EvalEngine engine) {
+		if (hashRule instanceof HashedPatternRulesTimesPower) {
+			IExpr temp = hashRule.evalDownRule(orderlessAST.get(i + 1), null, orderlessAST.get(j + 1), null, engine);
+			if (temp.isPresent()) {
+				hashValues[i] = 0;
+				hashValues[j] = 0;
+				result.append(temp);
+				return true;
+			}
+			return false;
+		}
 		IExpr temp;
 		IExpr arg1 = orderlessAST.get(i + 1);
 		ISignedNumber num1 = F.C1;
