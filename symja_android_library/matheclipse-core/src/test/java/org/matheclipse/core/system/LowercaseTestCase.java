@@ -1852,14 +1852,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// + "-a3 c2 d1+a2 c3 d1+a3 c1 d2-a1 c3 d2-a2 c1 d3+a1 c2 d3,"
 		// + "a3 b2 d1-a2 b3 d1-a3 b1 d2+a1 b3 d2+a2 b1 d3-a1 b2 d3,"
 		// + "-a3 b2 c1+a2 b3 c1+a3 b1 c2-a1 b3 c2-a2 b1 c3+a1 b2 c3}");
-		check("Cross({a,b}, {c,d})", "-b*c+a*d");
-		check("Cross({a, b, c}, {x, y, z})", "{-c*y+b*z,c*x-a*z,-b*x+a*y}");
-		check("Cross({x, y})", "{-y,x}");
-		check("Cross({x1, y1, z1}, {x2, y2, z2})", "{-y2*z1+y1*z2,x2*z1-x1*z2,-x2*y1+x1*y2}");
-		check("Cross({1, 2}, {3, 4, 5})", "Cross({1,2},{3,4,5})");
+		check("Cross({a,b}, {c,d})", //
+				"-b*c+a*d");
+		check("Cross({a, b, c}, {x, y, z})", //
+				"{-c*y+b*z,c*x-a*z,-b*x+a*y}");
+		check("Cross({x, y})", //
+				"{-y,x}");
+		check("Cross({x1, y1, z1}, {x2, y2, z2})", //
+				"{-y2*z1+y1*z2,x2*z1-x1*z2,-x2*y1+x1*y2}");
+		check("Cross({1, 2}, {3, 4, 5})", //
+				"Cross({1,2},{3,4,5})");
 
-		check("Cross({1,2,3},{1,1/2,1/3})", "{-5/6,8/3,-3/2}");
-		check("Cross(N({1,2,3}),N({1,1/2,1/3}))", "{-0.83333,2.66667,-1.5}");
+		check("Cross({1,2,3},{1,1/2,1/3})", //
+				"{-5/6,8/3,-3/2}");
+		check("Cross(N({1,2,3}),N({1,1/2,1/3}))", //
+				"{-0.83333,2.66667,-1.5}");
 	}
 
 	public void testCsc() {
@@ -1875,29 +1882,50 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"ComplexInfinity");
 		check("Csc(1)", //
 				"Csc(1)");
-		check("Csc(1.)", "1.1884");
-		check("Csc(2/5*Pi)", "Sqrt(2-2/Sqrt(5))");
-		check("Csc(23/12*Pi)", "-2*Sqrt(2+Sqrt(3))");
-		check("Csc(z+1/2*Pi)", "Sec(z)");
-		check("Csc(Pi)", "ComplexInfinity");
-		check("Csc(z+Pi)", "-Csc(z)");
-		check("Csc(z+42*Pi)", "Csc(z)");
-		check("Csc(x+y+z+43*Pi)", "-Csc(x+y+z)");
-		check("Csc(z+42*a*Pi)", "Csc(42*a*Pi+z)");
+		check("Csc(1.)", //
+				"1.1884");
+		check("Csc(2/5*Pi)", //
+				"Sqrt(2-2/Sqrt(5))");
+		check("Csc(23/12*Pi)", //
+				"-2*Sqrt(2+Sqrt(3))");
+		check("Csc(z+1/2*Pi)", //
+				"Sec(z)");
+		check("Csc(Pi)", //
+				"ComplexInfinity");
+		check("Csc(z+Pi)", //
+				"-Csc(z)");
+		check("Csc(z+42*Pi)", //
+				"Csc(z)");
+		check("Csc(x+y+z+43*Pi)", //
+				"-Csc(x+y+z)");
+		check("Csc(z+42*a*Pi)", //
+				"Csc(42*a*Pi+z)");
 
-		check("Csc(ArcSin(x))", "1/x");
-		check("Csc(ArcCos(x))", "1/Sqrt(1-x^2)");
-		check("Csc(ArcTan(x))", "Sqrt(1+x^2)/x");
-		check("Csc(ArcCot(x))", "Sqrt(1+1/x^2)*x");
-		check("Csc(ArcCsc(x))", "x");
-		check("Csc(ArcSec(x))", "1/Sqrt(1-1/x^2)");
+		check("Csc(ArcSin(x))", //
+				"1/x");
+		check("Csc(ArcCos(x))", //
+				"1/Sqrt(1-x^2)");
+		check("Csc(ArcTan(x))", //
+				"Sqrt(1+x^2)/x");
+		check("Csc(ArcCot(x))", //
+				"Sqrt(1+1/x^2)*x");
+		check("Csc(ArcCsc(x))", //
+				"x");
+		check("Csc(ArcSec(x))", //
+				"1/Sqrt(1-1/x^2)");
 	}
 
 	public void testCsch() {
-		check("Csch(0)", "ComplexInfinity");
-		check("Csch(-x)", "-Csch(x)");
-		checkNumeric("Csch(1.8)", "0.3398846914154937");
-		check("D(Csch(x),x)", "-Coth(x)*Csch(x)");
+		check("Csch(x)^m*Coth(x)^2", //
+				"Cosh(x)^2*Csch(x)^(2+m)");
+		check("Csch(0)", //
+				"ComplexInfinity");
+		check("Csch(-x)", //
+				"-Csch(x)");
+		checkNumeric("Csch(1.8)", //
+				"0.3398846914154937");
+		check("D(Csch(x),x)", //
+				"-Coth(x)*Csch(x)");
 	}
 
 	public void testCubeRoot() {
@@ -9363,10 +9391,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSech() {
-		check("Sech(0)", "1");
-		checkNumeric("Sech(1.8)", "0.3218048695065878");
-		check("Sech(-x)", "Sech(x)");
-		check("D(Sech(x),x)", "-Sech(x)*Tanh(x)");
+
+		check("Sech(x)^m*Tanh(x)^2", //
+				"Sech(x)^(2+m)*Sinh(x)^2");
+		check("Sech(0)", //
+				"1");
+		checkNumeric("Sech(1.8)", //
+				"0.3218048695065878");
+		check("Sech(-x)", //
+				"Sech(x)");
+		check("D(Sech(x),x)", //
+				"-Sech(x)*Tanh(x)");
 	}
 
 	public void testSelect() {

@@ -4651,12 +4651,22 @@ public final class Arithmetic {
 					F.Power(F.Csc(x_), F.m_), //
 					F.Power(F.Cot(x_), F.n_DEFAULT), //
 					F.Condition(F.Times(F.Power(F.Csc(F.x), F.Plus(F.m, F.n)), F.Power(F.Cos(F.x), F.n)),
-							F.And(F.SymbolQ(F.m), F.IntegerQ(F.n), F.Greater(F.n, F.C0)))));
+							F.And(F.Not(F.NumberQ(F.m)), F.IntegerQ(F.n), F.Greater(F.n, F.C0)))));
 			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimesPower(//
 					F.Power(F.Sec(x_), F.m_), //
 					F.Power(F.Tan(x_), F.n_DEFAULT), //
 					F.Condition(F.Times(F.Power(F.Sec(F.x), F.Plus(F.m, F.n)), F.Power(F.Sin(F.x), F.n)),
-							F.And(F.SymbolQ(F.m), F.IntegerQ(F.n), F.Greater(F.n, F.C0)))));
+							F.And(F.Not(F.NumberQ(F.m)), F.IntegerQ(F.n), F.Greater(F.n, F.C0)))));
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimesPower(//
+					F.Power(F.Csch(x_), F.m_), //
+					F.Power(F.Coth(x_), F.n_DEFAULT), //
+					F.Condition(F.Times(F.Power(F.Csch(F.x), F.Plus(F.m, F.n)), F.Power(F.Cosh(F.x), F.n)),
+							F.And(F.Not(F.NumberQ(F.m)), F.IntegerQ(F.n), F.Greater(F.n, F.C0)))));
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimesPower(//
+					F.Power(F.Sech(x_), F.m_), //
+					F.Power(F.Tanh(x_), F.n_DEFAULT), //
+					F.Condition(F.Times(F.Power(F.Sech(F.x), F.Plus(F.m, F.n)), F.Power(F.Sinh(F.x), F.n)),
+							F.And(F.Not(F.NumberQ(F.m)), F.IntegerQ(F.n), F.Greater(F.n, F.C0)))));
 			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimesPower(//
 					F.ProductLog(x_), //
 					F.Power(F.E, F.ProductLog(x_)), //

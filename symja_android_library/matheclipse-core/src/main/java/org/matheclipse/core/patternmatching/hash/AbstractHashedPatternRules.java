@@ -21,10 +21,8 @@ public abstract class AbstractHashedPatternRules {
 	 * @param lhsPattern2
 	 *            second left-hand-side pattern
 	 * @param defaultHashCode
-	 *            if <code>false</code> use a <code>HashValueVisitor()</code> to
-	 *            determine the tw0 hash values for the lhs... arguments. if
-	 *            <code>true</code> use the default <code>Object.hashCode()</code>
-	 *            method.
+	 *            if <code>false</code> use a <code>HashValueVisitor()</code> to determine the tw0 hash values for the
+	 *            lhs... arguments. if <code>true</code> use the default <code>Object.hashCode()</code> method.
 	 */
 	public AbstractHashedPatternRules(IExpr lhsPattern1, IExpr lhsPattern2, boolean defaultHashCode) {
 		fLHSPattern1 = lhsPattern1;
@@ -32,6 +30,14 @@ public abstract class AbstractHashedPatternRules {
 		hashValues(lhsPattern1, lhsPattern2, defaultHashCode);
 	}
 
+	/**
+	 * Calculate two hash values <code>hash1</code> for <code>lhsPattern1</code> and <code>hash2</code>for
+	 * <code>lhsPattern2</code>
+	 * 
+	 * @param lhsPattern1
+	 * @param lhsPattern2
+	 * @param defaultHashCode
+	 */
 	public void hashValues(IExpr lhsPattern1, IExpr lhsPattern2, boolean defaultHashCode) {
 		if (defaultHashCode) {
 			hash1 = lhsPattern1.head().hashCode();
