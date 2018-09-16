@@ -723,7 +723,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
 	public void testIssue82() {
 		check("Integrate(Sin(a^4)*a,a)", //
 				"1/2*Sqrt(Pi/2)*FresnelS(a^2*Sqrt(2/Pi))");
-		check("Integrate(Sin(a^4)*a,{a,0,2.0})", "0.37357");
+		check("Integrate(Sin(a^4)*a,{a,0,2.0})", "0.373567");
 	}
 
 	public void testIssue83() {
@@ -742,11 +742,11 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		check("Integrate(Sin(x) / x,x)", //
 				"SinIntegral(x)");
 		check("Integrate(Sin(x) / x, {x,0,0.5})", //
-				"0.49311");
+				"0.493107");
 		check("Integrate(Cos(x) / x,x)", //
 				"CosIntegral(x)");
 		check("Integrate(Cos(x) / x, {x,0.25,0.5})", //
-				"0.64688");
+				"0.646879");
 	}
 
 	public void testIssue84() {

@@ -16,6 +16,7 @@ import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplex;
@@ -152,7 +153,13 @@ public class OutputFormFactory {
 	}
 
 	private String convertDoubleToFormattedString(double dValue) {
-		return fNumberFormat == null ? Double.toString(dValue) : fNumberFormat.format(dValue);
+		if (fNumberFormat != null) {
+			StringBuilder buf = new StringBuilder();
+			DoubleToMMA.doubleToMMA(buf, dValue, 5, 7);
+			return buf.toString();
+		}
+		return Double.toString(dValue);
+		// return fNumberFormat == null ? Double.toString(dValue) : fNumberFormat.format(dValue);
 	}
 
 	private void convertDoubleString(final Appendable buf, final String d, final int precedence,

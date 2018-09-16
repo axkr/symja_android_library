@@ -42,7 +42,7 @@ public class NumberTest extends TestCase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		assertEquals(buf.toString(), "12345.12346");
+		assertEquals(buf.toString(), "12345.12");
 	}
 
 	public void testDoubleFormat() {
