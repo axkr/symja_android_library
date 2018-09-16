@@ -150,7 +150,7 @@ public class VariablesSet {
 				fCollection.add(((ASTSeriesData) list).getX());
 				return true;
 			}
-			if (list.head().isVariable()&&list.forAll(x->x.isInteger())) {
+			if (list.head().isVariable() && list.forAll(x -> x.isInteger())) {
 				fCollection.add(list);
 				return true;
 			}
@@ -215,6 +215,10 @@ public class VariablesSet {
 	 */
 	public boolean add(final IExpr symbol) {
 		return fVariablesSet.add(symbol);
+	}
+
+	public boolean addAll(final Set<? extends IExpr> symbols) {
+		return fVariablesSet.addAll(symbols);
 	}
 
 	/**

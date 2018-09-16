@@ -17,7 +17,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ISymbol.RuleType;
-import org.matheclipse.core.patternmatching.PatternMatcher.StackMatcher;
 
 public class PatternMatcherAndEvaluator extends PatternMatcher implements Externalizable {
 

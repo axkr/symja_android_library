@@ -454,6 +454,19 @@ public class ParserTestCase extends TestCase {
 		}
 	}
 
+	public void testParser33() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse(
+					"Int[(u_)*(y_)^(m_.), x_Symbol] := With[{q = DerivativeDivides[y, u, x]}, Simp[(q*y^(m + 1))/(m + 1), x] /;  !FalseQ[q]] /; FreeQ[m, x] && NeQ[m, -1]");
+			assertEquals(obj.toString(),
+					"SetDelayed(Int(Times(u_, Power(y_, m_.)), x_Symbol), Condition(With(List(Set(q, DerivativeDivides(y, u, x))), Condition(Simp(Times(Times(q, Power(y, Plus(m, 1))), Power(Plus(m, 1), -1)), x), Not(FalseQ(q)))), And(FreeQ(m, x), NeQ(m, -1))))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+
 	public void testParse33() {
 		try {
 			Parser p = new Parser();

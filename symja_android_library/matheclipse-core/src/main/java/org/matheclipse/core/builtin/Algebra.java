@@ -23,6 +23,7 @@ import static org.matheclipse.core.expression.F.x_;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -77,6 +78,7 @@ import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.IPartialFractionGenerator;
 import org.matheclipse.core.polynomials.PartialFractionGenerator;
+import org.matheclipse.core.polynomials.PolynomialSubstitutions;
 import org.matheclipse.core.visit.AbstractVisitorBoolean;
 import org.matheclipse.core.visit.VisitorExpr;
 
@@ -4214,10 +4216,16 @@ public class Algebra {
 			}
 
 			IAST vars = eVar.getVarList();
+			PolynomialSubstitutions substitutions = new PolynomialSubstitutions(vars);
+			numeratorPolynomial = substitutions.replaceAll(numeratorPolynomial);
+			denominatorPolynomial = substitutions.replaceAll(denominatorPolynomial);
+			if (substitutions.substitutedVariables().size() > 0) {
+				eVar.addAll(substitutions.substitutedVariables().keySet());
+				vars = eVar.getVarList();
+			}
 			ExprPolynomialRing ring = new ExprPolynomialRing(vars);
 			ExprPolynomial pol1 = ring.create(numeratorPolynomial);
 			ExprPolynomial pol2 = ring.create(denominatorPolynomial);
-			// ASTRange r = new ASTRange(eVar.getVarList(), 1);
 			List<IExpr> varList = eVar.getVarList().copyTo();
 			JASIExpr jas = new JASIExpr(varList, true);
 			GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
@@ -4232,16 +4240,20 @@ public class Algebra {
 				result[1] = jas.exprPoly2Expr(p1);
 				result[2] = jas.exprPoly2Expr(p2);
 			} else {
-				if (JASIExpr.isInexactCoefficient(gcd)) {
-					return null;
-				}
+				// if (JASIExpr.isInexactCoefficient(gcd)) {
+				// return null;
+				// }
 				result[0] = F.C1;
 				result[1] = F.eval(jas.exprPoly2Expr(p1.divide(gcd)));
 				result[2] = F.eval(jas.exprPoly2Expr(p2.divide(gcd)));
 			}
+			IdentityHashMap<ISymbol, IExpr> substitutedVariables = substitutions.substitutedVariables();
+			result[0] = F.subst(result[0], substitutedVariables);
+			result[1] = F.subst(result[1], substitutedVariables);
+			result[2] = F.subst(result[2], substitutedVariables);
 			return result;
 		} catch (RuntimeException e) {
-			if (Config.DEBUG) {
+			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();
 			}
 		}

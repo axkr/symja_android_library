@@ -8240,6 +8240,18 @@ public class F {
 	public static IExpr subst(IExpr expr, final Function<IExpr, IExpr> function) {
 		return expr.replaceAll(function).orElse(expr);
 	}
+	
+	/**
+	 * Substitute all (sub-) expressions with the given unary function. If no substitution matches, the method returns the given
+	 * <code>expr</code>.
+	 * 
+	 * @param expr
+	 * @param function if the unary functions <code>apply()</code> method returns <code>null</code> the expression isn't substituted.
+	 * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or the substituted expression.
+	 */
+	public static IExpr subst(IExpr expr, final Map<? extends IExpr, ? extends IExpr> map) {
+		return expr.replaceAll(map).orElse(expr);
+	}
 
 	/**
 	 * Substitute all (sub-) expressions with the given rule set. If no substitution matches, the method returns the given

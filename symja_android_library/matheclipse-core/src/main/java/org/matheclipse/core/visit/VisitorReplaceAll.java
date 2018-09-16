@@ -1,12 +1,12 @@
 package org.matheclipse.core.visit;
 
+import java.util.Map;
 import java.util.function.Function;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -20,10 +20,9 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Replace all occurrences of expressions where the given
- * <code>function.apply()</code> method returns a non <code>F.NIL</code> value.
- * The visitors <code>visit()</code> methods return <code>F.NIL</code> if no
- * substitution occurred.
+ * Replace all occurrences of expressions where the given <code>function.apply()</code> method returns a non
+ * <code>F.NIL</code> value. The visitors <code>visit()</code> methods return <code>F.NIL</code> if no substitution
+ * occurred.
  */
 public class VisitorReplaceAll extends VisitorExpr {
 	final Function<IExpr, IExpr> fFunction;
@@ -36,6 +35,22 @@ public class VisitorReplaceAll extends VisitorExpr {
 	public VisitorReplaceAll(Function<IExpr, IExpr> function, int offset) {
 		super();
 		this.fFunction = function;
+		this.fOffset = offset;
+	}
+
+	public VisitorReplaceAll(Map<? extends IExpr, ? extends IExpr> map) {
+		this(map, 0);
+	}
+
+	public VisitorReplaceAll(Map<? extends IExpr, ? extends IExpr> map, int offset) {
+		super();
+		this.fFunction = x -> {
+			IExpr subst = map.get(x);
+			if (subst != null) {
+				return subst;
+			}
+			return F.NIL;
+		};
 		this.fOffset = offset;
 	}
 

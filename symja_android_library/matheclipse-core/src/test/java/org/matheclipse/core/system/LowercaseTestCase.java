@@ -4132,6 +4132,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGCD() {
+		check("GCD(0,Cos(b*x)[[2]])", //
+				"GCD(0,Cos(b*x)[[2]])");
 		check("GCD(0, CoshIntegral(b*x))", //
 				"GCD(0,CoshIntegral(b*x))");
 		check("GCD(x,x)", "GCD(x,x)");
@@ -9530,11 +9532,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSimplify() {
+//		check("Simplify(Cos(b*x)/(-Cos(b*x)/x^2-CosIntegral(b*x)/x^2))", //
+//				"(x^2*Cos(b*x))/(-Cos(b*x)-CosIntegral(b*x))");
+		check("Together(-Cos(b*x)/x^2+(-b*Sin(b*x))/x)", //
+				"(-Cos(b*x)-b*x*Sin(b*x))/x^2");
+		check("Simplify(-Cos(b*x)/x^2+(-b*Sin(b*x))/x)", //
+				"(-Cos(b*x)-b*x*Sin(b*x))/x^2");
+		
 		check("Simplify(-(b/(2*Sqrt(c))+Sqrt(c)*x)^24+(a+b*x+c*x^2)^12)",
 				"-(b+2*c*x)^24/(16777216*c^12)+(a+b*x+c*x^2)^12");
 		check("Simplify(-ArcTan((1+x)/Sqrt(2))/(2*Sqrt(2)))", //
 				"-ArcTan((1+x)/Sqrt(2))/(2*Sqrt(2))");
-		check("Simplify(1 + 1/GoldenRatio - GoldenRatio)", "0");
+		check("Simplify(1 + 1/GoldenRatio - GoldenRatio)", //
+				"0");
 		// check("Simplify(-15-6*x)/(3*(1+x+x^2))", "");
 		check("Simplify(Abs(x), x<0)", "Abs(x)");
 		check("complexity(x_) := 2*Count(x, _Abs, {0, 10}) + LeafCount(x)", "");
@@ -9754,7 +9764,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{x->0.6666666666666665*y*z}}");
 		// Issue #160
 		checkNumeric("Solve((2.10937501*y)/(0.6923076944378698*z)==(0.6923076944378698*z)/x,x)", //
-				"{{x->(0.22721893523232692*z^2.0)/y}}");
+				"{{x->(0.22721893523232695*z^2.0)/y}}");
 		// Issue #159
 		check("Solve(x==2*Sqrt(y)*Sqrt(z),y)", //
 				"{{y->x^2/(4*z)}}");
@@ -10965,8 +10975,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Together(a / c + b / c)", "(a+b)/c");
 
 		check("Together(f(a / c + b / c))", "f(a/c+b/c)");
-		// TODO return f[x] (1 + x) / x ^ 2
-		check("f(x)/x+f(x)/x^2//Together", "(x*f(x)+x^2*f(x))/x^3");
+ 
+		check("f(x)/x+f(x)/x^2//Together", //
+				"(f(x)+x*f(x))/x^2");
 
 		check("Together(1 < 1/x + 1/(1 + x) < 2)", "1<(1+2*x)/(x+x^2)<2");
 		check("Together(1/(1+1/(1+1/a)))", "(1+a)/(1+2*a)");
