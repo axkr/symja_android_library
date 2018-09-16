@@ -7385,7 +7385,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PolynomialExtendedGCD((x - 1)*(x - 2)^2, (x - 1)*(x^2 - 3), x)", "{-1+x,{7+4*x,9-4*x}}");
 
 		 check("PolynomialExtendedGCD((x - 1)^2*(x - 2)^2, (x - 1)*(x^2 - 3), x)",
-		 "{-1+x,{19/2+11/2*x,-13+18*x-11/2*x^2}}");
+		 "{2-2*x,{-19-11*x,26-36*x+11*x^2}}");
 		 check("PolynomialExtendedGCD((x - 1)^2*(x - 2)^2, (x - 1)*(x^2 - 3), x, Modulus -> 2)", "{1+x^2,{1,1+x}}");
 
 		check("PolynomialExtendedGCD(a*x^2 + b*x + c, x - r, x)", //

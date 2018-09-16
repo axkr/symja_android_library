@@ -1684,7 +1684,7 @@ public class Algebra {
 			if (expr.isAST()) {
 				// System.out.println("leafCount " + expr.leafCount());
 //				IExpr temp = factor((IAST) expr, varList, false);
-				IExpr temp = SymjaRings.factor((IAST) expr,varList);//, false);
+				IExpr temp = SymjaRings.FactorOverQ((IAST) expr, false);//, false);
 				F.REMEMBER_AST_CACHE.put(ast, temp);
 				return temp;
 			}
@@ -2227,7 +2227,7 @@ public class Algebra {
 			}
 
 			List<IExpr> varList = eVar.getVarList().copyTo();
-			return SymjaRings.extendedGCD(expr1, expr2, varList, engine);
+			return SymjaRings.PolynomialExtendedGCDOverQ(expr1, expr2, x);
 //			try {
 //				List<IExpr> varList = eVar.getVarList().copyTo();
 //				JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
@@ -2319,7 +2319,7 @@ public class Algebra {
 				return gcdWithOption(ast, expr, eVar, engine);
 			}
 			List<IExpr> varList = eVar.getVarList().copyTo();
-			return SymjaRings.gcd(ast, varList, engine);
+			return SymjaRings.PolynomialGCDOverQ(ast.getAt(1), ast.getAt(2));
 			 
 //			try {
 //				// ASTRange r = new ASTRange(eVar.getVarList(), 1);
