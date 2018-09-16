@@ -2362,8 +2362,8 @@ public final class Programming {
 		if (engine.evalTrue(arg2)) {
 			if (arg1.isCondition()) {
 				return checkCondition(arg1.first(), arg1.second(), engine);
-			} else if (arg2.isModuleOrWith()) {
-				return checkModuleOrWithCondition(arg2.first(), arg2.second(), engine);
+			} else if (arg1.isModuleOrWith()) {
+				return checkModuleOrWithCondition(arg1.first(), arg1.second(), engine);
 			}
 			return true;
 		}
