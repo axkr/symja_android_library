@@ -42,4 +42,6 @@ public interface IPatternSequence extends IPatternObject, IExpr {
 	 * @return
 	 */
 	public boolean isDefault();
+	
+	public boolean isNullSequence();
 }

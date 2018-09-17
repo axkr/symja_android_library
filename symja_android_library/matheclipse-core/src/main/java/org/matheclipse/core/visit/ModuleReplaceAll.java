@@ -7,6 +7,8 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IPattern;
+import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -34,13 +36,36 @@ public class ModuleReplaceAll extends VisitorExpr {
 		return temp != null ? temp : F.NIL;
 	}
 
-	/**
-	 * 
-	 * @return <code>F.NIL</code>, if no evaluation is possible
-	 */
 	@Override
 	public IExpr visit(ISymbol element) {
 		return apply(element);
+	}
+
+	@Override
+	public IExpr visit(IPattern element) {
+		ISymbol symbol = element.getSymbol();
+		if (symbol != null) {
+			IExpr expr = apply(symbol);
+			if (expr.isPresent() && expr.isSymbol()) {
+				if (element.isPatternDefault()) {
+					return F.$p((ISymbol) expr, element.getCondition(), true);
+				}
+				return F.$p((ISymbol) expr, element.getCondition(), element.getDefaultValue());
+			}
+		}
+		return F.NIL;
+	}
+
+	@Override
+	public IExpr visit(IPatternSequence element) {
+		ISymbol symbol = element.getSymbol();
+		if (symbol != null) {
+			IExpr expr = apply(symbol);
+			if (expr.isPresent() && expr.isSymbol()) {
+				return F.$ps((ISymbol) expr, element.getCondition(), element.isDefault(), element.isNullSequence());
+			}
+		}
+		return F.NIL;
 	}
 
 	@Override
@@ -85,7 +110,7 @@ public class ModuleReplaceAll extends VisitorExpr {
 				visitor = new ModuleReplaceAll(variables, fEngine);
 			}
 		}
-		
+
 		IExpr temp;
 
 		int i = fOffset;

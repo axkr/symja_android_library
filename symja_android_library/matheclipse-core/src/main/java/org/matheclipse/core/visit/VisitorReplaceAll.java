@@ -114,24 +114,41 @@ public class VisitorReplaceAll extends VisitorExpr {
 		return fFunction.apply(element);
 	}
 
-	/**
-	 * 
-	 * @return <code>F.NIL</code>, if no evaluation is possible
-	 */
 	@Override
 	public IExpr visit(IPattern element) {
-		return fFunction.apply(element);
+		IExpr temp = fFunction.apply(element);
+		if (temp.isPresent()) {
+			return temp;
+		}
+		ISymbol symbol = element.getSymbol();
+		if (symbol != null) {
+			IExpr expr = fFunction.apply(symbol);
+			if (expr.isPresent() && expr.isSymbol()) {
+				if (element.isPatternDefault()) {
+					return F.$p((ISymbol) expr, element.getCondition(), true);
+				}
+				return F.$p((ISymbol) expr, element.getCondition(), element.getDefaultValue());
+			}
+		}
+		return F.NIL;
 	}
 
-	/**
-	 * 
-	 * @return <code>F.NIL</code>, if no evaluation is possible
-	 */
 	@Override
 	public IExpr visit(IPatternSequence element) {
-		return fFunction.apply(element);
+		IExpr temp = fFunction.apply(element);
+		if (temp.isPresent()) {
+			return temp;
+		}
+		ISymbol symbol = element.getSymbol();
+		if (symbol != null) {
+			IExpr expr = fFunction.apply(symbol);
+			if (expr.isPresent() && expr.isSymbol()) {
+				return F.$ps((ISymbol) expr, element.getCondition(), element.isDefault(), element.isNullSequence());
+			}
+		}
+		return F.NIL;
 	}
-
+	
 	/**
 	 * 
 	 * @return <code>F.NIL</code>, if no evaluation is possible

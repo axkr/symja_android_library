@@ -446,6 +446,10 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 		return fRulesData;
 	}
 
+	public void setRulesData(RulesData rd) {
+		fRulesData = rd;
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public final String getSymbolName() {

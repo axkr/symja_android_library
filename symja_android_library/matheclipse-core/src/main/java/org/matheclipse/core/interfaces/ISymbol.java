@@ -260,6 +260,8 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 */
 	public RulesData getRulesData();
 
+	public void setRulesData(RulesData rd);
+	
 	/**
 	 * Get the pure symbol name string
 	 * 

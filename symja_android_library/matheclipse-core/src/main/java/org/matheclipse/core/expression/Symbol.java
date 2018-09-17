@@ -992,7 +992,11 @@ public class Symbol implements ISymbol, Serializable {
 			fRulesData = new RulesData(EvalEngine.get().getContext());
 		}
 		fRulesData.putfDefaultValues(pos, expr);
-	} 
+	}
+
+	public void setRulesData(RulesData rd) {
+		fRulesData = rd;
+	}
 
 	@Override
 	public String toString() {
