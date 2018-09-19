@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.EvalAttributes;
@@ -28,6 +29,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.ISymbol2IntMap;
 import org.matheclipse.core.visit.AbstractVisitorLong;
 import org.matheclipse.core.visit.IndexedLevel;
+import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
 import org.matheclipse.parser.client.math.MathException;
 
@@ -548,6 +550,13 @@ public class Structure {
 						if (symbolSlots.size() > ast.size()) {
 							throw new WrongNumberOfArguments(ast, symbolSlots.argSize(), ast.argSize());
 						}
+						java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables = new IdentityHashMap<ISymbol, IExpr>();
+						final int moduleCounter = engine.incModuleCounter();
+						IExpr subst = arg2.accept(new ModuleReplaceAll(moduleVariables, engine, "$"+moduleCounter));
+						if (subst.isPresent()) {
+							arg2 = subst;
+						}
+
 						return arg2.replaceAll(x -> {
 							IExpr temp = getRulesMap(symbolSlots, ast).get(x);
 							return temp != null ? temp : F.NIL;

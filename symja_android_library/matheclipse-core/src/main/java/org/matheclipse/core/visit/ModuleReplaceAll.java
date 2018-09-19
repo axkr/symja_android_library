@@ -17,18 +17,20 @@ import org.matheclipse.core.interfaces.ISymbol;
  * occurred.
  */
 public class ModuleReplaceAll extends VisitorExpr {
-	final IdentityHashMap<ISymbol, IExpr> fModuleVariables;
+	final IdentityHashMap<ISymbol,? extends IExpr> fModuleVariables;
 	final int fOffset;
 	final EvalEngine fEngine;
+	final String moduleCounter;
 
-	public ModuleReplaceAll(IdentityHashMap<ISymbol, IExpr> moduleVariables, EvalEngine engine) {
-		this(moduleVariables, engine, 0);
+	public ModuleReplaceAll(IdentityHashMap<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine,String moduleCounter ) {
+		this(moduleVariables, engine, moduleCounter, 0);
 	}
 
-	public ModuleReplaceAll(IdentityHashMap<ISymbol, IExpr> moduleVariables, EvalEngine engine, int offset) {
+	public ModuleReplaceAll(IdentityHashMap<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine, String moduleCounter, int offset) {
 		this.fModuleVariables = moduleVariables;
 		this.fOffset = offset;
 		this.fEngine = engine;
+		this.moduleCounter = moduleCounter;
 	}
 
 	private IExpr apply(final IExpr arg) {
@@ -107,7 +109,7 @@ public class ModuleReplaceAll extends VisitorExpr {
 		if (localVariablesList.isPresent()) {
 			IdentityHashMap<ISymbol, IExpr> variables = renamedVariables(localVariablesList, isFunction);
 			if (variables != null) {
-				visitor = new ModuleReplaceAll(variables, fEngine);
+				visitor = new ModuleReplaceAll(variables, fEngine, moduleCounter);
 			}
 		}
 
@@ -140,8 +142,7 @@ public class ModuleReplaceAll extends VisitorExpr {
 
 	private IdentityHashMap<ISymbol, IExpr> renamedVariables(IAST localVariablesList, boolean isFunction) {
 		IdentityHashMap<ISymbol, IExpr> variables = null;
-		final int moduleCounter = fEngine.incModuleCounter();
-		final String varAppend = "$" + moduleCounter;
+		final String varAppend =   moduleCounter;
 		int size = localVariablesList.size();
 		for (int i = 1; i < size; i++) {
 			IExpr temp = localVariablesList.get(i);

@@ -277,8 +277,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * places an additional constraint on <code>pattern</code> that only allows it to match if <code>expr</code> evaluates to
-	 * <code>True</code>.
+	 * places an additional constraint on <code>pattern</code> that only allows it to match if <code>expr</code>
+	 * evaluates to <code>True</code>.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -413,8 +413,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * evaluates <code>expr</code> <code>max</code> times, substituting <code>i</code> in <code>expr</code> with values from
-	 * <code>1</code> to <code>max</code>.
+	 * evaluates <code>expr</code> <code>max</code> times, substituting <code>i</code> in <code>expr</code> with values
+	 * from <code>1</code> to <code>max</code>.
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -659,8 +659,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * starting with <code>expr</code>, iteratively applies <code>f</code> until the result no longer changes, and returns a list of all
-	 * intermediate results.
+	 * starting with <code>expr</code>, iteratively applies <code>f</code> until the result no longer changes, and
+	 * returns a list of all intermediate results.
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -779,8 +779,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * evaluates <code>start</code>, and then iteratively <code>body</code> and <code>incr</code> as long as test evaluates to
-	 * <code>True</code>.
+	 * evaluates <code>start</code>, and then iteratively <code>body</code> and <code>incr</code> as long as test
+	 * evaluates to <code>True</code>.
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -887,8 +887,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns <code>pos</code> if <code>cond</code> evaluates to <code>True</code>, and <code>neg</code> if it evaluates to
-	 * <code>False</code>.
+	 * returns <code>pos</code> if <code>cond</code> evaluates to <code>True</code>, and <code>neg</code> if it
+	 * evaluates to <code>False</code>.
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -929,7 +929,8 @@ public final class Programming {
 	 * </p>
 	 * </blockquote> </blockquote>
 	 * <p>
-	 * You might use comments (inside <code>(*</code> and <code>*)</code>) to make the branches of <code>If</code> more readable:
+	 * You might use comments (inside <code>(*</code> and <code>*)</code>) to make the branches of <code>If</code> more
+	 * readable:
 	 * </p>
 	 * 
 	 * <pre>
@@ -1011,7 +1012,7 @@ public final class Programming {
 			final String varAppend = "$" + moduleCounter;
 			java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables = new IdentityHashMap<ISymbol, IExpr>();
 			rememberModuleVariables(intializerList, varAppend, moduleVariables, engine);
-			IExpr subst = arg2.accept(new ModuleReplaceAll(moduleVariables, engine));
+			IExpr subst = arg2.accept(new ModuleReplaceAll(moduleVariables, engine, varAppend));
 			if (subst.isPresent()) {
 				return engine.evaluate(subst);
 			}
@@ -1032,7 +1033,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * starting with <code>expr</code>, iteratively applies <code>f</code> <code>n</code> times and returns the final result.
+	 * starting with <code>expr</code>, iteratively applies <code>f</code> <code>n</code> times and returns the final
+	 * result.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -1084,8 +1086,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * starting with <code>expr</code>, iteratively applies <code>f</code> <code>n</code> times and returns a list of all intermediate
-	 * results.
+	 * starting with <code>expr</code>, iteratively applies <code>f</code> <code>n</code> times and returns a list of
+	 * all intermediate results.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -1141,8 +1143,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * applies a function <code>f</code> repeatedly on an expression <code>expr</code>, until applying <code>test</code> on the result
-	 * no longer yields <code>True</code>.
+	 * applies a function <code>f</code> repeatedly on an expression <code>expr</code>, until applying <code>test</code>
+	 * on the result no longer yields <code>True</code>.
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -1511,8 +1513,8 @@ public final class Programming {
 	}
 
 	/**
-	 * The call <code>Quiet( expr )</code> evaluates <code>expr</code> in &quot;quiet&quot; mode (i.e. no warning messages are shown
-	 * during evaluation).
+	 * The call <code>Quiet( expr )</code> evaluates <code>expr</code> in &quot;quiet&quot; mode (i.e. no warning
+	 * messages are shown during evaluation).
 	 * 
 	 */
 	private static class Quiet extends AbstractCoreFunctionEvaluator {
@@ -1541,8 +1543,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * gives the result of evaluating <code>expr</code>, together with all values sown during this evaluation. Values sown with
-	 * different tags are given in different lists.
+	 * gives the result of evaluating <code>expr</code>, together with all values sown during this evaluation. Values
+	 * sown with different tags are given in different lists.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -1933,8 +1935,8 @@ public final class Programming {
 	 */
 	private static class Trace extends AbstractCoreFunctionEvaluator {
 		/**
-		 * Trace the evaluation steps for a given expression. The resulting trace expression list is wrapped by Hold (i.e.
-		 * <code>Hold[{...}]</code>.
+		 * Trace the evaluation steps for a given expression. The resulting trace expression list is wrapped by Hold
+		 * (i.e. <code>Hold[{...}]</code>.
 		 * 
 		 */
 		@Override
@@ -1986,8 +1988,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * yields <code>expr1</code> if <code>cond1</code> evaluates to <code>True</code>, <code>expr2</code> if <code>cond2</code>
-	 * evaluates to <code>True</code>, etc.
+	 * yields <code>expr1</code> if <code>cond1</code> evaluates to <code>True</code>, <code>expr2</code> if
+	 * <code>cond2</code> evaluates to <code>True</code>, etc.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -2009,8 +2011,8 @@ public final class Programming {
 	 * &gt;&gt; Which(False, a)
 	 * </pre>
 	 * <p>
-	 * If a test does not evaluate to <code>True</code> or <code>False</code>, evaluation stops and a <code>Which</code> expression
-	 * containing the remaining cases is returned:
+	 * If a test does not evaluate to <code>True</code> or <code>False</code>, evaluation stops and a <code>Which</code>
+	 * expression containing the remaining cases is returned:
 	 * </p>
 	 * 
 	 * <pre>
@@ -2146,7 +2148,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * evaluates <code>expr</code> for the <code>list_of_local_variables</code> by replacing the local variables in <code>expr</code>.
+	 * evaluates <code>expr</code> for the <code>list_of_local_variables</code> by replacing the local variables in
+	 * <code>expr</code>.
 	 * </p>
 	 * </blockquote>
 	 */
@@ -2173,26 +2176,19 @@ public final class Programming {
 		 * @return
 		 */
 		private static IExpr evalWith(IAST intializerList, IExpr arg2, final EvalEngine engine) {
-			// final int moduleCounter = engine.incModuleCounter();
-			// final String varAppend = "$" + moduleCounter;
+			final int moduleCounter = engine.incModuleCounter();
+			final String varAppend = "$" + moduleCounter;
 			final java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables = new IdentityHashMap<ISymbol, IExpr>();
-			// final java.util.Set<IExpr> renamedVarsSet = new HashSet<IExpr>();
-			// java.util.IdentityHashMap<ISymbol, ISymbol> renamedVars = new IdentityHashMap<ISymbol, ISymbol>();
 
 			try {
 				rememberWithVariables(intializerList, moduleVariables, engine);
-				// for (IExpr expr : renamedVarsSet) {
-				// if (expr.isSymbol()) {
-				// renamedVars.put((ISymbol) expr, F.$s(expr.toString() + varAppend));
-				// }
-				// }
-				IExpr subst = arg2.accept(new ModuleReplaceAll(moduleVariables, engine));
+				IExpr subst = arg2.accept(new ModuleReplaceAll(moduleVariables, engine, varAppend));
 				if (subst.isPresent()) {
 					return engine.evaluate(subst);
 				}
 				return arg2;
 			} finally {
-				// removeUserVariables(moduleVariables);
+				//
 			}
 		}
 
@@ -2204,10 +2200,13 @@ public final class Programming {
 	}
 
 	/**
-	 * Remember which local variable names (appended with the module counter) we use in the given <code>variablesMap</code>.
+	 * Remember which local variable names (appended with the module counter) we use in the given
+	 * <code>variablesMap</code>.
 	 * 
-	 * @param variablesList initializer variables list from the <code>Module</code> function
-	 * @param variablesMap  the resulting module variables map
+	 * @param variablesList
+	 *            initializer variables list from the <code>Module</code> function
+	 * @param variablesMap
+	 *            the resulting module variables map
 	 */
 	private static void rememberWithVariables(IAST variablesList, final java.util.Map<ISymbol, IExpr> variablesMap,
 			EvalEngine engine) {
@@ -2218,92 +2217,90 @@ public final class Programming {
 				if (setFun.arg1().isSymbol()) {
 					oldSymbol = (ISymbol) setFun.arg1();
 					IExpr rightHandSide = setFun.arg2();
-//					try {
 					IExpr temp = engine.evaluate(rightHandSide);
-					// VariablesSet.addVariables(renamedVars, temp);
 					variablesMap.put(oldSymbol, temp);
-//					} catch (MathException me) {
-//						if (Config.SHOW_STACKTRACE) {
-//							me.printStackTrace();
-//						}
-//						variablesMap.put(oldSymbol, rightHandSide);
-//					}
-
-				}
-			}
-			// }
-		}
-	}
-
-	/**
-	 * Remember which local variable names (appended with the module counter) we use in the given <code>variablesMap</code>.
-	 * 
-	 * @param variablesList initializer variables list from the <code>Module</code> function
-	 * @param varAppend     the module counter string which aer appended to the variable names.
-	 * @param variablesMap  the resulting module variables map
-	 * @param engine        the evaluation engine
-	 */
-	private static void rememberBlockVariables(IAST variablesList, final java.util.Map<ISymbol, IExpr> variablesMap,
-			final EvalEngine engine) {
-		ISymbol oldSymbol;
-		ISymbol newSymbol;
-		for (int i = 1; i < variablesList.size(); i++) {
-			if (variablesList.get(i).isSymbol()) {
-				oldSymbol = (ISymbol) variablesList.get(i);
-				// if (oldSymbol.toString().equals("num")){
-				// System.out.println(variablesList.toString());
-				// }
-				newSymbol = F.Dummy(oldSymbol.toString());// , engine);
-				variablesMap.put(oldSymbol, newSymbol);
-			} else {
-				if (variablesList.get(i).isAST(F.Set, 3)) {
-					final IAST setFun = (IAST) variablesList.get(i);
-					if (setFun.arg1().isSymbol()) {
-						oldSymbol = (ISymbol) setFun.arg1();
-						newSymbol = F.Dummy(oldSymbol.toString());// , engine);
-						variablesMap.put(oldSymbol, newSymbol);
-						engine.evaluate(F.Set(newSymbol, setFun.arg2()));
-					}
 				}
 			}
 		}
 	}
 
 	/**
-	 * Remember which local variable names (appended with the module counter) we use in the given <code>variablesMap</code>.
+	 * Remember which local variable names (appended with the module counter) we use in the given
+	 * <code>variablesMap</code>.
 	 * 
-	 * @param variablesList initializer variables list from the <code>Module</code> function
-	 * @param varAppend     the module counter string which aer appended to the variable names.
-	 * @param variablesMap  the resulting module variables map
-	 * @param engine        the evaluation engine
+	 * @param variablesList
+	 *            initializer variables list from the <code>Module</code> function
+	 * @param varAppend
+	 *            the module counter string which aer appended to the variable names.
+	 * @param variablesMap
+	 *            the resulting module variables map
+	 * @param engine
+	 *            the evaluation engine
 	 */
-	private static void rememberModuleVariables(IAST variablesList, final String varAppend,
+	public static void rememberModuleVariables(IAST variablesList, final String varAppend,
 			final java.util.Map<ISymbol, IExpr> variablesMap, final EvalEngine engine) {
 		ISymbol oldSymbol;
 		ISymbol newSymbol;
 		for (int i = 1; i < variablesList.size(); i++) {
 			if (variablesList.get(i).isSymbol()) {
 				oldSymbol = (ISymbol) variablesList.get(i);
-				// if (oldSymbol.toString().equals("num")){
-				// System.out.println(variablesList.toString());
-				// }
-				newSymbol = F.Dummy(oldSymbol.toString() + varAppend);// , engine);
+				newSymbol = F.Dummy(oldSymbol.toString() + varAppend);
 				variablesMap.put(oldSymbol, newSymbol);
 			} else {
 				if (variablesList.get(i).isAST(F.Set, 3)) {
 					final IAST setFun = (IAST) variablesList.get(i);
 					if (setFun.arg1().isSymbol()) {
 						oldSymbol = (ISymbol) setFun.arg1();
-						newSymbol = F.Dummy(oldSymbol.toString() + varAppend);// , engine);
+						newSymbol = F.Dummy(oldSymbol.toString() + varAppend);
 						variablesMap.put(oldSymbol, newSymbol);
-//						try {
 						engine.evaluate(F.Set(newSymbol, setFun.arg2()));
-//						} catch (MathException me) {
-//							if (Config.SHOW_STACKTRACE) {
-//								me.printStackTrace();
-//							}
-//						}
 					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Remember which local variable names (appended with the module counter) we use in the given
+	 * <code>variablesMap</code>.
+	 * 
+	 * @param variablesList
+	 *            initializer variables list from the <code>Module</code> function
+	 * @param varAppend
+	 *            the module counter string which appended to the variable names.
+	 * @param variablesMap
+	 *            the resulting module variables map
+	 * @param engine
+	 *            the evaluation engine
+	 */
+	public static void rememberBlockVariables(IAST variablesList, final String varAppend,
+			final java.util.Map<ISymbol, ISymbol> variablesMap, final EvalEngine engine) {
+		ISymbol oldSymbol;
+		ISymbol newSymbol;
+		for (int i = 1; i < variablesList.size(); i++) {
+			if (variablesList.get(i).isSymbol()) {
+				oldSymbol = (ISymbol) variablesList.get(i);
+				newSymbol = F.Dummy(oldSymbol.toString() + varAppend);
+				variablesMap.put(oldSymbol, newSymbol);
+			} else {
+				if (variablesList.get(i).isAST(F.Set, 3)) {
+					final IAST setFun = (IAST) variablesList.get(i);
+					if (setFun.arg1().isSymbol()) {
+						oldSymbol = (ISymbol) setFun.arg1();
+						newSymbol = F.Dummy(oldSymbol.toString() + varAppend);
+						variablesMap.put(oldSymbol, newSymbol);
+					}
+				}
+			}
+		}
+		for (int i = 1; i < variablesList.size(); i++) {
+			if (variablesList.get(i).isAST(F.Set, 3)) {
+				final IAST setFun = (IAST) variablesList.get(i);
+				if (setFun.arg1().isSymbol()) {
+					oldSymbol = (ISymbol) setFun.arg1();
+					newSymbol = (ISymbol) variablesMap.get(oldSymbol);
+					IExpr temp = F.subst(engine.evaluate(setFun.arg2()), variablesMap);
+					engine.evaluate(F.Set(newSymbol, temp));
 				}
 			}
 		}
@@ -2369,7 +2366,7 @@ public final class Programming {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Get the element stored at the given <code>position</code>.
 	 * 
@@ -2391,10 +2388,14 @@ public final class Programming {
 	/**
 	 * Get the <code>Part[...]</code> of an expression. If the expression is no <code>IAST</code> return the expression.
 	 * 
-	 * @param expr   the expression from which parts should be extracted
-	 * @param ast    the <code>Part[...]</code> expression
-	 * @param pos    the index position from which the sub-expressions should be extracted
-	 * @param engine the evaluation engine
+	 * @param expr
+	 *            the expression from which parts should be extracted
+	 * @param ast
+	 *            the <code>Part[...]</code> expression
+	 * @param pos
+	 *            the index position from which the sub-expressions should be extracted
+	 * @param engine
+	 *            the evaluation engine
 	 * @return
 	 */
 	public static IExpr part(final IExpr expr, final IAST ast, int pos, EvalEngine engine) {
@@ -2689,7 +2690,8 @@ public final class Programming {
 	/**
 	 * Assign the <code>value</code> to the given position in the left-hand-side. <code>lhs[[position]] = value</code>
 	 * 
-	 * @param lhs          left-hand-side
+	 * @param lhs
+	 *            left-hand-side
 	 * @param partPosition
 	 * @param value
 	 * @return
@@ -2706,17 +2708,19 @@ public final class Programming {
 	}
 
 	/**
-	 * Call <code>assignPart(element, ast, pos, value, engine)</code> recursively and assign the result to the given position in the
-	 * result. <code>result[[position]] = resultValue</code>
+	 * Call <code>assignPart(element, ast, pos, value, engine)</code> recursively and assign the result to the given
+	 * position in the result. <code>result[[position]] = resultValue</code>
 	 * 
 	 * @param expr
 	 * @param element
 	 * @param partPosition
 	 * @param pos
-	 * @param result       will be cloned if an assignment occurs and returned by this method
+	 * @param result
+	 *            will be cloned if an assignment occurs and returned by this method
 	 * @param position
 	 * @param value
-	 * @param engine       the evaluation engineF
+	 * @param engine
+	 *            the evaluation engineF
 	 * @return the (cloned and value assigned) result AST from input
 	 */
 	private static IASTAppendable assignPartSpanValue(IAST expr, IExpr element, final IAST part, int partPosition,
