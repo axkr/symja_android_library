@@ -2076,6 +2076,7 @@ public class Algebra {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
+			// System.out.println(ast.toString());
 			return super.evaluate(ast, engine);
 		}
 

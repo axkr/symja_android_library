@@ -18,6 +18,7 @@ import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntegerSym;
+import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
 
@@ -381,7 +382,7 @@ public class Primality {
 	 *            if <code>evaled[0]</code> is <code>true</code> a transformations was done
 	 * @return the rest factor or one, if the number could be factored completely into primes less equal then 1021
 	 */
-	public static IInteger countPrimes1021(IInteger base, IRational exponent, OpenIntToIExprHashMap<IRational> map,
+	public static IInteger countPrimes1021(IInteger base, IExpr exponent, OpenIntToIExprHashMap<IExpr> map,
 			boolean setEvaled, boolean[] evaled) {
 		if (base.isOne() || base.isMinusOne()) {
 			return base;
@@ -406,14 +407,14 @@ public class Primality {
 	 *            if <code>evaled[0]</code> is <code>true</code> a transformations was done
 	 * @return the rest factor or one, if the number could be factored completely into primes less equal then 1021
 	 */
-	private static IInteger countPrimes1021(final BigInteger base, IRational exponent,
-			OpenIntToIExprHashMap<IRational> map, boolean[] evaled) {
+	private static IInteger countPrimes1021(final BigInteger base, IExpr exponent,
+			OpenIntToIExprHashMap<IExpr> map, boolean[] evaled) {
 		BigInteger[] divRem;
 		BigInteger result = base;
 		int count;
 		if (base.compareTo(BigInteger.ZERO) < 0) {
 			// base < 0
-			IRational exp = map.get(-1);
+			IExpr exp = map.get(-1);
 			if (exp == null) {
 				map.put(-1, exponent);
 			} else {
@@ -437,7 +438,7 @@ public class Primality {
 					}
 					divRem = result.divideAndRemainder(BIprimes[i]);
 				} while (divRem[1].equals(BigInteger.ZERO));
-				IRational exp = map.get(primes[i]);
+				IExpr exp = map.get(primes[i]);
 				if (exp == null) {
 					map.put(primes[i], F.ZZ(count).multiply(exponent));
 				} else {
@@ -464,12 +465,12 @@ public class Primality {
 	 *            if <code>evaled[0]</code> is <code>true</code> a transformations was done
 	 * @return the rest factor or one, if the number could be factored completely into primes less equal then 1021
 	 */
-	private static IInteger countPrimes1021(final int base, IRational exponent, OpenIntToIExprHashMap<IRational> map,
+	private static IInteger countPrimes1021(final int base, IExpr exponent, OpenIntToIExprHashMap<IExpr> map,
 			boolean setEvaled, boolean[] evaled) {
 		int result = base;
 		int count = 0;
 		if (base < 0) {
-			IRational exp = map.get(-1);
+			IExpr exp = map.get(-1);
 			if (exp == null) {
 				map.put(-1, exponent);
 			} else {
@@ -485,7 +486,7 @@ public class Primality {
 			count++;
 		}
 		if (count > 0) {
-			IRational exp = map.get(2);
+			IExpr exp = map.get(2);
 			if (exp == null) {
 				if (setEvaled && count > 1) {
 					evaled[0] = true;
@@ -514,7 +515,7 @@ public class Primality {
 					div = result / primes[i];
 					rem = result % primes[i];
 				} while (rem == 0);
-				IRational exp = map.get(primes[i]);
+				IExpr exp = map.get(primes[i]);
 				if (exp == null) {
 					if (setEvaled && count > 1) {
 						evaled[0] = true;

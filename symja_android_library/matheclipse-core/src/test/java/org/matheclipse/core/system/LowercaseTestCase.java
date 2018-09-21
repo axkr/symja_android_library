@@ -4006,7 +4006,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Function({z$3$4},y+z+z$3$4)");
 		check("fufufu(y)[x][z]", //
 				"x+y+z");
-		
+
 		check("Function({x, y}, x^2 + y^3)[a, b]", //
 				"a^2+b^3");
 		check("f(x, ##, y, ##) &(a, b, c, d)", "f(x,a,b,c,d,y,a,b,c,d)");
@@ -6175,6 +6175,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{y,z,3}");
 		check("Module({x,f}, f(0)=0;f(x_):=f(x-1)+x;f(3))", //
 				"6");
+		check("Module({x},Function(y,x+y))", //
+				"Function(y$32,x$32+y$32)");
+		// check("Module({y},Function(y,x+y))",//
+		// "x$22$23+y");
 	}
 
 	public void testMoebiusMu() {
@@ -7437,7 +7441,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Infinity+Log(2)", "Infinity");
 
 		check("{1,2}+{4,5,6}", "{1,2}+{4,5,6}");
-		check("2+4/3*2^b/c", "2+4/3*2^b/c");
+		check("2+4/3*2^b/c", //
+				"2+2^(2+b)/(3*c)");
 		check("Refine(Infinity+x, x>0)", "Infinity");
 
 		// String s = System.getProperty("os.name");
@@ -10837,6 +10842,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTimes() {
+		check("2^(3+k)*4^(1+p)", //
+				"2^(5+k+2*p)");
+		check("2*2^(1+p)", //
+				"2^(2+p)");
+		check("2*4^(1+p)", //
+				"2^(3+2*p)");
+		check("(1/2)*4^(1+p)", //
+				"2^(1+2*p)");
 		check("-(-b*c+a*d)*n", //
 				"-(-b*c+a*d)*n");
 		check("5/7*Sqrt(7/6)", //
@@ -10847,10 +10860,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1/343*(2/7)^(3/4)*x");
 		check("1/(sq(a)*sq(b))//FullForm", //
 				"Times(Power(sq(a), -1), Power(sq(b), -1))");
-		check("(-Infinity)/Sin(-2)", "Infinity");
-		check("(-Infinity)/(-2)", "Infinity");
-		check("(-Infinity)/Log(2)", "-Infinity");
-		check("(-Infinity)/2", "-Infinity");
+		check("(-Infinity)/Sin(-2)", //
+				"Infinity");
+		check("(-Infinity)/(-2)", //
+				"Infinity");
+		check("(-Infinity)/Log(2)", //
+				"-Infinity");
+		check("(-Infinity)/2", //
+				"-Infinity");
 
 		// github #35
 		check(" y^2*y^(-0.6666) ", //
@@ -10870,65 +10887,116 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"(1+x)/Sqrt(2)");
 		check("((5/21)^(2/3)*(7/6)^(2/7))  ", //
 				"5^(2/3)/(2^(2/7)*3^(20/21)*7^(8/21))");
-		check("x*y/(y*z)", "x/z");
-		check("x*y/(y^3*z)", "x/(y^2*z)");
-		check("x*y/(y^(2/3)*z)", "(x*y^(1/3))/z");
-		check("x*y/(y^(0.6666)*z) ", "(x*y^0.3334)/z");
-		check("N(Pi, 30) * I", "I*3.14159265358979323846264338327");
-		check("N(I*Pi, 30)", "I*3.14159265358979323846264338327");
-		check("N(Pi * E, 30)", "8.53973422267356706546355086954");
-		check("N(Pi, 30) * N(E, 30)", "8.53973422267356706546355086954");
-		check("N(Pi, 30) * E", "8.53973422267356661130018539536");
-		check("N(Pi, 30) * E // Precision", "30");
-		// }
-		check("Floor(Log(7,1024))", "3");
-		check("10*2", "20");
-		check("a*a", "a^2");
-		check("x ^ 10 * x ^ -2", "x^8");
-		check("{1, 2, 3} * 4", "{4,8,12}");
-		check("Times @@ {1, 2, 3, 4}", "24");
-		check("IntegerLength(Times@@Range(100))", "158");
-		check("a /. n_. * x_ :> {n, x} ", "{1,a}");
-		check("-a*b // FullForm", "Times(-1, a, b)");
-		check("-(x - 2/3)", "2/3-x");
-		check("-(h/2) // FullForm", "Times(Rational(-1,2), h)");
-		check("x / x", "1");
-		check("2*x^2 / x^2", "2");
-		checkNumeric("3.*Pi", "9.42477796076938");
-		check("Head(3 * I) ", "Complex");
-		check("Head(Times(I, 1/2))", "Complex");
-		check("Head(Pi * I)", "Times");
-		checkNumeric("-2.123456789 * x", "-2.123456789*x");
-		checkNumeric("-2.123456789 * I", "I*(-2.123456789)");
+		check("x*y/(y*z)", //
+				"x/z");
+		check("x*y/(y^3*z)", //
+				"x/(y^2*z)");
+		check("x*y/(y^(2/3)*z)", //
+				"(x*y^(1/3))/z");
+		check("x*y/(y^(0.6666)*z) ", //
+				"(x*y^0.3334)/z");
+		check("N(Pi, 30) * I", //
+				"I*3.14159265358979323846264338327");
+		check("N(I*Pi, 30)", //
+				"I*3.14159265358979323846264338327");
+		check("N(Pi * E, 30)", //
+				"8.53973422267356706546355086954");
+		check("N(Pi, 30) * N(E, 30)", //
+				"8.53973422267356706546355086954");
+		check("N(Pi, 30) * E", //
+				"8.53973422267356661130018539536");
+		check("N(Pi, 30) * E // Precision", //
+				"30");
+		
+		check("Floor(Log(7,1024))", //
+				"3");
+		check("10*2", //
+				"20");
+		check("a*a", //
+				"a^2");
+		check("x ^ 10 * x ^ -2", //
+				"x^8");
+		check("{1, 2, 3} * 4", //
+				"{4,8,12}");
+		check("Times @@ {1, 2, 3, 4}", //
+				"24");
+		check("IntegerLength(Times@@Range(100))", //
+				"158");
+		check("a /. n_. * x_ :> {n, x} ", //
+				"{1,a}");
+		check("-a*b // FullForm", //
+				"Times(-1, a, b)");
+		check("-(x - 2/3)", //
+				"2/3-x");
+		check("-(h/2) // FullForm", //
+				"Times(Rational(-1,2), h)");
+		check("x / x", //
+				"1");
+		check("2*x^2 / x^2", //
+				"2");
+		checkNumeric("3.*Pi", //
+				"9.42477796076938");
+		check("Head(3 * I) ", //
+				"Complex");
+		check("Head(Times(I, 1/2))", //
+				"Complex");
+		check("Head(Pi * I)", //
+				"Times");
+		checkNumeric("-2.123456789 * x", //
+				"-2.123456789*x");
+		checkNumeric("-2.123456789 * I", //
+				"I*(-2.123456789)");
 
 		// issue #137
-		check("12*2^x*3^y", "2^(2+x)*3^(1+y)");
-		check("8*2^x", "2^(3+x)");
-		check("12*2^x", "3*2^(2+x)");
+		check("12*2^x*3^y", //
+				"2^(2+x)*3^(1+y)");
+		check("8*2^x", //
+				"2^(3+x)");
+		check("12*2^x", //
+				"3*2^(2+x)");
 
-		check("-Infinity", "-Infinity");
-		check("Times(I*Sqrt(2), I*Sqrt(3))", "-Sqrt(6)");
-		check("Sin(x)^(-2)/Tan(x)", "Cot(x)*Csc(x)^2");
-		check("Sin(x)/Tan(x)", "Cos(x)");
-		// check("Sin(x)^2/Tan(x)^3", "Cos(x)^2*Cot(x)");
-		// check("Sin(x)^3/Tan(x)^2", "Cos(x)^2*Sin(x)");
-		// check("Sin(x)^2/Tan(x)", "Cos(x)*Sin(x)");
-		// check("Sin(x)/Tan(x)^2", "Cos(x)*Cot(x)");
+		check("-Infinity", //
+				"-Infinity");
+		check("Times(I*Sqrt(2), I*Sqrt(3))", //
+				"-Sqrt(6)");
+		check("Sin(x)^(-2)/Tan(x)", //
+				"Cot(x)*Csc(x)^2");
+		check("Sin(x)/Tan(x)", //
+				"Cos(x)");
+		check("Sin(x)^2/Tan(x)^3", //
+				"Cos(x)^2*Cot(x)");
+		check("Sin(x)^3/Tan(x)^2", //
+				"Cos(x)^2*Sin(x)");
+		check("Sin(x)^2/Tan(x)", //
+				"Cos(x)*Sin(x)");
+		check("Sin(x)/Tan(x)^2", //
+				"Cos(x)*Cot(x)");
 
-		check("Sin(x)^(-2)", "Csc(x)^2");
-		check("Sin(x)/Tan(x)^(-2)", "Sin(x)*Tan(x)^2");
-		check("Sin(x)/Cos(x)", "Tan(x)");
-		check("Cos(x)*Tan(x)", "Sin(x)");
-		check("Cos(x)/Sin(x)", "Cot(x)");
-		check("Tan(x)/Sin(x)", "Sec(x)");
+		check("Sin(x)^(-2)", //
+				"Csc(x)^2");
+		check("Sin(x)/Tan(x)^(-2)", //
+				"Sin(x)*Tan(x)^2");
+		check("Sin(x)/Cos(x)", //
+				"Tan(x)");
+		check("Cos(x)*Tan(x)", //
+				"Sin(x)");
+		check("Cos(x)/Sin(x)", //
+				"Cot(x)");
+		check("Tan(x)/Sin(x)", //
+				"Sec(x)");
 
-		check("Times()", "1");
+		check("Times()", //
+				"1");
 		// OutputForm: I*Infinity is DirectedInfinity[I]
-		check("I*Infinity", "I*Infinity");
+		check("I*Infinity", //
+				"I*Infinity");
 
-		check("Gamma(a)*Gamma(1-a)", "Pi*Csc(a*Pi)");
-		check("Gamma(a)^3*Gamma(1-a)^3", "Pi^3*Csc(a*Pi)^3");
-		check("Gamma(a)^3*Gamma(1-a)^2", "Pi^2*Csc(a*Pi)^2*Gamma(a)");
+		check("Gamma(a)*Gamma(1-a)", //
+				"Pi*Csc(a*Pi)");
+		check("Gamma(a)^3*Gamma(1-a)^3", //
+				"Pi^3*Csc(a*Pi)^3");
+		check("Gamma(a)^3*Gamma(1-a)^2", //
+				"Pi^2*Csc(a*Pi)^2*Gamma(a)");
 	}
 
 	public void testTimesBy() {
@@ -11555,7 +11623,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("With({f = Function(n, If(n == 0, 1, n*f(n - 1)))}, f(10))", "10*f(9)");
 		// check("Timing(Do(With({x = 5}, x;), {10^5}))", "");
 		// check("Timing(Do(Module({x = 5}, x;), {10^5}))", "");
-		check("With({x=y,y=z,z=3}, Print({Hold(x),Hold(y),Hold(z)});{x,y,z})", "{y,z,3}");
+		check("With({x=y,y=z,z=3}, Print({Hold(x),Hold(y),Hold(z)});{x,y,z})", //
+				"{y,z,3}");
+
+		check("With({x=z},Module({x},x+y))", //
+				"x$22$23+y");
 	}
 
 	public void testXor() {

@@ -17,16 +17,18 @@ import org.matheclipse.core.interfaces.ISymbol;
  * occurred.
  */
 public class ModuleReplaceAll extends VisitorExpr {
-	final IdentityHashMap<ISymbol,? extends IExpr> fModuleVariables;
+	final IdentityHashMap<ISymbol, ? extends IExpr> fModuleVariables;
 	final int fOffset;
 	final EvalEngine fEngine;
 	final String moduleCounter;
 
-	public ModuleReplaceAll(IdentityHashMap<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine,String moduleCounter ) {
+	public ModuleReplaceAll(IdentityHashMap<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine,
+			String moduleCounter) {
 		this(moduleVariables, engine, moduleCounter, 0);
 	}
 
-	public ModuleReplaceAll(IdentityHashMap<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine, String moduleCounter, int offset) {
+	public ModuleReplaceAll(IdentityHashMap<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine,
+			String moduleCounter, int offset) {
 		this.fModuleVariables = moduleVariables;
 		this.fOffset = offset;
 		this.fEngine = engine;
@@ -142,7 +144,7 @@ public class ModuleReplaceAll extends VisitorExpr {
 
 	private IdentityHashMap<ISymbol, IExpr> renamedVariables(IAST localVariablesList, boolean isFunction) {
 		IdentityHashMap<ISymbol, IExpr> variables = null;
-		final String varAppend =   moduleCounter;
+		final String varAppend = moduleCounter;
 		int size = localVariablesList.size();
 		for (int i = 1; i < size; i++) {
 			IExpr temp = localVariablesList.get(i);

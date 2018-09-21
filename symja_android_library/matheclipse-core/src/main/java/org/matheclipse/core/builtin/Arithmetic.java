@@ -4417,6 +4417,12 @@ public final class Arithmetic {
 				if (temp.isPresent()) {
 					return temp;
 				}
+				if (o0.isRational() && !power1Exponent.isNumber()) {
+					temp = timesPowerPower(o0, F.C1, power1Base, power1Exponent);
+					if (temp.isPresent()) {
+						return temp;
+					}
+				}
 			} else if (o1.isInterval1()) {
 				if (o0.isInterval1() || o0.isReal()) {
 					return timesInterval(o0, o1);
@@ -4791,7 +4797,7 @@ public final class Arithmetic {
 							IExpr temp = timesPowerPower(((IRational) arg1).numerator(),
 									((IRational) arg1).denominator(), F.C1, //
 									((IRational) base2).denominator(), ((IRational) base2).numerator(),
-									(IFraction) exponent2.negate());
+									(IFraction) exponent2.negate(), false);
 							if (temp.isPresent()) {
 								return temp;
 							}
@@ -4799,7 +4805,7 @@ public final class Arithmetic {
 							IExpr temp = timesPowerPower(((IRational) arg1).numerator(),
 									((IRational) arg1).denominator(), F.C1, //
 									((IRational) base2).numerator(), ((IRational) base2).denominator(),
-									(IFraction) exponent2);
+									(IFraction) exponent2, false);
 							if (temp.isPresent()) {
 								return temp;
 							}
@@ -4888,26 +4894,25 @@ public final class Arithmetic {
 						return power0Arg1.divide(power1Arg1).power(power0Arg2);
 					}
 				}
-				if (power0Arg1.isFraction() && power0Arg2.isFraction() && power1Arg1.isFraction()
-						&& power1Arg2.isFraction()) {
-					IExpr temp = timesPowerPower(((IFraction) power0Arg1).numerator(),
-							((IFraction) power0Arg1).denominator(), (IFraction) power0Arg2, //
-							((IFraction) power1Arg1).numerator(), ((IFraction) power1Arg1).denominator(),
-							(IFraction) power1Arg2);
-					if (temp.isPresent()) {
-						return temp;
-					}
-				}
-				// if (power0Arg1.isPlus() && power1Arg1.isPlus() &&
-				// power0Arg1.equals(power1Arg1.negate())) {// Issue#128
-				// return
-				// power0Arg1.power(power0Arg2.plus(power1Arg2)).times(CN1.power(power1Arg2));
-				// }
 			}
 		}
-		if (power0Arg1.equals(power1Arg1))
+		if (power0Arg1.isRational() && power1Arg1.isRational()) {
+			// power0Arg2.isRational() &&
+			// && power1Arg2.isFraction()) {
+			IExpr temp = timesPowerPower(((IRational) power0Arg1).numerator(), ((IRational) power0Arg1).denominator(),
+					power0Arg2, //
+					((IRational) power1Arg1).numerator(), ((IRational) power1Arg1).denominator(), power1Arg2, true);
+			if (temp.isPresent()) {
+				return temp;
+			}
+		}
+		// if (power0Arg1.isPlus() && power1Arg1.isPlus() &&
+		// power0Arg1.equals(power1Arg1.negate())) {// Issue#128
+		// return
+		// power0Arg1.power(power0Arg2.plus(power1Arg2)).times(CN1.power(power1Arg2));
+		// }
 
-		{
+		if (power0Arg1.equals(power1Arg1)) {
 			// x^(a)*x^(b) => x ^(a+b)
 			return power0Arg1.power(power0Arg2.plus(power1Arg2));
 		}
@@ -4919,25 +4924,25 @@ public final class Arithmetic {
 	 * 
 	 * @return
 	 */
-	public static IExpr timesPowerPower(IInteger p1Numer, IInteger p1Denom, IRational p1Exp, IInteger p2Numer,
-			IInteger p2Denom, IRational p2Exp) {
+	public static IExpr timesPowerPower(IInteger p1Numer, IInteger p1Denom, IExpr p1Exp, IInteger p2Numer,
+			IInteger p2Denom, IExpr p2Exp, boolean setEvaled) {
 		boolean[] evaled = new boolean[] { false };
 
-		OpenIntToIExprHashMap<IRational> fn1Map = new OpenIntToIExprHashMap<IRational>();
-		IInteger fn1Rest = Primality.countPrimes1021(p1Numer, p1Exp, fn1Map, false, evaled);
-		IInteger fd2Rest = Primality.countPrimes1021(p2Denom, p2Exp.negate(), fn1Map, false, evaled);
+		OpenIntToIExprHashMap<IExpr> fn1Map = new OpenIntToIExprHashMap<IExpr>();
+		IInteger fn1Rest = Primality.countPrimes1021(p1Numer, p1Exp, fn1Map, setEvaled, evaled);
+		IInteger fd2Rest = Primality.countPrimes1021(p2Denom, p2Exp.negate(), fn1Map, setEvaled, evaled);
 
-		OpenIntToIExprHashMap<IRational> fn2Map = new OpenIntToIExprHashMap<IRational>();
-		IInteger fn2Rest = Primality.countPrimes1021(p2Numer, p2Exp, fn2Map, false, evaled);
-		IInteger fd1Rest = Primality.countPrimes1021(p1Denom, p1Exp.negate(), fn2Map, false, evaled);
+		OpenIntToIExprHashMap<IExpr> fn2Map = new OpenIntToIExprHashMap<IExpr>();
+		IInteger fn2Rest = Primality.countPrimes1021(p2Numer, p2Exp, fn2Map, setEvaled, evaled);
+		IInteger fd1Rest = Primality.countPrimes1021(p1Denom, p1Exp.negate(), fn2Map, setEvaled, evaled);
 
 		if (evaled[0]) {
-			OpenIntToIExprHashMap<IRational>.Iterator iter = fn2Map.iterator();
+			OpenIntToIExprHashMap<IExpr>.Iterator iter = fn2Map.iterator();
 			while (iter.hasNext()) {
 				iter.advance();
 				int base = iter.key();
-				IRational exponent = iter.value();
-				IRational exp = fn1Map.get(base);
+				IExpr exponent = iter.value();
+				IExpr exp = fn1Map.get(base);
 				if (exp == null) {
 					fn1Map.put(base, exponent);
 				} else {
@@ -4961,9 +4966,9 @@ public final class Arithmetic {
 			while (iter.hasNext()) {
 				iter.advance();
 				int base = iter.key();
-				IRational exponent = iter.value();
+				IExpr exponent = iter.value();
 				if (base != 1) {
-					times1.append(F.Power(F.ZZ(base), exponent));
+					times1.append(F.Power(F.ZZ(base), F.Expand.of(exponent)));
 				}
 			}
 			return times1;
@@ -4980,7 +4985,7 @@ public final class Arithmetic {
 	public static IExpr rationalPower(IInteger p1Numer, IInteger p1Denom, IRational p1Exp) {
 		boolean[] evaled = new boolean[] { false };
 
-		OpenIntToIExprHashMap<IRational> fn1Map = new OpenIntToIExprHashMap<IRational>();
+		OpenIntToIExprHashMap<IExpr> fn1Map = new OpenIntToIExprHashMap<IExpr>();
 		IInteger fn1Rest = Primality.countPrimes1021(p1Numer, p1Exp, fn1Map, true, evaled);
 		IInteger fd1Rest = Primality.countPrimes1021(p1Denom, p1Exp.negate(), fn1Map, true, evaled);
 
@@ -4992,11 +4997,11 @@ public final class Arithmetic {
 			if (!fd1Rest.isOne()) {
 				times1.append(F.Power(fd1Rest, p1Exp.negate()));
 			}
-			OpenIntToIExprHashMap<IRational>.Iterator iter = fn1Map.iterator();
+			OpenIntToIExprHashMap<IExpr>.Iterator iter = fn1Map.iterator();
 			while (iter.hasNext()) {
 				iter.advance();
 				int base = iter.key();
-				IRational exponent = iter.value();
+				IExpr exponent = iter.value();
 				if (base != 1) {
 					times1.append(F.Power(F.ZZ(base), exponent));
 				}
