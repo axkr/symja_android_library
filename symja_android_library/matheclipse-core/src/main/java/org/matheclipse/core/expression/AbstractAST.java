@@ -2038,8 +2038,14 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isModuleOrWith() {
-		return size() == 3 && (head().equals(F.With) || head().equals(F.Module));
+	public final boolean isModule() {
+		return size() == 3 && head().equals(F.Module);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isWith() {
+		return size() == 3 && head().equals(F.With);
 	}
 
 	/** {@inheritDoc} */

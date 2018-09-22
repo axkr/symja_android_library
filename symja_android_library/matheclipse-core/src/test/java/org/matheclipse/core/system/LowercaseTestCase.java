@@ -11627,7 +11627,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{y,z,3}");
 
 		check("With({x=z},Module({x},x+y))", //
-				"x$22$23+y");
+				"x$23+y");
 	}
 
 	public void testXor() {

@@ -1750,10 +1750,19 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 * @return
 	 */
-	default boolean isModuleOrWith() {
+	default boolean isModule() {
 		return false;
 	}
 
+	/**
+	 * Test if this expression is the With function <code>With[&lt;arg1&gt;, &lt;arg2&gt;]</code>
+	 * 
+	 * @return
+	 */
+	default boolean isWith() {
+		return false;
+	}
+	
 	default boolean isModuleOrWithCondition() {
 		return false;
 	}

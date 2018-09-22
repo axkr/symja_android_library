@@ -164,7 +164,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 			return true;
 		}
 		boolean matched = false;
-		if (!(fRightHandSide.isModuleOrWith() || fRightHandSide.isCondition())) {
+		if (!(fRightHandSide.isModule() || fRightHandSide.isWith() || fRightHandSide.isCondition())) {
 			matched = true;
 		} else {
 			if (!patternMap.isAllPatternsAssigned()) {
@@ -173,9 +173,10 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 				IExpr substConditon = patternMap.substituteSymbols(fRightHandSide);
 				if (substConditon.isCondition()) {
 					matched = Programming.checkCondition(substConditon.first(), substConditon.second(), engine);
-				} else if (substConditon.isModuleOrWith()) {
-					matched = Programming.checkModuleOrWithCondition(substConditon.first(), substConditon.second(),
-							engine);
+				} else if (substConditon.isModule()) {
+					matched = Programming.checkModuleCondition(substConditon.first(), substConditon.second(), engine);
+				} else if (substConditon.isWith()) {
+					matched = Programming.checkWithCondition(substConditon.first(), substConditon.second(), engine);
 				}
 			}
 		}

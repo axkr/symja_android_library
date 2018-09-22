@@ -18,7 +18,7 @@ public class Context implements Serializable {
 	 */
 	public final static Map<String, ISymbol> PREDEFINED_SYMBOLS_MAP = new HashMap<String, ISymbol>(2053);
 
-	public final static Context DUMMY = new Context("DUMMY");
+	public final static Context DUMMY = new Context("DUMMY", null);
 
 	public final static Context SYSTEM = new Context("System", PREDEFINED_SYMBOLS_MAP);
 
