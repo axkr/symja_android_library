@@ -2571,6 +2571,12 @@ public abstract class AbstractAST implements IASTMutable {
 		return -1;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @deprecated use {@link #isZero()} instead.
+	 */
+	@Deprecated
 	@Override
 	public boolean isZERO() {
 		return isZero();

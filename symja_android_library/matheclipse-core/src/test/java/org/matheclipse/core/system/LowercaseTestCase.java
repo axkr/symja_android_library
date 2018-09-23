@@ -2837,7 +2837,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-EllipticF(z,m)");
 		check("EllipticF(0, m)", "0");
 		check("EllipticF(z,0)", "z");
-		check("EllipticF(5/4, 1)", "Log(Sec(5/4)+Tan(5/4))");
+		check("EllipticF(5/4, 1)", //
+				"Log(Sec(5/4)+Tan(5/4))");
+		check("EllipticF(3, 1)", //
+				"ComplexInfinity");
+		check("EllipticF(Pi, 1)", //
+				"ComplexInfinity");
 		// TODO - use better approx:
 		check("Table(EllipticF(x,0.5), {x,-2.0, 2.0, 1/4})", //
 				"{-2.15985,-1.87887,-1.59434,-1.31126,-1.03407,-0.765207,-0.504668,-0.250595,0.0,0.250595,0.504668,0.765207,1.03407,1.31126,1.59434,1.87887,2.15985}");
@@ -6912,8 +6917,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testOperate() {
-		check("Operate(p, f(a, b))", "p(f)[a,b]");
-		check("Operate(p, f(a, b), 1)", "p(f)[a,b]");
+		check("Through(Operate(p, f(x)))", //
+				"p(f(x))");
+		check("Composition(p, f)[x]", //
+				"p(f(x))");
+		check("Operate(g &, f(a, b, c))", //
+				"g(a,b,c)");
+		check("Operate(p, f(a, b))", //
+				"p(f)[a,b]");
+		check("Operate(p, f(a, b), 1)", //
+				"p(f)[a,b]");
 		check("Operate(p, f(a)[b][c], 0)", "p(f(a)[b][c])");
 		check("Operate(p, f(a)[b][c])", "p(f(a)[b])[c]");
 		check("Operate(p, f(a)[b][c], 1)", "p(f(a)[b])[c]");

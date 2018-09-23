@@ -267,14 +267,6 @@ public class ExprParser extends Scanner {
 			return F.symbol(lowercaseStr, fEngine);
 		} else {
 			String lowercaseStr = nodeStr;
-			if (fRelaxedSyntax) {
-				lowercaseStr = nodeStr.toLowerCase(Locale.ENGLISH);
-				String temp = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(lowercaseStr);
-				if (temp != null) {
-					lowercaseStr = temp;
-				}
-			}
-
 			if (Config.RUBI_CONVERT_SYMBOLS) {
 				Integer num = AST2Expr.RUBI_STATISTICS_MAP.get(lowercaseStr);
 				if (num == null) {

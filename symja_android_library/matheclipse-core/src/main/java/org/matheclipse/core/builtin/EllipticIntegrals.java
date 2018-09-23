@@ -35,9 +35,8 @@ public class EllipticIntegrals {
 	 * See:
 	 * </p>
 	 * <ul>
-	 * <li><a href=
-	 * "https://en.wikipedia.org/wiki/Elliptic_integral#Complete_elliptic_integral_of_the_second_kind">Wikipedia -
-	 * Elliptic integral - Complete elliptic integral of the second kind)</a></li>
+	 * <li><a href= "https://en.wikipedia.org/wiki/Elliptic_integral#Complete_elliptic_integral_of_the_second_kind">Wikipedia - Elliptic
+	 * integral - Complete elliptic integral of the second kind)</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -145,8 +144,7 @@ public class EllipticIntegrals {
 	 * See:
 	 * </p>
 	 * <ul>
-	 * <li><a href=
-	 * "https://en.wikipedia.org/wiki/Elliptic_integral#Incomplete_elliptic_integral_of_the_first_kind">Wikipedia -
+	 * <li><a href= "https://en.wikipedia.org/wiki/Elliptic_integral#Incomplete_elliptic_integral_of_the_first_kind">Wikipedia -
 	 * Elliptic integral - Incomplete elliptic integral of the first kind)</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
@@ -183,9 +181,13 @@ public class EllipticIntegrals {
 			}
 			if (m.isOne()) {
 				// Abs(Re(z)) <= Pi/2
-				if (engine.evalTrue(F.LessEqual(F.Abs(F.Re(z)), F.CPiHalf))) {
+				IExpr temp = engine.evaluate(F.Abs(F.Re(z)));
+				if (F.LessEqual.ofQ(engine, temp, F.CPiHalf)) {
 					// Log(Sec(z) + Tan(z))
 					return F.Log(F.Plus(F.Sec(z), F.Tan(z)));
+				}
+				if (F.Greater.ofQ(engine, temp, F.CPiHalf)) {
+					return F.CComplexInfinity;
 				}
 			}
 			if (z instanceof INum && m instanceof INum) {
@@ -237,9 +239,8 @@ public class EllipticIntegrals {
 	 * See:
 	 * </p>
 	 * <ul>
-	 * <li><a href=
-	 * "https://en.wikipedia.org/wiki/Elliptic_integral#Complete_elliptic_integral_of_the_first_kind">Wikipedia -
-	 * Elliptic integral - Complete elliptic integral of the first kind)</a></li>
+	 * <li><a href= "https://en.wikipedia.org/wiki/Elliptic_integral#Complete_elliptic_integral_of_the_first_kind">Wikipedia - Elliptic
+	 * integral - Complete elliptic integral of the first kind)</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -308,9 +309,8 @@ public class EllipticIntegrals {
 	 * See:
 	 * </p>
 	 * <ul>
-	 * <li><a href=
-	 * "https://en.wikipedia.org/wiki/Elliptic_integral#Complete_elliptic_integral_of_the_third_kind">Wikipedia -
-	 * Elliptic integral - Complete elliptic integral of the third kind</a></li>
+	 * <li><a href= "https://en.wikipedia.org/wiki/Elliptic_integral#Complete_elliptic_integral_of_the_third_kind">Wikipedia - Elliptic
+	 * integral - Complete elliptic integral of the third kind</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 

@@ -1641,7 +1641,6 @@ public class Algebra {
 				return result;
 			}
 			VariablesSet eVar = new VariablesSet(ast.arg1());
-			// List<IExpr> varList = r;
 			List<IExpr> varList = eVar.getVarList().copyTo();
 
 			IExpr expr = ast.arg1();
@@ -1664,7 +1663,6 @@ public class Algebra {
 				}
 			}
 
-			// ASTRange r = new ASTRange(eVar.getVarList(), 1);
 			try {
 
 				if (ast.isAST2()) {

@@ -413,7 +413,6 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 */
 	@Override
 	public String toScriptFactory() {
-		// Python case
 		return factory().toScript();
 	}
 
@@ -427,6 +426,12 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 		return (val.size() == 0);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @deprecated use {@link #isZero()} instead.
+	 */
+	@Deprecated
 	@Override
 	public boolean isZERO() {
 		return isZero();

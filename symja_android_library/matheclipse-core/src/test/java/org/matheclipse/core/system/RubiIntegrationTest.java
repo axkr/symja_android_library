@@ -816,6 +816,11 @@ public class RubiIntegrationTest extends AbstractTestCase {
 
 	}
 
+	public void test00482() {
+		check("Integrate(x*(x+1),x)", //
+				"x^2/2+x^3/3");
+
+	}
 //	public void test00999() {
 //		check("Integrate(x, x)", //
 //				"x^2/2");

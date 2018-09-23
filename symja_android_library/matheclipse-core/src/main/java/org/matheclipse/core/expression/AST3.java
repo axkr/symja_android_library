@@ -100,7 +100,7 @@ public class AST3 extends AST2 {
 	 */
 	@Override
 	public IAST clone() {
-		return new AST(arg0, arg1, arg2, arg3);
+		return new AST3(arg0, arg1, arg2, arg3);
 	}
 
 	/** {@inheritDoc} */

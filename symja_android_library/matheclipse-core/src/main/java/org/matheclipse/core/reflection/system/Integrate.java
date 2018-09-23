@@ -36,6 +36,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.polynomials.PartialFractionIntegrateGenerator;
 
@@ -54,8 +55,7 @@ import edu.jas.poly.Monomial;
  * 
  * <blockquote>
  * <p>
- * integrates <code>f</code> with respect to <code>x</code>. The result does not contain the additive integration
- * constant.
+ * integrates <code>f</code> with respect to <code>x</code>. The result does not contain the additive integration constant.
  * </p>
  * </blockquote>
  * 
@@ -65,8 +65,7 @@ import edu.jas.poly.Monomial;
  * 
  * <blockquote>
  * <p>
- * computes the definite integral of <code>f</code> with respect to <code>x</code> from <code>a</code> to
- * <code>b</code>.
+ * computes the definite integral of <code>f</code> with respect to <code>x</code> from <code>a</code> to <code>b</code>.
  * </p>
  * </blockquote>
  * <p>
@@ -93,9 +92,6 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * Check if the internal rules are already initialized
 	 */
 	public static boolean INITIALIZED = false;
-
-	// public final static Set<ISymbol> INT_RUBI_FUNCTIONS = new HashSet<ISymbol>(64);
-	public final static Set<ISymbol> INT_FUNCTIONS = new HashSet<ISymbol>(64);
 
 	public final static Set<IExpr> DEBUG_EXPR = new HashSet<IExpr>(64);
 
@@ -205,21 +201,15 @@ public class Integrate extends AbstractFunctionEvaluator {
 					// issue #91
 					return F.NIL;
 				}
-				// if (arg1.isTimes()) {
-				// IASTAppendable freeTimes = F.TimesAlloc(arg1.size());
-				// IASTAppendable restTimes = F.TimesAlloc(arg1.size());
-				// collectFreeTerms((IAST)arg1, x, freeTimes, restTimes);
-				// IExpr free = freeTimes.getOneIdentity(F.C1);
-				// IExpr rest = restTimes.getOneIdentity(F.C1);
-				// if (!free.isOne()) {
-				// // Integrate[free_ * rest_,x_Symbol] -> free*Integrate[rest, x] /; FreeQ[free,y]
-				// // IExpr result = integrateByRubiRules(Integrate(rest, x));
-				// // if (result != null) {
-				// // return Times(free, result);
-				// // }
-				// return Times(free, Integrate(rest, x));
-				// }
-				// }
+				if (arg1.isTimes()) {
+					IAST[] temp = ((IAST) arg1).filter((Predicate<IExpr>) arg -> arg.isFree(x));
+					IExpr free = temp[0].getOneIdentity(F.C1);
+					if (!free.isOne()) {
+						IExpr rest = temp[1].getOneIdentity(F.C1);
+						// Integrate[free_ * rest_,x_Symbol] -> free*Integrate[rest, x] /; FreeQ[free,x]
+						return Times(free, Integrate(rest, x));
+					}
+				}
 
 				if (fx.isPower()) {
 					// base ^ exponent
@@ -230,67 +220,38 @@ public class Integrate extends AbstractFunctionEvaluator {
 							// Integrate[ 1 / x_ , x_ ] -> Log[x]
 							return Log(x);
 						}
-						// Integrate[ x_ ^n_ , x_ ] -> x^(n+1)/(n+1) /;
-						// FreeQ[n, x]
+						// Integrate[ x_ ^n_ , x_ ] -> x^(n+1)/(n+1) /; FreeQ[n, x]
 						IExpr temp = Plus(F.C1, exponent);
 						return Divide(Power(x, temp), temp);
 					}
-					if (fx.equalsAt(2, x) && fx.isFreeAt(1, x)) {
-						if (fx.arg1().isE()) {
+					if (exponent.equals(x) && base.isFree(x)) {
+						if (base.isE()) {
 							// E^x
 							return arg1;
 						}
 						// a^x / Log(a)
-						return F.Divide(fx, F.Log(fx.arg1()));
+						return F.Divide(fx, F.Log(base));
 					}
-					// } else if (fx.isAST(F.Times, 3)) {
-					// IExpr temp = F.NIL;
-					// if (fx.first().equals(x)) {
-					// temp = integrateByParts(fx.second(), x, x);
-					// } else if (fx.second().equals(x)) {
-					// temp = integrateByParts(fx.first(), x, x);
-					// }
-					// if (temp.isPresent()) {
-					// return temp;
-					// }
 				}
-				// if (INT_FUNCTIONS.contains(fx.head())) {
-				// if (fx.isAST1() && x.equals(fx.arg1())) {
-				// IExpr head = fx.head();
-				// IExpr temp = integrate1ArgumentFunctions(head, x);
-				// if (temp.isPresent()) {
-				// return temp;
-				// }
-				// }
 				if (!calledRubi) {
 					result = integrateByRubiRules(fx, x, ast);
 					if (result.isPresent()) {
 						return result;
 					}
 				}
-				// }
-				// >>>
+
 				result = callRestIntegrate(fx, x, ast, calledRubi);
 				if (result.isPresent()) {
 					return result;
 				}
-				// if (!calledRubi) {
-				// // return integrateByRubiRules(ast, F.NIL);
-				// result = integrateByRubiRules(ast, F.NIL);
-				// if (result.isPresent()) {
-				// return result;
-				// }
-				// calledRubi = true;
-				// }
+
 			}
-			IExpr fx = engine.evaluate(F.Expand(ast.arg1()));
+			IExpr fx = engine.evaluate(F.ExpandAll(ast.arg1()));
 			if (fx.isPlus()) {
-				// Integrate[a_+b_+...,x_] ->
-				// Integrate[a,x]+Integrate[b,x]+...
+				// Integrate[a_+b_+...,x_] -> Integrate[a,x]+Integrate[b,x]+...
 				return ((IAST) fx).mapThread(F.Integrate(null, ast.arg2()), 1);
 			}
-
-			return returnIntegrate(ast, evaled);
+			return evaled ? ast : F.NIL;
 		} finally {
 			engine.setNumericMode(numericMode);
 		}
@@ -349,13 +310,6 @@ public class Integrate extends AbstractFunctionEvaluator {
 					}
 				}
 			}
-		}
-		return F.NIL;
-	}
-
-	private IExpr returnIntegrate(final IAST ast, boolean evaled) {
-		if (evaled) {
-			return ast;
 		}
 		return F.NIL;
 	}
@@ -475,13 +429,10 @@ public class Integrate extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Try using the <code>TrigReduce</code> function to get a <code>Plus(...)</code> expression which could be
-	 * integrated.
+	 * Try using the <code>TrigReduce</code> function to get a <code>Plus(...)</code> expression which could be integrated.
 	 * 
-	 * @param timesAST
-	 *            an IAST which is a <code>Times(...)</code> expression
-	 * @param arg2
-	 *            the symbol to get the indefinite integral for.
+	 * @param timesAST an IAST which is a <code>Times(...)</code> expression
+	 * @param arg2     the symbol to get the indefinite integral for.
 	 * @return <code>F.NIL</code> if no trigonometric funtion could be found.
 	 */
 	private static IExpr integrateTimesTrigFunctions(final IAST timesAST, IExpr arg2) {
@@ -549,8 +500,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition of the numerator
-	 * and denominator parts.
+	 * Returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition of the numerator and denominator
+	 * parts.
 	 * 
 	 * @param parts
 	 * @param variableList
@@ -774,8 +725,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 	/**
 	 * See <a href="http://en.wikipedia.org/wiki/Integration_by_parts">Wikipedia- Integration by parts</a>
 	 * 
-	 * @param ast
-	 *            TODO - not used
+	 * @param ast    TODO - not used
 	 * @param arg1
 	 * @param symbol
 	 * 
@@ -796,67 +746,59 @@ public class Integrate extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Use the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - Symbolic Integration Rules</a> to integrate the
-	 * expression.
+	 * Use the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - Symbolic Integration Rules</a> to integrate the expression.
 	 * 
 	 * @param ast
 	 * @return
 	 */
 	private static IExpr integrateByRubiRules(IAST arg1, IExpr x, IAST ast) {
-		ISymbol head = arg1.topHead();
 		EvalEngine engine = EvalEngine.get();
 		int limit = engine.getRecursionLimit();
+		boolean quietMode = engine.isQuietMode();
+
 		boolean newCache = false;
 		try {
-			// Issue #91
-//			if ((head.getAttributes() & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION
-//					|| head.isBuiltInSymbol() || head.getSymbolName().startsWith("§")) { 
-				
-				if (engine.REMEMBER_AST_CACHE != null) {
-					IExpr result = engine.REMEMBER_AST_CACHE.getIfPresent(ast);
-					if (result != null) {
-						result = callRestIntegrate(arg1, x, ast, true);
-						if (result.isPresent()) {
-							return result;
-						}
-						RecursionLimitExceeded.throwIt(engine.getRecursionCounter(), ast);
-						return F.NIL;
+
+			if (engine.REMEMBER_AST_CACHE != null) {
+				IExpr result = engine.REMEMBER_AST_CACHE.getIfPresent(ast);
+				if (result != null) {
+					result = callRestIntegrate(arg1, x, ast, true);
+					if (result.isPresent()) {
+						return result;
 					}
-				} else {
-					newCache = true;
-					engine.REMEMBER_AST_CACHE = CacheBuilder.newBuilder().maximumSize(50).build();
+					RecursionLimitExceeded.throwIt(engine.getRecursionCounter(), ast);
+					return F.NIL;
 				}
-				try {
-					if (limit <= 0 || limit > Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT) {
-						engine.setRecursionLimit(Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT);
-					}
-					engine.REMEMBER_AST_CACHE.put(ast, F.True);
-					// System.out.println(ast.toString());
-					IExpr temp = F.Integrate.evalDownRule(EvalEngine.get(), ast);
-					if (temp.isPresent()) {
-						return temp;
-					}
-				} catch (RecursionLimitExceeded rle) {
-					// engine.printMessage("Integrate(Rubi recursion): " + Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT
-					// + " exceeded: " + ast.toString());
-					engine.printMessage("Integrate(Rubi recursion): " + rle.getMessage());
-					engine.setRecursionLimit(limit);
-					// if (secondTry.isPresent()) {
-					// return integrateByRubiRules(secondTry, F.NIL);
-					// }
-				} catch (RuntimeException rex) {
-					if (Config.SHOW_STACKTRACE) {
-						rex.printStackTrace();
-					}
-					engine.printMessage("Integrate Rubi recursion limit " + Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT
-							+ " RuntimeException: " + ast.toString());
-					engine.setRecursionLimit(limit);
-					// if (secondTry.isPresent()) {
-					// return integrateByRubiRules(secondTry, F.NIL);
-					// }
-				
+			} else {
+				newCache = true;
+				engine.REMEMBER_AST_CACHE = CacheBuilder.newBuilder().maximumSize(50).build();
+			}
+			try {
+				engine.setQuietMode(true);
+				if (limit <= 0 || limit > Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT) {
+					engine.setRecursionLimit(Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT);
 				}
-//			}
+				engine.REMEMBER_AST_CACHE.put(ast, F.True);
+				// System.out.println(ast.toString());
+				IExpr temp = F.Integrate.evalDownRule(EvalEngine.get(), ast);
+				if (temp.isPresent()) {
+					return temp;
+				}
+			} catch (RecursionLimitExceeded rle) {
+				// engine.printMessage("Integrate(Rubi recursion): " + Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT
+				// + " exceeded: " + ast.toString());
+				engine.printMessage("Integrate(Rubi recursion): " + rle.getMessage());
+				engine.setRecursionLimit(limit);
+			} catch (RuntimeException rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
+				engine.printMessage("Integrate Rubi recursion limit " + Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT
+						+ " RuntimeException: " + ast.toString());
+				engine.setRecursionLimit(limit);
+
+			}
+
 		} catch (AbortException ae) {
 			if (Config.DEBUG) {
 				ae.printStackTrace();
@@ -866,6 +808,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 			if (newCache) {
 				engine.REMEMBER_AST_CACHE = null;
 			}
+			engine.setQuietMode(quietMode);
 		}
 		return F.NIL;
 	}
@@ -877,10 +820,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * 
 	 * See <a href="http://en.wikipedia.org/wiki/Integration_by_parts">Wikipedia- Integration by parts</a>
 	 * 
-	 * @param f
-	 *            <code>f(x)</code>
-	 * @param g
-	 *            <code>g(x)</code>
+	 * @param f <code>f(x)</code>
+	 * @param g <code>g(x)</code>
 	 * @param x
 	 * @return <code>f(x) * g(x) - Integrate(f(x) * g'(x),x )</code>
 	 */
@@ -912,13 +853,10 @@ public class Integrate extends AbstractFunctionEvaluator {
 	/**
 	 * Collect all found polynomial terms into <code>polyTimes</code> and the rest into <code>restTimes</code>.
 	 * 
-	 * @param timesAST
-	 *            an AST representing a <code>Times[...]</code> expression.
+	 * @param timesAST  an AST representing a <code>Times[...]</code> expression.
 	 * @param symbol
-	 * @param polyTimes
-	 *            the polynomial terms part
-	 * @param restTimes
-	 *            the non-polynomil terms part
+	 * @param polyTimes the polynomial terms part
+	 * @param restTimes the non-polynomil terms part
 	 */
 	private static void collectPolynomialTerms(final IAST timesAST, IExpr symbol, IASTAppendable polyTimes,
 			IASTAppendable restTimes) {
@@ -940,37 +878,11 @@ public class Integrate extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Collect all found free terms (independent of x) into <code>freeTimes</code> and the rest into
-	 * <code>restTimes</code>.
-	 * 
-	 * @param timesAST
-	 *            an AST representing a <code>Times[...]</code> expression.
-	 * @param x
-	 * @param freeTimes
-	 *            the polynomial terms part
-	 * @param restTimes
-	 *            the non-polynomil terms part
-	 */
-	private static void collectFreeTerms(final IAST timesAST, IExpr x, IASTAppendable freeTimes,
-			IASTAppendable restTimes) {
-		IExpr temp;
-		for (int i = 1; i < timesAST.size(); i++) {
-			temp = timesAST.get(i);
-			if (temp.isFree(x, true)) {
-				freeTimes.append(temp);
-				continue;
-			}
-			restTimes.append(temp);
-		}
-	}
-
-	@Override
-	/**
-	 * Get the rules defined for Integrate function. These rules are loaded, if the Integrate function is used the first
-	 * time.
+	 * Get the rules defined for Integrate function. These rules are loaded, if the Integrate function is used the first time.
 	 * 
 	 * @see AbstractFunctionEvaluator#setUp(ISymbol)()
 	 */
+	@Override
 	public IAST getRuleAST() {
 		// long start = System.currentTimeMillis();
 
@@ -992,35 +904,41 @@ public class Integrate extends AbstractFunctionEvaluator {
 			INTEGRATE_RULES_DATA = F.Integrate.createRulesData(new int[] { 0, 7000 });
 			getRuleASTRubi45();
 
-			// INT_FUNCTIONS.add(F.Times);
-			// INT_FUNCTIONS.add(F.Power);
-			INT_FUNCTIONS.add(F.Cos);
-			INT_FUNCTIONS.add(F.Cot);
-			INT_FUNCTIONS.add(F.Csc);
-			INT_FUNCTIONS.add(F.Sec);
-			INT_FUNCTIONS.add(F.Sin);
-			INT_FUNCTIONS.add(F.Tan);
+//			RulesData rd = F.Integrate.getRulesData();
+//			Set<IPatternMatcher> set = rd.getPatternDownRules();
+//			IPatternMatcher last = null;
+//			for (IPatternMatcher matcher : set) {
+//				System.out.print(matcher.getLHSPriority());
+//				System.out.println(" - " +matcher.determinePatterns());
+//			}
 
-			INT_FUNCTIONS.add(F.ArcCos);
-			INT_FUNCTIONS.add(F.ArcCot);
-			INT_FUNCTIONS.add(F.ArcCsc);
-			INT_FUNCTIONS.add(F.ArcSec);
-			INT_FUNCTIONS.add(F.ArcSin);
-			INT_FUNCTIONS.add(F.ArcTan);
-
-			INT_FUNCTIONS.add(F.Cosh);
-			INT_FUNCTIONS.add(F.Coth);
-			INT_FUNCTIONS.add(F.Csch);
-			INT_FUNCTIONS.add(F.Sech);
-			INT_FUNCTIONS.add(F.Sinh);
-			INT_FUNCTIONS.add(F.Tanh);
-
-			INT_FUNCTIONS.add(F.ArcCosh);
-			INT_FUNCTIONS.add(F.ArcCoth);
-			INT_FUNCTIONS.add(F.ArcCsc);
-			INT_FUNCTIONS.add(F.ArcSec);
-			INT_FUNCTIONS.add(F.ArcSinh);
-			INT_FUNCTIONS.add(F.ArcTanh);
+//			INT_FUNCTIONS.add(F.Cos);
+//			INT_FUNCTIONS.add(F.Cot);
+//			INT_FUNCTIONS.add(F.Csc);
+//			INT_FUNCTIONS.add(F.Sec);
+//			INT_FUNCTIONS.add(F.Sin);
+//			INT_FUNCTIONS.add(F.Tan);
+//
+//			INT_FUNCTIONS.add(F.ArcCos);
+//			INT_FUNCTIONS.add(F.ArcCot);
+//			INT_FUNCTIONS.add(F.ArcCsc);
+//			INT_FUNCTIONS.add(F.ArcSec);
+//			INT_FUNCTIONS.add(F.ArcSin);
+//			INT_FUNCTIONS.add(F.ArcTan);
+//
+//			INT_FUNCTIONS.add(F.Cosh);
+//			INT_FUNCTIONS.add(F.Coth);
+//			INT_FUNCTIONS.add(F.Csch);
+//			INT_FUNCTIONS.add(F.Sech);
+//			INT_FUNCTIONS.add(F.Sinh);
+//			INT_FUNCTIONS.add(F.Tanh);
+//
+//			INT_FUNCTIONS.add(F.ArcCosh);
+//			INT_FUNCTIONS.add(F.ArcCoth);
+//			INT_FUNCTIONS.add(F.ArcCsc);
+//			INT_FUNCTIONS.add(F.ArcSec);
+//			INT_FUNCTIONS.add(F.ArcSinh);
+//			INT_FUNCTIONS.add(F.ArcTanh);
 
 			// ISymbol[] rubiSymbols = { F.AppellF1, F.ArcCos, F.ArcCot, F.ArcCsc, F.ArcSec, F.ArcSin, F.ArcTan,
 			// F.ArcCosh,
