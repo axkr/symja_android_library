@@ -57,6 +57,10 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Se
 		return v;
 	}
 
+	public int determinePatterns() {
+		return PatternMap.DEFAULT_RULE_PRIORITY;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -95,11 +99,9 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Se
 	/**
 	 * Match the given left-hand-side and return an evaluated expression
 	 * 
-	 * @param leftHandSide
-	 *            left-hand-side expression
+	 * @param leftHandSide left-hand-side expression
 	 * @param engine
-	 * @return <code>F.NIL</code> if the match wasn't successful, the evaluated
-	 *         expression otherwise.
+	 * @return <code>F.NIL</code> if the match wasn't successful, the evaluated expression otherwise.
 	 */
 	public abstract IExpr eval(final IExpr leftHandSide, @Nonnull EvalEngine engine);
 
@@ -113,28 +115,23 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Se
 	}
 
 	/**
-	 * Returns the matched pattern in the order they appear in the pattern
-	 * expression.
+	 * Returns the matched pattern in the order they appear in the pattern expression.
 	 * 
 	 * 
-	 * @param resultList
-	 *            a list instance
-	 * @param patternExpr
-	 *            the expression which contains the pattern objects
+	 * @param resultList  a list instance
+	 * @param patternExpr the expression which contains the pattern objects
 	 */
 	public abstract void getPatterns(List<IExpr> resultList, IExpr patternExpr);
 
 	/**
-	 * Get the priority of the left-and-side of this pattern-matcher. Lower values
-	 * have higher priorities.
+	 * Get the priority of the left-and-side of this pattern-matcher. Lower values have higher priorities.
 	 * 
 	 * @return the priority
 	 */
 	public abstract int getLHSPriority();
 
 	/**
-	 * Get the priority of the left-and-side of this pattern-matcher. Lower values
-	 * have higher priorities.
+	 * Get the priority of the left-and-side of this pattern-matcher. Lower values have higher priorities.
 	 * 
 	 * @return the priority
 	 */
@@ -145,8 +142,7 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Se
 	/**
 	 * Get the "right-hand-side" of a pattern-matching rule.
 	 * 
-	 * @return <code>F.NIL</code> if no right-hand-side is defined for the pattern
-	 *         matcher
+	 * @return <code>F.NIL</code> if no right-hand-side is defined for the pattern matcher
 	 */
 	public IExpr getRHS() {
 		return F.NIL;
@@ -158,8 +154,7 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Se
 	}
 
 	/**
-	 * Check if the pattern-matchings left-hand-side expression contains no
-	 * patterns.
+	 * Check if the pattern-matchings left-hand-side expression contains no patterns.
 	 * 
 	 * @return <code>true</code>, if the given expression contains no patterns
 	 */
@@ -169,18 +164,16 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Se
 	 * Start pattern matching.
 	 * 
 	 * @param expr
-	 * @return <code>true</code> if the <code>expr</code> matches the
-	 *         pattern-matchings left-hand-side expression.
+	 * @return <code>true</code> if the <code>expr</code> matches the pattern-matchings left-hand-side expression.
 	 */
 	@Override
 	public abstract boolean test(IExpr expr);
-	
+
 	/**
 	 * Start pattern matching.
 	 * 
 	 * @param expr
-	 * @return <code>true</code> if the <code>expr</code> matches the
-	 *         pattern-matchings left-hand-side expression.
+	 * @return <code>true</code> if the <code>expr</code> matches the pattern-matchings left-hand-side expression.
 	 */
 	public abstract boolean test(IExpr expr, EvalEngine engine);
 }

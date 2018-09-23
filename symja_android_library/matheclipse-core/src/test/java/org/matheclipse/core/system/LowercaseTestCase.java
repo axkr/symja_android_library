@@ -4474,6 +4474,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("(3+I)*(3-I)", "10");
 	}
 
+	public void testIdentity() {
+		check("Composition(Through, {Identity, Sqrt}) /@ {0, 1.0, 2.0, 3.0, 4.0}", //
+				"{{0.0,0.0},{1.0,1.0},{2.0,1.41421},{3.0,1.73205},{4.0,2.0}}");
+		check("Identity'", //
+				"1&");
+		check("D(Identity(Sin(x)),x)", //
+				"Cos(x)");
+		check("Composition(f,g,Identity,h,Identity,g)", //
+				"Composition(f,g,h,g)");
+		check("Identity(0)", //
+				"0");
+	}
+
 	public void testIf() {
 		check("If(FreeQ(a+b*x,x),1,a+b*x)", //
 				"a+b*x");
@@ -10907,7 +10920,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"8.53973422267356661130018539536");
 		check("N(Pi, 30) * E // Precision", //
 				"30");
-		
+
 		check("Floor(Log(7,1024))", //
 				"3");
 		check("10*2", //

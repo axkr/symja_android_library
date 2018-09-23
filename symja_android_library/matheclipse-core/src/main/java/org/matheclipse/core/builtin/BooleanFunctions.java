@@ -2050,7 +2050,7 @@ public final class BooleanFunctions {
 		private IExpr maximum(IAST list, boolean flattenedList) {
 			boolean evaled = false;
 			// int j = 1;
-			IASTAppendable f = Lambda.remove(list, x -> x.isNegativeInfinity());
+			IASTAppendable f = list.remove( x -> x.isNegativeInfinity());
 			if (f.isPresent()) {
 				if (f.isAST0()) {
 					return F.CNInfinity;
@@ -2186,7 +2186,7 @@ public final class BooleanFunctions {
 
 		private IExpr minimum(IAST list, final boolean flattenedList) {
 			boolean evaled = false;
-			IASTAppendable f = Lambda.remove(list, x -> x.isInfinity());
+			IASTAppendable f = list.remove(  x -> x.isInfinity());
 			if (f.isPresent()) {
 				if (f.isAST0()) {
 					return F.CNInfinity;

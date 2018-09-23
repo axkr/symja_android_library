@@ -8,8 +8,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * <p>
- * Interface for &quot;core functions&quot; which don't have associated rules and are only defined by a derived classes
- * from this interface.
+ * Interface for &quot;core functions&quot; which don't have associated rules and are only defined by a derived classes from this
+ * interface.
  * </p>
  * 
  */
@@ -18,12 +18,12 @@ public interface ICoreFunctionEvaluator extends IFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
-			return engine.evalAttributes((ISymbol) ast.head(), ast);
+			return engine.evalAttributes(ast.topHead(), ast);
 		}
 
 		@Override
 		public IExpr numericEval(IAST ast, EvalEngine engine) {
-			return engine.evalAttributes((ISymbol) ast.head(), ast);
+			return engine.evalAttributes(ast.topHead(), ast);
 		}
 
 		@Override

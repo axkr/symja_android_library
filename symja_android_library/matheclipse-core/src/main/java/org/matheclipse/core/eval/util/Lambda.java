@@ -52,61 +52,7 @@ public class Lambda {
 	public static IExpr replaceArgs(IExpr expr, final IAST exprsList) {
 		return expr.accept(new VisitorReplaceArgs(exprsList));
 	}
-
-	/**
-	 * Remove the arguments from <code>ast</code> which give <code>true</code> for the <code>predicate</code>
-	 * 
-	 * @param ast
-	 * @param predicate
-	 * @return the cloned ast with removed elements or <code>F.NIL</code> if the <code>predicate</code> never gives
-	 *         <code>true</code>.
-	 */
-	public static IASTAppendable remove(IAST ast, Predicate<IExpr> predicate) {
-		IASTAppendable result = F.NIL;
-		int size = ast.size();
-		int j = 1;
-		for (int i = 1; i < size; i++) {
-			IExpr temp = ast.get(i);
-			if (predicate.test(temp)) {
-				if (!result.isPresent()) {
-					result = ast.removeAtClone(i);
-					continue;
-				}
-				result.remove(j);
-				continue;
-			}
-
-			j++;
-		}
-
-		return result;
-	}
-
-	private static IExpr removeStop(IAST ast, Predicate<IExpr> predicate, Function<IExpr, IExpr> function) {
-		IASTAppendable result = F.NIL;
-		int size = ast.size();
-		int j = 1;
-		for (int i = 1; i < size; i++) {
-			IExpr temp = ast.get(i);
-			IExpr t = function.apply(temp);
-			if (t != null) {
-				return t;
-			}
-			if (predicate.test(temp)) {
-				if (!result.isPresent()) {
-					result = ast.removeAtClone(i);
-					continue;
-				}
-				result.remove(j);
-				continue;
-			}
-
-			j++;
-		}
-
-		return result;
-	}
-
+ 
 	/**
 	 * Append each argument of <code>ast</code> to <code>result</code> by applying the given <code>function</code> to
 	 * each argument.
