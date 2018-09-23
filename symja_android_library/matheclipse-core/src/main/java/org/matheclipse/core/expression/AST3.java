@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.generic.ObjIntPredicate;
@@ -18,17 +19,17 @@ import org.matheclipse.core.interfaces.IExpr;
  * </p>
  * 
  * <p>
- * In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic structure of the Symja
- * source code. Each node of the tree denotes a construct occurring in the source code. The syntax is 'abstract' in the
- * sense that it does not represent every detail that appears in the real syntax. For instance, grouping parentheses are
- * implicit in the tree structure, and a syntactic construct such as a <code>Sin[x]</code> expression will be denoted by
- * an AST with 2 nodes. One node for the header <code>Sin</code> and one node for the argument <code>x</code>.
+ * In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic structure of the Symja source code.
+ * Each node of the tree denotes a construct occurring in the source code. The syntax is 'abstract' in the sense that it does not
+ * represent every detail that appears in the real syntax. For instance, grouping parentheses are implicit in the tree structure,
+ * and a syntactic construct such as a <code>Sin[x]</code> expression will be denoted by an AST with 2 nodes. One node for the
+ * header <code>Sin</code> and one node for the argument <code>x</code>.
  * </p>
  * 
  * Internally an AST is represented as a <code>java.util.List</code> which contains
  * <ul>
- * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus, Times,...) at index
- * <code>0</code> and</li>
+ * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus, Times,...) at index <code>0</code>
+ * and</li>
  * <li>the <code>n</code> arguments of a function in the index <code>1 to n</code></li>
  * </ul>
  * 
@@ -54,14 +55,10 @@ public class AST3 extends AST2 {
 	/**
 	 * Create a function with three arguments (i.e. <code>head[arg1, arg2, arg3]</code>).
 	 * 
-	 * @param head
-	 *            the head of the function
-	 * @param arg1
-	 *            the first argument of the function
-	 * @param arg2
-	 *            the second argument of the function
-	 * @param arg3
-	 *            the thirs argument of the function
+	 * @param head the head of the function
+	 * @param arg1 the first argument of the function
+	 * @param arg2 the second argument of the function
+	 * @param arg3 the thirs argument of the function
 	 */
 	public AST3(IExpr head, IExpr arg1, IExpr arg2, IExpr arg3) {
 		super(head, arg1, arg2);
@@ -69,10 +66,9 @@ public class AST3 extends AST2 {
 	}
 
 	/**
-	 * Get the third argument (i.e. the fourth element of the underlying list structure) of the <code>AST</code>
-	 * function (i.e. get(3) ).<br />
-	 * <b>Example:</b> for the AST representing the expression <code>f(a, b, c)</code>, <code>arg3()</code> returns
-	 * <code>c</code>.
+	 * Get the third argument (i.e. the fourth element of the underlying list structure) of the <code>AST</code> function (i.e. get(3)
+	 * ).<br />
+	 * <b>Example:</b> for the AST representing the expression <code>f(a, b, c)</code>, <code>arg3()</code> returns <code>c</code>.
 	 * 
 	 * @return the third argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
@@ -97,8 +93,7 @@ public class AST3 extends AST2 {
 	}
 
 	/**
-	 * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity as this
-	 * {@code HMArrayList}.
+	 * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity as this {@code HMArrayList}.
 	 * 
 	 * @return a shallow copy of this {@code ArrayList}
 	 * @see java.lang.Cloneable
@@ -280,6 +275,30 @@ public class AST3 extends AST2 {
 	}
 
 	@Override
+	public void forEach(int start, int end, ObjIntConsumer<? super IExpr> action) {
+		switch (start) {
+		case 0:
+			action.accept(arg0, 0);
+			action.accept(arg1, 1);
+			action.accept(arg2, 2);
+			action.accept(arg3, 3);
+			break;
+		case 1:
+			action.accept(arg1, 1);
+			action.accept(arg2, 2);
+			action.accept(arg3, 3);
+			break;
+		case 2:
+			action.accept(arg2, 2);
+			action.accept(arg3, 3);
+			break;
+		case 3:
+			action.accept(arg3, 3);
+			break;
+		}
+	}
+
+	@Override
 	public IExpr get(int location) {
 		switch (location) {
 		case 0:
@@ -370,17 +389,14 @@ public class AST3 extends AST2 {
 		}
 		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(fromPosition) + ", Size: " + size());
 	}
-	
+
 	/**
 	 * Replaces the element at the specified location in this {@code ArrayList} with the specified object.
 	 * 
-	 * @param location
-	 *            the index at which to put the specified object.
-	 * @param object
-	 *            the object to add.
+	 * @param location the index at which to put the specified object.
+	 * @param object   the object to add.
 	 * @return the previous element at the index.
-	 * @throws IndexOutOfBoundsException
-	 *             when {@code location < 0 || >= size()}
+	 * @throws IndexOutOfBoundsException when {@code location < 0 || >= size()}
 	 */
 	@Override
 	public IExpr set(int location, IExpr object) {
