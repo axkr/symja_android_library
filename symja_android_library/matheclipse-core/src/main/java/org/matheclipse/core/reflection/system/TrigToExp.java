@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.*;
 import static org.matheclipse.core.expression.F.x_;
 
+import org.matheclipse.core.builtin.Structure;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -139,9 +140,17 @@ public class TrigToExp extends AbstractEvaluator {
 	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		if (ast.size() == 2) {
+			IExpr temp = Structure.threadLogicEquationOperators(ast.arg1(), ast, 1);
+			if (temp.isPresent()) {
+				return temp;
+			}
+
+			IExpr arg1 = ast.arg1();
+			return MATCHER.replaceAll(arg1).orElse(arg1);
+		}
 		Validate.checkSize(ast, 2);
-		IExpr arg1 = ast.arg1();
-		return MATCHER.replaceAll(arg1).orElse(arg1);
+		return F.NIL;
 	}
 
 	@Override

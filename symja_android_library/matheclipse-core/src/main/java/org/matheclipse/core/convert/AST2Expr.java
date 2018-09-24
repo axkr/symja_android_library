@@ -83,7 +83,7 @@ public class AST2Expr {
 			"End", "EndPackage", "Equal", "Equivalent", "Erf", "Erfc", "Erfi", "ErlangDistribution",
 			"EuclideanDistance", "EulerE", "EulerPhi", "Evaluate", "EvenQ", "ExactNumberQ", "Except", "Exists", "Exp",
 			"Expand", "ExpandAll", "Expectation", "ExponentialDistribution", "ExpIntegralE", "ExpIntegralEi",
-			"Exponent", "Export", "ExtendedGCD", "Extract", "Factor", "Factorial", "Factorial2", "FactorInteger",
+			"Exponent", "Export", "ExpToTrig", "ExtendedGCD", "Extract", "Factor", "Factorial", "Factorial2", "FactorInteger",
 			"FactorSquareFree", "FactorSquareFreeList", "FactorTerms", "Flatten", "FlattenAt", "Fibonacci", "FindFit",
 			"FindInstance", "FindRoot", "First", "Fit", "FiveNum", "FixedPoint", "FixedPointList", "Floor", "Fold",
 			"FoldList", "For", "ForAll", "FourierMatrix", "FractionalPart", "FrechetDistribution", "FreeQ", "FresnelC",

@@ -1,7 +1,8 @@
 package org.matheclipse.core.system;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.ToggleFeature;
+import org.matheclipse.core.basic.ToggleFeature;import org.matheclipse.core.builtin.Structure;
+import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
@@ -3187,6 +3188,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Exponent(a/c+b/c, c)", "-1");
 	}
 
+	public void testExpToTrig() {
+		check("ExpToTrig(TrigToExp(Sin(x)))", //
+				"Sin(x)");
+		check("ExpToTrig(Exp(I*x) == -1)", //
+				"Cos(x)+I*Sin(x)==-1");
+		check("ExpToTrig(Exp(x)-Exp(-x))", //
+				"2*Sinh(x)");
+		check("ExpToTrig(E^(I*x))", //
+				"Cos(x)+I*Sin(x)");
+		check("ExpToTrig(E^(c*x))", //
+				"Cosh(c*x)+Sinh(c*x)");
+	}
+	
 	public void testExtendedGCD() {
 		check("ExtendedGCD(2,3)", "{1,{-1,1}}");
 		check("ExtendedGCD(6,15,30)", "{3,{-2,1,0}}");
