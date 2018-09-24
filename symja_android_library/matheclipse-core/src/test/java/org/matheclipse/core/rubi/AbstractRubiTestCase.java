@@ -28,6 +28,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
 	 * Timeout limit in seconds as the default value for Symja expression evaluation.
 	 */
 	protected long fSeconds = 10;
+	
 	private boolean isRelaxedSyntax;
 
 	public AbstractRubiTestCase(String name, boolean isRelaxedSyntax) {
@@ -65,6 +66,9 @@ public abstract class AbstractRubiTestCase extends TestCase {
 
 			expectedResult = expectedResult.trim();
 			if (expectedResult.length() > 0) {
+				if (expectedResult.equals(result.toString()) ) {
+					return expectedResult;
+				}
 				IExpr expected = fEvaluator.eval(expectedResult);
 				if (result.equals(expected)) {
 					// the expressions are structurally equal
@@ -162,7 +166,6 @@ public abstract class AbstractRubiTestCase extends TestCase {
 			}
 			// scriptEngine.put("STEPWISE",Boolean.TRUE);
 			String evaledResult = interpreter(evalString, expectedResult, manuallyCheckedResult);
-
 			if (resultLength > 0 && evaledResult.length() > resultLength) {
 				evaledResult = evaledResult.substring(0, resultLength) + "<<SHORT>>";
 				assertEquals(expectedResult, evaledResult);
@@ -199,6 +202,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
 	@Override
 	protected void setUp() {
 		try {
+			super.setUp();
 			F.await();
 			// start test with fresh instance
 			EvalEngine engine = new EvalEngine(isRelaxedSyntax);
