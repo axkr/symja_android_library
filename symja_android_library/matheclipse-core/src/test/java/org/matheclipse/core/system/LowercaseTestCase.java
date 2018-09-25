@@ -6183,11 +6183,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 				+ "  m\n" + "  );$gcd(18, 21)", "3");
 
 		check("{Module({x}, x), Module({x}, x)}", //
-				"{x$18,x$19}");
+				"{x$14,x$15}");
 		check("Module({e = Expand((1 + x)^5)}, Function(x, e))", //
-				"Function(x$20,e$20)");
+				"Function(x$16,e$16)");
 		check("Module({a,b}, Block({c}, c+a))", //
-				"a$21+c");
+				"a$17+c");
 
 		if (Config.SERVER_MODE == false) {
 			check("f(x0_) :=\n" + " Module({x = x0},\n" + "  While(x > 0, x = Log(x));\n" + "  x\n" + "  );f(2.0)",
@@ -6208,7 +6208,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Module({x,f}, f(0)=0;f(x_):=f(x-1)+x;f(3))", //
 				"6");
 		check("Module({x},Function(y,x+y))", //
-				"Function(y$32,x$32+y$32)");
+				"Function(y$25,x$25+y$25)");
 		// check("Module({y},Function(y,x+y))",//
 		// "x$22$23+y");
 	}
@@ -11345,7 +11345,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("TrigToExp(ArcSec(x))", "Pi/2+I*Log(Sqrt(1-1/x^2)+I/x)");
 		check("TrigToExp(ArcSin(x))", "-I*Log(I*x+Sqrt(1-x^2))");
 		check("TrigToExp(ArcTan(x))", "I*1/2*Log(1-I*x)-I*1/2*Log(1+I*x)");
-		check("TrigToExp(ArcTan(x, y))", "-I*Log((x+I*y)/Sqrt(x^2+y^2))");
+		check("TrigToExp(ArcTan(x, y))", //
+				"-I*Log((I*x+y)/Sqrt(x^2+y^2))");
 
 		check("TrigToExp(ArcCosh(x))", "Log(x+Sqrt(-1+x)*Sqrt(1+x))");
 		check("TrigToExp(ArcCsch(x))", "Log(Sqrt(1+1/x^2)+1/x)");
@@ -11667,7 +11668,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{y,z,3}");
 
 		check("With({x=z},Module({x},x+y))", //
-				"x$23+y");
+				"x$21+y");
 	}
 
 	public void testXor() {

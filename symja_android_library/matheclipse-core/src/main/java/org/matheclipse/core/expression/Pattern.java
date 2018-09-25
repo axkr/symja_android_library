@@ -2,6 +2,7 @@ package org.matheclipse.core.expression;
 
 import java.io.ObjectStreamException;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
@@ -80,7 +81,7 @@ public class Pattern extends Blank {
 	}
 
 	@Override
-	public int[] addPattern(PatternMap patternMap, Map<IExpr, Integer> patternIndexMap) {
+	public int[] addPattern(PatternMap patternMap, Set<IExpr> patternIndexMap) {
 		patternMap.addPattern(patternIndexMap, this);
 		int[] result = new int[2];
 		if (isPatternDefault() || isPatternOptional()) {

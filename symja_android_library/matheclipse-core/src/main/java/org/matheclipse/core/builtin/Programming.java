@@ -2274,36 +2274,36 @@ public final class Programming {
 	 * @param engine
 	 * @return
 	 */
-	public static boolean checkModuleCondition(IExpr arg1, IExpr arg2, final EvalEngine engine) {
-		if (arg1.isList()) {
-			IAST intializerList = (IAST) arg1;
-			IExpr result = moduleSubstVariables(intializerList, arg2, engine);
-			if (result.isCondition()) {
-				return checkCondition(result.first(), result.second(), engine);
-			} else if (result.isModule()) {
-				return checkModuleCondition(result.first(), result.second(), engine);
-			} else if (result.isWith()) {
-				return checkWithCondition(result.first(), result.second(), engine);
-			}
-			return true;
-		}
-		return true;
-	}
+//	public static boolean checkModuleCondition(IExpr arg1, IExpr arg2, final EvalEngine engine) {
+//		if (arg1.isList()) {
+//			IAST intializerList = (IAST) arg1;
+//			IExpr result = moduleSubstVariables(intializerList, arg2, engine);
+//			if (result.isCondition()) {
+//				return checkCondition(result.first(), result.second(), engine);
+//			} else if (result.isModule()) {
+//				return checkModuleCondition(result.first(), result.second(), engine);
+//			} else if (result.isWith()) {
+//				return checkWithCondition(result.first(), result.second(), engine);
+//			}
+//			return true;
+//		}
+//		return true;
+//	}
 
-	public static boolean checkWithCondition(IExpr arg1, IExpr arg2, final EvalEngine engine) {
-		if (arg1.isList()) {
-			IAST intializerList = (IAST) arg1;
-			IExpr result = withSubstVariables(intializerList, arg2, engine);
-			if (result.isCondition()) {
-				return checkCondition(result.first(), result.second(), engine);
-			} else if (result.isModule()) {
-				return checkModuleCondition(result.first(), result.second(), engine);
-			} else if (result.isWith()) {
-				return checkWithCondition(result.first(), result.second(), engine);
-			}
-		}
-		return true;
-	}
+//	public static boolean checkWithCondition(IExpr arg1, IExpr arg2, final EvalEngine engine) {
+//		if (arg1.isList()) {
+//			IAST intializerList = (IAST) arg1;
+//			IExpr result = withSubstVariables(intializerList, arg2, engine);
+//			if (result.isCondition()) {
+//				return checkCondition(result.first(), result.second(), engine);
+//			} else if (result.isModule()) {
+//				return checkModuleCondition(result.first(), result.second(), engine);
+//			} else if (result.isWith()) {
+//				return checkWithCondition(result.first(), result.second(), engine);
+//			}
+//		}
+//		return true;
+//	}
 
 	/**
 	 * Substitute the variable names from the list with temporary dummy variable names in the &quot;module-block&quot;..
@@ -2351,19 +2351,19 @@ public final class Programming {
 	 * @param engine
 	 * @return
 	 */
-	public static boolean checkCondition(IExpr arg1, IExpr arg2, final EvalEngine engine) {
-		if (engine.evalTrue(arg2)) {
-			if (arg1.isCondition()) {
-				return checkCondition(arg1.first(), arg1.second(), engine);
-			} else if (arg1.isModule()) {
-				return checkModuleCondition(arg1.first(), arg1.second(), engine);
-			} else if (arg1.isWith()) {
-				return checkWithCondition(arg1.first(), arg1.second(), engine);
-			}
-			return true;
-		}
-		return false;
-	}
+//	public static boolean checkCondition(IExpr arg1, IExpr arg2, final EvalEngine engine) {
+//		if (engine.evalTrue(arg2)) {
+//			if (arg1.isCondition()) {
+//				return checkCondition(arg1.first(), arg1.second(), engine);
+//			} else if (arg1.isModule()) {
+//				return checkModuleCondition(arg1.first(), arg1.second(), engine);
+//			} else if (arg1.isWith()) {
+//				return checkWithCondition(arg1.first(), arg1.second(), engine);
+//			}
+//			return true;
+//		}
+//		return false;
+//	}
 
 	/**
 	 * Get the element stored at the given <code>position</code>.

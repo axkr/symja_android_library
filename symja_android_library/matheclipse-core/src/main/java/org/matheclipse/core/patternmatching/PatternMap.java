@@ -3,16 +3,17 @@ package org.matheclipse.core.patternmatching;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.EvalUtilities;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -38,11 +39,6 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 	 * Priority of this PatternMap. Lower values have higher priorities
 	 */
 	protected int fPriority;
-
-	/**
-	 * Count the number of patterns with associated symbols in the pattern map.
-	 */
-	private int fPatternCounter;
 
 	/**
 	 * If <code>true</code> the rule contains no pattern.
@@ -74,7 +70,6 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 
 	private PatternMap(IExpr[] exprArray) {
 		this.fPriority = 0;
-		this.fPatternCounter = 0;
 		this.fRuleWithoutPattern = true;
 		this.fSymbolsOrPatternValues = exprArray;
 	}
@@ -86,18 +81,14 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 	 * @param pattern
 	 * @param patternIndexMap
 	 */
-	public void addPattern(Map<IExpr, Integer> patternIndexMap, IPatternObject pattern) {
+	public void addPattern(Set<IExpr> patternIndexMap, IPatternObject pattern) {
 		fRuleWithoutPattern = false;
 		ISymbol sym = pattern.getSymbol();
 		if (sym != null) {
-			Integer i = patternIndexMap.get(sym);
-			if (i != null) {
-				return;
-			}
-			patternIndexMap.put(sym, fPatternCounter++);
+			patternIndexMap.add(sym);
 			return;
 		}
-		patternIndexMap.put(pattern, fPatternCounter++);
+		patternIndexMap.add(pattern);
 	}
 
 	protected void addSinglePattern(IPatternObject pattern) {
@@ -119,7 +110,6 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 		// don't clone the fSymbolsArray which is final after the #determinePatterns() method
 		result.fPriority = fPriority;
 		result.fSymbolsOrPattern = fSymbolsOrPattern;
-		result.fPatternCounter = fPatternCounter;
 		result.fRuleWithoutPattern = fRuleWithoutPattern;
 		return result;
 	}
@@ -165,12 +155,14 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 	public int determinePatterns(final IExpr lhsPatternExpr) {
 		fPriority = DEFAULT_RULE_PRIORITY;
 		if (lhsPatternExpr instanceof IAST) {
-			Map<IExpr, Integer> patternIndexMap = new IdentityHashMap<IExpr, Integer>();
+			Set<IExpr> patternIndexMap = Collections.newSetFromMap(new IdentityHashMap<IExpr, Boolean>(16));
 			determinePatternsRecursive(patternIndexMap, (IAST) lhsPatternExpr, 1);
-			this.fSymbolsOrPattern = new IExpr[fPatternCounter];
-			this.fSymbolsOrPatternValues = new IExpr[fPatternCounter];
-			for (Entry<IExpr, Integer> entry : patternIndexMap.entrySet()) {
-				fSymbolsOrPattern[entry.getValue().intValue()] = entry.getKey();
+			final int size = patternIndexMap.size();
+			this.fSymbolsOrPattern = new IExpr[size];
+			this.fSymbolsOrPatternValues = new IExpr[size];
+			int i = 0;
+			for (IExpr entry : patternIndexMap) {
+				fSymbolsOrPattern[i++] = entry;
 			}
 		} else if (lhsPatternExpr instanceof IPatternObject) {
 			addSinglePattern((IPatternObject) lhsPatternExpr);
@@ -187,8 +179,7 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 	 * @param lhsPatternExpr  the (left-hand-side) expression which could contain pattern objects.
 	 * @param treeLevel       the level of the tree where the patterns are determined
 	 */
-	private int determinePatternsRecursive(Map<IExpr, Integer> patternIndexMap, final IAST lhsPatternExpr,
-			int treeLevel) {
+	private int determinePatternsRecursive(Set<IExpr> patternIndexMap, final IAST lhsPatternExpr, int treeLevel) {
 		if (lhsPatternExpr.isAlternatives() || lhsPatternExpr.isExcept()) {
 			fRuleWithoutPattern = false;
 		}

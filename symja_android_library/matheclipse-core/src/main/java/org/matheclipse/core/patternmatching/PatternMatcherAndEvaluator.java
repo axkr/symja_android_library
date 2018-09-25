@@ -27,6 +27,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
 	private IExpr fRightHandSide;
 
+	private transient IExpr fReturnResult = F.NIL;
+
 	/**
 	 * Leaf count of the right-hand-side of this matcher if it's a <code>Condition()</code> or
 	 * <code>Module(...,Condition()) or With(...,Condition())</code> expression.
@@ -97,6 +99,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 		PatternMatcherAndEvaluator v = (PatternMatcherAndEvaluator) super.clone();
 		v.fRightHandSide = fRightHandSide;
 		v.fSetSymbol = fSetSymbol;
+		v.fReturnResult = F.NIL;
 		return v;
 	}
 
@@ -165,14 +168,17 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 			if (!patternMap.isAllPatternsAssigned()) {
 				matched = true;
 			} else {
-				IExpr substConditon = patternMap.substituteSymbols(fRightHandSide);
-				if (substConditon.isCondition()) {
-					matched = Programming.checkCondition(substConditon.first(), substConditon.second(), engine);
-				} else if (substConditon.isModule()) {
-					matched = Programming.checkModuleCondition(substConditon.first(), substConditon.second(), engine);
-				} else if (substConditon.isWith()) {
-					matched = Programming.checkWithCondition(substConditon.first(), substConditon.second(), engine);
+				IExpr rhs = patternMap.substituteSymbols(fRightHandSide);
+				try {
+					fReturnResult = engine.evaluate(rhs);
+					matched = true;
+				} catch (final ConditionException e) {
+					matched = false;
+				} catch (final ReturnException e) {
+					fReturnResult = e.getValue();
+					matched = true;
 				}
+
 			}
 		}
 		patternMap.setRHSEvaluated(matched);
@@ -229,6 +235,9 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 					}
 				}
 
+				if (fReturnResult.isPresent()) {
+					return fReturnResult;
+				}
 				IExpr result = patternMap.substituteSymbols(fRightHandSide);
 				try {
 					// System.out.println(result.toString());

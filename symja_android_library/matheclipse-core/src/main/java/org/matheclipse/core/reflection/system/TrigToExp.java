@@ -81,7 +81,7 @@ public class TrigToExp extends AbstractEvaluator {
 				F.Plus(F.Times(F.C1D2, F.CI, F.Log(F.Plus(F.C1, F.Times(F.CNI, x)))),
 						F.Times(F.CN1D2, F.CI, F.Log(F.Plus(F.C1, F.Times(F.CI, x)))))); // $$);
 		MATCHER.caseOf(ArcTan(x_, y_), //
-				x -> // [$ (-I)*Log((x + I*y)/Sqrt(x^2 + y^2)) $]
+				(x, y) -> // [$ (-I)*Log((x + I*y)/Sqrt(x^2 + y^2)) $]
 				F.Times(F.CNI,
 						F.Log(F.Times(F.Plus(x, F.Times(F.CI, y)), F.Power(F.Plus(F.Sqr(x), F.Sqr(y)), F.CN1D2))))); // $$);
 
@@ -134,8 +134,8 @@ public class TrigToExp extends AbstractEvaluator {
 	/**
 	 * Exponential definitions for trigonometric functions
 	 * 
-	 * See <a href= "http://en.wikipedia.org/wiki/List_of_trigonometric_identities#Exponential_definitions"> List of
-	 * trigonometric identities - Exponential definitions</a>,<br/>
+	 * See <a href= "http://en.wikipedia.org/wiki/List_of_trigonometric_identities#Exponential_definitions"> List of trigonometric
+	 * identities - Exponential definitions</a>,<br/>
 	 * <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
 	 */
 	@Override
