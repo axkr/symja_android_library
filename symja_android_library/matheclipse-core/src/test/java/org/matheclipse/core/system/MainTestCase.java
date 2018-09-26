@@ -1522,6 +1522,10 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem171a() {
+		check("Integrate(1/(x^5+x-7),x)", //
+				"Integrate(1/(-7+x+x^5),x)");
+		
+		
 		check("integrate::PolyQ(x/(2*Sqrt(2)),x,1)", //
 				"True");
 		check("integrate::PolyQ((2+2*x)/(2*Sqrt(2)),x)", //

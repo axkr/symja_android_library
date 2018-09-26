@@ -736,10 +736,13 @@ public class Integrate extends AbstractFunctionEvaluator {
 
 			if (engine.REMEMBER_AST_CACHE != null) {
 				IExpr result = engine.REMEMBER_AST_CACHE.getIfPresent(ast);
-				if (result != null) {
-					result = callRestIntegrate(arg1, x, ast);
+				if (result != null) {// &&engine.getRecursionCounter()>0) {
 					if (result.isPresent()) {
 						return result;
+					}
+					IExpr temp = callRestIntegrate(arg1, x, ast);
+					if (temp.isPresent()) {
+						return temp;
 					}
 					RecursionLimitExceeded.throwIt(engine.getRecursionCounter(), ast);
 					return F.NIL;
@@ -753,10 +756,12 @@ public class Integrate extends AbstractFunctionEvaluator {
 				if (limit <= 0 || limit > Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT) {
 					engine.setRecursionLimit(Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT);
 				}
-				engine.REMEMBER_AST_CACHE.put(ast, F.True);
+				
 				// System.out.println(ast.toString());
+				engine.REMEMBER_AST_CACHE.put(ast, F.NIL);
 				IExpr temp = F.Integrate.evalDownRule(EvalEngine.get(), ast);
 				if (temp.isPresent()) {
+					engine.REMEMBER_AST_CACHE.put(ast, temp);
 					return temp;
 				}
 			} catch (RecursionLimitExceeded rle) {

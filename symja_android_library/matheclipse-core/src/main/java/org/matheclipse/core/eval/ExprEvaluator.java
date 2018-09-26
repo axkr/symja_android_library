@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.matheclipse.core.basic.Config;
@@ -428,37 +426,41 @@ public class ExprEvaluator {
 		if (inputExpression != null) {
 			// F.join();
 			EvalEngine.set(engine);
-			engine.reset();
-			fExpr = engine.parse(inputExpression);
-			if (fExpr != null) {
-				try {
-					F.await();
-					TimeLimiter timeLimiter = SimpleTimeLimiter.create(engine.getExecutorService()); //Executors.newSingleThreadExecutor());
-					EvalCallable work = call == null ? new EvalCallable(engine) : call;
-					work.setExpr(fExpr);
-					return timeLimiter.callWithTimeout(work, timeoutDuration, timeUnit);
-				} catch (InterruptedException e) {
-					return F.$Aborted;
-					// } catch (java.util.concurrent.TimeoutException e) {
-					// return F.$Aborted;
-				} catch (java.util.concurrent.TimeoutException e) {
-					Throwable t = e.getCause();
-					if (t instanceof RuntimeException) {
-						throw (RuntimeException) t;
+			try {
+				engine.reset();
+				fExpr = engine.parse(inputExpression);
+				if (fExpr != null) {
+					try {
+						F.await();
+						TimeLimiter timeLimiter = SimpleTimeLimiter.create(engine.getExecutorService()); // Executors.newSingleThreadExecutor());
+						EvalCallable work = call == null ? new EvalCallable(engine) : call;
+						work.setExpr(fExpr);
+						return timeLimiter.callWithTimeout(work, timeoutDuration, timeUnit);
+					} catch (InterruptedException e) {
+						return F.$Aborted;
+						// } catch (java.util.concurrent.TimeoutException e) {
+						// return F.$Aborted;
+					} catch (java.util.concurrent.TimeoutException e) {
+						Throwable t = e.getCause();
+						if (t instanceof RuntimeException) {
+							throw (RuntimeException) t;
+						}
+						return F.$Aborted;
+					} catch (com.google.common.util.concurrent.UncheckedTimeoutException e) {
+						Throwable t = e.getCause();
+						if (t instanceof RuntimeException) {
+							throw (RuntimeException) t;
+						}
+						return F.$Aborted;
+					} catch (Exception e) {
+						if (Config.SHOW_STACKTRACE) {
+							e.printStackTrace();
+						}
+						return F.Null;
 					}
-					return F.$Aborted;
-				} catch (com.google.common.util.concurrent.UncheckedTimeoutException e) {
-					Throwable t = e.getCause();
-					if (t instanceof RuntimeException) {
-						throw (RuntimeException) t;
-					}
-					return F.$Aborted;
-				} catch (Exception e) {
-					if (Config.SHOW_STACKTRACE) {
-						e.printStackTrace();
-					}
-					return F.Null;
 				}
+			} finally {
+				EvalEngine.remove();
 			}
 		}
 		return null;
