@@ -80,6 +80,11 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 		fRuleWithoutPattern = false;
 		ISymbol sym = pattern.getSymbol();
 		if (sym != null) {
+			for (int i = 0; i < patternIndexMap.size(); i++) {
+				if (patternIndexMap.get(i)==sym) {
+					return;
+				}
+			}
 			patternIndexMap.add(sym);
 			return;
 		}
