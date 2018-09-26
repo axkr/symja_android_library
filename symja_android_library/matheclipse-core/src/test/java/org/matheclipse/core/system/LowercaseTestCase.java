@@ -11334,6 +11334,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTrigToExp() {
+		check("I*y+x", //
+				"x+I*y");
+		check("TrigToExp(ArcTan(x, y))", //
+				"-I*Log((x+I*y)/Sqrt(x^2+y^2))");
 		check("TrigToExp(Sin(x) < x < Tan(x))", //
 				"(I*1/2)/E^(I*x)-I*1/2*E^(I*x)<x<(I*(E^(-I*x)-E^(I*x)))/(E^(-I*x)+E^(I*x))");
 		check("a+E^x", //
@@ -11345,8 +11349,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("TrigToExp(ArcSec(x))", "Pi/2+I*Log(Sqrt(1-1/x^2)+I/x)");
 		check("TrigToExp(ArcSin(x))", "-I*Log(I*x+Sqrt(1-x^2))");
 		check("TrigToExp(ArcTan(x))", "I*1/2*Log(1-I*x)-I*1/2*Log(1+I*x)");
-		check("TrigToExp(ArcTan(x, y))", //
-				"-I*Log((x+I*y)/Sqrt(x^2+y^2))");
 
 		check("TrigToExp(ArcCosh(x))", "Log(x+Sqrt(-1+x)*Sqrt(1+x))");
 		check("TrigToExp(ArcCsch(x))", "Log(Sqrt(1+1/x^2)+1/x)");

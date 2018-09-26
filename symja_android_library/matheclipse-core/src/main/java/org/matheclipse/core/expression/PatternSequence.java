@@ -1,8 +1,8 @@
 package org.matheclipse.core.expression;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.EvalEngine;
@@ -83,7 +83,7 @@ public class PatternSequence implements IPatternSequence {
 	}
 
 	@Override
-	public int[] addPattern(PatternMap patternMap, Set<IExpr> patternIndexMap) {
+	public int[] addPattern(PatternMap patternMap, List<IExpr> patternIndexMap) {
 		patternMap.addPattern(patternIndexMap, this);
 		// the ast contains a pattern sequence (i.e. "x__")
 		int[] result = new int[2];

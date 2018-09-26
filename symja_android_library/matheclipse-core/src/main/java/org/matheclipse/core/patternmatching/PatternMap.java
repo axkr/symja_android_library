@@ -3,12 +3,7 @@ package org.matheclipse.core.patternmatching;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.annotation.Nonnull;
 
@@ -46,14 +41,14 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 	private boolean fRuleWithoutPattern;
 
 	/**
-	 * Contains the symbols of the patterns or the pattern objects itself. The corresponding value (or <code>null</code>) is stored in
-	 * <code>fSymbolsOrPatternValues</code>.
+	 * Contains the symbols of the patterns or the pattern objects itself. The corresponding value (or
+	 * <code>null</code>) is stored in <code>fSymbolsOrPatternValues</code>.
 	 */
 	private IExpr[] fSymbolsOrPattern;
 
 	/**
-	 * Contains the current values (or <code>null</code>) of the symbols of the patterns or the pattern objects itself. The
-	 * corresponding symbol or pattern is stored in <code>fSymbolsOrPattern</code>.
+	 * Contains the current values (or <code>null</code>) of the symbols of the patterns or the pattern objects itself.
+	 * The corresponding symbol or pattern is stored in <code>fSymbolsOrPattern</code>.
 	 */
 	private IExpr[] fSymbolsOrPatternValues;
 
@@ -75,13 +70,13 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 	}
 
 	/**
-	 * Set the index of <code>fPatternSymbolsArray</code> where the <code>pattern</code> stores it's assigned value during pattern
-	 * matching.
+	 * Set the index of <code>fPatternSymbolsArray</code> where the <code>pattern</code> stores it's assigned value
+	 * during pattern matching.
 	 * 
 	 * @param pattern
 	 * @param patternIndexMap
 	 */
-	public void addPattern(Set<IExpr> patternIndexMap, IPatternObject pattern) {
+	public void addPattern(List<IExpr> patternIndexMap, IPatternObject pattern) {
 		fRuleWithoutPattern = false;
 		ISymbol sym = pattern.getSymbol();
 		if (sym != null) {
@@ -149,13 +144,14 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 	 * 
 	 * Increments this classes pattern counter.
 	 * 
-	 * @param lhsPatternExpr the (left-hand-side) expression which could contain pattern objects.
+	 * @param lhsPatternExpr
+	 *            the (left-hand-side) expression which could contain pattern objects.
 	 * @return the priority of this pattern-matcher
 	 */
 	public int determinePatterns(final IExpr lhsPatternExpr) {
 		fPriority = DEFAULT_RULE_PRIORITY;
 		if (lhsPatternExpr instanceof IAST) {
-			Set<IExpr> patternIndexMap = Collections.newSetFromMap(new IdentityHashMap<IExpr, Boolean>(16));
+			List<IExpr> patternIndexMap = new ArrayList<IExpr>();
 			determinePatternsRecursive(patternIndexMap, (IAST) lhsPatternExpr, 1);
 			final int size = patternIndexMap.size();
 			this.fSymbolsOrPattern = new IExpr[size];
@@ -176,10 +172,12 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 	 * Increments this classes pattern counter.
 	 * 
 	 * @param patternIndexMap
-	 * @param lhsPatternExpr  the (left-hand-side) expression which could contain pattern objects.
-	 * @param treeLevel       the level of the tree where the patterns are determined
+	 * @param lhsPatternExpr
+	 *            the (left-hand-side) expression which could contain pattern objects.
+	 * @param treeLevel
+	 *            the level of the tree where the patterns are determined
 	 */
-	private int determinePatternsRecursive(Set<IExpr> patternIndexMap, final IAST lhsPatternExpr, int treeLevel) {
+	private int determinePatternsRecursive(List<IExpr> patternIndexMap, final IAST lhsPatternExpr, int treeLevel) {
 		if (lhsPatternExpr.isAlternatives() || lhsPatternExpr.isExcept()) {
 			fRuleWithoutPattern = false;
 		}
@@ -260,7 +258,8 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 	/**
 	 * Return the matched value for the given symbol
 	 * 
-	 * @param symbol the symbol
+	 * @param symbol
+	 *            the symbol
 	 * @return <code>null</code> if no matched expression exists
 	 */
 	public final IExpr val(@Nonnull ISymbol symbol) {
@@ -414,10 +413,11 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 	}
 
 	/**
-	 * Substitute all patterns and symbols in the given expression with the current value of the corresponding internal pattern values
-	 * arrays
+	 * Substitute all patterns and symbols in the given expression with the current value of the corresponding internal
+	 * pattern values arrays
 	 * 
-	 * @param lhsPatternExpr left-hand-side expression which may contain pattern objects
+	 * @param lhsPatternExpr
+	 *            left-hand-side expression which may contain pattern objects
 	 * 
 	 * @return <code>F.NIL</code> if substitutions isn't possible
 	 */
@@ -459,9 +459,11 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 	}
 
 	/**
-	 * Substitute all symbols in the given expression with the current value of the corresponding internal pattern values arrays
+	 * Substitute all symbols in the given expression with the current value of the corresponding internal pattern
+	 * values arrays
 	 * 
-	 * @param rhsExpr right-hand-side expression, substitute all symbols from the pattern-matching values
+	 * @param rhsExpr
+	 *            right-hand-side expression, substitute all symbols from the pattern-matching values
 	 * 
 	 * @return
 	 */

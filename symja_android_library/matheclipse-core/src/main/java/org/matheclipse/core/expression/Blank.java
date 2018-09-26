@@ -2,8 +2,8 @@ package org.matheclipse.core.expression;
 
 import java.io.ObjectStreamException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
@@ -109,7 +109,7 @@ public class Blank implements IPattern {
 	}
 
 	@Override
-	public int[] addPattern(PatternMap patternMap, Set<IExpr> patternIndexMap) {
+	public int[] addPattern(PatternMap patternMap, List<IExpr> patternIndexMap) {
 		patternMap.addPattern(patternIndexMap, this);
 		int[] result = new int[2];
 		if (isPatternDefault() || isPatternOptional()) {
