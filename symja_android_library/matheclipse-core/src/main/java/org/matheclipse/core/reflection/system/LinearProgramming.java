@@ -91,7 +91,7 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 4);
 		try {
 			if (ast.arg1().isList() && ast.arg2().isList() && ast.arg3().isList()) {
-				double[] arg1D = Expr2Object.toDoubleVector((IAST) ast.arg1());
+				double[] arg1D =   ast.arg1().toDoubleVector();
 				LinearObjectiveFunction f = new LinearObjectiveFunction(arg1D, 0);
 				Collection<LinearConstraint> constraints = new ArrayList<LinearConstraint>();
 

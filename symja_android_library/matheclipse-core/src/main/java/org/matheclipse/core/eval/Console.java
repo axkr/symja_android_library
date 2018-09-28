@@ -328,14 +328,14 @@ public class Console {
 					if (function != null) {
 						StringBuilder inputExpression = new StringBuilder(1024);
 						inputExpression.append(function);
-						inputExpression.append("(");
+						inputExpression.append('(');
 						for (int j = i + 1; j < args.length; j++) {
 							if (j != i + 1) {
 								inputExpression.append(", ");
 							}
 							inputExpression.append(args[j]);
 						}
-						inputExpression.append(")");
+						inputExpression.append(')');
 						String outputExpression = interpreter(inputExpression.toString());
 						if (outputExpression.length() > 0) {
 							System.out.print(outputExpression);

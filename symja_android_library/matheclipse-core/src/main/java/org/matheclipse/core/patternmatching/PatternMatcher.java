@@ -527,15 +527,6 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	}
 
 	/**
-	 * Return the matched value for index 0 if possible.
-	 * 
-	 * @return <code>null</code> if no matched expression exists
-	 */
-	private IExpr getPatternValue0() {
-		return fPatternMap.getValue(0);
-	}
-
-	/**
 	 * Get the priority of this pattern-matcher. Lower values have higher priorities.
 	 * 
 	 * @return the priority

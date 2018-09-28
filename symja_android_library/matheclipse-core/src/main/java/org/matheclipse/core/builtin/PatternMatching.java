@@ -44,8 +44,6 @@ import org.matheclipse.core.interfaces.ISymbol.RuleType;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
-import org.matheclipse.parser.client.ast.Pattern2Node;
-import org.matheclipse.parser.client.ast.SymbolNode;
 
 public final class PatternMatching {
 

@@ -38,7 +38,6 @@ public class BuiltinGenerator {
 		Collections.sort(list);
 
 		// public final static IBuiltInSymbol XXXXX = BuiltIns.valueOf(BuiltIns.XXXXX);
-		int i = 0;
 		for (String sym : list) {
 			// System.out.println(" public final static IBuiltInSymbol " + sym.name()
 			// + " = BuiltIns.valueOf(BuiltIns." + sym.name() + ");");

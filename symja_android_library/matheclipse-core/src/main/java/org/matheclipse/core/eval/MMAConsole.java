@@ -84,7 +84,6 @@ public class MMAConsole {
 		}
 		String inputExpression = null;
 		String trimmedInput = null;
-		String outputExpression = null;
 		try {
 			console.setArgs(args);
 		} catch (ReturnException re) {
@@ -172,7 +171,7 @@ public class MMAConsole {
 						}
 						continue;
 					}
-					outputExpression = console.interpreter(trimmedInput);
+					console.interpreter(trimmedInput);
 					System.out.println("In [" + COUNTER + "]: " + trimmedInput);
 					System.out.flush();
 					// if (outputExpression.length() > 0) {
@@ -347,8 +346,7 @@ public class MMAConsole {
 	/**
 	 * Sets the arguments for the <code>main</code> method
 	 * 
-	 * @param args
-	 *            the arguments of the program
+	 * @param args the arguments of the program
 	 */
 	private void setArgs(final String args[]) {
 		String function = null;
@@ -508,8 +506,7 @@ public class MMAConsole {
 	 * prints a prompt on the console but doesn't print a newline
 	 * 
 	 * @param out
-	 * @param prompt
-	 *            the prompt string to display
+	 * @param prompt the prompt string to display
 	 * 
 	 */
 
@@ -553,8 +550,7 @@ public class MMAConsole {
 	/**
 	 * read a string from the console. The string is terminated by a newline
 	 * 
-	 * @param out
-	 *            Description of Parameter
+	 * @param out Description of Parameter
 	 * @return the input string (without the newline)
 	 */
 
@@ -588,10 +584,8 @@ public class MMAConsole {
 	/**
 	 * read a string from the console. The string is terminated by a newline
 	 * 
-	 * @param prompt
-	 *            the prompt string to display
-	 * @param out
-	 *            Description of Parameter
+	 * @param prompt the prompt string to display
+	 * @param out    Description of Parameter
 	 * @return the input string (without the newline)
 	 */
 
@@ -615,8 +609,8 @@ public class MMAConsole {
 	// }
 
 	/**
-	 * Get the default rules textfile name, which should be loaded at startup. This file replaces the default built-in
-	 * System.mep resource stream.
+	 * Get the default rules textfile name, which should be loaded at startup. This file replaces the default built-in System.mep
+	 * resource stream.
 	 * 
 	 * @return default rules textfile name
 	 */

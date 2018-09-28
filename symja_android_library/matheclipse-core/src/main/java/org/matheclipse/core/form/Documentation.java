@@ -93,7 +93,6 @@ public class Documentation {
 			if (is != null) {
 				final BufferedReader f = new BufferedReader(new InputStreamReader(is, "UTF-8"));
 				String line;
-				boolean emptyLine = false;
 				String shortdesc = null;
 				while ((line = f.readLine()) != null) {
 					if (line.startsWith("```")) {

@@ -71,7 +71,7 @@ public final class StringFunctions {
 		public void setUp(final ISymbol newSymbol) {
 		}
 
-		public static IAST fromCharcterCode(final String unicodeInput, final String inputEncoding,
+		public static IAST fromCharacterCode(final String unicodeInput, final String inputEncoding,
 				final IASTAppendable list) {
 			try {
 				final String utf8String = new String(unicodeInput.getBytes(inputEncoding), "UTF-8");

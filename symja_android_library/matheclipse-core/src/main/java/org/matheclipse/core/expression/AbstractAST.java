@@ -1426,12 +1426,12 @@ public abstract class AbstractAST implements IASTMutable {
 	private void internalOperatorForm(IExpr arg1, boolean isLowerPrecedence, boolean symbolsAsFactoryMethod, int depth,
 			boolean useOperators, boolean usePrefix, boolean noSymbolPrefix, StringBuilder text) {
 		if (isLowerPrecedence) {
-			text.append("(");
+			text.append('(');
 		}
 		text.append(
 				arg1.internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators, usePrefix, noSymbolPrefix));
 		if (isLowerPrecedence) {
-			text.append(")");
+			text.append(')');
 		}
 	}
 

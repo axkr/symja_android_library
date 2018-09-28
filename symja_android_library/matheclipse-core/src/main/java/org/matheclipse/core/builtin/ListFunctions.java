@@ -879,7 +879,6 @@ public final class ListFunctions {
 		private static IExpr arrayPadMatrixAtom(IAST matrix, int[] dim, int m, int n, IExpr atom) {
 			int columnDim = dim[1] + m + n;
 			IASTAppendable result = matrix.copyHead(dim[0] + m + n);
-			IAST row;
 			// prepend m rows
 			result.appendArgs(0, m, i -> atom.constantArray(F.List, 0, columnDim));
 

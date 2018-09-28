@@ -13,11 +13,9 @@ public class SymbolnamePreprocessor {
 	/**
 	 * Generate Java files (*.java) from Symja rule files (*.m)
 	 * 
-	 * @param sourceLocation
-	 *            source directory for rule (*.m) files
-	 * @param ignoreTimestamp
-	 *            if <code>false</code> only change the target file (*.java), if the
-	 *            source file (*.m) has a newer time stamp than the target file.
+	 * @param sourceLocation  source directory for rule (*.m) files
+	 * @param ignoreTimestamp if <code>false</code> only change the target file (*.java), if the source file (*.m) has a newer time
+	 *                        stamp than the target file.
 	 */
 	public static void generateFunctionStrings1(final File sourceLocation, boolean ignoreTimestamp) {
 		if (sourceLocation.exists()) {
@@ -25,9 +23,8 @@ public class SymbolnamePreprocessor {
 			final String[] files = sourceLocation.list();
 			if (files != null) {
 				StringBuilder buffer = new StringBuilder(16000);
-				for (int i = 0; i < files.length; i++) {
-					File sourceFile = new File(sourceLocation, files[i]);
-					// we are only interested in .m files
+				for (int i = 0; i < files.length; i++) { 
+					// we are only interested in .java files
 					if (files[i].endsWith(".java")) {
 						String className = files[i].substring(0, files[i].length() - 5);
 						String lcClassName = className.length() == 1 ? className : className.toLowerCase();
@@ -60,7 +57,6 @@ public class SymbolnamePreprocessor {
 			if (files != null) {
 				StringBuilder buffer = new StringBuilder(16000);
 				for (int i = 0; i < files.length; i++) {
-					File sourceFile = new File(sourceLocation, files[i]);
 					// we are only interested in .m files
 					if (files[i].endsWith(".java")) {
 						String className = files[i].substring(0, files[i].length() - 5);
@@ -90,7 +86,6 @@ public class SymbolnamePreprocessor {
 			if (files != null) {
 				StringBuilder buffer = new StringBuilder(16000);
 				for (int i = 0; i < files.length; i++) {
-					File sourceFile = new File(sourceLocation, files[i]);
 					// we are only interested in .m files
 					if (files[i].endsWith(".java")) {
 						String className = files[i].substring(0, files[i].length() - 5);

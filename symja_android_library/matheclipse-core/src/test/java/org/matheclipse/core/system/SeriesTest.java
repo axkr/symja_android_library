@@ -92,7 +92,7 @@ public class SeriesTest extends AbstractTestCase {
 	}
 
 	public void testSeries() {
-		https: // oeis.org/A053614
+		// https://oeis.org/A053614
 		check("nn=10; t=Rest(CoefficientList(Series(Product((1+x^(k*(k+1)/2)), {k, nn}), {x, 0, nn*(nn+1)/2}), x)); Flatten(Position(t, 0))",
 				"{2,5,8,12,23,33}");
 		// check("InverseSeries(Series(x,{x,0,3})) // FullForm", //

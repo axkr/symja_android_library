@@ -246,18 +246,18 @@ public class Blank implements IPattern {
 			buf.append(']');
 		}
 		if (fDefaultValue != null) {
-			buf.append(",");
+			buf.append(',');
 			buf.append(fDefaultValue.fullFormString());
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-				buf.append(")");
+				buf.append(')');
 			} else {
-				buf.append("]");
+				buf.append(']');
 			}
 		} else if (fDefault) {
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-				buf.append(")");
+				buf.append(')');
 			} else {
-				buf.append("]");
+				buf.append(']');
 			}
 		}
 		return buf.toString();

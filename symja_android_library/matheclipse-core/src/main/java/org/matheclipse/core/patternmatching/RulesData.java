@@ -39,7 +39,7 @@ public class RulesData implements Serializable {
 	 */
 	public static final int DEFAULT_VALUE_INDEX = Integer.MIN_VALUE;
 
-	public static boolean isComplicatedPatternRule(final IExpr lhsExpr, ArraySet neededSymbols) {
+	public static boolean isComplicatedPatternRule(final IExpr lhsExpr, ArraySet<ISymbol> neededSymbols) {
 		if (lhsExpr.isAST()) {
 			final IAST lhsAST = ((IAST) lhsExpr);
 			if (lhsAST.size() > 1) {
@@ -88,7 +88,7 @@ public class RulesData implements Serializable {
 		return false;
 	}
 
-	private OpenIntToIExprHashMap fDefaultValues;
+	private OpenIntToIExprHashMap<IExpr> fDefaultValues;
 
 	private Map<IExpr, PatternMatcherEquals> fEqualDownRules;
 
@@ -878,7 +878,7 @@ public class RulesData implements Serializable {
 
 	public void putfDefaultValues(int pos, IExpr expr) {
 		if (this.fDefaultValues == null) {
-			this.fDefaultValues = new OpenIntToIExprHashMap();
+			this.fDefaultValues = new OpenIntToIExprHashMap<IExpr>();
 		}
 		fDefaultValues.put(pos, expr);
 	}

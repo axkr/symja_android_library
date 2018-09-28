@@ -47,11 +47,11 @@ public class ASCIIPrettyPrinter3 {
 		int len = numerator.length();
 		if (denominator == null) {
 			for (int i = 0; i < len; i++) {
-				line1.append(" ");
+				line1.append(' ');
 			}
 			line2.append(numerator);
 			for (int i = 0; i < len; i++) {
-				line3.append(" ");
+				line3.append(' ');
 			}
 			fractionPrinted = false;
 			return;

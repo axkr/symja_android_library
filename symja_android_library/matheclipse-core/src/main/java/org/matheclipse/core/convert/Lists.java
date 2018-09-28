@@ -3,21 +3,10 @@ package org.matheclipse.core.convert;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IExpr;
 
 public class Lists {
-	/**
-	 * Returns the size of a array, returning zero if the array is <code>null</code>.
-	 * 
-	 * @param p_array
-	 *            the array for which to return the size.
-	 * @return the size of the array, or <code>0</code> if the array is <code>null</code>.
-	 */
-	public static <T> int sizeOf(T... p_array) {
-		if (p_array == null) {
-			return 0;
-		}
-		return p_array.length;
-	}
+
 
 	/**
 	 * Returns a {@link org.matheclipse.core.interfaces.IAST} of boolean

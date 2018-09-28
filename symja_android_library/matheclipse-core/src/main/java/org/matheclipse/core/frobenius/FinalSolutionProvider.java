@@ -61,7 +61,7 @@ final class FinalSolutionProvider extends SolutionProviderAbstract {
 		}
 
 		currentCounter = currentRemainder[i].div(coefficients[i]);
-		for (i = 0; i < coefficients.length; ++i)
+		for (i = 0; i < coefficients.length; ++i) {
 			if (coefficients[i].isZero()) {
 				if (!currentRemainder[i].isZero()) {
 					currentSolution = null;
@@ -74,6 +74,7 @@ final class FinalSolutionProvider extends SolutionProviderAbstract {
 				currentSolution = null;
 				return null;
 			}
+		}
 		IInteger[] solution = currentSolution.clone();
 		solution[position] = solution[position].add(currentCounter);
 		currentSolution = null;
