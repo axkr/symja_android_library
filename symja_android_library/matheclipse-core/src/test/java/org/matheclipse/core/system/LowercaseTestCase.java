@@ -1,7 +1,8 @@
 package org.matheclipse.core.system;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.ToggleFeature;import org.matheclipse.core.builtin.Structure;
+import org.matheclipse.core.basic.ToggleFeature;
+import org.matheclipse.core.builtin.Structure;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -3200,7 +3201,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ExpToTrig(E^(c*x))", //
 				"Cosh(c*x)+Sinh(c*x)");
 	}
-	
+
 	public void testExtendedGCD() {
 		check("ExtendedGCD(2,3)", "{1,{-1,1}}");
 		check("ExtendedGCD(6,15,30)", "{3,{-2,1,0}}");
@@ -3302,8 +3303,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFactorial() {
-		check("Factorial(2.5)", "3.32335");
-		check("Factorial(Infinity)", "Infinity");
+
+		check("Factorial(Factorial(x))", //
+				"(x!)!");
+		check("Factorial(2.5)", //
+				"3.32335");
+		check("Factorial(Infinity)", //
+				"Infinity");
 
 		check("Factorial2(-1)", "1");
 		check("Factorial2(-2)", "ComplexInfinity");
@@ -8876,8 +8882,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testReplaceList() {
 		// TODO
-		// check("ReplaceList({a, b, c}, {___, x__, ___} -> {x})", "{{a},{a,
-		// b},{a,b,c},{b},{b,c},{c}}");
+		// check("ReplaceList({a, b, c, d, e, f, g}, {x__, y__, z__} :> {{x},{y},{z}})", //
+		// "{{a},{a, b},{a,b,c},{b},{b,c},{c}}");
 	}
 
 	public void testReplaceTransformations() {
@@ -11596,6 +11602,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testVectorAngle() {
+		check("(1/2)*Sqrt(2)", //
+				"1/Sqrt(2)");
+		check("ArcCos(1/Sqrt(2))", //
+				"Pi/4");
 		check("VectorAngle({1,0},{0,1})", "Pi/2");
 		check("VectorAngle({1, 2}, {3, 1})", "Pi/4");
 		check("VectorAngle({1, 1, 0}, {1, 0, 1})", "Pi/3");
@@ -11707,7 +11717,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Zeta(-3.0+I*1.0^(-100))", "0.0143825+I*0.0103497");
 
 		check("Zeta(-1)", "-1/12");
-		check("Zeta(2)", "Pi^2/6");
+		check("Zeta(2)", //
+				"Pi^2/6");
 		// TODO add implementation
 		// check("Zeta(-2.5 + I)", "0.0235936 + 0.0014078*I");
 		check("Zeta(s, 0)", "Zeta(s)");

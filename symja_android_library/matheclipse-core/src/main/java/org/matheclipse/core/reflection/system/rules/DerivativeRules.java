@@ -93,9 +93,15 @@ public interface DerivativeRules {
     // InverseErf->1/2*Sqrt(Pi)*E^InverseErf(x)^2
     Rule(InverseErf,
       Times(C1D2,Exp(Sqr(InverseErf(x))),Sqrt(Pi))),
+    // InverseErfc->-1/2*E^InverseErfc(#1)^2*Sqrt(Pi)
+    Rule(InverseErfc,
+      Times(CN1D2,Exp(Sqr(InverseErfc(Slot1))),Sqrt(Pi))),
     // Log->1/#1
     Rule(Log,
       Power(Slot1,-1)),
+    // LogGamma->PolyGamma(0,#1)
+    Rule(LogGamma,
+      PolyGamma(C0,Slot1)),
     // LogisticSigmoid->LogisticSigmoid(#1)*(1-LogisticSigmoid(#1))
     Rule(LogisticSigmoid,
       Times(Plus(C1,Negate(LogisticSigmoid(Slot1))),LogisticSigmoid(Slot1))),
@@ -210,6 +216,9 @@ public interface DerivativeRules {
     // {Power,1,1}->#1^(-1+#2)+(Log(#1)*#2)/#1^(1-#2)
     Rule(List(Power,C1,C1),
       Plus(Power(Slot1,Plus(CN1,Slot2)),Times(Log(Slot1),Power(Slot1,Plus(CN1,Slot2)),Slot2))),
+    // {PolyLog,0,1}->PolyLog(-1+#2,#1)/#1
+    Rule(List(PolyLog,C0,C1),
+      Times(PolyLog(Plus(CN1,Slot2),Slot1),Power(Slot1,-1))),
     // {ProductLog,0,1}->ProductLog(#1,#2)/#2*(1+ProductLog(#1,#2))
     Rule(List(ProductLog,C0,C1),
       Times(ProductLog(Slot1,Slot2),Plus(C1,ProductLog(Slot1,Slot2)),Power(Slot2,-1)))

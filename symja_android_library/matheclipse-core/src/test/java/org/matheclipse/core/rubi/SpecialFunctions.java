@@ -1752,6 +1752,8 @@ public class SpecialFunctions extends AbstractRubiTestCase {
 
 	// {6567}
 	public void test0249() {
+//		check("D[LogGamma[a+b*x],x]", //
+//				"");
 		check(//
 				"Integrate[LogGamma[a + b*x], x]", //
 				"PolyGamma[-2, a + b*x]/b", //

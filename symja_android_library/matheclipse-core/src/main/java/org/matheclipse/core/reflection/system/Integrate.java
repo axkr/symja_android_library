@@ -83,6 +83,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * Check if the internal rules are already initialized
 	 */
 	public static boolean INITIALIZED = false;
+	public final static Set<ISymbol> INT_RUBI_FUNCTIONS = new HashSet<ISymbol>(64);
 
 	public final static Set<IExpr> DEBUG_EXPR = new HashSet<IExpr>(64);
 
@@ -730,65 +731,70 @@ public class Integrate extends AbstractFunctionEvaluator {
 		EvalEngine engine = EvalEngine.get();
 		int limit = engine.getRecursionLimit();
 		boolean quietMode = engine.isQuietMode();
+		ISymbol head = arg1.topHead();
 
-		boolean newCache = false;
-		try {
+		if ((head.getAttributes() & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION
+				|| INT_RUBI_FUNCTIONS.contains(head) || head.getSymbolName().startsWith("§")) {
 
-			if (engine.REMEMBER_AST_CACHE != null) {
-				IExpr result = engine.REMEMBER_AST_CACHE.getIfPresent(ast);
-				if (result != null) {// &&engine.getRecursionCounter()>0) {
-					if (result.isPresent()) {
-						return result;
+			boolean newCache = false;
+			try {
+
+				if (engine.REMEMBER_AST_CACHE != null) {
+					IExpr result = engine.REMEMBER_AST_CACHE.getIfPresent(ast);
+					if (result != null) {// &&engine.getRecursionCounter()>0) {
+						if (result.isPresent()) {
+							return result;
+						}
+						IExpr temp = callRestIntegrate(arg1, x, ast);
+						if (temp.isPresent()) {
+							return temp;
+						}
+//					RecursionLimitExceeded.throwIt(engine.getRecursionCounter(), ast);
+						return F.NIL;
 					}
-					IExpr temp = callRestIntegrate(arg1, x, ast);
+				} else {
+					newCache = true;
+					engine.REMEMBER_AST_CACHE = CacheBuilder.newBuilder().maximumSize(50).build();
+				}
+				try {
+					engine.setQuietMode(true);
+					if (limit <= 0 || limit > Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT) {
+						engine.setRecursionLimit(Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT);
+					}
+
+					// System.out.println(ast.toString());
+					engine.REMEMBER_AST_CACHE.put(ast, F.NIL);
+					IExpr temp = F.Integrate.evalDownRule(EvalEngine.get(), ast);
 					if (temp.isPresent()) {
+						engine.REMEMBER_AST_CACHE.put(ast, temp);
 						return temp;
 					}
-					RecursionLimitExceeded.throwIt(engine.getRecursionCounter(), ast);
-					return F.NIL;
-				}
-			} else {
-				newCache = true;
-				engine.REMEMBER_AST_CACHE = CacheBuilder.newBuilder().maximumSize(50).build();
-			}
-			try {
-				engine.setQuietMode(true);
-				if (limit <= 0 || limit > Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT) {
-					engine.setRecursionLimit(Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT);
-				}
-				
-				// System.out.println(ast.toString());
-				engine.REMEMBER_AST_CACHE.put(ast, F.NIL);
-				IExpr temp = F.Integrate.evalDownRule(EvalEngine.get(), ast);
-				if (temp.isPresent()) {
-					engine.REMEMBER_AST_CACHE.put(ast, temp);
-					return temp;
-				}
-			} catch (RecursionLimitExceeded rle) {
-				// engine.printMessage("Integrate(Rubi recursion): " + Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT
-				// + " exceeded: " + ast.toString());
-				engine.printMessage("Integrate(Rubi recursion): " + rle.getMessage());
-				engine.setRecursionLimit(limit);
-			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
-					rex.printStackTrace();
-				}
-				engine.printMessage("Integrate Rubi recursion limit " + Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT
-						+ " RuntimeException: " + ast.toString());
-				engine.setRecursionLimit(limit);
+				} catch (RecursionLimitExceeded rle) {
+					// engine.printMessage("Integrate(Rubi recursion): " + Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT
+					// + " exceeded: " + ast.toString());
+					engine.printMessage("Integrate(Rubi recursion): " + rle.getMessage());
+					engine.setRecursionLimit(limit);
+				} catch (RuntimeException rex) {
+					if (Config.SHOW_STACKTRACE) {
+						rex.printStackTrace();
+					}
+					engine.printMessage("Integrate Rubi recursion limit " + Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT
+							+ " RuntimeException: " + ast.toString());
+					engine.setRecursionLimit(limit);
 
-			}
+				}
 
-		} catch (AbortException ae) {
-			if (Config.DEBUG) {
-				ae.printStackTrace();
+			} catch (AbortException ae) {
+				if (Config.DEBUG) {
+					ae.printStackTrace();
+				}
+			} finally {
+				engine.setRecursionLimit(limit);
+				if (newCache) {
+					engine.REMEMBER_AST_CACHE = null;
+				}
+				engine.setQuietMode(quietMode);
 			}
-		} finally {
-			engine.setRecursionLimit(limit);
-			if (newCache) {
-				engine.REMEMBER_AST_CACHE = null;
-			}
-			engine.setQuietMode(quietMode);
 		}
 		return F.NIL;
 	}
@@ -920,17 +926,10 @@ public class Integrate extends AbstractFunctionEvaluator {
 //			INT_FUNCTIONS.add(F.ArcSinh);
 //			INT_FUNCTIONS.add(F.ArcTanh);
 
-			// ISymbol[] rubiSymbols = { F.AppellF1, F.ArcCos, F.ArcCot, F.ArcCsc, F.ArcSec, F.ArcSin, F.ArcTan,
-			// F.ArcCosh,
-			// F.ArcCoth, F.ArcCsch, F.ArcSech, F.ArcSinh, F.ArcTanh, F.Cos, F.Cosh, F.CosIntegral, F.CoshIntegral,
-			// F.Cot, F.Coth, F.Csc, F.Csch, F.EllipticE, F.EllipticF, F.EllipticPi, F.Erf, F.Erfc, F.Erfi, F.Exp,
-			// F.ExpIntegralE, F.ExpIntegralEi, F.FresnelC, F.FresnelS, F.Gamma, F.HypergeometricPFQ,
-			// F.Hypergeometric2F1, F.HurwitzZeta, F.InverseErf, F.Log, F.LogGamma, F.LogIntegral, F.Piecewise, F.Plus,
-			// F.PolyGamma, F.PolyLog, F.Power, F.ProductLog, F.Sec, F.Sech, F.Sin, F.Sinc, F.Sinh, F.SinIntegral,
-			// F.SinhIntegral, F.Sqrt, F.Tan, F.Tanh, F.Times, F.Zeta };
-			// for (int i = 0; i < rubiSymbols.length; i++) {
-			// INT_RUBI_FUNCTIONS.add(rubiSymbols[i]);
-			// }
+			ISymbol[] rubiSymbols = { F.Derivative, F.D };
+			for (int i = 0; i < rubiSymbols.length; i++) {
+				INT_RUBI_FUNCTIONS.add(rubiSymbols[i]);
+			}
 		}
 	}
 

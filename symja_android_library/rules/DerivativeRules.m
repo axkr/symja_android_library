@@ -28,7 +28,9 @@
   HeavisideTheta->DiracDelta(#),
   IntegerPart->0,
   InverseErf->(1/2*Sqrt(Pi)*E^(InverseErf(x)^2)),
+  InverseErfc->(-(1/2))*E^InverseErfc(#)^2*Sqrt(Pi),
   Log->#^(-1),
+  LogGamma->PolyGamma(0,#),
   LogisticSigmoid->LogisticSigmoid(#)*(1-LogisticSigmoid(#)),
   PolyGamma->PolyGamma(1,#),
   Cot->(-1)*Csc(#)^2,
@@ -71,6 +73,7 @@
   {Power,1,0}->#^(-1+#2)*#2,
   {Power,0,1}->Log(#)*#^#2 ,
   {Power,1,1}->#^(-1+#2)+Log(#)*#^(-1+#2)*#2,
+  {PolyLog,0,1}->PolyLog(-1+#2,#)*(#^(-1)),
   {ProductLog,0,1}->ProductLog(#, #2)/#2 * (1+ProductLog(#, #2))
 }
 }

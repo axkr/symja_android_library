@@ -13,7 +13,7 @@ public interface DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 77 };
+  final public static int[] SIZES = { 0, 80 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -98,9 +98,15 @@ public interface DRules {
     // D(InverseErf(f_),x_NotListQ):=D(f,x)*1/2*Sqrt(Pi)*E^InverseErf(f)^2
     ISetDelayed(D(InverseErf(f_),$p(x,NotListQ)),
       Times(D(f,x),C1D2,Sqrt(Pi),Exp(Sqr(InverseErf(f))))),
+    // D(InverseErfc(f_),x_NotListQ):=D(f,x)*(-1/2)*E^InverseErfc(f)^2*Sqrt(Pi)
+    ISetDelayed(D(InverseErfc(f_),$p(x,NotListQ)),
+      Times(D(f,x),CN1D2,Exp(Sqr(InverseErfc(f))),Sqrt(Pi))),
     // D(Log(f_),x_NotListQ):=D(f,x)/f
     ISetDelayed(D(Log(f_),$p(x,NotListQ)),
       Times(D(f,x),Power(f,-1))),
+    // D(LogGamma(f_),x_NotListQ):=D(f,x)*PolyGamma(0,f)
+    ISetDelayed(D(LogGamma(f_),$p(x,NotListQ)),
+      Times(D(f,x),PolyGamma(C0,f))),
     // D(LogisticSigmoid(f_),x_NotListQ):=D(f,x)*LogisticSigmoid(f)*(1-LogisticSigmoid(f))
     ISetDelayed(D(LogisticSigmoid(f_),$p(x,NotListQ)),
       Times(D(f,x),LogisticSigmoid(f),Plus(C1,Negate(LogisticSigmoid(f))))),
@@ -245,6 +251,9 @@ public interface DRules {
     // D(BesselJ(f_,g_),x_NotListQ):=1/2*(BesselJ(-1+f,g)-BesselJ(1+f,g))*D(g,x)+D(f,x)*Derivative(1,0)[BesselJ][f,g]
     ISetDelayed(D(BesselJ(f_,g_),$p(x,NotListQ)),
       Plus(Times(C1D2,Plus(BesselJ(Plus(CN1,f),g),Negate(BesselJ(Plus(C1,f),g))),D(g,x)),Times(D(f,x),$($(Derivative(C1,C0),BesselJ),f,g)))),
+    // D(PolyLog(f_,g_),x_NotListQ):=(D(g,x)*PolyLog(-1+f,g))/g+D(f,x)*Derivative(1,0)[PolyLog][f,g]
+    ISetDelayed(D(PolyLog(f_,g_),$p(x,NotListQ)),
+      Plus(Times(Power(g,-1),D(g,x),PolyLog(Plus(CN1,f),g)),Times(D(f,x),$($(Derivative(C1,C0),PolyLog),f,g)))),
     // D(ProductLog(f_,g_),x_NotListQ):=ProductLog(f,g)*D(g,x)/(g*(1+ProductLog(f,g)))+D(f,x)*Derivative(1,0)[ProductLog][f,g]
     ISetDelayed(D(ProductLog(f_,g_),$p(x,NotListQ)),
       Plus(Times(ProductLog(f,g),D(g,x),Power(Times(g,Plus(C1,ProductLog(f,g))),-1)),Times(D(f,x),$($(Derivative(C1,C0),ProductLog),f,g))))

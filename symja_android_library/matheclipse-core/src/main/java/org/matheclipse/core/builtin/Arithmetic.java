@@ -4968,7 +4968,7 @@ public final class Arithmetic {
 				int base = iter.key();
 				IExpr exponent = iter.value();
 				if (base != 1) {
-					times1.append(F.Power(F.ZZ(base), F.Expand.of(exponent)));
+					times1.append(F.Power(F.ZZ(base), F.evalExpand(exponent)));
 				}
 			}
 			return times1;

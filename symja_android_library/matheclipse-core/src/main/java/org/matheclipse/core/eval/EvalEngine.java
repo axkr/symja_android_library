@@ -382,7 +382,7 @@ public class EvalEngine implements Serializable {
 		engine.fFileSystemEnabled = fFileSystemEnabled;
 		engine.fIterationLimit = fIterationLimit;
 		if (fLocalVariableStackMap != null) {
-			engine.fLocalVariableStackMap = fLocalVariableStackMap;
+			engine.fLocalVariableStackMap = (HashMap<ISymbol, Deque<IExpr>>)fLocalVariableStackMap.clone();
 		}
 		engine.fModifiedVariablesList = fModifiedVariablesList;
 		engine.fModuleCounter = fModuleCounter;
@@ -851,7 +851,7 @@ public class EvalEngine implements Serializable {
 				result = evaluate(expr);
 			}
 		} finally {
-			if (result.isPresent()) {
+			if (blockVariables.size()>0) {
 				// reset local variables to global ones
 				java.util.IdentityHashMap<ISymbol, IExpr> globalVariables = new IdentityHashMap<ISymbol, IExpr>();
 				for (Map.Entry<ISymbol, ISymbol> entry : blockVariables.entrySet()) {
@@ -875,13 +875,39 @@ public class EvalEngine implements Serializable {
 	 *            the value
 	 */
 	public IExpr evalBlock(IExpr expr, ISymbol symbol, IExpr localValue) {
-		Deque<IExpr> stack = localStackCreate(symbol);
+//		Deque<IExpr> stack = localStackCreate(symbol);
+//		try {
+//			stack.push(localValue);
+//			return evaluate(expr);
+//		} finally {
+//			stack.pop();
+//		}
+		
+		java.util.IdentityHashMap<ISymbol, ISymbol> blockVariables = new IdentityHashMap<ISymbol, ISymbol>();
+		IExpr result = F.NIL;
 		try {
-			stack.push(localValue);
-			return evaluate(expr);
+			ISymbol oldSymbol = symbol;
+			ISymbol newSymbol = F.Dummy(oldSymbol.toString() );
+			blockVariables.put(oldSymbol, newSymbol);
+			IExpr temp = F.subst(evaluate(localValue), blockVariables);
+			evaluate(F.Set(newSymbol, temp));
+			result = expr.accept(new ModuleReplaceAll(blockVariables, this, ""));
+			if (result.isPresent()) {
+				result = evaluate(result);
+			} else {
+				result = evaluate(expr);
+			}
 		} finally {
-			stack.pop();
+			if (blockVariables.size()>0) {
+				// reset local variables to global ones
+				java.util.IdentityHashMap<ISymbol, IExpr> globalVariables = new IdentityHashMap<ISymbol, IExpr>();
+				for (Map.Entry<ISymbol, ISymbol> entry : blockVariables.entrySet()) {
+					globalVariables.put(entry.getValue(), entry.getKey());
+				}
+				result = F.subst(result, globalVariables);
+			}
 		}
+		return result;
 	}
 
 	/**

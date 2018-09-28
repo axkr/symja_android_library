@@ -26,7 +26,9 @@
   D(HeavisideTheta(f_),x_NotListQ):=D(f,x)*DiracDelta(f),
   D(IntegerPart(f_),x_NotListQ):=0,
   D(InverseErf(f_),x_NotListQ):=D(f,x)*(1/2*Sqrt(Pi)*E^(InverseErf(f)^2)),
+  D(InverseErfc(f_),x_NotListQ):=D(f,x)*(-(1/2))*E^InverseErfc(f)^2*Sqrt(Pi),
   D(Log(f_),x_NotListQ):=D(f,x)*f^(-1),
+  D(LogGamma(f_),x_NotListQ):=D(f,x)*PolyGamma(0,f),
   D(LogisticSigmoid(f_),x_NotListQ):=D(f,x)*LogisticSigmoid(f)*(1-LogisticSigmoid(f)),
   D(PolyGamma(f_),x_NotListQ):=D(f,x)*PolyGamma(1,f),
   D(Cot(f_),x_NotListQ):=D(f,x)*(-1)*Csc(f)^2,
@@ -84,7 +86,7 @@
   D(ArcTan(x_), {x_, n_IntegerQ}) := KroneckerDelta(n)*ArcTan(x) + 
     Sum((((-1)^k*k! * Pochhammer(2*k - n + 2, 2*(n - k) - 2))/ ((n - k - 1)! * (2*x)^(n - 2*k - 1)))*(1 + x^2)^(-k - 1), {k, 0, n - 1})
     /; n >= 0,
-      
+       
   D(Cos(x_), {x_, n_IntegerQ}) := Cos(x + (Pi*n)/2) 
     /; n >= 0,
   D(Cot(x_), {x_, n_IntegerQ}) := Cot(x)*KroneckerDelta(n) - Csc(x)^2*KroneckerDelta(n - 1) - 
@@ -101,5 +103,6 @@
     
   
   D(BesselJ(f_, g_),x_NotListQ):= 1/2*(BesselJ(-1+f, g)-BesselJ(1+f, g))*D(g,x)+D(f,x)*Derivative(1,0)[BesselJ][f,g],
+  D(PolyLog(f_, g_),x_NotListQ):= (PolyLog(-1 + f, g)*D(g,x))/g + D(f,x)*Derivative(1, 0)[PolyLog][f, g],
   D(ProductLog(f_, g_),x_NotListQ):= ProductLog(f,g)*D(g,x)/(g*(1+ProductLog(f,g)))+D(f,x)*Derivative(1,0)[ProductLog][f,g] 
 }
