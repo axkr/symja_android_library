@@ -538,13 +538,13 @@ public class TeXFormFactory {
 		}
 
 		public void precedenceClose(final StringBuilder buf, final int precedence) {
-			if (precedence > fPrecedence) {
+			if (precedence >= fPrecedence) {
 				buf.append("\\right) ");
 			}
 		}
 
 		public void precedenceOpen(final StringBuilder buf, final int precedence) {
-			if (precedence > fPrecedence) {
+			if (precedence >= fPrecedence) {
 				buf.append("\\left( ");
 			}
 		}
@@ -631,13 +631,13 @@ public class TeXFormFactory {
 		}
 
 		public void precedenceClose(final StringBuilder buf, final int precedence) {
-			if (precedence > fPrecedence) {
+			if (precedence >= fPrecedence) {
 				buf.append("\\right) ");
 			}
 		}
 
 		public void precedenceOpen(final StringBuilder buf, final int precedence) {
-			if (precedence > fPrecedence) {
+			if (precedence >= fPrecedence) {
 				buf.append("\\left( ");
 			}
 		}

@@ -263,6 +263,12 @@ public class MathMLPresentationTestCase extends TestCase {
 				"<msqrt><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow></msqrt>");
 	}
 
+	public void testFactorial() {
+		IExpr expr = EvalEngine.get().evaluate("Factorial(Factorial(x))");
+		check(expr, //
+				"<mrow><mrow><mo>(</mo><mi>x</mi><mo>!</mo><mo>)</mo></mrow><mo>!</mo></mrow>");
+	}
+	
 	public void testFloor() {
 		IExpr expr = EvalEngine.get().evaluate("Floor(f(x))");
 		check(expr, //

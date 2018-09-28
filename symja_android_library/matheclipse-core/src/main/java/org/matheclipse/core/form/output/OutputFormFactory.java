@@ -790,24 +790,24 @@ public class OutputFormFactory {
 
 	public void convertPrefixOperator(final Appendable buf, final IAST list, final PrefixOperator oper,
 			final int precedence) throws IOException {
-		if (oper.getPrecedence() < precedence) {
+		if (oper.getPrecedence() <= precedence) {
 			append(buf, "(");
 		}
 		append(buf, oper.getOperatorString());
 		convert(buf, list.arg1(), oper.getPrecedence(), false);
-		if (oper.getPrecedence() < precedence) {
+		if (oper.getPrecedence() <= precedence) {
 			append(buf, ")");
 		}
 	}
 
 	public void convertPostfixOperator(final Appendable buf, final IAST list, final PostfixOperator oper,
 			final int precedence) throws IOException {
-		if (oper.getPrecedence() < precedence) {
+		if (oper.getPrecedence() <= precedence) {
 			append(buf, "(");
 		}
 		convert(buf, list.arg1(), oper.getPrecedence(), false);
 		append(buf, oper.getOperatorString());
-		if (oper.getPrecedence() < precedence) {
+		if (oper.getPrecedence() <= precedence) {
 			append(buf, ")");
 		}
 	}
