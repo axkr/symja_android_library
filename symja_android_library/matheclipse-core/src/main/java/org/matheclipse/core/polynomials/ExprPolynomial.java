@@ -2230,7 +2230,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 * 
 	 * @return val.values().iterator().
 	 */
-	public Iterator coefficientIterator() {
+	public Iterator<IExpr> coefficientIterator() {
 		return val.values().iterator();
 	}
 

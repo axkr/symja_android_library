@@ -129,7 +129,7 @@ public class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
 	 * @param source
 	 *            map to copy
 	 */
-	public OpenIntToIExprHashMap(final OpenIntToIExprHashMap source) {
+	public OpenIntToIExprHashMap(final OpenIntToIExprHashMap<T> source) {
 		final int length = source.keys.length;
 		keys = new int[length];
 		System.arraycopy(source.keys, 0, keys, 0, length);

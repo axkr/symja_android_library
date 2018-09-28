@@ -306,7 +306,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 					}
 				});
 				if (filterCollector.size() > 1) {
-					IExpr temp = F.evalQuiet(F.Sum(restCollector.getOneIdentity(F.C1), list));
+					IExpr temp = engine.evalQuiet(F.Sum(restCollector.getOneIdentity(F.C1), list));
 					if (temp.isFreeAST(F.Sum)) {
 						filterCollector.append(temp);
 						return filterCollector;
@@ -348,7 +348,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 			}
 		}
 		if (from.isPositive()) {
-			IExpr temp1 = F.evalQuiet(F.Sum(arg1, F.List(var, C0, from.minus(F.C1))));
+			IExpr temp1 = engine.evalQuiet(F.Sum(arg1, F.List(var, C0, from.minus(F.C1))));
 			if (!temp1.isComplexInfinity() && temp1.isFreeAST(F.Sum)) {
 				IExpr temp2 = engine.evalQuietNull(F.Sum(arg1, F.List(var, C0, to)));
 				if (temp2.isPresent() && !temp2.isComplexInfinity()) {
