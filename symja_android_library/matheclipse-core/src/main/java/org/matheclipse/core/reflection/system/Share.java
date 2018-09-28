@@ -60,10 +60,6 @@ public class Share extends AbstractFunctionEvaluator {
 		final int fOffset;
 		public int fCounter;
 
-		public ShareReplaceAll(Function<IExpr, IExpr> function) {
-			this(function, 0);
-		}
-
 		public ShareReplaceAll(Function<IExpr, IExpr> function, int offset) {
 			super();
 			this.fFunction = function;

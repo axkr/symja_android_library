@@ -513,11 +513,6 @@ public class TeXFormFactory {
 		protected int fPrecedence;
 		protected String fOperator;
 
-		public PostOperator(final int precedence, final String oper) {
-			fPrecedence = precedence;
-			fOperator = oper;
-		}
-
 		public PostOperator(final TeXFormFactory factory, final int precedence, final String oper) {
 			super(factory);
 			fPrecedence = precedence;
@@ -605,11 +600,6 @@ public class TeXFormFactory {
 	private final static class PreOperator extends AbstractConverter {
 		protected int fPrecedence;
 		protected String fOperator;
-
-		public PreOperator(final int precedence, final String oper) {
-			fPrecedence = precedence;
-			fOperator = oper;
-		}
 
 		public PreOperator(final TeXFormFactory factory, final int precedence, final String oper) {
 			super(factory);

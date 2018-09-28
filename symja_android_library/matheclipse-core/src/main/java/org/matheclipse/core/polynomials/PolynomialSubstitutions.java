@@ -1,35 +1,15 @@
 package org.matheclipse.core.polynomials;
 
-import java.io.Reader;
-import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
-import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-
-import edu.jas.kern.PrettyPrint;
-import edu.jas.kern.Scripting;
-import edu.jas.structure.RingFactory;
-import edu.jas.util.CartesianProduct;
-import edu.jas.util.CartesianProductInfinite;
-import edu.jas.util.LongIterable;
 
 /**
  * GenPolynomialRing generic polynomial factory implementing ExprRingFactory; Factory for n-variate ordered polynomials
