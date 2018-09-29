@@ -7749,29 +7749,6 @@ public class F {
 	}
 
 	/**
-	 * Get or create a user defined symbol which is retrieved from the evaluation engines context path.
-	 * 
-	 * @param symbolName the name of the symbol
-	 * @return the symbol object from the context path
-	 * @deprecated use {@link #symbol(String)}
-	 */
-	public static ISymbol userSymbol(final String symbolName) {
-		return symbol(symbolName, null, EvalEngine.get());
-	}
-
-	/**
-	 * Get or create a user defined symbol which is retrieved from the evaluation engines context path.
-	 * 
-	 * @param symbolName the name of the symbol
-	 * @param engine     the evaluation engine
-	 * @return the symbol object from the context path
-	 * @deprecated use {@link #symbol(String, EvalEngine)}
-	 */
-	public static ISymbol userSymbol(final String symbolName, EvalEngine engine) {
-		return symbol(symbolName, null, engine);
-	}
-
-	/**
 	 * Create a unique dummy symbol which is retrieved from the evaluation engines context path.
 	 * 
 	 * @param symbolName the name of the symbol

@@ -1257,23 +1257,22 @@ public class Algebra {
 						}
 					}
 
-					try {
-						int exp = Validate.checkPowerExponent(powerAST);
-						IAST plusAST = (IAST) base;
-						if (exp < 0) {
-							if (expandNegativePowers) {
-								exp *= (-1);
-								return PowerOp.power(expandPower(plusAST, exp), F.CN1);
-							}
-							addExpanded(powerAST);
-							return F.NIL;
-						}
-						return expandPower(plusAST, exp);
-
-					} catch (WrongArgumentType e) {
+					int exp = exponent.toIntDefault(Integer.MIN_VALUE);
+					if (exp == Integer.MIN_VALUE) {
 						addExpanded(powerAST);
 						return F.NIL;
 					}
+					IAST plusAST = (IAST) base;
+					if (exp < 0) {
+						if (expandNegativePowers) {
+							exp *= (-1);
+							return PowerOp.power(expandPower(plusAST, exp), F.CN1);
+						}
+						addExpanded(powerAST);
+						return F.NIL;
+					}
+					return expandPower(plusAST, exp);
+
 				}
 				addExpanded(powerAST);
 				return F.NIL;
@@ -3844,7 +3843,7 @@ public class Algebra {
 				return F.List(c, F.C1);
 			}
 			if (c.isTimes() && c.first().isNumber()) {
-				return F.List(c.first(), c.rest());
+				return F.List(c.first(), c.rest().getOneIdentity(F.C1));
 			}
 			return F.List(F.C1, c);
 		});

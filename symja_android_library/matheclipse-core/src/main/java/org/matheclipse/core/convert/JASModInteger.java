@@ -167,11 +167,12 @@ public class JASModInteger {
 				final IExpr base = ast.base();
 				for (int i = 0; i < fVariables.size(); i++) {
 					if (fVariables.get(i).equals(base)) {
-						int exponent = -1;
-						try {
-							exponent = Validate.checkPowerExponent(ast);
-						} catch (WrongArgumentType e) {
-						}
+						int exponent = ast.exponent().toIntDefault(Integer.MIN_VALUE);
+//						int exponent = -1;
+//						try {
+//							exponent = Validate.checkPowerExponent(ast);
+//						} catch (WrongArgumentType e) {
+//						}
 						if (exponent < 0) {
 							throw new ArithmeticException(
 									"JASConvert:expr2Poly - invalid exponent: " + ast.exponent().toString());
@@ -232,12 +233,13 @@ public class JASModInteger {
 				final IExpr base = ast.base();
 				for (int i = 0; i < fVariables.size(); i++) {
 					if (fVariables.get(i).equals(base)) {
-						int exponent = -1;
-						try {
-							exponent = Validate.checkPowerExponent(ast);
-						} catch (WrongArgumentType e) {
-							//
-						}
+						int exponent = ast.exponent().toIntDefault(Integer.MIN_VALUE);
+//						int exponent = -1;
+//						try {
+//							exponent = Validate.checkPowerExponent(ast);
+//						} catch (WrongArgumentType e) {
+//							//
+//						}
 						if (exponent < 0) {
 							throw new ArithmeticException(
 									"JASConvert:expr2Poly - invalid exponent: " + ast.exponent().toString());

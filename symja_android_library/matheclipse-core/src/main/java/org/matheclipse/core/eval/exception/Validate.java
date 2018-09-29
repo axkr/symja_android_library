@@ -30,39 +30,7 @@ public final class Validate {
 	public static int checkIntType(IAST ast, int pos) {
 		return checkIntType(ast, pos, 0);
 	}
-
-	/**
-	 * Get the exponent <code>int</code> value of the <code>ast</code> expressions, which is identified as a
-	 * <code>Power[&lt;something&gt;, exponent]</code> expression. The <code>int</code> value can be determined from an IInteger or INum
-	 * expression.
-	 * 
-	 * @param ast
-	 * @return the exponent <code>int</code> value of the <code>Power[&lt;something&gt;, exponent]</code> expression.
-	 * @throws WrongArgumentType
-	 */
-	public static int checkPowerExponent(final IAST ast) {
-		int result = ast.arg2().toIntDefault(Integer.MIN_VALUE);
-		if (result == Integer.MIN_VALUE) {
-			throw new WrongArgumentType(ast, ast.arg2(), 2,
-					"Trying to convert the argument into an integer exponent: " + ast.arg2());
-		}
-		return result;
-	}
-
-	/**
-	 * Get the exponent <code>long</code> value of the <code>ast</code> expressions, which is identified as a
-	 * <code>Power[&lt;something&gt;, exponent]</code> expression. The <code>long</code> value can be determined from an IInteger or
-	 * INum expression.
-	 * 
-	 * @param ast
-	 * @return the exponent <code>long</code> value of the <code>Power[&lt;something&gt;, exponent]</code> expression.
-	 * @throws WrongArgumentType
-	 */
-	public static long checkLongPowerExponent(final IAST ast) {
-		IExpr arg2 = ast.arg2();
-		return checkLongType(arg2);
-	}
-
+ 
 	/**
 	 * Check the argument, if it's a Java {@code long} value.
 	 * 

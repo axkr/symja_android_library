@@ -2106,6 +2106,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("D((x^2+5*y^3+z^4)/E^w,{{x,y}})", "{(2*x)/E^w,(15*y^2)/E^w}");
 		check("D(E^(-w)*(x^2 + 5*y^3 + z^4), {{{x, y}, {z, w}}})",
 				"{{(2*x)/E^w,(15*y^2)/E^w},{(4*z^3)/E^w,-(x^2+5*y^3+z^4)/E^w}}");
+		check("D(ExpIntegralEi(b*x),x)",//
+				"E^(b*x)/x");
 	}
 
 	public void testDefer() {
@@ -3658,6 +3660,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("First({a, b, c})", "a");
 		check("First(a + b + c)", "a");
 		check("First(a)", "First(a)");
+		check("First(a, b)", //
+				"b");
+		check("First({}, b)", //
+				"b");
+		check("First({a,b}, x)", //
+				"a");
 	}
 
 	public void testFit() {
@@ -5227,6 +5235,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLength() {
+		check("Length(aa)", "0");
 		check("Length({1, 2, 3})", "3");
 		check("Length(Exp(x))", "2");
 		check("FullForm(Exp(x))", "Power(E, x)");
@@ -5919,6 +5928,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("MatchQ(_Integer)[123]", "True");
 		check("MatchQ(22/7, _Rational)", "True");
 		check("MatchQ(6/3, _Rational)", "False");
+		
+		check("MatchQ(22/7, _Rational)",//
+				"True");
+		check("MatchQ(b*x,a_.+x^n_.*b_./;FreeQ({a,b,n},x))", //
+				"True");
+		check("MatchQ(x,a_.+x^n_.*b_./;FreeQ({a,b,n},x))", //
+				"True");
 	}
 
 	public void testMathMLForm() {
@@ -7665,7 +7681,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialQ() {
-		check("PolynomialQ(Tan(x),x)", "False");
+		check("PolynomialQ(E^f(x),x)", //
+				"False");
+		check("PolynomialQ(E^f(y),x)", //
+				"True");
+		check("PolynomialQ(Tan(x),x)", //
+				"False");
 		check("PolynomialQ(f(x), x)", "False");
 		check("PolynomialQ(f(a)+f(a)^2, f(a))", "True");
 		check("PolynomialQ(Sin(f(a))+f(a)^2, f(a))", "False");
@@ -8925,14 +8946,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRest() {
-		check("Rest(a + b + c + d)", "b+c+d");
-		check("Rest(f(a, b, c, d))", "f(b,c,d)");
-		check("NestList(Rest, {a, b, c, d, e}, 3)", "{{a,b,c,d,e},{b,c,d,e},{c,d,e},{d,e}}");
-		check("Rest(1/b)", "-1");
+		check("Rest(E^(b*x))", //
+				"b*x");
+		check("Rest(a + b + c + d)", //
+				"b+c+d");
+		check("Rest(f(a, b, c, d))", //
+				"f(b,c,d)");
+		check("NestList(Rest, {a, b, c, d, e}, 3)", //
+				"{{a,b,c,d,e},{b,c,d,e},{c,d,e},{d,e}}");
+		check("Rest(1/b)", //
+				"-1");
 
-		check("Rest({a, b, c})", "{b,c}");
-		check("Rest(a + b + c)", "b+c");
-		check("Rest(a)", "Rest(a)");
+		check("Rest({a, b, c})", //
+				"{b,c}");
+		check("Rest(a + b + c)", //
+				"b+c");
+		check("Rest(a)", //
+				"Rest(a)");
 	}
 
 	public void testRescale() {

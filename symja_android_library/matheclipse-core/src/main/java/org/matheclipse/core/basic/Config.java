@@ -28,8 +28,8 @@ public class Config {
 					+ "                                                              \n";
 
 	/**
-	 * A global expression cache which compares keys with <code>==</code> object identity instead of
-	 * <code>equals()</code>. The keys and values are weak references.
+	 * A global expression cache which compares keys with <code>==</code> object identity instead of <code>equals()</code>. The keys and
+	 * values are weak references.
 	 */
 	public static Cache<IExpr, Object> EXPR_CACHE;
 
@@ -44,8 +44,8 @@ public class Config {
 		EXPR_CACHE = CacheBuilder.newBuilder().maximumSize(MAX_EXPR_CACHE_SIZE).weakKeys().weakValues().build();
 	}
 	/**
-	 * COMPILER switch - set this boolean variable to <code>true</code>, if you would force a direct plot frame creation
-	 * from the Plot[], Plot3D[] and ParametricPlot[] functions
+	 * COMPILER switch - set this boolean variable to <code>true</code>, if you would force a direct plot frame creation from the
+	 * Plot[], Plot3D[] and ParametricPlot[] functions
 	 * 
 	 * On the server this switch should be set to <code>false</code>
 	 */
@@ -56,7 +56,7 @@ public class Config {
 	 * 0 => forever
 	 * 
 	 */
-	public static long TIME_CONSTRAINED_MILLISECONDS = 60000L;
+//	public static long TIME_CONSTRAINED_MILLISECONDS = 60000L;
 
 	/**
 	 * The time in milliseconds an evaluation thread should run.<br/>
@@ -98,16 +98,15 @@ public class Config {
 	public final static Set<ISymbol> SHOW_PATTERN_SYMBOL_STEPS = new HashSet<ISymbol>();
 
 	/**
-	 * If <code>true</code> the parser doesn't distinguish between lower- or uppercase symbols (i.e. constants, function
-	 * names,...), with the exception of symbols with only one character (i.e. the variable &quot;i&quot; is different
-	 * from the imaginary unit &quot;I&quot;)
+	 * If <code>true</code> the parser doesn't distinguish between lower- or uppercase symbols (i.e. constants, function names,...),
+	 * with the exception of symbols with only one character (i.e. the variable &quot;i&quot; is different from the imaginary unit
+	 * &quot;I&quot;)
 	 */
 	public static boolean PARSER_USE_LOWERCASE_SYMBOLS = true;
 
 	/**
-	 * If <code>true</code> the parser doesn't allow "square brackets" instead of "parentheses" for enclosing function
-	 * arguments in relaxed mode. The syntax <code>f[x, y, ...]</code> isn't allowed then. Always use
-	 * <code>f(x, y, ...)</code>.
+	 * If <code>true</code> the parser doesn't allow "square brackets" instead of "parentheses" for enclosing function arguments in
+	 * relaxed mode. The syntax <code>f[x, y, ...]</code> isn't allowed then. Always use <code>f(x, y, ...)</code>.
 	 * 
 	 */
 	public final static boolean PARSER_USE_STRICT_SYNTAX = false;
@@ -118,14 +117,12 @@ public class Config {
 	public static boolean RUBI_CONVERT_SYMBOLS = false;
 
 	/**
-	 * Used to serialize the internal Rubi rules or the <code>org.matheclipse.core.reflection.system.rules</code>
-	 * classes to a file.
+	 * Used to serialize the internal Rubi rules or the <code>org.matheclipse.core.reflection.system.rules</code> classes to a file.
 	 */
 	public static boolean SERIALIZE_SYMBOLS = false;
 
 	/**
-	 * If set to true the <code>Integrate</code> initialization Rules will be read from ressource
-	 * <code>/ser/integrate.ser</code>
+	 * If set to true the <code>Integrate</code> initialization Rules will be read from ressource <code>/ser/integrate.ser</code>
 	 */
 	// public static boolean LOAD_SERIALIZED_RULES = false;
 
@@ -167,7 +164,7 @@ public class Config {
 	 * Define the Rubi time limit for the <code>TimeConstrained()</code> function.
 	 */
 	public static int INTEGRATE_RUBI_TIMELIMIT = 12;
-	
+
 	/**
 	 * Define the recursion limit for <code>Limit#lHospitalesRule()</code> method.
 	 */
@@ -197,11 +194,10 @@ public class Config {
 	public static boolean TIMECONSTRAINED_NO_THREAD = false;
 
 	/**
-	 * An object that creates new threads on demand. Using thread factories removes hardwiring of calls to new Thread,
-	 * enabling applications to use special thread subclasses, priorities, etc.
+	 * An object that creates new threads on demand. Using thread factories removes hardwiring of calls to new Thread, enabling
+	 * applications to use special thread subclasses, priorities, etc.
 	 * 
-	 * For example <code>com.google.appengine.api.ThreadManager.currentRequestThreadFactory()</code> can be used on
-	 * Google appengine.
+	 * For example <code>com.google.appengine.api.ThreadManager.currentRequestThreadFactory()</code> can be used on Google appengine.
 	 * 
 	 */
 	public static java.util.concurrent.ThreadFactory THREAD_FACTORY = null;
@@ -212,8 +208,7 @@ public class Config {
 	public static final int MACHINE_PRECISION = 15;
 
 	/**
-	 * Enable tests and functions which use the local files. Don't use <code>final</code> here because of grpc
-	 * interface.
+	 * Enable tests and functions which use the local files. Don't use <code>final</code> here because of grpc interface.
 	 */
 	public static boolean FILESYSTEM_ENABLED = false;
 
@@ -229,14 +224,13 @@ public class Config {
 
 	/**
 	 * <p>
-	 * If <code>true</code> the <code>*</code> operator must be written for a <code>Times()</code> expression. I.e. you
-	 * cannot write <code>2(b+c)</code> anymore, but have to write <code>2*(b+c)</code> to get
-	 * <code>Times(2, Plus(b, c))</code>.
+	 * If <code>true</code> the <code>*</code> operator must be written for a <code>Times()</code> expression. I.e. you cannot write
+	 * <code>2(b+c)</code> anymore, but have to write <code>2*(b+c)</code> to get <code>Times(2, Plus(b, c))</code>.
 	 * </p>
 	 * <p>
-	 * You also enable <a href="https://en.wikipedia.org/wiki/Scientific_notation#E-notation">scientific E-notation</a>.
-	 * I.e. <code>1E-2</code> is converted to a double value <code>0.01</code> for floating point numbers and not parsed
-	 * as <code>Plus(-2, E)</code> anymore.
+	 * You also enable <a href="https://en.wikipedia.org/wiki/Scientific_notation#E-notation">scientific E-notation</a>. I.e.
+	 * <code>1E-2</code> is converted to a double value <code>0.01</code> for floating point numbers and not parsed as
+	 * <code>Plus(-2, E)</code> anymore.
 	 * </p>
 	 * <p>
 	 * You also enable integer literal input with a prefix, similar to
@@ -253,9 +247,8 @@ public class Config {
 	/**
 	 * <p>
 	 * If <code>true</code> the implicit <code>*</code> operator has a higher precedence than all other operators. I.e.
-	 * <code>1/2Pi</code> is parsed as <code>Power(Times(2, Pi), -1)</code>. If <code>false</code> the implicit
-	 * <code>*</code> operator has a normal precedence as in all other cases. I.e. <code>1/2Pi</code> is parsed as
-	 * <code>Times(Rational(1,2), Pi)</code>.
+	 * <code>1/2Pi</code> is parsed as <code>Power(Times(2, Pi), -1)</code>. If <code>false</code> the implicit <code>*</code> operator
+	 * has a normal precedence as in all other cases. I.e. <code>1/2Pi</code> is parsed as <code>Times(Rational(1,2), Pi)</code>.
 	 * </p>
 	 */
 	public static boolean DOMINANT_IMPLICIT_TIMES = false;

@@ -1793,6 +1793,9 @@ public final class Programming {
 				return F.$Aborted;
 			}
 
+//			public void cancel() {
+//				fEngine.cancel();
+//			}
 			public void setExpr(IExpr fExpr) {
 				this.fExpr = fExpr;
 			}
@@ -1814,9 +1817,6 @@ public final class Programming {
 			IExpr arg2 = engine.evaluate(ast.arg2());
 			long seconds = 0L;
 			try {
-				// if (ast.arg2().toString().equals("§timelimit")){
-				// arg2=F.num(5.0);
-				// }
 				if (arg2.isReal()) {
 					arg2 = ((ISignedNumber) arg2).ceilFraction();
 					seconds = ((ISignedNumber) arg2).toLong();
@@ -1854,6 +1854,8 @@ public final class Programming {
 					e.printStackTrace();
 				}
 				return F.Null;
+//			}finally {
+//				work.cancel();
 			}
 		}
 

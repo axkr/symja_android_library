@@ -6,7 +6,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
 class EvalCallable implements Callable<IExpr> {
-	private final EvalEngine fEngine;
+	protected final EvalEngine fEngine;
 	private IExpr fExpr;
 
 	public EvalCallable(EvalEngine engine) {
@@ -23,18 +23,19 @@ class EvalCallable implements Callable<IExpr> {
 	 */
 	@Override
 	public IExpr call() throws Exception {
+		EvalEngine.remove();
 		EvalEngine.set(fEngine);
-		// try {
-		fEngine.reset();
-		
-		IExpr temp = fEngine.evaluate(fExpr);
-		if (!fEngine.isOutListDisabled()) {
-			fEngine.addOut(temp);
+		try {
+			fEngine.reset();
+
+			IExpr temp = fEngine.evaluate(fExpr);
+			if (!fEngine.isOutListDisabled()) {
+				fEngine.addOut(temp);
+			}
+			return temp;
+		} finally {
+			EvalEngine.remove();
 		}
-		return temp;
-		// } finally {
-		// EvalEngine.remove();
-		// }
 	}
 
 	public IExpr getExpr() {

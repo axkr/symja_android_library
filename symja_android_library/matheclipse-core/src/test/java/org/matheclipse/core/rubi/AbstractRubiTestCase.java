@@ -209,8 +209,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
 			fEvaluator = new ExprEvaluator(engine, true, 0);
 			engine.setFileSystemEnabled(true);
 			engine.setRecursionLimit(256);
-			engine.setIterationLimit(500);
-			EvalEngine.set(engine);
+			engine.setIterationLimit(500); 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -15,6 +15,16 @@ public class ContextPath {
 	public final Map<String, Context> fContextMap;
 	List<Context> path = new ArrayList<Context>();
 
+	private ContextPath(List<Context> path) {
+		fContextMap = new HashMap<String, Context>(17);
+		this.path.add(Context.SYSTEM);
+		this.fContextMap.put(Context.SYSTEM.getContextName(), Context.SYSTEM);
+		for (int i = 1; i < path.size(); i++) {
+			//Start at index 1 because SYSTEM is already set!
+			this.path.add(path.get(i).copy());
+		}
+	}
+	
 	public ContextPath() {
 		this(GLOBAL_CONTEXT_NAME);
 	}
@@ -33,6 +43,10 @@ public class ContextPath {
 		path.add(context);
 	}
 
+	public ContextPath copy() {
+		return new ContextPath(path);
+	}
+	
 	public Context getGlobalContext() {
 		int size = path.size();
 		int start = size - 1;

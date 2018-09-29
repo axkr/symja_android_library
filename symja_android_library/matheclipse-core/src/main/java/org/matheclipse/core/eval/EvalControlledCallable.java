@@ -10,7 +10,7 @@ import org.matheclipse.parser.client.math.MathException;
 
 public class EvalControlledCallable extends EvalCallable {
 	public EvalControlledCallable(EvalEngine engine) {
-		super( engine);
+		super(engine);
 	}
 
 	@Override

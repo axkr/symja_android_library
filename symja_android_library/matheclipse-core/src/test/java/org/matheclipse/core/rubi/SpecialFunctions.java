@@ -5,7 +5,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
 	public SpecialFunctions(String name) {
 		super(name, false);
 	}
-	
+
 	// {6656}
 	public void test0001() {
 		check(//
@@ -792,6 +792,16 @@ public class SpecialFunctions extends AbstractRubiTestCase {
 
 	// {6686}
 	public void test0123() {
+//		check("Integrate::DerivativeDivides[b*x,ExpIntegralEi[b*x]/x,x]", //
+//				"False");
+//		check("Integrate::DerivativeDivides[ExpIntegralEi[b*x]/x,b*x,x]", //
+//				"False");
+//		check("Integrate::EasyDQ[ExpIntegralEi[b*x]/x,x]", //
+// 				"True");
+//		check("Integrate::EasyDQ[x*ExpIntegralEi[b*x],x]", //
+// 				"True");
+		check("Integrate::EasyDQ[E^(b*x)[[1]],x]", //
+			"True");
 		check(//
 				"Integrate[(E^(b*x)*ExpIntegralEi[b*x])/x, x]", //
 				"ExpIntegralEi[b*x]^2/2", //

@@ -94,10 +94,11 @@ public class QuarticSolver {
 					if (arg.isPower()) {
 						final IExpr base = arg.base();
 						if (x.equals(base)) {
-							try {
-								exponent = Validate.checkPowerExponent((IAST) arg);
-							} catch (WrongArgumentType e) {
-							}
+							exponent = arg.exponent().toIntDefault(Integer.MIN_VALUE);
+//							try {
+//								exponent = Validate.checkPowerExponent((IAST) arg);
+//							} catch (WrongArgumentType e) {
+//							}
 							if (exponent < 0 || exponent > 4) {
 								return false;
 							}
@@ -115,11 +116,7 @@ public class QuarticSolver {
 			} else if (ast.isPower()) {
 				final IExpr temp = ast.arg1();
 				if (x.equals(temp)) {
-					int exponent = -1;
-					try {
-						exponent = Validate.checkPowerExponent(ast);
-					} catch (WrongArgumentType e) {
-					}
+					int exponent = ast.exponent().toIntDefault(Integer.MIN_VALUE);
 					if (exponent < 0 || exponent > 4) {
 						return false;
 					}
@@ -142,8 +139,8 @@ public class QuarticSolver {
 	}
 
 	/**
-	 * <code>Solve(a*x^4+b*x^3+c*x^2+d*x+e==0,x)</code>. See
-	 * <a href="http://en.wikipedia.org/wiki/Quartic_equation">Wikipedia - Quartic equation</a>
+	 * <code>Solve(a*x^4+b*x^3+c*x^2+d*x+e==0,x)</code>. See <a href="http://en.wikipedia.org/wiki/Quartic_equation">Wikipedia - Quartic
+	 * equation</a>
 	 * 
 	 * @param e
 	 * @param a
@@ -336,8 +333,8 @@ public class QuarticSolver {
 	}
 
 	/**
-	 * <code>Solve(a*x^4+b*x^3+c*x^2+d*x+e==0,x)</code>. See
-	 * <a href="http://en.wikipedia.org/wiki/Quartic_equation">Wikipedia - Quartic equation</a>
+	 * <code>Solve(a*x^4+b*x^3+c*x^2+d*x+e==0,x)</code>. See <a href="http://en.wikipedia.org/wiki/Quartic_equation">Wikipedia - Quartic
+	 * equation</a>
 	 * 
 	 * @param e
 	 * @param a
@@ -387,15 +384,14 @@ public class QuarticSolver {
 	}
 
 	/**
-	 * <code>Solve(a*x^3+b*x^2+c*x+d==0,x)</code>. See
-	 * <a href= "http://en.wikipedia.org/wiki/Cubic_function#General_formula_of_roots"> Wikipedia - Cubic function</a>
+	 * <code>Solve(a*x^3+b*x^2+c*x+d==0,x)</code>. See <a href= "http://en.wikipedia.org/wiki/Cubic_function#General_formula_of_roots">
+	 * Wikipedia - Cubic function</a>
 	 * 
 	 * @param a
 	 * @param b
 	 * @param c
 	 * @param d
-	 * @param additionalSulution
-	 *            TODO
+	 * @param additionalSulution TODO
 	 * @return
 	 */
 	public static IASTAppendable cubicSolve(IExpr a, IExpr b, IExpr c, IExpr d, IExpr additionalSulution) {
@@ -495,16 +491,14 @@ public class QuarticSolver {
 	}
 
 	/**
-	 * <code>Solve(a*x^2+b*x+c==0,x)</code>. See <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Wikipedia -
-	 * Quadratic equation</a>
+	 * <code>Solve(a*x^2+b*x+c==0,x)</code>. See <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Wikipedia - Quadratic
+	 * equation</a>
 	 * 
 	 * @param a
 	 * @param b
 	 * @param c
-	 * @param solution1
-	 *            TODO
-	 * @param solution2
-	 *            TODO
+	 * @param solution1 TODO
+	 * @param solution2 TODO
 	 * @return
 	 */
 	public static IASTAppendable quadraticSolve(IExpr a, IExpr b, IExpr c, IExpr solution1, IExpr solution2) {
@@ -551,8 +545,7 @@ public class QuarticSolver {
 	 * @param a
 	 * @param c
 	 * @param e
-	 * @param subtrahend
-	 *            TODO
+	 * @param subtrahend TODO
 	 * @return
 	 */
 	public static IASTAppendable biQuadraticSolve(IExpr a, IExpr c, IExpr e, IExpr sum) {

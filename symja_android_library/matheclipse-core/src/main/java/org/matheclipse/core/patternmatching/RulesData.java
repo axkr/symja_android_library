@@ -135,8 +135,7 @@ public class RulesData implements Serializable {
 	 * </p>
 	 * Example: optimize internal memory usage by sharing common objects.
 	 * 
-	 * @param visitor
-	 *            the visitor whch manipulates the IAST objects
+	 * @param visitor the visitor whch manipulates the IAST objects
 	 * @return
 	 */
 	public IAST accept(AbstractVisitor visitor) {
@@ -275,8 +274,8 @@ public class RulesData implements Serializable {
 	}
 
 	/**
-	 * Create a pattern hash value for the left-hand-side expression and insert the left-hand-side as a simple pattern
-	 * rule to the <code>fSimplePatternRules</code>.
+	 * Create a pattern hash value for the left-hand-side expression and insert the left-hand-side as a simple pattern rule to the
+	 * <code>fSimplePatternRules</code>.
 	 * 
 	 * @param leftHandSide
 	 * @param pmEvaluator
@@ -292,8 +291,8 @@ public class RulesData implements Serializable {
 	}
 
 	/**
-	 * Create a pattern hash value for the left-hand-side expression and insert the left-hand-side as a simple pattern
-	 * rule to the <code>fSimplePatternRules</code>.
+	 * Create a pattern hash value for the left-hand-side expression and insert the left-hand-side as a simple pattern rule to the
+	 * <code>fSimplePatternRules</code>.
 	 * 
 	 * @param leftHandSide
 	 * @param pmEvaluator
@@ -559,19 +558,23 @@ public class RulesData implements Serializable {
 									.println(" COMPLEX: " + pmEvaluator.getLHS().toString() + " := " + rhs.toString());
 						}
 					}
-					// if (pmEvaluator.getLHSPriority() == 2218) {
-					// System.out.println("Debug from this line");
-					// }
+//					if (pmEvaluator.getLHSPriority() == 6686) {
+//						System.out.println("Debug from this line");
+//					}
 					if (Config.SHOW_STACKTRACE) {
 						if (isShowPriority(pmEvaluator)) {
 							System.out.print("try: " + pmEvaluator.getLHSPriority() + " - ");
 						}
-						// if (pmEvaluator.getLHSPriority() == 432) {
-						// System.out.println(pmEvaluator.toString());
-						// System.out.println(expr);
-						// System.out.println("Debug from this line");
-						// }
+//						 if (pmEvaluator.getLHSPriority() == 432) {
+//						 System.out.println(pmEvaluator.toString());
+//						 System.out.println(expr);
+//						 System.out.println("Debug from this line");
+//						 }
 					}
+//					System.out.println(pmEvaluator.toString());
+//					System.out.println(">>"+expr);
+					
+					
 					result = pmEvaluator.eval(expr, engine);
 					if (result.isPresent()) {
 						if (Config.SHOW_STACKTRACE) {
@@ -814,7 +817,7 @@ public class RulesData implements Serializable {
 			pmEvaluator = new PatternMatcherAndEvaluator(setSymbol, leftHandSide, rightHandSide, false);
 			// keep Integrate rules in order predefined by Rubi project
 			pmEvaluator.setLHSPriority(priority);
-			
+
 			fPatternDownRules = getPatternDownRules();
 			fPatternDownRules.add(pmEvaluator);
 			return pmEvaluator;
