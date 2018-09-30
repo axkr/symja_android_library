@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.ApfloatMath;
 import org.hipparchus.distribution.RealDistribution;
+import org.hipparchus.distribution.continuous.FDistribution;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.RandomDataGenerator;
@@ -60,6 +61,7 @@ public class StatisticsFunctions {
 		F.BinCounts.setEvaluator(new BinCounts());
 		F.BinomialDistribution.setEvaluator(new BinomialDistribution());
 		F.CentralMoment.setEvaluator(new CentralMoment());
+		F.ChiSquareDistribution.setEvaluator(new ChiSquareDistribution());
 		F.Correlation.setEvaluator(new Correlation());
 		F.Covariance.setEvaluator(new Covariance());
 		F.DiscreteUniformDistribution.setEvaluator(new DiscreteUniformDistribution());
@@ -67,6 +69,7 @@ public class StatisticsFunctions {
 		F.Expectation.setEvaluator(new Expectation());
 		F.ExponentialDistribution.setEvaluator(new ExponentialDistribution());
 		F.FiveNum.setEvaluator(new FiveNum());
+		F.FRatioDistribution.setEvaluator(new FRatioDistribution());
 		F.FrechetDistribution.setEvaluator(new FrechetDistribution());
 		F.GammaDistribution.setEvaluator(new GammaDistribution());
 		F.GeometricMean.setEvaluator(new GeometricMean());
@@ -868,6 +871,82 @@ public class StatisticsFunctions {
 
 	}
 
+	private final static class ChiSquareDistribution extends AbstractEvaluator
+			implements ICDF, IDistribution, IPDF, IVariance {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			// 1 or 3 args
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr mean(IAST dist) {
+			if (dist.isAST1()) {
+				return dist.arg1();
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr median(IAST dist) {
+			if (dist.isAST1()) {
+				IExpr v = dist.arg1();
+				// [$ 2*InverseGammaRegularized(v/2, 0, 1/2) $]
+				F.Times(F.C2, F.InverseGammaRegularized(F.Times(F.C1D2, v), F.C0, F.C1D2)); // $$;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr cdf(IAST dist, IExpr k) {
+			if (dist.isAST1()) {
+				IExpr v = dist.arg1();
+				IExpr function =
+						// [$ Piecewise({{GammaRegularized(v/2, 0, #/2), # > 0}}, 0) & $]
+						F.Function(F.Piecewise(
+								F.List(F.List(F.GammaRegularized(F.Times(F.C1D2, v), F.C0, F.Times(F.C1D2, F.Slot1)),
+										F.Greater(F.Slot1, F.C0))),
+								F.C0)); // $$;
+				return callFunction(function, k);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr pdf(IAST dist, IExpr k) {
+			if (dist.isAST1()) {
+				IExpr v = dist.arg1();
+				IExpr function =
+						// [$ Piecewise({{#^(-1 + v/2)/(2^(v/2)*E^(#/2)*Gamma(v/2)), # > 0}}, 0) & $]
+						F.Function(
+								F.Piecewise(F.List(F.List(
+										F.Times(F.Power(
+												F.Times(F.Power(F.C2, F.Times(F.C1D2, v)),
+														F.Exp(F.Times(F.C1D2, F.Slot1)), F.Gamma(F.Times(F.C1D2, v))),
+												-1), F.Power(F.Slot1, F.Plus(F.CN1, F.Times(F.C1D2, v)))),
+										F.Greater(F.Slot1, F.C0))), F.C0)); // $$;
+				return callFunction(function, k);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr variance(IAST dist) {
+			if (dist.isAST1()) {
+				IExpr v = dist.arg1();
+				// 2*v
+				return F.Times(F.C2, v);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
 	/**
 	 * <pre>
 	 * Correlation(a, b)
@@ -961,6 +1040,92 @@ public class StatisticsFunctions {
 		public void setUp(final ISymbol newSymbol) {
 		}
 
+	}
+
+	private final static class FRatioDistribution extends AbstractEvaluator
+			implements ICDF, IDistribution, IPDF, IVariance {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr mean(IAST dist) {
+			if (dist.isAST2()) {
+				IExpr n = dist.arg1();
+				IExpr m = dist.arg2();
+				return
+				// [$ Piecewise({{m/(-2 + m), m > 2}}, Indeterminate) $]
+				F.Piecewise(F.List(F.List(F.Times(F.Power(F.Plus(F.CN2, m), -1), m), F.Greater(m, F.C2))),
+						F.Indeterminate); // $$;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr median(IAST dist) {
+			if (dist.isAST2()) {
+				IExpr n = dist.arg1();
+				IExpr m = dist.arg2();
+				// [$ (m*(-1 + 1/InverseBetaRegularized(1, -(1/2), m/2, n/2)))/n $]
+				F.Times(m, F.Power(n, -1), F.Plus(F.CN1,
+						F.Power(F.InverseBetaRegularized(F.C1, F.CN1D2, F.Times(F.C1D2, m), F.Times(F.C1D2, n)), -1))); // $$;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr cdf(IAST dist, IExpr k) {
+			if (dist.isAST2()) {
+				IExpr n = dist.arg1();
+				IExpr m = dist.arg2();
+				IExpr function =
+						// [$ Piecewise({{BetaRegularized((#*n)/(m + #*n), n/2, m/2), # > 0}}, 0) & $]
+						F.Function(F.Piecewise(F.List(F.List(
+								F.BetaRegularized(F.Times(n, F.Power(F.Plus(m, F.Times(F.Slot1, n)), -1), F.Slot1),
+										F.Times(F.C1D2, n), F.Times(F.C1D2, m)),
+								F.Greater(F.Slot1, F.C0))), F.C0)); // $$;
+				return callFunction(function, k);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr pdf(IAST dist, IExpr k) {
+			if (dist.isAST2()) {
+				IExpr n = dist.arg1();
+				IExpr m = dist.arg2();
+				IExpr function =
+						// [$ Piecewise({{(#^(-1 + n/2)*m^(m/2)*n^(n/2)*(m + #*n)^((1/2)*(-m - n)))/Beta(n/2, m/2), # >
+						// 0}}, 0) & $]
+						F.Function(
+								F.Piecewise(F.List(F.List(
+										F.Times(F.Power(m, F.Times(F.C1D2, m)), F.Power(n, F.Times(F.C1D2, n)),
+												F.Power(F.Plus(m, F.Times(F.Slot1, n)),
+														F.Times(F.C1D2, F.Plus(F.Negate(m), F.Negate(n)))),
+												F.Power(F.Beta(F.Times(F.C1D2, n), F.Times(F.C1D2, m)), -1),
+												F.Power(F.Slot1, F.Plus(F.CN1, F.Times(F.C1D2, n)))),
+										F.Greater(F.Slot1, F.C0))), F.C0)); // $$;
+				return callFunction(function, k);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr variance(IAST dist) {
+			if (dist.isAST2()) {
+				IExpr n = dist.arg1();
+				IExpr m = dist.arg2();
+				return
+				// [$ Piecewise({{(2*m^2*(-2 + m + n))/((-4 + m)*(-2 + m)^2*n), m > 4}}, Indeterminate) $]
+				F.Piecewise(F.List(F.List(
+						F.Times(F.C2, F.Sqr(m), F.Plus(F.CN2, m, n),
+								F.Power(F.Times(F.Plus(F.CN4, m), F.Sqr(F.Plus(F.CN2, m)), n), -1)),
+						F.Greater(m, F.C4))), F.Indeterminate); // $$;
+			}
+			return F.NIL;
+		}
 	}
 
 	/**
