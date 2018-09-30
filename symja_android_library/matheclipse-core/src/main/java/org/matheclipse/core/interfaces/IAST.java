@@ -167,7 +167,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * 
 	 * @param i
 	 */
-	public void addEvalFlags(int i);
+	public IAST addEvalFlags(int i);
 
 	/**
 	 * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and add the <code>expr</code>

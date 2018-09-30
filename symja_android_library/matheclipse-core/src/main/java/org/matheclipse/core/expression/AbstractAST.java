@@ -357,8 +357,9 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final void addEvalFlags(final int i) {
+	public final IAST addEvalFlags(final int i) {
 		fEvalFlags |= i;
+		return this;
 	}
 
 	/** {@inheritDoc} */

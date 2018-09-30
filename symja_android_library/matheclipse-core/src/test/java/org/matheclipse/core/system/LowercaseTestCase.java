@@ -676,6 +676,41 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"0");
 	}
 
+	public void testBlankSequence() {
+		check("f(x__,y__,z__):={x,y,z}/;Print({x},{y},{z})", //
+				"");
+		check("f(a,b,c,d,e)", "f(a,b,c,d,e)");
+		// print the possible matches
+//		{a}{b}{c,d,e}
+//		{a}{b,c}{d,e}
+//		{a,b}{c}{d,e}
+//		{a}{b,c,d}{e}
+//		{a,b}{c,d}{e}
+//		{a,b,c}{d}{e}
+		System.out.println("-------------");
+		check("g(x___,y___,z___):={x,y,z}/;Print({x},{y},{z})", //
+				"");
+		check("g(a,b,c,d,e)", "g(a,b,c,d,e)");
+		// print the possible matches
+//		{}{}{a,b,c,d,e}
+//		{a}{b}{c,d,e}
+//		{}{a,b,c}{d,e}
+//		{a}{b,c}{d,e}
+//		{a,b}{c}{d,e}
+//		{a,b,c}{}{d,e}
+//		{}{a,b,c,d}{e}
+//		{a}{b,c,d}{e}
+//		{a,b}{c,d}{e}
+//		{a,b,c}{d}{e}
+//		{a,b,c,d}{}{e}
+//		{}{a,b,c,d,e}{}
+//		{a}{b,c,d,e}{}
+//		{a,b}{c,d,e}{}
+//		{a,b,c}{d,e}{}
+//		{a,b,c,d}{e}{}
+//		{a,b,c,d,e}{}{}
+	}
+
 	public void testBlock() {
 		// http://oeis.org/A005132 - Recaman's sequence
 		check("f(s_List) := Block({a = s[[-1]], len = Length@s}, Append(s, If(a > len && !MemberQ(s, a - len), a - len, a + len))); Nest(f, {0}, 70)", //
@@ -2106,7 +2141,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("D((x^2+5*y^3+z^4)/E^w,{{x,y}})", "{(2*x)/E^w,(15*y^2)/E^w}");
 		check("D(E^(-w)*(x^2 + 5*y^3 + z^4), {{{x, y}, {z, w}}})",
 				"{{(2*x)/E^w,(15*y^2)/E^w},{(4*z^3)/E^w,-(x^2+5*y^3+z^4)/E^w}}");
-		check("D(ExpIntegralEi(b*x),x)",//
+		check("D(ExpIntegralEi(b*x),x)", //
 				"E^(b*x)/x");
 	}
 
@@ -5928,8 +5963,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("MatchQ(_Integer)[123]", "True");
 		check("MatchQ(22/7, _Rational)", "True");
 		check("MatchQ(6/3, _Rational)", "False");
-		
-		check("MatchQ(22/7, _Rational)",//
+
+		check("MatchQ(22/7, _Rational)", //
 				"True");
 		check("MatchQ(b*x,a_.+x^n_.*b_./;FreeQ({a,b,n},x))", //
 				"True");
@@ -8903,8 +8938,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testReplaceList() {
 		// TODO
-		// check("ReplaceList({a, b, c, d, e, f, g}, {x__, y__, z__} :> {{x},{y},{z}})", //
-		// "{{a},{a, b},{a,b,c},{b},{b,c},{c}}");
+//		 check("ReplaceList({a, b, c, d, e, f}, {x__, y__, z__} :> {{x},{y},{z}})", //
+//		  "");
 	}
 
 	public void testReplaceTransformations() {

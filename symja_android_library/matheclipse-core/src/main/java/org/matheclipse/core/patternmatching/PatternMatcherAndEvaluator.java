@@ -178,10 +178,9 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 					fReturnResult = e.getValue();
 					matched = true;
 				}
-
+				patternMap.setRHSEvaluated(matched);
 			}
 		}
-		patternMap.setRHSEvaluated(matched);
 		return matched;
 	}
 

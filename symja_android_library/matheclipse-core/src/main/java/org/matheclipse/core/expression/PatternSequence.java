@@ -155,6 +155,9 @@ public class PatternSequence implements IPatternSequence {
 		if (!isConditionMatchedSequence(sequence, patternMap)) {
 			return false;
 		}
+		if (sequence.size() == 1 && !isNullSequence()) {
+			return false;
+		}
 
 		IExpr value = patternMap.getValue(this);
 		if (value != null) {
