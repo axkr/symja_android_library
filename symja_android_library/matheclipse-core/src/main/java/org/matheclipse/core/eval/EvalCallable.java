@@ -33,6 +33,8 @@ class EvalCallable implements Callable<IExpr> {
 				fEngine.addOut(temp);
 			}
 			return temp;
+		} catch (org.matheclipse.core.eval.exception.TimeoutException e) {
+			return F.$Aborted;
 		} finally {
 			EvalEngine.remove();
 		}

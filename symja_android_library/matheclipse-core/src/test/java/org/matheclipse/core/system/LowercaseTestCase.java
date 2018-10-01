@@ -9866,6 +9866,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		
+		checkNumeric("Eliminate(Abs(x-1)==(-1),x)", //
+				"True");
+		checkNumeric("Solve(Abs(x-1)==(-1),x)", //
+				"{}");
+		checkNumeric("Solve(Abs(x-1)==1,x)", //
+				"{{x->0},{x->2}}");
+		
 		checkNumeric("Solve(30*x/0.000002==30,x)", //
 				"{{x->2.0E-6}}");
 		check("Solve((a*x + b)/(c*x + d)==y,x)", //

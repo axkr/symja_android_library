@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
@@ -22,6 +21,7 @@ import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.eval.exception.IllegalArgument;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
+import org.matheclipse.core.eval.exception.TimeoutException;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -259,12 +259,6 @@ public class EvalEngine implements Serializable {
 	}
 
 	static public int MAX_THREADS_COUNT = 10;
-
-	private final static ExecutorService fExecutor = Executors.newFixedThreadPool(MAX_THREADS_COUNT);
-
-	public static ExecutorService getExecutorService() {
-		return fExecutor;
-	}
 
 	/**
 	 * Constructor for an evaluation engine
@@ -1113,12 +1107,18 @@ public class EvalEngine implements Serializable {
 				fTraceStack.setUp(expr, fRecursionCounter);
 				temp = expr.evaluate(this);
 				if (temp.isPresent()) {
+					if (fStopRequested) {
+						throw TimeoutException.TIMED_OUT;
+					}
 					fTraceStack.add(expr, temp, fRecursionCounter, 0L, "Evaluation loop");
 					result = temp;
 					long iterationCounter = 1;
 					while (true) {
 						temp = result.evaluate(this);
 						if (temp.isPresent()) {
+							if (fStopRequested) {
+								throw TimeoutException.TIMED_OUT;
+							}
 							fTraceStack.add(result, temp, fRecursionCounter, iterationCounter, "Evaluation loop");
 							result = temp;
 							if (fIterationLimit >= 0 && fIterationLimit <= ++iterationCounter) {
@@ -1132,6 +1132,9 @@ public class EvalEngine implements Serializable {
 			} else {
 				temp = expr.evaluate(this);
 				if (temp.isPresent()) {
+					if (fStopRequested) {
+						throw TimeoutException.TIMED_OUT;
+					}
 					// if (temp == F.Null&&!expr.isAST(F.SetDelayed)) {
 					// System.out.println(expr.toString());
 					// }
@@ -1144,6 +1147,9 @@ public class EvalEngine implements Serializable {
 					while (true) {
 						temp = result.evaluate(this);
 						if (temp.isPresent()) {
+							if (fStopRequested) {
+								throw TimeoutException.TIMED_OUT;
+							}
 							// if (temp == F.Null&&!result.isAST(F.SetDelayed)) {
 							// System.out.println(expr.toString());
 							// }

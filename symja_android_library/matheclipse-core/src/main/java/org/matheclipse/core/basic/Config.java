@@ -163,7 +163,7 @@ public class Config {
 	/**
 	 * Define the Rubi time limit for the <code>TimeConstrained()</code> function.
 	 */
-	public static int INTEGRATE_RUBI_TIMELIMIT = 12;
+	public static int INTEGRATE_RUBI_TIMELIMIT = 8;
 
 	/**
 	 * Define the recursion limit for <code>Limit#lHospitalesRule()</code> method.

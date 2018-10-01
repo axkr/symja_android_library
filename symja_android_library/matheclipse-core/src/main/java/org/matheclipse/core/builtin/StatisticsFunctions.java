@@ -8,7 +8,6 @@ import java.util.function.Supplier;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.ApfloatMath;
 import org.hipparchus.distribution.RealDistribution;
-import org.hipparchus.distribution.continuous.FDistribution;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.RandomDataGenerator;
