@@ -449,6 +449,14 @@ public class Solve extends AbstractFunctionEvaluator {
 		private IExpr rewriteInverseFunction(IAST plusAST, int position) {
 			IAST ast = (IAST) plusAST.get(position);
 			IExpr plus = plusAST.removeAtClone(position).getOneIdentity(F.C0);
+			if (ast.isAbs()) {
+				if (plus.isNegative() || plus.isZero()) {
+					if (plus.isFree(Predicates.in(fListOfVariables), true)) {
+						return rewriteInverseFunction(ast, F.Negate(plus));
+					}
+				}
+				return F.NIL;
+			}
 			if (plus.isFree(Predicates.in(fListOfVariables), true)) {
 				return rewriteInverseFunction(ast, F.Negate(plus));
 			}
@@ -925,6 +933,9 @@ public class Solve extends AbstractFunctionEvaluator {
 		// because Eliminate() operates on equations.
 		IAST equalsASTList = termsEqualZeroList.mapThread(F.Equal(F.Null, F.C0), 1);
 		IAST[] tempAST = Eliminate.eliminateOneVariable(equalsASTList, variable);
+		if (tempAST[1] != null && tempAST[1].isRule()&&tempAST[1].second().isTrue()) {
+			return F.CEmptyList;
+		}
 		if (tempAST != null && tempAST[1] != null) {
 			return F.List(F.List(tempAST[1]));
 		}
