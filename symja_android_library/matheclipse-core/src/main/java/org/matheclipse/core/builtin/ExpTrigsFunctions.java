@@ -819,7 +819,7 @@ public class ExpTrigsFunctions {
 				return F.Times(F.Subtract(F.C1, x.unitStep()), F.Pi);
 			}
 			IExpr yUnitStep = y.unitStep();
-			if (x.isNumber() && yUnitStep.isInteger()) {
+			if (x.isNumericFunction() && yUnitStep.isInteger()) {
 				if (x.re().isNegative()) {
 					return F.Plus(F.ArcTan(F.Divide(y, x)), F.Times(F.Subtract(F.Times(F.C2, yUnitStep), F.C1), F.Pi));
 				}
