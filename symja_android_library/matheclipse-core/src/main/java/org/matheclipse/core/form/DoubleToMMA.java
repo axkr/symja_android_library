@@ -27,6 +27,11 @@ public class DoubleToMMA {
 			throws IOException {
 		String s = String.format(Locale.US, "%16.16E", value);
 		int start = s.indexOf('E');
+		String expStr = s.substring(start + 1);
+		// on Android you may receive a '+' sign: 1.2345123456789000E+04
+		if (expStr.startsWith("+")){
+			expStr = expStr.substring(1);
+		}
 		int exp = Integer.parseInt(s.substring(start + 1));
 		if (-exponent <= exp && exp <= exponent) {
 			DecimalFormatSymbols usSymbols = new DecimalFormatSymbols(Locale.US);
