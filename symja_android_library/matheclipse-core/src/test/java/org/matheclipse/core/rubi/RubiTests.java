@@ -33,7 +33,6 @@ public class RubiTests extends TestCase {
 		suite.addTestSuite(SpecialFunctions.class);
 		suite.addTestSuite(TrigFunctions.class);
 		suite.addTestSuite(AlgebraicFunctions.class);
-		// suite.addTestSuite(AlgebraicFunctions2.class);
 		return suite;
 
 	}
