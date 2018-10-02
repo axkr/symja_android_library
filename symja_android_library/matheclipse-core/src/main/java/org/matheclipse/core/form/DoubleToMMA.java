@@ -32,7 +32,7 @@ public class DoubleToMMA {
 		if (expStr.startsWith("+")){
 			expStr = expStr.substring(1);
 		}
-		int exp = Integer.parseInt(s.substring(start + 1));
+		int exp = Integer.parseInt(expStr);
 		if (-exponent <= exp && exp <= exponent) {
 			DecimalFormatSymbols usSymbols = new DecimalFormatSymbols(Locale.US);
 			DecimalFormat format;
