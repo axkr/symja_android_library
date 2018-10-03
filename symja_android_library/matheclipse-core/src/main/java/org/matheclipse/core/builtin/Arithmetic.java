@@ -1711,12 +1711,12 @@ public final class Arithmetic {
 			}
 			if (arg1.isTimes()) {
 				IExpr first = arg1.first();
-				if (first.isReal()) {
-					return F.Times(first, F.Im(arg1.rest()));
-				}
-				if (first.isImaginaryUnit()) {
-					// Im(I*temp) -> Re(temp)
-					return arg1.rest().re();
+				if (first.isNumber()) {
+					IExpr rest = arg1.rest().getOneIdentity(F.C1);
+					if (first.isReal()) {
+						return F.Times(first, F.Im(rest));
+					}
+					return F.Plus(F.Times(first.re(), F.Im(rest)), F.Times(first.im(), F.Re(rest)));
 				}
 			}
 			if (arg1.isPlus()) {
@@ -3712,12 +3712,17 @@ public final class Arithmetic {
 			}
 			if (expr.isTimes()) {
 				IExpr first = expr.first();
-				if (first.isReal()) {
-					return F.Times(first, F.Re(expr.rest()));
-				}
-				if (first.isImaginaryUnit()) {
-					// Re(I*temp) -> -Im(temp)
-					return F.Times(F.CN1, F.Im(expr.rest()));
+				if (first.isNumber()) {
+					IExpr rest = expr.rest().getOneIdentity(F.C1);
+					if (first.isReal()) {
+						return F.Times(first, F.Re(expr.rest()));
+					}
+					// if (first.isImaginaryUnit()) {
+					// // Re(I*temp) -> -Im(temp)
+					// return F.Times(F.CN1, F.Im(expr.rest()));
+					// }
+
+					return F.Subtract(F.Times(first.re(), F.Re(rest)), F.Times(first.im(), F.Im(rest)));
 				}
 			}
 			if (expr.isPlus()) {

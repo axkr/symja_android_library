@@ -861,22 +861,30 @@ public class IntegerFunctions {
 		/**
 		 * 
 		 * See: <a href="http://en.wikipedia.org/wiki/Modular_arithmetic">Wikipedia - Modular arithmetic</a>
-		 */
-		@Override
-		public IExpr e2IntArg(final IInteger i0, final IInteger i1) {
-			try {
-				if (i1.isZero()) {
-					EvalEngine.get().printMessage("Mod: Modulus 0 encountered");
-					return F.Indeterminate;
-				}
+		 */ 
+		public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
+			if (o1.isZero()) {
+				EvalEngine.get().printMessage("Mod: Modulus 0 encountered");
+				return F.Indeterminate;
+			}
+			if (o0.isInteger() && o1.isInteger()) {
+				final IInteger i0 = (IInteger) o0;
+				final IInteger i1 = (IInteger) o1;
 				if (i1.isNegative()) {
 					return i0.negate().mod(i1.negate()).negate();
 				}
 				return i0.mod(i1);
-			} catch (ArithmeticException ae) {
-				EvalEngine.get().printMessage("Mod: " + ae.getMessage());
-				return F.NIL;
 			}
+			if (o0.isReal() && o1.isReal()) {
+				return F.Subtract(o0, F.Times(o1, F.Floor(((ISignedNumber) o0).divideBy((ISignedNumber) o1))));
+			}
+			if (o0.isRealResult() && o1.isRealResult()) {
+				return F.Subtract(o0, F.Times(o1, F.Floor(F.num(o0.evalDouble() / o1.evalDouble()))));
+			}
+			if (o0.isNumericFunction() && o1.isNumericFunction()) {
+				return F.Subtract(o0, F.Times(o1, F.Floor(F.complexNum(o0.evalComplex().divide(o1.evalComplex())))));
+			}
+			return F.NIL;
 		}
 
 		@Override
@@ -988,13 +996,24 @@ public class IntegerFunctions {
 	 */
 	private static class Quotient extends AbstractArg2 {
 
-		@Override
-		public IExpr e2IntArg(final IInteger i0, final IInteger i1) {
-			if (i1.isZero()) {
+		public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
+			if (o1.isZero()) {
 				EvalEngine.get().printMessage("Quotient: division by zero");
-				return F.NIL;
+				return F.CComplexInfinity;
 			}
-			return i0.quotient(i1);
+			if (o0.isInteger() && o1.isInteger()) {
+				return ((IInteger) o0).quotient((IInteger) o1);
+			}
+			if (o0.isReal() && o1.isReal()) {
+				return F.Floor(((ISignedNumber) o0).divideBy((ISignedNumber) o1));
+			}
+			if (o0.isRealResult() && o1.isRealResult()) {
+				return F.Floor(F.num(o0.evalDouble() / o1.evalDouble()));
+			}
+			if (o0.isNumericFunction() && o1.isNumericFunction()) {
+				return F.Floor(F.complexNum(o0.evalComplex().divide(o1.evalComplex())));
+			}
+			return F.NIL;
 		}
 
 		@Override

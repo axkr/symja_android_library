@@ -11,8 +11,8 @@
  ArcTan(Sqrt(3))=1/3*Pi,  
  ArcTan(1+Sqrt(2))=3/8*Pi, 
  ArcTan(2+Sqrt(3))=5/12*Pi,
- ArcTan(I)=I*Infinity,  
-  
+ ArcTan(I)=I*Infinity,
+ 
  ArcTan(Infinity, y_)=0, 
  ArcTan(Infinity)=Pi/2,
  ArcTan(-Infinity)=-Pi/2,

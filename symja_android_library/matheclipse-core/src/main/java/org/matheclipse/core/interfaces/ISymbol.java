@@ -401,6 +401,16 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public boolean ofQ(EvalEngine engine, IExpr... args);
 
 	/**
+	 * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code> to a boolean
+	 * value. If the result isn't a boolean value return <code>false</code>.
+	 * 
+	 * @param args
+	 *            the arguments for which this function symbol should be evaluated
+	 * @return if the result isn't a boolean value return <code>false</code>.
+	 */
+	public boolean ofQ(IExpr... args);
+	
+	/**
 	 * Get the ordinal number of this built-in symbol in the enumeration of built-in symbols. If this is no built-in
 	 * symbol return <code>-1</code> (ID.UNKNOWN)
 	 * 

@@ -742,6 +742,11 @@ public class Symbol implements ISymbol, Serializable {
 		return engine.evalTrue(ast);
 	}
 
+	@Override
+	public boolean ofQ(IExpr... args) {
+		return ofQ(EvalEngine.get(), args);
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public final void popLocalVariable() {

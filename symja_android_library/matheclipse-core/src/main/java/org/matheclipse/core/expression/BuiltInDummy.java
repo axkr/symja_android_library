@@ -43,7 +43,6 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
 public class BuiltInDummy implements IBuiltInSymbol, Serializable {
-	// protected transient Context fContext;
 
 	private final static Collator US_COLLATOR = Collator.getInstance(Locale.US);
 
@@ -741,6 +740,12 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 	public boolean ofQ(EvalEngine engine, IExpr... args) {
 		IAST ast = F.ast(args, this);
 		return engine.evalTrue(ast);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean ofQ(IExpr... args) {
+		return ofQ(EvalEngine.get(), args);
 	}
 
 	/** {@inheritDoc} */
