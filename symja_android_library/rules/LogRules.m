@@ -23,7 +23,6 @@
  Log(a_,1)=0, 
  Log(a_,-1):=I*Pi*Log(a)^(-1),
  Log(E,z_):=Log(z),
- Log(0,z_)=0,
  Log(1,z_)=ComplexInfinity,
  Log(-1,z_):=(-I/Pi)*Log(z),
  Log(a_,1)=Indeterminate
