@@ -395,7 +395,13 @@ public final class Arithmetic {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
 
-			final IExpr arg1 = engine.evaluate(ast.arg1());
+			IExpr result = F.NIL;
+			IExpr arg1 = engine.evaluateNull(ast.arg1());
+			if (arg1.isPresent()) {
+				result = F.Arg(arg1);
+			} else {
+				arg1 = ast.arg1();
+			}
 			if (arg1.isList()) {
 				return ((IAST) arg1).mapThread(F.Arg(F.Null), 1);
 			}
@@ -414,10 +420,48 @@ public final class Arithmetic {
 				}
 			} else if (arg1.isNumber()) {
 				return ((INumber) arg1).complexArg();
+			} else if (arg1.isTimes() && arg1.first().isRealResult()) {
+				IExpr first = arg1.first();
+				if (first.isPositive()) {
+					return F.Arg(arg1.rest());
+				}
+				if (first.isNegative() && !first.isMinusOne()) {
+					return F.Arg(F.Times(F.CN1, arg1.rest()));
+				}
+			} else if (arg1.isPower()) {
+				if (arg1.exponent().isFraction()) {
+					IFraction exponent = (IFraction) arg1.exponent();
+					if (exponent.numerator().isOne()) {
+						IInteger n = exponent.denominator();
+						if (!n.isMinusOne() && !n.isZero()) {
+							// Arg(z^(1/n)) => Arg(z)/n
+							return F.Divide(F.Arg(arg1.base()), n);
+						}
+					}
+				}
+				if (arg1.base().isE()) {
+					IExpr exponent = arg1.exponent();
+					IExpr imPart = AbstractFunctionEvaluator.imaginaryPart(exponent, false);
+					if (imPart.isPresent()) {
+						IExpr rePart = AbstractFunctionEvaluator.realPart(exponent, false);
+						if (rePart.isZero() && !imPart.isZero()) {
+							// Arg(E^(I*z)) => Re(z) + 2*Pi*Floor((Pi - Re(z))/(2*Pi))
+							return F.Plus(
+									F.Times(F.C2, F.Pi, F
+											.Floor(F.Times(F.C1D2, F.Power(F.Pi, -1), F.Plus(F.Pi, F.Negate(F.Re(imPart)))))),
+									F.Re(imPart));
+						}
+						// Arg(E^z) => Im(z) + 2*Pi*Floor((Pi - Im(z))/(2*Pi))
+						return F.Plus(
+								F.Times(F.C2, F.Pi,
+										F.Floor(F.Times(F.C1D2, F.Power(F.Pi, -1), F.Plus(F.Pi, F.Negate(imPart))))),
+								imPart);
+					}
+				}
 			}
 			if (arg1.isNumericFunction()) {
 				IExpr temp = engine.evalN(arg1);
-				if (temp.isReal()) {
+				if (temp.isRealResult()) {
 					if (temp.isNegative()) {
 						return F.Pi;
 					}
@@ -433,7 +477,11 @@ public final class Arithmetic {
 			if (AbstractAssumptions.assumePositive(arg1)) {
 				return F.C0;
 			}
-			return F.NIL;
+			IExpr imPart = AbstractFunctionEvaluator.imaginaryPart(arg1, true);
+			if (imPart.isPresent()) {
+				return F.ArcTan(F.Re(arg1), imPart);
+			}
+			return result;
 		}
 
 		@Override

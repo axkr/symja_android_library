@@ -4,7 +4,7 @@ import java.util.function.Function;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.F;
@@ -35,7 +35,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * -1
  * </pre>
  */
-public class Sign extends AbstractEvaluator {
+public class Sign extends AbstractCoreFunctionEvaluator {
 
 	public Sign() {
 	}
@@ -63,8 +63,24 @@ public class Sign extends AbstractEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
-		IExpr arg1 = ast.arg1();
+		// IExpr arg1 = ast.arg1();
+
+		IExpr result = F.NIL;
+		IExpr arg1 = engine.evaluateNull(ast.arg1());
+		if (arg1.isPresent()) {
+			result = F.Sign(arg1);
+		} else {
+			arg1 = ast.arg1();
+		}
+		if (arg1.isList()) {
+			return ((IAST) arg1).mapThread(F.Sign(F.Null), 1);
+		}
+
 		if (arg1.isNumber()) {
+			if (arg1.isComplexNumeric()) {
+				IComplexNum c = (IComplexNum) arg1;
+				return c.divide(F.num(c.dabs()));
+			}
 			return numberSign((INumber) arg1);
 		}
 		if (arg1.isIndeterminate()) {
@@ -78,17 +94,15 @@ public class Sign extends AbstractEvaluator {
 			if (directedInfininty.isAST1()) {
 				return F.Sign(directedInfininty.arg1());
 			}
-		}
-		if (arg1.isTimes()) {
-			IASTAppendable[] result = ((IAST) arg1).filter(new SignTimesFunction());
-			if (result[0].size() > 1) {
-				if (result[1].size() > 1) {
-					result[0].append(F.Sign(result[1]));
+		} else if (arg1.isTimes()) {
+			IASTAppendable[] res = ((IAST) arg1).filter(new SignTimesFunction());
+			if (res[0].size() > 1) {
+				if (res[1].size() > 1) {
+					res[0].append(F.Sign(res[1]));
 				}
-				return result[0];
+				return res[0];
 			}
-		}
-		if (arg1.isPower() && arg1.exponent().isReal()) {
+		} else if (arg1.isPower() && arg1.exponent().isReal()) {
 			return F.Power(F.Sign(arg1.base()), arg1.exponent());
 		}
 		if (AbstractAssumptions.assumeNegative(arg1)) {
@@ -104,9 +118,23 @@ public class Sign extends AbstractEvaluator {
 		}
 		INumber number = arg1.evalNumber();
 		if (number != null) {
-			return numberSign(number);
+			IExpr temp = numberSign(number);
+			if (temp.isPresent()) {
+				return temp;
+			}
 		}
-		return F.NIL;
+		if (arg1.isRealResult() && !arg1.isZero()) {
+			return F.Divide(arg1, F.Abs(arg1));
+		}
+		IExpr y = AbstractFunctionEvaluator.imaginaryPart(arg1, true);
+		if (y.isPresent() && y.isRealResult()) {
+			IExpr x = AbstractFunctionEvaluator.realPart(arg1, false);
+			if (x.isPresent() && x.isRealResult()) {
+				// (x + I*y)/Sqrt(x^2 + y^2)
+				return F.Times(F.Plus(x, F.Times(F.CI, y)), F.Power(F.Plus(F.Sqr(x), F.Sqr(y)), F.CN1D2));
+			}
+		}
+		return result;
 	}
 
 	public static IExpr numberSign(INumber arg1) {
@@ -116,16 +144,13 @@ public class Sign extends AbstractEvaluator {
 		} else if (arg1.isComplex()) {
 			IComplex c = (IComplex) arg1;
 			return F.Times(c, F.Power(c.abs(), F.CN1));
-		} else if (arg1.isComplexNumeric()) {
-			IComplexNum c = (IComplexNum) arg1;
-			return c.divide(F.num(c.dabs()));
 		}
 		return F.NIL;
 	}
 
 	@Override
 	public void setUp(final ISymbol newSymbol) {
-		newSymbol.setAttributes(ISymbol.LISTABLE);// | ISymbol.NUMERICFUNCTION);
+		newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 	}
 
 }

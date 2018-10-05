@@ -349,6 +349,32 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 		return F.NIL;
 	}
 
+	public static IExpr imaginaryPart(final IExpr expr, boolean unequalsZero) {
+		IExpr imPart = F.Im.of(expr);
+		if (unequalsZero) {
+			if (imPart.isZero()) {
+				return F.NIL;
+			}
+		}
+		if (imPart.isNumber() || imPart.isFree(F.Im)) {
+			return imPart;
+		}
+		return F.NIL;
+	}
+
+	public static IExpr realPart(final IExpr expr, boolean unequalsZero) {
+		IExpr rePart = F.Re.of(expr);
+		if (unequalsZero) {
+			if (rePart.isZero()) {
+				return F.NIL;
+			}
+		}
+		if (rePart.isNumber() || rePart.isFree(F.Re)) {
+			return rePart;
+		}
+		return F.NIL;
+	}
+	
 	/**
 	 * Initialize the serialized Rubi integration rules from ressource <code>/ser/integrate.ser</code>.
 	 * 
