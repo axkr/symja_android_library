@@ -7408,6 +7408,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testOneIdentityOrderless() {
 
+      // github issue 89
+
       // Check when substitution is defined BEFORE setting attributes.
 
        check("Table[Module[{ e = (eqv[p,q,r] /. {eqv[x_,y_] :> {x,y}}) }, ClearAll[eqv]; SetAttributes[eqv,j]; {j, First@e, Rest@e}], {j, Flatten[Table[Union[Sort/@Permutations[{Flat,Orderless,OneIdentity}, {i}]], {i,3}], 1]}]", //
@@ -7418,8 +7420,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Table[Module[{e},ClearAll[eqv];SetAttributes[eqv,j];e=(eqv[p,q,r]/.{eqv[x_,y_]:>{x,y}});{j,First@e,Rest@e}],{j,Flatten[Table[Union[Sort/@Permutations[{Flat,Orderless,OneIdentity},{i}]],{i,3}],1]}]", //
           "{{{Flat},eqv(p),{eqv(q,r)}},{{OneIdentity},p,eqv(q,r)},{{Orderless},p,eqv(q,r)},{{Flat,OneIdentity},p,{eqv(q,r)}},{{Flat,Orderless},eqv(p),{eqv(q,r)}},{{OneIdentity,Orderless},p,eqv(q,r)},{{Flat,OneIdentity,Orderless},p,{eqv(q,r)}}}");
 
-
-		// github issue 89
 
 		check("SetAttributes(f, {Orderless, OneIdentity})", "");
 		check("f(p, q) /. {f(x_,y_) :> {x,y}}", "{p,q}");
