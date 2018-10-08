@@ -172,7 +172,6 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2);
 			Lambda.forEach(ast, x -> x.isSymbol(), x -> ((ISymbol) x).clear(engine));
 			return F.Null;
 		}
@@ -198,10 +197,7 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
-			ISymbol symbol = Validate.checkSymbolType(ast, 1);
-			symbol.clearAll(engine);
+			Lambda.forEach(ast, x -> x.isSymbol(), x -> ((ISymbol) x).clearAll(engine));
 			return F.Null;
 		}
 
