@@ -41,7 +41,7 @@
   Csch->(-1)*Coth(#)*Csch(#),
   Round->Piecewise({{0, NotElement(-(1/2)+Re(#), Integers) && NotElement(-(1/2)+Im(#), Integers)}}, Indeterminate),
   Sin->Cos(#),
-  Sinc->-(Sin(#)/#^2)+Cos(#)/#,
+  Sinc->(Cos(#)/#-(Sin(#)/#^2)),
   Sinh->Cosh(#),
   Tan->Sec(#)^2,
   Tanh->Sech(#)^(2),

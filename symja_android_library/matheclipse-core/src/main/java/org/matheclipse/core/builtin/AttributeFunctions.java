@@ -167,6 +167,12 @@ public class AttributeFunctions {
 				case ID.HoldAll:
 					sym.clearAttributes(ISymbol.HOLDALL);
 					break;
+				case ID.HoldAllComplete:
+					sym.clearAttributes(ISymbol.HOLDALLCOMPLETE);
+					break;
+				case ID.HoldComplete:
+					sym.clearAttributes(ISymbol.HOLDCOMPLETE);
+					break;
 				case ID.HoldFirst:
 					sym.clearAttributes(ISymbol.HOLDFIRST);
 					break;
@@ -293,6 +299,12 @@ public class AttributeFunctions {
 				case ID.HoldAll:
 					sym.addAttributes(ISymbol.HOLDALL);
 					break;
+				case ID.HoldAllComplete:
+					sym.addAttributes(ISymbol.HOLDALLCOMPLETE);
+					break;
+				case ID.HoldComplete:
+					sym.addAttributes(ISymbol.HOLDCOMPLETE);
+					break;
 				case ID.HoldFirst:
 					sym.addAttributes(ISymbol.HOLDFIRST);
 					break;
@@ -326,53 +338,57 @@ public class AttributeFunctions {
 	 */
 	public static IAST attributesList(final ISymbol symbol) {
 		IASTAppendable result = F.ListAlloc(4);
-		int attributea = symbol.getAttributes();
+		int attributes = symbol.getAttributes();
 
-		if ((attributea & ISymbol.CONSTANT) != ISymbol.NOATTRIBUTE) {
+		if ((attributes & ISymbol.CONSTANT) != ISymbol.NOATTRIBUTE) {
 			result.append(F.Constant);
 		}
 
-		if ((attributea & ISymbol.FLAT) != ISymbol.NOATTRIBUTE) {
+		if ((attributes & ISymbol.FLAT) != ISymbol.NOATTRIBUTE) {
 			result.append(F.Flat);
 		}
 
-		if ((attributea & ISymbol.LISTABLE) != ISymbol.NOATTRIBUTE) {
+		if ((attributes & ISymbol.LISTABLE) != ISymbol.NOATTRIBUTE) {
 			result.append(F.Listable);
 		}
 
-		if ((attributea & ISymbol.ONEIDENTITY) != ISymbol.NOATTRIBUTE) {
+		if ((attributes & ISymbol.ONEIDENTITY) != ISymbol.NOATTRIBUTE) {
 			result.append(F.OneIdentity);
 		}
 
-		if ((attributea & ISymbol.ORDERLESS) != ISymbol.NOATTRIBUTE) {
+		if ((attributes & ISymbol.ORDERLESS) != ISymbol.NOATTRIBUTE) {
 			result.append(F.Orderless);
 		}
 
-		if ((attributea & ISymbol.HOLDALL) != ISymbol.NOATTRIBUTE) {
+		if ((attributes & ISymbol.HOLDALLCOMPLETE) == ISymbol.HOLDALLCOMPLETE) {
+			result.append(F.HoldAllComplete);
+		} else if ((attributes & ISymbol.HOLDCOMPLETE) == ISymbol.HOLDCOMPLETE) {
+			result.append(F.HoldComplete);
+		} else if ((attributes & ISymbol.HOLDALL) == ISymbol.HOLDALL) {
 			result.append(F.HoldAll);
 		} else {
-			if ((attributea & ISymbol.HOLDFIRST) != ISymbol.NOATTRIBUTE) {
+			if ((attributes & ISymbol.HOLDFIRST) != ISymbol.NOATTRIBUTE) {
 				result.append(F.HoldFirst);
 			}
 
-			if ((attributea & ISymbol.HOLDREST) != ISymbol.NOATTRIBUTE) {
+			if ((attributes & ISymbol.HOLDREST) != ISymbol.NOATTRIBUTE) {
 				result.append(F.HoldRest);
 			}
 		}
 
-		if ((attributea & ISymbol.NHOLDALL) != ISymbol.NOATTRIBUTE) {
+		if ((attributes & ISymbol.NHOLDALL) == ISymbol.NHOLDALL) {
 			result.append(F.NHoldAll);
 		} else {
-			if ((attributea & ISymbol.NHOLDFIRST) != ISymbol.NOATTRIBUTE) {
+			if ((attributes & ISymbol.NHOLDFIRST) != ISymbol.NOATTRIBUTE) {
 				result.append(F.NHoldFirst);
 			}
 
-			if ((attributea & ISymbol.NHOLDREST) != ISymbol.NOATTRIBUTE) {
+			if ((attributes & ISymbol.NHOLDREST) != ISymbol.NOATTRIBUTE) {
 				result.append(F.NHoldRest);
 			}
 		}
 
-		if ((attributea & ISymbol.NUMERICFUNCTION) != ISymbol.NOATTRIBUTE) {
+		if ((attributes & ISymbol.NUMERICFUNCTION) != ISymbol.NOATTRIBUTE) {
 			result.append(F.NumericFunction);
 		}
 		return result;

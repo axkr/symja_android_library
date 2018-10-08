@@ -867,9 +867,9 @@ public class MainTestCase extends AbstractTestCase {
 		check("$of(z,d,a,b,g)", "$of(a,b,d,g,z)");
 		check("$of(9,12,3,33)", "$of(3,9,12,33)");
 		check("$of(x_,y_):={x,y}", "");
-		check("$of(a,10)", "{$of(10),$of(a)}");
-		check("$of(a,10,b)", "{$of(10),{$of(a),$of(b)}}");
-		check("$of(a,10,b,c)", "{$of(10),{$of(a),{$of(b),$of(c)}}}");
+		check("$of(a,10)", "{10,a}");
+		check("$of(a,10,b)", "{10,{a,b}}");
+		check("$of(a,10,b,c)", "{10,{a,{b,c}}}");
 	}
 
 	// test attribute ISymbol.ORDERLESS && ISymbol.FLAT &&

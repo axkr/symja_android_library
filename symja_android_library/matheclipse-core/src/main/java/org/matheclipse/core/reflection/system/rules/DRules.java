@@ -86,9 +86,9 @@ public interface DRules {
     // D(Gamma(f_),x_NotListQ):=D(f,x)*Gamma(f)*PolyGamma(f)
     ISetDelayed(D(Gamma(f_),$p(x,NotListQ)),
       Times(D(f,x),Gamma(f),PolyGamma(f))),
-    // D(HarmonicNumber(f_),x_NotListQ):=D(f,x)*Pi^2/6-HarmonicNumber(f,2)
+    // D(HarmonicNumber(f_),x_NotListQ):=D(f,x)*(Pi^2/6-HarmonicNumber(f,2))
     ISetDelayed(D(HarmonicNumber(f_),$p(x,NotListQ)),
-      Plus(Times(D(f,x),QQ(1L,6L),Sqr(Pi)),Negate(HarmonicNumber(f,C2)))),
+      Times(D(f,x),Plus(Times(QQ(1L,6L),Sqr(Pi)),Negate(HarmonicNumber(f,C2))))),
     // D(HeavisideTheta(f_),x_NotListQ):=D(f,x)*DiracDelta(f)
     ISetDelayed(D(HeavisideTheta(f_),$p(x,NotListQ)),
       Times(D(f,x),DiracDelta(f))),
@@ -137,9 +137,9 @@ public interface DRules {
     // D(Sin(f_),x_NotListQ):=D(f,x)*Cos(f)
     ISetDelayed(D(Sin(f_),$p(x,NotListQ)),
       Times(D(f,x),Cos(f))),
-    // D(Sinc(f_),x_NotListQ):=D(f,x)*-Sin(f)/f^2+Cos(f)/f
+    // D(Sinc(f_),x_NotListQ):=D(f,x)*(Cos(f)/f-Sin(f)/f^2)
     ISetDelayed(D(Sinc(f_),$p(x,NotListQ)),
-      Plus(Times(D(f,x),CN1,Power(f,-2),Sin(f)),Times(Power(f,-1),Cos(f)))),
+      Times(D(f,x),Plus(Times(Power(f,-1),Cos(f)),Times(CN1,Power(f,-2),Sin(f))))),
     // D(Sinh(f_),x_NotListQ):=D(f,x)*Cosh(f)
     ISetDelayed(D(Sinh(f_),$p(x,NotListQ)),
       Times(D(f,x),Cosh(f))),
@@ -155,15 +155,15 @@ public interface DRules {
     // D(Sech(f_),x_NotListQ):=D(f,x)*(-1)*Tanh(f)*Sech(f)
     ISetDelayed(D(Sech(f_),$p(x,NotListQ)),
       Times(D(f,x),CN1,Tanh(f),Sech(f))),
-    // D(CosIntegral(f_),x_NotListQ):=D(f,x)*(-1)*Cos(f)/f
+    // D(CosIntegral(f_),x_NotListQ):=D(f,x)*Cos(f)/f
     ISetDelayed(D(CosIntegral(f_),$p(x,NotListQ)),
-      Times(D(f,x),CN1,Power(f,-1),Cos(f))),
+      Times(D(f,x),Power(f,-1),Cos(f))),
     // D(CoshIntegral(f_),x_NotListQ):=D(f,x)*Cosh(f)/f
     ISetDelayed(D(CoshIntegral(f_),$p(x,NotListQ)),
       Times(D(f,x),Power(f,-1),Cosh(f))),
-    // D(SinIntegral(f_),x_NotListQ):=D(f,x)*(-1)*Sinc(f)
+    // D(SinIntegral(f_),x_NotListQ):=D(f,x)*Sinc(f)
     ISetDelayed(D(SinIntegral(f_),$p(x,NotListQ)),
-      Times(D(f,x),CN1,Sinc(f))),
+      Times(D(f,x),Sinc(f))),
     // D(SinhIntegral(f_),x_NotListQ):=D(f,x)*Sinh(f)/f
     ISetDelayed(D(SinhIntegral(f_),$p(x,NotListQ)),
       Times(D(f,x),Power(f,-1),Sinh(f))),
