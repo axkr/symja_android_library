@@ -63,10 +63,22 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public final static int HOLDALL = HOLDFIRST | HOLDREST;
 
 	/**
+	 * ISymbol attribute for a function, where no argument should be evaluated
+	 * 
+	 */
+	public final static int HOLDCOMPLETE = HOLDALL | 0x0080;
+	
+	/**
+	 * ISymbol attribute for a function, where no argument should be evaluated
+	 * 
+	 */
+	public final static int HOLDALLCOMPLETE = HOLDCOMPLETE | 0x0100;
+	
+	/**
 	 * ISymbol attribute for a function with lists as arguments
 	 * 
 	 */
-	public final static int LISTABLE = 0x0080;
+	public final static int LISTABLE = 0x0200;
 
 	/**
 	 * ISymbol attribute for a function, where the first argument should not be evaluated numerically

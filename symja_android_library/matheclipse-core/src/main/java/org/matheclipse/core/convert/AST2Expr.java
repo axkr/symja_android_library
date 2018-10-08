@@ -49,7 +49,7 @@ public class AST2Expr {
 	public final static String[] SYMBOL_STRINGS = { "All", "Algebraics", "Automatic", "Axes", "AxesOrigin", "AxesStyle",
 			"Background", "Booleans", "CharacterEncoding", "ComplexInfinity", "Catalan", "Complexes",
 			"ComplexityFunction", "Constant", "Degree", "Disputed", "EulerGamma", "False", "Flat", "Glaisher",
-			"GoldenRatio", "HoldAll", "HoldFirst", "HoldRest", "Indeterminate", "Infinity", "Integer", "Integers",
+			"GoldenRatio", "HoldAll", "HoldComplete", "HoldAllComplete", "HoldFirst", "HoldRest", "Indeterminate", "Infinity", "Integer", "Integers",
 			"Khinchin", "Listable", "MaxIterations", "MaxPoints", "Method", "Modulus", "NHoldAll", "NHoldFirst",
 			"NHoldRest", "None", "Nonexistent", "NotApplicable", "NotAvailable", "Null", "NumericFunction",
 			"OneIdentity", "Orderless", "Pi", "PrecisionGoal", "Primes", "Rationals", "Real", "Reals", "Second", "Slot",

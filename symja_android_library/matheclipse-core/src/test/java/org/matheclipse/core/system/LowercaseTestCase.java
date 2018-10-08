@@ -3891,29 +3891,29 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		// see github issue 89
 
-//		check("SetAttributes(oi, {OneIdentity})", "");
-//		check("oi(p, q, r) /. {oi(x_,y_) :> {x,y}}", //
-//				"oi(p,q,r)");
-//		check("First@( oi(p, q, r) /. {oi(x_,y_) :> {x,y}} )", //
-//				"p");
-//		check("Rest@( oi(p, q, r) /. {oi(x_,y_) :> {x,y}} )", "oi(q,r)");
-//		
-//		check("SetAttributes(fo, {Flat, Orderless})", "");
-//		check("fo(p, q, r) /. {fo(x_,y_) :> {x,y}}", //
-//				"{p,fo(q,r)}");
-//		check("First@( fo(p, q, r) /. {fo(x_,y_) :> {x,y}} )", //
-//				"p");
-//		check("Rest@( fo(p, q, r) /. {fo(x_,y_) :> {x,y}} )", "{fo(q,r)}");
-//
-//		check("Flatten(Table(Union(Sort/@Permutations({Flat,Orderless,OneIdentity}, {i})), {i,3}), 1)", //
-//				//
-//				"{{Flat}," //
-//						+ "{OneIdentity}," //
-//						+ "{Orderless}," //
-//						+ "{Flat,OneIdentity},"//
-//						+ "{Flat,Orderless}," //
-//						+ "{OneIdentity,Orderless}," //
-//						+ "{Flat,OneIdentity,Orderless}}");
+		// check("SetAttributes(oi, {OneIdentity})", "");
+		// check("oi(p, q, r) /. {oi(x_,y_) :> {x,y}}", //
+		// "oi(p,q,r)");
+		// check("First@( oi(p, q, r) /. {oi(x_,y_) :> {x,y}} )", //
+		// "p");
+		// check("Rest@( oi(p, q, r) /. {oi(x_,y_) :> {x,y}} )", "oi(q,r)");
+		//
+		// check("SetAttributes(fo, {Flat, Orderless})", "");
+		// check("fo(p, q, r) /. {fo(x_,y_) :> {x,y}}", //
+		// "{p,fo(q,r)}");
+		// check("First@( fo(p, q, r) /. {fo(x_,y_) :> {x,y}} )", //
+		// "p");
+		// check("Rest@( fo(p, q, r) /. {fo(x_,y_) :> {x,y}} )", "{fo(q,r)}");
+		//
+		// check("Flatten(Table(Union(Sort/@Permutations({Flat,Orderless,OneIdentity}, {i})), {i,3}), 1)", //
+		// //
+		// "{{Flat}," //
+		// + "{OneIdentity}," //
+		// + "{Orderless}," //
+		// + "{Flat,OneIdentity},"//
+		// + "{Flat,Orderless}," //
+		// + "{OneIdentity,Orderless}," //
+		// + "{Flat,OneIdentity,Orderless}}");
 
 		// Check when substitution is defined BEFORE setting attributes.
 		check("Table(Module({ e = (eqv(p,q,r) /. {eqv(x_,y_) :> {x,y}}) }, ClearAll(eqv); " //
@@ -4593,6 +4593,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("val = Extract(expr, pos)", "{3,7,5,1+g(5)}");
 		check("ReplacePart(expr, Thread(pos -> val))", "Hold({3,g(7,2*3),f(1+g(5))})");
 		check("Hold(6/8)==6/8", "Hold(6/8)==3/4");
+	}
+
+	public void testHoldAllComplete() {
+		check("ClearAll(fump); "//
+				+ "SetAttributes(fump, HoldAllComplete);"//
+				+ "fump(e_) := (Print(ToString(Unevaluated(e)) <> \" ~~>\\n\" <> ToString(e)); e); "//
+				+ "fump((42 + 3)*6)", //
+				"270");
 	}
 
 	public void testHoldForm() {
