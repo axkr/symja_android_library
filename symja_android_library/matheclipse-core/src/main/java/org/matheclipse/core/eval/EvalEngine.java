@@ -1884,7 +1884,7 @@ public class EvalEngine implements Serializable {
 	}
 
 	/**
-	 * If <code>true</code> the engine evaluates in &quot;quiet&quot; mode (i.e. no warning messages are showw in the
+	 * If <code>true</code> the engine evaluates in &quot;quiet&quot; mode (i.e. no warning messages are shown in the
 	 * evaluation).
 	 * 
 	 * @return

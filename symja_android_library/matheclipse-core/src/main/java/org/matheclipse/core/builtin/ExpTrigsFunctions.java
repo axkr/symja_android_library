@@ -2133,6 +2133,9 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
+			if (arg1.isZero()) {
+				return F.C1;
+			}
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
 				return Sinc(negExpr);
