@@ -7285,10 +7285,13 @@ public class LowercaseTestCase extends AbstractTestCase {
       check("Module[{e}, ClearAll[eqv]; SetAttributes[eqv, {Flat, OneIdentity}]; eqv[p, q, r] /. {eqv[x_, y_] :> {x, y}}]",
             "{p,eqv(q,r)}");
 
-      // This test currently fails with {eqv(p),eqv(q,r)} as the actual. The expected below is the result from
-		// Mathematica 11.3.0.0. TODO: Make this test pass.
+      // Mathematica 11.3.0.0 produces {q, eqv[p,r]}, which I believe to be wrong.
+		// SymJa produces {p, eqv(q, r)}, which I also think is wrong. The only right answer, I believe, would be
+		// {eqv[p], eqv[q, r]}, although, with Orderless, that is equal to
+		// {eqv[q], eqv[p, r]}, {eqv[r], eqv[q, r]}, and other permutations in the right-hand term.
+      // See discussion here: https://mathematica.stackexchange.com/questions/183322/subtle-order-of-evaluation-issues-when-pattern-matching-with-attributes
       // check("Module[{e}, ClearAll[eqv]; SetAttributes[eqv, {Flat, Orderless}]; eqv[p, q, r] /. {eqv[x_, y_] :> {x, y}}]",
-      //      "{q,eqv(p,r)}");
+         //  "{eqv(p),eqv(q,r)}");
 
       check("Module[{e}, ClearAll[eqv]; SetAttributes[eqv, {Flat, OneIdentity, Orderless}]; eqv[p, q, r] /. {eqv[x_, y_] :> {x, y}}]",
             "{p,eqv(q,r)}");
