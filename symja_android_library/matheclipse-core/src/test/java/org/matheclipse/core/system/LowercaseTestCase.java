@@ -3891,29 +3891,29 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		// see github issue 89
 
-		// check("SetAttributes(oi, {OneIdentity})", "");
-		// check("oi(p, q, r) /. {oi(x_,y_) :> {x,y}}", //
-		// "oi(p,q,r)");
-		// check("First@( oi(p, q, r) /. {oi(x_,y_) :> {x,y}} )", //
-		// "p");
-		// check("Rest@( oi(p, q, r) /. {oi(x_,y_) :> {x,y}} )", "oi(q,r)");
-		//
-		// check("SetAttributes(fo, {Flat, Orderless})", "");
-		// check("fo(p, q, r) /. {fo(x_,y_) :> {x,y}}", //
-		// "{p,fo(q,r)}");
-		// check("First@( fo(p, q, r) /. {fo(x_,y_) :> {x,y}} )", //
-		// "p");
-		// check("Rest@( fo(p, q, r) /. {fo(x_,y_) :> {x,y}} )", "{fo(q,r)}");
-		//
-		// check("Flatten(Table(Union(Sort/@Permutations({Flat,Orderless,OneIdentity}, {i})), {i,3}), 1)", //
-		// //
-		// "{{Flat}," //
-		// + "{OneIdentity}," //
-		// + "{Orderless}," //
-		// + "{Flat,OneIdentity},"//
-		// + "{Flat,Orderless}," //
-		// + "{OneIdentity,Orderless}," //
-		// + "{Flat,OneIdentity,Orderless}}");
+		check("SetAttributes(oi, {OneIdentity})", "");
+		check("oi(p, q, r) /. {oi(x_,y_) :> {x,y}}", //
+				"oi(p,q,r)");
+		check("First@( oi(p, q, r) /. {oi(x_,y_) :> {x,y}} )", //
+				"p");
+		check("Rest@( oi(p, q, r) /. {oi(x_,y_) :> {x,y}} )", "oi(q,r)");
+
+		check("SetAttributes(fo, {Flat, Orderless})", "");
+		check("fo(p, q, r) /. {fo(x_,y_) :> {x,y}}", //
+				"{p,fo(q,r)}");
+		check("First@( fo(p, q, r) /. {fo(x_,y_) :> {x,y}} )", //
+				"p");
+		check("Rest@( fo(p, q, r) /. {fo(x_,y_) :> {x,y}} )", "{fo(q,r)}");
+
+		check("Flatten(Table(Union(Sort/@Permutations({Flat,Orderless,OneIdentity}, {i})), {i,3}), 1)", //
+				//
+				"{{Flat}," //
+						+ "{OneIdentity}," //
+						+ "{Orderless}," //
+						+ "{Flat,OneIdentity},"//
+						+ "{Flat,Orderless}," //
+						+ "{OneIdentity,Orderless}," //
+						+ "{Flat,OneIdentity,Orderless}}");
 
 		// Check when substitution is defined BEFORE setting attributes.
 		check("Table(Module({ e = (eqv(p,q,r) /. {eqv(x_,y_) :> {x,y}}) }, ClearAll(eqv); " //
@@ -7277,20 +7277,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testOneIdentityOrderless() {
 
-      // github issue 89
+		// github issue 89
 
-      check("Module[{e}, ClearAll[eqv]; SetAttributes[eqv, {Flat}]; eqv[p, q, r] /. {eqv[x_, y_] :> {x, y}}]",
-            "{eqv(p),eqv(q,r)}");
+		check("Module[{e}, ClearAll[eqv]; SetAttributes[eqv, {Flat}]; eqv[p, q, r] /. {eqv[x_, y_] :> {x, y}}]",
+				"{eqv(p),eqv(q,r)}");
 
-      check("Module[{e}, ClearAll[eqv]; SetAttributes[eqv, {Flat, OneIdentity}]; eqv[p, q, r] /. {eqv[x_, y_] :> {x, y}}]",
-            "{p,eqv(q,r)}");
+		check("Module[{e}, ClearAll[eqv]; SetAttributes[eqv, {Flat, OneIdentity}]; eqv[p, q, r] /. {eqv[x_, y_] :> {x, y}}]",
+				"{p,eqv(q,r)}");
 
-      // See discussion here: https://mathematica.stackexchange.com/questions/183322/subtle-order-of-evaluation-issues-when-pattern-matching-with-attributes
-      check("Module[{e}, ClearAll[eqv]; SetAttributes[eqv, {Flat, Orderless}]; eqv[p, q, r] /. {eqv[x_, y_] :> {x, y}}]",
-            "{p,eqv(q,r)}");
+		// See discussion here:
+		// https://mathematica.stackexchange.com/questions/183322/subtle-order-of-evaluation-issues-when-pattern-matching-with-attributes
+		check("Module[{e}, ClearAll[eqv]; SetAttributes[eqv, {Flat, Orderless}]; eqv[p, q, r] /. {eqv[x_, y_] :> {x, y}}]",
+				"{p,eqv(q,r)}");
 
-      check("Module[{e}, ClearAll[eqv]; SetAttributes[eqv, {Flat, OneIdentity, Orderless}]; eqv[p, q, r] /. {eqv[x_, y_] :> {x, y}}]",
-            "{p,eqv(q,r)}");
+		check("Module[{e}, ClearAll[eqv]; SetAttributes[eqv, {Flat, OneIdentity, Orderless}]; eqv[p, q, r] /. {eqv[x_, y_] :> {x, y}}]",
+				"{p,eqv(q,r)}");
 
 		check("SetAttributes(f,{Orderless,OneIdentity})", "");
 		check("f(p, q) /. {f(x_,y_) :> {x,y}}", "{p,q}");
