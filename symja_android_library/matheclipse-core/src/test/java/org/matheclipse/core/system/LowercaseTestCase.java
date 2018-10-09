@@ -7275,6 +7275,28 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("f(a)", "f(a)");
 	}
 
+	public void testOneIdentityOrderless() {
+
+      // github issue 89
+
+      check("Module[{e}, ClearAll[eqv]; SetAttributes[eqv, {Flat}]; eqv[p, q, r] /. {eqv[x_, y_] :> {x, y}}]",
+            "{eqv(p),eqv(q,r)}");
+
+      check("Module[{e}, ClearAll[eqv]; SetAttributes[eqv, {Flat, OneIdentity}]; eqv[p, q, r] /. {eqv[x_, y_] :> {x, y}}]",
+            "{p,eqv(q,r)}");
+
+      // See discussion here: https://mathematica.stackexchange.com/questions/183322/subtle-order-of-evaluation-issues-when-pattern-matching-with-attributes
+      check("Module[{e}, ClearAll[eqv]; SetAttributes[eqv, {Flat, Orderless}]; eqv[p, q, r] /. {eqv[x_, y_] :> {x, y}}]",
+            "{p,eqv(q,r)}");
+
+      check("Module[{e}, ClearAll[eqv]; SetAttributes[eqv, {Flat, OneIdentity, Orderless}]; eqv[p, q, r] /. {eqv[x_, y_] :> {x, y}}]",
+            "{p,eqv(q,r)}");
+
+		check("SetAttributes(f,{Orderless,OneIdentity})", "");
+		check("f(p, q) /. {f(x_,y_) :> {x,y}}", "{p,q}");
+		check("f(q,f(p,r)) /. {f(x_,y_) :> {x,y}}", "{q,f(p,r)}");
+	}
+
 	public void testOperate() {
 		check("Through(Operate(p, f(x)))", //
 				"p(f(x))");
