@@ -10565,6 +10565,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSqrt() {
+		check("Sqrt((1-a)*a)", //
+				"Sqrt((1-a)*a)");
 		check("(-3/4)/Sqrt(-3/4)", //
 				"I*1/2*Sqrt(3)");
 		check("(3/4)/Sqrt(3/4)", //

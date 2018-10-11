@@ -809,32 +809,6 @@ public class ExprParser extends Scanner {
 		return temp;
 	}
 
-//	private static INum getReal(String str) {
-//		int index = str.indexOf("*^");
-//		int fExponent = 1;
-//		String fFloatStr = str;
-//		if (index > 0) {
-//			fFloatStr = str.substring(0, index);
-//			fExponent = Integer.parseInt(str.substring(index + 2));
-//		}
-//		if (fFloatStr.length() > 15) {
-//			int precision = fFloatStr.length();
-//			Apfloat apfloatValue = new Apfloat(fFloatStr, precision);
-//			if (fExponent != 1) {
-//				// value * 10 ^ exponent
-//				return F.num(apfloatValue.multiply(ApfloatMath.pow(new Apfloat(10, precision), new Apint(fExponent))));
-//			}
-//			return F.num(apfloatValue);
-//		}
-//
-//		double fDouble = Double.parseDouble(fFloatStr);
-//		if (fExponent != 1) {
-//			// value * 10 ^ exponent
-//			fDouble = fDouble * Math.pow(10, fExponent);
-//		}
-//		return new NumStr(fFloatStr, fExponent);
-//	}
-
 	protected boolean isOperatorCharacters() {
 		return fFactory.getOperatorCharacters().indexOf(fCurrentChar) >= 0;
 	}
@@ -842,7 +816,7 @@ public class ExprParser extends Scanner {
 	final protected List<Operator> getOperator() {
 		char lastChar;
 		final int startPosition = fCurrentPosition - 1;
-		fOperatorString = fInputString.substring(startPosition, fCurrentPosition);
+		fOperatorString = new String(fInputString, startPosition, fCurrentPosition - startPosition);
 		List<Operator> list = fFactory.getOperatorList(fOperatorString);
 		List<Operator> lastList = null;
 		int lastOperatorPosition = -1;
@@ -853,7 +827,7 @@ public class ExprParser extends Scanner {
 		getChar();
 		while (fFactory.getOperatorCharacters().indexOf(fCurrentChar) >= 0) {
 			lastChar = fCurrentChar;
-			fOperatorString = fInputString.substring(startPosition, fCurrentPosition);
+			fOperatorString = new String(fInputString, startPosition, fCurrentPosition - startPosition);
 			list = fFactory.getOperatorList(fOperatorString);
 			if (list != null) {
 				lastList = list;
@@ -870,7 +844,8 @@ public class ExprParser extends Scanner {
 		}
 		final int endPosition = fCurrentPosition--;
 		fCurrentPosition = startPosition;
-		throwSyntaxError("Operator token not found: " + fInputString.substring(startPosition, endPosition - 1));
+		throwSyntaxError("Operator token not found: "
+				+ new String(fInputString, startPosition, endPosition - 1 - startPosition));
 		return null;
 	}
 
@@ -905,7 +880,7 @@ public class ExprParser extends Scanner {
 					getNextToken();
 
 					if (fToken == TT_ARGUMENTS_CLOSE) {
-						if (fInputString.length() > fCurrentPosition && fInputString.charAt(fCurrentPosition) == ']') {
+						if (fInputString.length > fCurrentPosition && fInputString[fCurrentPosition] == ']') {
 							throwSyntaxError("Statement (i.e. index) expected in [[ ]].");
 						}
 					}
@@ -916,8 +891,8 @@ public class ExprParser extends Scanner {
 				if (fToken == TT_ARGUMENTS_CLOSE) {
 					skipWhitespace();
 					// scanner-step begin: (instead of getNextToken() call):
-					if (fInputString.length() > fCurrentPosition) {
-						if (fInputString.charAt(fCurrentPosition) == ']') {
+					if (fInputString.length > fCurrentPosition) {
+						if (fInputString[fCurrentPosition] == ']') {
 							fCurrentPosition++;
 							fToken = TT_PARTCLOSE;
 						}

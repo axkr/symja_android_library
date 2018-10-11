@@ -245,7 +245,10 @@ public class Characters {
 	public static String substituteCharacters(String str) {
 		StringBuilder buf = null;
 		char currentChar;
-		int currentPosition = 0;
+		int currentPosition = str.indexOf('\\');
+		if (currentPosition < 0) {
+			return str;
+		}
 		final int strLength = str.length();
 		while (currentPosition < strLength) {
 			currentChar = str.charAt(currentPosition++);
