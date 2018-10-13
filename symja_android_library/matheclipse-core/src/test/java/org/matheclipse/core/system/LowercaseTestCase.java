@@ -10686,6 +10686,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("StirlingS2(2000, 199)", "12783663313027805423901972026528914<<SHORT>>", 35);
 	}
 
+	public void testString() {
+		check("\"Hello world!\\\r\n" //
+				+ "next line\"", //
+				"Hello world!\r\n" + "next line");
+		check("\"Hello world!\\\n" //
+				+ "next line\"", //
+				"Hello world!\n" + //
+						"next line");
+	}
+
 	public void testStringJoin() {
 		check("\"Hello\" <> \" \" <> \"world!\"", "Hello world!");
 		check("\"Debian\" <> 6", "Debian<>6");

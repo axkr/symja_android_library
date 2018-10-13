@@ -18,7 +18,6 @@ package org.matheclipse.parser.client;
 import java.util.List;
 import java.util.Stack;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.parser.client.operator.Operator;
 
 public abstract class Scanner {
@@ -420,7 +419,8 @@ public abstract class Scanner {
 		if (fCurrentChar == '$') {
 			getChar();
 		}
-		while (Character.isLetterOrDigit(fCurrentChar) || (fCurrentChar == '$') || (fCurrentChar == ':')) {
+		while ((Character.isJavaIdentifierPart(fCurrentChar) && (fCurrentChar != '_')) || (fCurrentChar == '$')
+				|| (fCurrentChar == ':')) {
 			if (fCurrentChar == ':') {
 				if ((fCurrentChar == ':') && fInputString.length > fCurrentPosition
 						&& fInputString[fCurrentPosition] == ':') {
@@ -439,6 +439,10 @@ public abstract class Scanner {
 		int endPosition = fCurrentPosition--;
 		final int length = (--endPosition) - startPosition;
 		if (length == 1) {
+			String name=Characters.CharacterNamesMap.get(String.valueOf(fInputString[startPosition]));
+			if (name!=null) {
+				return name;
+			}
 			return optimizedCurrentTokenSource1(startPosition);
 		}
 		if (length == 2 && fInputString[startPosition] == '$') {
@@ -525,7 +529,7 @@ public abstract class Scanner {
 					continue; // while loop
 				}
 
-				if (Character.isLetter(fCurrentChar) || (fCurrentChar == '$')) {
+				if ((Character.isJavaIdentifierStart(fCurrentChar) && (fCurrentChar != '_')) || (fCurrentChar == '$')) {
 					// the Character.isUnicodeIdentifierStart method doesn't
 					// work in Google Web Toolkit:
 					// || (Character.isUnicodeIdentifierStart(fCurrentChar))) {
@@ -644,6 +648,10 @@ public abstract class Scanner {
 
 					break;
 				default:
+					if (Characters.CharacterNamesMap.containsKey(String.valueOf(fCurrentChar))) {
+						fToken = TT_IDENTIFIER;
+						return;
+					}
 					throwSyntaxError("unexpected character: '" + fCurrentChar + "'");
 				}
 
@@ -848,6 +856,15 @@ public abstract class Scanner {
 						ident.append('\"');
 
 						break;
+					case '\n':
+						// a backslash at the end of the line means the scanner should continue on the next line
+						continue;
+					case '\r':
+						if (isValidPosition() && fInputString[fCurrentPosition] == '\n') {
+							// a backslash at the end of the line means the scanner should continue on the next line
+							continue;
+						}
+						throwSyntaxError("string - unknown character after back-slash.");
 					default:
 						throwSyntaxError("string - unknown character after back-slash.");
 					}
@@ -866,6 +883,10 @@ public abstract class Scanner {
 				}
 
 				ident.append(fCurrentChar);
+				if (fCurrentChar == '\n') {
+					fRowCounter++;
+					fCurrentColumnStartPosition = fCurrentPosition;
+				}
 				if (isValidPosition()) {
 					fCurrentChar = fInputString[fCurrentPosition++];
 				} else {
@@ -889,6 +910,7 @@ public abstract class Scanner {
 		fCurrentPosition = 0;
 		fRowCounter = 0;
 		fCurrentColumnStartPosition = 0;
+		fRecursionDepth = 0;
 	}
 
 	abstract protected boolean isOperatorCharacters();

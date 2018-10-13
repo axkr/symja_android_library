@@ -4,6 +4,8 @@ import junit.framework.TestCase;
 
 import java.util.List;
 
+import javax.xml.stream.events.Characters;
+
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -492,4 +494,60 @@ public class ParserTestCase extends TestCase {
 		}
 	}
 
+	public void testParse35() {
+		try {
+			Parser p = new Parser();
+			// http://oeis.org/A005132
+			ASTNode obj = p.parse(
+					"	If[!MatchQ[#,_\\[Rule]_],\n" + 
+					"       Message[Caller::\"UnknownOption\",#];\n" + 
+					"       (*else*),\n" + 
+					"       pos=Position[FullOptions,{#[[1]],_,_}];\n" + 
+					"       If[Length[pos]\\[Equal]0,\n" + 
+					"         Message[Caller::\"UnknownOption\",#]\n" + 
+					"         (*else*),\n" + 
+					"         FullOptions[[pos[[1,1]],3]]=#[[2]]\n" + 
+					"         ];\n" + 
+					"       ];");
+			assertEquals(obj.toString(),
+					"CompoundExpression(If(Not(MatchQ(Slot(1), Rule(_, _))), CompoundExpression(Message(Times(Caller::, UnknownOption), Slot(1)), Null), CompoundExpression(Set(pos, Position(FullOptions, List(Part(Slot(1), 1), _, _))), If(Equal(Length(pos), 0), Message(Times(Caller::, UnknownOption), Slot(1)), Set(Part(FullOptions, Part(pos, 1, 1), 3), Part(Slot(1), 2))), Null)), Null)");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+	
+	public void testParse36() {
+		try {
+//			System.out.println(Character.isUnicodeIdentifierPart('\u221E'));
+			Parser p = new Parser();
+			ASTNode obj = p.parse("\u221E");
+			assertEquals(obj.toString(),
+					"Infinity");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+	
+	public void testParse37() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("      Do[\n" + 
+					"        serh=SeriesHead[ser,\\[Omega]];\n" + 
+					"        \n" + 
+					"        (* check for series term that run out of precision *)\n" + 
+					"        If[FreeQ[serh,HoldPattern[SeriesData[_,_,{},_,_,_]]],\n" + 
+					"          (* No: done. *)\n" + 
+					"          Break[];\n" + 
+					"          ];\n" + 
+					"        ,{i,1,30}\n" + 
+					"        ]");
+			assertEquals(obj.toString(),
+					"Do(CompoundExpression(Set(serh, SeriesHead(ser, ω)), If(FreeQ(serh, HoldPattern(SeriesData(_, _, List(), _, _, _))), CompoundExpression(Break(), Null)), Null), List(i, 1, 30))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	} 
 }

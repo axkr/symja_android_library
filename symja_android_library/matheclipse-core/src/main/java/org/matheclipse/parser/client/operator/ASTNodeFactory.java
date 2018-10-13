@@ -36,7 +36,20 @@ import org.matheclipse.parser.client.ast.StringNode;
 import org.matheclipse.parser.client.ast.SymbolNode;
 
 public class ASTNodeFactory implements INodeParserFactory {
+	/**
+	 * The default set of characters, which could form an operator
+	 * 
+	 */
+	public static String DEFAULT_OPERATOR_CHARACTERS = null;
 
+	/**
+	 * The set of characters, which could form an operator
+	 * 
+	 */
+	public String getOperatorCharacters() {
+		return DEFAULT_OPERATOR_CHARACTERS;
+	}
+	
 	/**
 	 * @@@ operator (not @@ operator)
 	 *
@@ -213,11 +226,18 @@ public class ASTNodeFactory implements INodeParserFactory {
 	private static HashMap<String, ArrayList<Operator>> fOperatorTokenStartSet;
 
 	static {
+		StringBuilder buf = new StringBuilder(BASIC_OPERATOR_CHARACTERS);
 		fOperatorMap = new HashMap<String, Operator>();
 		fOperatorTokenStartSet = new HashMap<String, ArrayList<Operator>>();
 		for (int i = 0; i < HEADER_STRINGS.length; i++) {
 			addOperator(fOperatorMap, fOperatorTokenStartSet, OPERATOR_STRINGS[i], HEADER_STRINGS[i], OPERATORS[i]);
+			String unicodeChar = org.matheclipse.parser.client.Characters.NamedCharactersMap.get(HEADER_STRINGS[i]);
+			if (unicodeChar != null) {
+				addOperator(fOperatorMap, fOperatorTokenStartSet, unicodeChar, HEADER_STRINGS[i], OPERATORS[i]);
+				buf.append(unicodeChar);
+			}
 		}
+		DEFAULT_OPERATOR_CHARACTERS=buf.toString();
 	}
 
 	private final boolean fIgnoreCase;
@@ -245,9 +265,7 @@ public class ASTNodeFactory implements INodeParserFactory {
 		}
 	}
 
-	public String getOperatorCharacters() {
-		return DEFAULT_OPERATOR_CHARACTERS;
-	}
+	
 
 	/**
 	 * public Map<String, Operator> getIdentifier2OperatorMap()
