@@ -92,6 +92,18 @@ public class SeriesTest extends AbstractTestCase {
 	}
 
 	public void testSeries() {
+		// TODO handle positive>/negative fractional powers
+		// check("Series(Sqrt(Sin(x)), {x, 0, 10})", //
+		// "");
+		// check("Series(1/Sin(x)^10, {x, 0, 2})",//
+		// "");
+
+		// check("Series(Gamma(x), {x, 0, 3})", //
+		// "");
+		check("Series((1 + x)^n, {x, 0, 4})", //
+				"1+n*x+1/2*(-1+n)*n*x^2+1/6*(-2+n)*(-1+n)*n*x^3+1/24*(-3+n)*(-2+n)*(-1+n)*n*x^4+O(x)^\n" + "5");
+		check("Series(x^x, {x, 0, 4})", //
+				"1+Log(x)*x+1/2*Log(x)^2*x^2+1/6*Log(x)^3*x^3+1/24*Log(x)^4*x^4+O(x)^5");
 		// https://oeis.org/A053614
 		check("nn=10; t=Rest(CoefficientList(Series(Product((1+x^(k*(k+1)/2)), {k, nn}), {x, 0, nn*(nn+1)/2}), x)); Flatten(Position(t, 0))",
 				"{2,5,8,12,23,33}");

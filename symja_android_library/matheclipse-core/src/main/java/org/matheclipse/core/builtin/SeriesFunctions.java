@@ -923,6 +923,29 @@ public class SeriesFunctions {
 					ps.setCoeff(i, engine.evaluate(F.subst(temp, F.Rule(power, F.ZZ(i)))));
 				}
 				return ps;
+			} else {
+				int end = n;
+				if (n < 0) {
+					end = 0;
+				}
+				temp = engine.evaluate(F.SeriesCoefficient(function, F.List(x, x0, F.C0)));
+				if (temp.isFree(F.SeriesCoefficient)) {
+					boolean evaled = true;
+					ASTSeriesData ps = new ASTSeriesData(x, x0, end + 1, end + denominator, denominator);
+					ps.setCoeff(0, temp);
+					for (int i = 1; i <= end; i++) {
+						temp = engine.evaluate(F.SeriesCoefficient(function, F.List(x, x0, F.ZZ(i))));
+						if (temp.isFree(F.SeriesCoefficient)) {
+							ps.setCoeff(i, temp);
+						} else {
+							evaled = false;
+							break;
+						}
+					}
+					if (evaled) {
+						return ps;
+					}
+				}
 			}
 			ASTSeriesData ps = new ASTSeriesData(x, x0, 0, n + denominator, denominator);
 			IExpr derivedFunction = function;
@@ -1186,11 +1209,13 @@ public class SeriesFunctions {
 										F.C0);
 							}
 						}
-						IExpr exp = function.exponent();
-						return F.Piecewise(
-								F.List(F.List(F.Times(F.Power(x0, F.Plus(exp, n.negate())), F.Binomial(exp, n)),
-										F.GreaterEqual(n, F.C0))),
-								F.C0);
+						if (!x0.isZero()) {
+							IExpr exp = function.exponent();
+							return F.Piecewise(
+									F.List(F.List(F.Times(F.Power(x0, F.Plus(exp, n.negate())), F.Binomial(exp, n)),
+											F.GreaterEqual(n, F.C0))),
+									F.C0);
+						}
 					} else if (function.exponent().equals(x) && function.base().isFree(x)) {
 						// b^x with b is free of x
 						IExpr b = function.base();
