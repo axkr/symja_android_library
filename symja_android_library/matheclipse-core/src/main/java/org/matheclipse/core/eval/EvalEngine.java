@@ -1261,10 +1261,10 @@ public class EvalEngine implements Serializable {
 	 * 
 	 * @param expr
 	 *            the object which should be evaluated
-	 * @return an <code>IPatterMatcher</code> cretaed from the given expression.
+	 * @return an <code>IPatterMatcher</code> created from the given expression.
 	 */
-	public final IPatternMatcher evalPatternMatcher(@Nonnull final IExpr expr) {
-		IExpr temp = evalPattern(expr);
+	public final IPatternMatcher evalPatternMatcher(@Nonnull final IExpr patternExpression) {
+		IExpr temp = evalPattern(patternExpression); 
 		return new PatternMatcher(temp);
 	}
 

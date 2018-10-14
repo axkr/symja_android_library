@@ -2187,6 +2187,12 @@ public class F {
     public final static IBuiltInSymbol StringLength = F.initFinalSymbol("StringLength", ID.StringLength);
 
     /***/
+    public final static IBuiltInSymbol StringQ = F.initFinalSymbol("StringQ", ID.StringQ);
+
+    /***/
+    public final static IBuiltInSymbol StringReplace = F.initFinalSymbol("StringReplace", ID.StringReplace);
+
+    /***/
     public final static IBuiltInSymbol StringTake = F.initFinalSymbol("StringTake", ID.StringTake);
 
     /** StruveH(n, z) - returns the Struve function `H_n(z)`.*/

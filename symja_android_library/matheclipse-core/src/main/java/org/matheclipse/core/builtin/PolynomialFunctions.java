@@ -149,7 +149,7 @@ public class PolynomialFunctions {
 			if (cached != null) {
 				return cached;
 			}
-			
+
 			IExpr arg2 = ast.arg2();
 			// list of variable expressions extracted from the second argument
 			IASTAppendable listOfVariables = null;
@@ -205,7 +205,7 @@ public class PolynomialFunctions {
 				ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, listOfVariables,
 						listOfVariables.argSize());
 				ExprPolynomial poly = ring.create(expr, true, false);
-				IExpr temp= poly.coefficient(expArr);
+				IExpr temp = poly.coefficient(expArr);
 				F.REMEMBER_AST_CACHE.put(ast, temp);
 				return temp;
 			} catch (RuntimeException ae) {
@@ -930,7 +930,7 @@ public class PolynomialFunctions {
 			if (cached != null) {
 				return cached;
 			}
-			
+
 			final IExpr form = engine.evalPattern(ast.arg2());
 			if (form.isList()) {
 				return ((IAST) form).mapThread(ast, 2);
@@ -949,8 +949,8 @@ public class PolynomialFunctions {
 				collector.add(F.CNInfinity);
 			} else if (expr.isAST()) {
 				IAST arg1 = (IAST) expr;
-				final IPatternMatcher matcher = new PatternMatcherEvalEngine(form, engine);
-
+				// final IPatternMatcher matcher = new PatternMatcherEvalEngine(form, engine);
+				final IPatternMatcher matcher = engine.evalPatternMatcher(form);
 				if (arg1.isPower()) {
 					if (matcher.test(arg1.base(), engine)) {
 						collector.add(arg1.exponent());
@@ -987,7 +987,8 @@ public class PolynomialFunctions {
 				}
 
 			} else if (expr.isSymbol()) {
-				final PatternMatcher matcher = new PatternMatcherEvalEngine(form, engine);
+				// final PatternMatcher matcher = new PatternMatcherEvalEngine(form, engine);
+				final IPatternMatcher matcher = engine.evalPatternMatcher(form);
 				if (matcher.test(expr)) {
 					collector.add(F.C1);
 				} else {
@@ -1073,7 +1074,7 @@ public class PolynomialFunctions {
 			ExprPolynomialRing ring = new ExprPolynomialRing(F.List(x));
 			try {
 				// check if a is a polynomial otherwise check ArithmeticException, ClassCastException
-				ring.create(a); 
+				ring.create(a);
 				// check if b is a polynomial otherwise check ArithmeticException, ClassCastException
 				ring.create(b);
 				return F.Together(resultant(a, b, x, engine));
@@ -1101,7 +1102,7 @@ public class PolynomialFunctions {
 			return F.Times(F.Power(F.CN1, abExp), F.Power(F.Coefficient(b, x, bExp), F.Subtract(aExp, rExp)),
 					resultant(b, r, x, engine));
 		}
-		
+
 		private IExpr jasResultant(IExpr a, IExpr b, ISymbol x, EvalEngine engine) {
 			VariablesSet eVar = new VariablesSet();
 			eVar.addVarList(x);

@@ -716,7 +716,8 @@ public class Algebra {
 				IAST poly = (IAST) expr;
 				IASTAppendable rest = F.PlusAlloc(poly.size());
 
-				IPatternMatcher matcher = new PatternMatcherEvalEngine(x, engine);
+//				IPatternMatcher matcher = new PatternMatcherEvalEngine(x, engine);
+				final IPatternMatcher matcher = engine.evalPatternMatcher(x);
 				collectToMap(poly, matcher, map, rest);
 				if (listOfVariables != null && listPosition < listOfVariables.size()) {
 					// collect next pattern in sub-expressions

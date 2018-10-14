@@ -792,16 +792,16 @@ public class SpecialFunctions extends AbstractRubiTestCase {
 
 	// {6686}
 	public void test0123() {
-//		check("Integrate::DerivativeDivides[b*x,ExpIntegralEi[b*x]/x,x]", //
-//				"False");
-//		check("Integrate::DerivativeDivides[ExpIntegralEi[b*x]/x,b*x,x]", //
-//				"False");
-//		check("Integrate::EasyDQ[ExpIntegralEi[b*x]/x,x]", //
-// 				"True");
-//		check("Integrate::EasyDQ[x*ExpIntegralEi[b*x],x]", //
-// 				"True");
+		// check("Integrate::DerivativeDivides[b*x,ExpIntegralEi[b*x]/x,x]", //
+		// "False");
+		// check("Integrate::DerivativeDivides[ExpIntegralEi[b*x]/x,b*x,x]", //
+		// "False");
+		// check("Integrate::EasyDQ[ExpIntegralEi[b*x]/x,x]", //
+		// "True");
+		// check("Integrate::EasyDQ[x*ExpIntegralEi[b*x],x]", //
+		// "True");
 		check("Integrate::EasyDQ[E^(b*x)[[1]],x]", //
-			"True");
+				"True");
 		check(//
 				"Integrate[(E^(b*x)*ExpIntegralEi[b*x])/x, x]", //
 				"ExpIntegralEi[b*x]^2/2", //
@@ -1762,8 +1762,6 @@ public class SpecialFunctions extends AbstractRubiTestCase {
 
 	// {6567}
 	public void test0249() {
-//		check("D[LogGamma[a+b*x],x]", //
-//				"");
 		check(//
 				"Integrate[LogGamma[a + b*x], x]", //
 				"PolyGamma[-2, a + b*x]/b", //

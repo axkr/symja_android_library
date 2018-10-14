@@ -54,6 +54,7 @@ public class PredicateQ {
 		F.QuantityQ.setEvaluator(new QuantityQ());
 		F.RealNumberQ.setEvaluator(new RealNumberQ());
 		F.SquareMatrixQ.setEvaluator(new SquareMatrixQ());
+		F.StringQ.setPredicateQ(x -> x.isString());
 		F.SymbolQ.setPredicateQ(x -> x.isSymbol());
 		F.SymmetricMatrixQ.setEvaluator(new SymmetricMatrixQ());
 		F.SyntaxQ.setEvaluator(new SyntaxQ());
@@ -172,12 +173,14 @@ public class PredicateQ {
 	private static class ArrayQ extends AbstractCoreFunctionEvaluator {
 
 		/**
-		 * Determine the depth of the given expression <code>expr</code> which should be a full array of (possibly nested) lists. Return
-		 * <code>-1</code> if the expression isn't a full array.
+		 * Determine the depth of the given expression <code>expr</code> which should be a full array of (possibly
+		 * nested) lists. Return <code>-1</code> if the expression isn't a full array.
 		 * 
 		 * @param expr
-		 * @param depth     start depth of the full array
-		 * @param predicate an optional <code>Predicate</code> which would be applied to all elements which aren't lists.
+		 * @param depth
+		 *            start depth of the full array
+		 * @param predicate
+		 *            an optional <code>Predicate</code> which would be applied to all elements which aren't lists.
 		 * @return <code>-1</code> if the expression isn't a full array.
 		 */
 		private static int determineDepth(final IExpr expr, int depth, Predicate<IExpr> predicate) {
@@ -369,14 +372,16 @@ public class PredicateQ {
 	private static class FreeQ extends AbstractCoreFunctionEvaluator {
 
 		/**
-		 * Checks if <code>orderless1.size()</code> is greater or equal <code>orderless2.size()</code> and returns <code>false</code>, if
-		 * every argument in <code>orderless2</code> equals an argument in <code>orderless1</code>. I.e. <code>orderless1</code> doesn't
-		 * contain every argument of <code>orderless2</code>.
+		 * Checks if <code>orderless1.size()</code> is greater or equal <code>orderless2.size()</code> and returns
+		 * <code>false</code>, if every argument in <code>orderless2</code> equals an argument in
+		 * <code>orderless1</code>. I.e. <code>orderless1</code> doesn't contain every argument of
+		 * <code>orderless2</code>.
 		 * 
 		 * @param orderless1
 		 * @param orderless2
-		 * @return <code>false</code> if <code>orderless1.size()</code> is greater or equal <code>orderless2.size()</code> and if every
-		 *         argument in <code>orderless2</code> equals an argument in <code>orderless1</code>
+		 * @return <code>false</code> if <code>orderless1.size()</code> is greater or equal
+		 *         <code>orderless2.size()</code> and if every argument in <code>orderless2</code> equals an argument in
+		 *         <code>orderless1</code>
 		 */
 		private static boolean isFreeOrderless(IAST orderless1, IAST orderless2) {
 			if (orderless1.size() >= orderless2.size()) {
@@ -415,7 +420,9 @@ public class PredicateQ {
 				if (arg2.isSymbol() || arg2.isNumber() || arg2.isString()) {
 					return F.bool(arg1.isFree(arg2, true));
 				}
-				final IPatternMatcher matcher = new PatternMatcherEvalEngine(arg2, engine);
+
+				// final IPatternMatcher matcher = new PatternMatcherEvalEngine(arg2, engine);
+				final IPatternMatcher matcher = engine.evalPatternMatcher(arg2);
 				if (matcher.isRuleWithoutPatterns()) {
 					// special for FreeQ(), don't implemented in MemberQ()!
 					if (arg1.isOrderlessAST() && arg2.isOrderlessAST() && arg1.head().equals(arg2.head())) {
@@ -531,8 +538,8 @@ public class PredicateQ {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * only returns <code>True</code> if <code>f(x)</code> returns <code>True</code> for each element <code>x</code> of the matrix
-	 * <code>m</code>.
+	 * only returns <code>True</code> if <code>f(x)</code> returns <code>True</code> for each element <code>x</code> of
+	 * the matrix <code>m</code>.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -770,8 +777,8 @@ public class PredicateQ {
 	 * </blockquote>
 	 * <p>
 	 * For very large numbers, <code>PrimeQ</code> uses
-	 * <a href="https://en.wikipedia.org/wiki/Prime_number#Primality_testing_versus_primality_proving">probabilistic prime testing</a>,
-	 * so it might be wrong sometimes<br />
+	 * <a href="https://en.wikipedia.org/wiki/Prime_number#Primality_testing_versus_primality_proving">probabilistic
+	 * prime testing</a>, so it might be wrong sometimes<br />
 	 * (a number might be composite even though <code>PrimeQ</code> says it is prime).
 	 * </p>
 	 * <p>
@@ -1164,8 +1171,8 @@ public class PredicateQ {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns <code>True</code> if <code>v</code> is a vector and <code>f(x)</code> returns <code>True</code> for each element
-	 * <code>x</code> of <code>v</code>.
+	 * returns <code>True</code> if <code>v</code> is a vector and <code>f(x)</code> returns <code>True</code> for each
+	 * element <code>x</code> of <code>v</code>.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>

@@ -5871,11 +5871,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLog10() {
-		check("Log10(1000)", "3");
-		checkNumeric("Log10({2., 5.})", "{0.30102999566398114,0.6989700043360186}");
-		check("Log10(E ^ 3)", "3/Log(10)");
+		check("Log10(1000)", //
+				"3");
+		checkNumeric("Log10({2., 5.})", //
+				"{0.30102999566398114,0.6989700043360186}");
+		check("Log10(E ^ 3)", //
+				"3/Log(10)");
 
-		check("Log10(x)", "Log(x)/Log(10)");
+		check("Log10(x)", //
+				"Log(x)/Log(10)");
 	}
 
 	public void testLog2() {
@@ -5883,6 +5887,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("Log2(5.6)", "2.4854268271702415");
 		check("Log2(E ^ 2) ", "2/Log(2)");
 		check("Log2(x)", "Log(x)/Log(2)");
+	}
+
+	public void testLogGamma() {
+		check("LogGamma(7.7)", //
+				"7.92654");
+		check("LogGamma(-I*Infinity)", //
+				"ComplexInfinity");
+		check("LogGamma(6)", //
+				"Log(120)");
+		check("LogGamma(0)", //
+				"Infinity");
+		check("LogGamma(-6)", //
+				"Infinity");
 	}
 
 	public void testLogIntegral() {
@@ -8082,6 +8099,26 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPosition() {
+		check("Count({1, \"f\", g, \"h\", \"7\"}, _?StringQ)", //
+				"3");
+		check("Length(Position({1, \"f\", g, \"h\", \"7\"}, _?StringQ))", //
+				"3");
+		check("Position({1 + x^2, 5, x^4, a + (1 + x^2)^2}, x^_)", //
+				"{{1,2},{3},{4,2,1,2}}");
+		check("Extract({1 + x^2, 5, x^4, a + (1 + x^2)^2}, {{1,2},{3},{4,2,1,2}})", //
+				"{x^2,x^4,x^2}");
+		check("Position(x^2 + y^2, Power, Heads->False)", //
+				"{}");
+		check("Position(x^2 + y^2, Power)", //
+				"{{1,0},{2,0}}");
+		check("Position(f(g(h(x))), _, Infinity)", //
+				"{{0},{1,0},{1,1,0},{1,1,1},{1,1},{1}}");
+		check("Position({a, b, a, a, b, c, b, a, b}, b, 1, 2)", //
+				"{{2},{5}}");
+		check("Position({1 + x^2, 5, x^4, a + (1 + x^2)^2}, x^_)", //
+				"{{1,2},{3},{4,2,1,2}}");
+		check("Position({1 + x^2, 5, x^4, a + (1 + x^2)^2}, x^_, 2)", //
+				"{{1,2},{3}}");
 		check("Position({1, 2, 2, 1, 2, 3, 2}, 2)", "{{2},{3},{5},{7}}");
 		check("Position({1 + Sin(x), x, (Tan(x) - y)^2}, x, 3)", "{{1,2,1},{2}}");
 		check("Position({1 + x^2, x*y ^ 2,  4*y,  x ^ z}, x^_)", "{{1,2},{4}}");
@@ -10704,6 +10741,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testStringLength() {
 		check("StringLength(\"tiger\")", "5");
+	}
+
+	public void testStringQ() {
+		check("StringQ(a)", //
+				"False");
+		check("StringQ(\"a\")", //
+				"True");
 	}
 
 	public void testStringTake() {

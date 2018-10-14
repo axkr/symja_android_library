@@ -49,11 +49,12 @@ public class AST2Expr {
 	public final static String[] SYMBOL_STRINGS = { "All", "Algebraics", "Automatic", "Axes", "AxesOrigin", "AxesStyle",
 			"Background", "Booleans", "CharacterEncoding", "ComplexInfinity", "Catalan", "Complexes",
 			"ComplexityFunction", "Constant", "Degree", "Disputed", "EulerGamma", "False", "Flat", "Glaisher",
-			"GoldenRatio", "HoldAll", "HoldComplete", "HoldAllComplete", "HoldFirst", "HoldRest", "Indeterminate", "Infinity", "Integer", "Integers",
-			"Khinchin", "Listable", "MaxIterations", "MaxPoints", "Method", "Modulus", "NHoldAll", "NHoldFirst",
-			"NHoldRest", "None", "Nonexistent", "NotApplicable", "NotAvailable", "Null", "NumericFunction",
-			"OneIdentity", "Orderless", "Pi", "PrecisionGoal", "Primes", "Rationals", "Real", "Reals", "Second", "Slot",
-			"SlotSequence", "String", "Symbol", "TooLarge", "Trig", "True", "Variable", "White", "Unknown" };
+			"GoldenRatio", "HoldAll", "HoldComplete", "HoldAllComplete", "HoldFirst", "HoldRest", "Indeterminate",
+			"Infinity", "Integer", "Integers", "Khinchin", "Listable", "MaxIterations", "MaxPoints", "Method",
+			"Modulus", "NHoldAll", "NHoldFirst", "NHoldRest", "None", "Nonexistent", "NotApplicable", "NotAvailable",
+			"Null", "NumericFunction", "OneIdentity", "Orderless", "Pi", "PrecisionGoal", "Primes", "Rationals", "Real",
+			"Reals", "Second", "Slot", "SlotSequence", "String", "Symbol", "TooLarge", "Trig", "True", "Variable",
+			"White", "Unknown" };
 
 	public final static String[] FUNCTION_STRINGS = { "Abort", "Abs", "AbsArg", "Accumulate", "AddTo", "AllTrue", "And",
 			"AngleVector", "AnyTrue", "AntihermitianMatrixQ", "AntiSymmetric", "AntisymmetricMatrixQ", "Annuity",
@@ -140,18 +141,18 @@ public class AST2Expr {
 			"SinhIntegral", "Skewness", "SokalSneathDissimilarity", "Solve", "Sort", "Sow", "Span", "Split", "SplitBy",
 			"Sqrt", "SquaredEuclideanDistance", "SquareFreeQ", "SquareMatrixQ", "StandardDeviation", "StandardForm",
 			"Standardize", "StieltjesGamma", "StirlingS1", "StirlingS2", "StringDrop", "StringJoin", "StringLength",
-			"StringTake", "StruveH", "StruveL", "StudentTDistribution", "Subdivide", "Subfactorial", "Subscript",
-			"Subsuperscript", "Subsets", "Subtract", "SubtractFrom", "Sum", "Superscript", "SurfaceGraphics", "Switch",
-			"SyntaxLength", "SymbolName", "SymbolQ", "Symmetric", "SymmetricMatrixQ", "SyntaxQ", "Table", "TableForm",
-			"Take", "Tally", "Tan", "Tanh", "TautologyQ", "Taylor", "TensorDimensions", "TensorProduct", "TensorRank",
-			"TensorSymmetry", "TeXForm", "Thread", "Through", "Throw", "TimeConstrained", "Times", "TimesBy",
-			"TimeValue", "Timing", "ToCharacterCode", "ToeplitzMatrix", "Together", "ToPolarCoordinates", "ToRadicals",
-			"ToString", "Total", "ToUnicode", "Tr", "Trace", "TraditionalForm", "Transpose", "TrigExpand", "TrigReduce",
-			"TrigToExp", "TrueQ", "Tuples", "Undefined", "Unequal", "Unevaluated", "UniformDistribution", "Union",
-			"Unique", "UnitaryMatrixQ", "UnitConvert", "Unitize", "UnitStep", "UnitVector", "UnsameQ", "Unset",
-			"UpperCaseQ", "UpperTriangularize", "UpSet", "UpSetDelayed", "ValueQ", "VandermondeMatrix", "Variables",
-			"Variance", "VectorAngle", "VectorQ", "WeibullDistribution", "Which", "While", "With", "Xor",
-			"YuleDissimilarity", "ZeroSymmetric", "Zeta" };
+			"StringTake", "StringQ", "StringReplace", "StruveH", "StruveL", "StudentTDistribution", "Subdivide",
+			"Subfactorial", "Subscript", "Subsuperscript", "Subsets", "Subtract", "SubtractFrom", "Sum", "Superscript",
+			"SurfaceGraphics", "Switch", "SyntaxLength", "SymbolName", "SymbolQ", "Symmetric", "SymmetricMatrixQ",
+			"SyntaxQ", "Table", "TableForm", "Take", "Tally", "Tan", "Tanh", "TautologyQ", "Taylor", "TensorDimensions",
+			"TensorProduct", "TensorRank", "TensorSymmetry", "TeXForm", "Thread", "Through", "Throw", "TimeConstrained",
+			"Times", "TimesBy", "TimeValue", "Timing", "ToCharacterCode", "ToeplitzMatrix", "Together",
+			"ToPolarCoordinates", "ToRadicals", "ToString", "Total", "ToUnicode", "Tr", "Trace", "TraditionalForm",
+			"Transpose", "TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "Tuples", "Undefined", "Unequal",
+			"Unevaluated", "UniformDistribution", "Union", "Unique", "UnitaryMatrixQ", "UnitConvert", "Unitize",
+			"UnitStep", "UnitVector", "UnsameQ", "Unset", "UpperCaseQ", "UpperTriangularize", "UpSet", "UpSetDelayed",
+			"ValueQ", "VandermondeMatrix", "Variables", "Variance", "VectorAngle", "VectorQ", "WeibullDistribution",
+			"Which", "While", "With", "Xor", "YuleDissimilarity", "ZeroSymmetric", "Zeta" };
 
 	public static Map<String, Integer> RUBI_STATISTICS_MAP;
 

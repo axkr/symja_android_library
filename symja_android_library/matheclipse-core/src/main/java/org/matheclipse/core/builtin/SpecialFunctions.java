@@ -69,6 +69,7 @@ public class SpecialFunctions {
 		F.InverseErfc.setEvaluator(new InverseErfc());
 		F.InverseBetaRegularized.setEvaluator(new InverseBetaRegularized());
 		F.InverseGammaRegularized.setEvaluator(new InverseGammaRegularized());
+		F.LogGamma.setEvaluator(new LogGamma());
 		F.PolyGamma.setEvaluator(new PolyGamma());
 		F.PolyLog.setEvaluator(new PolyLog());
 		F.ProductLog.setEvaluator(new ProductLog());
@@ -618,6 +619,64 @@ public class SpecialFunctions {
 
 	}
 
+	private static class LogGamma extends AbstractTrigArg1 implements INumeric {
+
+		@Override
+		public IExpr e1DblArg(final double arg1) {
+			try {
+				if (arg1 > 0) {
+					return Num.valueOf(de.lab4inf.math.functions.Gamma.lngamma(arg1));
+				}
+				if (F.isZero(arg1)) {
+					return F.CInfinity;
+				}
+			} catch (final MathIllegalStateException e) {
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public double evalReal(final double[] stack, final int top, final int size) {
+			if (size != 1) {
+				throw new UnsupportedOperationException();
+			}
+			try {
+				return de.lab4inf.math.functions.Gamma.lngamma(stack[top]);
+			} catch (final MathIllegalStateException e) {
+			}
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public IExpr evaluateArg1(final IExpr arg1) {
+			if (arg1.isInfinity() || arg1.isZero()) {
+				return F.CInfinity;
+			}
+			if (arg1.isNegativeInfinity() || arg1.isDirectedInfinity(F.CI) || arg1.isDirectedInfinity(F.CNI)
+					|| arg1.isComplexInfinity()) {
+				return F.CComplexInfinity;
+			}
+			if (arg1.isPositive()) {
+				if (arg1.isInteger()) {
+					return F.Log(F.Factorial(arg1.dec()));
+				}
+			}
+			if (arg1.isNegative()) {
+				if (arg1.isInteger()) {
+					return F.CInfinity;
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+
+	}
+
 	private static class PolyGamma extends AbstractFunctionEvaluator implements PolyGammaRules {
 
 		@Override
@@ -770,11 +829,11 @@ public class SpecialFunctions {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 			super.setUp(newSymbol);
 		}
-		
+
 		public IExpr e1ObjArg(final IExpr o) {
 			return F.NIL;
 		}
-		
+
 		@Override
 		public IExpr e2ObjArg(IExpr k, IExpr z) {
 			// ProductLog(0,z_) := ProductLog(z)
