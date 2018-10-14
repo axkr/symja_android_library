@@ -43,6 +43,12 @@ public class QuantityFunctions {
 			Validate.checkRange(ast, 2, 3);
 
 			try {
+				if (ast.size() == 2) {
+					IExpr arg1 = engine.evaluate(ast.arg1());
+					if (arg1.isString()) {
+						return IQuantity.of(F.C1, IUnit.of(arg1.toString()));
+					}
+				}
 				if (ast.size() == 3) {
 					IExpr arg1 = engine.evaluate(ast.arg1());
 					IExpr arg2 = engine.evaluate(ast.arg2());

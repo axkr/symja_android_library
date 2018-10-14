@@ -8821,6 +8821,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testQuantity() {
 		if (ToggleFeature.QUANTITY) {
+			check("Quantity(\"m\")", //
+					"1[m]");
 			check("Quantity(3.25, \"m *rad\")", //
 					"3.25[m*rad]");
 			check("Quantity(3, \"Hz^(-2)*N*m^(-1)\")", //
@@ -8858,7 +8860,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 			check("QuantityMagnitude(Quantity(6.241509125883258*10^9, \"GeV\"), \"J\")", //
 					"1.0");
 			check("QuantityMagnitude(Quantity(360, \"deg\"), \"rad\")", //
-					"6.28319"); // Pi*2
+					"2*Pi");
 			check("QuantityMagnitude(Quantity(3.4, \"m\"))", //
 					"3.4");
 			check("QuantityMagnitude(Quantity(3.4, \"km\"), \"m\")", //
@@ -10092,6 +10094,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSin() {
+//		check("Sin(Quantity(90,\"Degree\"))", 
+//				"");
 		check("Sin( -3/x+x )", //
 				"-Sin(3/x-x)");
 		check("Sin((-3+x^2)/x)", //
@@ -11904,6 +11908,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testUnitConvert() {
 		if (ToggleFeature.QUANTITY) {
+			check("UnitConvert(Quantity(Pi, \"deg\"), \"rad\")", //
+					"Pi^2/180[rad]");
+			check("UnitConvert(Quantity(Pi, \"rad\"), \"deg\")", //
+					"180[deg]");
+			check("UnitConvert(Quantity(Pi, \"grad\"), \"rad\")", //
+					"Pi^2/180[rad]");
+			check("UnitConvert(Quantity(Pi, \"rad\"), \"grad\")", //
+					"180[grad]");
 			check("UnitConvert(Quantity(200, \"g\")*Quantity(981, \"cm*s^-2\") )", //
 					"981/500[kg*m*s^-2]");
 			check("UnitConvert(Quantity(10^(-6), \"MOhm\") )", //
