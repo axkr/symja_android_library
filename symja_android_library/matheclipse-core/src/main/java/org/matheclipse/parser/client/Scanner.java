@@ -407,21 +407,24 @@ public abstract class Scanner {
 	}
 
 	/**
-	 * Parse an identifier string (function, constant or variablename).
+	 * Parse an identifier string (function, constant or variable name) and the correponding context if possible.
 	 * 
-	 * @return
+	 * @return an array which contains &quot;the main identifier&quot; at offset 0 and &quot;context(or null)&quot; at
+	 *         offset 1.
 	 */
-	protected String getIdentifier() {
-
-		final int startPosition = fCurrentPosition - 1;
+	protected String[] getIdentifier() {
+		int startPosition = fCurrentPosition - 1;
 
 		getChar();
 		if (fCurrentChar == '$') {
 			getChar();
 		}
+		int contextIndex = -1;
 		while ((Character.isJavaIdentifierPart(fCurrentChar) && (fCurrentChar != '_')) || (fCurrentChar == '$')
-				|| (fCurrentChar == ':')) {
-			if (fCurrentChar == ':') {
+				|| (fCurrentChar == ':') || (fCurrentChar == '`')) {
+			if (fCurrentChar == '`') {
+				contextIndex = fCurrentPosition - 1;
+			} else if (fCurrentChar == ':') {
 				if ((fCurrentChar == ':') && fInputString.length > fCurrentPosition
 						&& fInputString[fCurrentPosition] == ':') {
 					// for Rubi identifiers integrate::PolyQ etc
@@ -432,23 +435,31 @@ public abstract class Scanner {
 			}
 			getChar();
 		}
-		while (Character.isLetterOrDigit(fCurrentChar) || (fCurrentChar == '$')) {
+		while ((Character.isJavaIdentifierPart(fCurrentChar) && (fCurrentChar != '_')) || (fCurrentChar == '$')
+				|| (fCurrentChar == '`')) {
+			if (fCurrentChar == '`') {
+				contextIndex = fCurrentPosition - 1;
+			}
 			getChar();
 		}
-
+		String context = "";
+		if (contextIndex > 0) {
+			context = new String(fInputString, startPosition, contextIndex - startPosition);
+			startPosition = contextIndex + 1;
+		}
 		int endPosition = fCurrentPosition--;
 		final int length = (--endPosition) - startPosition;
 		if (length == 1) {
-			String name=Characters.CharacterNamesMap.get(String.valueOf(fInputString[startPosition]));
-			if (name!=null) {
-				return name;
+			String name = Characters.CharacterNamesMap.get(String.valueOf(fInputString[startPosition]));
+			if (name != null) {
+				return new String[] { name, context };
 			}
-			return optimizedCurrentTokenSource1(startPosition);
+			return new String[] { optimizedCurrentTokenSource1(startPosition), context };
 		}
 		if (length == 2 && fInputString[startPosition] == '$') {
-			return optimizedCurrentTokenSource2(startPosition);
+			return new String[] { optimizedCurrentTokenSource2(startPosition), context };
 		}
-		return new String(fInputString, startPosition, endPosition - startPosition);
+		return new String[] { new String(fInputString, startPosition, endPosition - startPosition), context };
 	}
 
 	/**

@@ -719,12 +719,12 @@ public class Parser extends Scanner {
 	 * @see
 	 */
 	private SymbolNode getSymbol() throws SyntaxError {
-		String identifier = getIdentifier();
-		if (!fFactory.isValidIdentifier(identifier)) {
-			throwSyntaxError("Invalid identifier: " + identifier + " detected.");
+		String[] identifierContext = getIdentifier();
+		if (!fFactory.isValidIdentifier(identifierContext[0])) {
+			throwSyntaxError("Invalid identifier: " + identifierContext[0] + " detected.");
 		}
 
-		final SymbolNode symbol = fFactory.createSymbol(identifier);
+		final SymbolNode symbol = fFactory.createSymbol(identifierContext[0]);
 		getNextToken();
 		return symbol;
 	}

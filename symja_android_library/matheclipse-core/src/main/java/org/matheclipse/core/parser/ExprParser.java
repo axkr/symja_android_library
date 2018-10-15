@@ -938,12 +938,12 @@ public class ExprParser extends Scanner {
 	 * @see
 	 */
 	private IExpr getSymbol() throws SyntaxError {
-		String identifier = getIdentifier();
-		if (!fFactory.isValidIdentifier(identifier)) {
-			throwSyntaxError("Invalid identifier: " + identifier + " detected.");
+		String[] identifierContext = getIdentifier();
+		if (!fFactory.isValidIdentifier(identifierContext[0])) {
+			throwSyntaxError("Invalid identifier: " + identifierContext[0] + " detected.");
 		}
 
-		final IExpr symbol = convertSymbol(identifier);
+		final IExpr symbol = convertSymbol(identifierContext[0]);
 		// final ISymbol symbol = F.$s(identifier);
 		getNextToken();
 		return symbol;

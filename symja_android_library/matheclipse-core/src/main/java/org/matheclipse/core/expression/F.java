@@ -1717,7 +1717,10 @@ public class F {
 
     /***/
     public final static IBuiltInSymbol OutputForm = F.initFinalSymbol("OutputForm", ID.OutputForm);
-
+    
+    /***/
+    public final static IBuiltInSymbol OutputStream = F.initFinalSymbol("OutputStream", ID.OutputStream);
+    
     /** PDF(distribution, value) - returns the probability density function of `value`. */
     public final static IBuiltInSymbol PDF = F.initFinalSymbol("PDF", ID.PDF);
 
