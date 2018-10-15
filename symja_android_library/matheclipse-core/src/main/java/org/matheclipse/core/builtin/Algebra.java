@@ -1959,6 +1959,11 @@ public class Algebra {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
 
+			IAST temp = Structure.threadListLogicEquationOperators(ast.arg1(), ast, 1);
+			if (temp.isPresent()) {
+				return temp;
+			}
+			
 			IAST variableList = F.NIL;
 			if (ast.isAST2()) {
 				if (ast.arg2().isSymbol()) {
@@ -1988,7 +1993,6 @@ public class Algebra {
 			List<IExpr> varList = variableList.copyTo();
 			IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 			try {
-
 				JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
 				GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
 				Object[] objects = jas.factorTerms(poly);
@@ -2028,7 +2032,6 @@ public class Algebra {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.FLAT);
 		}
 	}
 

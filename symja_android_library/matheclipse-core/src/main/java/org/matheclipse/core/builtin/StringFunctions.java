@@ -30,6 +30,7 @@ public final class StringFunctions {
 		F.StringDrop.setEvaluator(new StringDrop());
 		F.StringJoin.setEvaluator(new StringJoin());
 		F.StringLength.setEvaluator(new StringLength());
+		F.StringReplace.setEvaluator(new StringReplace());
 		F.StringTake.setEvaluator(new StringTake());
 		F.SyntaxLength.setEvaluator(new SyntaxLength());
 		F.ToCharacterCode.setEvaluator(new ToCharacterCode());
@@ -238,6 +239,44 @@ public final class StringFunctions {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+	}
+
+	private static class StringReplace extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.size() == 3) {
+				if (!ast.arg1().isString()) {
+					return F.NIL;
+				}
+				String str = ((IStringX) ast.arg1()).toString();
+				IExpr arg2 = ast.arg2();
+				if (!arg2.isListOfRules()) {
+					if (arg2.isRuleAST()) {
+						arg2 = F.List(arg2);
+					} else {
+						return F.NIL;
+					}
+				}
+				IAST list = (IAST) arg2;
+				for (int i = 1; i < list.size(); i++) {
+					IAST rule = (IAST) list.get(i);
+					if (!rule.arg1().isString() || !rule.arg2().isString()) {
+						return F.NIL;
+					}
+					str = str.replace(((IStringX) rule.arg1()).toString(), //
+							((IStringX) rule.arg2()).toString());
+				}
+				return F.$str(str);
+			}
+			return F.NIL;
+
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			 
 		}
 	}
 

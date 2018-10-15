@@ -35,6 +35,9 @@ public class BuiltinGenerator {
 		for (int i = 0; i < AST2Expr.FUNCTION_STRINGS.length; i++) {
 			list.add(AST2Expr.FUNCTION_STRINGS[i]);
 		}
+		for (int i = 0; i < AST2Expr.DOLLAR_STRINGS.length; i++) {
+			list.add(AST2Expr.DOLLAR_STRINGS[i]);
+		}
 		Collections.sort(list);
 
 		// public final static IBuiltInSymbol XXXXX = BuiltIns.valueOf(BuiltIns.XXXXX);

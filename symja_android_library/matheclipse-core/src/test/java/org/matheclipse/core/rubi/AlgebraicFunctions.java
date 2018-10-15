@@ -1978,6 +1978,16 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {131}
 	public void test0276() {
+//		check("Simplify[1+n/2]", //
+//				"1/2*(2+n)");
+//		check("Factor[Simplify[1+n/2]]", //
+//				"1/2*(2+n)");
+//		check("Integrate::FactorNumericGcd[1+n/2]", //
+//				"1+n/2");
+//		check("Integrate::FixSimplify[1+n/2]", //
+//				"1+n/2");
+//		check("Integrate::SmartSimplify[1+n/2]", //
+//				"1/2*(2+n)");
 		check(//
 				"Integrate[(1 + x/a)^(n/2)/(x^2*(1 - x/a)^(n/2)), x]", //
 				"(-4*(1 - x/a)^(1 - n/2)*(1 + x/a)^((-2 + n)/2)*Hypergeometric2F1[2, 1 - n/2, 2 - n/2, (a - x)/(a + x)])/(a*(2 - n))", //

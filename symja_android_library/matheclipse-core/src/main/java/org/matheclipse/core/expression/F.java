@@ -159,7 +159,19 @@ public class F {
 	 * @see java.util.Optional#isPresent
 	 */
 	public final static NILPointer NIL = new NILPointer();
-    
+
+
+    /***/
+    public final static IBuiltInSymbol $Aborted = F.initFinalSymbol("$Aborted", ID.$Aborted);
+
+    /***/
+    public final static IBuiltInSymbol $DisplayFunction = F.initFinalSymbol("$DisplayFunction", ID.$DisplayFunction);
+
+    /***/
+    public final static IBuiltInSymbol $PrePrint = F.initFinalSymbol("$PrePrint", ID.$PrePrint);
+
+    /***/
+    public final static IBuiltInSymbol $Version = F.initFinalSymbol("$Version", ID.$Version);
 
     /** Abort() - aborts an evaluation completely and returns `$Aborted`.*/
     public final static IBuiltInSymbol Abort = F.initFinalSymbol("Abort", ID.Abort);
@@ -599,6 +611,9 @@ public class F {
     /** Covariance(a, b) - computes the covariance between the equal-sized vectors `a` and `b`.*/
     public final static IBuiltInSymbol Covariance = F.initFinalSymbol("Covariance", ID.Covariance);
 
+    /***/
+    public final static IBuiltInSymbol CreateDirectory = F.initFinalSymbol("CreateDirectory", ID.CreateDirectory);
+
     /** Cross(a, b) - computes the vector cross product of `a` and `b`.*/
     public final static IBuiltInSymbol Cross = F.initFinalSymbol("Cross", ID.Cross);
 
@@ -850,6 +865,9 @@ public class F {
 
     /***/
     public final static IBuiltInSymbol Export = F.initFinalSymbol("Export", ID.Export);
+
+    /***/
+    public final static IBuiltInSymbol ExportString = F.initFinalSymbol("ExportString", ID.ExportString);
 
     /** ExtendedGCD(n1, n2, ...) - computes the extended greatest common divisor of the given integers. */
     public final static IBuiltInSymbol ExtendedGCD = F.initFinalSymbol("ExtendedGCD", ID.ExtendedGCD);
@@ -1467,7 +1485,13 @@ public class F {
     public final static IBuiltInSymbol MeshRange = F.initFinalSymbol("MeshRange", ID.MeshRange);
 
     /***/
+    public final static IBuiltInSymbol Message = F.initFinalSymbol("Message", ID.Message);
+
+    /***/
     public final static IBuiltInSymbol MessageName = F.initFinalSymbol("MessageName", ID.MessageName);
+
+    /***/
+    public final static IBuiltInSymbol Messages = F.initFinalSymbol("Messages", ID.Messages);
 
     /***/
     public final static IBuiltInSymbol Method = F.initFinalSymbol("Method", ID.Method);
@@ -1959,6 +1983,9 @@ public class F {
     public final static IBuiltInSymbol Refine = F.initFinalSymbol("Refine", ID.Refine);
 
     /***/
+    public final static IBuiltInSymbol RegularExpression = F.initFinalSymbol("RegularExpression", ID.RegularExpression);
+
+    /***/
     public final static IBuiltInSymbol Repeated = F.initFinalSymbol("Repeated", ID.Repeated);
 
     /***/
@@ -2186,7 +2213,7 @@ public class F {
     /***/
     public final static IBuiltInSymbol StringLength = F.initFinalSymbol("StringLength", ID.StringLength);
 
-    /***/
+    /** StringQ(x) - is `True` if `x` is a string, or `False` otherwise.*/
     public final static IBuiltInSymbol StringQ = F.initFinalSymbol("StringQ", ID.StringQ);
 
     /***/
@@ -2420,6 +2447,9 @@ public class F {
     /***/
     public final static IBuiltInSymbol Unknown = F.initFinalSymbol("Unknown", ID.Unknown);
 
+    /***/
+    public final static IBuiltInSymbol Unprotect = F.initFinalSymbol("Unprotect", ID.Unprotect);
+
     /** UnsameQ(x, y) - returns `True` if `x` and `y` are not structurally identical.*/
     public final static IBuiltInSymbol UnsameQ = F.initFinalSymbol("UnsameQ", ID.UnsameQ);
 
@@ -2474,6 +2504,9 @@ public class F {
     /** With({list_of_local_variables}, expr ) - evaluates `expr` for the `list_of_local_variables` by replacing the local variables in `expr`.*/
     public final static IBuiltInSymbol With = F.initFinalSymbol("With", ID.With);
 
+    /***/
+    public final static IBuiltInSymbol WriteString = F.initFinalSymbol("WriteString", ID.WriteString);
+
     /** Xor(arg1, arg2, ...) - Logical XOR (exclusive OR) function. Returns `True` if an odd number of the arguments are `True` and the rest are `False`. Returns `False` if an even number of the arguments are `True` and the rest are `False`.*/
     public final static IBuiltInSymbol Xor = F.initFinalSymbol("Xor", ID.Xor);
 
@@ -2486,9 +2519,6 @@ public class F {
     /** Zeta(z) - returns the Riemann zeta function of `z`.*/
     public final static IBuiltInSymbol Zeta = F.initFinalSymbol("Zeta", ID.Zeta);
 
-
-	public final static ISymbol $Aborted = initFinalHiddenSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "$aborted" : "$Aborted");
 	// public final static ISymbol $PowerSeries = initFinalHiddenSymbol(
 	// Config.PARSER_USE_LOWERCASE_SYMBOLS ? "$powerseries" : "$PowerSeries");
 	public final static ISymbol $RealVector = initFinalHiddenSymbol(

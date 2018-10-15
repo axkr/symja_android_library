@@ -10754,6 +10754,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"True");
 	}
 
+	public void testStringReplace() {
+		check("StringReplace(\"abbaabbaa\", \"ab\" -> \"X\")", //
+				"XbaXbaa");
+	}
+	
 	public void testStringTake() {
 		check("StringTake(\"abcdefghijklm\", 6)", "abcdef");
 		check("StringTake(\"abcdefghijklm\", -4)", "jklm");
