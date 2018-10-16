@@ -170,8 +170,16 @@ public interface INodeParserFactory extends IParserFactory {
 	 * Create a symbol from the scanned identifier string
 	 * 
 	 * @param symbolName
+	 * @param context the name of the context the symbol should be created in
 	 * @return
 	 */
-	public SymbolNode createSymbol(String symbolName);
+	public SymbolNode createSymbol(String symbolName, String context);
 
+	/**
+	 * Create a symbol from the scanned identifier string
+	 * 
+	 * @param symbolName
+	 * @return
+	 */
+	public SymbolNode createSymbol(String symbolName );
 }

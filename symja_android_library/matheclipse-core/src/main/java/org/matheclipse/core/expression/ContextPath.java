@@ -20,11 +20,11 @@ public class ContextPath {
 		this.path.add(Context.SYSTEM);
 		this.fContextMap.put(Context.SYSTEM.getContextName(), Context.SYSTEM);
 		for (int i = 1; i < path.size(); i++) {
-			//Start at index 1 because SYSTEM is already set!
+			// Start at index 1 because SYSTEM is already set!
 			this.path.add(path.get(i).copy());
 		}
 	}
-	
+
 	public ContextPath() {
 		this(GLOBAL_CONTEXT_NAME);
 	}
@@ -46,7 +46,7 @@ public class ContextPath {
 	public ContextPath copy() {
 		return new ContextPath(path);
 	}
-	
+
 	public Context getGlobalContext() {
 		int size = path.size();
 		int start = size - 1;
@@ -132,6 +132,32 @@ public class ContextPath {
 		// }
 		// }
 		// }
+		symbol = new Symbol(name, context);
+		context.put(name, symbol);
+		// engine.putUserVariable(name, symbol);
+		if (Config.SERVER_MODE) {
+			if (name.charAt(0) == '$') {
+				F.SYMBOL_OBSERVER.createUserSymbol(symbol);
+			}
+		}
+
+		return symbol;
+	}
+
+	public ISymbol getSymbol(String symbolName, final Context context, boolean relaxedSyntax) {
+		String name = symbolName;
+		if (relaxedSyntax) {
+			if (symbolName.length() == 1) {
+				name = symbolName;
+			} else {
+				name = symbolName.toLowerCase(Locale.ENGLISH);
+			}
+		}
+		ISymbol symbol = context.get(name);
+		if (symbol != null) {
+			return symbol;
+		}
+
 		symbol = new Symbol(name, context);
 		context.put(name, symbol);
 		// engine.putUserVariable(name, symbol);

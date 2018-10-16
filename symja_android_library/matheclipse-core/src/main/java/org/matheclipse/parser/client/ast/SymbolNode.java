@@ -20,11 +20,34 @@ package org.matheclipse.parser.client.ast;
  * 
  */
 final public class SymbolNode extends ASTNode {
+	final String context;
 
+	/**
+	 * Create symbol in context <code>System`</code>. If <code>context == &quot;&quot;</code> the current context from context
+	 * path is used. 
+	 * 
+	 * @param value
+	 */
 	public SymbolNode(final String value) {
-		super(value);
+		this(value, "");
 	}
-	
+
+	/**
+	 * Create symbol in context <code>System`</code>. If <code>context == &quot;&quot;</code> the current context from context
+	 * path is used. 
+	 * 
+	 * @param value
+	 * @param context
+	 */
+	public SymbolNode(final String value, final String context) {
+		super(value);
+		this.context = context;
+	}
+
+	public String context() {
+		return context;
+	}
+
 	@Override
 	public boolean dependsOn(String variableName) {
 		return fStringValue.equals(variableName);

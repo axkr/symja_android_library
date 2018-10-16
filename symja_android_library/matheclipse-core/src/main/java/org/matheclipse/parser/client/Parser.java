@@ -724,7 +724,7 @@ public class Parser extends Scanner {
 			throwSyntaxError("Invalid identifier: " + identifierContext[0] + " detected.");
 		}
 
-		final SymbolNode symbol = fFactory.createSymbol(identifierContext[0]);
+		final SymbolNode symbol = fFactory.createSymbol(identifierContext[0], identifierContext[1]);
 		getNextToken();
 		return symbol;
 	}
