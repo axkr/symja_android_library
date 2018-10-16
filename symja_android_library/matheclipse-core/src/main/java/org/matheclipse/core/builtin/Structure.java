@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -36,9 +37,13 @@ import org.matheclipse.core.visit.VisitorLevelSpecification;
 import org.matheclipse.parser.client.math.MathException;
 
 public class Structure {
-	private final static Set<ISymbol> LOGIC_EQUATION_HEADS = new HashSet<ISymbol>(29);
-	private final static Set<ISymbol> PLUS_LOGIC_EQUATION_HEADS = new HashSet<ISymbol>(29);
-	private final static Set<ISymbol> LIST_LOGIC_EQUATION_HEADS = new HashSet<ISymbol>(29);
+	private final static Set<ISymbol> LOGIC_EQUATION_HEADS = Collections
+			.newSetFromMap(new IdentityHashMap<ISymbol, Boolean>(29));
+	private final static Set<ISymbol> PLUS_LOGIC_EQUATION_HEADS = Collections
+			.newSetFromMap(new IdentityHashMap<ISymbol, Boolean>(29));
+	private final static Set<ISymbol> LIST_LOGIC_EQUATION_HEADS = Collections
+			.newSetFromMap(new IdentityHashMap<ISymbol, Boolean>(29));
+
 	static {
 		F.Apply.setEvaluator(new Apply());
 		F.Depth.setEvaluator(new Depth());
