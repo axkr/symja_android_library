@@ -18,6 +18,7 @@ import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
@@ -494,7 +495,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			if (f.isAST1()) {
 				fFactory.tagStart(buf, "mrow");
 				if (fPrecedence <= precedence) {
-					fFactory.tag(buf, "mo", "("); 
+					fFactory.tag(buf, "mo", "(");
 				}
 				fFactory.convert(buf, f.arg1(), fPrecedence, false);
 				fFactory.tag(buf, "mo", fOperator);
@@ -1941,26 +1942,47 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
 	@Override
 	public void convertSymbol(final StringBuilder buf, final ISymbol sym) {
-		String headStr = sym.getSymbolName();
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
-			if (str != null) {
-				headStr = str;
-			}
-		}
-		final Object convertedSymbol = CONSTANT_SYMBOLS.get(headStr);
-		if (convertedSymbol == null) {
+		Context context = sym.getContext();
+		if (context == Context.DUMMY) {
 			tagStart(buf, "mi");
-			buf.append(sym.toString());
+			buf.append(sym.getSymbolName());
 			tagEnd(buf, "mi");
-		} else {
+			return;
+		}
+		String headStr = sym.getSymbolName();
+		if (context.equals(Context.SYSTEM) || context.isGlobal()) {
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
+				if (str != null) {
+					headStr = str;
+				}
+			}
+			final Object convertedSymbol = CONSTANT_SYMBOLS.get(headStr);
+			if (convertedSymbol == null) {
+				tagStart(buf, "mi");
+				buf.append(headStr);
+				tagEnd(buf, "mi");
+				return;
+			}
 			if (convertedSymbol instanceof Operator) {
 				((Operator) convertedSymbol).convert(buf);
-			} else {
-				tagStart(buf, "mi");
-				buf.append(convertedSymbol.toString());
-				tagEnd(buf, "mi");
+				return;
 			}
+			tagStart(buf, "mi");
+			buf.append(convertedSymbol.toString());
+			tagEnd(buf, "mi");
+			return;
+		}
+		if (EvalEngine.get().getContextPath().contains(context)) {
+			tagStart(buf, "mi");
+			buf.append(sym.getSymbolName());
+			tagEnd(buf, "mi");
+			return;
+		} else {
+			tagStart(buf, "mi");
+			buf.append(context.toString() + sym.getSymbolName());
+			tagEnd(buf, "mi");
+			return;
 		}
 	}
 
@@ -2076,7 +2098,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		CONVERTERS.put(F.Equal, new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("Equal").getPrecedence(), "=="));
 		CONVERTERS.put(F.Factorial,
 				new MMLPostfix("!", ASTNodeFactory.MMA_STYLE_FACTORY.get("Factorial").getPrecedence()));
-		CONVERTERS.put(F.Factorial2, new MMLPostfix("!!", ASTNodeFactory.MMA_STYLE_FACTORY.get("Factorial2").getPrecedence()));
+		CONVERTERS.put(F.Factorial2,
+				new MMLPostfix("!!", ASTNodeFactory.MMA_STYLE_FACTORY.get("Factorial2").getPrecedence()));
 		CONVERTERS.put(F.Floor, new Floor());
 		CONVERTERS.put(F.Function, new Function());
 		CONVERTERS.put(F.Greater,

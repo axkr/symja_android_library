@@ -44,7 +44,8 @@ public class AST2Expr {
 
 	public final static String[] UPPERCASE_SYMBOL_STRINGS = { "D", "E", "I", "N", "O" };
 
-	public final static String[] DOLLAR_STRINGS = { "$Aborted", "$DisplayFunction", "$PrePrint", "$Version" };
+	public final static String[] DOLLAR_STRINGS = { "$Aborted", "$Context", "$ContextPath", "$DisplayFunction",
+			"$PrePrint", "$Version" };
 
 	public final static String[] SYMBOL_STRINGS = { "All", "Algebraics", "Automatic", "Axes", "AxesOrigin", "AxesStyle",
 			"Background", "Booleans", "CharacterEncoding", "ComplexInfinity", "Catalan", "Complexes",
@@ -72,12 +73,12 @@ public class AST2Expr {
 			"ClearAll", "ClearAttributes", "Clip", "Coefficient", "CoefficientList", "CoefficientRules", "Colon",
 			"Collect", "Commonest", "CompatibleUnitQ", "Complement", "Compile", "Complex", "ComplexExpand",
 			"ComposeList", "ComposeSeries", "Composition", "CompoundExpression", "Condition", "ConditionalExpression",
-			"Conjugate", "ConjugateTranspose", "ConstantArray", "Continue", "ContinuedFraction", "Convergents",
-			"ConvexHullMesh", "CoprimeQ", "Correlation", "Cos", "Cosh", "CosineDistance", "CosIntegral", "CoshIntegral",
-			"Cot", "Coth", "Count", "Covariance", "CreateDirectory", "Cross", "Csc", "Csch", "CubeRoot", "Curl",
-			"Cyclotomic", "Decrement", "Default", "Defer", "Definition", "Delete", "DeleteCases", "DeleteDuplicates",
-			"Denominator", "Depth", "Derivative", "DesignMatrix", "Det", "Diagonal", "DiagonalMatrix",
-			"DiceDissimilarity", "Differences", "DigitQ", "Dimensions", "DiracDelta", "DiscreteDelta",
+			"Conjugate", "ConjugateTranspose", "ConstantArray", "Context", "Continue", "ContinuedFraction",
+			"Convergents", "ConvexHullMesh", "CoprimeQ", "Correlation", "Cos", "Cosh", "CosineDistance", "CosIntegral",
+			"CoshIntegral", "Cot", "Coth", "Count", "Covariance", "CreateDirectory", "Cross", "Csc", "Csch", "CubeRoot",
+			"Curl", "Cyclotomic", "Decrement", "Default", "Defer", "Definition", "Delete", "DeleteCases",
+			"DeleteDuplicates", "Denominator", "Depth", "Derivative", "DesignMatrix", "Det", "Diagonal",
+			"DiagonalMatrix", "DiceDissimilarity", "Differences", "DigitQ", "Dimensions", "DiracDelta", "DiscreteDelta",
 			"DiscreteUniformDistribution", "DirectedInfinity", "Direction", "Discriminant", "Distribute", "Distributed",
 			"Div", "Divide", "DivideBy", "Divisible", "Divisors", "DivisorSigma", "Do", "Dot", "Drop", "DSolve",
 			"EasterSunday", "EffectiveInterest", "Eigenvalues", "Eigenvectors", "Element", "ElementData", "Eliminate",
@@ -131,7 +132,7 @@ public class AST2Expr {
 			"ProductLog", "Projection", "PseudoInverse", "Put", "QRDecomposition", "Quantile", "Quantity",
 			"QuantityDistribution", "QuantityMagnitude", "QuantityQ", "Quiet", "Quit", "Quotient", "QuotientRemainder",
 			"RandomChoice", "RandomInteger", "RandomReal", "RandomSample", "RandomVariate", "Range", "Rational",
-			"Rationalize", "Re", "RealNumberQ", "Reap", "Rectangle", "Reduce", "Refine", "RegularExpression",
+			"Rationalize", "Re", "RealNumberQ", "Reap", "Rectangle", "Reduce", "Refine", "RegularExpression", "Remove",
 			"Repeated", "RepeatedNull", "Replace", "ReplaceAll", "ReplaceList", "ReplacePart", "ReplaceRepeated",
 			"Rescale", "Rest", "Resultant", "Return", "Reverse", "Riffle", "RogersTanimotoDissimilarity",
 			"RootIntervals", "Root", "RootOf", "Roots", "RussellRaoDissimilarity", "Surd", "RotateLeft", "RotateRight",

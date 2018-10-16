@@ -438,13 +438,13 @@ public abstract class Scanner {
 		while ((Character.isJavaIdentifierPart(fCurrentChar) && (fCurrentChar != '_')) || (fCurrentChar == '$')
 				|| (fCurrentChar == '`')) {
 			if (fCurrentChar == '`') {
-				contextIndex = fCurrentPosition - 1;
+				contextIndex = fCurrentPosition-1;
 			}
 			getChar();
 		}
 		String context = "";
 		if (contextIndex > 0) {
-			context = new String(fInputString, startPosition, contextIndex - startPosition);
+			context = new String(fInputString, startPosition, contextIndex - startPosition+1);
 			startPosition = contextIndex + 1;
 		}
 		int endPosition = fCurrentPosition--;

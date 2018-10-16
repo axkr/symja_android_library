@@ -8,6 +8,8 @@ import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.Iterator;
+import org.matheclipse.core.expression.Context;
+import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -1342,27 +1344,41 @@ public class TeXFormFactory {
 	}
 
 	public void convertSymbol(final StringBuilder buf, final ISymbol sym) {
-		String headStr = sym.getSymbolName();
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
-			if (str != null) {
-				headStr = str;
-			}
-		}
-		final Object convertedSymbol = CONSTANT_SYMBOLS.get(headStr);
-		if (convertedSymbol == null) {
+		Context context = sym.getContext();
+		if (context == Context.DUMMY) {
 			buf.append(sym.getSymbolName());
-		} else {
-			if (convertedSymbol.equals(AST2Expr.TRUE_STRING)) {
-				buf.append('\\');
-				buf.append(sym.getSymbolName());
-			} else {
-				if (convertedSymbol instanceof Operator) {
-					((Operator) convertedSymbol).convert(buf);
-				} else {
-					buf.append(convertedSymbol.toString());
+			return;
+		}
+		String headStr = sym.getSymbolName();
+		if (context.equals(Context.SYSTEM) || context.isGlobal()) {
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
+				if (str != null) {
+					headStr = str;
 				}
 			}
+			final Object convertedSymbol = CONSTANT_SYMBOLS.get(headStr);
+			if (convertedSymbol == null) {
+				buf.append(headStr);
+				return;
+			} else {
+				if (convertedSymbol.equals(AST2Expr.TRUE_STRING)) {
+					buf.append('\\');
+					buf.append(sym.getSymbolName());
+					return;
+				}
+				if (convertedSymbol instanceof Operator) {
+					((Operator) convertedSymbol).convert(buf);
+					return;
+				}
+				buf.append(convertedSymbol.toString());
+				return;
+			}
+		}
+		if (EvalEngine.get().getContextPath().contains(context)) {
+			buf.append(sym.getSymbolName());
+		} else {
+			buf.append(context.toString() + sym.getSymbolName());
 		}
 	}
 

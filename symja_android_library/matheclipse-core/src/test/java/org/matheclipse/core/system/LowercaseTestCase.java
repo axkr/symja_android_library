@@ -1832,6 +1832,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ConstantArray(c, {3, 4})", "{{c,c,c,c},{c,c,c,c},{c,c,c,c}}");
 	}
 
+	public void testContext() {
+		check("{x, Global`x}", //
+				"{x,x}");
+		check("a`b`x", //
+				"a`b`x");
+		
+	}
+
 	public void testContinue() {
 		check("For(i=1, i<=8, i=i+1, If(Mod(i,2) == 0, Continue()); Print(i))", "");
 	}
@@ -8936,10 +8944,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRandomVariate() {
-//		check("RandomVariate(FrechetDistribution(0.5,0.6), {10})", //
-//				"{288.7521,2.9714,0.403198,2.0156,0.21531,0.0399206,0.665026,1.49444,434.9269,118.3019}");
-//		check("RandomVariate(GumbelDistribution(0.5,0.6), {10})", //
-//				"{0.983572,1.01258,1.02586,0.351624,0.674945,0.549278,0.173217,0.464434,-0.335133,-0.151538}");
+		// check("RandomVariate(FrechetDistribution(0.5,0.6), {10})", //
+		// "{288.7521,2.9714,0.403198,2.0156,0.21531,0.0399206,0.665026,1.49444,434.9269,118.3019}");
+		// check("RandomVariate(GumbelDistribution(0.5,0.6), {10})", //
+		// "{0.983572,1.01258,1.02586,0.351624,0.674945,0.549278,0.173217,0.464434,-0.335133,-0.151538}");
 		// check("RandomVariate(GammaDistribution(0.5,0.6), {10})", //
 		// "{0.08716,0.39611,0.04844,0.03546,0.57366,0.02071,0.01487,1.65639,0.75104,0.05348}");
 		// check("RandomVariate(UniformDistribution({1,3}), {2})", //

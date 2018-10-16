@@ -9,10 +9,12 @@ import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
@@ -428,14 +430,23 @@ public class OutputFormFactory {
 	}
 
 	public void convertSymbol(final Appendable buf, final ISymbol symbol) throws IOException {
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+		Context context = symbol.getContext();
+		if (context == Context.DUMMY) {
+			append(buf, symbol.getSymbolName());
+			return;
+		}
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS && context.equals(Context.SYSTEM)) {
 			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(symbol.getSymbolName());
 			if (str != null) {
 				append(buf, str);
 				return;
 			}
 		}
-		append(buf, symbol.getSymbolName());
+		if (EvalEngine.get().getContextPath().contains(context)) {
+			append(buf, symbol.getSymbolName());
+		} else {
+			append(buf, context.toString() + symbol.getSymbolName());
+		}
 	}
 
 	public void convertPattern(final Appendable buf, final IPatternObject pattern) throws IOException {

@@ -10,7 +10,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class ContextPath {
-	public final static String GLOBAL_CONTEXT_NAME = "Global";
+	public final static String GLOBAL_CONTEXT_NAME = "Global`";
 
 	public final Map<String, Context> fContextMap;
 	List<Context> path = new ArrayList<Context>();
@@ -82,6 +82,15 @@ public class ContextPath {
 		return context;
 	}
 
+	public boolean contains(Context context) {
+		for (int i = path.size()-1; i >=0; i--) {
+			if (path.get(i).equals(context)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public boolean add(Context context) {
 		return path.add(context);
 	}
