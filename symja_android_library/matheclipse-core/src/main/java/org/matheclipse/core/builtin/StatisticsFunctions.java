@@ -51,6 +51,7 @@ import org.uncommons.maths.random.GaussianGenerator;
 import org.uncommons.maths.random.PoissonGenerator;
 
 public class StatisticsFunctions {
+	private static final double NEXTDOWNONE = Math.nextDown(1.0);
 
 	static {
 		F.ArithmeticGeometricMean.setEvaluator(new ArithmeticGeometricMean());
@@ -1151,7 +1152,7 @@ public class StatisticsFunctions {
 	 * </p>
 	 */
 	private final static class FrechetDistribution extends AbstractEvaluator
-			implements ICDF, IDistribution, IPDF, IVariance {
+			implements ICDF, IDistribution, IPDF, IVariance, IRandomVariate {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1228,6 +1229,22 @@ public class StatisticsFunctions {
 								F.Plus(F.Gamma(F.Plus(F.C1, F.Times(F.CN2, F.Power(n, -1)))),
 										F.Negate(F.Sqr(F.Gamma(F.Plus(F.C1, F.Negate(F.Power(n, -1)))))))),
 						F.Greater(n, F.C2))), F.CInfinity);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr randomVariate(Random random, IAST dist) {
+			if (dist.isAST2()) {
+				IExpr n = dist.arg1();
+				IExpr m = dist.arg2();
+				if (n.isReal() && m.isReal()) {
+					// avoid result -Infinity when reference is close to 1.0
+					double reference = random.nextDouble();
+					double uniform = reference == NEXTDOWNONE ? reference : Math.nextUp(reference);
+					uniform = -Math.log(uniform);
+					return m.multiply(F.Power.of(F.num(uniform), n.reciprocal().negate()));
+				}
 			}
 			return F.NIL;
 		}
@@ -1478,7 +1495,7 @@ public class StatisticsFunctions {
 	}
 
 	private final static class GumbelDistribution extends AbstractEvaluator
-			implements ICDF, IDistribution, IPDF, IVariance {
+			implements ICDF, IDistribution, IPDF, IVariance, IRandomVariate {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1556,22 +1573,21 @@ public class StatisticsFunctions {
 			return F.NIL;
 		}
 
-		private static final double NEXTDOWNONE = Math.nextDown(1.0);
-
-		// @Override
-		// public IExpr randomVariate(Random random, IAST dist) {
-		// if (dist.isAST2()) {
-		// if (dist.arg1().isReal() && dist.arg1().isPositiveResult()) {
-		// double alpha = dist.arg1().evalDouble();
-		// double beta = dist.arg2().evalDouble();
-		// double reference = random.nextDouble();
-		// // avoid result -Infinity when reference is close to 1.0
-		// double uniform = reference == NEXTDOWNONE ? reference : Math.nextUp(reference);
-		// return F.num(alpha + (beta * Math.log(-1.0 * Math.log(uniform))));
-		// }
-		// }
-		// return F.NIL;
-		// }
+		@Override
+		public IExpr randomVariate(Random random, IAST dist) {
+			if (dist.isAST2()) {
+				IExpr n = dist.arg1();
+				IExpr m = dist.arg2();
+				if (n.isReal() && m.isReal()) {
+					// avoid result -Infinity when reference is close to 1.0
+					double reference = random.nextDouble();
+					double uniform = reference == NEXTDOWNONE ? reference : Math.nextUp(reference);
+					uniform = -Math.log(uniform);
+					return m.add(n.multiply(F.Log(F.num(uniform))));
+				}
+			}
+			return F.NIL;
+		}
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
