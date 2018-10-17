@@ -8,6 +8,7 @@ import org.apfloat.ApfloatMath;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
+import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -15,6 +16,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class ConstantDefinitions {
 
 	static {
+		F.$Context.setEvaluator(new $Context());
+		F.$ContextPath.setEvaluator(new $ContextPath());
 		F.Catalan.setEvaluator(new Catalan());
 		F.ComplexInfinity.setEvaluator(new ComplexInfinity());
 		F.Degree.setEvaluator(new Degree());
@@ -26,7 +29,7 @@ public class ConstantDefinitions {
 		F.Infinity.setEvaluator(new Infinity());
 		F.Khinchin.setEvaluator(new Khinchin());
 		F.Pi.setEvaluator(new Pi());
-		
+
 		F.False.setEvaluator(NILEvaluator.CONST);
 		F.True.setEvaluator(NILEvaluator.CONST);
 		F.Null.setEvaluator(NILEvaluator.CONST);
@@ -41,10 +44,10 @@ public class ConstantDefinitions {
 	private ConstantDefinitions() {
 
 	}
-	
+
 	private static class NILEvaluator extends AbstractSymbolEvaluator {
 		final static NILEvaluator CONST = new NILEvaluator();
-		
+
 		@Override
 		public IExpr numericEval(final ISymbol symbol) {
 			return F.NIL;
@@ -59,6 +62,24 @@ public class ConstantDefinitions {
 		public void setUp(final ISymbol newSymbol) {
 			// don't set CONSTANT attribute !
 		}
+	}
+
+	private static class $Context extends AbstractSymbolEvaluator {
+
+		@Override
+		public IExpr evaluate(final ISymbol symbol) {
+			return EvalEngine.get().getContextPath().currentContext();
+		}
+
+	}
+
+	private static class $ContextPath extends AbstractSymbolEvaluator {
+
+		@Override
+		public IExpr evaluate(final ISymbol symbol) {
+			return EvalEngine.get().getContextPath().pathAsStrings();
+		}
+
 	}
 
 	/**

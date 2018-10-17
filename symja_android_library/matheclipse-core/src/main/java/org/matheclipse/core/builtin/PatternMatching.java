@@ -7,12 +7,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.FileSystems;
 import java.util.List;
@@ -55,6 +53,7 @@ public final class PatternMatching {
 		F.BlankNullSequence.setEvaluator(BlankNullSequence.CONST);
 		F.Clear.setEvaluator(new Clear());
 		F.ClearAll.setEvaluator(new ClearAll());
+		F.Context.setEvaluator(new ContextFunction());
 		F.Definition.setEvaluator(new Definition());
 		F.Evaluate.setEvaluator(new Evaluate());
 		F.Get.setEvaluator(new Get());
@@ -209,6 +208,25 @@ public final class PatternMatching {
 		}
 	}
 
+	private static class ContextFunction extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST1() && ast.first().isSymbol()) {
+				return F.stringx(((ISymbol) ast.first()).getContext().getContextName());
+			}
+			if (ast.isAST0()) {
+				return EvalEngine.get().getContextPath().currentContext();
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
 	/**
 	 * <pre>
 	 * Definition(symbol)
@@ -354,8 +372,9 @@ public final class PatternMatching {
 							packageContext = engine.getContextPath().getContext(contextName);
 							ISymbol endSymbol = F.EndPackage;
 							for (int j = 2; j < ast.size(); j++) {
-//								FileReader reader = new FileReader(ast.get(j).toString());
-								BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(ast.get(j).toString()), "UTF-8"));
+								// FileReader reader = new FileReader(ast.get(j).toString());
+								BufferedReader reader = new BufferedReader(
+										new InputStreamReader(new FileInputStream(ast.get(j).toString()), "UTF-8"));
 								Get.loadPackage(engine, reader);
 								reader.close();
 							}

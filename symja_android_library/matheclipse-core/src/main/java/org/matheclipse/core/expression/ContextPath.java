@@ -7,6 +7,9 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class ContextPath {
@@ -59,6 +62,27 @@ public class ContextPath {
 		return null;
 	}
 
+	/**
+	 * Return the context path as list of context strings.
+	 * 
+	 * @return
+	 */
+	public IAST pathAsStrings() {
+		int size = path.size();
+		IASTAppendable result = F.ListAlloc(size);
+
+		int start = size - 1;
+		for (int i = 0; i < size; i++) {
+			result.append(F.stringx(path.get(i).getContextName()));
+		}
+		return result;
+	}
+	
+	public IStringX currentContext() {
+		int size = path.size()-1;
+		return F.stringx(path.get(size).getContextName());
+	}
+
 	public boolean setGlobalContext(Context context) {
 		int size = path.size();
 		int start = size - 1;
@@ -83,14 +107,14 @@ public class ContextPath {
 	}
 
 	public boolean contains(Context context) {
-		for (int i = path.size()-1; i >=0; i--) {
+		for (int i = path.size() - 1; i >= 0; i--) {
 			if (path.get(i).equals(context)) {
 				return true;
 			}
 		}
 		return false;
 	}
-	
+
 	public boolean add(Context context) {
 		return path.add(context);
 	}
