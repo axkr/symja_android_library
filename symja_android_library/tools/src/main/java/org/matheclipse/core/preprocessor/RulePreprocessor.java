@@ -93,7 +93,7 @@ public class RulePreprocessor {
 					expr = list.get(i);
 					if (expr.isAST(F.SetDelayed, 3)) {
 						IAST ast = (IAST) expr;
-						if (!RulesData.isComplicatedPatternRule(ast.arg1(), headerSymbols)) {
+						if (!RulesData.isComplicatedPatternRule(ast.arg1())) {
 							simpleRuleCounter++;
 						}
 					} else if (expr.isAST(F.Set, 3)) {
@@ -239,7 +239,6 @@ public class RulePreprocessor {
 		File sourceLocation = new File("..\\symja_android_library\\rules");
 		File targetLocation = new File(
 				"..\\symja_android_library\\matheclipse-core\\src\\main\\java\\org\\matheclipse\\core\\reflection\\system\\rules");
-
 		generateFunctionStrings(sourceLocation, targetLocation, true);
 	}
 

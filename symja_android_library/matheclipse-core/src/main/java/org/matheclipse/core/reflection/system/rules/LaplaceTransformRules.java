@@ -13,16 +13,16 @@ public interface LaplaceTransformRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 13 };
+  final public static int[] SIZES = { 0, 11 };
 
   final public static IAST RULES = List(
     IInit(LaplaceTransform, SIZES),
-    // LaplaceTransform(a_*t_^n_.,t_,s_):=(-1)^n*D(LaplaceTransform(a,t,s),{s,n})/;FreeQ(n,t)&&n>0
-    ISetDelayed(LaplaceTransform(Times(a_,Power(t_,n_DEFAULT)),t_,s_),
-      Condition(Times(Power(CN1,n),D(LaplaceTransform(a,t,s),List(s,n))),And(FreeQ(n,t),Greater(n,C0)))),
     // LaplaceTransform(a_.*E^(b_.+c_.*t_),t_,s_):=LaplaceTransform(a*E^b,t,-c+s)/;FreeQ({b,c},t)
     ISetDelayed(LaplaceTransform(Times(Exp(Plus(b_DEFAULT,Times(c_DEFAULT,t_))),a_DEFAULT),t_,s_),
       Condition(LaplaceTransform(Times(a,Exp(b)),t,Plus(Negate(c),s)),FreeQ(List(b,c),t))),
+    // LaplaceTransform(a_*t_^n_.,t_,s_SymbolQ):=(-1)^n*D(LaplaceTransform(a,t,s),{s,n})/;FreeQ({n},t)&&n>0
+    ISetDelayed(LaplaceTransform(Times(a_,Power(t_,n_DEFAULT)),t_,$p(s,SymbolQ)),
+      Condition(Times(Power(CN1,n),D(LaplaceTransform(a,t,s),List(s,n))),And(FreeQ(List(n),t),Greater(n,C0)))),
     // LaplaceTransform(Sqrt(t_),t_,s_):=Sqrt(Pi)/(2*s^(3/2))
     ISetDelayed(LaplaceTransform(Sqrt(t_),t_,s_),
       Times(Sqrt(Pi),Power(Times(C2,Power(s,QQ(3L,2L))),-1))),

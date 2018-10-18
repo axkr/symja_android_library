@@ -68,7 +68,7 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 	public boolean test(IExpr lhsEvalExpr) {
 		return fLhsPatternExpr.equals(lhsEvalExpr);
 	}
-	
+
 	@Override
 	public boolean test(IExpr lhsEvalExpr, EvalEngine engine) {
 		return fLhsPatternExpr.equals(lhsEvalExpr);
@@ -122,6 +122,12 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 		return null;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isPatternHashAllowed(int patternHash) {
+		return true;
+	}
+
 	@Override
 	public boolean isRuleWithoutPatterns() {
 		return true;
@@ -131,17 +137,17 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 		fRightHandSide = rightHandSide;
 	}
 
-//	@Override
-//	public int compareTo(IPatternMatcher o) {
-//		if (getPriority() < o.getPriority()) {
-//			return -1;
-//		}
-//		if (getPriority() > o.getPriority()) {
-//			return 1;
-//		}
-//		return 0;
-//	}
-	
+	// @Override
+	// public int compareTo(IPatternMatcher o) {
+	// if (getPriority() < o.getPriority()) {
+	// return -1;
+	// }
+	// if (getPriority() > o.getPriority()) {
+	// return 1;
+	// }
+	// return 0;
+	// }
+
 	@Override
 	public int equivalentTo(IPatternMatcher o) {
 		if (getLHSPriority() < o.getLHSPriority()) {
@@ -151,9 +157,14 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 			return 1;
 		}
 		return 0;
-//		return equivalent(o);
+		// return equivalent(o);
 	}
 
+	@Override
+	public int getPatternHash() {
+		return 0;
+	}
+	
 	@Override
 	public int getLHSPriority() {
 		return 0;

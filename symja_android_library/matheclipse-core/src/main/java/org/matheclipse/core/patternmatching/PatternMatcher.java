@@ -259,6 +259,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	 */
 	protected transient int fLHSPriority;
 
+	protected transient int fPatterHash = 0;
+
 	/**
 	 * Additional condition for pattern-matching maybe <code>null</code>
 	 * 
@@ -530,6 +532,11 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		}
 	}
 
+	@Override
+	public int getPatternHash() {
+		return fPatterHash;
+	}
+
 	/**
 	 * Get the priority of this pattern-matcher. Lower values have higher priorities.
 	 * 
@@ -555,8 +562,15 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		return result;
 	}
 
+	@Override
 	public final int determinePatterns() {
 		return getPatternMap().determinePatterns(fLhsPatternExpr);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isPatternHashAllowed(int patternHash) {
+		return true;
 	}
 
 	/**
@@ -986,7 +1000,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 					break;
 				case ID.Alternatives:
 					if (lhsPatternAST.isAlternatives()) {
-						IAST alternatives = (IAST) lhsPatternAST;
+						IAST alternatives = lhsPatternAST;
 						matched = alternatives.exists(x -> matchExpr(x, lhsEvalExpr, engine));
 						if (!matched) {
 							return false;
@@ -1058,7 +1072,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	private boolean matchASTExpr(IAST lhsPatternExpr, final IExpr lhsEvalExpr, EvalEngine engine,
 			StackMatcher stackMatcher) {
 		boolean matched = false;
-		IAST lhsPatternAST = (IAST) lhsPatternExpr;
+		IAST lhsPatternAST = lhsPatternExpr;
 		IExpr[] patternValues = fPatternMap.copyPattern();
 		try {
 			matched = matchAST(lhsPatternAST, lhsEvalExpr, engine, stackMatcher);
@@ -1217,8 +1231,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	 * @return <code>null</code> if the matching isn't possible.
 	 */
 	private IASTAppendable[] removeOrderless(final IAST lhsPattern, final IAST lhsEval) {
-		IASTAppendable lhsPatternAST = (IASTAppendable) lhsPattern.copyAppendable();
-		IASTAppendable lhsEvalAST = (IASTAppendable) lhsEval.copyAppendable();
+		IASTAppendable lhsPatternAST = lhsPattern.copyAppendable();
+		IASTAppendable lhsEvalAST = lhsEval.copyAppendable();
 		int iIndex = 1;
 		while (iIndex < lhsPatternAST.size()) {
 			// for (int i = 1; i < lhsPatternSize; i++) {
@@ -1257,8 +1271,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	 * @return <code>null</code> if the matching isn't possible.
 	 */
 	private IASTAppendable[] removeFlat(final IAST lhsPattern, final IAST lhsEval) {
-		IASTAppendable lhsPatternAST = (IASTAppendable) lhsPattern.copyAppendable();
-		IASTAppendable lhsEvalAST = (IASTAppendable) lhsEval.copyAppendable();
+		IASTAppendable lhsPatternAST = lhsPattern.copyAppendable();
+		IASTAppendable lhsEvalAST = lhsEval.copyAppendable();
 		int iIndex = 1;
 		while (iIndex < lhsPatternAST.size()) {
 			IExpr temp = lhsPatternAST.get(iIndex);

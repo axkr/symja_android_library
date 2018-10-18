@@ -78,7 +78,7 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
 				final IExpr lhsPatternExpr = fLhsPatternAST.get(j + 1);
 				if (n == 1 && fOneIdentity) {
 					// OneIdentity here
-					if (!stackMatcher.push(lhsPatternExpr, (IExpr) array[result[j][0]])) {
+					if (!stackMatcher.push(lhsPatternExpr, array[result[j][0]])) {
 						matched = false;
 						return false;
 					}
@@ -89,7 +89,7 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
 					}
 					partitionElement = F.ast(head, n, false);
 					for (int i = 0; i < n; i++) {
-						partitionElement.append((IExpr) array[result[j][i]]);
+						partitionElement.append(array[result[j][i]]);
 					}
 					if (!stackMatcher.push(lhsPatternExpr, partitionElement)) {
 						matched = false;

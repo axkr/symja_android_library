@@ -1849,7 +1849,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("$Context", //
 				"Global`");
 	}
-	
+
 	public void test$ContextPath() {
 		check("$ContextPath", //
 				"{System`,Global`}");
@@ -1950,13 +1950,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Cosh(Infinity)", "Infinity");
 		check("Cosh(ComplexInfinity)", "Indeterminate");
 	}
-	
+
 	public void testCreateDirectory() {
-//		Config.FILESYSTEM_ENABLED = true;
-//		check("CreateDirectory()", //
-//				"C:\\Users\\dev\\AppData\\Local\\Temp\\1539799359607-0");
+		// Config.FILESYSTEM_ENABLED = true;
+		// check("CreateDirectory()", //
+		// "C:\\Users\\dev\\AppData\\Local\\Temp\\1539799359607-0");
 	}
-	
+
 	public void testCanberraDistance() {
 		check("CanberraDistance({-1, -1}, {1, 1})", "2");
 	}
@@ -5365,11 +5365,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLaplaceTransform() {
-		check("LaplaceTransform(E^2,t,-3+s)", "E^2/(-3+s)");
-		check("LaplaceTransform(c*t^2, t, s)", "(2*c)/s^3");
-		check("LaplaceTransform((t^3+t^4)*t^2, t, s)", "720/s^7+120/s^6");
-		check("LaplaceTransform(t^2*Exp(2+3*t), t, s)", "(-2*E^2)/(3-s)^3");
-		check("LaplaceTransform(Exp(2+3*t)/t, t, s)", "E^2*LaplaceTransform(1/t,t,-3+s)");
+		check("LaplaceTransform(E^2,t,-3+s)", //
+				"E^2/(-3+s)");
+		check("LaplaceTransform(c*t^2, t, s)", //
+				"(2*c)/s^3");
+		check("LaplaceTransform((t^3+t^4)*t^2, t, s)", //
+				"720/s^7+120/s^6");
+		check("LaplaceTransform(t^2*Exp(2+3*t), t, s)", //
+				"(2*E^2)/(-3+s)^3");
+		check("LaplaceTransform(Exp(2+3*t)/t, t, s)", //
+				"E^2*LaplaceTransform(1/t,t,-3+s)");
 
 		check("LaplaceTransform(y'(t),t,s)", "s*LaplaceTransform(y(t),t,s)-y(0)");
 		check("LaplaceTransform(y''(t),t,s)", "s^2*LaplaceTransform(y(t),t,s)-s*y(0)-y'(0)");
@@ -6486,11 +6491,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 				+ "  m\n" + "  );$gcd(18, 21)", "3");
 
 		check("{Module({x}, x), Module({x}, x)}", //
-				"{x$14,x$15}");
+				"{x$15,x$16}");
 		check("Module({e = Expand((1 + x)^5)}, Function(x, e))", //
-				"Function(x$16,e$16)");
+				"Function(x$17,e$17)");
 		check("Module({a,b}, Block({c}, c+a))", //
-				"a$17+c");
+				"a$18+c");
 
 		if (Config.SERVER_MODE == false) {
 			check("f(x0_) :=\n" + " Module({x = x0},\n" + "  While(x > 0, x = Log(x));\n" + "  x\n" + "  );f(2.0)",
@@ -6511,7 +6516,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Module({x,f}, f(0)=0;f(x_):=f(x-1)+x;f(3))", //
 				"6");
 		check("Module({x},Function(y,x+y))", //
-				"Function(y$25,x$25+y$25)");
+				"Function(y$26,x$26+y$26)");
 		// check("Module({y},Function(y,x+y))",//
 		// "x$22$23+y");
 	}

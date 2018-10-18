@@ -8370,6 +8370,10 @@ public class F {
 		return unaryAST1(TrigToExp, a0);
 	}
 
+	public static IAST TrueQ(final IExpr a0) {
+		return unaryAST1(TrueQ, a0);
+	}
+	
 	/**
 	 * Create a function with 1 argument without evaluation.
 	 * 

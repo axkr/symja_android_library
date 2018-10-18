@@ -32,7 +32,8 @@ public class PatternSequence implements IPatternSequence {
 	private static final long serialVersionUID = 2773651826316158627L;
 
 	/**
-	 * @param nullAllowed TODO
+	 * @param nullAllowed
+	 *            TODO
 	 * 
 	 */
 	public static PatternSequence valueOf(final ISymbol symbol, final IExpr check, final boolean def,
@@ -102,6 +103,17 @@ public class PatternSequence implements IPatternSequence {
 		}
 		if (obj instanceof PatternSequence) {
 			PatternSequence pattern = (PatternSequence) obj;
+			if (fSymbol == null) {
+				if (pattern.fSymbol == null) {
+					if (fDefault == pattern.fDefault && fZeroArgsAllowed == pattern.fZeroArgsAllowed) {
+						if ((fCondition != null) && (pattern.fCondition != null)) {
+							return fCondition.equals(pattern.fCondition);
+						}
+						return fCondition == pattern.fCondition;
+					}
+				}
+				return false;
+			}
 			if (fSymbol.equals(pattern.fSymbol) && fDefault == pattern.fDefault
 					&& fZeroArgsAllowed == pattern.fZeroArgsAllowed) {
 				if ((fCondition != null) && (pattern.fCondition != null)) {
@@ -311,8 +323,8 @@ public class PatternSequence implements IPatternSequence {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as this
-	 * expression is canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive
+	 * integer as this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
@@ -455,9 +467,9 @@ public class PatternSequence implements IPatternSequence {
 	}
 
 	/** {@inheritDoc} */
-//	public boolean isFreeOfDefaultPatterns() {
-//		return true;
-//	}
+	// public boolean isFreeOfDefaultPatterns() {
+	// return true;
+	// }
 
 	/** {@inheritDoc} */
 	@Override

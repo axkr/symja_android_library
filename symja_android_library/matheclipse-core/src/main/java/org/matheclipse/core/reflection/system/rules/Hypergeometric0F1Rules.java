@@ -17,17 +17,17 @@ public interface Hypergeometric0F1Rules {
 
   final public static IAST RULES = List(
     IInit(Hypergeometric0F1, SIZES),
+    // Hypergeometric0F1(1/2,-z_):=Cos(2*Sqrt(z))/;!TrueQ(Negative(z))
+    ISetDelayed(Hypergeometric0F1(C1D2,Negate(z_)),
+      Condition(Cos(Times(C2,Sqrt(z))),Not(TrueQ(Negative(z))))),
+    // Hypergeometric0F1(3/2,-z_):=Sin(2*Sqrt(z))/(2*Sqrt(z))/;!TrueQ(Negative(z))
+    ISetDelayed(Hypergeometric0F1(QQ(3L,2L),Negate(z_)),
+      Condition(Times(Power(Times(C2,Sqrt(z)),-1),Sin(Times(C2,Sqrt(z)))),Not(TrueQ(Negative(z))))),
     // Hypergeometric0F1(1/2,z_):=Cosh(2*Sqrt(z))
     ISetDelayed(Hypergeometric0F1(C1D2,z_),
       Cosh(Times(C2,Sqrt(z)))),
-    // Hypergeometric0F1(1/2,-z_):=Cos(2*Sqrt(z))
-    ISetDelayed(Hypergeometric0F1(C1D2,Negate(z_)),
-      Cos(Times(C2,Sqrt(z)))),
     // Hypergeometric0F1(3/2,z_):=Sinh(2*Sqrt(z))/(2*Sqrt(z))
     ISetDelayed(Hypergeometric0F1(QQ(3L,2L),z_),
-      Times(Power(Times(C2,Sqrt(z)),-1),Sinh(Times(C2,Sqrt(z))))),
-    // Hypergeometric0F1(3/2,-z_):=Sin(2*Sqrt(z))/(2*Sqrt(z))
-    ISetDelayed(Hypergeometric0F1(QQ(3L,2L),Negate(z_)),
-      Times(Power(Times(C2,Sqrt(z)),-1),Sin(Times(C2,Sqrt(z)))))
+      Times(Power(Times(C2,Sqrt(z)),-1),Sinh(Times(C2,Sqrt(z)))))
   );
 }

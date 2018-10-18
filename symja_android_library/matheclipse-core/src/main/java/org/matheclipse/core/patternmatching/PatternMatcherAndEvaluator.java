@@ -47,8 +47,10 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	/**
 	 * Define a pattern-matching rule.
 	 * 
-	 * @param leftHandSide  could contain pattern expressions for "pattern-matching"
-	 * @param rightHandSide the result which should be evaluated if the "pattern-matching" succeeds
+	 * @param leftHandSide
+	 *            could contain pattern expressions for "pattern-matching"
+	 * @param rightHandSide
+	 *            the result which should be evaluated if the "pattern-matching" succeeds
 	 */
 	public PatternMatcherAndEvaluator(final IExpr leftHandSide, final IExpr rightHandSide) {
 		this(ISymbol.RuleType.SET_DELAYED, leftHandSide, rightHandSide);
@@ -57,23 +59,38 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	/**
 	 * ine a pattern-matching rule.
 	 * 
-	 * @param setSymbol     the symbol which defines this pattern-matching rule (i.e. Set, SetDelayed,...)
-	 * @param leftHandSide  could contain pattern expressions for "pattern-matching"
-	 * @param rightHandSide the result which should be evaluated if the "pattern-matching" succeeds
+	 * @param setSymbol
+	 *            the symbol which defines this pattern-matching rule (i.e. Set, SetDelayed,...)
+	 * @param leftHandSide
+	 *            could contain pattern expressions for "pattern-matching"
+	 * @param rightHandSide
+	 *            the result which should be evaluated if the "pattern-matching" succeeds
 	 */
 	public PatternMatcherAndEvaluator(final ISymbol.RuleType setSymbol, final IExpr leftHandSide,
 			final IExpr rightHandSide) {
-		this(setSymbol, leftHandSide, rightHandSide, true);
+		this(setSymbol, leftHandSide, rightHandSide, true, 0);
 	}
 
 	public PatternMatcherAndEvaluator(final ISymbol.RuleType setSymbol, final IExpr leftHandSide,
-			final IExpr rightHandSide, boolean initAll) {
+			final IExpr rightHandSide, boolean initAll, int patternHash) {
 		super(leftHandSide, initAll);
 		fSetSymbol = setSymbol;
 		fRightHandSide = rightHandSide;
+		fPatterHash = patternHash;
 		if (initAll) {
 			initRHSleafCountSimplify();
 		}
+	}
+
+	/**
+	 * Check if <code>fPatterHash == 0 || fPatterHash == patternHash;</code>.
+	 * 
+	 * @param patternHash
+	 * @return
+	 */
+	@Override
+	public boolean isPatternHashAllowed(int patternHash) {
+		return fPatterHash == 0 || fPatterHash == patternHash;
 	}
 
 	/**
@@ -149,8 +166,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	}
 
 	/**
-	 * Check if the condition for the right-hand-sides <code>Module[], With[] or Condition[]</code> expressions evaluates to
-	 * <code>true</code>.
+	 * Check if the condition for the right-hand-sides <code>Module[], With[] or Condition[]</code> expressions
+	 * evaluates to <code>true</code>.
 	 * 
 	 * @return <code>true</code> if the right-hand-sides condition is fulfilled.
 	 */
@@ -169,12 +186,12 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 			} else {
 				IExpr rhs = patternMap.substituteSymbols(fRightHandSide);
 				try {
-//					System.out.println(rhs.toString());
+					// System.out.println(rhs.toString());
 					fReturnResult = engine.evaluate(rhs);
 					matched = true;
 				} catch (final ConditionException e) {
 					matched = false;
-				} catch (final ReturnException e) { 
+				} catch (final ReturnException e) {
 					fReturnResult = e.getValue();
 					matched = true;
 				}

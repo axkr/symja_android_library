@@ -44,19 +44,19 @@ public class OrderlessStepVisitor extends FlatOrderlessStepVisitor implements IS
 				final int n = result[j].length;
 				if (n == 1) {
 					if (fOneIdentity) {
-						if (!stackMatcher.push(fLhsPatternAST.get(j + 1), (IExpr) array[result[j][0]])) {
+						if (!stackMatcher.push(fLhsPatternAST.get(j + 1), array[result[j][0]])) {
 							matched = false;
 							return false;
 						}
 					} else {
 						if (!stackMatcher.push(fLhsPatternAST.get(j + 1),
-								F.unaryAST1(fSymbol, (IExpr) array[result[j][0]]))) {
+								F.unaryAST1(fSymbol, array[result[j][0]]))) {
 							matched = false;
 							return false;
 						}
 					}
 				} else {
-					throw new WrongNumberOfArguments((IAST) list, 1, n);
+					throw new WrongNumberOfArguments(list, 1, n);
 					// } else {
 					// partitionElement = F.ast(fSymbol, n, false);
 					// for (int i = 0; i < n; i++) {
