@@ -550,4 +550,20 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	} 
+	
+	public void testParse38() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("MakeGraph[Range[26],\n" + 
+					"                            Mod[#1-#2, 26] == 1 ||\n" + 
+					"                                (-1)^#1Mod[#1-#2, 26] == 11 ||\n" + 
+					"                                (-1)^#1Mod[#1-#2, 26] == 7&,\n" + 
+					"                            Type -> Directed]");
+			assertEquals(obj.toString(),
+					"MakeGraph(Range(26), Function(Or(Equal(Mod(Plus(Slot(1), Times(-1, Slot(2))), 26), 1), Equal(Times(Power(-1, Slot(1)), Mod(Plus(Slot(1), Times(-1, Slot(2))), 26)), 11), Equal(Times(Power(-1, Slot(1)), Mod(Plus(Slot(1), Times(-1, Slot(2))), 26)), 7))), Rule(Type, Directed))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
 }

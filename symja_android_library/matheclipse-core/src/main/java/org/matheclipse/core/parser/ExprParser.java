@@ -1121,8 +1121,8 @@ public class ExprParser extends Scanner {
 							lhs = parsePostfixOperator(lhs, postfixOperator);
 							continue;
 						}
-					} else {
-						throwSyntaxError("Operator: " + fOperatorString + " is no infix or postfix operator.");
+						// } else {
+						// throwSyntaxError("Operator: " + fOperatorString + " is no infix or postfix operator.");
 					}
 				}
 			}

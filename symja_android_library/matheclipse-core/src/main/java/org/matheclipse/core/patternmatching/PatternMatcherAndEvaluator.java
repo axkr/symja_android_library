@@ -281,6 +281,21 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	}
 
 	@Override
+	public final int determinePatterns() {
+		int result = super.determinePatterns();
+		if (fRightHandSide != null) {
+			if (fRightHandSide.isCondition()) {
+				fLHSPriority -= fRightHandSide.second().leafCount();
+			} else if (fRightHandSide.isModuleOrWithCondition()) {
+				if (fRightHandSide.second().isCondition()) {
+					fLHSPriority -= fRightHandSide.second().second().leafCount();
+				}
+			}
+		}
+		return result;
+	}
+
+	@Override
 	public IExpr getRHS() {
 		return ExprUtil.ofNullable(fRightHandSide);
 	}

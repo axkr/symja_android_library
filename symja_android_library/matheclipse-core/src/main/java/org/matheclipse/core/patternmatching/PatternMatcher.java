@@ -563,7 +563,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	}
 
 	@Override
-	public final int determinePatterns() {
+	public int determinePatterns() {
 		return getPatternMap().determinePatterns(fLhsPatternExpr);
 	}
 
