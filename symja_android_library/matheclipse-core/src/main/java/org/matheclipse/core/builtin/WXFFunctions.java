@@ -3,12 +3,13 @@ package org.matheclipse.core.builtin;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Locale;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
@@ -20,6 +21,7 @@ import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -126,7 +128,7 @@ public class WXFFunctions {
 				this.stream = stream;
 			}
 
-			private void write(IExpr arg1) {
+			private void write(IExpr arg1) throws IOException {
 				// argument dispatching
 				final int hier = arg1.hierarchy();
 				switch (hier) {
@@ -154,21 +156,53 @@ public class WXFFunctions {
 				case IExpr.STRINGID:
 					writeString(arg1);
 					return;
+				case IExpr.BLANKID:
+					IPattern blank = (IPattern) arg1;
+					IExpr blankCondition = blank.getCondition();
+					IExpr blankDef = blank.getDefaultValue();
+					if (blankDef != null) {
+						blank = F.$b();
+						writeAST2(F.Optional, blank, blankDef);
+					} else if (blank.isPatternDefault()) {
+						blank = F.$b();
+						writeAST1(F.Optional, blank);
+					} else if (blankCondition != null) {
+						writeAST1(F.Blank, blankCondition);
+					} else {
+						writeAST0(F.Blank);
+					}
+					return;
+				case IExpr.PATTERNID:
+					IPattern pat = (IPattern) arg1;
+					IExpr condition = pat.getCondition();
+					IExpr def = pat.getDefaultValue();
+					if (def != null) {
+						pat = F.$p(pat.getSymbol());
+						writeAST2(F.Optional, pat, def);
+					} else if (pat.isPatternDefault()) {
+						pat = F.$p(pat.getSymbol());
+						writeAST1(F.Optional, pat);
+					} else if (condition != null) {
+						writeAST2(F.Pattern, pat.getSymbol(), F.unaryAST1(F.Blank, condition));
+					} else {
+						writeAST2(F.Pattern, pat.getSymbol(), F.headAST0(F.Blank));
+					}
+					return;
 				}
 			}
 
-			private void writeString(IExpr arg1) {
+			private void writeString(IExpr arg1) throws IOException {
 				IStringX s = (IStringX) arg1;
 				char[] str = s.toString().toCharArray();
 				int size = str.length;
 				stream.write(WXF_CONSTANTS.String);
-				stream.write(str.length);
+				stream.write(varintBytes(size));
 				for (int i = 0; i < size; i++) {
 					stream.write(str[i]);
 				}
 			}
 
-			private void writeSymbol(IExpr arg1) {
+			private void writeSymbol(IExpr arg1) throws IOException {
 				ISymbol s = (ISymbol) arg1;
 				Context context = s.getContext();
 				final char[] str;
@@ -179,7 +213,7 @@ public class WXFFunctions {
 				}
 				int size = str.length;
 				stream.write(WXF_CONSTANTS.Symbol);
-				stream.write(str.length);
+				stream.write(varintBytes(size));
 				for (int i = 0; i < size; i++) {
 					stream.write(str[i]);
 				}
@@ -198,48 +232,91 @@ public class WXFFunctions {
 				stream.write((byte) (l >> 56 & 0x00000000000000ff));
 			}
 
-			private void writeInteger(IExpr arg1) {
+			private void writeInteger(IExpr arg1) throws IOException {
 				IInteger s = (IInteger) arg1;
 				if (s instanceof IntegerSym) {
 					int i = ((IntegerSym) s).intValue();
-					if (0 <= i && i <= Byte.MAX_VALUE) {
+					if (Byte.MIN_VALUE <= i && i <= Byte.MAX_VALUE) {
 						stream.write(WXF_CONSTANTS.Integer8);
 						stream.write((byte) i);
-					} else if (0 > i && i >= Byte.MIN_VALUE) {
-						stream.write(WXF_CONSTANTS.Integer8);
-						stream.write((byte) i);
+					} else if (Short.MIN_VALUE <= i && i <= Short.MAX_VALUE) {
+						stream.write(WXF_CONSTANTS.Integer16);
+						stream.write((byte) (i & 0xFF));
+						stream.write((byte) ((i >> 8) & 0xFF));
+					} else if (Integer.MIN_VALUE <= i && i <= Integer.MAX_VALUE) {
+						stream.write(WXF_CONSTANTS.Integer32);
+						stream.write((byte) (i & 0xFF));
+						stream.write((byte) ((i >> 8) & 0xFF));
+						stream.write((byte) ((i >> 16) & 0xFF));
+						stream.write((byte) ((i >> 24) & 0xFF));
 					}
 				}
+				// TODO determine correct byte array repr.
+				// if (s instanceof BigIntegerSym) {
+				// BigInteger big = ((BigIntegerSym) s).toBigNumerator();
+				// stream.write(WXF_CONSTANTS.BigInteger);
+				// byte[] bArray = big.toByteArray();
+				// stream.write(varintBytes(bArray.length));
+				// stream.write(big.toByteArray());
+				// }
 			}
 
-			private void writeAST(IExpr arg1) {
+			private void writeAST(IExpr arg1) throws IOException {
 				IAST ast = (IAST) arg1;
 				stream.write(WXF_CONSTANTS.Function);
-				stream.write(ast.argSize());
+				stream.write(varintBytes(ast.argSize()));
 				for (int i = 0; i < ast.size(); i++) {
 					write(ast.get(i));
 				}
 			}
 
-			private void writeAST0(IExpr head) {
+			private void writeAST0(IExpr head) throws IOException {
 				stream.write(WXF_CONSTANTS.Function);
 				stream.write(0);
 				write(head);
 			}
 
-			private void writeAST1(IExpr head, IExpr arg1) {
+			private void writeAST1(IExpr head, IExpr arg1) throws IOException {
 				stream.write(WXF_CONSTANTS.Function);
 				stream.write(1);
 				write(head);
 				write(arg1);
 			}
 
-			private void writeAST2(IExpr head, IExpr arg1, IExpr arg2) {
+			private void writeAST2(IExpr head, IExpr arg1, IExpr arg2) throws IOException {
 				stream.write(WXF_CONSTANTS.Function);
 				stream.write(2);
 				write(head);
 				write(arg1);
 				write(arg2);
+			}
+
+			/**
+			 * Serialize <code>length</code> into varint bytes and return them as a byte array.
+			 */
+			private byte[] varintBytes(int length) {
+				byte[] buf = new byte[9];
+				if (length < 0) {
+					throw new UnsupportedOperationException("Negative values cannot be encoded as varint.");
+				}
+				int count = 0;
+				while (true) {
+					int next = (length & 0x7f);
+					length >>= 7;
+					if (length != 0) {
+						buf[count] = (byte) (next | 0x80);
+						count += 1;
+					} else {
+						buf[count] = (byte) next;
+						count += 1;
+						break;
+					}
+				}
+				byte[] result = new byte[count];
+				for (int i = 0; i < count; i++) {
+					result[i] = buf[i];
+				}
+				return result;
 			}
 		}
 	}
@@ -298,6 +375,18 @@ public class WXFFunctions {
 				case WXF_CONSTANTS.Integer8:
 					value = array[position++];
 					return F.ZZ(value);
+				case WXF_CONSTANTS.Integer16:
+					ByteBuffer b16 = ByteBuffer.wrap(array, position, 2);
+					b16.order(ByteOrder.LITTLE_ENDIAN);
+					short v = b16.getShort();
+					position += 2;
+					return F.ZZ(v);
+				case WXF_CONSTANTS.Integer32:
+					ByteBuffer b32 = ByteBuffer.wrap(array, position, 4);
+					b32.order(ByteOrder.LITTLE_ENDIAN);
+					int iValue = b32.getInt();
+					position += 4;
+					return F.ZZ(iValue);
 				case WXF_CONSTANTS.Real64:
 					long l = 0;
 					position += 8;
@@ -314,15 +403,16 @@ public class WXFFunctions {
 				case WXF_CONSTANTS.Symbol:
 					return readSymbol();
 				case WXF_CONSTANTS.Function:
-					length = (int) array[position++];
+					length = parseVarint();// (int) array[position++];
 					IASTAppendable ast = F.ast(F.NIL, length, false);
 					ast.set(0, read());
 					for (int i = 0; i < length; i++) {
 						ast.append(read());
 					}
+					System.out.println(ast.toString());
 					return ast;
 				case WXF_CONSTANTS.String:
-					length = (int) array[position++];
+					length = parseVarint();// (int) array[position++];
 					StringBuilder str = new StringBuilder();
 					for (int i = 0; i < length; i++) {
 						char ch = (char) array[position++];
@@ -334,7 +424,7 @@ public class WXFFunctions {
 			}
 
 			private IExpr readSymbol() {
-				int length = (int) array[position++];
+				int length = parseVarint();// (int) array[position++];
 				StringBuilder symbol = new StringBuilder();
 				int contextStart = position;
 				int contextEnd = contextStart;
@@ -369,6 +459,42 @@ public class WXFFunctions {
 				ContextPath contextPath = engine.getContextPath();
 				Context context = contextPath.getContext(contextName);
 				return contextPath.getSymbol(lcSymbolName, context, engine.isRelaxedSyntax());
+			}
+
+			/**
+			 * Parse a readable binary buffer for a positive varint encoded integer.
+			 * 
+			 * @return
+			 */
+			private int parseVarint() {
+				int count = 0;
+				boolean continuation = true;
+				int shift = 0;
+				int length = 0;
+				// when we read from stream we get a sequence of bytes. Its length is 1
+				// except if we reached EOF in which case taking index 0 raises IndexError.
+				// try:
+				while (continuation && count < 8) {
+					count++;
+					byte next_byte = array[position++];
+					// next_byte = ord(next_byte);
+					length |= (next_byte & 0x7F) << shift;
+					shift = shift + 7;
+					continuation = (next_byte & 0x80) != 0;
+				}
+
+				if (continuation) {
+					byte next_byte = array[position++];
+					// next_byte = ord(next_byte);
+					next_byte &= 0x7F;
+					if (next_byte == 0) {
+						throw new UnsupportedOperationException("Invalid last varint byte.");
+					}
+					length |= next_byte << shift;
+				}
+				return length;
+				// except IndexError:
+				// raise EOFError('EOF reached while parsing varint encoded integer.')
 			}
 		}
 	}
