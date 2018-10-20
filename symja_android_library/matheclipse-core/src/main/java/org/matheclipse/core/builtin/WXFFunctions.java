@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Locale;
@@ -10,6 +11,7 @@ import java.util.Locale;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
+import org.matheclipse.core.expression.BigIntegerSym;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
@@ -250,15 +252,14 @@ public class WXFFunctions {
 						stream.write((byte) ((i >> 16) & 0xFF));
 						stream.write((byte) ((i >> 24) & 0xFF));
 					}
+				} else if (s instanceof BigIntegerSym) {
+					String big = ((BigIntegerSym) s).toBigNumerator().toString();
+					stream.write(WXF_CONSTANTS.BigInteger);
+					stream.write(varintBytes(big.length()));
+					for (int i = 0; i < big.length(); i++) {
+						stream.write(big.charAt(i));
+					}
 				}
-				// TODO determine correct byte array repr.
-				// if (s instanceof BigIntegerSym) {
-				// BigInteger big = ((BigIntegerSym) s).toBigNumerator();
-				// stream.write(WXF_CONSTANTS.BigInteger);
-				// byte[] bArray = big.toByteArray();
-				// stream.write(varintBytes(bArray.length));
-				// stream.write(big.toByteArray());
-				// }
 			}
 
 			private void writeAST(IExpr arg1) throws IOException {
@@ -387,6 +388,14 @@ public class WXFFunctions {
 					int iValue = b32.getInt();
 					position += 4;
 					return F.ZZ(iValue);
+				case WXF_CONSTANTS.BigInteger:
+					length = parseVarint();
+					StringBuilder bigIntegerString = new StringBuilder();
+					for (int i = 0; i < length; i++) {
+						char ch = (char) array[position++];
+						bigIntegerString.append(ch);
+					}
+					return F.ZZ(new BigInteger(bigIntegerString.toString()));
 				case WXF_CONSTANTS.Real64:
 					long l = 0;
 					position += 8;
@@ -409,14 +418,13 @@ public class WXFFunctions {
 					for (int i = 0; i < length; i++) {
 						ast.append(read());
 					}
-					System.out.println(ast.toString());
+					// System.out.println(ast.toString());
 					return ast;
 				case WXF_CONSTANTS.String:
 					length = parseVarint();// (int) array[position++];
 					StringBuilder str = new StringBuilder();
 					for (int i = 0; i < length; i++) {
-						char ch = (char) array[position++];
-						str.append(ch);
+						str.append((char) array[position++]);
 					}
 					return F.stringx(str);
 				}
@@ -493,8 +501,6 @@ public class WXFFunctions {
 					length |= next_byte << shift;
 				}
 				return length;
-				// except IndexError:
-				// raise EOFError('EOF reached while parsing varint encoded integer.')
 			}
 		}
 	}
