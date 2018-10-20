@@ -33,7 +33,7 @@ public class CompleteTestSuite extends TestCase {
 		suite.addTestSuite(SVGGraphicsTestCase.class);
 		suite.addTestSuite(Graphics3DTestCase.class);
 		suite.addTestSuite(SymjifyTestCase.class);
-		
+
 		suite.addTestSuite(MainTestCase.class);
 		suite.addTestSuite(BasicPatternPropertiesTestCase.class);
 		suite.addTestSuite(CompareToTestCase.class);
@@ -57,15 +57,16 @@ public class CompleteTestSuite extends TestCase {
 		suite.addTestSuite(SeriesTest.class);
 		suite.addTestSuite(SerializableTest.class);
 		suite.addTestSuite(PatternsTest.class);
-		
+
 		suite.addTestSuite(ParserTestCase.class);
 		suite.addTestSuite(RelaxedParserTestCase.class);
 		suite.addTestSuite(BracketBalancerTestCase.class);
 		suite.addTestSuite(EvalDoubleTestCase.class);
 		suite.addTestSuite(ExprEvaluatorTest.class);
-		
+
 		suite.addTestSuite(ConsoleTestCase.class);
 		suite.addTestSuite(AssumptionTestCase.class);
+		suite.addTestSuite(WXFTestCase.class);
 		
 		return suite;
 
