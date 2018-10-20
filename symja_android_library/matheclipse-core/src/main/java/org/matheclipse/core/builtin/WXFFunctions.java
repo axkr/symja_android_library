@@ -7,6 +7,7 @@ import java.util.Locale;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
@@ -14,8 +15,12 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntegerSym;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IComplex;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -83,17 +88,18 @@ public class WXFFunctions {
 		static final byte ComplexReal64 = 16;
 	}
 
-	private static class BinarySerialize extends AbstractEvaluator {
+	private static class BinarySerialize extends AbstractCoreFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST1()) {
+				IExpr arg1 = engine.evaluate(ast.arg1());
 				try {
 					ByteArrayOutputStream baos = new ByteArrayOutputStream();
 					baos.write('8');
 					baos.write(':');
 					WriteObject wo = new WriteObject(baos);
-					wo.write(ast.arg1());
+					wo.write(arg1);
 
 					byte[] bArray = baos.toByteArray();
 					baos.close();
@@ -130,8 +136,20 @@ public class WXFFunctions {
 				case IExpr.SYMBOLID:
 					writeSymbol(arg1);
 					return;
+				case IExpr.COMPLEXID:
+					writeAST2(F.Complex, ((IComplex) arg1).re(), ((IComplex) arg1).im());
+					return;
 				case IExpr.INTEGERID:
 					writeInteger(arg1);
+					return;
+				case IExpr.FRACTIONID:
+					writeAST2(F.Rational, ((IRational) arg1).numerator(), ((IRational) arg1).denominator());
+					return;
+				case IExpr.DOUBLEID:
+					writeDouble(((INum) arg1).doubleValue());
+					return;
+				case IExpr.DOUBLECOMPLEXID:
+					writeAST2(F.Complex, ((IComplexNum) arg1).re(), ((IComplexNum) arg1).im());
 					return;
 				case IExpr.STRINGID:
 					writeString(arg1);
@@ -167,6 +185,19 @@ public class WXFFunctions {
 				}
 			}
 
+			private void writeDouble(double d) {
+				long l = Double.doubleToRawLongBits(d);
+				stream.write(WXF_CONSTANTS.Real64);
+				stream.write((byte) (l & 0x00000000000000ff));
+				stream.write((byte) (l >> 8 & 0x00000000000000ff));
+				stream.write((byte) (l >> 16 & 0x00000000000000ff));
+				stream.write((byte) (l >> 24 & 0x00000000000000ff));
+				stream.write((byte) (l >> 32 & 0x00000000000000ff));
+				stream.write((byte) (l >> 40 & 0x00000000000000ff));
+				stream.write((byte) (l >> 48 & 0x00000000000000ff));
+				stream.write((byte) (l >> 56 & 0x00000000000000ff));
+			}
+
 			private void writeInteger(IExpr arg1) {
 				IInteger s = (IInteger) arg1;
 				if (s instanceof IntegerSym) {
@@ -189,30 +220,53 @@ public class WXFFunctions {
 					write(ast.get(i));
 				}
 			}
+
+			private void writeAST0(IExpr head) {
+				stream.write(WXF_CONSTANTS.Function);
+				stream.write(0);
+				write(head);
+			}
+
+			private void writeAST1(IExpr head, IExpr arg1) {
+				stream.write(WXF_CONSTANTS.Function);
+				stream.write(1);
+				write(head);
+				write(arg1);
+			}
+
+			private void writeAST2(IExpr head, IExpr arg1, IExpr arg2) {
+				stream.write(WXF_CONSTANTS.Function);
+				stream.write(2);
+				write(head);
+				write(arg1);
+				write(arg2);
+			}
 		}
 	}
 
-	private static class BinaryDeserialize extends AbstractEvaluator {
+	private static class BinaryDeserialize extends AbstractCoreFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST1() && ast.arg1().isList()) {
+			if (ast.isAST1()) {
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				if (arg1.isList()) {
+					try {
+						byte[] bArray = toByteArray((IAST) arg1);
+						ByteArrayInputStream bais = new ByteArrayInputStream(bArray);
 
-				try {
-					byte[] bArray = toByteArray((IAST) ast.arg1());
-					ByteArrayInputStream bais = new ByteArrayInputStream(bArray);
-
-					ReadObject rd = new ReadObject(bArray, 2);
-					IExpr result = rd.read();
-					bais.close();
-					return result;
-				} catch (ClassCastException cce) {
-					if (Config.SHOW_STACKTRACE) {
-						cce.printStackTrace();
-					}
-				} catch (IOException ioe) {
-					if (Config.SHOW_STACKTRACE) {
-						ioe.printStackTrace();
+						ReadObject rd = new ReadObject(bArray, 2);
+						IExpr result = rd.read();
+						bais.close();
+						return result;
+					} catch (ClassCastException cce) {
+						if (Config.SHOW_STACKTRACE) {
+							cce.printStackTrace();
+						}
+					} catch (IOException ioe) {
+						if (Config.SHOW_STACKTRACE) {
+							ioe.printStackTrace();
+						}
 					}
 				}
 			}
@@ -244,6 +298,19 @@ public class WXFFunctions {
 				case WXF_CONSTANTS.Integer8:
 					value = array[position++];
 					return F.ZZ(value);
+				case WXF_CONSTANTS.Real64:
+					long l = 0;
+					position += 8;
+					int pos2 = position - 1;
+					l = (l | (array[pos2--] & 0xFF)) << 8;
+					l = (l | (array[pos2--] & 0xFF)) << 8;
+					l = (l | (array[pos2--] & 0xFF)) << 8;
+					l = (l | (array[pos2--] & 0xFF)) << 8;
+					l = (l | (array[pos2--] & 0xFF)) << 8;
+					l = (l | (array[pos2--] & 0xFF)) << 8;
+					l = (l | (array[pos2--] & 0xFF)) << 8;
+					l = (l | (array[pos2--] & 0xFF));
+					return F.num(Double.longBitsToDouble(l));
 				case WXF_CONSTANTS.Symbol:
 					return readSymbol();
 				case WXF_CONSTANTS.Function:
