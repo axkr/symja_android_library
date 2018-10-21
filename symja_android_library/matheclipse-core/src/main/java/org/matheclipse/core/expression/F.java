@@ -4079,6 +4079,17 @@ public class F {
 	public static IPatternSequence $ps(final ISymbol symbol) {
 		return PatternSequence.valueOf(symbol, false);
 	}
+	
+	/**
+	 * 
+	 * @param symbol
+	 * @param zeroArgsAllowed
+	 *            if <code>true</code> 0 argument sequences are allowed for this pattern
+	 * @return
+	 */
+	public static IPatternSequence $ps(final ISymbol symbol, boolean zeroArgsAllowed) {
+		return PatternSequence.valueOf(symbol, zeroArgsAllowed);
+	}
 
 	/**
 	 * Create a pattern for pattern-matching and term rewriting

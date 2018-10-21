@@ -18,6 +18,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IPattern;
+import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -253,19 +254,37 @@ public class WL {
 				}
 				return;
 			case IExpr.PATTERNID:
-				IPattern pat = (IPattern) arg1;
-				IExpr condition = pat.getCondition();
-				IExpr def = pat.getDefaultValue();
-				if (def != null) {
-					pat = F.$p(pat.getSymbol());
-					writeAST2(F.Optional, pat, def);
-				} else if (pat.isPatternDefault()) {
-					pat = F.$p(pat.getSymbol());
-					writeAST1(F.Optional, pat);
-				} else if (condition != null) {
-					writeAST2(F.Pattern, pat.getSymbol(), F.unaryAST1(F.Blank, condition));
+				if (arg1 instanceof IPatternSequence) {
+					IPatternSequence pat = (IPatternSequence) arg1;
+					ISymbol symbol = pat.getSymbol();
+					if (symbol == null) {
+						if (pat.isNullSequence()) {
+							writeAST0(F.BlankNullSequence);
+						} else {
+							writeAST0(F.BlankSequence);
+						}
+					} else {
+						if (pat.isNullSequence()) {
+							writeAST2(F.Pattern, pat.getSymbol(), F.headAST0(F.BlankNullSequence));
+						} else {
+							writeAST2(F.Pattern, pat.getSymbol(), F.headAST0(F.BlankSequence));
+						}
+					}
 				} else {
-					writeAST2(F.Pattern, pat.getSymbol(), F.headAST0(F.Blank));
+					IPattern pat = (IPattern) arg1;
+					IExpr condition = pat.getCondition();
+					IExpr def = pat.getDefaultValue();
+					if (def != null) {
+						pat = F.$p(pat.getSymbol());
+						writeAST2(F.Optional, pat, def);
+					} else if (pat.isPatternDefault()) {
+						pat = F.$p(pat.getSymbol());
+						writeAST1(F.Optional, pat);
+					} else if (condition != null) {
+						writeAST2(F.Pattern, pat.getSymbol(), F.unaryAST1(F.Blank, condition));
+					} else {
+						writeAST2(F.Pattern, pat.getSymbol(), F.headAST0(F.Blank));
+					}
 				}
 				return;
 			}

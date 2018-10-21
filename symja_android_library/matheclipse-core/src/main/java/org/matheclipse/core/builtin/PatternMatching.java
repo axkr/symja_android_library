@@ -104,10 +104,10 @@ public final class PatternMatching {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.head().equals(F.BlankSequence)) {
 				if (ast.isAST0()) {
-					return F.$b();
+					return F.$ps((ISymbol) null);
 				}
-				if (ast.isAST1()) {
-					return F.$b(ast.arg1());
+				if (ast.isAST1() && ast.arg1().isSymbol()) {
+					return F.$ps((ISymbol) ast.arg1());
 				}
 			}
 			return F.NIL;
@@ -126,10 +126,10 @@ public final class PatternMatching {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.head().equals(F.BlankNullSequence)) {
 				if (ast.isAST0()) {
-					return F.$b();
+					return F.$ps((ISymbol) null, true);
 				}
-				if (ast.isAST1()) {
-					return F.$b(ast.arg1());
+				if (ast.isAST1() && ast.arg1().isSymbol()) {
+					return F.$ps((ISymbol) ast.arg1(), true);
 				}
 			}
 			return F.NIL;

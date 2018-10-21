@@ -12,9 +12,9 @@ public class WXFTestCase extends AbstractTestCase {
 	}
 
 	private String toString(byte[] bytes) {
-		StringBuilder sb= new StringBuilder();
+		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < bytes.length; i++) {
-			sb.append((int)bytes[i]&0x00ff);
+			sb.append((int) bytes[i] & 0x00ff);
 			sb.append(' ');
 		}
 		return sb.toString();
@@ -22,31 +22,42 @@ public class WXFTestCase extends AbstractTestCase {
 
 	public void testVarint() {
 		byte[] bytes = WL.varintBytes(500);
-		assertEquals("244 3 ", toString(bytes)); 
+		assertEquals("244 3 ", toString(bytes));
 		assertEquals(500, WL.parseVarint(bytes, 0)[0]);
 
 		bytes = WL.varintBytes(64);
-		assertEquals("64 ", toString(bytes)); 
+		assertEquals("64 ", toString(bytes));
 		assertEquals(Byte.MAX_VALUE / 2 + 1, WL.parseVarint(bytes, 0)[0]);
 
 		bytes = WL.varintBytes(Byte.MAX_VALUE);
-		assertEquals("127 ", toString(bytes)); 
+		assertEquals("127 ", toString(bytes));
 		assertEquals(Byte.MAX_VALUE, WL.parseVarint(bytes, 0)[0]);
 
 		bytes = WL.varintBytes(Byte.MAX_VALUE + 1);
-		assertEquals("128 1 ", toString(bytes)); 
+		assertEquals("128 1 ", toString(bytes));
 		assertEquals(Byte.MAX_VALUE + 1, WL.parseVarint(bytes, 0)[0]);
 
 		bytes = WL.varintBytes(Integer.MAX_VALUE);
-		assertEquals("255 255 255 255 7 ", toString(bytes)); 
+		assertEquals("255 255 255 255 7 ", toString(bytes));
 		assertEquals(Integer.MAX_VALUE, WL.parseVarint(bytes, 0)[0]);
 
 		bytes = WL.varintBytes(0);
-		assertEquals("0 ", toString(bytes)); 
+		assertEquals("0 ", toString(bytes));
 		assertEquals(0, WL.parseVarint(bytes, 0)[0]);
 	}
 
 	public void testBinarySerialize() {
+		check("BinarySerialize(x___)", //
+				"{56,58,102,2,115,7,80,97,116,116,101,114,110,115,8,71,108,111,98,97,108,96,120,\n" + 
+				"102,0,115,17,66,108,97,110,107,78,117,108,108,83,101,113,117,101,110,99,101}");
+		check("BinarySerialize(x__)", //
+				"{56,58,102,2,115,7,80,97,116,116,101,114,110,115,8,71,108,111,98,97,108,96,120,\n" + 
+				"102,0,115,13,66,108,97,110,107,83,101,113,117,101,110,99,101}");
+		check("BinarySerialize(___)", //
+				"{56,58,102,0,115,17,66,108,97,110,107,78,117,108,108,83,101,113,117,101,110,99,\n" + 
+				"101}");
+		check("BinarySerialize(__)", //
+				"{56,58,102,0,115,13,66,108,97,110,107,83,101,113,117,101,110,99,101}");
 		check("BinarySerialize(-25!)", //
 				"{56,58,73,27,45,49,53,53,49,49,50,49,48,48,52,51,51,51,48,57,56,53,57,56,52,48,\n"
 						+ "48,48,48,48,48}");
@@ -109,7 +120,18 @@ public class WXFTestCase extends AbstractTestCase {
 	}
 
 	public void testBinaryDeserialize() {
-
+		// BlankNullSequence(x);
+		check("BinaryDeserialize({56, 58, 102, 2, 115, 7, 80, 97, 116, 116, 101, 114, 110, 115, 8, 71, 108, 111, 98, 97, 108, 96, 120, 102, 0, 115, 17, 66, 108, 97, 110, 107, 78, 117, 108, 108, 83, 101, 113, 117, 101, 110, 99, 101})", //
+				"x___");
+		// BlankSequence(x);
+		check("BinaryDeserialize({56, 58, 102, 2, 115, 7, 80, 97, 116, 116, 101, 114, 110, 115, 8, 71, 108, 111, 98, 97, 108, 96, 120, 102, 0, 115, 13, 66, 108, 97, 110, 107, 83, 101, 113, 117, 101, 110, 99, 101})", //
+				"x__");
+		// BlankNullSequence();
+		check("BinaryDeserialize({56, 58, 102, 0, 115, 17, 66, 108, 97, 110, 107, 78, 117, 108, 108, 83, 101, 113, 117, 101, 110, 99, 101})", //
+				"___");
+		// BlankSequence();
+		check("BinaryDeserialize({56, 58, 102, 0, 115, 13, 66, 108, 97, 110, 107, 83, 101, 113, 117, 101, 110, 99, 101})", //
+				"__");
 		// -25!
 		check("BinaryDeserialize({56,58,73,27,45,49,53,53,49,49,50,49,48,48,52,51,51,51,48,57,56,53,57,56,52,48,48,48,48,48,48})", //
 				"-15511210043330985984000000");
