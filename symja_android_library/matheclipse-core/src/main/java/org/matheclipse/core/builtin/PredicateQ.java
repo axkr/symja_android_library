@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import java.util.function.Predicate;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -722,10 +723,15 @@ public class PredicateQ {
 			if (expr.isNumber()) {
 				return expr.isZero();
 			}
+			// System.out.println(arg1);
+			// System.out.println();
 			if (expr.isAST()) {
 				expr = F.expandAll(expr, true, true);
 				if (expr.isZero()) {
 					return true;
+				}
+				if (Config.MAX_FACTOR_LEAFCOUNT > 0 && expr.leafCount() > Config.MAX_FACTOR_LEAFCOUNT) {
+					return false;
 				}
 				if (expr.isPlusTimesPower()) {
 					expr = engine.evaluate(expr);

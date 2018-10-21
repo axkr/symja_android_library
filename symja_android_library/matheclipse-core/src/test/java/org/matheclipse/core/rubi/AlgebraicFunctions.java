@@ -13,7 +13,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 	@Override
 	protected void setUp() {
 		super.setUp();
-		fSeconds = 20;
+		fSeconds=20;
 	}
 
 	// {8}
@@ -1978,16 +1978,16 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {131}
 	public void test0276() {
-//		check("Simplify[1+n/2]", //
-//				"1/2*(2+n)");
-//		check("Factor[Simplify[1+n/2]]", //
-//				"1/2*(2+n)");
-//		check("Integrate::FactorNumericGcd[1+n/2]", //
-//				"1+n/2");
-//		check("Integrate::FixSimplify[1+n/2]", //
-//				"1+n/2");
-//		check("Integrate::SmartSimplify[1+n/2]", //
-//				"1/2*(2+n)");
+		// check("Simplify[1+n/2]", //
+		// "1/2*(2+n)");
+		// check("Factor[Simplify[1+n/2]]", //
+		// "1/2*(2+n)");
+		// check("Integrate::FactorNumericGcd[1+n/2]", //
+		// "1+n/2");
+		// check("Integrate::FixSimplify[1+n/2]", //
+		// "1+n/2");
+		// check("Integrate::SmartSimplify[1+n/2]", //
+		// "1/2*(2+n)");
 		check(//
 				"Integrate[(1 + x/a)^(n/2)/(x^2*(1 - x/a)^(n/2)), x]", //
 				"(-4*(1 - x/a)^(1 - n/2)*(1 + x/a)^((-2 + n)/2)*Hypergeometric2F1[2, 1 - n/2, 2 - n/2, (a - x)/(a + x)])/(a*(2 - n))", //
@@ -9540,6 +9540,14 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {1706}
 	public void test1242() {
+		// check("PossibleZeroQ[(-(Sqrt[c/a]*d+e)*(1+Sqrt[c/a]*x^2)*Sqrt[(a+b*x^2+c*x^4)/(a*(1+Sqrt[c/a]*x^2)^2)]*EllipticPi[-(Sqrt[c/a]*d-e)^\r\n"
+		// +
+		// "2/(4*Sqrt[c/a]*d*e),2*ArcTan[(c/a)^(1/4)*x],1/4*(2+(-b*Sqrt[c/a])/c)])/(4*(c/a)^(\r\n" +
+		// "1/4)*d*e*Sqrt[a+b*x^2+c*x^4])+((Sqrt[c/a]*d+e)*(1+Sqrt[c/a]*x^2)*Sqrt[(a+b*x^2+c*x^\r\n" +
+		// "4)/(a*(1+Sqrt[c/a]*x^2)^2)]*EllipticPi[1/4*(2+(-c*d)/(a*Sqrt[c/a]*e)-e/(Sqrt[c/a]*d)),\r\n" +
+		// "2*ArcTan[(c/a)^(1/4)*x],1/4*(2-b/(a*Sqrt[c/a]))])/(4*(c/a)^(1/4)*d*e*Sqrt[a+b*x^\r\n" +
+		// "2+c*x^4])]", //
+		// "");
 		check(//
 				"Integrate[(1 + Sqrt[c/a]*x^2)/((d + e*x^2)*Sqrt[a + b*x^2 + c*x^4]), x]", //
 				"-((Sqrt[c/a]*d - e)*ArcTan[(Sqrt[c*d^2 - b*d*e + a*e^2]*x)/(Sqrt[d]*Sqrt[e]*Sqrt[a + b*x^2 + c*x^4])])/(2*Sqrt[d]*Sqrt[e]*Sqrt[c*d^2 - b*d*e + a*e^2]) + ((Sqrt[c/a]*d + e)*(1 + Sqrt[c/a]*x^2)*Sqrt[(a + b*x^2 + c*x^4)/(a*(1 + Sqrt[c/a]*x^2)^2)]*EllipticPi[-(Sqrt[c/a]*d - e)^2/(4*Sqrt[c/a]*d*e), 2*ArcTan[(c/a)^(1/4)*x], (2 - (b*Sqrt[c/a])/c)/4])/(4*(c/a)^(1/4)*d*e*Sqrt[a + b*x^2 + c*x^4])", //
