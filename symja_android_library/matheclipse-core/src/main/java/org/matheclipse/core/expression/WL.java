@@ -256,18 +256,35 @@ public class WL {
 			case IExpr.PATTERNID:
 				if (arg1 instanceof IPatternSequence) {
 					IPatternSequence pat = (IPatternSequence) arg1;
+					IExpr condition = pat.getCondition();
 					ISymbol symbol = pat.getSymbol();
 					if (symbol == null) {
 						if (pat.isNullSequence()) {
-							writeAST0(F.BlankNullSequence);
+							if (condition != null) {
+								writeAST1(F.BlankNullSequence, condition);
+							} else {
+								writeAST0(F.BlankNullSequence);
+							}
 						} else {
-							writeAST0(F.BlankSequence);
+							if (condition != null) {
+								writeAST1(F.BlankSequence, condition);
+							} else {
+								writeAST0(F.BlankSequence);
+							}
 						}
 					} else {
 						if (pat.isNullSequence()) {
-							writeAST2(F.Pattern, pat.getSymbol(), F.headAST0(F.BlankNullSequence));
+							if (condition != null) {
+								writeAST2(F.Pattern, pat.getSymbol(), F.unaryAST1(F.BlankNullSequence, condition));
+							} else {
+								writeAST2(F.Pattern, pat.getSymbol(), F.headAST0(F.BlankNullSequence));
+							}
 						} else {
+							if (condition != null) {
+								writeAST2(F.Pattern, pat.getSymbol(), F.unaryAST1(F.BlankSequence, condition));
+							} else {
 							writeAST2(F.Pattern, pat.getSymbol(), F.headAST0(F.BlankSequence));
+							}
 						}
 					}
 				} else {

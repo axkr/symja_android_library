@@ -753,19 +753,26 @@ public final class PatternMatching {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.head().equals(F.Pattern)) {
-				Validate.checkSize(ast, 3);
-
 				if (ast.size() == 3) {
 					if (ast.arg1().isSymbol()) {
 						if (ast.arg2().isBlank()) {
 							IPatternObject blank = (IPatternObject) ast.arg2();
 							return F.$p((ISymbol) ast.arg1(), blank.getCondition());
 						}
+						if (ast.arg2().isAST(F.Blank, 1)) {
+							return F.$p((ISymbol) ast.arg1());
+						}
 						if (ast.arg2().isAST(F.BlankSequence, 1)) {
 							return F.$ps((ISymbol) ast.arg1(), null, false, false);
 						}
 						if (ast.arg2().isAST(F.BlankNullSequence, 1)) {
 							return F.$ps((ISymbol) ast.arg1(), null, false, true);
+						}
+						if (ast.arg2().isAST(F.BlankSequence, 2)) {
+							return F.$ps((ISymbol) ast.arg1(), ast.arg2().first(), false, false);
+						}
+						if (ast.arg2().isAST(F.BlankNullSequence, 2)) {
+							return F.$ps((ISymbol) ast.arg1(), ast.arg2().first(), false, true);
 						}
 					}
 				}
