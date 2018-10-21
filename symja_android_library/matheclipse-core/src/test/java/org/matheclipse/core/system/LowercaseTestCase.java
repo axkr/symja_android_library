@@ -387,6 +387,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArcTan() {
+		check("ArcTan(1, 0)", "0");
+		check("ArcTan(1/2, 1/2)", "Pi/4");
+		check("ArcTan(0, 1)", "Pi/2");
+		check("ArcTan(-1/2, 1/2)", "3/4*Pi");
+		check("ArcTan(-1, 0)", "Pi");
+		check("ArcTan(-1/2, -1/2)", "-3/4*Pi");
+		check("ArcTan(0, -1)", "-Pi/2");
+		check("ArcTan(1/2, -1/2)", "-Pi/4");
+		
 		check("ArcTan(Tan(-1/2))", //
 				"-1/2");
 		check("ArcTan(Tan(-1))", //
@@ -431,11 +440,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ArcTan(1, -1)", "-Pi/4");
 		check("ArcTan(-1, -1)", "-3/4*Pi");
 
-		check("ArcTan(1, 0)", "0");
 		check("ArcTan(17, 0)", "0");
-		check("ArcTan(-1, 0)", "Pi");
-		check("ArcTan(0, 1)", "Pi/2");
-		check("ArcTan(0, -1)", "-Pi/2");
 		check("arctan(Infinity,y)", "0");
 		check("arctan(-Infinity,y)", "Pi*(-1+2*UnitStep(Re(y)))");
 
