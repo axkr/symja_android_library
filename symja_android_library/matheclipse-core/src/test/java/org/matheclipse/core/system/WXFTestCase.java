@@ -1,5 +1,7 @@
 package org.matheclipse.core.system;
 
+import org.matheclipse.core.expression.WL;
+
 /**
  * Tests for the Java port of the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based integrator</a>.
  * 
@@ -7,6 +9,41 @@ package org.matheclipse.core.system;
 public class WXFTestCase extends AbstractTestCase {
 	public WXFTestCase(String name) {
 		super(name);
+	}
+
+	private String toString(byte[] bytes) {
+		StringBuilder sb= new StringBuilder();
+		for (int i = 0; i < bytes.length; i++) {
+			sb.append((int)bytes[i]&0x00ff);
+			sb.append(' ');
+		}
+		return sb.toString();
+	}
+
+	public void testVarint() {
+		byte[] bytes = WL.varintBytes(500);
+		assertEquals("244 3 ", toString(bytes)); 
+		assertEquals(500, WL.parseVarint(bytes, 0)[0]);
+
+		bytes = WL.varintBytes(64);
+		assertEquals("64 ", toString(bytes)); 
+		assertEquals(Byte.MAX_VALUE / 2 + 1, WL.parseVarint(bytes, 0)[0]);
+
+		bytes = WL.varintBytes(Byte.MAX_VALUE);
+		assertEquals("127 ", toString(bytes)); 
+		assertEquals(Byte.MAX_VALUE, WL.parseVarint(bytes, 0)[0]);
+
+		bytes = WL.varintBytes(Byte.MAX_VALUE + 1);
+		assertEquals("128 1 ", toString(bytes)); 
+		assertEquals(Byte.MAX_VALUE + 1, WL.parseVarint(bytes, 0)[0]);
+
+		bytes = WL.varintBytes(Integer.MAX_VALUE);
+		assertEquals("255 255 255 255 7 ", toString(bytes)); 
+		assertEquals(Integer.MAX_VALUE, WL.parseVarint(bytes, 0)[0]);
+
+		bytes = WL.varintBytes(0);
+		assertEquals("0 ", toString(bytes)); 
+		assertEquals(0, WL.parseVarint(bytes, 0)[0]);
 	}
 
 	public void testBinarySerialize() {

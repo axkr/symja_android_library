@@ -77,38 +77,10 @@ public class WL {
 			this.position = position;
 		}
 
-		/**
-		 * Parse a readable binary buffer for a positive varint encoded integer.
-		 * 
-		 * @return
-		 */
-		private int parseVarint() {
-			int count = 0;
-			boolean continuation = true;
-			int shift = 0;
-			int length = 0;
-			// when we read from stream we get a sequence of bytes. Its length is 1
-			// except if we reached EOF in which case taking index 0 raises IndexError.
-			// try:
-			while (continuation && count < 8) {
-				count++;
-				byte next_byte = array[position++];
-				// next_byte = ord(next_byte);
-				length |= (next_byte & 0x7F) << shift;
-				shift = shift + 7;
-				continuation = (next_byte & 0x80) != 0;
-			}
-
-			if (continuation) {
-				byte next_byte = array[position++];
-				// next_byte = ord(next_byte);
-				next_byte &= 0x7F;
-				if (next_byte == 0) {
-					throw new UnsupportedOperationException("Invalid last varint byte.");
-				}
-				length |= next_byte << shift;
-			}
-			return length;
+		private int parseLength() {
+			int[] result = parseVarint(array, position);
+			position = result[1];
+			return result[0];
 		}
 
 		public IExpr read() {
@@ -132,7 +104,7 @@ public class WL {
 				position += 4;
 				return F.ZZ(iValue);
 			case WXF_CONSTANTS.BigInteger:
-				length = parseVarint();
+				length = parseLength();
 				StringBuilder bigIntegerString = new StringBuilder();
 				for (int i = 0; i < length; i++) {
 					char ch = (char) array[position++];
@@ -155,7 +127,7 @@ public class WL {
 			case WXF_CONSTANTS.Symbol:
 				return readSymbol();
 			case WXF_CONSTANTS.Function:
-				length = parseVarint();// (int) array[position++];
+				length = parseLength();// (int) array[position++];
 				IASTAppendable ast = F.ast(F.NIL, length, false);
 				ast.set(0, read());
 				for (int i = 0; i < length; i++) {
@@ -164,7 +136,7 @@ public class WL {
 				// System.out.println(ast.toString());
 				return ast;
 			case WXF_CONSTANTS.String:
-				length = parseVarint();// (int) array[position++];
+				length = parseLength();// (int) array[position++];
 				StringBuilder str = new StringBuilder();
 				for (int i = 0; i < length; i++) {
 					str.append((char) array[position++]);
@@ -175,7 +147,7 @@ public class WL {
 		}
 
 		private IExpr readSymbol() {
-			int length = parseVarint();// (int) array[position++];
+			int length = parseLength();// (int) array[position++];
 			StringBuilder symbol = new StringBuilder();
 			int contextStart = position;
 			int contextEnd = contextStart;
@@ -234,34 +206,6 @@ public class WL {
 
 		public byte[] toByteArray() {
 			return stream.toByteArray();
-		}
-
-		/**
-		 * Serialize <code>length</code> into varint bytes and return them as a byte array.
-		 */
-		private byte[] varintBytes(int length) {
-			byte[] buf = new byte[9];
-			if (length < 0) {
-				throw new UnsupportedOperationException("Negative values cannot be encoded as varint.");
-			}
-			int count = 0;
-			while (true) {
-				int next = (length & 0x7f);
-				length >>= 7;
-				if (length != 0) {
-					buf[count] = (byte) (next | 0x80);
-					count += 1;
-				} else {
-					buf[count] = (byte) next;
-					count += 1;
-					break;
-				}
-			}
-			byte[] result = new byte[count];
-			for (int i = 0; i < count; i++) {
-				result[i] = buf[i];
-			}
-			return result;
 		}
 
 		public void write(IExpr arg1) throws IOException {
@@ -449,6 +393,47 @@ public class WL {
 		static final byte RuleDelayed = ':';
 	}
 
+	public static IExpr deserialize(byte[] bArray) {
+		// byte[] bArray = WL.toByteArray((IAST) arg1);
+		WL.ReadObject ro = new WL.ReadObject(bArray);
+		IExpr result = ro.read();
+		return result;
+	}
+
+	/**
+	 * Parse a readable binary buffer for a positive varint encoded integer.
+	 * 
+	 * @return
+	 */
+	public static int[] parseVarint(byte[] array, int position) {
+		int count = 0;
+		boolean continuation = true;
+		int shift = 0;
+		int length = 0;
+		// when we read from stream we get a sequence of bytes. Its length is 1
+		// except if we reached EOF in which case taking index 0 raises IndexError.
+		// try:
+		while (continuation && count < 8) {
+			count++;
+			byte next_byte = array[position++];
+			// next_byte = ord(next_byte);
+			length |= (next_byte & 0x7F) << shift;
+			shift = shift + 7;
+			continuation = (next_byte & 0x80) != 0;
+		}
+
+		if (continuation) {
+			byte next_byte = array[position++];
+			// next_byte = ord(next_byte);
+			next_byte &= 0x7F;
+			if (next_byte == 0) {
+				throw new UnsupportedOperationException("Invalid last varint byte.");
+			}
+			length |= next_byte << shift;
+		}
+		return new int[] { length, position };
+	}
+
 	/**
 	 * 
 	 * @param expr
@@ -470,13 +455,6 @@ public class WL {
 			}
 		}
 		return null;
-	}
-
-	public static IExpr deserialize(byte[] bArray) {
-		// byte[] bArray = WL.toByteArray((IAST) arg1);
-		WL.ReadObject ro = new WL.ReadObject(bArray);
-		IExpr result = ro.read();
-		return result;
 	}
 
 	/**
@@ -508,4 +486,31 @@ public class WL {
 		return list;
 	}
 
+	/**
+	 * Serialize <code>length</code> into varint bytes and return them as a byte array.
+	 */
+	public static byte[] varintBytes(int length) {
+		byte[] buf = new byte[9];
+		if (length < 0) {
+			throw new UnsupportedOperationException("Negative values cannot be encoded as varint.");
+		}
+		int count = 0;
+		while (true) {
+			int next = (length & 0x7f);
+			length >>= 7;
+			if (length != 0) {
+				buf[count] = (byte) (next | 0x80);
+				count += 1;
+			} else {
+				buf[count] = (byte) next;
+				count += 1;
+				break;
+			}
+		}
+		byte[] result = new byte[count];
+		for (int i = 0; i < count; i++) {
+			result[i] = buf[i];
+		}
+		return result;
+	}
 }
