@@ -28,6 +28,7 @@ public final class OutputFunctions {
 		F.InputForm.setEvaluator(new InputForm());
 		F.JavaForm.setEvaluator(new JavaForm());
 		F.MathMLForm.setEvaluator(new MathMLForm());
+		F.TableForm.setEvaluator(new TableForm());
 		F.TeXForm.setEvaluator(new TeXForm());
 	}
 
@@ -81,6 +82,30 @@ public final class OutputFunctions {
 			Validate.checkSize(ast, 2);
 
 			return F.stringx(engine.evaluate(ast.arg1()).fullFormString());
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+		}
+	}
+
+	private static class TableForm extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				if (arg1.isList()) {
+					IAST list = (IAST)arg1;
+					StringBuilder sb=new StringBuilder();
+					for (int i = 1; i < list.size(); i++) {
+						sb.append(list.get(i).toString());
+						sb.append("\n");
+					}
+					return F.stringx(sb.toString());
+				}
+			}
+			return F.NIL;
 		}
 
 		@Override
@@ -197,11 +222,14 @@ public final class OutputFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-				return F.stringx(StringFunctions.inputForm(ast.arg1(), true));
+			if (ast.isAST1()) {
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+					return F.stringx(StringFunctions.inputForm(arg1, true));
+				}
+				return F.stringx(StringFunctions.inputForm(arg1, false));
 			}
-			return F.stringx(StringFunctions.inputForm(ast.arg1(), false));
+			return F.NIL;
 		}
 
 		@Override

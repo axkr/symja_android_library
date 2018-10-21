@@ -23,7 +23,14 @@
  Cosh(9/5*Pi*I)=1/4*(Sqrt(5)+1), 
  Cosh(11/6*Pi*I)=1/2*Sqrt(3), 
  Cosh(2*Pi*I)=1, 
-   
+
+ Cosh(ArcSinh(x_)):=Sqrt(1 + x^2),
+ Cosh(ArcCosh(x_)):=x,
+ Cosh(ArcTanh(x_)):=1/Sqrt(1 - x^2),
+ Cosh(ArcCoth(x_)):=1/Sqrt(1 - x^(-2)),
+ Cosh(ArcSech(x_)):=1/x,
+ Cosh(ArcCsch(x_)):=Sqrt(1 + 1/x^2),
+ 
  Cosh(Infinity)=Infinity,
  Cosh(ComplexInfinity)=Indeterminate
 }

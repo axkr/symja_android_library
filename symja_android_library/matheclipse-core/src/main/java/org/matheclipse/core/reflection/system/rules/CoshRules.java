@@ -13,7 +13,7 @@ public interface CoshRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 26, 0 };
+  final public static int[] SIZES = { 26, 6 };
 
   final public static IAST RULES = List(
     IInit(Cosh, SIZES),
@@ -89,6 +89,24 @@ public interface CoshRules {
     // Cosh(2*Pi*I)=1
     ISet(Cosh(Times(CC(0L,1L,2L,1L),Pi)),
       C1),
+    // Cosh(ArcSinh(x_)):=Sqrt(1+x^2)
+    ISetDelayed(Cosh(ArcSinh(x_)),
+      Sqrt(Plus(C1,Sqr(x)))),
+    // Cosh(ArcCosh(x_)):=x
+    ISetDelayed(Cosh(ArcCosh(x_)),
+      x),
+    // Cosh(ArcTanh(x_)):=1/Sqrt(1-x^2)
+    ISetDelayed(Cosh(ArcTanh(x_)),
+      Power(Plus(C1,Negate(Sqr(x))),CN1D2)),
+    // Cosh(ArcCoth(x_)):=1/Sqrt(1-1/x^2)
+    ISetDelayed(Cosh(ArcCoth(x_)),
+      Power(Plus(C1,Negate(Power(x,-2))),CN1D2)),
+    // Cosh(ArcSech(x_)):=1/x
+    ISetDelayed(Cosh(ArcSech(x_)),
+      Power(x,-1)),
+    // Cosh(ArcCsch(x_)):=Sqrt(1+1/x^2)
+    ISetDelayed(Cosh(ArcCsch(x_)),
+      Sqrt(Plus(C1,Power(x,-2)))),
     // Cosh(Infinity)=Infinity
     ISet(Cosh(oo),
       oo),

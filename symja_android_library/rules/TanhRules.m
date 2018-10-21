@@ -8,6 +8,13 @@
  Tanh(5/6*Pi*I)=-I/Sqrt(3),
  Tanh(Pi*I)=0,
   
+ Tanh(ArcSinh(x_)):=x/Sqrt(1 + x^2),
+ Tanh(ArcCosh(x_)):=(Sqrt((-1 + x)/(1 + x))*(1 + x))/x,
+ Tanh(ArcTanh(x_)):=x,
+ Tanh(ArcCoth(x_)):=1/x,
+ Tanh(ArcSech(x_)):=Sqrt((1 - x)/(1 + x))*(1 + x),
+ Tanh(ArcCsch(x_)):=1/(Sqrt(1 + 1/x^2)*x),
+ 
  Tanh(Infinity)=1,
  Tanh(ComplexInfinity)=Indeterminate 
 }

@@ -24,6 +24,13 @@
  Sech(11/6*Pi*I) = 2/Sqrt(3),            
  Sech(2*Pi*I) = 1,          
            
+ Sech(ArcSinh(x_)):=1/Sqrt(1 + x^2),
+ Sech(ArcCosh(x_)):=1/x,
+ Sech(ArcTanh(x_)):=Sqrt(1 - x^2),
+ Sech(ArcCoth(x_)):=Sqrt(1 - x^(-2)),
+ Sech(ArcSech(x_)):=x,
+ Sech(ArcCsch(x_)):=1/Sqrt(1 + x^(-2)),
+ 
  Sech(Infinity) = 0,
  Sech(ComplexInfinity) = Indeterminate 
 }

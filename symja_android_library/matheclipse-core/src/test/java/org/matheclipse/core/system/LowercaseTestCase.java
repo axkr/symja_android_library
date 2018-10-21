@@ -4876,9 +4876,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Inner(f, {{{a, b}}, {{x, y}}}, {{1}, {2}}, g)", "{{{g(f(a,1),f(b,2))}},{{g(f(x,1),f(y,2))}}}");
 	}
 
+	public void testInputForm() {
+		check("InputForm(Sin(0))", //
+				"0");
+	}
+
 	public void testInsert() {
-		check("Insert({a, b, c, d, e}, x, 3)", "{a,b,x,c,d,e}");
-		check("Insert({a, b, c, d, e}, x, -2)", "{a,b,c,d,x,e}");
+		check("Insert({a, b, c, d, e}, x, 3)", //
+				"{a,b,x,c,d,e}");
+		check("Insert({a, b, c, d, e}, x, -2)", //
+				"{a,b,c,d,x,e}");
 	}
 
 	public void testInteger() {
@@ -10766,9 +10773,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testString() {
-		check("\"Hello world!\\\r\n" //
+		check("\"Hello world!\\\n" //
 				+ "next line\"", //
-				"Hello world!\r\n" + "next line");
+				"Hello world!\n" + "next line");
 		check("\"Hello world!\\\n" //
 				+ "next line\"", //
 				"Hello world!\n" + //
@@ -11708,8 +11715,99 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testToString() {
+		check("Outer((ToString(#1) <> \"(\" <> ToString(#2) <> \"(x)) == \" <> ToString(InputForm(#1(#2(x)))))&," //
+				+ "{Sinh,Cosh,Tanh,Coth,Sech,Csch},"//
+				+ "{ArcSinh, ArcCosh, ArcTanh, ArcCoth, ArcSech, ArcCsch}) //" //
+				+ "Flatten // TableForm ", //
+				"Sinh(ArcSinh(x)) == x\n" + //
+						"Sinh(ArcCosh(x)) == (1+x)*Sqrt((-1+x)/(1+x))\n" + //
+						"Sinh(ArcTanh(x)) == x/Sqrt(1-x^2)\n" + //
+						"Sinh(ArcCoth(x)) == 1/(Sqrt(1-1/x^2)*x)\n" + //
+						"Sinh(ArcSech(x)) == ((1+x)*Sqrt((1-x)/(1+x)))/x\n" + //
+						"Sinh(ArcCsch(x)) == 1/x\n" + //
+						//
+						"Cosh(ArcSinh(x)) == Sqrt(1+x^2)\n" + //
+						"Cosh(ArcCosh(x)) == x\n" + //
+						"Cosh(ArcTanh(x)) == 1/Sqrt(1-x^2)\n" + //
+						"Cosh(ArcCoth(x)) == 1/Sqrt(1-1/x^2)\n" + //
+						"Cosh(ArcSech(x)) == 1/x\n" + //
+						"Cosh(ArcCsch(x)) == Sqrt(1+1/x^2)\n" + //
+						//
+						"Tanh(ArcSinh(x)) == x/Sqrt(1+x^2)\n" + //
+						"Tanh(ArcCosh(x)) == ((1+x)*Sqrt((-1+x)/(1+x)))/x\n" + //
+						"Tanh(ArcTanh(x)) == x\n" + //
+						"Tanh(ArcCoth(x)) == 1/x\n" + //
+						"Tanh(ArcSech(x)) == (1+x)*Sqrt((1-x)/(1+x))\n" + //
+						"Tanh(ArcCsch(x)) == 1/(Sqrt(1+1/x^2)*x)\n" + //
+						//
+						"Coth(ArcSinh(x)) == Sqrt(1+x^2)/x\n" + //
+						"Coth(ArcCosh(x)) == x/((1+x)*Sqrt((-1+x)/(1+x)))\n" + //
+						"Coth(ArcTanh(x)) == 1/x\n" + //
+						"Coth(ArcCoth(x)) == x\n" + //
+						"Coth(ArcSech(x)) == 1/((1+x)*Sqrt((1-x)/(1+x)))\n" + //
+						"Coth(ArcCsch(x)) == Sqrt(1+1/x^2)*x\n" + //
+						//
+						"Sech(ArcSinh(x)) == 1/Sqrt(1+x^2)\n" + //
+						"Sech(ArcCosh(x)) == 1/x\n" + //
+						"Sech(ArcTanh(x)) == Sqrt(1-x^2)\n" + //
+						"Sech(ArcCoth(x)) == Sqrt(1-1/x^2)\n" + //
+						"Sech(ArcSech(x)) == x\n" + //
+						"Sech(ArcCsch(x)) == 1/Sqrt(1+1/x^2)\n" + //
+						//
+						"Csch(ArcSinh(x)) == 1/x\n" + //
+						"Csch(ArcCosh(x)) == 1/((1+x)*Sqrt((-1+x)/(1+x)))\n" + //
+						"Csch(ArcTanh(x)) == Sqrt(1-x^2)/x\n" + //
+						"Csch(ArcCoth(x)) == Sqrt(1-1/x^2)*x\n" + //
+						"Csch(ArcSech(x)) == x/((1+x)*Sqrt((1-x)/(1+x)))\n" + //
+						"Csch(ArcCsch(x)) == x\n" + "");
+		check("Outer((ToString(#1) <> \"(\" <> ToString(#2) <> \"(x)) == \" <> ToString(InputForm(#1(#2(x)))))&," //
+				+ "{Sin,Cos,Tan,Cot,Sec,Csc},"//
+				+ "{ArcSin, ArcCos, ArcTan, ArcCot, ArcSec, ArcCsc}) //" //
+				+ "Flatten // TableForm ", //
+				"Sin(ArcSin(x)) == x\n" + //
+						"Sin(ArcCos(x)) == Sqrt(1-x^2)\n" + //
+						"Sin(ArcTan(x)) == x/Sqrt(1+x^2)\n" + //
+						"Sin(ArcCot(x)) == 1/(Sqrt(1+1/x^2)*x)\n" + //
+						"Sin(ArcSec(x)) == Sqrt(1-1/x^2)\n" + //
+						"Sin(ArcCsc(x)) == 1/x\n" + //
+						//
+						"Cos(ArcSin(x)) == Sqrt(1-x^2)\n" + //
+						"Cos(ArcCos(x)) == x\n" + //
+						"Cos(ArcTan(x)) == 1/Sqrt(1+x^2)\n" + //
+						"Cos(ArcCot(x)) == 1/Sqrt(1+1/x^2)\n" + //
+						"Cos(ArcSec(x)) == 1/x\n" + //
+						"Cos(ArcCsc(x)) == Sqrt(1-1/x^2)\n" + //
+						//
+						"Tan(ArcSin(x)) == x/Sqrt(1-x^2)\n" + //
+						"Tan(ArcCos(x)) == Sqrt(1-x^2)/x\n" + //
+						"Tan(ArcTan(x)) == x\n" + //
+						"Tan(ArcCot(x)) == 1/x\n" + //
+						"Tan(ArcSec(x)) == Sqrt(1-1/x^2)*x\n" + //
+						"Tan(ArcCsc(x)) == 1/(Sqrt(1-1/x^2)*x)\n" + //
+						//
+						"Cot(ArcSin(x)) == Sqrt(1-x^2)/x\n" + //
+						"Cot(ArcCos(x)) == x/Sqrt(1-x^2)\n" + //
+						"Cot(ArcTan(x)) == 1/x\n" + //
+						"Cot(ArcCot(x)) == x\n" + //
+						"Cot(ArcSec(x)) == 1/(Sqrt(1-1/x^2)*x)\n" + //
+						"Cot(ArcCsc(x)) == Sqrt(1-1/x^2)*x\n" + //
+						//
+						"Sec(ArcSin(x)) == 1/Sqrt(1-x^2)\n" + //
+						"Sec(ArcCos(x)) == 1/x\n" + //
+						"Sec(ArcTan(x)) == Sqrt(1+x^2)\n" + //
+						"Sec(ArcCot(x)) == Sqrt(1+1/x^2)\n" + //
+						"Sec(ArcSec(x)) == x\n" + //
+						"Sec(ArcCsc(x)) == 1/Sqrt(1-1/x^2)\n" + //
+						//
+						"Csc(ArcSin(x)) == 1/x\n" + //
+						"Csc(ArcCos(x)) == 1/Sqrt(1-x^2)\n" + //
+						"Csc(ArcTan(x)) == Sqrt(1+x^2)/x\n" + //
+						"Csc(ArcCot(x)) == Sqrt(1+1/x^2)*x\n" + //
+						"Csc(ArcSec(x)) == 1/Sqrt(1-1/x^2)\n" + //
+						"Csc(ArcCsc(x)) == x\n" + //
+						"");
 		check("ToString(InputForm(a+\"b\"))", //
-				"a+\"b\"");
+				"\"b\"+a");
 		check("ToString(InputForm(d/2+f(x)))", //
 				"d/2+f(x)");
 		check("ToString(FullForm(d/2))", //
@@ -11846,6 +11944,25 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTrigToExp() {
+		check("Map(# == TrigToExp(#)&," //
+				+ "{ArcSinh(x), ArcCosh(x), ArcTanh(x)," //
+				+ "ArcCoth(x), ArcSech(x), ArcCsch(x)}) // TableForm", //
+				"ArcSinh(x)==Log(x+Sqrt(1+x^2))\n" + //
+						"ArcCosh(x)==Log(x+Sqrt(-1+x)*Sqrt(1+x))\n" + //
+						"ArcTanh(x)==-Log(1-x)/2+Log(1+x)/2\n" + //
+						"ArcCoth(x)==-Log(1-1/x)/2+Log(1+1/x)/2\n" + //
+						"ArcSech(x)==Log(Sqrt(-1+1/x)*Sqrt(1+1/x)+1/x)\n" + //
+						"ArcCsch(x)==Log(Sqrt(1+1/x^2)+1/x)\n");
+		check("Map(# == TrigToExp(#)&," //
+				+ "{ArcSin(x), ArcCos(x), ArcTan(x)," //
+				+ "ArcCot(x), ArcSec(x), ArcCsc(x)}) // TableForm", //
+				"ArcSin(x)==-I*Log(I*x+Sqrt(1-x^2))\n" + //
+						"ArcCos(x)==Pi/2+I*Log(I*x+Sqrt(1-x^2))\n" + //
+						"ArcTan(x)==I*1/2*Log(1-I*x)-I*1/2*Log(1+I*x)\n" + //
+						"ArcCot(x)==I*1/2*Log(1-I/x)-I*1/2*Log(1+I/x)\n" + //
+						"ArcSec(x)==Pi/2+I*Log(Sqrt(1-1/x^2)+I/x)\n" + //
+						"ArcCsc(x)==-I*Log(Sqrt(1-1/x^2)+I/x)\n" + //
+						"");
 		check("I*y+x", //
 				"x+I*y");
 		check("TrigToExp(ArcTan(x, y))", //

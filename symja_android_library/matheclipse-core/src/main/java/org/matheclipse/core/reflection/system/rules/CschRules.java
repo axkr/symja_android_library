@@ -13,7 +13,7 @@ public interface CschRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 15, 0 };
+  final public static int[] SIZES = { 15, 6 };
 
   final public static IAST RULES = List(
     IInit(Csch, SIZES),
@@ -56,6 +56,24 @@ public interface CschRules {
     // Csch(2*Pi*I)=ComplexInfinity
     ISet(Csch(Times(CC(0L,1L,2L,1L),Pi)),
       CComplexInfinity),
+    // Csch(ArcSinh(x_)):=1/x
+    ISetDelayed(Csch(ArcSinh(x_)),
+      Power(x,-1)),
+    // Csch(ArcCosh(x_)):=1/(Sqrt((-1+x)/(1+x))*(1+x))
+    ISetDelayed(Csch(ArcCosh(x_)),
+      Power(Times(Sqrt(Times(Plus(CN1,x),Power(Plus(C1,x),-1))),Plus(C1,x)),-1)),
+    // Csch(ArcTanh(x_)):=Sqrt(1-x^2)/x
+    ISetDelayed(Csch(ArcTanh(x_)),
+      Times(Power(x,-1),Sqrt(Plus(C1,Negate(Sqr(x)))))),
+    // Csch(ArcCoth(x_)):=Sqrt(1-1/x^2)*x
+    ISetDelayed(Csch(ArcCoth(x_)),
+      Times(Sqrt(Plus(C1,Negate(Power(x,-2)))),x)),
+    // Csch(ArcSech(x_)):=x/(Sqrt((1-x)/(1+x))*(1+x))
+    ISetDelayed(Csch(ArcSech(x_)),
+      Times(x,Power(Times(Sqrt(Times(Plus(C1,Negate(x)),Power(Plus(C1,x),-1))),Plus(C1,x)),-1))),
+    // Csch(ArcCsch(x_)):=x
+    ISetDelayed(Csch(ArcCsch(x_)),
+      x),
     // Csch(Infinity)=0
     ISet(Csch(oo),
       C0),

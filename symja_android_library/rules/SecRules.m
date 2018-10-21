@@ -40,6 +40,13 @@
  Sec(23/12*Pi)=Sqrt(6)-Sqrt(2),
  Sec(2*Pi)=1,
  
+ Sec(ArcSin(x_)):=1/Sqrt(1-x^2),
+ Sec(ArcCos(x_)):=1/x,
+ Sec(ArcTan(x_)):=Sqrt(1+x^2),
+ Sec(ArcCot(x_)):=Sqrt(1+x^(-2)),
+ Sec(ArcSec(x_)):=x,
+ Sec(ArcCsc(x_)):=1/Sqrt(1-x^(-2)),
+ 
  Sec(I*Infinity)=0,
  Sec(-I*Infinity)=0,
  Sec(ComplexInfinity)=Indeterminate,

@@ -13,6 +13,13 @@
  Csch(11/6*Pi*I)=2*I, 
  Csch(2*Pi*I)=ComplexInfinity,  
  
+ Csch(ArcSinh(x_)):=1/x,
+ Csch(ArcCosh(x_)):=1/(Sqrt((-1 + x)/(1 + x))*(1 + x)),
+ Csch(ArcTanh(x_)):=Sqrt(1 - x^2)/x,
+ Csch(ArcCoth(x_)):=Sqrt(1 - x^(-2))*x,
+ Csch(ArcSech(x_)):=x/(Sqrt((1 - x)/(1 + x))*(1 + x)),
+ Csch(ArcCsch(x_)):=x,
+ 
  Csch(Infinity)=0,
  Csch(ComplexInfinity)=Indeterminate 
 }

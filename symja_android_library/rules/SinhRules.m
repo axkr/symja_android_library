@@ -17,6 +17,13 @@
  Sinh(11/6*Pi*I)=-1/2*I,
  Sinh(2*Pi*I)=0,
  
+ Sinh(ArcSinh(x_)):=x,
+ Sinh(ArcCosh(x_)):=Sqrt((x-1)/(x+1))*(1 + x),
+ Sinh(ArcTanh(x_)):=x/Sqrt(1-x^2),
+ Sinh(ArcCoth(x_)):=1/(Sqrt(1-x^(-2))*x),
+ Sinh(ArcSech(x_)):=(Sqrt((1 - x)/(1 + x))*(1 + x))/x,
+ Sinh(ArcCsch(x_)):=1/x,
+ 
  Sinh(Infinity)=Infinity,
  Sinh(ComplexInfinity)=Indeterminate
 }

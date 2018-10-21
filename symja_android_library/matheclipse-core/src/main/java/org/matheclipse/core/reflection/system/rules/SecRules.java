@@ -13,7 +13,7 @@ public interface SecRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 43, 1 };
+  final public static int[] SIZES = { 43, 7 };
 
   final public static IAST RULES = List(
     IInit(Sec, SIZES),
@@ -137,6 +137,24 @@ public interface SecRules {
     // Sec(2*Pi)=1
     ISet(Sec(Times(C2,Pi)),
       C1),
+    // Sec(ArcSin(x_)):=1/Sqrt(1-x^2)
+    ISetDelayed(Sec(ArcSin(x_)),
+      Power(Plus(C1,Negate(Sqr(x))),CN1D2)),
+    // Sec(ArcCos(x_)):=1/x
+    ISetDelayed(Sec(ArcCos(x_)),
+      Power(x,-1)),
+    // Sec(ArcTan(x_)):=Sqrt(1+x^2)
+    ISetDelayed(Sec(ArcTan(x_)),
+      Sqrt(Plus(C1,Sqr(x)))),
+    // Sec(ArcCot(x_)):=Sqrt(1+1/x^2)
+    ISetDelayed(Sec(ArcCot(x_)),
+      Sqrt(Plus(C1,Power(x,-2)))),
+    // Sec(ArcSec(x_)):=x
+    ISetDelayed(Sec(ArcSec(x_)),
+      x),
+    // Sec(ArcCsc(x_)):=1/Sqrt(1-1/x^2)
+    ISetDelayed(Sec(ArcCsc(x_)),
+      Power(Plus(C1,Negate(Power(x,-2))),CN1D2)),
     // Sec(I*Infinity)=0
     ISet(Sec(DirectedInfinity(CI)),
       C0),
