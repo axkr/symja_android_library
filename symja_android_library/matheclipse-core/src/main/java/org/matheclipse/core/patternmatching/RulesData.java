@@ -398,10 +398,6 @@ public class RulesData implements Serializable {
 										" COMPLEX: " + pmEvaluator.getLHS().toString() + " := " + rhs.toString());
 							}
 						}
-//						if (pmEvaluator.getLHSPriority() == 1706 && pmEvaluator.getLHS().isAST(F.Integrate)) {
-//							// don't use 1706 Rule from Rubi
-//							continue;
-//						}
 						// if (pmEvaluator.getLHSPriority() == 6686) {
 						// System.out.println("Debug from this line");
 						// }
