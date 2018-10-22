@@ -395,7 +395,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ArcTan(-1/2, -1/2)", "-3/4*Pi");
 		check("ArcTan(0, -1)", "-Pi/2");
 		check("ArcTan(1/2, -1/2)", "-Pi/4");
-		
+
 		check("ArcTan(Tan(-1/2))", //
 				"-1/2");
 		check("ArcTan(Tan(-1))", //
@@ -4812,13 +4812,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testImportExport() {
 		if (Config.FILESYSTEM_ENABLED) {
-			check("Export(\"c:\\\\temp\\\\out.dat\", {{5.7, 4.3}, {-1.2, 7.8}, {a, f(x)}}, \"Table\")",
+			check("Export(\"c:\\\\temp\\\\out.wxf\", {{5.7, 4.3}, {-1.2, 7.8}, {a, f(x)}}, \"WXF\")", //
+					"c:\\temp\\out.wxf");
+			check("Import(\"c:\\\\temp\\\\out.wxf\", \"WXF\")", //
+					"{{5.7,4.3},{-1.2,7.8},{a,f(x)}}");
+
+			check("Export(\"c:\\\\temp\\\\out.dat\", {{5.7, 4.3}, {-1.2, 7.8}, {a, f(x)}}, \"Table\")", //
 					"c:\\temp\\out.dat");
-			check("Import(\"c:\\\\temp\\\\out.dat\", \"Table\")", "{{5.7,4.3},{-1.2,7.8},{a,f(x)}}");
-			check("Export(\"c:\\\\temp\\\\data.txt\", Integrate(sin(x)^10,x), \"Data\")", "c:\\temp\\data.txt");
-			check("Import(\"c:\\\\temp\\\\data.txt\", \"String\")",
-					"9/10*(7/8*(5/6*(3/4*(x/2-1/2*Cos(x)*Sin(x))-1/4*Cos(x)*Sin(x)^3)-1/6*Cos(x)*Sin(x)^\n"
-							+ "5)-1/8*Cos(x)*Sin(x)^7)-1/10*Cos(x)*Sin(x)^9");
+			check("Import(\"c:\\\\temp\\\\out.dat\", \"Table\")", //
+					"{{5.7,4.3},{-1.2,7.8},{a,f(x)}}");
+			check("Export(\"c:\\\\temp\\\\data.txt\", Integrate(sin(x)^10,x), \"Data\")", //
+					"c:\\temp\\data.txt");
+			check("Import(\"c:\\\\temp\\\\data.txt\", \"String\")", //
+					"63/256*x-63/256*Cos(x)*Sin(x)-21/128*Cos(x)*Sin(x)^3-21/160*Cos(x)*Sin(x)^5-9/80*Cos(x)*Sin(x)^\n"//
+							+ "7-1/10*Cos(x)*Sin(x)^9");
 		}
 	}
 

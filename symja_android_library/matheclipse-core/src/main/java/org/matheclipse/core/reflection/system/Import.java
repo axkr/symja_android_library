@@ -16,6 +16,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -80,6 +81,10 @@ public class Import extends AbstractEvaluator {
 				} else if (format.equals("String")) {
 					File file = new File(fileName);
 					return of(file, engine);
+				} else if (format.equals("WXF")) {
+					File file = new File(fileName);
+					byte[] byteArray = com.google.common.io.Files.toByteArray(file);
+					return WL.deserialize(byteArray);
 				}
 
 			} catch (IOException ioe) {

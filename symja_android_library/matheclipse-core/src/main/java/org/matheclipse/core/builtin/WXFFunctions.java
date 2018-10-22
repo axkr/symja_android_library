@@ -40,8 +40,8 @@ public class WXFFunctions {
 				if (arg1.isList()) {
 					try {
 						byte[] bArray = WL.toByteArray((IAST) arg1);
-						IExpr temp= WL.deserialize(bArray);
-						System.out.println(temp);
+						IExpr temp = WL.deserialize(bArray);
+						// System.out.println(temp);
 						return temp;
 					} catch (ClassCastException cce) {
 						if (Config.SHOW_STACKTRACE) {
