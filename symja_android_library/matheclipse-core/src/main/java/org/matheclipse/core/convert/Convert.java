@@ -327,16 +327,16 @@ public class Convert {
 	}
 	
 	/**
-	 * Converts a RealMatrix to the list expression representation.
+	 * Converts a RealVector to the list expression representation.
 	 * 
-	 * @param matrix
+	 * @param vector
 	 * @return <code>F.NIL</code> if no conversion was possible
 	 */
-	public static IASTMutable realVectors2List(final RealVector matrix) {
-		if (matrix == null) {
+	public static IASTMutable realVectors2List(final RealVector vector) {
+		if (vector == null) {
 			return F.NIL;
 		}
-		return new ASTRealVector(matrix, false);
+		return new ASTRealVector(vector, false);
 	}
 
 	/**

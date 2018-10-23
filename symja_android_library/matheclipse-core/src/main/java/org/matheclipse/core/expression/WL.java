@@ -8,6 +8,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Locale;
 
+import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
@@ -113,18 +115,10 @@ public class WL {
 				}
 				return F.ZZ(new BigInteger(bigIntegerString.toString()));
 			case WXF_CONSTANTS.Real64:
-				long l = 0;
-				position += 8;
-				int pos2 = position - 1;
-				l = (l | (array[pos2--] & 0xFF)) << 8;
-				l = (l | (array[pos2--] & 0xFF)) << 8;
-				l = (l | (array[pos2--] & 0xFF)) << 8;
-				l = (l | (array[pos2--] & 0xFF)) << 8;
-				l = (l | (array[pos2--] & 0xFF)) << 8;
-				l = (l | (array[pos2--] & 0xFF)) << 8;
-				l = (l | (array[pos2--] & 0xFF)) << 8;
-				l = (l | (array[pos2--] & 0xFF));
-				return F.num(Double.longBitsToDouble(l));
+				double real64 = parseDouble();
+				return F.num(real64);
+			case WXF_CONSTANTS.PackedArray:
+				return readPackedArray();
 			case WXF_CONSTANTS.Symbol:
 				return readSymbol();
 			case WXF_CONSTANTS.Function:
@@ -145,6 +139,52 @@ public class WL {
 				return F.stringx(str);
 			}
 			return F.NIL;
+		}
+
+		private IExpr readPackedArray() {
+			byte arrayType = array[position++];
+			switch (arrayType) {
+			case ARRAY_TYPES.Real64:
+				int rank = parseLength();
+				int[] dimensions = new int[rank];
+				for (int i = 0; i < rank; i++) {
+					dimensions[i] = parseLength();
+				}
+				if (rank == 1) {
+					double[] vector = new double[dimensions[0]];
+					for (int i = 0; i < vector.length; i++) {
+						double d = parseDouble();
+						vector[i] = d;
+					}
+					return new ASTRealVector(vector, false);
+				} else if (rank == 2) {
+					double[][] matrix = new double[dimensions[0]][dimensions[1]];
+					for (int i = 0; i < dimensions[0]; i++) {
+						for (int j = 0; j < dimensions[1]; j++) {
+							double d = parseDouble();
+							matrix[i][j] = d;
+						}
+					}
+					return new ASTRealMatrix(matrix, false);
+				}
+				break;
+			}
+			return F.NIL;
+		}
+
+		private double parseDouble() {
+			long l = 0;
+			position += 8;
+			int pos2 = position - 1;
+			l = (l | (array[pos2--] & 0xFF)) << 8;
+			l = (l | (array[pos2--] & 0xFF)) << 8;
+			l = (l | (array[pos2--] & 0xFF)) << 8;
+			l = (l | (array[pos2--] & 0xFF)) << 8;
+			l = (l | (array[pos2--] & 0xFF)) << 8;
+			l = (l | (array[pos2--] & 0xFF)) << 8;
+			l = (l | (array[pos2--] & 0xFF)) << 8;
+			l = (l | (array[pos2--] & 0xFF));
+			return Double.longBitsToDouble(l);
 		}
 
 		private IExpr readSymbol() {
@@ -229,6 +269,7 @@ public class WL {
 				writeAST2(F.Rational, ((IRational) arg1).numerator(), ((IRational) arg1).denominator());
 				return;
 			case IExpr.DOUBLEID:
+				stream.write(WL.WXF_CONSTANTS.Real64);
 				writeDouble(((INum) arg1).doubleValue());
 				return;
 			case IExpr.DOUBLECOMPLEXID:
@@ -283,7 +324,7 @@ public class WL {
 							if (condition != null) {
 								writeAST2(F.Pattern, pat.getSymbol(), F.unaryAST1(F.BlankSequence, condition));
 							} else {
-							writeAST2(F.Pattern, pat.getSymbol(), F.headAST0(F.BlankSequence));
+								writeAST2(F.Pattern, pat.getSymbol(), F.headAST0(F.BlankSequence));
 							}
 						}
 					}
@@ -309,6 +350,30 @@ public class WL {
 
 		private void writeAST(IExpr arg1) throws IOException {
 			IAST ast = (IAST) arg1;
+			if (ast instanceof ASTRealVector) {
+				RealVector vector = ((ASTRealVector) ast).getRealVector();
+				stream.write(WL.WXF_CONSTANTS.PackedArray);
+				stream.write(ARRAY_TYPES.Real64);
+				stream.write(0x01);
+				stream.write(varintBytes(vector.getDimension()));
+				for (int i = 0; i < vector.getDimension(); i++) {
+					writeDouble(vector.getEntry(i));
+				}
+				return;
+			} else if (ast instanceof ASTRealMatrix) {
+				RealMatrix matrix = ((ASTRealMatrix) ast).getRealMatrix();
+				stream.write(WL.WXF_CONSTANTS.PackedArray);
+				stream.write(ARRAY_TYPES.Real64);
+				stream.write(0x02);
+				stream.write(varintBytes(matrix.getRowDimension()));
+				stream.write(varintBytes(matrix.getColumnDimension()));
+				for (int i = 0; i < matrix.getRowDimension(); i++) {
+					for (int j = 0; j < matrix.getColumnDimension(); j++) {
+						writeDouble(matrix.getEntry(i, j));
+					}
+				}
+				return;
+			}
 			stream.write(WL.WXF_CONSTANTS.Function);
 			stream.write(varintBytes(ast.argSize()));
 			for (int i = 0; i < ast.size(); i++) {
@@ -339,7 +404,6 @@ public class WL {
 
 		private void writeDouble(double d) {
 			long l = Double.doubleToRawLongBits(d);
-			stream.write(WL.WXF_CONSTANTS.Real64);
 			stream.write((byte) (l & 0x00000000000000ff));
 			stream.write((byte) (l >> 8 & 0x00000000000000ff));
 			stream.write((byte) (l >> 16 & 0x00000000000000ff));
@@ -349,6 +413,18 @@ public class WL {
 			stream.write((byte) (l >> 48 & 0x00000000000000ff));
 			stream.write((byte) (l >> 56 & 0x00000000000000ff));
 		}
+		
+//		private void writePackedDouble(double d) {
+//			long l = Double.doubleToRawLongBits(d);
+//			stream.write((byte) (l & 0x00000000000000ff));
+//			stream.write((byte) (l >> 8 & 0x00000000000000ff));
+//			stream.write((byte) (l >> 16 & 0x00000000000000ff));
+//			stream.write((byte) (l >> 24 & 0x00000000000000ff));
+//			stream.write((byte) (l >> 32 & 0x00000000000000ff));
+//			stream.write((byte) (l >> 40 & 0x00000000000000ff));
+//			stream.write((byte) (l >> 48 & 0x00000000000000ff));
+//			stream.write((byte) (l >> 56 & 0x00000000000000ff));
+//		}
 
 		private void writeInteger(IExpr arg1) throws IOException {
 			IInteger s = (IInteger) arg1;
