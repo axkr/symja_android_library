@@ -7,7 +7,7 @@ public class Characters {
 
 	public static Map<String, String> NamedCharactersMap = new HashMap<String, String>(1409);
 	
-	public static Map<String, String> CharacterNamesMap = new HashMap<String, String>(1409);
+	public static Map<String, String> CharacterNamesMap = new HashMap<String, String>();
 	
 	private final static String[] NamedCharacters = { "AAcute", "\u00E1", "ABar", "\u0101", "ACup", "\u0103",
 			"ADoubleDot", "\u00E4", "AE", "\u00E6", "AGrave", "\u00E0", "AHat", "\u00E2", "Aleph", "\u2135",

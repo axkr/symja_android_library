@@ -83,7 +83,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * Check if the internal rules are already initialized
 	 */
 	public static boolean INITIALIZED = false;
-	public final static Set<ISymbol> INT_RUBI_FUNCTIONS = new HashSet<ISymbol>(64);
+	public final static Set<ISymbol> INT_RUBI_FUNCTIONS = new HashSet<ISymbol>();
 
 	public final static Set<IExpr> DEBUG_EXPR = new HashSet<IExpr>(64);
 
