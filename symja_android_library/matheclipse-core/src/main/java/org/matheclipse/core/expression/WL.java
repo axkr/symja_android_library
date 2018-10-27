@@ -348,6 +348,9 @@ public class WL {
 			case IExpr.QUANTITYID:
 				writeQuantity(arg1);
 				return;
+			case IExpr.SERIESID:
+				writeSeriesData(arg1);
+				return;
 			}
 		}
 
@@ -384,9 +387,17 @@ public class WL {
 			}
 		}
 
-
 		private void writeQuantity(IExpr arg1) throws IOException {
 			IAST ast = (IAST) arg1;
+			stream.write(WL.WXF_CONSTANTS.Function);
+			stream.write(varintBytes(ast.argSize()));
+			for (int i = 0; i < ast.size(); i++) {
+				write(ast.get(i));
+			}
+		}
+		
+		private void writeSeriesData(IExpr arg1) throws IOException {
+			ASTSeriesData ast = (ASTSeriesData) arg1;
 			stream.write(WL.WXF_CONSTANTS.Function);
 			stream.write(varintBytes(ast.argSize()));
 			for (int i = 0; i < ast.size(); i++) {
