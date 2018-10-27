@@ -510,6 +510,11 @@ public class ComplexNum implements IComplexNum {
 	public boolean isZero() {
 		return F.isZero(fComplex.getReal()) && F.isZero(fComplex.getImaginary());
 	}
+	
+	@Override
+	public long leafCountSimplify() {
+		return 5;
+	}
 
 	/**
 	 * Returns a {@code ComplexNum} whose value is {@code this * factor}. Implements preliminary checks for {@code NaN}

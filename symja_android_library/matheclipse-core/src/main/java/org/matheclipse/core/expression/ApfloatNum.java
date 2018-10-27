@@ -301,9 +301,11 @@ public class ApfloatNum implements INum {
 		return l;
 	}
 
-	/**
-	 * @return
-	 */
+	@Override
+	public long leafCountSimplify() {
+		return 2;
+	}
+	
 	public Apfloat log() {
 		return ApfloatMath.log(fApfloat);
 	}

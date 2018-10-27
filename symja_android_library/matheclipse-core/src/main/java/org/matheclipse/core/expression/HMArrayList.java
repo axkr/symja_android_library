@@ -172,7 +172,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	 * @return always true
 	 */
 	@Override
-	public boolean append(IExpr object) {
+	public final boolean append(IExpr object) {
 		hashValue = 0;
 		if (lastIndex == array.length) {
 			growAtEnd(1);
@@ -194,7 +194,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	 *             when {@code location < 0 || > size()}
 	 */
 	@Override
-	public void append(int location, IExpr object) {
+	public final void append(int location, IExpr object) {
 		hashValue = 0;
 		int size = lastIndex - firstIndex;
 		if (0 < location && location < size) {
@@ -509,7 +509,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	}
 
 	/** {@inheritDoc} */
-	public int argSize() {
+	public final int argSize() {
 		return lastIndex - firstIndex - 1;
 	}
 
@@ -708,13 +708,14 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	}
 
 	@Override
-	public IExpr get(int location) {
-		int index;
-		if ((index = firstIndex + location) < lastIndex) {
-			return array[index];
-		}
-		throw new IndexOutOfBoundsException(
-				"Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(lastIndex - firstIndex));
+	public final IExpr get(int location) {
+		return array[firstIndex + location];
+		// int index;
+		// if ((index = firstIndex + location) < lastIndex) {
+		// return array[index];
+		// }
+		// throw new IndexOutOfBoundsException(
+		// "Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(lastIndex - firstIndex));
 	}
 
 	private void growAtEnd(int required) {
@@ -1009,20 +1010,20 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	 *             when {@code location < 0 || >= size()}
 	 */
 	@Override
-	public IExpr set(int location, IExpr object) {
+	public final IExpr set(int location, IExpr object) {
 		hashValue = 0;
-		if (0 <= location && location < (lastIndex - firstIndex)) {
-			IExpr result = array[firstIndex + location];
-			array[firstIndex + location] = object;
-			return result;
-		}
-		throw new IndexOutOfBoundsException(
-				"Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(lastIndex - firstIndex));
+		// if (0 <= location && location < (lastIndex - firstIndex)) {
+		IExpr result = array[firstIndex + location];
+		array[firstIndex + location] = object;
+		return result;
+		// }
+		// throw new IndexOutOfBoundsException(
+		// "Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(lastIndex - firstIndex));
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public int size() {
+	public final int size() {
 		return lastIndex - firstIndex;
 	}
 

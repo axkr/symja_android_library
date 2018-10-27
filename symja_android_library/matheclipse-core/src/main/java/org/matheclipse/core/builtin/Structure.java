@@ -687,46 +687,46 @@ public class Structure {
 		/**
 		 * Calculate the number of leaves in an AST
 		 */
-		public static class SimplifyLeafCountVisitor extends AbstractVisitorLong {
-			int fHeadOffset;
-
-			public SimplifyLeafCountVisitor() {
-				this(1);
-			}
-
-			public SimplifyLeafCountVisitor(int hOffset) {
-				fHeadOffset = hOffset;
-			}
-
-			@Override
-			public long visit(IAST list) {
-				long sum = 0;
-				for (int i = fHeadOffset; i < list.size(); i++) {
-					sum += list.get(i).accept(this);
-				}
-				return sum;
-			}
-
-			@Override
-			public long visit(IComplex element) {
-				return element.leafCountSimplify();
-			}
-
-			@Override
-			public long visit(IComplexNum element) {
-				return 3;
-			}
-
-			@Override
-			public long visit(IFraction element) {
-				return element.leafCountSimplify();
-			}
-
-			@Override
-			public long visit(IInteger element) {
-				return element.leafCountSimplify();
-			}
-		}
+//		public static class SimplifyLeafCountVisitor extends AbstractVisitorLong {
+//			int fHeadOffset;
+//
+//			public SimplifyLeafCountVisitor() {
+//				this(1);
+//			}
+//
+//			public SimplifyLeafCountVisitor(int hOffset) {
+//				fHeadOffset = hOffset;
+//			}
+//
+//			@Override
+//			public long visit(IAST list) {
+//				long sum = 0;
+//				for (int i = fHeadOffset; i < list.size(); i++) {
+//					sum += list.get(i).accept(this);
+//				}
+//				return sum;
+//			}
+//
+//			@Override
+//			public long visit(IComplex element) {
+//				return element.leafCountSimplify();
+//			}
+//
+//			@Override
+//			public long visit(IComplexNum element) {
+//				return 3;
+//			}
+//
+//			@Override
+//			public long visit(IFraction element) {
+//				return element.leafCountSimplify();
+//			}
+//
+//			@Override
+//			public long visit(IInteger element) {
+//				return element.leafCountSimplify();
+//			}
+//		}
 
 		public static class SimplifyLeafCountPatternMapVisitor extends AbstractVisitorLong {
 

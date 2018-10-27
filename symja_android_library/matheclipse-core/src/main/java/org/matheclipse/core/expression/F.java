@@ -5930,6 +5930,10 @@ public class F {
 	public static IAST Factor(final IExpr a0) {
 		return unaryAST1(Factor, a0);
 	}
+	
+	public static IAST FactorTerms(final IExpr a0) {
+		return unaryAST1(FactorTerms, a0);
+	}
 
 	public static IAST Factorial(final IExpr a0) {
 		return unaryAST1(Factorial, a0);

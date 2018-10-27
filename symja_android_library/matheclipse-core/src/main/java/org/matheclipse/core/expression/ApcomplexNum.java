@@ -324,7 +324,12 @@ public class ApcomplexNum implements IComplexNum {
 	public final int hashCode() {
 		return fApcomplex.hashCode();
 	}
-
+	
+	@Override
+	public long leafCountSimplify() {
+		return 5;
+	}
+	
 	/**
 	 * @param that
 	 * @return

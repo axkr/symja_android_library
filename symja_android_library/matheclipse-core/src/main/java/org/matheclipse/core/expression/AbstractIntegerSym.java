@@ -151,13 +151,17 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	}
 
 	/**
-	 * Returns the IInteger for the specified character sequence stated in the specified radix. The characters must all be digits of the
-	 * specified radix, except the first character which may be a plus sign <code>'+'</code> or a minus sign <code>'-'</code> .
+	 * Returns the IInteger for the specified character sequence stated in the specified radix. The characters must all
+	 * be digits of the specified radix, except the first character which may be a plus sign <code>'+'</code> or a minus
+	 * sign <code>'-'</code> .
 	 * 
-	 * @param integerString the character sequence to parse.
-	 * @param radix         the radix to be used while parsing.
+	 * @param integerString
+	 *            the character sequence to parse.
+	 * @param radix
+	 *            the radix to be used while parsing.
 	 * @return the corresponding large integer.
-	 * @throws NumberFormatException if the specified character sequence does not contain a parsable large integer.
+	 * @throws NumberFormatException
+	 *             if the specified character sequence does not contain a parsable large integer.
 	 */
 	public static IInteger valueOf(final String integerString, final int radix) {
 		if (integerString.length() >= 1) {
@@ -305,7 +309,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	/**
 	 * IntegerSym extended greatest common divisor.
 	 * 
-	 * @param that if that is of type IntegerSym calculate the extended GCD otherwise call <code>super#egcd(IExpr)</code>
+	 * @param that
+	 *            if that is of type IntegerSym calculate the extended GCD otherwise call <code>super#egcd(IExpr)</code>
 	 * 
 	 * @return [ gcd(this,S), a, b ] with a*this + b*S = gcd(this,S).
 	 */
@@ -408,7 +413,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	/**
 	 * Get all prime factors of this integer
 	 * 
-	 * @param result add the prime factors to this result list
+	 * @param result
+	 *            add the prime factors to this result list
 	 * @return
 	 */
 	public IAST factorize() {
@@ -628,7 +634,10 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
 	@Override
 	public long leafCountSimplify() {
-		return integerLength(F.C10);
+		if (isZero()) {
+			return 1;
+		}
+		return integerLength(F.C10) + (isPositive() ? 0 : 1);
 	}
 
 	/**
@@ -673,8 +682,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	public abstract IInteger negate();
 
 	/**
-	 * Split this integer into the nth-root (with prime factors less equal 1021) and the &quot;rest-factor&quot;, so that
-	 * <code>this== (nth-root ^ n) + rest</code>
+	 * Split this integer into the nth-root (with prime factors less equal 1021) and the &quot;rest-factor&quot;, so
+	 * that <code>this== (nth-root ^ n) + rest</code>
 	 * 
 	 * @return <code>{nth-root, rest}</code>
 	 */
