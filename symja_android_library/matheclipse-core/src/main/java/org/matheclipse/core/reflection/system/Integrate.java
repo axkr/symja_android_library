@@ -273,9 +273,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 				}
 			}
 
-			final IExpr header = arg1AST.head();
-			if (arg1AST.size() >= 3 && arg1AST.isFree(F.Integrate)) {
-				if (header == F.Times || header == F.Power) {
+			if (arg1AST.size() >= 3 && arg1AST.isFree(F.Integrate)&&arg1AST.isPlusTimesPower()) {
 					if (!arg1AST.isEvalFlagOn(IAST.IS_DECOMPOSED_PARTIAL_FRACTION) && ast.arg2().isSymbol()) {
 						IExpr[] parts = Algebra.fractionalParts(arg1, true);
 						if (parts != null) {
@@ -284,7 +282,6 @@ public class Integrate extends AbstractFunctionEvaluator {
 									new PartialFractionIntegrateGenerator(x), parts, x);
 						}
 					}
-				}
 			}
 		}
 		return F.NIL;
