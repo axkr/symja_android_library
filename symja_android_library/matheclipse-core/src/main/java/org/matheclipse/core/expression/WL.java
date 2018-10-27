@@ -345,6 +345,9 @@ public class WL {
 					}
 				}
 				return;
+			case IExpr.QUANTITYID:
+				writeQuantity(arg1);
+				return;
 			}
 		}
 
@@ -381,6 +384,16 @@ public class WL {
 			}
 		}
 
+
+		private void writeQuantity(IExpr arg1) throws IOException {
+			IAST ast = (IAST) arg1;
+			stream.write(WL.WXF_CONSTANTS.Function);
+			stream.write(varintBytes(ast.argSize()));
+			for (int i = 0; i < ast.size(); i++) {
+				write(ast.get(i));
+			}
+		}
+		
 		private void writeAST0(IExpr head) throws IOException {
 			stream.write(WL.WXF_CONSTANTS.Function);
 			stream.write(0);
@@ -413,18 +426,18 @@ public class WL {
 			stream.write((byte) (l >> 48 & 0x00000000000000ff));
 			stream.write((byte) (l >> 56 & 0x00000000000000ff));
 		}
-		
-//		private void writePackedDouble(double d) {
-//			long l = Double.doubleToRawLongBits(d);
-//			stream.write((byte) (l & 0x00000000000000ff));
-//			stream.write((byte) (l >> 8 & 0x00000000000000ff));
-//			stream.write((byte) (l >> 16 & 0x00000000000000ff));
-//			stream.write((byte) (l >> 24 & 0x00000000000000ff));
-//			stream.write((byte) (l >> 32 & 0x00000000000000ff));
-//			stream.write((byte) (l >> 40 & 0x00000000000000ff));
-//			stream.write((byte) (l >> 48 & 0x00000000000000ff));
-//			stream.write((byte) (l >> 56 & 0x00000000000000ff));
-//		}
+
+		// private void writePackedDouble(double d) {
+		// long l = Double.doubleToRawLongBits(d);
+		// stream.write((byte) (l & 0x00000000000000ff));
+		// stream.write((byte) (l >> 8 & 0x00000000000000ff));
+		// stream.write((byte) (l >> 16 & 0x00000000000000ff));
+		// stream.write((byte) (l >> 24 & 0x00000000000000ff));
+		// stream.write((byte) (l >> 32 & 0x00000000000000ff));
+		// stream.write((byte) (l >> 40 & 0x00000000000000ff));
+		// stream.write((byte) (l >> 48 & 0x00000000000000ff));
+		// stream.write((byte) (l >> 56 & 0x00000000000000ff));
+		// }
 
 		private void writeInteger(IExpr arg1) throws IOException {
 			IInteger s = (IInteger) arg1;

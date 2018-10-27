@@ -51,6 +51,9 @@ public class WXFTestCase extends AbstractTestCase {
 	}
 
 	public void testBinarySerialize() {
+		check("BinarySerialize(Quantity(12, \"Hours\"))", //
+				"{56,58,102,2,115,8,81,117,97,110,116,105,116,121,67,12,83,5,72,111,117,114,115}");
+
 		double[] d0 = new double[] { 1.1, 2.34, 4.11 };
 		double[] d1 = new double[] { 3.1415, 100000.1234567, -100000.4711 };
 		ASTRealMatrix m = new ASTRealMatrix(new double[][] { d0, d1 }, false);
@@ -142,6 +145,11 @@ public class WXFTestCase extends AbstractTestCase {
 	}
 
 	public void testBinaryDeserialize() {
+		// Quantity(12, "Hours")
+		check("BinaryDeserialize({56,58,102,2,115,8,81,117,97,110,116,105,116,121,67,12,83,5,72,111,117,114,115})", //
+				//
+				"12[Hours]");
+
 		check("BinaryDeserialize({56,58,193,35,2,2,3,154,153,153,153,153,153,241,63,184,30,133,235,81,184,2,64,"
 				+ "113,61,10,215,163,112,16,64,111,18,131,192,202,33,9,64,144,187,173,249,1,106,248,"
 				+ "64,82,39,160,137,7,106,248,192})", //
