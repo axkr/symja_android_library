@@ -119,7 +119,9 @@ public class VariablesSet {
 					fCollection.add(list);
 				}
 			} else {
-				fCollection.add(list);
+				if (!list.isNumericFunction()) {
+					fCollection.add(list);
+				}
 			}
 			return true;
 		}
@@ -150,9 +152,12 @@ public class VariablesSet {
 				fCollection.add(((ASTSeriesData) list).getX());
 				return true;
 			}
-			if (list.head().isVariable() && list.forAll(x -> x.isInteger())) {
-				fCollection.add(list);
-				return true;
+			IExpr head = list.head();
+			if (head.isVariable() && list.forAll(x -> x.isInteger())) {
+				if (!list.isNumericFunction()) {
+					fCollection.add(list);
+					return true;
+				}
 			}
 			return super.visit(list);
 		}
