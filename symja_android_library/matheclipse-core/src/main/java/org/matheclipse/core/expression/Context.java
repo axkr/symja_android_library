@@ -25,7 +25,9 @@ public class Context implements Serializable {
 
 	public final static Context SYSTEM = new Context("System`", PREDEFINED_SYMBOLS_MAP);
 
-	public final static Context INTEGRATE = new Context("Integrate`");
+	// public final static Context INTEGRATE = new Context("Integrate`");
+
+	public final static Context RUBI = new Context("Rubi`");
 
 	private String contextName;
 

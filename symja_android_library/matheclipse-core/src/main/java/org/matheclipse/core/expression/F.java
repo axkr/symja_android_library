@@ -3486,7 +3486,7 @@ public class F {
 					final EvalEngine engine = EvalEngine.get();
 					ContextPath path = engine.getContextPath();
 					try {
-						engine.getContextPath().add(org.matheclipse.core.expression.Context.INTEGRATE);
+						engine.getContextPath().add(org.matheclipse.core.expression.Context.RUBI);
 						org.matheclipse.core.reflection.system.Integrate.getUtilityFunctionsRuleAST();
 						// if (ruleList != null) {
 						// engine.addRules(ruleList);
@@ -4079,7 +4079,7 @@ public class F {
 	public static IPatternSequence $ps(final ISymbol symbol) {
 		return PatternSequence.valueOf(symbol, false);
 	}
-	
+
 	/**
 	 * 
 	 * @param symbol
@@ -4288,58 +4288,14 @@ public class F {
 				name = symbolName.toLowerCase(Locale.ENGLISH);
 			}
 		}
-		ISymbol symbol = org.matheclipse.core.expression.Context.PREDEFINED_SYMBOLS_MAP.get(name);
+		ISymbol symbol = org.matheclipse.core.expression.Context.RUBI.get(name);
 		if (symbol != null) {
 			return symbol;
 		}
-		if (Config.SERVER_MODE) {
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-				if (SYMBOL_OBSERVER.createPredefinedSymbol(name)) {
-					// second try, because the symbol may now be added to
-					// fSymbolMap
-					ISymbol secondTry = org.matheclipse.core.expression.Context.PREDEFINED_SYMBOLS_MAP.get(name);
-					if (secondTry != null) {
-						return secondTry;
-					}
-				}
-			} else {
-				if (Character.isUpperCase(name.charAt(0))) {
-					if (SYMBOL_OBSERVER.createPredefinedSymbol(name)) {
-						// second try, because the symbol may now be added to
-						// fSymbolMap
-						ISymbol secondTry = org.matheclipse.core.expression.Context.PREDEFINED_SYMBOLS_MAP.get(name);
-						if (secondTry != null) {
-							return secondTry;
-						}
-					}
-				}
-			}
-			// symbol = new BuiltInSymbol(name);
-			// symbol = symbol(name, EvalEngine.get());
-			BuiltInDummy sym = new BuiltInDummy(name);
-			sym.setEvaluator(evaluator);
-			// engine.putUserVariable(name, symbol);
-			org.matheclipse.core.expression.Context.PREDEFINED_SYMBOLS_MAP.put(name, sym);
-			if (name.charAt(0) == '$') {
-				SYMBOL_OBSERVER.createUserSymbol(sym);
-			}
-			return sym;
-		} else {
-			// symbol = new BuiltInSymbol(name);
-			// symbol = symbol(name);
-			BuiltInDummy sym = new BuiltInDummy(name);
-			sym.setEvaluator(evaluator);
-			org.matheclipse.core.expression.Context.PREDEFINED_SYMBOLS_MAP.put(name, sym);
-			// if (symbol.isBuiltInSymbol()) {
-			// if (!setEval) {
-			// ((IBuiltInSymbol) symbol).setEvaluator(BuiltInSymbol.DUMMY_EVALUATOR);
-			// } else {
-			// ((IBuiltInSymbol) symbol).getEvaluator();
-			// }
-			// }
-			return sym;
-		}
-
+		BuiltInRubi bSymbol = new BuiltInRubi(name);
+		bSymbol.setEvaluator(evaluator);
+		org.matheclipse.core.expression.Context.RUBI.put(name, bSymbol);
+		return bSymbol;
 	}
 
 	/**
@@ -5930,7 +5886,7 @@ public class F {
 	public static IAST Factor(final IExpr a0) {
 		return unaryAST1(Factor, a0);
 	}
-	
+
 	public static IAST FactorTerms(final IExpr a0) {
 		return unaryAST1(FactorTerms, a0);
 	}

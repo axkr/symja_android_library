@@ -46,7 +46,8 @@ import edu.jas.poly.Monomial;
  * 
  * <blockquote>
  * <p>
- * integrates <code>f</code> with respect to <code>x</code>. The result does not contain the additive integration constant.
+ * integrates <code>f</code> with respect to <code>x</code>. The result does not contain the additive integration
+ * constant.
  * </p>
  * </blockquote>
  * 
@@ -56,7 +57,8 @@ import edu.jas.poly.Monomial;
  * 
  * <blockquote>
  * <p>
- * computes the definite integral of <code>f</code> with respect to <code>x</code> from <code>a</code> to <code>b</code>.
+ * computes the definite integral of <code>f</code> with respect to <code>x</code> from <code>a</code> to
+ * <code>b</code>.
  * </p>
  * </blockquote>
  * <p>
@@ -273,139 +275,142 @@ public class Integrate extends AbstractFunctionEvaluator {
 				}
 			}
 
-			if (arg1AST.size() >= 3 && arg1AST.isFree(F.Integrate)&&arg1AST.isPlusTimesPower()) {
-					if (!arg1AST.isEvalFlagOn(IAST.IS_DECOMPOSED_PARTIAL_FRACTION) && ast.arg2().isSymbol()) {
-						IExpr[] parts = Algebra.fractionalParts(arg1, true);
-						if (parts != null) {
+			if (arg1AST.size() >= 3 && arg1AST.isFree(F.Integrate) && arg1AST.isPlusTimesPower()) {
+				if (!arg1AST.isEvalFlagOn(IAST.IS_DECOMPOSED_PARTIAL_FRACTION) && ast.arg2().isSymbol()) {
+					IExpr[] parts = Algebra.fractionalParts(arg1, true);
+					if (parts != null) {
 
-							return Algebra.partialFractionDecompositionRational(
-									new PartialFractionIntegrateGenerator(x), parts, x);
-						}
+						return Algebra.partialFractionDecompositionRational(new PartialFractionIntegrateGenerator(x),
+								parts, x);
 					}
+				}
 			}
 		}
 		return F.NIL;
 	}
 
-//	private IExpr integrate1ArgumentFunctions(final IExpr head, final IExpr x) {
-//		if (head.equals(F.ArcCos)) {
-//			// x*ArcCos(x) - Sqrt(1-x^2)
-//			return F.Subtract(F.Times(x, F.ArcCos(x)), F.Sqrt(F.Subtract(F.C1, F.Sqr(x))));
-//		}
-//		if (head.equals(F.ArcCosh)) {
-//			// x*ArcCosh(x) - Sqrt(x+1) * Sqrt(x-1)
-//			return F.Subtract(F.Times(x, F.ArcCosh(x)), F.Times(F.Sqrt(F.Plus(x, F.C1)), F.Sqrt(F.Plus(x, F.CN1))));
-//		}
-//		if (head.equals(F.ArcCot)) {
-//			// x*ArcCot(x) + (1/2 * Log(1+x^2))
-//			return F.Plus(F.Times(x, F.ArcCot(x)), F.Times(F.C1D2, F.Log(F.Plus(F.C1, F.Sqr(x)))));
-//		}
-//		if (head.equals(F.ArcCoth)) {
-//			// x*ArcCoth(x) - (1/2 * Log(1-x^2))
-//			return F.Plus(F.Times(x, F.ArcCoth(x)), F.Times(F.C1D2, F.Log(F.Subtract(F.C1, F.Sqr(x)))));
-//		}
-//		if (head.equals(F.ArcCsc)) {
-//			// x*ArcCsc(x) + (Sqrt(1 - x^(-2))*x*Log(x + Sqrt(-1 + x^2))) /
-//			// Sqrt(-1 + x^2)
-//			return Plus(Times(x, F.ArcCsc(x)), Times(F.Sqrt(Plus(C1, Negate(Power(x, F.CN2)))), x,
-//					Log(Plus(x, F.Sqrt(Plus(CN1, Power(x, C2))))), Power(F.Sqrt(Plus(CN1, Power(x, C2))), CN1)));
-//		}
-//		if (head.equals(F.ArcCsch)) {
-//			// x*(ArcCsch(x) + (Sqrt(1 + x^(-2))*ArcSinh(x))/Sqrt(1 + x^2))
-//			return Times(x, Plus(F.ArcCsch(x),
-//					Times(Sqrt(Plus(C1, Power(x, CN2))), F.ArcSinh(x), Power(Sqrt(Plus(C1, Power(x, C2))), CN1))));
-//		}
-//		if (head.equals(F.ArcSec)) {
-//			// x*ArcSec(x) - (Sqrt(1 - x^(-2))*x*Log(x + Sqrt(-1 +
-//			// x^2)))/Sqrt(-1 + x^2)
-//			return Plus(Times(x, F.ArcSec(x)), Times(CN1, Sqrt(Plus(C1, Times(CN1, Power(x, CN2)))), x,
-//					Log(Plus(x, Sqrt(Plus(CN1, Power(x, C2))))), Power(Sqrt(Plus(CN1, Power(x, C2))), CN1)));
-//		}
-//		if (head.equals(F.ArcSech)) {
-//			// x*ArcSech(x) - (2*Sqrt((1 - x)/(1 + x))*Sqrt(1 -
-//			// x^2)*ArcSin(Sqrt(1 + x)/Sqrt(2)))/(-1 + x)
-//			return Plus(Times(x, F.ArcSech(x)),
-//					Times(CN1, C2, Sqrt(Times(Plus(C1, Times(CN1, x)), Power(Plus(C1, x), CN1))),
-//							Sqrt(Plus(C1, Times(CN1, Power(x, C2)))),
-//							F.ArcSin(Times(Sqrt(Plus(C1, x)), Power(Sqrt(C2), CN1))), Power(Plus(CN1, x), CN1)));
-//		}
-//		if (head.equals(F.ArcSin)) {
-//			// x*ArcSin(x) + Sqrt(1-x^2)
-//			return F.Plus(F.Times(x, F.ArcSin(x)), F.Sqrt(F.Subtract(F.C1, F.Sqr(x))));
-//		}
-//		if (head.equals(F.ArcSinh)) {
-//			// x*ArcSinh(x) - Sqrt(1+x^2)
-//			return F.Subtract(F.Times(x, F.ArcSinh(x)), F.Sqrt(F.Plus(F.C1, F.Sqr(x))));
-//		}
-//		if (head.equals(F.ArcTan)) {
-//			// x*ArcTan(x) - (1/2 * Log(1+x^2))
-//			return F.Subtract(F.Times(x, F.ArcTan(x)), F.Times(F.C1D2, F.Log(F.Plus(F.C1, F.Sqr(x)))));
-//		}
-//		if (head.equals(F.ArcTanh)) {
-//			// x*ArcTanh(x) + (1/2 * Log(1-x^2))
-//			return F.Plus(F.Times(x, F.ArcTanh(x)), F.Times(F.C1D2, F.Log(F.Subtract(F.C1, F.Sqr(x)))));
-//		}
-//		if (head.equals(F.Cos)) {
-//			// Sin(x)
-//			return F.Sin(x);
-//		}
-//		if (head.equals(F.Cosh)) {
-//			// Sinh(x)
-//			return F.Sinh(x);
-//		}
-//		if (head.equals(F.Cot)) {
-//			// Log(Sin(x))
-//			return F.Log(F.Sin(x));
-//		}
-//		if (head.equals(F.Coth)) {
-//			// Log(Sinh(x))
-//			return F.Log(F.Sinh(x));
-//		}
-//		if (head.equals(F.Csc)) {
-//			// Log(Sin(x/2))-Log(Cos(x/2))
-//			return F.Subtract(F.Log(F.Sin(F.Times(F.C1D2, x))), F.Log(F.Cos(F.Times(F.C1D2, x))));
-//		}
-//		if (head.equals(F.Csch)) {
-//			// -Log(Cosh(x/2)) + Log(Sinh[x/2))
-//			return Plus(Times(CN1, Log(F.Cosh(Times(C1D2, x)))), Log(F.Sinh(Times(C1D2, x))));
-//		}
-//		if (head.equals(F.Log)) {
-//			// x*Log(x)-x
-//			return F.Subtract(F.Times(x, F.Log(x)), x);
-//		}
-//		if (head.equals(F.Sec)) {
-//			// Log( Sin(x/2)+Cos(x/2) ) - Log( Cos(x/2)-Sin(x/2) )
-//			return F.Subtract(F.Log(F.Plus(F.Sin(F.Times(F.C1D2, x)), F.Cos(F.Times(F.C1D2, x)))),
-//					F.Log(F.Subtract(F.Cos(F.Times(F.C1D2, x)), F.Sin(F.Times(F.C1D2, x)))));
-//		}
-//		if (head.equals(F.Sech)) {
-//			// 2*ArcTan(Tanh(x/2))
-//			return Times(C2, ArcTan(F.Tanh(Times(C1D2, x))));
-//		}
-//		if (head.equals(F.Sin)) {
-//			// -Cos(x)
-//			return F.Times(F.CN1, F.Cos(x));
-//		}
-//		if (head.equals(F.Sinh)) {
-//			// Cosh(x)
-//			return F.Cosh(x);
-//		}
-//		if (head.equals(F.Tan)) {
-//			// -Log(Cos(x))
-//			return F.Times(F.CN1, F.Log(F.Cos(x)));
-//		}
-//		if (head.equals(F.Tanh)) {
-//			// Log(Cosh(x))
-//			return F.Log(F.Cosh(x));
-//		}
-//		return F.NIL;
-//	}
+	// private IExpr integrate1ArgumentFunctions(final IExpr head, final IExpr x) {
+	// if (head.equals(F.ArcCos)) {
+	// // x*ArcCos(x) - Sqrt(1-x^2)
+	// return F.Subtract(F.Times(x, F.ArcCos(x)), F.Sqrt(F.Subtract(F.C1, F.Sqr(x))));
+	// }
+	// if (head.equals(F.ArcCosh)) {
+	// // x*ArcCosh(x) - Sqrt(x+1) * Sqrt(x-1)
+	// return F.Subtract(F.Times(x, F.ArcCosh(x)), F.Times(F.Sqrt(F.Plus(x, F.C1)), F.Sqrt(F.Plus(x, F.CN1))));
+	// }
+	// if (head.equals(F.ArcCot)) {
+	// // x*ArcCot(x) + (1/2 * Log(1+x^2))
+	// return F.Plus(F.Times(x, F.ArcCot(x)), F.Times(F.C1D2, F.Log(F.Plus(F.C1, F.Sqr(x)))));
+	// }
+	// if (head.equals(F.ArcCoth)) {
+	// // x*ArcCoth(x) - (1/2 * Log(1-x^2))
+	// return F.Plus(F.Times(x, F.ArcCoth(x)), F.Times(F.C1D2, F.Log(F.Subtract(F.C1, F.Sqr(x)))));
+	// }
+	// if (head.equals(F.ArcCsc)) {
+	// // x*ArcCsc(x) + (Sqrt(1 - x^(-2))*x*Log(x + Sqrt(-1 + x^2))) /
+	// // Sqrt(-1 + x^2)
+	// return Plus(Times(x, F.ArcCsc(x)), Times(F.Sqrt(Plus(C1, Negate(Power(x, F.CN2)))), x,
+	// Log(Plus(x, F.Sqrt(Plus(CN1, Power(x, C2))))), Power(F.Sqrt(Plus(CN1, Power(x, C2))), CN1)));
+	// }
+	// if (head.equals(F.ArcCsch)) {
+	// // x*(ArcCsch(x) + (Sqrt(1 + x^(-2))*ArcSinh(x))/Sqrt(1 + x^2))
+	// return Times(x, Plus(F.ArcCsch(x),
+	// Times(Sqrt(Plus(C1, Power(x, CN2))), F.ArcSinh(x), Power(Sqrt(Plus(C1, Power(x, C2))), CN1))));
+	// }
+	// if (head.equals(F.ArcSec)) {
+	// // x*ArcSec(x) - (Sqrt(1 - x^(-2))*x*Log(x + Sqrt(-1 +
+	// // x^2)))/Sqrt(-1 + x^2)
+	// return Plus(Times(x, F.ArcSec(x)), Times(CN1, Sqrt(Plus(C1, Times(CN1, Power(x, CN2)))), x,
+	// Log(Plus(x, Sqrt(Plus(CN1, Power(x, C2))))), Power(Sqrt(Plus(CN1, Power(x, C2))), CN1)));
+	// }
+	// if (head.equals(F.ArcSech)) {
+	// // x*ArcSech(x) - (2*Sqrt((1 - x)/(1 + x))*Sqrt(1 -
+	// // x^2)*ArcSin(Sqrt(1 + x)/Sqrt(2)))/(-1 + x)
+	// return Plus(Times(x, F.ArcSech(x)),
+	// Times(CN1, C2, Sqrt(Times(Plus(C1, Times(CN1, x)), Power(Plus(C1, x), CN1))),
+	// Sqrt(Plus(C1, Times(CN1, Power(x, C2)))),
+	// F.ArcSin(Times(Sqrt(Plus(C1, x)), Power(Sqrt(C2), CN1))), Power(Plus(CN1, x), CN1)));
+	// }
+	// if (head.equals(F.ArcSin)) {
+	// // x*ArcSin(x) + Sqrt(1-x^2)
+	// return F.Plus(F.Times(x, F.ArcSin(x)), F.Sqrt(F.Subtract(F.C1, F.Sqr(x))));
+	// }
+	// if (head.equals(F.ArcSinh)) {
+	// // x*ArcSinh(x) - Sqrt(1+x^2)
+	// return F.Subtract(F.Times(x, F.ArcSinh(x)), F.Sqrt(F.Plus(F.C1, F.Sqr(x))));
+	// }
+	// if (head.equals(F.ArcTan)) {
+	// // x*ArcTan(x) - (1/2 * Log(1+x^2))
+	// return F.Subtract(F.Times(x, F.ArcTan(x)), F.Times(F.C1D2, F.Log(F.Plus(F.C1, F.Sqr(x)))));
+	// }
+	// if (head.equals(F.ArcTanh)) {
+	// // x*ArcTanh(x) + (1/2 * Log(1-x^2))
+	// return F.Plus(F.Times(x, F.ArcTanh(x)), F.Times(F.C1D2, F.Log(F.Subtract(F.C1, F.Sqr(x)))));
+	// }
+	// if (head.equals(F.Cos)) {
+	// // Sin(x)
+	// return F.Sin(x);
+	// }
+	// if (head.equals(F.Cosh)) {
+	// // Sinh(x)
+	// return F.Sinh(x);
+	// }
+	// if (head.equals(F.Cot)) {
+	// // Log(Sin(x))
+	// return F.Log(F.Sin(x));
+	// }
+	// if (head.equals(F.Coth)) {
+	// // Log(Sinh(x))
+	// return F.Log(F.Sinh(x));
+	// }
+	// if (head.equals(F.Csc)) {
+	// // Log(Sin(x/2))-Log(Cos(x/2))
+	// return F.Subtract(F.Log(F.Sin(F.Times(F.C1D2, x))), F.Log(F.Cos(F.Times(F.C1D2, x))));
+	// }
+	// if (head.equals(F.Csch)) {
+	// // -Log(Cosh(x/2)) + Log(Sinh[x/2))
+	// return Plus(Times(CN1, Log(F.Cosh(Times(C1D2, x)))), Log(F.Sinh(Times(C1D2, x))));
+	// }
+	// if (head.equals(F.Log)) {
+	// // x*Log(x)-x
+	// return F.Subtract(F.Times(x, F.Log(x)), x);
+	// }
+	// if (head.equals(F.Sec)) {
+	// // Log( Sin(x/2)+Cos(x/2) ) - Log( Cos(x/2)-Sin(x/2) )
+	// return F.Subtract(F.Log(F.Plus(F.Sin(F.Times(F.C1D2, x)), F.Cos(F.Times(F.C1D2, x)))),
+	// F.Log(F.Subtract(F.Cos(F.Times(F.C1D2, x)), F.Sin(F.Times(F.C1D2, x)))));
+	// }
+	// if (head.equals(F.Sech)) {
+	// // 2*ArcTan(Tanh(x/2))
+	// return Times(C2, ArcTan(F.Tanh(Times(C1D2, x))));
+	// }
+	// if (head.equals(F.Sin)) {
+	// // -Cos(x)
+	// return F.Times(F.CN1, F.Cos(x));
+	// }
+	// if (head.equals(F.Sinh)) {
+	// // Cosh(x)
+	// return F.Cosh(x);
+	// }
+	// if (head.equals(F.Tan)) {
+	// // -Log(Cos(x))
+	// return F.Times(F.CN1, F.Log(F.Cos(x)));
+	// }
+	// if (head.equals(F.Tanh)) {
+	// // Log(Cosh(x))
+	// return F.Log(F.Cosh(x));
+	// }
+	// return F.NIL;
+	// }
 
 	/**
-	 * Try using the <code>TrigReduce</code> function to get a <code>Plus(...)</code> expression which could be integrated.
+	 * Try using the <code>TrigReduce</code> function to get a <code>Plus(...)</code> expression which could be
+	 * integrated.
 	 * 
-	 * @param timesAST an IAST which is a <code>Times(...)</code> expression
-	 * @param arg2     the symbol to get the indefinite integral for.
+	 * @param timesAST
+	 *            an IAST which is a <code>Times(...)</code> expression
+	 * @param arg2
+	 *            the symbol to get the indefinite integral for.
 	 * @return <code>F.NIL</code> if no trigonometric funtion could be found.
 	 */
 	private static IExpr integrateTimesTrigFunctions(final IAST timesAST, IExpr arg2) {
@@ -473,8 +478,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition of the numerator and denominator
-	 * parts.
+	 * Returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition of the numerator
+	 * and denominator parts.
 	 * 
 	 * @param parts
 	 * @param variableList
@@ -698,7 +703,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 	/**
 	 * See <a href="http://en.wikipedia.org/wiki/Integration_by_parts">Wikipedia- Integration by parts</a>
 	 * 
-	 * @param ast    TODO - not used
+	 * @param ast
+	 *            TODO - not used
 	 * @param arg1
 	 * @param symbol
 	 * 
@@ -719,7 +725,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Use the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - Symbolic Integration Rules</a> to integrate the expression.
+	 * Use the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - Symbolic Integration Rules</a> to integrate the
+	 * expression.
 	 * 
 	 * @param ast
 	 * @return
@@ -746,7 +753,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 						if (temp.isPresent()) {
 							return temp;
 						}
-//					RecursionLimitExceeded.throwIt(engine.getRecursionCounter(), ast);
+						// RecursionLimitExceeded.throwIt(engine.getRecursionCounter(), ast);
 						return F.NIL;
 					}
 				} else {
@@ -803,8 +810,10 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * 
 	 * See <a href="http://en.wikipedia.org/wiki/Integration_by_parts">Wikipedia- Integration by parts</a>
 	 * 
-	 * @param f <code>f(x)</code>
-	 * @param g <code>g(x)</code>
+	 * @param f
+	 *            <code>f(x)</code>
+	 * @param g
+	 *            <code>g(x)</code>
 	 * @param x
 	 * @return <code>f(x) * g(x) - Integrate(f(x) * g'(x),x )</code>
 	 */
@@ -836,10 +845,13 @@ public class Integrate extends AbstractFunctionEvaluator {
 	/**
 	 * Collect all found polynomial terms into <code>polyTimes</code> and the rest into <code>restTimes</code>.
 	 * 
-	 * @param timesAST  an AST representing a <code>Times[...]</code> expression.
+	 * @param timesAST
+	 *            an AST representing a <code>Times[...]</code> expression.
 	 * @param symbol
-	 * @param polyTimes the polynomial terms part
-	 * @param restTimes the non-polynomil terms part
+	 * @param polyTimes
+	 *            the polynomial terms part
+	 * @param restTimes
+	 *            the non-polynomil terms part
 	 */
 	private static void collectPolynomialTerms(final IAST timesAST, IExpr symbol, IASTAppendable polyTimes,
 			IASTAppendable restTimes) {
@@ -861,7 +873,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Get the rules defined for Integrate function. These rules are loaded, if the Integrate function is used the first time.
+	 * Get the rules defined for Integrate function. These rules are loaded, if the Integrate function is used the first
+	 * time.
 	 * 
 	 * @see AbstractFunctionEvaluator#setUp(ISymbol)()
 	 */
@@ -887,41 +900,41 @@ public class Integrate extends AbstractFunctionEvaluator {
 			INTEGRATE_RULES_DATA = F.Integrate.createRulesData(new int[] { 0, 7000 });
 			getRuleASTRubi45();
 
-//			RulesData rd = F.Integrate.getRulesData();
-//			Set<IPatternMatcher> set = rd.getPatternDownRules();
-//			IPatternMatcher last = null;
-//			for (IPatternMatcher matcher : set) {
-//				System.out.print(matcher.getLHSPriority());
-//				System.out.println(" - " +matcher.determinePatterns());
-//			}
+			// RulesData rd = F.Integrate.getRulesData();
+			// Set<IPatternMatcher> set = rd.getPatternDownRules();
+			// IPatternMatcher last = null;
+			// for (IPatternMatcher matcher : set) {
+			// System.out.print(matcher.getLHSPriority());
+			// System.out.println(" - " +matcher.determinePatterns());
+			// }
 
-//			INT_FUNCTIONS.add(F.Cos);
-//			INT_FUNCTIONS.add(F.Cot);
-//			INT_FUNCTIONS.add(F.Csc);
-//			INT_FUNCTIONS.add(F.Sec);
-//			INT_FUNCTIONS.add(F.Sin);
-//			INT_FUNCTIONS.add(F.Tan);
-//
-//			INT_FUNCTIONS.add(F.ArcCos);
-//			INT_FUNCTIONS.add(F.ArcCot);
-//			INT_FUNCTIONS.add(F.ArcCsc);
-//			INT_FUNCTIONS.add(F.ArcSec);
-//			INT_FUNCTIONS.add(F.ArcSin);
-//			INT_FUNCTIONS.add(F.ArcTan);
-//
-//			INT_FUNCTIONS.add(F.Cosh);
-//			INT_FUNCTIONS.add(F.Coth);
-//			INT_FUNCTIONS.add(F.Csch);
-//			INT_FUNCTIONS.add(F.Sech);
-//			INT_FUNCTIONS.add(F.Sinh);
-//			INT_FUNCTIONS.add(F.Tanh);
-//
-//			INT_FUNCTIONS.add(F.ArcCosh);
-//			INT_FUNCTIONS.add(F.ArcCoth);
-//			INT_FUNCTIONS.add(F.ArcCsc);
-//			INT_FUNCTIONS.add(F.ArcSec);
-//			INT_FUNCTIONS.add(F.ArcSinh);
-//			INT_FUNCTIONS.add(F.ArcTanh);
+			// INT_FUNCTIONS.add(F.Cos);
+			// INT_FUNCTIONS.add(F.Cot);
+			// INT_FUNCTIONS.add(F.Csc);
+			// INT_FUNCTIONS.add(F.Sec);
+			// INT_FUNCTIONS.add(F.Sin);
+			// INT_FUNCTIONS.add(F.Tan);
+			//
+			// INT_FUNCTIONS.add(F.ArcCos);
+			// INT_FUNCTIONS.add(F.ArcCot);
+			// INT_FUNCTIONS.add(F.ArcCsc);
+			// INT_FUNCTIONS.add(F.ArcSec);
+			// INT_FUNCTIONS.add(F.ArcSin);
+			// INT_FUNCTIONS.add(F.ArcTan);
+			//
+			// INT_FUNCTIONS.add(F.Cosh);
+			// INT_FUNCTIONS.add(F.Coth);
+			// INT_FUNCTIONS.add(F.Csch);
+			// INT_FUNCTIONS.add(F.Sech);
+			// INT_FUNCTIONS.add(F.Sinh);
+			// INT_FUNCTIONS.add(F.Tanh);
+			//
+			// INT_FUNCTIONS.add(F.ArcCosh);
+			// INT_FUNCTIONS.add(F.ArcCoth);
+			// INT_FUNCTIONS.add(F.ArcCsc);
+			// INT_FUNCTIONS.add(F.ArcSec);
+			// INT_FUNCTIONS.add(F.ArcSinh);
+			// INT_FUNCTIONS.add(F.ArcTanh);
 
 			ISymbol[] rubiSymbols = { F.Derivative, F.D };
 			for (int i = 0; i < rubiSymbols.length; i++) {
@@ -1115,16 +1128,10 @@ public class Integrate extends AbstractFunctionEvaluator {
 		F.ISet(F.$s("§$inversetrigfunctions"), F.List(F.ArcSin, F.ArcCos, F.ArcTan, F.ArcCot, F.ArcSec, F.ArcCsc));
 		F.ISet(F.$s("§$inversehyperbolicfunctions"),
 				F.List(F.ArcSinh, F.ArcCosh, F.ArcTanh, F.ArcCoth, F.ArcSech, F.ArcCsch));
-		F.ISet(F.$s("§$calculusfunctions"),
-				F.List(F.D, Integrate, F.Sum, F.Product, F.Integrate,
-						F.$rubi(UtilityFunctionCtors.INTEGRATE_PREFIX + "Unintegrable"),
-						F.$rubi(UtilityFunctionCtors.INTEGRATE_PREFIX + "CannotIntegrate"),
-						F.$rubi(UtilityFunctionCtors.INTEGRATE_PREFIX + "Dif"),
-						F.$rubi(UtilityFunctionCtors.INTEGRATE_PREFIX + "Subst")));
-		F.ISet(F.$s("§$stopfunctions"),
-				F.List(F.Hold, F.HoldForm, F.Defer, F.Pattern, F.If, F.Integrate,
-						F.$rubi(UtilityFunctionCtors.INTEGRATE_PREFIX + "Unintegrable"),
-						F.$rubi(UtilityFunctionCtors.INTEGRATE_PREFIX + "CannotIntegrate")));
+		F.ISet(F.$s("§$calculusfunctions"), F.List(F.D, Integrate, F.Sum, F.Product, F.Integrate,
+				F.$rubi("Unintegrable"), F.$rubi("CannotIntegrate"), F.$rubi("Dif"), F.$rubi("Subst")));
+		F.ISet(F.$s("§$stopfunctions"), F.List(F.Hold, F.HoldForm, F.Defer, F.Pattern, F.If, F.Integrate,
+				F.$rubi("Unintegrable"), F.$rubi("CannotIntegrate")));
 		F.ISet(F.$s("§$heldfunctions"), F.List(F.Hold, F.HoldForm, F.Defer, F.Pattern));
 
 		F.ISet(UtilityFunctionCtors.IntegerPowerQ, //

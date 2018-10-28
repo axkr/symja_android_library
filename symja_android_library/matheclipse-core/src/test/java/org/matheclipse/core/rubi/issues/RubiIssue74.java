@@ -9,38 +9,38 @@ public class RubiIssue74 extends AbstractRubiTestCase {
 	}
 
 	public void test0001() {
-		check("Part[Integrate::SignOfFactor[-I]*Integrate::SignOfFactor[x]*Integrate::SignOfFactor[1/Sqrt[2*x+x^2]],1]", //
+		check("Part[Rubi`SignOfFactor[-I]*Rubi`SignOfFactor[x]*Rubi`SignOfFactor[1/Sqrt[2*x+x^2]],1]", //
 				"1");
-		check("(Integrate::SignOfFactor[-I]*Integrate::SignOfFactor[x]*Integrate::SignOfFactor[1/Sqrt[2*x+x^2]])[[1]]==1", //
+		check("(Rubi`SignOfFactor[-I]*Rubi`SignOfFactor[x]*Rubi`SignOfFactor[1/Sqrt[2*x+x^2]])[[1]]==1", //
 				"True");
 	}
 
 	public void test0098() {
-		check("Integrate::FunctionOfTrig[1, Null, x]", "Null");
+		check("Rubi`FunctionOfTrig[1, Null, x]", "Null");
 	}
 
 	public void test0118() {
-		check("Integrate::InverseFunctionFreeQ[ArcCos[x], x]", "False");
+		check("Rubi`InverseFunctionFreeQ[ArcCos[x], x]", "False");
 	}
 
 	public void test0119() {
-		check("Integrate::InverseFunctionFreeQ[ArcCos[1 + x], x]", "False");
+		check("Rubi`InverseFunctionFreeQ[ArcCos[1 + x], x]", "False");
 	}
 
 	public void test0120() {
-		check("Integrate::InverseFunctionQ[ArcCos[x]]", "True");
+		check("Rubi`InverseFunctionQ[ArcCos[x]]", "True");
 	}
 
 	public void test0121() {
-		check("Integrate::InverseFunctionQ[ArcCos[1 + x]]", "True");
+		check("Rubi`InverseFunctionQ[ArcCos[1 + x]]", "True");
 	}
 
 	public void test0122() {
-		check("Integrate::InverseTrigQ[ArcCos[x]]", "True");
+		check("Rubi`InverseTrigQ[ArcCos[x]]", "True");
 	}
 
 	public void test0123() {
-		check("Integrate::InverseTrigQ[ArcCos[1 + x]]", "True");
+		check("Rubi`InverseTrigQ[ArcCos[1 + x]]", "True");
 	}
 
 	public void test0263() {

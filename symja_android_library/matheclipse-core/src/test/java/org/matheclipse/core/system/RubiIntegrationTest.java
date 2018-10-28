@@ -347,7 +347,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		IAST ast;
 		// DeactivateTrig(Sin(a+b*x)^3,x)
 		ast = DeactivateTrig(Power(Sin(Plus(a, Times(b, x))), C3), x);
-		check(ast, "Integrate`§sin[a+b*x]^3");
+		check(ast, "Rubi`§sin[a+b*x]^3");
 	}
 
 	public void testRubi012() {
@@ -416,7 +416,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
 	}
 
 	// Integrate(1/(a_.+b_.*x_+c_.*x_^2),x_Symbol) :=
-	// Integrate::Dist(-2,integrate::subst(Integrate(1/integrate::simp(b^2+(-1)*4*a*c-x^
+	// rubi`Dist(-2,integrate::subst(Integrate(1/integrate::simp(b^2+(-1)*4*a*c-x^
 	// 2,x),x),x,b+2*c*x),x)/;FreeQ({a,b,c},x)&&integrate::neq(b^2+(-1)*4*a*c,0)
 	// >>> Integrate(1/(3+2*x+x^2),x) >>>> 0
 	public void testRubi020() {

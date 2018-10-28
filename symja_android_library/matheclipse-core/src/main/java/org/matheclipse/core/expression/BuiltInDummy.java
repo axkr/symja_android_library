@@ -415,7 +415,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final Context getContext() {
+	public Context getContext() {
 		return null;
 	}
 
@@ -583,20 +583,20 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 		if (Character.isUpperCase(fSymbolName.charAt(0))) {
 			String alias = F.PREDEFINED_INTERNAL_FORM_STRINGS.get(fSymbolName);
 			if (alias != null) {
-				if (alias.contains("::")) {
+				if (alias.startsWith("Rubi`")) {
 					if (Config.RUBI_CONVERT_SYMBOLS) {
-						return "$rubi(\"" + alias + "\")";
+						return "$rubi(\"" + alias.substring(5) + "\")";
 					}
 					return "$s(\"" + alias + "\")";
 				}
 				return alias;
 			}
 		}
-		if (fSymbolName.contains("::")) {
-			if (Config.RUBI_CONVERT_SYMBOLS) {
-				return "$rubi(\"" + fSymbolName + "\")";
-			}
-		}
+		// if (fSymbolName.contains("::")) {
+		// if (Config.RUBI_CONVERT_SYMBOLS) {
+		// return "$rubi(\"" + fSymbolName + "\")";
+		// }
+		// }
 		return "$s(\"" + fSymbolName + "\")";
 	}
 

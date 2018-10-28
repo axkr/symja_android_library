@@ -1613,7 +1613,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
 		// /; !FalseQ[q]] /; FreeQ[m, x] && NeQ[m, -1]
 		
 		
-		// check("Integrate::DerivativeDivides[Log[Tan[x]]*Sec[x],Csc[x]*Sec[x]^((-1)*1+1),x]", //
+		// check("rubi`DerivativeDivides[Log[Tan[x]]*Sec[x],Csc[x]*Sec[x]^((-1)*1+1),x]", //
 		// "");
 		check(//
 				"Integrate[Csc[x]*Log[Tan[x]]*Sec[x], x]", //

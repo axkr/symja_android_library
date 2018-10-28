@@ -58,12 +58,12 @@ public class DerivativeDevides extends AbstractRubiTestCase {
 	}
 	
 	public void test0000j() {
-		check("Integrate::Simp[(-4*Coth[2*x]*Csch[2*x]*(Log[Tanh[x]])^(2))/(2), x]", //
+		check("Rubi`Simp[(-4*Coth[2*x]*Csch[2*x]*(Log[Tanh[x]])^(2))/(2), x]", //
 				"-2*Coth(2*x)*Csch(2*x)*Log(Tanh(x))^2");
 	}
 	
 	public void test0000k() {
-		check("Integrate::Simp[(-Coth[x]*Csch[x]*Sech[x]-Csch[x]*Sech[x]*Tanh[x]*(Log[Tanh[x]])^(2))/(2), x]", //
+		check("Rubi`Simp[(-Coth[x]*Csch[x]*Sech[x]-Csch[x]*Sech[x]*Tanh[x]*(Log[Tanh[x]])^(2))/(2), x]", //
 				"-(Csch(x)^2+Log(Tanh(x))^2*Sech(x)^2)/2");
 	}
 	
@@ -76,42 +76,42 @@ public class DerivativeDevides extends AbstractRubiTestCase {
 	 * </pre>
 	 */
 	public void test0001() {
-		check("Integrate::DerivativeDivides[Log[Tanh[x]]*Sech[x], Csch[x], x]", //
+		check("Rubi`DerivativeDivides[Log[Tanh[x]]*Sech[x], Csch[x], x]", //
 				"False");
 	}
 
 	public void test0002() {
-		check("Integrate::DerivativeDivides[Log[Tanh[x]], Csch[x]*Sech[x], x]", //
+		check("Rubi`DerivativeDivides[Log[Tanh[x]], Csch[x]*Sech[x], x]", //
 				"1");
 	}
 
 	public void test0003() {
-		check("Integrate::DerivativeDivides[Log[Tanh[x]]*Csch[x], Sech[x], x]", //
+		check("Rubi`DerivativeDivides[Log[Tanh[x]]*Csch[x], Sech[x], x]", //
 				"False");
 	}
 	
 	public void test0004() {
-		check("Integrate::EasyDQ[Log[Tanh[x]]*Sech[x], x]", //
+		check("Rubi`EasyDQ[Log[Tanh[x]]*Sech[x], x]", //
 				"False");
 	}
 
 	public void test0005() {
-		check("Integrate::EasyDQ[Log[Tanh[x]],  x]", //
+		check("Rubi`EasyDQ[Log[Tanh[x]],  x]", //
 				"True");
 	}
 	
 	public void test0006() {
-		check("Integrate::EasyDQ[Csch[x],  x]", //
+		check("Rubi`EasyDQ[Csch[x],  x]", //
 				"True");
 	}
 	
 	public void test0007() {
-		check("Integrate::EasyDQ[Sech[x],  x]", //
+		check("Rubi`EasyDQ[Sech[x],  x]", //
 				"True");
 	}
 
 	public void test0008() {
-		check("Integrate::EasyDQ[Log[Tanh[x]]*Csch[x], x]", //
+		check("Rubi`EasyDQ[Log[Tanh[x]]*Csch[x], x]", //
 				"False");
 	}
 }

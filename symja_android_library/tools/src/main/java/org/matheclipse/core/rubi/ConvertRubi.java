@@ -164,7 +164,7 @@ public class ConvertRubi {
 				buffer.append("IIntegrate(" + GLOBAL_COUNTER + ",");
 			} else {
 				try {
-					leftHandSide = EvalEngine.get().evaluate((IAST) temp);
+					leftHandSide = EvalEngine.get().evalLHSPattern((IAST) temp);
 				} catch (Exception ex) {
 					System.out.println("GLOBAL_COUNTER: " + GLOBAL_COUNTER);
 					ex.printStackTrace();
@@ -195,7 +195,7 @@ public class ConvertRubi {
 		// }
 	}
 
-	public final static String INTEGRATE_PREFIX = "Integrate::";
+	public final static String INTEGRATE_PREFIX = "Rubi`";
 
 	public static void addPredefinedSymbols() {
 		F.PREDEFINED_INTERNAL_FORM_STRINGS.put("AbortRubi", INTEGRATE_PREFIX + "AbortRubi");

@@ -130,7 +130,7 @@ public class ConvertRubiUtilityFunctions {
 		}
 	}
 
-	public final static String INTEGRATE_PREFIX = "Integrate::";
+	public final static String INTEGRATE_PREFIX = "Rubi`";
 
 	public static void main(String[] args) {
 		Config.SERVER_MODE = false;
@@ -194,46 +194,46 @@ public class ConvertRubiUtilityFunctions {
 					switch (numberOfArguments) {
 					case 1:
 						buffer.append("  public static IAST " + functionName + "(final IExpr a0) {\n");
-						buffer.append("    return unary($rubi(INTEGRATE_PREFIX+\"" + functionName + "\"), a0);\n");
+						buffer.append("    return unary($rubi(\"" + functionName + "\"), a0);\n");
 						buffer.append("  }\n\n");
 						break;
 					case 2:
 						buffer.append("  public static IAST " + functionName + "(final IExpr a0, final IExpr a1) {\n");
-						buffer.append("    return binary($rubi(INTEGRATE_PREFIX+\"" + functionName + "\"), a0, a1);\n");
+						buffer.append("    return binary($rubi(\"" + functionName + "\"), a0, a1);\n");
 						buffer.append("  }\n\n");
 						break;
 					case 3:
 						buffer.append("  public static IAST " + functionName
 								+ "(final IExpr a0, final IExpr a1, final IExpr a2) {\n");
 						buffer.append(
-								"    return ternary($rubi(INTEGRATE_PREFIX+\"" + functionName + "\"), a0, a1, a2);\n");
+								"    return ternary($rubi(\"" + functionName + "\"), a0, a1, a2);\n");
 						buffer.append("  }\n\n");
 						break;
 					case 4:
 						buffer.append("  public static IAST " + functionName
 								+ "(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {\n");
-						buffer.append("    return quaternary($rubi(INTEGRATE_PREFIX+\"" + functionName
+						buffer.append("    return quaternary($rubi(\"" + functionName
 								+ "\"), a0, a1, a2, a3);\n");
 						buffer.append("  }\n\n");
 						break;
 					case 5:
 						buffer.append("  public static IAST " + functionName
 								+ "(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4) {\n");
-						buffer.append("    return quinary($rubi(INTEGRATE_PREFIX+\"" + functionName
+						buffer.append("    return quinary($rubi(\"" + functionName
 								+ "\"), a0, a1, a2, a3, a4);\n");
 						buffer.append("  }\n\n");
 						break;
 					case 6:
 						buffer.append("  public static IAST " + functionName
 								+ "(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4, final IExpr a5) {\n");
-						buffer.append("    return senary($rubi(INTEGRATE_PREFIX+\"" + functionName
+						buffer.append("    return senary($rubi(\"" + functionName
 								+ "\"), a0, a1, a2, a3, a4, a5);\n");
 						buffer.append("  }\n\n");
 						break;
 					case Integer.MAX_VALUE:
 						// MAX_VALUE indicates a left-hand-side form with a PetternSequence (i.e. f[x__]:=...)
 						buffer.append("  public static IAST " + functionName + "(final IExpr... a) {\n");
-						buffer.append("    return ast(a, $rubi(INTEGRATE_PREFIX+\"" + functionName + "\"));\n");
+						buffer.append("    return ast(a, $rubi(\"" + functionName + "\"));\n");
 						buffer.append("  }\n\n");
 						break;
 					default:
@@ -242,7 +242,7 @@ public class ConvertRubiUtilityFunctions {
 						// return ast(a, Part);
 						// }
 						buffer.append("  public static IAST " + functionName + "(final IExpr... a) {\n");
-						buffer.append("    return ast(a, $rubi(INTEGRATE_PREFIX+\"" + functionName + "\"));\n");
+						buffer.append("    return ast(a, $rubi(\"" + functionName + "\"));\n");
 						buffer.append("  }\n\n");
 					}
 				}

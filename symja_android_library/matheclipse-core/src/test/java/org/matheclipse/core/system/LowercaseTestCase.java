@@ -6431,6 +6431,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{2,3,5,7,13,17,19,31,61,89,107,127,521,607,1279,2203,2281,3217,4253,4423,9689,\n" + "9941}");
 	}
 
+	public void testMessageName() {
+		// Set[MessageName(f,"usage"),"text")
+		check("f::usage=\"text\"", //
+				"text");
+//		check("?f::usage", //
+//				"text");
+	}
+
 	public void testMin() {
 		check("Min(Interval({1,2}))", "1");
 

@@ -163,7 +163,7 @@ public class UtilityFunctions {
 	// Module(List(Set(w, Times(Simp(Times(u, Sqr(x)), x), Power(Sqr(x), CN1)))),
 	// If(And(And(UnsameQ(w, u), FreeQ(w, x)), SameQ(w, Simp(w, x))),
 	// Dist(w, v, x),
-	// $(Defer($s("Integrate::Dist")), u, v, x))))))))));
+	// $(Defer($s("rubi`Dist")), u, v, x))))))))));
 
 //	public static void init() {
 		// Dist[u_,v_,x_]+Dist[w_,v_,x_] :=

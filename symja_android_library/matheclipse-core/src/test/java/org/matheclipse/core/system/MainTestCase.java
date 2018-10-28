@@ -1526,15 +1526,15 @@ public class MainTestCase extends AbstractTestCase {
 				"Integrate(1/(-7+x+x^5),x)");
 		
 		
-		check("integrate::PolyQ(x/(2*Sqrt(2)),x,1)", //
+		check("Rubi`PolyQ(x/(2*Sqrt(2)),x,1)", //
 				"True");
-		check("integrate::PolyQ((2+2*x)/(2*Sqrt(2)),x)", //
+		check("Rubi`PolyQ((2+2*x)/(2*Sqrt(2)),x)", //
 				"True");
-//		check("integrate::PolyQ(2+2 *x,x,1)", //
+//		check("Rubi`PolyQ(2+2 *x,x,1)", //
 //				"True");
-//		check("integrate::PolyQ(-(ArcTan((1+x)/Sqrt(2))/(2 Sqrt(2))),x )", //
+//		check("Rubi`PolyQ(-(ArcTan((1+x)/Sqrt(2))/(2 Sqrt(2))),x )", //
 //				"True");
-		check("integrate::substaux(-ArcTan(x/(2*Sqrt(2)))/(2*Sqrt(2)),x,2+2*x,True)", //
+		check("Rubi`substaux(-ArcTan(x/(2*Sqrt(2)))/(2*Sqrt(2)),x,2+2*x,True)", //
 				"-ArcTan((1+x)/Sqrt(2))/(2*Sqrt(2))");
 		check("Integrate((x^2+2*x+3)^(-1),x)", //
 				"ArcTan((1+x)/Sqrt(2))/Sqrt(2)");

@@ -22,6 +22,8 @@ public class ContextPath {
 		fContextMap = new HashMap<String, Context>(17);
 		this.path.add(Context.SYSTEM);
 		this.fContextMap.put(Context.SYSTEM.getContextName(), Context.SYSTEM);
+		// don't put RUBI on the context path
+				fContextMap.put(Context.RUBI.getContextName(), Context.RUBI);
 		for (int i = 1; i < path.size(); i++) {
 			// Start at index 1 because SYSTEM is already set!
 			this.path.add(path.get(i).copy());
@@ -36,6 +38,8 @@ public class ContextPath {
 		fContextMap = new HashMap<String, Context>(17);
 		path.add(Context.SYSTEM);
 		fContextMap.put(Context.SYSTEM.getContextName(), Context.SYSTEM);
+		// don't put RUBI on the context path
+		fContextMap.put(Context.RUBI.getContextName(), Context.RUBI);
 		path.add(getContext(contextName));
 	}
 
@@ -43,6 +47,8 @@ public class ContextPath {
 		fContextMap = new HashMap<String, Context>(17);
 		path.add(Context.SYSTEM);
 		fContextMap.put(Context.SYSTEM.getContextName(), Context.SYSTEM);
+		// don't put RUBI on the context path
+				fContextMap.put(Context.RUBI.getContextName(), Context.RUBI);
 		path.add(context);
 	}
 
@@ -77,9 +83,9 @@ public class ContextPath {
 		}
 		return result;
 	}
-	
+
 	public IStringX currentContext() {
-		int size = path.size()-1;
+		int size = path.size() - 1;
 		return F.stringx(path.get(size).getContextName());
 	}
 

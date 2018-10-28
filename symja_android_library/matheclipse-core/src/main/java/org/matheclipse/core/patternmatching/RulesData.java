@@ -452,7 +452,7 @@ public class RulesData implements Serializable {
 
 	private boolean isShowSteps(IPatternMatcher pmEvaluator) {
 		IExpr head = pmEvaluator.getLHS().head();
-		if (head.toString().toLowerCase().contains("integrate::")) {
+		if (head.isSymbol() && ((ISymbol) head).getContext().equals(Context.RUBI)) {
 			return true;
 		}
 		return head.equals(F.Integrate);
@@ -460,9 +460,6 @@ public class RulesData implements Serializable {
 
 	private boolean isShowPriority(IPatternMatcher pmEvaluator) {
 		IExpr head = pmEvaluator.getLHS().head();
-		// if (head.toString().toLowerCase().contains("integrate::")) {
-		// return true;
-		// }
 		return head.equals(F.Integrate);
 	}
 
