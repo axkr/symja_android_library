@@ -56,7 +56,6 @@ public class UtilityFunctionCtors {
 	public static ISymbol FractionalPowerQ = org.matheclipse.core.expression.F
 			.$rubi("FractionalPowerQ");
 
-	public static ISymbol AbortRubi = org.matheclipse.core.expression.F.$rubi("AbortRubi");
 	public static ISymbol ReapList = org.matheclipse.core.expression.F.$rubi("ReapList");
 
 	static ISymbol FalseQ = F.$rubi("FalseQ", new AbstractCoreFunctionEvaluator() {
@@ -150,10 +149,6 @@ public class UtilityFunctionCtors {
 			return F.False;
 		}
 	});
-
-	public static IAST AbortRubi(final IExpr a0) {
-		return F.headAST0(F.Abort);
-	}
 
 	public static IAST F(final IExpr a0) {
 		return unaryAST1(F.FSymbol, a0);

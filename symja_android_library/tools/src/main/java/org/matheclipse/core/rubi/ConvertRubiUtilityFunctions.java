@@ -13,6 +13,7 @@ import java.util.TreeSet;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -80,8 +81,8 @@ public class ConvertRubiUtilityFunctions {
 			IExpr expr = new AST2Expr(false, EvalEngine.get()).convert(node);
 
 			if (expr.isAST(F.CompoundExpression)) {
-				IAST ast=(IAST)expr;
-				ast.forEach(x->convertExpr(x, buffer, last, functionSet));
+				IAST ast = (IAST) expr;
+				ast.forEach(x -> convertExpr(x, buffer, last, functionSet));
 			} else {
 				convertExpr(expr, buffer, last, functionSet);
 			}
@@ -129,8 +130,6 @@ public class ConvertRubiUtilityFunctions {
 			}
 		}
 	}
-
-	public final static String INTEGRATE_PREFIX = "Rubi`";
 
 	public static void main(String[] args) {
 		Config.SERVER_MODE = false;
@@ -183,7 +182,7 @@ public class ConvertRubiUtilityFunctions {
 				for (String str : uniqueFunctionSet) {
 					String functionName = str;
 					buffer.append("    F.PREDEFINED_INTERNAL_FORM_STRINGS.put(\"" + functionName
-							+ "\",INTEGRATE_PREFIX+\"" + functionName + "\");\n");
+							+ "\", Context.RUBI_STR + \"" + functionName + "\");\n");
 				}
 				System.out.println(buffer.toString());
 				buffer = new StringBuffer(100000);
@@ -205,29 +204,25 @@ public class ConvertRubiUtilityFunctions {
 					case 3:
 						buffer.append("  public static IAST " + functionName
 								+ "(final IExpr a0, final IExpr a1, final IExpr a2) {\n");
-						buffer.append(
-								"    return ternary($rubi(\"" + functionName + "\"), a0, a1, a2);\n");
+						buffer.append("    return ternary($rubi(\"" + functionName + "\"), a0, a1, a2);\n");
 						buffer.append("  }\n\n");
 						break;
 					case 4:
 						buffer.append("  public static IAST " + functionName
 								+ "(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {\n");
-						buffer.append("    return quaternary($rubi(\"" + functionName
-								+ "\"), a0, a1, a2, a3);\n");
+						buffer.append("    return quaternary($rubi(\"" + functionName + "\"), a0, a1, a2, a3);\n");
 						buffer.append("  }\n\n");
 						break;
 					case 5:
 						buffer.append("  public static IAST " + functionName
 								+ "(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4) {\n");
-						buffer.append("    return quinary($rubi(\"" + functionName
-								+ "\"), a0, a1, a2, a3, a4);\n");
+						buffer.append("    return quinary($rubi(\"" + functionName + "\"), a0, a1, a2, a3, a4);\n");
 						buffer.append("  }\n\n");
 						break;
 					case 6:
 						buffer.append("  public static IAST " + functionName
 								+ "(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4, final IExpr a5) {\n");
-						buffer.append("    return senary($rubi(\"" + functionName
-								+ "\"), a0, a1, a2, a3, a4, a5);\n");
+						buffer.append("    return senary($rubi(\"" + functionName + "\"), a0, a1, a2, a3, a4, a5);\n");
 						buffer.append("  }\n\n");
 						break;
 					case Integer.MAX_VALUE:

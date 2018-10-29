@@ -27,11 +27,14 @@ public class Context implements Serializable {
 
 	// public final static Context INTEGRATE = new Context("Integrate`");
 
-	public final static Context RUBI = new Context("Rubi`");
+	public final static String RUBI_STR = "Rubi`";
+	
+	public final static Context RUBI = new Context(RUBI_STR);
 
 	private String contextName;
 
 	private HashMap<String, ISymbol> symbolTable;
+
 
 	public Context(String contextName) {
 		this(contextName, new HashMap<String, ISymbol>());

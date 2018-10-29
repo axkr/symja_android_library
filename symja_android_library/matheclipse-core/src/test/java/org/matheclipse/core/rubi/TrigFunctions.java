@@ -10,6 +10,12 @@ public class TrigFunctions extends AbstractRubiTestCase {
 		super(name, false);
 	}
 
+	@Override
+	protected void setUp() {
+		super.setUp();
+		fSeconds=20;
+	}
+	
 	// {2638}
 	public void test0001() {
 		check(//

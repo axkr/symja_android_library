@@ -792,9 +792,9 @@ public class SpecialFunctions extends AbstractRubiTestCase {
 
 	// {6686}
 	public void test0123() {
-		// check("Rubi`DerivativeDivides[b*x,ExpIntegralEi[b*x]/x,x]", //
+		// check("rubi`DerivativeDivides[b*x,ExpIntegralEi[b*x]/x,x]", //
 		// "False");
-		// check("Rubi`DerivativeDivides[ExpIntegralEi[b*x]/x,b*x,x]", //
+		// check("rubi`DerivativeDivides[ExpIntegralEi[b*x]/x,b*x,x]", //
 		// "False");
 		// check("rubi`EasyDQ[ExpIntegralEi[b*x]/x,x]", //
 		// "True");

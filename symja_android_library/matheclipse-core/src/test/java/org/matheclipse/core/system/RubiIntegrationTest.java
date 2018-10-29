@@ -42,7 +42,6 @@ import static org.matheclipse.core.expression.F.m;
 import static org.matheclipse.core.expression.F.p;
 import static org.matheclipse.core.expression.F.v;
 import static org.matheclipse.core.expression.F.x;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.AbortRubi;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.ActivateTrig;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.ContentFactor;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.DeactivateTrig;
@@ -333,14 +332,6 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		IAST ast;
 		ast = FixSimplify(fraction(5L, 3L));
 		check(ast, "5/3");
-	}
-
-	public void testRubi010() {
-		IAST ast;
-		ast = AbortRubi(Integrate);
-		// throws AbortException
-		check(ast, "Abort evaluation.\n" + "");
-
 	}
 
 	public void testRubi011() {
