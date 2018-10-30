@@ -22,8 +22,6 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.AbstractVisitor;
 
-import com.sun.xml.internal.txw2.output.IndentingXMLStreamWriter;
-
 /**
  * The pattern matching rules associated with a symbol.
  */
