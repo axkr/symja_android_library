@@ -5,6 +5,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.interfaces.IAST;
@@ -36,7 +37,7 @@ public class AttributeFunctions {
 	 * {Flat,Listable,OneIdentity,Orderless,NumericFunction}
 	 * </pre>
 	 */
-	private final static class Attributes extends AbstractCoreFunctionEvaluator {
+	private final static class Attributes extends AbstractCoreFunctionEvaluator implements ISetEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -45,6 +46,16 @@ public class AttributeFunctions {
 			if (ast.arg1().isSymbol()) {
 				final ISymbol sym = ((ISymbol) ast.arg1());
 				return attributesList(sym);
+			}
+			return F.NIL;
+		}
+
+		public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide, EvalEngine engine) {
+			if (leftHandSide.isAST(F.Attributes, 2)) {
+				IExpr temp=engine.evaluate(F.SetAttributes(leftHandSide.first(), rightHandSide));
+				if (temp.equals(F.Null) ) {
+					return rightHandSide;
+				}
 			}
 			return F.NIL;
 		}
@@ -322,6 +333,12 @@ public class AttributeFunctions {
 					break;
 				case ID.NumericFunction:
 					sym.addAttributes(ISymbol.NUMERICFUNCTION);
+					break;
+				case ID.Protected:
+					sym.addAttributes(ISymbol.PROTECTED);
+					break;
+				case ID.ReadProtected:
+					sym.addAttributes(ISymbol.READPROTECTED);
 					break;
 				}
 			}

@@ -23,10 +23,13 @@ import org.matheclipse.core.patternmatching.PatternMap;
 public class Pattern extends Blank {
 
 	public static IPattern valueOf(@Nonnull final ISymbol symbol) {
-		IPattern value = F.PREDEFINED_PATTERN_MAP.get(symbol.toString());
-		if (value != null) {
-			return value;
+		if (symbol.getContext().equals(Context.DUMMY)) {
+			IPattern value = F.PREDEFINED_PATTERN_MAP.get(symbol.toString());
+			if (value != null) {
+				return value;
+			}
 		}
+		
 		return new Pattern(symbol);
 	}
 

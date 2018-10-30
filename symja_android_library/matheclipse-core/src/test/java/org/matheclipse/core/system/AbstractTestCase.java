@@ -148,7 +148,7 @@ public abstract class AbstractTestCase extends TestCase {
 				F.await();
 
 				EvalEngine engine = EvalEngine.get();
-				engine.reset();
+				engine.init();
 				engine.setRecursionLimit(256);
 				engine.setIterationLimit(500);
 			}

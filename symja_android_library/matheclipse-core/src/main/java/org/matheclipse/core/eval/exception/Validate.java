@@ -556,7 +556,7 @@ public final class Validate {
 			// }
 			return ast;
 		}
-		throw new WrongArgumentType(expr, "Function(AST)  in left-hand-side of UpSet[] or UpSetDelayed[] expected!");
+		throw new WrongArgumentType(expr, "Function(AST) in left-hand-side of UpSet[] or UpSetDelayed[] expected!");
 	}
 
 	/**

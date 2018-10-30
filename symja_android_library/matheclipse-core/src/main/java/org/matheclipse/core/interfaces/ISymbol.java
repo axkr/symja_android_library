@@ -12,6 +12,7 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.interfaces.ISymbol.RuleType;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
@@ -67,13 +68,13 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * 
 	 */
 	public final static int HOLDCOMPLETE = HOLDALL | 0x0080;
-	
+
 	/**
 	 * ISymbol attribute for a function, where no argument should be evaluated
 	 * 
 	 */
 	public final static int HOLDALLCOMPLETE = HOLDCOMPLETE | 0x0100;
-	
+
 	/**
 	 * ISymbol attribute for a function with lists as arguments
 	 * 
@@ -132,9 +133,21 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public final static int FLATORDERLESS = FLAT | ORDERLESS;
 
 	/**
+	 * ISymbol attribute for a symbol where no rule definition should be possible
+	 * 
+	 */
+	public final static int PROTECTED = 0x8000;
+	
+	/**
+	 * ISymbol attribute for a symbol where the definition shouldn't be displayed
+	 * 
+	 */
+	public final static int READPROTECTED = 0x10000;
+	
+	/**
 	 * ISymbol attribute to indicate that a symbols evaluation should be printed to Console with System.out.println();
 	 */
-	public final static int DELAYED_RULE_EVALUATION = 0x00010000;
+	public final static int DELAYED_RULE_EVALUATION = 0x00020000;
 
 	/**
 	 * Add the attributes to the existing attributes bit-set.
@@ -273,7 +286,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public RulesData getRulesData();
 
 	public void setRulesData(RulesData rd);
-	
+
 	/**
 	 * Get the pure symbol name string
 	 * 
@@ -421,7 +434,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * @return if the result isn't a boolean value return <code>false</code>.
 	 */
 	public boolean ofQ(IExpr... args);
-	
+
 	/**
 	 * Get the ordinal number of this built-in symbol in the enumeration of built-in symbols. If this is no built-in
 	 * symbol return <code>-1</code> (ID.UNKNOWN)
@@ -477,6 +490,10 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 */
 	public IPatternMatcher putDownRule(final RuleType setSymbol, boolean equalRule, IExpr leftHandSide,
 			IExpr rightHandSide, boolean packageMode);
+
+	public IExpr evalMessage(EvalEngine engine, String messageName);
+
+	public void putMessage(final RuleType setSymbol, String messageName, IStringX message);
 
 	/**
 	 * Associate a new rule with the given priority to this symbol.<br/>

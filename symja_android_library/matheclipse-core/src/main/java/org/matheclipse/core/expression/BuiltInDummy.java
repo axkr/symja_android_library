@@ -30,7 +30,9 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.interfaces.ISymbol.RuleType;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcher;
@@ -794,6 +796,13 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 		return fRulesData.putDownRule(pmEvaluator);
 	}
 
+	public IExpr evalMessage(EvalEngine engine, String messageName) {
+		return F.NIL;
+	}
+	
+	public void putMessage(final RuleType setSymbol, String messageName, IStringX message) {
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public final IPatternMatcher putUpRule(final ISymbol.RuleType symbol, boolean equalRule, IAST leftHandSide,

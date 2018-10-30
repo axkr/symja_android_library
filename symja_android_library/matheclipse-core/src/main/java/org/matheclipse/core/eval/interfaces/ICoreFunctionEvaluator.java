@@ -8,8 +8,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * <p>
- * Interface for &quot;core functions&quot; which don't have associated rules and are only defined by a derived classes from this
- * interface.
+ * Interface for &quot;core functions&quot; which don't have associated rules and are only defined by a derived classes
+ * from this interface.
  * </p>
  * 
  */
@@ -32,4 +32,5 @@ public interface ICoreFunctionEvaluator extends IFunctionEvaluator {
 		}
 
 	};
+	
 }

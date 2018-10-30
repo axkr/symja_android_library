@@ -29,6 +29,7 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ISymbol.RuleType;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
@@ -798,6 +799,23 @@ public class Symbol implements ISymbol, Serializable {
 			fRulesData = new RulesData(EvalEngine.get().getContext());
 		}
 		return fRulesData.putDownRule(pmEvaluator);
+	}
+
+	public IExpr evalMessage(EvalEngine engine, String messageName) {
+		if (fRulesData != null) {
+			IExpr temp = fRulesData.getMessages().get(messageName);
+			if (temp != null) {
+				return temp;
+			}
+		}
+		return F.NIL;
+	}
+
+	public void putMessage(final RuleType setSymbol, String messageName, IStringX message) {
+		if (fRulesData == null) {
+			fRulesData = new RulesData(EvalEngine.get().getContext());
+		}
+		fRulesData.getMessages().put(messageName, message);
 	}
 
 	/** {@inheritDoc} */

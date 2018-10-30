@@ -174,10 +174,10 @@ public class Console {
 					// console.fSeconds = 60;
 					// continue;
 					// } else
-					if (trimmedInput.length() > 1 && trimmedInput.charAt(0) == '?') {
-						Documentation.findDocumentation(System.out, trimmedInput);
-						continue;
-					}
+					// if (trimmedInput.length() > 1 && trimmedInput.charAt(0) == '?') {
+					// Documentation.findDocumentation(System.out, trimmedInput);
+					// continue;
+					// }
 					String postfix = Scanner.balanceCode(inputExpression);
 					if (postfix != null && postfix.length() > 0) {
 						System.err.println("Automatically closing brackets: " + postfix);

@@ -371,16 +371,13 @@ public class ExprEvaluator {
 	 */
 	public IExpr eval(final String inputExpression) {
 		if (inputExpression != null) {
-			try {
-				EvalEngine.set(engine);
-				engine.reset();
-				fExpr = engine.parse(inputExpression);
-				if (fExpr != null) {
-					return eval(fExpr);
-				}
-			} finally {
-				EvalEngine.remove();
+			EvalEngine.set(engine);
+			engine.reset();
+			fExpr = engine.parse(inputExpression);
+			if (fExpr != null) {
+				return eval(fExpr);
 			}
+			// call EvalEngine.remove() at the end of the thread if necessary
 		}
 
 		return null;
@@ -443,10 +440,10 @@ public class ExprEvaluator {
 					} catch (org.matheclipse.core.eval.exception.TimeoutException e) {
 						return F.$Aborted;
 					} catch (java.util.concurrent.TimeoutException e) {
-//						Throwable t = e.getCause();
-//						if (t instanceof RuntimeException) {
-//							throw (RuntimeException) t;
-//						}
+						// Throwable t = e.getCause();
+						// if (t instanceof RuntimeException) {
+						// throw (RuntimeException) t;
+						// }
 						return F.$Aborted;
 					} catch (com.google.common.util.concurrent.UncheckedTimeoutException e) {
 						// Throwable t = e.getCause();
@@ -473,7 +470,7 @@ public class ExprEvaluator {
 							}
 						} catch (InterruptedException ie) {
 							// (Re-)Cancel if current thread also interrupted
-							executor.shutdownNow(); 
+							executor.shutdownNow();
 						}
 					}
 				}

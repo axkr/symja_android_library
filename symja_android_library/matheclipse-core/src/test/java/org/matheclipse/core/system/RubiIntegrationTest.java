@@ -338,7 +338,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		IAST ast;
 		// DeactivateTrig(Sin(a+b*x)^3,x)
 		ast = DeactivateTrig(Power(Sin(Plus(a, Times(b, x))), C3), x);
-		check(ast, "Rubi`§sin[a+b*x]^3");
+		check(ast, "§sin[a+b*x]^3");
 	}
 
 	public void testRubi012() {

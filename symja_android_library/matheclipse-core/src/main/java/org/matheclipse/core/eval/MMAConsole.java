@@ -157,21 +157,21 @@ public class MMAConsole {
 						}
 					}
 
-					if (trimmedInput.length() > 1 && trimmedInput.charAt(0) == '?') {
-						IAST list = Names.getNamesByPrefix(trimmedInput.substring(1));
-						for (int i = 1; i < list.size(); i++) {
-							System.out.print(list.get(i).toString());
-							if (i != list.argSize()) {
-								System.out.print(", ");
-							}
-						}
-						System.out.println();
-						if (list.size() == 2) {
-							printDocumentation(list.get(1).toString());
-						}
-						continue;
-					}
-					console.interpreter(trimmedInput);
+					// if (trimmedInput.length() > 1 && trimmedInput.charAt(0) == '?') {
+					// IAST list = Names.getNamesByPrefix(trimmedInput.substring(1));
+					// for (int i = 1; i < list.size(); i++) {
+					// System.out.print(list.get(i).toString());
+					// if (i != list.argSize()) {
+					// System.out.print(", ");
+					// }
+					// }
+					// System.out.println();
+					// if (list.size() == 2) {
+					// printDocumentation(list.get(1).toString());
+					// }
+					// continue;
+					// }
+					// console.interpreter(trimmedInput);
 					System.out.println("In [" + COUNTER + "]: " + trimmedInput);
 					System.out.flush();
 					// if (outputExpression.length() > 0) {
@@ -195,43 +195,43 @@ public class MMAConsole {
 	}
 
 	/**
-	 * Load the documentation fro ressources folder if available ad print to output.
+	 * Load the documentation from resources folder if available and print to output.
 	 * 
 	 * @param symbolName
 	 */
-	private static void printDocumentation(String symbolName) {
-		// read markdown file
-		String fileName = symbolName + ".md";
-
-		// Get file from resources folder
-		ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-
-		try {
-			InputStream is = classloader.getResourceAsStream(fileName);
-			final BufferedReader f = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-			String line;
-			boolean emptyLine = false;
-			while ((line = f.readLine()) != null) {
-				if (line.startsWith("```")) {
-					continue;
-				}
-				if (line.trim().length() == 0) {
-					if (emptyLine) {
-						continue;
-					}
-					emptyLine = true;
-				} else {
-					emptyLine = false;
-				}
-				System.out.println(line);
-			}
-			System.out.flush();
-			f.close();
-			is.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+	// private static void printDocumentation(String symbolName) {
+	// // read markdown file
+	// String fileName = symbolName + ".md";
+	//
+	// // Get file from resources folder
+	// ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+	//
+	// try {
+	// InputStream is = classloader.getResourceAsStream(fileName);
+	// final BufferedReader f = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+	// String line;
+	// boolean emptyLine = false;
+	// while ((line = f.readLine()) != null) {
+	// if (line.startsWith("```")) {
+	// continue;
+	// }
+	// if (line.trim().length() == 0) {
+	// if (emptyLine) {
+	// continue;
+	// }
+	// emptyLine = true;
+	// } else {
+	// emptyLine = false;
+	// }
+	// System.out.println(line);
+	// }
+	// System.out.flush();
+	// f.close();
+	// is.close();
+	// } catch (IOException e) {
+	// e.printStackTrace();
+	// }
+	// }
 
 	private String resultPrinter(String inputExpression) {
 		String outputExpression = interpreter(inputExpression);
@@ -346,7 +346,8 @@ public class MMAConsole {
 	/**
 	 * Sets the arguments for the <code>main</code> method
 	 * 
-	 * @param args the arguments of the program
+	 * @param args
+	 *            the arguments of the program
 	 */
 	private void setArgs(final String args[]) {
 		String function = null;
@@ -506,7 +507,8 @@ public class MMAConsole {
 	 * prints a prompt on the console but doesn't print a newline
 	 * 
 	 * @param out
-	 * @param prompt the prompt string to display
+	 * @param prompt
+	 *            the prompt string to display
 	 * 
 	 */
 
@@ -550,7 +552,8 @@ public class MMAConsole {
 	/**
 	 * read a string from the console. The string is terminated by a newline
 	 * 
-	 * @param out Description of Parameter
+	 * @param out
+	 *            Description of Parameter
 	 * @return the input string (without the newline)
 	 */
 
@@ -584,8 +587,10 @@ public class MMAConsole {
 	/**
 	 * read a string from the console. The string is terminated by a newline
 	 * 
-	 * @param prompt the prompt string to display
-	 * @param out    Description of Parameter
+	 * @param prompt
+	 *            the prompt string to display
+	 * @param out
+	 *            Description of Parameter
 	 * @return the input string (without the newline)
 	 */
 
@@ -609,8 +614,8 @@ public class MMAConsole {
 	// }
 
 	/**
-	 * Get the default rules textfile name, which should be loaded at startup. This file replaces the default built-in System.mep
-	 * resource stream.
+	 * Get the default rules textfile name, which should be loaded at startup. This file replaces the default built-in
+	 * System.mep resource stream.
 	 * 
 	 * @return default rules textfile name
 	 */

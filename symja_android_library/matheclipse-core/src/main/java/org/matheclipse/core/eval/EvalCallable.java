@@ -27,7 +27,6 @@ class EvalCallable implements Callable<IExpr> {
 		EvalEngine.set(fEngine);
 		try {
 			fEngine.reset();
-
 			IExpr temp = fEngine.evaluate(fExpr);
 			if (!fEngine.isOutListDisabled()) {
 				fEngine.addOut(temp);

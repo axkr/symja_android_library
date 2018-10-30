@@ -823,6 +823,19 @@ public class OutputFormFactory {
 		}
 	}
 
+	public String toString(final IExpr o) {
+		reset();
+		StringBuilder buf = new StringBuilder();
+		try {
+			convert(buf, o, Integer.MIN_VALUE, false);
+		} catch (IOException e) {
+			if (Config.SHOW_STACKTRACE) {
+				e.printStackTrace();
+			}
+		}
+		return buf.toString();
+	}
+
 	public void convert(final Appendable buf, final IExpr o) throws IOException {
 		convert(buf, o, Integer.MIN_VALUE, false);
 	}

@@ -29,6 +29,8 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -40,7 +42,9 @@ import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.interfaces.ISymbol.RuleType;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.parser.client.SyntaxError;
 
@@ -65,6 +69,7 @@ public final class Programming {
 		F.FixedPointList.setEvaluator(new FixedPointList());
 		F.For.setEvaluator(new For());
 		F.If.setEvaluator(new If());
+		F.List.setEvaluator(new ListFunction());
 		F.Module.setEvaluator(new Module());
 		F.Nest.setEvaluator(new Nest());
 		F.NestList.setEvaluator(new NestList());
@@ -976,6 +981,31 @@ public final class Programming {
 
 	}
 
+	private final static class ListFunction extends AbstractFunctionEvaluator implements ISetEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			return F.NIL;
+		}
+
+		public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide, EvalEngine engine) {
+			if (leftHandSide.isList()) {
+				// thread over lists
+				try {
+					rightHandSide = engine.evaluate(rightHandSide);
+				} catch (final ReturnException e) {
+					rightHandSide = e.getValue();
+				}
+				IExpr temp = engine.threadASTListArgs((IASTMutable) F.Set(leftHandSide, rightHandSide));
+				if (temp.isPresent()) {
+					return engine.evaluate(temp);
+				}
+			}
+			return F.NIL;
+
+		}
+	}
+
 	/**
 	 * <pre>
 	 * Module({list_of_local_variables}, expr )
@@ -1402,7 +1432,7 @@ public final class Programming {
 	 * {1,2,3,4}[[3;;1]]
 	 * </pre>
 	 */
-	private final static class Part extends AbstractCoreFunctionEvaluator {
+	private final static class Part extends AbstractCoreFunctionEvaluator implements ISetEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1462,6 +1492,42 @@ public final class Programming {
 			return F.NIL;
 		}
 
+		public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide, EvalEngine engine) {
+			if (leftHandSide.size() > 1) {
+				IAST part = (IAST) leftHandSide;
+				if (part.arg1().isSymbol()) {
+					ISymbol symbol = (ISymbol) part.arg1();
+					RulesData rd = symbol.getRulesData();
+					if (rd == null) {
+						engine.printMessage(
+								"Set: no value defined for symbol '" + symbol.toString() + "' in Part() expression.");
+					} else {
+						try {
+							IExpr temp = symbol.getRulesData().evalDownRule(symbol, engine);
+							if (!temp.isPresent()) {
+								engine.printMessage("Set: no value defined for symbol '" + symbol.toString()
+										+ "' in Part() expression.");
+							} else {
+								if (rightHandSide.isList()) {
+									IExpr res = Programming.assignPart(temp, part, 2, (IAST) rightHandSide, 1, engine);
+									symbol.putDownRule(RuleType.SET, true, symbol, res, false);
+									return rightHandSide;
+								} else {
+									IExpr res = Programming.assignPart(temp, part, 2, rightHandSide, engine);
+									symbol.putDownRule(RuleType.SET, true, symbol, res, false);
+									return rightHandSide;
+								}
+							}
+						} catch (RuntimeException npe) {
+							engine.printMessage("Set: wrong argument for Part[] function: " + part.toString()
+									+ " selects no part expression.");
+						}
+					}
+				}
+
+			}
+			return F.NIL;
+		}
 	}
 
 	private static class Print extends AbstractCoreFunctionEvaluator {

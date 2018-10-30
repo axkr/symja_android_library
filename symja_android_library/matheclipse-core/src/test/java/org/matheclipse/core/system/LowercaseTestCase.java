@@ -637,7 +637,64 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAttributes() {
-		check("Attributes(Plus)", "{Flat,Listable,OneIdentity,Orderless,NumericFunction}");
+		check("Attributes(fun) = {ReadProtected, Protected}",//
+				"{ReadProtected,Protected}");
+		check("Attributes(Plus)", //
+				"{Flat,Listable,OneIdentity,Orderless,NumericFunction}");
+	}
+
+	public void testBeginPackage() {
+		check("BeginPackage(\"test`\")", //
+				"");
+		check("Context( )", //
+				"test`");
+		check("$ContextPath", //
+				"{test`,System`}");
+		check("testit::usage = \"testit(x) gives x^2\"", //
+				"testit(x) gives x^2");
+		check("testit(x_) :=  x^2 ", //
+				"");
+		check("testit(12)", //
+				"144");
+		check("EndPackage( )", //
+				"");
+		check("$ContextPath", //
+				"{test`,System`,Global`}");
+		check("Context( )", //
+				"Global`");
+		// print usage message in console
+		check("?testit", //
+				"");
+		check("testit(12)", //
+				"144");
+	}
+
+	public void testBegin() {
+		check("Begin(\"mytest`\")", //
+				"");
+		check("Context( )", //
+				"mytest`");
+		check("$ContextPath", //
+				"{System`,Global`}");
+		check("testit::usage = \"testit(x) gives x^2\"", //
+				"testit(x) gives x^2");
+		check("testit(x_) :=  x^2 ", //
+				"");
+		check("testit(12)", //
+				"144");
+		check("End( )", //
+				"mytest`");
+		check("$ContextPath", //
+				"{System`,Global`}");
+		check("Context( )", //
+				"Global`");
+		// print usage message in console
+		check("?mytest`testit", //
+				"");
+		check("mytest`testit(12)", //
+				"144");
+		check("testit(12)", //
+				"testit(12)");
 	}
 
 	public void testBellB() {
@@ -6432,11 +6489,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMessageName() {
-		// Set[MessageName(f,"usage"),"text")
-		check("f::usage=\"text\"", //
-				"text");
-//		check("?f::usage", //
-//				"text");
+		// Set[MessageName(f,"usage"),"A usage message")
+		check("f::usage=\"A usage message\"", //
+				"A usage message");
+		// print "A usage message" on the console. Evaluation returns Null (i.e. no output)
+		check("Information(f)", //
+				"");
+		check("Information(Sin)", //
+				"");
+		check("Information(Sin, LongForm->False)", //
+				"");
+		// print "A usage message" on the console. Evaluation returns Null (i.e. no output)
+		check("?f", //
+				"");
+		check("??Sin;??Cos", //
+				"");
 	}
 
 	public void testMin() {
@@ -11171,6 +11238,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSymbolName() {
+		check("Context(x)", "Global`");
 		check("SymbolName(x)", "x");
 		// TODO allow contexts
 		// check("SymbolName(a`b`x)", "x");
@@ -12206,6 +12274,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testUpSet() {
+		check("ParameterRanges[Cartesian]^=Null;Null", //
+				"");
+		check("ParameterRanges[Cartesian]^=Null;Null", //
+				"");
 		check("$f($abc(0))^=100;$f($abc(0))", "100");
 	}
 
