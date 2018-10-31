@@ -665,7 +665,8 @@ public class MainTestCase extends AbstractTestCase {
 
 		check("D(Cosh(x),x)", "Sinh(x)"); // issue#39
 		check("D(x^4, x)", "4*x^3");
-		check("D((-x+2)/(2*x-6), x)", "(-2*(2-x))/(6-2*x)^2+1/(6-2*x)");
+		check("D((-x+2)/(2*x-6), x)", //
+				"(-2*(2-x))/(6-2*x)^2-1/(-6+2*x)");
 		check("D((2*x-6)^(-1), x)", "-2/(6-2*x)^2");
 
 		// (-x+2)*(2*x-6)^(-2)*2
@@ -680,15 +681,15 @@ public class MainTestCase extends AbstractTestCase {
 		check("Trace(D(Sin(x),x))", "{{{D(x,x),1},1*Cos(x),Cos(x)},Cos(x)}");
 		check("D(Sin(x)^Cos(x),x)", "(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)");
 		check("Trace(D(Sin(x)^Cos(x),x))",
-				"{{{IntegerQ(#1)&&#1<0&[Cos(x)],IntegerQ(Cos(x))&&Cos(x)<0,{IntegerQ(Cos(x)),False},False}},Sin(x)^Cos(x)*(D(Cos(x),x)*Log(Sin(x))+(Cos(x)*D(Sin(x),x))/Sin(x)),{{IntegerQ(#1)&&#1<\n" + 
-				"0&[Cos(x)],IntegerQ(Cos(x))&&Cos(x)<0,{IntegerQ(Cos(x)),False},False}},{{{{{D(x,x),\n" + 
-				"1},(-1)*1*Sin(x),-Sin(x)},-Sin(x)},Log(Sin(x))*-Sin(x),-Log(Sin(x))*Sin(x)},{{{{D(x,x),\n" + 
-				"1},1*Cos(x),Cos(x)},Cos(x)},{{IntegerQ(#1)&&#1<0&[-1],IntegerQ(-1)&&-1<0,{IntegerQ(\n" + 
-				"-1),True},{-1<0,True},True},{{(-1)*(-1),1},Csc(x)^1,{IntegerQ(#1)&&#1<0&[1],IntegerQ(\n" + 
-				"1)&&1<0,{IntegerQ(1),True},{1<0,False},False},Csc(x)},Csc(x)},Cos(x)*Cos(x)*Csc(x),Cot(x)^\n" + 
-				"1*Cos(x),{{IntegerQ(#1)&&#1<0&[1],IntegerQ(1)&&1<0,{IntegerQ(1),True},{1<0,False},False},Cot(x)},Cos(x)*Cot(x)},Cos(x)*Cot(x)-Log(Sin(x))*Sin(x)},(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x),{{IntegerQ(#1)&&#1<\n" + 
-				"0&[Cos(x)],IntegerQ(Cos(x))&&Cos(x)<0,{IntegerQ(Cos(x)),False},False}},{{-Cos(x)*Cot(x),-Cos(x)*Cot(x)},{--Log(Sin(x))*Sin(x),(\n" + 
-				"-1)*(-1)*Log(Sin(x))*Sin(x),Log(Sin(x))*Sin(x)},-Cos(x)*Cot(x)+Log(Sin(x))*Sin(x)}}");
+				"{{{IntegerQ(#1)&&#1<0&[Cos(x)],IntegerQ(Cos(x))&&Cos(x)<0,{IntegerQ(Cos(x)),False},False}},Sin(x)^Cos(x)*(D(Cos(x),x)*Log(Sin(x))+(Cos(x)*D(Sin(x),x))/Sin(x)),{{IntegerQ(#1)&&#1<\n"
+						+ "0&[Cos(x)],IntegerQ(Cos(x))&&Cos(x)<0,{IntegerQ(Cos(x)),False},False}},{{{{{D(x,x),\n"
+						+ "1},(-1)*1*Sin(x),-Sin(x)},-Sin(x)},Log(Sin(x))*-Sin(x),-Log(Sin(x))*Sin(x)},{{{{D(x,x),\n"
+						+ "1},1*Cos(x),Cos(x)},Cos(x)},{{IntegerQ(#1)&&#1<0&[-1],IntegerQ(-1)&&-1<0,{IntegerQ(\n"
+						+ "-1),True},{-1<0,True},True},{{(-1)*(-1),1},Csc(x)^1,{IntegerQ(#1)&&#1<0&[1],IntegerQ(\n"
+						+ "1)&&1<0,{IntegerQ(1),True},{1<0,False},False},Csc(x)},Csc(x)},Cos(x)*Cos(x)*Csc(x),Cot(x)^\n"
+						+ "1*Cos(x),{{IntegerQ(#1)&&#1<0&[1],IntegerQ(1)&&1<0,{IntegerQ(1),True},{1<0,False},False},Cot(x)},Cos(x)*Cot(x)},Cos(x)*Cot(x)-Log(Sin(x))*Sin(x)},(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x),{{IntegerQ(#1)&&#1<\n"
+						+ "0&[Cos(x)],IntegerQ(Cos(x))&&Cos(x)<0,{IntegerQ(Cos(x)),False},False}},{{-Cos(x)*Cot(x),-Cos(x)*Cot(x)},{--Log(Sin(x))*Sin(x),(\n"
+						+ "-1)*(-1)*Log(Sin(x))*Sin(x),Log(Sin(x))*Sin(x)},-Cos(x)*Cot(x)+Log(Sin(x))*Sin(x)}}");
 	}
 
 	public void testSystem039() {
@@ -964,9 +965,9 @@ public class MainTestCase extends AbstractTestCase {
 
 	public void testSystem081() {
 		check("Inverse(s*{{1,0,0},{0,1,0},{0,0,1}}-{{-1,1,1},{-4,-4,1},{1,1,1}})",
-				"{{(5-3*s-s^2)/(10-s-4*s^2-s^3),s/(-10+s+4*s^2+s^3),(5+s)/(-10+s+4*s^2+s^3)},\n" + 
-				" {(5-4*s)/(-10+s+4*s^2+s^3),(2-s^2)/(10-s-4*s^2-s^3),(-3+s)/(-10+s+4*s^2+s^3)},\n" + 
-				" {-s/(10-s-4*s^2-s^3),(-2-s)/(10-s-4*s^2-s^3),(8+5*s+s^2)/(-10+s+4*s^2+s^3)}}");
+				"{{(5-3*s-s^2)/(10-s-4*s^2-s^3),s/(-10+s+4*s^2+s^3),(5+s)/(-10+s+4*s^2+s^3)},\n"
+						+ " {(5-4*s)/(-10+s+4*s^2+s^3),(2-s^2)/(10-s-4*s^2-s^3),(-3+s)/(-10+s+4*s^2+s^3)},\n"
+						+ " {-s/(10-s-4*s^2-s^3),(-2-s)/(10-s-4*s^2-s^3),(8+5*s+s^2)/(-10+s+4*s^2+s^3)}}");
 		check("N(Inverse({{1,2.0},{3,4}}),50)", "{{-2,1},\n" + " {1.5,-5e-1}}");
 
 		check("Inverse({{1,2},{3,4}})", "{{-2,1},\n" + " {3/2,-1/2}}");
@@ -1524,16 +1525,15 @@ public class MainTestCase extends AbstractTestCase {
 	public void testSystem171a() {
 		check("Integrate(1/(x^5+x-7),x)", //
 				"Integrate(1/(-7+x+x^5),x)");
-		
-		
+
 		check("Rubi`PolyQ(x/(2*Sqrt(2)),x,1)", //
 				"True");
 		check("Rubi`PolyQ((2+2*x)/(2*Sqrt(2)),x)", //
 				"True");
-//		check("Rubi`PolyQ(2+2 *x,x,1)", //
-//				"True");
-//		check("Rubi`PolyQ(-(ArcTan((1+x)/Sqrt(2))/(2 Sqrt(2))),x )", //
-//				"True");
+		// check("Rubi`PolyQ(2+2 *x,x,1)", //
+		// "True");
+		// check("Rubi`PolyQ(-(ArcTan((1+x)/Sqrt(2))/(2 Sqrt(2))),x )", //
+		// "True");
 		check("Rubi`substaux(-ArcTan(x/(2*Sqrt(2)))/(2*Sqrt(2)),x,2+2*x,True)", //
 				"-ArcTan((1+x)/Sqrt(2))/(2*Sqrt(2))");
 		check("Integrate((x^2+2*x+3)^(-1),x)", //
@@ -1666,17 +1666,16 @@ public class MainTestCase extends AbstractTestCase {
 
 	public void testSystem172() {
 
-		check("Cos((a-b)*x)/(2*(a-b))-Cos((a+b)*x)/(2*(a+b))",
-				"Cos((a-b)*x)/(2*(a-b))-Cos((a+b)*x)/(2*(a+b))");
+		check("Cos((a-b)*x)/(2*(a-b))-Cos((a+b)*x)/(2*(a+b))", "Cos((a-b)*x)/(2*(a-b))-Cos((a+b)*x)/(2*(a+b))");
 		check("Integrate(Cos(a*x)*Sin(b*x),x)", //
 				"Cos((a-b)*x)/(2*(a-b))-Cos((a+b)*x)/(2*(a+b))");
 		check("Integrate(Cos(a*x)*Sin(b*x),x)", //
 				"Cos((a-b)*x)/(2*(a-b))-Cos((a+b)*x)/(2*(a+b))");
-		
+
 		check("Csc(b*x)^0", "1");
 		check("Integrate(Cos(x*(a+b)),x)", //
 				"Sin((a+b)*x)/(a+b)");
-	 
+
 		check("Integrate(Cos(a*x)*Sin(b*x)^2,x)",
 				"Sin(a*x)/(2*a)-Sin((a-2*b)*x)/(4*(a-2*b))-Sin((a+2*b)*x)/(4*(a+2*b))");
 		check("Integrate(Cos(a*x)^2*Sin(b*x),x)",
@@ -3182,7 +3181,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("Integrate(1/(x^3 + 1), x)", //
 				"Log(1+x)/3-Log(1-x+x^2)/6");
 		check("D(1/3*(-3*ArcTan((2*x+1)*3^(-1/2))*3^(-1/2)-1/2*Log(x^2-x+1))+1/3*Log(x+1), x)", //
-				"1/(3*(1+x))+1/3*(-(-1+2*x)/(2*(1-x+x^2))+2/(-1-(1+2*x)^2/3))");
+				"1/(3*(1+x))+1/3*(-(-1+2*x)/(2*(1-x+x^2))-2/(1+(1+2*x)^2/3))");
 		check("Simplify(D(Integrate(1/(x^3 + 1), x), x))", //
 				"(1-x)/(2*(1+x^3))");
 		// check("Apart((1+(1/x))/(1+(2/x)))","");
@@ -3329,14 +3328,15 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem995() {
-		check("Apart(1/((1 + x)*(5 + x)))", "1/(4+4*x)+1/(-20-4*x)");
+		check("Apart(1/((1 + x)*(5 + x)))", //
+				"1/(4+4*x)-1/(20+4*x)");
 		check("Apart((x)/(x^2-1))", "1/(-2+2*x)+1/(2+2*x)");
 		check("Apart((x+3)/(x^2-3*x-40))", "11/(-104+13*x)+2/(65+13*x)");
 		check("Apart((10*x^2+12*x+20)/(x^3-8))", "7/(-2+x)+(4+3*x)/(4+2*x+x^2)");
 		check("Apart((3*x+5)*(1-2*x)^(-2))", "13/8*1/(1/2-x)^2+3/(-2+4*x)");
 		check("Apart((10*x^2+12*x+20)/(x^3-8))", "7/(-2+x)+(4+3*x)/(4+2*x+x^2)");
 		check("Apart((10*x^2-63*x+29)/((x+2)*(x+3)^5))",
-				"195/(2+x)-308/(3+x)^5-185/(3+x)^4-195/(3+x)^3-195/(3+x)^2+195/(-3-x)");
+				"195/(2+x)-308/(3+x)^5-185/(3+x)^4-195/(3+x)^3-195/(3+x)^2-195/(3+x)");
 	}
 
 	public void testSystem996() {
@@ -3552,13 +3552,13 @@ public class MainTestCase extends AbstractTestCase {
 				+ "{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },\n"
 				+ "{ 56.0,  4.0, 24.0, 56.0, 78.0, 0.0, 13.0, 0.0, 24.0, 57.0, 8.0, 1.0 },\n"
 				+ "{ 0.0, 0.0, 46.0, 666.0, 34.0, 13.0, 67.0, 9.0, 12.0, 45.0, 38.0, 0.0 }})", //
-				"{{1.0,0.0,0.0,0.0,0.0,0.0,2.10208,0.880296,1.20494,2.02695,0.0532847,-0.0238165},\n" + 
-				" {0.0,1.0,0.0,0.0,0.0,0.0,15.92647,11.96727,11.32597,8.52651,4.08647,-0.243999},\n" + 
-				" {0.0,0.0,1.0,0.0,0.0,0.0,35.20901,22.34247,20.93462,20.96898,8.61046,-0.47866},\n" + 
-				" {0.0,0.0,0.0,1.0,0.0,0.0,-0.273706,-0.238202,-0.880791,-0.17439,-0.130603,0.0150597},\n" + 
-				" {0.0,0.0,0.0,0.0,1.0,0.0,-12.79629,-7.9493,-6.94727,-7.48852,-2.70086,0.1789},\n" + 
-				" {0.0,0.0,0.0,0.0,0.0,1.0,-71.94246,-45.37189,-9.85987,-42.21689,-13.79002,0.454309},\n" + 
-				" {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0}}");
+				"{{1.0,0.0,0.0,0.0,0.0,0.0,2.10208,0.880296,1.20494,2.02695,0.0532847,-0.0238165},\n"
+						+ " {0.0,1.0,0.0,0.0,0.0,0.0,15.92647,11.96727,11.32597,8.52651,4.08647,-0.243999},\n"
+						+ " {0.0,0.0,1.0,0.0,0.0,0.0,35.20901,22.34247,20.93462,20.96898,8.61046,-0.47866},\n"
+						+ " {0.0,0.0,0.0,1.0,0.0,0.0,-0.273706,-0.238202,-0.880791,-0.17439,-0.130603,0.0150597},\n"
+						+ " {0.0,0.0,0.0,0.0,1.0,0.0,-12.79629,-7.9493,-6.94727,-7.48852,-2.70086,0.1789},\n"
+						+ " {0.0,0.0,0.0,0.0,0.0,1.0,-71.94246,-45.37189,-9.85987,-42.21689,-13.79002,0.454309},\n"
+						+ " {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0}}");
 
 		check("RowReduce({{ 0, 0, 0, 0 }})", "{{0,0,0,0}}");
 		check("RowReduce({{ 0.0, 1.0, 0.0, 0.0 }})", "{{0.0,1.0,0.0,0.0}}");
@@ -3570,9 +3570,8 @@ public class MainTestCase extends AbstractTestCase {
 
 		check("RowReduce({{ 5.0, 7.0, 10.0, 3.0, 5.0, 8.0 },\n" + "{ 5.0, 2.0, 3.0, 10.0, 11.0, 9.0 },\n"
 				+ "{ 4.0, 3.0, 9.0, 12.0, 8.0, 9.0 }})",
-				"{{1.0,0.0,0.0,2.50862,2.67241,1.86207},\n" + 
-				" {0.0,1.0,0.0,-3.19828,-1.46552,-0.827586},\n" + 
-				" {0.0,0.0,1.0,1.28448,0.189655,0.448276}}");
+				"{{1.0,0.0,0.0,2.50862,2.67241,1.86207},\n" + " {0.0,1.0,0.0,-3.19828,-1.46552,-0.827586},\n"
+						+ " {0.0,0.0,1.0,1.28448,0.189655,0.448276}}");
 		check("RowReduce({{1,2,3},{4,5,6}})", "{{1,0,-1},\n" + " {0,1,2}}");
 
 		check("RowReduce({{1,1,0,1,5},{1,0,0,2,2},{0,0,1,4,-1},{0,0,0,0,0}})",
@@ -3790,14 +3789,14 @@ public class MainTestCase extends AbstractTestCase {
 		check("Together(1/(-3+x)-(2+x)/(3-x)^2)", "-5/(9-6*x+x^2)");
 		check("Simplify(1/(-3+x)-(2+x)/(3-x)^2)", "-5/(3-x)^2");
 	}
-	
-//	public void testOutputformats() {
-//		check("{6.7^-4, 6.7^6, 6.7^8}", //
-//				"{0.0005,90458.38217,4.06067678*10^6}");
-//		check("{8.^5, 11.^7, 13.^9}", //
-//				"{32768.0,1.94871710*10^7,1.06044994*10^10}");
-//		
-//		checkNumeric("{6.7^-4, 6.7^6, 6.7^8}", //
-//				"{4.962503078612847E-4,90458.38216900002,4060676.7755664107}");
-//	}
+
+	// public void testOutputformats() {
+	// check("{6.7^-4, 6.7^6, 6.7^8}", //
+	// "{0.0005,90458.38217,4.06067678*10^6}");
+	// check("{8.^5, 11.^7, 13.^9}", //
+	// "{32768.0,1.94871710*10^7,1.06044994*10^10}");
+	//
+	// checkNumeric("{6.7^-4, 6.7^6, 6.7^8}", //
+	// "{4.962503078612847E-4,90458.38216900002,4060676.7755664107}");
+	// }
 }

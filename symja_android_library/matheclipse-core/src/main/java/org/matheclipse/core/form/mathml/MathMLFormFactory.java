@@ -821,7 +821,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		 */
 		public boolean convertTimesFraction(final StringBuilder buf, final IAST f, final int precedence,
 				final boolean caller) {
-			IExpr[] parts = Algebra.fractionalPartsTimesPower(f, false, true, false, false);
+			IExpr[] parts = Algebra.fractionalPartsTimesPower(f, false, true, false, false, false);
 			if (parts == null) {
 				convertTimesOperator(buf, f, precedence, caller);
 				return true;

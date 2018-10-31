@@ -159,14 +159,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Sin(1 / (x ^ 2 - y ^ 2)) // Apart", "Sin(1/(x^2-y^2))");
 
-		check("Apart(1 / (x^2 + 5*x + 6))", "1/(2+x)+1/(-3-x)");
+		check("Apart(1 / (x^2 + 5*x + 6))", "1/(2+x)-1/(3+x)");
 		// TODO return -1 / (2 y (x + y)) + 1 / (2 y (x - y))
 		check("Apart(1 / (x^2 - y^2), x)", "1/(x^2-y^2)");
 		// TODO return 1 / (2 x (x + y)) + 1 / (2 x (x - y))
 		check("Apart(1 / (x^2 - y^2), y)", "1/(x^2-y^2)");
 
-		check("Apart(1/((1 + x)*(5 + x)))", "1/(4+4*x)+1/(-20-4*x)");
-		check("Apart(1 < (x + 1)/(x - 1) < 2)", "1<1+2/(-1+x)<2");
+		check("Apart(1/((1 + x)*(5 + x)))", //
+				"1/(4+4*x)-1/(20+4*x)");
+		check("Apart(1 < (x + 1)/(x - 1) < 2)", //
+				"1<1+2/(-1+x)<2");
 	}
 
 	public void testAppend() {
@@ -298,7 +300,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("arccot(0)", "Pi/2");
 		check("arccot(-11)", "-ArcCot(11)");
 		check("arccot(-x)", "-ArcCot(x)");
-		check("D(ArcCot(x),x)", "1/(-1-x^2)");
+		check("D(ArcCot(x),x)", //
+				"-1/(1+x^2)");
 	}
 
 	public void testArcCoth() {
@@ -1151,7 +1154,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Cancel((x^2 - 1)/(x - 1))", //
 				"1+x");
 		check("Cancel((x - y)/(x^2 - y^2) + (x^3 - 27)/(x^2 - 9) + (x^3 + 1)/(x^2 - x + 1))", //
-				"1+x+(9+3*x+x^2)/(3+x)+1/(x+y)");
+				"1+x+(9+3*x+x^2)/(3+x)-1/(-x-y)");
 		check("cancel((x - 1)/(x^2 - 1) + (x - 2)/(x^2 - 4))", //
 				"1/(1+x)+1/(2+x)");
 		check("together((x - 1)/(x^2 - 1) + (x - 2)/(x^2 - 4))", //
@@ -3804,7 +3807,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testFindInstance() {
 		check("FindInstance(2*Sin(x)==1/2,x)", //
 				"{{x->ArcSin(1/4)}}");
-		
+
 		check("FindInstance({x^2==4,x+y^2==6}, {x,y})", "{{x->-2,y->-2*Sqrt(2)}}");
 		check("FindInstance(x+5.0==a,x)", "{{x->-5.0+a}}");
 
@@ -3818,7 +3821,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("FindInstance(2*Sin(x)==1/2,x)", //
 				"{{x->ArcSin(1/4)}}");
-		check("FindInstance(3+2*Cos(x)==1/2,x)",//
+		check("FindInstance(3+2*Cos(x)==1/2,x)", //
 				"{{x->ArcCos(-5/4)}}");
 		check("FindInstance(Sin(x)==0,x)", "{{x->0}}");
 		check("FindInstance(Sin(x)==0.0,x)", "{{x->0}}");
@@ -3830,8 +3833,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		checkNumeric("FindInstance(x^2+50*x-2500.00==0,x)", "{{x->30.901699437494745}}");
 
-		check("FindInstance(a*x + y == 7 && b*x - y == 1, {x, y})", "{{x->8/(a+b),y->(a-7*b)/(-a-b)}}");
-		check("FindInstance({a*x + y == 7, b*x - y == 1}, {x, y})", "{{x->8/(a+b),y->(a-7*b)/(-a-b)}}");
+		check("FindInstance(a*x + y == 7 && b*x - y == 1, {x, y})", //
+				"{{x->-8/(-a-b),y->(a-7*b)/(-a-b)}}");
+		check("FindInstance({a*x + y == 7, b*x - y == 1}, {x, y})", //
+				"{{x->-8/(-a-b),y->(a-7*b)/(-a-b)}}");
 
 	}
 
@@ -10574,9 +10579,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{x->30.901699437494745},{x->-80.90169943749474}}");
 
 		check("Solve(a*x + y == 7 && b*x - y == 1, {x, y})", //
-				"{{x->8/(a+b),y->(a-7*b)/(-a-b)}}");
+				"{{x->-8/(-a-b),y->(a-7*b)/(-a-b)}}");
 		check("Solve({a*x + y == 7, b*x - y == 1}, {x, y})", //
-				"{{x->8/(a+b),y->(a-7*b)/(-a-b)}}");
+				"{{x->-8/(-a-b),y->(a-7*b)/(-a-b)}}");
 
 		check("Solve(-Infinity==(2*a2)/a3+(-2*a5)/a3,a3)", //
 				"Solve(-Infinity==(2*a2)/a3+(-2*a5)/a3,a3)");
@@ -11776,7 +11781,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Together((-7*a^(-1)*b+1)*(-a^(-1)*b-1)^(-1))", "(a-7*b)/(-a-b)");
 		check("Together(a*b^(-2)+c*d^(-3))", "(b^2*c+a*d^3)/(b^2*d^3)");
 		check("Together(-a*b^(-2)-c*d^(-3))", "(-b^2*c-a*d^3)/(b^2*d^3)");
-		check("Together((-8)*a^(-1)*(-a^(-1)*b-1)^(-1))", "8/(a+b)");
+		check("Together((-8)*a^(-1)*(-a^(-1)*b-1)^(-1))", "-8/(-a-b)");
 
 		check("Together((2*(2*x^3-4*x+5)*x^3*(3*x^2+2)^(-1)-4*x*(2*x^3-4*x+5)*(3*x^2+2)^(-1)+5*(2*x^3-4*x+\n"
 				+ "5)*(3*x^2+2)^(-1)-4*x^4+8*x^2-10*x)*(3*x^2+2)^(-1)+x^2-2)",
@@ -11786,7 +11791,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Together((2*(2*x^3-4*x+5)*x^3*(3*x^2+2)^(-1)-4*x*(2*x^3-4*x+5)*(3*x^2+2)^(-1)+5*(2*x^3-4*x+\n"
 				+ "5)*(3*x^2+2)^(-1)-4*x^4+8*x^2-10*x)*(x)^(-1)-2)", "(25-64*x+32*x^2-16*x^3-8*x^6)/(2*x+3*x^3)");
 		check("Together(a + c/g)", "(c+a*g)/g");
-		check("Together(((7*b*a^(-1)-1)*(-b*a^(-1)-1)^(-1)+7)*a^(-1))", "8/(a+b)");
+		check("Together(((7*b*a^(-1)-1)*(-b*a^(-1)-1)^(-1)+7)*a^(-1))", //
+				"-8/(-a-b)");
 
 		check("ExpandAll((x^2-1)*x^2+x*(x^2-1))", "-x-x^2+x^3+x^4");
 		check("together(x^2/(x^2 - 1) + x/(x^2 - 1))", "x/(-1+x)");
@@ -11794,7 +11800,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"(-1+2*x)/(6*(1-x+x^2))");
 		check("Together((-a^2*r^2*x-a*b*r*x-a*c*x-a^2*r^3-2*a*b*r^2-a*c*r-b^2*r-b*c)*((a*r^2+b*r)^2+2*c*(a*r^2+b*r)+c^2)^(-1))",
 				"(-b-a*r-a*x)/(c+b*r+a*r^2)");
-		check("Together((-8)*a^(-1)*(-a^(-1)*b-1)^(-1))", "8/(a+b)");
+		check("Together((-8)*a^(-1)*(-a^(-1)*b-1)^(-1))", //
+				"-8/(-a-b)");
 
 		check("Together(a/b + c/d)", "(b*c+a*d)/(b*d)");
 		check("Together((-a^(-1)*b-1))", "(-a-b)/a");

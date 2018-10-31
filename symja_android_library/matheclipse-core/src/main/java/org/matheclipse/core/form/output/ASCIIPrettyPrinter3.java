@@ -212,7 +212,7 @@ public class ASCIIPrettyPrinter3 {
 	 * @param ast
 	 */
 	private void convertTimesPowerFraction(IAST ast, final int precedence) {
-		IExpr[] parts = Algebra.fractionalPartsTimesPower(ast, true, false, false, false);
+		IExpr[] parts = Algebra.fractionalPartsTimesPower(ast, true, false, false, false, false);
 		// IExpr[] parts = Algebra.getFractionalParts(ast, false);
 		if (parts == null) {
 			print(ast.toString());
