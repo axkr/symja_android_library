@@ -182,6 +182,10 @@ public class OutputFormFactory {
 			return;
 		}
 		if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
+			if (caller == PLUS_CALL) {
+				append(buf, "+");
+				caller=false;
+			}
 			append(buf, "(");
 		}
 		double realPart = dc.getRealPart();
@@ -202,6 +206,7 @@ public class OutputFormFactory {
 			} else {
 				if (caller == PLUS_CALL) {
 					append(buf, "+");
+					caller=false;
 				}
 				append(buf, "I*");
 				final boolean isNegative = imaginaryPart < 0;
@@ -217,6 +222,10 @@ public class OutputFormFactory {
 	public void convertApcomplex(final Appendable buf, final Apcomplex dc, final int precedence, boolean caller)
 			throws IOException {
 		if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
+			if (caller == PLUS_CALL) {
+				append(buf, "+");
+				caller=false;
+			}
 			append(buf, "(");
 		}
 		Apfloat realPart = dc.real();
@@ -237,6 +246,7 @@ public class OutputFormFactory {
 			} else {
 				if (caller == PLUS_CALL) {
 					append(buf, "+");
+					caller=false;
 				}
 				append(buf, "I*");
 				final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
@@ -350,6 +360,10 @@ public class OutputFormFactory {
 		final boolean isImOne = c.getImaginaryPart().isOne();
 		final boolean isImMinusOne = c.getImaginaryPart().isMinusOne();
 		if (!isReZero && (ASTNodeFactory.PLUS_PRECEDENCE < precedence)) {
+			if (caller == PLUS_CALL) {
+				append(buf, "+");
+				caller=false;
+			}
 			append(buf, "(");
 		}
 		if (!isReZero) {
@@ -359,6 +373,7 @@ public class OutputFormFactory {
 			if (isReZero) {
 				if (caller == PLUS_CALL) {
 					append(buf, "+");
+					caller=false;
 				}
 				append(buf, "I");
 				return;

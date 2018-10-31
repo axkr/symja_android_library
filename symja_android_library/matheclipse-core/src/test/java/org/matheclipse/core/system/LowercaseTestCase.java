@@ -637,7 +637,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAttributes() {
-		check("Attributes(fun) = {ReadProtected, Protected}",//
+		check("Attributes(fun) = {ReadProtected, Protected}", //
 				"{ReadProtected,Protected}");
 		check("Attributes(Plus)", //
 				"{Flat,Listable,OneIdentity,Orderless,NumericFunction}");
@@ -3802,6 +3802,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFindInstance() {
+		check("FindInstance(2*Sin(x)==1/2,x)", //
+				"{{x->ArcSin(1/4)}}");
+		
 		check("FindInstance({x^2==4,x+y^2==6}, {x,y})", "{{x->-2,y->-2*Sqrt(2)}}");
 		check("FindInstance(x+5.0==a,x)", "{{x->-5.0+a}}");
 
@@ -3813,8 +3816,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("FindInstance(Abs((-3+x^2)/x) ==2,{x})", "{{x->-3}}");
 		check("FindInstance({x^2-11==y, x+y==-9}, {x,y})", "{{x->-2,y->-7}}");
 
-		check("FindInstance(2*Sin(x)==1/2,x)", "{{x->ArcSin(1/4)}}");
-		check("FindInstance(3+2*Cos(x)==1/2,x)", "{{x->ArcCos(-5/4)}}");
+		check("FindInstance(2*Sin(x)==1/2,x)", //
+				"{{x->ArcSin(1/4)}}");
+		check("FindInstance(3+2*Cos(x)==1/2,x)",//
+				"{{x->ArcCos(-5/4)}}");
 		check("FindInstance(Sin(x)==0,x)", "{{x->0}}");
 		check("FindInstance(Sin(x)==0.0,x)", "{{x->0}}");
 		check("FindInstance(Sin(x)==1/2,x)", "{{x->Pi/6}}");
@@ -11710,6 +11715,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTogether() {
+		check("Together(1/2+I/3 + 3*a^(-1))", //
+				"(18+(3+I*2)*a)/(6*a)");
+		check("Together(1/2 + 3/a )", //
+				"(6+a)/(2*a)");
 		check("Together[(2 + 2*x)/(2*Sqrt[2])]", //
 				"(1+x)/Sqrt(2)");
 
@@ -11781,7 +11790,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("ExpandAll((x^2-1)*x^2+x*(x^2-1))", "-x-x^2+x^3+x^4");
 		check("together(x^2/(x^2 - 1) + x/(x^2 - 1))", "x/(-1+x)");
-		check("Together((1/3*x-1/6)*(x^2-x+1)^(-1))", "(-1/2+x)/(3*(1-x+x^2))");
+		check("Together((1/3*x-1/6)*(x^2-x+1)^(-1))", //
+				"(-1+2*x)/(6*(1-x+x^2))");
 		check("Together((-a^2*r^2*x-a*b*r*x-a*c*x-a^2*r^3-2*a*b*r^2-a*c*r-b^2*r-b*c)*((a*r^2+b*r)^2+2*c*(a*r^2+b*r)+c^2)^(-1))",
 				"(-b-a*r-a*x)/(c+b*r+a*r^2)");
 		check("Together((-8)*a^(-1)*(-a^(-1)*b-1)^(-1))", "8/(a+b)");

@@ -4120,17 +4120,45 @@ public class Algebra {
 			IASTAppendable denominator = F.ast(F.Times, plusAST.size(), false);
 			boolean[] evaled = new boolean[1];
 			plusAST.forEach((x, i) -> {
-				IExpr[] fractionalParts = fractionalParts(x, false);
-				if (fractionalParts != null) {
-					numerator.append(i, fractionalParts[0]);
-					IExpr temp = fractionalParts[1];
-					if (!temp.isOne()) {
-						evaled[0] = true;
+				// IExpr[] fractionalParts = fractionalPartsRational(x);
+				// if (fractionalParts != null) {
+				// numerator.append(i, fractionalParts[0]);
+				// IExpr temp = fractionalParts[1];
+				// if (!temp.isOne()) {
+				// evaled[0] = true;
+				// }
+				// denominator.append(i, temp);
+				// } else {
+				// numerator.append(i, x);
+				// denominator.append(i, F.C1);
+				// }
+				if (x.isFraction()) {
+					numerator.append(i, ((IFraction) x).numerator());
+					denominator.append(i, ((IFraction) x).denominator());
+				} else if (x.isComplex()) {
+					IRational re = ((IComplex) x).getRealPart();
+					IRational im = ((IComplex) x).getImaginaryPart();
+					if (re.isFraction() || im.isFraction()) {
+						numerator.append(i, re.numerator().times(im.denominator())
+								.add(im.numerator().times(re.denominator()).times(F.CI)));
+						denominator.append(i, re.denominator().times(im.denominator()));
+					} else {
+						numerator.append(i, x);
+						denominator.append(i, F.C1);
 					}
-					denominator.append(i, temp);
 				} else {
-					numerator.append(i, x);
-					denominator.append(i, F.C1);
+					IExpr[] fractionalParts = fractionalParts(x, false);
+					if (fractionalParts != null) {
+						numerator.append(i, fractionalParts[0]);
+						IExpr temp = fractionalParts[1];
+						if (!temp.isOne()) {
+							evaled[0] = true;
+						}
+						denominator.append(i, temp);
+					} else {
+						numerator.append(i, x);
+						denominator.append(i, F.C1);
+					}
 				}
 			});
 			if (!evaled[0]) {
@@ -4830,7 +4858,6 @@ public class Algebra {
 					return null;
 				}
 			} else {
-
 				IExpr numerForm = Numerator.getTrigForm(ast, trig);
 				if (numerForm.isPresent()) {
 					IExpr denomForm = Denominator.getTrigForm(ast, trig);
@@ -5005,6 +5032,17 @@ public class Algebra {
 			parts[0] = fr.numerator();
 			parts[1] = fr.denominator();
 			return parts;
+		} else if (arg.isComplex()) {
+			IRational re = ((IComplex) arg).getRealPart();
+			IRational im = ((IComplex) arg).getImaginaryPart();
+			if (re.isFraction() || im.isFraction()) {
+				IExpr[] parts = new IExpr[2];
+				parts[0] = re.numerator().times(im.denominator())
+						.add(im.numerator().times(re.denominator()).times(F.CI));
+				parts[1] = re.denominator().times(im.denominator());
+				return parts;
+			}
+			return null;
 		}
 		return fractionalParts(arg, false);
 	}

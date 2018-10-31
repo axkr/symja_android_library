@@ -769,8 +769,15 @@ public class RubiIntegrationTest extends AbstractTestCase {
 	public void testGithub21() {
 		check("Integrate(4/(1-3*(x)) + 1/2*Sqrt((x)) - 5,x)", //
 				"-5*x+x^(3/2)/3-4/3*Log(1-3*x)");
+		
+		// TODO Sort/Orderless problem in Simplify?
+		check("-5+4/(1-3*x)+Sqrt(x)/2", //
+				"-5+4/(1-3*x)+Sqrt(x)/2");
+		check("-5+Sqrt(x)/2+4/(1-3*x)", //
+				"-5+4/(1-3*x)+Sqrt(x)/2");
 		check("Simplify(D(-5*x+x^(3/2)/3-4/3*Log(1/3-x),x))", //
 				"-5+Sqrt(x)/2+4/(1-3*x)");
+		
 		check("PowerExpand(ln(3*(1/3-x)))", //
 				"Log(3)+Log(1/3-x)");
 	}
