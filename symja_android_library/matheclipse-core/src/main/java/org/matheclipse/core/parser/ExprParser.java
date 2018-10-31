@@ -119,7 +119,7 @@ public class ExprParser extends Scanner {
 	 */
 	private final boolean fRelaxedSyntax;
 
-	private List<IExpr> fNodeList = null;
+	// private List<IExpr> fNodeList = null;
 
 	private final EvalEngine fEngine;
 
@@ -165,9 +165,9 @@ public class ExprParser extends Scanner {
 		this.fRelaxedSyntax = relaxedSyntax;
 		this.fFactory = factory;
 		this.fEngine = engine;
-		if (packageMode) {
-			fNodeList = new ArrayList<IExpr>(256);
-		}
+		// if (packageMode) {
+		// fNodeList = new ArrayList<IExpr>(256);
+		// }
 	}
 
 	private IExpr convert(IASTMutable ast) {
@@ -1204,13 +1204,13 @@ public class ExprParser extends Scanner {
 					if (infixOperator.getPrecedence() > min_precedence
 							|| ((infixOperator.getPrecedence() == min_precedence)
 									&& (infixOperator.getGrouping() == InfixExprOperator.RIGHT_ASSOCIATIVE))) {
-						if (infixOperator.isOperator(";")) {
-							rhs = F.Null;
+//						if (infixOperator.isOperator(";")) {
+//							rhs = F.Null;
 							// if (fPackageMode && fRecursionDepth < 1) {
 							// return createInfixFunction(infixOperator, lhs,
 							// rhs);
 							// }
-						}
+//						}
 						rhs = parseExpression(rhs, infixOperator.getPrecedence());
 						continue;
 					}
@@ -1254,13 +1254,14 @@ public class ExprParser extends Scanner {
 		return expr;
 	}
 
-	public List<IExpr> parsePackage(final String expression) throws SyntaxError {
+	public void parsePackage(final String expression) throws SyntaxError {
 		initialize(expression);
 		while (fToken == TT_NEWLINE) {
 			getNextToken();
 		}
 		IExpr temp = parseExpression();
-		fNodeList.add(temp);
+		fEngine.evaluate(temp);
+		// fNodeList.add(temp);
 		while (fToken != TT_EOF) {
 			if (fToken == TT_PRECEDENCE_CLOSE) {
 				throwSyntaxError("Too many closing ')'; End-of-file not reached.");
@@ -1275,14 +1276,16 @@ public class ExprParser extends Scanner {
 				getNextToken();
 			}
 			if (fToken == TT_EOF) {
-				return fNodeList;
+				return;
+				// return fNodeList;
 			}
 			temp = parseExpression();
-			fNodeList.add(temp);
+			fEngine.evaluate(temp);
+			// fNodeList.add(temp);
 			// throwSyntaxError("End-of-file not reached.");
 		}
 
-		return fNodeList;
+		// return fNodeList;
 	}
 
 	private IExpr parsePrimary(final int min_precedence) {
