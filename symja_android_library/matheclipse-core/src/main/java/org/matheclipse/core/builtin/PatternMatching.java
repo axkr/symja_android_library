@@ -133,6 +133,9 @@ public final class PatternMatching {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Context context = engine.end();
+			if (context==null) {
+				return F.NIL;
+			}
 			return F.stringx(context.getContextName());
 		}
 

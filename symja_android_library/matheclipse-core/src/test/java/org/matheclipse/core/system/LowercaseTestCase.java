@@ -672,6 +672,44 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"144");
 	}
 
+	public void testBeginPackageNested() {
+		check("BeginPackage(\"test`\")", //
+				"");
+		check("Context( )", //
+				"test`");
+		check("$ContextPath", //
+				"{test`,System`}");
+		check("testit::usage = \"testit(x) gives x^2\"", //
+				"testit(x) gives x^2");
+		check("testit(x_) :=  x^2 ", //
+				"");
+		check("Begin(\"test`Private`\")", //
+				"");
+		check("test2(x_) :=  x^3 ", //
+				"");
+		check("testit(12)", //
+				"144");
+		check("End( )", //
+				"test`Private`");
+		check("$ContextPath", //
+				"{test`,System`}");
+		check("Context( )", //
+				"test`");
+		check("EndPackage( )", //
+				"");
+		check("test`Private`test2(12)", //
+				"1728");
+		check("$ContextPath", //
+				"{test`,System`,Global`}");
+		check("Context( )", //
+				"Global`");
+		// print usage message in console
+		check("?testit", //
+				"");
+		check("testit(12)", //
+				"144");
+	}
+	
 	public void testBegin() {
 		check("Begin(\"mytest`\")", //
 				"");
