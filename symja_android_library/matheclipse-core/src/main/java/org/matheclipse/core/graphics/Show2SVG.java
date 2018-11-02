@@ -50,7 +50,7 @@ public class Show2SVG {
 		}
 	}
 
-	private static void graphicsToSVG(IAST ast, StringBuilder buf) {
+	public static void graphicsToSVG(IAST ast, StringBuilder buf) {
 		EvalEngine engine = EvalEngine.get();
 		IAST numericAST = (IAST) engine.evalN(ast);
 		Dimensions2D dim = new Dimensions2D(350, 350);
