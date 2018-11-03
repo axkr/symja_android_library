@@ -16,6 +16,7 @@ import org.logicng.formulas.Literal;
 import org.logicng.formulas.Not;
 import org.logicng.formulas.Or;
 import org.logicng.formulas.Variable;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.generic.Comparators.ExprComparator;
@@ -115,14 +116,27 @@ public class LogicFormula {
 		} else if (formula instanceof Literal) {
 			Literal a = (Literal) formula;
 			if (a.phase()) {
-				return variable2symbolMap.get(a.variable());
+				return mapToSymbol(a.variable());
 			}
-			return F.Not(variable2symbolMap.get(a.variable()));
+			return F.Not(mapToSymbol(a.variable()));
 		} else if (formula instanceof Variable) {
 			Variable a = (Variable) formula;
-			return variable2symbolMap.get(a);
+			return mapToSymbol(a);
 		}
 		throw new ClassCastException(formula.toString());
+	}
+
+	private ISymbol mapToSymbol(Variable v) {
+		ISymbol s = variable2symbolMap.get(v);
+		if (s != null) {
+			return s;
+		}
+		EvalEngine engine = EvalEngine.get();
+		int moduleCounter = engine.incModuleCounter();
+		final String varAppend = "LF" + "$" + moduleCounter;
+		s = F.symbol(varAppend, engine);
+		variable2symbolMap.put(v, s);
+		return s;
 	}
 
 	private Formula convertEquivalent(IAST ast) {
