@@ -1572,7 +1572,7 @@ class GenPolynomialIterator implements Iterator<ExprPolynomial> {
 		int i = 0;
 		for (ExpVectorLong f : powers) {
 			IExpr c = coeffs.get(i++);
-			if (c.isZero()) {
+			if (c.isZERO()) {
 				continue;
 			}
 			if (pol.val.get(f) != null) {
@@ -1672,7 +1672,7 @@ class GenPolynomialMonomialIterator implements Iterator<ExprPolynomial> {
 
 		List<IExpr> ec = iter.next();
 		IExpr c = ec.get(1);
-		while (c.isZero()) { // zero already done in first next
+		while (c.isZERO()) { // zero already done in first next
 			ec = iter.next();
 			c = ec.get(1);
 		}

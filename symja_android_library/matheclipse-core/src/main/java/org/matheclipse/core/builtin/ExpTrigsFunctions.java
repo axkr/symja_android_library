@@ -987,7 +987,7 @@ public class ExpTrigsFunctions {
 
 						IASTAppendable result = F.ListAlloc(10);
 						ast.forEach(0, i, (x, j) -> {
-							result.append(F.AngleVector(F.Plus(start, F.ZZ(j).multiply(angle))));
+							result.append(F.AngleVector(F.Plus(start, F.ZZ(j).times(angle))));
 						});
 						return result;
 					}

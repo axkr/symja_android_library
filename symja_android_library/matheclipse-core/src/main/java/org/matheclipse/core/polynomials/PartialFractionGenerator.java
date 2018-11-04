@@ -56,7 +56,7 @@ public class PartialFractionGenerator implements IPartialFractionGenerator {
 			temp = F.eval(F.Times(F.integer(gcd), jas.integerPoly2Expr(poly), F.Power(F.integer(lcm), F.integer(-1L)),
 					F.Power(jas.rationalPoly2Expr(Di_1), F.integer(j * (-1L)))));
 		}
-		if (!temp.isZero()) {
+		if (!temp.isZERO()) {
 			if (temp.isAST()) {
 				((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
 			}
@@ -87,7 +87,7 @@ public class PartialFractionGenerator implements IPartialFractionGenerator {
 	// temp = F.eval(
 	// F.Times(jas.integerPoly2Expr(poly), F.Power(jas.integerPoly2Expr(Di_1), F.integer(j * (-1L)))));
 	// }
-	// if (!temp.isZero()) {
+	// if (!temp.isZERO()) {
 	// if (temp.isAST()) {
 	// ((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
 	// }

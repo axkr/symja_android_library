@@ -70,14 +70,14 @@ public class JASConvert<C extends RingElem<C>> {
 		for (int i = 0; i < fVariables.size(); i++) {
 			vars[i] = fVariables.get(i).toString();
 		}
-		this.fTermOrder = TermOrderByName.Lexicographic;
+		this.fTermOrder = TermOrderByName.INVLEX;
 		this.fPolyFactory = new GenPolynomialRing<C>(fRingFactory, fVariables.size(), fTermOrder, vars);
 		this.fBigIntegerPolyFactory = new GenPolynomialRing<edu.jas.arith.BigInteger>(edu.jas.arith.BigInteger.ZERO,
 				fVariables.size(), fTermOrder, vars);
 	}
 
 	public JASConvert(final List<? extends IExpr> variablesList, RingFactory<C> ringFactory) {
-		this(variablesList, ringFactory, TermOrderByName.Lexicographic);
+		this(variablesList, ringFactory, TermOrderByName.INVLEX);
 	}
 
 	public JASConvert(final List<? extends IExpr> variablesList, RingFactory<C> ringFactory, TermOrder termOrder) {

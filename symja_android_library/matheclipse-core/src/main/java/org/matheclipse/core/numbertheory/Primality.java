@@ -440,10 +440,10 @@ public class Primality {
 				} while (divRem[1].equals(BigInteger.ZERO));
 				IExpr exp = map.get(primes[i]);
 				if (exp == null) {
-					map.put(primes[i], F.ZZ(count).multiply(exponent));
+					map.put(primes[i], F.ZZ(count).times(exponent));
 				} else {
 					evaled[0] = true;
-					map.put(primes[i], exp.add(F.ZZ(count).multiply(exponent)));
+					map.put(primes[i], exp.add(F.ZZ(count).times(exponent)));
 				}
 
 			}
@@ -491,10 +491,10 @@ public class Primality {
 				if (setEvaled && count > 1) {
 					evaled[0] = true;
 				}
-				map.put(2, F.ZZ(count).multiply(exponent));
+				map.put(2, F.ZZ(count).times(exponent));
 			} else {
 				evaled[0] = true;
-				map.put(2, exp.add(F.ZZ(count).multiply(exponent)));
+				map.put(2, exp.add(F.ZZ(count).times(exponent)));
 			}
 		}
 
@@ -520,10 +520,10 @@ public class Primality {
 					if (setEvaled && count > 1) {
 						evaled[0] = true;
 					}
-					map.put(primes[i], F.ZZ(count).multiply(exponent));
+					map.put(primes[i], F.ZZ(count).times(exponent));
 				} else {
 					evaled[0] = true;
-					map.put(primes[i], exp.add(F.ZZ(count).multiply(exponent)));
+					map.put(primes[i], exp.add(F.ZZ(count).times(exponent)));
 				}
 
 			}

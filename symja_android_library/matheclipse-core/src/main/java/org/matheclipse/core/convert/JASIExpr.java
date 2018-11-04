@@ -76,22 +76,22 @@ public class JASIExpr {
 		for (int i = 0; i < fVariables.size(); i++) {
 			vars[i] = fVariables.get(i).toString();
 		}
-		this.fTermOrder = TermOrderByName.Lexicographic;
+		this.fTermOrder = TermOrderByName.INVLEX;
 		this.fPolyFactory = new GenPolynomialRing<IExpr>(fRingFactory, fVariables.size(), fTermOrder, vars);
 		this.fBigIntegerPolyFactory = new GenPolynomialRing<edu.jas.arith.BigInteger>(edu.jas.arith.BigInteger.ZERO,
 				fVariables.size(), fTermOrder, vars);
 	}
 
 	public JASIExpr(final List<? extends IExpr> variablesList) {
-		this(variablesList, ExprRingFactory.CONST, TermOrderByName.Lexicographic, false);
+		this(variablesList, ExprRingFactory.CONST, TermOrderByName.INVLEX, false);
 	}
 
 	public JASIExpr(final List<? extends IExpr> variablesList, boolean numericFunction) {
-		this(variablesList, ExprRingFactory.CONST, TermOrderByName.Lexicographic, numericFunction);
+		this(variablesList, ExprRingFactory.CONST, TermOrderByName.INVLEX, numericFunction);
 	}
 
 	public JASIExpr(final List<? extends IExpr> variablesList, RingFactory<IExpr> ringFactory) {
-		this(variablesList, ringFactory, TermOrderByName.Lexicographic, false);
+		this(variablesList, ringFactory, TermOrderByName.INVLEX, false);
 	}
 
 	public JASIExpr(final List<? extends IExpr> variablesList, RingFactory<IExpr> ringFactory, TermOrder termOrder,

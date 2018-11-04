@@ -370,9 +370,7 @@ public final class NILPointer extends AbstractAST implements IASTAppendable {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @deprecated use {@link #isZero()} instead.
 	 */
-	@Deprecated
 	@Override
 	public final boolean isZERO() {
 		return false;

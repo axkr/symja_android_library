@@ -134,7 +134,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public final static int SYMBOLID = 512;
 
 	public final static int DATAID = 1024;
-	
+
 	/**
 	 * Operator overloading for Scala operator <code>/</code>. Calls <code>divide(that)</code>.
 	 * 
@@ -1763,7 +1763,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isWith() {
 		return false;
 	}
-	
+
 	default boolean isModuleOrWithCondition() {
 		return false;
 	}
@@ -2588,12 +2588,14 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @deprecated use {@link #isZero()} instead.
+	 * Calls <code>PossibleZeroQ()</code>
 	 */
-	@Deprecated
 	@Override
 	default boolean isZERO() {
-		return isZero();
+		if (isNumber()) {
+			return isZero();
+		}
+		return F.PossibleZeroQ.ofQ(this);
 	}
 
 	/**
@@ -2726,7 +2728,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Additional multiply method which works like <code>times()</code> to fulfill groovy's method signature
+	 * Additional multiply method which works with overriden <code>JAS</code> method.
 	 * 
 	 * @param that
 	 * @return
@@ -2734,12 +2736,72 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	@Override
 	default IExpr multiply(final IExpr that) {
+		// if (isZero()) {
+		// return this;
+		// }
+		// if (that.isZero()) {
+		// return that;
+		// }
+		// if (isOne()) {
+		// return that;
+		// }
+		// if (that.isOne()) {
+		// return this;
+		// }
+		// if (isPlus() && !that.isPlus()) {
+		// if (that.isAtom() || (that.isPower() && that.base().isAtom())) {
+		// IExpr temp = ((IAST) this).mapThread(F.binaryAST2(F.Times, null, that), 1);
+		// return EvalEngine.get().evaluate(temp);
+		// }
+		// } else if (!isPlus() && that.isPlus()) {
+		// if (isAtom() || (isPower() && base().isAtom())) {
+		// IExpr temp = ((IAST) that).mapThread(F.binaryAST2(F.Times, this, null), 2);
+		// return EvalEngine.get().evaluate(temp);
+		// }
+		// }
 		return times(that);
 	}
 
 	@Override
 	default public IExpr multiply(int n) {
+		if (isPlus()) {
+			return F.evalExpand(times(F.integer(n)));
+		}
 		return times(F.integer(n));
+	}
+
+	/**
+	 * Multiply <code>this * that</code>. If oneof the arguments is a <code>Plus</code> expression, distribute the other
+	 * expression other <code>Plus</code>.
+	 * 
+	 * @param that
+	 * @return
+	 */
+	default IExpr multiplyDistributed(final IExpr that) {
+		if (isZero()) {
+			return this;
+		}
+		if (that.isZero()) {
+			return that;
+		}
+		if (isOne()) {
+			return that;
+		}
+		if (that.isOne()) {
+			return this;
+		}
+		if (isPlus()) {
+			if (that.isPlus()) {
+				IExpr temp = ((IAST) this).map(x -> x.multiplyDistributed(that), 1);
+				return EvalEngine.get().evaluate(temp);
+			}
+			IExpr temp = ((IAST) this).mapThread(F.binaryAST2(F.Times, null, that), 1);
+			return EvalEngine.get().evaluate(temp);
+		} else if (that.isPlus()) {
+			IExpr temp = ((IAST) that).mapThread(F.binaryAST2(F.Times, this, null), 2);
+			return EvalEngine.get().evaluate(temp);
+		}
+		return times(that);
 	}
 
 	/** {@inheritDoc} */
@@ -3019,14 +3081,14 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 			INumber x = r;
 
 			while ((exp >>= 1) > 0) {
-				x = (INumber) x.multiply(x);
+				x = (INumber) x.times(x);
 				if ((exp & 1) != 0) {
-					r = (INumber) r.multiply(x);
+					r = (INumber) r.times(x);
 				}
 			}
 
 			while (b2pow-- > 0) {
-				r = (INumber) r.multiply(r);
+				r = (INumber) r.times(r);
 			}
 			if (n < 0) {
 				return r.inverse();

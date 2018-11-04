@@ -3690,7 +3690,7 @@ public final class LinearAlgebra {
 		// 2x2 matrix
 		IExpr[] row1 = matrix.getRow(0);
 		IExpr[] row2 = matrix.getRow(1);
-		return F.evalExpand(row1[0].multiply(row2[1]).subtract((row1[1].multiply(row2[0]))));
+		return F.evalExpand(row1[0].times(row2[1]).subtract((row1[1].times(row2[0]))));
 	}
 
 	/**
@@ -3706,11 +3706,9 @@ public final class LinearAlgebra {
 		IExpr[] row1 = matrix.getRow(0);
 		IExpr[] row2 = matrix.getRow(1);
 		IExpr[] row3 = matrix.getRow(2);
-		return F.evalExpand(row1[0].multiply(row2[1].multiply(row3[2]))
-				.subtract((row1[0].multiply(row2[2].multiply(row3[1]))))
-				.subtract((row1[1].multiply(row2[0].multiply(row3[2]))))
-				.plus((row1[1].multiply(row2[2].multiply(row3[0])))).plus((row1[2].multiply(row2[0].multiply(row3[1]))))
-				.subtract((row1[2].multiply(row2[1].multiply(row3[0])))));
+		return F.evalExpand(row1[0].times(row2[1].times(row3[2])).subtract((row1[0].times(row2[2].times(row3[1]))))
+				.subtract((row1[1].times(row2[0].times(row3[2])))).plus((row1[1].times(row2[2].times(row3[0]))))
+				.plus((row1[2].times(row2[0].times(row3[1])))).subtract((row1[2].times(row2[1].times(row3[0])))));
 	}
 
 	/**

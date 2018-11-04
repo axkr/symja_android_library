@@ -73,9 +73,9 @@ public class SimpleUnitSystem implements UnitSystem {
 								? ((IQuantity) lookup).power(entryValue)//
 								: F.Power.of(lookup, entryValue);
 				if (temp.isQuantity()) {
-					value = temp.multiply(value);
+					value = temp.times(value);
 				} else {
-					value = value.multiply(temp);
+					value = value.times(temp);
 				}
 				// }
 			}

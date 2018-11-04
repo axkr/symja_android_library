@@ -317,9 +317,9 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 	public IExpr times(IExpr scalar) {
 		if (scalar instanceof IQuantity) {
 			IQuantity quantity = (IQuantity) scalar;
-			return of(arg1.multiply(quantity.value()), unit.add(quantity.unit()));
+			return of(arg1.times(quantity.value()), unit.add(quantity.unit()));
 		}
-		return ofUnit(arg1.multiply(scalar));
+		return ofUnit(arg1.times(scalar));
 	}
 
 	public IExpr n() {

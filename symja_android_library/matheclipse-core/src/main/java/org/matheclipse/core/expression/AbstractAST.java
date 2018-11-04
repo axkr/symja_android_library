@@ -24,6 +24,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.BooleanFunctions;
+import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.builtin.Structure.LeafCount;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -2593,12 +2594,11 @@ public abstract class AbstractAST implements IASTMutable {
 	 * 
 	 * @deprecated use {@link #isZero()} instead.
 	 */
-	@Deprecated
-	@Override
-	public boolean isZERO() {
-		return isZero();
-		// return PredicateQ.possibleZeroQ(this, EvalEngine.get());
-	}
+//	@Deprecated
+//	@Override
+//	public boolean isZERO() {
+//		return isZero();
+//	}
 
 	/**
 	 * Returns an iterator over the elements in this <code>IAST</code> starting with offset <b>1</b>.

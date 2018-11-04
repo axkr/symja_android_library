@@ -1243,7 +1243,7 @@ public class StatisticsFunctions {
 					double reference = random.nextDouble();
 					double uniform = reference == NEXTDOWNONE ? reference : Math.nextUp(reference);
 					uniform = -Math.log(uniform);
-					return m.multiply(F.Power.of(F.num(uniform), n.reciprocal().negate()));
+					return m.times(F.Power.of(F.num(uniform), n.reciprocal().negate()));
 				}
 			}
 			return F.NIL;
@@ -1583,7 +1583,7 @@ public class StatisticsFunctions {
 					double reference = random.nextDouble();
 					double uniform = reference == NEXTDOWNONE ? reference : Math.nextUp(reference);
 					uniform = -Math.log(uniform);
-					return m.add(n.multiply(F.Log(F.num(uniform))));
+					return m.add(n.times(F.Log(F.num(uniform))));
 				}
 			}
 			return F.NIL;

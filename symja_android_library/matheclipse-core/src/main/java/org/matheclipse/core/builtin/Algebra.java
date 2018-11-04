@@ -69,7 +69,6 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
-import org.matheclipse.core.patternmatching.PatternMatcherEvalEngine;
 import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcher;
 import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcherPlus;
 import org.matheclipse.core.patternmatching.hash.HashedPatternRules;
@@ -90,6 +89,7 @@ import edu.jas.arith.ModLong;
 import edu.jas.arith.ModLongRing;
 import edu.jas.poly.Complex;
 import edu.jas.poly.ComplexRing;
+import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
 import edu.jas.poly.PolyUtil;
@@ -1716,7 +1716,9 @@ public class Algebra {
 			if (Config.MAX_FACTOR_LEAFCOUNT > 0 && expr.leafCount() > Config.MAX_FACTOR_LEAFCOUNT) {
 				return expr;
 			}
-			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
+			// use TermOrderByName.INVLEX here!
+			// See https://github.com/kredel/java-algebra-system/issues/8
+			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO, TermOrderByName.INVLEX);
 			GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, false);
 			if (polyRat.length() <= 1) {
 				return expr;
@@ -2327,18 +2329,30 @@ public class Algebra {
 				return list;
 			} catch (JASConversionException e0) {
 				try {
-					List<IExpr> varList = eVar.getVarList().copyTo();
-					JASIExpr jas = new JASIExpr(varList, ExprRingFactory.CONST);
-					GenPolynomial<IExpr> poly1 = jas.expr2IExprJAS(expr1);
-					GenPolynomial<IExpr> poly2 = jas.expr2IExprJAS(expr2);
-					GenPolynomial<IExpr>[] result = poly1.egcd(poly2);
+					ExprPolynomialRing ring = new ExprPolynomialRing(eVar.getVarList());
+					ExprPolynomial poly1 = ring.create(expr1);
+					ExprPolynomial poly2 = ring.create(expr2);
+					ExprPolynomial[] result = poly1.egcd(poly2);
 					IASTAppendable list = F.ListAlloc(2);
-					list.append(jas.exprPoly2Expr(result[0], x));
+					list.append(result[0].getExpr());
 					IASTAppendable subList = F.ListAlloc(2);
-					subList.append(F.Together.of(engine, jas.exprPoly2Expr(result[1], x)));
-					subList.append(F.Together.of(engine, jas.exprPoly2Expr(result[2], x)));
+					subList.append(F.Together.of(engine, result[1].getExpr()));
+					subList.append(F.Together.of(engine, result[2].getExpr()));
 					list.append(subList);
 					return list;
+
+					// List<IExpr> varList = eVar.getVarList().copyTo();
+					// JASIExpr jas = new JASIExpr(varList, ExprRingFactory.CONST);
+					// GenPolynomial<IExpr> poly1 = jas.expr2IExprJAS(expr1);
+					// GenPolynomial<IExpr> poly2 = jas.expr2IExprJAS(expr2);
+					// GenPolynomial<IExpr>[] result = poly1.egcd(poly2);
+					// IASTAppendable list = F.ListAlloc(2);
+					// list.append(jas.exprPoly2Expr(result[0], x));
+					// IASTAppendable subList = F.ListAlloc(2);
+					// subList.append(F.Together.of(engine, jas.exprPoly2Expr(result[1], x)));
+					// subList.append(F.Together.of(engine, jas.exprPoly2Expr(result[2], x)));
+					// list.append(subList);
+					// return list;
 				} catch (JASConversionException e) {
 					if (Config.SHOW_STACKTRACE) {
 						e.printStackTrace();
@@ -2421,30 +2435,42 @@ public class Algebra {
 						return F.NIL;
 					}
 					IAST vars = eVar.getVarList();
-					ExprPolynomialRing ring = new ExprPolynomialRing(vars);
-					ExprPolynomial pol1 = ring.create(expr);
-					ExprPolynomial pol2;
-					// ASTRange r = new ASTRange(eVar.getVarList(), 1);
-					List<IExpr> varList = eVar.getVarList().copyTo();
-					JASIExpr jas = new JASIExpr(varList, true);
-					GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
-					GenPolynomial<IExpr> p2;
+					expr = F.evalExpandAll(ast.arg1(), engine);
 
-					GreatestCommonDivisor<IExpr> factaory = GCDFactory.getImplementation(ExprRingFactory.CONST);
+					ExprPolynomialRing ring = new ExprPolynomialRing(vars);
+					ExprPolynomial p1 = ring.create(expr);
+					ExprPolynomial p2;
 					for (int i = 2; i < ast.size(); i++) {
 						expr = F.evalExpandAll(ast.get(i), engine);
-						p2 = jas.expr2IExprJAS(expr);
-						p1 = factaory.gcd(p1, p2);
+						p2 = ring.create(expr);
+						p1 = p1.gcd(p2);
 					}
-					return jas.exprPoly2Expr(p1);
+					return p1.getExpr();
+
+					// ExprPolynomialRing ring = new ExprPolynomialRing(vars);
+					// ExprPolynomial pol1 = ring.create(expr);
+					// ExprPolynomial pol2;
+					// // ASTRange r = new ASTRange(eVar.getVarList(), 1);
+					// List<IExpr> varList = eVar.getVarList().copyTo();
+					// JASIExpr jas = new JASIExpr(varList, true);
+					// GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
+					// GenPolynomial<IExpr> p2;
+					//
+					// GreatestCommonDivisor<IExpr> factory = GCDFactory.getImplementation(ExprRingFactory.CONST);
+					// for (int i = 2; i < ast.size(); i++) {
+					// expr = F.evalExpandAll(ast.get(i), engine);
+					// p2 = jas.expr2IExprJAS(expr);
+					// p1 = factory.gcd(p1, p2);
+					// }
+					// return jas.exprPoly2Expr(p1);
 				} catch (RuntimeException rex) {
 					if (Config.DEBUG) {
 						e.printStackTrace();
 					}
+					return F.C1;
 				}
 
 			}
-			return F.NIL;
 		}
 
 		private IExpr gcdWithOption(final IAST ast, IExpr expr, VariablesSet eVar, final EvalEngine engine) {
@@ -2566,6 +2592,7 @@ public class Algebra {
 							if (eVar.size() == 0) {
 								return F.NIL;
 							}
+							expr = F.evalExpandAll(ast.arg1(), engine);
 							IAST vars = eVar.getVarList();
 							ExprPolynomialRing ring = new ExprPolynomialRing(vars);
 							ExprPolynomial pol1 = ring.create(expr);
@@ -2576,11 +2603,11 @@ public class Algebra {
 							GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
 							GenPolynomial<IExpr> p2;
 
-							GreatestCommonDivisor<IExpr> factaory = GCDFactory.getImplementation(ExprRingFactory.CONST);
+							GreatestCommonDivisor<IExpr> factory = GCDFactory.getImplementation(ExprRingFactory.CONST);
 							for (int i = 2; i < ast.size(); i++) {
 								expr = F.evalExpandAll(ast.get(i), engine);
 								p2 = jas.expr2IExprJAS(expr);
-								p1 = factaory.lcm(p1, p2);
+								p1 = factory.lcm(p1, p2);
 							}
 							return jas.exprPoly2Expr(p1);
 						} catch (RuntimeException rex) {
@@ -2772,18 +2799,22 @@ public class Algebra {
 				return result;
 			} catch (JASConversionException e1) {
 				try {
-					JASIExpr jas = new JASIExpr(variable, ExprRingFactory.CONST);
-					GenPolynomial<IExpr> poly1 = jas.expr2IExprJAS(arg1);
-					GenPolynomial<IExpr> poly2 = jas.expr2IExprJAS(arg2);
-					GenPolynomial<IExpr>[] divRem = poly1.quotientRemainder(poly2);
+					ExprPolynomialRing ring = new ExprPolynomialRing(F.List(variable));
+					ExprPolynomial poly1 = ring.create(arg1);
+					ExprPolynomial poly2 = ring.create(arg2);
+					ExprPolynomial[] divRem = poly1.quotientRemainder(poly2);
 					IExpr[] result = new IExpr[2];
-					result[0] = jas.exprPoly2Expr(divRem[0], variable);
-					result[1] = jas.exprPoly2Expr(divRem[1], variable);
+					result[0] = divRem[0].getExpr();
+					result[1] = divRem[1].getExpr();
 					return result;
-				} catch (JASConversionException e) {
+				} catch (RuntimeException e) {
 					if (Config.SHOW_STACKTRACE) {
 						e.printStackTrace();
 					}
+					// } catch (JASConversionException e) {
+					// if (Config.SHOW_STACKTRACE) {
+					// e.printStackTrace();
+					// }
 				}
 			}
 			return null;
@@ -4580,7 +4611,7 @@ public class Algebra {
 
 	public static IAST factorComplex(GenPolynomial<BigRational> polyRat, JASConvert<BigRational> jas,
 			List<IExpr> varList, ISymbol head, boolean noGCDLCM) {
-		TermOrder termOrder = TermOrderByName.Lexicographic;
+		TermOrder termOrder = TermOrderByName.INVLEX;
 		String[] vars = new String[varList.size()];
 		for (int i = 0; i < varList.size(); i++) {
 			vars[i] = varList.get(i).toString();

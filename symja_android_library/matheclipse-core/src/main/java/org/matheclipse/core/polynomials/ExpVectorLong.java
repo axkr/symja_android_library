@@ -175,7 +175,7 @@ public final class ExpVectorLong {
 	 * 
 	 * @return If this has all elements 0 then true is returned, else false.
 	 */
-	public boolean isZero() {
+	public boolean isZERO() {
 		return (0 == this.signum());
 	}
 
