@@ -1108,7 +1108,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("BooleanMinimize((A && !B || !A && B) && "//
 				+ "(C && B && !A && !D && !E || C && !B && A && !D && !E || C && !B && !A && D && !E || C && !B && !A && !D && E || !C && B && A && !D && !E || !C && B && !A && D && !E || !C && B && !A && !D && E || !C && !B && A && D && !E || !C && !B && A && !D && E || !C && !B && !A && D && E) && "
 				+ "(A && !F || !A && F) && (E && !C || !E && C))", //
-				"A&&!B&&C&&!D&&!E&&!F&&!lf$1&&!lf$10&&lf$2&&!lf$3&&!lf$4&&!lf$5&&!lf$6&&!lf$7&&!lf$8&&!lf$9||A&&!B&&!C&&!D&&E&&!F&&!lf$1&&!lf$10&&!lf$2&&!lf$3&&!lf$4&&!lf$5&&!lf$6&&!lf$7&&!lf$8&&lf$9||!A&&B&&C&&!D&&!E&&F&&lf$1&&!lf$10&&!lf$2&&!lf$3&&!lf$4&&!lf$5&&!lf$6&&!lf$7&&!lf$8&&!lf$9||!A&&B&&!C&&!D&&E&&F&&!lf$1&&!lf$10&&!lf$2&&!lf$3&&!lf$4&&!lf$5&&!lf$6&&lf$7&&!lf$8&&!lf$9");
+				"A&&!B&&C&&!D&&!E&&!F||A&&!B&&!C&&!D&&E&&!F||!A&&B&&C&&!D&&!E&&F||!A&&B&&!C&&!D&&E&&F");
 		check("BooleanMinimize((a&&!b)||(!a&&b)||(b&&!c)||(!b&&c))", //
 				"a&&!b||!a&&c||b&&!c");
 		check("BooleanMinimize((a||b)&&(c||d))", //

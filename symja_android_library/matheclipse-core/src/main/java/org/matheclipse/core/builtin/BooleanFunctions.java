@@ -14,7 +14,6 @@ import org.logicng.solvers.SATSolver;
 import org.logicng.transformations.cnf.CNFFactorization;
 import org.logicng.transformations.dnf.DNFFactorization;
 import org.logicng.transformations.qmc.QuineMcCluskeyAlgorithm;
-//import org.logicng.transformations.qmc.QuineMcCluskeyAlgorithm;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.LogicFormula;
 import org.matheclipse.core.convert.VariablesSet;
@@ -591,8 +590,8 @@ public final class BooleanFunctions {
 			FormulaFactory factory = new FormulaFactory();
 			LogicFormula lf = new LogicFormula(factory);
 			Formula formula = lf.expr2BooleanFunction(ast.arg1());
-			// System.out.println(">> " + formula.toString());
-			// only DNF form
+			// only DNF form can be used in QuineMcCluskeyAlgorithm at the moment
+			formula=formula.transform(new DNFFactorization());
 			formula = QuineMcCluskeyAlgorithm.compute(formula);
 			// System.out.println(formula.toString());
 			return lf.booleanFunction2Expr(formula);
