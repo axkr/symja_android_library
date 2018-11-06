@@ -91,6 +91,12 @@ public final class ContextPath {
 		fContext = context;
 	}
 
+	/**
+	 * Replace for example a &quot;serialized context&quot; in this context-path
+	 * 
+	 * @param context
+	 * @return
+	 */
 	public boolean setGlobalContext(Context context) {
 		int size = path.size();
 		int start = size - 1;
@@ -98,6 +104,10 @@ public final class ContextPath {
 			Context temp = path.get(i);
 			if (temp.getContextName().equals(Context.GLOBAL_CONTEXT_NAME)) {
 				path.set(i, context);
+				fContextMap.put(Context.GLOBAL_CONTEXT_NAME, context);
+				if (fContext.getContextName().equals(Context.GLOBAL_CONTEXT_NAME)) {
+					fContext = context;
+				}
 				return true;
 			}
 		}
