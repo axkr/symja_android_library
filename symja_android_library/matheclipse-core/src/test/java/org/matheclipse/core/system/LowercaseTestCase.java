@@ -8377,9 +8377,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPossibleZeroQ() {
-		check("PossibleZeroQ(2^(2*I) - 2^(-2*I) - 2*I*Sin(Log(4)))", "True");
-		check("PossibleZeroQ(E^Pi - Pi^E)", "False");
-		check("PossibleZeroQ((E + Pi)^2 - E^2 - Pi^2 - 2*E*Pi)", "True");
+		check("PossibleZeroQ(2^(2*I) - 2^(-2*I) - 2*I*Sin(Log(4)))", //
+				"True");
+		check("PossibleZeroQ(E^Pi - Pi^E)",//
+				"False");
+		check("PossibleZeroQ((E + Pi)^2 - E^2 - Pi^2 - 2*E*Pi)", //
+				"True");
 		check("PossibleZeroQ(E^(I*Pi/4) - (-1)^(1/4))", "True");
 		check("PossibleZeroQ((x + 1)*(x - 1) - x^2 + 1)", "True");
 		check("PossibleZeroQ(1/x + 1/y - (x + y)/(x*y))", "True");
@@ -8391,7 +8394,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "$Aborted");
 		// check("TimeConstrained(1^3^3^3, 10)", //
 		// "1");
-
+		check(" 2^(2*I) - 2^(-2*I) - 2*I*Sin(Log(4)) ", //
+				"0");
 		check("2*Sqrt(2)", //
 				"2*Sqrt(2)");
 		check("-2*Sqrt(2)", //

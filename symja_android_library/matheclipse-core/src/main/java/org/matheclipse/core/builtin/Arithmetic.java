@@ -447,8 +447,8 @@ public final class Arithmetic {
 						if (rePart.isZero() && !imPart.isZero()) {
 							// Arg(E^(I*z)) => Re(z) + 2*Pi*Floor((Pi - Re(z))/(2*Pi))
 							return F.Plus(
-									F.Times(F.C2, F.Pi, F
-											.Floor(F.Times(F.C1D2, F.Power(F.Pi, -1), F.Plus(F.Pi, F.Negate(F.Re(imPart)))))),
+									F.Times(F.C2, F.Pi, F.Floor(
+											F.Times(F.C1D2, F.Power(F.Pi, -1), F.Plus(F.Pi, F.Negate(F.Re(imPart)))))),
 									F.Re(imPart));
 						}
 						// Arg(E^z) => Im(z) + 2*Pi*Floor((Pi - Im(z))/(2*Pi))
@@ -2761,6 +2761,16 @@ public final class Arithmetic {
 
 		@Override
 		public IExpr e2ComArg(final IComplex base, final IComplex exponent) {
+			if (base.getImaginaryPart().isZero()) {
+				IRational a = base.getRealPart();
+				IRational b = exponent.getRealPart();
+				IRational c = exponent.getImaginaryPart();
+				IExpr temp = // [$ b*Arg(a)+1/2*c*Log(a^2) $]
+						F.Plus(F.Times(b, F.Arg(a)), F.Times(F.C1D2, c, F.Log(F.Sqr(a)))); // $$;
+				return // [$ (a^2)^(b/2)*E^(-c*Arg(a)) * (Cos(temp)+I* Sin(temp)) $]
+				F.Times(F.Power(F.Sqr(a), F.Times(F.C1D2, b)), F.Exp(F.Times(F.CN1, c, F.Arg(a))),
+						F.Plus(F.Cos(temp), F.Times(F.CI, F.Sin(temp)))); // $$;
+			}
 			return F.NIL;
 		}
 
