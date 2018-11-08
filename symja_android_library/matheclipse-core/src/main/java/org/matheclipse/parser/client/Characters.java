@@ -243,6 +243,10 @@ public class Characters {
 			NamedCharactersMap.put(NamedCharacters[i], NamedCharacters[i + 1]);
 		}
 		CharacterNamesMap.put(NamedCharactersMap.get("Infinity"), "Infinity");
+		CharacterNamesMap.put(NamedCharactersMap.get("ImaginaryI"), "I");
+		CharacterNamesMap.put(NamedCharactersMap.get("ImaginaryJ"), "I");
+		CharacterNamesMap.put(NamedCharactersMap.get("Pi"), "Pi");
+		
 	}
 
 	public static String substituteCharacters(String str) {
