@@ -1907,31 +1907,56 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testConjugate() {
-		check("Conjugate(3 + 4*I)", "3-I*4");
-		check("Conjugate(3)", "3");
-		check("Conjugate(a + b * I)", "Conjugate(a)-I*Conjugate(b)");
-		check("Conjugate(a * b * I)", "-I*Conjugate(a*b)");
-		check("Conjugate({{1, 2 + I*4, a + I*b}, {I}})", "{{1,2-I*4,Conjugate(a)-I*Conjugate(b)},{-I}}");
-		check("{Conjugate(Pi), Conjugate(E)}", "{Pi,E}");
-		check("Conjugate(1.5 + 2.5*I)", "1.5+I*(-2.5)");
+		check("Conjugate(Sin(Pi+I))", //
+				"I*Sinh(1)");
+		check("Conjugate(3 + 4*I)", //
+				"3-I*4");
+		check("Conjugate(3)", //
+				"3");
+		check("Conjugate(a + b * I)", //
+				"Conjugate(a)-I*Conjugate(b)");
+		check("Conjugate(a * b * I)", //
+				"-I*Conjugate(a*b)");
+		check("Conjugate({{1, 2 + I*4, a + I*b}, {I}})", //
+				"{{1,2-I*4,Conjugate(a)-I*Conjugate(b)},{-I}}");
+		check("{Conjugate(Pi), Conjugate(E)}", //
+				"{Pi,E}");
+		check("Conjugate(1.5 + 2.5*I)", //
+				"1.5+I*(-2.5)");
 
-		check("Conjugate(1-I)", "1+I");
-		check("Conjugate(1+I)", "1-I");
-		check("Conjugate(Conjugate(x))", "x");
-		check("Conjugate(3*a*z)", "3*Conjugate(a*z)");
-		check("Conjugate(E^z)", "E^Conjugate(z)");
-		check("Conjugate(Pi)", "Pi");
-		check("Conjugate(0)", "0");
-		check("Conjugate(I)", "-I");
-		check("Conjugate(Indeterminate)", "Indeterminate");
-		check("Conjugate(Infinity)", "Infinity");
-		check("Conjugate(-Infinity)", "-Infinity");
-		check("Conjugate(ComplexInfinity)", "ComplexInfinity");
-		check("Conjugate(Transpose({{1,2+I,3},{4,5-I,6},{7,8,9}}))", "{{1,4,7},{2-I,5+I,8},{3,6,9}}");
-		check("Conjugate(Zeta(x))", "Zeta(Conjugate(x))");
-		check("Conjugate(Zeta(11,7))", "Zeta(11,7)");
+		check("Conjugate(1-I)", //
+				"1+I");
+		check("Conjugate(1+I)", //
+				"1-I");
+		check("Conjugate(Conjugate(x))", //
+				"x");
+		check("Conjugate(3*a*z)", //
+				"3*Conjugate(a*z)");
+		check("Conjugate(E^z)", //
+				"E^Conjugate(z)");
+		check("Conjugate(Pi)", //
+				"Pi");
+		check("Conjugate(0)", //
+				"0");
+		check("Conjugate(I)", //
+				"-I");
+		check("Conjugate(Indeterminate)", //
+				"Indeterminate");
+		check("Conjugate(Infinity)", //
+				"Infinity");
+		check("Conjugate(-Infinity)", //
+				"-Infinity");
+		check("Conjugate(ComplexInfinity)", //
+				"ComplexInfinity");
+		check("Conjugate(Transpose({{1,2+I,3},{4,5-I,6},{7,8,9}}))", //
+				"{{1,4,7},{2-I,5+I,8},{3,6,9}}");
+		check("Conjugate(Zeta(x))", //
+				"Zeta(Conjugate(x))");
+		check("Conjugate(Zeta(11,7))", //
+				"Zeta(11,7)");
 
-		check("Conjugate(Erf(x))", "Erf(Conjugate(x))");
+		check("Conjugate(Erf(x))", //
+				"Erf(Conjugate(x))");
 	}
 
 	public void testConjugateTranspose() {
