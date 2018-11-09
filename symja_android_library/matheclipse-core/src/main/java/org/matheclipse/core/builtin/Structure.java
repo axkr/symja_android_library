@@ -183,24 +183,28 @@ public class Structure {
 			return evalApply(arg1, arg2, evaledAST, lastIndex, heads, engine);
 		}
 
-		public static IExpr evalApply(IExpr arg1, IExpr arg2, IAST evaledAST, int lastIndex, boolean heads,
+		public static IExpr evalApply(IExpr f, IExpr expr, IAST evaledAST, int lastIndex, boolean heads,
 				EvalEngine engine) {
-			VisitorLevelSpecification level = null;
-			java.util.function.Function<IExpr, IExpr> af = x -> x.isAST() ? ((IAST) x).setAtCopy(0, arg1) : F.NIL;
+
+			java.util.function.Function<IExpr, IExpr> af = x -> x.isAST() ? ((IAST) x).setAtCopy(0, f) : F.NIL;
 			try {
+				VisitorLevelSpecification level = null;
 				if (lastIndex == 3) {
 					level = new VisitorLevelSpecification(af, evaledAST.get(lastIndex), heads, engine);
 				} else {
 					level = new VisitorLevelSpecification(af, 0);
 				}
 
-				if (!arg2.isAtom()) {
-					return arg2.accept(level).orElse(arg2);
-				} else if (evaledAST.isAST2()) {
-					if (arg1.isFunction()) {
-						return F.unaryAST1(arg1, arg2);
+				if (!expr.isAtom()) {
+					return expr.accept(level).orElse(expr);
+				} else {
+					// arg2 is an Atom to which the head f couldn't be applied
+					if (evaledAST.size() >= 3) {
+						if (f.isFunction()) {
+							return F.unaryAST1(f, expr);
+						}
+						return expr;
 					}
-					return arg2;
 				}
 			} catch (final MathException e) {
 				engine.printMessage(e.getMessage());
@@ -687,46 +691,46 @@ public class Structure {
 		/**
 		 * Calculate the number of leaves in an AST
 		 */
-//		public static class SimplifyLeafCountVisitor extends AbstractVisitorLong {
-//			int fHeadOffset;
-//
-//			public SimplifyLeafCountVisitor() {
-//				this(1);
-//			}
-//
-//			public SimplifyLeafCountVisitor(int hOffset) {
-//				fHeadOffset = hOffset;
-//			}
-//
-//			@Override
-//			public long visit(IAST list) {
-//				long sum = 0;
-//				for (int i = fHeadOffset; i < list.size(); i++) {
-//					sum += list.get(i).accept(this);
-//				}
-//				return sum;
-//			}
-//
-//			@Override
-//			public long visit(IComplex element) {
-//				return element.leafCountSimplify();
-//			}
-//
-//			@Override
-//			public long visit(IComplexNum element) {
-//				return 3;
-//			}
-//
-//			@Override
-//			public long visit(IFraction element) {
-//				return element.leafCountSimplify();
-//			}
-//
-//			@Override
-//			public long visit(IInteger element) {
-//				return element.leafCountSimplify();
-//			}
-//		}
+		// public static class SimplifyLeafCountVisitor extends AbstractVisitorLong {
+		// int fHeadOffset;
+		//
+		// public SimplifyLeafCountVisitor() {
+		// this(1);
+		// }
+		//
+		// public SimplifyLeafCountVisitor(int hOffset) {
+		// fHeadOffset = hOffset;
+		// }
+		//
+		// @Override
+		// public long visit(IAST list) {
+		// long sum = 0;
+		// for (int i = fHeadOffset; i < list.size(); i++) {
+		// sum += list.get(i).accept(this);
+		// }
+		// return sum;
+		// }
+		//
+		// @Override
+		// public long visit(IComplex element) {
+		// return element.leafCountSimplify();
+		// }
+		//
+		// @Override
+		// public long visit(IComplexNum element) {
+		// return 3;
+		// }
+		//
+		// @Override
+		// public long visit(IFraction element) {
+		// return element.leafCountSimplify();
+		// }
+		//
+		// @Override
+		// public long visit(IInteger element) {
+		// return element.leafCountSimplify();
+		// }
+		// }
 
 		public static class SimplifyLeafCountPatternMapVisitor extends AbstractVisitorLong {
 

@@ -46,6 +46,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAbs() {
+		check("Abs(x^2)", //
+				"Abs(x)^2");
 		check("Abs(1/2*x)", //
 				"Abs(x)/2");
 		check("Abs(1/2*E^(\\[ImaginaryJ]*\\[Pi]/4))", //
@@ -204,6 +206,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testApply() {
+		// 
+		check("Apply(f, p[x][q[y]], {1}, Heads -> True)", //
+				"f(x)[f(y)]");
+		check("Apply(f, p[x][q[y]], {1}, Heads -> False)", //
+				"p(x)[f(y)]");
+		check("Apply(f, p[x][q[y]], {1})", //
+				"p(x)[f(y)]");
+		check("Apply(f, 1+2+3, {1}, Heads -> True)", //
+				"6");
+		check("List @@@ (1+2+3)", //
+				"6");
+		
 		check("f@ g@ h@ i", //
 				"f(g(h(i)))");
 
@@ -236,18 +250,26 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("apply(f, {{{{{a}}}}}, {2, -3})", "{{f(f({a}))}}");
 		check("apply(f, h0(h1(h2(h3(h4(a))))), {2, -3})", "h0(h1(f(f(h4(a)))))");
 
-		check("apply(f, p(x)[q(y)], {1})", "p(x)[f(y)]");
-		check("apply(f, p(x)[q(y)], {1}, heads -> true)", "f(x)[f(y)]");
-
-		check("f @@ {1, 2, 3}", "f(1,2,3)");
-		check("Plus @@ {1, 2, 3}", "6");
-		check("f @@ (a + b + c)", "f(a,b,c)");
-		check("Apply(f, {a + b, g(c, d, e * f), 3}, {1})", "{f(a,b),f(c,d,e*f),3}");
-		check("f @@@ {a + b, g(c, d, e * f), 3}", "{f(a,b),f(c,d,e*f),3}");
-		check("Apply(f, {a, b, c}, {0})", "f(a,b,c)");
-		check("Apply(f, {{{{{a}}}}}, {2, -3})", "{{f(f({a}))}}");
-		check("Apply(List, a + b * c ^ e * f(g), {0, Infinity})", "{a,{b,{c,e},{g}}}");
-		check("Apply(f, {a, b, c}, x+y)", "Apply(f,{a,b,c},x+y)");
+		check("Apply(List,1+2+3)", //
+				"6");
+		check("f @@ {1, 2, 3}", //
+				"f(1,2,3)");
+		check("Plus @@ {1, 2, 3}", //
+				"6");
+		check("f @@ (a + b + c)", //
+				"f(a,b,c)");
+		check("Apply(f, {a + b, g(c, d, e * f), 3}, {1})", //
+				"{f(a,b),f(c,d,e*f),3}");
+		check("f @@@ {a + b, g(c, d, e * f), 3}", //
+				"{f(a,b),f(c,d,e*f),3}");
+		check("Apply(f, {a, b, c}, {0})", //
+				"f(a,b,c)");
+		check("Apply(f, {{{{{a}}}}}, {2, -3})", //
+				"{{f(f({a}))}}");
+		check("Apply(List, a + b * c ^ e * f(g), {0, Infinity})", //
+				"{a,{b,{c,e},{g}}}");
+		check("Apply(f, {a, b, c}, x+y)", //
+				"Apply(f,{a,b,c},x+y)");
 	}
 
 	public void testArcCos() {
