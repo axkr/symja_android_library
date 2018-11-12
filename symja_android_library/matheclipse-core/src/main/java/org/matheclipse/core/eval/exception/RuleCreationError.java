@@ -12,19 +12,9 @@ public class RuleCreationError extends MathException {
 
 	IExpr fLHS = null;
 
-	// IExpr fRHS = null;
-	//
-	// IExpr fCondition = null;
-
 	public RuleCreationError(final IExpr lhs) {
 		fLHS = lhs;
 	}
-
-	// public RuleCreationError(final IExpr lhs, final IExpr rhs, final IExpr condition) {
-	// fLHS = lhs;
-	// fRHS = rhs;
-	// fCondition = condition;
-	// }
 
 	@Override
 	public String getMessage() {

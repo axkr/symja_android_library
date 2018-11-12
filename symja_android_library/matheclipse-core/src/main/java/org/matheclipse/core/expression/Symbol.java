@@ -44,7 +44,7 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
 public class Symbol implements ISymbol, Serializable {
-	
+
 	protected transient Context fContext;
 
 	private final static Collator US_COLLATOR = Collator.getInstance(Locale.US);
@@ -112,13 +112,13 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isLocked(boolean packageMode) {
-		return !packageMode && fContext == Context.SYSTEM; // fSymbolName.charAt(0) != '$';
+		return !packageMode && (fContext == Context.SYSTEM || fContext == Context.RUBI);
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public boolean isLocked() {
-		return !EvalEngine.get().isPackageMode() && fContext == Context.SYSTEM; // fSymbolName.charAt(0) != '$';
+		return !EvalEngine.get().isPackageMode() && (fContext == Context.SYSTEM || fContext == Context.RUBI);
 	}
 
 	/** {@inheritDoc} */
