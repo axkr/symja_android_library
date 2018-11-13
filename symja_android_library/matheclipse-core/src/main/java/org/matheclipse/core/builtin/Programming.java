@@ -319,10 +319,10 @@ public final class Programming {
 	private final static class Condition extends AbstractCoreFunctionEvaluator {
 
 		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		public final IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST2()) {
 				if (engine.evalTrue(ast.arg2())) {
-					return engine.evaluate(ast.arg1());
+					return ast.arg1();
 				}
 				if (engine.isEvalLHSMode()) {
 					return F.NIL;
