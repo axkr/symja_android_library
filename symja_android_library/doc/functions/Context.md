@@ -16,6 +16,12 @@ Context()
 ### Examples
 
 ``` 
+>> $ContextPath
+{System`,Global`}
+
 >> Context(a)
 Global`
+
+>> Context(Sin)
+System`
 ```
