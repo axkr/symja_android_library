@@ -81,7 +81,7 @@ public class PredicateQ {
 	 * <li><a href="https://en.wikipedia.org/wiki/Skew-Hermitian_matrix">Wikipedia - Skew-Hermitian matrix</a></li>
 	 * </ul>
 	 */
-	private static class AntihermitianMatrixQ extends SymmetricMatrixQ {
+	private final static class AntihermitianMatrixQ extends SymmetricMatrixQ {
 
 		@Override
 		protected boolean compareElements(IExpr expr1, IExpr expr2, EvalEngine engine) {
@@ -113,7 +113,7 @@ public class PredicateQ {
 	 * <li><a href="https://en.wikipedia.org/wiki/Skew-symmetric_matrix">Wikipedia - Skew-symmetric matrix</a></li>
 	 * </ul>
 	 */
-	private static class AntisymmetricMatrixQ extends SymmetricMatrixQ {
+	private final static class AntisymmetricMatrixQ extends SymmetricMatrixQ {
 
 		@Override
 		protected boolean compareElements(IExpr expr1, IExpr expr2, EvalEngine engine) {
@@ -171,7 +171,7 @@ public class PredicateQ {
 	 * True
 	 * </pre>
 	 */
-	private static class ArrayQ extends AbstractCoreFunctionEvaluator {
+	private final static class ArrayQ extends AbstractCoreFunctionEvaluator {
 
 		/**
 		 * Determine the depth of the given expression <code>expr</code> which should be a full array of (possibly
@@ -277,7 +277,7 @@ public class PredicateQ {
 	 * True
 	 * </pre>
 	 */
-	private static class DigitQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
+	private final static class DigitQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
 
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
@@ -325,7 +325,7 @@ public class PredicateQ {
 	 * False
 	 * </pre>
 	 */
-	private static class EvenQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
+	private final static class EvenQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
 
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
@@ -370,7 +370,7 @@ public class PredicateQ {
 	 * True
 	 * </pre>
 	 */
-	private static class FreeQ extends AbstractCoreFunctionEvaluator {
+	private final static class FreeQ extends AbstractCoreFunctionEvaluator {
 
 		/**
 		 * Checks if <code>orderless1.size()</code> is greater or equal <code>orderless2.size()</code> and returns
@@ -455,7 +455,7 @@ public class PredicateQ {
 	 * <li><a href="https://en.wikipedia.org/wiki/Hermitian_matrix">Wikipedia - Hermitian matrix</a></li>
 	 * </ul>
 	 */
-	private static class HermitianMatrixQ extends SymmetricMatrixQ {
+	private final static class HermitianMatrixQ extends SymmetricMatrixQ {
 		@Override
 		protected boolean compareElements(IExpr expr1, IExpr expr2, EvalEngine engine) {
 			if (expr1.isReal() && expr2.isReal()) {
@@ -498,7 +498,7 @@ public class PredicateQ {
 	 * True
 	 * </pre>
 	 */
-	private static class MatchQ extends AbstractCoreFunctionEvaluator {
+	private final static class MatchQ extends AbstractCoreFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -550,7 +550,7 @@ public class PredicateQ {
 	 * True
 	 * </pre>
 	 */
-	private static class MatrixQ extends AbstractCoreFunctionEvaluator {
+	private final static class MatrixQ extends AbstractCoreFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -608,7 +608,7 @@ public class PredicateQ {
 	 * True
 	 * </pre>
 	 */
-	private static class MemberQ extends AbstractCoreFunctionEvaluator {
+	private final static class MemberQ extends AbstractCoreFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -658,7 +658,7 @@ public class PredicateQ {
 	 * False
 	 * </pre>
 	 */
-	private static class OddQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
+	private final static class OddQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
 
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
@@ -677,7 +677,7 @@ public class PredicateQ {
 
 	}
 
-	private static class QuantityQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
+	private final static class QuantityQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
 
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
@@ -715,7 +715,7 @@ public class PredicateQ {
 	 * False
 	 * </pre>
 	 */
-	private static class PossibleZeroQ extends AbstractCorePredicateEvaluator {
+	private final static class PossibleZeroQ extends AbstractCorePredicateEvaluator {
 
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
@@ -838,7 +838,7 @@ public class PredicateQ {
 	 * True
 	 * </pre>
 	 */
-	private static class PrimeQ extends AbstractCorePredicateEvaluator implements Predicate<IInteger> {
+	private final static class PrimeQ extends AbstractCorePredicateEvaluator implements Predicate<IInteger> {
 
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
@@ -918,7 +918,7 @@ public class PredicateQ {
 	 *  = False
 	 * </pre>
 	 */
-	private static class RealNumberQ extends AbstractCoreFunctionEvaluator {
+	private final static class RealNumberQ extends AbstractCoreFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST1()) {
@@ -968,7 +968,7 @@ public class PredicateQ {
 	 * False
 	 * </pre>
 	 */
-	private static class SquareMatrixQ extends AbstractCoreFunctionEvaluator {
+	private final static class SquareMatrixQ extends AbstractCoreFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1061,7 +1061,7 @@ public class PredicateQ {
 	 * True
 	 * </pre>
 	 */
-	private static class SyntaxQ extends AbstractCorePredicateEvaluator {
+	private final static class SyntaxQ extends AbstractCorePredicateEvaluator {
 
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
@@ -1090,7 +1090,7 @@ public class PredicateQ {
 	 * False
 	 * </pre>
 	 */
-	private static class UpperCaseQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
+	private final static class UpperCaseQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
 
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
@@ -1138,7 +1138,7 @@ public class PredicateQ {
 	 * False
 	 * </pre>
 	 */
-	private static class ValueQ extends AbstractCoreFunctionEvaluator implements Predicate<IExpr> {
+	private final static class ValueQ extends AbstractCoreFunctionEvaluator implements Predicate<IExpr> {
 
 		/**
 		 * Returns <code>True</code> if the 1st argument is an atomic object; <code>False</code> otherwise
@@ -1188,7 +1188,7 @@ public class PredicateQ {
 	 * True
 	 * </pre>
 	 */
-	private static class VectorQ extends AbstractCoreFunctionEvaluator {
+	private final static class VectorQ extends AbstractCoreFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
