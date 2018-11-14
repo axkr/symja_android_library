@@ -185,13 +185,15 @@ public final class Programming {
 	private final static class Block extends AbstractCoreFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
+			if (ast.size() == 3) {
+				if (ast.arg1().isList()) {
+					final IAST blockVariablesList = (IAST) ast.arg1();
+					return engine.evalBlock(ast.arg2(), blockVariablesList);
+				}
 
-			if (ast.arg1().isList()) {
-				final IAST blockVariablesList = (IAST) ast.arg1();
-				return engine.evalBlock(ast.arg2(), blockVariablesList);
+				return F.NIL;
 			}
-
+			Validate.checkSize(ast, 3);
 			return F.NIL;
 		}
 
@@ -546,16 +548,19 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3);
-			try {
-				final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
-				ast.forEach(2, ast.size(), x -> iterList.add(Iterator.create((IAST) x, engine)));
-				final DoIterator generator = new DoIterator(iterList, engine);
-				return generator.doIt(ast.arg1());
-			} catch (final ClassCastException e) {
-				// the iterators are generated only from IASTs
-			} catch (final NoEvalException e) {
+			if (ast.size() >= 3) {
+				try {
+					final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
+					ast.forEach(2, ast.size(), x -> iterList.add(Iterator.create((IAST) x, engine)));
+					final DoIterator generator = new DoIterator(iterList, engine);
+					return generator.doIt(ast.arg1());
+				} catch (final ClassCastException e) {
+					// the iterators are generated only from IASTs
+				} catch (final NoEvalException e) {
+				}
+				return F.NIL;
 			}
+			Validate.checkRange(ast, 3);
 			return F.NIL;
 		}
 
@@ -839,48 +844,51 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 4, 5);
-			// use EvalEngine's iterationLimit only for evaluation control
-			// final int iterationLimit = engine.getIterationLimit();
-			// int iterationCounter = 1;
+			if (ast.size() >= 4 && ast.size() <= 5) {
+				// use EvalEngine's iterationLimit only for evaluation control
+				// final int iterationLimit = engine.getIterationLimit();
+				// int iterationCounter = 1;
 
-			// For(start, test, incr, body)
-			engine.evaluate(ast.arg1()); // start
-			IExpr test = ast.arg2();
-			IExpr incr = ast.arg3();
-			IExpr body = F.Null;
-			if (ast.size() == 5) {
-				body = ast.arg4();
-			}
-			boolean exit = false;
-			while (true) {
-				try {
-					if (!engine.evaluate(test).isTrue()) {
+				// For(start, test, incr, body)
+				engine.evaluate(ast.arg1()); // start
+				IExpr test = ast.arg2();
+				IExpr incr = ast.arg3();
+				IExpr body = F.Null;
+				if (ast.size() == 5) {
+					body = ast.arg4();
+				}
+				boolean exit = false;
+				while (true) {
+					try {
+						if (!engine.evaluate(test).isTrue()) {
+							exit = true;
+							return F.Null;
+						}
+						if (ast.size() == 5) {
+							engine.evaluate(body);
+						}
+						// if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
+						// IterationLimitExceeded.throwIt(iterationCounter, ast);
+						// }
+					} catch (final BreakException e) {
 						exit = true;
 						return F.Null;
-					}
-					if (ast.size() == 5) {
-						engine.evaluate(body);
-					}
-					// if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
-					// IterationLimitExceeded.throwIt(iterationCounter, ast);
-					// }
-				} catch (final BreakException e) {
-					exit = true;
-					return F.Null;
-				} catch (final ContinueException e) {
-					// if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
-					// IterationLimitExceeded.throwIt(iterationCounter, ast);
-					// }
-					continue;
-				} catch (final ReturnException e) {
-					return e.getValue();
-				} finally {
-					if (!exit) {
-						engine.evaluate(incr);
+					} catch (final ContinueException e) {
+						// if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
+						// IterationLimitExceeded.throwIt(iterationCounter, ast);
+						// }
+						continue;
+					} catch (final ReturnException e) {
+						return e.getValue();
+					} finally {
+						if (!exit) {
+							engine.evaluate(incr);
+						}
 					}
 				}
 			}
+			Validate.checkRange(ast, 4, 5);
+			return F.NIL;
 		}
 
 		@Override
@@ -951,26 +959,28 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 5);
+			if (ast.size() >= 3 && ast.size() <= 5) {
+				final IExpr temp = engine.evaluate(ast.arg1());
 
-			final IExpr temp = engine.evaluate(ast.arg1());
+				if (temp.isFalse()) {
+					if (ast.size() >= 4) {
+						return ast.arg3();
+					}
 
-			if (temp.isFalse()) {
-				if (ast.size() >= 4) {
-					return ast.arg3();
+					return F.Null;
 				}
 
-				return F.Null;
-			}
+				if (temp.equals(F.True)) {
+					return ast.arg2();
+				}
 
-			if (temp.equals(F.True)) {
-				return ast.arg2();
-			}
+				if (ast.size() == 5) {
+					return ast.arg4();
+				}
 
-			if (ast.size() == 5) {
-				return ast.arg4();
+				return F.NIL;
 			}
-
+			Validate.checkRange(ast, 3, 5);
 			return F.NIL;
 		}
 
@@ -1023,16 +1033,18 @@ public final class Programming {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
-			if (ast.arg1().isList()) {
-				IExpr temp = moduleSubstVariables((IAST) ast.arg1(), ast.arg2(), engine);
-				if (temp.isPresent()) {
-					return engine.evaluate(temp);
+			if (ast.isAST2()) {
+				if (ast.arg1().isList()) {
+					IExpr temp = moduleSubstVariables((IAST) ast.arg1(), ast.arg2(), engine);
+					if (temp.isPresent()) {
+						return engine.evaluate(temp);
+					}
 				}
+				return F.NIL;
 			}
-
+			Validate.checkSize(ast, 3);
 			return F.NIL;
+
 		}
 
 		@Override
@@ -1572,14 +1584,17 @@ public final class Programming {
 	private static class Quiet extends AbstractCoreFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-			boolean quietMode = engine.isQuietMode();
-			try {
-				engine.setQuietMode(true);
-				return engine.evaluate(ast.arg1());
-			} finally {
-				engine.setQuietMode(quietMode);
+			if (ast.isAST1()) {
+				boolean quietMode = engine.isQuietMode();
+				try {
+					engine.setQuietMode(true);
+					return engine.evaluate(ast.arg1());
+				} finally {
+					engine.setQuietMode(quietMode);
+				}
 			}
+			Validate.checkSize(ast, 2);
+			return F.NIL;
 		}
 
 		@Override
@@ -1610,21 +1625,22 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
-			IASTAppendable oldList = engine.getReapList();
-			try {
-				IASTAppendable reapList = F.ListAlloc(10);
-				engine.setReapList(reapList);
-				IExpr expr = engine.evaluate(ast.arg1());
-				if (reapList.isAST0()) {
-					return F.List(expr, F.CEmptyList);
+			if (ast.isAST1()) {
+				IASTAppendable oldList = engine.getReapList();
+				try {
+					IASTAppendable reapList = F.ListAlloc(10);
+					engine.setReapList(reapList);
+					IExpr expr = engine.evaluate(ast.arg1());
+					if (reapList.isAST0()) {
+						return F.List(expr, F.CEmptyList);
+					}
+					return F.List(expr, F.List(reapList));
+				} finally {
+					engine.setReapList(oldList);
 				}
-				return F.List(expr, F.List(reapList));
-			} finally {
-				engine.setReapList(oldList);
 			}
-
+			Validate.checkSize(ast, 2);
+			return F.NIL;
 		}
 
 		@Override
@@ -1726,14 +1742,16 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
-			IASTAppendable reapList = engine.getReapList();
-			IExpr expr = engine.evaluate(ast.arg1());
-			if (reapList != null) {
-				reapList.append(expr);
+			if (ast.isAST1()) {
+				IASTAppendable reapList = engine.getReapList();
+				IExpr expr = engine.evaluate(ast.arg1());
+				if (reapList != null) {
+					reapList.append(expr);
+				}
+				return expr;
 			}
-			return expr;
+			Validate.checkSize(ast, 2);
+			return F.NIL;
 		}
 
 		@Override
@@ -1796,7 +1814,6 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			// Validate.checkRange(ast, 4);
 			if ((ast.size() & 0x0001) != 0x0000) {
 				engine.printMessage("Switch: number of arguments must be odd");
 			}
@@ -2113,7 +2130,6 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			// Validate.checkEven(ast);
 			if (((ast.argSize()) & 0x0001) == 0x0001) {
 				engine.printMessage("Which: number of arguments must be evaen");
 			}
@@ -2182,35 +2198,33 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
+			if (ast.size() >= 2 && ast.size() <= 3) {
+				// use EvalEngine's iterationLimit only for evaluation control
 
-			// use EvalEngine's iterationLimit only for evaluation control
-
-			// While(test, body)
-			IExpr test = ast.arg1();
-			IExpr body = F.Null;
-			if (ast.isAST2()) {
-				body = ast.arg2();
-			}
-
-			while (engine.evaluate(test).isTrue()) {
-				try {
-					if (ast.isAST2()) {
-						engine.evaluate(body);
+				// While(test, body)
+				IExpr test = ast.arg1();
+				IExpr body = ast.isAST2() ? ast.arg2() : F.Null;
+				while (engine.evaluate(test).isTrue()) {
+					try {
+						if (ast.isAST2()) {
+							engine.evaluate(body);
+						}
+						// if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
+						// IterationLimitExceeded.throwIt(iterationCounter, ast);
+						// }
+					} catch (final BreakException e) {
+						return F.Null;
+					} catch (final ContinueException e) {
+						continue;
+					} catch (final ReturnException e) {
+						return e.getValue();
 					}
-					// if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
-					// IterationLimitExceeded.throwIt(iterationCounter, ast);
-					// }
-				} catch (final BreakException e) {
-					return F.Null;
-				} catch (final ContinueException e) {
-					continue;
-				} catch (final ReturnException e) {
-					return e.getValue();
 				}
-			}
 
-			return F.Null;
+				return F.Null;
+			}
+			Validate.checkRange(ast, 2, 3);
+			return F.NIL;
 		}
 
 		@Override
@@ -2235,16 +2249,18 @@ public final class Programming {
 	private final static class With extends AbstractCoreFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
+			if (ast.size() == 3) {
+				if (ast.arg1().isList()) {
+					IExpr temp = withSubstVariables((IAST) ast.arg1(), ast.arg2(), engine);
+					if (temp.isPresent()) {
+						return engine.evaluate(temp);
+					}
 
-			if (ast.arg1().isList()) {
-				IExpr temp = withSubstVariables((IAST) ast.arg1(), ast.arg2(), engine);
-				if (temp.isPresent()) {
-					return engine.evaluate(temp);
 				}
 
+				return F.NIL;
 			}
-
+			Validate.checkSize(ast, 3);
 			return F.NIL;
 		}
 

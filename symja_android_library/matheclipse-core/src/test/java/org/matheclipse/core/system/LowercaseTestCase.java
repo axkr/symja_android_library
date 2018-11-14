@@ -206,7 +206,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testApply() {
-		// 
+		//
 		check("Apply(f, p[x][q[y]], {1}, Heads -> True)", //
 				"f(x)[f(y)]");
 		check("Apply(f, p[x][q[y]], {1}, Heads -> False)", //
@@ -217,7 +217,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"6");
 		check("List @@@ (1+2+3)", //
 				"6");
-		
+
 		check("f@ g@ h@ i", //
 				"f(g(h(i)))");
 
@@ -9271,6 +9271,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "{{{4,5,5,3},{5,4,4,6},{6,3,4,7}},{{6,6,7,3},{4,6,5,6},{7,7,6,5}}}");
 		// check("RandomVariate(DiscreteUniformDistribution({3,7}), 10)", "{6,5,7,7,7,7,4,5,6,3}");
 		// check("RandomVariate(DiscreteUniformDistribution({1, 5}) )", "3");
+	}
+
+	public void testRandomSample() {
+		// check("RandomSample(f(1,2,3,4,5),3)", //
+		// "f(3,4,1)");
+		// check("RandomSample(f(1,2,3,4,5))", //
+		// "f(3,4,5,1,2)");
 	}
 
 	public void testRange() {

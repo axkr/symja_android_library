@@ -1704,7 +1704,7 @@ public class EvalEngine implements Serializable {
 	public final IExpr evaluateNull(final IExpr expr) {
 		boolean numericMode = fNumericMode;
 		try {
-			return evalLoopExpr(expr);
+			return evalLoop(expr);
 		} finally {
 			fNumericMode = numericMode;
 		}
@@ -1720,11 +1720,7 @@ public class EvalEngine implements Serializable {
 	 * 
 	 */
 	public final IExpr evalWithoutNumericReset(final IExpr expr) {
-		return evalLoopExpr(expr).orElse(expr);
-	}
-
-	public final IExpr evalLoopExpr(final IExpr expr) {
-		return evalLoop(expr);
+		return evalLoop(expr).orElse(expr);
 	}
 
 	/**

@@ -24,7 +24,24 @@ public final class RandomFunctions {
 		F.RandomSample.setEvaluator(new RandomSample());
 	}
 
-	private static class RandomChoice extends AbstractFunctionEvaluator {
+	/**
+	 * <pre>
+	 * RandomChoice({arg1, arg2, arg3,...})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * chooses a random <code>arg</code> from the list.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; RandomChoice({1,2,3,4,5,6,7})
+	 * 5
+	 * </pre>
+	 */
+	private final static class RandomChoice extends AbstractFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -54,7 +71,24 @@ public final class RandomFunctions {
 
 	}
 
-	private static class RandomInteger extends AbstractFunctionEvaluator {
+	/**
+	 * <pre>
+	 * RandomInteger(n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * create a random integer number between <code>0</code> and <code>n</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; RandomInteger(100)
+	 * 88
+	 * </pre>
+	 */
+	private final static class RandomInteger extends AbstractFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -75,7 +109,24 @@ public final class RandomFunctions {
 
 	}
 
-	private static class RandomReal extends AbstractFunctionEvaluator {
+	/**
+	 * <pre>
+	 * RandomReal()
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * create a random number between <code>0.0</code> and <code>1.0</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; RandomReal( )
+	 * 0.53275
+	 * </pre>
+	 */
+	private final static class RandomReal extends AbstractFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -91,29 +142,66 @@ public final class RandomFunctions {
 	}
 
 	/**
-	 * Create a random shuffled list.
+	 * <pre>
+	 * RandomSample(&lt;function&gt;)
+	 * </pre>
 	 * 
+	 * <blockquote>
+	 * <p>
+	 * create a random sample for the arguments of the <code>function</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * RandomSample(&lt;function&gt;, n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * create a random sample of <code>n</code> elements for the arguments of the <code>function</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; RandomSample(f(1,2,3,4,5))
+	 * f(3,4,5,1,2)
+	 * 
+	 * &gt;&gt; RandomSample(f(1,2,3,4,5),3)
+	 * f(3,4,1)
+	 * </pre>
 	 */
-	private static class RandomSample extends AbstractFunctionEvaluator {
+	private final static class RandomSample extends AbstractFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
-			if (ast.arg1().isAST()) {
-				return shuffle((IAST) ast.arg1());
+			if (ast.size() >= 2 && ast.size() <= 3) {
+				if (ast.arg1().isAST()) {
+					int n = ast.isAST2() ? ast.arg2().toIntDefault(Integer.MIN_VALUE) : Integer.MAX_VALUE;
+					if (n >= 0) {
+						return shuffle((IAST) ast.arg1(), n);
+					}
+				}
+				return F.NIL;
 			}
-
+			Validate.checkRange(ast, 2, 3);
 			return F.NIL;
 		}
 
-		public static IAST shuffle(IAST list) {
+		public static IAST shuffle(IAST list, int n) {
 			final int len = list.argSize();
 
 			// Shuffle indices.
 			final int[] indexList = MathArrays.natural(len);
 			MathArrays.shuffle(indexList);
 
+			if (n < len) {
+				IASTAppendable result = list.copyHead();
+				for (int j = 0; j < n; j++) {
+					result.append(list.get(indexList[j] + 1));
+				}
+				return result;
+			}
 			// Create shuffled list.
 			return list.copy().setArgs(1, len + 1, i -> list.get(indexList[i - 1] + 1));
 		}
