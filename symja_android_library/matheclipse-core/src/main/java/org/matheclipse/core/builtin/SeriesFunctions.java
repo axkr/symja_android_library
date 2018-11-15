@@ -71,10 +71,6 @@ public class SeriesFunctions {
 
 			int direction;
 
-			// public LimitData(ISymbol symbol, IExpr limitValue, IAST rule) {
-			// this(symbol, limitValue, rule, DIRECTION_TWO_SIDED);
-			// }
-
 			public LimitData(ISymbol symbol, IExpr limitValue, IAST rule, int direction) {
 				this.symbol = symbol;
 				this.limitValue = limitValue;
@@ -91,6 +87,11 @@ public class SeriesFunctions {
 				return direction;
 			}
 
+			/**
+			 * Get the limit value of the limit definition <code>symbol->value</code>
+			 * 
+			 * @return
+			 */
 			public IExpr getLimitValue() {
 				return limitValue;
 			}
@@ -99,6 +100,11 @@ public class SeriesFunctions {
 				return rule;
 			}
 
+			/**
+			 * Get the <code>symbol</code> of the limit definition <code>symbol->value</code>
+			 * 
+			 * @return
+			 */
 			public ISymbol getSymbol() {
 				return symbol;
 			}
@@ -158,6 +164,7 @@ public class SeriesFunctions {
 		 */
 		private static IExpr evalLimit(final IExpr expr, LimitData data, boolean evalExpr) {
 			IExpr expression = expr;
+			final IExpr limitValue = data.getLimitValue();
 			if (evalExpr) {
 				IExpr result = F.evalQuiet(expression);
 				if (result.isNumericFunction()) {
@@ -172,17 +179,16 @@ public class SeriesFunctions {
 				}
 				if (result.equals(data.getSymbol())) {
 					// Limit[x_,x_->lim] -> lim
-					return data.getLimitValue();
+					return limitValue;
 				}
 
-				if (data.getLimitValue().isNumericFunction()) {
+				if (limitValue.isNumericFunction()) {
 					result = expression.replaceAll(data.getRule());
 					if (result.isPresent()) {
 						result = F.evalQuiet(result);
 						if (result.isNumericFunction()) {
 							if (result.isZero()) {
-								IExpr temp = F
-										.evalQuiet(F.N(F.Greater(F.Subtract(expression, data.getLimitValue()), F.C0)));
+								IExpr temp = F.evalQuiet(F.N(F.Greater(F.Subtract(expression, limitValue), F.C0)));
 								if (temp != null) {
 									IAssumptions assumptions = Assumptions.getInstance(temp);
 									if (assumptions != null) {
@@ -210,6 +216,11 @@ public class SeriesFunctions {
 			}
 
 			if (expression.isAST()) {
+				if (!limitValue.isNumericFunction() && limitValue.isFree(F.DirectedInfinity)
+						&& limitValue.isFree(data.getSymbol())) {
+					// example Limit(E^(3*x), x->a) ==> E^(3*a)
+					return expr.replaceAll(data.getRule()).orElse(expr);
+				}
 				final IAST arg1 = (IAST) expression;
 				if (arg1.isSin() || arg1.isCos()) {
 					return F.unaryAST1(arg1.head(), data.limit(arg1.arg1()));

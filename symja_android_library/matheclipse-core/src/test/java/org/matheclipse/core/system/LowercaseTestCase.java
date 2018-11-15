@@ -5868,6 +5868,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("Limit(x/((x!)^(1/x)), x->Infinity)", //
 		// "E");
 
+		check("Limit(E^(3*x), x->a)", //
+				"E^(3*a)");
+
 		check("Limit((1+k/x)^x, x->Infinity)", "E^k");
 		check("Limit((1-1/x)^x, x->Infinity)", "1/E");
 		// check("Limit((1 + Sinh(x))/E^x, x ->Infinity)", "Infinity*Limit(E^(-x),x->Infinity)");
