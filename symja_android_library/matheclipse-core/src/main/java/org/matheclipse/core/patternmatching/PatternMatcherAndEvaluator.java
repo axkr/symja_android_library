@@ -24,9 +24,9 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	 */
 	private static final long serialVersionUID = 2241135467123931061L;
 
-	private IExpr fRightHandSide;
+	protected IExpr fRightHandSide;
 
-	private transient IExpr fReturnResult = F.NIL;
+	protected transient IExpr fReturnResult = F.NIL;
 
 	/**
 	 * Leaf count of the right-hand-side of this matcher if it's a <code>Condition()</code> or
@@ -207,7 +207,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 		return replace(leftHandSide, engine, true);
 	}
 
-	final public IExpr replace(final IExpr leftHandSide, @Nonnull EvalEngine engine, boolean evaluate) {
+	public IExpr replace(final IExpr leftHandSide, @Nonnull EvalEngine engine, boolean evaluate) {
 		PatternMap patternMap = null;
 		if (isRuleWithoutPatterns()) {
 			// no patterns found match equally:

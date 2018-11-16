@@ -1,7 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import java.util.function.Function;
-
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -14,39 +12,48 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.PatternMatcherList;
 
 public class ReplaceList extends AbstractEvaluator {
 
-	private static IAST replaceExpr(final IAST ast, IExpr arg1, IExpr rules, IASTAppendable result, int maxNumberOfResults,
-			final EvalEngine engine) {
-		if (rules.isList()) {
-			for (IExpr element : (IAST) rules) {
-				if (element.isRuleAST()) {
-					IAST rule = (IAST) element;
-					Function<IExpr, IExpr> function = Functors.rules(rule, engine);
-					IExpr temp = function.apply(arg1);
-					if (temp.isPresent()) {
-						if (maxNumberOfResults <= result.size()) {
-							return result;
-						}
-						result.append(temp);
-					}
-				} else {
-					WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
-					throw wat;
+	private static IAST replaceExpr(final IAST ast, IExpr arg1, IExpr rules, IASTAppendable result,
+			int maxNumberOfResults, final EvalEngine engine) {
+		// if (rules.isList()) {
+		// for (IExpr element : (IAST) rules) {
+		// if (element.isRuleAST()) {
+		// IAST rule = (IAST) element;
+		// Function<IExpr, IExpr> function = Functors.rules(rule, engine);
+		// IExpr temp = function.apply(arg1);
+		// if (temp.isPresent()) {
+		// if (maxNumberOfResults <= result.size()) {
+		// return result;
+		// }
+		// result.append(temp);
+		// }
+		// } else {
+		// WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
+		// throw wat;
+		// }
+		//
+		// }
+		// return result;
+		// }
+		if (rules.isRuleAST()) {
+			PatternMatcherList matcher = Functors.listRules((IAST) rules, engine);
+			if (matcher != null) {
+				matcher.replace(arg1, engine, false);
+				IAST list = matcher.getReplaceList();
+				if (list.size() > 1) {
+					return list;
 				}
 
-			}
-			return result;
-		}
-		if (rules.isRuleAST()) {
-			Function<IExpr, IExpr> function = Functors.rules((IAST) rules, engine);
-			IExpr temp = function.apply(arg1);
-			if (temp.isPresent()) {
-				if (maxNumberOfResults <= result.size()) {
-					return result;
-				}
-				result.append(temp);
+				// IExpr temp = function.apply(arg1);
+				// if (temp.isPresent()) {
+				// if (maxNumberOfResults <= result.size()) {
+				// return result;
+				// }
+				// result.append(temp);
+				// }
 			}
 		} else {
 			WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
@@ -65,7 +72,7 @@ public class ReplaceList extends AbstractEvaluator {
 		}
 
 		Validate.checkRange(ast, 3, 4);
-		
+
 		try {
 			int maxNumberOfResults = Integer.MAX_VALUE;
 			IExpr arg1 = ast.arg1();
