@@ -148,9 +148,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public class FindRoot extends AbstractFunctionEvaluator {
 
-	// public final static ISymbol Newton =
-	// F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "newton" :
-	// "Newton");
 	public FindRoot() {
 	}
 
