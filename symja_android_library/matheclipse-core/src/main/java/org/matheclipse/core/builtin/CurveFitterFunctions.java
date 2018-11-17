@@ -124,10 +124,6 @@ public class CurveFitterFunctions {
 			}
 		}
 
-		public FindFit() {
-			super();
-		}
-
 		/**
 		 * Evaluate the data to double values and add it to the observed points.
 		 * 

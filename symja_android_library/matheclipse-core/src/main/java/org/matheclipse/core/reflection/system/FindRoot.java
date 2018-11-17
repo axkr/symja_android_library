@@ -257,10 +257,6 @@ public class FindRoot extends AbstractFunctionEvaluator {
 			if (max == null) { 
 				return solver.solve(maxIterations, f, min.doubleValue());
 			}
-			if (solver instanceof BisectionSolver) {
-				// TODO github #60 - remove if hipparchus 1.4 is available
-				UnivariateSolverUtils.verifyBracketing(f, min.doubleValue(), max.doubleValue());
-			}
 			return solver.solve(maxIterations, f, min.doubleValue(), max.doubleValue());
 		} finally {
 			engine.setAssumptions(oldAssumptions);
