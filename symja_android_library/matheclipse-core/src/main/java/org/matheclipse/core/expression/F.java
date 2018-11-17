@@ -7550,11 +7550,19 @@ public class F {
 	public static IAST Refine(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Refine, a0, a1);
 	}
-
+	
+	public static IAST Replace(final IExpr a0, final IExpr a1) {
+		return binaryAST2(Replace, a0, a1);
+	}
+	
 	public static IAST ReplaceAll(final IExpr a0, final IExpr a1) {
 		return binaryAST2(ReplaceAll, a0, a1);
 	}
 
+	public static IAST ReplaceList(final IExpr a0, final IExpr a1) {
+		return binaryAST2(ReplaceList, a0, a1);
+	}
+	
 	public static IAST ReplacePart(final IExpr a0, final IExpr a1) {
 		return binaryAST2(ReplacePart, a0, a1);
 	}

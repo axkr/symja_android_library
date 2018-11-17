@@ -82,6 +82,61 @@ public class Functors {
 		}
 	}
 
+	private static class ListRulesPatternFunctor implements Function<IExpr, IExpr> {
+		private final Map<IExpr, IExpr> fEqualRules;
+		private final List<PatternMatcherList> fMatchers;
+		private final EvalEngine fEngine;
+		private IASTAppendable fResult;
+
+		/**
+		 * 
+		 * @param plusAST
+		 *            the complete AST which should be cloned in the {@code apply} method
+		 * @param position
+		 *            the position which should be replaced in the <code>apply()</code> method.
+		 */
+		public ListRulesPatternFunctor(Map<IExpr, IExpr> equalRules, List<PatternMatcherList> matchers,
+				IASTAppendable result, @Nonnull EvalEngine engine) {
+			fEqualRules = equalRules;
+			fMatchers = matchers;
+			fResult = result;
+			fEngine = engine;
+		}
+
+		public ListRulesPatternFunctor(Map<IExpr, IExpr> rulesMap, IASTAppendable result) {
+			fEqualRules = rulesMap;
+			fResult = result;
+			fMatchers = null;
+			fEngine = null;
+		}
+
+		@Override
+		@Nonnull
+		public IExpr apply(final IExpr arg) {
+			IExpr temp = fEqualRules.get(arg);
+			if (temp != null) {
+				fResult.append(temp);
+				return temp;
+			}
+			if (fMatchers != null) {
+				for (int i = 0; i < fMatchers.size(); i++) {
+					PatternMatcherList matcher = fMatchers.get(i);
+					if (matcher != null) {
+						matcher.replace(arg, fEngine, false);
+						IAST list = matcher.getReplaceList();
+						if (list.size() > 1) {
+							for (int j = 1; j < list.size(); j++) {
+								fResult.append(list.get(j));
+							}
+							return list;
+						}
+					}
+				}
+			}
+			return F.NIL;
+		}
+	}
+
 	/**
 	 * Create a functor from the given map, which calls the <code>rulesMap.get()</code> in the functors
 	 * <code>apply</code>method.
@@ -163,9 +218,10 @@ public class Functors {
 		return rules(equalRules);
 	}
 
-	public static PatternMatcherList listRules(@Nonnull IAST astRules, @Nonnull EvalEngine engine)
-			throws WrongArgumentType {
+	public static Function<IExpr, IExpr> listRules(@Nonnull IAST astRules, IASTAppendable result,
+			@Nonnull EvalEngine engine) throws WrongArgumentType {
 		final Map<IExpr, IExpr> equalRules;
+		List<PatternMatcherList> matchers = new ArrayList<PatternMatcherList>();
 		if (astRules.isList()) {
 			if (astRules.size() > 1) {
 				// assuming multiple rules in a list
@@ -180,7 +236,7 @@ public class Functors {
 				for (final IExpr expr : astRules) {
 					if (expr.isRuleAST()) {
 						rule = (IAST) expr;
-						return createPatternMatcherList(equalRules, rule);
+						createPatternMatcherList(equalRules, matchers, rule);
 					} else {
 						throw new WrongArgumentType(astRules, astRules, -1, "Rule expression (x->y) expected: ");
 					}
@@ -191,12 +247,19 @@ public class Functors {
 		} else {
 			if (astRules.isRuleAST()) {
 				equalRules = new OpenFixedSizeMap<IExpr, IExpr>(3);
-				return createPatternMatcherList(equalRules, astRules);
+				createPatternMatcherList(equalRules, matchers, astRules);
 			} else {
 				throw new WrongArgumentType(astRules, astRules, -1, "Rule expression (x->y) expected: ");
 			}
 		}
-		return null; 
+		if (matchers.size() > 0) {
+			return new ListRulesPatternFunctor(equalRules, matchers, result, engine);
+		}
+		return listRules(equalRules, result);
+	}
+
+	public static Function<IExpr, IExpr> listRules(Map<IExpr, IExpr> rulesMap, IASTAppendable result) {
+		return new ListRulesPatternFunctor(rulesMap, result);
 	}
 
 	/**
@@ -238,26 +301,29 @@ public class Functors {
 		}
 	}
 
-	private static PatternMatcherList createPatternMatcherList(Map<IExpr, IExpr> equalRules, IAST rule) {
+	private static void createPatternMatcherList(Map<IExpr, IExpr> equalRules, List<PatternMatcherList> matchers,
+			IAST rule) {
 		if (rule.arg1().isFree(PATTERNQ_PREDICATE, true)) {
 			IExpr temp = equalRules.get(rule.arg1());
 			if (temp == null) {
 				if (rule.arg1().isOrderlessAST() || rule.arg1().isFlatAST()) {
 					if (rule.isRuleDelayed()) {
-						return new PatternMatcherList(ISymbol.RuleType.SET_DELAYED, rule.arg1(), rule.arg2());
+						matchers.add(new PatternMatcherList(ISymbol.RuleType.SET_DELAYED, rule.arg1(), rule.arg2()));
+					} else {
+						matchers.add(new PatternMatcherList(ISymbol.RuleType.SET, rule.arg1(),
+								evalOneIdentity(rule.arg2())));
 					}
-					return new PatternMatcherList(ISymbol.RuleType.SET, rule.arg1(), evalOneIdentity(rule.arg2()));
+					return;
 				}
 				equalRules.put(rule.arg1(), rule.arg2());
 			}
 		} else {
 			if (rule.isRuleDelayed()) {
-				return new PatternMatcherList(ISymbol.RuleType.SET_DELAYED, rule.arg1(), rule.arg2());
+				matchers.add(new PatternMatcherList(ISymbol.RuleType.SET_DELAYED, rule.arg1(), rule.arg2()));
 			} else {
-				return new PatternMatcherList(ISymbol.RuleType.SET, rule.arg1(), evalOneIdentity(rule.arg2()));
+				matchers.add(new PatternMatcherList(ISymbol.RuleType.SET, rule.arg1(), evalOneIdentity(rule.arg2())));
 			}
 		}
-		return null;
 	}
 
 	/**
