@@ -8002,6 +8002,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPatternTest() {
+		check("MatchQ({1,8,Pi},{__?Positive})", //
+				"True");
+		
 		check("$j(x_, y_:1, z_:2) := jp(x, y, z); $j(a,b)", //
 				"jp(a,b,2)");
 		check("$j(x_, y_:1, z_:2) := jp(x, y, z); $j(a)", //
@@ -9612,19 +9615,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testReplaceList() {
-
-		// TODO wrong result:
 		check("ReplaceList({a, b, b, b, c, c, a}, {___, x_, x_, ___} -> x)", //
-				"{b}");
-		// TODO wrong result:
+				"{b,b,c}");
+
+		check("ReplaceList({a, b}, {___, x__, ___} -> {x})", //
+				"{{a},{a,b},{b}}");
 		check("ReplaceList({a, b, c, d}, {___, x__, ___} -> {x})", //
-				"{{b},{a,b,c},{b,c},{c},{a,b,c,d},{b,c,d},{c,d},{d}}");
+				"{{a},{a,b},{a,b,c},{a,b,c,d},{b},{b,c},{b,c,d},{c},{c,d},{d}}");
 
 		check("ReplaceList(a + b + c, x_ + y_ :> {x, y})", //
 				"{{a,b+c},{b,a+c},{c,a+b},{a+b,c},{a+c,b},{b+c,a}}");
 		check("Replace(a + b + c, x_ + y_ :> {x, y})", //
 				"{a,b+c}");
-		
+
 		check("ReplaceList(a + b + c, x_ + y_ -> g(x, y))", //
 				"{g(a,b+c),"//
 						+ "g(b,a+c),"//
@@ -9774,16 +9777,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "{{c+d+e+f},{b},{a}}}");
 
 		check("ReplaceList({a, b, c, d, e, f}, {x__, y__, z__} :> {{x},{y},{z}})", //
-				"{{{a},{b},{c,d,e,f}}," //
-						+ "{{a},{b,c},{d,e,f}}," //
-						+ "{{a,b},{c},{d,e,f}}," //
-						+ "{{a},{b,c,d},{e,f}}," //
-						+ "{{a,b},{c,d},{e,f}}," //
-						+ "{{a,b,c},{d},{e,f}}," //
-						+ "{{a},{b,c,d,e},{f}}," //
-						+ "{{a,b},{c,d,e},{f}}," //
-						+ "{{a,b,c},{d,e},{f}}," //
-						+ "{{a,b,c,d},{e},{f}}}"); //
+				"{{{a},{b},{c,d,e,f}},"//
+				+ "{{a},{b,c},{d,e,f}},"//
+				+ "{{a},{b,c,d},{e,f}},"//
+				+ "{{a},{b,c,d,e},{f}},"//
+				+ "{{a,b},{c},{d,e,f}},"//
+				+ "{{a,b},{c,d},{e,f}},"//
+				+ "{{a,b},{c,d,e},{f}},"//
+				+ "{{a,b,c},{d},{e,f}},"//
+				+ "{{a,b,c},{d,e},{f}},"//
+				+ "{{a,b,c,d},{e},{f}}}"); //
 
 		// "{{{a},{b},{c,d,e,f}}, {{a}, {b, c}, {d, e, f}}," +
 		// "{{a}, {b, c, d}, {e, f}}, {{a}, {b, c, d, e}, {f}}," +
