@@ -3957,7 +3957,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testFindRoot() {
 		checkNumeric("FindRoot(30*x/0.000002==30, {x, 0, 5}, Method->brent)", //
-				"{x->2.0000000000000003E-6}");
+				"{x->2.0E-6}");
 		// github issue #60
 		check("FindRoot(cos(x) + 2, {x, 0, 5}, Method->brent)", //
 				"{}");
@@ -3970,56 +3970,79 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("findroot(abs(x-1)-2x-3==0, {x, -10, 10})", //
 				"{x->-0.666667}");
 
-		// issue #181
-		check("FindRoot(2^x==0,{x,-100,100}, Method->Brent)", "{x->-100.0}");
+		// github issue #103
+		check("FindRoot(2^x==0,{x,-100, 100}, Method->Brent)", //
+				"{}");
 		// FindRoot: interval does not bracket a root: f(-1) = 0.5, f(100) =
 		// 1,267,650,600,228,229,400,000,000,000,000
-		check("FindRoot(2^x==0,{x,-1,100}, Method->Brent)", "{}");
+		check("FindRoot(2^x==0,{x,-1,100}, Method->Brent)", //
+				"{}");
 
-		checkNumeric("N(2^(-100))", "0.0");
+		checkNumeric("N(2^(-100))", //
+				"0.0");
 
-		check("FindRoot(Exp(x)-1 == 0,{x,-50,100}, Method->Muller)", "{x->0.0}");
+		check("FindRoot(Exp(x)-1 == 0,{x,-50,100}, Method->Muller)", //
+				"{x->0.0}");
 		if (!Config.EXPLICIT_TIMES_OPERATOR) {
 			// implicit times operator '*' allowed
-			check("Exp(1.2436240901689538 * E - 16) - 1", "-0.999997");
-			check("Exp(1.2436240901689538E-16) - 1", "-0.999997");
+			check("Exp(1.2436240901689538 * E - 16) - 1", //
+					"-0.999997");
+			check("Exp(1.2436240901689538E-16) - 1",//
+					"-0.999997");
 		} else {
-			check("Exp(1.2436240901689538E-16) - 1", "0.0");
+			check("Exp(1.2436240901689538E-16) - 1", //
+					"0.0");
 		}
 
-		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10})", "{x->3.4341896575482007}");
+		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10})",//
+				"{x->3.4341896575482007}");
 		checkNumeric("$K=10000;\n" + "$g=0.0;\n" + "$n=10*12;\n" + "$Z=12;\n" + "$AA=0.0526;\n" + "$R=100;\n"
 				+ "$d=0.00;\n" + "$vn=0;\n" + "$EAj=0;\n" + "$zj=0;\n" + "$sz=1;\n"
-				+ "FindRoot((($K*(1+p-$g)^($n/$Z))/(1+$AA))+(Sum((($R*(1+$d)^(Floor(i0/$Z)))/(1+$AA))*(1+p-$g)^(($n-i0-$vn)/$Z),{i0,0,$n-1}))+(Sum(($EAj*(1+p-$g)^(($n-$zj)/$Z))/(1+$AA),{j,1,$sz})) - 30199, {p, 0, 0.1})",
+				+ "FindRoot((($K*(1+p-$g)^($n/$Z))/(1+$AA))+(Sum((($R*(1+$d)^(Floor(i0/$Z)))/(1+$AA))*(1+p-$g)^(($n-i0-$vn)/$Z),{i0,0,$n-1}))+(Sum(($EAj*(1+p-$g)^(($n-$zj)/$Z))/(1+$AA),{j,1,$sz})) - 30199, {p, 0, 0.1})", //
 				"{p->0.04999709393822401}");
-		checkNumeric("$K=10000;\n" + "$g=0.0;\n" + "$n=10*12;\n" + "$Z=12;\n" + "$AA=0.0526;\n" + "$res=15474;\n"
-				+ "FindRoot((($K*(1+p-$g)^($n/$Z))/(1+$AA)) - $res, {p, 0, 0.1})", "{p->0.049993464334866594}");
+		checkNumeric(
+				"$K=10000;\n" + "$g=0.0;\n" + "$n=10*12;\n" + "$Z=12;\n" + "$AA=0.0526;\n" + "$res=15474;\n"
+						+ "FindRoot((($K*(1+p-$g)^($n/$Z))/(1+$AA)) - $res, {p, 0, 0.1})", //
+				"{p->0.049993464334866594}");
 
-		checkNumeric("Exp(3.4341896)", "31.006274895944433");
-		checkNumeric("Pi^3.0", "31.006276680299816");
+		checkNumeric("Exp(3.4341896)", //
+				"31.006274895944433");
+		checkNumeric("Pi^3.0", //
+				"31.006276680299816");
 		// default to Newton method
-		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10})", "{x->3.4341896575482007}");
-		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Method->Newton)", "{x->3.4341896575482007}");
+		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10})", //
+				"{x->3.4341896575482007}");
+		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Method->Newton)", //
+				"{x->3.4341896575482007}");
 
 		// only a start value is given:
 		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,3}, Method->Newton)", "{x->3.4341896575482007}");
 
-		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Method->Bisection)", "{x->3.434189647436142}");
-		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Method->Brent)", "{x->3.4341896127725238}");
-		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Muller)", "{x->3.4341896575483015}");
-		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Ridders)", "{x->3.4341896575482007}");
-		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Secant)", "{x->3.4341896575036097}");
+		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Method->Bisection)", //
+				"{x->3.434189647436142}");
+		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Method->Brent)", //
+				"{x->3.434189629596888}");
+		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Muller)", //
+				"{x->3.4341896575483015}");
+		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Ridders)", //
+				"{x->3.4341896575482007}");
+		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Secant)", //
+				"{x->3.4341896575036097}");
 		// FindRoot: maximal count (100) exceeded
-		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Method->RegulaFalsi, MaxIterations->100)",
+		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Method->RegulaFalsi, MaxIterations->100)", //
 				"FindRoot(E^x==Pi^3,{x,1,10},Method->regulafalsi,MaxIterations->100)");
 		// FindRoot: convergence failed
-		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Method->RegulaFalsi, MaxIterations->32000)",
+		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Method->RegulaFalsi, MaxIterations->32000)", //
 				"FindRoot(E^x==Pi^3,{x,1,10},Method->regulafalsi,MaxIterations->32000)");
-		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Illinois)", "{x->3.4341896915055257}");
-		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Pegasus)", "{x->3.4341896575481976}");
+		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Illinois)", //
+				"{x->3.4341896915055257}");
+		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Pegasus)", //
+				"{x->3.4341896575481976}");
 
-		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Brent)", "{x->3.4341896127725238}");
-		check("FindRoot(Sin(x),{x,-0.5,0.5}, Secant)", "{x->0.0}");
+		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Brent)", //
+				"{x->3.434189629596888}");
+		check("FindRoot(Sin(x),{x,-0.5,0.5}, Secant)", //
+				"{x->0.0}");
 	}
 
 	public void testFirst() {
@@ -8004,7 +8027,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testPatternTest() {
 		check("MatchQ({1,8,Pi},{__?Positive})", //
 				"True");
-		
+
 		check("$j(x_, y_:1, z_:2) := jp(x, y, z); $j(a,b)", //
 				"jp(a,b,2)");
 		check("$j(x_, y_:1, z_:2) := jp(x, y, z); $j(a)", //
@@ -9778,15 +9801,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("ReplaceList({a, b, c, d, e, f}, {x__, y__, z__} :> {{x},{y},{z}})", //
 				"{{{a},{b},{c,d,e,f}},"//
-				+ "{{a},{b,c},{d,e,f}},"//
-				+ "{{a},{b,c,d},{e,f}},"//
-				+ "{{a},{b,c,d,e},{f}},"//
-				+ "{{a,b},{c},{d,e,f}},"//
-				+ "{{a,b},{c,d},{e,f}},"//
-				+ "{{a,b},{c,d,e},{f}},"//
-				+ "{{a,b,c},{d},{e,f}},"//
-				+ "{{a,b,c},{d,e},{f}},"//
-				+ "{{a,b,c,d},{e},{f}}}"); //
+						+ "{{a},{b,c},{d,e,f}},"//
+						+ "{{a},{b,c,d},{e,f}},"//
+						+ "{{a},{b,c,d,e},{f}},"//
+						+ "{{a,b},{c},{d,e,f}},"//
+						+ "{{a,b},{c,d},{e,f}},"//
+						+ "{{a,b},{c,d,e},{f}},"//
+						+ "{{a,b,c},{d},{e,f}},"//
+						+ "{{a,b,c},{d,e},{f}},"//
+						+ "{{a,b,c,d},{e},{f}}}"); //
 
 		// "{{{a},{b},{c,d,e,f}}, {{a}, {b, c}, {d, e, f}}," +
 		// "{{a}, {b, c, d}, {e, f}}, {{a}, {b, c, d, e}, {f}}," +

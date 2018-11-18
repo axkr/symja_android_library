@@ -3,14 +3,13 @@ package org.matheclipse.core.reflection.system;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BaseAbstractUnivariateSolver;
 import org.hipparchus.analysis.solvers.BisectionSolver;
-import org.hipparchus.analysis.solvers.BrentSolver;
+import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.IllinoisSolver;
 import org.hipparchus.analysis.solvers.MullerSolver;
 import org.hipparchus.analysis.solvers.PegasusSolver;
 import org.hipparchus.analysis.solvers.RegulaFalsiSolver;
 import org.hipparchus.analysis.solvers.RiddersSolver;
 import org.hipparchus.analysis.solvers.SecantSolver;
-import org.hipparchus.analysis.solvers.UnivariateSolverUtils;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.commons.math.analysis.solvers.DifferentiableUnivariateFunction;
@@ -222,7 +221,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
 			if (method.equalsIgnoreCase("Bisection")) {
 				solver = new BisectionSolver();
 			} else if (method.equalsIgnoreCase("Brent")) {
-				solver = new BrentSolver();
+				solver = new BracketingNthOrderBrentSolver();
 				// } else if (method.isSymbolName("Laguerre")) {
 				// solver = new LaguerreSolver();
 			} else if (method.equalsIgnoreCase("Muller")) {

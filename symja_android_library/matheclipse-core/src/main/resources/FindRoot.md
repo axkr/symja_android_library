@@ -31,11 +31,9 @@ The function should be continuous but not necessarily smooth.
 
 #### Brent
 
-Implements the Brent algorithm for finding zeros of real univariate functions. 
+Implements the Brent algorithm for finding zeros of real univariate functions (`BracketingNthOrderBrentSolver`). 
 The function should be continuous but not necessarily smooth. 
-The solve method returns a zero `x` of the function `f` in the given interval `[xmin, xmax]` to within a 
-tolerance `6*eps*abs(x)+t` where `eps` is the relative accuracy and `t` is the absolute accuracy. 
-The given interval must bracket the root.
+The solve method returns a zero `x` of the function `f` in the given interval `[xmin, xmax]`.
 
 #### Muller
 
