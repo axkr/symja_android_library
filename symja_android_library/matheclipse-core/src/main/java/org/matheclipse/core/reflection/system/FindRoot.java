@@ -242,7 +242,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
 				solver = new IllinoisSolver();
 			} else if (method.equalsIgnoreCase("Pegasus")) {
 				solver = new PegasusSolver();
-			} else if (method.equalsIgnoreCase("Newton")) {
+			} else if (max == null||method.equalsIgnoreCase("Newton")) {
 				try {
 					NewtonRaphsonSolver nrs = new NewtonRaphsonSolver();
 					if (max == null) {
@@ -257,9 +257,6 @@ public class FindRoot extends AbstractFunctionEvaluator {
 				// default: BracketingNthOrderBrentSolver
 				try {
 					solver = new BracketingNthOrderBrentSolver();
-					if (max == null) {
-						return solver.solve(maxIterations, f, min.doubleValue());
-					}
 					return solver.solve(maxIterations, f, min.doubleValue(), max.doubleValue());
 				} catch (MathRuntimeException mex) {
 					// switch to BisectionSolver

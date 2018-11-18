@@ -1017,7 +1017,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 						// expression /; test
 						IExpr lhsTempPatternExpr = fPatternMap.substituteSymbols(lhsPatternAST);
 						if (lhsTempPatternExpr.isAST()) {
-							lhsTempPatternExpr = engine.evalLHSPattern((IAST) lhsTempPatternExpr);
+							lhsTempPatternExpr = engine.evalHoldPattern((IAST) lhsTempPatternExpr);
 						}
 						final PatternMatcher matcher = new PatternMatcherEvalEngine(lhsTempPatternExpr, engine);
 						if (matcher.test(lhsEvalExpr, engine)) {

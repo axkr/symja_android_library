@@ -165,7 +165,7 @@ public class ConvertRubi {
 				buffer.append("IIntegrate(" + GLOBAL_COUNTER + ",");
 			} else {
 				try {
-					leftHandSide = EvalEngine.get().evalLHSPattern((IAST) temp);
+					leftHandSide = EvalEngine.get().evalHoldPattern((IAST) temp);
 				} catch (Exception ex) {
 					System.out.println("GLOBAL_COUNTER: " + GLOBAL_COUNTER);
 					ex.printStackTrace();

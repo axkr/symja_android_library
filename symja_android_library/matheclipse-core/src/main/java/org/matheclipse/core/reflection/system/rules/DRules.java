@@ -13,7 +13,7 @@ public interface DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 80 };
+  final public static int[] SIZES = { 0, 81 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -248,6 +248,9 @@ public interface DRules {
     // D(Log(x_),{x_,n_IntegerQ}):=(-1+n)!/((-1)^(1-n)*x^n)/;n>=0
     ISetDelayed(D(Log(x_),List(x_,$p(n,IntegerQ))),
       Condition(Times(Power(CN1,Plus(CN1,n)),Power(Power(x,n),-1),Factorial(Plus(CN1,n))),GreaterEqual(n,C0))),
+    // D(ArcTan(f_,g_),x_NotListQ):=(-g*D(f,x)+f*D(g,x))/(f^2+g^2)
+    ISetDelayed(D(ArcTan(f_,g_),$p(x,NotListQ)),
+      Times(Power(Plus(Sqr(f),Sqr(g)),-1),Plus(Times(CN1,g,D(f,x)),Times(f,D(g,x))))),
     // D(BesselJ(f_,g_),x_NotListQ):=1/2*(BesselJ(-1+f,g)-BesselJ(1+f,g))*D(g,x)+D(f,x)*Derivative(1,0)[BesselJ][f,g]
     ISetDelayed(D(BesselJ(f_,g_),$p(x,NotListQ)),
       Plus(Times(C1D2,Plus(BesselJ(Plus(CN1,f),g),Negate(BesselJ(Plus(C1,f),g))),D(g,x)),Times(D(f,x),$($(Derivative(C1,C0),BesselJ),f,g)))),

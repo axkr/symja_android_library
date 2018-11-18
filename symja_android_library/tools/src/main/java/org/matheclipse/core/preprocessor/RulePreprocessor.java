@@ -45,7 +45,7 @@ public class RulePreprocessor {
 		IExpr leftHandSide = ast.arg1();
 		IExpr rightHandSide = ast.arg2();
 		if (ast.arg1().isAST()) {
-			leftHandSide = EvalEngine.get().evalLHSPattern((IAST) leftHandSide);
+			leftHandSide = EvalEngine.get().evalHoldPattern((IAST) leftHandSide);
 		}
 		if (evalRHS) {
 			rightHandSide = F.eval(rightHandSide);

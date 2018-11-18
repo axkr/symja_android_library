@@ -113,7 +113,7 @@ public interface SeriesCoefficientRules {
     // SeriesCoefficient(ArcCos(x_),{x_Symbol,a_,1}):=-1/Sqrt(1-a^2)/;FreeQ(a,x)
     ISetDelayed(SeriesCoefficient(ArcCos(x_),List(x_Symbol,a_,C1)),
       Condition(Negate(Power(Plus(C1,Negate(Sqr(a))),CN1D2)),FreeQ(a,x))),
-    // SeriesCoefficient(ArcCot(x_),{x_Symbol,a_,1}):=1/(-1-a^2)/;FreeQ(a,x)
+    // SeriesCoefficient(ArcCot(x_),{x_Symbol,a_,1}):=-1/(1+a^2)/;FreeQ(a,x)
     ISetDelayed(SeriesCoefficient(ArcCot(x_),List(x_Symbol,a_,C1)),
       Condition(Negate(Power(Plus(C1,Sqr(a)),-1)),FreeQ(a,x))),
     // SeriesCoefficient(ArcSin(x_),{x_Symbol,a_,1}):=1/Sqrt(1-a^2)/;FreeQ(a,x)

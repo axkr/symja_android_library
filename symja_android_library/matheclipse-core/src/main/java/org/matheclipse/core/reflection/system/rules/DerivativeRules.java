@@ -15,7 +15,7 @@ public interface DerivativeRules {
     // ArcCosh->1/Sqrt(-1+#1^2)
     Rule(ArcCosh,
       Power(Plus(CN1,Sqr(Slot1)),CN1D2)),
-    // ArcCot->1/(-1-#1^2)
+    // ArcCot->-1/(1+#1^2)
     Rule(ArcCot,
       Negate(Power(Plus(C1,Sqr(Slot1)),-1))),
     // ArcCoth->1/(1-#1^2)

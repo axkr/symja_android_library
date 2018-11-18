@@ -1136,7 +1136,13 @@ public class EvalEngine implements Serializable {
 		}
 	}
 
-	public IExpr evalLHSPattern(IAST ast) {
+	/**
+	 * 
+	 * @param ast
+	 * @return
+	 * @deprecated use {@link #evalHoldPattern(IAST)}
+	 */
+	private IExpr evalLHSPattern(IAST ast) {
 		boolean evalLHSMode = fEvalLHSMode;
 		boolean numericMode = fNumericMode;
 		try {

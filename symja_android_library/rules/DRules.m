@@ -86,7 +86,6 @@
   D(ArcTan(x_), {x_, n_IntegerQ}) := KroneckerDelta(n)*ArcTan(x) + 
     Sum((((-1)^k*k! * Pochhammer(2*k - n + 2, 2*(n - k) - 2))/ ((n - k - 1)! * (2*x)^(n - 2*k - 1)))*(1 + x^2)^(-k - 1), {k, 0, n - 1})
     /; n >= 0,
-       
   D(Cos(x_), {x_, n_IntegerQ}) := Cos(x + (Pi*n)/2) 
     /; n >= 0,
   D(Cot(x_), {x_, n_IntegerQ}) := Cot(x)*KroneckerDelta(n) - Csc(x)^2*KroneckerDelta(n - 1) - 
@@ -97,11 +96,10 @@
   D(Tan(x_), {x_, n_IntegerQ}) := Tan(x)*KroneckerDelta(n) + Sec(x)^2* KroneckerDelta(n - 1) + 
     n*Sum((((-1)^k*Binomial(n - 1, k))/(k + 1))*Cos(x)^(-2*k - 2)*2^(n - 2*k)*Binomial(2*k, j)*(k - j)^(n - 1)*Sin((n*Pi)/2 + 2*(k - j)*x), {k, 0, n - 1}, {j, 0, k - 1})
       /; n >= 0,
-  
   D(Log(x_), {x_, n_IntegerQ}) := ((-1)^(n - 1)*(n - 1)!)/x^n
     /; n >= 0,
     
-  
+  D(ArcTan(f_, g_),x_NotListQ):= ((-g*D(f,x)+f*D(g,x))/(f^2 + g^2)),
   D(BesselJ(f_, g_),x_NotListQ):= 1/2*(BesselJ(-1+f, g)-BesselJ(1+f, g))*D(g,x)+D(f,x)*Derivative(1,0)[BesselJ][f,g],
   D(PolyLog(f_, g_),x_NotListQ):= (PolyLog(-1 + f, g)*D(g,x))/g + D(f,x)*Derivative(1, 0)[PolyLog][f, g],
   D(ProductLog(f_, g_),x_NotListQ):= ProductLog(f,g)*D(g,x)/(g*(1+ProductLog(f,g)))+D(f,x)*Derivative(1,0)[ProductLog][f,g] 

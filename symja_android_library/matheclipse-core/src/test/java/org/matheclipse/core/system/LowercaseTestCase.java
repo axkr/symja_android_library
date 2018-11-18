@@ -1,5 +1,9 @@
 package org.matheclipse.core.system;
 
+import static org.matheclipse.core.expression.F.ArcTan;
+import static org.matheclipse.core.expression.F.x_;
+import static org.matheclipse.core.expression.F.y_;
+
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.Structure;
@@ -2331,6 +2335,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testD() {
+		check("D(ArcTan(x,y),x)", //
+				"-y/(x^2+y^2)");
+		check("D(ArcTan(x,y),y)", //
+				"x/(x^2+y^2)");
+//		check("D(ArcTan(x,x),x)", //
+//				"0");
 		check("D(Cosh(b*x),x)", //
 				"b*Sinh(b*x)");
 		check("D(Sinh(x),x)", //
