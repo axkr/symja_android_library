@@ -4,7 +4,8 @@ import java.util.Deque;
 import java.util.function.Function;
 
 import org.hipparchus.analysis.UnivariateFunction;
-import org.matheclipse.commons.math.analysis.solvers.DifferentiableUnivariateFunction;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.matheclipse.core.eval.DoubleStackEvaluator;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ComplexNum;
@@ -20,21 +21,30 @@ import org.matheclipse.core.interfaces.ISymbol;
  * 
  * @see org.matheclipse.core.reflection.system.Plot
  */
-public class UnaryNumerical implements Function<IExpr, IExpr>, DifferentiableUnivariateFunction {
+public class UnaryNumerical implements Function<IExpr, IExpr>, UnivariateDifferentiableFunction {
 	IExpr fFunction;
+	UnaryNumerical fFirstDerivative = null;
 
 	ISymbol fVariable;
 
 	EvalEngine fEngine;
 
 	public UnaryNumerical(final IExpr fn, final ISymbol v) {
-		this(fn, v, EvalEngine.get());
+		this(fn, v, EvalEngine.get(), false);
 	}
 
 	public UnaryNumerical(final IExpr fn, final ISymbol v, final EvalEngine engine) {
+		this(fn, v, engine, false);
+	}
+
+	public UnaryNumerical(final IExpr fn, final ISymbol v, final EvalEngine engine, boolean firstDerivative) {
 		fVariable = v;
 		fFunction = fn;
 		fEngine = engine;
+		IExpr temp = engine.evaluate(F.D(fFunction, fVariable));
+		if (firstDerivative) {
+			fFirstDerivative = new UnaryNumerical(temp, fVariable, engine, false);
+		}
 	}
 
 	@Override
@@ -56,14 +66,23 @@ public class UnaryNumerical implements Function<IExpr, IExpr>, DifferentiableUni
 		return result;
 	}
 
+	public DerivativeStructure value(final DerivativeStructure x) {
+		// x.getPartialDerivative(1)==1.0 in the case:
+		// fFirstDerivative.value(x.getValue() * x.getPartialDerivative(1)
+		return x.getFactory().build(value(x.getValue()), fFirstDerivative.value(x.getValue()));
+	}
+
 	/**
 	 * First derivative of unary function
 	 */
-	@Override
 	public UnivariateFunction derivative() {
+		if (fFirstDerivative != null) {
+			return fFirstDerivative;
+		}
 		final IAST ast = F.D(fFunction, fVariable);
 		IExpr expr = fEngine.evaluate(ast);
-		return new UnaryNumerical(expr, fVariable, fEngine);
+		fFirstDerivative = new UnaryNumerical(expr, fVariable, fEngine, false);
+		return fFirstDerivative;
 	}
 
 	public ComplexNum value(final ComplexNum z) {

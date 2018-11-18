@@ -3995,15 +3995,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 		}
 
 		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10})",//
-				"{x->3.4341896575482007}");
+				"{x->3.434189629596888}");
 		checkNumeric("$K=10000;\n" + "$g=0.0;\n" + "$n=10*12;\n" + "$Z=12;\n" + "$AA=0.0526;\n" + "$R=100;\n"
 				+ "$d=0.00;\n" + "$vn=0;\n" + "$EAj=0;\n" + "$zj=0;\n" + "$sz=1;\n"
 				+ "FindRoot((($K*(1+p-$g)^($n/$Z))/(1+$AA))+(Sum((($R*(1+$d)^(Floor(i0/$Z)))/(1+$AA))*(1+p-$g)^(($n-i0-$vn)/$Z),{i0,0,$n-1}))+(Sum(($EAj*(1+p-$g)^(($n-$zj)/$Z))/(1+$AA),{j,1,$sz})) - 30199, {p, 0, 0.1})", //
-				"{p->0.04999709393822401}");
+				"{p->0.049997093940105534}");
 		checkNumeric(
 				"$K=10000;\n" + "$g=0.0;\n" + "$n=10*12;\n" + "$Z=12;\n" + "$AA=0.0526;\n" + "$res=15474;\n"
 						+ "FindRoot((($K*(1+p-$g)^($n/$Z))/(1+$AA)) - $res, {p, 0, 0.1})", //
-				"{p->0.049993464334866594}");
+				"{p->0.04999346433486661}");
 
 		checkNumeric("Exp(3.4341896)", //
 				"31.006274895944433");
@@ -4011,7 +4011,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"31.006276680299816");
 		// default to Newton method
 		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10})", //
-				"{x->3.4341896575482007}");
+				"{x->3.434189629596888}");
 		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Method->Newton)", //
 				"{x->3.4341896575482007}");
 

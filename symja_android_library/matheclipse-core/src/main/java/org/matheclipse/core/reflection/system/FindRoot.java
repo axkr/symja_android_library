@@ -1,19 +1,20 @@
 package org.matheclipse.core.reflection.system;
 
 import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.analysis.solvers.BaseAbstractUnivariateSolver;
 import org.hipparchus.analysis.solvers.BisectionSolver;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.IllinoisSolver;
 import org.hipparchus.analysis.solvers.MullerSolver;
+import org.hipparchus.analysis.solvers.NewtonRaphsonSolver;
 import org.hipparchus.analysis.solvers.PegasusSolver;
 import org.hipparchus.analysis.solvers.RegulaFalsiSolver;
 import org.hipparchus.analysis.solvers.RiddersSolver;
 import org.hipparchus.analysis.solvers.SecantSolver;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
-import org.matheclipse.commons.math.analysis.solvers.DifferentiableUnivariateFunction;
-import org.matheclipse.commons.math.analysis.solvers.NewtonSolver;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -62,22 +63,24 @@ import org.matheclipse.core.interfaces.ISymbol;
  * names:
  * </p>
  * </blockquote>
+ * <h4>Brent</h4>
+ * <p>
+ * Implements the Brent algorithm for finding zeros of real univariate functions
+ * (<code>BracketingNthOrderBrentSolver</code>). The function should be continuous but not necessarily smooth. The solve
+ * method returns a zero <code>x</code> of the function <code>f</code> in the given interval <code>[xmin, xmax]</code>.
+ * </p>
+ * <p>
+ * This is the default method, if no <code>method_name</code> is given.
+ * </p>
  * <h4>Newton</h4>
  * <p>
  * Implements Newton's method for finding zeros of real univariate functions. The function should be continuous but not
- * necessarily smooth. This is the default method, if no method name is given
+ * necessarily smooth.
  * </p>
  * <h4>Bisection</h4>
  * <p>
  * Implements the bisection algorithm for finding zeros of univariate real functions. The function should be continuous
  * but not necessarily smooth.
- * </p>
- * <h4>Brent</h4>
- * <p>
- * Implements the Brent algorithm for finding zeros of real univariate functions. The function should be continuous but
- * not necessarily smooth. The solve method returns a zero <code>x</code> of the function <code>f</code> in the given
- * interval <code>[xmin, xmax]</code> to within a tolerance <code>6*eps*abs(x)+t</code> where <code>eps</code> is the
- * relative accuracy and <code>t</code> is the absolute accuracy. The given interval must bracket the root.
  * </p>
  * <h4>Muller</h4>
  * <p>
@@ -143,8 +146,12 @@ import org.matheclipse.core.interfaces.ISymbol;
  * {x-&gt;0.0}
  * </pre>
  * 
+ * <h3>Related terms</h3>
+ * <p>
+ * <a href="Factor.md">Factor</a>, <a href="Eliminate.md">Eliminate</a>, <a href="NRoots.md">NRoots</a>,
+ * <a href="Solve.md">Solve</a>
+ * </p>
  */
-
 public class FindRoot extends AbstractFunctionEvaluator {
 
 	public FindRoot() {
@@ -154,7 +161,8 @@ public class FindRoot extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3);
 
-		String method = "Newton";
+		// default: BracketingNthOrderBrentSolver
+		String method = "Brent";
 		int maxIterations = 100;
 		if (ast.size() >= 4) {
 			final Options options = new Options(ast.topHead(), ast, 3, engine);
@@ -216,12 +224,10 @@ public class FindRoot extends AbstractFunctionEvaluator {
 			IAssumptions assum = Assumptions.getInstance(F.Element(xVar, F.Reals));
 			engine.setAssumptions(assum);
 			function = engine.evaluate(function);
-			UnivariateFunction f = new UnaryNumerical(function, xVar, engine);
+			UnivariateDifferentiableFunction f = new UnaryNumerical(function, xVar, engine, true);
 			BaseAbstractUnivariateSolver<UnivariateFunction> solver = null;
 			if (method.equalsIgnoreCase("Bisection")) {
 				solver = new BisectionSolver();
-			} else if (method.equalsIgnoreCase("Brent")) {
-				solver = new BracketingNthOrderBrentSolver();
 				// } else if (method.isSymbolName("Laguerre")) {
 				// solver = new LaguerreSolver();
 			} else if (method.equalsIgnoreCase("Muller")) {
@@ -236,21 +242,31 @@ public class FindRoot extends AbstractFunctionEvaluator {
 				solver = new IllinoisSolver();
 			} else if (method.equalsIgnoreCase("Pegasus")) {
 				solver = new PegasusSolver();
-			} else {
-				// default: NewtonSolver
+			} else if (method.equalsIgnoreCase("Newton")) {
 				try {
-					DifferentiableUnivariateFunction fNewton = new UnaryNumerical(function, xVar, engine);
-					BaseAbstractUnivariateSolver<DifferentiableUnivariateFunction> solver2 = new NewtonSolver();
+					NewtonRaphsonSolver nrs = new NewtonRaphsonSolver();
 					if (max == null) {
-						return solver2.solve(maxIterations, fNewton, min.doubleValue());
+						return nrs.solve(maxIterations, f, min.doubleValue());
 					}
-					return solver2.solve(maxIterations, fNewton, min.doubleValue(), max.doubleValue());
+					return nrs.solve(maxIterations, f, min.doubleValue(), max.doubleValue());
+				} catch (MathRuntimeException mex) {
+					// switch to BracketingNthOrderBrentSolver
+					solver = new BracketingNthOrderBrentSolver();
+				}
+			} else {
+				// default: BracketingNthOrderBrentSolver
+				try {
+					solver = new BracketingNthOrderBrentSolver();
+					if (max == null) {
+						return solver.solve(maxIterations, f, min.doubleValue());
+					}
+					return solver.solve(maxIterations, f, min.doubleValue(), max.doubleValue());
 				} catch (MathRuntimeException mex) {
 					// switch to BisectionSolver
 					solver = new BisectionSolver();
 				}
 			}
-			if (max == null) { 
+			if (max == null) {
 				return solver.solve(maxIterations, f, min.doubleValue());
 			}
 			return solver.solve(maxIterations, f, min.doubleValue(), max.doubleValue());
