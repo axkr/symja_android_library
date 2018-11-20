@@ -38,7 +38,7 @@ public class Plot3D extends AbstractEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		// ISymbol optionsArray[] = new ISymbol[] { f.BoxRatios, f.PlotRange };
-		if ((ast.size() >= 4) && ast.get(2).isList() && ast.get(3).isList()) {
+		if ((ast.size() >= 4) && ast.arg2().isList() && ast.get(3).isList()) {
 			try {
 				final IASTAppendable graphics = SurfaceGraphics();
 				IExpr temp;

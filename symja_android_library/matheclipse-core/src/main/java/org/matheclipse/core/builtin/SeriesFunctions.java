@@ -462,7 +462,7 @@ public class SeriesFunctions {
 			if (base.isTimes() && exponent.isFree(data.getSymbol())) {
 				IAST isFreeResult = ((IAST) base).partitionTimes(x -> x.isFree(data.getSymbol(), true), F.C1, F.C1,
 						F.List);
-				if (!isFreeResult.get(2).isOne()) {
+				if (!isFreeResult.arg2().isOne()) {
 					return F.Times(F.Power(isFreeResult.arg1(), exponent),
 							data.limit(F.Power(isFreeResult.arg2(), exponent)));
 				}
@@ -568,7 +568,7 @@ public class SeriesFunctions {
 		private static IExpr timesLimit(final IAST timesAST, LimitData data) {
 			IAST isFreeResult = timesAST.partitionTimes(x -> x.isFree(data.getSymbol(), true), F.C1, F.C1, F.List);
 			if (!isFreeResult.arg1().isOne()) {
-				return F.Times(isFreeResult.arg1(), data.limit(isFreeResult.get(2)));
+				return F.Times(isFreeResult.arg1(), data.limit(isFreeResult.arg2()));
 			}
 			IExpr[] parts = Algebra.fractionalPartsTimesPower(timesAST, false, false, true, true, true);
 			if (parts != null) {

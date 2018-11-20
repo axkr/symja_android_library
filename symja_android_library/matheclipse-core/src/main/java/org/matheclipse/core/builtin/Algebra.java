@@ -483,7 +483,7 @@ public class Algebra {
 					IAST numParts = ((IAST) p00).partitionPlus(new PolynomialPredicate(), F.C0, F.C1, F.List);
 					if (numParts.isPresent() && !numParts.arg1().isOne()) {
 						p00 = numParts.arg1();
-						p01 = numParts.get(2);
+						p01 = numParts.arg2();
 					}
 				}
 
@@ -902,7 +902,7 @@ public class Algebra {
 				if (option.isTrue()) {
 					trig = true;
 				} else if (!option.isPresent()) {
-					throw new WrongArgumentType(ast, ast.get(2), 2, "Option expected!");
+					throw new WrongArgumentType(ast, ast.arg2(), 2, "Option expected!");
 				}
 			}
 
@@ -2181,7 +2181,7 @@ public class Algebra {
 				if (option.isTrue()) {
 					trig = true;
 				} else if (!option.isPresent()) {
-					throw new WrongArgumentType(ast, ast.get(2), 2, "Option expected!");
+					throw new WrongArgumentType(ast, ast.arg2(), 2, "Option expected!");
 				}
 			}
 

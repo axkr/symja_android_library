@@ -172,7 +172,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 						IExpr q = coeffs.arg1(); // degree 0
 						IExpr p = F.C0;
 						if (poly.degree() == 1) {
-							p = coeffs.get(2); // degree 1
+							p = coeffs.arg2(); // degree 1
 						}
 						return linearODE(p, q, xVar, C_1, engine);
 					}
