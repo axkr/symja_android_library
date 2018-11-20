@@ -169,7 +169,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 					ExprPolynomial poly = ring.create(eq.getOneIdentity(F.C0), false, true);
 					if (order == 1 && poly.degree() <= 1) {
 						IAST coeffs = poly.coefficientList();
-						IExpr q = coeffs.get(1); // degree 0
+						IExpr q = coeffs.arg1(); // degree 0
 						IExpr p = F.C0;
 						if (poly.degree() == 1) {
 							p = coeffs.get(2); // degree 1

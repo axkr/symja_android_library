@@ -383,9 +383,9 @@ public class Show2SVG {
 	}
 
 	public static void toSVG(IAST ast, StringBuilder buf) {
-		if (ast.size() > 1 && ast.get(1).isASTSizeGE(F.Graphics, 2)) {
+		if (ast.size() > 1 && ast.arg1().isASTSizeGE(F.Graphics, 2)) {
 			graphicsToSVG(ast.getAST(1), buf);
-		} else if (ast.size() > 1 && ast.get(1).isASTSizeGE(F.Graphics3D, 2)) {
+		} else if (ast.size() > 1 && ast.arg1().isASTSizeGE(F.Graphics3D, 2)) {
 			Show3D2ThreeJS.graphics3dToSVG(ast.getAST(1), buf);
 		}
 	}

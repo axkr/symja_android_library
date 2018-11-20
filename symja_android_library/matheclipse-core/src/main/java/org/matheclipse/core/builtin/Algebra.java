@@ -460,11 +460,11 @@ public class Algebra {
 			if (parts != null && parts[0].isPlus() && parts[1].isPlus()) {
 				IAST numParts = ((IAST) parts[0]).partitionPlus(new PolynomialPredicate(), F.C0, F.C1, F.List);
 				IAST denParts = ((IAST) parts[1]).partitionPlus(new PolynomialPredicate(), F.C0, F.C1, F.List);
-				if (denParts.isPresent() && !denParts.get(1).isOne()) {
-					IExpr[] result = cancelGCD(numParts.get(1), denParts.get(1));
+				if (denParts.isPresent() && !denParts.arg1().isOne()) {
+					IExpr[] result = cancelGCD(numParts.arg1(), denParts.arg1());
 					if (result != null) {
-						return F.Times(result[0], result[1], numParts.get(2),
-								F.Power(F.Times(result[2], denParts.get(2)), F.CN1));
+						return F.Times(result[0], result[1], numParts.arg2(),
+								F.Power(F.Times(result[2], denParts.arg2()), F.CN1));
 					}
 				}
 
@@ -481,17 +481,17 @@ public class Algebra {
 				IExpr p11 = F.C1;
 				if (p00.isPlus()) {
 					IAST numParts = ((IAST) p00).partitionPlus(new PolynomialPredicate(), F.C0, F.C1, F.List);
-					if (numParts.isPresent() && !numParts.get(1).isOne()) {
-						p00 = numParts.get(1);
+					if (numParts.isPresent() && !numParts.arg1().isOne()) {
+						p00 = numParts.arg1();
 						p01 = numParts.get(2);
 					}
 				}
 
 				if (p10.isPlus()) {
 					IAST denParts = ((IAST) p10).partitionPlus(new PolynomialPredicate(), F.C0, F.C1, F.List);
-					if (denParts.isPresent() && !denParts.get(1).isOne()) {
-						p10 = denParts.get(1);
-						p11 = denParts.get(2);
+					if (denParts.isPresent() && !denParts.arg1().isOne()) {
+						p10 = denParts.arg1();
+						p11 = denParts.arg2();
 					}
 				}
 				if (!p10.isOne()) {

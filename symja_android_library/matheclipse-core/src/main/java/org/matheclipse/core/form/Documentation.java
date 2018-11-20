@@ -29,7 +29,7 @@ public class Documentation {
 			}
 			out.append("\n");
 			if (list.size() == 2) {
-				Documentation.printDocumentation(out, list.get(1).toString());
+				Documentation.printDocumentation(out, list.arg1().toString());
 			} else if (list.size() == 1
 					&& (name.equals("D") || name.equals("E") || name.equals("I") || name.equals("N"))) {
 				Documentation.printDocumentation(out, name);

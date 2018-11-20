@@ -954,7 +954,7 @@ public class TeXFormFactory {
 					fFactory.convert(buf, timesAST.get(i), fPrecedence);
 				}
 				if ((i < timesAST.argSize()) && (fOperator.compareTo("") != 0)) {
-					if (timesAST.get(1).isNumber() && isTeXNumberDigit(timesAST.get(i + 1))) {
+					if (timesAST.arg1().isNumber() && isTeXNumberDigit(timesAST.get(i + 1))) {
 						// Issue #67, #117: if we have 2 TeX number expressions we
 						// use
 						// the \cdot operator see

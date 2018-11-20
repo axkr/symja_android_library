@@ -61,10 +61,10 @@ public enum ColorFormat {
 		Validate.checkSize(vector, 5);
 
 		return new Color( //
-				((IInteger) vector.get(1)).toInt(), //
-				((IInteger) vector.get(2)).toInt(), //
-				((IInteger) vector.get(3)).toInt(), //
-				((IInteger) vector.get(4)).toInt());
+				((IInteger) vector.arg1()).toInt(), //
+				((IInteger) vector.arg2()).toInt(), //
+				((IInteger) vector.arg3()).toInt(), //
+				((IInteger) vector.arg4()).toInt());
 	}
 
 	/**

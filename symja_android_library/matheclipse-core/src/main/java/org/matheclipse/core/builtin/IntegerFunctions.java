@@ -939,9 +939,9 @@ public class IntegerFunctions {
 			if (ast.exists(x -> !x.isInteger())) {
 				return F.NIL;
 			}
-			IInteger arg1 = (IInteger) ast.get(1);
-			IInteger arg2 = (IInteger) ast.get(2);
-			IInteger arg3 = (IInteger) ast.get(3);
+			IInteger arg1 = (IInteger) ast.arg1();
+			IInteger arg2 = (IInteger) ast.arg2();
+			IInteger arg3 = (IInteger) ast.arg3();
 			try {
 				if (arg2.isMinusOne()) {
 					return arg1.modInverse(arg3);

@@ -1306,7 +1306,7 @@ public final class ListFunctions {
 
 				IAST headList = (IAST) ast.head();
 				if (headList.size() > 1) {
-					IASTAppendable inner = F.ast(headList.get(1));
+					IASTAppendable inner = F.ast(headList.arg1());
 					IAST result = inner;
 					IASTAppendable temp;
 					for (int i = 2; i < headList.size(); i++) {
@@ -4099,7 +4099,7 @@ public final class ListFunctions {
 
 				IASTAppendable result = F.ListAlloc(8);
 				if (list.size() > 1) {
-					IExpr current = list.get(1);
+					IExpr current = list.arg1();
 					IASTAppendable temp = F.ListAlloc(8);
 					result.append(temp);
 					temp.append(current);
@@ -4170,11 +4170,11 @@ public final class ListFunctions {
 
 			IASTAppendable result = F.ListAlloc(8);
 			if (list.size() > 1) {
-				IExpr last = function.apply(list.get(1));
+				IExpr last = function.apply(list.arg1());
 				IExpr current;
 				IASTAppendable temp = F.ListAlloc(8);
 
-				temp.append(list.get(1));
+				temp.append(list.arg1());
 				for (int i = 2; i < list.size(); i++) {
 					current = function.apply(list.get(i));
 					if (current.equals(last)) {

@@ -139,19 +139,19 @@ public class ElementData extends AbstractFunctionEvaluator {
 	private IExpr dataPoint(final IAST ast, IAST propertyList) {
 		String propertyStr = ast.arg2().toString();
 		if (propertyStr.equals("AtomicNumber")) {
-			return propertyList.get(1);
+			return propertyList.arg1();
 		}
 		if (propertyStr.equals("Abbreviation")) {
-			return propertyList.get(2);
+			return propertyList.arg2();
 		}
 		if (propertyStr.equals("StandardName")) {
-			return propertyList.get(3);
+			return propertyList.arg3();
 		}
 		if (propertyStr.equals("Name")) {
-			return propertyList.get(4);
+			return propertyList.arg4();
 		}
 		if (propertyStr.equals("Block")) {
-			return propertyList.get(5);
+			return propertyList.arg5();
 		}
 		if (propertyStr.equals("Group")) {
 			return propertyList.get(6);

@@ -251,12 +251,12 @@ public abstract class AbstractAST implements IASTMutable {
 	}
 
 	private static int compareToASTIncreasingArg1(final IAST lhsAST, final IExpr arg1, IInteger value) {
-		int cp = lhsAST.get(1).compareTo(arg1);
+		int cp = lhsAST.arg1().compareTo(arg1);
 		if (cp != 0) {
 			return cp;
 		}
 		if (lhsAST.size() >= 2) {
-			cp = lhsAST.get(2).compareTo(value);
+			cp = lhsAST.arg2().compareTo(value);
 			if (cp != 0) {
 				return cp;
 			}

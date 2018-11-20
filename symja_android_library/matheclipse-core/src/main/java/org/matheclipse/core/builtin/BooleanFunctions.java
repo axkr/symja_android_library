@@ -1530,18 +1530,18 @@ public final class BooleanFunctions {
 				}
 				if (lhsAST.isTimes()) {
 					IAST result = lhsAST.partitionTimes(x -> x.isNumericFunction(), F.C0, F.C1, F.List);
-					if (!result.get(1).isZero()) {
-						if (result.get(1).isNegative()) {
+					if (!result.arg1().isZero()) {
+						if (result.arg1().isNegative()) {
 							useOppositeHeader = !useOppositeHeader;
 						}
-						rhs = rhs.divide(result.get(1));
-						return createComparatorResult(result.get(2), rhs, useOppositeHeader, originalHead,
+						rhs = rhs.divide(result.arg1());
+						return createComparatorResult(result.arg2(), rhs, useOppositeHeader, originalHead,
 								oppositeHead);
 					}
 				} else if (lhsAST.isPlus()) {
 					IAST result = lhsAST.partitionPlus(x -> x.isNumericFunction(), F.C0, F.C0, F.List);
 					if (!result.arg1().isZero()) {
-						rhs = rhs.subtract(result.get(1));
+						rhs = rhs.subtract(result.arg1());
 						return createComparatorResult(result.arg2(), rhs, useOppositeHeader, originalHead,
 								oppositeHead);
 					}

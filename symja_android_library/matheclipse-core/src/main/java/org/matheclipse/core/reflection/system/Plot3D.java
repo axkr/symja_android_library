@@ -75,8 +75,8 @@ public class Plot3D extends AbstractEvaluator {
 					// double y1d = 10.0f;
 					// double params[] = {ad, bd, cd, dd, -10.0, 10.0};
 
-					temp = plotArray(xMinD, xMaxD, yMinD, yMaxD, ast.get(1), (ISymbol) lst1.get(1),
-							(ISymbol) lst2.get(1), engine);
+					temp = plotArray(xMinD, xMaxD, yMinD, yMaxD, ast.arg1(), (ISymbol) lst1.arg1(),
+							(ISymbol) lst2.arg1(), engine);
 					graphics.append(temp);
 
 					final IASTAppendable options = F.ListAlloc();

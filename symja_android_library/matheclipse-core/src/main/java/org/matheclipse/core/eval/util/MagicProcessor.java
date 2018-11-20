@@ -172,7 +172,7 @@ public class MagicProcessor {
 		}
 		IAST varList = eVar.getVarList();
 		// [list, x, null, null, null, null]
-		return (varList.isAST1()) ? varList.get(1).toString() : varList.toString();
+		return (varList.isAST1()) ? varList.arg1().toString() : varList.toString();
 	}
 
 	boolean isEquation(IExpr exp) {

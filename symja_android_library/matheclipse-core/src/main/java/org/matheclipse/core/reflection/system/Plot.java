@@ -73,8 +73,8 @@ public class Plot extends AbstractEvaluator {
 					IASTAppendable line = Line();
 					IExpr temp;
 					Dimensions2D dim = new Dimensions2D();
-					if (ast.get(1).isList()) {
-						final IAST list = (IAST) ast.get(1);
+					if (ast.arg1().isList()) {
+						final IAST list = (IAST) ast.arg1();
 						int size = list.size();
 						final IASTAppendable primitives = F.ListAlloc(size);
 						for (int i = 1; i < size; i++) {
@@ -91,7 +91,7 @@ public class Plot extends AbstractEvaluator {
 						graphics.append(primitives);
 
 					} else {
-						temp = plotLine(xMinD, xMaxd, yMinD, yMaxD, ast.get(1), x, dim, engine);
+						temp = plotLine(xMinD, xMaxd, yMinD, yMaxD, ast.arg1(), x, dim, engine);
 						if (temp.isPresent()) {
 							line.append(temp);
 							graphics.append(line);

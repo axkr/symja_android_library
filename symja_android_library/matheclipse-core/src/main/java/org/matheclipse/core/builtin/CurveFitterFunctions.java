@@ -98,7 +98,7 @@ public class CurveFitterFunctions {
 			}
 
 			private void createSubstitutionRules(double t, double... parameters) {
-				IASTMutable substitutionRules = (IASTMutable) this.listOfRules.get(1);
+				IASTMutable substitutionRules = (IASTMutable) this.listOfRules.arg1();
 				substitutionRules.set(2, F.num(t));
 				for (int i = 2; i < listOfRules.size(); i++) {
 					substitutionRules = (IASTMutable) this.listOfRules.get(i);
