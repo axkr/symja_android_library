@@ -2339,8 +2339,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-y/(x^2+y^2)");
 		check("D(ArcTan(x,y),y)", //
 				"x/(x^2+y^2)");
-//		check("D(ArcTan(x,x),x)", //
-//				"0");
+		// check("D(ArcTan(x,x),x)", //
+		// "0");
 		check("D(Cosh(b*x),x)", //
 				"b*Sinh(b*x)");
 		check("D(Sinh(x),x)", //
@@ -3997,14 +3997,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 			// implicit times operator '*' allowed
 			check("Exp(1.2436240901689538 * E - 16) - 1", //
 					"-0.999997");
-			check("Exp(1.2436240901689538E-16) - 1",//
+			check("Exp(1.2436240901689538E-16) - 1", //
 					"-0.999997");
 		} else {
 			check("Exp(1.2436240901689538E-16) - 1", //
 					"0.0");
 		}
 
-		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10})",//
+		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10})", //
 				"{x->3.434189629596888}");
 		checkNumeric("$K=10000;\n" + "$g=0.0;\n" + "$n=10*12;\n" + "$Z=12;\n" + "$AA=0.0526;\n" + "$R=100;\n"
 				+ "$d=0.00;\n" + "$vn=0;\n" + "$EAj=0;\n" + "$zj=0;\n" + "$sz=1;\n"
@@ -5340,8 +5340,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIntersection() {
-		check("Intersection({a,a,b,c})", "{a,b,c}");
-		check("Intersection({a,a,b,c},{b,a})", "{a,b}");
+		check("Intersection({a,a,b,c})", //
+				"{a,b,c}");
+		check("Intersection({a,a,b,c},{b,a})", //
+				"{a,b}");
+		check(" Intersection({a, b, c}, {a}, {b})", //
+				"{}");
+		check(" Intersection({}, {a, b, c}, {a,b}, {b,c})", //
+				"{}");
 	}
 
 	public void testInterval() {
@@ -12556,6 +12562,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Union({a,a,b,c})", "{a,b,c}");
 		check("Union({9, 0, 0, 3, 2, 3, 6, 2, 9, 8, 4, 9, 0, 2, 6, 5, 7, 4, 9, 8})", "{0,2,3,4,5,6,7,8,9}");
+		check("Union({a,a,b,c},{},{})", "{a,b,c}");
+		check("Union({a,a,b,c},{},{z,z,z,x,x,x,y,y,y})", "{a,b,c,x,y,z}");
 	}
 
 	public void testUnique() {
