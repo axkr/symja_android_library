@@ -1559,29 +1559,21 @@ public class ExpTrigsFunctions {
 	 */
 	private final static class Log extends AbstractArg12 implements INumeric, LogRules {
 
-		/**
-		 * <pre>
-		 * { Log[1]=0, Log[E]=1, Log[E^(x_Integer)]:=x, Log[E^(x_Rational)]:=x, Log[E^(I)]=I, Log[Exp[-I]]=(-I),
-		 * Log[0]=(-Infinity) }
-		 * </pre>
-		 */
-
 		@Override
 		public IAST getRuleAST() {
-			// if (RULES == null) {
-			// RULES = List(Set(Log(Power(E, Times(CN1, CI))), Times(CN1, CI)),
-			// Set(Log(Power(E, CI)), CI),
-			// Set(Log(C0), Times(CN1, CInfinity)), Set(Log(C1), C0), Set(Log(E),
-			// C1),
-			// SetDelayed(Log(Power(E, $p("x", $s("Integer")))), $s("x")),
-			// SetDelayed(Log(Power(E, $p("x", $s("Rational")))), $s("x")));
-			// }
 			return RULES;
 		}
 
 		@Override
 		public IExpr e1DblArg(final INum arg1) {
 			return Num.valueOf(Math.log(arg1.getRealPart()));
+		}
+
+		public IExpr e1FraArg(final IFraction f) {
+			if (f.isPositive() && f.isLessThan(F.C1)) {
+				return F.Negate(F.Log(f.inverse()));
+			}
+			return F.NIL;
 		}
 
 		@Override
