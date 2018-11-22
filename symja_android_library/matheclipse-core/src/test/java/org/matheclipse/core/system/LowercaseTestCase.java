@@ -4521,6 +4521,39 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFunctionExpand() {
+		check("FunctionExpand(BlackmanHarrisWindow(x))", //
+				"Piecewise({{1/100000*(35875+48829*Cos(2*Pi*x)+14128*Cos(4*Pi*x)+1168*Cos(6*Pi*x)),\n"
+						+ "-1/2<=x<=1/2}},0)");
+		check("BlackmanHarrisWindow(1/4)", //
+				"21747/100000");
+		check("FunctionExpand(BlackmanHarrisWindow(x))", //
+				"Piecewise({{1/100000*(35875+48829*Cos(2*Pi*x)+14128*Cos(4*Pi*x)+1168*Cos(6*Pi*x)),\n" + 
+				"-1/2<=x<=1/2}},0)");
+		check("FunctionExpand(BlackmanNuttallWindow(x))", //
+				"Piecewise({{1/10000000*(4891775*Cos(2*Pi*x)+1365995*Cos(4*Pi*x)+106411*Cos(6*Pi*x)+\n" + 
+				"3635819),-1/2<=x<=1/2}},0)");
+		check("FunctionExpand(BlackmanWindow(x))", //
+				"Piecewise({{1/50*(21+25*Cos(2*Pi*x)+4*Cos(4*Pi*x)),-1/2<=x<=1/2}},0)");
+		check("FunctionExpand(DirichletWindow(x))", //
+				"Piecewise({{1,-1/2<=x<=1/2}},0)");
+		check("FunctionExpand(FlatTopWindow(x))", //
+				"Piecewise({{1/1000000000*(215578947+416631580*Cos(2*Pi*x)+277263158*Cos(4*Pi*x)+\n" + 
+				"83578947*Cos(6*Pi*x)+6947368*Cos(8*Pi*x)),-1/2<=x<=1/2}},0)");
+		check("FunctionExpand(GaussianWindow(x))", //
+				"Piecewise({{E^((-1)*1/9*50*x^2),-1/2<=x<=1/2}},0)");
+		check("FunctionExpand(HammingWindow(x))", //
+				"Piecewise({{25/46+21/46*Cos(2*Pi*x),-1/2<=x<=1/2}},0)");
+		check("FunctionExpand(HannWindow(x))", //
+				"Piecewise({{1/2+Cos(2*Pi*x)/2,-1/2<=x<=1/2}},0)");
+		check("FunctionExpand(NuttallWindow(x))", //
+				"Piecewise({{1/250000*(88942+121849*Cos(2*Pi*x)+36058*Cos(4*Pi*x)+3151*Cos(6*Pi*x)),\n" + 
+				"-1/2<=x<=1/2}},0)");
+		check("FunctionExpand(ParzenWindow(x))", //
+				"Piecewise({{-2*(-1+2*x)^3,1/4<x&&x<=1/2},{2*(1+2*x)^3,-1/2<=x&&x<-1/4},{1-24*x^2\n" + 
+				"-48*x^3,-1/4<=x&&x<0},{1-24*x^2+48*x^3,0<=x<=1/4}},0)");
+		check("FunctionExpand(TukeyWindow(x))", //
+				"Piecewise({{1,-1/3-2*x<=0&&-1/3+2*x<=0},{1/2*(1+Cos(3*Pi*(1/6+x))),x>=-1/2&&-1/3\n" + 
+				"-2*x>0},{1/2*(1+Cos(3*Pi*(-1/6+x))),-1/3+2*x>0&&x<=1/2}},0)");
 		check("FunctionExpand(Log(10*E))", //
 				"1+Log(10)");
 		check("FunctionExpand(PolyGamma(-2, 1))", //
@@ -6113,55 +6146,101 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLog() {
-
+		check("Log(2/3)", //
+				"-Log(3/2)");
+		check("Log(3/2)", //
+				"Log(3/2)");
+		check("Log(-3/2)", //
+				"I*Pi+Log(3/2)");
+		check("Log(-2/3)", //
+				"I*Pi-Log(3/2)");
 		check("Log(0, 0)", ///
 				"Indeterminate");
 		check("Log(0, x)", ///
 				"0");
-		check("Log(2, 0)", "-Infinity");
-		check("Log(3/4, 0)", "Infinity");
-		check("Log(-2, 0)", "(-Infinity)/(I*Pi+Log(2))");
+		check("Log(2, 0)", //
+				"-Infinity");
+		check("Log(3/4, 0)", //
+				"Infinity");
+		check("Log(-2, 0)", //
+				"(-Infinity)/(I*Pi+Log(2))");
 
-		check("Exp(Log(x))", "x");
-		check("Refine(Log(Exp(x)),Element(x, Reals))", "x");
-		check("Log({0, 1, E, E * E, E ^ 3, E ^ x})", "{-Infinity,0,1,2,3,Log(E^x)}");
-		check("Log(0.)", "Indeterminate");
-		check("Log(1000) / Log(10)", "3");
-		check("Log(1.4)", "0.336472");
-		checkNumeric("Log(Exp(1.4))", "1.3999999999999997");
-		checkNumeric("Log(-1.4)", "0.3364722366212129+I*3.141592653589793");
+		check("Exp(Log(x))", //
+				"x");
+		check("Refine(Log(Exp(x)),Element(x, Reals))", //
+				"x");
+		check("Log({0, 1, E, E * E, E ^ 3, E ^ x})", //
+				"{-Infinity,0,1,2,3,Log(E^x)}");
+		check("Log(0.)", //
+				"Indeterminate");
+		check("Log(1000) / Log(10)", //
+				"3");
+		check("Log(1.4)", //
+				"0.336472");
+		checkNumeric("Log(Exp(1.4))", //
+				"1.3999999999999997");
+		checkNumeric("Log(-1.4)", //
+				"0.3364722366212129+I*3.141592653589793");
 
-		check("Log(-1)", "I*Pi");
-		check("Log(-2)", "I*Pi+Log(2)");
+		check("Log(-1)", //
+				"I*Pi");
+		check("Log(-2)", //
+				"I*Pi+Log(2)");
 		// test alias
-		check("Ln(E)", "1");
-		check("ln(E)", "1");
+		check("Ln(E)", //
+				"1");
+		check("ln(E)", //
+				"1");
 
-		check("Log(a, b)", "Log(b)/Log(a)");
-		check("Log(Pi^E)", "E*Log(Pi)");
-		check("Log(E^10)", "10");
-		check("Log(E)", "1");
-		check("Log(-E)", "1+I*Pi");
-		check("D(Log(a, x),x)", "1/(x*Log(a))");
-		checkNumeric("Log(1000.)", "6.907755278982137");
-		checkNumeric("Log(2.5 + I)", "0.9905007344332918+I*0.3805063771123649");
-		checkNumeric("Log({2.1, 3.1, 4.1})", "{0.7419373447293773,1.1314021114911006,1.410986973710262}");
-		check("Log(2, 16)", "4");
-		check("Log(10, 1000)", "3");
-		check("Log(10, 10)", "1");
-		check("Log(0)", "-Infinity");
-		check("Log(1)", "0");
-		check("Log(-x)", "Log(-x)");
-		check("Log(-1)", "I*Pi");
-		check("Log(I)", "I*1/2*Pi");
-		check("Log(-I)", "-I*1/2*Pi");
-		check("Log(GoldenRatio)", "ArcCsch(2)");
-		check("Log(Infinity)", "Infinity");
-		check("Log(-Infinity)", "Infinity");
+		check("Log(a, b)", //
+				"Log(b)/Log(a)");
+		check("Log(Pi^E)", //
+				"E*Log(Pi)");
+		check("Log(E^10)", //
+				"10");
+		check("Log(E)", //
+				"1");
+		check("Log(-E)", //
+				"1+I*Pi");
+		check("D(Log(a, x),x)", //
+				"1/(x*Log(a))");
+		checkNumeric("Log(1000.)", //
+				"6.907755278982137");
+		checkNumeric("Log(2.5 + I)", //
+				"0.9905007344332918+I*0.3805063771123649");
+		checkNumeric("Log({2.1, 3.1, 4.1})", //
+				"{0.7419373447293773,1.1314021114911006,1.410986973710262}");
+		check("Log(2, 16)", //
+				"4");
+		check("Log(10, 1000)", //
+				"3");
+		check("Log(10, 10)", //
+				"1");
+		check("Log(0)", //
+				"-Infinity");
+		check("Log(1)", //
+				"0");
+		check("Log(-x)", //
+				"Log(-x)");
+		check("Log(-1)", //
+				"I*Pi");
+		check("Log(I)", //
+				"I*1/2*Pi");
+		check("Log(-I)", //
+				"-I*1/2*Pi");
+		check("Log(GoldenRatio)", //
+				"ArcCsch(2)");
+		check("Log(Infinity)", //
+				"Infinity");
+		check("Log(-Infinity)", //
+				"Infinity");
 
-		check("Log(I*Infinity)", "Infinity");
-		check("Log(-I*Infinity)", "Infinity");
-		check("Log(ComplexInfinity)", "Infinity");
+		check("Log(I*Infinity)", //
+				"Infinity");
+		check("Log(-I*Infinity)", //
+				"Infinity");
+		check("Log(ComplexInfinity)", //
+				"Infinity");
 	}
 
 	public void testLog10() {

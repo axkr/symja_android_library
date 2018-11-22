@@ -9,10 +9,10 @@ import javax.annotation.Nonnull;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.expression.AST1;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
-import org.matheclipse.core.interfaces.ISymbol.RuleType;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
@@ -230,6 +230,18 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 */
 	public IExpr evalUpRule(EvalEngine engine, IExpr expression);
 
+	default IAST f(IExpr arg1) {
+		return F.unaryAST1(this, arg1);
+	}
+	
+	default IAST f(IExpr arg1, IExpr arg2) {
+		return F.binaryAST2(this, arg1, arg2);
+	}
+	
+	default IAST f(IExpr arg1, IExpr arg2, IExpr arg3) {
+		return F.ternaryAST3(this, arg1, arg2, arg3);
+	}
+	
 	/**
 	 * Get the topmost value from the local variable stack
 	 * 

@@ -21,6 +21,7 @@ import static org.matheclipse.core.expression.F.y_;
 import static org.matheclipse.core.expression.F.z;
 import static org.matheclipse.core.expression.F.z_;
 
+import org.matheclipse.core.builtin.WindowFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -134,6 +135,20 @@ public class FunctionExpand extends AbstractEvaluator {
 				// [$ (Log(m)+Log(n)) /; Positive(m)
 				// $]
 				F.Condition(F.Plus(F.Log(m), F.Log(n)), F.Positive(m))); // $$);
+
+		MATCHER.caseOf(F.BartlettWindow.of(x_), WindowFunctions.bartlettWindow(x));
+		MATCHER.caseOf(F.BlackmanHarrisWindow.of(x_), WindowFunctions.blackmanHarrisWindow(x));
+		MATCHER.caseOf(F.BlackmanNuttallWindow.of(x_), WindowFunctions.blackmanNuttallWindow(x));
+		MATCHER.caseOf(F.BlackmanWindow.of(x_), WindowFunctions.blackmanWindow(x));
+		MATCHER.caseOf(F.DirichletWindow.of(x_), WindowFunctions.dirichletWindow(x));
+		MATCHER.caseOf(F.HannWindow.of(x_), WindowFunctions.hannWindow(x));
+		MATCHER.caseOf(F.FlatTopWindow.of(x_), WindowFunctions.flatTopWindow(x));
+		MATCHER.caseOf(F.GaussianWindow.of(x_), WindowFunctions.gaussianWindow(x));
+		MATCHER.caseOf(F.HammingWindow.of(x_), WindowFunctions.hammingWindow(x));
+		MATCHER.caseOf(F.NuttallWindow.of(x_), WindowFunctions.nuttallWindow(x));
+		MATCHER.caseOf(F.ParzenWindow.of(x_), WindowFunctions.parzenWindow(x));
+		MATCHER.caseOf(F.TukeyWindow.of(x_), WindowFunctions.tukeyWindow(x));
+
 	}
 
 	public FunctionExpand() {

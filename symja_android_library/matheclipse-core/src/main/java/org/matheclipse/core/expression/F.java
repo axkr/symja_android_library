@@ -52,6 +52,7 @@ import org.matheclipse.core.builtin.Structure;
 import org.matheclipse.core.builtin.TensorFunctions;
 import org.matheclipse.core.builtin.VectorAnalysisFunctions;
 import org.matheclipse.core.builtin.WXFFunctions;
+import org.matheclipse.core.builtin.WindowFunctions;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -160,6 +161,7 @@ public class F {
 	 * @see java.util.Optional#isPresent
 	 */
 	public final static NILPointer NIL = new NILPointer();
+  
 
     /***/
     public final static IBuiltInSymbol $Aborted = F.initFinalSymbol("$Aborted", ID.$Aborted);
@@ -333,9 +335,12 @@ public class F {
     public final static IBuiltInSymbol Background = F.initFinalSymbol("Background", ID.Background);
 
     /***/
+    public final static IBuiltInSymbol BartlettWindow = F.initFinalSymbol("BartlettWindow", ID.BartlettWindow);
+
+    /** Begin("<context-name>") - start a new context definition*/
     public final static IBuiltInSymbol Begin = F.initFinalSymbol("Begin", ID.Begin);
 
-    /***/
+    /** BeginPackage("<context-name>") - start a new package definition*/
     public final static IBuiltInSymbol BeginPackage = F.initFinalSymbol("BeginPackage", ID.BeginPackage);
 
     /** BellB(n) -  the Bell number function counts the number of different ways to partition a set that has exactly `n` elements*/
@@ -385,6 +390,15 @@ public class F {
 
     /** BitLengthi(x) - gives the number of bits needed to represent the integer `x`. The sign of `x` is ignored. */
     public final static IBuiltInSymbol BitLength = F.initFinalSymbol("BitLength", ID.BitLength);
+
+    /***/
+    public final static IBuiltInSymbol BlackmanHarrisWindow = F.initFinalSymbol("BlackmanHarrisWindow", ID.BlackmanHarrisWindow);
+
+    /***/
+    public final static IBuiltInSymbol BlackmanNuttallWindow = F.initFinalSymbol("BlackmanNuttallWindow", ID.BlackmanNuttallWindow);
+
+    /***/
+    public final static IBuiltInSymbol BlackmanWindow = F.initFinalSymbol("BlackmanWindow", ID.BlackmanWindow);
 
     /***/
     public final static IBuiltInSymbol Blank = F.initFinalSymbol("Blank", ID.Blank);
@@ -719,6 +733,9 @@ public class F {
     /***/
     public final static IBuiltInSymbol Direction = F.initFinalSymbol("Direction", ID.Direction);
 
+    /***/
+    public final static IBuiltInSymbol DirichletWindow = F.initFinalSymbol("DirichletWindow", ID.DirichletWindow);
+
     /** DiscreteDelta(n1, n2, n3, ...) - `DiscreteDelta` function returns `1` if all the `ni` are `0`. Returns `0` otherwise.*/
     public final static IBuiltInSymbol DiscreteDelta = F.initFinalSymbol("DiscreteDelta", ID.DiscreteDelta);
 
@@ -800,10 +817,10 @@ public class F {
     /** EllipticPi(n,m) - returns the complete elliptic integral of the third kind. */
     public final static IBuiltInSymbol EllipticPi = F.initFinalSymbol("EllipticPi", ID.EllipticPi);
 
-    /***/
+    /** End( ) - end a context definition started with `Begin`*/
     public final static IBuiltInSymbol End = F.initFinalSymbol("End", ID.End);
 
-    /***/
+    /** EndPackage( ) - end a package definition*/
     public final static IBuiltInSymbol EndPackage = F.initFinalSymbol("EndPackage", ID.EndPackage);
 
     /** Equal(x, y) - yields `True` if `x` and `y` are known to be equal, or `False` if `x` and `y` are known to be unequal.*/
@@ -947,6 +964,9 @@ public class F {
     /** Flat - is an attribute that specifies that nested occurrences of a function should be automatically flattened.    */
     public final static IBuiltInSymbol Flat = F.initFinalSymbol("Flat", ID.Flat);
 
+    /***/
+    public final static IBuiltInSymbol FlatTopWindow = F.initFinalSymbol("FlatTopWindow", ID.FlatTopWindow);
+
     /** Flatten(expr) - flattens out nested lists in `expr`.*/
     public final static IBuiltInSymbol Flatten = F.initFinalSymbol("Flatten", ID.Flatten);
 
@@ -1032,6 +1052,9 @@ public class F {
     public final static IBuiltInSymbol Gather = F.initFinalSymbol("Gather", ID.Gather);
 
     /***/
+    public final static IBuiltInSymbol GaussianWindow = F.initFinalSymbol("GaussianWindow", ID.GaussianWindow);
+
+    /***/
     public final static IBuiltInSymbol GegenbauerC = F.initFinalSymbol("GegenbauerC", ID.GegenbauerC);
 
     /** GeometricDistribution(p) - returns a geometric distribution.*/
@@ -1069,6 +1092,12 @@ public class F {
 
     /** GumbelDistribution(a, b) - returns a Gumbel distribution.*/
     public final static IBuiltInSymbol GumbelDistribution = F.initFinalSymbol("GumbelDistribution", ID.GumbelDistribution);
+
+    /***/
+    public final static IBuiltInSymbol HammingWindow = F.initFinalSymbol("HammingWindow", ID.HammingWindow);
+
+    /***/
+    public final static IBuiltInSymbol HannWindow = F.initFinalSymbol("HannWindow", ID.HannWindow);
 
     /** HarmonicNumber(n) - returns the `n`th harmonic number.  */
     public final static IBuiltInSymbol HarmonicNumber = F.initFinalSymbol("HarmonicNumber", ID.HarmonicNumber);
@@ -1686,6 +1715,9 @@ public class F {
     public final static IBuiltInSymbol NumericQ = F.initFinalSymbol("NumericQ", ID.NumericQ);
 
     /***/
+    public final static IBuiltInSymbol NuttallWindow = F.initFinalSymbol("NuttallWindow", ID.NuttallWindow);
+
+    /***/
     public final static IBuiltInSymbol O = F.initFinalSymbol("O", ID.O);
 
     /** OddQ(x) - returns `True` if `x` is odd, and `False` otherwise.*/
@@ -1765,6 +1797,9 @@ public class F {
 
     /** PartitionsQ(n) - gives the number of partitions of the integer `n` into distinct parts*/
     public final static IBuiltInSymbol PartitionsQ = F.initFinalSymbol("PartitionsQ", ID.PartitionsQ);
+
+    /***/
+    public final static IBuiltInSymbol ParzenWindow = F.initFinalSymbol("ParzenWindow", ID.ParzenWindow);
 
     /***/
     public final static IBuiltInSymbol Pattern = F.initFinalSymbol("Pattern", ID.Pattern);
@@ -1964,7 +1999,7 @@ public class F {
     /** RandomReal() - create a random number between `0.0` and `1.0`.*/
     public final static IBuiltInSymbol RandomReal = F.initFinalSymbol("RandomReal", ID.RandomReal);
 
-    /***/
+    /** RandomSample(<function>) - create a random sample for the arguments of the `function`.*/
     public final static IBuiltInSymbol RandomSample = F.initFinalSymbol("RandomSample", ID.RandomSample);
 
     /***/
@@ -2021,13 +2056,13 @@ public class F {
     /***/
     public final static IBuiltInSymbol RepeatedNull = F.initFinalSymbol("RepeatedNull", ID.RepeatedNull);
 
-    /***/
+    /** Replace(expr, lhs -> rhs) - replaces the left-hand-side pattern expression `lhs` in `expr` with the right-hand-side `rhs`.*/
     public final static IBuiltInSymbol Replace = F.initFinalSymbol("Replace", ID.Replace);
 
     /** ReplaceAll(expr, i -> new) - replaces all `i` in `expr` with `new`.*/
     public final static IBuiltInSymbol ReplaceAll = F.initFinalSymbol("ReplaceAll", ID.ReplaceAll);
 
-    /***/
+    /** ReplaceList(expr, lhs -> rhs) - replaces the left-hand-side pattern expression `lhs` in `expr` with the right-hand-side `rhs`.*/
     public final static IBuiltInSymbol ReplaceList = F.initFinalSymbol("ReplaceList", ID.ReplaceList);
 
     /** ReplacePart(expr, i -> new) - replaces part `i` in `expr` with `new`.*/
@@ -2437,6 +2472,9 @@ public class F {
 
     /** TrueQ(expr) - returns `True` if and only if `expr` is `True`.*/
     public final static IBuiltInSymbol TrueQ = F.initFinalSymbol("TrueQ", ID.TrueQ);
+
+    /***/
+    public final static IBuiltInSymbol TukeyWindow = F.initFinalSymbol("TukeyWindow", ID.TukeyWindow);
 
     /** Tuples(list, n) - creates a list of all `n`-tuples of elements in `list`.*/
     public final static IBuiltInSymbol Tuples = F.initFinalSymbol("Tuples", ID.Tuples);
@@ -3320,6 +3358,7 @@ public class F {
 			QuantityFunctions.initialize();
 			FinancialFunctions.initialize();
 			WXFFunctions.initialize();
+			WindowFunctions.initialize();
 			ComputationalGeometryFunctions.initialize();
 
 			// initialize only the utility function rules for Integrate
