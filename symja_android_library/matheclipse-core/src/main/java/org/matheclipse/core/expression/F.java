@@ -3017,31 +3017,57 @@ public class F {
 
 	// public final static ISymbol usage = initFinalHiddenSymbol("usage");
 
+	/** Used to represent a formal parameter <code>a</code> that will never be assigned a value. */
 	public final static ISymbol a = initFinalHiddenSymbol("a");
+	/** Used to represent a formal parameter <code>b</code> that will never be assigned a value. */
 	public final static ISymbol b = initFinalHiddenSymbol("b");
+	/** Used to represent a formal parameter <code>c</code> that will never be assigned a value. */
 	public final static ISymbol c = initFinalHiddenSymbol("c");
+	/** Used to represent a formal parameter <code>d</code> that will never be assigned a value. */
 	public final static ISymbol d = initFinalHiddenSymbol("d");
+	/** Used to represent a formal parameter <code>e</code> that will never be assigned a value. */
 	public final static ISymbol e = initFinalHiddenSymbol("e");
+	/** Used to represent a formal parameter <code>f</code> that will never be assigned a value. */
 	public final static ISymbol f = initFinalHiddenSymbol("f");
+	/** Used to represent a formal parameter <code>g</code> that will never be assigned a value. */
 	public final static ISymbol g = initFinalHiddenSymbol("g");
+	/** Used to represent a formal parameter <code>h</code> that will never be assigned a value. */
 	public final static ISymbol h = initFinalHiddenSymbol("h");
+	/** Used to represent a formal parameter <code>i</code> that will never be assigned a value. */
 	public final static ISymbol i = initFinalHiddenSymbol("i");
+	/** Used to represent a formal parameter <code>j</code> that will never be assigned a value. */
 	public final static ISymbol j = initFinalHiddenSymbol("j");
+	/** Used to represent a formal parameter <code>k</code> that will never be assigned a value. */
 	public final static ISymbol k = initFinalHiddenSymbol("k");
+	/** Used to represent a formal parameter <code>l</code> that will never be assigned a value. */
 	public final static ISymbol l = initFinalHiddenSymbol("l");
+	/** Used to represent a formal parameter <code>m</code> that will never be assigned a value. */
 	public final static ISymbol m = initFinalHiddenSymbol("m");
+	/** Used to represent a formal parameter <code>n</code> that will never be assigned a value. */
 	public final static ISymbol n = initFinalHiddenSymbol("n");
+	/** Used to represent a formal parameter <code>o</code> that will never be assigned a value. */
 	public final static ISymbol o = initFinalHiddenSymbol("o");
+	/** Used to represent a formal parameter <code>p</code> that will never be assigned a value. */
 	public final static ISymbol p = initFinalHiddenSymbol("p");
+	/** Used to represent a formal parameter <code>q</code> that will never be assigned a value. */
 	public final static ISymbol q = initFinalHiddenSymbol("q");
+	/** Used to represent a formal parameter <code>r</code> that will never be assigned a value. */
 	public final static ISymbol r = initFinalHiddenSymbol("r");
+	/** Used to represent a formal parameter <code>s</code> that will never be assigned a value. */
 	public final static ISymbol s = initFinalHiddenSymbol("s");
+	/** Used to represent a formal parameter <code>t</code> that will never be assigned a value. */
 	public final static ISymbol t = initFinalHiddenSymbol("t");
+	/** Used to represent a formal parameter <code>u</code> that will never be assigned a value. */
 	public final static ISymbol u = initFinalHiddenSymbol("u");
+	/** Used to represent a formal parameter <code>v</code> that will never be assigned a value. */
 	public final static ISymbol v = initFinalHiddenSymbol("v");
+	/** Used to represent a formal parameter <code>w</code> that will never be assigned a value. */
 	public final static ISymbol w = initFinalHiddenSymbol("w");
+	/** Used to represent a formal parameter <code>x</code> that will never be assigned a value. */
 	public final static ISymbol x = initFinalHiddenSymbol("x");
+	/** Used to represent a formal parameter <code>y</code> that will never be assigned a value. */
 	public final static ISymbol y = initFinalHiddenSymbol("y");
+	/** Used to represent a formal parameter <code>z</code> that will never be assigned a value. */
 	public final static ISymbol z = initFinalHiddenSymbol("z");
 
 	public final static ISymbol ASymbol = initFinalHiddenSymbol("A");
@@ -6249,12 +6275,11 @@ public class F {
 	public static IAST Hypergeometric1F1Regularized(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(Hypergeometric1F1Regularized, a0, a1, a2);
 	}
-	
+
 	public static IAST Hypergeometric2F1(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
 		return quaternary(Hypergeometric2F1, a0, a1, a2, a3);
 	}
 
-	
 	public static IAST HypergeometricPFQ(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(HypergeometricPFQ, a0, a1, a2);
 	}
