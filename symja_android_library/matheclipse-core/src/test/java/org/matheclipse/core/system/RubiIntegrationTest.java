@@ -581,13 +581,13 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		// +
 		// "2),x))", "");
 		check("Integrate((a + b*Sin(c + g*x))^3,x)", //
-				"1/2*a*(2*a^2+3*b^2)*x-2/3*(b*(4*a^2+b^2)*Cos(c+g*x))/g-5/6*(a*b^2*Cos(c+g*x)*Sin(c+g*x))/g+(-b*Cos(c+g*x)*(a+b*Sin(c+g*x))^\n"
-						+ "2)/(3*g)");
+				"1/2*a*(2*a^2+3*b^2)*x+2/3*(b*(-4*a^2-b^2)*Cos(c+g*x))/g-5/6*(a*b^2*Cos(c+g*x)*Sin(c+g*x))/g+(-b*Cos(c+g*x)*(a+b*Sin(c+g*x))^\n" + 
+				"2)/(3*g)");
 
 		check("Integrate((a + b*Sin(c + g*x))^4,x)", //
-				"1/8*(8*a^4+24*a^2*b^2+3*b^4)*x+(-a*b*(19*a^2+16*b^2)*Cos(c+g*x))/(6*g)+(-b^2*(26*a^\n"
-						+ "2+9*b^2)*Cos(c+g*x)*Sin(c+g*x))/(24*g)-7/12*(a*b*Cos(c+g*x)*(a+b*Sin(c+g*x))^2)/g+(-b*Cos(c+g*x)*(a+b*Sin(c+g*x))^\n"
-						+ "3)/(4*g)");
+				"1/8*(8*a^4+24*a^2*b^2+3*b^4)*x+(a*b*(-19*a^2-16*b^2)*Cos(c+g*x))/(6*g)+((-26*a^2\n" + 
+				"-9*b^2)*b^2*Cos(c+g*x)*Sin(c+g*x))/(24*g)-7/12*(a*b*Cos(c+g*x)*(a+b*Sin(c+g*x))^\n" + 
+				"2)/g+(-b*Cos(c+g*x)*(a+b*Sin(c+g*x))^3)/(4*g)");
 
 		check("$f(a_.+b_.*c_):={a,b,c};$f(x)", //
 				"{0,1,x}");
@@ -794,7 +794,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		check("-5+Sqrt(x)/2-4/(-1+3*x)", //
 				"-5+Sqrt(x)/2-4/(-1+3*x)");
 		check("Simplify(-5+4/3*1/(1/3-x)+Sqrt(x)/2)", //
-				"-5+Sqrt(x)/2-4/(-1+3*x)");
+				"-5+4/(1-3*x)+Sqrt(x)/2");
 		check("PowerExpand(ln(3*(1/3-x)))", //
 				"Log(3)+Log(1/3-x)");
 	}

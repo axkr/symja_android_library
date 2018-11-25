@@ -1,9 +1,19 @@
 package org.matheclipse.core.rubi;
 
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.ExprEvaluator;
+import org.matheclipse.core.expression.F;
+
 public class Logarithms extends AbstractRubiTestCase {
 
 	public Logarithms(String name) {
 		super(name, false);
+	}
+
+	@Override
+	protected void setUp() {
+		super.setUp();
+		fSeconds = 20;
 	}
 
 	// {2315}
@@ -267,7 +277,7 @@ public class Logarithms extends AbstractRubiTestCase {
 		check(//
 				"Integrate[Log[(a*(1 - c) + b*(1 + c)*x)/(a + b*x)]/(a^2 - b^2*x^2), x]", //
 				"PolyLog[2, 1 - (a*(1 - c) + b*(1 + c)*x)/(a + b*x)]/(2*a*b)", // rubi
-				"PolyLog[2,(c*(a-b*x))/(a+b*x)]/(2*a*b)", // 
+				"PolyLog[2,(c*(a-b*x))/(a+b*x)]/(2*a*b)", //
 				2447);
 	}
 
@@ -537,7 +547,7 @@ public class Logarithms extends AbstractRubiTestCase {
 
 	// {2447}
 	public void test0128() {
-		
+
 		// needs FullSimplify
 		check(//
 				"Integrate[Log[(2*x*(d*Sqrt[-(e/d)] + e*x))/(d + e*x^2)]/(d + e*x^2), x]", //

@@ -231,7 +231,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 					return result;
 				}
 
-				result = callRestIntegrate(fx, x, ast);
+				result = callRestIntegrate(fx, x, engine);
 				if (result.isPresent()) {
 					return result;
 				}
@@ -243,7 +243,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 		}
 	}
 
-	private static IExpr callRestIntegrate(IAST arg1, final IExpr x, final IAST ast) {
+	private static IExpr callRestIntegrate(IAST arg1, final IExpr x, final EvalEngine engine) {
 		IExpr fxExpanded = F.expand(arg1, false, false, false);
 		if (fxExpanded.isAST()) {
 			if (fxExpanded.isPlus()) {
@@ -276,7 +276,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 			}
 
 			if (arg1AST.size() >= 3 && arg1AST.isFree(F.Integrate) && arg1AST.isPlusTimesPower()) {
-				if (!arg1AST.isEvalFlagOn(IAST.IS_DECOMPOSED_PARTIAL_FRACTION) && ast.arg2().isSymbol()) {
+				if (!arg1AST.isEvalFlagOn(IAST.IS_DECOMPOSED_PARTIAL_FRACTION) && x.isSymbol()) {
 					IExpr[] parts = Algebra.fractionalParts(arg1, true);
 					if (parts != null) {
 
@@ -285,6 +285,11 @@ public class Integrate extends AbstractFunctionEvaluator {
 					}
 				}
 			}
+		}
+		if (arg1.isTrigFunction()) {
+			// https://github.com/RuleBasedIntegration/Rubi/issues/12
+			IExpr temp = engine.evaluate(F.TrigToExp(arg1));
+			return engine.evaluate(F.Integrate(temp, x));
 		}
 		return F.NIL;
 	}
@@ -749,7 +754,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 						if (result.isPresent()) {
 							return result;
 						}
-						IExpr temp = callRestIntegrate(arg1, x, ast);
+						IExpr temp = callRestIntegrate(arg1, x, engine);
 						if (temp.isPresent()) {
 							return temp;
 						}

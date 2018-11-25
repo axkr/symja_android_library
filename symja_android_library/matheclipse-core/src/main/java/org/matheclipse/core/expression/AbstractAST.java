@@ -2530,6 +2530,28 @@ public abstract class AbstractAST implements IASTMutable {
 		return isSameHeadSizeGE(F.Times, 3);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean isTrigFunction() {
+		int id = headID();
+		if (id >= 0) {
+			if (size() == 2) {
+				return id == ID.Cos || id == ID.Cosh || id == ID.ArcCos || id == ID.ArcCosh || //
+						id == ID.Cot || id == ID.Coth || id == ID.ArcCot || id == ID.ArcCoth || //
+						id == ID.Csc || id == ID.Csch || id == ID.ArcCsc || id == ID.ArcCsch || //
+						id == ID.Sec || id == ID.Sech || id == ID.ArcSec || id == ID.ArcSech || //
+						id == ID.Sin || id == ID.Sinh || id == ID.ArcSin || id == ID.ArcSinh || //
+						id == ID.Tan || id == ID.Tanh || id == ID.ArcTan || id == ID.ArcTanh;
+			}
+			if (size() == 3) {
+				return id == ID.ArcTan;
+			}
+		}
+		return false;
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isUnit() {
@@ -2594,11 +2616,11 @@ public abstract class AbstractAST implements IASTMutable {
 	 * 
 	 * @deprecated use {@link #isZero()} instead.
 	 */
-//	@Deprecated
-//	@Override
-//	public boolean isZERO() {
-//		return isZero();
-//	}
+	// @Deprecated
+	// @Override
+	// public boolean isZERO() {
+	// return isZero();
+	// }
 
 	/**
 	 * Returns an iterator over the elements in this <code>IAST</code> starting with offset <b>1</b>.

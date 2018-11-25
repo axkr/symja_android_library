@@ -2528,6 +2528,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is a trigonometric function.
+	 * 
+	 * @return
+	 */
+	default boolean isTrigFunction() {
+		return false;
+	}
+	
+	/**
 	 * Test if this expression equals the symbol <code>True</code>.
 	 * 
 	 * @return <code>true</code> if the expression equals symbol <code>True</code> and <code>false</code> in all other

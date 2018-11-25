@@ -1544,7 +1544,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("Integrate(Log(x)*x^2,x)", //
 				"-x^3/9+1/3*x^3*Log(x)");
 		check("Integrate((x^2+1)*Log(x),x)", //
-				"-(3*x+x^3/3)/3+1/3*(3*x+x^3)*Log(x)");
+				"1/3*(-3*x-x^3/3)+1/3*(3*x+x^3)*Log(x)");
 		check("Simplify(D(ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)+1/6*Log(x^2-x+1)-1/3*Log(x+1),x))", "x/(1+x^3)");
 
 		check("Integrate(x/(x^3+1),x)", //
@@ -1582,12 +1582,15 @@ public class MainTestCase extends AbstractTestCase {
 		check("Integrate(1/(x^2+1),x)", //
 				"ArcTan(x)");
 		check("Integrate((2*x+5)/(x^2-2*x+5),x)", //
-				"-7/2*ArcTan(1/2*(1-x))+Log(5-2*x+x^2)");
+				"7/2*ArcTan(1/2*(-1+x))+Log(5-2*x+x^2)");
 		check("Integrate((8*x+1)/(x^2+2*x+1),x)", //
 				"7/(1+x)+8*Log(1+x)");
 	}
 
 	public void testSystem171b() {
+//		check("D(2*E^x-Gamma(3,-x),x)", //
+//				"2*E^x-E^x*x^2");
+		
 		check("Integrate(1/(x^3+1),x)", //
 				"Log(1+x)/3-Log(1-x+x^2)/6");
 		// check("Simplify(Integrate(1/3*(2-x)*(x^2-x+1)^(-1),x))",
@@ -1599,7 +1602,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("D(2*E^x-Gamma(3,-x),x)", //
 				"2*E^x-E^x*x^2");
 		check("Integrate((x^2+1)*Log(x),x)", //
-				"-(3*x+x^3/3)/3+1/3*(3*x+x^3)*Log(x)");
+				"1/3*(-3*x-x^3/3)+1/3*(3*x+x^3)*Log(x)");
 		check("D(-x-Gamma(2,-3*Log(x))/9+x*Log(x),x)", //
 				"Log(x)+x^2*Log(x)");
 
@@ -3181,7 +3184,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("Integrate(1/(x^3 + 1), x)", //
 				"Log(1+x)/3-Log(1-x+x^2)/6");
 		check("D(1/3*(-3*ArcTan((2*x+1)*3^(-1/2))*3^(-1/2)-1/2*Log(x^2-x+1))+1/3*Log(x+1), x)", //
-				"1/(3*(1+x))+1/3*(-(-1+2*x)/(2*(1-x+x^2))-2/(1+(1+2*x)^2/3))");
+				"1/(3*(1+x))+1/3*((1-2*x)/(2*(1-x+x^2))-2/(1+(1+2*x)^2/3))");
 		check("Simplify(D(Integrate(1/(x^3 + 1), x), x))", //
 				"(1-x)/(2*(1+x^3))");
 		// check("Apart((1+(1/x))/(1+(2/x)))","");
@@ -3386,9 +3389,12 @@ public class MainTestCase extends AbstractTestCase {
 		// + "2-Sqrt(-I*6)/2||x==1/2+I*1/2+Sqrt(-I*6)/2");
 
 		// check("Factor(1+x^2,GaussianIntegers->True)", "");
-		check("-5/2+I*1/2*Sqrt(15)", "-5/2+I*1/2*Sqrt(15)");
-		check("Roots(Expand((x-1)^3)==0, x)", "x==1");
-		check("-1/2*(-I*3^(1/2)+1)", "-(1-I*Sqrt(3))/2");
+		check("-5/2+I*1/2*Sqrt(15)", //
+				"-5/2+I*1/2*Sqrt(15)");
+		check("Roots(Expand((x-1)^3)==0, x)",//
+				"x==1");
+		check("-1/2*(-I*3^(1/2)+1)", //
+				"1/2*(-1+I*Sqrt(3))");
 		check("Roots(x^3-3*x-2==0, x)", "x==-1||x==2");
 
 		check("Roots((x^2-1)/(x-1)==0, x)", "x==-1");

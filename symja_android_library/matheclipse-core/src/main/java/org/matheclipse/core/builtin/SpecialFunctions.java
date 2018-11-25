@@ -70,6 +70,7 @@ public class SpecialFunctions {
 		F.InverseBetaRegularized.setEvaluator(new InverseBetaRegularized());
 		F.InverseGammaRegularized.setEvaluator(new InverseGammaRegularized());
 		F.LogGamma.setEvaluator(new LogGamma());
+		F.MeijerG.setEvaluator(new MeijerG());
 		F.PolyGamma.setEvaluator(new PolyGamma());
 		F.PolyLog.setEvaluator(new PolyLog());
 		F.ProductLog.setEvaluator(new ProductLog());
@@ -672,6 +673,191 @@ public class SpecialFunctions {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+
+	}
+
+	private static class MeijerG extends AbstractFunctionEvaluator implements StieltjesGammaRules {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.size() == 4) {
+				IExpr arg1 = ast.arg1();
+				IExpr arg2 = ast.arg2();
+				IExpr z = ast.arg3();
+				if (z.isList()) {
+					return ((IAST) z).mapThread(ast.setAtClone(3, F.Null), 3);
+				}
+				if (arg1.isList() && arg2.isList()) {
+					IAST list1 = (IAST) arg1;
+					IAST list2 = (IAST) arg2;
+					if (list1.size() == 3 && list1.arg1().isList() && list1.arg2().isList() && //
+							list2.size() == 3 && list2.arg1().isList() && list2.arg2().isList()) {
+						IAST k1 = (IAST) list1.arg1();
+						IAST k2 = (IAST) list1.arg2();
+						IAST l1 = (IAST) list2.arg1();
+						IAST l2 = (IAST) list2.arg2();
+						int n = k1.argSize();
+						int p = k2.argSize();
+						int m = l1.argSize();
+						int q = l2.argSize();
+						switch (n) {
+						case 0:
+							// 0
+							switch (p) {
+							case 0:
+								// 0,0
+								switch (m) {
+								case 0:
+									switch (q) {
+									case 0:
+										// 0,0,0,0
+										engine.printMessage("MeijerG: " + ast + "not available.");
+										return F.NIL;
+									}
+									break;
+								case 1:
+									IExpr b1 = l1.arg1();
+									switch (q) {
+									case 1:
+										// 0,0,1,1
+										IExpr b2 = l2.arg1();
+										return
+										// [$ z^(b1 + (1/2)*(-b1 + b2))*BesselJ(b1 - b2, 2*Sqrt(z)) $]
+										F.Times(F.Power(z, F.Plus(b1, F.Times(F.C1D2, F.Plus(F.Negate(b1), b2)))),
+												F.BesselJ(F.Plus(b1, F.Negate(b2)), F.Times(F.C2, F.Sqrt(z)))); // $$;
+									}
+									break;
+								}
+								break;
+							case 1:
+								// 0,1
+								IExpr a2 = k2.arg1();
+								switch (m) {
+								case 1:
+									// 0,1,1
+									IExpr b1 = l1.arg1();
+									switch (q) {
+									case 1:
+										// 0,1,1,1
+										IExpr b2 = l2.arg1();
+										return
+										// [$ (z^b1*Hypergeometric1F1Regularized(1 - a2 + b1, 1 + b1 - b2, z))/Gamma(a2
+										// - b1) $]
+										F.Times(F.Power(z, b1), F.Power(F.Gamma(F.Plus(a2, F.Negate(b1))), -1),
+												F.Hypergeometric1F1Regularized(F.Plus(F.C1, F.Negate(a2), b1),
+														F.Plus(F.C1, b1, F.Negate(b2)), z)); // $$;
+									}
+									break;
+								}
+								break;
+							}
+							break;
+						case 1:
+							// 1
+							IExpr a1 = k1.arg1();
+							switch (p) {
+							case 0:
+								// 1,0
+								switch (m) {
+								case 0:
+									// 1,0,0
+									switch (q) {
+									case 0:
+										// 1,0,0,0
+										return
+										// [$ z^(-1 + a1)/E^z^(-1) $]
+										F.Times(F.Power(F.Exp(F.Power(z, -1)), -1), F.Power(z, F.Plus(F.CN1, a1))); // $$;
+									case 1:
+										// 1,0,0,1
+										IExpr b2 = l2.arg1();
+										if (z.isPositive()) {
+											return
+											// [$ (z^b2/Gamma(a1 - b2))*(z - 1)^(a1 - b2 - 1)*UnitStep(z - 1) $]
+											F.Times(F.Power(z, b2), F.Power(F.Gamma(F.Plus(a1, F.Negate(b2))), -1),
+													F.Power(F.Plus(F.CN1, z), F.Plus(F.CN1, a1, F.Negate(b2))),
+													F.UnitStep(F.Plus(F.CN1, z))); // $$;
+										}
+									}
+									break;
+								case 1:
+									// 1,0,1
+									IExpr b1 = l1.arg1();
+									switch (q) {
+									case 1:
+										// 1,0,1,1
+										IExpr b2 = l2.arg1();
+										return
+										// [$ z^b1*Gamma(1 - a1 + b1)*Hypergeometric1F1Regularized(1 - a1 + b1, 1 +
+										// b1 - b2, -z) $]
+										F.Times(F.Power(z, b1), F.Gamma(F.Plus(F.C1, F.Negate(a1), b1)),
+												F.Hypergeometric1F1Regularized(F.Plus(F.C1, F.Negate(a1), b1),
+														F.Plus(F.C1, b1, F.Negate(b2)), F.Negate(z))); // $$;
+									}
+									break;
+								}
+								break;
+							case 1:
+								// 1,1
+								IExpr a2 = k2.arg1();
+								switch (m) {
+								case 0:
+									// 1,1,0
+									switch (q) {
+									case 0:
+										// 1,1,0,0
+										return
+										// [$ z^(-1 + a1 + (1/2)*(-a1 + a2))*BesselJ(-a1 + a2, 2/Sqrt(z)) $]
+										F.Times(F.Power(z,
+												F.Plus(F.CN1, a1, F.Times(F.C1D2, F.Plus(F.Negate(a1), a2)))),
+												F.BesselJ(F.Plus(F.Negate(a1), a2),
+														F.Times(F.C2, F.Power(z, F.CN1D2)))); // $$;
+									case 1:
+										// 1,1,0,1
+										IExpr b2 = l2.arg1();
+										return
+										// [$ (z^(-1 + a1)*Hypergeometric1F1Regularized(1 - a1 + b2, 1 - a1 + a2,
+										// 1/z))/Gamma(a1 - b2) $]
+										F.Times(F.Power(z, F.Plus(F.CN1, a1)),
+												F.Power(F.Gamma(F.Plus(a1, F.Negate(b2))), -1),
+												F.Hypergeometric1F1Regularized(F.Plus(F.C1, F.Negate(a1), b2),
+														F.Plus(F.C1, F.Negate(a1), a2), F.Power(z, -1))); // $$;
+									}
+									break;
+								case 1:
+									IExpr b1 = l1.arg1();
+									switch (q) {
+									case 0:
+										// 1,1,1,0
+										return
+										// [$ z^(-1 + a1)*Gamma(1 - a1 + b1)*Hypergeometric1F1Regularized(1 - a1 + b1, 1
+										// - a1 + a2, -(1/z)) $]
+										F.Times(F.Power(z, F.Plus(F.CN1, a1)), F.Gamma(F.Plus(F.C1, F.Negate(a1), b1)),
+												F.Hypergeometric1F1Regularized(F.Plus(F.C1, F.Negate(a1), b1),
+														F.Plus(F.C1, F.Negate(a1), a2), F.Negate(F.Power(z, -1)))); // $$;
+									}
+									break;
+								}
+								break;
+							}
+							break;
+						}
+					}
+				}
+
+			}
+			return F.NIL;
+		}
+
+		// @Override
+		// public IAST getRuleAST() {
+		// return RULES;
+		// }
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
 			super.setUp(newSymbol);
 		}
 

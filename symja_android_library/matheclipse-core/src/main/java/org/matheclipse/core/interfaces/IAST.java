@@ -905,7 +905,13 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	@Override
 	public boolean isTimes();
-
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean isTrigFunction();
+	
 	/**
 	 * Returns an iterator over the elements in this list starting with offset <b>1</b>.
 	 * 

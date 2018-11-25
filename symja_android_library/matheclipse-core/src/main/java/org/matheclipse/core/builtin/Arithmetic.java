@@ -4515,7 +4515,9 @@ public final class Arithmetic {
 			} else if (o1 instanceof ASTSeriesData) {
 				return ((ASTSeriesData) o1).times(o0);
 			}
-
+			if (o0.isFraction() && o0.isNegative() && o1.isPlus()) {
+				return F.Times(o0.negate(),o1.negate());
+			}
 			return F.NIL;
 		}
 

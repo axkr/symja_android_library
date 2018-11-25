@@ -2290,10 +2290,10 @@ public class EvalEngine implements Serializable {
 	 */
 	public IASTMutable threadASTListArgs(final IASTMutable ast) {
 
-		int[] listLength = new int[] { 0 };
+		int[] listLength = new int[] { -1 };
 		if (ast.exists(x -> {
 			if (x.isList()) {
-				if (listLength[0] == 0) {
+				if (listLength[0] < 0) {
 					listLength[0] = ((IAST) x).argSize();
 				} else {
 					if (listLength[0] != ((IAST) x).argSize()) {
@@ -2307,7 +2307,7 @@ public class EvalEngine implements Serializable {
 		})) {
 			return F.NIL;
 		}
-		if (listLength[0] != 0) {
+		if (listLength[0] != -1) {
 			IASTAppendable result = EvalAttributes.threadList(ast, F.List, ast.head(), listLength[0]);
 			result.addEvalFlags(IAST.IS_LISTABLE_THREADED);
 			return result;

@@ -353,7 +353,7 @@ public class SeriesTest extends AbstractTestCase {
 		check("SeriesCoefficient(x^x,{x,0,4})", //
 				"Log(x)^4/24");
 		check("SeriesCoefficient(ChebyshevT(k, x), {x, 0, 2})", //
-				"(-(1-k)*(1+k)*k^2*Pi)/(8*Gamma(1/2*(3-k))*Gamma(1/2*(3+k)))");
+				"((-1+k)*(1+k)*k^2*Pi)/(8*Gamma(1/2*(3-k))*Gamma(1/2*(3+k)))");
 		check("SeriesCoefficient(d+4*x^e+7*x^f,{x, a, n})", //
 				"Piecewise({{(4*a^e*Binomial(e,n)+7*a^f*Binomial(f,n))/a^n,n>0},{4*a^e+7*a^f+d,n==\n" + "0}},0)");
 		check("SeriesCoefficient(1/(3*x^2),{x,0,4})", //
