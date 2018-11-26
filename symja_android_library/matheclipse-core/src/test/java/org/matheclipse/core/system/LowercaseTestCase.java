@@ -10163,21 +10163,40 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRotateLeft() {
-		check("RotateLeft({1, 2, 3})", "{2,3,1}");
-		check("RotateLeft(Range(10),3)", "{4,5,6,7,8,9,10,1,2,3}");
-		check("RotateLeft(x(a,b,c),2)", "x(c,a,b)");
+		check("RotateLeft({1, 2, 3})", //
+				"{2,3,1}");
+		check("RotateLeft(Range(10),3)", //
+				"{4,5,6,7,8,9,10,1,2,3}");
+		check("RotateLeft(x(a,b,c),2)", //
+				"x(c,a,b)");
 
-		check("RotateLeft({1,2,3,4,5},2)", "{3,4,5,1,2}");
+		check("RotateLeft({1,2,3,4,5},2)", //
+				"{3,4,5,1,2}");
 
 	}
 
 	public void testRotateRight() {
-		check("RotateRight({1, 2, 3})", "{3,1,2}");
-		check("RotateRight(Range(10),3)", "{8,9,10,1,2,3,4,5,6,7}");
-		check("RotateRight(x(a,b,c),2)", "x(b,c,a)");
+		check("RotateRight({1, 2, 3})", //
+				"{3,1,2}");
+		check("RotateRight(Range(10),3)", //
+				"{8,9,10,1,2,3,4,5,6,7}");
+		check("RotateRight(x(a,b,c),2)", //
+				"x(b,c,a)");
 
-		check("RotateRight({1,2,3,4,5},2)", "{4,5,1,2,3}");
+		check("RotateRight({1,2,3,4,5},2)", //
+				"{4,5,1,2,3}");
 
+	}
+
+	public void testRotationMatrix() {
+		check("RotationMatrix(90*Degree)", //
+				"{{0,-1},{1,0}}");
+		check("RotationMatrix(t,{0,0,1})", //
+				"{{Cos(t),-Sin(t),0},{Sin(t),Cos(t),0},{0,0,1}}");
+		check("RotationMatrix(t,{0,1,0})", //
+				"{{Cos(t),0,Sin(t)},{0,1,0},{-Sin(t),0,Cos(t)}}");
+		check("RotationMatrix(t,{1,0,0})", //
+				"{{1,0,0},{0,Cos(t),-Sin(t)},{0,Sin(t),Cos(t)}}");
 	}
 
 	public void testRound() {

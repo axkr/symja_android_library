@@ -2454,7 +2454,9 @@ public class F {
 
 	/** RotateRight(list) - rotates the items of `list` by one item to the right. */
 	public final static IBuiltInSymbol RotateRight = F.initFinalSymbol("RotateRight", ID.RotateRight);
-
+	
+	public final static IBuiltInSymbol RotationMatrix = F.initFinalSymbol("RotationMatrix", ID.RotationMatrix);
+	
 	/** Round(expr) - round a given `expr` to nearest integer. */
 	public final static IBuiltInSymbol Round = F.initFinalSymbol("Round", ID.Round);
 

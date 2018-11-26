@@ -13,6 +13,7 @@ public class VectorAnalysisFunctions {
 		F.Curl.setEvaluator(new Curl());
 		F.Div.setEvaluator(new Div());
 		F.Grad.setEvaluator(new Grad());
+		F.RotationMatrix.setEvaluator(new RotationMatrix());
 	}
 
 	/**
@@ -124,6 +125,69 @@ public class VectorAnalysisFunctions {
 				return dList;
 			}
 
+			return F.NIL;
+		}
+
+	}
+
+	private static final class RotationMatrix extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				IExpr theta = ast.arg1();
+				return
+				// [$ {{Cos(theta),-Sin(theta)},{Sin(theta),Cos(theta)}} $]
+				F.List(F.List(F.Cos(theta), F.Negate(F.Sin(theta))), F.List(F.Sin(theta), F.Cos(theta))); // $$;
+			}
+			if (ast.isAST2() && ast.arg2().isAST(F.List, 4)) {
+				// TODO generalize for all rotations
+				// see https://github.com/corywalker/expreduce/blob/master/expreduce/resources/trig.m
+				IExpr theta = ast.arg1();
+				IAST vector = (IAST) ast.arg2();
+				IExpr x = vector.arg1();
+				IExpr y = vector.arg2();
+				IExpr z = vector.arg3();
+				if (z.isZero()) {
+					if (y.isZero()) {
+						return
+						// [$ {{(x^3*Conjugate(x)^3)/Abs(x)^6,0,0},{0,Cos(theta),-((x^2*Conjugate(x)*
+						// Sin(theta))/Abs(x)^3)},{0,(x*Conjugate(x)^2*Sin(theta))/Abs(x)^3,(x^3*Conjugate(x)^3*
+						// Cos(theta))/Abs(x)^6}} $]
+						F.List(F.List(F.Times(F.Power(x, 3), F.Power(F.Abs(x), -6), F.Power(F.Conjugate(x), 3)), F.C0,
+								F.C0),
+								F.List(F.C0, F.Cos(theta),
+										F.Times(F.CN1, F.Sqr(x), F.Power(F.Abs(x), -3), F.Conjugate(x), F.Sin(theta))),
+								F.List(F.C0, F.Times(x, F.Power(F.Abs(x), -3), F.Sqr(F.Conjugate(x)), F.Sin(theta)),
+										F.Times(F.Power(x, 3), F.Power(F.Abs(x), -6), F.Power(F.Conjugate(x), 3),
+												F.Cos(theta)))); // $$;
+					}
+					if (x.isZero()) {
+						return
+						// [$
+						// {{Cos(theta),0,(y^2*Conjugate(y)*Sin(theta))/Abs(y)^3},{0,(y^3*Conjugate(y)^3)/Abs(y)^6,0},{-((y*Conjugate(y)^2*Sin(theta))/Abs(y)^3),0,(y^3*Conjugate(y)^3*Cos(theta))/Abs(y)^6}}
+						// $]
+						F.List(F.List(F.Cos(theta), F.C0,
+								F.Times(F.Sqr(y), F.Power(F.Abs(y), -3), F.Conjugate(y), F.Sin(theta))),
+								F.List(F.C0, F.Times(F.Power(y, 3), F.Power(F.Abs(y), -6), F.Power(F.Conjugate(y), 3)),
+										F.C0),
+								F.List(F.Times(F.CN1, y, F.Power(F.Abs(y), -3), F.Sqr(F.Conjugate(y)), F.Sin(theta)),
+										F.C0, F.Times(F.Power(y, 3), F.Power(F.Abs(y), -6), F.Power(F.Conjugate(y), 3),
+												F.Cos(theta)))); // $$;
+					}
+					return F.NIL;
+				}
+				if (x.isZero() && y.isZero()) {
+					return
+					// [$ {{Cos(theta),-((z*Sin(theta))/Abs(z)),0},{(Conjugate(z)*Sin(theta))/Abs(z),(z*Conjugate(z)*
+					// Cos(theta))/Abs(z)^2,0},{0,0,(z*Conjugate(z))/Abs(z)^2}} $]
+					F.List(F.List(F.Cos(theta), F.Times(F.CN1, z, F.Power(F.Abs(z), -1), F.Sin(theta)), F.C0),
+							F.List(F.Times(F.Power(F.Abs(z), -1), F.Conjugate(z), F.Sin(theta)),
+									F.Times(z, F.Power(F.Abs(z), -2), F.Conjugate(z), F.Cos(theta)), F.C0),
+							F.List(F.C0, F.C0, F.Times(z, F.Power(F.Abs(z), -2), F.Conjugate(z)))); // $$;
+				}
+				return F.NIL;
+			}
 			return F.NIL;
 		}
 
