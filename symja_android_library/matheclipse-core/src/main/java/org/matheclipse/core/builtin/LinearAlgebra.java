@@ -109,6 +109,7 @@ public final class LinearAlgebra {
 		F.LUDecomposition.setEvaluator(new LUDecomposition());
 		F.ManhattanDistance.setEvaluator(new ManhattanDistance());
 		F.MatrixMinimalPolynomial.setEvaluator(new MatrixMinimalPolynomial());
+		F.MatrixExp.setEvaluator(new MatrixExp());
 		F.MatrixPower.setEvaluator(new MatrixPower());
 		F.MatrixRank.setEvaluator(new MatrixRank());
 		F.Norm.setEvaluator(new Norm());
@@ -2177,6 +2178,20 @@ public final class LinearAlgebra {
 
 	}
 
+	private static class MatrixExp extends AbstractFunctionEvaluator {
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.size() == 2) {
+				int[] dim = ast.arg1().isMatrix();
+				if (dim != null && dim[0] == dim[1]) {
+					IAST matrix = (IAST) ast.arg1();
+					final int n = dim[0];
+				}
+			}
+			return F.NIL;
+		}
+	}
+
 	/**
 	 * <pre>
 	 * MatrixMinimalPolynomial(matrix, var)
@@ -2202,10 +2217,6 @@ public final class LinearAlgebra {
 	 * </pre>
 	 */
 	private static class MatrixMinimalPolynomial extends AbstractFunctionEvaluator {
-
-		public MatrixMinimalPolynomial() {
-			super();
-		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {

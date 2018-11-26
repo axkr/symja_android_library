@@ -1704,7 +1704,10 @@ public class F {
 
 	/** MathMLForm(expr) - returns the MathMLForm form of the evaluated `expr`. */
 	public final static IBuiltInSymbol MathMLForm = F.initFinalSymbol("MathMLForm", ID.MathMLForm);
-
+	
+	/***/
+	public final static IBuiltInSymbol MatrixExp = F.initFinalSymbol("MatrixExp", ID.MatrixExp);
+	
 	/***/
 	public final static IBuiltInSymbol MatrixForm = F.initFinalSymbol("MatrixForm", ID.MatrixForm);
 
