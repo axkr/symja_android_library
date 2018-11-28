@@ -100,6 +100,11 @@ public class SeriesTest extends AbstractTestCase {
 
 		// check("Series(Gamma(x), {x, 0, 3})", //
 		// "");
+//		check("Series(1/(xˆ3+x), {x, 0, 3})", //
+//				"");
+//		check("Series((xˆ3-2xˆ2-9x+18)/(xˆ3+x), {x, 0, 3})", //
+//				"");
+		
 		check("Series((1 + x)^n, {x, 0, 4})", //
 				"1+n*x+1/2*(-1+n)*n*x^2+1/6*(-2+n)*(-1+n)*n*x^3+1/24*(-3+n)*(-2+n)*(-1+n)*n*x^4+O(x)^\n" + "5");
 		check("Series(x^x, {x, 0, 4})", //

@@ -55,6 +55,20 @@ public interface INodeParserFactory extends IParserFactory {
 	public FunctionNode createFunction(SymbolNode head, ASTNode arg1, ASTNode arg2);
 
 	/**
+	 * 
+	 * @param head
+	 *            the head of the function
+	 * @param arg1
+	 *            the first argument of the function
+	 * @param arg2
+	 *            the second argument of the function
+	 * @param arg3
+	 *            the third argument of the function
+	 * @return
+	 */
+	public FunctionNode createFunction(SymbolNode head, ASTNode arg1, ASTNode arg2, ASTNode arg3);
+
+	/**
 	 * Creates a new function with no arguments from the given header expression .
 	 * 
 	 * @param headExpr
@@ -170,7 +184,8 @@ public interface INodeParserFactory extends IParserFactory {
 	 * Create a symbol from the scanned identifier string
 	 * 
 	 * @param symbolName
-	 * @param context the name of the context the symbol should be created in
+	 * @param context
+	 *            the name of the context the symbol should be created in
 	 * @return
 	 */
 	public SymbolNode createSymbol(String symbolName, String context);
@@ -181,5 +196,5 @@ public interface INodeParserFactory extends IParserFactory {
 	 * @param symbolName
 	 * @return
 	 */
-	public SymbolNode createSymbol(String symbolName );
+	public SymbolNode createSymbol(String symbolName);
 }

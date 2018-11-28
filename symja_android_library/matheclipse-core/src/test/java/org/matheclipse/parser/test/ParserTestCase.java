@@ -498,17 +498,11 @@ public class ParserTestCase extends TestCase {
 		try {
 			Parser p = new Parser();
 			// http://oeis.org/A005132
-			ASTNode obj = p.parse(
-					"	If[!MatchQ[#,_\\[Rule]_],\n" + 
-					"       Message[Caller::\"UnknownOption\",#];\n" + 
-					"       (*else*),\n" + 
-					"       pos=Position[FullOptions,{#[[1]],_,_}];\n" + 
-					"       If[Length[pos]\\[Equal]0,\n" + 
-					"         Message[Caller::\"UnknownOption\",#]\n" + 
-					"         (*else*),\n" + 
-					"         FullOptions[[pos[[1,1]],3]]=#[[2]]\n" + 
-					"         ];\n" + 
-					"       ];");
+			ASTNode obj = p.parse("	If[!MatchQ[#,_\\[Rule]_],\n" + "       Message[Caller::\"UnknownOption\",#];\n"
+					+ "       (*else*),\n" + "       pos=Position[FullOptions,{#[[1]],_,_}];\n"
+					+ "       If[Length[pos]\\[Equal]0,\n" + "         Message[Caller::\"UnknownOption\",#]\n"
+					+ "         (*else*),\n" + "         FullOptions[[pos[[1,1]],3]]=#[[2]]\n" + "         ];\n"
+					+ "       ];");
 			assertEquals(obj.toString(),
 					"CompoundExpression(If(Not(MatchQ(Slot(1), Rule(_, _))), CompoundExpression(Message(MessageName(Caller, UnknownOption), Slot(1)), Null), CompoundExpression(Set(pos, Position(FullOptions, List(Part(Slot(1), 1), _, _))), If(Equal(Length(pos), 0), Message(MessageName(Caller, UnknownOption), Slot(1)), Set(Part(FullOptions, Part(pos, 1, 1), 3), Part(Slot(1), 2))), Null)), Null)");
 		} catch (Exception e) {
@@ -516,51 +510,91 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParse36() {
 		try {
-//			System.out.println(Character.isUnicodeIdentifierPart('\u221E'));
+			// System.out.println(Character.isUnicodeIdentifierPart('\u221E'));
 			Parser p = new Parser();
 			ASTNode obj = p.parse("\u221E");
-			assertEquals(obj.toString(),
-					"Infinity");
+			assertEquals(obj.toString(), "Infinity");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParse37() {
 		try {
 			Parser p = new Parser();
-			ASTNode obj = p.parse("      Do[\n" + 
-					"        serh=SeriesHead[ser,\\[Omega]];\n" + 
-					"        \n" + 
-					"        (* check for series term that run out of precision *)\n" + 
-					"        If[FreeQ[serh,HoldPattern[SeriesData[_,_,{},_,_,_]]],\n" + 
-					"          (* No: done. *)\n" + 
-					"          Break[];\n" + 
-					"          ];\n" + 
-					"        ,{i,1,30}\n" + 
-					"        ]");
+			ASTNode obj = p.parse("      Do[\n" + "        serh=SeriesHead[ser,\\[Omega]];\n" + "        \n"
+					+ "        (* check for series term that run out of precision *)\n"
+					+ "        If[FreeQ[serh,HoldPattern[SeriesData[_,_,{},_,_,_]]],\n" + "          (* No: done. *)\n"
+					+ "          Break[];\n" + "          ];\n" + "        ,{i,1,30}\n" + "        ]");
 			assertEquals(obj.toString(),
 					"Do(CompoundExpression(Set(serh, SeriesHead(ser, ω)), If(FreeQ(serh, HoldPattern(SeriesData(_, _, List(), _, _, _))), CompoundExpression(Break(), Null)), Null), List(i, 1, 30))");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
 		}
-	} 
-	
+	}
+
 	public void testParse38() {
 		try {
 			Parser p = new Parser();
-			ASTNode obj = p.parse("MakeGraph[Range[26],\n" + 
-					"                            Mod[#1-#2, 26] == 1 ||\n" + 
-					"                                (-1)^#1Mod[#1-#2, 26] == 11 ||\n" + 
-					"                                (-1)^#1Mod[#1-#2, 26] == 7&,\n" + 
-					"                            Type -> Directed]");
+			ASTNode obj = p.parse("MakeGraph[Range[26],\n" + "                            Mod[#1-#2, 26] == 1 ||\n"
+					+ "                                (-1)^#1Mod[#1-#2, 26] == 11 ||\n"
+					+ "                                (-1)^#1Mod[#1-#2, 26] == 7&,\n"
+					+ "                            Type -> Directed]");
 			assertEquals(obj.toString(),
 					"MakeGraph(Range(26), Function(Or(Equal(Mod(Plus(Slot(1), Times(-1, Slot(2))), 26), 1), Equal(Times(Power(-1, Slot(1)), Mod(Plus(Slot(1), Times(-1, Slot(2))), 26)), 11), Equal(Times(Power(-1, Slot(1)), Mod(Plus(Slot(1), Times(-1, Slot(2))), 26)), 7))), Rule(Type, Directed))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+
+	public void testParse39() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("While[i\\[LessEqual]Length[asympt] && asympt[[i,2]]\\[Equal]0,i++]");
+			assertEquals(obj.toString(),
+					"While(And(LessEqual(i, Length(asympt)), Equal(Part(asympt, i, 2), 0)), Increment(i))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+
+	public void testParse40() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("ff/: Power[ff, i_Integer] = {i}");
+			assertEquals(obj.toString(),
+					"TagSet(ff, Power(ff, i_Integer), List(i))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+	
+	public void testParse41() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("ff/: Power[ff, i_Integer] := {i}");
+			assertEquals(obj.toString(),
+					"TagSetDelayed(ff, Power(ff, i_Integer), List(i))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+	
+	public void testParse42() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("m_.k_+b_.");
+			assertEquals(obj.toString(),
+					"Plus(Times(m_., k_), b_.)");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());

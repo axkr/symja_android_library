@@ -28,7 +28,11 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.parser.client.ast.ASTNode;
+import org.matheclipse.parser.client.ast.FunctionNode;
+import org.matheclipse.parser.client.ast.INodeParserFactory;
 import org.matheclipse.parser.client.ast.IParserFactory;
+import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
 
 public class ExprParserFactory implements IParserFactory {
@@ -83,10 +87,32 @@ public class ExprParserFactory implements IParserFactory {
 			if (fOperatorString.equals("@@")) {
 				return fn;
 			}
+			// case "@@@"
 			fn.append(F.List(F.C1));
 			return fn;
 		}
 
+	}
+
+	private static class TagSetOperator extends InfixExprOperator {
+		public TagSetOperator(final String oper, final String functionName, final int precedence, final int grouping) {
+			super(oper, functionName, precedence, grouping);
+		}
+
+		@Override
+		public IASTMutable createFunction(final IParserFactory factory, ExprParser parser, final IExpr lhs,
+				final IExpr rhs) {
+			if (rhs.isAST()) {
+				IAST r = (IAST) rhs;
+
+				if (r.isAST(F.Set, 3)) {
+					return F.TagSet(lhs, r.arg1(), r.arg2());
+				} else if (r.isAST(F.SetDelayed, 3)) {
+					return F.TagSetDelayed(lhs, r.arg1(), r.arg2());
+				}
+			}
+			return F.binaryAST2(F.TagSet, lhs, rhs);
+		}
 	}
 
 	private static class DivideExprOperator extends InfixExprOperator {
@@ -186,6 +212,9 @@ public class ExprParserFactory implements IParserFactory {
 	public final static ApplyOperator APPLY_LEVEL_OPERATOR = //
 			new ApplyOperator("@@@", "Apply", 620, InfixExprOperator.RIGHT_ASSOCIATIVE);
 
+	public final static TagSetOperator TAG_SET_OPERATOR = //
+			new TagSetOperator("/:", "TagSet", 40, InfixExprOperator.NONE);
+
 	static final String[] HEADER_STRINGS = { "MessageName", "Information", "Information", "Get", "PatternTest",
 			"MapAll", "TimesBy", "Plus", "UpSet", "CompoundExpression", "Apply", "Map", "Unset", "Apply", "Apply",
 			"ReplaceRepeated", "Less", "And", "Divide", "Set", "Increment", "Factorial2", "LessEqual",
@@ -193,12 +222,12 @@ public class ExprParserFactory implements IParserFactory {
 			"GreaterEqual", "Condition", "Colon", "//", "DivideBy", "Or", "Span", "Equal", "StringJoin", "Unequal",
 			"Decrement", "SubtractFrom", "PrePlus", "RepeatedNull", "UnsameQ", "Rule", "UpSetDelayed", "PreIncrement",
 			"Function", "Greater", "PreDecrement", "Subtract", "SetDelayed", "Alternatives", "AddTo", "Repeated",
-			"ReplaceAll" };
+			"ReplaceAll", "TagSet"};
 
 	static final String[] OPERATOR_STRINGS = { "::", "<<", "?", "??", "?", "//@", "*=", "+", "^=", ";", "@", "/@", "=.",
 			"@@", "@@@", "//.", "<", "&&", "/", "=", "++", "!!", "<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>",
 			">=", "/;", ":", "//", "/=", "||", ";;", "==", "<>", "!=", "--", "-=", "+", "...", "=!=", "->", "^:=", "++",
-			"&", ">", "--", "-", ":=", "|", "+=", "..", "/." };
+			"&", ">", "--", "-", ":=", "|", "+=", "..", "/.", "/:" };
 
 	static final Operator[] OPERATORS = { new InfixExprOperator("::", "MessageName", 750, InfixExprOperator.NONE),
 			new PrefixExprOperator("<<", "Get", 720), //
@@ -213,7 +242,9 @@ public class ExprParserFactory implements IParserFactory {
 
 			APPLY_HEAD_OPERATOR, //
 			new InfixExprOperator("/@", "Map", 620, InfixExprOperator.RIGHT_ASSOCIATIVE), //
-			new PostfixExprOperator("=.", "Unset", 670), APPLY_OPERATOR, APPLY_LEVEL_OPERATOR, //
+			new PostfixExprOperator("=.", "Unset", 670), //
+			APPLY_OPERATOR, //
+			APPLY_LEVEL_OPERATOR, //
 			new InfixExprOperator("//.", "ReplaceRepeated", 110, InfixExprOperator.LEFT_ASSOCIATIVE), //
 			new InfixExprOperator("<", "Less", 290, InfixExprOperator.NONE), //
 			new InfixExprOperator("&&", "And", 215, InfixExprOperator.NONE), //
@@ -257,7 +288,8 @@ public class ExprParserFactory implements IParserFactory {
 			new InfixExprOperator("|", "Alternatives", 160, InfixExprOperator.NONE), //
 			new InfixExprOperator("+=", "AddTo", 100, InfixExprOperator.RIGHT_ASSOCIATIVE), //
 			new PostfixExprOperator("..", "Repeated", 170), //
-			new InfixExprOperator("/.", "ReplaceAll", 110, InfixExprOperator.LEFT_ASSOCIATIVE) };
+			new InfixExprOperator("/.", "ReplaceAll", 110, InfixExprOperator.LEFT_ASSOCIATIVE), //
+			TAG_SET_OPERATOR};
 
 	public final static ExprParserFactory MMA_STYLE_FACTORY = new ExprParserFactory();
 

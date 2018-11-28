@@ -50,6 +50,15 @@ final public class FunctionNode extends ASTNode implements java.util.List<ASTNod
 		fNodesList.add(arg0);
 		fNodesList.add(arg1);
 	}
+	
+	public FunctionNode(final SymbolNode head, final ASTNode arg0, final ASTNode arg1, final ASTNode arg2) {
+		super(null);
+		fNodesList = new ArrayList<ASTNode>(3);
+		fNodesList.add(head);
+		fNodesList.add(arg0);
+		fNodesList.add(arg1);
+		fNodesList.add(arg2);
+	}
 
 	@Override
 	public boolean add(final ASTNode e) {

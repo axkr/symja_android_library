@@ -8080,6 +8080,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPart() {
+		check("{a(x,y,z,f),b,c,d}[[1,2]]", //
+				"y");
 		check("{{3,1},{5,1},{17,1},{257,1},{65537,1}}[[All,2]]", //
 				"{1,1,1,1,1}");
 		check("{{3,1},{5,1},{17,1},{257,1},{65537,1}}[[None]]", //
@@ -8096,6 +8098,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("(a + b + c)[[0]]", "Plus");
 		check("M = {{a, b}, {c, d}}", "{{a,b},{c,d}}");
 		check("M[[1, 2]]", "b");
+		check("M[[1, 2]] = x", "x");
+		check("M", "{{a,x},{c,d}}");
+		check("M[[1, 1+1]] = y", "y");
+		check("M", "{{a,y},{c,d}}");
 		check("{1, 2, 3, 4}[[2;;4]]", "{2,3,4}");
 		check("{1, 2, 3, 4}[[2;;-1]]", "{2,3,4}");
 		check("{a, b, c, d}[[{1, 3, 3}]]", "{a,c,c}");
@@ -8123,11 +8129,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("F[[;; All, 1 ;; 2, 3 ;; 3]] = k", "k");
 		check("F", "{{{1,2,k},{2,t,k},{3,t,9}},{{2,4,k},{4,t,k},{6,t,18}},{{3,6,k},{6,t,k},{9,t,27}}}");
 
-		check("A[[1]] + B[[2]] + C[[3]] // Hold // FullForm", "Hold(Plus(Part(A, 1), Part(B, 2), Part(C, 3)))");
-		check("a = {2,3,4}; i = 1; a[[i]] = 0; a", "{0,3,4}");
+		check("A[[1]] + B[[2]] + C[[3]] // Hold // FullForm", //
+				"Hold(Plus(Part(A, 1), Part(B, 2), Part(C, 3)))");
+		check("a = {2,3,4}; i = 1; a[[i]] = 0; a", //
+				"{0,3,4}");
 
-		check("{1,2,3,4,5}[[3;;1;;-1]]", "{3,2,1}");
-		check("{1, 2, 3, 4, 5}[[;; ;; -1]]", "{5,4,3,2,1}");
+		check("{1,2,3,4,5}[[3;;1;;-1]]", //
+				"{3,2,1}");
+		check("{1, 2, 3, 4, 5}[[;; ;; -1]]", //
+				"{5,4,3,2,1}");
 
 		check("Range(11)[[-3 ;; 2 ;; -2]]", "{9,7,5,3}");
 		check("Range(11)[[-3 ;; -7 ;; -3]]", "{9,6}");
@@ -11992,6 +12002,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Tally({b,a,b,a,c,b,a})", "{{b,3},{a,3},{c,1}}");
 	}
 
+	public void testTagSet() {
+		check("f/: Format(f) = \"TagSet test\"", //
+				"TagSet test");
+		check("Format(f)", //
+				"TagSet test");
+	}
+
+	public void testTagSetDelayed() {
+		check("g/: Format(a_,g(x)) := \"TagSetDelayed test\"", //
+				"");
+//		check("Definition(g)", //
+//				"TagSet test");
+		check("Format(f,g(x))", //
+				"TagSetDelayed test");
+	}
+
+	
 	public void testTan() {
 		check("Tan(Pi/2+Pi*n)", "-Cot(n*Pi)");
 
@@ -13088,7 +13115,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testWhile() {
-		check("While(False)", "");
+		check("$n = 1; While($n \\[LessEqual] 4, $n++); $n", //
+				"5");
+		check("While(False)", //
+				"");
 		check("{a, b} = {27, 6}; While(b != 0, {a, b} = {b, Mod(a, b)});a", "3");
 		check("i = 1; While(True, If(i^2 > 100, Return(i + 1), i++))", "12");
 		check("$n = 1; While($n < 4, Print($n); $n++)", "");

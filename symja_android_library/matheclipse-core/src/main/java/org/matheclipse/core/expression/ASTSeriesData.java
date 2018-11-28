@@ -901,6 +901,9 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 			return this;
 		}
 
+//		if (n == -1L) {
+//			return inverse();
+//		}
 		long exp = n;
 		if (n < 0) {
 			if (n == Long.MIN_VALUE) {

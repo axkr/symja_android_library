@@ -338,6 +338,12 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 		if (fSetSymbol == ISymbol.RuleType.UPSET) {
 			return F.UpSet;
 		}
+		if (fSetSymbol == ISymbol.RuleType.TAGSET_DELAYED) {
+			return F.TagSetDelayed;
+		}
+		if (fSetSymbol == ISymbol.RuleType.TAGSET) {
+			return F.TagSet;
+		}
 		return null;
 	}
 

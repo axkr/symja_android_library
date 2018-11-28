@@ -251,7 +251,7 @@ public class Parser extends Scanner {
 					getNextToken();
 				} else {
 					getNextToken();
-					if (fToken == TT_IDENTIFIER) {
+					if (isSymbolIdentifier()) {
 						final ASTNode check = getSymbol();
 						temp = fFactory.createPattern(symbol, check);
 					} else {
@@ -265,7 +265,7 @@ public class Parser extends Scanner {
 					getNextToken();
 				} else {
 					getNextToken();
-					if (fToken == TT_IDENTIFIER) {
+					if (isSymbolIdentifier()) {
 						final ASTNode check = getSymbol();
 						temp = fFactory.createPattern2(symbol, check);
 					} else {
@@ -279,7 +279,7 @@ public class Parser extends Scanner {
 					getNextToken();
 				} else {
 					getNextToken();
-					if (fToken == TT_IDENTIFIER) {
+					if (isSymbolIdentifier()) {
 						final ASTNode check = getSymbol();
 						temp = fFactory.createPattern3(symbol, check);
 					} else {
@@ -293,7 +293,7 @@ public class Parser extends Scanner {
 					getNextToken();
 				} else {
 					getNextToken();
-					if (fToken == TT_IDENTIFIER) {
+					if (isSymbolIdentifier()) {
 						final ASTNode check = getSymbol();
 						temp = fFactory.createPattern(symbol, check, true);
 					} else {
@@ -319,7 +319,7 @@ public class Parser extends Scanner {
 				temp = fFactory.createPattern(null, null);
 			} else {
 				getNextToken();
-				if (fToken == TT_IDENTIFIER) {
+				if (isSymbolIdentifier()) {
 					final ASTNode check = getSymbol();
 					temp = fFactory.createPattern(null, check);
 				} else {
@@ -334,7 +334,7 @@ public class Parser extends Scanner {
 				temp = fFactory.createPattern2(null, null);
 			} else {
 				getNextToken();
-				if (fToken == TT_IDENTIFIER) {
+				if (isSymbolIdentifier()) {
 					final ASTNode check = getSymbol();
 					temp = fFactory.createPattern2(null, check);
 				} else {
@@ -349,7 +349,7 @@ public class Parser extends Scanner {
 				temp = fFactory.createPattern3(null, null);
 			} else {
 				getNextToken();
-				if (fToken == TT_IDENTIFIER) {
+				if (isSymbolIdentifier()) {
 					final ASTNode check = getSymbol();
 					temp = fFactory.createPattern3(null, check);
 				} else {
@@ -364,7 +364,7 @@ public class Parser extends Scanner {
 				temp = fFactory.createPattern(null, null, true);
 			} else {
 				getNextToken();
-				if (fToken == TT_IDENTIFIER) {
+				if (isSymbolIdentifier()) {
 					final ASTNode check = getSymbol();
 					temp = fFactory.createPattern(null, check, true);
 				} else {
@@ -446,6 +446,17 @@ public class Parser extends Scanner {
 		throwSyntaxError("Error in factor at character: '" + fCurrentChar + "' (Token:" + fToken + " \\u"
 				+ Integer.toHexString(fCurrentChar | 0x10000).substring(1) + ")");
 		return null;
+	}
+
+	/**
+	 * The current token is <code>TT_IDENTIFIER</code> and it is not followed by a <code>_</code> &quot;pattern
+	 * character&quot;.
+	 * 
+	 * @return
+	 */
+	private boolean isSymbolIdentifier() {
+		return fToken == TT_IDENTIFIER && fCurrentPosition < fInputString.length
+				&& fInputString[fCurrentPosition] != '_';
 	}
 
 	public INodeParserFactory getFactory() {

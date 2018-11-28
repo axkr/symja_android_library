@@ -230,7 +230,7 @@ public class RulesData implements Serializable {
 	 * @return
 	 */
 	private PatternMatcher addSimplePatternUpRule(final IExpr leftHandSide, final PatternMatcher pmEvaluator) {
-		final int hash = ((IAST) leftHandSide).patternHashCode();
+		final int hash = ((IAST) leftHandSide).topHead().hashCode();
 		if (F.isSystemInitialized && fSimplePatternUpRules.containsEntry(hash, pmEvaluator)) {
 			fSimplePatternUpRules.remove(hash, pmEvaluator);
 		}
@@ -478,7 +478,7 @@ public class RulesData implements Serializable {
 		try {
 			IPatternMatcher pmEvaluator;
 			if ((fSimplePatternUpRules != null) && (expression.isAST())) {
-				final int hash = ((IAST) expression).patternHashCode();
+				final int hash = ((IAST) expression).topHead().hashCode();
 				if (fSimplePatternUpRules.containsKey(hash)) {
 					Set<IPatternMatcher> set = fSimplePatternUpRules.get(hash);
 					if (set != null) {

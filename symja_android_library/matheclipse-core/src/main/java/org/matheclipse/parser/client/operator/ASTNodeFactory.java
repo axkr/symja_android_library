@@ -46,6 +46,7 @@ public class ASTNodeFactory implements INodeParserFactory {
 	 * The set of characters, which could form an operator
 	 * 
 	 */
+	@Override
 	public String getOperatorCharacters() {
 		return DEFAULT_OPERATOR_CHARACTERS;
 	}
@@ -59,6 +60,7 @@ public class ASTNodeFactory implements INodeParserFactory {
 			super(oper, functionName, precedence, grouping);
 		}
 
+		@Override
 		public ASTNode createFunction(final INodeParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
 			if (fOperatorString.equals("@")) {
 				FunctionNode fn = factory.createAST(lhs);
@@ -69,8 +71,30 @@ public class ASTNodeFactory implements INodeParserFactory {
 			if (fOperatorString.equals("@@")) {
 				return fn;
 			}
+			// case "@@@"
 			fn.add(factory.createFunction(factory.createSymbol("List"), factory.createInteger(1)));
 			return fn;
+		}
+	}
+
+	private static class TagSetOperator extends InfixOperator {
+		public TagSetOperator(final String oper, final String functionName, final int precedence, final int grouping) {
+			super(oper, functionName, precedence, grouping);
+		}
+
+		@Override
+		public ASTNode createFunction(final INodeParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
+			if (rhs instanceof FunctionNode) {
+				FunctionNode r = (FunctionNode) rhs;
+				if (r.size() == 3) {
+					if (r.get(0).equals(factory.createSymbol("Set"))) {
+						return factory.createFunction(factory.createSymbol("TagSet"), lhs, r.get(1), r.get(2));
+					} else if (r.get(0).equals(factory.createSymbol("SetDelayed"))) {
+						return factory.createFunction(factory.createSymbol("TagSetDelayed"), lhs, r.get(1), r.get(2));
+					}
+				}
+			}
+			return factory.createFunction(factory.createSymbol("TagSet"), lhs, rhs);
 		}
 	}
 
@@ -79,6 +103,7 @@ public class ASTNodeFactory implements INodeParserFactory {
 			super(oper, functionName, precedence, grouping);
 		}
 
+		@Override
 		public ASTNode createFunction(final INodeParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
 			if (rhs instanceof IntegerNode) {
 				if (lhs instanceof IntegerNode) {
@@ -102,6 +127,7 @@ public class ASTNodeFactory implements INodeParserFactory {
 			super(oper, functionName, precedence);
 		}
 
+		@Override
 		public ASTNode createFunction(final INodeParserFactory factory, final ASTNode argument) {
 			return factory.createFunction(factory.createSymbol("Times"), factory.createInteger(-1), argument);
 		}
@@ -113,6 +139,7 @@ public class ASTNodeFactory implements INodeParserFactory {
 			super(oper, functionName, precedence);
 		}
 
+		@Override
 		public ASTNode createFunction(final INodeParserFactory factory, final ASTNode argument) {
 			return argument;
 		}
@@ -124,12 +151,15 @@ public class ASTNodeFactory implements INodeParserFactory {
 			super(oper, functionName, precedence, grouping);
 		}
 
+		@Override
 		public ASTNode createFunction(final INodeParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
 			return factory.createFunction(factory.createSymbol("Plus"), lhs,
 					factory.createFunction(factory.createSymbol("Times"), factory.createInteger(-1), rhs));
 		}
 	}
 
+	public final static int TAG_SET_PRECEDENCE = 40;
+	
 	public final static int PLUS_PRECEDENCE = 310;
 
 	public final static int TIMES_PRECEDENCE = 400;
@@ -148,12 +178,12 @@ public class ASTNodeFactory implements INodeParserFactory {
 			"Dot", "Not", "PreMinus", "SameQ", "RuleDelayed", "GreaterEqual", "Condition", "Colon", "//", "DivideBy",
 			"Or", "Span", "Equal", "StringJoin", "Unequal", "Decrement", "SubtractFrom", "PrePlus", "RepeatedNull",
 			"UnsameQ", "Rule", "UpSetDelayed", "PreIncrement", "Function", "Greater", "PreDecrement", "Subtract",
-			"SetDelayed", "Alternatives", "AddTo", "Repeated", "ReplaceAll" };
+			"SetDelayed", "Alternatives", "AddTo", "Repeated", "ReplaceAll", "TagSet" };
 
 	static final String[] OPERATOR_STRINGS = { "::", "<<", "?", "//@", "*=", "+", "^=", ";", "@", "/@", "=.", "@@",
 			"@@@", "//.", "<", "&&", "/", "=", "++", "!!", "<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>", ">=",
 			"/;", ":", "//", "/=", "||", ";;", "==", "<>", "!=", "--", "-=", "+", "...", "=!=", "->", "^:=", "++", "&",
-			">", "--", "-", ":=", "|", "+=", "..", "/." };
+			">", "--", "-", ":=", "|", "+=", "..", "/.", "/:" };
 
 	public static final ApplyOperator APPLY_HEAD_OPERATOR = new ApplyOperator("@", "Apply", APPLY_HEAD_PRECEDENCE,
 			InfixOperator.RIGHT_ASSOCIATIVE);
@@ -161,7 +191,10 @@ public class ASTNodeFactory implements INodeParserFactory {
 			InfixOperator.RIGHT_ASSOCIATIVE);
 	public static final ApplyOperator APPLY_LEVEL_OPERATOR = new ApplyOperator("@@@", "Apply", APPLY_PRECEDENCE,
 			InfixOperator.RIGHT_ASSOCIATIVE);
-
+	
+	public static final TagSetOperator TAG_SET_OPERATOR = new TagSetOperator("/:", "TagSet", TAG_SET_PRECEDENCE,
+			InfixOperator.NONE);
+	
 	static final Operator[] OPERATORS = { new InfixOperator("::", "MessageName", 750, InfixOperator.NONE),
 			new PrefixOperator("<<", "Get", 720), new InfixOperator("?", "PatternTest", 680, InfixOperator.NONE),
 			new InfixOperator("//@", "MapAll", 620, InfixOperator.RIGHT_ASSOCIATIVE),
@@ -204,15 +237,15 @@ public class ASTNodeFactory implements INodeParserFactory {
 			new InfixOperator("=!=", "UnsameQ", 290, InfixOperator.NONE),
 			new InfixOperator("->", "Rule", 120, InfixOperator.RIGHT_ASSOCIATIVE),
 			new InfixOperator("^:=", "UpSetDelayed", 40, InfixOperator.RIGHT_ASSOCIATIVE),
-			new PrefixOperator("++", "PreIncrement", 660), 
-			new PostfixOperator("&", "Function", 90),
+			new PrefixOperator("++", "PreIncrement", 660), new PostfixOperator("&", "Function", 90),
 			new InfixOperator(">", "Greater", 290, InfixOperator.NONE), new PrefixOperator("--", "PreDecrement", 660),
 			new SubtractOperator("-", "Subtract", 310, InfixOperator.LEFT_ASSOCIATIVE),
 			new InfixOperator(":=", "SetDelayed", 40, InfixOperator.RIGHT_ASSOCIATIVE),
 			new InfixOperator("|", "Alternatives", 160, InfixOperator.NONE),
 			new InfixOperator("+=", "AddTo", 100, InfixOperator.RIGHT_ASSOCIATIVE),
 			new PostfixOperator("..", "Repeated", 170),
-			new InfixOperator("/.", "ReplaceAll", 110, InfixOperator.LEFT_ASSOCIATIVE) };
+			new InfixOperator("/.", "ReplaceAll", 110, InfixOperator.LEFT_ASSOCIATIVE),
+			TAG_SET_OPERATOR };
 
 	public final static ASTNodeFactory MMA_STYLE_FACTORY = new ASTNodeFactory(false);
 
@@ -269,10 +302,12 @@ public class ASTNodeFactory implements INodeParserFactory {
 	/**
 	 * public Map<String, Operator> getIdentifier2OperatorMap()
 	 */
+	@Override
 	public Map<String, Operator> getIdentifier2OperatorMap() {
 		return fOperatorMap;
 	}
 
+	@Override
 	public Operator get(final String identifier) {
 		return fOperatorMap.get(identifier);
 	}
@@ -280,6 +315,7 @@ public class ASTNodeFactory implements INodeParserFactory {
 	/**
 	 * 
 	 */
+	@Override
 	public Map<String, ArrayList<Operator>> getOperator2ListMap() {
 		return fOperatorTokenStartSet;
 	}
@@ -287,6 +323,7 @@ public class ASTNodeFactory implements INodeParserFactory {
 	/**
 	 * 
 	 */
+	@Override
 	public List<Operator> getOperatorList(final String key) {
 		return fOperatorTokenStartSet.get(key);
 	}
@@ -324,65 +361,86 @@ public class ASTNodeFactory implements INodeParserFactory {
 		return new PostfixOperator(operatorStr, headStr, precedence);
 	}
 
+	@Override
 	public ASTNode createDouble(final String doubleString) {
 		return new FloatNode(doubleString);
 	}
 
+	@Override
 	public FunctionNode createFunction(final SymbolNode head) {
 		return new FunctionNode(head);
 	}
 
+	@Override
 	public FunctionNode createFunction(final SymbolNode head, final ASTNode arg0) {
 		return new FunctionNode(head, arg0);
 	}
 
+	@Override
 	public FunctionNode createFunction(final SymbolNode head, final ASTNode arg1, final ASTNode arg2) {
 		return new FunctionNode(head, arg1, arg2);
+	}
+
+	@Override
+	public FunctionNode createFunction(final SymbolNode head, final ASTNode arg1, final ASTNode arg2,
+			final ASTNode arg3) {
+		return new FunctionNode(head, arg1, arg2, arg3);
 	}
 
 	/**
 	 * Creates a new list with no arguments from the given header object .
 	 */
+	@Override
 	public FunctionNode createAST(final ASTNode headExpr) {
 		return new FunctionNode(headExpr);
 	}
 
+	@Override
 	public IntegerNode createInteger(final String integerString, final int numberFormat) {
 		return new IntegerNode(integerString, numberFormat);
 	}
 
+	@Override
 	public IntegerNode createInteger(final int intValue) {
 		return new IntegerNode(intValue);
 	}
 
+	@Override
 	public FractionNode createFraction(final IntegerNode numerator, final IntegerNode denominator) {
 		return new FractionNode(numerator, denominator);
 	}
 
+	@Override
 	public PatternNode createPattern(final SymbolNode patternName, final ASTNode check) {
 		return new PatternNode(patternName, check);
 	}
 
+	@Override
 	public PatternNode createPattern(final SymbolNode patternName, final ASTNode check, boolean optional) {
 		return new PatternNode(patternName, check, optional);
 	}
 
+	@Override
 	public PatternNode createPattern(final SymbolNode patternName, final ASTNode check, final ASTNode defaultValue) {
 		return new PatternNode(patternName, check, defaultValue);
 	}
 
+	@Override
 	public PatternNode createPattern2(final SymbolNode patternName, final ASTNode check) {
 		return new Pattern2Node(patternName, check);
 	}
 
+	@Override
 	public PatternNode createPattern3(final SymbolNode patternName, final ASTNode check) {
 		return new Pattern3Node(patternName, check);
 	}
 
+	@Override
 	public StringNode createString(final StringBuilder buffer) {
 		return new StringNode(buffer.toString());
 	}
 
+	@Override
 	public SymbolNode createSymbol(final String symbolName, final String context) {
 		String name = symbolName;
 		if (fIgnoreCase) {
@@ -397,10 +455,12 @@ public class ASTNodeFactory implements INodeParserFactory {
 		return new SymbolNode(name);
 	}
 
+	@Override
 	public SymbolNode createSymbol(final String symbolName) {
-		return createSymbol(symbolName, ""); 
+		return createSymbol(symbolName, "");
 	}
 
+	@Override
 	public boolean isValidIdentifier(String identifier) {
 		return true;
 	}

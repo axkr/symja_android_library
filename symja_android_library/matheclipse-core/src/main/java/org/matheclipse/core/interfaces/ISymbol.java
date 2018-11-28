@@ -25,7 +25,7 @@ import org.matheclipse.core.patternmatching.RulesData;
 public interface ISymbol extends IExpr { // Variable<IExpr>
 
 	public static enum RuleType {
-		SET, SET_DELAYED, UPSET, UPSET_DELAYED;
+		SET, SET_DELAYED, TAGSET, TAGSET_DELAYED, UPSET, UPSET_DELAYED;
 	}
 
 	/**
