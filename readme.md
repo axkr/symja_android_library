@@ -209,9 +209,11 @@ If you have any questions about using or developing for this project, send me an
 
 * the complete Symja system is published under the GNU GENERAL PUBLIC LICENSE Version 3.
 
-If you would like to use parts of the system here are the associated licenses:
+If you would like to use parts of the system here are some of the associated licenses:
 
 * the [JAS Java Algebra System](http://krum.rz.uni-mannheim.de/jas/) is published under the (LESSER) GNU GENERAL PUBLIC LICENSE licence. The Java bytecode is dual licenced also under the Apache 2.0 licence to allow usage in Android projects.  
+* the [apfloat project](https://github.com/mtommila/apfloat) is published under the (LESSER) GNU GENERAL PUBLIC LICENSE licence. 
+* the [LogicNG project](https://github.com/logic-ng/LogicNG) is published under the Apache software licence
 * the [Hipparchus Mathematics Library](https://www.hipparchus.org/) is published under the Apache software licence
 * the Symja parser libraries (org.matheclipse.parser* packages) are published under the APACHE LICENSE Version 2.0.
 
