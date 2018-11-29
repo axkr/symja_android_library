@@ -96,7 +96,7 @@ public class RulesData implements Serializable {
 	private OpenIntToIExprHashMap<IExpr> fDefaultValues;
 
 	private Map<String, IStringX> fMessages;
-	
+
 	private Map<IExpr, PatternMatcherEquals> fEqualDownRules;
 
 	private List<IPatternMatcher> fPatternDownRules;
@@ -250,17 +250,13 @@ public class RulesData implements Serializable {
 		Iterator<IExpr> iter;
 		IExpr key;
 		PatternMatcherEquals pmEquals;
-		IAST ast;
-		ISymbol setSymbol;
-		IExpr condition;
 		PatternMatcherAndEvaluator pmEvaluator;
 		if (fEqualUpRules != null && fEqualUpRules.size() > 0) {
 			iter = fEqualUpRules.keySet().iterator();
 			while (iter.hasNext()) {
 				key = iter.next();
 				pmEquals = fEqualUpRules.get(key);
-				setSymbol = pmEquals.getSetSymbol();
-				definitionList.add(F.binaryAST2(setSymbol, key, pmEquals.getRHS()));
+				definitionList.add( pmEquals.getAsAST());
 			}
 		}
 		if (fSimplePatternUpRules != null && fSimplePatternUpRules.size() > 0) {
@@ -274,16 +270,7 @@ public class RulesData implements Serializable {
 						elem = listIter.next();
 						if (elem instanceof PatternMatcherAndEvaluator) {
 							pmEvaluator = (PatternMatcherAndEvaluator) elem;
-							setSymbol = pmEvaluator.getSetSymbol();
-
-							condition = pmEvaluator.getCondition();
-							if (condition != null) {
-								definitionList.add(F.binaryAST2(setSymbol, pmEvaluator.getLHS(),
-										F.Condition(pmEvaluator.getRHS(), condition)));
-							} else {
-								definitionList.add(F.binaryAST2(setSymbol, pmEvaluator.getLHS(), pmEvaluator.getRHS()));
-							}
-
+							definitionList.add(pmEvaluator.getAsAST());
 						}
 					}
 				}
@@ -295,8 +282,7 @@ public class RulesData implements Serializable {
 			while (iter.hasNext()) {
 				key = iter.next();
 				pmEquals = fEqualDownRules.get(key);
-				ast = pmEquals.getAsAST();
-				definitionList.add(ast);
+				definitionList.add(pmEquals.getAsAST());
 			}
 		}
 
@@ -306,8 +292,7 @@ public class RulesData implements Serializable {
 			for (int i = 0; i < length; i++) {
 				if (list[i] instanceof PatternMatcherAndEvaluator) {
 					pmEvaluator = (PatternMatcherAndEvaluator) list[i];
-					ast = pmEvaluator.getAsAST();
-					definitionList.add(ast);
+					definitionList.add(pmEvaluator.getAsAST());
 				}
 			}
 
@@ -519,7 +504,7 @@ public class RulesData implements Serializable {
 		}
 		return fMessages;
 	}
-	
+
 	/**
 	 * @return Returns the equalRules.
 	 */
@@ -576,18 +561,18 @@ public class RulesData implements Serializable {
 	}
 
 	public final IPatternMatcher putDownRule(final IExpr leftHandSide, final IExpr rightHandSide) {
-		return putDownRule(ISymbol.RuleType.SET_DELAYED, false, leftHandSide, rightHandSide,
+		return putDownRule(IPatternMatcher.SET_DELAYED, false, leftHandSide, rightHandSide,
 				PatternMap.DEFAULT_RULE_PRIORITY);
 	}
 
-	public IPatternMatcher putDownRule(final ISymbol.RuleType setSymbol, final boolean equalRule,
-			final IExpr leftHandSide, final IExpr rightHandSide) {
-		return putDownRule(ISymbol.RuleType.SET_DELAYED, false, leftHandSide, rightHandSide,
+	public IPatternMatcher putDownRule(final int setSymbol, final boolean equalRule, final IExpr leftHandSide,
+			final IExpr rightHandSide) {
+		return putDownRule(IPatternMatcher.SET_DELAYED, false, leftHandSide, rightHandSide,
 				PatternMap.DEFAULT_RULE_PRIORITY);
 	}
 
-	public IPatternMatcher putDownRule(final ISymbol.RuleType setSymbol, final boolean equalRule,
-			final IExpr leftHandSide, final IExpr rightHandSide, final int priority) {
+	public IPatternMatcher putDownRule(final int setSymbol, final boolean equalRule, final IExpr leftHandSide,
+			final IExpr rightHandSide, final int priority) {
 		if (equalRule || leftHandSide.isSymbol()) {
 			fEqualDownRules = getEqualDownRules();
 			PatternMatcherEquals pmEquals = new PatternMatcherEquals(setSymbol, leftHandSide, rightHandSide);
@@ -676,7 +661,7 @@ public class RulesData implements Serializable {
 		fDefaultValues.put(pos, expr);
 	}
 
-	public IPatternMatcher putUpRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IAST leftHandSide,
+	public IPatternMatcher putUpRule(final int setSymbol, final boolean equalRule, final IAST leftHandSide,
 			final IExpr rightHandSide) {
 		if (equalRule) {
 			fEqualUpRules = getEqualUpRules();
@@ -700,7 +685,7 @@ public class RulesData implements Serializable {
 
 	}
 
-	public boolean removeRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IExpr leftHandSide) {
+	public boolean removeRule(final int setSymbol, final boolean equalRule, final IExpr leftHandSide) {
 		if (equalRule) {
 			if (fEqualDownRules != null) {
 				return fEqualDownRules.remove(leftHandSide) != null;

@@ -1008,7 +1008,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			if (functionID > ID.UNKNOWN) {
 				switch (functionID) {
 				case ID.HoldPattern:
-					if (lhsPatternAST.isHoldPattern()) {
+				case ID.Literal:
+					if (lhsPatternAST.isHoldPatternOrLiteral()) {
 						return matchExpr(lhsPatternAST.arg1(), lhsEvalExpr, engine, stackMatcher, replaceMode);
 					}
 					break;

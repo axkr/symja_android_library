@@ -350,7 +350,7 @@ public class EvalEngine implements Serializable {
 			fAnswer = F.Null;
 		}
 		ISymbol ans = F.symbol("$ans", Context.GLOBAL_CONTEXT_NAME, null, this);
-		ans.putDownRule(ISymbol.RuleType.SET, true, ans, fAnswer, false);
+		ans.putDownRule(IPatternMatcher.SET, true, ans, fAnswer, false);
 		if (fOutListDisabled) {
 			return;
 		}
@@ -1459,9 +1459,6 @@ public class EvalEngine implements Serializable {
 	}
 
 	private IExpr evalSetAttributesRecursive(IAST ast, boolean noEvaluation, boolean evalNumericFunction, int level) {
-		if (ast.isAST(F.Literal, 2)) {
-			return ast.arg1();
-		}
 		final ISymbol symbol = ast.topHead();
 		if (symbol.isBuiltInSymbol()) {
 			// call so that attributes may be set in

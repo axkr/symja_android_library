@@ -14,7 +14,6 @@ import org.matheclipse.core.interfaces.ExprUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.interfaces.ISymbol.RuleType;
 
 /**
  * Matches a given expression by simply comparing the left-hand-side expression of this pattern matcher with the
@@ -36,10 +35,10 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 	protected IExpr fRightHandSide;
 
 	/**
-	 * Contains the "set" symbol used to define this pattern matcher
+	 * Contains the flag for the "set" symbol used to define this pattern matcher
 	 * 
 	 */
-	private ISymbol.RuleType fSetSymbol;
+	private int fSetFlags;
 
 	/**
 	 * Public constructor for serialization.
@@ -57,10 +56,10 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 	 * @param rightHandSide
 	 *            the result which should be evaluated if the "pattern-matching" succeeds
 	 */
-	public PatternMatcherEquals(final ISymbol.RuleType setSymbol, @Nonnull final IExpr leftHandSide,
+	public PatternMatcherEquals(final int setSymbol, @Nonnull final IExpr leftHandSide,
 			@Nonnull final IExpr rightHandSide) {
 		super(leftHandSide);
-		fSetSymbol = setSymbol;
+		fSetFlags = setSymbol;
 		fRightHandSide = rightHandSide;
 	}
 
@@ -78,7 +77,7 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 	public Object clone() throws CloneNotSupportedException {
 		PatternMatcherEquals v = (PatternMatcherEquals) super.clone();
 		v.fRightHandSide = fRightHandSide;
-		v.fSetSymbol = fSetSymbol;
+		v.fSetFlags = fSetFlags;
 		return v;
 	}
 
@@ -107,25 +106,47 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 	 * @return <code>null</code> if no symbol was defined
 	 */
 	public ISymbol getSetSymbol() {
-		if (fSetSymbol == ISymbol.RuleType.SET_DELAYED) {
+		if (isFlagOn(SET_DELAYED)) {
 			return F.SetDelayed;
 		}
-		if (fSetSymbol == ISymbol.RuleType.SET) {
+		if (isFlagOn(SET)) {
 			return F.Set;
 		}
-		if (fSetSymbol == ISymbol.RuleType.UPSET_DELAYED) {
+		if (isFlagOn(UPSET_DELAYED)) {
 			return F.UpSetDelayed;
 		}
-		if (fSetSymbol == ISymbol.RuleType.UPSET) {
+		if (isFlagOn(UPSET)) {
 			return F.UpSet;
 		}
-		if (fSetSymbol == ISymbol.RuleType.TAGSET_DELAYED) {
+		if (isFlagOn(TAGSET_DELAYED)) {
 			return F.TagSetDelayed;
 		}
-		if (fSetSymbol == ISymbol.RuleType.TAGSET) {
+		if (isFlagOn(TAGSET)) {
 			return F.TagSet;
 		}
 		return null;
+	}
+
+	/**
+	 * Are the given flags disabled ?
+	 * 
+	 * @param flags
+	 * @return
+	 * @see IAST#NO_FLAG
+	 */
+	public final boolean isFlagOff(final int i) {
+		return (fSetFlags & i) == 0;
+	}
+
+	/**
+	 * Are the given flags enabled ?
+	 * 
+	 * @param flags
+	 * @return
+	 * @see IAST#NO_FLAG
+	 */
+	public final boolean isFlagOn(int i) {
+		return (fSetFlags & i) == i;
 	}
 
 	/** {@inheritDoc} */
@@ -170,22 +191,22 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 	public int getPatternHash() {
 		return 0;
 	}
-	
+
 	@Override
 	public int getLHSPriority() {
 		return 0;
 	}
-
+ 
 	public IAST getAsAST() {
-		ISymbol setSymbol;
-		// IAST ast;
-		setSymbol = getSetSymbol();
-		return F.binaryAST2(setSymbol, fLhsPatternExpr, getRHS());
-		//
-		// ast = F.ast(setSymbol);
-		// ast.add(fLhsPatternExpr);
-		// ast.add(getRHS());
-		// return ast;
+		ISymbol setSymbol = getSetSymbol();
+		IAST temp = F.binaryAST2(setSymbol, getLHS(), getRHS());
+		if (isFlagOn(HOLDPATTERN)) {
+			return F.HoldPattern(temp);
+		}
+		if (isFlagOn(LITERAL)) {
+			return F.Literal(temp);
+		}
+		return temp;
 	}
 
 	@Override
@@ -195,14 +216,14 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
-		objectOutput.writeShort(fSetSymbol.ordinal());
+		objectOutput.writeShort(fSetFlags);
 		objectOutput.writeObject(fLhsPatternExpr);
 		objectOutput.writeObject(fRightHandSide);
 	}
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
-		fSetSymbol = RuleType.values()[objectInput.readShort()];
+		fSetFlags = objectInput.readShort();
 		fLhsPatternExpr = (IExpr) objectInput.readObject();
 		fRightHandSide = (IExpr) objectInput.readObject();
 	}
@@ -216,7 +237,7 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + ((fSetSymbol == null) ? 0 : fSetSymbol.hashCode());
+		result = prime * result + fSetFlags;
 		return result;
 	}
 
@@ -226,7 +247,7 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 			if (!super.equals(obj)) {
 				return false;
 			}
-			return fSetSymbol == ((PatternMatcherEquals) obj).fSetSymbol;
+			return fSetFlags == ((PatternMatcherEquals) obj).fSetFlags;
 		}
 		return false;
 	}

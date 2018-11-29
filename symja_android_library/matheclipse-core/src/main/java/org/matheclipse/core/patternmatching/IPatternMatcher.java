@@ -15,6 +15,54 @@ import org.matheclipse.core.interfaces.IExpr;
  * Interface for the pattern matcher
  */
 public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Serializable {// Comparable<IPatternMatcher>,
+
+	public final static int NOFLAG = 0x0000;
+	
+	/**
+	 * This rule is defined with the <code>Set[]</code>  function
+	 */
+	public final static int SET = 0x0001;
+	
+	/**
+	 * This rule is defined with the <code>SetDelayed[]</code>  function
+	 */
+	public final static int SET_DELAYED = 0x0002;
+	
+	/**
+	 * This rule is defined with the <code>Set[]</code>  function
+	 */
+	public final static int TAGSET = 0x0004;
+	
+	/**
+	 * This rule is defined with the <code>Set[]</code>  function
+	 */
+	public final static int TAGSET_DELAYED = 0x0008;
+	
+	/**
+	 * This rule is defined with the <code>Set[]</code>  function
+	 */
+	public final static int UPSET = 0x0010;
+	
+	/**
+	 * This rule is defined with the <code>Set[]</code>  function
+	 */
+	public final static int UPSET_DELAYED = 0x0020;
+	
+	/**
+	 * This rules left-hand-side is wrapped with a <code>Literal[]</code>  function
+	 */
+	public final static int LITERAL = 0x1000;
+	
+	/**
+	 * This rules left-hand-side is wrapped with a <code>HoldPattern[]</code>  function
+	 */
+	public final static int HOLDPATTERN = 0x2000;
+	
+	/**
+	 * Serialization mask
+	 */
+	public final static int SERIALIZATION_MASK = 0x8000;
+	
 	public static class EquivalenceComparator implements Comparator<IPatternMatcher>, Serializable {
 
 		private static final long serialVersionUID = 8357661139299702326L;

@@ -1495,11 +1495,12 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is the <code>HoldPattern</code> function <code>HoldPattern[&lt;expression&gt;]</code>
+	 * Test if this expression is the <code>HoldPattern</code> function <code>HoldPattern[&lt;expression&gt;]</code> or
+	 * the deprecated <code>Literal[&lt;expression&gt;]</code> form.
 	 * 
 	 * @return
 	 */
-	default boolean isHoldPattern() {
+	default boolean isHoldPatternOrLiteral() {
 		return false;
 	}
 
@@ -2535,7 +2536,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isTrigFunction() {
 		return false;
 	}
-	
+
 	/**
 	 * Test if this expression equals the symbol <code>True</code>.
 	 * 

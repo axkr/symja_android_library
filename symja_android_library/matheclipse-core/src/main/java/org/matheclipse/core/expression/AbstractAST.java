@@ -1893,8 +1893,8 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isHoldPattern() {
-		return isSameHead(F.HoldPattern, 2);
+	public final boolean isHoldPatternOrLiteral() {
+		return isSameHead(F.HoldPattern, 2)||isSameHead(F.Literal, 2);
 	}
 
 	/** {@inheritDoc} */

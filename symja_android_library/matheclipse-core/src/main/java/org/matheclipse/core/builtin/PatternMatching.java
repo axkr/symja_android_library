@@ -44,7 +44,7 @@ import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.interfaces.ISymbol.RuleType;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -69,6 +69,7 @@ public final class PatternMatching {
 		F.HoldPattern.setEvaluator(new HoldPattern());
 		F.Identity.setEvaluator(new Identity());
 		F.Information.setEvaluator(new Information());
+		F.Literal.setEvaluator(new Literal());
 		F.MessageName.setEvaluator(new MessageName());
 		F.Optional.setEvaluator(Optional.CONST);
 		F.Pattern.setEvaluator(Pattern.CONST);
@@ -84,7 +85,7 @@ public final class PatternMatching {
 		F.UpSet.setEvaluator(new UpSet());
 		F.UpSetDelayed.setEvaluator(new UpSetDelayed());
 	}
- 
+
 	private final static class Begin extends AbstractCoreFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -624,7 +625,7 @@ public final class PatternMatching {
 	 * {x,y,z}
 	 * </pre>
 	 */
-	private final static class HoldPattern extends AbstractCoreFunctionEvaluator {
+	private static class HoldPattern extends AbstractCoreFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -646,6 +647,27 @@ public final class PatternMatching {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
 
+	}
+
+	/**
+	 * 
+	 * @deprecated use {@link HoldPattern}
+	 */
+	private final static class Literal extends HoldPattern {
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.size() == 2) {
+				IExpr arg1 = ast.arg1();
+				if (arg1.isAST()) {
+					IExpr temp = engine.evalHoldPattern((IAST) arg1);
+					if (temp == arg1) {
+						return F.NIL;
+					}
+					return F.Literal(temp);
+				}
+			}
+			return F.NIL;
+		}
 	}
 
 	private final static class Identity extends AbstractCoreFunctionEvaluator {
@@ -1111,6 +1133,7 @@ public final class PatternMatching {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
+
 			final IExpr leftHandSide = ast.arg1();
 			final IExpr head = leftHandSide.head();
 			if (head.isBuiltInSymbol()) {
@@ -1131,10 +1154,8 @@ public final class PatternMatching {
 
 		private static Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode,
 				final EvalEngine engine) throws RuleCreationError {
-
-			if (leftHandSide.isAST()) {
-				leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
-			}
+			int[] flags = new int[] { IPatternMatcher.NOFLAG };
+			leftHandSide = evalLHS(leftHandSide, flags, engine);
 			try {
 				rightHandSide = engine.evaluate(rightHandSide);
 			} catch (final ConditionException e) {
@@ -1153,12 +1174,12 @@ public final class PatternMatching {
 					} else {
 						message = F.stringx(rightHandSide.toString());
 					}
-					symbol.putMessage(RuleType.SET, messageName, message);
+					symbol.putMessage(IPatternMatcher.SET, messageName, message);
 					return new Object[] { null, message };
 				}
 			}
 
-			return setDownRule(leftHandSide, rightHandSide, packageMode);
+			return setDownRule(flags[0], leftHandSide, rightHandSide, packageMode);
 		}
 
 		@Override
@@ -1222,7 +1243,7 @@ public final class PatternMatching {
 	 * f(-3)
 	 * </pre>
 	 */
-	private final static class SetDelayed extends AbstractCoreFunctionEvaluator  {
+	private final static class SetDelayed extends AbstractCoreFunctionEvaluator {
 
 		// public final static SetDelayed CONST = new SetDelayed();
 
@@ -1239,11 +1260,9 @@ public final class PatternMatching {
 
 		private static Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode,
 				final EvalEngine engine) throws RuleCreationError {
-			if (leftHandSide.isAST()
-					&& (((IAST) leftHandSide).getEvalFlags() & IAST.IS_FLATTENED_OR_SORTED_MASK) == IAST.NO_FLAG) {
-				leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
-			}
-			return setDelayedDownRule(leftHandSide, rightHandSide, packageMode);
+			int[] flags = new int[] { IPatternMatcher.NOFLAG };
+			leftHandSide = evalLHS(leftHandSide, flags, engine);
+			return setDelayedDownRule(leftHandSide, flags[0], rightHandSide, packageMode);
 		}
 
 		@Override
@@ -1253,11 +1272,11 @@ public final class PatternMatching {
 
 	}
 
-	public static Object[] setDownRule(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode) {
+	public static Object[] setDownRule(int flags, IExpr leftHandSide, IExpr rightHandSide, boolean packageMode) {
 		final Object[] result = new Object[] { null, rightHandSide };
 		if (leftHandSide.isAST()) {
 			final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
-			result[0] = lhsSymbol.putDownRule(ISymbol.RuleType.SET, false, leftHandSide, rightHandSide, packageMode);
+			result[0] = lhsSymbol.putDownRule(IPatternMatcher.SET, false, leftHandSide, rightHandSide, packageMode);
 			return result;
 		}
 		if (leftHandSide.isSymbol()) {
@@ -1267,19 +1286,21 @@ public final class PatternMatching {
 				lhsSymbol.set(rightHandSide);
 				return result;
 			}
-			result[0] = lhsSymbol.putDownRule(ISymbol.RuleType.SET, true, leftHandSide, rightHandSide, packageMode);
+			result[0] = lhsSymbol.putDownRule(flags | IPatternMatcher.SET, true, leftHandSide, rightHandSide,
+					packageMode);
 			return result;
 		}
 
 		throw new RuleCreationError(leftHandSide);
 	}
 
-	public static Object[] setDelayedDownRule(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode) {
+	private static Object[] setDelayedDownRule(IExpr leftHandSide, int flags, IExpr rightHandSide,
+			boolean packageMode) {
 		final Object[] result = new Object[] { null, rightHandSide };
 		if (leftHandSide.isAST()) {
 			final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
 
-			result[0] = lhsSymbol.putDownRule(ISymbol.RuleType.SET_DELAYED, false, leftHandSide, rightHandSide,
+			result[0] = lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, false, leftHandSide, rightHandSide,
 					packageMode);
 			return result;
 		}
@@ -1289,7 +1310,7 @@ public final class PatternMatching {
 				lhsSymbol.set(rightHandSide);
 				return result;
 			}
-			result[0] = lhsSymbol.putDownRule(ISymbol.RuleType.SET_DELAYED, true, leftHandSide, rightHandSide,
+			result[0] = lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, true, leftHandSide, rightHandSide,
 					packageMode);
 			return result;
 		}
@@ -1306,7 +1327,7 @@ public final class PatternMatching {
 		if (leftHandSide.isAST()) {
 			final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
 
-			lhsSymbol.putDownRule(ISymbol.RuleType.SET_DELAYED, false, leftHandSide, rightHandSide, priority,
+			lhsSymbol.putDownRule(IPatternMatcher.SET_DELAYED, false, leftHandSide, rightHandSide, priority,
 					packageMode);
 			return;
 		}
@@ -1316,7 +1337,7 @@ public final class PatternMatching {
 				lhsSymbol.set(rightHandSide);
 				return;
 			}
-			lhsSymbol.putDownRule(ISymbol.RuleType.SET_DELAYED, true, leftHandSide, rightHandSide, priority,
+			lhsSymbol.putDownRule(IPatternMatcher.SET_DELAYED, true, leftHandSide, rightHandSide, priority,
 					packageMode);
 			return;
 		}
@@ -1328,7 +1349,7 @@ public final class PatternMatching {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 4);
-			
+
 			IExpr arg1 = ast.arg1();
 			if (arg1.isSymbol() && !arg1.isBuiltInSymbol()) {
 				ISymbol symbol = (ISymbol) arg1;
@@ -1356,9 +1377,12 @@ public final class PatternMatching {
 				boolean packageMode, EvalEngine engine) throws RuleCreationError {
 			final Object[] result = new Object[2];
 
-			if (leftHandSide.isAST()) {
-				leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
-			}
+			// if (leftHandSide.isAST()) {
+			// leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
+			// }
+			int[] flags = new int[] { IPatternMatcher.NOFLAG };
+			leftHandSide = evalLHS(leftHandSide, flags, engine);
+
 			try {
 				rightHandSide = engine.evaluate(rightHandSide);
 			} catch (final ConditionException e) {
@@ -1371,7 +1395,7 @@ public final class PatternMatching {
 			result[1] = rightHandSide;
 
 			IAST lhsAST = Validate.checkASTUpRuleType(leftHandSide);
-			result[0] = tagSetSymbol.putUpRule(ISymbol.RuleType.TAGSET, false, lhsAST, rightHandSide);
+			result[0] = tagSetSymbol.putUpRule(flags[0] | IPatternMatcher.TAGSET, false, lhsAST, rightHandSide);
 			return result;
 		}
 
@@ -1405,15 +1429,18 @@ public final class PatternMatching {
 				boolean packageMode, EvalEngine engine) throws RuleCreationError {
 			final Object[] result = new Object[2];
 
-			if (leftHandSide.isAST()
-					&& (((IAST) leftHandSide).getEvalFlags() & IAST.IS_FLATTENED_OR_SORTED_MASK) == IAST.NO_FLAG) {
-				leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
-			}
+			// if (leftHandSide.isAST()
+			// && (((IAST) leftHandSide).getEvalFlags() & IAST.IS_FLATTENED_OR_SORTED_MASK) == IAST.NO_FLAG) {
+			// leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
+			// }
+			int[] flags = new int[] { IPatternMatcher.NOFLAG };
+			leftHandSide = evalLHS(leftHandSide, flags, engine);
+
 			result[0] = null;
 			result[1] = rightHandSide;
 
 			IAST lhsAST = Validate.checkASTUpRuleType(leftHandSide);
-			result[0] = lhsSymbol.putUpRule(ISymbol.RuleType.TAGSET_DELAYED, false, lhsAST, rightHandSide);
+			result[0] = lhsSymbol.putUpRule(flags[0] | IPatternMatcher.TAGSET_DELAYED, false, lhsAST, rightHandSide);
 			return result;
 		}
 
@@ -1567,7 +1594,7 @@ public final class PatternMatching {
 		public void removeRule(IExpr leftHandSide, boolean packageMode) {
 			if (leftHandSide.isAST()) {
 				final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
-				if (!lhsSymbol.removeRule(ISymbol.RuleType.SET, false, leftHandSide, packageMode)) {
+				if (!lhsSymbol.removeRule(IPatternMatcher.SET, false, leftHandSide, packageMode)) {
 					printAssignmentNotFound(leftHandSide);
 				}
 				return;
@@ -1575,7 +1602,7 @@ public final class PatternMatching {
 			if (leftHandSide.isSymbol()) {
 				final ISymbol lhsSymbol = (ISymbol) leftHandSide;
 
-				if (!lhsSymbol.removeRule(ISymbol.RuleType.SET, true, leftHandSide, packageMode)) {
+				if (!lhsSymbol.removeRule(IPatternMatcher.SET, true, leftHandSide, packageMode)) {
 					printAssignmentNotFound(leftHandSide);
 				}
 				return;
@@ -1595,7 +1622,7 @@ public final class PatternMatching {
 
 	}
 
-	private final static class UpSet extends AbstractCoreFunctionEvaluator   {
+	private final static class UpSet extends AbstractCoreFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1622,9 +1649,9 @@ public final class PatternMatching {
 				EvalEngine engine) throws RuleCreationError {
 			final Object[] result = new Object[2];
 
-			if (leftHandSide.isAST()) {
-				leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
-			}
+			int[] flags = new int[] { IPatternMatcher.NOFLAG };
+			leftHandSide = evalLHS(leftHandSide, flags, engine);
+
 			try {
 				rightHandSide = engine.evaluate(rightHandSide);
 			} catch (final ConditionException e) {
@@ -1648,7 +1675,7 @@ public final class PatternMatching {
 				} else {
 					lhsSymbol = lhsAST.get(i).topHead();
 				}
-				result[0] = lhsSymbol.putUpRule(ISymbol.RuleType.UPSET, false, lhsAST, rightHandSide);
+				result[0] = lhsSymbol.putUpRule(flags[0] | IPatternMatcher.UPSET, false, lhsAST, rightHandSide);
 			}
 			return result;
 		}
@@ -1677,10 +1704,13 @@ public final class PatternMatching {
 				EvalEngine engine) throws RuleCreationError {
 			final Object[] result = new Object[2];
 
-			if (leftHandSide.isAST()
-					&& (((IAST) leftHandSide).getEvalFlags() & IAST.IS_FLATTENED_OR_SORTED_MASK) == IAST.NO_FLAG) {
-				leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
-			}
+			// if (leftHandSide.isAST()
+			// && (((IAST) leftHandSide).getEvalFlags() & IAST.IS_FLATTENED_OR_SORTED_MASK) == IAST.NO_FLAG) {
+			// leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
+			// }
+			int[] flags = new int[] { IPatternMatcher.NOFLAG };
+			leftHandSide = evalLHS(leftHandSide, flags, engine);
+
 			result[0] = null;
 			result[1] = rightHandSide;
 
@@ -1697,7 +1727,7 @@ public final class PatternMatching {
 				} else {
 					lhsSymbol = lhsAST.get(i).topHead();
 				}
-				result[0] = lhsSymbol.putUpRule(ISymbol.RuleType.UPSET_DELAYED, false, lhsAST, rightHandSide);
+				result[0] = lhsSymbol.putUpRule(flags[0] | IPatternMatcher.UPSET_DELAYED, false, lhsAST, rightHandSide);
 			}
 			return result;
 		}
@@ -1707,6 +1737,18 @@ public final class PatternMatching {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
 
+	}
+
+	private static IExpr evalLHS(IExpr leftHandSide, int[] flags, EvalEngine engine) {
+		if (leftHandSide.isAST()
+				&& (((IAST) leftHandSide).getEvalFlags() & IAST.IS_FLATTENED_OR_SORTED_MASK) == IAST.NO_FLAG) {
+			if (leftHandSide.isHoldPatternOrLiteral()) {
+				flags[0] = leftHandSide.isAST(F.HoldPattern, 2) ? IPatternMatcher.HOLDPATTERN : IPatternMatcher.LITERAL;
+				return leftHandSide.first();
+			}
+			return engine.evalHoldPattern((IAST) leftHandSide);
+		}
+		return leftHandSide;
 	}
 
 	public static IExpr evaluatePackage(final List<ASTNode> node, final EvalEngine engine) {

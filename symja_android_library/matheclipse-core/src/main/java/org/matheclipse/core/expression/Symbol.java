@@ -31,7 +31,6 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.interfaces.ISymbol.RuleType;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcher;
@@ -770,15 +769,15 @@ public class Symbol implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IPatternMatcher putDownRule(final ISymbol.RuleType symbol, final boolean equalRule,
+	public final IPatternMatcher putDownRule(final int setSymbol, final boolean equalRule,
 			final IExpr leftHandSide, final IExpr rightHandSide, boolean packageMode) {
-		return putDownRule(symbol, equalRule, leftHandSide, rightHandSide, PatternMap.DEFAULT_RULE_PRIORITY,
+		return putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, PatternMap.DEFAULT_RULE_PRIORITY,
 				packageMode);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final IPatternMatcher putDownRule(final ISymbol.RuleType setSymbol, final boolean equalRule,
+	public final IPatternMatcher putDownRule(final int setSymbol, final boolean equalRule,
 			final IExpr leftHandSide, final IExpr rightHandSide, final int priority, boolean packageMode) {
 		EvalEngine engine = EvalEngine.get();
 		if (!packageMode) {
@@ -812,7 +811,7 @@ public class Symbol implements ISymbol, Serializable {
 		return F.NIL;
 	}
 
-	public void putMessage(final RuleType setSymbol, String messageName, IStringX message) {
+	public void putMessage(final int setSymbol, String messageName, IStringX message) {
 		if (fRulesData == null) {
 			fRulesData = new RulesData(EvalEngine.get().getContext());
 		}
@@ -821,14 +820,14 @@ public class Symbol implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IPatternMatcher putUpRule(final ISymbol.RuleType symbol, boolean equalRule, IAST leftHandSide,
+	public final IPatternMatcher putUpRule(final int setSymbol, boolean equalRule, IAST leftHandSide,
 			IExpr rightHandSide) {
-		return putUpRule(symbol, equalRule, leftHandSide, rightHandSide, PatternMap.DEFAULT_RULE_PRIORITY);
+		return putUpRule(setSymbol, equalRule, leftHandSide, rightHandSide, PatternMap.DEFAULT_RULE_PRIORITY);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final IPatternMatcher putUpRule(final ISymbol.RuleType setSymbol, final boolean equalRule,
+	public final IPatternMatcher putUpRule(final int setSymbol, final boolean equalRule,
 			final IAST leftHandSide, final IExpr rightHandSide, final int priority) {
 		EvalEngine engine = EvalEngine.get();
 		if (!engine.isPackageMode()) {
@@ -971,7 +970,7 @@ public class Symbol implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean removeRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IExpr leftHandSide,
+	public final boolean removeRule(final int setSymbol, final boolean equalRule, final IExpr leftHandSide,
 			boolean packageMode) {
 		if (!packageMode) {
 			if (isLocked(packageMode)) {

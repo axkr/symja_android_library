@@ -6,6 +6,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.ExprUtil;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
 
 /**
@@ -130,10 +131,10 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
 		if (fRulesData == null) {
 			fRulesData = new RulesData(Context.SYSTEM);
 			if (fCondition != null) {
-				fRulesData.putDownRule(ISymbol.RuleType.SET_DELAYED, false, F.List(fLHSPattern1, fLHSPattern2),
+				fRulesData.putDownRule(IPatternMatcher.SET_DELAYED, false, F.List(fLHSPattern1, fLHSPattern2),
 						F.Condition(fRHS, fCondition));
 			} else {
-				fRulesData.putDownRule(ISymbol.RuleType.SET_DELAYED, false, F.List(fLHSPattern1, fLHSPattern2), fRHS);
+				fRulesData.putDownRule(IPatternMatcher.SET_DELAYED, false, F.List(fLHSPattern1, fLHSPattern2), fRHS);
 			}
 		}
 		return fRulesData;

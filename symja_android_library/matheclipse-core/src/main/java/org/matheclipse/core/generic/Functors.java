@@ -18,6 +18,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
 import org.matheclipse.core.patternmatching.PatternMatcherList;
 
@@ -282,9 +283,9 @@ public class Functors {
 				if (rule.arg1().isOrderlessAST() || rule.arg1().isFlatAST()) {
 					if (rule.isRuleDelayed()) {
 						matchers.add(
-								new PatternMatcherAndEvaluator(ISymbol.RuleType.SET_DELAYED, rule.arg1(), rule.arg2()));
+								new PatternMatcherAndEvaluator(IPatternMatcher.SET_DELAYED, rule.arg1(), rule.arg2()));
 					} else {
-						matchers.add(new PatternMatcherAndEvaluator(ISymbol.RuleType.SET, rule.arg1(),
+						matchers.add(new PatternMatcherAndEvaluator(IPatternMatcher.SET, rule.arg1(),
 								evalOneIdentity(rule.arg2())));
 					}
 					return;
@@ -293,9 +294,9 @@ public class Functors {
 			}
 		} else {
 			if (rule.isRuleDelayed()) {
-				matchers.add(new PatternMatcherAndEvaluator(ISymbol.RuleType.SET_DELAYED, rule.arg1(), rule.arg2()));
+				matchers.add(new PatternMatcherAndEvaluator(IPatternMatcher.SET_DELAYED, rule.arg1(), rule.arg2()));
 			} else {
-				matchers.add(new PatternMatcherAndEvaluator(ISymbol.RuleType.SET, rule.arg1(),
+				matchers.add(new PatternMatcherAndEvaluator(IPatternMatcher.SET, rule.arg1(),
 						evalOneIdentity(rule.arg2())));
 			}
 		}
@@ -308,9 +309,9 @@ public class Functors {
 			if (temp == null) {
 				if (rule.arg1().isOrderlessAST() || rule.arg1().isFlatAST()) {
 					if (rule.isRuleDelayed()) {
-						matchers.add(new PatternMatcherList(ISymbol.RuleType.SET_DELAYED, rule.arg1(), rule.arg2()));
+						matchers.add(new PatternMatcherList(IPatternMatcher.SET_DELAYED, rule.arg1(), rule.arg2()));
 					} else {
-						matchers.add(new PatternMatcherList(ISymbol.RuleType.SET, rule.arg1(),
+						matchers.add(new PatternMatcherList(IPatternMatcher.SET, rule.arg1(),
 								evalOneIdentity(rule.arg2())));
 					}
 					return;
@@ -319,9 +320,9 @@ public class Functors {
 			}
 		} else {
 			if (rule.isRuleDelayed()) {
-				matchers.add(new PatternMatcherList(ISymbol.RuleType.SET_DELAYED, rule.arg1(), rule.arg2()));
+				matchers.add(new PatternMatcherList(IPatternMatcher.SET_DELAYED, rule.arg1(), rule.arg2()));
 			} else {
-				matchers.add(new PatternMatcherList(ISymbol.RuleType.SET, rule.arg1(), evalOneIdentity(rule.arg2())));
+				matchers.add(new PatternMatcherList(IPatternMatcher.SET, rule.arg1(), evalOneIdentity(rule.arg2())));
 			}
 		}
 	}

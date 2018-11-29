@@ -42,7 +42,6 @@ import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.interfaces.ISymbol.RuleType;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.visit.ModuleReplaceAll;
@@ -1522,11 +1521,11 @@ public final class Programming {
 							} else {
 								if (rightHandSide.isList()) {
 									IExpr res = Programming.assignPart(temp, part, 2, (IAST) rightHandSide, 1, engine);
-									symbol.putDownRule(RuleType.SET, true, symbol, res, false);
+									symbol.putDownRule(IPatternMatcher.SET, true, symbol, res, false);
 									return rightHandSide;
 								} else {
 									IExpr res = Programming.assignPart(temp, part, 2, rightHandSide, engine);
-									symbol.putDownRule(RuleType.SET, true, symbol, res, false);
+									symbol.putDownRule(IPatternMatcher.SET, true, symbol, res, false);
 									return rightHandSide;
 								}
 							}
