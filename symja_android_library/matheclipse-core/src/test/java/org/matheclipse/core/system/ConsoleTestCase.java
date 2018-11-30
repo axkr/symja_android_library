@@ -1,7 +1,9 @@
 package org.matheclipse.core.system;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 
 import org.matheclipse.core.eval.Console;
 
@@ -16,17 +18,18 @@ public class ConsoleTestCase extends TestCase {
 	}
 
 	private void check(String[] args, String result) {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		PrintStream ps = new PrintStream(baos);
-		PrintStream old = System.out;
-		System.setOut(ps);
+		StringWriter outWriter = new StringWriter();
+		// writer for standard outrput
+		PrintWriter stdout = new PrintWriter(outWriter, true);
+		// writer for errors
+		PrintWriter stderr = new PrintWriter(new OutputStreamWriter(System.err, StandardCharsets.UTF_8), true);
 
-		Console.main(args);
+		Console.runConsole(args, stdout, stderr);
 
-		System.out.flush();
-		System.setOut(old);
-		assertEquals(baos.toString(), //
+		assertEquals(outWriter.toString(), //
 				result);
+		stdout.close();
+		stderr.close();
 	}
 
 	public void test001() {

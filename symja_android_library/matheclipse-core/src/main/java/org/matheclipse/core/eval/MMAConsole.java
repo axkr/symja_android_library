@@ -73,21 +73,29 @@ public class MMAConsole {
 	private static int COUNTER = 1;
 
 	/**
-	 * See: <a href="https://stackoverflow.com/a/20387039/24819">Printing out unicode from Java code issue in windows console</a>
+	 * See: <a href="https://stackoverflow.com/a/20387039/24819">Printing out unicode from Java code issue in windows
+	 * console</a>
 	 */
 	private static PrintWriter stdout = new PrintWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8),
 			true);
 	/**
-	 * See: <a href="https://stackoverflow.com/a/20387039/24819">Printing out unicode from Java code issue in windows console</a>
+	 * See: <a href="https://stackoverflow.com/a/20387039/24819">Printing out unicode from Java code issue in windows
+	 * console</a>
 	 */
 	private static PrintWriter stderr = new PrintWriter(new OutputStreamWriter(System.err, StandardCharsets.UTF_8),
 			true);
-	
+
 	static {
 		// distinguish between lower- and uppercase identifiers
 		Config.PARSER_USE_LOWERCASE_SYMBOLS = false;
 		F.initSymbols(null, null, true);
 
+	}
+
+	public static void runConsole(final String args[], PrintWriter out, PrintWriter err) {
+		stdout = out;
+		stderr = err;
+		main(args);
 	}
 
 	public static void main(final String args[]) {
