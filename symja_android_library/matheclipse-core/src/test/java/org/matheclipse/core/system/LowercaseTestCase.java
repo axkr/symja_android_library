@@ -722,6 +722,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"testit(x) gives x^2");
 		check("testit(x_) :=  x^2 ", //
 				"");
+		check("xxx", //
+				"xxx");
 		check("testit(12)", //
 				"144");
 		check("EndPackage( )", //
@@ -735,6 +737,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"");
 		check("testit(12)", //
 				"144");
+		check("xxx", //
+				"xxx");
 	}
 
 	public void testBeginPackageNested() {

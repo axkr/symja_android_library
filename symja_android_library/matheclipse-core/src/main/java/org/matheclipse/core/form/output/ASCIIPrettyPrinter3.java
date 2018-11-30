@@ -1,6 +1,6 @@
 package org.matheclipse.core.form.output;
 
-import java.io.PrintStream;
+import java.io.PrintWriter;
 
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.expression.F;
@@ -285,7 +285,7 @@ public class ASCIIPrettyPrinter3 {
 	 * @param prefix
 	 *            a prefix which should be placed before the <code>outputExpression</code>
 	 */
-	public static void prettyPrinter(PrintStream out, String[] outputExpression, String prefix) {
+	public static void prettyPrinter(PrintWriter out, String[] outputExpression, String prefix) {
 		if (outputExpression == null) {
 			out.println(prefix);
 		} else {
