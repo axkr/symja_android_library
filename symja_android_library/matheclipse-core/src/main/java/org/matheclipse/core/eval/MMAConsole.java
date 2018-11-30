@@ -143,7 +143,7 @@ public class MMAConsole {
 
 		while (true) {
 			try {
-				inputExpression = console.readString(stdout, "▶    ");
+				inputExpression = console.readString(stdout, ">> ");
 				if (inputExpression != null) {
 					trimmedInput = inputExpression.trim();
 					if (trimmedInput.length() >= 4 && trimmedInput.charAt(0) == '/') {
