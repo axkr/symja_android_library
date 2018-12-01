@@ -580,14 +580,7 @@ public class MMAConsole {
 						try {
 							IAST show = (IAST) outExpr;
 							if (show.size() > 1 && show.arg1().isASTSizeGE(F.Graphics, 2)) {
-								StringBuilder stw = new StringBuilder();
-								Show2SVG.graphicsToSVG(show.getAST(1), stw);
-								File temp = File.createTempFile("tempfile", ".svg");
-								BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
-								bw.write(stw.toString());
-								bw.close();
-								Desktop.getDesktop().open(temp);
-								return temp.toString();
+								return Console.openSVGOnDesktop(show);
 							}
 						} catch (Exception ex) {
 							if (Config.SHOW_STACKTRACE) {
