@@ -6,6 +6,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IStringX;
@@ -79,8 +80,23 @@ public final class ContextPath {
 		return result;
 	}
 
+	/**
+	 * Print the context name without prepending the parent context name.
+	 * 
+	 * @return
+	 */
 	public IStringX currentContextString() {
 		return F.stringx(fContext.getContextName());
+	}
+
+	/**
+	 * If the current parent context isn't <code>null</code> or <code>Global`</code> print the complete context name
+	 * prepended with the parent context name.
+	 * 
+	 * @return
+	 */
+	public IStringX currentCompleteContextName() {
+		return F.stringx(fContext.completeContextName());
 	}
 
 	public Context currentContext() {
@@ -121,6 +137,21 @@ public final class ContextPath {
 		}
 		context = new Context(contextName);
 		fContextMap.put(contextName, context);
+		return context;
+	}
+
+	public Context getContext(String contextName, Context parentContext) {
+		String name = contextName;
+		if (parentContext != null) {
+			String packageName = parentContext.getContextName();
+			name = packageName.substring(0, packageName.length() - 1) + name;
+		}
+		Context context = fContextMap.get(name);
+		if (context != null) {
+			return context;
+		}
+		context = new Context(contextName, parentContext);
+		fContextMap.put(name, context);
 		return context;
 	}
 

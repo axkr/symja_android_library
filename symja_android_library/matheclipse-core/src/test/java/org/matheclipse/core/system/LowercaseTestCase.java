@@ -726,6 +726,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"xxx");
 		check("testit(12)", //
 				"144");
+		check("Begin(\"`Private`\")", //
+				"test`Private`");
+		check("End( )", //
+				"test`Private`");
 		check("EndPackage( )", //
 				"");
 		check("$ContextPath", //
@@ -752,12 +756,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"testit(x) gives x^2");
 		check("testit(x_) :=  x^2 ", //
 				"");
-		check("Begin(\"test`Private`\")", //
-				"");
+		check("Begin(\"`Private`\")", //
+				"test`Private`");
 		check("test2(x_) :=  x^3 ", //
 				"");
 		check("testit(12)", //
 				"144");
+		check("Context( )", //
+				"test`Private`");
+		check("$Context", //
+				"test`Private`");
+		check("$ContextPath", //
+				"{test`,System`}");
 		check("End( )", //
 				"test`Private`");
 		check("$ContextPath", //
@@ -781,7 +791,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testBegin() {
 		check("Begin(\"mytest`\")", //
-				"");
+				"mytest`");
 		check("Context( )", //
 				"mytest`");
 		check("$ContextPath", //

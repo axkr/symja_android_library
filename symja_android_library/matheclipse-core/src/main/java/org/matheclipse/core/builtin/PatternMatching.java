@@ -26,7 +26,6 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.Options;
@@ -45,9 +44,9 @@ import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
-import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
+import org.matheclipse.core.expression.Context;
 
 public final class PatternMatching {
 
@@ -91,8 +90,15 @@ public final class PatternMatching {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() > 1) {
 				String contextName = Validate.checkContextName(ast, 1);
-				engine.begin(contextName);
-				return F.Null;
+				Context pack = EvalEngine.get().getContextPath().currentContext();
+				String packageName = pack.getContextName();
+//				if (packageName.equals(Context.GLOBAL_CONTEXT_NAME)) {
+//					completeContextName = contextName;
+//				} else {
+//					completeContextName = packageName.substring(0, packageName.length() - 1) + contextName;
+//				}
+				Context context=engine.begin(contextName, pack); 
+				return F.stringx(context.completeContextName());
 			}
 			return F.NIL;
 		}
@@ -138,7 +144,7 @@ public final class PatternMatching {
 			if (context == null) {
 				return F.NIL;
 			}
-			return F.stringx(context.getContextName());
+			return F.stringx(context.completeContextName());
 		}
 
 		@Override
@@ -303,7 +309,7 @@ public final class PatternMatching {
 				return F.stringx(((ISymbol) ast.first()).getContext().getContextName());
 			}
 			if (ast.isAST0()) {
-				return F.stringx(EvalEngine.get().getContext().getContextName());
+				return F.stringx(EvalEngine.get().getContext().completeContextName());
 			}
 			return F.NIL;
 		}

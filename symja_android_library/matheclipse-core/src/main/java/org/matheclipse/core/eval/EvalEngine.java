@@ -403,17 +403,19 @@ public class EvalEngine implements Serializable {
 		return engine;
 	}
 
-	public void begin(String contextName) {
+	public Context begin(String contextName, Context parentContext) {
 		fContextPathStack.push(fContextPath);
 		fContextPath = fContextPath.copy();
-		Context packageContext = fContextPath.getContext(contextName);
+		Context packageContext = fContextPath.getContext(contextName, parentContext);
 		setContext(packageContext);
+		return packageContext;
 	}
 
-	public void beginPackage(String contextName) {
+	public Context beginPackage(String contextName) {
 		fContextPathStack.push(fContextPath);
 		Context packageContext = fContextPath.getContext(contextName);
 		setContextPath(new ContextPath(packageContext));
+		return packageContext;
 	}
 
 	public Context end() {

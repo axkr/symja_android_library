@@ -460,7 +460,7 @@ public class OutputFormFactory {
 		if (EvalEngine.get().getContextPath().contains(context)) {
 			append(buf, symbol.getSymbolName());
 		} else {
-			append(buf, context.toString() + symbol.getSymbolName());
+			append(buf, context.completeContextName() + symbol.getSymbolName());
 		}
 	}
 

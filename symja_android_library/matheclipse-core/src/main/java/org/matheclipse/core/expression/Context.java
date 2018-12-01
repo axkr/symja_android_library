@@ -26,7 +26,7 @@ public class Context implements Serializable {
 	// public final static Context GLOBAL = new Context("Global`");
 	public final static String SYSTEM_CONTEXT_NAME = "System`";
 
-	public final static Context SYSTEM = new Context(SYSTEM_CONTEXT_NAME, PREDEFINED_SYMBOLS_MAP);
+	public final static Context SYSTEM = new Context(SYSTEM_CONTEXT_NAME, null, PREDEFINED_SYMBOLS_MAP);
 
 	// public final static Context INTEGRATE = new Context("Integrate`");
 
@@ -36,24 +36,31 @@ public class Context implements Serializable {
 
 	private String contextName;
 
+	private Context parentContext;
+
 	private HashMap<String, ISymbol> symbolTable;
 
 	public final static String GLOBAL_CONTEXT_NAME = "Global`";
 
 	public Context(String contextName) {
-		this(contextName, new HashMap<String, ISymbol>());
+		this(contextName, null, new HashMap<String, ISymbol>());
 	}
 
-	private Context(String contextName, HashMap<String, ISymbol> symbolTable) {
+	public Context(String contextName, Context parentContext) {
+		this(contextName, parentContext, new HashMap<String, ISymbol>());
+	}
+
+	private Context(String contextName, Context parentContext, HashMap<String, ISymbol> symbolTable) {
 		this.symbolTable = symbolTable;
 		this.contextName = contextName;
+		this.parentContext = parentContext;
 	}
 
 	public Context copy() {
 		if (this == SYSTEM) {
 			return SYSTEM;
 		}
-		return new Context(contextName, (HashMap<String, ISymbol>) symbolTable.clone());
+		return new Context(contextName, parentContext, (HashMap<String, ISymbol>) symbolTable.clone());
 	}
 
 	public Set<Entry<String, ISymbol>> entrySet() {
@@ -71,12 +78,34 @@ public class Context implements Serializable {
 		return false;
 	}
 
-	public ISymbol get(Object key) {
+	public ISymbol get(String key) {
 		return symbolTable.get(key);
 	}
 
+	/**
+	 * Get the &quot;pure&quot; context name without prepending the parent context name.
+	 * 
+	 * @return
+	 */
 	public String getContextName() {
 		return contextName;
+	}
+
+	/**
+	 * If the current parent context isn't <code>null</code> or <code>Global`</code> get the complete context name
+	 * prepended with the parent context name.
+	 * 
+	 * @return
+	 */
+	public String completeContextName() {
+		String completeContextName = contextName;
+		if (parentContext != null) {
+			String packageName = parentContext.getContextName();
+			if (!packageName.equals(Context.GLOBAL_CONTEXT_NAME)) {
+				completeContextName = packageName.substring(0, packageName.length() - 1) + contextName;
+			}
+		}
+		return completeContextName;
 	}
 
 	@Override
