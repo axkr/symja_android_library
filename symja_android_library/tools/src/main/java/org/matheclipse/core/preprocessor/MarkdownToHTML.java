@@ -32,37 +32,6 @@ public class MarkdownToHTML {
 	 */
 	public static void generateHTMLString(final File sourceLocation, String function, boolean javadoc) {
 		if (sourceLocation.exists()) {
-			// Builder builder = Configuration.builder();
-			// BlockEmitter emitter = new BlockEmitter() {
-			// @Override
-			// public void emitBlock(StringBuilder out, List<String> lines, String meta) {
-			// out.append("<pre>");
-			// for (final String s : lines) {
-			// for (int i = 0; i < s.length(); i++) {
-			// final char c = s.charAt(i);
-			// switch (c) {
-			// case '&':
-			// out.append("&amp;");
-			// break;
-			// case '<':
-			// out.append("&lt;");
-			// break;
-			// case '>':
-			// out.append("&gt;");
-			// break;
-			// default:
-			// out.append(c);
-			// break;
-			// }
-			// }
-			// out.append('\n');
-			// }
-			// out.append("</pre>\n");
-			// }
-			//
-			// };
-			// Configuration config =
-			// builder.setCodeBlockEmitter(emitter).enableSafeMode().forceExtentedProfile().build();
 			// Get the list of the files contained in the package
 			final String[] files = sourceLocation.list();
 			if (files != null) {
