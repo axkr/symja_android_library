@@ -5,16 +5,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Locale;
 
+import org.commonmark.node.Node;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.Documentation;
 
-import com.github.rjeschke.txtmark.BlockEmitter;
-import com.github.rjeschke.txtmark.Configuration;
-import com.github.rjeschke.txtmark.Configuration.Builder;
-import com.github.rjeschke.txtmark.Processor;
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 
 /**
  * Generate HTML code from markdown files.
@@ -32,36 +32,37 @@ public class MarkdownToHTML {
 	 */
 	public static void generateHTMLString(final File sourceLocation, String function, boolean javadoc) {
 		if (sourceLocation.exists()) {
-			Builder builder = Configuration.builder();
-			BlockEmitter emitter = new BlockEmitter() {
-				@Override
-				public void emitBlock(StringBuilder out, List<String> lines, String meta) {
-					out.append("<pre>");
-					for (final String s : lines) {
-						for (int i = 0; i < s.length(); i++) {
-							final char c = s.charAt(i);
-							switch (c) {
-							case '&':
-								out.append("&amp;");
-								break;
-							case '<':
-								out.append("&lt;");
-								break;
-							case '>':
-								out.append("&gt;");
-								break;
-							default:
-								out.append(c);
-								break;
-							}
-						}
-						out.append('\n');
-					}
-					out.append("</pre>\n");
-				}
-
-			};
-			Configuration config = builder.setCodeBlockEmitter(emitter).enableSafeMode().forceExtentedProfile().build();
+			// Builder builder = Configuration.builder();
+			// BlockEmitter emitter = new BlockEmitter() {
+			// @Override
+			// public void emitBlock(StringBuilder out, List<String> lines, String meta) {
+			// out.append("<pre>");
+			// for (final String s : lines) {
+			// for (int i = 0; i < s.length(); i++) {
+			// final char c = s.charAt(i);
+			// switch (c) {
+			// case '&':
+			// out.append("&amp;");
+			// break;
+			// case '<':
+			// out.append("&lt;");
+			// break;
+			// case '>':
+			// out.append("&gt;");
+			// break;
+			// default:
+			// out.append(c);
+			// break;
+			// }
+			// }
+			// out.append('\n');
+			// }
+			// out.append("</pre>\n");
+			// }
+			//
+			// };
+			// Configuration config =
+			// builder.setCodeBlockEmitter(emitter).enableSafeMode().forceExtentedProfile().build();
 			// Get the list of the files contained in the package
 			final String[] files = sourceLocation.list();
 			if (files != null) {
@@ -73,7 +74,10 @@ public class MarkdownToHTML {
 							File file = new File(sourceLocation + "/" + files[i]);
 							String html;
 							try {
-								html = Processor.process(file, config);
+								Parser parser = Parser.builder().build();
+								Node document = parser.parse(Files.asCharSource(file, Charsets.UTF_8).read());
+								HtmlRenderer renderer = HtmlRenderer.builder().build();
+								html = renderer.render(document);
 								if (javadoc) {
 									String[] lines = html.split("\\n");
 									System.out.println("/**");
@@ -104,9 +108,9 @@ public class MarkdownToHTML {
 		final BufferedReader in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
 		boolean done = false;
 
-		try { 
+		try {
 			while (!done) {
-				System.out.print("▶ ");  
+				System.out.print("▶ ");
 				final String s = in.readLine();
 				if (s != null) {
 					if ((s.length() > 0) && (s.charAt(s.length() - 1) != '\\')) {
@@ -129,8 +133,7 @@ public class MarkdownToHTML {
 
 	public static void main(final String[] args) {
 		F.initSymbols();
-		File sourceLocation = new File(
-				"..\\symja_android_library\\doc\\functions");
+		File sourceLocation = new File("..\\symja_android_library\\doc\\functions");
 		String inputExpression;
 		String trimmedInput;
 		while (true) {

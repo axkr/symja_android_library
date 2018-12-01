@@ -54,6 +54,11 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
+				<groupId>com.atlassian.commonmark</groupId>
+				<artifactId>commonmark</artifactId>
+				<version>0.11.0</version>
+			</dependency>
+			<dependency>
 				<groupId>de.uni-mannheim.rz.krum</groupId>
 				<artifactId>jas</artifactId>
 				<version>2.6.5961</version>
@@ -144,12 +149,7 @@
 				<artifactId>junit</artifactId>
 				<version>4.12</version>
 				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>com.github.rjeschke</groupId>
-				<artifactId>txtmark</artifactId>
-				<version>0.13</version>
-			</dependency>
+			</dependency> 
 			<dependency>
 				<groupId>org.logicng</groupId>
 				<artifactId>logicng</artifactId>
@@ -280,7 +280,7 @@
 					<artifactId>spring-javaformat-maven-plugin</artifactId>
 					<version>0.0.6</version>
 				</plugin>
-				
+
 			</plugins>
 		</pluginManagement>
 	</build>
