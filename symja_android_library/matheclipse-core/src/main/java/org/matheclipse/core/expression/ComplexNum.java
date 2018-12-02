@@ -508,9 +508,10 @@ public class ComplexNum implements IComplexNum {
 
 	@Override
 	public boolean isZero() {
-		return F.isZero(fComplex.getReal()) && F.isZero(fComplex.getImaginary());
+		return F.isZero(fComplex.getReal(), Config.DOUBLE_TOLERANCE) && //
+				F.isZero(fComplex.getImaginary(), Config.DOUBLE_TOLERANCE);
 	}
-	
+
 	@Override
 	public long leafCountSimplify() {
 		return 5;

@@ -2040,7 +2040,8 @@ public final class Arithmetic {
 			try {
 				int numericPrecision = Config.MACHINE_PRECISION;
 				if (ast.isAST2()) {
-					numericPrecision = Validate.checkIntType(ast.arg2());
+					IExpr arg2 = engine.evaluateNonNumeric(ast.arg2());
+					numericPrecision = Validate.checkIntType(arg2);
 				}
 				engine.setNumericMode(true, numericPrecision);
 				return engine.evalWithoutNumericReset(ast.arg1());
@@ -2052,7 +2053,6 @@ public final class Arithmetic {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
 
 	}
@@ -4516,7 +4516,7 @@ public final class Arithmetic {
 				return ((ASTSeriesData) o1).times(o0);
 			}
 			if (o0.isFraction() && o0.isNegative() && o1.isPlus()) {
-				return F.Times(o0.negate(),o1.negate());
+				return F.Times(o0.negate(), o1.negate());
 			}
 			return F.NIL;
 		}

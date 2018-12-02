@@ -236,7 +236,7 @@ public class ExprEvaluatorTest extends TestCase {
 
 			buf = new StringWriter();
 			OutputFormFactory.get(true).convert(buf, expr);
-			assertEquals("0.0", buf.toString());
+			assertEquals("1.0E-15", buf.toString());
 
 		} catch (SyntaxError e) {
 			// catch Symja parser errors here

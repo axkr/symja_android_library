@@ -3,21 +3,66 @@ package org.matheclipse.core.builtin;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
 
+import java.util.Calendar;
+import java.util.Properties;
+
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
-import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
+import ch.ethz.idsc.tensor.io.ResourceData;
+
 public class ConstantDefinitions {
 
+	public static String VERSION = "1.0.0";
+	public static String TIMESTAMP = "";
+	private static int YEAR = Calendar.getInstance().get(Calendar.YEAR);
+	private static int MONTH = Calendar.getInstance().get(Calendar.MONTH);
+	private static int DAY = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+	private static int HOUR = Calendar.getInstance().get(Calendar.HOUR);
+	private static int MINUTE = Calendar.getInstance().get(Calendar.MINUTE);
+	private static int SECOND = Calendar.getInstance().get(Calendar.SECOND);
+
 	static {
+		Properties properties = ResourceData.properties("/version.txt");
+
+		String versionString = properties.getProperty("version");
+		if (versionString != null && versionString.charAt(0) != '$') {
+			VERSION = versionString;
+		}
+
+		String timestamp = properties.getProperty("timestamp");
+		if (timestamp != null && timestamp.charAt(0) != '$') {
+			TIMESTAMP = timestamp;
+			try {
+				YEAR = Integer.parseInt(TIMESTAMP.substring(0, 4));
+				MONTH = Integer.parseInt(TIMESTAMP.substring(4, 6));
+				DAY = Integer.parseInt(TIMESTAMP.substring(6, 8));
+				HOUR = Integer.parseInt(TIMESTAMP.substring(8, 10));
+				MINUTE = Integer.parseInt(TIMESTAMP.substring(10, 12));
+				SECOND = Integer.parseInt(TIMESTAMP.substring(12, 14));
+			} catch (NumberFormatException nfe) {
+				nfe.printStackTrace();
+			}
+		}
+
+		// System.out.println(VERSION);
+		// System.out.println(TIMESTAMP);
+
 		F.$Context.setEvaluator(new $Context());
 		F.$ContextPath.setEvaluator(new $ContextPath());
+		F.$CreationDate.setEvaluator(new $CreationDate());
+		F.$MachineEpsilon.setEvaluator(new $MachineEpsilon());
+		F.$MachinePrecision.setEvaluator(new $MachinePrecision());
+		F.$Version.setEvaluator(new $Version());
+
+		// System.out.println(F.$CreationDate.of().toString());
 		F.Catalan.setEvaluator(new Catalan());
 		F.ComplexInfinity.setEvaluator(new ComplexInfinity());
 		F.Degree.setEvaluator(new Degree());
@@ -78,6 +123,44 @@ public class ConstantDefinitions {
 		@Override
 		public IExpr evaluate(final ISymbol symbol) {
 			return EvalEngine.get().getContextPath().pathAsStrings();
+		}
+
+	}
+
+	private static class $CreationDate extends AbstractSymbolEvaluator {
+
+		@Override
+		public IExpr evaluate(final ISymbol symbol) {
+			return F.List(F.integer(YEAR), F.integer(MONTH), F.integer(DAY), F.integer(HOUR), F.integer(MINUTE),
+					F.integer(SECOND));
+		}
+
+	}
+	
+	private static class $MachineEpsilon extends AbstractSymbolEvaluator {
+
+		@Override
+		public IExpr evaluate(final ISymbol symbol) {
+//			System.out.println(Config.MACHINE_EPSILON);
+			return F.num(Config.MACHINE_EPSILON);
+		}
+
+	}
+	
+	private static class $MachinePrecision extends AbstractSymbolEvaluator {
+
+		@Override
+		public IExpr evaluate(final ISymbol symbol) {
+			return F.integer(Config.MACHINE_PRECISION);
+		}
+
+	}
+
+	private static class $Version extends AbstractSymbolEvaluator {
+
+		@Override
+		public IExpr evaluate(final ISymbol symbol) {
+			return F.stringx(VERSION);
 		}
 
 	}

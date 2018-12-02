@@ -6,6 +6,7 @@ import java.math.RoundingMode;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatRuntimeException;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -464,7 +465,7 @@ public class Num implements INum {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isZero() {
-		return F.isZero(fDouble);
+		return F.isZero(fDouble, Config.DOUBLE_TOLERANCE);
 	}
 
 	@Override

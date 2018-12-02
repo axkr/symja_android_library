@@ -173,10 +173,40 @@ public class F {
 	public final static IBuiltInSymbol $ContextPath = F.initFinalSymbol("$ContextPath", ID.$ContextPath);
 
 	/***/
+	public final static IBuiltInSymbol $CreationDate = F.initFinalSymbol("$CreationDate", ID.$CreationDate);
+
+	/***/
 	public final static IBuiltInSymbol $DisplayFunction = F.initFinalSymbol("$DisplayFunction", ID.$DisplayFunction);
 
 	/***/
+	public final static IBuiltInSymbol $HistoryLength = F.initFinalSymbol("$HistoryLength", ID.$HistoryLength);
+
+	/***/
+	public final static IBuiltInSymbol $IterationLimit = F.initFinalSymbol("$IterationLimit", ID.$IterationLimit);
+
+	/***/
+	public final static IBuiltInSymbol $Line = F.initFinalSymbol("$Line", ID.$Line);
+
+	/***/
+	public final static IBuiltInSymbol $MachineEpsilon = F.initFinalSymbol("$MachineEpsilon", ID.$MachineEpsilon);
+
+	/***/
+	public final static IBuiltInSymbol $MachinePrecision = F.initFinalSymbol("$MachinePrecision", ID.$MachinePrecision);
+
+	/***/
+	public final static IBuiltInSymbol $MaxMachineNumber = F.initFinalSymbol("$MaxMachineNumber", ID.$MaxMachineNumber);
+
+	/***/
+	public final static IBuiltInSymbol $MessageList = F.initFinalSymbol("$MessageList", ID.$MessageList);
+
+	/***/
+	public final static IBuiltInSymbol $MinMachineNumber = F.initFinalSymbol("$MinMachineNumber", ID.$MinMachineNumber);
+
+	/***/
 	public final static IBuiltInSymbol $PrePrint = F.initFinalSymbol("$PrePrint", ID.$PrePrint);
+
+	/***/
+	public final static IBuiltInSymbol $RecursionLimit = F.initFinalSymbol("$RecursionLimit", ID.$RecursionLimit);
 
 	/***/
 	public final static IBuiltInSymbol $Version = F.initFinalSymbol("$Version", ID.$Version);
@@ -6790,8 +6820,44 @@ public class F {
 	 * 
 	 */
 	final public static boolean isEqual(double x, double y) {
-		return DoubleMath.fuzzyEquals(x, y, Config.DOUBLE_TOLERANCE);
+		return  isFuzzyEquals(x, y, Config.MACHINE_EPSILON);
 	}
+
+	/**
+	 * Returns {@code true} if {@code a} and {@code b} are within {@code tolerance} (exclusive) of each other.
+	 *
+	 * <p>
+	 * Technically speaking, this is equivalent to {@code Math.abs(a - b) <= tolerance ||
+	 * Double.valueOf(a).equals(Double.valueOf(b))}.
+	 *
+	 * <p>
+	 * Notable special cases include:
+	 *
+	 * <ul>
+	 * <li>All NaNs are fuzzily equal.
+	 * <li>If {@code a == b}, then {@code a} and {@code b} are always fuzzily equal.
+	 * <li>Positive and negative zero are always fuzzily equal.
+	 * <li>If {@code tolerance} is zero, and neither {@code a} nor {@code b} is NaN, then {@code a} and {@code b} are
+	 * fuzzily equal if and only if {@code a == b}.
+	 * <li>With {@link Double#POSITIVE_INFINITY} tolerance, all non-NaN values are fuzzily equal.
+	 * <li>With finite tolerance, {@code Double.POSITIVE_INFINITY} and {@code
+	 *       Double.NEGATIVE_INFINITY} are fuzzily equal only to themselves.
+	 * </ul>
+	 *
+	 * <p>
+	 * This is reflexive and symmetric, but <em>not</em> transitive, so it is <em>not</em> an equivalence relation and
+	 * <em>not</em> suitable for use in {@link Object#equals} implementations.
+	 *
+	 * @throws IllegalArgumentException
+	 *             if {@code tolerance} is {@code < 0} or NaN
+	 */
+	public static boolean isFuzzyEquals(double a, double b, double tolerance) {
+		return Math.copySign(a - b, 1.0) < tolerance
+				// copySign(x, 1.0) is a branch-free version of abs(x), but with different NaN semantics
+				|| (a == b) // needed to ensure that infinities equal themselves
+				|| (Double.isNaN(a) && Double.isNaN(b));
+	}
+
 
 	/**
 	 * Test if the absolute value is less <code>Config.DOUBLE_EPSILON</code>.
@@ -6800,9 +6866,9 @@ public class F {
 	 * @return
 	 */
 	public static boolean isZero(double value) {
-		return isZero(value, Config.DOUBLE_TOLERANCE);
+		return isZero(value, Config.MACHINE_EPSILON);
 	}
-
+	
 	/**
 	 * Test if the absolute value is less than the given epsilon.
 	 * 
@@ -6811,7 +6877,7 @@ public class F {
 	 * @return
 	 */
 	public static boolean isZero(double x, double epsilon) {
-		return DoubleMath.fuzzyEquals(x, 0.0, epsilon);
+		return isFuzzyEquals(x, 0.0, epsilon);
 		// return -epsilon < x && x < epsilon;
 	}
 

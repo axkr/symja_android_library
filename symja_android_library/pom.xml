@@ -44,6 +44,8 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<hipparchus.version>1.4</hipparchus.version>
 		<version.antlr>4.7</version.antlr>
+		<timestamp>${maven.build.timestamp}</timestamp>
+		<maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
 	</properties>
 
 	<modules>
@@ -149,7 +151,7 @@
 				<artifactId>junit</artifactId>
 				<version>4.12</version>
 				<scope>test</scope>
-			</dependency> 
+			</dependency>
 			<dependency>
 				<groupId>org.logicng</groupId>
 				<artifactId>logicng</artifactId>

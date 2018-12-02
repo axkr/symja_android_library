@@ -138,7 +138,7 @@ public class OutputFormFactory {
 	public void convertDouble(final Appendable buf, final INum d, final int precedence, boolean caller)
 			throws IOException {
 
-		if (d.isZero()) {
+		if (F.isZero(d.doubleValue(), Config.MACHINE_EPSILON)) {
 			convertDoubleString(buf, convertDoubleToFormattedString(0.0), precedence, false);
 			return;
 		}
@@ -184,7 +184,7 @@ public class OutputFormFactory {
 		if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
 			if (caller == PLUS_CALL) {
 				append(buf, "+");
-				caller=false;
+				caller = false;
 			}
 			append(buf, "(");
 		}
@@ -206,7 +206,7 @@ public class OutputFormFactory {
 			} else {
 				if (caller == PLUS_CALL) {
 					append(buf, "+");
-					caller=false;
+					caller = false;
 				}
 				append(buf, "I*");
 				final boolean isNegative = imaginaryPart < 0;
@@ -224,7 +224,7 @@ public class OutputFormFactory {
 		if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
 			if (caller == PLUS_CALL) {
 				append(buf, "+");
-				caller=false;
+				caller = false;
 			}
 			append(buf, "(");
 		}
@@ -246,7 +246,7 @@ public class OutputFormFactory {
 			} else {
 				if (caller == PLUS_CALL) {
 					append(buf, "+");
-					caller=false;
+					caller = false;
 				}
 				append(buf, "I*");
 				final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
@@ -362,7 +362,7 @@ public class OutputFormFactory {
 		if (!isReZero && (ASTNodeFactory.PLUS_PRECEDENCE < precedence)) {
 			if (caller == PLUS_CALL) {
 				append(buf, "+");
-				caller=false;
+				caller = false;
 			}
 			append(buf, "(");
 		}
@@ -373,7 +373,7 @@ public class OutputFormFactory {
 			if (isReZero) {
 				if (caller == PLUS_CALL) {
 					append(buf, "+");
-					caller=false;
+					caller = false;
 				}
 				append(buf, "I");
 				return;
