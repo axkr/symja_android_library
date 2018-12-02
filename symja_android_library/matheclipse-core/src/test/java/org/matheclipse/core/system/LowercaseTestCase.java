@@ -2077,7 +2077,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1.0");
 		check("{a1-1.0, a2-1.0}", //
 				"{2.22045*10^-16,0.0}");
-		
+
 		// use the non-formatted engine
 		checkNumeric("$MachineEpsilon", //
 				"2.220446049250313E-16");
@@ -2094,8 +2094,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"16");
 		check("N(Sqrt(2), $MachinePrecision)", //
 				"1.41421");
-		check("N(Sqrt(2), $MachinePrecision+1)", //
-				"1.41421356237309505");
+		String evalStr = evalString("N(Sqrt(2), $MachinePrecision+1)");
+		String resultStr = "1.4142135623730950";
+		assertEquals(evalStr.substring(0, resultStr.length()), resultStr);
 	}
 
 	public void test$Version() {
