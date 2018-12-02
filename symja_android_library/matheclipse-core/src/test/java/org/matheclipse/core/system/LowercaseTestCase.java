@@ -2094,6 +2094,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"16");
 		check("N(Sqrt(2), $MachinePrecision)", //
 				"1.41421");
+		// compare shorter string result to work under unix and windows:
 		String evalStr = evalString("N(Sqrt(2), $MachinePrecision+1)");
 		String resultStr = "1.4142135623730950";
 		assertEquals(evalStr.substring(0, resultStr.length()), resultStr);
