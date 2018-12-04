@@ -117,14 +117,6 @@ Using Maven, add the following to your `pom.xml`
       <enabled>true</enabled>
     </snapshots>
   </repository>
-  <repository>
-    <id>jas-repository</id>
-    <url>http://krum.rz.uni-mannheim.de/maven-repository</url>
-  </repository>
-  <repository>
-    <id>Lab4Inf</id>
-    <url>http://www.lab4inf.fh-muenster.de/lab4inf/maven-repository</url>
-  </repository>
 </repositories>
 ```
 
