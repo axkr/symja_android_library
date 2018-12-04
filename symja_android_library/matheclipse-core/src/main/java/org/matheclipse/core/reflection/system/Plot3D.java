@@ -38,7 +38,7 @@ public class Plot3D extends AbstractEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		// ISymbol optionsArray[] = new ISymbol[] { f.BoxRatios, f.PlotRange };
-		if ((ast.size() >= 4) && ast.arg2().isList() && ast.get(3).isList()) {
+		if ((ast.size() >= 4) && ast.arg2().isList() && ast.arg3().isList()) {
 			try {
 				final IASTAppendable graphics = SurfaceGraphics();
 				IExpr temp;
@@ -116,8 +116,7 @@ public class Plot3D extends AbstractEvaluator {
 	 *            the y variable
 	 * @param engine
 	 *            the evaluation engine
-	 * @return <code>F.NIL</code> is no conversion of the data into an
-	 *         <code>IExpr</code> was possible
+	 * @return <code>F.NIL</code> is no conversion of the data into an <code>IExpr</code> was possible
 	 */
 	@Nonnull
 	public static IExpr plotArray(final double xMin, final double xMax, final double yMin, final double yMax,

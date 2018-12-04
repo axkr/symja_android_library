@@ -58,7 +58,7 @@ public class Plot extends AbstractEvaluator {
 					double yMinD = 0.0f;
 					double yMaxD = 0.0f;
 
-					if ((ast.isAST3()) && ast.get(3).isList()) {
+					if ((ast.isAST3()) && ast.arg3().isList()) {
 						final IAST lsty = (IAST) ast.arg3();
 						if (lsty.isAST2()) {
 							final IExpr y0 = engine.evalN(lsty.arg1());
@@ -118,9 +118,8 @@ public class Plot extends AbstractEvaluator {
 	}
 
 	/**
-	 * Calculates mean and standard deviation, throwing away all points which are
-	 * more than 'thresh' number of standard deviations away from the mean. These
-	 * are then used to find good vmin and vmax values. These values can then be
+	 * Calculates mean and standard deviation, throwing away all points which are more than 'thresh' number of standard
+	 * deviations away from the mean. These are then used to find good vmin and vmax values. These values can then be
 	 * used to find Automatic Plotrange.
 	 * 
 	 * @param values
@@ -167,19 +166,18 @@ public class Plot extends AbstractEvaluator {
 	 * @param xMax
 	 *            the maximum x-range value
 	 * @param yMin
-	 *            if <code>yMin != 0 && yMax != 0</code> filter only results which
-	 *            are in the y-range and set yMin or yMax as plot result-range.
+	 *            if <code>yMin != 0 && yMax != 0</code> filter only results which are in the y-range and set yMin or
+	 *            yMax as plot result-range.
 	 * @param yMax
-	 *            if <code>yMin != 0 && yMax != 0</code> filter only results which
-	 *            are in the y-range and set yMin or yMax as plot result-range.
+	 *            if <code>yMin != 0 && yMax != 0</code> filter only results which are in the y-range and set yMin or
+	 *            yMax as plot result-range.
 	 * @param function
 	 *            the function which should be plotted
 	 * @param xVar
 	 *            the variable name
 	 * @param engine
 	 *            the evaluation engine
-	 * @return <code>F.NIL</code> is no conversion of the data into an
-	 *         <code>IExpr</code> was possible
+	 * @return <code>F.NIL</code> is no conversion of the data into an <code>IExpr</code> was possible
 	 */
 	public IExpr plotLine(final double xMin, final double xMax, final double yMin, final double yMax,
 			final IExpr function, final ISymbol xVar, Dimensions2D autoPlotRange, final EvalEngine engine) {
