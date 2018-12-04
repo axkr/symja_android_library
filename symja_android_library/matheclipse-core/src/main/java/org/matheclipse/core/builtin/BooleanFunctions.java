@@ -591,7 +591,7 @@ public final class BooleanFunctions {
 			LogicFormula lf = new LogicFormula(factory);
 			Formula formula = lf.expr2BooleanFunction(ast.arg1());
 			// only DNF form can be used in QuineMcCluskeyAlgorithm at the moment
-			formula=formula.transform(new DNFFactorization());
+			formula = formula.transform(new DNFFactorization());
 			formula = QuineMcCluskeyAlgorithm.compute(formula);
 			// System.out.println(formula.toString());
 			return lf.booleanFunction2Expr(formula);
@@ -2049,7 +2049,7 @@ public final class BooleanFunctions {
 		private IExpr maximum(IAST list, boolean flattenedList) {
 			boolean evaled = false;
 			// int j = 1;
-			IASTAppendable f = list.remove( x -> x.isNegativeInfinity());
+			IASTAppendable f = list.remove(x -> x.isNegativeInfinity());
 			if (f.isPresent()) {
 				if (f.isAST0()) {
 					return F.CNInfinity;
@@ -2185,7 +2185,7 @@ public final class BooleanFunctions {
 
 		private IExpr minimum(IAST list, final boolean flattenedList) {
 			boolean evaled = false;
-			IASTAppendable f = list.remove(  x -> x.isInfinity());
+			IASTAppendable f = list.remove(x -> x.isInfinity());
 			if (f.isPresent()) {
 				if (f.isAST0()) {
 					return F.CNInfinity;
@@ -2349,18 +2349,28 @@ public final class BooleanFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+			if (ast.isAST1()) {
+				IExpr arg1 = ast.arg1();
+				if (arg1.isReal()) {
+					return F.bool(arg1.isNegative());
+				}
+				if (arg1.isNumber()) {
+					return F.False;
+				}
+				ISignedNumber signedNumber = arg1.evalReal();
+				if (signedNumber != null) {
+					return F.bool(signedNumber.isNegative());
+				}
+				if (arg1.isNegativeInfinity()) {
+					return F.True;
+				}
+				if (arg1.isInfinity()) {
+					return F.False;
+				}
+				return F.NIL;
+			}
 			Validate.checkSize(ast, 2);
-			IExpr arg1 = ast.arg1();
-			if (arg1.isReal()) {
-				return F.bool(arg1.isNegative());
-			}
-			if (arg1.isNumber()) {
-				return F.False;
-			}
-			ISignedNumber signedNumber = arg1.evalReal();
-			if (signedNumber != null) {
-				return F.bool(signedNumber.isNegative());
-			}
 
 			return F.NIL;
 		}
@@ -2487,19 +2497,29 @@ public final class BooleanFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
 
-			IExpr arg1 = ast.arg1();
-			if (arg1.isReal()) {
-				return F.bool(!arg1.isNegative());
+			if (ast.isAST1()) {
+				IExpr arg1 = ast.arg1();
+				if (arg1.isReal()) {
+					return F.bool(!arg1.isNegative());
+				}
+				if (arg1.isNumber()) {
+					return F.False;
+				}
+				ISignedNumber signedNumber = arg1.evalReal();
+				if (signedNumber != null) {
+					return F.bool(!signedNumber.isNegative());
+				}
+				if (arg1.isNegativeInfinity()) {
+					return F.False;
+				}
+				if (arg1.isInfinity()) {
+					return F.True;
+				}
+				return F.NIL;
 			}
-			if (arg1.isNumber()) {
-				return F.False;
-			}
-			ISignedNumber signedNumber = arg1.evalReal();
-			if (signedNumber != null) {
-				return F.bool(!signedNumber.isNegative());
-			}
+
+			Validate.checkSize(ast, 2);
 			return F.NIL;
 		}
 
@@ -2848,20 +2868,28 @@ public final class BooleanFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+			if (ast.isAST1()) {
+				IExpr arg1 = ast.arg1();
+				if (arg1.isNumber()) {
+					return F.bool(arg1.isPositive());
+				}
+				if (arg1.isNumber()) {
+					return F.False;
+				}
+				ISignedNumber signedNumber = arg1.evalReal();
+				if (signedNumber != null) {
+					return F.bool(signedNumber.isPositive());
+				}
+				if (arg1.isNegativeInfinity()) {
+					return F.False;
+				}
+				if (arg1.isInfinity()) {
+					return F.True;
+				}
+				return F.NIL;
+			}
 			Validate.checkSize(ast, 2);
-
-			IExpr arg1 = ast.arg1();
-			if (arg1.isNumber()) {
-				return F.bool(arg1.isPositive());
-			}
-			if (arg1.isNumber()) {
-				return F.False;
-			}
-			ISignedNumber signedNumber = arg1.evalReal();
-			if (signedNumber != null) {
-				return F.bool(signedNumber.isPositive());
-			}
-
 			return F.NIL;
 		}
 
