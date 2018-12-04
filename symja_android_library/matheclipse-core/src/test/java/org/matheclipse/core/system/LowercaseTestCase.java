@@ -4605,6 +4605,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFunctionExpand() {
+		check("FunctionExpand(Binomial(n,k))", //
+				"Gamma(1+n)/(Gamma(1+k)*Gamma(1-k+n))");
+		check("FunctionExpand(Binomial(n,7))", //
+				"1/5040*(-6+n)*(-5+n)*(-4+n)*(-3+n)*(-2+n)*(-1+n)*n");
+		check("FunctionExpand(Binomial(3,k))", //
+				"(6*Sin(k*Pi))/((-3+k)*(-2+k)*(-1+k)*k*Pi)");
+		check("FunctionExpand(Binomial(6,k))", //
+				"(720*Sin(k*Pi))/((-6+k)*(-5+k)*(-4+k)*(-3+k)*(-2+k)*(-1+k)*k*Pi)"); 
 		check("FunctionExpand(BlackmanHarrisWindow(x))", //
 				"Piecewise({{1/100000*(35875+48829*Cos(2*Pi*x)+14128*Cos(4*Pi*x)+1168*Cos(6*Pi*x)),\n"
 						+ "-1/2<=x<=1/2}},0)");
@@ -7527,6 +7535,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testNegative() {
+		check("Negative(Infinity)", "False");
+		check("Negative(-Infinity)", "True");
 		check("Negative(-9/4)", "True");
 		check("Negative(0.1+I)", "False");
 		check("Negative(0)", "False");
@@ -7654,6 +7664,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testNonNegative() {
+		check("NonNegative(Infinity)", "True");
+		check("NonNegative(-Infinity)", "False");
 		check("NonNegative(-9/4)", "False");
 		check("NonNegative(0.1+I)", "False");
 		check("NonNegative(I)", "False");
@@ -8614,6 +8626,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialQ() {
+		check("PolynomialQ(x^2*y^3+34*x^2+7-Sin(z^3)*x^34, {x,y})", //
+				"True");
+		check("PolynomialQ(x^2*y^3+34*x^2+7-Sin(z^3)*x^34, {x,y,z})", //
+				"False");
 		check("PolynomialQ(E^f(x),x)", //
 				"False");
 		check("PolynomialQ(E^f(y),x)", //
@@ -8723,6 +8739,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPositive() {
+		check("Positive(Infinity)", "True");
+		check("Positive(-Infinity)", "False");
 		check("Positive(-9/4)", "False");
 		check("Positive(0.1+I)", "False");
 		check("Positive(1)", "True");
