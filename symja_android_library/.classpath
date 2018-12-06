@@ -24,6 +24,6 @@
 	<classpathentry kind="lib" path="lib/hipparchus-ode-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-optim-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-stat-1.4.jar"/>
-	<classpathentry kind="lib" path="lib/commonmark-0.11.0.jar"/>
+	<classpathentry kind="lib" path="lib/commonmark-0.12.1.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

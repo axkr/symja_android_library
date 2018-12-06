@@ -4605,6 +4605,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFunctionExpand() {
+		// Use Expand for Power() and Times() expressions
+		check("FunctionExpand((x+y)^3)", //
+				"(x+y)^3");
+		check("FunctionExpand((x+y)*(a+b))", //
+				"(a+b)*(x+y)");
+		
+		
 		check("FunctionExpand(Binomial(n,k))", //
 				"Gamma(1+n)/(Gamma(1+k)*Gamma(1-k+n))");
 		check("FunctionExpand(Binomial(n,7))", //
@@ -4612,7 +4619,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("FunctionExpand(Binomial(3,k))", //
 				"(6*Sin(k*Pi))/((-3+k)*(-2+k)*(-1+k)*k*Pi)");
 		check("FunctionExpand(Binomial(6,k))", //
-				"(720*Sin(k*Pi))/((-6+k)*(-5+k)*(-4+k)*(-3+k)*(-2+k)*(-1+k)*k*Pi)"); 
+				"(720*Sin(k*Pi))/((-6+k)*(-5+k)*(-4+k)*(-3+k)*(-2+k)*(-1+k)*k*Pi)");
 		check("FunctionExpand(BlackmanHarrisWindow(x))", //
 				"Piecewise({{1/100000*(35875+48829*Cos(2*Pi*x)+14128*Cos(4*Pi*x)+1168*Cos(6*Pi*x)),\n"
 						+ "-1/2<=x<=1/2}},0)");
