@@ -1179,6 +1179,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBooleanMinimize() {
+
+		check("BooleanMinimize(!e && !d && c && b && a || !c && !f && !b && a || !f && a && !c && b || !i && f && h && !a || c && d && b && a || !b && g && a || !j && !h && !a)", //
+				"a&&b&&c&&d||a&&b&&c&&!e||a&&!b&&g||a&&!c&&!f||!a&&f&&h&&!i||!a&&!h&&!j");
 		check("BooleanMinimize((A && !B || !A && B) && "//
 				+ "(C && B && !A && !D && !E || C && !B && A && !D && !E || C && !B && !A && D && !E || C && !B && !A && !D && E || !C && B && A && !D && !E || !C && B && !A && D && !E || !C && B && !A && !D && E || !C && !B && A && D && !E || !C && !B && A && !D && E || !C && !B && !A && D && E) && "
 				+ "(A && !F || !A && F) && (E && !C || !E && C))", //
@@ -1190,13 +1193,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("BooleanMinimize(a && b || ! a && b)", //
 				"b");
 
-		// TODO CNF form after minimizing blows up the formula.
+		// TODO CNF form not supported
 		// check("BooleanMinimize((a&&!b)||(!a&&b)||(b&&!c)||(!b&&c), \"CNF\")", //
 		// "(a||b||c)&&(!a||!b||!c)");
 		// check("BooleanMinimize((a||b)&&(c||d), \"CNF\")", //
 		// "(a||b)&&(a||b||c)&&(a||b||c||d)&&(a||b||d)&&(a||c||d)&&(b||c||d)&&(c||d)");
-		// check("BooleanMinimize(a && b || ! a && b, \"CNF\")", //
-		// "b");
 	}
 
 	public void testBooleanQ() {
@@ -4610,8 +4611,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"(x+y)^3");
 		check("FunctionExpand((x+y)*(a+b))", //
 				"(a+b)*(x+y)");
-		
-		
+
 		check("FunctionExpand(Binomial(n,k))", //
 				"Gamma(1+n)/(Gamma(1+k)*Gamma(1-k+n))");
 		check("FunctionExpand(Binomial(n,7))", //

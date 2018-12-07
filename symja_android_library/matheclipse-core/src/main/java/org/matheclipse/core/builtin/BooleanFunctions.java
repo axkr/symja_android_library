@@ -449,76 +449,10 @@ public final class BooleanFunctions {
 	 */
 	private static class BooleanConvert extends AbstractFunctionEvaluator {
 
-		// static class BooleanConvertVisitor extends VisitorExpr {
-		// public BooleanConvertVisitor() {
-		// super();
-		// }
-		//
-		// @Override
-		// protected IExpr visitAST(IAST ast) {
-		// if (ast.isNot()) {
-		// if (ast.arg1().isAST()) {
-		// IAST notArg1 = (IAST) ast.arg1();
-		// if (notArg1.isASTSizeGE(Nand, 1)) {
-		// return notArg1.apply(And);
-		// } else if (notArg1.isASTSizeGE(Nor, 1)) {
-		// return notArg1.apply(Or);
-		// } else if (notArg1.isASTSizeGE(And, 1)) {
-		// return convertNand(notArg1);
-		// } else if (notArg1.isASTSizeGE(Or, 1)) {
-		// return convertNor(notArg1);
-		// }
-		//
-		// }
-		// } else if (ast.isASTSizeGE(Equivalent, 1)) {
-		// return convertEquivalent(ast);
-		// } else if (ast.isAST(Implies, 3)) {
-		// return convertImplies(ast);
-		// } else if (ast.isASTSizeGE(Nand, 1)) {
-		// return convertNand(ast);
-		// } else if (ast.isASTSizeGE(Nor, 1)) {
-		// return convertNor(ast);
-		// } else if (ast.isASTSizeGE(Xor, 3)) {
-		// return convertXor(ast);
-		// }
-		// return super.visitAST(ast);
-		// }
-		//
-		// public IAST convertEquivalent(IAST ast) {
-		// IAST term1 = ast.apply(F.And);
-		// IAST term2 = term1.mapThread(F.Not(null), 1);
-		// return F.Or(term1, term2);
-		// }
-		//
-		// public IAST convertImplies(IAST ast) {
-		// return F.Or(F.Not(ast.arg1()), ast.arg2());
-		// }
-		//
-		// public IAST convertNand(IAST ast) {
-		// return Lambda.forEachAppend(ast, F.Or(), x -> F.Not(x));
-		// }
-		//
-		// public IAST convertNor(IAST ast) {
-		// return Lambda.forEachAppend(ast, F.And(), x -> F.Not(x));
-		// }
-		//
-		// public IAST convertXor(IAST ast) {
-		// IExpr temp = ast.arg2();
-		// if (ast.size() > 3) {
-		// IASTAppendable clone = ast.copyAppendable();
-		// clone.remove(1);
-		// temp = convertXor(clone);
-		// }
-		// return F.Or(F.And(ast.arg1(), F.Not(temp)), F.And(F.Not(ast.arg1()), temp));
-		// }
-		// }
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
 
-			// BooleanConvertVisitor bcVisitor = new BooleanConvertVisitor();
-			// IExpr result = ast.arg1().accept(bcVisitor);
 			try {
 
 				FormulaTransformation transformation = transformation(ast, engine);
@@ -585,7 +519,7 @@ public final class BooleanFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
+			Validate.checkSize(ast, 2);
 
 			FormulaFactory factory = new FormulaFactory();
 			LogicFormula lf = new LogicFormula(factory);
