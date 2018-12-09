@@ -283,11 +283,15 @@ public class WXFTestCase extends AbstractTestCase {
 	}
 
 	public void testByteArray() {
+		check(" ByteArray({1,2,3})", //
+				"ByteArray[3 Bytes]");
 		check(" ByteArray(Range(16))", //
 				"ByteArray[16 Bytes]");
 	}
 
 	public void testByteArrayQ() {
+		check("ByteArrayQ(ByteArray({1,2,3}))", //
+				"True");
 		check("ByteArrayQ(ByteArray(Range(16)))", //
 				"True");
 	}
