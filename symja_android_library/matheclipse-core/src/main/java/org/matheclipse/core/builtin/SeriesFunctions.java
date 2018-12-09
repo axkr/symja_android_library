@@ -15,9 +15,11 @@ import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
@@ -752,6 +754,10 @@ public class SeriesFunctions {
 			IExpr arg1 = ast.arg1();
 			if (arg1 instanceof ASTSeriesData) {
 				return ((ASTSeriesData) arg1).normal();
+			}
+			if (WXFFunctions.isByteArray(arg1)) {
+				byte[] bArray = (byte[]) ((IDataExpr) arg1).toData();
+				return WL.toList(bArray);
 			}
 			return F.NIL;
 		}

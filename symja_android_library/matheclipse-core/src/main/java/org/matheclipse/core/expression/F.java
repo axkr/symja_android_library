@@ -510,6 +510,12 @@ public class F {
 	/** Break() - exits a `For`, `While`, or `Do` loop. */
 	public final static IBuiltInSymbol Break = F.initFinalSymbol("Break", ID.Break);
 
+	/***/
+	public final static IBuiltInSymbol ByteArray = F.initFinalSymbol("ByteArray", ID.ByteArray);
+
+	/***/
+	public final static IBuiltInSymbol ByteArrayQ = F.initFinalSymbol("ByteArrayQ", ID.ByteArrayQ);
+
 	/** CDF(distribution, value) - returns the cumulative distribution function of `value`. */
 	public final static IBuiltInSymbol CDF = F.initFinalSymbol("CDF", ID.CDF);
 
@@ -6820,7 +6826,7 @@ public class F {
 	 * 
 	 */
 	final public static boolean isEqual(double x, double y) {
-		return  isFuzzyEquals(x, y, Config.MACHINE_EPSILON);
+		return isFuzzyEquals(x, y, Config.MACHINE_EPSILON);
 	}
 
 	/**
@@ -6858,7 +6864,6 @@ public class F {
 				|| (Double.isNaN(a) && Double.isNaN(b));
 	}
 
-
 	/**
 	 * Test if the absolute value is less <code>Config.DOUBLE_EPSILON</code>.
 	 * 
@@ -6868,7 +6873,7 @@ public class F {
 	public static boolean isZero(double value) {
 		return isZero(value, Config.MACHINE_EPSILON);
 	}
-	
+
 	/**
 	 * Test if the absolute value is less than the given epsilon.
 	 * 

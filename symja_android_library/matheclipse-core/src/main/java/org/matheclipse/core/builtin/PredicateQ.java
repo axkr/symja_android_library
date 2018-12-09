@@ -33,6 +33,7 @@ public class PredicateQ {
 		F.ArrayQ.setEvaluator(new ArrayQ());
 		F.AtomQ.setPredicateQ(x -> x.isAtom());
 		F.BooleanQ.setPredicateQ(x -> x.isTrue() || x.isFalse());
+		F.ByteArrayQ.setPredicateQ(WXFFunctions::isByteArray);
 		F.DigitQ.setEvaluator(new DigitQ());
 		F.EvenQ.setEvaluator(new EvenQ());
 		F.ExactNumberQ.setPredicateQ(x -> x.isExactNumber());

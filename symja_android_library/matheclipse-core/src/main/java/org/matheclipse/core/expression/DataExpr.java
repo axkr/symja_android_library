@@ -1,10 +1,7 @@
 package org.matheclipse.core.expression;
 
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.Locale;
-
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -23,27 +20,22 @@ public class DataExpr implements IDataExpr {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -3866374701012688L;
-
-	public static DataExpr newInstance(final Symbol head, final byte[] bytes) {
-		DataExpr d = new DataExpr(head, WL.deserialize(bytes));
-		return d;
-	}
+	private static final long serialVersionUID = 4987827851920443376L;
 
 	/**
-	 * Be cautious with this method, no new internal String object is created
+	 * Be cautious with this method, no new internal IExpr object is created
 	 * 
 	 * @param value
 	 * @return
 	 */
-	public static DataExpr newInstance(final Symbol head, final Object value) {
+	public static DataExpr newInstance(final IBuiltInSymbol head, final Object value) {
 		return new DataExpr(head, value);
 	}
 
-	private Symbol fHead;
+	private IBuiltInSymbol fHead;
 	private Object fData;
 
-	private DataExpr(final Symbol head, final Object data) {
+	private DataExpr(final IBuiltInSymbol head, final Object data) {
 		fHead = head;
 		fData = data;
 	}
@@ -94,6 +86,11 @@ public class DataExpr implements IDataExpr {
 		return false;
 	}
 
+	@Override
+	public IExpr evaluate(EvalEngine engine) {
+		return F.NIL;
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public String fullFormString() {
@@ -116,8 +113,16 @@ public class DataExpr implements IDataExpr {
 	}
 
 	@Override
+	public Object toData() {
+		return fData;
+	}
+
+	@Override
 	public String toString() {
-		return fHead + "(" + fData.toString() + ")";
+		if (fHead.equals(F.ByteArray)) {
+			return fHead.toString() + "[" + ((byte[]) fData).length + " Bytes]";
+		}
+		return fHead + "[" + fData.toString() + "]";
 	}
 
 }
