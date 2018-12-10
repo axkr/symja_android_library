@@ -71,7 +71,7 @@ public class Example {
 
 			// define a function with a recursive factorial function definition.
 			// Note: fac(0) is the stop condition.
-			result = util.eval("fac(x_IntegerQ):=x*fac(x-1);fac(0)=1");
+			result = util.eval("fac(x_Integer):=x*fac(x-1);fac(0)=1");
 			// now calculate factorial of 10:
 			result = util.eval("fac(10)");
 			// print: 3628800

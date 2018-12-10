@@ -94,10 +94,10 @@ public interface SinRules {
       C0),
     // Sin(13/12*Pi)=-(-1+Sqrt(3))/(2*Sqrt(2))
     ISet(Sin(Times(QQ(13L,12L),Pi)),
-      Times(CN1D2,C1DSqrt2,Plus(CN1,CSqrt3))),
+      Times(C1D2,C1DSqrt2,Plus(C1,Negate(CSqrt3)))),
     // Sin(11/10*Pi)=-(-1+Sqrt(5))/4
     ISet(Sin(Times(QQ(11L,10L),Pi)),
-      Times(CN1D4,Plus(CN1,CSqrt5))),
+      Times(C1D4,Plus(C1,Negate(CSqrt5)))),
     // Sin(9/8*Pi)=-Sqrt(2-Sqrt(2))/2
     ISet(Sin(Times(QQ(9L,8L),Pi)),
       Times(CN1D2,Sqrt(Plus(C2,Negate(CSqrt2))))),
@@ -112,7 +112,7 @@ public interface SinRules {
       Negate(C1DSqrt2)),
     // Sin(13/10*Pi)=-(Sqrt(5)+1)/4
     ISet(Sin(Times(QQ(13L,10L),Pi)),
-      Times(CN1D4,Plus(C1,CSqrt5))),
+      Times(C1D4,Plus(CN1,Negate(CSqrt5)))),
     // Sin(4/3*Pi)=(-1)*1/2*Sqrt(3)
     ISet(Sin(Times(QQ(4L,3L),Pi)),
       Times(CN1D2,CSqrt3)),
@@ -124,13 +124,13 @@ public interface SinRules {
       Times(CN1D2,Sqrt(Times(C1D2,Plus(C5,CSqrt5))))),
     // Sin(17/12*Pi)=-(1+Sqrt(3))/(2*Sqrt(2))
     ISet(Sin(Times(QQ(17L,12L),Pi)),
-      Times(CN1D2,C1DSqrt2,Plus(C1,CSqrt3))),
+      Times(C1D2,C1DSqrt2,Plus(CN1,Negate(CSqrt3)))),
     // Sin(3/2*Pi)=-1
     ISet(Sin(Times(QQ(3L,2L),Pi)),
       CN1),
     // Sin(19/12*Pi)=-(1+Sqrt(3))/(2*Sqrt(2))
     ISet(Sin(Times(QQ(19L,12L),Pi)),
-      Times(CN1D2,C1DSqrt2,Plus(C1,CSqrt3))),
+      Times(C1D2,C1DSqrt2,Plus(CN1,Negate(CSqrt3)))),
     // Sin(8/5*Pi)=-Sqrt(1/2*(5+Sqrt(5)))/2
     ISet(Sin(Times(QQ(8L,5L),Pi)),
       Times(CN1D2,Sqrt(Times(C1D2,Plus(C5,CSqrt5))))),
@@ -142,7 +142,7 @@ public interface SinRules {
       Times(CN1D2,CSqrt3)),
     // Sin(17/10*Pi)=-(Sqrt(5)+1)/4
     ISet(Sin(Times(QQ(17L,10L),Pi)),
-      Times(CN1D4,Plus(C1,CSqrt5))),
+      Times(C1D4,Plus(CN1,Negate(CSqrt5)))),
     // Sin(7/4*Pi)=(-1)*1/2*Sqrt(2)
     ISet(Sin(Times(QQ(7L,4L),Pi)),
       Negate(C1DSqrt2)),
@@ -157,18 +157,18 @@ public interface SinRules {
       Times(CN1D2,Sqrt(Plus(C2,Negate(CSqrt2))))),
     // Sin(19/10*Pi)=-(-1+Sqrt(5))/4
     ISet(Sin(Times(QQ(19L,10L),Pi)),
-      Times(CN1D4,Plus(CN1,CSqrt5))),
+      Times(C1D4,Plus(C1,Negate(CSqrt5)))),
     // Sin(23/12*Pi)=-(-1+Sqrt(3))/(2*Sqrt(2))
     ISet(Sin(Times(QQ(23L,12L),Pi)),
-      Times(CN1D2,C1DSqrt2,Plus(CN1,CSqrt3))),
+      Times(C1D2,C1DSqrt2,Plus(C1,Negate(CSqrt3)))),
     // Sin(2*Pi)=0
     ISet(Sin(Times(C2,Pi)),
       C0),
     // Sin(I)=I*Sinh(1)
     ISet(Sin(CI),
       Times(CI,Sinh(C1))),
-    // Sin(x_NumberQ*Pi):=If(x<1,Sin((1-x)*Pi),If(x<2,-Sin((2-x)*Pi),Sin((x-2*Quotient(IntegerPart(x),2))*Pi)))/;x>=1/2
-    ISetDelayed(Sin(Times(Pi,$p(x,NumberQ))),
+    // Sin(x_?NumberQ*Pi):=If(x<1,Sin((1-x)*Pi),If(x<2,-Sin((2-x)*Pi),Sin((x-2*Quotient(IntegerPart(x),2))*Pi)))/;x>=1/2
+    ISetDelayed(Sin(Times(Pi,PatternTest(x_,NumberQ))),
       Condition(If(Less(x,C1),Sin(Times(Plus(C1,Negate(x)),Pi)),If(Less(x,C2),Negate(Sin(Times(Plus(C2,Negate(x)),Pi))),Sin(Times(Plus(x,Times(CN2,Quotient(IntegerPart(x),C2))),Pi)))),GreaterEqual(x,C1D2))),
     // Sin(ArcSin(x_)):=x
     ISetDelayed(Sin(ArcSin(x_)),

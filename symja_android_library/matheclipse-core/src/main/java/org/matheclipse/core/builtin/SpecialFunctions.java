@@ -1037,7 +1037,7 @@ public class SpecialFunctions {
 				}
 			}
 			if (z.isZero()) {
-				// ProductLog(k_NumberQ,0) := -Infinity/;k!=0
+				// ProductLog(k_?NumberQ,0) := -Infinity/;k!=0
 				if (k.isNonZeroComplexResult()) {
 					return F.CNInfinity;
 				}

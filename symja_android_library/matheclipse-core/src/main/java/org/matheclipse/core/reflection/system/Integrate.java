@@ -159,7 +159,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 			final IExpr x = ast.arg2();
 
 			if (arg1.isNumber()) {
-				// Integrate[x_NumberQ,y_Symbol] -> x*y
+				// Integrate[x_?NumberQ,y_Symbol] -> x*y
 				return Times(arg1, x);
 			}
 			if (arg1 instanceof ASTSeriesData) {

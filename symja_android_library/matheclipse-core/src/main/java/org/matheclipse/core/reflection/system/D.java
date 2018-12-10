@@ -338,7 +338,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 			}
 		}
 		if (fx.isNumber()) {
-			// D[x_NumberQ,y_] -> 0
+			// D[x_?NumberQ,y_] -> 0
 			return F.C0;
 		}
 		if (fx.equals(x)) {

@@ -95,8 +95,8 @@ public interface TanRules {
     // Tan(I)=I*Tanh(1)
     ISet(Tan(CI),
       Times(CI,Tanh(C1))),
-    // Tan(Pi*x_NumberQ):=If(x<1,-Tan((1-x)*Pi),If(x<2,Tan((-1+x)*Pi),Tan((x-2*Quotient(IntegerPart(x),2))*Pi)))/;x>1/2
-    ISetDelayed(Tan(Times(Pi,$p(x,NumberQ))),
+    // Tan(Pi*x_?NumberQ):=If(x<1,-Tan((1-x)*Pi),If(x<2,Tan((-1+x)*Pi),Tan((x-2*Quotient(IntegerPart(x),2))*Pi)))/;x>1/2
+    ISetDelayed(Tan(Times(Pi,PatternTest(x_,NumberQ))),
       Condition(If(Less(x,C1),Negate(Tan(Times(Plus(C1,Negate(x)),Pi))),If(Less(x,C2),Tan(Times(Plus(CN1,x),Pi)),Tan(Times(Plus(x,Times(CN2,Quotient(IntegerPart(x),C2))),Pi)))),Greater(x,C1D2))),
     // Tan(ArcSin(x_)):=x/Sqrt(1-x^2)
     ISetDelayed(Tan(ArcSin(x_)),

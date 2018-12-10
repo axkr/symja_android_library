@@ -51,7 +51,7 @@ Cos(2*Pi)=1,
 
 Cos(I)=Cosh(1),
 
-Cos(Pi*x_NumberQ):=If(x<1,(-1)*Cos((1-x)*Pi),If(x<2,Cos((2-x)*Pi),Cos((x-2*Quotient(IntegerPart(x),2))*Pi)))/;x>=1/2,
+Cos(Pi*x_?NumberQ):=If(x<1,(-1)*Cos((1-x)*Pi),If(x<2,Cos((2-x)*Pi),Cos((x-2*Quotient(IntegerPart(x),2))*Pi)))/;x>=1/2,
 
 Cos(ArcSin(x_)):=(1-x^2)^(1/2),
 Cos(ArcCos(x_)):=x,

@@ -1,7 +1,7 @@
 { 
  LaplaceTransform(a_. * E^(b_. + c_. * t_), t_, s_) := LaplaceTransform(a * E^b, t, s-c)
    /; FreeQ({b,c}, t), 
-  LaplaceTransform(a_ * t_ ^n_., t_, s_SymbolQ) := (-1)^n * D(LaplaceTransform(a, t, s), {s,n}) 
+  LaplaceTransform(a_ * t_ ^n_., t_, s_Symbol) := (-1)^n * D(LaplaceTransform(a, t, s), {s,n}) 
    /; FreeQ({n}, t) && n>0, 
    
  LaplaceTransform(t_^(1/2), t_, s_) := Sqrt(Pi)/(2*s^(3/2)),

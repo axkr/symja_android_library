@@ -18,7 +18,7 @@
  
  Log(a_,b_):=Log(b)*Log(a)^(-1),
  Log(a_,E):=Log(a)^(-1),
- Log(a_,E^m_IntegerQ):=m*Log(a)^(-1),
+ Log(a_,E^m_Integer):=m*Log(a)^(-1),
  Log(a_,0):=(-Infinity)*Log(a)^(-1), 
  Log(a_,1)=0, 
  Log(a_,-1):=I*Pi*Log(a)^(-1),

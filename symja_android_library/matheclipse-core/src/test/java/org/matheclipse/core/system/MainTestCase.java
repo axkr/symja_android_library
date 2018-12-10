@@ -678,18 +678,18 @@ public class MainTestCase extends AbstractTestCase {
 
 		check("D(f(x)/g(x), x)", "f'(x)/g(x)+(-f(x)*g'(x))/g(x)^2");
 
-		check("Trace(D(Sin(x),x))", "{{{D(x,x),1},1*Cos(x),Cos(x)},Cos(x)}");
+		check("Trace(D(Sin(x),x))", "{{NotListQ(x),True},{{D(x,x),1},1*Cos(x),Cos(x)},Cos(x)}");
 		check("D(Sin(x)^Cos(x),x)", "(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)");
 		check("Trace(D(Sin(x)^Cos(x),x))",
-				"{{{IntegerQ(#1)&&#1<0&[Cos(x)],IntegerQ(Cos(x))&&Cos(x)<0,{IntegerQ(Cos(x)),False},False}},Sin(x)^Cos(x)*(D(Cos(x),x)*Log(Sin(x))+(Cos(x)*D(Sin(x),x))/Sin(x)),{{IntegerQ(#1)&&#1<\n"
-						+ "0&[Cos(x)],IntegerQ(Cos(x))&&Cos(x)<0,{IntegerQ(Cos(x)),False},False}},{{{{{D(x,x),\n"
-						+ "1},(-1)*1*Sin(x),-Sin(x)},-Sin(x)},Log(Sin(x))*-Sin(x),-Log(Sin(x))*Sin(x)},{{{{D(x,x),\n"
-						+ "1},1*Cos(x),Cos(x)},Cos(x)},{{IntegerQ(#1)&&#1<0&[-1],IntegerQ(-1)&&-1<0,{IntegerQ(\n"
-						+ "-1),True},{-1<0,True},True},{{(-1)*(-1),1},Csc(x)^1,{IntegerQ(#1)&&#1<0&[1],IntegerQ(\n"
-						+ "1)&&1<0,{IntegerQ(1),True},{1<0,False},False},Csc(x)},Csc(x)},Cos(x)*Cos(x)*Csc(x),Cot(x)^\n"
-						+ "1*Cos(x),{{IntegerQ(#1)&&#1<0&[1],IntegerQ(1)&&1<0,{IntegerQ(1),True},{1<0,False},False},Cot(x)},Cos(x)*Cot(x)},Cos(x)*Cot(x)-Log(Sin(x))*Sin(x)},(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x),{{IntegerQ(#1)&&#1<\n"
-						+ "0&[Cos(x)],IntegerQ(Cos(x))&&Cos(x)<0,{IntegerQ(Cos(x)),False},False}},{{-Cos(x)*Cot(x),-Cos(x)*Cot(x)},{--Log(Sin(x))*Sin(x),(\n"
-						+ "-1)*(-1)*Log(Sin(x))*Sin(x),Log(Sin(x))*Sin(x)},-Cos(x)*Cot(x)+Log(Sin(x))*Sin(x)}}");
+				"{{{IntegerQ(#1)&&#1<0&[Cos(x)],IntegerQ(Cos(x))&&Cos(x)<0,{IntegerQ(Cos(x)),False},False}},Sin(x)^Cos(x)*(D(Cos(x),x)*Log(Sin(x))+(Cos(x)*D(Sin(x),x))/Sin(x)),{{IntegerQ(#1)&&#1<\n" + 
+				"0&[Cos(x)],IntegerQ(Cos(x))&&Cos(x)<0,{IntegerQ(Cos(x)),False},False}},{{{{NotListQ(x),True},{{D(x,x),\n" + 
+				"1},(-1)*1*Sin(x),-Sin(x)},-Sin(x)},Log(Sin(x))*-Sin(x),-Log(Sin(x))*Sin(x)},{{{NotListQ(x),True},{{D(x,x),\n" + 
+				"1},1*Cos(x),Cos(x)},Cos(x)},{{IntegerQ(#1)&&#1<0&[-1],IntegerQ(-1)&&-1<0,{IntegerQ(\n" + 
+				"-1),True},{-1<0,True},True},{{(-1)*(-1),1},Csc(x)^1,{IntegerQ(#1)&&#1<0&[1],IntegerQ(\n" + 
+				"1)&&1<0,{IntegerQ(1),True},{1<0,False},False},Csc(x)},Csc(x)},Cos(x)*Cos(x)*Csc(x),Cot(x)^\n" + 
+				"1*Cos(x),{{IntegerQ(#1)&&#1<0&[1],IntegerQ(1)&&1<0,{IntegerQ(1),True},{1<0,False},False},Cot(x)},Cos(x)*Cot(x)},Cos(x)*Cot(x)-Log(Sin(x))*Sin(x)},(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x),{{IntegerQ(#1)&&#1<\n" + 
+				"0&[Cos(x)],IntegerQ(Cos(x))&&Cos(x)<0,{IntegerQ(Cos(x)),False},False}},{{-Cos(x)*Cot(x),-Cos(x)*Cot(x)},{--Log(Sin(x))*Sin(x),(\n" + 
+				"-1)*(-1)*Log(Sin(x))*Sin(x),Log(Sin(x))*Sin(x)},-Cos(x)*Cot(x)+Log(Sin(x))*Sin(x)}}");
 	}
 
 	public void testSystem039() {
@@ -858,7 +858,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("SetAttributes($ooi, {Orderless, OneIdentity})", "");
 		check("$ooi(z,d,a,b,g)", "$ooi(a,b,d,g,z)");
 		check("$ooi(9,12,3,33)", "$ooi(3,9,12,33)");
-		check("$ooi(x_NumberQ,y_):={x,y}", "");
+		check("$ooi(x_?NumberQ,y_):={x,y}", "");
 		check("$ooi(a,10)", "{10,a}");
 	}
 
@@ -3139,10 +3139,10 @@ public class MainTestCase extends AbstractTestCase {
 		check("MatchQ(a+b+c+d, HoldPattern(Times(_,_)))", "False");
 
 		check("MatchQ(I, Complex(0,x_))", "True");
-		check("MatchQ(Sin(x)^3, Sin(a_.*x_)^n_IntegerQ)", "True");
+		check("MatchQ(Sin(x)^3, Sin(a_.*x_)^n_?IntegerQ)", "True");
 		check("MatchQ(powered(h,h), powered(x_ ^ a_., x_))", "True");
 		check("MatchQ(powered(h^3,h), powered(x_ ^ a_., x_))", "True");
-		check("MatchQ(42, _IntegerQ)", "True");
+		check("MatchQ(42, _?IntegerQ)", "True");
 		check("MatchQ(a+b+c+d, HoldPattern(Times(_,_)))", "False");
 		check("MatchQ(a+b+c+d, HoldPattern(Plus(_,_)))", "True");
 		check("MatchQ(Expand((a+b)^2), HoldPattern(Plus(_,_)))", "True");

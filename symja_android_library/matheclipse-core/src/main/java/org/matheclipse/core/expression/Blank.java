@@ -352,21 +352,21 @@ public class Blank implements IPattern {
 			patternMap.setValue(this, expr);
 			return true;
 		}
-		EvalEngine engine = EvalEngine.get();
-		boolean traceMode = false;
-		try {
-			traceMode = engine.isTraceMode();
-			engine.setTraceMode(false);
-			final Predicate<IExpr> matcher = Predicates.isTrue(engine, fCondition);
-			if (matcher.test(expr)) {
-				patternMap.setValue(this, expr);
-				return true;
-			}
-		} finally {
-			if (traceMode) {
-				engine.setTraceMode(true);
-			}
-		}
+		// EvalEngine engine = EvalEngine.get();
+		// boolean traceMode = false;
+		// try {
+		// traceMode = engine.isTraceMode();
+		// engine.setTraceMode(false);
+		// final Predicate<IExpr> matcher = Predicates.isTrue(engine, fCondition);
+		// if (matcher.test(expr)) {
+		// patternMap.setValue(this, expr);
+		// return true;
+		// }
+		// } finally {
+		// if (traceMode) {
+		// engine.setTraceMode(true);
+		// }
+		// }
 		return false;
 	}
 

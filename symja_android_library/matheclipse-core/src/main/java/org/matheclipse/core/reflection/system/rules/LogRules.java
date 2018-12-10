@@ -71,8 +71,8 @@ public interface LogRules {
     // Log(a_,E):=1/Log(a)
     ISetDelayed(Log(a_,E),
       Power(Log(a),-1)),
-    // Log(a_,E^m_IntegerQ):=m/Log(a)
-    ISetDelayed(Log(a_,Exp($p(m,IntegerQ))),
+    // Log(a_,E^m_Integer):=m/Log(a)
+    ISetDelayed(Log(a_,Exp($p(m, Integer))),
       Times(m,Power(Log(a),-1))),
     // Log(a_,0):=-Infinity/Log(a)
     ISetDelayed(Log(a_,C0),

@@ -23,14 +23,14 @@ public interface LimitRules {
     // Limit(x_/(x_!)^(1/x_),x_Symbol->Infinity):=E
     ISetDelayed(Limit(Times(x_,Power(Factorial(x_),Negate(Power(x_,-1)))),Rule(x_Symbol,oo)),
       E),
-    // Limit(x_^m_RealNumberQ,x_Symbol->Infinity):=If(m<0,0,Infinity)
-    ISetDelayed(Limit(Power(x_,$p(m,RealNumberQ)),Rule(x_Symbol,oo)),
+    // Limit(x_^m_?RealNumberQ,x_Symbol->Infinity):=If(m<0,0,Infinity)
+    ISetDelayed(Limit(Power(x_,PatternTest(m_,RealNumberQ)),Rule(x_Symbol,oo)),
       If(Less(m,C0),C0,oo)),
-    // Limit(m_NumberQ^x_,x_Symbol->Infinity):=If(m>1,Infinity,If(m==1,1,0))/;Positive(m)
-    ISetDelayed(Limit(Power($p(m,NumberQ),x_),Rule(x_Symbol,oo)),
+    // Limit(m_?NumberQ^x_,x_Symbol->Infinity):=If(m>1,Infinity,If(m==1,1,0))/;Positive(m)
+    ISetDelayed(Limit(Power(PatternTest(m_,NumberQ),x_),Rule(x_Symbol,oo)),
       Condition(If(Greater(m,C1),oo,If(Equal(m,C1),C1,C0)),Positive(m))),
-    // Limit(m_NumberQ^(-x_),x_Symbol->Infinity):=0/;m>1
-    ISetDelayed(Limit(Power($p(m,NumberQ),Negate(x_)),Rule(x_Symbol,oo)),
+    // Limit(m_?NumberQ^(-x_),x_Symbol->Infinity):=0/;m>1
+    ISetDelayed(Limit(Power(PatternTest(m_,NumberQ),Negate(x_)),Rule(x_Symbol,oo)),
       Condition(C0,Greater(m,C1))),
     // Limit(E^x_,x_Symbol->Infinity):=Infinity
     ISetDelayed(Limit(Exp(x_),Rule(x_Symbol,oo)),
@@ -53,8 +53,8 @@ public interface LimitRules {
     // Limit((1+a_/x_)^x_,x_Symbol->Infinity)=E^a/;FreeQ(a,x)
     ISet(Limit(Power(Plus(C1,Times(a_,Power(x_,-1))),x_),Rule(x_Symbol,oo)),
       Exp(a)),
-    // Limit(HarmonicNumber(y_Symbol,s_IntegerQ),x_Symbol->Infinity):=Module({v=s/2},((-1)^(v+1)*(2*Pi)^(2*v)*BernoulliB(2*v))/(2*(2*v)!))/;EvenQ(s)&&Positive(s)
-    ISetDelayed(Limit(HarmonicNumber(y_Symbol,$p(s,IntegerQ)),Rule(x_Symbol,oo)),
+    // Limit(HarmonicNumber(y_Symbol,s_Integer),x_Symbol->Infinity):=Module({v=s/2},((-1)^(v+1)*(2*Pi)^(2*v)*BernoulliB(2*v))/(2*(2*v)!))/;EvenQ(s)&&Positive(s)
+    ISetDelayed(Limit(HarmonicNumber(y_Symbol,$p(s, Integer)),Rule(x_Symbol,oo)),
       Condition(Module(List(Set(v,Times(C1D2,s))),Times(Power(CN1,Plus(v,C1)),Power(Times(C2,Pi),Times(C2,v)),BernoulliB(Times(C2,v)),Power(Times(C2,Factorial(Times(C2,v))),-1))),And(EvenQ(s),Positive(s)))),
     // Limit(Tan(x_),x_Symbol->Pi/2):=Indeterminate
     ISetDelayed(Limit(Tan(x_),Rule(x_Symbol,Times(C1D2,Pi))),

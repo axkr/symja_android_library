@@ -100,7 +100,7 @@ public class ExprEvaluatorTest extends TestCase {
 
 			// define a function with a recursive factorial function definition.
 			// Note: fac(0) is the stop condition.
-			result = util.eval("fac(x_IntegerQ):=x*fac(x-1);fac(0)=1");
+			result = util.eval("fac(x_?IntegerQ):=x*fac(x-1);fac(0)=1");
 			// now calculate factorial of 10:
 			result = util.eval("fac(10)");
 			assertEquals("3628800", result.toString());

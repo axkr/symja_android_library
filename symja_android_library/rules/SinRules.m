@@ -50,7 +50,7 @@ Sin(23/12*Pi)=-(-1+Sqrt(3))/(2*Sqrt(2)),
 Sin(2*Pi)=0,
 
 Sin(I)=I*Sinh(1), 
-Sin(x_NumberQ*Pi):=If(x<1, Sin((1-x)*Pi),If(x<2,-Sin((2-x)*Pi), Sin((x-2*Quotient(IntegerPart(x),2))*Pi) ) ) /; x>=1/2,
+Sin(x_?NumberQ*Pi):=If(x<1, Sin((1-x)*Pi),If(x<2,-Sin((2-x)*Pi), Sin((x-2*Quotient(IntegerPart(x),2))*Pi) ) ) /; x>=1/2,
 
 Sin(ArcSin(x_)):=x,
 Sin(ArcCos(x_)):=(1-x^2)^(1/2),

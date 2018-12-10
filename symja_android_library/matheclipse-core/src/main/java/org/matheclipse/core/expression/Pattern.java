@@ -29,7 +29,7 @@ public class Pattern extends Blank {
 				return value;
 			}
 		}
-		
+
 		return new Pattern(symbol);
 	}
 
@@ -268,20 +268,20 @@ public class Pattern extends Blank {
 		if (fCondition == null || expr.head().equals(fCondition)) {
 			return true;
 		}
-		EvalEngine engine = EvalEngine.get();
-		boolean traceMode = false;
-		try {
-			traceMode = engine.isTraceMode();
-			engine.setTraceMode(false);
-			final Predicate<IExpr> matcher = Predicates.isTrue(engine, fCondition);
-			if (matcher.test(expr)) {
-				return true;
-			}
-		} finally {
-			if (traceMode) {
-				engine.setTraceMode(true);
-			}
-		}
+//		EvalEngine engine = EvalEngine.get();
+//		boolean traceMode = false;
+//		try {
+//			traceMode = engine.isTraceMode();
+//			engine.setTraceMode(false);
+//			final Predicate<IExpr> matcher = Predicates.isTrue(engine, fCondition);
+//			if (matcher.test(expr)) {
+//				return true;
+//			}
+//		} finally {
+//			if (traceMode) {
+//				engine.setTraceMode(true);
+//			}
+//		}
 		return false;
 	}
 

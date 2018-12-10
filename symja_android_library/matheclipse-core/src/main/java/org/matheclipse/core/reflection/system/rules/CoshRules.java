@@ -40,7 +40,7 @@ public interface CoshRules {
       C0),
     // Cosh(3/5*Pi*I)=-(-1+Sqrt(5))/4
     ISet(Cosh(Times(CC(0L,1L,3L,5L),Pi)),
-      Times(CN1D4,Plus(CN1,CSqrt5))),
+      Times(C1D4,Plus(C1,Negate(CSqrt5)))),
     // Cosh(2/3*Pi*I)=-1/2
     ISet(Cosh(Times(CC(0L,1L,2L,3L),Pi)),
       CN1D2),
@@ -49,7 +49,7 @@ public interface CoshRules {
       Negate(C1DSqrt2)),
     // Cosh(4/5*Pi*I)=-(Sqrt(5)+1)/4
     ISet(Cosh(Times(CC(0L,1L,4L,5L),Pi)),
-      Times(CN1D4,Plus(C1,CSqrt5))),
+      Times(C1D4,Plus(CN1,Negate(CSqrt5)))),
     // Cosh(5/6*Pi*I)=-Sqrt(3)/2
     ISet(Cosh(Times(CC(0L,1L,5L,6L),Pi)),
       Times(CN1D2,CSqrt3)),
@@ -61,7 +61,7 @@ public interface CoshRules {
       Times(CN1D2,CSqrt3)),
     // Cosh(6/5*Pi*I)=-(Sqrt(5)+1)/4
     ISet(Cosh(Times(CC(0L,1L,6L,5L),Pi)),
-      Times(CN1D4,Plus(C1,CSqrt5))),
+      Times(C1D4,Plus(CN1,Negate(CSqrt5)))),
     // Cosh(5/4*Pi*I)=-1/Sqrt(2)
     ISet(Cosh(Times(CC(0L,1L,5L,4L),Pi)),
       Negate(C1DSqrt2)),
@@ -70,7 +70,7 @@ public interface CoshRules {
       CN1D2),
     // Cosh(7/5*Pi*I)=-(-1+Sqrt(5))/4
     ISet(Cosh(Times(CC(0L,1L,7L,5L),Pi)),
-      Times(CN1D4,Plus(CN1,CSqrt5))),
+      Times(C1D4,Plus(C1,Negate(CSqrt5)))),
     // Cosh(8/5*Pi*I)=1/4*(-1+Sqrt(5))
     ISet(Cosh(Times(CC(0L,1L,8L,5L),Pi)),
       Times(C1D4,Plus(CN1,CSqrt5))),
