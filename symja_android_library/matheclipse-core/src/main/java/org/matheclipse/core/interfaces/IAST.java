@@ -883,18 +883,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public IExpr getPart(final List<Integer> positions);
 
 	/**
-	 * Test if the last argument contains a pattern with a default argument.
-	 * 
-	 * @return
-	 */
-	default boolean hasDefaultArgument() {
-		if (size() > 1) {
-			return last().isPatternDefault();
-		}
-		return false;
-	}
-
-	/**
 	 * Test if one of the arguments gives <code>true</code> for the <code>isNumericArgument()</code> method
 	 * 
 	 * @return <code>true</code> if one of the arguments gives <code>true</code> for the

@@ -51,7 +51,9 @@ public class RulesData implements Serializable {
 				if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
 					return true;
 				}
-				if (lhsAST.arg1().isPattern()) {
+				if (lhsAST.arg1().isBlank()) {
+					return true;
+				} else if (lhsAST.arg1().isPattern()) {
 					return true;
 				} else if (lhsAST.arg1().isPatternSequence(false)) {
 					return true;

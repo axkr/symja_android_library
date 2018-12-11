@@ -7947,7 +7947,80 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1/6*(3+3*a^2+Sqrt(5+6*a+5*a^2)+a*(4+Sqrt(5+6*a+5*a^2)))");
 	}
 
-	public void testOptional() {
+
+	public void testOptional() { 
+		
+		check("f(a)/.f(a,b_.)->{a,b}", //
+				"f(a)");
+		check("f(a,b)/.f(a,b_.)->{a,b}", //
+				"{a,b}");
+		check("f(a)/.f(a,b_:c)->{a,b}", //
+				"{a,c}");
+		check("f(a,b)/.f(a,b_:c)->{a,b}", //
+				"{a,b}");
+		
+		check("f(x,y)/.f(a__,b_.)->{{a},{b}}", //
+				"{{x},{y}}");
+		check("f(x,y)/.f(a___,b_.)->{{a},{b}}", //
+				"{{x},{y}}");
+		check("f(x,y)/.f(a__,b_:c)->{{a},{b}}", //
+				"{{x},{y}}");
+		check("f(x,y)/.f(a___,b_:c)->{{a},{b}}", //
+				"{{x},{y}}");
+		
+		check("f(x,y)/.f(a___,b_:c,d_:e)->{{a},{b},{d}}", //
+				"{{},{x},{y}}");
+		check("f(x)/.f(a_,b_:y,c_:z)->{{a},{b},{c}}", //
+				"{{x},{y},{z}}");
+		check("f( )/.f(a_,b_:y,c_:z)->{{a},{b},{c}}", //
+				"f()");
+		check("f(x,i,j)/.f(a_,b_:y,c_:z)->{{a},{b},{c}}", //
+				"{{x},{i},{j}}");
+		check("a /.f(a,c_.)->{{c}}", //
+				"a");
+		
+		check("a /. a + c_.->{{c}}", //
+				"{{0}}");
+		
+		check("MatchQ(a,f(a,c_.))", //
+				"False");
+		check("MatchQ(a,a+c_.)", //
+				"True");
+		
+		check("a/.a+c_.+d_.->{{c},{d}}", //
+				"{{0},{0}}");
+		check("Cos(x)/.(_+c_.+d_.)->{{c},{d}}", //
+				"{{0},{0}}");
+		
+		check("5*a/.Optional(c1_?NumberQ)*a_->{{c1},{a}}", //
+				"{{5},{a}}");
+		check("a/.Optional(c1_?NumberQ)*a_->{{c1},{a}}", //
+				"{{1},{a}}");
+		
+		check("MatchQ(f(a,b),f(c1__?NumberQ))", //
+				"False");
+		check("MatchQ(f(1,2),f(c1__?NumberQ))", //
+				"True");
+		check("MatchQ(f(1,2),f(Optional(c1__?NumberQ)))", //
+				"False");
+		check("MatchQ(f(1),f(Optional(c1__?NumberQ)))", //
+				"True");
+		
+		check("ReplaceList({a,b,c},{a_:5,b__}->{{a},{b}})", //
+				"{{{a},{b,c}},{{5},{a,b,c}}}");
+		// TODO add missing combinations
+		check("ReplaceList({a,b,c},{a_:5,b_:6,c___}->{{a},{b},{c}})", //
+				"{{{a},{b},{c}},{{5},{6},{a,b,c}}}");
+		
+		check("MatchQ(-x,p_.)", //
+				"True");
+		check("MatchQ(-x*a,p_.*a)", //
+				"True");
+		check("MatchQ(__, Optional(1)*a_)", //
+				"True");
+		check("MatchQ(x^x, x^Optional(exp_))", //
+				"True");
+		
 		check("f(a) /. f(x_, y_:3) -> {x, y}", "{a,3}");
 
 		check("f(x_, Optional(y_,1)) := {x, y}", "");

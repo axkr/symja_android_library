@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.matheclipse.combinatoric.MultisetPartitionsIterator;
 import org.matheclipse.combinatoric.NumberPartitionsIterator;
+import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
@@ -641,6 +642,9 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				if (!matchExpr(lhsPatternAST.head(), lhsEvalAST.head(), engine)) {
 					return false;
 				}
+				if (lhsPatternAST.size() == 1 && lhsEvalAST.size() == 1) {
+					return true;
+				}
 				final int lastPosition = lhsPatternAST.argSize();
 				if (lhsPatternAST.get(lastPosition).isAST(F.PatternTest, 3)) {
 					if (lhsPatternAST.size() <= lhsEvalSize) {
@@ -945,6 +949,17 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		boolean[] defaultValueMatched = new boolean[] { false };
 		if (lhsPatternAST.exists((temp, i) -> {
 			if (temp.isPatternDefault()) {
+				if (temp.isAST(F.Optional, 2)) {
+					IExpr commonDefaultValue = symbolWithDefaultValue.getDefaultValue();
+					if (commonDefaultValue != null) {
+						if (!(matchExpr(temp.first(), commonDefaultValue, EvalEngine.get()))) {
+							return true;
+						}
+						defaultValueMatched[0] = true;
+						return false;
+					}
+					return false;
+				}
 				IPattern pattern = (IPattern) temp;
 				IExpr positionDefaultValue = pattern.getDefaultValue();
 				if (positionDefaultValue == null) {
@@ -1074,6 +1089,14 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 						} else {
 							matched = matchASTExpr(lhsPatternAST, lhsEvalExpr, engine, stackMatcher);
 						}
+						if (!matched) {
+							return false;
+						}
+					}
+					break;
+				case ID.Optional:
+					if (lhsPatternAST.isAST(F.Optional, 2, 3)) {
+						matched = matchExpr(lhsPatternAST.arg1(), lhsEvalExpr, engine, stackMatcher, false);
 						if (!matched) {
 							return false;
 						}
@@ -1369,6 +1392,18 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		boolean defaultValueMatched = false;
 		for (int i = 1; i < lhsPatternAST.size(); i++) {
 			if (lhsPatternAST.get(i).isPatternDefault()) {
+				if (lhsPatternAST.get(i).isAST(F.Optional, 2, 3)) {
+					IAST optional = (IAST) lhsPatternAST.get(i);
+					IExpr commonDefaultValue = symbolWithDefaultValue.getDefaultValue();
+					if (commonDefaultValue != null) {
+						if (!(matchExpr(optional.arg1(), commonDefaultValue, EvalEngine.get()))) {
+							return F.NIL;
+						}
+						defaultValueMatched = true;
+						continue;
+					}
+					return F.NIL;
+				}
 				IPattern pattern = (IPattern) lhsPatternAST.get(i);
 				IExpr positionDefaultValue = symbolWithDefaultValue.getDefaultValue(i);
 				if (positionDefaultValue == null) {
@@ -1412,6 +1447,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		}
 		return F.NIL;
 	}
+	
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {

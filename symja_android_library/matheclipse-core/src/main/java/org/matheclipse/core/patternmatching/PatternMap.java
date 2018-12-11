@@ -191,6 +191,10 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 			if (x.isAST()) {
 				listEvalFlags[0] |= determinePatternsRecursive(patternIndexMap, (IAST) x, treeLevel + 1);
 				fPriority -= 11;
+				if (x.isPatternDefault()) {
+					listEvalFlags[0] |= IAST.CONTAINS_DEFAULT_PATTERN;
+				}
+				
 			} else if (x instanceof IPatternObject) {
 				int[] result = ((IPatternObject) x).addPattern(this, patternIndexMap);
 				listEvalFlags[0] |= result[0];
