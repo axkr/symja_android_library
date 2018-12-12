@@ -42,19 +42,14 @@ public class Blank implements IPattern {
 	}
 
 	/**
-	 * The expression which should check this pattern
+	 * The expression which should check the head of the matched expression
 	 */
-	final IExpr fCondition;
+	final IExpr fHeadTest;
 
 	/**
-	 * Use default value, if no matching expression was found
+	 * Use the default value, if no matching expression was found
 	 */
 	final boolean fDefault;
-
-	/**
-	 * Use default value, if no matching expression was found
-	 */
-	final IExpr fDefaultValue;
 
 	public Blank() {
 		this(null);
@@ -66,16 +61,8 @@ public class Blank implements IPattern {
 
 	public Blank(final IExpr condition, boolean def) {
 		super();
-		this.fCondition = condition;
+		this.fHeadTest = condition;
 		this.fDefault = def;
-		this.fDefaultValue = null;
-	}
-
-	public Blank(final IExpr condition, IExpr defaultValue) {
-		super();
-		this.fCondition = condition;
-		this.fDefault = true;
-		this.fDefaultValue = defaultValue;
 	}
 
 	/**
@@ -122,7 +109,7 @@ public class Blank implements IPattern {
 			result[0] = IAST.CONTAINS_PATTERN;
 			result[1] = 5;
 		}
-		if (fCondition != null) {
+		if (fHeadTest != null) {
 			result[1] += 2;
 		}
 		return result;
@@ -135,28 +122,15 @@ public class Blank implements IPattern {
 			if (fDefault != blank.fDefault) {
 				return fDefault ? 1 : -1;
 			}
-			if (fCondition == null) {
-				if (blank.fCondition != null) {
+			if (fHeadTest == null) {
+				if (blank.fHeadTest != null) {
 					return -1;
 				}
 			} else {
-				if (blank.fCondition == null) {
+				if (blank.fHeadTest == null) {
 					return 1;
 				}
-				int result = fCondition.compareTo(blank.fCondition);
-				if (result != 0) {
-					return result;
-				}
-			}
-			if (fDefaultValue == null) {
-				if (blank.fDefaultValue != null) {
-					return -1;
-				}
-			} else {
-				if (blank.fDefaultValue == null) {
-					return 1;
-				}
-				int result = fDefaultValue.compareTo(blank.fDefaultValue);
+				int result = fHeadTest.compareTo(blank.fHeadTest);
 				if (result != 0) {
 					return result;
 				}
@@ -186,10 +160,10 @@ public class Blank implements IPattern {
 				return false;
 			}
 			Blank blank = (Blank) obj;
-			if ((fCondition != null) && (blank.fCondition != null)) {
-				return fCondition.equals(blank.fCondition);
+			if ((fHeadTest != null) && (blank.fHeadTest != null)) {
+				return fHeadTest.equals(blank.fHeadTest);
 			}
-			return fCondition == blank.fCondition;
+			return fHeadTest == blank.fHeadTest;
 		}
 		return false;
 	}
@@ -210,8 +184,8 @@ public class Blank implements IPattern {
 		}
 		if (patternObject instanceof Blank) {
 			// test if the "check" expressions are equal
-			final IExpr o1 = getCondition();
-			final IExpr o2 = patternObject.getCondition();
+			final IExpr o1 = getHeadTest();
+			final IExpr o2 = patternObject.getHeadTest();
 			if ((o1 == null) || (o2 == null)) {
 				return o1 == o2;
 			}
@@ -223,7 +197,7 @@ public class Blank implements IPattern {
 	@Override
 	public String fullFormString() {
 		StringBuilder buf = new StringBuilder();
-		if (fDefaultValue != null || fDefault) {
+		if (fDefault) {
 			buf.append("Optional");
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 				buf.append('(');
@@ -237,23 +211,15 @@ public class Blank implements IPattern {
 		} else {
 			buf.append('[');
 		}
-		if (fCondition != null) {
-			buf.append(fCondition.fullFormString());
+		if (fHeadTest != null) {
+			buf.append(fHeadTest.fullFormString());
 		}
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			buf.append(')');
 		} else {
 			buf.append(']');
 		}
-		if (fDefaultValue != null) {
-			buf.append(',');
-			buf.append(fDefaultValue.fullFormString());
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-				buf.append(')');
-			} else {
-				buf.append(']');
-			}
-		} else if (fDefault) {
+		if (fDefault) {
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 				buf.append(')');
 			} else {
@@ -264,13 +230,8 @@ public class Blank implements IPattern {
 	}
 
 	@Override
-	public IExpr getCondition() {
-		return fCondition;
-	}
-
-	@Override
-	public IExpr getDefaultValue() {
-		return fDefaultValue;
+	public IExpr getHeadTest() {
+		return fHeadTest;
 	}
 
 	@Override
@@ -299,7 +260,7 @@ public class Blank implements IPattern {
 
 	@Override
 	public int hashCode() {
-		return (fCondition == null) ? 193 : 23 + fCondition.hashCode();
+		return (fHeadTest == null) ? 193 : 23 + fHeadTest.hashCode();
 	}
 
 	@Override
@@ -318,9 +279,9 @@ public class Blank implements IPattern {
 		String prefix = usePrefix ? "F." : "";
 		final StringBuilder buffer = new StringBuilder();
 		buffer.append(prefix + "$b(");
-		if (fCondition != null) {
+		if (fHeadTest != null) {
 			buffer.append(
-					fCondition.internalJavaString(symbolsAsFactoryMethod, 0, useOperators, usePrefix, noSymbolPrefix));
+					fHeadTest.internalJavaString(symbolsAsFactoryMethod, 0, useOperators, usePrefix, noSymbolPrefix));
 		}
 		buffer.append(')');
 		return buffer.toString();
@@ -348,25 +309,10 @@ public class Blank implements IPattern {
 
 	@Override
 	public boolean isConditionMatched(final IExpr expr, PatternMap patternMap) {
-		if (fCondition == null || expr.head().equals(fCondition)) {
+		if (fHeadTest == null || expr.head().equals(fHeadTest)) {
 			patternMap.setValue(this, expr);
 			return true;
 		}
-		// EvalEngine engine = EvalEngine.get();
-		// boolean traceMode = false;
-		// try {
-		// traceMode = engine.isTraceMode();
-		// engine.setTraceMode(false);
-		// final Predicate<IExpr> matcher = Predicates.isTrue(engine, fCondition);
-		// if (matcher.test(expr)) {
-		// patternMap.setValue(this, expr);
-		// return true;
-		// }
-		// } finally {
-		// if (traceMode) {
-		// engine.setTraceMode(true);
-		// }
-		// }
 		return false;
 	}
 
@@ -391,7 +337,7 @@ public class Blank implements IPattern {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPatternOptional() {
-		return fDefaultValue != null;
+		return false; // fOptionalValue != null;
 	}
 
 	@Override
@@ -403,23 +349,11 @@ public class Blank implements IPattern {
 	public String toString() {
 		final StringBuilder buffer = new StringBuilder();
 		buffer.append('_');
-		if (fCondition != null) {
-			buffer.append(fCondition.toString());
-		} else {
-			if (fDefaultValue != null) {
-				buffer.append(':');
-				if (!fDefaultValue.isAtom()) {
-					buffer.append('(');
-				}
-				buffer.append(fDefaultValue.toString());
-				if (!fDefaultValue.isAtom()) {
-					buffer.append(')');
-				}
-			} else {
-				if (fDefault) {
-					buffer.append('.');
-				}
-			}
+		if (fHeadTest != null) {
+			buffer.append(fHeadTest.toString());
+		}
+		if (fDefault) {
+			buffer.append('.');
 		}
 		return buffer.toString();
 	}

@@ -36,7 +36,7 @@ public interface IPatternObject extends IExpr {
 	 * 
 	 * @return <code>null</code> if no condition is associated.
 	 */
-	public IExpr getCondition();
+	public IExpr getHeadTest();
 
 	/**
 	 * Get the flags which should be set in an AST structure, if the structure contains a pattern or pattern sequence.

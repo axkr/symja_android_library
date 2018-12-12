@@ -146,8 +146,8 @@ public class PatternSequence implements IPatternSequence {
 				return false;
 			}
 			// test if the "check" expressions are equal
-			final Object o1 = getCondition();
-			final Object o2 = p2.getCondition();
+			final Object o1 = getHeadTest();
+			final Object o2 = p2.getHeadTest();
 			if ((o1 == null) || (o2 == null)) {
 				return o1 == o2;
 			}
@@ -180,7 +180,7 @@ public class PatternSequence implements IPatternSequence {
 	}
 
 	@Override
-	public IExpr getCondition() {
+	public IExpr getHeadTest() {
 		return fCondition;
 	}
 

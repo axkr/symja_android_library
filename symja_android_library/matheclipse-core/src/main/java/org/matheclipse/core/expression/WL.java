@@ -306,12 +306,13 @@ public class WL {
 				return;
 			case IExpr.BLANKID:
 				IPattern blank = (IPattern) arg1;
-				IExpr blankCondition = blank.getCondition();
-				IExpr blankDef = blank.getDefaultValue();
-				if (blankDef != null) {
-					blank = F.$b();
-					writeAST2(F.Optional, blank, blankDef);
-				} else if (blank.isPatternDefault()) {
+				IExpr blankCondition = blank.getHeadTest();
+				// IExpr blankDef = blank.getOptionalValue();
+				// if (blankDef != null) {
+				// blank = F.$b();
+				// writeAST2(F.Optional, blank, blankDef);
+				// } else
+				if (blank.isPatternDefault()) {
 					blank = F.$b();
 					writeAST1(F.Optional, blank);
 				} else if (blankCondition != null) {
@@ -323,7 +324,7 @@ public class WL {
 			case IExpr.PATTERNID:
 				if (arg1 instanceof IPatternSequence) {
 					IPatternSequence pat = (IPatternSequence) arg1;
-					IExpr condition = pat.getCondition();
+					IExpr condition = pat.getHeadTest();
 					ISymbol symbol = pat.getSymbol();
 					if (symbol == null) {
 						if (pat.isNullSequence()) {
@@ -356,12 +357,13 @@ public class WL {
 					}
 				} else {
 					IPattern pat = (IPattern) arg1;
-					IExpr condition = pat.getCondition();
-					IExpr def = pat.getDefaultValue();
-					if (def != null) {
-						pat = F.$p(pat.getSymbol());
-						writeAST2(F.Optional, pat, def);
-					} else if (pat.isPatternDefault()) {
+					IExpr condition = pat.getHeadTest();
+					// IExpr def = pat.getOptionalValue();
+					// if (def != null) {
+					// pat = F.$p(pat.getSymbol());
+					// writeAST2(F.Optional, pat, def);
+					// } else
+					if (pat.isPatternDefault()) {
 						pat = F.$p(pat.getSymbol());
 						writeAST1(F.Optional, pat);
 					} else if (condition != null) {

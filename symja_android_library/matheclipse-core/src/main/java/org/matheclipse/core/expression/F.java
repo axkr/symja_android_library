@@ -4030,9 +4030,9 @@ public class F {
 	 *            use this <code>defaultValue</code> in pattern-matching if an argument is optional
 	 * @return IPattern
 	 */
-	public static IPattern $b(final IExpr condition, IExpr defaultValue) {
-		return new org.matheclipse.core.expression.Blank(condition, defaultValue);
-	}
+//	public static IPattern $b(final IExpr condition, IExpr defaultValue) {
+//		return new org.matheclipse.core.expression.Blank(condition, defaultValue);
+//	}
 
 	/**
 	 * Create a <code>Pattern[]</code> pattern for pattern-matching and term rewriting
@@ -4093,9 +4093,9 @@ public class F {
 	 *            use this <code>defaultValue</code> in pattern-matching if an argument is optional
 	 * @return IPattern
 	 */
-	public static IPattern $p(final ISymbol symbol, final IExpr check, final IExpr defaultValue) {
-		return org.matheclipse.core.expression.Pattern.valueOf(symbol, check, defaultValue);
-	}
+//	public static IPattern $p(final ISymbol symbol, final IExpr check, final IExpr defaultValue) {
+//		return org.matheclipse.core.expression.Pattern.valueOf(symbol, check, defaultValue);
+//	}
 
 	/**
 	 * Create a pattern for pattern-matching and term rewriting
@@ -4186,9 +4186,9 @@ public class F {
 	 *            use this <code>defaultValue</code> in pattern-matching if an argument is optional
 	 * @return IPattern
 	 */
-	public static IPattern pattern(final ISymbol symbol, final IExpr check, final IExpr defaultValue) {
-		return org.matheclipse.core.expression.Pattern.valueOf(symbol, check, defaultValue);
-	}
+//	public static IPattern pattern(final ISymbol symbol, final IExpr check, final IExpr defaultValue) {
+//		return org.matheclipse.core.expression.Pattern.valueOf(symbol, check, defaultValue);
+//	}
 
 	/**
 	 * Create a pattern for pattern-matching and term rewriting
@@ -4200,9 +4200,9 @@ public class F {
 	 *            use this <code>defaultValue</code> in pattern-matching if an argument is optional
 	 * @return IPattern
 	 */
-	public static IPattern $p(@Nonnull final String symbolName, final IExpr check, final IExpr defaultValue) {
-		return org.matheclipse.core.expression.Pattern.valueOf($s(symbolName), check, defaultValue);
-	}
+//	public static IPattern $p(@Nonnull final String symbolName, final IExpr check, final IExpr defaultValue) {
+//		return org.matheclipse.core.expression.Pattern.valueOf($s(symbolName), check, defaultValue);
+//	}
 
 	/**
 	 * Create a pattern for pattern-matching and term rewriting

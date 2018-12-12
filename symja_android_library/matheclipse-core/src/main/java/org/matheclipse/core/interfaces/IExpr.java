@@ -1331,6 +1331,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is the <code>Optional</code> function <code>Optional[&lt;pattern&gt;]</code> or
+	 * <code>Optional[&lt;pattern&gt;, &lt;value&gt;]</code>
+	 * 
+	 * @return
+	 */
+	default boolean isOptional() {
+		return false;
+	}
+	
+	/**
 	 * Test if this expression is already expanded i.e. <code>Plus, Times, Power</code> expression is expanded.
 	 * 
 	 * @return
@@ -2067,6 +2077,10 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default boolean isPatternDefault() {
 		return false;
+	}
+
+	default IExpr getOptionalValue() {
+		return null;
 	}
 
 	/**

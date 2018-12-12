@@ -13,7 +13,7 @@ public interface IPatternSequence extends IPatternObject, IExpr {
 	 * @return may return null;
 	 */
 	@Override
-	public IExpr getCondition();
+	public IExpr getHeadTest();
 
 	/**
 	 * Check if this pattern sequence object matches the given <code>sequence</code>.

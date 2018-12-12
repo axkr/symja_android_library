@@ -92,12 +92,12 @@ public final class PatternMatching {
 				String contextName = Validate.checkContextName(ast, 1);
 				Context pack = EvalEngine.get().getContextPath().currentContext();
 				String packageName = pack.getContextName();
-//				if (packageName.equals(Context.GLOBAL_CONTEXT_NAME)) {
-//					completeContextName = contextName;
-//				} else {
-//					completeContextName = packageName.substring(0, packageName.length() - 1) + contextName;
-//				}
-				Context context=engine.begin(contextName, pack); 
+				// if (packageName.equals(Context.GLOBAL_CONTEXT_NAME)) {
+				// completeContextName = contextName;
+				// } else {
+				// completeContextName = packageName.substring(0, packageName.length() - 1) + contextName;
+				// }
+				Context context = engine.begin(contextName, pack);
 				return F.stringx(context.completeContextName());
 			}
 			return F.NIL;
@@ -823,30 +823,39 @@ public final class PatternMatching {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.head().equals(F.Optional)) {
-
+				// convert only special forms of _. or x_.
 				if (ast.size() == 2) {
 					IExpr arg1 = engine.evaluate(ast.arg1());
 					if (arg1.isBlank()) {
 						IPattern patt = (IPattern) arg1;
-						return F.$b(patt.getCondition(), true);
+						if (patt.getHeadTest() == null) {
+							return F.$b(patt.getHeadTest(), true);
+						}
 					}
 					if (arg1.isPattern()) {
 						IPattern patt = (IPattern) arg1;
-						return F.$p(patt.getSymbol(), patt.getCondition(), true);
+						if (patt.getHeadTest() == null) {
+							return F.$p(patt.getSymbol(), patt.getHeadTest(), true);
+						}
 					}
 				}
-				if (ast.size() == 3) {
-					IExpr arg1 = engine.evaluate(ast.arg1());
-					IExpr arg2 = engine.evaluate(ast.arg2());
-					if (arg1.isBlank()) {
-						IPattern patt = (IPattern) arg1;
-						return F.$b(patt.getCondition(), arg2);
-					}
-					if (arg1.isPattern()) {
-						IPattern patt = (IPattern) arg1;
-						return F.$p(patt.getSymbol(), patt.getCondition(), arg2);
-					}
-				}
+				// if (ast.size() == 3) {
+				// // convert only special forms of _:v or x_:v.
+				// IExpr arg1 = engine.evaluate(ast.arg1());
+				// IExpr arg2 = engine.evaluate(ast.arg2());
+				// if (arg1.isBlank()) {
+				// IPattern patt = (IPattern) arg1;
+				// if (patt.getCondition() == null) {
+				// return F.$b(patt.getCondition(), arg2);
+				// }
+				// }
+				// if (arg1.isPattern()) {
+				// IPattern patt = (IPattern) arg1;
+				// if (patt.getCondition() == null) {
+				// return F.$p(patt.getSymbol(), patt.getCondition(), arg2);
+				// }
+				// }
+				// }
 			}
 			return F.NIL;
 		}
@@ -867,7 +876,7 @@ public final class PatternMatching {
 					if (ast.arg1().isSymbol()) {
 						if (ast.arg2().isBlank()) {
 							IPatternObject blank = (IPatternObject) ast.arg2();
-							return F.$p((ISymbol) ast.arg1(), blank.getCondition());
+							return F.$p((ISymbol) ast.arg1(), blank.getHeadTest());
 						}
 						if (ast.arg2().isAST(F.Blank, 1)) {
 							return F.$p((ISymbol) ast.arg1());

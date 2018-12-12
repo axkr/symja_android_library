@@ -445,7 +445,7 @@ public class AST2Expr {
 			}
 			ASTNode defaultValue = pn.getDefaultValue();
 			if (defaultValue != null) {
-				return F.$p((ISymbol) convertNode(pn.getSymbol()), convertNode(pn.getConstraint()),
+				return F.Optional(F.$p((ISymbol) convertNode(pn.getSymbol()), convertNode(pn.getConstraint())),
 						convertNode(defaultValue));
 			}
 			return F.$p((ISymbol) convertNode(pn.getSymbol()), convertNode(pn.getConstraint()), pn.isDefault());

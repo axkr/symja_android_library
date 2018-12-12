@@ -4537,7 +4537,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Optional(Blank())", //
 				"_.");
 		check("( _:2 ) // FullForm", //
-				"Optional(Blank(),2)");
+				"Optional(Blank(), 2)");
 		check("Optional(Blank(),2)", //
 				"_:2");
 		check("( x_. ) // FullForm", //
@@ -4545,7 +4545,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Optional(Pattern(x, Blank()))", //
 				"x_.");
 		check("( x_:2 ) // FullForm", //
-				"Optional(Pattern(x, Blank()),2)");
+				"Optional(Pattern(x, Blank()), 2)");
 		check("Optional(Pattern(x,Blank()),2)", //
 				"x_:2");
 		// FullForm[Hold[(#1[[1]]*#1[[2]] & )[SignOfFactor[NormalizeSumFactors /@ u]]]]
@@ -7949,7 +7949,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 
 	public void testOptional() { 
-		
 		check("f(a)/.f(a,b_.)->{a,b}", //
 				"f(a)");
 		check("f(a,b)/.f(a,b_.)->{a,b}", //
@@ -9896,7 +9895,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testReplaceAll() {
 		check("x_Integer /. x->xvar", //
-				"xvar_.Integer");
+				"xvar_Integer");
 		check("x__ /. x->xvar", //
 				"xvar__");
 		check("x___ /. x->xvar", //

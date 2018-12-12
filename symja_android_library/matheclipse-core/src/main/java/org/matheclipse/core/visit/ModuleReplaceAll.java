@@ -52,9 +52,9 @@ public class ModuleReplaceAll extends VisitorExpr {
 			IExpr expr = apply(symbol);
 			if (expr.isPresent() && expr.isSymbol()) {
 				if (element.isPatternDefault()) {
-					return F.$p((ISymbol) expr, element.getCondition(), true);
+					return F.$p((ISymbol) expr, element.getHeadTest(), true);
 				}
-				return F.$p((ISymbol) expr, element.getCondition(), element.getDefaultValue());
+				return F.$p((ISymbol) expr, element.getHeadTest());
 			}
 		}
 		return F.NIL;
@@ -66,7 +66,7 @@ public class ModuleReplaceAll extends VisitorExpr {
 		if (symbol != null) {
 			IExpr expr = apply(symbol);
 			if (expr.isPresent() && expr.isSymbol()) {
-				return F.$ps((ISymbol) expr, element.getCondition(), element.isDefault(), element.isNullSequence());
+				return F.$ps((ISymbol) expr, element.getHeadTest(), element.isDefault(), element.isNullSequence());
 			}
 		}
 		return F.NIL;
@@ -93,12 +93,12 @@ public class ModuleReplaceAll extends VisitorExpr {
 				return temp;
 			}
 			return ast;
-//		} else if (ast.isASTSizeGE(F.Block, 2)) {
-//			temp = visitNestedScope(ast, false);
-//			if (temp.isPresent()) {
-//				return temp;
-//			}
-//			return F.NIL;
+			// } else if (ast.isASTSizeGE(F.Block, 2)) {
+			// temp = visitNestedScope(ast, false);
+			// if (temp.isPresent()) {
+			// return temp;
+			// }
+			// return F.NIL;
 		}
 
 		return visitASTModule(ast);
@@ -108,7 +108,8 @@ public class ModuleReplaceAll extends VisitorExpr {
 	 * Handle nested Module(), With() or Function()
 	 * 
 	 * @param ast
-	 * @param isFunction <code>ast</code> has the form <code>Function(a1, a2)</code> 
+	 * @param isFunction
+	 *            <code>ast</code> has the form <code>Function(a1, a2)</code>
 	 * @return
 	 */
 	private IAST visitNestedScope(IAST ast, boolean isFunction) {

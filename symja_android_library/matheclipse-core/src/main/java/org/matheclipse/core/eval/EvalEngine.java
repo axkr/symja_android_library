@@ -1465,7 +1465,7 @@ public class EvalEngine implements Serializable {
 			// AbstractFunctionEvaluator#setUp() method
 			((IBuiltInSymbol) symbol).getEvaluator();
 		}
-		if (ast.isAST(F.Optional, 3)) {
+		if (ast.isAST(F.Optional, 2)) {
 			return ((IFunctionEvaluator) F.Optional.getEvaluator()).evaluate(ast, this);
 		}
 

@@ -1773,6 +1773,12 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
+	public final boolean isOptional() {
+		return isAST(F.Optional, 2, 3);
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public final boolean isExpanded() {
 		return !(isPlusTimesPower() && (isEvalFlagOff(IAST.IS_EXPANDED)));
 	}
@@ -1894,7 +1900,7 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isHoldPatternOrLiteral() {
-		return isSameHead(F.HoldPattern, 2)||isSameHead(F.Literal, 2);
+		return isSameHead(F.HoldPattern, 2) || isSameHead(F.Literal, 2);
 	}
 
 	/** {@inheritDoc} */
@@ -2145,9 +2151,18 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPatternDefault() {
-		return isAST(F.Optional,2,3);
+		return isOptional();
 	}
-	
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr getOptionalValue() {
+		if (isAST(F.Optional, 3)) {
+			return arg2();
+		}
+		return null;// fOptionalValue;
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isPatternExpr() {

@@ -125,9 +125,9 @@ public class VisitorReplaceAll extends VisitorExpr {
 			IExpr expr = fFunction.apply(symbol);
 			if (expr.isPresent() && expr.isSymbol()) {
 				if (element.isPatternDefault()) {
-					return F.$p((ISymbol) expr, element.getCondition(), true);
+					return F.$p((ISymbol) expr, element.getHeadTest(), true);
 				}
-				return F.$p((ISymbol) expr, element.getCondition(), element.getDefaultValue());
+				return F.$p((ISymbol) expr, element.getHeadTest());
 			}
 		}
 		return F.NIL;
@@ -143,12 +143,12 @@ public class VisitorReplaceAll extends VisitorExpr {
 		if (symbol != null) {
 			IExpr expr = fFunction.apply(symbol);
 			if (expr.isPresent() && expr.isSymbol()) {
-				return F.$ps((ISymbol) expr, element.getCondition(), element.isDefault(), element.isNullSequence());
+				return F.$ps((ISymbol) expr, element.getHeadTest(), element.isDefault(), element.isNullSequence());
 			}
 		}
 		return F.NIL;
 	}
-	
+
 	/**
 	 * 
 	 * @return <code>F.NIL</code>, if no evaluation is possible

@@ -951,7 +951,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		boolean[] defaultValueMatched = new boolean[] { false };
 		if (lhsPatternAST.exists((temp, i) -> {
 			if (temp.isPatternDefault()) {
-				if (temp.isAST(F.Optional, 2, 3)) {
+				if (temp.isOptional()) {
 					IAST optional = (IAST) temp;
 					IExpr optionalValue;
 					if (optional.size() == 3) {
@@ -964,15 +964,11 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 							return true;
 						}
 						defaultValueMatched[0] = true;
-						return false;
 					}
 					return false;
 				}
 				IPattern pattern = (IPattern) temp;
-				IExpr positionDefaultValue = pattern.getDefaultValue();
-				if (positionDefaultValue == null) {
-					positionDefaultValue = symbolWithDefaultValue.getDefaultValue(i);
-				}
+				IExpr positionDefaultValue = symbolWithDefaultValue.getDefaultValue(i);
 				if (positionDefaultValue != null) {
 					if (!((IPatternObject) temp).matchPattern(positionDefaultValue, fPatternMap)) {
 						return true;
@@ -1103,7 +1099,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 					}
 					break;
 				case ID.Optional:
-					if (lhsPatternAST.isAST(F.Optional, 2, 3)) {
+					if (lhsPatternAST.isOptional()) {
 						matched = matchExpr(lhsPatternAST.arg1(), lhsEvalExpr, engine, stackMatcher, false);
 						if (!matched) {
 							return false;
@@ -1399,14 +1395,17 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	private IExpr matchOptionalArgumentsAST(ISymbol symbolWithDefaultValue, IAST lhsPatternAST, IAST lhsEvalAST,
 			EvalEngine engine) {
 		int lhsSize = lhsEvalAST.size();
-		IExpr head = lhsEvalAST.head();
 		IASTAppendable cloned = F.ast(lhsPatternAST.head(), lhsPatternAST.size(), false);
 		boolean defaultValueMatched = false;
 		for (int i = 1; i < lhsPatternAST.size(); i++) {
 			IExpr temp = lhsPatternAST.get(i);
 			if (temp.isPatternDefault()) {
-				if (temp.isAST(F.Optional, 2, 3)) {
+				if (temp.isOptional()) {
 					IAST optional = (IAST) temp;
+					if (i < lhsSize) {
+						cloned.append(optional.arg1());
+						continue;
+					}
 					IExpr optionalValue;
 					if (optional.size() == 3) {
 						optionalValue = optional.arg2();
@@ -1420,40 +1419,30 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 						defaultValueMatched = true;
 						continue;
 					}
-					return F.NIL;
-				}
-				IPattern pattern = (IPattern) temp;
-				IExpr positionDefaultValue = symbolWithDefaultValue.getDefaultValue(i);
-				if (positionDefaultValue == null) {
-					if (i < lhsSize && symbolWithDefaultValue.equals(head)) {
-						cloned.append(pattern);
-						continue;
-					}
-				}
-				if (positionDefaultValue == null) {
-					positionDefaultValue = pattern.getDefaultValue();
-				}
-				if (positionDefaultValue != null) {
-					if (!((IPatternObject) temp).matchPattern(positionDefaultValue, fPatternMap)) {
-						return F.NIL;
-					}
-					defaultValueMatched = true;
-					continue;
 				} else {
-					if (i < lhsSize) {
-						cloned.append(pattern);
-						continue;
-					}
-					IExpr commonDefaultValue = symbolWithDefaultValue.getDefaultValue();
-					if (commonDefaultValue != null) {
-						if (!((IPatternObject) temp).matchPattern(commonDefaultValue, fPatternMap)) {
+					IPattern pattern = (IPattern) temp;
+					IExpr positionDefaultValue = symbolWithDefaultValue.getDefaultValue(i);
+					if (positionDefaultValue != null) {
+						if (!((IPatternObject) temp).matchPattern(positionDefaultValue, fPatternMap)) {
 							return F.NIL;
 						}
 						defaultValueMatched = true;
 						continue;
+					} else {
+						if (i < lhsSize) {
+							cloned.append(pattern);
+							continue;
+						}
+						IExpr commonDefaultValue = symbolWithDefaultValue.getDefaultValue();
+						if (commonDefaultValue != null) {
+							if (!((IPatternObject) temp).matchPattern(commonDefaultValue, fPatternMap)) {
+								return F.NIL;
+							}
+							defaultValueMatched = true;
+							continue;
+						}
 					}
 				}
-
 			}
 			cloned.append(temp);
 		}
