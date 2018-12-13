@@ -986,9 +986,9 @@ public class ExpTrigsFunctions {
 						final IExpr angle = engine.evaluate(F.Times(F.QQ(2, i), F.Pi));
 
 						IASTAppendable result = F.ListAlloc(10);
-						ast.forEach(0, i, (x, j) -> {
+						for (int j = 0; j < i; j++) {
 							result.append(F.AngleVector(F.Plus(start, F.ZZ(j).times(angle))));
-						});
+						}
 						return result;
 					}
 				}
