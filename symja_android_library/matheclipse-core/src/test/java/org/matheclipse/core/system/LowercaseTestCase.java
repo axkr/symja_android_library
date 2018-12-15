@@ -1538,8 +1538,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCirclePoints() {
+		// check("CirclePoints(3)", "{{Sqrt(3)/2,-1/2},{0,1},{-Sqrt(3)/2,-1/2}}");
 		check("CirclePoints(2)", "{{1,0},{-1,0}}");
-		check("CirclePoints(3)", "{{Sqrt(3)/2,-1/2},{0,1},{-Sqrt(3)/2,-1/2}}");
+
 		check("CirclePoints(4)",
 				"{{1/Sqrt(2),-1/Sqrt(2)},{1/Sqrt(2),1/Sqrt(2)},{-1/Sqrt(2),1/Sqrt(2)},{-1/Sqrt(2),\n" + "-1/Sqrt(2)}}");
 		// check("CirclePoints(10)", "");
@@ -1970,6 +1971,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("g(x_) := Module({a}, a = Prime(10^x); (FactorInteger(a + 1)) /; a < 10^6)", "");
 		check("g(4)", "{{2,1},{3,1},{5,1},{3491,1}}");
 		check("g(5)", "g(5)");
+	}
+
+	public void testConditionalExpression() {
+		check("ConditionalExpression(a,True)", //
+				"a");
+		check("ConditionalExpression(a,False)", //
+				"Undefined");
 	}
 
 	public void testConjugate() {
@@ -3690,6 +3698,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("Factor(a*b+(4+4*x+x^2)^2)",//
 		// "16+a*b+32*x+24*x^2+8*x^3+x^4");
 
+		// Homogenization example from
+		// https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+		check("Factor(E^(3*x)-4*E^x+3*E^(-x))", //
+				"((-1+E^x)*(1+E^x)*(-3+E^(2*x)))/E^x");
+		check("Factor(E^x+E^(2*x))", //
+				"E^x*(1+E^x)");
+
 		// TODO https://github.com/kredel/java-algebra-system/issues/8
 		check("Factor(a*c+(b*c+a*d)*x+b*d*x^2)", //
 				"(a+b*x)*(c+d*x)");
@@ -5364,13 +5379,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testIntegrate() {
 		// check("Limit(1/9*x*(9-x^2)^(3/2)*Hypergeometric2F1(1,2,3/2,x^2/9),x->3)", //
 		// "");
-
+		check("Integrate(x^n,x)", //
+				"x^(1+n)/(1+n)");
+		check("Integrate(x^n,{x,0,1})", //
+				"(1-ConditionalExpression(0,n>-1))/(1+n)");
 		// https://github.com/RuleBasedIntegration/Rubi/issues/12
 		check("Integrate(Tan(Log(x)),x)", //
 				"I*(-x+2*x*Hypergeometric2F1(1,-I*1/2,1-I*1/2,-x^(I*2)))");
 
 		check("Integrate(5*E^(3*x),{x,2,a})", //
-				"-5/3*E^6+5/3*E^(3*a)");
+				"1/3*(-5*E^6+5*E^(3*a))");
 		check("Integrate(Sqrt(9-x^2),x)", //
 				"1/2*x*Sqrt(9-x^2)+9/2*ArcSin(x/3)");
 		check("Integrate(Sqrt(9-x^2),{x,0,3})", //
@@ -6051,6 +6069,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("Limit(x/((x!)^(1/x)), x->Infinity)", //
 		// "E");
 
+		check("Limit(x^(13+n),x->0)", //
+				"ConditionalExpression(0,n>-13)");
+		// check("Limit(x^(13+n)/a,x->0)", //
+		// "");
+
 		check("Limit(E^(3*x), x->a)", //
 				"E^(3*a)");
 
@@ -6079,9 +6102,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Limit(Log(y*x), x->0)", "-Infinity+Log(y)");
 		check("Limit(Log(x), x->Infinity)", "Infinity");
 		check("Limit(Log(x), x->-Infinity)", "Infinity");
-		check("Limit((y*x)/Abs(x), x->0)", "Indeterminate");
+		check("Limit((y*x)/Abs(x), x->0)", //
+				"Indeterminate");
 		check("Limit((y*x)/Abs(x), x->0, Direction->1)", "-y");
-		check("Limit(x/Abs(x), x->0)", "Indeterminate");
+		check("Limit(x/Abs(x), x->0)", //
+				"Indeterminate");
 		check("Limit(x/Abs(x), x->0, Direction->-1)", "1");
 		check("Limit(x/Abs(x), x->0, Direction->1)", "-1");
 		check("Limit(Log(x), x -> 0)", "-Infinity");
@@ -7947,8 +7972,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1/6*(3+3*a^2+Sqrt(5+6*a+5*a^2)+a*(4+Sqrt(5+6*a+5*a^2)))");
 	}
 
-
-	public void testOptional() { 
+	public void testOptional() {
 		check("f(a)/.f(a,b_.)->{a,b}", //
 				"f(a)");
 		check("f(a,b)/.f(a,b_.)->{a,b}", //
@@ -7957,7 +7981,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{a,c}");
 		check("f(a,b)/.f(a,b_:c)->{a,b}", //
 				"{a,b}");
-		
+
 		check("f(x,y)/.f(a__,b_.)->{{a},{b}}", //
 				"{{x},{y}}");
 		check("f(x,y)/.f(a___,b_.)->{{a},{b}}", //
@@ -7966,7 +7990,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{x},{y}}");
 		check("f(x,y)/.f(a___,b_:c)->{{a},{b}}", //
 				"{{x},{y}}");
-		
+
 		check("f(x,y)/.f(a___,b_:c,d_:e)->{{a},{b},{d}}", //
 				"{{},{x},{y}}");
 		check("f(x)/.f(a_,b_:y,c_:z)->{{a},{b},{c}}", //
@@ -7977,25 +8001,25 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{x},{i},{j}}");
 		check("a /.f(a,c_.)->{{c}}", //
 				"a");
-		
+
 		check("a /. a + c_.->{{c}}", //
 				"{{0}}");
-		
+
 		check("MatchQ(a,f(a,c_.))", //
 				"False");
 		check("MatchQ(a,a+c_.)", //
 				"True");
-		
+
 		check("a/.a+c_.+d_.->{{c},{d}}", //
 				"{{0},{0}}");
 		check("Cos(x)/.(_+c_.+d_.)->{{c},{d}}", //
 				"{{0},{0}}");
-		
+
 		check("5*a/.Optional(c1_?NumberQ)*a_->{{c1},{a}}", //
 				"{{5},{a}}");
 		check("a/.Optional(c1_?NumberQ)*a_->{{c1},{a}}", //
 				"{{1},{a}}");
-		
+
 		check("MatchQ(f(a,b),f(c1__?NumberQ))", //
 				"False");
 		check("MatchQ(f(1,2),f(c1__?NumberQ))", //
@@ -8004,13 +8028,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"False");
 		check("MatchQ(f(1),f(Optional(c1__?NumberQ)))", //
 				"True");
-		
+
 		check("ReplaceList({a,b,c},{a_:5,b__}->{{a},{b}})", //
 				"{{{a},{b,c}},{{5},{a,b,c}}}");
 		// TODO add missing combinations
 		check("ReplaceList({a,b,c},{a_:5,b_:6,c___}->{{a},{b},{c}})", //
 				"{{{a},{b},{c}},{{5},{6},{a,b,c}}}");
-		
+
 		check("MatchQ(-x,p_.)", //
 				"True");
 		check("MatchQ(-x*a,p_.*a)", //
@@ -8019,7 +8043,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"True");
 		check("MatchQ(x^x, x^Optional(exp_))", //
 				"True");
-		
+
 		check("f(a) /. f(x_, y_:3) -> {x, y}", "{a,3}");
 
 		check("f(x_, Optional(y_,1)) := {x, y}", "");
@@ -8848,6 +8872,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "$Aborted");
 		// check("TimeConstrained(1^3^3^3, 10)", //
 		// "1");
+		check("0^(13+n)/a", //
+				"0^(13+n)/a");
 		check(" 2^(2*I) - 2^(-2*I) - 2*I*Sin(Log(4)) ", //
 				"0");
 		check("2*Sqrt(2)", //
@@ -11198,6 +11224,26 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		check("Solve(-28 - 4*Sqrt(-1 + x) + 4*x==0,x)", //
+				"{{x->10}}");
+		check("Solve(Sqrt(5*x-25)-Sqrt(x-1)==2,x)",  //
+				"{{x->10}}");
+
+		// check("Solve(E^x==b,x)", //
+		// "{{x->{{x->ConditionalExpression(I*2*c$2*Pi+Log(b),Element(c$2,Integers))}}}}");
+		check("Solve(Sqrt(x+6)-Sqrt(x-1)==1,x)", "{{x->10}}");
+
+		check("Solve(Sin((x+1)*(x-1))==2,x)", //
+				"{{x->Sqrt(1+ArcSin(2))}}");
+		check("Solve(Log((x+1)*(x-1))==2,x)", //
+				"{{x->-Sqrt(1+E^2)},{x->Sqrt(1+E^2)}}");
+		check("Solve(Log(x^2-1)==3,x)", //
+				"{{x->-Sqrt(1+E^3)},{x->Sqrt(1+E^3)}}");
+
+		check("Solve(a^x==b,x)", //
+				"{{x->Log(b)/Log(a)}}");
+		check("Solve(E^(3*x)-4*E^x+3*E^(-x)==0,x)", //
+				"{}");
 
 		checkNumeric("Eliminate(Abs(x-1)==(-1),x)", //
 				"True");
@@ -11220,7 +11266,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{x->0},{x->-b/a}}");
 		check("Solve({Cos(x)*x==0, x > 10}, x)", //
 				"{}");
-		check("Solve({Cos(x)*x==0, x ==0}, x)", //
+		check("Solve({Cos(x)*x==0, x==0}, x)", //
 				"{{x->0}}");
 		check("Solve({Cos(x)*x==0, x < 10}, x)", //
 				"{{x->0},{x->Pi/2}}");
@@ -11286,7 +11332,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{x->-5.0+a}}");
 
 		checkNumeric("Solve(-8828.206-582.222*b+55.999*b^2.0+4.8*b^3.0==0, b)", //
-				"{{b->-11.735882719537255+I*(-4.250200714726695)},{b->11.805307105741175},{b->-11.735882719537255+I*4.250200714726695}}");
+				"{{b->11.805307105741175},{b->-11.735882719537255+I*(-4.250200714726695)},{b->-11.735882719537255+I*4.250200714726695}}");
 		// check("Solve(Abs((-3+x^2)/x) ==2,{x})",
 		// "{{x->-3},{x->-1},{x->1},{x->3}}");
 		check("Solve(x^3==-2,x)", //
@@ -11366,14 +11412,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("Solve(sin(x)==0.5,x)", //
 				"{{x->0.5235987755982989}}");
 		check("Solve(x^2-2500.00==0,x)", //
-				"{{x->50.0},{x->-50.0}}");
+				"{{x->-50.0},{x->50.0}}");
 		check("Solve(x^2+a*x+1 == 0, x)", //
 				"{{x->-a/2-Sqrt(-4+a^2)/2},{x->-a/2+Sqrt(-4+a^2)/2}}");
 		check("Solve((-3)*x^3 +10*x^2-11*x == (-4), {x})", //
 				"{{x->1},{x->4/3}}");
 
 		checkNumeric("Solve(x^2+50*x-2500.00==0,x)", //
-				"{{x->30.901699437494745},{x->-80.90169943749474}}");
+				"{{x->-80.90169943749474},{x->30.901699437494745}}");
 
 		check("Solve(a*x + y == 7 && b*x - y == 1, {x, y})", //
 				"{{x->-8/(-a-b),y->(a-7*b)/(-a-b)}}");
@@ -11501,6 +11547,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "-1)^(3/10)*b^(1/10))/a^(1/10)},{x->((-1)^(7/10)*b^(1/10))/a^(1/10)},{x->(-(-1)^(\n"
 						+ "7/10)*b^(1/10))/a^(1/10)},{x->((-1)^(9/10)*b^(1/10))/a^(1/10)},{x->(-(-1)^(9/10)*b^(\n"
 						+ "1/10))/a^(1/10)}}");
+
+		check("Solve(x^10-1==0,x)",
+				"{{x->-1},{x->1},{x->-(-1)^(1/5)},{x->(-1)^(1/5)},{x->-(-1)^(2/5)},{x->(-1)^(2/5)},{x->-(\n"
+						+ "-1)^(3/5)},{x->(-1)^(3/5)},{x->-(-1)^(4/5)},{x->(-1)^(4/5)}}");
 
 		check("Solve(a*x^3+b==0,x)",
 				"{{x->-b^(1/3)/a^(1/3)},{x->((-1)^(1/3)*b^(1/3))/a^(1/3)},{x->(-(-1)^(2/3)*b^(1/3))/a^(\n" + "1/3)}}");

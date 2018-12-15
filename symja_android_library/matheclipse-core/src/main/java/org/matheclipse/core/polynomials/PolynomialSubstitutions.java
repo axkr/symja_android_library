@@ -11,24 +11,50 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
+//final class PowerPolynomialSubstitutions extends PolynomialSubstitutions {
+//	public PowerPolynomialSubstitutions(IAST listOfVariables) {
+//		super(listOfVariables);
+//	}
+//
+//	protected void substituteExpression(final IExpr exprPoly) {
+//		ISymbol symbol = substitutedExpr.get(exprPoly);
+//		if (symbol != null) {
+//			return;
+//		}
+//		final int moduleCounter = EvalEngine.get().incModuleCounter();
+//		final String varAppend = "$" + moduleCounter;
+//		ISymbol newSymbol = F.Dummy("jas" + varAppend);// , engine);
+//		substitutedVariables.put(newSymbol, exprPoly);
+//		substitutedExpr.put(exprPoly, newSymbol);
+//	}
+//}
+
 /**
- * GenPolynomialRing generic polynomial factory implementing ExprRingFactory; Factory for n-variate ordered polynomials
- * over C. Almost immutable object, except variable names.
+ * Forward and backward substitutions of expressions for polynomials. See
+ * <a href="https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf">3.5
+ * Homogenization</a>
  * 
  */
-
 public class PolynomialSubstitutions {
 	/**
-	 * The names of the variables. This value can be modified.
+	 * The names of the variables from the unsubstituted polynomials.
 	 */
-	protected IAST vars;
+	private final IAST vars;
 
+	/**
+	 * Variables (ISymbols) which are substituted from the original polynomial (backward substitution).
+	 */
 	protected java.util.IdentityHashMap<ISymbol, IExpr> substitutedVariables = new IdentityHashMap<ISymbol, IExpr>();
 
+	/**
+	 * Expressions which are substituted with variables(ISymbol) from the original polynomial (forward substitution).
+	 */
 	protected java.util.HashMap<IExpr, ISymbol> substitutedExpr = new HashMap<IExpr, ISymbol>();
 
 	/**
-	 * The constructor creates a polynomial factory object.
+	 * Forward and backward substitutions of expressions for polynomials. See
+	 * <a href="https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf">3.5
+	 * Homogenization</a>
 	 * 
 	 * @param listOfVariables
 	 *            names for the variables.
@@ -37,87 +63,99 @@ public class PolynomialSubstitutions {
 		vars = listOfVariables;
 	}
 
-	private void substitute(final IExpr exprPoly) {
-		substitute(exprPoly, false, true);
+	/**
+	 * Forward and backward substitutions of expressions for polynomials. See
+	 * <a href="https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf">3.5
+	 * Homogenization</a>
+	 * 
+	 * @param listOfVariables
+	 * @return
+	 */
+	public static PolynomialSubstitutions buildSubs(IAST listOfVariables) {
+		return new PolynomialSubstitutions(listOfVariables);
 	}
 
-	private void substitute(final IExpr exprPoly, boolean coefficient, boolean checkNegativeExponents)
-			throws ArithmeticException, ClassCastException {
-		int ix = ExpVectorLong.indexVar(exprPoly, vars);
-		if (ix >= 0) {
-			return;
-		}
-		if (exprPoly instanceof IAST) {
-			final IAST ast = (IAST) exprPoly;
-			if (ast.isPlus()) {
-				IExpr expr = ast.arg1();
-				substitute(expr, coefficient, checkNegativeExponents);
-				for (int i = 2; i < ast.size(); i++) {
-					expr = ast.get(i);
-					substitute(expr, coefficient, checkNegativeExponents);
-				}
-				return;
-			} else if (ast.isTimes()) {
-				IExpr expr = ast.arg1();
-				substitute(expr, coefficient, checkNegativeExponents);
-				for (int i = 2; i < ast.size(); i++) {
-					expr = ast.get(i);
-					substitute(expr, coefficient, checkNegativeExponents);
-				}
-				return;
-			} else if (ast.isPower()) {
-				final IExpr base = ast.base();
-				IExpr exp = ast.exponent();
-				// if (exp.isTimes()) {
-				// int exponent = exp.first().toIntDefault(Integer.MIN_VALUE);
-				// if (exponent > 0) {
-				// substitute(base, coefficient, checkNegativeExponents);
-				// } else {
-				// substituteExpression(ast);
-				// }
-				// }
-				int exponent = exp.toIntDefault(Integer.MIN_VALUE);
-				if (exponent > 0) {
-					ix = ExpVectorLong.indexVar(base, vars);
-					if (ix >= 0) {
-						return;
-					}
-					substitute(base, coefficient, checkNegativeExponents);
-				} else {
-					substituteExpression(ast);
-				}
-				return;
-			}
-			if (coefficient) {
-				return;
-			}
-			if (exprPoly.isFree(Predicates.in(vars), true)) {
-				return;
-			}
-			substituteExpression(exprPoly);
-			return;
-		} else if (exprPoly instanceof ISymbol) {
-			if (coefficient) {
-				return;
-			}
-			return;
+	// private void substitute(final IExpr exprPoly) {
+	// substitute(exprPoly, false, true);
+	// }
 
-		} else if (exprPoly.isNumber()) {
-			return;
-		}
-	}
+	// private void substitute(final IExpr exprPoly, boolean coefficient, boolean checkNegativeExponents)
+	// throws ArithmeticException, ClassCastException {
+	// int ix = ExpVectorLong.indexVar(exprPoly, vars);
+	// if (ix >= 0) {
+	// return;
+	// }
+	// if (exprPoly instanceof IAST) {
+	// final IAST ast = (IAST) exprPoly;
+	// if (ast.isPlus()) {
+	// IExpr expr = ast.arg1();
+	// substitute(expr, coefficient, checkNegativeExponents);
+	// for (int i = 2; i < ast.size(); i++) {
+	// expr = ast.get(i);
+	// substitute(expr, coefficient, checkNegativeExponents);
+	// }
+	// return;
+	// } else if (ast.isTimes()) {
+	// IExpr expr = ast.arg1();
+	// substitute(expr, coefficient, checkNegativeExponents);
+	// for (int i = 2; i < ast.size(); i++) {
+	// expr = ast.get(i);
+	// substitute(expr, coefficient, checkNegativeExponents);
+	// }
+	// return;
+	// } else if (ast.isPower()) {
+	// final IExpr base = ast.base();
+	// IExpr exp = ast.exponent();
+	// // if (exp.isTimes()) {
+	// // int exponent = exp.first().toIntDefault(Integer.MIN_VALUE);
+	// // if (exponent > 0) {
+	// // substitute(base, coefficient, checkNegativeExponents);
+	// // } else {
+	// // substituteExpression(ast);
+	// // }
+	// // }
+	// int exponent = exp.toIntDefault(Integer.MIN_VALUE);
+	// if (exponent > 0) {
+	// ix = ExpVectorLong.indexVar(base, vars);
+	// if (ix >= 0) {
+	// return;
+	// }
+	// substitute(base, coefficient, checkNegativeExponents);
+	// } else {
+	// substituteExpression(ast);
+	// }
+	// return;
+	// }
+	// if (coefficient) {
+	// return;
+	// }
+	// if (exprPoly.isFree(Predicates.in(vars), true)) {
+	// return;
+	// }
+	// substituteExpression(exprPoly);
+	// return;
+	// } else if (exprPoly instanceof ISymbol) {
+	// if (coefficient) {
+	// return;
+	// }
+	// return;
+	//
+	// } else if (exprPoly.isNumber()) {
+	// return;
+	// }
+	// }
 
-	private void substituteExpression(final IExpr exprPoly) {
-		ISymbol symbol = substitutedExpr.get(exprPoly);
-		if (symbol != null) {
-			return;
-		}
-		final int moduleCounter = EvalEngine.get().incModuleCounter();
-		final String varAppend = "$" + moduleCounter;
-		ISymbol newSymbol = F.Dummy("jas" + varAppend);// , engine);
-		substitutedVariables.put(newSymbol, exprPoly);
-		substitutedExpr.put(exprPoly, newSymbol);
-	}
+	// private void substituteExpression(final IExpr exprPoly) {
+	// ISymbol symbol = substitutedExpr.get(exprPoly);
+	// if (symbol != null) {
+	// return;
+	// }
+	// final int moduleCounter = EvalEngine.get().incModuleCounter();
+	// final String varAppend = "$" + moduleCounter;
+	// ISymbol newSymbol = F.Dummy("jas" + varAppend);// , engine);
+	// substitutedVariables.put(newSymbol, exprPoly);
+	// substitutedExpr.put(exprPoly, newSymbol);
+	// }
 
 	public IExpr replaceAll(final IExpr exprPoly) {
 		return replaceAll(exprPoly, false, true);
@@ -151,26 +189,29 @@ public class PolynomialSubstitutions {
 				return times;
 			} else if (ast.isPower()) {
 				final IExpr base = ast.base();
-				IExpr exp = ast.exponent();
-				if (exp.isTimes()) {
-					int exponent = exp.first().toIntDefault(Integer.MIN_VALUE);
+				if (!base.isMember(x -> vars.isMember(x, true), true)) {
+					IExpr exp = ast.exponent();
+					if (exp.isTimes()) {
+						int exponent = exp.first().toIntDefault(Integer.MIN_VALUE);
+						if (exponent > 0) {
+							IExpr rest = exp.rest().getOneIdentity(F.C1);
+							return F.Power(replaceExpression(base.power(rest)), exponent);
+						}
+						return replaceExpression(ast);
+					}
+					int exponent = exp.toIntDefault(Integer.MIN_VALUE);
 					if (exponent > 0) {
-						IExpr rest = exp.rest().getOneIdentity(F.C1);
-						return F.Power(replaceExpression(base.power(rest)), exponent);
+						if (base.isSymbol()) {
+							return ast;
+						}
+						ix = ExpVectorLong.indexVar(base, vars);
+						if (ix >= 0) {
+							return ast;
+						}
 					}
 					return replaceExpression(ast);
 				}
-				int exponent = exp.toIntDefault(Integer.MIN_VALUE);
-				if (exponent > 0) {
-					if (base.isSymbol()) {
-						return ast;
-					}
-					ix = ExpVectorLong.indexVar(base, vars);
-					if (ix >= 0) {
-						return ast;
-					}
-				}
-				return replaceExpression(ast);
+				return ast;
 			}
 			if (coefficient) {
 				return exprPoly;
@@ -199,11 +240,19 @@ public class PolynomialSubstitutions {
 		return newSymbol;
 	}
 
+	/**
+	 * Variables (ISymbols) which are substituted from the original polynomial (backward substitution) returned in a
+	 * <code>IdentityHashMap</code>.
+	 */
 	public java.util.IdentityHashMap<ISymbol, IExpr> substitutedVariables() {
 		return substitutedVariables; // .copyAppendable();
 	}
 
-	public java.util.Map<IExpr, ISymbol> substitutedExpressions() {
-		return substitutedExpr; // .copyAppendable();
+	/**
+	 * Expressions which are substituted with variables(ISymbol) from the original polynomial (forward substitution)
+	 * returned in a Map.
+	 */
+	private java.util.Map<IExpr, ISymbol> substitutedExpressions() {
+		return substitutedExpr;
 	}
 }

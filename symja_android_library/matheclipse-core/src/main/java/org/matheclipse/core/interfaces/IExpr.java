@@ -1339,7 +1339,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isOptional() {
 		return false;
 	}
-	
+
 	/**
 	 * Test if this expression is already expanded i.e. <code>Plus, Times, Power</code> expression is expanded.
 	 * 
@@ -2230,6 +2230,23 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default boolean isPower() {
+		return false;
+	}
+
+	/**
+	 * Test if this expression is the function <code>Power[&lt;arg1&gt;, 1/2]</code>
+	 * 
+	 * @return
+	 */
+	default boolean isSqrt() {
+		if (isPower() && second().equals(F.C1D2)) {
+			return true;
+		}
+		if (isTimes() && first().equals(F.CN1)&&size()==3) {
+			if (second().isPower() && second().second().equals(F.C1D2)) {
+				return true;
+			}
+		}
 		return false;
 	}
 

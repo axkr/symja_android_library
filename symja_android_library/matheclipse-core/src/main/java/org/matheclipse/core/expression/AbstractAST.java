@@ -604,12 +604,12 @@ public abstract class AbstractAST implements IASTMutable {
 
 	@Override
 	public boolean equals(final Object obj) {
+		if (obj == this) {
+			return true;
+		}
 		if (obj instanceof AbstractAST) {
 			if (hashCode() != obj.hashCode()) {
 				return false;
-			}
-			if (obj == this) {
-				return true;
 			}
 			final IAST list = (IAST) obj;
 			if (size() != list.size()) {

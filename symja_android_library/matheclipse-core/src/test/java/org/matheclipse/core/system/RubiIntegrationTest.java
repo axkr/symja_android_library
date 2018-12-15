@@ -486,19 +486,31 @@ public class RubiIntegrationTest extends AbstractTestCase {
 
 	public void testSystemIntegrate() {
 		// check("Integrate(x*Sin(x),x)", "-x*Cos(x)+Sin(x)");
-		check("Integrate(Sin(x*y),y)", "-Cos(x*y)/x");
+		check("Integrate(Sin(x*y),y)", //
+				"-Cos(x*y)/x");
 
-		check("Integrate(x^(-1),x)", "Log(x)");
-		check("Integrate(x^(-1),{x,0,1})", "Integrate(1/x,{x,0,1})");
-		check("Integrate(x^a, x)", "x^(1+a)/(1+a)");
-		check("Integrate(f(x), x)", "Integrate(f(x),x)");
-		check("Integrate(x^(-1),{x, 0, 1})", "Integrate(1/x,{x,0,1})");
-		check("Integrate(f(x)+g(x), {x, a, b})", "Integrate(f(x)+g(x),{x,a,b})");
-		check("Integrate(Sin(x), {x, 3, 4})", "Cos(3)-Cos(4)");
-		check("Integrate(Sin(x), {x, a, b})", "Cos(a)-Cos(b)");
-		check("Integrate(Sin(x*y),y)", "-Cos(x*y)/x");
-		check("D(-Cos(x*y)*x^(-1),y)", "Sin(x*y)");
-		check("Integrate(Sin(x*y),{y, 0, x})", "1/x-Cos(x^2)/x");
+		check("Integrate(x^(-1),x)", //
+				"Log(x)");
+		check("Integrate(x^(-1),{x,0,1})", //
+				"Integrate(1/x,{x,0,1})");
+		check("Integrate(x^a, x)", //
+				"x^(1+a)/(1+a)");
+		check("Integrate(f(x), x)", //
+				"Integrate(f(x),x)");
+		check("Integrate(x^(-1),{x, 0, 1})", //
+				"Integrate(1/x,{x,0,1})");
+		check("Integrate(f(x)+g(x), {x, a, b})", //
+				"Integrate(f(x)+g(x),{x,a,b})");
+		check("Integrate(Sin(x), {x, 3, 4})", //
+				"Cos(3)-Cos(4)");
+		check("Integrate(Sin(x), {x, a, b})", //
+				"Cos(a)-Cos(b)");
+		check("Integrate(Sin(x*y),y)", //
+				"-Cos(x*y)/x");
+		check("D(-Cos(x*y)*x^(-1),y)", //
+				"Sin(x*y)");
+		check("Integrate(Sin(x*y),{y, 0, x})", //
+				"(1-Cos(x^2))/x");
 		// check("Integrate(Sin(x*y), {x, 0, 1}, {y, 0, x})",
 		// "-1/2*CosIntegral(1)+1/2*CosIntegral(0)+Integrate(x^(-1),{x,0,1})");
 	}
@@ -581,13 +593,13 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		// +
 		// "2),x))", "");
 		check("Integrate((a + b*Sin(c + g*x))^3,x)", //
-				"1/2*a*(2*a^2+3*b^2)*x+2/3*(b*(-4*a^2-b^2)*Cos(c+g*x))/g-5/6*(a*b^2*Cos(c+g*x)*Sin(c+g*x))/g+(-b*Cos(c+g*x)*(a+b*Sin(c+g*x))^\n" + 
-				"2)/(3*g)");
+				"1/2*a*(2*a^2+3*b^2)*x+2/3*(b*(-4*a^2-b^2)*Cos(c+g*x))/g-5/6*(a*b^2*Cos(c+g*x)*Sin(c+g*x))/g+(-b*Cos(c+g*x)*(a+b*Sin(c+g*x))^\n"
+						+ "2)/(3*g)");
 
 		check("Integrate((a + b*Sin(c + g*x))^4,x)", //
-				"1/8*(8*a^4+24*a^2*b^2+3*b^4)*x+(a*b*(-19*a^2-16*b^2)*Cos(c+g*x))/(6*g)+((-26*a^2\n" + 
-				"-9*b^2)*b^2*Cos(c+g*x)*Sin(c+g*x))/(24*g)-7/12*(a*b*Cos(c+g*x)*(a+b*Sin(c+g*x))^\n" + 
-				"2)/g+(-b*Cos(c+g*x)*(a+b*Sin(c+g*x))^3)/(4*g)");
+				"1/8*(8*a^4+24*a^2*b^2+3*b^4)*x+(a*b*(-19*a^2-16*b^2)*Cos(c+g*x))/(6*g)+((-26*a^2\n"
+						+ "-9*b^2)*b^2*Cos(c+g*x)*Sin(c+g*x))/(24*g)-7/12*(a*b*Cos(c+g*x)*(a+b*Sin(c+g*x))^\n"
+						+ "2)/g+(-b*Cos(c+g*x)*(a+b*Sin(c+g*x))^3)/(4*g)");
 
 		check("$f(a_.+b_.*c_):={a,b,c};$f(x)", //
 				"{0,1,x}");

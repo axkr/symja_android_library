@@ -295,7 +295,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 		return new IExpr[] { m, n };
 	}
 
-	private static IExpr odeSeparable(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y, IExpr C_1) {
+	private static IExpr odeSeparable(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y, IExpr C_1 ) {
 		if (n.isOne()) {
 			IExpr fxExpr = F.NIL;
 			IExpr gyExpr = F.NIL;
@@ -320,7 +320,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 				gyExpr = F.Integrate.of(engine, F.Divide(F.C1, gyExpr), y);
 				fxExpr = F.Plus.of(engine, F.Integrate(F.Times(F.CN1, fxExpr), x), C_1);
 				IExpr yEquation = F.Subtract.of(engine, gyExpr, fxExpr);
-				IExpr result = Eliminate.extractVariable(yEquation, y);
+				IExpr result = Eliminate.extractVariable(yEquation, y, engine);
 				if (result.isPresent()) {
 					return engine.evaluate(result);
 				}

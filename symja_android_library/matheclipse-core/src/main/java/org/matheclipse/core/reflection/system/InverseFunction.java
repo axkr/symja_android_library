@@ -42,7 +42,7 @@ public class InverseFunction extends AbstractFunctionEvaluator {
 				final int moduleCounter = engine.incModuleCounter();
 				final String varAppend = "$" + moduleCounter;
 				ISymbol dummy = F.Dummy(varAppend);
-				IAST[] arr = Eliminate.eliminateSlot(F.Equal((IAST) f, dummy), F.Slot1);
+				IAST[] arr = Eliminate.eliminateSlot(F.Equal((IAST) f, dummy), F.Slot1, engine);
 				if (arr != null) {
 					return F.Function(F.subst(arr[1].second(), F.Rule(dummy, F.Slot1)));
 				}

@@ -16,6 +16,7 @@ import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.eval.util.OpenIntToSet;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
@@ -73,14 +74,17 @@ public class RulesData implements Serializable {
 		} else if (a1.isPatternSequence(false)) {
 			return true;
 		} else if (a1.isAST()) {
-			IAST arg1 = (IAST) a1;
-			if (arg1.isCondition() || arg1.isPatternTest() || arg1.isAlternatives() || arg1.isExcept()
-					|| arg1.isOptional()) {
-				return true;
+
+			int functionID = a1.headID();
+			if (functionID > ID.UNKNOWN) {
+				if (a1.isCondition() || a1.isPatternTest() || a1.isAlternatives() || a1.isExcept() || a1.isOptional()) {
+					return true;
+				}
 			}
+
+			IAST arg1 = (IAST) a1;
 			IExpr head = arg1.head();
-			// if (head.isPatternExpr()) {
-			if (!head.isSymbol()) {
+			if (!head.isSymbol() && isComplicatedPatternExpr(head)) {
 				// the head contains a pattern F_(a1, a2,...) or complicated expression
 				return true;
 			}

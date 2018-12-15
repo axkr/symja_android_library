@@ -1,8 +1,10 @@
 package org.matheclipse.core.eval.util;
 
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class SolveUtils {
@@ -15,8 +17,8 @@ public class SolveUtils {
 	 * @param list
 	 * @return
 	 */
-	public static IAST[] filterSolveLists(IAST list, IAST solution) {
-		IAST[] result = new IAST[3];
+	public static IASTMutable[] filterSolveLists(IAST list, IASTMutable solution) {
+		IASTMutable[] result = new IASTMutable[3];
 		IASTAppendable termsEqualZero = F.ListAlloc(list.size());
 		IASTAppendable inequalityTerms = F.ListAlloc(list.size());
 		result[0] = termsEqualZero;
@@ -28,7 +30,7 @@ public class SolveUtils {
 			if (arg.isTrue()) {
 			} else if (arg.isFalse()) {
 				// no solution possible
-				result[2] = F.List();
+				result[2] = F.ListAlloc();
 				return result;
 			} else if (arg.isEqual()) {
 				// arg must be Equal(_, 0)
@@ -38,11 +40,13 @@ public class SolveUtils {
 			}
 			i++;
 		}
+		EvalAttributes.sort((IASTMutable) result[0]);
+		EvalAttributes.sort((IASTMutable) result[1]);
 		if (result[0].isEmpty() && result[1].isEmpty()) {
 			if (solution.isPresent()) {
 				result[2] = solution;
 			} else {
-				result[2] = F.List(F.List());
+				result[2] = F.unary(F.List, F.List());
 			}
 			return result;
 		}

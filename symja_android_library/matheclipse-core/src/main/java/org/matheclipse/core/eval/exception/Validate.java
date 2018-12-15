@@ -17,8 +17,8 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Static methods to be called at the start of the built-in <code>IFunctionEvaluator#evaluate()</code> methods to verify correct
- * arguments and state.
+ * Static methods to be called at the start of the built-in <code>IFunctionEvaluator#evaluate()</code> methods to verify
+ * correct arguments and state.
  * 
  */
 public final class Validate {
@@ -30,7 +30,7 @@ public final class Validate {
 	public static int checkIntType(IAST ast, int pos) {
 		return checkIntType(ast, pos, 0);
 	}
- 
+
 	/**
 	 * Check the argument, if it's a Java {@code long} value.
 	 * 
@@ -55,7 +55,8 @@ public final class Validate {
 	}
 
 	/**
-	 * Check the argument, if it's an {@code IAST} of {@code long} values in the range [{@code startValue}, Long.MAX_VALUE]
+	 * Check the argument, if it's an {@code IAST} of {@code long} values in the range [{@code startValue},
+	 * Long.MAX_VALUE]
 	 * 
 	 * @throws WrongArgumentType
 	 */
@@ -123,8 +124,8 @@ public final class Validate {
 	}
 
 	/**
-	 * Check the argument, if it's an {@code IAST} of {@code int} values in the range {@code minValue} (inclusive), {@code maxValue}
-	 * (inclusive).
+	 * Check the argument, if it's an {@code IAST} of {@code int} values in the range {@code minValue} (inclusive),
+	 * {@code maxValue} (inclusive).
 	 * 
 	 * @throws WrongArgumentType
 	 */
@@ -203,8 +204,9 @@ public final class Validate {
 	/**
 	 * Check the expression, if it's a Java {@code int} value in the range [ {@code startValue}, Integer.MAX_VALUE]
 	 * 
-	 * @param expr a signed number which will be converted to a Java <code>int</code> if possible, otherwise throw a
-	 *             <code>WrongArgumentType</code> exception.
+	 * @param expr
+	 *            a signed number which will be converted to a Java <code>int</code> if possible, otherwise throw a
+	 *            <code>WrongArgumentType</code> exception.
 	 * @throws WrongArgumentType
 	 */
 	public static int checkIntLevelType(IExpr expr, int startValue) {
@@ -263,8 +265,9 @@ public final class Validate {
 	/**
 	 * Check the expression, if it's a Java {@code int} value in the range [ {@code startValue}, Integer.MAX_VALUE]
 	 * 
-	 * @param expr a signed number which will be converted to a Java <code>int</code> if possible, otherwise throw a
-	 *             <code>WrongArgumentType</code> exception.
+	 * @param expr
+	 *            a signed number which will be converted to a Java <code>int</code> if possible, otherwise throw a
+	 *            <code>WrongArgumentType</code> exception.
 	 * @throws WrongArgumentType
 	 */
 	public static int checkIntType(IExpr expr, int startValue) {
@@ -297,8 +300,10 @@ public final class Validate {
 	/**
 	 * Check if the argument at the given position is a integer.
 	 * 
-	 * @param position the position which has to be a symbol.
-	 * @throws WrongArgumentType if it's not a symbol.
+	 * @param position
+	 *            the position which has to be a symbol.
+	 * @throws WrongArgumentType
+	 *             if it's not a symbol.
 	 */
 	public static IInteger checkIntegerType(IAST ast, int position) {
 		if (ast.get(position).isInteger()) {
@@ -310,7 +315,8 @@ public final class Validate {
 	/**
 	 * If {@code ast.size() < from} throw a {@code WrongNumberOfArguments} exception.
 	 * 
-	 * @throws WrongNumberOfArguments if {@code size} is not in the range {@code from} to {@code Integer.MAX_VALUE}
+	 * @throws WrongNumberOfArguments
+	 *             if {@code size} is not in the range {@code from} to {@code Integer.MAX_VALUE}
 	 */
 	public static IAST checkRange(IAST ast, int from) {
 		return checkRange(ast, from, Integer.MAX_VALUE);
@@ -319,7 +325,8 @@ public final class Validate {
 	/**
 	 * If {@code ast.size() < from || ast.size() > to} throw a {@code WrongNumberOfArguments} exception.
 	 * 
-	 * @throws WrongNumberOfArguments if {@code size} is not in the range {@code from} to {@code to}
+	 * @throws WrongNumberOfArguments
+	 *             if {@code size} is not in the range {@code from} to {@code to}
 	 */
 	public static IAST checkRange(IAST ast, int from, int to) {
 		if (ast.size() < from) {
@@ -334,7 +341,8 @@ public final class Validate {
 	/**
 	 * If {@code ast.size() != size} throw a {@code WrongNumberOfArguments} exception.
 	 * 
-	 * @throws WrongNumberOfArguments if {@code size} unequals the list size
+	 * @throws WrongNumberOfArguments
+	 *             if {@code size} unequals the list size
 	 */
 	public static IAST checkSize(IAST ast, int size) {
 		if (ast.size() != size) {
@@ -346,7 +354,8 @@ public final class Validate {
 	/**
 	 * If {@code ast.size()-1} is not even throw a {@code WrongNumberOfArguments} exception.
 	 * 
-	 * @throws WrongNumberOfArguments if {@code ast.size()-1} is not even
+	 * @throws WrongNumberOfArguments
+	 *             if {@code ast.size()-1} is not even
 	 */
 	public static IAST checkEven(IAST ast) {
 		if (((ast.argSize()) & 0x0001) == 0x0001) {
@@ -358,7 +367,8 @@ public final class Validate {
 	/**
 	 * If {@code ast.size()-1} is not odd throw a {@code WrongNumberOfArguments} exception.
 	 * 
-	 * @throws WrongNumberOfArguments if {@code ast.size()-1} is not odd
+	 * @throws WrongNumberOfArguments
+	 *             if {@code ast.size()-1} is not odd
 	 */
 	public static IAST checkOdd(IAST ast) {
 		if (((ast.argSize()) & 0x0001) == 0x0000) {
@@ -370,8 +380,10 @@ public final class Validate {
 	/**
 	 * Check if the argument at the given position is a <code>List()</code> (i.e. <code>{...}</code>) object.
 	 * 
-	 * @param position the position which has to be a list.
-	 * @throws WrongArgumentType if it's not a list.
+	 * @param position
+	 *            the position which has to be a list.
+	 * @throws WrongArgumentType
+	 *             if it's not a list.
 	 */
 	public static IAST checkListType(IAST ast, int position) {
 		if (ast.get(position).isList()) {
@@ -383,8 +395,10 @@ public final class Validate {
 	/**
 	 * Check if the argument at the given position is a <code>IStringX</code> string object.
 	 * 
-	 * @param position the position which has to be a string.
-	 * @throws WrongArgumentType if it's not a symbol.
+	 * @param position
+	 *            the position which has to be a string.
+	 * @throws WrongArgumentType
+	 *             if it's not a symbol.
 	 */
 	public static IStringX checkStringType(IAST ast, int position) {
 		if (ast.get(position) instanceof IStringX) {
@@ -396,8 +410,10 @@ public final class Validate {
 	/**
 	 * Check if the argument at the given position is a <code>IStringX</code> string object.
 	 * 
-	 * @param position the position which has to be a string.
-	 * @throws WrongArgumentType if it's not a symbol.
+	 * @param position
+	 *            the position which has to be a string.
+	 * @throws WrongArgumentType
+	 *             if it's not a symbol.
 	 */
 	public static String checkContextName(IAST ast, int position) {
 
@@ -416,9 +432,11 @@ public final class Validate {
 	/**
 	 * Check if the argument at the given position is a single symbol or a list of symbols.
 	 * 
-	 * @param position the position which has to be a symbol or list.
+	 * @param position
+	 *            the position which has to be a symbol or list.
 	 * @return a list of symbols defined at <code>ast.get(position)</code>.
-	 * @throws WrongArgumentType if it's not a symbol.
+	 * @throws WrongArgumentType
+	 *             if it's not a symbol.
 	 */
 	public static IAST checkSymbolOrSymbolList(IAST ast, int position) {
 		IAST vars = null;
@@ -437,8 +455,10 @@ public final class Validate {
 	 * Check if the argument at the given position is a single variable or a list of variables.
 	 * 
 	 * @param ast
-	 * @param position the position which has to be a variable or list of variables.
-	 * @param engine   engine to print a message if the expression is no variable
+	 * @param position
+	 *            the position which has to be a variable or list of variables.
+	 * @param engine
+	 *            engine to print a message if the expression is no variable
 	 * @return a list of symbols defined at <code>ast.get(position)</code> or <code>null</code> if not.
 	 */
 	public static IAST checkIsVariableOrVariableList(IAST ast, int position, EvalEngine engine) {
@@ -465,8 +485,10 @@ public final class Validate {
 	/**
 	 * Check if the argument at the given position is a single symbol or a list of symbols.
 	 * 
-	 * @param position the position which has to be a symbol or list.
-	 * @throws WrongArgumentType if it's not a symbol.
+	 * @param position
+	 *            the position which has to be a symbol or list.
+	 * @throws WrongArgumentType
+	 *             if it's not a symbol.
 	 */
 	// public static IAST checkSymbolList(IAST ast, int position) {
 	// IAST vars = null;
@@ -484,9 +506,11 @@ public final class Validate {
 	/**
 	 * Check if the argument is a symbol and has an assigned value.
 	 * 
-	 * @param expr the expr which has to be a symbol.
+	 * @param expr
+	 *            the expr which has to be a symbol.
 	 * @return <code>expr</code> if it's a Symbol
-	 * @throws WrongArgumentType if it's not a symbol.
+	 * @throws WrongArgumentType
+	 *             if it's not a symbol.
 	 */
 	public static ISymbol checkAssignedVariable(IExpr expr) {
 		if (expr.isSymbol() && ((ISymbol) expr).hasAssignedSymbolValue()) {
@@ -499,8 +523,10 @@ public final class Validate {
 	/**
 	 * Check if the argument at the given position is a symbol.
 	 * 
-	 * @param position the position which has to be a symbol.
-	 * @throws WrongArgumentType if it's not a symbol.
+	 * @param position
+	 *            the position which has to be a symbol.
+	 * @throws WrongArgumentType
+	 *             if it's not a symbol.
 	 */
 	public static ISymbol checkSymbolType(IAST ast, int position) {
 		if (ast.get(position).isSymbol()) {
@@ -512,7 +538,8 @@ public final class Validate {
 	/**
 	 * Check if the argument at the given position is a symbol.
 	 * 
-	 * @param position the position which has to be a symbol.
+	 * @param position
+	 *            the position which has to be a symbol.
 	 * @return <code>null</code> if the argument at the given position is not a symbol.
 	 */
 	public static ISymbol checkSymbolType(IAST ast, int position, EvalEngine engine) {
@@ -525,9 +552,11 @@ public final class Validate {
 	}
 
 	/**
-	 * Check if the argument at the given position is a variable, i.e. a symbol which doesnt't have the <code>Constant</code> set.
+	 * Check if the argument at the given position is a variable, i.e. a symbol which doesnt't have the
+	 * <code>Constant</code> set.
 	 * 
-	 * @param position the position which has to be a variable.
+	 * @param position
+	 *            the position which has to be a variable.
 	 * @return null if the argument is not a variable
 	 */
 	public static ISymbol checkIsVariable(IAST ast, int position, EvalEngine engine) {
@@ -541,8 +570,10 @@ public final class Validate {
 	/**
 	 * Check if the argument at the given position is an AST.
 	 * 
-	 * @param position the position which has to be an AST.
-	 * @throws WrongArgumentType if it's not an AST.
+	 * @param position
+	 *            the position which has to be an AST.
+	 * @throws WrongArgumentType
+	 *             if it's not an AST.
 	 */
 	public static IAST checkASTUpRuleType(IExpr expr) {
 		if (expr.isAST()) {
@@ -562,8 +593,10 @@ public final class Validate {
 	/**
 	 * Check if the argument at the given position is an AST.
 	 * 
-	 * @param position the position which has to be an AST.
-	 * @throws WrongArgumentType if it's not an AST.
+	 * @param position
+	 *            the position which has to be an AST.
+	 * @throws WrongArgumentType
+	 *             if it's not an AST.
 	 */
 	public static IAST checkASTType(IAST ast, int position) {
 		if (ast.get(position).isAST()) {
@@ -575,7 +608,8 @@ public final class Validate {
 	/**
 	 * Check if the expression is an AST.
 	 * 
-	 * @throws WrongArgumentType if it's not an AST.
+	 * @throws WrongArgumentType
+	 *             if it's not an AST.
 	 */
 	public static IAST checkASTType(IExpr expr, EvalEngine engine) {
 		if (expr.isAST()) {
@@ -589,12 +623,13 @@ public final class Validate {
 	}
 
 	/**
-	 * Check if the argument at the given <code>ast</code> position is an equation (i.e. <code>Equal(a,b)</code>) or a list of equations
-	 * or a boolean <code>And()</code> expression of equations and return a list of expanded expressions, which should be equal to
-	 * <code>0</code>.
+	 * Check if the argument at the given <code>ast</code> position is an equation (i.e. <code>Equal(a,b)</code>) or a
+	 * list of equations or a boolean <code>And()</code> expression of equations and return a list of expanded
+	 * expressions, which should be equal to <code>0</code>.
 	 * 
 	 * @param ast
-	 * @param position the position of the equations argument in the <code>ast</code> expression.
+	 * @param position
+	 *            the position of the equations argument in the <code>ast</code> expression.
 	 * @return
 	 */
 	public static IASTAppendable checkEquations(final IAST ast, int position) {
@@ -613,12 +648,13 @@ public final class Validate {
 	}
 
 	/**
-	 * Check if the argument at the given <code>ast</code> position is an equation or inequation (i.e. <code>Equal(a,b)</code>) or a
-	 * list of equations or inequations or a boolean <code>And()</code> expression of equations and return a list of expanded
-	 * expressions, which should be equal to <code>0</code>.
+	 * Check if the argument at the given <code>ast</code> position is an equation or inequation (i.e.
+	 * <code>Equal(a,b)</code>) or a list of equations or inequations or a boolean <code>And()</code> expression of
+	 * equations and return a list of expanded expressions, which should be equal to <code>0</code>.
 	 * 
 	 * @param ast
-	 * @param position the position of the equations argument in the <code>ast</code> expression.
+	 * @param position
+	 *            the position of the equations argument in the <code>ast</code> expression.
 	 * @return
 	 */
 	public static IASTAppendable checkEquationsAndInequations(final IAST ast, int position) {
@@ -682,7 +718,8 @@ public final class Validate {
 	/**
 	 * Check if the given expression is an equation (i.e. <code>Equal(a,b)</code>)
 	 * 
-	 * @param expr the expression which should be an equation
+	 * @param expr
+	 *            the expression which should be an equation
 	 * @return
 	 */
 	public static IExpr checkEquation(IExpr expr) {

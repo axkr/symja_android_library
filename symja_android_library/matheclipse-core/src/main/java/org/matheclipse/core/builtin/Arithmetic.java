@@ -892,9 +892,9 @@ public final class Arithmetic {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
 
-			IExpr arg2 = engine.evaluate(ast.arg2());
+			IExpr arg2 = ast.arg2();
 			if (arg2.isTrue()) {
-				return engine.evaluate(ast.arg1());
+				return ast.arg1();
 			}
 			if (arg2.isFalse()) {
 				return F.Undefined;
@@ -904,7 +904,7 @@ public final class Arithmetic {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.NUMERICFUNCTION);
+			newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
 		}
 	}
 

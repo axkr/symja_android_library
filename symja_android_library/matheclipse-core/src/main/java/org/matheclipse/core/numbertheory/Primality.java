@@ -384,7 +384,7 @@ public class Primality {
 	 */
 	public static IInteger countPrimes1021(IInteger base, IExpr exponent, OpenIntToIExprHashMap<IExpr> map,
 			boolean setEvaled, boolean[] evaled) {
-		if (base.isOne() || base.isMinusOne()) {
+		if (base.isZero() ||base.isOne() || base.isMinusOne()) {
 			return base;
 		}
 		if (base instanceof IntegerSym) {

@@ -1650,8 +1650,8 @@ public class Algebra {
 					IExpr[] parts = Algebra.getNumeratorDenominator((IAST) expr, engine);
 					if (!parts[1].isOne()) {
 						try {
-							IExpr numerator = factorExpr(F.Factor(parts[0]), parts[0], varList);
-							IExpr denomimator = factorExpr(F.Factor(parts[1]), parts[1], varList);
+							IExpr numerator = factorExpr(F.Factor(parts[0]), parts[0], eVar);
+							IExpr denomimator = factorExpr(F.Factor(parts[1]), parts[1], eVar);
 							return F.Divide(numerator, denomimator);
 						} catch (JASConversionException e) {
 							if (Config.DEBUG) {
@@ -1669,7 +1669,7 @@ public class Algebra {
 					return factorWithOption(ast, expr, varList, false, engine);
 				}
 
-				return factorExpr(ast, expr, varList);
+				return factorExpr(ast, expr, eVar);
 
 			} catch (JASConversionException e) {
 				if (Config.DEBUG) {
@@ -1679,7 +1679,7 @@ public class Algebra {
 			return expr;
 		}
 
-		private IExpr factorExpr(final IAST ast, IExpr expr, List<IExpr> varList) {
+		private IExpr factorExpr(final IAST ast, IExpr expr, VariablesSet eVar) {
 			if (expr.isAST()) {
 				IExpr temp;
 				// if (expr.isPower()&&expr.base().isPlus()) {
@@ -1691,10 +1691,10 @@ public class Algebra {
 					// System.out.println(ast.toString());
 					temp = ((IAST) expr).map(x -> {
 						if (x.isPlus()) {
-							return factorExpr(ast, x, varList);
+							return factorExpr(ast, x, eVar);
 						}
 						if (x.isPower() && x.base().isPlus()) {
-							IExpr p = factorExpr(ast, x.base(), varList);
+							IExpr p = factorExpr(ast, x.base(), eVar);
 							if (!p.equals(x.base())) {
 								return F.Power(p, x.exponent());
 							}
@@ -1703,74 +1703,98 @@ public class Algebra {
 					}, 1);
 				} else {
 					// System.out.println("leafCount " + expr.leafCount());
-					temp = factor((IAST) expr, varList, false);
+					temp = factor((IAST) expr, eVar, false);
 				}
-				F.REMEMBER_AST_CACHE.put(ast, temp);
-				return temp;
+				if (temp.isPresent()) {
+					F.REMEMBER_AST_CACHE.put(ast, temp);
+					return temp;
+				}
 			}
 			return expr;
 		}
 
-		public static IExpr factor(IAST expr, List<IExpr> varList, boolean factorSquareFree)
+		public static IExpr factor(IAST expr, VariablesSet eVar, boolean factorSquareFree)
 				throws JASConversionException {
 			if (Config.MAX_FACTOR_LEAFCOUNT > 0 && expr.leafCount() > Config.MAX_FACTOR_LEAFCOUNT) {
 				return expr;
 			}
 			// use TermOrderByName.INVLEX here!
 			// See https://github.com/kredel/java-algebra-system/issues/8
-			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO, TermOrderByName.INVLEX);
-			GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, false);
-			if (polyRat.length() <= 1) {
-				return expr;
+			Object[] objects = null;
+			JASConvert<BigRational> jas = new JASConvert<BigRational>(eVar.getArrayList(), BigRational.ZERO,
+					TermOrderByName.INVLEX);
+			try {
+				GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, false);
+				if (polyRat.length() <= 1) {
+					return expr;
+				}
+				objects = jas.factorTerms(polyRat);
+			} catch (JASConversionException e) {
+				PolynomialSubstitutions pSubs = PolynomialSubstitutions.buildSubs(eVar.getVarList());
+				IExpr subsPolynomial = pSubs.replaceAll(expr);
+
+				if (pSubs.substitutedVariables().size() > 0) {
+					if (subsPolynomial.isAST()) {
+						eVar.addAll(pSubs.substitutedVariables().keySet());
+						IExpr f2 = factor((IAST) subsPolynomial, eVar, factorSquareFree);
+						if (f2.isPresent()) {
+							IdentityHashMap<ISymbol, IExpr> substitutedVariables = pSubs.substitutedVariables();
+							return F.subst(f2, substitutedVariables);
+						}
+					}
+				}
 			}
 
-			Object[] objects = jas.factorTerms(polyRat);
-			SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
-			try {
-				GenPolynomial<edu.jas.arith.BigInteger> poly = (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
-				FactorAbstract<edu.jas.arith.BigInteger> factorAbstract = FactorFactory
-						.getImplementation(edu.jas.arith.BigInteger.ONE);
-				if (factorSquareFree) {
-					map = factorAbstract.squarefreeFactors(poly);// factors(poly);
-				} else {
-					// System.out.println("Variable: " + varList.toString() + " -- " + expr.fullFormString());
-					// System.out.println(poly);
-					map = factorAbstract.factors(poly);
-				}
-			} catch (RuntimeException rex) {
-				// System.out.println("Factor failed: " + expr.toString());
-				if (Config.SHOW_STACKTRACE) {
-					rex.printStackTrace();
-				}
-				return expr;
-			}
-			IASTAppendable result = F.TimesAlloc(map.size() + 1);
-			java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
-			java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
-			IRational f = F.C1;
-			if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
-				f = F.fraction(gcd, lcm).normalize();
-			}
-			for (SortedMap.Entry<GenPolynomial<edu.jas.arith.BigInteger>, Long> entry : map.entrySet()) {
-				if (entry.getKey().isONE() && entry.getValue().equals(1L)) {
-					continue;
-				}
-				IExpr base = jas.integerPoly2Expr(entry.getKey());
-				if (entry.getValue() == 1L) {
-					if (f.isMinusOne() && base.isPlus()) {
-						base = ((IAST) base).map(x -> x.negate(), 1);
-						f = F.C1;
+			if (objects != null) {
+
+				SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
+				try {
+					GenPolynomial<edu.jas.arith.BigInteger> poly = (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
+					FactorAbstract<edu.jas.arith.BigInteger> factorAbstract = FactorFactory
+							.getImplementation(edu.jas.arith.BigInteger.ONE);
+					if (factorSquareFree) {
+						map = factorAbstract.squarefreeFactors(poly);// factors(poly);
+					} else {
+						// System.out.println("Variable: " + varList.toString() + " -- " + expr.fullFormString());
+						// System.out.println(poly);
+						map = factorAbstract.factors(poly);
 					}
-					result.append(base);
-				} else {
-					result.append(F.Power(base, F.integer(entry.getValue())));
+				} catch (RuntimeException rex) {
+					// System.out.println("Factor failed: " + expr.toString());
+					if (Config.SHOW_STACKTRACE) {
+						rex.printStackTrace();
+					}
+					return expr;
 				}
+				IASTAppendable result = F.TimesAlloc(map.size() + 1);
+				java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
+				java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
+				IRational f = F.C1;
+				if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
+					f = F.fraction(gcd, lcm).normalize();
+				}
+				for (SortedMap.Entry<GenPolynomial<edu.jas.arith.BigInteger>, Long> entry : map.entrySet()) {
+					if (entry.getKey().isONE() && entry.getValue().equals(1L)) {
+						continue;
+					}
+					IExpr base = jas.integerPoly2Expr(entry.getKey());
+					if (entry.getValue() == 1L) {
+						if (f.isMinusOne() && base.isPlus()) {
+							base = ((IAST) base).map(x -> x.negate(), 1);
+							f = F.C1;
+						}
+						result.append(base);
+					} else {
+						result.append(F.Power(base, F.integer(entry.getValue())));
+					}
+				}
+				if (!f.isOne()) {
+					result.append(f);
+				}
+				// System.out.println("Factor: " + expr.toString() + " ==> " + result.toString());
+				return result.getOneIdentity(F.C0);
 			}
-			if (!f.isOne()) {
-				result.append(f);
-			}
-			// System.out.println("Factor: " + expr.toString() + " ==> " + result.toString());
-			return result.getOneIdentity(F.C0);
+			return F.NIL;
 		}
 
 		/**
@@ -1838,7 +1862,7 @@ public class Algebra {
 					return factorWithOption(ast, expr, varList, true, engine);
 				}
 				if (expr.isAST()) {
-					return factor((IAST) expr, varList, true);
+					return factor((IAST) expr, eVar, true);
 				}
 				return expr;
 
@@ -4073,7 +4097,7 @@ public class Algebra {
 		});
 
 		private static IExpr reduceFactorConstant(IExpr p, EvalEngine engine) {
-			if (p.isPlus() && !engine.isTogetherMode()) {
+			if (!engine.isNumericMode()&&p.isPlus() && !engine.isTogetherMode()) {
 				IExpr e = p;
 				// ((reduceConstantTerm /@ (List @@ e)) // Transpose)[[1]]
 				IExpr cTerms = F.Transpose

@@ -457,33 +457,39 @@ public class SeriesFunctions {
 		private static IExpr powerLimit(final IAST powerAST, LimitData data) {
 			// IAST rule = data.getRule();
 			IExpr base = powerAST.arg1();
-			IExpr exponent = powerAST.arg1();
-			if (powerAST.arg2().equals(data.getSymbol()) && data.getLimitValue().isZero()) {
+			IExpr exponent = powerAST.arg2();
+			if (exponent.equals(data.getSymbol()) && data.getLimitValue().isZero()) {
 				return F.C1;
 			}
-			if (base.isTimes() && exponent.isFree(data.getSymbol())) {
-				IAST isFreeResult = ((IAST) base).partitionTimes(x -> x.isFree(data.getSymbol(), true), F.C1, F.C1,
-						F.List);
-				if (!isFreeResult.arg2().isOne()) {
-					return F.Times(F.Power(isFreeResult.arg1(), exponent),
-							data.limit(F.Power(isFreeResult.arg2(), exponent)));
+			if (exponent.isFree(data.getSymbol())) {
+				IExpr temp = evalLimitQuiet(base, data);
+				if (temp.isZero()&&!exponent.isNumericFunction()) {
+					// ConditionalExpression(0, exponent > 0)
+					return F.ConditionalExpression(F.C0,F.Greater(exponent, F.C0));
+				}
+				if (base.isTimes()) {
+					IAST isFreeResult = ((IAST) base).partitionTimes(x -> x.isFree(data.getSymbol(), true), F.C1, F.C1,
+							F.List);
+					if (!isFreeResult.arg2().isOne()) {
+						return F.Times(F.Power(isFreeResult.arg1(), exponent),
+								data.limit(F.Power(isFreeResult.arg2(), exponent)));
+					}
 				}
 			}
-			if (powerAST.arg2().isNumericFunction()) {
+			if (exponent.isNumericFunction()) {
 				// Limit[a_^exp_,sym->lim] -> Limit[a,sym->lim]^exp
-				IExpr exp = powerAST.arg2();
 				// IExpr temp = F.evalQuiet(F.Limit(arg1.arg1(), rule));?
 				IExpr temp = evalLimitQuiet(powerAST.arg1(), data);
 				if (temp.isNumericFunction()) {
 					if (temp.isZero()) {
-						if (exp.isPositive()) {
+						if (exponent.isPositive()) {
 							// 0 ^ (positve exponent)
 							return F.C0;
 						}
-						if (exp.isNegative()) {
+						if (exponent.isNegative()) {
 							// 0 ^ (negative exponent)
-							if (exp.isInteger()) {
-								IInteger n = (IInteger) exp;
+							if (exponent.isInteger()) {
+								IInteger n = (IInteger) exponent;
 								if (n.isEven()) {
 									return F.CInfinity;
 								}
@@ -493,7 +499,7 @@ public class SeriesFunctions {
 									data.setDirection(DIRECTION_FROM_ABOVE);
 									return F.CInfinity;
 								}
-							} else if (exp.isFraction()) {
+							} else if (exponent.isFraction()) {
 								if (data.getDirection() != DIRECTION_FROM_BELOW) {
 									data.setDirection(DIRECTION_FROM_ABOVE);
 									return F.CInfinity;
@@ -504,10 +510,10 @@ public class SeriesFunctions {
 
 						return F.NIL;
 					}
-					return F.Power(temp, exp);
+					return F.Power(temp, exponent);
 				}
-				if (exp.isInteger()) {
-					IInteger n = (IInteger) exp;
+				if (exponent.isInteger()) {
+					IInteger n = (IInteger) exponent;
 					if (temp.isInfinity()) {
 						if (n.isPositive()) {
 							return temp;

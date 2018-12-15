@@ -6294,7 +6294,7 @@ public class F {
 	 *            <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
 	 * 
 	 */
-	public final static IAST headAST0(final IExpr head) {
+	public final static IASTMutable headAST0(final IExpr head) {
 		return new AST0(head);
 	}
 

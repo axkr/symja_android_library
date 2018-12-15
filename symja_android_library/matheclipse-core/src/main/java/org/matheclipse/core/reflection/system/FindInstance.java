@@ -1,11 +1,13 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -50,8 +52,16 @@ public class FindInstance extends Solve {
 			}
 			throw new WrongArgumentType(ast, ast.arg3(), 3, "Booleans expected!");
 		}
-		IAST termsEqualZeroList = Validate.checkEquations(ast, 1);
+		IASTMutable termsEqualZeroList = Validate.checkEquations(ast, 1);
 
-		return solveEquations(termsEqualZeroList, F.List(), vars, 1, engine);
+		try {
+			return solveEquations(termsEqualZeroList, F.List(), vars, 1, engine);
+		} catch (RuntimeException rex) {
+			if (Config.SHOW_STACKTRACE) {
+				rex.printStackTrace();
+			}
+		}
+
+		return F.NIL;
 	}
 }

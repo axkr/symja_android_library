@@ -145,6 +145,13 @@ public class Integrate extends AbstractFunctionEvaluator {
 									"Not integrable: " + temp + " for limit " + xList.arg1() + " -> " + xList.arg2());
 							return F.NIL;
 						}
+						if (Fb.isAST() && Fa.isAST()) {
+							IExpr bDenominator = F.Denominator.of(engine, Fb);
+							IExpr aDenominator = F.Denominator.of(engine, Fa);
+							if (bDenominator.equals(aDenominator)) {
+								return F.Divide(F.Subtract(F.Numerator(Fb), F.Numerator(Fa)),bDenominator);
+							}
+						}
 						return F.Subtract(Fb, Fa);
 					}
 				}
