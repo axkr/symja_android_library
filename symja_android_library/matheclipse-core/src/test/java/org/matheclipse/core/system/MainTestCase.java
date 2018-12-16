@@ -1571,7 +1571,7 @@ public class MainTestCase extends AbstractTestCase {
 				"-(5+2*x)/(1+x+x^2)");
 
 		check("Apart(1/(x^3+1))", //
-				"1/(3+3*x)-(-2+x)/(3-3*x+3*x^2)");
+				"1/(3*(1+x))+(2-x)/(3*(1-x+x^2))");
 		check("Integrate(1/(x^5+x-7),x)", //
 				"Integrate(1/(-7+x+x^5),x)");
 		check("Integrate(1/(x-2),x)", //
@@ -1607,7 +1607,7 @@ public class MainTestCase extends AbstractTestCase {
 				"Log(x)+x^2*Log(x)");
 
 		check("Apart(2*x^2/(x^3+1))", //
-				"2/(3+3*x)+(2*(-1+2*x))/(3-3*x+3*x^2)");
+				"2/3*1/(1+x)+2/3*(-1+2*x)/(1-x+x^2)");
 
 		check("Integrate(2*x^2/(x^3+1),x)", //
 				"2/3*Log(1+x^3)");
@@ -3329,24 +3329,13 @@ public class MainTestCase extends AbstractTestCase {
 
 		check("PolynomialGCD(2*x^5-2*x,(x^2-1)^2)", "-1+x^2");
 		check("PolynomialGCD(2*x^5-2*x,(x^2-1)^2,Modulus->2)", "(1+x)^4");
-		check("PolynomialExtendedGCD(2*x^5-2*x,(x^2-1)^2,x)", "{-1+x^2,{x/4,-1-x^2/2}}");
+		check("PolynomialExtendedGCD(2*x^5-2*x,(x^2-1)^2,x)", //
+				"{-1+x^2,{x/4,1/2*(-2-x^2)}}");
 		check("PolynomialExtendedGCD(2*x^5-2*x,(x^2-1)^2,x, Modulus->2)", "{1+x^4,{0,1}}");
 
 		check("ExpandAll((1+x)^2*(7+x)*(11+x)*(17+x))", "1309+3001*x+2110*x^2+454*x^3+37*x^4+x^5");
 		check("PolynomialLCM((1+x)^2*(7+x)*(17+x),(1+x)*(7+x)*(11+x))", "1309+3001*x+2110*x^2+454*x^3+37*x^4+x^5");
 		check("PolynomialLCM((1+x)^2*(7+x)*(17+x),(1+x)*(7+x)*(11+x), Modulus->31)", "(7+x)*(11+x)*(17+x)*(1+x)^2");
-	}
-
-	public void testSystem995() {
-		check("Apart(1/((1 + x)*(5 + x)))", //
-				"1/(4+4*x)-1/(20+4*x)");
-		check("Apart((x)/(x^2-1))", "1/(-2+2*x)+1/(2+2*x)");
-		check("Apart((x+3)/(x^2-3*x-40))", "11/(-104+13*x)+2/(65+13*x)");
-		check("Apart((10*x^2+12*x+20)/(x^3-8))", "7/(-2+x)+(4+3*x)/(4+2*x+x^2)");
-		check("Apart((3*x+5)*(1-2*x)^(-2))", "13/8*1/(1/2-x)^2+3/(-2+4*x)");
-		check("Apart((10*x^2+12*x+20)/(x^3-8))", "7/(-2+x)+(4+3*x)/(4+2*x+x^2)");
-		check("Apart((10*x^2-63*x+29)/((x+2)*(x+3)^5))",
-				"195/(2+x)-308/(3+x)^5-185/(3+x)^4-195/(3+x)^3-195/(3+x)^2-195/(3+x)");
 	}
 
 	public void testSystem996() {

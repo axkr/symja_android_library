@@ -63,7 +63,7 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 
 	@Override
 	public void addNonFractionalPart(GenPolynomial<BigRational> genPolynomial) {
-		IExpr temp = F.eval(jas.rationalPoly2Expr(genPolynomial));
+		IExpr temp = F.eval(jas.rationalPoly2Expr(genPolynomial, false));
 		if (temp.isAST()) {
 			((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
 		}
@@ -174,8 +174,8 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 				// ElementaryIntegration<BigRational>(BigRational.ZERO);
 				// Integral<BigRational> integral= ei.integrate(genPolynomial,
 				// Di_1);
-				temp = F.eval(F.Times(jas.rationalPoly2Expr(genPolynomial),
-						F.Power(jas.rationalPoly2Expr(Di_1), F.integer(j * (-1L)))));
+				temp = F.eval(F.Times(jas.rationalPoly2Expr(genPolynomial, false),
+						F.Power(jas.rationalPoly2Expr(Di_1, false), F.integer(j * (-1L)))));
 				if (!temp.isZero()) {
 					if (temp.isAST()) {
 						((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);

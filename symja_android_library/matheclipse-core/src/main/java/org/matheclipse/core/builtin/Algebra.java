@@ -262,7 +262,7 @@ public class Algebra {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
 
-			final IExpr arg1 = ast.arg1();
+			IExpr arg1 = ast.arg1();
 			IAST tempAST = Structure.threadLogicEquationOperators(arg1, ast, 1);
 			if (tempAST.isPresent()) {
 				return tempAST;
@@ -274,11 +274,11 @@ public class Algebra {
 			} else {
 				VariablesSet eVar = new VariablesSet(arg1);
 				if (eVar.isSize(0)) {
-					return arg1;
+					return F.evalExpandAll(arg1, engine);
 				}
 				if (!eVar.isSize(1)) {
 					// partial fraction only possible for univariate polynomials
-					return arg1;
+					return F.evalExpandAll(arg1, engine);
 				}
 				variableList = eVar.getVarList();
 			}
@@ -296,8 +296,9 @@ public class Algebra {
 					// System.out.println(temp.toString());
 					// }
 				}
+				return arg1;
 			}
-			return arg1;
+			return F.evalExpandAll(arg1, engine);
 
 			// return F.NIL;
 		}
@@ -517,7 +518,7 @@ public class Algebra {
 					if (!divRem[1].isZERO()) {
 						return null;
 					}
-					result[0] = jas.rationalPoly2Expr(divRem[0]);
+					result[0] = jas.rationalPoly2Expr(divRem[0], false);
 					result[1] = F.C1;
 				} else {
 					GenPolynomial<BigRational>[] divRem = poly2.quotientRemainder(poly1);
@@ -525,7 +526,7 @@ public class Algebra {
 						return null;
 					}
 					result[0] = F.C1;
-					result[1] = jas.rationalPoly2Expr(divRem[0]);
+					result[1] = jas.rationalPoly2Expr(divRem[0], false);
 				}
 				return result;
 			} catch (JASConversionException e1) {
@@ -2345,10 +2346,10 @@ public class Algebra {
 				GenPolynomial<BigRational> poly2 = jas.expr2JAS(expr2, false);
 				GenPolynomial<BigRational>[] result = poly1.egcd(poly2);
 				IASTAppendable list = F.ListAlloc(2);
-				list.append(jas.rationalPoly2Expr(result[0]));
+				list.append(jas.rationalPoly2Expr(result[0], true));
 				IASTAppendable subList = F.ListAlloc(2);
-				subList.append(jas.rationalPoly2Expr(result[1]));
-				subList.append(jas.rationalPoly2Expr(result[2]));
+				subList.append(jas.rationalPoly2Expr(result[1], true));
+				subList.append(jas.rationalPoly2Expr(result[2], true));
 				list.append(subList);
 				return list;
 			} catch (JASConversionException e0) {
@@ -2818,8 +2819,8 @@ public class Algebra {
 				GenPolynomial<BigRational> poly2 = jas.expr2JAS(arg2, false);
 				GenPolynomial<BigRational>[] divRem = poly1.quotientRemainder(poly2);
 				IExpr[] result = new IExpr[2];
-				result[0] = jas.rationalPoly2Expr(divRem[0]);
-				result[1] = jas.rationalPoly2Expr(divRem[1]);
+				result[0] = jas.rationalPoly2Expr(divRem[0], false);
+				result[1] = jas.rationalPoly2Expr(divRem[1], false);
 				return result;
 			} catch (JASConversionException e1) {
 				try {

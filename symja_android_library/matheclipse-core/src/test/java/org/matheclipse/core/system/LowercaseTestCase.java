@@ -161,24 +161,57 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testApart() {
 		// check("Factor(x^2 - y^2 )", "(x-y)*(x+y)");
 		// check("Solve(x^2 - y^2==0, y)", "{{y->-x},{y->x}}");
-		check("Apart(1 / (x^2 - y^2))", "1/(x^2-y^2)");
 
-		check("Apart(x/(2*x + a^2))", "x/(a^2+2*x)");
+		// TODO return 1/b - a/(b*(a + b*x))
+		check("Apart((x/(a+(b*x))),x)", //
+				"x/(a+b*x)");
+		
+		check("Apart((3*x-8)/((x+1)*(x-5)),x)", //
+				"7/6*1/(-5+x)+11/6*1/(1+x)");
 
-		check("Apart(y/(x + 2)/(x + 1),x)", "y/((1+x)*(2+x))");
+		check("Apart((a + b)^3)", //
+				"a^3+3*a^2*b+3*a*b^2+b^3");
 
-		check("Sin(1 / (x ^ 2 - y ^ 2)) // Apart", "Sin(1/(x^2-y^2))");
+		check("Apart(1 / (x^2 - y^2))", //
+				"1/(x^2-y^2)");
 
-		check("Apart(1 / (x^2 + 5*x + 6))", "1/(2+x)-1/(3+x)");
+		check("Apart(x/(2*x + a^2))", //
+				"x/(a^2+2*x)");
+
+		check("Apart(y/(x + 2)/(x + 1),x)", //
+				"y/((1+x)*(2+x))");
+
+		check("Sin(1 / (x ^ 2 - y ^ 2)) // Apart", //
+				"Sin(1/(x^2-y^2))");
+
+		check("Apart(1 / (x^2 + 5*x + 6))", //
+				"1/(2+x)-1/(3+x)");
 		// TODO return -1 / (2 y (x + y)) + 1 / (2 y (x - y))
-		check("Apart(1 / (x^2 - y^2), x)", "1/(x^2-y^2)");
+		check("Apart(1 / (x^2 - y^2), x)", //
+				"1/(x^2-y^2)");
 		// TODO return 1 / (2 x (x + y)) + 1 / (2 x (x - y))
-		check("Apart(1 / (x^2 - y^2), y)", "1/(x^2-y^2)");
+		check("Apart(1 / (x^2 - y^2), y)", //
+				"1/(x^2-y^2)");
 
 		check("Apart(1/((1 + x)*(5 + x)))", //
-				"1/(4+4*x)-1/(20+4*x)");
+				"1/(4*(1+x))-1/(4*(5+x))");
 		check("Apart(1 < (x + 1)/(x - 1) < 2)", //
 				"1<1+2/(-1+x)<2");
+
+		check("Apart(1/((1 + x)*(5 + x)))", //
+				"1/(4*(1+x))-1/(4*(5+x))");
+		check("Apart((x)/(x^2-1))", //
+				"1/(2*(-1+x))+1/(2*(1+x))");
+		check("Apart((x+3)/(x^2-3*x-40))", //
+				"11/13*1/(-8+x)+2/13*1/(5+x)");
+		check("Apart((10*x^2+12*x+20)/(x^3-8))", //
+				"7/(-2+x)+(4+3*x)/(4+2*x+x^2)");
+		check("Apart((3*x+5)*(1-2*x)^(-2))", //
+				"13/2*1/(1-2*x)^2+3/2*1/(-1+2*x)");
+		check("Apart((10*x^2+12*x+20)/(x^3-8))", //
+				"7/(-2+x)+(4+3*x)/(4+2*x+x^2)");
+		check("Apart((10*x^2-63*x+29)/((x+2)*(x+3)^5))", //
+				"195/(2+x)-308/(3+x)^5-185/(3+x)^4-195/(3+x)^3-195/(3+x)^2-195/(3+x)");
 	}
 
 	public void testAppend() {
@@ -2622,13 +2655,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDenominator() {
-		check("Denominator(a/(b*c))", "b*c");
-		check("Denominator(a^2*b)", "1");
-		check("Denominator(a^2*b^-2*c^-3)", "b^2*c^3");
-		check("Denominator(a^2*b^-a*c^-d)", "b^a*c^d");
+		check("Denominator(a/(b*c))", //
+				"b*c");
+		check("Denominator(a^2*b)", //
+				"1");
+		check("Denominator(a^2*b^-2*c^-3)", //
+				"b^2*c^3");
+		check("Denominator(a^2*b^-a*c^-d)", //
+				"b^a*c^d");
 
-		check("Denominator(Csc(x))", "1");
-		check("Denominator(Csc(x), Trig->True)", "Sin(x)");
+		check("Denominator(Csc(x))", //
+				"1");
+		check("Denominator(Csc(x), Trig->True)", //
+				"Sin(x)");
 		check("Denominator(Csc(x)^4)", "1");
 		check("Denominator(Csc(x)^4, Trig->True)", "Sin(x)^4");
 		check("Denominator(42*Csc(x))", "1");
@@ -4363,20 +4402,30 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFold() {
-		check("Fold(f, x, {a, b, c, d})", "f(f(f(f(x,a),b),c),d)");
-		check("Fold(List, x, {a, b, c, d})", "{{{{x,a},b},c},d}");
-		check("Fold(Times, 1, {a, b, c, d})", "a*b*c*d");
-		check("Fold(#1^#2 &, x, {a, b, c, d})", "(((x^a)^b)^c)^d");
-		check("Catch(Fold(If(# > 10^6, Throw(#), #^2 + #1) &, 2, Range(6)))", "3263442");
-		check("Fold(g(#2, #1) &, x, {a, b, c, d})", "g(d,g(c,g(b,g(a,x))))");
-		check("Fold(x *#1 + #2 &, 0, {a, b, c, d, e})", "e+x*(d+x*(c+x*(b+a*x)))");
+		check("Fold(f, x, {a, b, c, d})", //
+				"f(f(f(f(x,a),b),c),d)");
+		check("Fold(List, x, {a, b, c, d})", //
+				"{{{{x,a},b},c},d}");
+		check("Fold(Times, 1, {a, b, c, d})", //
+				"a*b*c*d");
+		check("Fold(#1^#2 &, x, {a, b, c, d})", //
+				"(((x^a)^b)^c)^d");
+		check("Catch(Fold(If(# > 10^6, Throw(#), #^2 + #1) &, 2, Range(6)))", //
+				"3263442");
+		check("Fold(g(#2, #1) &, x, {a, b, c, d})", //
+				"g(d,g(c,g(b,g(a,x))))");
+		check("Fold(x *#1 + #2 &, 0, {a, b, c, d, e})", //
+				"e+x*(d+x*(c+x*(b+a*x)))");
 	}
 
 	public void testFoldList() {
-		check("foldlist(#^2 + #1 &, 2, range(6))", "{2,6,42,1806,3263442,10650056950806,113423713055421844361000442}");
-		check("foldlist(f, x, {a, b, c, d})", "{x,f(x,a),f(f(x,a),b),f(f(f(x,a),b),c),f(f(f(f(x,a),b),c),d)}");
+		check("foldlist(#^2 + #1 &, 2, range(6))", //
+				"{2,6,42,1806,3263442,10650056950806,113423713055421844361000442}");
+		check("foldlist(f, x, {a, b, c, d})", //
+				"{x,f(x,a),f(f(x,a),b),f(f(f(x,a),b),c),f(f(f(f(x,a),b),c),d)}");
 		// check("FoldList(Times, 1, Array(Prime, 10))", "");
-		check("foldlist(1/(#2 + #1) &, x, reverse({a, b, c}))", "{x,1/(c+x),1/(b+1/(c+x)),1/(a+1/(b+1/(c+x)))}");
+		check("foldlist(1/(#2 + #1) &, x, reverse({a, b, c}))", //
+				"{x,1/(c+x),1/(b+1/(c+x)),1/(a+1/(b+1/(c+x)))}");
 		check("", "");
 	}
 
@@ -4588,6 +4637,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFunction() {
+		check("(4*# + (2*# &)[a] &)[b]", //
+				"2*a+4*b");
 		check("fufufu=Function({x},Function({y},Function({z},x+y+z)))", //
 				"Function({x},Function({y},Function({z},x+y+z)))");
 		check("fufufu(a)", //
@@ -7610,8 +7661,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testNestWhileList() {
-		check("NestWhileList(#/2 &, 123456, EvenQ)", "{123456,61728,30864,15432,7716,3858,1929}");
-		check("NestWhileList(Log, 100, # > 0 &)",
+		check("NestWhileList(#^2 &, 2, # < 256 &)", //
+				"{2,4,16,256}");
+		check("NestWhileList(#/2 &, 123456, EvenQ)", //
+				"{123456,61728,30864,15432,7716,3858,1929}");
+		check("NestWhileList(Log, 100, # > 0 &)", //
 				"{100,Log(100),Log(Log(100)),Log(Log(Log(100))),Log(Log(Log(Log(100))))}");
 	}
 
@@ -8668,7 +8722,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PolynomialExtendedGCD((x - 1)*(x - 2)^2, (x - 1)*(x^2 - 3), x)", "{-1+x,{7+4*x,9-4*x}}");
 
 		check("PolynomialExtendedGCD((x - 1)^2*(x - 2)^2, (x - 1)*(x^2 - 3), x)",
-				"{-1+x,{19/2+11/2*x,-13+18*x-11/2*x^2}}");
+				"{-1+x,{1/2*(19+11*x),1/2*(-26+36*x-11*x^2)}}");
 		check("PolynomialExtendedGCD((x - 1)^2*(x - 2)^2, (x - 1)*(x^2 - 3), x,  Modulus -> 2)", "{1+x^2,{1,1+x}}");
 
 		check("PolynomialExtendedGCD(a*x^2 + b*x + c, x - r, x)", "{1,{1/(c+b*r+a*r^2),(-b-a*r-a*x)/(c+b*r+a*r^2)}}");
@@ -11226,7 +11280,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testSolve() {
 		check("Solve(-28 - 4*Sqrt(-1 + x) + 4*x==0,x)", //
 				"{{x->10}}");
-		check("Solve(Sqrt(5*x-25)-Sqrt(x-1)==2,x)",  //
+		check("Solve(Sqrt(5*x-25)-Sqrt(x-1)==2,x)", //
 				"{{x->10}}");
 
 		// check("Solve(E^x==b,x)", //

@@ -245,7 +245,7 @@ public class PolynomialSubstitutions {
 	 * <code>IdentityHashMap</code>.
 	 */
 	public java.util.IdentityHashMap<ISymbol, IExpr> substitutedVariables() {
-		return substitutedVariables; // .copyAppendable();
+		return substitutedVariables;  
 	}
 
 	/**
