@@ -808,8 +808,7 @@ public final class NumberTheory {
 				maxIterations = Validate.checkIntType(ast, 2);
 			}
 
-			if (ast.isAST1() && arg1.isPower() && arg1.base().isInteger() && arg1.base().isPositive()
-					&& arg1.exponent().equals(F.C1D2)) {
+			if (ast.isAST1() && arg1.isSqrt() && arg1.base().isInteger() && arg1.base().isPositive()) {
 				// Sqrt( d ) with d positive integer number
 				return sqrtContinuedFraction((IInteger) arg1.base());
 			}

@@ -3462,7 +3462,7 @@ public final class Arithmetic {
 
 		@Override
 		public IExpr eComFraArg(final IComplex base, final IFraction exponent) {
-			if (exponent.equals(F.C1D2) && base.getRealPart().isZero()) {
+			if (exponent.isNumEqualRational(F.C1D2) && base.getRealPart().isZero()) {
 				// square root of pure imaginary number
 				IRational im = base.getImaginaryPart();
 				boolean negative = false;

@@ -344,7 +344,7 @@ public class HypergeometricFunctions {
 				// GegenbauerC(n, l, z)
 				IExpr l = ast.arg2();
 				IExpr z = ast.arg3();
-				if (l.equals(F.C1D2)) {
+				if (l.isNumEqualRational(F.C1D2)) {
 					return F.LegendreP(n, z);
 				}
 

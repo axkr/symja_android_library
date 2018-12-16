@@ -376,7 +376,7 @@ public class SpecialFunctions {
 
 			if (a.isZero()) {
 				return F.C0;
-			} else if (a.equals(F.C1D2)) {
+			} else if (a.isNumEqualRational(F.C1D2)) {
 				// Erfc(Sqrt(z))
 				return F.Erfc(F.Sqrt(z));
 			} else if (a.isOne()) {
@@ -1302,10 +1302,10 @@ public class SpecialFunctions {
 					}
 				}
 			}
-			if (a.equals(C2)) {
+			if (a.isNumEqualRational(C2)) {
 				return Plus(CN1, Zeta(s));
 			}
-			if (a.equals(C1D2)) {
+			if (a.isNumEqualRational(C1D2)) {
 				return Times(Plus(CN1, Sqr(s)), Zeta(s));
 			}
 			return NIL;

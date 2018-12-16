@@ -504,6 +504,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>null</code> if the conversion is not possible.
 	 * @deprecated use {@link #evalReal()} instead
 	 */
+	@Deprecated
 	default ISignedNumber evalSignedNumber() {
 		return evalReal();
 	}
@@ -566,6 +567,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return toString();
 	}
 
+	/**
+	 * Return the Gaussian integers real and imaginary parts. If this is not a Gaussian integer return <code>null</code>
+	 * 
+	 * @return <code>null</code> if this is not a Gaussian integer
+	 */
+	default IInteger[] gaussianIntegers() {
+		return null;
+	}
+
 	@Override
 	default IExpr gcd(IExpr that) {
 		return F.GCD.of(this, that);
@@ -585,6 +595,10 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	@Override
 	default public Field<IExpr> getField() {
 		return ExprField.CONST;
+	}
+
+	default IExpr getOptionalValue() {
+		return null;
 	}
 
 	/**
@@ -1271,20 +1285,20 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is a distribution AST (i.e. NormalDistribution(), PoissonDistribution(),...)
-	 * 
-	 * @return
-	 */
-	default boolean isDistribution() {
-		return false;
-	}
-
-	/**
 	 * Test if this expression is a discrete distribution AST (i.e. BinomialDistribution(), PoissonDistribution(),...)
 	 * 
 	 * @return
 	 */
 	default boolean isDiscreteDistribution() {
+		return false;
+	}
+
+	/**
+	 * Test if this expression is a distribution AST (i.e. NormalDistribution(), PoissonDistribution(),...)
+	 * 
+	 * @return
+	 */
+	default boolean isDistribution() {
 		return false;
 	}
 
@@ -1327,16 +1341,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default boolean isExcept() {
-		return false;
-	}
-
-	/**
-	 * Test if this expression is the <code>Optional</code> function <code>Optional[&lt;pattern&gt;]</code> or
-	 * <code>Optional[&lt;pattern&gt;, &lt;value&gt;]</code>
-	 * 
-	 * @return
-	 */
-	default boolean isOptional() {
 		return false;
 	}
 
@@ -1561,15 +1565,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Return the Gaussian integers real and imaginary parts. If this is not a Gaussian integer return <code>null</code>
-	 * 
-	 * @return <code>null</code> if this is not a Gaussian integer
-	 */
-	default IInteger[] gaussianIntegers() {
-		return null;
-	}
-
-	/**
 	 * Test if this expression is a integer function (i.e. a number, a symbolic constant or an integer function where
 	 * all arguments are also &quot;integer functions&quot;)
 	 * 
@@ -1600,15 +1595,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default boolean isInterval1() {
-		return false;
-	}
-
-	/**
-	 * Test if this expression is a Quantity(a,unit) expression.
-	 * 
-	 * @return
-	 */
-	default boolean isQuantity() {
 		return false;
 	}
 
@@ -1763,15 +1749,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default boolean isModule() {
-		return false;
-	}
-
-	/**
-	 * Test if this expression is the With function <code>With[&lt;arg1&gt;, &lt;arg2&gt;]</code>
-	 * 
-	 * @return
-	 */
-	default boolean isWith() {
 		return false;
 	}
 
@@ -2038,6 +2015,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is the <code>Optional</code> function <code>Optional[&lt;pattern&gt;]</code> or
+	 * <code>Optional[&lt;pattern&gt;, &lt;value&gt;]</code>
+	 * 
+	 * @return
+	 */
+	default boolean isOptional() {
+		return false;
+	}
+
+	/**
 	 * Test if this expression is the function <code>Or[&lt;arg&gt;,...]</code> and has at least 2 arguments.
 	 * 
 	 * @return
@@ -2077,10 +2064,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default boolean isPatternDefault() {
 		return false;
-	}
-
-	default IExpr getOptionalValue() {
-		return null;
 	}
 
 	/**
@@ -2234,19 +2217,18 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is the function <code>Power[&lt;arg1&gt;, 1/2]</code> (i.e. <code>Sqrt[&lt;arg1&gt;]</code>) or
-	 * <code>-Power[&lt;arg1&gt;, 1/2]</code> (i.e. <code>-Sqrt[&lt;arg1&gt;]</code>) 
+	 * <p>
+	 * Test if this expression is the function <code>Power[&lt;arg1&gt;, -1]</code> (i.e.
+	 * <code>1 / &lt;arg1&gt;</code>).
+	 * </p>
+	 * 
+	 * See: <a href="https://en.wikipedia.org/wiki/Multiplicative_inverse">Wikipedia - Multiplicative inverse</a>
 	 * 
 	 * @return
 	 */
-	default boolean isSqrtExpr() {
-		if (isPower() && second().equals(F.C1D2)) {
+	default boolean isPowerReciprocal() {
+		if (isPower() && second().isMinusOne()) {
 			return true;
-		}
-		if (isTimes() && first().equals(F.CN1) && size() == 3) {
-			if (second().isPower() && second().second().equals(F.C1D2)) {
-				return true;
-			}
 		}
 		return false;
 	}
@@ -2260,6 +2242,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default boolean isPresent() {
 		return true;
+	}
+
+	/**
+	 * Test if this expression is a Quantity(a,unit) expression.
+	 * 
+	 * @return
+	 */
+	default boolean isQuantity() {
+		return false;
 	}
 
 	/**
@@ -2308,6 +2299,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is a <code>IBuiltInSymbol</code> symbol and the evaluator implements the
+	 * <code>ISignedNumberConstant</code> interface (see package <code>org.matheclipse.core.builtin.constant</code>).
+	 * 
+	 * @return
+	 */
+	default boolean isRealConstant() {
+		return false;
+	}
+
+	/**
 	 * Test if this expression is a real matrix (i.e. an ASTRealMatrix) or a <code>List[List[...],...,List[...]]</code>
 	 * matrix with elements of type <code>org.matheclipse.core.expression.Num</code>.
 	 * 
@@ -2324,6 +2325,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 * @deprecated use {@link isReal()}
 	 */
+	@Deprecated
 	default boolean isRealNumber() {
 		return isReal();
 	}
@@ -2432,6 +2434,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 * @deprecated use {@link #isReal()};
 	 */
+	@Deprecated
 	default boolean isSignedNumber() {
 		return isReal();
 	}
@@ -2441,18 +2444,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * <code>ISignedNumberConstant</code> interface (see package <code>org.matheclipse.core.builtin.constant</code>).
 	 * 
 	 * @return
-	 */
-	default boolean isRealConstant() {
-		return false;
-	}
-
-	/**
-	 * Test if this expression is a <code>IBuiltInSymbol</code> symbol and the evaluator implements the
-	 * <code>ISignedNumberConstant</code> interface (see package <code>org.matheclipse.core.builtin.constant</code>).
-	 * 
-	 * @return
 	 * @deprecated use {@link #isRealConstant()}
 	 */
+	@Deprecated
 	default boolean isSignedNumberConstant() {
 		return isRealConstant();
 	}
@@ -2503,6 +2497,38 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default int[] isSpan(int size) {
 		return null;
+	}
+
+	/**
+	 * Test if this expression is the function <code>Power[&lt;arg1&gt;, 1/2]</code> (i.e.
+	 * <code>Sqrt[&lt;arg1&gt;]</code>).
+	 * 
+	 * @return
+	 */
+	default boolean isSqrt() {
+		if (isPower() && second().isNumEqualRational(F.C1D2)) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Test if this expression is the function <code>Power[&lt;arg1&gt;, 1/2]</code> (i.e.
+	 * <code>Sqrt[&lt;arg1&gt;]</code>) or <code>-Power[&lt;arg1&gt;, 1/2]</code> (i.e.
+	 * <code>-Sqrt[&lt;arg1&gt;]</code>)
+	 * 
+	 * @return
+	 */
+	default boolean isSqrtExpr() {
+		if (isPower() && second().isNumEqualRational(F.C1D2)) {
+			return true;
+		}
+		if (isTimes() && first().equals(F.CN1) && size() == 3) {
+			if (second().isPower() && second().second().isNumEqualRational(F.C1D2)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -2616,6 +2642,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default int isVector() {
 		// default: no vector
 		return -1;
+	}
+
+	/**
+	 * Test if this expression is the With function <code>With[&lt;arg1&gt;, &lt;arg2&gt;]</code>
+	 * 
+	 * @return
+	 */
+	default boolean isWith() {
+		return false;
 	}
 
 	/**
@@ -2934,16 +2969,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Return <code>this</code> if <code>isList()==true</code>, otherwise create a new list <code>{this}</code> from
-	 * this (i.e. return <code>F.List(this)</code>).
-	 * 
-	 * @return <code>this</code> if <code>isList()==true</code>, otherwise return <code>F.List(this)</code>.
-	 */
-	default IAST orNewList() {
-		return isList() ? (IAST) this : F.List(this);
-	}
-
-	/**
 	 * Return <code>this</code> if <code>this</code> unequals <code>F.NIL</code> , otherwise throw an exception to be
 	 * created by the provided supplier.
 	 *
@@ -2960,6 +2985,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default <X extends Throwable> IExpr orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
 		return this;
+	}
+
+	/**
+	 * Return <code>this</code> if <code>isList()==true</code>, otherwise create a new list <code>{this}</code> from
+	 * this (i.e. return <code>F.List(this)</code>).
+	 * 
+	 * @return <code>this</code> if <code>isList()==true</code>, otherwise return <code>F.List(this)</code>.
+	 */
+	default IAST orNewList() {
+		return isList() ? (IAST) this : F.List(this);
 	}
 
 	/**
@@ -3192,20 +3227,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Replace all (sub-) expressions with the given <code>java.util.Map</code>n. If no substitution matches, the method
-	 * returns <code>F.NIL</code>.
-	 * 
-	 * @param function
-	 *            if the unary functions <code>apply()</code> method returns <code>F.NIL</code> the expression isn't
-	 *            substituted.
-	 * @return <code>F.NIL</code> if no substitution of a (sub-)expression was possible.
-	 */
-	@Nullable
-	default IExpr replaceAll(final Map<? extends IExpr, ? extends IExpr> map) {
-		return accept(new VisitorReplaceAll(map));
-	}
-
-	/**
 	 * Replace all (sub-) expressions with the given rule set. If no substitution matches, the method returns
 	 * <code>F.NIL</code>.
 	 * 
@@ -3217,6 +3238,20 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	@Nullable
 	default IExpr replaceAll(final IAST astRules) {
 		return accept(new VisitorReplaceAll(astRules));
+	}
+
+	/**
+	 * Replace all (sub-) expressions with the given <code>java.util.Map</code>n. If no substitution matches, the method
+	 * returns <code>F.NIL</code>.
+	 * 
+	 * @param function
+	 *            if the unary functions <code>apply()</code> method returns <code>F.NIL</code> the expression isn't
+	 *            substituted.
+	 * @return <code>F.NIL</code> if no substitution of a (sub-)expression was possible.
+	 */
+	@Nullable
+	default IExpr replaceAll(final Map<? extends IExpr, ? extends IExpr> map) {
+		return accept(new VisitorReplaceAll(map));
 	}
 
 	/**

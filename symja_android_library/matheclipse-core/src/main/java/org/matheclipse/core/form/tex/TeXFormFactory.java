@@ -566,7 +566,7 @@ public class TeXFormFactory {
 			}
 			IExpr arg1 = f.arg1();
 			IExpr arg2 = f.arg2();
-			if (arg2.isRationalValue(F.C1D2)) {
+			if (arg2.isNumEqualRational(F.C1D2)) {
 				buf.append("\\sqrt{");
 				fFactory.convert(buf, arg1, fPrecedence);
 				buf.append('}');

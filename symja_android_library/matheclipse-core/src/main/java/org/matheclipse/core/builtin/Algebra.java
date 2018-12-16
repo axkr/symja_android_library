@@ -3767,8 +3767,7 @@ public class Algebra {
 					IASTAppendable newTimes = F.NIL;
 					for (int i = 1; i < ast.size(); i++) {
 						temp = ast.get(i);
-						if (temp.isPower() && temp.exponent().isMinusOne() && temp.base().isPlus()
-								&& temp.base().size() == 3) {
+						if (temp.isPowerReciprocal() && temp.base().isPlus() && temp.base().size() == 3) {
 							IAST plus1 = (IAST) temp.base();
 							IAST plus2 = plus1.setAtClone(2, plus1.arg2().negate());
 							IExpr expr = F.eval(F.Expand(F.Times(plus1, plus2)));
@@ -3879,7 +3878,7 @@ public class Algebra {
 								if (reduced.isPresent()) {
 									return reduced;
 								}
-							} else if (temp.isPower() && temp.base().isPlus() && temp.exponent().isMinusOne()) {
+							} else if (temp.isPowerReciprocal() && temp.base().isPlus()) {
 								// <number> * Power[Plus[...], -1 ]
 								reduced = tryExpandAll(ast, temp.base(), number.inverse(), i);
 								if (reduced.isPresent()) {
@@ -4097,7 +4096,7 @@ public class Algebra {
 		});
 
 		private static IExpr reduceFactorConstant(IExpr p, EvalEngine engine) {
-			if (!engine.isNumericMode()&&p.isPlus() && !engine.isTogetherMode()) {
+			if (!engine.isNumericMode() && p.isPlus() && !engine.isTogetherMode()) {
 				IExpr e = p;
 				// ((reduceConstantTerm /@ (List @@ e)) // Transpose)[[1]]
 				IExpr cTerms = F.Transpose

@@ -1588,7 +1588,7 @@ public class PolynomialFunctions {
 				}
 				return PolynomialsUtils.createChebyshevPolynomial(degree, ast.arg2());
 			}
-			if (n.equals(F.C1D2) || n.equals(F.CN1D2)) {
+			if (n.isNumEqualRational(F.C1D2) || n.isNumEqualRational(F.CN1D2)) {
 				// (1/2, z) => Cos(ArcCos(z)/2)
 				// (-1/2, z) => Cos(ArcCos(z)/2)
 				return F.Cos(F.Times(F.C1D2, F.ArcCos(z)));
@@ -1667,11 +1667,11 @@ public class PolynomialFunctions {
 						F.Factorial(F.Plus(F.Negate(k), n))), 0, degree / 2);
 			}
 
-			if (n.equals(F.CN1D2)) {
+			if (n.isNumEqualRational(F.CN1D2)) {
 				// (-1/2, z) => 1/(Sqrt(2)* Sqrt(1 + z))
 				return F.Times(F.C1DSqrt2, F.Power(F.Plus(F.C1, z), F.CN1D2));
 			}
-			if (n.equals(F.C1D2)) {
+			if (n.isNumEqualRational(F.C1D2)) {
 				// (1/2, z) => (1 + 2*z)/(Sqrt(2)* Sqrt(1 + z))
 				return F.Times(F.C1DSqrt2, F.Plus(F.C1, F.Times(F.C2, z)), F.Power(F.Plus(F.C1, z), F.CN1D2));
 			}

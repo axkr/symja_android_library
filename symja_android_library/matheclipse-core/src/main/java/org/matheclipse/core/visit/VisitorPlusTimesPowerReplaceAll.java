@@ -36,10 +36,6 @@ public class VisitorPlusTimesPowerReplaceAll extends VisitorReplaceAll {
 
 	@Override
 	protected IExpr visitAST(IAST ast) {
-		if (ast.isPower()) {
-
-		}
-		 
 		IASTMutable result = F.NIL;
 		if (ast.isPower()) {
 			IExpr base = ast.base().accept(this);

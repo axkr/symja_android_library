@@ -98,7 +98,7 @@ public class EllipticIntegrals {
 			if (z.isOne()) {
 				return F.C1;
 			}
-			if (z.equals(F.C1D2)) {
+			if (z.isNumEqualRational(F.C1D2)) {
 				// (Pi^2 + 2 Gamma(3/4)^4)/(4*Sqrt(Pi)*Gamma(3/4)^2)
 				return F.Times(F.C1D4, F.Power(F.Pi, F.CN1D2), F.Power(F.Gamma(F.QQ(3L, 4L)), -2),
 						F.Plus(F.Sqr(F.Pi), F.Times(F.C2, F.Power(F.Gamma(F.QQ(3L, 4L)), 4))));
@@ -269,7 +269,7 @@ public class EllipticIntegrals {
 				// Gamma(1/4)^2/(4*Sqrt(2*Pi))
 				return F.Times(F.C1D4, F.C1DSqrt2, F.Power(F.Pi, F.CN1D2), F.Sqr(F.Gamma(F.C1D4)));
 			}
-			if (m.equals(F.C1D2)) {
+			if (m.isNumEqualRational(F.C1D2)) {
 				// (8 Pi^(3/2))/Gamma(-(1/4))^2
 				return F.Times(F.C8, F.Power(F.Pi, F.QQ(3L, 2L)), F.Power(F.Gamma(F.CN1D4), -2));
 			}
