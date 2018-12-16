@@ -1108,7 +1108,7 @@ public class Solve extends AbstractFunctionEvaluator {
 				if (eq.isEqual()) {
 					IExpr arg1 = eq.first();
 					if (arg1.isPlus() && arg1.size() == 3) {
-						if (arg1.first().isSqrt() && arg1.second().isSqrt()) {
+						if (arg1.first().isSqrtExpr() && arg1.second().isSqrtExpr()) {
 							// Sqrt() + Sqrt() == constant
 							termsEqualZeroList.set(i, F.Subtract.of(F.Expand.of(F.Sqr(arg1.second())),
 									F.Expand.of(F.Sqr(F.Subtract(eq.second(), arg1.first())))));

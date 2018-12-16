@@ -82,7 +82,7 @@ public class RulePreprocessor {
 	private static void convertExpr(IExpr expr, String rulePostfix, final PrintWriter out, String symbolName) {
 		boolean last;
 		StringBuilder buffer = new StringBuilder();
-		ArraySet<ISymbol> headerSymbols = new ArraySet<ISymbol>();
+//		ArraySet<ISymbol> headerSymbols = new ArraySet<ISymbol>();
 		if (expr.isAST()) {
 			IAST list = (IAST) expr;
 			if (symbolName != null) {
@@ -176,13 +176,10 @@ public class RulePreprocessor {
 	/**
 	 * Generate Java files (*.java) from Symja rule files (*.m)
 	 * 
-	 * @param sourceLocation
-	 *            source directory for rule (*.m) files
-	 * @param targetLocation
-	 *            target directory for the generated Java files
-	 * @param ignoreTimestamp
-	 *            if <code>false</code> only change the target file (*.java), if the source file (*.m) has a newer time
-	 *            stamp than the target file.
+	 * @param sourceLocation  source directory for rule (*.m) files
+	 * @param targetLocation  target directory for the generated Java files
+	 * @param ignoreTimestamp if <code>false</code> only change the target file (*.java), if the source file (*.m) has a newer time
+	 *                        stamp than the target file.
 	 */
 	public static void generateFunctionStrings(final File sourceLocation, File targetLocation,
 			boolean ignoreTimestamp) {

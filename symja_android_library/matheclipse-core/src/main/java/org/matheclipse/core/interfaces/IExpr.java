@@ -2234,15 +2234,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is the function <code>Power[&lt;arg1&gt;, 1/2]</code>
+	 * Test if this expression is the function <code>Power[&lt;arg1&gt;, 1/2]</code> (i.e. <code>Sqrt[&lt;arg1&gt;]</code>) or
+	 * <code>-Power[&lt;arg1&gt;, 1/2]</code> (i.e. <code>-Sqrt[&lt;arg1&gt;]</code>) 
 	 * 
 	 * @return
 	 */
-	default boolean isSqrt() {
+	default boolean isSqrtExpr() {
 		if (isPower() && second().equals(F.C1D2)) {
 			return true;
 		}
-		if (isTimes() && first().equals(F.CN1)&&size()==3) {
+		if (isTimes() && first().equals(F.CN1) && size() == 3) {
 			if (second().isPower() && second().second().equals(F.C1D2)) {
 				return true;
 			}
