@@ -12956,6 +12956,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testToExpression() {
 		check("ToExpression(\"\\\\frac{x}{\\\\sqrt{5}}\", TeXForm)", //
 				"x/Sqrt(5)");
+		check("ToExpression(\"1 + 2 - x \\\\times 4 \\\\div 5\", TeXForm)", //
+				"3-4/5*x");
 	}
 
 	public void testToPolarCoordinates() {
