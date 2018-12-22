@@ -33,8 +33,8 @@ public class TeXConverterTestCase extends TestCase {
 	}
 
 	public void testTeX004() {
-		check("\\frac{x}{\\sqrt{5}}", //
-				"x/Sqrt(5)");
+		check("x=\\frac{1+y}{1+2*z^2}", //
+				"x==(1+y)/(1+2*z^2)");
 	}
 
 	public void testTeX005() {
@@ -61,14 +61,39 @@ public class TeXConverterTestCase extends TestCase {
 		check("x ^ { 2 } + 1 = 2", //
 				"1+x^2==2");
 	}
-	
+
 	public void testTeX010() {
 		check("\\left ( 1+2 \\right )^{2}", //
 				"(1+2)^2");
 	}
-	
-	
 
+	public void testTeX011() {
+		check("\\int_0^\\infty a dx", //
+				"Integrate(a,{x,0,Infinity})");
+		check("\\int_0^\\infty e^{-x^2} dx=\\frac{\\sqrt{\\pi}}{2}", //
+				"Integrate(e^(-x^2),{x,0,Infinity})==Sqrt(Pi)*1/2");
+	}
+
+	public void testTeX012() {
+		check("\\sin x", //
+				"Sin(x)");
+	}
+
+	public void testTeX013() {
+		check("\\exp x", //
+				"Exp(x)");
+	}
+
+	public void testTeX014() {
+		check("\\sum_{n=1}^{\\infty} 2^{-n} = 1", //
+				"Sum(2^(-n),{n,1,Infinity})==1");
+	}
+
+	public void testTeX015() {
+		check("\\prod_{i=a}^{b} f(i)", //
+				"Product(f(i),{i,a,b})");
+	}
+	
 	public void check(String strEval, String strResult) {
 		IExpr expr = texConverter.toExpression(strEval);
 		assertEquals(expr.toString(), strResult);
