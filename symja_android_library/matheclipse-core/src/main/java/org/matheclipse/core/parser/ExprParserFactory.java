@@ -187,6 +187,8 @@ public class ExprParserFactory implements IParserFactory {
 		}
 	}
 
+	public final static int EQUAL_PRECEDENCE = 290;
+
 	public final static int PLUS_PRECEDENCE = 310;
 
 	public final static int TIMES_PRECEDENCE = 400;
@@ -222,7 +224,7 @@ public class ExprParserFactory implements IParserFactory {
 			"GreaterEqual", "Condition", "Colon", "//", "DivideBy", "Or", "Span", "Equal", "StringJoin", "Unequal",
 			"Decrement", "SubtractFrom", "PrePlus", "RepeatedNull", "UnsameQ", "Rule", "UpSetDelayed", "PreIncrement",
 			"Function", "Greater", "PreDecrement", "Subtract", "SetDelayed", "Alternatives", "AddTo", "Repeated",
-			"ReplaceAll", "TagSet"};
+			"ReplaceAll", "TagSet" };
 
 	static final String[] OPERATOR_STRINGS = { "::", "<<", "?", "??", "?", "//@", "*=", "+", "^=", ";", "@", "/@", "=.",
 			"@@", "@@@", "//.", "<", "&&", "/", "=", "++", "!!", "<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>",
@@ -269,7 +271,7 @@ public class ExprParserFactory implements IParserFactory {
 			new InfixExprOperator("/=", "DivideBy", 100, InfixExprOperator.RIGHT_ASSOCIATIVE), //
 			new InfixExprOperator("||", "Or", 213, InfixExprOperator.NONE), //
 			new InfixExprOperator(";;", "Span", 305, InfixExprOperator.NONE), //
-			new InfixExprOperator("==", "Equal", 290, InfixExprOperator.NONE), //
+			new InfixExprOperator("==", "Equal", EQUAL_PRECEDENCE, InfixExprOperator.NONE), //
 			new InfixExprOperator("<>", "StringJoin", 600, InfixExprOperator.NONE), //
 			new InfixExprOperator("!=", "Unequal", 290, InfixExprOperator.NONE), //
 			new PostfixExprOperator("--", "Decrement", 660), //
@@ -289,7 +291,7 @@ public class ExprParserFactory implements IParserFactory {
 			new InfixExprOperator("+=", "AddTo", 100, InfixExprOperator.RIGHT_ASSOCIATIVE), //
 			new PostfixExprOperator("..", "Repeated", 170), //
 			new InfixExprOperator("/.", "ReplaceAll", 110, InfixExprOperator.LEFT_ASSOCIATIVE), //
-			TAG_SET_OPERATOR};
+			TAG_SET_OPERATOR };
 
 	public final static ExprParserFactory MMA_STYLE_FACTORY = new ExprParserFactory();
 

@@ -165,7 +165,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// TODO return 1/b - a/(b*(a + b*x))
 		check("Apart((x/(a+(b*x))),x)", //
 				"x/(a+b*x)");
-		
+
 		check("Apart((3*x-8)/((x+1)*(x-5)),x)", //
 				"7/6*1/(-5+x)+11/6*1/(1+x)");
 
@@ -4085,11 +4085,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("FindInstance(Sin(x)==0.0,x)", "{{x->0}}");
 		check("FindInstance(Sin(x)==1/2,x)", "{{x->Pi/6}}");
 		checkNumeric("FindInstance(sin(x)==0.5,x)", "{{x->0.5235987755982989}}");
-		check("FindInstance(x^2-2500.00==0,x)", "{{x->50.0}}");
-		check("FindInstance(x^2+a*x+1 == 0, x)", "{{x->-a/2-Sqrt(-4+a^2)/2}}");
-		check("FindInstance((-3)*x^3 +10*x^2-11*x == (-4), {x})", "{{x->1}}");
+		check("FindInstance(x^2-2500.00==0,x)", //
+				"{{x->-50.0}}");
+		check("FindInstance(x^2+a*x+1 == 0, x)", //
+				"{{x->1/2*(-a-Sqrt(-4+a^2))}}");
+		check("FindInstance((-3)*x^3 +10*x^2-11*x == (-4), {x})", //
+				"{{x->1}}");
 
-		checkNumeric("FindInstance(x^2+50*x-2500.00==0,x)", "{{x->30.901699437494745}}");
+		checkNumeric("FindInstance(x^2+50*x-2500.00==0,x)", //
+				"{{x->-80.90169943749474}}");
 
 		check("FindInstance(a*x + y == 7 && b*x - y == 1, {x, y})", //
 				"{{x->-8/(-a-b),y->(a-7*b)/(-a-b)}}");
@@ -10428,15 +10432,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testRoots() {
 		check("Roots(x^16-1==0,x)", //
-				"x==-1||x==1||x==-I||x==I||x==-(-1)^(1/8)||x==(-1)^(1/8)||x==-(-1)^(1/4)||x==(-1)^(\n"
-						+ "1/4)||x==-(-1)^(3/8)||x==(-1)^(3/8)||x==-(-1)^(5/8)||x==(-1)^(5/8)||x==-(-1)^(3/\n"
-						+ "4)||x==(-1)^(3/4)||x==-(-1)^(7/8)||x==(-1)^(7/8)");
+				"x==(-1)^(1/8)||x==-(-1)^(1/8)||x==(-1)^(1/4)||x==-(-1)^(1/4)||x==(-1)^(3/8)||x==-(\n"
+						+ "-1)^(3/8)||x==I||x==-I||x==(-1)^(5/8)||x==-(-1)^(5/8)||x==(-1)^(3/4)||x==-(-1)^(\n"
+						+ "3/4)||x==(-1)^(7/8)||x==-(-1)^(7/8)||x==-1||x==1");
 		// check("Roots(a*x^3+b*x^2+c^2+d, x)",
 		// "{(-b/2-Sqrt(b^2-4*a*c)/2)/a,(-b/2+Sqrt(b^2-4*a*c)/2)/a}");
 		check("Roots(x^2-2*x-3==0,x)", //
 				"x==-1||x==3");
 		check("Roots(a*x^2+b*x+c==0, x)", //
-				"x==-b/(2*a)-Sqrt(b^2-4*a*c)/(2*a)||x==-b/(2*a)+Sqrt(b^2-4*a*c)/(2*a)");
+				"x==(-b-Sqrt(b^2-4*a*c))/(2*a)||x==(-b+Sqrt(b^2-4*a*c))/(2*a)");
 		check("Roots(3*x^3-8*x^2+-11*x+10==0,x)", //
 				"x==2/3||x==1-Sqrt(6)||x==1+Sqrt(6)");
 		check("Roots(3*x^3-5*x^2+5*x-2==0,x)", //
@@ -11277,7 +11281,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("SokalSneathDissimilarity({0, 0, 0, 0}, {1, 1, 1, 1})", "1");
 	}
 
-	public void testSolve() {
+	public void testSolve1() {
 		check("Solve(-28 - 4*Sqrt(-1 + x) + 4*x==0,x)", //
 				"{{x->10}}");
 		check("Solve(Sqrt(5*x-25)-Sqrt(x-1)==2,x)", //
@@ -11309,7 +11313,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("Solve(30*x/0.000002==30,x)", //
 				"{{x->2.0E-6}}");
 		check("Solve((a*x + b)/(c*x + d)==y,x)", //
-				"{{x->-b/(a-c*y)+(d*y)/(a-c*y)}}");
+				"{{x->-(b-d*y)/(a-c*y)}}");
 
 		check("E^((Log(a)+Log(b))/m)", //
 				"E^((Log(a)+Log(b))/m)");
@@ -11468,7 +11472,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Solve(x^2-2500.00==0,x)", //
 				"{{x->-50.0},{x->50.0}}");
 		check("Solve(x^2+a*x+1 == 0, x)", //
-				"{{x->-a/2-Sqrt(-4+a^2)/2},{x->-a/2+Sqrt(-4+a^2)/2}}");
+				"{{x->1/2*(-a-Sqrt(-4+a^2))},{x->1/2*(-a+Sqrt(-4+a^2))}}");
 		check("Solve((-3)*x^3 +10*x^2-11*x == (-4), {x})", //
 				"{{x->1},{x->4/3}}");
 
@@ -11491,6 +11495,213 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("Solve(x/y==z/x,x)", //
 				"{{x->-81.08825721072805},{x->81.08825721072805}}");
 	}
+
+//	public void testSolve2() {
+//		ESameTest("{{x->-Sqrt(-3+y)},{x->Sqrt(-3+y)}}", //
+//				"Solve[y == x^2 + 3, x]");
+//		
+////		ESameTest("{{x->(-I*Sqrt(3)*Sqrt(a*c))/a},{x->(I*Sqrt(3)*Sqrt(a*c))/a}}", //
+////				"Solve[a*x^2==-3*c,x]");
+//		
+//		ESameTest("{{x->(-b-Sqrt[b^2-4*a*c])/(2*a)},{x->(-b+Sqrt[b^2-4*a*c])/(2 a)}}", //
+//				"Solve[a*x^2==-b*x-c,x]");
+//
+//		check("Solve(e*x^4+d*x^3==0,x)", //
+//				"{{x->0},{x->-d/e}}");
+//		check("Solve((a+b)^x==y,x)", //
+//				"{{x->Log(y)/Log(a+b)}}");
+//		check("Solve(y == x^2 + 3, x)", //
+//				"{{x->-Sqrt(3-y)},{x->Sqrt(3-y)}}");
+//		check("Solve(2==x^2+y^2+(x-2)^2+(y-2)^2,y)", //
+//				"{{y->1-Sqrt(-2+2*x-x^2)},{y->1+Sqrt(-2+2*x-x^2)}}");
+//
+//		// from Expreduce
+//		ESameTest("{{x->0}}", //
+//				"Solve[x == 0, x]");
+//		ESameTest("{{x->b}}", //
+//				"Solve[x == b, x]");
+//		// (* Inverses of addition *)
+//		ESameTest("{{a->1.5}}", "Solve[a + 1.5 == 3, a]");
+//		// (* Inverses of multiplication/division *)
+//		ESameTest("{{x->b/a}}", "Solve[x*a == b, x]");
+//		ESameTest("{{x->a*b}}", "Solve[x/a == b, x]");
+//		ESameTest("{{x->-b/m}}", "Solve[m*x + b == 0, x]");
+//		// ESameTest("{{x->(-b + c)/m}}", //
+//		// "Solve[m*x + b == c, x]");
+//		// (* Inverse of exponentiation, var in base *)
+//		ESameTest("{{x->-Sqrt(a)},{x->Sqrt(a)}}", //
+//				"Solve[x^2 == a, x]");
+//		ESameTest("{{x->b^(1/a)}}", //
+//				"Solve[x^a==b,x]");
+//		ESameTest("{{x->-Sqrt(-3+y)},{x->Sqrt(-3+y)}}", //
+//				"Solve[y == x^2 + 3, x]");
+//		ESameTest("{{x->2^(1/(5 y+Sin[y]))}}", //
+//				"Solve[x^(5y+Sin[y])==2,x]");
+//		ESameTest("{{a->-b},{a->b}}", //
+//				"Solve[a^2==b^2,a]");
+//		ESameTest("{}", "Solve[x^(1/2)==-1,x]");
+//		// (* Inverse of exponentiation, var in base: To a fractional power *)
+//		ESameTest("{{x->y^2}}", "Solve[Sqrt[x]==y,x]");
+//		ESameTest("{{x->y^9}}", "Solve[x^(1/9)==y,x]");
+//		ESameTest("{}", "Solve[x^(1/6)==-I,x]");
+//		// (* Inverse of exponentiation, var in power *)
+//		ESameTest("{{x->Log[y]/Log[a+b]}}", //
+//				"Solve[(a+b)^x==y,x]");
+//		// ESameTest("{{x->ConditionalExpression[1/2 (2 I Pi C[1]+Log[5/4]),Element[C[1],Integers]]}}",//
+//		// "Solve[4E^(2x)==5,x]");
+//		// ESameTest("{{x->ConditionalExpression[2 I Pi C[1]+Log[5],Element[C[1],Integers]}}", "Solve[E^x==5,x]");
+//		// ESameTest("{}", "Solve[E^x==0,x]");
+//		// ESameTest("{{x->ConditionalExpression[2 I Pi C[1],C[1]\\[Element]Integers]}}", "Solve[E^x==1,x]");
+//		// //(*ESameTest("{{x->2.4663 Log[y]}}", "Solve[1.5^x==y,x]");*)
+//		// ESameTest("{{x->ConditionalExpression[(2 I Pi
+//		// C[1])/Log[3]+Log[y]/Log[3],C[1]\\[Element]Integers]}}//Simplify", "Solve[3^x == y, x]");
+//		// ESameTest("{{x->ConditionalExpression[(2 I Pi
+//		// C[1])/Log[2]+Log[y]/Log[2],C[1]\\[Element]Integers]}}//Simplify", "Solve[2^x == y, x]");
+//		// ESameTest("{{x->ConditionalExpression[(2 I Pi C[1]+Log[y])/(I Pi+Log[2]),C[1]\\[Element]Integers]}}",
+//		// "Solve[(-2)^x == y, x]");
+//		// ESameTest("{{x->ConditionalExpression[(2 I Pi C[1]+Log[y])/(I Pi+Log[3]),C[1]\\[Element]Integers]}}",
+//		// "Solve[(-3)^x == y, x]");
+//		// // (* Inverse of log *)
+//		// ESameTest("{{x->ConditionalExpression[E^(b+y-z)-y,-Pi<Im[b+y-z]<=Pi]}}", "Solve[y+b==Log[x+y]+z,x]");
+//		// ESameTest("{{x->ConditionalExpression[Pi-ArcSin[E^y]+2 Pi
+//		// C[1],C[1]\\[Element]Integers&&-Pi<Im[y]<=Pi]},{x->ConditionalExpression[ArcSin[E^y]+2 Pi
+//		// C[1],C[1]\\[Element]Integers&&-Pi<Im[y]<=Pi]}}//Sort", "Solve[Log[Sin[x]]==y,x]");
+//		// //(* Inverse of Abs *)
+//		// ESameTest("{{a->-2-b},{a->2-b}}", "Solve[Abs[a+b]==2,a]");
+//		// // (* Inverse of Sin *)
+//		// ESameTest("{{x->ConditionalExpression[-b-ArcSin[c-d]+2 Pi
+//		// C[1],C[1]\\[Element]Integers]},{x->ConditionalExpression[-b+Pi+ArcSin[c-d]+2 Pi
+//		// C[1],C[1]\\[Element]Integers]}}", "Solve[Sin[x+b]+c==d,x]");
+//		// // (* Inverse of Cos *)
+//		// ESameTest("{{a->ConditionalExpression[-b-ArcCos[2]+2 Pi
+//		// C[1],C[1]\\[Element]Integers]},{a->ConditionalExpression[-b+ArcCos[2]+2 Pi C[1],C[1]\\[Element]Integers]}}",
+//		// "Solve[Cos[a+b]==2,a]");
+//		// // (* Solve nested trig functions *)
+//		// ESameTest("{{x->ConditionalExpression[-ArcSin[ArcCos[y]-2 Pi C[2]]+2 Pi
+//		// C[1],C[2]\\[Element]Integers&&C[1]\\[Element]Integers]},{x->ConditionalExpression[Pi+ArcSin[ArcCos[y]-2 Pi
+//		// C[2]]+2 Pi
+//		// C[1],C[2]\\[Element]Integers&&C[1]\\[Element]Integers]},{x->ConditionalExpression[Pi-ArcSin[ArcCos[y]+2 Pi
+//		// C[2]]+2 Pi
+//		// C[1],C[2]\\[Element]Integers&&C[1]\\[Element]Integers]},{x->ConditionalExpression[ArcSin[ArcCos[y]+2 Pi
+//		// C[2]]+2 Pi C[1],C[2]\\[Element]Integers&&C[1]\\[Element]Integers]}}//normSol",
+//		// "Solve[Cos[Sin[x]]==y,x]//normSol");
+//		// // (* Solve combination of Sin and ArcSin *)
+//		// ESameTest("{{x->-b+y}}", "Solve[Sin[ArcSin[x+b]]==y,x]");
+//		// ESameTest("{{x->ConditionalExpression[Pi-ArcSin[Sin[y]]+2 Pi
+//		// C[1],((Re[y]==-(Pi/2)&&Im[y]>=0)||-(Pi/2)<Re[y]<Pi/2||(Re[y]==Pi/2&&Im[y]<=0))&&C[1]\\[Element]Integers]},{x->ConditionalExpression[ArcSin[Sin[y]]+2
+//		// Pi
+//		// C[1],((Re[y]==-(Pi/2)&&Im[y]>=0)||-(Pi/2)<Re[y]<Pi/2||(Re[y]==Pi/2&&Im[y]<=0))&&C[1]\\[Element]Integers]}}//normSol",
+//		// "Solve[ArcSin[Sin[x]]==y,x]//normSol");
+//
+//		// (* POLYNOMIALS *)
+//		ESameTest("{{x->(-b-Sqrt[b^2-4*a*c])/(2*a)},{x->(-b+Sqrt[b^2-4*a*c])/(2 a)}}", //
+//				"Solve[a*x^2==-b*x-c,x]");
+//		ESameTest("Solve[a x^2==-b*x-foo[x],x]", //
+//				"Solve[a*x^2==-b*x-foo[x],x]");
+//		ESameTest("{{x->-((I*Sqrt[c])/Sqrt[a])},{x->(I*Sqrt[c])/Sqrt[a]}}", //
+//				"Solve[a*x^2==-c,x]");
+//		ESameTest("{{x->-I Sqrt[c]},{x->I*Sqrt[c]}}", //
+//				"Solve[x^2==-c,x]");
+//
+//		// (* COLLECTION *)
+//		ESameTest("{{x->4}}", //
+//				"Solve[3x+1==2x+5,x]");
+//		ESameTest("{{x->17/15}}", //
+//				"Solve[5*(4*x-3)+4*(6 x+1)==7*(2*x+3)+2,x]");
+//
+//		ESameTest("{}", "Solve[x^(1/2) == -2, x]");
+//		// (* Probably needs solution checking for this to work. *)
+//		ESameTest("{}", "Solve[x^(1/4) == -2, x]");
+//
+//		ESameTest("{}", //
+//				"Solve[False, x]");
+//		ESameTest("{}", //
+//				"Solve[False, x]");
+//		ESameTest("{}", //
+//				"Solve[False, x]");
+//		ESameTest("{{}}", //
+//				"Solve[{}, x]");
+//		ESameTest("{{x->0}}", //
+//				"Solve[x == 0, x]");
+//		ESameTest("{{x->0}}", //
+//				"Solve[x == 0, x]");
+//		ESameTest("{}", //
+//				"Solve[1 + x^(1/2) == 0, x]");
+//		ESameTest("{{x->0}}", //
+//				"Solve[2*x == 0, x]");
+//		ESameTest("{}", //
+//				"Solve[x^2 + -Pi == 0, pi]");
+//		ESameTest("{{y->3}}", //
+//				"Solve[-3 + y == 0, y]");
+//		ESameTest("{{x->-a}}", //
+//				"Solve[a + x == 0, x]");
+//		ESameTest("{{x->-1}}", //
+//				"Solve[y + x*y == 0, x]");
+//		ESameTest("{{x->16}}", //
+//				"Solve[-2 + x^(1/4) == 0, x]");
+//		ESameTest("{{x->27}}", //
+//				"Solve[-3 + x^(1/3) == 0, x]");
+//		ESameTest("{{x->4}}", //
+//				"Solve[-2 + x^(1/2) == 0, x]");
+//		ESameTest("{{x->1}}", //
+//				"Solve[-1 + x^(1/2) == 0, x]");
+//		ESameTest("{{x->2/3}}", //
+//				"Solve[-2 + 3*x == 0, x]");
+//		ESameTest("{{x->2/3}}", //
+//				"Solve[-2 + 3*x == 0, x]");
+//		ESameTest("{}", //
+//				"Solve[1 + x^(1/3) + x^(1/2) == 0, x]");
+//		ESameTest("{{x->-2}, {x->2}}", //
+//				"Solve[-4 + x^2 == 0, x]");
+//		ESameTest("{{x->-2}, {x->2}}", //
+//				"Solve[-4 + x^2 == 0, x]");
+//		ESameTest("{{x->-1}, {x->1}}", //
+//				"Solve[-1 + x^2 == 0, x]");
+//		ESameTest("{{x->-1}, {x->1}}", //
+//				"Solve[-1 + x^2 == 0, x]");
+//		ESameTest("{{x->-1}, {x->1}}", //
+//				"Solve[-1 + x^2 == 0, x]");
+//		ESameTest("{{x->y^3}}", //
+//				"Solve[x + -y^3 == 0, x]");
+//		ESameTest("{{x->-ProductLog[-1]}}", //
+//				"Solve[x + -E^x == 0, x]");
+//		ESameTest("{{x->0}, {x->27}}", //
+//				"Solve[x*(-3 + x^(1/3)) == 0, x]");
+//		ESameTest("{{x->-2^(1/4)}}", //
+//				"Solve[2^(1/4) + x == 0, x]");
+//		ESameTest("{{x->-2^(1/2)}}", //
+//				"Solve[2^(1/2) + x == 0, x]");
+//		ESameTest("{{x->(0 + -1*I)}, {x->(0 + 1*I)}}", //
+//				"Solve[1 + x^2 == 0, x]");
+//		ESameTest("{{x->-y*E^((-1)*y)}}", //
+//				"Solve[y + x*E^y == 0, x]");
+//		ESameTest("{{x->0}, {x->1}}", //
+//				"Solve[4*x*(1 + -x^(1/2)) == 0, x]");
+//		ESameTest("{{x->(a^(-1)*y)^(b^(-1))}}", //
+//				"Solve[a*x^b + -y == 0, x]");
+//		ESameTest("{{x->0}, {x->a^(-2)}}", //
+//				"Solve[4*x*(1 + -a*x^(1/2)) == 0, x]");
+//		ESameTest("{{x->ConditionalExpression[(0 + 1*I)*Pi + (0 + 2*I)*Pi*C[1], Element[C[1], Integers]]}}//Simplify", //
+//				"Solve[1 + E^x == 0, x]");
+//		ESameTest("{{x->y^3}}", //
+//				"Solve[y^(-2)*(1 + -y^2)^(-1/2)*(x + -y^3) == 0, x]");
+//		ESameTest("{{x->y^3}}", //
+//				"Solve[y^(-2)*(1 + -y^2)^(-1/2)*(x + -y^3) == 0, x]");
+//		ESameTest(
+//				"{{x->ConditionalExpression[(0 + 2*I)*Pi*C[1]*Log[3]^(-1) + Log[3]^(-1)*Log[10], Element[C[1], Integers]]}}//Simplify", //
+//				"Solve[-10 + 3^x == 0, x]");
+//		ESameTest(
+//				"{{x->ConditionalExpression[(0 + 2*I)*Pi*C[1]*Log[3]^(-1) + Log[3]^(-1)*Log[10], Element[C[1], Integers]]}}//Simplify", //
+//				"Solve[10 + -3^x == 0, x]");
+//		ESameTest("{{y->x^(1/3)}, {y->-(-1)^(1/3)*x^(1/3)}, {y->(-1)^(2/3)*x^(1/3)}}", //
+//				"Solve[x + -y^3 == 0, y]");
+//		ESameTest(
+//				"{{x->ConditionalExpression[-ArcCos[(1/2)*y] + 2*Pi*C[1], Element[C[1], Integers]]}, {x->ConditionalExpression[ArcCos[(1/2)*y] + 2*Pi*C[1], Element[C[1], Integers]]}}", //
+//				"Solve[-y + 2*Cos[x] == 0, x]");
+//		ESameTest(
+//				"{{x->-(1 + -a^(1/2))^(1/2)}, {x->(1 + -a^(1/2))^(1/2)}, {x->-(1 + a^(1/2))^(1/2)}, {x->(1 + a^(1/2))^(1/2)}}", //
+//				"Solve[-a + (-1 + x^2)^2 == 0, x]");
+//	}
 
 	public void testSolveIssue130() {
 		check("Sqrt(1-x)+Sqrt(3+x)", "Sqrt(1-x)+Sqrt(3+x)");
@@ -11624,8 +11835,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "10/11)*(-b)^(1/11))/a^(1/11)}}");
 
 		check("Solve(y==x+((1)/(x)),y)", //
-				"{{y->1/x+x}}");
-		check("Solve(y==((1-x)^(1/(2)))+((x+3)^(1/(2))),y)", "{{y->Sqrt(1-x)+Sqrt(3+x)}}");
+				"{{y->-(-1-x^2)/x}}");
+		check("Solve(y==((1-x)^(1/(2)))+((x+3)^(1/(2))),y)", //
+				"{{y->Sqrt(1-x)+Sqrt(3+x)}}");
 
 		check("Solve(x^24==1,x)",
 				"{{x->-1},{x->1},{x->-I},{x->I},{x->-(-1)^(1/12)},{x->(-1)^(1/12)},{x->-(-1)^(1/6)},{x->(\n"

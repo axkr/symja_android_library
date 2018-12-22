@@ -31,6 +31,24 @@ public abstract class AbstractTestCase extends TestCase {
 		Config.SERVER_MODE = false;
 	}
 
+	
+	public void ESameTest(String expectedString, String evalString  ) {
+		try {
+			if (evalString.length() == 0 && expectedString.length() == 0) {
+				return;
+			}
+			// scriptEngine.put("STEPWISE",Boolean.TRUE);
+			String evaledResult = (String) fScriptEngine.eval(evalString);
+			String expectedResult = (String) fScriptEngine.eval(expectedString);
+			 
+				assertEquals(expectedResult, evaledResult);
+			 
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", "1");
+		}
+	}
+	
 	public void check(String evalString, String expectedResult) {
 		check(fScriptEngine, evalString, expectedResult, -1);
 	}

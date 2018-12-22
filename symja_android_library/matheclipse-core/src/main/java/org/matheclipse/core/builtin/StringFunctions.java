@@ -34,6 +34,7 @@ public final class StringFunctions {
 		F.StringTake.setEvaluator(new StringTake());
 		F.SyntaxLength.setEvaluator(new SyntaxLength());
 		F.ToCharacterCode.setEvaluator(new ToCharacterCode());
+		F.ToExpression.setEvaluator(new ToExpression());
 		F.ToString.setEvaluator(new ToString());
 		F.ToUnicode.setEvaluator(new ToUnicode());
 	}
@@ -72,21 +73,21 @@ public final class StringFunctions {
 		public void setUp(final ISymbol newSymbol) {
 		}
 
-		public static IAST fromCharacterCode(final String unicodeInput, final String inputEncoding,
-				final IASTAppendable list) {
-			try {
-				final String utf8String = new String(unicodeInput.getBytes(inputEncoding), "UTF-8");
-				int characterCode;
-				for (int i = 0; i < utf8String.length(); i++) {
-					characterCode = utf8String.charAt(i);
-					list.append(F.integer(characterCode));
-				}
-				return list;
-			} catch (final UnsupportedEncodingException e) {
-				e.printStackTrace();
-			}
-			return F.NIL;
-		}
+		// public static IAST fromCharacterCode(final String unicodeInput, final String inputEncoding,
+		// final IASTAppendable list) {
+		// try {
+		// final String utf8String = new String(unicodeInput.getBytes(inputEncoding), "UTF-8");
+		// int characterCode;
+		// for (int i = 0; i < utf8String.length(); i++) {
+		// characterCode = utf8String.charAt(i);
+		// list.append(F.integer(characterCode));
+		// }
+		// return list;
+		// } catch (final UnsupportedEncodingException e) {
+		// e.printStackTrace();
+		// }
+		// return F.NIL;
+		// }
 	}
 
 	/**
@@ -276,7 +277,7 @@ public final class StringFunctions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			 
+
 		}
 	}
 
@@ -352,6 +353,36 @@ public final class StringFunctions {
 			}
 			return F.NIL;
 		}
+	}
+
+	private final static class ToExpression extends AbstractFunctionEvaluator {
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+			IExpr arg1 = ast.arg1();
+			if (arg1.isString()) {
+				ISymbol form = F.InputForm;
+				if (ast.size() == 3) {
+					IExpr arg2 = ast.arg1();
+					if (arg2.equals(F.InputForm)) {
+						form = F.InputForm;
+					} else if (arg2.equals(F.TeXForm)) {
+						form = F.TeXForm;
+					} else {
+						return F.NIL;
+					}
+				}
+				if (form.equals(F.InputForm)) {
+					ExprParser fParser = new ExprParser(engine);
+					IExpr temp = fParser.parse(arg1.toString());
+					return temp;
+				} else if (form.equals(F.TeXForm)) {
+					// TODO call TeXParser
+				}
+			}
+			return F.NIL;
+		}
+
 	}
 
 	private static class ToString extends AbstractFunctionEvaluator {

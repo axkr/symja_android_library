@@ -22,8 +22,8 @@ import java.util.Map;
  * </p>
  *
  * <p>
- * See <a href="https://en.wikipedia.org/wiki/Lenstra_elliptic_curve_factorization"> Wikipedia: Lenstra elliptic curve
- * factorization </a>
+ * See <a href="https://en.wikipedia.org/wiki/Lenstra_elliptic_curve_factorization"> Wikipedia: Lenstra elliptic curve factorization
+ * </a>
  * </p>
  */
 public class EllipticCurveMethod {
@@ -368,9 +368,9 @@ public class EllipticCurveMethod {
 	}
 
 	/**
-	 * Adds Q=(x2:z2) and R=(x1:z1) and puts the result in (x3:z3), using 5/6 mul, 6 add/sub and 6 mod. One assumes that
-	 * Q-R=P or R-Q=P where P=(x:z). Uses the following global variables: - n : number to factor - x, z : coordinates of
-	 * P - u, v, w : auxiliary variables Modifies: x3, z3, u, v, w. (x3,z3) may be identical to (x2,z2) and to (x,z)
+	 * Adds Q=(x2:z2) and R=(x1:z1) and puts the result in (x3:z3), using 5/6 mul, 6 add/sub and 6 mod. One assumes that Q-R=P or R-Q=P
+	 * where P=(x:z). Uses the following global variables: - n : number to factor - x, z : coordinates of P - u, v, w : auxiliary
+	 * variables Modifies: x3, z3, u, v, w. (x3,z3) may be identical to (x2,z2) and to (x,z)
 	 */
 	private void add3(long[] x3, long[] z3, long[] x2, long[] z2, long[] x1, long[] z1, long[] x, long[] z) {
 		long[] t = fieldTX;
@@ -556,8 +556,8 @@ public class EllipticCurveMethod {
 						}
 						if (Computing3Squares == false) {
 							/*
-							 * System.out.println( primalityString + "P = " + P + ",  Q = " + Q + "  (" + (i *
-							 * (TestingQs + 1) + j) * 100 / (NP * (TestingQs + 1)) + "%)");
+							 * System.out.println( primalityString + "P = " + P + ",  Q = " + Q + "  (" + (i * (TestingQs + 1) + j) * 100 / (NP * (TestingQs +
+							 * 1)) + "%)");
 							 */
 						}
 						PM = 1;
@@ -1852,8 +1852,8 @@ public class EllipticCurveMethod {
 	}
 
 	/*
-	 * computes 2P=(x2:z2) from P=(x1:z1), with 5 mul, 4 add/sub, 5 mod. Uses the following global variables: - n :
-	 * number to factor - b : (a+2)/4 mod n - u, v, w : auxiliary variables Modifies: x2, z2, u, v, w
+	 * computes 2P=(x2:z2) from P=(x1:z1), with 5 mul, 4 add/sub, 5 mod. Uses the following global variables: - n : number to factor - b
+	 * : (a+2)/4 mod n - u, v, w : auxiliary variables Modifies: x2, z2, u, v, w
 	 */
 	private void duplicate(long[] x2, long[] z2, long[] x1, long[] z1) {
 		long[] u = fieldUZ;
@@ -1903,7 +1903,7 @@ public class EllipticCurveMethod {
 	}
 
 	private BigInteger factoringSIQS(BigInteger NbrToFactor) {
-		int NbrPrimes, NbrPrimes2;
+		int NbrPrimes2;
 		long modsqrt[];
 		long prime[];
 		byte logar[];
@@ -1924,17 +1924,15 @@ public class EllipticCurveMethod {
 		long vectLeftHandSide[][];
 		int matrixPartial[][];
 		int matrixPartialHashIndex[];
-		long biR0 = 0, biR1 = 0, biR2 = 0, biR3 = 0, biR4 = 0, biR5 = 0;
-		long biR6 = 0; 
-		boolean cond = false;
 
 		final double Temp = Math.log(NbrToFactor.doubleValue());
-		NbrPrimes = (int) Math.exp(Math.sqrt(Temp * Math.log(Temp)) * 0.318);
+		
 		int SieveLimit = (int) Math.exp(8.5 + 0.015 * Temp);
 		if (SieveLimit > 30000) {
 			SieveLimit = 30000;
 		}
 		int s = NbrToFactor.bitLength() / 28 + 1;
+		int NbrPrimes = (int) Math.exp(Math.sqrt(Temp * Math.log(Temp)) * 0.318);
 		prime = new long[NbrPrimes + 3];
 		modsqrt = new long[NbrPrimes + 3];
 		logar = new byte[NbrPrimes + 3];
@@ -2051,8 +2049,8 @@ public class EllipticCurveMethod {
 			j = 2;
 		}
 		currentPrime = 3;
-		int pp = 0;
-		int nbrPartials = 0;
+		int[] pp = new int[] { 0 };
+
 		while (j < NbrPrimes) { /* select small primes */
 			NbrMod = (int) RemDivBigNbrByLong(TestNbr, currentPrime);
 			if (modPow(NbrMod, (currentPrime - 1) / 2, currentPrime) == 1) {
@@ -2160,7 +2158,7 @@ public class EllipticCurveMethod {
 			/*********************************************/
 			/* Initialization stage for first polynomial */
 			/*********************************************/
-			int PolynomialIndex = 1;
+			int[] PolynomialIndex = new int[] { 1 };
 			final double Prod = Math.sqrt(2 * dNumberToFactor) / SieveLimit;
 			final long fact = (long) Math.pow(Prod, 1 / (float) s);
 			int iStage;
@@ -2191,791 +2189,897 @@ public class EllipticCurveMethod {
 				aindex[index] = iStage;
 			}
 
-			// Compute the leading coefficient in biS.
+			computeLeadingCoefficientINBiS(NbrPrimes, modsqrt, prime, ainv, Bainv2, soln1, difsoln, afact, aindex,
+					amodq, SieveLimit, s);
+			do {
+				BigInteger result = sieveStage(NbrPrimes, NbrPrimes2, prime, logar, Bainv2, soln1, difsoln, afact,
+						aindex, amodq, SieveArray, vectExpParity, matrixB, rowMatrixB, vectLeftHandSide, matrixPartial,
+						matrixPartialHashIndex, SieveLimit, s, TestNbr2, multiplier, FactorBase, pp, firstLimit,
+						smallPrimeUpperLimit, logarsmall, threshold, secondLimit, thirdLimit, PolynomialIndex);
+				if (result != null) {
+					return result;
+				}
+			} while (PolynomialIndex[0] < NbrPolynomials);
+		} while (true);
+	}
 
-			LongToBigNbr(afact[0], biS);
-			for (int index = 1; index < s; index++) {
-				MultBigNbrByLong(biS, afact[index], biS);
-			}
-			for (int index = 0; index < s; index++) {
-				long D = 1;
-				long E = afact[index];
-				for (int index2 = 0; index2 < s; index2++) {
-					if (index != index2) {
-						D = D * afact[index2] % E;
-					}
-				}
-				amodq[index] = (int) D;
-				long Q = modsqrt[aindex[index]] * modInv(D, E) % E;
-				if (Q > E / 2) {
-					Q = E - Q;
-				}
-				DivBigNbrByLong(biS, E, biR);
-				MultBigNbrByLong(biR, Q, aiJS[index]);
-			}
-			for (int index = 0; index < NumberLength; index++) {
-				biN[index] = aiJS[0][index];
-			}
-			for (int index2 = 1; index2 < s; index2++) {
-				AddBigNbr(biN, aiJS[index2], biN);
-			}
-			for (int index = 1; index < NbrPrimes; index++) {
-				long D = 1;
-				long E = prime[index];
-				for (int index2 = 0; index2 < s; index2++) {
+	/**
+	 * Compute the leading coefficient in biS.
+	 * 
+	 * @param NbrPrimes
+	 * @param modsqrt
+	 * @param prime
+	 * @param ainv
+	 * @param Bainv2
+	 * @param soln1
+	 * @param difsoln
+	 * @param afact
+	 * @param aindex
+	 * @param amodq
+	 * @param SieveLimit
+	 * @param s
+	 */
+	private void computeLeadingCoefficientINBiS(int NbrPrimes, long[] modsqrt, long[] prime, long[] ainv,
+			int[][] Bainv2, int[] soln1, int[] difsoln, long[] afact, int[] aindex, int[] amodq, int SieveLimit,
+			int s) {
+		LongToBigNbr(afact[0], biS);
+		for (int index = 1; index < s; index++) {
+			MultBigNbrByLong(biS, afact[index], biS);
+		}
+		for (int index = 0; index < s; index++) {
+			long D = 1;
+			long E = afact[index];
+			for (int index2 = 0; index2 < s; index2++) {
+				if (index != index2) {
 					D = D * afact[index2] % E;
 				}
-				ainv[index] = modInv(D, E);
-				for (int index2 = 0; index2 < s; index2++) {
-					Bainv2[index2][index] = (int) (RemDivBigNbrByLong(aiJS[index2], E) * 2 * ainv[index] % E);
-				}
-				D = RemDivBigNbrByLong(biN, E);
-				soln1[index] = (int) ((SieveLimit + ainv[index] * (E + modsqrt[index] - D)) % E + 100 * E);
-				difsoln[index] = (int) ((2 * ainv[index] * (E - modsqrt[index])) % E);
 			}
+			amodq[index] = (int) D;
+			long Q = modsqrt[aindex[index]] * modInv(D, E) % E;
+			if (Q > E / 2) {
+				Q = E - Q;
+			}
+			DivBigNbrByLong(biS, E, biR);
+			MultBigNbrByLong(biR, Q, aiJS[index]);
+		}
+		for (int index = 0; index < NumberLength; index++) {
+			biN[index] = aiJS[0][index];
+		}
+		for (int index2 = 1; index2 < s; index2++) {
+			AddBigNbr(biN, aiJS[index2], biN);
+		}
+		for (int index = 1; index < NbrPrimes; index++) {
+			long D = 1;
+			long E = prime[index];
+			for (int index2 = 0; index2 < s; index2++) {
+				D = D * afact[index2] % E;
+			}
+			ainv[index] = modInv(D, E);
+			for (int index2 = 0; index2 < s; index2++) {
+				Bainv2[index2][index] = (int) (RemDivBigNbrByLong(aiJS[index2], E) * 2 * ainv[index] % E);
+			}
+			D = RemDivBigNbrByLong(biN, E);
+			soln1[index] = (int) ((SieveLimit + ainv[index] * (E + modsqrt[index] - D)) % E + 100 * E);
+			difsoln[index] = (int) ((2 * ainv[index] * (E - modsqrt[index])) % E);
+		}
+	}
+
+	/**
+	 * Sieve stage.
+	 * 
+	 * @param NbrPrimes
+	 * @param NbrPrimes2
+	 * @param prime
+	 * @param logar
+	 * @param Bainv2
+	 * @param soln1
+	 * @param difsoln
+	 * @param afact
+	 * @param aindex
+	 * @param amodq
+	 * @param SieveArray
+	 * @param vectExpParity
+	 * @param matrixB
+	 * @param rowMatrixB
+	 * @param vectLeftHandSide
+	 * @param matrixPartial
+	 * @param matrixPartialHashIndex
+	 * @param SieveLimit
+	 * @param s
+	 * @param TestNbr2
+	 * @param multiplier
+	 * @param FactorBase
+	 * @param pp
+	 * @param firstLimit
+	 * @param smallPrimeUpperLimit
+	 * @param logarsmall
+	 * @param threshold
+	 * @param secondLimit
+	 * @param thirdLimit
+	 * @param PolynomialIndex
+	 * @return
+	 */
+	private BigInteger sieveStage(int NbrPrimes, int NbrPrimes2, long[] prime, byte[] logar, int[][] Bainv2,
+			int[] soln1, int[] difsoln, long[] afact, int[] aindex, int[] amodq, byte[] SieveArray, int[] vectExpParity,
+			int[][] matrixB, int[] rowMatrixB, long[][] vectLeftHandSide, int[][] matrixPartial,
+			int[] matrixPartialHashIndex, int SieveLimit, int s, long[] TestNbr2, int multiplier, long FactorBase,
+			int[] pp, int firstLimit, final int smallPrimeUpperLimit, int logarsmall, byte threshold, int secondLimit,
+			int thirdLimit, int[] PolynomialIndex) {
+		/***************/
+		/* Sieve stage */
+		/***************/
+		long D = PolynomialIndex[0];
+		int index2 = 0;
+		while ((D & 1) == 0) {
+			D /= 2;
+			index2++;
+		}
+		boolean polyadd;
+		if (polyadd = ((D & 2) != 0)) {
+			AddBigNbr(biN, aiJS[index2], biN);
+			AddBigNbr(biN, aiJS[index2], biN);
+		} else {
+			SubtractBigNbr(biN, aiJS[index2], biN);
+			SubtractBigNbr(biN, aiJS[index2], biN);
+		}
+		int[] rowBainv2 = Bainv2[index2];
+		// Compute solutions for divisors of the leading coefficients
+		for (int index = 0; index < s; index++) {
+			final int temp = aindex[index];
+			long E = prime[temp];
+			D = RemDivBigNbrByLong(TestNbr, E * E);
+			long Q = RemDivBigNbrByLong(biN, E * E);
+			soln1[temp] = (int) (((D - Q * Q) / E * modInv(amodq[index] * Q % E, E) % E + E + SieveLimit) % E
+					+ 100 * E);
+			difsoln[temp] = -1; // Only one solution.
+		}
+		final int X1 = 2 * SieveLimit;
+		int F1 = polyadd ? -rowBainv2[1] : rowBainv2[1];
+		if ((soln1[1] += F1) % 2 == 0) {
+			SieveArray[0] = (byte) (logar[1] - threshold);
+			SieveArray[1] = (byte) (-threshold);
+		} else {
+			SieveArray[0] = (byte) (-threshold);
+			SieveArray[1] = (byte) (logar[1] - threshold);
+		}
+		int F2 = 2;
+		int index = 2;
+		while (true) {
+			final int F = (int) prime[index];
+			int F3 = F2 * F;
+			if (X1 + 1 < F3) {
+				F3 = X1 + 1;
+			}
+			int F4 = F2;
+			while (F4 * 2 <= F3) {
+				System.arraycopy(SieveArray, 0, SieveArray, F4, F4);
+				F4 *= 2;
+			}
+			System.arraycopy(SieveArray, 0, SieveArray, F4, F3 - F4);
+			if (F3 == X1 + 1) {
+				break;
+			}
+			final byte logprime = logar[index];
+			F1 = polyadd ? -rowBainv2[index] : rowBainv2[index];
+			for (int indx = (soln1[index] += F1) % F; indx < F3; indx += F) {
+				SieveArray[indx] += logprime;
+			}
+			if (F != multiplier) {
+				for (int indx = (soln1[index] + difsoln[index]) % F; indx < F3; indx += F) {
+					SieveArray[indx] += logprime;
+				}
+			}
+			index++;
+			F2 *= F;
+		}
+
+		for (; index < smallPrimeUpperLimit; index++) {
+			F1 = polyadd ? -rowBainv2[index] : rowBainv2[index];
+			soln1[index] += F1;
+		}
+
+		int primesmall = (int) prime[index - 1];
+		int soln1small = soln1[index - 1];
+		int soln2small = (soln1small + difsoln[index - 1]) % primesmall;
+		for (; index < firstLimit; index++) {
+			final int F = (int) prime[index];
+			F1 = polyadd ? -rowBainv2[index] : rowBainv2[index];
+			F2 = F + F;
+			final int F3 = F2 + F;
+			final int F4 = F3 + F;
+			int S1 = (soln1[index] += F1) % F;
+			final int S2 = (S1 + difsoln[index]) % F;
+			int G0 = S2 - S1;
+			if (G0 < 0) {
+				S1 = S2;
+				G0 *= -1;
+			}
+			final int G1 = G0 + F;
+			final int G2 = G1 + F;
+			final int G3 = G2 + F;
+			final byte logprime = logar[index];
+			index2 = X1 / F4 * F4 + S1;
 			do {
-				/***************/
-				/* Sieve stage */
-				/***************/
-				long D = PolynomialIndex;
-				int index2 = 0;
-				while ((D & 1) == 0) {
-					D /= 2;
-					index2++;
+				SieveArray[index2] += logprime;
+				SieveArray[index2 + F] += logprime;
+				SieveArray[index2 + F2] += logprime;
+				SieveArray[index2 + F3] += logprime;
+				SieveArray[index2 + G0] += logprime;
+				SieveArray[index2 + G1] += logprime;
+				SieveArray[index2 + G2] += logprime;
+				SieveArray[index2 + G3] += logprime;
+			} while ((index2 -= F4) >= 0);
+		}
+		for (; index < secondLimit; index++) {
+			int F = (int) prime[index];
+			F1 = (polyadd ? -rowBainv2[index] : rowBainv2[index]);
+			final int X2 = X1 - 4 * F;
+			F2 = F + F;
+			int F3 = F2 + F;
+			int F4 = F2 + F2;
+			final byte logprime = logar[index];
+			for (index2 = (soln1[index] += F1) % F; index2 <= X2; index2 += F4) {
+				SieveArray[index2] += logprime;
+				SieveArray[index2 + F] += logprime;
+				SieveArray[index2 + F2] += logprime;
+				SieveArray[index2 + F3] += logprime;
+			}
+			for (; index2 <= X1; index2 += F) {
+				SieveArray[index2] += logprime;
+			}
+			if (difsoln[index] >= 0) {
+				for (index2 = (index2 + difsoln[index]) % F; index2 <= X2; index2 += F4) {
+					SieveArray[index2] += logprime;
+					SieveArray[index2 + F] += logprime;
+					SieveArray[index2 + F2] += logprime;
+					SieveArray[index2 + F3] += logprime;
 				}
-				boolean polyadd;
-				if (polyadd = ((D & 2) != 0)) {
-					AddBigNbr(biN, aiJS[index2], biN);
-					AddBigNbr(biN, aiJS[index2], biN);
-				} else {
-					SubtractBigNbr(biN, aiJS[index2], biN);
-					SubtractBigNbr(biN, aiJS[index2], biN);
+				for (; index2 <= X1; index2 += F) {
+					SieveArray[index2] += logprime;
 				}
-				int[] rowBainv2 = Bainv2[index2];
-				// Compute solutions for divisors of the leading coefficients
+			}
+		}
+		for (; index < thirdLimit; index++) {
+			int F = (int) prime[index];
+			final byte logprime = logar[index];
+			F1 = (polyadd ? -rowBainv2[index] : rowBainv2[index]);
+			for (index2 = (soln1[index] += F1) % F; index2 <= X1; index2 += F) {
+				SieveArray[index2] += logprime;
+			}
+			for (index2 = (index2 + difsoln[index]) % F; index2 <= X1; index2 += F) {
+				SieveArray[index2] += logprime;
+			}
+		}
+		if (polyadd) {
+			for (; index < NbrPrimes2; index++) {
+				final byte logprime = logar[index];
+				int F = (int) prime[index];
+				F1 = -rowBainv2[index];
+				if ((F2 = (soln1[index] += F1) % F) < X1) {
+					SieveArray[F2] += logprime;
+				}
+				if ((F2 = (F2 + difsoln[index]) % F) < X1) {
+					SieveArray[F2] += logprime;
+				}
+				F = (int) prime[++index];
+				F1 = -rowBainv2[index];
+				if ((F2 = (soln1[index] += F1) % F) < X1) {
+					SieveArray[F2] += logprime;
+				}
+				if ((F2 = (F2 + difsoln[index]) % F) < X1) {
+					SieveArray[F2] += logprime;
+				}
+				F = (int) prime[++index];
+				F1 = -rowBainv2[index];
+				if ((F2 = (soln1[index] += F1) % F) < X1) {
+					SieveArray[F2] += logprime;
+				}
+				if ((F2 = (F2 + difsoln[index]) % F) < X1) {
+					SieveArray[F2] += logprime;
+				}
+				F = (int) prime[++index];
+				F1 = -rowBainv2[index];
+				if ((F2 = (soln1[index] += F1) % F) < X1) {
+					SieveArray[F2] += logprime;
+				}
+				if ((F2 = (F2 + difsoln[index]) % F) < X1) {
+					SieveArray[F2] += logprime;
+				}
+			}
+			for (; index < NbrPrimes; index++) {
+				final byte logprime = logar[index];
+				int F = (int) prime[index];
+				F1 = -rowBainv2[index];
+				if ((F2 = (soln1[index] += F1) % F) < X1) {
+					SieveArray[F2] += logprime;
+				}
+				if ((F2 = (F2 + difsoln[index]) % F) < X1) {
+					SieveArray[F2] += logprime;
+				}
+			}
+		} else {
+			for (; index < NbrPrimes2; index++) {
+				final byte logprime = logar[index];
+				int F = (int) prime[index];
+				F1 = rowBainv2[index];
+				if ((F2 = (soln1[index] += F1) % F) < X1) {
+					SieveArray[F2] += logprime;
+				}
+				if ((F2 = (F2 + difsoln[index]) % F) < X1) {
+					SieveArray[F2] += logprime;
+				}
+				F = (int) prime[++index];
+				F1 = rowBainv2[index];
+				if ((F2 = (soln1[index] += F1) % F) < X1) {
+					SieveArray[F2] += logprime;
+				}
+				if ((F2 = (F2 + difsoln[index]) % F) < X1) {
+					SieveArray[F2] += logprime;
+				}
+				F = (int) prime[++index];
+				F1 = rowBainv2[index];
+				if ((F2 = (soln1[index] += F1) % F) < X1) {
+					SieveArray[F2] += logprime;
+				}
+				if ((F2 = (F2 + difsoln[index]) % F) < X1) {
+					SieveArray[F2] += logprime;
+				}
+				F = (int) prime[++index];
+				F1 = rowBainv2[index];
+				if ((F2 = (soln1[index] += F1) % F) < X1) {
+					SieveArray[F2] += logprime;
+				}
+				if ((F2 = (F2 + difsoln[index]) % F) < X1) {
+					SieveArray[F2] += logprime;
+				}
+			}
+			for (; index < NbrPrimes; index++) {
+				final byte logprime = logar[index];
+				final int F = (int) prime[index];
+				if ((F2 = (soln1[index] += rowBainv2[index]) % F) < X1) {
+					SieveArray[F2] += logprime;
+				}
+				// if ((F2 = (F2 + difsoln[index]) % F) < X1)
+				if ((F2 += difsoln[index]) > F) {
+					F2 -= F;
+				}
+				if (F2 < X1) {
+					SieveArray[F2] += logprime;
+				}
+			}
+		}
+		// ValuesSieved += 2 * SieveLimit;
+
+		index2 = 2 * SieveLimit + 1;
+		/************************/
+		/* Trial division stage */
+		/************************/
+		BigInteger result = trialDivisionStage(NbrPrimes, prime, afact, SieveArray, vectExpParity, matrixB, rowMatrixB,
+				vectLeftHandSide, matrixPartial, matrixPartialHashIndex, SieveLimit, s, TestNbr2, multiplier,
+				FactorBase, pp, logarsmall, index2,  primesmall, soln1small, soln2small);
+		if (result != null) {
+			return result;
+		}
+		/*******************/
+		/* Next polynomial */
+		/*******************/
+		PolynomialIndex[0]++;
+		return null;
+	}
+
+	/**
+	 * Trial division stage
+	 * 
+	 * @param NbrPrimes
+	 * @param prime
+	 * @param afact
+	 * @param SieveArray
+	 * @param vectExpParity
+	 * @param matrixB
+	 * @param rowMatrixB
+	 * @param vectLeftHandSide
+	 * @param matrixPartial
+	 * @param matrixPartialHashIndex
+	 * @param SieveLimit
+	 * @param s
+	 * @param TestNbr2
+	 * @param multiplier
+	 * @param FactorBase
+	 * @param pp
+	 * @param logarsmall
+	 * @param index2
+	 * @param primesmall
+	 * @param soln1small
+	 * @param soln2small
+	 * @return
+	 */
+	private BigInteger trialDivisionStage(int NbrPrimes, long[] prime, long[] afact, byte[] SieveArray,
+			int[] vectExpParity, int[][] matrixB, int[] rowMatrixB, long[][] vectLeftHandSide, int[][] matrixPartial,
+			int[] matrixPartialHashIndex, int SieveLimit, int s, long[] TestNbr2, int multiplier, long FactorBase,
+			int[] pp, int logarsmall, int index2,   int primesmall, int soln1small, int soln2small) {
+		
+		long biR0 = 0, biR1 = 0, biR2 = 0, biR3 = 0, biR4 = 0, biR5 = 0;
+		long biR6 = 0;
+		
+		int nbrPartials = 0;
+		boolean cond = false;
+		do {
+			if (SieveArray[--index2] >= 0 && SieveArray[index2] < 64) {
+				if (SieveArray[index2] < logarsmall) {
+					if ((index2 - soln1small) % primesmall != 0) {
+						if ((index2 - soln2small) % primesmall != 0) {
+							continue;
+						}
+					}
+				}
+				// trialDivisions++;
+				MultBigNbrByLong(biS, index2 - SieveLimit, biT);
+				AddBigNbr(biT, biN, biT);
+				MultBigNbr(biT, biT, biR);
+				SubtractBigNbr(biR, TestNbr, biR); // Number to factor:
+													// (Ax+B)^2-N
+				for (int i = 0; i < NumberLength; i++) {
+					biT[i] = biR[i];
+				}
+				/* factor biR */
+				if (multiplier > 1) {
+					while (RemDivBigNbrByLong(biR, multiplier * multiplier) == 0) {
+						DivBigNbrByLong(biR, multiplier * multiplier, biR);
+					}
+				}
+				int F = NumberLength; /* Back up NumberLength */
+				boolean positive = true;
+				if (biR[NumberLength - 1] >= 0x40000000) { /* Negative */
+					positive = false;
+					ChSignBigNbr(biR); // Convert to positive.
+				}
 				for (int index = 0; index < s; index++) {
-					final int temp = aindex[index];
-					long E = prime[temp];
-					D = RemDivBigNbrByLong(TestNbr, E * E);
-					long Q = RemDivBigNbrByLong(biN, E * E);
-					soln1[temp] = (int) (((D - Q * Q) / E * modInv(amodq[index] * Q % E, E) % E + E + SieveLimit) % E
-							+ 100 * E);
-					difsoln[temp] = -1; // Only one solution.
-				}
-				final int X1 = 2 * SieveLimit;
-				int F1 = polyadd ? -rowBainv2[1] : rowBainv2[1];
-				if ((soln1[1] += F1) % 2 == 0) {
-					SieveArray[0] = (byte) (logar[1] - threshold);
-					SieveArray[1] = (byte) (-threshold);
-				} else {
-					SieveArray[0] = (byte) (-threshold);
-					SieveArray[1] = (byte) (logar[1] - threshold);
-				}
-				int F2 = 2;
-				int index = 2;
-				while (true) {
-					final int F = (int) prime[index];
-					int F3 = F2 * F;
-					if (X1 + 1 < F3) {
-						F3 = X1 + 1;
-					}
-					int F4 = F2;
-					while (F4 * 2 <= F3) {
-						System.arraycopy(SieveArray, 0, SieveArray, F4, F4);
-						F4 *= 2;
-					}
-					System.arraycopy(SieveArray, 0, SieveArray, F4, F3 - F4);
-					if (F3 == X1 + 1) {
-						break;
-					}
-					final byte logprime = logar[index];
-					F1 = polyadd ? -rowBainv2[index] : rowBainv2[index];
-					for (int indx = (soln1[index] += F1) % F; indx < F3; indx += F) {
-						SieveArray[indx] += logprime;
-					}
-					if (F != multiplier) {
-						for (int indx = (soln1[index] + difsoln[index]) % F; indx < F3; indx += F) {
-							SieveArray[indx] += logprime;
-						}
-					}
-					index++;
-					F2 *= F;
-				}
-
-				for (; index < smallPrimeUpperLimit; index++) {
-					F1 = polyadd ? -rowBainv2[index] : rowBainv2[index];
-					soln1[index] += F1;
-				}
-
-				int primesmall = (int) prime[index - 1];
-				int soln1small = soln1[index - 1];
-				int soln2small = (soln1small + difsoln[index - 1]) % primesmall;
-				for (; index < firstLimit; index++) {
-					final int F = (int) prime[index];
-					F1 = polyadd ? -rowBainv2[index] : rowBainv2[index];
-					F2 = F + F;
-					final int F3 = F2 + F;
-					final int F4 = F3 + F;
-					int S1 = (soln1[index] += F1) % F;
-					final int S2 = (S1 + difsoln[index]) % F;
-					int G0 = S2 - S1;
-					if (G0 < 0) {
-						S1 = S2;
-						G0 *= -1;
-					}
-					final int G1 = G0 + F;
-					final int G2 = G1 + F;
-					final int G3 = G2 + F;
-					final byte logprime = logar[index];
-					index2 = X1 / F4 * F4 + S1;
-					do {
-						SieveArray[index2] += logprime;
-						SieveArray[index2 + F] += logprime;
-						SieveArray[index2 + F2] += logprime;
-						SieveArray[index2 + F3] += logprime;
-						SieveArray[index2 + G0] += logprime;
-						SieveArray[index2 + G1] += logprime;
-						SieveArray[index2 + G2] += logprime;
-						SieveArray[index2 + G3] += logprime;
-					} while ((index2 -= F4) >= 0);
-				}
-				for (; index < secondLimit; index++) {
-					int F = (int) prime[index];
-					F1 = (polyadd ? -rowBainv2[index] : rowBainv2[index]);
-					final int X2 = X1 - 4 * F;
-					F2 = F + F;
-					int F3 = F2 + F;
-					int F4 = F2 + F2;
-					final byte logprime = logar[index];
-					for (index2 = (soln1[index] += F1) % F; index2 <= X2; index2 += F4) {
-						SieveArray[index2] += logprime;
-						SieveArray[index2 + F] += logprime;
-						SieveArray[index2 + F2] += logprime;
-						SieveArray[index2 + F3] += logprime;
-					}
-					for (; index2 <= X1; index2 += F) {
-						SieveArray[index2] += logprime;
-					}
-					if (difsoln[index] >= 0) {
-						for (index2 = (index2 + difsoln[index]) % F; index2 <= X2; index2 += F4) {
-							SieveArray[index2] += logprime;
-							SieveArray[index2 + F] += logprime;
-							SieveArray[index2 + F2] += logprime;
-							SieveArray[index2 + F3] += logprime;
-						}
-						for (; index2 <= X1; index2 += F) {
-							SieveArray[index2] += logprime;
-						}
+					DivBigNbrByLong(biR, afact[index], biR);
+					if ((biR[NumberLength - 1] == 0 && biR[NumberLength - 2] < 0x40000000l)) {
+						NumberLength--;
 					}
 				}
-				for (; index < thirdLimit; index++) {
-					int F = (int) prime[index];
-					final byte logprime = logar[index];
-					F1 = (polyadd ? -rowBainv2[index] : rowBainv2[index]);
-					for (index2 = (soln1[index] += F1) % F; index2 <= X1; index2 += F) {
-						SieveArray[index2] += logprime;
-					}
-					for (index2 = (index2 + difsoln[index]) % F; index2 <= X1; index2 += F) {
-						SieveArray[index2] += logprime;
-					}
+				switch (NumberLength) {
+				// fall through
+				case 7:
+					biR6 = biR[6];
+					// fall through
+				case 6:
+					biR5 = biR[5];
+					// fall through
+				case 5:
+					biR4 = biR[4];
+					// fall through
+				case 4:
+					biR3 = biR[3];
+					// fall through
+				case 3:
+					biR2 = biR[2];
+					// fall through
+				case 1:
+					// fall through
+				case 2:
+					biR1 = biR[1];
+					biR0 = biR[0];
 				}
-				if (polyadd) {
-					for (; index < NbrPrimes2; index++) {
-						final byte logprime = logar[index];
-						int F = (int) prime[index];
-						F1 = -rowBainv2[index];
-						if ((F2 = (soln1[index] += F1) % F) < X1) {
-							SieveArray[F2] += logprime;
-						}
-						if ((F2 = (F2 + difsoln[index]) % F) < X1) {
-							SieveArray[F2] += logprime;
-						}
-						F = (int) prime[++index];
-						F1 = -rowBainv2[index];
-						if ((F2 = (soln1[index] += F1) % F) < X1) {
-							SieveArray[F2] += logprime;
-						}
-						if ((F2 = (F2 + difsoln[index]) % F) < X1) {
-							SieveArray[F2] += logprime;
-						}
-						F = (int) prime[++index];
-						F1 = -rowBainv2[index];
-						if ((F2 = (soln1[index] += F1) % F) < X1) {
-							SieveArray[F2] += logprime;
-						}
-						if ((F2 = (F2 + difsoln[index]) % F) < X1) {
-							SieveArray[F2] += logprime;
-						}
-						F = (int) prime[++index];
-						F1 = -rowBainv2[index];
-						if ((F2 = (soln1[index] += F1) % F) < X1) {
-							SieveArray[F2] += logprime;
-						}
-						if ((F2 = (F2 + difsoln[index]) % F) < X1) {
-							SieveArray[F2] += logprime;
-						}
-					}
-					for (; index < NbrPrimes; index++) {
-						final byte logprime = logar[index];
-						int F = (int) prime[index];
-						F1 = -rowBainv2[index];
-						if ((F2 = (soln1[index] += F1) % F) < X1) {
-							SieveArray[F2] += logprime;
-						}
-						if ((F2 = (F2 + difsoln[index]) % F) < X1) {
-							SieveArray[F2] += logprime;
+				int nbrColumns = 0;
+				long Divid;
+				if (NumberLength <= 2) {
+					Divid = (biR1 << 31) | biR0;
+					for (int index = 1; index < NbrPrimes; index++) {
+						long Divisor = prime[index];
+						while (Divid % Divisor == 0) {
+							Divid /= Divisor;
 						}
 					}
 				} else {
-					for (; index < NbrPrimes2; index++) {
-						final byte logprime = logar[index];
-						int F = (int) prime[index];
-						F1 = rowBainv2[index];
-						if ((F2 = (soln1[index] += F1) % F) < X1) {
-							SieveArray[F2] += logprime;
-						}
-						if ((F2 = (F2 + difsoln[index]) % F) < X1) {
-							SieveArray[F2] += logprime;
-						}
-						F = (int) prime[++index];
-						F1 = rowBainv2[index];
-						if ((F2 = (soln1[index] += F1) % F) < X1) {
-							SieveArray[F2] += logprime;
-						}
-						if ((F2 = (F2 + difsoln[index]) % F) < X1) {
-							SieveArray[F2] += logprime;
-						}
-						F = (int) prime[++index];
-						F1 = rowBainv2[index];
-						if ((F2 = (soln1[index] += F1) % F) < X1) {
-							SieveArray[F2] += logprime;
-						}
-						if ((F2 = (F2 + difsoln[index]) % F) < X1) {
-							SieveArray[F2] += logprime;
-						}
-						F = (int) prime[++index];
-						F1 = rowBainv2[index];
-						if ((F2 = (soln1[index] += F1) % F) < X1) {
-							SieveArray[F2] += logprime;
-						}
-						if ((F2 = (F2 + difsoln[index]) % F) < X1) {
-							SieveArray[F2] += logprime;
-						}
-					}
-					for (; index < NbrPrimes; index++) {
-						final byte logprime = logar[index];
-						final int F = (int) prime[index];
-						if ((F2 = (soln1[index] += rowBainv2[index]) % F) < X1) {
-							SieveArray[F2] += logprime;
-						}
-						// if ((F2 = (F2 + difsoln[index]) % F) < X1)
-						if ((F2 += difsoln[index]) > F) {
-							F2 -= F;
-						}
-						if (F2 < X1) {
-							SieveArray[F2] += logprime;
-						}
-					}
-				}
-				// ValuesSieved += 2 * SieveLimit;
-				/************************/
-				/* Trial division stage */
-				/************************/
-				index2 = 2 * SieveLimit + 1;
-				
-				do {
-					if (SieveArray[--index2] >= 0 && SieveArray[index2] < 64) {
-						if (SieveArray[index2] < logarsmall) {
-							if ((index2 - soln1small) % primesmall != 0) {
-								if ((index2 - soln2small) % primesmall != 0) {
-									continue;
-								}
-							}
-						}
-						// trialDivisions++;
-						MultBigNbrByLong(biS, index2 - SieveLimit, biT);
-						AddBigNbr(biT, biN, biT);
-						MultBigNbr(biT, biT, biR);
-						SubtractBigNbr(biR, TestNbr, biR); // Number to factor:
-															// (Ax+B)^2-N
-						for (int i = 0; i < NumberLength; i++) {
-							biT[i] = biR[i];
-						}
-						/* factor biR */
-						if (multiplier > 1) {
-							while (RemDivBigNbrByLong(biR, multiplier * multiplier) == 0) {
-								DivBigNbrByLong(biR, multiplier * multiplier, biR);
-							}
-						}
-						int F = NumberLength; /* Back up NumberLength */
-						boolean positive = true;
-						if (biR[NumberLength - 1] >= 0x40000000) { /* Negative */
-							positive = false;
-							ChSignBigNbr(biR); // Convert to positive.
-						}
-						for (index = 0; index < s; index++) {
-							DivBigNbrByLong(biR, afact[index], biR);
-							if ((biR[NumberLength - 1] == 0 && biR[NumberLength - 2] < 0x40000000l)) {
-								NumberLength--;
-							}
-						}
-						switch (NumberLength) {
-						// fall through
-						case 7:
-							biR6 = biR[6];
-							// fall through
-						case 6:
-							biR5 = biR[5];
-							// fall through
-						case 5:
-							biR4 = biR[4];
-							// fall through
-						case 4:
-							biR3 = biR[3];
-							// fall through
-						case 3:
-							biR2 = biR[2];
-							// fall through
-						case 1:
-							// fall through
-						case 2:
-							biR1 = biR[1];
-							biR0 = biR[0];
-						}
-						int nbrColumns = 0;
-						long Divid;
-						if (NumberLength <= 2) {
-							Divid = (biR1 << 31) | biR0;
-							for (index = 1; index < NbrPrimes; index++) {
+					Divid = 0;
+					for (int index = 1; index < NbrPrimes; index++) {
+							while (true) {
 								long Divisor = prime[index];
-								while (Divid % Divisor == 0) {
-									Divid /= Divisor;
+								long Rem = 0;
+								switch (NumberLength) {
+								// fall through
+								case 7:
+									Rem = (biR6 + (Rem << 31)) % Divisor;
+									// fall through
+								case 6:
+									Rem = (biR5 + (Rem << 31)) % Divisor;
+									// fall through
+								case 5:
+									Rem = (biR4 + (Rem << 31)) % Divisor;
+									// fall through
+								case 4:
+									Rem = (biR3 + (Rem << 31)) % Divisor;
+									// fall through
+								case 3:
+									Rem = (biR2 + (Rem << 31)) % Divisor;
+									Rem = (biR1 + (Rem << 31)) % Divisor;
+									Rem = (biR0 + (Rem << 31)) % Divisor;
 								}
-							}
-						} else {
-							Divid = 0;
-							for (index = 1; index < NbrPrimes; index++) {
-								while (true) {
-									long Divisor = prime[index];
-									long Rem = 0;
-									switch (NumberLength) {
+								if (Rem != 0) {
+									break;
+								}
+								switch (NumberLength) {
+								// fall through
+								case 7:
+									Divid = biR6 + (Rem << 31);
+									Rem = Divid % Divisor;
+									biR6 = Divid / Divisor;
 									// fall through
-									case 7:
-										Rem = (biR6 + (Rem << 31)) % Divisor;
-										// fall through
-									case 6:
-										Rem = (biR5 + (Rem << 31)) % Divisor;
-										// fall through
-									case 5:
-										Rem = (biR4 + (Rem << 31)) % Divisor;
-										// fall through
-									case 4:
-										Rem = (biR3 + (Rem << 31)) % Divisor;
-										// fall through
-									case 3:
-										Rem = (biR2 + (Rem << 31)) % Divisor;
-										Rem = (biR1 + (Rem << 31)) % Divisor;
-										Rem = (biR0 + (Rem << 31)) % Divisor;
-									}
-									if (Rem != 0) {
-										break;
-									}
-									switch (NumberLength) {
+								case 6:
+									Divid = biR5 + (Rem << 31);
+									Rem = Divid % Divisor;
+									biR5 = Divid / Divisor;
 									// fall through
-									case 7:
-										Divid = biR6 + (Rem << 31);
-										Rem = Divid % Divisor;
-										biR6 = Divid / Divisor;
-										// fall through
-									case 6:
-										Divid = biR5 + (Rem << 31);
-										Rem = Divid % Divisor;
-										biR5 = Divid / Divisor;
-										// fall through
-									case 5:
-										Divid = biR4 + (Rem << 31);
-										Rem = Divid % Divisor;
-										biR4 = Divid / Divisor;
-										// fall through
-									case 4:
-										Divid = biR3 + (Rem << 31);
-										Rem = Divid % Divisor;
-										biR3 = Divid / Divisor;
-										// fall through
-									case 3:
-										Divid = biR2 + (Rem << 31);
-										Rem = Divid % Divisor;
-										biR2 = Divid / Divisor;
-										Divid = biR1 + (Rem << 31);
-										biR1 = Divid / Divisor;
-										biR0 = (biR0 + ((Divid % Divisor) << 31)) / Divisor;
-									}
-									switch (NumberLength) {
-									case 7:
-										cond = (biR6 == 0 && biR5 < 0x40000000);
-										break;
-									case 6:
-										cond = (biR5 == 0 && biR4 < 0x40000000);
-										break;
-									case 5:
-										cond = (biR4 == 0 && biR3 < 0x40000000);
-										break;
-									case 4:
-										cond = (biR3 == 0 && biR2 < 0x40000000);
-										break;
-									case 3:
-										cond = (biR2 == 0 && biR1 < 0x40000000);
-										break;
-									}
-									if (cond) {
-										NumberLength--;
-										if (NumberLength == 2) {
-											Divid = (biR1 << 31) | biR0;
-											int sqrtDivid = (int) Math.floor(Math.sqrt(Divid));
-											for (; index < NbrPrimes; index++) {
-												Divisor = prime[index];
-												while (Divid % Divisor == 0) {
-													Divid /= Divisor;
-													sqrtDivid = (int) Math.floor(Math.sqrt(Divid));
-												}
-												if (Divisor > sqrtDivid) {
-													index = NbrPrimes - 1;
-													if (Divid <= prime[index]) {
-														Divid = 1;
-													}
-													break;
-												}
+								case 5:
+									Divid = biR4 + (Rem << 31);
+									Rem = Divid % Divisor;
+									biR4 = Divid / Divisor;
+									// fall through
+								case 4:
+									Divid = biR3 + (Rem << 31);
+									Rem = Divid % Divisor;
+									biR3 = Divid / Divisor;
+									// fall through
+								case 3:
+									Divid = biR2 + (Rem << 31);
+									Rem = Divid % Divisor;
+									biR2 = Divid / Divisor;
+									Divid = biR1 + (Rem << 31);
+									biR1 = Divid / Divisor;
+									biR0 = (biR0 + ((Divid % Divisor) << 31)) / Divisor;
+								}
+								switch (NumberLength) {
+								case 7:
+									cond = (biR6 == 0 && biR5 < 0x40000000);
+									break;
+								case 6:
+									cond = (biR5 == 0 && biR4 < 0x40000000);
+									break;
+								case 5:
+									cond = (biR4 == 0 && biR3 < 0x40000000);
+									break;
+								case 4:
+									cond = (biR3 == 0 && biR2 < 0x40000000);
+									break;
+								case 3:
+									cond = (biR2 == 0 && biR1 < 0x40000000);
+									break;
+								}
+								if (cond) {
+									NumberLength--;
+									if (NumberLength == 2) {
+										Divid = (biR1 << 31) | biR0;
+										int sqrtDivid = (int) Math.floor(Math.sqrt(Divid));
+										for (; index < NbrPrimes; index++) {
+											Divisor = prime[index];
+											while (Divid % Divisor == 0) {
+												Divid /= Divisor;
+												sqrtDivid = (int) Math.floor(Math.sqrt(Divid));
 											}
-											break;
+											if (Divisor > sqrtDivid) {
+												index = NbrPrimes - 1;
+												if (Divid <= prime[index]) {
+													Divid = 1;
+												}
+												break;
+											}
 										}
-									}
-								} /* end while */
-							} /* end for */
-						}
-						F2 = NumberLength;
-						NumberLength = F;
-						if (F2 == 2 && Divid == 1) { // Smooth relation found.
-							if (positive == false) {
-								rowMatrixB[nbrColumns++] = 0; // Insert -1 as a
-																// factor.
-							}
-							/*
-							 * factor biT (backup) storing in BiR the square part
-							 */
-							LongToBigNbr(1, biR);
-							while (RemDivBigNbrByLong(biT, 3 * 3) == 0) {
-								DivBigNbrByLong(biT, 3 * 3, biT);
-								if (RemDivBigNbrByLong(TestNbr, 3) == 0) {
-									DivBigNbrByLong(biU, 3, biU);
-								} else {
-									MultBigNbrByLong(biR, 3, biR);
-								}
-							}
-							for (index = 5; index < 100; index += 4) {
-								while (RemDivBigNbrByLong(biT, index * index) == 0) {
-									DivBigNbrByLong(biT, index * index, biT);
-									if (RemDivBigNbrByLong(TestNbr, index) == 0) {
-										DivBigNbrByLong(biU, index, biU);
-									} else {
-										MultBigNbrByLong(biR, index, biR);
+										break;
 									}
 								}
-								index += 2;
-								while (RemDivBigNbrByLong(biR, index * index) == 0) {
-									DivBigNbrByLong(biR, index * index, biR);
-									if (RemDivBigNbrByLong(TestNbr, index) == 0) {
-										DivBigNbrByLong(biU, index, biU);
-									} else {
-										MultBigNbrByLong(biR, index, biR);
-									}
-								}
-							}
-							MultBigNbrByLong(biS, index2 - SieveLimit, biU);
-							AddBigNbr(biU, biN, biU);
-							for (index = 1; index < NbrPrimes; index++) {
-								int expParity = 0;
-								D = prime[index];
-								while (RemDivBigNbrByLong(biT, D) == 0) {
-									DivBigNbrByLong(biT, D, biT);
-									expParity = 1 - expParity;
-									if (expParity == 0) {
-										if (RemDivBigNbrByLong(TestNbr, D) == 0) {
-											DivBigNbrByLong(biU, D, biU);
-										} else {
-											MultBigNbrByLong(biR, D, biR);
-										}
-									}
-								}
-								if (expParity != 0) {
-									rowMatrixB[nbrColumns++] = index;
-									expParity = 0;
-								}
-							}
-
-							if (InsertNewRelation(biR, biT, biU, nbrColumns, matrixB, rowMatrixB, pp,
-									vectLeftHandSide)) {
-								pp++;
-								// ShowSIQSStatus(pp, matrixB.length,
-								// startTime);
-								if (pp == matrixB.length) {
-									int i = EraseSingletons(matrixB, vectLeftHandSide, vectExpParity);
-									if (i != 0) {
-
-										// System.out.println(SIQSInfoText +
-										// "\n" + i + " singletons discarded");
-										pp -= i;
-									} else {
-
-										/*
-										 * System.out.println(SIQSInfoText +
-										 * "\nSolving congruence matrix using Block Lanczos algorithm" );
-										 */
-										if (LinearAlgebraPhase(NbrPrimes, matrixB, prime, biT, biR, biU, vectExpParity,
-												vectLeftHandSide, TestNbr2)) {
-											return BigIntToBigNbr(biT); /* Factor found */
-										} else {
-											/*
-											 * System.out.println(SIQSInfoText +
-											 * "\nLinear dependences were found. Discarding 50 congruences..." );
-											 */
-											pp -= 50; /* Factor not found */
-										}
-									}
-								}
-							}
-							continue; /* Continue sieving */
+							} /* end while */
+					} /* end for */
+				}
+				int F2 = NumberLength;
+				NumberLength = F;
+				if (F2 == 2 && Divid == 1) { // Smooth relation found.
+					if (positive == false) {
+						rowMatrixB[nbrColumns++] = 0; // Insert -1 as a
+														// factor.
+					}
+					/*
+					 * factor biT (backup) storing in BiR the square part
+					 */
+					LongToBigNbr(1, biR);
+					while (RemDivBigNbrByLong(biT, 3 * 3) == 0) {
+						DivBigNbrByLong(biT, 3 * 3, biT);
+						if (RemDivBigNbrByLong(TestNbr, 3) == 0) {
+							DivBigNbrByLong(biU, 3, biU);
 						} else {
-							if (F2 == 2 && Divid < 64 * FactorBase) {
-								// Partial relation found.
-								if (positive == false) {
-									rowMatrixB[nbrColumns++] = 0; // Insert -1
-																	// as a
-																	// factor.
+							MultBigNbrByLong(biR, 3, biR);
+						}
+					}
+					for (int index = 5; index < 100; index += 4) {
+						while (RemDivBigNbrByLong(biT, index * index) == 0) {
+							DivBigNbrByLong(biT, index * index, biT);
+							if (RemDivBigNbrByLong(TestNbr, index) == 0) {
+								DivBigNbrByLong(biU, index, biU);
+							} else {
+								MultBigNbrByLong(biR, index, biR);
+							}
+						}
+						index += 2;
+						while (RemDivBigNbrByLong(biR, index * index) == 0) {
+							DivBigNbrByLong(biR, index * index, biR);
+							if (RemDivBigNbrByLong(TestNbr, index) == 0) {
+								DivBigNbrByLong(biU, index, biU);
+							} else {
+								MultBigNbrByLong(biR, index, biR);
+							}
+						}
+					}
+					MultBigNbrByLong(biS, index2 - SieveLimit, biU);
+					AddBigNbr(biU, biN, biU);
+					for (int index = 1; index < NbrPrimes; index++) {
+						int expParity = 0;
+						long D = prime[index];
+						while (RemDivBigNbrByLong(biT, D) == 0) {
+							DivBigNbrByLong(biT, D, biT);
+							expParity = 1 - expParity;
+							if (expParity == 0) {
+								if (RemDivBigNbrByLong(TestNbr, D) == 0) {
+									DivBigNbrByLong(biU, D, biU);
+								} else {
+									MultBigNbrByLong(biR, D, biR);
 								}
-								// Check if there is already another relation
-								// with the same
-								// factor outside the prime base.
-								// Calculate hash index
-								int i = matrixPartialHashIndex[(int) (Divid & 0x7FE) / 2];
-								int prev = -1;
-								while (i >= 0) {
-									if ((int) Divid == matrixPartial[i][0]) {
-										// Match of partials.
-										for (index = 0; index < NumberLength; index++) {
-											biV[index] = matrixPartial[i][index + 2];
-										}
-										MultBigNbr(biV, biV, biT);
-										SubtractBigNbr(biT, TestNbr, biT);
+							}
+						}
+						if (expParity != 0) {
+							rowMatrixB[nbrColumns++] = index;
+							expParity = 0;
+						}
+					}
 
-										/* factor biT */
+					if (InsertNewRelation(biR, biT, biU, nbrColumns, matrixB, rowMatrixB, pp[0], vectLeftHandSide)) {
+						pp[0]++;
+						// ShowSIQSStatus(pp, matrixB.length,
+						// startTime);
+						if (pp[0] == matrixB.length) {
+							int i = EraseSingletons(matrixB, vectLeftHandSide, vectExpParity);
+							if (i != 0) {
 
-										D = matrixPartial[i][0];
-										long E = RemDivBigNbrByLong(TestNbr, D);
-										long t1 = D;
-										long t2 = E;
-										while (t1 != 0) {
-											long t3 = t2 % t1;
-											t2 = t1;
-											t1 = t3;
-										} // t2 = GCD(D, E)
-										LongToBigNbr(D, biR);
-										if (D < 0) {
-											AddBigNbr(biR, TestNbr, biR);
-										}
-										if (t2 < 0) {
-											t2 = -t2;
-										}
-										if (t2 != 1) {
-											DivBigNbrByLong(TestNbr, t2 < 0 ? -t2 : t2, biU);
+								// System.out.println(SIQSInfoText +
+								// "\n" + i + " singletons discarded");
+								pp[0] -= i;
+							} else {
+
+								/*
+								 * System.out.println(SIQSInfoText + "\nSolving congruence matrix using Block Lanczos algorithm" );
+								 */
+								if (LinearAlgebraPhase(NbrPrimes, matrixB, prime, biT, biR, biU, vectExpParity,
+										vectLeftHandSide, TestNbr2)) {
+									return BigIntToBigNbr(biT); /* Factor found */
+								} else {
+									/*
+									 * System.out.println(SIQSInfoText + "\nLinear dependences were found. Discarding 50 congruences..." );
+									 */
+									pp[0] -= 50; /* Factor not found */
+								}
+							}
+						}
+					}
+					continue; /* Continue sieving */
+				} else {
+					if (F2 == 2 && Divid < 64 * FactorBase) {
+						// Partial relation found.
+						if (positive == false) {
+							rowMatrixB[nbrColumns++] = 0; // Insert -1
+															// as a
+															// factor.
+						}
+						// Check if there is already another relation
+						// with the same
+						// factor outside the prime base.
+						// Calculate hash index
+						int i = matrixPartialHashIndex[(int) (Divid & 0x7FE) / 2];
+						int prev = -1;
+						while (i >= 0) {
+							if ((int) Divid == matrixPartial[i][0]) {
+								// Match of partials.
+								for (int index = 0; index < NumberLength; index++) {
+									biV[index] = matrixPartial[i][index + 2];
+								}
+								MultBigNbr(biV, biV, biT);
+								SubtractBigNbr(biT, TestNbr, biT);
+
+								/* factor biT */
+
+								long D = matrixPartial[i][0];
+								long E = RemDivBigNbrByLong(TestNbr, D);
+								long t1 = D;
+								long t2 = E;
+								while (t1 != 0) {
+									long t3 = t2 % t1;
+									t2 = t1;
+									t1 = t3;
+								} // t2 = GCD(D, E)
+								LongToBigNbr(D, biR);
+								if (D < 0) {
+									AddBigNbr(biR, TestNbr, biR);
+								}
+								if (t2 < 0) {
+									t2 = -t2;
+								}
+								if (t2 != 1) {
+									DivBigNbrByLong(TestNbr, t2 < 0 ? -t2 : t2, biU);
+									AddBigNbrModN(biR, biU, biR);
+								}
+								if (multiplier > 1) {
+									while (RemDivBigNbrByLong(biT, multiplier * multiplier) == 0) {
+										DivBigNbrByLong(biT, multiplier * multiplier, biT);
+										NumberLength--;
+										MultBigNbrByLongModN(biR, multiplier, biR);
+										NumberLength++;
+										if (RemDivBigNbrByLong(TestNbr, multiplier) == 0) {
+											DivBigNbrByLong(TestNbr, multiplier, biU);
 											AddBigNbrModN(biR, biU, biR);
 										}
-										if (multiplier > 1) {
-											while (RemDivBigNbrByLong(biT, multiplier * multiplier) == 0) {
-												DivBigNbrByLong(biT, multiplier * multiplier, biT);
-												NumberLength--;
-												MultBigNbrByLongModN(biR, multiplier, biR);
-												NumberLength++;
-												if (RemDivBigNbrByLong(TestNbr, multiplier) == 0) {
-													DivBigNbrByLong(TestNbr, multiplier, biU);
-													AddBigNbrModN(biR, biU, biR);
-												}
-											}
-										}
-										nbrColumns = 0;
-										for (index = 1; index < NbrPrimes; index++) {
-											D = prime[index];
-											int expParity = 0;
-											while (RemDivBigNbrByLong(biT, D) == 0) {
-												expParity = 1 - expParity;
-												DivBigNbrByLong(biT, D, biT);
-												if (expParity == 0) {
-													NumberLength--;
-													MultBigNbrByLongModN(biR, D, biR);
-													NumberLength++;
-													if (RemDivBigNbrByLong(TestNbr, D) == 0) {
-														DivBigNbrByLong(TestNbr, D, biU);
-														AddBigNbrModN(biR, biU, biR);
-													}
-												}
-											}
-											if (expParity != 0) {
-												rowMatrixB[nbrColumns++] = index;
-											}
-										}
-
-										MultBigNbrByLong(biS, index2 - SieveLimit, biT);
-										AddBigNbr(biT, biN, biW);
-										MultBigNbr(biW, biW, biT);
-										SubtractBigNbr(biT, TestNbr, biT);
-
-										/* factor biT */
-
-										if (multiplier > 1) {
-											while (RemDivBigNbrByLong(biT, multiplier * multiplier) == 0) {
-												DivBigNbrByLong(biT, multiplier * multiplier, biT);
-												NumberLength--;
-												MultBigNbrByLongModN(biR, multiplier, biR);
-												NumberLength++;
-												if (RemDivBigNbrByLong(TestNbr, multiplier) == 0) {
-													DivBigNbrByLong(TestNbr, multiplier, biU);
-													AddBigNbrModN(biR, biU, biR);
-												}
-											}
-										}
-										for (index = 1; index < NbrPrimes; index++) {
-											int expParity = 0;
-											D = prime[index];
-											while (RemDivBigNbrByLong(biT, D) == 0) {
-												expParity = 1 - expParity;
-												DivBigNbrByLong(biT, D, biT);
-												if (expParity == 0) {
-													NumberLength--;
-													MultBigNbrByLongModN(biR, D, biR);
-													NumberLength++;
-													if (RemDivBigNbrByLong(TestNbr, D) == 0) {
-														DivBigNbrByLong(TestNbr, D, biU);
-														AddBigNbrModN(biR, biU, biR);
-													}
-												}
-											}
-											if (expParity != 0) {
-												// Check if the index is already
-												// in the row.
-												for (j = 0; j < nbrColumns; j++) {
-													if (index <= rowMatrixB[j]) {
-														break;
-													}
-												}
-												if (j < nbrColumns && index == rowMatrixB[j]) {
-													// Index already in row.
-													D = prime[rowMatrixB[j]];
-													NumberLength--;
-													MultBigNbrByLongModN(biR, D, biR);
-													NumberLength++;
-													if (RemDivBigNbrByLong(TestNbr, D) == 0) {
-														DivBigNbrByLong(TestNbr, D, biU);
-														AddBigNbrModN(biR, biU, biR);
-													}
-													// Delete entry from row.
-													for (int k = j + 1; k < nbrColumns; k++) {
-														rowMatrixB[k - 1] = rowMatrixB[k];
-													}
-													nbrColumns--;
-												} else { // Index not in row => Insert entry in row.
-													for (int k = nbrColumns; k > j; k--) {
-														rowMatrixB[k] = rowMatrixB[k - 1];
-													}
-													rowMatrixB[j] = index;
-													nbrColumns++;
-												}
-											}
-										}
-										if ((biV[NumberLength - 1] & 0x40000000L) != 0) {
-											AddBigNbr(biV, TestNbr, biV);
-										}
-										if ((biW[NumberLength - 1] & 0x40000000L) != 0) {
-											AddBigNbr(biW, TestNbr, biW);
-										}
-										NumberLength--;
-										MultBigNbrModN(biV, biW, biU);
-										NumberLength++;
-										if (InsertNewRelation(biR, biT, biU, nbrColumns, matrixB, rowMatrixB, pp,
-												vectLeftHandSide)) {
-											pp++;
-											// ShowSIQSStatus(pp,
-											// matrixB.length, startTime);
-											if (pp == matrixB.length) {
-												i = EraseSingletons(matrixB, vectLeftHandSide, vectExpParity);
-												if (i != 0) {
-													// System.out.println(SIQSInfoText
-													// + "\n" + i + " singletons
-													// discarded");
-													pp -= i;
-												} else {
-													/*
-													 * System.out.println( SIQSInfoText +
-													 * "\nSolving congruence matrix using Block Lanczos algorithm" );
-													 */
-													if (LinearAlgebraPhase(NbrPrimes, matrixB, prime, biT, biR, biU,
-															vectExpParity, vectLeftHandSide, TestNbr2)) {
-														return BigIntToBigNbr(biT); /*
-																					 * Factor found
-																					 */
-													} else {
-														/*
-														 * System.out.println( SIQSInfoText +
-														 * "\nLinear dependences were found. Discarding 50 congruences..."
-														 * );
-														 */
-														pp -= 50; /*
-																	 * Factor not found
-																	 */
-													}
-												}
-											}
-											break;
-										}
-										i = -2; // Do not execute next if.
-										break;
 									}
-									prev = i;
-									i = matrixPartial[i][1]; // Get next index
-																// for same
-																// hash.
-								} /* end while */
-								if (i == -1 && nbrPartials < matrixPartial.length) { // No
-																						// match.
-																						// Add
-																						// partial
-																						// to
-																						// table
-																						// of
-																						// partials.
-									if (prev >= 0) {
-										matrixPartial[prev][1] = nbrPartials;
-									} else {
-										matrixPartialHashIndex[(int) (Divid & 0x7FE) / 2] = nbrPartials;
-									}
-									matrixPartial[nbrPartials][0] = (int) Divid;
-									// Indicate last index with this hash.
-									matrixPartial[nbrPartials][1] = -1;
-									MultBigNbrByLong(biS, index2 - SieveLimit, biT);
-									AddBigNbr(biT, biN, biT); // biT = Ax+B
-									for (index = 0; index < NumberLength; index++) {
-										matrixPartial[nbrPartials][index + 2] = (int) biT[index];
-									}
-									nbrPartials++;
 								}
+								nbrColumns = 0;
+								for (int index = 1; index < NbrPrimes; index++) {
+									D = prime[index];
+									int expParity = 0;
+									while (RemDivBigNbrByLong(biT, D) == 0) {
+										expParity = 1 - expParity;
+										DivBigNbrByLong(biT, D, biT);
+										if (expParity == 0) {
+											NumberLength--;
+											MultBigNbrByLongModN(biR, D, biR);
+											NumberLength++;
+											if (RemDivBigNbrByLong(TestNbr, D) == 0) {
+												DivBigNbrByLong(TestNbr, D, biU);
+												AddBigNbrModN(biR, biU, biR);
+											}
+										}
+									}
+									if (expParity != 0) {
+										rowMatrixB[nbrColumns++] = index;
+									}
+								}
+
+								MultBigNbrByLong(biS, index2 - SieveLimit, biT);
+								AddBigNbr(biT, biN, biW);
+								MultBigNbr(biW, biW, biT);
+								SubtractBigNbr(biT, TestNbr, biT);
+
+								/* factor biT */
+
+								if (multiplier > 1) {
+									while (RemDivBigNbrByLong(biT, multiplier * multiplier) == 0) {
+										DivBigNbrByLong(biT, multiplier * multiplier, biT);
+										NumberLength--;
+										MultBigNbrByLongModN(biR, multiplier, biR);
+										NumberLength++;
+										if (RemDivBigNbrByLong(TestNbr, multiplier) == 0) {
+											DivBigNbrByLong(TestNbr, multiplier, biU);
+											AddBigNbrModN(biR, biU, biR);
+										}
+									}
+								}
+								for (int index = 1; index < NbrPrimes; index++) {
+									int expParity = 0;
+									D = prime[index];
+									while (RemDivBigNbrByLong(biT, D) == 0) {
+										expParity = 1 - expParity;
+										DivBigNbrByLong(biT, D, biT);
+										if (expParity == 0) {
+											NumberLength--;
+											MultBigNbrByLongModN(biR, D, biR);
+											NumberLength++;
+											if (RemDivBigNbrByLong(TestNbr, D) == 0) {
+												DivBigNbrByLong(TestNbr, D, biU);
+												AddBigNbrModN(biR, biU, biR);
+											}
+										}
+									}
+									if (expParity != 0) {
+										// Check if the index is already
+										// in the row.
+										int jj;
+										for (jj = 0; jj < nbrColumns; jj++) {
+											if (index <= rowMatrixB[jj]) {
+												break;
+											}
+										}
+										if (jj < nbrColumns && index == rowMatrixB[jj]) {
+											// Index already in row.
+											D = prime[rowMatrixB[jj]];
+											NumberLength--;
+											MultBigNbrByLongModN(biR, D, biR);
+											NumberLength++;
+											if (RemDivBigNbrByLong(TestNbr, D) == 0) {
+												DivBigNbrByLong(TestNbr, D, biU);
+												AddBigNbrModN(biR, biU, biR);
+											}
+											// Delete entry from row.
+											for (int k = jj + 1; k < nbrColumns; k++) {
+												rowMatrixB[k - 1] = rowMatrixB[k];
+											}
+											nbrColumns--;
+										} else { // Index not in row => Insert entry in row.
+											for (int k = nbrColumns; k > jj; k--) {
+												rowMatrixB[k] = rowMatrixB[k - 1];
+											}
+											rowMatrixB[jj] = index;
+											nbrColumns++;
+										}
+									}
+								}
+								if ((biV[NumberLength - 1] & 0x40000000L) != 0) {
+									AddBigNbr(biV, TestNbr, biV);
+								}
+								if ((biW[NumberLength - 1] & 0x40000000L) != 0) {
+									AddBigNbr(biW, TestNbr, biW);
+								}
+								NumberLength--;
+								MultBigNbrModN(biV, biW, biU);
+								NumberLength++;
+								if (InsertNewRelation(biR, biT, biU, nbrColumns, matrixB, rowMatrixB, pp[0],
+										vectLeftHandSide)) {
+									pp[0]++;
+									// ShowSIQSStatus(pp,
+									// matrixB.length, startTime);
+									if (pp[0] == matrixB.length) {
+										i = EraseSingletons(matrixB, vectLeftHandSide, vectExpParity);
+										if (i != 0) {
+											// System.out.println(SIQSInfoText
+											// + "\n" + i + " singletons
+											// discarded");
+											pp[0] -= i;
+										} else {
+											/*
+											 * System.out.println( SIQSInfoText + "\nSolving congruence matrix using Block Lanczos algorithm" );
+											 */
+											if (LinearAlgebraPhase(NbrPrimes, matrixB, prime, biT, biR, biU,
+													vectExpParity, vectLeftHandSide, TestNbr2)) {
+												return BigIntToBigNbr(biT); /*
+																			 * Factor found
+																			 */
+											} else {
+												/*
+												 * System.out.println( SIQSInfoText + "\nLinear dependences were found. Discarding 50 congruences..." );
+												 */
+												pp[0] -= 50; /*
+																 * Factor not found
+																 */
+											}
+										}
+									}
+									break;
+								}
+								i = -2; // Do not execute next if.
+								break;
 							}
+							prev = i;
+							i = matrixPartial[i][1]; // Get next index
+														// for same
+														// hash.
+						} /* end while */
+						if (i == -1 && nbrPartials < matrixPartial.length) {
+							// No match. Add partial to table of partials.
+							if (prev >= 0) {
+								matrixPartial[prev][1] = nbrPartials;
+							} else {
+								matrixPartialHashIndex[(int) (Divid & 0x7FE) / 2] = nbrPartials;
+							}
+							matrixPartial[nbrPartials][0] = (int) Divid;
+							// Indicate last index with this hash.
+							matrixPartial[nbrPartials][1] = -1;
+							MultBigNbrByLong(biS, index2 - SieveLimit, biT);
+							AddBigNbr(biT, biN, biT); // biT = Ax+B
+							for (int index = 0; index < NumberLength; index++) {
+								matrixPartial[nbrPartials][index + 2] = (int) biT[index];
+							}
+							nbrPartials++;
 						}
 					}
-				} while (index2 > 0);
-				/*******************/
-				/* Next polynomial */
-				/*******************/
-				PolynomialIndex++;
-			} while (PolynomialIndex < NbrPolynomials);
-		} while (true);
+				}
+			}
+		} while (index2 > 0);
+		return null;
 	}
 
 	public void factorize(Map<BigInteger, Integer> map) {
@@ -3604,8 +3708,7 @@ public class EllipticCurveMethod {
 	/**
 	 * Gcd calculation:
 	 * <ul>
-	 * <li>Step 1: Set k<-0, and then repeatedly set k<-k+1, u<-u/2, v<-v/2 zero or more times until u and v are not
-	 * both even.</li>
+	 * <li>Step 1: Set k<-0, and then repeatedly set k<-k+1, u<-u/2, v<-v/2 zero or more times until u and v are not both even.</li>
 	 * <li>Step 2: If u is odd, set t<-(-v) and go to step 4. Otherwise set t<-u.</li>
 	 * <li>Step 3: Set t<-t/2</li>
 	 * <li>Step 4: If t is even, go back to step 3.</li>

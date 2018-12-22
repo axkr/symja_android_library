@@ -27,11 +27,12 @@ import java.util.TreeSet;
 
 import javax.annotation.Nonnull;
 
-import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.eval.EvalAttributes;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -527,14 +528,14 @@ public class QuarticSolver {
 					result.append(Times(Plus(b.negate(), discriminant), Power(a.times(F.C2), -1L)));
 					result.append(Times(Plus(b.negate(), discriminant.negate()), Power(a.times(F.C2), -1L)));
 				}
-				return createSet(result);
+				return result;
 			}
 		} else {
 			if (!b.isZero()) {
 				result.append(Times(CN1, c, Power(b, -1L)));
 			}
 		}
-		return createSet(result);
+		return result;
 	}
 
 	/**
@@ -602,4 +603,36 @@ public class QuarticSolver {
 
 		return createSet(result);
 	}
+	
+
+	/**
+	 * Sort the arguments, which are assumed to be of type <code>List()</code>
+	 * 
+	 * @param resultList
+	 * @return
+	 */
+	public static IASTMutable sortASTArguments(IASTMutable resultList) {
+		if (resultList.isList()) {
+			EvalEngine engine = EvalEngine.get();
+			IASTAppendable result = F.ListAlloc(resultList.size());
+			for (int i = 1; i < resultList.size(); i++) {
+				IExpr temp = resultList.get(i);
+				// if (temp.isList()) {
+				temp = engine.evaluate(temp);
+				if (temp.isList()) {
+					EvalAttributes.sort((IASTMutable) temp);
+					result.append(temp);
+				} else {
+					result.append(resultList.get(i));
+				}
+				// } else {
+				// result.append(temp);
+				// }
+			}
+			EvalAttributes.sort(result);
+			return result;
+		}
+		return resultList;
+	}
+
 }

@@ -32,6 +32,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.QuarticSolver;
 
 /**
  * <pre>
@@ -866,31 +867,13 @@ public class Solve extends AbstractFunctionEvaluator {
 					for (IExpr root : rootsList) {
 						resultList.append(F.Rule(sym, root));
 					}
-					return resultList;
+					return QuarticSolver.sortASTArguments(resultList);
 				}
 				return F.NIL;
 			}
 		}
 		return F.NIL;
 
-	}
-
-	/**
-	 * Sort the arguments, which are assumed to be of type <code>List()</code>
-	 * 
-	 * @param resultList
-	 * @return
-	 */
-	private static IAST sortASTArguments(IAST resultList) {
-		if (resultList.isList()) {
-			for (int i = 1; i < resultList.size(); i++) {
-				if (resultList.get(i).isList()) {
-					EvalAttributes.sort((IASTMutable) resultList.get(i));
-				}
-			}
-			EvalAttributes.sort((IASTMutable) resultList);
-		}
-		return resultList;
 	}
 
 	/**
@@ -964,9 +947,9 @@ public class Solve extends AbstractFunctionEvaluator {
 			}
 
 			IASTMutable termsEqualZeroList = lists[0];
-			IAST temp = solveTimesEquationsRecursively(termsEqualZeroList, lists[1], variables, engine);
+			IASTMutable temp = solveTimesEquationsRecursively(termsEqualZeroList, lists[1], variables, engine);
 			if (temp.isPresent()) {
-				return sortASTArguments(temp);
+				return QuarticSolver.sortASTArguments(temp);
 			}
 
 			if (lists[1].isEmpty() && termsEqualZeroList.size() == 2 && variables.size() == 2) {
@@ -1087,7 +1070,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * @return a &quot;list of rules list&quot; which solves the equations, or an empty list if no solution exists, or
 	 *         <code>F.NIL</code> if the equations are not solvable by this algorithm.
 	 */
-	protected IAST solveEquations(IASTMutable termsEqualZeroList, IAST inequationsList, IAST variables,
+	protected IASTMutable solveEquations(IASTMutable termsEqualZeroList, IAST inequationsList, IAST variables,
 			int maximumNumberOfResults, EvalEngine engine) {
 		try {
 			IASTMutable list = GroebnerBasis.solveGroebnerBasis(termsEqualZeroList, variables);
@@ -1153,16 +1136,16 @@ public class Solve extends AbstractFunctionEvaluator {
 			// return sortASTArguments(resultList);
 		} catch (NoSolution e) {
 			if (e.getType() == NoSolution.WRONG_SOLUTION) {
-				return F.List();
+				return F.ListAlloc();
 			}
 			return F.NIL;
 		}
 	}
 
-	protected IAST solveInequations(IASTMutable subSolutionList, IAST inequationsList, IAST variables,
+	protected IASTMutable solveInequations(IASTMutable subSolutionList, IAST inequationsList, IAST variables,
 			int maximumNumberOfResults, EvalEngine engine) {
 		if (inequationsList.isEmpty()) {
-			return sortASTArguments(subSolutionList);
+			return QuarticSolver.sortASTArguments(subSolutionList);
 		}
 		try {
 			IExpr temp = F.subst(inequationsList, subSolutionList);
@@ -1198,9 +1181,9 @@ public class Solve extends AbstractFunctionEvaluator {
 	 *            the evaluation engine
 	 * @return
 	 */
-	private IAST solveTimesEquationsRecursively(IASTMutable termsEqualZeroList, IAST inequationsList, IAST variables,
+	private IASTMutable solveTimesEquationsRecursively(IASTMutable termsEqualZeroList, IAST inequationsList, IAST variables,
 			EvalEngine engine) {
-		IAST resultList = solveEquations(termsEqualZeroList, inequationsList, variables, 0, engine);
+		IASTMutable resultList = solveEquations(termsEqualZeroList, inequationsList, variables, 0, engine);
 		if (resultList.isPresent() && !resultList.isEmpty()) {
 			return resultList;
 		}
@@ -1232,7 +1215,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			return list;
 		}
 		if (isTimesEvaled && !resultList.isPresent()) {
-			return F.CEmptyList;
+			return F.ListAlloc();
 		}
 		return resultList;
 	}

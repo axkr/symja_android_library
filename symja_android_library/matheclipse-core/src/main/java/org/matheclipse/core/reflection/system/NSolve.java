@@ -15,6 +15,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.QuarticSolver;
 
 /**
  * Try to solve a set of equations (i.e. <code>Equal[...]</code> expressions).
@@ -484,7 +485,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 						IAST rule = F.Rule(sym, root);
 						resultList.append(rule);
 					}
-					return resultList;
+					return QuarticSolver.sortASTArguments(resultList);
 				}
 				return F.NIL;
 			}
