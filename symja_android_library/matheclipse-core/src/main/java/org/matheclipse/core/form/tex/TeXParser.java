@@ -69,11 +69,10 @@ public class TeXParser {
 		}
 	}
 
-	static final PrefixOperator[] PREFIX_OPERATORS = {
-			new PrefixOperator("+", "Plus", 670, (x) -> x), //
+	static final PrefixOperator[] PREFIX_OPERATORS = { new PrefixOperator("+", "Plus", 670, (x) -> x), //
 			new PrefixOperator("-", "Minus", 485, (x) -> F.Negate(x)), //
 			new PrefixOperator("\u00ac", "Not", 230, (x) -> F.Not(x)), //
-			
+
 	};
 
 	static final PostfixOperator[] POSTFIX_OPERATORS = {
@@ -91,6 +90,10 @@ public class TeXParser {
 
 			new BinaryOperator("\u2227", "And", 215, (lhs, rhs) -> F.And(lhs, rhs)), //
 			new BinaryOperator("\u2228", "Or", 213, (lhs, rhs) -> F.Or(lhs, rhs)), //
+			
+			new BinaryOperator("\u21d2", "Implies", 120, (lhs, rhs) -> F.Implies(lhs, rhs)), // Rightarrow
+			new BinaryOperator("\u2192", "Rule", 120, (lhs, rhs) -> F.Rule(lhs, rhs)), // rightarrow
+			new BinaryOperator("\u21d4", "Equivalent", 120, (lhs, rhs) -> F.Equivalent(lhs, rhs)),  // Leftrightarrow
 			
 			new BinaryOperator("+", "Plus", ExprParserFactory.PLUS_PRECEDENCE, (lhs, rhs) -> F.Plus(lhs, rhs)), //
 			new BinaryOperator("-", "Subtract", ExprParserFactory.PLUS_PRECEDENCE, (lhs, rhs) -> F.Subtract(lhs, rhs)), //
@@ -122,6 +125,7 @@ public class TeXParser {
 		UNICODE_OPERATOR_MAP.put("\u221e", F.CInfinity);
 		UNICODE_OPERATOR_MAP.put("\u2148", F.CI); // double-struck italic letter i
 		UNICODE_OPERATOR_MAP.put("\u2149", F.CI); // double-struck italic letter j
+		UNICODE_OPERATOR_MAP.put("\u2107", F.E); // euler's constant
 
 		BINARY_OPERATOR_MAP = new HashMap<String, BinaryOperator>();
 		for (int i = 0; i < BINARY_OPERATORS.length; i++) {

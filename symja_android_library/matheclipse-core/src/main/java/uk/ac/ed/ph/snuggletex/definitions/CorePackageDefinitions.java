@@ -522,6 +522,7 @@ public final class CorePackageDefinitions {
         /* Arrows */
         corePackage.addSimpleMathCommand("leftarrow", new MathOperatorInterpretation(MathMLSymbol.LEFTARROW));
         corePackage.addSimpleMathCommand("Leftarrow", new MathOperatorInterpretation(MathMLSymbol.UC_LEFTARROW));
+        corePackage.addSimpleMathCommand("to", new MathOperatorInterpretation(MathMLSymbol.RIGHTARROW));
         corePackage.addSimpleMathCommand("rightarrow", new MathOperatorInterpretation(MathMLSymbol.RIGHTARROW));
         corePackage.addSimpleMathCommand("Rightarrow", new MathOperatorInterpretation(MathMLSymbol.UC_RIGHTARROW));
         corePackage.addSimpleMathCommand("leftrightarrow", new MathOperatorInterpretation(MathMLSymbol.LEFTRIGHTARROW));

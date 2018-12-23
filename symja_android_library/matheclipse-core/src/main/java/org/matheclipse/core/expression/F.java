@@ -5656,6 +5656,10 @@ public class F {
 		return binaryAST2(Equal, a0, a1);
 	}
 
+	public static IAST Equivalent(final IExpr a0, final IExpr a1) {
+		return binaryAST2(Equivalent, a0, a1);
+	}
+	
 	public static IAST Erf(final IExpr a) {
 		return unaryAST1(Erf, a);
 	}

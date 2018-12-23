@@ -125,10 +125,25 @@ public class TeXConverterTestCase extends TestCase {
 	}
 	
 	public void testTeX022() {
-		check("((a \\lor \\neg b) \\land (c\\wedge a))", //
-				"(a||!b)&&c&&a");
+		// Rightarrow
+		check("((a \\lor \\neg b) \\land (c\\Rightarrow a))", //
+				"(a||!b)&&Implies(c,a)");
+		
+		// vs rightarrow
+		check("((a \\lor \\neg b) \\land (c\\rightarrow a))", //
+				"(a||!b)&&(c->a)");
+	}
+	 
+	public void testTeX023() {
+		check("a \\to b", //
+				"a->b");
 	}
 	
+	public void testTeX024() {
+		check("a \\Leftrightarrow b", //
+				"Equivalent(a,b)");
+	}
+	 
 	public void check(String strEval, String strResult) {
 		IExpr expr = texConverter.toExpression(strEval);
 		assertEquals(expr.toString(), strResult);
