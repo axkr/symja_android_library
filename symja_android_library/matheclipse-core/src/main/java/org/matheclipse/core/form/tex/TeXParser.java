@@ -90,11 +90,11 @@ public class TeXParser {
 
 			new BinaryOperator("\u2227", "And", 215, (lhs, rhs) -> F.And(lhs, rhs)), //
 			new BinaryOperator("\u2228", "Or", 213, (lhs, rhs) -> F.Or(lhs, rhs)), //
-			
+
 			new BinaryOperator("\u21d2", "Implies", 120, (lhs, rhs) -> F.Implies(lhs, rhs)), // Rightarrow
 			new BinaryOperator("\u2192", "Rule", 120, (lhs, rhs) -> F.Rule(lhs, rhs)), // rightarrow
-			new BinaryOperator("\u21d4", "Equivalent", 120, (lhs, rhs) -> F.Equivalent(lhs, rhs)),  // Leftrightarrow
-			
+			new BinaryOperator("\u21d4", "Equivalent", 120, (lhs, rhs) -> F.Equivalent(lhs, rhs)), // Leftrightarrow
+
 			new BinaryOperator("+", "Plus", ExprParserFactory.PLUS_PRECEDENCE, (lhs, rhs) -> F.Plus(lhs, rhs)), //
 			new BinaryOperator("-", "Subtract", ExprParserFactory.PLUS_PRECEDENCE, (lhs, rhs) -> F.Subtract(lhs, rhs)), //
 
@@ -273,7 +273,7 @@ public class TeXParser {
 			}
 			IExpr result = lhs;
 			int currPrec = 0;
-			while (position[0] + 2 <= list.getLength()) {
+			while (position[0] < list.getLength()) {
 				Node op = list.item(position[0]);
 				String name = op.getNodeName();
 				if (name.equals("mo")) {
@@ -292,10 +292,11 @@ public class TeXParser {
 						result = binaryOperator.createFunction(result, rhs);
 						continue;
 					} else {
-						PrefixOperator prefixOperator = PREFIX_OPERATOR_MAP.get(text);
-						if (prefixOperator != null) {
-							currPrec = prefixOperator.getPrecedence();
-							result = prefixOperator.createFunction(lhs);
+						PostfixOperator postfixOperator = POSTFIX_OPERATOR_MAP.get(text);
+						if (postfixOperator != null) {
+							currPrec = postfixOperator.getPrecedence();
+							result = postfixOperator.createFunction(lhs);
+							position[0]++;
 							continue;
 						}
 					}

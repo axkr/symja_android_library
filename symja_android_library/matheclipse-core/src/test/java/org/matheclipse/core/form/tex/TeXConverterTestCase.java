@@ -108,7 +108,7 @@ public class TeXConverterTestCase extends TestCase {
 		check("a\\geq b \\ge c", //
 				"a>=b>=c");
 	}
-	
+
 	public void testTeX019() {
 		check("a < b < c", //
 				"a<b<c");
@@ -123,27 +123,32 @@ public class TeXConverterTestCase extends TestCase {
 		check("((a \\lor \\lnot b) \\land (c\\wedge a))", //
 				"(a||!b)&&c&&a");
 	}
-	
+
 	public void testTeX022() {
 		// Rightarrow
 		check("((a \\lor \\neg b) \\land (c\\Rightarrow a))", //
 				"(a||!b)&&Implies(c,a)");
-		
+
 		// vs rightarrow
 		check("((a \\lor \\neg b) \\land (c\\rightarrow a))", //
 				"(a||!b)&&(c->a)");
 	}
-	 
+
 	public void testTeX023() {
 		check("a \\to b", //
 				"a->b");
 	}
-	
+
 	public void testTeX024() {
 		check("a \\Leftrightarrow b", //
 				"Equivalent(a,b)");
 	}
-	 
+
+	public void testTeX025() {
+		check("a!", //
+				"a!");
+	}
+
 	public void check(String strEval, String strResult) {
 		IExpr expr = texConverter.toExpression(strEval);
 		assertEquals(expr.toString(), strResult);
