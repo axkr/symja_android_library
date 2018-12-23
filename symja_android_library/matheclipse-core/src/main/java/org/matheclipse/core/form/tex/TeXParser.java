@@ -25,6 +25,7 @@ import uk.ac.ed.ph.snuggletex.SnuggleInput;
 import uk.ac.ed.ph.snuggletex.SnuggleSession;
 
 public class TeXParser {
+	final static boolean SHOW_UNICODE = false;
 
 	static class PrefixOperator extends Operator {
 		Function<IExpr, IExpr> function;
@@ -69,8 +70,10 @@ public class TeXParser {
 	}
 
 	static final PrefixOperator[] PREFIX_OPERATORS = {
-			new PrefixOperator("+", "Plus", ExprParserFactory.PLUS_PRECEDENCE, (x) -> x), //
-			new PrefixOperator("-", "Minus", ExprParserFactory.PLUS_PRECEDENCE, (x) -> F.Negate(x)), //
+			new PrefixOperator("+", "Plus", 670, (x) -> x), //
+			new PrefixOperator("-", "Minus", 485, (x) -> F.Negate(x)), //
+			new PrefixOperator("\u00ac", "Not", 230, (x) -> F.Not(x)), //
+			
 	};
 
 	static final PostfixOperator[] POSTFIX_OPERATORS = {
@@ -79,11 +82,27 @@ public class TeXParser {
 
 	static final BinaryOperator[] BINARY_OPERATORS = {
 			new BinaryOperator("=", "Equal", ExprParserFactory.EQUAL_PRECEDENCE, (lhs, rhs) -> F.Equal(lhs, rhs)), //
+			new BinaryOperator("\u2264", "LessEqual", ExprParserFactory.EQUAL_PRECEDENCE,
+					(lhs, rhs) -> F.LessEqual(lhs, rhs)), //
+			new BinaryOperator("\u2265", "GreaterEqual", ExprParserFactory.EQUAL_PRECEDENCE,
+					(lhs, rhs) -> F.GreaterEqual(lhs, rhs)), //
+			new BinaryOperator("<", "Less", ExprParserFactory.EQUAL_PRECEDENCE, (lhs, rhs) -> F.Less(lhs, rhs)), //
+			new BinaryOperator(">", "Greater", ExprParserFactory.EQUAL_PRECEDENCE, (lhs, rhs) -> F.Greater(lhs, rhs)), //
+
+			new BinaryOperator("\u2227", "And", 215, (lhs, rhs) -> F.And(lhs, rhs)), //
+			new BinaryOperator("\u2228", "Or", 213, (lhs, rhs) -> F.Or(lhs, rhs)), //
+			
 			new BinaryOperator("+", "Plus", ExprParserFactory.PLUS_PRECEDENCE, (lhs, rhs) -> F.Plus(lhs, rhs)), //
 			new BinaryOperator("-", "Subtract", ExprParserFactory.PLUS_PRECEDENCE, (lhs, rhs) -> F.Subtract(lhs, rhs)), //
+
 			new BinaryOperator("*", "Times", ExprParserFactory.TIMES_PRECEDENCE, (lhs, rhs) -> F.Times(lhs, rhs)), //
+			// x multiplication sign
 			new BinaryOperator("\u00d7", "Times", ExprParserFactory.TIMES_PRECEDENCE, (lhs, rhs) -> F.Times(lhs, rhs)), //
+			// InvisibleTimes
+			new BinaryOperator("\u2062", "Times", ExprParserFactory.TIMES_PRECEDENCE, (lhs, rhs) -> F.Times(lhs, rhs)), //
+
 			new BinaryOperator("/", "Divide", ExprParserFactory.DIVIDE_PRECEDENCE, (lhs, rhs) -> F.Divide(lhs, rhs)), //
+			// &#xf7; Division sign
 			new BinaryOperator("\u00f7", "Divide", ExprParserFactory.DIVIDE_PRECEDENCE,
 					(lhs, rhs) -> F.Divide(lhs, rhs)) //
 	};
@@ -101,6 +120,8 @@ public class TeXParser {
 		UNICODE_OPERATOR_MAP.put("\u220f", F.Product);
 		UNICODE_OPERATOR_MAP.put("\u03c0", F.Pi);
 		UNICODE_OPERATOR_MAP.put("\u221e", F.CInfinity);
+		UNICODE_OPERATOR_MAP.put("\u2148", F.CI); // double-struck italic letter i
+		UNICODE_OPERATOR_MAP.put("\u2149", F.CI); // double-struck italic letter j
 
 		BINARY_OPERATOR_MAP = new HashMap<String, BinaryOperator>();
 		for (int i = 0; i < BINARY_OPERATORS.length; i++) {
@@ -253,6 +274,9 @@ public class TeXParser {
 				String name = op.getNodeName();
 				if (name.equals("mo")) {
 					String text = op.getTextContent();
+					if (SHOW_UNICODE) {
+						System.out.println("mo: " + text + " - " + toUnicodeString(text, "UTF-8"));
+					}
 					BinaryOperator binaryOperator = BINARY_OPERATOR_MAP.get(text);
 					if (binaryOperator != null) {
 						currPrec = binaryOperator.getPrecedence();
@@ -314,7 +338,9 @@ public class TeXParser {
 	private IExpr mi(Node node) {
 		String text = node.getTextContent();
 		if (text.length() == 1) {
-			// System.out.println("mi: " + text + " - " + toUnicodeString(text, "UTF-8"));
+			if (SHOW_UNICODE) {
+				System.out.println("mi: " + text + " - " + toUnicodeString(text, "UTF-8"));
+			}
 			IExpr x = UNICODE_OPERATOR_MAP.get(text);
 			if (x != null) {
 				return x;
@@ -324,14 +350,26 @@ public class TeXParser {
 	}
 
 	private IExpr mn(Node node) {
-		String text = node.getTextContent();
-		return F.integer(text, 10);
+		try {
+			String text = node.getTextContent();
+			if (text.contains(".") || text.contains("E")) {
+				return F.num(text);
+			}
+			return F.integer(text, 10);
+		} catch (RuntimeException rex) {
+			if (Config.SHOW_STACKTRACE) {
+				rex.printStackTrace();
+			}
+		}
+		throw new AbortException();
 	}
 
 	private IExpr mo(Node node) {
 		String text = node.getTextContent();
 		if (text.length() == 1) {
-			// System.out.println("mo: " + text + " - " + toUnicodeString(text, "UTF-8"));
+			if (SHOW_UNICODE) {
+				System.out.println("mo: " + text + " - " + toUnicodeString(text, "UTF-8"));
+			}
 			IExpr x = UNICODE_OPERATOR_MAP.get(text);
 			if (x != null) {
 				return x;

@@ -93,6 +93,41 @@ public class TeXConverterTestCase extends TestCase {
 		check("\\prod_{i=a}^{b} f(i)", //
 				"Product(f(i),{i,a,b})");
 	}
+
+	public void testTeX016() {
+		check("\\frac{x}{\\sqrt{0.75}}", //
+				"x/Sqrt(0.75)");
+	}
+
+	public void testTeX017() {
+		check("a\\leq b \\le c", //
+				"a<=b<=c");
+	}
+
+	public void testTeX018() {
+		check("a\\geq b \\ge c", //
+				"a>=b>=c");
+	}
+	
+	public void testTeX019() {
+		check("a < b < c", //
+				"a<b<c");
+	}
+
+	public void testTeX020() {
+		check("a > b > c", //
+				"a>b>c");
+	}
+
+	public void testTeX021() {
+		check("((a \\lor \\lnot b) \\land (c\\wedge a))", //
+				"(a||!b)&&c&&a");
+	}
+	
+	public void testTeX022() {
+		check("((a \\lor \\neg b) \\land (c\\wedge a))", //
+				"(a||!b)&&c&&a");
+	}
 	
 	public void check(String strEval, String strResult) {
 		IExpr expr = texConverter.toExpression(strEval);
