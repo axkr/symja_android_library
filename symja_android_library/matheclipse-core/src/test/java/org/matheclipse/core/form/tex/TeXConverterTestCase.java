@@ -43,13 +43,19 @@ public class TeXConverterTestCase extends TestCase {
 	}
 
 	public void testTeX006() {
-		check("\\operatorname { sin } 30 ^ { \\circ }", //
+		check("\\sin 30 ^ { \\circ }", //
 				"Sin(30*Degree)");
 	}
 
 	public void testTeX007() {
-		check("\\operatorname { sin } \\frac { \\pi } { 2 }", //
+		check("\\sin  \\frac { \\pi } { 2 }", //
 				"Sin(Pi*1/2)");
+		check("f(  \\frac { \\pi } { 2 } )", //
+				"f(Pi*1/2)");
+		// this will print an error message in the console
+		// \operatorname isn't supported:
+		check("\\operatorname{ sin } \\frac { \\pi } { 2 }", //
+				"$Aborted");
 	}
 
 	public void testTeX008() {
@@ -68,6 +74,10 @@ public class TeXConverterTestCase extends TestCase {
 	}
 
 	public void testTeX011() {
+		check("\\int f(xz) \\, dxz", //
+				"Integrate(f(xz),xz)");
+		check("\\int f(x) \\, dx", //
+				"Integrate(f(x),x)");
 		check("\\int_0^\\infty a dx", //
 				"Integrate(a,{x,0,Infinity})");
 		check("\\int_0^\\infty e^{-x^2} dx=\\frac{\\sqrt{\\pi}}{2}", //
@@ -155,7 +165,12 @@ public class TeXConverterTestCase extends TestCase {
 		check("\\tan (a)", //
 				"Tan(a)");
 	}
-	
+
+	public void testTeX027() {
+		check("f'(x)", //
+				"f'(x)");
+	}
+
 	public void check(String strEval, String strResult) {
 		IExpr expr = texConverter.toExpression(strEval);
 		assertEquals(expr.toString(), strResult);

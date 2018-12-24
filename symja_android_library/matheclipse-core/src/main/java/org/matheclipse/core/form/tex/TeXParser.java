@@ -2,6 +2,7 @@ package org.matheclipse.core.form.tex;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -20,6 +21,7 @@ import org.w3c.dom.NodeList;
 
 import com.sun.org.apache.xerces.internal.dom.ElementImpl;
 
+import uk.ac.ed.ph.snuggletex.InputError;
 import uk.ac.ed.ph.snuggletex.SnuggleEngine;
 import uk.ac.ed.ph.snuggletex.SnuggleInput;
 import uk.ac.ed.ph.snuggletex.SnuggleSession;
@@ -187,7 +189,7 @@ public class TeXParser {
 		} else if (name.equals("mn")) {
 			return mn(node);
 		} else if (name.equals("math")) {
-			return getNodeList(node.getChildNodes(), position, null, 0);
+			return convert(node.getChildNodes(), position, null, 0);
 		} else if (name.equals("mfrac")) {
 			return mfrac(node.getChildNodes());
 		} else if (name.equals("msqrt")) {
@@ -204,7 +206,7 @@ public class TeXParser {
 		// String n = node.getNodeName();
 		// System.out.println(n.toString());
 		NodeList list = node.getChildNodes();
-		return getNodeList(list, position, null, 0);
+		return convert(list, position, null, 0);
 	}
 
 	private IExpr toHeadExpr(Node node, NodeList parentList, int[] position, int precedence) {
@@ -216,7 +218,7 @@ public class TeXParser {
 		} else if (name.equals("mn")) {
 			return mn(node);
 		} else if (name.equals("math")) {
-			return getNodeList(node.getChildNodes(), position, null, 0);
+			return convert(node.getChildNodes(), position, null, 0);
 		} else if (name.equals("mfrac")) {
 			return mfrac(node.getChildNodes());
 		} else if (name.equals("msqrt")) {
@@ -233,11 +235,15 @@ public class TeXParser {
 		// String n = node.getNodeName();
 		// System.out.println(n.toString());
 		NodeList list = node.getChildNodes();
-		return getNodeList(list, position, null, 0);
+		return convert(list, position, null, 0);
 	}
 
-	private IExpr getNodeList(NodeList list, int[] position, IExpr lhs, int precedence) {
-		if (list.getLength() > 1) {
+	private IExpr convert(NodeList list, int[] position, IExpr lhs, int precedence) {
+		return convert(list, position, list.getLength(), lhs, precedence);
+	}
+
+	private IExpr convert(NodeList list, int[] position, int end, IExpr lhs, int precedence) {
+		if (end > 1) {
 			if (lhs == null) {
 				Node lhsNode = list.item(position[0]++);
 				String name = lhsNode.getNodeName();
@@ -246,7 +252,7 @@ public class TeXParser {
 					PrefixOperator operator = PREFIX_OPERATOR_MAP.get(text);
 					if (operator != null) {
 						int currPrec = operator.getPrecedence();
-						IExpr x = getNodeList(list, position, null, currPrec);
+						IExpr x = convert(list, position, end, null, currPrec);
 						lhs = operator.createFunction(x);
 					}
 				}
@@ -257,23 +263,28 @@ public class TeXParser {
 					}
 				}
 
-				if (lhs.isSymbol() && position[0] < list.getLength()) {
+				if ((lhs.isSymbol() || lhs.isDerivative() != null) && //
+						position[0] < list.getLength()) {
 					Node arg2 = list.item(position[0]);
 					if (arg2.getNodeName().equals("mfenced")) {
 						position[0]++;
 						int[] position2 = new int[] { 0 };
-						IExpr args = getNodeList(arg2.getChildNodes(), position2, null, 0);
+						IExpr args = convert(arg2.getChildNodes(), position2, end, null, 0);
 						if (args.isSequence()) {
 							((IASTMutable) args).set(0, lhs);
 							return args;
 						}
 						return F.unaryAST1(lhs, args);
 					}
+
+					if (lhs.equals(F.Integrate)) {
+						return integrate(list, position, F.Dummy("test"), F.Dummy("test"));
+					}
 				}
 			}
 			IExpr result = lhs;
 			int currPrec = 0;
-			while (position[0] < list.getLength()) {
+			while (position[0] < end) {
 				Node op = list.item(position[0]);
 				String name = op.getNodeName();
 				if (name.equals("mo")) {
@@ -288,7 +299,7 @@ public class TeXParser {
 							return result;
 						}
 						position[0]++;
-						IExpr rhs = getNodeList(list, position, null, currPrec);
+						IExpr rhs = convert(list, position, end, null, currPrec);
 						result = binaryOperator.createFunction(result, rhs);
 						continue;
 					} else {
@@ -305,7 +316,7 @@ public class TeXParser {
 				result = F.NIL;
 				break;
 			}
-			if (result.isPresent() && position[0] >= list.getLength()) {
+			if (result.isPresent() && position[0] >= end) {
 				return result;
 			}
 		}
@@ -402,7 +413,33 @@ public class TeXParser {
 			return F.$s(buf.toString());
 		}
 		int[] position = new int[] { 0 };
-		return getNodeList(list, position, null, 0);
+		return convert(list, position, null, 0);
+	}
+
+	/**
+	 * Create an identifier from multiple <code>&lt;mi&gt;</code> expressions.
+	 * 
+	 * @param list
+	 * @param position
+	 * @return
+	 */
+	private IExpr identifier(NodeList list, int[] position) {
+		StringBuilder buf = new StringBuilder();
+		boolean evaled = false;
+		while (position[0] < list.getLength()) {
+			Node temp = list.item(position[0]);
+			if (temp.getNodeName().equals("mi")) {
+				position[0]++;
+				buf.append(temp.getTextContent());
+				evaled = true;
+				continue;
+			}
+			break;
+		}
+		if (evaled) {
+			return F.$s(buf.toString());
+		}
+		throw new AbortException();
 	}
 
 	private IExpr msqrt(NodeList list) {
@@ -419,32 +456,59 @@ public class TeXParser {
 			Node arg0 = list.item(0);
 			IExpr head = toExpr(arg0);
 			if (head.isBuiltInSymbol()) {
-				ISymbol sym = F.Dummy("msubsup$" + counter++);
-				IExpr arg2 = sym;
+				ISymbol dummySymbol = F.Dummy("msubsup$" + counter++);
+				IExpr arg2 = dummySymbol;
 				if (list.getLength() >= 2) {
 					Node arg1 = list.item(1);
 					IExpr a1 = toExpr(arg1);
 					if (list.getLength() == 3) {
 						IExpr a2 = toExpr(list.item(2));
-						arg2 = F.List(sym, a1, a2);
+						arg2 = F.List(dummySymbol, a1, a2);
 					} else if (list.getLength() == 2) {
-						arg2 = F.List(sym, a1);
+						arg2 = F.List(dummySymbol, a1);
 					}
 				}
 
 				while (position[0] < parentList.getLength()) {
 					if (head.equals(F.Integrate)) {
-						IExpr arg1 = toExpr(parentList.item(position[0]++));
-						IExpr d = toExpr(parentList.item(position[0]++));
-						if (d.toString().equals("d")) {
-							IExpr x = toExpr(parentList.item(position[0]++));
-							arg1 = F.subs(arg1, sym, x);
-							arg2 = F.subs(arg2, sym, x);
-							return F.binaryAST2(head, arg1, arg2);
-						}
+						return integrate(parentList, position, dummySymbol, arg2);
 					} else {
-						IExpr arg1 = getNodeList(parentList, position, null, Integer.MAX_VALUE);
+						IExpr arg1 = convert(parentList, position, null, Integer.MAX_VALUE);
 						return F.binaryAST2(head, arg1, arg2);
+					}
+				}
+			}
+		}
+		throw new AbortException();
+	}
+
+	private IExpr integrate(NodeList parentList, int[] position, ISymbol dummySymbol, IExpr symbolOrList) {
+		int dxPosition = dxPosition(parentList, position[0]);
+		IExpr arg1 = convert(parentList, position, dxPosition - 1, null, 0);
+		position[0] = dxPosition;
+		IExpr x = identifier(parentList, position);
+		// IExpr x = toExpr(parentList.item(position[0]++));
+		arg1 = F.subs(arg1, dummySymbol, x);
+		symbolOrList = F.subs(symbolOrList, dummySymbol, x);
+		return F.binaryAST2(F.Integrate, arg1, symbolOrList);
+	}
+
+	/**
+	 * Get the position there the <code>d</code> of the the <code>dx</code> in the integral definition ends.
+	 * 
+	 * @param parentList
+	 * @param start
+	 * @return
+	 */
+	private int dxPosition(NodeList list, int start) {
+		int dxPosition = start;
+		while (dxPosition < list.getLength()) {
+			Node nd = list.item(dxPosition++);
+			if (nd.getNodeName().equals("mi") && nd.getTextContent().equals("d")) {
+				if (dxPosition < list.getLength()) {
+					nd = list.item(dxPosition);
+					if (nd.getNodeName().equals("mi")) {
+						return dxPosition;
 					}
 				}
 			}
@@ -477,7 +541,7 @@ public class TeXParser {
 				}
 
 				if (position[0] < parentList.getLength()) {
-					IExpr arg1 = getNodeList(parentList, position, null, Integer.MAX_VALUE);
+					IExpr arg1 = convert(parentList, position, null, Integer.MAX_VALUE);
 					return F.binaryAST2(head, arg1, arg2);
 				}
 			}
@@ -490,6 +554,11 @@ public class TeXParser {
 			Node arg1 = list.item(0);
 			IExpr a1 = toExpr(arg1);
 			Node arg2 = list.item(1);
+			String name2 = arg2.getNodeName();
+			String text2 = arg2.getTextContent();
+			if (name2.equals("mi") && text2.equals("'")) {
+				return F.unaryAST1(F.Derivative(F.C1), a1);
+			}
 			IExpr a2 = toExpr(arg2);
 			if (a1.isBuiltInSymbol() && a2.isMinusOne()) {
 				IExpr value = F.UNARY_INVERSE_FUNCTIONS.get(a1);
@@ -497,9 +566,8 @@ public class TeXParser {
 					// typically Sin^(-1) -> ArcSin or similar...
 					return value;
 				}
-			}
-			if (a2.equals(F.Degree)) {
-				// case \operatorname { sin } 30 ^ { \circ } ==> Sin(30*Degree)
+			} else if (a2.equals(F.Degree)) {
+				// case \sin 30 ^ { \circ } ==> Sin(30*Degree)
 				return F.Times(a1, a2);
 			}
 			return F.Power(a1, a2);
@@ -507,24 +575,30 @@ public class TeXParser {
 		throw new AbortException();
 	}
 
+	/**
+	 * Convert a tex math formula into a Symja expression. The SnuggleTeX engine first converts the TeX expression in a
+	 * MathML expression. This MathML expression is then converted to Symja.
+	 * 
+	 * @param texStr
+	 *            the tex math formula
+	 * @return
+	 */
 	public IExpr toExpression(String texStr) {
 		SnuggleEngine engine = new SnuggleEngine();
 		SnuggleSession session = engine.createSession();
+		session.getConfiguration().setFailingFast(true);
 
 		SnuggleInput input = new SnuggleInput("$$ " + texStr + " $$");
 		try {
-			session.parseInput(input);
-
-			/*
-			 * Convert the results to an XML String, which in this case will be a single MathML <math>...</math>
-			 * element.
-			 */
-			// String xmlString = session.buildXMLString();
-			// System.out.println("Input " + input.getString() + " was converted to:\n" + xmlString);
-
-			NodeList nodes = session.buildDOMSubtree();
-			int[] position = new int[] { 0 };
-			return getNodeList(nodes, position, null, 0);
+			if (session.parseInput(input)) {
+				NodeList nodes = session.buildDOMSubtree();
+				int[] position = new int[] { 0 };
+				return convert(nodes, position, null, 0);
+			}
+			List<InputError> errors = session.getErrors();
+			for (int i = 0; i < errors.size(); i++) {
+				fEngine.printMessage(errors.get(i).toString());
+			}
 		} catch (Exception e) {
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();
