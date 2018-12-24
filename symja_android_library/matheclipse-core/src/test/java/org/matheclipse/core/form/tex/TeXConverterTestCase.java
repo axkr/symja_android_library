@@ -149,6 +149,13 @@ public class TeXConverterTestCase extends TestCase {
 				"a!");
 	}
 
+	public void testTeX026() {
+		check("\\cosh ^{-1}(a)", //
+				"ArcCosh(a)");
+		check("\\tan (a)", //
+				"Tan(a)");
+	}
+	
 	public void check(String strEval, String strResult) {
 		IExpr expr = texConverter.toExpression(strEval);
 		assertEquals(expr.toString(), strResult);

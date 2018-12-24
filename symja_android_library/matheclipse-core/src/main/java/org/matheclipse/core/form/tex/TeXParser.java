@@ -320,7 +320,6 @@ public class TeXParser {
 		}
 		if (ast.size() > 1) {
 			if (ast.arg1().isBuiltInSymbol()) {
-
 				return F.unaryAST1(ast.arg1(), ast.arg2());
 			}
 		}
@@ -492,7 +491,15 @@ public class TeXParser {
 			IExpr a1 = toExpr(arg1);
 			Node arg2 = list.item(1);
 			IExpr a2 = toExpr(arg2);
+			if (a1.isBuiltInSymbol() && a2.isMinusOne()) {
+				IExpr value = F.UNARY_INVERSE_FUNCTIONS.get(a1);
+				if (value != null) {
+					// typically Sin^(-1) -> ArcSin or similar...
+					return value;
+				}
+			}
 			if (a2.equals(F.Degree)) {
+				// case \operatorname { sin } 30 ^ { \circ } ==> Sin(30*Degree)
 				return F.Times(a1, a2);
 			}
 			return F.Power(a1, a2);
