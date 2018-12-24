@@ -71,17 +71,18 @@ public class TeXParser {
 
 	final static boolean SHOW_UNICODE = false;
 
-	static final PrefixOperator[] PREFIX_OPERATORS = { new PrefixOperator("+", "Plus", 670, (x) -> x), //
+	static final PrefixOperator[] PREFIX_OPERATORS = { //
+			new PrefixOperator("+", "Plus", 670, (x) -> x), //
 			new PrefixOperator("-", "Minus", 485, (x) -> F.Negate(x)), //
 			new PrefixOperator("\u00ac", "Not", 230, (x) -> F.Not(x)), //
 
 	};
 
-	static final PostfixOperator[] POSTFIX_OPERATORS = {
+	static final PostfixOperator[] POSTFIX_OPERATORS = { //
 			new PostfixOperator("!", "Factorial", ExprParserFactory.FACTORIAL_PRECEDENCE, (x) -> F.Factorial(x)), //
 	};
 
-	static final BinaryOperator[] BINARY_OPERATORS = {
+	static final BinaryOperator[] BINARY_OPERATORS = { //
 			new BinaryOperator("=", "Equal", ExprParserFactory.EQUAL_PRECEDENCE, (lhs, rhs) -> F.Equal(lhs, rhs)), //
 			new BinaryOperator("\u2264", "LessEqual", ExprParserFactory.EQUAL_PRECEDENCE,
 					(lhs, rhs) -> F.LessEqual(lhs, rhs)), //
@@ -96,6 +97,7 @@ public class TeXParser {
 			new BinaryOperator("\u21d2", "Implies", 120, (lhs, rhs) -> F.Implies(lhs, rhs)), // Rightarrow
 			new BinaryOperator("\u2192", "Rule", 120, (lhs, rhs) -> F.Rule(lhs, rhs)), // rightarrow
 			new BinaryOperator("\u21d4", "Equivalent", 120, (lhs, rhs) -> F.Equivalent(lhs, rhs)), // Leftrightarrow
+			new BinaryOperator("\u2261", "Equivalent", 120, (lhs, rhs) -> F.Equivalent(lhs, rhs)), // equiv
 
 			new BinaryOperator("+", "Plus", ExprParserFactory.PLUS_PRECEDENCE, (lhs, rhs) -> F.Plus(lhs, rhs)), //
 			new BinaryOperator("-", "Subtract", ExprParserFactory.PLUS_PRECEDENCE, (lhs, rhs) -> F.Subtract(lhs, rhs)), //
@@ -109,10 +111,15 @@ public class TeXParser {
 			new BinaryOperator("/", "Divide", ExprParserFactory.DIVIDE_PRECEDENCE, (lhs, rhs) -> F.Divide(lhs, rhs)), //
 			// &#xf7; Division sign
 			new BinaryOperator("\u00f7", "Divide", ExprParserFactory.DIVIDE_PRECEDENCE,
-					(lhs, rhs) -> F.Divide(lhs, rhs)) //
+					(lhs, rhs) -> F.Divide(lhs, rhs)), //
+
+			new BinaryOperator("\u2208", "Element", 250, (lhs, rhs) -> F.Element(lhs, rhs)), //
+
 	};
 
 	private static final HashMap<String, IExpr> UNICODE_OPERATOR_MAP;
+
+	private static final HashMap<String, IExpr> FUNCTION_HEADER_MAP;
 	private static final HashMap<String, BinaryOperator> BINARY_OPERATOR_MAP;
 	private static final HashMap<String, PrefixOperator> PREFIX_OPERATOR_MAP;
 	private static final HashMap<String, PostfixOperator> POSTFIX_OPERATOR_MAP;
@@ -128,6 +135,9 @@ public class TeXParser {
 		UNICODE_OPERATOR_MAP.put("\u2148", F.CI); // double-struck italic letter i
 		UNICODE_OPERATOR_MAP.put("\u2149", F.CI); // double-struck italic letter j
 		UNICODE_OPERATOR_MAP.put("\u2107", F.E); // euler's constant
+
+		FUNCTION_HEADER_MAP = new HashMap<String, IExpr>();
+		FUNCTION_HEADER_MAP.put("ln", F.Log);
 
 		BINARY_OPERATOR_MAP = new HashMap<String, BinaryOperator>();
 		for (int i = 0; i < BINARY_OPERATORS.length; i++) {
@@ -146,7 +156,7 @@ public class TeXParser {
 		}
 	}
 
-	public static String toUnicodeString(final String unicodeInput, final String inputEncoding) {
+	private static String toUnicodeString(final String unicodeInput, final String inputEncoding) {
 		final StringBuilder unicodeStringBuilder = new StringBuilder();
 		String unicodeString = null;
 
@@ -289,7 +299,8 @@ public class TeXParser {
 		int dxPosition = start;
 		while (dxPosition < list.getLength()) {
 			Node nd = list.item(dxPosition++);
-			if (nd.getNodeName().equals("mi") && nd.getTextContent().equals("d")) {
+			if (nd.getNodeName().equals("mi") && //
+					nd.getTextContent().equals("d")) {
 				if (dxPosition < list.getLength()) {
 					nd = list.item(dxPosition);
 					if (nd.getNodeName().equals("mi")) {
@@ -354,6 +365,26 @@ public class TeXParser {
 	private IExpr mi(Node node) {
 		String text = node.getTextContent();
 		if (text.length() == 1) {
+			if (node.hasAttributes()) {
+				Node value = node.getAttributes().getNamedItem("mathvariant");
+				if (value != null) {
+					if (value.getTextContent().equals("double-struck")) {
+						if (text.equals("B")) {
+							return F.Booleans;
+						} else if (text.equals("C")) {
+							return F.Complexes;
+						} else if (text.equals("P")) {
+							return F.Primes;
+						} else if (text.equals("Q")) {
+							return F.Rationals;
+						} else if (text.equals("Z")) {
+							return F.Integers;
+						} else if (text.equals("R")) {
+							return F.Reals;
+						}
+					}
+				}
+			}
 			if (SHOW_UNICODE) {
 				System.out.println("mi: " + text + " - " + toUnicodeString(text, "UTF-8"));
 			}
@@ -361,6 +392,10 @@ public class TeXParser {
 			if (x != null) {
 				return x;
 			}
+		}
+		IExpr x = FUNCTION_HEADER_MAP.get(text);
+		if (x != null) {
+			return x;
 		}
 		return F.$s(text);
 	}

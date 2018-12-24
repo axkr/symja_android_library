@@ -152,6 +152,8 @@ public class TeXConverterTestCase extends TestCase {
 	public void testTeX024() {
 		check("a \\Leftrightarrow b", //
 				"Equivalent(a,b)");
+		check("a \\equiv b", //
+				"Equivalent(a,b)");
 	}
 
 	public void testTeX025() {
@@ -169,6 +171,31 @@ public class TeXConverterTestCase extends TestCase {
 	public void testTeX027() {
 		check("f'(x)", //
 				"f'(x)");
+	}
+	
+	public void testTeX028() {
+		check("\\arccos(x)", //
+				"ArcCos(x)");
+	}
+	
+	public void testTeX029() {
+		check("\\ln(x)", //
+				"Log(x)");
+	}
+	
+	public void testTeX030() {
+		check("a\\in \\mathbb{B}", //
+				"Element(a,Booleans)");
+		check("a\\in \\mathbb{C}", //
+				"Element(a,Complexes)");
+		check("a\\in \\mathbb{P}", //
+				"Element(a,Primes)");
+		check("a\\in \\mathbb{Q}", //
+				"Element(a,Rationals)");
+		check("a\\in \\mathbb{Z}", //
+				"Element(a,Integers)");
+		check("a\\in \\mathbb{R}", //
+				"Element(a,Reals)");
 	}
 
 	public void check(String strEval, String strResult) {
