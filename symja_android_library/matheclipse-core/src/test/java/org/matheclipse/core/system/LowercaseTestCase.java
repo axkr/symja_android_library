@@ -12138,10 +12138,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSubtract() {
-		check("5 - 3", "2");
-		check("a - b // FullForm", "Plus(a, Times(-1, b))");
-		check("a - b - c", "a-b-c");
-		check("a - (b - c)", "a-b+c");
+		check("a - x + z", //
+				"a-x+z");
+		check("5 - 3", //
+				"2");
+		check("a - b // FullForm", //
+				"Plus(a, Times(-1, b))");
+		check("a - b - c", //
+				"a-b-c");
+		check("a - (b - c)", //
+				"a-b+c");
 	}
 
 	public void testSubtractFrom() {

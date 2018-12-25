@@ -214,13 +214,22 @@ public class TeXParser {
 					}
 				}
 
-				if ((lhs.isSymbol() || lhs.isDerivative() != null) && //
+				if ((lhs.isFunction() || lhs.isSymbol() || lhs.isDerivative() != null) && //
 						position[0] < list.getLength()) {
 					Node arg2 = list.item(position[0]);
 					if (arg2.getNodeName().equals("mfenced")) {
 						position[0]++;
 						int[] position2 = new int[] { 0 };
 						IExpr args = convert(arg2.getChildNodes(), position2, end, null, 0);
+						if (args.isSequence()) {
+							((IASTMutable) args).set(0, lhs);
+							return args;
+						}
+						return F.unaryAST1(lhs, args);
+					}
+
+					if (lhs.isFunction()) {
+						IExpr args = convert(list, position, end, null, 0);
 						if (args.isSequence()) {
 							((IASTMutable) args).set(0, lhs);
 							return args;
@@ -246,7 +255,7 @@ public class TeXParser {
 					BinaryOperator binaryOperator = BINARY_OPERATOR_MAP.get(text);
 					if (binaryOperator != null) {
 						currPrec = binaryOperator.getPrecedence();
-						if (precedence > currPrec) {
+						if (precedence >= currPrec) {
 							return result;
 						}
 						position[0]++;
@@ -264,6 +273,13 @@ public class TeXParser {
 					}
 					throw new AbortException();
 				}
+				if (lhs.isNumber()) {
+					currPrec = ExprParserFactory.TIMES_PRECEDENCE;
+					IExpr rhs = convert(list, position, end, null, currPrec);
+					// invisible times?
+					result = F.Times(lhs, rhs);
+					continue;
+				}
 				result = F.NIL;
 				break;
 			}
@@ -271,6 +287,7 @@ public class TeXParser {
 				return result;
 			}
 		}
+
 		IASTAppendable ast = F.Sequence();
 		for (int i = 0; i < list.getLength(); i++) {
 			Node temp = list.item(i);
@@ -295,22 +312,43 @@ public class TeXParser {
 	 * @param start
 	 * @return
 	 */
-	private int dxPosition(NodeList list, int start) {
-		int dxPosition = start;
-		while (dxPosition < list.getLength()) {
-			Node nd = list.item(dxPosition++);
-			if (nd.getNodeName().equals("mi") && //
-					nd.getTextContent().equals("d")) {
-				if (dxPosition < list.getLength()) {
-					nd = list.item(dxPosition);
-					if (nd.getNodeName().equals("mi")) {
-						return dxPosition;
-					}
-				}
-			}
-		}
-		throw new AbortException();
-	}
+	// private Object[] dxPosition(NodeList list, int start) {
+	// Object[] result = null;
+	// int[] dxPosition = new int[] { start };
+	// while (dxPosition[0] < list.getLength()) {
+	// Node nd = list.item(dxPosition[0]++);
+	// if (nd.getNodeName().equals("mi") && //
+	// nd.getTextContent().equals("d")) {
+	// if (dxPosition[0] < list.getLength()) {
+	// nd = list.item(dxPosition[0]);
+	// if (nd.getNodeName().equals("mi")) {
+	// result = new Object[4];
+	// result[0] = new Integer(dxPosition[0]);
+	// IExpr x = identifier(list, dxPosition);
+	// result[1] = new Integer(dxPosition[0]);
+	// result[2] = x;
+	// result[3] = F.C1;
+	// break;
+	// }
+	// }
+	// } else if (nd.getNodeName().equals("mfrac")) {
+	// IExpr frac = mfrac(nd.getChildNodes());
+	// if (frac.isTimes() && frac.first().isSymbol()) {
+	// ISymbol d = (ISymbol) frac.first();
+	// String dStr = ((ISymbol) d).getSymbolName();
+	// if (dStr.startsWith("d")) {
+	// result = new Object[4];
+	// result[0] = new Integer(dxPosition[0]);
+	// result[1] = new Integer(dxPosition[0]);
+	// result[2] = F.$s(dStr.substring(1));
+	// result[3] = frac.second();
+	// break;
+	// }
+	// }
+	// }
+	// }
+	// return result;
+	// }
 
 	/**
 	 * Create an identifier from multiple <code>&lt;mi&gt;</code> expressions.
@@ -319,7 +357,7 @@ public class TeXParser {
 	 * @param position
 	 * @return
 	 */
-	private IExpr identifier(NodeList list, int[] position) {
+	private ISymbol identifier(NodeList list, int[] position) {
 		StringBuilder buf = new StringBuilder();
 		boolean evaled = false;
 		while (position[0] < list.getLength()) {
@@ -338,28 +376,98 @@ public class TeXParser {
 		throw new AbortException();
 	}
 
+	/**
+	 * Get the position there the <code>d</code> of the <code>dx</code> or <code>dx/expr</code> in the integral
+	 * definition starts and ends and create an <code>F.Integrate(...,x)</code> or
+	 * <code>F.Integrate()...,{x,a,b})</code> expression.
+	 * 
+	 * @param parentList
+	 * @param start
+	 * @return
+	 */
 	private IExpr integrate(NodeList parentList, int[] position, ISymbol dummySymbol, IExpr symbolOrList) {
-		int dxPosition = dxPosition(parentList, position[0]);
-		IExpr arg1 = convert(parentList, position, dxPosition - 1, null, 0);
-		position[0] = dxPosition;
-		IExpr x = identifier(parentList, position);
-		// IExpr x = toExpr(parentList.item(position[0]++));
-		arg1 = F.subs(arg1, dummySymbol, x);
-		symbolOrList = F.subs(symbolOrList, dummySymbol, x);
-		return F.binaryAST2(F.Integrate, arg1, symbolOrList);
+		ISymbol x = null;
+		IExpr dxValue = F.C1;
+		int dxStart = -1;
+		int dxEnd = -1;
+
+		int[] dxPosition1 = new int[] { position[0] };
+		while (dxPosition1[0] < parentList.getLength()) {
+			Node nd = parentList.item(dxPosition1[0]++);
+			if (nd.getNodeName().equals("mi") && //
+					nd.getTextContent().equals("d")) {
+				if (dxPosition1[0] < parentList.getLength()) {
+					nd = parentList.item(dxPosition1[0]);
+					if (nd.getNodeName().equals("mi")) {
+						dxStart = dxPosition1[0];
+						ISymbol x1 = identifier(parentList, dxPosition1);
+						dxEnd = dxPosition1[0];
+						x = x1;
+						break;
+					}
+				}
+			} else if (nd.getNodeName().equals("mfrac")) {
+
+				IExpr frac = mfrac(nd.getChildNodes());
+				if (frac.isTimes() && frac.first().isSymbol()) {
+					ISymbol d = (ISymbol) frac.first();
+					String dStr = ((ISymbol) d).getSymbolName();
+					if (dStr.startsWith("d")) {
+						// dx/x
+						dxStart = dxPosition1[0];
+						dxEnd = dxPosition1[0];
+						x = F.$s(dStr.substring(1));
+						dxValue = frac.second();
+						break;
+					}
+				}
+			}
+		}
+		if (x == null) {
+			throw new AbortException();
+		}
+
+		dxStart--;
+		if (dxStart > position[0]) {
+			IExpr arg1 = convert(parentList, position, dxStart, null, 0);
+			position[0] = dxEnd;
+			arg1 = F.subs(arg1, dummySymbol, x);
+			symbolOrList = F.subs(symbolOrList, dummySymbol, x);
+			return F.binaryAST2(F.Integrate, arg1, symbolOrList);
+		} else if (dxStart == position[0]) {
+			position[0] = dxEnd;
+			symbolOrList = F.subs(symbolOrList, dummySymbol, x);
+			return F.binaryAST2(F.Integrate, dxValue, symbolOrList);
+		}
+		throw new AbortException();
 	}
 
 	private IExpr mfrac(NodeList list) {
-		IASTAppendable divide = F.TimesAlloc(2);
+		IASTAppendable frac = F.TimesAlloc(2);
 		if (list.getLength() > 0) {
 			Node temp = list.item(0);
-			divide.append(toExpr(temp));
-			for (int i = 1; i < list.getLength(); i++) {
-				temp = list.item(i);
-				divide.append(F.Power(toExpr(temp), -1));
+			frac.append(toExpr(temp));
+			if (1 < list.getLength()) {
+				temp = list.item(1);
+				frac.append(F.Power(toExpr(temp), -1));
+			} else {
+				throw new AbortException();
 			}
 		}
-		return divide;
+		if (frac.isTimes() && frac.first().isSymbol() && frac.size() == 3 && frac.second().isPowerReciprocal()) {
+			ISymbol d = (ISymbol) frac.first();
+			if (d.getSymbolName().equals("d")) {
+				IExpr dDenominator = frac.second().first();
+				if (dDenominator.isSymbol()) {
+					String str = ((ISymbol) dDenominator).getSymbolName();
+					if (str.startsWith("d")) {
+						str = str.substring(1);
+						return F.Function(F.D(F.Slot1, F.$s(str)));
+					}
+				}
+			}
+		}
+		return frac;
 	}
 
 	private IExpr mi(Node node) {
@@ -635,7 +743,9 @@ public class TeXParser {
 		} else if (name.equals("math")) {
 			return convert(node.getChildNodes(), position, null, 0);
 		} else if (name.equals("mfrac")) {
-			return mfrac(node.getChildNodes());
+			IExpr frac = mfrac(node.getChildNodes());
+
+			return frac;
 		} else if (name.equals("msqrt")) {
 			return msqrt(node.getChildNodes());
 		} else if (name.equals("msup")) {

@@ -18,8 +18,15 @@ public class TeXConverterTestCase extends TestCase {
 	}
 
 	public void testTeX001() {
+		check("(2x^3 - x + z)", //
+				"-x+2*x^3+z");
+		check("(2x^3 - 3*x + 4.5z)", //
+				"-3*x+2*x^3+4.5*z");
+		check("x^{3}", //
+				"x^3");
 		check("\\frac{x}{\\sqrt{5}}", //
 				"x/Sqrt(5)");
+
 	}
 
 	public void testTeX002() {
@@ -74,6 +81,8 @@ public class TeXConverterTestCase extends TestCase {
 	}
 
 	public void testTeX011() {
+		check("\\int_{a}^{b} \\frac{dt}{t}", //
+				"Integrate(1/t,{t,a,b})");
 		check("\\int f(xz) \\, dxz", //
 				"Integrate(f(xz),xz)");
 		check("\\int f(x) \\, dx", //
@@ -95,6 +104,8 @@ public class TeXConverterTestCase extends TestCase {
 	}
 
 	public void testTeX014() {
+		check("\\sum_{i = 1}^{n} i", //
+				"Sum(i,{i,1,n})");
 		check("\\sum_{n=1}^{\\infty} 2^{-n} = 1", //
 				"Sum(2^(-n),{n,1,Infinity})==1");
 	}
@@ -172,17 +183,17 @@ public class TeXConverterTestCase extends TestCase {
 		check("f'(x)", //
 				"f'(x)");
 	}
-	
+
 	public void testTeX028() {
 		check("\\arccos(x)", //
 				"ArcCos(x)");
 	}
-	
+
 	public void testTeX029() {
 		check("\\ln(x)", //
 				"Log(x)");
 	}
-	
+
 	public void testTeX030() {
 		check("a\\in \\mathbb{B}", //
 				"Element(a,Booleans)");
@@ -196,6 +207,14 @@ public class TeXConverterTestCase extends TestCase {
 				"Element(a,Integers)");
 		check("a\\in \\mathbb{R}", //
 				"Element(a,Reals)");
+	}
+
+	public void testTeX031() {
+		// D(x^2, x)
+		check("\\frac{d}{dx} x^{2}", //
+				"D(#1,x)&[x^2]");
+		checkEval("\\frac{d}{dx} x^{2}", //
+				"2*x");
 	}
 
 	public void check(String strEval, String strResult) {
