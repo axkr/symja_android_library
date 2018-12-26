@@ -250,7 +250,10 @@ public class TeXParser {
 								return args;
 							}
 							if (lhs.isFunction() && lhs.size() == 2) {
-								lhs = Lambda.replaceSlots(lhs.first(), F.List(args));
+								IExpr temp = Lambda.replaceSlots(lhs.first(), F.List(args));
+								if (temp.isPresent()) {
+									lhs = temp;
+								}
 								if (position[0] == listSize) {
 									return lhs;
 								}
@@ -694,15 +697,15 @@ public class TeXParser {
 				}
 			}
 		}
-//		if (list.getLength() == 3) {
-//			Node node = list.item(0);
-//			IExpr a1 = toExpr(node);
-//			node = list.item(1);
-//			IExpr a2 = toExpr(node);
-//			node = list.item(2);
-//			IExpr a3 = toExpr(node);
-//			return F.ternaryAST3(F.Underoverscript, a1, a2, a3);
-//		}
+		// if (list.getLength() == 3) {
+		// Node node = list.item(0);
+		// IExpr a1 = toExpr(node);
+		// node = list.item(1);
+		// IExpr a2 = toExpr(node);
+		// node = list.item(2);
+		// IExpr a3 = toExpr(node);
+		// return F.ternaryAST3(F.Underoverscript, a1, a2, a3);
+		// }
 		throw new AbortException();
 	}
 
