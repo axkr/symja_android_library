@@ -9,7 +9,9 @@ import java.util.function.Function;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
+import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -138,6 +140,7 @@ public class TeXParser {
 
 		FUNCTION_HEADER_MAP = new HashMap<String, IExpr>();
 		FUNCTION_HEADER_MAP.put("ln", F.Log);
+		FUNCTION_HEADER_MAP.put("lim", F.Limit);
 
 		BINARY_OPERATOR_MAP = new HashMap<String, BinaryOperator>();
 		for (int i = 0; i < BINARY_OPERATORS.length; i++) {
@@ -194,6 +197,7 @@ public class TeXParser {
 	}
 
 	private IExpr convert(NodeList list, int[] position, int end, IExpr lhs, int precedence) {
+		final int listSize = list.getLength();
 		if (end > 1) {
 			if (lhs == null) {
 				Node lhsNode = list.item(position[0]++);
@@ -209,36 +213,55 @@ public class TeXParser {
 				}
 				if (lhs == null) {
 					lhs = toHeadExpr(lhsNode, list, position, precedence);
-					if (position[0] >= list.getLength()) {
+					if (position[0] >= listSize) {
 						return lhs;
 					}
 				}
 
-				if ((lhs.isFunction() || lhs.isSymbol() || lhs.isDerivative() != null) && //
-						position[0] < list.getLength()) {
-					Node arg2 = list.item(position[0]);
-					if (arg2.getNodeName().equals("mfenced")) {
-						position[0]++;
-						int[] position2 = new int[] { 0 };
-						IExpr args = convert(arg2.getChildNodes(), position2, end, null, 0);
-						if (args.isSequence()) {
-							((IASTMutable) args).set(0, lhs);
-							return args;
+				int attribute = ISymbol.NOATTRIBUTE;
+				if (lhs.isSymbol()) {
+					attribute = ((ISymbol) lhs).getAttributes();
+				}
+				if ((attribute & ISymbol.CONSTANT) != ISymbol.CONSTANT) {
+					if ((lhs.isFunction() || lhs.isSymbol() || lhs.isDerivative() != null) && //
+							position[0] < listSize) {
+						boolean isNumericFunction = ((attribute & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION);
+						Node arg2 = list.item(position[0]);
+						if (arg2.getNodeName().equals("mfenced")) {
+							position[0]++;
+							int[] position2 = new int[] { 0 };
+							NodeList childNodes = arg2.getChildNodes();
+							IExpr args = convertArgs(childNodes, position2);
+							if (args.isSequence()) {
+								((IASTMutable) args).set(0, lhs);
+								return args;
+							}
+							lhs = F.unaryAST1(lhs, args);
+							if (position[0] == listSize) {
+								return lhs;
+							}
+						} else if (isNumericFunction || lhs.isBuiltInSymbol() || lhs.isFunction()) {
+							if (lhs.equals(F.Integrate)) {
+								return integrate(list, position, F.Dummy("test"), F.Dummy("test"));
+							}
+							IExpr args = convert(list, position, end, null, 0);
+							if (args.isSequence()) {
+								((IASTMutable) args).set(0, lhs);
+								return args;
+							}
+							if (lhs.isFunction() && lhs.size() == 2) {
+								lhs = Lambda.replaceSlots(lhs.first(), F.List(args));
+								if (position[0] == listSize) {
+									return lhs;
+								}
+							} else {
+								lhs = F.unaryAST1(lhs, args);
+								if (position[0] == listSize) {
+									return lhs;
+								}
+							}
 						}
-						return F.unaryAST1(lhs, args);
-					}
 
-					if (lhs.isFunction()) {
-						IExpr args = convert(list, position, end, null, 0);
-						if (args.isSequence()) {
-							((IASTMutable) args).set(0, lhs);
-							return args;
-						}
-						return F.unaryAST1(lhs, args);
-					}
-
-					if (lhs.equals(F.Integrate)) {
-						return integrate(list, position, F.Dummy("test"), F.Dummy("test"));
 					}
 				}
 			}
@@ -279,21 +302,23 @@ public class TeXParser {
 					position[0]++;
 					continue;
 				}
-				if (lhs.isNumber()) {
-					currPrec = ExprParserFactory.TIMES_PRECEDENCE;
-					IExpr rhs = convert(list, position, end, null, currPrec);
-					// invisible times?
-					result = F.Times(lhs, rhs);
-					continue;
-				}
-				result = F.NIL;
-				break;
+
+				// try to build a Times(...) expression
+				currPrec = ExprParserFactory.TIMES_PRECEDENCE;
+				IExpr rhs = convert(list, position, end, null, currPrec);
+				// invisible times?
+				result = F.Times(lhs, rhs);
+
 			}
 			if (result.isPresent() && position[0] >= end) {
 				return result;
 			}
 		}
 
+		return convertArgs(list, position);
+	}
+
+	public IExpr convertArgs(NodeList list, int[] position) {
 		IASTAppendable ast = F.Sequence();
 		for (int i = 0; i < list.getLength(); i++) {
 			Node temp = list.item(i);
@@ -603,6 +628,31 @@ public class TeXParser {
 				}
 			}
 		}
+		if (list.getLength() == 3) {
+			Node node = list.item(0);
+			IExpr a1 = toExpr(node);
+			node = list.item(1);
+			IExpr a2 = toExpr(node);
+			node = list.item(2);
+			IExpr a3 = toExpr(node);
+			return F.ternaryAST3(F.Subsuperscript, a1, a2, a3);
+		}
+		throw new AbortException();
+	}
+
+	private IExpr msub(NodeList list) {
+		if (list.getLength() == 2) {
+			Node arg1 = list.item(0);
+			Node arg2 = list.item(1);
+
+			IExpr a1 = toExpr(arg1);
+			IExpr a2 = toExpr(arg2);
+			if (a1.equals(F.Limit)) {
+				// Limit(#,a2)&
+				return F.Function(F.Limit(F.Slot1, a2));
+			}
+			return F.binaryAST2(F.Subscript, a1, a2);
+		}
 		throw new AbortException();
 	}
 
@@ -616,7 +666,6 @@ public class TeXParser {
 	}
 
 	private IExpr munderover(NodeList list, NodeList parentList, int[] position, int precedence) {
-		// \\int_0^\\infty a dx
 		if (list.getLength() > 0) {
 			Node arg0 = list.item(0);
 			IExpr head = toExpr(arg0);
@@ -645,6 +694,15 @@ public class TeXParser {
 				}
 			}
 		}
+//		if (list.getLength() == 3) {
+//			Node node = list.item(0);
+//			IExpr a1 = toExpr(node);
+//			node = list.item(1);
+//			IExpr a2 = toExpr(node);
+//			node = list.item(2);
+//			IExpr a3 = toExpr(node);
+//			return F.ternaryAST3(F.Underoverscript, a1, a2, a3);
+//		}
 		throw new AbortException();
 	}
 
@@ -691,6 +749,8 @@ public class TeXParser {
 			return mfrac(node.getChildNodes());
 		} else if (name.equals("msqrt")) {
 			return msqrt(node.getChildNodes());
+		} else if (name.equals("msub")) {
+			return msub(node.getChildNodes());
 		} else if (name.equals("msup")) {
 			return msup(node.getChildNodes());
 		} else if (name.equals("msubsup")) {
@@ -699,6 +759,8 @@ public class TeXParser {
 			return munderover(node.getChildNodes(), null, position, 0);
 		} else if (name.equals("mrow")) {
 			return mrow(node);
+		} else if (name.equals("mfenced")) {
+			return convertArgs(node.getChildNodes(), position);
 		}
 		// String n = node.getNodeName();
 		// System.out.println(n.toString());
@@ -749,11 +811,11 @@ public class TeXParser {
 		} else if (name.equals("math")) {
 			return convert(node.getChildNodes(), position, null, 0);
 		} else if (name.equals("mfrac")) {
-			IExpr frac = mfrac(node.getChildNodes());
-
-			return frac;
+			return mfrac(node.getChildNodes());
 		} else if (name.equals("msqrt")) {
 			return msqrt(node.getChildNodes());
+		} else if (name.equals("msub")) {
+			return msub(node.getChildNodes());
 		} else if (name.equals("msup")) {
 			return msup(node.getChildNodes());
 		} else if (name.equals("msubsup")) {
@@ -762,6 +824,8 @@ public class TeXParser {
 			return munderover(node.getChildNodes(), parentList, position, precedence);
 		} else if (name.equals("mrow")) {
 			return mrow(node);
+		} else if (name.equals("mfenced")) {
+			return convertArgs(node.getChildNodes(), position);
 		}
 		// String n = node.getNodeName();
 		// System.out.println(n.toString());

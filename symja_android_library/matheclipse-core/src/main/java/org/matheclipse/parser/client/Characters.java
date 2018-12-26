@@ -6,9 +6,11 @@ import java.util.Map;
 public class Characters {
 
 	public static Map<String, String> NamedCharactersMap = new HashMap<String, String>(1409);
-	
+
+	private static Map<String, String> ReversedNamedCharactersMap = new HashMap<String, String>(1409);
+
 	public static Map<String, String> CharacterNamesMap = new HashMap<String, String>();
-	
+
 	private final static String[] NamedCharacters = { "AAcute", "\u00E1", "ABar", "\u0101", "ACup", "\u0103",
 			"ADoubleDot", "\u00E4", "AE", "\u00E6", "AGrave", "\u00E0", "AHat", "\u00E2", "Aleph", "\u2135",
 			"AliasDelimiter", "\uF764", "AliasIndicator", "\uF768", "AlignmentMarker", "\uF760", "Alpha", "\u03B1",
@@ -246,9 +248,36 @@ public class Characters {
 		CharacterNamesMap.put(NamedCharactersMap.get("ImaginaryI"), "I");
 		CharacterNamesMap.put(NamedCharactersMap.get("ImaginaryJ"), "I");
 		CharacterNamesMap.put(NamedCharactersMap.get("Pi"), "Pi");
-		
+
 	}
 
+	/**
+	 * Return the name for a given unicode character.
+	 * 
+	 * @param unicode
+	 *            a string of length 1.
+	 * @return <code>null</code> if no corresponding name was found
+	 */
+	public static String unicodeName(String unicode) {
+		if (ReversedNamedCharactersMap == null) {
+			// create unicode to name map
+			ReversedNamedCharactersMap = new HashMap<String, String>(1409);
+			for (int i = 0; i < NamedCharacters.length; i += 2) {
+				ReversedNamedCharactersMap.put(NamedCharacters[i + 1], NamedCharacters[i]);
+			}
+		}
+		return ReversedNamedCharactersMap.get(unicode);
+	}
+
+	/**
+	 * Substitute all named (unicode-) characters in a string with their unicode value
+	 * For example <code>\[Alpha], \[Phi], \[Pi]</code> will be replace with unicode characters:
+	 * 
+	 * <pre>f(\[Alpha])+\[Phi]*\[Pi]</pre>
+	 * 
+	 * @param str
+	 * @return
+	 */
 	public static String substituteCharacters(String str) {
 		StringBuilder buf = null;
 		char currentChar;

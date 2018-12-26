@@ -18,6 +18,8 @@ public class TeXConverterTestCase extends TestCase {
 	}
 
 	public void testTeX001() {
+		check("x^2 + (a+b)x + ab", //
+				"a*b+(a+b)*x+x^2");
 		check("(2x^3 - x + z)", //
 				"-x+2*x^3+z");
 		check("(2x^3 - 3*x + 4.5z)", //
@@ -40,6 +42,13 @@ public class TeXConverterTestCase extends TestCase {
 	}
 
 	public void testTeX004() {
+		check("a = bq + r", //
+				"a==b*q+r");
+		check("f(x)=(x+a)(x+b)", //
+				"f(x)==(a+x)*(b+x)");
+		check("(x+a)(x+b)=f(x)", //
+				"(a+x)*(b+x)==f(x)");
+
 		check("x=\\frac{1+y}{1+2*z^2}", //
 				"x==(1+y)/(1+2*z^2)");
 	}
@@ -212,11 +221,38 @@ public class TeXConverterTestCase extends TestCase {
 	public void testTeX031() {
 		// D(x^2, x)
 		check("\\frac{d}{dx} x^{2}", //
-				"D(#1,x)&[x^2]");
+				"D(x^2,x)");
 		checkEval("\\frac{d}{dx} x^{2}", //
 				"2*x");
 	}
 
+	public void testTeX032() {
+		check("L' = {L}{\\sqrt{1-\\frac{v^2}{c^2}}}", //
+				"Derivative(1)[L]==Sqrt(1-v^2/c^2)*L");
+		
+		
+	}
+	
+	public void testTeX033() {
+		check("-\\nabla \\times e", //
+				"-e*∇");
+		check("\\nabla \\times B - 4\\pi j", //
+				"B*∇-4*j*Pi"); 
+	}
+	
+	public void testTeX034() {
+		check("\\lim_{x\\to 0}{\\frac{E^x-1}{2x}}", //
+				"Limit((E^x+(-1)*1)/(2*x),x->0)");
+		checkEval("\\lim_{x\\to 0}{\\frac{E^x-1}{2x}}", //
+				"1/2");
+		
+		// only "upper case" E is interpreted as euler's constant
+		check("\\lim_{x\\to 0}{\\frac{e^x-1}{2x}}", //
+				"Limit((e^x+(-1)*1)/(2*x),x->0)");
+		checkEval("\\lim_{x\\to 0}{\\frac{e^x-1}{2x}}", //
+				"Log(e)/2");
+	}
+	
 	public void check(String strEval, String strResult) {
 		IExpr expr = texConverter.toExpression(strEval);
 		assertEquals(expr.toString(), strResult);
