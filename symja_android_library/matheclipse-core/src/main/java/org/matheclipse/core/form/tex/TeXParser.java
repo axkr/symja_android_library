@@ -266,12 +266,18 @@ public class TeXParser {
 						PostfixOperator postfixOperator = POSTFIX_OPERATOR_MAP.get(text);
 						if (postfixOperator != null) {
 							currPrec = postfixOperator.getPrecedence();
+							if (precedence >= currPrec) {
+								return result;
+							}
 							result = postfixOperator.createFunction(lhs);
 							position[0]++;
 							continue;
 						}
 					}
 					throw new AbortException();
+				} else if (name.equals("mspace")) {
+					position[0]++;
+					continue;
 				}
 				if (lhs.isNumber()) {
 					currPrec = ExprParserFactory.TIMES_PRECEDENCE;
