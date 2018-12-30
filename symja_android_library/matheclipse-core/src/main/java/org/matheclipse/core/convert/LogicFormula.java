@@ -134,7 +134,7 @@ public class LogicFormula {
 		EvalEngine engine = EvalEngine.get();
 		int moduleCounter = engine.incModuleCounter();
 		final String varAppend = "LF" + "$" + moduleCounter;
-		s = F.symbol(varAppend, engine);
+		s = F.Dummy(varAppend);
 		variable2symbolMap.put(v, s);
 		return s;
 	}
