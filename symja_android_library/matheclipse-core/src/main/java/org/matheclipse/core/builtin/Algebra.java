@@ -4911,9 +4911,6 @@ public class Algebra {
 				parts = fractionalPartsTimesPower(ast, false, true, trig, true, true);
 			} else if (arg.isPower()) {
 				parts = Apart.fractionalPartsPower(ast, trig);
-				if (parts == null) {
-					return null;
-				}
 			} else {
 				IExpr numerForm = Numerator.getTrigForm(ast, trig);
 				if (numerForm.isPresent()) {

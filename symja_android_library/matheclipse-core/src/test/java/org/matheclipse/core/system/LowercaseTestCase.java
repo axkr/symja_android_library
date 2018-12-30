@@ -3,6 +3,7 @@ package org.matheclipse.core.system;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.ConstantDefinitions;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
@@ -3897,12 +3898,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 					"{{149,1},{329569479697,1},{903019357561501,1}}");
 		}
 
-		check("FactorInteger(2^32-1)", "{{3,1},{5,1},{17,1},{257,1},{65537,1}}");
-		check("FactorInteger(0)", "{{0,1}}");
-		check("FactorInteger(1)", "{{1,1}}");
-		check("FactorInteger(990)", "{{2,1},{3,2},{5,1},{11,1}}");
-		check("FactorInteger(-993)", "{{-1,1},{3,1},{331,1}}");
-		check("FactorInteger(2^32-1)", "{{3,1},{5,1},{17,1},{257,1},{65537,1}}");
+		check("FactorInteger(600851475143)", //
+				"{{71,1},{839,1},{1471,1},{6857,1}}");
+		check("FactorInteger(2^32-1)", //
+				"{{3,1},{5,1},{17,1},{257,1},{65537,1}}");
+		check("FactorInteger(0)", //
+				"{{0,1}}");
+		check("FactorInteger(1)", //
+				"{{1,1}}");
+		check("FactorInteger(990)", //
+				"{{2,1},{3,2},{5,1},{11,1}}");
+		check("FactorInteger(-993)", //
+				"{{-1,1},{3,1},{331,1}}");
+		check("FactorInteger(2^32-1)", //
+				"{{3,1},{5,1},{17,1},{257,1},{65537,1}}");
 
 		check("FactorInteger(10+30*I,GaussianIntegers->True)", //
 				"{{-1,1},{1+I,3},{1+I*2,1},{2+I,2}}");
@@ -6856,6 +6865,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Max(Abs(x), Abs(y))", "Max(Abs(x),Abs(y))");
 	}
 
+	public void testMaximize() {
+		check("Maximize(x^4+7*Tan(x)-2*x^2 + 42, x)", //
+				"Maximize(42-2*x^2+x^4+7*Tan(x),x)");
+		check("Maximize(x^4+7*x^3-2*x^2 + 42, x)", //
+				"{Infinity,{x->-Infinity}}");
+		check("Maximize(-2*x^2 - 3*x + 5, x)", //
+				"{49/8,{x->-3/4}}");
+	}
+
 	public void testMean() {
 		check("Mean({26, 64, 36})", "42");
 		check("Mean({1, 1, 2, 3, 5, 8})", "10/3");
@@ -7033,6 +7051,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Min()", "Infinity");
 		check("Min(x)", "x");
 		check("Min(Abs(x), Abs(y))", "Min(Abs(x),Abs(y))");
+	}
+
+	public void testMinimize() {
+		check("Minimize(x^4+7*x^3-2*x^2 + 42, x)", //
+				"{42+7*(-21/8-Sqrt(505)/8)^3-2*(21/8+Sqrt(505)/8)^2+(21/8+Sqrt(505)/8)^4,{x->-21/\n" + 
+				"8-Sqrt(505)/8}}");
+		check("Minimize(2*x^2 - 3*x + 5, x)", //
+				"{31/8,{x->3/4}}");
 	}
 
 	public void testMinus() {
@@ -9978,6 +10004,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testReplaceAll() {
+		check("2*x*y /. {x -> a, y -> b}", //
+				"2*a*b");
+		check("2*x*y /. {2*x -> a, 2*x*y -> b}", //
+				"a*y");
+		check("2*x*y /. {x -> a, 2*x*y -> b}", //
+				"b");
+		check("ReplaceAll(x^2+3*x+12, x->10)", //
+				"142");
 		check("x_Integer /. x->xvar", //
 				"xvar_Integer");
 		check("x__ /. x->xvar", //

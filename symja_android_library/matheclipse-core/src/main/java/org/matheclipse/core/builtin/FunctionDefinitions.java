@@ -29,11 +29,13 @@ public final class FunctionDefinitions {
 		InterpolatingFunction.setEvaluator(new org.matheclipse.core.reflection.system.InterpolatingFunction());
 		InterpolatingPolynomial.setEvaluator(new org.matheclipse.core.reflection.system.InterpolatingPolynomial());
 		Interpolation.setEvaluator(new org.matheclipse.core.reflection.system.Interpolation());
-		Interval.setEvaluator(new org.matheclipse.core.reflection.system.Interval()); 
+		Interval.setEvaluator(new org.matheclipse.core.reflection.system.Interval());
 		InverseFunction.setEvaluator(new org.matheclipse.core.reflection.system.InverseFunction());
 		InverseLaplaceTransform.setEvaluator(new org.matheclipse.core.reflection.system.InverseLaplaceTransform());
 		LaplaceTransform.setEvaluator(new org.matheclipse.core.reflection.system.LaplaceTransform());
 		LinearProgramming.setEvaluator(new org.matheclipse.core.reflection.system.LinearProgramming());
+		Maximize.setEvaluator(new org.matheclipse.core.reflection.system.Maximize());
+		Minimize.setEvaluator(new org.matheclipse.core.reflection.system.Minimize());
 		MonomialList.setEvaluator(new org.matheclipse.core.reflection.system.MonomialList());
 		Names.setEvaluator(new org.matheclipse.core.reflection.system.Names());
 		NDSolve.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve());
@@ -49,7 +51,7 @@ public final class FunctionDefinitions {
 		Plot.setEvaluator(new org.matheclipse.core.reflection.system.Plot());
 		Plot3D.setEvaluator(new org.matheclipse.core.reflection.system.Plot3D());
 		Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
-		
+
 		Rationalize.setEvaluator(new org.matheclipse.core.reflection.system.Rationalize());
 		Replace.setEvaluator(new org.matheclipse.core.reflection.system.Replace());
 		ReplaceList.setEvaluator(new org.matheclipse.core.reflection.system.ReplaceList());

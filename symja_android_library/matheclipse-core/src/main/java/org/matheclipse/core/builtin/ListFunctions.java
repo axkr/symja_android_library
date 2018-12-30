@@ -3520,38 +3520,42 @@ public final class ListFunctions {
 			if (ast.isAST1()) {
 				return F.operatorFormAST1(ast);
 			}
-			Validate.checkSize(ast, 3);
-			try {
-				IExpr arg1 = ast.arg1();
-				IExpr arg2 = engine.evaluate(ast.arg2());
+			if (ast.size() == 3) {
+				try {
+					IExpr arg1 = ast.arg1();
+					IExpr arg2 = engine.evaluate(ast.arg2());
 
-				if (arg2.isListOfRules()) {
-					return arg1.replaceAll((IAST) arg2).orElse(arg1);
-				} else if (arg2.isListOfLists()) {
-					IAST list = (IAST) arg2;
-					IASTAppendable result = F.ListAlloc(list.size());
-					for (IExpr subList : list) {
-						if (subList.isListOfRules()) {
-							result.append(F.subst(arg1, (IAST) subList));
-						} else {
-							WrongArgumentType wat = new WrongArgumentType(ast, ast, -1,
-									"List of rule expressions (x->y) expected: ");
-							engine.printMessage(wat.getMessage());
+					if (arg2.isListOfRules()) {
+						return arg1.replaceAll((IAST) arg2).orElse(arg1);
+					} else if (arg2.isListOfLists()) {
+						IAST list = (IAST) arg2;
+						IASTAppendable result = F.ListAlloc(list.size());
+						for (IExpr subList : list) {
+							if (subList.isListOfRules()) {
+								result.append(F.subst(arg1, (IAST) subList));
+							} else {
+								WrongArgumentType wat = new WrongArgumentType(ast, ast, -1,
+										"List of rule expressions (x->y) expected: ");
+								engine.printMessage(wat.getMessage());
+							}
 						}
+						return result;
+					} else if (arg2.isRuleAST()) {
+						return F.subst(arg1, (IAST) arg2);
+					} else {
+						WrongArgumentType wat = new WrongArgumentType(ast, ast, -1,
+								"Rule expression (x->y) expected: ");
+						engine.printMessage(wat.getMessage());
 					}
-					return result;
-				} else if (arg2.isRuleAST()) {
-					return F.subst(arg1, (IAST) arg2);
-				} else {
-					WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
+				} catch (WrongArgumentType wat) {
+					if (Config.SHOW_STACKTRACE) {
+						wat.printStackTrace();
+					}
 					engine.printMessage(wat.getMessage());
 				}
-			} catch (WrongArgumentType wat) {
-				if (Config.SHOW_STACKTRACE) {
-					wat.printStackTrace();
-				}
-				engine.printMessage(wat.getMessage());
+				return F.NIL;
 			}
+			Validate.checkSize(ast, 3);
 			return F.NIL;
 		}
 

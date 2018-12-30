@@ -431,10 +431,10 @@ public class F {
 	 */
 	public final static IBuiltInSymbol BinCounts = F.initFinalSymbol("BinCounts", ID.BinCounts);
 
-	/***/
+	/** BinaryDeserialize(byte-array) - deserialize the `byte-array` into a Symja expression. */
 	public final static IBuiltInSymbol BinaryDeserialize = F.initFinalSymbol("BinaryDeserialize", ID.BinaryDeserialize);
 
-	/***/
+	/** BinarySerialize(expr) - serialize the `expr` into a byte array expression. */
 	public final static IBuiltInSymbol BinarySerialize = F.initFinalSymbol("BinarySerialize", ID.BinarySerialize);
 
 	/** Binomial(n, k) - returns the binomial coefficient of the 2 integers `n` and `k` */
@@ -510,7 +510,7 @@ public class F {
 	/** Break() - exits a `For`, `While`, or `Do` loop. */
 	public final static IBuiltInSymbol Break = F.initFinalSymbol("Break", ID.Break);
 
-	/***/
+	/** ByteArray({list-of-byte-values}) - converts the `list-of-byte-values` into a byte array. */
 	public final static IBuiltInSymbol ByteArray = F.initFinalSymbol("ByteArray", ID.ByteArray);
 
 	/***/
@@ -1040,7 +1040,10 @@ public class F {
 	public final static IBuiltInSymbol ExponentialDistribution = F.initFinalSymbol("ExponentialDistribution",
 			ID.ExponentialDistribution);
 
-	/***/
+	/**
+	 * Export("path-to-filename", expression, "WXF") - if the file system is enabled, export the `expression` in WXF
+	 * format to the "path-to-filename" file.
+	 */
 	public final static IBuiltInSymbol Export = F.initFinalSymbol("Export", ID.Export);
 
 	/***/
@@ -1143,10 +1146,10 @@ public class F {
 	/** Floor(expr) - gives the smallest integer less than or equal `expr`. */
 	public final static IBuiltInSymbol Floor = F.initFinalSymbol("Floor", ID.Floor);
 
-	/***/
+	/** Fold[f, x, {a, b}] - returns `f[f[x, a], b]`, and this nesting continues for lists of arbitrary length. */
 	public final static IBuiltInSymbol Fold = F.initFinalSymbol("Fold", ID.Fold);
 
-	/***/
+	/** FoldList[f, x, {a, b}] - returns `{x, f[x, a], f[f[x, a], b]}` */
 	public final static IBuiltInSymbol FoldList = F.initFinalSymbol("FoldList", ID.FoldList);
 
 	/**
@@ -1372,7 +1375,7 @@ public class F {
 	 */
 	public final static IBuiltInSymbol I = F.initFinalSymbol("I", ID.I);
 
-	/***/
+	/** Identity(expr) - returns `expr`. */
 	public final static IBuiltInSymbol Identity = F.initFinalSymbol("Identity", ID.Identity);
 
 	/** IdentityMatrix(n) - gives the identity matrix with `n` rows and columns. */
@@ -1391,7 +1394,10 @@ public class F {
 	 */
 	public final static IBuiltInSymbol Implies = F.initFinalSymbol("Implies", ID.Implies);
 
-	/***/
+	/**
+	 * Import("path-to-filename", "WXF") - if the file system is enabled, import an expression in WXF format from the
+	 * "path-to-filename" file.
+	 */
 	public final static IBuiltInSymbol Import = F.initFinalSymbol("Import", ID.Import);
 
 	/** Increment(x) - increments `x` by `1`, returning the original value of `x`. */
@@ -1774,6 +1780,9 @@ public class F {
 	/***/
 	public final static IBuiltInSymbol MaxPoints = F.initFinalSymbol("MaxPoints", ID.MaxPoints);
 
+	/***/
+	public final static IBuiltInSymbol Maximize = F.initFinalSymbol("Maximize", ID.Maximize);
+
 	/** Mean(list) - returns the statistical mean of `list`. */
 	public final static IBuiltInSymbol Mean = F.initFinalSymbol("Mean", ID.Mean);
 
@@ -1820,6 +1829,9 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol MinimalPolynomial = F.initFinalSymbol("MinimalPolynomial", ID.MinimalPolynomial);
+
+	/***/
+	public final static IBuiltInSymbol Minimize = F.initFinalSymbol("Minimize", ID.Minimize);
 
 	/** Minus(expr) - is the negation of `expr`. */
 	public final static IBuiltInSymbol Minus = F.initFinalSymbol("Minus", ID.Minus);
@@ -1939,7 +1951,10 @@ public class F {
 	 */
 	public final static IBuiltInSymbol NestWhile = F.initFinalSymbol("NestWhile", ID.NestWhile);
 
-	/***/
+	/**
+	 * NestWhileList(f, expr, test) - applies a function `f` repeatedly on an expression `expr`, until applying `test`
+	 * on the result no longer yields `True`. It returns a list of all intermediate results.
+	 */
 	public final static IBuiltInSymbol NestWhileList = F.initFinalSymbol("NestWhileList", ID.NestWhileList);
 
 	/** NextPrime(n) - gives the next prime after `n`. */
@@ -1976,7 +1991,7 @@ public class F {
 	/** Norm(m, l) - computes the `l`-norm of matrix `m` (currently only works for vectors!). */
 	public final static IBuiltInSymbol Norm = F.initFinalSymbol("Norm", ID.Norm);
 
-	/** Normal(series) - converts a `series` expression into a standard expression. */
+	/** Normal(expr) - converts a special Symja expression `expr` into a standard expression. */
 	public final static IBuiltInSymbol Normal = F.initFinalSymbol("Normal", ID.Normal);
 
 	/** NormalDistribution(m, s) - returns the normal distribution of mean `m` and sigma `s`. */
@@ -2863,7 +2878,7 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol ToExpression = F.initFinalSymbol("ToExpression", ID.ToExpression);
-	
+
 	/** ToPolarCoordinates({x, y}) - return the polar coordinates for the cartesian coordinates `{x, y}`. */
 	public final static IBuiltInSymbol ToPolarCoordinates = F.initFinalSymbol("ToPolarCoordinates",
 			ID.ToPolarCoordinates);
@@ -4033,9 +4048,9 @@ public class F {
 	 *            use this <code>defaultValue</code> in pattern-matching if an argument is optional
 	 * @return IPattern
 	 */
-//	public static IPattern $b(final IExpr condition, IExpr defaultValue) {
-//		return new org.matheclipse.core.expression.Blank(condition, defaultValue);
-//	}
+	// public static IPattern $b(final IExpr condition, IExpr defaultValue) {
+	// return new org.matheclipse.core.expression.Blank(condition, defaultValue);
+	// }
 
 	/**
 	 * Create a <code>Pattern[]</code> pattern for pattern-matching and term rewriting
@@ -4096,9 +4111,9 @@ public class F {
 	 *            use this <code>defaultValue</code> in pattern-matching if an argument is optional
 	 * @return IPattern
 	 */
-//	public static IPattern $p(final ISymbol symbol, final IExpr check, final IExpr defaultValue) {
-//		return org.matheclipse.core.expression.Pattern.valueOf(symbol, check, defaultValue);
-//	}
+	// public static IPattern $p(final ISymbol symbol, final IExpr check, final IExpr defaultValue) {
+	// return org.matheclipse.core.expression.Pattern.valueOf(symbol, check, defaultValue);
+	// }
 
 	/**
 	 * Create a pattern for pattern-matching and term rewriting
@@ -4189,9 +4204,9 @@ public class F {
 	 *            use this <code>defaultValue</code> in pattern-matching if an argument is optional
 	 * @return IPattern
 	 */
-//	public static IPattern pattern(final ISymbol symbol, final IExpr check, final IExpr defaultValue) {
-//		return org.matheclipse.core.expression.Pattern.valueOf(symbol, check, defaultValue);
-//	}
+	// public static IPattern pattern(final ISymbol symbol, final IExpr check, final IExpr defaultValue) {
+	// return org.matheclipse.core.expression.Pattern.valueOf(symbol, check, defaultValue);
+	// }
 
 	/**
 	 * Create a pattern for pattern-matching and term rewriting
@@ -4203,9 +4218,9 @@ public class F {
 	 *            use this <code>defaultValue</code> in pattern-matching if an argument is optional
 	 * @return IPattern
 	 */
-//	public static IPattern $p(@Nonnull final String symbolName, final IExpr check, final IExpr defaultValue) {
-//		return org.matheclipse.core.expression.Pattern.valueOf($s(symbolName), check, defaultValue);
-//	}
+	// public static IPattern $p(@Nonnull final String symbolName, final IExpr check, final IExpr defaultValue) {
+	// return org.matheclipse.core.expression.Pattern.valueOf($s(symbolName), check, defaultValue);
+	// }
 
 	/**
 	 * Create a pattern for pattern-matching and term rewriting

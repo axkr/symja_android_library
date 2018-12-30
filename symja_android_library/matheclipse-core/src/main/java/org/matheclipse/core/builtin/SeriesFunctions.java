@@ -980,7 +980,7 @@ public class SeriesFunctions {
 				IExpr coefficient = F.Times.of(engine, F.Power(NumberTheory.factorial(i), F.CN1), functionPart);
 
 				ps.setCoeff(i, coefficient);
-				derivedFunction = F.D(derivedFunction, x);
+				derivedFunction = F.D.of(engine, derivedFunction, x);
 			}
 			return ps;
 		}

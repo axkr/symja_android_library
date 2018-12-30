@@ -1776,7 +1776,7 @@ public abstract class AbstractAST implements IASTMutable {
 	public final boolean isOptional() {
 		return isAST(F.Optional, 2, 3);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isExpanded() {
@@ -2575,14 +2575,14 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isUnit() {
+	public boolean isUnit() {
 		if (isZero()) {
 			return false;
 		}
-		if (isOne()) {
+		if (isNumber()) {
 			return true;
 		}
-		if (isNumber()) {
+		if (isConstant()) {
 			return true;
 		}
 		IExpr temp = F.eval(F.Times(this, F.Power(this, F.CN1)));

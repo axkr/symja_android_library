@@ -24,6 +24,30 @@ import org.matheclipse.core.patternmatching.PatternMatcherList;
 
 public class Functors {
 
+	private static class SingleRuleFunctor implements Function<IExpr, IExpr> {
+		private final IExpr lhs;
+		private final IExpr rhs;
+
+		/**
+		 * 
+		 * @param plusAST
+		 *            the complete AST which should be cloned in the {@code apply} method
+		 * @param position
+		 *            the position which should be replaced in the <code>apply()</code> method.
+		 */
+		public SingleRuleFunctor(IAST equalRule) {
+			lhs = equalRule.arg1();
+			rhs = equalRule.arg2();
+		}
+
+		@Override
+		@Nonnull
+		public IExpr apply(final IExpr arg) {
+			return lhs.equals(arg) ? rhs : F.NIL;
+		}
+
+	}
+
 	private static class RulesFunctor implements Function<IExpr, IExpr> {
 		private final Map<? extends IExpr, ? extends IExpr> fEqualRules;
 
@@ -150,6 +174,18 @@ public class Functors {
 	}
 
 	/**
+	 * Create a functor from the given rule <code>lhs->rhs</code> or <code>lhs:>rhs</code> and match the left-hand-side
+	 * argument with the <code>#equals()</code> method. Therefore the left-hand-side shouldn't contain any pattern or
+	 * orderless expression.
+	 * 
+	 * @param rulesMap
+	 * @return
+	 */
+	public static Function<IExpr, IExpr> equalRule(IAST rule) {
+		return new SingleRuleFunctor(rule);
+	}
+
+	/**
 	 * Create a functor from the given rules. All strings in <code>strRules</code> are parsed in internal rules form.
 	 * 
 	 * @param strRules
@@ -181,12 +217,12 @@ public class Functors {
 	public static Function<IExpr, IExpr> rules(@Nonnull IAST astRules, @Nonnull EvalEngine engine)
 			throws WrongArgumentType {
 		final Map<IExpr, IExpr> equalRules;
-
+		IAST rule;
 		List<PatternMatcherAndEvaluator> matchers = new ArrayList<PatternMatcherAndEvaluator>();
 		if (astRules.isList()) {
 			if (astRules.size() > 1) {
 				// assuming multiple rules in a list
-				IAST rule;
+
 				int argsSize = astRules.argSize();
 				if (argsSize <= 5) {
 					equalRules = new OpenFixedSizeMap<IExpr, IExpr>(argsSize * 3 - 1);
@@ -202,21 +238,30 @@ public class Functors {
 						throw new WrongArgumentType(astRules, astRules, -1, "Rule expression (x->y) expected: ");
 					}
 				}
-			} else {
-				equalRules = new HashMap<IExpr, IExpr>();
+				if (matchers.size() > 0) {
+					return new RulesPatternFunctor(equalRules, matchers, engine);
+				}
+				if (argsSize == 1) {
+					return equalRule((IAST) astRules.arg1());
+				}
+				return rules(equalRules);
 			}
+			equalRules = new HashMap<IExpr, IExpr>();
+			return rules(equalRules);
 		} else {
 			if (astRules.isRuleAST()) {
+				rule = astRules;
 				equalRules = new OpenFixedSizeMap<IExpr, IExpr>(3);
-				addRuleToCollection(equalRules, matchers, astRules);
+				addRuleToCollection(equalRules, matchers, rule);
 			} else {
 				throw new WrongArgumentType(astRules, astRules, -1, "Rule expression (x->y) expected: ");
 			}
+			if (matchers.size() > 0) {
+				return new RulesPatternFunctor(equalRules, matchers, engine);
+			}
+			return equalRule(rule);
 		}
-		if (matchers.size() > 0) {
-			return new RulesPatternFunctor(equalRules, matchers, engine);
-		}
-		return rules(equalRules);
+
 	}
 
 	public static Function<IExpr, IExpr> listRules(@Nonnull IAST astRules, IASTAppendable result,
@@ -296,8 +341,8 @@ public class Functors {
 			if (rule.isRuleDelayed()) {
 				matchers.add(new PatternMatcherAndEvaluator(IPatternMatcher.SET_DELAYED, rule.arg1(), rule.arg2()));
 			} else {
-				matchers.add(new PatternMatcherAndEvaluator(IPatternMatcher.SET, rule.arg1(),
-						evalOneIdentity(rule.arg2())));
+				matchers.add(
+						new PatternMatcherAndEvaluator(IPatternMatcher.SET, rule.arg1(), evalOneIdentity(rule.arg2())));
 			}
 		}
 	}
@@ -311,8 +356,8 @@ public class Functors {
 					if (rule.isRuleDelayed()) {
 						matchers.add(new PatternMatcherList(IPatternMatcher.SET_DELAYED, rule.arg1(), rule.arg2()));
 					} else {
-						matchers.add(new PatternMatcherList(IPatternMatcher.SET, rule.arg1(),
-								evalOneIdentity(rule.arg2())));
+						matchers.add(
+								new PatternMatcherList(IPatternMatcher.SET, rule.arg1(), evalOneIdentity(rule.arg2())));
 					}
 					return;
 				}

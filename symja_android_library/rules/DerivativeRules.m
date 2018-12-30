@@ -33,6 +33,7 @@
   LogGamma->PolyGamma(0,#),
   LogisticSigmoid->LogisticSigmoid(#)*(1-LogisticSigmoid(#)),
   PolyGamma->PolyGamma(1,#),
+  ProductLog->ProductLog(#)/((1 + ProductLog(#))*#),
   Cot->(-1)*Csc(#)^2,
   Coth->(-1)*Sinh(#)^(-2),
   Cos->(-1)*Sin(#),

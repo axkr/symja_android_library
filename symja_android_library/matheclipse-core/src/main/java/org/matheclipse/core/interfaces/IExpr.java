@@ -1536,6 +1536,10 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return false;
 	}
 
+	default boolean isNotDefined() {
+		return isIndeterminate() || isDirectedInfinity();
+	}
+
 	/**
 	 * Test if this expression is an inexact number. I.e. an instance of type <code>INum</code> or
 	 * <code>IComplexNum</code>.

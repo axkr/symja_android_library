@@ -102,5 +102,6 @@
   D(ArcTan(f_, g_),x_?NotListQ):= ((-g*D(f,x)+f*D(g,x))/(f^2 + g^2)),
   D(BesselJ(f_, g_),x_?NotListQ):= 1/2*(BesselJ(-1+f, g)-BesselJ(1+f, g))*D(g,x)+D(f,x)*Derivative(1,0)[BesselJ][f,g],
   D(PolyLog(f_, g_),x_?NotListQ):= (PolyLog(-1 + f, g)*D(g,x))/g + D(f,x)*Derivative(1, 0)[PolyLog][f, g],
+  D(ProductLog(f_),x_?NotListQ) := (ProductLog[f]*D(f, x))/(f*(1 + ProductLog[f])),
   D(ProductLog(f_, g_),x_?NotListQ):= ProductLog(f,g)*D(g,x)/(g*(1+ProductLog(f,g)))+D(f,x)*Derivative(1,0)[ProductLog][f,g] 
 }

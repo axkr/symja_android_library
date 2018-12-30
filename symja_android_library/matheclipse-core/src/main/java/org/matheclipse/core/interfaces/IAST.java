@@ -947,6 +947,18 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	public boolean isFreeAt(int position, final IExpr pattern);
 
+	default boolean isNotDefined() {
+		if (isIndeterminate() || isDirectedInfinity()) {
+			return true;
+		}
+		for (int i = 0; i < size(); i++) {
+			if (get(i).isIndeterminate() || get(i).isDirectedInfinity()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * Check if the object at index 0 (i.e. the head of the list) is the same object as <code>head</code> and if the
 	 * size of the list is greater or equal <code>length</code>.

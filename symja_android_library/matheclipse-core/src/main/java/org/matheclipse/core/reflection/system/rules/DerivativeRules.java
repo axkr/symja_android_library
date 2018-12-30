@@ -108,6 +108,9 @@ public interface DerivativeRules {
     // PolyGamma->PolyGamma(1,#1)
     Rule(PolyGamma,
       PolyGamma(C1,Slot1)),
+    // ProductLog->ProductLog(#1)/((1+ProductLog(#1))*#1)
+    Rule(ProductLog,
+      Times(ProductLog(Slot1),Power(Plus(C1,ProductLog(Slot1)),-1),Power(Slot1,-1))),
     // Cot->-Csc(#1)^2
     Rule(Cot,
       Negate(Sqr(Csc(Slot1)))),
