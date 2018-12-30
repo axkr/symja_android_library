@@ -8,8 +8,17 @@ Maximize(unary-function, variable)
 	
 ### Examples
  
+```
+>> Maximize(-x^4-7*x^3+2*x^2 - 42,x) 
+{-42-7*(-21/8-Sqrt(505)/8)^3+2*(21/8+Sqrt(505)/8)^2-(21/8+Sqrt(505)/8)^4,{x->-21/8-Sqrt(505)/8}}
+```
+				
+Print a message if no maximum can be found
 
 ```
 >> Maximize(x^4+7*x^3-2*x^2 + 42, x) 
-{{42+7*(-21/8-Sqrt(505)/8)^3-2*(21/8+Sqrt(505)/8)^2+(21/8+Sqrt(505)/8)^4,x->-21/8-Sqrt(505)/8},{42-2*(21/8-Sqrt(505)/8)^2+(21/8-Sqrt(505)/8)^4+7*(-21/8+Sqrt(505)/8)^3,x->-21/8+Sqrt(505)/8}}
+{Infinity,{x->-Infinity}}
 ```
+
+### Related terms 
+[Minimize](Minimize.md) 

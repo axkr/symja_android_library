@@ -6866,6 +6866,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMaximize() {
+		check("Maximize(-x^4-7*x^3+2*x^2 - 42,x)", //
+				"{-42-7*(-21/8-Sqrt(505)/8)^3+2*(21/8+Sqrt(505)/8)^2-(21/8+Sqrt(505)/8)^4,{x->-21/\n" + 
+				"8-Sqrt(505)/8}}");
 		check("Maximize(x^4+7*Tan(x)-2*x^2 + 42, x)", //
 				"Maximize(42-2*x^2+x^4+7*Tan(x),x)");
 		check("Maximize(x^4+7*x^3-2*x^2 + 42, x)", //
@@ -7055,8 +7058,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testMinimize() {
 		check("Minimize(x^4+7*x^3-2*x^2 + 42, x)", //
-				"{42+7*(-21/8-Sqrt(505)/8)^3-2*(21/8+Sqrt(505)/8)^2+(21/8+Sqrt(505)/8)^4,{x->-21/\n" + 
-				"8-Sqrt(505)/8}}");
+				"{42+7*(-21/8-Sqrt(505)/8)^3-2*(21/8+Sqrt(505)/8)^2+(21/8+Sqrt(505)/8)^4,{x->-21/\n"
+						+ "8-Sqrt(505)/8}}");
 		check("Minimize(2*x^2 - 3*x + 5, x)", //
 				"{31/8,{x->3/4}}");
 	}
