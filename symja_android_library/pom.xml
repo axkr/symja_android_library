@@ -118,11 +118,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
-				<artifactId>hipparchus-geometry</artifactId>
-				<version>${hipparchus.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-ode</artifactId>
 				<version>${hipparchus.version}</version>
 			</dependency>
