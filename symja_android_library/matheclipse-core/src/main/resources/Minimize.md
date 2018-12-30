@@ -6,6 +6,9 @@ Minimize(unary-function, variable)
 
 > returns the minimum of the unary function for the given `variable`.
 	
+See:
+* [Wikipedia - Derivative test](https://en.wikipedia.org/wiki/Derivative_test)
+	
 ### Examples
  
 
