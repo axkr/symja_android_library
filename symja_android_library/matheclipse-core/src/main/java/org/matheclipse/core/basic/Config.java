@@ -193,7 +193,7 @@ public class Config {
 	/**
 	 * Use of <code>java.misc.Unsafe</code> is allowed if <code>true</code>.
 	 */
-	public static boolean JAVA_UNSAFE = false;
+	public static boolean JAVA_UNSAFE = true;
 
 	/**
 	 * <p>
