@@ -3876,6 +3876,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("213916881789829278910570173437*467471286806848547076331371449== 10^59+213", //
 		// "True");
 		if (Config.EXPENSIVE_JUNIT_TESTS) {
+			check("FactorInteger(966983290915691193309978723256242679920691599725908954700676674631843021151)", //
+					"{{2166660942804222727904664493239497749,1},{\n" + 
+					"446301159453293757389122758418041256099,1}}");
 			check("FactorInteger(672924717570659549138949381690007452648932205241)", //
 					"{{324557421200651278898953,1},{2073361056053736024795697,1}}");
 			check("FactorInteger(475055344870856723877355576259313975012575765717)", //
@@ -3898,6 +3901,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 					"{{149,1},{329569479697,1},{903019357561501,1}}");
 		}
 
+//		check("FactorInteger(966983290915691193309978723256242679920691599725908954700676674631843021151)", //
+//				"{{2166660942804222727904664493239497749,1},{\n" + 
+//				"446301159453293757389122758418041256099,1}}");
 		check("FactorInteger(600851475143)", //
 				"{{71,1},{839,1},{1471,1},{6857,1}}");
 		check("FactorInteger(2^32-1)", //
@@ -6867,8 +6873,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testMaximize() {
 		check("Maximize(-x^4-7*x^3+2*x^2 - 42,x)", //
-				"{-42-7*(-21/8-Sqrt(505)/8)^3+2*(21/8+Sqrt(505)/8)^2-(21/8+Sqrt(505)/8)^4,{x->-21/\n" + 
-				"8-Sqrt(505)/8}}");
+				"{-42-7*(-21/8-Sqrt(505)/8)^3+2*(21/8+Sqrt(505)/8)^2-(21/8+Sqrt(505)/8)^4,{x->-21/\n"
+						+ "8-Sqrt(505)/8}}");
 		check("Maximize(x^4+7*Tan(x)-2*x^2 + 42, x)", //
 				"Maximize(42-2*x^2+x^4+7*Tan(x),x)");
 		check("Maximize(x^4+7*x^3-2*x^2 + 42, x)", //
@@ -9323,6 +9329,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPrimePowerQ() {
+		check("PrimePowerQ(1)", "False");
+		
 		check("13^9", "10604499373");
 		check("PrimePowerQ(10604499373)", "True");
 		check("PrimePowerQ(-8)", "True");
