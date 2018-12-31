@@ -72,6 +72,10 @@ public class SeriesTest extends AbstractTestCase {
 		check("InverseSeries(Series(Log(x+1), {x, 0, 9}))", //
 				"x+x^2/2+x^3/6+x^4/24+x^5/120+x^6/720+x^7/5040+x^8/40320+x^9/362880+O(x)^10");
 
+		check("Series((x+1),{x, 0, 9})", //
+				"1+x+O(x)^10");
+		check("InverseSeries(Series((x+1),{x, 0, 9}))", //
+				"(-1+x)+O(-1+x)^10");
 		check("InverseSeries(Series(Sin(x), {x, 0, 9}))", //
 				"x+x^3/6+3/40*x^5+5/112*x^7+35/1152*x^9+O(x)^10");
 		check("InverseSeries(Series(ArcSin(x), {x, 0, 9}))", //
@@ -100,11 +104,11 @@ public class SeriesTest extends AbstractTestCase {
 
 		// check("Series(Gamma(x), {x, 0, 3})", //
 		// "");
-//		check("Series(1/(x^3+x), {x, 0, 3})", //
-//				"");
-//		check("Series((x^3-2x^2-9x+18)/(x^3+x), {x, 0, 3})", //
-//				"");
-		
+		// check("Series(1/(x^3+x), {x, 0, 3})", //
+		// "");
+		// check("Series((x^3-2x^2-9x+18)/(x^3+x), {x, 0, 3})", //
+		// "");
+
 		check("Series((1 + x)^n, {x, 0, 4})", //
 				"1+n*x+1/2*(-1+n)*n*x^2+1/6*(-2+n)*(-1+n)*n*x^3+1/24*(-3+n)*(-2+n)*(-1+n)*n*x^4+O(x)^\n" + "5");
 		check("Series(x^x, {x, 0, 4})", //
