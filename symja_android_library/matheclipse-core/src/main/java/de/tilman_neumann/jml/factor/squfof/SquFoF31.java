@@ -16,14 +16,12 @@ package de.tilman_neumann.jml.factor.squfof;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
-//import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.factor.FactorAlgorithm;
 import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
 import de.tilman_neumann.jml.factor.SingleFactorFinder;
 import de.tilman_neumann.jml.gcd.Gcd63;
 import de.tilman_neumann.jml.sequence.SquarefreeSequence63;
-//import de.tilman_neumann.util.ConfigUtil;
 import de.tilman_neumann.util.SortedMultiset;
 
 /**

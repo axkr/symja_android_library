@@ -13,18 +13,19 @@
  */
 package de.tilman_neumann.jml.factor.pollardRho;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
-import de.tilman_neumann.jml.base.Int127;
+import de.tilman_neumann.jml.base.Uint128;
 import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
 import de.tilman_neumann.jml.gcd.Gcd63;
-//import de.tilman_neumann.util.ConfigUtil;
 import de.tilman_neumann.util.SortedMultiset;
 
 /**
@@ -42,8 +43,8 @@ import de.tilman_neumann.util.SortedMultiset;
  * @author Tilman Neumann
  */
 public class PollardRhoBrentMontgomery63 extends FactorAlgorithmBase {
-//	private static final Logger LOG = Logger.getLogger(PollardRhoBrentMontgomery63.class);
-//	private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(PollardRhoBrentMontgomery63.class);
+	private static final boolean DEBUG = false;
 
 	private static final SecureRandom RNG = new SecureRandom();
 
@@ -160,21 +161,21 @@ public class PollardRhoBrentMontgomery63 extends FactorAlgorithmBase {
 	 * @return
 	 */
 	private long montgomeryMult(final long a, final long b) {
-		Int127 ab = Int127.mul64(a, b);
+		Uint128 ab = Uint128.mul63(a, b);
 		// t = ab * (-1/N) mod R
 		// XXX The "and" operations could be removed if R = 2^64
-		long t = Int127.mul64(ab.and(R_MASK), minusNInvModR).and(R_MASK);
+		long t = Uint128.mul63(ab.and(R_MASK), minusNInvModR).and(R_MASK);
 		// reduced = (a*b + t*N) / R
 		// XXX the right shift would be much simpler if R = 2^64
-		long reduced = ab.add(Int127.mul64(t, N)).shiftRight(R_BITS).getLow();
+		long reduced = ab.add(Uint128.mul63(t, N)).shiftRight(R_BITS).getLow();
 		long result = reduced<N ? reduced : reduced-N;
 		
-//		if (DEBUG) {
-//			//LOG.debug(a + " * " + b + " = " + result);
-//			assertTrue(a >= 0 && a<N);
-//			assertTrue(b >= 0 && b<N);
-//			assertTrue(result >= 0 && result < N);
-//		}
+		if (DEBUG) {
+			//LOG.debug(a + " * " + b + " = " + result);
+			assertTrue(a >= 0 && a<N);
+			assertTrue(b >= 0 && b<N);
+			assertTrue(result >= 0 && result < N);
+		}
 		
 		return result;
 	}
