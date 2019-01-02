@@ -3857,9 +3857,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 
 		if (Config.EXPENSIVE_JUNIT_TESTS) {
-			check("FactorInteger(12^151-1)", // 
-					"");
-			
 			// 10^79+5923 - very slow test  
 			 check("FactorInteger(10^79+5923)", //
 			 "{{1333322076518899001350381760807974795003,1},{\n" +
