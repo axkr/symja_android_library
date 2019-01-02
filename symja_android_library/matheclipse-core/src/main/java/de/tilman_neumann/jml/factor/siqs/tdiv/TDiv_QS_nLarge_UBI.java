@@ -18,8 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-//import org.apache.log4j.Logger;
-
 import de.tilman_neumann.jml.base.UnsignedBigInt;
 import de.tilman_neumann.jml.factor.base.SortedIntegerArray;
 import de.tilman_neumann.jml.factor.base.SortedLongArray;
@@ -28,12 +26,12 @@ import de.tilman_neumann.jml.factor.base.congruence.AQPairFactory;
 import de.tilman_neumann.jml.factor.base.congruence.Smooth_Perfect;
 import de.tilman_neumann.jml.factor.base.matrixSolver.MatrixSolver01_Gauss;
 import de.tilman_neumann.jml.factor.lehman.Lehman_Fast;
+import de.tilman_neumann.jml.factor.pollardRho.PollardRhoBrentMontgomery63;
 import de.tilman_neumann.jml.factor.siqs.SIQS;
 import de.tilman_neumann.jml.factor.siqs.data.SolutionArrays;
 import de.tilman_neumann.jml.factor.siqs.poly.SIQSPolyGenerator;
 import de.tilman_neumann.jml.factor.siqs.powers.PowerOfSmallPrimesFinder;
 import de.tilman_neumann.jml.factor.siqs.sieve.Sieve03g;
-import de.tilman_neumann.jml.factor.squfof.SquFoF63;
 import de.tilman_neumann.jml.primes.probable.BPSWTest;
 import de.tilman_neumann.util.SortedMultiset;
 import de.tilman_neumann.util.Timer;
@@ -80,9 +78,12 @@ public class TDiv_QS_nLarge_UBI implements TDiv_QS {
 
 	private BPSWTest bpsw = new BPSWTest();
 
-	private Lehman_Fast lehman = new Lehman_Fast(true); // for N <= 2^56
-	private SquFoF63 squFoF63 = new SquFoF63(); // used for 2^57 <= Q <= 2^59
-	private SIQS qsInternal; // Nested SIQS for Q_rest >= 2^60. Required only for approximately N>310 bit.
+	private Lehman_Fast lehman = new Lehman_Fast(true);
+	private PollardRhoBrentMontgomery63 pollardRho = new PollardRhoBrentMontgomery63();
+	// Nested SIQS is required only for approximately N>310 bit.
+	// XXX For safety reasons we do not use Sieve03gU yet for the internal quadratic sieve
+	private SIQS qsInternal = new SIQS(0.32F, 0.37F, null, 0.16F, new PowerOfSmallPrimesFinder(),
+			new SIQSPolyGenerator(), new Sieve03g(), new TDiv_QS_1Large_UBI(), 10, new MatrixSolver01_Gauss(), false);
 
 	// smallest solutions of Q(x) == A(x)^2 (mod p)
 	private int[] x1Array, x2Array;
@@ -97,12 +98,6 @@ public class TDiv_QS_nLarge_UBI implements TDiv_QS {
 	private Timer timer = new Timer();
 	private long testCount, sufficientSmoothCount;
 	private long duration;
-
-	public TDiv_QS_nLarge_UBI() {
-		// XXX For safety reasons we do not use Sieve03gU yet for the internal quadratic sieve
-		this.qsInternal = new SIQS(0.32F, 0.37F, null, 0.16F, new PowerOfSmallPrimesFinder(), new SIQSPolyGenerator(),
-				new Sieve03g(), new TDiv_QS_1Large_UBI(), 10, new MatrixSolver01_Gauss(), false);
-	}
 
 	@Override
 	public String getName() {
@@ -260,10 +255,12 @@ public class TDiv_QS_nLarge_UBI implements TDiv_QS {
 
 		// now we consider Q as sufficiently smooth. then we want to know all prime factors, as long as we do not find
 		// one that is too big to be useful.
-		// if (DEBUG) LOG.debug("test(): pMax=" + pMax + " < Q_rest=" + Q_rest + " < maxQRest=" + maxQRest + " ->
-		// resolve all factors");
+		// if (DEBUG)
+		// LOG.debug("test(): pMax=" + pMax + " < Q_rest=" + Q_rest + " < maxQRest=" + maxQRest
+		// + " -> resolve all factors");
 		boolean isSmooth = factor_recurrent(Q_rest);
-		// if (bigFactors.size()>2) LOG.debug("Found " + bigFactors.size() + " distinct big factors!");
+		// if (bigFactors.size() > 2)
+		// LOG.debug("Found " + bigFactors.size() + " distinct big factors!");
 		return isSmooth ? aqPairFactory.create(A, smallFactors, bigFactors) : null;
 	}
 
@@ -284,32 +281,37 @@ public class TDiv_QS_nLarge_UBI implements TDiv_QS {
 		if (bpsw.isProbablePrime(Q_rest)) {
 			// Q_rest is a (probable) prime >= pMax^2. Such big factors do not help to find smooth congruences, so we
 			// ignore the partial.
-			// if (DEBUG) LOG.debug("factor_recurrent(): Q_rest = " + Q_rest + " is probable prime > pMax^2 -> ignore");
+			// if (DEBUG)
+			// LOG.debug("factor_recurrent(): Q_rest = " + Q_rest + " is probable prime > pMax^2 -> ignore");
 			return false;
 		} // else: Q_rest is surely not prime
 
 		// Find a factor of Q_rest, where Q_rest is odd and has two+ factors, each greater than pMax.
-		// At N with 200 bit we have pMax ~ 17 bit, thus Q_rest >= 34 bit -> trial division is no help here.
+		// This starts to happen at N >= 200 bit where we have pMax ~ 17 bit, thus Q_rest >= 34 bit
+		// -> trial division is no help here.
 		BigInteger factor1;
 		int Q_rest_bits = Q_rest.bitLength();
-		if (Q_rest_bits < 57) {
-			// if (DEBUG) LOG.debug("test(): pMax^2 = " + pMaxSquare + ", Q_rest = " + Q_rest + " (" + Q_rest_bits + "
-			// bits) not prime -> use lehman");
+		if (Q_rest_bits < 51) {
+			// if (DEBUG)
+			// LOG.debug("test(): pMax^2 = " + pMaxSquare + ", Q_rest = " + Q_rest + " (" + Q_rest_bits
+			// + " bits) not prime -> use lehman");
 			factor1 = lehman.findSingleFactor(Q_rest);
-		} else if (Q_rest_bits < 60) {
-			// if (DEBUG) LOG.debug("factor_recurrent(): pMax^2 = " + pMaxSquare + ", Q_rest = " + Q_rest + " (" +
-			// Q_rest_bits + " bits) not prime -> use squFoF63");
-			factor1 = squFoF63.findSingleFactor(Q_rest);
+		} else if (Q_rest_bits < 63) {
+			// if (DEBUG)
+			// LOG.debug("factor_recurrent(): pMax^2 = " + pMaxSquare + ", Q_rest = " + Q_rest + " (" + Q_rest_bits
+			// + " bits) not prime -> use pollardRho");
+			factor1 = pollardRho.findSingleFactor(Q_rest);
 		} else {
-			// if (DEBUG) LOG.debug("factor_recurrent(): pMax^2 = " + pMaxSquare + ", Q_rest = " + Q_rest + " (" +
-			// Q_rest_bits + " bits) not prime -> use qsInternal");
+			// if (DEBUG)
+			// LOG.debug("factor_recurrent(): pMax^2 = " + pMaxSquare + ", Q_rest = " + Q_rest + " (" + Q_rest_bits
+			// + " bits) not prime -> use qsInternal");
 			factor1 = qsInternal.findSingleFactor(Q_rest);
 		}
 		// Here we can not exclude factors > 31 bit because they may have 2 prime factors themselves.
 		BigInteger factor2 = Q_rest.divide(factor1);
-//		if (DEBUG)
-//			LOG.debug("factor_recurrent(): Q_rest = " + Q_rest + " (" + Q_rest_bits + " bits) = " + factor1 + " * "
-//					+ factor2);
+		// if (DEBUG)
+		// LOG.debug("factor_recurrent(): Q_rest = " + Q_rest + " (" + Q_rest_bits + " bits) = " + factor1 + " * "
+		// + factor2);
 		return factor_recurrent(factor1) && factor_recurrent(factor2);
 	}
 
