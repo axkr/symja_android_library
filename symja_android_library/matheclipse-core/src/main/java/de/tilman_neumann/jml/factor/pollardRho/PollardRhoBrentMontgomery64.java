@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 import de.tilman_neumann.jml.base.Uint128;
 import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
 import de.tilman_neumann.jml.gcd.Gcd63;
+//import de.tilman_neumann.util.ConfigUtil;
 import de.tilman_neumann.util.SortedMultiset;
 
 /**
@@ -32,7 +33,8 @@ import de.tilman_neumann.util.SortedMultiset;
  * The main reason why Montgomery multiplication is helpful for Pollard-Rho is that
  * no conversions to/from Montgomery form are required.
  * 
- * This implementation is long-based and uses the Montgomery reducer R=2^63.
+ * In this implementation I managed to use the Montgomery reducer R=2^64, which simplifies
+ * the Montgomery multiplication a good deal.
  * 
  * @see [Richard P. Brent: An improved Monte Carlo Factorization Algorithm, 1980]
  * @see [http://projecteuler.chat/viewtopic.php?t=3776]
@@ -40,17 +42,14 @@ import de.tilman_neumann.util.SortedMultiset;
  * 
  * @author Tilman Neumann
  */
-public class PollardRhoBrentMontgomery63 extends FactorAlgorithmBase {
-	private static final Logger LOG = Logger.getLogger(PollardRhoBrentMontgomery63.class);
+public class PollardRhoBrentMontgomery64 extends FactorAlgorithmBase {
+	private static final Logger LOG = Logger.getLogger(PollardRhoBrentMontgomery64.class);
 	private static final boolean DEBUG = false;
 
 	private static final SecureRandom RNG = new SecureRandom();
 
-	// Reducer constants
-	private static final long R = 1L << 63; // The reducer, a power of 2
-	private static final int R_BITS = 63;
-	private static final long R_MASK = R-1; // 0x7FFFFFFFFFFFFFFFL, helps to compute x mod R = x & (R - 1)
-	private static final long R_HALF = 1L << 62;
+	// The reducer R is 2^64, but the only constant still required is the half of it.
+	private static final long R_HALF = 1L << 63;
 
 	private long N;
 
@@ -60,7 +59,7 @@ public class PollardRhoBrentMontgomery63 extends FactorAlgorithmBase {
 
 	@Override
 	public String getName() {
-		return "PollardRhoBrentMontgomery63";
+		return "PollardRhoBrentMontgomery64";
 	}
 	
 	@Override
@@ -122,11 +121,11 @@ public class PollardRhoBrentMontgomery63 extends FactorAlgorithmBase {
 	}
 	
 	/**
-	 * Finds (1/R) mod N and (-1/N) mod R for odd N and R=2^63.
+	 * Finds (1/R) mod N and (-1/N) mod R for odd N and R=2^64.
 	 * 
-	 * EEA63 would not work with R=2^63 because R overflows positive longs.
-	 * But the algorithm from http://coliru.stacked-crooked.com/a/f57f11426d06acd8
-	 * (which refers to "hackers delight") can deal with R=2^63.
+	 * As before, EEA63 would not work for R=2^64, but with a minor modification
+	 * the algorithm from http://coliru.stacked-crooked.com/a/f57f11426d06acd8
+	 * still works for R=2^64.
 	 */
 	private void setUpMontgomeryMult() {
 		// initialization
@@ -134,7 +133,7 @@ public class PollardRhoBrentMontgomery63 extends FactorAlgorithmBase {
 	    long u = 1;
 	    long v = 0;
 	    
-	    while (a > 0) {
+	    while (a != 0) { // modification
 	        a >>>= 1;
 	        if ((u & 1) == 0) {
 	            u >>>= 1;
@@ -150,7 +149,7 @@ public class PollardRhoBrentMontgomery63 extends FactorAlgorithmBase {
 	}
 
 	/**
-	 * Montgomery multiplication modulo N, using reducer R=2^63.
+	 * Montgomery multiplication modulo N, using reducer R=2^64.
 	 * Inputs and output are in Montgomery form and in the range [0, N).
 	 * 
 	 * @param a
@@ -159,13 +158,15 @@ public class PollardRhoBrentMontgomery63 extends FactorAlgorithmBase {
 	 */
 	private long montgomeryMult(final long a, final long b) {
 		// Step 1: Compute a*b
-		Uint128 ab = Uint128.mul63(a, b);
+		Uint128 ab = Uint128.mul64(a, b);
 		// Step 2: Compute t = ab * (-1/N) mod R
-		// Since R is a power of 2, "mod R" can be computed by "& R_MASK".
-		long t = Uint128.mul63(ab.and(R_MASK), minusNInvModR).and(R_MASK);
+		// Since R=2^64, "x mod R" just means to get the low part of x.
+		// That would give t = Uint128.mul64(ab.getLow(), minusNInvModR).getLow();
+		// but even better, the long product just gives the low part -> we can get rid of one expensive mul64().
+		long t = ab.getLow() * minusNInvModR;
 		// Step 3: Compute reduced = (a*b + t*N) / R
-		// Since R is a power of 2, "/ R" can be computed by "shiftRight(R_BITS)".
-		long reduced = ab.add(Uint128.mul63(t, N)).shiftRight(R_BITS).getLow();
+		// Since R=2^64, "x / R" just means to get the high part of x.
+		long reduced = ab.add(Uint128.mul64(t, N)).getHigh();
 		long result = reduced<N ? reduced : reduced-N;
 		
 //		if (DEBUG) {
@@ -216,7 +217,7 @@ public class PollardRhoBrentMontgomery63 extends FactorAlgorithmBase {
 //			}
 //			
 //			long start = System.currentTimeMillis();
-//			SortedMultiset<BigInteger> result = new PollardRhoBrentMontgomery63().factor(n);
+//			SortedMultiset<BigInteger> result = new PollardRhoBrentMontgomery64().factor(n);
 //			LOG.info("Factored " + n + " = " + result.toString() + " in " + (System.currentTimeMillis()-start) + " ms");
 //
 //		} // next input...

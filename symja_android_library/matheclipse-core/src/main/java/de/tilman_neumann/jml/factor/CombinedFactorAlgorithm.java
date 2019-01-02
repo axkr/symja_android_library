@@ -21,10 +21,13 @@ import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.util.StringTokenizer;
 
+import org.apache.log4j.Logger;
+
 import de.tilman_neumann.jml.factor.base.matrixSolver.MatrixSolver01_Gauss;
 import de.tilman_neumann.jml.factor.base.matrixSolver.MatrixSolver02_BlockLanczos;
 import de.tilman_neumann.jml.factor.lehman.Lehman_Fast;
 import de.tilman_neumann.jml.factor.pollardRho.PollardRhoBrentMontgomery63;
+import de.tilman_neumann.jml.factor.psiqs.PSIQS;
 import de.tilman_neumann.jml.factor.psiqs.PSIQSBase;
 import de.tilman_neumann.jml.factor.psiqs.PSIQS_U;
 import de.tilman_neumann.jml.factor.siqs.SIQS;
@@ -44,7 +47,7 @@ import de.tilman_neumann.util.TimeUtil;
  */
 public class CombinedFactorAlgorithm extends FactorAlgorithmBase {
 	@SuppressWarnings("unused")
-//	private static final Logger LOG = Logger.getLogger(CombinedFactorAlgorithm.class);
+	private static final Logger LOG = Logger.getLogger(CombinedFactorAlgorithm.class);
 	
 	private TDiv31Inverse tDiv31 = new TDiv31Inverse();
 	private Lehman_Fast lehman = new Lehman_Fast(true);
@@ -53,14 +56,31 @@ public class CombinedFactorAlgorithm extends FactorAlgorithmBase {
 	private PSIQSBase siqs_bigArgs;
 	
 	/**
-	 * Complete constructor.
+	 * Simple constructor using PSIQS with sun.misc.Unsafe features.
+	 * 
 	 * @param numberOfThreads the number of parallel threads for PSIQS
+	 * @param profile if true then extended profiling information is collected
 	 */
 	public CombinedFactorAlgorithm(int numberOfThreads, boolean profile) {
+		this(numberOfThreads, true, profile);
+	}
+	
+	/**
+	 * Complete constructor.
+	 * 
+	 * @param numberOfThreads the number of parallel threads for PSIQS
+	 * @param permitUnsafeUsage if true then PSIQS_U using sun.misc.Unsafe features is used. This may be ~10% faster.
+	 * @param profile if true then extended profiling information is collected
+	 */
+	public CombinedFactorAlgorithm(int numberOfThreads, boolean permitUnsafeUsage, boolean profile) {
 		// SIQS tuned for small N
 		siqs_smallArgs = new SIQS(0.32F, 0.37F, null, 0.16F, new PowerOfSmallPrimesFinder(), new SIQSPolyGenerator(), new Sieve03gU(), new TDiv_QS_1Large_UBI(), 10, new MatrixSolver01_Gauss(), false);
 		// PSIQS for bigger N: monolithic sieve is still slightly faster than SBH in the long run.
-		siqs_bigArgs = new PSIQS_U(0.32F, 0.37F, null, null, numberOfThreads, new NoPowerFinder(), new MatrixSolver02_BlockLanczos(), profile);
+		if (permitUnsafeUsage) {
+			siqs_bigArgs = new PSIQS_U(0.32F, 0.37F, null, null, numberOfThreads, new NoPowerFinder(), new MatrixSolver02_BlockLanczos(), profile);
+		} else {
+			siqs_bigArgs = new PSIQS(0.32F, 0.37F, null, null, numberOfThreads, new NoPowerFinder(), new MatrixSolver02_BlockLanczos(), profile);
+		}
 	}
 
 	@Override

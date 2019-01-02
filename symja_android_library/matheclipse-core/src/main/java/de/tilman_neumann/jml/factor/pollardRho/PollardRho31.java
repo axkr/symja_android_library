@@ -16,7 +16,7 @@ package de.tilman_neumann.jml.factor.pollardRho;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
 import de.tilman_neumann.jml.gcd.Gcd63;
@@ -27,8 +27,8 @@ import de.tilman_neumann.jml.gcd.Gcd63;
  * @author Tilman Neumann
  */
 public class PollardRho31 extends FactorAlgorithmBase {
-//	@SuppressWarnings("unused")
-//	private static final Logger LOG = Logger.getLogger(PollardRho31.class);
+	@SuppressWarnings("unused")
+	private static final Logger LOG = Logger.getLogger(PollardRho31.class);
 	private static final SecureRandom RNG = new SecureRandom();
 
 	private Gcd63 gcdEngine = new Gcd63();

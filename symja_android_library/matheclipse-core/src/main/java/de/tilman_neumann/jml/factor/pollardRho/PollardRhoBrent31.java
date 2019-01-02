@@ -13,11 +13,17 @@
  */
 package de.tilman_neumann.jml.factor.pollardRho;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
+import org.apache.log4j.Logger;
+
 import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
 import de.tilman_neumann.jml.gcd.Gcd31;
+import de.tilman_neumann.util.SortedMultiset;
 
 /**
  * Brents's improvement of Pollard's Rho algorithm, following [Richard P. Brent: An improved Monte Carlo Factorization Algorithm, 1980].
@@ -27,7 +33,7 @@ import de.tilman_neumann.jml.gcd.Gcd31;
  * @author Tilman Neumann
  */
 public class PollardRhoBrent31 extends FactorAlgorithmBase {
-//	private static final Logger LOG = Logger.getLogger(PollardRhoBrent31.class);
+	private static final Logger LOG = Logger.getLogger(PollardRhoBrent31.class);
 	private static final SecureRandom RNG = new SecureRandom();
 
 	private int N;

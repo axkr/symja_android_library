@@ -18,7 +18,7 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
 
@@ -29,7 +29,7 @@ import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
  */
 public class PollardRho_ProductGcd extends FactorAlgorithmBase {
 	@SuppressWarnings("unused")
-//	private static final Logger LOG = Logger.getLogger(PollardRho_ProductGcd.class);
+	private static final Logger LOG = Logger.getLogger(PollardRho_ProductGcd.class);
 	private static final SecureRandom RNG = new SecureRandom();
 
 	private BigInteger N;
