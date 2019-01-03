@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import de.tilman_neumann.jml.factor.base.SortedIntegerArray;
 import de.tilman_neumann.jml.factor.base.SortedLongArray;
 import de.tilman_neumann.jml.factor.base.congruence.AQPair;
@@ -25,7 +27,7 @@ import de.tilman_neumann.jml.factor.base.congruence.AQPairFactory;
 import de.tilman_neumann.jml.factor.base.congruence.Smooth_Perfect;
 import de.tilman_neumann.jml.factor.base.matrixSolver.MatrixSolver01_Gauss;
 import de.tilman_neumann.jml.factor.lehman.Lehman_Fast;
-import de.tilman_neumann.jml.factor.pollardRho.PollardRhoBrentMontgomery63;
+import de.tilman_neumann.jml.factor.pollardRho.PollardRhoBrentMontgomery64;
 import de.tilman_neumann.jml.factor.siqs.SIQS;
 import de.tilman_neumann.jml.factor.siqs.data.SolutionArrays;
 import de.tilman_neumann.jml.factor.siqs.poly.SIQSPolyGenerator;
@@ -44,8 +46,8 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
  * @author Tilman Neumann
  */
 public class TDiv_QS_nLarge implements TDiv_QS {
-//	private static final Logger LOG = Logger.getLogger(TDiv_QS_nLarge.class);
-//	private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(TDiv_QS_nLarge.class);
+	private static final boolean DEBUG = false;
 	
 	// factor argument and polynomial parameters
 	private BigInteger kN;
@@ -72,7 +74,7 @@ public class TDiv_QS_nLarge implements TDiv_QS {
 	private BPSWTest bpsw = new BPSWTest();
 	
 	private Lehman_Fast lehman = new Lehman_Fast(true);
-	private PollardRhoBrentMontgomery63 pollardRho = new PollardRhoBrentMontgomery63();
+	private PollardRhoBrentMontgomery64 pollardRho = new PollardRhoBrentMontgomery64();
 	// Nested SIQS is required only for approximately N>310 bit.
 	// XXX For safety reasons we do not use Sieve03gU yet for the internal quadratic sieve
 	private SIQS qsInternal = new SIQS(0.32F, 0.37F, null, 0.16F, new PowerOfSmallPrimesFinder(), new SIQSPolyGenerator(), new Sieve03g(), new TDiv_QS_1Large_UBI(), 10, new MatrixSolver01_Gauss(), false);
@@ -100,7 +102,7 @@ public class TDiv_QS_nLarge implements TDiv_QS {
 	public void initializeForN(double N_dbl, BigInteger kN, double maxQRest, boolean profile) {
 		// the biggest unfactored rest where some Q is considered smooth enough for a congruence.
 		this.maxQRest = maxQRest;
-//		if (DEBUG) LOG.debug("maxQRest = " + maxQRest + " (" + (64 - Long.numberOfLeadingZeros((long)maxQRest)) + " bits)");
+		if (DEBUG) LOG.debug("maxQRest = " + maxQRest + " (" + (64 - Long.numberOfLeadingZeros((long)maxQRest)) + " bits)");
 		this.kN = kN;
 		// statistics
 		this.profile = profile;
@@ -197,10 +199,10 @@ public class TDiv_QS_nLarge implements TDiv_QS {
 			int p = powers[pIndex];
 			int xModP = xAbs<p ? x : x % p;
 			if (xModP<0) xModP += p; // make remainder non-negative for negative x
-//			if (DEBUG) {
-//				if (xModP<0) LOG.debug("x=" + x + ", p=" + p + " -> x % p = " + xModP + ", x1 = " + x1Array[pIndex] + ", x2 = " + x2Array[pIndex]);
+			if (DEBUG) {
+				if (xModP<0) LOG.debug("x=" + x + ", p=" + p + " -> x % p = " + xModP + ", x1 = " + x1Array[pIndex] + ", x2 = " + x2Array[pIndex]);
 //				assertTrue(0<=xModP && xModP<p);
-//			}
+			}
 			if (xModP==x1Array[pIndex] || xModP==x2Array[pIndex]) {
 				pass2Primes[pass2Count] = primes[pIndex];
 				pass2Exponents[pass2Count] = exponents[pIndex];
@@ -228,19 +230,19 @@ public class TDiv_QS_nLarge implements TDiv_QS {
 		if (Q_rest.doubleValue() >= maxQRest) return null; // Q is not sufficiently smooth
 		
 		// now we consider Q as sufficiently smooth. then we want to know all prime factors, as long as we do not find one that is too big to be useful.
-//		if (DEBUG) LOG.debug("test(): pMax=" + pMax + " < Q_rest=" + Q_rest + " < maxQRest=" + maxQRest + " -> resolve all factors");
+		if (DEBUG) LOG.debug("test(): pMax=" + pMax + " < Q_rest=" + Q_rest + " < maxQRest=" + maxQRest + " -> resolve all factors");
 		boolean isSmooth = factor_recurrent(Q_rest);
-//		if (bigFactors.size()>2) LOG.debug("Found " + bigFactors.size() + " distinct big factors!");
+		if (bigFactors.size()>2) LOG.debug("Found " + bigFactors.size() + " distinct big factors!");
 		return isSmooth ? aqPairFactory.create(A, smallFactors, bigFactors) : null;
 	}
 
 	private boolean factor_recurrent(BigInteger Q_rest) {
 		if (Q_rest.compareTo(pMaxSquare)<0) {
 			// we divided Q_rest by all primes <= pMax and we have Q_rest < pMax^2 -> it must be prime
-//			if (DEBUG) {
-//				LOG.debug("factor_recurrent(): Q_rest = " + Q_rest + " < pMax^2 -> Q_rest is prime");
+			if (DEBUG) {
+				LOG.debug("factor_recurrent(): Q_rest = " + Q_rest + " < pMax^2 -> Q_rest is prime");
 //				assertTrue(bpsw.isProbablePrime(Q_rest));
-//			}
+			}
 			if (Q_rest.bitLength() > 31) return false;
 			bigFactors.add(Q_rest.intValue());
 			return true;
@@ -248,7 +250,7 @@ public class TDiv_QS_nLarge implements TDiv_QS {
 		// now we can not do without isProbablePrime(), because calling findSingleFactor() may not return when called with a prime argument
 		if (bpsw.isProbablePrime(Q_rest)) {
 			// Q_rest is a (probable) prime >= pMax^2. Such big factors do not help to find smooth congruences, so we ignore the partial.
-//			if (DEBUG) LOG.debug("factor_recurrent(): Q_rest = " + Q_rest + " is probable prime > pMax^2 -> ignore");
+			if (DEBUG) LOG.debug("factor_recurrent(): Q_rest = " + Q_rest + " is probable prime > pMax^2 -> ignore");
 			return false;
 		} // else: Q_rest is surely not prime
 		
@@ -257,19 +259,19 @@ public class TDiv_QS_nLarge implements TDiv_QS {
 		// -> trial division is no help here.
 		BigInteger factor1;
 		int Q_rest_bits = Q_rest.bitLength();
-		if (Q_rest_bits<51) {
-//			if (DEBUG) LOG.debug("test(): pMax^2 = " + pMaxSquare + ", Q_rest = " + Q_rest + " (" + Q_rest_bits + " bits) not prime -> use lehman");
+		if (Q_rest_bits<50) {
+			if (DEBUG) LOG.debug("test(): pMax^2 = " + pMaxSquare + ", Q_rest = " + Q_rest + " (" + Q_rest_bits + " bits) not prime -> use lehman");
 			factor1 = lehman.findSingleFactor(Q_rest);
 		} else if (Q_rest_bits<63) {
-//			if (DEBUG) LOG.debug("factor_recurrent(): pMax^2 = " + pMaxSquare + ", Q_rest = " + Q_rest + " (" + Q_rest_bits + " bits) not prime -> use pollardRho");
+			if (DEBUG) LOG.debug("factor_recurrent(): pMax^2 = " + pMaxSquare + ", Q_rest = " + Q_rest + " (" + Q_rest_bits + " bits) not prime -> use pollardRho");
 			factor1 = pollardRho.findSingleFactor(Q_rest);
 		} else {
-//			if (DEBUG) LOG.debug("factor_recurrent(): pMax^2 = " + pMaxSquare + ", Q_rest = " + Q_rest + " (" + Q_rest_bits + " bits) not prime -> use qsInternal");
+			if (DEBUG) LOG.debug("factor_recurrent(): pMax^2 = " + pMaxSquare + ", Q_rest = " + Q_rest + " (" + Q_rest_bits + " bits) not prime -> use qsInternal");
 			factor1 = qsInternal.findSingleFactor(Q_rest);
 		}
 		// Here we can not exclude factors > 31 bit because they may have 2 prime factors themselves.
 		BigInteger factor2 = Q_rest.divide(factor1);
-//		if (DEBUG) LOG.debug("factor_recurrent(): Q_rest = " + Q_rest + " (" + Q_rest_bits + " bits) = " + factor1 + " * " + factor2);
+		if (DEBUG) LOG.debug("factor_recurrent(): Q_rest = " + Q_rest + " (" + Q_rest_bits + " bits) = " + factor1 + " * " + factor2);
 		return factor_recurrent(factor1) && factor_recurrent(factor2);
 	}
 
