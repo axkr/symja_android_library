@@ -13,6 +13,7 @@ import java.util.TreeSet;
 
 import org.matheclipse.combinatoric.KSubsets;
 import org.matheclipse.combinatoric.KSubsets.KSubsetsList;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.expression.AbstractIntegerSym;
@@ -20,10 +21,12 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntegerSym;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.IRational;
 
 import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
+
+import de.tilman_neumann.jml.factor.CombinedFactorAlgorithm;
+import de.tilman_neumann.util.SortedMultiset;
 
 /**
  * Provides primality probabilistic methods.
@@ -384,7 +387,7 @@ public class Primality {
 	 */
 	public static IInteger countPrimes1021(IInteger base, IExpr exponent, OpenIntToIExprHashMap<IExpr> map,
 			boolean setEvaled, boolean[] evaled) {
-		if (base.isZero() ||base.isOne() || base.isMinusOne()) {
+		if (base.isZero() || base.isOne() || base.isMinusOne()) {
 			return base;
 		}
 		if (base instanceof IntegerSym) {
@@ -407,8 +410,8 @@ public class Primality {
 	 *            if <code>evaled[0]</code> is <code>true</code> a transformations was done
 	 * @return the rest factor or one, if the number could be factored completely into primes less equal then 1021
 	 */
-	private static IInteger countPrimes1021(final BigInteger base, IExpr exponent,
-			OpenIntToIExprHashMap<IExpr> map, boolean[] evaled) {
+	private static IInteger countPrimes1021(final BigInteger base, IExpr exponent, OpenIntToIExprHashMap<IExpr> map,
+			boolean[] evaled) {
 		BigInteger[] divRem;
 		BigInteger result = base;
 		int count;
@@ -681,7 +684,21 @@ public class Primality {
 
 	public static void factorInteger(final BigInteger val, Map<BigInteger, Integer> map) {
 		EllipticCurveMethod ecm = new EllipticCurveMethod(val);
-		ecm.factorize(map);
+		BigInteger rest = ecm.factorize(map);
+		if (!rest.equals(BigInteger.ONE)) {
+			CombinedFactorAlgorithm factorizer;
+			final int cores = Runtime.getRuntime().availableProcessors();
+			if (Config.JAVA_UNSAFE) {
+				factorizer = new CombinedFactorAlgorithm(cores / 2 + 1, true, false);
+			} else {
+				factorizer = new CombinedFactorAlgorithm(1, false, false);
+			}
+			SortedMultiset<BigInteger> result = factorizer.factor(rest);
+			for (Map.Entry<BigInteger, Integer> entry : result.entrySet()) {
+				map.put(entry.getKey(), entry.getValue());
+			}
+			return;
+		}
 	}
 
 	public static BigInteger rho(final BigInteger val) {
