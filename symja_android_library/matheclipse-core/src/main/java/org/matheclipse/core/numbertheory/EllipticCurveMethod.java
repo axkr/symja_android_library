@@ -203,7 +203,7 @@ public class EllipticCurveMethod {
 				}
 			}
 			if (i == 17) { // Test for perfect square
-				val = a.add(BigInteger.valueOf(m * j));
+				val = a.add(BigInteger.valueOf(m).multiply(BigInteger.valueOf(j)));
 				c = val.multiply(val).subtract(sqr);
 				intLog2N = c.bitLength() - 1;
 				log2N = intLog2N + Math.log(c.shiftRight(intLog2N - 32).add(BigInt1).doubleValue()) / Math.log(2) - 32;
@@ -309,7 +309,7 @@ public class EllipticCurveMethod {
 	private final long biN[] = new long[NLen];
 	private final long biR[] = new long[NLen];
 	private final long biS[] = new long[NLen];
-	private final long biT[] = new long[NLen]; 
+	private final long biT[] = new long[NLen];
 	private final long aiJS[][] = new long[PWmax][NLen];
 	private final long aiJW[][] = new long[PWmax][NLen];
 	private final long aiJX[][] = new long[PWmax][NLen];
@@ -530,7 +530,7 @@ public class EllipticCurveMethod {
 			for (i = 0; i < NP; i++) {
 				P = aiP[i];
 				SW = TestedQs = 0;
-				Q = W = (int) BigNbrModLong(TestNbr, P * P);
+				Q = W = (int) BigNbrModLong(TestNbr, ((long)P) * ((long)P));
 				for (J = P - 2; J > 0; J--) {
 					W = (W * Q) % (P * P);
 				}
@@ -666,7 +666,7 @@ public class EllipticCurveMethod {
 									if (IV == 0) {
 										LongToBigNbr(X, biExp);
 									} else {
-										LongToBigNbr(VK * X / PK, biExp);
+										LongToBigNbr(((long)VK) * ((long)X) / ((long)PK), biExp);
 										if (VK * X / PK == 0) {
 											continue;
 										}
@@ -752,7 +752,7 @@ public class EllipticCurveMethod {
 											if (IV == 0) {
 												LongToBigNbr(X, biExp);
 											} else {
-												LongToBigNbr(VK * X / PK, biExp);
+												LongToBigNbr(((long)VK) * ((long)X) / ((long)PK), biExp);
 												if (VK * X / PK == 0) {
 													continue;
 												}
@@ -2408,7 +2408,7 @@ public class EllipticCurveMethod {
 			incNbrFactors();
 		}
 		SortFactorsInputNbr();
-	} 
+	}
 
 	private void JacobiSum(int A, int B, int P, int PK, int PL, int PM, int Q) {
 		int I, J, K;
@@ -2515,7 +2515,7 @@ public class EllipticCurveMethod {
 		for (i = 2; i < NumberLength; i++) {
 			Out[i] = (Nbr < 0 ? 0x7FFFFFFFl : 0);
 		}
-	}  
+	}
 
 	/**
 	 * 
@@ -3489,7 +3489,7 @@ public class EllipticCurveMethod {
 			Prod[j] += (Pr >>> 31);
 			AdjustModN(Prod);
 		} while (i > 0);
-	} 
+	}
 
 	/**
 	 * Normalize coefficient of JS.

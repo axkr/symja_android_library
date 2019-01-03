@@ -731,7 +731,7 @@ public class PredicateQ {
 				if (expr.isZero()) {
 					return true;
 				}
-				if (Config.MAX_FACTOR_LEAFCOUNT > 0 && expr.leafCount() > Config.MAX_FACTOR_LEAFCOUNT) {
+				if (expr.leafCount() > Config.MAX_FACTOR_LEAFCOUNT && Config.MAX_FACTOR_LEAFCOUNT > 0) {
 					return false;
 				}
 				if (expr.isPlusTimesPower()) {

@@ -592,7 +592,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	}
 
 	@Override
-	public boolean equals(final Object obj) {
+	public final boolean equals(final Object obj) {
 		if (obj instanceof HMArrayList) {
 			if (hashCode() != obj.hashCode()) {
 				return false;
@@ -797,6 +797,17 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 		lastIndex = size + increment;
 
 		array = newArray;
+	}
+
+	@Override
+	public final int hashCode() {
+		if (hashValue == 0) {
+			hashValue = 0x811c9dc5;// decimal 2166136261;
+			for (int i = firstIndex; i < lastIndex; i++) {
+				hashValue = (hashValue * 16777619) ^ (array[i].hashCode() & 0xff);
+			}
+		}
+		return hashValue;
 	}
 
 	@Override

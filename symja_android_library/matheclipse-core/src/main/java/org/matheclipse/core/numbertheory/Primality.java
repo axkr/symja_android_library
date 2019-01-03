@@ -1188,7 +1188,7 @@ public class Primality {
 		for (p = 31; count >= n; --p) {
 			count -= (mask >> p) & 1;
 		}
-		return 3 * (p + (i << 5)) + 7 + (p & 1);
+		return 3L * (((long)p) + (i << 5)) + 7L + (((long)p) & 1);
 	}
 
 	// Count number of set bits in an int

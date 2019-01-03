@@ -1331,7 +1331,7 @@ public final class LinearAlgebra {
 				int[] count = new int[1];
 				count[0] = 1;
 				IAST scalar = F.Sqrt(F.QQ(1, m));
-				return F.matrix((i, j) -> unit(F.QQ(2 * i * j, m).times(F.Pi)).times(scalar), m, m);
+				return F.matrix((i, j) -> unit(F.QQ(2L * ((long)i) * ((long)j), m).times(F.Pi)).times(scalar), m, m);
 			}
 			return F.NIL;
 		}

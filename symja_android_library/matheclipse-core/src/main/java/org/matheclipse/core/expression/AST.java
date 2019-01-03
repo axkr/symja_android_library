@@ -254,17 +254,6 @@ public class AST extends HMArrayList implements Externalizable {
 		ast.lastIndex = lastIndex;
 		return ast;
 	}
-
-	@Override
-	public int hashCode() {
-		if (hashValue == 0) {
-			hashValue = 0x811c9dc5;// decimal 2166136261;
-			for (int i = firstIndex; i < lastIndex; i++) {
-				hashValue = (hashValue * 16777619) ^ (array[i].hashCode() & 0xff);
-			}
-		}
-		return hashValue;
-	}
 	
 	public IAST removeFromEnd(int fromPosition) {
 		if (0 < fromPosition && fromPosition <= size()) {

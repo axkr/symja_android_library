@@ -421,30 +421,30 @@ public abstract class Scanner {
 		}
 		int contextIndex = -1;
 		while ((Character.isJavaIdentifierPart(fCurrentChar) && (fCurrentChar != '_')) || (fCurrentChar == '$')
-				  || (fCurrentChar == '`')) {
+				|| (fCurrentChar == '`')) {
 			if (fCurrentChar == '`') {
 				contextIndex = fCurrentPosition - 1;
-//			} else if (fCurrentChar == ':') {
-//				if ((fCurrentChar == ':') && fInputString.length > fCurrentPosition
-//						&& fInputString[fCurrentPosition] == ':') {
-//					// for Rubi identifiers integrate::PolyQ etc
-//					getChar();
-//					getChar();
-//				}
-//				break;
+				// } else if (fCurrentChar == ':') {
+				// if ((fCurrentChar == ':') && fInputString.length > fCurrentPosition
+				// && fInputString[fCurrentPosition] == ':') {
+				// // for Rubi identifiers integrate::PolyQ etc
+				// getChar();
+				// getChar();
+				// }
+				// break;
 			}
 			getChar();
 		}
 		while ((Character.isJavaIdentifierPart(fCurrentChar) && (fCurrentChar != '_')) || (fCurrentChar == '$')
 				|| (fCurrentChar == '`')) {
 			if (fCurrentChar == '`') {
-				contextIndex = fCurrentPosition-1;
+				contextIndex = fCurrentPosition - 1;
 			}
 			getChar();
 		}
 		String context = "";
 		if (contextIndex > 0) {
-			context = new String(fInputString, startPosition, contextIndex - startPosition+1);
+			context = new String(fInputString, startPosition, contextIndex - startPosition + 1);
 			startPosition = contextIndex + 1;
 		}
 		int endPosition = fCurrentPosition--;

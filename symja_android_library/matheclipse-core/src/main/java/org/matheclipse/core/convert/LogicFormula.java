@@ -114,14 +114,12 @@ public class LogicFormula {
 		} else if (formula instanceof CTrue) {
 			return F.True;
 		} else if (formula instanceof Literal) {
+			// also used for Variable
 			Literal a = (Literal) formula;
 			if (a.phase()) {
 				return mapToSymbol(a.variable());
 			}
 			return F.Not(mapToSymbol(a.variable()));
-		} else if (formula instanceof Variable) {
-			Variable a = (Variable) formula;
-			return mapToSymbol(a);
 		}
 		throw new ClassCastException(formula.toString());
 	}

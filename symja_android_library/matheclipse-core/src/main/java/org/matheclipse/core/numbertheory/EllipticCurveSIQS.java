@@ -204,7 +204,7 @@ public class EllipticCurveSIQS {
 				}
 			}
 			if (i == 17) { // Test for perfect square
-				val = a.add(BigInteger.valueOf(m * j));
+				val = a.add(BigInteger.valueOf(m).multiply(BigInteger.valueOf(j)));
 				c = val.multiply(val).subtract(sqr);
 				intLog2N = c.bitLength() - 1;
 				log2N = intLog2N + Math.log(c.shiftRight(intLog2N - 32).add(BigInt1).doubleValue()) / Math.log(2) - 32;
@@ -534,7 +534,7 @@ public class EllipticCurveSIQS {
 			for (i = 0; i < NP; i++) {
 				P = aiP[i];
 				SW = TestedQs = 0;
-				Q = W = (int) BigNbrModLong(TestNbr, P * P);
+				Q = W = (int) BigNbrModLong(TestNbr, ((long)P) * ((long)P));
 				for (J = P - 2; J > 0; J--) {
 					W = (W * Q) % (P * P);
 				}
@@ -670,7 +670,7 @@ public class EllipticCurveSIQS {
 									if (IV == 0) {
 										LongToBigNbr(X, biExp);
 									} else {
-										LongToBigNbr(VK * X / PK, biExp);
+										LongToBigNbr(((long)VK) * ((long)X) / ((long)PK), biExp);
 										if (VK * X / PK == 0) {
 											continue;
 										}
@@ -756,7 +756,7 @@ public class EllipticCurveSIQS {
 											if (IV == 0) {
 												LongToBigNbr(X, biExp);
 											} else {
-												LongToBigNbr(VK * X / PK, biExp);
+												LongToBigNbr(((long)VK) * ((long)X) / ((long)PK), biExp);
 												if (VK * X / PK == 0) {
 													continue;
 												}
@@ -2068,9 +2068,9 @@ public class EllipticCurveSIQS {
 					SqrRootMod = modPow(NbrMod, (currentPrime + 1) / 4, currentPrime);
 				} else {
 					if (currentPrime % 8 == 5) {
-						SqrRootMod = modPow(NbrMod * 2, (currentPrime - 5) / 8, currentPrime);
-						SqrRootMod = ((((2 * NbrMod * SqrRootMod % currentPrime) * SqrRootMod - 1) % currentPrime)
-								* NbrMod % currentPrime) * SqrRootMod % currentPrime;
+						SqrRootMod = modPow(((long)NbrMod) * 2, (currentPrime - 5) / 8, currentPrime);
+						SqrRootMod = ((((2L * ((long)NbrMod) * SqrRootMod % currentPrime) * SqrRootMod - 1) % currentPrime)
+								* ((long)NbrMod) % currentPrime) * SqrRootMod % currentPrime;
 					} else { /* p = 1 (mod 8) */
 						long Q = currentPrime - 1;
 						long E = 0;

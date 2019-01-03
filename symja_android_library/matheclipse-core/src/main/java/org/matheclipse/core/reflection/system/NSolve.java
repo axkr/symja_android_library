@@ -35,7 +35,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 		private IExpr expr;
 		private IExpr numer;
 		private IExpr denom;
-		private int leafCount;
+		private long leafCount;
 
 		IASTAppendable row;
 		HashSet<ISymbol> symbolSet;
@@ -308,7 +308,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 			result = prime * result + ((denom == null) ? 0 : denom.hashCode());
 			result = prime * result + equationType;
 			result = prime * result + ((expr == null) ? 0 : expr.hashCode());
-			result = prime * result + leafCount;
+			result = prime * result + (int) (leafCount ^ (leafCount >>> 32));
 			result = prime * result + ((numer == null) ? 0 : numer.hashCode());
 			result = prime * result + ((row == null) ? 0 : row.hashCode());
 			result = prime * result + ((symbolSet == null) ? 0 : symbolSet.hashCode());

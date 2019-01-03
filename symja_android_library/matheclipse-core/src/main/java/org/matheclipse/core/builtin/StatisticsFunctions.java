@@ -1806,7 +1806,7 @@ public class StatisticsFunctions {
 			IASTAppendable v1 = F.PlusAlloc(arg1.size());
 			v1.appendArgs(arg1.size(),
 					i -> F.Times(F.CN1, num1.setAtClone(i, F.Times(factor, arg1.get(i))), F.Conjugate(arg2.get(i))));
-			return F.Divide(v1, F.integer((arg1.argSize()) * (arg1.size() - 2)));
+			return F.Divide(v1, F.integer(((long)arg1.argSize()) * (((long)arg1.size()) - 2L)));
 		}
 
 		@Override

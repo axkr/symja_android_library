@@ -1086,7 +1086,7 @@ public class SpecialFunctions {
 				double fraction = 0;
 				double fractionFactor = Math.pow((0.5 * z), v + 1);
 				for (int i = 0; i < iterationSum; ++i) {
-					double fractionTopPart = Math.pow(-1, i) * Math.pow(0.5 * z, 2 * i);
+					double fractionTopPart = Math.pow(-1, i) * Math.pow(0.5 * z, 2.0 * i);
 					double fractionBottomPart = gammaEuler(i + 1.5) * gammaEuler(i + v + 1.5);
 					fraction = fraction + (fractionTopPart / fractionBottomPart);
 				}
@@ -1171,7 +1171,7 @@ public class SpecialFunctions {
 				double fraction = 0;
 				double fractionFactor = Math.pow((0.5 * z), v + 1);
 				for (int i = 0; i < iterationSum; ++i) {
-					double fractionTopPart = 1 * Math.pow((0.5 * z), (2 * i));
+					double fractionTopPart = 1 * Math.pow((0.5 * z), (2.0 * i));
 					double fractionBottomPart = StruveH.gammaEuler(i + (1.5)) * StruveH.gammaEuler(i + v + (1.5));
 					fraction = fraction + (fractionTopPart / fractionBottomPart);
 				}

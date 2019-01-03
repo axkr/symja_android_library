@@ -589,9 +589,10 @@ public class Algebra {
 					((parts[0].isPower() && parts[0].exponent().isInteger()) //
 							|| (parts[1].isPower() && parts[1].exponent().isInteger()))) {
 				IExpr numer = parts[0];
-				int numerExponent = 1;
+				// use long values see: https://lgtm.com/rules/7900075/
+				long numerExponent = 1;
+				long denomExponent = 1;
 				IExpr denom = parts[1];
-				int denomExponent = 1;
 				if (numer.isPower()) {
 					numerExponent = numer.exponent().toIntDefault(Integer.MIN_VALUE);
 					numer = numer.base();
