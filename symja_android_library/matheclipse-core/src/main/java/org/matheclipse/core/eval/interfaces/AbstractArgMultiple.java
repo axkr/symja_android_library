@@ -192,9 +192,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 
 		if (o0 instanceof IComplexNum) {
 			// use specialized methods for complex numeric mode
-			if (o1 instanceof INum) {
-				result = e2DblComArg((IComplexNum) o0, F.complexNum(((INum) o1).getRealPart()));
-			} else if (o1.isInteger()) {
+			if (o1.isInteger()) {
 				result = e2DblComArg((IComplexNum) o0, F.complexNum((IInteger) o1));
 			} else if (o1.isFraction()) {
 				result = e2DblComArg((IComplexNum) o0, F.complexNum((IFraction) o1));
@@ -207,9 +205,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 			return e2ObjArg(o0, o1);
 		} else if (o1 instanceof IComplexNum) {
 			// use specialized methods for complex numeric mode
-			if (o0 instanceof INum) {
-				result = e2DblComArg(F.complexNum(((INum) o0).getRealPart()), (IComplexNum) o1);
-			} else if (o0.isInteger()) {
+			if (o0.isInteger()) {
 				result = e2DblComArg(F.complexNum((IInteger) o0), (IComplexNum) o1);
 			} else if (o0.isFraction()) {
 				result = e2DblComArg(F.complexNum((IFraction) o0), (IComplexNum) o1);

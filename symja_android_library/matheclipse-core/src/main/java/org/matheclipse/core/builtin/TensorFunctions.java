@@ -395,7 +395,7 @@ public class TensorFunctions {
 				IAST tensor = (IAST) ast.arg1();
 				ArrayList<Integer> dims = LinearAlgebra.dimensions(tensor, tensor.head(), Integer.MAX_VALUE);
 				if (dims.size() > 0) {
-					if (dims.size() == 2 && dims.get(0) == dims.get(1)) {
+					if (dims.size() == 2 && dims.get(0).equals(dims.get(1))) {
 						// square matrix
 						int rowColumnSize = dims.get(0) + 1;
 						if (rowColumnSize == 2) {

@@ -1304,7 +1304,7 @@ public class EvalEngine implements Serializable {
 	 * mode to the value stored before the evaluation starts. If evaluation is not possible return the input object.
 	 * </p>
 	 * 
-	 * @param expr
+	 * @param patternExpression
 	 *            the object which should be evaluated
 	 * @return an <code>IPatterMatcher</code> created from the given expression.
 	 */
@@ -1355,7 +1355,7 @@ public class EvalEngine implements Serializable {
 	 * Evaluate the rules for an AST.
 	 * 
 	 * @param symbol
-	 * @param ast
+	 * @param argsAST
 	 * @return <code>F.NIL</code> if no evaluation happened
 	 */
 	public IExpr evalRules(ISymbol symbol, IAST argsAST) {

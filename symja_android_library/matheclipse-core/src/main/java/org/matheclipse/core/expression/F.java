@@ -8674,12 +8674,12 @@ public class F {
 	}
 
 	/**
-	 * Substitute all (sub-) expressions with the given unary function. If no substitution matches, the method returns
+	 * Substitute all (sub-) expressions with the given map. If no substitution matches, the method returns
 	 * the given <code>expr</code>.
 	 * 
 	 * @param expr
-	 * @param function
-	 *            if the unary functions <code>apply()</code> method returns <code>null</code> the expression isn't
+	 * @param map
+	 *            if the maps <code>get()</code> method returns <code>null</code> the expression isn't
 	 *            substituted.
 	 * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or the substituted
 	 *         expression.

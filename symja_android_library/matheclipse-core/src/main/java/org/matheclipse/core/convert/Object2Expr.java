@@ -97,12 +97,6 @@ public class Object2Expr {
 			org.hipparchus.complex.Complex cmp = (org.hipparchus.complex.Complex) obj;
 			return F.complexNum(cmp.getReal(), cmp.getImaginary());
 		}
-		if (obj instanceof Object[]) {
-			final Object[] array = (Object[]) obj;
-			int length = array.length;
-			final IASTAppendable list = F.ListAlloc(length);
-			return list.appendArgs(0, length, i -> convert(array[i]));
-		}
 		if (obj instanceof int[]) {
 			return AST.newInstance(F.List, (int[]) obj);
 		}
@@ -124,6 +118,12 @@ public class Object2Expr {
 		}
 		if (obj instanceof org.hipparchus.complex.Complex[]) {
 			return AST.newInstance(F.List, false, (org.hipparchus.complex.Complex[]) obj);
+		}
+		if (obj instanceof Object[]) {
+			final Object[] array = (Object[]) obj;
+			int length = array.length;
+			final IASTAppendable list = F.ListAlloc(length);
+			return list.appendArgs(0, length, i -> convert(array[i]));
 		}
 		if (obj instanceof boolean[]) {
 			final boolean[] array = (boolean[]) obj;

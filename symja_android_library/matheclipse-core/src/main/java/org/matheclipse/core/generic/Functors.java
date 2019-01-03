@@ -51,13 +51,6 @@ public class Functors {
 	private static class RulesFunctor implements Function<IExpr, IExpr> {
 		private final Map<? extends IExpr, ? extends IExpr> fEqualRules;
 
-		/**
-		 * 
-		 * @param plusAST
-		 *            the complete AST which should be cloned in the {@code apply} method
-		 * @param position
-		 *            the position which should be replaced in the <code>apply()</code> method.
-		 */
 		public RulesFunctor(Map<? extends IExpr, ? extends IExpr> rulesMap) {
 			fEqualRules = rulesMap;
 		}
@@ -75,14 +68,7 @@ public class Functors {
 		private final Map<IExpr, IExpr> fEqualRules;
 		private final List<PatternMatcherAndEvaluator> fMatchers;
 		private final EvalEngine fEngine;
-
-		/**
-		 * 
-		 * @param plusAST
-		 *            the complete AST which should be cloned in the {@code apply} method
-		 * @param position
-		 *            the position which should be replaced in the <code>apply()</code> method.
-		 */
+ 
 		public RulesPatternFunctor(Map<IExpr, IExpr> equalRules, List<PatternMatcherAndEvaluator> matchers,
 				@Nonnull EvalEngine engine) {
 			fEqualRules = equalRules;

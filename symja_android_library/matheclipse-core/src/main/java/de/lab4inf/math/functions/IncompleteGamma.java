@@ -231,7 +231,7 @@ public class IncompleteGamma extends L4MFunction {
          */
         @Override
         protected double getAn(final int n, final double x) {
-            return (2 * n + 1) - a + x;
+            return (2.0 * n + 1.0) - a + x;
         }
 
         /*

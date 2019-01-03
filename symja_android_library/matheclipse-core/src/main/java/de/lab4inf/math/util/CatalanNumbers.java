@@ -58,13 +58,13 @@ public final class CatalanNumbers {
             throw new IllegalArgumentException("n too large");
         }
         if (n < 1) {
-            return 1;
+            return 1L;
         } else if (CN[n] > 0) {
             return CN[n];
         }
         long cn = 0;
         if (n <= 33) {
-            cn = ((4 * n - 2) * catalan(n - 1)) / (n + 1);
+            cn = ((4L * n - 2L) * catalan(n - 1)) / (n + 1L);
         } else {
             cn = cn(n).longValue();
         }
@@ -85,7 +85,7 @@ public final class CatalanNumbers {
             return new BigDecimal(CN[n]);
         }
         BigDecimal rcn = cn(n - 1);
-        rcn = rcn.multiply(BigDecimal.valueOf(4 * n - 2)).divide(BigDecimal.valueOf(n + 1));
+        rcn = rcn.multiply(BigDecimal.valueOf(4L * n - 2L)).divide(BigDecimal.valueOf(n + 1L));
         final long cn = rcn.longValue();
         CN[n] = cn;
         return rcn;

@@ -1598,7 +1598,7 @@ public final class LinearAlgebra extends L4MObject {
         final float[][] c = new float[n][m];
         for (i = 0; i < n; i++)
             for (j = 0; j < m; c[i][j] = (float) tmp, j++)
-                for (tmp = 0, k = 0; k < l; tmp += a[k][i] * b[k][j], k++) ;
+                for (tmp = 0, k = 0; k < l; tmp += ((double)a[k][i]) *  ((double)b[k][j]), k++) ;
         return c;
     }
 
@@ -2181,10 +2181,10 @@ public final class LinearAlgebra extends L4MObject {
             for (int j = 1; j <= i; j++) {
                 hij = binomial(i + j - 2, i - 1);
                 hij *= hij;
-                hij *= binomial(dim + i - 1, dim - j) * binomial(dim + j - 1, dim - i);
+                hij *=  ((double)binomial(dim + i - 1, dim - j)) *  ((double)binomial(dim + j - 1, dim - i));
                 // sign = (i+j)%2==0 ? 1 : -1;
                 sign = 1 - 2 * ((i + j) & 1);
-                hij *= sign * (i + j - 1);
+                hij *=  ((double)sign) * (i + j - 1.0);
                 mat[i - 1][j - 1] = hij;
                 mat[j - 1][i - 1] = hij;
             }
@@ -2207,7 +2207,7 @@ public final class LinearAlgebra extends L4MObject {
         double bi, det = 1;
         for (int k = 1; k < dim; k++) {
             bi = binomial(2 * k, k);
-            det *= (2 * k + 1) * bi * bi;
+            det *= (2.0 * k + 1.0) * bi * bi;
         }
         return det;
     }
@@ -3381,7 +3381,7 @@ public final class LinearAlgebra extends L4MObject {
         // check if the calculation is numerical correct.
         nbk = norm(bk);
         if (abs(c[0]) > 1)
-            nbk /= n * n * abs(c[0]);
+            nbk /=  ((double)n) *  ((double)n) * abs(c[0]);
         if (nbk > Accuracy.FEPS) {
             String msg = format("characteristic polynomial p%s numerical instable %.3g", Strings.toLowerScript(n), nbk);
             getLogger().error(msg);

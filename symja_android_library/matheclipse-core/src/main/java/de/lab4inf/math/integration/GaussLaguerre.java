@@ -97,7 +97,7 @@ public final class GaussLaguerre extends L4MObject {
                 for (j = 1; j <= n; j++) {
                     p2 = p1;
                     p1 = p0;
-                    p0 = ((2 * j - 1 + v - zn) * p1 - (j - 1 + v) * p2) / j;
+                    p0 = ((2.0 * j - 1.0 + v - zn) * p1 - (j - 1.0 + v) * p2) / j;
                 }
                 // derivative of the Laguerre polynom
                 dP = (n * p0 - (n + v) * p1) / zn;

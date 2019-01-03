@@ -64,9 +64,9 @@ public class Legendre extends Polynomial {
             for (int k = 2; k <= n; k++) {
                 a[0] = -(k - 1) * c[0] / k;
                 for (int j = 1; j < k; j++) {
-                    a[j] = ((2 * k - 1) * b[j - 1] - (k - 1) * c[j]) / k;
+                    a[j] = ((2.0 * k - 1.0) * b[j - 1] - (k - 1.0) * c[j]) / k;
                 }
-                a[k] = (2 * k - 1) * b[k - 1] / k;
+                a[k] = (2.0 * k - 1.0) * b[k - 1] / k;
 
                 for (int m = 0; m <= k; m++) {
                     c[m] = b[m];

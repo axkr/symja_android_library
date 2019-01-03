@@ -294,14 +294,15 @@ public class KummerFunction extends L4MFunction implements Differentiable, Integ
         if (n > 0) {
             // for (+-) dominant stable recursion
             yo = kummer(a - 1, b + 1, x);
-            for (int k = 1; k <= n; k++) {
-                dk = (k - b + 1) * (k - b) * (a + k) * (k + a + x - 1);
+            for (int i = 1; i <= n; i++) {
+            	double k=i;
+                dk = (k - b + 1) * (k - b) * (a + k) * (k + a + x - 1.0);
 
-                ak = -x * (2 * k + a - b) * (2 * k - 1 + a - b) * (k + a + x);
+                ak = -x * (2.0 * k + a - b) * (2.0 * k - 1.0 + a - b) * (k + a + x);
 
-                bk = -k * k * k + (-2 * a + 3 * x + b) * k * k;
-                bk += (2 * a * b - a * a + 1 - a - b + 5 * x * x + 6 * a * x - 3 * x) * k + x * x * x;
-                bk += x * x * (4 * a - b - 1) + 3 * a * x * (a - 1) + a * (a * b - a - b + 1);
+                bk = -k * k * k + (-2.0 * a + 3.0 * x + b) * k * k;
+                bk += (2.0 * a * b - a * a + 1.0 - a - b + 5.0 * x * x + 6.0 * a * x - 3.0 * x) * k + x * x * x;
+                bk += x * x * (4.0 * a - b - 1) + 3.0 * a * x * (a - 1.0) + a * (a * b - a - b + 1.0);
                 bk *= (k - b);
 
                 yk = -(bk * ym + ak * yo) / dk;
@@ -312,14 +313,15 @@ public class KummerFunction extends L4MFunction implements Differentiable, Integ
             // for (-+) minimal unstable recursion
             LOGGER.warn(format("%s(%.2f,%.2f;%g) unstable (-+) recursion n=%d", KUMMER, a, b, x, n));
             yo = kummer(a + 1, b - 1, x);
-            for (int k = 1; k <= m; k++) {
-                dk = x * (b + 2 * k + 1 - a) * (b + 2 * k - a) * (a + x - k);
+            for (int i = 1; i <= m; i++) {
+            	double k=i;
+                dk = x * (b + 2.0 * k + 1.0 - a) * (b + 2.0 * k - a) * (a + x - k);
 
-                ak = (b + k - 1) * (b + k) * (-a + k) * (a + x - 1 - k);
+                ak = (b + k - 1.0) * (b + k) * (-a + k) * (a + x - 1.0 - k);
 
-                bk = k * k * k + (3 * x + b - 2 * a) * k * k;
-                bk += (3 * x + b - 6 * a * b + a * a - 5 * x * x + a - 2 * a * b - 1) * k + x * x * x;
-                bk += x * x * (4 * a - b - 1) + 3 * a * x * (a - 1) + a * (a * b - a - b + 1);
+                bk = k * k * k + (3.0 * x + b - 2.0 * a) * k * k;
+                bk += (3.0 * x + b - 6.0 * a * b + a * a - 5.0 * x * x + a - 2.0 * a * b - 1.0) * k + x * x * x;
+                bk += x * x * (4.0 * a - b - 1) + 3.0 * a * x * (a - 1.0) + a * (a * b - a - b + 1.0);
                 bk *= (k + b);
 
                 yk = -(bk * ym + ak * yo) / dk;

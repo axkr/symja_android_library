@@ -108,11 +108,11 @@ public class FresnelS extends AbstractFresnelIntegrals {
         int k = 0;
         do {
             k++;
-            fac *= (2 * k);
-            fac *= (2 * k + 1);
+            fac *= (2.0 * k);
+            fac *= (2.0 * k + 1.0);
             yo = yn;
             z4 *= x4;
-            yn += z4 / (fac * (4 * k + 3));
+            yn += z4 / (fac * (4.0 * k + 3.0));
         } while (abs(yn - yo) > abs(yo) * EPS);
         yn *= x * x2;
         return yn;

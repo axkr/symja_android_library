@@ -150,7 +150,7 @@ public class Pade extends L4MObject {
             c = b - c;
             rs += a[k].real() * c;
             is += a[k].imag() * c;
-            b *= (k + n) * (k - n) / ((k + 0.5) * (k + 1));
+            b *= (((double)k) + ((double)n)) * (((double)k) - ((double)n)) / ((k + 0.5) * (k + 1.0));
         }
         return a[0].newComplex(rs, is);
     }

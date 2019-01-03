@@ -119,10 +119,12 @@ public final class PatternMatching {
 					try {
 						for (int j = 2; j < ast.size(); j++) {
 							// FileReader reader = new FileReader(ast.get(j).toString());
+							FileInputStream fis = new FileInputStream(ast.get(j).toString());
 							BufferedReader reader = new BufferedReader(
-									new InputStreamReader(new FileInputStream(ast.get(j).toString()), "UTF-8"));
+									new InputStreamReader(fis, "UTF-8"));
 							Get.loadPackage(engine, reader);
 							reader.close();
+							fis.close();
 						}
 					} catch (IOException e) {
 						if (Config.SHOW_STACKTRACE) {

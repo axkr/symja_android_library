@@ -74,10 +74,10 @@ public final class GaussLegendre extends L4MObject {
                 for (j = 1; j <= n; j++) {
                     p2 = p1;
                     p1 = p0;
-                    p0 = ((2 * j - 1) * zn * p1 - (j - 1) * p2) / j;
+                    p0 = ((2.0 * j - 1.0) * zn * p1 - (j - 1.0) * p2) / j;
                 }
                 // derivative of the Legendre polynom
-                dP = n * (zn * p0 - p1) / (zn * zn - 1);
+                dP = n * (zn * p0 - p1) / (zn * zn - 1.0);
                 zo = zn;
                 // newtown iteration z_{j+1} = z_j - f(z_j)/f'(z_j)
                 zn = zo - p0 / dP;

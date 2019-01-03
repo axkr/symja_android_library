@@ -150,12 +150,12 @@ public final class SetUtil extends L4MObject {
             v++;
             probability.put(item, v);
         }
-        gini = t * t;
+        gini = ((double)t) * ((double)t);
         for (Map.Entry<T, Double> item : probability.entrySet()) {
             v = item.getValue();
             gini -= v * v;
         }
-        gini /= t * t;
+        gini /= ((double)t) * ((double)t);
         return gini;
     }
 }

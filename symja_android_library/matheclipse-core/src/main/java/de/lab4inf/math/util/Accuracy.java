@@ -85,13 +85,13 @@ public final class Accuracy extends L4MObject {
             fy = 1.0f + feps;
         }
         FEPS = feps * 8;
-        double deps = feps * FEPS_START;
+        double deps =  ((double)feps) *  ((double)FEPS_START);
         double dy = 1.0 + deps;
         while (dy > 1.0) {
             deps /= 2.0;
             dy = 1.0 + deps;
         }
-        DEPS = deps * 8;
+        DEPS = deps * 8.0;
 
         // MathContext mc = new MathContext(35,RoundingMode.HALF_EVEN);
         final MathContext mc = MathContext.DECIMAL128;

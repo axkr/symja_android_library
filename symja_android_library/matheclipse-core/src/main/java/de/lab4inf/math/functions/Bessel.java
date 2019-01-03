@@ -53,7 +53,7 @@ import static java.lang.Math.sqrt;
  * @since 19.09.2006
  */
 public class Bessel extends L4MFunction implements Differentiable {
-    private static final int MMAX = 80;
+    private static final double MMAX = 80.0;
     private static final double SCALE = 1.E10;
     /**
      * p coefficients for j0 for |x|<8.

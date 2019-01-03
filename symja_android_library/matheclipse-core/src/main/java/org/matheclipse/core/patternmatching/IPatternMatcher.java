@@ -143,14 +143,6 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Se
 	 */
 	public abstract int equivalentLHS(final IPatternMatcher obj);
 
-	/**
-	 * Compare the matchers for equivalence
-	 * 
-	 * @param obj
-	 * @return
-	 */
-	// public abstract int equivalent(final IPatternMatcher obj);
-
 	public abstract int equivalentTo(IPatternMatcher patternMatcher);
 
 	/**

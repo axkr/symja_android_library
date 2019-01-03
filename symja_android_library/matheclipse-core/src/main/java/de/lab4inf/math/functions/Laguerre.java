@@ -78,7 +78,7 @@ public class Laguerre extends L4MFunction implements Differentiable {
             ln = l1;
         } else {
             for (int k = 2; k <= n; k++) {
-                ln = (2 * k - 1 - x) * l1 - (k - 1) * l0;
+                ln = (2.0 * k - 1.0 - x) * l1 - (k - 1.0) * l0;
                 ln /= k;
                 l0 = l1;
                 l1 = ln;

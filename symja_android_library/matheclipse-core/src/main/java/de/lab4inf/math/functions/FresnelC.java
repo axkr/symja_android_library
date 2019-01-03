@@ -106,11 +106,11 @@ public class FresnelC extends AbstractFresnelIntegrals {
         int k = 0;
         do {
             k++;
-            fac *= (2 * k - 1);
-            fac *= (2 * k);
+            fac *= (2.0 * k - 1.0);
+            fac *= (2.0 * k);
             yo = yn;
             z4 *= x4;
-            yn += z4 / (fac * (4 * k + 1));
+            yn += z4 / (fac * (4.0 * k + 1.0));
         } while (!hasRelativeConverged(yn, yo));
         yn *= x;
         return yn;

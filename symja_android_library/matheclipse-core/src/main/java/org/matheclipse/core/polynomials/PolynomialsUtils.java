@@ -215,7 +215,7 @@ public class PolynomialsUtils {
 	public static IAST buildPolynomial(final int degree, final IExpr x, final List<BigFraction> coefficients,
 			final RecurrenceCoefficientsGenerator generator) {
 
-		final int maxDegree = (int) FastMath.floor(FastMath.sqrt(2 * coefficients.size())) - 1;
+		final int maxDegree = (int) FastMath.floor(FastMath.sqrt(2.0 * coefficients.size())) - 1;
 		synchronized (PolynomialsUtils.class) {
 			if (degree > maxDegree) {
 				computeUpToDegree(degree, maxDegree, generator, coefficients);
