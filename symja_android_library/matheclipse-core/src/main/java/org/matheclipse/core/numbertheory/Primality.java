@@ -682,6 +682,12 @@ public class Primality {
 		return result;
 	}
 
+	/**
+	 * Call elliptic curve method anf if necessary the parallel SIQS factoring algorithm.
+	 * 
+	 * @param val
+	 * @param map of all BigInteger primes and their associated exponents
+	 */
 	public static void factorInteger(final BigInteger val, Map<BigInteger, Integer> map) {
 		EllipticCurveMethod ecm = new EllipticCurveMethod(val);
 		BigInteger rest = ecm.factorize(map);

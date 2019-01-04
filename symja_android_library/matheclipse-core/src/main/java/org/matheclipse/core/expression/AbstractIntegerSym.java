@@ -429,21 +429,19 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		}
 
 		if (b instanceof IntegerSym) {
-			Map<Long, Integer> map = PrimeInteger.factors(b.longValue());
-			IASTAppendable result = F.ListAlloc(map.size() + 1);
-			if (sign() < 0) {
-				result.append(F.CN1);
-			}
-			for (Map.Entry<Long, Integer> entry : map.entrySet()) {
-				long key = entry.getKey();
-				IInteger is = valueOf(key);
-				for (int i = 0; i < entry.getValue(); i++) {
-					result.append(is);
-				}
-			}
-			return result;
+			long longValue = b.longValue();
+			return factorizeLong(longValue);
 		}
 
+		BigInteger big = b.toBigNumerator();
+		try {
+			long longValue = big.longValueExact();
+			if (longValue < PrimeInteger.BETA) {
+				return factorizeLong(longValue);
+			}
+		} catch (ArithmeticException aex) {
+			// go on with big integers
+		}
 		SortedMap<Integer, Integer> map = new TreeMap<Integer, Integer>();
 		BigInteger rest = Primality.countPrimes32749(b.toBigNumerator(), map);
 
@@ -478,6 +476,22 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 			}
 		}
 
+		return result;
+	}
+
+	private IAST factorizeLong(long longValue) {
+		Map<Long, Integer> map = PrimeInteger.factors(longValue);
+		IASTAppendable result = F.ListAlloc(map.size() + 1);
+		if (sign() < 0) {
+			result.append(F.CN1);
+		}
+		for (Map.Entry<Long, Integer> entry : map.entrySet()) {
+			long key = entry.getKey();
+			IInteger is = valueOf(key);
+			for (int i = 0; i < entry.getValue(); i++) {
+				result.append(is);
+			}
+		}
 		return result;
 	}
 
