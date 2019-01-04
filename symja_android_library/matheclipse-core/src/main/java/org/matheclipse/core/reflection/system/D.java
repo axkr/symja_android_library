@@ -177,7 +177,8 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 	 * 
 	 * @param x
 	 * @param a1
-	 * @param header
+	 * @param head
+	 * @param engine
 	 * @return
 	 */
 	private IExpr getDerivativeArg1(IExpr x, final IExpr a1, final IExpr head, EvalEngine engine) {
@@ -197,9 +198,8 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 	 * Search for one of the <code>Derivative[a1, a2][head]</code> rules.
 	 * 
 	 * @param x
-	 * @param a1
-	 * @param a2
-	 * @param header
+	 * @param ast
+	 * @param head
 	 * @return
 	 */
 	private IExpr getDerivativeArgN(IExpr x, final IAST ast, final IExpr head) {
@@ -228,7 +228,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 	 * @param pos
 	 *            the position of the <code>1</code>
 	 * @param header
-	 * @param arg1
+	 * @param args
 	 * @return
 	 */
 	private IAST createDerivative(final int pos, final IExpr header, final IAST args) {
@@ -421,8 +421,6 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 					return F.NIL;
 				}
 				return getDerivativeArg1(x, listArg1.arg1(), header, engine);
-				// } else if (listArg1.isAST2()) {
-				// return getDerivativeArg2(x, listArg1.arg1(), listArg1.arg2(), header);
 			} else if (listArg1.isAST() && ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
 				return getDerivativeArgN(x, listArg1, header);
 			}

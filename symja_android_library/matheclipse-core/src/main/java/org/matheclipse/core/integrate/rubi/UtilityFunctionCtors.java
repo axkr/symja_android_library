@@ -1963,7 +1963,7 @@ public class UtilityFunctionCtors {
 	 *     Dist[u-w,v,x]]
 	 * </pre>
 	 * 
-	 * @param astTimes
+	 * @param astPlus
 	 * @return
 	 */
 	public static IExpr evalRubiDistPlus(IAST astPlus) {

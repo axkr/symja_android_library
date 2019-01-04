@@ -32,7 +32,7 @@ import org.matheclipse.core.interfaces.IExpr;
 	 *            for instance "A*kg^-1*s^2"
 	 * @return unit
 	 */
-	/* package */ IUnit lookup(String string) {
+	IUnit lookup(String string) {
 		IUnit unit = map.get(string);
 		if (Objects.isNull(unit)) {
 			unit = create(string);

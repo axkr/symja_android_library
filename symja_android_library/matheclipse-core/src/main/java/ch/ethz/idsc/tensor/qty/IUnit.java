@@ -17,7 +17,7 @@ public interface IUnit extends Serializable {
 	// static final IUnit ONE = IUnit.of("");
 
 	/**
-	 * @param string,
+	 * @param string
 	 *            for instance "m*s^-2"
 	 * @return
 	 */

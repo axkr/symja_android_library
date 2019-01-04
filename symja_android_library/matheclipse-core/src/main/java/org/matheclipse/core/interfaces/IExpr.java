@@ -3389,10 +3389,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Generate <code>Sqrt(discriminant)</code>.
+	 * Generate <code>Sqrt(this)</code>.
 	 * 
-	 * @param discriminant
-	 * @return <code>Sqrt(discriminant)</code>
+	 * @return <code>Sqrt(this)</code>
 	 */
 	default IExpr sqrt() {
 		if (isPower()) {

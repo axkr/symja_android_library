@@ -299,18 +299,7 @@ public class LogicFormula {
 		}
 		return list;
 	}
-
-	/**
-	 * Example: Create a list of rules in the form
-	 * <code>{{a->False,b->True,c->False,d->False},{a->True,b->False,c->False,d->False},...}</code> for the variables
-	 * <code>{a,b,c,d}</code>
-	 * 
-	 * @param booleanExpression
-	 * @param variables
-	 *            the possible variables
-	 * @param maxChoices
-	 * @return
-	 */
+ 
 	public IAST literals2VariableList(final SortedSet<Literal> literals, Map<String, Integer> map) {
 		IASTAppendable list = F.ast(F.List, map.size(), true);
 

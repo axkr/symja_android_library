@@ -1866,7 +1866,8 @@ public final class LinearAlgebra {
 		/**
 		 * For a underdetermined system, return one of the possible solutions through a row reduced matrix.
 		 * 
-		 * @param ast
+		 * @param matrix
+		 * @param vector
 		 * @param engine
 		 * @return
 		 */

@@ -816,34 +816,6 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	}
 
 	/**
-	 * Searches this list for the specified object and returns the index of the first occurrence.
-	 * 
-	 * @param object
-	 *            the object to search for.
-	 * @return the index of the first occurrence of the object, or -1 if it was not found.
-	 */
-	// public int indexOf(IExpr object) {
-	// Iterator<IExpr> it = iterator();
-	// int indx = 0;
-	// if (object != null) {
-	// while (it.hasNext()) {
-	// if (object.equals(it.next())) {
-	// return indx;
-	// }
-	// indx++;
-	// }
-	// } else {
-	// while (it.hasNext()) {
-	// if (it.next() == null) {
-	// return indx;
-	// }
-	// indx++;
-	// }
-	// }
-	// return -1;
-	// }
-
-	/**
 	 * Constructs a new list assigning the given <code>array</code> to this lists array. No new memory is allocated for
 	 * the list. The list contains the arrays elements from offset <code>0</code> to offset <code>array.length-1</code>
 	 * in the list.

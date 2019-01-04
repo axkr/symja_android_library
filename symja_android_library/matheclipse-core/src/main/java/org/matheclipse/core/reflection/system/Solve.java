@@ -844,7 +844,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * Evaluate the roots of a univariate polynomial with the Roots() function.
 	 * 
 	 * @param exprAnalyzer
-	 * @param fListOfVariables
+	 * @param engine
 	 * @return
 	 */
 	private static IAST rootsOfUnivariatePolynomial(ExprAnalyzer exprAnalyzer, EvalEngine engine) {

@@ -648,21 +648,7 @@ public class Console {
 	public String readString(final PrintWriter out, final String prompt) {
 		printPrompt(out, prompt);
 		return readString();
-	}
-
-	/**
-	 * @param file
-	 */
-	// public void setFile(final File file) {
-	// fFile = file;
-	// }
-
-	/**
-	 * @return the file with which the program was started or <code>null</code>
-	 */
-	// public File getFile() {
-	// return fFile;
-	// }
+	} 
 
 	/**
 	 * Get the default rules textfile name, which should be loaded at startup. This file replaces the default built-in

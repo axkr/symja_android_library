@@ -121,7 +121,7 @@ public class Options {
 		}
 		if (fDefaultOptionsList != null) {
 			try {
-				if (fCurrentOptionsList.exists(x -> {
+				if (fDefaultOptionsList.exists(x -> {
 					if (x.isAST()) {
 						IAST temp = (IAST) x;
 						if (temp.isRuleAST() && temp.arg1().toString().equalsIgnoreCase(optionString)) {
@@ -162,7 +162,7 @@ public class Options {
 		}
 		if (fDefaultOptionsList != null) {
 			try {
-				if (fCurrentOptionsList.exists(x -> {
+				if (fDefaultOptionsList.exists(x -> {
 					if (x.isAST()) {
 						IAST temp = (IAST) x;
 						if (temp.isRuleAST() && temp.arg1().equals(option)) {

@@ -331,19 +331,7 @@ public class JASIExpr {
 			}
 		}
 		return true;
-	}
-
-	/**
-	 * BigInteger from BigRational coefficients. Represent as polynomial with BigInteger coefficients by multiplication
-	 * with the gcd of the numerators and the lcm of the denominators of the BigRational coefficients.
-	 * 
-	 * @param A
-	 *            polynomial with BigRational coefficients to be converted.
-	 * @return Object[] with 3 entries: [0]->gcd [1]->lcm and [2]->polynomial with BigInteger coefficients.
-	 */
-//	public Object[] factorTerms(GenPolynomial<BigRational> A) {
-//		return PolyUtil.integerFromRationalCoefficientsFactor(fBigIntegerPolyFactory, A);
-//	}
+	} 
 
 	/**
 	 * @return the fPolyFactory

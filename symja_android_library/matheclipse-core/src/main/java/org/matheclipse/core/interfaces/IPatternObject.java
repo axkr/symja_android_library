@@ -23,13 +23,12 @@ public interface IPatternObject extends IExpr {
 	 * Check if the two left-hand-side pattern expressions are equivalent. (i.e. <code>f[x_,y_]</code> is equivalent to
 	 * <code>f[a_,b_]</code> )
 	 * 
-	 * @param patternExpr1
-	 * @param patternExpr2
+	 * @param patternExpr
 	 * @param pm1
 	 * @param pm2
 	 * @return
 	 */
-	public boolean equivalent(final IPatternObject patternExpr2, final PatternMap pm1, PatternMap pm2);
+	public boolean equivalent(final IPatternObject patternExpr, final PatternMap pm1, PatternMap pm2);
 
 	/**
 	 * Get the associated condition if available

@@ -177,8 +177,8 @@ public class ComplexNum implements IComplexNum {
 	 * @throws NullArgumentException
 	 *             if {@code addend} is {@code null}.
 	 */
-	public ComplexNum add(final ComplexNum that) {
-		return newInstance(fComplex.add(that.fComplex));
+	public ComplexNum add(final ComplexNum addend) {
+		return newInstance(fComplex.add(addend.fComplex));
 	}
 
 	@Override
