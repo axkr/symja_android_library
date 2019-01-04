@@ -729,7 +729,7 @@ public final class PatternMatching {
 				// Set[MessageName(f,"usage"),"text")
 				IExpr temp = symbol.evalMessage(engine, "usage");
 				if (temp.isPresent()) {
-					s.println(temp.toString());
+					stream.println(temp.toString());
 				}
 				if (longForm) {
 					Documentation.printDocumentation(s, symbol.getSymbolName());
@@ -737,17 +737,9 @@ public final class PatternMatching {
 					IAST function = F.Attributes(symbol);
 					temp = engine.evaluate(F.Attributes(symbol));
 					if (temp.isPresent()) {
-						s.println(function.toString() + " = " + temp.toString());
+						stream.println(function.toString() + " = " + temp.toString());
 					}
-				}
-
-				// IExpr temp = engine.evaluate(F.MessageName(symbol, F.stringx("usage")));
-				// if (temp.isPresent()) {
-				// stream.println(temp.toString());
-				// }
-				// if (!Documentation.printDocumentation(stream, symbol.getSymbolName())) {
-				//
-				// }
+				} 
 				return F.Null;
 			}
 			return F.NIL;

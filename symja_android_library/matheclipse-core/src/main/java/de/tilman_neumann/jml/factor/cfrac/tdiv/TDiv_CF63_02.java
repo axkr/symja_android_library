@@ -13,6 +13,8 @@
  */
 package de.tilman_neumann.jml.factor.cfrac.tdiv;
 
+import static org.junit.Assert.assertTrue;
+
 import java.math.BigInteger;
 
 import org.apache.log4j.Logger;
@@ -24,6 +26,7 @@ import de.tilman_neumann.jml.factor.base.congruence.AQPairFactory;
 import de.tilman_neumann.jml.factor.base.congruence.Smooth_Perfect;
 import de.tilman_neumann.jml.factor.lehman.Lehman_Fast;
 import de.tilman_neumann.jml.factor.pollardRho.PollardRhoBrentMontgomery64;
+import de.tilman_neumann.jml.factor.pollardRho.PollardRhoBrentMontgomeryR64Mul63;
 import de.tilman_neumann.jml.factor.tdiv.TDiv31Inverse;
 import de.tilman_neumann.jml.primes.probable.BPSWTest;
 
@@ -49,7 +52,8 @@ public class TDiv_CF63_02 implements TDiv_CF63 {
 
 	private TDiv31Inverse tDiv31 = new TDiv31Inverse();
 	private Lehman_Fast lehman = new Lehman_Fast(true);
-	private PollardRhoBrentMontgomery64 pollardRho = new PollardRhoBrentMontgomery64();
+	private PollardRhoBrentMontgomeryR64Mul63 pollardRhoR64Mul63 = new PollardRhoBrentMontgomeryR64Mul63();
+	private PollardRhoBrentMontgomery64 pollardRho64 = new PollardRhoBrentMontgomery64();
 	
 	private BPSWTest bpsw = new BPSWTest(1<<20);
 
@@ -114,7 +118,7 @@ public class TDiv_CF63_02 implements TDiv_CF63 {
 				}
 			} // end while (trialDivIndex < primeBaseSize)
 		}
-//		if (DEBUG) assertTrue(Q_rest>1);
+		if (DEBUG) assertTrue(Q_rest>1);
 		if (Q_rest_bits<32) {
 			int Q_rest_int = (int) Q_rest;
 			while (trialDivIndex < primeBaseSize) {
@@ -145,7 +149,7 @@ public class TDiv_CF63_02 implements TDiv_CF63 {
 	private boolean factor_recurrent(long Q_rest) {
 		if (Q_rest < pMaxSquare) {
 			// we divided Q_rest by all primes <= pMax and the rest is < pMax^2 -> it must be prime
-//			if (DEBUG) assertTrue(bpsw.isProbablePrime(Q_rest));
+			if (DEBUG) assertTrue(bpsw.isProbablePrime(Q_rest));
 			if (bitLength(Q_rest) > 31) return false;
 			bigFactors.add((int)Q_rest);
 			return true;
@@ -163,10 +167,12 @@ public class TDiv_CF63_02 implements TDiv_CF63 {
 		int Q_rest_bits = bitLength(Q_rest);
 		if (Q_rest_bits < 28) {
 			factor1 = tDiv31.findSingleFactor((int) Q_rest);
-		} else if (Q_rest_bits < 50) {
+		} else if (Q_rest_bits < 48) {
 			factor1 = lehman.findSingleFactor(Q_rest);
-		} else { // max Q_rest_bits is 63, pollardRho works only until 62 bit, but that should be ok
-			factor1 = pollardRho.findSingleFactor(Q_rest);
+		} else if (Q_rest_bits < 58) {
+			factor1 = pollardRhoR64Mul63.findSingleFactor(Q_rest);
+		} else { // max Q_rest_bits is 63, pollardRho64 works only until 62 bit, but that should be ok
+			factor1 = pollardRho64.findSingleFactor(Q_rest);
 		}
 		// Recurrence: Is it possible to further decompose the parts?
 		// Here we can not exclude factors > 31 bit because they may have 2 prime factors themselves.

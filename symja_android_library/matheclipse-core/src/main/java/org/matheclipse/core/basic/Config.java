@@ -235,7 +235,7 @@ public class Config {
 	 * Do time consuming JUnit tests. For example for <code>FactorInteger</code> function
 	 * 
 	 */
-	public static boolean EXPENSIVE_JUNIT_TESTS = false;
+	public static boolean EXPENSIVE_JUNIT_TESTS = true;
 
 	/**
 	 * <p>

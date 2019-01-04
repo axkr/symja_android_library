@@ -311,7 +311,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 						}
 						s.append(" ");
 					}
-					if (e != null && v != null) {
+					if (v != null) {
 						s.append(e.toString(v));
 					} else {
 						s.append(e);

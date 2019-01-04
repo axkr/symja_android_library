@@ -1331,7 +1331,7 @@ public final class LinearAlgebra {
 				int[] count = new int[1];
 				count[0] = 1;
 				IAST scalar = F.Sqrt(F.QQ(1, m));
-				return F.matrix((i, j) -> unit(F.QQ(2L * ((long)i) * ((long)j), m).times(F.Pi)).times(scalar), m, m);
+				return F.matrix((i, j) -> unit(F.QQ(2L * ((long) i) * ((long) j), m).times(F.Pi)).times(scalar), m, m);
 			}
 			return F.NIL;
 		}
@@ -3336,7 +3336,9 @@ public final class LinearAlgebra {
 			 */
 			private IAST recursiveTranspose(int permutationIndex, IASTAppendable resultList) {
 				if (permutationIndex >= permutation.length) {
-					resultList.append(tensor.getPart(positions));
+					if (resultList != null) {
+						resultList.append(tensor.getPart(positions));
+					}
 				} else {
 					int size = dimensions[permutation[permutationIndex] - 1];
 					IASTAppendable list = F.ListAlloc(size);

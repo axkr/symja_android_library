@@ -88,14 +88,14 @@ public class PollardRhoBrentMontgomery64 extends FactorAlgorithmBase {
         	long q = 1;
         	do {
 	    	    x = y;
-	    	    for (int i=1; i<=r; i++) {
+	    	    for (int i=r; i>0; i--) {
 	    	        y = montgomeryMult(y, y+1);
 	    	    }
 	    	    int k = 0;
 	    	    do {
 	    	        ys = y;
 	    	        final int iMax = Math.min(m, r-k);
-	    	        for (int i=1; i<=iMax; i++) {
+	    	        for (int i=iMax; i>0; i--) {
 	    	            y = montgomeryMult(y, y+1);
 	    	            final long diff = x<y ? y-x : x-y;
 	    	            q = montgomeryMult(diff, q);
@@ -165,19 +165,26 @@ public class PollardRhoBrentMontgomery64 extends FactorAlgorithmBase {
 		// That would give t = Uint128.mul64(ab.getLow(), minusNInvModR).getLow();
 		// but even better, the long product just gives the low part -> we can get rid of one expensive mul64().
 		long t = ab.getLow() * minusNInvModR;
-		// Step 3: Compute reduced = (a*b + t*N) / R
+		// Step 3: Compute r = (a*b + t*N) / R
 		// Since R=2^64, "x / R" just means to get the high part of x.
-		long reduced = ab.add(Uint128.mul64(t, N)).getHigh();
-		long result = reduced<N ? reduced : reduced-N;
+		long r = ab.add(Uint128.mul64(t, N)).getHigh();
+		// If the correct result is c, then now r==c or r==c+N.
+		// This is fine for this factoring algorithm, because r will 
+		// * either be subjected to another Montgomery multiplication mod N,
+		// * or to a gcd(r, N), where it doesn't matter if we test gcd(c, N) or gcd(c+N, N).
 		
-		// if (DEBUG) {
-		// //LOG.debug(a + " * " + b + " = " + result);
-		// assertTrue(a >= 0 && a<N);
-		// assertTrue(b >= 0 && b<N);
-		// assertTrue(result >= 0 && result < N);
-		// }
+//		if (DEBUG) {
+//			//LOG.debug(a + " * " + b + " = " + r);
+//			assertTrue(a >= 0 && a<N);
+//			assertTrue(b >= 0 && b<N);
+//			
+//			// In a general Montgomery multiplication we would still have to check
+//			r = r<N ? r : r-N;
+//			// to satisfy
+//			assertTrue(r >= 0 && r < N);
+//		}
 		
-		return result;
+		return r;
 	}
 	
 	/**

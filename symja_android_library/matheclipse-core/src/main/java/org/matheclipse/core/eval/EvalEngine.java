@@ -1562,7 +1562,7 @@ public class EvalEngine implements Serializable {
 	/**
 	 * Currently only the Rubi TagSet rules for <code>Dist()</code> are implemented
 	 * 
-	 * @param tempAST
+	 * @param ast
 	 * @return
 	 */
 	private IExpr evalTagSetPlusTimes(IAST ast) {

@@ -27,10 +27,12 @@ import de.tilman_neumann.jml.factor.base.matrixSolver.MatrixSolver01_Gauss;
 import de.tilman_neumann.jml.factor.cfrac.CFrac63_01;
 import de.tilman_neumann.jml.factor.lehman.Lehman_Fast;
 import de.tilman_neumann.jml.factor.pollardRho.PollardRhoBrentMontgomery64;
+import de.tilman_neumann.jml.factor.pollardRho.PollardRhoBrentMontgomeryR64Mul63;
 import de.tilman_neumann.jml.factor.tdiv.TDiv31Inverse;
 import de.tilman_neumann.jml.primes.probable.BPSWTest;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
+import static org.junit.Assert.*;
 
 /**
  * Auxiliary factor algorithm to find smooth decompositions of Q's.
@@ -55,7 +57,8 @@ public class TDiv_CF02 implements TDiv_CF {
 
 	private TDiv31Inverse tDiv31 = new TDiv31Inverse();
 	private Lehman_Fast lehman = new Lehman_Fast(true);
-	private PollardRhoBrentMontgomery64 pollardRho = new PollardRhoBrentMontgomery64();
+	private PollardRhoBrentMontgomeryR64Mul63 pollardRhoR64Mul63 = new PollardRhoBrentMontgomeryR64Mul63();
+	private PollardRhoBrentMontgomery64 pollardRho64 = new PollardRhoBrentMontgomery64();
 	private CFrac63_01 cf_internal = new CFrac63_01(true, 5, 1.5F, 0.152F, 0.25F, new TDiv_CF63_01(), 10, new MatrixSolver01_Gauss(), 12);
 
 	private BPSWTest bpsw = new BPSWTest(1<<20);
@@ -151,7 +154,7 @@ public class TDiv_CF02 implements TDiv_CF {
 			} // end while (trialDivIndex < primeBaseSize)
 			Q_rest = BigInteger.valueOf(Q_rest_long); // keep Q_rest up-to-date
 		}
-//		if (DEBUG) assertTrue(Q_rest.compareTo(I_1)>0);
+		if (DEBUG) assertTrue(Q_rest.compareTo(I_1)>0);
 		if (Q_rest_bits<32) {
 			int Q_rest_int = Q_rest.intValue();
 			while (trialDivIndex < primeBaseSize) {
@@ -182,7 +185,7 @@ public class TDiv_CF02 implements TDiv_CF {
 	private boolean factor_recurrent(BigInteger Q_rest) {
 		if (Q_rest.compareTo(pMaxSquare)<0) {
 			// we divided Q_rest by all primes <= pMax and the rest is < pMax^2 -> it must be prime
-//			if (DEBUG) assertTrue(bpsw.isProbablePrime(Q_rest));
+			if (DEBUG) assertTrue(bpsw.isProbablePrime(Q_rest));
 			if (Q_rest.bitLength() > 31) return false;
 			bigFactors.add(Q_rest.intValue());
 			return true;
@@ -200,10 +203,12 @@ public class TDiv_CF02 implements TDiv_CF {
 		int Q_rest_bits = Q_rest.bitLength();
 		if (Q_rest_bits < 28) {
 			factor1 = tDiv31.findSingleFactor(Q_rest);
-		} else if (Q_rest_bits < 50) {
+		} else if (Q_rest_bits < 48) {
 			factor1 = lehman.findSingleFactor(Q_rest);
+		} else if (Q_rest_bits < 58) {
+			factor1 = pollardRhoR64Mul63.findSingleFactor(Q_rest);
 		} else if (Q_rest_bits < 63) {
-			factor1 = pollardRho.findSingleFactor(Q_rest);
+			factor1 = pollardRho64.findSingleFactor(Q_rest);
 		} else {
 			factor1 = cf_internal.findSingleFactor(Q_rest);
 		}
