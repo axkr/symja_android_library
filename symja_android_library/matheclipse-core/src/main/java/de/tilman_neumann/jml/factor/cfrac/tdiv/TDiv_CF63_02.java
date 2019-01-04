@@ -13,8 +13,6 @@
  */
 package de.tilman_neumann.jml.factor.cfrac.tdiv;
 
-import static org.junit.Assert.assertTrue;
-
 import java.math.BigInteger;
 
 import org.apache.log4j.Logger;
@@ -33,8 +31,7 @@ import de.tilman_neumann.jml.primes.probable.BPSWTest;
 /**
  * Auxiliary factor algorithm to find smooth decompositions of Q's.
  * 
- * Version 02:
- * Uses trial division first, complete factorization if Q is considered sufficiently smooth.
+ * Version 02: Uses trial division first, complete factorization if Q is considered sufficiently smooth.
  * 
  * @author Tilman Neumann
  */
@@ -54,8 +51,8 @@ public class TDiv_CF63_02 implements TDiv_CF63 {
 	private Lehman_Fast lehman = new Lehman_Fast(true);
 	private PollardRhoBrentMontgomeryR64Mul63 pollardRhoR64Mul63 = new PollardRhoBrentMontgomeryR64Mul63();
 	private PollardRhoBrentMontgomery64 pollardRho64 = new PollardRhoBrentMontgomery64();
-	
-	private BPSWTest bpsw = new BPSWTest(1<<20);
+
+	private BPSWTest bpsw = new BPSWTest(1 << 20);
 
 	// result: two arrays that are reused, their content is _copied_ to AQ-pairs
 	private SortedIntegerArray smallFactors = new SortedIntegerArray();
@@ -74,14 +71,14 @@ public class TDiv_CF63_02 implements TDiv_CF63 {
 	public void initialize(BigInteger kN, int primeBaseSize, int[] primesArray) {
 		this.primeBaseSize = primeBaseSize;
 		this.primesArray = primesArray;
-		this.pMax = primesArray[primeBaseSize-1];
+		this.pMax = primesArray[primeBaseSize - 1];
 		this.pMaxSquare = pMax * (long) pMax;
 	}
 
 	public AQPair test(BigInteger A, long Q) {
 		smallFactors.reset();
 		bigFactors.reset();
-		
+
 		// sign
 		long Q_rest = Q;
 		if (Q < 0) {
@@ -91,8 +88,8 @@ public class TDiv_CF63_02 implements TDiv_CF63 {
 		// Remove multiples of 2
 		int lsb = Long.numberOfTrailingZeros(Q_rest);
 		if (lsb > 0) {
-			smallFactors.add(2, (short)lsb);
-			Q_rest = Q_rest>>lsb;
+			smallFactors.add(2, (short) lsb);
+			Q_rest = Q_rest >> lsb;
 		}
 
 		// Trial division chain:
@@ -101,7 +98,7 @@ public class TDiv_CF63_02 implements TDiv_CF63 {
 		// -> running indices bottom-up is faster because small dividends are more likely to reduce the size of Q_rest.
 		int trialDivIndex = 1; // p[0]=2 has already been tested
 		int Q_rest_bits = 64 - Long.numberOfLeadingZeros(Q_rest);
-		if (Q_rest_bits>31) {
+		if (Q_rest_bits > 31) {
 			// do trial division in long
 			while (trialDivIndex < primeBaseSize) {
 				int p = primesArray[trialDivIndex];
@@ -111,15 +108,16 @@ public class TDiv_CF63_02 implements TDiv_CF63 {
 					Q_rest /= p;
 					// After division by a prime base element (typically < 20 bit), Q_rest is 12..61 bits.
 					Q_rest_bits = 64 - Long.numberOfLeadingZeros(Q_rest);
-					if (Q_rest_bits<32) break; // continue with int
+					if (Q_rest_bits < 32)
+						break; // continue with int
 					// trialDivIndex must remain as it is to find the same p more than once
 				} else {
 					trialDivIndex++;
 				}
 			} // end while (trialDivIndex < primeBaseSize)
 		}
-		if (DEBUG) assertTrue(Q_rest>1);
-		if (Q_rest_bits<32) {
+		// if (DEBUG) assertTrue(Q_rest>1);
+		if (Q_rest_bits < 32) {
 			int Q_rest_int = (int) Q_rest;
 			while (trialDivIndex < primeBaseSize) {
 				// continue trial division in int
@@ -131,34 +129,42 @@ public class TDiv_CF63_02 implements TDiv_CF63 {
 				}
 				trialDivIndex++;
 			} // end while (trialDivIndex < primeBaseSize)
-			if (Q_rest_int==1) return new Smooth_Perfect(A, smallFactors);
+			if (Q_rest_int == 1)
+				return new Smooth_Perfect(A, smallFactors);
 			Q_rest = (long) Q_rest_int; // keep Q_rest up-to-date
 		}
 
 		// trial division was not sufficient to factor Q completely.
 		// the remaining Q is either a prime > pMax, or a composite > pMax^2.
-		if (Q_rest > maxQRest) return null; // Q is not sufficiently smooth
-		 
-		// now we consider Q as sufficiently smooth. then we want to know all prime factors, as long as we do not find one that is too big to be useful.
-		//LOG.debug("before factor_recurrent()");
+		if (Q_rest > maxQRest)
+			return null; // Q is not sufficiently smooth
+
+		// now we consider Q as sufficiently smooth. then we want to know all prime factors, as long as we do not find
+		// one that is too big to be useful.
+		// LOG.debug("before factor_recurrent()");
 		boolean isSmooth = factor_recurrent(Q_rest);
-		if (DEBUG) if (bigFactors.size()>2) LOG.debug("Found " + bigFactors.size() + " distinct big factors: " + bigFactors);
+		if (DEBUG)
+			if (bigFactors.size() > 2)
+				LOG.debug("Found " + bigFactors.size() + " distinct big factors: " + bigFactors);
 		return isSmooth ? aqPairFactory.create(A, smallFactors, bigFactors) : null;
 	}
 
 	private boolean factor_recurrent(long Q_rest) {
 		if (Q_rest < pMaxSquare) {
 			// we divided Q_rest by all primes <= pMax and the rest is < pMax^2 -> it must be prime
-			if (DEBUG) assertTrue(bpsw.isProbablePrime(Q_rest));
-			if (bitLength(Q_rest) > 31) return false;
-			bigFactors.add((int)Q_rest);
+			// if (DEBUG) assertTrue(bpsw.isProbablePrime(Q_rest));
+			if (bitLength(Q_rest) > 31)
+				return false;
+			bigFactors.add((int) Q_rest);
 			return true;
 		}
-		// here we can not do without isProbablePrime(), because calling findSingleFactor() may not return when called with a prime argument
+		// here we can not do without isProbablePrime(), because calling findSingleFactor() may not return when called
+		// with a prime argument
 		if (bpsw.isProbablePrime(Q_rest)) {
 			// Q_rest is (probable) prime -> end of recurrence
-			if (bitLength(Q_rest) > 31) return false;
-			bigFactors.add((int)Q_rest);
+			if (bitLength(Q_rest) > 31)
+				return false;
+			bigFactors.add((int) Q_rest);
 			return true;
 		} // else: Q_rest is surely not prime
 
@@ -178,7 +184,7 @@ public class TDiv_CF63_02 implements TDiv_CF63 {
 		// Here we can not exclude factors > 31 bit because they may have 2 prime factors themselves.
 		return factor_recurrent(factor1) && factor_recurrent(Q_rest / factor1);
 	}
-	
+
 	private int bitLength(long n) {
 		return 64 - Long.numberOfLeadingZeros(n);
 	}

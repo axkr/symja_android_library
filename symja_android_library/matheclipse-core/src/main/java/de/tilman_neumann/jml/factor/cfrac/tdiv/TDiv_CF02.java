@@ -32,7 +32,6 @@ import de.tilman_neumann.jml.factor.tdiv.TDiv31Inverse;
 import de.tilman_neumann.jml.primes.probable.BPSWTest;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
-import static org.junit.Assert.*;
 
 /**
  * Auxiliary factor algorithm to find smooth decompositions of Q's.
@@ -154,7 +153,7 @@ public class TDiv_CF02 implements TDiv_CF {
 			} // end while (trialDivIndex < primeBaseSize)
 			Q_rest = BigInteger.valueOf(Q_rest_long); // keep Q_rest up-to-date
 		}
-		if (DEBUG) assertTrue(Q_rest.compareTo(I_1)>0);
+//		if (DEBUG) assertTrue(Q_rest.compareTo(I_1)>0);
 		if (Q_rest_bits<32) {
 			int Q_rest_int = Q_rest.intValue();
 			while (trialDivIndex < primeBaseSize) {
@@ -185,7 +184,7 @@ public class TDiv_CF02 implements TDiv_CF {
 	private boolean factor_recurrent(BigInteger Q_rest) {
 		if (Q_rest.compareTo(pMaxSquare)<0) {
 			// we divided Q_rest by all primes <= pMax and the rest is < pMax^2 -> it must be prime
-			if (DEBUG) assertTrue(bpsw.isProbablePrime(Q_rest));
+//			if (DEBUG) assertTrue(bpsw.isProbablePrime(Q_rest));
 			if (Q_rest.bitLength() > 31) return false;
 			bigFactors.add(Q_rest.intValue());
 			return true;

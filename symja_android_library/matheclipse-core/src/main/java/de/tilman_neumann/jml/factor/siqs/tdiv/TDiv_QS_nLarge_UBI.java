@@ -40,7 +40,6 @@ import de.tilman_neumann.util.SortedMultiset;
 import de.tilman_neumann.util.Timer;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.I_1;
-import static org.junit.Assert.*;
 
 /**
  * A trial division engine where partials can have several large factors.
@@ -158,19 +157,19 @@ public class TDiv_QS_nLarge_UBI implements TDiv_QS {
 				// Q(x) was found sufficiently smooth to be considered a (partial) congruence
 				aqPairs.add(aqPair);
 				sufficientSmoothCount++;
-				if (DEBUG) {
-					LOG.debug("Found congruence " + aqPair);
-					assertEquals(A.multiply(A).mod(kN), Q.mod(kN));
-					// make sure that the product of factors gives Q
-					SortedMultiset<Integer> allQFactors = aqPair.getAllQFactors();
-					BigInteger testProduct = I_1;
-					for (Map.Entry<Integer, Integer> entry : allQFactors.entrySet()) {
-						BigInteger prime = BigInteger.valueOf(entry.getKey());
-						int exponent = entry.getValue();
-						testProduct = testProduct.multiply(prime.pow(exponent));
-					}
-					assertEquals(Q, testProduct);
-				}
+//				if (DEBUG) {
+//					LOG.debug("Found congruence " + aqPair);
+//					assertEquals(A.multiply(A).mod(kN), Q.mod(kN));
+//					// make sure that the product of factors gives Q
+//					SortedMultiset<Integer> allQFactors = aqPair.getAllQFactors();
+//					BigInteger testProduct = I_1;
+//					for (Map.Entry<Integer, Integer> entry : allQFactors.entrySet()) {
+//						BigInteger prime = BigInteger.valueOf(entry.getKey());
+//						int exponent = entry.getValue();
+//						testProduct = testProduct.multiply(prime.pow(exponent));
+//					}
+//					assertEquals(Q, testProduct);
+//				}
 			}
 		}
 		if (profile) duration += timer.capture();
@@ -211,7 +210,7 @@ public class TDiv_QS_nLarge_UBI implements TDiv_QS {
 			if (xModP<0) xModP += p; // make remainder non-negative for negative x
 			if (DEBUG) {
 				if (xModP<0) LOG.debug("x=" + x + ", p=" + p + " -> x % p = " + xModP + ", x1 = " + x1Array[pIndex] + ", x2 = " + x2Array[pIndex]);
-				assertTrue(0<=xModP && xModP<p);
+//				assertTrue(0<=xModP && xModP<p);
 			}
 			if (xModP==x1Array[pIndex] || xModP==x2Array[pIndex]) {
 				pass2Primes[pass2Count] = primes[pIndex];
@@ -236,7 +235,7 @@ public class TDiv_QS_nLarge_UBI implements TDiv_QS {
 				if (DEBUG) {
 					BigInteger pBig = BigInteger.valueOf(p);
 					BigInteger[] div = Q_rest.divideAndRemainder(pBig);
-					assertEquals(div[1].intValue(), rem);
+//					assertEquals(div[1].intValue(), rem);
 					Q_rest = div[0];
 				}
 			}
@@ -260,7 +259,7 @@ public class TDiv_QS_nLarge_UBI implements TDiv_QS {
 			// we divided Q_rest by all primes <= pMax and we have Q_rest < pMax^2 -> it must be prime
 			if (DEBUG) {
 				LOG.debug("factor_recurrent(): Q_rest = " + Q_rest + " < pMax^2 -> Q_rest is prime");
-				assertTrue(bpsw.isProbablePrime(Q_rest));
+//				assertTrue(bpsw.isProbablePrime(Q_rest));
 			}
 			if (Q_rest.bitLength() > 31) return false;
 			bigFactors.add(Q_rest.intValue());
