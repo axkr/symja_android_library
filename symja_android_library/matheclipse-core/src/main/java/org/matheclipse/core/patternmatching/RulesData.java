@@ -54,14 +54,14 @@ public class RulesData implements Serializable {
 				}
 
 				IExpr a1 = lhsAST.arg1();
-				if (isComplicatedPatternExpr(a1)) {
+				if (isComplicatedPatternExpr(a1) || !a1.head().isFreeOfPatterns()) {
 					return true;
 				}
 				if (lhsAST.exists(x -> x.isPatternDefault(), 2)) {
 					return true;
 				}
 			}
-			return isComplicatedPatternExpr(lhs.head());
+			return !lhs.head().isFreeOfPatterns();
 		}
 		return isComplicatedPatternExpr(lhs);
 	}
@@ -389,6 +389,9 @@ public class RulesData implements Serializable {
 					patternHash = ((IAST) expr).patternHashCode();
 				}
 				for (IPatternMatcher patternEvaluator : fPatternDownRules) {
+					if (((IPatternMatcher) patternEvaluator).getLHSPriority() == 6656) {
+						System.out.println("Debug from this line");
+					}
 					if (patternEvaluator.isPatternHashAllowed(patternHash)) {
 						pmEvaluator = (IPatternMatcher) patternEvaluator.clone();
 						if (showSteps) {
@@ -401,9 +404,9 @@ public class RulesData implements Serializable {
 										" COMPLEX: " + pmEvaluator.getLHS().toString() + " := " + rhs.toString());
 							}
 						}
-						// if (pmEvaluator.getLHSPriority() == 6686) {
-						// System.out.println("Debug from this line");
-						// }
+						if (pmEvaluator.getLHSPriority() == 6656) {
+							System.out.println("Debug from this line");
+						}
 						if (Config.SHOW_STACKTRACE) {
 							if (isShowPriority(pmEvaluator)) {
 								System.out.print("try: " + pmEvaluator.getLHSPriority() + " - ");
