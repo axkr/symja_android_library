@@ -16,13 +16,14 @@ package de.tilman_neumann.jml.factor.tdiv;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
+import org.apache.log4j.Logger;
+
 import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
 import de.tilman_neumann.jml.factor.squfof.SquFoF63;
 import de.tilman_neumann.jml.primes.bounds.PrimeCountUpperBounds;
 
 /**
- * Trial division factor algorithm replacing division by multiplications, following
- * an idea of Thilo Harich (https://github.com/ThiloHarich/factoring.git).
+ * Trial division factor algorithm replacing division by multiplications.
  * 
  * Instead of dividing N by consecutive primes, we store the reciprocals of those primes, too,
  * and multiply N by those reciprocals. Only if such a result is near to an integer we need
@@ -31,14 +32,14 @@ import de.tilman_neumann.jml.primes.bounds.PrimeCountUpperBounds;
  * Assuming that we want to identify "near integers" with a precision of 2^-d.
  * Then the approach works for primes p if bitLength(p) >= bitLength(N) - 53 + d.
  * 
- * @author Tilman Neumann
+ * @authors Thilo Harich + Tilman Neumann
  */
 public class TDiv63Inverse extends FactorAlgorithmBase {
-//	private static final Logger LOG = Logger.getLogger(TDiv63Inverse.class);
+	private static final Logger LOG = Logger.getLogger(TDiv63Inverse.class);
 
 	private static final int DISCRIMINATOR_BITS = 10; // experimental result
 	private static final double DISCRIMINATOR = 1.0/(1<<DISCRIMINATOR_BITS);
-	
+
 	private int[] primes;
 	private double[] reciprocals;
 	private int pLimit;
@@ -83,7 +84,7 @@ public class TDiv63Inverse extends FactorAlgorithmBase {
 		return BigInteger.valueOf(findSingleFactor(N.longValue()));
 	}
 	
-	public int findSingleFactor(long N) {
+	public int findSingleFactor_v1(long N) {
 		int i=0;
 		int Nbits = 64-Long.numberOfLeadingZeros(N);
 		int pMinBits = Nbits - 53 + DISCRIMINATOR_BITS;
@@ -114,6 +115,37 @@ public class TDiv63Inverse extends FactorAlgorithmBase {
 		return 0;
 	}
 	
+	public int findSingleFactor/*_v2*/(long N) {
+		int i=0;
+		int Nbits = 64-Long.numberOfLeadingZeros(N);
+		int pMinBits = Nbits - 53 + DISCRIMINATOR_BITS;
+		if (pMinBits>0) {
+			// for the smallest primes we must do standard trial division
+			int pMin = 1<<pMinBits;
+			for ( ; primes[i]<pMin; i++) {
+				if (N%primes[i]==0) {
+					return primes[i];
+				}
+			}
+		}
+		
+		// Now the primes are big enough to apply trial division by inverses
+		for (; primes[i]<pLimit; i++) {
+			//LOG.debug("N=" + N + ": Test p=" + primes[i]);
+			long nDivPrime = (long) (N*reciprocals[i] + DISCRIMINATOR);
+			if (nDivPrime * primes[i] == N) {
+				// nDivPrime is very near to an integer
+				if (N%primes[i]==0) {
+					//LOG.debug("Found factor " + primes[i]);
+					return primes[i];
+				}
+			}
+		}
+
+		// nothing found up to pLimit
+		return 0;
+	}
+
 	/**
 	 * Test.
 	 * @param args ignored
