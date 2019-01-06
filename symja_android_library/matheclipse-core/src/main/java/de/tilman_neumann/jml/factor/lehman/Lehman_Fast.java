@@ -15,12 +15,11 @@ package de.tilman_neumann.jml.factor.lehman;
 
 import java.math.BigInteger;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
-import de.tilman_neumann.jml.gcd.Gcd63;
-//import de.tilman_neumann.util.ConfigUtil;
 import de.tilman_neumann.jml.factor.tdiv.TDiv63Inverse;
+import de.tilman_neumann.jml.gcd.Gcd63;
 
 /**
  * Fast implementation of Lehman's factor algorithm.
@@ -29,7 +28,7 @@ import de.tilman_neumann.jml.factor.tdiv.TDiv63Inverse;
  * @authors Tilman Neumann + Thilo Harich
  */
 public class Lehman_Fast extends FactorAlgorithmBase {
-//	private static final Logger LOG = Logger.getLogger(Lehman_Fast.class);
+	private static final Logger LOG = Logger.getLogger(Lehman_Fast.class);
 
 	/** This is a constant that is below 1 for rounding up double values to long. */
 	private static final double ROUND_UP_DOUBLE = 0.9999999665;
@@ -91,12 +90,19 @@ public class Lehman_Fast extends FactorAlgorithmBase {
 		// For kTwoA = kLimit / 64 the range for a is at most 2. We make it 0 mod 6, too.
 		final int kTwoA = (((cbrt >> 6) + 6) / 6) * 6;
 
-		// Investigate solutions of a^2 - sqrt(k*n) = y^2, where we only have two possible 'a' values per k.
-		// But do not go to far, since there we have a lower chance to find a factor.
-		// Here we only inspect k == 0 (mod 6) which are most likely to have a solution x^2 - sqrt(k*n) = y^2.
-		if ((factor = lehmanEven(kTwoA, kLimit))>1) return factor;
+		// We are investigating solutions of a^2 - sqrt(k*n) = y^2 in three k-ranges:
+		// * The "small range" is 1 <= k < kTwoA, where we may have more than two 'a'-solutions per k.
+		//   Thus, an inner 'a'-loop is required.
+		// * The "middle range" is kTwoA <= k < kLimit, where we have at most two possible 'a' values per k.
+		// * The "high range" is kLimit <= k < 2*kLimit. This range is not required for the correctness
+		//   of the algorithm, but investigating it for some k==0 (mod 6) improves performance.
+		
+		// We start with the middle range cases k == 0 (mod 6) and k == 3 (mod 6),
+		// which have the highest chance to find a factor.
+		if ((factor = lehmanEven(kTwoA, kLimit)) > 1) return factor;
+		if ((factor = lehmanOdd(kTwoA + 3, kLimit)) > 1) return factor;
 
-		// Investigate solutions of a^2 - sqrt(k*n) = y^2 where we might have more then two solutions 'a'.
+		// Now investigate the small range
 		final double sixthRootTerm = 0.25 * Math.pow(N, 1/6.0); // double precision is required for stability
 		for (int k=1; k < kTwoA; k++) {
 			final double sqrt4kN = sqrt4N * sqrt[k];
@@ -130,16 +136,10 @@ public class Lehman_Fast extends FactorAlgorithmBase {
 			}
 		}
 
-		// additional loop for k = 3 mod 6 in the middle range
-		// this loop has fewer possible a's than k = 0 mod 6 and therefore gives less often factors
-		if ((factor = lehmanOdd(kTwoA + 3, kLimit)) > 1) return factor;
-
-		// Continue k == 0 (mod 6) loop for larger k. Since we are looking at very high numbers this now done after the k = 3 mod 6 loop
+		// k == 0 (mod 6) has the highest chance to find a factor; checking it in the high range boosts performance
 		if ((factor = lehmanEven(kLimit, kLimit << 1)) > 1) return factor;
 
-		// So far we have done loops for offset 0,3 -> Now do the missing 1,2,4,5.
-		// This code will be executed very rarely, but to be sure we did not miss factors
-		// from the lehman argument we have to execute it.
+		// Complete middle range
 		if ((factor = lehmanOdd(kTwoA + 1, kLimit)) > 1) return factor;
 		if ((factor = lehmanEven(kTwoA + 2, kLimit)) > 1) return factor;
 		if ((factor = lehmanEven(kTwoA + 4, kLimit)) > 1) return factor;

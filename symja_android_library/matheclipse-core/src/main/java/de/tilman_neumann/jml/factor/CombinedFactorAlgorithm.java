@@ -13,7 +13,8 @@
  */
 package de.tilman_neumann.jml.factor;
 
-import static de.tilman_neumann.jml.base.BigIntConstants.*;
+import static de.tilman_neumann.jml.base.BigIntConstants.I_1;
+import static de.tilman_neumann.jml.base.BigIntConstants.I_MINUS_1;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -29,14 +30,16 @@ import de.tilman_neumann.jml.factor.lehman.Lehman_Fast;
 import de.tilman_neumann.jml.factor.pollardRho.PollardRhoBrentMontgomery64;
 import de.tilman_neumann.jml.factor.pollardRho.PollardRhoBrentMontgomeryR64Mul63;
 import de.tilman_neumann.jml.factor.psiqs.PSIQS;
-import de.tilman_neumann.jml.factor.psiqs.PSIQSBase;
 import de.tilman_neumann.jml.factor.psiqs.PSIQS_U;
 import de.tilman_neumann.jml.factor.siqs.SIQS;
 import de.tilman_neumann.jml.factor.siqs.poly.SIQSPolyGenerator;
 import de.tilman_neumann.jml.factor.siqs.powers.NoPowerFinder;
 import de.tilman_neumann.jml.factor.siqs.powers.PowerOfSmallPrimesFinder;
+import de.tilman_neumann.jml.factor.siqs.sieve.Sieve;
+import de.tilman_neumann.jml.factor.siqs.sieve.Sieve03g;
 import de.tilman_neumann.jml.factor.siqs.sieve.Sieve03gU;
 import de.tilman_neumann.jml.factor.siqs.tdiv.TDiv_QS_1Large_UBI;
+import de.tilman_neumann.jml.factor.siqs.tdiv.TDiv_QS_2Large_UBI;
 import de.tilman_neumann.jml.factor.tdiv.TDiv31Inverse;
 import de.tilman_neumann.util.SortedMultiset;
 import de.tilman_neumann.util.TimeUtil;
@@ -54,8 +57,12 @@ public class CombinedFactorAlgorithm extends FactorAlgorithmBase {
 	private Lehman_Fast lehman = new Lehman_Fast(true);
 	private PollardRhoBrentMontgomeryR64Mul63 pollardRhoR64Mul63 = new PollardRhoBrentMontgomeryR64Mul63();
 	private PollardRhoBrentMontgomery64 pollardRho64 = new PollardRhoBrentMontgomery64();
-	private SIQS siqs_smallArgs;
-	private PSIQSBase siqs_bigArgs;
+	
+	// SIQS tuned for small N
+	private SIQS siqs_smallArgs = new SIQS(0.32F, 0.37F, null, 0.16F, new PowerOfSmallPrimesFinder(), new SIQSPolyGenerator(), new Sieve03gU(), new TDiv_QS_1Large_UBI(), 10, new MatrixSolver01_Gauss(), false);
+
+	// The SIQS chosen for big arguments depends on constructor parameters
+	private SingleFactorFinder siqs_bigArgs;
 	
 	/**
 	 * Simple constructor using PSIQS with sun.misc.Unsafe features.
@@ -75,14 +82,19 @@ public class CombinedFactorAlgorithm extends FactorAlgorithmBase {
 	 * @param profile if true then extended profiling information is collected
 	 */
 	public CombinedFactorAlgorithm(int numberOfThreads, boolean permitUnsafeUsage, boolean profile) {
-		// SIQS tuned for small N
-		siqs_smallArgs = new SIQS(0.32F, 0.37F, null, 0.16F, new PowerOfSmallPrimesFinder(), new SIQSPolyGenerator(), new Sieve03gU(), new TDiv_QS_1Large_UBI(), 10, new MatrixSolver01_Gauss(), false);
-		// PSIQS for bigger N: monolithic sieve is still slightly faster than SBH in the long run.
-		if (permitUnsafeUsage) {
-			siqs_bigArgs = new PSIQS_U(0.32F, 0.37F, null, null, numberOfThreads, new NoPowerFinder(), new MatrixSolver02_BlockLanczos(), profile);
+		if (numberOfThreads==1) {
+			// Avoid multi-thread overhead if the requested number of threads is 1
+			Sieve sieve = permitUnsafeUsage ? new Sieve03gU() : new Sieve03g();
+			siqs_bigArgs = new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), sieve, new TDiv_QS_2Large_UBI(), 10, new MatrixSolver02_BlockLanczos(), false);
 		} else {
-			siqs_bigArgs = new PSIQS(0.32F, 0.37F, null, null, numberOfThreads, new NoPowerFinder(), new MatrixSolver02_BlockLanczos(), profile);
+			if (permitUnsafeUsage) {
+				siqs_bigArgs = new PSIQS_U(0.32F, 0.37F, null, null, numberOfThreads, new NoPowerFinder(), new MatrixSolver02_BlockLanczos(), profile);
+			} else {
+				siqs_bigArgs = new PSIQS(0.32F, 0.37F, null, null, numberOfThreads, new NoPowerFinder(), new MatrixSolver02_BlockLanczos(), profile);
+			}
 		}
+	
+		// XXX: Other options that perform well: PowerOfSmallPrimesFinder, SingleBlockHybridSieve(U).
 	}
 
 	@Override

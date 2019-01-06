@@ -84,9 +84,10 @@ abstract public class FactorAlgorithmBase implements SingleFactorFinder {
 		}
 
 		if (N.bitLength() > 62) {
-			// TODO Move small factor finding to (P)SIQS
-
-			// Do some trial division to factor smooth numbers much faster.
+			// "Small" algorithms like trial division, Lehman or Pollard-Rho are very good themselves
+			// at finding small factors, but for larger N we do some trial division.
+			// This will help "big" algorithms to factor smooth numbers much faster.
+			
 			// We start at p[1]=3, because powers of 2 have already been removed.
 			// We run over all p_i<2^31-1 as long as N can still have a prime factor >= p_i.
 			// This would find all prime factors < 46340.
@@ -111,7 +112,8 @@ abstract public class FactorAlgorithmBase implements SingleFactorFinder {
 				}
 			}
 			
-			// TODO For large and not so smooth N, an advanced small factor test like ECM or parallel Pollard-Rho would be nice here
+			// TODO For large N with many "middle-size" prime factors, an advanced small factor test
+			// like ECM or parallel Pollard-Rho would be nice here.
 		}
 		
 		// N contains larger factors...
