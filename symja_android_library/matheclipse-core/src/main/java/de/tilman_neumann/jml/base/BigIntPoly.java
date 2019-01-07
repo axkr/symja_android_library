@@ -16,7 +16,7 @@ package de.tilman_neumann.jml.base;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
@@ -27,8 +27,8 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
  * @author Tilman Neumann 
  */
 public class BigIntPoly extends ArrayList<BigInteger> {
-//	@SuppressWarnings("unused")
-//	private static final Logger LOG = Logger.getLogger(BigIntPoly.class);
+	@SuppressWarnings("unused")
+	private static final Logger LOG = Logger.getLogger(BigIntPoly.class);
 
 	private static final long serialVersionUID = 5031959748489950586L;
 
@@ -50,17 +50,17 @@ public class BigIntPoly extends ArrayList<BigInteger> {
 	 * @param value the new value of the coefficient.
 	 */
 	public BigInteger set(final int n, final BigInteger value) {
-		if (n<0) throw new IllegalArgumentException("index must be non-negative, but is " + n);
+		if (n < 0) throw new IllegalArgumentException("index must be non-negative, but is " + n);
 		
-		if (n>=0 && n<this.size()) {
+		if (n < this.size()) {
 			return super.set(n,value);
 		}
 		// fill intermediate powers with coefficients of zero
-		while (this.size() < n ) {
-			this.add(BigInteger.ZERO);
+		while (this.size() < n) {
+			this.add(I_0);
 		}
 		this.add(value);
-		return BigInteger.ZERO;
+		return I_0;
 	}
 	
 	/**
@@ -68,23 +68,19 @@ public class BigIntPoly extends ArrayList<BigInteger> {
 	 * @param val the other polynomial
 	 * @return the product of this with the other polynomial
 	 */
-	public BigIntPoly multiply(BigIntPoly val)
-	{
+	public BigIntPoly multiply(BigIntPoly val) {
 		// the degree of the result is the sum of the two degrees.
-		final int nmax = this.degree()+val.degree();
+		final int nmax = this.degree() + val.degree();
 		BigIntPoly resul = new BigIntPoly(nmax+1);
 		
 		for(int n=0; n<=nmax; n++) {
-			BigInteger coef = BigInteger.ZERO;
-			for (int nleft=0; nleft <= n ; nleft++) {
-				// LOG.debug(""+nleft+" "+at(nleft).toString() ) ;
-				// LOG.debug(" * "+(n-nleft)+" "+at(n-nleft).toString() ) ;
-				// LOG.debug(" = "+ at(nleft).multiply(val.at(n-nleft)).toString() ) ;
-				coef = coef.add(this.at(nleft).multiply(val.at(n-nleft))) ;
+			BigInteger coef = I_0;
+			for (int nleft=0; nleft <= n; nleft++) {
+				coef = coef.add(this.at(nleft).multiply(val.at(n-nleft)));
 			}
-			resul.set(n,coef) ;
+			resul.set(n,coef);
 		}
-		return resul ;
+		return resul;
 	}
 	
 	/** 
@@ -93,10 +89,10 @@ public class BigIntPoly extends ArrayList<BigInteger> {
 	 * @return the polynomial coefficient in front of x^n.
 	 */
 	public BigInteger at(final int n) {
-		if ( n>=0 && n<this.size()) {
+		if (n>=0 && n<this.size()) {
 			return super.get(n);
 		}
-		return BigInteger.ZERO;
+		return I_0;
 	}
 
 	/**

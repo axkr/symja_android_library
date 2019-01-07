@@ -13,7 +13,7 @@
  */
 package de.tilman_neumann.util;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,7 +45,7 @@ public class Multiset_HashMapImpl<T> extends HashMap<T, Integer> implements Mult
 	private static final long serialVersionUID = -6604624351619809213L;
 	
 	@SuppressWarnings("unused")
-//	private static final Logger LOG = Logger.getLogger(Multiset_HashMapImpl.class);
+	private static final Logger LOG = Logger.getLogger(Multiset_HashMapImpl.class);
 
 	private int totalCount = 0;
 	
@@ -257,5 +257,10 @@ public class Multiset_HashMapImpl<T> extends HashMap<T, Integer> implements Mult
 			return true;
 		}
 		return false;
+	}
+	
+	@Override
+	public int hashCode() {
+		throw new IllegalStateException("SortedMultisets are not ready to be used in hash structures");
 	}
 }

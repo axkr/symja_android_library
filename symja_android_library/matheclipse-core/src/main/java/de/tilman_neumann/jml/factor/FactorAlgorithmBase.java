@@ -153,6 +153,9 @@ abstract public class FactorAlgorithmBase implements SingleFactorFinder {
 	/**
 	 * Returns a product-like representation of the given factorization,
 	 * with distinct keys separated by "*" and the multiplicity indicated by "^".
+	 * 
+	 * @param factorization a prime factorization
+	 * @return string representation
 	 */
 	public String getPrettyFactorString(SortedMultiset<BigInteger> factorization) {
 		if (factorization.size()>0) {

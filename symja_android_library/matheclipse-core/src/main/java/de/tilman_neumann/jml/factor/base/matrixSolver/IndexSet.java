@@ -15,8 +15,10 @@ package de.tilman_neumann.jml.factor.base.matrixSolver;
 
 import java.util.ArrayList;
 
-//import org.apache.log4j.Logger;
-//
+import org.apache.log4j.Logger;
+
+import static org.junit.Assert.*;
+
 /**
  * BitArray implementation of an IndexSet, realized in long[], used by the Gaussian solver.
  * 
@@ -26,8 +28,8 @@ import java.util.ArrayList;
  * @author Tilman Neumann
  */
 public class IndexSet  {
-//	private static final Logger LOG = Logger.getLogger(IndexSet.class);
-//	private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(IndexSet.class);
+	private static final boolean DEBUG = false;
 
 	/**
 	 * the bit array:
@@ -62,7 +64,7 @@ public class IndexSet  {
 	}
 	
 	public boolean contains(Object o) {
-//		LOG.debug("contains()", new Throwable()); // never used, method untested
+		LOG.debug("contains()", new Throwable()); // never used, method untested
 		if (o==null || !(o instanceof Integer)) return false;
 		int x = ((Integer)o).intValue();
 		if (x >= numberOfBits) return false; // there is no entry as big as x
@@ -117,7 +119,7 @@ public class IndexSet  {
 		for (int i=0; i<numberOfLongs; i++) {
 			long theLong = bitArray[i];
 			int x = i<<6; // x = 64*i
-//			if (DEBUG) assertEquals(64*i, x);
+			if (DEBUG) assertEquals(64*i, x);
 			if (x>biggestEntry) break;
 			for (int j=0; j<64; j++) {
 				boolean isSet = (theLong & (1L<<j)) != 0;
@@ -137,6 +139,11 @@ public class IndexSet  {
 			if (bitArray[i] != other.bitArray[i]) return false;
 		}
 		return true;
+	}
+	
+	@Override
+	public int hashCode() {
+		throw new IllegalStateException("Class IndexSet is not ready to be used in hash structures");
 	}
 
 	@Override

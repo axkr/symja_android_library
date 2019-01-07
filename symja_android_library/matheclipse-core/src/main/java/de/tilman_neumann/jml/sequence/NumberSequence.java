@@ -17,19 +17,21 @@ package de.tilman_neumann.jml.sequence;
  * Interface for number sequences of type T.
  * @author Tilman Neumann
  * 
- * @param T sequence element type
+ * @param <T> sequence element type
  */
 public interface NumberSequence<T> {
-	/** The name of this sequence generator */
+	/**
+	 * @return the name of this sequence generator
+	 */
 	String getName();
 	
 	/** 
 	 * Reset sequence so that it starts again with its first element. 
-	 * @param newParam
 	 */
-	// TODO removing the parameter destroys SquareFactor algorithms!?
 	void reset();
 
-	/** Return the next integer */
+	/**
+	 * @return the next integer
+	 */
 	T next();
 }

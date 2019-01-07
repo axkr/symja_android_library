@@ -19,7 +19,6 @@ import java.security.SecureRandom;
 import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
-import de.tilman_neumann.jml.factor.squfof.SquFoF63;
 import de.tilman_neumann.jml.primes.bounds.PrimeCountUpperBounds;
 
 /**

@@ -13,6 +13,8 @@
  */
 package de.tilman_neumann.jml.factor.base.matrixSolver;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +31,7 @@ import de.tilman_neumann.jml.factor.base.congruence.Congruence;
  * @author Tilman Neumann
  */
 public class MatrixSolver02_BlockLanczos extends MatrixSolver {
-//	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = false;
 
 	private BlockLanczos blockLanczosSolver = new BlockLanczos();
 	
@@ -54,7 +56,7 @@ public class MatrixSolver02_BlockLanczos extends MatrixSolver {
 			for (Integer oddExpFactor : oddExpFactors) {
 				// columnIndex should not be bigger than the number of congruences
 				int columnIndex = factors_2_columnIndices.get(oddExpFactor);
-//				if (DEBUG) assertTrue(columnIndex <= matrixBlength);
+				if (DEBUG) assertTrue(columnIndex <= matrixBlength);
 				matrixRow[j++] = columnIndex;
 			}
 			matrixB[i++] = matrixRow;

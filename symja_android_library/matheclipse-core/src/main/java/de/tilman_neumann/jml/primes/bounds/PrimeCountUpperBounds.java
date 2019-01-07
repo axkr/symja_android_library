@@ -61,7 +61,7 @@ public class PrimeCountUpperBounds {
 		double lnxPow6 = lnxPow5 * lnx;
 		double lnxPow7 = lnxPow6 * lnx;
 		double lnxPow8 = lnxPow7 * lnx;
-		return (long) Math.ceil(x/lnx + x/lnxPow2 + 2*x/lnxPow3 + 6.35*x/lnxPow4 + 24.35*x/lnxPow5 + 121.75*x/lnxPow6 + 730.5*x/lnxPow7 + 6801.4*x/lnxPow8);
+		return (long) Math.ceil(x/lnx + x/lnxPow2 + 2.0*x/lnxPow3 + 6.35*x/lnxPow4 + 24.35*x/lnxPow5 + 121.75*x/lnxPow6 + 730.5*x/lnxPow7 + 6801.4*x/lnxPow8);
 	}
 
 	/**

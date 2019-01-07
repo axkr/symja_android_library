@@ -178,6 +178,8 @@ public class BlockLanczos implements Serializable {
 		        			break;
 		        		}
 		        	}
+		        	// The loop above will always find a hit at k<=31.
+		        	// Thus we do not need to worry that the following statement overflows matrixE.
 		        	i = matrixE[k];
 		        	Temp = matrixWinv[i];
 		        	matrixWinv[i] = matrixWinv[currentOrder];

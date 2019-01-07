@@ -13,7 +13,7 @@
  */
 package de.tilman_neumann.util;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,8 +36,8 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
 	
 	private static final long serialVersionUID = -6604624351619809213L;
 	
-//	@SuppressWarnings("unused")
-//	private static final Logger LOG = Logger.getLogger(SortedMultiset_BottomUp.class);
+	@SuppressWarnings("unused")
+	private static final Logger LOG = Logger.getLogger(SortedMultiset_BottomUp.class);
 
 	private int totalCount = 0;
 	
@@ -283,6 +283,11 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
 		return false;
 	}
 	
+	@Override
+	public int hashCode() {
+		throw new IllegalStateException("SortedMultisets are not ready to be used in hash structures");
+	}
+
 	public String toString(String entrySep, String expSep) {
 		String ret = "";
 		for (Map.Entry<T, Integer> entry : this.entrySet()) {
