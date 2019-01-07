@@ -1106,7 +1106,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		IsWrongSolveExpression predicate = new IsWrongSolveExpression();
 		// collect linear and univariate polynomial equations:
 		for (IExpr expr : termsEqualZeroList) {
-			if (expr.isMember(predicate, true)) {
+			if (expr.has(predicate, true)) {
 				engine.printMessage(
 						"Solve: the system contains the wrong object: " + predicate.getWrongExpr().toString());
 				throw new NoEvalException();

@@ -427,7 +427,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 */
 	private static IExpr integrateTimesTrigFunctions(final IAST timesAST, IExpr arg2) {
 		Predicate<IExpr> isTrigFunction = Predicates.isAST(new ISymbol[] { F.Cos, F.Sin });
-		if (timesAST.isMember(isTrigFunction, false)) {
+		if (timesAST.has(isTrigFunction, false)) {
 			// use a symbol which is not in the symbols map
 			ISymbol pSymbol = new Symbol("$x$", Context.SYSTEM);
 			IExpr fx = F.eval(F.TrigReduce(timesAST));

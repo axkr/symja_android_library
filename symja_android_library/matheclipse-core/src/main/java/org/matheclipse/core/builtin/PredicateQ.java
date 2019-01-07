@@ -18,7 +18,9 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
-import org.matheclipse.core.patternmatching.PatternMatcherEvalEngine;
+import org.matheclipse.core.patternmatching.PatternMatcher;
+import org.matheclipse.core.visit.IVisitorBoolean;
+import org.matheclipse.core.visit.VisitorBooleanLevelSpecification;
 
 public class PredicateQ {
 
@@ -618,25 +620,42 @@ public class PredicateQ {
 			}
 
 			boolean heads = false;
+			int size = ast.size();
 			if (ast.size() > 3) {
-				final Options options = new Options(ast.topHead(), ast, ast.argSize(), engine);
+				final Options options = new Options(ast.topHead(), ast, 3, size, engine);
 				if (options.isOption("Heads")) {
 					heads = true;
-				} else {
-					Validate.checkSize(ast, 4);
+				}
+				int pos = options.getLastPosition();
+				if (pos != -1) {
+					size = pos;
 				}
 			}
-			if (ast.size() == 3 || ast.size() == 4) {
+			if (size >= 3) {
 				final IExpr arg1 = engine.evaluate(ast.arg1());
-				final IExpr arg2 = engine.evaluate(ast.arg2());
 				if (arg1.isAST()) {
-					return F.bool(arg1.isMember(arg2, heads));
+					final IExpr arg2 = engine.evaluate(ast.arg2());
+					if (size == 3) {
+						return F.bool(arg1.isMember(arg2, heads, null));
+					}
+
+					Predicate<IExpr> predicate = memberPredicate(arg2);
+					IVisitorBoolean level = new VisitorBooleanLevelSpecification(predicate, ast.arg3(), heads, engine);
+
+					return F.bool(arg1.accept(level));
 				}
+
 				return F.False;
 			}
 			return F.NIL;
 		}
 
+		private static Predicate<IExpr> memberPredicate(IExpr pattern) {
+			if (pattern.isSymbol() || pattern.isNumber() || pattern.isString()) {
+				return x -> x.equals(pattern);
+			}
+			return new PatternMatcher(pattern);
+		}
 	}
 
 	/**

@@ -41,6 +41,7 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
+import org.matheclipse.core.visit.VisitorBooleanLevelSpecification;
 import org.matheclipse.core.visit.VisitorReplaceAll;
 import org.matheclipse.core.visit.VisitorReplaceAllLambda;
 import org.matheclipse.core.visit.VisitorReplacePart;
@@ -671,6 +672,41 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default boolean has(IExpr pattern) {
 		return isFree(pattern, true);
+	}
+
+	/**
+	 * Returns <code>true</code>, if <b>at least one of the elements</b> in the subexpressions or the expression itself,
+	 * match the given pattern.
+	 * 
+	 * 
+	 * @param pattern
+	 *            a pattern-matching expression
+	 * @param heads
+	 *            if set to <code>false</code>, only the arguments of an IAST should be tested and not the
+	 *            <code>Head[]</code> element.
+	 * @return
+	 */
+	default boolean has(IExpr pattern, boolean heads) {
+		if (pattern.isSymbol() || pattern.isNumber() || pattern.isString()) {
+			return has(x -> x.equals(pattern), heads);
+		}
+		final IPatternMatcher matcher = new PatternMatcher(pattern);
+		return has(matcher, heads);
+	}
+
+	/**
+	 * Returns <code>true</code>, if <b>at least one of the elements</b> in the subexpressions or the expression itself,
+	 * satisfy the given unary predicate.
+	 * 
+	 * @param predicate
+	 *            a unary predicate
+	 * @param heads
+	 *            if set to <code>false</code>, only the arguments of an IAST should be tested and not the
+	 *            <code>Head[]</code> element.
+	 * @return
+	 */
+	default boolean has(Predicate<IExpr> predicate, boolean heads) {
+		return predicate.test(this);
 	}
 
 	/**
@@ -1536,10 +1572,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return false;
 	}
 
-	default boolean isNotDefined() {
-		return isIndeterminate() || isDirectedInfinity();
-	}
-
 	/**
 	 * Test if this expression is an inexact number. I.e. an instance of type <code>INum</code> or
 	 * <code>IComplexNum</code>.
@@ -1704,8 +1736,22 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Returns <code>true</code>, if <b>at least one of the elements</b> in the subexpressions or the expression itself,
-	 * match the given pattern.
+	 * Returns <code>true</code>, if <b>at least one of the elements</b> in the subexpressions, match the given pattern.
+	 * By default <code>isMember()</code> only operates at level 1.
+	 * 
+	 * 
+	 * @param pattern
+	 *            a pattern-matching expression
+	 * 
+	 * @return
+	 */
+	default boolean isMember(IExpr pattern) {
+		return isMember(pattern, false, null);
+	}
+
+	/**
+	 * Returns <code>true</code>, if <b>at least one of the elements</b> in the subexpressions, match the given pattern.
+	 * If <code>visitor==null</code> the <code>isMember()</code> method only operates at level 1.
 	 * 
 	 * 
 	 * @param pattern
@@ -1713,29 +1759,22 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @param heads
 	 *            if set to <code>false</code>, only the arguments of an IAST should be tested and not the
 	 *            <code>Head[]</code> element.
+	 * @param visitor
+	 *            if <code>null</code> use <code>VisitorBooleanLevelSpecification(predicate, 1, heads)</code>
 	 * @return
 	 */
-	default boolean isMember(IExpr pattern, boolean heads) {
+	default boolean isMember(IExpr pattern, boolean heads, IVisitorBoolean visitor) {
+		Predicate<IExpr> predicate;
 		if (pattern.isSymbol() || pattern.isNumber() || pattern.isString()) {
-			return isMember(x -> x.equals(pattern), heads);
+			predicate = x -> x.equals(pattern);
+		} else {
+			predicate = new PatternMatcher(pattern);
 		}
-		final IPatternMatcher matcher = new PatternMatcher(pattern);
-		return isMember(matcher, heads);
-	}
 
-	/**
-	 * Returns <code>true</code>, if <b>at least one of the elements</b> in the subexpressions or the expression itself,
-	 * satisfy the given unary predicate.
-	 * 
-	 * @param predicate
-	 *            a unary predicate
-	 * @param heads
-	 *            if set to <code>false</code>, only the arguments of an IAST should be tested and not the
-	 *            <code>Head[]</code> element.
-	 * @return
-	 */
-	default boolean isMember(Predicate<IExpr> predicate, boolean heads) {
-		return predicate.test(this);
+		if (visitor == null) {
+			visitor = new VisitorBooleanLevelSpecification(predicate, 1, heads);
+		}
+		return accept(visitor);
 	}
 
 	/**
@@ -1896,6 +1935,10 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default boolean isNot() {
 		return false;
+	}
+
+	default boolean isNotDefined() {
+		return isIndeterminate() || isDirectedInfinity();
 	}
 
 	/**
@@ -3249,8 +3292,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * returns <code>F.NIL</code>.
 	 * 
 	 * @param map
-	 *            if the maps <code>get()</code> method returns <code>F.NIL</code> the expression isn't
-	 *            substituted.
+	 *            if the maps <code>get()</code> method returns <code>F.NIL</code> the expression isn't substituted.
 	 * @return <code>F.NIL</code> if no substitution of a (sub-)expression was possible.
 	 */
 	@Nullable

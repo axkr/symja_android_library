@@ -2040,13 +2040,20 @@ public final class Programming {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
 
-			final IExpr temp = ast.arg1();
-			IPatternMatcher matcher = null;
-			if (ast.isAST2()) {
-				matcher = engine.evalPatternMatcher(ast.arg2());
-			}
+			try {
+				final IExpr temp = ast.arg1();
+				IPatternMatcher matcher = null;
+				if (ast.isAST2()) {
+					matcher = engine.evalPatternMatcher(ast.arg2());
+				}
 
-			return engine.evalTrace(temp, matcher, F.List());
+				return engine.evalTrace(temp, matcher, F.List());
+			} catch (RuntimeException rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
+			}
+			return F.NIL;
 		}
 
 		@Override

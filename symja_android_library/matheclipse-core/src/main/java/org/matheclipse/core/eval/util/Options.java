@@ -26,6 +26,8 @@ public class Options {
 
 	private final EvalEngine fEngine;
 
+	private int fLastPosition = -1;
+
 	/**
 	 * Construct special <i>Options</i> used in evaluation of function symbols (i.e. <code>Modulus-&gt;n</code> is an
 	 * option which could be used for an integer <code>n</code> in a function like
@@ -36,7 +38,7 @@ public class Options {
 	 * @param currentOptionsList
 	 *            the AST where the option could be defined starting at position <code>startIndex</code>
 	 * @param startIndex
-	 *            the index from which tolook for options defined in <code>currentOptionsList</code>
+	 *            the index from which to look for options defined in <code>currentOptionsList</code>
 	 */
 	public Options(final ISymbol symbol, final IAST currentOptionsList, final int startIndex, final EvalEngine engine) {
 		fEngine = engine;
@@ -54,6 +56,47 @@ public class Options {
 			this.fCurrentOptionsList = F.ListAlloc(size);
 			for (int i = startIndex; i < size; i++) {
 				this.fCurrentOptionsList.append(1, currentOptionsList.get(i));
+			}
+		}
+	}
+
+	/**
+	 * Construct special <i>Options</i> used in evaluation of function symbols (i.e. <code>Modulus-&gt;n</code> is an
+	 * option which could be used for an integer <code>n</code> in a function like
+	 * <code>Factor(polynomial, Modulus-&gt;2)</code>.
+	 * 
+	 * @param symbol
+	 *            the options symbol for determining &quot;default option values&quot;
+	 * @param currentOptionsList
+	 *            the AST where the option could be defined starting at position <code>startIndex</code>
+	 * @param startIndex
+	 *            the index from which to look for options defined in <code>currentOptionsList</code>
+	 * @param endIndex
+	 *            the index from which to look for options defined in <code>currentOptionsList</code>
+	 */
+	public Options(final ISymbol symbol, final IAST currentOptionsList, final int startIndex, final int endIndex,
+			final EvalEngine engine) {
+		fEngine = engine;
+		// get the List of pre-defined options:
+		final IExpr temp = fEngine.evaluate(Options(symbol));
+		if ((temp != null) && (temp instanceof IAST) && temp.isList()) {
+			fDefaultOptionsList = (IAST) temp;
+		} else {
+			fDefaultOptionsList = null;
+		}
+		this.fCurrentOptionsList = null;
+
+		if (currentOptionsList != null && startIndex < currentOptionsList.size()) {
+			int size = currentOptionsList.size();
+			this.fCurrentOptionsList = F.ListAlloc(size);
+			for (int i = endIndex - 1; i >= startIndex; i--) {
+				IExpr opt = currentOptionsList.get(i);
+				if (opt.isRule()) {
+					fLastPosition = i;
+					this.fCurrentOptionsList.append(1, opt);
+				} else {
+					break;
+				}
 			}
 		}
 	}
@@ -179,6 +222,15 @@ public class Options {
 			}
 		}
 		return F.NIL;
+	}
+
+	/**
+	 * Get the last position which is not an option rule.
+	 * 
+	 * @return <code>-1</code> if no options is found
+	 */
+	public int getLastPosition() {
+		return fLastPosition;
 	}
 
 	public IAST replaceAll(final IAST options) {

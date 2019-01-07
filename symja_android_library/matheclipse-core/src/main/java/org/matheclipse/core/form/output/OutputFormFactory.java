@@ -1009,7 +1009,7 @@ public class OutputFormFactory {
 						}
 						break;
 					case ID.Optional:
-						if (list.isAST2()&&(list.arg1().isBlank()||list.arg1().isPattern())) {
+						if (list.isAST2() && (list.arg1().isBlank() || list.arg1().isPattern())) {
 							convert(buf, list.arg1());
 							buf.append(":");
 							convert(buf, list.arg2());

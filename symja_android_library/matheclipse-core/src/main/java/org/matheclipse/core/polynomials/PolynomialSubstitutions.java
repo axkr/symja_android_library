@@ -189,7 +189,7 @@ public class PolynomialSubstitutions {
 				return times;
 			} else if (ast.isPower()) {
 				final IExpr base = ast.base();
-				if (!base.isMember(x -> vars.isMember(x, true), true)) {
+				if (!base.has(x -> vars.isMember(x), true)) {
 					IExpr exp = ast.exponent();
 					if (exp.isTimes()) {
 						int exponent = exp.first().toIntDefault(Integer.MIN_VALUE);
@@ -245,7 +245,7 @@ public class PolynomialSubstitutions {
 	 * <code>IdentityHashMap</code>.
 	 */
 	public java.util.IdentityHashMap<ISymbol, IExpr> substitutedVariables() {
-		return substitutedVariables;  
+		return substitutedVariables;
 	}
 
 	/**

@@ -34,6 +34,9 @@ class EvalCallable implements Callable<IExpr> {
 			return temp;
 		} catch (org.matheclipse.core.eval.exception.TimeoutException e) {
 			return F.$Aborted;
+//		} catch (RuntimeException rex) {
+//			rex.printStackTrace();
+//			return F.$Aborted;
 		} finally {
 			EvalEngine.remove();
 		}

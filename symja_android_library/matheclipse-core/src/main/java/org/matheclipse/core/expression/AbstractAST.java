@@ -57,6 +57,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.IUnaryIndexFunction;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherEvalEngine;
 import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
@@ -64,6 +65,7 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
+import org.matheclipse.core.visit.VisitorBooleanLevelSpecification;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -1802,13 +1804,13 @@ public abstract class AbstractAST implements IASTMutable {
 			return isFree(x -> x.equals(pattern), heads);
 		}
 		final IPatternMatcher matcher = new PatternMatcherEvalEngine(pattern, EvalEngine.get());
-		return !isMember(matcher, heads);
+		return !has(matcher, heads);
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isFree(Predicate<IExpr> predicate, boolean heads) {
-		return !isMember(predicate, heads);
+		return !has(predicate, heads);
 	}
 
 	/** {@inheritDoc} */
@@ -2035,13 +2037,26 @@ public abstract class AbstractAST implements IASTMutable {
 		return null;
 	}
 
+	public boolean isMember(IExpr pattern, boolean heads, IVisitorBoolean visitor) {
+		if (visitor != null) {
+			return IASTMutable.super.isMember(pattern, heads, visitor);
+		}
+		Predicate<IExpr> predicate;
+		if (pattern.isSymbol() || pattern.isNumber() || pattern.isString()) {
+			predicate = x -> x.equals(pattern);
+		} else {
+			predicate = new PatternMatcher(pattern);
+		}
+		return exists(predicate, heads ? 0 : 1);
+	}
+
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isMember(Predicate<IExpr> predicate, boolean heads) {
+	public final boolean has(Predicate<IExpr> predicate, boolean heads) {
 		if (predicate.test(this)) {
 			return true;
 		}
-		return exists(x -> x.isMember(predicate, heads), heads ? 0 : 1);
+		return exists(x -> x.has(predicate, heads), heads ? 0 : 1);
 	}
 
 	/** {@inheritDoc} */
