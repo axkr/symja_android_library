@@ -493,7 +493,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default ISignedNumber evalReal() {
 		if (isReal()) {
-			return (ISignedNumber) EvalEngine.get().evalN(this);
+			return (ISignedNumber) this;
 		}
 		return null;
 	}
