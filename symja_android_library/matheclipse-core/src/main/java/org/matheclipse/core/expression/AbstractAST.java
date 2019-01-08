@@ -476,13 +476,17 @@ public abstract class AbstractAST implements IASTMutable {
 				}
 				return compareToASTIncreasing(this, (IAST) rhsExpr);
 			}
+			if (rhsExpr.isNumber()) {
+				// O-7
+				return 1;
+			}
 			rhsOrdinal = (rhsExpr.head() instanceof IBuiltInSymbol) ? ((IBuiltInSymbol) rhsExpr.head()).ordinal() : -1;
 		}
 		if (rhsExpr.isAST()) {
 			if (rhsOrdinal == ID.DirectedInfinity && rhsExpr.isDirectedInfinity()) {
 				return 1;
 			}
-			if (lhsOrdinal >= ID.Plus && size() > 1) {
+			if (lhsOrdinal >= ID.Plus && lhsOrdinal <= ID.Times && size() > 1) {
 				IAST rhs = (IAST) rhsExpr;
 
 				switch (lhsOrdinal) {
@@ -531,11 +535,7 @@ public abstract class AbstractAST implements IASTMutable {
 			return IASTMutable.super.compareTo(rhsExpr);
 		}
 
-		if (rhsExpr.isNumber()) {
-			// O-7
-			return 1;
-		}
-		if (lhsOrdinal >= ID.Not && size() > 1) {
+		if (lhsOrdinal >= ID.Not && lhsOrdinal <= ID.Times && size() > 1) {
 			switch (lhsOrdinal) {
 			case ID.Not:
 				if (rhsExpr.isSymbol() && arg1().isSymbol() && size() == 2) {
@@ -2937,28 +2937,35 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr opposite() {
-		if (isTimes()) {
-			IExpr arg1 = arg1();
-			if (arg1.isNumber()) {
-				if (arg1.isMinusOne()) {
-					if (size() == 3) {
-						return arg2();
+		final int lhsOrdinal = (head() instanceof IBuiltInSymbol) ? ((IBuiltInSymbol) head()).ordinal() : -1;
+		if (lhsOrdinal > 0) {
+			if (isTimes()) {
+				IExpr arg1 = arg1();
+				if (arg1.isNumber()) {
+					if (arg1.isMinusOne()) {
+						if (size() == 3) {
+							return arg2();
+						}
+						return rest();
 					}
-					return rest();
+					return setAtCopy(1, ((INumber) arg1).negate());
 				}
-				return setAtCopy(1, ((INumber) arg1).negate());
+				IASTAppendable timesAST = copyAppendable();
+				timesAST.append(1, F.CN1);
+				return timesAST;
 			}
-			IASTAppendable timesAST = copyAppendable();
-			timesAST.append(1, F.CN1);
-			return timesAST;
+			if (isNegativeInfinity()) {
+				return F.CInfinity;
+			}
+			if (isInfinity()) {
+				return F.CNInfinity;
+			}
+			if (isPlus()) {
+				return map(x -> x.negate(), 1);
+			}
 		}
-		if (isNegativeInfinity()) {
-			return F.CInfinity;
-		}
-		if (isInfinity()) {
-			return F.CNInfinity;
-		}
-		return F.eval(F.Times(F.CN1, this));
+		return F.Times(F.CN1, this);
+		// return F.eval(F.Times(F.CN1, this));
 	}
 
 	@Override

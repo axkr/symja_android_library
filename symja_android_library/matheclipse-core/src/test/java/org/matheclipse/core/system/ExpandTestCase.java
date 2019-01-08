@@ -35,9 +35,9 @@ public class ExpandTestCase extends AbstractTestCase {
 	}
 
 	public void testExpand002() {
-		IAST ast = Times(x, Times(C1D2, x));
+		IAST ast =  Times(C1D2, x, x );
 		IExpr temp = Algebra.expand(ast, null, false, false, true);
-		assertEquals(temp.toString(), "x^2/2");
+		assertEquals(temp.toString(), "ExprNull");
 	}
 
 	public void testExpand003() {
@@ -73,7 +73,7 @@ public class ExpandTestCase extends AbstractTestCase {
 		if (temp == null) {
 			temp = ast;
 		}
-		assertEquals(temp.toString(), "4+9*x^4+12*x^2");
+		assertEquals(temp.toString(), "2^2+3^2*(x^2)^2+2*2*3*x^2");
 	}
 
 	public void testExpand007() {

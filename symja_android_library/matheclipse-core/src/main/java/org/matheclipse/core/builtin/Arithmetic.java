@@ -4403,33 +4403,34 @@ public final class Arithmetic {
 
 		@Override
 		public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
-
-			if (o0.isZero()) {
-				if (o1.isQuantity()) {
-					return ((IQuantity) o1).ofUnit(F.C0);
+			if (o0.isReal() || o1.isReal()) {
+				if (o0.isZero()) {
+					if (o1.isQuantity()) {
+						return ((IQuantity) o1).ofUnit(F.C0);
+					}
+					if (o1.isDirectedInfinity()) {
+						return F.Indeterminate;
+					}
+					return F.C0;
 				}
-				if (o1.isDirectedInfinity()) {
-					return F.Indeterminate;
-				}
-				return F.C0;
-			}
 
-			if (o1.isZero()) {
-				if (o0.isQuantity()) {
-					return ((IQuantity) o0).ofUnit(F.C0);
+				if (o1.isZero()) {
+					if (o0.isQuantity()) {
+						return ((IQuantity) o0).ofUnit(F.C0);
+					}
+					if (o0.isDirectedInfinity()) {
+						return F.Indeterminate;
+					}
+					return F.C0;
 				}
-				if (o0.isDirectedInfinity()) {
-					return F.Indeterminate;
+
+				if (o0.isOne()) {
+					return o1;
 				}
-				return F.C0;
-			}
 
-			if (o0.isOne()) {
-				return o1;
-			}
-
-			if (o1.isOne()) {
-				return o0;
+				if (o1.isOne()) {
+					return o0;
+				}
 			}
 			// note not a general rule
 			// if (o0.isMinusOne() && o1.isPlus()) {
@@ -4442,81 +4443,82 @@ public final class Arithmetic {
 				}
 				return o0.power(F.C2);
 			}
-
-			if (o0.isDirectedInfinity()) {
-				IExpr temp = eInfinity((IAST) o0, o1);
-				if (temp.isPresent()) {
-					return temp;
+			if (o0.isAST() || o1.isAST()) {
+				if (o0.isDirectedInfinity()) {
+					IExpr temp = eInfinity((IAST) o0, o1);
+					if (temp.isPresent()) {
+						return temp;
+					}
+				} else if (o1.isDirectedInfinity()) {
+					IExpr temp = eInfinity((IAST) o1, o0);
+					if (temp.isPresent()) {
+						return temp;
+					}
 				}
-			} else if (o1.isDirectedInfinity()) {
-				IExpr temp = eInfinity((IAST) o1, o0);
-				if (temp.isPresent()) {
-					return temp;
-				}
-			}
 
-			if (o0.isPower()) {
-				// (x^a) * b
-				IExpr power0Base = o0.base();
-				IExpr power0Exponent = o0.exponent();
-				if (o0.equalsAt(1, o1)) {
-					// (x^a) * x
-					if (power0Exponent.isNumber() && !o1.isRational()) {
-						// avoid reevaluation of a root of a rational number (example: 2*Sqrt(2) )
-						return o1.power(power0Exponent.inc());
-					} else if (!power0Exponent.isNumber()) {
-						return o1.power(power0Exponent.inc());
+				if (o0.isPower()) {
+					// (x^a) * b
+					IExpr power0Base = o0.base();
+					IExpr power0Exponent = o0.exponent();
+					if (o0.equalsAt(1, o1)) {
+						// (x^a) * x
+						if (power0Exponent.isNumber() && !o1.isRational()) {
+							// avoid reevaluation of a root of a rational number (example: 2*Sqrt(2) )
+							return o1.power(power0Exponent.inc());
+						} else if (!power0Exponent.isNumber()) {
+							return o1.power(power0Exponent.inc());
+						}
+					}
+
+					if (o1.isPower()) {
+						IExpr power1Base = o1.base();
+						IExpr power1Exponent = o1.exponent();
+						IExpr temp = timesPowerPower(power0Base, power0Exponent, power1Base, power1Exponent);
+						if (temp.isPresent()) {
+							return temp;
+						}
+					}
+				} else if (o0.isInterval1()) {
+					if (o1.isInterval1() || o1.isReal()) {
+						return timesInterval(o0, o1);
+					}
+				} else if (o0.isQuantity()) {
+					IQuantity q = (IQuantity) o0;
+					return q.times(o1);
+				} else if (o0.isNegative() && o1.isLog() && o1.first().isFraction() && o0.isReal()) {
+					IFraction f = (IFraction) o1.first();
+					if (f.isPositive() && f.isLessThan(F.C1)) {
+						// -<number> * Log(<fraction>) -> <number> * Log(<fraction>.inverse())
+						return o0.negate().times(F.Log(f.inverse()));
 					}
 				}
 
 				if (o1.isPower()) {
 					IExpr power1Base = o1.base();
 					IExpr power1Exponent = o1.exponent();
-					IExpr temp = timesPowerPower(power0Base, power0Exponent, power1Base, power1Exponent);
+					IExpr temp = timesArgPower(o0, power1Base, power1Exponent);
 					if (temp.isPresent()) {
 						return temp;
 					}
-				}
-			} else if (o0.isInterval1()) {
-				if (o1.isInterval1() || o1.isReal()) {
-					return timesInterval(o0, o1);
-				}
-			} else if (o0.isQuantity()) {
-				IQuantity q = (IQuantity) o0;
-				return q.times(o1);
-			} else if (o0.isNegative() && o1.isLog() && o1.first().isFraction() && o0.isReal()) {
-				IFraction f = (IFraction) o1.first();
-				if (f.isPositive() && f.isLessThan(F.C1)) {
-					// -<number> * Log(<fraction>) -> <number> * Log(<fraction>.inverse())
-					return o0.negate().times(F.Log(f.inverse()));
-				}
-			}
-
-			if (o1.isPower()) {
-				IExpr power1Base = o1.base();
-				IExpr power1Exponent = o1.exponent();
-				IExpr temp = timesArgPower(o0, power1Base, power1Exponent);
-				if (temp.isPresent()) {
-					return temp;
-				}
-				if (o0.isRational() && !power1Exponent.isNumber()) {
-					temp = timesPowerPower(o0, F.C1, power1Base, power1Exponent);
-					if (temp.isPresent()) {
-						return temp;
+					if (o0.isRational() && !power1Exponent.isNumber()) {
+						temp = timesPowerPower(o0, F.C1, power1Base, power1Exponent);
+						if (temp.isPresent()) {
+							return temp;
+						}
 					}
+				} else if (o1.isInterval1()) {
+					if (o0.isInterval1() || o0.isReal()) {
+						return timesInterval(o0, o1);
+					}
+				} else if (o1.isQuantity()) {
+					IQuantity q = (IQuantity) o1;
+					return q.times(o0);
+				} else if (o1 instanceof ASTSeriesData) {
+					return ((ASTSeriesData) o1).times(o0);
 				}
-			} else if (o1.isInterval1()) {
-				if (o0.isInterval1() || o0.isReal()) {
-					return timesInterval(o0, o1);
+				if (o0.isFraction() && o0.isNegative() && o1.isPlus()) {
+					return F.Times(o0.negate(), o1.negate());
 				}
-			} else if (o1.isQuantity()) {
-				IQuantity q = (IQuantity) o1;
-				return q.times(o0);
-			} else if (o1 instanceof ASTSeriesData) {
-				return ((ASTSeriesData) o1).times(o0);
-			}
-			if (o0.isFraction() && o0.isNegative() && o1.isPlus()) {
-				return F.Times(o0.negate(), o1.negate());
 			}
 			return F.NIL;
 		}

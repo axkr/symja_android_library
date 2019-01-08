@@ -40,6 +40,7 @@ import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.PowerOp;
@@ -1161,7 +1162,7 @@ public class Algebra {
 						if (temp[1].isTimes()) {
 							tempExpr = expandTimes((IAST) temp[1]);
 							if (tempExpr.isPresent()) {
-								return PowerOp.power(tempExpr, F.CN1);
+								return F.Power(tempExpr, F.CN1);
 							}
 							addExpanded(ast);
 							return F.NIL;
@@ -1169,7 +1170,7 @@ public class Algebra {
 						if (temp[1].isPower() || temp[1].isPlus()) {
 							IExpr denom = expandAST((IAST) temp[1], evalParts);
 							if (denom.isPresent()) {
-								return PowerOp.power(denom, F.CN1);
+								return F.Power(denom, F.CN1);
 							}
 						}
 						addExpanded(ast);
@@ -1206,12 +1207,15 @@ public class Algebra {
 						}
 
 					}
-					IExpr powerAST = PowerOp.power(temp[1], F.CN1);
+					IExpr powerAST = F.Power(temp[1], F.CN1);
 					if (distributePlus && temp[0].isPlus()) {
-						return addExpanded(PlusOp.plus(((IAST) temp[0]).mapThread(F.Times(null, powerAST), 1)));
+						IAST mappedAST = ((IAST) temp[0]).mapThread(F.Times(null, powerAST), 1);
+						IExpr flattened = flattenOneIdentity(mappedAST, F.C0);//EvalAttributes.flatten(mappedAST).orElse(mappedAST);
+						return addExpanded(flattened);
 					}
 					if (evaled) {
-						return addExpanded(TimesOp.times(temp[0], powerAST));
+						return addExpanded(binaryFlatTimes(temp[0], powerAST));
+						// return addExpanded(TimesOp.times(temp[0], powerAST));
 					}
 					addExpanded(ast);
 					return F.NIL;
@@ -1251,10 +1255,16 @@ public class Algebra {
 					result.ifAppendable(r -> r.append(arg));
 				}
 				if (result.isPresent()) {
-					return PlusOp.plus(result);
+					// return result;
+					return flattenOneIdentity(result, F.C0);
+					// return PlusOp.plus(result);
 				}
 				addExpanded(ast);
 				return F.NIL;
+			}
+
+			private static IExpr flattenOneIdentity(IAST result, IExpr defaultValue) {
+				return EvalAttributes.flatten(result).orElse(result).getOneIdentity(defaultValue);
 			}
 
 			/**
@@ -1289,7 +1299,7 @@ public class Algebra {
 					if (exp < 0) {
 						if (expandNegativePowers) {
 							exp *= (-1);
-							return PowerOp.power(expandPower(plusAST, exp), F.CN1);
+							return F.Power(expandPower(plusAST, exp), F.CN1);
 						}
 						addExpanded(powerAST);
 						return F.NIL;
@@ -1331,7 +1341,8 @@ public class Algebra {
 				final IASTAppendable expandedResult = F.ast(F.Plus, (int) numberOfTerms, false);
 				Expand.NumberPartititon part = new Expand.NumberPartititon(plusAST, n, expandedResult);
 				part.partition();
-				return PlusOp.plus(expandedResult);
+				return flattenOneIdentity(expandedResult, F.C0);
+				// return PlusOp.plus(expandedResult);
 			}
 
 			private IExpr expandTimes(final IAST timesAST) {
@@ -1379,7 +1390,11 @@ public class Algebra {
 				if (expr1.isPlus()) {
 					return expandExprTimesPlus(expr0, (IAST) expr1);
 				}
-				return TimesOp.times(expr0, expr1);
+				if (expr0.equals(expr1)) {
+					return F.Power(expr0, F.C2);
+				}
+				return binaryFlatTimes(expr0, expr1);
+				// return TimesOp.times(expr0, expr1);
 			}
 
 			/**
@@ -1401,7 +1416,8 @@ public class Algebra {
 						evalAndExpandAST(x, y, result);
 					});
 				});
-				return PlusOp.plus(result);
+				return flattenOneIdentity(result, F.C0);
+				// return PlusOp.plus(result);
 			}
 
 			/**
@@ -1417,7 +1433,8 @@ public class Algebra {
 					// evaluate to flatten out Times() exprs
 					evalAndExpandAST(expr1, x, result);
 				});
-				return PlusOp.plus(result);
+				return flattenOneIdentity(result, F.C0);
+				// return PlusOp.plus(result);
 			}
 
 			/**
@@ -1429,12 +1446,8 @@ public class Algebra {
 			 * @param result
 			 */
 			public void evalAndExpandAST(IExpr expr1, IExpr expr2, final IASTAppendable result) {
-				IExpr arg = TimesOp.times(expr1, expr2);
-				if (arg.isAST()) {
-					appendPlus(result, expandAST((IAST) arg, true).orElse(arg));
-					return;
-				}
-				result.append(arg);
+				IASTAppendable timesAST = binaryFlatTimes(expr1, expr2);
+				appendPlus(result, expandAST(timesAST, true).orElse(timesAST));
 			}
 
 		}
@@ -1461,10 +1474,9 @@ public class Algebra {
 			private void addFactor(int[] j) {
 				final Permutations.KPermutationsIterable perm = new Permutations.KPermutationsIterable(j, m, m);
 				IInteger multinomial = NumberTheory.multinomial(j, n);
-				final IAST times = F.Times();
 				IExpr temp;
 				for (int[] indices : perm) {
-					final IASTAppendable timesAST = times.copyAppendable();
+					final IASTAppendable timesAST = F.TimesAlloc(m + 1);
 					if (!multinomial.isOne()) {
 						timesAST.append(multinomial);
 					}
@@ -1477,16 +1489,15 @@ public class Algebra {
 								if (temp.isTimes()) {
 									IAST ast = (IAST) temp;
 									final int ki = k;
-									timesAST.appendArgs(ast.size(),
-											i -> PowerOp.power(ast.get(i), F.integer(indices[ki])));
+									timesAST.appendArgs(ast.size(), i -> F.Power(ast.get(i), F.integer(indices[ki])));
 								} else {
-									timesAST.append(PowerOp.power(temp, F.integer(indices[k])));
+									timesAST.append(F.Power(temp, F.integer(indices[k])));
 								}
 							}
 
 						}
 					}
-					expandedResult.append(TimesOp.times(timesAST));
+					expandedResult.append(timesAST.getOneIdentity(F.C0));
 				}
 			}
 
@@ -1512,6 +1523,23 @@ public class Algebra {
 				}
 				parts[currentIndex] = old;
 			}
+		}
+
+		private static IASTAppendable binaryFlatTimes(IExpr expr1, IExpr expr2) {
+			int size = expr1.isTimes() ? expr1.size() : 1;
+			size += expr2.isTimes() ? expr2.size() : 1;
+			IASTAppendable timesAST = F.TimesAlloc(size);
+			if (expr1.isTimes()) {
+				timesAST.appendAll((IAST) expr1, 1, expr1.size());
+			} else {
+				timesAST.append(expr1);
+			}
+			if (expr2.isTimes()) {
+				timesAST.appendAll((IAST) expr2, 1, expr2.size());
+			} else {
+				timesAST.append(expr2);
+			}
+			return timesAST;
 		}
 
 		@Override

@@ -1852,29 +1852,40 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCollect() {
-		check("Collect(x^2 + y*x^2 + x*y + y + a*y, {x, y})", "(1+a)*y+x*y+x^2*(1+y)");
-		check("Collect(a*x^2 + b*x^2 + a*x - b*x + c, x)", "c+(a-b)*x+(a+b)*x^2");
-		check("Collect(a*Exp(2*x) + b*Exp(2*x), Exp(2*x))", "(a+b)*E^(2*x)");
+		check("Collect((1 + a + x)^4, x, Simplify)", //
+				"(1+a)^4+4*(1+a)^3*x+6*(1+a)^2*x^2+4*(1+a)*x^3+x^4");
+		check("Collect(x^2 + y*x^2 + x*y + y + a*y, {x, y})", //
+				"(1+a)*y+x*y+x^2*(1+y)");
+		check("Collect(a*x^2 + b*x^2 + a*x - b*x + c, x)", //
+				"c+(a-b)*x+(a+b)*x^2");
+		check("Collect(a*Exp(2*x) + b*Exp(2*x), Exp(2*x))", //
+				"(a+b)*E^(2*x)");
 		check("a*Exp(2*x) + b*Exp(2*x)", "a*E^(2*x)+b*E^(2*x)");
 		// check("Collect(D(f(Sqrt(x^2 + 1)), {x, 3}), Derivative(_)[f][_],
 		// Together)", "");
-		check("x*(4*a^3+12*a^2+12*a+4)+x^4+(4*a+4)*x^3+(6*a^2+12*a+6)*x^2+a^4+4*a^3+6*a^2+4*a+1",
+		check("x*(4*a^3+12*a^2+12*a+4)+x^4+(4*a+4)*x^3+(6*a^2+12*a+6)*x^2+a^4+4*a^3+6*a^2+4*a+1", //
 				"1+4*a+6*a^2+4*a^3+a^4+(4+12*a+12*a^2+4*a^3)*x+(6+12*a+6*a^2)*x^2+(4+4*a)*x^3+x^4");
-		check("x+x^4", "x+x^4");
-		check("Collect(a, x)", "a");
-		check("Collect(a*y, {x,y})", "a*y");
-		check("Collect(42*a, {x,y})", "42*a");
-		check("Collect(a*Sqrt(x) + Sqrt(x) + x^(2/3) - c*x + 3*x - 2*b*x^(2/3) + 5, x)",
+		check("x+x^4", //
+				"x+x^4");
+		check("Collect(a, x)", //
+				"a");
+		check("Collect(a*y, {x,y})", //
+				"a*y");
+		check("Collect(42*a, {x,y})", //
+				"42*a");
+		check("Collect(a*Sqrt(x) + Sqrt(x) + x^(2/3) - c*x + 3*x - 2*b*x^(2/3) + 5, x)", //
 				"5+(1+a)*Sqrt(x)+(1-2*b)*x^(2/3)+(3-c)*x");
-		check("Collect(3*b*x + x, x)", "(1+3*b)*x");
+		check("Collect(3*b*x + x, x)", //
+				"(1+3*b)*x");
 		check("Collect(a*x^4 + b*x^4 + 2*a^2*x - 3*b*x + x - 7, x)", "-7+(1+2*a^2-3*b)*x+(a+b)*x^4");
 		check("Collect((1 + a + x)^4, x)",
 				"1+4*a+6*a^2+4*a^3+a^4+(4+12*a+12*a^2+4*a^3)*x+(6+12*a+6*a^2)*x^2+(4+4*a)*x^3+x^4");
 		check("Collect((1 + a + x)^4, x, Simplify)", //
 				"(1+a)^4+4*(1+a)^3*x+6*(1+a)^2*x^2+4*(1+a)*x^3+x^4");
 
-		check("Collect(a*x + b*y + c*x, x)", "(a+c)*x+b*y");
-		check("Collect((x + y + z + 1)^4, {x, y})",
+		check("Collect(a*x + b*y + c*x, x)", //
+				"(a+c)*x+b*y");
+		check("Collect((x + y + z + 1)^4, {x, y})", //
 				"1+x^4+y^4+4*z+y^3*(4+4*z)+x^3*(4+4*y+4*z)+6*z^2+y^2*(6+12*z+6*z^2)+x^2*(6+6*y^2+\n"
 						+ "12*z+y*(12+12*z)+6*z^2)+4*z^3+y*(4+12*z+12*z^2+4*z^3)+x*(4+4*y^3+12*z+y^2*(12+12*z)+\n"
 						+ "12*z^2+y*(12+24*z+12*z^2)+4*z^3)+z^4");
@@ -3570,38 +3581,63 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testExpand() {
-		check("Expand((x + 3)^(5/2)+(x + 1)^(3/2))", "Sqrt(1+x)+x*Sqrt(1+x)+9*Sqrt(3+x)+6*x*Sqrt(3+x)+x^2*Sqrt(3+x)");
-		check("Expand((x + 1)^(5/2))", "Sqrt(1+x)+2*x*Sqrt(1+x)+x^2*Sqrt(1+x)");
-		check("Expand((x + 1)^(-5/2))", "1/(1+x)^(5/2)");
+		// performance test
+		// check("f = (x + y + z + w)^15 ;Expand(f*(f+w))", //
+		// "");
+		check("Expand((x + 3)^(5/2)+(x + 1)^(3/2))", //
+				"Sqrt(1+x)+x*Sqrt(1+x)+9*Sqrt(3+x)+6*x*Sqrt(3+x)+x^2*Sqrt(3+x)");
+		check("Expand((x + 1)^(5/2))", //
+				"Sqrt(1+x)+2*x*Sqrt(1+x)+x^2*Sqrt(1+x)");
+		check("Expand((x + 1)^(-5/2))", //
+				"1/(1+x)^(5/2)");
 
-		check("Expand((x + y) ^ 3) ", "x^3+3*x^2*y+3*x*y^2+y^3");
-		check("Expand((a + b)*(a + c + d))", "a^2+a*b+a*c+b*c+a*d+b*d");
+		check("Expand((x + y) ^ 3) ", //
+				"x^3+3*x^2*y+3*x*y^2+y^3");
+		check("Expand((a + b)*(a + c + d))", //
+				"a^2+a*b+a*c+b*c+a*d+b*d");
 		check("Expand((a + b)*(a + c + d)*(e + f) + e*a*a)", //
 				"2*a^2*e+a*b*e+a*c*e+b*c*e+a*d*e+b*d*e+a^2*f+a*b*f+a*c*f+b*c*f+a*d*f+b*d*f");
-		check("Expand((a + b) ^ 2 * (c + d))", "a^2*c+2*a*b*c+b^2*c+a^2*d+2*a*b*d+b^2*d");
-		check("Expand((x + y) ^ 2 + x*y)", "x^2+3*x*y+y^2");
-		check("Expand(((a + b)*(c + d)) ^ 2 + b (1 + a))",
+		check("Expand((a + b) ^ 2 * (c + d))", //
+				"a^2*c+2*a*b*c+b^2*c+a^2*d+2*a*b*d+b^2*d");
+		check("Expand((x + y) ^ 2 + x*y)", //
+				"x^2+3*x*y+y^2");
+		check("Expand(((a + b)*(c + d)) ^ 2 + b (1 + a))", //
 				"a^2*c^2+2*a*b*c^2+b^2*c^2+2*a^2*c*d+4*a*b*c*d+2*b^2*c*d+a^2*d^2+2*a*b*d^2+b^2*d^\n" + "2+b(1+a)");
 		// TODO return {4 x + 4 y, 2 x + 2 y -> 4 x + 4 y}
-		check("Expand({4*(x + y), 2*(x + y) -> 4*(x + y)})", "{4*x+4*y,2*(x+y)->4*(x+y)}");
-		check("Expand(Sin(x*(1 + y)))", "Sin(x*(1+y))");
-		check("a*(b*(c+d)+e) // Expand ", "a*b*c+a*b*d+a*e");
-		check("(y^2)^(1/2)/(2*x+2*y)//Expand", "Sqrt(y^2)/(2*x+2*y)");
+		check("Expand({4*(x + y), 2*(x + y) -> 4*(x + y)})", //
+				"{4*x+4*y,2*(x+y)->4*(x+y)}");
+		check("Expand(Sin(x*(1 + y)))", //
+				"Sin(x*(1+y))");
+		check("a*(b*(c+d)+e) // Expand ", //
+				"a*b*c+a*b*d+a*e");
+		check("(y^2)^(1/2)/(2*x+2*y)//Expand", //
+				"Sqrt(y^2)/(2*x+2*y)");
 
-		check("2*(3+2*x)^2/(5+x^2+3*x)^3 // Expand ", "18/(5+3*x+x^2)^3+(24*x)/(5+3*x+x^2)^3+(8*x^2)/(5+3*x+x^2)^3");
+		check("2*(3+2*x)^2/(5+x^2+3*x)^3 // Expand ", //
+				"18/(5+3*x+x^2)^3+(24*x)/(5+3*x+x^2)^3+(8*x^2)/(5+3*x+x^2)^3");
 
-		check("Expand({x*(1+x)})", "{x+x^2}");
-		check("Expand((-g^2+4*f*h)*h)", "-g^2*h+4*f*h^2");
-		check("expand((1 + x)^10)", "1+10*x+45*x^2+120*x^3+210*x^4+252*x^5+210*x^6+120*x^7+45*x^8+10*x^9+x^10");
-		check("expand((1 + x + y)*(2 - x)^3)", "8-4*x-6*x^2+5*x^3-x^4+8*y-12*x*y+6*x^2*y-x^3*y");
-		check("expand((x + y)/z)", "x/z+y/z");
-		check("expand((x^s + y^s)^4)", "x^(4*s)+4*x^(3*s)*y^s+6*x^(2*s)*y^(2*s)+4*x^s*y^(3*s)+y^(4*s)");
+		check("Expand({x*(1+x)})", //
+				"{x+x^2}");
+		check("Expand((-g^2+4*f*h)*h)", //
+				"-g^2*h+4*f*h^2");
+		check("expand((1 + x)^10)", //
+				"1+10*x+45*x^2+120*x^3+210*x^4+252*x^5+210*x^6+120*x^7+45*x^8+10*x^9+x^10");
+		check("expand((1 + x + y)*(2 - x)^3)", //
+				"8-4*x-6*x^2+5*x^3-x^4+8*y-12*x*y+6*x^2*y-x^3*y");
+		check("expand((x + y)/z)", //
+				"x/z+y/z");
+		check("expand((x^s + y^s)^4)", //
+				"x^(4*s)+4*x^(3*s)*y^s+6*x^(2*s)*y^(2*s)+4*x^s*y^(3*s)+y^(4*s)");
 
-		check("Expand((1 + x)*(2 + x)*(3 + x))", "6+11*x+6*x^2+x^3");
-		check("Distribute((1 + x)*(2 + x)*(3 + x))", "6+11*x+6*x^2+x^3");
+		check("Expand((1 + x)*(2 + x)*(3 + x))", //
+				"6+11*x+6*x^2+x^3");
+		check("Distribute((1 + x)*(2 + x)*(3 + x))", //
+				"6+11*x+6*x^2+x^3");
 
-		check("expand(2*(x + y)^2*Sin(x))", "2*x^2*Sin(x)+4*x*y*Sin(x)+2*y^2*Sin(x)");
-		check("expand(4*(a+b)*(c+d)*(f+g)^(-2))", "(4*a*c)/(f+g)^2+(4*b*c)/(f+g)^2+(4*a*d)/(f+g)^2+(4*b*d)/(f+g)^2");
+		check("expand(2*(x + y)^2*Sin(x))", //
+				"2*x^2*Sin(x)+4*x*y*Sin(x)+2*y^2*Sin(x)");
+		check("expand(4*(a+b)*(c+d)*(f+g)^(-2))", //
+				"(4*a*c)/(f+g)^2+(4*b*c)/(f+g)^2+(4*a*d)/(f+g)^2+(4*b*d)/(f+g)^2");
 	}
 
 	public void testExpandAll() {
@@ -4208,7 +4244,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("FindInstance(2*Sin(x)==1/2,x)", //
 				"{{x->ArcSin(1/4)}}");
 
-		check("FindInstance({x^2==4,x+y^2==6}, {x,y})", "{{x->-2,y->-2*Sqrt(2)}}");
+		check("FindInstance({x^2==4,x+y^2==6}, {x,y})", //
+				"{{x->-2,y->2*Sqrt(2)}}");
 		check("FindInstance(x+5.0==a,x)", "{{x->-5.0+a}}");
 
 		check("FindInstance(Xor(a, b, c, d) && (a || b) && ! (c || d), {a, b, c, d}, Booleans)",
@@ -12460,10 +12497,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Sum(i^5,{i,1,n})", "-n^2/12+5/12*n^4+n^5/2+n^6/6");
 		check("Sum(f(i,1),{i,{a,b}})", "f(a,1)+f(b,1)");
 
-		check("Sum(c/(i-j+1), {j,i+1,n}, {i,1,n})", "c*Sum(1/(i-j+1),{j,1+i,n},{i,1,n})");
-		check("Sum(-(-c*j+c),{j,i+1,n})", "-c*(-i+n)+1/2*c*(-i+n)*(1+i+n)");
+		check("Sum(c/(i-j+1), {j,i+1,n}, {i,1,n})", //
+				"c*Sum(1/(i-j+1),{j,1+i,n},{i,1,n})");
+		check("Sum(-(-c*j+c),{j,i+1,n})", //
+				"-c*(-i+n)+1/2*c*(-i+n)*(1+i+n)");
 
-		check("Sum(c*(i-j+1), {j,i+1,n}, {i,1,n})", "c*n*(-i+n)+1/2*c*(i-n)*n*(1+i+n)+c*(1/2*n*(-i+n)+1/2*(-i+n)*n^2)");
+		check("Sum(c*(i-j+1), {j,i+1,n}, {i,1,n})", //
+				"c*n*(-i+n)+1/2*c*(i-n)*n*(1+i+n)+c*(1/2*(i-n)+1/2*(i-n)*n+1/2*(-i+n)+n*(-i+n)+1/\n" + "2*(-i+n)*n^2)");
 		check("Simplify(1/2*c*(n-i)*n^2-1/2*c*n*(n+i+1)*(n-i)+3/2*c*n*(n-i))", //
 				"1/2*(-2*c*i*n+c*i^2*n+2*c*n^2-c*i*n^2)");
 

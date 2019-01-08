@@ -681,15 +681,14 @@ public class MainTestCase extends AbstractTestCase {
 		check("Trace(D(Sin(x),x))", "{{NotListQ(x),True},{{D(x,x),1},1*Cos(x),Cos(x)},Cos(x)}");
 		check("D(Sin(x)^Cos(x),x)", "(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)");
 		check("Trace(D(Sin(x)^Cos(x),x))",
-				"{{{IntegerQ(#1)&&#1<0&[Cos(x)],IntegerQ(Cos(x))&&Cos(x)<0,{IntegerQ(Cos(x)),False},False}},Sin(x)^Cos(x)*(D(Cos(x),x)*Log(Sin(x))+(Cos(x)*D(Sin(x),x))/Sin(x)),{{IntegerQ(#1)&&#1<\n"
-						+ "0&[Cos(x)],IntegerQ(Cos(x))&&Cos(x)<0,{IntegerQ(Cos(x)),False},False}},{{{{NotListQ(x),True},{{D(x,x),\n"
-						+ "1},(-1)*1*Sin(x),-Sin(x)},-Sin(x)},Log(Sin(x))*-Sin(x),-Log(Sin(x))*Sin(x)},{{{NotListQ(x),True},{{D(x,x),\n"
-						+ "1},1*Cos(x),Cos(x)},Cos(x)},{{IntegerQ(#1)&&#1<0&[-1],IntegerQ(-1)&&-1<0,{IntegerQ(\n"
-						+ "-1),True},{-1<0,True},True},{{(-1)*(-1),1},Csc(x)^1,{IntegerQ(#1)&&#1<0&[1],IntegerQ(\n"
-						+ "1)&&1<0,{IntegerQ(1),True},{1<0,False},False},Csc(x)},Csc(x)},Cos(x)*Cos(x)*Csc(x),Cot(x)^\n"
-						+ "1*Cos(x),{{IntegerQ(#1)&&#1<0&[1],IntegerQ(1)&&1<0,{IntegerQ(1),True},{1<0,False},False},Cot(x)},Cos(x)*Cot(x)},Cos(x)*Cot(x)-Log(Sin(x))*Sin(x)},(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x),{{IntegerQ(#1)&&#1<\n"
-						+ "0&[Cos(x)],IntegerQ(Cos(x))&&Cos(x)<0,{IntegerQ(Cos(x)),False},False}},{{-Cos(x)*Cot(x),-Cos(x)*Cot(x)},{--Log(Sin(x))*Sin(x),(\n"
-						+ "-1)*(-1)*Log(Sin(x))*Sin(x),Log(Sin(x))*Sin(x)},-Cos(x)*Cot(x)+Log(Sin(x))*Sin(x)}}");
+				"{{{IntegerQ(#1)&&#1<0&[Cos(x)],IntegerQ(Cos(x))&&Cos(x)<0,{IntegerQ(Cos(x)),False},False}},Sin(x)^Cos(x)*(D(Cos(x),x)*Log(Sin(x))+(Cos(x)*D(Sin(x),x))/Sin(x)),{{IntegerQ(#1)&&#1<\n" + 
+				"0&[Cos(x)],IntegerQ(Cos(x))&&Cos(x)<0,{IntegerQ(Cos(x)),False},False}},{{{{NotListQ(x),True},{{D(x,x),\n" + 
+				"1},(-1)*1*Sin(x),-Sin(x)},-Sin(x)},Log(Sin(x))*-Sin(x),-Log(Sin(x))*Sin(x)},{{{NotListQ(x),True},{{D(x,x),\n" + 
+				"1},1*Cos(x),Cos(x)},Cos(x)},{{IntegerQ(#1)&&#1<0&[-1],IntegerQ(-1)&&-1<0,{IntegerQ(\n" + 
+				"-1),True},{-1<0,True},True},{{(-1)*(-1),1},Csc(x)^1,{IntegerQ(#1)&&#1<0&[1],IntegerQ(\n" + 
+				"1)&&1<0,{IntegerQ(1),True},{1<0,False},False},Csc(x)},Csc(x)},Cos(x)*Cos(x)*Csc(x),Cot(x)^\n" + 
+				"1*Cos(x),{{IntegerQ(#1)&&#1<0&[1],IntegerQ(1)&&1<0,{IntegerQ(1),True},{1<0,False},False},Cot(x)},Cos(x)*Cot(x)},Cos(x)*Cot(x)-Log(Sin(x))*Sin(x)},(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x),{{IntegerQ(#1)&&#1<\n" + 
+				"0&[Cos(x)],IntegerQ(Cos(x))&&Cos(x)<0,{IntegerQ(Cos(x)),False},False}}}");
 	}
 
 	public void testSystem039() {
@@ -3416,7 +3415,7 @@ public class MainTestCase extends AbstractTestCase {
 		// + "2-Sqrt(-I*6)/2||x==1/2+I*1/2+Sqrt(-I*6)/2");
 
 		check("Roots(x^2 + 5*x + 10==0, x)", //
-				"x==1/2*(-5+I*Sqrt(15))||x==1/2*(-5-I*Sqrt(15))");
+				"x==1/2*(-5-I*Sqrt(15))||x==1/2*(-5+I*Sqrt(15))");
 		check("Roots(4+x^2+2*x+3*x^3==0, x)", //
 				"x==-1||x==1/3-I*1/3*Sqrt(11)||x==1/3+I*1/3*Sqrt(11)");
 		check("Roots(x^3-4*x^2+x+6==0, x)", //

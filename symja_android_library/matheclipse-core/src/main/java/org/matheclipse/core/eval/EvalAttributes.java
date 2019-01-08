@@ -80,8 +80,7 @@ public class EvalAttributes {
 	public static IASTAppendable flatten(final ISymbol head, final IAST ast) {
 		int[] newSize = new int[1];
 		newSize[0] = 0;
-		boolean[] flattened = new boolean[1];
-		flattened[0] = false;
+		boolean[] flattened = new boolean[] { false };
 
 		ast.forEach(expr -> {
 			if (expr.isAST(head)) {
