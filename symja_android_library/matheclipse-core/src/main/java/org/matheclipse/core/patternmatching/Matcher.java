@@ -256,7 +256,7 @@ public class Matcher implements Function<IExpr, IExpr> {
 	 * @param predicate
 	 */
 	public void caseBoole(final IExpr patternMatchingRule, final BiPredicate<IExpr, IExpr> predicate) {
-		rules.putDownRule(patternMatchingRule, new PatternMatcherBiPredicateMethod(patternMatchingRule, predicate));
+		rules.insertMatcher(new PatternMatcherBiPredicateMethod(patternMatchingRule, predicate));
 	}
 
 	/**
@@ -267,7 +267,7 @@ public class Matcher implements Function<IExpr, IExpr> {
 	 * @param predicate
 	 */
 	public void caseBoole(final IExpr patternMatchingRule, final Predicate<IExpr> predicate) {
-		rules.putDownRule(patternMatchingRule, new PatternMatcherPredicateMethod(patternMatchingRule, predicate));
+		rules.insertMatcher(new PatternMatcherPredicateMethod(patternMatchingRule, predicate));
 	}
 
 	/**
@@ -277,7 +277,7 @@ public class Matcher implements Function<IExpr, IExpr> {
 	 * @param method
 	 */
 	public void caseMethod(final IExpr patternMatchingRule, final IPatternMethod method) {
-		rules.putDownRule(patternMatchingRule, new PatternMatcherMapMethod(patternMatchingRule, method));
+		rules.insertMatcher(new PatternMatcherMapMethod(patternMatchingRule, method));
 	}
 
 	/**
@@ -287,7 +287,7 @@ public class Matcher implements Function<IExpr, IExpr> {
 	 * @param function
 	 */
 	public void caseOf(final IExpr patternMatchingRule, final BiFunction<IExpr, IExpr, IExpr> function) {
-		rules.putDownRule(patternMatchingRule, new PatternMatcherBiFunctionMethod(patternMatchingRule, function));
+		rules.insertMatcher(new PatternMatcherBiFunctionMethod(patternMatchingRule, function));
 	}
 
 	/**
@@ -297,7 +297,7 @@ public class Matcher implements Function<IExpr, IExpr> {
 	 * @param function
 	 */
 	public void caseOf(final IExpr patternMatchingRule, final Function<IExpr, IExpr> function) {
-		rules.putDownRule(patternMatchingRule, new PatternMatcherFunctionMethod(patternMatchingRule, function));
+		rules.insertMatcher(new PatternMatcherFunctionMethod(patternMatchingRule, function));
 	}
 
 	/**

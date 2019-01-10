@@ -785,11 +785,11 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final PatternMatcher putDownRule(final PatternMatcherAndInvoker pmEvaluator) {
+	public final IPatternMatcher putDownRule(final PatternMatcherAndInvoker pmEvaluator) {
 		if (fRulesData == null) {
 			fRulesData = new RulesData(EvalEngine.get().getContext());
 		}
-		return fRulesData.putDownRule(pmEvaluator);
+		return fRulesData.insertMatcher(pmEvaluator);
 	}
 
 	public IExpr evalMessage(EvalEngine engine, String messageName) {

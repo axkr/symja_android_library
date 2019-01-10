@@ -113,7 +113,7 @@ public class Import extends AbstractEvaluator {
 
 		AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
 		final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
-		String str = com.google.common.io.Files.toString(file, Charset.defaultCharset());
+		String str = com.google.common.io.Files.asCharSource(file, Charset.defaultCharset()).read();
 		final ASTNode node = parser.parse(str);
 		return ast2Expr.convert(node);
 	}

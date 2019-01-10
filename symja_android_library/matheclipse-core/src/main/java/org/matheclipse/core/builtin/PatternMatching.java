@@ -6,12 +6,11 @@ import static org.matheclipse.core.expression.F.RuleDelayed;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
 import java.util.List;
 
@@ -46,7 +45,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
-import org.matheclipse.core.expression.Context;
+
+import com.google.common.io.Files;
 
 public final class PatternMatching {
 
@@ -120,8 +120,7 @@ public final class PatternMatching {
 						for (int j = 2; j < ast.size(); j++) {
 							// FileReader reader = new FileReader(ast.get(j).toString());
 							FileInputStream fis = new FileInputStream(ast.get(j).toString());
-							BufferedReader reader = new BufferedReader(
-									new InputStreamReader(fis, "UTF-8"));
+							BufferedReader reader = new BufferedReader(new InputStreamReader(fis, "UTF-8"));
 							Get.loadPackage(engine, reader);
 							reader.close();
 							fis.close();
@@ -447,6 +446,28 @@ public final class PatternMatching {
 		 * @param is
 		 * @return the last evaluated expression result
 		 */
+		protected static IExpr loadPackage(final EvalEngine engine, final String is) {
+			Context packageContext = null;
+			try {
+				final List<ASTNode> node = parseReader(is, engine);
+				return evaluatePackage(node, engine);
+			} catch (final Exception e) {
+				e.printStackTrace();
+			} finally {
+				if (packageContext != null) {
+					engine.getContextPath().add(packageContext);
+				}
+			}
+			return F.Null;
+		}
+
+		/**
+		 * Load a package from the given reader
+		 * 
+		 * @param engine
+		 * @param is
+		 * @return the last evaluated expression result
+		 */
 		protected static IExpr loadPackage(final EvalEngine engine, final BufferedReader is) {
 			final BufferedReader r = is;
 			Context packageContext = null;
@@ -506,6 +527,30 @@ public final class PatternMatching {
 			}
 			final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
 			final List<ASTNode> node = parser.parsePackage(builder.toString());
+			return node;
+		}
+
+		/**
+		 * <p>
+		 * Parse the <code>reader</code> input.
+		 * </p>
+		 * <p>
+		 * This method ignores the first line of the script if it starts with the <code>#!</code> characters (i.e. Unix
+		 * Script Executables)
+		 * </p>
+		 * <p>
+		 * <b>Note</b>: uses the <code>ASTNode</code> parser and not the <code>ExprParser</code>, because otherwise the
+		 * symbols couldn't be assigned to the contexts.
+		 * </p>
+		 * 
+		 * @param reader
+		 * @param engine
+		 * @return
+		 * @throws IOException
+		 */
+		public static List<ASTNode> parseReader(final String reader, final EvalEngine engine) throws IOException {
+			final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
+			final List<ASTNode> node = parser.parsePackage(reader);
 			return node;
 		}
 
@@ -739,7 +784,7 @@ public final class PatternMatching {
 					if (temp.isPresent()) {
 						stream.println(function.toString() + " = " + temp.toString());
 					}
-				} 
+				}
 				return F.Null;
 			}
 			return F.NIL;
@@ -1799,14 +1844,12 @@ public final class PatternMatching {
 		boolean packageMode = engine.isPackageMode();
 		try {
 			engine.setPackageMode(true);
-			// FileReader reader = new FileReader(file);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
-			return Get.loadPackage(engine, reader);
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-			engine.printMessage("Get exception: " + e.getMessage());
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			String str = Files.asCharSource(file, Charset.defaultCharset()).read();
+			return Get.loadPackage(engine, str);
+		} catch (IOException e) {
+			if (Config.SHOW_STACKTRACE) {
+				e.printStackTrace();
+			}
 			engine.printMessage("Get exception: " + e.getMessage());
 		} finally {
 			engine.setPackageMode(packageMode);
