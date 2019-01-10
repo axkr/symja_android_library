@@ -278,7 +278,7 @@ public abstract class Scanner {
 	protected List<Operator> fOperList;
 
 	/**
-	 * Row counter for syntax errors.
+	 * Row counter for reporting syntax errors.
 	 */
 	protected int fRowCounter;
 
@@ -288,7 +288,7 @@ public abstract class Scanner {
 	protected boolean fPackageMode = false;
 
 	/**
-	 * Column counter for syntax errors
+	 * Current rows start position for reporting syntax errors
 	 */
 	protected int fCurrentColumnStartPosition;
 
@@ -868,6 +868,8 @@ public abstract class Scanner {
 
 						break;
 					case '\n':
+						fRowCounter++;
+						fCurrentColumnStartPosition = fCurrentPosition;
 						// a backslash at the end of the line means the scanner should continue on the next line
 						continue;
 					case '\r':
@@ -950,10 +952,15 @@ public abstract class Scanner {
 
 	protected void skipWhitespace() {
 		if (isValidPosition()) {
-			if (!Character.isWhitespace(charAtPosition())) {
+			char ch=charAtPosition();
+			if (!Character.isWhitespace(ch)) {
 				return;
 			}
 			fCurrentPosition++;
+			if (ch == '\n') {
+				fRowCounter++;
+				fCurrentColumnStartPosition = fCurrentPosition;
+			}
 		}
 	}
 
