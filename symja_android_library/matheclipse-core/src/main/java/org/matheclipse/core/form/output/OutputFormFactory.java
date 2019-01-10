@@ -6,6 +6,8 @@ import java.text.NumberFormat;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.AST2Expr;
@@ -137,8 +139,13 @@ public class OutputFormFactory {
 
 	public void convertDouble(final Appendable buf, final INum d, final int precedence, boolean caller)
 			throws IOException {
+		final double doubleValue = d.doubleValue();
+		convertDouble(buf, doubleValue, d, precedence, caller);
+	}
 
-		if (F.isZero(d.doubleValue(), Config.MACHINE_EPSILON)) {
+	private void convertDouble(final Appendable buf, final double doubleValue, final INum d, final int precedence,
+			boolean caller) throws IOException {
+		if (F.isZero(doubleValue, Config.MACHINE_EPSILON)) {
 			convertDoubleString(buf, convertDoubleToFormattedString(0.0), precedence, false);
 			return;
 		}
@@ -147,11 +154,23 @@ public class OutputFormFactory {
 			append(buf, "+");
 		}
 		if (d instanceof Num) {
-			double dValue = d.doubleValue();
-			convertDoubleString(buf, convertDoubleToFormattedString(dValue), precedence, isNegative);
+			convertDoubleString(buf, convertDoubleToFormattedString(doubleValue), precedence, isNegative);
 		} else {
 			convertDoubleString(buf, d.toString(), precedence, isNegative);
 		}
+	}
+
+	private void convertDouble(final Appendable buf, final double doubleValue )
+			throws IOException {
+		if (F.isZero(doubleValue, Config.MACHINE_EPSILON)) {
+			convertDoubleString(buf, convertDoubleToFormattedString(0.0), 0, false);
+			return;
+		}
+//		final boolean isNegative = doubleValue < 0.0;
+//		if (!isNegative && caller == PLUS_CALL) {
+//			append(buf, "+");
+//		}
+		convertDoubleString(buf, convertDoubleToFormattedString(doubleValue), 0, false);
 	}
 
 	private String convertDoubleToFormattedString(double dValue) {
@@ -1127,13 +1146,54 @@ public class OutputFormFactory {
 
 	public void convertList(final Appendable buf, final IAST list) throws IOException {
 		if (list instanceof ASTRealVector) {
-			((ASTRealVector) list).toString(buf);
+			try {
+				RealVector vector = ((ASTRealVector) list).getRealVector();
+				buf.append('{');
+				int size = vector.getDimension();
+				for (int i = 0; i < size; i++) {
+					convertDouble(buf, vector.getEntry(i));
+					if (i < size - 1) {
+						buf.append(",");
+					}
+				}
+				buf.append('}');
+			} catch (IOException e) {
+				if (Config.DEBUG) {
+					e.printStackTrace();
+				}
+			}
 			return;
 		}
 		if (list instanceof ASTRealMatrix) {
-			((ASTRealMatrix) list).toString(buf, fEmpty);
-			fColumnCounter = 1;
-			fEmpty = false;
+			try {
+				RealMatrix matrix = ((ASTRealMatrix) list).getRealMatrix();
+				buf.append('{');
+
+				int rows = matrix.getRowDimension();
+				int cols = matrix.getColumnDimension();
+				for (int i = 0; i < rows; i++) {
+					if (i != 0) {
+						buf.append(" ");
+					}
+					buf.append("{");
+					for (int j = 0; j < cols; j++) {
+						convertDouble(buf, matrix.getEntry(i, j));
+						if (j < cols - 1) {
+							buf.append(",");
+						}
+					}
+					buf.append('}');
+					if (i < rows - 1) {
+						buf.append(",");
+						buf.append('\n');
+					}
+				}
+				buf.append('}');
+			} catch (IOException e) {
+				if (Config.DEBUG) {
+					e.printStackTrace();
+				}
+			}
 			return;
 		}
 		if (list.isEvalFlagOn(IAST.IS_MATRIX)) {
