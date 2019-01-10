@@ -1842,7 +1842,7 @@ public final class Programming {
 	 */
 	private static class TimeConstrained extends AbstractCoreFunctionEvaluator {
 
-		class EvalControlledCallable implements Callable<IExpr> {
+		static class EvalControlledCallable implements Callable<IExpr> {
 			private final EvalEngine fEngine;
 			private IExpr fExpr;
 
