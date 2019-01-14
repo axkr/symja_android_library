@@ -13,6 +13,7 @@
  */
 package de.tilman_neumann.jml.factor.pollardRho;
 
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -162,7 +163,7 @@ public class PollardRhoBrentMontgomeryR64Mul63 extends FactorAlgorithmBase {
 		long t = ab.getLow() * minusNInvModR;
 		// Step 3: Compute r = (a*b + t*N) / R
 		// Since R=2^64, "x / R" just means to get the high part of x.
-		long r = ab.add(Uint128.mul63(t, N)).getHigh();
+		long r = ab.add_getHigh(Uint128.mul63(t, N));
 		// If the correct result is c, then now r==c or r==c+N.
 		// This is fine for this factoring algorithm, because r will 
 		// * either be subjected to another Montgomery multiplication mod N,

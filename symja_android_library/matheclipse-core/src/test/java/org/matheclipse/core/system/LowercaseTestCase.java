@@ -3965,6 +3965,37 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		}
 		// Java "long" numbers
+		check("FactorInteger(621887327)", //
+				"{{853,1},{729059,1}}");
+		check("FactorInteger(676762483)", //
+				"{{877,1},{771679,1}}");
+		
+		check("FactorInteger(2947524803)", //
+				"{{1433,1},{2056891,1}}");
+		check("FactorInteger(5616540799)", //
+				"{{1777,1},{3160687,1}}");
+		check("FactorInteger(35936505149)", //
+				"{{3299,1},{10893151,1}}");
+		check("FactorInteger(145682871839)", //
+				"{{5261,1},{27691099,1}}");
+		check("FactorInteger(317756737253)", //
+				"{{6823,1},{46571411,1}}");
+		check("FactorInteger(3294635112749)", //
+				"{{14879,1},{221428531,1}}");
+		check("FactorInteger(13293477682249)", //
+				"{{398077,1},{33394237,1}}");
+		
+		check("FactorInteger(24596491225651)", //
+				"{{3311299,1},{7428049,1}}");
+		check("FactorInteger(44579405690563)", //
+				"{{930889,1},{47889067,1}}");
+		check("FactorInteger(72795445155721)", //
+				"{{83459,1},{872230019,1}}");
+		check("FactorInteger(155209074377713)", //
+				"{{361909,1},{428862157,1}}");
+		check("FactorInteger(293851765137859)", //
+				"{{11736397,1},{25037647,1}}"); 
+
 		// 5640012124823L,
 		check("FactorInteger(5640012124823)", //
 				"{{23117,1},{243976819,1}}");
@@ -12158,6 +12189,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testSort() {
 		// TODO
 		// check("Sort({a,A,a,b,B})", "{a, a, A, b, B}");
+		check("Sort@{x,1+x^2,1+x^2+y^3+z^4,Cos[x^2],Sin[x^2]}", //
+				"{x,1+x^2,1+x^2+y^3+z^4,Cos(x^2),Sin(x^2)}");
 		check("Sort({E,a,D,d,N,b,c, Adele, enigma})", "{a,adele,b,c,d,D,E,enigma,N}");
 		check("Sort({d, b, c, a})", "{a,b,c,d}");
 		check("Sort({4, 1, 3, 2, 2}, Greater)", "{4,3,2,2,1}");

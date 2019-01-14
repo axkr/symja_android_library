@@ -1858,6 +1858,9 @@ public class F {
     /** PatternTest(pattern, test) - constrains `pattern` to match `expr` only if the evaluation of `test(expr)` yields `True`.*/
     public final static IBuiltInSymbol PatternTest = F.initFinalSymbol("PatternTest", ID.PatternTest);
 
+    /***/
+    public final static IBuiltInSymbol PearsonChiSquareTest = F.initFinalSymbol("PearsonChiSquareTest", ID.PearsonChiSquareTest);
+    
     /** PerfectNumber(n) - returns the `n`th perfect number. In number theory, a perfect number is a positive integer that is equal to the sum of its proper */
     public final static IBuiltInSymbol PerfectNumber = F.initFinalSymbol("PerfectNumber", ID.PerfectNumber);
 

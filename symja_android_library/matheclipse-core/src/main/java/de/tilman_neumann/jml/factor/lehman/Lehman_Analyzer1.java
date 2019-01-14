@@ -18,10 +18,9 @@ import static de.tilman_neumann.jml.base.BigIntConstants.I_1;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.gcd.Gcd63;
-//import de.tilman_neumann.util.ConfigUtil;
 import de.tilman_neumann.util.SortedMultiset_BottomUp;
 import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
 import de.tilman_neumann.jml.factor.TestsetGenerator;
@@ -32,7 +31,7 @@ import de.tilman_neumann.jml.factor.TestsetGenerator;
  * @author Tilman Neumann
  */
 public class Lehman_Analyzer1 extends FactorAlgorithmBase {
-//	private static final Logger LOG = Logger.getLogger(Lehman_Analyzer1.class);
+	private static final Logger LOG = Logger.getLogger(Lehman_Analyzer1.class);
 
 	// algorithm options
 	/** number of test numbers */
@@ -48,15 +47,17 @@ public class Lehman_Analyzer1 extends FactorAlgorithmBase {
 	
 	private SortedMultiset_BottomUp<Integer>[][] aValues;
 	
-	private static final int MOD = 6;
-	
+	private static final int N_MOD = 6;
+	private static final int k_MOD = 6;
+	private static final int a_MOD = 4;
+
 	@SuppressWarnings("unchecked")
 	public Lehman_Analyzer1() {
-		aValues = new SortedMultiset_BottomUp[MOD][MOD];
-		for (int i=0; i<MOD; i++) {
-			aValues[i] = new SortedMultiset_BottomUp[MOD];
-			for (int j=0; j<MOD; j++) {
-				aValues[i][j] = new SortedMultiset_BottomUp<Integer>();
+		aValues = new SortedMultiset_BottomUp[N_MOD][k_MOD];
+		for (int NMod=0; NMod<N_MOD; NMod++) {
+			aValues[NMod] = new SortedMultiset_BottomUp[k_MOD];
+			for (int kMod=0; kMod<k_MOD; kMod++) {
+				aValues[NMod][kMod] = new SortedMultiset_BottomUp<Integer>();
 			}
 		}
 	}
@@ -85,7 +86,7 @@ public class Lehman_Analyzer1 extends FactorAlgorithmBase {
 				if (b*b == test) {
 					long gcd = gcdEngine.gcd(a+b, N);
 					if (gcd>1 && gcd<N) {
-						aValues[(int)(N%MOD)][k%MOD].add((int) (a%MOD));
+						aValues[(int)(N%N_MOD)][k%k_MOD].add((int) (a%a_MOD));
 						return gcd;
 					}
 				}
@@ -99,22 +100,29 @@ public class Lehman_Analyzer1 extends FactorAlgorithmBase {
 		BigInteger N_min = I_1.shiftLeft(bits-1);
 		// find N-set for square tests
 		ArrayList<BigInteger> NSet = TestsetGenerator.generate(bits, N_COUNT);
-//		LOG.info("Test N with " + bits + " bits, i.e. N >= " + N_min);
+		LOG.info("Test N with " + bits + " bits, i.e. N >= " + N_min);
 		
 		for (BigInteger N : NSet) {
 			this.findSingleFactor(N);
 		}
 		
-		for (int i=0; i<MOD; i++) {
+		int lehmanCount = 0;
+		for (int NMod=0; NMod<N_MOD; NMod++) {
 			boolean logged = false;
-			for (int j=0; j<MOD; j++) {
-				if (aValues[i][j].size() > 0) {
-//					LOG.info("Successful a-values %" + MOD + " for N%" + MOD + "==" + i + ", k%" + MOD + "==" + j + " : " + aValues[i][j]);
+			for (int kMod=0; kMod<k_MOD; kMod++) {
+				SortedMultiset_BottomUp<Integer> aCounts = aValues[NMod][kMod];
+				if (aCounts.size() > 0) {
+					int totalCount = aCounts.totalCount();
+					LOG.info("Successful a-values %" + a_MOD + " for N%" + N_MOD + "==" + NMod + ", k%" + k_MOD + "==" + kMod + " : " + totalCount + " (" + aCounts + ")");
+					lehmanCount += totalCount;
 					logged = true;
 				}
 			}
-//			if (logged) LOG.info("");
+			if (logged) LOG.info("");
 		}
+		int tdivCount = N_COUNT - lehmanCount;
+		LOG.info("Factored by trial division: " + tdivCount);
+		LOG.info("");
 	}
 
 //	public static void main(String[] args) {

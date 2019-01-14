@@ -24,6 +24,8 @@ import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
  * and multiply N by those reciprocals. Only if such a result is near to an integer we need
  * to do a division.
  * 
+ * About 3 times faster than ordinary trial division.
+ * 
  * @authors Thilo Harich + Tilman Neumann
  */
 public class TDiv31Inverse extends FactorAlgorithmBase {
@@ -35,7 +37,7 @@ public class TDiv31Inverse extends FactorAlgorithmBase {
 	private static int[] primes;
 	private static double[] reciprocals;
 	
-	public TDiv31Inverse() {
+	static {
 		primes = new int[NUM_PRIMES_FOR_31_BIT_TDIV];
 		reciprocals = new double[NUM_PRIMES_FOR_31_BIT_TDIV];
 		for (int i=0; i<NUM_PRIMES_FOR_31_BIT_TDIV; i++) {
