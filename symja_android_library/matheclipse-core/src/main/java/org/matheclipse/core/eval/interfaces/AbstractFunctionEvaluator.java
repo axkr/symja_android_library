@@ -100,6 +100,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 			if (checkTimesPlus && expression.isTimes()) {
 				IAST timesAST = ((IAST) expression);
 				IExpr arg1 = timesAST.arg1();
+				// see github #110: checking for arg1.isNegative() will trigger infinite recursion!
 				if (arg1.isNumber()) {
 					if (((INumber) arg1).complexSign() < 0) {
 						IExpr negNum = ((INumber) arg1).negate();
@@ -110,9 +111,6 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 					}
 				} else if (arg1.isNegativeInfinity()) {
 					return timesAST.setAtClone(1, F.CInfinity);
-				} else if (arg1.isNegative()) {
-					IExpr negNum = arg1.negate();
-					return timesAST.setAtClone(1, negNum);
 				}
 			} else if (checkTimesPlus && expression.isPlus()) {
 				IAST plusAST = ((IAST) expression);

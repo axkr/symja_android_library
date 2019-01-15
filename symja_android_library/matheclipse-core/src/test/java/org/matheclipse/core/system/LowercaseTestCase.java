@@ -454,14 +454,24 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArcTan() {
-		check("ArcTan(1, 0)", "0");
-		check("ArcTan(1/2, 1/2)", "Pi/4");
-		check("ArcTan(0, 1)", "Pi/2");
-		check("ArcTan(-1/2, 1/2)", "3/4*Pi");
-		check("ArcTan(-1, 0)", "Pi");
-		check("ArcTan(-1/2, -1/2)", "-3/4*Pi");
-		check("ArcTan(0, -1)", "-Pi/2");
-		check("ArcTan(1/2, -1/2)", "-Pi/4");
+		check("ArcTan(Re(Sin(3+I*2)),Im(Sin(3+I*2)))", //
+				"ArcTan(Im(Sin(3+I*2))/Re(Sin(3+I*2)))");
+		check("ArcTan(1, 0)", //
+				"0");
+		check("ArcTan(1/2, 1/2)", //
+				"Pi/4");
+		check("ArcTan(0, 1)",//
+				"Pi/2");
+		check("ArcTan(-1/2, 1/2)", //
+				"3/4*Pi");
+		check("ArcTan(-1, 0)", //
+				"Pi");
+		check("ArcTan(-1/2, -1/2)", //
+				"-3/4*Pi");
+		check("ArcTan(0, -1)", //
+				"-Pi/2");
+		check("ArcTan(1/2, -1/2)", //
+				"-Pi/4");
 
 		check("ArcTan(Tan(-1/2))", //
 				"-1/2");
@@ -3965,7 +3975,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{853,1},{729059,1}}");
 		check("FactorInteger(676762483)", //
 				"{{877,1},{771679,1}}");
-		
+
 		check("FactorInteger(2947524803)", //
 				"{{1433,1},{2056891,1}}");
 		check("FactorInteger(5616540799)", //
@@ -3980,7 +3990,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{14879,1},{221428531,1}}");
 		check("FactorInteger(13293477682249)", //
 				"{{398077,1},{33394237,1}}");
-		
+
 		check("FactorInteger(24596491225651)", //
 				"{{3311299,1},{7428049,1}}");
 		check("FactorInteger(44579405690563)", //
@@ -3990,7 +4000,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("FactorInteger(155209074377713)", //
 				"{{361909,1},{428862157,1}}");
 		check("FactorInteger(293851765137859)", //
-				"{{11736397,1},{25037647,1}}"); 
+				"{{11736397,1},{25037647,1}}");
 
 		// 5640012124823L,
 		check("FactorInteger(5640012124823)", //
