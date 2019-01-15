@@ -3,7 +3,7 @@
 **Note**: this repository contains the **Java 8** version of the project. The [NCalc](https://github.com/tranleduy2000/ncalc) and [Natural Calc](https://github.com/tranleduy2000/naturalcalc)  projects maintains a [Java 7 branch based on Retrolambda](https://github.com/tranleduy2000/symja_android_library).
 
 <a href="https://play.google.com/store/apps/details?id=com.duy.calc.casio.v2">
-    <img src="art/google-play-store/en_badge_web_generic.png" alt="Google Play" width="200">
+    <img src="en_badge_web_generic.png" alt="Google Play" width="200">
 <a/>
 
 - [Quick start](#quick-start) 
