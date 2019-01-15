@@ -265,13 +265,6 @@ public class StatisticsFunctions {
 			if (b.isZero()) {
 				return b;
 			}
-			if (a.isOne() || b.isInfinity()) {
-				return F.CInfinity;
-			}
-			IExpr div = F.Divide.of(b, a);
-			if (div.equals(F.CSqrt2)) {
-				return F.Times(F.CSqrt2, F.a, F.Power(F.Pi, F.CN1D2), F.Sqr(F.Gamma(F.QQ(3L, 4L))));
-			}
 			return F.NIL;
 		}
 

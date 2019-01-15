@@ -709,10 +709,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArithmeticGeometricMean() {
-		check("ArithmeticGeometricMean(1, Infinity)", //
-				"Infinity");
-		check("ArithmeticGeometricMean(a, a*Sqrt(2))", //
-				"(Sqrt(2)*a*Gamma(3/4)^2)/Sqrt(Pi)");
 		check("ArithmeticGeometricMean(a, 1/a)", // orderless
 				"ArithmeticGeometricMean(1/a,a)");
 		check("ArithmeticGeometricMean(a, 0)", //
