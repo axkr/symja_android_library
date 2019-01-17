@@ -1,13 +1,14 @@
 package org.matheclipse.core.system;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 import org.matheclipse.core.expression.AbstractFractionSym;
+import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.FractionSym;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -15,6 +16,22 @@ import org.matheclipse.core.interfaces.IFraction;
 import junit.framework.TestCase;
 
 public class NumberTest extends TestCase {
+
+	public void testComplexNum() {
+		// test for Android bug:
+		// https://github.com/tranleduy2000/symja_android_library/commit/2f03d0b6c8095c2c71b1f56c8e5fc5f0b30f927d
+		// 3802951800684688204490109616127/1267650600228229401496703205376
+		IFraction f = AbstractFractionSym.valueOf(new BigInteger("3802951800684688204490109616127"),
+				new BigInteger("1267650600228229401496703205376"));
+		ComplexNum cn = f.complexNumValue();
+		assertEquals(cn.toString(), "(3.0, 0.0)");
+		// 2535301200456458802993406410751/1267650600228229401496703205376
+		f = AbstractFractionSym.valueOf(new BigInteger("2535301200456458802993406410751"),
+				new BigInteger("1267650600228229401496703205376"));
+		cn = f.complexNumValue();
+		assertEquals(cn.toString(), "(2.0, 0.0)");
+
+	}
 
 	public void testPower() {
 		IFraction f = AbstractFractionSym.valueOf(2, 3);
