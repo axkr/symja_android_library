@@ -372,7 +372,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @param position
 	 * @return
 	 */
-	public IAST copyFrom(int position);
+	public IASTAppendable copyFrom(int position);
 
 	/**
 	 * Create a copy of this <code>AST</code>, which only contains the head element of the list (i.e. the element with
@@ -1237,6 +1237,36 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public IASTAppendable removeAtClone(int i);
 
 	/**
+	 * Copy to a new <code>IAST</code> and remove all arguments from position <code>1</code> inclusive to the
+	 * <code>firstPosition</code> exclusive of this AST.
+	 * 
+	 * @param firstPosition
+	 * @return
+	 */
+	default public IAST removeFromStart(int firstPosition) {
+		if (0 < firstPosition && firstPosition <= size()) {
+			if (firstPosition == 1) {
+				return this;
+			}
+			int last = size();
+			int size = last - firstPosition + 1;
+			switch (size) {
+			case 1:
+				return F.headAST0(head());
+			case 2:
+				return F.unaryAST1(head(), get(last - 1));
+			case 3:
+				return F.binaryAST2(head(), get(last - 2), get(last - 1));
+			case 4:
+				return F.ternaryAST3(head(), get(last - 3), get(last - 2), get(last - 1));
+			}
+			return copyFrom(firstPosition);
+		} else {
+			throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(firstPosition) + ", Size: " + size());
+		}
+	}
+
+	/**
 	 * Create a new <code>IAST</code> and remove all arguments from position <code>fromPosition</code> inclusive to the
 	 * end of this AST.
 	 * 
@@ -1258,8 +1288,21 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 
 	/** {@inheritDoc} */
 	@Override
-	default IASTAppendable rest() {
-		return removeAtClone(1);
+	default IAST rest() {
+		switch (size()) {
+		case 1:
+			return this;
+		case 2:
+			return F.headAST0(head());
+		case 3:
+			return F.unaryAST1(head(), arg2());
+		case 4:
+			return F.binaryAST2(head(), arg2(), arg3());
+		case 5:
+			return F.ternaryAST3(head(), arg2(), arg3(), arg4());
+		default:
+			return removeAtClone(1);
+		}
 	}
 
 	/**

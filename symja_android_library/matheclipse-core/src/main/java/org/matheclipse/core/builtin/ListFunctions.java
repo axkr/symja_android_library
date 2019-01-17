@@ -2845,7 +2845,7 @@ public final class ListFunctions {
 				return result;
 			}
 			if (n > 0 && n < ast.size()) {
-				return ast.copyFrom(ast.size() - n);
+				return ast.removeFromStart(ast.size() - n);
 			}
 			return ast;
 		}

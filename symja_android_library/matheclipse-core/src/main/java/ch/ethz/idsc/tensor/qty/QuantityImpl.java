@@ -396,7 +396,7 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 
 	@Override
 	public IExpr set(int i, IExpr object) {
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

@@ -454,13 +454,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArcTan() {
+		// github #110 avoid infinite recursion
 		check("ArcTan(Re(Sin(3+I*2)),Im(Sin(3+I*2)))", //
 				"ArcTan(Im(Sin(3+I*2))/Re(Sin(3+I*2)))");
+
 		check("ArcTan(1, 0)", //
 				"0");
 		check("ArcTan(1/2, 1/2)", //
 				"Pi/4");
-		check("ArcTan(0, 1)",//
+		check("ArcTan(0, 1)", //
 				"Pi/2");
 		check("ArcTan(-1/2, 1/2)", //
 				"3/4*Pi");
@@ -12193,16 +12195,26 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSort() {
-		// TODO
-		// check("Sort({a,A,a,b,B})", "{a, a, A, b, B}");
-		check("Sort@{x,1+x^2,1+x^2+y^3+z^4,Cos[x^2],Sin[x^2]}", //
+		check("Sort(StringJoin /@ Tuples({\"a\",\"A\",\"b\",\"B\"},2))", //
+				"{aa,aA,Aa,AA,ab,aB,Ab,AB,ba,bA,Ba,BA,bb,bB,Bb,BB}");
+		check("Sort({a,A,a,b,B})", //
+				"{a,a,A,b,B}");
+		check("Sort@{ 1+x^2,2+x^2,x(x),-x,x,Cos(x^2),Sin(x^2)}", //
+				"{-x,x,1+x^2,2+x^2,Cos(x^2),Sin(x^2),x(x)}");
+		check("Sort@{x,1+x^2,1+x^2+y^3+z^4,Cos(x^2),Sin(x^2)}", //
 				"{x,1+x^2,1+x^2+y^3+z^4,Cos(x^2),Sin(x^2)}");
-		check("Sort({E,a,D,d,N,b,c, Adele, enigma})", "{a,adele,b,c,d,D,E,enigma,N}");
-		check("Sort({d, b, c, a})", "{a,b,c,d}");
-		check("Sort({4, 1, 3, 2, 2}, Greater)", "{4,3,2,2,1}");
-		check("Sort({4, 1, 3, 2, 2}, #1 > #2 &)", "{4,3,2,2,1}");
-		check("Sort({{a, 2}, {c, 1}, {d, 3}}, #1[[2]] < #2[[2]] &)", "{{c,1},{a,2},{d,3}}");
-		check("Sort({4, 1.0, a, 3+I})", "{1.0,4,3+I,a}");
+		check("Sort({E,a,D,d,N,b,c, Adele, enigma})", //
+				"{a,adele,b,c,d,D,E,enigma,N}");
+		check("Sort({d, b, c, a})", //
+				"{a,b,c,d}");
+		check("Sort({4, 1, 3, 2, 2}, Greater)", //
+				"{4,3,2,2,1}");
+		check("Sort({4, 1, 3, 2, 2}, #1 > #2 &)", //
+				"{4,3,2,2,1}");
+		check("Sort({{a, 2}, {c, 1}, {d, 3}}, #1[[2]] < #2[[2]] &)", //
+				"{{c,1},{a,2},{d,3}}");
+		check("Sort({4, 1.0, a, 3+I})", //
+				"{1.0,4,3+I,a}");
 	}
 
 	public void testSow() {
@@ -12361,9 +12373,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStringJoin() {
-		check("\"Hello\" <> \" \" <> \"world!\"", "Hello world!");
-		check("\"Debian\" <> 6", "Debian<>6");
-		check("\"Debian\" <> ToString(6)", "Debian6");
+		check("StringJoin(\"test\")", //
+				"test");
+		check("\"Hello\" <> \" \" <> \"world!\"", //
+				"Hello world!");
+		check("\"Debian\" <> 6", //
+				"Debian<>6");
+		check("\"Debian\" <> ToString(6)", //
+				"Debian6");
 	}
 
 	public void testStringLength() {

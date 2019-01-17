@@ -573,7 +573,7 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST copyFrom(int index) {
+	public IASTAppendable copyFrom(int index) {
 		AST result = new AST(size() - index + 1, false);
 		result.append(head());
 		result.appendAll(this, index, size());
@@ -594,7 +594,7 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IASTAppendable copyUntil(int index) {
+	public IASTAppendable copyUntil(int index) {
 		return AST.newInstance(index, this, index);
 	}
 

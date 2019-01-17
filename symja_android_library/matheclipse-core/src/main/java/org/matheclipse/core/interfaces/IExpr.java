@@ -3386,7 +3386,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return the rest arguments of the function represented by this <code>AST</code> with the first argument removed.
 	 * @see IExpr#head()
 	 */
-	default IASTAppendable rest() {
+	default IAST rest() {
 		return F.NIL;
 	}
 
