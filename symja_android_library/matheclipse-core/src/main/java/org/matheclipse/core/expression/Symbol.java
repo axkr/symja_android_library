@@ -46,8 +46,6 @@ public class Symbol implements ISymbol, Serializable {
 
 	protected transient Context fContext;
 
-	private final static Collator US_COLLATOR = Collator.getInstance(Locale.US);
-
 	/**
 	 * The attribute values of the symbol represented by single bits.
 	 */
@@ -171,7 +169,7 @@ public class Symbol implements ISymbol, Serializable {
 				return 0;
 			}
 			// sort lexicographically
-			return US_COLLATOR.compare(fSymbolName, ((ISymbol) expr).getSymbolName());// fSymbolName);
+ 			return StringX.US_COLLATOR.compare(fSymbolName, ((ISymbol) expr).getSymbolName()); 
 		}
 		if (expr.isNot() && expr.first().isSymbol()) {
 			int cp = compareTo(expr.first());

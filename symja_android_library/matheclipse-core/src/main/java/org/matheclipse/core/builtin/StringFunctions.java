@@ -205,17 +205,28 @@ public final class StringFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3);
 
-			StringBuilder buf = new StringBuilder();
-			for (int i = 1; i < ast.size(); i++) {
-				if (ast.get(i).isString()) {
-					buf.append(ast.get(i).toString());
-				} else {
-					return F.NIL;
+			IAST list = ast;
+			if (ast.size() > 1) {
+				if (ast.isAST1()) {
+					IExpr arg1 = ast.arg1();
+					if (arg1.isList()) {
+						list = (IAST) arg1;
+					} else {
+						return arg1.isString() ? arg1 : F.NIL;
+					}
 				}
+				StringBuilder buf = new StringBuilder();
+				for (int i = 1; i < list.size(); i++) {
+					if (list.get(i).isString()) {
+						buf.append(list.get(i).toString());
+					} else {
+						return F.NIL;
+					}
+				}
+				return F.$str(buf.toString());
 			}
-			return F.$str(buf.toString());
+			return F.NIL;
 
 		}
 

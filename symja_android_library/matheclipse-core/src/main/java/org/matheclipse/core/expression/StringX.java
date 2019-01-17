@@ -3,6 +3,7 @@ package org.matheclipse.core.expression;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.text.Collator;
 import java.util.Locale;
 
 import org.matheclipse.core.interfaces.IExpr;
@@ -19,6 +20,7 @@ import org.matheclipse.core.visit.IVisitorLong;
  * @see org.matheclipse.core.interfaces.IStringX
  */
 public class StringX implements IStringX {
+	public final static Collator US_COLLATOR = Collator.getInstance(Locale.US);
 	/**
 	 * 
 	 */
@@ -194,7 +196,7 @@ public class StringX implements IStringX {
 	@Override
 	public int compareTo(final IExpr expr) {
 		if (expr instanceof StringX) {
-			return fString.compareTo(((StringX) expr).fString);
+			return US_COLLATOR.compare(fString, ((StringX) expr).fString);
 		}
 		return IStringX.super.compareTo(expr);
 	}
@@ -204,7 +206,8 @@ public class StringX implements IStringX {
 	 * @return
 	 */
 	public int compareTo(final StringX anotherString) {
-		return fString.compareTo(anotherString.fString);
+		// sort lexicographically
+		return US_COLLATOR.compare(fString, anotherString.fString);
 	}
 
 	/**
@@ -371,8 +374,8 @@ public class StringX implements IStringX {
 
 	/** {@inheritDoc} */
 	@Override
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
-			boolean usePrefix, boolean noSymbolPrefix) {
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators, boolean usePrefix,
+			boolean noSymbolPrefix) {
 		final StringBuilder buffer = new StringBuilder();
 		String prefix = usePrefix ? "F." : "";
 		buffer.append(prefix + "$str(\"");
