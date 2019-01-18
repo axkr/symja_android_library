@@ -827,7 +827,7 @@ public class Algebra {
 				IAST timesAST = (IAST) expr;
 				return timesAST.exists((x, i) -> {
 					if (matcher.test(x) || isPowerMatched(x, matcher)) {
-						IAST clone = timesAST.removeAtClone(i);
+						IAST clone = timesAST.removeAtCopy(i);
 						addOneIdentityPowerFactor(x, clone, map);
 						return true;
 					}
@@ -3046,7 +3046,7 @@ public class Algebra {
 					if (x1.isTimes()) {
 						IAST timesAST = (IAST) x1;
 						// Log[x_ * y_ * z_] :> Log(x)+Log(y)+Log(z)
-						IAST logResult = timesAST.setAtClone(0, F.Plus);
+						IAST logResult = timesAST.setAtCopy(0, F.Plus);
 						logResult = logResult.mapThread(F.Log(F.Null), 1);
 						return powerExpand(logResult, assumptions);
 					}
@@ -3305,8 +3305,8 @@ public class Algebra {
 			@Override
 			public IExpr visit(IASTMutable ast) {
 				if (!ast.isAST(F.Root)) {
-					IAST cloned = replacement.setAtClone(1, null);
-					return ast.mapThread(cloned, 1);
+					IAST copied = replacement.setAtCopy(1, null);
+					return ast.mapThread(copied, 1);
 				}
 				return F.NIL;
 			}
@@ -3799,7 +3799,7 @@ public class Algebra {
 						temp = ast.get(i);
 						if (temp.isPowerReciprocal() && temp.base().isPlus() && temp.base().size() == 3) {
 							IAST plus1 = (IAST) temp.base();
-							IAST plus2 = plus1.setAtClone(2, plus1.arg2().negate());
+							IAST plus2 = plus1.setAtCopy(2, plus1.arg2().negate());
 							IExpr expr = F.eval(F.Expand(F.Times(plus1, plus2)));
 							if (expr.isNumber()) {
 								if (newTimes.isPresent()) {
@@ -4391,7 +4391,7 @@ public class Algebra {
 					}
 				} else if (arg1.isTimes()) {
 					if (arg1.first().isAtom()) {
-						IExpr times = ((IAST) arg1).removeAtClone(1).getOneIdentity(F.C0);
+						IExpr times = ((IAST) arg1).removeAtCopy(1).getOneIdentity(F.C0);
 						if (times.isPower()) {
 							return F.Times(arg1.first(), together(times, engine));
 						}

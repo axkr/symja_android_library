@@ -107,10 +107,10 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 						if (negNum.isOne()) {
 							return timesAST.rest().getOneIdentity(F.C1);
 						}
-						return timesAST.setAtClone(1, negNum);
+						return timesAST.setAtCopy(1, negNum);
 					}
 				} else if (arg1.isNegativeInfinity()) {
-					return timesAST.setAtClone(1, F.CInfinity);
+					return timesAST.setAtCopy(1, F.CInfinity);
 				}
 			} else if (checkTimesPlus && expression.isPlus()) {
 				IAST plusAST = ((IAST) expression);
@@ -200,7 +200,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 			if (ast.isTimes()) {
 				for (int i = 1; i < ast.size(); i++) {
 					if (ast.get(i).equals(period)) {
-						result.set(2, ast.removeAtClone(i).getOneIdentity(F.C1));
+						result.set(2, ast.removeAtCopy(i).getOneIdentity(F.C1));
 						return result;
 					}
 				}
@@ -210,7 +210,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 				for (int i = 1; i < ast.size(); i++) {
 					IAST temp = getPeriodicParts(ast.get(i), period);
 					if (temp.isPresent() && temp.arg1().isZero()) {
-						result.set(1, ast.removeAtClone(i).getOneIdentity(F.C0));
+						result.set(1, ast.removeAtCopy(i).getOneIdentity(F.C0));
 						result.set(2, temp.arg2());
 						return result;
 					}
@@ -246,13 +246,13 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 						if (negNum.isOne()) {
 							return timesAST.rest().getOneIdentity(F.C1);
 						}
-						return timesAST.setAtClone(1, negNum);
+						return timesAST.setAtCopy(1, negNum);
 					}
 				} else if (arg1.isNegativeInfinity()) {
-					return timesAST.setAtClone(1, F.CInfinity);
+					return timesAST.setAtCopy(1, F.CInfinity);
 				} else if (arg1.isNegative()) {
 					IExpr negNum = arg1.negate();
-					return timesAST.setAtClone(1, negNum);
+					return timesAST.setAtCopy(1, negNum);
 				}
 			} else if (checkTimesPlus && expression.isPlus()) {
 				IAST plusAST = ((IAST) expression);
@@ -333,7 +333,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 			IAST plus = ((IAST) expr);
 			IExpr arg = pureImaginaryPart(plus.arg1());
 			if (arg.isPresent()) {
-				IASTAppendable result = plus.setAtClone(1, arg);
+				IASTMutable result = plus.setAtCopy(1, arg);
 				for (int i = 2; i < plus.size(); i++) {
 					arg = pureImaginaryPart(plus.get(i));
 					if (!arg.isPresent()) {
@@ -417,7 +417,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 			IAST times = ((IAST) expr);
 			IExpr arg1 = times.arg1();
 			if (arg1.isComplex() && ((IComplex) arg1).re().isZero()) {
-				return times.setAtClone(1, ((IComplex) arg1).im());
+				return times.setAtCopy(1, ((IComplex) arg1).im());
 			}
 		}
 		return F.NIL;

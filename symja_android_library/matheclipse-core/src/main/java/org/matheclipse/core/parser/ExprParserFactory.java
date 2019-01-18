@@ -181,7 +181,7 @@ public class ExprParserFactory implements IParserFactory {
 				return (IASTMutable) F.Plus(lhs, rhs.negate());
 			}
 			if (rhs.isTimes() && rhs.first().isNumber()) {
-				return (IASTMutable) F.Plus(lhs, ((IAST) rhs).setAtClone(1, rhs.first().negate()));
+				return (IASTMutable) F.Plus(lhs, ((IAST) rhs).setAtCopy(1, rhs.first().negate()));
 			}
 			return (IASTMutable) F.Plus(lhs, F.Times(F.CN1, rhs));
 		}

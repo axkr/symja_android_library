@@ -1557,7 +1557,7 @@ public final class ListFunctions {
 						// negative n counts from the end
 						indx = list1.size() + indx;
 					}
-					return list1.removeAtClone(indx);
+					return list1.removeAtCopy(indx);
 				} catch (final IndexOutOfBoundsException e) {
 					if (Config.DEBUG) {
 						e.printStackTrace();
@@ -2666,7 +2666,7 @@ public final class ListFunctions {
 			Validate.checkSize(ast, 2);
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			if (arg1.isAST() && ((IAST) arg1).size() > 1) {
-				return ((IAST) arg1).removeAtClone(((IAST) arg1).argSize());
+				return ((IAST) arg1).removeAtCopy(((IAST) arg1).argSize());
 			}
 			engine.printMessage("Most: Nonatomic expression expected");
 			return F.NIL;

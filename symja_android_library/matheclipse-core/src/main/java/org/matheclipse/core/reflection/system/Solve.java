@@ -283,7 +283,7 @@ public class Solve extends AbstractFunctionEvaluator {
 								} else {
 									sym = (ISymbol) expr;
 									if (fEquationType == LINEAR) {
-										IAST cloned = arg.removeAtClone(i);
+										IAST cloned = arg.removeAtCopy(i);
 										fMatrixRow.set(j, F.Plus(fMatrixRow.get(j), cloned));
 									}
 								}
@@ -480,7 +480,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		 */
 		private IExpr rewriteInverseFunction(IAST plusAST, int position) {
 			IAST ast = (IAST) plusAST.get(position);
-			IExpr plus = plusAST.removeAtClone(position).getOneIdentity(F.C0);
+			IExpr plus = plusAST.removeAtCopy(position).getOneIdentity(F.C0);
 			if (ast.isAbs()) {
 				if (plus.isNegative() || plus.isZero()) {
 					if (plus.isFree(Predicates.in(fListOfVariables), true)) {
@@ -549,7 +549,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			if (exponent.isFraction() || (exponent.isReal() && !exponent.isNumIntValue())) {
 				ISignedNumber arg2 = (ISignedNumber) exponent;
 				if (arg2.isPositive()) {
-					IExpr plus = plusAST.removeAtClone(i).getOneIdentity(F.C0);
+					IExpr plus = plusAST.removeAtCopy(i).getOneIdentity(F.C0);
 					if (plus.isPositiveResult()) {
 						// no solution possible
 						return NO_EQUATION_SOLUTION;
@@ -1228,7 +1228,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			for (int j = 1; j < times.size(); j++) {
 				if (!times.get(j).isFree(Predicates.in(variables), true)) {
 					// try to get a solution from this Times() factor
-					IASTAppendable clonedEqualZeroList = termsEqualZeroList.setAtClone(i, times.get(j));
+					IASTMutable clonedEqualZeroList = termsEqualZeroList.setAtCopy(i, times.get(j));
 					temp = solveEquations(clonedEqualZeroList, inequationsList, variables, 0, engine);
 					if (temp.size() > 1) {
 						temp.copyTo(subSolutionSet);

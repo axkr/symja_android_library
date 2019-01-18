@@ -129,8 +129,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 				IAST xList = (IAST) arg2;
 				if (xList.isVector() == 3) {
 					// Integrate[f[x], {x,a,b}]
-					IAST clone = holdallAST.setAtClone(2, xList.arg1());
-					IExpr temp = engine.evaluate(clone);
+					IAST copy = holdallAST.setAtCopy(2, xList.arg1());
+					IExpr temp = engine.evaluate(copy);
 					if (temp.isFreeAST(F.Integrate)) {
 						// F(b)-F(a)
 						IExpr Fb = engine.evaluate(F.Limit(temp, F.Rule(xList.arg1(), xList.arg3())));

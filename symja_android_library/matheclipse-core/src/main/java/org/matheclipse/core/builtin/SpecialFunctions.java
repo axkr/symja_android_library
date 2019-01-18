@@ -687,7 +687,7 @@ public class SpecialFunctions {
 				IExpr arg2 = ast.arg2();
 				IExpr z = ast.arg3();
 				if (z.isList()) {
-					return ((IAST) z).mapThread(ast.setAtClone(3, F.Null), 3);
+					return ((IAST) z).mapThread(ast.setAtCopy(3, F.Null), 3);
 				}
 				if (arg1.isList() && arg2.isList()) {
 					IAST list1 = (IAST) arg1;

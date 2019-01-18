@@ -1232,6 +1232,15 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * element at the given <code>position</code>.
 	 * 
 	 * @param i
+	 * @return an IAST with removed element at the given position.
+	 */
+	public IASTMutable removeAtCopy(int position);
+
+	/**
+	 * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and remove the
+	 * element at the given <code>position</code>.
+	 * 
+	 * @param i
 	 * @return a clone with removed element at the given position.
 	 */
 	public IASTAppendable removeAtClone(int i);

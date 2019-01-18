@@ -4341,7 +4341,6 @@ public final class Arithmetic {
 					for (int i = 2; i < times.size(); i++) {
 						IExpr temp = times.get(i);
 						if (temp.isPower() && temp.base().isInteger() && !temp.exponent().isNumber()) {
-							// IASTMutable power = (IASTMutable) temp;
 							IInteger powArg1 = (IInteger) temp.base();
 							if (powArg1.isPositive()) {
 								IInteger mod = F.C0;
@@ -4359,9 +4358,7 @@ public final class Arithmetic {
 									if (!result.isPresent()) {
 										result = times.copyAppendable();
 									}
-									IASTMutable power = ((IASTMutable) temp).copyAppendable();
-									power.set(2, F.Plus(F.integer(count), power.exponent()));
-									result.set(i, power);
+									result.set(i, F.Power(temp.base(), F.Plus(F.integer(count), temp.exponent())));
 								}
 							}
 						}
@@ -4593,82 +4590,86 @@ public final class Arithmetic {
 
 		@Override
 		public IExpr evaluate(final IAST ast1, EvalEngine engine) {
-			IAST astTimes = ast1;
-			int size = astTimes.size();
+			int size = ast1.size();
 			if (size == 1) {
 				return F.C1;
 			}
-			if (size == 2 && astTimes.head() == F.Times) {
-				return astTimes.arg1();
+			if (size == 2 && ast1.head() == F.Times) {
+				// OneIdentity
+				return ast1.arg1();
 			}
 			if (size > 2) {
-				IAST temp = evaluateHashsRepeated(astTimes, engine);
+				IAST temp = evaluateHashsRepeated(ast1, engine);
 				if (temp.isPresent()) {
 					return temp.getOneIdentity(F.C1);
 				}
 			}
 			if (size == 3) {
-				if ((astTimes.arg1().isNumeric() || astTimes.arg1().isOne() || astTimes.arg1().isMinusOne())
-						&& astTimes.arg2().isPlus()) {
-					if (astTimes.arg1().isOne()) {
-						return astTimes.arg2();
+				if ((ast1.arg1().isNumeric() || ast1.arg1().isOne() || ast1.arg1().isMinusOne())
+						&& ast1.arg2().isPlus()) {
+					if (ast1.arg1().isOne()) {
+						return ast1.arg2();
 					}
 					// distribute the number over the sum:
-					final IAST arg2 = (IAST) astTimes.arg2();
-					return arg2.mapThread(F.Times(astTimes.arg1(), null), 2);
+					final IAST arg2 = (IAST) ast1.arg2();
+					return arg2.mapThread(F.Times(ast1.arg1(), null), 2);
 				}
-				return distributeLeadingFactor(binaryOperator(astTimes.arg1(), astTimes.arg2()), astTimes);
+				return distributeLeadingFactor(binaryOperator(ast1.arg1(), ast1.arg2()), ast1);
 			}
 
 			if (size > 3) {
-				final ISymbol sym = astTimes.topHead();
+				final ISymbol sym = ast1.topHead();
 				IASTAppendable result = F.NIL;
-				IExpr tres;
-				IExpr temp = astTimes.arg1();
+				IExpr tempArg1 = ast1.arg1();
 				boolean evaled = false;
 				int i = 2;
-
+				boolean isIASTAppendable = false;
+				IAST astTimes = ast1;
 				while (i < astTimes.size()) {
 
-					tres = binaryOperator(temp, astTimes.get(i));
+					IExpr binaryResult = binaryOperator(tempArg1, astTimes.get(i));
 
-					if (!tres.isPresent()) {
+					if (!binaryResult.isPresent()) {
 
 						for (int j = i + 1; j < astTimes.size(); j++) {
-							tres = binaryOperator(temp, astTimes.get(j));
+							binaryResult = binaryOperator(tempArg1, astTimes.get(j));
 
-							if (tres.isPresent()) {
+							if (binaryResult.isPresent()) {
 								evaled = true;
-								temp = tres;
-
-								astTimes = astTimes.removeAtClone(j);
-
+								tempArg1 = binaryResult;
+								if (isIASTAppendable) {
+									((IASTAppendable) astTimes).remove(j);
+								} else {
+									// creates an IASTAppendable
+									astTimes = astTimes.removeAtClone(j);
+									isIASTAppendable = true;
+								}
 								break;
 							}
 						}
 
-						if (!tres.isPresent()) {
+						if (!binaryResult.isPresent()) {
 							if (!result.isPresent()) {
 								result = F.ast(sym, astTimes.size() - i + 1, false);
 							}
-							result.append(temp);
+							result.append(tempArg1);
 							if (i == astTimes.argSize()) {
 								result.append(astTimes.get(i));
 							} else {
-								temp = astTimes.get(i);
+								tempArg1 = astTimes.get(i);
 							}
 							i++;
 						}
 
 					} else {
 						evaled = true;
-						temp = tres;
+						tempArg1 = binaryResult;
 
 						if (i == astTimes.argSize()) {
 							if (!result.isPresent()) {
 								result = F.ast(sym, astTimes.size() - i + 1, false);
 							}
-							result.append(temp);
+							result.append(tempArg1);
 						}
 
 						i++;

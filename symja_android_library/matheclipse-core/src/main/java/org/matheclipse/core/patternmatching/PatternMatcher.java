@@ -1216,6 +1216,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				temp = lhsPatternFinal.get(i);
 				if (!(temp instanceof IPatternObject)) {
 					final int index = i;
+					IAST reduced=lhsPatternFinal.removeAtCopy(index);
 					return lhsEval.exists((x, j) -> {
 						StackMatcher myStackMatcher = stackMatcher;
 						if (myStackMatcher == null) {
@@ -1223,7 +1224,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 						}
 						int lastStackSize = myStackMatcher.size();
 
-						if (myStackMatcher.push(lhsPatternFinal.removeAtClone(index), lhsEvalFinal.removeAtClone(j))) {
+						if (myStackMatcher.push(reduced, lhsEvalFinal.removeAtCopy(j))) {
 							boolean matched = false;
 							try {
 								if (matchExpr(lhsPatternFinal.get(index), x, engine, myStackMatcher, false)) {

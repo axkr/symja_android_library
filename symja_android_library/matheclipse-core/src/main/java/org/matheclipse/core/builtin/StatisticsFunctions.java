@@ -1403,7 +1403,7 @@ public class StatisticsFunctions {
 				return F.num(StatUtils.geometricMean(arg1.toDoubleVector()));
 			}
 			if (arg1.size() > 1) {
-				return F.Power(arg1.setAtClone(0, F.Times), F.fraction(1, arg1.argSize()));
+				return F.Power(arg1.setAtCopy(0, F.Times), F.fraction(1, arg1.argSize()));
 			}
 			return F.NIL;
 		}
@@ -1848,7 +1848,7 @@ public class StatisticsFunctions {
 			IExpr factor = F.integer(-1 * (arg1.size() - 2));
 			IASTAppendable v1 = F.PlusAlloc(arg1.size());
 			v1.appendArgs(arg1.size(),
-					i -> F.Times(F.CN1, num1.setAtClone(i, F.Times(factor, arg1.get(i))), F.Conjugate(arg2.get(i))));
+					i -> F.Times(F.CN1, num1.setAtCopy(i, F.Times(factor, arg1.get(i))), F.Conjugate(arg2.get(i))));
 			return F.Divide(v1, F.integer(((long) arg1.argSize()) * (((long) arg1.size()) - 2L)));
 		}
 
@@ -3433,7 +3433,7 @@ public class StatisticsFunctions {
 			}
 			if (dim != null) {
 				IAST matrix = (IAST) arg1;
-				return matrix.mapMatrixColumns(dim, (IExpr x) -> ast.setAtClone(1, x));
+				return matrix.mapMatrixColumns(dim, (IExpr x) -> ast.setAtCopy(1, x));
 			}
 
 			if (arg1.isList()) {
