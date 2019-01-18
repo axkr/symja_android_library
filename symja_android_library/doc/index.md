@@ -470,6 +470,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [JavaForm](functions/JavaForm.md)
 * [Join](functions/Join.md)
 * [Khinchin](functions/Khinchin.md)
+* [KolmogorovSmirnovTest](functions/KolmogorovSmirnovTest.md)
 * [KroneckerDelta](functions/KroneckerDelta.md)
 * [Kurtosis](functions/Kurtosis.md)
 * [LaguerreL](functions/LaguerreL.md)
@@ -725,6 +726,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Times](functions/Times.md)
 * [TimesBy](functions/TimesBy.md)
 * [TimeValue](functions/TimeValue.md)
+* [Timing](functions/Timing.md)
 * [ToCharacterCode](functions/ToCharacterCode.md)
 * [ToeplitzMatrix](functions/ToeplitzMatrix.md)
 * [Together](functions/Together.md)
@@ -765,3 +767,4 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Xor](functions/Xor.md)
 * [YuleDissimilarity](functions/YuleDissimilarity.md)
 * [Zeta](functions/Zeta.md)
+

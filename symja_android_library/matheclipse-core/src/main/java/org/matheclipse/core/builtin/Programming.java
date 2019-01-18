@@ -1981,11 +1981,12 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
-			final long begin = System.currentTimeMillis();
-			final IExpr result = engine.evaluate(ast.arg1());
-			return List(Divide(F.num(System.currentTimeMillis() - begin), F.integer(1000L)), F.Hold(result));
+			if (ast.size() == 2) {
+				final long begin = System.currentTimeMillis();
+				final IExpr result = engine.evaluate(ast.arg1());
+				return List(Divide(F.num(System.currentTimeMillis() - begin), F.integer(1000L)), F.HoldForm(result));
+			}
+			return F.NIL;
 		}
 
 		@Override
