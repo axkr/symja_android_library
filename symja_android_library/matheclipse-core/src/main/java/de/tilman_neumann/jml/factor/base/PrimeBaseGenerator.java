@@ -15,12 +15,13 @@ package de.tilman_neumann.jml.factor.base;
 
 import java.math.BigInteger;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.modular.JacobiSymbol;
 import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
+
 /**
  * Prime base generator.
  * Creates prime bases consisting of the 2 and odd primes with Legendre(kN|p)>=0, i.e. such that kN is not a non-residue (mod p).
@@ -29,8 +30,8 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
  * @author Tilman Neumann
  */
 public class PrimeBaseGenerator {
-//	private static final Logger LOG = Logger.getLogger(PrimeBaseGenerator.class);
-//	private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(PrimeBaseGenerator.class);
+	private static final boolean DEBUG = false;
 	
 	private AutoExpandingPrimesArray rawPrimesArray = AutoExpandingPrimesArray.get();
 	private JacobiSymbol jacobiEngine = new JacobiSymbol();

@@ -16,6 +16,8 @@ package de.tilman_neumann.jml.factor.siqs.poly;
 import java.math.BigInteger;
 import java.util.Arrays;
 
+import org.apache.log4j.Logger;
+
 import de.tilman_neumann.jml.base.UnsignedBigInt;
 import de.tilman_neumann.jml.factor.siqs.data.BaseArrays;
 import de.tilman_neumann.jml.factor.siqs.data.SolutionArrays;
@@ -42,8 +44,8 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
  * @author Tilman Neumann
  */
 public class SIQSPolyGenerator implements PolyGenerator {
-//	private static final Logger LOG = Logger.getLogger(SIQSPolyGenerator.class);
-//	private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(SIQSPolyGenerator.class);
+	private static final boolean DEBUG = false;
 
 	/** the a paramater */
 	private BigInteger a;
@@ -166,10 +168,10 @@ public class SIQSPolyGenerator implements PolyGenerator {
 			computeFirstBParameter();
 			bParamCount++;
 			bIndex = 1;
-//			if (DEBUG) {
-//				LOG.debug("first a=" + a + ", b=" + b);
-//				LOG.debug("(b^2-kN)/a [" + bIndex + "] = " + b.multiply(b).subtract(kN).divide(a));
-//			}
+			if (DEBUG) {
+				LOG.debug("first a=" + a + ", b=" + b);
+				LOG.debug("(b^2-kN)/a [" + bIndex + "] = " + b.multiply(b).subtract(kN).divide(a));
+			}
 			if (profile) firstBDuration += timer.capture();
 			// filter prime base
 			BaseFilter.Result filterResult = baseFilter.filter(solutionArrays, baseArrays, mergedBaseSize, qArray, qCount, k);
@@ -214,10 +216,10 @@ public class SIQSPolyGenerator implements PolyGenerator {
 //				}
 //			}
 			bIndex++;
-//			if (DEBUG) {
-//				LOG.debug("a=" + a + ": " + bIndex + ".th b=" + b);
-//				LOG.debug("(b^2-kN)/a [" + bIndex + "] = " + b.multiply(b).subtract(kN).divide(a));
-//			}
+			if (DEBUG) {
+				LOG.debug("a=" + a + ": " + bIndex + ".th b=" + b);
+				LOG.debug("(b^2-kN)/a [" + bIndex + "] = " + b.multiply(b).subtract(kN).divide(a));
+			}
 			if (profile) nextBDuration += timer.capture();
 
 			// Update solution arrays: 
@@ -436,7 +438,7 @@ public class SIQSPolyGenerator implements PolyGenerator {
 //			BigInteger p_big = BigInteger.valueOf(p);
 //			assertEquals(kN.mod(p_big), da.multiply(BigInteger.valueOf(x1)).add(b).pow(2).mod(p_big));
 //			assertEquals(kN.mod(p_big), da.multiply(BigInteger.valueOf(x2)).add(b).pow(2).mod(p_big));
-////			if (x1<0 || x2<0) LOG.debug("p=" + p + ", Bainv2=" + Bainv2 + ": x1 = " + x1 + ", x2 = " + x2);
+//			if (x1<0 || x2<0) LOG.debug("p=" + p + ", Bainv2=" + Bainv2 + ": x1 = " + x1 + ", x2 = " + x2);
 //		}
 //	}
 

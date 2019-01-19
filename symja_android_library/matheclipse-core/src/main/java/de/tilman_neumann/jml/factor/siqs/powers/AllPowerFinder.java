@@ -16,7 +16,7 @@ package de.tilman_neumann.jml.factor.siqs.powers;
 import java.math.BigInteger;
 import java.util.TreeSet;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.BinarySearch;
 import de.tilman_neumann.jml.base.UnsignedBigInt;
@@ -29,8 +29,8 @@ import de.tilman_neumann.jml.modular.ModularSqrt31;
  * @author Tilman Neumann
  */
 public class AllPowerFinder extends SomePowerFinder {
-//	private static final Logger LOG = Logger.getLogger(AllPowerFinder.class);
-//	private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(AllPowerFinder.class);
+	private static final boolean DEBUG = false;
 
 	private BinarySearch binarySearch = new BinarySearch();
 	private ModularSqrt31 modularSqrtEngine = new ModularSqrt31();
@@ -76,7 +76,7 @@ public class AllPowerFinder extends SomePowerFinder {
 					int last_power = (int) power_long;
 					power_long *= p;
 					if (power_long>pMax) {
-//						if (DEBUG) LOG.debug("power = " + p + "^" + exponent + " = " + power_long + " > pMax=" + pMax + ", not added");
+						if (DEBUG) LOG.debug("power = " + p + "^" + exponent + " = " + power_long + " > pMax=" + pMax + ", not added");
 						break;
 					}
 					int power = (int) power_long;
@@ -86,7 +86,7 @@ public class AllPowerFinder extends SomePowerFinder {
 //						assertTrue(jacobi>0);
 //					}
 					if (power>pMin) {
-//						if (DEBUG) LOG.debug("Add power = " + p + "^" + exponent + " = " + power);
+						if (DEBUG) LOG.debug("Add power = " + p + "^" + exponent + " = " + power);
 						byte logPower;
 						if (last_power > pMin) {
 							// reduced contribution
@@ -100,12 +100,12 @@ public class AllPowerFinder extends SomePowerFinder {
 						int u = modularSqrtEngine.modularSqrtModPower(kN_UBI.mod(power), power, last_power, tArray[pIndex]);
 						powerEntries.add(new PowerEntry(p, exponent, power, u, logPower));
 					} else {
-//						if (DEBUG) LOG.debug("power = " + p + "^" + exponent + " = " + power + " < pMin=" + pMin + ", not added");
+						if (DEBUG) LOG.debug("power = " + p + "^" + exponent + " = " + power + " < pMin=" + pMin + ", not added");
 					}
 				}
 			}
 		}
-//		if (DEBUG) LOG.info("Found " + powerEntries.size() + " powers");
+		if (DEBUG) LOG.info("Found " + powerEntries.size() + " powers");
 		return powerEntries;
 	}
 }

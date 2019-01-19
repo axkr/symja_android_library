@@ -30,7 +30,6 @@ abstract public class Partial extends AQPair implements Congruence {
 	 * Full constructor.
 	 * @param A
 	 * @param smallFactors small factors of Q
-	 * @param bigFactor the single large factor of Q
 	 */
 	public Partial(BigInteger A, SortedIntegerArray smallFactors) {
 		super(A, smallFactors);

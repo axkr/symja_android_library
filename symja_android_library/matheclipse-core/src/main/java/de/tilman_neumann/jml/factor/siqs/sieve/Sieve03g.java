@@ -16,7 +16,7 @@ package de.tilman_neumann.jml.factor.siqs.sieve;
 import java.util.ArrayList;
 import java.util.List;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.BinarySearch;
 import de.tilman_neumann.jml.factor.siqs.data.SolutionArrays;
@@ -59,8 +59,8 @@ import de.tilman_neumann.util.Timer;
  * @author Tilman Neumann
  */
 public class Sieve03g implements Sieve {
-//	private static final Logger LOG = Logger.getLogger(Sieve03g.class);
-//	private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(Sieve03g.class);
+	private static final boolean DEBUG = false;
 
 	// prime base
 	private int primeBaseSize;
@@ -105,7 +105,7 @@ public class Sieve03g implements Sieve {
 		this.sieveArraySize = sieveParams.sieveArraySize;
 		int sieveAllocationSize = Math.max(pMax+1, 2*sieveArraySize);
 		sieveArray = new byte[sieveAllocationSize];
-//		if (DEBUG) LOG.debug("pMax = " + pMax + ", sieveArraySize = " + sieveArraySize + " --> sieveAllocationSize = " + sieveAllocationSize);
+		if (DEBUG) LOG.debug("pMax = " + pMax + ", sieveArraySize = " + sieveArraySize + " --> sieveAllocationSize = " + sieveAllocationSize);
 
 		// profiling
 		this.profile = profile;
@@ -121,7 +121,7 @@ public class Sieve03g implements Sieve {
 		this.p1Index = binarySearch.getInsertPosition(powers, primeBaseSize, sieveArraySize);
 		this.p2Index = binarySearch.getInsertPosition(powers, p1Index, (sieveArraySize+1)/2);
 		this.p3Index = binarySearch.getInsertPosition(powers, p2Index, (sieveArraySize+2)/3);
-//		if (DEBUG) LOG.debug("primeBaseSize=" + primeBaseSize + ", p1Index=" + p1Index + ", p2Index=" + p2Index + ", p3Index=" + p3Index);
+		if (DEBUG) LOG.debug("primeBaseSize=" + primeBaseSize + ", p1Index=" + p1Index + ", p2Index=" + p2Index + ", p3Index=" + p3Index);
 		
 		// The minimum number of x-solutions in the sieve array is floor(sieveArraySize/p).
 		// E.g. for p=3, sieveArraySize=8 there are solutions (0, 3, 6), (1, 4, 7), (2, 5)  <-- 8 is not in sieve array anymore

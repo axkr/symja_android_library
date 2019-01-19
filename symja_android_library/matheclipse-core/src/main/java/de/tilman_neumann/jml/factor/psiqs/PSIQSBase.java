@@ -18,7 +18,7 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
 import de.tilman_neumann.jml.factor.FactorException;
@@ -51,8 +51,8 @@ import de.tilman_neumann.util.Timer;
  * @author Tilman Neumann
  */
 abstract public class PSIQSBase extends FactorAlgorithmBase {
-//	private static final Logger LOG = Logger.getLogger(PSIQSBase.class);
-//	private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(PSIQSBase.class);
+	private static final boolean DEBUG = false;
 
 	protected int numberOfThreads;
 	private Integer d0;
@@ -153,7 +153,7 @@ abstract public class PSIQSBase extends FactorAlgorithmBase {
 		double lnTerm = Math.sqrt(lnN * Math.log(lnN)); // (lnN)^0.5 * (lnlnN)^(1-0.5)
 		double primeBaseSize_dbl = Math.exp(Cmult * lnTerm);
 		if (primeBaseSize_dbl > Integer.MAX_VALUE) {
-//			LOG.error("N=" + N + " (" + NBits + " bits) is too big for SIQS!");
+			LOG.error("N=" + N + " (" + NBits + " bits) is too big for SIQS!");
 			return null;
 		}
 		int primeBaseSize = Math.max(30, (int) primeBaseSize_dbl); // min. size for very small N
@@ -180,7 +180,7 @@ abstract public class PSIQSBase extends FactorAlgorithmBase {
 		} else {
 			d = d0;
 		}
-//		if (DEBUG) LOG.debug("d = " + d);
+		if (DEBUG) LOG.debug("d = " + d);
 		
 		// Create the reduced prime base for kN:
 		primeBaseBuilder.computeReducedPrimeBase(kN, primeBaseSize, primesArray);
@@ -192,11 +192,11 @@ abstract public class PSIQSBase extends FactorAlgorithmBase {
 		int pMax = primesArray[primeBaseSize-1];
 		long proposedSieveArraySize = 6144 + (long) Math.exp(Mmult * lnTerm); // 6144 = best experimental result for small N
 		if (proposedSieveArraySize+pMax > Integer.MAX_VALUE) { // this might happen at N with ~ 650 bit or later
-//			LOG.error("N=" + N + " (" + NBits + " bits) is too big for SIQS!");
+			LOG.error("N=" + N + " (" + NBits + " bits) is too big for SIQS!");
 			return null;
 		}
 		int adjustedSieveArraySize = (int) (proposedSieveArraySize & 0x7FFFFF00);
-//		if (DEBUG) LOG.debug("N=" + N + ", k=" + k + ": pMax=" + pMax + ", sieve array size was adjusted from " + proposedSieveArraySize + " to " + adjustedSieveArraySize);
+		if (DEBUG) LOG.debug("N=" + N + ", k=" + k + ": pMax=" + pMax + ", sieve array size was adjusted from " + proposedSieveArraySize + " to " + adjustedSieveArraySize);
 		
 		// compute biggest QRest admitted for a smooth relation
 		if (maxQRestExponent0 != null) {
@@ -249,7 +249,7 @@ abstract public class PSIQSBase extends FactorAlgorithmBase {
 							// It is faster to block the other threads while the solver is running,
 							// because on modern CPUs a single thread runs at a higher clock rate.
 							solverRunCount++;
-//							if (DEBUG) LOG.debug("Run " + solverRunCount + ": #smooths = " + smoothCongruenceCount + ", #requiredSmooths = " + requiredSmoothCongruenceCount);
+							if (DEBUG) LOG.debug("Run " + solverRunCount + ": #smooths = " + smoothCongruenceCount + ", #requiredSmooths = " + requiredSmoothCongruenceCount);
 							ArrayList<Smooth> congruences = congruenceCollector.getSmoothCongruences();
 							synchronized (aqPairBuffer) {
 								solverController.solve(congruences); // throws FactorException
@@ -285,27 +285,27 @@ abstract public class PSIQSBase extends FactorAlgorithmBase {
 				long tdivDuration = tdivReport.getTotalDuration(numberOfThreads);
 				
 				// report results
-//				LOG.info(getName() + ":");
-//				LOG.info("Found factor " + factor + " (" + factor.bitLength() + " bits) of N=" + N + " in " + TimeUtil.timeStr(timer.totalRuntime()));
-//				int pMaxBits = 32 - Integer.numberOfLeadingZeros(pMax);
-//				LOG.info("    multiplier k = " + k + ", kN%8 = " + kN.mod(I_8) + ", primeBaseSize = " + primeBaseSize + ", pMax = " + pMax + " (" + pMaxBits + " bits), sieveArraySize = " + adjustedSieveArraySize);
-//				LOG.info("    polyGenerator: " + polyReport.getOperationDetails());
-//				LOG.info("    tDiv: " + tdivReport.getOperationDetails());
-//				LOG.info("    cc: " + ccReport.getOperationDetails());
-//				if (CongruenceCollector.ANALYZE_BIG_FACTOR_SIZES) {
-//					LOG.info("        " + ccReport.getPartialBigFactorSizes());
-//					LOG.info("        " + ccReport.getSmoothBigFactorSizes());
-//					LOG.info("        " + ccReport.getNonIntFactorPercentages());
-//				}
-//				if (CongruenceCollector.ANALYZE_Q_SIGNS) {
-//					LOG.info("        " + ccReport.getPartialQSignCounts());
-//					LOG.info("        " + ccReport.getSmoothQSignCounts());
-//				}
-//				LOG.info("    #solverRuns = " + solverRunCount + ", #tested null vectors = " + solverController.getTestedNullVectorCount());
-//				LOG.info("    Approximate phase timings: powerTest=" + powerTestDuration + "ms, initN=" + initNDuration + "ms, initPoly=" + initPolyDuration + "ms, sieve=" + sieveDuration + "ms, tdiv=" + tdivDuration + "ms, cc=" + ccDuration + "ms, solver=" + solverDuration + "ms");
-//				LOG.info("    -> initPoly sub-timings: " + polyReport.getPhaseTimings(numberOfThreads));
-//				LOG.info("    -> sieve sub-timings: " + sieveReport.getPhaseTimings(numberOfThreads));
-//				// TDiv, CC and solver have no sub-timings yet
+				LOG.info(getName() + ":");
+				LOG.info("Found factor " + factor + " (" + factor.bitLength() + " bits) of N=" + N + " in " + TimeUtil.timeStr(timer.totalRuntime()));
+				int pMaxBits = 32 - Integer.numberOfLeadingZeros(pMax);
+				LOG.info("    multiplier k = " + k + ", kN%8 = " + kN.mod(I_8) + ", primeBaseSize = " + primeBaseSize + ", pMax = " + pMax + " (" + pMaxBits + " bits), sieveArraySize = " + adjustedSieveArraySize);
+				LOG.info("    polyGenerator: " + polyReport.getOperationDetails());
+				LOG.info("    tDiv: " + tdivReport.getOperationDetails());
+				LOG.info("    cc: " + ccReport.getOperationDetails());
+				if (CongruenceCollector.ANALYZE_BIG_FACTOR_SIZES) {
+					LOG.info("        " + ccReport.getPartialBigFactorSizes());
+					LOG.info("        " + ccReport.getSmoothBigFactorSizes());
+					LOG.info("        " + ccReport.getNonIntFactorPercentages());
+				}
+				if (CongruenceCollector.ANALYZE_Q_SIGNS) {
+					LOG.info("        " + ccReport.getPartialQSignCounts());
+					LOG.info("        " + ccReport.getSmoothQSignCounts());
+				}
+				LOG.info("    #solverRuns = " + solverRunCount + ", #tested null vectors = " + solverController.getTestedNullVectorCount());
+				LOG.info("    Approximate phase timings: powerTest=" + powerTestDuration + "ms, initN=" + initNDuration + "ms, initPoly=" + initPolyDuration + "ms, sieve=" + sieveDuration + "ms, tdiv=" + tdivDuration + "ms, cc=" + ccDuration + "ms, solver=" + solverDuration + "ms");
+				LOG.info("    -> initPoly sub-timings: " + polyReport.getPhaseTimings(numberOfThreads));
+				LOG.info("    -> sieve sub-timings: " + sieveReport.getPhaseTimings(numberOfThreads));
+				// TDiv, CC and solver have no sub-timings yet
 			}
 			
 			// kill all threads & release memory
@@ -315,7 +315,7 @@ abstract public class PSIQSBase extends FactorAlgorithmBase {
 				threadArray[threadIndex].cleanUp(); // e.g. let sieve release native memory !
 				threadArray[threadIndex] = null;
 			}
-//			if (DEBUG) LOG.debug("Killing threads took " + (System.currentTimeMillis()-killStart) + "ms"); // usually 0-16 ms, no problem
+			if (DEBUG) LOG.debug("Killing threads took " + (System.currentTimeMillis()-killStart) + "ms"); // usually 0-16 ms, no problem
 			apg.cleanUp();
 			congruenceCollector.cleanUp();
 			solverController.cleanUp();
@@ -338,29 +338,29 @@ abstract public class PSIQSBase extends FactorAlgorithmBase {
 	
 	private void killThread(PSIQSThreadBase t) {
     	while (t.isAlive()) {
-//    		if (DEBUG) LOG.debug("request to kill thread " + t.getName() + " ...");
+    		if (DEBUG) LOG.debug("request to kill thread " + t.getName() + " ...");
     		// Thread.interrupt() is unsafe, it may block the program when the thread is just aquiring a lock
     		// It is safer to set a flag and let the thread check it outside any locks.
 			t.setFinishNow();
-//			if (DEBUG) {
-//				StackTraceElement[] stackTrace = t.getStackTrace();
-//				if (stackTrace.length>0) {
-//	    			LOG.debug("thread " + t.getName() + " is in");
-//					for (StackTraceElement elem : stackTrace) LOG.debug(elem.toString());
-//				} else {
-//	    			LOG.debug("thread " + t.getName() + " has empty stack trace");
-//				}
-//			}
+			if (DEBUG) {
+				StackTraceElement[] stackTrace = t.getStackTrace();
+				if (stackTrace.length>0) {
+	    			LOG.debug("thread " + t.getName() + " is in");
+					for (StackTraceElement elem : stackTrace) LOG.debug(elem.toString());
+				} else {
+	    			LOG.debug("thread " + t.getName() + " has empty stack trace");
+				}
+			}
     		try {
     			t.join();
     			// XXX: Joining a thread may fail when it is in a synchronized block.
     			// If I remember well, this is a problem with unsafe atomic operations in Java.
     			// It happens most likely for small N.
-//    			if (DEBUG) LOG.debug("thread " + t.getName() + " joined");
+    			if (DEBUG) LOG.debug("thread " + t.getName() + " joined");
     		} catch (InterruptedException e) {
-//    			if (DEBUG) LOG.debug("thread " + t.getName() + " interrupted main thread");
+    			if (DEBUG) LOG.debug("thread " + t.getName() + " interrupted main thread");
     		}
      	}
-//   		if (DEBUG) LOG.debug("thread " + t.getName() + " has been killed.");
+   		if (DEBUG) LOG.debug("thread " + t.getName() + " has been killed.");
 	}
 }

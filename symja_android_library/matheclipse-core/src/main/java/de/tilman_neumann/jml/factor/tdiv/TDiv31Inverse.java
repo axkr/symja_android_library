@@ -58,22 +58,7 @@ public class TDiv31Inverse extends FactorAlgorithmBase {
 		return BigInteger.valueOf(findSingleFactor(N.intValue()));
 	}
 	
-	public int findSingleFactor_v1(int N) {
-		// if N is odd and composite then the loop runs maximally up to prime = floor(sqrt(N))
-		for (int i=0; i<NUM_PRIMES_FOR_31_BIT_TDIV; i++) {
-			double nDivPrime = N*reciprocals[i];
-			if (((int)(nDivPrime+DISCRIMINATOR)) - ((int)(nDivPrime-DISCRIMINATOR)) == 1) {
-				// nDivPrime is very near to an integer
-				if (N%primes[i]==0) {
-					return primes[i];
-				}
-			}
-		}
-		// otherwise N is prime!
-		throw new IllegalArgumentException("N = " + N + " is prime!");
-	}
-	
-	public int findSingleFactor/*_v2*/(int N) {
+	public int findSingleFactor(int N) {
 		// if N is odd and composite then the loop runs maximally up to prime = floor(sqrt(N))
 		for (int i=0; i<NUM_PRIMES_FOR_31_BIT_TDIV; i++) {
 			int nDivPrime = (int) (N*reciprocals[i] + DISCRIMINATOR);

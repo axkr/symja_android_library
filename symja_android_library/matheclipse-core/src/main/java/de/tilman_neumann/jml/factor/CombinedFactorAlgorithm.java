@@ -13,8 +13,7 @@
  */
 package de.tilman_neumann.jml.factor;
 
-import static de.tilman_neumann.jml.base.BigIntConstants.I_1;
-import static de.tilman_neumann.jml.base.BigIntConstants.I_MINUS_1;
+import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;

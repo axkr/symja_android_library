@@ -15,7 +15,7 @@ package de.tilman_neumann.jml.factor.siqs;
 
 import java.math.BigInteger;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.base.UnsignedBigInt;
 import de.tilman_neumann.jml.modular.ModularSqrt;
@@ -28,8 +28,8 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
  * @author Tilman Neumann
  */
 public class ModularSqrtsEngine {
-//	private static final Logger LOG = Logger.getLogger(ModularSqrtsEngine.class);
-//	private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(ModularSqrtsEngine.class);
+	private static final boolean DEBUG = false;
 	
 	private ModularSqrt31 modularSqrtEngine = new ModularSqrt31();
 
@@ -39,7 +39,7 @@ public class ModularSqrtsEngine {
 	 * @param primesArray
 	 * @param primeBaseSize
 	 * @param kN
-	 * @return
+	 * @return the array of modular sqrt's t with t^2 == kN (mod p) for all p of the prime base
 	 */
 	public int[] computeTArray(int[] primesArray, int primeBaseSize, BigInteger kN) {
 		UnsignedBigInt kN_UBI = new UnsignedBigInt(kN);

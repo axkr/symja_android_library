@@ -17,7 +17,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.modular.JacobiSymbol;
 import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
@@ -36,8 +36,8 @@ import de.tilman_neumann.jml.sequence.SquarefreeSequence63;
  */
 public class KnuthSchroeppel {
 	
-//	private static final Logger LOG = Logger.getLogger(KnuthSchroeppel.class);
-//	private final static boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(KnuthSchroeppel.class);
+	private final static boolean DEBUG = false;
 	
 	// The original "benalty" for kN == 1 (mod 8) is 2*ln(2), according to Pomerance.
 	// Here it is adjusted for using polynomial Q2(x)=(2*a*x + b)^2 - kN when kN == 1 (mod 8).
@@ -136,7 +136,7 @@ public class KnuthSchroeppel {
 			// are we done with all k ?
 			if (kIndexList.isEmpty()) break;
 		} // end for (odd primes)
-//		if (DEBUG) LOG.debug("kCount = " + kCount + ": required number of primes = " + (i+1));
+		if (DEBUG) LOG.debug("kCount = " + kCount + ": required number of primes = " + (i+1));
 		// Analysis: required number of primes < 6*kCount
 		
 		// now we have evaluated f(k, N) for all k. pick the one that maximizes f [Pomerance 1985]

@@ -13,7 +13,7 @@
  */
 package de.tilman_neumann.jml.factor.base;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * A reused buffer to store small factors temporarily during trial division.
@@ -22,7 +22,7 @@ package de.tilman_neumann.jml.factor.base;
 // XXX: add() methods might profit from binary search and arraycopy()
 public class SortedIntegerArray {
 	@SuppressWarnings("unused")
-//	private static final Logger LOG = Logger.getLogger(SortedIntegerArray.class);
+	private static final Logger LOG = Logger.getLogger(SortedIntegerArray.class);
 	
 	private int[] factors;
 	private short[] exponents;
@@ -43,7 +43,6 @@ public class SortedIntegerArray {
 	/**
 	 * Add a factor.
 	 * @param factor
-	 * @param power
 	 */
 	public void add(int factor) {
 		//LOG.debug("add small factor " + factor);

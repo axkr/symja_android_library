@@ -15,14 +15,14 @@ package de.tilman_neumann.jml.factor.base.matrixSolver;
 
 import java.util.ArrayList;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * A congruence used by the matrix solver where the elements have been mapped to integer indices.
  * @author Tilman Neumann
  */
 public class MatrixRow {
-//	private static final Logger LOG = Logger.getLogger(MatrixRow.class);
+	private static final Logger LOG = Logger.getLogger(MatrixRow.class);
 
 	/** The indices of the factors with odd exponent in this row. */
 	private IndexSet columnIndices;
@@ -66,7 +66,7 @@ public class MatrixRow {
 	
 	@Override
 	public int hashCode() {
-//		LOG.debug("hashCode()", new Throwable()); // never used
+		LOG.debug("hashCode()", new Throwable()); // never used
 		return this.rowIndexHistory.hashCode();
 	}
 	

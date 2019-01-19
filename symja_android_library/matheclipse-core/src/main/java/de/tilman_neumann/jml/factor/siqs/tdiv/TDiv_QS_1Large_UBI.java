@@ -180,10 +180,10 @@ public class TDiv_QS_1Large_UBI implements TDiv_QS {
 			int p = powers[pIndex];
 			int xModP = xAbs<p ? x : x % p;
 			if (xModP<0) xModP += p; // make remainder non-negative for negative x
-			if (DEBUG) {
-				if (xModP<0) LOG.debug("x=" + x + ", p=" + p + " -> x % p = " + xModP + ", x1 = " + x1Array[pIndex] + ", x2 = " + x2Array[pIndex]);
+//			if (DEBUG) {
+//				if (xModP<0) LOG.debug("x=" + x + ", p=" + p + " -> x % p = " + xModP + ", x1 = " + x1Array[pIndex] + ", x2 = " + x2Array[pIndex]);
 //				assertTrue(0<=xModP && xModP<p);
-			}
+//			}
 			if (xModP==x1Array[pIndex] || xModP==x2Array[pIndex]) {
 				pass2Primes[pass2Count] = primes[pIndex];
 				pass2Exponents[pass2Count] = exponents[pIndex];
@@ -204,12 +204,12 @@ public class TDiv_QS_1Large_UBI implements TDiv_QS {
 				Q_rest_UBI = quotient_UBI;
 				quotient_UBI = tmp;
 				smallFactors.add(pass2Primes[pass2Index], (short)pass2Exponents[pass2Index]);
-				if (DEBUG) {
-					BigInteger pBig = BigInteger.valueOf(p);
-					BigInteger[] div = Q_rest.divideAndRemainder(pBig);
+//				if (DEBUG) {
+//					BigInteger pBig = BigInteger.valueOf(p);
+//					BigInteger[] div = Q_rest.divideAndRemainder(pBig);
 //					assertEquals(div[1].intValue(), rem);
-					Q_rest = div[0];
-				}
+//					Q_rest = div[0];
+//				}
 			}
 		}
 		if (Q_rest_UBI.isOne()) return new Smooth_Perfect(A, smallFactors);

@@ -83,38 +83,7 @@ public class TDiv63Inverse extends FactorAlgorithmBase {
 		return BigInteger.valueOf(findSingleFactor(N.longValue()));
 	}
 	
-	public int findSingleFactor_v1(long N) {
-		int i=0;
-		int Nbits = 64-Long.numberOfLeadingZeros(N);
-		int pMinBits = Nbits - 53 + DISCRIMINATOR_BITS;
-		if (pMinBits>0) {
-			// for the smallest primes we must do standard trial division
-			int pMin = 1<<pMinBits;
-			for ( ; primes[i]<pMin; i++) {
-				if (N%primes[i]==0) {
-					return primes[i];
-				}
-			}
-		}
-		
-		// Now the primes are big enough to apply trial division by inverses
-		for (; primes[i]<pLimit; i++) {
-			//LOG.debug("N=" + N + ": Test p=" + primes[i]);
-			double prod = N*reciprocals[i];
-			if (((long)(prod+DISCRIMINATOR)) - ((long)(prod-DISCRIMINATOR)) == 1) {
-				// prod is very near to an integer
-				if (N%primes[i]==0) {
-					//LOG.debug("Found factor " + primes[i]);
-					return primes[i];
-				}
-			}
-		}
-
-		// nothing found up to pLimit
-		return 0;
-	}
-	
-	public int findSingleFactor/*_v2*/(long N) {
+	public int findSingleFactor(long N) {
 		int i=0;
 		int Nbits = 64-Long.numberOfLeadingZeros(N);
 		int pMinBits = Nbits - 53 + DISCRIMINATOR_BITS;
@@ -171,7 +140,8 @@ public class TDiv63Inverse extends FactorAlgorithmBase {
 //				44579405690563L,
 //				72795445155721L,
 //				155209074377713L,
-//				293851765137859L // = 11736397 * 25037647; can not be found with factorLimit=2^21
+//				293851765137859L, // = 11736397 * 25037647; can not be found with factorLimit=2^21
+//				67915439339311L // = 2061599 * 32943089, ok
 //		};
 //		for (long N : specialN) {
 //			long tdivFactor = tdivInv.findSingleFactor(N);

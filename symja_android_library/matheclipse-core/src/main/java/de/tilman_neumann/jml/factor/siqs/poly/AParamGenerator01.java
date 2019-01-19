@@ -23,7 +23,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.BinarySearch;
 
@@ -58,8 +58,8 @@ import de.tilman_neumann.jml.BinarySearch;
  * @author Tilman Neumann
  */
 public class AParamGenerator01 implements AParamGenerator {
-//	private static final Logger LOG = Logger.getLogger(AParamGenerator01.class);
-//	private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(AParamGenerator01.class);
+	private static final boolean DEBUG = false;
 
 	/** multiplier k: we must avoid q_l that divide k */
 	private int k;
@@ -175,9 +175,9 @@ public class AParamGenerator01 implements AParamGenerator {
 			// introduce some randomness
 			int randomOffset = rng.nextInt(indexVariance<<1) - indexVariance; // randomOffset = -indexVariance..+indexVariance -> centered at 0
 			int wanted_qIndex = indexCentre + randomOffset;
-//			if (DEBUG) LOG.debug("indexCentre=" + indexCentre + ", indexVariance=" + indexVariance + " -> randomOffset=" + randomOffset + ", wanted_qIndex=" + wanted_qIndex);
+			if (DEBUG) LOG.debug("indexCentre=" + indexCentre + ", indexVariance=" + indexVariance + " -> randomOffset=" + randomOffset + ", wanted_qIndex=" + wanted_qIndex);
 			// find the first "free" index around wanted_qIndex
-			Integer qIndex = findFreeQIndex(qIndexSet, wanted_qIndex);
+			int qIndex = findFreeQIndex(qIndexSet, wanted_qIndex);
 			// now we have found qIndex :)
 			qIndexSet.add(qIndex);
 			int q = primesArray[qIndex];
@@ -247,19 +247,19 @@ public class AParamGenerator01 implements AParamGenerator {
 			this.computeAParameter();
 			if (!previousAParams.contains(a)) break; // a new "a"
 			duplicateACount++;
-//			if (DEBUG) LOG.warn("New a-parameter #" + aParamHistory.size() + ": a=" + a + " has already been used! #(duplicate a in a row) = " + duplicateACount);
+			if (DEBUG) LOG.warn("New a-parameter #" + aParamHistory.size() + ": a=" + a + " has already been used! #(duplicate a in a row) = " + duplicateACount);
 		}
-//		if (DEBUG) {
-//			// Analyze disjunctness with previous a-parameters
-//			int[] disjunctQCountCounts = new int[qCount]; // entry 0: #aParams with 1 disjunct q, entry 1: #aParams with 2 disjunct q, ...
-//			for (int[] oldQArray : aParamHistory.values()) {
-//				int sharedQCount = getSharedQCount(oldQArray, qArray);
-//				int disjunctQCount = qCount - sharedQCount;
-//				disjunctQCountCounts[disjunctQCount-1]++;
-//			}
-//			LOG.debug("Disjunct qCount counts = " + Arrays.toString(disjunctQCountCounts));
-//			// Result: The q's are typically quite disjunct. At 200 bit we get something like [0, 0, 0, 0, 1, 4, 15, 78, 87].
-//		}
+		if (DEBUG) {
+			// Analyze disjunctness with previous a-parameters
+			int[] disjunctQCountCounts = new int[qCount]; // entry 0: #aParams with 1 disjunct q, entry 1: #aParams with 2 disjunct q, ...
+			for (int[] oldQArray : aParamHistory.values()) {
+				int sharedQCount = getSharedQCount(oldQArray, qArray);
+				int disjunctQCount = qCount - sharedQCount;
+				disjunctQCountCounts[disjunctQCount-1]++;
+			}
+			LOG.debug("Disjunct qCount counts = " + Arrays.toString(disjunctQCountCounts));
+			// Result: The q's are typically quite disjunct. At 200 bit we get something like [0, 0, 0, 0, 1, 4, 15, 78, 87].
+		}
 		aParamHistory.put(a, qArray);
 		return a;
 	}

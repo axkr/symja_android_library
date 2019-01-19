@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.TreeSet;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.factor.siqs.data.BaseArrays;
 import de.tilman_neumann.jml.factor.siqs.data.SolutionArrays;
@@ -28,8 +28,8 @@ import de.tilman_neumann.jml.factor.siqs.data.SolutionArrays;
  * @author Tilman Neumann
  */
 public class BaseFilter_qk implements BaseFilter {
-//	private static final Logger LOG = Logger.getLogger(BaseFilter_qk.class);
-//	private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(BaseFilter_qk.class);
+	private static final boolean DEBUG = false;
 
 	@Override
 	public Result filter(SolutionArrays solutionArrays, BaseArrays baseArrays, int mergedBaseSize, int[] qArray, int qCount, int k) {
@@ -82,13 +82,13 @@ public class BaseFilter_qk implements BaseFilter {
 			System.arraycopy(baseArrays.tArray, srcPos, filteredTArray, destPos, length);
 			System.arraycopy(baseArrays.logPArray, srcPos, filteredLogPArray, destPos, length);
 		}
-//		if (DEBUG) {
-//			// qArray[] entries must be sorted bottom up
-//			LOG.debug("qArray = " + Arrays.toString(qArray));
-//			LOG.debug("mergedPrimes = " + Arrays.toString(mergedPrimes));
-//			LOG.debug("mergedPowers = " + Arrays.toString(baseArrays.powers));
-//			LOG.debug("filteredPrimes = " + Arrays.toString(filteredPrimes));
-//		}
+		if (DEBUG) {
+			// qArray[] entries must be sorted bottom up
+			LOG.debug("qArray = " + Arrays.toString(qArray));
+			LOG.debug("mergedPrimes = " + Arrays.toString(mergedPrimes));
+			LOG.debug("mergedPowers = " + Arrays.toString(baseArrays.powers));
+			LOG.debug("filteredPrimes = " + Arrays.toString(filteredPrimes));
+		}
 		
 		// convert Set to int[]
 		int[] filteredOutBaseElements = new int[filteredOutBaseElementsSet.size()];

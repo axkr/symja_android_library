@@ -27,6 +27,7 @@ public class AQPairFactory {
 	 * @param A
 	 * @param smallFactors small factors of Q
 	 * @param bigFactors large factors of Q
+	 * @return a new AQPair created from the given arguments
 	 */
 	public AQPair create(BigInteger A, SortedIntegerArray smallFactors, SortedLongArray bigFactors) {
 		int distinctBigFactorsCount = bigFactors.size();

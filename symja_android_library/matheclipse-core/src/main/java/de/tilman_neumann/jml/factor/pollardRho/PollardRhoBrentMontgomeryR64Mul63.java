@@ -13,7 +13,6 @@
  */
 package de.tilman_neumann.jml.factor.pollardRho;
 
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

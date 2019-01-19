@@ -17,7 +17,7 @@ import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Set;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.factor.FactorException;
 import de.tilman_neumann.jml.factor.base.congruence.AQPair;
@@ -33,7 +33,7 @@ import de.tilman_neumann.jml.factor.base.congruence.Congruence;
  */
 public class SmoothSolverController implements NullVectorProcessor {
 	@SuppressWarnings("unused")
-//	private static final Logger LOG = Logger.getLogger(SmoothSolverController.class);
+	private static final Logger LOG = Logger.getLogger(SmoothSolverController.class);
 
 	private MatrixSolver matrixSolver;
 

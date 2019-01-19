@@ -16,7 +16,7 @@ package de.tilman_neumann.jml.factor.siqs.sieve;
 import java.util.ArrayList;
 import java.util.List;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.BinarySearch;
 import de.tilman_neumann.jml.factor.base.UnsafeUtil;
@@ -32,8 +32,8 @@ import sun.misc.Unsafe;
  * @author Tilman Neumann
  */
 public class Sieve03gU implements Sieve {
-//	private static final Logger LOG = Logger.getLogger(Sieve03gU.class);
-//	private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(Sieve03gU.class);
+	private static final boolean DEBUG = false;
 	private static final Unsafe UNSAFE = UnsafeUtil.getUnsafe();
 
 	// prime base
@@ -79,7 +79,7 @@ public class Sieve03gU implements Sieve {
 		this.sieveArraySize = sieveParams.sieveArraySize;
 		int sieveAllocationSize = Math.max(pMax+1, 2*sieveArraySize);
 		sieveArrayAddress = UnsafeUtil.allocateMemory(sieveAllocationSize);
-//		if (DEBUG) LOG.debug("pMax = " + pMax + ", sieveArraySize = " + sieveArraySize + " --> sieveAllocationSize = " + sieveAllocationSize);
+		if (DEBUG) LOG.debug("pMax = " + pMax + ", sieveArraySize = " + sieveArraySize + " --> sieveAllocationSize = " + sieveAllocationSize);
 
 		// profiling
 		this.profile = profile;
@@ -95,7 +95,7 @@ public class Sieve03gU implements Sieve {
 		this.p1Index = binarySearch.getInsertPosition(powers, primeBaseSize, sieveArraySize);
 		this.p2Index = binarySearch.getInsertPosition(powers, p1Index, (sieveArraySize+1)/2);
 		this.p3Index = binarySearch.getInsertPosition(powers, p2Index, (sieveArraySize+2)/3);
-//		if (DEBUG) LOG.debug("primeBaseSize=" + primeBaseSize + ", p1Index=" + p1Index + ", p2Index=" + p2Index + ", p3Index=" + p3Index);
+		if (DEBUG) LOG.debug("primeBaseSize=" + primeBaseSize + ", p1Index=" + p1Index + ", p2Index=" + p2Index + ", p3Index=" + p3Index);
 		
 		// The minimum number of x-solutions in the sieve array is floor(sieveArraySize/p).
 		// E.g. for p=3, sieveArraySize=8 there are solutions (0, 3, 6), (1, 4, 7), (2, 5)  <-- 8 is not in sieve array anymore
@@ -105,7 +105,7 @@ public class Sieve03gU implements Sieve {
 			try { // entering a try-catch-block has no time cost
 				minSolutionCounts_m3[i] = sieveArraySize/powers[i] - 3;
 			} catch (Exception e) {
-//				LOG.error("p3Index = " + p3Index + ", pMinIndex = " + pMinIndex + ", i = " + i + ", primesArray[i] = " + powers[i]);
+				LOG.error("p3Index = " + p3Index + ", pMinIndex = " + pMinIndex + ", i = " + i + ", primesArray[i] = " + powers[i]);
 				throw e;
 			}
 			//LOG.debug("p=" + primesArray[i] + ": minSolutionCount = " + minSolutionCounts_m3[i]);

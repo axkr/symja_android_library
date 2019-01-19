@@ -15,15 +15,15 @@ package de.tilman_neumann.jml.factor.siqs.sieve;
 
 import java.math.BigInteger;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * Basic parameters for the quadratic sieve.
  * @author Tilman Neumann
  */
 public class SieveParams {
-//	private static final Logger LOG = Logger.getLogger(SieveParams.class);
-//	private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(SieveParams.class);
+	private static final boolean DEBUG = false;
 
 	/** the index of the smallest prime used for sieving. */
 	public int pMinIndex;
@@ -56,10 +56,10 @@ public class SieveParams {
 		// convert the sieve bound from natural logarithm to the actual logBase:
 		float lnLogBase = (float) (minLnPSum / wantedMinLogPSum); // normalizer to be used as a divisor for p_i values
 		int minLogPSum = (int) (minLnPSum / lnLogBase); // floor, result should be ~wantedMinLogPSum
-//		if (DEBUG) {
-//			float logBase = (float) Math.exp(lnLogBase);
-//			LOG.debug("logBase=" + logBase + ", lnLogBase=" + lnLogBase + ", minLnPSum = " + minLnPSum + ", minLogPSum = " + minLogPSum);
-//		}
+		if (DEBUG) {
+			float logBase = (float) Math.exp(lnLogBase);
+			LOG.debug("logBase=" + logBase + ", lnLogBase=" + lnLogBase + ", minLnPSum = " + minLnPSum + ", minLogPSum = " + minLogPSum);
+		}
 		initializer = computeInitializerValue(primeBase, pMinIndex, minLogPSum, lnLogBase);
 		lnPMultiplier = 1.0F/lnLogBase; // normalizer to be used as a multiplier for p_i values (faster than a divisor)
 	}
@@ -83,7 +83,7 @@ public class SieveParams {
 		double logSmallPSum = lnSmallPSum / lnLogBase;
 		// compute initializerValue, rounded
 		byte initializerValue = (byte) (128 - minLogPSum + logSmallPSum + 0.5);
-//		if (DEBUG) LOG.debug("initializerValue = " + initializerValue);
+		if (DEBUG) LOG.debug("initializerValue = " + initializerValue);
 		return initializerValue;
 	}
 

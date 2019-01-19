@@ -52,6 +52,7 @@ public interface TDiv_QS {
 	
 	/**
 	 * Set a new b-parameter.
+	 * @param b
 	 */
 	void setBParameter(BigInteger b);
 	

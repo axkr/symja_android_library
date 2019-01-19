@@ -20,15 +20,14 @@ import java.math.BigInteger;
 import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.factor.siqs.ModularSqrtsEngine;
-//import de.tilman_neumann.util.ConfigUtil;
 
 /**
  * A test of the b-computation numbers reported by [Contini, p.10]
  * @author Tilman Neumann
  */
 public class BParamTest {
-//	private static final Logger LOG = Logger.getLogger(BParamTest.class);
-//	private static final boolean DEBUG = true;
+	private static final Logger LOG = Logger.getLogger(BParamTest.class);
+	private static final boolean DEBUG = true;
 	
 	private BigInteger a = BigInteger.valueOf(385); // 5*7*11
 	private BigInteger b;

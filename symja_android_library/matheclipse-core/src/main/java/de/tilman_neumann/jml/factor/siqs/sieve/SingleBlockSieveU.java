@@ -16,7 +16,7 @@ package de.tilman_neumann.jml.factor.siqs.sieve;
 import java.util.ArrayList;
 import java.util.List;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.BinarySearch;
 import de.tilman_neumann.jml.factor.base.UnsafeUtil;
@@ -30,8 +30,8 @@ import sun.misc.Unsafe;
  * @author Tilman Neumann
  */
 public class SingleBlockSieveU implements Sieve {
-//	private static final Logger LOG = Logger.getLogger(SingleBlockSieveU.class);
-//	private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(SingleBlockSieveU.class);
+	private static final boolean DEBUG = false;
 	private static final Unsafe UNSAFE = UnsafeUtil.getUnsafe();
 
 	// prime base

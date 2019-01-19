@@ -13,10 +13,11 @@
  */
 package de.tilman_neumann.jml.factor.siqs.sieve;
 
+
 import java.util.ArrayList;
 import java.util.List;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.BinarySearch;
 import de.tilman_neumann.jml.factor.siqs.data.SolutionArrays;
@@ -28,8 +29,8 @@ import de.tilman_neumann.util.Timer;
  * @author Tilman Neumann
  */
 public class DoubleBlockSieve implements Sieve {
-//	private static final Logger LOG = Logger.getLogger(DoubleBlockSieve.class);
-//	private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(DoubleBlockSieve.class);
+	private static final boolean DEBUG = false;
 
 	// prime base
 	private int filteredBaseSize;
@@ -159,10 +160,10 @@ public class DoubleBlockSieve implements Sieve {
 		int r_l = binarySearch.getInsertPosition(powers, filteredBaseSize, effectiveB2);
 		int r_m = binarySearch.getInsertPosition(powers, r_l, geometricMeanOfB1AndB2);
 		int r_s = binarySearch.getInsertPosition(powers, r_m, effectiveB1);
-//		if (DEBUG) {
-//			LOG.debug("db: sieveArraySize=" + sieveArraySize + ", effectiveB2=" + effectiveB2 + ", k2=" + k2 + ", effectiveB1=" + effectiveB1 + ", k1=" + k1);
-//			LOG.debug("db: r_s=" + r_s + ", r_m = " + r_m + ", r_l = " + r_l);
-//		}
+		if (DEBUG) {
+			LOG.debug("db: sieveArraySize=" + sieveArraySize + ", effectiveB2=" + effectiveB2 + ", k2=" + k2 + ", effectiveB1=" + effectiveB1 + ", k1=" + k1);
+			LOG.debug("db: r_s=" + r_s + ", r_m = " + r_m + ", r_l = " + r_l);
+		}
 
 		List<Integer> smoothXList = new ArrayList<Integer>();
 		for (int b2=0; b2<k2; b2++) { // bottom-up order is required because in each block, the data for the next block is adjusted

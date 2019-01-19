@@ -17,9 +17,12 @@ import java.math.BigInteger;
 
 import de.tilman_neumann.jml.gcd.Gcd63;
 import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
+import de.tilman_neumann.jml.factor.tdiv.TDiv63Inverse;
 
 /**
- * Simple implementation of Lehmans factor algorithm following https://programmingpraxis.com/2017/08/22/lehmans-factoring-algorithm/.
+ * Simple implementation of Lehmans factor algorithm,
+ * following https://programmingpraxis.com/2017/08/22/lehmans-factoring-algorithm/,
+ * using fast inverse trial division.
  * 
  * This implementation is pretty slow, but useful for illustrating the basic algorithm.
  * It may fail for N>=47 bit where 4*k*N produces a long-overflow.
@@ -28,10 +31,23 @@ import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
  */
 public class Lehman_Simple extends FactorAlgorithmBase {
 	private final Gcd63 gcdEngine = new Gcd63();
-	
+
+	private boolean doTDivFirst;
+
+	private static final TDiv63Inverse tdiv = new TDiv63Inverse(1<<21);
+
+	/**
+	 * Full constructor.
+	 * @param doTDivFirst If true then trial division is done before the Lehman loop.
+	 * This is recommended if arguments N are known to have factors < cbrt(N) frequently.
+	 */
+	public Lehman_Simple(boolean doTDivFirst) {
+		this.doTDivFirst = doTDivFirst;
+	}
+
 	@Override
 	public String getName() {
-		return "Lehman_Simple";
+		return "Lehman_Simple(" + doTDivFirst + ")";
 	}
 
 	@Override
@@ -40,14 +56,14 @@ public class Lehman_Simple extends FactorAlgorithmBase {
 	}
 	
 	public long findSingleFactor(long N) {
-		// 1. Check via trial division whether N has a nontrivial divisor d <= cbrt(N), and if so, return d.
 		int cbrt = (int) Math.ceil(Math.cbrt(N));
-		int i=0, p;
-		while ((p = SMALL_PRIMES.getPrime(i++)) <= cbrt) {
-			if (N%p==0) return p;
-		}
-		
-		// 2. Main loop
+
+		// do trial division before Lehman loop ?
+		long factor;
+		tdiv.setTestLimit(cbrt);
+		if (doTDivFirst && (factor = tdiv.findSingleFactor(N))>1) return factor;
+
+		// Lehman loop
 		double sixthRoot = Math.pow(N, 1/6.0); // double precision is required for stability
 		for (int k=1; k <= cbrt; k++) {
 			long fourKN = k*N<<2; // long overflow possible for N>=47 bit
@@ -63,7 +79,10 @@ public class Lehman_Simple extends FactorAlgorithmBase {
 				}
 			}
 	    }
-		
+
+		// do trial division after Lehman loop ?
+		if (!doTDivFirst && (factor = tdiv.findSingleFactor(N))>1) return factor;
+
 		return 0; // Fail
 	}
 }

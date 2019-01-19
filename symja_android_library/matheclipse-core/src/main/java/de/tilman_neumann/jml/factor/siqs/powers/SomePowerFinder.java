@@ -17,6 +17,8 @@ import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.TreeSet;
 
+import org.apache.log4j.Logger;
+
 import de.tilman_neumann.jml.factor.siqs.data.BaseArrays;
 import de.tilman_neumann.jml.factor.siqs.sieve.SieveParams;
 
@@ -25,8 +27,8 @@ import de.tilman_neumann.jml.factor.siqs.sieve.SieveParams;
  * @author Tilman Neumann
  */
 abstract public class SomePowerFinder implements PowerFinder {
-//	private static final Logger LOG = Logger.getLogger(SomePowerFinder.class);
-//	private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(SomePowerFinder.class);
+	private static final boolean DEBUG = false;
 
 	@Override
 	public BaseArrays addPowers(BigInteger kN, int[] primes, int[] tArray, byte[] logPArray, int primeBaseSize, SieveParams sieveParams) {

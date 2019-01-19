@@ -13,9 +13,10 @@
  */
 package de.tilman_neumann.jml.factor.siqs;
 
-import static de.tilman_neumann.jml.base.BigIntConstants.I_0;
-import static de.tilman_neumann.jml.base.BigIntConstants.I_8;
+import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,19 +34,25 @@ import de.tilman_neumann.jml.factor.base.congruence.Smooth;
 import de.tilman_neumann.jml.factor.base.matrixSolver.FactorTest;
 import de.tilman_neumann.jml.factor.base.matrixSolver.FactorTest01;
 import de.tilman_neumann.jml.factor.base.matrixSolver.MatrixSolver;
+import de.tilman_neumann.jml.factor.base.matrixSolver.MatrixSolver02_BlockLanczos;
 import de.tilman_neumann.jml.factor.base.matrixSolver.SmoothSolverController;
 import de.tilman_neumann.jml.factor.siqs.data.BaseArrays;
 import de.tilman_neumann.jml.factor.siqs.poly.AParamGenerator;
 import de.tilman_neumann.jml.factor.siqs.poly.AParamGenerator01;
 import de.tilman_neumann.jml.factor.siqs.poly.PolyGenerator;
 import de.tilman_neumann.jml.factor.siqs.poly.PolyReport;
+import de.tilman_neumann.jml.factor.siqs.poly.SIQSPolyGenerator;
+import de.tilman_neumann.jml.factor.siqs.powers.NoPowerFinder;
 import de.tilman_neumann.jml.factor.siqs.powers.PowerFinder;
 import de.tilman_neumann.jml.factor.siqs.sieve.Sieve;
+import de.tilman_neumann.jml.factor.siqs.sieve.Sieve03gU;
 import de.tilman_neumann.jml.factor.siqs.sieve.SieveParams;
 import de.tilman_neumann.jml.factor.siqs.sieve.SieveReport;
 import de.tilman_neumann.jml.factor.siqs.tdiv.TDivReport;
 import de.tilman_neumann.jml.factor.siqs.tdiv.TDiv_QS;
+import de.tilman_neumann.jml.factor.siqs.tdiv.TDiv_QS_nLarge_UBI;
 import de.tilman_neumann.jml.powers.PurePowerTest;
+import de.tilman_neumann.util.SortedMultiset;
 import de.tilman_neumann.util.TimeUtil;
 import de.tilman_neumann.util.Timer;
 
@@ -372,7 +379,10 @@ public class SIQS extends FactorAlgorithmBase {
 	// Standalone test --------------------------------------------------------------------------------------------------
 
 	/**
-	 * Test numbers:
+	 * Stand-alone test.
+	 * @param args ignored
+	 * 
+	 * Some test numbers:
 	 * 11111111111111111111111111
 	 * 5679148659138759837165981543
 	 * 11111111111111111111111111155555555555111111111111111

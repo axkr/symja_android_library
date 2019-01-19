@@ -41,15 +41,19 @@ abstract public class PSIQSThreadBase extends Thread {
 
 	/**
 	 * Standard constructor.
-	 * @param k
-	 * @param N
-	 * @param kN
+	 * @param k multiplier
+	 * @param N factor argument
+	 * @param kN k*N
 	 * @param d the d-parameter of quadratic polynomials Q(x) = (d*a*x + b)^2 - kN
 	 * @param sieveParams basic sieve parameters
 	 * @param baseArrays primes, power arrays after adding powers
-	 * @param apg
-	 * @param aqPairBuffer
+	 * @param apg a-parameter generator
+	 * @param aqPairBuffer buffer for newly found relations; collects results from several sieve threads
+	 * @param polyGenerator the SIQS polynomial generator
+	 * @param sieve the sieve engine
+	 * @param tdiv the trial division engine
 	 * @param threadIndex
+	 * @param profile
 	 */
 	public PSIQSThreadBase(
 			int k, BigInteger N, BigInteger kN, int d, SieveParams sieveParams, BaseArrays baseArrays, AParamGenerator apg, AQPairBuffer aqPairBuffer,

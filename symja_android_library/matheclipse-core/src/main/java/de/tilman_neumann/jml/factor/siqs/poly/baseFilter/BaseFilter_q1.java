@@ -16,7 +16,7 @@ package de.tilman_neumann.jml.factor.siqs.poly.baseFilter;
 import java.util.Arrays;
 import java.util.HashSet;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.factor.siqs.data.BaseArrays;
 import de.tilman_neumann.jml.factor.siqs.data.SolutionArrays;
@@ -26,8 +26,8 @@ import de.tilman_neumann.jml.factor.siqs.data.SolutionArrays;
  * @author Tilman Neumann
  */
 public class BaseFilter_q1 implements BaseFilter {
-//	private static final Logger LOG = Logger.getLogger(BaseFilter_q1.class);
-//	private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(BaseFilter_q1.class);
+	private static final boolean DEBUG = false;
 
 	@Override
 	public Result filter(SolutionArrays solutionArrays, BaseArrays baseArrays, int mergedBaseSize, int[] qArray, int qCount, int k) {

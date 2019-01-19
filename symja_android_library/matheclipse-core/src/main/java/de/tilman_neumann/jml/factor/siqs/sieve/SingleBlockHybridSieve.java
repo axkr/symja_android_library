@@ -16,7 +16,7 @@ package de.tilman_neumann.jml.factor.siqs.sieve;
 import java.util.ArrayList;
 import java.util.List;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.BinarySearch;
 import de.tilman_neumann.jml.factor.siqs.data.SolutionArrays;
@@ -32,8 +32,8 @@ import de.tilman_neumann.util.Timer;
  * @author Tilman Neumann
  */
 public class SingleBlockHybridSieve implements Sieve {
-//	private static final Logger LOG = Logger.getLogger(SingleBlockHybridSieve.class);
-//	private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(SingleBlockHybridSieve.class);
+	private static final boolean DEBUG = false;
 
 	// prime base
 	private int primeBaseSize;
@@ -113,7 +113,7 @@ public class SingleBlockHybridSieve implements Sieve {
 		// For primes p[i], i<p1Index, we need p[i]+sieveArraySize = 2*sieveArraySize entries.
 		int sieveAllocationSize = Math.max(pMax+1, 2*sieveArraySize);
 		sieveArray = new byte[sieveAllocationSize];
-//		if (DEBUG) LOG.debug("pMax = " + pMax + ", sieveArraySize = " + sieveArraySize + " --> sieveAllocationSize = " + sieveAllocationSize);
+		if (DEBUG) LOG.debug("pMax = " + pMax + ", sieveArraySize = " + sieveArraySize + " --> sieveAllocationSize = " + sieveAllocationSize);
 		sieveBlock = new byte[effectiveBlockSize];
 
 		// profiling
@@ -132,7 +132,7 @@ public class SingleBlockHybridSieve implements Sieve {
 		p3Index = binarySearch.getInsertPosition(powers, p2Index, (sieveArraySize+2)/3);
 		// find the index of the largest prime < p3 fitting into a block
 		r_s = binarySearch.getInsertPosition(powers, p3Index, effectiveBlockSize);
-//		if (DEBUG) LOG.debug("primeBaseSize=" + primeBaseSize + ", p1Index=" + p1Index + ", p2Index=" + p2Index + ", p3Index=" + p3Index + ", r_s = " + r_s);
+		if (DEBUG) LOG.debug("primeBaseSize=" + primeBaseSize + ", p1Index=" + p1Index + ", p2Index=" + p2Index + ", p3Index=" + p3Index + ", r_s = " + r_s);
 
 		xPosArray = new int[p3Index];
 		xNegArray = new int[p3Index];

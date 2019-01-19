@@ -16,7 +16,7 @@ package de.tilman_neumann.jml.factor.base.matrixSolver;
 import java.math.BigInteger;
 import java.util.Set;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.factor.FactorException;
 import de.tilman_neumann.jml.factor.base.congruence.AQPair;
@@ -24,14 +24,15 @@ import de.tilman_neumann.util.SortedMultiset;
 import de.tilman_neumann.util.SortedMultiset_BottomUp;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
+
 /**
  * Factor test using modular reduction (mod N).
  * 
  * @author Tilman Neumann
  */
 public class FactorTest01 implements FactorTest {
-//	private static final Logger LOG = Logger.getLogger(FactorTest01.class);
-//	private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(FactorTest01.class);
+	private static final boolean DEBUG = false;
 
 	private BigInteger N;
 	
@@ -72,7 +73,7 @@ public class FactorTest01 implements FactorTest {
 			int exp = totalQ_factors.get(factor);
 			if ((exp&1) == 1) {
 				// non-square "solution" -> early exit
-//				if (DEBUG) LOG.debug("factor = " + factor + ", exp = " + exp);
+				if (DEBUG) LOG.debug("factor = " + factor + ", exp = " + exp);
 				return;
 			}
 			int halfExp = exp>>1;
@@ -84,24 +85,24 @@ public class FactorTest01 implements FactorTest {
 			AProd = AProd.multiply(aqPair.getA()).mod(N); // reduction (mod N) is much faster
 		}
 		
-//		if (DEBUG) {
-//			long compositionDuration = System.currentTimeMillis() - t0;
-//			LOG.debug("N = " + N + ": testForFactor(): A=" + getAString(aqPairs) + "=" + AProd + ", Q=" + getQString(aqPairs) + ", sqrt(Q)=" + totalQSqrt);
-//			// verify congruence A^2 == Q (mod N)
-//			BigInteger totalQ = totalQSqrt.multiply(totalQSqrt);
-//			BigInteger div[] = AProd.pow(2).subtract(totalQ).divideAndRemainder(N);
+		if (DEBUG) {
+			long compositionDuration = System.currentTimeMillis() - t0;
+			LOG.debug("N = " + N + ": testForFactor(): A=" + getAString(aqPairs) + "=" + AProd + ", Q=" + getQString(aqPairs) + ", sqrt(Q)=" + totalQSqrt);
+			// verify congruence A^2 == Q (mod N)
+			BigInteger totalQ = totalQSqrt.multiply(totalQSqrt);
+			BigInteger div[] = AProd.pow(2).subtract(totalQ).divideAndRemainder(N);
 //			assertEquals(I_0, div[1]);
-//			LOG.debug("A^2-Q = " + div[0] + " * N");
-//			LOG.debug("A^2 % N = " + AProd.pow(2).mod(N) + ", Q = " + totalQ);
-//		}
+			LOG.debug("A^2-Q = " + div[0] + " * N");
+			LOG.debug("A^2 % N = " + AProd.pow(2).mod(N) + ", Q = " + totalQ);
+		}
 
 		// test A-sqrt(Q)
 		BigInteger minusGcd = AProd.subtract(totalQSqrt).gcd(N);
-//		if (DEBUG) LOG.debug("minusGcd = " + minusGcd);
+		if (DEBUG) LOG.debug("minusGcd = " + minusGcd);
 		if (minusGcd.compareTo(I_1)>0 && minusGcd.compareTo(N)<0) throw new FactorException(minusGcd); // factor!
 		// test A+sqrt(Q)
 		BigInteger plusGcd = AProd.add(totalQSqrt).gcd(N);
-//		if (DEBUG) LOG.debug("plusGcd = " + plusGcd);
+		if (DEBUG) LOG.debug("plusGcd = " + plusGcd);
 		if (plusGcd.compareTo(I_1)>0 && plusGcd.compareTo(N)<0) throw new FactorException(plusGcd); // factor!
 		// no factor exception -> no success
 	}

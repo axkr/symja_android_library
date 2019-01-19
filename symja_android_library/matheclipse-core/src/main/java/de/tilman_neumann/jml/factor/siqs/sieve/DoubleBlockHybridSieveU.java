@@ -16,7 +16,7 @@ package de.tilman_neumann.jml.factor.siqs.sieve;
 import java.util.ArrayList;
 import java.util.List;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.BinarySearch;
 import de.tilman_neumann.jml.factor.base.UnsafeUtil;
@@ -34,8 +34,8 @@ import sun.misc.Unsafe;
  * @author Tilman Neumann
  */
 public class DoubleBlockHybridSieveU implements Sieve {
-//	private static final Logger LOG = Logger.getLogger(DoubleBlockHybridSieveU.class);
-//	private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(DoubleBlockHybridSieveU.class);
+	private static final boolean DEBUG = false;
 	private static final Unsafe UNSAFE = UnsafeUtil.getUnsafe();
 
 	// prime base
@@ -122,7 +122,7 @@ public class DoubleBlockHybridSieveU implements Sieve {
 		// For primes p[i], i<p1Index, we need p[i]+sieveArraySize = 2*sieveArraySize entries.
 		int sieveAllocationSize = Math.max(pMax+1, 2*sieveArraySize);
 		sieveArrayAddress = UnsafeUtil.allocateMemory(sieveAllocationSize);
-//		if (DEBUG) LOG.debug("pMax = " + pMax + ", sieveArraySize = " + sieveArraySize + " --> sieveAllocationSize = " + sieveAllocationSize);
+		if (DEBUG) LOG.debug("pMax = " + pMax + ", sieveArraySize = " + sieveArraySize + " --> sieveAllocationSize = " + sieveAllocationSize);
 		sieveBlockAddress = UnsafeUtil.allocateMemory(effectiveB2);
 
 		// profiling
@@ -139,12 +139,12 @@ public class DoubleBlockHybridSieveU implements Sieve {
 		p1Index = binarySearch.getInsertPosition(powers, solutionCount, sieveArraySize);
 		p2Index = binarySearch.getInsertPosition(powers, p1Index, (sieveArraySize+1)/2);
 		p3Index = binarySearch.getInsertPosition(powers, p2Index, (sieveArraySize+2)/3);
-//		if (DEBUG) LOG.debug("primeBaseSize=" + solutionCount + ", p1Index=" + p1Index + ", p2Index=" + p2Index + ", p3Index=" + p3Index);
+		if (DEBUG) LOG.debug("primeBaseSize=" + solutionCount + ", p1Index=" + p1Index + ", p2Index=" + p2Index + ", p3Index=" + p3Index);
 
 		r_l = binarySearch.getInsertPosition(powers, p3Index, effectiveB2);
 		r_m = binarySearch.getInsertPosition(powers, r_l, geometricMeanOfB1AndB2);
 		r_s = binarySearch.getInsertPosition(powers, r_m, effectiveB1);
-//		if (DEBUG) LOG.debug("db: r_s = " + r_s + ", r_m = " + r_m + ", r_l = " + r_l);
+		if (DEBUG) LOG.debug("db: r_s = " + r_s + ", r_m = " + r_m + ", r_l = " + r_l);
 
 		xPosArray = new long[p3Index];
 		xNegArray = new long[p3Index];

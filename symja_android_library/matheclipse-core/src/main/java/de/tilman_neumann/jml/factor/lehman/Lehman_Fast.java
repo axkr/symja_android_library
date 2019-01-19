@@ -18,13 +18,19 @@ import java.math.BigInteger;
 import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
-import de.tilman_neumann.jml.factor.tdiv.TDiv63Inverse;
 import de.tilman_neumann.jml.gcd.Gcd63;
+import de.tilman_neumann.jml.factor.tdiv.TDiv63Inverse;
 
 /**
  * Fast implementation of Lehman's factor algorithm.
- * Works flawlessly for N up to 60 bit.
- *
+ * Works flawlessly for N up to 60 bit.<br><br>
+ * 
+ * It is quite surprising that the exact sqrt test of <code>test = a^2 - 4kN</code> works for N >= 45 bit.
+ * At that size, both a^2 and 4kN start to overflow Long.MAX_VALUE.
+ * But the error - comparing correct results vs. long results - is just the same for both a^2 and 4kN
+ * (and a multiple of 2^64).
+ *  Thus <code>test</code> is correct and <code>b</code> is correct, too. <code>a</code> is correct anyway.
+ * 
  * @authors Tilman Neumann + Thilo Harich
  */
 public class Lehman_Fast extends FactorAlgorithmBase {
@@ -52,21 +58,21 @@ public class Lehman_Fast extends FactorAlgorithmBase {
 	private long N;
 	private long fourN;
 	private double sqrt4N;
-	private boolean doLehmanBeforeTDiv;
+	private boolean doTDivFirst;
 	private final Gcd63 gcdEngine = new Gcd63();
 
 	/**
 	 * Full constructor.
-	 * @param doLehmanBeforeTDiv If true than the Lehman loop is executed before trial division.
-	 * This is recommended for "hard" numbers (semiprimes having factors of similar size).
+	 * @param doTDivFirst If true then trial division is done before the Lehman loop.
+	 * This is recommended if arguments N are known to have factors < cbrt(N) frequently.
 	 */
-	public Lehman_Fast(boolean doLehmanBeforeTDiv) {
-		this.doLehmanBeforeTDiv = doLehmanBeforeTDiv;
+	public Lehman_Fast(boolean doTDivFirst) {
+		this.doTDivFirst = doTDivFirst;
 	}
 
 	@Override
 	public String getName() {
-		return "Lehman_Fast(" + doLehmanBeforeTDiv + ")";
+		return "Lehman_Fast(" + doTDivFirst + ")";
 	}
 
 	@Override
@@ -78,9 +84,10 @@ public class Lehman_Fast extends FactorAlgorithmBase {
 		this.N = N;
 		final int cbrt = (int) Math.cbrt(N);
 
+		// do trial division before Lehman loop ?
 		long factor;
 		tdiv.setTestLimit(cbrt);
-		if (!doLehmanBeforeTDiv && (factor = tdiv.findSingleFactor(N))>1) return factor;
+		if (doTDivFirst && (factor = tdiv.findSingleFactor(N))>1) return factor;
 
 		fourN = N<<2;
 		sqrt4N = Math.sqrt(fourN);
@@ -129,6 +136,8 @@ public class Lehman_Fast extends FactorAlgorithmBase {
 			final long fourkN = k * fourN;
 			for (long a=aLimit; a >= aStart; a-=aStep) {
 				final long test = a*a - fourkN;
+				// Here test<0 is possible because of double to long cast errors in the 'a'-computation.
+				// But then b = Math.sqrt(test) gives 0 (sic!) => 0*0 != test => no errors.
 				final long b = (long) Math.sqrt(test);
 				if (b*b == test) {
 					return gcdEngine.gcd(a+b, N);
@@ -145,11 +154,11 @@ public class Lehman_Fast extends FactorAlgorithmBase {
 		if ((factor = lehmanEven(kTwoA + 4, kLimit)) > 1) return factor;
 		if ((factor = lehmanOdd(kTwoA + 5, kLimit)) > 1) return factor;
 
-		// Check via trial division whether N has a nontrivial divisor d <= cbrt(N).
-		if (doLehmanBeforeTDiv && (factor = tdiv.findSingleFactor(N))>1) return factor;
+		// do trial division after Lehman loop ?
+		if (!doTDivFirst && (factor = tdiv.findSingleFactor(N))>1) return factor;
 		
-		// If sqrt(4kN) is very near to an exact integer then the fast ceil() operations may have failed.
-		// It seems that it is enough to fix either the k%6=1 or the k%6=5 loop.
+		// If sqrt(4kN) is very near to an exact integer then the fast ceil() in the 'aStart'-computation
+		// may have failed. Then we need a "correction loop":
 		for (int k=kTwoA + 1; k <= kLimit; k++) {
 			long a = (long) (sqrt4N * sqrt[k] + ROUND_UP_DOUBLE) - 1;
 			long test = a*a - k*fourN;

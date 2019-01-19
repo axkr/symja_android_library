@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.factor.FactorException;
 import de.tilman_neumann.jml.factor.base.matrixSolver.FactorTest;
@@ -34,8 +34,8 @@ import de.tilman_neumann.util.SortedMultiset_BottomUp;
  * @author Tilman Neumann
  */
 public class CongruenceCollector {
-//	private static final Logger LOG = Logger.getLogger(CongruenceCollector.class);
-//	private static final boolean DEBUG = false; // used for logs and asserts
+	private static final Logger LOG = Logger.getLogger(CongruenceCollector.class);
+	private static final boolean DEBUG = false; // used for logs and asserts
 	
 	public static final boolean ANALYZE_BIG_FACTOR_SIZES = false;
 	public static final boolean ANALYZE_Q_SIGNS = false;
@@ -101,12 +101,12 @@ public class CongruenceCollector {
 	 * @throws FactorException
 	 */
 	public boolean add(AQPair aqPair) throws FactorException {
-//		if (DEBUG) LOG.debug("new aqPair = " + aqPair);
+		if (DEBUG) LOG.debug("new aqPair = " + aqPair);
 		if (aqPair instanceof Smooth) {
 			Smooth smooth = (Smooth) aqPair;
 			boolean added = addSmooth(smooth);
 			if (added) {
-//				if (DEBUG) LOG.debug("Found new smooth congruence " + smooth + " --> #smooth = " + smoothCongruences.size() + ", #partials = " + getPartialCongruenceCount());
+				if (DEBUG) LOG.debug("Found new smooth congruence " + smooth + " --> #smooth = " + smoothCongruences.size() + ", #partials = " + getPartialCongruenceCount());
 				perfectSmoothCount++;
 				return true;
 			}
@@ -122,7 +122,7 @@ public class CongruenceCollector {
 		// Check if the partial helps to assemble a smooth congruence:
 		// First collect all partials that are somehow related to the new partial via big factors:
 		HashSet<Partial> relatedPartials = findRelatedPartials(oddExpBigFactors); // oddExpBigFactors is not modified in the method
-//		if (DEBUG) LOG.debug("#relatedPartials = " + relatedPartials.size());
+		if (DEBUG) LOG.debug("#relatedPartials = " + relatedPartials.size());
 		if (relatedPartials.size()>0) {
 			// We found some "old" partials that share at least one big factor with the new partial.
 			// Since relatedPartials is a set, we can not get duplicate AQ-pairs.
@@ -144,7 +144,7 @@ public class CongruenceCollector {
 								if (largeFactorCount > maxLargeFactorCount) maxLargeFactorCount = largeFactorCount;
 							}
 							smoothFromPartialCounts[maxLargeFactorCount-1]++;
-//							if (DEBUG) LOG.debug("Found smooth congruence from " + maxLargeFactorCount + "-partial --> #smooth = " + smoothCongruences.size() + ", #partials = " + getPartialCongruenceCount());
+							if (DEBUG) LOG.debug("Found smooth congruence from " + maxLargeFactorCount + "-partial --> #smooth = " + smoothCongruences.size() + ", #partials = " + getPartialCongruenceCount());
 						}
 						addedCount++; // increment counter if foundSmooth was really added
 					}
@@ -168,7 +168,7 @@ public class CongruenceCollector {
 		// We were not able to construct a smooth congruence with the new partial, so just keep the partial:
 		addPartial(partial, oddExpBigFactors);
 		totalPartialCount++;
-//		if (DEBUG) LOG.debug("Found new partial relation " + aqPair + " --> #smooth = " + smoothCongruences.size() + ", #partials = " + totalPartialCount);
+		if (DEBUG) LOG.debug("Found new partial relation " + aqPair + " --> #smooth = " + smoothCongruences.size() + ", #partials = " + totalPartialCount);
 		if (analyzeBigFactorCounts) partialCounts[oddExpBigFactorsCount-1]++;
 		return false; // no smooth added
 	}
@@ -188,7 +188,7 @@ public class CongruenceCollector {
 			currentFactors.add(oddExpBigFactor);
 		}
 		while (currentFactors.size()>0) {
-//			if (DEBUG) LOG.debug("currentFactors = " + currentFactors);
+			if (DEBUG) LOG.debug("currentFactors = " + currentFactors);
 			ArrayList<Integer> nextFactors = new ArrayList<Integer>(); // no Set required, ArrayList has faster iteration
 			for (Integer oddExpBigFactor : currentFactors) {
 				bigFactorsAlreadyUsed.add(oddExpBigFactor);

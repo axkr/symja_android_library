@@ -16,7 +16,7 @@ package de.tilman_neumann.jml.factor.base;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import sun.misc.Unsafe;
 
@@ -26,8 +26,8 @@ import sun.misc.Unsafe;
  * @author Tilman Neumann
  */
 public class UnsafeUtil {
-//	private static final Logger LOG = Logger.getLogger(UnsafeUtil.class);
-//	private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(UnsafeUtil.class);
+	private static final boolean DEBUG = false;
 	
 	private static final Unsafe UNSAFE = fetchUnsafe();
 	
@@ -41,18 +41,18 @@ public class UnsafeUtil {
 	// native memory already allocated in byte
 	private static long TOTAL_ALLOCATED = 0;
 	
-	static {
-		// register shutdown hook that checks release of all memory on normal shutdown
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-		    public void run() {
+//	static {
+//		// register shutdown hook that checks release of all memory on normal shutdown
+//		Runtime.getRuntime().addShutdownHook(new Thread() {
+//		    public void run() {
 //				if(TOTAL_ALLOCATED == 0) {
 //					LOG.info("All native memory has been released.");
 //				} else {
 //					LOG.error(TOTAL_ALLOCATED + " bytes of native memory have not been released !");
 //				}
-		    }
-		});
-	}
+//		    }
+//		});
+//	}
 	
 	private UnsafeUtil() {
 		// static class
@@ -64,7 +64,7 @@ public class UnsafeUtil {
 			f.setAccessible(true);
 			return (Unsafe) f.get(null);
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-//			LOG.error("Could not get unsafe: " + e, e);
+			LOG.error("Could not get unsafe: " + e, e);
 			return null;
 		}
 	}
@@ -83,9 +83,9 @@ public class UnsafeUtil {
 	 */
 	public synchronized static long allocateMemory(long size) {
 		long allocationSize = size + ADDITIONAL_SIZE;
-//		if (DEBUG) LOG.debug("Allocate " + allocationSize + " bytes >>>");
+		if (DEBUG) LOG.debug("Allocate " + allocationSize + " bytes >>>");
 		long address = UNSAFE.allocateMemory(allocationSize);
-//		if (DEBUG) LOG.debug("<<< Allocation of " + allocationSize + " bytes complete.");
+		if (DEBUG) LOG.debug("<<< Allocation of " + allocationSize + " bytes complete.");
 		ADDRESS_2_SIZE_MAP.put(address, allocationSize);
 		TOTAL_ALLOCATED += allocationSize;
 		return address;
@@ -100,9 +100,9 @@ public class UnsafeUtil {
 		if (allocationSize == null) {
 			throw new IllegalStateException("Attempt to release native memory block that is not allocated! address = " + address);
 		}
-//		if (DEBUG) LOG.debug("Release " + allocationSize + " bytes >>>");
+		if (DEBUG) LOG.debug("Release " + allocationSize + " bytes >>>");
 		UNSAFE.freeMemory(address);
-//		if (DEBUG) LOG.debug("<<< Release of " + allocationSize + " bytes complete.");
+		if (DEBUG) LOG.debug("<<< Release of " + allocationSize + " bytes complete.");
 		ADDRESS_2_SIZE_MAP.remove(address);
 		TOTAL_ALLOCATED -= allocationSize;
 	}

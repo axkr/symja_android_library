@@ -208,10 +208,10 @@ public class TDiv_QS_nLarge_UBI implements TDiv_QS {
 			int p = powers[pIndex];
 			int xModP = xAbs<p ? x : x % p;
 			if (xModP<0) xModP += p; // make remainder non-negative for negative x
-			if (DEBUG) {
-				if (xModP<0) LOG.debug("x=" + x + ", p=" + p + " -> x % p = " + xModP + ", x1 = " + x1Array[pIndex] + ", x2 = " + x2Array[pIndex]);
+//			if (DEBUG) {
+//				if (xModP<0) LOG.debug("x=" + x + ", p=" + p + " -> x % p = " + xModP + ", x1 = " + x1Array[pIndex] + ", x2 = " + x2Array[pIndex]);
 //				assertTrue(0<=xModP && xModP<p);
-			}
+//			}
 			if (xModP==x1Array[pIndex] || xModP==x2Array[pIndex]) {
 				pass2Primes[pass2Count] = primes[pIndex];
 				pass2Exponents[pass2Count] = exponents[pIndex];
@@ -232,12 +232,12 @@ public class TDiv_QS_nLarge_UBI implements TDiv_QS {
 				Q_rest_UBI = quotient_UBI;
 				quotient_UBI = tmp;
 				smallFactors.add(pass2Primes[pass2Index], (short)pass2Exponents[pass2Index]);
-				if (DEBUG) {
-					BigInteger pBig = BigInteger.valueOf(p);
-					BigInteger[] div = Q_rest.divideAndRemainder(pBig);
+//				if (DEBUG) {
+//					BigInteger pBig = BigInteger.valueOf(p);
+//					BigInteger[] div = Q_rest.divideAndRemainder(pBig);
 //					assertEquals(div[1].intValue(), rem);
-					Q_rest = div[0];
-				}
+//					Q_rest = div[0];
+//				}
 			}
 		}
 		if (Q_rest_UBI.isOne()) return new Smooth_Perfect(A, smallFactors);
@@ -257,10 +257,10 @@ public class TDiv_QS_nLarge_UBI implements TDiv_QS {
 	private boolean factor_recurrent(BigInteger Q_rest) {
 		if (Q_rest.compareTo(pMaxSquare)<0) {
 			// we divided Q_rest by all primes <= pMax and we have Q_rest < pMax^2 -> it must be prime
-			if (DEBUG) {
-				LOG.debug("factor_recurrent(): Q_rest = " + Q_rest + " < pMax^2 -> Q_rest is prime");
+//			if (DEBUG) {
+//				LOG.debug("factor_recurrent(): Q_rest = " + Q_rest + " < pMax^2 -> Q_rest is prime");
 //				assertTrue(bpsw.isProbablePrime(Q_rest));
-			}
+//			}
 			if (Q_rest.bitLength() > 31) return false;
 			bigFactors.add(Q_rest.intValue());
 			return true;
@@ -278,13 +278,13 @@ public class TDiv_QS_nLarge_UBI implements TDiv_QS {
 		BigInteger factor1;
 		int Q_rest_bits = Q_rest.bitLength();
 		if (Q_rest_bits<48) {
-			if (DEBUG) LOG.debug("test(): pMax^2 = " + pMaxSquare + ", Q_rest = " + Q_rest + " (" + Q_rest_bits + " bits) not prime -> use lehman");
+			if (DEBUG) LOG.debug("factor_recurrent(): pMax^2 = " + pMaxSquare + ", Q_rest = " + Q_rest + " (" + Q_rest_bits + " bits) not prime -> use lehman");
 			factor1 = lehman.findSingleFactor(Q_rest);
 		} else if (Q_rest_bits<58) {
-			if (DEBUG) LOG.debug("test(): pMax^2 = " + pMaxSquare + ", Q_rest = " + Q_rest + " (" + Q_rest_bits + " bits) not prime -> use pollardRhoR64Mul63");
+			if (DEBUG) LOG.debug("factor_recurrent(): pMax^2 = " + pMaxSquare + ", Q_rest = " + Q_rest + " (" + Q_rest_bits + " bits) not prime -> use pollardRhoR64Mul63");
 			factor1 = pollardRhoR64Mul63.findSingleFactor(Q_rest);
 		} else if (Q_rest_bits<63) {
-			if (DEBUG) LOG.debug("test(): pMax^2 = " + pMaxSquare + ", Q_rest = " + Q_rest + " (" + Q_rest_bits + " bits) not prime -> use pollardRho64");
+			if (DEBUG) LOG.debug("factor_recurrent(): pMax^2 = " + pMaxSquare + ", Q_rest = " + Q_rest + " (" + Q_rest_bits + " bits) not prime -> use pollardRho64");
 			factor1 = pollardRho64.findSingleFactor(Q_rest);
 		} else {
 			if (DEBUG) LOG.debug("factor_recurrent(): pMax^2 = " + pMaxSquare + ", Q_rest = " + Q_rest + " (" + Q_rest_bits + " bits) not prime -> use qsInternal");

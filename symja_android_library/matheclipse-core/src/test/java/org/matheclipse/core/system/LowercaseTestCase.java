@@ -3907,7 +3907,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testFactorInteger() {
-
+		// 147 seconds on notebook
+		// check("FactorInteger(10^79+5923)", "");
+		// 32 seconds on notebook
+		// check("FactorInteger(10^71-1)", "");
 		if (Config.EXPENSIVE_JUNIT_TESTS) {
 
 			check("FactorInteger(101546450935661953908994991437690198927080333663460351836152986526126114727314353555755712261904130976988029406423152881932996637460315302992884162068350429 )", //
@@ -4003,6 +4006,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{361909,1},{428862157,1}}");
 		check("FactorInteger(293851765137859)", //
 				"{{11736397,1},{25037647,1}}");
+		// 67915439339311L == 2061599 * 32943089 
+		check("FactorInteger(67915439339311)", //
+				"{{2061599,1},{32943089,1}}");
 
 		// 5640012124823L,
 		check("FactorInteger(5640012124823)", //
