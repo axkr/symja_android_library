@@ -277,7 +277,7 @@ public class OutputFormFactory {
 		}
 	}
 
-	private static String convertApfloat(Apfloat num) {
+	public static String convertApfloat(Apfloat num) {
 		String str = num.toString();
 		int index = str.indexOf('e');
 		if (index > 0) {

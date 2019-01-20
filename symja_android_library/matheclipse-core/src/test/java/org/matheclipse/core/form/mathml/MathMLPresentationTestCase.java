@@ -65,13 +65,15 @@ public class MathMLPresentationTestCase extends TestCase {
 		check(F.Slot1, "<mi>#1</mi>");
 		check(F.SlotSequence(2), "<mi>##2</mi>");
 		Apcomplex c = new Apcomplex("(-0.5,-4.0)");
-		check(F.complexNum(c), "<mrow><mn>-5e-1</mn><mo>-</mo><mn>4</mn><mo>&#0183;</mo><mi>&#x2148;</mi></mrow>");
-		check(F.complexNum(-0.5, -4.0),
+		check(F.complexNum(c), //
+				"<mrow><mrow><mn>-5</mn><mo>&#0183;</mo><msup><mn>10</mn><mn>-1</mn></msup></mrow><mo>-</mo><mn>4</mn><mo>&#0183;</mo><mi>&#x2148;</mi></mrow>");
+		check(F.complexNum(-0.5, -4.0), //
 				"<mrow><mn>-0.5</mn><mo>-</mo><mn>4.0</mn><mo>&#0183;</mo><mi>&#x2148;</mi></mrow>");
-		check(F.pattern(F.x), "<mtext>x_</mtext><mspace linebreak='newline' />");
-		check(F.complexNum(0.5, 4.0),
+		check(F.pattern(F.x), //
+				"<mtext>x_</mtext><mspace linebreak='newline' />");
+		check(F.complexNum(0.5, 4.0), //
 				"<mrow><mn>0.5</mn><mo>+</mo><mn>4.0</mn><mo>&#0183;</mo><mi>&#x2148;</mi></mrow>");
-		check(F.complexNum(-0.5, -4.0),
+		check(F.complexNum(-0.5, -4.0), //
 				"<mrow><mn>-0.5</mn><mo>-</mo><mn>4.0</mn><mo>&#0183;</mo><mi>&#x2148;</mi></mrow>");
 
 		check("0.5-0.75*x",

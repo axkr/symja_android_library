@@ -1048,18 +1048,15 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
 			tag(buf, "mo", "(");
 		}
-		tagStart(buf, "mn");
-		buf.append(String.valueOf(realPart));
-		tagEnd(buf, "mn");
+		convertApfloat(buf, realPart);
 		if (isImNegative) {
 			tag(buf, "mo", "-");
 			imaginaryPart = imaginaryPart.negate();
 		} else {
 			tag(buf, "mo", "+");
 		}
-		tagStart(buf, "mn");
-		buf.append(String.valueOf(imaginaryPart));
-		tagEnd(buf, "mn");
+
+		convertApfloat(buf, imaginaryPart);
 
 		// <!ENTITY InvisibleTimes "&#x2062;" >
 		// <!ENTITY CenterDot "&#0183;" >
@@ -1073,7 +1070,38 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	}
 
 	public void convertApfloat(final StringBuilder buf, final Apfloat realPart, final int precedence) {
-		buf.append(String.valueOf(realPart));
+		convertApfloat(buf, realPart);
+	}
+
+	public void convertApfloat(StringBuilder buf, Apfloat num) {
+		String str = num.toString();
+		int index = str.indexOf('e');
+		if (index > 0) {
+			String result = str.substring(0, index);
+			String exponentStr = str.substring(index + 1);
+			
+			tagStart(buf, "mrow");
+			tagStart(buf, "mn");
+			buf.append(result);
+			tagEnd(buf, "mn");
+			tagStart(buf, "mo");
+			// dot operator for multiplication
+			buf.append("&#0183;");
+			tagEnd(buf, "mo");
+			tagStart(buf, "msup");
+			tagStart(buf, "mn");
+			buf.append("10");
+			tagEnd(buf, "mn");
+			tagStart(buf, "mn");
+			buf.append(exponentStr);
+			tagEnd(buf, "mn");
+			tagEnd(buf, "msup");
+			tagEnd(buf, "mrow");
+			return;
+		}
+		tagStart(buf, "mn");
+		buf.append(str);
+		tagEnd(buf, "mn");
 	}
 
 	public void convertArgs(final StringBuilder buf, IExpr head, final IAST function) {
