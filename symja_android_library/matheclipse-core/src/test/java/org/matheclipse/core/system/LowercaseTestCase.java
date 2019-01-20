@@ -1469,8 +1469,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "2+Floor(k),2-n-ns+nt+Floor(k)},1))/(Binomial(nt,n)*(-1+n-Floor(k))!*(-1+ns-Floor(k))!),\n"
 						+ "0<=k&&n+ns-nt<=k&&k<n&&k<ns},{1,k>=n||k>=ns}},0)");
 		check("CDF(StudentTDistribution(n),k)", //
-				"Piecewise({{BetaRegularized(n/(k^2+n),n/2,1/2)/2,k<=0}},1/2*(1+BetaRegularized(k^\n" + 
-				"2/(n+k^2),1/2,n/2)))");
+				"Piecewise({{BetaRegularized(n/(k^2+n),n/2,1/2)/2,k<=0}},1/2*(1+BetaRegularized(k^\n"
+						+ "2/(n+k^2),1/2,n/2)))");
 		check("CDF(WeibullDistribution(n, m),k)", //
 				"Piecewise({{1-1/E^(k/m)^n,k>0}},0)");
 		check("CDF(BernoulliDistribution(4),k)", //
@@ -3975,6 +3975,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 					"{{149,1},{329569479697,1},{903019357561501,1}}");
 
 		}
+
+		check("FactorInteger(341550071728321)", //
+				"{{10670053,1},{32010157,1}}");
+		check("FactorInteger(20568266680457)", //
+				"{{19,1},{101,5},{103,1}}");
+		check("FactorInteger(1524157877488187891)", //
+				"{{9091,1},{167655689966801,1}}");
+
 		// Java "long" numbers
 		check("FactorInteger(621887327)", //
 				"{{853,1},{729059,1}}");
@@ -4932,8 +4940,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Piecewise({{1/100000*(35875+48829*Cos(2*Pi*x)+14128*Cos(4*Pi*x)+1168*Cos(6*Pi*x)),\n"
 						+ "-1/2<=x<=1/2}},0)");
 		check("FunctionExpand(BlackmanNuttallWindow(x))", //
-				"Piecewise({{1/10000000*(3635819+4891775*Cos(2*Pi*x)+1365995*Cos(4*Pi*x)+106411*Cos(\n" + 
-				"6*Pi*x)),-1/2<=x<=1/2}},0)");
+				"Piecewise({{1/10000000*(3635819+4891775*Cos(2*Pi*x)+1365995*Cos(4*Pi*x)+106411*Cos(\n"
+						+ "6*Pi*x)),-1/2<=x<=1/2}},0)");
 		check("FunctionExpand(BlackmanWindow(x))", //
 				"Piecewise({{1/50*(21+25*Cos(2*Pi*x)+4*Cos(4*Pi*x)),-1/2<=x<=1/2}},0)");
 		check("FunctionExpand(DirichletWindow(x))", //
@@ -5027,7 +5035,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"E^(-x)-1/E^y");
 		check("GammaRegularized(-42,x,y)", //
 				"0");
-//		check("GammaRegularized(a,z1,z2)", "GammaRegularized(a,z1)-GammaRegularized(a,z2)");
+		// check("GammaRegularized(a,z1,z2)", "GammaRegularized(a,z1)-GammaRegularized(a,z2)");
 
 		check("GammaRegularized(1/2, z)", "Erfc(Sqrt(z))");
 		check("GammaRegularized(-4, z)", "0");
@@ -8860,8 +8868,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PDF(GumbelDistribution(n, m),k)", //
 				"1/(E^(E^((k-n)/m)-(k-n)/m)*m)");
 		check("PDF(HypergeometricDistribution(n, ns, nt),k)", //
-				"Piecewise({{(Binomial(ns,k)*Binomial(-ns+nt,-k+n))/Binomial(nt,n),0<=k<=n&&n+ns-nt<=k<=n&&\n" + 
-				"0<=k<=ns&&n+ns-nt<=k<=ns}},0)");
+				"Piecewise({{(Binomial(ns,k)*Binomial(-ns+nt,-k+n))/Binomial(nt,n),0<=k<=n&&n+ns-nt<=k<=n&&\n"
+						+ "0<=k<=ns&&n+ns-nt<=k<=ns}},0)");
 		check("PDF(StudentTDistribution(n),k)", //
 				"(n/(k^2+n))^(1/2*(1+n))/(Sqrt(n)*Beta(n/2,1/2))");
 		check("PDF(WeibullDistribution(n, m),k)", //
