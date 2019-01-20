@@ -3665,6 +3665,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("ExpandAll(( ( ( X3 - X1$c) * ( ( X1 + ( ( X4$c * X3 ) + X5$c))
 		// + X3$b)) * ( ( X3 - X1 ) + ( X3$c + X5 ))))",
 		// "");
+		
+		
+		// github #111 - loss of precision if you expand the expression
+		check("t=ExpandAll((Pi*E-9)^13)", //
+				"-2541865828329+3671583974253*E*Pi-2447722649502*E^2*Pi^2+997220338686*E^3*Pi^3\n" + 
+				"-277005649635*E^4*Pi^4+55401129927*E^5*Pi^5-8207574804*E^6*Pi^6+911952756*E^7*Pi^\n" + 
+				"7-75996063*E^8*Pi^8+4691115*E^9*Pi^9-208494*E^10*Pi^10+6318*E^11*Pi^11-117*E^12*Pi^\n" + 
+				"12+E^13*Pi^13");
+		check("N(t)", //
+				"0.5");
+		check("N(t, 30)", //
+				"-4.16018744e-5");
+		check("N((Pi*E-9)^13)", //
+				"-0.0000416019");
+		
 		check("ExpandAll(( ( ( X3 - X1_c) * ( ( X1 + ( ( X4_c * X3 ) + X5_c)) + X3_b)) * ( ( X3 - X1 ) + ( X3_c + X5 ))))",
 				"-x1^2*x3+x1*x3^2+x1*x3*x5+x1^2*x1_c-x1*x3*x1_c-x1*x5*x1_c-x1*x3*x3_b+x3^2*x3_b+x3*x5*x3_b+x1*x1_c*x3_b-x3*x1_c*x3_b-x5*x1_c*x3_b+x1*x3*x3_c-x1*x1_c*x3_c+x3*x3_b*x3_c-x1_c*x3_b*x3_c-x1*x3^\n"
 						+ "2*x4_c+x3^3*x4_c+x3^2*x5*x4_c+x1*x3*x1_c*x4_c-x3^2*x1_c*x4_c-x3*x5*x1_c*x4_c+x3^\n"
