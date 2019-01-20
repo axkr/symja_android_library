@@ -8068,6 +8068,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testNonNegative() {
+		check("NonNegative(-Infinity)", "False");
+		
 		check("NonNegative(Infinity)", "True");
 		check("NonNegative(-Infinity)", "False");
 		check("NonNegative(-9/4)", "False");
