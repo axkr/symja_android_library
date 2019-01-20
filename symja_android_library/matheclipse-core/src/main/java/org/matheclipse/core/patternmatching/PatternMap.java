@@ -306,7 +306,7 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 		if (fSymbolsOrPatternValues != null) {
 			// all patterns have values assigned?
 			final int length = fSymbolsOrPatternValues.length;
-			for (int i = 0; i < length; i++) {
+			for (int i = length-1; i >= 0; i--) {
 				if (fSymbolsOrPatternValues[i] == null) {
 					return false;
 				}
