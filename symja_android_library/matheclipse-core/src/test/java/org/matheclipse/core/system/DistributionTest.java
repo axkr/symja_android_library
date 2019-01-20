@@ -27,7 +27,7 @@ public class DistributionTest extends AbstractTestCase {
 		check("CDF(ChiSquareDistribution(v), k)", //
 				"Piecewise({{GammaRegularized(v/2,0,k/2),k>0}},0)");
 		check("PDF(ChiSquareDistribution(v), k)", //
-				"Piecewise({{1/(2^(v/2)*E^(k/2)*Gamma(v/2)*k^(1-v/2)),k>0}},0)");
+				"Piecewise({{1/(2^(v/2)*E^(k/2)*k^(1-v/2)*Gamma(v/2)),k>0}},0)");
 		// TODO
 //		check("Skewness(ChiSquareDistribution(v))", //
 //				"");
@@ -53,9 +53,9 @@ public class DistributionTest extends AbstractTestCase {
 				"Piecewise({{m/(-2+m),m>2}},Indeterminate)");
 		// TODO distribute Sqrt over Piecewise
 		check("StandardDeviation(FRatioDistribution(n, m))", //
-				"Sqrt(Piecewise({{(2*m^2*(-2+m+n))/((-4+m)*(-2+m)^2*n),m>4}},Indeterminate))");
+				"Sqrt(Piecewise({{(2*m^2*(-2+m+n))/((2-m)^2*(-4+m)*n),m>4}},Indeterminate))");
 		check("Variance(FRatioDistribution(n, m))", //
-				"Piecewise({{(2*m^2*(-2+m+n))/((-4+m)*(-2+m)^2*n),m>4}},Indeterminate)");
+				"Piecewise({{(2*m^2*(-2+m+n))/((2-m)^2*(-4+m)*n),m>4}},Indeterminate)");
 		check("CDF(FRatioDistribution(n, m))", //
 				"Piecewise({{BetaRegularized((n*#1)/(m+n*#1),n/2,m/2),#1>0}},0)&");
 		check("PDF(FRatioDistribution(n, m))", //

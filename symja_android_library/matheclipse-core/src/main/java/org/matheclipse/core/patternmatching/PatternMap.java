@@ -107,7 +107,7 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 		result.fSymbolsOrPatternValues = new IExpr[length];
 		// System.arraycopy(fPatternValuesArray, 0, result.fPatternValuesArray, 0, length);
 
-		// don't clone the fSymbolsArray which is final after the #determinePatterns() method
+		// don't clone the fSymbolsOrPattern array which is final after the #determinePatterns() method
 		result.fPriority = fPriority;
 		result.fSymbolsOrPattern = fSymbolsOrPattern;
 		result.fRuleWithoutPattern = fRuleWithoutPattern;

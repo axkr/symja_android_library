@@ -1830,7 +1830,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			IExpr x0 = seriesData.getX0();
 			int nMin = seriesData.getNMin();
 			int nMax = seriesData.getNMax();
-			int power = seriesData.getPower();
+			int power = seriesData.order();
 			int den = seriesData.getDenominator();
 			boolean call = NO_PLUS_CALL;
 			INumber exp;
@@ -1838,7 +1838,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			boolean first = true;
 			IExpr x0Term = x.subtract(x0);
 			for (int i = nMin; i < nMax; i++) {
-				IExpr coefficient = seriesData.coeff(i);
+				IExpr coefficient = seriesData.coefficient(i);
 				if (!coefficient.isZero()) {
 					if (!first) {
 						tag(tempBuffer, "mo", "+");

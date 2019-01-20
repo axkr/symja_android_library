@@ -96,6 +96,8 @@ public class SeriesTest extends AbstractTestCase {
 	}
 
 	public void testSeries() {
+		check("Series(Sin(x),{x,2,3})", //
+				"Sin(2)+Cos(2)*(-2+x)-1/2*Sin(2)*(2-x)^2-1/6*Cos(2)*(-2+x)^3+O(-2+x)^4");
 		// TODO handle positive>/negative fractional powers
 		// check("Series(Sqrt(Sin(x)), {x, 0, 10})", //
 		// "");
@@ -359,8 +361,20 @@ public class SeriesTest extends AbstractTestCase {
 	}
 
 	public void testSeriesCoefficient() {
+		// check("SeriesCoefficient(x^x,{x,2,4})", //
+		// " ");
+
+		check("SeriesCoefficient(Series(Exp(Sin(x)), {x, 0, 10}), 8)", //
+				"31/5760");
+		check("SeriesCoefficient(Series(Exp(Sin(x)), {x, 0, 10}), 10)", //
+				"-2951/3628800");
+		check("SeriesCoefficient(Series(Exp(Sin(x)), {x, 0, 10}), 11)", //
+				"Indeterminate");
+		check("SeriesCoefficient(a^x, {x, 0, n})", "Piecewise({{Log(a)^n/n!,n>=0}},0)");
+		check("SeriesCoefficient(E^x, {x, 0, n})", "Piecewise({{1/n!,n>=0}},0)");
 		check("SeriesCoefficient(x^x,{x,0,4})", //
 				"Log(x)^4/24");
+
 		check("SeriesCoefficient(ChebyshevT(k, x), {x, 0, 2})", //
 				"((-1+k)*(1+k)*k^2*Pi)/(8*Gamma(1/2*(3-k))*Gamma(1/2*(3+k)))");
 		check("SeriesCoefficient(d+4*x^e+7*x^f,{x, a, n})", //
@@ -404,12 +418,12 @@ public class SeriesTest extends AbstractTestCase {
 		check("SeriesCoefficient(Cos(x),{x,0,n})", //
 				"Piecewise({{((1+(-1)^n)*I^n)/(2*n!),n>=0}},0)");
 		check("SeriesCoefficient(Cos(x),{x,Pi/2,n})", //
-				"Piecewise({{((-1)*I*(-1+(-1)^n)*I^n)/(2*n!),n>=0}},0)");
+				"Piecewise({{(-I*1/2*(-1+(-1)^n)*I^n)/n!,n>=0}},0)");
 		check("SeriesCoefficient(Cos(x),{x,f+g,n})", //
 				"Piecewise({{Cos(f+g+1/2*n*Pi)/n!,n>=0}},0)");
 
 		check("SeriesCoefficient(Sin(x),{x,0,n})", //
-				"Piecewise({{(I*(-1+(-1)^n)*I^n)/(2*n!),n>=0}},0)");
+				"Piecewise({{(I*1/2*(-1+(-1)^n)*I^n)/n!,n>=0}},0)");
 		check("SeriesCoefficient(Sin(x),{x,Pi/2,n})", //
 				"Piecewise({{((1+(-1)^n)*I^n)/(2*n!),n>=0}},0)");
 		check("SeriesCoefficient(Sin(x),{x,f+g,n})", //
@@ -424,13 +438,11 @@ public class SeriesTest extends AbstractTestCase {
 				"Piecewise({{-1,n==-1},{((-1+(-1)^n)*2^n*I^(1+n)*BernoulliB(1+n))/(1+n)!,n>=0}},0)");
 
 		check("SeriesCoefficient(Cot(x),{x,0,n})", //
-				"Piecewise({{1,n==-1},{((-1)*I*(-1+(-1)^n)*(2*I)^n*BernoulliB(1+n))/(1+n)!,n>=0}},\n" + //
-						"0)");
+				"Piecewise({{1,n==-1},{(-I*(-1+(-1)^n)*(I*2)^n*BernoulliB(1+n))/(1+n)!,n>=0}},0)");
 		check("SeriesCoefficient(Cot(x),{x,0,3})", //
 				"-1/45");
 		check("SeriesCoefficient(Cot(x),{x,Pi/2,n})", //
-				"Piecewise({{((-1)*I*(-1+(-1)^n)*(-1+2^(1+n))*(2*I)^n*BernoulliB(1+n))/(1+n)!,n>=\n" + //
-						"1}},0)");
+				"Piecewise({{(-I*(-1+(-1)^n)*(-1+2^(1+n))*(I*2)^n*BernoulliB(1+n))/(1+n)!,n>=1}},\n" + "0)");
 		check("SeriesCoefficient(Cot(x),{x,Pi/2,3})", //
 				"-1/3");
 		check("SeriesCoefficient(d+4*x^e+7*x^f,{x, a,3})", //

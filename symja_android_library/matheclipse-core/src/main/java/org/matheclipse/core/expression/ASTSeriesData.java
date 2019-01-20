@@ -24,9 +24,9 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 	OpenIntToIExprHashMap<IExpr> coefficientValues;
 
 	/**
-	 * The power of this series.
+	 * The order of this series.
 	 */
-	private int power;
+	private int order;
 
 	/**
 	 * The variable symbol of this series.
@@ -59,7 +59,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 
 	public ASTSeriesData() {
 		super();
-		power = 0;
+		order = 0;
 		denominator = 1;
 		// When Externalizable objects are deserialized, they first need to be constructed by invoking the void
 		// constructor. Since this class does not have one, serialization and deserialization will fail at runtime.
@@ -91,7 +91,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 		this.x0 = x0;
 		this.nMin = nMin;
 		this.nMax = nMax;
-		this.power = power;
+		this.order = power;
 		this.denominator = denominator;
 	}
 
@@ -113,7 +113,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 		}
 		IASTAppendable list = F.ListAlloc(capacity);
 		for (int i = nMin; i < nMax; i++) {
-			list.append(coeff(i));
+			list.append(coefficient(i));
 		}
 		return list;
 	}
@@ -125,7 +125,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 
 	@Override
 	final public IInteger arg5() {
-		return F.ZZ(power);
+		return F.ZZ(order);
 	}
 
 	@Override
@@ -146,7 +146,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 	 */
 	@Override
 	public IAST clone() {
-		return new ASTSeriesData(x, x0, nMin, nMax, power, denominator, new OpenIntToIExprHashMap<IExpr>(coefficientValues));
+		return new ASTSeriesData(x, x0, nMin, nMax, order, denominator, new OpenIntToIExprHashMap<IExpr>(coefficientValues));
 	}
 
 	/**
@@ -155,15 +155,15 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 	 * @param k
 	 * @return
 	 */
-	public IExpr coeff(int k) {
+	public IExpr coefficient(int k) {
 		if (k < nMin || k >= nMax) {
 			return F.C0;
 		}
-		IExpr temp = coefficientValues.get(k);
-		if (temp == null) {
+		IExpr coefficient = coefficientValues.get(k);
+		if (coefficient == null) {
 			return F.C0;
 		}
-		return temp;
+		return coefficient;
 	}
 
 	@Override
@@ -228,13 +228,13 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 	 * @return the composed series
 	 */
 	public ASTSeriesData compose(ASTSeriesData series2) {
-		IExpr coeff0 = series2.coeff(0);
+		IExpr coeff0 = series2.coefficient(0);
 		if (!coeff0.equals(x0)) {
 			EvalEngine.get().printMessage("Constant " + coeff0.toString() + " of series " + this.toString() + //
 					" unequals point " + x0.toString() + " of series " + series2.toString());
 			return null;
 		}
-		ASTSeriesData series = new ASTSeriesData(series2.x, series2.x0, 0, series2.power, series2.denominator);
+		ASTSeriesData series = new ASTSeriesData(series2.x, series2.x0, 0, series2.order, series2.denominator);
 		ASTSeriesData s;
 		ASTSeriesData x0Term;
 		if (x0.isZero()) {
@@ -243,7 +243,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 			x0Term = series2.subtract(x0);
 		}
 		for (int n = nMin; n < nMax; n++) {
-			IExpr temp = coeff(n);
+			IExpr temp = coefficient(n);
 			if (!temp.isZero()) {
 				s = x0Term.pow(n);
 				s = s.times(temp);
@@ -256,7 +256,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 	/** {@inheritDoc} */
 	@Override
 	public ASTSeriesData copy() {
-		return new ASTSeriesData(x, x0, nMin, nMax, power, denominator, new OpenIntToIExprHashMap<IExpr>(coefficientValues));
+		return new ASTSeriesData(x, x0, nMin, nMax, order, denominator, new OpenIntToIExprHashMap<IExpr>(coefficientValues));
 	}
 
 	@Override
@@ -278,15 +278,15 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 			if (isProbableZero()) {
 				return this;
 			}
-			if (power > 0) {
-				ASTSeriesData series = new ASTSeriesData(x, x0, nMin, nMin, power - 1, denominator,
+			if (order > 0) {
+				ASTSeriesData series = new ASTSeriesData(x, x0, nMin, nMin, order - 1, denominator,
 						new OpenIntToIExprHashMap<IExpr>());
 				if (nMin >= 0) {
 					if (nMin > 0) {
-						series.setCoeff(nMin - 1, this.coeff(nMin + 1).times(F.ZZ(nMin + 1)));
+						series.setCoeff(nMin - 1, this.coefficient(nMin + 1).times(F.ZZ(nMin + 1)));
 					}
 					for (int i = nMin; i < nMax - 1; i++) {
-						series.setCoeff(i, this.coeff(i + 1).times(F.ZZ(i + 1)));
+						series.setCoeff(i, this.coefficient(i + 1).times(F.ZZ(i + 1)));
 					}
 					return series;
 				}
@@ -314,14 +314,14 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 			if (denominator != that.denominator) {
 				return false;
 			}
-			if (power != that.power) {
+			if (order != that.order) {
 				return false;
 			}
 			if (coefficientValues.equals(that.coefficientValues)) {
 				return true;
 			}
 			for (int i = nMin; i < nMax; i++) {
-				if (!coeff(i).equals(that.coeff(i))) {
+				if (!coefficient(i).equals(that.coefficient(i))) {
 					return false;
 				}
 			}
@@ -349,7 +349,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 		buf.append('{');
 		boolean first = true;
 		for (int i = nMin; i < nMax; i++) {
-			IExpr temp = coeff(i);
+			IExpr temp = coefficient(i);
 			if (!first) {
 				buf.append(',');
 			}
@@ -361,7 +361,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 		buf.append(',');
 		buf.append(nMin);
 		buf.append(',');
-		buf.append(power);
+		buf.append(order);
 		buf.append(',');
 		buf.append(denominator);
 		buf.append(')');
@@ -409,8 +409,8 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 		return nMin;
 	}
 
-	public Integer getPower() {
-		return power;
+	public int order() {
+		return order;
 	}
 
 	public IExpr getX() {
@@ -425,9 +425,9 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 	public int hashCode() {
 		if (hashValue == 0 && x0 != null) {
 			if (coefficientValues != null) {
-				hashValue = x0.hashCode() + power * coefficientValues.hashCode();
+				hashValue = x0.hashCode() + order * coefficientValues.hashCode();
 			} else {
-				hashValue = x0.hashCode() + power;
+				hashValue = x0.hashCode() + order;
 			}
 		}
 		return hashValue;
@@ -458,12 +458,12 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 			if (isProbableZero()) {
 				return this;
 			}
-			if (power > 0) {
-				ASTSeriesData series = new ASTSeriesData(x, x0, nMin, nMin, power + 1, denominator,
+			if (order > 0) {
+				ASTSeriesData series = new ASTSeriesData(x, x0, nMin, nMin, order + 1, denominator,
 						new OpenIntToIExprHashMap<IExpr>());
 				if (nMin + 1 > 0) {
 					for (int i = nMin + 1; i <= nMax; i++) {
-						series.setCoeff(i, this.coeff(i - 1).times(F.QQ(1, i)));
+						series.setCoeff(i, this.coefficient(i - 1).times(F.QQ(1, i)));
 					}
 					return series;
 				}
@@ -506,11 +506,11 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 	@Override
 	public ASTSeriesData inverse() {
 		IExpr x0 = this.x0;
-		if (!coeff(0).isZero()) {
+		if (!coefficient(0).isZero()) {
 			x0 = F.C1;
 		}
 		// if (!isInvertible()) {
-		final int maxPower = power;
+		final int maxPower = order;
 		// if (maxPower > 0) {
 		// IExpr a1 = coeff(1);
 		// IExpr a1Inverse = a1.inverse();
@@ -529,8 +529,8 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 		if (maxPower > 10) {
 			return null;
 		}
-		if (maxPower > 1 && !this.coeff(1).isZero()) {
-			IExpr a1 = coeff(1);
+		if (maxPower > 1 && !this.coefficient(1).isZero()) {
+			IExpr a1 = coefficient(1);
 			IExpr a1Inverse = a1.inverse();
 
 			// if (maxPower >= 2) {
@@ -555,7 +555,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 			// System.out.println(gList.toString());
 			// }
 
-			ASTSeriesData ps = new ASTSeriesData(x, x0, nMin, nMin, power, denominator, new OpenIntToIExprHashMap<IExpr>());
+			ASTSeriesData ps = new ASTSeriesData(x, x0, nMin, nMin, order, denominator, new OpenIntToIExprHashMap<IExpr>());
 			if (!this.x0.isZero()) {
 				ps.setCoeff(0, this.x0);
 			}
@@ -565,22 +565,22 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 			if (maxPower > 2) {
 				EvalEngine engine = EvalEngine.get();
 				// -a1^(-3) * a2
-				IExpr a2 = coeff(2);
+				IExpr a2 = coefficient(2);
 				ps.setCoeff(2, a1.power(-3).times(a2).negate());
 				if (maxPower > 3) {
 					// a1^(-5) * (2*a2^2-a1*a3)
-					IExpr a3 = coeff(3);
+					IExpr a3 = coefficient(3);
 					ps.setCoeff(3, F.Times.of(engine, F.Power(a1, -5), //
 							F.Subtract(F.Times(F.C2, F.Sqr(a2)), F.Times(a1, a3))));
 					if (maxPower > 4) {
 						// a1^(-7) * (5*a1*a2*a3-a1*a4-5*a2^3)
-						IExpr a4 = coeff(4);
+						IExpr a4 = coefficient(4);
 						ps.setCoeff(4, F.Times.of(engine, F.Power(a1, -7), //
 								F.Plus(F.Times(F.CN5, F.Power(a2, 3)), F.Times(F.C5, a1, a2, a3),
 										F.Times(F.CN1, a1, a4))));
 						if (maxPower > 5) {
 							// a1^(-9) * (6*a1^2*a2*a4+3*a1^2*a3^2+14*a2^4-a1^3*a5-21*a1*a2^2*a3)
-							IExpr a5 = coeff(5);
+							IExpr a5 = coefficient(5);
 							ps.setCoeff(5, F.Times.of(engine, F.Power(a1, -9), //
 									F.Plus(F.Times(F.ZZ(14L), F.Power(a2, 4)), F.Times(F.ZZ(-21L), a1, F.Sqr(a2), a3),
 											F.Times(F.C3, F.Sqr(a1), F.Sqr(a3)), F.Times(F.C6, F.Sqr(a1), a2, a4),
@@ -588,7 +588,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 							if (maxPower > 6) {
 								// a1^(-11) *
 								// (7*a1^3*a2*a5+7*a1^3*a3*a4+84*a1*a2^3*a3-a1^4*a6-28*a1^2*a2*a3^2-42*a2^5-28*a1^2*a2^2*a4)
-								IExpr a6 = coeff(6);
+								IExpr a6 = coefficient(6);
 								ps.setCoeff(6, F.Times.of(engine, F.Power(a1, -11), //
 										F.Plus(F.Times(F.ZZ(-42L), F.Power(a2, 5)),
 												F.Times(F.ZZ(84L), a1, F.Power(a2, 3), a3),
@@ -598,7 +598,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 												F.Times(F.C7, F.Power(a1, 3), a2, a5),
 												F.Times(F.CN1, F.Power(a1, 4), a6))));
 								if (maxPower > 7) {
-									IExpr a7 = coeff(7);
+									IExpr a7 = coefficient(7);
 									// (132*a2^6 - 330*a1*a2^4*a3 + 120*a1^2*a2^3*a4 - 36*a1^2*a2^2*(-5*a3^2 +
 									// a1*a5) + 8*a1^3*a2*(-9*a3*a4 + a1*a6) + a1^3*(-12*a3^3 + 8*a1*a3*a5 +
 									// a1*(4*a4^2 - a1*a7))) / a1^13
@@ -625,7 +625,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 										// 30*a1*a3*a5 + 3*a1*(-5*a4^2 + a1*a7)) + a1^4*(-45*a3^2*a4 +
 										// 9*a1*a3*a6 +
 										// a1*(9*a4*a5 - a1*a8)))/a1^15
-										IExpr a8 = coeff(8);
+										IExpr a8 = coefficient(8);
 										ps.setCoeff(8, F.Times.of(engine, F.Power(a1, -15),
 												F.Plus(F.Times(F.ZZ(-429L), F.Power(a2, 7)),
 														F.Times(F.ZZ(1287L), a1, F.Power(a2, 5), a3),
@@ -653,7 +653,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 											// 10*a1^4*a2*(66*a3^2*a4 - 11*a1*a3*a6 + a1*(-11*a4*a5 + a1*a8)) +
 											// a1^4*(55*a3^4 - 55*a1*a3^2*a5 + 5*a1*a3*(-11*a4^2 + 2*a1*a7) +
 											// a1^2*(5*a5^2 + 10*a4*a6 - a1*a9)))/a1^17
-											IExpr a9 = coeff(9);
+											IExpr a9 = coefficient(9);
 											ps.setCoeff(9,
 													F.Times.of(engine, F.Power(a1, -17),
 															F.Plus(F.Times(F.ZZ(1430L), F.Power(a2, 8)),
@@ -752,15 +752,15 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 	}
 
 	public boolean isInvertible() {
-		return !coeff(0).isZero();
+		return !coefficient(0).isZero();
 	}
 
 	public boolean isProbableOne() {
-		if (!coeff(0).isOne()) {
+		if (!coefficient(0).isOne()) {
 			return false;
 		}
 		for (int i = nMin; i < nMax; i++) {
-			if (!coeff(i).isZero()) {
+			if (!coefficient(i).isZero()) {
 				return false;
 			}
 		}
@@ -772,7 +772,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 			return true;
 		}
 		for (int i = nMin; i < nMax; i++) {
-			if (!coeff(i).isZero()) {
+			if (!coefficient(i).isZero()) {
 				return false;
 			}
 		}
@@ -783,7 +783,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 	public ASTSeriesData negate() {
 		ASTSeriesData series = copy();
 		for (int i = nMin; i < nMax; i++) {
-			series.setCoeff(i, coeff(i).negate());
+			series.setCoeff(i, coefficient(i).negate());
 		}
 		return series;
 	}
@@ -819,7 +819,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 		}
 		IASTAppendable result = F.PlusAlloc(size);
 		for (int i = nMin; i < nMax; i++) {
-			IExpr expr = coeff(i);
+			IExpr expr = coefficient(i);
 			if (!expr.isZero()) {
 				INumber exp;
 				if (denominator == 1) {
@@ -842,7 +842,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 		if (b.isZero()) {
 			return this;
 		}
-		IExpr value = F.eval(coeff(0).plus(b));
+		IExpr value = F.eval(coefficient(0).plus(b));
 		ASTSeriesData series = copy();
 		if (value.isZero()) {
 			series.setZero(0);
@@ -870,9 +870,9 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 		if (nMax < b.nMax) {
 			maxSize = b.nMax;
 		}
-		int maxPower = power;
-		if (power > b.power) {
-			maxPower = b.power;
+		int maxPower = order;
+		if (order > b.order) {
+			maxPower = b.order;
 		}
 		int newDenominator = denominator;
 		if (denominator != b.denominator) {
@@ -885,14 +885,14 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 		}
 		ASTSeriesData series = new ASTSeriesData(x, x0, minSize, maxPower, newDenominator);
 		for (int i = minSize; i < maxSize; i++) {
-			series.setCoeff(i, this.coeff(i).plus(b.coeff(i)));
+			series.setCoeff(i, this.coefficient(i).plus(b.coefficient(i)));
 		}
 		return series;
 	}
 
 	public ASTSeriesData pow(final long n) {
 		if ((n == 0L)) {
-			ASTSeriesData series = new ASTSeriesData(x, x0, 0, power, denominator);
+			ASTSeriesData series = new ASTSeriesData(x, x0, 0, order, denominator);
 			series.setCoeff(0, F.C1);
 			return series;
 		}
@@ -949,7 +949,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 		x = array[1];
 		x0 = array[2];
 		nMin = array[4].toIntDefault(0);
-		power = array[5].toIntDefault(0);
+		order = array[5].toIntDefault(0);
 		denominator = array[6].toIntDefault(0);
 		coefficientValues = new OpenIntToIExprHashMap<IExpr>();
 		IAST list = (IAST) array[3];
@@ -988,9 +988,9 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 			}
 			return result;
 		case 5:
-			result = F.ZZ(power);
-			power = object.toIntDefault(Integer.MIN_VALUE);
-			if (power == Integer.MIN_VALUE) {
+			result = F.ZZ(order);
+			order = object.toIntDefault(Integer.MIN_VALUE);
+			if (order == Integer.MIN_VALUE) {
 				throw new IndexOutOfBoundsException(
 						"SeriesData: Index[" + Integer.valueOf(location) + "] expects machine size integer.");
 
@@ -1010,7 +1010,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 	}
 
 	public void setCoeff(int k, IExpr value) {
-		if (value.isZero() || k >= power) {
+		if (value.isZero() || k >= order) {
 			return;
 		}
 		coefficientValues.put(k, value);
@@ -1041,7 +1041,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 	public ASTSeriesData shift(int shift, IExpr coefficient, int power) {
 		ASTSeriesData series = new ASTSeriesData(this.x, this.x0, this.nMin, power, denominator);
 		for (int i = this.nMin; i < this.nMax; i++) {
-			series.setCoeff(i + shift, this.coeff(i).times(coefficient));
+			series.setCoeff(i + shift, this.coefficient(i).times(coefficient));
 		}
 		return series;
 	}
@@ -1049,7 +1049,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 	public ASTSeriesData shiftTimes(int shift, IExpr coefficient, int power) {
 		ASTSeriesData series = new ASTSeriesData(this.x, this.x0, this.nMin, power, denominator);
 		for (int i = this.nMin; i < this.nMax; i++) {
-			series.setCoeff(i * shift, this.coeff(i).times(coefficient));
+			series.setCoeff(i * shift, this.coefficient(i).times(coefficient));
 		}
 		return series;
 	}
@@ -1067,7 +1067,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 		if (b.isZero()) {
 			return this;
 		}
-		IExpr value = F.eval(coeff(0).subtract(b));
+		IExpr value = F.eval(coefficient(0).subtract(b));
 		ASTSeriesData series = copy();
 		if (value.isZero()) {
 			series.setZero(0);
@@ -1095,13 +1095,13 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 		if (nMax < b.nMax) {
 			maxSize = b.nMax;
 		}
-		int maxPower = power;
-		if (power > b.power) {
-			maxPower = b.power;
+		int maxPower = order;
+		if (order > b.order) {
+			maxPower = b.order;
 		}
 		ASTSeriesData series = new ASTSeriesData(x, x0, minSize, maxPower, denominator);
 		for (int i = minSize; i < maxSize; i++) {
-			series.setCoeff(i, this.coeff(i).subtract(b.coeff(i)));
+			series.setCoeff(i, this.coefficient(i).subtract(b.coefficient(i)));
 		}
 		return series;
 	}
@@ -1119,7 +1119,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 		}
 		ASTSeriesData series = copy();
 		for (int i = nMin; i < nMax; i++) {
-			series.setCoeff(i, this.coeff(i).times(b));
+			series.setCoeff(i, this.coefficient(i).times(b));
 		}
 		return series;
 	}
@@ -1138,9 +1138,9 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 		if (nMin > b.nMin) {
 			minSize = b.nMin;
 		}
-		int newPower = power;
-		if (b.power > power) {
-			newPower = b.power;
+		int newPower = order;
+		if (b.order > order) {
+			newPower = b.order;
 		}
 		int newDenominator = denominator;
 		if (denominator != b.denominator) {
@@ -1164,7 +1164,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 		int start = series.nMin;
 		int end = nMax + b.nMax + 1;
 		for (int n = start; n < end; n++) {
-			if (n - start >= series.power) {
+			if (n - start >= series.order) {
 				continue;
 			}
 			IASTAppendable sum = F.PlusAlloc(end - start);
@@ -1174,7 +1174,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 			// }
 			// } else {
 			for (int i = minSize; i <= n; i++) {
-				sum.append(this.coeff(i).times(b.coeff(n - i)));
+				sum.append(this.coefficient(i).times(b.coefficient(n - i)));
 			}
 			// }
 			IExpr value = F.eval(sum);

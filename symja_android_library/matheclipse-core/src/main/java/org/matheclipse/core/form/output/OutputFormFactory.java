@@ -160,16 +160,15 @@ public class OutputFormFactory {
 		}
 	}
 
-	private void convertDouble(final Appendable buf, final double doubleValue )
-			throws IOException {
+	private void convertDouble(final Appendable buf, final double doubleValue) throws IOException {
 		if (F.isZero(doubleValue, Config.MACHINE_EPSILON)) {
 			convertDoubleString(buf, convertDoubleToFormattedString(0.0), 0, false);
 			return;
 		}
-//		final boolean isNegative = doubleValue < 0.0;
-//		if (!isNegative && caller == PLUS_CALL) {
-//			append(buf, "+");
-//		}
+		// final boolean isNegative = doubleValue < 0.0;
+		// if (!isNegative && caller == PLUS_CALL) {
+		// append(buf, "+");
+		// }
 		convertDoubleString(buf, convertDoubleToFormattedString(doubleValue), 0, false);
 	}
 
@@ -1272,20 +1271,20 @@ public class OutputFormFactory {
 			IExpr x0 = seriesData.getX0();
 			int nmin = seriesData.getNMin();
 			int nmax = seriesData.getNMax();
-			int power = seriesData.getPower();
+			int order = seriesData.order();
 			long den = seriesData.getDenominator();
 			boolean call = NO_PLUS_CALL;
 			if (nmax > nmin) {
 				INumber exp = F.fraction(nmin, den).normalize();
 				IExpr pow = x.subtract(x0).power(exp);
-				call = convertSeriesDataArg(tempBuffer, seriesData.coeff(nmin), pow, call);
+				call = convertSeriesDataArg(tempBuffer, seriesData.coefficient(nmin), pow, call);
 				for (int i = nmin + 1; i < nmax; i++) {
 					exp = F.fraction(i, den).normalize();
 					pow = x.subtract(x0).power(exp);
-					call = convertSeriesDataArg(tempBuffer, seriesData.coeff(i), pow, call);
+					call = convertSeriesDataArg(tempBuffer, seriesData.coefficient(i), pow, call);
 				}
 			}
-			plusArg = F.Power(F.O(x.subtract(x0)), F.fraction(power, den).normalize());
+			plusArg = F.Power(F.O(x.subtract(x0)), F.fraction(order, den).normalize());
 			if (!plusArg.isZero()) {
 				convertPlusArgument(tempBuffer, plusArg, call);
 				call = PLUS_CALL;

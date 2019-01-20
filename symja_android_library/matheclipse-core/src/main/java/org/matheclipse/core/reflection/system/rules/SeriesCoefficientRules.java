@@ -13,7 +13,7 @@ public interface SeriesCoefficientRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 44 };
+  final public static int[] SIZES = { 0, 42 };
 
   final public static IAST RULES = List(
     IInit(SeriesCoefficient, SIZES),
@@ -131,12 +131,6 @@ public interface SeriesCoefficientRules {
     // SeriesCoefficient(Log(x_),{x_Symbol,a_,n_?NotListQ}):=Piecewise({{(-1)^(1+n)/(a^n*n),n>=1},{Log(a),n==0}},0)/;FreeQ(a,x)&&a!=0&&FreeQ(n,x)
     ISetDelayed(SeriesCoefficient(Log(x_),List(x_Symbol,a_,PatternTest(n_,NotListQ))),
       Condition(Piecewise(List(List(Times(Power(CN1,Plus(C1,n)),Power(Times(Power(a,n),n),-1)),GreaterEqual(n,C1)),List(Log(a),Equal(n,C0))),C0),And(FreeQ(a,x),Unequal(a,C0),FreeQ(n,x)))),
-    // SeriesCoefficient(b_^x_,{x_Symbol,a_,n_?NotListQ}):=Piecewise({{(b^a*Log(b)^n)/n!,n>=0}},0)/;FreeQ(b,x)&&FreeQ(a,x)&&FreeQ(n,x)
-    ISetDelayed(SeriesCoefficient(Power(b_,x_),List(x_Symbol,a_,PatternTest(n_,NotListQ))),
-      Condition(Piecewise(List(List(Times(Power(b,a),Power(Factorial(n),-1),Power(Log(b),n)),GreaterEqual(n,C0))),C0),And(FreeQ(b,x),FreeQ(a,x),FreeQ(n,x)))),
-    // SeriesCoefficient(x_^x_,{x_Symbol,0,n_Integer}):=Log(x)^n/n!
-    ISetDelayed(SeriesCoefficient(Power(x_,x_),List(x_Symbol,C0,$p(n, Integer))),
-      Times(Power(Factorial(n),-1),Power(Log(x),n))),
     // SeriesCoefficient(ProductLog(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{1/((-n)^(1-n)*n!),n>=1}},0)/;FreeQ(n,x)
     ISetDelayed(SeriesCoefficient(ProductLog(x_),List(x_Symbol,C0,PatternTest(n_,NotListQ))),
       Condition(Piecewise(List(List(Times(Power(Negate(n),Plus(CN1,n)),Power(Factorial(n),-1)),GreaterEqual(n,C1))),C0),FreeQ(n,x))),

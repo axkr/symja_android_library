@@ -463,9 +463,9 @@ public class SeriesFunctions {
 			}
 			if (exponent.isFree(data.getSymbol())) {
 				IExpr temp = evalLimitQuiet(base, data);
-				if (temp.isZero()&&!exponent.isNumericFunction()) {
+				if (temp.isZero() && !exponent.isNumericFunction()) {
 					// ConditionalExpression(0, exponent > 0)
-					return F.ConditionalExpression(F.C0,F.Greater(exponent, F.C0));
+					return F.ConditionalExpression(F.C0, F.Greater(exponent, F.C0));
 				}
 				if (base.isTimes()) {
 					IAST isFreeResult = ((IAST) base).partitionTimes(x -> x.isFree(data.getSymbol(), true), F.C1, F.C1,
@@ -1111,7 +1111,7 @@ public class SeriesFunctions {
 							if (temp instanceof ASTSeriesData) {
 								ASTSeriesData series = (ASTSeriesData) temp;
 								if (numerator != 1) {
-									series = series.shiftTimes(numerator, F.C1, series.getPower());
+									series = series.shiftTimes(numerator, F.C1, series.order());
 								}
 								series.setDenominator(denominator);
 								return series;
@@ -1198,84 +1198,106 @@ public class SeriesFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST2() && (ast.arg2().isVector() == 3)) {
-
-				IExpr function = ast.arg1();
-
-				IAST list = (IAST) ast.arg2();
-				IExpr x = list.arg1();
-				IExpr x0 = list.arg2();
-
-				IExpr n = list.arg3();
-				if (function.isFree(x)) {
-					if (n.isZero()) {
-						return function;
-					}
-					return F.Piecewise(F.List(F.List(function, F.Equal(n, F.C0))), F.C0);
-				}
-				IExpr temp = polynomialSeriesCoefficient(function, x, x0, n, ast, engine);
-				if (temp.isPresent()) {
-					return temp;
-				}
-				if (function.isPower()) {
-					if (function.base().equals(x)) {
-						if (function.exponent().isNumber()) {
-							// x^exp
-							INumber exp = (INumber) function.exponent();
-							if (exp.isInteger()) {
-								if (x0.isZero()) {
-									return F.Piecewise(F.List(F.List(F.C1, F.Equal(n, exp))), F.C0);
-								}
-								return F.Piecewise(
-										F.List(F.List(F.Times(F.Power(x0, F.Plus(exp, n.negate())), F.Binomial(exp, n)),
-												F.LessEqual(F.C0, n, exp))),
-										F.C0);
-							}
+			if (ast.isAST2()) {
+				if (ast.arg1() instanceof ASTSeriesData && ast.arg2().isInteger()) {
+					ASTSeriesData series = (ASTSeriesData) ast.arg1();
+					int n = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+					if (n >= 0) {
+						int order = series.order();
+						if (order > n) {
+							return series.coefficient(n);
+						} else {
+							return F.Indeterminate;
 						}
-						if (!x0.isZero()) {
-							IExpr exp = function.exponent();
+					}
+					return F.NIL;
+				}
+				if (ast.arg2().isVector() == 3 && !(ast.arg1() instanceof ASTSeriesData)) {
+					IExpr function = ast.arg1();
+
+					IAST list = (IAST) ast.arg2();
+					IExpr x = list.arg1();
+					IExpr x0 = list.arg2();
+
+					IExpr n = list.arg3();
+					return functionCoefficient(ast, function, x, x0, n, engine);
+
+				}
+			}
+
+			return F.NIL;
+		}
+
+		private static IExpr functionCoefficient(final IAST ast, IExpr function, IExpr x, IExpr x0, IExpr n,
+				EvalEngine engine) {
+			if (function.isFree(x)) {
+				if (n.isZero()) {
+					return function;
+				}
+				return F.Piecewise(F.List(F.List(function, F.Equal(n, F.C0))), F.C0);
+			}
+			IExpr temp = polynomialSeriesCoefficient(function, x, x0, n, ast, engine);
+			if (temp.isPresent()) {
+				return temp;
+			}
+			if (function.isPower()) {
+				if (function.base().equals(x)) {
+					if (function.exponent().isNumber()) {
+						// x^exp
+						INumber exp = (INumber) function.exponent();
+						if (exp.isInteger()) {
+							if (x0.isZero()) {
+								return F.Piecewise(F.List(F.List(F.C1, F.Equal(n, exp))), F.C0);
+							}
 							return F.Piecewise(
 									F.List(F.List(F.Times(F.Power(x0, F.Plus(exp, n.negate())), F.Binomial(exp, n)),
-											F.GreaterEqual(n, F.C0))),
+											F.LessEqual(F.C0, n, exp))),
 									F.C0);
 						}
-					} else if (function.exponent().equals(x) && function.base().isFree(x)) {
-						// b^x with b is free of x
-						IExpr b = function.base();
-						return F.Piecewise(F.List(
-								F.List(F.Times(F.Power(b, x0), F.Power(F.Factorial(n), F.CN1), F.Power(F.Log(b), n)),
+					}
+					if (!x0.isZero() && function.exponent().isFree(x)) {
+						IExpr exp = function.exponent();
+						return F.Piecewise(
+								F.List(F.List(F.Times(F.Power(x0, F.Plus(exp, n.negate())), F.Binomial(exp, n)),
 										F.GreaterEqual(n, F.C0))),
 								F.C0);
 					}
 				}
-
-				if (x0.isReal()) {
-					try {
-						final int lowerLimit = ((ISignedNumber) x0).toInt();
-						if (lowerLimit != 0) {
-							// TODO support other cases than 0
-							return F.NIL;
-						}
-						x0 = F.integer(lowerLimit);
-					} catch (ClassCastException cce) {
-					} catch (ArithmeticException ae) {
-					}
+				if (function.exponent().equals(x) && //
+						(function.base().isFree(x) || //
+								(x0.isZero() && function.base().equals(function.exponent())))) {
+					// x^x or b^x with b is free of x
+					IExpr b = function.base();
+					return F.Piecewise(
+							F.List(F.List(F.Times(F.Power(b, x0), F.Power(F.Factorial(n), F.CN1), F.Power(F.Log(b), n)),
+									F.GreaterEqual(n, F.C0))),
+							F.C0);
 				}
-
-				final int degree = n.toIntDefault(Integer.MIN_VALUE);
-				if (degree < 0) {
-					return F.NIL;
-				}
-
-				if (degree == 0) {
-					return F.ReplaceAll(function, F.Rule(x, x0));
-				}
-				IExpr derivedFunction = F.D.of(engine, function, F.List(x, n));
-				return F.Times(F.Power(F.Factorial(n), F.CN1), F.ReplaceAll(derivedFunction, F.Rule(x, x0)));
-
 			}
 
-			return F.NIL;
+			if (x0.isReal()) {
+				try {
+					final int lowerLimit = ((ISignedNumber) x0).toInt();
+					if (lowerLimit != 0) {
+						// TODO support other cases than 0
+						return F.NIL;
+					}
+					x0 = F.integer(lowerLimit);
+				} catch (ClassCastException cce) {
+				} catch (ArithmeticException ae) {
+				}
+			}
+
+			final int degree = n.toIntDefault(Integer.MIN_VALUE);
+			if (degree < 0) {
+				return F.NIL;
+			}
+
+			if (degree == 0) {
+				return F.ReplaceAll(function, F.Rule(x, x0));
+			}
+			IExpr derivedFunction = F.D.of(engine, function, F.List(x, n));
+			return F.Times(F.Power(F.Factorial(n), F.CN1), F.ReplaceAll(derivedFunction, F.Rule(x, x0)));
 		}
 
 		/**
@@ -1288,7 +1310,7 @@ public class SeriesFunctions {
 		 * @param engine
 		 * @return
 		 */
-		public IExpr polynomialSeriesCoefficient(IExpr univariatePolynomial, IExpr x, IExpr x0, IExpr n,
+		public static IExpr polynomialSeriesCoefficient(IExpr univariatePolynomial, IExpr x, IExpr x0, IExpr n,
 				final IAST seriesTemplate, EvalEngine engine) {
 			try {
 				// if (!x0.isZero()) {

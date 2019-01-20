@@ -1450,11 +1450,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("CDF(UniformDistribution({a, b}), k)", //
 				"Piecewise({{(-a+k)/(-a+b),a<=k<=b},{1,k>b}},0)");
 		check("CDF(ErlangDistribution(n, m),k)", //
-				"Piecewise({{GammaRegularized(n,0,m*k),k>0}},0)");
+				"Piecewise({{GammaRegularized(n,0,k*m),k>0}},0)");
 		check("CDF(LogNormalDistribution(n,m),k)", //
 				"Piecewise({{Erfc((n-Log(k))/(Sqrt(2)*m))/2,k>0}},0)");
 		check("CDF(NakagamiDistribution(n, m),k)", //
-				"Piecewise({{GammaRegularized(n,0,(n*k^2)/m),k>0}},0)");
+				"Piecewise({{GammaRegularized(n,0,(k^2*n)/m),k>0}},0)");
 		check("CDF(NormalDistribution(n, m),k)", //
 				"Erfc((-k+n)/(Sqrt(2)*m))/2");
 		check("CDF(FrechetDistribution(n, m),k)", //
@@ -1469,12 +1469,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "2+Floor(k),2-n-ns+nt+Floor(k)},1))/(Binomial(nt,n)*(-1+n-Floor(k))!*(-1+ns-Floor(k))!),\n"
 						+ "0<=k&&n+ns-nt<=k&&k<n&&k<ns},{1,k>=n||k>=ns}},0)");
 		check("CDF(StudentTDistribution(n),k)", //
-				"Piecewise({{BetaRegularized(n/(n+k^2),n/2,1/2)/2,k<=0}},1/2*(1+BetaRegularized(k^\n"
-						+ "2/(n+k^2),1/2,n/2)))");
+				"Piecewise({{BetaRegularized(n/(k^2+n),n/2,1/2)/2,k<=0}},1/2*(1+BetaRegularized(k^\n" + 
+				"2/(n+k^2),1/2,n/2)))");
 		check("CDF(WeibullDistribution(n, m),k)", //
 				"Piecewise({{1-1/E^(k/m)^n,k>0}},0)");
 		check("CDF(BernoulliDistribution(4),k)", //
-				"Piecewise({{0,k<0},{-4+1,0<=k&&k<1}},1)");
+				"Piecewise({{0,k<0},{-3,0<=k&&k<1}},1)");
 
 		check("CDF(DiscreteUniformDistribution({1, 5}), 3)", //
 				"3/5");
@@ -4006,7 +4006,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{361909,1},{428862157,1}}");
 		check("FactorInteger(293851765137859)", //
 				"{{11736397,1},{25037647,1}}");
-		// 67915439339311L == 2061599 * 32943089 
+		// 67915439339311L == 2061599 * 32943089
 		check("FactorInteger(67915439339311)", //
 				"{{2061599,1},{32943089,1}}");
 
@@ -4932,8 +4932,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Piecewise({{1/100000*(35875+48829*Cos(2*Pi*x)+14128*Cos(4*Pi*x)+1168*Cos(6*Pi*x)),\n"
 						+ "-1/2<=x<=1/2}},0)");
 		check("FunctionExpand(BlackmanNuttallWindow(x))", //
-				"Piecewise({{1/10000000*(4891775*Cos(2*Pi*x)+1365995*Cos(4*Pi*x)+106411*Cos(6*Pi*x)+\n"
-						+ "3635819),-1/2<=x<=1/2}},0)");
+				"Piecewise({{1/10000000*(3635819+4891775*Cos(2*Pi*x)+1365995*Cos(4*Pi*x)+106411*Cos(\n" + 
+				"6*Pi*x)),-1/2<=x<=1/2}},0)");
 		check("FunctionExpand(BlackmanWindow(x))", //
 				"Piecewise({{1/50*(21+25*Cos(2*Pi*x)+4*Cos(4*Pi*x)),-1/2<=x<=1/2}},0)");
 		check("FunctionExpand(DirichletWindow(x))", //
@@ -4942,7 +4942,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Piecewise({{1/1000000000*(215578947+416631580*Cos(2*Pi*x)+277263158*Cos(4*Pi*x)+\n"
 						+ "83578947*Cos(6*Pi*x)+6947368*Cos(8*Pi*x)),-1/2<=x<=1/2}},0)");
 		check("FunctionExpand(GaussianWindow(x))", //
-				"Piecewise({{E^((-1)*1/9*50*x^2),-1/2<=x<=1/2}},0)");
+				"Piecewise({{E^(-50/9*x^2),-1/2<=x<=1/2}},0)");
 		check("FunctionExpand(HammingWindow(x))", //
 				"Piecewise({{25/46+21/46*Cos(2*Pi*x),-1/2<=x<=1/2}},0)");
 		check("FunctionExpand(HannWindow(x))", //
@@ -5022,7 +5022,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGammaRegularized() {
-		check("GammaRegularized(a,z1,z2)", "GammaRegularized(a,z1)-GammaRegularized(a,z2)");
+		// TODO improve output Format to E^(-x)-E^(-y)
+		check("GammaRegularized(1,x,y)", //
+				"E^(-x)-1/E^y");
+		check("GammaRegularized(-42,x,y)", //
+				"0");
+//		check("GammaRegularized(a,z1,z2)", "GammaRegularized(a,z1)-GammaRegularized(a,z2)");
 
 		check("GammaRegularized(1/2, z)", "Erfc(Sqrt(z))");
 		check("GammaRegularized(-4, z)", "0");
@@ -8069,7 +8074,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testNonNegative() {
 		check("NonNegative(-Infinity)", "False");
-		
+
 		check("NonNegative(Infinity)", "True");
 		check("NonNegative(-Infinity)", "False");
 		check("NonNegative(-9/4)", "False");
@@ -8830,9 +8835,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PDF(BernoulliDistribution(p),k)", //
 				"Piecewise({{1-p,k==0},{p,k==1}},0)");
 		check("PDF(BinomialDistribution(n, m),k)", //
-				"Piecewise({{(1-m)^(n-k)*m^k*Binomial(n,k),0<=k<=n}},0)");
+				"Piecewise({{(m^k*Binomial(n,k))/(1-m)^(k-n),0<=k<=n}},0)");
 		check("PDF(ExponentialDistribution(n),k)", //
-				"Piecewise({{n/E^(n*k),k>=0}},0)");
+				"Piecewise({{n/E^(k*n),k>=0}},0)");
 		check("PDF(PoissonDistribution(p),k)", //
 				"Piecewise({{p^k/(E^p*k!),k>=0}},0)");
 		check("PDF(DiscreteUniformDistribution({a, b}), k)", //
@@ -8840,27 +8845,27 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PDF(UniformDistribution({a, b}), k)", //
 				"Piecewise({{1/(-a+b),a<=k<=b}},0)");
 		check("PDF(ErlangDistribution(n, m),k)", //
-				"Piecewise({{m^n/(E^(m*k)*Gamma(n)*k^(1-n)),k>0}},0)");
+				"Piecewise({{m^n/(E^(k*m)*k^(1-n)*Gamma(n)),k>0}},0)");
 		check("PDF(LogNormalDistribution(n,m),k)", //
 				"Piecewise({{1/(E^((-n+Log(k))^2/(2*m^2))*k*m*Sqrt(2*Pi)),k>0}},0)");
 		check("PDF(NakagamiDistribution(n, m),k)", //
-				"Piecewise({{(2*(n/m)^n)/(E^((n*k^2)/m)*Gamma(n)*k^(1-2*n)),k>0}},0)");
+				"Piecewise({{(2*(n/m)^n)/(E^((k^2*n)/m)*k^(1-2*n)*Gamma(n)),k>0}},0)");
 
 		check("PDF(FrechetDistribution(n, m),k)", //
-				"Piecewise({{n/(E^(k/m)^(-n)*m*(k/m)^(1+n)),k>0}},0)");
+				"Piecewise({{n/(E^(k/m)^(-n)*(k/m)^(1+n)*m),k>0}},0)");
 		check("PDF(GammaDistribution(n, m),k)", //
-				"Piecewise({{1/(m^n*E^(k/m)*Gamma(n)*k^(1-n)),k>0}},0)");
+				"Piecewise({{1/(E^(k/m)*k^(1-n)*m^n*Gamma(n)),k>0}},0)");
 		check("PDF(GeometricDistribution(n),k)", //
 				"Piecewise({{(1-n)^k*n,k>=0}},0)");
 		check("PDF(GumbelDistribution(n, m),k)", //
 				"1/(E^(E^((k-n)/m)-(k-n)/m)*m)");
 		check("PDF(HypergeometricDistribution(n, ns, nt),k)", //
-				"Piecewise({{(Binomial(ns,k)*Binomial(-ns+nt,n-k))/Binomial(nt,n),0<=k<=n&&n+ns-nt<=k<=n&&\n"
-						+ "0<=k<=ns&&n+ns-nt<=k<=ns}},0)");
+				"Piecewise({{(Binomial(ns,k)*Binomial(-ns+nt,-k+n))/Binomial(nt,n),0<=k<=n&&n+ns-nt<=k<=n&&\n" + 
+				"0<=k<=ns&&n+ns-nt<=k<=ns}},0)");
 		check("PDF(StudentTDistribution(n),k)", //
 				"(n/(k^2+n))^(1/2*(1+n))/(Sqrt(n)*Beta(n/2,1/2))");
 		check("PDF(WeibullDistribution(n, m),k)", //
-				"Piecewise({{n/(E^(k/m)^n*m*(k/m)^(1-n)),k>0}},0)");
+				"Piecewise({{n/(E^(k/m)^n*(k/m)^(1-n)*m),k>0}},0)");
 		check("PDF(StudentTDistribution(4),k)", //
 				"12*((1/(4+k^2)))^(5/2)");
 
@@ -8891,20 +8896,27 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPiecewise() {
-		check("Piecewise({})", "0");
+		check("Piecewise({{(a^0*Log(a)^n)/n!,n>=0}},0)", //
+				"Piecewise({{Log(a)^n/n!,n>=0}},0)");
+		check("Piecewise({})", //
+				"0");
 		check("Piecewise({},0)", "0");
-		check("Piecewise({{0, x <= 0}}, 1)", "Piecewise({{0,x<=0}},1)");
-		check("Piecewise({{1, False}})", "0");
-		check("Piecewise({{0 ^ 0, False}}, -1)", "-1");
+		check("Piecewise({{0, x <= 0}}, 1)", //
+				"Piecewise({{0,x<=0}},1)");
+		check("Piecewise({{1, False}})", //
+				"0");
+		check("Piecewise({{0 ^ 0, False}}, -1)", //
+				"-1");
 
-		check("$pw = Piecewise({{Sin(x)/x, x < 0}, {1, x == 0}}, -x^2/100 + 1); $pw /. {{x -> -5}, {x -> 0}, {x -> 5}}",
+		check("$pw = Piecewise({{Sin(x)/x, x < 0}, {1, x == 0}}, -x^2/100 + 1); $pw /. {{x -> -5}, {x -> 0}, {x -> 5}}", //
 				"{Sin(5)/5,1,3/4}");
-		check("Piecewise({{e1, True}, {e2, d2}, {e3, d3}}, e0)", "e1");
-		check("Piecewise({{e1, d1}, {e2, d2}, {e3, True}, {e4, d4}, {e5, d5}}, e0)",
+		check("Piecewise({{e1, True}, {e2, d2}, {e3, d3}}, e0)", //
+				"e1");
+		check("Piecewise({{e1, d1}, {e2, d2}, {e3, True}, {e4, d4}, {e5, d5}}, e0)", //
 				"Piecewise({{e1,d1},{e2,d2},{e3,True}})");
-		check("Piecewise({{e1, d1}, {e2, d2}, {e3, d2 && d3}, {e4, d4}}, e0)",
+		check("Piecewise({{e1, d1}, {e2, d2}, {e3, d2 && d3}, {e4, d4}}, e0)", //
 				"Piecewise({{e1,d1},{e2,d2},{e3,d2&&d3},{e4,d4}},e0)");
-		check("Piecewise({{e1, d1}, {e2, d2}, {e3, False}, {e4, d4}, {e5, d5}}, e0)",
+		check("Piecewise({{e1, d1}, {e2, d2}, {e3, False}, {e4, d4}, {e5, d5}}, e0)", //
 				"Piecewise({{e1,d1},{e2,d2},{e4,d4},{e5,d5}},e0)");
 	}
 
