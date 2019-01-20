@@ -32,7 +32,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("1231231236123216361256312631627.12312312", //
 				d.toString());
 		checkNumeric("N(1231231236123216361256312631627.12312312,50)", //
-				"1.23123123612321636125631263162712312312e30");
+				"1.23123123612321636125631263162712312312*10^30");
 
 		check("f[[1,2]]", "(f[[1,2]])");
 		check("-cos(x)", "-Cos(x)");
@@ -738,7 +738,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ArithmeticGeometricMean(1 - I, 2.5 + I)", //
 				"1.83463+I*(-0.191462)");
 		check("N(ArithmeticGeometricMean(1 - I, 2.5 + I), 30)", //
-				"1.83462883815328396810218573046+I*(-1.91461625197137083440493535055e-1)");
+				"1.83462883815328396810218573046+I*(-1.91461625197137083440493535055*10^-1)");
 	}
 
 	public void testAttributes() {
@@ -3665,21 +3665,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("ExpandAll(( ( ( X3 - X1$c) * ( ( X1 + ( ( X4$c * X3 ) + X5$c))
 		// + X3$b)) * ( ( X3 - X1 ) + ( X3$c + X5 ))))",
 		// "");
-		
-		
+
 		// github #111 - loss of precision if you expand the expression
 		check("t=ExpandAll((Pi*E-9)^13)", //
-				"-2541865828329+3671583974253*E*Pi-2447722649502*E^2*Pi^2+997220338686*E^3*Pi^3\n" + 
-				"-277005649635*E^4*Pi^4+55401129927*E^5*Pi^5-8207574804*E^6*Pi^6+911952756*E^7*Pi^\n" + 
-				"7-75996063*E^8*Pi^8+4691115*E^9*Pi^9-208494*E^10*Pi^10+6318*E^11*Pi^11-117*E^12*Pi^\n" + 
-				"12+E^13*Pi^13");
+				"-2541865828329+3671583974253*E*Pi-2447722649502*E^2*Pi^2+997220338686*E^3*Pi^3\n"
+						+ "-277005649635*E^4*Pi^4+55401129927*E^5*Pi^5-8207574804*E^6*Pi^6+911952756*E^7*Pi^\n"
+						+ "7-75996063*E^8*Pi^8+4691115*E^9*Pi^9-208494*E^10*Pi^10+6318*E^11*Pi^11-117*E^12*Pi^\n"
+						+ "12+E^13*Pi^13");
 		check("N(t)", //
 				"0.5");
 		check("N(t, 30)", //
-				"-4.16018744e-5");
+				"-4.16018744*10^-5");
 		check("N((Pi*E-9)^13)", //
 				"-0.0000416019");
-		
+
 		check("ExpandAll(( ( ( X3 - X1_c) * ( ( X1 + ( ( X4_c * X3 ) + X5_c)) + X3_b)) * ( ( X3 - X1 ) + ( X3_c + X5 ))))",
 				"-x1^2*x3+x1*x3^2+x1*x3*x5+x1^2*x1_c-x1*x3*x1_c-x1*x5*x1_c-x1*x3*x3_b+x3^2*x3_b+x3*x5*x3_b+x1*x1_c*x3_b-x3*x1_c*x3_b-x5*x1_c*x3_b+x1*x3*x3_c-x1*x1_c*x3_c+x3*x3_b*x3_c-x1_c*x3_b*x3_c-x1*x3^\n"
 						+ "2*x4_c+x3^3*x4_c+x3^2*x5*x4_c+x1*x3*x1_c*x4_c-x3^2*x1_c*x4_c-x3*x5*x1_c*x4_c+x3^\n"
@@ -9818,30 +9817,37 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testProductLog() {
-		check("ProductLog(-1, -(Pi/2))", "-I*1/2*Pi");
-		check("ProductLog(-1, -(1/E))", "-1");
-		check("Refine(ProductLog(k, 0), k>1)", "-Infinity");
+		check("ProductLog(-1, -(Pi/2))", //
+				"-I*1/2*Pi");
+		check("ProductLog(-1, -(1/E))", //
+				"-1");
+		check("Refine(ProductLog(k, 0), k>1)", //
+				"-Infinity");
 
 		check("ProductLog(2.5 + 2*I)", //
-				"1.056167968948635+I*3.5256052020787e-1");
+				"1.056167968948635+I*3.5256052020787*10^-1");
 
-		check("z == ProductLog(z) * E ^ ProductLog(z)", "True");
-		check("ProductLog(0)", "0");
-		check("ProductLog(E)", "1");
+		check("z == ProductLog(z) * E ^ ProductLog(z)", //
+				"True");
+		check("ProductLog(0)", //
+				"0");
+		check("ProductLog(E)", //
+				"1");
 
 		String s = System.getProperty("os.name");
 		if (s.contains("Windows")) {
 			// TODO fix apfloat output for "exponential" format
 			check("ProductLog(-1.5)", //
-					"-3.2783735915572e-2+I*1.549643823350159");
+					"-3.2783735915572*10^-2+I*1.549643823350159");
 			check("ProductLog({0.2, 0.5, 0.8})", //
-					"{1.689159734991096e-1,3.517337112491959e-1,4.900678588015799e-1}");
+					"{1.689159734991096*10^-1,3.517337112491959*10^-1,4.900678588015799*10^-1}");
 			check("ProductLog(2.5 + 2*I)", //
-					"1.056167968948635+I*3.5256052020787e-1");
+					"1.056167968948635+I*3.5256052020787*10^-1");
 			check("N(ProductLog(4/10),50)", //
-					"2.9716775067313854677972696224702134190445810155014e-1");
+					"2.9716775067313854677972696224702134190445810155014*10^-1");
 
-			check("N(ProductLog(-1),20)", "-3.181315052047641353e-1+I*1.3372357014306894089");
+			check("N(ProductLog(-1),20)", //
+					"-3.181315052047641353*10^-1+I*1.3372357014306894089");
 		}
 
 		check("ProductLog(-Pi/2)", "I*1/2*Pi");

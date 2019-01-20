@@ -16,6 +16,7 @@ import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -156,7 +157,7 @@ public class OutputFormFactory {
 		if (d instanceof Num) {
 			convertDoubleString(buf, convertDoubleToFormattedString(doubleValue), precedence, isNegative);
 		} else {
-			convertDoubleString(buf, d.toString(), precedence, isNegative);
+			convertDoubleString(buf, convertApfloat(((ApfloatNum) d).apfloatValue()), precedence, isNegative);
 		}
 	}
 
@@ -254,11 +255,11 @@ public class OutputFormFactory {
 			convertDoubleString(buf, "0.0", ASTNodeFactory.PLUS_PRECEDENCE, false);
 		} else {
 			if (!realZero) {
-				append(buf, String.valueOf(realPart));
+				append(buf, convertApfloat(realPart));
 				if (!imaginaryZero) {
 					append(buf, "+I*");
 					final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
-					convertDoubleString(buf, String.valueOf(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE,
+					convertDoubleString(buf, convertApfloat(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE,
 							isNegative);
 				}
 			} else {
@@ -268,12 +269,23 @@ public class OutputFormFactory {
 				}
 				append(buf, "I*");
 				final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
-				convertDoubleString(buf, String.valueOf(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
+				convertDoubleString(buf, convertApfloat(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
 			}
 		}
 		if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
 			append(buf, ")");
 		}
+	}
+
+	private static String convertApfloat(Apfloat num) {
+		String str = num.toString();
+		int index = str.indexOf('e');
+		if (index > 0) {
+			String exponentStr = str.substring(index + 1);
+			String result = str.substring(0, index);
+			return result + "*10^" + exponentStr;
+		}
+		return str;
 	}
 
 	public void convertInteger(final Appendable buf, final IInteger i, final int precedence, boolean caller)

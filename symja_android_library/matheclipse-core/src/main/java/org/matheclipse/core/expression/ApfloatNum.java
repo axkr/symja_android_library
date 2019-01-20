@@ -305,7 +305,7 @@ public class ApfloatNum implements INum {
 	public long leafCountSimplify() {
 		return 2;
 	}
-	
+
 	public Apfloat log() {
 		return ApfloatMath.log(fApfloat);
 	}
@@ -359,7 +359,7 @@ public class ApfloatNum implements INum {
 		}
 		return valueOf(ApfloatMath.inverseRoot(fApfloat, 1));
 	}
- 
+
 	public IExpr sqrt() {
 		return valueOf(ApfloatMath.sqrt(fApfloat));
 	}
@@ -448,7 +448,7 @@ public class ApfloatNum implements INum {
 	public ISignedNumber fractionalPart() {
 		return F.num(fApfloat.frac());
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public IInteger floorFraction() {
@@ -496,7 +496,14 @@ public class ApfloatNum implements INum {
 	 */
 	@Override
 	public String toString() {
-		return fApfloat.toString();
+		String str = fApfloat.toString();
+		int index = str.indexOf('e');
+		if (index > 0) {
+			String exponentStr = str.substring(index + 1);
+			String result = str.substring(0, index);
+			return result + "*10^" + exponentStr;
+		}
+		return str;
 	}
 
 	/**
