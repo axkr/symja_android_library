@@ -524,7 +524,7 @@ public class WL {
 			if (context == Context.SYSTEM) {
 				str = s.toString().toCharArray();
 			} else {
-				str = (context.getContextName() + s.toString()).toCharArray();
+				str = (context.getContextName() + s.getSymbolName()).toCharArray();
 			}
 			int size = str.length;
 			stream.write(WL.WXF_CONSTANTS.Symbol);
