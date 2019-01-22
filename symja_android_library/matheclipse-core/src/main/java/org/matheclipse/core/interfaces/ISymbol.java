@@ -296,7 +296,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public void setRulesData(RulesData rd);
 
 	/**
-	 * Get the pure symbol name string
+	 * Get the pure symbol name string without the context prefix.
 	 * 
 	 * @return
 	 */
