@@ -12545,10 +12545,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSubtract() {
-		check("5 - 3", "2");
-		check("a - b // FullForm", "Plus(a, Times(-1, b))");
-		check("a - b - c", "a-b-c");
-		check("a - (b - c)", "a-b+c");
+		check("a - x + z", //
+				"a-x+z");
+		check("5 - 3", //
+				"2");
+		check("a - b // FullForm", //
+				"Plus(a, Times(-1, b))");
+		check("a - b - c", //
+				"a-b-c");
+		check("a - (b - c)", //
+				"a-b+c");
 	}
 
 	public void testSubtractFrom() {
@@ -13361,6 +13367,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("((-b-a)*a^(-1))^(-1)", "a/(-a-b)");
 		check("Together(1/x + 1/(x + 1) + 1/(x + 2) + 1/(x + 3))", "(6+22*x+18*x^2+4*x^3)/(6*x+11*x^2+6*x^3+x^4)");
 
+	}
+
+	public void testToExpression() {
+		check("ToExpression(\"\\\\frac{x}{\\\\sqrt{5}}\", TeXForm)", //
+				"x/Sqrt(5)");
+		check("ToExpression(\"1 + 2 - x \\\\times 4 \\\\div 5\", TeXForm)", //
+				"3-4/5*x");
 	}
 
 	public void testToPolarCoordinates() {

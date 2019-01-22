@@ -197,6 +197,8 @@ public class ExprParserFactory implements IParserFactory {
 
 	public final static int POWER_PRECEDENCE = 590;
 
+	public final static int FACTORIAL_PRECEDENCE = 610;
+	
 	public final static int APPLY_PRECEDENCE = 620;
 
 	public final static InformationOperator INFORMATION_SHORT = //
@@ -256,7 +258,7 @@ public class ExprParserFactory implements IParserFactory {
 			new PostfixExprOperator("!!", "Factorial2", 610), //
 			new InfixExprOperator("<=", "LessEqual", 290, InfixExprOperator.NONE), //
 			new InfixExprOperator("**", "NonCommutativeMultiply", 510, InfixExprOperator.NONE), //
-			new PostfixExprOperator("!", "Factorial", 610), //
+			new PostfixExprOperator("!", "Factorial", FACTORIAL_PRECEDENCE), //
 			new InfixExprOperator("*", "Times", TIMES_PRECEDENCE, InfixExprOperator.NONE), //
 			new InfixExprOperator("^", "Power", POWER_PRECEDENCE, InfixExprOperator.RIGHT_ASSOCIATIVE), //
 			new InfixExprOperator(".", "Dot", 490, InfixExprOperator.NONE), //

@@ -1,0 +1,80 @@
+
+This is a basic command line runner for SnuggleTeX.
+See http://www2.ph.ed.ac.uk/snuggletex/ for SnuggleTeX documentation.
+
+Usage:
+
+Specify one or more input files. You may use '-' to denote STDIN
+as an input. You may also pass zero or more of the following
+command line options as required:
+
+-?
+-h
+-help
+    Show usage and exit
+
+-web TYPE
+    Generate a web page of given type, rather than plain XML
+    output.
+    Allowable values for TYPE are:
+      MOZILLA
+      CROSS_BROWSER_XHTML
+      MATHPLAYER_HTML
+      UNIVERSAL_STYLESHEET
+      CLIENT_SIDE_XSLT_STYLESHEET
+      PROCESSED_HTML
+    Consult the documentation for further details.
+    Note that some of these types will set sensible values
+    for other options; you can override these if required.
+
+-enc ENCODING
+    Generate XML encoded using the given encoding
+
+-indent [true|false|1|0|on|off]
+    Specify whether to indent the resulting XML or not
+
+-xmldecl [true|false|1|0|on|off]
+    Specify whether to include an XML declaration at the top
+    of the output.
+
+-dtpublic IDENTIFIER
+    Puts the given public identifier in the output within
+    a <!DOCTYPE> declaration.
+    (Requires -dtsystem to be used as well.)
+
+-dtsystem IDENTIFIER
+    Puts the given system identifier in the output within
+    a <!DOCTYPE> declaration.
+
+-ctype STRING
+    Sets the content type in XHTML output,
+    e.g. application/xhtml+xml, text/html etc.
+    (Only used when generating web pages.)
+
+-lang STRING
+    Sets the language details in XHTML output,
+    e.g. en, fr etc.
+    (Only used when generating web pages.)
+
+-title STRING
+    Sets the title in XHTML output
+    (Only used when generating web pages.)
+
+-head [true|false|1|0|on|off]
+    Determines whether to include a <h1> title header in XHTML
+    output.
+    (Only used when generating web pages.)
+
+-style [true|false|1|0|on|off]
+    Determines whether to embed CSS within a <style>..</style>
+    section in XHTML output.
+    (Only used when generating web pages.)
+
+-css URL
+    Add the given URL as a CSS stylesheet link in the XHTML output
+    (Only used when generating web pages.)
+
+-clientxsl URL
+    Add the given URL as a client-side XSLT transform link in the
+    XHTML output
+    (Only used when generating web pages.)

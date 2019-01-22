@@ -14,6 +14,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.form.tex.TeXParser;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -374,7 +375,7 @@ public final class StringFunctions {
 			if (arg1.isString()) {
 				ISymbol form = F.InputForm;
 				if (ast.size() == 3) {
-					IExpr arg2 = ast.arg1();
+					IExpr arg2 = ast.arg2();
 					if (arg2.equals(F.InputForm)) {
 						form = F.InputForm;
 					} else if (arg2.equals(F.TeXForm)) {
@@ -383,12 +384,20 @@ public final class StringFunctions {
 						return F.NIL;
 					}
 				}
-				if (form.equals(F.InputForm)) {
-					ExprParser fParser = new ExprParser(engine);
-					IExpr temp = fParser.parse(arg1.toString());
-					return temp;
-				} else if (form.equals(F.TeXForm)) {
-					// TODO call TeXParser
+				try {
+					if (form.equals(F.InputForm)) {
+						ExprParser fParser = new ExprParser(engine);
+						IExpr temp = fParser.parse(arg1.toString());
+						return temp;
+					} else if (form.equals(F.TeXForm)) {
+						TeXParser texParser = new TeXParser(engine);
+						return texParser.toExpression(arg1.toString());
+					}
+				} catch (RuntimeException rex) {
+					if (Config.SHOW_STACKTRACE) {
+						rex.printStackTrace();
+					}
+					return F.$Aborted;
 				}
 			}
 			return F.NIL;
