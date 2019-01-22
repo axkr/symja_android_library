@@ -8,13 +8,20 @@
 //No part of this code can be used for commercial purposes without
 //the written consent from the author. Otherwise it can be used freely
 //except that you have to write somewhere in the code this header.
-//
-//
 
-package org.matheclipse.core.numbertheory;
+package de.tilman_neumann.jml.factor.ecm;
 
 import java.math.BigInteger;
 import java.util.Map;
+import java.util.TreeMap;
+
+import org.apache.log4j.Logger;
+
+import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
+import de.tilman_neumann.jml.primes.probable.BPSWTest;
+//import de.tilman_neumann.util.ConfigUtil;
+
+import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
 /**
  * <p>
@@ -26,66 +33,91 @@ import java.util.Map;
  * factorization </a>
  * </p>
  */
-public class EllipticCurveMethod {
-	/**
-	 * Initial capacity for the arrays which store the factors.
-	 */
-	private static int START_CAPACITY = 32;
+public class EllipticCurveMethod extends FactorAlgorithmBase {
+	private static final Logger LOG = Logger.getLogger(EllipticCurveMethod.class);
 
-	private static final int TYP_AURIF = 100000000;
-	private static final int TYP_TABLE = 150000000;
-	private static final int TYP_SIQS = 200000000;
-	private static final int TYP_LEHMAN = 250000000;
-	private static final int TYP_EC = 300000000;
+	/** Initial capacity for the arrays which store the factors. */
+	private static final int START_CAPACITY = 32;
 
-	private static final BigInteger BigInt0 = BigInteger.ZERO;
-	private static final BigInteger BigInt1 = BigInteger.ONE;
-	private static final BigInteger BigInt2 = BigInteger.valueOf(2L);
-	private static final BigInteger BigInt3 = BigInteger.valueOf(3L);
-	private static final int PWmax = 32, Qmax = 30241, LEVELmax = 11;
 	private static final int NLen = 1200;
-	private static final int aiP[] = { 2, 3, 5, 7, 11, 13 };
-	private static final int aiQ[] = { 2, 3, 5, 7, 13, 11, 31, 61, 19, 37, 181, 29, 43, 71, 127, 211, 421, 631, 41, 73,
-			281, 2521, 17, 113, 241, 337, 1009, 109, 271, 379, 433, 541, 757, 2161, 7561, 15121, 23, 67, 89, 199, 331,
-			397, 463, 617, 661, 881, 991, 1321, 2311, 2377, 2971, 3697, 4159, 4621, 8317, 9241, 16633, 18481, 23761,
-			101, 151, 401, 601, 701, 1051, 1201, 1801, 2801, 3301, 3851, 4201, 4951, 6301, 9901, 11551, 12601, 14851,
-			15401, 19801, 97, 353, 673, 2017, 3169, 3361, 5281, 7393, 21601, 30241, 53, 79, 131, 157, 313, 521, 547,
-			859, 911, 937, 1093, 1171, 1249, 1301, 1873, 1951, 2003, 2081, 41, 2731, 2861, 3121, 3433, 3511, 5851, 6007,
-			6553, 7151, 7723, 8009, 8191, 8581, 8737, 9829, 11701, 13729, 14561, 15601, 16381, 17551, 20021, 20593,
-			21841, 24571, 25741, 26209, 28081 };
-	private static final int aiG[] = { 1, 2, 2, 3, 2, 2, 3, 2, 2, 2, 2, 2, 3, 7, 3, 2, 2, 3, 6, 5, 3, 17, 3, 3, 7, 10,
-			11, 6, 6, 2, 5, 2, 2, 23, 13, 11, 5, 2, 3, 3, 3, 5, 3, 3, 2, 3, 6, 13, 3, 5, 10, 5, 3, 2, 6, 13, 15, 13, 7,
-			2, 6, 3, 7, 2, 7, 11, 11, 3, 6, 2, 11, 6, 10, 2, 7, 11, 2, 6, 13, 5, 3, 5, 5, 7, 22, 7, 5, 7, 11, 2, 3, 2,
-			5, 10, 3, 2, 2, 17, 5, 5, 2, 7, 2, 10, 3, 5, 3, 7, 3, 2, 7, 5, 7, 2, 3, 10, 7, 3, 3, 17, 6, 5, 10, 6, 23, 6,
-			23, 2, 3, 3, 5, 11, 7, 6, 11, 19 };
-	private static final int aiNP[] = { 2, 3, 3, 4, 4, 4, 4, 5, 5, 5, 6 };
-	private static final int aiNQ[] = { 5, 8, 11, 18, 22, 27, 36, 59, 79, 89, 136 };
-	private static final int aiT[] = { 2 * 2 * 3, 2 * 2 * 3 * 5, 2 * 2 * 3 * 3 * 5, 2 * 2 * 3 * 3 * 5 * 7,
-			2 * 2 * 2 * 3 * 3 * 5 * 7, 2 * 2 * 2 * 2 * 3 * 3 * 5 * 7, 2 * 2 * 2 * 2 * 3 * 3 * 3 * 5 * 7,
-			2 * 2 * 2 * 2 * 3 * 3 * 3 * 5 * 7 * 11, 2 * 2 * 2 * 2 * 3 * 3 * 3 * 5 * 5 * 7 * 11,
-			2 * 2 * 2 * 2 * 2 * 3 * 3 * 3 * 5 * 5 * 7 * 11, 2 * 2 * 2 * 2 * 2 * 3 * 3 * 3 * 5 * 5 * 7 * 11 * 13 };
 	private static final long DosALa32 = (long) 1 << 32;
 	private static final long DosALa31 = (long) 1 << 31;
 	private static final double dDosALa31 = DosALa31;
 	private static final double dDosALa62 = dDosALa31 * dDosALa31;
 	private static final long Mi = 1000000000;
-	/* ECM limits for 30, 35, ..., 85 digits */
-	static final int limits[] = { 5, 8, 15, 25, 27, 32, 43, 70, 150, 300, 350, 600, 1500 };
-	static final String[] expressionText = { "Number too low (less than 2).",
-			"Number too high (more than 10000 digits).", "Intermediate expression too high (more than 20000 digits).",
-			"Non-integer division.", "Parentheses mismatch.", "Syntax error.", "Too many parentheses.",
-			"Invalid parameter." };
+
+	/** ECM limits for 30, 35, ..., 85 digits */
+	private static final int limits[] = { 5, 8, 15, 25, 27, 32, 43, 70, 150, 300, 350, 600, 1500 };
+
+	private static final BPSWTest bpsw = new BPSWTest();
+
 	/*********************************************************/
 	/* Start of code "borrowed" from Paul Zimmermann's ECM4C */
 	/*********************************************************/
-	final private static int ADD = 6; /*
-										 * number of multiplications in an addition
-										 */
-	final private static int DUP = 5; /*
-										 * number of multiplications in a duplicate
-										 */
-	/**********************/
+	private static final int ADD = 6; // number of multiplications in an addition
+	private static final int DUP = 5; // number of multiplications in a duplicate
 
+	private final long biTmp[] = new long[NLen];
+
+	// Used inside GCD calculations in multiple precision numbers
+	private final long CalcAuxGcdU[] = new long[NLen];
+	private final long CalcAuxGcdV[] = new long[NLen];
+	private final long CalcAuxGcdT[] = new long[NLen];
+	private final long TestNbr[] = new long[NLen];
+	private final long GcdAccumulated[] = new long[NLen];
+	private final long BigNbr1[] = new long[NLen];
+	private final int SmallPrime[] = new int[670]; /* Primes < 5000 */
+	private final long MontgomeryMultR1[] = new long[NLen];
+	private final long MontgomeryMultR2[] = new long[NLen];
+	private final long MontgomeryMultAfterInv[] = new long[NLen];
+
+	public BigInteger inputNumber;
+
+	/** Length of multiple precision numbers. */
+	private int NumberLength;
+	private int fCapacity;
+	private int NbrFactors;
+
+	/** Elliptic Curve number */
+	private int EC, NextEC = -1;
+
+	private BigInteger PD[] = new BigInteger[START_CAPACITY]; // and prime factors
+	private int Exp[] = new int[START_CAPACITY];
+	private int Typ[] = new int[START_CAPACITY];
+	private BigInteger PD1[] = new BigInteger[START_CAPACITY];
+	private int Exp1[] = new int[START_CAPACITY];
+	private int Typ1[] = new int[START_CAPACITY];
+
+	private long[] fieldAA, fieldTX, fieldTZ, fieldUX, fieldUZ;
+	private long[] fieldAux1, fieldAux2, fieldAux3, fieldAux4;
+	private double dN;
+	private long MontgomeryMultN;
+	private BigInteger NumberToFactor;
+	private int indexM, maxIndexM;
+
+	@Override
+	public String getName() {
+		return "ECM";
+	}
+
+	@Override
+	public BigInteger findSingleFactor(BigInteger N) {
+		Map<BigInteger, Integer> factors = new TreeMap<>();
+		ellipticCurveFactors(N, factors);
+		return factors.size() > 0 ? factors.keySet().iterator().next() : null;
+	}
+
+	private void ellipticCurveFactors(final BigInteger N, Map<BigInteger, Integer> factors) {
+		fCapacity = START_CAPACITY;
+		inputNumber = N;
+		NextEC = -1;
+		NbrFactors = 0; // TODO outcommenting this makes class tests much faster but leads to 100% fails in
+						// FactorizerTest
+		BigNbrToBigInt(N);
+		factorize(inputNumber, factors);
+	}
+
+	/**********************/
 	/* Auxiliary routines */
 	/**********************/
 
@@ -115,130 +147,7 @@ public class EllipticCurveMethod {
 		} while (Q < 5000);
 	}
 
-	/**
-	 * Perform Lehman algorithm.
-	 * 
-	 * @param nbr
-	 * @param k
-	 * @return
-	 */
-	private static BigInteger Lehman(BigInteger nbr, int k) {
-		long bitsSqr[] = { 0x0000000000000003l, // 3
-				0x0000000000000013l, // 5
-				0x0000000000000017l, // 7
-				0x000000000000023Bl, // 11
-				0x000000000000161Bl, // 13
-				0x000000000001A317l, // 17
-				0x0000000000030AF3l, // 19
-				0x000000000005335Fl, // 23
-				0x0000000013D122F3l, // 29
-				0x00000000121D47B7l, // 31
-				0x000000165E211E9Bl, // 37
-				0x000001B382B50737l, // 41
-				0x0000035883A3EE53l, // 43
-				0x000004351B2753DFl, // 47
-				0x0012DD703303AED3l, // 53
-				0x022B62183E7B92BBl, // 59
-				0x1713E6940A59F23Bl, // 61
-		};
-		int primes[] = { 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61 };
-		int nbrs[] = new int[17];
-		int diffs[] = new int[17];
-		int i, j, m;
-		int intLog2N;
-		double log2N;
-		BigInteger root, rootN, dif, nextroot;
-		BigInteger bM, a, c, r, sqr, val;
-		if (nbr.testBit(0) == false) { // nbr Even
-			r = BigInt0;
-			m = 1;
-			bM = BigInt1;
-		} else {
-			if (k % 2 == 0) { // k Even
-				r = BigInt1;
-				m = 2;
-				bM = BigInt2;
-			} else { // k Odd
-				r = BigInteger.valueOf(k).add(nbr).and(BigInt3);
-				m = 4;
-				bM = BigInteger.valueOf(4);
-			}
-		}
-		sqr = nbr.multiply(BigInteger.valueOf(k)).shiftLeft(2);
-		intLog2N = sqr.bitLength() - 1;
-		log2N = intLog2N + Math.log(sqr.shiftRight(intLog2N - 32).add(BigInt1).doubleValue()) / Math.log(2) - 32;
-		log2N /= 2;
-		if (log2N < 32) {
-			root = BigInteger.valueOf((long) Math.exp(log2N * Math.log(2)));
-		} else {
-			intLog2N = (int) Math.floor(log2N) - 32;
-			root = BigInteger.valueOf((long) Math.exp((log2N - intLog2N) * Math.log(2)) + 10).shiftLeft(intLog2N);
-		}
-		while (true) {
-			rootN = root.multiply(root);
-			dif = sqr.subtract(rootN);
-			if (dif.signum() == 0) { // Perfect power
-				break;
-			}
-			nextroot = dif.add(BigInt1).divide(BigInt2.multiply(root)).add(root).subtract(BigInt1);
-			if (root.compareTo(nextroot) <= 0)
-				break; // Not a perfect power
-			root = nextroot;
-		}
-		a = root;
-		while (a.mod(bM).equals(r) == false || a.multiply(a).compareTo(sqr) < 0) {
-			a = a.add(BigInt1);
-		}
-		c = a.multiply(a).subtract(sqr);
-		for (i = 0; i < 17; i++) {
-			BigInteger prime = BigInteger.valueOf(primes[i]);
-			nbrs[i] = c.mod(prime).intValue();
-			diffs[i] = bM.multiply(a.shiftLeft(1).add(bM)).mod(prime).intValue();
-		}
-		for (j = 0; j < 10000; j++) {
-			for (i = 0; i < 17; i++) {
-				if ((bitsSqr[i] & (1l << nbrs[i])) == 0) {
-					// Not a perfect square
-					break;
-				}
-			}
-			if (i == 17) { // Test for perfect square
-				val = a.add(BigInteger.valueOf(m).multiply(BigInteger.valueOf(j)));
-				c = val.multiply(val).subtract(sqr);
-				intLog2N = c.bitLength() - 1;
-				log2N = intLog2N + Math.log(c.shiftRight(intLog2N - 32).add(BigInt1).doubleValue()) / Math.log(2) - 32;
-				log2N /= 2;
-				if (log2N < 32) {
-					root = BigInteger.valueOf((long) Math.exp(log2N * Math.log(2)));
-				} else {
-					intLog2N = (int) Math.floor(log2N) - 32;
-					root = BigInteger.valueOf((long) Math.exp((log2N - intLog2N) * Math.log(2)) + 10)
-							.shiftLeft(intLog2N);
-				}
-				while (true) {
-					rootN = root.multiply(root);
-					dif = c.subtract(rootN);
-					if (dif.signum() == 0) { // Perfect power -> factor found
-						root = nbr.gcd(val.add(root));
-						if (root.compareTo(BigInteger.valueOf(10000)) > 0) {
-							return root; // Return non-trivial found
-						}
-					}
-					nextroot = dif.add(BigInt1).divide(BigInt2.multiply(root)).add(root).subtract(BigInt1);
-					if (root.compareTo(nextroot) <= 0)
-						break; // Not a perfect power
-					root = nextroot;
-				}
-			}
-			for (i = 0; i < 17; i++) {
-				nbrs[i] = (nbrs[i] + diffs[i]) % primes[i];
-				diffs[i] = (diffs[i] + 2 * m * m) % primes[i];
-			}
-		}
-		return BigInt1; // Factor not found
-	}
-
-	/* returns the number of modular multiplications */
+	/** returns the number of modular multiplications */
 	private static int lucas_cost(int n, double v) {
 		int c, d, e, r;
 
@@ -287,80 +196,6 @@ public class EllipticCurveMethod {
 			}
 		}
 		return (c);
-	}
-
-	private final BigInteger inputNumber;
-
-	private boolean onlyFactoring = true;
-	private int digitsInGroup = 6;
-	private BigInteger PD[] = new BigInteger[START_CAPACITY]; // and prime
-																// factors
-	private int Exp[] = new int[START_CAPACITY];
-	private int Typ[] = new int[START_CAPACITY];
-	private BigInteger PD1[] = new BigInteger[START_CAPACITY];
-	private int Exp1[] = new int[START_CAPACITY];
-	private int Typ1[] = new int[START_CAPACITY];
-	private boolean foundByLehman;
-	private final int aiIndx[] = new int[Qmax];
-	private final int aiF[] = new int[Qmax];
-	private final int aiInv[] = new int[PWmax];
-	private final long biTmp[] = new long[NLen];
-	private final long biExp[] = new long[NLen];
-	private final long biN[] = new long[NLen];
-	private final long biR[] = new long[NLen];
-	private final long biS[] = new long[NLen];
-	private final long biT[] = new long[NLen];
-	private final long aiJS[][] = new long[PWmax][NLen];
-	private final long aiJW[][] = new long[PWmax][NLen];
-	private final long aiJX[][] = new long[PWmax][NLen];
-	private final long aiJ0[][] = new long[PWmax][NLen];
-	private final long aiJ1[][] = new long[PWmax][NLen];
-	private final long aiJ2[][] = new long[PWmax][NLen];
-	private final long aiJ00[][] = new long[PWmax][NLen];
-	private final long aiJ01[][] = new long[PWmax][NLen];
-
-	/**
-	 * Length of multiple precision numbers.
-	 */
-	private int NumberLength;
-	private int fCapacity;
-	private int NbrFactors, NbrFactors1;
-
-	/**
-	 * Elliptic Curve number
-	 */
-	private int EC;
-
-	/**
-	 * Used inside GCD calculations in multiple precision numbers
-	 */
-	private final long CalcAuxGcdU[] = new long[NLen];
-	private final long CalcAuxGcdV[] = new long[NLen];
-	private final long CalcAuxGcdT[] = new long[NLen];
-	private long TestNbr[] = new long[NLen];
-	private final long GcdAccumulated[] = new long[NLen];
-	private long[] fieldAA, fieldTX, fieldTZ, fieldUX, fieldUZ;
-	private long[] fieldAux1, fieldAux2, fieldAux3, fieldAux4;
-	private double dN;
-	private final long BigNbr1[] = new long[NLen];
-	private final int SmallPrime[] = new int[670]; /* Primes < 5000 */
-	private final long MontgomeryMultR1[] = new long[NLen];
-	private final long MontgomeryMultR2[] = new long[NLen];
-	private final long MontgomeryMultAfterInv[] = new long[NLen];
-	private long MontgomeryMultN;
-	private BigInteger NumberToFactor;
-	private boolean batchFinished = true;
-	private boolean batchPrime = false;
-	private boolean TerminateThread = true;
-	private int NextEC = -1;
-	private int indexM, maxIndexM;
-	private BigInteger Quad1, Quad2, Quad3, Quad4;
-	private boolean Computing3Squares;
-
-	public EllipticCurveMethod(BigInteger nn) {
-		fCapacity = START_CAPACITY;
-		inputNumber = nn;
-		BigNbrToBigInt(nn);
 	}
 
 	/**
@@ -472,598 +307,12 @@ public class EllipticCurveMethod {
 		}
 	}
 
-	/**
-	 * Prime checking routine
-	 * 
-	 * @param N
-	 * @return 0 = Number is prime. 1 = Number is composite.
-	 */
-	private int AprtCle(BigInteger N) {
-		int i, j, G, H, I, J, K, P, Q, T, U, W, X;
-		int IV, InvX, LEVELnow, NP, PK, PL, PM, SW, VK, TestedQs, TestingQs;
-		int QQ, T1, T3, U1, U3, V1, V3;
-		int LengthN, LengthS;
-		long Mask;
-		double dS;
-
-		// System.out.println("Starting Prime Check routine.");
-		BigNbrToBigInt(N);
-		GetMontgomeryParms();
-		// if (Computing3Squares == false) {
-		// }
-		j = PK = PL = PM = 0;
-		for (I = 0; I < NumberLength; I++) {
-			biS[I] = 0;
-			for (J = 0; J < PWmax; J++) {
-				aiJX[J][I] = 0;
-			}
-		}
-		GetPrimes2Test: for (i = 0; i < LEVELmax; i++) {
-			biS[0] = 2;
-			for (I = 1; I < NumberLength; I++) {
-				biS[I] = 0;
-			}
-			for (j = 0; j < aiNQ[i]; j++) {
-				Q = aiQ[j];
-				U = aiT[i] * Q;
-				do {
-					U /= Q;
-					MultBigNbrByLong(biS, Q, biS);
-				} while (U % Q == 0);
-
-				// Exit loop if S^2 > N.
-
-				if (CompareSquare(biS, TestNbr) > 0) {
-					break GetPrimes2Test;
-				}
-			} /* End for j */
-		} /* End for i */
-		if (i == LEVELmax) { /* too big */
-			return ProbabilisticPrimeTest(N);
-		}
-		LEVELnow = i;
-		TestingQs = j;
-		T = aiT[LEVELnow];
-		NP = aiNP[LEVELnow];
-
-		MainStart: do {
-			for (i = 0; i < NP; i++) {
-				P = aiP[i];
-				SW = TestedQs = 0;
-				Q = W = (int) BigNbrModLong(TestNbr, ((long)P) * ((long)P));
-				for (J = P - 2; J > 0; J--) {
-					W = (W * Q) % (P * P);
-				}
-				if (P > 2 && W != 1) {
-					SW = 1;
-				}
-				do {
-					for (j = TestedQs; j <= TestingQs; j++) {
-						Q = aiQ[j] - 1;
-						G = aiG[j];
-						K = 0;
-						while (Q % P == 0) {
-							K++;
-							Q /= P;
-						}
-						Q = aiQ[j];
-						if (K == 0) {
-							continue;
-						}
-						if (Computing3Squares == false) {
-							/*
-							 * System.out.println( primalityString + "P = " + P + ",  Q = " + Q + "  (" + (i *
-							 * (TestingQs + 1) + j) * 100 / (NP * (TestingQs + 1)) + "%)");
-							 */
-						}
-						PM = 1;
-						for (I = 1; I < K; I++) {
-							PM = PM * P;
-						}
-						PL = (P - 1) * PM;
-						PK = P * PM;
-						J = 1;
-						for (I = 1; I < Q; I++) {
-							J = J * G % Q;
-							aiIndx[J] = I;
-						}
-						J = 1;
-						for (I = 1; I <= Q - 2; I++) {
-							J = J * G % Q;
-							aiF[I] = aiIndx[(Q + 1 - J) % Q];
-						}
-						for (I = 0; I < PK; I++) {
-							for (J = 0; J < NumberLength; J++) {
-								aiJ0[I][J] = aiJ1[I][J] = 0;
-							}
-						}
-						if (P > 2) {
-							JacobiSum(1, 1, P, PK, PL, PM, Q);
-						} else {
-							if (K != 1) {
-								JacobiSum(1, 1, P, PK, PL, PM, Q);
-								for (I = 0; I < PK; I++) {
-									for (J = 0; J < NumberLength; J++) {
-										aiJW[I][J] = 0;
-									}
-								}
-								if (K != 2) {
-									for (I = 0; I < PM; I++) {
-										for (J = 0; J < NumberLength; J++) {
-											aiJW[I][J] = aiJ0[I][J];
-										}
-									}
-									JacobiSum(2, 1, P, PK, PL, PM, Q);
-									for (I = 0; I < PM; I++) {
-										for (J = 0; J < NumberLength; J++) {
-											aiJS[I][J] = aiJ0[I][J];
-										}
-									}
-									JS_JW(PK, PL, PM, P);
-									NormalizeJS(PK, PL, PM, P);
-									for (I = 0; I < PM; I++) {
-										for (J = 0; J < NumberLength; J++) {
-											aiJ1[I][J] = aiJS[I][J];
-										}
-									}
-									JacobiSum(3 << (K - 3), 1 << (K - 3), P, PK, PL, PM, Q);
-									for (J = 0; J < NumberLength; J++) {
-										for (I = 0; I < PK; I++) {
-											aiJW[I][J] = 0;
-										}
-										for (I = 0; I < PM; I++) {
-											aiJS[I][J] = aiJ0[I][J];
-										}
-									}
-									JS_2(PK, PL, PM, P);
-									NormalizeJS(PK, PL, PM, P);
-									for (I = 0; I < PM; I++) {
-										for (J = 0; J < NumberLength; J++) {
-											aiJ2[I][J] = aiJS[I][J];
-										}
-									}
-								}
-							}
-						}
-						for (J = 0; J < NumberLength; J++) {
-							aiJ00[0][J] = aiJ01[0][J] = MontgomeryMultR1[J];
-							for (I = 1; I < PK; I++) {
-								aiJ00[I][J] = aiJ01[I][J] = 0;
-							}
-						}
-						VK = (int) BigNbrModLong(TestNbr, PK);
-						for (I = 1; I < PK; I++) {
-							if (I % P != 0) {
-								U1 = 1;
-								U3 = I;
-								V1 = 0;
-								V3 = PK;
-								while (V3 != 0) {
-									QQ = U3 / V3;
-									T1 = U1 - V1 * QQ;
-									T3 = U3 - V3 * QQ;
-									U1 = V1;
-									U3 = V3;
-									V1 = T1;
-									V3 = T3;
-								}
-								aiInv[I] = (U1 + PK) % PK;
-							} else {
-								aiInv[I] = 0;
-							}
-						}
-						if (P != 2) {
-							for (IV = 0; IV <= 1; IV++) {
-								for (X = 1; X < PK; X++) {
-									for (I = 0; I < PK; I++) {
-										for (J = 0; J < NumberLength; J++) {
-											aiJS[I][J] = aiJ0[I][J];
-										}
-									}
-									if (X % P == 0) {
-										continue;
-									}
-									if (IV == 0) {
-										LongToBigNbr(X, biExp);
-									} else {
-										LongToBigNbr(((long)VK) * ((long)X) / ((long)PK), biExp);
-										if (VK * X / PK == 0) {
-											continue;
-										}
-									}
-									JS_E(PK, PL, PM, P);
-									for (I = 0; I < PK; I++) {
-										for (J = 0; J < NumberLength; J++) {
-											aiJW[I][J] = 0;
-										}
-									}
-									InvX = aiInv[X];
-									for (I = 0; I < PK; I++) {
-										J = I * InvX % PK;
-										AddBigNbrModN(aiJW[J], aiJS[I], aiJW[J]);
-									}
-									NormalizeJW(PK, PL, PM, P);
-									if (IV == 0) {
-										for (I = 0; I < PK; I++) {
-											for (J = 0; J < NumberLength; J++) {
-												aiJS[I][J] = aiJ00[I][J];
-											}
-										}
-									} else {
-										for (I = 0; I < PK; I++) {
-											for (J = 0; J < NumberLength; J++) {
-												aiJS[I][J] = aiJ01[I][J];
-											}
-										}
-									}
-									JS_JW(PK, PL, PM, P);
-									if (IV == 0) {
-										for (I = 0; I < PK; I++) {
-											for (J = 0; J < NumberLength; J++) {
-												aiJ00[I][J] = aiJS[I][J];
-											}
-										}
-									} else {
-										for (I = 0; I < PK; I++) {
-											for (J = 0; J < NumberLength; J++) {
-												aiJ01[I][J] = aiJS[I][J];
-											}
-										}
-									}
-								} /* end for X */
-							} /* end for IV */
-						} else {
-							if (K == 1) {
-								MultBigNbrByLongModN(MontgomeryMultR1, Q, aiJ00[0]);
-								for (J = 0; J < NumberLength; J++) {
-									aiJ01[0][J] = MontgomeryMultR1[J];
-								}
-							} else {
-								if (K == 2) {
-									if (VK == 1) {
-										for (J = 0; J < NumberLength; J++) {
-											aiJ01[0][J] = MontgomeryMultR1[J];
-										}
-									}
-									for (J = 0; J < NumberLength; J++) {
-										aiJS[0][J] = aiJ0[0][J];
-										aiJS[1][J] = aiJ0[1][J];
-									}
-									JS_2(PK, PL, PM, P);
-									if (VK == 3) {
-										for (J = 0; J < NumberLength; J++) {
-											aiJ01[0][J] = aiJS[0][J];
-											aiJ01[1][J] = aiJS[1][J];
-										}
-									}
-									MultBigNbrByLongModN(aiJS[0], Q, aiJ00[0]);
-									MultBigNbrByLongModN(aiJS[1], Q, aiJ00[1]);
-								} else {
-									for (IV = 0; IV <= 1; IV++) {
-										for (X = 1; X < PK; X += 2) {
-											for (I = 0; I <= PM; I++) {
-												for (J = 0; J < NumberLength; J++) {
-													aiJS[I][J] = aiJ1[I][J];
-												}
-											}
-											if (X % 8 == 5 || X % 8 == 7) {
-												continue;
-											}
-											if (IV == 0) {
-												LongToBigNbr(X, biExp);
-											} else {
-												LongToBigNbr(((long)VK) * ((long)X) / ((long)PK), biExp);
-												if (VK * X / PK == 0) {
-													continue;
-												}
-											}
-											JS_E(PK, PL, PM, P);
-											for (I = 0; I < PK; I++) {
-												for (J = 0; J < NumberLength; J++) {
-													aiJW[I][J] = 0;
-												}
-											}
-											InvX = aiInv[X];
-											for (I = 0; I < PK; I++) {
-												J = I * InvX % PK;
-												AddBigNbrModN(aiJW[J], aiJS[I], aiJW[J]);
-											}
-											NormalizeJW(PK, PL, PM, P);
-											if (IV == 0) {
-												for (I = 0; I < PK; I++) {
-													for (J = 0; J < NumberLength; J++) {
-														aiJS[I][J] = aiJ00[I][J];
-													}
-												}
-											} else {
-												for (I = 0; I < PK; I++) {
-													for (J = 0; J < NumberLength; J++) {
-														aiJS[I][J] = aiJ01[I][J];
-													}
-												}
-											}
-											NormalizeJS(PK, PL, PM, P);
-											JS_JW(PK, PL, PM, P);
-											if (IV == 0) {
-												for (I = 0; I < PK; I++) {
-													for (J = 0; J < NumberLength; J++) {
-														aiJ00[I][J] = aiJS[I][J];
-													}
-												}
-											} else {
-												for (I = 0; I < PK; I++) {
-													for (J = 0; J < NumberLength; J++) {
-														aiJ01[I][J] = aiJS[I][J];
-													}
-												}
-											}
-										} /* end for X */
-										if (IV == 0 || VK % 8 == 1 || VK % 8 == 3) {
-											continue;
-										}
-										for (I = 0; I < PM; I++) {
-											for (J = 0; J < NumberLength; J++) {
-												aiJW[I][J] = aiJ2[I][J];
-												aiJS[I][J] = aiJ01[I][J];
-											}
-										}
-										for (; I < PK; I++) {
-											for (J = 0; J < NumberLength; J++) {
-												aiJW[I][J] = aiJS[I][J] = 0;
-											}
-										}
-										JS_JW(PK, PL, PM, P);
-										for (I = 0; I < PM; I++) {
-											for (J = 0; J < NumberLength; J++) {
-												aiJ01[I][J] = aiJS[I][J];
-											}
-										}
-									} /* end for IV */
-								}
-							}
-						}
-						for (I = 0; I < PL; I++) {
-							for (J = 0; J < NumberLength; J++) {
-								aiJS[I][J] = aiJ00[I][J];
-							}
-						}
-						for (; I < PK; I++) {
-							for (J = 0; J < NumberLength; J++) {
-								aiJS[I][J] = 0;
-							}
-						}
-						DivBigNbrByLong(TestNbr, PK, biExp);
-						JS_E(PK, PL, PM, P);
-						for (I = 0; I < PK; I++) {
-							for (J = 0; J < NumberLength; J++) {
-								aiJW[I][J] = 0;
-							}
-						}
-						for (I = 0; I < PL; I++) {
-							for (J = 0; J < PL; J++) {
-								MontgomeryMult(aiJS[I], aiJ01[J], biTmp);
-								AddBigNbrModN(biTmp, aiJW[(I + J) % PK], aiJW[(I + J) % PK]);
-							}
-						}
-						NormalizeJW(PK, PL, PM, P);
-						MatchingRoot: do {
-							H = -1;
-							W = 0;
-							for (I = 0; I < PL; I++) {
-								if (BigNbrIsZero(aiJW[I]) == false) {
-									if (H == -1 && BigNbrAreEqual(aiJW[I], MontgomeryMultR1) == true) {
-										H = I;
-									} else {
-										H = -2;
-										AddBigNbrModN(aiJW[I], MontgomeryMultR1, biTmp);
-										if (BigNbrIsZero(biTmp)) {
-											W++;
-										}
-									}
-								}
-							}
-							if (H >= 0) {
-								break MatchingRoot;
-							}
-							if (W != P - 1) {
-								return 1; /* Not prime */
-							}
-							for (I = 0; I < PM; I++) {
-								AddBigNbrModN(aiJW[I], MontgomeryMultR1, biTmp);
-								if (BigNbrIsZero(biTmp) == true) {
-									break;
-								}
-							}
-							if (I == PM) {
-								return 1; /* Not prime */
-							}
-							for (J = 1; J <= P - 2; J++) {
-								AddBigNbrModN(aiJW[I + J * PM], MontgomeryMultR1, biTmp);
-								if (BigNbrIsZero(biTmp) == false) {
-									return 1; /* Not prime */
-								}
-							}
-							H = I + PL;
-						} while (false);
-						if (SW == 1 || H % P == 0) {
-							continue;
-						}
-						if (P != 2) {
-							SW = 1;
-							continue;
-						}
-						if (K == 1) {
-							if ((TestNbr[0] & 3) == 1) {
-								SW = 1;
-							}
-							continue;
-						}
-
-						// if (Q^((N-1)/2) mod N != N-1), N is not prime.
-
-						MultBigNbrByLongModN(MontgomeryMultR1, Q, biTmp);
-						for (I = 0; I < NumberLength; I++) {
-							biR[I] = biTmp[I];
-						}
-						I = NumberLength - 1;
-						Mask = 0x40000000l;
-						while ((TestNbr[I] & Mask) == 0) {
-							Mask /= 2;
-							if (Mask == 0) {
-								I--;
-								Mask = 0x40000000l;
-							}
-						}
-						do {
-							Mask /= 2;
-							if (Mask == 0) {
-								I--;
-								Mask = 0x40000000l;
-							}
-							MontgomeryMult(biR, biR, biT);
-							for (J = 0; J < NumberLength; J++) {
-								biR[J] = biT[J];
-							}
-							if ((TestNbr[I] & Mask) != 0) {
-								MontgomeryMult(biR, biTmp, biT);
-								for (J = 0; J < NumberLength; J++) {
-									biR[J] = biT[J];
-								}
-							}
-						} while (I > 0 || Mask > 2);
-						AddBigNbrModN(biR, MontgomeryMultR1, biTmp);
-						if (BigNbrIsZero(biTmp) == false) {
-							return 1; /* Not prime */
-						}
-						SW = 1;
-					} /* end for j */
-					if (SW == 0) {
-						TestedQs = TestingQs + 1;
-						if (TestingQs < aiNQ[LEVELnow] - 1) {
-							TestingQs++;
-							Q = aiQ[TestingQs];
-							U = T * Q;
-							do {
-								MultBigNbrByLong(biS, Q, biS);
-								U /= Q;
-							} while (U % Q == 0);
-							continue; /* Retry */
-						}
-						LEVELnow++;
-						if (LEVELnow == LEVELmax) {
-							return ProbabilisticPrimeTest(N); /* Cannot tell */
-						}
-						T = aiT[LEVELnow];
-						NP = aiNP[LEVELnow];
-						biS[0] = 2;
-						for (J = 1; J < NumberLength; J++) {
-							biS[J] = 0;
-						}
-						for (J = 0; J <= aiNQ[LEVELnow]; J++) {
-							Q = aiQ[J];
-							U = T * Q;
-							do {
-								MultBigNbrByLong(biS, Q, biS);
-								U /= Q;
-							} while (U % Q == 0);
-							if (CompareSquare(biS, TestNbr) > 0) {
-								TestingQs = J;
-								continue MainStart; /*
-													 * Retry from the beginning
-													 */
-							}
-						} /* end for J */
-						return ProbabilisticPrimeTest(N); /* Program error */
-					} /* end if */
-					break;
-				} while (true); /* end do */
-			} /* end for i */
-
-			// Final Test
-
-			LengthN = NumberLength;
-			for (I = 0; I < NumberLength; I++) {
-				biN[I] = TestNbr[I];
-				TestNbr[I] = biS[I];
-				biR[I] = 0;
-			}
-			while (true) {
-				if (TestNbr[NumberLength - 1] != 0) {
-					break;
-				}
-				NumberLength--;
-			}
-			dN = TestNbr[NumberLength - 1];
-			if (NumberLength > 1) {
-				dN += TestNbr[NumberLength - 2] / dDosALa31;
-			}
-			if (NumberLength > 2) {
-				dN += TestNbr[NumberLength - 3] / dDosALa62;
-			}
-			LengthS = NumberLength;
-			dS = dN;
-			MontgomeryMultR1[0] = 1;
-			for (I = 1; I < NumberLength; I++) {
-				MontgomeryMultR1[I] = 0;
-			}
-
-			biR[0] = 1;
-			BigNbrModN(biN, LengthN, biT); /* Compute N mod S */
-			for (J = 1; J <= T; J++) {
-				MultBigNbrModN(biR, biT, biTmp);
-				for (i = NumberLength - 1; i > 0; i--) {
-					if (biTmp[i] != 0) {
-						break;
-					}
-				}
-				if (i == 0 && biTmp[0] != 1) {
-					return 0; /* Number is prime */
-				}
-				while (true) {
-					if (biTmp[NumberLength - 1] != 0) {
-						break;
-					}
-					NumberLength--;
-				}
-				for (I = 0; I < NumberLength; I++) {
-					TestNbr[I] = biTmp[I];
-				}
-				dN = TestNbr[NumberLength - 1];
-				if (NumberLength > 1) {
-					dN += TestNbr[NumberLength - 2] / dDosALa31;
-				}
-				if (NumberLength > 2) {
-					dN += TestNbr[NumberLength - 3] / dDosALa62;
-				}
-				for (i = NumberLength - 1; i > 0; i--) {
-					if (TestNbr[i] != biTmp[i]) {
-						break;
-					}
-				}
-				if (TestNbr[i] > biTmp[i]) {
-					BigNbrModN(biN, LengthN, biTmp); /* Compute N mod R */
-					if (BigNbrIsZero(biTmp) == true) { /* If N is multiple of R.. */
-						return 1; /* Number is composite */
-					}
-				}
-				dN = dS;
-				NumberLength = LengthS;
-				for (I = 0; I < NumberLength; I++) {
-					biR[I] = TestNbr[I];
-					TestNbr[I] = biS[I];
-				}
-			} /* End for J */
-			return 0; /* Number is prime */
-		} while (true);
-	}
-
 	// Perform JS <- JS * JW
-
 	private BigInteger BigIntToBigNbr(long[] GD) {
 		byte[] Result;
 		long[] Temp;
 		int i, NL;
-		long digit; // , MaxUInt = 0xFFFFFFFFl;
+		long digit;
 
 		Temp = new long[NumberLength];
 		Convert31To32Bits(GD, Temp);
@@ -1080,7 +329,6 @@ public class EllipticCurveMethod {
 	}
 
 	// Perform JS <- JS ^ 2
-
 	private boolean BigNbrAreEqual(long Nbr1[], long Nbr2[]) {
 		for (int i = 0; i < NumberLength; i++) {
 			if (Nbr1[i] != Nbr2[i]) {
@@ -1099,33 +347,7 @@ public class EllipticCurveMethod {
 		return true;
 	}
 
-	private long BigNbrModLong(long Nbr1[], long Nbr2) {
-		int i;
-		long Rem = 0;
-
-		for (i = NumberLength - 1; i >= 0; i--) {
-			Rem = ((Rem << 31) + Nbr1[i]) % Nbr2;
-		}
-		return Rem;
-	}
-
-	private void BigNbrModN(long Nbr[], int Length, long Mod[]) {
-		int i, j;
-		for (i = 0; i < NumberLength; i++) {
-			Mod[i] = Nbr[i + Length - NumberLength];
-		}
-		Mod[i] = 0;
-		AdjustModN(Mod);
-		for (i = Length - NumberLength - 1; i >= 0; i--) {
-			for (j = NumberLength; j > 0; j--) {
-				Mod[j] = Mod[j - 1];
-			}
-			Mod[0] = Nbr[i];
-			AdjustModN(Mod);
-		}
-	}
-
-	public void BigNbrToBigInt(BigInteger N) {
+	private void BigNbrToBigInt(BigInteger N) {
 		byte[] Result;
 		long[] Temp;
 		int i, j;
@@ -1162,231 +384,6 @@ public class EllipticCurveMethod {
 			Cy = (Cy >> 31) - Nbr[i];
 			Nbr[i] = Cy & 0x7FFFFFFFl;
 		}
-	}
-
-	/**
-	 * Compare Nbr1^2 vs. Nbr2
-	 * 
-	 * @param Nbr1
-	 * @param Nbr2
-	 * @return
-	 */
-	private int CompareSquare(long Nbr1[], long Nbr2[]) {
-		int I, k;
-
-		for (I = NumberLength - 1; I > 0; I--) {
-			if (Nbr1[I] != 0) {
-				break;
-			}
-		}
-		k = NumberLength / 2;
-		if (NumberLength % 2 == 0) {
-			if (I >= k) {
-				return 1;
-			} // Nbr1^2 > Nbr2
-			if (I < k - 1 || biS[k - 1] < 65536) {
-				return -1;
-			} // Nbr1^2 < Nbr2
-		} else {
-			if (I < k) {
-				return -1;
-			} // Nbr1^2 < Nbr2
-			if (I > k || biS[k] >= 65536) {
-				return 1;
-			} // Nbr1^2 > Nbr2
-		}
-		MultBigNbr(biS, biS, biTmp);
-		SubtractBigNbr(biTmp, TestNbr, biTmp);
-		if (BigNbrIsZero(biTmp) == true) {
-			return 0;
-		} // Nbr1^2 == Nbr2
-		if (biTmp[NumberLength - 1] >= 0) {
-			return 1;
-		} // Nbr1^2 > Nbr2
-		return -1; // Nbr1^2 < Nbr2
-	}
-
-	private boolean ComputeFourSquares(BigInteger PD[], int Exp[]) {
-		if (onlyFactoring) {
-			int indexPrimes;
-			BigInteger p, q, K, Mult1, Mult2, Mult3, Mult4;
-			BigInteger Tmp, Tmp1, Tmp2, Tmp3, M1, M2, M3, M4;
-
-			Quad1 = BigInt1; /* 1 = 1^2 + 0^2 + 0^2 + 0^2 */
-			Quad2 = BigInt0;
-			Quad3 = BigInt0;
-			Quad4 = BigInt0;
-			for (indexPrimes = NbrFactors - 1; indexPrimes >= 0; indexPrimes--) {
-				if (Exp[indexPrimes] % 2 == 0) {
-					continue;
-				}
-				p = PD[indexPrimes];
-				q = p.subtract(BigInt1); /* q = p-1 */
-				if (p.equals(BigInt2)) {
-					Mult1 = BigInt1; /* 2 = 1^2 + 1^2 + 0^2 + 0^2 */
-					Mult2 = BigInt1;
-					Mult3 = BigInt0;
-					Mult4 = BigInt0;
-				} else { /* Prime not 2 */
-					if (p.testBit(1) == false) { /* if p = 1 (mod 4) */
-						K = BigInt1;
-						do { // Compute Mult1 = sqrt(-1) mod p
-							K = K.add(BigInt1);
-							Mult1 = K.modPow(q.shiftRight(2), p);
-						} while (Mult1.equals(BigInt1) || Mult1.equals(q));
-						if (Mult1.multiply(Mult1).mod(p).equals(q) == false) {
-							return false; /* The number is not prime */
-						}
-						Mult2 = BigInt1;
-						while (true) {
-							K = Mult1.multiply(Mult1).add(Mult2.multiply(Mult2)).divide(p);
-							if (K.equals(BigInt1)) {
-								Mult3 = BigInt0;
-								Mult4 = BigInt0;
-								break;
-							}
-							if (p.mod(K).signum() == 0) {
-								return false; /* The number is not prime */
-							}
-							M1 = Mult1.mod(K);
-							M2 = Mult2.mod(K);
-							if (M1.compareTo(K.shiftRight(1)) > 0) {
-								M1 = M1.subtract(K);
-							}
-							if (M2.compareTo(K.shiftRight(1)) > 0) {
-								M2 = M2.subtract(K);
-							}
-							Tmp = Mult1.multiply(M1).add(Mult2.multiply(M2)).divide(K);
-							Mult2 = Mult1.multiply(M2).subtract(Mult2.multiply(M1)).divide(K);
-							Mult1 = Tmp;
-						} /* end while */
-					} /* end p = 1 (mod 4) */
-					else { /* if p = 3 (mod 4) */
-						// Compute Mult1 and Mult2 so Mult1^2 + Mult2^2 = -1
-						// (mod p)
-						Mult1 = BigInt0;
-						do {
-							Mult1 = Mult1.add(BigInt1);
-						} while (BigInt1.negate().subtract(Mult1.multiply(Mult1)).modPow(q.shiftRight(1), p)
-								.compareTo(BigInt1) > 0);
-						Mult2 = BigInt1.negate().subtract(Mult1.multiply(Mult1)).modPow(p.add(BigInt1).shiftRight(2),
-								p);
-						Mult3 = BigInt1;
-						Mult4 = BigInt0;
-						while (true) {
-							K = Mult1.multiply(Mult1).add(Mult2.multiply(Mult2)).add(Mult3.multiply(Mult3))
-									.add(Mult4.multiply(Mult4)).divide(p);
-							if (K.equals(BigInt1)) {
-								break;
-							}
-							if (K.testBit(0) == false) { // If K is even ...
-								if (Mult1.add(Mult2).testBit(0)) {
-									if (Mult1.add(Mult3).testBit(0) == false) {
-										Tmp = Mult2;
-										Mult2 = Mult3;
-										Mult3 = Tmp;
-									} else {
-										Tmp = Mult2;
-										Mult2 = Mult4;
-										Mult4 = Tmp;
-									}
-								} // At this moment Mult1+Mult2 = even,
-									// Mult3+Mult4 = even
-								Tmp1 = Mult1.add(Mult2).shiftRight(1);
-								Tmp2 = Mult1.subtract(Mult2).shiftRight(1);
-								Tmp3 = Mult3.add(Mult4).shiftRight(1);
-								Mult4 = Mult3.subtract(Mult4).shiftRight(1);
-								Mult3 = Tmp3;
-								Mult2 = Tmp2;
-								Mult1 = Tmp1;
-								continue;
-							} /* end if k is even */
-							M1 = Mult1.mod(K);
-							M2 = Mult2.mod(K);
-							M3 = Mult3.mod(K);
-							M4 = Mult4.mod(K);
-							if (M1.compareTo(K.shiftRight(1)) > 0) {
-								M1 = M1.subtract(K);
-							}
-							if (M2.compareTo(K.shiftRight(1)) > 0) {
-								M2 = M2.subtract(K);
-							}
-							if (M3.compareTo(K.shiftRight(1)) > 0) {
-								M3 = M3.subtract(K);
-							}
-							if (M4.compareTo(K.shiftRight(1)) > 0) {
-								M4 = M4.subtract(K);
-							}
-							Tmp1 = Mult1.multiply(M1).add(Mult2.multiply(M2)).add(Mult3.multiply(M3))
-									.add(Mult4.multiply(M4)).divide(K);
-							Tmp2 = Mult1.multiply(M2).subtract(Mult2.multiply(M1)).add(Mult3.multiply(M4))
-									.subtract(Mult4.multiply(M3)).divide(K);
-							Tmp3 = Mult1.multiply(M3).subtract(Mult3.multiply(M1)).subtract(Mult2.multiply(M4))
-									.add(Mult4.multiply(M2)).divide(K);
-							Mult4 = Mult1.multiply(M4).subtract(Mult4.multiply(M1)).add(Mult2.multiply(M3))
-									.subtract(Mult3.multiply(M2)).divide(K);
-							Mult3 = Tmp3;
-							Mult2 = Tmp2;
-							Mult1 = Tmp1;
-						} /* end while */
-					} /* end if p = 3 (mod 4) */
-				} /* end prime not 2 */
-				Tmp1 = Mult1.multiply(Quad1).add(Mult2.multiply(Quad2)).add(Mult3.multiply(Quad3))
-						.add(Mult4.multiply(Quad4));
-				Tmp2 = Mult1.multiply(Quad2).subtract(Mult2.multiply(Quad1)).add(Mult3.multiply(Quad4))
-						.subtract(Mult4.multiply(Quad3));
-				Tmp3 = Mult1.multiply(Quad3).subtract(Mult3.multiply(Quad1)).subtract(Mult2.multiply(Quad4))
-						.add(Mult4.multiply(Quad2));
-				Quad4 = Mult1.multiply(Quad4).subtract(Mult4.multiply(Quad1)).add(Mult2.multiply(Quad3))
-						.subtract(Mult3.multiply(Quad2));
-				Quad3 = Tmp3;
-				Quad2 = Tmp2;
-				Quad1 = Tmp1;
-			} /* end for indexPrimes */
-			for (indexPrimes = 0; indexPrimes < NbrFactors; indexPrimes++) {
-				p = PD[indexPrimes].pow(Exp[indexPrimes] / 2);
-				Quad1 = Quad1.multiply(p);
-				Quad2 = Quad2.multiply(p);
-				Quad3 = Quad3.multiply(p);
-				Quad4 = Quad4.multiply(p);
-			}
-			Quad1 = Quad1.abs();
-			Quad2 = Quad2.abs();
-			Quad3 = Quad3.abs();
-			Quad4 = Quad4.abs();
-			// Sort squares
-			if (Quad1.compareTo(Quad2) < 0) {
-				Tmp = Quad1;
-				Quad1 = Quad2;
-				Quad2 = Tmp;
-			}
-			if (Quad1.compareTo(Quad3) < 0) {
-				Tmp = Quad1;
-				Quad1 = Quad3;
-				Quad3 = Tmp;
-			}
-			if (Quad1.compareTo(Quad4) < 0) {
-				Tmp = Quad1;
-				Quad1 = Quad4;
-				Quad4 = Tmp;
-			}
-			if (Quad2.compareTo(Quad3) < 0) {
-				Tmp = Quad2;
-				Quad2 = Quad3;
-				Quad3 = Tmp;
-			}
-			if (Quad2.compareTo(Quad4) < 0) {
-				Tmp = Quad2;
-				Quad2 = Quad4;
-				Quad4 = Tmp;
-			}
-			if (Quad3.compareTo(Quad4) < 0) {
-				Tmp = Quad3;
-				Quad3 = Quad4;
-				Quad4 = Tmp;
-			}
-		}
-		return true;
 	}
 
 	private void Convert31To32Bits(long[] nbr31bits, long[] nbr32bits) {
@@ -1436,8 +433,7 @@ public class EllipticCurveMethod {
 			ChSignDivisor = true; // Indicate to change sign at the end and
 			Divisor = -Divisor; // convert divisor to positive.
 		}
-		if (Dividend[i = NumberLength - 1] >= 0x40000000l) { // If dividend is
-																// negative...
+		if (Dividend[i = NumberLength - 1] >= 0x40000000l) { // If dividend is negative...
 			Rem = Divisor - 1;
 		}
 		for (; i >= 0; i--) {
@@ -1450,7 +446,7 @@ public class EllipticCurveMethod {
 		}
 	}
 
-	/*
+	/**
 	 * computes 2P=(x2:z2) from P=(x1:z1), with 5 mul, 4 add/sub, 5 mod. Uses the following global variables: - n :
 	 * number to factor - b : (a+2)/4 mod n - u, v, w : auxiliary variables Modifies: x2, z2, u, v, w
 	 */
@@ -1475,28 +471,22 @@ public class EllipticCurveMethod {
 	 * 
 	 * @param map
 	 *            the map of prime factors
-	 * @param noSIQS
-	 *            return the rest number; don't call SIQS in this method
-	 * @return
+	 * @return latest factor found ?
 	 */
-	public BigInteger factorize(Map<BigInteger, Integer> map) {
-		BigInteger NN;// N
-		long TestComp; // , New;
-		BigInteger N1, N2, Tmp;
+	public BigInteger factorize(BigInteger n, Map<BigInteger, Integer> map) {
+		BigInteger NN;
+		long TestComp;
 		int i, j;
-		Computing3Squares = false;
-		TerminateThread = false;
-		if (onlyFactoring) {
-			NumberToFactor = inputNumber;
-		}
+		NbrFactors = 0;
+		inputNumber = n;
+		NumberToFactor = inputNumber;
 		BigNbr1[0] = 1;
 		for (i = 1; i < NLen; i++) {
 			BigNbr1[i] = 0;
 		}
 		try {
 			if (NbrFactors == 0) {
-				// System.out.println("Searching for small factors (less than
-				// 131072).");
+				// System.out.println("Searching for small factors (less than 131072).");
 				TestComp = GetSmallFactors(NumberToFactor, PD, Exp, 0);
 				if (TestComp != 1) { // There are factors greater than 131071.
 					PD[NbrFactors] = BigIntToBigNbr(TestNbr);
@@ -1516,32 +506,13 @@ public class EllipticCurveMethod {
 						if (PD[i].bitLength() <= 33) {
 							j = 0;
 						} else {
-							// System.out.println("Before calling prime check
-							// routine.");
-							j = AprtCle(PD[i]);
-							if (batchFinished == false && batchPrime) {
-								NbrFactors = j;
-								return BigInteger.ONE;
-							}
+							// System.out.println("Before calling prime check routine.");
+							j = bpsw.isProbablePrime(PD[i]) ? 0 : 1;
 						}
 						if (j == 0) {
-							if (Typ[i] < -TYP_EC) {
-								Typ[i] = -Typ[i]; /* Prime */
-							} else if (Typ[i] < -TYP_LEHMAN) {
-								Typ[i] = TYP_LEHMAN; /* Prime */
-							} else if (Typ[i] < -TYP_SIQS) {
-								Typ[i] = TYP_SIQS; /* Prime */
-							} else if (Typ[i] < -TYP_AURIF) {
-								Typ[i] = TYP_AURIF; /* Prime */
-							} else {
-								Typ[i] = 0; /* Prime */
-							}
+							Typ[i] = 0; /* Prime */
 						} else {
-							if (Typ[i] < -TYP_EC) {
-								Typ[i] = -TYP_EC - Typ[i]; /* Composite */
-							} else {
-								Typ[i] = -Typ[i]; /* Composite */
-							}
+							Typ[i] = -Typ[i]; /* Composite */
 						}
 						continue factor_loop;
 					}
@@ -1549,12 +520,10 @@ public class EllipticCurveMethod {
 				for (i = 0; i < NbrFactors; i++) {
 					EC = Typ[i];
 
-					if (EC > 0 && EC < TYP_EC && EC != TYP_AURIF && EC != TYP_SIQS
-							&& EC != TYP_LEHMAN) { /* Composite */
+					if (EC > 0) { /* Composite */
 						EC %= 50000000;
 						NN = fnECM(PD[i], i);
-						if (NN.equals(BigInt1)) {
-
+						if (NN.equals(I_1)) {
 							for (i = 0; i < NbrFactors - 1; i++) {
 								map.put(PD[i], Exp[i]);
 							}
@@ -1562,11 +531,7 @@ public class EllipticCurveMethod {
 
 							// System.out.println(NN.toString());
 						}
-						if (foundByLehman) { // Factor found using Lehman method
-							Typ[i] = TYP_LEHMAN + EC + 1;
-						} else {
-							Typ[i] = EC;
-						}
+						Typ[i] = EC;
 						InsertNewFactor(NN);
 						continue factor_loop;
 					}
@@ -1574,72 +539,16 @@ public class EllipticCurveMethod {
 				break;
 			} while (true);
 			for (i = 0; i < NbrFactors; i++) {
-				map.put(PD[i], Exp[i]);
+				BigInteger pd = PD[i];
+				int exp = Exp[i];
+				// LOG.debug("pd = " + pd + ", exp =" + exp);
+				map.put(pd, exp);
 			}
-			if (onlyFactoring) {
-				ComputeFourSquares(PD, Exp); // Quad1^2 + Quad2^2 + Quad3^2 +
-												// Quad4^2
-				NbrFactors1 = NbrFactors;
-				if (Quad4.signum() != 0) { // Check if four squares are really
-											// needed.
-					j = NumberToFactor.getLowestSetBit();
-					if (j % 2 != 0 || NumberToFactor.shiftRight(j).and(BigInteger.valueOf(7))
-							.equals(BigInteger.valueOf(7)) == false) {
-						/* Only three squares are required here */
-
-						Computing3Squares = true;
-						j = j / 2;
-						// System.out.println("Computing sum of three
-						// squares...");
-						for (N1 = BigInt1.shiftLeft(j);; N1 = N1.add(BigInt1.shiftLeft(j))) {
-							if (TerminateThread) {
-								throw new ArithmeticException();
-							}
-							N2 = NumberToFactor.subtract(N1.multiply(N1));
-							TestComp = GetSmallFactors(N2, PD1, Exp1, 1); // Typ1, 1);
-							if (TestComp >= 0) {
-								if (TestComp == 1) { // Number has all factors <
-														// 2^17
-									ComputeFourSquares(PD1, Exp1); // Quad1^2 +
-																	// Quad2^2
-									break;
-								}
-								if (TestNbr[0] % 4 == 3) {
-									continue;
-								} // This value of c does not work
-								PD1[NbrFactors] = BigIntToBigNbr(TestNbr);
-								Exp1[NbrFactors] = 1;
-								incNbrFactors();
-								if (ComputeFourSquares(PD1, Exp1)) { // Quad1^2
-																		// +
-																		// Quad2^2
-									break;
-								}
-							}
-						} /* end for */
-						Quad3 = N1;
-						// Sort squares (only Quad3 can be out of order).
-						if (Quad1.compareTo(Quad3) < 0) {
-							Tmp = Quad1;
-							Quad1 = Quad3;
-							Quad3 = Tmp;
-						}
-						if (Quad2.compareTo(Quad3) < 0) {
-							Tmp = Quad2;
-							Quad2 = Quad3;
-							Quad3 = Tmp;
-						}
-						Computing3Squares = false;
-					}
-				}
-				NbrFactors = NbrFactors1;
-				NextEC = -1; /* First curve of new number should be 1 */
-			}
+			NextEC = -1; /* First curve of new number should be 1 */
 		} catch (ArithmeticException e) {
-
+			LOG.debug("Caught " + e, e);
 		}
-		// System.gc();
-		return BigInteger.ONE;
+		return I_1;
 	}
 
 	private BigInteger fnECM(BigInteger N, int FactorIndex) {
@@ -1684,8 +593,6 @@ public class EllipticCurveMethod {
 		byte[] sieve2310 = new byte[2310];
 		int[] sieveidx = new int[480];
 		int i, j, u;
-		BigInteger NN;
-		boolean PrevCurveECMd = false;
 
 		fieldAA = AA;
 		BigNbrToBigInt(N);
@@ -1709,73 +616,45 @@ public class EllipticCurveMethod {
 				break; /* Prime found */
 			} while (true);
 		}
-		foundByLehman = false;
+
 		do {
 			new_curve: do {
 				if (NextEC > 0) {
 					EC = NextEC;
 					NextEC = -1;
-					if (EC >= TYP_SIQS) {
-						return BigInt1;
-					}
 				} else {
 					EC++;
-					NN = Lehman(NumberToFactor, EC);
-					if (NN.equals(BigInt1) == false) { // Factor found.
-						foundByLehman = true;
-						return NN;
-					}
 					L1 = N.toString().length(); // Get number of digits.
 					if (L1 > 30 && L1 <= 90) // If between 30 and 90 digits...
 					{
-						if ((digitsInGroup & 0x400) == 0) { // Switch to SIQS
-															// checkbox is set.
-							int limit = limits[((int) L1 - 31) / 5];
-							if (EC % 50000000 > limit && PrevCurveECMd == false
-									|| EC % 50000000 == limit && PrevCurveECMd == true) { // Switch
-																							// to
-																							// SIQS.
-								EC += TYP_SIQS;
-								return BigInt1;
-							}
+						int limit = limits[((int) L1 - 31) / 5];
+						if (EC % 50000000 >= limit) {
+							EC += 1;
+							return I_1;
 						}
 					}
 				}
-				PrevCurveECMd = true;
 				Typ[FactorIndex] = EC;
 				L1 = 2000;
 				L2 = 200000;
 				LS = 45;
-				// Paux = EC;
-				// NbrPrimes = 303; /* Number of primes less than 2000 */
+				/* Number of primes less than 2000 */
 				if (EC > 25) {
 					if (EC < 326) {
 						L1 = 50000;
 						L2 = 5000000;
 						LS = 224;
-						// Paux = EC - 24;
-						// NbrPrimes = 5133;
 						/* Number of primes less than 50000 */
+					} else if (EC < 2000) {
+						L1 = 1000000;
+						L2 = 100000000;
+						LS = 1001;
+						/* Number of primes less than 1000000 */
 					} else {
-						if (EC < 2000) {
-							L1 = 1000000;
-							L2 = 100000000;
-							LS = 1001;
-							// Paux = EC - 299;
-							// NbrPrimes = 78498;
-							/*
-							 * Number of primes less than 1000000
-							 */
-						} else {
-							L1 = 11000000;
-							L2 = 1100000000;
-							LS = 3316;
-							// Paux = EC - 1900;
-							// NbrPrimes = 726517;
-							/*
-							 * Number of primes less than 11000000
-							 */
-						}
+						L1 = 11000000;
+						L2 = 1100000000;
+						LS = 3316;
+						/* Number of primes less than 11000000 */
 					}
 				}
 
@@ -2235,7 +1114,7 @@ public class EllipticCurveMethod {
 		}
 		while ((TestNbr[0] & 1) == 0) { /* N even */
 			if (Exp[NbrFactors] == 0) {
-				PD[NbrFactors] = BigInt2;
+				PD[NbrFactors] = I_2;
 			}
 			Exp[NbrFactors]++;
 			DivBigNbrByLong(TestNbr, 2, TestNbr);
@@ -2259,7 +1138,7 @@ public class EllipticCurveMethod {
 				checkExpParity = !checkExpParity;
 			}
 			if (Exp[NbrFactors] == 0) {
-				PD[NbrFactors] = BigInt3;
+				PD[NbrFactors] = I_3;
 			}
 			Exp[NbrFactors]++;
 			DivBigNbrByLong(TestNbr, 3, TestNbr);
@@ -2356,19 +1235,6 @@ public class EllipticCurveMethod {
 				PD[NbrFactors] = BigInteger.valueOf(TestComp);
 				Exp[NbrFactors] = 1;
 				TestComp = 1;
-				// Object[] temp = incNbrFactors();
-				//
-				// if (temp != null) {
-				// if (Type == 0) {
-				// PD = (BigInteger[]) temp[0];
-				// Exp = (int[]) temp[1];
-				// Typ = (int[]) temp[2];
-				// } else {
-				// PD = (BigInteger[]) temp[3];
-				// Exp = (int[]) temp[4];
-				// Typ = (int[]) temp[5];
-				// }
-				// }
 				incNbrFactors();
 				break;
 			}
@@ -2382,129 +1248,18 @@ public class EllipticCurveMethod {
 		/* Insert input factor */
 		for (g = NbrFactors - 1; g >= 0; g--) {
 			PD[NbrFactors] = PD[g].gcd(InputFactor);
-			if (PD[NbrFactors].equals(BigInt1) || PD[NbrFactors].equals(PD[g])) {
+			if (PD[NbrFactors].equals(I_1) || PD[NbrFactors].equals(PD[g])) {
 				continue;
 			}
 			for (exp = 0; PD[g].remainder(PD[NbrFactors]).signum() == 0; exp++) {
 				PD[g] = PD[g].divide(PD[NbrFactors]);
 			}
 			Exp[NbrFactors] = Exp[g] * exp;
-			if (Typ[g] < 100000000) {
-				Typ[g] = -EC;
-				Typ[NbrFactors] = -TYP_EC - EC;
-			} else if (Typ[g] < 150000000) {
-				Typ[NbrFactors] = -Typ[g];
-				Typ[g] = TYP_AURIF - Typ[g];
-			} else if (Typ[g] < 200000000) {
-				Typ[NbrFactors] = -Typ[g];
-				Typ[g] = TYP_TABLE - Typ[g];
-			} else if (Typ[g] < 250000000) {
-				Typ[NbrFactors] = -Typ[g];
-				Typ[g] = TYP_SIQS - Typ[g];
-			} else {
-				Typ[NbrFactors] = -Typ[g];
-				Typ[g] = TYP_LEHMAN - Typ[g];
-			}
+			Typ[g] = -EC;
+			Typ[NbrFactors] = -EC;
 			incNbrFactors();
 		}
 		SortFactorsInputNbr();
-	}
-
-	private void JacobiSum(int A, int B, int P, int PK, int PL, int PM, int Q) {
-		int I, J, K;
-
-		for (I = 0; I < PL; I++) {
-			for (J = 0; J < NumberLength; J++) {
-				aiJ0[I][J] = 0;
-			}
-		}
-		for (I = 1; I <= Q - 2; I++) {
-			J = (A * I + B * aiF[I]) % PK;
-			if (J < PL) {
-				AddBigNbrModN(aiJ0[J], MontgomeryMultR1, aiJ0[J]);
-			} else {
-				for (K = 1; K < P; K++) {
-					SubtractBigNbrModN(aiJ0[J - K * PM], MontgomeryMultR1, aiJ0[J - K * PM]);
-				}
-			}
-		}
-	}
-
-	private void JS_2(int PK, int PL, int PM, int P) {
-		int I, J, K;
-		for (I = 0; I < PL; I++) {
-			K = 2 * I % PK;
-			MontgomeryMult(aiJS[I], aiJS[I], biTmp);
-			AddBigNbrModN(aiJX[K], biTmp, aiJX[K]);
-			AddBigNbrModN(aiJS[I], aiJS[I], biT);
-			for (J = I + 1; J < PL; J++) {
-				K = (I + J) % PK;
-				MontgomeryMult(biT, aiJS[J], biTmp);
-				AddBigNbrModN(aiJX[K], biTmp, aiJX[K]);
-			}
-		}
-		for (I = 0; I < PK; I++) {
-			for (J = 0; J < NumberLength; J++) {
-				aiJS[I][J] = aiJX[I][J];
-				aiJX[I][J] = 0;
-			}
-		}
-		NormalizeJS(PK, PL, PM, P);
-	}
-
-	private void JS_E(int PK, int PL, int PM, int P) {
-		int I, J, K;
-		long Mask;
-
-		for (I = NumberLength - 1; I > 0; I--) {
-			if (biExp[I] != 0) {
-				break;
-			}
-		}
-		if (I == 0 && biExp[0] == 1) {
-			return;
-		} // Return if E == 1
-		for (K = 0; K < PL; K++) {
-			for (J = 0; J < NumberLength; J++) {
-				aiJW[K][J] = aiJS[K][J];
-			}
-		}
-		Mask = 0x40000000l;
-		while (true) {
-			if ((biExp[I] & Mask) != 0) {
-				break;
-			}
-			Mask /= 2;
-		}
-		do {
-			JS_2(PK, PL, PM, P);
-			Mask /= 2;
-			if (Mask == 0) {
-				Mask = 0x40000000l;
-				I--;
-			}
-			if ((biExp[I] & Mask) != 0) {
-				JS_JW(PK, PL, PM, P);
-			}
-		} while (I > 0 || Mask != 1);
-	}
-
-	private void JS_JW(int PK, int PL, int PM, int P) {
-		int I, J, K;
-		for (I = 0; I < PL; I++) {
-			for (J = 0; J < PL; J++) {
-				K = (I + J) % PK;
-				MontgomeryMult(aiJS[I], aiJW[J], biTmp);
-				AddBigNbrModN(aiJX[K], biTmp, aiJX[K]);
-			}
-		}
-		for (I = 0; I < PK; I++) {
-			for (J = 0; J < NumberLength; J++) {
-				aiJS[I][J] = aiJX[I][J];
-				aiJX[I][J] = 0;
-			}
-		}
-		NormalizeJS(PK, PL, PM, P);
 	}
 
 	private void LongToBigNbr(long Nbr, long Out[]) {
@@ -2518,7 +1273,6 @@ public class EllipticCurveMethod {
 	}
 
 	/**
-	 * 
 	 * <p>
 	 * Find the inverse multiplicative modulo v.
 	 * </p>
@@ -2896,14 +1650,11 @@ public class EllipticCurveMethod {
 		long TestNbr8, TestNbr9, TestNbr10;
 		long Nbr2_0, Nbr2_1, Nbr2_2, Nbr2_3, Nbr2_4, Nbr2_5, Nbr2_6, Nbr2_7;
 		long Nbr2_8, Nbr2_9, Nbr2_10;
-		long MontDig; // New, Prd;
+		long MontDig;
 		int MontgomeryMultN = (int) this.MontgomeryMultN;
 		long TestNbr[] = this.TestNbr;
 		int NumberLength = this.NumberLength;
 
-		if (TerminateThread) {
-			throw new ArithmeticException();
-		}
 		TestNbr0 = TestNbr[0];
 		TestNbr1 = TestNbr[1];
 		Nbr2_0 = Nbr2[0];
@@ -3418,35 +2169,6 @@ public class EllipticCurveMethod {
 		} /* end switch */
 	}
 
-	private void MultBigNbr(long Nbr1[], long Nbr2[], long Prod[]) {
-		int NumberLength = this.NumberLength;
-		long MaxUInt = 0x7FFFFFFFl;
-		long Cy, Pr;
-		int j;
-		Cy = Pr = 0;
-		for (int i = 0; i < NumberLength; i++) {
-			Pr = Cy & MaxUInt;
-			Cy >>>= 31;
-			for (j = 0; j <= i; j++) {
-				Pr += Nbr1[j] * Nbr2[i - j];
-				Cy += (Pr >>> 31);
-				Pr &= MaxUInt;
-			}
-			Prod[i] = Pr;
-		}
-	}
-
-	private void MultBigNbrByLong(long Nbr1[], long Nbr2, long Prod[]) {
-		int NumberLength = this.NumberLength;
-		long MaxUInt = 0x7FFFFFFFl;
-		long Pr;
-		Pr = 0;
-		for (int i = 0; i < NumberLength; i++) {
-			Pr = (Pr >> 31) + Nbr2 * Nbr1[i];
-			Prod[i] = Pr & MaxUInt;
-		}
-	}
-
 	private void MultBigNbrByLongModN(long Nbr1[], long Nbr2, long Prod[]) {
 		int NumberLength = this.NumberLength;
 		long MaxUInt = 0x7FFFFFFFl;
@@ -3491,64 +2213,14 @@ public class EllipticCurveMethod {
 		} while (i > 0);
 	}
 
-	/**
-	 * Normalize coefficient of JS.
-	 * 
-	 * @param PK
-	 * @param PL
-	 * @param PM
-	 * @param P
-	 */
-	private void NormalizeJS(int PK, int PL, int PM, int P) {
-		int I, J;
-		for (I = PL; I < PK; I++) {
-			if (BigNbrIsZero(aiJS[I]) == false) {
-				for (J = 0; J < NumberLength; J++) {
-					biT[J] = aiJS[I][J];
-				}
-				for (J = 1; J < P; J++) {
-					SubtractBigNbrModN(aiJS[I - J * PM], biT, aiJS[I - J * PM]);
-				}
-				for (J = 0; J < NumberLength; J++) {
-					aiJS[I][J] = 0;
-				}
-			}
-		}
-	}
-
-	/**
-	 * Normalize coefficient of JW.
-	 * 
-	 * @param PK
-	 * @param PL
-	 * @param PM
-	 * @param P
-	 */
-	private void NormalizeJW(int PK, int PL, int PM, int P) {
-		int I, J;
-		for (I = PL; I < PK; I++) {
-			if (BigNbrIsZero(aiJW[I]) == false) {
-				for (J = 0; J < NumberLength; J++) {
-					biT[J] = aiJW[I][J];
-				}
-				for (J = 1; J < P; J++) {
-					SubtractBigNbrModN(aiJW[I - J * PM], biT, aiJW[I - J * PM]);
-				}
-				for (J = 0; J < NumberLength; J++) {
-					aiJW[I][J] = 0;
-				}
-			}
-		}
-	}
-
-	private int PowerCheck(int i) {
+	private int PowerCheck(int i) { // TODO substitute?
 		int maxExpon = (PD[i].bitLength() - 1) / 17;
 		int h, j;
 		long modulus;
 		int intLog2N;
 		double log2N;
 		BigInteger root, rootN1, rootN, dif, nextroot;
-		int prime2310x1[] = { 2311, 4621, 9241, 11551, 18481, 25411, 32341, 34651, 43891, 50821 };
+		final int prime2310x1[] = { 2311, 4621, 9241, 11551, 18481, 25411, 32341, 34651, 43891, 50821 };
 		// Primes of the form 2310x+1.
 		boolean expon2 = true, expon3 = true, expon5 = true;
 		boolean expon7 = true, expon11 = true;
@@ -3575,8 +2247,7 @@ public class EllipticCurveMethod {
 			primes[h] = true;
 		}
 		for (h = 2; h * h < primes.length; h++) { // Generation of primes
-			for (j = h * h; j < primes.length; j += h) { // using Eratosthenes
-															// sieve
+			for (j = h * h; j < primes.length; j += h) { // using Eratosthenes sieve
 				primes[j] = false;
 			}
 		}
@@ -3613,7 +2284,7 @@ public class EllipticCurveMethod {
 				continue;
 			}
 			intLog2N = PD[i].bitLength() - 1;
-			log2N = intLog2N + Math.log(PD[i].shiftRight(intLog2N - 32).add(BigInt1).doubleValue()) / Math.log(2) - 32;
+			log2N = intLog2N + Math.log(PD[i].shiftRight(intLog2N - 32).add(I_1).doubleValue()) / Math.log(2) - 32;
 			log2N /= Exponent;
 			if (log2N < 32) {
 				root = BigInteger.valueOf((long) Math.exp(log2N * Math.log(2)));
@@ -3630,8 +2301,7 @@ public class EllipticCurveMethod {
 					Exp[i] *= Exponent;
 					return 1;
 				}
-				nextroot = dif.add(BigInt1).divide(BigInteger.valueOf(Exponent).multiply(rootN1)).add(root)
-						.subtract(BigInt1);
+				nextroot = dif.add(I_1).divide(BigInteger.valueOf(Exponent).multiply(rootN1)).add(root).subtract(I_1);
 				if (root.compareTo(nextroot) <= 0)
 					break; // Not a perfect power
 				root = nextroot;
@@ -3770,16 +2440,6 @@ public class EllipticCurveMethod {
 		add3(x, z, xA, zA, xB, zB, xC, zC);
 	}
 
-	/**
-	 * Prime checking routine
-	 * 
-	 * @param N
-	 * @return return codes: 0 = Number is prime. 1 = Number is composite.
-	 */
-	private static int ProbabilisticPrimeTest(BigInteger N) {
-		return N.isProbablePrime(32) ? 0 : 1;
-	}
-
 	private long RemDivBigNbrByLong(long Dividend[], long Divisor) {
 		int i;
 		long Divid, Rem = 0;
@@ -3787,8 +2447,7 @@ public class EllipticCurveMethod {
 		if (Divisor < 0) { // If divisor is negative...
 			Divisor = -Divisor; // Convert divisor to positive.
 		}
-		if (Dividend[i = NumberLength - 1] >= 0x40000000l) { // If dividend is
-																// negative...
+		if (Dividend[i = NumberLength - 1] >= 0x40000000l) { // If dividend is negative...
 			Rem = Divisor - 1;
 		}
 		for (; i >= 0; i--) {
@@ -3900,8 +2559,29 @@ public class EllipticCurveMethod {
 		return null;
 	}
 
-	public static void ellipticCurveFactors(final BigInteger val, Map<BigInteger, Integer> map) {
-		EllipticCurveMethod ecm = new EllipticCurveMethod(val);
-		ecm.factorize(map);
-	}
+	// public static void main(String[] args) {
+	// ConfigUtil.initProject();
+	// BigInteger[] testNums = new BigInteger[] {
+	// // 1794577685365897117833870712928656282041295031283603412289229185967719140138841093599 (280 bits) =
+	// 42181796536350966453737572957846241893933 * 42543889372264778301966140913837516662044603 (factored by PSIQS(6
+	// threads) in 6m, 44s, 591ms)
+	// //new BigInteger("1794577685365897117833870712928656282041295031283603412289229185967719140138841093599"), //
+	// TODO no reply?
+	// new BigInteger("8225267468394993133669189614204532935183709603155231863020477010700542265332938919716662623"),
+	// new
+	// BigInteger("101546450935661953908994991437690198927080333663460351836152986526126114727314353555755712261904130976988029406423152881932996637460315302992884162068350429")
+	// };
+	//
+	// EllipticCurveMethod ecm = new EllipticCurveMethod();
+	//
+	// long t0, t1;
+	// t0 = System.currentTimeMillis();
+	// for (BigInteger N : testNums) {
+	// Map<BigInteger, Integer> factors = new TreeMap<>();
+	// ecm.ellipticCurveFactors(N, factors);
+	// LOG.debug("N = " + N + " = " + factors);
+	// }
+	// t1 = System.currentTimeMillis();
+	// LOG.info("Test suite took " + (t1-t0) + "ms");
+	// }
 }
