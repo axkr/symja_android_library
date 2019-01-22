@@ -7,7 +7,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import junit.framework.TestCase;
 
 /**
- * Tests LaTeX export function
+ * Tests LaTeX import (parsing) function
  */
 public class TeXConverterTestCase extends TestCase {
 
