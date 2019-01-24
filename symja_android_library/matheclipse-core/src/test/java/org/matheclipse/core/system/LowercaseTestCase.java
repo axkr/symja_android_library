@@ -3665,7 +3665,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("ExpandAll(( ( ( X3 - X1$c) * ( ( X1 + ( ( X4$c * X3 ) + X5$c))
 		// + X3$b)) * ( ( X3 - X1 ) + ( X3$c + X5 ))))",
 		// "");
-
+		check("ExpandAll(Sum(9*x,{x,x,2*x}))", //
+				"27/2*x+27/2*x^2");
+		// github #113 - endless recursion
+		check("ExpandAll(Sum(9*x,{x,x,x}))", //
+				"9*x");
 		// github #111 - loss of precision if you expand the expression
 		check("t=ExpandAll((Pi*E-9)^13)", //
 				"-2541865828329+3671583974253*E*Pi-2447722649502*E^2*Pi^2+997220338686*E^3*Pi^3\n"
@@ -6433,6 +6437,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("Limit(x/((x!)^(1/x)), x->Infinity)", //
 		// "E");
 
+		// github #115
+		check("Limit(Sqrt(-4+2*x^2)/(4+3*x),x->Infinity)", //
+				"Sqrt(2)/3");
+		check("Limit((4+3*x)/Sqrt(-4+2*x^2),x->Infinity)", //
+				"3/Sqrt(2)");
+		check("Limit((4+3*x)^2/(-4+2*x^2),x->Infinity)", //
+				"9/2");
+		
 		check("Limit(x^(13+n),x->0)", //
 				"ConditionalExpression(0,n>-13)");
 		// check("Limit(x^(13+n)/a,x->0)", //
@@ -9280,6 +9292,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "$Aborted");
 		// check("TimeConstrained(1^3^3^3, 10)", //
 		// "1");
+
+		// github #114
+		check("Sqrt(1/(2*Surd(-Cos(9/20*Pi),3)))", //
+				"Sqrt(1/(2*Surd(-Cos(9/20*Pi),3)))");
 		check("0^(13+n)/a", //
 				"0^(13+n)/a");
 		check(" 2^(2*I) - 2^(-2*I) - 2*I*Sin(Log(4)) ", //

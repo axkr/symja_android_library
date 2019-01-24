@@ -13,10 +13,10 @@ public class DistributionTest extends AbstractTestCase {
 	}
 
 	public void testChiSquareDistribution() {
-		check("Mean(ChiSquareDistribution(v))", //
-				"v");
 		check("StandardDeviation(ChiSquareDistribution(v))", //
 				"Sqrt(2)*Sqrt(v)");
+		check("Mean(ChiSquareDistribution(v))", //
+				"v");
 		check("Variance(ChiSquareDistribution(v))", //
 				"2*v");
 		check("CDF(ChiSquareDistribution(v))", //
@@ -29,8 +29,8 @@ public class DistributionTest extends AbstractTestCase {
 		check("PDF(ChiSquareDistribution(v), k)", //
 				"Piecewise({{1/(2^(v/2)*E^(k/2)*k^(1-v/2)*Gamma(v/2)),k>0}},0)");
 		// TODO
-//		check("Skewness(ChiSquareDistribution(v))", //
-//				"");
+		// check("Skewness(ChiSquareDistribution(v))", //
+		// "");
 	}
 
 	public void testErlangDistribution() {
