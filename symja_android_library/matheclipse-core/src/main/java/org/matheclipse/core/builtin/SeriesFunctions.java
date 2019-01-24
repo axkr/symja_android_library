@@ -21,6 +21,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
@@ -254,22 +255,34 @@ public class SeriesFunctions {
 		private static IExpr lHospitalesRule(IExpr numerator, IExpr denominator, LimitData data) {
 			EvalEngine engine = EvalEngine.get();
 			ISymbol x = data.getSymbol();
+			int recursionLimit = engine.getRecursionLimit();
 			try {
-				int recursionLimit = engine.getRecursionLimit();
-				try {
-					if (recursionLimit <= 0 || recursionLimit > Config.LIMIT_LHOSPITAL_RECURSION_LIMIT) {
-						// set recursion limit for using l'Hospitales rule
-						engine.setRecursionLimit(Config.LIMIT_LHOSPITAL_RECURSION_LIMIT);
-					}
-					IExpr expr = F.evalQuiet(F.Times(F.D(numerator, x), F.Power(F.D(denominator, x), F.CN1)));
-					return evalLimit(expr, data, false);
-				} catch (RecursionLimitExceeded rle) {
-					engine.setRecursionLimit(recursionLimit);
-				} finally {
-					engine.setRecursionLimit(recursionLimit);
+				if (recursionLimit <= 0 || recursionLimit > Config.LIMIT_LHOSPITAL_RECURSION_LIMIT) {
+					// set recursion limit for using l'Hospitales rule
+					engine.setRecursionLimit(Config.LIMIT_LHOSPITAL_RECURSION_LIMIT);
 				}
+				if (data.limitValue.isInfinity() || data.limitValue.isNegativeInfinity()) {
+					if (!numerator.isPower() && denominator.isPower() && denominator.exponent().equals(F.C1D2)) {
+						// github #115: numerator / Sqrt( denominator.base() )
+						IFraction frac = (IFraction) denominator.exponent();
+						if (frac.numerator().isOne()) {
+							IInteger exp = frac.denominator(); // == 2
+							IExpr expr = engine.evalQuiet(F.Times(F.D(F.Power(numerator, exp), x),
+									F.Power(F.D(denominator.base(), x), F.CN1)));
+							expr = evalLimit(expr, data, true);
+							if (expr.isNumber()) {
+								// Sqrt( expr )
+								return F.Power(expr, frac);
+							}
+						}
+					}
+				}
+				IExpr expr = engine.evalQuiet(F.Times(F.D(numerator, x), F.Power(F.D(denominator, x), F.CN1)));
+				return evalLimit(expr, data, false);
+			} catch (RecursionLimitExceeded rle) {
+				engine.setRecursionLimit(recursionLimit);
 			} finally {
-				engine.decRecursionCounter();
+				engine.setRecursionLimit(recursionLimit);
 			}
 			return F.NIL;
 		}
