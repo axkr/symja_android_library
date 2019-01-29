@@ -246,11 +246,11 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 			return true;
 		}
 		if (obj instanceof BuiltInDummy) {
-			BuiltInDummy symbol = (BuiltInDummy) obj;
-			if (hashCode() != symbol.hashCode()) {
-				return false;
-			}
-			return fSymbolName.equals(symbol.fSymbolName);
+//			BuiltInDummy symbol = (BuiltInDummy) obj;
+//			if (hashCode() != symbol.hashCode()) {
+//				return false;
+//			}
+			return fSymbolName.equals(((BuiltInDummy) obj).fSymbolName);
 		}
 		return false;
 	}

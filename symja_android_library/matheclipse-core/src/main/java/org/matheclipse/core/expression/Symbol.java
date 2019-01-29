@@ -56,8 +56,8 @@ public class Symbol implements ISymbol, Serializable {
 	protected transient RulesData fRulesData;
 
 	/**
-	 * The name of this symbol. The characters may be all lower-cases if the system doesn't distinguish between lower-
-	 * and upper-case function names.
+	 * The name of this symbol. The characters may be all lower-cases if the system doesn't distinguish between lower- and upper-case
+	 * function names.
 	 */
 	protected String fSymbolName;
 
@@ -156,8 +156,8 @@ public class Symbol implements ISymbol, Serializable {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive
-	 * integer as this expression is canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as this
+	 * expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
@@ -169,7 +169,7 @@ public class Symbol implements ISymbol, Serializable {
 				return 0;
 			}
 			// sort lexicographically
- 			return StringX.US_COLLATOR.compare(fSymbolName, ((ISymbol) expr).getSymbolName()); 
+			return StringX.US_COLLATOR.compare(fSymbolName, ((ISymbol) expr).getSymbolName());
 		}
 		if (expr.isNot() && expr.first().isSymbol()) {
 			int cp = compareTo(expr.first());
@@ -244,18 +244,18 @@ public class Symbol implements ISymbol, Serializable {
 		if (this == obj) {
 			return true;
 		}
-		if (obj instanceof IBuiltInSymbol) {
-			return false;
-		}
 		if (obj instanceof Symbol) {
-			Symbol symbol = (Symbol) obj;
-			if (hashCode() != symbol.hashCode()) {
+			if (obj instanceof IBuiltInSymbol) {
 				return false;
 			}
-			if (fSymbolName.equals(symbol.fSymbolName)) {
-				// #172
-				return fContext.equals(symbol.fContext);
-			}
+//			Symbol symbol = (Symbol) obj;
+//			if (hashCode() != symbol.hashCode()) {
+//				return false;
+//			}
+//			if () {
+			// #172
+			return fSymbolName.equals(((Symbol) obj).fSymbolName) && fContext.equals(((Symbol) obj).fContext);
+//			}
 		}
 		return false;
 	}
@@ -767,16 +767,16 @@ public class Symbol implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IPatternMatcher putDownRule(final int setSymbol, final boolean equalRule,
-			final IExpr leftHandSide, final IExpr rightHandSide, boolean packageMode) {
+	public final IPatternMatcher putDownRule(final int setSymbol, final boolean equalRule, final IExpr leftHandSide,
+			final IExpr rightHandSide, boolean packageMode) {
 		return putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, PatternMap.DEFAULT_RULE_PRIORITY,
 				packageMode);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final IPatternMatcher putDownRule(final int setSymbol, final boolean equalRule,
-			final IExpr leftHandSide, final IExpr rightHandSide, final int priority, boolean packageMode) {
+	public final IPatternMatcher putDownRule(final int setSymbol, final boolean equalRule, final IExpr leftHandSide,
+			final IExpr rightHandSide, final int priority, boolean packageMode) {
 		EvalEngine engine = EvalEngine.get();
 		if (!packageMode) {
 			if (isLocked(packageMode)) {
@@ -825,8 +825,8 @@ public class Symbol implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IPatternMatcher putUpRule(final int setSymbol, final boolean equalRule,
-			final IAST leftHandSide, final IExpr rightHandSide, final int priority) {
+	public final IPatternMatcher putUpRule(final int setSymbol, final boolean equalRule, final IAST leftHandSide,
+			final IExpr rightHandSide, final int priority) {
 		EvalEngine engine = EvalEngine.get();
 		if (!engine.isPackageMode()) {
 			if (isLocked(false)) {

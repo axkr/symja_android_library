@@ -15,8 +15,8 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 
 /**
- * IFraction implementation which reimplements methods of the Apache
- * <code>org.apache.commons.math3.fraction.Fraction</code> methods.
+ * IFraction implementation which reimplements methods of the Apache <code>org.apache.commons.math3.fraction.Fraction</code>
+ * methods.
  * 
  * @see AbstractFractionSym
  * @see BigFractionSym
@@ -30,10 +30,8 @@ public class FractionSym extends AbstractFractionSym {
 	/**
 	 * Check if numerator and denominator are equal and the numerator isn't zero.
 	 * 
-	 * @param num
-	 *            Numerator
-	 * @param den
-	 *            Denominator
+	 * @param num Numerator
+	 * @param den Denominator
 	 * @return
 	 */
 	private static boolean isOne(long num, long den) {
@@ -45,13 +43,11 @@ public class FractionSym extends AbstractFractionSym {
 	int fDenominator;
 
 	/**
-	 * Construct a rational from two ints. The constructor is private and does not normalize. Use the static constructor
-	 * valueOf instead.
+	 * Construct a rational from two ints. The constructor is private and does not normalize. Use the static constructor valueOf
+	 * instead.
 	 * 
-	 * @param nom
-	 *            Numerator
-	 * @param denom
-	 *            Denominator
+	 * @param nom   Numerator
+	 * @param denom Denominator
 	 */
 	FractionSym(int nom, int denom) {
 		fNumerator = nom;
@@ -71,8 +67,7 @@ public class FractionSym extends AbstractFractionSym {
 	/**
 	 * Return a new rational representing <code>this + other</code>.
 	 * 
-	 * @param other
-	 *            Rational to add.
+	 * @param other Rational to add.
 	 * @return Sum of <code>this</code> and <code>other</code>.
 	 */
 	@Override
@@ -176,25 +171,28 @@ public class FractionSym extends AbstractFractionSym {
 
 	@Override
 	public int compareTo(IExpr expr) {
-		if (expr instanceof FractionSym) {
-			FractionSym temp = (FractionSym) expr;
-			if (temp.fDenominator == fDenominator) {
-				return fNumerator < temp.fNumerator ? -1 : fNumerator == temp.fNumerator ? 0 : 1;
+		if (expr instanceof IRational) {
+			if (expr instanceof FractionSym) {
+				FractionSym temp = (FractionSym) expr;
+				if (temp.fDenominator == fDenominator) {
+					return fNumerator < temp.fNumerator ? -1 : fNumerator == temp.fNumerator ? 0 : 1;
+				}
+				long valt = (long) fNumerator * (long) temp.fDenominator;
+				long valo = (long) fDenominator * (long) temp.fNumerator;
+				return valt < valo ? -1 : valt == valo ? 0 : 1;
 			}
-			long valt = (long) fNumerator * (long) temp.fDenominator;
-			long valo = (long) fDenominator * (long) temp.fNumerator;
-			return valt < valo ? -1 : valt == valo ? 0 : 1;
-		}
-		if (expr instanceof AbstractIntegerSym) {
-			return compareTo(new BigFractionSym(((AbstractIntegerSym) expr).toBigNumerator(), BigInteger.ONE));
-		}
-		if (expr instanceof BigFractionSym) {
-			return -expr.compareTo(this);
+			if (expr instanceof AbstractIntegerSym) {
+				return compareTo(new BigFractionSym(((AbstractIntegerSym) expr).toBigNumerator(), BigInteger.ONE));
+			}
+			if (expr instanceof BigFractionSym) {
+				return -expr.compareTo(this);
+			}
 		}
 		if (expr.isReal()) {
 			return Double.compare(doubleValue(), ((ISignedNumber) expr).doubleValue());
 		}
-		return super.compareTo(expr);
+		return -1;
+//		return super.compareTo(expr);
 	}
 
 	@Override
@@ -220,8 +218,7 @@ public class FractionSym extends AbstractFractionSym {
 	/**
 	 * Return a new rational representing <code>this / other</code>.
 	 * 
-	 * @param other
-	 *            Rational to divide.
+	 * @param other Rational to divide.
 	 * @return Quotient of <code>this</code> and <code>other</code>.
 	 */
 	@Override
@@ -355,11 +352,10 @@ public class FractionSym extends AbstractFractionSym {
 	}
 
 	/**
-	 * Compute the gcd of two rationals (this and other). The gcd is the rational number, such that dividing this and
-	 * other with the gcd will yield two co-prime integers.
+	 * Compute the gcd of two rationals (this and other). The gcd is the rational number, such that dividing this and other with the gcd
+	 * will yield two co-prime integers.
 	 * 
-	 * @param other
-	 *            the second rational argument.
+	 * @param other the second rational argument.
 	 * @return the gcd of this and other.
 	 */
 	public IFraction gcd(IFraction other) {
@@ -453,8 +449,7 @@ public class FractionSym extends AbstractFractionSym {
 	}
 
 	/**
-	 * Check whether this rational corresponds to a (finite) rational value. This function can be used to test for
-	 * infinites and NaNs.
+	 * Check whether this rational corresponds to a (finite) rational value. This function can be used to test for infinites and NaNs.
 	 * 
 	 * @return true if and only if this rational is not infinite or NaN.
 	 */
@@ -505,8 +500,7 @@ public class FractionSym extends AbstractFractionSym {
 	/**
 	 * Return a new rational representing <code>this * other</code>.
 	 * 
-	 * @param other
-	 *            big integer to multiply.
+	 * @param other big integer to multiply.
 	 * @return Product of <code>this</code> and <code>other</code>.
 	 */
 	public IFraction mul(BigInteger other) {
@@ -533,8 +527,7 @@ public class FractionSym extends AbstractFractionSym {
 	/**
 	 * Return a new rational representing <code>this * other</code>.
 	 * 
-	 * @param other
-	 *            Rational to multiply.
+	 * @param other Rational to multiply.
 	 * @return Product of <code>this</code> and <code>other</code>.
 	 */
 	@Override

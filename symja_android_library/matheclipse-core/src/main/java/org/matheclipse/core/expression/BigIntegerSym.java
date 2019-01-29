@@ -158,24 +158,27 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive
-	 * integer as this expression is canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as this
+	 * expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
-		if (expr instanceof IntegerSym) {
-			return compareInt(((IntegerSym) expr).fIntValue);
-		}
-		if (expr instanceof BigIntegerSym) {
-			return fBigIntValue.compareTo(((BigIntegerSym) expr).fBigIntValue);
-		}
-		if (expr instanceof IFraction) {
-			return -((IFraction) expr).compareTo(AbstractFractionSym.valueOf(fBigIntValue, BigInteger.ONE));
+		if (expr instanceof IRational) {
+			if (expr instanceof IntegerSym) {
+				return compareInt(((IntegerSym) expr).fIntValue);
+			}
+			if (expr instanceof BigIntegerSym) {
+				return fBigIntValue.compareTo(((BigIntegerSym) expr).fBigIntValue);
+			}
+			if (expr instanceof IFraction) {
+				return -((IFraction) expr).compareTo(AbstractFractionSym.valueOf(fBigIntValue, BigInteger.ONE));
+			}
 		}
 		if (expr.isReal()) {
 			return Double.compare(fBigIntValue.doubleValue(), ((ISignedNumber) expr).doubleValue());
 		}
-		return super.compareTo(expr);
+		return -1;
+//		return super.compareTo(expr);
 	}
 
 	@Override
@@ -390,8 +393,8 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	}
 
 	@Override
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
-			boolean usePrefix, boolean noSymbolPrefix) {
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators, boolean usePrefix,
+			boolean noSymbolPrefix) {
 		String prefix = usePrefix ? "F." : "";
 		int value = NumberUtil.toInt(fBigIntValue);
 		switch (value) {
@@ -659,10 +662,8 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	 * Returns the nth-root of this integer.
 	 * 
 	 * @return <code>k<code> such as <code>k^n <= this < (k + 1)^n</code>
-	 * @throws IllegalArgumentException
-	 *             if {@code this < 0}
-	 * @throws ArithmeticException
-	 *             if this integer is negative and n is even.
+	 * @throws IllegalArgumentException if {@code this < 0}
+	 * @throws ArithmeticException      if this integer is negative and n is even.
 	 */
 	@Override
 	public IExpr nthRoot(int n) throws ArithmeticException {
@@ -779,8 +780,8 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	/**
 	 * Returns the integer square root of this integer.
 	 * 
-	 * @return <code>k<code> such as <code>k^2 <= this < (k + 1)^2</code>. If this integer is negative or it's
-	 *         impossible to find a square root return <code>F.Sqrt(this)</code>.
+	 * @return <code>k<code> such as <code>k^2 <= this < (k + 1)^2</code>. If this integer is negative or it's impossible to find a
+	 *         square root return <code>F.Sqrt(this)</code>.
 	 */
 	public IExpr sqrt() {
 		try {

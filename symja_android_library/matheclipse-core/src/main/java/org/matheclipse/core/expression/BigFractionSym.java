@@ -14,8 +14,7 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 
 /**
- * IFraction implementation which uses methods of the Apache <code>org.apache.commons.math3.fraction.BigFraction</code>
- * methods.
+ * IFraction implementation which uses methods of the Apache <code>org.apache.commons.math3.fraction.BigFraction</code> methods.
  * 
  * @see IFraction
  * @see FractionSym
@@ -39,13 +38,10 @@ public class BigFractionSym extends AbstractFractionSym {
 	 * <p>
 	 * Construct a rational from two BigIntegers.
 	 * </p>
-	 * <b>Note:</b> the constructor is package private and does not normalize. Use the static constructor valueOf
-	 * instead.
+	 * <b>Note:</b> the constructor is package private and does not normalize. Use the static constructor valueOf instead.
 	 * 
-	 * @param nom
-	 *            Numerator
-	 * @param denom
-	 *            Denominator
+	 * @param nom   Numerator
+	 * @param denom Denominator
 	 */
 	BigFractionSym(BigInteger nom, BigInteger denom) {
 		fFraction = new BigFraction(nom, denom);
@@ -59,8 +55,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	/**
 	 * Return a new rational representing <code>this + other</code>.
 	 * 
-	 * @param other
-	 *            Rational to add.
+	 * @param other Rational to add.
 	 * @return Sum of <code>this</code> and <code>other</code>.
 	 */
 	@Override
@@ -139,18 +134,21 @@ public class BigFractionSym extends AbstractFractionSym {
 
 	@Override
 	public int compareTo(IExpr expr) {
-		if (expr instanceof IFraction) {
-			BigInteger valthis = toBigNumerator().multiply(((IFraction) expr).toBigDenominator());
-			BigInteger valo = ((IFraction) expr).toBigNumerator().multiply(toBigDenominator());
-			return valthis.compareTo(valo);
-		}
-		if (expr instanceof IInteger) {
-			return fFraction.compareTo(new BigFraction(((IInteger) expr).toBigNumerator(), BigInteger.ONE));
+		if (expr instanceof IRational) {
+			if (expr instanceof IFraction) {
+				BigInteger valthis = toBigNumerator().multiply(((IFraction) expr).toBigDenominator());
+				BigInteger valo = ((IFraction) expr).toBigNumerator().multiply(toBigDenominator());
+				return valthis.compareTo(valo);
+			}
+			if (expr instanceof IInteger) {
+				return fFraction.compareTo(new BigFraction(((IInteger) expr).toBigNumerator(), BigInteger.ONE));
+			}
 		}
 		if (expr.isReal()) {
 			return Double.compare(fFraction.doubleValue(), ((ISignedNumber) expr).doubleValue());
 		}
-		return super.compareTo(expr);
+		return -1;
+//		return super.compareTo(expr);
 	}
 
 	@Override
@@ -176,8 +174,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	/**
 	 * Return a new rational representing <code>this / other</code>.
 	 * 
-	 * @param other
-	 *            Rational to divide.
+	 * @param other Rational to divide.
 	 * @return Quotient of <code>this</code> and <code>other</code>.
 	 */
 	@Override
@@ -316,11 +313,10 @@ public class BigFractionSym extends AbstractFractionSym {
 	}
 
 	/**
-	 * Compute the gcd of two rationals (this and other). The gcd is the rational number, such that dividing this and
-	 * other with the gcd will yield two co-prime integers.
+	 * Compute the gcd of two rationals (this and other). The gcd is the rational number, such that dividing this and other with the gcd
+	 * will yield two co-prime integers.
 	 * 
-	 * @param other
-	 *            the second rational argument.
+	 * @param other the second rational argument.
 	 * @return the gcd of this and other.
 	 */
 	public IFraction gcd(IFraction other) {
@@ -362,8 +358,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	/**
 	 * Return a new rational representing <code>this / other</code>.
 	 * 
-	 * @param other
-	 *            Rational to divide.
+	 * @param other Rational to divide.
 	 * @return Quotient of <code>this</code> and <code>other</code>.
 	 */
 	public IFraction idiv(IFraction other) {
@@ -377,8 +372,8 @@ public class BigFractionSym extends AbstractFractionSym {
 	}
 
 	@Override
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
-			boolean usePrefix, boolean noSymbolPrefix) {
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators, boolean usePrefix,
+			boolean noSymbolPrefix) {
 		String prefix = usePrefix ? "F." : "";
 		try {
 			int numerator = NumberUtil.toInt(fFraction.getNumerator());
@@ -466,8 +461,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	/**
 	 * Return a new rational representing <code>this * other</code>.
 	 * 
-	 * @param other
-	 *            big integer to multiply.
+	 * @param other big integer to multiply.
 	 * @return Product of <code>this</code> and <code>other</code>.
 	 */
 	public IFraction mul(BigInteger other) {
