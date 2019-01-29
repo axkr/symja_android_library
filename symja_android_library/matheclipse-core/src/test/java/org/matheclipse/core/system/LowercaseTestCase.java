@@ -3599,8 +3599,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testExpand() {
 		// performance test
-		// check("f = (x + y + z + w)^15 ;Expand(f*(f+w))", //
-		// "");
+		// check("f = (x + y + z + w)^15 ;Expand(f*(f+w));", //
+		// "?");
 		check("Expand((x + 3)^(5/2)+(x + 1)^(3/2))", //
 				"Sqrt(1+x)+x*Sqrt(1+x)+9*Sqrt(3+x)+6*x*Sqrt(3+x)+x^2*Sqrt(3+x)");
 		check("Expand((x + 1)^(5/2))", //
@@ -3930,6 +3930,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// 32 seconds on notebook
 		// check("FactorInteger(10^71-1)", "");
 		if (Config.EXPENSIVE_JUNIT_TESTS) {
+			check("FactorInteger(1593332576170570774181606244493046197050984933692181475920784855223341)", //
+					"{{17,1},{1210508704285703,1},{2568160569265616473,1},{\n"
+							+ "30148619026320753545829271787156467,1}}");
 
 			check("FactorInteger(101546450935661953908994991437690198927080333663460351836152986526126114727314353555755712261904130976988029406423152881932996637460315302992884162068350429 )", //
 					"{{123456789012419,1},{123456789012421,1},{123456789012437,1},{123456789012439,1},{\n"
@@ -6444,7 +6447,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"3/Sqrt(2)");
 		check("Limit((4+3*x)^2/(-4+2*x^2),x->Infinity)", //
 				"9/2");
-		
+
 		check("Limit(x^(13+n),x->0)", //
 				"ConditionalExpression(0,n>-13)");
 		// check("Limit(x^(13+n)/a,x->0)", //

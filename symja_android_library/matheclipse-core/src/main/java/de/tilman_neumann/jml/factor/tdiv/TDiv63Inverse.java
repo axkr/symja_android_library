@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
 import de.tilman_neumann.jml.primes.bounds.PrimeCountUpperBounds;
+import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
 
 /**
  * Trial division factor algorithm replacing division by multiplications.
@@ -35,6 +36,8 @@ import de.tilman_neumann.jml.primes.bounds.PrimeCountUpperBounds;
  */
 public class TDiv63Inverse extends FactorAlgorithmBase {
 	private static final Logger LOG = Logger.getLogger(TDiv63Inverse.class);
+	
+	private static AutoExpandingPrimesArray SMALL_PRIMES = AutoExpandingPrimesArray.get().ensurePrimeCount(NUM_PRIMES_FOR_31_BIT_TDIV);
 
 	private static final int DISCRIMINATOR_BITS = 10; // experimental result
 	private static final double DISCRIMINATOR = 1.0/(1<<DISCRIMINATOR_BITS);

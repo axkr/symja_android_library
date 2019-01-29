@@ -23,28 +23,38 @@ import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
  * 
  * @author Tilman Neumann
  */
-public class TDiv31 extends FactorAlgorithmBase {
-
+public class TDiv63 extends FactorAlgorithmBase {
+	
 	private static AutoExpandingPrimesArray SMALL_PRIMES = AutoExpandingPrimesArray.get().ensurePrimeCount(NUM_PRIMES_FOR_31_BIT_TDIV);
+
+	private int pLimit = Integer.MAX_VALUE;
 
 	@Override
 	public String getName() {
-		return "TDiv31";
+		return "TDiv63";
+	}
+
+	/**
+	 * Set the upper limit of primes to be tested in the next findSingleFactor() run.
+	 * 
+	 * @param pLimit
+	 */
+	public void setTestLimit(int pLimit) {
+		this.pLimit = pLimit;
 	}
 
 	@Override
-	// TODO will not work for N > 31 bit having smallest factor > 15 bit
 	public BigInteger findSingleFactor(BigInteger N) {
-		return BigInteger.valueOf(findSingleFactor(N.intValue()));
+		return BigInteger.valueOf(findSingleFactor(N.longValue()));
 	}
 	
-	public int findSingleFactor(int N) {
-		// if N is odd and composite then the loop runs maximally up to test = floor(sqrt(N))
-		for (int i=0; i<NUM_PRIMES_FOR_31_BIT_TDIV; i++) {
-			int p = SMALL_PRIMES.getPrime(i);
+	public int findSingleFactor(long N) {
+		int i=0, p;
+		while ((p = SMALL_PRIMES.getPrime(i++)) <= pLimit) { // upper bound avoids positive int overflow
 			if (N%p==0) return p;
 		}
-		// otherwise N is prime!
-		throw new IllegalArgumentException("N = " + N + " is prime!");
+		
+		// nothing found up to pLimit
+		return 0;
 	}
 }

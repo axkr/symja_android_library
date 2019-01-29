@@ -16,6 +16,7 @@ package de.tilman_neumann.jml.factor.tdiv;
 import java.math.BigInteger;
 
 import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
+import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
 
 /**
  * Trial division factor algorithm replacing division by multiplications.
@@ -29,6 +30,8 @@ import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
  * @authors Thilo Harich + Tilman Neumann
  */
 public class TDiv31Inverse extends FactorAlgorithmBase {
+	
+	private static AutoExpandingPrimesArray SMALL_PRIMES = AutoExpandingPrimesArray.get().ensurePrimeCount(NUM_PRIMES_FOR_31_BIT_TDIV);
 
 	// The allowed discriminator bit size is d <= 53 - bitLength(N/p), thus d<=23 would be safe
 	// for any integer N and p>=2. d=10 is the value that performs best, determined by experiment.

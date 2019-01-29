@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +27,7 @@ import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
 
 import de.tilman_neumann.jml.factor.CombinedFactorAlgorithm;
+import de.tilman_neumann.jml.factor.ecm.EllipticCurveMethod;
 import de.tilman_neumann.util.SortedMultiset;
 
 /**
@@ -686,25 +688,32 @@ public class Primality {
 	 * Call elliptic curve method anf if necessary the parallel SIQS factoring algorithm.
 	 * 
 	 * @param val
-	 * @param map of all BigInteger primes and their associated exponents
+	 * @param map
+	 *            of all BigInteger primes and their associated exponents
 	 */
-	public static void factorInteger(final BigInteger val, Map<BigInteger, Integer> map) {
-		EllipticCurveMethod ecm = new EllipticCurveMethod(val);
-		BigInteger rest = ecm.factorize(map);
-		if (!rest.equals(BigInteger.ONE)) {
-			CombinedFactorAlgorithm factorizer;
-			final int cores = Runtime.getRuntime().availableProcessors();
-			if (Config.JAVA_UNSAFE) {
-				factorizer = new CombinedFactorAlgorithm(cores / 2 + 1, true, false);
-			} else {
-				factorizer = new CombinedFactorAlgorithm(1, false, false);
+	public static void factorInteger(final BigInteger val, SortedMap<BigInteger, Integer> map) {
+		EllipticCurveMethod ecm = new EllipticCurveMethod();
+		SortedMap<BigInteger, Integer> unfactoredComposites = ecm.factorize(val, map);
+		for (Map.Entry<BigInteger, Integer> entry : unfactoredComposites.entrySet()) {
+			BigInteger rest = entry.getKey();
+			if (!rest.equals(BigInteger.ONE)) {
+				CombinedFactorAlgorithm factorizer;
+				final int cores = Runtime.getRuntime().availableProcessors();
+				if (Config.JAVA_UNSAFE) {
+					factorizer = new CombinedFactorAlgorithm(cores / 2 + 1, true, false);
+				} else {
+					factorizer = new CombinedFactorAlgorithm(1, false, false);
+				}
+				SortedMultiset<BigInteger> result = factorizer.factor(rest);
+				for (Map.Entry<BigInteger, Integer> entry2 : result.entrySet()) {
+					map.put(entry2.getKey(), entry2.getValue());
+				}
 			}
-			SortedMultiset<BigInteger> result = factorizer.factor(rest);
-			for (Map.Entry<BigInteger, Integer> entry : result.entrySet()) {
-				map.put(entry.getKey(), entry.getValue());
-			}
-			return;
 		}
+		
+		
+		return;
+
 	}
 
 	public static BigInteger rho(final BigInteger val) {
@@ -1194,7 +1203,7 @@ public class Primality {
 		for (p = 31; count >= n; --p) {
 			count -= (mask >> p) & 1;
 		}
-		return 3L * (((long)p) + (i << 5)) + 7L + (((long)p) & 1);
+		return 3L * (((long) p) + (i << 5)) + 7L + (((long) p) & 1);
 	}
 
 	// Count number of set bits in an int

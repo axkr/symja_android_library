@@ -22,12 +22,14 @@
 package de.tilman_neumann.jml.factor.ecm;
 
 import java.math.BigInteger;
+import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
+import de.tilman_neumann.jml.factor.tdiv.TDiv;
 import de.tilman_neumann.jml.powers.PurePowerTest;
 import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
 import de.tilman_neumann.jml.primes.probable.BPSWTest;
@@ -44,10 +46,6 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
  */
 public class EllipticCurveMethod extends FactorAlgorithmBase {
 	private static final Logger LOG = Logger.getLogger(EllipticCurveMethod.class);
-	private static final boolean DEBUG = true;
-	
-	/** Initial capacity for the arrays which store the factors. */
-	private static final int START_CAPACITY = 32;
 
 	private static final int NLen = 1200;
 	private static final long DosALa32 = (long) 1 << 32;
@@ -55,27 +53,21 @@ public class EllipticCurveMethod extends FactorAlgorithmBase {
 	private static final double dDosALa31 = DosALa31;
 	private static final double dDosALa62 = dDosALa31 * dDosALa31;
 	private static final long Mi = 1000000000;
-	
+	private static final int ADD = 6; // number of multiplications in an addition
+	private static final int DUP = 5; //number of multiplications in a duplicate
+
+	/** 1 as "BigNbr" */
+	private static final long BigNbr1[] = new long[NLen];
+
 	/** ECM limits for 30, 35, ..., 85 digits */
 	private static final int limits[] = { 5, 8, 15, 25, 27, 32, 43, 70, 150, 300, 350, 600, 1500 };
+	
+	/** Primes < 5000 */
+	private static final int SmallPrime[] = new int[670]; // p_669 = 4999;
 
 	private static final BPSWTest bpsw = new BPSWTest();
 	private static final PurePowerTest powerTest = new PurePowerTest();
-	
-	/** Primes < 5000 */
-	private final static int SmallPrime[] = getPrimesBelow5000();
-	private static final int[] getPrimesBelow5000() {
-		final AutoExpandingPrimesArray autoPrimes = AutoExpandingPrimesArray.get().ensureLimit(5000);
-		int[] smallPrimes = new int[670]; // p_669 = 4999
-		smallPrimes[0] = 2;
-		for (int indexM = 1; indexM < smallPrimes.length; indexM++) {
-			smallPrimes[indexM] = autoPrimes.getPrime(indexM);
-		}
-		return smallPrimes;
-	}
-
-	private static final int ADD = 6; // number of multiplications in an addition
-	private static final int DUP = 5; //number of multiplications in a duplicate
+	private static final TDiv tdiv = new TDiv();
 
 	private final long biTmp[] = new long[NLen];
 
@@ -85,27 +77,33 @@ public class EllipticCurveMethod extends FactorAlgorithmBase {
 	private final long CalcAuxGcdT[] = new long[NLen];
 	private final long TestNbr[] = new long[NLen];
 	private final long GcdAccumulated[] = new long[NLen];
-	private final long BigNbr1[] = new long[NLen];
 	private final long MontgomeryMultR1[] = new long[NLen];
 	private final long MontgomeryMultR2[] = new long[NLen];
 	private final long MontgomeryMultAfterInv[] = new long[NLen];
 
 	/** Length of multiple precision numbers. */
 	private int NumberLength;
-	private int fCapacity;
-	private int NbrFactors;
 
 	/** Elliptic Curve number */
-	private int EC, NextEC;
-
-	private BigInteger PD[] = new BigInteger[START_CAPACITY]; // prime factors
-	private int Exp[] = new int[START_CAPACITY];
-	private int Typ[] = new int[START_CAPACITY];
+	private int EC;
 	
 	private long[] fieldAA, fieldTX, fieldTZ, fieldUX, fieldUZ;
 	private long[] fieldAux1, fieldAux2, fieldAux3, fieldAux4;
 	private double dN;
 	private long MontgomeryMultN;
+
+	static {
+		BigNbr1[0] = 1;
+		for (int i = 1; i < NLen; i++) {
+			BigNbr1[i] = 0;
+		}
+		
+		final AutoExpandingPrimesArray autoPrimes = AutoExpandingPrimesArray.get().ensureLimit(5000);
+		SmallPrime[0] = 2;
+		for (int indexM = 1; indexM < SmallPrime.length; indexM++) {
+			SmallPrime[indexM] = autoPrimes.getPrime(indexM);
+		}
+	}
 
 	@Override
 	public String getName() {
@@ -114,467 +112,98 @@ public class EllipticCurveMethod extends FactorAlgorithmBase {
 
 	@Override
 	public BigInteger findSingleFactor(BigInteger N) {
-		SortedMap<BigInteger, Integer> factors = new TreeMap<>();
-		factorize(N, factors);
-		return factors.size()>0 ? factors.keySet().iterator().next() : null;
-	}
-
-	private static void GenerateSieve(int initial, byte[] sieve, byte[] sieve2310, int[] SmallPrime) {
-		int i, j, Q;
-		for (i = 0; i < 23100; i += 2310) {
-			System.arraycopy(sieve2310, 0, sieve, i, 2310);
-		}
-		j = 5;
-		Q = 13; /* Point to prime 13 */
-		do {
-			if (initial > Q * Q) {
-				for (i = (int) (((long) initial * ((Q - 1) / 2)) % Q); i < 23100; i += Q) {
-					sieve[i] = 1; /* Composite */
-				}
-			} else {
-				i = Q * Q - initial;
-				if (i < 46200) {
-					for (i = i / 2; i < 23100; i += Q) {
-						sieve[i] = 1; /* Composite */
-					}
-				} else {
-					break;
-				}
-			}
-			Q = SmallPrime[++j];
-		} while (Q < 5000);
-	}
-
-	/** returns the number of modular multiplications */
-	private static int lucas_cost(int n, double v) {
-		int c, d, e, r;
-
-		d = n;
-		r = (int) (d / v + 0.5);
-		if (r >= n)
-			return (ADD * n);
-		d = n - r;
-		e = 2 * r - n;
-		c = DUP + ADD; /* initial duplicate and final addition */
-		while (d != e) {
-			if (d < e) {
-				r = d;
-				d = e;
-				e = r;
-			}
-			if (4 * d <= 5 * e && ((d + e) % 3) == 0) { /* condition 1 */
-				r = (2 * d - e) / 3;
-				e = (2 * e - d) / 3;
-				d = r;
-				c += 3 * ADD; /* 3 additions */
-			} else if (4 * d <= 5 * e && (d - e) % 6 == 0) { /* condition 2 */
-				d = (d - e) / 2;
-				c += ADD + DUP; /* one addition, one duplicate */
-			} else if (d <= (4 * e)) { /* condition 3 */
-				d -= e;
-				c += ADD; /* one addition */
-			} else if ((d + e) % 2 == 0) { /* condition 4 */
-				d = (d - e) / 2;
-				c += ADD + DUP; /* one addition, one duplicate */
-			} else if (d % 2 == 0) { /* condition 5 */
-				d /= 2;
-				c += ADD + DUP; /* one addition, one duplicate */
-			} else if (d % 3 == 0) { /* condition 6 */
-				d = d / 3 - e;
-				c += 3 * ADD + DUP; /* three additions, one duplicate */
-			} else if ((d + e) % 3 == 0) { /* condition 7 */
-				d = (d - 2 * e) / 3;
-				c += 3 * ADD + DUP; /* three additions, one duplicate */
-			} else if ((d - e) % 3 == 0) { /* condition 8 */
-				d = (d - e) / 3;
-				c += 3 * ADD + DUP; /* three additions, one duplicate */
-			} else if (e % 2 == 0) { /* condition 9 */
-				e /= 2;
-				c += ADD + DUP; /* one addition, one duplicate */
-			}
-		}
-		return (c);
+		SortedMap<BigInteger, Integer> primeFactors = new TreeMap<>();
+		SortedMap<BigInteger, Integer> unfactoredComposites = factorize(N, primeFactors);
+		if (primeFactors.size()>0) return primeFactors.firstKey();
+		return unfactoredComposites.size()>0 ? unfactoredComposites.firstKey() : null;
 	}
 
 	/**
-	 * Adds Q=(x2:z2) and R=(x1:z1) and puts the result in (x3:z3), using 5/6 mul, 6 add/sub and 6 mod. One assumes that
-	 * Q-R=P or R-Q=P where P=(x:z). Uses the following global variables: - n : number to factor - x, z : coordinates of
-	 * P - u, v, w : auxiliary variables Modifies: x3, z3, u, v, w. (x3,z3) may be identical to (x2,z2) and to (x,z)
-	 */
-	private void add3(long[] x3, long[] z3, long[] x2, long[] z2, long[] x1, long[] z1, long[] x, long[] z) {
-		long[] t = fieldTX;
-		long[] u = fieldTZ;
-		long[] v = fieldUX;
-		long[] w = fieldUZ;
-		SubtractBigNbrModN(x2, z2, v); // v = x2-z2
-		AddBigNbrModN(x1, z1, w); // w = x1+z1
-		MontgomeryMult(v, w, u); // u = (x2-z2)*(x1+z1)
-		AddBigNbrModN(x2, z2, w); // w = x2+z2
-		SubtractBigNbrModN(x1, z1, t); // t = x1-z1
-		MontgomeryMult(t, w, v); // v = (x2+z2)*(x1-z1)
-		AddBigNbrModN(u, v, t); // t = 2*(x1*x2-z1*z2)
-		MontgomeryMult(t, t, w); // w = 4*(x1*x2-z1*z2)^2
-		SubtractBigNbrModN(u, v, t); // t = 2*(x2*z1-x1*z2)
-		MontgomeryMult(t, t, v); // v = 4*(x2*z1-x1*z2)^2
-		if (BigNbrAreEqual(x, x3)) {
-			System.arraycopy(x, 0, u, 0, NumberLength);
-			System.arraycopy(w, 0, t, 0, NumberLength);
-			MontgomeryMult(z, t, w);
-			MontgomeryMult(v, u, z3);
-			System.arraycopy(w, 0, x3, 0, NumberLength);
-		} else {
-			MontgomeryMult(w, z, x3); // x3 = 4*z*(x1*x2-z1*z2)^2
-			MontgomeryMult(x, v, z3); // z3 = 4*x*(x2*z1-x1*z2)^2
-		}
-	}
-
-	private void AddBigNbr(long Nbr1[], long Nbr2[], long Sum[]) {
-		int NumberLength = this.NumberLength;
-		long Cy = 0;
-		for (int i = 0; i < NumberLength; i++) {
-			Cy = (Cy >> 31) + Nbr1[i] + Nbr2[i];
-			Sum[i] = Cy & 0x7FFFFFFFl;
-		}
-	}
-
-	private void AddBigNbr32(long Nbr1[], long Nbr2[], long Sum[]) {
-		int NumberLength = this.NumberLength;
-		long Cy = 0;
-		for (int i = 0; i < NumberLength; i++) {
-			Cy = (Cy >> 32) + Nbr1[i] + Nbr2[i];
-			Sum[i] = Cy & 0xFFFFFFFFl;
-		}
-	}
-
-	private void AddBigNbrModN(long Nbr1[], long Nbr2[], long Sum[]) {
-		int NumberLength = this.NumberLength;
-		long MaxUInt = 0x7FFFFFFFl;
-		long Cy = 0;
-		int i;
-
-		for (i = 0; i < NumberLength; i++) {
-			Cy = (Cy >> 31) + Nbr1[i] + Nbr2[i] - TestNbr[i];
-			Sum[i] = Cy & MaxUInt;
-		}
-		if (Cy < 0) {
-			Cy = 0;
-			for (i = 0; i < NumberLength; i++) {
-				Cy = (Cy >> 31) + Sum[i] + TestNbr[i];
-				Sum[i] = Cy & MaxUInt;
-			}
-		}
-	}
-
-	private void AdjustModN(long Nbr[]) {
-		int NumberLength = this.NumberLength;
-		long MaxUInt = 0x7FFFFFFFl;
-		long TrialQuotient;
-		long Cy;
-		int i;
-		double dAux;
-
-		dAux = Nbr[NumberLength] * dDosALa31 + Nbr[NumberLength - 1];
-		if (NumberLength > 1) {
-			dAux += Nbr[NumberLength - 2] / dDosALa31;
-		}
-		TrialQuotient = (long) Math.ceil(dAux / dN) + 2;
-		if (TrialQuotient >= DosALa32) {
-			Cy = 0;
-			for (i = 0; i < NumberLength; i++) {
-				Cy = Nbr[i + 1] - (TrialQuotient >>> 31) * TestNbr[i] - Cy;
-				Nbr[i + 1] = Cy & MaxUInt;
-				Cy = (MaxUInt - Cy) >>> 31;
-			}
-			TrialQuotient &= MaxUInt;
-		}
-		Cy = 0;
-		for (i = 0; i < NumberLength; i++) {
-			Cy = Nbr[i] - TrialQuotient * TestNbr[i] - Cy;
-			Nbr[i] = Cy & MaxUInt;
-			Cy = (MaxUInt - Cy) >>> 31;
-		}
-		Nbr[NumberLength] -= Cy;
-		while ((Nbr[NumberLength] & MaxUInt) != 0) {
-			Cy = 0;
-			for (i = 0; i < NumberLength; i++) {
-				Cy += Nbr[i] + TestNbr[i];
-				Nbr[i] = Cy & MaxUInt;
-				Cy >>= 31;
-			}
-			Nbr[NumberLength] += Cy;
-		}
-	}
-
-	// Perform JS <- JS * JW
-	private BigInteger BigIntToBigNbr(long[] GD) {
-		byte[] Result;
-		long[] Temp;
-		int i, NL;
-		long digit;
-
-		Temp = new long[NumberLength];
-		Convert31To32Bits(GD, Temp);
-		NL = NumberLength * 4;
-		Result = new byte[NL];
-		for (i = 0; i < NumberLength; i++) {
-			digit = Temp[i];
-			Result[NL - 1 - 4 * i] = (byte) (digit & 0xFF);
-			Result[NL - 2 - 4 * i] = (byte) (digit / 0x100 & 0xFF);
-			Result[NL - 3 - 4 * i] = (byte) (digit / 0x10000 & 0xFF);
-			Result[NL - 4 - 4 * i] = (byte) (digit / 0x1000000 & 0xFF);
-		}
-		return (new BigInteger(Result));
-	}
-
-	// Perform JS <- JS ^ 2
-	private boolean BigNbrAreEqual(long Nbr1[], long Nbr2[]) {
-		for (int i = 0; i < NumberLength; i++) {
-			if (Nbr1[i] != Nbr2[i]) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	private boolean BigNbrIsZero(long Nbr[]) {
-		for (int i = 0; i < NumberLength; i++) {
-			if (Nbr[i] != 0) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	private void BigNbrToBigInt(BigInteger N) {
-		byte[] Result;
-		long[] Temp;
-		int i, j;
-		long mask, p;
-
-		Result = N.toByteArray();
-		NumberLength = (Result.length * 8 + 30) / 31;
-		Temp = new long[NumberLength + 1];
-		j = 0;
-		mask = 1;
-		p = 0;
-		for (i = Result.length - 1; i >= 0; i--) {
-			p += mask * (Result[i] >= 0 ? Result[i] : Result[i] + 256);
-			mask *= 0x100;
-			if (mask == DosALa32) {
-				Temp[j++] = p;
-				mask = 1;
-				p = 0;
-			}
-		}
-		Temp[j] = p;
-		Convert32To31Bits(Temp, TestNbr);
-		if (TestNbr[NumberLength - 1] > Mi) {
-			TestNbr[NumberLength] = 0;
-			NumberLength++;
-		}
-		TestNbr[NumberLength] = 0;
-	}
-
-	private void ChSignBigNbr(long Nbr[]) {
-		int NumberLength = this.NumberLength;
-		long Cy = 0;
-		for (int i = 0; i < NumberLength; i++) {
-			Cy = (Cy >> 31) - Nbr[i];
-			Nbr[i] = Cy & 0x7FFFFFFFl;
-		}
-	}
-
-	private void Convert31To32Bits(long[] nbr31bits, long[] nbr32bits) {
-		int i, j, k;
-		i = 0;
-		for (j = -1; j < NumberLength; j++) {
-			k = i % 31;
-			if (k == 0) {
-				j++;
-			}
-			if (j == NumberLength) {
-				break;
-			}
-			if (j == NumberLength - 1) {
-				nbr32bits[i] = nbr31bits[j] >> k;
-			} else {
-				nbr32bits[i] = ((nbr31bits[j] >> k) | (nbr31bits[j + 1] << (31 - k))) & 0xFFFFFFFFl;
-			}
-			i++;
-		}
-		for (; i < NumberLength; i++) {
-			nbr32bits[i] = 0;
-		}
-	}
-
-	private void Convert32To31Bits(long[] nbr32bits, long[] nbr31bits) {
-		int i, j, k;
-		j = 0;
-		nbr32bits[NumberLength] = 0;
-		for (i = 0; i < NumberLength; i++) {
-			k = i % 32;
-			if (k == 0) {
-				nbr31bits[i] = nbr32bits[j] & 0x7FFFFFFFl;
-			} else {
-				nbr31bits[i] = ((nbr32bits[j] >> (32 - k)) | (nbr32bits[j + 1] << k)) & 0x7FFFFFFFl;
-				j++;
-			}
-		}
-	}
-
-	private void DivBigNbrByLong(long Dividend[], long Divisor, long Quotient[]) {
-		int i;
-		boolean ChSignDivisor = false;
-		long Divid, Rem = 0;
-
-		if (Divisor < 0) { // If divisor is negative...
-			ChSignDivisor = true; // Indicate to change sign at the end and
-			Divisor = -Divisor; // convert divisor to positive.
-		}
-		if (Dividend[i = NumberLength - 1] >= 0x40000000l) { // If dividend is negative...
-			Rem = Divisor - 1;
-		}
-		for (; i >= 0; i--) {
-			Divid = Dividend[i] + (Rem << 31);
-			Rem = Divid % Divisor;
-			Quotient[i] = Divid / Divisor;
-		}
-		if (ChSignDivisor) { // Change sign if divisor is negative.
-			ChSignBigNbr(Quotient); // Convert divisor to positive.
-		}
-	}
-
-	/**
-	 * computes 2P=(x2:z2) from P=(x1:z1), with 5 mul, 4 add/sub, 5 mod. Uses the following global variables: - n :
-	 * number to factor - b : (a+2)/4 mod n - u, v, w : auxiliary variables Modifies: x2, z2, u, v, w
-	 */
-	private void duplicate(long[] x2, long[] z2, long[] x1, long[] z1) {
-		long[] u = fieldUZ;
-		long[] v = fieldTX;
-		long[] w = fieldTZ;
-		AddBigNbrModN(x1, z1, w); // w = x1+z1
-		MontgomeryMult(w, w, u); // u = (x1+z1)^2
-		SubtractBigNbrModN(x1, z1, w); // w = x1-z1
-		MontgomeryMult(w, w, v); // v = (x1-z1)^2
-		MontgomeryMult(u, v, x2); // x2 = u*v = (x1^2 - z1^2)^2
-		SubtractBigNbrModN(u, v, w); // w = u-v = 4*x1*z1
-		MontgomeryMult(fieldAA, w, u);
-		AddBigNbrModN(u, v, u); // u = (v+b*w)
-		MontgomeryMult(w, u, z2); // z2 = (w*u)
-	}
-
-	/**
-	 * Factor N.
+	 * Find small factors of some N. Returns found factors in <code>primeFactors</code> and eventually some
+	 * unfactored composites as return value.
 	 * 
 	 * @param N the number to factor
-	 * @param map the prime factors that were found
-	 * @return unfactored composite left after stopping ECM, 1 if N has been factored completely
+	 * @param primeFactors the found prime factors.
+	 * @return unfactored composites left after stopping ECM, empty map if N has been factored completely
 	 */
-	public BigInteger factorize(BigInteger N, SortedMap<BigInteger, Integer> map) {
+	public SortedMap<BigInteger, Integer> factorize(BigInteger N, SortedMap<BigInteger, Integer> primeFactors) {
 		// set up new N
-		fCapacity = START_CAPACITY;
-		NextEC = -1; // First curve of new number should be 1
-		NbrFactors = 0; // important
-		BigNbrToBigInt(N);
-
+		EC = 1;
+		
 		// go
-		BigInteger NN;
-		long TestComp;
-		int i, j;
-		BigNbr1[0] = 1;
-		for (i = 1; i < NLen; i++) {
-			BigNbr1[i] = 0;
-		}
+		TreeMap<BigInteger, Integer> unresolvedComposites = new TreeMap<BigInteger, Integer>();
 		try {
-			// Do trial division by all primes < 131072
-			TestComp = GetSmallFactors(N);
-			if (TestComp != 1) { // There are factors greater than 131071.
-				PD[NbrFactors] = BigIntToBigNbr(TestNbr);
-				Exp[NbrFactors] = 1;
-				Typ[NbrFactors] = -1; /* Unknown */
-				incNbrFactors();
+			// Do trial division by all primes < 131072.
+			N = tdiv.findSmallFactors(N, 131072, primeFactors);
+			
+			if (N.equals(I_1)) {
+				return unresolvedComposites;
 			}
 			
-			// XXX Simplify factor_loop
-			factor_loop: do {
-				for (i = 0; i < NbrFactors; i++) {
-					if (Typ[i] < 0) { /* Unknown */
-						// System.out.println("Searching for perfect power.");
-						PurePowerTest.Result r = powerTest.test(PD[i]);
-						if (r != null) {
-							PD[i] = r.base;
-							Exp[i] *= r.exponent;
-							// Typ[i] remains unknown
-							//SortFactorsInputNbr(); // No sorting of factors required here?
-							continue factor_loop;
-						}
-						
-						// TODO the following code is only safe if we did tdiv until 2^17 before
-						if (PD[i].bitLength() <= 33) {
-							j = 0;
-						} else {
-							// System.out.println("Before calling prime check routine.");
-							j = bpsw.isProbablePrime(PD[i]) ? 0 : 1;
-						}
-						if (j == 0) {
-							Typ[i] = 0; /* Prime */
-						} else {
-							Typ[i] = -Typ[i]; /* Composite */
-						}
-						continue factor_loop;
-					}
-				}
-				for (i = 0; i < NbrFactors; i++) {
-					EC = Typ[i];
-
-					if (EC > 0) { /* Composite */
-						EC %= 50000000;
-						NN = fnECM(PD[i]);
-						if (NN.equals(I_1)) {
-							// ECM has been stopped before all prime factors have been found
-							for (i = 0; i < NbrFactors - 1; i++) {
-								if (DEBUG) {
-									// assertTrue(bpsw.isProbablePrime(PD[i])); // XXX rare fails for N >= 220 bit
-									if(!bpsw.isProbablePrime(PD[i])) {
-										LOG.debug("N=" + N + ": NbrFactors=" + NbrFactors + ": factor " + i + " = " + PD[i] + " is not prime");
-									}
-								}
-								map.put(PD[i], Exp[i]);
-							}
-//							if (DEBUG) {
-//								//LOG.debug("factors = " + map + ", unfactored = " + PD[i]);
-//								assertEquals(PD[NbrFactors-1], PD[i]);
-//							}
-							return PD[i]; // return unfactored composite, requires sorting in incNbrFactors()
-						}
-						Typ[i] = EC;
-						
-						// insert new factor
-						PD[NbrFactors] = NN;
-						PD[i] = PD[i].divide(NN);
-						Exp[NbrFactors] = Exp[i];
-						Typ[NbrFactors] = Typ[i] = -EC;
-						incNbrFactors();
-						continue factor_loop;
-					}
-				}
-				break;
-			} while (true);
+			// There are factors greater than 131071, and they may be prime or composite.
+			if (bpsw.isProbablePrime(N)) {
+				addToMap(N, 1, primeFactors);
+				return unresolvedComposites;
+			}
 			
-			for (i = 0; i < NbrFactors; i++) {
-				if (DEBUG) {
-					if(!bpsw.isProbablePrime(PD[i])) {
-						LOG.debug("N=" + N + ": NbrFactors=" + NbrFactors + ": factor " + i + " is not prime");
+			// N is composite. Do ECM:
+			TreeMap<BigInteger, Integer> compositesToTest = new TreeMap<BigInteger, Integer>();
+			compositesToTest.put(N, 1);
+			while (!compositesToTest.isEmpty()) {
+				// get next composite to test
+				Entry<BigInteger, Integer> compositeEntry = compositesToTest.pollLastEntry();
+				N = compositeEntry.getKey();
+				int exp = compositeEntry.getValue();
+				
+				// pure power?
+				PurePowerTest.Result r = powerTest.test(N);
+				if (r != null) {
+					// N is a pure power!
+					if (isProbablePrime(r.base)) {
+						addToMap(r.base, exp*r.exponent, primeFactors);
+					} else {
+						addToMap(r.base, exp*r.exponent, compositesToTest);
 					}
+					continue; // test next composite
 				}
-				map.put(PD[i], Exp[i]);
+
+				// ECM
+				final BigInteger NN = fnECM(N);
+				if (NN.equals(I_1)) {
+					// N is composite but could not be resolved
+					addToMap(N, exp, unresolvedComposites);
+					continue;
+				}
+				// NN is a factor of N
+				if (isProbablePrime(NN)) {
+					addToMap(NN, exp, primeFactors);
+				} else {
+					addToMap(NN, exp, compositesToTest);
+				}
+				BigInteger factor2 = N.divide(NN);
+				if (isProbablePrime(factor2)) {
+					addToMap(factor2, exp, primeFactors);
+				} else {
+					addToMap(factor2, exp, compositesToTest);
+				}
 			}
 		} catch (ArithmeticException e) {
 			LOG.debug("Caught " + e, e);
 		}
-		return I_1;
+		return unresolvedComposites;
 	}
 
+	private boolean isProbablePrime(BigInteger N) {
+		// TODO The 33-bit "guard" is only safe if we did tdiv until 2^17 before
+		return (N.bitLength() <= 33) ? true : bpsw.isProbablePrime(N);
+	}
+	
+	private void addToMap(BigInteger N, int exp, SortedMap<BigInteger, Integer> map) {
+		Integer oldExp = map.get(N);
+		// replaces old entry if oldExp!=null
+		map.put(N, (oldExp == null) ? exp : oldExp+exp);
+	}
+	
 	private BigInteger fnECM(BigInteger N) {
 		int I, J, Pass, Qaux;
 		long L1, L2, LS, P, IP;
@@ -622,25 +251,22 @@ public class EllipticCurveMethod extends FactorAlgorithmBase {
 		BigNbrToBigInt(N);
 		GetMontgomeryParms();
 		for (I = 0; I < NumberLength; I++) {
-			M[I] = DX[I] = DZ[I] = W3[I] = W4[I] = GD[I] = 0;
+			M[I] = DX[I] = DZ[I] = W3[I] = W4[I] = GD[I] = 0; // XXX these arrays are zero-initialized anyway
 		}
+		
+		// it seems to be faster not to repeat previously tested curves for new factors
 		EC--;
 
 		do {
 			new_curve: do {
-				if (NextEC > 0) {
-					EC = NextEC;
-					NextEC = -1;
-				} else {
-					EC++;
-					L1 = N.toString().length(); // Get number of digits.
-					if (L1 > 30 && L1 <= 90) // If between 30 and 90 digits...
-					{
-						int limit = limits[((int) L1 - 31) / 5];
-						if (EC % 50000000 >= limit) {
-							EC += 1;
-							return I_1;
-						}
+				EC++;
+				L1 = N.toString().length(); // Get number of digits.
+				if (L1 > 30 && L1 <= 90) // If between 30 and 90 digits...
+				{
+					int limit = limits[((int) L1 - 31) / 5];
+					if (EC % 50000000 >= limit) {
+						EC += 1;
+						return I_1;
 					}
 				}
 				L1 = 2000;
@@ -980,89 +606,6 @@ public class EllipticCurveMethod extends FactorAlgorithmBase {
 		return BigIntToBigNbr(GD);
 	}
 
-	/**
-	 * Gcd calculation:
-	 * <ul>
-	 * <li>Step 1: Set k<-0, and then repeatedly set k<-k+1, u<-u/2, v<-v/2 zero or more times until u and v are not
-	 * both even.</li>
-	 * <li>Step 2: If u is odd, set t<-(-v) and go to step 4. Otherwise set t<-u.</li>
-	 * <li>Step 3: Set t<-t/2</li>
-	 * <li>Step 4: If t is even, go back to step 3.</li>
-	 * <li>Step 5: If t>0, set u<-t, otherwise set v<-(-t).</li>
-	 * <li>Step 6: Set t<-u-v. If t!=0, go back to step 3.</li>
-	 * <li>Step 7: The GCD is u*2^k.</li>
-	 * </ul>
-	 * 
-	 * @param Nbr1
-	 * @param Nbr2
-	 * @param Gcd
-	 */
-	private void GcdBigNbr(long Nbr1[], long Nbr2[], long Gcd[]) {
-		int i, k;
-		int NumberLength = this.NumberLength;
-
-		System.arraycopy(Nbr1, 0, CalcAuxGcdU, 0, NumberLength);
-		System.arraycopy(Nbr2, 0, CalcAuxGcdV, 0, NumberLength);
-		for (i = 0; i < NumberLength; i++) {
-			if (CalcAuxGcdU[i] != 0) {
-				break;
-			}
-		}
-		if (i == NumberLength) {
-			System.arraycopy(CalcAuxGcdV, 0, Gcd, 0, NumberLength);
-			return;
-		}
-		for (i = 0; i < NumberLength; i++) {
-			if (CalcAuxGcdV[i] != 0) {
-				break;
-			}
-		}
-		if (i == NumberLength) {
-			System.arraycopy(CalcAuxGcdU, 0, Gcd, 0, NumberLength);
-			return;
-		}
-		if (CalcAuxGcdU[NumberLength - 1] >= 0x40000000l) {
-			ChSignBigNbr(CalcAuxGcdU);
-		}
-		if (CalcAuxGcdV[NumberLength - 1] >= 0x40000000l) {
-			ChSignBigNbr(CalcAuxGcdV);
-		}
-		k = 0;
-		while ((CalcAuxGcdU[0] & 1) == 0 && (CalcAuxGcdV[0] & 1) == 0) { // Step 1
-			k++;
-			DivBigNbrByLong(CalcAuxGcdU, 2, CalcAuxGcdU);
-			DivBigNbrByLong(CalcAuxGcdV, 2, CalcAuxGcdV);
-		}
-		if ((CalcAuxGcdU[0] & 1) == 1) { // Step 2
-			System.arraycopy(CalcAuxGcdV, 0, CalcAuxGcdT, 0, NumberLength);
-			ChSignBigNbr(CalcAuxGcdT);
-		} else {
-			System.arraycopy(CalcAuxGcdU, 0, CalcAuxGcdT, 0, NumberLength);
-		}
-		do {
-			while ((CalcAuxGcdT[0] & 1) == 0) { // Step 4
-				DivBigNbrByLong(CalcAuxGcdT, 2, CalcAuxGcdT); // Step 3
-			}
-			if (CalcAuxGcdT[NumberLength - 1] < 0x40000000l) { // Step 5
-				System.arraycopy(CalcAuxGcdT, 0, CalcAuxGcdU, 0, NumberLength);
-			} else {
-				System.arraycopy(CalcAuxGcdT, 0, CalcAuxGcdV, 0, NumberLength);
-				ChSignBigNbr(CalcAuxGcdV);
-			}
-			SubtractBigNbr(CalcAuxGcdU, CalcAuxGcdV, CalcAuxGcdT); // Step 6
-			for (i = 0; i < NumberLength; i++) {
-				if (CalcAuxGcdT[i] != 0) {
-					break;
-				}
-			}
-		} while (i != NumberLength);
-		System.arraycopy(CalcAuxGcdU, 0, Gcd, 0, NumberLength); // Step 7
-		while (k > 0) {
-			AddBigNbr(Gcd, Gcd, Gcd);
-			k--;
-		}
-	}
-
 	private void GetMontgomeryParms() {
 		int NumberLength = this.NumberLength;
 		int N, x, j;
@@ -1090,455 +633,6 @@ public class EllipticCurveMethod extends FactorAlgorithmBase {
 		MultBigNbrModN(MontgomeryMultR1, MontgomeryMultR1, MontgomeryMultR2);
 		MontgomeryMult(MontgomeryMultR2, MontgomeryMultR2, MontgomeryMultAfterInv);
 		AddBigNbrModN(MontgomeryMultR1, MontgomeryMultR1, MontgomeryMultR2);
-	}
-
-	// TODO do tdiv before calling ECM and remove this method
-	private long GetSmallFactors(BigInteger NumberToFactor) {
-
-		long Div, TestComp;
-		int i;
-		boolean checkExpParity = false;
-
-		BigNbrToBigInt(NumberToFactor);
-		NbrFactors = 0;
-		for (i = 0; i < Exp.length; i++) {
-			Exp[i] = Typ[i] = 0;
-		}
-		while ((TestNbr[0] & 1) == 0) { /* N even */
-			if (Exp[NbrFactors] == 0) {
-				PD[NbrFactors] = I_2;
-			}
-			Exp[NbrFactors]++;
-			DivBigNbrByLong(TestNbr, 2, TestNbr);
-		}
-		if (Exp[NbrFactors] != 0) {
-			incNbrFactors();
-		}
-		while (RemDivBigNbrByLong(TestNbr, 3) == 0) {
-			if (Exp[NbrFactors] == 0) {
-				PD[NbrFactors] = I_3;
-			}
-			Exp[NbrFactors]++;
-			DivBigNbrByLong(TestNbr, 3, TestNbr);
-		}
-		if (checkExpParity) {
-			return -1; /* Discard it */
-		}
-		if (Exp[NbrFactors] != 0) {
-			incNbrFactors();
-		}
-		Div = 5;
-		TestComp = TestNbr[0] + (TestNbr[1] << 31);
-		if (TestComp < 0) {
-			TestComp = 10000 * DosALa31;
-		} else {
-			for (i = 2; i < NumberLength; i++) {
-				if (TestNbr[i] != 0) {
-					TestComp = 10000 * DosALa31;
-					break;
-				}
-			}
-		}
-		while (Div < 131072) {
-			if (Div % 3 != 0) {
-				while (RemDivBigNbrByLong(TestNbr, Div) == 0) {
-					if (Exp[NbrFactors] == 0) {
-						PD[NbrFactors] = BigInteger.valueOf(Div);
-					}
-					Exp[NbrFactors]++;
-					DivBigNbrByLong(TestNbr, Div, TestNbr);
-					TestComp = TestNbr[0] + (TestNbr[1] << 31);
-					if (TestComp < 0) {
-						TestComp = 10000 * DosALa31;
-					} else {
-						for (i = 2; i < NumberLength; i++) {
-							if (TestNbr[i] != 0) {
-								TestComp = 10000 * DosALa31;
-								break;
-							}
-						}
-					} /* end while */
-				}
-				if (checkExpParity) {
-					return -1; /* Discard it */
-				}
-				if (Exp[NbrFactors] != 0) {
-					incNbrFactors();
-				}
-			}
-			Div += 2;
-			if (TestComp < Div * Div && TestComp != 1) {
-				if (Exp[NbrFactors] != 0) {
-					incNbrFactors();
-				}
-				PD[NbrFactors] = BigInteger.valueOf(TestComp);
-				Exp[NbrFactors] = 1;
-				TestComp = 1;
-				incNbrFactors();
-				break;
-			}
-		} /* end while */
-		return TestComp;
-	}
-
-	private void LongToBigNbr(long Nbr, long Out[]) {
-		int i;
-
-		Out[0] = Nbr & 0x7FFFFFFFl;
-		Out[1] = (Nbr >> 31) & 0x7FFFFFFFl;
-		for (i = 2; i < NumberLength; i++) {
-			Out[i] = (Nbr < 0 ? 0x7FFFFFFFl : 0);
-		}
-	}
-
-	/**
-	 * <p>Find the inverse multiplicative modulo v.</p>
-	 * 
-	 * <p>The algorithm terminates with u1 = u^(-1) MOD v.</p>
-	 */
-	private void ModInvBigNbr(long[] a, long[] inv, long[] b) {
-		int i;
-		int NumberLength = this.NumberLength;
-		int Dif, E;
-		int st1, st2;
-		long Yaa, Yab; // 2^E * A' = Yaa A + Yab B
-		long Yba, Ybb; // 2^E * B' = Yba A + Ybb B
-		long Ygb0; // 2^E * Mu' = Yaa Mu + Yab Gamma + Ymb0 B0
-		long Ymb0; // 2^E * Gamma' = Yba Mu + Ybb Gamma + Ygb0 B0
-		int Iaa, Iab, Iba, Ibb;
-		long Tmp1, Tmp2, Tmp3, Tmp4, Tmp5;
-		int B0l;
-		int invB0l;
-		int Al, Bl, T1, Gl, Ml;
-		long Cy1, Cy2, Cy3, Cy4;
-		int Yaah, Yabh, Ybah, Ybbh;
-		int Ymb0h, Ygb0h;
-		long Pr1, Pr2, Pr3, Pr4, Pr5, Pr6, Pr7;
-		long[] B = this.biTmp;
-		long[] CalcAuxModInvA = this.CalcAuxGcdU;
-		long[] CalcAuxModInvB = this.CalcAuxGcdV;
-		long[] CalcAuxModInvMu = this.CalcAuxGcdT; // Cannot be inv
-		long[] CalcAuxModInvGamma = inv;
-
-		Convert31To32Bits(a, CalcAuxModInvA);
-		Convert31To32Bits(b, CalcAuxModInvB);
-		System.arraycopy(CalcAuxModInvB, 0, B, 0, NumberLength);
-		B0l = (int) B[0];
-		invB0l = B0l; // 2 least significant bits of inverse correct.
-		invB0l = invB0l * (2 - B0l * invB0l); // 4 LSB of inverse correct.
-		invB0l = invB0l * (2 - B0l * invB0l); // 8 LSB of inverse correct.
-		invB0l = invB0l * (2 - B0l * invB0l); // 16 LSB of inverse correct.
-		invB0l = invB0l * (2 - B0l * invB0l); // 32 LSB of inverse correct.
-		for (i = NumberLength - 1; i >= 0; i--) {
-			CalcAuxModInvGamma[i] = 0;
-			CalcAuxModInvMu[i] = 0;
-		}
-		CalcAuxModInvMu[0] = 1;
-		Dif = 0;
-		outer_loop: do {
-			Iaa = Ibb = 1;
-			Iab = Iba = 0;
-			Al = (int) CalcAuxModInvA[0];
-			Bl = (int) CalcAuxModInvB[0];
-			E = 0;
-			if (Bl == 0) {
-				for (i = NumberLength - 1; i >= 0; i--) {
-					if (CalcAuxModInvB[i] != 0)
-						break;
-				}
-				if (i < 0)
-					break; // Go out of loop if CalcAuxModInvB = 0
-			}
-			do {
-				T1 = 0;
-				while ((Bl & 1) == 0) {
-					if (E == 31) {
-						Yaa = Iaa;
-						Yab = Iab;
-						Yba = Iba;
-						Ybb = Ibb;
-						Gl = (int) CalcAuxModInvGamma[0];
-						Ml = (int) CalcAuxModInvMu[0];
-						Dif++;
-						T1++;
-						Yaa <<= T1;
-						Yab <<= T1;
-						Ymb0 = (-(int) Yaa * Ml - (int) Yab * Gl) * invB0l;
-						Ygb0 = (-Iba * Ml - Ibb * Gl) * invB0l;
-						Cy1 = Cy2 = Cy3 = Cy4 = 0;
-						Yaah = (int) (Yaa >> 32);
-						Yabh = (int) (Yab >> 32);
-						Ybah = (int) (Yba >> 32);
-						Ybbh = (int) (Ybb >> 32);
-						Ymb0h = (int) (Ymb0 >> 32);
-						Ygb0h = (int) (Ygb0 >> 32);
-						Yaa &= 0xFFFFFFFFL;
-						Yab &= 0xFFFFFFFFL;
-						Yba &= 0xFFFFFFFFL;
-						Ybb &= 0xFFFFFFFFL;
-						Ymb0 &= 0xFFFFFFFFL;
-						Ygb0 &= 0xFFFFFFFFL;
-
-						st1 = Yaah * 6 + Yabh * 2 + Ymb0h;
-						st2 = Ybah * 6 + Ybbh * 2 + Ygb0h;
-						for (i = 0; i < NumberLength; i++) {
-							Pr1 = Yaa * (Tmp1 = CalcAuxModInvMu[i]);
-							Pr2 = Yab * (Tmp2 = CalcAuxModInvGamma[i]);
-							Pr3 = Ymb0 * (Tmp3 = B[i]);
-							Pr4 = (Pr1 & 0xFFFFFFFFL) + (Pr2 & 0xFFFFFFFFL) + (Pr3 & 0xFFFFFFFFL) + Cy3;
-							Pr5 = Yaa * (Tmp4 = CalcAuxModInvA[i]);
-							Pr6 = Yab * (Tmp5 = CalcAuxModInvB[i]);
-							Pr7 = (Pr5 & 0xFFFFFFFFL) + (Pr6 & 0xFFFFFFFFL) + Cy1;
-							switch (st1) {
-							case -9:
-								Cy3 = -Tmp1 - Tmp2 - Tmp3;
-								Cy1 = -Tmp4 - Tmp5;
-								break;
-							case -8:
-								Cy3 = -Tmp1 - Tmp2;
-								Cy1 = -Tmp4 - Tmp5;
-								break;
-							case -7:
-								Cy3 = -Tmp1 - Tmp3;
-								Cy1 = -Tmp4;
-								break;
-							case -6:
-								Cy3 = -Tmp1;
-								Cy1 = -Tmp4;
-								break;
-							case -5:
-								Cy3 = -Tmp1 + Tmp2 - Tmp3;
-								Cy1 = -Tmp4 + Tmp5;
-								break;
-							case -4:
-								Cy3 = -Tmp1 + Tmp2;
-								Cy1 = -Tmp4 + Tmp5;
-								break;
-							case -3:
-								Cy3 = -Tmp2 - Tmp3;
-								Cy1 = -Tmp5;
-								break;
-							case -2:
-								Cy3 = -Tmp2;
-								Cy1 = -Tmp5;
-								break;
-							case -1:
-								Cy3 = -Tmp3;
-								Cy1 = 0;
-								break;
-							case 0:
-								Cy3 = 0;
-								Cy1 = 0;
-								break;
-							case 1:
-								Cy3 = Tmp2 - Tmp3;
-								Cy1 = Tmp5;
-								break;
-							case 2:
-								Cy3 = Tmp2;
-								Cy1 = Tmp5;
-								break;
-							case 3:
-								Cy3 = Tmp1 - Tmp2 - Tmp3;
-								Cy1 = Tmp4 - Tmp5;
-								break;
-							case 4:
-								Cy3 = Tmp1 - Tmp2;
-								Cy1 = Tmp4 - Tmp5;
-								break;
-							case 5:
-								Cy3 = Tmp1 - Tmp3;
-								Cy1 = Tmp4;
-								break;
-							case 6:
-								Cy3 = Tmp1;
-								Cy1 = Tmp4;
-								break;
-							case 7:
-								Cy3 = Tmp1 + Tmp2 - Tmp3;
-								Cy1 = Tmp4 + Tmp5;
-								break;
-							case 8:
-								Cy3 = Tmp1 + Tmp2;
-								Cy1 = Tmp4 + Tmp5;
-								break;
-							}
-							Cy3 += (Pr1 >>> 32) + (Pr2 >>> 32) + (Pr3 >>> 32) + (Pr4 >> 32);
-							Cy1 += (Pr5 >>> 32) + (Pr6 >>> 32) + (Pr7 >> 32);
-							if (i > 0) {
-								CalcAuxModInvMu[i - 1] = Pr4 & 0xFFFFFFFFL;
-								CalcAuxModInvA[i - 1] = Pr7 & 0xFFFFFFFFL;
-							}
-							Pr1 = Yba * Tmp1;
-							Pr2 = Ybb * Tmp2;
-							Pr3 = Ygb0 * Tmp3;
-							Pr4 = (Pr1 & 0xFFFFFFFFL) + (Pr2 & 0xFFFFFFFFL) + (Pr3 & 0xFFFFFFFFL) + Cy4;
-							Pr5 = Yba * Tmp4;
-							Pr6 = Ybb * Tmp5;
-							Pr7 = (Pr5 & 0xFFFFFFFFL) + (Pr6 & 0xFFFFFFFFL) + Cy2;
-							switch (st2) {
-							case -9:
-								Cy4 = -Tmp1 - Tmp2 - Tmp3;
-								Cy2 = -Tmp4 - Tmp5;
-								break;
-							case -8:
-								Cy4 = -Tmp1 - Tmp2;
-								Cy2 = -Tmp4 - Tmp5;
-								break;
-							case -7:
-								Cy4 = -Tmp1 - Tmp3;
-								Cy2 = -Tmp4;
-								break;
-							case -6:
-								Cy4 = -Tmp1;
-								Cy2 = -Tmp4;
-								break;
-							case -5:
-								Cy4 = -Tmp1 + Tmp2 - Tmp3;
-								Cy2 = -Tmp4 + Tmp5;
-								break;
-							case -4:
-								Cy4 = -Tmp1 + Tmp2;
-								Cy2 = -Tmp4 + Tmp5;
-								break;
-							case -3:
-								Cy4 = -Tmp2 - Tmp3;
-								Cy2 = -Tmp5;
-								break;
-							case -2:
-								Cy4 = -Tmp2;
-								Cy2 = -Tmp5;
-								break;
-							case -1:
-								Cy4 = -Tmp3;
-								Cy2 = 0;
-								break;
-							case 0:
-								Cy4 = 0;
-								Cy2 = 0;
-								break;
-							case 1:
-								Cy4 = Tmp2 - Tmp3;
-								Cy2 = Tmp5;
-								break;
-							case 2:
-								Cy4 = Tmp2;
-								Cy2 = Tmp5;
-								break;
-							case 3:
-								Cy4 = Tmp1 - Tmp2 - Tmp3;
-								Cy2 = Tmp4 - Tmp5;
-								break;
-							case 4:
-								Cy4 = Tmp1 - Tmp2;
-								Cy2 = Tmp4 - Tmp5;
-								break;
-							case 5:
-								Cy4 = Tmp1 - Tmp3;
-								Cy2 = Tmp4;
-								break;
-							case 6:
-								Cy4 = Tmp1;
-								Cy2 = Tmp4;
-								break;
-							case 7:
-								Cy4 = Tmp1 + Tmp2 - Tmp3;
-								Cy2 = Tmp4 + Tmp5;
-								break;
-							case 8:
-								Cy4 = Tmp1 + Tmp2;
-								Cy2 = Tmp4 + Tmp5;
-								break;
-							}
-							Cy4 += (Pr1 >>> 32) + (Pr2 >>> 32) + (Pr3 >>> 32) + (Pr4 >> 32);
-							Cy2 += (Pr5 >>> 32) + (Pr6 >>> 32) + (Pr7 >> 32);
-							if (i > 0) {
-								CalcAuxModInvGamma[i - 1] = Pr4 & 0xFFFFFFFFL;
-								CalcAuxModInvB[i - 1] = Pr7 & 0xFFFFFFFFL;
-							}
-						}
-
-						if ((int) CalcAuxModInvA[i - 1] < 0) {
-							Cy1 -= Yaa;
-							Cy2 -= Yba;
-						}
-						if ((int) CalcAuxModInvB[i - 1] < 0) {
-							Cy1 -= Yab;
-							Cy2 -= Ybb;
-						}
-						if ((int) CalcAuxModInvMu[i - 1] < 0) {
-							Cy3 -= Yaa;
-							Cy4 -= Yba;
-						}
-						if ((int) CalcAuxModInvGamma[i - 1] < 0) {
-							Cy3 -= Yab;
-							Cy4 -= Ybb;
-						}
-						CalcAuxModInvA[i - 1] = Cy1 & 0xFFFFFFFFL;
-						CalcAuxModInvB[i - 1] = Cy2 & 0xFFFFFFFFL;
-						CalcAuxModInvMu[i - 1] = Cy3 & 0xFFFFFFFFL;
-						CalcAuxModInvGamma[i - 1] = Cy4 & 0xFFFFFFFFL;
-						continue outer_loop;
-					}
-					Bl >>= 1;
-					Dif++;
-					E++;
-					T1++;
-				}
-				; /* end while */
-				Iaa <<= T1;
-				Iab <<= T1;
-				if (Dif >= 0) {
-					Dif = -Dif;
-					if (((Al + Bl) & 3) == 0) {
-						T1 = Iba;
-						Iba += Iaa;
-						Iaa = T1;
-						T1 = Ibb;
-						Ibb += Iab;
-						Iab = T1;
-						T1 = Bl;
-						Bl += Al;
-						Al = T1;
-					} else {
-						T1 = Iba;
-						Iba -= Iaa;
-						Iaa = T1;
-						T1 = Ibb;
-						Ibb -= Iab;
-						Iab = T1;
-						T1 = Bl;
-						Bl -= Al;
-						Al = T1;
-					}
-				} else {
-					if (((Al + Bl) & 3) == 0) {
-						Iba += Iaa;
-						Ibb += Iab;
-						Bl += Al;
-					} else {
-						Iba -= Iaa;
-						Ibb -= Iab;
-						Bl -= Al;
-					}
-				}
-				Dif--;
-			} while (true);
-		} while (true);
-		if (CalcAuxModInvA[0] != 1) {
-			SubtractBigNbr32(B, CalcAuxModInvMu, CalcAuxModInvMu);
-		}
-		if ((int) CalcAuxModInvMu[i = NumberLength - 1] < 0) {
-			AddBigNbr32(B, CalcAuxModInvMu, CalcAuxModInvMu);
-		}
-		for (; i >= 0; i--) {
-			if (B[i] != CalcAuxModInvMu[i])
-				break;
-		}
-		if (i < 0 || B[i] < CalcAuxModInvMu[i]) { // If B < Mu
-			SubtractBigNbr32(CalcAuxModInvMu, B, CalcAuxModInvMu); // Mu <- Mu - B
-		}
-		Convert32To31Bits(CalcAuxModInvMu, inv);
 	}
 
 	private void MontgomeryMult(long Nbr1[], long Nbr2[], long Prod[]) {
@@ -2070,6 +1164,793 @@ public class EllipticCurveMethod extends FactorAlgorithmBase {
 		} /* end switch */
 	}
 
+	private static void GenerateSieve(int initial, byte[] sieve, byte[] sieve2310, int[] SmallPrime) {
+		int i, j, Q;
+		for (i = 0; i < 23100; i += 2310) {
+			System.arraycopy(sieve2310, 0, sieve, i, 2310);
+		}
+		j = 5;
+		Q = 13; /* Point to prime 13 */
+		do {
+			if (initial > Q * Q) {
+				for (i = (int) (((long) initial * ((Q - 1) / 2)) % Q); i < 23100; i += Q) {
+					sieve[i] = 1; /* Composite */
+				}
+			} else {
+				i = Q * Q - initial;
+				if (i < 46200) {
+					for (i = i / 2; i < 23100; i += Q) {
+						sieve[i] = 1; /* Composite */
+					}
+				} else {
+					break;
+				}
+			}
+			Q = SmallPrime[++j];
+		} while (Q < 5000);
+	}
+
+	/** returns the number of modular multiplications */
+	private static int lucas_cost(int n, double v) {
+		int c, d, e, r;
+
+		d = n;
+		r = (int) (d / v + 0.5);
+		if (r >= n)
+			return (ADD * n);
+		d = n - r;
+		e = 2 * r - n;
+		c = DUP + ADD; /* initial duplicate and final addition */
+		while (d != e) {
+			if (d < e) {
+				r = d;
+				d = e;
+				e = r;
+			}
+			if (4 * d <= 5 * e && ((d + e) % 3) == 0) { /* condition 1 */
+				r = (2 * d - e) / 3;
+				e = (2 * e - d) / 3;
+				d = r;
+				c += 3 * ADD; /* 3 additions */
+			} else if (4 * d <= 5 * e && (d - e) % 6 == 0) { /* condition 2 */
+				d = (d - e) / 2;
+				c += ADD + DUP; /* one addition, one duplicate */
+			} else if (d <= (4 * e)) { /* condition 3 */
+				d -= e;
+				c += ADD; /* one addition */
+			} else if ((d + e) % 2 == 0) { /* condition 4 */
+				d = (d - e) / 2;
+				c += ADD + DUP; /* one addition, one duplicate */
+			} else if (d % 2 == 0) { /* condition 5 */
+				d /= 2;
+				c += ADD + DUP; /* one addition, one duplicate */
+			} else if (d % 3 == 0) { /* condition 6 */
+				d = d / 3 - e;
+				c += 3 * ADD + DUP; /* three additions, one duplicate */
+			} else if ((d + e) % 3 == 0) { /* condition 7 */
+				d = (d - 2 * e) / 3;
+				c += 3 * ADD + DUP; /* three additions, one duplicate */
+			} else if ((d - e) % 3 == 0) { /* condition 8 */
+				d = (d - e) / 3;
+				c += 3 * ADD + DUP; /* three additions, one duplicate */
+			} else if (e % 2 == 0) { /* condition 9 */
+				e /= 2;
+				c += ADD + DUP; /* one addition, one duplicate */
+			}
+		}
+		return (c);
+	}
+
+	/**
+	 * Adds Q=(x2:z2) and R=(x1:z1) and puts the result in (x3:z3), using 5/6 mul, 6 add/sub and 6 mod. One assumes that
+	 * Q-R=P or R-Q=P where P=(x:z). Uses the following global variables: - n : number to factor - x, z : coordinates of
+	 * P - u, v, w : auxiliary variables Modifies: x3, z3, u, v, w. (x3,z3) may be identical to (x2,z2) and to (x,z)
+	 */
+	private void add3(long[] x3, long[] z3, long[] x2, long[] z2, long[] x1, long[] z1, long[] x, long[] z) {
+		long[] t = fieldTX;
+		long[] u = fieldTZ;
+		long[] v = fieldUX;
+		long[] w = fieldUZ;
+		SubtractBigNbrModN(x2, z2, v); // v = x2-z2
+		AddBigNbrModN(x1, z1, w); // w = x1+z1
+		MontgomeryMult(v, w, u); // u = (x2-z2)*(x1+z1)
+		AddBigNbrModN(x2, z2, w); // w = x2+z2
+		SubtractBigNbrModN(x1, z1, t); // t = x1-z1
+		MontgomeryMult(t, w, v); // v = (x2+z2)*(x1-z1)
+		AddBigNbrModN(u, v, t); // t = 2*(x1*x2-z1*z2)
+		MontgomeryMult(t, t, w); // w = 4*(x1*x2-z1*z2)^2
+		SubtractBigNbrModN(u, v, t); // t = 2*(x2*z1-x1*z2)
+		MontgomeryMult(t, t, v); // v = 4*(x2*z1-x1*z2)^2
+		if (BigNbrAreEqual(x, x3)) {
+			System.arraycopy(x, 0, u, 0, NumberLength);
+			System.arraycopy(w, 0, t, 0, NumberLength);
+			MontgomeryMult(z, t, w);
+			MontgomeryMult(v, u, z3);
+			System.arraycopy(w, 0, x3, 0, NumberLength);
+		} else {
+			MontgomeryMult(w, z, x3); // x3 = 4*z*(x1*x2-z1*z2)^2
+			MontgomeryMult(x, v, z3); // z3 = 4*x*(x2*z1-x1*z2)^2
+		}
+	}
+
+	private void AddBigNbr(long Nbr1[], long Nbr2[], long Sum[]) {
+		int NumberLength = this.NumberLength;
+		long Cy = 0;
+		for (int i = 0; i < NumberLength; i++) {
+			Cy = (Cy >> 31) + Nbr1[i] + Nbr2[i];
+			Sum[i] = Cy & 0x7FFFFFFFl;
+		}
+	}
+
+	private void AddBigNbr32(long Nbr1[], long Nbr2[], long Sum[]) {
+		int NumberLength = this.NumberLength;
+		long Cy = 0;
+		for (int i = 0; i < NumberLength; i++) {
+			Cy = (Cy >> 32) + Nbr1[i] + Nbr2[i];
+			Sum[i] = Cy & 0xFFFFFFFFl;
+		}
+	}
+
+	private void AddBigNbrModN(long Nbr1[], long Nbr2[], long Sum[]) {
+		int NumberLength = this.NumberLength;
+		long MaxUInt = 0x7FFFFFFFl;
+		long Cy = 0;
+		int i;
+
+		for (i = 0; i < NumberLength; i++) {
+			Cy = (Cy >> 31) + Nbr1[i] + Nbr2[i] - TestNbr[i];
+			Sum[i] = Cy & MaxUInt;
+		}
+		if (Cy < 0) {
+			Cy = 0;
+			for (i = 0; i < NumberLength; i++) {
+				Cy = (Cy >> 31) + Sum[i] + TestNbr[i];
+				Sum[i] = Cy & MaxUInt;
+			}
+		}
+	}
+
+	private void AdjustModN(long Nbr[]) {
+		int NumberLength = this.NumberLength;
+		long MaxUInt = 0x7FFFFFFFl;
+		long TrialQuotient;
+		long Cy;
+		int i;
+		double dAux;
+
+		dAux = Nbr[NumberLength] * dDosALa31 + Nbr[NumberLength - 1];
+		if (NumberLength > 1) {
+			dAux += Nbr[NumberLength - 2] / dDosALa31;
+		}
+		TrialQuotient = (long) Math.ceil(dAux / dN) + 2;
+		if (TrialQuotient >= DosALa32) {
+			Cy = 0;
+			for (i = 0; i < NumberLength; i++) {
+				Cy = Nbr[i + 1] - (TrialQuotient >>> 31) * TestNbr[i] - Cy;
+				Nbr[i + 1] = Cy & MaxUInt;
+				Cy = (MaxUInt - Cy) >>> 31;
+			}
+			TrialQuotient &= MaxUInt;
+		}
+		Cy = 0;
+		for (i = 0; i < NumberLength; i++) {
+			Cy = Nbr[i] - TrialQuotient * TestNbr[i] - Cy;
+			Nbr[i] = Cy & MaxUInt;
+			Cy = (MaxUInt - Cy) >>> 31;
+		}
+		Nbr[NumberLength] -= Cy;
+		while ((Nbr[NumberLength] & MaxUInt) != 0) {
+			Cy = 0;
+			for (i = 0; i < NumberLength; i++) {
+				Cy += Nbr[i] + TestNbr[i];
+				Nbr[i] = Cy & MaxUInt;
+				Cy >>= 31;
+			}
+			Nbr[NumberLength] += Cy;
+		}
+	}
+
+	// Perform JS <- JS * JW
+	private BigInteger BigIntToBigNbr(long[] GD) {
+		byte[] Result;
+		long[] Temp;
+		int i, NL;
+		long digit;
+
+		Temp = new long[NumberLength];
+		Convert31To32Bits(GD, Temp);
+		NL = NumberLength * 4;
+		Result = new byte[NL];
+		for (i = 0; i < NumberLength; i++) {
+			digit = Temp[i];
+			Result[NL - 1 - 4 * i] = (byte) (digit & 0xFF);
+			Result[NL - 2 - 4 * i] = (byte) (digit / 0x100 & 0xFF);
+			Result[NL - 3 - 4 * i] = (byte) (digit / 0x10000 & 0xFF);
+			Result[NL - 4 - 4 * i] = (byte) (digit / 0x1000000 & 0xFF);
+		}
+		return (new BigInteger(Result));
+	}
+
+	// Perform JS <- JS ^ 2
+	private boolean BigNbrAreEqual(long Nbr1[], long Nbr2[]) {
+		for (int i = 0; i < NumberLength; i++) {
+			if (Nbr1[i] != Nbr2[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private boolean BigNbrIsZero(long Nbr[]) {
+		for (int i = 0; i < NumberLength; i++) {
+			if (Nbr[i] != 0) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private void BigNbrToBigInt(BigInteger N) {
+		byte[] Result;
+		long[] Temp;
+		int i, j;
+		long mask, p;
+
+		Result = N.toByteArray();
+		NumberLength = (Result.length * 8 + 30) / 31;
+		Temp = new long[NumberLength + 1];
+		j = 0;
+		mask = 1;
+		p = 0;
+		for (i = Result.length - 1; i >= 0; i--) {
+			p += mask * (Result[i] >= 0 ? Result[i] : Result[i] + 256);
+			mask *= 0x100;
+			if (mask == DosALa32) {
+				Temp[j++] = p;
+				mask = 1;
+				p = 0;
+			}
+		}
+		Temp[j] = p;
+		Convert32To31Bits(Temp, TestNbr);
+		if (TestNbr[NumberLength - 1] > Mi) {
+			TestNbr[NumberLength] = 0;
+			NumberLength++;
+		}
+		TestNbr[NumberLength] = 0;
+	}
+
+	private void ChSignBigNbr(long Nbr[]) {
+		int NumberLength = this.NumberLength;
+		long Cy = 0;
+		for (int i = 0; i < NumberLength; i++) {
+			Cy = (Cy >> 31) - Nbr[i];
+			Nbr[i] = Cy & 0x7FFFFFFFl;
+		}
+	}
+
+	private void Convert31To32Bits(long[] nbr31bits, long[] nbr32bits) {
+		int i, j, k;
+		i = 0;
+		for (j = -1; j < NumberLength; j++) {
+			k = i % 31;
+			if (k == 0) {
+				j++;
+			}
+			if (j == NumberLength) {
+				break;
+			}
+			if (j == NumberLength - 1) {
+				nbr32bits[i] = nbr31bits[j] >> k;
+			} else {
+				nbr32bits[i] = ((nbr31bits[j] >> k) | (nbr31bits[j + 1] << (31 - k))) & 0xFFFFFFFFl;
+			}
+			i++;
+		}
+		for (; i < NumberLength; i++) {
+			nbr32bits[i] = 0;
+		}
+	}
+
+	private void Convert32To31Bits(long[] nbr32bits, long[] nbr31bits) {
+		int i, j, k;
+		j = 0;
+		nbr32bits[NumberLength] = 0;
+		for (i = 0; i < NumberLength; i++) {
+			k = i % 32;
+			if (k == 0) {
+				nbr31bits[i] = nbr32bits[j] & 0x7FFFFFFFl;
+			} else {
+				nbr31bits[i] = ((nbr32bits[j] >> (32 - k)) | (nbr32bits[j + 1] << k)) & 0x7FFFFFFFl;
+				j++;
+			}
+		}
+	}
+
+	private void DivBigNbrByLong(long Dividend[], long Divisor, long Quotient[]) {
+		int i;
+		boolean ChSignDivisor = false;
+		long Divid, Rem = 0;
+
+		if (Divisor < 0) { // If divisor is negative...
+			ChSignDivisor = true; // Indicate to change sign at the end and
+			Divisor = -Divisor; // convert divisor to positive.
+		}
+		if (Dividend[i = NumberLength - 1] >= 0x40000000l) { // If dividend is negative...
+			Rem = Divisor - 1;
+		}
+		for (; i >= 0; i--) {
+			Divid = Dividend[i] + (Rem << 31);
+			Rem = Divid % Divisor;
+			Quotient[i] = Divid / Divisor;
+		}
+		if (ChSignDivisor) { // Change sign if divisor is negative.
+			ChSignBigNbr(Quotient); // Convert divisor to positive.
+		}
+	}
+
+	/**
+	 * computes 2P=(x2:z2) from P=(x1:z1), with 5 mul, 4 add/sub, 5 mod. Uses the following global variables: - n :
+	 * number to factor - b : (a+2)/4 mod n - u, v, w : auxiliary variables Modifies: x2, z2, u, v, w
+	 */
+	private void duplicate(long[] x2, long[] z2, long[] x1, long[] z1) {
+		long[] u = fieldUZ;
+		long[] v = fieldTX;
+		long[] w = fieldTZ;
+		AddBigNbrModN(x1, z1, w); // w = x1+z1
+		MontgomeryMult(w, w, u); // u = (x1+z1)^2
+		SubtractBigNbrModN(x1, z1, w); // w = x1-z1
+		MontgomeryMult(w, w, v); // v = (x1-z1)^2
+		MontgomeryMult(u, v, x2); // x2 = u*v = (x1^2 - z1^2)^2
+		SubtractBigNbrModN(u, v, w); // w = u-v = 4*x1*z1
+		MontgomeryMult(fieldAA, w, u);
+		AddBigNbrModN(u, v, u); // u = (v+b*w)
+		MontgomeryMult(w, u, z2); // z2 = (w*u)
+	}
+
+	/**
+	 * Gcd calculation:
+	 * <ul>
+	 * <li>Step 1: Set k<-0, and then repeatedly set k<-k+1, u<-u/2, v<-v/2 zero or more times until u and v are not
+	 * both even.</li>
+	 * <li>Step 2: If u is odd, set t<-(-v) and go to step 4. Otherwise set t<-u.</li>
+	 * <li>Step 3: Set t<-t/2</li>
+	 * <li>Step 4: If t is even, go back to step 3.</li>
+	 * <li>Step 5: If t>0, set u<-t, otherwise set v<-(-t).</li>
+	 * <li>Step 6: Set t<-u-v. If t!=0, go back to step 3.</li>
+	 * <li>Step 7: The GCD is u*2^k.</li>
+	 * </ul>
+	 * 
+	 * @param Nbr1
+	 * @param Nbr2
+	 * @param Gcd
+	 */
+	private void GcdBigNbr(long Nbr1[], long Nbr2[], long Gcd[]) {
+		int i, k;
+		int NumberLength = this.NumberLength;
+
+		System.arraycopy(Nbr1, 0, CalcAuxGcdU, 0, NumberLength);
+		System.arraycopy(Nbr2, 0, CalcAuxGcdV, 0, NumberLength);
+		for (i = 0; i < NumberLength; i++) {
+			if (CalcAuxGcdU[i] != 0) {
+				break;
+			}
+		}
+		if (i == NumberLength) {
+			System.arraycopy(CalcAuxGcdV, 0, Gcd, 0, NumberLength);
+			return;
+		}
+		for (i = 0; i < NumberLength; i++) {
+			if (CalcAuxGcdV[i] != 0) {
+				break;
+			}
+		}
+		if (i == NumberLength) {
+			System.arraycopy(CalcAuxGcdU, 0, Gcd, 0, NumberLength);
+			return;
+		}
+		if (CalcAuxGcdU[NumberLength - 1] >= 0x40000000l) {
+			ChSignBigNbr(CalcAuxGcdU);
+		}
+		if (CalcAuxGcdV[NumberLength - 1] >= 0x40000000l) {
+			ChSignBigNbr(CalcAuxGcdV);
+		}
+		k = 0;
+		while ((CalcAuxGcdU[0] & 1) == 0 && (CalcAuxGcdV[0] & 1) == 0) { // Step 1
+			k++;
+			DivBigNbrByLong(CalcAuxGcdU, 2, CalcAuxGcdU);
+			DivBigNbrByLong(CalcAuxGcdV, 2, CalcAuxGcdV);
+		}
+		if ((CalcAuxGcdU[0] & 1) == 1) { // Step 2
+			System.arraycopy(CalcAuxGcdV, 0, CalcAuxGcdT, 0, NumberLength);
+			ChSignBigNbr(CalcAuxGcdT);
+		} else {
+			System.arraycopy(CalcAuxGcdU, 0, CalcAuxGcdT, 0, NumberLength);
+		}
+		do {
+			while ((CalcAuxGcdT[0] & 1) == 0) { // Step 4
+				DivBigNbrByLong(CalcAuxGcdT, 2, CalcAuxGcdT); // Step 3
+			}
+			if (CalcAuxGcdT[NumberLength - 1] < 0x40000000l) { // Step 5
+				System.arraycopy(CalcAuxGcdT, 0, CalcAuxGcdU, 0, NumberLength);
+			} else {
+				System.arraycopy(CalcAuxGcdT, 0, CalcAuxGcdV, 0, NumberLength);
+				ChSignBigNbr(CalcAuxGcdV);
+			}
+			SubtractBigNbr(CalcAuxGcdU, CalcAuxGcdV, CalcAuxGcdT); // Step 6
+			for (i = 0; i < NumberLength; i++) {
+				if (CalcAuxGcdT[i] != 0) {
+					break;
+				}
+			}
+		} while (i != NumberLength);
+		System.arraycopy(CalcAuxGcdU, 0, Gcd, 0, NumberLength); // Step 7
+		while (k > 0) {
+			AddBigNbr(Gcd, Gcd, Gcd);
+			k--;
+		}
+	}
+
+	private void LongToBigNbr(long Nbr, long Out[]) {
+		int i;
+
+		Out[0] = Nbr & 0x7FFFFFFFl;
+		Out[1] = (Nbr >> 31) & 0x7FFFFFFFl;
+		for (i = 2; i < NumberLength; i++) {
+			Out[i] = (Nbr < 0 ? 0x7FFFFFFFl : 0);
+		}
+	}
+
+	/**
+	 * <p>Find the inverse multiplicative modulo v.</p>
+	 * 
+	 * <p>The algorithm terminates with u1 = u^(-1) MOD v.</p>
+	 */
+	private void ModInvBigNbr(long[] a, long[] inv, long[] b) {
+		int i;
+		int NumberLength = this.NumberLength;
+		int Dif, E;
+		int st1, st2;
+		long Yaa, Yab; // 2^E * A' = Yaa A + Yab B
+		long Yba, Ybb; // 2^E * B' = Yba A + Ybb B
+		long Ygb0; // 2^E * Mu' = Yaa Mu + Yab Gamma + Ymb0 B0
+		long Ymb0; // 2^E * Gamma' = Yba Mu + Ybb Gamma + Ygb0 B0
+		int Iaa, Iab, Iba, Ibb;
+		long Tmp1, Tmp2, Tmp3, Tmp4, Tmp5;
+		int B0l;
+		int invB0l;
+		int Al, Bl, T1, Gl, Ml;
+		long Cy1, Cy2, Cy3, Cy4;
+		int Yaah, Yabh, Ybah, Ybbh;
+		int Ymb0h, Ygb0h;
+		long Pr1, Pr2, Pr3, Pr4, Pr5, Pr6, Pr7;
+		long[] B = this.biTmp;
+		long[] CalcAuxModInvA = this.CalcAuxGcdU;
+		long[] CalcAuxModInvB = this.CalcAuxGcdV;
+		long[] CalcAuxModInvMu = this.CalcAuxGcdT; // Cannot be inv
+		long[] CalcAuxModInvGamma = inv;
+
+		Convert31To32Bits(a, CalcAuxModInvA);
+		Convert31To32Bits(b, CalcAuxModInvB);
+		System.arraycopy(CalcAuxModInvB, 0, B, 0, NumberLength);
+		B0l = (int) B[0];
+		invB0l = B0l; // 2 least significant bits of inverse correct.
+		invB0l = invB0l * (2 - B0l * invB0l); // 4 LSB of inverse correct.
+		invB0l = invB0l * (2 - B0l * invB0l); // 8 LSB of inverse correct.
+		invB0l = invB0l * (2 - B0l * invB0l); // 16 LSB of inverse correct.
+		invB0l = invB0l * (2 - B0l * invB0l); // 32 LSB of inverse correct.
+		for (i = NumberLength - 1; i >= 0; i--) {
+			CalcAuxModInvGamma[i] = 0;
+			CalcAuxModInvMu[i] = 0;
+		}
+		CalcAuxModInvMu[0] = 1;
+		Dif = 0;
+		outer_loop: do {
+			Iaa = Ibb = 1;
+			Iab = Iba = 0;
+			Al = (int) CalcAuxModInvA[0];
+			Bl = (int) CalcAuxModInvB[0];
+			E = 0;
+			if (Bl == 0) {
+				for (i = NumberLength - 1; i >= 0; i--) {
+					if (CalcAuxModInvB[i] != 0)
+						break;
+				}
+				if (i < 0)
+					break; // Go out of loop if CalcAuxModInvB = 0
+			}
+			do {
+				T1 = 0;
+				while ((Bl & 1) == 0) {
+					if (E == 31) {
+						Yaa = Iaa;
+						Yab = Iab;
+						Yba = Iba;
+						Ybb = Ibb;
+						Gl = (int) CalcAuxModInvGamma[0];
+						Ml = (int) CalcAuxModInvMu[0];
+						Dif++;
+						T1++;
+						Yaa <<= T1;
+						Yab <<= T1;
+						Ymb0 = (-(int) Yaa * Ml - (int) Yab * Gl) * invB0l;
+						Ygb0 = (-Iba * Ml - Ibb * Gl) * invB0l;
+						Cy1 = Cy2 = Cy3 = Cy4 = 0;
+						Yaah = (int) (Yaa >> 32);
+						Yabh = (int) (Yab >> 32);
+						Ybah = (int) (Yba >> 32);
+						Ybbh = (int) (Ybb >> 32);
+						Ymb0h = (int) (Ymb0 >> 32);
+						Ygb0h = (int) (Ygb0 >> 32);
+						Yaa &= 0xFFFFFFFFL;
+						Yab &= 0xFFFFFFFFL;
+						Yba &= 0xFFFFFFFFL;
+						Ybb &= 0xFFFFFFFFL;
+						Ymb0 &= 0xFFFFFFFFL;
+						Ygb0 &= 0xFFFFFFFFL;
+
+						st1 = Yaah * 6 + Yabh * 2 + Ymb0h;
+						st2 = Ybah * 6 + Ybbh * 2 + Ygb0h;
+						for (i = 0; i < NumberLength; i++) {
+							Pr1 = Yaa * (Tmp1 = CalcAuxModInvMu[i]);
+							Pr2 = Yab * (Tmp2 = CalcAuxModInvGamma[i]);
+							Pr3 = Ymb0 * (Tmp3 = B[i]);
+							Pr4 = (Pr1 & 0xFFFFFFFFL) + (Pr2 & 0xFFFFFFFFL) + (Pr3 & 0xFFFFFFFFL) + Cy3;
+							Pr5 = Yaa * (Tmp4 = CalcAuxModInvA[i]);
+							Pr6 = Yab * (Tmp5 = CalcAuxModInvB[i]);
+							Pr7 = (Pr5 & 0xFFFFFFFFL) + (Pr6 & 0xFFFFFFFFL) + Cy1;
+							switch (st1) {
+							case -9:
+								Cy3 = -Tmp1 - Tmp2 - Tmp3;
+								Cy1 = -Tmp4 - Tmp5;
+								break;
+							case -8:
+								Cy3 = -Tmp1 - Tmp2;
+								Cy1 = -Tmp4 - Tmp5;
+								break;
+							case -7:
+								Cy3 = -Tmp1 - Tmp3;
+								Cy1 = -Tmp4;
+								break;
+							case -6:
+								Cy3 = -Tmp1;
+								Cy1 = -Tmp4;
+								break;
+							case -5:
+								Cy3 = -Tmp1 + Tmp2 - Tmp3;
+								Cy1 = -Tmp4 + Tmp5;
+								break;
+							case -4:
+								Cy3 = -Tmp1 + Tmp2;
+								Cy1 = -Tmp4 + Tmp5;
+								break;
+							case -3:
+								Cy3 = -Tmp2 - Tmp3;
+								Cy1 = -Tmp5;
+								break;
+							case -2:
+								Cy3 = -Tmp2;
+								Cy1 = -Tmp5;
+								break;
+							case -1:
+								Cy3 = -Tmp3;
+								Cy1 = 0;
+								break;
+							case 0:
+								Cy3 = 0;
+								Cy1 = 0;
+								break;
+							case 1:
+								Cy3 = Tmp2 - Tmp3;
+								Cy1 = Tmp5;
+								break;
+							case 2:
+								Cy3 = Tmp2;
+								Cy1 = Tmp5;
+								break;
+							case 3:
+								Cy3 = Tmp1 - Tmp2 - Tmp3;
+								Cy1 = Tmp4 - Tmp5;
+								break;
+							case 4:
+								Cy3 = Tmp1 - Tmp2;
+								Cy1 = Tmp4 - Tmp5;
+								break;
+							case 5:
+								Cy3 = Tmp1 - Tmp3;
+								Cy1 = Tmp4;
+								break;
+							case 6:
+								Cy3 = Tmp1;
+								Cy1 = Tmp4;
+								break;
+							case 7:
+								Cy3 = Tmp1 + Tmp2 - Tmp3;
+								Cy1 = Tmp4 + Tmp5;
+								break;
+							case 8:
+								Cy3 = Tmp1 + Tmp2;
+								Cy1 = Tmp4 + Tmp5;
+								break;
+							}
+							Cy3 += (Pr1 >>> 32) + (Pr2 >>> 32) + (Pr3 >>> 32) + (Pr4 >> 32);
+							Cy1 += (Pr5 >>> 32) + (Pr6 >>> 32) + (Pr7 >> 32);
+							if (i > 0) {
+								CalcAuxModInvMu[i - 1] = Pr4 & 0xFFFFFFFFL;
+								CalcAuxModInvA[i - 1] = Pr7 & 0xFFFFFFFFL;
+							}
+							Pr1 = Yba * Tmp1;
+							Pr2 = Ybb * Tmp2;
+							Pr3 = Ygb0 * Tmp3;
+							Pr4 = (Pr1 & 0xFFFFFFFFL) + (Pr2 & 0xFFFFFFFFL) + (Pr3 & 0xFFFFFFFFL) + Cy4;
+							Pr5 = Yba * Tmp4;
+							Pr6 = Ybb * Tmp5;
+							Pr7 = (Pr5 & 0xFFFFFFFFL) + (Pr6 & 0xFFFFFFFFL) + Cy2;
+							switch (st2) {
+							case -9:
+								Cy4 = -Tmp1 - Tmp2 - Tmp3;
+								Cy2 = -Tmp4 - Tmp5;
+								break;
+							case -8:
+								Cy4 = -Tmp1 - Tmp2;
+								Cy2 = -Tmp4 - Tmp5;
+								break;
+							case -7:
+								Cy4 = -Tmp1 - Tmp3;
+								Cy2 = -Tmp4;
+								break;
+							case -6:
+								Cy4 = -Tmp1;
+								Cy2 = -Tmp4;
+								break;
+							case -5:
+								Cy4 = -Tmp1 + Tmp2 - Tmp3;
+								Cy2 = -Tmp4 + Tmp5;
+								break;
+							case -4:
+								Cy4 = -Tmp1 + Tmp2;
+								Cy2 = -Tmp4 + Tmp5;
+								break;
+							case -3:
+								Cy4 = -Tmp2 - Tmp3;
+								Cy2 = -Tmp5;
+								break;
+							case -2:
+								Cy4 = -Tmp2;
+								Cy2 = -Tmp5;
+								break;
+							case -1:
+								Cy4 = -Tmp3;
+								Cy2 = 0;
+								break;
+							case 0:
+								Cy4 = 0;
+								Cy2 = 0;
+								break;
+							case 1:
+								Cy4 = Tmp2 - Tmp3;
+								Cy2 = Tmp5;
+								break;
+							case 2:
+								Cy4 = Tmp2;
+								Cy2 = Tmp5;
+								break;
+							case 3:
+								Cy4 = Tmp1 - Tmp2 - Tmp3;
+								Cy2 = Tmp4 - Tmp5;
+								break;
+							case 4:
+								Cy4 = Tmp1 - Tmp2;
+								Cy2 = Tmp4 - Tmp5;
+								break;
+							case 5:
+								Cy4 = Tmp1 - Tmp3;
+								Cy2 = Tmp4;
+								break;
+							case 6:
+								Cy4 = Tmp1;
+								Cy2 = Tmp4;
+								break;
+							case 7:
+								Cy4 = Tmp1 + Tmp2 - Tmp3;
+								Cy2 = Tmp4 + Tmp5;
+								break;
+							case 8:
+								Cy4 = Tmp1 + Tmp2;
+								Cy2 = Tmp4 + Tmp5;
+								break;
+							}
+							Cy4 += (Pr1 >>> 32) + (Pr2 >>> 32) + (Pr3 >>> 32) + (Pr4 >> 32);
+							Cy2 += (Pr5 >>> 32) + (Pr6 >>> 32) + (Pr7 >> 32);
+							if (i > 0) {
+								CalcAuxModInvGamma[i - 1] = Pr4 & 0xFFFFFFFFL;
+								CalcAuxModInvB[i - 1] = Pr7 & 0xFFFFFFFFL;
+							}
+						}
+
+						if ((int) CalcAuxModInvA[i - 1] < 0) {
+							Cy1 -= Yaa;
+							Cy2 -= Yba;
+						}
+						if ((int) CalcAuxModInvB[i - 1] < 0) {
+							Cy1 -= Yab;
+							Cy2 -= Ybb;
+						}
+						if ((int) CalcAuxModInvMu[i - 1] < 0) {
+							Cy3 -= Yaa;
+							Cy4 -= Yba;
+						}
+						if ((int) CalcAuxModInvGamma[i - 1] < 0) {
+							Cy3 -= Yab;
+							Cy4 -= Ybb;
+						}
+						CalcAuxModInvA[i - 1] = Cy1 & 0xFFFFFFFFL;
+						CalcAuxModInvB[i - 1] = Cy2 & 0xFFFFFFFFL;
+						CalcAuxModInvMu[i - 1] = Cy3 & 0xFFFFFFFFL;
+						CalcAuxModInvGamma[i - 1] = Cy4 & 0xFFFFFFFFL;
+						continue outer_loop;
+					}
+					Bl >>= 1;
+					Dif++;
+					E++;
+					T1++;
+				}
+				; /* end while */
+				Iaa <<= T1;
+				Iab <<= T1;
+				if (Dif >= 0) {
+					Dif = -Dif;
+					if (((Al + Bl) & 3) == 0) {
+						T1 = Iba;
+						Iba += Iaa;
+						Iaa = T1;
+						T1 = Ibb;
+						Ibb += Iab;
+						Iab = T1;
+						T1 = Bl;
+						Bl += Al;
+						Al = T1;
+					} else {
+						T1 = Iba;
+						Iba -= Iaa;
+						Iaa = T1;
+						T1 = Ibb;
+						Ibb -= Iab;
+						Iab = T1;
+						T1 = Bl;
+						Bl -= Al;
+						Al = T1;
+					}
+				} else {
+					if (((Al + Bl) & 3) == 0) {
+						Iba += Iaa;
+						Ibb += Iab;
+						Bl += Al;
+					} else {
+						Iba -= Iaa;
+						Ibb -= Iab;
+						Bl -= Al;
+					}
+				}
+				Dif--;
+			} while (true);
+		} while (true);
+		if (CalcAuxModInvA[0] != 1) {
+			SubtractBigNbr32(B, CalcAuxModInvMu, CalcAuxModInvMu);
+		}
+		if ((int) CalcAuxModInvMu[i = NumberLength - 1] < 0) {
+			AddBigNbr32(B, CalcAuxModInvMu, CalcAuxModInvMu);
+		}
+		for (; i >= 0; i--) {
+			if (B[i] != CalcAuxModInvMu[i])
+				break;
+		}
+		if (i < 0 || B[i] < CalcAuxModInvMu[i]) { // If B < Mu
+			SubtractBigNbr32(CalcAuxModInvMu, B, CalcAuxModInvMu); // Mu <- Mu - B
+		}
+		Convert32To31Bits(CalcAuxModInvMu, inv);
+	}
+
 	private void MultBigNbrByLongModN(long Nbr1[], long Nbr2, long Prod[]) {
 		int NumberLength = this.NumberLength;
 		long MaxUInt = 0x7FFFFFFFl;
@@ -2244,23 +2125,6 @@ public class EllipticCurveMethod extends FactorAlgorithmBase {
 		add3(x, z, xA, zA, xB, zB, xC, zC);
 	}
 
-	private long RemDivBigNbrByLong(long Dividend[], long Divisor) {
-		int i;
-		long Divid, Rem = 0;
-
-		if (Divisor < 0) { // If divisor is negative...
-			Divisor = -Divisor; // Convert divisor to positive.
-		}
-		if (Dividend[i = NumberLength - 1] >= 0x40000000l) { // If dividend is negative...
-			Rem = Divisor - 1;
-		}
-		for (; i >= 0; i--) {
-			Divid = Dividend[i] + (Rem << 31);
-			Rem = Divid % Divisor;
-		}
-		return Rem;
-	}
-
 	private void SubtractBigNbr(long Nbr1[], long Nbr2[], long Diff[]) {
 		int NumberLength = this.NumberLength;
 		long Cy = 0;
@@ -2298,68 +2162,24 @@ public class EllipticCurveMethod extends FactorAlgorithmBase {
 		}
 	}
 
-	/**
-	 * Increment the &quot;number of factors&quot;. Ensure that the resulting arrays have enough memory allocated.
-	 */
-	private void incNbrFactors() {
-		NbrFactors++;
-		if (NbrFactors >= fCapacity) {
-			int oldCapacity = PD.length;
-			fCapacity += 32;
-
-			BigInteger localPD[] = new BigInteger[fCapacity];
-			System.arraycopy(PD, 0, localPD, 0, oldCapacity);
-			PD = localPD;
-
-			int localExp[] = new int[fCapacity];
-			System.arraycopy(Exp, 0, localExp, 0, oldCapacity);
-			Exp = localExp;
-
-			int localTyp[] = new int[fCapacity];
-			System.arraycopy(Typ, 0, localTyp, 0, oldCapacity);
-			Typ = localTyp;
-		}
-		// At this point we need sorting to avoid messing up factors with the unfactored rest.
-		// XXX Possibly sorting is not required at all invocations of incNbrFactors()
-		SortFactorsInputNbr();
-	}
-
-	private void SortFactorsInputNbr() {
-		int g, i, j;
-		BigInteger Nbr1;
-
-		for (g = 0; g < NbrFactors - 1; g++) {
-			for (j = g + 1; j < NbrFactors; j++) {
-				if (PD[g].compareTo(PD[j]) > 0) {
-					Nbr1 = PD[g];
-					PD[g] = PD[j];
-					PD[j] = Nbr1;
-					i = Exp[g];
-					Exp[g] = Exp[j];
-					Exp[j] = i;
-					i = Typ[g];
-					Typ[g] = Typ[j];
-					Typ[j] = i;
-				}
-			}
-		}
-	}
-
 //	public static void main(String[] args) {
 //		ConfigUtil.initProject();
 //		BigInteger[] testNums = new BigInteger[] {
-//				// very hard for ECM, better suited for SIQS
-//				// 1794577685365897117833870712928656282041295031283603412289229185967719140138841093599 (280 bits) = 42181796536350966453737572957846241893933 * 42543889372264778301966140913837516662044603
-//				//new BigInteger("1794577685365897117833870712928656282041295031283603412289229185967719140138841093599"),
-//				
 //				// easy for ECM
 //				new BigInteger("8225267468394993133669189614204532935183709603155231863020477010700542265332938919716662623"),
+//				
+//				// incomplete result, some unfactored rest is returned
 //				new BigInteger("101546450935661953908994991437690198927080333663460351836152986526126114727314353555755712261904130976988029406423152881932996637460315302992884162068350429"),
 //				
-//				// errors
+//				// incomplete result, the factor map contains a composite
 //				new BigInteger("1593332576170570774181606244493046197050984933692181475920784855223341")
 //				// = 17 * 1210508704285703 * 2568160569265616473 * 30148619026320753545829271787156467
-//				// but ECM returns non-prime factor 3108780723099354807613175415185519
+//				// but ECM fails to factor 3108780723099354807613175415185519 = 1210508704285703 * 2568160569265616473
+//				// with the maximum number of curves
+//				
+//				// very hard for ECM, better suited for SIQS
+//				//new BigInteger("1794577685365897117833870712928656282041295031283603412289229185967719140138841093599"),
+//				// = 42181796536350966453737572957846241893933 * 42543889372264778301966140913837516662044603
 //		};
 //		
 //		EllipticCurveMethod ecm = new EllipticCurveMethod();
@@ -2367,12 +2187,12 @@ public class EllipticCurveMethod extends FactorAlgorithmBase {
 //		long t0, t1;
 //		t0 = System.currentTimeMillis();
 //		for (BigInteger N : testNums) {
-//			SortedMap<BigInteger, Integer> factors = new TreeMap<>();
-//			BigInteger unfactored = ecm.factorize(N, factors);
-//			if (unfactored.compareTo(I_1) > 0) {
-//				LOG.debug("N = " + N + " = " + factors + " * " + unfactored);
+//			SortedMap<BigInteger, Integer> primeFactors = new TreeMap<>();
+//			SortedMap<BigInteger, Integer> unfactoredComposites = ecm.factorize(N, primeFactors);
+//			if (!unfactoredComposites.isEmpty()) {
+//				LOG.debug("N = " + N + " = " + primeFactors + " * " + unfactoredComposites);
 //			} else {
-//				LOG.debug("N = " + N + " = " + factors);
+//				LOG.debug("N = " + N + " = " + primeFactors);
 //			}
 //		}
 //		t1 = System.currentTimeMillis();

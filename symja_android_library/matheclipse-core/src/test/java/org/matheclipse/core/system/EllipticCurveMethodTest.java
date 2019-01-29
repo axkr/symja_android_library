@@ -4,7 +4,7 @@ import java.math.BigInteger;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.matheclipse.core.numbertheory.EllipticCurveMethod;
+import org.matheclipse.core.numbertheory.EllipticCurveMethodOLD;
 
 import junit.framework.TestCase;
 
@@ -12,7 +12,7 @@ public class EllipticCurveMethodTest extends TestCase {
 
 	public void testECM() {
 		BigInteger big = new BigInteger("8438503049348381100385800049534923490020044110031");
-		EllipticCurveMethod ecm1 = new EllipticCurveMethod(big);
+		EllipticCurveMethodOLD ecm1 = new EllipticCurveMethodOLD(big);
 		SortedMap<BigInteger, Integer> bigMap = new TreeMap<BigInteger, Integer>();
 		ecm1.factorize(bigMap);
 		System.out.println(bigMap.toString());
@@ -20,7 +20,7 @@ public class EllipticCurveMethodTest extends TestCase {
 
 		System.out.println();
 		big = new BigInteger("8392894255239922239");
-		ecm1 = new EllipticCurveMethod(big);
+		ecm1 = new EllipticCurveMethodOLD(big);
 		bigMap = new TreeMap<BigInteger, Integer>();
 
 		ecm1.factorize(bigMap);
@@ -29,7 +29,7 @@ public class EllipticCurveMethodTest extends TestCase {
 
 		System.out.println();
 		big = new BigInteger("44343535354351600000003434353");
-		ecm1 = new EllipticCurveMethod(big);
+		ecm1 = new EllipticCurveMethodOLD(big);
 		bigMap = new TreeMap<BigInteger, Integer>();
 
 		ecm1.factorize(bigMap);
@@ -39,7 +39,7 @@ public class EllipticCurveMethodTest extends TestCase {
 		System.out.println();
 		// 50! * 8392894255239922239
 		big = new BigInteger("255262268110991784076989150819008060991712040134738393813423038941626368000000000000");
-		ecm1 = new EllipticCurveMethod(big);
+		ecm1 = new EllipticCurveMethodOLD(big);
 		bigMap = new TreeMap<BigInteger, Integer>();
 		ecm1.factorize(bigMap);
 		System.out.println(bigMap.toString());
@@ -49,7 +49,7 @@ public class EllipticCurveMethodTest extends TestCase {
 		System.out.println();
 		big = new BigInteger(
 				"10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001");
-		ecm1 = new EllipticCurveMethod(big);
+		ecm1 = new EllipticCurveMethodOLD(big);
 		bigMap = new TreeMap<BigInteger, Integer>();
 		ecm1.factorize(bigMap);
 		System.out.println(bigMap.toString());
@@ -60,7 +60,7 @@ public class EllipticCurveMethodTest extends TestCase {
 
 		System.out.println();
 		big = new BigInteger("2010");
-		ecm1 = new EllipticCurveMethod(big);
+		ecm1 = new EllipticCurveMethodOLD(big);
 		bigMap = new TreeMap<BigInteger, Integer>();
 		ecm1.factorize(bigMap);
 		System.out.println(bigMap.toString());
@@ -68,7 +68,7 @@ public class EllipticCurveMethodTest extends TestCase {
 
 		System.out.println();
 		big = new BigInteger("65536");
-		ecm1 = new EllipticCurveMethod(big);
+		ecm1 = new EllipticCurveMethodOLD(big);
 		bigMap = new TreeMap<BigInteger, Integer>();
 		ecm1.factorize(bigMap);
 		System.out.println(bigMap.toString());
@@ -76,7 +76,7 @@ public class EllipticCurveMethodTest extends TestCase {
 
 		System.out.println();
 		big = new BigInteger("140016480344628383");
-		ecm1 = new EllipticCurveMethod(big);
+		ecm1 = new EllipticCurveMethodOLD(big);
 		bigMap = new TreeMap<BigInteger, Integer>();
 		ecm1.factorize(bigMap);
 		System.out.println(bigMap.toString());
