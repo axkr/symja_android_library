@@ -242,7 +242,8 @@ public class TeXParser {
 							}
 						} else if (isNumericFunction || lhs.isBuiltInSymbol() || lhs.isFunction()) {
 							if (lhs.equals(F.Integrate)) {
-								return integrate(list, position, F.Dummy("test"), F.Dummy("test"));
+								ISymbol test = F.Dummy("test");
+								return integrate(list, position, test, test);
 							}
 							IExpr args = convert(list, position, end, null, 0);
 							if (args.isSequence()) {
