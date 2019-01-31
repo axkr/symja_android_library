@@ -247,6 +247,12 @@ public class MathMLPresentationTestCase extends TestCase {
 				"<mrow><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow><mo>!!</mo></mrow>");
 	}
 
+	public void testN() {
+		IExpr expr = EvalEngine.get().evaluate("N(E,30)");
+		check(expr, //
+				"<mn>2.71828182845904523536028747135</mn>");
+	}
+	
 	public void testNot() {
 		IExpr expr = EvalEngine.get().evaluate("!f(x)");
 		check(expr, //

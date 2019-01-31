@@ -1079,7 +1079,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		if (index > 0) {
 			String result = str.substring(0, index);
 			String exponentStr = str.substring(index + 1);
-			
+
 			tagStart(buf, "mrow");
 			tagStart(buf, "mn");
 			buf.append(result);
@@ -1389,13 +1389,15 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			tagStart(buf, "mrow");
 			tag(buf, "mo", "(");
 		}
-		tagStart(buf, "mn");
+
 		if (d instanceof ApfloatNum) {
 			convertApfloat(buf, ((ApfloatNum) d).apfloatValue(), precedence);
 		} else {
+			tagStart(buf, "mn");
 			buf.append(convertDoubleToFormattedString(d.getRealPart()));
+			tagEnd(buf, "mn");
 		}
-		tagEnd(buf, "mn");
+
 		if (isNegative && (precedence > plusPrec)) {
 			tag(buf, "mo", ")");
 			tagEnd(buf, "mrow");
