@@ -1,5 +1,6 @@
 package org.matheclipse.core.patternmatching;
 
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import org.matheclipse.core.eval.util.OpenIntToSet;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.Symbol;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
@@ -693,7 +695,7 @@ public final class RulesData implements Serializable {
 		fSimplePatternUpRules = getSimplePatternUpRules();
 		return addSimplePatternUpRule(leftHandSide, pmEvaluator);
 
-	}
+	} 
 
 	public boolean removeRule(final int setSymbol, final boolean equalRule, final IExpr leftHandSide) {
 		if (equalRule) {

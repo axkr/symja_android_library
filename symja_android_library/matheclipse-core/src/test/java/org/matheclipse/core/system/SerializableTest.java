@@ -104,13 +104,13 @@ public class SerializableTest extends TestCase {
 	}
 
 	public void testPattern() {
-		equalsCopy(F.$p("test", true));
-		equalsCopy(F.$p("test", false));
+		equalsCopy(F.$p(F.symbol("test"), true));
+		equalsCopy(F.$p(F.symbol("test"), false));
 		equalsCopy(F.$p(F.x));
 	}
 
 	public void testPatternSequence() {
-		equalsCopy(F.$ps("test"));
+		equalsCopy(F.$ps(F.symbol("test")));
 		equalsCopy(F.$ps(F.x, F.IntegerQ));
 		equalsCopy(F.$ps(F.x, F.IntegerQ, true, true));
 		equalsCopy(F.$ps(F.x, F.IntegerQ, true, false));

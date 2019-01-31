@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class Context implements Serializable {
@@ -36,7 +37,7 @@ public class Context implements Serializable {
 
 	private String contextName;
 
-	private Context parentContext;
+	private transient Context parentContext;
 
 	private HashMap<String, ISymbol> symbolTable;
 
@@ -131,7 +132,17 @@ public class Context implements Serializable {
 
 	private void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		contextName = stream.readUTF();
-		symbolTable = (HashMap<String, ISymbol>) stream.readObject();
+		int size = stream.readInt();
+		symbolTable = new HashMap<String, ISymbol>(size + size / 10);
+		EvalEngine.get().getContextPath().setGlobalContext(this);
+		String[] table = new String[size];
+		for (int i = 0; i < size; i++) {
+			table[i] = stream.readUTF();
+		}
+		for (int i = 0; i < size; i++) {
+			ISymbol symbol = (ISymbol) stream.readObject();
+			symbolTable.put(table[i], symbol);
+		}
 	}
 
 	public ISymbol remove(String key) {
@@ -158,6 +169,13 @@ public class Context implements Serializable {
 
 	private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
 		stream.writeUTF(contextName);
-		stream.writeObject(symbolTable);
+		Set<Entry<String, ISymbol>> entrySet = symbolTable.entrySet();
+		stream.writeInt(entrySet.size());
+		for (Entry<String, ISymbol> entry : entrySet) {
+			stream.writeUTF(entry.getKey());
+		}
+		for (Entry<String, ISymbol> entry : entrySet) {
+			stream.writeObject(entry.getValue());
+		}
 	}
 }

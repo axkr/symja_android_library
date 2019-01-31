@@ -56,8 +56,8 @@ public class Symbol implements ISymbol, Serializable {
 	protected transient RulesData fRulesData;
 
 	/**
-	 * The name of this symbol. The characters may be all lower-cases if the system doesn't distinguish between lower- and upper-case
-	 * function names.
+	 * The name of this symbol. The characters may be all lower-cases if the system doesn't distinguish between lower-
+	 * and upper-case function names.
 	 */
 	protected String fSymbolName;
 
@@ -156,8 +156,8 @@ public class Symbol implements ISymbol, Serializable {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as this
-	 * expression is canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive
+	 * integer as this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
@@ -241,23 +241,7 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean equals(final Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj instanceof Symbol) {
-			if (obj instanceof IBuiltInSymbol) {
-				return false;
-			}
-//			Symbol symbol = (Symbol) obj;
-//			if (hashCode() != symbol.hashCode()) {
-//				return false;
-//			}
-//			if () {
-			// #172
-			return fSymbolName.equals(((Symbol) obj).fSymbolName) && fContext.equals(((Symbol) obj).fContext);
-//			}
-		}
-		return false;
+		return this == obj;
 	}
 
 	/** {@inheritDoc} */
@@ -845,34 +829,37 @@ public class Symbol implements ISymbol, Serializable {
 		fSymbolName = stream.readUTF();
 		fAttributes = stream.read();
 		int contextNumber = stream.readInt();
-		if (contextNumber == 1) {
+		switch (contextNumber) {
+		case 1:
 			fContext = Context.SYSTEM;
-		} else if (contextNumber == 2) {
+			break;
+		case 2:
 			fContext = Context.RUBI;
-		} else if (contextNumber == 3) {
+			break;
+		case 3:
 			fContext = Context.DUMMY;
-		} else {
+			break;
+		default:
 			String contextName = stream.readUTF();
 			fContext = EvalEngine.get().getContextPath().getContext(contextName);
+			Symbol symbol = (Symbol) fContext.get(fSymbolName);
+			if (symbol == null) {
+				fContext.put(fSymbolName, this);
+				symbol = this;
+			} else {
+				symbol.fAttributes = fAttributes;
+			}
 			boolean hasDownRulesData = stream.readBoolean();
 			if (hasDownRulesData) {
-				fRulesData = new RulesData(EvalEngine.get().getContext());
-				fRulesData = (RulesData) stream.readObject();
+				symbol.fRulesData = (RulesData) stream.readObject();
 			}
 		}
+
 	}
 
-	// public Object readResolve() throws ObjectStreamException {
-	// ISymbol sym = fContext.get(fSymbolName);
-	// if (sym != null) {
-	// return sym;
-	// }
-	// // probably user defined
-	// Symbol symbol = new Symbol(fSymbolName, fContext);
-	// fContext.put(fSymbolName, symbol);
-	// symbol.fAttributes = fAttributes;
-	// return symbol;
-	// }
+	public Object readResolve() throws ObjectStreamException {
+		return fContext == Context.DUMMY ? this : fContext.get(fSymbolName);
+	}
 
 	/** {@inheritDoc} */
 	@Override
