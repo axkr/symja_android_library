@@ -51,6 +51,7 @@ import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.parser.client.math.MathException;
 
 import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 /**
  * The main evaluation algorithms for the .Symja computer algebra system
@@ -68,6 +69,7 @@ public class EvalEngine implements Serializable {
 
 	public transient Cache<IAST, IExpr> REMEMBER_AST_CACHE = null;
 
+ 	
 	public final static boolean DEBUG = false;
 
 	transient private static final ThreadLocal<EvalEngine> instance = new ThreadLocal<EvalEngine>() {

@@ -480,7 +480,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 			IExpr temp = PolynomialFunctions.rootsOfVariable(expr, denom, F.List(sym), true, engine);
 			if (temp.isPresent()) {
 				IASTAppendable resultList = F.ListAlloc();
-				if (temp.isASTSizeGE(F.List, 2)) {
+				if (temp.isSameHeadSizeGE(F.List, 2)) {
 					IAST rootsList = (IAST) temp;
 					for (IExpr root : rootsList) {
 						IAST rule = F.Rule(sym, root);
@@ -520,7 +520,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 			if (vector.size() > 1) {
 				// solve a linear equation <code>matrix.x == vector</code>
 				IExpr temp = engine.evaluate(F.LinearSolve(matrix, vector));
-				if (temp.isASTSizeGE(F.List, 2)) {
+				if (temp.isSameHeadSizeGE(F.List, 2)) {
 					IAST rootsList = (IAST) temp;
 					int size = vars.size();
 					IASTAppendable list = F.ListAlloc(size);

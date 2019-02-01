@@ -12,6 +12,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * <p>
@@ -320,20 +321,20 @@ public class AST2 extends AST1 {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isSameHead(IExpr head, int length) {
-		return length == SIZE && arg0.equals(head);
+	public boolean isSameHead(ISymbol head, int length) {
+		return arg0 == head && length == SIZE;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isSameHead(IExpr head, int minLength, int maxLength) {
-		return arg0.equals(head) && minLength <= SIZE && maxLength >= SIZE;
+	public boolean isSameHead(ISymbol head, int minLength, int maxLength) {
+		return arg0 == head && minLength <= SIZE && maxLength >= SIZE;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isSameHeadSizeGE(IExpr head, int length) {
-		return arg0.equals(head) && length <= SIZE;
+	public boolean isSameHeadSizeGE(ISymbol head, int length) {
+		return arg0 == head && length <= SIZE;
 	}
 
 	/** {@inheritDoc} */

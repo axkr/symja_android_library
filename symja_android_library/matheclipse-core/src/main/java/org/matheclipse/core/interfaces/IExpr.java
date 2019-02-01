@@ -33,7 +33,6 @@ import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
-import org.matheclipse.core.expression.NILPointer;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
@@ -2373,7 +2372,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @param length
 	 * @return
 	 */
-	default boolean isSameHeadSizeGE(IExpr head, int length) {
+	default boolean isSameHeadSizeGE(ISymbol head, int length) {
 		return false;
 	}
 

@@ -108,13 +108,13 @@ public class CreamConvert {
 						return result;
 					}
 				}
-			} else if (ast.isASTSizeGE(F.Max, 3)) {
+			} else if (ast.isSameHeadSizeGE(F.Max, 3)) {
 				IntVariable result = integerVariable(net, ast.arg1());
 				for (int i = 2; i < ast.size(); i++) {
 					result = result.max(integerVariable(net, ast.get(i)));
 				}
 				return result;
-			} else if (ast.isASTSizeGE(F.Min, 3)) {
+			} else if (ast.isSameHeadSizeGE(F.Min, 3)) {
 				IntVariable result = integerVariable(net, ast.arg1());
 				for (int i = 2; i < ast.size(); i++) {
 					result = result.min(integerVariable(net, ast.get(i)));

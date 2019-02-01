@@ -969,8 +969,8 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return
 	 */
 	@Override
-	default boolean isSameHeadSizeGE(IExpr head, int length) {
-		return head().equals(head) && length <= size();
+	default boolean isSameHeadSizeGE(ISymbol head, int length) {
+		return head() == head && length <= size();
 	}
 
 	/**

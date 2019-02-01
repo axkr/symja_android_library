@@ -24,7 +24,6 @@ import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.ComplexSym;
 import org.matheclipse.core.expression.FractionSym;
 import org.matheclipse.core.expression.IntegerSym;
-import org.matheclipse.core.expression.NILPointer;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.Pattern;
 import org.matheclipse.core.expression.PatternSequence;
@@ -46,7 +45,7 @@ public class PrintClassHierarchy {
 				AST.class, ASTRealMatrix.class, ASTRealVector.class, IASTAppendable.class, ComplexSym.class,
 				IntegerSym.class, BigIntegerSym.class, FractionSym.class, BigFractionSym.class, ComplexNum.class,
 				Num.class, ApcomplexNum.class, ApfloatNum.class, Pattern.class, PatternSequence.class,
-				BuiltInSymbol.class, NILPointer.class, StringX.class).printHierarchy();
+				BuiltInSymbol.class, StringX.class).printHierarchy();
 	}
 
 	public PrintClassHierarchy(final Class<?>... clazzes) {

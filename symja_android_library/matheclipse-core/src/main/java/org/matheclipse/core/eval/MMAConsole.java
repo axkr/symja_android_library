@@ -576,10 +576,10 @@ public class MMAConsole {
 					if (result.isAST(F.Graphics)) {// || result.isAST(F.Graphics3D)) {
 						outExpr = F.Show(outExpr);
 					}
-					if (outExpr.isASTSizeGE(F.Show, 2)) {
+					if (outExpr.isSameHeadSizeGE(F.Show, 2)) {
 						try {
 							IAST show = (IAST) outExpr;
-							if (show.size() > 1 && show.arg1().isASTSizeGE(F.Graphics, 2)) {
+							if (show.size() > 1 && show.arg1().isSameHeadSizeGE(F.Graphics, 2)) {
 								return Console.openSVGOnDesktop(show);
 							}
 						} catch (Exception ex) {

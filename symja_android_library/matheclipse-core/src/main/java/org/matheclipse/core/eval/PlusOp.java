@@ -139,7 +139,7 @@ public class PlusOp {
 	 * @return <code>F.Indeterminate</code> if the result is indeterminated, <code>F.NIL</code> otherwise.
 	 */
 	public IExpr plus(final IExpr arg) {
-		if (arg.isASTSizeGE(F.Plus, 2)) {
+		if (arg.isPlus()) {
 			// flatten the Plus() argument
 			final IAST plusAST = (IAST) arg;
 			return plusUntilPosition(plusAST, plusAST.size());

@@ -75,7 +75,7 @@ public class ModuleReplaceAll extends VisitorExpr {
 	@Override
 	public IExpr visit(IASTMutable ast) {
 		IAST temp;
-		if (ast.isASTSizeGE(F.Function, 2)) {
+		if (ast.isSameHeadSizeGE(F.Function, 2)) {
 			temp = visitNestedScope(ast, true);
 			if (temp.isPresent()) {
 				return temp;

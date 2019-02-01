@@ -57,9 +57,9 @@ public class Show3D2ThreeJS {
 				// if (numericAST.get(i).isASTSizeGE(F.Line, 2)) {
 				// lineToSVG(numericAST.getAST(i), buf, dim);
 				// } else
-				if (numericAST.get(i).isASTSizeGE(F.Polygon, 2)) {
+				if (numericAST.get(i).isSameHeadSizeGE(F.Polygon, 2)) {
 					elements("polygon", numericAST.getAST(i), builder, dim);
-				} else if (numericAST.get(i).isASTSizeGE(F.Point, 2)) {
+				} else if (numericAST.get(i).isSameHeadSizeGE(F.Point, 2)) {
 					elements("point", numericAST.getAST(i), builder, dim);
 				}
 			}

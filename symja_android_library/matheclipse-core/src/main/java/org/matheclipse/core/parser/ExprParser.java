@@ -189,16 +189,16 @@ public class ExprParser extends Scanner {
 				// - <number>)
 				return F.Power(arg1Power.base(), arg1Power.exponent().negate());
 			}
-		} else if (ast.isASTSizeGE(F.GreaterEqual, 3)) {
+		} else if (ast.isSameHeadSizeGE(F.GreaterEqual, 3)) {
 			ISymbol compareHead = F.Greater;
 			return AST2Expr.rewriteLessGreaterAST(ast, compareHead);
-		} else if (ast.isASTSizeGE(F.Greater, 3)) {
+		} else if (ast.isSameHeadSizeGE(F.Greater, 3)) {
 			ISymbol compareHead = F.GreaterEqual;
 			return AST2Expr.rewriteLessGreaterAST(ast, compareHead);
-		} else if (ast.isASTSizeGE(F.LessEqual, 3)) {
+		} else if (ast.isSameHeadSizeGE(F.LessEqual, 3)) {
 			ISymbol compareHead = F.Less;
 			return AST2Expr.rewriteLessGreaterAST(ast, compareHead);
-		} else if (ast.isASTSizeGE(F.Less, 3)) {
+		} else if (ast.isSameHeadSizeGE(F.Less, 3)) {
 			ISymbol compareHead = F.LessEqual;
 			return AST2Expr.rewriteLessGreaterAST(ast, compareHead);
 		} else if (head.equals(F.Pattern)) {

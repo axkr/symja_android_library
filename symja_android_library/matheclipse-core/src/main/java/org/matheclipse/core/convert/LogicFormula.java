@@ -183,7 +183,7 @@ public class LogicFormula {
 					}
 					break;
 				case ID.Nand:
-					if (ast.isASTSizeGE(F.Nand, 3)) {
+					if (ast.isSameHeadSizeGE(F.Nand, 3)) {
 						Formula[] result = new Formula[ast.argSize()];
 						for (int i = 1; i < ast.size(); i++) {
 							result[i - 1] = factory.not(expr2BooleanFunction(ast.get(i)));
@@ -192,7 +192,7 @@ public class LogicFormula {
 					}
 					break;
 				case ID.Nor:
-					if (ast.isASTSizeGE(F.Nor, 3)) {
+					if (ast.isSameHeadSizeGE(F.Nor, 3)) {
 						Formula[] result = new Formula[ast.argSize()];
 						for (int i = 1; i < ast.size(); i++) {
 							result[i - 1] = factory.not(expr2BooleanFunction(ast.get(i)));
@@ -201,12 +201,12 @@ public class LogicFormula {
 					}
 					break;
 				case ID.Equivalent:
-					if (ast.isASTSizeGE(F.Equivalent, 3)) {
+					if (ast.isSameHeadSizeGE(F.Equivalent, 3)) {
 						return convertEquivalent(ast);
 					}
 					break;
 				case ID.Xor:
-					if (ast.isASTSizeGE(F.Xor, 3)) {
+					if (ast.isSameHeadSizeGE(F.Xor, 3)) {
 						return convertXor(ast);
 					}
 					break;

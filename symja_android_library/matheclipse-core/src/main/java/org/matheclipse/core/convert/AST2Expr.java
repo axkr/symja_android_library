@@ -365,25 +365,25 @@ public class AST2Expr {
 					}
 					break;
 				case ID.GreaterEqual:
-					if (ast.isASTSizeGE(F.GreaterEqual, 3)) {
+					if (ast.isSameHeadSizeGE(F.GreaterEqual, 3)) {
 						ISymbol compareHead = F.Greater;
 						return rewriteLessGreaterAST(ast, compareHead);
 					}
 					break;
 				case ID.Greater:
-					if (ast.isASTSizeGE(F.Greater, 3)) {
+					if (ast.isSameHeadSizeGE(F.Greater, 3)) {
 						ISymbol compareHead = F.GreaterEqual;
 						return rewriteLessGreaterAST(ast, compareHead);
 					}
 					break;
 				case ID.LessEqual:
-					if (ast.isASTSizeGE(F.LessEqual, 3)) {
+					if (ast.isSameHeadSizeGE(F.LessEqual, 3)) {
 						ISymbol compareHead = F.Less;
 						return rewriteLessGreaterAST(ast, compareHead);
 					}
 					break;
 				case ID.Less:
-					if (ast.isASTSizeGE(F.Less, 3)) {
+					if (ast.isSameHeadSizeGE(F.Less, 3)) {
 						ISymbol compareHead = F.LessEqual;
 						return rewriteLessGreaterAST(ast, compareHead);
 					}
@@ -573,7 +573,7 @@ public class AST2Expr {
 		IASTAppendable andAST = F.And();
 		for (int i = 1; i < ast.size(); i++) {
 			temp = ast.get(i);
-			if (temp.isASTSizeGE(compareHead, 3)) {
+			if (temp.isSameHeadSizeGE(compareHead, 3)) {
 				IAST lt = (IAST) temp;
 				andAST.append(lt);
 				ast.set(i, lt.last());

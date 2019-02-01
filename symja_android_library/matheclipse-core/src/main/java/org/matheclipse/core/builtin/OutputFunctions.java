@@ -202,7 +202,7 @@ public final class OutputFunctions {
 
 				if (variables.size() >= 2) {
 					ISymbol sym = (ISymbol) variables.arg1();
-					if (poly.isASTSizeGE(F.Plus, 2)) {
+					if (poly.isPlus( )) {
 						HornerScheme scheme = new HornerScheme();
 						return scheme.generate(engine.isNumericMode(), poly, sym);
 					}

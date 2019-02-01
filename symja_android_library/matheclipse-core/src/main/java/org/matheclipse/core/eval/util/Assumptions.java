@@ -553,7 +553,7 @@ public class Assumptions extends AbstractAssumptions {
 			if (addEqual(ast, this)) {
 				return this;
 			}
-		} else if (ast.isASTSizeGE(F.And, 2) || ast.isASTSizeGE(F.List, 2)) {
+		} else if (ast.isAnd() || ast.isSameHeadSizeGE(F.List, 2)) {
 			return addList(ast, this);
 		} else if (ast.isAST(F.Distributed, 3)) {
 			if (addDistribution(ast, this)) {

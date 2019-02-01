@@ -861,7 +861,7 @@ public class Solve extends AbstractFunctionEvaluator {
 						numerator.isNumericMode(), engine);
 			}
 			if (temp.isPresent()) {
-				if (temp.isASTSizeGE(F.List, 2)) {
+				if (temp.isSameHeadSizeGE(F.List, 2)) {
 					IAST rootsList = (IAST) temp;
 					IASTAppendable resultList = F.ListAlloc(rootsList.size());
 					for (IExpr root : rootsList) {
