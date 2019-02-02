@@ -128,14 +128,15 @@ public class AST1 extends AST0 {
 			return true;
 		}
 		if (obj instanceof AbstractAST) {
-			// if (hashCode() != obj.hashCode()) {
-			// return false;
-			// }
-			IAST list = (IAST) obj;
+			final IAST list = (IAST) obj;
+			if (arg0 != ((AbstractAST) list).head() && arg0 instanceof ISymbol) {
+				// compared with ISymbol object identity
+				return false;
+			}
 			if (list.size() != SIZE) {
 				return false;
 			}
-			return arg0.equals(list.head()) && arg1.equals(list.arg1());
+			return arg1.equals(list.arg1()) && (arg0 instanceof ISymbol || arg0.equals(list.head()));
 		}
 		return false;
 	}

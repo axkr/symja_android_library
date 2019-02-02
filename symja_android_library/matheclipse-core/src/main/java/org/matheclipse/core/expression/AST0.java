@@ -204,13 +204,18 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 			return true;
 		}
 		if (obj instanceof AbstractAST) {
-			IAST list = (IAST) obj;
+			final IAST list = (IAST) obj;
+			if (arg0 != ((AbstractAST) list).head() && arg0 instanceof ISymbol) {
+				// compared with ISymbol object identity
+				return false;
+			}
 			if (list.size() != SIZE) {
 				return false;
 			}
-			return arg0.equals(list.head());
+			return arg0 instanceof ISymbol || arg0.equals(list.head());
 		}
 		return false;
+
 	}
 
 	/** {@inheritDoc} */

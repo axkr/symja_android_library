@@ -1074,6 +1074,12 @@ public abstract class AbstractAST implements IASTMutable {
 			if (size() != list.size()) {
 				return false;
 			}
+			IExpr head = head();
+			if (head != ((AbstractAST) obj).head()) {
+				if (head instanceof ISymbol) {
+					return false;
+				}
+			}
 			return forAll((x, i) -> x.equals(list.get(i)), 0);
 		}
 		return false;

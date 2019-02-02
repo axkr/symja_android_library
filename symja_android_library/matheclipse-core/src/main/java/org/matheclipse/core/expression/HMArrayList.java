@@ -40,6 +40,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * HMArrayList is an implementation of a list, backed by an array. All optional operations adding, removing, and
@@ -371,9 +372,8 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	/** {@inheritDoc} */
 	@Override
 	public void forEach(int startOffset, int endOffset, Consumer<? super IExpr> action) {
-		int index;
-		int start = firstIndex + startOffset;
-		if ((index = start) < lastIndex) {
+		int index = firstIndex + startOffset;
+		if (index < lastIndex) {
 			for (int i = startOffset; i < endOffset; i++) {
 				action.accept(array[index++]);
 			}
@@ -383,9 +383,8 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	/** {@inheritDoc} */
 	@Override
 	public void forEach(int startOffset, int endOffset, ObjIntConsumer<? super IExpr> action) {
-		int index;
-		int start = firstIndex + startOffset;
-		if ((index = start) < lastIndex) {
+		int index = firstIndex + startOffset;
+		if (index < lastIndex) {
 			int j = startOffset;
 			for (int i = startOffset; i < endOffset; i++) {
 				action.accept(array[index++], j++);
@@ -593,29 +592,43 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 
 	@Override
 	public final boolean equals(final Object obj) {
-		if (obj instanceof HMArrayList) {
+		if (obj == this) {
+			return true;
+		}
+		if (obj instanceof AbstractAST) {
+			if (obj instanceof AST0) {
+				return obj.equals(this);
+			}
+			IExpr head = array[firstIndex];
+			if (head != ((AbstractAST) obj).head() && head instanceof ISymbol) {
+				// compared with ISymbol object identity
+				return false;
+			}
 			if (hashCode() != obj.hashCode()) {
 				return false;
 			}
-			if (obj == this) {
-				return true;
-			}
-			HMArrayList list = (HMArrayList) obj;
-			int size = lastIndex - firstIndex;
-			if (size != list.size()) {
-				return false;
-			}
-			int i1 = firstIndex;
-			int i2 = list.firstIndex;
-			for (int i = 0; i < size; i++) {
-				if (array[i1++].equals(list.array[i2++])) {
-					continue;
+			final int size = lastIndex - firstIndex;
+			if (obj instanceof HMArrayList) {
+				final HMArrayList ast = (HMArrayList) obj;
+				if (size != ast.size()) {
+					return false;
 				}
+				int i1 = firstIndex + 1;
+				int i2 = ast.firstIndex + 1;
+				for (int i = 1; i < size; i++) {
+					if (!array[i1++].equals(ast.array[i2++])) {
+						return false;
+					}
+				}
+				return head instanceof ISymbol || head.equals(ast.array[ast.firstIndex]);
+			}
+			final AbstractAST ast = (AbstractAST) obj;
+			if (size != ast.size()) {
 				return false;
 			}
-			return true;
+			return forAll((x, i) -> x.equals(ast.get(i)), 0);
 		}
-		return super.equals(obj);
+		return false;
 	}
 
 	/** {@inheritDoc} */
