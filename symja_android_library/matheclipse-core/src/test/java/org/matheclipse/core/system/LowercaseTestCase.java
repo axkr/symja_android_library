@@ -3208,8 +3208,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEigenvalues() {
+//		check("m = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}", //
+//				"{{1,2,3},{4,5,6},{7,8,9}}");
+//		check("Roots(CharacteristicPolynomial(m,x)==0, x)",//
+//				"x==0||x==15/2-3/2*Sqrt(33)||x==15/2+3/2*Sqrt(33)");
+//		check("EigenValues(m)",//
+//				"{15/2+3/2*Sqrt(33),15/2-3/2*Sqrt(33),0}");
+		
 		check("Eigenvalues(A)", "Eigenvalues(A)");
-		check("Eigenvalues({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", //
+		check("Eigenvalues({{1.0, 2, 3}, {4, 5, 6}, {7, 8, 9}})", //
 				"{16.11684,-1.11684,-9.29650*10^-16}");
 		check("Eigenvalues({{a}})", //
 				"{a}");
