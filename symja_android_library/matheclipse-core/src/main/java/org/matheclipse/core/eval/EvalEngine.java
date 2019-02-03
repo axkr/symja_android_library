@@ -69,7 +69,6 @@ public class EvalEngine implements Serializable {
 
 	public transient Cache<IAST, IExpr> REMEMBER_AST_CACHE = null;
 
- 	
 	public final static boolean DEBUG = false;
 
 	transient private static final ThreadLocal<EvalEngine> instance = new ThreadLocal<EvalEngine>() {
@@ -134,12 +133,6 @@ public class EvalEngine implements Serializable {
 	public static void set(final EvalEngine engine) {
 		instance.set(engine);
 	}
-
-	/**
-	 * Associate a symbol name with a local variable stack in this thread.
-	 * 
-	 */
-	transient private HashMap<ISymbol, Deque<IExpr>> fLocalVariableStackMap = null;
 
 	/**
 	 * If set to <code>true</code> the current thread should stop evaluation;
@@ -379,9 +372,6 @@ public class EvalEngine implements Serializable {
 		engine.fEvalLHSMode = fEvalLHSMode;
 		engine.fFileSystemEnabled = fFileSystemEnabled;
 		engine.fIterationLimit = fIterationLimit;
-		if (fLocalVariableStackMap != null) {
-			engine.fLocalVariableStackMap = (HashMap<ISymbol, Deque<IExpr>>) fLocalVariableStackMap.clone();
-		}
 		engine.fModifiedVariablesList = fModifiedVariablesList;
 		engine.fModuleCounter = fModuleCounter;
 		engine.fNumericMode = fNumericMode;
@@ -442,7 +432,6 @@ public class EvalEngine implements Serializable {
 	}
 
 	public void cancel() {
-		fLocalVariableStackMap = null;
 		fContextPath = null;
 		fErrorPrintStream = null;
 		fFileSystemEnabled = false;
@@ -470,20 +459,6 @@ public class EvalEngine implements Serializable {
 	public int decRecursionCounter() {
 		return --fRecursionCounter;
 	}
-
-	// public void addRules(IAST ruleList) {
-	// boolean oldTraceMode = isTraceMode();
-	// try {
-	// setTraceMode(false);
-	// ruleList.forEach(x -> {
-	// if (x.isPresent()) {
-	// evaluate(x);
-	// }
-	// });
-	// } finally {
-	// setTraceMode(oldTraceMode);
-	// }
-	// }
 
 	private IAST endTrace() {
 		setTraceMode(false);
@@ -933,14 +908,6 @@ public class EvalEngine implements Serializable {
 	 *            the value
 	 */
 	public IExpr evalBlock(IExpr expr, ISymbol symbol, IExpr localValue) {
-		// Deque<IExpr> stack = localStackCreate(symbol);
-		// try {
-		// stack.push(localValue);
-		// return evaluate(expr);
-		// } finally {
-		// stack.pop();
-		// }
-
 		java.util.IdentityHashMap<ISymbol, ISymbol> blockVariables = new IdentityHashMap<ISymbol, ISymbol>();
 		IExpr result = F.NIL;
 		try {
@@ -1524,7 +1491,7 @@ public class EvalEngine implements Serializable {
 			// already flattened or sorted
 			return ast;
 		}
-		
+
 		if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 			// associative
 			IASTAppendable result;
@@ -1789,13 +1756,6 @@ public class EvalEngine implements Serializable {
 		return fIterationLimit;
 	}
 
-	final private Map<ISymbol, Deque<IExpr>> getLocalVariableStackMap() {
-		if (fLocalVariableStackMap == null) {
-			fLocalVariableStackMap = new HashMap<ISymbol, Deque<IExpr>>();
-		}
-		return fLocalVariableStackMap;
-	}
-
 	/**
 	 * Get the list of modified variables
 	 * 
@@ -1884,13 +1844,11 @@ public class EvalEngine implements Serializable {
 		fEvalLHSMode = false;
 		fTraceMode = false;
 		fTraceStack = null;
-		// fTraceList = null;
 		fStopRequested = false;
 		fSeconds = 0;
 		fModifiedVariablesList = null;
 		fContextPathStack = new Stack<ContextPath>();
 		fContextPath = ContextPath.initialContext();
-		fLocalVariableStackMap = null;
 		REMEMBER_AST_CACHE = null;
 	}
 
@@ -1986,40 +1944,6 @@ public class EvalEngine implements Serializable {
 	}
 
 	/**
-	 * Get the local variable stack for a given symbol. If the local variable stack doesn't exist, return
-	 * <code>null</code>
-	 * 
-	 * @param symbol
-	 * @return <code>null</code> if the stack doesn't exist
-	 */
-	final public Deque<IExpr> localStack(final ISymbol symbol) {
-		return getLocalVariableStackMap().get(symbol);
-	}
-
-	/**
-	 * Get the local variable stack for a given symbol. If the local variable stack doesn't exist, create a new one for
-	 * the symbol.
-	 * 
-	 * @param symbol
-	 * @return
-	 */
-	public Deque<IExpr> localStackCreate(final ISymbol symbol) {
-		Map<ISymbol, Deque<IExpr>> localVariableStackMap = getLocalVariableStackMap();
-		Deque<IExpr> temp = localVariableStackMap.get(symbol);
-		if (temp != null) {
-			return temp;
-		}
-		temp = new ArrayDeque<IExpr>();// new ArrayList<IExpr>();
-		localVariableStackMap.put(symbol, temp);
-		return temp;
-	}
-
-	public void localStackRemove(final ISymbol symbol) {
-		Map<ISymbol, Deque<IExpr>> localVariableStackMap = getLocalVariableStackMap();
-		localVariableStackMap.remove(symbol);
-	}
-
-	/**
 	 * Parse the given <code>expression String</code> into an IExpr without evaluation.
 	 * 
 	 * @param expression
@@ -2085,7 +2009,6 @@ public class EvalEngine implements Serializable {
 		fEvalLHSMode = false;
 		fTraceMode = false;
 		fTraceStack = null;
-		// fTraceList = null;
 		fStopRequested = false;
 		fSeconds = 0;
 		fModifiedVariablesList = null;
@@ -2316,15 +2239,6 @@ public class EvalEngine implements Serializable {
 		}
 		ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
 		return F.NIL;
-	}
-
-	@Override
-	public String toString() {
-		StringBuilder buf = new StringBuilder();
-		if (fLocalVariableStackMap != null) {
-			buf.append(fLocalVariableStackMap.toString());
-		}
-		return buf.toString();
 	}
 
 }

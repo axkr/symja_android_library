@@ -100,12 +100,12 @@ public class Blank implements IPattern {
 		patternMap.addPattern(patternIndexMap, this);
 		int[] result = new int[2];
 		if (isPatternDefault() || isPatternOptional()) {
-			// the ast contains a pattern with default value (i.e. "x_." or
-			// "x_:")
+			// the ast contains a pattern with default value (i.e. "_." or
+			// "_:")
 			result[0] = IAST.CONTAINS_DEFAULT_PATTERN;
 			result[1] = 2;
 		} else {
-			// the ast contains a pattern without default value (i.e. "x_")
+			// the ast contains a pattern without default value (i.e. "_")
 			result[0] = IAST.CONTAINS_PATTERN;
 			result[1] = 5;
 		}

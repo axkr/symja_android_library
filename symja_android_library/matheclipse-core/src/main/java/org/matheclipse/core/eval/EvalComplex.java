@@ -71,8 +71,10 @@ public class EvalComplex {
 	}
 
 	public static double[] evalSymbol(final ISymbol symbol) {
-		if (symbol.hasLocalVariableStack()) {
-			final IExpr expr = symbol.get();
+		IExpr expr = symbol.assignedValue();
+		if (expr != null) {
+//		if (symbol.hasLocalVariableStack()) {
+//			final IExpr expr = symbol.get();
 			if (expr instanceof ISignedNumber) {
 				final double[] result = new double[2];
 				result[0] = ((ISignedNumber) expr).doubleValue();

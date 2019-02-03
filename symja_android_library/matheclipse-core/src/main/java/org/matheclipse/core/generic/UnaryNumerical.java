@@ -56,12 +56,12 @@ public class UnaryNumerical implements Function<IExpr, IExpr>, UnivariateDiffere
 	public double value(double x) {
 		double result = 0.0;
 		final double[] stack = new double[10];
+		IExpr value = fVariable.assignedValue();
 		try {
-			fEngine.localStackCreate(fVariable).push(Num.valueOf(x));
+			fVariable.assign(Num.valueOf(x));
 			result = DoubleStackEvaluator.eval(stack, 0, fFunction);
 		} finally {
-			final Deque<IExpr> localVariableStack = fEngine.localStack(fVariable);
-			localVariableStack.pop();
+			fVariable.assign(value);
 		}
 		return result;
 	}

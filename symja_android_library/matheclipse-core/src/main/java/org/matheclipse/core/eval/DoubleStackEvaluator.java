@@ -14,8 +14,9 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class DoubleStackEvaluator {
 
 	public static double evalSymbol(final ISymbol symbol) {
-		if (symbol.hasLocalVariableStack()) {
-			return ((ISignedNumber) symbol.get()).doubleValue();
+		IExpr value = symbol.assignedValue();
+		if (value != null) {
+			return ((ISignedNumber) value).doubleValue();
 		}
 		if (symbol.isRealConstant()) {
 			// fast evaluation path

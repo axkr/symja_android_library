@@ -1508,26 +1508,23 @@ public final class Programming {
 				IAST part = (IAST) leftHandSide;
 				if (part.arg1().isSymbol()) {
 					ISymbol symbol = (ISymbol) part.arg1();
-					RulesData rd = symbol.getRulesData();
-					if (rd == null) {
+					IExpr temp = symbol.assignedValue();
+					// RulesData rd = symbol.getRulesData();
+					if (temp == null) {
 						engine.printMessage(
 								"Set: no value defined for symbol '" + symbol.toString() + "' in Part() expression.");
 					} else {
 						try {
-							IExpr temp = symbol.getRulesData().evalDownRule(symbol, engine);
-							if (!temp.isPresent()) {
-								engine.printMessage("Set: no value defined for symbol '" + symbol.toString()
-										+ "' in Part() expression.");
+							if (rightHandSide.isList()) {
+								IExpr res = Programming.assignPart(temp, part, 2, (IAST) rightHandSide, 1, engine);
+								// symbol.putDownRule(IPatternMatcher.SET, true, symbol, res, false);
+								symbol.assign(res);
+								return rightHandSide;
 							} else {
-								if (rightHandSide.isList()) {
-									IExpr res = Programming.assignPart(temp, part, 2, (IAST) rightHandSide, 1, engine);
-									symbol.putDownRule(IPatternMatcher.SET, true, symbol, res, false);
-									return rightHandSide;
-								} else {
-									IExpr res = Programming.assignPart(temp, part, 2, rightHandSide, engine);
-									symbol.putDownRule(IPatternMatcher.SET, true, symbol, res, false);
-									return rightHandSide;
-								}
+								IExpr res = Programming.assignPart(temp, part, 2, rightHandSide, engine);
+								// symbol.putDownRule(IPatternMatcher.SET, true, symbol, res, false);
+								symbol.assign(res);
+								return rightHandSide;
 							}
 						} catch (RuntimeException npe) {
 							engine.printMessage("Set: wrong argument for Part[] function: " + part.toString()

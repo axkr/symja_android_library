@@ -18,14 +18,14 @@ public class BasicPatternPropertiesTestCase extends TestCase {
 		super(name);
 	}
 
-	public void checkPriority(String patternString, int priority) {
+	public void checkPriority(String patternString, String priority) {
 		try {
 			EvalEngine engine = EvalEngine.get();
 			ASTNode node = fParser.parse(patternString);
 			IExpr pat = new AST2Expr(false, engine).convert(node);
 
 			PatternMatcher matcher = new PatternMatcher(pat);
-			assertEquals(matcher.getLHSPriority(), priority);
+			assertEquals(Integer.toString(matcher.getLHSPriority()), priority);
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals(0, priority);
@@ -52,13 +52,20 @@ public class BasicPatternPropertiesTestCase extends TestCase {
 
 	public void testSimplePriority() {
 		// the space between "x_" and "." operator is needed:
-		checkPriority("x_ . y_", 2147483586);
-		checkPriority("x_+y_", 2147483586);
-		checkPriority("f[x_]", 2147483592);
-		checkPriority("f[x__]", 2147483597);
-		checkPriority("f[x_,y_]", 2147483586);
-		checkPriority("g[x_,y_]", 2147483586);
-		checkPriority("g[x_,42, y_]", 2147483537);
+		checkPriority("x_ . y_", "2147483586");
+		checkPriority("x_+y_", "2147483586");
+		checkPriority("f[x_]", "2147483592");
+		checkPriority("f[x__]", "2147483597");
+		checkPriority("f[x_,y_]", "2147483586");
+		checkPriority("g[x_,y_]", "2147483586");
+		checkPriority("g[x_,42, y_]", "2147483537");
+//		checkPriority("x_ . y_", "1073741762");
+//		checkPriority("x_+y_", "1073741762");
+//		checkPriority("f[x_]", "1073741768");
+//		checkPriority("f[x__]", "1073741773");
+//		checkPriority("f[x_,y_]", "1073741762");
+//		checkPriority("g[x_,y_]", "1073741762");
+//		checkPriority("g[x_,42, y_]", "1073741713");
 	}
 
 	public void testCompareTo() {

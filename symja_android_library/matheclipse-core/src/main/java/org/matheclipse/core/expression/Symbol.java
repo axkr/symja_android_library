@@ -7,6 +7,7 @@ import java.io.StringWriter;
 import java.text.Collator;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -50,6 +51,12 @@ public class Symbol implements ISymbol, Serializable {
 	 * The attribute values of the symbol represented by single bits.
 	 */
 	protected int fAttributes = NOATTRIBUTE;
+
+	/**
+	 * The value associate with this symbol.
+	 */
+	protected transient IExpr fValue;
+
 	/**
 	 * The pattern matching &quot;down value&quot; rules associated with this symbol.
 	 */
@@ -132,6 +139,7 @@ public class Symbol implements ISymbol, Serializable {
 				throw new RuleCreationError(this);
 			}
 		}
+		fValue = null;
 		if (fRulesData != null) {
 			fRulesData = null;
 		}
@@ -209,6 +217,9 @@ public class Symbol implements ISymbol, Serializable {
 	@Override
 	public IAST definition() {
 		IASTAppendable result = F.ListAlloc();
+		if (fValue != null) {
+			result.append(F.Set(this, fValue));
+		}
 		if (fRulesData != null) {
 			result.appendAll(fRulesData.definition());
 		}
@@ -271,22 +282,22 @@ public class Symbol implements ISymbol, Serializable {
 			if (result.isNumber()) {
 				return (INumber) result;
 			}
-		} else if (hasLocalVariableStack()) {
-			IExpr temp = get();
+		} else if (fValue != null) {
+			IExpr temp = assignedValue();
 			if (temp != null && temp.isNumericFunction()) {
 				IExpr result = F.evaln(this);
 				if (result.isNumber()) {
 					return (INumber) result;
 				}
 			}
-		} else {
-			IExpr temp = evalDownRule(EvalEngine.get(), this);
-			if (temp.isPresent() && temp.isNumericFunction()) {
-				IExpr result = F.evaln(this);
-				if (result.isNumber()) {
-					return (INumber) result;
-				}
-			}
+			// } else {
+			// IExpr temp = evalDownRule(EvalEngine.get(), this);
+			// if (temp.isPresent() && temp.isNumericFunction()) {
+			// IExpr result = F.evaln(this);
+			// if (result.isNumber()) {
+			// return (INumber) result;
+			// }
+			// }
 		}
 		return null;
 	}
@@ -299,22 +310,22 @@ public class Symbol implements ISymbol, Serializable {
 			if (result.isReal()) {
 				return (ISignedNumber) result;
 			}
-		} else if (hasLocalVariableStack()) {
-			IExpr temp = get();
+		} else if (fValue != null) {
+			IExpr temp = assignedValue();
 			if (temp != null && temp.isNumericFunction()) {
 				IExpr result = F.evaln(this);
 				if (result.isReal()) {
 					return (ISignedNumber) result;
 				}
 			}
-		} else {
-			IExpr temp = evalDownRule(EvalEngine.get(), this);
-			if (temp.isPresent() && temp.isNumericFunction()) {
-				IExpr result = F.evaln(this);
-				if (result.isReal()) {
-					return (ISignedNumber) result;
-				}
-			}
+			// } else {
+			// IExpr temp = evalDownRule(EvalEngine.get(), this);
+			// if (temp.isPresent() && temp.isNumericFunction()) {
+			// IExpr result = F.evaln(this);
+			// if (result.isReal()) {
+			// return (ISignedNumber) result;
+			// }
+			// }
 		}
 		return null;
 	}
@@ -322,9 +333,12 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
-		if (hasLocalVariableStack()) {
-			return ExprUtil.ofNullable(get());
+		if (fValue != null) {
+			return fValue;
 		}
+		// if (hasLocalVariableStack()) {
+		// return ExprUtil.ofNullable(get());
+		// }
 		IExpr result;
 		if ((result = evalDownRule(engine, this)).isPresent()) {
 			return result;
@@ -366,32 +380,12 @@ public class Symbol implements ISymbol, Serializable {
 		return fSymbolName;
 	}
 
-	/** {@inheritDoc} */
-	@Override
-	public final IExpr get() {
-		final Deque<IExpr> localVariableStack = EvalEngine.get().localStack(this);
-		if (localVariableStack == null) {
-			return null;
-		}
-		return localVariableStack.peek();
-	}
-
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IExpr getAssignedValue() {
-		if (hasLocalVariableStack()) {
-			return get();
-		} else {
-			if (fRulesData != null) {
-				PatternMatcherEquals pme = fRulesData.getEqualDownRules().get(this);
-				if (pme != null) {
-					return pme.getRHS();
-				}
-			}
-		}
-		return null;
+	public IExpr assignedValue() {
+		return fValue;
 	}
 
 	/** {@inheritDoc} */
@@ -441,17 +435,7 @@ public class Symbol implements ISymbol, Serializable {
 	 */
 	@Override
 	public boolean hasAssignedSymbolValue() {
-		if (hasLocalVariableStack()) {
-			return get() != null;
-		} else {
-			if (fRulesData != null) {
-				PatternMatcherEquals pme = fRulesData.getEqualDownRules().get(this);
-				if (pme != null) {
-					return pme.getRHS() != null;
-				}
-			}
-		}
-		return false;
+		return fValue != null;
 	}
 
 	@Override
@@ -463,13 +447,6 @@ public class Symbol implements ISymbol, Serializable {
 	@Override
 	public int hashCode() {
 		return (fSymbolName == null) ? 31 : fSymbolName.hashCode();
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean hasLocalVariableStack() {
-		final Deque<IExpr> localVariableStack = EvalEngine.get().localStack(this);
-		return (localVariableStack != null) && !(localVariableStack.isEmpty());
 	}
 
 	@Override
@@ -615,14 +592,9 @@ public class Symbol implements ISymbol, Serializable {
 		if (isConstant()) {
 			return true;
 		}
-		if (hasLocalVariableStack()) {
-			IExpr temp = get();
+		if (fValue != null) {
+			IExpr temp = assignedValue();
 			if (temp != null && temp != this && temp.isNumericFunction()) {
-				return true;
-			}
-		} else {
-			IExpr temp = evalDownRule(EvalEngine.get(), this);
-			if (temp.isPresent() && temp.isNumericFunction()) {
 				return true;
 			}
 		}
@@ -639,7 +611,6 @@ public class Symbol implements ISymbol, Serializable {
 			return true;
 		}
 		return true;
-		// return variables.exists(x -> this.equals(x));
 	}
 
 	/** {@inheritDoc} */
@@ -731,35 +702,14 @@ public class Symbol implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final void popLocalVariable() {
-		final Deque<IExpr> localVariableStack = EvalEngine.get().localStack(this);
-		localVariableStack.pop();
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final void pushLocalVariable() {
-		pushLocalVariable(F.NIL);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final void pushLocalVariable(final IExpr expression) {
-		EvalEngine engine = EvalEngine.get();
-		engine.localStackCreate(this).push(expression);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final IPatternMatcher putDownRule(final int setSymbol, final boolean equalRule, final IExpr leftHandSide,
+	public final void putDownRule(final int setSymbol, final boolean equalRule, final IExpr leftHandSide,
 			final IExpr rightHandSide, boolean packageMode) {
-		return putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, PatternMap.DEFAULT_RULE_PRIORITY,
-				packageMode);
+		putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, PatternMap.DEFAULT_RULE_PRIORITY, packageMode);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final IPatternMatcher putDownRule(final int setSymbol, final boolean equalRule, final IExpr leftHandSide,
+	public final void putDownRule(final int setSymbol, final boolean equalRule, final IExpr leftHandSide,
 			final IExpr rightHandSide, final int priority, boolean packageMode) {
 		EvalEngine engine = EvalEngine.get();
 		if (!packageMode) {
@@ -768,19 +718,23 @@ public class Symbol implements ISymbol, Serializable {
 			}
 			engine.addModifiedVariable(this);
 		}
+		if (leftHandSide.isSymbol()) {
+			fValue = rightHandSide;
+			return;
+		}
 		if (fRulesData == null) {
 			fRulesData = new RulesData(engine.getContext());
 		}
-		return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
+		fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final IPatternMatcher putDownRule(final PatternMatcherAndInvoker pmEvaluator) {
+	public final void putDownRule(final PatternMatcherAndInvoker pmEvaluator) {
 		if (fRulesData == null) {
 			fRulesData = new RulesData(EvalEngine.get().getContext());
 		}
-		return fRulesData.insertMatcher(pmEvaluator);
+		fRulesData.insertMatcher(pmEvaluator);
 	}
 
 	public IExpr evalMessage(EvalEngine engine, String messageName) {
@@ -828,6 +782,7 @@ public class Symbol implements ISymbol, Serializable {
 	private void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		fSymbolName = stream.readUTF();
 		fAttributes = stream.read();
+		fValue = (IExpr) stream.readObject();
 		int contextNumber = stream.readInt();
 		switch (contextNumber) {
 		case 1:
@@ -848,6 +803,7 @@ public class Symbol implements ISymbol, Serializable {
 				symbol = this;
 			} else {
 				symbol.fAttributes = fAttributes;
+				symbol.fValue = fValue;
 			}
 			boolean hasDownRulesData = stream.readBoolean();
 			if (hasDownRulesData) {
@@ -878,33 +834,14 @@ public class Symbol implements ISymbol, Serializable {
 	 */
 	@Override
 	public IExpr[] reassignSymbolValue(Function<IExpr, IExpr> function, ISymbol functionSymbol, EvalEngine engine) {
-		IExpr[] result = new IExpr[2];
-		IExpr symbolValue;
-		if (hasLocalVariableStack()) {
-			symbolValue = get();
-			result[0] = symbolValue;
-			IExpr calculatedResult = function.apply(symbolValue);
+		if (fValue != null) {
+			IExpr[] result = new IExpr[2];
+			result[0] = fValue;
+			IExpr calculatedResult = function.apply(fValue);
 			if (calculatedResult.isPresent()) {
-				set(calculatedResult);
+				assign(calculatedResult);
 				result[1] = calculatedResult;
 				return result;
-			}
-
-		} else {
-			if (fRulesData != null) {
-				PatternMatcherEquals pme = fRulesData.getEqualDownRules().get(this);
-				if (pme != null) {
-					symbolValue = pme.getRHS();
-					if (symbolValue != null) {
-						result[0] = symbolValue;
-						IExpr calculatedResult = function.apply(symbolValue);
-						if (calculatedResult.isPresent()) {
-							pme.setRHS(calculatedResult);
-							result[1] = calculatedResult;
-							return result;
-						}
-					}
-				}
 			}
 		}
 		engine.printMessage(toString() + " is not a variable with a value, so its value cannot be changed.");
@@ -916,37 +853,15 @@ public class Symbol implements ISymbol, Serializable {
 	 */
 	@Override
 	public IExpr[] reassignSymbolValue(IASTMutable ast, ISymbol functionSymbol, EvalEngine engine) {
-		IExpr[] result = new IExpr[2];
-		IExpr symbolValue;
-		if (hasLocalVariableStack()) {
-			symbolValue = get();
-			result[0] = symbolValue;
-			// IExpr calculatedResult = function.apply(symbolValue);
-			ast.set(1, symbolValue);
+		if (fValue != null) {
+			IExpr[] result = new IExpr[2];
+			result[0] = fValue;
+			ast.set(1, fValue);
 			IExpr calculatedResult = engine.evaluate(ast);// F.binaryAST2(this, symbolValue, value));
 			if (calculatedResult != null) {
-				set(calculatedResult);
+				assign(calculatedResult);
 				result[1] = calculatedResult;
 				return result;
-			}
-
-		} else {
-			if (fRulesData != null) {
-				PatternMatcherEquals pme = fRulesData.getEqualDownRules().get(this);
-				if (pme != null) {
-					symbolValue = pme.getRHS();
-					if (symbolValue != null) {
-						result[0] = symbolValue;
-						// IExpr calculatedResult = function.apply(symbolValue);
-						ast.set(1, symbolValue);
-						IExpr calculatedResult = engine.evaluate(ast);
-						if (calculatedResult != null) {
-							pme.setRHS(calculatedResult);
-							result[1] = calculatedResult;
-							return result;
-						}
-					}
-				}
 			}
 		}
 		throw new WrongArgumentType(this, functionSymbol.toString() + " - Symbol: " + toString()
@@ -964,19 +879,22 @@ public class Symbol implements ISymbol, Serializable {
 
 			EvalEngine.get().addModifiedVariable(this);
 		}
-		if (fRulesData != null) {
+		if (leftHandSide.isSymbol()) {
+			fValue = null;
+			return true;
+		} else if (fRulesData != null) {
 			return fRulesData.removeRule(setSymbol, equalRule, leftHandSide);
-
 		}
 		return false;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final void set(final IExpr value) {
-		final Deque<IExpr> localVariableStack = EvalEngine.get().localStack(this);
-		localVariableStack.remove();
-		localVariableStack.push(value);
+	public final void assign(final IExpr value) {
+		fValue = value;
+		// final Deque<IExpr> localVariableStack = EvalEngine.get().localStack(this);
+		// localVariableStack.remove();
+		// localVariableStack.push(value);
 	}
 
 	/** {@inheritDoc} */
@@ -1032,6 +950,7 @@ public class Symbol implements ISymbol, Serializable {
 	private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
 		stream.writeUTF(fSymbolName);
 		stream.write(fAttributes);
+		stream.writeObject(fValue);
 		if (fContext.equals(Context.SYSTEM)) {
 			stream.writeInt(1);
 		} else if (fContext.equals(Context.RUBI)) {
@@ -1069,6 +988,10 @@ public class Symbol implements ISymbol, Serializable {
 			stream.writeObject(fRulesData);
 		}
 		return true;
+	}
+
+	void addValue(IdentityHashMap<ISymbol, IExpr> map) {
+		map.put(this, fValue);
 	}
 
 }

@@ -126,9 +126,12 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 			}
 			return ((ISymbolEvaluator) fEvaluator).evaluate(this);
 		}
-		if (hasLocalVariableStack()) {
-			return ExprUtil.ofNullable(get());
+		if (fValue!=null) {
+			return fValue;
 		}
+//		if (hasLocalVariableStack()) {
+//			return ExprUtil.ofNullable(get());
+//		}
 		// IExpr result;
 		// if ((result = evalDownRule(engine, this)).isPresent()) {
 		// return result;

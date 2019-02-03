@@ -38,16 +38,16 @@ public class BinaryNumerical implements BiFunction<IExpr, IExpr, IExpr> {
 
 	public double value(double x, double y) {
 		double result = 0.0;
+		IExpr value1 = variable1.assignedValue();
+		IExpr value2 = variable2.assignedValue();
 		try {
-			fEngine.localStackCreate(variable1).push(Num.valueOf(x));
-			fEngine.localStackCreate(variable2).push(Num.valueOf(y));
+			variable1.assign(Num.valueOf(x));
+			variable2.assign(Num.valueOf(y));
 			final double[] stack = new double[10];
 			result = DoubleStackEvaluator.eval(stack, 0, fun);
 		} finally {
-			// Deque<IExpr> localVariableStack = fEngine.localStack(variable2);
-			fEngine.localStack(variable2).pop();
-			// localVariableStack = fEngine.localStack(variable1);
-			fEngine.localStack(variable1).pop();
+			variable1.assign(value1);
+			variable2.assign(value2);
 		}
 		return result;
 

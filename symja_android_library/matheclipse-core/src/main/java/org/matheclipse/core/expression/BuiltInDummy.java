@@ -62,6 +62,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 	 */
 	protected String fSymbolName;
 
+	IExpr fValue = null;
 	// public static ISymbol valueOf(final String symbolName, final Context context) {
 	// return new Symbol(symbolName, context);
 	// }
@@ -133,6 +134,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 				throw new RuleCreationError(this);
 			}
 		}
+		fValue = null;
 		if (fRulesData != null) {
 			fRulesData = null;
 		}
@@ -210,6 +212,9 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 	@Override
 	public IAST definition() {
 		IASTAppendable result = F.ListAlloc();
+		if (fValue != null) {
+			result.append(F.Set(this, fValue));
+		}
 		if (fRulesData != null) {
 			result.appendAll(fRulesData.definition());
 		}
@@ -246,10 +251,10 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 			return true;
 		}
 		if (obj instanceof BuiltInDummy) {
-//			BuiltInDummy symbol = (BuiltInDummy) obj;
-//			if (hashCode() != symbol.hashCode()) {
-//				return false;
-//			}
+			// BuiltInDummy symbol = (BuiltInDummy) obj;
+			// if (hashCode() != symbol.hashCode()) {
+			// return false;
+			// }
 			return fSymbolName.equals(((BuiltInDummy) obj).fSymbolName);
 		}
 		return false;
@@ -282,17 +287,9 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 			if (result.isNumber()) {
 				return (INumber) result;
 			}
-		} else if (hasLocalVariableStack()) {
-			IExpr temp = get();
+		} else if (fValue != null) {
+			IExpr temp = assignedValue();
 			if (temp != null && temp.isNumericFunction()) {
-				IExpr result = F.evaln(this);
-				if (result.isNumber()) {
-					return (INumber) result;
-				}
-			}
-		} else {
-			IExpr temp = evalDownRule(EvalEngine.get(), this);
-			if (temp.isPresent() && temp.isNumericFunction()) {
 				IExpr result = F.evaln(this);
 				if (result.isNumber()) {
 					return (INumber) result;
@@ -310,22 +307,22 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 			if (result.isReal()) {
 				return (ISignedNumber) result;
 			}
-		} else if (hasLocalVariableStack()) {
-			IExpr temp = get();
+		} else if (fValue != null) {
+			IExpr temp = assignedValue();
 			if (temp != null && temp.isNumericFunction()) {
 				IExpr result = F.evaln(this);
 				if (result.isReal()) {
 					return (ISignedNumber) result;
 				}
 			}
-		} else {
-			IExpr temp = evalDownRule(EvalEngine.get(), this);
-			if (temp.isPresent() && temp.isNumericFunction()) {
-				IExpr result = F.evaln(this);
-				if (result.isReal()) {
-					return (ISignedNumber) result;
-				}
-			}
+			// } else {
+			// IExpr temp = evalDownRule(EvalEngine.get(), this);
+			// if (temp.isPresent() && temp.isNumericFunction()) {
+			// IExpr result = F.evaln(this);
+			// if (result.isReal()) {
+			// return (ISignedNumber) result;
+			// }
+			// }
 		}
 		return null;
 	}
@@ -333,13 +330,13 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
-		if (hasLocalVariableStack()) {
-			return ExprUtil.ofNullable(get());
+		if (fValue != null) {
+			return ExprUtil.ofNullable(assignedValue());
 		}
-		IExpr result;
-		if ((result = evalDownRule(engine, this)).isPresent()) {
-			return result;
-		}
+		// IExpr result;
+		// if ((result = evalDownRule(engine, this)).isPresent()) {
+		// return result;
+		// }
 		return F.NIL;
 	}
 
@@ -377,32 +374,12 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 		return fSymbolName;
 	}
 
-	/** {@inheritDoc} */
-	@Override
-	public final IExpr get() {
-		final Deque<IExpr> localVariableStack = EvalEngine.get().localStack(this);
-		if (localVariableStack == null) {
-			return null;
-		}
-		return localVariableStack.peek();
-	}
-
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IExpr getAssignedValue() {
-		if (hasLocalVariableStack()) {
-			return get();
-		} else {
-			if (fRulesData != null) {
-				PatternMatcherEquals pme = fRulesData.getEqualDownRules().get(this);
-				if (pme != null) {
-					return pme.getRHS();
-				}
-			}
-		}
-		return null;
+	public IExpr assignedValue() {
+		return fValue;
 	}
 
 	/** {@inheritDoc} */
@@ -456,17 +433,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 	 */
 	@Override
 	public boolean hasAssignedSymbolValue() {
-		if (hasLocalVariableStack()) {
-			return get() != null;
-		} else {
-			if (fRulesData != null) {
-				PatternMatcherEquals pme = fRulesData.getEqualDownRules().get(this);
-				if (pme != null) {
-					return pme.getRHS() != null;
-				}
-			}
-		}
-		return false;
+		return fValue != null;
 	}
 
 	@Override
@@ -478,13 +445,6 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 	@Override
 	public int hashCode() {
 		return (fSymbolName == null) ? 31 : fSymbolName.hashCode();
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean hasLocalVariableStack() {
-		final Deque<IExpr> localVariableStack = EvalEngine.get().localStack(this);
-		return (localVariableStack != null) && !(localVariableStack.isEmpty());
 	}
 
 	@Override
@@ -627,16 +587,16 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 		if (isConstant()) {
 			return true;
 		}
-		if (hasLocalVariableStack()) {
-			IExpr temp = get();
+		if (fValue != null) {
+			IExpr temp = assignedValue();
 			if (temp != null && temp.isNumericFunction()) {
 				return true;
 			}
-		} else {
-			IExpr temp = evalDownRule(EvalEngine.get(), this);
-			if (temp.isPresent() && temp.isNumericFunction()) {
-				return true;
-			}
+			// } else {
+			// IExpr temp = evalDownRule(EvalEngine.get(), this);
+			// if (temp.isPresent() && temp.isNumericFunction()) {
+			// return true;
+			// }
 		}
 		return false;
 	}
@@ -742,35 +702,15 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final void popLocalVariable() {
-		final Deque<IExpr> localVariableStack = EvalEngine.get().localStack(this);
-		localVariableStack.pop();
+	public final void putDownRule(final int setSymbol, final boolean equalRule, final IExpr leftHandSide,
+			final IExpr rightHandSide, boolean packageMode) {
+		putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, PatternMap.DEFAULT_RULE_PRIORITY, packageMode);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final void pushLocalVariable() {
-		pushLocalVariable(F.NIL);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final void pushLocalVariable(final IExpr expression) {
-		EvalEngine.get().localStackCreate(this).push(expression);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final IPatternMatcher putDownRule(final int setSymbol, final boolean equalRule,
-			final IExpr leftHandSide, final IExpr rightHandSide, boolean packageMode) {
-		return putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, PatternMap.DEFAULT_RULE_PRIORITY,
-				packageMode);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final IPatternMatcher putDownRule(final int setSymbol, final boolean equalRule,
-			final IExpr leftHandSide, final IExpr rightHandSide, final int priority, boolean packageMode) {
+	public final void putDownRule(final int setSymbol, final boolean equalRule, final IExpr leftHandSide,
+			final IExpr rightHandSide, final int priority, boolean packageMode) {
 		if (!packageMode) {
 			if (isLocked(packageMode)) {
 				throw new RuleCreationError(leftHandSide);
@@ -780,25 +720,25 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 		if (fRulesData == null) {
 			fRulesData = new RulesData(EvalEngine.get().getContext());
 		}
-		return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
+		fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final IPatternMatcher putDownRule(final PatternMatcherAndInvoker pmEvaluator) {
+	public final void putDownRule(final PatternMatcherAndInvoker pmEvaluator) {
 		if (fRulesData == null) {
 			fRulesData = new RulesData(EvalEngine.get().getContext());
 		}
-		return fRulesData.insertMatcher(pmEvaluator);
+		fRulesData.insertMatcher(pmEvaluator);
 	}
 
 	public IExpr evalMessage(EvalEngine engine, String messageName) {
 		return F.NIL;
 	}
-	
+
 	public void putMessage(final int setSymbol, String messageName, IStringX message) {
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public final IPatternMatcher putUpRule(final int setSymbol, boolean equalRule, IAST leftHandSide,
@@ -808,14 +748,15 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IPatternMatcher putUpRule(final int setSymbol, final boolean equalRule,
-			final IAST leftHandSide, final IExpr rightHandSide, final int priority) {
+	public final IPatternMatcher putUpRule(final int setSymbol, final boolean equalRule, final IAST leftHandSide,
+			final IExpr rightHandSide, final int priority) {
 		throw new UnsupportedOperationException();
 	}
 
 	private void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		fSymbolName = stream.readUTF();
 		fAttributes = stream.read();
+		fValue = (IExpr) stream.readObject();
 		// fContext = (Context) stream.readObject();
 		// if (fContext == null) {
 		// fContext = Context.SYSTEM;
@@ -857,33 +798,14 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 	 */
 	@Override
 	public IExpr[] reassignSymbolValue(Function<IExpr, IExpr> function, ISymbol functionSymbol, EvalEngine engine) {
-		IExpr[] result = new IExpr[2];
-		IExpr symbolValue;
-		if (hasLocalVariableStack()) {
-			symbolValue = get();
-			result[0] = symbolValue;
-			IExpr calculatedResult = function.apply(symbolValue);
+		if (fValue != null) {
+			IExpr[] result = new IExpr[2];
+			result[0] = fValue;
+			IExpr calculatedResult = function.apply(fValue);
 			if (calculatedResult.isPresent()) {
-				set(calculatedResult);
+				assign(calculatedResult);
 				result[1] = calculatedResult;
 				return result;
-			}
-
-		} else {
-			if (fRulesData != null) {
-				PatternMatcherEquals pme = fRulesData.getEqualDownRules().get(this);
-				if (pme != null) {
-					symbolValue = pme.getRHS();
-					if (symbolValue != null) {
-						result[0] = symbolValue;
-						IExpr calculatedResult = function.apply(symbolValue);
-						if (calculatedResult.isPresent()) {
-							pme.setRHS(calculatedResult);
-							result[1] = calculatedResult;
-							return result;
-						}
-					}
-				}
 			}
 		}
 		engine.printMessage(toString() + " is not a variable with a value, so its value cannot be changed.");
@@ -895,37 +817,16 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 	 */
 	@Override
 	public IExpr[] reassignSymbolValue(IASTMutable ast, ISymbol functionSymbol, EvalEngine engine) {
-		IExpr[] result = new IExpr[2];
-		IExpr symbolValue;
-		if (hasLocalVariableStack()) {
-			symbolValue = get();
-			result[0] = symbolValue;
+		if (fValue != null) {
+			IExpr[] result = new IExpr[2];
+			result[0] = fValue;
 			// IExpr calculatedResult = function.apply(symbolValue);
-			ast.set(1, symbolValue);
+			ast.set(1, fValue);
 			IExpr calculatedResult = engine.evaluate(ast);// F.binaryAST2(this, symbolValue, value));
 			if (calculatedResult != null) {
-				set(calculatedResult);
+				assign(calculatedResult);
 				result[1] = calculatedResult;
 				return result;
-			}
-
-		} else {
-			if (fRulesData != null) {
-				PatternMatcherEquals pme = fRulesData.getEqualDownRules().get(this);
-				if (pme != null) {
-					symbolValue = pme.getRHS();
-					if (symbolValue != null) {
-						result[0] = symbolValue;
-						// IExpr calculatedResult = function.apply(symbolValue);
-						ast.set(1, symbolValue);
-						IExpr calculatedResult = engine.evaluate(ast);
-						if (calculatedResult != null) {
-							pme.setRHS(calculatedResult);
-							result[1] = calculatedResult;
-							return result;
-						}
-					}
-				}
 			}
 		}
 		throw new WrongArgumentType(this, functionSymbol.toString() + " - Symbol: " + toString()
@@ -943,19 +844,22 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
 			EvalEngine.get().addModifiedVariable(this);
 		}
-		if (fRulesData != null) {
+		if (leftHandSide.isSymbol()) {
+			fValue = null;
+			return true;
+		} else if (fRulesData != null) {
 			return fRulesData.removeRule(setSymbol, equalRule, leftHandSide);
-
 		}
 		return false;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final void set(final IExpr value) {
-		final Deque<IExpr> localVariableStack = EvalEngine.get().localStack(this);
-		localVariableStack.remove();
-		localVariableStack.push(value);
+	public final void assign(final IExpr value) {
+		fValue = value;
+		// final Deque<IExpr> localVariableStack = EvalEngine.get().localStack(this);
+		// localVariableStack.remove();
+		// localVariableStack.push(value);
 	}
 
 	/** {@inheritDoc} */
@@ -1007,6 +911,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 	private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
 		stream.writeUTF(fSymbolName);
 		stream.write(fAttributes);
+		stream.writeObject(fValue);
 		// if (fContext.equals(Context.SYSTEM)) {
 		// stream.writeObject(null);
 		// } else {

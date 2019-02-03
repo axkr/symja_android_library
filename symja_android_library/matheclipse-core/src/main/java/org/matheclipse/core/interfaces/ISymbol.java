@@ -133,13 +133,13 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * 
 	 */
 	public final static int PROTECTED = 0x8000;
-	
+
 	/**
 	 * ISymbol attribute for a symbol where the definition shouldn't be displayed
 	 * 
 	 */
 	public final static int READPROTECTED = 0x10000;
-	
+
 	/**
 	 * ISymbol attribute to indicate that a symbols evaluation should be printed to Console with System.out.println();
 	 */
@@ -151,6 +151,19 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * @param attributes
 	 */
 	public void addAttributes(final int attributes);
+
+	/**
+	 * Set the value of the local variable on top of the local variable stack
+	 * 
+	 */
+	public void assign(IExpr value);
+
+	/**
+	 * Get the value which is assigned to the symbol or <code>null</code>, if no value is assigned.
+	 * 
+	 * @return <code>null</code>, if no value is assigned.
+	 */
+	public IExpr assignedValue();
 
 	/**
 	 * Clear the associated rules for this symbol
@@ -217,6 +230,8 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 */
 	public IExpr evalDownRule(EvalEngine engine, IExpr expression);
 
+	public IExpr evalMessage(EvalEngine engine, String messageName);
+
 	/**
 	 * Evaluate the given expression for the &quot;up value&quot; rules associated with this symbol
 	 * 
@@ -229,28 +244,24 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	default IAST f(IExpr arg1) {
 		return F.unaryAST1(this, arg1);
 	}
-	
+
 	default IAST f(IExpr arg1, IExpr arg2) {
 		return F.binaryAST2(this, arg1, arg2);
 	}
-	
+
 	default IAST f(IExpr arg1, IExpr arg2, IExpr arg3) {
 		return F.ternaryAST3(this, arg1, arg2, arg3);
 	}
-	
-	/**
-	 * Get the topmost value from the local variable stack
-	 * 
-	 * @return <code>null</code> if no local variable is defined
-	 */
-	public IExpr get();
 
 	/**
 	 * Get the value which is assigned to the symbol or <code>null</code>, if no value is assigned.
 	 * 
 	 * @return <code>null</code>, if no value is assigned.
+	 * @deprecated use {@link #assignedValue()} instead
 	 */
-	public IExpr getAssignedValue();
+	default IExpr get() {
+		return assignedValue();
+	}
 
 	/**
 	 * Get the Attributes of this symbol (i.e. LISTABLE, FLAT, ORDERLESS,...)
@@ -293,8 +304,6 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 */
 	public RulesData getRulesData();
 
-	public void setRulesData(RulesData rd);
-
 	/**
 	 * Get the pure symbol name string without the context prefix.
 	 * 
@@ -315,13 +324,6 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * @return <code>true</code> if this symbols attribute set contains the <code>Flat</code> attribute.
 	 */
 	boolean hasFlatAttribute();
-
-	/**
-	 * Is a local variable stack created for this symbol ?
-	 * 
-	 * @return <code>true</code> if this symbol has a local variable stack
-	 */
-	boolean hasLocalVariableStack();
 
 	/**
 	 * Does this symbols attribute set contains the <code>OneIdentity</code> attribute?
@@ -444,6 +446,25 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public boolean ofQ(IExpr... args);
 
 	/**
+	 * Delete the topmost placeholder from the local variable stack
+	 * 
+	 */
+	// public void popLocalVariable();
+
+	/**
+	 * Create a new variable placeholder on the symbols variable stack
+	 * 
+	 */
+	// public void pushLocalVariable();
+
+	/**
+	 * Create a new variable placeholder on the symbols variable stack and set the local value
+	 * 
+	 * @param localValue
+	 */
+	// public void pushLocalVariable(IExpr localValue);
+
+	/**
 	 * Get the ordinal number of this built-in symbol in the enumeration of built-in symbols. If this is no built-in
 	 * symbol return <code>-1</code> (ID.UNKNOWN)
 	 * 
@@ -452,33 +473,6 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	default int ordinal() {
 		return ID.UNKNOWN;
 	}
-
-	/**
-	 * Delete the topmost placeholder from the local variable stack
-	 * 
-	 */
-	public void popLocalVariable();
-
-	/**
-	 * Create a new variable placeholder on the symbols variable stack
-	 * 
-	 */
-	public void pushLocalVariable();
-
-	/**
-	 * Create a new variable placeholder on the symbols variable stack and set the local value
-	 * 
-	 * @param localValue
-	 */
-	public void pushLocalVariable(IExpr localValue);
-
-	/**
-	 * Associate a new rule, which invokes a method, to this symbol.
-	 * 
-	 * @param pmEvaluator
-	 * @return
-	 */
-	public IPatternMatcher putDownRule(final PatternMatcherAndInvoker pmEvaluator);
 
 	/**
 	 * Associate a new &quot;down value&quot; rule with default priority to this symbol.
@@ -496,12 +490,8 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * 
 	 * @see PatternMap#DEFAULT_RULE_PRIORITY
 	 */
-	public IPatternMatcher putDownRule(final int setSymbol, boolean equalRule, IExpr leftHandSide,
-			IExpr rightHandSide, boolean packageMode);
-
-	public IExpr evalMessage(EvalEngine engine, String messageName);
-
-	public void putMessage(final int setSymbol, String messageName, IStringX message);
+	public void putDownRule(final int setSymbol, boolean equalRule, IExpr leftHandSide, IExpr rightHandSide,
+			boolean packageMode);
 
 	/**
 	 * Associate a new rule with the given priority to this symbol.<br/>
@@ -523,8 +513,18 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * 
 	 * @see PatternMap#DEFAULT_RULE_PRIORITY
 	 */
-	public IPatternMatcher putDownRule(final int setSymbol, boolean equalRule, IExpr leftHandSide,
-			IExpr rightHandSide, int priority, boolean packageMode);
+	public void putDownRule(final int setSymbol, boolean equalRule, IExpr leftHandSide, IExpr rightHandSide,
+			int priority, boolean packageMode);
+
+	/**
+	 * Associate a new rule, which invokes a method, to this symbol.
+	 * 
+	 * @param pmEvaluator
+	 * @return
+	 */
+	public void putDownRule(final PatternMatcherAndInvoker pmEvaluator);
+
+	public void putMessage(final int setSymbol, String messageName, IStringX message);
 
 	/**
 	 * Associate a new &quot;up value&quot; rule with default priority to this symbol.
@@ -539,8 +539,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * 
 	 * @see PatternMap#DEFAULT_RULE_PRIORITY
 	 */
-	public IPatternMatcher putUpRule(final int setSymbol, boolean equalRule, IAST leftHandSide,
-			IExpr rightHandSide);
+	public IPatternMatcher putUpRule(final int setSymbol, boolean equalRule, IAST leftHandSide, IExpr rightHandSide);
 
 	/**
 	 * Associate a new &quot;up value&quot; rule with the given priority to this symbol.<br/>
@@ -614,14 +613,17 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * @param packageMode
 	 * @return <code>true</code> if a rule could be removed, <code>false</code> otherwise
 	 */
-	public boolean removeRule(final int setSymbol, final boolean equalRule,
-			final IExpr leftHandSide, boolean packageMode);
+	public boolean removeRule(final int setSymbol, final boolean equalRule, final IExpr leftHandSide,
+			boolean packageMode);
 
 	/**
 	 * Set the value of the local variable on top of the local variable stack
 	 * 
+	 * @deprecated use {@link #assign(IExpr)} instead
 	 */
-	public void set(IExpr value);
+	default void set(IExpr value) {
+		assign(value);
+	}
 
 	/**
 	 * Set the Attributes of this symbol (i.e. LISTABLE, FLAT, ORDERLESS,...)
@@ -654,6 +656,8 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * @see IBuiltInSymbol#getDefaultValue(int)
 	 */
 	public void setDefaultValue(int position, IExpr expr);
+
+	public void setRulesData(RulesData rd);
 
 	/**
 	 * Serialize the rule definitions associated to this symbol

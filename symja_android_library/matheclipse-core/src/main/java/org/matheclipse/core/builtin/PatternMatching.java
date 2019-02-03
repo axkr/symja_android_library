@@ -1202,11 +1202,11 @@ public final class PatternMatching {
 					}
 				}
 			}
-			Object[] result = createPatternMatcher(leftHandSide, ast.arg2(), engine.isPackageMode(), engine);
-			return (IExpr) result[1];
+			return createPatternMatcher(leftHandSide, ast.arg2(), engine.isPackageMode(), engine);
+//			return (IExpr) result[1];
 		}
 
-		private static Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode,
+		private static IExpr createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode,
 				final EvalEngine engine) throws RuleCreationError {
 			int[] flags = new int[] { IPatternMatcher.NOFLAG };
 			leftHandSide = evalLHS(leftHandSide, flags, engine);
@@ -1229,7 +1229,7 @@ public final class PatternMatching {
 						message = F.stringx(rightHandSide.toString());
 					}
 					symbol.putMessage(IPatternMatcher.SET, messageName, message);
-					return new Object[] { null, message };
+					return message;
 				}
 			}
 
@@ -1312,11 +1312,11 @@ public final class PatternMatching {
 			return F.Null;
 		}
 
-		private static Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode,
+		private static void createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode,
 				final EvalEngine engine) throws RuleCreationError {
 			int[] flags = new int[] { IPatternMatcher.NOFLAG };
 			leftHandSide = evalLHS(leftHandSide, flags, engine);
-			return setDelayedDownRule(leftHandSide, flags[0], rightHandSide, packageMode);
+			setDelayedDownRule(leftHandSide, flags[0], rightHandSide, packageMode);
 		}
 
 		@Override
@@ -1326,56 +1326,33 @@ public final class PatternMatching {
 
 	}
 
-	public static Object[] setDownRule(int flags, IExpr leftHandSide, IExpr rightHandSide, boolean packageMode) {
-		final Object[] result = new Object[] { null, rightHandSide };
+	public static IExpr setDownRule(int flags, IExpr leftHandSide, IExpr rightHandSide, boolean packageMode) {
+//		final Object[] result = new Object[] { null, rightHandSide };
 		if (leftHandSide.isAST()) {
 			final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
-			result[0] = lhsSymbol.putDownRule(IPatternMatcher.SET, false, leftHandSide, rightHandSide, packageMode);
-			return result;
+			 lhsSymbol.putDownRule(IPatternMatcher.SET, false, leftHandSide, rightHandSide, packageMode);
+			return rightHandSide;
 		}
 		if (leftHandSide.isSymbol()) {
-			final ISymbol lhsSymbol = (ISymbol) leftHandSide;
-
-			if (lhsSymbol.hasLocalVariableStack()) {
-				lhsSymbol.set(rightHandSide);
-				return result;
-			}
-			result[0] = lhsSymbol.putDownRule(flags | IPatternMatcher.SET, true, leftHandSide, rightHandSide,
-					packageMode);
-			return result;
+			((ISymbol) leftHandSide).assign(rightHandSide);
+			return rightHandSide;
 		}
 
 		throw new RuleCreationError(leftHandSide);
 	}
 
-	private static Object[] setDelayedDownRule(IExpr leftHandSide, int flags, IExpr rightHandSide,
-			boolean packageMode) {
-		final Object[] result = new Object[] { null, rightHandSide };
+	private static void setDelayedDownRule(IExpr leftHandSide, int flags, IExpr rightHandSide, boolean packageMode) {
 		if (leftHandSide.isAST()) {
 			final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
-
-			result[0] = lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, false, leftHandSide, rightHandSide,
-					packageMode);
-			return result;
+			lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, false, leftHandSide, rightHandSide, packageMode);
+			return;
 		}
 		if (leftHandSide.isSymbol()) {
-			final ISymbol lhsSymbol = (ISymbol) leftHandSide;
-			if (lhsSymbol.hasLocalVariableStack()) {
-				lhsSymbol.set(rightHandSide);
-				return result;
-			}
-			result[0] = lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, true, leftHandSide, rightHandSide,
-					packageMode);
-			return result;
+			((ISymbol) leftHandSide).assign(rightHandSide);
+			return;
 		}
 		throw new RuleCreationError(leftHandSide);
 	}
-
-	// public static void setDelayedIntegrateRule(int priority, IAST leftHandSide, IExpr rightHandSide,
-	// boolean packageMode) {
-	// F.Integrate.putDownRule(ISymbol.RuleType.SET_DELAYED, false, leftHandSide, rightHandSide, priority,
-	// packageMode) ;
-	// }
 
 	public static void setDelayedDownRule(int priority, IExpr leftHandSide, IExpr rightHandSide, boolean packageMode) {
 		if (leftHandSide.isAST()) {
@@ -1386,13 +1363,7 @@ public final class PatternMatching {
 			return;
 		}
 		if (leftHandSide.isSymbol()) {
-			final ISymbol lhsSymbol = (ISymbol) leftHandSide;
-			if (lhsSymbol.hasLocalVariableStack()) {
-				lhsSymbol.set(rightHandSide);
-				return;
-			}
-			lhsSymbol.putDownRule(IPatternMatcher.SET_DELAYED, true, leftHandSide, rightHandSide, priority,
-					packageMode);
+			((ISymbol) leftHandSide).assign(rightHandSide);
 			return;
 		}
 		throw new RuleCreationError(leftHandSide);

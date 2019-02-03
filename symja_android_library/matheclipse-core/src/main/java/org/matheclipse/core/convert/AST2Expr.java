@@ -127,7 +127,7 @@ public class AST2Expr {
 			"NumberFieldRootsOfUnity", "NumberQ", "Numerator", "NumericQ", "NuttallWindow", "OddQ", "Operate",
 			"OptimizeExpression", "Optional", "Options", "Or", "Order", "Ordering", "OrderedQ", "Orthogonalize",
 			"OrthogonalMatrixQ", "Out", "Outer", "OutputForm", "OutputStream", "Package", "PadLeft", "PadRight",
-			"ParametricPlot", "Part", "Partition", "PartitionsP", "PartitionsQ", "ParzenWindow", "PearsonChiSquareTest",
+			"ParametricPlot", "Part", "Partition", "PartitionsP", "PartitionsQ","PatternOrder", "ParzenWindow", "PearsonChiSquareTest",
 			"PerfectNumber", "PerfectNumberQ", "Pattern", "PatternTest", "PDF", "Permutations", "Piecewise", "Plot",
 			"PlotRange", "Plot3D", "Plus", "Pochhammer", "Point", "PoissonDistribution", "PolyGamma", "Polygon",
 			"PolyLog", "PolynomialExtendedGCD", "PolynomialGCD", "PolynomialLCM", "PolynomialQ", "PolynomialQuotient",

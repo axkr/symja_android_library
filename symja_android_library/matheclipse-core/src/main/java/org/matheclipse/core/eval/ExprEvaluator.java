@@ -195,7 +195,7 @@ public class ExprEvaluator {
 		fVariableMap.clear();
 		// pop all local variables from local variable stack
 		for (int i = 0; i < fVariables.size(); i++) {
-			fVariables.get(i).popLocalVariable();
+			fVariables.get(i).assign(null);
 		}
 	}
 
@@ -227,11 +227,10 @@ public class ExprEvaluator {
 	 * @param value
 	 */
 	public ISymbol defineVariable(ISymbol variable, IExpr value) {
-		variable.pushLocalVariable();
 		if (value != null) {
 			// this evaluation step may throw an exception
 			IExpr temp = engine.evaluate(value);
-			variable.set(temp);
+			variable.assign(temp);
 		}
 		fVariables.add(variable);
 		fVariableMap.put(variable, value);

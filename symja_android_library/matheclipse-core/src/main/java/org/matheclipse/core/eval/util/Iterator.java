@@ -21,9 +21,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Create iterators for functions like <code>Table()</code>, <code>Sum()</code> or <code>Product()</code>
  * 
- * @see org.matheclipse.core.reflection.system.Product
- * @see org.matheclipse.core.reflection.system.Sum
- * @see org.matheclipse.core.reflection.system.Table
  */
 public class Iterator {
 	public static class ExprIterator implements IIterator<IExpr> {
@@ -53,6 +50,8 @@ public class Iterator {
 		final IExpr originalStep;
 
 		final ISymbol variable;
+
+		IExpr variableValue;
 
 		public ExprIterator(final ISymbol symbol, final EvalEngine engine, final IExpr originalStart,
 				final IExpr originalMaxCount, final IExpr originalStep, boolean numericMode) {
@@ -167,7 +166,7 @@ public class Iterator {
 		@Override
 		public IExpr next() {
 			if (variable != null) {
-				variable.set(count);
+				variable.assign(count);
 			}
 			final IExpr temp = count;
 			if (maxCounterOrList.isList()) {
@@ -194,7 +193,7 @@ public class Iterator {
 		@Override
 		public boolean setUp() {
 			if (variable != null) {
-				variable.pushLocalVariable();
+				variableValue = variable.assignedValue();
 			}
 			lowerLimit = originalLowerLimit;
 			if (!(originalLowerLimit.isReal())) {
@@ -228,7 +227,7 @@ public class Iterator {
 				count = lowerLimit;
 			}
 			if (variable != null) {
-				variable.set(count);
+				variable.assign(count);
 			}
 			return true;
 		}
@@ -240,7 +239,7 @@ public class Iterator {
 		@Override
 		public void tearDown() {
 			if (variable != null) {
-				variable.popLocalVariable();
+				variable.assign(variableValue);
 			}
 			EvalEngine.get().setNumericMode(fNumericMode);
 		}
@@ -256,6 +255,8 @@ public class Iterator {
 		double step;
 
 		final ISymbol variable;
+
+		IExpr variableValue;
 
 		final IExpr originalLowerLimit;
 
@@ -339,7 +340,7 @@ public class Iterator {
 		public IExpr next() {
 			final IExpr temp = F.num(count);
 			if (variable != null) {
-				variable.set(temp);
+				variable.assign(temp);
 			}
 			count += step;
 			return temp;
@@ -357,7 +358,7 @@ public class Iterator {
 		@Override
 		public boolean setUp() {
 			if (variable != null) {
-				variable.pushLocalVariable();
+				variableValue = variable.assignedValue();
 			}
 			count = lowerLimit;
 			if (step < 0) {
@@ -371,7 +372,7 @@ public class Iterator {
 			}
 
 			if (variable != null) {
-				variable.set(originalLowerLimit);
+				variable.assign(originalLowerLimit);
 			}
 			return true;
 		}
@@ -383,7 +384,7 @@ public class Iterator {
 		@Override
 		public void tearDown() {
 			if (variable != null) {
-				variable.popLocalVariable();
+				variable.assign(variableValue);
 			}
 		}
 	}
@@ -398,6 +399,8 @@ public class Iterator {
 		IRational step;
 
 		final ISymbol variable;
+
+		IExpr variableValue = null;
 
 		final IRational originalLowerLimit;
 
@@ -484,7 +487,7 @@ public class Iterator {
 		public IExpr next() {
 			final ISignedNumber temp = count;
 			if (variable != null) {
-				variable.set(temp);
+				variable.assign(temp);
 			}
 			count = (IRational) count.plus(step);
 			return temp;
@@ -511,10 +514,10 @@ public class Iterator {
 					return false;
 				}
 			}
-
 			if (variable != null) {
-				variable.pushLocalVariable(originalLowerLimit);
-			}
+				variableValue = variable.assignedValue();
+				variable.assign(originalLowerLimit);
+			} 
 			return true;
 		}
 
@@ -525,7 +528,7 @@ public class Iterator {
 		@Override
 		public void tearDown() {
 			if (variable != null) {
-				variable.popLocalVariable();
+				variable.assign(variableValue);
 			}
 		}
 	}
@@ -540,6 +543,8 @@ public class Iterator {
 		ISignedNumber step;
 
 		final ISymbol variable;
+
+		IExpr variableValue;
 
 		final ISignedNumber originalLowerLimit;
 
@@ -620,7 +625,7 @@ public class Iterator {
 		public IExpr next() {
 			final ISignedNumber temp = count;
 			if (variable != null) {
-				variable.set(temp);
+				variable.assign(temp);
 			}
 			count = (ISignedNumber) count.plus(step);
 			return temp;
@@ -638,7 +643,7 @@ public class Iterator {
 		@Override
 		public boolean setUp() {
 			if (variable != null) {
-				variable.pushLocalVariable();
+				variableValue = variable.assignedValue();
 			}
 			count = lowerLimit;
 			if (step.isNegative()) {
@@ -652,7 +657,7 @@ public class Iterator {
 			}
 
 			if (variable != null) {
-				variable.set(originalLowerLimit);
+				variable.assign(originalLowerLimit);
 			}
 			return true;
 		}
@@ -664,7 +669,7 @@ public class Iterator {
 		@Override
 		public void tearDown() {
 			if (variable != null) {
-				variable.popLocalVariable();
+				variable.assign(variableValue);
 			}
 		}
 	}
@@ -679,6 +684,8 @@ public class Iterator {
 		int step;
 
 		final ISymbol variable;
+
+		IExpr variableValue = null;
 
 		final IExpr originalLowerLimit;
 
@@ -773,7 +780,7 @@ public class Iterator {
 		public IExpr next() {
 			final IExpr temp = F.integer(count);
 			if (variable != null) {
-				variable.set(temp);
+				variable.assign(temp);
 			}
 			count += step;
 			return temp;
@@ -791,7 +798,7 @@ public class Iterator {
 		@Override
 		public boolean setUp() {
 			if (variable != null) {
-				variable.pushLocalVariable();
+				variableValue = variable.assignedValue();
 			}
 			count = lowerLimit;
 			if (step < 0) {
@@ -805,7 +812,7 @@ public class Iterator {
 			}
 
 			if (variable != null) {
-				variable.set(originalLowerLimit);
+				variable.assign(originalLowerLimit);
 			}
 			return true;
 		}
@@ -817,7 +824,7 @@ public class Iterator {
 		@Override
 		public void tearDown() {
 			if (variable != null) {
-				variable.popLocalVariable();
+				variable.assign(variableValue);
 			}
 		}
 	}

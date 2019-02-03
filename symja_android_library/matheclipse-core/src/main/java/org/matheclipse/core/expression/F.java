@@ -2147,6 +2147,9 @@ public class F {
 	public final static IBuiltInSymbol PartitionsQ = F.initFinalSymbol("PartitionsQ", ID.PartitionsQ);
 
 	/***/
+	public final static IBuiltInSymbol PatternOrder = F.initFinalSymbol("PatternOrder", ID.PatternOrder);
+	
+	/***/
 	public final static IBuiltInSymbol ParzenWindow = F.initFinalSymbol("ParzenWindow", ID.ParzenWindow);
 
 	/***/

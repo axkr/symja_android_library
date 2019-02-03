@@ -1098,21 +1098,17 @@ public final class LinearAlgebra {
 										Times(C1D2, Plus(sqrtExpr, matrix.getEntry(0, 0), matrix.getEntry(1, 1))));
 							}
 						}
-//						if (((IAST) arg1).forAllLeaves(x->x.isExactNumber(), 1)) {
-//							ISymbol x = F.Dummy("x");
-//							IExpr m = engine.evaluate(F.CharacteristicPolynomial(arg1, x));
-//							IAST list = PolynomialFunctions.roots(m, false, F.List(x), engine);
-//							if (list.isPresent()) {
-//								return F.Reverse(list);
-//							}
-//						}
+						// if (((IAST) arg1).forAllLeaves(x->x.isExactNumber(), 1)) {
+						// ISymbol x = F.Dummy("x");
+						// IExpr m = engine.evaluate(F.CharacteristicPolynomial(arg1, x));
+						// IAST list = PolynomialFunctions.roots(m, false, F.List(x), engine);
+						// if (list.isPresent()) {
+						// return F.Reverse(list);
+						// }
+						// }
 					}
 
-				} catch (final ClassCastException e) {
-					if (Config.SHOW_STACKTRACE) {
-						e.printStackTrace();
-					}
-				} catch (final IndexOutOfBoundsException e) {
+				} catch (final RuntimeException e) {
 					if (Config.SHOW_STACKTRACE) {
 						e.printStackTrace();
 					}
