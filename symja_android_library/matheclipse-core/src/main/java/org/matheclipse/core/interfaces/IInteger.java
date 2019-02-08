@@ -1,6 +1,7 @@
 package org.matheclipse.core.interfaces;
 
 import java.math.BigInteger;
+import java.util.SortedMap;
 
 import org.matheclipse.core.expression.F;
 

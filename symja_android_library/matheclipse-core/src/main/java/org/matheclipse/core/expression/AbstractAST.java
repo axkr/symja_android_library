@@ -962,6 +962,13 @@ public abstract class AbstractAST implements IASTMutable {
 					if (rhsOrdinal == ID.Power) {
 						if (rhs.size() == 3) {
 							// O-4
+							// if (base().isNumber() && rhs.base().isNumber()) {
+							// int exponentCompare = exponent().compareTo(rhs.exponent());
+							// if (exponentCompare == 0) {
+							// return base().compareTo(rhs.base());
+							// }
+							// return exponentCompare;
+							// }
 							int baseCompare = base().compareTo(rhs.base());
 							if (baseCompare == 0) {
 								return exponent().compareTo(rhs.exponent());

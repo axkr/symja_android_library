@@ -51,7 +51,17 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	 * @return the list of prime factors paired with their exponents
 	 */
 	public IASTAppendable factorInteger();
-
+	
+	/**
+	 * Factor into small factors below 1021 if possible and determine the root.
+	 * 
+	 * @param numerator
+	 * @param root
+	 *            the <code>root > 1</code> which should be determined
+	 * @return the rest of the factorization
+	 */
+	public IAST factorSmallPrimes(int numerator, int root);
+	
 	public IInteger floor();
 
 	/**

@@ -1,6 +1,8 @@
 package org.matheclipse.core.expression;
 
 import java.math.BigInteger;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -12,6 +14,7 @@ import org.hipparchus.util.ArithmeticUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -335,7 +338,7 @@ public abstract class AbstractFractionSym implements IFraction {
 	public IASTAppendable factorInteger() {
 		IInteger num = numerator();
 		IInteger den = denominator();
-		IASTAppendable result =  den.factorInteger();
+		IASTAppendable result = den.factorInteger();
 
 		// negate the exponents of the denominator part
 		for (int i = 1; i < result.size(); i++) {
@@ -347,6 +350,35 @@ public abstract class AbstractFractionSym implements IFraction {
 		result.appendArgs(num.factorInteger());
 		EvalAttributes.sort(result);
 		return result;
+	}
+
+	public IAST factorSmallPrimes(int numerator, int root) {
+		BigInteger b = toBigNumerator();
+		boolean isNegative = false;
+		if (sign() < 0) {
+			b = b.negate();
+			isNegative = true;
+		}
+		if (numerator != 1) {
+			b = b.pow(numerator);
+		}
+		BigInteger d = toBigDenominator();
+		if (numerator != 1) {
+			d = d.pow(numerator);
+		}
+		SortedMap<Integer, Integer> bMap = new TreeMap<Integer, Integer>();
+		IAST bAST = AbstractIntegerSym.factorBigInteger(b, isNegative, numerator, root, bMap);
+		SortedMap<Integer, Integer> dMap = new TreeMap<Integer, Integer>();
+		IAST dAST = AbstractIntegerSym.factorBigInteger(d, false, numerator, root, dMap);
+		if (bAST.isPresent()) {
+			if (dAST.isPresent()) {
+				return F.Times(bAST, F.Power(dAST, F.CN1));
+			}
+			return F.Times(bAST, F.Power(denominator(), F.QQ(-numerator, root)));
+		} else if (dAST.isPresent()) {
+			return F.Times(F.Power(numerator(), F.QQ(numerator, root)), F.Power(dAST, F.CN1));
+		}
+		return F.NIL;
 	}
 
 	/**
@@ -528,7 +560,7 @@ public abstract class AbstractFractionSym implements IFraction {
 			return this;
 		} else if (n == -1L) {
 			return inverse();
-		}  
+		}
 		long exp = n;
 		if (n < 0) {
 			if (n == Long.MIN_VALUE) {

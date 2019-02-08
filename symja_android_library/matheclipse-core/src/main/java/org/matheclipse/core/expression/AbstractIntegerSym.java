@@ -479,6 +479,65 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		return result;
 	}
 
+	/** {@inheritDoc} */
+	public IAST factorSmallPrimes(int numerator, int root) {
+		SortedMap<Integer, Integer> map = new TreeMap<Integer, Integer>();
+		IASTAppendable result = F.NIL;
+		IInteger b = this;
+		boolean isNegative = false;
+		if (sign() < 0) {
+			b = b.negate();
+			isNegative = true;
+		}
+		if (numerator != 1) {
+			b = b.pow(numerator);
+		}
+		if (b.isLessThan(F.C8)) {
+			return F.NIL;
+		}
+
+		BigInteger number = b.toBigNumerator();
+		return factorBigInteger(number, isNegative, numerator, root, map);
+	}
+
+	protected static IAST factorBigInteger(BigInteger number, boolean isNegative, int numerator, int denominator,
+			SortedMap<Integer, Integer> map) {
+		if (number.compareTo(BigInteger.valueOf(7)) <= 0) {
+			return F.NIL;
+		}
+		BigInteger rest = Primality.countPrimes1021(number, map);
+		if (map.size() == 0) {
+			return F.NIL;
+		}
+		IASTAppendable result = F.TimesAlloc(map.size());
+		boolean evaled = false;
+		for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
+			int key = entry.getKey();
+			int value = entry.getValue();
+			int mod = value % denominator;
+			int div = value / denominator;
+			if (div != 0) {
+				result.append(F.Power(valueOf(key), F.ZZ(div)));
+				if (mod != 0) {
+					result.append(F.Power(valueOf(key), F.QQ(mod, denominator)));
+				}
+				evaled = true;
+			} else {
+				result.append(F.Power(F.Power(valueOf(key), valueOf(value)), F.QQ(1, denominator)));
+			}
+		}
+		if (evaled) {
+			if (!rest.equals(BigInteger.ONE)) {
+				result.append(F.Power(valueOf(rest), F.QQ(1, denominator)));
+			}
+			if (isNegative) {
+				result.append(F.Power(F.CN1, F.QQ(numerator, denominator)));
+			}
+			return result;
+		}
+		return F.NIL;
+	}
+
 	private IAST factorizeLong(long longValue) {
 		Map<Long, Integer> map = PrimeInteger.factors(longValue);
 		IASTAppendable result = F.ListAlloc(map.size() + 1);
