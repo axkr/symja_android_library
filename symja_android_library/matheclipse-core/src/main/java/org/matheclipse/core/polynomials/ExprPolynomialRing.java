@@ -64,7 +64,6 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	/**
 	 * The names of the variables. This value can be modified.
 	 */
-	// protected String[] vars;
 	protected IAST vars;
 
 	/**

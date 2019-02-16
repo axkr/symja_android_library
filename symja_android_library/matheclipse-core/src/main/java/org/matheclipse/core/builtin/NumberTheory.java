@@ -280,7 +280,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public IExpr e2ObjArg(final IExpr n, final IExpr k) {
+		public IExpr e2ObjArg(IAST ast, final IExpr n, final IExpr k) {
 			if (n.isInteger() && k.isInteger()) {
 				// use e2IntArg() method
 				return F.NIL;
@@ -334,15 +334,15 @@ public final class NumberTheory {
 				IInteger ki = (IInteger) k;
 				if (ki.compareInt(6) < 0 && ki.compareInt(1) > 0 && !n.isNumber()) {
 					int kInt = ki.intValue();
-					IASTAppendable ast = F.TimesAlloc(kInt);
+					IASTAppendable result = F.TimesAlloc(kInt);
 					IAST temp;
 					IExpr nTemp = n;
 					for (int i = 1; i <= kInt; i++) {
 						temp = F.Divide(nTemp, F.integer(i));
-						ast.append(temp);
+						result.append(temp);
 						nTemp = F.eval(F.Subtract(nTemp, F.C1));
 					}
-					return ast;
+					return result;
 				}
 			}
 			if (n.equals(k)) {
@@ -368,15 +368,13 @@ public final class NumberTheory {
 			if (!n.isNumber() && !k.isNumber()) {
 				int diff = F.eval(F.Subtract(n, k)).toIntDefault(-1);
 				if (diff > 0 && diff <= 5) {
-					IASTAppendable ast = F.TimesAlloc(diff + 1);
-					ast.append(F.Power(NumberTheory.factorial(diff), -1));
-					IAST temp;
-					IExpr nTemp = n;
+					IASTAppendable result = F.TimesAlloc(diff + 1);
+					result.append(F.Power(NumberTheory.factorial(diff), -1));
 					for (int i = 1; i <= diff; i++) {
-						temp = F.Plus(F.ZZ(i), k);
-						ast.append(temp);
+						IAST temp = F.Plus(F.ZZ(i), k);
+						result.append(temp);
 					}
-					return ast;
+					return result;
 				}
 			}
 
@@ -1747,6 +1745,14 @@ public final class NumberTheory {
 					return F.CComplexInfinity;
 				}
 				return factorial((IInteger) arg1);
+			}
+			if (arg1.isFraction()) {
+				if (arg1.equals(F.C1D2)) {
+					return F.Times(F.C1D2, F.Sqrt(F.Pi));
+				}
+				if (arg1.equals(F.CN1D2)) {
+					return F.Sqrt(F.Pi);
+				}
 			}
 			if (arg1.isInfinity()) {
 				return F.CInfinity;

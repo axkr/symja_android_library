@@ -294,7 +294,7 @@ public class Blank implements IPattern {
 	}
 
 	/**
-	 * Groovy operator overloading
+	 * SymjaMMA operator overloading
 	 * 
 	 * @param that
 	 * @return

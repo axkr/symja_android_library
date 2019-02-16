@@ -896,7 +896,7 @@ public final class LinearAlgebra {
 	private static class Dot extends AbstractNonOrderlessArgMultiple {
 
 		@Override
-		public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
+		public IExpr e2ObjArg(IAST ast, final IExpr o0, final IExpr o1) {
 
 			IExpr temp = numericalDot(o0, o1);
 			if (temp.isPresent()) {

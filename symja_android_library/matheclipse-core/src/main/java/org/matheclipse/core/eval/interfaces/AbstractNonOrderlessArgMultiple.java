@@ -24,7 +24,7 @@ public class AbstractNonOrderlessArgMultiple extends AbstractArg2 {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		int size = ast.size();
 		if (size == 3) {
-			return binaryOperator(ast.arg1(), ast.arg2());
+			return binaryOperator(ast, ast.arg1(), ast.arg2());
 		} else if (size == 1) {
 			return evaluateArg1(ast, engine);
 		} else if (size == 0) {
@@ -40,7 +40,7 @@ public class AbstractNonOrderlessArgMultiple extends AbstractArg2 {
 			int i = 2;
 
 			while (i < size) {
-				tres = binaryOperator(temp, ast.get(i));
+				tres = binaryOperator(null, temp, ast.get(i));
 				if (!tres.isPresent()) {
 					result.append(temp);
 					if (i == size - 1) {

@@ -24,7 +24,7 @@ package de.lab4inf.math;
 /**
  * Interface of complex numbers as a basic data type.
  * Some of the methods like plus, multiply etc. are named
- * suitable for usage with Groovy operator overloading.
+ * suitable for usage with SymjaMMA operator overloading.
  * <p>
  * You can resolve a complex implementation via the L4MLoader:
  * <pre>

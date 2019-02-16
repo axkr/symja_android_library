@@ -26,7 +26,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
 /**
- * Marker annotation for methods usable with the a scripting language like Groovy.
+ * Marker annotation for methods usable with the a scripting language like SymjaMMA.
  * Examples are classes with a plus or and method. For instances of these
  * classes you can write: x + y or x | y instead of x.plus(y) or x.or(y).
  *

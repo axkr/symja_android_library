@@ -496,7 +496,7 @@ public class TensorFunctions {
 	private static class TensorProduct extends AbstractNonOrderlessArgMultiple {
 
 		@Override
-		public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
+		public IExpr e2ObjArg(IAST ast, final IExpr o0, final IExpr o1) {
 			if (o0.isList() && o1.isList()) {
 				// TODO
 				// IAST tensor1 = (IAST) o0;

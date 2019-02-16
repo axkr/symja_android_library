@@ -258,7 +258,7 @@ public class StatisticsFunctions {
 			return F.num(a1);
 		}
 
-		public IExpr e2ObjArg(final IExpr a, final IExpr b) {
+		public IExpr e2ObjArg(IAST ast, final IExpr a, final IExpr b) {
 			if (a.isZero() || a.equals(b)) {
 				return a;
 			}

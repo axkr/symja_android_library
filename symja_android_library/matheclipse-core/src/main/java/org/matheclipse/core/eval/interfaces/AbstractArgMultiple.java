@@ -24,7 +24,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
 		if (ast.isAST2()) {
-			IExpr temp = binaryOperator(ast.arg1(), ast.arg2());
+			IExpr temp = binaryOperator(null, ast.arg1(), ast.arg2());
 			if (temp.isPresent()) {
 				return temp;
 			}
@@ -42,12 +42,12 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 
 			while (i < tempAST.size()) {
 
-				tres = binaryOperator(temp, tempAST.get(i));
+				tres = binaryOperator(null, temp, tempAST.get(i));
 
 				if (!tres.isPresent()) {
 
 					for (int j = i + 1; j < tempAST.size(); j++) {
-						tres = binaryOperator(temp, tempAST.get(j));
+						tres = binaryOperator(null, temp, tempAST.get(j));
 
 						if (tres.isPresent()) {
 							evaled = true;
@@ -150,7 +150,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 	}
 
 	@Override
-	public IExpr binaryOperator(final IExpr o0, final IExpr o1) {
+	public IExpr binaryOperator(IAST ast, final IExpr o0, final IExpr o1) {
 		IExpr result = F.NIL;
 		if (o0 instanceof INum) {
 			// use specialized methods for numeric mode
@@ -170,7 +170,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 			if (result.isPresent()) {
 				return result;
 			}
-			return e2ObjArg(o0, o1);
+			return e2ObjArg(ast, o0, o1);
 		} else if (o1 instanceof INum) {
 			// use specialized methods for numeric mode
 			if (o0.isInteger()) {
@@ -187,7 +187,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 			if (result.isPresent()) {
 				return result;
 			}
-			return e2ObjArg(o0, o1);
+			return e2ObjArg(null, o0, o1);
 		}
 
 		if (o0 instanceof IComplexNum) {
@@ -202,7 +202,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 			if (result.isPresent()) {
 				return result;
 			}
-			return e2ObjArg(o0, o1);
+			return e2ObjArg(null, o0, o1);
 		} else if (o1 instanceof IComplexNum) {
 			// use specialized methods for complex numeric mode
 			if (o0.isInteger()) {
@@ -213,7 +213,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 			if (result.isPresent()) {
 				return result;
 			}
-			return e2ObjArg(o0, o1);
+			return e2ObjArg(null, o0, o1);
 		}
 
 		if (o0 instanceof IInteger) {
@@ -244,7 +244,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 				return e2ComArg((IComplex) o0, (IComplex) o1);
 			}
 		}
-		result = e2ObjArg(o0, o1);
+		result = e2ObjArg(null, o0, o1);
 		if (result.isPresent()) {
 			return result;
 		}

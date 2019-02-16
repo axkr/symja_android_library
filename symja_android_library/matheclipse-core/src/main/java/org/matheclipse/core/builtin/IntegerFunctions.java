@@ -862,7 +862,7 @@ public class IntegerFunctions {
 		 * 
 		 * See: <a href="http://en.wikipedia.org/wiki/Modular_arithmetic">Wikipedia - Modular arithmetic</a>
 		 */ 
-		public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
+		public IExpr e2ObjArg(IAST ast, final IExpr o0, final IExpr o1) {
 			if (o1.isZero()) {
 				EvalEngine.get().printMessage("Mod: Modulus 0 encountered");
 				return F.Indeterminate;
@@ -996,7 +996,7 @@ public class IntegerFunctions {
 	 */
 	private static class Quotient extends AbstractArg2 {
 
-		public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
+		public IExpr e2ObjArg(IAST ast, final IExpr o0, final IExpr o1) {
 			if (o1.isZero()) {
 				EvalEngine.get().printMessage("Quotient: division by zero");
 				return F.CComplexInfinity;

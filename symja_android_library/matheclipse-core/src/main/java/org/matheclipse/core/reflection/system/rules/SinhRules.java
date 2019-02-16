@@ -13,7 +13,7 @@ public interface SinhRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 19, 6 };
+  final public static int[] SIZES = { 19, 8 };
 
   final public static IAST RULES = List(
     IInit(Sinh, SIZES),
@@ -68,6 +68,12 @@ public interface SinhRules {
     // Sinh(2*Pi*I)=0
     ISet(Sinh(Times(CC(0L,1L,2L,1L),Pi)),
       C0),
+    // Sinh(Pi/2*I+x_):=I*Cosh(x)
+    ISetDelayed(Sinh(Plus(Times(CC(0L,1L,1L,2L),Pi),x_)),
+      Times(CI,Cosh(x))),
+    // Sinh(Complex(0,n_Integer)*Pi+x_):=(-1)^n*Sinh(x)
+    ISetDelayed(Sinh(Plus(x_,Times(Pi,Complex(C0,$p(n, Integer))))),
+      Times(Power(CN1,n),Sinh(x))),
     // Sinh(ArcSinh(x_)):=x
     ISetDelayed(Sinh(ArcSinh(x_)),
       x),

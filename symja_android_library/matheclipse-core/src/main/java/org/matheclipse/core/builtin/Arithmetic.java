@@ -1923,7 +1923,7 @@ public final class Arithmetic {
 		}
 
 		@Override
-		public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
+		public IExpr e2ObjArg(IAST ast, final IExpr o0, final IExpr o1) {
 			if (o0.isZero()) {
 				return o0;
 			}
@@ -2521,7 +2521,7 @@ public final class Arithmetic {
 	private final static class Pochhammer extends AbstractArg2 {// implements PochhammerRules {
 
 		@Override
-		public IExpr e2ObjArg(final IExpr a, final IExpr n) {
+		public IExpr e2ObjArg(IAST ast, final IExpr a, final IExpr n) {
 			if (n.isZero()) {
 				return F.C1;
 			}
@@ -3013,7 +3013,7 @@ public final class Arithmetic {
 		}
 
 		@Override
-		public IExpr e2ObjArg(final IExpr base, final IExpr exponent) {
+		public IExpr e2ObjArg(IAST ast, final IExpr base, final IExpr exponent) {
 			if (exponent.isDirectedInfinity()) {
 				IExpr temp = evalDirectedInfinityArg2(base, (IAST) exponent);
 				if (temp.isPresent()) {
@@ -3245,7 +3245,7 @@ public final class Arithmetic {
 					//
 					return F.Times(F.CN1, F.Power(F.CN1, F.C1.add(exponent)), F.Power(base.negate(), exponent));
 				}
-				if (base.isRational()) {
+				if (base.isRational() && !ast.isAllExpanded()) {
 					// try factorizing base
 					IRational num = ((IRational) base);
 					IInteger expNumerator = ((IFraction) exponent).numerator();
@@ -3262,6 +3262,9 @@ public final class Arithmetic {
 								return temp;
 							}
 						}
+					}
+					if (ast.isPresent()) {
+						ast.addEvalFlags(IAST.IS_ALL_EXPANDED);
 					}
 				}
 			}
@@ -4012,7 +4015,7 @@ public final class Arithmetic {
 		}
 
 		@Override
-		public IExpr e2ObjArg(final IExpr base, final IExpr root) {
+		public IExpr e2ObjArg(IAST ast, final IExpr base, final IExpr root) {
 			if (base.isNumber() && root.isInteger()) {
 				EvalEngine ee = EvalEngine.get();
 				if (base.isComplex() || base.isComplexNumeric()) {
@@ -4099,7 +4102,7 @@ public final class Arithmetic {
 				}
 			}
 
-			return binaryOperator(ast.arg1(), ast.arg2());
+			return binaryOperator(ast, ast.arg1(), ast.arg2());
 		}
 	}
 
@@ -4452,7 +4455,7 @@ public final class Arithmetic {
 		}
 
 		@Override
-		public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
+		public IExpr e2ObjArg(IAST ast, final IExpr o0, final IExpr o1) {
 			if (o0.isReal() || o1.isReal()) {
 				if (o0.isZero()) {
 					if (o1.isQuantity()) {
@@ -4659,7 +4662,7 @@ public final class Arithmetic {
 					final IAST arg2 = (IAST) ast1.arg2();
 					return arg2.mapThread(F.Times(ast1.arg1(), null), 2);
 				}
-				return distributeLeadingFactor(binaryOperator(ast1.arg1(), ast1.arg2()), ast1);
+				return distributeLeadingFactor(binaryOperator(null, ast1.arg1(), ast1.arg2()), ast1);
 			}
 
 			if (size > 3) {
@@ -4672,12 +4675,12 @@ public final class Arithmetic {
 				IAST astTimes = ast1;
 				while (i < astTimes.size()) {
 
-					IExpr binaryResult = binaryOperator(tempArg1, astTimes.get(i));
+					IExpr binaryResult = binaryOperator(null, tempArg1, astTimes.get(i));
 
 					if (!binaryResult.isPresent()) {
 
 						for (int j = i + 1; j < astTimes.size(); j++) {
-							binaryResult = binaryOperator(tempArg1, astTimes.get(j));
+							binaryResult = binaryOperator(null, tempArg1, astTimes.get(j));
 
 							if (binaryResult.isPresent()) {
 								evaled = true;

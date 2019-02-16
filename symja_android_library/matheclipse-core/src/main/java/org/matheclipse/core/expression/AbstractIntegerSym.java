@@ -505,7 +505,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		if (number.compareTo(BigInteger.valueOf(7)) <= 0) {
 			return F.NIL;
 		}
-		BigInteger rest = Primality.countPrimes1021(number, map);
+		BigInteger rest = Primality.countPrimes32749(number, map);
 		if (map.size() == 0) {
 			return F.NIL;
 		}

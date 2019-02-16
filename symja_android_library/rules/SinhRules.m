@@ -17,6 +17,9 @@
  Sinh(11/6*Pi*I)=-1/2*I,
  Sinh(2*Pi*I)=0,
  
+ Sinh(Pi/2*I+x_):=I*Cosh(x),
+ Sinh(Complex(0,n_Integer)*Pi+x_):=(-1)^n*Sinh(x),
+ 
  Sinh(ArcSinh(x_)):=x,
  Sinh(ArcCosh(x_)):=Sqrt((x-1)/(x+1))*(1 + x),
  Sinh(ArcTanh(x_)):=x/Sqrt(1-x^2),
