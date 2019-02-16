@@ -4,3 +4,4 @@ proguard.map
 /dump/
 /.classpath
   
+/store.paldb
