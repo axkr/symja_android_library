@@ -15,9 +15,8 @@
  */
 package com.twosigma.beakerx.symjamma.evaluator;
 
-import com.twosigma.beakerx.TryResult;
-import com.twosigma.beakerx.evaluator.Evaluator;
-import com.twosigma.beakerx.jvm.object.SimpleEvaluationObject;
+import static com.twosigma.beakerx.evaluator.BaseEvaluator.INTERUPTED_MSG;
+import static com.twosigma.beakerx.symjamma.evaluator.SymjaMMAStackTracePrettyPrinter.printStacktrace;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -29,148 +28,171 @@ import java.util.concurrent.TimeUnit;
 import org.matheclipse.core.eval.EvalControlledCallable;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.exception.AbortException;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.form.tex.TeXFormFactory;
+import org.matheclipse.core.graphics.Show2SVG;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.SyntaxError;
-import org.matheclipse.parser.client.math.MathException;
 
-import static com.twosigma.beakerx.evaluator.BaseEvaluator.INTERUPTED_MSG;
-import static com.twosigma.beakerx.symjamma.evaluator.SymjaMMAStackTracePrettyPrinter.printStacktrace;
+import com.twosigma.beakerx.TryResult;
+import com.twosigma.beakerx.jvm.object.SimpleEvaluationObject;
+import com.twosigma.beakerx.symjamma.output.LatexNotebookOutput;
+import com.twosigma.beakerx.symjamma.output.SVGImageNotebookOutput;
 
 class SymjaMMACodeRunner implements Callable<TryResult> {
 
-  public static final String SCRIPT_NAME = "script";
-  private SymjaMMAEvaluator symjammaEvaluator;
-  private final String theCode;
-  private final SimpleEvaluationObject theOutput;
+	public static final String SCRIPT_NAME = "script";
+	private SymjaMMAEvaluator symjammaEvaluator;
+	private final String theCode;
+	private final SimpleEvaluationObject theOutput;
 
-  public SymjaMMACodeRunner(SymjaMMAEvaluator groovyEvaluator, String code, SimpleEvaluationObject out) {
-    this.symjammaEvaluator = groovyEvaluator;
-    theCode = code;
-    theOutput = out;
-  }
-  public String interpreter(ExprEvaluator fEvaluator, OutputFormFactory fOutputFactory, final String inputExpression) {
+	public SymjaMMACodeRunner(SymjaMMAEvaluator groovyEvaluator, String code, SimpleEvaluationObject out) {
+		this.symjammaEvaluator = groovyEvaluator;
+		theCode = code;
+		theOutput = out;
+	}
+
+	private String createSVGOutput(IAST show) throws IOException {
+		StringBuilder svgData = new StringBuilder();
+		Show2SVG.toSVG(show, svgData);
+		return svgData.toString();
+	}
+
+	public Object interpreter(ExprEvaluator fEvaluator, OutputFormFactory fOutputFactory,
+			final String inputExpression) {
 		IExpr result;
 		final StringWriter buf = new StringWriter();
 		try {
-//			if (fSeconds <= 0) {
-//				result = fEvaluator.eval(inputExpression);
-//			} else {
-				result = fEvaluator.evaluateWithTimeout(inputExpression, 60, TimeUnit.SECONDS, true,
-						new EvalControlledCallable(fEvaluator.getEvalEngine()));
-//			}
+			// if (fSeconds <= 0) {
+			// result = fEvaluator.eval(inputExpression);
+			// } else {
+			result = fEvaluator.evaluateWithTimeout(inputExpression, 60, TimeUnit.SECONDS, true,
+					new EvalControlledCallable(fEvaluator.getEvalEngine()));
+			// }
 			if (result != null) {
-//				return printResult(result);
-				StringBuilder strBuffer = new StringBuilder();
-				fOutputFactory.reset();
-				fOutputFactory.convert(strBuffer, result);
-				return strBuffer.toString();
+				if (result.equals(F.Null)) {
+					return "Null";
+				} else {
+					return result;
+				}
+
+				// StringBuilder strBuffer = new StringBuilder();
+				// fOutputFactory.reset();
+				// fOutputFactory.convert(strBuffer, result);
+				// return strBuffer.toString();
 			}
 		} catch (final AbortException re) {
 			re.printStackTrace();
-//			try {
-//				return printResult(F.$Aborted);
-//			} catch (IOException e) {
-//				Validate.printException(buf, e);
-//				stderr.println(buf.toString());
-//				stderr.flush();
-//				return "";
-//			}
+			// try {
+			// return printResult(F.$Aborted);
+			// } catch (IOException e) {
+			// Validate.printException(buf, e);
+			// stderr.println(buf.toString());
+			// stderr.flush();
+			// return "";
+			// }
 		} catch (final SyntaxError se) {
 			se.printStackTrace();
-//			String msg = se.getMessage();
-//			stderr.println(msg);
-//			stderr.println();
-//			stderr.flush();
-//			return "";
+			// String msg = se.getMessage();
+			// stderr.println(msg);
+			// stderr.println();
+			// stderr.flush();
+			// return "";
 		} catch (final RuntimeException re) {
 			re.printStackTrace();
-//			Throwable me = re.getCause();
-//			if (me instanceof MathException) {
-//				Validate.printException(buf, me);
-//			} else {
-//				Validate.printException(buf, re);
-//			}
-//			stderr.println(buf.toString());
-//			stderr.flush();
-//			return "";
+			// Throwable me = re.getCause();
+			// if (me instanceof MathException) {
+			// Validate.printException(buf, me);
+			// } else {
+			// Validate.printException(buf, re);
+			// }
+			// stderr.println(buf.toString());
+			// stderr.flush();
+			// return "";
 		} catch (final Exception e) {
 			e.printStackTrace();
-//			Validate.printException(buf, e);
-//			stderr.println(buf.toString());
-//			stderr.flush();
-//			return "";
-//		} catch (final OutOfMemoryError e) {
-//			Validate.printException(buf, e);
-//			stderr.println(buf.toString());
-//			stderr.flush();
-//			return "";
-//		} catch (final StackOverflowError e) {
-//			Validate.printException(buf, e);
-//			stderr.println(buf.toString());
-//			stderr.flush();
-//			return "";
+			// Validate.printException(buf, e);
+			// stderr.println(buf.toString());
+			// stderr.flush();
+			// return "";
+			// } catch (final OutOfMemoryError e) {
+			// Validate.printException(buf, e);
+			// stderr.println(buf.toString());
+			// stderr.flush();
+			// return "";
+			// } catch (final StackOverflowError e) {
+			// Validate.printException(buf, e);
+			// stderr.println(buf.toString());
+			// stderr.flush();
+			// return "";
 		}
 		return buf.toString();
 	}
-  
-  @Override
-  public TryResult call() {
-    ClassLoader oldld = Thread.currentThread().getContextClassLoader();
-    TryResult either;
-    String scriptName = SCRIPT_NAME;
-    try {
-      Object result = null;
-      theOutput.setOutputHandler();
-//      Thread.currentThread().setContextClassLoader(symjammaEvaluator.getGroovyClassLoader());
-//      scriptName += System.currentTimeMillis();
-//      Class<?> parsedClass = interpreter(theCode);
-//      if (canBeInstantiated(parsedClass)) {
-//        Object instance = parsedClass.newInstance();
-//        if (instance instanceof Script) {
-//          result = runScript((Script) instance);
-//        }
-//      }
-      result = interpreter(symjammaEvaluator.fEvaluator, symjammaEvaluator.fOutputFactory, theCode);
-      either = TryResult.createResult(result);
-    } catch (Throwable e) {
-      either = handleError(scriptName, e);
-    } finally {
-      theOutput.clrOutputHandler();
-      Thread.currentThread().setContextClassLoader(oldld);
-    }
-    return either;
-  }
 
-  private TryResult handleError(String scriptName, Throwable e) {
-    TryResult either;
-    if (e instanceof InvocationTargetException) {
-      e = ((InvocationTargetException) e).getTargetException();
-    }
+	@Override
+	public TryResult call() {
+		ClassLoader oldld = Thread.currentThread().getContextClassLoader();
+		TryResult either;
+		String scriptName = SCRIPT_NAME;
+		try {
+			Object result = null;
+			theOutput.setOutputHandler(); 
+			result = interpreter(symjammaEvaluator.fEvaluator, symjammaEvaluator.fOutputFactory, theCode);
+			if (result instanceof IExpr) {
+				if (((IExpr) result).isASTSizeGE(F.Show, 2)) {
+					IAST show = (IAST) result;
+					either = TryResult.createResult(new SVGImageNotebookOutput(createSVGOutput(show)));
+				} else {
+					final TeXFormFactory fTeXFactory = new TeXFormFactory();
+					final StringBuilder texBuilder = new StringBuilder();
+					texBuilder.append("$$");
+					fTeXFactory.convert(texBuilder, (IExpr) result, 0);
+					texBuilder.append("$$");
+					either = TryResult.createResult(new LatexNotebookOutput(texBuilder.toString()));
+				}
+			} else {
+				either = TryResult.createResult(result);
+			}
+		} catch (
 
-    if (e instanceof InterruptedException || e instanceof InvocationTargetException || e instanceof ThreadDeath) {
-      either = TryResult.createError(INTERUPTED_MSG);
-    } else {
-      StringWriter sw = new StringWriter();
-      PrintWriter pw = new PrintWriter(sw);
-//      StackTraceUtils.sanitize(e).printStackTrace(pw);
-      String value = sw.toString();
-      value = printStacktrace(scriptName, value);
-      either = TryResult.createError(value);
-    }
-    return either;
-  }
+		Throwable e) {
+			either = handleError(scriptName, e);
+		} finally {
+			theOutput.clrOutputHandler();
+			Thread.currentThread().setContextClassLoader(oldld);
+		}
+		return either;
+	}
 
-//  private Object runScript(Script script) {
-//    symjammaEvaluator.getScriptBinding().setVariable(Evaluator.BEAKER_VARIABLE_NAME, symjammaEvaluator.getBeakerX());
-//    script.setBinding(symjammaEvaluator.getScriptBinding());
-//    return script.run();
-//  }
+	private TryResult handleError(String scriptName, Throwable e) {
+		TryResult either;
+		if (e instanceof InvocationTargetException) {
+			e = ((InvocationTargetException) e).getTargetException();
+		}
 
-  private boolean canBeInstantiated(Class<?> parsedClass) {
-    return !parsedClass.isEnum();
-  }
+		if (e instanceof InterruptedException || e instanceof InvocationTargetException || e instanceof ThreadDeath) {
+			either = TryResult.createError(INTERUPTED_MSG);
+		} else {
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			// StackTraceUtils.sanitize(e).printStackTrace(pw);
+			String value = sw.toString();
+			value = printStacktrace(scriptName, value);
+			either = TryResult.createError(value);
+		}
+		return either;
+	}
+
+	// private Object runScript(Script script) {
+	// symjammaEvaluator.getScriptBinding().setVariable(Evaluator.BEAKER_VARIABLE_NAME, symjammaEvaluator.getBeakerX());
+	// script.setBinding(symjammaEvaluator.getScriptBinding());
+	// return script.run();
+	// }
+
+	private boolean canBeInstantiated(Class<?> parsedClass) {
+		return !parsedClass.isEnum();
+	}
 
 }
