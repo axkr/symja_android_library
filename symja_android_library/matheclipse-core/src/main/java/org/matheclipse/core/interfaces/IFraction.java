@@ -58,7 +58,8 @@ public interface IFraction extends IRational {
 	public IRational normalize();
 
 	/**
-	 * Returns this number raised at the specified exponent.
+	 * Returns this number raised at the specified exponent. See
+	 * <a href="https://en.wikipedia.org/wiki/Exponentiation_by_squaring">Wikipedia - Exponentiation by squaring</a>
 	 * 
 	 * @param exp
 	 *            the exponent.

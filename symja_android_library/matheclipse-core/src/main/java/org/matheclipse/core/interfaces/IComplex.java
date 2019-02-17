@@ -26,6 +26,16 @@ public interface IComplex extends IBigNumber {
 	
 	public IComplex multiply(IComplex val);
 
+	/**
+	 * Returns this number raised at the specified exponent. See
+	 * <a href="https://en.wikipedia.org/wiki/Exponentiation_by_squaring">Wikipedia - Exponentiation by squaring</a>
+	 * 
+	 * @param exp
+	 *            the exponent.
+	 * @return <code>this<sup>exp</sup></code>
+	 * @throws ArithmeticException
+	 *             if {@code 0^0} is given.
+	 */
 	public IComplex pow(long n);
 
 	/**
