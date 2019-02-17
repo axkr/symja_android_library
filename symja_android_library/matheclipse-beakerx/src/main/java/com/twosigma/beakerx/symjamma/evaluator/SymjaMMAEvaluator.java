@@ -15,6 +15,20 @@
  */
 package com.twosigma.beakerx.symjamma.evaluator;
 
+import static com.twosigma.beakerx.symjamma.evaluator.EnvVariablesFilter.envVariablesFilter;
+
+import java.io.File;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
+import java.util.concurrent.Executors;
+
+import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.ExprEvaluator;
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.form.output.OutputFormFactory;
+
 import com.twosigma.beakerx.BeakerXClient;
 import com.twosigma.beakerx.TryResult;
 import com.twosigma.beakerx.autocomplete.AutocompleteResult;
@@ -31,22 +45,8 @@ import com.twosigma.beakerx.kernel.Classpath;
 import com.twosigma.beakerx.kernel.EvaluatorParameters;
 import com.twosigma.beakerx.kernel.ExecutionOptions;
 import com.twosigma.beakerx.kernel.ImportPath;
-import com.twosigma.beakerx.kernel.Imports;
 import com.twosigma.beakerx.kernel.PathToJar;
-
-import static com.twosigma.beakerx.symjamma.evaluator.EnvVariablesFilter.envVariablesFilter;
-
-import java.io.File;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
-import java.util.concurrent.Executors;
-
-import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.ExprEvaluator;
-import org.matheclipse.core.expression.F;
-import org.matheclipse.core.form.output.OutputFormFactory;
+import com.twosigma.beakerx.symjamma.autocomplete.SymjaMMAAutocomplete;
 
 public class SymjaMMAEvaluator extends BaseEvaluator {
 	/**
@@ -72,6 +72,7 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
 	private OutputFormFactory fOutputTraditionalFactory;
 
 	private OutputFormFactory fInputFactory;
+	private SymjaMMAAutocomplete gac;
 	private BeakerXUrlClassLoader beakerxUrlClassLoader;
 
 	static {
@@ -80,17 +81,18 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
 		F.initSymbols(null, null, true);
 
 	}
-	
+
 	public SymjaMMAEvaluator(String id, String sId, EvaluatorParameters evaluatorParameters,
 			BeakerXClient beakerxClient, MagicCommandAutocompletePatterns autocompletePatterns) {
-		this(id, sId, new BeakerCellExecutor("symjamma"), new TempFolderFactoryImpl(), evaluatorParameters, beakerxClient,
-				autocompletePatterns);
+		this(id, sId, new BeakerCellExecutor("symjamma"), new TempFolderFactoryImpl(), evaluatorParameters,
+				beakerxClient, autocompletePatterns);
 	}
 
 	public SymjaMMAEvaluator(String id, String sId, CellExecutor cellExecutor, TempFolderFactory tempFolderFactory,
 			EvaluatorParameters evaluatorParameters, BeakerXClient beakerxClient,
 			MagicCommandAutocompletePatterns autocompletePatterns) {
 		super(id, sId, cellExecutor, tempFolderFactory, evaluatorParameters, beakerxClient, autocompletePatterns);
+		gac = createAutocomplete(autocompletePatterns);
 		outDir = envVariablesFilter(outDir, System.getenv());
 		EvalEngine engine = new EvalEngine(false);
 		fEvaluator = new ExprEvaluator(engine, false, 100);
@@ -111,6 +113,7 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
 	@Override
 	protected void doResetEnvironment() {
 		String cpp = createClasspath(classPath);
+		gac = createAutocomplete(autocompletePatterns);
 		executorService.shutdown();
 		executorService = Executors.newSingleThreadExecutor();
 	}
@@ -128,6 +131,10 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
 		this.beakerxUrlClassLoader.addJar(pathToJar);
 	}
 
+	private SymjaMMAAutocomplete createAutocomplete(MagicCommandAutocompletePatterns autocompletePatterns) {
+		return new SymjaMMAAutocomplete(autocompletePatterns);
+	}
+
 	private String createClasspath(Classpath classPath) {
 		StringBuilder cppBuilder = new StringBuilder();
 		for (String pt : classPath.getPathsAsStrings()) {
@@ -141,9 +148,8 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
 	}
 
 	@Override
-	public AutocompleteResult autocomplete(String arg0, int arg1) {
-		// TODO Auto-generated method stub
-		return null;
+	public AutocompleteResult autocomplete(String code, int caretPosition) {
+		return gac.find(code, caretPosition);
 	}
 
 	@Override

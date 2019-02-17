@@ -34,11 +34,13 @@ import org.matheclipse.core.form.tex.TeXFormFactory;
 import org.matheclipse.core.graphics.Show2SVG;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.parser.client.SyntaxError;
 
 import com.twosigma.beakerx.TryResult;
 import com.twosigma.beakerx.jvm.object.SimpleEvaluationObject;
 import com.twosigma.beakerx.symjamma.output.LatexNotebookOutput;
+import com.twosigma.beakerx.symjamma.output.MarkdownNotebookOutput;
 import com.twosigma.beakerx.symjamma.output.SVGImageNotebookOutput;
 
 class SymjaMMACodeRunner implements Callable<TryResult> {
@@ -128,7 +130,7 @@ class SymjaMMACodeRunner implements Callable<TryResult> {
 			// stderr.flush();
 			// return "";
 		}
-		return buf.toString();
+		return new MarkdownNotebookOutput(buf.toString());
 	}
 
 	@Override
@@ -138,10 +140,12 @@ class SymjaMMACodeRunner implements Callable<TryResult> {
 		String scriptName = SCRIPT_NAME;
 		try {
 			Object result = null;
-			theOutput.setOutputHandler(); 
+			theOutput.setOutputHandler();
 			result = interpreter(symjammaEvaluator.fEvaluator, symjammaEvaluator.fOutputFactory, theCode);
 			if (result instanceof IExpr) {
-				if (((IExpr) result).isASTSizeGE(F.Show, 2)) {
+				if (result instanceof IStringX) {
+					either = TryResult.createResult(((IStringX)result).toString());
+				} else if (((IExpr) result).isASTSizeGE(F.Show, 2)) {
 					IAST show = (IAST) result;
 					either = TryResult.createResult(new SVGImageNotebookOutput(createSVGOutput(show)));
 				} else {
