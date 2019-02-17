@@ -30,7 +30,6 @@ import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
-import org.matheclipse.core.form.tex.TeXFormFactory;
 import org.matheclipse.core.graphics.Show2SVG;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -39,14 +38,13 @@ import org.matheclipse.parser.client.SyntaxError;
 
 import com.twosigma.beakerx.TryResult;
 import com.twosigma.beakerx.jvm.object.SimpleEvaluationObject;
-import com.twosigma.beakerx.symjamma.output.LatexNotebookOutput;
 import com.twosigma.beakerx.symjamma.output.MarkdownNotebookOutput;
 import com.twosigma.beakerx.symjamma.output.SVGImageNotebookOutput;
 
 class SymjaMMACodeRunner implements Callable<TryResult> {
 
 	public static final String SCRIPT_NAME = "script";
-	private SymjaMMAEvaluator symjammaEvaluator;
+	SymjaMMAEvaluator symjammaEvaluator;
 	private final String theCode;
 	private final SimpleEvaluationObject theOutput;
 
@@ -67,68 +65,34 @@ class SymjaMMACodeRunner implements Callable<TryResult> {
 		IExpr result;
 		final StringWriter buf = new StringWriter();
 		try {
-			// if (fSeconds <= 0) {
-			// result = fEvaluator.eval(inputExpression);
-			// } else {
-			result = fEvaluator.evaluateWithTimeout(inputExpression, 60, TimeUnit.SECONDS, true,
-					new EvalControlledCallable(fEvaluator.getEvalEngine()));
-			// }
+			String trimmedInput = inputExpression.trim();
+			if (trimmedInput.length() >= 4 && trimmedInput.charAt(0) == '/') {
+				Object meta = symjammaEvaluator.metaCommand(this, trimmedInput);
+				if (meta != null) {
+					return meta;
+				}
+			}
+			if (symjammaEvaluator.fSeconds <= 0) {
+				result = fEvaluator.eval(inputExpression);
+			} else {
+				result = fEvaluator.evaluateWithTimeout(inputExpression, symjammaEvaluator.fSeconds, TimeUnit.SECONDS,
+						true, new EvalControlledCallable(fEvaluator.getEvalEngine()));
+			}
 			if (result != null) {
 				if (result.equals(F.Null)) {
 					return "Null";
 				} else {
 					return result;
 				}
-
-				// StringBuilder strBuffer = new StringBuilder();
-				// fOutputFactory.reset();
-				// fOutputFactory.convert(strBuffer, result);
-				// return strBuffer.toString();
 			}
 		} catch (final AbortException re) {
 			re.printStackTrace();
-			// try {
-			// return printResult(F.$Aborted);
-			// } catch (IOException e) {
-			// Validate.printException(buf, e);
-			// stderr.println(buf.toString());
-			// stderr.flush();
-			// return "";
-			// }
 		} catch (final SyntaxError se) {
 			se.printStackTrace();
-			// String msg = se.getMessage();
-			// stderr.println(msg);
-			// stderr.println();
-			// stderr.flush();
-			// return "";
 		} catch (final RuntimeException re) {
 			re.printStackTrace();
-			// Throwable me = re.getCause();
-			// if (me instanceof MathException) {
-			// Validate.printException(buf, me);
-			// } else {
-			// Validate.printException(buf, re);
-			// }
-			// stderr.println(buf.toString());
-			// stderr.flush();
-			// return "";
 		} catch (final Exception e) {
 			e.printStackTrace();
-			// Validate.printException(buf, e);
-			// stderr.println(buf.toString());
-			// stderr.flush();
-			// return "";
-			// } catch (final OutOfMemoryError e) {
-			// Validate.printException(buf, e);
-			// stderr.println(buf.toString());
-			// stderr.flush();
-			// return "";
-			// } catch (final StackOverflowError e) {
-			// Validate.printException(buf, e);
-			// stderr.println(buf.toString());
-			// stderr.flush();
-			// return "";
 		}
 		return new MarkdownNotebookOutput(buf.toString());
 	}
@@ -144,21 +108,16 @@ class SymjaMMACodeRunner implements Callable<TryResult> {
 			result = interpreter(symjammaEvaluator.fEvaluator, symjammaEvaluator.fOutputFactory, theCode);
 			if (result instanceof IExpr) {
 				if (result instanceof IStringX) {
-					either = TryResult.createResult(((IStringX)result).toString());
+					return TryResult.createResult(((IStringX) result).toString());
 				} else if (((IExpr) result).isASTSizeGE(F.Show, 2)) {
 					IAST show = (IAST) result;
-					either = TryResult.createResult(new SVGImageNotebookOutput(createSVGOutput(show)));
+					return TryResult.createResult(new SVGImageNotebookOutput(createSVGOutput(show)));
 				} else {
-					final TeXFormFactory fTeXFactory = new TeXFormFactory();
-					final StringBuilder texBuilder = new StringBuilder();
-					texBuilder.append("$$");
-					fTeXFactory.convert(texBuilder, (IExpr) result, 0);
-					texBuilder.append("$$");
-					either = TryResult.createResult(new LatexNotebookOutput(texBuilder.toString()));
+					return symjammaEvaluator.printForm(this, result);
 				}
-			} else {
-				either = TryResult.createResult(result);
 			}
+			return TryResult.createResult(result);
+
 		} catch (
 
 		Throwable e) {

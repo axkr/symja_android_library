@@ -18,6 +18,7 @@ package com.twosigma.beakerx.symjamma.evaluator;
 import static com.twosigma.beakerx.symjamma.evaluator.EnvVariablesFilter.envVariablesFilter;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
@@ -28,6 +29,8 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.form.tex.TeXFormFactory;
+import org.matheclipse.core.interfaces.IExpr;
 
 import com.twosigma.beakerx.BeakerXClient;
 import com.twosigma.beakerx.TryResult;
@@ -46,34 +49,23 @@ import com.twosigma.beakerx.kernel.EvaluatorParameters;
 import com.twosigma.beakerx.kernel.ExecutionOptions;
 import com.twosigma.beakerx.kernel.ImportPath;
 import com.twosigma.beakerx.kernel.PathToJar;
+import com.twosigma.beakerx.mimetype.MIMEContainer;
 import com.twosigma.beakerx.symjamma.autocomplete.SymjaMMAAutocomplete;
+import com.twosigma.beakerx.symjamma.output.LatexNotebookOutput;
+import com.twosigma.beakerx.symjamma.output.MarkdownNotebookOutput;
 
 public class SymjaMMAEvaluator extends BaseEvaluator {
-	/**
-	 * 60 seconds timeout limit as the default value for Symja expression evaluation.
-	 */
-	private long fSeconds = 60;
+	final static int OUTPUTFORM = 0;
 
-	private final static int OUTPUTFORM = 0;
+	final static int JAVAFORM = 1;
 
-	private final static int JAVAFORM = 1;
+	final static int TRADITIONALFORM = 2;
 
-	private final static int TRADITIONALFORM = 2;
+	final static int PRETTYFORM = 3;
 
-	private final static int PRETTYFORM = 3;
+	final static int INPUTFORM = 4;
 
-	private final static int INPUTFORM = 4;
-	private int fUsedForm = OUTPUTFORM;
-
-	public ExprEvaluator fEvaluator;
-
-	public OutputFormFactory fOutputFactory;
-
-	private OutputFormFactory fOutputTraditionalFactory;
-
-	private OutputFormFactory fInputFactory;
-	private SymjaMMAAutocomplete gac;
-	private BeakerXUrlClassLoader beakerxUrlClassLoader;
+	final static int TEXFORM = 5;
 
 	static {
 		// distinguish between lower- and uppercase identifiers
@@ -82,11 +74,24 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
 
 	}
 
-	public SymjaMMAEvaluator(String id, String sId, EvaluatorParameters evaluatorParameters,
-			BeakerXClient beakerxClient, MagicCommandAutocompletePatterns autocompletePatterns) {
-		this(id, sId, new BeakerCellExecutor("symjamma"), new TempFolderFactoryImpl(), evaluatorParameters,
-				beakerxClient, autocompletePatterns);
-	}
+	/**
+	 * 60 seconds timeout limit as the default value for Symja expression evaluation.
+	 */
+	long fSeconds = 60;
+
+	int fUsedForm = OUTPUTFORM;
+
+	ExprEvaluator fEvaluator;
+
+	OutputFormFactory fOutputFactory;
+
+	OutputFormFactory fOutputTraditionalFactory;
+
+	OutputFormFactory fInputFactory;
+
+	private SymjaMMAAutocomplete gac;
+
+	private BeakerXUrlClassLoader beakerxUrlClassLoader;
 
 	public SymjaMMAEvaluator(String id, String sId, CellExecutor cellExecutor, TempFolderFactory tempFolderFactory,
 			EvaluatorParameters evaluatorParameters, BeakerXClient beakerxClient,
@@ -103,32 +108,29 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
 		fOutputTraditionalFactory = OutputFormFactory.get(true, false, decimalFormat);
 		fInputFactory = OutputFormFactory.get(false, false, decimalFormat);
 		fInputFactory.setQuotes(true);
+		fUsedForm = TEXFORM;
+	}
+
+	public SymjaMMAEvaluator(String id, String sId, EvaluatorParameters evaluatorParameters,
+			BeakerXClient beakerxClient, MagicCommandAutocompletePatterns autocompletePatterns) {
+		this(id, sId, new BeakerCellExecutor("symjamma"), new TempFolderFactoryImpl(), evaluatorParameters,
+				beakerxClient, autocompletePatterns);
 	}
 
 	@Override
-	public TryResult evaluate(SimpleEvaluationObject seo, String code, ExecutionOptions executionOptions) {
-		return evaluate(seo, new SymjaMMAWorkerThread(this, new JobDescriptor(code, seo, executionOptions)));
-	}
+	protected void addImportToClassLoader(ImportPath arg0) {
+		// TODO Auto-generated method stub
 
-	@Override
-	protected void doResetEnvironment() {
-		String cpp = createClasspath(classPath);
-		gac = createAutocomplete(autocompletePatterns);
-		executorService.shutdown();
-		executorService = Executors.newSingleThreadExecutor();
-	}
-
-	@Override
-	public void exit() {
-		super.exit();
-		killAllThreads();
-		executorService.shutdown();
-		executorService = Executors.newSingleThreadExecutor();
 	}
 
 	@Override
 	protected void addJarToClassLoader(PathToJar pathToJar) {
 		this.beakerxUrlClassLoader.addJar(pathToJar);
+	}
+
+	@Override
+	public AutocompleteResult autocomplete(String code, int caretPosition) {
+		return gac.find(code, caretPosition);
 	}
 
 	private SymjaMMAAutocomplete createAutocomplete(MagicCommandAutocompletePatterns autocompletePatterns) {
@@ -148,20 +150,106 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
 	}
 
 	@Override
-	public AutocompleteResult autocomplete(String code, int caretPosition) {
-		return gac.find(code, caretPosition);
+	protected void doResetEnvironment() {
+		String cpp = createClasspath(classPath);
+		gac = createAutocomplete(autocompletePatterns);
+		executorService.shutdown();
+		executorService = Executors.newSingleThreadExecutor();
 	}
 
 	@Override
-	protected void addImportToClassLoader(ImportPath arg0) {
-		// TODO Auto-generated method stub
+	public TryResult evaluate(SimpleEvaluationObject seo, String code, ExecutionOptions executionOptions) {
+		return evaluate(seo, new SymjaMMAWorkerThread(this, new JobDescriptor(code, seo, executionOptions)));
+	}
 
+	@Override
+	public void exit() {
+		super.exit();
+		killAllThreads();
+		executorService.shutdown();
+		executorService = Executors.newSingleThreadExecutor();
 	}
 
 	@Override
 	public ClassLoader getClassLoader() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	/**
+	 * Set the mode for the output format possible values <code>input, output, tex, java, traditional</code>
+	 * @param symjaMMACodeRunner
+	 * @param trimmedInput
+	 * @return
+	 */
+	MIMEContainer metaCommand(final SymjaMMACodeRunner symjaMMACodeRunner, final String trimmedInput) {
+		String command = trimmedInput.substring(1).toLowerCase(Locale.ENGLISH);
+		if (command.equals("java")) {
+			fUsedForm = SymjaMMAEvaluator.JAVAFORM;
+			return new MarkdownNotebookOutput("Enabling output for JavaForm");
+		} else if (command.equals("traditional")) {
+			fUsedForm = SymjaMMAEvaluator.TRADITIONALFORM;
+			return new MarkdownNotebookOutput("Enabling output for TraditionalForm");
+		} else if (command.equals("output")) {
+			fUsedForm = SymjaMMAEvaluator.OUTPUTFORM;
+			return new MarkdownNotebookOutput("Enabling output for OutputForm");
+			// } else if (command.equals("pretty")) {
+			// symjammaEvaluator.fUsedForm = SymjaMMAEvaluator.PRETTYFORM;
+			// return new MarkdownNotebookOutput("Enabling output for PrettyPrinterForm");
+		} else if (command.equals("input")) {
+			fUsedForm = SymjaMMAEvaluator.INPUTFORM;
+			return new MarkdownNotebookOutput("Enabling output for InputForm");
+		} else if (command.equals("tex")) {
+			fUsedForm = SymjaMMAEvaluator.TEXFORM;
+			return new MarkdownNotebookOutput("Enabling output for TeXForm");
+		} else if (command.equals("timeoutoff")) {
+			fSeconds = -1;
+			return new MarkdownNotebookOutput("Disabling timeout for evaluation");
+		} else if (command.equals("timeouton")) {
+			fSeconds = 60;
+			return new MarkdownNotebookOutput("Enabling timeout for evaluation to 60 seconds.");
+		}
+		return null;
+	}
+
+	/**
+	 * Print the result in the default output form
+	 * 
+	 * @param symjaMMACodeRunner
+	 * @param result
+	 * @return
+	 * @throws IOException
+	 */
+	TryResult printForm(final SymjaMMACodeRunner symjaMMACodeRunner, final Object result) throws IOException {
+		switch (fUsedForm) {
+		case SymjaMMAEvaluator.JAVAFORM:
+			return TryResult.createResult(((IExpr) result).internalJavaString(false, -1, false, true, false));
+		case SymjaMMAEvaluator.TRADITIONALFORM:
+			StringBuilder traditionalBuffer = new StringBuilder();
+			fOutputTraditionalFactory.reset();
+			fOutputTraditionalFactory.convert(traditionalBuffer, (IExpr) result);
+			return TryResult.createResult(traditionalBuffer.toString());
+		// case SymjaMMAEvaluator.PRETTYFORM:
+		// ASCIIPrettyPrinter3 prettyBuffer = new ASCIIPrettyPrinter3();
+		// prettyBuffer.convert(result);
+		// stdout.println();
+		// String[] outputExpression = prettyBuffer.toStringBuilder();
+		// ASCIIPrettyPrinter3.prettyPrinter(stdout, outputExpression, "Out[" + COUNTER + "]: ");
+		// return "";
+		case SymjaMMAEvaluator.INPUTFORM:
+			StringBuilder inputBuffer = new StringBuilder();
+			fInputFactory.reset();
+			fInputFactory.convert(inputBuffer, (IExpr) result);
+			return TryResult.createResult(inputBuffer.toString());
+		case SymjaMMAEvaluator.TEXFORM:
+			final TeXFormFactory fTeXFactory = new TeXFormFactory();
+			final StringBuilder texBuilder = new StringBuilder();
+			texBuilder.append("$$");
+			fTeXFactory.convert(texBuilder, (IExpr) result, 0);
+			texBuilder.append("$$");
+			return TryResult.createResult(new LatexNotebookOutput(texBuilder.toString()));
+		}
+		return TryResult.createResult(result);
 	}
 
 }
