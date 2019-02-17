@@ -32,5 +32,8 @@
 	<classpathentry kind="lib" path="lib/beaker-kernel-base-1.3.0.jar"/>
 	<classpathentry kind="lib" path="lib/javalin-1.7.0.jar"/>
 	<classpathentry kind="lib" path="lib/gson-2.8.5.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-databind-2.6.5.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-core-2.6.5.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-annotations-2.6.0.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
