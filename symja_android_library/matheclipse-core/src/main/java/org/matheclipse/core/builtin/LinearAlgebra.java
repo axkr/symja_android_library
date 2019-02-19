@@ -3891,7 +3891,7 @@ public final class LinearAlgebra {
 							plus.append(F.Times(rowReduced.getEntry(j - 1, i).negate(), listOfVariables.get(i + 1)));
 						}
 					}
-					rule = F.Rule(listOfVariables.get(j), F.eval(F.Together(plus.getOneIdentity(F.C0))));
+					rule = F.Rule(listOfVariables.get(j), F.eval(F.Together(plus.oneIdentity0())));
 					list.append(rule);
 				}
 			}

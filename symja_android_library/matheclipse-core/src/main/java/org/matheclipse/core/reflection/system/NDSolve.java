@@ -188,9 +188,9 @@ public class NDSolve extends AbstractFunctionEvaluator {
 						}
 						boundaryCondition[0][i - 1] = uArg1;
 						if (negate) {
-							temp = engine.evaluate(rest.getOneIdentity(F.C0).negate());
+							temp = engine.evaluate(rest.oneIdentity0().negate());
 						} else {
-							temp = engine.evaluate(rest.getOneIdentity(F.C0));
+							temp = engine.evaluate(rest.oneIdentity0());
 						}
 						boundaryCondition[1][i - 1] = temp;
 						eq.remove(j);
@@ -235,9 +235,9 @@ public class NDSolve extends AbstractFunctionEvaluator {
 								return false;
 							}
 							if (negate) {
-								temp = engine.evaluate(rest.getOneIdentity(F.C0).negate());
+								temp = engine.evaluate(rest.oneIdentity0().negate());
 							} else {
-								temp = engine.evaluate(rest.getOneIdentity(F.C0));
+								temp = engine.evaluate(rest.oneIdentity0());
 							}
 							dotEquations[i - 1] = temp;
 							// eliminate deriveExpr from Plus(...) expression

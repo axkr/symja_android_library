@@ -370,7 +370,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		 * @return the value
 		 */
 		public IExpr getValue() {
-			return fPlusAST.getOneIdentity(F.C0);
+			return fPlusAST.oneIdentity0();
 		}
 
 		@Override
@@ -480,7 +480,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		 */
 		private IExpr rewriteInverseFunction(IAST plusAST, int position) {
 			IAST ast = (IAST) plusAST.get(position);
-			IExpr plus = plusAST.removeAtCopy(position).getOneIdentity(F.C0);
+			IExpr plus = plusAST.removeAtCopy(position).oneIdentity0();
 			if (ast.isAbs()) {
 				if (plus.isNegative() || plus.isZero()) {
 					if (plus.isFree(Predicates.in(fListOfVariables), true)) {
@@ -549,7 +549,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			if (exponent.isFraction() || (exponent.isReal() && !exponent.isNumIntValue())) {
 				ISignedNumber arg2 = (ISignedNumber) exponent;
 				if (arg2.isPositive()) {
-					IExpr plus = plusAST.removeAtCopy(i).getOneIdentity(F.C0);
+					IExpr plus = plusAST.removeAtCopy(i).oneIdentity0();
 					if (plus.isPositiveResult()) {
 						// no solution possible
 						return NO_EQUATION_SOLUTION;
@@ -586,7 +586,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			if (!result.isPresent()) {
 				return rewriteInverseFunction(times, F.C0);
 			}
-			IExpr temp0 = result.getOneIdentity(F.C1);
+			IExpr temp0 = result.oneIdentity1();
 			if (temp0.isAST()) {
 				return rewriteInverseFunction((IAST) temp0, F.C0).orElse(temp0);
 			}

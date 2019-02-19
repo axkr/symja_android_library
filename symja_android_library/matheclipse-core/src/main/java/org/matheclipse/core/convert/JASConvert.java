@@ -305,9 +305,9 @@ public class JASConvert<C extends RingElem<C>> {
 			ExpVector exp = monomial.exponent();
 			IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
 			monomialToExpr(coeff, exp, monomTimes);
-			result.append(monomTimes.getOneIdentity(F.C1));
+			result.append(monomTimes.oneIdentity1());
 		}
-		return result.getOneIdentity(F.C0);
+		return result.oneIdentity0();
 	}
 
 	public boolean monomialToExpr(edu.jas.arith.BigInteger coeff, ExpVector exp, IASTAppendable monomTimes) {
@@ -358,9 +358,9 @@ public class JASConvert<C extends RingElem<C>> {
 			ExpVector exp = monomial.exponent();
 			IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
 			monomialToExpr(coeff, exp, monomTimes);
-			result.append(monomTimes.getOneIdentity(F.C1));
+			result.append(monomTimes.oneIdentity1());
 		}
-		return result.getOneIdentity(F.C0);
+		return result.oneIdentity0();
 	}
 
 	public boolean monomialToExpr(Complex<BigRational> coeff, ExpVector exp, IASTAppendable monomTimes) {
@@ -490,7 +490,7 @@ public class JASConvert<C extends RingElem<C>> {
 				ExpVector exp = monomial.exponent();
 				IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
 				monomialToExpr(coeff, exp, monomTimes);
-				result.append(monomTimes.getOneIdentity(F.C1));
+				result.append(monomTimes.oneIdentity1());
 			}
 			if (factor.isOne()) {
 				return result;
@@ -504,7 +504,7 @@ public class JASConvert<C extends RingElem<C>> {
 			ExpVector exp = monomial.exponent();
 			IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
 			monomialToExpr(coeff, exp, monomTimes);
-			result.append(monomTimes.getOneIdentity(F.C1));
+			result.append(monomTimes.oneIdentity1());
 		}
 		return result;
 	}
@@ -533,7 +533,7 @@ public class JASConvert<C extends RingElem<C>> {
 				ExpVector exp = m.getKey();
 				IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
 				monomialToExpr(coeff, exp, monomTimes);
-				result.append(monomTimes.getOneIdentity(F.C1));
+				result.append(monomTimes.oneIdentity1());
 			}
 			return result;
 		}

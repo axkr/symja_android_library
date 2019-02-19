@@ -194,7 +194,7 @@ public class PolynomialSubstitutions {
 					if (exp.isTimes()) {
 						int exponent = exp.first().toIntDefault(Integer.MIN_VALUE);
 						if (exponent > 0) {
-							IExpr rest = exp.rest().getOneIdentity(F.C1);
+							IExpr rest = exp.rest().oneIdentity1();
 							return F.Power(replaceExpression(base.power(rest)), exponent);
 						}
 						return replaceExpression(ast);

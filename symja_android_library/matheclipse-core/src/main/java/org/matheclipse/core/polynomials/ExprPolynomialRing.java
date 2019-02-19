@@ -464,7 +464,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 			restList.append(ast);
 			return coefficientMap;
 		}
-		return addCoefficient(coefficientMap, mainExponent, times.getOneIdentity(F.C1));
+		return addCoefficient(coefficientMap, mainExponent, times.oneIdentity1());
 	}
 
 	public static Map<IExpr, IExpr> createTimes(final IAST ast, IExpr x, Map<IExpr, IExpr> coefficientMap,
@@ -497,7 +497,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 			}
 			restList.append(expr);
 		}
-		return addCoefficient(coefficientMap, mainExponent, times.getOneIdentity(F.C1));
+		return addCoefficient(coefficientMap, mainExponent, times.oneIdentity1());
 	}
 
 	/**

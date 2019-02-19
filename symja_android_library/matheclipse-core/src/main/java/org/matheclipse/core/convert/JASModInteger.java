@@ -294,9 +294,9 @@ public class JASModInteger {
 			IInteger coeffValue = F.integer(coeff.getVal());
 			IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
 			monomialToExpr(coeffValue, exp, monomTimes);
-			result.append(monomTimes.getOneIdentity(F.C1));
+			result.append(monomTimes.oneIdentity1());
 		}
-		return result.getOneIdentity(F.C0);
+		return result.oneIdentity0();
 	}
 
 	public boolean monomialToExpr(IInteger coeff, ExpVector exp, IASTAppendable monomTimes) {

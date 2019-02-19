@@ -393,7 +393,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 						return F.NIL;
 					}
 					IExpr value = engine.evaluate(F.Subtract(exprWithoutVariable, plusClone));
-					return extractVariable(rest.getOneIdentity(F.C0), value, predicate, x, engine);
+					return extractVariable(rest.oneIdentity0(), value, predicate, x, engine);
 				} else if (ast.isTimes()) {
 					// a * b * c....
 					IASTAppendable rest = F.TimesAlloc(size);
@@ -427,7 +427,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 						return F.NIL;
 					}
 					IExpr value = F.Divide(exprWithoutVariable, timesClone);
-					return extractVariable(rest.getOneIdentity(F.C1), value, predicate, x, engine);
+					return extractVariable(rest.oneIdentity1(), value, predicate, x, engine);
 				} else if (ast.isPower()) {
 					IExpr base = ast.base();
 					IExpr exponent = ast.exponent();

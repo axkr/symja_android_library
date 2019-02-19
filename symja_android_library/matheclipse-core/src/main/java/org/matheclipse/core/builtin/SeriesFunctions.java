@@ -1421,7 +1421,7 @@ public class SeriesFunctions {
 					term.set(1, rest.get(i));
 					coefficientPlus.append(term);
 				}
-				return coefficientPlus.getOneIdentity(F.C0);
+				return coefficientPlus.oneIdentity0();
 				// }
 			} catch (RuntimeException re) {
 				if (Config.SHOW_STACKTRACE) {

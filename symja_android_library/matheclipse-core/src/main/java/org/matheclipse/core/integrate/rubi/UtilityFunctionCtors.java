@@ -1933,7 +1933,7 @@ public class UtilityFunctionCtors {
 			IExpr temp = astTimes.get(i);
 			if (temp.isAST(Dist) && temp.size() == 4) {
 				IAST dist = (IAST) temp;
-				temp = astTimes.removeAtCopy(i).getOneIdentity(F.C1);
+				temp = astTimes.removeAtCopy(i).oneIdentity1();
 				if (!temp.isMinusOne()) {
 					// System.out.println("w_*Dist[u_,v_,x_]");
 					// Dist[ temp *u,v,x]

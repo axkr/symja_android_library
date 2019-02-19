@@ -166,7 +166,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 					return F.NIL;
 				}
 				try {
-					ExprPolynomial poly = ring.create(eq.getOneIdentity(F.C0), false, true);
+					ExprPolynomial poly = ring.create(eq.oneIdentity0(), false, true);
 					if (order == 1 && poly.degree() <= 1) {
 						IAST coeffs = poly.coefficientList();
 						IExpr q = coeffs.arg1(); // degree 0
@@ -239,7 +239,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 			if (uArg1 != null) {
 				IExpr[] result = new IExpr[2];
 				result[0] = uArg1;
-				result[1] = engine.evaluate(eq.getOneIdentity(F.C0).negate());
+				result[1] = engine.evaluate(eq.oneIdentity0().negate());
 				return result;
 			}
 

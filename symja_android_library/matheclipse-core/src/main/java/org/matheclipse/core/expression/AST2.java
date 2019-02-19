@@ -286,6 +286,12 @@ public class AST2 extends AST1 {
 		}
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public IExpr oneIdentity(IExpr defaultValue) {
+		return this;
+	}
+
 	@Override
 	public int hashCode() {
 		if (hashValue == 0 && arg2 != null) {

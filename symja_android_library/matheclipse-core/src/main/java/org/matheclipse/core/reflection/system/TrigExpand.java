@@ -106,7 +106,7 @@ public class TrigExpand extends AbstractEvaluator {
 				IInteger n = (IInteger) timesAST.arg1();
 				if (n.compareInt(0) > 0) {
 					try {
-						IExpr theta = timesAST.rest().getOneIdentity(F.C1);
+						IExpr theta = timesAST.rest().oneIdentity1();
 						if (ast.isSin()) {
 							return expandSinTimes(n, theta);
 						} else if (ast.isCos()) {

@@ -54,7 +54,7 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 
 	@Override
 	public IExpr getResult() {
-		IExpr temp = result.getOneIdentity(F.C0);
+		IExpr temp = result.oneIdentity0();
 		if (temp.head().equals(F.Integrate)) {
 			return F.NIL;
 		}

@@ -251,6 +251,12 @@ public class AST1 extends AST0 {
 		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 2");
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public IExpr oneIdentity(IExpr defaultValue) {
+		return arg1();
+	}
+
 	@Override
 	public int hashCode() {
 		if (hashValue == 0 && arg1 != null) {

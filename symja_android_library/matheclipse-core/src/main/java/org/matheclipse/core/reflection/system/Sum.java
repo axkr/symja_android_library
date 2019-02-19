@@ -263,8 +263,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
 		IASTAppendable restAST = F.TimesAlloc(16);
 		prod.filter(filterAST, restAST, VariablesSet.isFree(variablesSet));
 		if (filterAST.size() > 1) {
-			IASTMutable reducedSum = ast.setAtCopy(1, restAST.getOneIdentity(F.C1));
-			return F.Times(filterAST.getOneIdentity(F.C0), reducedSum);
+			IASTMutable reducedSum = ast.setAtCopy(1, restAST.oneIdentity1());
+			return F.Times(filterAST.oneIdentity0(), reducedSum);
 		}
 		return F.NIL;
 	}
@@ -306,7 +306,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 					}
 				});
 				if (filterCollector.size() > 1) {
-					IExpr temp = engine.evalQuiet(F.Sum(restCollector.getOneIdentity(F.C1), list));
+					IExpr temp = engine.evalQuiet(F.Sum(restCollector.oneIdentity1(), list));
 					if (temp.isFreeAST(F.Sum)) {
 						filterCollector.append(temp);
 						return filterCollector;

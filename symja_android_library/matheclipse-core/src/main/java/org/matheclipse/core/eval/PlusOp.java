@@ -100,7 +100,7 @@ public class PlusOp {
 			result.append(F.Times(element.getValue(), element.getKey()));
 		}
 		// result.addEvalFlags(IAST.IS_EVALED);
-		return result.getOneIdentity(F.C0);
+		return result.oneIdentity0();
 	}
 
 	private IExpr infinityPlus(final IExpr o1) {
@@ -260,7 +260,7 @@ public class PlusOp {
 		} else if (arg.isTimes()) {
 			IAST timesAST = (IAST) arg;
 			if (timesAST.arg1().isNumber()) {
-				if (addMerge(timesAST.rest().getOneIdentity(F.C1), timesAST.arg1())) {
+				if (addMerge(timesAST.rest().oneIdentity1(), timesAST.arg1())) {
 					evaled = true;
 				}
 				return F.NIL;
@@ -309,7 +309,7 @@ public class PlusOp {
 		}
 		IExpr expr = Arithmetic.CONST_PLUS.evaluate(temp, EvalEngine.get());
 		if (!expr.isPresent()) {
-			return plusAST.getOneIdentity(F.C0);
+			return plusAST.oneIdentity0();
 		}
 		return expr;
 	}

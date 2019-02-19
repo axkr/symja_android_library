@@ -97,7 +97,7 @@ public class TimesOp {
 			}
 			result.append(F.Power(element.getValue(), element.getKey()));
 		}
-		return result.getOneIdentity(F.C1);
+		return result.oneIdentity1();
 	}
 
 	/**
@@ -114,7 +114,7 @@ public class TimesOp {
 		}
 		IExpr expr = Arithmetic.CONST_TIMES.evaluate(temp, EvalEngine.get());
 		if (!expr.isPresent()) {
-			return timesAST.getOneIdentity(F.C0);
+			return timesAST.oneIdentity0();
 		}
 		return expr;
 	}

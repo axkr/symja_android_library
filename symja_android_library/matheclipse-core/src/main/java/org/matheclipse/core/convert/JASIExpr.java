@@ -304,9 +304,9 @@ public class JASIExpr {
 			ExpVector exp = monomial.exponent();
 			IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
 			monomialToExpr(coeff, exp, monomTimes);
-			result.append(monomTimes.getOneIdentity(F.C1));
+			result.append(monomTimes.oneIdentity1());
 		}
-		return result.getOneIdentity(F.C0);
+		return result.oneIdentity0();
 	}
 
 	public boolean monomialToExpr(IExpr coeff, ExpVector exp, IASTAppendable monomTimes) {

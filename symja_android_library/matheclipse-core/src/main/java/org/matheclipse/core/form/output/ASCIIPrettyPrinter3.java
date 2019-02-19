@@ -185,7 +185,7 @@ public class ASCIIPrettyPrinter3 {
 				}
 			}
 
-			IExpr timesExpr = times.rest().getOneIdentity(F.C0);
+			IExpr timesExpr = times.rest().oneIdentity0();
 			if (timesExpr.isTimes()) {
 				times = (IAST) timesExpr;
 			} else {

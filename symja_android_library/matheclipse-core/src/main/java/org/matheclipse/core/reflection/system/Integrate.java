@@ -203,9 +203,9 @@ public class Integrate extends AbstractFunctionEvaluator {
 				}
 				if (arg1.isTimes()) {
 					IAST[] temp = ((IAST) arg1).filter((Predicate<IExpr>) arg -> arg.isFree(x));
-					IExpr free = temp[0].getOneIdentity(F.C1);
+					IExpr free = temp[0].oneIdentity1();
 					if (!free.isOne()) {
-						IExpr rest = temp[1].getOneIdentity(F.C1);
+						IExpr rest = temp[1].oneIdentity1();
 						// Integrate[free_ * rest_,x_Symbol] -> free*Integrate[rest, x] /; FreeQ[free,x]
 						return Times(free, Integrate(rest, x));
 					}
@@ -271,7 +271,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 				});
 				if (filterCollector.size() > 1) {
 					if (restCollector.size() > 1) {
-						filterCollector.append(F.Integrate(restCollector.getOneIdentity(F.C0), x));
+						filterCollector.append(F.Integrate(restCollector.oneIdentity0(), x));
 					}
 					return filterCollector;
 				}
@@ -726,8 +726,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 		IASTAppendable fTimes = F.TimesAlloc(arg1.size());
 		IASTAppendable gTimes = F.TimesAlloc(arg1.size());
 		collectPolynomialTerms(arg1, symbol, gTimes, fTimes);
-		IExpr g = gTimes.getOneIdentity(F.C1);
-		IExpr f = fTimes.getOneIdentity(F.C1);
+		IExpr g = gTimes.oneIdentity1();
+		IExpr f = fTimes.oneIdentity1();
 		// confLICTS WITH RUBI 4.5 INTEGRATION RULES
 		// ONLY call integrateBy Parts for simple Times() expression
 		if (f.isOne() || g.isOne()) {

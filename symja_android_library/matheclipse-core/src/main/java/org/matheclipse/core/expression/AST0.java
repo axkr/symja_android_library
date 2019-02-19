@@ -281,6 +281,12 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 1");
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public IExpr oneIdentity(IExpr defaultValue) {
+		return defaultValue;
+	}
+
 	@Override
 	public int hashCode() {
 		if (hashValue == 0 && arg0 != null) {
