@@ -42,9 +42,6 @@ import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.PlusOp;
-import org.matheclipse.core.eval.PowerOp;
-import org.matheclipse.core.eval.TimesOp;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -90,7 +87,6 @@ import edu.jas.arith.ModLong;
 import edu.jas.arith.ModLongRing;
 import edu.jas.poly.Complex;
 import edu.jas.poly.ComplexRing;
-import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
 import edu.jas.poly.PolyUtil;
@@ -284,7 +280,7 @@ public class Algebra {
 				variableList = eVar.getVarList();
 			}
 
-			if (arg1.isTimes() || arg1.isPower()) {
+			if (variableList.size() == 2 && (arg1.isTimes() || arg1.isPower())) {
 				IExpr[] parts = fractionalParts(arg1, false);
 				if (parts != null) {
 					IExpr temp = partialFractionDecompositionRational(new PartialFractionGenerator(), parts,
@@ -292,21 +288,66 @@ public class Algebra {
 					if (temp.isPresent()) {
 						return temp;
 					}
-					// temp = F.Factor.of(parts[1]);
-					// if (temp.isTimes()) {
-					// System.out.println(temp.toString());
-					// }
+					temp = F.Factor.of(parts[1]);
+					if (temp.isTimes()) {
+						IExpr variable = variableList.arg1();
+						return partialFractionDecomposition(parts[0], temp, variable, 0, engine);
+					}
 				}
 				return arg1;
 			}
 			return F.evalExpandAll(arg1, engine);
-
-			// return F.NIL;
 		}
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+
+		/**
+		 * Create a (recursive) partial fraction decomposition of the expression <code>numerator / Times( ... )</code>
+		 * for the given <code>variable</code>
+		 * 
+		 * @param numerator
+		 *            the numerator of the fraction expression
+		 * @param denominatorTimes
+		 *            the <codeTimes( ... )</code> expression of the denominator of the fraction expression
+		 * @param variable
+		 * @param count
+		 *            the recursion level
+		 * @param engine
+		 * @return the partial fraction decomposition is possible
+		 */
+		private static IExpr partialFractionDecomposition(IExpr numerator, IExpr denominatorTimes, IExpr variable,
+				int count, EvalEngine engine) {
+			if (!denominatorTimes.isTimes()) {
+				return F.Times.of(engine, numerator, F.Power(denominatorTimes, -1));
+			}
+
+			// denominator is Times() here:
+			IExpr first = denominatorTimes.first();
+			IExpr rest = denominatorTimes.rest().getOneIdentity(F.C1);
+			if (first.isFree(variable)) {
+				return F.Times.of(engine, F.Power(first, -1),
+						partialFractionDecomposition(numerator, rest, variable, count + 1, engine));
+			} else {
+				IExpr v1 = F.Expand.of(engine, first);
+				IExpr v2 = F.Expand.of(engine, rest);
+				IExpr peGCD = F.PolynomialExtendedGCD.of(engine, v1, v2, variable);
+				if (peGCD.isList() && peGCD.second().isList()) {
+					IAST s = (IAST) peGCD.second();
+					IExpr A = s.arg1();
+					IExpr B = s.arg2();
+					IExpr u1 = F.PolynomialRemainder.of(engine, F.Expand(F.Times(B, numerator)), v1, variable);
+					IExpr u2 = F.PolynomialRemainder.of(engine, F.Expand(F.Times(A, numerator)), v2, variable);
+					return F.Plus.of(engine, F.Times(u1, F.Power(first, -1)),
+							partialFractionDecomposition(u2, rest, variable, count + 1, engine));
+				}
+			}
+			if (count == 0) {
+				return F.NIL;
+			}
+			return F.Times.of(engine, numerator, F.Power(denominatorTimes, -1));
 		}
 	}
 
@@ -1210,7 +1251,7 @@ public class Algebra {
 					IExpr powerAST = F.Power(temp[1], F.CN1);
 					if (distributePlus && temp[0].isPlus()) {
 						IAST mappedAST = ((IAST) temp[0]).mapThread(F.Times(null, powerAST), 1);
-						IExpr flattened = flattenOneIdentity(mappedAST, F.C0);//EvalAttributes.flatten(mappedAST).orElse(mappedAST);
+						IExpr flattened = flattenOneIdentity(mappedAST, F.C0);// EvalAttributes.flatten(mappedAST).orElse(mappedAST);
 						return addExpanded(flattened);
 					}
 					if (evaled) {

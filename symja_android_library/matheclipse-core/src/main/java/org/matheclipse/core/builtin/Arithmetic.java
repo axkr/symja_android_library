@@ -1652,10 +1652,6 @@ public final class Arithmetic {
 						}
 						IASTAppendable result = F.PlusAlloc(n);
 						return result.appendArgs(n + 1, i -> Power(integer(i), Negate(arg2)));
-						// for (int i = 1; i <= n; i++) {
-						// result.append(Power(integer(i), Negate(arg2)));
-						// }
-						// return result;
 					}
 					return F.NIL;
 				}

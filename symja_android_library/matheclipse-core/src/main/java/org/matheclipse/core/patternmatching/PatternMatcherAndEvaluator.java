@@ -56,7 +56,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	}
 
 	/**
-	 * ine a pattern-matching rule.
+	 * Define a pattern-matching rule.
 	 * 
 	 * @param setSymbol
 	 *            the flags for the symbol which defines this pattern-matching rule (i.e. Set, SetDelayed,...)

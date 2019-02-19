@@ -163,6 +163,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("Factor(x^2 - y^2 )", "(x-y)*(x+y)");
 		// check("Solve(x^2 - y^2==0, y)", "{{y->-x},{y->x}}");
 
+		check("Apart(1 / (x^2 - y^2), x)", //
+				"1/(2*(x-y)*y)-1/(2*y*(x+y))");
+
+		check("Apart(1/(a*b+a*c),x)", //
+				"1/(a*(b+c))");
+
 		// TODO return 1/b - a/(b*(a + b*x))
 		check("Apart((x/(a+(b*x))),x)", //
 				"x/(a+b*x)");
@@ -180,19 +186,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"x/(a^2+2*x)");
 
 		check("Apart(y/(x + 2)/(x + 1),x)", //
-				"y/((1+x)*(2+x))");
+				"y/(1+x)-y/(2+x)");
 
 		check("Sin(1 / (x ^ 2 - y ^ 2)) // Apart", //
 				"Sin(1/(x^2-y^2))");
 
 		check("Apart(1 / (x^2 + 5*x + 6))", //
 				"1/(2+x)-1/(3+x)");
-		// TODO return -1 / (2 y (x + y)) + 1 / (2 y (x - y))
 		check("Apart(1 / (x^2 - y^2), x)", //
-				"1/(x^2-y^2)");
-		// TODO return 1 / (2 x (x + y)) + 1 / (2 x (x - y))
-		check("Apart(1 / (x^2 - y^2), y)", //
-				"1/(x^2-y^2)");
+				"1/(2*(x-y)*y)-1/(2*y*(x+y))");
 
 		check("Apart(1/((1 + x)*(5 + x)))", //
 				"1/(4*(1+x))-1/(4*(5+x))");
@@ -8709,9 +8711,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPart() {
-		check("{{1,0,0},\n" + 
-				" {0,1,0},\n" + 
-				" {0,0,1}}[[2]]", //
+		check("{{1,0,0},\n" + " {0,1,0},\n" + " {0,0,1}}[[2]]", //
 				"{0,1,0}");
 		check("T = {a, b, c, d}", "{a,b,c,d}");
 		check("T[[2]]=3", "3");
@@ -9367,10 +9367,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "$Aborted");
 		// check("TimeConstrained(1^3^3^3, 10)", //
 		// "1");
-		
-		
-		
-		
+
 		check("(-1095912791)^(2/3)", //
 				"1062961*(-1)^(2/3)");
 		check("(-1062961)^(2/3)", //
