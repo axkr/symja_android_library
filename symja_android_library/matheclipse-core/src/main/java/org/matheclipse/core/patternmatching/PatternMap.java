@@ -31,11 +31,6 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 	private static final long serialVersionUID = -5384429232269800438L;
 
 	/**
-	 * Priority of this PatternMap. Lower values have higher priorities
-	 */
-	protected int fPriority;
-
-	/**
 	 * If <code>true</code> the rule contains no pattern.
 	 */
 	private boolean fRuleWithoutPattern;
@@ -64,7 +59,6 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 	}
 
 	private PatternMap(IExpr[] exprArray) {
-		this.fPriority = 0;
 		this.fRuleWithoutPattern = true;
 		this.fSymbolsOrPatternValues = exprArray;
 	}
@@ -81,7 +75,7 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 		ISymbol sym = pattern.getSymbol();
 		if (sym != null) {
 			for (int i = 0; i < patternIndexMap.size(); i++) {
-				if (patternIndexMap.get(i)==sym) {
+				if (patternIndexMap.get(i) == sym) {
 					return;
 				}
 			}
@@ -108,7 +102,6 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 		// System.arraycopy(fPatternValuesArray, 0, result.fPatternValuesArray, 0, length);
 
 		// don't clone the fSymbolsOrPattern array which is final after the #determinePatterns() method
-		result.fPriority = fPriority;
 		result.fSymbolsOrPattern = fSymbolsOrPattern;
 		result.fRuleWithoutPattern = fRuleWithoutPattern;
 		return result;
@@ -154,10 +147,10 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 	 * @return the priority of this pattern-matcher
 	 */
 	public int determinePatterns(final IExpr lhsPatternExpr) {
-		fPriority = DEFAULT_RULE_PRIORITY;
+		int[] priority = new int[] { DEFAULT_RULE_PRIORITY };
 		if (lhsPatternExpr instanceof IAST) {
 			List<IExpr> patternIndexMap = new ArrayList<IExpr>();
-			determinePatternsRecursive(patternIndexMap, (IAST) lhsPatternExpr, 1);
+			determinePatternsRecursive(patternIndexMap, (IAST) lhsPatternExpr,priority,1);
 			final int size = patternIndexMap.size();
 			this.fSymbolsOrPattern = new IExpr[size];
 			this.fSymbolsOrPatternValues = new IExpr[size];
@@ -168,7 +161,7 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 		} else if (lhsPatternExpr instanceof IPatternObject) {
 			addSinglePattern((IPatternObject) lhsPatternExpr);
 		}
-		return fPriority;
+		return priority[0];
 	}
 
 	/**
@@ -182,25 +175,25 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 	 * @param treeLevel
 	 *            the level of the tree where the patterns are determined
 	 */
-	private int determinePatternsRecursive(List<IExpr> patternIndexMap, final IAST lhsPatternExpr, int treeLevel) {
+	private int determinePatternsRecursive(List<IExpr> patternIndexMap, final IAST lhsPatternExpr, int[] priority, int treeLevel) {
 		if (lhsPatternExpr.isAlternatives() || lhsPatternExpr.isExcept()) {
 			fRuleWithoutPattern = false;
 		}
 		int[] listEvalFlags = new int[] { IAST.NO_FLAG };
 		lhsPatternExpr.forEach(x -> {
 			if (x.isAST()) {
-				listEvalFlags[0] |= determinePatternsRecursive(patternIndexMap, (IAST) x, treeLevel + 1);
-				fPriority -= 11;
+				listEvalFlags[0] |= determinePatternsRecursive(patternIndexMap, (IAST) x, priority, treeLevel + 1);
+				priority[0] -= 11;
 				if (x.isPatternDefault()) {
 					listEvalFlags[0] |= IAST.CONTAINS_DEFAULT_PATTERN;
 				}
-				
+
 			} else if (x instanceof IPatternObject) {
 				int[] result = ((IPatternObject) x).addPattern(this, patternIndexMap);
 				listEvalFlags[0] |= result[0];
-				fPriority -= result[1];
+				priority[0] -= result[1];
 			} else {
-				fPriority -= (50 - treeLevel);
+				priority[0] -= (50 - treeLevel);
 			}
 		}, 0);
 		lhsPatternExpr.setEvalFlags(listEvalFlags[0]);
@@ -220,15 +213,6 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 			}
 		}
 		return -1;
-	}
-
-	/**
-	 * Get the priority of this PatternMap
-	 * 
-	 * @return
-	 */
-	public final int getPriority() {
-		return fPriority;
 	}
 
 	public final boolean getRHSEvaluated() {
@@ -306,7 +290,7 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 		if (fSymbolsOrPatternValues != null) {
 			// all patterns have values assigned?
 			final int length = fSymbolsOrPatternValues.length;
-			for (int i = length-1; i >= 0; i--) {
+			for (int i = length - 1; i >= 0; i--) {
 				if (fSymbolsOrPatternValues[i] == null) {
 					return false;
 				}
