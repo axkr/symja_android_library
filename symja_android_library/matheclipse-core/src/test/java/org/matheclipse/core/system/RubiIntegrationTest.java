@@ -708,9 +708,9 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		check("ExpandAll(-(2-x)^(-1)*x^(-2))", //
 				"-1/(2*x^2-x^3)");
 		check("integrate(1/(-2*x^2+x^3),x)", //
-				"1/(2*x)-Log(x)/4+Log(-8+4*x)/4");
+				"1/(2*x)+Log(2-x)/4-Log(x)/4");
 		check("integrate(1/(x^2*(x-2)),x)", //
-				"1/(2*x)-Log(x)/4+Log(-8+4*x)/4");
+				"1/(2*x)+Log(2-x)/4-Log(x)/4");
 		check("Expand(-(2-x)^(-1)*x^(-2))", //
 				"-1/((2-x)*x^2)");
 	}

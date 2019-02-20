@@ -149,7 +149,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 							IExpr bDenominator = F.Denominator.of(engine, Fb);
 							IExpr aDenominator = F.Denominator.of(engine, Fa);
 							if (bDenominator.equals(aDenominator)) {
-								return F.Divide(F.Subtract(F.Numerator(Fb), F.Numerator(Fa)),bDenominator);
+								return F.Divide(F.Subtract(F.Numerator(Fb), F.Numerator(Fa)), bDenominator);
 							}
 						}
 						return F.Subtract(Fb, Fa);
@@ -158,7 +158,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 				return F.NIL;
 			}
 			if (arg1.isList() && arg2.isSymbol()) {
-				return ((IAST) arg1).mapThread(F.Integrate(null, arg2), 1);
+				return mapIntegrate((IAST) arg1, arg2);
 			}
 
 			final IASTAppendable ast = holdallAST.setAtClone(1, arg1);
@@ -254,8 +254,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 		IExpr fxExpanded = F.expand(arg1, false, false, false);
 		if (fxExpanded.isAST()) {
 			if (fxExpanded.isPlus()) {
-				// Integrate[a_+b_+...,x_] -> Integrate[a,x]+Integrate[b,x]+...
-				return ((IAST) fxExpanded).mapThread(F.Integrate(null, x), 1);
+				return mapIntegrate((IAST) fxExpanded, x);
 			}
 
 			final IAST arg1AST = (IAST) fxExpanded;
@@ -286,9 +285,12 @@ public class Integrate extends AbstractFunctionEvaluator {
 				if (!arg1AST.isEvalFlagOn(IAST.IS_DECOMPOSED_PARTIAL_FRACTION) && x.isSymbol()) {
 					IExpr[] parts = Algebra.fractionalParts(arg1, true);
 					if (parts != null) {
-
-						return Algebra.partialFractionDecompositionRational(new PartialFractionIntegrateGenerator(x),
-								parts, x);
+						IExpr temp = Algebra.partsApart(parts, x, engine);
+						if (temp.isPlus()) {
+							return mapIntegrate((IAST) temp, x);
+						}
+						// return Algebra.partialFractionDecompositionRational(new
+						// PartialFractionIntegrateGenerator(x),parts, x);
 					}
 				}
 			}
@@ -299,6 +301,23 @@ public class Integrate extends AbstractFunctionEvaluator {
 			return engine.evaluate(F.Integrate(temp, x));
 		}
 		return F.NIL;
+	}
+
+	/**
+	 * Map <code>Integrate</code> on <code>ast</code>. Examples:
+	 * <ul>
+	 * <li><code>Integrate[{a_, b_,...},x_] -> {Integrate[a,x], Integrate[b,x], ...}</code> or</li>
+	 * <li><code>Integrate[a_+b_+...,x_] -> Integrate[a,x]+Integrate[b,x]+...</code></li>
+	 * </ul>
+	 * 
+	 * @param ast
+	 *            a <code>List(...)</code> or <code>Plus(...)</code> ast
+	 * @param x
+	 *            the integ	ration veariable
+	 * @return
+	 */
+	private static IExpr mapIntegrate(IAST ast, final IExpr x) {
+		return ast.mapThread(F.Integrate(null, x), 1);
 	}
 
 	// private IExpr integrate1ArgumentFunctions(final IExpr head, final IExpr x) {
@@ -436,8 +455,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 				// Sin(f_) -> Sin(Collect(f, arg2))
 				fx = F.eval(F.ReplaceAll(fx, F.List(F.Rule(F.Sin(F.$p(pSymbol)), F.Sin(F.Collect(pSymbol, arg2))),
 						F.Rule(F.Cos(F.$p(pSymbol)), F.Cos(F.Collect(pSymbol, arg2))))));
-				// Integrate[a_+b_+...,x_] -> Integrate[a,x]+Integrate[b,x]+...
-				return ((IAST) fx).mapThread(F.Integrate(null, arg2), 1);
+				return mapIntegrate((IAST) fx, arg2);
 			}
 		}
 		return F.NIL;

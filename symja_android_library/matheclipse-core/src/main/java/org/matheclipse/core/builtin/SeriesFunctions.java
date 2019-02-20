@@ -611,8 +611,8 @@ public class SeriesFunctions {
 					}
 				}
 
-				IExpr plusResult = Algebra.partialFractionDecompositionRational(new PartialFractionGenerator(), parts,
-						symbol);
+				IExpr plusResult = Algebra.partsApart(parts, symbol, EvalEngine.get());
+				// Algebra.partialFractionDecompositionRational(new PartialFractionGenerator(), parts,symbol);
 				if (plusResult.isPlus()) {
 					// OneIdentity if plusResult.isAST1()
 					// if (plusResult.size() > 2) {

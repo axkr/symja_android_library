@@ -283,15 +283,10 @@ public class Algebra {
 			if (variableList.size() == 2 && (arg1.isTimes() || arg1.isPower())) {
 				IExpr[] parts = fractionalParts(arg1, false);
 				if (parts != null) {
-					IExpr temp = partialFractionDecompositionRational(new PartialFractionGenerator(), parts,
-							variableList);
+					IExpr variable = variableList.arg1();
+					IExpr temp = partsApart(parts, variable, engine);
 					if (temp.isPresent()) {
 						return temp;
-					}
-					temp = F.Factor.of(parts[1]);
-					if (temp.isTimes()) {
-						IExpr variable = variableList.arg1();
-						return partialFractionDecomposition(parts[0], temp, variable, 0, engine);
 					}
 				}
 				return arg1;
@@ -304,51 +299,6 @@ public class Algebra {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
 		}
 
-		/**
-		 * Create a (recursive) partial fraction decomposition of the expression <code>numerator / Times( ... )</code>
-		 * for the given <code>variable</code>
-		 * 
-		 * @param numerator
-		 *            the numerator of the fraction expression
-		 * @param denominatorTimes
-		 *            the <codeTimes( ... )</code> expression of the denominator of the fraction expression
-		 * @param variable
-		 * @param count
-		 *            the recursion level
-		 * @param engine
-		 * @return the partial fraction decomposition is possible
-		 */
-		private static IExpr partialFractionDecomposition(IExpr numerator, IExpr denominatorTimes, IExpr variable,
-				int count, EvalEngine engine) {
-			if (!denominatorTimes.isTimes()) {
-				return F.Times.of(engine, numerator, F.Power(denominatorTimes, -1));
-			}
-
-			// denominator is Times() here:
-			IExpr first = denominatorTimes.first();
-			IExpr rest = denominatorTimes.rest().oneIdentity1();
-			if (first.isFree(variable)) {
-				return F.Times.of(engine, F.Power(first, -1),
-						partialFractionDecomposition(numerator, rest, variable, count + 1, engine));
-			} else {
-				IExpr v1 = F.Expand.of(engine, first);
-				IExpr v2 = F.Expand.of(engine, rest);
-				IExpr peGCD = F.PolynomialExtendedGCD.of(engine, v1, v2, variable);
-				if (peGCD.isList() && peGCD.second().isList()) {
-					IAST s = (IAST) peGCD.second();
-					IExpr A = s.arg1();
-					IExpr B = s.arg2();
-					IExpr u1 = F.PolynomialRemainder.of(engine, F.Expand(F.Times(B, numerator)), v1, variable);
-					IExpr u2 = F.PolynomialRemainder.of(engine, F.Expand(F.Times(A, numerator)), v2, variable);
-					return F.Plus.of(engine, F.Times(u1, F.Power(first, -1)),
-							partialFractionDecomposition(u2, rest, variable, count + 1, engine));
-				}
-			}
-			if (count == 0) {
-				return F.NIL;
-			}
-			return F.Times.of(engine, numerator, F.Power(denominatorTimes, -1));
-		}
 	}
 
 	/**
@@ -2435,22 +2385,9 @@ public class Algebra {
 					subList.append(F.Together.of(engine, result[2].getExpr()));
 					list.append(subList);
 					return list;
-
-					// List<IExpr> varList = eVar.getVarList().copyTo();
-					// JASIExpr jas = new JASIExpr(varList, ExprRingFactory.CONST);
-					// GenPolynomial<IExpr> poly1 = jas.expr2IExprJAS(expr1);
-					// GenPolynomial<IExpr> poly2 = jas.expr2IExprJAS(expr2);
-					// GenPolynomial<IExpr>[] result = poly1.egcd(poly2);
-					// IASTAppendable list = F.ListAlloc(2);
-					// list.append(jas.exprPoly2Expr(result[0], x));
-					// IASTAppendable subList = F.ListAlloc(2);
-					// subList.append(F.Together.of(engine, jas.exprPoly2Expr(result[1], x)));
-					// subList.append(F.Together.of(engine, jas.exprPoly2Expr(result[2], x)));
-					// list.append(subList);
-					// return list;
-				} catch (JASConversionException e) {
+				} catch (RuntimeException rex) {
 					if (Config.SHOW_STACKTRACE) {
-						e.printStackTrace();
+						rex.printStackTrace();
 					}
 				}
 			}
@@ -2902,14 +2839,10 @@ public class Algebra {
 					result[0] = divRem[0].getExpr();
 					result[1] = divRem[1].getExpr();
 					return result;
-				} catch (RuntimeException e) {
+				} catch (RuntimeException rex) {
 					if (Config.SHOW_STACKTRACE) {
-						e.printStackTrace();
+						rex.printStackTrace();
 					}
-					// } catch (JASConversionException e) {
-					// if (Config.SHOW_STACKTRACE) {
-					// e.printStackTrace();
-					// }
 				}
 			}
 			return null;
@@ -4161,7 +4094,7 @@ public class Algebra {
 				return F.List(c, F.C1);
 			}
 			if (c.isTimes() && c.first().isNumber()) {
-				return F.List(c.first(), c.rest().oneIdentity1( ));
+				return F.List(c.first(), c.rest().oneIdentity1());
 			}
 			return F.List(F.C1, c);
 		});
@@ -4315,7 +4248,7 @@ public class Algebra {
 				return F.NIL;
 			}
 
-			IExpr exprNumerator = F.evalExpand(numerator.oneIdentity0( ));
+			IExpr exprNumerator = F.evalExpand(numerator.oneIdentity0());
 			IExpr denom = F.eval(denominator.oneIdentity1());
 			IExpr exprDenominator = F.evalExpand(denom);
 			if (exprNumerator.isZero()) {
@@ -4432,7 +4365,7 @@ public class Algebra {
 					}
 				} else if (arg1.isTimes()) {
 					if (arg1.first().isAtom()) {
-						IExpr times = ((IAST) arg1).removeAtCopy(1).oneIdentity0( );
+						IExpr times = ((IAST) arg1).removeAtCopy(1).oneIdentity0();
 						if (times.isPower()) {
 							return F.Times(arg1.first(), together(times, engine));
 						}
@@ -5057,6 +4990,28 @@ public class Algebra {
 	// }
 
 	/**
+	 * If possible returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition of the
+	 * numerator and denominator parts.
+	 * 
+	 * @param parts
+	 *            numerator and denominator parts
+	 * @param variable
+	 * @param engine
+	 * @return
+	 */
+	public static IExpr partsApart(IExpr[] parts, IExpr variable, EvalEngine engine) {
+		IExpr temp = partialFractionDecompositionRational(new PartialFractionGenerator(), parts, variable);
+		if (temp.isPresent()) {
+			return temp;
+		}
+		temp = F.Factor.of(parts[1]);
+		if (temp.isTimes()) {
+			return partialFractionDecomposition(parts[0], temp, variable, 0, engine);
+		}
+		return F.NIL;
+	}
+
+	/**
 	 * Returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition of the numerator
 	 * and denominator parts.
 	 * 
@@ -5070,6 +5025,52 @@ public class Algebra {
 	public static IExpr partialFractionDecompositionRational(IPartialFractionGenerator pf, IExpr[] parts,
 			IExpr variable) {
 		return partialFractionDecompositionRational(pf, parts, F.List(variable));
+	}
+
+	/**
+	 * Create a (recursive) partial fraction decomposition of the expression <code>numerator / Times( ... )</code> for
+	 * the given <code>variable</code>
+	 * 
+	 * @param numerator
+	 *            the numerator of the fraction expression
+	 * @param denominatorTimes
+	 *            the <codeTimes( ... )</code> expression of the denominator of the fraction expression
+	 * @param variable
+	 * @param count
+	 *            the recursion level
+	 * @param engine
+	 * @return the partial fraction decomposition is possible
+	 */
+	public static IExpr partialFractionDecomposition(IExpr numerator, IExpr denominatorTimes, IExpr variable, int count,
+			EvalEngine engine) {
+		if (!denominatorTimes.isTimes()) {
+			return F.Times.of(engine, numerator, F.Power(denominatorTimes, -1));
+		}
+
+		// denominator is Times() here:
+		IExpr first = denominatorTimes.first();
+		IExpr rest = denominatorTimes.rest().oneIdentity1();
+		if (first.isFree(variable)) {
+			return F.Times.of(engine, F.Power(first, -1),
+					partialFractionDecomposition(numerator, rest, variable, count + 1, engine));
+		} else {
+			IExpr v1 = F.Expand.of(engine, first);
+			IExpr v2 = F.Expand.of(engine, rest);
+			IExpr peGCD = F.PolynomialExtendedGCD.of(engine, v1, v2, variable);
+			if (peGCD.isList() && peGCD.second().isList()) {
+				IAST s = (IAST) peGCD.second();
+				IExpr A = s.arg1();
+				IExpr B = s.arg2();
+				IExpr u1 = F.PolynomialRemainder.of(engine, F.Expand(F.Times(B, numerator)), v1, variable);
+				IExpr u2 = F.PolynomialRemainder.of(engine, F.Expand(F.Times(A, numerator)), v2, variable);
+				return F.Plus.of(engine, F.Times(u1, F.Power(first, -1)),
+						partialFractionDecomposition(u2, rest, variable, count + 1, engine));
+			}
+		}
+		if (count == 0) {
+			return F.NIL;
+		}
+		return F.Times.of(engine, numerator, F.Power(denominatorTimes, -1));
 	}
 
 	/**
