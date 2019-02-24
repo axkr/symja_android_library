@@ -1,129 +1,129 @@
 Exponentials
 HyperbolicFunctions
-test0122
-test0123
-test0146
-test0152
+test0122 - Integrate[(Cosh[x] + Sinh[x])/(Cosh[x] - Sinh[x]), x]
+test0123 - Integrate[(Cosh[x] - Sinh[x])/(Cosh[x] + Sinh[x]), x]
+test0146 - Integrate[Csch[2*x]*Log[Tanh[x]], x]
+test0152 - Integrate[(Cosh[a + b*x] - Sinh[a + b*x])/(Cosh[a + b*x] + Sinh[a + b*x]), x]
 IndependentTestSuites
-test0103
-test0118
-test0217
-test0256
-test0257
-test0258
-test0259
-test0281
-test0283
+test0103 - Integrate[(-1 + I*eps*Sinh[x])/(I*a - x + I*eps*Cosh[x]), x]
+test0118 - Integrate[(x*(-Sqrt[-4 + x^2] + x^2*Sqrt[-4 + x^2] - 4*Sqrt[-1 + x^2] + x^2*Sqrt[-1 + x^2]))/((4 - 5*x^2 + x^4)*(1 + Sqrt[-4 + x^2] + Sqrt[-1 + x^2])), x]
+test0217 - Integrate[-Sec[Pi/4 + 2*x], x]
+test0256 - Integrate[(E^x*(1 - Sin[x]))/(1 - Cos[x]), x]
+test0257 - Integrate[(E^x*(1 + Sin[x]))/(1 + Cos[x]), x]
+test0258 - Integrate[(E^x*(1 + Cos[x]))/(1 - Sin[x]), x]
+test0259 - Integrate[(E^x*(1 - Cos[x]))/(1 + Sin[x]), x]
+test0281 - Integrate[x/(Sqrt[1 + x^3]*(10 - 6*Sqrt[3] + x^3)), x]
+test0283 - Integrate[x/(Sqrt[-1 + x^3]*(-10 + 6*Sqrt[3] + x^3)), x]
 InverseHyperbolicFunctions
-test0041
-test0042
-test0045
-test0154
-test0155
-test0156
-test0157
-test0158
-test0159
-test0160
-test0161
-test0162
-test0163
-test0164
-test0165
-test0166
-test0167
-test0168
-test0188
-test0189
-test0190
-test0191
-test0192
+test0041 - Integrate[(a + I*b*ArcSin[1 - I*d*x^2])^(-1), x]
+test0042 - Integrate[(a + I*b*ArcSin[1 - I*d*x^2])^(-2), x]
+test0045 - Integrate[Sqrt[a + I*b*ArcSin[1 - I*d*x^2]], x]
+test0154 - Integrate[ArcTanh[Tanh[a + b*x]]^2/x^4, x]
+test0155 - Integrate[ArcTanh[Tanh[a + b*x]]^3/x^5, x]
+test0156 - Integrate[ArcTanh[Tanh[a + b*x]]^4/x^6, x]
+test0157 - Integrate[x^m/ArcTanh[Tanh[a + b*x]], x]
+test0158 - Integrate[1/(x*Sqrt[ArcTanh[Tanh[a + b*x]]]), x]
+test0159 - Integrate[1/(Sqrt[x]*ArcTanh[Tanh[a + b*x]]), x]
+test0160 - Integrate[Sqrt[ArcTanh[Tanh[a + b*x]]]/x^(5/2), x]
+test0161 - Integrate[ArcTanh[Tanh[a + b*x]]^(3/2)/x^(7/2), x]
+test0162 - Integrate[ArcTanh[Tanh[a + b*x]]^(5/2)/x^(9/2), x]
+test0163 - Integrate[1/(Sqrt[x]*Sqrt[ArcTanh[Tanh[a + b*x]]]), x]
+test0164 - Integrate[1/(x^(3/2)*Sqrt[ArcTanh[Tanh[a + b*x]]]), x]
+test0165 - Integrate[1/(Sqrt[x]*ArcTanh[Tanh[a + b*x]]^(3/2)), x]
+test0166 - Integrate[Sqrt[x]/ArcTanh[Tanh[a + b*x]]^(5/2), x]
+test0167 - Integrate[x^m*ArcTanh[Tanh[a + b*x]]^n, x]
+test0168 - Integrate[ArcTanh[Tanh[a + b*x]]^n/x, x]
+test0188 - Integrate[ArcCoth[Tanh[a + b*x]]^2/x^4, x]
+test0189 - Integrate[ArcCoth[Tanh[a + b*x]]^3/x^5, x]
+test0190 - Integrate[x^m/ArcCoth[Tanh[a + b*x]], x]
+test0191 - Integrate[x^m*ArcCoth[Tanh[a + b*x]]^n, x]
+test0192 - Integrate[ArcCoth[Tanh[a + b*x]]^n/x, x]
 InverseTrigFunctions
-test0050
+test0050 - Integrate[(a - b*ArcSin[1 - d*x^2])^(-2), x]
 Logarithms
-test0128
-test0129
-test0130
-test0131
-test0132
-test0133
+test0128 - Integrate[Log[(2*x*(d*Sqrt[-(e/d)] + e*x))/(d + e*x^2)]/(d + e*x^2), x]
+test0129 - Integrate[Log[(-2*x*(d*Sqrt[-(e/d)] - e*x))/(d + e*x^2)]/(d + e*x^2), x]
+test0130 - Integrate[Log[(2*x*((d*Sqrt[e])/Sqrt[-d] + e*x))/(d + e*x^2)]/(d + e*x^2), x]
+test0131 - Integrate[Log[(-2*x*((d*Sqrt[e])/Sqrt[-d] - e*x))/(d + e*x^2)]/(d + e*x^2), x]
+test0132 - Integrate[Log[(2*x*(Sqrt[d]*Sqrt[-e] + e*x))/(d + e*x^2)]/(d + e*x^2), x]
+test0133 - Integrate[Log[(-2*x*(Sqrt[d]*Sqrt[-e] - e*x))/(d + e*x^2)]/(d + e*x^2), x]
 SpecialFunctions
 TrigFunctions
-test0143
-test0144
-test0145
-test0146
-test0149
-test0150
-test0255
-test0256
-test0257
-test0258
-test0318
-test0319
-test0320
-test0321
-test0350
-test0351
-test0352
-test0353
-test0354
-test0421
-test0534
-test0535
+test0143 - Integrate[Sqrt[a + b*Sin[e + f*x]]/(Sqrt[g*Sin[e + f*x]]*(c + c*Sin[e + f*x])), x]
+test0144 - Integrate[Sqrt[g*Sin[e + f*x]]/(Sqrt[a + b*Sin[e + f*x]]*(c + d*Sin[e + f*x])), x]
+test0145 - Integrate[Sqrt[g*Sin[e + f*x]]/((a + b*Sin[e + f*x])*Sqrt[c + d*Sin[e + f*x]]), x]
+test0146 - Integrate[(Csc[e + f*x]*Sqrt[a + b*Sin[e + f*x]])/Sqrt[c + d*Sin[e + f*x]], x]
+test0149 - Integrate[(a + a*Sin[e + f*x])^m*(c - c*Sin[e + f*x])^n*(B*(m - n) - B*(1 + m + n)*Sin[e + f*x]), x]
+test0150 - Integrate[(a - a*Sin[e + f*x])^m*(c + c*Sin[e + f*x])^n*(B*(m - n) + B*(1 + m + n)*Sin[e + f*x]), x]
+test0255 - Integrate[(1 + Cos[c + d*x])/(Cos[c + d*x]^(3/2)*Sqrt[2 + 3*Cos[c + d*x]]), x]
+test0256 - Integrate[(1 + Cos[c + d*x])/(Cos[c + d*x]^(3/2)*Sqrt[-2 + 3*Cos[c + d*x]]), x]
+test0257 - Integrate[(1 + Cos[c + d*x])/(Cos[c + d*x]^(3/2)*Sqrt[3 + 2*Cos[c + d*x]]), x]
+test0258 - Integrate[(1 + Cos[c + d*x])/(Sqrt[3 - 2*Cos[c + d*x]]*Cos[c + d*x]^(3/2)), x]
+test0318 - Integrate[(b*Csc[e + f*x])^m*Tan[e + f*x]^4, x]
+test0319 - Integrate[(b*Csc[e + f*x])^m*Tan[e + f*x]^2, x]
+test0320 - Integrate[Cot[e + f*x]^2*(b*Csc[e + f*x])^m, x]
+test0321 - Integrate[Cot[e + f*x]^4*(b*Csc[e + f*x])^m, x]
+test0350 - Integrate[(d*Cot[e + f*x])^n*Csc[e + f*x]^3, x]
+test0351 - Integrate[(d*Cot[e + f*x])^n*Csc[e + f*x], x]
+test0352 - Integrate[(d*Cot[e + f*x])^n*Sin[e + f*x], x]
+test0353 - Integrate[(d*Cot[e + f*x])^n*Sin[e + f*x]^3, x]
+test0354 - Integrate[(b*Cot[e + f*x])^n*(a*Csc[e + f*x])^m, x]
+test0421 - Integrate[(Sec[e + f*x]*Sqrt[a + b*Sec[e + f*x]])/Sqrt[c + d*Sec[e + f*x]], x]
+test0534 - Integrate[(Cos[x] - I*Sin[x])/(Cos[x] + I*Sin[x]), x]
+test0535 - Integrate[(Cos[x] + I*Sin[x])/(Cos[x] - I*Sin[x]), x]
 AlgebraicFunctions
-test0048
-test0049
-test0276
-test0280
-test0318
-test0348
-test0351
-test0484
-test0485
-test0486
-test0838
-test0839
-test0840
-test0841
-test0868
-test0869
-test0876
-test0877
-test1038
-test1039
-test1047
-test1059
-test1061
-test1118
-test1121
-test1124
-test1136
-test1137
-test1138
-test1140
-test1142
-test1143
-test1144
-test1146
-test1147
-test1149
-test1150
-test1151
-test1153
-test1155
-test1156
-test1157
-test1171
-test1172
-test1174
-test1210
-test1241
-test1242
-test1325
-test1326
-test1346
-test1347
-test1379
-test1380
-test1381
+test0048 - Integrate[c*(a + b*x), x]
+test0049 - Integrate[((c + d)*(a + b*x))/e, x]
+test0276 - Integrate[(1 + x/a)^(n/2)/(x^2*(1 - x/a)^(n/2)), x]
+test0280 - Integrate[x^2*(1 - a*x)^(-1 - (n*(1 + n))/2)*(1 + a*x)^(-1 - ((-1 + n)*n)/2), x]
+test0318 - Integrate[(a + b*x)^m*(c + d*x)^n*((b*c*f + a*d*f + a*d*f*m + b*c*f*n)/(b*d*(2 + m + n)) + f*x)^(-3 - m - n), x]
+test0348 - Integrate[(-1 + a + a*x^2)^(-1), x]
+test0351 - Integrate[(a - (b - a*c)*x^2)^(-1), x]
+test0484 - Integrate[Sqrt[1 + (2*c*x^2)/(b - Sqrt[b^2 - 4*a*c])]/Sqrt[1 - (2*c*x^2)/(b + Sqrt[b^2 - 4*a*c])], x]
+test0485 - Integrate[Sqrt[1 - (2*c*x^2)/(b - Sqrt[b^2 - 4*a*c])]/Sqrt[1 - (2*c*x^2)/(b + Sqrt[b^2 - 4*a*c])], x]
+test0486 - Integrate[1/(Sqrt[3 - 3*Sqrt[3] + 2*Sqrt[3]*x^2]*Sqrt[3 + (-3 + Sqrt[3])*x^2]), x]
+test0838 - Integrate[x/(Sqrt[a + b*x^3]*(2*(5 - 3*Sqrt[3])*a + b*x^3)), x]
+test0839 - Integrate[x/(Sqrt[a - b*x^3]*(2*(5 - 3*Sqrt[3])*a - b*x^3)), x]
+test0840 - Integrate[x/((2*(5 - 3*Sqrt[3])*a - b*x^3)*Sqrt[-a + b*x^3]), x]
+test0841 - Integrate[x/(Sqrt[-a - b*x^3]*(2*(5 - 3*Sqrt[3])*a + b*x^3)), x]
+test0868 - Integrate[(1 + Sqrt[3] - (b/a)^(1/3)*x)/Sqrt[-a + b*x^3], x]
+test0869 - Integrate[(1 + Sqrt[3] + (b/a)^(1/3)*x)/Sqrt[-a - b*x^3], x]
+test0876 - Integrate[(1 - Sqrt[3] + (b/a)^(1/3)*x)/Sqrt[a + b*x^3], x]
+test0877 - Integrate[(1 - Sqrt[3] - (b/a)^(1/3)*x)/Sqrt[a - b*x^3], x]
+test1038 - Integrate[(d + e*x)/(a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2)^(3/2), x]
+test1039 - Integrate[(a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2)^(-3/2), x]
+test1047 - Integrate[(a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2)^p, x]
+test1059 - Integrate[1/((d + e*x)^(3/2)*(a + b*x + c*x^2)^(1/4)), x]
+test1061 - Integrate[(d + e*x)^(-2 - 2*p)*(a + b*x + c*x^2)^p, x]
+test1118 - Integrate[((d + e*x)^(5/2)*Sqrt[f + g*x])/(a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2)^(5/2), x]
+test1119 - Integrate[Sqrt[a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2]/(Sqrt[d + e*x]*(f + g*x)^(5/2)), x]
+test1124 - Integrate[Sqrt[d + e*x]/(Sqrt[f + g*x]*Sqrt[a + b*x + c*x^2]), x]
+test1136 - Integrate[1/Sqrt[-2 + 4*x^2 + 3*x^4], x]
+test1137 - Integrate[1/Sqrt[-2 + 3*x^2 + 3*x^4], x]
+test1138 - Integrate[1/Sqrt[-2 + 2*x^2 + 3*x^4], x]
+test1140 - Integrate[1/Sqrt[-2 + 3*x^4], x]
+test1142 - Integrate[1/Sqrt[-2 - 2*x^2 + 3*x^4], x]
+test1143 - Integrate[1/Sqrt[-2 - 3*x^2 + 3*x^4], x]
+test1144 - Integrate[1/Sqrt[-2 - 4*x^2 + 3*x^4], x]
+test1146 - Integrate[1/Sqrt[-3 + 7*x^2 + 2*x^4], x]
+test1147 - Integrate[1/Sqrt[-3 + 6*x^2 + 2*x^4], x]
+test1149 - Integrate[1/Sqrt[-3 + 4*x^2 + 2*x^4], x]
+test1150 - Integrate[1/Sqrt[-3 + 3*x^2 + 2*x^4], x]
+test1151 - Integrate[1/Sqrt[-3 + 2*x^2 + 2*x^4], x]
+test1153 - Integrate[1/Sqrt[-3 + 2*x^4], x]
+test1155 - Integrate[1/Sqrt[-3 - 2*x^2 + 2*x^4], x]
+test1156 - Integrate[1/Sqrt[-3 - 3*x^2 + 2*x^4], x]
+test1157 - Integrate[1/Sqrt[-3 - 4*x^2 + 2*x^4], x]
+test1171 - Integrate[1/Sqrt[3 + 9*x^2 + 2*x^4], x]
+test1172 - Integrate[1/Sqrt[3 + 8*x^2 + 2*x^4], x]
+test1174 - Integrate[1/Sqrt[3 + 6*x^2 + 2*x^4], x]
+test1210 - Integrate[1/Sqrt[2 + 5*x^2 + x^4], x]
+test1241 - Integrate[(Sqrt[a] + Sqrt[c]*x^2)/((d + e*x^2)*Sqrt[a + b*x^2 + c*x^4]), x]
+test1242 - Integrate[(1 + Sqrt[c/a]*x^2)/((d + e*x^2)*Sqrt[a + b*x^2 + c*x^4]), x]
+test1325 - Integrate[(b + 2*c*x + 3*d*x^2)*(a + b*x + c*x^2 + d*x^3)^7, x]
+test1326 - Integrate[(b + 2*c*x + 3*d*x^2)*(b*x + c*x^2 + d*x^3)^7, x]
+test1346 - Integrate[x^2*(a + b*x + c*x^2 + d*x^3)^p*(3*a + b*(4 + p)*x + c*(5 + 2*p)*x^2 + d*(6 + 3*p)*x^3), x]
+test1347 - Integrate[x*(a + b*x + c*x^2 + d*x^3)^p*(2*a + b*(3 + p)*x + c*(4 + 2*p)*x^2 + d*(5 + 3*p)*x^3), x]
+test1379 - Integrate[x*(a + b*x + c*x^2)^m*(d + e*x + f*x^2 + g*x^3)^n*(2*a*d + (3*b*d + 3*a*e + b*d*m + a*e*n)*x + (4*c*d + 4*b*e + 4*a*f + 2*c*d*m + b*e*m + b*e*n + 2*a*f*n)*x^2 + (5*c*e + 5*b*f + 5*a*g + 2*c*e*m + b*f*m + c*e*n + 2*b*f*n + 3*a*g*n)*x^3 + (6*c*f + 6*b*g + 2*c*f*m + b*g*m + 2*c*f*n + 3*b*g*n)*x^4 + c*g*(7 + 2*m + 3*n)*x^5), x]
+test1380 - Integrate[(a + b*x + c*x^2)^m*(d + e*x + f*x^2 + g*x^3)^n*(a*d + (2*b*d + 2*a*e + b*d*m + a*e*n)*x + (3*c*d + 3*b*e + 3*a*f + 2*c*d*m + b*e*m + b*e*n + 2*a*f*n)*x^2 + (4*c*e + 4*b*f + 4*a*g + 2*c*e*m + b*f*m + c*e*n + 2*b*f*n + 3*a*g*n)*x^3 + (5*c*f + 5*b*g + 2*c*f*m + b*g*m + 2*c*f*n + 3*b*g*n)*x^4 + c*g*(6 + 2*m + 3*n)*x^5), x]
+test1381 - Integrate[(a + b*x + c*x^2)^m*(d + e*x + f*x^2 + g*x^3)^n*(b*d + a*e + b*d*m + a*e*n + (2*c*d + 2*b*e + 2*a*f + 2*c*d*m + b*e*m + b*e*n + 2*a*f*n)*x + (3*c*e + 3*b*f + 3*a*g + 2*c*e*m + b*f*m + c*e*n + 2*b*f*n + 3*a*g*n)*x^2 + (4*c*f + 4*b*g + 2*c*f*m + b*g*m + 2*c*f*n + 3*b*g*n)*x^3 + c*g*(5 + 2*m + 3*n)*x^4), x]
