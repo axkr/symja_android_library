@@ -28,11 +28,12 @@ public abstract class AbstractRubiTestCase extends TestCase {
 	 * Timeout limit in seconds as the default value for Symja expression evaluation.
 	 */
 	protected long fSeconds = 10;
-	
+
 	private boolean isRelaxedSyntax;
 
 	public AbstractRubiTestCase(String name, boolean isRelaxedSyntax) {
 		super(name);
+//		System.out.println(">>>" + name);
 		this.isRelaxedSyntax = isRelaxedSyntax;
 		Config.SERVER_MODE = false;
 		Config.PARSER_USE_LOWERCASE_SYMBOLS = isRelaxedSyntax;
@@ -54,19 +55,19 @@ public abstract class AbstractRubiTestCase extends TestCase {
 						// the expressions are textual equal
 						return expectedResult;
 					}
-					
+
 					IExpr expected = fEvaluator.eval(manuallyCheckedResult);
 					if (result.equals(expected)) {
 						// the expressions are structurally equal
 						return expectedResult;
 					}
 				}
-				
+
 			}
 
 			expectedResult = expectedResult.trim();
 			if (expectedResult.length() > 0) {
-				if (expectedResult.equals(result.toString()) ) {
+				if (expectedResult.equals(result.toString())) {
 					return expectedResult;
 				}
 				IExpr expected = fEvaluator.eval(expectedResult);
@@ -172,6 +173,9 @@ public abstract class AbstractRubiTestCase extends TestCase {
 			} else {
 				assertEquals(expectedResult, evaledResult);
 			}
+		} catch (AssertionError e) {
+			System.out.println(getName());
+			throw e;
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", "1");
@@ -209,7 +213,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
 			fEvaluator = new ExprEvaluator(engine, true, 0);
 			engine.setFileSystemEnabled(true);
 			engine.setRecursionLimit(256);
-			engine.setIterationLimit(500); 
+			engine.setIterationLimit(500);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

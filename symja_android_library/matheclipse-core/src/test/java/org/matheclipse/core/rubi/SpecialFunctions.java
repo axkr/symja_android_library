@@ -1,11 +1,25 @@
 package org.matheclipse.core.rubi;
 
 public class SpecialFunctions extends AbstractRubiTestCase {
-
+    static boolean init=true;
+    
 	public SpecialFunctions(String name) {
 		super(name, false);
 	}
 
+	@Override
+	protected void setUp() {
+		try {
+			super.setUp(); 
+			if (init) {
+				System.out.println("SpecialFunctions");
+				init=false;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	// {6656}
 	public void test0001() {
 		check(//

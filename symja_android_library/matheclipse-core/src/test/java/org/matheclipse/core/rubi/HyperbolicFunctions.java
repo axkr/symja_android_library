@@ -1,11 +1,25 @@
 package org.matheclipse.core.rubi;
 
 public class HyperbolicFunctions extends AbstractRubiTestCase {
-
+	static boolean init=true;
+	
 	public HyperbolicFunctions(String name) {
 		super(name, false);
 	}
 
+	@Override
+	protected void setUp() {
+		try {
+			super.setUp();
+			if (init) {
+				System.out.println("HyperbolicFunctions");
+				init=false;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	// {2638}
 	public void test0009() {
 		check(//

@@ -1,9 +1,23 @@
 package org.matheclipse.core.rubi;
 
 public class InverseTrigFunctions extends AbstractRubiTestCase {
-
+	static boolean init=true;
+	
 	public InverseTrigFunctions(String name) {
 		super(name, false);
+	}
+	
+	@Override
+	protected void setUp() {
+		try {
+			super.setUp();
+			if (init) {
+				System.out.println("InverseTrigFunctions");
+				init=false;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	// {4641}

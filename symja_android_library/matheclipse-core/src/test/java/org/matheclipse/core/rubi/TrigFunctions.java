@@ -5,15 +5,24 @@ import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
 
 public class TrigFunctions extends AbstractRubiTestCase {
-
+    static boolean init=true;
+    
 	public TrigFunctions(String name) {
 		super(name, false);
 	}
 
 	@Override
 	protected void setUp() {
-		super.setUp();
-		fSeconds=20;
+		try {
+			super.setUp(); 
+			fSeconds=20;
+			if (init) {
+				System.out.println("TrigFunctions");
+				init=false;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	// {2638}

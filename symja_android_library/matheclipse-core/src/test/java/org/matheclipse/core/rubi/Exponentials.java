@@ -1,9 +1,27 @@
 package org.matheclipse.core.rubi;
 
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.ExprEvaluator;
+import org.matheclipse.core.expression.F;
+
 public class Exponentials extends AbstractRubiTestCase {
+    static boolean init=true;
 
 	public Exponentials(String name) {
 		super(name, false);
+	}
+	
+	@Override
+	protected void setUp() {
+		try {
+			super.setUp();
+			if (init) {
+				System.out.println("Exponentials");
+				init=false;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	// {2181}
@@ -1524,7 +1542,7 @@ public class Exponentials extends AbstractRubiTestCase {
 		check(//
 				"Integrate[10^Sqrt[x]/Sqrt[x], x]", //
 				"(2^(1 + Sqrt[x])*5^Sqrt[x])/Log[10]", //
-				"(2*10^Sqrt[x])/Log[10]",//
+				"(2*10^Sqrt[x])/Log[10]", //
 				2209);
 	}
 
@@ -1538,7 +1556,7 @@ public class Exponentials extends AbstractRubiTestCase {
 
 	// {2218}
 	public void test0209() {
-		fSeconds=0;
+		fSeconds = 0;
 		check(//
 				"Integrate[E^x^n*x^m, x]", //
 				"-((x^(1 + m)*Gamma[(1 + m)/n, -x^n])/(n*(-x^n)^((1 + m)/n)))", //

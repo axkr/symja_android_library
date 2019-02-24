@@ -1,11 +1,25 @@
 package org.matheclipse.core.rubi;
 
 public class IndependentTestSuites extends AbstractRubiTestCase {
-
+	static boolean init=true;
+	
 	public IndependentTestSuites(String name) {
 		super(name, false);
 	}
 
+	@Override
+	protected void setUp() {
+		try {
+			super.setUp();
+			if (init) {
+				System.out.println("IndependentTestSuites");
+				init=false;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	// {32}
 	public void test0001() {
 		check(//

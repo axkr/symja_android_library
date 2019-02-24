@@ -5,17 +5,26 @@ import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
 
 public class AlgebraicFunctions extends AbstractRubiTestCase {
-
+	static boolean init=true;
+	
 	public AlgebraicFunctions(String name) {
 		super(name, false);
 	}
 
 	@Override
 	protected void setUp() {
-		super.setUp();
-		fSeconds=20;
+		try {
+			super.setUp();
+			fSeconds=20;
+			if (init) {
+				System.out.println("AlgebraicFunctions");
+				init=false;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
-
+	
 	// {8}
 	public void test0001() {
 		check(//
