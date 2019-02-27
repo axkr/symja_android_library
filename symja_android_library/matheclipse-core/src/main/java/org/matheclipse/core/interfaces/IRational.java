@@ -1,6 +1,8 @@
 package org.matheclipse.core.interfaces;
 
 import org.hipparchus.fraction.BigFraction;
+import org.matheclipse.core.expression.F;
+
 import java.math.BigInteger;
 
 /**
@@ -51,7 +53,7 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	 * @return the list of prime factors paired with their exponents
 	 */
 	public IASTAppendable factorInteger();
-	
+
 	/**
 	 * Factor into small factors below 1021 if possible and determine the root.
 	 * 
@@ -61,7 +63,7 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	 * @return the rest of the factorization
 	 */
 	public IAST factorSmallPrimes(int numerator, int root);
-	
+
 	public IInteger floor();
 
 	/**
@@ -96,11 +98,36 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	 * 
 	 * @return
 	 * @deprecated use {@link #numerator()}
-	 */ 
+	 */
 	default IInteger getNumerator() {
 		return numerator();
 	}
 
+	/**
+	 * <p>
+	 * Returns <code>this mod m</code>, a non-negative value less than m. This differs from <code>this % m</code>, which
+	 * might be negative.
+	 * </p>
+	 * 
+	 * For example:
+	 * 
+	 * <pre>
+	 * mod(7, 4) == 3
+	 * mod(-7, 4) == 1
+	 * mod(-1, 4) == 3
+	 * mod(-8, 4) == 0
+	 * mod(8, 4) == 0
+	 * </pre>
+	 * 
+	 * @param that
+	 * @return
+	 * @throws ArithmeticException
+	 *             - if m <= 0
+	 */
+	default IRational mod(final IRational m) {
+		return subtract(m.multiply(this.divideBy(m).floorFraction()));
+	}
+ 
 	public IRational multiply(IRational parm1);
 
 	@Override

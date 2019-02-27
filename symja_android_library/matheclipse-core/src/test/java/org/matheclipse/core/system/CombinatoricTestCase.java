@@ -6,7 +6,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.patternmatching.FlatOrderlessStepVisitor;
-import org.matheclipse.core.patternmatching.PatternMap;
+import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher.StackMatcher;
 
@@ -58,7 +58,7 @@ public class CombinatoricTestCase extends AbstractTestCase {
 		IAST lhsEvalAST = F.Plus(F.a, F.b, F.c, F.d);
 
 		PatternMatcher patternMatcher = new PatternMatcher(lhsPatternAST);
-		PatternMap patternMap = patternMatcher.getPatternMap();
+		IPatternMap patternMap = patternMatcher.getPatternMap();
 		StackMatcher stackMatcher = patternMatcher.new StackMatcher(EvalEngine.get());
 		FlatOrderlessStepVisitor visitor = new FlatOrderlessStepVisitor(F.Plus, lhsPatternAST, lhsEvalAST, stackMatcher,
 				patternMap);

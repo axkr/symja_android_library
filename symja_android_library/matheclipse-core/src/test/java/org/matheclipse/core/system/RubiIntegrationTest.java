@@ -61,6 +61,7 @@ import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.SimpFixFa
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.SubstAux;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.SubstForFractionalPowerOfLinear;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.TrigSimplifyAux;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Subst;
 
 import javax.script.ScriptException;
 
@@ -468,8 +469,24 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		// check(ast, "ArcTanh[x/(2*Sqrt[2])]/Sqrt[2]");
 	}
 
-	public void testSqrtSin() {
-		check("Integrate(Sqrt(a*Sin(x)^2),x)", "-Cot(x)*Sqrt(a*Sin(x)^2)");
+	/**
+	 * Github issue #116
+	 */
+	public void testRubi021() {
+		IAST ast;
+		// Rubi`subst(-ArcTan(x/Sqrt(3))/Sqrt(3),x,1+2*x)
+		ast = Subst(F.Times(F.CN1, F.C1DSqrt3, F.ArcTan(F.Times(F.C1DSqrt3, F.x))), F.x,
+				F.Plus(F.C1, F.Times(F.C2, F.x)));
+		check(ast, "-ArcTan[(1+2*x)/Sqrt[3]]/Sqrt[3]");
+	}
+	
+	/**
+	 * Github issue #116
+	 */
+	public void testRubi022() {
+		IAST ast;
+		ast = SubstAux(F.Times(F.CN1,F.C1DSqrt3,F.ArcTan(F.Times(F.C1DSqrt3,F.x))),F.x,F.Plus(F.C1,F.Times(F.C2,F.x)),F.True);
+		check(ast, "-ArcTan[(1+2*x)/Sqrt[3]]/Sqrt[3]");
 	}
 
 	public void testArcSin() {

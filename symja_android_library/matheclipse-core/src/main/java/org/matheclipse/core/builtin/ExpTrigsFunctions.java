@@ -1055,7 +1055,17 @@ public class ExpTrigsFunctions {
 			if (imPart.isPresent()) {
 				return F.Cosh(imPart);
 			}
-
+//			if (arg1.isPlus()) {
+//				IAST peel = AbstractFunctionEvaluator.peelOff((IAST) arg1, EvalEngine.get());
+//				if (peel.isPresent()) {
+//					IExpr m = peel.arg2();
+//					if (!m.isZero()) {
+//						IExpr x = peel.arg1();
+//						// cos(m)*cos(x) - sin(m)*sin(x)
+//						return F.Subtract(F.Times(F.Cos(m), F.Cos(x)), F.Times(F.Sin(m), F.Sin(x)));
+//					}
+//				}
+//			}
 			IAST parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, Pi);
 			if (parts.isPresent()) {
 				if (parts.arg2().isInteger()) {
@@ -1073,14 +1083,14 @@ public class ExpTrigsFunctions {
 					IInteger[] divRem = f.divideAndRemainder();
 					IFraction rest = F.fraction(divRem[1], f.denominator());
 					if (!NumberUtil.isZero(divRem[0])) {
-
 						if (divRem[0].isEven()) {
 							return Cos(Plus(parts.arg1(), Times(rest, Pi)));
-						} else {
-							return Negate(Cos(Plus(parts.arg1(), Times(rest, Pi))));
 						}
+						return Negate(Cos(Plus(parts.arg1(), Times(rest, Pi))));
 					}
-
+					if (f.isGreaterThan(F.C1D2)) {
+						return F.Cos(F.Plus(F.Times(F.Subtract(f, C2), F.Pi), parts.arg1()));
+					}
 					if (rest.equals(F.C1D2) || rest.equals(F.CN1D2)) {
 						// Cos(z) == Sin(Pi/2 - z)
 						return Sin(Subtract(F.CPiHalf, arg1));
@@ -1248,7 +1258,9 @@ public class ExpTrigsFunctions {
 							return Times(CN1, Csc(Plus(parts.arg1(), Times(rest, Pi))));
 						}
 					}
-
+					if (f.isGreaterThan(F.C1D2)) {
+						return F.Csc(F.Plus(F.Times(F.Subtract(f, C2), F.Pi), parts.arg1()));
+					}
 					if (rest.equals(C1D2) || rest.equals(F.CN1D2)) {
 						// Csc(z) == Sec(Pi/2 - z)
 						return Sec(Subtract(F.CPiHalf, arg1));
@@ -1803,7 +1815,9 @@ public class ExpTrigsFunctions {
 							return Times(CN1, Sec(Plus(parts.arg1(), Times(rest, Pi))));
 						}
 					}
-
+					if (f.isGreaterThan(F.C1D2)) {
+						return F.Sec(F.Plus(F.Times(F.Subtract(f, C2), F.Pi), parts.arg1()));
+					}
 					if (rest.equals(F.CN1D2)) {
 						return Csc(parts.arg1());
 					}
@@ -1950,6 +1964,16 @@ public class ExpTrigsFunctions {
 			if (imPart.isPresent()) {
 				return F.Times(F.CI, F.Sinh(imPart));
 			}
+//			if (arg1.isPlus()) {
+//				IAST peel = AbstractFunctionEvaluator.peelOff((IAST) arg1, EvalEngine.get());
+//				if (peel.isPresent()) {
+//					IExpr m = peel.arg2();
+//					if (!m.isZero()) {
+//						IExpr x = peel.arg1();
+//						return F.Plus(F.Times(F.Sin(m), F.Cos(x)), F.Times(F.Cos(m), F.Sin(x)));
+//					}
+//				}
+//			}
 			IAST parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, Pi);
 			if (parts.isPresent()) {
 				if (parts.arg2().isInteger()) {
@@ -1968,14 +1992,14 @@ public class ExpTrigsFunctions {
 					IInteger[] divRem = f.divideAndRemainder();
 					IFraction rest = F.fraction(divRem[1], f.denominator());
 					if (!divRem[0].isZero()) {
-
 						if (divRem[0].isEven()) {
 							return Sin(Plus(parts.arg1(), Times(rest, Pi)));
-						} else {
-							return Times(CN1, Sin(Plus(parts.arg1(), Times(rest, Pi))));
 						}
+						return Times(CN1, Sin(Plus(parts.arg1(), Times(rest, Pi))));
 					}
-
+					if (f.isGreaterThan(F.C1D2)) {
+						return F.Sin(F.Plus(F.Times(F.Subtract(f, C2), F.Pi), parts.arg1()));
+					}
 					if (rest.equals(C1D2)) {
 						// Sin(z) == Cos(Pi/2 - z)
 						return Cos(Subtract(F.CPiHalf, arg1));

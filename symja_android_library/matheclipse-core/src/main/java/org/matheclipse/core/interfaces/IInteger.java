@@ -209,8 +209,50 @@ public interface IInteger extends IRational {
 	 */
 	public long longValue();
 
-	public IInteger mod(final IInteger that);
+	/**
+	 * <p>
+	 * Returns <code>this mod m</code>, a non-negative value less than m. This differs from <code>this % m</code>, which
+	 * might be negative.
+	 * </p>
+	 * 
+	 * For example:
+	 * 
+	 * <pre>
+	 * mod(7, 4) == 3
+	 * mod(-7, 4) == 1
+	 * mod(-1, 4) == 3
+	 * mod(-8, 4) == 0
+	 * mod(8, 4) == 0
+	 * </pre>
+	 * 
+	 * @param that
+	 * @return
+	 * @throws ArithmeticException
+	 *             - if m <= 0
+	 */
+	public IInteger mod(final IInteger m);
 
+	/**
+	 * <p>
+	 * Returns <code>this mod m</code>, a non-negative value less than m. This differs from <code>this % m</code>, which
+	 * might be negative.
+	 * </p>
+	 * 
+	 * For example:
+	 * 
+	 * <pre>
+	 * mod(7, 4) == 3
+	 * mod(-7, 4) == 1
+	 * mod(-1, 4) == 3
+	 * mod(-8, 4) == 0
+	 * mod(8, 4) == 0
+	 * </pre>
+	 * 
+	 * @param that
+	 * @return
+	 * @throws ArithmeticException
+	 *             - if m <= 0
+	 */
 	default IInteger mod(final int that) {
 		if (that == 1) {
 			return F.C0;

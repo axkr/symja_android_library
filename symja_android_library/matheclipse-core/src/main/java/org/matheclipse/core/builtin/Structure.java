@@ -28,8 +28,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.patternmatching.ISymbol2IntMap;
-import org.matheclipse.core.patternmatching.PatternMap;
+import org.matheclipse.core.patternmatching.IPatternMap;
+import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
 import org.matheclipse.core.visit.AbstractVisitorLong;
 import org.matheclipse.core.visit.IndexedLevel;
@@ -738,9 +738,9 @@ public class Structure {
 
 			int fHeadOffset;
 
-			ISymbol2IntMap fPatternMap;
+			IPatternMap fPatternMap;
 
-			public SimplifyLeafCountPatternMapVisitor(ISymbol2IntMap patternMap, int hOffset) {
+			public SimplifyLeafCountPatternMapVisitor(IPatternMap patternMap, int hOffset) {
 				fHeadOffset = hOffset;
 				fPatternMap = patternMap;
 			}
@@ -1355,28 +1355,30 @@ public class Structure {
 				IExpr arg2 = ast.arg2();
 				final PatternMatcherAndEvaluator pmEvaluator1 = new PatternMatcherAndEvaluator(arg1, F.Null);
 				final PatternMatcherAndEvaluator pmEvaluator2 = new PatternMatcherAndEvaluator(arg2, F.Null);
-				PatternMap patternMap1 = pmEvaluator1.getPatternMap();
-				PatternMap patternMap2 = pmEvaluator2.getPatternMap();
-				
-				int priority1 = patternMap1.determinePatterns(arg1);
-				int priority2 = patternMap2.determinePatterns(arg2);
+				// IPatternMap patternMap1 = pmEvaluator1.getPatternMap();
+				// IPatternMap patternMap2 = pmEvaluator2.getPatternMap();
+
+				int[] priority1 = new int[] { PatternMap.DEFAULT_RULE_PRIORITY };
+				IPatternMap patternMap1 = IPatternMap.determinePatterns(arg1, priority1);
+				// patternMap1.determinePatterns(arg1, priority1);
+				int[] priority2 = new int[] { PatternMap.DEFAULT_RULE_PRIORITY };
+				IPatternMap patternMap2 = IPatternMap.determinePatterns(arg2, priority2);
+				// patternMap2.determinePatterns(arg2, priority2);
 				if (pmEvaluator1.isRuleWithoutPatterns()) {
 					if (pmEvaluator2.isRuleWithoutPatterns()) {
-						return F.ZZ(-1*arg1.compareTo(arg2));
+						return F.ZZ(-1 * arg1.compareTo(arg2));
 					}
 					return F.C1;
 				}
 				if (pmEvaluator2.isRuleWithoutPatterns()) {
 					return F.CN1;
 				}
-				if (priority1 > priority2) {
+				if (priority1[0] > priority2[0]) {
 					return F.C1;
-				} else if (priority1 < priority2) {
+				} else if (priority1[0] < priority2[0]) {
 					return F.CN1;
 				}
-				
 
-				
 				return F.ZZ(pmEvaluator1.equivalentLHS(pmEvaluator2));
 
 			}

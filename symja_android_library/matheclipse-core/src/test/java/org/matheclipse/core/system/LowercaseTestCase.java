@@ -2235,6 +2235,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "");
 		// check("Cos(3/4*Pi+2*x)", //
 		// "");
+		check("Cos(I*x)-I*Sin(I*x)", //
+				"Cosh(x)+Sinh(x)");
+		check("Cos(3/4*Pi+x)", //
+				"-Cos(Pi/4-x)");
+		check("Cos(-3/4*Pi+x)", //
+				"-Cos(Pi/4+x)");
 		check("Cos(e - Pi/2 + f*x)", //
 				"Sin(e+f*x)");
 		check("Cos(-1/2*E+z)", //
@@ -2389,6 +2395,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCsc() {
+		check("Csc(5/7*Pi+x)", //
+				"Csc(2/7*Pi-x)");
+		check("Csc(3/4*Pi+x)", //
+				"Csc(Pi/4-x)");
+		check("Csc(-3/4*Pi+x)", //
+				"-Csc(Pi/4+x)");
+
 		check("Csc(e - Pi/2 + f*x)", //
 				"-Sec(e+f*x)");
 		check("Csc(x)^m*Cot(x)", //
@@ -3740,6 +3753,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testExponent() {
+		check("Exponent(Together((1+2*x)/Sqrt(3)),x,List)", //
+				"{0,1}");
+		check("Exponent((1+2*x)/Sqrt(3),x,List)", //
+				"{0,1}");
 		check("Exponent(a+b*x,x,List)", //
 				"{0,1}");
 		check("Exponent(SeriesData(x, 0, {1, 1, 0, 1, 1, 0, 1, 1}, 0, 9, 1), x)", //
@@ -4504,9 +4521,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFirst() {
+		check("First(Infinity)", "1");
+		check("First(ComplexInfinity)", "First(ComplexInfinity)");
 		check("First({a, b, c})", "a");
-		check("First(a + b + c)", "a");
-		check("First(a)", "First(a)");
+		check("First(a + b + c)", //
+				"a");
+		check("First(a)", //
+				"First(a)");
 		check("First(a, b)", //
 				"b");
 		check("First({}, b)", //
@@ -5761,6 +5782,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testIntegrate() {
 		// check("Limit(1/9*x*(9-x^2)^(3/2)*Hypergeometric2F1(1,2,3/2,x^2/9),x->3)", //
 		// "");
+		 
+		// see github #116
+		// should give (2*ArcTan((1 + 2*x)/Sqrt(3)))/Sqrt(3)
+		check(" Integrate(1/(x^2+x+1),x) ", //
+				"(2*ArcTan((1+2*x)/Sqrt(3)))/Sqrt(3)");
 
 		// see github #109
 		check("Int(1/Sqrt(9*x^4+1),{x,0,999})//N", //
@@ -5967,6 +5993,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("InverseBetaRegularized(1,47.11,b)", "1.0");
 		check("InverseBetaRegularized(z,0,a,b)", "z");
 		check("InverseBetaRegularized(0,z,a,b)", "InverseBetaRegularized(z,a,b)");
+	}
+
+	public void testInverseCDF() {
+		check("InverseCDF[NormalDistribution[ ]]", //
+				"ConditionalExpression(-Sqrt(2)*InverseErfc(2*#1),0<=#1<=1)&");
+		check("InverseCDF[NormalDistribution[ ], p]", //
+				"ConditionalExpression(-Sqrt(2)*InverseErfc(2*p),0<=p<=1)");
+		check("InverseCDF[NormalDistribution[n,m]]", //
+				"ConditionalExpression(n-Sqrt(2)*m*InverseErfc(2*#1),0<=#1<=1)&");
+		check("InverseCDF[NormalDistribution[n,m], p]", //
+				"ConditionalExpression(n-Sqrt(2)*m*InverseErfc(2*p),0<=p<=1)");
 	}
 
 	public void testInverseErf() {
@@ -11504,6 +11541,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSec() {
+		check("Sec(5/7*Pi+x)", //
+				"-Sec(2/7*Pi-x)");
+		check("Sec(3/4*Pi+x)", //
+				"-Sec(Pi/4-x)");
+		check("Sec(-3/4*Pi+x)", //
+				"-Sec(Pi/4+x)");
+
 		check("Sec(e - Pi/2 + f*x)", //
 				"Csc(e+f*x)");
 		check("Sec(e+f*x)^m*Tan(e+f*x)^2", //
@@ -11723,10 +11767,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testSin() {
 		// check("Sin(Quantity(90,\"Degree\"))",
 		// "");
+		check("Sin(3/4*Pi+x)", //
+				"Sin(Pi/4-x)");
+		check("Sin(5/7*Pi+x)", //
+				"Sin(2/7*Pi-x)");
+		check("Sin(-3/4*Pi+x)", //
+				"-Sin(Pi/4+x)");
 
 		check("Sin({})", //
 				"{}");
-
 		check("Sin(e - Pi/2 + f*x)", //
 				"-Cos(e+f*x)");
 		check("Sin( -3/x+x )", //
@@ -13917,7 +13966,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("TrigToExp(Tan(x))", //
 				"(I*(E^(-I*x)-E^(I*x)))/(E^(-I*x)+E^(I*x))");
 		check("TrigToExp(Cosh(x)+a)", //
-				"a+1/2*(E^(-x)+E^x)");
+				"a+1/(2*E^x)+E^x/2");
 		check("TrigToExp(Csch(x)+a)", //
 				"a+2/(-1/E^x+E^x)");
 		check("TrigToExp(Coth(x)+a)", //
@@ -13925,9 +13974,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("TrigToExp(Sech(x)+a)", //
 				"a+2/(E^(-x)+E^x)");
 		check("TrigToExp(Sinh(x)+a)", //
-				"a+1/2*(-1/E^x+E^x)");
+				"a-1/(2*E^x)+E^x/2");
 		check("TrigToExp(Tanh(x))", //
-				"(-1/E^x+E^x)/(E^(-x)+E^x)");
+				"-1/(E^x*(E^(-x)+E^x))+E^x/(E^(-x)+E^x)");
 		check("TrigToExp(a+b)", //
 				"a+b");
 	}
@@ -14268,6 +14317,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("With({x=z},Module({x},x+y))", //
 				"x$21+y");
+
+		check("f(x_) := With({q = False},  test /; q==0) /;  x==1", //
+				"");
+		check("f(1)", //
+				"f(1)");
 	}
 
 	public void testXor() {

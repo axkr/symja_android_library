@@ -9,12 +9,11 @@ import javax.annotation.Nonnull;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
-import org.matheclipse.core.expression.AST1;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
-import org.matheclipse.core.patternmatching.PatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
 import org.matheclipse.core.patternmatching.RulesData;
 

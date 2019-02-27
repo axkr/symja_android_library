@@ -1,13 +1,10 @@
 Exponentials
 HyperbolicFunctions
-test0122 - Integrate[(Cosh[x] + Sinh[x])/(Cosh[x] - Sinh[x]), x]
-test0123 - Integrate[(Cosh[x] - Sinh[x])/(Cosh[x] + Sinh[x]), x]
+test0145 - Integrate[Csch[x]*Log[Tanh[x]]*Sech[x], x]
 test0146 - Integrate[Csch[2*x]*Log[Tanh[x]], x]
-test0152 - Integrate[(Cosh[a + b*x] - Sinh[a + b*x])/(Cosh[a + b*x] + Sinh[a + b*x]), x]
 IndependentTestSuites
 test0103 - Integrate[(-1 + I*eps*Sinh[x])/(I*a - x + I*eps*Cosh[x]), x]
 test0118 - Integrate[(x*(-Sqrt[-4 + x^2] + x^2*Sqrt[-4 + x^2] - 4*Sqrt[-1 + x^2] + x^2*Sqrt[-1 + x^2]))/((4 - 5*x^2 + x^4)*(1 + Sqrt[-4 + x^2] + Sqrt[-1 + x^2])), x]
-test0217 - Integrate[-Sec[Pi/4 + 2*x], x]
 test0256 - Integrate[(E^x*(1 - Sin[x]))/(1 - Cos[x]), x]
 test0257 - Integrate[(E^x*(1 + Sin[x]))/(1 + Cos[x]), x]
 test0258 - Integrate[(E^x*(1 + Cos[x]))/(1 - Sin[x]), x]
@@ -18,6 +15,12 @@ InverseHyperbolicFunctions
 test0041 - Integrate[(a + I*b*ArcSin[1 - I*d*x^2])^(-1), x]
 test0042 - Integrate[(a + I*b*ArcSin[1 - I*d*x^2])^(-2), x]
 test0045 - Integrate[Sqrt[a + I*b*ArcSin[1 - I*d*x^2]], x]
+test0124 - Integrate[Sqrt[a + b*ArcCosh[1 + d*x^2]], x]
+test0125 - Integrate[1/Sqrt[a + b*ArcCosh[1 + d*x^2]], x]
+test0126 - Integrate[(a + b*ArcCosh[1 + d*x^2])^(-3/2), x]
+test0127 - Integrate[Sqrt[a + b*ArcCosh[-1 + d*x^2]], x]
+test0128 - Integrate[1/Sqrt[a + b*ArcCosh[-1 + d*x^2]], x]
+test0129 - Integrate[(a + b*ArcCosh[-1 + d*x^2])^(-3/2), x]
 test0154 - Integrate[ArcTanh[Tanh[a + b*x]]^2/x^4, x]
 test0155 - Integrate[ArcTanh[Tanh[a + b*x]]^3/x^5, x]
 test0156 - Integrate[ArcTanh[Tanh[a + b*x]]^4/x^6, x]
@@ -48,6 +51,7 @@ test0131 - Integrate[Log[(-2*x*((d*Sqrt[e])/Sqrt[-d] - e*x))/(d + e*x^2)]/(d + e
 test0132 - Integrate[Log[(2*x*(Sqrt[d]*Sqrt[-e] + e*x))/(d + e*x^2)]/(d + e*x^2), x]
 test0133 - Integrate[Log[(-2*x*(Sqrt[d]*Sqrt[-e] - e*x))/(d + e*x^2)]/(d + e*x^2), x]
 SpecialFunctions
+test0143 - Integrate[(Sinh[b*x]*SinhIntegral[b*x])/x, x]
 TrigFunctions
 test0143 - Integrate[Sqrt[a + b*Sin[e + f*x]]/(Sqrt[g*Sin[e + f*x]]*(c + c*Sin[e + f*x])), x]
 test0144 - Integrate[Sqrt[g*Sin[e + f*x]]/(Sqrt[a + b*Sin[e + f*x]]*(c + d*Sin[e + f*x])), x]
@@ -96,7 +100,6 @@ test1047 - Integrate[(a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2)^p, x]
 test1059 - Integrate[1/((d + e*x)^(3/2)*(a + b*x + c*x^2)^(1/4)), x]
 test1061 - Integrate[(d + e*x)^(-2 - 2*p)*(a + b*x + c*x^2)^p, x]
 test1118 - Integrate[((d + e*x)^(5/2)*Sqrt[f + g*x])/(a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2)^(5/2), x]
-test1119 - Integrate[Sqrt[a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2]/(Sqrt[d + e*x]*(f + g*x)^(5/2)), x]
 test1124 - Integrate[Sqrt[d + e*x]/(Sqrt[f + g*x]*Sqrt[a + b*x + c*x^2]), x]
 test1136 - Integrate[1/Sqrt[-2 + 4*x^2 + 3*x^4], x]
 test1137 - Integrate[1/Sqrt[-2 + 3*x^2 + 3*x^4], x]

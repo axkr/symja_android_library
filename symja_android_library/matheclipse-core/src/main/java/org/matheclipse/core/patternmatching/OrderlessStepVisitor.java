@@ -7,7 +7,6 @@ import org.matheclipse.combinatoric.MultisetPartitionsIterator;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher.StackMatcher;
 
@@ -27,7 +26,7 @@ public class OrderlessStepVisitor extends FlatOrderlessStepVisitor implements IS
 	 * @see MultisetPartitionsIterator
 	 */
 	public OrderlessStepVisitor(final ISymbol sym, IAST lhsPatternAST, IAST lhsEvalAST, StackMatcher stackMatcher,
-			PatternMap patternMap, boolean oneIdentity) {
+			IPatternMap patternMap, boolean oneIdentity) {
 		super(sym, lhsPatternAST, lhsEvalAST, stackMatcher, patternMap, oneIdentity);
 	}
 

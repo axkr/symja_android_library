@@ -148,8 +148,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	 * @param pm2
 	 * @return
 	 */
-	private static int equivalentRHS(final IExpr patternExpr1, final IExpr patternExpr2, final PatternMap pm1,
-			final PatternMap pm2) {
+	private static int equivalentRHS(final IExpr patternExpr1, final IExpr patternExpr2, final IPatternMap pm1,
+			final IPatternMap pm2) {
 		IExpr p1, p2;
 		if (patternExpr1.isCondition()) {
 			p1 = patternExpr1.second();
@@ -202,7 +202,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	 */
 	@Override
 	public boolean checkRHSCondition(EvalEngine engine) {
-		PatternMap patternMap = getPatternMap();
+		IPatternMap patternMap = getPatternMap();
 		if (patternMap.getRHSEvaluated()) {
 			return true;
 		}
@@ -237,7 +237,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	}
 
 	public IExpr replace(final IExpr leftHandSide, @Nonnull EvalEngine engine, boolean evaluate) {
-		PatternMap patternMap = null;
+		IPatternMap patternMap = null;
 		if (isRuleWithoutPatterns()) {
 			// no patterns found match equally:
 			if (fLhsPatternExpr.equals(leftHandSide)) {
@@ -310,8 +310,10 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	}
 
 	@Override
-	public final int determinePatterns() {
-		int result = super.determinePatterns();
+	public final IPatternMap determinePatterns() {
+		int[] result = new int[] { IPatternMap.DEFAULT_RULE_PRIORITY };
+		IPatternMap patternMap = IPatternMap.determinePatterns(fLhsPatternExpr, result);
+		// int result = super.determinePatterns();
 		if (fRightHandSide != null) {
 			if (fRightHandSide.isCondition()) {
 				fLHSPriority -= fRightHandSide.second().leafCount();
@@ -321,7 +323,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 				}
 			}
 		}
-		return result;
+		// return result;
+		return patternMap;
 	}
 
 	/**
@@ -466,10 +469,11 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 		if ((ordinal & 0x8000) == 0x0000) {
 			fPatternCondition = (IExpr) objectInput.readObject();
 		}
-		this.fPatternMap = new PatternMap();
+
 		if (fLhsPatternExpr != null) {
-			fLHSPriority = fPatternMap.determinePatterns(fLhsPatternExpr);
-		}
+			int[] priority = new int[] { IPatternMap.DEFAULT_RULE_PRIORITY };
+			this.fPatternMap = IPatternMap.determinePatterns(fLhsPatternExpr, priority);
+		} 
 		initRHSleafCountSimplify();
 	}
 

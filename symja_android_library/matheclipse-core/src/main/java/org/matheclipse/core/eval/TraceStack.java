@@ -38,13 +38,12 @@ final public class TraceStack extends AbstractEvalStepListener {
 		}
 	}
 
-	public IAST getList() {
+	public IASTAppendable getList() {
 		return fTraceList;
 	}
 
 	/**
-	 * Add the expression to the internal trace list, if the trace matcher
-	 * returns <code>true</code>.
+	 * Add the expression to the internal trace list, if the trace matcher returns <code>true</code>.
 	 * 
 	 * @param expr
 	 *            an expression
@@ -60,8 +59,8 @@ final public class TraceStack extends AbstractEvalStepListener {
 	}
 
 	/**
-	 * Add the expression to the internal trace list, if the trace matcher
-	 * returns <code>true</code> and the trace lit is empty.
+	 * Add the expression to the internal trace list, if the trace matcher returns <code>true</code> and the trace lit
+	 * is empty.
 	 * 
 	 * @param expr
 	 *            an expression
@@ -70,6 +69,12 @@ final public class TraceStack extends AbstractEvalStepListener {
 		if (fTraceList.isAST0()) {
 			add(expr);
 		}
+	}
+
+	public void setList(IASTAppendable list) {
+		fTraceList = list;
+		fStack.pop();
+		fStack.push(list);
 	}
 
 	@Override
@@ -93,4 +98,18 @@ final public class TraceStack extends AbstractEvalStepListener {
 			add(resultExpr);
 		}
 	}
+
+//	@Override
+//	public int size() {
+//		return fStack.size();
+//	}
+//
+//	@Override
+//	public void resetSize(int fromPosition) {
+//		if (fromPosition > 1 && fromPosition < fStack.size()) {
+//			while (fStack.size() > fromPosition) {
+//				fStack.pop();
+//			}
+//		}
+//	}
 }

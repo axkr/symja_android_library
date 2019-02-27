@@ -745,6 +745,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[(Cosh[x] + Sinh[x])/(Cosh[x] - Sinh[x]), x]", //
 				"(Cosh[x] + Sinh[x])^2/2", //
+				"1/(2*(Cosh[x]-Sinh[x])^2)", //
 				4385);
 	}
 
@@ -752,7 +753,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
 	public void test0123() {
 		check(//
 				"Integrate[(Cosh[x] - Sinh[x])/(Cosh[x] + Sinh[x]), x]", //
-				"-1/(2*(Cosh[x] + Sinh[x])^2)", //
+				"-1/(2*(Cosh[x] + Sinh[x])^2)", // 
 				4385);
 	}
 
@@ -918,6 +919,14 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
 
 	// {6686}
 	public void test0145() {
+//		check(//
+//				"Simplify[(E^x-E^(-x))/2]", //
+//				"Sinh(x)", //
+//				6686);
+//		check(//
+//				"Simplify[-(1/(E^x*2)) + E^x/2]", //
+//				"Sinh(x)", //
+//				6686);
 		check(//
 				"Integrate[Csch[x]*Log[Tanh[x]]*Sech[x], x]", //
 				"Log[Tanh[x]]^2/2", //

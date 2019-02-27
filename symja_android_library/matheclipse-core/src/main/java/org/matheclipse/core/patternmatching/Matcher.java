@@ -141,7 +141,7 @@ public class Matcher implements Function<IExpr, IExpr> {
 
 		@Override
 		IExpr evalMethod() {
-			PatternMap pm=getPatternMap();
+			IPatternMap pm=getPatternMap();
 			IExpr arg1 = pm.getValue(0);
 			IExpr arg2 = pm.getValue(1);
 			return fRightHandSide.apply(arg1, arg2);
@@ -159,7 +159,7 @@ public class Matcher implements Function<IExpr, IExpr> {
 
 		@Override
 		IExpr evalMethod() {
-			PatternMap pm=getPatternMap();
+			IPatternMap pm=getPatternMap();
 			IExpr arg1 = pm.getValue(0);
 			IExpr arg2 = pm.getValue(1);
 			return fRightHandSide.test(arg1, arg2) ? F.True : F.False;
@@ -176,7 +176,7 @@ public class Matcher implements Function<IExpr, IExpr> {
 
 		@Override
 		IExpr evalMethod() {
-			PatternMap pm=getPatternMap();
+			IPatternMap pm=getPatternMap();
 			IExpr arg1 = pm.getValue(0);
 			return fRightHandSide.apply(arg1);
 		}
@@ -192,7 +192,7 @@ public class Matcher implements Function<IExpr, IExpr> {
 
 		@Override
 		IExpr evalMethod() {
-			PatternMap pm=getPatternMap();
+			IPatternMap pm=getPatternMap();
 			return fRightHandSide.eval(pm);
 		}
 	}
@@ -207,7 +207,7 @@ public class Matcher implements Function<IExpr, IExpr> {
 
 		@Override
 		IExpr evalMethod() {
-			PatternMap pm=getPatternMap();
+			IPatternMap pm=getPatternMap();
 			IExpr arg1 = pm.getValue(0);
 			return fRightHandSide.test(arg1) ? F.True : F.False;
 		}

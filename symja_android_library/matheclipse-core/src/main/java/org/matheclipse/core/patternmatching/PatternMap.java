@@ -150,7 +150,7 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 		int[] priority = new int[] { DEFAULT_RULE_PRIORITY };
 		if (lhsPatternExpr instanceof IAST) {
 			List<IExpr> patternIndexMap = new ArrayList<IExpr>();
-			determinePatternsRecursive(patternIndexMap, (IAST) lhsPatternExpr,priority,1);
+			determinePatternsRecursive(patternIndexMap, (IAST) lhsPatternExpr, priority, 1);
 			final int size = patternIndexMap.size();
 			this.fSymbolsOrPattern = new IExpr[size];
 			this.fSymbolsOrPatternValues = new IExpr[size];
@@ -175,7 +175,8 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 	 * @param treeLevel
 	 *            the level of the tree where the patterns are determined
 	 */
-	private int determinePatternsRecursive(List<IExpr> patternIndexMap, final IAST lhsPatternExpr, int[] priority, int treeLevel) {
+	private int determinePatternsRecursive(List<IExpr> patternIndexMap, final IAST lhsPatternExpr, int[] priority,
+			int treeLevel) {
 		if (lhsPatternExpr.isAlternatives() || lhsPatternExpr.isExcept()) {
 			fRuleWithoutPattern = false;
 		}
@@ -189,7 +190,7 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 				}
 
 			} else if (x instanceof IPatternObject) {
-				int[] result = ((IPatternObject) x).addPattern(this, patternIndexMap);
+				int[] result = ((IPatternObject) x).addPattern(patternIndexMap);
 				listEvalFlags[0] |= result[0];
 				priority[0] -= result[1];
 			} else {

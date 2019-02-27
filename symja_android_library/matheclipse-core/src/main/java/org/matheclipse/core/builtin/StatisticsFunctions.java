@@ -77,6 +77,7 @@ public class StatisticsFunctions {
 		F.GeometricDistribution.setEvaluator(new GeometricDistribution());
 		F.GumbelDistribution.setEvaluator(new GumbelDistribution());
 		F.HypergeometricDistribution.setEvaluator(new HypergeometricDistribution());
+		F.InverseCDF.setEvaluator(new InverseCDF());
 		F.KolmogorovSmirnovTest.setEvaluator(new KolmogorovSmirnovTest());
 		F.Kurtosis.setEvaluator(new Kurtosis());
 		F.LogNormalDistribution.setEvaluator(new LogNormalDistribution());
@@ -157,6 +158,49 @@ public class StatisticsFunctions {
 		static final IExpr CDF_NUMERIC_THRESHOLD = F.num(1e-14);
 
 		public IExpr cdf(IAST dist, IExpr x);
+
+		default IExpr inverseCDF(IAST dist, IExpr x) {
+			return F.NIL;
+		}
+
+	}
+
+	private static class InverseCDF extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			// 1 or 2 arguments
+			if (ast.size() == 2 || ast.size() == 3) {
+				try {
+					if (ast.arg1().isAST()) {
+						IAST dist = (IAST) ast.arg1();
+						IExpr xArg = F.NIL;
+						if (ast.isAST2()) {
+							xArg = ast.arg2();
+						}
+						if (dist.head().isSymbol()) {
+							ISymbol head = (ISymbol) dist.head();
+
+							if (dist.head().isSymbol()) {
+								if (head instanceof IBuiltInSymbol) {
+									IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
+									if (evaluator instanceof ICDF) {
+										ICDF inverseCDF = (ICDF) evaluator;
+										return inverseCDF.inverseCDF(dist, xArg);
+									}
+								}
+							}
+						}
+					}
+				} catch (Exception ex) {
+					if (Config.SHOW_STACKTRACE) {
+						ex.printStackTrace();
+					}
+				}
+			}
+
+			return F.NIL;
+		}
 
 	}
 
@@ -3034,6 +3078,28 @@ public class StatisticsFunctions {
 						// [$ ( (1/2)*Erfc((-# + n)/(Sqrt(2)*m)) &) $]
 						F.Function(F.Times(F.C1D2,
 								F.Erfc(F.Times(F.Power(F.Times(F.CSqrt2, m), -1), F.Plus(F.Negate(F.Slot1), n))))); // $$;
+				return callFunction(function, k);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr inverseCDF(IAST dist, IExpr k) {
+			if (dist.isAST0()) {
+				IExpr function =
+						// [$ (ConditionalExpression((-Sqrt(2))*InverseErfc(2*#1), 0 <= #1 <= 1) & ) $]
+						F.Function(
+								F.ConditionalExpression(F.Times(F.CN1, F.CSqrt2, F.InverseErfc(F.Times(F.C2, F.Slot1))),
+										F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
+				return callFunction(function, k);
+			} else if (dist.isAST2()) {
+				IExpr n = dist.arg1();
+				IExpr m = dist.arg2();
+				IExpr function =
+						// [$ ( ConditionalExpression(n - Sqrt(2)*m*InverseErfc(2*#1), 0 <= #1 <= 1) &) $]
+						F.Function(F.ConditionalExpression(
+								F.Plus(n, F.Times(F.CN1, F.CSqrt2, m, F.InverseErfc(F.Times(F.C2, F.Slot1)))),
+								F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
 				return callFunction(function, k);
 			}
 			return F.NIL;

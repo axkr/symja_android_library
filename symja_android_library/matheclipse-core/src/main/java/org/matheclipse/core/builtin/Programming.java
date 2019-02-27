@@ -2257,6 +2257,7 @@ public final class Programming {
 				if (ast.arg1().isList()) {
 					IExpr temp = withSubstVariables((IAST) ast.arg1(), ast.arg2(), engine);
 					if (temp.isPresent()) {
+						// System.out.println(temp);
 						return engine.evaluate(temp);
 					}
 

@@ -80,12 +80,11 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
-import org.matheclipse.core.patternmatching.PatternMap;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.math.DoubleMath;
 
 import ch.ethz.idsc.tensor.QuantityParser;
 import edu.jas.kern.ComputerThreads;
@@ -1492,6 +1491,9 @@ public class F {
 	public final static IBuiltInSymbol InverseBetaRegularized = F.initFinalSymbol("InverseBetaRegularized",
 			ID.InverseBetaRegularized);
 
+	/***/
+	public final static IBuiltInSymbol InverseCDF = F.initFinalSymbol("InverseCDF", ID.InverseCDF);
+
 	/** InverseErf(z) - returns the inverse error function of `z`. */
 	public final static IBuiltInSymbol InverseErf = F.initFinalSymbol("InverseErf", ID.InverseErf);
 
@@ -2148,7 +2150,7 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol PatternOrder = F.initFinalSymbol("PatternOrder", ID.PatternOrder);
-	
+
 	/***/
 	public final static IBuiltInSymbol ParzenWindow = F.initFinalSymbol("ParzenWindow", ID.ParzenWindow);
 
@@ -5042,11 +5044,11 @@ public class F {
 	public static IAST ChebyshevU(final IExpr a0, final IExpr a1) {
 		return binaryAST2(ChebyshevU, a0, a1);
 	}
-	
+
 	public static IAST CharacteristicPolynomial(final IExpr a0, final IExpr a1) {
 		return binaryAST2(CharacteristicPolynomial, a0, a1);
 	}
-	
+
 	public static IAST Chop(final IExpr a0) {
 		return unaryAST1(Chop, a0);
 	}

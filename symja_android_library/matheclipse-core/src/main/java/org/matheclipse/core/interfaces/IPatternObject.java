@@ -2,7 +2,7 @@ package org.matheclipse.core.interfaces;
 
 import java.util.List;
 
-import org.matheclipse.core.patternmatching.PatternMap;
+import org.matheclipse.core.patternmatching.IPatternMap;
 
 /**
  * Interface for pattern objects (i.e. _, x_, x__)
@@ -12,12 +12,11 @@ public interface IPatternObject extends IExpr {
 
 	/**
 	 * Add this pattern to the given <code>patternMap</code> and <code>patternIndexMap</code>.
-	 * 
-	 * @param patternMap      a map from a pattern to a possibly found value during pattern-matching.
 	 * @param patternIndexMap a map from the pattern symbol to the intern array index
+	 * 
 	 * @return
 	 */
-	public int[] addPattern(PatternMap patternMap, List<IExpr> patternIndexMap);
+	public int[] addPattern(List<IExpr> patternIndexMap);
 
 	/**
 	 * Check if the two left-hand-side pattern expressions are equivalent. (i.e. <code>f[x_,y_]</code> is equivalent to
@@ -28,7 +27,7 @@ public interface IPatternObject extends IExpr {
 	 * @param pm2
 	 * @return
 	 */
-	public boolean equivalent(final IPatternObject patternExpr, final PatternMap pm1, PatternMap pm2);
+	public boolean equivalent(final IPatternObject patternExpr, final IPatternMap pm1, IPatternMap pm2);
 
 	/**
 	 * Get the associated condition if available
@@ -50,7 +49,7 @@ public interface IPatternObject extends IExpr {
 	 * @param pm the PatternMap from which we determine the index.
 	 * @return
 	 */
-	public int getIndex(PatternMap pm);
+	public int getIndex(IPatternMap pm);
 
 	/**
 	 * Get the associated symbol for this pattern-object
@@ -67,6 +66,6 @@ public interface IPatternObject extends IExpr {
 	 * 
 	 * @return
 	 */
-	public boolean matchPattern(final IExpr expr, PatternMap patternMap);
+	public boolean matchPattern(final IExpr expr, IPatternMap patternMap);
 
 }

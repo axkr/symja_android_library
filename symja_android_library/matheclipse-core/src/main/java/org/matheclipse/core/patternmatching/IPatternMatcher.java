@@ -114,9 +114,9 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Se
 		return v;
 	}
 
-	public int determinePatterns() {
-		return PatternMap.DEFAULT_RULE_PRIORITY;
-	}
+//	public int determinePatterns() {
+//		return PatternMap.DEFAULT_RULE_PRIORITY;
+//	}
 
 	@Override
 	public boolean equals(Object obj) {

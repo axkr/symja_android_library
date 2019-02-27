@@ -43,9 +43,12 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
 	/**
 	 * Create a pattern-matching rule which invokes the method name in the given instance, if leftHandSide is matching.
 	 * 
-	 * @param leftHandSide could contain pattern expressions for "pattern-matching"
-	 * @param instance     instance of an IFunctionEvaluator interface
-	 * @param method       method to call
+	 * @param leftHandSide
+	 *            could contain pattern expressions for "pattern-matching"
+	 * @param instance
+	 *            instance of an IFunctionEvaluator interface
+	 * @param method
+	 *            method to call
 	 */
 	public PatternMatcherAndInvoker(final IExpr leftHandSide, IFunctionEvaluator instance, final String methodName) {
 		super(leftHandSide);
@@ -66,11 +69,10 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
 		final ExprParser parser = new ExprParser(EvalEngine.get());
 		IExpr lhs = parser.parse(leftHandSide);
 
-		// Parser parser = new Parser();
-		// ASTNode node = parser.parse(leftHandSide);
-		// IExpr lhs = AST2Expr.CONST.convert(node);
 		fLhsPatternExpr = lhs;
-		this.fLHSPriority = determinePatterns();
+		int[] priority = new int[] {IPatternMap.DEFAULT_RULE_PRIORITY};
+		determinePatterns(priority);
+		this.fLHSPriority = priority[0];
 		initInvoker(instance, methodName);
 	}
 
@@ -116,7 +118,7 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
 			}
 			return result != null ? result : F.NIL;
 		}
-		PatternMap patternMap = getPatternMap();
+		IPatternMap patternMap = getPatternMap();
 		if (fTypes.length != patternMap.size()) {
 			return F.NIL;
 		}

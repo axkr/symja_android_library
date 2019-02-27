@@ -6,11 +6,8 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.patternmatching.PatternMatcher.StackMatcher;
 
 public class PatternMatcherList extends PatternMatcherAndEvaluator {
 	IASTAppendable fReplaceList;
@@ -26,7 +23,7 @@ public class PatternMatcherList extends PatternMatcherAndEvaluator {
 	}
 
 	final public IExpr replace(final IExpr leftHandSide, @Nonnull EvalEngine engine, boolean evaluate) {
-		PatternMap patternMap = null;
+		IPatternMap patternMap = null;
 		if (isRuleWithoutPatterns()) {
 			// no patterns found match equally:
 			if (fLhsPatternExpr.equals(leftHandSide)) {
@@ -94,7 +91,7 @@ public class PatternMatcherList extends PatternMatcherAndEvaluator {
 	
 	@Override
 	public boolean checkRHSCondition(EvalEngine engine) {
-		PatternMap patternMap = getPatternMap();
+		IPatternMap patternMap = getPatternMap();
 
 		if (patternMap.isAllPatternsAssigned()) {
 			IExpr result = patternMap.substituteSymbols(fRightHandSide);

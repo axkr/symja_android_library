@@ -33,7 +33,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
 
 	public AbstractRubiTestCase(String name, boolean isRelaxedSyntax) {
 		super(name);
-//		System.out.println(">>>" + name);
+		// System.out.println(">>>" + name);
 		this.isRelaxedSyntax = isRelaxedSyntax;
 		Config.SERVER_MODE = false;
 		Config.PARSER_USE_LOWERCASE_SYMBOLS = isRelaxedSyntax;
@@ -174,7 +174,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
 				assertEquals(expectedResult, evaledResult);
 			}
 		} catch (AssertionError e) {
-			System.out.println(getName());
+			System.out.println(getName() + " - " + evalString);
 			throw e;
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -942,8 +942,18 @@ public class PolynomialFunctions {
 				}
 			}
 			Set<IExpr> collector = new TreeSet<IExpr>();
-
+			// final IExpr a1 = engine.evaluate(ast.arg1());
+			// IExpr expr = a1;
+			// if (a1.isAST()) {
+			// expr = Algebra.expandAll((IAST) a1, null, true, true, engine);
+			// if (!expr.isPresent()) {
+			// expr = a1;
+			// }
+			// }
 			IExpr expr = F.evalExpandAll(ast.arg1(), engine).normal();
+			// if (expr.isTimes()) {
+			// expr =F.Distribute.of(expr);
+			// }
 			if (expr.isZero()) {
 				collector.add(F.CNInfinity);
 			} else if (expr.isAST()) {
@@ -2222,7 +2232,7 @@ public class PolynomialFunctions {
 			}
 			IASTAppendable result = QuarticSolver.quarticSolve(a, b, c, d, e);
 			if (result.isPresent()) {
-				return (IASTAppendable)QuarticSolver.sortASTArguments(result);
+				return (IASTAppendable) QuarticSolver.sortASTArguments(result);
 			}
 		}
 
@@ -2333,7 +2343,7 @@ public class PolynomialFunctions {
 			}
 			IASTAppendable result = QuarticSolver.quarticSolve(a, b, c, d, e);
 			if (result.isPresent()) {
-				result = (IASTAppendable)QuarticSolver.sortASTArguments (result);
+				result = (IASTAppendable) QuarticSolver.sortASTArguments(result);
 				return result;
 			}
 
@@ -2426,12 +2436,12 @@ public class PolynomialFunctions {
 				// eliminate roots from the result list, which occur in the
 				// denominator
 				int i = 1;
-				IASTAppendable appendable=F.NIL;
+				IASTAppendable appendable = F.NIL;
 				while (i < result.size()) {
 					IExpr temp = denominator.replaceAll(F.Rule(variables.arg1(), result.get(i)));
 					if (temp.isPresent() && engine.evaluate(temp).isZero()) {
 						if (!appendable.isPresent()) {
-							appendable=result.removeAtClone(i);
+							appendable = result.removeAtClone(i);
 							continue;
 						}
 						appendable.remove(i);

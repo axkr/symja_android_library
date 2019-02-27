@@ -14,11 +14,11 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.AST2;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
 
@@ -221,6 +221,40 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 	}
 
 	/**
+	 * Split plusAST into two parts, a "rest" and a multiple of Pi/2. This assumes plusAST to be an Plus() expression.
+	 * The multiple of Pi returned in the second position is always a IRational number.
+	 * 
+	 * @param plusAST
+	 * @param engine
+	 * @return <code>F.NIL</code> if no multiple is found.
+	 */
+	public static IAST peelOff(final IAST plusAST, EvalEngine engine) {
+		IRational k = null;
+		for (int i = 1; i < plusAST.size(); i++) {
+			IExpr temp = plusAST.get(i);
+			if (temp.equals(F.Pi)) {
+				k = F.C1;
+				break;
+			}
+			if (temp.isTimes()) {
+				if (temp.first().isRational() && temp.second().equals(F.Pi)) {
+					k = (IRational) temp.first();
+					break;
+				}
+			}
+		}
+		if (k != null) {
+			AST2 result = new AST2(F.List, plusAST, F.C0);
+			IExpr m1 = F.Times(k.mod(F.C1D2), F.Pi);
+			IExpr m2 = F.Subtract.of(engine, F.Times(k, F.Pi), m1);
+			result.set(1, F.Subtract(plusAST, m2));
+			result.set(2, m2);
+			return result;
+		}
+		return F.NIL;
+	}
+
+	/**
 	 * Check if the expression is canonical negative.
 	 * 
 	 * @param expression
@@ -372,7 +406,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 		}
 		return F.NIL;
 	}
-	
+
 	/**
 	 * Initialize the serialized Rubi integration rules from ressource <code>/ser/integrate.ser</code>.
 	 * 

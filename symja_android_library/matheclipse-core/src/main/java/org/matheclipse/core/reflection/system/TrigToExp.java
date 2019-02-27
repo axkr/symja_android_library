@@ -106,8 +106,8 @@ public class TrigToExp extends AbstractEvaluator {
 				F.Plus(F.Times(F.CN1D2, F.Log(F.Plus(F.C1, F.Negate(x)))), F.Times(F.C1D2, F.Log(F.Plus(F.C1, x))))); // $$);
 
 		MATCHER.caseOf(Cosh(x_), //
-				x -> // [$ (E^x+E^(-x))/2 $]
-				F.Times(F.C1D2, F.Plus(F.Exp(x), F.Exp(F.Negate(x))))); // $$);
+				x -> // [$ 1/(E^x*2) + E^x/2 $]
+				F.Plus(F.Power(F.Times(F.Exp(x), F.C2), -1), F.Times(F.C1D2, F.Exp(x)))); // $$);
 		MATCHER.caseOf(Csch(x_), //
 				x -> // [$ 2/(E^x-E^(-x)) $]
 				F.Times(F.C2, F.Power(F.Plus(F.Negate(F.Exp(F.Negate(x))), F.Exp(x)), -1))); // $$);
@@ -119,12 +119,12 @@ public class TrigToExp extends AbstractEvaluator {
 				x -> // [$ 2/(E^x+E^(-x)) $]
 				F.Times(F.C2, F.Power(F.Plus(F.Exp(x), F.Exp(F.Negate(x))), -1))); // $$);
 		MATCHER.caseOf(Sinh(x_), //
-				x -> // [$ (E^x-E^(-x))/2 $]
-				F.Times(F.C1D2, F.Plus(F.Negate(F.Exp(F.Negate(x))), F.Exp(x)))); // $$);
+				x -> // [$ -(1/(E^x*2)) + E^x/2 $]
+				F.Plus(F.Negate(F.Power(F.Times(F.Exp(x), F.C2), -1)), F.Times(F.C1D2, F.Exp(x)))); // $$);
 		MATCHER.caseOf(Tanh(x_), //
-				x -> // [$ ((-E^(-x))+E^x)/((E^(-x))+E^x) $]
-				F.Times(F.Plus(F.Negate(F.Exp(F.Negate(x))), F.Exp(x)),
-						F.Power(F.Plus(F.Exp(F.Negate(x)), F.Exp(x)), -1))); // $$);
+				x -> // [$ -(1/(E^x*(E^(-x) + E^x))) + E^x/(E^(-x) + E^x) $]
+				F.Plus(F.Negate(F.Power(F.Times(F.Exp(x), F.Plus(F.Exp(F.Negate(x)), F.Exp(x))), -1)),
+						F.Times(F.Exp(x), F.Power(F.Plus(F.Exp(F.Negate(x)), F.Exp(x)), -1)))); // $$);
 	}
 
 	public TrigToExp() {
@@ -133,8 +133,8 @@ public class TrigToExp extends AbstractEvaluator {
 	/**
 	 * Exponential definitions for trigonometric functions
 	 * 
-	 * See <a href= "http://en.wikipedia.org/wiki/List_of_trigonometric_identities#Exponential_definitions"> List of trigonometric
-	 * identities - Exponential definitions</a>,<br/>
+	 * See <a href= "http://en.wikipedia.org/wiki/List_of_trigonometric_identities#Exponential_definitions"> List of
+	 * trigonometric identities - Exponential definitions</a>,<br/>
 	 * <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
 	 */
 	@Override

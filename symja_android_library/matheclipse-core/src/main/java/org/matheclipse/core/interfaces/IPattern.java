@@ -1,6 +1,6 @@
 package org.matheclipse.core.interfaces;
 
-import org.matheclipse.core.patternmatching.PatternMap;
+import org.matheclipse.core.patternmatching.IPatternMap;
 
 /**
  * Interface for pattern objects (i.e. x_)
@@ -15,6 +15,6 @@ public interface IPattern extends IPatternObject, IExpr {
 	 * @param expr
 	 * @return
 	 */
-	public boolean isConditionMatched(IExpr expr, PatternMap patternMap);
+	public boolean isConditionMatched(IExpr expr, IPatternMap patternMap);
 	
 }
