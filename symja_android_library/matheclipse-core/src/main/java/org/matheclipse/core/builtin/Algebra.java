@@ -4559,7 +4559,7 @@ public class Algebra {
 				localAST = tempAST;
 			}
 		}
-		if (localAST.isAllExpanded()) {
+		if (localAST.isAllExpanded() && expandNegativePowers && !distributePlus) {
 			if (localAST != ast) {
 				return localAST;
 			}
