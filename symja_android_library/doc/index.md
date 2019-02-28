@@ -567,6 +567,8 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Numerator](functions/Numerator.md)
 * [NumericQ](functions/NumericQ.md)
 * [OddQ](functions/OddQ.md)
+* [Off](functions/Off.md)
+* [On](functions/On.md)
 * [OneIdentity](functions/OneIdentity.md)
 * [Operate](functions/Operate.md)
 * [OptimizeExpression](functions/OptimizeExpression.md)
@@ -729,6 +731,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Timing](functions/Timing.md)
 * [ToCharacterCode](functions/ToCharacterCode.md)
 * [ToeplitzMatrix](functions/ToeplitzMatrix.md)
+* [ToExpression](functions/ToExpression.md)
 * [Together](functions/Together.md)
 * [ToPolarCoordinates](functions/ToPolarCoordinates.md)
 * [ToString](functions/ToString.md)
@@ -767,4 +770,3 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Xor](functions/Xor.md)
 * [YuleDissimilarity](functions/YuleDissimilarity.md)
 * [Zeta](functions/Zeta.md)
-

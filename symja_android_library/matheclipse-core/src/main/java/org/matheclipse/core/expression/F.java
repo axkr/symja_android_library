@@ -1555,7 +1555,11 @@ public class F {
 	/***/
 	public final static IBuiltInSymbol KnownUnitQ = F.initFinalSymbol("KnownUnitQ", ID.KnownUnitQ);
 
-	/***/
+	/**
+	 * KolmogorovSmirnovTest(data) - Computes the `p-value`, or <i>observed significance level</i>, of a one-sample
+	 * [Wikipedia:Kolmogorov-Smirnov test](http://en.wikipedia.org/wiki/Kolmogorov-Smirnov_test) evaluating the null
+	 * hypothesis that `data` conforms to the `NormalDistribution()`.
+	 */
 	public final static IBuiltInSymbol KolmogorovSmirnovTest = F.initFinalSymbol("KolmogorovSmirnovTest",
 			ID.KolmogorovSmirnovTest);
 
@@ -2057,6 +2061,12 @@ public class F {
 	/** OddQ(x) - returns `True` if `x` is odd, and `False` otherwise. */
 	public final static IBuiltInSymbol OddQ = F.initFinalSymbol("OddQ", ID.OddQ);
 
+	/***/
+	public final static IBuiltInSymbol Off = F.initFinalSymbol("Off", ID.Off);
+
+	/***/
+	public final static IBuiltInSymbol On = F.initFinalSymbol("On", ID.On);
+
 	/**
 	 * OneIdentity - is an attribute specifying that `f(x)` should be treated as equivalent to `x` in pattern matching.
 	 */
@@ -2149,13 +2159,13 @@ public class F {
 	public final static IBuiltInSymbol PartitionsQ = F.initFinalSymbol("PartitionsQ", ID.PartitionsQ);
 
 	/***/
-	public final static IBuiltInSymbol PatternOrder = F.initFinalSymbol("PatternOrder", ID.PatternOrder);
-
-	/***/
 	public final static IBuiltInSymbol ParzenWindow = F.initFinalSymbol("ParzenWindow", ID.ParzenWindow);
 
 	/***/
 	public final static IBuiltInSymbol Pattern = F.initFinalSymbol("Pattern", ID.Pattern);
+
+	/***/
+	public final static IBuiltInSymbol PatternOrder = F.initFinalSymbol("PatternOrder", ID.PatternOrder);
 
 	/**
 	 * PatternTest(pattern, test) - constrains `pattern` to match `expr` only if the evaluation of `test(expr)` yields
@@ -2884,13 +2894,16 @@ public class F {
 	/** TimesBy(x, dx) - is equivalent to `x = x * dx`. */
 	public final static IBuiltInSymbol TimesBy = F.initFinalSymbol("TimesBy", ID.TimesBy);
 
-	/***/
+	/**
+	 * Timing(x) - returns a list with the first entry containing the evaluation time of `x` and the second entry is the
+	 * evaluation result of `x`.
+	 */
 	public final static IBuiltInSymbol Timing = F.initFinalSymbol("Timing", ID.Timing);
 
 	/** ToCharacterCode(string) - converts `string` into a list of corresponding integer numbers. */
 	public final static IBuiltInSymbol ToCharacterCode = F.initFinalSymbol("ToCharacterCode", ID.ToCharacterCode);
 
-	/***/
+	/** ToExpression("string", form) - converts the `string` given in `form` into an expression. */
 	public final static IBuiltInSymbol ToExpression = F.initFinalSymbol("ToExpression", ID.ToExpression);
 
 	/** ToPolarCoordinates({x, y}) - return the polar coordinates for the cartesian coordinates `{x, y}`. */
@@ -2959,6 +2972,9 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol Undefined = F.initFinalSymbol("Undefined", ID.Undefined);
+
+	/***/
+	public final static IBuiltInSymbol Underoverscript = F.initFinalSymbol("Underoverscript", ID.Underoverscript);
 
 	/**
 	 * Unequal(x, y) - yields `False` if `x` and `y` are known to be equal, or `True` if `x` and `y` are known to be

@@ -74,6 +74,8 @@ public final class Programming {
 		F.NestList.setEvaluator(new NestList());
 		F.NestWhile.setEvaluator(new NestWhile());
 		F.NestWhileList.setEvaluator(new NestWhileList());
+		F.On.setEvaluator(new On());
+		F.Off.setEvaluator(new Off());
 		F.Part.setEvaluator(new Part());
 		F.Print.setEvaluator(new Print());
 		F.Quiet.setEvaluator(new Quiet());
@@ -1253,6 +1255,45 @@ public final class Programming {
 		}
 	}
 
+	private final static class Off extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST0()) {
+				engine.setOnOffMode(false);
+				return F.Null;
+			}
+
+			Validate.checkSize(ast, 1);
+
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	private final static class On extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST0()) {
+				engine.setOnOffMode(true);
+				return F.Null;
+			}
+
+			Validate.checkSize(ast, 1);
+
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
 	/**
 	 * <pre>
 	 * Part(expr, i)

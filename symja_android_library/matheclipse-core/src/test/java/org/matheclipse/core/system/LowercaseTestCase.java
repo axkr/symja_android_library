@@ -1640,6 +1640,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCoefficient() {
+		check("Coefficient((1+2*x)/Sqrt(3),x,1)", //
+				"2/Sqrt(3)");
+		check("g = (x + 3)^5;Coefficient(g, x, #) & /@ Range(0, Exponent(g, x))", //
+				"{243,405,270,90,15,1}");
 		// http://oeis.org/A133314
 		check("b(0) = 1; " //
 				+ "b(n_) := b(n)=-Sum(Binomial(n, j)*a(j)*b(n-j), {j, 1, n}); row(0) = {1}; " //
@@ -1776,7 +1780,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Coefficient((x + y)*(x + 2*y)*(3*x + 4*y + 5), x^2*y)", "13");
 		check("Coefficient((x + y)*(x + 2*y)*(3*x + 4*y + 5), x*y^2)", "18");
 		check("Coefficient((x + y)*(x + 2*y)*(3*x + 4*y + 5), x*y)", "15");
-		check("Coefficient((x + y)*(x + 2*y)*(3*x + 4*y + 5), y^3)", "8");
+		check("Coefficient((x + y)*(x + 2*y)*(3*x + 4*y + 5), y^3)", //
+				"8");
+
 	}
 
 	public void testCoefficientList() {
@@ -3753,6 +3759,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testExponent() {
+		check("Exponent((1+2*x)/Sqrt(3),x,List)", //
+				"{0,1}");
 		check("Exponent(Together((1+2*x)/Sqrt(3)),x,List)", //
 				"{0,1}");
 		check("Exponent((1+2*x)/Sqrt(3),x,List)", //
@@ -5782,7 +5790,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testIntegrate() {
 		// check("Limit(1/9*x*(9-x^2)^(3/2)*Hypergeometric2F1(1,2,3/2,x^2/9),x->3)", //
 		// "");
-		 
+
 		// see github #116
 		// should give (2*ArcTan((1 + 2*x)/Sqrt(3)))/Sqrt(3)
 		check(" Integrate(1/(x^2+x+1),x) ", //
