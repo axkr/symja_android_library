@@ -159,9 +159,13 @@ public class Rationalize extends AbstractFunctionEvaluator {
 					return F.NIL;
 				}
 				epsilon = epsilonExpr.doubleValue();
+				if (arg1.isNumericFunction()) {
+					// works more similar to MMA if we do this step:
+					arg1 = engine.evalN(arg1);
+				}
 			}
 			// try to convert into a fractional number
-			IExpr temp = of(arg1, epsilon);
+			IExpr temp = ofNumbers(arg1, epsilon);
 			if (temp.isPresent()) {
 				return temp;
 			}

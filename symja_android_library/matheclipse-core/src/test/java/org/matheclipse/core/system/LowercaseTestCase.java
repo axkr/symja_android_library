@@ -10409,6 +10409,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRationalize() {
+		check("Rationalize(x+E)", //
+				"E+x");
+		check("Rationalize(E)", //
+				"E");
+		check("Rationalize(E, 0.01)", //
+				"19/7");
+		check("Rationalize(x+E, 0.01)", //
+				"E+x");
 		check("Rationalize(x+y)", //
 				"x+y");
 		check("Rationalize(x+0.3333*y)", //
@@ -10424,7 +10432,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Rationalize(6.75)", //
 				"27/4");
 		check("Rationalize(Pi)", //
-				"245850922/78256779");
+				"Pi");
 		check("Rationalize(Pi, .01)", //
 				"22/7");
 		check("Rationalize(Pi, .001)", //
@@ -11954,7 +11962,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// github #117
 		check("Solve({x+y^2==9.1, y==2*x+2}, {x,y})", //
 				"{{x->-2.71893,y->-3.43787},{x->0.468934,y->2.93787}}");
-		
+
 		check("Solve(-28 - 4*Sqrt(-1 + x) + 4*x==0,x)", //
 				"{{x->10}}");
 		check("Solve(Sqrt(5*x-25)-Sqrt(x-1)==2,x)", //
