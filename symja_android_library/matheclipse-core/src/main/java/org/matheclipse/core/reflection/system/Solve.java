@@ -907,7 +907,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3, 4);
-
+		boolean[] isNumeric = new boolean[] { false };
 		try {
 			IAST variables = Validate.checkIsVariableOrVariableList(ast, 2, engine);
 			if (variables == null) {
@@ -941,19 +941,19 @@ public class Solve extends AbstractFunctionEvaluator {
 			}
 			// IAST termsEqualZeroList = Validate.checkEquationsAndInequations(ast, 1);
 			IAST termsList = Validate.checkEquationsAndInequations(ast, 1);
-			IASTMutable[] lists = SolveUtils.filterSolveLists(termsList, F.NIL);
+			IASTMutable[] lists = SolveUtils.filterSolveLists(termsList, F.NIL, isNumeric);
 			if (lists[2].isPresent()) {
-				return lists[2];
+				return solveNumeric(lists[2], isNumeric[0], engine);
 			}
 
 			IASTMutable termsEqualZeroList = lists[0];
 			IASTMutable temp = solveTimesEquationsRecursively(termsEqualZeroList, lists[1], variables, engine);
 			if (temp.isPresent()) {
-				return QuarticSolver.sortASTArguments(temp);
+				return solveNumeric(QuarticSolver.sortASTArguments(temp), isNumeric[0], engine);
 			}
 
 			if (lists[1].isEmpty() && termsEqualZeroList.size() == 2 && variables.size() == 2) {
-				return eliminateOneVariable(termsEqualZeroList, variables.arg1(), engine);
+				return solveNumeric(eliminateOneVariable(termsEqualZeroList, variables.arg1(), engine), isNumeric[0], engine);
 			}
 		} catch (RuntimeException rex) {
 			if (Config.SHOW_STACKTRACE) {
@@ -963,6 +963,18 @@ public class Solve extends AbstractFunctionEvaluator {
 
 		return F.NIL;
 
+	}
+
+	/**
+	 * if <code>isNumeric == true</code> do a numeric calculation
+	 * 
+	 * @param expr
+	 * @param isNumeric
+	 * @param engine
+	 * @return
+	 */
+	private static IExpr solveNumeric(IExpr expr, boolean isNumeric, EvalEngine engine) {
+		return expr.isPresent() ? isNumeric ? engine.evalN(expr) : expr : F.NIL;
 	}
 
 	/**
@@ -1149,9 +1161,10 @@ public class Solve extends AbstractFunctionEvaluator {
 		}
 		try {
 			IExpr temp = F.subst(inequationsList, subSolutionList);
+			boolean[] isNumeric = new boolean[] { false };
 			temp = engine.evaluate(temp);
 			if (temp.isAST()) {
-				IASTMutable[] lists = SolveUtils.filterSolveLists((IASTMutable) temp, subSolutionList);
+				IASTMutable[] lists = SolveUtils.filterSolveLists((IASTMutable) temp, subSolutionList, isNumeric);
 				if (lists[2].isPresent()) {
 					return lists[2];
 				}
@@ -1181,8 +1194,8 @@ public class Solve extends AbstractFunctionEvaluator {
 	 *            the evaluation engine
 	 * @return
 	 */
-	private IASTMutable solveTimesEquationsRecursively(IASTMutable termsEqualZeroList, IAST inequationsList, IAST variables,
-			EvalEngine engine) {
+	private IASTMutable solveTimesEquationsRecursively(IASTMutable termsEqualZeroList, IAST inequationsList,
+			IAST variables, EvalEngine engine) {
 		IASTMutable resultList = solveEquations(termsEqualZeroList, inequationsList, variables, 0, engine);
 		if (resultList.isPresent() && !resultList.isEmpty()) {
 			return resultList;

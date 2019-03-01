@@ -17,7 +17,7 @@ public class SolveUtils {
 	 * @param list
 	 * @return
 	 */
-	public static IASTMutable[] filterSolveLists(IAST list, IASTMutable solution) {
+	public static IASTMutable[] filterSolveLists(IAST list, IASTMutable solution, boolean[] isNumeric) {
 		IASTMutable[] result = new IASTMutable[3];
 		IASTAppendable termsEqualZero = F.ListAlloc(list.size());
 		IASTAppendable inequalityTerms = F.ListAlloc(list.size());
@@ -34,7 +34,14 @@ public class SolveUtils {
 				return result;
 			} else if (arg.isEqual()) {
 				// arg must be Equal(_, 0)
-				termsEqualZero.append(arg.first());
+				IExpr arg1 = arg.first();
+				IExpr temp = org.matheclipse.core.reflection.system.Rationalize.ofNumbers(arg1);
+				if (temp.isPresent()) {
+					isNumeric[0]=true;
+					termsEqualZero.append(temp);
+				} else {
+					termsEqualZero.append(arg1);
+				}
 			} else {
 				inequalityTerms.append(arg);
 			}

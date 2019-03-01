@@ -10409,14 +10409,26 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRationalize() {
-		check("ArcCos(-Rationalize(0.5))", "2/3*Pi");
-		check("Rationalize(0.202898)", "101449/500000");
-		check("Rationalize(1.2 + 6.7*x)", "6/5+67/10*x");
-		check("Rationalize(Exp(Sqrt(2)), 2^-12)", "218/53");
-		check("Rationalize(6.75)", "27/4");
-		check("Rationalize(Pi)", "245850922/78256779");
-		check("Rationalize(Pi, .01)", "22/7");
-		check("Rationalize(Pi, .001)", "333/106");
+		check("Rationalize(x+y)", //
+				"x+y");
+		check("Rationalize(x+0.3333*y)", //
+				"x+3333/10000*y");
+		check("ArcCos(-Rationalize(0.5))", //
+				"2/3*Pi");
+		check("Rationalize(0.202898)", //
+				"101449/500000");
+		check("Rationalize(1.2 + 6.7*x)", //
+				"6/5+67/10*x");
+		check("Rationalize(Exp(Sqrt(2)), 2^-12)", //
+				"218/53");
+		check("Rationalize(6.75)", //
+				"27/4");
+		check("Rationalize(Pi)", //
+				"245850922/78256779");
+		check("Rationalize(Pi, .01)", //
+				"22/7");
+		check("Rationalize(Pi, .001)", //
+				"333/106");
 	}
 
 	public void testRe() {
@@ -11939,6 +11951,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve1() {
+		// github #117
+		check("Solve({x+y^2==9.1, y==2*x+2}, {x,y})", //
+				"{{x->-2.71893,y->-3.43787},{x->0.468934,y->2.93787}}");
+		
 		check("Solve(-28 - 4*Sqrt(-1 + x) + 4*x==0,x)", //
 				"{{x->10}}");
 		check("Solve(Sqrt(5*x-25)-Sqrt(x-1)==2,x)", //
@@ -12021,12 +12037,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{x->0.6666666666666665*y*z}}");
 		// Issue #160
 		checkNumeric("Solve((2.10937501*y)/(0.6923076944378698*z)==(0.6923076944378698*z)/x,x)", //
-				"{{x->(0.22721893523232695*z^2.0)/y}}");
+				"{{x->(0.2272189352323269*z^2.0)/y}}");
 		// Issue #159
 		check("Solve(x==2*Sqrt(y)*Sqrt(z),y)", //
 				"{{y->x^2/(4*z)}}");
 		check("Solve(x==2.0*Sqrt(y)*Sqrt(z),y)", //
-				"{{y->0.25*(x/Sqrt(z))^2.0}}");
+				"{{y->(0.25*x^2.0)/z}}");
 
 		// Issue #155
 		check("Solve(x==2*Sqrt(y)*Sqrt(z),y)", //
@@ -12038,7 +12054,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		// Issue #152
 		checkNumeric("Solve(Sqrt(x)==16.1,x)", //
-				"{{x->259.21000000000004}}");
+				"{{x->259.21}}");
 
 		// TODO check type of result in Solve()
 		// check("Solve(x^3 == 1, x, Reals)", "{{x->1}}");
@@ -12047,7 +12063,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{x->-5.0+a}}");
 
 		checkNumeric("Solve(-8828.206-582.222*b+55.999*b^2.0+4.8*b^3.0==0, b)", //
-				"{{b->11.805307105741175},{b->-11.735882719537255+I*(-4.250200714726695)},{b->-11.735882719537255+I*4.250200714726695}}");
+				"{{b->11.805307105741173},{b->-11.735882719537255+I*(-4.250200714726687)},{b->-11.735882719537255+I*4.250200714726687}}");
 		// check("Solve(Abs((-3+x^2)/x) ==2,{x})",
 		// "{{x->-3},{x->-1},{x->1},{x->3}}");
 		check("Solve(x^3==-2,x)", //
@@ -12125,7 +12141,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Solve(Sin(x)==1/2,x)", //
 				"{{x->Pi/6}}");
 		checkNumeric("Solve(sin(x)==0.5,x)", //
-				"{{x->0.5235987755982989}}");
+				"{{x->0.5235987755982988}}");
 		check("Solve(x^2-2500.00==0,x)", //
 				"{{x->-50.0},{x->50.0}}");
 		check("Solve(x^2+a*x+1 == 0, x)", //
@@ -12134,7 +12150,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{x->1},{x->4/3}}");
 
 		checkNumeric("Solve(x^2+50*x-2500.00==0,x)", //
-				"{{x->-80.90169943749474},{x->30.901699437494745}}");
+				"{{x->-80.90169943749474},{x->30.90169943749474}}");
 
 		check("Solve(a*x + y == 7 && b*x - y == 1, {x, y})", //
 				"{{x->-8/(-a-b),y->(a-7*b)/(-a-b)}}");
@@ -12150,7 +12166,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("z=22.13904248493947", // 7
 				"22.13904248493947");
 		checkNumeric("Solve(x/y==z/x,x)", //
-				"{{x->-81.08825721072805},{x->81.08825721072805}}");
+				"{{x->-81.08825721072823},{x->81.08825721072823}}");
 	}
 
 	// public void testSolve2() {

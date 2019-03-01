@@ -13,6 +13,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorExpr;
@@ -52,7 +53,7 @@ public class Rationalize extends AbstractFunctionEvaluator {
 			if (ast.isNumericFunction()) {
 				ISignedNumber signedNumber = ast.evalReal();
 				if (signedNumber != null) {
-					return F.fraction(signedNumber.doubleValue(), epsilon);
+					return getRational(signedNumber);
 				}
 			}
 			return super.visitAST(ast);
@@ -68,15 +69,15 @@ public class Rationalize extends AbstractFunctionEvaluator {
 			return F.complex(element.getRealPart(), element.getImaginaryPart(), epsilon);
 		}
 
-		@Override
-		public IExpr visit(IFraction element) {
-			return element;
-		}
+		// @Override
+		// public IExpr visit(IFraction element) {
+		// return element;
+		// }
 
-		@Override
-		public IExpr visit(IInteger element) {
-			return element;
-		}
+		// @Override
+		// public IExpr visit(IInteger element) {
+		// return element;
+		// }
 
 		@Override
 		public IExpr visit(INum element) {
@@ -92,10 +93,53 @@ public class Rationalize extends AbstractFunctionEvaluator {
 			if (element.isNumericFunction()) {
 				ISignedNumber signedNumber = element.evalReal();
 				if (signedNumber != null) {
-					return F.fraction(signedNumber.doubleValue(), epsilon);
+					return getRational(signedNumber);
 				}
 			}
 			return F.NIL;
+		}
+
+		private IRational getRational(ISignedNumber signedNumber) {
+			if (signedNumber.isRational()) {
+				return (IRational) signedNumber;
+			}
+			return F.fraction(signedNumber.doubleValue(), epsilon);
+		}
+	}
+
+	static class RationalizeNumericsVisitor extends VisitorExpr {
+		double epsilon;
+
+		public RationalizeNumericsVisitor(double epsilon) {
+			super();
+			this.epsilon = epsilon;
+		}
+
+		@Override
+		public IExpr visit(IASTMutable ast) {
+			return super.visitAST(ast);
+		}
+
+		@Override
+		public IExpr visit(IComplex element) {
+			return element;
+		}
+
+		@Override
+		public IExpr visit(IComplexNum element) {
+			return F.complex(element.getRealPart(), element.getImaginaryPart(), epsilon);
+		}
+
+		@Override
+		public IExpr visit(INum element) {
+			return F.fraction(element.getRealPart(), epsilon);
+		}
+
+		private IRational getRational(ISignedNumber signedNumber) {
+			if (signedNumber.isRational()) {
+				return (IRational) signedNumber;
+			}
+			return F.fraction(signedNumber.doubleValue(), epsilon);
 		}
 	}
 
@@ -117,11 +161,11 @@ public class Rationalize extends AbstractFunctionEvaluator {
 				epsilon = epsilonExpr.doubleValue();
 			}
 			// try to convert into a fractional number
-			RationalizeVisitor rationalizeVisitor = new RationalizeVisitor(epsilon);
-			IExpr temp = arg1.accept(rationalizeVisitor);
+			IExpr temp = of(arg1, epsilon);
 			if (temp.isPresent()) {
 				return temp;
 			}
+			return arg1;
 		} catch (Exception e) {
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();
@@ -129,6 +173,50 @@ public class Rationalize extends AbstractFunctionEvaluator {
 		}
 
 		return F.NIL;
+	}
+
+	/**
+	 * Rationalize numeric numbers and numeric functions (e.g. Sin(Pi*4.5) ) in expression <code>arg</code>.
+	 * 
+	 * @param arg1
+	 * @return <code>F.NIL</code> if no expression was transformed
+	 */
+	public static IExpr of(IExpr arg1) {
+		return of(arg1, Config.DOUBLE_EPSILON);
+	}
+
+	/**
+	 * Rationalize numeric numbers and numeric functions (e.g. Sin(Pi*4.5) ) in expression <code>arg</code>.
+	 * 
+	 * @param arg1
+	 * @param epsilon
+	 * @return <code>F.NIL</code> if no expression was transformed
+	 */
+	public static IExpr of(IExpr arg1, double epsilon) {
+		RationalizeVisitor rationalizeVisitor = new RationalizeVisitor(epsilon);
+		return arg1.accept(rationalizeVisitor);
+	}
+
+	/**
+	 * Rationalize only pure numeric numbers in expression <code>arg</code>.
+	 * 
+	 * @param arg1
+	 * @return <code>F.NIL</code> if no expression was transformed
+	 */
+	public static IExpr ofNumbers(IExpr arg1) {
+		return ofNumbers(arg1, Config.DOUBLE_EPSILON);
+	}
+
+	/**
+	 * Rationalize only pure numeric numbers in expression <code>arg</code>.
+	 * 
+	 * @param arg1
+	 * @param epsilon
+	 * @return <code>F.NIL</code> if no expression was transformed
+	 */
+	public static IExpr ofNumbers(IExpr arg1, double epsilon) {
+		RationalizeNumericsVisitor rationalizeVisitor = new RationalizeNumericsVisitor(epsilon);
+		return arg1.accept(rationalizeVisitor);
 	}
 
 	@Override
