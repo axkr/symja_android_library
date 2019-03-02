@@ -6,6 +6,26 @@ On( )
 
 > switch on the interactive trace. The output is printed in the defined `out` stream.
  
+
+```
+On({head1, head2,... })
+```
+
+> switch on the interactive trace only for the `head`s defined in the list. The output is printed in the defined `out` stream.
+
+```
+On({head1, head2,... }, Unique)
+```
+
+or
+
+```
+On(All, Unique)
+```
+
+> switch on the interactive trace only for the defined `head` s. The output is printed only once for a combination of _unevaluated_ input expression and _evaluated_ output expression.
+
+
 ### Examples
 
 

@@ -1260,7 +1260,7 @@ public final class Programming {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST0()) {
-				engine.setOnOffMode(false);
+				engine.setOnOffMode(false, null, false);
 				return F.Null;
 			}
 
@@ -1280,13 +1280,41 @@ public final class Programming {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST0()) {
-				engine.setOnOffMode(true);
+				engine.setOnOffMode(true, null, false);
 				return F.Null;
 			}
-
-			Validate.checkSize(ast, 1);
+			if (ast.size() > 1) {
+				IExpr arg1 = ast.first();
+				if (ast.isAST2() && ast.second().equals(F.Unique)) {
+					return enableOnOffTrace(arg1, true, engine);
+				}
+				if (ast.isAST1()) {
+					return enableOnOffTrace(arg1, false, engine);
+				}
+			}
+			Validate.checkRange(ast, 1, 2);
 
 			return F.NIL;
+		}
+
+		private IExpr enableOnOffTrace(IExpr arg1, boolean unique, EvalEngine engine) {
+			IdentityHashMap<ISymbol, ISymbol> map = null;
+			if (!arg1.equals(F.All)) {
+				IAST list = F.List(arg1);
+				if (arg1.isList()) {
+					list = (IAST) arg1;
+				}
+				map = new IdentityHashMap<ISymbol, ISymbol>();
+				for (int i = 1; i < list.size(); i++) {
+					if (list.get(i).isSymbol()) {
+						map.put((ISymbol) list.get(i), F.Null);
+					} else {
+						map.put(list.get(i).topHead(), F.Null);
+					}
+				}
+			}
+			engine.setOnOffMode(true, map, unique);
+			return F.Null;
 		}
 
 		@Override
@@ -1294,6 +1322,7 @@ public final class Programming {
 		}
 
 	}
+
 	/**
 	 * <pre>
 	 * Part(expr, i)

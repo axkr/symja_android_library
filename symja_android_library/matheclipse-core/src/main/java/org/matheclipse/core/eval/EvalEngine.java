@@ -210,9 +210,24 @@ public class EvalEngine implements Serializable {
 	public transient Set<ISymbol> fModifiedVariablesList;
 
 	/**
-	 * Set interactive trace mode on or off.
+	 * Set interactive trace mode on or off. See functions <code>On()</code> and <code>Off()</code>.
 	 */
 	transient private boolean fOnOffMode = false;
+
+	/**
+	 * Set interactive trace output only to unique expression (e.g. to print an evaluated combination only once).
+	 */
+	transient private boolean fOnOffUnique = false;
+
+	/**
+	 * If <code>fOnOffUnique==true</code> this map contains the unique expressions which occurred during evaluation
+	 */
+	transient HashMap<IExpr, IExpr> fOnOffUniqueMap = null;
+
+	/**
+	 * If not null, this map contains the header symbols for which the interactive trace should be printed.
+	 */
+	transient IdentityHashMap<ISymbol, ISymbol> fOnOffMap = null;
 
 	/**
 	 * The history list for the <code>Out[]</code> function.
@@ -1184,13 +1199,8 @@ public class EvalEngine implements Serializable {
 					if (fStopRequested) {
 						throw TimeoutException.TIMED_OUT;
 					}
-
 					if (fOnOffMode) {
-						PrintStream stream = getOutPrintStream();
-						if (stream == null) {
-							stream = System.out;
-						}
-						stream.println("  " + expr.toString() + " --> " + temp.toString() + "\n");
+						printOnOffTrace(expr, temp);
 					}
 
 					// if (temp == F.Null&&!expr.isAST(F.SetDelayed)) {
@@ -1209,11 +1219,7 @@ public class EvalEngine implements Serializable {
 								throw TimeoutException.TIMED_OUT;
 							}
 							if (fOnOffMode) {
-								PrintStream stream = getOutPrintStream();
-								if (stream == null) {
-									stream = System.out;
-								}
-								stream.println("  " + result.toString() + " --> " + temp.toString() + "\n");
+								printOnOffTrace(result, temp);
 							}
 
 							// if (temp == F.Null&&!result.isAST(F.SetDelayed)) {
@@ -1242,6 +1248,35 @@ public class EvalEngine implements Serializable {
 				fTraceStack.tearDown(fRecursionCounter);
 			}
 			fRecursionCounter--;
+		}
+	}
+
+	/**
+	 * Print the trace enabled by the <code>On({head1, head2,...})</code> function.
+	 * 
+	 * @param unevaledExpr
+	 *            the unevaluated expression
+	 * @param evaledExpr
+	 *            the evaluated expression
+	 */
+	private void printOnOffTrace(IExpr unevaledExpr, IExpr evaledExpr) {
+		boolean showExpr = true;
+		if (fOnOffMap != null) {
+			showExpr = fOnOffMap.containsKey(unevaledExpr.topHead());
+		}
+		if (showExpr) {
+			if (fOnOffUniqueMap != null) {
+				if (fOnOffUniqueMap.containsKey(unevaledExpr)) {
+					return;
+				} else {
+					fOnOffUniqueMap.put(unevaledExpr, evaledExpr);
+				}
+			}
+			PrintStream stream = getOutPrintStream();
+			if (stream == null) {
+				stream = System.out;
+			}
+			stream.println("  " + unevaledExpr.toString() + " --> " + evaledExpr.toString() + "\n");
 		}
 	}
 
@@ -1867,6 +1902,9 @@ public class EvalEngine implements Serializable {
 		fTogetherMode = false;
 		fEvalLHSMode = false;
 		fOnOffMode = false;
+		fOnOffUnique = false;
+		fOnOffUniqueMap = null;
+		fOnOffMap = null;
 		fTraceMode = false;
 		fTraceStack = null;
 		fStopRequested = false;
@@ -2055,6 +2093,10 @@ public class EvalEngine implements Serializable {
 		fSeconds = 0;
 		fModifiedVariablesList = null;
 		REMEMBER_AST_CACHE = null;
+
+		if (fOnOffMode && fOnOffUnique) {
+			fOnOffUniqueMap = new HashMap<IExpr, IExpr>();
+		}
 	}
 
 	private void selectNumericMode(final int attr, final int nAttribute, boolean localNumericMode) {
@@ -2137,12 +2179,24 @@ public class EvalEngine implements Serializable {
 	}
 
 	/**
-	 * Set the mode for <code>On()</code> or <code>Off()</code> function
+	 * Set the mode for the <code>On()</code> or <code>Off()</code> function
 	 * 
-	 * @param b
+	 * @param onOffMode
+	 *            if <code>true</code> every evaluation step will be printd to the defined out stream.
+	 * @param headSymbolsMap
+	 *            the header symbols which should trigger an output in the trace
+	 * @param uniqueTrace
+	 *            the output is printed only once for a combination of _unevaluated_ input expression and _evaluated_
+	 *            output expression.
 	 */
-	public void setOnOffMode(final boolean b) {
-		fOnOffMode = b;
+	public void setOnOffMode(final boolean onOffMode, IdentityHashMap<ISymbol, ISymbol> headSymbolsMap,
+			boolean uniqueTrace) {
+		fOnOffMode = onOffMode;
+		fOnOffMap = headSymbolsMap;
+		fOnOffUnique = uniqueTrace;
+		if (uniqueTrace) {
+			fOnOffUniqueMap = new HashMap<IExpr, IExpr>();
+		}
 	}
 
 	public void setOutListDisabled(LastCalculationsHistory outList) {
