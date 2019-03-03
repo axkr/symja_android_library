@@ -499,7 +499,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkSize(ast, 3);
+		Validate.checkRange(ast, 3, 4);
 		return Solve.of(ast, true, engine);
 //		IAST vars = Validate.checkSymbolOrSymbolList(ast, 2);
 //		IAST termsEqualZeroList = Validate.checkEquations(ast, 1);

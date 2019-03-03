@@ -561,6 +561,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Normalize](functions/Normalize.md)
 * [Not](functions/Not.md)
 * [NRoots](functions/NRoots.md)
+* [NSolve](functions/NSolve.md)
 * [Null](functions/Null.md)
 * [NullSpace](functions/NullSpace.md)
 * [NumberQ](functions/NumberQ.md)

@@ -8301,8 +8301,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "x+Sin(x)==2");
 		// checkNumeric("FindRoot(x+Sin(x)==2, {x,0})", //
 		// "{x->1.1060601577062719}");
-		// checkNumeric("NSolve(x+Sin(x)==2, x)", //
-		// "{x->1.1060601577062719}");
+		
+		// NSolve calls Solve in numeric mode
+		checkNumeric("NSolve({Sin(x)-11==y, x+y==-9}, {y,x})", //
+				"{x->1.1060601577062719,y->-10.106060157706272}");
+		// Solve doesn't get the result
+		checkNumeric("Solve({Sin(x)-11==y, x+y==-9}, {y,x})", //
+				"Solve({-11+Sin(x)==y,x+y==-9},{y,x})");
+		
+		
+		checkNumeric("NSolve(x+Sin(x)==2, x)", //
+				"{x->1.1060601577062719}");
 		checkNumeric("NSolve(x^3 + 2.0*x^2 - 5*x -3.0 ==0,x)",
 				"{{x->1.773387411650643},{x->-0.5199693720627907+I*2.220446049250313E-16},{x->-3.253418039587852}}");
 		checkNumeric("NSolve(x^3 + 2*x^2 - 5*x -3 ==0,x)",
@@ -11964,7 +11973,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("SokalSneathDissimilarity({0, 0, 0, 0}, {1, 1, 1, 1})", "1");
 	}
 
-	public void testSolve1() {
+	public void testSolve() {
+		check("Solve((x^2 + 2)*(x^2 - 2) == 0, x, Reals)",//
+				"{{x->-Sqrt(2)},{x->Sqrt(2)}}");
 		// github #117
 		check("Solve({x+y^2==9.1, y==2*x+2}, {x,y})", //
 				"{{x->-2.71893,y->-3.43787},{x->0.468934,y->2.93787}}");

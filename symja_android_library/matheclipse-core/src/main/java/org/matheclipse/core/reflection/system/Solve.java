@@ -917,9 +917,12 @@ public class Solve extends AbstractFunctionEvaluator {
 			if (variables == null) {
 				return F.NIL;
 			}
-			IExpr domain = F.Complexes;
+			ISymbol domain = F.Complexes;
 			if (ast.isAST3()) {
-				domain = ast.arg3();
+				if (!ast.arg3().isSymbol()) {
+					throw new WrongArgumentType(ast, ast.arg3(), 3, "Domain definition expected!");
+				}
+				domain = (ISymbol) ast.arg3();
 				if (domain.equals(F.Booleans)) {
 					return BooleanFunctions.solveInstances(ast.arg1(), variables, Integer.MAX_VALUE);
 				}
@@ -940,30 +943,19 @@ public class Solve extends AbstractFunctionEvaluator {
 					return F.NIL;
 				}
 				if (!domain.equals(F.Reals) && !domain.equals(F.Complexes)) {
-					throw new WrongArgumentType(ast, ast.arg3(), 3, "Booleans or Integers expected!");
+					throw new WrongArgumentType(ast, ast.arg3(), 3, "Domain definition expected!");
 				}
 			}
 			IAST termsList = Validate.checkEquationsAndInequations(ast, 1);
 			IASTMutable[] lists = SolveUtils.filterSolveLists(termsList, F.NIL, isNumeric);
+			boolean numericFlag = isNumeric[0] || numeric;
 			if (lists[2].isPresent()) {
-				return solveNumeric(lists[2], isNumeric[0] || numeric, engine);
+				IExpr result = solveNumeric(lists[2], numericFlag, engine);
+				return checkDomain(result, domain);
 			}
-
 			IASTMutable termsEqualZeroList = lists[0];
-			IASTMutable temp = solveTimesEquationsRecursively(termsEqualZeroList, lists[1], variables, engine);
-			if (temp.isPresent()) {
-				return solveNumeric(QuarticSolver.sortASTArguments(temp), isNumeric[0] || numeric, engine);
-			}
-
-			if (lists[1].isEmpty() && termsEqualZeroList.size() == 2 && variables.size() == 2) {
-				IExpr res = eliminateOneVariable(termsEqualZeroList, variables.arg1(), engine);
-				// if (!res.isPresent()) {
-				// if (isNumeric[0] || numeric) {
-				// return F.FindRoot.of(engine, termsEqualZeroList.arg1(), F.List(variables.arg1(), F.C0));
-				// }
-				// }
-				return solveNumeric(res, isNumeric[0] || numeric, engine);
-			}
+			IExpr result = solveRecursive(lists[1], termsEqualZeroList, numericFlag, variables, engine);
+			return checkDomain(result, domain);
 		} catch (RuntimeException rex) {
 			if (Config.SHOW_STACKTRACE) {
 				rex.printStackTrace();
@@ -971,6 +963,115 @@ public class Solve extends AbstractFunctionEvaluator {
 		}
 
 		return F.NIL;
+	}
+
+	/**
+	 * Check if all solutions are in the given domain (currently only <code>Reals</code> is checked).
+	 * 
+	 * @param expr
+	 * @param domain
+	 * @return
+	 */
+	private static IExpr checkDomain(IExpr expr, ISymbol domain) {
+		if (expr.isList() && domain.equals(F.Reals)) {
+			if (expr.isListOfLists()) {
+				IASTAppendable result = F.ListAlloc(expr.size());
+				IASTAppendable appendable;
+				for (int i = 1; i < expr.size(); i++) {
+					IAST listOfRules = (IAST) ((IAST) expr).get(i);
+					appendable = listOfRules.copyAppendable();
+					if (!isComplex(listOfRules)) {
+						result.append(appendable);
+					}
+				}
+				return result;
+			} else {
+				if (!isComplex(((IAST) expr))) {
+					return expr;
+				}
+				return F.CEmptyList;
+			}
+		}
+		return expr;
+	}
+
+	/**
+	 * Check if all rules in the list return a real result.
+	 * 
+	 * @param listOfRules
+	 *            a list of rules <code>Rule(variable, value)</code>
+	 * @return
+	 */ 
+	private static boolean isComplex(IAST listOfRules) {
+		if (listOfRules.isListOfRules()) {
+			for (int i = 1; i < listOfRules.size(); i++) {
+				IExpr value = listOfRules.get(i).second();
+				if (!value.isRealResult()) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	private static IExpr solveRecursive(IASTMutable list, IASTMutable termsEqualZeroList, boolean numericFlag,
+			IAST variables, EvalEngine engine) {
+		IASTMutable temp = solveTimesEquationsRecursively(termsEqualZeroList, list, variables, engine);
+		if (temp.isPresent()) {
+			return solveNumeric(QuarticSolver.sortASTArguments(temp), numericFlag, engine);
+		}
+
+		if (list.isEmpty() && termsEqualZeroList.size() == 2 && variables.size() == 2) {
+			IExpr firstVariable = variables.arg1();
+			IExpr res = eliminateOneVariable(termsEqualZeroList, firstVariable, engine);
+			if (!res.isPresent()) {
+				if (numericFlag) {
+					// find numerically find start value 0
+					return F.FindRoot.of(engine, termsEqualZeroList.arg1(), F.List(firstVariable, F.C0));
+				}
+			}
+			return solveNumeric(res, numericFlag, engine);
+		}
+
+		if (termsEqualZeroList.size() > 2 && variables.size() >= 3) {
+			// expensive recursion try
+			IExpr firstEquation = termsEqualZeroList.arg1();
+			IExpr firstVariable = variables.arg1();
+			IAST[] reduced = Eliminate.eliminateOneVariable(F.List(F.Equal(firstEquation, F.C0)), firstVariable,
+					engine);
+			if (reduced != null) {
+				variables = variables.removeAtCopy(1);
+				termsEqualZeroList = termsEqualZeroList.removeAtCopy(1);
+				// oneVariableRule = ( firstVariable -> reducedExpression )
+				IAST oneVariableRule = reduced[1];
+				IExpr replaced = termsEqualZeroList.replaceAll(oneVariableRule);
+				if (replaced.isPresent() && replaced.isList()) {
+					IExpr subResult = solveRecursive(list, (IASTMutable) replaced, numericFlag, variables, engine);
+					if (subResult.isList()) {
+						replaced = oneVariableRule.second().replaceAll((IAST) subResult);
+						if (replaced.isPresent()) {
+							if (subResult.isListOfLists()) {
+								IASTAppendable result = F.ListAlloc(subResult.size());
+								IASTAppendable appendable;
+								for (int i = 1; i < subResult.size(); i++) {
+									appendable = ((IAST) ((IAST) subResult).get(i)).copyAppendable();
+									appendable.append(F.Rule(firstVariable, replaced));
+									result.append(appendable);
+								}
+								return result;
+							} else {
+								IASTAppendable appendable = ((IAST) subResult).copyAppendable();
+								appendable.append(F.Rule(firstVariable, replaced));
+								return appendable;
+							}
+						}
+					}
+				}
+			}
+
+		}
+		return F.NIL;
+
 	}
 
 	/**
@@ -994,7 +1095,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	 *            the variable which should be eliminated in the term
 	 * @return
 	 */
-	private static IExpr eliminateOneVariable(IAST termsEqualZeroList, IExpr variable, EvalEngine engine) {
+	private static IAST eliminateOneVariable(IAST termsEqualZeroList, IExpr variable, EvalEngine engine) {
 		if (!termsEqualZeroList.arg1().isFree(t -> t.isIndeterminate() || t.isDirectedInfinity(), true)) {
 			return F.NIL;
 		}
