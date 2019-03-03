@@ -4814,6 +4814,94 @@ public final class Arithmetic {
 					// Pi*Csc(x*Pi)
 					F.Times(F.Pi, F.Csc(F.Times(x, F.Pi)))));
 
+			// Sin(x_)^2/(1-Cos(x_)^2) = 1
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimesPower(//
+					F.Power(F.Sin(x_), F.C2), //
+					F.Power(F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Cos(x_), F.C2))), F.CN1), //
+					F.C1));
+			// (1-Cos(x_)^2) / Sin(x_)^2 = 1
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimesPower(//
+					F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Cos(x_), F.C2))), //
+					F.Power(F.Sin(x_), F.CN2), //
+					F.C1));
+
+			// Cos(x_)^2/(1-Sin(x_)^2) = 1
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimesPower(//
+					F.Power(F.Cos(x_), F.C2), //
+					F.Power(F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Sin(x_), F.C2))), F.CN1), //
+					F.C1));
+			// (1-Sin(x_)^2) / Cos(x_)^2 = 1
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimesPower(//
+					F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Sin(x_), F.C2))), //
+					F.Power(F.Cos(x_), F.CN2), //
+					F.C1));
+
+			// Sech(x_)^2/(1-Tanh(x_)^2 ) = 1
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimesPower(//
+					F.Power(F.Sech(x_), F.C2), //
+					F.Power(F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Tanh(x_), F.C2))), F.CN1), //
+					F.C1));
+			// (1-Tanh(x_)^2 ) / Sech(x_)^2 = 1
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimesPower(//
+					F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Tanh(x_), F.C2))), //
+					F.Power(F.Sech(x_), F.CN2), //
+					F.C1));
+
+			// Tanh(x_)^2/(1-Sech(x_)^2 ) = 1
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimesPower(//
+					F.Power(F.Tanh(x_), F.C2), //
+					F.Power(F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Sech(x_), F.C2))), F.CN1), //
+					F.C1));
+			// (1-Sech(x_)^2 ) / Tanh(x_)^2= 1
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimesPower(//
+					F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Sech(x_), F.C2))), //
+					F.Power(F.Tanh(x_), F.CN2), //
+					F.C1));
+
+			// Cos(2*x_)/(1-2*Sin(x)^2) = 1
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimesPower(//
+					F.Cos(F.Times(F.C2, x_)), //
+					F.Power(F.Plus(F.C1, F.Times(F.CN2, F.Power(F.Sin(x_), F.C2))), F.CN1), //
+					F.C1));
+			// (1-2*Sin(x)^2) / Cos(2*x_) = 1
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimesPower(//
+					F.Plus(F.C1, F.Times(F.CN2, F.Power(F.Sin(x_), F.C2))), //
+					F.Power(F.Cos(F.Times(F.C2, x_)), F.CN1), //
+					F.C1));
+
+			// Cos(2*x_)/(-1+2*Cos(x)^2) = 1
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimesPower(//
+					F.Cos(F.Times(F.C2, x_)), //
+					F.Power(F.Plus(F.CN1, F.Times(F.C2, F.Power(F.Cos(x_), F.C2))), F.CN1), //
+					F.C1));
+			// (-1+2*Cos(x)^2) / Cos(2*x_) = 1
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimesPower(//
+					F.Plus(F.CN1, F.Times(F.C2, F.Power(F.Cos(x_), F.C2))), //
+					F.Power(F.Cos(F.Times(F.C2, x_)), F.CN1), //
+					F.C1));
+
+			// Sec(x_)^2/(1+Tan(x_)^2 ) = 1
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimesPower(//
+					F.Power(F.Sec(x_), F.C2), //
+					F.Power(F.Plus(F.C1, F.Power(F.Tan(x_), F.C2)), F.CN1), //
+					F.C1));
+			// (1+Tan(x_)^2) / Sec(x_)^2 = 1
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimesPower(//
+					F.Plus(F.C1, F.Power(F.Tan(x_), F.C2)), //
+					F.Power(F.Sec(x_), F.CN2), //
+					F.C1));
+
+			// Csc(x_)^2/(1+Cot(x_)^2 ) = 1
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimesPower(//
+					F.Power(F.Csc(x_), F.C2), //
+					F.Power(F.Plus(F.C1, F.Power(F.Cot(x_), F.C2)), F.CN1), //
+					F.C1));
+			// (1+Cot(x_)^2) / Csc(x_)^2 = 1
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimesPower(//
+					F.Plus(F.C1, F.Power(F.Cot(x_), F.C2)), //
+					F.Power(F.Csc(x_), F.CN2), //
+					F.C1));
+
 			// TODO: HACK useOnlyEqualFactors = true in the following rules,
 			// to avoid stack overflow in integration rules.
 			// If true use only rules where both factors are equal,
