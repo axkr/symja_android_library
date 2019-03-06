@@ -1336,9 +1336,9 @@ public class Solve extends AbstractFunctionEvaluator {
 			list.appendAll(subSolutionSet);
 			return list;
 		}
-		if (isTimesEvaled && !resultList.isPresent()) {
-			return F.ListAlloc();
-		}
+//		if (isTimesEvaled && !resultList.isPresent()) {
+//			return F.ListAlloc();
+//		}
 		return resultList;
 	}
 

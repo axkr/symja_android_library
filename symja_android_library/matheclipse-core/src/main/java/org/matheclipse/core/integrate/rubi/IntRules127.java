@@ -112,6 +112,6 @@ IIntegrate(6398,Int(Erfc(Times(Plus(a_DEFAULT,Times(Log(Times(c_DEFAULT,Power(x_
 IIntegrate(6399,Int(Erfi(Times(Plus(a_DEFAULT,Times(Log(Times(c_DEFAULT,Power(x_,n_DEFAULT))),b_DEFAULT)),d_DEFAULT)),x_Symbol),
     Condition(Plus(Simp(Times(x,Erfi(Times(d,Plus(a,Times(b,Log(Times(c,Power(x,n)))))))),x),Negate(Dist(Times(C2,b,d,n,Power(Pi,CN1D2)),Int(Exp(Sqr(Times(d,Plus(a,Times(b,Log(Times(c,Power(x,n)))))))),x),x))),FreeQ(List(a,b,c,d,n),x))),
 IIntegrate(6400,Int(Times(Power(x_,-1),$(F_,Times(Plus(a_DEFAULT,Times(Log(Times(c_DEFAULT,Power(x_,n_DEFAULT))),b_DEFAULT)),d_DEFAULT))),x_Symbol),
-    Condition(Dist(Power(n,-1),Subst(F(Times(d,Plus(a,Times(b,x)))),x,Log(Times(c,Power(x,n)))),x),And(FreeQ(List(a,b,c,d,n),x),MemberQ(List($s("Erf"),$s("Erfc"),$s("Erfi")),FSymbol))))
+    Condition(Dist(Power(n,-1),Subst(F(Times(d,Plus(a,Times(b,x)))),x,Log(Times(c,Power(x,n)))),x),And(FreeQ(List(a,b,c,d,n),x),MemberQ(List(Erf,Erfc,Erfi),FSymbol))))
   );
 }

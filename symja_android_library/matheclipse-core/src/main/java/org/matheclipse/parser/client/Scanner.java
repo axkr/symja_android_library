@@ -594,7 +594,6 @@ public abstract class Scanner {
 					break;
 				case ',':
 					fToken = TT_COMMA;
-
 					break;
 				case '_':
 					fToken = TT_BLANK;
@@ -952,7 +951,7 @@ public abstract class Scanner {
 
 	protected void skipWhitespace() {
 		if (isValidPosition()) {
-			char ch=charAtPosition();
+			char ch = charAtPosition();
 			if (!Character.isWhitespace(ch)) {
 				return;
 			}

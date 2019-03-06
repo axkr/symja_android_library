@@ -961,11 +961,8 @@ public class PolynomialFunctions {
 				// final IPatternMatcher matcher = new PatternMatcherEvalEngine(form, engine);
 				final IPatternMatcher matcher = engine.evalPatternMatcher(form);
 				if (arg1.isPower()) {
-					if (matcher.test(arg1.base(), engine)) {
-						collector.add(arg1.exponent());
-					} else {
-						collector.add(F.C0);
-					}
+					IExpr pEx = powerExponent((IAST) arg1, form, matcher, engine);
+					collector.add(pEx);
 				} else if (arg1.isPlus()) {
 					for (int i = 1; i < arg1.size(); i++) {
 						if (arg1.get(i).isAtom()) {
@@ -979,20 +976,22 @@ public class PolynomialFunctions {
 								collector.add(F.C0);
 							}
 						} else if (arg1.get(i).isPower()) {
-							IAST pow = (IAST) arg1.get(i);
-							if (matcher.test(pow.base(), engine)) {
-								collector.add(pow.exponent());
-							} else {
-								collector.add(F.C0);
-							}
+							// IAST pow = (IAST) arg1.get(i);
+							IExpr pEx = powerExponent((IAST) arg1.get(i), form, matcher, engine);
+							collector.add(pEx);
+							// if (matcher.test(pow.base(), engine)) {
+							// collector.add(pow.exponent());
+							// } else {
+							// collector.add(F.C0);
+							// }
 						} else if (arg1.get(i).isTimes()) {
-							timesExponent((IAST) arg1.get(i), matcher, collector, engine);
+							timesExponent((IAST) arg1.get(i), form, matcher, collector, engine);
 						} else {
 							collector.add(F.C0);
 						}
 					}
 				} else if (arg1.isTimes()) {
-					timesExponent(arg1, matcher, collector, engine);
+					timesExponent(arg1, form, matcher, collector, engine);
 				}
 
 			} else if (expr.isSymbol()) {
@@ -1019,18 +1018,35 @@ public class PolynomialFunctions {
 			return result;
 		}
 
-		private void timesExponent(IAST timesAST, final IPatternMatcher matcher, Set<IExpr> collector,
+		private static IExpr powerExponent(IAST powerAST, final IExpr form, final IPatternMatcher matcher, EvalEngine engine) {
+			if (matcher.test(powerAST.base(), engine)) {
+				return powerAST.exponent();
+			}
+			if (matcher.isRuleWithoutPatterns() && form.isPower() && form.base().equals(powerAST.base())
+					&& form.exponent().isRational()) {
+				return form.exponent().reciprocal().times(powerAST.exponent());
+			}
+			return F.C0;
+		}
+
+		private static void timesExponent(IAST timesAST, IExpr form, final IPatternMatcher matcher, Set<IExpr> collector,
 				EvalEngine engine) {
 			boolean evaled = false;
 			IExpr argi;
 			for (int i = 1; i < timesAST.size(); i++) {
 				argi = timesAST.get(i);
 				if (argi.isPower()) {
-					if (matcher.test(argi.base(), engine)) {
-						collector.add(argi.exponent());
+					IExpr pEx = powerExponent((IAST) argi, form, matcher, engine);
+					if (!pEx.isZero()) {
+						collector.add(pEx);
 						evaled = true;
 						break;
 					}
+					// if (matcher.test(argi.base(), engine)) {
+					// collector.add(argi.exponent());
+					// evaled = true;
+					// break;
+					// }
 				} else if (argi.isSymbol()) {
 					if (matcher.test(argi, engine)) {
 						collector.add(F.C1);

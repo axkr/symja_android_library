@@ -62,6 +62,7 @@ import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.SubstAux;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.SubstForFractionalPowerOfLinear;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.TrigSimplifyAux;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Subst;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.MakeAssocList;
 
 import javax.script.ScriptException;
 
@@ -479,14 +480,21 @@ public class RubiIntegrationTest extends AbstractTestCase {
 				F.Plus(F.C1, F.Times(F.C2, F.x)));
 		check(ast, "-ArcTan[(1+2*x)/Sqrt[3]]/Sqrt[3]");
 	}
-	
+
 	/**
 	 * Github issue #116
 	 */
 	public void testRubi022() {
 		IAST ast;
-		ast = SubstAux(F.Times(F.CN1,F.C1DSqrt3,F.ArcTan(F.Times(F.C1DSqrt3,F.x))),F.x,F.Plus(F.C1,F.Times(F.C2,F.x)),F.True);
+		ast = SubstAux(F.Times(F.CN1, F.C1DSqrt3, F.ArcTan(F.Times(F.C1DSqrt3, F.x))), F.x,
+				F.Plus(F.C1, F.Times(F.C2, F.x)), F.True);
 		check(ast, "-ArcTan[(1+2*x)/Sqrt[3]]/Sqrt[3]");
+	}
+
+	public void testRubi023() {
+		IAST ast;
+		ast = MakeAssocList(F.Power(F.x,F.CN1),F.x);
+		check(ast, "{}");
 	}
 
 	public void testArcSin() {

@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FunctionNode;
 import org.matheclipse.parser.client.ast.IConstantOperators;
@@ -253,7 +255,16 @@ public class Parser extends Scanner {
 					getNextToken();
 					if (isSymbolIdentifier()) {
 						final ASTNode check = getSymbol();
-						temp = fFactory.createPattern(symbol, check);
+						if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
+							getNextToken();
+							ASTNode defaultValue = parseExpression();
+							final FunctionNode function = fFactory.createAST(fFactory.createSymbol("Optional"));
+							function.add(fFactory.createPattern(symbol, check));
+							function.add(defaultValue);
+							temp = function;
+						} else {
+							temp = fFactory.createPattern(symbol, check);
+						}
 					} else {
 						temp = fFactory.createPattern(symbol, null);
 					}

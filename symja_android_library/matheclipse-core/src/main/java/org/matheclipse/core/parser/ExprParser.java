@@ -593,7 +593,14 @@ public class ExprParser extends Scanner {
 				getNextToken();
 				if (fToken == TT_IDENTIFIER) {
 					final IExpr check = getSymbol();
-					temp = F.$p(symbol, check);
+					if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
+						getNextToken();
+						IExpr defaultValue = parseExpression();
+						temp = F.Optional(F.$p(symbol, check), defaultValue);
+					} else {
+						temp = F.$p(symbol, check);
+					}
+
 				} else {
 					temp = F.$p(symbol, null);
 				}

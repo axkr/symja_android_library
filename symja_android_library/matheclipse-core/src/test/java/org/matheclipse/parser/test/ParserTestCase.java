@@ -569,32 +569,40 @@ public class ParserTestCase extends TestCase {
 		try {
 			Parser p = new Parser();
 			ASTNode obj = p.parse("ff/: Power[ff, i_Integer] = {i}");
-			assertEquals(obj.toString(),
-					"TagSet(ff, Power(ff, i_Integer), List(i))");
+			assertEquals(obj.toString(), "TagSet(ff, Power(ff, i_Integer), List(i))");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParse41() {
 		try {
 			Parser p = new Parser();
 			ASTNode obj = p.parse("ff/: Power[ff, i_Integer] := {i}");
-			assertEquals(obj.toString(),
-					"TagSetDelayed(ff, Power(ff, i_Integer), List(i))");
+			assertEquals(obj.toString(), "TagSetDelayed(ff, Power(ff, i_Integer), List(i))");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParse42() {
 		try {
 			Parser p = new Parser();
 			ASTNode obj = p.parse("m_.k_+b_.");
-			assertEquals(obj.toString(),
-					"Plus(Times(m_., k_), b_.)");
+			assertEquals(obj.toString(), "Plus(Times(m_., k_), b_.)");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+
+	public void testParse43() {
+		try {
+			Parser p = new Parser();
+ 			ASTNode obj = p.parse("MakeAssocList[u_,x_Symbol,alst_List:{}] ");
+			assertEquals(obj.toString(), "MakeAssocList(u_, x_Symbol, Optional(alst_List, List()))");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
