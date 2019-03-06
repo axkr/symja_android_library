@@ -1,5 +1,8 @@
 package org.matheclipse.core.convert;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.linear.Array2DRowFieldMatrix;
 import org.hipparchus.linear.Array2DRowRealMatrix;
@@ -27,6 +30,39 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Conversions between an IExpr object and misc other object class types
  */
 public class Convert {
+
+	/**
+	 * Convert rules of the form <code>x-&gt;y</code> or <code>{a-&gt;b, c-&gt;d}</code> into
+	 * <code>java.util.Map</code>.
+	 * 
+	 * @param astRules
+	 *            rules of the form <code>x-&gt;y</code> or <code>{a-&gt;b, c-&gt;d}</code>
+	 * @return <code>F.NIL</code> if no substitution of a (sub-)expression was possible.
+	 */
+	public static Map<IExpr, IExpr> rules2Map(IAST astRules) {
+		final Map<IExpr, IExpr> map = new HashMap<IExpr, IExpr>();
+		IAST rule;
+		if (astRules.isListOfLists()) {
+			// {{a->b,...},{...}....}
+			// what to do in this case?
+		} else if (astRules.isList()) {
+			// {a->b, c->d, ...}
+			if (astRules.size() > 1) {
+				// assuming multiple rules in a list
+				for (final IExpr expr : astRules) {
+					if (expr.isRuleAST()) {
+						rule = (IAST) expr;
+						map.put(rule.arg1(), rule.arg2());
+					}
+				}
+			}
+		} else if (astRules.isRuleAST()) {
+			// a->b
+			rule = astRules;
+			map.put(rule.arg1(), rule.arg2());
+		}
+		return map;
+	}
 
 	/**
 	 * Returns a FieldMatrix if possible.
@@ -325,7 +361,7 @@ public class Convert {
 		}
 		return new ASTRealMatrix(matrix, false);
 	}
-	
+
 	/**
 	 * Converts a RealVector to the list expression representation.
 	 * 
