@@ -9119,8 +9119,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Infinity+Log(2)", "Infinity");
 
 		check("{1,2}+{4,5,6}", "{1,2}+{4,5,6}");
-//		check("2+4/3*2^b/c", //
-//				"2+2^(2+b)/(3*c)");
+		// check("2+4/3*2^b/c", //
+		// "2+2^(2+b)/(3*c)");
 		check("Refine(Infinity+x, x>0)", "Infinity");
 
 		// String s = System.getProperty("os.name");
@@ -13424,11 +13424,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTimes() {
-//		check("(1/2)*4^(1+p)", //
-//				"2^(1+2*p)");
+		check("2*4^(1+p)", //
+				"2^(3+2*p)");
+		check("(2^(3/4)*x*7^(-15/4))", //
+				"1/343*(2/7)^(3/4)*x");
+
 		check("125*2^(2+3*b)", //
 				"125*2^(2+3*b)");
-		
+		check("(1/2)*4^(1+p)", //
+				"2^(1+2*p)");
+
 		// same as in MMA
 		check("-(1/3)*(2+n)", //
 				"1/3*(-2-n)");
@@ -13436,22 +13441,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-2-n");
 		check("-3*(2+n)", //
 				"-3*(2+n)");
-//		check("2^(3+k)*4^(1+p)", //
-//				"2^(5+k+2*p)");
+		check("2^(3+k)*4^(1+p)", //
+				"2^(5+k+2*p)");
 		check("2*2^(1+p)", //
 				"2^(2+p)");
-//		check("2*4^(1+p)", //
-//				"2^(3+2*p)");
-//		check("(1/2)*4^(1+p)", //
-//				"2^(1+2*p)");
+		check("(1/2)*4^(1+p)", //
+				"2^(1+2*p)");
 		check("-(-b*c+a*d)*n", //
 				"-(-b*c+a*d)*n");
 		check("5/7*Sqrt(7/6)", //
 				"5/Sqrt(42)");
 		check("(Sqrt(3)*x)/Sqrt(2)", //
 				"Sqrt(3/2)*x");
-		check("(2^(3/4)*x*7^(-15/4))", //
-				"1/343*(2/7)^(3/4)*x");
 		check("1/(sq(a)*sq(b))//FullForm", //
 				"Times(Power(sq(a), -1), Power(sq(b), -1))");
 		check("(-Infinity)/Sin(-2)", //

@@ -1001,7 +1001,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * @param listOfRules
 	 *            a list of rules <code>Rule(variable, value)</code>
 	 * @return
-	 */ 
+	 */
 	private static boolean isComplex(IAST listOfRules) {
 		if (listOfRules.isListOfRules()) {
 			for (int i = 1; i < listOfRules.size(); i++) {
@@ -1305,41 +1305,45 @@ public class Solve extends AbstractFunctionEvaluator {
 	 */
 	private static IASTMutable solveTimesEquationsRecursively(IASTMutable termsEqualZeroList, IAST inequationsList,
 			IAST variables, EvalEngine engine) {
-		IASTMutable resultList = solveEquations(termsEqualZeroList, inequationsList, variables, 0, engine);
-		if (resultList.isPresent() && !resultList.isEmpty()) {
-			return resultList;
-		}
-		Set<IExpr> subSolutionSet = new TreeSet<IExpr>();
-		boolean isTimesEvaled = false;
-		for (int i = 1; i < termsEqualZeroList.size(); i++) {
-			IExpr termEQZero = termsEqualZeroList.get(i);
-			if (termEQZero.isTimes()) {
-				isTimesEvaled = true;
-				solveTimesAST((IAST) termEQZero, termsEqualZeroList, inequationsList, variables, engine, subSolutionSet,
-						i);
+		try {
+			IASTMutable resultList = solveEquations(termsEqualZeroList, inequationsList, variables, 0, engine);
+			if (resultList.isPresent() && !resultList.isEmpty()) {
+				return resultList;
+			}
+			Set<IExpr> subSolutionSet = new TreeSet<IExpr>();
+			for (int i = 1; i < termsEqualZeroList.size(); i++) {
+				IExpr termEQZero = termsEqualZeroList.get(i);
+				if (termEQZero.isTimes()) {
+					solveTimesAST((IAST) termEQZero, termsEqualZeroList, inequationsList, variables, engine,
+							subSolutionSet, i);
 
-			} else {
-				if (termEQZero.isAST()) {
-					// try factoring
-					termEQZero = F.Factor.of(engine, termEQZero);
+				} else {
+					if (termEQZero.isAST()) {
+						// try factoring
+						termEQZero = F.Factor.of(engine, termEQZero);
 
-					if (termEQZero.isTimes()) {
-						isTimesEvaled = true;
-						solveTimesAST((IAST) termEQZero, termsEqualZeroList, inequationsList, variables, engine,
-								subSolutionSet, i);
+						if (termEQZero.isTimes()) {
+							solveTimesAST((IAST) termEQZero, termsEqualZeroList, inequationsList, variables, engine,
+									subSolutionSet, i);
+						}
 					}
 				}
 			}
+			if (subSolutionSet.size() > 0) {
+				IASTAppendable list = F.ListAlloc(subSolutionSet.size());
+				list.appendAll(subSolutionSet);
+				return list;
+			}
+			// if (isTimesEvaled && !resultList.isPresent()) {
+			// return F.ListAlloc();
+			// }
+			return resultList;
+		} catch (RuntimeException rex) {
+			if (Config.SHOW_STACKTRACE) {
+				rex.printStackTrace();
+			}
 		}
-		if (subSolutionSet.size() > 0) {
-			IASTAppendable list = F.ListAlloc(subSolutionSet.size());
-			list.appendAll(subSolutionSet);
-			return list;
-		}
-//		if (isTimesEvaled && !resultList.isPresent()) {
-//			return F.ListAlloc();
-//		}
-		return resultList;
+		return F.NIL;
 	}
 
 	private static void solveTimesAST(IAST times, IAST termsEqualZeroList, IAST inequationsList, IAST variables,

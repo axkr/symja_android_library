@@ -19,6 +19,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.ExprMonomial;
 import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
@@ -230,7 +231,7 @@ public class ExprEvaluatorTest extends TestCase {
 			DecimalFormat decimalFormat = new DecimalFormat("0.0####", usSymbols);
 			OutputFormFactory.get(true, false, decimalFormat).convert(buf, expr);
 			assertEquals("1.8", buf.toString());
-			
+
 			expr = util.eval("10.0^-15");
 			assertEquals("1.0E-15", expr.toString());
 
@@ -251,6 +252,18 @@ public class ExprEvaluatorTest extends TestCase {
 		} catch (final OutOfMemoryError oome) {
 			System.out.println(oome.getMessage());
 		}
+	}
+
+	public void testDefineVariable() {
+		// github #118
+		ExprEvaluator exprEvaluator = new ExprEvaluator();
+		ISymbol symbol = exprEvaluator.defineVariable("x", 1.0);
+		assertEquals(exprEvaluator.eval("x").toString(), "1.0");
+
+		// now clear its value
+		symbol.clear(EvalEngine.get());
+
+		assertEquals(exprEvaluator.eval("x").toString(), "x");
 	}
 
 	public void testX2() {

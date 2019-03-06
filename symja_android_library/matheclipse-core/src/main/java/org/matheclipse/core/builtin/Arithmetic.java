@@ -5123,10 +5123,10 @@ public final class Arithmetic {
 				}
 			}
 		}
-		if (power0Arg1.isRational() && power0Arg2.isRational() && power1Arg1.isRational() && power1Arg2.isRational()) { 
+		if (power0Arg1.isRational() && power1Arg1.isRational()) {
 			IExpr temp = timesPowerPower(((IRational) power0Arg1).numerator(), ((IRational) power0Arg1).denominator(),
 					power0Arg2, //
-					((IRational) power1Arg1).numerator(), ((IRational) power1Arg1).denominator(), power1Arg2, true);
+					((IRational) power1Arg1).numerator(), ((IRational) power1Arg1).denominator(), power1Arg2, false);
 			if (temp.isPresent()) {
 				return temp;
 			}
@@ -5160,7 +5160,31 @@ public final class Arithmetic {
 		OpenIntToIExprHashMap<IExpr> fn2Map = new OpenIntToIExprHashMap<IExpr>();
 		IInteger fn2Rest = Primality.countPrimes1021(p2Numer, p2Exp, fn2Map, setEvaled, evaled);
 		IInteger fd1Rest = Primality.countPrimes1021(p1Denom, p1Exp.negate(), fn2Map, setEvaled, evaled);
+		if (!evaled[0]) {
+			OpenIntToIExprHashMap<IExpr>.Iterator iter = fn2Map.iterator();
 
+			iter = fn2Map.iterator();
+			while (iter.hasNext()) {
+				iter.advance();
+				int base = iter.key();
+				IExpr exp1 = fn1Map.get(base);
+				if (exp1 != null) {
+					if (exp1.isAST()) {
+						evaled[0] = true;
+						break;
+					}
+					IExpr exp2 = fn2Map.get(base);
+					if (exp2.isAST()) {
+						evaled[0] = true;
+						break;
+					}
+					if ((exp1.isInteger() && exp2.isInteger())) {
+						evaled[0] = true;
+						break;
+					}
+				}
+			}
+		}
 		if (evaled[0]) {
 			OpenIntToIExprHashMap<IExpr>.Iterator iter = fn2Map.iterator();
 
