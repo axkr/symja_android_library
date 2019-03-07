@@ -572,6 +572,11 @@ public class ExprParser extends Scanner {
 			IExpr defaultValue = parseExpression();
 			temp = F.Optional(F.$b(), defaultValue);
 		}
+		if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
+			getNextToken();
+			IExpr defaultValue = parseExpression();
+			temp = F.Optional(temp, defaultValue);
+		} 
 		return parseArguments(temp);
 	}
 
@@ -593,14 +598,7 @@ public class ExprParser extends Scanner {
 				getNextToken();
 				if (fToken == TT_IDENTIFIER) {
 					final IExpr check = getSymbol();
-					if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
-						getNextToken();
-						IExpr defaultValue = parseExpression();
-						temp = F.Optional(F.$p(symbol, check), defaultValue);
-					} else {
-						temp = F.$p(symbol, check);
-					}
-
+					temp = F.$p(symbol, check);
 				} else {
 					temp = F.$p(symbol, null);
 				}
@@ -653,6 +651,11 @@ public class ExprParser extends Scanner {
 			IExpr defaultValue = parseExpression();
 			temp = F.Optional(F.$p(symbol), defaultValue);
 		}
+		if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
+			getNextToken();
+			IExpr defaultValue = parseExpression();
+			temp = F.Optional(temp, defaultValue);
+		} 
 		return temp;
 	}
 

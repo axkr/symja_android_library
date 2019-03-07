@@ -212,7 +212,7 @@ public class Parser extends Scanner {
 	}
 
 	private ASTNode getFactor(final int min_precedence) throws SyntaxError {
-		ASTNode temp;
+		ASTNode temp = null;
 
 		if (fToken == TT_PRECEDENCE_OPEN) {
 			fRecursionDepth++;
@@ -245,156 +245,14 @@ public class Parser extends Scanner {
 			return getList();
 		} else if (fToken == TT_IDENTIFIER) {
 			final SymbolNode symbol = getSymbol();
-
-			if (fToken == TT_BLANK) {
-				// read '_'
-				if (isWhitespace()) {
-					temp = fFactory.createPattern(symbol, null);
-					getNextToken();
-				} else {
-					getNextToken();
-					if (isSymbolIdentifier()) {
-						final ASTNode check = getSymbol();
-						if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
-							getNextToken();
-							ASTNode defaultValue = parseExpression();
-							final FunctionNode function = fFactory.createAST(fFactory.createSymbol("Optional"));
-							function.add(fFactory.createPattern(symbol, check));
-							function.add(defaultValue);
-							temp = function;
-						} else {
-							temp = fFactory.createPattern(symbol, check);
-						}
-					} else {
-						temp = fFactory.createPattern(symbol, null);
-					}
-				}
-			} else if (fToken == TT_BLANK_BLANK) {
-				// read '__'
-				if (isWhitespace()) {
-					temp = fFactory.createPattern2(symbol, null);
-					getNextToken();
-				} else {
-					getNextToken();
-					if (isSymbolIdentifier()) {
-						final ASTNode check = getSymbol();
-						temp = fFactory.createPattern2(symbol, check);
-					} else {
-						temp = fFactory.createPattern2(symbol, null);
-					}
-				}
-			} else if (fToken == TT_BLANK_BLANK_BLANK) {
-				// read '___'
-				if (isWhitespace()) {
-					temp = fFactory.createPattern3(symbol, null);
-					getNextToken();
-				} else {
-					getNextToken();
-					if (isSymbolIdentifier()) {
-						final ASTNode check = getSymbol();
-						temp = fFactory.createPattern3(symbol, check);
-					} else {
-						temp = fFactory.createPattern3(symbol, null);
-					}
-				}
-			} else if (fToken == TT_BLANK_OPTIONAL) {
-				// read '_.'
-				if (isWhitespace()) {
-					temp = fFactory.createPattern(symbol, null, true);
-					getNextToken();
-				} else {
-					getNextToken();
-					if (isSymbolIdentifier()) {
-						final ASTNode check = getSymbol();
-						temp = fFactory.createPattern(symbol, check, true);
-					} else {
-						temp = fFactory.createPattern(symbol, null, true);
-					}
-				}
-			} else if (fToken == TT_BLANK_COLON) {
-				// read '_:'
-				getNextToken();
-				ASTNode defaultValue = parseExpression();
-				final FunctionNode function = fFactory.createAST(fFactory.createSymbol("Optional"));
-				function.add(fFactory.createPattern(symbol, null, false));
-				function.add(defaultValue);
-				temp = function;
+			if (fToken >= TT_BLANK && fToken <= TT_BLANK_COLON) {
+				temp = getBlankPatterns(symbol);
 			} else {
 				temp = symbol;
 			}
-
 			return parseArguments(temp);
-		} else if (fToken == TT_BLANK) {
-			if (isWhitespace()) {
-				getNextToken();
-				temp = fFactory.createPattern(null, null);
-			} else {
-				getNextToken();
-				if (isSymbolIdentifier()) {
-					final ASTNode check = getSymbol();
-					temp = fFactory.createPattern(null, check);
-				} else {
-					temp = fFactory.createPattern(null, null);
-				}
-			}
-			return parseArguments(temp);
-		} else if (fToken == TT_BLANK_BLANK) {
-			// read '__'
-			if (isWhitespace()) {
-				getNextToken();
-				temp = fFactory.createPattern2(null, null);
-			} else {
-				getNextToken();
-				if (isSymbolIdentifier()) {
-					final ASTNode check = getSymbol();
-					temp = fFactory.createPattern2(null, check);
-				} else {
-					temp = fFactory.createPattern2(null, null);
-				}
-			}
-			return parseArguments(temp);
-		} else if (fToken == TT_BLANK_BLANK_BLANK) {
-			// read '___'
-			if (isWhitespace()) {
-				getNextToken();
-				temp = fFactory.createPattern3(null, null);
-			} else {
-				getNextToken();
-				if (isSymbolIdentifier()) {
-					final ASTNode check = getSymbol();
-					temp = fFactory.createPattern3(null, check);
-				} else {
-					temp = fFactory.createPattern3(null, null);
-				}
-			}
-			return parseArguments(temp);
-		} else if (fToken == TT_BLANK_OPTIONAL) {
-			// read '_.'
-			if (isWhitespace()) {
-				getNextToken();
-				temp = fFactory.createPattern(null, null, true);
-			} else {
-				getNextToken();
-				if (isSymbolIdentifier()) {
-					final ASTNode check = getSymbol();
-					temp = fFactory.createPattern(null, check, true);
-				} else {
-					temp = fFactory.createPattern(null, null, true);
-				}
-			}
-			return parseArguments(temp);
-		} else if (fToken == TT_BLANK_COLON) {
-			// read '_:'
-			getNextToken();
-			ASTNode defaultValue = parseExpression();
-			// temp = fFactory.createPattern(null, null, defaultValue);
-
-			final FunctionNode function = fFactory.createAST(fFactory.createSymbol("Optional"));
-			function.add(fFactory.createPattern(null, null, false));
-			function.add(defaultValue);
-			temp = function;
-
-			return parseArguments(temp);
+		} else if (fToken >= TT_BLANK && fToken <= TT_BLANK_COLON) {
+			return getBlanks(temp);
 		} else if (fToken == TT_DIGIT) {
 			return getNumber(false);
 
@@ -457,6 +315,166 @@ public class Parser extends Scanner {
 		throwSyntaxError("Error in factor at character: '" + fCurrentChar + "' (Token:" + fToken + " \\u"
 				+ Integer.toHexString(fCurrentChar | 0x10000).substring(1) + ")");
 		return null;
+	}
+
+	private ASTNode getBlanks(ASTNode temp) {
+		if (fToken == TT_BLANK) {
+			if (isWhitespace()) {
+				getNextToken();
+				temp = fFactory.createPattern(null, null);
+			} else {
+				getNextToken();
+				if (isSymbolIdentifier()) {
+					final ASTNode check = getSymbol();
+					temp = fFactory.createPattern(null, check);
+				} else {
+					temp = fFactory.createPattern(null, null);
+				}
+			}
+		} else if (fToken == TT_BLANK_BLANK) {
+			// read '__'
+			if (isWhitespace()) {
+				getNextToken();
+				temp = fFactory.createPattern2(null, null);
+			} else {
+				getNextToken();
+				if (isSymbolIdentifier()) {
+					final ASTNode check = getSymbol();
+					temp = fFactory.createPattern2(null, check);
+				} else {
+					temp = fFactory.createPattern2(null, null);
+				}
+			}
+		} else if (fToken == TT_BLANK_BLANK_BLANK) {
+			// read '___'
+			if (isWhitespace()) {
+				getNextToken();
+				temp = fFactory.createPattern3(null, null);
+			} else {
+				getNextToken();
+				if (isSymbolIdentifier()) {
+					final ASTNode check = getSymbol();
+					temp = fFactory.createPattern3(null, check);
+				} else {
+					temp = fFactory.createPattern3(null, null);
+				}
+			}
+		} else if (fToken == TT_BLANK_OPTIONAL) {
+			// read '_.'
+			if (isWhitespace()) {
+				getNextToken();
+				temp = fFactory.createPattern(null, null, true);
+			} else {
+				getNextToken();
+				if (isSymbolIdentifier()) {
+					final ASTNode check = getSymbol();
+					temp = fFactory.createPattern(null, check, true);
+				} else {
+					temp = fFactory.createPattern(null, null, true);
+				}
+			}
+		} else if (fToken == TT_BLANK_COLON) {
+			// read '_:'
+			getNextToken();
+			ASTNode defaultValue = parseExpression();
+			// temp = fFactory.createPattern(null, null, defaultValue);
+
+			final FunctionNode function = fFactory.createAST(fFactory.createSymbol("Optional"));
+			function.add(fFactory.createPattern(null, null, false));
+			function.add(defaultValue);
+			temp = function;
+
+		}
+
+		if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
+			getNextToken();
+			ASTNode defaultValue = parseExpression();
+			final FunctionNode function = fFactory.createAST(fFactory.createSymbol("Optional"));
+			function.add(temp);
+			function.add(defaultValue);
+			temp = function;
+		}
+
+		return parseArguments(temp);
+	}
+
+	private ASTNode getBlankPatterns(final SymbolNode symbol) {
+		ASTNode temp = null;
+		if (fToken == TT_BLANK) {
+			// read '_'
+			if (isWhitespace()) {
+				temp = fFactory.createPattern(symbol, null);
+				getNextToken();
+			} else {
+				getNextToken();
+				if (isSymbolIdentifier()) {
+					final ASTNode check = getSymbol();
+					temp = fFactory.createPattern(symbol, check);
+				} else {
+					temp = fFactory.createPattern(symbol, null);
+				}
+			}
+		} else if (fToken == TT_BLANK_BLANK) {
+			// read '__'
+			if (isWhitespace()) {
+				temp = fFactory.createPattern2(symbol, null);
+				getNextToken();
+			} else {
+				getNextToken();
+				if (isSymbolIdentifier()) {
+					final ASTNode check = getSymbol();
+					temp = fFactory.createPattern2(symbol, check);
+				} else {
+					temp = fFactory.createPattern2(symbol, null);
+				}
+			}
+		} else if (fToken == TT_BLANK_BLANK_BLANK) {
+			// read '___'
+			if (isWhitespace()) {
+				temp = fFactory.createPattern3(symbol, null);
+				getNextToken();
+			} else {
+				getNextToken();
+				if (isSymbolIdentifier()) {
+					final ASTNode check = getSymbol();
+					temp = fFactory.createPattern3(symbol, check);
+				} else {
+					temp = fFactory.createPattern3(symbol, null);
+				}
+			}
+		} else if (fToken == TT_BLANK_OPTIONAL) {
+			// read '_.'
+			if (isWhitespace()) {
+				temp = fFactory.createPattern(symbol, null, true);
+				getNextToken();
+			} else {
+				getNextToken();
+				if (isSymbolIdentifier()) {
+					final ASTNode check = getSymbol();
+					temp = fFactory.createPattern(symbol, check, true);
+				} else {
+					temp = fFactory.createPattern(symbol, null, true);
+				}
+			}
+		} else if (fToken == TT_BLANK_COLON) {
+			// read '_:'
+			getNextToken();
+			ASTNode defaultValue = parseExpression();
+			final FunctionNode function = fFactory.createAST(fFactory.createSymbol("Optional"));
+			function.add(fFactory.createPattern(symbol, null, false));
+			function.add(defaultValue);
+			temp = function;
+		}
+
+		if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
+			getNextToken();
+			ASTNode defaultValue = parseExpression();
+			final FunctionNode function = fFactory.createAST(fFactory.createSymbol("Optional"));
+			function.add(temp);
+			function.add(defaultValue);
+			temp = function;
+		}
+		return temp;
 	}
 
 	/**

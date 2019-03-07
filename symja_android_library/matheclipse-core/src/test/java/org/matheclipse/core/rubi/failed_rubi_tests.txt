@@ -5,7 +5,6 @@ test0146 - Integrate[Csch[2*x]*Log[Tanh[x]], x]
 IndependentTestSuites
 test0103 - Integrate[(-1 + I*eps*Sinh[x])/(I*a - x + I*eps*Cosh[x]), x]
 test0118 - Integrate[(x*(-Sqrt[-4 + x^2] + x^2*Sqrt[-4 + x^2] - 4*Sqrt[-1 + x^2] + x^2*Sqrt[-1 + x^2]))/((4 - 5*x^2 + x^4)*(1 + Sqrt[-4 + x^2] + Sqrt[-1 + x^2])), x]
-test0243 - Integrate[(1 - x^2)/((1 + 2*a*x + x^2)*Sqrt[1 + 2*a*x + 2*b*x^2 + 2*a*x^3 + x^4]), x]
 test0256 - Integrate[(E^x*(1 - Sin[x]))/(1 - Cos[x]), x]
 test0257 - Integrate[(E^x*(1 + Sin[x]))/(1 + Cos[x]), x]
 test0258 - Integrate[(E^x*(1 + Cos[x]))/(1 - Sin[x]), x]

@@ -2,8 +2,6 @@ package org.matheclipse.core.eval;
 
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -51,7 +49,6 @@ import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.parser.client.math.MathException;
 
 import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 
 /**
  * The main evaluation algorithms for the .Symja computer algebra system
@@ -71,9 +68,17 @@ public class EvalEngine implements Serializable {
 
 	public final static boolean DEBUG = false;
 
-	transient private static final ThreadLocal<EvalEngine> instance=new ThreadLocal<EvalEngine>(){private int fID=1;
+	transient private static final ThreadLocal<EvalEngine> instance = new ThreadLocal<EvalEngine>() {
+		private int fID = 1;
 
-	@Override public EvalEngine initialValue(){if(DEBUG){System.out.println("ThreadLocal"+fID);}return new EvalEngine("ThreadLocal"+(fID++),0,System.out,true);}};
+		@Override
+		public EvalEngine initialValue() {
+			if (DEBUG) {
+				System.out.println("ThreadLocal" + fID);
+			}
+			return new EvalEngine("ThreadLocal" + (fID++), 0, System.out, true);
+		}
+	};
 
 	/**
 	 * Get the thread local evaluation engine instance
@@ -125,6 +130,8 @@ public class EvalEngine implements Serializable {
 	public static void set(final EvalEngine engine) {
 		instance.set(engine);
 	}
+
+	// transient Interner<IAST> fInterner = Interners.newWeakInterner();
 
 	/**
 	 * If set to <code>true</code> the current thread should stop evaluation;
@@ -625,6 +632,8 @@ public class EvalEngine implements Serializable {
 	 * @return <code>F.NIL</code> if no evaluation happened
 	 */
 	public final IExpr evalAST(IAST ast) {
+		// interning costs too much performance here
+		// ast = fInterner.intern(ast);
 		final IExpr head = ast.head();
 		if (head.isCoreFunctionSymbol()) {
 			IExpr temp = evalEvaluate(ast);
