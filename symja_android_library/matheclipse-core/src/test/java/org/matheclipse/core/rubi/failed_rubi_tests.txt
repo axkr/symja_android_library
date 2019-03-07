@@ -1,7 +1,5 @@
 Exponentials
 HyperbolicFunctions
-test0145 - Integrate[Csch[x]*Log[Tanh[x]]*Sech[x], x]
-test0146 - Integrate[Csch[2*x]*Log[Tanh[x]], x]
 IndependentTestSuites
 test0103 - Integrate[(-1 + I*eps*Sinh[x])/(I*a - x + I*eps*Cosh[x]), x]
 test0118 - Integrate[(x*(-Sqrt[-4 + x^2] + x^2*Sqrt[-4 + x^2] - 4*Sqrt[-1 + x^2] + x^2*Sqrt[-1 + x^2]))/((4 - 5*x^2 + x^4)*(1 + Sqrt[-4 + x^2] + Sqrt[-1 + x^2])), x]
@@ -31,7 +29,6 @@ test0131 - Integrate[Log[(-2*x*((d*Sqrt[e])/Sqrt[-d] - e*x))/(d + e*x^2)]/(d + e
 test0132 - Integrate[Log[(2*x*(Sqrt[d]*Sqrt[-e] + e*x))/(d + e*x^2)]/(d + e*x^2), x]
 test0133 - Integrate[Log[(-2*x*(Sqrt[d]*Sqrt[-e] - e*x))/(d + e*x^2)]/(d + e*x^2), x]
 SpecialFunctions
-test0143 - Integrate[(Sinh[b*x]*SinhIntegral[b*x])/x, x]
 TrigFunctions
 test0143 - Integrate[Sqrt[a + b*Sin[e + f*x]]/(Sqrt[g*Sin[e + f*x]]*(c + c*Sin[e + f*x])), x]
 test0144 - Integrate[Sqrt[g*Sin[e + f*x]]/(Sqrt[a + b*Sin[e + f*x]]*(c + d*Sin[e + f*x])), x]
@@ -52,6 +49,7 @@ test0351 - Integrate[(d*Cot[e + f*x])^n*Csc[e + f*x], x]
 test0352 - Integrate[(d*Cot[e + f*x])^n*Sin[e + f*x], x]
 test0353 - Integrate[(d*Cot[e + f*x])^n*Sin[e + f*x]^3, x]
 test0354 - Integrate[(b*Cot[e + f*x])^n*(a*Csc[e + f*x])^m, x]
+test0389 - Integrate[Sqrt[c + d*Sec[e + f*x]]/Sqrt[a + b*Sec[e + f*x]], x]
 test0421 - Integrate[(Sec[e + f*x]*Sqrt[a + b*Sec[e + f*x]])/Sqrt[c + d*Sec[e + f*x]], x]
 test0534 - Integrate[(Cos[x] - I*Sin[x])/(Cos[x] + I*Sin[x]), x]
 test0535 - Integrate[(Cos[x] + I*Sin[x])/(Cos[x] - I*Sin[x]), x]

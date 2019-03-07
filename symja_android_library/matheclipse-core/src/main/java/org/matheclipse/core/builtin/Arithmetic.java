@@ -4940,6 +4940,10 @@ public final class Arithmetic {
 					F.Sech(x_), //
 					F.Cosh(x_), //
 					F.C1));
+			TIMES_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(//
+					F.Csch(x_), //
+					F.Sinh(x_), //
+					F.C1));
 			super.setUp(newSymbol);
 		}
 

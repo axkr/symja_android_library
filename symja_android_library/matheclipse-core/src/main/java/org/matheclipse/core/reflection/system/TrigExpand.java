@@ -131,6 +131,12 @@ public class TrigExpand extends AbstractEvaluator {
 							int nInt = n.toInt();
 							// return expandCoshPlus(F.constantArray(F.Plus, theta, nInt), 1);
 							return expandCoshPlus(theta.constantArray(F.Plus, 0, nInt), 1);
+						} else if (ast.isAST(F.Csch, 2)) {
+							int nInt = n.toInt();
+							if (nInt == 2) {
+								// Csch(2*theta) --> 1/(2*Cosh(theta)* Sinh(theta))
+								return F.Power(F.Times(F.C2, F.Cosh(theta), F.Sinh(theta)), F.CN1);
+							}
 						}
 					} catch (ArithmeticException ae) {
 

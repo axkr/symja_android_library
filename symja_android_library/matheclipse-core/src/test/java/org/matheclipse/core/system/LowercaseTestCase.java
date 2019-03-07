@@ -6768,6 +6768,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLog() {
+
+		check("Log( )", //
+				"Log()");
+
 		check("Log(2/3)", //
 				"-Log(3/2)");
 		check("Log(3/2)", //
@@ -10982,6 +10986,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRest() {
+		check("Rest(f(x))", //
+				"f()");
 		check("Rest(E^(b*x))", //
 				"b*x");
 		check("Rest(a + b + c + d)", //
@@ -13927,44 +13933,55 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTrigExpand() {
+		check("TrigExpand(Cosh(x)*Csch(2*x)*Sinh(x))", //
+				"1/2");
 		check("TrigExpand(Cos(x)*Csc(2*x)*Sin(x))", //
 				"1/2");
 		check("TrigExpand(Cot(2*x))", //
 				"Cot(x)/2-Tan(x)/2");
 
-		check("TrigExpand(Cosh(2*a))", "Cosh(a)^2+Sinh(a)^2");
-		check("TrigExpand(Cosh(3*a))", "Cosh(a)^3+3*Cosh(a)*Sinh(a)^2");
+		check("TrigExpand(Cosh(2*a))", //
+				"Cosh(a)^2+Sinh(a)^2");
+		check("TrigExpand(Cosh(3*a))", //
+				"Cosh(a)^3+3*Cosh(a)*Sinh(a)^2");
 
-		check("TrigExpand(Cosh(a+b))", "Cosh(a)*Cosh(b)+Sinh(a)*Sinh(b)");
-		check("TrigExpand(Cosh(a+b+c))",
+		check("TrigExpand(Cosh(a+b))", //
+				"Cosh(a)*Cosh(b)+Sinh(a)*Sinh(b)");
+		check("TrigExpand(Cosh(a+b+c))", //
 				"Cosh(a)*Cosh(b)*Cosh(c)+Cosh(c)*Sinh(a)*Sinh(b)+Cosh(b)*Sinh(a)*Sinh(c)+Cosh(a)*Sinh(b)*Sinh(c)");
 
-		check("TrigExpand(Sinh(2*a))", "2*Cosh(a)*Sinh(a)");
-		check("TrigExpand(Sinh(3*a))", "3*Cosh(a)^2*Sinh(a)+Sinh(a)^3");
-		check("TrigExpand(Sinh(4*a))", "4*Cosh(a)^3*Sinh(a)+4*Cosh(a)*Sinh(a)^3");
+		check("TrigExpand(Sinh(2*a))", //
+				"2*Cosh(a)*Sinh(a)");
+		check("TrigExpand(Sinh(3*a))", //
+				"3*Cosh(a)^2*Sinh(a)+Sinh(a)^3");
+		check("TrigExpand(Sinh(4*a))", //
+				"4*Cosh(a)^3*Sinh(a)+4*Cosh(a)*Sinh(a)^3");
 
-		check("TrigExpand(Sinh(a+b))", "Cosh(b)*Sinh(a)+Cosh(a)*Sinh(b)");
-		check("TrigExpand(Sinh(a+b+c))",
+		check("TrigExpand(Sinh(a+b))", //
+				"Cosh(b)*Sinh(a)+Cosh(a)*Sinh(b)");
+		check("TrigExpand(Sinh(a+b+c))", //
 				"Cosh(b)*Cosh(c)*Sinh(a)+Cosh(a)*Cosh(c)*Sinh(b)+Cosh(a)*Cosh(b)*Sinh(c)+Sinh(a)*Sinh(b)*Sinh(c)");
 
 		check("TrigExpand(Tanh(a+b))", //
 				"Tanh(a)/(1+Tanh(a)*Tanh(b))+Tanh(b)/(1+Tanh(a)*Tanh(b))");
-		check("TrigExpand(Tanh(a+b+c))",
+		check("TrigExpand(Tanh(a+b+c))", //
 				"Tanh(a)/(1+(Tanh(a)*Tanh(b))/(1+Tanh(b)*Tanh(c))+(Tanh(a)*Tanh(c))/(1+Tanh(b)*Tanh(c)))+Tanh(b)/((\n"
 						+ "1+Tanh(b)*Tanh(c))*(1+(Tanh(a)*Tanh(b))/(1+Tanh(b)*Tanh(c))+(Tanh(a)*Tanh(c))/(1+Tanh(b)*Tanh(c))))+Tanh(c)/((\n"
 						+ "1+Tanh(b)*Tanh(c))*(1+(Tanh(a)*Tanh(b))/(1+Tanh(b)*Tanh(c))+(Tanh(a)*Tanh(c))/(1+Tanh(b)*Tanh(c))))");
 
-		check("TrigExpand(Csc(a+b+c))",
+		check("TrigExpand(Csc(a+b+c))", //
 				"1/(Cos(b)*Cos(c)*Sin(a)+Cos(a)*Cos(c)*Sin(b)+Cos(a)*Cos(b)*Sin(c)-Sin(a)*Sin(b)*Sin(c))");
-		check("TrigExpand(Sec(a+b+c))",
+		check("TrigExpand(Sec(a+b+c))", //
 				"1/(Cos(a)*Cos(b)*Cos(c)-Cos(c)*Sin(a)*Sin(b)-Cos(b)*Sin(a)*Sin(c)-Cos(a)*Sin(b)*Sin(c))");
-		check("TrigExpand(Cot(a+b+c))",
+		check("TrigExpand(Cot(a+b+c))", //
 				"(Cos(a)*Cos(b)*Cos(c))/(Cos(b)*Cos(c)*Sin(a)+Cos(a)*Cos(c)*Sin(b)+Cos(a)*Cos(b)*Sin(c)-Sin(a)*Sin(b)*Sin(c))+(-Cos(c)*Sin(a)*Sin(b))/(Cos(b)*Cos(c)*Sin(a)+Cos(a)*Cos(c)*Sin(b)+Cos(a)*Cos(b)*Sin(c)-Sin(a)*Sin(b)*Sin(c))+(-Cos(b)*Sin(a)*Sin(c))/(Cos(b)*Cos(c)*Sin(a)+Cos(a)*Cos(c)*Sin(b)+Cos(a)*Cos(b)*Sin(c)-Sin(a)*Sin(b)*Sin(c))+(-Cos(a)*Sin(b)*Sin(c))/(Cos(b)*Cos(c)*Sin(a)+Cos(a)*Cos(c)*Sin(b)+Cos(a)*Cos(b)*Sin(c)-Sin(a)*Sin(b)*Sin(c))");
-		check("TrigExpand(Tan(a+b+c))",
+		check("TrigExpand(Tan(a+b+c))", //
 				"(Cos(b)*Cos(c)*Sin(a))/(Cos(a)*Cos(b)*Cos(c)-Cos(c)*Sin(a)*Sin(b)-Cos(b)*Sin(a)*Sin(c)-Cos(a)*Sin(b)*Sin(c))+(Cos(a)*Cos(c)*Sin(b))/(Cos(a)*Cos(b)*Cos(c)-Cos(c)*Sin(a)*Sin(b)-Cos(b)*Sin(a)*Sin(c)-Cos(a)*Sin(b)*Sin(c))+(Cos(a)*Cos(b)*Sin(c))/(Cos(a)*Cos(b)*Cos(c)-Cos(c)*Sin(a)*Sin(b)-Cos(b)*Sin(a)*Sin(c)-Cos(a)*Sin(b)*Sin(c))+(-Sin(a)*Sin(b)*Sin(c))/(Cos(a)*Cos(b)*Cos(c)-Cos(c)*Sin(a)*Sin(b)-Cos(b)*Sin(a)*Sin(c)-Cos(a)*Sin(b)*Sin(c))");
 
-		check("TrigExpand(Csc(2*x))", "1/2*Csc(x)*Sec(x)");
-		check("TrigExpand(Sec(2*x))", "1/(Cos(x)^2-Sin(x)^2)");
+		check("TrigExpand(Csc(2*x))", //
+				"1/2*Csc(x)*Sec(x)");
+		check("TrigExpand(Sec(2*x))", //
+				"1/(Cos(x)^2-Sin(x)^2)");
 		check("TrigExpand(Cot(2*x))", "Cot(x)/2-Tan(x)/2");
 		check("TrigExpand(Tan(2*x))", "(2*Cos(x)*Sin(x))/(Cos(x)^2-Sin(x)^2)");
 		check("TrigExpand(Sin(2*x+3*y))",
