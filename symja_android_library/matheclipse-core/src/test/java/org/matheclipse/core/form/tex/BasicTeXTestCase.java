@@ -55,8 +55,10 @@ public class BasicTeXTestCase extends TestCase {
 	}
 
 	public void testTeX007() {
-		check("Integrate(f(x),{x,1,10})", "\\int_{1}^{10} f(x)\\,\\mathrm{d}x");
-		check("Integrate(E^(-x),{x,0,Infinity})", "\\int_{0}^{\\infty} E^{ - x}\\,\\mathrm{d}x");
+		check("Integrate(f(x),{x,1,10})", //
+				"\\int_{1}^{10} f(x)\\,\\mathrm{d}x");
+		check("Integrate(E^(-x),{x,0,Infinity})", //
+				"\\int_{0}^{\\infty} e^{ - x}\\,\\mathrm{d}x");
 	}
 
 	public void testTeX008() {
@@ -64,7 +66,7 @@ public class BasicTeXTestCase extends TestCase {
 	}
 
 	public void testTeX009() {
-		check("Limit(Sin(x),x->0)", "\\lim_{x\\to 0 }\\,{\\sin(x)}");
+		check("Limit(Sin(x),x->0)", "\\lim_{x\\to 0 }\\,{\\sin (x)}");
 	}
 
 	public void testTeX010() {
@@ -97,8 +99,8 @@ public class BasicTeXTestCase extends TestCase {
 	}
 
 	public void testTeX014() {
-		check("Sin(x)^2", "{\\sin(x)}^{2}");
-		check("Sin(2*x)^2", "{\\sin(2\\,x)}^{2}");
+		check("Sin(x)^2", "{\\sin (x)}^{2}");
+		check("Sin(2*x)^2", "{\\sin (2\\,x)}^{2}");
 	}
 
 	public void testTeX015() {
@@ -198,13 +200,15 @@ public class BasicTeXTestCase extends TestCase {
 	}
 
 	public void testTeX021() {
+		check("\\[Alpha]", "\\alpha");
 		check("-Infinity", " - \\infty");
 		check("GoldenRatio", "\\phi");
 		check("Infinity", "\\infty");
 
 		check("EulerGamma", "\\gamma");
 		check("Pi", "\\pi");
-		// check("E", "E");
+		check("E", "e");
+		
 		// check("Catalan", "");
 		// check("Degree", "");
 		//
@@ -224,7 +228,7 @@ public class BasicTeXTestCase extends TestCase {
 
 	public void testTeX023() {
 		// issue #117
-		check("5*3^(5*x)*Log(3)", "5\\cdot 3^{5\\,x}\\,\\log(3)");
+		check("5*3^(5*x)*Log(3)", "5\\cdot 3^{5\\,x}\\,\\log (3)");
 	}
 
 	public void testTeX024() {

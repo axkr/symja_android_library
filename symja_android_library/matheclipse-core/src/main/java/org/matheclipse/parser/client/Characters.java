@@ -259,7 +259,7 @@ public class Characters {
 	 * @return <code>null</code> if no corresponding name was found
 	 */
 	public static String unicodeName(String unicode) {
-		if (ReversedNamedCharactersMap == null) {
+		if (ReversedNamedCharactersMap.size()==0) {
 			// create unicode to name map
 			ReversedNamedCharactersMap = new HashMap<String, String>(1409);
 			for (int i = 0; i < NamedCharacters.length; i += 2) {

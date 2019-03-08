@@ -1925,6 +1925,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
 
 	// {2084}
 	public void test0243() {
+		fSeconds=30;
 		check(//
 				"Integrate[(1 - x^2)/((1 + 2*a*x + x^2)*Sqrt[1 + 2*a*x + 2*b*x^2 + 2*a*x^3 + x^4]), x]", //
 				"ArcTan[(a + 2*(1 + a^2 - b)*x + a*x^2)/(Sqrt[2]*Sqrt[1 - b]*Sqrt[1 + 2*a*x + 2*b*x^2 + 2*a*x^3 + x^4])]/(Sqrt[2]*Sqrt[1 - b])", //

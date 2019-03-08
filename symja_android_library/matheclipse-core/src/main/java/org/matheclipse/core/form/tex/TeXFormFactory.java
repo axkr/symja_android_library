@@ -9,7 +9,6 @@ import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.Context;
-import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -23,6 +22,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.Characters;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 
 /**
@@ -1350,6 +1350,16 @@ public class TeXFormFactory {
 			return;
 		}
 		String headStr = sym.getSymbolName();
+		if (headStr.length() == 1) {
+			String c = Characters.unicodeName(headStr);
+			if (c != null) {
+				final Object convertedSymbol = CONSTANT_SYMBOLS.get(c);
+				if (convertedSymbol != null) {
+					convertConstantSymbol(buf, sym, convertedSymbol);
+					return;
+				}
+			}
+		}
 		if (context.equals(Context.SYSTEM) || context.isGlobal()) {
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 				String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
@@ -1362,24 +1372,30 @@ public class TeXFormFactory {
 				buf.append(headStr);
 				return;
 			} else {
-				if (convertedSymbol.equals(AST2Expr.TRUE_STRING)) {
-					buf.append('\\');
-					buf.append(sym.getSymbolName());
-					return;
-				}
-				if (convertedSymbol instanceof Operator) {
-					((Operator) convertedSymbol).convert(buf);
-					return;
-				}
-				buf.append(convertedSymbol.toString());
+				convertConstantSymbol(buf, sym, convertedSymbol);
 				return;
 			}
 		}
+
 		if (EvalEngine.get().getContextPath().contains(context)) {
 			buf.append(sym.getSymbolName());
 		} else {
 			buf.append(context.toString() + sym.getSymbolName());
 		}
+	}
+
+	private void convertConstantSymbol(final StringBuilder buf, final ISymbol sym, final Object convertedSymbol) {
+		if (convertedSymbol.equals(AST2Expr.TRUE_STRING)) {
+			buf.append('\\');
+			buf.append(sym.getSymbolName());
+			return;
+		}
+		if (convertedSymbol instanceof Operator) {
+			((Operator) convertedSymbol).convert(buf);
+			return;
+		}
+		buf.append(convertedSymbol.toString());
+		return;
 	}
 
 	public void init() {
@@ -1505,56 +1521,54 @@ public class TeXFormFactory {
 				new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Set").getPrecedence(), " = "));
 		operTab.put("SetDelayed", new AbstractOperator(this,
 				ASTNodeFactory.MMA_STYLE_FACTORY.get("SetDelayed").getPrecedence(), "\\text{:=}\\,"));
-		operTab.put("Sin", new TeXFunction(this, "sin"));
-		operTab.put("Cos", new TeXFunction(this, "cos"));
-		operTab.put("Tan", new TeXFunction(this, "tan"));
-		operTab.put("Cot", new TeXFunction(this, "cot"));
-		operTab.put("Sinh", new TeXFunction(this, "sinh"));
-		operTab.put("Cosh", new TeXFunction(this, "cosh"));
-		operTab.put("Tanh", new TeXFunction(this, "tanh"));
-		operTab.put("Coth", new TeXFunction(this, "coth"));
-		operTab.put("Csc", new TeXFunction(this, "csc"));
-		operTab.put("Sec", new TeXFunction(this, "sec"));
-		operTab.put("ArcSin", new TeXFunction(this, "arcsin"));
-		operTab.put("ArcCos", new TeXFunction(this, "arccos"));
-		operTab.put("ArcTan", new TeXFunction(this, "arctan"));
-		operTab.put("ArcCot", new TeXFunction(this, "arccot"));
-		operTab.put("ArcSinh", new TeXFunction(this, "arcsinh"));
-		operTab.put("ArcCosh", new TeXFunction(this, "arccosh"));
-		operTab.put("ArcTanh", new TeXFunction(this, "arctanh"));
-		operTab.put("ArcCoth", new TeXFunction(this, "arccoth"));
-		operTab.put("Log", new TeXFunction(this, "log"));
+		operTab.put("Sin", new TeXFunction(this, "sin "));
+		operTab.put("Cos", new TeXFunction(this, "cos "));
+		operTab.put("Tan", new TeXFunction(this, "tan "));
+		operTab.put("Cot", new TeXFunction(this, "cot "));
+		operTab.put("Sinh", new TeXFunction(this, "sinh "));
+		operTab.put("Cosh", new TeXFunction(this, "cosh "));
+		operTab.put("Tanh", new TeXFunction(this, "tanh "));
+		operTab.put("Coth", new TeXFunction(this, "coth "));
+		operTab.put("Csc", new TeXFunction(this, "csc "));
+		operTab.put("Sec", new TeXFunction(this, "sec "));
+		operTab.put("ArcSin", new TeXFunction(this, "arcsin "));
+		operTab.put("ArcCos", new TeXFunction(this, "arccos "));
+		operTab.put("ArcTan", new TeXFunction(this, "arctan "));
+		operTab.put("ArcCot", new TeXFunction(this, "arccot "));
+		operTab.put("ArcSinh", new TeXFunction(this, "arcsinh "));
+		operTab.put("ArcCosh", new TeXFunction(this, "arccosh "));
+		operTab.put("ArcTanh", new TeXFunction(this, "arctanh "));
+		operTab.put("ArcCoth", new TeXFunction(this, "arccoth "));
+		operTab.put("Log", new TeXFunction(this, "log "));
 
-		CONSTANT_SYMBOLS.put("Alpha", AST2Expr.TRUE_STRING);
-		CONSTANT_SYMBOLS.put("Beta", AST2Expr.TRUE_STRING);
-		CONSTANT_SYMBOLS.put("Chi", AST2Expr.TRUE_STRING);
-		CONSTANT_SYMBOLS.put("Delta", AST2Expr.TRUE_STRING);
-		CONSTANT_SYMBOLS.put("Epsilon", AST2Expr.TRUE_STRING);
-		CONSTANT_SYMBOLS.put("Phi", AST2Expr.TRUE_STRING);
-		CONSTANT_SYMBOLS.put("Gamma", AST2Expr.TRUE_STRING);
-		CONSTANT_SYMBOLS.put("Eta", AST2Expr.TRUE_STRING);
-		CONSTANT_SYMBOLS.put("Iota", AST2Expr.TRUE_STRING);
-		CONSTANT_SYMBOLS.put("varTheta", AST2Expr.TRUE_STRING);
-		CONSTANT_SYMBOLS.put("Kappa", AST2Expr.TRUE_STRING);
-		CONSTANT_SYMBOLS.put("Lambda", AST2Expr.TRUE_STRING);
-		CONSTANT_SYMBOLS.put("Mu", AST2Expr.TRUE_STRING);
-		CONSTANT_SYMBOLS.put("Nu", AST2Expr.TRUE_STRING);
-		CONSTANT_SYMBOLS.put("Omicron", AST2Expr.TRUE_STRING);
-
-		CONSTANT_SYMBOLS.put("Theta", AST2Expr.TRUE_STRING);
-		CONSTANT_SYMBOLS.put("Rho", AST2Expr.TRUE_STRING);
-		CONSTANT_SYMBOLS.put("Sigma", AST2Expr.TRUE_STRING);
-		CONSTANT_SYMBOLS.put("Tau", AST2Expr.TRUE_STRING);
-		CONSTANT_SYMBOLS.put("Upsilon", AST2Expr.TRUE_STRING);
-		CONSTANT_SYMBOLS.put("Omega", AST2Expr.TRUE_STRING);
-		CONSTANT_SYMBOLS.put("Xi", AST2Expr.TRUE_STRING);
-		CONSTANT_SYMBOLS.put("Psi", AST2Expr.TRUE_STRING);
-		CONSTANT_SYMBOLS.put("Zeta", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("Alpha", "\\alpha");
+		CONSTANT_SYMBOLS.put("Beta", "\\beta");
+		CONSTANT_SYMBOLS.put("Chi", "\\chi");
+		CONSTANT_SYMBOLS.put("Delta", "\\delta");
+		CONSTANT_SYMBOLS.put("Epsilon", "\\epsilon");
+		CONSTANT_SYMBOLS.put("Phi", "\\phi");
+		CONSTANT_SYMBOLS.put("Gamma", "\\gamma");
+		CONSTANT_SYMBOLS.put("Eta", "\\eta");
+		CONSTANT_SYMBOLS.put("Iota", "\\iota");
+		CONSTANT_SYMBOLS.put("Kappa", "\\kappa");
+		CONSTANT_SYMBOLS.put("Lambda", "\\lambda");
+		CONSTANT_SYMBOLS.put("Mu", "\\mu");
+		CONSTANT_SYMBOLS.put("Nu", "\\nu");
+		CONSTANT_SYMBOLS.put("Omicron", "\\omicron");
+		CONSTANT_SYMBOLS.put("Theta", "\\theta");
+		CONSTANT_SYMBOLS.put("Rho", "\\rho");
+		CONSTANT_SYMBOLS.put("Sigma", "\\sigma");
+		CONSTANT_SYMBOLS.put("Tau", "\\tau");
+		CONSTANT_SYMBOLS.put("Upsilon", "\\upsilon");
+		CONSTANT_SYMBOLS.put("Omega", "\\omega");
+		CONSTANT_SYMBOLS.put("Xi", "\\xi");
+		CONSTANT_SYMBOLS.put("Psi", "\\psi");
+		CONSTANT_SYMBOLS.put("Zeta", "\\zeta");
 
 		CONSTANT_SYMBOLS.put("alpha", AST2Expr.TRUE_STRING);
 		CONSTANT_SYMBOLS.put("beta", AST2Expr.TRUE_STRING);
 		CONSTANT_SYMBOLS.put("chi", AST2Expr.TRUE_STRING);
-		CONSTANT_SYMBOLS.put("selta", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("delta", AST2Expr.TRUE_STRING);
 		CONSTANT_SYMBOLS.put("epsilon", AST2Expr.TRUE_STRING);
 		CONSTANT_SYMBOLS.put("phi", AST2Expr.TRUE_STRING);
 		CONSTANT_SYMBOLS.put("gamma", AST2Expr.TRUE_STRING);
@@ -1581,6 +1595,7 @@ public class TeXFormFactory {
 
 		CONSTANT_EXPRS.put(F.Catalan, "C");
 		CONSTANT_EXPRS.put(F.Degree, "{}^{\\circ}");
+		CONSTANT_EXPRS.put(F.E, "e");
 		CONSTANT_EXPRS.put(F.Glaisher, "A");
 		CONSTANT_EXPRS.put(F.GoldenRatio, "\\phi");
 		CONSTANT_EXPRS.put(F.EulerGamma, "\\gamma");
