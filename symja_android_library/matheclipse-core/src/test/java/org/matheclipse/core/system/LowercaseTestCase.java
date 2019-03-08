@@ -13933,6 +13933,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTrigExpand() {
+		check("TrigExpand( Csch(2*x) )", //
+				"1/2*Csch(x)*Sech(x)");
+		check("TrigExpand( Csch(3*x) )", //
+				"-Csch(x)/(4*(-3/4*Cosh(x)^2-Sinh(x)^2/4))");
 		check("TrigExpand(Cosh(x)*Csch(2*x)*Sinh(x))", //
 				"1/2");
 		check("TrigExpand(Cos(x)*Csc(2*x)*Sin(x))", //
