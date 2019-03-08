@@ -19,17 +19,15 @@ import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTSeriesData;
-import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.Symbol;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.RulesData;
-import org.matheclipse.core.polynomials.PartialFractionIntegrateGenerator;
 
 import com.google.common.cache.CacheBuilder;
 
@@ -275,10 +273,10 @@ public class Integrate extends AbstractFunctionEvaluator {
 					return filterCollector;
 				}
 
-				IExpr temp = integrateTimesTrigFunctions(arg1AST, x);
-				if (temp.isPresent()) {
-					return temp;
-				}
+//				IExpr temp = integrateTimesTrigFunctions(arg1AST, x);
+//				if (temp.isPresent()) {
+//					return temp;
+//				}
 			}
 
 			if (arg1AST.size() >= 3 && arg1AST.isFree(F.Integrate) && arg1AST.isPlusTimesPower()) {
@@ -313,7 +311,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * @param ast
 	 *            a <code>List(...)</code> or <code>Plus(...)</code> ast
 	 * @param x
-	 *            the integ	ration veariable
+	 *            the integ ration veariable
 	 * @return
 	 */
 	private static IExpr mapIntegrate(IAST ast, final IExpr x) {
@@ -444,22 +442,22 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 *            the symbol to get the indefinite integral for.
 	 * @return <code>F.NIL</code> if no trigonometric funtion could be found.
 	 */
-	private static IExpr integrateTimesTrigFunctions(final IAST timesAST, IExpr arg2) {
-		Predicate<IExpr> isTrigFunction = Predicates.isAST(new ISymbol[] { F.Cos, F.Sin });
-		if (timesAST.has(isTrigFunction, false)) {
-			// use a symbol which is not in the symbols map
-			ISymbol pSymbol = new Symbol("$x$", Context.SYSTEM);
-			IExpr fx = F.eval(F.TrigReduce(timesAST));
-			if (fx.isPlus()) {
-				// Collect arguments for x
-				// Sin(f_) -> Sin(Collect(f, arg2))
-				fx = F.eval(F.ReplaceAll(fx, F.List(F.Rule(F.Sin(F.$p(pSymbol)), F.Sin(F.Collect(pSymbol, arg2))),
-						F.Rule(F.Cos(F.$p(pSymbol)), F.Cos(F.Collect(pSymbol, arg2))))));
-				return mapIntegrate((IAST) fx, arg2);
-			}
-		}
-		return F.NIL;
-	}
+//	private static IExpr integrateTimesTrigFunctions(final IAST timesAST, IExpr arg2) {
+//		Predicate<IExpr> isTrigFunction = Predicates.isAST(new ISymbol[] { F.Cos, F.Sin });
+//		if (timesAST.has(isTrigFunction, false)) {
+//			IExpr fx = F.eval(F.TrigReduce(timesAST));
+//			if (fx.isPlus()) {
+//				ISymbol dummy = F.Dummy("dummy");
+//				IPattern dummy_ = F.$p(dummy);
+//				// Collect arguments for x
+//				// Sin(x_) -> Sin(Collect(x, arg2))
+//				fx = F.eval(F.ReplaceAll(fx, F.List(F.RuleDelayed(F.Sin(dummy_), F.Sin(F.Collect(dummy, arg2))),
+//						F.RuleDelayed(F.Cos(dummy_), F.Cos(F.Collect(dummy, arg2))))));
+//				return mapIntegrate((IAST) fx, arg2);
+//			}
+//		}
+//		return F.NIL;
+//	}
 
 	/**
 	 * Check if the polynomial has maximum degree 2 in 1 variable and return the coefficients.

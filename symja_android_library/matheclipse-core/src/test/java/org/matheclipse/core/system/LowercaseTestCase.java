@@ -1877,6 +1877,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCollect() {
+		check("Collect(e+f*x, {})", //
+				"e+f*x");
+		check("Collect(e+f*x, {x})", //
+				"e+f*x");
+		check("Collect(e+f*x, x)", //
+				"e+f*x");
 		check("Collect((1 + a + x)^4, x, Simplify)", //
 				"(1+a)^4+4*(1+a)^3*x+6*(1+a)^2*x^2+4*(1+a)*x^3+x^4");
 		check("Collect(x^2 + y*x^2 + x*y + y + a*y, {x, y})", //
@@ -1885,7 +1891,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"c+(a-b)*x+(a+b)*x^2");
 		check("Collect(a*Exp(2*x) + b*Exp(2*x), Exp(2*x))", //
 				"(a+b)*E^(2*x)");
-		check("a*Exp(2*x) + b*Exp(2*x)", "a*E^(2*x)+b*E^(2*x)");
+		check("a*Exp(2*x) + b*Exp(2*x)",//
+				"a*E^(2*x)+b*E^(2*x)");
 		// check("Collect(D(f(Sqrt(x^2 + 1)), {x, 3}), Derivative(_)[f][_],
 		// Together)", "");
 		check("x*(4*a^3+12*a^2+12*a+4)+x^4+(4*a+4)*x^3+(6*a^2+12*a+6)*x^2+a^4+4*a^3+6*a^2+4*a+1", //

@@ -1255,6 +1255,71 @@ public final class Programming {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>Off( )
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * switch off the interactive trace.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * <code>On()</code> enables the trace of the evaluation steps.
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; On()
+	 *   On() --&gt; Null
+	 * 
+	 * &gt;&gt; D(Sin(x)+Cos(x), x)
+	 * 
+	 *   NotListQ(x) --&gt; True
+	 * 
+	 *   D(x,x) --&gt; 1
+	 * 
+	 *   D(x,x)*(-1)*Sin(x) --&gt; (-1)*1*Sin(x)
+	 * 
+	 *   (-1)*1*Sin(x) --&gt; -Sin(x)
+	 * 
+	 *   D(Cos(x),x) --&gt; -Sin(x)
+	 * 
+	 *   NotListQ(x) --&gt; True
+	 * 
+	 *   D(x,x) --&gt; 1
+	 * 
+	 *   Cos(x)*D(x,x) --&gt; 1*Cos(x)
+	 * 
+	 *   1*Cos(x) --&gt; Cos(x)
+	 * 
+	 *   D(Sin(x),x) --&gt; Cos(x)
+	 * 
+	 *   D(Cos(x)+Sin(x),x) --&gt; -Sin(x)+Cos(x)
+	 * 
+	 * Cos(x)-Sin(x)
+	 * </code>
+	 * </pre>
+	 * <p>
+	 * <code>Off()</code> disables the trace of the evaluation steps.
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Off()
+	 * 
+	 * &gt;&gt; D(Sin(x)+Cos(x), x)
+	 * Cos(x)-Sin(x)
+	 * 
+	 * </code>
+	 * </pre>
+	 * 
+	 * <h3>Related terms</h3>
+	 * <p>
+	 * <a href="On.md">On</a>
+	 * </p>
+	 */
 	private final static class Off extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -1275,6 +1340,103 @@ public final class Programming {
 
 	}
 
+	/**
+	 * <pre>
+	 * <code>On( )
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * switch on the interactive trace. The output is printed in the defined <code>out</code> stream.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * <code>On({head1, head2,... })
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * switch on the interactive trace only for the <code>head</code>s defined in the list. The output is printed in the
+	 * defined <code>out</code> stream.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * <code>On({head1, head2,... }, Unique)
+	 * </code>
+	 * </pre>
+	 * <p>
+	 * or
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>On(All, Unique)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * switch on the interactive trace only for the defined <code>head</code> s. The output is printed only once for a
+	 * combination of <em>unevaluated</em> input expression and <em>evaluated</em> output expression.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * <code>On()</code> enables the trace of the evaluation steps.
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; On()
+	 *   On() --&gt; Null
+	 * 
+	 * &gt;&gt; D(Sin(x)+Cos(x), x)
+	 * 
+	 *   NotListQ(x) --&gt; True
+	 * 
+	 *   D(x,x) --&gt; 1
+	 * 
+	 *   D(x,x)*(-1)*Sin(x) --&gt; (-1)*1*Sin(x)
+	 * 
+	 *   (-1)*1*Sin(x) --&gt; -Sin(x)
+	 * 
+	 *   D(Cos(x),x) --&gt; -Sin(x)
+	 * 
+	 *   NotListQ(x) --&gt; True
+	 * 
+	 *   D(x,x) --&gt; 1
+	 * 
+	 *   Cos(x)*D(x,x) --&gt; 1*Cos(x)
+	 * 
+	 *   1*Cos(x) --&gt; Cos(x)
+	 * 
+	 *   D(Sin(x),x) --&gt; Cos(x)
+	 * 
+	 *   D(Cos(x)+Sin(x),x) --&gt; -Sin(x)+Cos(x)
+	 * 
+	 * Cos(x)-Sin(x)
+	 * </code>
+	 * </pre>
+	 * <p>
+	 * <code>Off()</code> disables the trace of the evaluation steps.
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Off()
+	 * 
+	 * &gt;&gt; D(Sin(x)+Cos(x), x)
+	 * Cos(x)-Sin(x)
+	 * 
+	 * </code>
+	 * </pre>
+	 * 
+	 * <h3>Related terms</h3>
+	 * <p>
+	 * <a href="Off.md">Off</a>
+	 * </p>
+	 */
 	private final static class On extends AbstractCoreFunctionEvaluator {
 
 		@Override

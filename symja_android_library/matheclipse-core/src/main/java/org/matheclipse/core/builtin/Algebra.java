@@ -645,7 +645,8 @@ public class Algebra {
 
 	/**
 	 * <pre>
-	 * Collect(expr, variable)
+	 * <code>Collect(expr, variable)
+	 * </code>
 	 * </pre>
 	 * 
 	 * <blockquote>
@@ -653,33 +654,73 @@ public class Algebra {
 	 * collect subexpressions in <code>expr</code> which belong to the same <code>variable</code>.
 	 * </p>
 	 * </blockquote>
+	 * 
+	 * <pre>
+	 * <code>Collect(expr, variable, head)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * collect subexpressions in <code>expr</code> which belong to the same <code>variable</code> and apply
+	 * <code>head</code> on these subexpressions.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * Collect additive terms of an expression.
+	 * </p>
+	 * <p>
+	 * This function collects additive terms of an expression with respect to a list of expression up to powers with
+	 * rational exponents. By the term symbol here are meant arbitrary expressions, which can contain powers, products,
+	 * sums etc. In other words symbol is a pattern which will be searched for in the expression's terms.
+	 * </p>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Collect(a*x^2 + b*x^2 + a*x - b*x + c, x)
+	 * c+(a-b)*x+(a+b)*x^2
+	 * 
+	 * &gt;&gt; Collect(a*Exp(2*x) + b*Exp(2*x), Exp(2*x))
+	 * (a+b)*E^(2*x)
+	 * 
+	 * &gt;&gt; Collect(x^2 + y*x^2 + x*y + y + a*y, {x, y})
+	 * (1+a)*y+x*y+x^2*(1+y)
+	 * </code>
+	 * </pre>
 	 */
 	private static class Collect extends AbstractCoreFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
-			try {
-				IExpr head = null;
-				if (ast.isAST3()) {
-					head = engine.evaluate(ast.arg3());
-				}
-				final IExpr arg1 = F.expandAll(ast.arg1(), true, true);
-				IAST temp = Structure.threadLogicEquationOperators(arg1, ast, 1);
-				if (temp.isPresent()) {
-					return temp;
-				}
-				final IExpr arg2 = engine.evalPattern(ast.arg2());
-				if (!arg2.isList()) {
-					return collectSingleVariable(arg1, arg2, null, 1, head, engine);
-				}
-				IAST list = (IAST) arg2;
-				if (list.size() > 1) {
-					return collectSingleVariable(arg1, list.arg1(), (IAST) arg2, 2, head, engine);
-				}
-			} catch (Exception e) {
-				if (Config.SHOW_STACKTRACE) {
-					e.printStackTrace();
+			if (ast.size() >= 3 && ast.size() <= 4) {
+				try {
+					IExpr arg1 = ast.arg1();
+					IAST temp = Structure.threadLogicEquationOperators(arg1, ast, 1);
+					if (temp.isPresent()) {
+						return temp;
+					}
+					IExpr arg3Head = null;
+					arg1 = engine.evaluate(arg1);
+					arg1 = F.expandAll(arg1, true, true);
+					final IExpr arg2 = engine.evalPattern(ast.arg2());
+					if (!arg2.isList()) {
+						if (ast.isAST3()) {
+							arg3Head = engine.evaluate(ast.arg3());
+						}
+						return collectSingleVariable(arg1, arg2, null, 1, arg3Head, engine);
+					}
+					IAST list = (IAST) arg2;
+					if (list.size() > 1) {
+						if (ast.isAST3()) {
+							arg3Head = engine.evaluate(ast.arg3());
+						}
+						return collectSingleVariable(arg1, list.arg1(), (IAST) arg2, 2, arg3Head, engine);
+					}
+					return arg1;
+				} catch (Exception e) {
+					if (Config.SHOW_STACKTRACE) {
+						e.printStackTrace();
+					}
 				}
 			}
 			return F.NIL;

@@ -3721,16 +3721,25 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testIssue102() {
-		check("Collect((a+b)/c,b)", "a/c+b/c");
-		check("Collect((a+b)/c,c)", "(a+b)/c");
+		check("Collect((a+b)/c,b)", //
+				"a/c+b/c");
+		check("Collect((a+b)/c,c)", //
+				"(a+b)/c");
 
-		check("Collect(a/c+b/c,c)", "(a+b)/c");
-		check("Collect((a+b)/c,c)", "(a+b)/c");
-		check("Collect((a+b)/c,b)", "a/c+b/c");
-		check("Collect((a+b)/c,a)", "a/c+b/c");
-		check("(a+b)/c==a/c+b/c", "True");
-		check("(a+b)/c==a/c+b/c==(a+b)/c", "True");
-		check("Pi==Pi==Pi", "True");
+		check("Collect(a/c+b/c,c)", //
+				"(a+b)/c");
+		check("Collect((a+b)/c,c)", //
+				"(a+b)/c");
+		check("Collect((a+b)/c,b)", //
+				"a/c+b/c");
+		check("Collect((a+b)/c,a)", //
+				"a/c+b/c");
+		check("(a+b)/c==a/c+b/c", //
+				"True");
+		check("(a+b)/c==a/c+b/c==(a+b)/c", //
+				"True");
+		check("Pi==Pi==Pi", //
+				"True");
 	}
 
 	public void testGithub18() {

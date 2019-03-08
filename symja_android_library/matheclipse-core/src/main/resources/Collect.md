@@ -6,6 +6,12 @@ Collect(expr, variable)
 
 > collect subexpressions in `expr` which belong to the same `variable`.
 
+```
+Collect(expr, variable, head)
+```
+
+> collect subexpressions in `expr` which belong to the same `variable` and apply `head` on these subexpressions.
+
 Collect additive terms of an expression.
 
 This function collects additive terms of an expression with respect to a list of expression up to powers with rational exponents. By the term symbol here are meant arbitrary expressions, which can contain powers, products, sums etc. In other words symbol is a pattern which will be searched for in the expression's terms.
