@@ -643,7 +643,8 @@ public class RubiIntegrationTest extends AbstractTestCase {
 	}
 
 	public void testRationalFunction001() {
-		check("PolynomialQ(x^2*(a+b*x^3)^16,x)", "True");
+		check("PolynomialQ(x^2*(a+b*x^3)^16,x)", //
+				"True");
 
 		check("Integrate(x^2*(a+b*x^3)^16,x)", //
 				"(a+b*x^3)^17/(51*b)");
