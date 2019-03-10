@@ -75,7 +75,7 @@ public class EvalUtilities extends MathMLUtilities {
 	public IExpr evaluate(final String inputExpression) throws MathException {
 		if (inputExpression != null) {
 			startRequest();
-			EvalEngine.set(fEvalEngine);;
+			EvalEngine.set(fEvalEngine);
 			fEvalEngine.reset();
 			IExpr parsedExpression = fEvalEngine.parse(inputExpression);
 			if (parsedExpression != null) {
