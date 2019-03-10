@@ -408,6 +408,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [GammaDistribution](functions/GammaDistribution.md)
 * [GCD](functions/GCD.md)
 * [GeometricDistribution](functions/GeometricDistribution.md)
+* [Get](functions/Get.md)
 * [Glaisher](functions/Glaisher.md)
 * [GoldenRatio](functions/GoldenRatio.md)
 * [Grad](functions/Grad.md)
