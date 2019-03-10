@@ -20,17 +20,17 @@ import org.matheclipse.core.interfaces.ISymbol;
  * </p>
  * 
  * <p>
- * In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic structure of the Symja
- * source code. Each node of the tree denotes a construct occurring in the source code. The syntax is 'abstract' in the
- * sense that it does not represent every detail that appears in the real syntax. For instance, grouping parentheses are
- * implicit in the tree structure, and a syntactic construct such as a <code>Sin[x]</code> expression will be denoted by
- * an AST with 2 nodes. One node for the header <code>Sin</code> and one node for the argument <code>x</code>.
+ * In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic structure of the Symja source code.
+ * Each node of the tree denotes a construct occurring in the source code. The syntax is 'abstract' in the sense that it does not
+ * represent every detail that appears in the real syntax. For instance, grouping parentheses are implicit in the tree structure,
+ * and a syntactic construct such as a <code>Sin[x]</code> expression will be denoted by an AST with 2 nodes. One node for the
+ * header <code>Sin</code> and one node for the argument <code>x</code>.
  * </p>
  * 
  * Internally an AST is represented as a <code>java.util.List</code> which contains
  * <ul>
- * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus, Times,...) at index
- * <code>0</code> and</li>
+ * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus, Times,...) at index <code>0</code>
+ * and</li>
  * <li>the <code>n</code> arguments of a function in the index <code>1 to n</code></li>
  * </ul>
  * 
@@ -57,10 +57,8 @@ public class AST1 extends AST0 {
 	/**
 	 * Create a function with one arguments (i.e. <code>head[arg1]</code>).
 	 * 
-	 * @param head
-	 *            the head of the function
-	 * @param arg1
-	 *            the first argument of the function
+	 * @param head the head of the function
+	 * @param arg1 the first argument of the function
 	 */
 	protected AST1(IExpr head, IExpr arg1) {
 		super(head);
@@ -68,10 +66,9 @@ public class AST1 extends AST0 {
 	}
 
 	/**
-	 * Get the first argument (i.e. the second element of the underlying list structure) of the <code>AST</code>
-	 * function (i.e. get(1) ). <br />
-	 * <b>Example:</b> for the AST representing the expression <code>Sin(x)</code>, <code>arg1()</code> returns
-	 * <code>x</code>.
+	 * Get the first argument (i.e. the second element of the underlying list structure) of the <code>AST</code> function (i.e. get(1)
+	 * ). <br />
+	 * <b>Example:</b> for the AST representing the expression <code>Sin(x)</code>, <code>arg1()</code> returns <code>x</code>.
 	 * 
 	 * @return the first argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
@@ -94,8 +91,7 @@ public class AST1 extends AST0 {
 	}
 
 	/**
-	 * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity as this
-	 * {@code HMArrayList}.
+	 * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity as this {@code HMArrayList}.
 	 * 
 	 * @return a shallow copy of this {@code ArrayList}
 	 * @see java.lang.Cloneable
@@ -230,14 +226,36 @@ public class AST1 extends AST0 {
 
 	@Override
 	public void forEach(int start, int end, ObjIntConsumer<? super IExpr> action) {
-		switch (start) {
-		case 0:
-			action.accept(arg0, 0);
-			action.accept(arg1, 1);
-			break;
-		case 1:
-			action.accept(arg1, 1);
-			break;
+		if (start < end) {
+			switch (start) {
+			case 0:
+				action.accept(arg0, 0);
+				if (start + 1 < end) {
+					action.accept(arg1, 1);
+				}
+				break;
+			case 1:
+				action.accept(arg1, 1);
+				break;
+			}
+		}
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public void forEach(int startOffset, int endOffset, Consumer<? super IExpr> action) {
+		if (startOffset < endOffset) {
+			switch (startOffset) {
+			case 0:
+				action.accept(arg0);
+				if (startOffset + 1 < endOffset) {
+					action.accept(arg1);
+				}
+				break;
+			case 1:
+				action.accept(arg1);
+				break;
+			}
 		}
 	}
 
@@ -328,13 +346,10 @@ public class AST1 extends AST0 {
 	/**
 	 * Replaces the element at the specified location in this {@code ArrayList} with the specified object.
 	 * 
-	 * @param location
-	 *            the index at which to put the specified object.
-	 * @param object
-	 *            the object to add.
+	 * @param location the index at which to put the specified object.
+	 * @param object   the object to add.
 	 * @return the previous element at the index.
-	 * @throws IndexOutOfBoundsException
-	 *             when {@code location < 0 || >= size()}
+	 * @throws IndexOutOfBoundsException when {@code location < 0 || >= size()}
 	 */
 	@Override
 	public IExpr set(int location, IExpr object) {
