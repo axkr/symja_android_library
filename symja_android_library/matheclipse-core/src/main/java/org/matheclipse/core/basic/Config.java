@@ -40,6 +40,24 @@ public class Config {
 	 */
 	public static final int MAX_FACTOR_LEAFCOUNT = 600;
 
+	/**
+	 * Maximum number for the leaf count of an expression so that <code>Simplify()</code> will try calling
+	 * <code>Factor()</code>.
+	 */
+	public static final int MAX_SIMPLIFY_FACTOR_LEAFCOUNT = 25;
+
+	/**
+	 * Maximum number for the leaf count of an expression so that <code>Simplify()</code> will try calling
+	 * <code>Apart()</code>.
+	 */
+	public static final int MAX_SIMPLIFY_APART_LEAFCOUNT = 25;
+
+	/**
+	 * Maximum number for the leaf count of an expression so that <code>Simplify()</code> will try calling
+	 * <code>Together()</code>.
+	 */
+	public static final int MAX_SIMPLIFY_TOGETHER_LEAFCOUNT = 60;
+
 	static {
 		EXPR_CACHE = CacheBuilder.newBuilder().maximumSize(MAX_EXPR_CACHE_SIZE).weakKeys().weakValues().build();
 	}

@@ -5,8 +5,8 @@ import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
 
 public class AlgebraicFunctions extends AbstractRubiTestCase {
-	static boolean init=true;
-	
+	static boolean init = true;
+
 	public AlgebraicFunctions(String name) {
 		super(name, false);
 	}
@@ -15,16 +15,16 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 	protected void setUp() {
 		try {
 			super.setUp();
-			fSeconds=20;
+			fSeconds = 20;
 			if (init) {
 				System.out.println("AlgebraicFunctions");
-				init=false;
+				init = false;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	// {8}
 	public void test0001() {
 		check(//
@@ -6669,7 +6669,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {1879}
 	public void test0869() {
-		fSeconds=30;
+		fSeconds = 30;
 		check(//
 				"Integrate[(1 + Sqrt[3] + (b/a)^(1/3)*x)/Sqrt[-a - b*x^3], x]", //
 				"(-2*(b/a)^(2/3)*Sqrt[-a - b*x^3])/(b*(1 - Sqrt[3] + (b/a)^(1/3)*x)) + (3^(1/4)*Sqrt[2 + Sqrt[3]]*(1 + (b/a)^(1/3)*x)*Sqrt[(1 - (b/a)^(1/3)*x + (b/a)^(2/3)*x^2)/(1 - Sqrt[3] + (b/a)^(1/3)*x)^2]*EllipticE[ArcSin[(1 + Sqrt[3] + (b/a)^(1/3)*x)/(1 - Sqrt[3] + (b/a)^(1/3)*x)], -7 + 4*Sqrt[3]])/((b/a)^(1/3)*Sqrt[-((1 + (b/a)^(1/3)*x)/(1 - Sqrt[3] + (b/a)^(1/3)*x)^2)]*Sqrt[-a - b*x^3])", //
@@ -8590,7 +8590,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {860}
 	public void test1119() {
-		fSeconds=30;
+		fSeconds = 30;
 		check(//
 				"Integrate[Sqrt[a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2]/(Sqrt[d + e*x]*(f + g*x)^(5/2)), x]", //
 				"(2*(a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2)^(3/2))/(3*(c*d*f - a*e*g)*(d + e*x)^(3/2)*(f + g*x)^(3/2))", //
@@ -8599,12 +8599,12 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {860}
 	public void test1120() {
-		fSeconds=30;
+		fSeconds = 30;
 		check(//
 				"Integrate[(a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2)^(3/2)/((d + e*x)^(3/2)*(f + g*x)^(7/2)), x]", //
 				"(2*(a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2)^(5/2))/(5*(c*d*f - a*e*g)*(d + e*x)^(5/2)*(f + g*x)^(5/2))", //
-				"-2/5*(e^2*(a*d*e+(c*d^2+a*e^2)*x+c*d*e*x^2)^(5/2))/((-c*d*e^2*f-c*d^2*e*g+e*(c*d^\n" + 
-				"2+a*e^2)*g)*(d+e*x)^(5/2)*(f+g*x)^(5/2))",
+				"-2/5*(e^2*(a*d*e+(c*d^2+a*e^2)*x+c*d*e*x^2)^(5/2))/((-c*d*e^2*f-c*d^2*e*g+e*(c*d^\n"
+						+ "2+a*e^2)*g)*(d+e*x)^(5/2)*(f+g*x)^(5/2))",
 				860);
 	}
 
@@ -8613,8 +8613,8 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[(a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2)^(5/2)/((d + e*x)^(5/2)*(f + g*x)^(9/2)), x]", //
 				"(2*(a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2)^(7/2))/(7*(c*d*f - a*e*g)*(d + e*x)^(7/2)*(f + g*x)^(7/2))", //
-				"-2/7*(e^2*(a*d*e+(c*d^2+a*e^2)*x+c*d*e*x^2)^(7/2))/((-c*d*e^2*f-c*d^2*e*g+e*(c*d^\n" + 
-				"2+a*e^2)*g)*(d+e*x)^(7/2)*(f+g*x)^(7/2))", //
+				"-2/7*(e^2*(a*d*e+(c*d^2+a*e^2)*x+c*d*e*x^2)^(7/2))/((-c*d*e^2*f-c*d^2*e*g+e*(c*d^\n"
+						+ "2+a*e^2)*g)*(d+e*x)^(7/2)*(f+g*x)^(7/2))", //
 				860);
 	}
 
@@ -9612,7 +9612,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {1247, 629}
 	public void test1248() {
-		fSeconds=30;
+		fSeconds = 30;
 		check(//
 				"Integrate[x*(b + 2*c*x^2)*(a + b*x^2 + c*x^4)^13, x]", //
 				"(a + b*x^2 + c*x^4)^14/28", //
@@ -9621,7 +9621,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {1468, 629}
 	public void test1249() {
-		fSeconds=30;
+		fSeconds = 30;
 		check(//
 				"Integrate[x^2*(b + 2*c*x^3)*(a + b*x^3 + c*x^6)^13, x]", //
 				"(a + b*x^3 + c*x^6)^14/42", //
@@ -9638,7 +9638,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {1247, 629}
 	public void test1251() {
-		fSeconds=30;
+		fSeconds = 30;
 		check(//
 				"Integrate[x*(b + 2*c*x^2)*(-a + b*x^2 + c*x^4)^13, x]", //
 				"(a - b*x^2 - c*x^4)^14/28", //
@@ -9647,7 +9647,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {1468, 629}
 	public void test1252() {
-		fSeconds=30;
+		fSeconds = 30;
 		check(//
 				"Integrate[x^2*(b + 2*c*x^3)*(-a + b*x^3 + c*x^6)^13, x]", //
 				"(a - b*x^3 - c*x^6)^14/42", //
@@ -9712,7 +9712,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {1247, 629}
 	public void test1260() {
-		fSeconds=30;
+		fSeconds = 30;
 		check(//
 				"Integrate[(x*(b + 2*c*x^2))/(a + b*x^2 + c*x^4)^8, x]", //
 				"-1/(14*(a + b*x^2 + c*x^4)^7)", //
@@ -9761,7 +9761,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {1247, 629}
 	public void test1266() {
-		fSeconds=30;
+		fSeconds = 30;
 		check(//
 				"Integrate[(x*(b + 2*c*x^2))/(-a + b*x^2 + c*x^4)^8, x]", //
 				"1/(14*(a - b*x^2 - c*x^4)^7)", //
@@ -10298,7 +10298,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {1590}
 	public void test1345() {
-		fSeconds=30;
+		fSeconds = 30;
 		check(//
 				"Integrate[x^m*(a + b*x + c*x^2 + d*x^3)^p*(a*(1 + m) + x*(b*(2 + m + p) + x*(c*(3 + m + 2*p) + d*(4 + m + 3*p)*x))), x]", //
 				"x^(1 + m)*(a + b*x + c*x^2 + d*x^3)^(1 + p)", //
@@ -10307,6 +10307,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {1588}
 	public void test1346() {
+		fSeconds = 60;
 		check(//
 				"Integrate[x^2*(a + b*x + c*x^2 + d*x^3)^p*(3*a + b*(4 + p)*x + c*(5 + 2*p)*x^2 + d*(6 + 3*p)*x^3), x]", //
 				"x^3*(a + b*x + c*x^2 + d*x^3)^(1 + p)", //
@@ -10315,6 +10316,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {1588}
 	public void test1347() {
+		fSeconds = 120;
 		check(//
 				"Integrate[x*(a + b*x + c*x^2 + d*x^3)^p*(2*a + b*(3 + p)*x + c*(4 + 2*p)*x^2 + d*(5 + 3*p)*x^3), x]", //
 				"x^2*(a + b*x + c*x^2 + d*x^3)^(1 + p)", //
@@ -10547,6 +10549,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {1590}
 	public void test1379() {
+		fSeconds = 60;
 		check(//
 				"Integrate[x*(a + b*x + c*x^2)^m*(d + e*x + f*x^2 + g*x^3)^n*(2*a*d + (3*b*d + 3*a*e + b*d*m + a*e*n)*x + (4*c*d + 4*b*e + 4*a*f + 2*c*d*m + b*e*m + b*e*n + 2*a*f*n)*x^2 + (5*c*e + 5*b*f + 5*a*g + 2*c*e*m + b*f*m + c*e*n + 2*b*f*n + 3*a*g*n)*x^3 + (6*c*f + 6*b*g + 2*c*f*m + b*g*m + 2*c*f*n + 3*b*g*n)*x^4 + c*g*(7 + 2*m + 3*n)*x^5), x]", //
 				"x^2*(a + b*x + c*x^2)^(1 + m)*(d + e*x + f*x^2 + g*x^3)^(1 + n)", //
@@ -10555,6 +10558,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {1590}
 	public void test1380() {
+		fSeconds = 60;
 		check(//
 				"Integrate[(a + b*x + c*x^2)^m*(d + e*x + f*x^2 + g*x^3)^n*(a*d + (2*b*d + 2*a*e + b*d*m + a*e*n)*x + (3*c*d + 3*b*e + 3*a*f + 2*c*d*m + b*e*m + b*e*n + 2*a*f*n)*x^2 + (4*c*e + 4*b*f + 4*a*g + 2*c*e*m + b*f*m + c*e*n + 2*b*f*n + 3*a*g*n)*x^3 + (5*c*f + 5*b*g + 2*c*f*m + b*g*m + 2*c*f*n + 3*b*g*n)*x^4 + c*g*(6 + 2*m + 3*n)*x^5), x]", //
 				"x*(a + b*x + c*x^2)^(1 + m)*(d + e*x + f*x^2 + g*x^3)^(1 + n)", //
@@ -10563,6 +10567,19 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {1590}
 	public void test1381() {
+		fSeconds = 60;
+//		check(//
+//				"Rubi`PseudoBinomialParts[(a+b*x+c*x^2)^m*(d+e*x+f*x^2+g*x^3)^n,x]", //
+//				"False", //
+//				1590);
+		check(//
+				"Rubi`PseudoBinomialParts[b*d+a*e+b*d*m+a*e*n+(2*c*d+2*b*e+2*a*f+2*c*d*m+b*e*m+b*e*n+2*a*f*n)*x+(3*c*e+3*b*f+3*a*g+2*c*e*m+b*f*m+c*e*n+2*b*f*n+3*a*g*n)*x^2+(4*c*f+4*b*g+2*c*f*m+b*g*m+2*c*f*n+3*b*g*n)*x^3+c*g*(5+2*m+3*n)*x^4,x]", //
+				"False", //
+				1590);
+//		check(//
+//				"Rubi`PseudoBinomialPairQ[b*d+a*e+b*d*m+a*e*n+(2*c*d+2*b*e+2*a*f+2*c*d*m+b*e*m+b*e*n+2*a*f*n)*x+(3*c*e+3*b*f+3*a*g+2*c*e*m+b*f*m+c*e*n+2*b*f*n+3*a*g*n)*x^2+(4*c*f+4*b*g+2*c*f*m+b*g*m+2*c*f*n+3*b*g*n)*x^3+c*g*(5+2*m+3*n)*x^4,(a+b*x+c*x^2)^m*(d+e*x+f*x^2+g*x^3)^n,x]", //
+//				"False", //
+//				1590);
 		check(//
 				"Integrate[(a + b*x + c*x^2)^m*(d + e*x + f*x^2 + g*x^3)^n*(b*d + a*e + b*d*m + a*e*n + (2*c*d + 2*b*e + 2*a*f + 2*c*d*m + b*e*m + b*e*n + 2*a*f*n)*x + (3*c*e + 3*b*f + 3*a*g + 2*c*e*m + b*f*m + c*e*n + 2*b*f*n + 3*a*g*n)*x^2 + (4*c*f + 4*b*g + 2*c*f*m + b*g*m + 2*c*f*n + 3*b*g*n)*x^3 + c*g*(5 + 2*m + 3*n)*x^4), x]", //
 				"(a + b*x + c*x^2)^(1 + m)*(d + e*x + f*x^2 + g*x^3)^(1 + n)", //
@@ -10675,7 +10692,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {2084}
 	public void test1402() {
-		fSeconds=30;
+		fSeconds = 30;
 		check(//
 				"Integrate[(e*f - e*f*x^2)/((a*d + b*d*x + a*d*x^2)*Sqrt[a + b*x + c*x^2 + b*x^3 + a*x^4]), x]", //
 				"(e*f*ArcTan[(a*b + (4*a^2 + b^2 - 2*a*c)*x + a*b*x^2)/(2*a*Sqrt[2*a - c]*Sqrt[a + b*x + c*x^2 + b*x^3 + a*x^4])])/(a*Sqrt[2*a - c]*d)", //
@@ -10684,7 +10701,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {2085}
 	public void test1403() {
-		fSeconds=30;
+		fSeconds = 30;
 		check(//
 				"Integrate[(e*f - e*f*x^2)/((-(a*d) + b*d*x - a*d*x^2)*Sqrt[-a + b*x + c*x^2 + b*x^3 - a*x^4]), x]", //
 				"(e*f*ArcTanh[(a*b - (4*a^2 + b^2 + 2*a*c)*x + a*b*x^2)/(2*a*Sqrt[2*a + c]*Sqrt[-a + b*x + c*x^2 + b*x^3 - a*x^4])])/(a*Sqrt[2*a + c]*d)", //

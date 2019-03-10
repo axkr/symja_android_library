@@ -206,13 +206,14 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 		if (patternMap.getRHSEvaluated()) {
 			return true;
 		}
-		boolean matched = false;
+		
 		if (!(fRightHandSide.isModule() || fRightHandSide.isWith() || fRightHandSide.isCondition())) {
-			matched = true;
+			return true;
 		} else {
 			if (!patternMap.isAllPatternsAssigned()) {
-				matched = true;
+				return true;
 			} else {
+				boolean matched = false;
 				IExpr rhs = patternMap.substituteSymbols(fRightHandSide);
 				try {
 					// System.out.println(rhs.toString());
@@ -225,9 +226,9 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 					matched = true;
 				}
 				patternMap.setRHSEvaluated(matched);
+				return matched;
 			}
 		}
-		return matched;
 	}
 
 	/** {@inheritDoc} */

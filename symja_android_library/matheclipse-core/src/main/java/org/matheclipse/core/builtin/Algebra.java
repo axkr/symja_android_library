@@ -3669,33 +3669,35 @@ public class Algebra {
 					}
 
 					try {
-						temp = F.eval(F.Together(expr));
-						count = fComplexityFunction.apply(temp);
-						if (count < minCounter) {
-							minCounter = count;
-							result = temp;
-						}
-						if (fFullSimplify) {
-							if (temp.isTimes()) {
-								IExpr[] parts = Algebra.getNumeratorDenominator((IAST) temp, EvalEngine.get());
-								if (!parts[1].isOne()) {
-									try {
-										IExpr numerator = parts[0];
-										IExpr denominator = parts[1];
-										if (denominator.isPlus() && !numerator.isPlusTimesPower()) {
-											IExpr test = ((IAST) denominator).map(x -> F.Divide(x, numerator), 1);
-											temp = F.eval(F.Divide(F.C1, test));
-											count = fComplexityFunction.apply(temp);
-											if (count < minCounter) {
-												minCounter = count;
-												result = temp;
+						if (minCounter < Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT) {
+							temp = F.eval(F.Together(expr));
+							count = fComplexityFunction.apply(temp);
+							if (count < minCounter) {
+								minCounter = count;
+								result = temp;
+							}
+							if (fFullSimplify) {
+								if (temp.isTimes()) {
+									IExpr[] parts = Algebra.getNumeratorDenominator((IAST) temp, EvalEngine.get());
+									if (!parts[1].isOne()) {
+										try {
+											IExpr numerator = parts[0];
+											IExpr denominator = parts[1];
+											if (denominator.isPlus() && !numerator.isPlusTimesPower()) {
+												IExpr test = ((IAST) denominator).map(x -> F.Divide(x, numerator), 1);
+												temp = F.eval(F.Divide(F.C1, test));
+												count = fComplexityFunction.apply(temp);
+												if (count < minCounter) {
+													minCounter = count;
+													result = temp;
+												}
 											}
+										} catch (JASConversionException e) {
+											if (Config.DEBUG) {
+												e.printStackTrace();
+											}
+											return expr;
 										}
-									} catch (JASConversionException e) {
-										if (Config.DEBUG) {
-											e.printStackTrace();
-										}
-										return expr;
 									}
 								}
 							}
@@ -3709,7 +3711,7 @@ public class Algebra {
 						// TODO: Factor is not fast enough for large expressions!
 						// Maybe restricting factoring to smaller expressions is necessary here
 						temp = F.NIL;
-						if (minCounter < 25) {
+						if (minCounter < Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT) {
 							temp = F.eval(F.Factor(expr));
 							count = fComplexityFunction.apply(temp);
 							if (count < minCounter) {
@@ -3717,7 +3719,8 @@ public class Algebra {
 								result = temp;
 							}
 						}
-						if (fFullSimplify && (minCounter >= 25 || !temp.equals(expr))) {
+						if (fFullSimplify
+								&& (minCounter >= Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT || !temp.equals(expr))) {
 							temp = F.eval(F.FactorSquareFree(expr));
 							count = fComplexityFunction.apply(temp);
 							if (count < minCounter) {
@@ -3731,11 +3734,13 @@ public class Algebra {
 					}
 
 					try {
-						temp = F.eval(F.Apart(expr));
-						count = fComplexityFunction.apply(temp);
-						if (count < minCounter) {
-							minCounter = count;
-							result = temp;
+						if (minCounter < Config.MAX_SIMPLIFY_APART_LEAFCOUNT) {
+							temp = F.eval(F.Apart(expr));
+							count = fComplexityFunction.apply(temp);
+							if (count < minCounter) {
+								minCounter = count;
+								result = temp;
+							}
 						}
 					} catch (WrongArgumentType wat) {
 						//
