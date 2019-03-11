@@ -1443,6 +1443,9 @@ public final class BooleanFunctions {
 			} else {
 				lhs = F.eval(F.Subtract(a1, a2));
 				rhs = F.C0;
+				if (lhs.isReal()) {
+					return createComparatorResult(lhs, rhs, useOppositeHeader, originalHead, oppositeHead);
+				}
 			}
 			if (lhs.isAST()) {
 				IAST lhsAST = (IAST) lhs;
