@@ -2568,6 +2568,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[(-1 + a + a*x^2)^(-1), x]", //
 				"-(ArcTanh[(Sqrt[a]*x)/Sqrt[1 - a]]/Sqrt[(1 - a)*a])", //
+				"-ArcTanh((Sqrt(a)*x)/Sqrt(1-a))/(Sqrt(1-a)*Sqrt(a))", //
 				208);
 	}
 
@@ -8594,6 +8595,8 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[Sqrt[a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2]/(Sqrt[d + e*x]*(f + g*x)^(5/2)), x]", //
 				"(2*(a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2)^(3/2))/(3*(c*d*f - a*e*g)*(d + e*x)^(3/2)*(f + g*x)^(3/2))", //
+				"-2/3*(e^2*(a*d*e+(c*d^2+a*e^2)*x+c*d*e*x^2)^(3/2))/((-c*d*e^2*f-c*d^2*e*g+e*(c*d^\n"
+						+ "2+a*e^2)*g)*(d+e*x)^(3/2)*(f+g*x)^(3/2))", //
 				860);
 	}
 
@@ -8767,6 +8770,9 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[1/Sqrt[-2 + 3*x^4], x]", //
 				"(Sqrt[-2 + Sqrt[6]*x^2]*Sqrt[(2 + Sqrt[6]*x^2)/(2 - Sqrt[6]*x^2)]*EllipticF[ArcSin[(2^(3/4)*3^(1/4)*x)/Sqrt[-2 + Sqrt[6]*x^2]], 1/2])/(2*6^(1/4)*Sqrt[(2 - Sqrt[6]*x^2)^(-1)]*Sqrt[-2 + 3*x^4])", //
+				"(Sqrt(-2+Sqrt(6)*x^2)*Sqrt((2+Sqrt(6)*x^2)/(2-Sqrt(6)*x^2))*EllipticF(ArcSin(x/(Sqrt(\n" + 
+				"1/(2*Sqrt(6)))*Sqrt(-2+Sqrt(6)*x^2))),1/2))/(2*6^(1/4)*Sqrt(-2+3*x^4)*Sqrt(1/(2-Sqrt(\n" + 
+				"6)*x^2)))", //
 				223);
 	}
 
@@ -10568,18 +10574,19 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 	// {1590}
 	public void test1381() {
 		fSeconds = 60;
-//		check(//
-//				"Rubi`PseudoBinomialParts[(a+b*x+c*x^2)^m*(d+e*x+f*x^2+g*x^3)^n,x]", //
-//				"False", //
-//				1590);
+		// check(//
+		// "Rubi`PseudoBinomialParts[(a+b*x+c*x^2)^m*(d+e*x+f*x^2+g*x^3)^n,x]", //
+		// "False", //
+		// 1590);
 		check(//
 				"Rubi`PseudoBinomialParts[b*d+a*e+b*d*m+a*e*n+(2*c*d+2*b*e+2*a*f+2*c*d*m+b*e*m+b*e*n+2*a*f*n)*x+(3*c*e+3*b*f+3*a*g+2*c*e*m+b*f*m+c*e*n+2*b*f*n+3*a*g*n)*x^2+(4*c*f+4*b*g+2*c*f*m+b*g*m+2*c*f*n+3*b*g*n)*x^3+c*g*(5+2*m+3*n)*x^4,x]", //
 				"False", //
 				1590);
-//		check(//
-//				"Rubi`PseudoBinomialPairQ[b*d+a*e+b*d*m+a*e*n+(2*c*d+2*b*e+2*a*f+2*c*d*m+b*e*m+b*e*n+2*a*f*n)*x+(3*c*e+3*b*f+3*a*g+2*c*e*m+b*f*m+c*e*n+2*b*f*n+3*a*g*n)*x^2+(4*c*f+4*b*g+2*c*f*m+b*g*m+2*c*f*n+3*b*g*n)*x^3+c*g*(5+2*m+3*n)*x^4,(a+b*x+c*x^2)^m*(d+e*x+f*x^2+g*x^3)^n,x]", //
-//				"False", //
-//				1590);
+		// check(//
+		// "Rubi`PseudoBinomialPairQ[b*d+a*e+b*d*m+a*e*n+(2*c*d+2*b*e+2*a*f+2*c*d*m+b*e*m+b*e*n+2*a*f*n)*x+(3*c*e+3*b*f+3*a*g+2*c*e*m+b*f*m+c*e*n+2*b*f*n+3*a*g*n)*x^2+(4*c*f+4*b*g+2*c*f*m+b*g*m+2*c*f*n+3*b*g*n)*x^3+c*g*(5+2*m+3*n)*x^4,(a+b*x+c*x^2)^m*(d+e*x+f*x^2+g*x^3)^n,x]",
+		// //
+		// "False", //
+		// 1590);
 		check(//
 				"Integrate[(a + b*x + c*x^2)^m*(d + e*x + f*x^2 + g*x^3)^n*(b*d + a*e + b*d*m + a*e*n + (2*c*d + 2*b*e + 2*a*f + 2*c*d*m + b*e*m + b*e*n + 2*a*f*n)*x + (3*c*e + 3*b*f + 3*a*g + 2*c*e*m + b*f*m + c*e*n + 2*b*f*n + 3*a*g*n)*x^2 + (4*c*f + 4*b*g + 2*c*f*m + b*g*m + 2*c*f*n + 3*b*g*n)*x^3 + c*g*(5 + 2*m + 3*n)*x^4), x]", //
 				"(a + b*x + c*x^2)^(1 + m)*(d + e*x + f*x^2 + g*x^3)^(1 + n)", //
@@ -10692,7 +10699,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {2084}
 	public void test1402() {
-		fSeconds = 30;
+		fSeconds = 60;
 		check(//
 				"Integrate[(e*f - e*f*x^2)/((a*d + b*d*x + a*d*x^2)*Sqrt[a + b*x + c*x^2 + b*x^3 + a*x^4]), x]", //
 				"(e*f*ArcTan[(a*b + (4*a^2 + b^2 - 2*a*c)*x + a*b*x^2)/(2*a*Sqrt[2*a - c]*Sqrt[a + b*x + c*x^2 + b*x^3 + a*x^4])])/(a*Sqrt[2*a - c]*d)", //
@@ -10701,7 +10708,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {2085}
 	public void test1403() {
-		fSeconds = 30;
+		fSeconds = 60;
 		check(//
 				"Integrate[(e*f - e*f*x^2)/((-(a*d) + b*d*x - a*d*x^2)*Sqrt[-a + b*x + c*x^2 + b*x^3 - a*x^4]), x]", //
 				"(e*f*ArcTanh[(a*b - (4*a^2 + b^2 + 2*a*c)*x + a*b*x^2)/(2*a*Sqrt[2*a + c]*Sqrt[-a + b*x + c*x^2 + b*x^3 - a*x^4])])/(a*Sqrt[2*a + c]*d)", //

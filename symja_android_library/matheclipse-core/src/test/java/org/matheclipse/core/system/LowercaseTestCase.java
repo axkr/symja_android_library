@@ -1891,7 +1891,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"c+(a-b)*x+(a+b)*x^2");
 		check("Collect(a*Exp(2*x) + b*Exp(2*x), Exp(2*x))", //
 				"(a+b)*E^(2*x)");
-		check("a*Exp(2*x) + b*Exp(2*x)",//
+		check("a*Exp(2*x) + b*Exp(2*x)", //
 				"a*E^(2*x)+b*E^(2*x)");
 		// check("Collect(D(f(Sqrt(x^2 + 1)), {x, 3}), Derivative(_)[f][_],
 		// Together)", "");
@@ -4640,8 +4640,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("v(x_) := x   ", "");
 		check("v()", "v()");
 		check("v(a)", "a");
-		check("v(a, b)", "Iteration limit of 1000 exceeded.");
-		check("v(a, b, c)", "Iteration limit of 1000 exceeded.");
+		check("v(a, b)", "Iteration limit of 500 exceeded.");
+		check("v(a, b, c)", "Iteration limit of 500 exceeded.");
 	}
 
 	public void testFlatOrderlessOneIdentity() {
@@ -5287,21 +5287,36 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGreater() {
-		check("42>Infinity", "False");
+		check("x+1>x", //
+				"True");
 
-		check("Infinity>Infinity", "False");
+		check("42>Infinity", //
+				"False");
 
-		check("Refine(Infinity>x, x>0)", "True");
-		check("Refine(-Infinity>x, x>0)", "False");
+		check("Infinity>Infinity", //
+				"False");
 
-		check("{Greater(), Greater(x), Greater(1)}", "{True,True,True}");
-		check("Pi>0", "True");
-		check("Pi+E<8", "True");
-		check("2/17 > 1/5 > Pi/10", "False");
-		check("x<x", "False");
-		check("x<=x", "True");
-		check("x>x", "False");
-		check("x>=x", "True");
+		check("Refine(Infinity>x, x>0)", //
+				"True");
+		check("Refine(-Infinity>x, x>0)", //
+				"False");
+
+		check("{Greater(), Greater(x), Greater(1)}", //
+				"{True,True,True}");
+		check("Pi>0", //
+				"True");
+		check("Pi+E<8", //
+				"True");
+		check("2/17 > 1/5 > Pi/10", //
+				"False");
+		check("x<x", //
+				"False");
+		check("x<=x", //
+				"True");
+		check("x>x", //
+				"False");
+		check("x>=x", //
+				"True");
 	}
 
 	public void testGreaterEqual() {
@@ -5829,7 +5844,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"(1-ConditionalExpression(0,n>-1))/(1+n)");
 		// https://github.com/RuleBasedIntegration/Rubi/issues/12
 		check("Integrate(Tan(Log(x)),x)", //
-				"I*(-x+2*x*Hypergeometric2F1(1,-I*1/2,1-I*1/2,-x^(I*2)))");
+				"-I*x+I*2*x*Hypergeometric2F1(1,-I*1/2,1-I*1/2,-x^(I*2))");
 
 		check("Integrate(5*E^(3*x),{x,2,a})", //
 				"1/3*(-5*E^6+5*E^(3*a))");
@@ -6408,16 +6423,24 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLess() {
-		check("Infinity<Infinity", "False");
+		check("Infinity<Infinity", //
+				"False");
 
-		check("Refine(Infinity<x, x>0)", "False");
-		check("Refine(-Infinity<x, x>0)", "True");
+		check("Refine(Infinity<x, x>0)", //
+				"False");
+		check("Refine(-Infinity<x, x>0)", //
+				"True");
 
-		check("3<4", "True");
-		check("3<4<5", "True");
-		check("{Less(), Less(x), Less(1)}", "{True,True,True}");
-		check("(2*x+5)<(5^(1/2))", "x<1/2*(-5+Sqrt(5))");
-		check("(-2*x+5)<(5^(1/2))", "x>1/2*(5-Sqrt(5))");
+		check("3<4", //
+				"True");
+		check("3<4<5", //
+				"True");
+		check("{Less(), Less(x), Less(1)}", //
+				"{True,True,True}");
+		check("(2*x+5)<(5^(1/2))", //
+				"x<1/2*(-5+Sqrt(5))");
+		check("(-2*x+5)<(5^(1/2))", //
+				"x>1/2*(5-Sqrt(5))");
 	}
 
 	public void testLessEqual() {
@@ -10044,6 +10067,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testProduct() {
+
+		// prints RecursionLimitExeceeded
+		check("Product(f(x), {x, x, x+1})", //
+				"Product(f(x),{x,x,1+x})");
+
+		check("Product(f(x), {x, x, x})", //
+				"f(x)");
+		check("Product(f(x), {x, a, a+1})", //
+				"f(a)*f(1+a)");
+
+		check("Product(k^3, {k, 1, n})", //
+				"(n!)^3");
+
 		check("Product(0, {k, a, Infinity})", //
 				"0");
 		check("Product(1, {k, a, Infinity})", //
@@ -12930,6 +12966,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSum() {
+
+		// prints RecursionLimitExeceeded
+		check("Sum(f(x), {x, x, x+1})", //
+				"Sum(f(x),{x,x,1+x})");
+
+		check("Sum(f(x), {x, x, x})", //
+				"f(x)");
+		check("Sum(f(x), {x, a, a+1})", //
+				"f(a)+f(1+a)");
+
 		check("Sum(Boole(x>0), {x,{1,2,3,-2,4,5}})", //
 				"5");
 		check("Sum(0, {k, a, Infinity})", //
@@ -12990,8 +13036,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Sum(k, {k, Range(5)})", "15");
 		check("Sum(i^2 - i + 10 ,{i,1,10})", "430");
-		check("Sum(i!,{i,3,n})", "-4-Subfactorial(-1)+(-1)^(1+n)*Gamma(2+n)*Subfactorial(-2-n)");
-		check("Sum(i!,{i,1,n})", "-1-Subfactorial(-1)+(-1)^(1+n)*Gamma(2+n)*Subfactorial(-2-n)");
+		check("Sum(i!,{i,3,n})", //
+				"-4-Subfactorial(-1)+(-1)^(1+n)*Gamma(2+n)*Subfactorial(-2-n)");
+		check("Sum(i!,{i,1,n})", //
+				"-1-Subfactorial(-1)+(-1)^(1+n)*Gamma(2+n)*Subfactorial(-2-n)");
 
 		check("Sum(g(i),{i,10,2})", "0");
 		check("Sum(0.5^i,{i,1,Infinity})", "1.0");
@@ -13173,6 +13221,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTable() {
+		check("Table(f(x), {x, a, a+1})", //
+				"{f(a),f(1+a)}");
 		check("s=0;Table(s=i+s, {i, 0, 7})", //
 				"{0,1,3,6,10,15,21,28}");
 		check("Table(a + dx, {dx, 0, 3, Pi/8})", //

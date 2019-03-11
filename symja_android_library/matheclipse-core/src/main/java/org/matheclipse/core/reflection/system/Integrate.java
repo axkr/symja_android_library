@@ -199,6 +199,12 @@ public class Integrate extends AbstractFunctionEvaluator {
 					// issue #91
 					return F.NIL;
 				}
+				
+				result = integrateByRubiRules(fx, x, ast);
+				if (result.isPresent()) {
+					return result;
+				}
+				
 				if (arg1.isTimes()) {
 					IAST[] temp = ((IAST) arg1).filter((Predicate<IExpr>) arg -> arg.isFree(x));
 					IExpr free = temp[0].oneIdentity1();
@@ -230,10 +236,6 @@ public class Integrate extends AbstractFunctionEvaluator {
 						// a^x / Log(a)
 						return F.Divide(fx, F.Log(base));
 					}
-				}
-				result = integrateByRubiRules(fx, x, ast);
-				if (result.isPresent()) {
-					return result;
 				}
 
 				result = callRestIntegrate(fx, x, engine);

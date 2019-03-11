@@ -31,8 +31,7 @@ public abstract class AbstractTestCase extends TestCase {
 		Config.SERVER_MODE = false;
 	}
 
-	
-	public void ESameTest(String expectedString, String evalString  ) {
+	public void ESameTest(String expectedString, String evalString) {
 		try {
 			if (evalString.length() == 0 && expectedString.length() == 0) {
 				return;
@@ -40,15 +39,15 @@ public abstract class AbstractTestCase extends TestCase {
 			// scriptEngine.put("STEPWISE",Boolean.TRUE);
 			String evaledResult = (String) fScriptEngine.eval(evalString);
 			String expectedResult = (String) fScriptEngine.eval(expectedString);
-			 
-				assertEquals(expectedResult, evaledResult);
-			 
+
+			assertEquals(expectedResult, evaledResult);
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", "1");
 		}
 	}
-	
+
 	public void check(String evalString, String expectedResult) {
 		check(fScriptEngine, evalString, expectedResult, -1);
 	}
@@ -158,7 +157,8 @@ public abstract class AbstractTestCase extends TestCase {
 	protected void setUp() {
 		try {
 			synchronized (fScriptManager) {
-				fScriptEngine = new MathScriptEngine();// fScriptManager.getEngineByExtension("m");
+				EvalEngine engine = new EvalEngine();
+				fScriptEngine = new MathScriptEngine(engine);// fScriptManager.getEngineByExtension("m");
 				fScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
 				fScriptEngine.put("DECIMAL_FORMAT", "0.0####");
 
@@ -166,7 +166,7 @@ public abstract class AbstractTestCase extends TestCase {
 				fNumericScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
 				F.await();
 
-				EvalEngine engine = EvalEngine.get();
+				EvalEngine.set(engine);
 				engine.init();
 				engine.setRecursionLimit(256);
 				engine.setIterationLimit(500);

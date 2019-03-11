@@ -38,8 +38,12 @@ public class MathScriptEngine extends AbstractScriptEngine {
 	// }
 
 	public MathScriptEngine() {
+		this(new EvalEngine()); 
+	}
+	
+	public MathScriptEngine(EvalEngine engine) {
 		// get the thread local evaluation engine
-		fEngine = new EvalEngine();
+		fEngine = engine;
 		// fEngine.setRecursionLimit(256);
 		// fEngine.setIterationLimit(256);
 		fUtility = new EvalUtilities(fEngine, false, false);
