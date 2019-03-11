@@ -24,11 +24,13 @@ import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.IllegalArgument;
 import org.matheclipse.core.eval.exception.NoEvalException;
+import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IArrayFunction;
 import org.matheclipse.core.eval.util.ISequence;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.eval.util.LevelSpec;
@@ -49,8 +51,6 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
-import org.matheclipse.core.patternmatching.PatternMatcher;
-import org.matheclipse.core.patternmatching.PatternMatcherEvalEngine;
 import org.matheclipse.core.reflection.system.Product;
 import org.matheclipse.core.reflection.system.Sum;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
@@ -113,10 +113,6 @@ public final class ListFunctions {
 		F.Total.setEvaluator(new Total());
 		F.Union.setEvaluator(new Union());
 
-	}
-
-	private static interface IArrayFunction {
-		IExpr evaluate(IExpr[] index);
 	}
 
 	private static interface IPositionConverter<T> {
@@ -252,6 +248,7 @@ public final class ListFunctions {
 									return createGenericTable(iter, index, iter.allocHint(), temp, null);
 								}
 							}
+							return fDefaultValue;
 						}
 						return createGenericTable(iter, index, iter.allocHint(), null, null);
 					} finally {
@@ -4440,7 +4437,7 @@ public final class ListFunctions {
 
 				final TableGenerator generator = new TableGenerator(iterList, resultList,
 						new UnaryArrayFunction(EvalEngine.get(), expr), defaultValue);
-				return generator.table();
+				return generator.table(); 
 			} catch (final ClassCastException e) {
 				// the iterators are generated only from IASTs
 			} catch (final NoEvalException e) {

@@ -7,6 +7,7 @@ import static org.matheclipse.core.expression.F.Times;
 
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
@@ -220,9 +221,16 @@ public class Product extends ListFunctions.Table implements ProductRules {
 
 				}
 			}
-			IAST resultList = Times();
-			temp = evaluateLast(ast.arg1(), iterator, resultList, C1);
-			if (!temp.isPresent() || temp.equals(resultList)) {
+			
+			try {
+				temp = F.NIL;
+				IAST resultList = Times();
+				temp = evaluateLast(ast.arg1(), iterator, resultList, F.NIL);
+				if (!temp.isPresent() || temp.equals(resultList)) {
+					return F.NIL;
+				}
+			} catch (RecursionLimitExceeded rle) {
+				engine.printMessage("Product: Recursionlimit exceeded");
 				return F.NIL;
 			}
 			if (ast.isAST2()) {

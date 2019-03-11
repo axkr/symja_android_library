@@ -165,7 +165,7 @@ public class Iterator {
 		 */
 		@Override
 		public IExpr next() {
-			if (variable != null) {
+			if (variable != null && variable != count) {
 				variable.assign(count);
 			}
 			final IExpr temp = count;
@@ -226,7 +226,7 @@ public class Iterator {
 			} else {
 				count = lowerLimit;
 			}
-			if (variable != null) {
+			if (variable != null && variable != count) {
 				variable.assign(count);
 			}
 			return true;
@@ -239,7 +239,7 @@ public class Iterator {
 		@Override
 		public void tearDown() {
 			if (variable != null) {
-				variable.assign(variableValue);
+				variable.assign(null);
 			}
 			EvalEngine.get().setNumericMode(fNumericMode);
 		}
@@ -517,7 +517,7 @@ public class Iterator {
 			if (variable != null) {
 				variableValue = variable.assignedValue();
 				variable.assign(originalLowerLimit);
-			} 
+			}
 			return true;
 		}
 
