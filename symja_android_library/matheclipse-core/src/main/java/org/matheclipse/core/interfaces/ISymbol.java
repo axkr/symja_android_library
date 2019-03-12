@@ -229,7 +229,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 */
 	public IExpr evalDownRule(EvalEngine engine, IExpr expression);
 
-	public IExpr evalMessage(EvalEngine engine, String messageName);
+	public IExpr evalMessage(String messageName);
 
 	/**
 	 * Evaluate the given expression for the &quot;up value&quot; rules associated with this symbol

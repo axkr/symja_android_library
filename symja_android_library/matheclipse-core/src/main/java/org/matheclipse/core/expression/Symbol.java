@@ -733,7 +733,7 @@ public class Symbol implements ISymbol, Serializable {
 		fRulesData.insertMatcher(pmEvaluator);
 	}
 
-	public IExpr evalMessage(EvalEngine engine, String messageName) {
+	public IExpr evalMessage(String messageName) {
 		if (fRulesData != null) {
 			IExpr temp = fRulesData.getMessages().get(messageName);
 			if (temp != null) {

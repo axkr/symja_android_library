@@ -6423,6 +6423,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLess() {
+		check("3+x<4+x", //
+				"True");
+		check("3+x>4+x", //
+				"False");
 		check("Infinity<Infinity", //
 				"False");
 
@@ -6444,6 +6448,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLessEqual() {
+		check("3+x<=4+x", //
+				"True");
+		check("3+x>=4+x", //
+				"False");
+
 		check("Infinity<=Infinity", "True");
 
 		check("Refine(Infinity<=x, x>0)", "False");
@@ -7479,6 +7488,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testMersennePrimeExponentQ() {
 		check("Select(Range(10000), MersennePrimeExponentQ)",
 				"{2,3,5,7,13,17,19,31,61,89,107,127,521,607,1279,2203,2281,3217,4253,4423,9689,\n" + "9941}");
+	}
+
+	public void testMessage() {
+		check("f::failure=\"`1` called with wrong argument; `2`, `3`.\"", //
+				"`1` called with wrong argument; `2`, `3`.");
+		check("Message(f::failure, f, x, y)", //
+				"f: f called with wrong argument; x, y.");
+		check("Message(Rule::argr, Rule, 2)", //
+				"General: Rule called with 1 argument; 2 arguments are expected.");
 	}
 
 	public void testMessageName() {

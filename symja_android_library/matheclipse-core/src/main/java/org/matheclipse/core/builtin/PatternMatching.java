@@ -772,7 +772,7 @@ public final class PatternMatching {
 				}
 
 				// Set[MessageName(f,"usage"),"text")
-				IExpr temp = symbol.evalMessage(engine, "usage");
+				IExpr temp = symbol.evalMessage("usage");
 				if (temp.isPresent()) {
 					stream.println(temp.toString());
 				}
