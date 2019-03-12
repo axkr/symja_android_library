@@ -7491,15 +7491,30 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMessage() {
+		check("a::b:=\"Hello world\"", //
+				"");
+		check("Message(a::b)", //
+				"a: Hello world");
+		check("a::c:=\"Hello `1`, Mr 00`2`!\"", //
+				"");
+		check("Message(a::c, \"you\", 3 + 4)", //
+				"a: Hello you, Mr 007!");
+		
 		check("f::failure=\"`1` called with wrong argument; `2`, `3`.\"", //
 				"`1` called with wrong argument; `2`, `3`.");
 		check("Message(f::failure, f, x, y)", //
 				"f: f called with wrong argument; x, y.");
 		check("Message(Rule::argr, Rule, 2)", //
 				"General: Rule called with 1 argument; 2 arguments are expected.");
+		 
 	}
 
 	public void testMessageName() {
+		check("FullForm(a::b)", //
+				"MessageName(a, b)");
+		check("FullForm(a::\"b\")", //
+				"MessageName(a, \"b\")");
+		
 		// Set[MessageName(f,"usage"),"A usage message")
 		check("f::usage=\"A usage message\"", //
 				"A usage message");

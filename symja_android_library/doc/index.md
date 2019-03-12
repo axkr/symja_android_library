@@ -525,6 +525,8 @@ for a full description of their possible arguments, options, etc., see their ent
 * [MemberQ](functions/MemberQ.md)
 * [MersennePrimeExponent](functions/MersennePrimeExponent.md)
 * [MersennePrimeExponentQ](functions/MersennePrimeExponentQ.md)
+* [Message](functions/Message.md)
+* [MessageName](functions/MessageName.md)
 * [Min](functions/Min.md)
 * [Minimize](functions/Minimize.md)
 * [Minus](functions/Minus.md)

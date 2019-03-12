@@ -78,18 +78,32 @@ public class IOFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() > 1 && ast.arg1().isAST(F.MessageName, 3)) {
-				IAST messageName = (IAST) ast.arg1();
-				String messageShortcut = messageName.arg2().toString();
-				if (messageName.arg1().isSymbol()) {
-					IExpr temp = message((ISymbol) messageName.arg1(), messageShortcut, ast);
-					if (temp.isPresent()) {
-						return temp;
+			if (ast.size() > 1) {
+				if (ast.arg1().isString()) {
+					String message = ast.arg1().toString();
+					for (int i = 2; i < ast.size(); i++) {
+						message = message.replaceAll("`" + (i - 1) + "`", ast.get(i).toString());
 					}
+					return F.stringx(": " + message);
 				}
-				return message(F.General, messageShortcut, ast);
+				if (ast.arg1().isAST(F.MessageName, 3)) {
+					IAST messageName = (IAST) ast.arg1();
+					String messageShortcut = messageName.arg2().toString();
+					if (messageName.arg1().isSymbol()) {
+						IExpr temp = message((ISymbol) messageName.arg1(), messageShortcut, ast);
+						if (temp.isPresent()) {
+							return temp;
+						}
+					}
+					return message(F.General, messageShortcut, ast);
+				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDFIRST);
 		}
 
 	}
@@ -103,7 +117,7 @@ public class IOFunctions {
 				for (int i = 2; i < ast.size(); i++) {
 					message = message.replaceAll("`" + (i - 1) + "`", ast.get(i).toString());
 				}
-				return F.stringx(symbol.toString()+": " + message);
+				return F.stringx(symbol.toString() + ": " + message);
 			}
 		}
 		return F.NIL;

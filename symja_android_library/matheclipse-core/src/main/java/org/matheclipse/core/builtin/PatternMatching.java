@@ -1203,7 +1203,7 @@ public final class PatternMatching {
 				}
 			}
 			return createPatternMatcher(leftHandSide, ast.arg2(), engine.isPackageMode(), engine);
-//			return (IExpr) result[1];
+			// return (IExpr) result[1];
 		}
 
 		private static IExpr createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode,
@@ -1327,10 +1327,10 @@ public final class PatternMatching {
 	}
 
 	public static IExpr setDownRule(int flags, IExpr leftHandSide, IExpr rightHandSide, boolean packageMode) {
-//		final Object[] result = new Object[] { null, rightHandSide };
+		// final Object[] result = new Object[] { null, rightHandSide };
 		if (leftHandSide.isAST()) {
 			final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
-			 lhsSymbol.putDownRule(IPatternMatcher.SET, false, leftHandSide, rightHandSide, packageMode);
+			lhsSymbol.putDownRule(IPatternMatcher.SET, false, leftHandSide, rightHandSide, packageMode);
 			return rightHandSide;
 		}
 		if (leftHandSide.isSymbol()) {
@@ -1343,6 +1343,19 @@ public final class PatternMatching {
 
 	private static void setDelayedDownRule(IExpr leftHandSide, int flags, IExpr rightHandSide, boolean packageMode) {
 		if (leftHandSide.isAST()) {
+			if (leftHandSide.isAST(F.MessageName, 3) && leftHandSide.first().isSymbol()) {
+				// Set[MessageName(f,"usage"),"text")
+				ISymbol symbol = (ISymbol) leftHandSide.first();
+				String messageName = leftHandSide.second().toString();
+				IStringX message;
+				if (rightHandSide instanceof IStringX) {
+					message = (IStringX) rightHandSide;
+				} else {
+					message = F.stringx(rightHandSide.toString());
+				}
+				symbol.putMessage(IPatternMatcher.SET_DELAYED, messageName, message);
+				return;
+			}
 			final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
 			lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, false, leftHandSide, rightHandSide, packageMode);
 			return;
