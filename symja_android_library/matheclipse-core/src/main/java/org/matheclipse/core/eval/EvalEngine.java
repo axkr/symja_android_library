@@ -538,7 +538,7 @@ public class EvalEngine implements Serializable {
 		if (astSize > 1) {
 			boolean numericMode = fNumericMode;
 			boolean localNumericMode = fNumericMode;
-			boolean isNumericFunction = (ISymbol.NUMERICFUNCTION & attr) == ISymbol.NUMERICFUNCTION;
+			final boolean isNumericFunction = (ISymbol.NUMERICFUNCTION & attr) == ISymbol.NUMERICFUNCTION;
 			boolean isNumericArgument = ast.isNumericArgument();
 			if (!fNumericMode) {
 				if (isNumericFunction && ast.isNumericArgument()) {

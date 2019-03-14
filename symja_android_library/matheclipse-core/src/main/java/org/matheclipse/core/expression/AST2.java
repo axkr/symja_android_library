@@ -250,6 +250,25 @@ public class AST2 extends AST1 {
 		action.accept(arg2);
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public void forEach(Consumer<? super IExpr> action, int startOffset) {
+		switch (startOffset) {
+		case 0:
+			action.accept(arg0);
+			action.accept(arg1);
+			action.accept(arg2);
+			break;
+		case 1:
+			action.accept(arg1);
+			action.accept(arg2);
+			break;
+		case 2:
+			action.accept(arg2);
+			break;
+		}
+	}
+	
 	@Override
 	public void forEach(int start, int end, ObjIntConsumer<? super IExpr> action) {
 		if (start < end) {

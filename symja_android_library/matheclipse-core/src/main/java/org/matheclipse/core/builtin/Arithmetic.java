@@ -202,7 +202,7 @@ public final class Arithmetic {
 					return ((INumber) expr).abs();
 				}
 				IExpr temp = F.eval(F.Abs(expr));
-				if (!temp.topHead().equals(F.Abs)) {
+				if (!temp.isAbs()) {
 					return temp;
 				}
 				return F.NIL;
@@ -1578,6 +1578,22 @@ public final class Arithmetic {
 				}
 			}
 			return super.evaluate(ast, engine);
+		}
+
+		@Override
+		public IExpr e2ComArg(final IComplex c0, final IComplex c1) {
+			// TODO implement GCD for gaussian integers
+			IInteger[] gi0 = c0.gaussianIntegers();
+			IInteger[] gi1 = c1.gaussianIntegers();
+			if (gi0 != null && gi1 != null) {
+				if (gi0[0].isOne() && gi0[1].isZero()) {
+					return F.C1;
+				}
+				if (gi1[0].isOne() && gi1[1].isZero()) {
+					return F.C1;
+				}
+			}
+			return F.NIL;
 		}
 
 		@Override

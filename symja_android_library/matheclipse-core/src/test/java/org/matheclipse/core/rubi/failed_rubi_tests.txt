@@ -50,7 +50,6 @@ test0353 - Integrate[(d*Cot[e + f*x])^n*Sin[e + f*x]^3, x]
 test0354 - Integrate[(b*Cot[e + f*x])^n*(a*Csc[e + f*x])^m, x]
 test0421 - Integrate[(Sec[e + f*x]*Sqrt[a + b*Sec[e + f*x]])/Sqrt[c + d*Sec[e + f*x]], x]
 test0534 - Integrate[(Cos[x] - I*Sin[x])/(Cos[x] + I*Sin[x]), x]
-test0535 - Integrate[(Cos[x] + I*Sin[x])/(Cos[x] - I*Sin[x]), x]
 AlgebraicFunctions
 test0275 - Integrate[((1 - x)^(-1/2 + p)*(1 + x)^(1/2 + p))/(c*x)^(2*(1 + p)), x]
 test0276 - Integrate[(1 + x/a)^(n/2)/(x^2*(1 - x/a)^(n/2)), x]

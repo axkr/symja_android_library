@@ -3463,13 +3463,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEqual() {
+		check("-I==1", //
+				"False");
 		check("1/2*(1+Sqrt(5))==GoldenRatio", //
 				"True");
-		check("x^2+4*x+4==(x+2)^2", "True");
+		check("x^2+4*x+4==(x+2)^2", //
+				"True");
 		check("x^2+x==x*(x+1)", "True");
 
 		// github issue #42
-		check("1-i==1.0-i", "True");
+		check("1-i==1.0-i", //
+				"True");
 
 		// Issue #174
 		check("x/(y*x)==0.25", "1/y==0.25");
@@ -5217,11 +5221,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"GCD(0,Cos(b*x)[[2]])");
 		check("GCD(0, CoshIntegral(b*x))", //
 				"GCD(0,CoshIntegral(b*x))");
-		check("GCD(x,x)", "GCD(x,x)");
-		check("GCD(-2147483648)", "2147483648");
-		check("GCD(-2147483648, -2147483648/2)", "1073741824");
-		check("GCD(I)", "1");
-		check("GCD(-I)", "1");
+		check("GCD(x,x)", //
+				"GCD(x,x)");
+		check("GCD(-2147483648)", //
+				"2147483648");
+		check("GCD(-2147483648, -2147483648/2)", //
+				"1073741824");
+		check("GCD(I)", //
+				"1");
+		check("GCD(-I)", //
+				"1");
+		check("GCD(1,I)", //
+				"1");
 
 		check("GCD()", "0");
 		check("GCD(10)", "10");
@@ -7499,14 +7510,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"");
 		check("Message(a::c, \"you\", 3 + 4)", //
 				"a: Hello you, Mr 007!");
-		
+
 		check("f::failure=\"`1` called with wrong argument; `2`, `3`.\"", //
 				"`1` called with wrong argument; `2`, `3`.");
 		check("Message(f::failure, f, x, y)", //
 				"f: f called with wrong argument; x, y.");
 		check("Message(Rule::argr, Rule, 2)", //
 				"General: Rule called with 1 argument; 2 arguments are expected.");
-		 
+
 	}
 
 	public void testMessageName() {
@@ -7514,7 +7525,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"MessageName(a, b)");
 		check("FullForm(a::\"b\")", //
 				"MessageName(a, \"b\")");
-		
+
 		// Set[MessageName(f,"usage"),"A usage message")
 		check("f::usage=\"A usage message\"", //
 				"A usage message");
@@ -14092,6 +14103,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTrigReduce() {
+		
+		check("TrigReduce(-a*Cos(x)^2+a*Sin(x)^2 )", //
+				"-a*Cos(2*x)");
+		check("TrigReduce(Sin(x)*Tan(y))", //
+				"1/2*(Cos(x-y)-Cos(x+y))*Sec(y)");
 		check("TrigReduce(Sin(x)*Tan(y))", //
 				"1/2*(Cos(x-y)-Cos(x+y))*Sec(y)");
 		check("TrigReduce(Cos(x)*Tan(y))", //

@@ -1678,7 +1678,6 @@ public class MainTestCase extends AbstractTestCase {
 	// }
 
 	public void testSystem172() {
-
 		check("Cos((a-b)*x)/(2*(a-b))-Cos((a+b)*x)/(2*(a+b))", //
 				"Cos((a-b)*x)/(2*(a-b))-Cos((a+b)*x)/(2*(a+b))");
 		check("Integrate(Cos(a*x)*Sin(b*x),x)", //

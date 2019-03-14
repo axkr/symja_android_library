@@ -896,6 +896,13 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	}
 
 	/**
+	 * Returns<code>true</code>, if one of the headers of this AST contains a trigonometric function.
+	 * 
+	 * @return <code>true</code>, if one of the headers of this AST contains a trigonometric function.
+	 */
+	public boolean hasTrigonometricFunction();
+
+	/**
 	 * Find the first argument position, which equals <code>expr</code>. The search starts at index <code>1</code>.
 	 * 
 	 * @param expr

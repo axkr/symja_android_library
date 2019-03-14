@@ -314,8 +314,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 				return -1 * expr.compareTo(this);
 			}
 		}
-		int x = hierarchy();
-		int y = expr.hierarchy();
+		final int x = hierarchy();
+		final int y = expr.hierarchy();
 		return (x < y) ? -1 : ((x == y) ? 0 : 1);
 	}
 
