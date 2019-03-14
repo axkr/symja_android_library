@@ -3634,27 +3634,40 @@ public class Algebra {
 					} catch (WrongArgumentType wat) {
 						//
 					}
-
-					try {
-						temp = F.eval(F.TrigExpand(expr));
-						count = fComplexityFunction.apply(temp);
-						if (count < minCounter) {
-							minCounter = count;
-							result = temp;
+			 
+					if (((IAST) expr).hasTrigonometricFunction()) {
+						try {
+							temp = F.eval(F.TrigReduce(expr));
+							count = fComplexityFunction.apply(temp);
+							if (count < minCounter) {
+								minCounter = count;
+								result = temp;
+							}
+						} catch (WrongArgumentType wat) {
+							//
 						}
-					} catch (WrongArgumentType wat) {
-						//
-					}
 
-					try {
-						temp = F.eval(F.TrigToExp(expr));
-						count = fComplexityFunction.apply(temp);
-						if (count < minCounter) {
-							minCounter = count;
-							result = temp;
+						try {
+							temp = F.eval(F.TrigExpand(expr));
+							count = fComplexityFunction.apply(temp);
+							if (count < minCounter) {
+								minCounter = count;
+								result = temp;
+							}
+						} catch (WrongArgumentType wat) {
+							//
 						}
-					} catch (WrongArgumentType wat) {
-						//
+
+						try {
+							temp = F.eval(F.TrigToExp(expr));
+							count = fComplexityFunction.apply(temp);
+							if (count < minCounter) {
+								minCounter = count;
+								result = temp;
+							}
+						} catch (WrongArgumentType wat) {
+							//
+						}
 					}
 
 					try {
