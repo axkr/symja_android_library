@@ -3587,6 +3587,9 @@ public final class BooleanFunctions {
 	 * @return <code>F.NIL</code> or the simplified expression, if equality couldn't be determined.
 	 */
 	public static IExpr equalNull(final IExpr a1, final IExpr a2, EvalEngine engine) {
+		if (a1.isExactNumber() && a2.isExactNumber()) {
+			return a1.equals(a2) ? F.True : F.False;
+		}
 		IExpr.COMPARE_TERNARY b;
 		IExpr arg1 = F.expandAll(a1, true, true);
 		IExpr arg2 = F.expandAll(a2, true, true);
@@ -3612,6 +3615,9 @@ public final class BooleanFunctions {
 	 * @return <code>F.NIL</code> or the simplified expression, if equality couldn't be determined.
 	 */
 	public static IExpr unequalNull(IExpr a1, IExpr a2, EvalEngine engine) {
+		if (a1.isExactNumber() && a2.isExactNumber()) {
+			return a1.equals(a2) ? F.False : F.True;
+		}
 		IExpr.COMPARE_TERNARY b;
 		IExpr arg1 = F.expandAll(a1, true, true);
 		IExpr arg2 = F.expandAll(a2, true, true);
