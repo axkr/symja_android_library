@@ -13531,6 +13531,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTimes() {
+		check("Csch(x)^3 * Sinh(x)^(-2)", //
+				"Csch(x)^5");
+		check("Csch(x)^3 * Sinh(x)^7", //
+				"Sinh(x)^4");
+
 		check("2*4^(1+p)", //
 				"2^(3+2*p)");
 		check("(2^(3/4)*x*7^(-15/4))", //
@@ -14103,7 +14108,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTrigReduce() {
-		
+		check("TrigReduce(Sin(x)*Cos(y))", //
+				"1/2*(Sin(x-y)+Sin(x+y))");
+		check("TrigReduce(-I*Cos(x)^2-2*Cos(x)*Sin(x)+I*Sin(x)^2)", //
+				"-I*Cos(2*x)-Sin(2*x)");
+		check("TrigReduce(I*Cos(x)^4+I*2*Cos(x)^2*Sin(x)^2+I*Sin(x)^4)", //
+				"I");
+		check("TrigReduce(Cos(a*x)*Sin(a*x)^2)", //
+				"Cos(a*x)/4-Cos(3*a*x)/4");
 		check("TrigReduce(-a*Cos(x)^2+a*Sin(x)^2 )", //
 				"-a*Cos(2*x)");
 		check("TrigReduce(Sin(x)*Tan(y))", //

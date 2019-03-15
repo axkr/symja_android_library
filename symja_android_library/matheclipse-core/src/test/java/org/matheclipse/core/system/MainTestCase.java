@@ -1689,7 +1689,7 @@ public class MainTestCase extends AbstractTestCase {
 				"1");
 		check("Integrate(Cos(x*(a+b)),x)", //
 				"Sin((a+b)*x)/(a+b)");
-
+		// Integrate[Cos[a*x]*Sin[b*x]^2,x]
 		check("Integrate(Cos(a*x)*Sin(b*x)^2,x)", //
 				"Sin(a*x)/(2*a)-Sin((a-2*b)*x)/(4*(a-2*b))-Sin((a+2*b)*x)/(4*(a+2*b))");
 		check("Integrate(Cos(a*x)^2*Sin(b*x),x)", //
@@ -3125,12 +3125,18 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem420() {
-		check("TrigReduce(Cos(x)*Cos(y)*Sin(x))", "Sin(2*x-y)/4+Sin(2*x+y)/4");
-		check("TrigReduce(Sin(x)*Cos(y))", "Sin(x-y)/2+Sin(x+y)/2");
-		check("TrigReduce(Sin(x)*Cos(y)*x^2*y^4+42)", "42+1/2*x^2*y^4*Sin(x-y)+1/2*x^2*y^4*Sin(x+y)");
-		check("TrigReduce(Sin(10)*Cos(11)*x^2*y^4+42)", "42-1/2*x^2*y^4*Sin(1)+1/2*x^2*y^4*Sin(21)");
-		check("TrigReduce(Sin(x)^3)", "3/4*Sin(x)-Sin(3*x)/4");
-		check("TrigReduce(Cos(x)^3)", "3/4*Cos(x)+Cos(3*x)/4");
+		check("TrigReduce(Cos(x)*Cos(y)*Sin(x))", //
+				"Sin(2*x-y)/4+Sin(2*x+y)/4");
+		check("TrigReduce(Sin(x)*Cos(y))", //
+				"1/2*(Sin(x-y)+Sin(x+y))");
+		check("TrigReduce(Sin(x)*Cos(y)*x^2*y^4+42)", //
+				"42+1/2*x^2*y^4*Sin(x-y)+1/2*x^2*y^4*Sin(x+y)");
+		check("TrigReduce(Sin(10)*Cos(11)*x^2*y^4+42)", //
+				"42-1/2*x^2*y^4*Sin(1)+1/2*x^2*y^4*Sin(21)");
+		check("TrigReduce(Sin(x)^3)", //
+				"3/4*Sin(x)-Sin(3*x)/4");
+		check("TrigReduce(Cos(x)^3)", //
+				"3/4*Cos(x)+Cos(3*x)/4");
 	}
 
 	public void testSystem421() {
