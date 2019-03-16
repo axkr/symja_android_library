@@ -1329,7 +1329,10 @@ public final class Programming {
 				return F.Null;
 			}
 
-			Validate.checkSize(ast, 1);
+			if (ast.isAST1()) {
+				engine.printMessage("On: " + ast + " - disabling messages currently not supported");
+				return F.Null;
+			}
 
 			return F.NIL;
 		}

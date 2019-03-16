@@ -80,18 +80,30 @@ public class TrigReduce extends AbstractEvaluator {
 						IAST base = (IAST) ast.base();
 						IExpr x;
 						if (base.isSin()) {
-							x = base.arg1();
-							// 1/2 * (1-Cos[2*x])*Sin[x]^(n-2)
-							return Times(C1D2, Subtract(F.C1, Cos(Times(C2, x))), Power(Sin(x), n.subtract(C2)));
+							return trigReduceSinPower(base, n);
 						} else if (base.isCos()) {
-							x = base.arg1();
-							// 1/2 * (1+Cos[2*x])*Cos[x]^(n-2)
-							return Times(C1D2, Plus(F.C1, Cos(Times(C2, x))), Power(Cos(x), n.subtract(C2)));
+							return trigReduceCosPower(base, n);
+//						} else if (base.isTan()) {
+//							return F.Together(F.Times(trigReduceSinPower(base, n), F.Power(trigReduceCosPower(base, n), F.CN1)));
 						}
 					}
 				}
 			}
 			return visitAST(ast);
+		}
+
+		private static IExpr trigReduceCosPower(IAST base, IInteger n) {
+			IExpr x;
+			x = base.arg1();
+			// 1/2 * (1+Cos[2*x])*Cos[x]^(n-2)
+			return Times(C1D2, Plus(F.C1, Cos(Times(C2, x))), Power(Cos(x), n.subtract(C2)));
+		}
+
+		private static IExpr trigReduceSinPower(IAST base, IInteger n) {
+			IExpr x;
+			x = base.arg1();
+			// 1/2 * (1-Cos[2*x])*Sin[x]^(n-2)
+			return Times(C1D2, Subtract(F.C1, Cos(Times(C2, x))), Power(Sin(x), n.subtract(C2)));
 		}
 	}
 

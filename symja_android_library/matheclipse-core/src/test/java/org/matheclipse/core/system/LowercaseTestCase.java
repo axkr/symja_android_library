@@ -14108,6 +14108,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTrigReduce() {
+//		check("TrigReduce(Tan(x)^2)", //
+//				"(1-Cos(2*x))/(1+Cos(2*x))");
+//		check("TrigReduce(Tan(x)^3)", //
+//				"");
 		check("TrigReduce(Sin(x)*Cos(y))", //
 				"1/2*(Sin(x-y)+Sin(x+y))");
 		check("TrigReduce(-I*Cos(x)^2-2*Cos(x)*Sin(x)+I*Sin(x)^2)", //
