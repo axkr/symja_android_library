@@ -22,6 +22,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.BooleanFunctions;
+import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -2625,7 +2626,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		if (isNumber()) {
 			return isZero();
 		}
-		return F.PossibleZeroQ.ofQ(this);
+		return isAST()&&PredicateQ.isZeroTogether(this, EvalEngine.get());
 	}
 
 	/**
