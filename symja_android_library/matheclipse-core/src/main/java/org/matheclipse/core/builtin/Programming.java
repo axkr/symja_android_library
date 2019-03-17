@@ -2370,7 +2370,7 @@ public final class Programming {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (((ast.argSize()) & 0x0001) == 0x0001) {
-				engine.printMessage("Which: number of arguments must be evaen");
+				engine.printMessage("Which: number of arguments must be even");
 			}
 			for (int i = 1; i < ast.size(); i += 2) {
 				IExpr temp = engine.evaluate(ast.get(i));
