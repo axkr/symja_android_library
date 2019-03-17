@@ -421,18 +421,31 @@ public class SeriesFunctions {
 						return lHospitalesRule(numerator, denominator, data);
 					}
 					return F.NIL;
-				} else if (F.CInfinity.equals(denValue)) {
-					numValue = engine.evalBlock(numerator, x, limit);
-					if (F.CInfinity.equals(numValue)) {
-						return lHospitalesRule(numerator, denominator, data);
+				} else if (denValue.isInfinity()) {
+					try {
+						numValue = engine.evalBlock(numerator, x, limit);
+						if (F.CInfinity.equals(numValue)) {
+							return lHospitalesRule(numerator, denominator, data);
+						}
+						return F.NIL;
+					} catch (RuntimeException rex) {
+						if (Config.SHOW_STACKTRACE) {
+							rex.printStackTrace();
+						}
 					}
-					return F.NIL;
 				} else if (denValue.isNegativeInfinity()) {
-					numValue = engine.evalBlock(numerator, x, limit);
-					if (numValue.isNegativeInfinity()) {
-						return lHospitalesRule(numerator, denominator, data);
+					try {
+						numValue = engine.evalBlock(numerator, x, limit);
+						if (numValue.isNegativeInfinity()) {
+							return lHospitalesRule(numerator, denominator, data);
+						}
+						return F.NIL;
+					} catch (RuntimeException rex) {
+						if (Config.SHOW_STACKTRACE) {
+							rex.printStackTrace();
+						}
 					}
-					return F.NIL;
+
 				}
 			}
 
@@ -458,7 +471,7 @@ public class SeriesFunctions {
 					// even degree
 					return data.limit(F.Times(coeff, F.CInfinity));
 				} catch (RuntimeException e) {
-					if (Config.DEBUG) {
+					if (Config.SHOW_STACKTRACE) {
 						e.printStackTrace();
 					}
 				}
