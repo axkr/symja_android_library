@@ -2031,6 +2031,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
 
 	// {2288}
 	public void test0256() {
+		fSeconds = 60;
 		check(//
 				"Integrate[(E^x*(1 - Sin[x]))/(1 - Cos[x]), x]", //
 				"-((E^x*Sin[x])/(1 - Cos[x]))", //
