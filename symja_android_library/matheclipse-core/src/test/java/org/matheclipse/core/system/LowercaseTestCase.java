@@ -6590,6 +6590,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testLimit() {
+		check("Limit(E^(-x)*Sqrt(x), x -> Infinity)",//
+				"0");
+		
 		// adjust LimitRules.m if these 2 tests fails
 		// check("FullForm(x*(Sqrt(2*Pi*x)/(x!))^(1/x) )", //
 		// "Times(Power(Power(Times(2, Pi), Rational(1,2)), Power(x, -1)), x, Power(Times(Power(x, Rational(1,2)),
@@ -6661,7 +6664,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Infinity-1", "Infinity");
 		check("Limit(a+b+2*x,x->-Infinity)", "-Infinity");
 		check("Limit(a+b+2*x,x->Infinity)", "Infinity");
-		check("Limit(E^(-x)*Sqrt(x), x -> Infinity)", "0");
+		check("Limit(E^(-x)*Sqrt(x), x -> Infinity)",//
+				"0");
 		check("Limit(Sin(x)/x,x->0)", "1");
 		check("Limit(x*Sin(1/x),x->Infinity)", "1");
 
@@ -8958,14 +8962,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPartitionsP() {
-		check("PartitionsP({1,2,3,4,5,6,7})", "{1,2,3,5,7,11,15}");
-		check("PartitionsP(5)", "7");
-		check("PartitionsP(6)", "11");
-		check("PartitionsP(9)", "30");
-		check("PartitionsP(50)", "204226");
-		check("PartitionsP(100)", "190569292");
-		check("PartitionsP(200)", "3972999029388");
-		check("PartitionsP(300)", "9253082936723602");
+		check("PartitionsP({1,2,3,4,5,6,7})", //
+				"{1,2,3,5,7,11,15}");
+		check("PartitionsP(5)", //
+				"7");
+		check("PartitionsP(6)",//
+				"11");
+		check("PartitionsP(9)", //
+				"30");
+		check("PartitionsP(50)", //
+				"204226");
+		check("PartitionsP(100)", //
+				"190569292");
+		check("PartitionsP(200)",//
+				"3972999029388");
+		check("PartitionsP(300)", //
+				"9253082936723602");
 		// check("PartitionsP(1000)", "24061467864032622473692149727991");
 	}
 
@@ -9308,6 +9320,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialExtendedGCD() {
+		check("PolynomialExtendedGCD(a[x],b[x],x)", //
+				"{b(x),{0,1}}");
+		check("PolynomialExtendedGCD(a[x],b,x)", //
+				"{1,{0,1/b}}");
+		check("PolynomialExtendedGCD(a,b,x)", //
+				"{1,{0,1/b}}");
+		
 		// TODO make result consistent with PolynomiaGCD
 		check("PolynomialExtendedGCD(e*x^2 + d, ( -2*d*e^2*Sqrt(-e/d) )*x + 2*d*e^2, x )", //
 				"{-1/Sqrt(-e/d)+x,{0,-1/(2*d*e^2*Sqrt(-e/d))}}");
@@ -9330,6 +9349,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialGCD() {
+		check("PolynomialGCD(a,b )", //
+				"1");
 		check("PolynomialGCD(e*x^2 + d, ( -2*d*e^2*Sqrt(-e/d) )*x + 2*d*e^2 )", //
 				"1");
 
@@ -9338,23 +9359,35 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-Sqrt(2)+x");
 
 		// check("PolynomialGCD(I*2,12)", "2");
-		check("PolynomialGCD(a+b*x,c+d*x)", "1");
-		check("PolynomialGCD()", "PolynomialGCD()");
-		check("PolynomialGCD(x)", "x");
-		check("PolynomialGCD(-12)", "12");
-		check("PolynomialGCD(x,x)", "x");
+		check("PolynomialGCD(a+b*x,c+d*x)", //
+				"1");
+		check("PolynomialGCD()", //
+				"PolynomialGCD()");
+		check("PolynomialGCD(x)", //
+				"x");
+		check("PolynomialGCD(-12)", //
+				"12");
+		check("PolynomialGCD(x,x)", //
+				"x");
 
-		check("PolynomialGCD((x + 1)^3, x^3 + x, Modulus -> 2)", "(1+x)^2");
+		check("PolynomialGCD((x + 1)^3, x^3 + x, Modulus -> 2)", //
+				"(1+x)^2");
 		check("PolynomialGCD((x - a)*(b*x - c)^2, (x - a)*(x^2 - b*c))", //
 				"-a+x");
-		check("PolynomialGCD((1 + x)^2*(2 + x)*(4 + x), (1 + x)*(2 + x)*(3 + x))", "2+3*x+x^2");
-		check("PolynomialGCD(x^4 - 4, x^4 + 4*x^2 + 4)", "2+x^2");
+		check("PolynomialGCD((1 + x)^2*(2 + x)*(4 + x), (1 + x)*(2 + x)*(3 + x))", //
+				"2+3*x+x^2");
+		check("PolynomialGCD(x^4 - 4, x^4 + 4*x^2 + 4)", //
+				"2+x^2");
 
-		check("PolynomialGCD(x^2 + 2*x*y + y^2, x^3 + y^3)", "x+y");
-		check("PolynomialGCD(x^2 - 1, x^3 - 1, x^4 - 1, x^5 - 1, x^6 - 1, x^7 - 1)", "-1+x");
+		check("PolynomialGCD(x^2 + 2*x*y + y^2, x^3 + y^3)", //
+				"x+y");
+		check("PolynomialGCD(x^2 - 1, x^3 - 1, x^4 - 1, x^5 - 1, x^6 - 1, x^7 - 1)", //
+				"-1+x");
 
-		check("PolynomialGCD(x^2 - 4, x^2 + 4*x + 4)", "2+x");
-		check("PolynomialGCD(3*x + 9, 6*x^3 - 3*x + 12)", "3");
+		check("PolynomialGCD(x^2 - 4, x^2 + 4*x + 4)", //
+				"2+x");
+		check("PolynomialGCD(3*x + 9, 6*x^3 - 3*x + 12)", //
+				"3");
 	}
 
 	public void testPolynomialLCM() {
@@ -9447,6 +9480,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialQuotientRemainder() {
+		check("PolynomialQuotientRemainder[a,b,x]", //
+				"{a/b,0}");
 		check("PolynomialQuotientRemainder(e*x^2 + d, ( -2*d*e^2*Sqrt(-e/d) )*x + 2*d*e^2, x )", //
 				"{1/(2*e^2)-x/(2*d*e*Sqrt(-e/d)),0}");
 		check("PolynomialQuotientRemainder(x^2, x + a,x)", //
@@ -9463,8 +9498,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialRemainder() {
-		check("PolynomialRemainder(x^2, x + a,x)", "a^2");
-		check("PolynomialRemainder(x^2 + 4*x + 1, 2*x + 1, x, Modulus -> 2)", "0");
+		check("PolynomialRemainder(1,Sin(e+f*x),x)", //
+				"PolynomialRemainder(1,Sin(e+f*x),x)");
+		check("PolynomialRemainder(x^2, x + a,x)", //
+				"a^2");
+		check("PolynomialRemainder(x^2 + 4*x + 1, 2*x + 1, x, Modulus -> 2)",//
+				"0");
 		check("PolynomialRemainder(x^2 + 4*x + 1, 2*x + 1, x, Modulus -> 5)", "3");
 	}
 
@@ -9523,16 +9562,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPossibleZeroQ() {
+		check("PossibleZeroQ(-Cos(x)/(1-Cos(x))+Sin(x)^2/(1-Cos(x))^2-1/(1-Cos(x)))", //
+				"True");
 		check("PossibleZeroQ(2^(2*I) - 2^(-2*I) - 2*I*Sin(Log(4)))", //
 				"True");
 		check("PossibleZeroQ(E^Pi - Pi^E)", //
 				"False");
 		check("PossibleZeroQ((E + Pi)^2 - E^2 - Pi^2 - 2*E*Pi)", //
 				"True");
-		check("PossibleZeroQ(E^(I*Pi/4) - (-1)^(1/4))", "True");
-		check("PossibleZeroQ((x + 1)*(x - 1) - x^2 + 1)", "True");
-		check("PossibleZeroQ(1/x + 1/y - (x + y)/(x*y))", "True");
-		check("PossibleZeroQ(Sqrt(x^2) - x)", "False");
+		check("PossibleZeroQ(E^(I*Pi/4) - (-1)^(1/4))", //
+				"True");
+		check("PossibleZeroQ((x + 1)*(x - 1) - x^2 + 1)", //
+				"True");
+		check("PossibleZeroQ(1/x + 1/y - (x + y)/(x*y))", //
+				"True");
+		check("PossibleZeroQ(Sqrt(x^2) - x)", //
+				"False");
 	}
 
 	public void testPower() {
@@ -11892,6 +11937,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSimplify() {
+		check("Simplify((-b^12*x^456)/x^12+(x^12*(a+b*x^37)^12)/x^12)", //
+				"-b^12*x^444+(a+b*x^37)^12");
+		check("Simplify(-Cos(x) +Sin(x)^2/(1-Cos(x)))", //
+				"1");
+		check("Simplify(-Cos(x)/(1-Cos(x))+Sin(x)^2/(1-Cos(x))^2-1/(1-Cos(x)))", //
+				"0");
+
 		check("Simplify(x^(5/2) - Sqrt(x^5), x>=0)", //
 				"0");
 		check("Simplify(-136+40*Sqrt(17))", //
@@ -13114,7 +13166,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Sum(c*(i-j+1), {j,i+1,n}, {i,1,n})", //
 				"c*n*(-i+n)+1/2*c*(i-n)*n*(1+i+n)+c*(1/2*(i-n)+1/2*(i-n)*n+1/2*(-i+n)+n*(-i+n)+1/\n" + "2*(-i+n)*n^2)");
 		check("Simplify(1/2*c*(n-i)*n^2-1/2*c*n*(n+i+1)*(n-i)+3/2*c*n*(n-i))", //
-				"1/2*(-2*c*i*n+c*i^2*n+2*c*n^2-c*i*n^2)");
+				"1/2*c*n*(-2*i+i^2+2*n-i*n)");
 
 		check("Sum(c*(n-1), {j,i,n-1})", //
 				"-c*(-i+n)+c*n*(-i+n)");
@@ -14108,10 +14160,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTrigReduce() {
-//		check("TrigReduce(Tan(x)^2)", //
-//				"(1-Cos(2*x))/(1+Cos(2*x))");
-//		check("TrigReduce(Tan(x)^3)", //
-//				"");
+		// check("TrigReduce(Tan(x)^2)", //
+		// "(1-Cos(2*x))/(1+Cos(2*x))");
+		// check("TrigReduce(Tan(x)^3)", //
+		// "");
 		check("TrigReduce(Sin(x)*Cos(y))", //
 				"1/2*(Sin(x-y)+Sin(x+y))");
 		check("TrigReduce(-I*Cos(x)^2-2*Cos(x)*Sin(x)+I*Sin(x)^2)", //
