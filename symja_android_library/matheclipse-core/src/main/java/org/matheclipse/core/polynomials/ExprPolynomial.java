@@ -60,7 +60,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 */
 	private ExprPolynomial(ExprPolynomialRing r, TreeMap<ExpVectorLong, IExpr> t) {
 		ring = r;
-		val = t; 
+		val = t;
 	}
 
 	/**
@@ -1670,7 +1670,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 * @param S
 	 *            nonzero GenPolynomial with invertible leading coefficient.
 	 * @return [ quotient , remainder ] with this = quotient * S + remainder and deg(remainder) &lt; deg(S) or remiander
-	 *         = 0.
+	 *         = 0. Or <code>null</code> is the evaluation was not possible.
 	 * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
 	 */
 	@Override
@@ -1694,15 +1694,18 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 				IExpr a = r.leadingBaseCoefficient();
 				ExpVectorLong g = f.subtract(e);
 				a = a.multiplyDistributed(ci);
+				if (a.isZERO()) {
+					return null;
+				}
 				q = q.sum(a, g);
 				h = S.multiply(a, g);
 				r = r.subtract(h);
-//				IExpr a = r.leadingBaseCoefficient();
-//				f = f.subtract(e);
-//				a = a.multiply(ci);
-//				q = q.sum(a, f);
-//				h = S.multiply(a, f);
-//				r = r.subtract(h);
+				// IExpr a = r.leadingBaseCoefficient();
+				// f = f.subtract(e);
+				// a = a.multiply(ci);
+				// q = q.sum(a, f);
+				// h = S.multiply(a, f);
+				// r = r.subtract(h);
 			} else {
 				break;
 			}
@@ -1725,7 +1728,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 * @deprecated use quotientRemainder()
 	 */
 	@Deprecated
-	public ExprPolynomial[] divideAndRemainder(ExprPolynomial S) {
+	private ExprPolynomial[] divideAndRemainder(ExprPolynomial S) {
 		return quotientRemainder(S);
 	}
 
@@ -1834,7 +1837,8 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 * 
 	 * @param S
 	 *            GenPolynomial.
-	 * @return [ gcd(this,S), a, b ] with a*this + b*S = gcd(this,S).
+	 * @return [ gcd(this,S), a, b ] with a*this + b*S = gcd(this,S) or <code>null</code> is the evaluation was not
+	 *         possible.
 	 */
 	@Override
 	public ExprPolynomial[] egcd(ExprPolynomial S) {
@@ -1860,13 +1864,15 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 		if (this.isConstant() && S.isConstant()) {
 			IExpr t = this.leadingBaseCoefficient();
 			IExpr s = S.leadingBaseCoefficient();
-			IExpr[] gg = t.egcd(s);
-			// System.out.println("coeff gcd = " + Arrays.toString(gg));
-			ExprPolynomial z = this.ring.getZero();
-			ret[0] = z.sum(gg[0]);
-			ret[1] = z.sum(gg[1]);
-			ret[2] = z.sum(gg[2]);
-			return ret;
+			if (t.isInteger() && s.isInteger()) {
+				IExpr[] gg = t.egcd(s);
+				// System.out.println("coeff gcd = " + Arrays.toString(gg));
+				ExprPolynomial z = this.ring.getZero();
+				ret[0] = z.sum(gg[0]);
+				ret[1] = z.sum(gg[1]);
+				ret[2] = z.sum(gg[2]);
+				return ret;
+			}
 		}
 		ExprPolynomial[] qr;
 		ExprPolynomial q = this;
@@ -1879,6 +1885,9 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 		ExprPolynomial x2;
 		while (!r.isZERO()) {
 			qr = q.quotientRemainder(r);
+			if (qr == null) {
+				return null;
+			}
 			q = qr[0];
 			x1 = c1.subtract(q.multiply(d1));
 			x2 = c2.subtract(q.multiply(d2));
@@ -2063,7 +2072,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	public Map<ExpVectorLong, ExprPolynomial> contract(ExprPolynomialRing pfac) {
 		ExprPolynomial zero = pfac.getZero(); // not pfac.coFac;
 		ExprTermOrder t = ExprTermOrderByName.INVLEX;// new
-															// ExprTermOrder(ExprTermOrder.INVLEX);
+														// ExprTermOrder(ExprTermOrder.INVLEX);
 		Map<ExpVectorLong, ExprPolynomial> B = new TreeMap<ExpVectorLong, ExprPolynomial>(t.getAscendComparator());
 		if (this.isZERO()) {
 			return B;
