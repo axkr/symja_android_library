@@ -78,6 +78,10 @@
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>
+			<artifactId>failureaccess</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 		</dependency>
 		<dependency>
@@ -87,7 +91,7 @@
 		<dependency>
 			<groupId>org.logicng</groupId>
 			<artifactId>logicng</artifactId>
-		</dependency> 
+		</dependency>
 	</dependencies>
 
 	<build>
