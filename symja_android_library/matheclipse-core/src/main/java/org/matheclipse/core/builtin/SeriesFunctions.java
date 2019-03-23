@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
@@ -29,7 +30,6 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
-import org.matheclipse.core.polynomials.PartialFractionGenerator;
 import org.matheclipse.core.reflection.system.rules.LimitRules;
 import org.matheclipse.core.reflection.system.rules.SeriesCoefficientRules;
 
@@ -189,7 +189,7 @@ public class SeriesFunctions {
 					result = expression.replaceAll(data.getRule());
 					if (result.isPresent()) {
 						result = F.evalQuiet(result);
-						if (result.isNumericFunction()) {
+						if (result.isNumericFunction() || result.isInfinity() || result.isNegativeInfinity()) {
 							if (result.isZero()) {
 								IExpr temp = F.evalQuiet(F.N(F.Greater(F.Subtract(expression, limitValue), F.C0)));
 								if (temp != null) {
@@ -415,36 +415,14 @@ public class SeriesFunctions {
 				denValue = engine.evalBlock(denominator, x, limit);
 				if (denValue.equals(F.Indeterminate)) {
 					return F.NIL;
-				} else if (denValue.isZero()) {
+				} else if (denValue.isZero() || denValue.isDirectedInfinity() || denValue.isComplexInfinity()
+						|| denValue.isIndeterminate()) {
 					numValue = engine.evalBlock(numerator, x, limit);
-					if (numValue.isZero()) {
+					if (numValue.isZero() || numValue.isDirectedInfinity() || numValue.isComplexInfinity()
+							|| numValue.isIndeterminate()) {
 						return lHospitalesRule(numerator, denominator, data);
 					}
 					return F.NIL;
-				} else if (denValue.isInfinity()) {
-					try {
-						numValue = engine.evalBlock(numerator, x, limit);
-						if (F.CInfinity.equals(numValue)) {
-							return lHospitalesRule(numerator, denominator, data);
-						}
-						return F.NIL;
-					} catch (RuntimeException rex) {
-						if (Config.SHOW_STACKTRACE) {
-							rex.printStackTrace();
-						}
-					}
-				} else if (denValue.isNegativeInfinity()) {
-					try {
-						numValue = engine.evalBlock(numerator, x, limit);
-						if (numValue.isNegativeInfinity()) {
-							return lHospitalesRule(numerator, denominator, data);
-						}
-						return F.NIL;
-					} catch (RuntimeException rex) {
-						if (Config.SHOW_STACKTRACE) {
-							rex.printStackTrace();
-						}
-					}
 
 				}
 			}
@@ -505,7 +483,7 @@ public class SeriesFunctions {
 			if (exponent.isNumericFunction()) {
 				// Limit[a_^exp_,sym->lim] -> Limit[a,sym->lim]^exp
 				// IExpr temp = F.evalQuiet(F.Limit(arg1.arg1(), rule));?
-				IExpr temp = evalLimitQuiet(powerAST.arg1(), data);
+				IExpr temp = evalLimitQuiet(base, data);
 				if (temp.isNumericFunction()) {
 					if (temp.isZero()) {
 						if (exponent.isPositive()) {
@@ -537,6 +515,9 @@ public class SeriesFunctions {
 						return F.NIL;
 					}
 					return F.Power(temp, exponent);
+				}
+				if (!temp.isPresent()) {
+					temp = base;
 				}
 				if (exponent.isInteger()) {
 					IInteger n = (IInteger) exponent;
@@ -605,6 +586,13 @@ public class SeriesFunctions {
 				return F.Times(isFreeResult.arg1(), data.limit(isFreeResult.arg2()));
 			}
 			IExpr[] parts = Algebra.fractionalPartsTimesPower(timesAST, false, false, true, true, true);
+			if (parts == null) {
+				IAST[] timesPolyFiltered = timesAST.filter((Predicate<IExpr>) x -> x.isPolynomial(data.symbol));
+				if (timesPolyFiltered[0].size() > 1 && timesPolyFiltered[1].size() > 1) {
+					parts = new IExpr[] { timesPolyFiltered[1].oneIdentity1(),
+							F.Power(timesPolyFiltered[0].oneIdentity1(), F.CN1) };
+				}
+			}
 			if (parts != null) {
 
 				IExpr numerator = parts[0];
@@ -627,10 +615,7 @@ public class SeriesFunctions {
 				IExpr plusResult = Algebra.partsApart(parts, symbol, EvalEngine.get());
 				// Algebra.partialFractionDecompositionRational(new PartialFractionGenerator(), parts,symbol);
 				if (plusResult.isPlus()) {
-					// OneIdentity if plusResult.isAST1()
-					// if (plusResult.size() > 2) {
 					return data.mapLimit((IAST) plusResult);
-					// }
 				}
 
 				if (denominator.isOne()) {
