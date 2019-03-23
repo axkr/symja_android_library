@@ -556,7 +556,7 @@ public class Logarithms extends AbstractRubiTestCase {
 
 	// {2447}
 	public void test0128() {
-
+		fSeconds = 120;
 		// needs FullSimplify
 		check(//
 				"Integrate[Log[(2*x*(d*Sqrt[-(e/d)] + e*x))/(d + e*x^2)]/(d + e*x^2), x]", //

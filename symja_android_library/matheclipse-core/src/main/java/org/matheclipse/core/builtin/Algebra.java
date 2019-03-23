@@ -3934,7 +3934,7 @@ public class Algebra {
 											if (Config.DEBUG) {
 												e.printStackTrace();
 											}
-											return expr;
+											// return expr;
 										}
 									}
 								}
@@ -4057,14 +4057,17 @@ public class Algebra {
 					for (int i = 1; i < ast.size(); i++) {
 						temp = ast.get(i);
 						if (temp.isPowerReciprocal() && temp.base().isPlus() && temp.base().size() == 3) {
+							// example 1/(5+Sqrt(17)) => 1/8*(5-Sqrt(17))
 							IAST plus1 = (IAST) temp.base();
 							IAST plus2 = plus1.setAtCopy(2, plus1.arg2().negate());
+							// example (5+Sqrt(17)) * (5-Sqrt(17))
 							IExpr expr = F.eval(F.Expand(F.Times(plus1, plus2)));
-							if (expr.isNumber()) {
+							if (expr.isNumber() && !expr.isZero()) {
+								IASTMutable powerSimplified = F.Times(expr.inverse(), plus2);
 								if (newTimes.isPresent()) {
-									newTimes.set(i, F.Times(expr, plus2));
+									newTimes.set(i, powerSimplified);
 								} else {
-									newTimes = ast.setAtClone(i, F.Times(expr, plus2));
+									newTimes = ast.setAtClone(i, powerSimplified);
 								}
 							}
 						}
@@ -4083,19 +4086,12 @@ public class Algebra {
 								if (temp.isAtom()) {
 									return temp;
 								}
-								// IExpr e = temp.accept(this);
-								// if (e.isPresent()) {
-								// count = fComplexityFunction.apply(e);
-								// if (count < minCounter) {
-								// temp = tryTransformations(e);
-								// return temp.orElse(result);
-								// }
-								// }
 							}
 						} catch (WrongArgumentType wat) {
 							//
 						}
 					}
+
 					// temp = tryTransformations(result);
 					// return temp.orElse(result);
 
@@ -4120,20 +4116,6 @@ public class Algebra {
 				}
 
 				return functionExpand(ast, minCounter, result);
-				// if (fFullSimplify) {
-				// try {
-				// temp = F.eval(F.FunctionExpand(ast));
-				// count = fComplexityFunction.apply(temp);
-				// if (count < minCounter) {
-				// minCounter = count;
-				// result = temp;
-				// }
-				// } catch (WrongArgumentType wat) {
-				// //
-				// }
-				// }
-				//
-				// return result;
 			}
 
 			private IExpr functionExpand(IExpr expr, long minCounter, IExpr result) {
