@@ -78,7 +78,7 @@ public class Replace extends AbstractEvaluator {
 				return replaceRule(input, (IAST) rules, engine);
 			} else {
 				WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
-				engine.printMessage(wat.getMessage());
+				engine.printMessage("Replace: " + wat.getMessage());
 			}
 			return F.NIL;
 		}
@@ -135,7 +135,7 @@ public class Replace extends AbstractEvaluator {
 			return replaceRule(arg1, (IAST) rules, engine);
 		} else {
 			WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
-			engine.printMessage(wat.getMessage());
+			engine.printMessage("Replace: " + wat.getMessage());
 		}
 		return F.NIL;
 	}
@@ -211,7 +211,7 @@ public class Replace extends AbstractEvaluator {
 			}
 			return replaceExpr(ast, arg1, rules, engine);
 		} catch (WrongArgumentType wat) {
-			engine.printMessage(wat.getMessage());
+			engine.printMessage("Replace: " + wat.getMessage());
 		}
 		return F.NIL;
 	}

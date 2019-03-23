@@ -145,9 +145,9 @@ public class BesselJ extends AbstractFunctionEvaluator {
 					}
 				}
 			} catch (NegativeArraySizeException nae) {
-				engine.printMessage(ast.toString() + " caused NegativeArraySizeException");
+				engine.printMessage("BesselJ: "+ast.toString() + " caused NegativeArraySizeException");
 			} catch (RuntimeException rte) {
-				engine.printMessage(rte.getMessage());
+				engine.printMessage("BesselJ: "+rte.getMessage());
 			}
 		}
 

@@ -1727,12 +1727,12 @@ public final class Programming {
 					if (Config.SHOW_STACKTRACE) {
 						we.printStackTrace();
 					}
-					engine.printMessage(we.getMessage());
+					engine.printMessage("Part: " + we.getMessage());
 				} catch (WrongArgumentType wat) {
 					if (Config.SHOW_STACKTRACE) {
 						wat.printStackTrace();
 					}
-					engine.printMessage(wat.getMessage());
+					engine.printMessage("Part: " + wat.getMessage());
 				}
 			}
 			return F.NIL;
@@ -2098,13 +2098,13 @@ public final class Programming {
 					if (Config.SHOW_STACKTRACE) {
 						re.printStackTrace();
 					}
-					fEngine.printMessage(re.getMessage());
+					fEngine.printMessage("TimeConstrained: " + re.getMessage());
 				} catch (final Exception e) {
-					fEngine.printMessage(e.getMessage());
+					fEngine.printMessage("TimeConstrained: " + e.getMessage());
 				} catch (final OutOfMemoryError e) {
-					fEngine.printMessage(e.getMessage());
+					fEngine.printMessage("TimeConstrained: " + e.getMessage());
 				} catch (final StackOverflowError e) {
-					fEngine.printMessage(e.getMessage());
+					fEngine.printMessage("TimeConstrained: " + e.getMessage());
 				} finally {
 					EvalEngine.remove();
 				}

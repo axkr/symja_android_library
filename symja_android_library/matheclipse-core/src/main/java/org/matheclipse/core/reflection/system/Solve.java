@@ -938,7 +938,7 @@ public class Solve extends AbstractFunctionEvaluator {
 						if (Config.SHOW_STACKTRACE) {
 							rex.printStackTrace();
 						}
-						engine.printMessage("Integer solution not found: " + rex.getMessage());
+						engine.printMessage("Solve: " + "Integer solution not found: " + rex.getMessage());
 					}
 					return F.NIL;
 				}

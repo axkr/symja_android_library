@@ -209,7 +209,7 @@ public class Structure {
 					}
 				}
 			} catch (final MathException e) {
-				engine.printMessage(e.getMessage());
+				engine.printMessage("Apply: " +e.getMessage());
 			} catch (final ArithmeticException e) {
 
 			}
@@ -875,7 +875,7 @@ public class Structure {
 				}
 				return arg2.accept(level).orElse(arg2);
 			} catch (final MathException e) {
-				engine.printMessage(e.getMessage());
+				engine.printMessage("Map: " +e.getMessage());
 			}
 			return F.NIL;
 		}
@@ -982,7 +982,7 @@ public class Structure {
 					return level.visitAST(((IAST) arg2), new int[0]).orElse(arg2);
 				}
 			} catch (final MathException e) {
-				engine.printMessage(e.getMessage());
+				engine.printMessage("MapIndexed: " +e.getMessage());
 			}
 			return F.NIL;
 		}

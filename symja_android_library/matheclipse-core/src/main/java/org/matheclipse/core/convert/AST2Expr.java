@@ -589,9 +589,9 @@ public class AST2Expr {
 		}
 	}
 
-	public static void main(String[] args) {
-		for (int i = 0; i < FUNCTION_STRINGS.length; i++) {
-			System.out.println(FUNCTION_STRINGS[i]);
-		}
-	}
+//	public static void main(String[] args) {
+//		for (int i = 0; i < FUNCTION_STRINGS.length; i++) {
+//			System.out.println(FUNCTION_STRINGS[i]);
+//		}
+//	}
 }

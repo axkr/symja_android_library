@@ -37,10 +37,10 @@ public class ReplaceRepeated extends AbstractEvaluator {
 				}
 			} else {
 				WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
-				engine.printMessage(wat.getMessage());
+				engine.printMessage("ReplaceRepeated: " + wat.getMessage());
 			}
 		} catch (WrongArgumentType wat) {
-			engine.printMessage(wat.getMessage());
+			engine.printMessage("ReplaceRepeated: " + wat.getMessage());
 		}
 		return F.NIL;
 	}

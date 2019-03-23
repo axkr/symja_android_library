@@ -925,8 +925,12 @@ public class EvalEngine implements Serializable {
 	 *            the symbol which should be evaluated as a local variable
 	 * @param localValue
 	 *            the value
+	 * @param quiet
+	 *            if <code>true</code> evaluate in quiet mode and suppress evaluation messages
 	 */
-	public IExpr evalBlock(IExpr expr, ISymbol symbol, IExpr localValue) {
+	public IExpr evalBlock(IExpr expr, ISymbol symbol, IExpr localValue, boolean quiet) {
+		boolean quietMode = isQuietMode();
+		setQuietMode(quiet);
 		java.util.IdentityHashMap<ISymbol, ISymbol> blockVariables = new IdentityHashMap<ISymbol, ISymbol>();
 		IExpr result = F.NIL;
 		try {
@@ -942,6 +946,7 @@ public class EvalEngine implements Serializable {
 				result = evaluate(expr);
 			}
 		} finally {
+			setQuietMode(quietMode);
 			if (blockVariables.size() > 0) {
 				// reset local variables to global ones
 				java.util.IdentityHashMap<ISymbol, IExpr> globalVariables = new IdentityHashMap<ISymbol, IExpr>();

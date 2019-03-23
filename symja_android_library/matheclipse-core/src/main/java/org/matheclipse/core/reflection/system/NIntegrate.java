@@ -149,7 +149,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 				try {
 					maxPoints = ((ISignedNumber) option).toInt();
 				} catch (ArithmeticException ae) {
-					engine.printMessage("Error in option MaxPoints. Using default value: " + maxPoints);
+					engine.printMessage("NIntegrate: "+"Error in option MaxPoints. Using default value: " + maxPoints);
 				}
 			}
 			option = options.getOption("MaxIterations");
@@ -157,7 +157,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 				try {
 					maxIterations = ((ISignedNumber) option).toInt();
 				} catch (ArithmeticException ae) {
-					engine.printMessage("Error in option MaxIterations. Using default value: " + maxIterations);
+					engine.printMessage("NIntegrate: "+"Error in option MaxIterations. Using default value: " + maxIterations);
 				}
 			}
 			option = options.getOption("PrecisionGoal");
@@ -165,7 +165,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 				try {
 					precisionGoal = ((ISignedNumber) option).toInt();
 				} catch (ArithmeticException ae) {
-					engine.printMessage("Error in option PrecisionGoal. Using default value: " + precisionGoal);
+					engine.printMessage("NIntegrate: "+"Error in option PrecisionGoal. Using default value: " + precisionGoal);
 				}
 			}
 		}
@@ -190,7 +190,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 						if (Config.SHOW_STACKTRACE) {
 							e.printStackTrace();
 						}
-						engine.printMessage("NIntegrate(method=" + method + ") " + e.getMessage());
+						engine.printMessage("NIntegrate: "+"(method=" + method + ") " + e.getMessage());
 						// throw new WrappedException(e);
 					}
 				}
