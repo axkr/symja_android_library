@@ -4103,22 +4103,9 @@ public class Algebra {
 					if (temp.isPresent()) {
 						result = temp;
 					}
-
-					if (fFullSimplify) {
-						try {
-							temp = result.orElse(ast);
-							long minCounter = fComplexityFunction.apply(temp);
-							long count;
-							temp = F.eval(F.FunctionExpand(temp));
-							count = fComplexityFunction.apply(temp);
-							if (count < minCounter) {
-								minCounter = count;
-								result = temp;
-							}
-						} catch (WrongArgumentType wat) {
-							//
-						}
-					}
+					temp = result.orElse(ast);
+					long minCounter = fComplexityFunction.apply(temp);
+					result = functionExpand(temp, minCounter, result);
 
 					return result;
 				}
@@ -4132,19 +4119,51 @@ public class Algebra {
 					result = temp;
 				}
 
+				return functionExpand(ast, minCounter, result);
+				// if (fFullSimplify) {
+				// try {
+				// temp = F.eval(F.FunctionExpand(ast));
+				// count = fComplexityFunction.apply(temp);
+				// if (count < minCounter) {
+				// minCounter = count;
+				// result = temp;
+				// }
+				// } catch (WrongArgumentType wat) {
+				// //
+				// }
+				// }
+				//
+				// return result;
+			}
+
+			private IExpr functionExpand(IExpr expr, long minCounter, IExpr result) {
 				if (fFullSimplify) {
 					try {
-						temp = F.eval(F.FunctionExpand(ast));
-						count = fComplexityFunction.apply(temp);
+						long count;
+						expr = F.eval(F.FunctionExpand(expr));
+						count = fComplexityFunction.apply(expr);
 						if (count < minCounter) {
 							minCounter = count;
-							result = temp;
+							result = expr;
 						}
 					} catch (WrongArgumentType wat) {
 						//
 					}
+				} else {
+					if (expr.isLog()) {
+						try {
+							long count;
+							expr = F.eval(F.FunctionExpand(expr));
+							count = fComplexityFunction.apply(expr);
+							if (count <= minCounter) {
+								minCounter = count;
+								result = expr;
+							}
+						} catch (WrongArgumentType wat) {
+							//
+						}
+					}
 				}
-
 				return result;
 			}
 

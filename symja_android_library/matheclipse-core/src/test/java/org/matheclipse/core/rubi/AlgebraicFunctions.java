@@ -8585,7 +8585,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {860}
 	public void test1118() {
-		fSeconds = 60;
+		fSeconds = 120;
 		check(//
 				"Integrate[((d + e*x)^(5/2)*Sqrt[f + g*x])/(a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2)^(5/2), x]", //
 				"(-2*(d + e*x)^(3/2)*(f + g*x)^(3/2))/(3*(c*d*f - a*e*g)*(a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2)^(3/2))", //

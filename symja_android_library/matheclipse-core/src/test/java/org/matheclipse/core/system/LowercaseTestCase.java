@@ -6699,11 +6699,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-Infinity");
 		check("Limit(1/x, x -> 0, Direction->-1)", //
 				"Infinity");
-		
+
 		// print additional message. Messages are typically suppressed in Limit() steps.
 		check("1/0", //
 				"ComplexInfinity");
-		
+
 		// check("Limit((4 - x), x -> 4)", "0");
 		check("Limit(1/(4 - x), x -> 4)", //
 				"Infinity");
@@ -6888,7 +6888,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLog() {
-
+		check("Log(10*E) // Simplify", //
+				"1+Log(10)");
+		check("Log(10*E*x*y) // FunctionExpand", //
+				"1+Log(10)+Log(x*y)");
+		
 		check("Log( )", //
 				"Log()");
 
