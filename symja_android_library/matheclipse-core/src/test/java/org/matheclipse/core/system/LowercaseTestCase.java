@@ -12032,32 +12032,48 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Simplify(-Cos(b*x)/x^2+(-b*Sin(b*x))/x)", //
 				"(-Cos(b*x)-b*x*Sin(b*x))/x^2");
 
-		check("Simplify(-(b/(2*Sqrt(c))+Sqrt(c)*x)^24+(a+b*x+c*x^2)^12)", "-(b/2+c*x)^24/c^12+(a+b*x+c*x^2)^12");
+		check("Simplify(-(b/(2*Sqrt(c))+Sqrt(c)*x)^24+(a+b*x+c*x^2)^12)", //
+				"-(b/2+c*x)^24/c^12+(a+b*x+c*x^2)^12");
 		check("Simplify(-ArcTan((1+x)/Sqrt(2))/(2*Sqrt(2)))", //
 				"-ArcTan((1+x)/Sqrt(2))/(2*Sqrt(2))");
 		check("Simplify(1 + 1/GoldenRatio - GoldenRatio)", //
 				"0");
 		// check("Simplify(-15-6*x)/(3*(1+x+x^2))", "");
-		check("Simplify(Abs(x), x<0)", "Abs(x)");
-		check("complexity(x_) := 2*Count(x, _Abs, {0, 10}) + LeafCount(x)", "");
-		check("Simplify(Abs(x), x<0, ComplexityFunction->complexity)", "-x");
+		check("Simplify(Abs(x), x<0)", //
+				"Abs(x)");
+		check("complexity(x_) := 2*Count(x, _Abs, {0, 10}) + LeafCount(x)", //
+				"");
+		check("Simplify(Abs(x), x<0, ComplexityFunction->complexity)", //
+				"-x");
 
 		check("Simplify(100*Log(2))", //
 				"100*Log(2)");
-		check("Simplify(2*Sin(x)^2 + 2*Cos(x)^2)", "2");
-		check("Simplify(f(x))", "f(x)");
-		check("Simplify(a*x^2+b*x^2)", "(a+b)*x^2");
+		check("Simplify(2*Sin(x)^2 + 2*Cos(x)^2)", //
+				"2");
+		check("Simplify(f(x))", //
+				"f(x)");
+		check("Simplify(a*x^2+b*x^2)", //
+				"(a+b)*x^2");
 
-		check("Simplify(5*x*(6*x+30))", "30*x*(5+x)");
-		check("Simplify(Sqrt(x^2), Assumptions -> x>0)", "x");
-		check("Simplify(Sqrt(x^2), x>0)", "x");
-		check("Together(2/(1/Tan(x) + Tan(x)))", "2/(Cot(x)+Tan(x))");
-		check("Together(2*Tan(x)/(1 + Tan(x)^2))", "(2*Tan(x))/(1+Tan(x)^2)");
-		check("Simplify(Sin(x)^2 + Cos(x)^2)", "1");
-		check("Simplify((x - 1)*(x + 1)*(x^2 + 1) + 1)", "x^4");
-		check("Simplify(3/(x + 3) + x/(x + 3))", "1");
+		check("Simplify(5*x*(6*x+30))", //
+				"30*x*(5+x)");
+		check("Simplify(Sqrt(x^2), Assumptions -> x>0)", //
+				"x");
+		check("Simplify(Sqrt(x^2), x>0)", //
+				"x");
+		check("Together(2/(1/Tan(x) + Tan(x)))", //
+				"2/(Cot(x)+Tan(x))");
+		check("Together(2*Tan(x)/(1 + Tan(x)^2))", //
+				"(2*Tan(x))/(1+Tan(x)^2)");
+		check("Simplify(Sin(x)^2 + Cos(x)^2)", //
+				"1");
+		check("Simplify((x - 1)*(x + 1)*(x^2 + 1) + 1)", //
+				"x^4");
+		check("Simplify(3/(x + 3) + x/(x + 3))", //
+				"1");
 
-		check("Simplify(2*Tan(x)/(1 + Tan(x)^2))", "(2*Tan(x))/(1+Tan(x)^2)");
+		check("Simplify(2*Tan(x)/(1 + Tan(x)^2))", //
+				"(2*Tan(x))/(1+Tan(x)^2)");
 
 	}
 
