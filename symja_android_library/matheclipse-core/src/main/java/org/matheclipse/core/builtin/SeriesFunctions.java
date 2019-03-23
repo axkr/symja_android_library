@@ -402,7 +402,7 @@ public class SeriesFunctions {
 		private static IExpr numeratorDenominatorLimit(final IExpr numerator, final IExpr denominator, LimitData data) {
 			IExpr numValue;
 			IExpr denValue;
-			IExpr limit = data.getLimitValue();
+			IExpr limitValue = data.getLimitValue();
 			// IAST rule = data.getRule();
 			EvalEngine engine = EvalEngine.get();
 			if (denominator.isOne() && numerator.isTimes()) {
@@ -412,12 +412,12 @@ public class SeriesFunctions {
 			}
 			if (!denominator.isNumber() || denominator.isZero()) {
 				ISymbol x = data.getSymbol();
-				denValue = engine.evalBlock(denominator, x, limit);
+				denValue = engine.evalBlock(denominator, x, limitValue, true);
 				if (denValue.equals(F.Indeterminate)) {
 					return F.NIL;
 				} else if (denValue.isZero() || denValue.isDirectedInfinity() || denValue.isComplexInfinity()
 						|| denValue.isIndeterminate()) {
-					numValue = engine.evalBlock(numerator, x, limit);
+					numValue = engine.evalBlock(numerator, x, limitValue, true);
 					if (numValue.isZero() || numValue.isDirectedInfinity() || numValue.isComplexInfinity()
 							|| numValue.isIndeterminate()) {
 						return lHospitalesRule(numerator, denominator, data);
