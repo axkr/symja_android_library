@@ -1055,17 +1055,17 @@ public class ExpTrigsFunctions {
 			if (imPart.isPresent()) {
 				return F.Cosh(imPart);
 			}
-//			if (arg1.isPlus()) {
-//				IAST peel = AbstractFunctionEvaluator.peelOff((IAST) arg1, EvalEngine.get());
-//				if (peel.isPresent()) {
-//					IExpr m = peel.arg2();
-//					if (!m.isZero()) {
-//						IExpr x = peel.arg1();
-//						// cos(m)*cos(x) - sin(m)*sin(x)
-//						return F.Subtract(F.Times(F.Cos(m), F.Cos(x)), F.Times(F.Sin(m), F.Sin(x)));
-//					}
-//				}
-//			}
+			// if (arg1.isPlus()) {
+			// IAST peel = AbstractFunctionEvaluator.peelOff((IAST) arg1, EvalEngine.get());
+			// if (peel.isPresent()) {
+			// IExpr m = peel.arg2();
+			// if (!m.isZero()) {
+			// IExpr x = peel.arg1();
+			// // cos(m)*cos(x) - sin(m)*sin(x)
+			// return F.Subtract(F.Times(F.Cos(m), F.Cos(x)), F.Times(F.Sin(m), F.Sin(x)));
+			// }
+			// }
+			// }
 			IAST parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, Pi);
 			if (parts.isPresent()) {
 				if (parts.arg2().isInteger()) {
@@ -1405,6 +1405,18 @@ public class ExpTrigsFunctions {
 			if (imPart.isPresent()) {
 				return Times(CNI, Coth(imPart));
 			}
+
+			if (arg1.isPlus()) {
+				IAST peel = AbstractFunctionEvaluator.peelOff((IAST) arg1, EvalEngine.get());
+				if (peel.isPresent()) {
+					IExpr m = peel.arg2();
+					if (m.isNegative()) {
+						IExpr x = peel.arg1();
+						return F.Negate(F.Tan(x));
+					}
+				}
+			}
+
 			IAST parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, Pi);
 			if (parts.isPresent()) {
 				if (parts.arg2().isInteger()) {
@@ -1964,16 +1976,16 @@ public class ExpTrigsFunctions {
 			if (imPart.isPresent()) {
 				return F.Times(F.CI, F.Sinh(imPart));
 			}
-//			if (arg1.isPlus()) {
-//				IAST peel = AbstractFunctionEvaluator.peelOff((IAST) arg1, EvalEngine.get());
-//				if (peel.isPresent()) {
-//					IExpr m = peel.arg2();
-//					if (!m.isZero()) {
-//						IExpr x = peel.arg1();
-//						return F.Plus(F.Times(F.Sin(m), F.Cos(x)), F.Times(F.Cos(m), F.Sin(x)));
-//					}
-//				}
-//			}
+			// if (arg1.isPlus()) {
+			// IAST peel = AbstractFunctionEvaluator.peelOff((IAST) arg1, EvalEngine.get());
+			// if (peel.isPresent()) {
+			// IExpr m = peel.arg2();
+			// if (!m.isZero()) {
+			// IExpr x = peel.arg1();
+			// return F.Plus(F.Times(F.Sin(m), F.Cos(x)), F.Times(F.Cos(m), F.Sin(x)));
+			// }
+			// }
+			// }
 			IAST parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, Pi);
 			if (parts.isPresent()) {
 				if (parts.arg2().isInteger()) {

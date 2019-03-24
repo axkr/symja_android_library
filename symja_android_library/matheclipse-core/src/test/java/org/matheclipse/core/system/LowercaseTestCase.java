@@ -2336,7 +2336,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCot() {
-		check("Sin(x)*Cot(x)", "Cos(x)");
+		// TODO
+		// check("Cot(z-Pi/3)", //
+		// "-Tan(Pi/6+z)");
+		check("Cot(e-Pi/2+f*x)", //
+				"-Tan(e+f*x)");
+		check("Cot(ComplexInfinity)", //
+				"Indeterminate");
+		check("Cot(Indeterminate)", //
+				"Indeterminate");
+		check("Sin(x)*Cot(x)", //
+				"Cos(x)");
 		// check("Sin(x)^2*Cot(x)^2", "Cos(x)^2");
 		// check("Sin(x)^2*Cot(x)^4", "Cos(x)^2*Cot(x)^2");
 		// check("Sin(x)^4*Cot(x)^2", "Cos(x)^2*Sin(x)^2");

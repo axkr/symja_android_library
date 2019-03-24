@@ -236,7 +236,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 				k = F.C1;
 				break;
 			}
-			if (temp.isTimes()) {
+			if (temp.isTimes() && temp.size() == 3) {
 				if (temp.first().isRational() && temp.second().equals(F.Pi)) {
 					k = (IRational) temp.first();
 					break;
@@ -247,7 +247,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 			AST2 result = new AST2(F.List, plusAST, F.C0);
 			IExpr m1 = F.Times(k.mod(F.C1D2), F.Pi);
 			IExpr m2 = F.Subtract.of(engine, F.Times(k, F.Pi), m1);
-			result.set(1, F.Subtract(plusAST, m2));
+			result.set(1, F.Subtract.of(plusAST, m2));
 			result.set(2, m2);
 			return result;
 		}
