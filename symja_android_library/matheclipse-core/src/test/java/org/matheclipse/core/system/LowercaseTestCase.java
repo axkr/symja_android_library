@@ -2336,7 +2336,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCot() {
-		// TODO
 		// check("Cot(z-Pi/3)", //
 		// "-Tan(Pi/6+z)");
 		check("Cot(e-Pi/2+f*x)", //
@@ -2351,23 +2350,38 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("Sin(x)^2*Cot(x)^4", "Cos(x)^2*Cot(x)^2");
 		// check("Sin(x)^4*Cot(x)^2", "Cos(x)^2*Sin(x)^2");
 
-		check("Cot(ArcSin(x))", "Sqrt(1-x^2)/x");
-		check("Cot(ArcCos(x))", "x/Sqrt(1-x^2)");
-		check("Cot(ArcTan(x))", "1/x");
-		check("Cot(ArcCot(x))", "x");
-		check("Cot(ArcCsc(x))", "Sqrt(1-1/x^2)*x");
-		check("Cot(ArcSec(x))", "1/(Sqrt(1-1/x^2)*x)");
+		check("Cot(ArcSin(x))", //
+				"Sqrt(1-x^2)/x");
+		check("Cot(ArcCos(x))", //
+				"x/Sqrt(1-x^2)");
+		check("Cot(ArcTan(x))", //
+				"1/x");
+		check("Cot(ArcCot(x))", //
+				"x");
+		check("Cot(ArcCsc(x))", //
+				"Sqrt(1-1/x^2)*x");
+		check("Cot(ArcSec(x))", //
+				"1/(Sqrt(1-1/x^2)*x)");
 
-		check("Cot(Pi/4)", "1");
-		check("Cot(0)", "ComplexInfinity");
-		check("Cot(1.)", "0.642093");
+		check("Cot(Pi/4)", //
+				"1");
+		check("Cot(0)", //
+				"ComplexInfinity");
+		check("Cot(1.)", //
+				"0.642093");
 
-		check("Cot(z+1/2*Pi)", "-Tan(z)");
-		check("Cot(Pi)", "ComplexInfinity");
-		check("Cot(z+Pi)", "Cot(z)");
-		check("Cot(z+42*Pi)", "Cot(z)");
-		check("Cot(x+y+z+43*Pi)", "Cot(x+y+z)");
-		check("Cot(z+42*a*Pi)", "Cot(42*a*Pi+z)");
+		check("Cot(z+1/2*Pi)", //
+				"-Tan(z)");
+		check("Cot(Pi)", //
+				"ComplexInfinity");
+		check("Cot(z+Pi)", //
+				"Cot(z)");
+		check("Cot(z+42*Pi)", //
+				"Cot(z)");
+		check("Cot(x+y+z+43*Pi)", //
+				"Cot(x+y+z)");
+		check("Cot(z+42*a*Pi)", //
+				"Cot(42*a*Pi+z)");
 	}
 
 	public void testCoth() {
