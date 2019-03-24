@@ -206,7 +206,7 @@ public class Config {
 	 * 
 	 * @see edu.jas.ufd.GCDFactory#getProxy(edu.jas.structure.RingFactory)
 	 */
-	public static boolean JAS_NO_THREADS = false;
+	public static boolean JAS_NO_THREADS = true;
 
 	/**
 	 * Use of <code>java.misc.Unsafe</code> is allowed if <code>true</code>.

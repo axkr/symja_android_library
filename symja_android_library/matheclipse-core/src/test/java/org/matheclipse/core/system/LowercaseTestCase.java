@@ -2340,6 +2340,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "-Tan(Pi/6+z)");
 		check("Cot(e-Pi/2+f*x)", //
 				"-Tan(e+f*x)");
+		check("Cot(e+Pi/2+f*x)", //
+				"-Tan(e+f*x)");
 		check("Cot(ComplexInfinity)", //
 				"Indeterminate");
 		check("Cot(Indeterminate)", //
@@ -13539,36 +13541,67 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTan() {
-		check("Tan(Pi/2+Pi*n)", "-Cot(n*Pi)");
+		// TODO
+		// check("Tan(z-Pi/3)", //
+		// "-Cot(Pi/6+z)");
+		check("Tan(e-Pi/2+f*x)", //
+				"-Cot(e+f*x)");
+		check("Tan(e+Pi/2+f*x)", //
+				"-Cot(e+f*x)");
+		check("Tan(Pi/2+Pi*n)", //
+				"-Cot(n*Pi)");
 
-		check("Tan(ArcSin(x))", "x/Sqrt(1-x^2)");
-		check("Tan(ArcCos(x))", "Sqrt(1-x^2)/x");
-		check("Tan(ArcTan(x))", "x");
-		check("Tan(ArcCot(x))", "1/x");
-		check("Tan(ArcCsc(x))", "1/(Sqrt(1-1/x^2)*x)");
-		check("Tan(ArcSec(x))", "Sqrt(1-1/x^2)*x");
+		check("Tan(ArcSin(x))", //
+				"x/Sqrt(1-x^2)");
+		check("Tan(ArcCos(x))", //
+				"Sqrt(1-x^2)/x");
+		check("Tan(ArcTan(x))", //
+				"x");
+		check("Tan(ArcCot(x))", //
+				"1/x");
+		check("Tan(ArcCsc(x))", //
+				"1/(Sqrt(1-1/x^2)*x)");
+		check("Tan(ArcSec(x))", //
+				"Sqrt(1-1/x^2)*x");
 
-		check("Tan(0)", "0");
-		check("Tan(Pi / 2)", "ComplexInfinity");
-		checkNumeric("Tan(0.5*Pi)", "1.633123935319537E16");
+		check("Tan(0)", //
+				"0");
+		check("Tan(Pi / 2)", //
+				"ComplexInfinity");
+		checkNumeric("Tan(0.5*Pi)", //
+				"1.633123935319537E16");
 
-		check("Tan(Pi/2)", "ComplexInfinity");
-		check("Tan(1/6*Pi)", "1/Sqrt(3)");
-		check("Tan(Pi)", "0");
-		check("Tan(z+Pi)", "Tan(z)");
-		check("Tan(z+42*Pi)", "Tan(z)");
-		check("Tan(z+42*a*Pi)", "Tan(42*a*Pi+z)");
-		check("Tan(z+1/2*Pi)", "-Cot(z)");
-		check("Tan(Pi)", "0");
-		check("Tan(33*Pi)", "0");
-		check("Tan(z+Pi)", "Tan(z)");
-		check("Tan(z+42*Pi)", "Tan(z)");
-		check("Tan(x+y+z+43*Pi)", "Tan(x+y+z)");
-		check("Tan(z+42*a*Pi)", "Tan(42*a*Pi+z)");
-		check("Tan(z+4/3*Pi)", "Tan(Pi/3+z)");
+		check("Tan(Pi/2)", //
+				"ComplexInfinity");
+		check("Tan(1/6*Pi)", //
+				"1/Sqrt(3)");
+		check("Tan(Pi)", //
+				"0");
+		check("Tan(z+Pi)", //
+				"Tan(z)");
+		check("Tan(z+42*Pi)", //
+				"Tan(z)");
+		check("Tan(z+42*a*Pi)", //
+				"Tan(42*a*Pi+z)");
+		check("Tan(z+1/2*Pi)", //
+				"-Cot(z)");
+		check("Tan(Pi)", //
+				"0");
+		check("Tan(33*Pi)", //
+				"0");
+		check("Tan(z+Pi)", //
+				"Tan(z)");
+		check("Tan(z+42*Pi)", //
+				"Tan(z)");
+		check("Tan(x+y+z+43*Pi)", //
+				"Tan(x+y+z)");
+		check("Tan(z+42*a*Pi)", //
+				"Tan(42*a*Pi+z)");
+		check("Tan(z+4/3*Pi)", //
+				"Tan(Pi/3+z)");
 	}
 
-	public void testTanh() {
+	public void testTanh() { 
 		check("Tanh(0)", "0");
 	}
 

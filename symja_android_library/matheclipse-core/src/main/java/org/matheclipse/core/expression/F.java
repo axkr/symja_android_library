@@ -3641,7 +3641,7 @@ public class F {
 	 */
 	static IExpr[] GLOBAL_IDS = null;
 
-	private final static java.util.concurrent.CountDownLatch COUNT_DOWN_LATCH = new java.util.concurrent.CountDownLatch(
+	public final static java.util.concurrent.CountDownLatch COUNT_DOWN_LATCH = new java.util.concurrent.CountDownLatch(
 			1);
 
 	/**
@@ -3667,32 +3667,33 @@ public class F {
 		try {
 			PreemptStatus.setNotAllow();
 			ComputerThreads.NO_THREADS = Config.JAS_NO_THREADS;
-			Runnable runnable = new Runnable() {
-				@Override
-				public void run() {
-					// long start = System.currentTimeMillis();
-					final EvalEngine engine = EvalEngine.get();
-					ContextPath path = engine.getContextPath();
-					try {
-						engine.getContextPath().add(org.matheclipse.core.expression.Context.RUBI);
-						org.matheclipse.core.reflection.system.Integrate.getUtilityFunctionsRuleAST();
-						// if (ruleList != null) {
-						// engine.addRules(ruleList);
-						// }
-						org.matheclipse.core.reflection.system.Integrate.getRuleASTStatic();
-						// if (ruleList != null) {
-						// engine.addRules(ruleList);
-						// }
-					} finally {
-						engine.setContextPath(path);
-					}
-					Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
-					engine.setPackageMode(false);
-					// long stop = System.currentTimeMillis();
-					// System.out.println("Milliseconds: " + (stop - start));
-					COUNT_DOWN_LATCH.countDown();
-				}
-			};
+			Runnable runnable = new org.matheclipse.core.reflection.system.Integrate.IntegrateInitializer();
+			// {
+			// @Override
+			// public void run() {
+			// // long start = System.currentTimeMillis();
+			// final EvalEngine engine = EvalEngine.get();
+			// ContextPath path = engine.getContextPath();
+			// try {
+			// engine.getContextPath().add(org.matheclipse.core.expression.Context.RUBI);
+			// org.matheclipse.core.reflection.system.Integrate.getUtilityFunctionsRuleAST();
+			// // if (ruleList != null) {
+			// // engine.addRules(ruleList);
+			// // }
+			// org.matheclipse.core.reflection.system.Integrate.getRuleASTStatic();
+			// // if (ruleList != null) {
+			// // engine.addRules(ruleList);
+			// // }
+			// } finally {
+			// engine.setContextPath(path);
+			// }
+			// Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
+			// engine.setPackageMode(false);
+			// // long stop = System.currentTimeMillis();
+			// // System.out.println("Milliseconds: " + (stop - start));
+			// COUNT_DOWN_LATCH.countDown();
+			// }
+			// };
 
 			if (Config.THREAD_FACTORY != null) {
 				INIT_THREAD = Config.THREAD_FACTORY.newThread(runnable);

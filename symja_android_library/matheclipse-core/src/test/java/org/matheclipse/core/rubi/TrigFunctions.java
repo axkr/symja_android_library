@@ -2980,7 +2980,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
 
 	// {3936}
 	public void test0389() {
-		fSeconds=30;
+		fSeconds=60;
 		check(//
 				"Integrate[Sqrt[c + d*Sec[e + f*x]]/Sqrt[a + b*Sec[e + f*x]], x]", //
 				"(-2*Sqrt[a + b]*Cot[e + f*x]*EllipticPi[((a + b)*c)/(a*(c + d)), ArcSin[(Sqrt[c + d]*Sqrt[a + b*Sec[e + f*x]])/(Sqrt[a + b]*Sqrt[c + d*Sec[e + f*x]])], ((a + b)*(c - d))/((a - b)*(c + d))]*Sqrt[((b*c - a*d)*(1 - Sec[e + f*x]))/((a + b)*(c + d*Sec[e + f*x]))]*Sqrt[-(((b*c - a*d)*(1 + Sec[e + f*x]))/((a - b)*(c + d*Sec[e + f*x])))]*(c + d*Sec[e + f*x]))/(a*Sqrt[c + d]*f)", //
