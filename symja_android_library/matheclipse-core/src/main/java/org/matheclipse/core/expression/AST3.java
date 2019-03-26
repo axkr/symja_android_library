@@ -44,7 +44,7 @@ public final class AST3 extends AST2 {
 	/**
 	 * The third argument of this function.
 	 */
-	protected IExpr arg3;
+	IExpr arg3;
 
 	/**
 	 * ctor for deserialization
@@ -410,23 +410,11 @@ public final class AST3 extends AST2 {
 			hashValue = (hashValue * 16777619) ^ (arg3.hashCode() & 0xff);
 		}
 		return hashValue;
-	}
+	} 
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isAST0() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isAST1() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isAST2() {
+	public final boolean isAST2() {
 		return false;
 	}
 

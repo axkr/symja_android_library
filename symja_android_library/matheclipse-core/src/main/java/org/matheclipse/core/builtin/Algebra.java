@@ -36,7 +36,6 @@ import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Arithmetic.Plus;
 import org.matheclipse.core.builtin.Combinatoric.Permutations;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
@@ -104,35 +103,43 @@ import edu.jas.ufd.SquarefreeAbstract;
 import edu.jas.ufd.SquarefreeFactory;
 
 public class Algebra {
-	static {
-		F.Apart.setEvaluator(new Apart());
-		F.Cancel.setEvaluator(new Cancel());
-		F.Collect.setEvaluator(new Collect());
-		F.Denominator.setEvaluator(new Denominator());
-		F.Distribute.setEvaluator(new Distribute());
-		F.Expand.setEvaluator(new Expand());
-		F.ExpandAll.setEvaluator(new ExpandAll());
-		F.Factor.setEvaluator(new Factor());
-		F.FactorSquareFree.setEvaluator(new FactorSquareFree());
-		F.FactorSquareFreeList.setEvaluator(new FactorSquareFreeList());
-		F.FactorTerms.setEvaluator(new FactorTerms());
-		F.FullSimplify.setEvaluator(new FullSimplify());
-		F.Numerator.setEvaluator(new Numerator());
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
 
-		F.PolynomialExtendedGCD.setEvaluator(new PolynomialExtendedGCD());
-		F.PolynomialGCD.setEvaluator(new PolynomialGCD());
-		F.PolynomialLCM.setEvaluator(new PolynomialLCM());
-		F.PolynomialQ.setEvaluator(new PolynomialQ());
-		F.PolynomialQuotient.setEvaluator(new PolynomialQuotient());
-		F.PolynomialQuotientRemainder.setEvaluator(new PolynomialQuotientRemainder());
-		F.PolynomialRemainder.setEvaluator(new PolynomialRemainder());
+		private static void init() {
+			F.Apart.setEvaluator(new Apart());
+			F.Cancel.setEvaluator(new Cancel());
+			F.Collect.setEvaluator(new Collect());
+			F.Denominator.setEvaluator(new Denominator());
+			F.Distribute.setEvaluator(new Distribute());
+			F.Expand.setEvaluator(new Expand());
+			F.ExpandAll.setEvaluator(new ExpandAll());
+			F.Factor.setEvaluator(new Factor());
+			F.FactorSquareFree.setEvaluator(new FactorSquareFree());
+			F.FactorSquareFreeList.setEvaluator(new FactorSquareFreeList());
+			F.FactorTerms.setEvaluator(new FactorTerms());
+			F.FullSimplify.setEvaluator(new FullSimplify());
+			F.Numerator.setEvaluator(new Numerator());
 
-		F.PowerExpand.setEvaluator(new PowerExpand());
-		F.Root.setEvaluator(new Root());
-		F.Simplify.setEvaluator(new Simplify());
-		F.Together.setEvaluator(new Together());
-		F.ToRadicals.setEvaluator(new ToRadicals());
-		F.Variables.setEvaluator(new Variables());
+			F.PolynomialExtendedGCD.setEvaluator(new PolynomialExtendedGCD());
+			F.PolynomialGCD.setEvaluator(new PolynomialGCD());
+			F.PolynomialLCM.setEvaluator(new PolynomialLCM());
+			F.PolynomialQ.setEvaluator(new PolynomialQ());
+			F.PolynomialQuotient.setEvaluator(new PolynomialQuotient());
+			F.PolynomialQuotientRemainder.setEvaluator(new PolynomialQuotientRemainder());
+			F.PolynomialRemainder.setEvaluator(new PolynomialRemainder());
+
+			F.PowerExpand.setEvaluator(new PowerExpand());
+			F.Root.setEvaluator(new Root());
+			F.Simplify.setEvaluator(new Simplify());
+			F.Together.setEvaluator(new Together());
+			F.ToRadicals.setEvaluator(new ToRadicals());
+			F.Variables.setEvaluator(new Variables());
+		}
 	}
 
 	protected static class InternalFindCommonFactorPlus {
@@ -5485,10 +5492,8 @@ public class Algebra {
 		return temp;
 	}
 
-	private final static Algebra CONST = new Algebra();
-
-	public static Algebra initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	private Algebra() {

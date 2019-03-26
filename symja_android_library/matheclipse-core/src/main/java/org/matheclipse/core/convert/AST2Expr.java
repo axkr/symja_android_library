@@ -202,36 +202,48 @@ public class AST2Expr {
 		return SUGGEST_TREE;
 	}
 
-	static {
-		for (String str : UPPERCASE_SYMBOL_STRINGS) {
-			// these constants must be written in upper case characters
-			PREDEFINED_SYMBOLS_MAP.put(str, str);
-		}
-		for (String str : DOLLAR_STRINGS) {
-			PREDEFINED_SYMBOLS_MAP.put(str.toLowerCase(Locale.ENGLISH), str);
-		}
-		for (String str : SYMBOL_STRINGS) {
-			PREDEFINED_SYMBOLS_MAP.put(str.toLowerCase(Locale.ENGLISH), str);
-		}
-		for (String str : FUNCTION_STRINGS) {
-			PREDEFINED_SYMBOLS_MAP.put(str.toLowerCase(Locale.ENGLISH), str);
-		}
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-			for (int i = 0; i < ALIASES_STRINGS.length; i++) {
-				PREDEFINED_ALIASES_MAP.put(ALIASES_STRINGS[i].toLowerCase(Locale.ENGLISH), ALIASES_SUBSTITUTES[i]); // YMBOLS[i]);
-			}
-		}
-		if (Config.RUBI_CONVERT_SYMBOLS) {
-			for (int i = 0; i < ALIASES_STRINGS.length; i++) {
-				PREDEFINED_SYMBOLS_MAP.put(ALIASES_STRINGS[i].toLowerCase(Locale.ENGLISH), ALIASES_STRINGS[i]);
-			}
-		}
-		if (Config.RUBI_CONVERT_SYMBOLS) {
-			RUBI_STATISTICS_MAP = new TreeMap<String, Integer>();
-		}
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
 
+		private static void init() {
+			for (String str : UPPERCASE_SYMBOL_STRINGS) {
+				// these constants must be written in upper case characters
+				PREDEFINED_SYMBOLS_MAP.put(str, str);
+			}
+			for (String str : DOLLAR_STRINGS) {
+				PREDEFINED_SYMBOLS_MAP.put(str.toLowerCase(Locale.ENGLISH), str);
+			}
+			for (String str : SYMBOL_STRINGS) {
+				PREDEFINED_SYMBOLS_MAP.put(str.toLowerCase(Locale.ENGLISH), str);
+			}
+			for (String str : FUNCTION_STRINGS) {
+				PREDEFINED_SYMBOLS_MAP.put(str.toLowerCase(Locale.ENGLISH), str);
+			}
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				for (int i = 0; i < ALIASES_STRINGS.length; i++) {
+					PREDEFINED_ALIASES_MAP.put(ALIASES_STRINGS[i].toLowerCase(Locale.ENGLISH), ALIASES_SUBSTITUTES[i]); // YMBOLS[i]);
+				}
+			}
+			if (Config.RUBI_CONVERT_SYMBOLS) {
+				for (int i = 0; i < ALIASES_STRINGS.length; i++) {
+					PREDEFINED_SYMBOLS_MAP.put(ALIASES_STRINGS[i].toLowerCase(Locale.ENGLISH), ALIASES_STRINGS[i]);
+				}
+			}
+			if (Config.RUBI_CONVERT_SYMBOLS) {
+				RUBI_STATISTICS_MAP = new TreeMap<String, Integer>();
+			}
+
+		}
 	}
 
+	public static void initialize() {
+		Initializer.init();
+	}
+	
 	private int fPrecision;
 
 	private boolean fLowercaseEnabled;
@@ -589,9 +601,9 @@ public class AST2Expr {
 		}
 	}
 
-//	public static void main(String[] args) {
-//		for (int i = 0; i < FUNCTION_STRINGS.length; i++) {
-//			System.out.println(FUNCTION_STRINGS[i]);
-//		}
-//	}
+	// public static void main(String[] args) {
+	// for (int i = 0; i < FUNCTION_STRINGS.length; i++) {
+	// System.out.println(FUNCTION_STRINGS[i]);
+	// }
+	// }
 }

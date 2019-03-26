@@ -24,20 +24,28 @@ import org.matheclipse.core.parser.ExprParser;
 
 public final class StringFunctions {
 
-	static {
-		F.FromCharacterCode.setEvaluator(new FromCharacterCode());
-		F.LetterQ.setEvaluator(new LetterQ());
-		F.LowerCaseQ.setEvaluator(new LowerCaseQ());
-		F.StringDrop.setEvaluator(new StringDrop());
-		F.StringJoin.setEvaluator(new StringJoin());
-		F.StringLength.setEvaluator(new StringLength());
-		F.StringReplace.setEvaluator(new StringReplace());
-		F.StringTake.setEvaluator(new StringTake());
-		F.SyntaxLength.setEvaluator(new SyntaxLength());
-		F.ToCharacterCode.setEvaluator(new ToCharacterCode());
-		F.ToExpression.setEvaluator(new ToExpression());
-		F.ToString.setEvaluator(new ToString());
-		F.ToUnicode.setEvaluator(new ToUnicode());
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
+
+		private static void init() {
+			F.FromCharacterCode.setEvaluator(new FromCharacterCode());
+			F.LetterQ.setEvaluator(new LetterQ());
+			F.LowerCaseQ.setEvaluator(new LowerCaseQ());
+			F.StringDrop.setEvaluator(new StringDrop());
+			F.StringJoin.setEvaluator(new StringJoin());
+			F.StringLength.setEvaluator(new StringLength());
+			F.StringReplace.setEvaluator(new StringReplace());
+			F.StringTake.setEvaluator(new StringTake());
+			F.SyntaxLength.setEvaluator(new SyntaxLength());
+			F.ToCharacterCode.setEvaluator(new ToCharacterCode());
+			F.ToExpression.setEvaluator(new ToExpression());
+			F.ToString.setEvaluator(new ToString());
+			F.ToUnicode.setEvaluator(new ToUnicode());
+		}
 	}
 
 	private static class FromCharacterCode extends AbstractFunctionEvaluator {
@@ -402,7 +410,10 @@ public final class StringFunctions {
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			TeXParser.initialize();
+		}
 	}
 
 	private static class ToString extends AbstractFunctionEvaluator {
@@ -479,10 +490,8 @@ public final class StringFunctions {
 		return null;
 	}
 
-	private final static StringFunctions CONST = new StringFunctions();
-
-	public static StringFunctions initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	private StringFunctions() {

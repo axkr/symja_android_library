@@ -240,15 +240,27 @@ public class Characters {
 			"Xnor", "\uF4A2", "Xor", "\u22BB", "YAcute", "\u00FD", "YDoubleDot", "\u00FF", "Yen", "\u00A5", "Zeta",
 			"\u03B6", "ZHacek", "\u017E" };
 
-	static {
-		for (int i = 0; i < NamedCharacters.length; i += 2) {
-			NamedCharactersMap.put(NamedCharacters[i], NamedCharacters[i + 1]);
-		}
-		CharacterNamesMap.put(NamedCharactersMap.get("Infinity"), "Infinity");
-		CharacterNamesMap.put(NamedCharactersMap.get("ImaginaryI"), "I");
-		CharacterNamesMap.put(NamedCharactersMap.get("ImaginaryJ"), "I");
-		CharacterNamesMap.put(NamedCharactersMap.get("Pi"), "Pi");
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
 
+		private static void init() {
+			for (int i = 0; i < NamedCharacters.length; i += 2) {
+				NamedCharactersMap.put(NamedCharacters[i], NamedCharacters[i + 1]);
+			}
+			CharacterNamesMap.put(NamedCharactersMap.get("Infinity"), "Infinity");
+			CharacterNamesMap.put(NamedCharactersMap.get("ImaginaryI"), "I");
+			CharacterNamesMap.put(NamedCharactersMap.get("ImaginaryJ"), "I");
+			CharacterNamesMap.put(NamedCharactersMap.get("Pi"), "Pi");
+
+		}
+	}
+
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	/**
@@ -259,7 +271,7 @@ public class Characters {
 	 * @return <code>null</code> if no corresponding name was found
 	 */
 	public static String unicodeName(String unicode) {
-		if (ReversedNamedCharactersMap.size()==0) {
+		if (ReversedNamedCharactersMap.size() == 0) {
 			// create unicode to name map
 			ReversedNamedCharactersMap = new HashMap<String, String>(1409);
 			for (int i = 0; i < NamedCharacters.length; i += 2) {
@@ -270,10 +282,12 @@ public class Characters {
 	}
 
 	/**
-	 * Substitute all named (unicode-) characters in a string with their unicode value
-	 * For example <code>\[Alpha], \[Phi], \[Pi]</code> will be replace with unicode characters:
+	 * Substitute all named (unicode-) characters in a string with their unicode value For example
+	 * <code>\[Alpha], \[Phi], \[Pi]</code> will be replace with unicode characters:
 	 * 
-	 * <pre>f(\[Alpha])+\[Phi]*\[Pi]</pre>
+	 * <pre>
+	 * f(\[Alpha])+\[Phi]*\[Pi]
+	 * </pre>
 	 * 
 	 * @param str
 	 * @return

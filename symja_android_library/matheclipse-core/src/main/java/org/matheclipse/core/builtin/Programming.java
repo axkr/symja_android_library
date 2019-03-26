@@ -43,7 +43,6 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
-import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.parser.client.SyntaxError;
 
@@ -51,46 +50,53 @@ import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.google.common.util.concurrent.TimeLimiter;
 
 public final class Programming {
-	private final static Programming CONST = new Programming();
 
-	static {
-		F.Abort.setEvaluator(new Abort());
-		F.Break.setEvaluator(new Break());
-		F.Block.setEvaluator(new Block());
-		F.Catch.setEvaluator(new Catch());
-		F.Compile.setEvaluator(new Compile());
-		F.CompoundExpression.setEvaluator(new CompoundExpression());
-		F.Condition.setEvaluator(new Condition());
-		F.Continue.setEvaluator(new Continue());
-		F.Defer.setEvaluator(new Defer());
-		F.Do.setEvaluator(new Do());
-		F.FixedPoint.setEvaluator(new FixedPoint());
-		F.FixedPointList.setEvaluator(new FixedPointList());
-		F.For.setEvaluator(new For());
-		F.If.setEvaluator(new If());
-		F.List.setEvaluator(new ListFunction());
-		F.Module.setEvaluator(new Module());
-		F.Nest.setEvaluator(new Nest());
-		F.NestList.setEvaluator(new NestList());
-		F.NestWhile.setEvaluator(new NestWhile());
-		F.NestWhileList.setEvaluator(new NestWhileList());
-		F.On.setEvaluator(new On());
-		F.Off.setEvaluator(new Off());
-		F.Part.setEvaluator(new Part());
-		F.Print.setEvaluator(new Print());
-		F.Quiet.setEvaluator(new Quiet());
-		F.Reap.setEvaluator(new Reap());
-		F.Return.setEvaluator(new Return());
-		F.Sow.setEvaluator(new Sow());
-		F.Switch.setEvaluator(new Switch());
-		F.TimeConstrained.setEvaluator(new TimeConstrained());
-		F.Timing.setEvaluator(new Timing());
-		F.Throw.setEvaluator(new Throw());
-		F.Trace.setEvaluator(new Trace());
-		F.Unevaluated.setEvaluator(new Unevaluated());
-		F.Which.setEvaluator(new Which());
-		F.While.setEvaluator(new While());
-		F.With.setEvaluator(new With());
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
+
+		private static void init() {
+			F.Abort.setEvaluator(new Abort());
+			F.Break.setEvaluator(new Break());
+			F.Block.setEvaluator(new Block());
+			F.Catch.setEvaluator(new Catch());
+			F.Compile.setEvaluator(new Compile());
+			F.CompoundExpression.setEvaluator(new CompoundExpression());
+			F.Condition.setEvaluator(new Condition());
+			F.Continue.setEvaluator(new Continue());
+			F.Defer.setEvaluator(new Defer());
+			F.Do.setEvaluator(new Do());
+			F.FixedPoint.setEvaluator(new FixedPoint());
+			F.FixedPointList.setEvaluator(new FixedPointList());
+			F.For.setEvaluator(new For());
+			F.If.setEvaluator(new If());
+			F.List.setEvaluator(new ListFunction());
+			F.Module.setEvaluator(new Module());
+			F.Nest.setEvaluator(new Nest());
+			F.NestList.setEvaluator(new NestList());
+			F.NestWhile.setEvaluator(new NestWhile());
+			F.NestWhileList.setEvaluator(new NestWhileList());
+			F.On.setEvaluator(new On());
+			F.Off.setEvaluator(new Off());
+			F.Part.setEvaluator(new Part());
+			F.Print.setEvaluator(new Print());
+			F.Quiet.setEvaluator(new Quiet());
+			F.Reap.setEvaluator(new Reap());
+			F.Return.setEvaluator(new Return());
+			F.Sow.setEvaluator(new Sow());
+			F.Switch.setEvaluator(new Switch());
+			F.TimeConstrained.setEvaluator(new TimeConstrained());
+			F.Timing.setEvaluator(new Timing());
+			F.Throw.setEvaluator(new Throw());
+			F.Trace.setEvaluator(new Trace());
+			F.Unevaluated.setEvaluator(new Unevaluated());
+			F.Which.setEvaluator(new Which());
+			F.While.setEvaluator(new While());
+			F.With.setEvaluator(new With());
+		}
 	}
 
 	/**
@@ -3026,8 +3032,8 @@ public final class Programming {
 		return result;
 	}
 
-	public static Programming initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	private Programming() {

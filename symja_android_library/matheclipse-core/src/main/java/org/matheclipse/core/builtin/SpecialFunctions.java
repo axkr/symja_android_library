@@ -57,27 +57,35 @@ import org.matheclipse.core.reflection.system.rules.StruveHRules;
 import org.matheclipse.core.reflection.system.rules.StruveLRules;
 
 public class SpecialFunctions {
-	static {
-		F.Beta.setEvaluator(new Beta());
-		F.BetaRegularized.setEvaluator(new BetaRegularized());
-		F.Erf.setEvaluator(new Erf());
-		F.Erfc.setEvaluator(new Erfc());
-		F.Erfi.setEvaluator(new Erfi());
-		F.GammaRegularized.setEvaluator(new GammaRegularized());
-		F.HypergeometricPFQRegularized.setEvaluator(new HypergeometricPFQRegularized());
-		F.InverseErf.setEvaluator(new InverseErf());
-		F.InverseErfc.setEvaluator(new InverseErfc());
-		F.InverseBetaRegularized.setEvaluator(new InverseBetaRegularized());
-		F.InverseGammaRegularized.setEvaluator(new InverseGammaRegularized());
-		F.LogGamma.setEvaluator(new LogGamma());
-		F.MeijerG.setEvaluator(new MeijerG());
-		F.PolyGamma.setEvaluator(new PolyGamma());
-		F.PolyLog.setEvaluator(new PolyLog());
-		F.ProductLog.setEvaluator(new ProductLog());
-		F.StieltjesGamma.setEvaluator(new StieltjesGamma());
-		F.StruveH.setEvaluator(new StruveH());
-		F.StruveL.setEvaluator(new StruveL());
-		F.Zeta.setEvaluator(new Zeta());
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
+
+		private static void init() {
+			F.Beta.setEvaluator(new Beta());
+			F.BetaRegularized.setEvaluator(new BetaRegularized());
+			F.Erf.setEvaluator(new Erf());
+			F.Erfc.setEvaluator(new Erfc());
+			F.Erfi.setEvaluator(new Erfi());
+			F.GammaRegularized.setEvaluator(new GammaRegularized());
+			F.HypergeometricPFQRegularized.setEvaluator(new HypergeometricPFQRegularized());
+			F.InverseErf.setEvaluator(new InverseErf());
+			F.InverseErfc.setEvaluator(new InverseErfc());
+			F.InverseBetaRegularized.setEvaluator(new InverseBetaRegularized());
+			F.InverseGammaRegularized.setEvaluator(new InverseGammaRegularized());
+			F.LogGamma.setEvaluator(new LogGamma());
+			F.MeijerG.setEvaluator(new MeijerG());
+			F.PolyGamma.setEvaluator(new PolyGamma());
+			F.PolyLog.setEvaluator(new PolyLog());
+			F.ProductLog.setEvaluator(new ProductLog());
+			F.StieltjesGamma.setEvaluator(new StieltjesGamma());
+			F.StruveH.setEvaluator(new StruveH());
+			F.StruveL.setEvaluator(new StruveL());
+			F.Zeta.setEvaluator(new Zeta());
+		}
 	}
 
 	private static class Beta extends AbstractFunctionEvaluator {
@@ -375,13 +383,11 @@ public class SpecialFunctions {
 					// E^(-arg2)-E^(-arg3)
 					return F.Subtract(F.Power(F.E, F.Negate(z)), F.Power(F.E, F.Negate(ast.arg3())));
 				}
-				if (a.isInteger()&&a.isNegative()) {
+				if (a.isInteger() && a.isNegative()) {
 					return F.C0;
 				}
 				// TODO add more rules
-				
-				
-				
+
 				// return F.Subtract(F.GammaRegularized(a, z), F.GammaRegularized(a, ast.arg3()));
 				return F.NIL;
 			}
@@ -1330,10 +1336,8 @@ public class SpecialFunctions {
 		}
 	}
 
-	private final static SpecialFunctions CONST = new SpecialFunctions();
-
-	public static SpecialFunctions initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	private SpecialFunctions() {

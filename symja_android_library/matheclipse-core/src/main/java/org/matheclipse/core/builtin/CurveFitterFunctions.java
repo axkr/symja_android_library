@@ -20,9 +20,17 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.math.MathException;
 
 public class CurveFitterFunctions {
-	static {
-		F.FindFit.setEvaluator(new FindFit());
-		F.Fit.setEvaluator(new Fit());
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
+
+		private static void init() {
+			F.FindFit.setEvaluator(new FindFit());
+			F.Fit.setEvaluator(new Fit());
+		}
 	}
 
 	/**
@@ -303,10 +311,8 @@ public class CurveFitterFunctions {
 		}
 	}
 
-	private final static CurveFitterFunctions CONST = new CurveFitterFunctions();
-
-	public static CurveFitterFunctions initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	private CurveFitterFunctions() {

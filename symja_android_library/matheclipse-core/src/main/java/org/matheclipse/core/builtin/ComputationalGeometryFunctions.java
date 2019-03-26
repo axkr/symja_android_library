@@ -8,8 +8,16 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class ComputationalGeometryFunctions {
-	static {
-		F.ConvexHullMesh.setEvaluator(new ConvexHullMesh());
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
+
+		private static void init() {
+			F.ConvexHullMesh.setEvaluator(new ConvexHullMesh());
+		}
 	}
 
 	private static class ConvexHullMesh extends AbstractEvaluator {
@@ -23,10 +31,8 @@ public class ComputationalGeometryFunctions {
 		}
 	}
 
-	private final static ComputationalGeometryFunctions CONST = new ComputationalGeometryFunctions();
-
-	public static ComputationalGeometryFunctions initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	private ComputationalGeometryFunctions() {

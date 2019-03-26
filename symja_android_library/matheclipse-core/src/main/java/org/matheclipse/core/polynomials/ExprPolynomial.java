@@ -2361,7 +2361,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 					exp = expArray.getVal(0);
 					exprs[(int) exp] = val.get(expArray);
 				}
-				return F.ast(exprs, F.List);
+				return F.function(F.List, exprs);
 			} else {
 				long lastDegree = 0L;
 				IASTAppendable result = F.ListAlloc(val.size());

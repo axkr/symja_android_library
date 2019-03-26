@@ -17,11 +17,19 @@ import ch.ethz.idsc.tensor.qty.IUnit;
 import ch.ethz.idsc.tensor.qty.UnitSystem;
 
 public class QuantityFunctions {
-	static {
-		if (ToggleFeature.QUANTITY) {
-			F.Quantity.setEvaluator(new Quantity());
-			F.QuantityMagnitude.setEvaluator(new QuantityMagnitude());
-			F.UnitConvert.setEvaluator(new UnitConvert());
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
+
+		private static void init() {
+			if (ToggleFeature.QUANTITY) {
+				F.Quantity.setEvaluator(new Quantity());
+				F.QuantityMagnitude.setEvaluator(new QuantityMagnitude());
+				F.UnitConvert.setEvaluator(new UnitConvert());
+			}
 		}
 	}
 
@@ -170,7 +178,7 @@ public class QuantityFunctions {
 				engine.printMessage("UnitConvert: " + e.getMessage());
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
-				} 
+				}
 			}
 
 			return F.NIL;
@@ -178,10 +186,8 @@ public class QuantityFunctions {
 
 	}
 
-	private final static QuantityFunctions CONST = new QuantityFunctions();
-
-	public static QuantityFunctions initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	private QuantityFunctions() {

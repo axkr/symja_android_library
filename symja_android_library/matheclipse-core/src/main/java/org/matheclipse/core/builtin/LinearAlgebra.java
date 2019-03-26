@@ -78,57 +78,65 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public final class LinearAlgebra {
 
-	static {
-		F.ArrayDepth.setEvaluator(new ArrayDepth());
-		F.BrayCurtisDistance.setEvaluator(new BrayCurtisDistance());
-		F.CanberraDistance.setEvaluator(new CanberraDistance());
-		F.CharacteristicPolynomial.setEvaluator(new CharacteristicPolynomial());
-		F.ChessboardDistance.setEvaluator(new ChessboardDistance());
-		F.CholeskyDecomposition.setEvaluator(new CholeskyDecomposition());
-		F.ConjugateTranspose.setEvaluator(new ConjugateTranspose());
-		F.CosineDistance.setEvaluator(new CosineDistance());
-		F.Cross.setEvaluator(new Cross());
-		F.DesignMatrix.setEvaluator(new DesignMatrix());
-		F.Det.setEvaluator(new Det());
-		F.Diagonal.setEvaluator(new Diagonal());
-		F.DiagonalMatrix.setEvaluator(new DiagonalMatrix());
-		F.Dimensions.setEvaluator(new Dimensions());
-		F.Dot.setEvaluator(new Dot());
-		F.Eigenvalues.setEvaluator(new Eigenvalues());
-		F.Eigenvectors.setEvaluator(new Eigenvectors());
-		F.EuclideanDistance.setEvaluator(new EuclideanDistance());
-		F.FourierMatrix.setEvaluator(new FourierMatrix());
-		F.HilbertMatrix.setEvaluator(new HilbertMatrix());
-		F.IdentityMatrix.setEvaluator(new IdentityMatrix());
-		F.Inner.setEvaluator(new Inner());
-		F.Inverse.setEvaluator(new Inverse());
-		F.JacobiMatrix.setEvaluator(new JacobiMatrix());
-		F.LeastSquares.setEvaluator(new LeastSquares());
-		F.LinearSolve.setEvaluator(new LinearSolve());
-		F.LowerTriangularize.setEvaluator(new LowerTriangularize());
-		F.LUDecomposition.setEvaluator(new LUDecomposition());
-		F.ManhattanDistance.setEvaluator(new ManhattanDistance());
-		F.MatrixMinimalPolynomial.setEvaluator(new MatrixMinimalPolynomial());
-		F.MatrixExp.setEvaluator(new MatrixExp());
-		F.MatrixPower.setEvaluator(new MatrixPower());
-		F.MatrixRank.setEvaluator(new MatrixRank());
-		F.Norm.setEvaluator(new Norm());
-		F.Normalize.setEvaluator(new Normalize());
-		F.NullSpace.setEvaluator(new NullSpace());
-		F.Orthogonalize.setEvaluator(new Orthogonalize());
-		F.PseudoInverse.setEvaluator(PseudoInverse.CONST);
-		F.Projection.setEvaluator(new Projection());
-		F.QRDecomposition.setEvaluator(new QRDecomposition());
-		F.RowReduce.setEvaluator(new RowReduce());
-		F.SingularValueDecomposition.setEvaluator(new SingularValueDecomposition());
-		F.SquaredEuclideanDistance.setEvaluator(new SquaredEuclideanDistance());
-		F.ToeplitzMatrix.setEvaluator(new ToeplitzMatrix());
-		F.Tr.setEvaluator(new Tr());
-		F.Transpose.setEvaluator(new Transpose());
-		F.UpperTriangularize.setEvaluator(new UpperTriangularize());
-		F.UnitVector.setEvaluator(new UnitVector());
-		F.VandermondeMatrix.setEvaluator(new VandermondeMatrix());
-		F.VectorAngle.setEvaluator(new VectorAngle());
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
+
+		private static void init() {
+			F.ArrayDepth.setEvaluator(new ArrayDepth());
+			F.BrayCurtisDistance.setEvaluator(new BrayCurtisDistance());
+			F.CanberraDistance.setEvaluator(new CanberraDistance());
+			F.CharacteristicPolynomial.setEvaluator(new CharacteristicPolynomial());
+			F.ChessboardDistance.setEvaluator(new ChessboardDistance());
+			F.CholeskyDecomposition.setEvaluator(new CholeskyDecomposition());
+			F.ConjugateTranspose.setEvaluator(new ConjugateTranspose());
+			F.CosineDistance.setEvaluator(new CosineDistance());
+			F.Cross.setEvaluator(new Cross());
+			F.DesignMatrix.setEvaluator(new DesignMatrix());
+			F.Det.setEvaluator(new Det());
+			F.Diagonal.setEvaluator(new Diagonal());
+			F.DiagonalMatrix.setEvaluator(new DiagonalMatrix());
+			F.Dimensions.setEvaluator(new Dimensions());
+			F.Dot.setEvaluator(new Dot());
+			F.Eigenvalues.setEvaluator(new Eigenvalues());
+			F.Eigenvectors.setEvaluator(new Eigenvectors());
+			F.EuclideanDistance.setEvaluator(new EuclideanDistance());
+			F.FourierMatrix.setEvaluator(new FourierMatrix());
+			F.HilbertMatrix.setEvaluator(new HilbertMatrix());
+			F.IdentityMatrix.setEvaluator(new IdentityMatrix());
+			F.Inner.setEvaluator(new Inner());
+			F.Inverse.setEvaluator(new Inverse());
+			F.JacobiMatrix.setEvaluator(new JacobiMatrix());
+			F.LeastSquares.setEvaluator(new LeastSquares());
+			F.LinearSolve.setEvaluator(new LinearSolve());
+			F.LowerTriangularize.setEvaluator(new LowerTriangularize());
+			F.LUDecomposition.setEvaluator(new LUDecomposition());
+			F.ManhattanDistance.setEvaluator(new ManhattanDistance());
+			F.MatrixMinimalPolynomial.setEvaluator(new MatrixMinimalPolynomial());
+			F.MatrixExp.setEvaluator(new MatrixExp());
+			F.MatrixPower.setEvaluator(new MatrixPower());
+			F.MatrixRank.setEvaluator(new MatrixRank());
+			F.Norm.setEvaluator(new Norm());
+			F.Normalize.setEvaluator(new Normalize());
+			F.NullSpace.setEvaluator(new NullSpace());
+			F.Orthogonalize.setEvaluator(new Orthogonalize());
+			F.PseudoInverse.setEvaluator(PseudoInverse.CONST);
+			F.Projection.setEvaluator(new Projection());
+			F.QRDecomposition.setEvaluator(new QRDecomposition());
+			F.RowReduce.setEvaluator(new RowReduce());
+			F.SingularValueDecomposition.setEvaluator(new SingularValueDecomposition());
+			F.SquaredEuclideanDistance.setEvaluator(new SquaredEuclideanDistance());
+			F.ToeplitzMatrix.setEvaluator(new ToeplitzMatrix());
+			F.Tr.setEvaluator(new Tr());
+			F.Transpose.setEvaluator(new Transpose());
+			F.UpperTriangularize.setEvaluator(new UpperTriangularize());
+			F.UnitVector.setEvaluator(new UnitVector());
+			F.VandermondeMatrix.setEvaluator(new VandermondeMatrix());
+			F.VectorAngle.setEvaluator(new VectorAngle());
+		}
 	}
 
 	/**
@@ -3606,8 +3614,6 @@ public final class LinearAlgebra {
 
 	}
 
-	private final static LinearAlgebra CONST = new LinearAlgebra();
-
 	/**
 	 * <p>
 	 * Use cramer's rule to solve linear equations represented by a <code>2 x 3</code> augmented matrix which represents
@@ -3782,8 +3788,8 @@ public final class LinearAlgebra {
 		return dims;
 	}
 
-	public static LinearAlgebra initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	/**

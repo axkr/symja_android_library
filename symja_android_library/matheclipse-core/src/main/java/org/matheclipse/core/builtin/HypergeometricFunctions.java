@@ -27,20 +27,28 @@ import org.matheclipse.core.reflection.system.rules.Hypergeometric0F1Rules;
 import org.matheclipse.core.reflection.system.rules.Hypergeometric2F1Rules;
 
 public class HypergeometricFunctions {
-	static {
-		F.CosIntegral.setEvaluator(new CosIntegral());
-		F.CoshIntegral.setEvaluator(new CoshIntegral());
-		F.ExpIntegralE.setEvaluator(new ExpIntegralE());
-		F.ExpIntegralEi.setEvaluator(new ExpIntegralEi());
-		F.FresnelC.setEvaluator(new FresnelC());
-		F.FresnelS.setEvaluator(new FresnelS());
-		F.GegenbauerC.setEvaluator(new GegenbauerC());
-		F.Hypergeometric0F1.setEvaluator(new Hypergeometric0F1());
-		F.Hypergeometric1F1.setEvaluator(new Hypergeometric1F1());
-		F.Hypergeometric2F1.setEvaluator(new Hypergeometric2F1());
-		F.LogIntegral.setEvaluator(new LogIntegral());
-		F.SinIntegral.setEvaluator(new SinIntegral());
-		F.SinhIntegral.setEvaluator(new SinhIntegral());
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
+
+		private static void init() {
+			F.CosIntegral.setEvaluator(new CosIntegral());
+			F.CoshIntegral.setEvaluator(new CoshIntegral());
+			F.ExpIntegralE.setEvaluator(new ExpIntegralE());
+			F.ExpIntegralEi.setEvaluator(new ExpIntegralEi());
+			F.FresnelC.setEvaluator(new FresnelC());
+			F.FresnelS.setEvaluator(new FresnelS());
+			F.GegenbauerC.setEvaluator(new GegenbauerC());
+			F.Hypergeometric0F1.setEvaluator(new Hypergeometric0F1());
+			F.Hypergeometric1F1.setEvaluator(new Hypergeometric1F1());
+			F.Hypergeometric2F1.setEvaluator(new Hypergeometric2F1());
+			F.LogIntegral.setEvaluator(new LogIntegral());
+			F.SinIntegral.setEvaluator(new SinIntegral());
+			F.SinhIntegral.setEvaluator(new SinhIntegral());
+		}
 	}
 
 	private static class CosIntegral extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperator {
@@ -574,8 +582,8 @@ public class HypergeometricFunctions {
 			if (z.isZero()) {
 				return F.C1;
 			}
-			if (a.compareTo(b)>0) {
-				IASTMutable newAST=ast.copy();
+			if (a.compareTo(b) > 0) {
+				IASTMutable newAST = ast.copy();
 				newAST.set(1, b);
 				newAST.set(2, a);
 				return newAST;
@@ -755,10 +763,8 @@ public class HypergeometricFunctions {
 		}
 	}
 
-	private final static HypergeometricFunctions CONST = new HypergeometricFunctions();
-
-	public static HypergeometricFunctions initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	private HypergeometricFunctions() {

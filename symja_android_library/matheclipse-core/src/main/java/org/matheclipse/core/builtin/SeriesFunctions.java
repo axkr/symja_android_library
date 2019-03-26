@@ -34,15 +34,23 @@ import org.matheclipse.core.reflection.system.rules.LimitRules;
 import org.matheclipse.core.reflection.system.rules.SeriesCoefficientRules;
 
 public class SeriesFunctions {
-	static {
-		F.Limit.setEvaluator(new Limit());
-		if (ToggleFeature.SERIES) {
-			F.ComposeSeries.setEvaluator(new ComposeSeries());
-			F.InverseSeries.setEvaluator(new InverseSeries());
-			F.Normal.setEvaluator(new Normal());
-			F.Series.setEvaluator(new Series());
-			F.SeriesCoefficient.setEvaluator(new SeriesCoefficient());
-			F.SeriesData.setEvaluator(new SeriesData());
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
+
+		private static void init() {
+			F.Limit.setEvaluator(new Limit());
+			if (ToggleFeature.SERIES) {
+				F.ComposeSeries.setEvaluator(new ComposeSeries());
+				F.InverseSeries.setEvaluator(new InverseSeries());
+				F.Normal.setEvaluator(new Normal());
+				F.Series.setEvaluator(new Series());
+				F.SeriesCoefficient.setEvaluator(new SeriesCoefficient());
+				F.SeriesData.setEvaluator(new SeriesData());
+			}
 		}
 	}
 
@@ -1484,10 +1492,8 @@ public class SeriesFunctions {
 		}
 	}
 
-	private final static SeriesFunctions CONST = new SeriesFunctions();
-
-	public static SeriesFunctions initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	private SeriesFunctions() {

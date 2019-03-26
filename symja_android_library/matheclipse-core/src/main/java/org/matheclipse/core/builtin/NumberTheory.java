@@ -3880,62 +3880,67 @@ public final class NumberTheory {
 		}
 	}
 
-	static {
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
 
-		F.BellB.setEvaluator(new BellB());
-		F.BernoulliB.setEvaluator(new BernoulliB());
-		F.Binomial.setEvaluator(new Binomial());
-		F.CarmichaelLambda.setEvaluator(new CarmichaelLambda());
-		F.CatalanNumber.setEvaluator(new CatalanNumber());
-		F.ChineseRemainder.setEvaluator(new ChineseRemainder());
-		F.Convergents.setEvaluator(new Convergents());
-		F.ContinuedFraction.setEvaluator(new ContinuedFraction());
-		F.CoprimeQ.setEvaluator(new CoprimeQ());
-		F.CubeRoot.setEvaluator(new CubeRoot());
-		F.DiracDelta.setEvaluator(new DiracDelta());
-		F.DiscreteDelta.setEvaluator(new DiscreteDelta());
-		F.Divisible.setEvaluator(new Divisible());
-		F.Divisors.setEvaluator(new Divisors());
-		F.DivisorSigma.setEvaluator(new DivisorSigma());
-		F.EulerE.setEvaluator(new EulerE());
-		F.EulerPhi.setEvaluator(new EulerPhi());
-		F.ExtendedGCD.setEvaluator(new ExtendedGCD());
-		F.Factorial.setEvaluator(new Factorial());
-		F.Factorial2.setEvaluator(new Factorial2());
-		F.FactorInteger.setEvaluator(new FactorInteger());
-		F.Fibonacci.setEvaluator(new Fibonacci());
-		F.FrobeniusNumber.setEvaluator(new FrobeniusNumber());
-		F.FromContinuedFraction.setEvaluator(new FromContinuedFraction());
-		F.JacobiSymbol.setEvaluator(new JacobiSymbol());
-		F.KroneckerDelta.setEvaluator(new KroneckerDelta());
-		F.LinearRecurrence.setEvaluator(new LinearRecurrence());
-		F.LiouvilleLambda.setEvaluator(new LiouvilleLambda());
-		F.LucasL.setEvaluator(new LucasL());
-		F.MangoldtLambda.setEvaluator(new MangoldtLambda());
-		F.MersennePrimeExponent.setEvaluator(new MersennePrimeExponent());
-		F.MersennePrimeExponentQ.setEvaluator(new MersennePrimeExponentQ());
-		F.MoebiusMu.setEvaluator(new MoebiusMu());
-		F.Multinomial.setEvaluator(new Multinomial());
-		F.MultiplicativeOrder.setEvaluator(new MultiplicativeOrder());
-		F.NextPrime.setEvaluator(new NextPrime());
-		F.PartitionsP.setEvaluator(new PartitionsP());
-		F.PartitionsQ.setEvaluator(new PartitionsQ());
-		F.PerfectNumber.setEvaluator(new PerfectNumber());
-		F.PerfectNumberQ.setEvaluator(new PerfectNumberQ());
-		F.Prime.setEvaluator(new Prime());
-		F.PrimePi.setEvaluator(new PrimePi());
-		F.PrimeOmega.setEvaluator(new PrimeOmega());
-		F.PrimePowerQ.setEvaluator(new PrimePowerQ());
-		F.PrimitiveRoot.setEvaluator(new PrimitiveRoot());
-		F.PrimitiveRootList.setEvaluator(new PrimitiveRootList());
-		F.SquareFreeQ.setEvaluator(new SquareFreeQ());
-		F.StirlingS1.setEvaluator(new StirlingS1());
-		F.StirlingS2.setEvaluator(new StirlingS2());
-		F.Subfactorial.setEvaluator(new Subfactorial());
-		F.Unitize.setEvaluator(new Unitize());
+		private static void init() {
+			F.BellB.setEvaluator(new BellB());
+			F.BernoulliB.setEvaluator(new BernoulliB());
+			F.Binomial.setEvaluator(new Binomial());
+			F.CarmichaelLambda.setEvaluator(new CarmichaelLambda());
+			F.CatalanNumber.setEvaluator(new CatalanNumber());
+			F.ChineseRemainder.setEvaluator(new ChineseRemainder());
+			F.Convergents.setEvaluator(new Convergents());
+			F.ContinuedFraction.setEvaluator(new ContinuedFraction());
+			F.CoprimeQ.setEvaluator(new CoprimeQ());
+			F.CubeRoot.setEvaluator(new CubeRoot());
+			F.DiracDelta.setEvaluator(new DiracDelta());
+			F.DiscreteDelta.setEvaluator(new DiscreteDelta());
+			F.Divisible.setEvaluator(new Divisible());
+			F.Divisors.setEvaluator(new Divisors());
+			F.DivisorSigma.setEvaluator(new DivisorSigma());
+			F.EulerE.setEvaluator(new EulerE());
+			F.EulerPhi.setEvaluator(new EulerPhi());
+			F.ExtendedGCD.setEvaluator(new ExtendedGCD());
+			F.Factorial.setEvaluator(new Factorial());
+			F.Factorial2.setEvaluator(new Factorial2());
+			F.FactorInteger.setEvaluator(new FactorInteger());
+			F.Fibonacci.setEvaluator(new Fibonacci());
+			F.FrobeniusNumber.setEvaluator(new FrobeniusNumber());
+			F.FromContinuedFraction.setEvaluator(new FromContinuedFraction());
+			F.JacobiSymbol.setEvaluator(new JacobiSymbol());
+			F.KroneckerDelta.setEvaluator(new KroneckerDelta());
+			F.LinearRecurrence.setEvaluator(new LinearRecurrence());
+			F.LiouvilleLambda.setEvaluator(new LiouvilleLambda());
+			F.LucasL.setEvaluator(new LucasL());
+			F.MangoldtLambda.setEvaluator(new MangoldtLambda());
+			F.MersennePrimeExponent.setEvaluator(new MersennePrimeExponent());
+			F.MersennePrimeExponentQ.setEvaluator(new MersennePrimeExponentQ());
+			F.MoebiusMu.setEvaluator(new MoebiusMu());
+			F.Multinomial.setEvaluator(new Multinomial());
+			F.MultiplicativeOrder.setEvaluator(new MultiplicativeOrder());
+			F.NextPrime.setEvaluator(new NextPrime());
+			F.PartitionsP.setEvaluator(new PartitionsP());
+			F.PartitionsQ.setEvaluator(new PartitionsQ());
+			F.PerfectNumber.setEvaluator(new PerfectNumber());
+			F.PerfectNumberQ.setEvaluator(new PerfectNumberQ());
+			F.Prime.setEvaluator(new Prime());
+			F.PrimePi.setEvaluator(new PrimePi());
+			F.PrimeOmega.setEvaluator(new PrimeOmega());
+			F.PrimePowerQ.setEvaluator(new PrimePowerQ());
+			F.PrimitiveRoot.setEvaluator(new PrimitiveRoot());
+			F.PrimitiveRootList.setEvaluator(new PrimitiveRootList());
+			F.SquareFreeQ.setEvaluator(new SquareFreeQ());
+			F.StirlingS1.setEvaluator(new StirlingS1());
+			F.StirlingS2.setEvaluator(new StirlingS2());
+			F.Subfactorial.setEvaluator(new Subfactorial());
+			F.Unitize.setEvaluator(new Unitize());
+		}
 	}
-
-	private final static NumberTheory CONST = new NumberTheory();
 
 	public static IInteger factorial(final IInteger x) {
 		return x.factorial();
@@ -4020,8 +4025,8 @@ public final class NumberTheory {
 		return F.ZZ(result);
 	}
 
-	public static NumberTheory initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	/**

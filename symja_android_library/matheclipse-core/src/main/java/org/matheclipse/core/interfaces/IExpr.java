@@ -237,11 +237,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return an IExpr instance with the current expression as head(), and leaves as leaves().
 	 */
 	default IExpr apply(IExpr... leaves) {
-		return F.ast(leaves, head());
-		// for (int i = 0; i < leaves.length; i++) {
-		// ast.append(leaves[i]);
-		// }
-		// return ast;
+		return F.ast(leaves, head()); 
 	}
 
 	/**

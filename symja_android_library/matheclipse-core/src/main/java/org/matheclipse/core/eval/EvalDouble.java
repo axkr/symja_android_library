@@ -6,7 +6,6 @@ import org.matheclipse.parser.client.eval.DoubleEvaluator;
 
 public class EvalDouble extends DoubleEvaluator {
 	static {
-		// initialize the global available symbols
 		F.initSymbols();
 	}
 

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -54,6 +55,7 @@ import org.matheclipse.core.builtin.TensorFunctions;
 import org.matheclipse.core.builtin.VectorAnalysisFunctions;
 import org.matheclipse.core.builtin.WXFFunctions;
 import org.matheclipse.core.builtin.WindowFunctions;
+import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -81,8 +83,11 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.parser.ExprParserFactory;
 import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.parser.client.Characters;
+import org.matheclipse.parser.client.operator.ASTNodeFactory;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -3641,69 +3646,30 @@ public class F {
 	 */
 	static IExpr[] GLOBAL_IDS = null;
 
-	public final static java.util.concurrent.CountDownLatch COUNT_DOWN_LATCH = new java.util.concurrent.CountDownLatch(
-			1);
+	private final static CountDownLatch COUNT_DOWN_LATCH = new CountDownLatch(1);
 
 	/**
-	 * Causes the current thread to wait until the INIT_THREAD has initialized the Integrate() rules.
+	 * Causes the current thread to wait until the main initialization has finished.
 	 *
 	 */
-	public static final void await() throws InterruptedException {
+	public final static void await() throws InterruptedException {
 		COUNT_DOWN_LATCH.await();
 	}
 
-	/**
-	 * @deprecated use {@link #await()} instead
-	 */
-	public static final void join() {
-		try {
-			COUNT_DOWN_LATCH.await();
-		} catch (InterruptedException e) {
-		}
-	}
-
 	static {
-		Thread INIT_THREAD = null;
 		try {
+			// long start = System.currentTimeMillis();
+			// System.out.println("Start");
+			Characters.initialize();
+			AST2Expr.initialize();
+			ASTNodeFactory.initialize();
+			ExprParserFactory.initialize();
+
 			PreemptStatus.setNotAllow();
 			ComputerThreads.NO_THREADS = Config.JAS_NO_THREADS;
-			Runnable runnable = new org.matheclipse.core.reflection.system.Integrate.IntegrateInitializer();
-			// {
-			// @Override
-			// public void run() {
-			// // long start = System.currentTimeMillis();
-			// final EvalEngine engine = EvalEngine.get();
-			// ContextPath path = engine.getContextPath();
-			// try {
-			// engine.getContextPath().add(org.matheclipse.core.expression.Context.RUBI);
-			// org.matheclipse.core.reflection.system.Integrate.getUtilityFunctionsRuleAST();
-			// // if (ruleList != null) {
-			// // engine.addRules(ruleList);
-			// // }
-			// org.matheclipse.core.reflection.system.Integrate.getRuleASTStatic();
-			// // if (ruleList != null) {
-			// // engine.addRules(ruleList);
-			// // }
-			// } finally {
-			// engine.setContextPath(path);
-			// }
-			// Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
-			// engine.setPackageMode(false);
-			// // long stop = System.currentTimeMillis();
-			// // System.out.println("Milliseconds: " + (stop - start));
-			// COUNT_DOWN_LATCH.countDown();
-			// }
-			// };
-
-			if (Config.THREAD_FACTORY != null) {
-				INIT_THREAD = Config.THREAD_FACTORY.newThread(runnable);
-			} else {
-				INIT_THREAD = new Thread(runnable);
-			}
 
 			ApfloatContext ctx = ApfloatContext.getContext();
 			ctx.setNumberOfProcessors(1);
-			// long start = System.currentTimeMillis();
 
 			Slot.setAttributes(ISymbol.NHOLDALL);
 			Slot.setEvaluator(ICoreFunctionEvaluator.ARGS_EVALUATOR);
@@ -3915,19 +3881,10 @@ public class F {
 			WindowFunctions.initialize();
 			ComputationalGeometryFunctions.initialize();
 
-			// initialize only the utility function rules for Integrate
-			// final EvalEngine engine = EvalEngine.get();
-			// IAST ruleList =
-			// org.matheclipse.core.reflection.system.Integrate.getUtilityFunctionsRuleAST();
-			// if (ruleList != null) {
-			// engine.addRules(ruleList);
-			// }
-			if (Config.JAS_NO_THREADS) {
-				// explicitly invoke run() because no threads should be spawned
-				INIT_THREAD.run();
-			} else {
-				INIT_THREAD.start();
-			}
+			F.Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
+			COUNT_DOWN_LATCH.countDown();
+			// long stop = System.currentTimeMillis();
+			// System.out.println("Milliseconds: " + (stop - start));
 		} catch (Throwable th) {
 			th.printStackTrace();
 		}
@@ -4007,19 +3964,6 @@ public class F {
 	 * @return
 	 */
 	public final static IAST $(final IExpr head, final IExpr... a) {
-		return ast(a, head);
-	}
-
-	/**
-	 * Create a new abstract syntax tree (AST).
-	 * 
-	 * @param head
-	 *            the header symbol of the function. If the ast represents a function like
-	 *            <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
-	 * @param a
-	 * @return
-	 */
-	public final static IAST function(final ISymbol head, final IExpr... a) {
 		return ast(a, head);
 	}
 
@@ -4478,7 +4422,7 @@ public class F {
 	}
 
 	public static IAST Alternatives(final IExpr... a) {
-		return ast(a, Alternatives);
+		return function(Alternatives, a);
 	}
 
 	public static IExpr and(IExpr a, Integer i) {
@@ -4502,7 +4446,7 @@ public class F {
 	}
 
 	public static IAST And(final IExpr... a) {
-		return ast(a, And);
+		return function(And, a);
 	}
 
 	public static IAST AngleVector(final IExpr a0) {
@@ -4526,7 +4470,7 @@ public class F {
 	}
 
 	public static IAST AppellF1(final IExpr... a) {
-		return ast(a, AppellF1);
+		return function(AppellF1, a);
 	}
 
 	public static IAST Append(final IExpr a0, final IExpr a1) {
@@ -5119,7 +5063,7 @@ public class F {
 	}
 
 	public static IAST Clear(final IExpr... a) {
-		return ast(a, Clear);
+		return function(Clear, a);
 	}
 
 	public static IAST ClearAttributes(final IExpr a0, final IExpr a1) {
@@ -5361,7 +5305,29 @@ public class F {
 	}
 
 	public static IAST CompoundExpression(final IExpr... a) {
-		return ast(a, CompoundExpression);
+		return function(CompoundExpression, a);
+	}
+
+	/**
+	 * Create a new abstract syntax tree (AST).
+	 * 
+	 * @param head
+	 *            the header symbol of the function. If the ast represents a function like
+	 *            <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
+	 * @param a
+	 * @return
+	 */
+	public static IAST function(IExpr head, final IExpr... a) {
+		final int size = a.length;
+		switch (size) {
+		case 1:
+			return unaryAST1(head, a[0]);
+		case 2:
+			return binaryAST2(head, a[0], a[1]);
+		case 3:
+			return ternaryAST3(head, a[0], a[1], a[2]);
+		}
+		return new AST(head, a);
 	}
 
 	public static IAST Condition(final IExpr a0, final IExpr a1) {
@@ -5457,7 +5423,7 @@ public class F {
 	}
 
 	public static IAST DeleteCases(final IExpr... a) {
-		return ast(a, DeleteCases);
+		return function(DeleteCases, a);
 	}
 
 	public static IAST Denominator(final IExpr a0) {
@@ -5470,8 +5436,8 @@ public class F {
 		return unaryAST1(Depth, a0);
 	}
 
-	public static IASTAppendable Derivative(final IExpr... a) {
-		return ast(a, Derivative);
+	public static IAST Derivative(final IExpr... a) {
+		return function(Derivative, a);
 	}
 
 	public static IAST DesignMatrix(final IExpr a0, final IExpr a1, final IExpr a2) {
@@ -5639,8 +5605,8 @@ public class F {
 		return binaryAST2(Do, a0, a1);
 	}
 
-	public static IASTAppendable Dot(final IExpr... a) {
-		return ast(a, Dot);
+	public static IAST Dot(final IExpr... a) {
+		return function(Dot, a);
 	}
 
 	public static IAST Dot(final IExpr a0, final IExpr a1) {
@@ -5683,8 +5649,8 @@ public class F {
 		return ternaryAST3(EllipticPi, a0, a1, a2);
 	}
 
-	public static IASTAppendable Equal(final IExpr... a) {
-		return ast(a, Equal);
+	public static IAST Equal(final IExpr... a) {
+		return function(Equal, a);
 	}
 
 	public static IAST Equal(final IExpr a0, final IExpr a1) {
@@ -6416,8 +6382,8 @@ public class F {
 		return unaryAST1(Increment, a);
 	}
 
-	public static IASTAppendable Inequality(final IExpr... a) {
-		return ast(a, Inequality);
+	public static IAST Inequality(final IExpr... a) {
+		return function(Inequality, a);
 	}
 
 	/**
@@ -7096,7 +7062,7 @@ public class F {
 		for (int i = 0; i < numbers.length; i++) {
 			a[i] = num(numbers[i]);
 		}
-		return ast(a, List);
+		return function(List, a);
 	}
 
 	/**
@@ -7163,7 +7129,7 @@ public class F {
 		for (int i = 0; i < numbers.length; i++) {
 			a[i] = integer(numbers[i]);
 		}
-		return ast(a, List);
+		return function(List, a);
 	}
 
 	public static IAST ListConvolve(final IExpr a0, final IExpr a1) {
@@ -7457,7 +7423,7 @@ public class F {
 	}
 
 	public static IAST Multinomial(final IExpr... a) {
-		return ast(a, Multinomial);
+		return function(Multinomial, a);
 	}
 
 	/**
@@ -7728,7 +7694,7 @@ public class F {
 	}
 
 	public static IAST Or(final IExpr... a) {
-		return ast(a, Or);
+		return function(Or, a);
 	}
 
 	public static IAST Order(final IExpr a0, final IExpr a1) {
@@ -7823,7 +7789,7 @@ public class F {
 	}
 
 	public static IAST Plus(final IExpr... a) {
-		return ast(a, Plus);
+		return function(Plus, a);
 	}
 
 	public static IAST Plus(final IExpr a0, final IExpr a1) {
@@ -7989,7 +7955,7 @@ public class F {
 	}
 
 	public static IAST Print(final IExpr... a) {
-		return ast(a, Print);
+		return function(Print, a);
 	}
 
 	public static IAST Product(final IExpr a0, final IExpr a1) {
@@ -8455,11 +8421,11 @@ public class F {
 	}
 
 	public static IAST Sequence(final IExpr... a) {
-		return ast(a, Sequence);
+		return function(Sequence, a);
 	}
 
 	public static IAST Series(final IExpr... a) {
-		return ast(a, Series);
+		return function(Series, a);
 	}
 
 	public static IAST SeriesCoefficient(final IExpr a0, final IExpr a1) {
@@ -8467,7 +8433,7 @@ public class F {
 	}
 
 	public static IAST SeriesData(final IExpr... a) {
-		return ast(a, SeriesData);
+		return function(SeriesData, a);
 	}
 
 	public static IAST Set(final IExpr a0, final IExpr a1) {
@@ -8548,7 +8514,7 @@ public class F {
 	}
 
 	public static IAST Span(final IExpr... a) {
-		return ast(a, Span);
+		return function(Span, a);
 	}
 
 	/**
@@ -8800,7 +8766,7 @@ public class F {
 	}
 
 	public static IAST Switch(final IExpr... a) {
-		return ast(a, Switch);
+		return function(Switch, a);
 	}
 
 	public static IAST Table(final IExpr a0, final IExpr a1) {
@@ -8900,7 +8866,7 @@ public class F {
 	}
 
 	public static IAST Times(final IExpr... a) {
-		return ast(a, Times);
+		return function(Times, a);
 	}
 
 	public static IASTMutable Times(final IExpr a0, final IExpr a1) {

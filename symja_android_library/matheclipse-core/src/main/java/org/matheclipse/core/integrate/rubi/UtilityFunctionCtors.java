@@ -3,6 +3,7 @@ package org.matheclipse.core.integrate.rubi;
 import static org.matheclipse.core.expression.F.Integrate;
 import static org.matheclipse.core.expression.F.ast;
 import static org.matheclipse.core.expression.F.binaryAST2;
+import static org.matheclipse.core.expression.F.function;
 import static org.matheclipse.core.expression.F.initFinalHiddenSymbol;
 import static org.matheclipse.core.expression.F.quaternary;
 import static org.matheclipse.core.expression.F.quinary;
@@ -53,8 +54,7 @@ public class UtilityFunctionCtors {
 
 	public static ISymbol Dist = org.matheclipse.core.expression.F.$rubi("Dist");
 	public static ISymbol IntegerPowerQ = org.matheclipse.core.expression.F.$rubi("IntegerPowerQ");
-	public static ISymbol FractionalPowerQ = org.matheclipse.core.expression.F
-			.$rubi("FractionalPowerQ");
+	public static ISymbol FractionalPowerQ = org.matheclipse.core.expression.F.$rubi("FractionalPowerQ");
 
 	public static ISymbol ReapList = org.matheclipse.core.expression.F.$rubi("ReapList");
 
@@ -191,7 +191,7 @@ public class UtilityFunctionCtors {
 	}
 
 	public static IAST IntBinomialQ(final IExpr... a) {
-		return ast(a, F.$rubi("IntBinomialQ"));
+		return function(F.$rubi("IntBinomialQ"), a);
 	}
 
 	public static IAST IntHide(final IExpr a0, final IExpr a1) {
@@ -199,11 +199,11 @@ public class UtilityFunctionCtors {
 	}
 
 	public static IAST IntLinearQ(final IExpr... a) {
-		return ast(a, F.$rubi("IntLinearQ"));
+		return function(F.$rubi("IntLinearQ"), a);
 	}
 
 	public static IAST IntQuadraticQ(final IExpr... a) {
-		return ast(a, F.$rubi("IntQuadraticQ"));
+		return function(F.$rubi("IntQuadraticQ"), a);
 	}
 
 	public static IAST Dist(final IExpr a0, final IExpr a1) {
@@ -582,11 +582,11 @@ public class UtilityFunctionCtors {
 	}
 
 	public static IAST FractionOrNegativeQ(final IExpr... a) {
-		return ast(a, F.$rubi("FractionOrNegativeQ"));
+		return function(F.$rubi("FractionOrNegativeQ"), a);
 	}
 
 	public static IAST FractionQ(final IExpr... a) {
-		return ast(a, FractionQ);
+		return function(FractionQ, a);
 	}
 
 	public static IAST FractionalPowerFreeQ(final IExpr a0) {
@@ -791,14 +791,6 @@ public class UtilityFunctionCtors {
 		return ternaryAST3(F.$rubi("GeQ"), a0, a1, a2);
 	}
 
-	public static IAST Gcd(final IExpr... a) {
-		return ast(a, F.$rubi("Gcd"));
-	}
-
-	public static IAST Gcd(final IExpr a0, final IExpr a1) {
-		return binaryAST2(F.$rubi("Gcd"), a0, a1);
-	}
-
 	public static IAST GeneralizedBinomialDegree(final IExpr a0, final IExpr a1) {
 		return binaryAST2(F.$rubi("GeneralizedBinomialDegree"), a0, a1);
 	}
@@ -936,7 +928,7 @@ public class UtilityFunctionCtors {
 	}
 
 	public static IAST IntegersQ(final IExpr... a) {
-		return ast(a, IntegersQ);
+		return function(IntegersQ, a);
 	}
 
 	public static IAST Integral(final IExpr a0, final IExpr a1) {
@@ -1136,7 +1128,7 @@ public class UtilityFunctionCtors {
 	}
 
 	public static IAST NegativeIntegerQ(final IExpr... a) {
-		return ast(a, F.$rubi("NegativeIntegerQ"));
+		return function(F.$rubi("NegativeIntegerQ"), a);
 	}
 
 	public static IAST NegativeOrZeroQ(final IExpr a0) {
@@ -1300,7 +1292,7 @@ public class UtilityFunctionCtors {
 	}
 
 	public static IAST OneQ(final IExpr... a) {
-		return ast(a, F.$rubi("OneQ"));
+		return function(F.$rubi("OneQ"), a);
 	}
 
 	public static IAST PerfectPowerTest(final IExpr a0, final IExpr a1) {
@@ -1380,7 +1372,7 @@ public class UtilityFunctionCtors {
 	}
 
 	public static IAST PositiveIntegerQ(final IExpr... a) {
-		return ast(a, F.$rubi("PositiveIntegerQ"));
+		return function(F.$rubi("PositiveIntegerQ"), a);
 	}
 
 	public static IAST PositiveOrZeroQ(final IExpr a0) {
@@ -1524,7 +1516,7 @@ public class UtilityFunctionCtors {
 	}
 
 	public static IAST RationalQ(final IExpr... a) {
-		return ast(a, F.$rubi("RationalQ"));
+		return function(F.$rubi("RationalQ"), a);
 	}
 
 	// public static IAST RealNumericQ(final IExpr a0) {
@@ -1934,7 +1926,7 @@ public class UtilityFunctionCtors {
 			if (temp.isAST(Dist) && temp.size() == 4) {
 				IAST dist = (IAST) temp;
 				temp = astTimes.removeAtCopy(i).oneIdentity1();
-				temp= F.eval(temp);
+				temp = F.eval(temp);
 				if (!temp.isMinusOne()) {
 					// System.out.println("w_*Dist[u_,v_,x_]");
 					// Dist[ temp *u,v,x]

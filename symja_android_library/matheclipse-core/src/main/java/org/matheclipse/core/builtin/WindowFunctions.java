@@ -9,19 +9,27 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public class WindowFunctions {
 
-	static {
-		F.BartlettWindow.setEvaluator(new WindowFunction(WindowFunctions::bartlettWindow));
-		F.BlackmanHarrisWindow.setEvaluator(new WindowFunction(WindowFunctions::blackmanHarrisWindow));
-		F.BlackmanNuttallWindow.setEvaluator(new WindowFunction(WindowFunctions::blackmanNuttallWindow));
-		F.BlackmanWindow.setEvaluator(new WindowFunction(WindowFunctions::blackmanWindow));
-		F.DirichletWindow.setEvaluator(new WindowFunction(WindowFunctions::dirichletWindow));
-		F.FlatTopWindow.setEvaluator(new WindowFunction(WindowFunctions::flatTopWindow));
-		F.GaussianWindow.setEvaluator(new WindowFunction(WindowFunctions::gaussianWindow));
-		F.HammingWindow.setEvaluator(new WindowFunction(WindowFunctions::hammingWindow));
-		F.HannWindow.setEvaluator(new WindowFunction(WindowFunctions::hannWindow));
-		F.NuttallWindow.setEvaluator(new WindowFunction(WindowFunctions::nuttallWindow));
-		F.ParzenWindow.setEvaluator(new WindowFunction(WindowFunctions::parzenWindow));
-		F.TukeyWindow.setEvaluator(new WindowFunction(WindowFunctions::tukeyWindow));
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
+
+		private static void init() {
+			F.BartlettWindow.setEvaluator(new WindowFunction(WindowFunctions::bartlettWindow));
+			F.BlackmanHarrisWindow.setEvaluator(new WindowFunction(WindowFunctions::blackmanHarrisWindow));
+			F.BlackmanNuttallWindow.setEvaluator(new WindowFunction(WindowFunctions::blackmanNuttallWindow));
+			F.BlackmanWindow.setEvaluator(new WindowFunction(WindowFunctions::blackmanWindow));
+			F.DirichletWindow.setEvaluator(new WindowFunction(WindowFunctions::dirichletWindow));
+			F.FlatTopWindow.setEvaluator(new WindowFunction(WindowFunctions::flatTopWindow));
+			F.GaussianWindow.setEvaluator(new WindowFunction(WindowFunctions::gaussianWindow));
+			F.HammingWindow.setEvaluator(new WindowFunction(WindowFunctions::hammingWindow));
+			F.HannWindow.setEvaluator(new WindowFunction(WindowFunctions::hannWindow));
+			F.NuttallWindow.setEvaluator(new WindowFunction(WindowFunctions::nuttallWindow));
+			F.ParzenWindow.setEvaluator(new WindowFunction(WindowFunctions::parzenWindow));
+			F.TukeyWindow.setEvaluator(new WindowFunction(WindowFunctions::tukeyWindow));
+		}
 	}
 
 	private static class WindowFunction extends AbstractTrigArg1 {
@@ -44,8 +52,6 @@ public class WindowFunctions {
 			super.setUp(newSymbol);
 		}
 	}
-
-	private final static WindowFunctions CONST = new WindowFunctions();
 
 	public static IExpr bartlettWindow(IExpr x) {
 		return
@@ -179,8 +185,8 @@ public class WindowFunctions {
 				F.C0); // $$;
 	}
 
-	public static WindowFunctions initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	private WindowFunctions() {

@@ -8,6 +8,7 @@ import static org.matheclipse.core.expression.F.a;
 import static org.matheclipse.core.expression.F.a_;
 import static org.matheclipse.core.expression.F.ast;
 import static org.matheclipse.core.expression.F.f;
+import static org.matheclipse.core.expression.F.function;
 import static org.matheclipse.core.expression.F.n;
 import static org.matheclipse.core.expression.F.x;
 import static org.matheclipse.core.expression.F.x_;

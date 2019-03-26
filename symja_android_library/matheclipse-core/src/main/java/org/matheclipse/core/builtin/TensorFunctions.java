@@ -19,15 +19,23 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class TensorFunctions {
-	static {
-		F.ArrayReshape.setEvaluator(new ArrayReshape());
-		F.Ordering.setEvaluator(new Ordering());
-		F.ListConvolve.setEvaluator(new ListConvolve());
-		F.ListCorrelate.setEvaluator(new ListCorrelate());
-		F.TensorDimensions.setEvaluator(new TensorDimensions());
-		F.TensorProduct.setEvaluator(new TensorProduct());
-		F.TensorRank.setEvaluator(new TensorRank());
-		F.TensorSymmetry.setEvaluator(new TensorSymmetry());
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
+
+		private static void init() {
+			F.ArrayReshape.setEvaluator(new ArrayReshape());
+			F.Ordering.setEvaluator(new Ordering());
+			F.ListConvolve.setEvaluator(new ListConvolve());
+			F.ListCorrelate.setEvaluator(new ListCorrelate());
+			F.TensorDimensions.setEvaluator(new TensorDimensions());
+			F.TensorProduct.setEvaluator(new TensorProduct());
+			F.TensorRank.setEvaluator(new TensorRank());
+			F.TensorSymmetry.setEvaluator(new TensorSymmetry());
+		}
 	}
 
 	/**
@@ -542,10 +550,8 @@ public class TensorFunctions {
 
 	}
 
-	private final static TensorFunctions CONST = new TensorFunctions();
-
-	public static TensorFunctions initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	private TensorFunctions() {

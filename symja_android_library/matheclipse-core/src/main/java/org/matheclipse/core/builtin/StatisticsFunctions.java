@@ -54,50 +54,58 @@ import org.uncommons.maths.random.PoissonGenerator;
 public class StatisticsFunctions {
 	private static final double NEXTDOWNONE = Math.nextDown(1.0);
 
-	static {
-		F.ArithmeticGeometricMean.setEvaluator(new ArithmeticGeometricMean());
-		F.CDF.setEvaluator(new CDF());
-		F.PDF.setEvaluator(new PDF());
-		F.BernoulliDistribution.setEvaluator(new BernoulliDistribution());
-		F.BinCounts.setEvaluator(new BinCounts());
-		F.BinomialDistribution.setEvaluator(new BinomialDistribution());
-		F.CentralMoment.setEvaluator(new CentralMoment());
-		F.ChiSquareDistribution.setEvaluator(new ChiSquareDistribution());
-		F.Correlation.setEvaluator(new Correlation());
-		F.Covariance.setEvaluator(new Covariance());
-		F.DiscreteUniformDistribution.setEvaluator(new DiscreteUniformDistribution());
-		F.ErlangDistribution.setEvaluator(new ErlangDistribution());
-		F.Expectation.setEvaluator(new Expectation());
-		F.ExponentialDistribution.setEvaluator(new ExponentialDistribution());
-		F.FiveNum.setEvaluator(new FiveNum());
-		F.FRatioDistribution.setEvaluator(new FRatioDistribution());
-		F.FrechetDistribution.setEvaluator(new FrechetDistribution());
-		F.GammaDistribution.setEvaluator(new GammaDistribution());
-		F.GeometricMean.setEvaluator(new GeometricMean());
-		F.GeometricDistribution.setEvaluator(new GeometricDistribution());
-		F.GumbelDistribution.setEvaluator(new GumbelDistribution());
-		F.HypergeometricDistribution.setEvaluator(new HypergeometricDistribution());
-		F.InverseCDF.setEvaluator(new InverseCDF());
-		F.KolmogorovSmirnovTest.setEvaluator(new KolmogorovSmirnovTest());
-		F.Kurtosis.setEvaluator(new Kurtosis());
-		F.LogNormalDistribution.setEvaluator(new LogNormalDistribution());
-		F.Mean.setEvaluator(new Mean());
-		F.MeanDeviation.setEvaluator(new MeanDeviation());
-		F.Median.setEvaluator(new Median());
-		F.NakagamiDistribution.setEvaluator(new NakagamiDistribution());
-		F.NormalDistribution.setEvaluator(new NormalDistribution());
-		F.PoissonDistribution.setEvaluator(new PoissonDistribution());
-		F.Probability.setEvaluator(new Probability());
-		F.Quantile.setEvaluator(new Quantile());
-		F.RandomVariate.setEvaluator(new RandomVariate());
-		F.Rescale.setEvaluator(new Rescale());
-		F.Skewness.setEvaluator(new Skewness());
-		F.StandardDeviation.setEvaluator(new StandardDeviation());
-		F.Standardize.setEvaluator(new Standardize());
-		F.StudentTDistribution.setEvaluator(new StudentTDistribution());
-		F.UniformDistribution.setEvaluator(new UniformDistribution());
-		F.Variance.setEvaluator(new Variance());
-		F.WeibullDistribution.setEvaluator(new WeibullDistribution());
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
+
+		private static void init() {
+			F.ArithmeticGeometricMean.setEvaluator(new ArithmeticGeometricMean());
+			F.CDF.setEvaluator(new CDF());
+			F.PDF.setEvaluator(new PDF());
+			F.BernoulliDistribution.setEvaluator(new BernoulliDistribution());
+			F.BinCounts.setEvaluator(new BinCounts());
+			F.BinomialDistribution.setEvaluator(new BinomialDistribution());
+			F.CentralMoment.setEvaluator(new CentralMoment());
+			F.ChiSquareDistribution.setEvaluator(new ChiSquareDistribution());
+			F.Correlation.setEvaluator(new Correlation());
+			F.Covariance.setEvaluator(new Covariance());
+			F.DiscreteUniformDistribution.setEvaluator(new DiscreteUniformDistribution());
+			F.ErlangDistribution.setEvaluator(new ErlangDistribution());
+			F.Expectation.setEvaluator(new Expectation());
+			F.ExponentialDistribution.setEvaluator(new ExponentialDistribution());
+			F.FiveNum.setEvaluator(new FiveNum());
+			F.FRatioDistribution.setEvaluator(new FRatioDistribution());
+			F.FrechetDistribution.setEvaluator(new FrechetDistribution());
+			F.GammaDistribution.setEvaluator(new GammaDistribution());
+			F.GeometricMean.setEvaluator(new GeometricMean());
+			F.GeometricDistribution.setEvaluator(new GeometricDistribution());
+			F.GumbelDistribution.setEvaluator(new GumbelDistribution());
+			F.HypergeometricDistribution.setEvaluator(new HypergeometricDistribution());
+			F.InverseCDF.setEvaluator(new InverseCDF());
+			F.KolmogorovSmirnovTest.setEvaluator(new KolmogorovSmirnovTest());
+			F.Kurtosis.setEvaluator(new Kurtosis());
+			F.LogNormalDistribution.setEvaluator(new LogNormalDistribution());
+			F.Mean.setEvaluator(new Mean());
+			F.MeanDeviation.setEvaluator(new MeanDeviation());
+			F.Median.setEvaluator(new Median());
+			F.NakagamiDistribution.setEvaluator(new NakagamiDistribution());
+			F.NormalDistribution.setEvaluator(new NormalDistribution());
+			F.PoissonDistribution.setEvaluator(new PoissonDistribution());
+			F.Probability.setEvaluator(new Probability());
+			F.Quantile.setEvaluator(new Quantile());
+			F.RandomVariate.setEvaluator(new RandomVariate());
+			F.Rescale.setEvaluator(new Rescale());
+			F.Skewness.setEvaluator(new Skewness());
+			F.StandardDeviation.setEvaluator(new StandardDeviation());
+			F.Standardize.setEvaluator(new Standardize());
+			F.StudentTDistribution.setEvaluator(new StudentTDistribution());
+			F.UniformDistribution.setEvaluator(new UniformDistribution());
+			F.Variance.setEvaluator(new Variance());
+			F.WeibullDistribution.setEvaluator(new WeibullDistribution());
+		}
 	}
 
 	private static IDistribution getDistribution(final IExpr arg1) {
@@ -4387,10 +4395,8 @@ public class StatisticsFunctions {
 		}
 	}
 
-	private final static StatisticsFunctions CONST = new StatisticsFunctions();
-
-	public static StatisticsFunctions initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	private StatisticsFunctions() {

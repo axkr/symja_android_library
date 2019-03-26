@@ -105,7 +105,7 @@ public class Plot extends AbstractEvaluator {
 					}
 					final IExpr options[] = { plotRange, Rule(F.AxesStyle, F.Automatic),
 							Rule(F.AxesOrigin, List(F.C0, F.C0)), Rule(F.Axes, F.True), Rule(F.Background, F.White) };
-					graphics.appendAll(F.ast(options, F.List), 1, options.length);
+					graphics.appendAll(F.function(F.List, options), 1, options.length);
 					return Show(graphics);
 				}
 			} catch (RuntimeException rex) {

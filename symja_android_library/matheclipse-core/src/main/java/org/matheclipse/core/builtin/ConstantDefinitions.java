@@ -29,61 +29,67 @@ public class ConstantDefinitions {
 	private static int MINUTE = Calendar.getInstance().get(Calendar.MINUTE);
 	private static int SECOND = Calendar.getInstance().get(Calendar.SECOND);
 
-	static {
-		Properties properties = ResourceData.properties("/version.txt");
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
 
-		String versionString = properties.getProperty("version");
-		if (versionString != null && versionString.charAt(0) != '$') {
-			VERSION = versionString;
-		}
+		private static void init() {
+			Properties properties = ResourceData.properties("/version.txt");
 
-		String timestamp = properties.getProperty("timestamp");
-		if (timestamp != null && timestamp.charAt(0) != '$') {
-			TIMESTAMP = timestamp;
-			try {
-				YEAR = Integer.parseInt(TIMESTAMP.substring(0, 4));
-				MONTH = Integer.parseInt(TIMESTAMP.substring(4, 6));
-				DAY = Integer.parseInt(TIMESTAMP.substring(6, 8));
-				HOUR = Integer.parseInt(TIMESTAMP.substring(8, 10));
-				MINUTE = Integer.parseInt(TIMESTAMP.substring(10, 12));
-				SECOND = Integer.parseInt(TIMESTAMP.substring(12, 14));
-			} catch (NumberFormatException nfe) {
-				nfe.printStackTrace();
+			String versionString = properties.getProperty("version");
+			if (versionString != null && versionString.charAt(0) != '$') {
+				VERSION = versionString;
 			}
+
+			String timestamp = properties.getProperty("timestamp");
+			if (timestamp != null && timestamp.charAt(0) != '$') {
+				TIMESTAMP = timestamp;
+				try {
+					YEAR = Integer.parseInt(TIMESTAMP.substring(0, 4));
+					MONTH = Integer.parseInt(TIMESTAMP.substring(4, 6));
+					DAY = Integer.parseInt(TIMESTAMP.substring(6, 8));
+					HOUR = Integer.parseInt(TIMESTAMP.substring(8, 10));
+					MINUTE = Integer.parseInt(TIMESTAMP.substring(10, 12));
+					SECOND = Integer.parseInt(TIMESTAMP.substring(12, 14));
+				} catch (NumberFormatException nfe) {
+					nfe.printStackTrace();
+				}
+			}
+
+			// System.out.println(VERSION);
+			// System.out.println(TIMESTAMP);
+
+			F.$Context.setEvaluator(new $Context());
+			F.$ContextPath.setEvaluator(new $ContextPath());
+			F.$CreationDate.setEvaluator(new $CreationDate());
+			F.$MachineEpsilon.setEvaluator(new $MachineEpsilon());
+			F.$MachinePrecision.setEvaluator(new $MachinePrecision());
+			F.$Version.setEvaluator(new $Version());
+
+			// System.out.println(F.$CreationDate.of().toString());
+			F.Catalan.setEvaluator(new Catalan());
+			F.ComplexInfinity.setEvaluator(new ComplexInfinity());
+			F.Degree.setEvaluator(new Degree());
+			F.E.setEvaluator(new E());
+			F.EulerGamma.setEvaluator(new EulerGamma());
+			F.Glaisher.setEvaluator(new Glaisher());
+			F.GoldenRatio.setEvaluator(new GoldenRatio());
+			F.I.setEvaluator(new I());
+			F.Infinity.setEvaluator(new Infinity());
+			F.Khinchin.setEvaluator(new Khinchin());
+			F.Pi.setEvaluator(new Pi());
+
+			F.False.setEvaluator(NILEvaluator.CONST);
+			F.True.setEvaluator(NILEvaluator.CONST);
+			F.Null.setEvaluator(NILEvaluator.CONST);
 		}
-
-		// System.out.println(VERSION);
-		// System.out.println(TIMESTAMP);
-
-		F.$Context.setEvaluator(new $Context());
-		F.$ContextPath.setEvaluator(new $ContextPath());
-		F.$CreationDate.setEvaluator(new $CreationDate());
-		F.$MachineEpsilon.setEvaluator(new $MachineEpsilon());
-		F.$MachinePrecision.setEvaluator(new $MachinePrecision());
-		F.$Version.setEvaluator(new $Version());
-
-		// System.out.println(F.$CreationDate.of().toString());
-		F.Catalan.setEvaluator(new Catalan());
-		F.ComplexInfinity.setEvaluator(new ComplexInfinity());
-		F.Degree.setEvaluator(new Degree());
-		F.E.setEvaluator(new E());
-		F.EulerGamma.setEvaluator(new EulerGamma());
-		F.Glaisher.setEvaluator(new Glaisher());
-		F.GoldenRatio.setEvaluator(new GoldenRatio());
-		F.I.setEvaluator(new I());
-		F.Infinity.setEvaluator(new Infinity());
-		F.Khinchin.setEvaluator(new Khinchin());
-		F.Pi.setEvaluator(new Pi());
-
-		F.False.setEvaluator(NILEvaluator.CONST);
-		F.True.setEvaluator(NILEvaluator.CONST);
-		F.Null.setEvaluator(NILEvaluator.CONST);
 	}
 
-	private final static ConstantDefinitions CONST = new ConstantDefinitions();
-
-	public static ConstantDefinitions initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	private ConstantDefinitions() {
@@ -136,17 +142,17 @@ public class ConstantDefinitions {
 		}
 
 	}
-	
+
 	private static class $MachineEpsilon extends AbstractSymbolEvaluator {
 
 		@Override
 		public IExpr evaluate(final ISymbol symbol) {
-//			System.out.println(Config.MACHINE_EPSILON);
+			// System.out.println(Config.MACHINE_EPSILON);
 			return F.num(Config.MACHINE_EPSILON);
 		}
 
 	}
-	
+
 	private static class $MachinePrecision extends AbstractSymbolEvaluator {
 
 		@Override

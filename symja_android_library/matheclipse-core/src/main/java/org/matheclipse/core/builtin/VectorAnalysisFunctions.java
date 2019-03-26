@@ -9,11 +9,19 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class VectorAnalysisFunctions {
-	static {
-		F.Curl.setEvaluator(new Curl());
-		F.Div.setEvaluator(new Div());
-		F.Grad.setEvaluator(new Grad());
-		F.RotationMatrix.setEvaluator(new RotationMatrix());
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
+
+		private static void init() {
+			F.Curl.setEvaluator(new Curl());
+			F.Div.setEvaluator(new Div());
+			F.Grad.setEvaluator(new Grad());
+			F.RotationMatrix.setEvaluator(new RotationMatrix());
+		}
 	}
 
 	/**
@@ -193,10 +201,8 @@ public class VectorAnalysisFunctions {
 
 	}
 
-	private final static VectorAnalysisFunctions CONST = new VectorAnalysisFunctions();
-
-	public static VectorAnalysisFunctions initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	private VectorAnalysisFunctions() {

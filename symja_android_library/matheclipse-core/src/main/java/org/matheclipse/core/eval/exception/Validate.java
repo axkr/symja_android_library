@@ -695,7 +695,7 @@ public final class Validate {
 		if (eq.isEqual()) {
 			IAST equal = (IAST) eq;
 			final IExpr[] arr = new IExpr[] { F.evalExpandAll(F.Subtract(equal.arg1(), equal.arg2())), F.C0 };
-			return F.ast(arr, F.Equal);
+			return F.function(F.Equal, arr);
 		}
 		if (eq.isAST()) {
 			IAST equal = (IAST) eq;

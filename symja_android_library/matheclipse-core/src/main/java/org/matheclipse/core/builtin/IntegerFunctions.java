@@ -28,22 +28,30 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class IntegerFunctions {
-	static {
-		F.BitLength.setEvaluator(new BitLength());
-		F.Ceiling.setEvaluator(new Ceiling());
-		F.Floor.setEvaluator(new Floor());
-		F.FractionalPart.setEvaluator(new FractionalPart());
-		F.FromDigits.setEvaluator(new FromDigits());
-		F.IntegerDigits.setEvaluator(new IntegerDigits());
-		F.IntegerExponent.setEvaluator(new IntegerExponent());
-		F.IntegerLength.setEvaluator(new IntegerLength());
-		F.IntegerPart.setEvaluator(new IntegerPart());
-		F.Mod.setEvaluator(new Mod());
-		F.PowerMod.setEvaluator(new PowerMod());
-		F.Quotient.setEvaluator(new Quotient());
-		F.QuotientRemainder.setEvaluator(new QuotientRemainder());
-		F.Round.setEvaluator(new Round());
-		F.UnitStep.setEvaluator(new UnitStep());
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
+
+		private static void init() {
+			F.BitLength.setEvaluator(new BitLength());
+			F.Ceiling.setEvaluator(new Ceiling());
+			F.Floor.setEvaluator(new Floor());
+			F.FractionalPart.setEvaluator(new FractionalPart());
+			F.FromDigits.setEvaluator(new FromDigits());
+			F.IntegerDigits.setEvaluator(new IntegerDigits());
+			F.IntegerExponent.setEvaluator(new IntegerExponent());
+			F.IntegerLength.setEvaluator(new IntegerLength());
+			F.IntegerPart.setEvaluator(new IntegerPart());
+			F.Mod.setEvaluator(new Mod());
+			F.PowerMod.setEvaluator(new PowerMod());
+			F.Quotient.setEvaluator(new Quotient());
+			F.QuotientRemainder.setEvaluator(new QuotientRemainder());
+			F.Round.setEvaluator(new Round());
+			F.UnitStep.setEvaluator(new UnitStep());
+		}
 	}
 
 	/**
@@ -861,7 +869,7 @@ public class IntegerFunctions {
 		/**
 		 * 
 		 * See: <a href="http://en.wikipedia.org/wiki/Modular_arithmetic">Wikipedia - Modular arithmetic</a>
-		 */ 
+		 */
 		public IExpr e2ObjArg(IAST ast, final IExpr o0, final IExpr o1) {
 			if (o1.isZero()) {
 				EvalEngine.get().printMessage("Mod: Modulus 0 encountered");
@@ -1086,10 +1094,8 @@ public class IntegerFunctions {
 		}
 	}
 
-	private final static IntegerFunctions CONST = new IntegerFunctions();
-
-	public static IntegerFunctions initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	private IntegerFunctions() {

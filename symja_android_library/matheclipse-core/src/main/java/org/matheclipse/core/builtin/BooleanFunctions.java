@@ -25,7 +25,6 @@ import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -49,45 +48,53 @@ public final class BooleanFunctions {
 	public final static GreaterEqual CONST_GREATER_EQUAL = new GreaterEqual();
 	public final static LessEqual CONST_LESS_EQUAL = new LessEqual();
 
-	static {
-		F.AllTrue.setEvaluator(new AllTrue());
-		F.And.setEvaluator(new And());
-		F.AnyTrue.setEvaluator(new AnyTrue());
-		F.Boole.setEvaluator(new Boole());
-		F.BooleanConvert.setEvaluator(new BooleanConvert());
-		F.BooleanMinimize.setEvaluator(new BooleanMinimize());
-		F.BooleanTable.setEvaluator(new BooleanTable());
-		F.BooleanVariables.setEvaluator(new BooleanVariables());
-		F.Equal.setEvaluator(CONST_EQUAL);
-		F.Equivalent.setEvaluator(new Equivalent());
-		F.Exists.setEvaluator(new Exists());
-		F.ForAll.setEvaluator(new ForAll());
-		F.Greater.setEvaluator(CONST_GREATER);
-		F.GreaterEqual.setEvaluator(new GreaterEqual());
-		F.Implies.setEvaluator(new Implies());
-		F.Inequality.setEvaluator(new Inequality());
-		F.Less.setEvaluator(CONST_LESS);
-		F.LessEqual.setEvaluator(new LessEqual());
-		F.Max.setEvaluator(new Max());
-		F.Min.setEvaluator(new Min());
-		F.Nand.setEvaluator(new Nand());
-		F.Negative.setEvaluator(new Negative());
-		F.NoneTrue.setEvaluator(new NoneTrue());
-		F.NonNegative.setEvaluator(new NonNegative());
-		F.NonPositive.setEvaluator(new NonPositive());
-		F.Nor.setEvaluator(new Nor());
-		F.Not.setEvaluator(new Not());
-		F.Or.setEvaluator(new Or());
-		F.Positive.setEvaluator(new Positive());
-		F.SameQ.setEvaluator(new SameQ());
-		F.SatisfiabilityCount.setEvaluator(new SatisfiabilityCount());
-		F.SatisfiabilityInstances.setEvaluator(new SatisfiabilityInstances());
-		F.SatisfiableQ.setEvaluator(new SatisfiableQ());
-		F.TautologyQ.setEvaluator(new TautologyQ());
-		F.TrueQ.setEvaluator(new TrueQ());
-		F.Unequal.setEvaluator(new Unequal());
-		F.UnsameQ.setEvaluator(new UnsameQ());
-		F.Xor.setEvaluator(new Xor());
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
+
+		private static void init() {
+			F.AllTrue.setEvaluator(new AllTrue());
+			F.And.setEvaluator(new And());
+			F.AnyTrue.setEvaluator(new AnyTrue());
+			F.Boole.setEvaluator(new Boole());
+			F.BooleanConvert.setEvaluator(new BooleanConvert());
+			F.BooleanMinimize.setEvaluator(new BooleanMinimize());
+			F.BooleanTable.setEvaluator(new BooleanTable());
+			F.BooleanVariables.setEvaluator(new BooleanVariables());
+			F.Equal.setEvaluator(CONST_EQUAL);
+			F.Equivalent.setEvaluator(new Equivalent());
+			F.Exists.setEvaluator(new Exists());
+			F.ForAll.setEvaluator(new ForAll());
+			F.Greater.setEvaluator(CONST_GREATER);
+			F.GreaterEqual.setEvaluator(new GreaterEqual());
+			F.Implies.setEvaluator(new Implies());
+			F.Inequality.setEvaluator(new Inequality());
+			F.Less.setEvaluator(CONST_LESS);
+			F.LessEqual.setEvaluator(new LessEqual());
+			F.Max.setEvaluator(new Max());
+			F.Min.setEvaluator(new Min());
+			F.Nand.setEvaluator(new Nand());
+			F.Negative.setEvaluator(new Negative());
+			F.NoneTrue.setEvaluator(new NoneTrue());
+			F.NonNegative.setEvaluator(new NonNegative());
+			F.NonPositive.setEvaluator(new NonPositive());
+			F.Nor.setEvaluator(new Nor());
+			F.Not.setEvaluator(new Not());
+			F.Or.setEvaluator(new Or());
+			F.Positive.setEvaluator(new Positive());
+			F.SameQ.setEvaluator(new SameQ());
+			F.SatisfiabilityCount.setEvaluator(new SatisfiabilityCount());
+			F.SatisfiabilityInstances.setEvaluator(new SatisfiabilityInstances());
+			F.SatisfiableQ.setEvaluator(new SatisfiableQ());
+			F.TautologyQ.setEvaluator(new TautologyQ());
+			F.TrueQ.setEvaluator(new TrueQ());
+			F.Unequal.setEvaluator(new Unequal());
+			F.UnsameQ.setEvaluator(new UnsameQ());
+			F.Xor.setEvaluator(new Xor());
+		}
 	}
 
 	private static class AllTrue extends AbstractFunctionEvaluator {
@@ -3722,10 +3729,8 @@ public final class BooleanFunctions {
 		return miniSat.enumerateAllModels(vars);
 	}
 
-	private final static BooleanFunctions CONST = new BooleanFunctions();
-
-	public static BooleanFunctions initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	private BooleanFunctions() {

@@ -11,7 +11,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -119,46 +118,59 @@ public class TeXParser {
 
 	};
 
-	private static final HashMap<String, IExpr> UNICODE_OPERATOR_MAP;
+	private static HashMap<String, IExpr> UNICODE_OPERATOR_MAP;
 
-	private static final HashMap<String, IExpr> FUNCTION_HEADER_MAP;
-	private static final HashMap<String, BinaryOperator> BINARY_OPERATOR_MAP;
-	private static final HashMap<String, PrefixOperator> PREFIX_OPERATOR_MAP;
-	private static final HashMap<String, PostfixOperator> POSTFIX_OPERATOR_MAP;
-	static {
-		UNICODE_OPERATOR_MAP = new HashMap<String, IExpr>();
-		UNICODE_OPERATOR_MAP.put("\u2218", F.Degree);
-		UNICODE_OPERATOR_MAP.put("\u00B0", F.Degree);
-		UNICODE_OPERATOR_MAP.put("\u222b", F.Integrate);
-		UNICODE_OPERATOR_MAP.put("\u2211", F.Sum);
-		UNICODE_OPERATOR_MAP.put("\u220f", F.Product);
-		UNICODE_OPERATOR_MAP.put("\u03c0", F.Pi);
-		UNICODE_OPERATOR_MAP.put("\u221e", F.CInfinity);
-		UNICODE_OPERATOR_MAP.put("\u2148", F.CI); // double-struck italic letter i
-		UNICODE_OPERATOR_MAP.put("\u2149", F.CI); // double-struck italic letter j
-		UNICODE_OPERATOR_MAP.put("\u2107", F.E); // euler's constant
+	private static HashMap<String, IExpr> FUNCTION_HEADER_MAP;
+	private static HashMap<String, BinaryOperator> BINARY_OPERATOR_MAP;
+	private static HashMap<String, PrefixOperator> PREFIX_OPERATOR_MAP;
+	private static HashMap<String, PostfixOperator> POSTFIX_OPERATOR_MAP;
 
-		FUNCTION_HEADER_MAP = new HashMap<String, IExpr>();
-		FUNCTION_HEADER_MAP.put("ln", F.Log);
-		FUNCTION_HEADER_MAP.put("lim", F.Limit);
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
 
-		BINARY_OPERATOR_MAP = new HashMap<String, BinaryOperator>();
-		for (int i = 0; i < BINARY_OPERATORS.length; i++) {
-			String headStr = BINARY_OPERATORS[i].getOperatorString();
-			BINARY_OPERATOR_MAP.put(headStr, BINARY_OPERATORS[i]);
-		}
-		PREFIX_OPERATOR_MAP = new HashMap<String, PrefixOperator>();
-		for (int i = 0; i < PREFIX_OPERATORS.length; i++) {
-			String headStr = PREFIX_OPERATORS[i].getOperatorString();
-			PREFIX_OPERATOR_MAP.put(headStr, PREFIX_OPERATORS[i]);
-		}
-		POSTFIX_OPERATOR_MAP = new HashMap<String, PostfixOperator>();
-		for (int i = 0; i < POSTFIX_OPERATORS.length; i++) {
-			String headStr = POSTFIX_OPERATORS[i].getOperatorString();
-			POSTFIX_OPERATOR_MAP.put(headStr, POSTFIX_OPERATORS[i]);
+		private static void init() {
+			UNICODE_OPERATOR_MAP = new HashMap<String, IExpr>();
+			UNICODE_OPERATOR_MAP.put("\u2218", F.Degree);
+			UNICODE_OPERATOR_MAP.put("\u00B0", F.Degree);
+			UNICODE_OPERATOR_MAP.put("\u222b", F.Integrate);
+			UNICODE_OPERATOR_MAP.put("\u2211", F.Sum);
+			UNICODE_OPERATOR_MAP.put("\u220f", F.Product);
+			UNICODE_OPERATOR_MAP.put("\u03c0", F.Pi);
+			UNICODE_OPERATOR_MAP.put("\u221e", F.CInfinity);
+			UNICODE_OPERATOR_MAP.put("\u2148", F.CI); // double-struck italic letter i
+			UNICODE_OPERATOR_MAP.put("\u2149", F.CI); // double-struck italic letter j
+			UNICODE_OPERATOR_MAP.put("\u2107", F.E); // euler's constant
+
+			FUNCTION_HEADER_MAP = new HashMap<String, IExpr>();
+			FUNCTION_HEADER_MAP.put("ln", F.Log);
+			FUNCTION_HEADER_MAP.put("lim", F.Limit);
+
+			BINARY_OPERATOR_MAP = new HashMap<String, BinaryOperator>();
+			for (int i = 0; i < BINARY_OPERATORS.length; i++) {
+				String headStr = BINARY_OPERATORS[i].getOperatorString();
+				BINARY_OPERATOR_MAP.put(headStr, BINARY_OPERATORS[i]);
+			}
+			PREFIX_OPERATOR_MAP = new HashMap<String, PrefixOperator>();
+			for (int i = 0; i < PREFIX_OPERATORS.length; i++) {
+				String headStr = PREFIX_OPERATORS[i].getOperatorString();
+				PREFIX_OPERATOR_MAP.put(headStr, PREFIX_OPERATORS[i]);
+			}
+			POSTFIX_OPERATOR_MAP = new HashMap<String, PostfixOperator>();
+			for (int i = 0; i < POSTFIX_OPERATORS.length; i++) {
+				String headStr = POSTFIX_OPERATORS[i].getOperatorString();
+				POSTFIX_OPERATOR_MAP.put(headStr, POSTFIX_OPERATORS[i]);
+			}
 		}
 	}
-
+	
+	public static void initialize() {
+		Initializer.init();
+	}
+	
 	private static String toUnicodeString(final String unicodeInput, final String inputEncoding) {
 		final StringBuilder unicodeStringBuilder = new StringBuilder();
 		String unicodeString = null;

@@ -66,11 +66,19 @@ public class IOFunctions {
 			"ucdec", "An invalid unicode sequence was encountered and ignored." //
 	};
 
-	static {
-		// F.General.setEvaluator(new General());
-		F.Message.setEvaluator(new Message());
-		for (int i = 0; i < MESSAGES.length; i += 2) {
-			F.General.putMessage(IPatternMatcher.SET, MESSAGES[i], F.stringx(MESSAGES[i + 1]));
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
+
+		private static void init() {
+			// F.General.setEvaluator(new General());
+			F.Message.setEvaluator(new Message());
+			for (int i = 0; i < MESSAGES.length; i += 2) {
+				F.General.putMessage(IPatternMatcher.SET, MESSAGES[i], F.stringx(MESSAGES[i + 1]));
+			}
 		}
 	}
 
@@ -123,10 +131,8 @@ public class IOFunctions {
 		return F.NIL;
 	}
 
-	private final static IOFunctions CONST = new IOFunctions();
-
-	public static IOFunctions initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	private IOFunctions() {

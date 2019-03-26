@@ -20,16 +20,24 @@ import org.matheclipse.core.polynomials.HornerScheme;
 
 public final class OutputFunctions {
 
-	static {
-		F.CForm.setEvaluator(new CForm());
-		F.FullForm.setEvaluator(new FullForm());
-		F.HoldForm.setEvaluator(new HoldForm());
-		F.HornerForm.setEvaluator(new HornerForm());
-		F.InputForm.setEvaluator(new InputForm());
-		F.JavaForm.setEvaluator(new JavaForm());
-		F.MathMLForm.setEvaluator(new MathMLForm());
-		F.TableForm.setEvaluator(new TableForm());
-		F.TeXForm.setEvaluator(new TeXForm());
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
+
+		private static void init() {
+			F.CForm.setEvaluator(new CForm());
+			F.FullForm.setEvaluator(new FullForm());
+			F.HoldForm.setEvaluator(new HoldForm());
+			F.HornerForm.setEvaluator(new HornerForm());
+			F.InputForm.setEvaluator(new InputForm());
+			F.JavaForm.setEvaluator(new JavaForm());
+			F.MathMLForm.setEvaluator(new MathMLForm());
+			F.TableForm.setEvaluator(new TableForm());
+			F.TeXForm.setEvaluator(new TeXForm());
+		}
 	}
 
 	private static class CForm extends AbstractCoreFunctionEvaluator {
@@ -96,8 +104,8 @@ public final class OutputFunctions {
 			if (ast.isAST1()) {
 				IExpr arg1 = engine.evaluate(ast.arg1());
 				if (arg1.isList()) {
-					IAST list = (IAST)arg1;
-					StringBuilder sb=new StringBuilder();
+					IAST list = (IAST) arg1;
+					StringBuilder sb = new StringBuilder();
 					for (int i = 1; i < list.size(); i++) {
 						sb.append(list.get(i).toString());
 						sb.append("\n");
@@ -202,7 +210,7 @@ public final class OutputFunctions {
 
 				if (variables.size() >= 2) {
 					ISymbol sym = (ISymbol) variables.arg1();
-					if (poly.isPlus( )) {
+					if (poly.isPlus()) {
 						HornerScheme scheme = new HornerScheme();
 						return scheme.generate(engine.isNumericMode(), poly, sym);
 					}
@@ -371,10 +379,8 @@ public final class OutputFunctions {
 		}
 	}
 
-	private final static OutputFunctions CONST = new OutputFunctions();
-
-	public static OutputFunctions initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	private OutputFunctions() {

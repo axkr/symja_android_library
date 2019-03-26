@@ -35,12 +35,10 @@ public class CompleteTestSuite extends TestCase {
 		suite.addTestSuite(Graphics3DTestCase.class);
 		suite.addTestSuite(SymjifyTestCase.class);
 
-		suite.addTestSuite(MainTestCase.class);
 		suite.addTestSuite(BasicPatternPropertiesTestCase.class);
 		suite.addTestSuite(CompareToTestCase.class);
 		suite.addTestSuite(Java8TestCase.class);
 		suite.addTestSuite(PatternMatchingTestCase.class);
-		suite.addTestSuite(RubiIntegrationTest.class);
 		suite.addTestSuite(CombinatoricTestCase.class);
 
 		suite.addTestSuite(MathMLPresentationTestCase.class);
@@ -53,8 +51,10 @@ public class CompleteTestSuite extends TestCase {
 		suite.addTestSuite(OpenFixedSizeMapTest.class);
 		suite.addTestSuite(NumberTest.class);
 		suite.addTestSuite(JavaFormTestCase.class);
-
+		
+		suite.addTestSuite(MainTestCase.class);
 		suite.addTestSuite(LowercaseTestCase.class);
+		suite.addTestSuite(RubiIntegrationTest.class);
 		suite.addTestSuite(DistributionTest.class);
 		suite.addTestSuite(SeriesTest.class);
 		suite.addTestSuite(SerializableTest.class);

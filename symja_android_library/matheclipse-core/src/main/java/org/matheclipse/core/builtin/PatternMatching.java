@@ -50,39 +50,47 @@ import com.google.common.io.Files;
 
 public final class PatternMatching {
 
-	static {
-		F.BeginPackage.setEvaluator(new BeginPackage());
-		F.EndPackage.setEvaluator(new EndPackage());
-		F.Begin.setEvaluator(new Begin());
-		F.End.setEvaluator(new End());
-		F.Blank.setEvaluator(Blank.CONST);
-		F.BlankSequence.setEvaluator(BlankSequence.CONST);
-		F.BlankNullSequence.setEvaluator(BlankNullSequence.CONST);
-		F.Clear.setEvaluator(new Clear());
-		F.ClearAll.setEvaluator(new ClearAll());
-		F.Context.setEvaluator(new ContextFunction());
-		F.Definition.setEvaluator(new Definition());
-		F.Evaluate.setEvaluator(new Evaluate());
-		F.Get.setEvaluator(new Get());
-		F.Hold.setEvaluator(new Hold());
-		F.HoldPattern.setEvaluator(new HoldPattern());
-		F.Identity.setEvaluator(new Identity());
-		F.Information.setEvaluator(new Information());
-		F.Literal.setEvaluator(new Literal());
-		F.MessageName.setEvaluator(new MessageName());
-		F.Optional.setEvaluator(Optional.CONST);
-		F.Pattern.setEvaluator(Pattern.CONST);
-		F.Put.setEvaluator(new Put());
-		F.Rule.setEvaluator(new Rule());
-		F.RuleDelayed.setEvaluator(new RuleDelayed());
-		F.Set.setEvaluator(new Set());
-		F.SetDelayed.setEvaluator(new SetDelayed());
-		F.TagSet.setEvaluator(new TagSet());
-		F.TagSetDelayed.setEvaluator(new TagSetDelayed());
-		F.Unique.setEvaluator(new Unique());
-		F.Unset.setEvaluator(new Unset());
-		F.UpSet.setEvaluator(new UpSet());
-		F.UpSetDelayed.setEvaluator(new UpSetDelayed());
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
+
+		private static void init() {
+			F.BeginPackage.setEvaluator(new BeginPackage());
+			F.EndPackage.setEvaluator(new EndPackage());
+			F.Begin.setEvaluator(new Begin());
+			F.End.setEvaluator(new End());
+			F.Blank.setEvaluator(Blank.CONST);
+			F.BlankSequence.setEvaluator(BlankSequence.CONST);
+			F.BlankNullSequence.setEvaluator(BlankNullSequence.CONST);
+			F.Clear.setEvaluator(new Clear());
+			F.ClearAll.setEvaluator(new ClearAll());
+			F.Context.setEvaluator(new ContextFunction());
+			F.Definition.setEvaluator(new Definition());
+			F.Evaluate.setEvaluator(new Evaluate());
+			F.Get.setEvaluator(new Get());
+			F.Hold.setEvaluator(new Hold());
+			F.HoldPattern.setEvaluator(new HoldPattern());
+			F.Identity.setEvaluator(new Identity());
+			F.Information.setEvaluator(new Information());
+			F.Literal.setEvaluator(new Literal());
+			F.MessageName.setEvaluator(new MessageName());
+			F.Optional.setEvaluator(Optional.CONST);
+			F.Pattern.setEvaluator(Pattern.CONST);
+			F.Put.setEvaluator(new Put());
+			F.Rule.setEvaluator(new Rule());
+			F.RuleDelayed.setEvaluator(new RuleDelayed());
+			F.Set.setEvaluator(new Set());
+			F.SetDelayed.setEvaluator(new SetDelayed());
+			F.TagSet.setEvaluator(new TagSet());
+			F.TagSetDelayed.setEvaluator(new TagSetDelayed());
+			F.Unique.setEvaluator(new Unique());
+			F.Unset.setEvaluator(new Unset());
+			F.UpSet.setEvaluator(new UpSet());
+			F.UpSetDelayed.setEvaluator(new UpSetDelayed());
+		}
 	}
 
 	private final static class Begin extends AbstractCoreFunctionEvaluator {
@@ -1841,10 +1849,8 @@ public final class PatternMatching {
 		return F.Null;
 	}
 
-	private final static PatternMatching CONST = new PatternMatching();
-
-	public static PatternMatching initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	private PatternMatching() {

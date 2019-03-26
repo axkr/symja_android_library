@@ -9,8 +9,8 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.util.LevelSpecification;
 import org.matheclipse.core.eval.util.IntRangeSpec;
+import org.matheclipse.core.eval.util.LevelSpecification;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -19,23 +19,30 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public final class Combinatoric {
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
 
-	static {
-		F.CartesianProduct.setEvaluator(new CartesianProduct());
-		F.DiceDissimilarity.setEvaluator(new DiceDissimilarity());
-		F.IntegerPartitions.setEvaluator(new IntegerPartitions());
-		F.JaccardDissimilarity.setEvaluator(new JaccardDissimilarity());
-		F.KOrderlessPartitions.setEvaluator(new KOrderlessPartitions());
-		F.KPartitions.setEvaluator(new KPartitions());
-		F.MatchingDissimilarity.setEvaluator(new MatchingDissimilarity());
-		F.Partition.setEvaluator(new Partition());
-		F.Permutations.setEvaluator(new Permutations());
-		F.RogersTanimotoDissimilarity.setEvaluator(new RogersTanimotoDissimilarity());
-		F.RussellRaoDissimilarity.setEvaluator(new RussellRaoDissimilarity());
-		F.SokalSneathDissimilarity.setEvaluator(new SokalSneathDissimilarity());
-		F.Subsets.setEvaluator(new Subsets());
-		F.Tuples.setEvaluator(new Tuples());
-		F.YuleDissimilarity.setEvaluator(new YuleDissimilarity());
+		private static void init() {
+			F.CartesianProduct.setEvaluator(new CartesianProduct());
+			F.DiceDissimilarity.setEvaluator(new DiceDissimilarity());
+			F.IntegerPartitions.setEvaluator(new IntegerPartitions());
+			F.JaccardDissimilarity.setEvaluator(new JaccardDissimilarity());
+			F.KOrderlessPartitions.setEvaluator(new KOrderlessPartitions());
+			F.KPartitions.setEvaluator(new KPartitions());
+			F.MatchingDissimilarity.setEvaluator(new MatchingDissimilarity());
+			F.Partition.setEvaluator(new Partition());
+			F.Permutations.setEvaluator(new Permutations());
+			F.RogersTanimotoDissimilarity.setEvaluator(new RogersTanimotoDissimilarity());
+			F.RussellRaoDissimilarity.setEvaluator(new RussellRaoDissimilarity());
+			F.SokalSneathDissimilarity.setEvaluator(new SokalSneathDissimilarity());
+			F.Subsets.setEvaluator(new Subsets());
+			F.Tuples.setEvaluator(new Tuples());
+			F.YuleDissimilarity.setEvaluator(new YuleDissimilarity());
+		}
 	}
 
 	/**
@@ -1626,10 +1633,8 @@ public final class Combinatoric {
 
 	}
 
-	final static Combinatoric CONST = new Combinatoric();
-
-	public static Combinatoric initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	private Combinatoric() {

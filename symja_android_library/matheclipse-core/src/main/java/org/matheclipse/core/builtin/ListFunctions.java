@@ -24,7 +24,6 @@ import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.IllegalArgument;
 import org.matheclipse.core.eval.exception.NoEvalException;
-import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -58,61 +57,69 @@ import org.matheclipse.core.visit.VisitorRemoveLevelSpecification;
 import org.matheclipse.parser.client.math.MathException;
 
 public final class ListFunctions {
-	static {
-		F.Accumulate.setEvaluator(new Accumulate());
-		F.Append.setEvaluator(new Append());
-		F.AppendTo.setEvaluator(new AppendTo());
-		F.Array.setEvaluator(new Array());
-		F.ArrayPad.setEvaluator(new ArrayPad());
-		F.Cases.setEvaluator(new Cases());
-		F.Catenate.setEvaluator(new Catenate());
-		F.Commonest.setEvaluator(new Commonest());
-		F.Complement.setEvaluator(new Complement());
-		F.Composition.setEvaluator(new Composition());
-		F.ComposeList.setEvaluator(new ComposeList());
-		F.ConstantArray.setEvaluator(new ConstantArray());
-		F.Count.setEvaluator(new Count());
-		F.Delete.setEvaluator(new Delete());
-		F.DeleteDuplicates.setEvaluator(new DeleteDuplicates());
-		F.DeleteCases.setEvaluator(new DeleteCases());
-		F.Drop.setEvaluator(new Drop());
-		F.Extract.setEvaluator(new Extract());
-		F.First.setEvaluator(new First());
-		F.Fold.setEvaluator(new Fold());
-		F.FoldList.setEvaluator(new FoldList());
-		F.Gather.setEvaluator(new Gather());
-		F.Insert.setEvaluator(new Insert());
-		F.Intersection.setEvaluator(new Intersection());
-		F.Join.setEvaluator(new Join());
-		F.Last.setEvaluator(new Last());
-		F.Length.setEvaluator(new Length());
-		F.LevelQ.setEvaluator(new LevelQ());
-		F.Level.setEvaluator(new Level());
-		F.Most.setEvaluator(new Most());
-		F.Nearest.setEvaluator(new Nearest());
-		F.PadLeft.setEvaluator(new PadLeft());
-		F.PadRight.setEvaluator(new PadRight());
-		F.Position.setEvaluator(new Position());
-		F.Prepend.setEvaluator(new Prepend());
-		F.PrependTo.setEvaluator(new PrependTo());
-		F.Range.setEvaluator(new Range());
-		F.Rest.setEvaluator(new Rest());
-		F.Reverse.setEvaluator(new Reverse());
-		F.ReplaceAll.setEvaluator(new ReplaceAll());
-		F.ReplacePart.setEvaluator(new ReplacePart());
-		F.Riffle.setEvaluator(new Riffle());
-		F.RotateLeft.setEvaluator(new RotateLeft());
-		F.RotateRight.setEvaluator(new RotateRight());
-		F.Select.setEvaluator(new Select());
-		F.Split.setEvaluator(new Split());
-		F.SplitBy.setEvaluator(new SplitBy());
-		F.Subdivide.setEvaluator(new Subdivide());
-		F.Table.setEvaluator(new Table());
-		F.Take.setEvaluator(new Take());
-		F.Tally.setEvaluator(new Tally());
-		F.Total.setEvaluator(new Total());
-		F.Union.setEvaluator(new Union());
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
 
+		private static void init() {
+			F.Accumulate.setEvaluator(new Accumulate());
+			F.Append.setEvaluator(new Append());
+			F.AppendTo.setEvaluator(new AppendTo());
+			F.Array.setEvaluator(new Array());
+			F.ArrayPad.setEvaluator(new ArrayPad());
+			F.Cases.setEvaluator(new Cases());
+			F.Catenate.setEvaluator(new Catenate());
+			F.Commonest.setEvaluator(new Commonest());
+			F.Complement.setEvaluator(new Complement());
+			F.Composition.setEvaluator(new Composition());
+			F.ComposeList.setEvaluator(new ComposeList());
+			F.ConstantArray.setEvaluator(new ConstantArray());
+			F.Count.setEvaluator(new Count());
+			F.Delete.setEvaluator(new Delete());
+			F.DeleteDuplicates.setEvaluator(new DeleteDuplicates());
+			F.DeleteCases.setEvaluator(new DeleteCases());
+			F.Drop.setEvaluator(new Drop());
+			F.Extract.setEvaluator(new Extract());
+			F.First.setEvaluator(new First());
+			F.Fold.setEvaluator(new Fold());
+			F.FoldList.setEvaluator(new FoldList());
+			F.Gather.setEvaluator(new Gather());
+			F.Insert.setEvaluator(new Insert());
+			F.Intersection.setEvaluator(new Intersection());
+			F.Join.setEvaluator(new Join());
+			F.Last.setEvaluator(new Last());
+			F.Length.setEvaluator(new Length());
+			F.LevelQ.setEvaluator(new LevelQ());
+			F.Level.setEvaluator(new Level());
+			F.Most.setEvaluator(new Most());
+			F.Nearest.setEvaluator(new Nearest());
+			F.PadLeft.setEvaluator(new PadLeft());
+			F.PadRight.setEvaluator(new PadRight());
+			F.Position.setEvaluator(new Position());
+			F.Prepend.setEvaluator(new Prepend());
+			F.PrependTo.setEvaluator(new PrependTo());
+			F.Range.setEvaluator(new Range());
+			F.Rest.setEvaluator(new Rest());
+			F.Reverse.setEvaluator(new Reverse());
+			F.ReplaceAll.setEvaluator(new ReplaceAll());
+			F.ReplacePart.setEvaluator(new ReplacePart());
+			F.Riffle.setEvaluator(new Riffle());
+			F.RotateLeft.setEvaluator(new RotateLeft());
+			F.RotateRight.setEvaluator(new RotateRight());
+			F.Select.setEvaluator(new Select());
+			F.Split.setEvaluator(new Split());
+			F.SplitBy.setEvaluator(new SplitBy());
+			F.Subdivide.setEvaluator(new Subdivide());
+			F.Table.setEvaluator(new Table());
+			F.Take.setEvaluator(new Take());
+			F.Tally.setEvaluator(new Tally());
+			F.Total.setEvaluator(new Total());
+			F.Union.setEvaluator(new Union());
+
+		}
 	}
 
 	private static interface IPositionConverter<T> {
@@ -4437,7 +4444,7 @@ public final class ListFunctions {
 
 				final TableGenerator generator = new TableGenerator(iterList, resultList,
 						new UnaryArrayFunction(EvalEngine.get(), expr), defaultValue);
-				return generator.table(); 
+				return generator.table();
 			} catch (final ClassCastException e) {
 				// the iterators are generated only from IASTs
 			} catch (final NoEvalException e) {
@@ -5027,10 +5034,8 @@ public final class ListFunctions {
 		return list.reverse(F.ast(list.head(), list.size(), false));
 	}
 
-	private final static ListFunctions CONST = new ListFunctions();
-
-	public static ListFunctions initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	private ListFunctions() {

@@ -86,24 +86,32 @@ import edu.jas.ufd.Squarefree;
 import edu.jas.ufd.SquarefreeFactory;
 
 public class PolynomialFunctions {
-	static {
-		F.BellY.setEvaluator(new BellY());
-		F.ChebyshevT.setEvaluator(new ChebyshevT());
-		F.ChebyshevU.setEvaluator(new ChebyshevU());
-		F.Coefficient.setEvaluator(new Coefficient());
-		F.CoefficientList.setEvaluator(new CoefficientList());
-		F.CoefficientRules.setEvaluator(new CoefficientRules());
-		F.Cyclotomic.setEvaluator(new Cyclotomic());
-		F.Discriminant.setEvaluator(new Discriminant());
-		F.Exponent.setEvaluator(new Exponent());
-		F.HermiteH.setEvaluator(new HermiteH());
-		F.LaguerreL.setEvaluator(new LaguerreL());
-		F.LegendreP.setEvaluator(new LegendreP());
-		F.LegendreQ.setEvaluator(new LegendreQ());
-		F.NRoots.setEvaluator(new NRoots());
-		F.Resultant.setEvaluator(new Resultant());
-		F.RootIntervals.setEvaluator(new RootIntervals());
-		F.Roots.setEvaluator(new Roots());
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
+
+		private static void init() {
+			F.BellY.setEvaluator(new BellY());
+			F.ChebyshevT.setEvaluator(new ChebyshevT());
+			F.ChebyshevU.setEvaluator(new ChebyshevU());
+			F.Coefficient.setEvaluator(new Coefficient());
+			F.CoefficientList.setEvaluator(new CoefficientList());
+			F.CoefficientRules.setEvaluator(new CoefficientRules());
+			F.Cyclotomic.setEvaluator(new Cyclotomic());
+			F.Discriminant.setEvaluator(new Discriminant());
+			F.Exponent.setEvaluator(new Exponent());
+			F.HermiteH.setEvaluator(new HermiteH());
+			F.LaguerreL.setEvaluator(new LaguerreL());
+			F.LegendreP.setEvaluator(new LegendreP());
+			F.LegendreQ.setEvaluator(new LegendreQ());
+			F.NRoots.setEvaluator(new NRoots());
+			F.Resultant.setEvaluator(new Resultant());
+			F.RootIntervals.setEvaluator(new RootIntervals());
+			F.Roots.setEvaluator(new Roots());
+		}
 	}
 
 	/**
@@ -1018,7 +1026,8 @@ public class PolynomialFunctions {
 			return result;
 		}
 
-		private static IExpr powerExponent(IAST powerAST, final IExpr form, final IPatternMatcher matcher, EvalEngine engine) {
+		private static IExpr powerExponent(IAST powerAST, final IExpr form, final IPatternMatcher matcher,
+				EvalEngine engine) {
 			if (matcher.test(powerAST.base(), engine)) {
 				return powerAST.exponent();
 			}
@@ -1029,8 +1038,8 @@ public class PolynomialFunctions {
 			return F.C0;
 		}
 
-		private static void timesExponent(IAST timesAST, IExpr form, final IPatternMatcher matcher, Set<IExpr> collector,
-				EvalEngine engine) {
+		private static void timesExponent(IAST timesAST, IExpr form, final IPatternMatcher matcher,
+				Set<IExpr> collector, EvalEngine engine) {
 			boolean evaled = false;
 			IExpr argi;
 			for (int i = 1; i < timesAST.size(); i++) {
@@ -2471,10 +2480,8 @@ public class PolynomialFunctions {
 		return F.NIL;
 	}
 
-	private final static PolynomialFunctions CONST = new PolynomialFunctions();
-
-	public static PolynomialFunctions initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	private PolynomialFunctions() {

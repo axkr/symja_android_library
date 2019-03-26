@@ -122,7 +122,7 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public final IExpr apply(IExpr... expressions) {
-		return F.ast(expressions, this);
+		return F.function(this, expressions);
 	}
 
 	/** {@inheritDoc} */
@@ -681,14 +681,14 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr of(EvalEngine engine, IExpr... args) {
-		IAST ast = F.ast(args, this);
+		IAST ast = F.function(this, args);
 		return engine.evaluate(ast);
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public IExpr ofNIL(EvalEngine engine, IExpr... args) {
-		IAST ast = F.ast(args, this);
+		IAST ast = F.function(this, args);
 		IExpr temp = engine.evalLoop(ast);
 		if (temp.isPresent() && temp.head() == this) {
 			return F.NIL;
@@ -705,7 +705,7 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean ofQ(EvalEngine engine, IExpr... args) {
-		IAST ast = F.ast(args, this);
+		IAST ast = F.function(this, args);
 		return engine.evalTrue(ast);
 	}
 

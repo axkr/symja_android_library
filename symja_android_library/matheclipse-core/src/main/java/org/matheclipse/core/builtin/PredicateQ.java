@@ -30,42 +30,50 @@ public class PredicateQ {
 	 */
 	// public final static AtomQ ATOMQ = new AtomQ();
 
-	static {
-		F.AntisymmetricMatrixQ.setEvaluator(new AntisymmetricMatrixQ());
-		F.AntihermitianMatrixQ.setEvaluator(new AntihermitianMatrixQ());
-		F.ArrayQ.setEvaluator(new ArrayQ());
-		F.AtomQ.setPredicateQ(x -> x.isAtom());
-		F.BooleanQ.setPredicateQ(x -> x.isTrue() || x.isFalse());
-		F.ByteArrayQ.setPredicateQ(WXFFunctions::isByteArray);
-		F.DigitQ.setEvaluator(new DigitQ());
-		F.EvenQ.setEvaluator(new EvenQ());
-		F.ExactNumberQ.setPredicateQ(x -> x.isExactNumber());
-		F.FreeQ.setEvaluator(new FreeQ());
-		F.HermitianMatrixQ.setEvaluator(new HermitianMatrixQ());
-		F.InexactNumberQ.setPredicateQ(x -> x.isInexactNumber());
-		F.IntegerQ.setPredicateQ(x -> x.isInteger());
-		F.ListQ.setPredicateQ(x -> x.isList());
-		F.MachineNumberQ.setPredicateQ(x -> x.isMachineNumber());
-		F.MatchQ.setEvaluator(new MatchQ());
-		F.MatrixQ.setEvaluator(new MatrixQ());
-		F.MemberQ.setEvaluator(new MemberQ());
-		F.MissingQ.setPredicateQ(x -> x.isAST(F.Missing, 2));
-		F.NotListQ.setPredicateQ(x -> !x.isList());
-		F.NumberQ.setPredicateQ(x -> x.isNumber());
-		F.NumericQ.setPredicateQ(x -> x.isNumericFunction());
-		F.OddQ.setEvaluator(new OddQ());
-		F.PossibleZeroQ.setEvaluator(new PossibleZeroQ());
-		F.PrimeQ.setEvaluator(new PrimeQ());
-		F.QuantityQ.setEvaluator(new QuantityQ());
-		F.RealNumberQ.setEvaluator(new RealNumberQ());
-		F.SquareMatrixQ.setEvaluator(new SquareMatrixQ());
-		F.StringQ.setPredicateQ(x -> x.isString());
-		F.SymbolQ.setPredicateQ(x -> x.isSymbol());
-		F.SymmetricMatrixQ.setEvaluator(new SymmetricMatrixQ());
-		F.SyntaxQ.setEvaluator(new SyntaxQ());
-		F.UpperCaseQ.setEvaluator(new UpperCaseQ());
-		F.ValueQ.setEvaluator(new ValueQ());
-		F.VectorQ.setEvaluator(new VectorQ());
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
+
+		private static void init() {
+			F.AntisymmetricMatrixQ.setEvaluator(new AntisymmetricMatrixQ());
+			F.AntihermitianMatrixQ.setEvaluator(new AntihermitianMatrixQ());
+			F.ArrayQ.setEvaluator(new ArrayQ());
+			F.AtomQ.setPredicateQ(x -> x.isAtom());
+			F.BooleanQ.setPredicateQ(x -> x.isTrue() || x.isFalse());
+			F.ByteArrayQ.setPredicateQ(WXFFunctions::isByteArray);
+			F.DigitQ.setEvaluator(new DigitQ());
+			F.EvenQ.setEvaluator(new EvenQ());
+			F.ExactNumberQ.setPredicateQ(x -> x.isExactNumber());
+			F.FreeQ.setEvaluator(new FreeQ());
+			F.HermitianMatrixQ.setEvaluator(new HermitianMatrixQ());
+			F.InexactNumberQ.setPredicateQ(x -> x.isInexactNumber());
+			F.IntegerQ.setPredicateQ(x -> x.isInteger());
+			F.ListQ.setPredicateQ(x -> x.isList());
+			F.MachineNumberQ.setPredicateQ(x -> x.isMachineNumber());
+			F.MatchQ.setEvaluator(new MatchQ());
+			F.MatrixQ.setEvaluator(new MatrixQ());
+			F.MemberQ.setEvaluator(new MemberQ());
+			F.MissingQ.setPredicateQ(x -> x.isAST(F.Missing, 2));
+			F.NotListQ.setPredicateQ(x -> !x.isList());
+			F.NumberQ.setPredicateQ(x -> x.isNumber());
+			F.NumericQ.setPredicateQ(x -> x.isNumericFunction());
+			F.OddQ.setEvaluator(new OddQ());
+			F.PossibleZeroQ.setEvaluator(new PossibleZeroQ());
+			F.PrimeQ.setEvaluator(new PrimeQ());
+			F.QuantityQ.setEvaluator(new QuantityQ());
+			F.RealNumberQ.setEvaluator(new RealNumberQ());
+			F.SquareMatrixQ.setEvaluator(new SquareMatrixQ());
+			F.StringQ.setPredicateQ(x -> x.isString());
+			F.SymbolQ.setPredicateQ(x -> x.isSymbol());
+			F.SymmetricMatrixQ.setEvaluator(new SymmetricMatrixQ());
+			F.SyntaxQ.setEvaluator(new SyntaxQ());
+			F.UpperCaseQ.setEvaluator(new UpperCaseQ());
+			F.ValueQ.setEvaluator(new ValueQ());
+			F.VectorQ.setEvaluator(new VectorQ());
+		}
 	}
 
 	/**
@@ -1262,10 +1270,8 @@ public class PredicateQ {
 		return false;
 	}
 
-	private final static PredicateQ CONST = new PredicateQ();
-
-	public static PredicateQ initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	private PredicateQ() {

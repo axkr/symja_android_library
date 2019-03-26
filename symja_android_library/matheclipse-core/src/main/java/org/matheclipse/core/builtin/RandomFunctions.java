@@ -17,11 +17,19 @@ import org.matheclipse.core.interfaces.IInteger;
 
 public final class RandomFunctions {
 
-	static {
-		F.RandomInteger.setEvaluator(new RandomInteger());
-		F.RandomChoice.setEvaluator(new RandomChoice());
-		F.RandomReal.setEvaluator(new RandomReal());
-		F.RandomSample.setEvaluator(new RandomSample());
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
+
+		private static void init() {
+			F.RandomInteger.setEvaluator(new RandomInteger());
+			F.RandomChoice.setEvaluator(new RandomChoice());
+			F.RandomReal.setEvaluator(new RandomReal());
+			F.RandomSample.setEvaluator(new RandomSample());
+		}
 	}
 
 	/**
@@ -207,10 +215,8 @@ public final class RandomFunctions {
 		}
 	}
 
-	private final static RandomFunctions CONST = new RandomFunctions();
-
-	public static RandomFunctions initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	private RandomFunctions() {

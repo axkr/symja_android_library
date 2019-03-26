@@ -45,39 +45,47 @@ public class Structure {
 	private final static Set<ISymbol> LIST_LOGIC_EQUATION_HEADS = Collections
 			.newSetFromMap(new IdentityHashMap<ISymbol, Boolean>(29));
 
-	static {
-		F.Apply.setEvaluator(new Apply());
-		F.Depth.setEvaluator(new Depth());
-		F.Flatten.setEvaluator(new Flatten());
-		F.FlattenAt.setEvaluator(new FlattenAt());
-		F.Function.setEvaluator(new Function());
-		F.Head.setEvaluator(new Head());
-		F.LeafCount.setEvaluator(new LeafCount());
-		F.Map.setEvaluator(new Map());
-		F.MapAll.setEvaluator(new MapAll());
-		F.MapAt.setEvaluator(new MapAt());
-		F.MapIndexed.setEvaluator(new MapIndexed());
-		F.MapThread.setEvaluator(new MapThread());
-		F.Order.setEvaluator(new Order());
-		F.OrderedQ.setEvaluator(new OrderedQ());
-		F.Operate.setEvaluator(new Operate());
-		F.PatternOrder.setEvaluator(new PatternOrder());
-		F.Quit.setEvaluator(new Quit());
-		F.Scan.setEvaluator(new Scan());
-		F.Sort.setEvaluator(new Sort());
-		F.Symbol.setEvaluator(new Symbol());
-		F.SymbolName.setEvaluator(new SymbolName());
-		F.Thread.setEvaluator(new Thread());
-		F.Through.setEvaluator(new Through());
-		ISymbol[] logicEquationHeads = { F.And, F.Or, F.Xor, F.Nand, F.Nor, F.Not, F.Implies, F.Equivalent, F.Equal,
-				F.Unequal, F.Less, F.Greater, F.LessEqual, F.GreaterEqual };
-		for (int i = 0; i < logicEquationHeads.length; i++) {
-			LOGIC_EQUATION_HEADS.add(logicEquationHeads[i]);
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
+
+		private static void init() {
+			F.Apply.setEvaluator(new Apply());
+			F.Depth.setEvaluator(new Depth());
+			F.Flatten.setEvaluator(new Flatten());
+			F.FlattenAt.setEvaluator(new FlattenAt());
+			F.Function.setEvaluator(new Function());
+			F.Head.setEvaluator(new Head());
+			F.LeafCount.setEvaluator(new LeafCount());
+			F.Map.setEvaluator(new Map());
+			F.MapAll.setEvaluator(new MapAll());
+			F.MapAt.setEvaluator(new MapAt());
+			F.MapIndexed.setEvaluator(new MapIndexed());
+			F.MapThread.setEvaluator(new MapThread());
+			F.Order.setEvaluator(new Order());
+			F.OrderedQ.setEvaluator(new OrderedQ());
+			F.Operate.setEvaluator(new Operate());
+			F.PatternOrder.setEvaluator(new PatternOrder());
+			F.Quit.setEvaluator(new Quit());
+			F.Scan.setEvaluator(new Scan());
+			F.Sort.setEvaluator(new Sort());
+			F.Symbol.setEvaluator(new Symbol());
+			F.SymbolName.setEvaluator(new SymbolName());
+			F.Thread.setEvaluator(new Thread());
+			F.Through.setEvaluator(new Through());
+			ISymbol[] logicEquationHeads = { F.And, F.Or, F.Xor, F.Nand, F.Nor, F.Not, F.Implies, F.Equivalent, F.Equal,
+					F.Unequal, F.Less, F.Greater, F.LessEqual, F.GreaterEqual };
+			for (int i = 0; i < logicEquationHeads.length; i++) {
+				LOGIC_EQUATION_HEADS.add(logicEquationHeads[i]);
+			}
+			PLUS_LOGIC_EQUATION_HEADS.addAll(LOGIC_EQUATION_HEADS);
+			PLUS_LOGIC_EQUATION_HEADS.add(F.Plus);
+			LIST_LOGIC_EQUATION_HEADS.addAll(LOGIC_EQUATION_HEADS);
+			LIST_LOGIC_EQUATION_HEADS.add(F.List);
 		}
-		PLUS_LOGIC_EQUATION_HEADS.addAll(LOGIC_EQUATION_HEADS);
-		PLUS_LOGIC_EQUATION_HEADS.add(F.Plus);
-		LIST_LOGIC_EQUATION_HEADS.addAll(LOGIC_EQUATION_HEADS);
-		LIST_LOGIC_EQUATION_HEADS.add(F.List);
 	}
 
 	/**
@@ -209,7 +217,7 @@ public class Structure {
 					}
 				}
 			} catch (final MathException e) {
-				engine.printMessage("Apply: " +e.getMessage());
+				engine.printMessage("Apply: " + e.getMessage());
 			} catch (final ArithmeticException e) {
 
 			}
@@ -875,7 +883,7 @@ public class Structure {
 				}
 				return arg2.accept(level).orElse(arg2);
 			} catch (final MathException e) {
-				engine.printMessage("Map: " +e.getMessage());
+				engine.printMessage("Map: " + e.getMessage());
 			}
 			return F.NIL;
 		}
@@ -982,7 +990,7 @@ public class Structure {
 					return level.visitAST(((IAST) arg2), new int[0]).orElse(arg2);
 				}
 			} catch (final MathException e) {
-				engine.printMessage("MapIndexed: " +e.getMessage());
+				engine.printMessage("MapIndexed: " + e.getMessage());
 			}
 			return F.NIL;
 		}
@@ -1858,10 +1866,8 @@ public class Structure {
 		return F.NIL;
 	}
 
-	private final static Structure CONST = new Structure();
-
-	public static Structure initialize() {
-		return CONST;
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	private Structure() {

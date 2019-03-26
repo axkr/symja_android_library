@@ -61,6 +61,7 @@ public class Config {
 	static {
 		EXPR_CACHE = CacheBuilder.newBuilder().maximumSize(MAX_EXPR_CACHE_SIZE).weakKeys().weakValues().build();
 	}
+
 	/**
 	 * COMPILER switch - set this boolean variable to <code>true</code>, if you would force a direct plot frame creation
 	 * from the Plot[], Plot3D[] and ParametricPlot[] functions
@@ -206,7 +207,7 @@ public class Config {
 	 * 
 	 * @see edu.jas.ufd.GCDFactory#getProxy(edu.jas.structure.RingFactory)
 	 */
-	public static boolean JAS_NO_THREADS = true;
+	public static boolean JAS_NO_THREADS = false;
 
 	/**
 	 * Use of <code>java.misc.Unsafe</code> is allowed if <code>true</code>.
