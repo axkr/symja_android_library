@@ -33,7 +33,6 @@ test0534 - Integrate[(Cos[x] - I*Sin[x])/(Cos[x] + I*Sin[x]), x]
 AlgebraicFunctions
 test0275 - Integrate[((1 - x)^(-1/2 + p)*(1 + x)^(1/2 + p))/(c*x)^(2*(1 + p)), x]
 test0276 - Integrate[(1 + x/a)^(n/2)/(x^2*(1 - x/a)^(n/2)), x]
-test0280 - Integrate[x^2*(1 - a*x)^(-1 - (n*(1 + n))/2)*(1 + a*x)^(-1 - ((-1 + n)*n)/2), x]
 test0318 - Integrate[(a + b*x)^m*(c + d*x)^n*((b*c*f + a*d*f + a*d*f*m + b*c*f*n)/(b*d*(2 + m + n)) + f*x)^(-3 - m - n), x]
 test0484 - Integrate[Sqrt[1 + (2*c*x^2)/(b - Sqrt[b^2 - 4*a*c])]/Sqrt[1 - (2*c*x^2)/(b + Sqrt[b^2 - 4*a*c])], x]
 test0485 - Integrate[Sqrt[1 - (2*c*x^2)/(b - Sqrt[b^2 - 4*a*c])]/Sqrt[1 - (2*c*x^2)/(b + Sqrt[b^2 - 4*a*c])], x]
