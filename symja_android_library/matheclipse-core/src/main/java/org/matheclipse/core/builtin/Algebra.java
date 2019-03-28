@@ -4000,9 +4000,9 @@ public class Algebra {
 			@Override
 			public IExpr visit(IASTMutable ast) {
 				IExpr result = F.NIL;
+				long minCounter = fComplexityFunction.apply(ast);
 				IExpr temp = visitAST(ast);
 				if (temp.isPresent()) {
-					long minCounter = fComplexityFunction.apply(ast);
 					long count = fComplexityFunction.apply(temp);
 					if (count <= minCounter) {
 						minCounter = count;
@@ -4081,9 +4081,7 @@ public class Algebra {
 					}
 					if (newTimes.isPresent()) {
 						result = ast;
-						long minCounter = fComplexityFunction.apply(ast);
 						long count;
-
 						try {
 							temp = F.eval(F.Expand(newTimes));
 							count = fComplexityFunction.apply(temp);
@@ -4107,15 +4105,26 @@ public class Algebra {
 						result = temp;
 					}
 					temp = result.orElse(ast);
-					long minCounter = fComplexityFunction.apply(temp);
+					minCounter = fComplexityFunction.apply(temp);
 					result = functionExpand(temp, minCounter, result);
-
-					return result;
+				} else if (ast.isPowerReciprocal() && ast.base().isPlus() && ast.base().size() == 3) {
+					// example 1/(5+Sqrt(17)) => 1/8*(5-Sqrt(17))
+					IAST plus1 = (IAST) ast.base();
+					IAST plus2 = plus1.setAtCopy(2, plus1.arg2().negate());
+					// example (5+Sqrt(17)) * (5-Sqrt(17))
+					IExpr expr = F.eval(F.Expand(F.Times(plus1, plus2)));
+					if (expr.isNumber() && !expr.isZero()) {
+						IExpr powerSimplified = F.Times.of(expr.inverse(), plus2);
+						long count = fComplexityFunction.apply(powerSimplified);
+						if (count < minCounter) {
+							minCounter = count;
+							result = temp;
+							return powerSimplified;
+						}
+					}
 				}
 
 				temp = F.evalExpandAll(ast);
-				long minCounter = fComplexityFunction.apply(ast);
-
 				long count = fComplexityFunction.apply(temp);
 				if (count < minCounter) {
 					minCounter = count;
@@ -4156,31 +4165,28 @@ public class Algebra {
 				return result;
 			}
 
-			private IExpr reduceNumberFactor(IASTMutable ast) {
+			private IExpr reduceNumberFactor(IASTMutable timesAST) {
 				IExpr temp;
-				IASTAppendable basicTimes = F.TimesAlloc(ast.size());
-				IASTAppendable restTimes = F.TimesAlloc(ast.size());
+				IASTAppendable basicTimes = F.TimesAlloc(timesAST.size());
+				IASTAppendable restTimes = F.TimesAlloc(timesAST.size());
 				INumber number = null;
-				if (ast.arg1().isNumber()) {
-					number = (INumber) ast.arg1();
+				if (timesAST.arg1().isNumber()) {
+					number = (INumber) timesAST.arg1();
 				}
-				IExpr reduced;
-				for (int i = 1; i < ast.size(); i++) {
-					temp = ast.get(i);
+				IExpr reduced = F.NIL;
+				for (int i = 1; i < timesAST.size(); i++) {
+					temp = timesAST.get(i);
 					if (temp.accept(isBasicAST)) {
 						if (i != 1 && number != null) {
 							if (temp.isPlus()) {
 								// <number> * Plus[.....]
-								reduced = tryExpandAll(ast, temp, number, i);
-								if (reduced.isPresent()) {
-									return reduced;
-								}
+								reduced = tryExpandAll(timesAST, (IAST) temp, number, i, false);
 							} else if (temp.isPowerReciprocal() && temp.base().isPlus()) {
 								// <number> * Power[Plus[...], -1 ]
-								reduced = tryExpandAll(ast, temp.base(), number.inverse(), i);
-								if (reduced.isPresent()) {
-									return F.Power(reduced, F.CN1);
-								}
+								reduced = tryExpandAll(timesAST, (IAST) temp.base(), number.inverse(), i, true);
+							}
+							if (reduced.isPresent()) {
+								return reduced;
 							}
 						}
 						basicTimes.append(temp);
@@ -4201,13 +4207,17 @@ public class Algebra {
 				return F.NIL;
 			}
 
-			private IExpr tryExpandAll(IAST ast, IExpr temp, IExpr arg1, int i) {
-				IExpr expandedAst = tryExpandAllTransformation((IAST) temp, F.Times(arg1, temp));
+			private IExpr tryExpandAll(IAST timesAST, IAST plusAST, IExpr arg1, int i, boolean isPowerReciprocal) {
+				IExpr expandedAst = tryExpandAllTransformation((IAST) plusAST, F.Times(arg1, plusAST));
 				if (expandedAst.isPresent()) {
-					IASTAppendable result = F.TimesAlloc(ast.size());
+					IASTAppendable result = F.TimesAlloc(timesAST.size());
 					// ast.range(2, ast.size()).toList(result.args());
-					result.appendAll(ast, 2, ast.size());
-					result.set(i - 1, expandedAst);
+					result.appendAll(timesAST, 2, timesAST.size());
+					if (isPowerReciprocal) {
+						result.set(i - 1, F.Power(expandedAst, F.CN1));
+					} else {
+						result.set(i - 1, expandedAst);
+					}
 					return result;
 				}
 				return F.NIL;
