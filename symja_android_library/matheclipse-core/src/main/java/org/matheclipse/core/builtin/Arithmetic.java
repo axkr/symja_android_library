@@ -5127,7 +5127,8 @@ public final class Arithmetic {
 					return F.Power(power0Arg1, power0Arg2.plus(power1Arg2));
 				}
 				if (power0Arg2.equals(power1Arg2)) {
-					if (power1Arg1.isPositive() && power0Arg1.isReal() && power1Arg1.isReal()) {
+					if (power1Arg1.isPositive() && power0Arg1.isReal() && (power1Arg1.isReal()
+							|| power1Arg1.isConstant() || (power1Arg1.isPlus() && power1Arg1.first().isReal()))) {
 						if (power0Arg1.isPositive()) {
 							// a^(c)*b^(c) => (a*b) ^c
 							return F.Power(power0Arg1.times(power1Arg1), power0Arg2);
@@ -5148,6 +5149,7 @@ public final class Arithmetic {
 					}
 				}
 			}
+
 		}
 		if (power0Arg1.isRational() && power1Arg1.isRational()) {
 			IExpr temp = timesPowerPower(((IRational) power0Arg1).numerator(), ((IRational) power0Arg1).denominator(),

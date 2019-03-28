@@ -34,7 +34,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("N(1231231236123216361256312631627.12312312,50)", //
 				"1.23123123612321636125631263162712312312*10^30");
 
-		check("f[[1,2]]", "(f[[1,2]])");
+		check("f[[1,2]]", //
+				"f[[1,2]]");
 		check("-cos(x)", "-Cos(x)");
 		check("expand((a+b)^3)", "a^3+3*a^2*b+3*a*b^2+b^3");
 		check("expand((a+b)^8)", "a^8+8*a^7*b+28*a^6*b^2+56*a^5*b^3+70*a^4*b^4+56*a^3*b^5+28*a^2*b^6+8*a*b^7+b^8");
@@ -3408,7 +3409,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("EllipticE(1/2)", //
 				"(Pi^2+2*Gamma(3/4)^4)/(4*Sqrt(Pi)*Gamma(3/4)^2)");
 		check("EllipticE(-1)", //
-				"(Pi^2+2*Gamma(3/4)^4)/(2*Sqrt(2)*Sqrt(Pi)*Gamma(3/4)^2)");
+				"(Pi^2+2*Gamma(3/4)^4)/(2*Sqrt(2*Pi)*Gamma(3/4)^2)");
 		check("EllipticE(Pi/2, m)", "EllipticE(m)");
 		check("EllipticE(5/4,1)", "Sin(5/4)");
 		check("EllipticE(0.4)", //
@@ -6422,6 +6423,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLegendreP() {
+		check("Sqrt(Pi)/(Gamma((1 - Pi)/2) * Gamma(1 + Pi/2))", //
+				"Sqrt(Pi)/(Gamma(1/2*(1-Pi))*Gamma(1+Pi/2))");
+
 		check("LegendreP(-(1/2), 1 - 2*z)", //
 				"(2*EllipticK(z))/Pi");
 		check("LegendreP(Pi,0)", //
@@ -8599,7 +8603,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testOddQ() {
-		check("OddQ({1,3}) && OddQ({5,7})", "{True,True}&&{True,True}");
+		check("OddQ(1/(b-a*c)[[2]])", "False");
+		check("OddQ((1/(b-a*c))[[2]])//Trace", "{{(1/(b-a*c))[[2]],-1},True}");
+		check("OddQ({1,3}) && OddQ({5,7})", //
+				"{True,True}&&{True,True}");
 	}
 
 	public void testOneIdentity() {
@@ -8970,10 +8977,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPart() {
+		check("1/(b-a*c)[[2]]", //
+				"-1/(a*c)");
 		check("{{1,0,0},\n" + " {0,1,0},\n" + " {0,0,1}}[[2]]", //
 				"{0,1,0}");
-		check("T = {a, b, c, d}", "{a,b,c,d}");
-		check("T[[2]]=3", "3");
+		check("T = {a, b, c, d}", //
+				"{a,b,c,d}");
+		check("T[[2]]=3", //
+				"3");
 
 		check("{a(x,y,z,f),b,c,d}[[1,2]]", //
 				"y");
@@ -8981,15 +8992,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{1,1,1,1,1}");
 		check("{{3,1},{5,1},{17,1},{257,1},{65537,1}}[[None]]", //
 				"{{3,1},{5,1},{17,1},{257,1},{65537,1}}[[None]]");
-		check("lst=False;lst[[2]]", "(False[[2]])");
-		check("T = {a, b, c, d}", "{a,b,c,d}");
-		check("T[[2]]=3", "3");
-		check("T", "{a,3,c,d}");
+		check("lst=False;lst[[2]]", //
+				"False[[2]]");
+		check("T = {a, b, c, d}", //
+				"{a,b,c,d}");
+		check("T[[2]]=3", //
+				"3");
+		check("T", //
+				"{a,3,c,d}");
 
-		check("A = {a, b, c, d}", "{a,b,c,d}");
-		check("A[[3]]", "c");
-		check("{a, b, c}[[-2]]", "b");
-		check("(a + b + c)[[2]]", "b");
+		check("A = {a, b, c, d}", //
+				"{a,b,c,d}");
+		check("A[[3]]", //
+				"c");
+		check("{a, b, c}[[-2]]", //
+				"b");
+		check("(a + b + c)[[2]]", //
+				"b");
 		check("(a + b + c)[[0]]", "Plus");
 		check("M = {{a, b}, {c, d}}", "{{a,b},{c,d}}");
 		check("M[[1, 2]]", "b");
@@ -9006,9 +9025,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("B = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}", "{{1,2,3},{4,5,6},{7,8,9}}");
 		check("B[[{1, 3}, -2;;-1]]", "{{2,3},{8,9}}");
 		check("(a+b+c+d)[[-1;;-2]]", "0");
-		check("x[[2]] ", "(x[[2]])");
+		check("x[[2]]", //
+				"x[[2]]");
 		// Assignment
-		check("B[[;;, 2]] = {10, 11, 12}", "{10,11,12}");
+		check("B[[;;, 2]] = {10, 11, 12}", //
+				"{10,11,12}");
 		check("B", "{{1,10,3},{4,11,6},{7,12,9}}");
 		check("B[[;;, 3]] = 13", "13");
 		check("B", "{{1,10,13},{4,11,13},{7,12,13}}");
@@ -9682,6 +9703,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("TimeConstrained(1^3^3^3, 10)", //
 		// "1");
 
+		check("2^(2/3)*(-5+3*Sqrt[3])^(2/3)", //
+				"(2*(-5+3*Sqrt(3)))^(2/3)");
 		check("(-1095912791)^(2/3)", //
 				"1062961*(-1)^(2/3)");
 		check("(-1062961)^(2/3)", //
@@ -10762,20 +10785,30 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRefine() {
-
-		check("Refine(MoebiusMu(p),Element(p, Primes))", "-1");
+		check("Refine(a>0)", //
+				"a>0");
+		check("Refine(MoebiusMu(p),Element(p, Primes))", //
+				"-1");
 
 		// TODO
 		// check("Refine((a^b)^c, -1<b&&b<(-1))", "a^(b*c)");
-		check("Refine(Log(x)>0, x>1)", "True");
-		check("Refine(Log(x)<0, x<1&&x>0)", "True");
-		check("Refine(Log(x)<0, x<1&&x>0)", "True");
-		check("Refine(Log(x)<0, x<1&&x>=0)", "Log(x)<0");
+		check("Refine(Log(x)>0, x>1)", //
+				"True");
+		check("Refine(Log(x)<0, x<1&&x>0)", //
+				"True");
+		check("Refine(Log(x)<0, x<1&&x>0)", //
+				"True");
+		check("Refine(Log(x)<0, x<1&&x>=0)", //
+				"Log(x)<0");
 
-		check("Refine(x^4<0,x<0)", "False");
-		check("Refine(x^(1/2)>=0, x>=0)", "Sqrt(x)>=0");
-		check("Refine(x^4>=0,Element(x, Reals))", "True");
-		check("Refine(x^4>0,Element(x, Reals))", "x^4>0");
+		check("Refine(x^4<0,x<0)", //
+				"False");
+		check("Refine(x^(1/2)>=0, x>=0)", //
+				"Sqrt(x)>=0");
+		check("Refine(x^4>=0,Element(x, Reals))",//
+				"True");
+		check("Refine(x^4>0,Element(x, Reals))", //
+				"x^4>0");
 		check("Refine(x^3>=0,Element(x, Reals))", "x^3>=0");
 		check("Refine(x^4<0,Element(x, Reals))", "x^4<0");
 		check("Refine(x^4<0,x<0)", "False");
@@ -12033,6 +12066,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSimplify() {
+		check("Simplify(-a/(-b+a*c))", //
+				"a/(b-a*c)");
+		check("Simplify((Cos(x)-I*Sin(x))/(I*Cos(x)-Sin(x)))", //
+				"-I*Cos(2*x)-Sin(2*x)");
+		check("Simplify(1/(Cos(x)+I*Sin(x))-(c+d*x)^n)", //
+				"-(c+d*x)^n+Cos(x)-I*Sin(x)");
+		check("Simplify(1/(Cos(x)+I*Sin(x)))", //
+				"Cos(x)-I*Sin(x)");
 		check("Expand((Sqrt(-d)*e+d*Sqrt(e)*Sqrt(-e/d))*(Sqrt(-d)*e-d*Sqrt(e)*Sqrt(-e/d)))", //
 				"0");
 		check("Simplify((e*x^2)/(Sqrt(-d)*e-d*Sqrt(e)*Sqrt(-e/d)))", //
@@ -13601,7 +13642,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Tan(Pi/3+z)");
 	}
 
-	public void testTanh() { 
+	public void testTanh() {
 		check("Tanh(0)", "0");
 	}
 
@@ -13946,6 +13987,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTogether() {
+		check("Together(-a/(-(b-a*c)))", //
+				"-a/(-b+a*c)");
+		check("Together(Simplify(Together(-a/(-(b-a*c)))))", //
+				"a/(b-a*c)");
 		check("Together(1/2+I/3 + 3*a^(-1))", //
 				"(18+(3+I*2)*a)/(6*a)");
 		check("Together(1/2 + 3/a )", //

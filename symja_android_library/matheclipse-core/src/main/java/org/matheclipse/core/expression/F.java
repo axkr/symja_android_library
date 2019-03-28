@@ -6763,7 +6763,7 @@ public class F {
 		return F.NIL;
 	}
 
-	public static IAST IIntegrate(int priority, final IAST lhs, final IExpr rhs) {
+	public static IExpr IIntegrate(int priority, final IAST lhs, final IExpr rhs) {
 		((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
 		org.matheclipse.core.reflection.system.Integrate.INTEGRATE_RULES_DATA.putDownRule(IPatternMatcher.SET_DELAYED,
 				false, lhs, rhs, priority);
@@ -8869,40 +8869,40 @@ public class F {
 		return function(Times, a);
 	}
 
-	public static IASTMutable Times(final IExpr a0, final IExpr a1) {
-		if (a0 != null && a1 != null) {
-			if (a0.isTimes() || a1.isTimes()) {
+	public static IASTMutable Times(final IExpr a1, final IExpr a2) {
+		if (a1 != null && a2 != null) {
+			if (a1.isTimes() || a2.isTimes()) {
 				int size = 0;
-				if (a0.isTimes()) {
-					size += a0.size();
-				} else {
-					size++;
-				}
 				if (a1.isTimes()) {
 					size += a1.size();
 				} else {
 					size++;
 				}
-				IASTAppendable result = TimesAlloc(size);
-				if (a0.isTimes()) {
-					result.appendArgs((IAST) a0);
+				if (a2.isTimes()) {
+					size += a2.size();
 				} else {
-					result.append(a0);
+					size++;
 				}
+				IASTAppendable result = TimesAlloc(size);
 				if (a1.isTimes()) {
 					result.appendArgs((IAST) a1);
 				} else {
 					result.append(a1);
 				}
+				if (a2.isTimes()) {
+					result.appendArgs((IAST) a2);
+				} else {
+					result.append(a2);
+				}
 				EvalAttributes.sort(result);
 				return result;
 			}
-			if (a0.compareTo(a1) > 0) {
+			if (a1.compareTo(a2) > 0) {
 				// swap arguments
-				return binary(Times, a1, a0);
+				return binary(Times, a2, a1);
 			}
 		}
-		return binary(Times, a0, a1);
+		return binary(Times, a1, a2);
 	}
 
 	public static IAST Times(final long num, final IExpr... a) {

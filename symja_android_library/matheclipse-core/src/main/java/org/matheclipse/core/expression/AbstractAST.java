@@ -1723,6 +1723,22 @@ public abstract class AbstractAST implements IASTMutable {
 			return arg1().internalJavaString(symbolsAsFactoryMethod, depth, useOperators, usePrefix, noSymbolPrefix);
 		}
 		if (isPower()) {
+			if (arg1().isInteger() && arg2().isMinusOne()) {
+				IInteger i = (IInteger) arg1();
+				if (i.equals(F.C2)) {
+					return prefix + "C1D2";
+				} else if (i.equals(F.C3)) {
+					return prefix + "C1D3";
+				} else if (i.equals(F.C4)) {
+					return prefix + "C1D4";
+				} else if (i.equals(F.CN2)) {
+					return prefix + "CN1D2";
+				} else if (i.equals(F.CN3)) {
+					return prefix + "CN1D3";
+				} else if (i.equals(F.CN4)) {
+					return prefix + "CN1D4";
+				}
+			}
 			if (equalsAt(1, F.E)) {
 				return prefix + "Exp(" + arg2().internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators,
 						usePrefix, noSymbolPrefix) + ")";

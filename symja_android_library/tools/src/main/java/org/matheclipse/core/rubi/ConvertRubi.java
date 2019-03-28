@@ -33,7 +33,7 @@ public class ConvertRubi {
 			+ " * IndefiniteIntegrationRules from the <a href=\"http://www.apmaths.uwo.ca/~arich/\">Rubi -\n"
 			+ " * rule-based integrator</a>.\n" + " *  \n" + " */\n" + "public class IntRules";
 
-	private static final String FOOTER = "}\n";
+	private static final String FOOTER = "}\n}\n";
 	private static int NUMBER_OF_RULES_PER_FILE = 50;
 
 	public static List<ASTNode> parseFileToList(String fileName) {
@@ -189,9 +189,9 @@ public class ConvertRubi {
 		// for Rubi patternExpression must be set to true in internalFormString() for right-hand-side
 		buffer.append(rightHandSide.internalFormString(true, 0));
 		if (last) {
-			buffer.append(")\n");
+			buffer.append(");\n");
 		} else {
-			buffer.append("),\n");
+			buffer.append(");\n");
 		}
 		// }
 	}
@@ -619,7 +619,7 @@ public class ConvertRubi {
 		Config.PARSER_USE_LOWERCASE_SYMBOLS = false;
 		Config.RUBI_CONVERT_SYMBOLS = true;
 		EvalEngine.set(new EvalEngine(false));
-		addPredefinedSymbols(); 
+		addPredefinedSymbols();
 		// use same order as in Rubi.m
 		String[] fileNames = { //
 				"./Rubi/RubiRules4.16.0_FullLHS.m", };
@@ -640,14 +640,22 @@ public class ConvertRubi {
 				for (int j = 0; j < list.size(); j++) {
 					if (cnt == 0) {
 						buffer = new StringBuffer(100000);
-						buffer.append(HEADER + fcnt + " { \n  public static IAST RULES = List( \n");
+						buffer.append(HEADER + fcnt //
+								+ " { \n" //
+								+ "\n" //
+								+ "	public static void initialize() {\n"//
+								+ "		Initializer.init();\n" + "	}\n" //
+								+ "\n"//
+								+ "	private static class Initializer  {\n" //
+								+ "\n"//
+								+ "		private static void init() {\n");
 					}
 					ASTNode astNode = list.get(j);
 					cnt++;
 					convert(astNode, buffer, cnt == NUMBER_OF_RULES_PER_FILE || j == list.size() - 1);
 
 					if (cnt == NUMBER_OF_RULES_PER_FILE) {
-						buffer.append("  );\n" + FOOTER);
+						buffer.append("  }\n" + FOOTER);
 						writeFile("C:/temp/rubi/IntRules" + fcnt + ".java", buffer);
 						fcnt++;
 						cnt = 0;
