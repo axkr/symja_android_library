@@ -1238,23 +1238,32 @@ public class OutputFormFactory {
 	 */
 	public void convertPart(final Appendable buf, final IAST list) throws IOException {
 		IExpr arg1 = list.arg1();
-		if (!(arg1 instanceof IAST)) {
+
+		boolean parentheses = false;
+		if (arg1.isAST()) {
+			final Operator operator = getOperator(arg1.topHead());
+			if (operator != null ) {
+				parentheses = true;
+			}
+		} else if (!arg1.isSymbol()) {
+			parentheses = true;
+		}
+		if (parentheses) {
 			append(buf, "(");
 		}
 		convert(buf, arg1);
+		if (parentheses) {
+			append(buf, ")");
+		}
 		append(buf, "[[");
-
 		for (int i = 2; i < list.size(); i++) {
 			convert(buf, list.get(i));
 			if (i < list.argSize()) {
 				append(buf, ",");
 			}
 		}
-
 		append(buf, "]]");
-		if (!(arg1 instanceof IAST)) {
-			append(buf, ")");
-		}
+
 	}
 
 	/**
