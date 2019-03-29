@@ -10805,7 +10805,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"False");
 		check("Refine(x^(1/2)>=0, x>=0)", //
 				"Sqrt(x)>=0");
-		check("Refine(x^4>=0,Element(x, Reals))",//
+		check("Refine(x^4>=0,Element(x, Reals))", //
 				"True");
 		check("Refine(x^4>0,Element(x, Reals))", //
 				"x^4>0");
@@ -12066,6 +12066,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSimplify() {
+		check("Simplify(1+n/2)", //
+				"1/2*(2+n)");
+		check("Simplify((9-Sqrt[57])*x^2)", //
+				"-(-9+Sqrt(57))*x^2");
 		check("Simplify(-a/(-b+a*c))", //
 				"a/(b-a*c)");
 		check("Simplify((Cos(x)-I*Sin(x))/(I*Cos(x)-Sin(x)))", //
@@ -12946,6 +12950,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSqrt() {
+		check("Sqrt(-Sqrt(3))", //
+				"I*3^(1/4)");
+		check("Sqrt(Sqrt(3))", //
+				"3^(1/4)");
 		check("Sqrt((1-a)*a)", //
 				"Sqrt((1-a)*a)");
 		check("(-3/4)/Sqrt(-3/4)", //

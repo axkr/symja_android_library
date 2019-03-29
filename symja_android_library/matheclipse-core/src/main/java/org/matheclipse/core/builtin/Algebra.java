@@ -4170,8 +4170,22 @@ public class Algebra {
 				IASTAppendable basicTimes = F.TimesAlloc(timesAST.size());
 				IASTAppendable restTimes = F.TimesAlloc(timesAST.size());
 				INumber number = null;
-				if (timesAST.arg1().isNumber()) {
-					number = (INumber) timesAST.arg1();
+				IExpr arg1 = timesAST.arg1();
+				
+				if (arg1.isNumber()) {
+					number = (INumber) arg1;
+				} else if (arg1.isPlus() && arg1.first().isNumber()) {
+					long minCounter = fComplexityFunction.apply(arg1);
+					IExpr negativeAST = fEngine.evaluate(F.Times(F.CN1, arg1));
+					long count = fComplexityFunction.apply(negativeAST);
+					if (count <= minCounter) {
+						number = F.CN1;
+						IASTAppendable result = F.TimesAlloc(timesAST.size());
+						result.append(F.CN1);
+						result.append(negativeAST);
+						result.appendAll(timesAST, 2, timesAST.size());
+						return result;
+					}
 				}
 				IExpr reduced = F.NIL;
 				for (int i = 1; i < timesAST.size(); i++) {
