@@ -33,6 +33,7 @@ Features of the Symja language:
 * two [REPLs](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop) are available in the library a [Console.java](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/eval/Console.java) for standard math input and a [MMAConsole.java](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/eval/MMAConsole.java) for "Mathematica like syntax" input.
 * Symja with "Mathematica like syntax" input can also be used interactively in a [BeakerX/Jupyter Lab](https://github.com/axkr/symja_android_library/wiki/BeakerX-usage) environment
 * Symja can also be used interactively in the [Java jshell](https://github.com/axkr/symja_android_library/wiki/JShell-usage)
+* the [Rubi symbolic integration rules](https://github.com/axkr/symja_android_library/wiki/Porting-Rubi-Integration-rules-to-Symja) are used to implement the `[Integrate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Integrate.md)` function, they can be systematically applied to determine the antiderivative of a wide variety of mathematical expressions. 
 
 ### Demos
 
