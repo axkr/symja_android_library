@@ -25,34 +25,34 @@ public interface LaplaceTransformRules {
       Condition(Times(Power(CN1,n),D(LaplaceTransform(a,t,s),List(s,n))),And(FreeQ(List(n),t),Greater(n,C0)))),
     // LaplaceTransform(Sqrt(t_),t_,s_):=Sqrt(Pi)/(2*s^(3/2))
     ISetDelayed(LaplaceTransform(Sqrt(t_),t_,s_),
-      Times(Sqrt(Pi),Power(Times(C2,Power(s,QQ(3L,2L))),-1))),
+      Times(Sqrt(Pi),Power(Times(C2,Power(s,QQ(3L,2L))),CN1))),
     // LaplaceTransform(Sin(t_),t_,s_):=1/(s^2+1)
     ISetDelayed(LaplaceTransform(Sin(t_),t_,s_),
-      Power(Plus(Sqr(s),C1),-1)),
+      Power(Plus(Sqr(s),C1),CN1)),
     // LaplaceTransform(Cos(t_),t_,s_):=s/(s^2+1)
     ISetDelayed(LaplaceTransform(Cos(t_),t_,s_),
-      Times(Power(Plus(Sqr(s),C1),-1),s)),
+      Times(Power(Plus(Sqr(s),C1),CN1),s)),
     // LaplaceTransform(Sinh(t_),t_,s_):=c/(-1+s^2)
     ISetDelayed(LaplaceTransform(Sinh(t_),t_,s_),
-      Times(c,Power(Plus(CN1,Sqr(s)),-1))),
+      Times(c,Power(Plus(CN1,Sqr(s)),CN1))),
     // LaplaceTransform(Cosh(t_),t_,s_):=s/(-1+s^2)
     ISetDelayed(LaplaceTransform(Cosh(t_),t_,s_),
-      Times(s,Power(Plus(CN1,Sqr(s)),-1))),
+      Times(s,Power(Plus(CN1,Sqr(s)),CN1))),
     // LaplaceTransform(E^t_,t_,s_):=1/(-1+s)
     ISetDelayed(LaplaceTransform(Exp(t_),t_,s_),
-      Power(Plus(CN1,s),-1)),
+      Power(Plus(CN1,s),CN1)),
     // LaplaceTransform(Log(t_),t_,s_):=-(EulerGamma+Log(s))/s
     ISetDelayed(LaplaceTransform(Log(t_),t_,s_),
-      Times(CN1,Power(s,-1),Plus(EulerGamma,Log(s)))),
+      Times(CN1,Power(s,CN1),Plus(EulerGamma,Log(s)))),
     // LaplaceTransform(Log(t_)^2,t_,s_):=(6*EulerGamma^2+Pi^2+6*Log(s)*(2*EulerGamma+Log(s)))/(6*s)
     ISetDelayed(LaplaceTransform(Sqr(Log(t_)),t_,s_),
-      Times(Power(Times(C6,s),-1),Plus(Times(C6,Sqr(EulerGamma)),Sqr(Pi),Times(C6,Log(s),Plus(Times(C2,EulerGamma),Log(s)))))),
+      Times(Power(Times(C6,s),CN1),Plus(Times(C6,Sqr(EulerGamma)),Sqr(Pi),Times(C6,Log(s),Plus(Times(C2,EulerGamma),Log(s)))))),
     // LaplaceTransform(Erf(t_),t_,s_):=E^(s^2/4)*Erfc(s/2)/s
     ISetDelayed(LaplaceTransform(Erf(t_),t_,s_),
-      Times(Exp(Times(C1D4,Sqr(s))),Power(s,-1),Erfc(Times(C1D2,s)))),
+      Times(Exp(Times(C1D4,Sqr(s))),Power(s,CN1),Erfc(Times(C1D2,s)))),
     // LaplaceTransform(Erf(Sqrt(t_)),t_,s_):=1/(Sqrt(s+1)*s)
     ISetDelayed(LaplaceTransform(Erf(Sqrt(t_)),t_,s_),
-      Power(Times(Sqrt(Plus(s,C1)),s),-1)),
+      Power(Times(Sqrt(Plus(s,C1)),s),CN1)),
     // LaplaceTransform(Derivative(1)[f_][t_],t_,s_):=-f(0)+s*LaplaceTransform(f(t),t,s)/;FreeQ(f,t)
     ISetDelayed(LaplaceTransform($($(Derivative(C1),f_),t_),t_,s_),
       Condition(Plus(Negate($(f,C0)),Times(s,LaplaceTransform($(f,t),t,s))),FreeQ(f,t))),

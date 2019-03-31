@@ -67,7 +67,7 @@ public interface GammaRules {
       Times(Sqrt(Pi),Erfc(Sqrt(z)))),
     // Gamma(-1/2,z_?NumericQ):=2/(E^z*Sqrt(z))-2*Sqrt(Pi)*Erfc(Sqrt(z))
     ISetDelayed(Gamma(CN1D2,PatternTest(z_,NumericQ)),
-      Plus(Times(C2,Power(Times(Exp(z),Sqrt(z)),-1)),Times(CN2,Sqrt(Pi),Erfc(Sqrt(z))))),
+      Plus(Times(C2,Power(Times(Exp(z),Sqrt(z)),CN1)),Times(CN2,Sqrt(Pi),Erfc(Sqrt(z))))),
     // Gamma(1,z_):=E^(-z)
     ISetDelayed(Gamma(C1,z_),
       Exp(Negate(z))),
@@ -85,9 +85,9 @@ public interface GammaRules {
       Condition(Gamma(a),Greater(Re(a),C0))),
     // Gamma(a_,0,z_):=Gamma(a)-Gamma(a,z)/;Re(a)>0
     ISetDelayed(Gamma(a_,C0,z_),
-      Condition(Plus(Gamma(a),Negate(Gamma(a,z))),Greater(Re(a),C0))),
+      Condition(Subtract(Gamma(a),Gamma(a,z)),Greater(Re(a),C0))),
     // Gamma(a_,x_,y_):=Gamma(a,x)-Gamma(a,y)
     ISetDelayed(Gamma(a_,x_,y_),
-      Plus(Gamma(a,x),Negate(Gamma(a,y))))
+      Subtract(Gamma(a,x),Gamma(a,y)))
   );
 }

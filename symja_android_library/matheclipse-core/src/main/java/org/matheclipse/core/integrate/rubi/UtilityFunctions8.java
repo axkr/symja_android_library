@@ -48,9 +48,9 @@ ISetDelayed(663,PiecewiseLinearQ(u_,v_,x_Symbol),
 ISetDelayed(664,PiecewiseLinearQ(u_,x_Symbol),
     Or(LinearQ(u,x),MatchQ(u,Condition(Log(Times(c_DEFAULT,Power(F_,v_))),And(FreeQ(List(FSymbol,c),x),LinearQ(v,x)))),MatchQ(u,Condition($(F_,$(G_,v_)),And(LinearQ(v,x),MemberQ(List(List(ArcTanh,Tanh),List(ArcTanh,Coth),List(ArcCoth,Coth),List(ArcCoth,Tanh),List(ArcTan,Tan),List(ArcTan,Cot),List(ArcCot,Cot),List(ArcCot,Tan)),List(FSymbol,GSymbol)))))));
 ISetDelayed(665,Divides(y_,u_,x_Symbol),
-    With(List(Set(v,Simplify(Times(u,Power(y,-1))))),If(FreeQ(v,x),v,False)));
+    With(List(Set(v,Simplify(Times(u,Power(y,CN1))))),If(FreeQ(v,x),v,False)));
 ISetDelayed(666,DerivativeDivides(y_,u_,x_Symbol),
-    If(MatchQ(y,Condition(Times(a_DEFAULT,x),FreeQ(a,x))),False,If(If(PolynomialQ(y,x),And(PolynomialQ(u,x),Equal(Exponent(u,x),Plus(Exponent(y,x),Negate(C1)))),EasyDQ(y,x)),Module(List(Set(v,Block(List(Set($s("§$showsteps"),False)),ReplaceAll(D(y,x),Rule(Sinc(z_),Times(Sin(z),Power(z,-1))))))),If(EqQ(v,C0),False,CompoundExpression(Set(v,Simplify(Times(u,Power(v,-1)))),If(FreeQ(v,x),v,False)))),False)));
+    If(MatchQ(y,Condition(Times(a_DEFAULT,x),FreeQ(a,x))),False,If(If(PolynomialQ(y,x),And(PolynomialQ(u,x),Equal(Exponent(u,x),Subtract(Exponent(y,x),C1))),EasyDQ(y,x)),Module(List(Set(v,Block(List(Set($s("§$showsteps"),False)),ReplaceAll(D(y,x),Rule(Sinc(z_),Times(Sin(z),Power(z,CN1))))))),If(EqQ(v,C0),False,CompoundExpression(Set(v,Simplify(Times(u,Power(v,CN1)))),If(FreeQ(v,x),v,False)))),False)));
 ISetDelayed(667,EasyDQ(Times(u_DEFAULT,Power(x_,m_DEFAULT)),x_Symbol),
     Condition(EasyDQ(u,x),FreeQ(m,x)));
 ISetDelayed(668,EasyDQ(u_,x_Symbol),
@@ -60,11 +60,11 @@ ISetDelayed(669,ProductOfLinearPowersQ(u_,x_Symbol),
 ISetDelayed(670,Rt(u_,$p(n, Integer)),
     RtAux(TogetherSimplify(u),n));
 ISetDelayed(671,NthRoot(u_,n_),
-    Power(u,Power(n,-1)));
+    Power(u,Power(n,CN1)));
 ISetDelayed(672,TrigSquare(u_),
     If(SumQ(u),With(List(Set($s("lst"),SplitSum(Function(SplitProduct($rubi("TrigSquareQ"),Slot1)),u))),If(And(Not(AtomQ($s("lst"))),EqQ(Plus(Part($s("lst"),C1,C2),Part($s("lst"),C2)),C0)),If(SameQ(Head(Part(Part($s("lst"),C1,C1),C1)),Sin),Times(Part($s("lst"),C2),Sqr(Cos(Part(Part($s("lst"),C1,C1),C1,C1)))),Times(Part($s("lst"),C2),Sqr(Sin(Part(Part($s("lst"),C1,C1),C1,C1))))),False)),False));
 ISetDelayed(673,RtAux(u_,n_),
-    If(PowerQ(u),Power(Part(u,C1),Times(Part(u,C2),Power(n,-1))),If(ProductQ(u),Module(List($s("lst")),CompoundExpression(Set($s("lst"),SplitProduct(Function(GtQ(Slot1,C0)),u)),If(ListQ($s("lst")),Times(RtAux(Part($s("lst"),C1),n),RtAux(Part($s("lst"),C2),n)),CompoundExpression(Set($s("lst"),SplitProduct(Function(LtQ(Slot1,C0)),u)),If(ListQ($s("lst")),If(EqQ(Part($s("lst"),C1),CN1),With(List(Set(v,Part($s("lst"),C2))),If(And(PowerQ(v),LtQ(Part(v,C2),C0)),Power(RtAux(Negate(Power(Part(v,C1),Negate(Part(v,C2)))),n),-1),If(ProductQ(v),If(ListQ(SplitProduct($rubi("SumBaseQ"),v)),CompoundExpression(Set($s("lst"),SplitProduct($rubi("AllNegTermQ"),v)),If(ListQ($s("lst")),Times(RtAux(Negate(Part($s("lst"),C1)),n),RtAux(Part($s("lst"),C2),n)),CompoundExpression(Set($s("lst"),SplitProduct($rubi("NegSumBaseQ"),v)),If(ListQ($s("lst")),Times(RtAux(Negate(Part($s("lst"),C1)),n),RtAux(Part($s("lst"),C2),n)),CompoundExpression(Set($s("lst"),SplitProduct($rubi("SomeNegTermQ"),v)),If(ListQ($s("lst")),Times(RtAux(Negate(Part($s("lst"),C1)),n),RtAux(Part($s("lst"),C2),n)),CompoundExpression(Set($s("lst"),SplitProduct($rubi("SumBaseQ"),v)),Times(RtAux(Negate(Part($s("lst"),C1)),n),RtAux(Part($s("lst"),C2),n))))))))),CompoundExpression(Set($s("lst"),SplitProduct($rubi("AtomBaseQ"),v)),If(ListQ($s("lst")),Times(RtAux(Negate(Part($s("lst"),C1)),n),RtAux(Part($s("lst"),C2),n)),Times(RtAux(Negate(First(v)),n),RtAux(Rest(v),n))))),If(OddQ(n),Negate(RtAux(v,n)),NthRoot(u,n))))),Times(RtAux(Negate(Part($s("lst"),C1)),n),RtAux(Negate(Part($s("lst"),C2)),n))),CompoundExpression(Set($s("lst"),SplitProduct($rubi("AllNegTermQ"),u)),If(And(ListQ($s("lst")),ListQ(SplitProduct($rubi("SumBaseQ"),Part($s("lst"),C2)))),Times(RtAux(Negate(Part($s("lst"),C1)),n),RtAux(Negate(Part($s("lst"),C2)),n)),CompoundExpression(Set($s("lst"),SplitProduct($rubi("NegSumBaseQ"),u)),If(And(ListQ($s("lst")),ListQ(SplitProduct($rubi("NegSumBaseQ"),Part($s("lst"),C2)))),Times(RtAux(Negate(Part($s("lst"),C1)),n),RtAux(Negate(Part($s("lst"),C2)),n)),Map(Function(RtAux(Slot1,n)),u)))))))))),With(List(Set(v,TrigSquare(u))),If(Not(AtomQ(v)),RtAux(v,n),If(And(OddQ(n),LtQ(u,C0)),Negate(RtAux(Negate(u),n)),If(ComplexNumberQ(u),With(List(Set(a,Re(u)),Set(b,Im(u))),If(And(Not(And(IntegerQ(a),IntegerQ(b))),IntegerQ(Times(a,Power(Plus(Sqr(a),Sqr(b)),-1))),IntegerQ(Times(b,Power(Plus(Sqr(a),Sqr(b)),-1)))),Power(RtAux(Plus(Times(a,Power(Plus(Sqr(a),Sqr(b)),-1)),Times(CN1,b,Power(Plus(Sqr(a),Sqr(b)),-1),CI)),n),-1),NthRoot(u,n))),If(And(OddQ(n),NegQ(u),PosQ(Negate(u))),Negate(RtAux(Negate(u),n)),NthRoot(u,n)))))))));
+    If(PowerQ(u),Power(Part(u,C1),Times(Part(u,C2),Power(n,CN1))),If(ProductQ(u),Module(List($s("lst")),CompoundExpression(Set($s("lst"),SplitProduct(Function(GtQ(Slot1,C0)),u)),If(ListQ($s("lst")),Times(RtAux(Part($s("lst"),C1),n),RtAux(Part($s("lst"),C2),n)),CompoundExpression(Set($s("lst"),SplitProduct(Function(LtQ(Slot1,C0)),u)),If(ListQ($s("lst")),If(EqQ(Part($s("lst"),C1),CN1),With(List(Set(v,Part($s("lst"),C2))),If(And(PowerQ(v),LtQ(Part(v,C2),C0)),Power(RtAux(Negate(Power(Part(v,C1),Negate(Part(v,C2)))),n),CN1),If(ProductQ(v),If(ListQ(SplitProduct($rubi("SumBaseQ"),v)),CompoundExpression(Set($s("lst"),SplitProduct($rubi("AllNegTermQ"),v)),If(ListQ($s("lst")),Times(RtAux(Negate(Part($s("lst"),C1)),n),RtAux(Part($s("lst"),C2),n)),CompoundExpression(Set($s("lst"),SplitProduct($rubi("NegSumBaseQ"),v)),If(ListQ($s("lst")),Times(RtAux(Negate(Part($s("lst"),C1)),n),RtAux(Part($s("lst"),C2),n)),CompoundExpression(Set($s("lst"),SplitProduct($rubi("SomeNegTermQ"),v)),If(ListQ($s("lst")),Times(RtAux(Negate(Part($s("lst"),C1)),n),RtAux(Part($s("lst"),C2),n)),CompoundExpression(Set($s("lst"),SplitProduct($rubi("SumBaseQ"),v)),Times(RtAux(Negate(Part($s("lst"),C1)),n),RtAux(Part($s("lst"),C2),n))))))))),CompoundExpression(Set($s("lst"),SplitProduct($rubi("AtomBaseQ"),v)),If(ListQ($s("lst")),Times(RtAux(Negate(Part($s("lst"),C1)),n),RtAux(Part($s("lst"),C2),n)),Times(RtAux(Negate(First(v)),n),RtAux(Rest(v),n))))),If(OddQ(n),Negate(RtAux(v,n)),NthRoot(u,n))))),Times(RtAux(Negate(Part($s("lst"),C1)),n),RtAux(Negate(Part($s("lst"),C2)),n))),CompoundExpression(Set($s("lst"),SplitProduct($rubi("AllNegTermQ"),u)),If(And(ListQ($s("lst")),ListQ(SplitProduct($rubi("SumBaseQ"),Part($s("lst"),C2)))),Times(RtAux(Negate(Part($s("lst"),C1)),n),RtAux(Negate(Part($s("lst"),C2)),n)),CompoundExpression(Set($s("lst"),SplitProduct($rubi("NegSumBaseQ"),u)),If(And(ListQ($s("lst")),ListQ(SplitProduct($rubi("NegSumBaseQ"),Part($s("lst"),C2)))),Times(RtAux(Negate(Part($s("lst"),C1)),n),RtAux(Negate(Part($s("lst"),C2)),n)),Map(Function(RtAux(Slot1,n)),u)))))))))),With(List(Set(v,TrigSquare(u))),If(Not(AtomQ(v)),RtAux(v,n),If(And(OddQ(n),LtQ(u,C0)),Negate(RtAux(Negate(u),n)),If(ComplexNumberQ(u),With(List(Set(a,Re(u)),Set(b,Im(u))),If(And(Not(And(IntegerQ(a),IntegerQ(b))),IntegerQ(Times(a,Power(Plus(Sqr(a),Sqr(b)),CN1))),IntegerQ(Times(b,Power(Plus(Sqr(a),Sqr(b)),CN1)))),Power(RtAux(Subtract(Times(a,Power(Plus(Sqr(a),Sqr(b)),CN1)),Times(b,Power(Plus(Sqr(a),Sqr(b)),CN1),CI)),n),CN1),NthRoot(u,n))),If(And(OddQ(n),NegQ(u),PosQ(Negate(u))),Negate(RtAux(Negate(u),n)),NthRoot(u,n)))))))));
 ISetDelayed(674,AtomBaseQ(u_),
     Or(AtomQ(u),And(PowerQ(u),OddQ(Part(u,C2)),AtomBaseQ(Part(u,C1)))));
 ISetDelayed(675,SumBaseQ(u_),
@@ -86,7 +86,7 @@ ISetDelayed(682,IntSum(u_,x_Symbol),
 ISetDelayed(683,IntTerm(u_,x_Symbol),
     Condition(Map(Function(IntTerm(Slot1,x)),u),SumQ(u)));
 ISetDelayed(684,IntTerm(Times(c_DEFAULT,Power(v_,m_DEFAULT)),x_Symbol),
-    Condition(With(List(Set(u,Cancel(v))),If(EqQ(m,CN1),Simp(Times(c,Log(RemoveContent(u,x)),Power(Coeff(u,x,C1),-1)),x),If(And(EqQ(m,C1),EqQ(c,C1),SumQ(u)),IntSum(u,x),Simp(Times(c,Power(u,Plus(m,C1)),Power(Times(Coeff(u,x,C1),Plus(m,C1)),-1)),x)))),And(FreeQ(List(c,m),x),LinearQ(v,x))));
+    Condition(With(List(Set(u,Cancel(v))),If(EqQ(m,CN1),Simp(Times(c,Log(RemoveContent(u,x)),Power(Coeff(u,x,C1),CN1)),x),If(And(EqQ(m,C1),EqQ(c,C1),SumQ(u)),IntSum(u,x),Simp(Times(c,Power(u,Plus(m,C1)),Power(Times(Coeff(u,x,C1),Plus(m,C1)),CN1)),x)))),And(FreeQ(List(c,m),x),LinearQ(v,x))));
 ISetDelayed(685,IntTerm(u_,x_Symbol),
     Dist(FreeFactors(u,x),Int(NonfreeFactors(u,x),x),x));
 ISetDelayed(686,RuleName($p("name")),
@@ -129,14 +129,14 @@ ISetDelayed(704,FixIntRule(RuleDelayed($p("lhs"),u_),x_),
     ReplacePart(RuleDelayed($s("lhs"),u),Rule(List(C2),FixRhsIntRule(u,x))));
 ISetDelayed(705,FixRhsIntRule(Plus(u_,v_),x_),
     Plus(FixRhsIntRule(u,x),FixRhsIntRule(v,x)));
-ISetDelayed(706,FixRhsIntRule(Plus(u_,Negate(v_)),x_),
-    Plus(FixRhsIntRule(u,x),Negate(FixRhsIntRule(v,x))));
+ISetDelayed(706,FixRhsIntRule(Subtract(u_,v_),x_),
+    Subtract(FixRhsIntRule(u,x),FixRhsIntRule(v,x)));
 ISetDelayed(707,FixRhsIntRule(Negate(u_),x_),
     Negate(FixRhsIntRule(u,x)));
 ISetDelayed(708,FixRhsIntRule(Times(a_,u_),x_),
     Condition(Dist(a,u,x),MemberQ(List(Integrate,$rubi("Subst")),Head(Unevaluated(u)))));
 ISetDelayed(709,FixRhsIntRule(u_,x_),
     If(And(SameQ(Head(Unevaluated(u)),$rubi("Dist")),Equal(Length(Unevaluated(u)),C2)),Insert(Unevaluated(u),x,C3),If(MemberQ(List(Integrate,$rubi("Unintegrable"),$rubi("CannotIntegrate"),$rubi("Subst"),$rubi("Simp"),$rubi("Dist")),Head(Unevaluated(u))),u,Simp(u,x))));
-		}
+  };
 }
 }

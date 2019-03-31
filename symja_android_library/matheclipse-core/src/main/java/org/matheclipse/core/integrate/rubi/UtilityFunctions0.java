@@ -34,7 +34,7 @@ ISetDelayed(6,RationalQ($ps("u")),
 ISetDelayed(7,FractionOrNegativeQ($ps("u")),
     SameQ(Scan(Function(If(Or(FractionQ(Slot1),And(IntegerQ(Slot1),Less(Slot1,C0))),Null,Return(False))),List(u)),Null));
 ISetDelayed(8,SqrtNumberQ(Power(m_,n_)),
-    Or(And(IntegerQ(n),SqrtNumberQ(m)),And(IntegerQ(Plus(n,Negate(C1D2))),RationalQ(m))));
+    Or(And(IntegerQ(n),SqrtNumberQ(m)),And(IntegerQ(Subtract(n,C1D2)),RationalQ(m))));
 ISetDelayed(9,SqrtNumberQ(Times(u_,v_)),
     And(SqrtNumberQ(u),SqrtNumberQ(v)));
 ISetDelayed(10,SqrtNumberQ(u_),
@@ -74,9 +74,9 @@ ISetDelayed(26,CalculusFreeQ(u_,x_),
 ISetDelayed(27,IntegralFreeQ(u_),
     And(FreeQ(u,Integrate),FreeQ(u,$rubi("Integral")),FreeQ(u,$rubi("Unintegrable")),FreeQ(u,$rubi("CannotIntegrate"))));
 ISetDelayed(28,EqQ(u_,v_),
-    Or(Quiet(PossibleZeroQ(Plus(u,Negate(v)))),SameQ(Refine(Equal(u,v)),True)));
+    Or(Quiet(PossibleZeroQ(Subtract(u,v))),SameQ(Refine(Equal(u,v)),True)));
 ISetDelayed(29,NeQ(u_,v_),
-    Not(Or(Quiet(PossibleZeroQ(Plus(u,Negate(v)))),SameQ(Refine(Equal(u,v)),True))));
+    Not(Or(Quiet(PossibleZeroQ(Subtract(u,v))),SameQ(Refine(Equal(u,v)),True))));
 ISetDelayed(30,IGtQ(u_,n_),
     And(IntegerQ(u),Greater(u,n)));
 ISetDelayed(31,ILtQ(u_,n_),

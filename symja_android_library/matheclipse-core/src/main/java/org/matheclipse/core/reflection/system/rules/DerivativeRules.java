@@ -11,49 +11,49 @@ public interface DerivativeRules {
   final public static IAST RULES1 = List(
     // ArcCos->-1/Sqrt(1-#1^2)
     Rule(ArcCos,
-      Negate(Power(Plus(C1,Negate(Sqr(Slot1))),CN1D2))),
+      Negate(Power(Subtract(C1,Sqr(Slot1)),CN1D2))),
     // ArcCosh->1/Sqrt(-1+#1^2)
     Rule(ArcCosh,
       Power(Plus(CN1,Sqr(Slot1)),CN1D2)),
     // ArcCot->-1/(1+#1^2)
     Rule(ArcCot,
-      Negate(Power(Plus(C1,Sqr(Slot1)),-1))),
+      Negate(Power(Plus(C1,Sqr(Slot1)),CN1))),
     // ArcCoth->1/(1-#1^2)
     Rule(ArcCoth,
-      Power(Plus(C1,Negate(Sqr(Slot1))),-1)),
+      Power(Subtract(C1,Sqr(Slot1)),CN1)),
     // ArcCsc->-1/(#1^2*Sqrt(1-1/#1^2))
     Rule(ArcCsc,
-      Times(CN1,Power(Plus(C1,Negate(Power(Slot1,-2))),CN1D2),Power(Slot1,-2))),
+      Times(CN1,Power(Subtract(C1,Power(Slot1,CN2)),CN1D2),Power(Slot1,CN2))),
     // ArcCsch->-1/(Abs(#1)*Sqrt(1+#1^2))
     Rule(ArcCsch,
-      Times(CN1,Power(Abs(Slot1),-1),Power(Plus(C1,Sqr(Slot1)),CN1D2))),
+      Times(CN1,Power(Abs(Slot1),CN1),Power(Plus(C1,Sqr(Slot1)),CN1D2))),
     // ArcSin->1/Sqrt(1-#1^2)
     Rule(ArcSin,
-      Power(Plus(C1,Negate(Sqr(Slot1))),CN1D2)),
+      Power(Subtract(C1,Sqr(Slot1)),CN1D2)),
     // ArcSinh->1/Sqrt(1+#1^2)
     Rule(ArcSinh,
       Power(Plus(C1,Sqr(Slot1)),CN1D2)),
     // ArcTan->1/(1+#1^2)
     Rule(ArcTan,
-      Power(Plus(C1,Sqr(Slot1)),-1)),
+      Power(Plus(C1,Sqr(Slot1)),CN1)),
     // ArcTanh->1/(1-#1^2)
     Rule(ArcTanh,
-      Power(Plus(C1,Negate(Sqr(Slot1))),-1)),
+      Power(Subtract(C1,Sqr(Slot1)),CN1)),
     // ArcSec->1/(#1^2*Sqrt(1-1/#1^2))
     Rule(ArcSec,
-      Times(Power(Plus(C1,Negate(Power(Slot1,-2))),CN1D2),Power(Slot1,-2))),
+      Times(Power(Subtract(C1,Power(Slot1,CN2)),CN1D2),Power(Slot1,CN2))),
     // ArcSech->-1/(#1*Sqrt(1-#1^2))
     Rule(ArcSech,
-      Times(CN1,Power(Slot1,-1),Power(Plus(C1,Negate(Sqr(Slot1))),CN1D2))),
+      Times(CN1,Power(Slot1,CN1),Power(Subtract(C1,Sqr(Slot1)),CN1D2))),
     // Ceiling->Piecewise({{0,#1<Ceiling(#1)}},Indeterminate)
     Rule(Ceiling,
       Piecewise(List(List(C0,Less(Slot1,Ceiling(Slot1)))),Indeterminate)),
     // EllipticE->(EllipticE(#1)-EllipticK(#1))/(2*#1)
     Rule(EllipticE,
-      Times(C1D2,Plus(EllipticE(Slot1),Negate(EllipticK(Slot1))),Power(Slot1,-1))),
+      Times(C1D2,Subtract(EllipticE(Slot1),EllipticK(Slot1)),Power(Slot1,CN1))),
     // EllipticK->(EllipticE(#1)-EllipticK(#1)*(1-#1))/(2*(1-#1)*#1)
     Rule(EllipticK,
-      Times(C1D2,Power(Plus(C1,Negate(Slot1)),-1),Power(Slot1,-1),Plus(EllipticE(Slot1),Times(CN1,EllipticK(Slot1),Plus(C1,Negate(Slot1)))))),
+      Times(C1D2,Power(Subtract(C1,Slot1),CN1),Power(Slot1,CN1),Plus(EllipticE(Slot1),Times(CN1,EllipticK(Slot1),Subtract(C1,Slot1))))),
     // Erf->2*1/(E^#1^2*Sqrt(Pi))
     Rule(Erf,
       Times(C2,Exp(Negate(Sqr(Slot1))),Power(Pi,CN1D2))),
@@ -65,7 +65,7 @@ public interface DerivativeRules {
       Times(C2,Exp(Sqr(Slot1)),Power(Pi,CN1D2))),
     // ExpIntegralEi->E^#1/#1
     Rule(ExpIntegralEi,
-      Times(Exp(Slot1),Power(Slot1,-1))),
+      Times(Exp(Slot1),Power(Slot1,CN1))),
     // Floor->Piecewise({{0,#1>Floor(#1)}},Indeterminate)
     Rule(Floor,
       Piecewise(List(List(C0,Greater(Slot1,Floor(Slot1)))),Indeterminate)),
@@ -83,7 +83,7 @@ public interface DerivativeRules {
       Times(Gamma(Slot1),PolyGamma(Slot1))),
     // HarmonicNumber->Pi^2/6-HarmonicNumber(#1,2)
     Rule(HarmonicNumber,
-      Plus(Times(QQ(1L,6L),Sqr(Pi)),Negate(HarmonicNumber(Slot1,C2)))),
+      Subtract(Times(QQ(1L,6L),Sqr(Pi)),HarmonicNumber(Slot1,C2))),
     // HeavisideTheta->DiracDelta(#1)
     Rule(HeavisideTheta,
       DiracDelta(Slot1)),
@@ -98,19 +98,19 @@ public interface DerivativeRules {
       Times(CN1D2,Exp(Sqr(InverseErfc(Slot1))),Sqrt(Pi))),
     // Log->1/#1
     Rule(Log,
-      Power(Slot1,-1)),
+      Power(Slot1,CN1)),
     // LogGamma->PolyGamma(0,#1)
     Rule(LogGamma,
       PolyGamma(C0,Slot1)),
     // LogisticSigmoid->LogisticSigmoid(#1)*(1-LogisticSigmoid(#1))
     Rule(LogisticSigmoid,
-      Times(Plus(C1,Negate(LogisticSigmoid(Slot1))),LogisticSigmoid(Slot1))),
+      Times(Subtract(C1,LogisticSigmoid(Slot1)),LogisticSigmoid(Slot1))),
     // PolyGamma->PolyGamma(1,#1)
     Rule(PolyGamma,
       PolyGamma(C1,Slot1)),
     // ProductLog->ProductLog(#1)/((1+ProductLog(#1))*#1)
     Rule(ProductLog,
-      Times(ProductLog(Slot1),Power(Plus(C1,ProductLog(Slot1)),-1),Power(Slot1,-1))),
+      Times(ProductLog(Slot1),Power(Plus(C1,ProductLog(Slot1)),CN1),Power(Slot1,CN1))),
     // Cot->-Csc(#1)^2
     Rule(Cot,
       Negate(Sqr(Csc(Slot1)))),
@@ -137,7 +137,7 @@ public interface DerivativeRules {
       Cos(Slot1)),
     // Sinc->-Sin(#1)/#1^2+Cos(#1)/#1
     Rule(Sinc,
-      Plus(Times(CN1,Sin(Slot1),Power(Slot1,-2)),Times(Cos(Slot1),Power(Slot1,-1)))),
+      Plus(Times(CN1,Sin(Slot1),Power(Slot1,CN2)),Times(Cos(Slot1),Power(Slot1,CN1)))),
     // Sinh->Cosh(#1)
     Rule(Sinh,
       Cosh(Slot1)),
@@ -158,24 +158,24 @@ public interface DerivativeRules {
       Sinc(Slot1)),
     // SinhIntegral->Sinh(#1)/#1
     Rule(SinhIntegral,
-      Times(Sinh(Slot1),Power(Slot1,-1))),
+      Times(Sinh(Slot1),Power(Slot1,CN1))),
     // CosIntegral->Cos(#1)/#1
     Rule(CosIntegral,
-      Times(Cos(Slot1),Power(Slot1,-1))),
+      Times(Cos(Slot1),Power(Slot1,CN1))),
     // CoshIntegral->Cosh(#1)/#1
     Rule(CoshIntegral,
-      Times(Cosh(Slot1),Power(Slot1,-1)))
+      Times(Cosh(Slot1),Power(Slot1,CN1)))
   );
   final public static IAST RULES2 = List(
     // ArcSin->#1/(1-#1^2)^(3/2)
     Rule(ArcSin,
-      Times(Slot1,Power(Plus(C1,Negate(Sqr(Slot1))),QQ(-3L,2L)))),
+      Times(Slot1,Power(Subtract(C1,Sqr(Slot1)),QQ(-3L,2L)))),
     // Gamma->Gamma(#1)*PolyGamma(#1)^2+Gamma(#1)*PolyGamma(1,#1)
     Rule(Gamma,
       Plus(Times(Gamma(Slot1),PolyGamma(C1,Slot1)),Times(Gamma(Slot1),Sqr(PolyGamma(Slot1))))),
     // Log->-1/#1^2
     Rule(Log,
-      Negate(Power(Slot1,-2))),
+      Negate(Power(Slot1,CN2))),
     // PolyGamma->PolyGamma(2,#1)
     Rule(PolyGamma,
       PolyGamma(C2,Slot1)),
@@ -203,7 +203,7 @@ public interface DerivativeRules {
   final public static IAST RULES4 = List(
     // {BesselJ,0,1}->1/2*(BesselJ(-1+#1,#2)-BesselJ(1+#1,#2))
     Rule(List(BesselJ,C0,C1),
-      Times(C1D2,Plus(BesselJ(Plus(CN1,Slot1),Slot2),Negate(BesselJ(Plus(C1,Slot1),Slot2))))),
+      Times(C1D2,Subtract(BesselJ(Plus(CN1,Slot1),Slot2),BesselJ(Plus(C1,Slot1),Slot2)))),
     // {Gamma,0,1}->-E^(-#2)/#2^(1-#1)
     Rule(List(Gamma,C0,C1),
       Times(CN1,Exp(Negate(Slot2)),Power(Slot2,Plus(CN1,Slot1)))),
@@ -221,9 +221,9 @@ public interface DerivativeRules {
       Plus(Power(Slot1,Plus(CN1,Slot2)),Times(Log(Slot1),Power(Slot1,Plus(CN1,Slot2)),Slot2))),
     // {PolyLog,0,1}->PolyLog(-1+#2,#1)/#1
     Rule(List(PolyLog,C0,C1),
-      Times(PolyLog(Plus(CN1,Slot2),Slot1),Power(Slot1,-1))),
+      Times(PolyLog(Plus(CN1,Slot2),Slot1),Power(Slot1,CN1))),
     // {ProductLog,0,1}->ProductLog(#1,#2)/#2*(1+ProductLog(#1,#2))
     Rule(List(ProductLog,C0,C1),
-      Times(ProductLog(Slot1,Slot2),Plus(C1,ProductLog(Slot1,Slot2)),Power(Slot2,-1)))
+      Times(ProductLog(Slot1,Slot2),Plus(C1,ProductLog(Slot1,Slot2)),Power(Slot2,CN1)))
   );
 }

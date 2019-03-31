@@ -48,7 +48,7 @@ public interface ArcCosRules {
     ISet(ArcCos(Times(C1D2,C1DSqrt2,Plus(C1,CSqrt3))),
       Times(QQ(1L,12L),Pi)),
     // ArcCos((-1-Sqrt(3))/(2*Sqrt(2)))=11/12*Pi
-    ISet(ArcCos(Times(C1D2,C1DSqrt2,Plus(CN1,Negate(CSqrt3)))),
+    ISet(ArcCos(Times(C1D2,C1DSqrt2,Subtract(CN1,CSqrt3))),
       Times(QQ(11L,12L),Pi)),
     // ArcCos(1)=0
     ISet(ArcCos(C1),

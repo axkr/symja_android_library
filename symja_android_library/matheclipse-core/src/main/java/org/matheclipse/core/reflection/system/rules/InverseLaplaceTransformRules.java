@@ -21,28 +21,28 @@ public interface InverseLaplaceTransformRules {
     ISetDelayed(InverseLaplaceTransform(s_,s_,t_),
       $($(Derivative(C1),DiracDelta),t)),
     // InverseLaplaceTransform(1/s_,s_,t_):=1
-    ISetDelayed(InverseLaplaceTransform(Power(s_,-1),s_,t_),
+    ISetDelayed(InverseLaplaceTransform(Power(s_,CN1),s_,t_),
       C1),
     // InverseLaplaceTransform(s_^n_?IntegerQ,s_,t_):=1/(t^(1+n)*(-1-n)!)/;n<-1
     ISetDelayed(InverseLaplaceTransform(Power(s_,PatternTest(n_,IntegerQ)),s_,t_),
-      Condition(Times(Power(t,Plus(CN1,Negate(n))),Power(Factorial(Plus(CN1,Negate(n))),-1)),Less(n,CN1))),
+      Condition(Times(Power(t,Subtract(CN1,n)),Power(Factorial(Subtract(CN1,n)),CN1)),Less(n,CN1))),
     // InverseLaplaceTransform(1/(s_+a_),s_,t_):=E^(-a*t)/;FreeQ(a,s)
-    ISetDelayed(InverseLaplaceTransform(Power(Plus(a_,s_),-1),s_,t_),
+    ISetDelayed(InverseLaplaceTransform(Power(Plus(a_,s_),CN1),s_,t_),
       Condition(Exp(Times(CN1,a,t)),FreeQ(a,s))),
     // InverseLaplaceTransform(1/(a_?RealNumberQ+s_^2),s_,t_):=If(a>0,Sin(Sqrt(a)*t)/Sqrt(a),(-1+E^(2*Sqrt(-a)*t))/(E^(Sqrt(-a)*t)*2*Sqrt(-a)))
-    ISetDelayed(InverseLaplaceTransform(Power(Plus(Sqr(s_),PatternTest(a_,RealNumberQ)),-1),s_,t_),
-      If(Greater(a,C0),Times(Power(a,CN1D2),Sin(Times(Sqrt(a),t))),Times(Power(Times(Exp(Times(Sqrt(Negate(a)),t)),C2,Sqrt(Negate(a))),-1),Plus(CN1,Exp(Times(C2,Sqrt(Negate(a)),t)))))),
+    ISetDelayed(InverseLaplaceTransform(Power(Plus(Sqr(s_),PatternTest(a_,RealNumberQ)),CN1),s_,t_),
+      If(Greater(a,C0),Times(Power(a,CN1D2),Sin(Times(Sqrt(a),t))),Times(Power(Times(Exp(Times(Sqrt(Negate(a)),t)),C2,Sqrt(Negate(a))),CN1),Plus(CN1,Exp(Times(C2,Sqrt(Negate(a)),t)))))),
     // InverseLaplaceTransform(s_/(s_^2+a_?NumberQ),s_,t_):=Cos(Sqrt(a)*t)/;a>0
-    ISetDelayed(InverseLaplaceTransform(Times(s_,Power(Plus(Sqr(s_),PatternTest(a_,NumberQ)),-1)),s_,t_),
+    ISetDelayed(InverseLaplaceTransform(Times(s_,Power(Plus(Sqr(s_),PatternTest(a_,NumberQ)),CN1)),s_,t_),
       Condition(Cos(Times(Sqrt(a),t)),Greater(a,C0))),
     // InverseLaplaceTransform(1/(s_^2+a_^2),s_,t_):=Sin(a*t)/a/;FreeQ(a,s)
-    ISetDelayed(InverseLaplaceTransform(Power(Plus(Sqr(a_),Sqr(s_)),-1),s_,t_),
-      Condition(Times(Power(a,-1),Sin(Times(a,t))),FreeQ(a,s))),
+    ISetDelayed(InverseLaplaceTransform(Power(Plus(Sqr(a_),Sqr(s_)),CN1),s_,t_),
+      Condition(Times(Power(a,CN1),Sin(Times(a,t))),FreeQ(a,s))),
     // InverseLaplaceTransform(1/(-a_^2+s_^2),s_,t_):=(-1+E^(2*a*t))/(E^(a*t)*2*a)/;FreeQ(a,s)
-    ISetDelayed(InverseLaplaceTransform(Power(Plus(Negate(Sqr(a_)),Sqr(s_)),-1),s_,t_),
-      Condition(Times(Power(Times(Exp(Times(a,t)),C2,a),-1),Plus(CN1,Exp(Times(C2,a,t)))),FreeQ(a,s))),
+    ISetDelayed(InverseLaplaceTransform(Power(Plus(Negate(Sqr(a_)),Sqr(s_)),CN1),s_,t_),
+      Condition(Times(Power(Times(Exp(Times(a,t)),C2,a),CN1),Plus(CN1,Exp(Times(C2,a,t)))),FreeQ(a,s))),
     // InverseLaplaceTransform(s_/(s_^2+a_^2),s_,t_):=Cos(a*t)/;FreeQ(a,s)
-    ISetDelayed(InverseLaplaceTransform(Times(s_,Power(Plus(Sqr(a_),Sqr(s_)),-1)),s_,t_),
+    ISetDelayed(InverseLaplaceTransform(Times(s_,Power(Plus(Sqr(a_),Sqr(s_)),CN1)),s_,t_),
       Condition(Cos(Times(a,t)),FreeQ(a,s)))
   );
 }

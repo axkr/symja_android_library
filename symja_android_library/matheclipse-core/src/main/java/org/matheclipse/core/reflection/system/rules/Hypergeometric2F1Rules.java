@@ -19,6 +19,6 @@ public interface Hypergeometric2F1Rules {
     IInit(Hypergeometric2F1, SIZES),
     // Hypergeometric2F1(1,2,3/2,z_):=(Sqrt(z)*Sqrt(1-z)+ArcSin(Sqrt(z)))/(2*(1-z)^(3/2)*Sqrt(z))
     ISetDelayed(Hypergeometric2F1(C1,C2,QQ(3L,2L),z_),
-      Times(Power(Times(C2,Power(Plus(C1,Negate(z)),QQ(3L,2L)),Sqrt(z)),-1),Plus(Times(Sqrt(z),Sqrt(Plus(C1,Negate(z)))),ArcSin(Sqrt(z)))))
+      Times(Power(Times(C2,Power(Subtract(C1,z),QQ(3L,2L)),Sqrt(z)),CN1),Plus(Times(Sqrt(z),Sqrt(Subtract(C1,z))),ArcSin(Sqrt(z)))))
   );
 }

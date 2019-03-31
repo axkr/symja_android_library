@@ -663,7 +663,7 @@ public class ConvertRubi {
 				}
 				if (cnt != 0) {
 					// System.out.println(");");
-					buffer.append("  );\n" + FOOTER);
+					buffer.append("  };\n" + FOOTER);
 					writeFile("C:/temp/rubi/IntRules" + fcnt + ".java", buffer);
 					fcnt++;
 					cnt = 0;

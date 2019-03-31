@@ -19,12 +19,12 @@ public interface StruveLRules {
     IInit(StruveL, SIZES),
     // StruveL(-1,0)=Times(2/Pi)
     ISet(StruveL(CN1,C0),
-      Times(C2,Power(Pi,-1))),
+      Times(C2,Power(Pi,CN1))),
     // StruveL(-1/2,z_):=Sqrt(2/(Pi*z))*Sinh(z)
     ISetDelayed(StruveL(CN1D2,z_),
-      Times(Sqrt(Times(C2,Power(Times(Pi,z),-1))),Sinh(z))),
+      Times(Sqrt(Times(C2,Power(Times(Pi,z),CN1))),Sinh(z))),
     // StruveL(1/2,z_):=Sqrt(2/(Pi*z))*(-1+Cosh(z))
     ISetDelayed(StruveL(C1D2,z_),
-      Times(Sqrt(Times(C2,Power(Times(Pi,z),-1))),Plus(CN1,Cosh(z))))
+      Times(Sqrt(Times(C2,Power(Times(Pi,z),CN1))),Plus(CN1,Cosh(z))))
   );
 }

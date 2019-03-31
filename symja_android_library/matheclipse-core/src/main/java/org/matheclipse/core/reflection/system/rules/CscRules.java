@@ -85,7 +85,7 @@ public interface CscRules {
       CComplexInfinity),
     // Csc(11/10*Pi)=-1-Sqrt(5)
     ISet(Csc(Times(QQ(11L,10L),Pi)),
-      Plus(CN1,Negate(CSqrt5))),
+      Subtract(CN1,CSqrt5)),
     // Csc(7/6*Pi)=-2
     ISet(Csc(Times(QQ(7L,6L),Pi)),
       CN2),
@@ -97,19 +97,19 @@ public interface CscRules {
       Negate(CSqrt2)),
     // Csc(13/10*Pi)=1-Sqrt(5)
     ISet(Csc(Times(QQ(13L,10L),Pi)),
-      Plus(C1,Negate(CSqrt5))),
+      Subtract(C1,CSqrt5)),
     // Csc(4/3*Pi)=-2/Sqrt(3)
     ISet(Csc(Times(QQ(4L,3L),Pi)),
       Times(CN2,C1DSqrt3)),
     // Csc(17/12*Pi)=Sqrt(2)-Sqrt(6)
     ISet(Csc(Times(QQ(17L,12L),Pi)),
-      Plus(CSqrt2,Negate(CSqrt6))),
+      Subtract(CSqrt2,CSqrt6)),
     // Csc(3/2*Pi)=-1
     ISet(Csc(Times(QQ(3L,2L),Pi)),
       CN1),
     // Csc(19/12*Pi)=Sqrt(2)-Sqrt(6)
     ISet(Csc(Times(QQ(19L,12L),Pi)),
-      Plus(CSqrt2,Negate(CSqrt6))),
+      Subtract(CSqrt2,CSqrt6)),
     // Csc(8/5*Pi)=-Sqrt(2-2/Sqrt(5))
     ISet(Csc(Times(QQ(8L,5L),Pi)),
       Negate(Sqrt(Plus(C2,Times(CN2,C1DSqrt5))))),
@@ -118,7 +118,7 @@ public interface CscRules {
       Times(CN2,C1DSqrt3)),
     // Csc(17/10*Pi)=1-Sqrt(5)
     ISet(Csc(Times(QQ(17L,10L),Pi)),
-      Plus(C1,Negate(CSqrt5))),
+      Subtract(C1,CSqrt5)),
     // Csc(7/4*Pi)=-Sqrt(2)
     ISet(Csc(Times(QQ(7L,4L),Pi)),
       Negate(CSqrt2)),
@@ -130,7 +130,7 @@ public interface CscRules {
       CN2),
     // Csc(19/10*Pi)=-1-Sqrt(5)
     ISet(Csc(Times(QQ(19L,10L),Pi)),
-      Plus(CN1,Negate(CSqrt5))),
+      Subtract(CN1,CSqrt5)),
     // Csc(23/12*Pi)=-2*Sqrt(2+Sqrt(3))
     ISet(Csc(Times(QQ(23L,12L),Pi)),
       Times(CN2,Sqrt(Plus(C2,CSqrt3)))),
@@ -139,22 +139,22 @@ public interface CscRules {
       CComplexInfinity),
     // Csc(ArcSin(x_)):=1/x
     ISetDelayed(Csc(ArcSin(x_)),
-      Power(x,-1)),
+      Power(x,CN1)),
     // Csc(ArcCos(x_)):=1/Sqrt(1-x^2)
     ISetDelayed(Csc(ArcCos(x_)),
-      Power(Plus(C1,Negate(Sqr(x))),CN1D2)),
+      Power(Subtract(C1,Sqr(x)),CN1D2)),
     // Csc(ArcTan(x_)):=Sqrt(1+x^2)/x
     ISetDelayed(Csc(ArcTan(x_)),
-      Times(Power(x,-1),Sqrt(Plus(C1,Sqr(x))))),
+      Times(Power(x,CN1),Sqrt(Plus(C1,Sqr(x))))),
     // Csc(ArcCot(x_)):=Sqrt(1+1/x^2)*x
     ISetDelayed(Csc(ArcCot(x_)),
-      Times(Sqrt(Plus(C1,Power(x,-2))),x)),
+      Times(Sqrt(Plus(C1,Power(x,CN2))),x)),
     // Csc(ArcCsc(x_)):=x
     ISetDelayed(Csc(ArcCsc(x_)),
       x),
     // Csc(ArcSec(x_)):=1/Sqrt(1-1/x^2)
     ISetDelayed(Csc(ArcSec(x_)),
-      Power(Plus(C1,Negate(Power(x,-2))),CN1D2)),
+      Power(Subtract(C1,Power(x,CN2)),CN1D2)),
     // Csc(I*Infinity)=0
     ISet(Csc(DirectedInfinity(CI)),
       C0),

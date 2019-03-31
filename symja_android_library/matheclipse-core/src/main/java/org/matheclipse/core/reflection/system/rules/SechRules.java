@@ -46,7 +46,7 @@ public interface SechRules {
       Negate(CSqrt2)),
     // Sech(4/5*Pi*I)=1-Sqrt(5)
     ISet(Sech(Times(CC(0L,1L,4L,5L),Pi)),
-      Plus(C1,Negate(CSqrt5))),
+      Subtract(C1,CSqrt5)),
     // Sech(5/6*Pi*I)=-2/Sqrt(3)
     ISet(Sech(Times(CC(0L,1L,5L,6L),Pi)),
       Times(CN2,C1DSqrt3)),
@@ -58,7 +58,7 @@ public interface SechRules {
       Times(CN2,C1DSqrt3)),
     // Sech(6/5*Pi*I)=1-Sqrt(5)
     ISet(Sech(Times(CC(0L,1L,6L,5L),Pi)),
-      Plus(C1,Negate(CSqrt5))),
+      Subtract(C1,CSqrt5)),
     // Sech(5/4*Pi*I)=-Sqrt(2)
     ISet(Sech(Times(CC(0L,1L,5L,4L),Pi)),
       Negate(CSqrt2)),
@@ -67,7 +67,7 @@ public interface SechRules {
       CN2),
     // Sech(7/5*Pi*I)=-1-Sqrt(5)
     ISet(Sech(Times(CC(0L,1L,7L,5L),Pi)),
-      Plus(CN1,Negate(CSqrt5))),
+      Subtract(CN1,CSqrt5)),
     // Sech(3/2*Pi*I)=ComplexInfinity
     ISet(Sech(Times(CC(0L,1L,3L,2L),Pi)),
       CComplexInfinity),
@@ -94,19 +94,19 @@ public interface SechRules {
       Power(Plus(C1,Sqr(x)),CN1D2)),
     // Sech(ArcCosh(x_)):=1/x
     ISetDelayed(Sech(ArcCosh(x_)),
-      Power(x,-1)),
+      Power(x,CN1)),
     // Sech(ArcTanh(x_)):=Sqrt(1-x^2)
     ISetDelayed(Sech(ArcTanh(x_)),
-      Sqrt(Plus(C1,Negate(Sqr(x))))),
+      Sqrt(Subtract(C1,Sqr(x)))),
     // Sech(ArcCoth(x_)):=Sqrt(1-1/x^2)
     ISetDelayed(Sech(ArcCoth(x_)),
-      Sqrt(Plus(C1,Negate(Power(x,-2))))),
+      Sqrt(Subtract(C1,Power(x,CN2)))),
     // Sech(ArcSech(x_)):=x
     ISetDelayed(Sech(ArcSech(x_)),
       x),
     // Sech(ArcCsch(x_)):=1/Sqrt(1+1/x^2)
     ISetDelayed(Sech(ArcCsch(x_)),
-      Power(Plus(C1,Power(x,-2)),CN1D2)),
+      Power(Plus(C1,Power(x,CN2)),CN1D2)),
     // Sech(Infinity)=0
     ISet(Sech(oo),
       C0),

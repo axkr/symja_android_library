@@ -19,48 +19,48 @@ public interface QuantileRules {
     IInit(Quantile, SIZES),
     // Quantile(BernoulliDistribution(x_)):=ConditionalExpression(Piecewise({{1,#1>1-x}},0),0<=#1<=1)&
     ISetDelayed(Quantile(BernoulliDistribution(x_)),
-      Function(ConditionalExpression(Piecewise(List(List(C1,Greater(Slot1,Plus(C1,Negate(x))))),C0),LessEqual(C0,Slot1,C1)))),
+      Function(ConditionalExpression(Piecewise(List(List(C1,Greater(Slot1,Subtract(C1,x)))),C0),LessEqual(C0,Slot1,C1)))),
     // Quantile(ErlangDistribution(k_,l_)):=ConditionalExpression(Piecewise({{InverseGammaRegularized(k,0,#1)/l,0<#1<1},{0,#1<=0}},Infinity),0<=#1<=1)&
     ISetDelayed(Quantile(ErlangDistribution(k_,l_)),
-      Function(ConditionalExpression(Piecewise(List(List(Times(Power(l,-1),InverseGammaRegularized(k,C0,Slot1)),Less(C0,Slot1,C1)),List(C0,LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),
+      Function(ConditionalExpression(Piecewise(List(List(Times(Power(l,CN1),InverseGammaRegularized(k,C0,Slot1)),Less(C0,Slot1,C1)),List(C0,LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),
     // Quantile(ExponentialDistribution(n_)):=ConditionalExpression(Piecewise({{-Log(1-#1)/n,#1<1}},Infinity),0<=#1<=1)&
     ISetDelayed(Quantile(ExponentialDistribution(n_)),
-      Function(ConditionalExpression(Piecewise(List(List(Times(CN1,Power(n,-1),Log(Plus(C1,Negate(Slot1)))),Less(Slot1,C1))),oo),LessEqual(C0,Slot1,C1)))),
+      Function(ConditionalExpression(Piecewise(List(List(Times(CN1,Power(n,CN1),Log(Subtract(C1,Slot1))),Less(Slot1,C1))),oo),LessEqual(C0,Slot1,C1)))),
     // Quantile(FrechetDistribution(n_,m_)):=ConditionalExpression(Piecewise({{m/(-Log(#1))^(1/n),0<#1<1},{0,#1<=0}},Infinity),0<=#1<=1)&
     ISetDelayed(Quantile(FrechetDistribution(n_,m_)),
-      Function(ConditionalExpression(Piecewise(List(List(Times(m,Power(Power(Negate(Log(Slot1)),Power(n,-1)),-1)),Less(C0,Slot1,C1)),List(C0,LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),
+      Function(ConditionalExpression(Piecewise(List(List(Times(m,Power(Power(Negate(Log(Slot1)),Power(n,CN1)),CN1)),Less(C0,Slot1,C1)),List(C0,LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),
     // Quantile(GammaDistribution(a_,b_)):=ConditionalExpression(Piecewise({{b*InverseGammaRegularized(a,0,#1),0<#1<1},{0,#1<=0}},Infinity),0<=#1<=1)&
     ISetDelayed(Quantile(GammaDistribution(a_,b_)),
       Function(ConditionalExpression(Piecewise(List(List(Times(b,InverseGammaRegularized(a,C0,Slot1)),Less(C0,Slot1,C1)),List(C0,LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),
     // Quantile(GammaDistribution(a_,b_,g_,d_)):=ConditionalExpression(Piecewise({{d+b*InverseGammaRegularized(a,0,#1)^(1/g),0<#1<1},{d,#1<=0}},Infinity),0<=#1<=1)&
     ISetDelayed(Quantile(GammaDistribution(a_,b_,g_,d_)),
-      Function(ConditionalExpression(Piecewise(List(List(Plus(d,Times(b,Power(InverseGammaRegularized(a,C0,Slot1),Power(g,-1)))),Less(C0,Slot1,C1)),List(d,LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),
+      Function(ConditionalExpression(Piecewise(List(List(Plus(d,Times(b,Power(InverseGammaRegularized(a,C0,Slot1),Power(g,CN1)))),Less(C0,Slot1,C1)),List(d,LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),
     // Quantile(GumbelDistribution()):=ConditionalExpression(Piecewise({{Log(-Log(1-#1)),0<#1<1},{-Infinity,#1<=0}},Infinity),0<=#1<=1)&
     ISetDelayed(Quantile(GumbelDistribution()),
-      Function(ConditionalExpression(Piecewise(List(List(Log(Negate(Log(Plus(C1,Negate(Slot1))))),Less(C0,Slot1,C1)),List(Negate(oo),LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),
+      Function(ConditionalExpression(Piecewise(List(List(Log(Negate(Log(Subtract(C1,Slot1)))),Less(C0,Slot1,C1)),List(Negate(oo),LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),
     // Quantile(GumbelDistribution(a_,b_)):=ConditionalExpression(Piecewise({{a+b*Log(-Log(1-#1)),0<#1<1},{-Infinity,#1<=0}},Infinity),0<=#1<=1)&
     ISetDelayed(Quantile(GumbelDistribution(a_,b_)),
-      Function(ConditionalExpression(Piecewise(List(List(Plus(a,Times(b,Log(Negate(Log(Plus(C1,Negate(Slot1))))))),Less(C0,Slot1,C1)),List(Negate(oo),LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),
+      Function(ConditionalExpression(Piecewise(List(List(Plus(a,Times(b,Log(Negate(Log(Subtract(C1,Slot1)))))),Less(C0,Slot1,C1)),List(Negate(oo),LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),
     // Quantile(LogNormalDistribution(m_,d_)):=ConditionalExpression(Piecewise({{E^(m-Sqrt(2)*d*InverseErfc(2*#1)),0<#1<1},{0,#1<=0}},Infinity),0<=#1<=1)&
     ISetDelayed(Quantile(LogNormalDistribution(m_,d_)),
       Function(ConditionalExpression(Piecewise(List(List(Exp(Plus(m,Times(CN1,CSqrt2,d,InverseErfc(Times(C2,Slot1))))),Less(C0,Slot1,C1)),List(C0,LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),
     // Quantile(NakagamiDistribution(m_,w_)):=ConditionalExpression(Piecewise({{Sqrt((w*InverseGammaRegularized(m,0,#1))/m),0<#1<1},{0,#1<=0}},Infinity),0<=#1<=1)&
     ISetDelayed(Quantile(NakagamiDistribution(m_,w_)),
-      Function(ConditionalExpression(Piecewise(List(List(Sqrt(Times(Power(m,-1),w,InverseGammaRegularized(m,C0,Slot1))),Less(C0,Slot1,C1)),List(C0,LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),
+      Function(ConditionalExpression(Piecewise(List(List(Sqrt(Times(Power(m,CN1),w,InverseGammaRegularized(m,C0,Slot1))),Less(C0,Slot1,C1)),List(C0,LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),
     // Quantile(NormalDistribution(m_,s_)):=ConditionalExpression(m-Sqrt(2)*s*InverseErfc(2*#1),0<=#1<=1)&
     ISetDelayed(Quantile(NormalDistribution(m_,s_)),
       Function(ConditionalExpression(Plus(m,Times(CN1,CSqrt2,s,InverseErfc(Times(C2,Slot1)))),LessEqual(C0,Slot1,C1)))),
     // Quantile(StudentTDistribution(v_)):=ConditionalExpression(Piecewise({{-Sqrt(v)*Sqrt(-1+1/InverseBetaRegularized(2*#1,v/2,1/2)),0<#1<1/2},{0,#1==1/2},{Sqrt(v)*Sqrt(-1+1/InverseBetaRegularized(2*(1-#1),v/2,1/2)),1/2<#1<1},{-Infinity,#1<=0}},Infinity),0<=#1<=1)&
     ISetDelayed(Quantile(StudentTDistribution(v_)),
-      Function(ConditionalExpression(Piecewise(List(List(Times(CN1,Sqrt(v),Sqrt(Plus(CN1,Power(InverseBetaRegularized(Times(C2,Slot1),Times(C1D2,v),C1D2),-1)))),Less(C0,Slot1,C1D2)),List(C0,Equal(Slot1,C1D2)),List(Times(Sqrt(v),Sqrt(Plus(CN1,Power(InverseBetaRegularized(Times(C2,Plus(C1,Negate(Slot1))),Times(C1D2,v),C1D2),-1)))),Less(C1D2,Slot1,C1)),List(Negate(oo),LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),
+      Function(ConditionalExpression(Piecewise(List(List(Times(CN1,Sqrt(v),Sqrt(Plus(CN1,Power(InverseBetaRegularized(Times(C2,Slot1),Times(C1D2,v),C1D2),CN1)))),Less(C0,Slot1,C1D2)),List(C0,Equal(Slot1,C1D2)),List(Times(Sqrt(v),Sqrt(Plus(CN1,Power(InverseBetaRegularized(Times(C2,Subtract(C1,Slot1)),Times(C1D2,v),C1D2),CN1)))),Less(C1D2,Slot1,C1)),List(Negate(oo),LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),
     // Quantile(StudentTDistribution(m_,s_,v_)):=ConditionalExpression(Piecewise({{m-s*Sqrt(v)*Sqrt(-1+1/InverseBetaRegularized(2*#1,v/2,1/2)),0<#1<1/2},{m,#1==1/2},{m+s*Sqrt(v)*Sqrt(-1+1/InverseBetaRegularized(2*(1-#1),v/2,1/2)),1/2<#1<1},{-Infinity,#1<=0}},Infinity),0<=#1<=1)&
     ISetDelayed(Quantile(StudentTDistribution(m_,s_,v_)),
-      Function(ConditionalExpression(Piecewise(List(List(Plus(m,Times(CN1,s,Sqrt(v),Sqrt(Plus(CN1,Power(InverseBetaRegularized(Times(C2,Slot1),Times(C1D2,v),C1D2),-1))))),Less(C0,Slot1,C1D2)),List(m,Equal(Slot1,C1D2)),List(Plus(m,Times(s,Sqrt(v),Sqrt(Plus(CN1,Power(InverseBetaRegularized(Times(C2,Plus(C1,Negate(Slot1))),Times(C1D2,v),C1D2),-1))))),Less(C1D2,Slot1,C1)),List(Negate(oo),LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),
+      Function(ConditionalExpression(Piecewise(List(List(Plus(m,Times(CN1,s,Sqrt(v),Sqrt(Plus(CN1,Power(InverseBetaRegularized(Times(C2,Slot1),Times(C1D2,v),C1D2),CN1))))),Less(C0,Slot1,C1D2)),List(m,Equal(Slot1,C1D2)),List(Plus(m,Times(s,Sqrt(v),Sqrt(Plus(CN1,Power(InverseBetaRegularized(Times(C2,Subtract(C1,Slot1)),Times(C1D2,v),C1D2),CN1))))),Less(C1D2,Slot1,C1)),List(Negate(oo),LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),
     // Quantile(WeibullDistribution(a_,b_)):=ConditionalExpression(Piecewise({{b*(-Log(1-#1))^(1/a),0<#1<1},{0,#1<=0}},Infinity),0<=#1<=1)&
     ISetDelayed(Quantile(WeibullDistribution(a_,b_)),
-      Function(ConditionalExpression(Piecewise(List(List(Times(b,Power(Negate(Log(Plus(C1,Negate(Slot1)))),Power(a,-1))),Less(C0,Slot1,C1)),List(C0,LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),
+      Function(ConditionalExpression(Piecewise(List(List(Times(b,Power(Negate(Log(Subtract(C1,Slot1))),Power(a,CN1))),Less(C0,Slot1,C1)),List(C0,LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),
     // Quantile(WeibullDistribution(a_,b_,m_)):=ConditionalExpression(Piecewise({{m+b*(-Log(1-#1))^(1/a),0<#1<1},{m,#1<=0}},Infinity),0<=#1<=1)&
     ISetDelayed(Quantile(WeibullDistribution(a_,b_,m_)),
-      Function(ConditionalExpression(Piecewise(List(List(Plus(m,Times(b,Power(Negate(Log(Plus(C1,Negate(Slot1)))),Power(a,-1)))),Less(C0,Slot1,C1)),List(m,LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1))))
+      Function(ConditionalExpression(Piecewise(List(List(Plus(m,Times(b,Power(Negate(Log(Subtract(C1,Slot1))),Power(a,CN1)))),Less(C0,Slot1,C1)),List(m,LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1))))
   );
 }

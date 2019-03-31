@@ -27,13 +27,13 @@ public interface ArcSinRules {
     ISet(ArcSin(Times(C1D4,Plus(CN1,CSqrt5))),
       Times(QQ(1L,10L),Pi)),
     // ArcSin(Sqrt(2-Sqrt(2))/2)=Pi/8
-    ISet(ArcSin(Times(C1D2,Sqrt(Plus(C2,Negate(CSqrt2))))),
+    ISet(ArcSin(Times(C1D2,Sqrt(Subtract(C2,CSqrt2)))),
       Times(QQ(1L,8L),Pi)),
     // ArcSin(1/2)=Pi/6
     ISet(ArcSin(C1D2),
       Times(QQ(1L,6L),Pi)),
     // ArcSin(Sqrt(1/2*(5-Sqrt(5)))/2)=Pi/5
-    ISet(ArcSin(Times(C1D2,Sqrt(Times(C1D2,Plus(C5,Negate(CSqrt5)))))),
+    ISet(ArcSin(Times(C1D2,Sqrt(Times(C1D2,Subtract(C5,CSqrt5))))),
       Times(QQ(1L,5L),Pi)),
     // ArcSin(Sqrt(2)/2)=Pi/4
     ISet(ArcSin(C1DSqrt2),

@@ -178,7 +178,7 @@ public class ConvertRubiUtilityFunctions {
 				}
 				if (cnt != 0) {
 					// System.out.println(");");
-					buffer.append("  );\n" + FOOTER);
+					buffer.append("  };\n" + FOOTER);
 					writeFile("C:/temp/rubi/UtilityFunctions" + fcnt + ".java", buffer);
 				}
 				buffer = new StringBuffer(100000);

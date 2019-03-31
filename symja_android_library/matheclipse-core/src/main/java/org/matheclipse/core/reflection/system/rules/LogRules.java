@@ -67,22 +67,22 @@ public interface LogRules {
       oo),
     // Log(a_,b_):=Log(b)/Log(a)
     ISetDelayed(Log(a_,b_),
-      Times(Log(b),Power(Log(a),-1))),
+      Times(Log(b),Power(Log(a),CN1))),
     // Log(a_,E):=1/Log(a)
     ISetDelayed(Log(a_,E),
-      Power(Log(a),-1)),
+      Power(Log(a),CN1)),
     // Log(a_,E^m_Integer):=m/Log(a)
     ISetDelayed(Log(a_,Exp($p(m, Integer))),
-      Times(m,Power(Log(a),-1))),
+      Times(m,Power(Log(a),CN1))),
     // Log(a_,0):=-Infinity/Log(a)
     ISetDelayed(Log(a_,C0),
-      Times(CN1,oo,Power(Log(a),-1))),
+      Times(CN1,oo,Power(Log(a),CN1))),
     // Log(a_,1)=0
     ISet(Log(a_,C1),
       C0),
     // Log(a_,-1):=(I*Pi)/Log(a)
     ISetDelayed(Log(a_,CN1),
-      Times(CI,Pi,Power(Log(a),-1))),
+      Times(CI,Pi,Power(Log(a),CN1))),
     // Log(E,z_):=Log(z)
     ISetDelayed(Log(E,z_),
       Log(z)),
@@ -91,7 +91,7 @@ public interface LogRules {
       CComplexInfinity),
     // Log(-1,z_):=-I/Pi*Log(z)
     ISetDelayed(Log(CN1,z_),
-      Times(CNI,Power(Pi,-1),Log(z))),
+      Times(CNI,Power(Pi,CN1),Log(z))),
     // Log(a_,1)=Indeterminate
     ISet(Log(a_,C1),
       Indeterminate)

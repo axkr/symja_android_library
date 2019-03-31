@@ -79,19 +79,19 @@ public interface SinhRules {
       x),
     // Sinh(ArcCosh(x_)):=Sqrt((-1+x)/(x+1))*(1+x)
     ISetDelayed(Sinh(ArcCosh(x_)),
-      Times(Sqrt(Times(Power(Plus(x,C1),-1),Plus(CN1,x))),Plus(C1,x))),
+      Times(Sqrt(Times(Power(Plus(x,C1),CN1),Plus(CN1,x))),Plus(C1,x))),
     // Sinh(ArcTanh(x_)):=x/Sqrt(1-x^2)
     ISetDelayed(Sinh(ArcTanh(x_)),
-      Times(x,Power(Plus(C1,Negate(Sqr(x))),CN1D2))),
+      Times(x,Power(Subtract(C1,Sqr(x)),CN1D2))),
     // Sinh(ArcCoth(x_)):=1/(Sqrt(1-1/x^2)*x)
     ISetDelayed(Sinh(ArcCoth(x_)),
-      Power(Times(Sqrt(Plus(C1,Negate(Power(x,-2)))),x),-1)),
+      Power(Times(Sqrt(Subtract(C1,Power(x,CN2))),x),CN1)),
     // Sinh(ArcSech(x_)):=((1+x)*Sqrt((1-x)/(1+x)))/x
     ISetDelayed(Sinh(ArcSech(x_)),
-      Times(Power(x,-1),Plus(C1,x),Sqrt(Times(Plus(C1,Negate(x)),Power(Plus(C1,x),-1))))),
+      Times(Power(x,CN1),Plus(C1,x),Sqrt(Times(Subtract(C1,x),Power(Plus(C1,x),CN1))))),
     // Sinh(ArcCsch(x_)):=1/x
     ISetDelayed(Sinh(ArcCsch(x_)),
-      Power(x,-1)),
+      Power(x,CN1)),
     // Sinh(Infinity)=Infinity
     ISet(Sinh(oo),
       oo),

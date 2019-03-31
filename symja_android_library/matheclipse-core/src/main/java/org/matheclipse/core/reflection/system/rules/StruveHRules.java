@@ -19,9 +19,9 @@ public interface StruveHRules {
     IInit(StruveH, SIZES),
     // StruveH(-1/2,z_):=Sqrt(2/(Pi*z))*Sin(z)
     ISetDelayed(StruveH(CN1D2,z_),
-      Times(Sqrt(Times(C2,Power(Times(Pi,z),-1))),Sin(z))),
+      Times(Sqrt(Times(C2,Power(Times(Pi,z),CN1))),Sin(z))),
     // StruveH(1/2,z_):=Sqrt(2/(Pi*z))*(1-Cos(z))
     ISetDelayed(StruveH(C1D2,z_),
-      Times(Sqrt(Times(C2,Power(Times(Pi,z),-1))),Plus(C1,Negate(Cos(z)))))
+      Times(Sqrt(Times(C2,Power(Times(Pi,z),CN1))),Subtract(C1,Cos(z))))
   );
 }

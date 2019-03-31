@@ -2757,10 +2757,10 @@ public class MainTestCase extends AbstractTestCase {
 		check("JavaForm(1/3+I)", "CC(1L,3L,1L,1L)");
 
 		check("JavaForm(ff(x_*y_))", "$(ff,Times(x_,y_))");
-		check("JavaForm(Log(b*x+c)/b)", "Times(Power(b,-1),Log(Plus(c,Times(b,x))))");
+		check("JavaForm(Log(b*x+c)/b)", "Times(Power(b,CN1),Log(Plus(c,Times(b,x))))");
 
 		check("JavaForm(B)", "B");
-		check("JavaForm(B*Log(p*x+q)/p)", "Times(B,Power(p,-1),Log(Plus(q,Times(p,x))))");
+		check("JavaForm(B*Log(p*x+q)/p)", "Times(B,Power(p,CN1),Log(Plus(q,Times(p,x))))");
 		// check(
 		// "JavaForm(B*((2*a*x+b)/((k-1)*(4*a*c-b^2)*(a*x^2+b*x+c)^(k-1))+
 		// (4*k*a-6*a)/((k-1)*(4*a*c-b^2))*Integrate((a*x^2+b*x+c)^(-k+1),x)))",

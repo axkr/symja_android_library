@@ -30,7 +30,7 @@ public interface ArcSecRules {
     ISet(ArcSec(Plus(Negate(CSqrt2),CSqrt6)),
       Times(QQ(1L,12L),Pi)),
     // ArcSec(Sqrt(2)-Sqrt(6))=11/12*Pi
-    ISet(ArcSec(Plus(CSqrt2,Negate(CSqrt6))),
+    ISet(ArcSec(Subtract(CSqrt2,CSqrt6)),
       Times(QQ(11L,12L),Pi)),
     // ArcSec(2/Sqrt(3))=Pi/6
     ISet(ArcSec(Times(C2,C1DSqrt3)),
@@ -42,7 +42,7 @@ public interface ArcSecRules {
     ISet(ArcSec(Plus(CN1,CSqrt5)),
       Times(QQ(1L,5L),Pi)),
     // ArcSec(1-Sqrt(5))=4/5*Pi
-    ISet(ArcSec(Plus(C1,Negate(CSqrt5))),
+    ISet(ArcSec(Subtract(C1,CSqrt5)),
       Times(QQ(4L,5L),Pi)),
     // ArcSec(Sqrt(2))=Pi/4
     ISet(ArcSec(CSqrt2),
@@ -60,13 +60,13 @@ public interface ArcSecRules {
     ISet(ArcSec(Plus(C1,CSqrt5)),
       Times(QQ(1L,5L),Pi)),
     // ArcSec(-1-Sqrt(5))=3/5*Pi
-    ISet(ArcSec(Plus(CN1,Negate(CSqrt5))),
+    ISet(ArcSec(Subtract(CN1,CSqrt5)),
       Times(QQ(3L,5L),Pi)),
     // ArcSec(Sqrt(2)+Sqrt(6))=5/12*Pi
     ISet(ArcSec(Plus(CSqrt2,CSqrt6)),
       Times(QQ(5L,12L),Pi)),
     // ArcSec(-Sqrt(2)-Sqrt(6))=7/12*Pi
-    ISet(ArcSec(Plus(Negate(CSqrt2),Negate(CSqrt6))),
+    ISet(ArcSec(Subtract(Negate(CSqrt2),CSqrt6)),
       Times(QQ(7L,12L),Pi)),
     // ArcSec(I)=Pi/2+I*Log(Sqrt(2)+1)
     ISet(ArcSec(CI),

@@ -6199,15 +6199,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("JavaForm(Hold(D(sin(x)*cos(x),x)))", //
 				"D(Times(Sin(x),Cos(x)),x)");
 		check("JavaForm(D(sin(x)*cos(x),x), prefix->True)", //
-				"F.Plus(F.Sqr(F.Cos(F.x)),F.Negate(F.Sqr(F.Sin(F.x))))");
+				"F.Subtract(F.Sqr(F.Cos(F.x)),F.Sqr(F.Sin(F.x)))");
 		check("JavaForm(D(sin(x)*cos(x),x))", //
-				"Plus(Sqr(Cos(x)),Negate(Sqr(Sin(x))))");
+				"Subtract(Sqr(Cos(x)),Sqr(Sin(x)))");
 		check("JavaForm(I/2*E^((-I)*x)-I/2*E^(I*x), Prefix->True)", //
 				"F.Plus(F.Times(F.CC(0L,1L,1L,2L),F.Exp(F.Times(F.CNI,F.x))),F.Times(F.CC(0L,1L,-1L,2L),F.Exp(F.Times(F.CI,F.x))))");
 		check("JavaForm(I/2*E^((-I)*x)-I/2*E^(I*x))", //
 				"Plus(Times(CC(0L,1L,1L,2L),Exp(Times(CNI,x))),Times(CC(0L,1L,-1L,2L),Exp(Times(CI,x))))");
-		check("JavaForm(a+b+x^2+I+7+3/4+x+y, Prefix->True)", "F.Plus(F.CC(31L,4L,1L,1L),F.a,F.b,F.x,F.Sqr(F.x),F.y)");
-		check("JavaForm(a+b+x^2+I+7+3/4+x+y)", "Plus(CC(31L,4L,1L,1L),a,b,x,Sqr(x),y)");
+		check("JavaForm(a+b+x^2+I+7+3/4+x+y, Prefix->True)", //
+				"F.Plus(F.CC(31L,4L,1L,1L),F.a,F.b,F.x,F.Sqr(F.x),F.y)");
+		check("JavaForm(a+b+x^2+I+7+3/4+x+y)", //
+				"Plus(CC(31L,4L,1L,1L),a,b,x,Sqr(x),y)");
 	}
 
 	public void testJoin() {
@@ -6217,17 +6219,27 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "324,343,361,400,441,484,512,529,576,625,676,729,784,841,900,961,1000,1024,1089,\n"
 						+ "1156,1225,1296,1331,1369,1444,1521,1600,1681,1728,1764}");
 
-		check("Join({a, b}, {c, d, e})", "{a,b,c,d,e}");
-		check("Join({{a, b}, {c, d}}, {{1, 2}, {3, 4}})", "{{a,b},{c,d},{1,2},{3,4}}");
-		check("Join(a + b, c + d, e + f)", "a+b+c+d+e+f");
-		check("Join(a + b, c * d)", "Join(a+b,c*d)");
-		check("Join(x + y, z)", "Join(x+y,z)");
-		check("Join(x + y, y * z, a)", "Join(x+y,y*z,a)");
-		check("Join(x, y + z, y * z)", "Join(x,y+z,y*z)");
+		check("Join({a, b}, {c, d, e})", //
+				"{a,b,c,d,e}");
+		check("Join({{a, b}, {c, d}}, {{1, 2}, {3, 4}})", //
+				"{{a,b},{c,d},{1,2},{3,4}}");
+		check("Join(a + b, c + d, e + f)", //
+				"a+b+c+d+e+f");
+		check("Join(a + b, c * d)", //
+				"Join(a+b,c*d)");
+		check("Join(x + y, z)", //
+				"Join(x+y,z)");
+		check("Join(x + y, y * z, a)", //
+				"Join(x+y,y*z,a)");
+		check("Join(x, y + z, y * z)", //
+				"Join(x,y+z,y*z)");
 
-		check("Join(x, y)", "Join(x,y)");
-		check("Join({a,b}, {x,y,z})", "{a,b,x,y,z}");
-		check("Join({{a, b}, {x, y}}, {{1, 2}, {3, 4}})", "{{a,b},{x,y},{1,2},{3,4}}");
+		check("Join(x, y)", //
+				"Join(x,y)");
+		check("Join({a,b}, {x,y,z})", //
+				"{a,b,x,y,z}");
+		check("Join({{a, b}, {x, y}}, {{1, 2}, {3, 4}})", //
+				"{{a,b},{x,y},{1,2},{3,4}}");
 	}
 
 	public void testKolmogorovSmirnovTest() {
@@ -6263,28 +6275,42 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testKroneckerDelta() {
-		check("KroneckerDelta(2 - I, 2. - I)", "1");
-		check("KroneckerDelta(n,0)", "KroneckerDelta(0,n)");
+		check("KroneckerDelta(2 - I, 2. - I)", //
+				"1");
+		check("KroneckerDelta(n,0)", //
+				"KroneckerDelta(0,n)");
 
-		check("KroneckerDelta( )", "1");
-		check("KroneckerDelta(0)", "1");
-		check("KroneckerDelta(1)", "0");
-		check("KroneckerDelta(42)", "0");
-		check("KroneckerDelta(42, 42.0, 42)", "1");
-		check("KroneckerDelta(0,1)", "0");
-		check("KroneckerDelta(2,2)", "1");
-		check("KroneckerDelta(2,2.0)", "1");
+		check("KroneckerDelta( )", //
+				"1");
+		check("KroneckerDelta(0)", //
+				"1");
+		check("KroneckerDelta(1)", //
+				"0");
+		check("KroneckerDelta(42)", //
+				"0");
+		check("KroneckerDelta(42, 42.0, 42)", //
+				"1");
+		check("KroneckerDelta(0,1)", //
+				"0");
+		check("KroneckerDelta(2,2)", //
+				"1");
+		check("KroneckerDelta(2,2.0)", //
+				"1");
 
-		check("KroneckerDelta(1,1,1,2)", "0");
+		check("KroneckerDelta(1,1,1,2)", //
+				"0");
 
-		check("Table(KroneckerDelta(n), {n, -2, 2})", "{0,0,1,0,0}");
-		check("Array(KroneckerDelta, {3, 3})", "{{1,0,0},{0,1,0},{0,0,1}}");
-		check("Table((KroneckerDelta(i - j + 1) + KroneckerDelta(i - j + 2))*i*j^2, {i, 5}, {j, 5})",
+		check("Table(KroneckerDelta(n), {n, -2, 2})", //
+				"{0,0,1,0,0}");
+		check("Array(KroneckerDelta, {3, 3})", //
+				"{{1,0,0},{0,1,0},{0,0,1}}");
+		check("Table((KroneckerDelta(i - j + 1) + KroneckerDelta(i - j + 2))*i*j^2, {i, 5}, {j, 5})", //
 				"{{0,4,9,0,0},{0,0,18,32,0},{0,0,0,48,75},{0,0,0,0,100},{0,0,0,0,0}}");
 	}
 
 	public void testKurtosis() {
-		check("Kurtosis({1.1, 1.2, 1.4, 2.1, 2.4})", "1.42098");
+		check("Kurtosis({1.1, 1.2, 1.4, 2.1, 2.4})", //
+				"1.42098");
 	}
 
 	public void testLaguerreL() {
@@ -6319,17 +6345,27 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testInverseLaplaceTransform() {
 
-		check("InverseLaplaceTransform(f(x)*s,s,t)", "f(x)*DiracDelta'(t)");
-		check("InverseLaplaceTransform(f(x),s,t)", "DiracDelta(t)*f(x)");
-		check("InverseLaplaceTransform(1/s,s,t)", "1");
-		check("InverseLaplaceTransform(1/s^5,s,t)", "t^4/24");
-		check("InverseLaplaceTransform(1/(s^2 +a^2),s,t)", "Sin(a*t)/a");
-		check("InverseLaplaceTransform(s/(s^2 +a^2),s,t)", "Cos(a*t)");
-		check("InverseLaplaceTransform(1/(1+s),s,t)", "E^(-t)");
-		check("InverseLaplaceTransform(1/(s^2-4),s,t)", "(-1+E^(4*t))/(4*E^(2*t))");
+		check("InverseLaplaceTransform(f(x)*s,s,t)", //
+				"f(x)*DiracDelta'(t)");
+		check("InverseLaplaceTransform(f(x),s,t)", //
+				"DiracDelta(t)*f(x)");
+		check("InverseLaplaceTransform(1/s,s,t)", //
+				"1");
+		check("InverseLaplaceTransform(1/s^5,s,t)", //
+				"t^4/24");
+		check("InverseLaplaceTransform(1/(s^2 +a^2),s,t)", //
+				"Sin(a*t)/a");
+		check("InverseLaplaceTransform(s/(s^2 +a^2),s,t)", //
+				"Cos(a*t)");
+		check("InverseLaplaceTransform(1/(1+s),s,t)", //
+				"E^(-t)");
+		check("InverseLaplaceTransform(1/(s^2-4),s,t)", //
+				"(-1+E^(4*t))/(4*E^(2*t))");
 		// test partial fraction decomposition:
-		check("InverseLaplaceTransform(Together(3/(s-1)+(2*s)/(s^2+4)),s,t)", "3*E^t+2*Cos(2*t)");
-		check("InverseLaplaceTransform(3/(s-1)+(2*s)/(s^2+4),s,t)", "3*E^t+2*Cos(2*t)");
+		check("InverseLaplaceTransform(Together(3/(s-1)+(2*s)/(s^2+4)),s,t)", //
+				"3*E^t+2*Cos(2*t)");
+		check("InverseLaplaceTransform(3/(s-1)+(2*s)/(s^2+4),s,t)", //
+				"3*E^t+2*Cos(2*t)");
 	}
 
 	public void testLaplaceTransform() {
@@ -6344,35 +6380,59 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("LaplaceTransform(Exp(2+3*t)/t, t, s)", //
 				"E^2*LaplaceTransform(1/t,t,-3+s)");
 
-		check("LaplaceTransform(y'(t),t,s)", "s*LaplaceTransform(y(t),t,s)-y(0)");
-		check("LaplaceTransform(y''(t),t,s)", "s^2*LaplaceTransform(y(t),t,s)-s*y(0)-y'(0)");
+		check("LaplaceTransform(y'(t),t,s)", //
+				"s*LaplaceTransform(y(t),t,s)-y(0)");
+		check("LaplaceTransform(y''(t),t,s)", //
+				"s^2*LaplaceTransform(y(t),t,s)-s*y(0)-y'(0)");
 
-		check("LaplaceTransform(t, t, t)", "LaplaceTransform(t,t,t)");
-		check("LaplaceTransform(t, t, s)", "1/s^2");
-		check("LaplaceTransform(t, s, t)", "1");
-		check("LaplaceTransform(s, t, t)", "LaplaceTransform(s,t,t)");
-		check("LaplaceTransform(E^(-t), t, s)", "1/(1+s)");
-		check("LaplaceTransform(t^4*Sin(t), t, s)", "(384*s^4)/(1+s^2)^5+(-288*s^2)/(1+s^2)^4+24/(1+s^2)^3");
-		check("LaplaceTransform(t^(1/2), t, s)", "Sqrt(Pi)/(2*s^(3/2))");
-		check("LaplaceTransform(t^(1/3), t, s)", "Gamma(4/3)/s^(4/3)");
-		check("LaplaceTransform(t^a, t, s)", "Gamma(1+a)/s^(1+a)");
-		check("LaplaceTransform(Sin(t), t, s)", "1/(1+s^2)");
-		check("LaplaceTransform(Sin(t), t, t)", "1/(1+t^2)");
-		check("LaplaceTransform(Cos(t), t, s)", "s/(1+s^2)");
-		check("LaplaceTransform(Sinh(t), t, s)", "c/(-1+s^2)");
-		check("LaplaceTransform(Cosh(t), t, s)", "s/(-1+s^2)");
-		check("LaplaceTransform(Log(t), t, s)", "-(EulerGamma+Log(s))/s");
-		check("LaplaceTransform(Log(t)^2, t, s)", "(6*EulerGamma^2+Pi^2+6*Log(s)*(2*EulerGamma+Log(s)))/(6*s)");
-		check("LaplaceTransform(Erf(t), t, s)", "(E^(s^2/4)*Erfc(s/2))/s");
-		check("LaplaceTransform(Erf(t^(1/2)), t, s)", "1/(s*Sqrt(1+s))");
+		check("LaplaceTransform(t, t, t)", //
+				"LaplaceTransform(t,t,t)");
+		check("LaplaceTransform(t, t, s)", //
+				"1/s^2");
+		check("LaplaceTransform(t, s, t)", //
+				"1");
+		check("LaplaceTransform(s, t, t)", //
+				"LaplaceTransform(s,t,t)");
+		check("LaplaceTransform(E^(-t), t, s)", //
+				"1/(1+s)");
+		check("LaplaceTransform(t^4*Sin(t), t, s)", //
+				"(384*s^4)/(1+s^2)^5+(-288*s^2)/(1+s^2)^4+24/(1+s^2)^3");
+		check("LaplaceTransform(t^(1/2), t, s)", //
+				"Sqrt(Pi)/(2*s^(3/2))");
+		check("LaplaceTransform(t^(1/3), t, s)", //
+				"Gamma(4/3)/s^(4/3)");
+		check("LaplaceTransform(t^a, t, s)", //
+				"Gamma(1+a)/s^(1+a)");
+		check("LaplaceTransform(Sin(t), t, s)", //
+				"1/(1+s^2)");
+		check("LaplaceTransform(Sin(t), t, t)", //
+				"1/(1+t^2)");
+		check("LaplaceTransform(Cos(t), t, s)", //
+				"s/(1+s^2)");
+		check("LaplaceTransform(Sinh(t), t, s)", //
+				"c/(-1+s^2)");
+		check("LaplaceTransform(Cosh(t), t, s)", //
+				"s/(-1+s^2)");
+		check("LaplaceTransform(Log(t), t, s)", //
+				"-(EulerGamma+Log(s))/s");
+		check("LaplaceTransform(Log(t)^2, t, s)", //
+				"(6*EulerGamma^2+Pi^2+6*Log(s)*(2*EulerGamma+Log(s)))/(6*s)");
+		check("LaplaceTransform(Erf(t), t, s)", //
+				"(E^(s^2/4)*Erfc(s/2))/s");
+		check("LaplaceTransform(Erf(t^(1/2)), t, s)", //
+				"1/(s*Sqrt(1+s))");
 
-		check("LaplaceTransform(Sin(t)*Exp(t), t, s)", "1/(1+(1-s)^2)");
+		check("LaplaceTransform(Sin(t)*Exp(t), t, s)", //
+				"1/(1+(1-s)^2)");
 	}
 
 	public void testLast() {
-		check("Last({a, b, c})", "c");
-		check("Last(a + b + c)", "c");
-		check("Last(a)", "Last(a)");
+		check("Last({a, b, c})", //
+				"c");
+		check("Last(a + b + c)", //
+				"c");
+		check("Last(a)", //
+				"Last(a)");
 	}
 
 	public void testLCM() {
@@ -12069,6 +12129,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSimplify() {
+		check("Simplify(-2*Log(2))", //
+				"-Log(4)");
+		check("Simplify(Log(6)-Log(2))", //
+				"Log(3)");
+ 		check("Simplify(a+Log(1/6)+Log(1/7)+z())", //
+				"a-Log(42)+z()");
+ 		check("Simplify(a+Log(1/6)+Log(1/7)+Log(3/4)+z())", //
+				"a-Log(56)+z()");
+ 		check("Simplify(a+Log(1/6)-2*Log(1/7)+7*Log(3/4)+z())", //
+				"a+Log(35721/32768)+z()");
 		check("Simplify(1+n/2)", //
 				"1/2*(2+n)");
 		check("Simplify((9-Sqrt[57])*x^2)", //

@@ -55,10 +55,10 @@ public interface SecRules {
       CComplexInfinity),
     // Sec(7/12*Pi)=-Sqrt(2)-Sqrt(6)
     ISet(Sec(Times(QQ(7L,12L),Pi)),
-      Plus(Negate(CSqrt2),Negate(CSqrt6))),
+      Subtract(Negate(CSqrt2),CSqrt6)),
     // Sec(3/5*Pi)=-1-Sqrt(5)
     ISet(Sec(Times(QQ(3L,5L),Pi)),
-      Plus(CN1,Negate(CSqrt5))),
+      Subtract(CN1,CSqrt5)),
     // Sec(2/3*Pi)=-2
     ISet(Sec(Times(QQ(2L,3L),Pi)),
       CN2),
@@ -70,7 +70,7 @@ public interface SecRules {
       Negate(CSqrt2)),
     // Sec(4/5*Pi)=1-Sqrt(5)
     ISet(Sec(Times(QQ(4L,5L),Pi)),
-      Plus(C1,Negate(CSqrt5))),
+      Subtract(C1,CSqrt5)),
     // Sec(5/6*Pi)=-2/Sqrt(3)
     ISet(Sec(Times(QQ(5L,6L),Pi)),
       Times(CN2,C1DSqrt3)),
@@ -79,13 +79,13 @@ public interface SecRules {
       Negate(Sqrt(Plus(C2,Times(CN2,C1DSqrt5))))),
     // Sec(11/12*Pi)=Sqrt(2)-Sqrt(6)
     ISet(Sec(Times(QQ(11L,12L),Pi)),
-      Plus(CSqrt2,Negate(CSqrt6))),
+      Subtract(CSqrt2,CSqrt6)),
     // Sec(Pi)=-1
     ISet(Sec(Pi),
       CN1),
     // Sec(13/12*Pi)=Sqrt(2)-Sqrt(6)
     ISet(Sec(Times(QQ(13L,12L),Pi)),
-      Plus(CSqrt2,Negate(CSqrt6))),
+      Subtract(CSqrt2,CSqrt6)),
     // Sec(11/10*Pi)=-Sqrt(2-2/Sqrt(5))
     ISet(Sec(Times(QQ(11L,10L),Pi)),
       Negate(Sqrt(Plus(C2,Times(CN2,C1DSqrt5))))),
@@ -94,7 +94,7 @@ public interface SecRules {
       Times(CN2,C1DSqrt3)),
     // Sec(6/5*Pi)=1-Sqrt(5)
     ISet(Sec(Times(QQ(6L,5L),Pi)),
-      Plus(C1,Negate(CSqrt5))),
+      Subtract(C1,CSqrt5)),
     // Sec(5/4*Pi)=-Sqrt(2)
     ISet(Sec(Times(QQ(5L,4L),Pi)),
       Negate(CSqrt2)),
@@ -103,7 +103,7 @@ public interface SecRules {
       CN2),
     // Sec(7/5*Pi)=-1-Sqrt(5)
     ISet(Sec(Times(QQ(7L,5L),Pi)),
-      Plus(CN1,Negate(CSqrt5))),
+      Subtract(CN1,CSqrt5)),
     // Sec(3/2*Pi)=ComplexInfinity
     ISet(Sec(Times(QQ(3L,2L),Pi)),
       CComplexInfinity),
@@ -139,22 +139,22 @@ public interface SecRules {
       C1),
     // Sec(ArcSin(x_)):=1/Sqrt(1-x^2)
     ISetDelayed(Sec(ArcSin(x_)),
-      Power(Plus(C1,Negate(Sqr(x))),CN1D2)),
+      Power(Subtract(C1,Sqr(x)),CN1D2)),
     // Sec(ArcCos(x_)):=1/x
     ISetDelayed(Sec(ArcCos(x_)),
-      Power(x,-1)),
+      Power(x,CN1)),
     // Sec(ArcTan(x_)):=Sqrt(1+x^2)
     ISetDelayed(Sec(ArcTan(x_)),
       Sqrt(Plus(C1,Sqr(x)))),
     // Sec(ArcCot(x_)):=Sqrt(1+1/x^2)
     ISetDelayed(Sec(ArcCot(x_)),
-      Sqrt(Plus(C1,Power(x,-2)))),
+      Sqrt(Plus(C1,Power(x,CN2)))),
     // Sec(ArcSec(x_)):=x
     ISetDelayed(Sec(ArcSec(x_)),
       x),
     // Sec(ArcCsc(x_)):=1/Sqrt(1-1/x^2)
     ISetDelayed(Sec(ArcCsc(x_)),
-      Power(Plus(C1,Negate(Power(x,-2))),CN1D2)),
+      Power(Subtract(C1,Power(x,CN2)),CN1D2)),
     // Sec(I*Infinity)=0
     ISet(Sec(DirectedInfinity(CI)),
       C0),

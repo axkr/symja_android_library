@@ -1785,18 +1785,7 @@ public abstract class AbstractAST implements IASTMutable {
 					return prefix + "C1DSqrt10";
 				}
 			}
-			if (arg2().isInteger()) {
-				try {
-					long exp = ((IInteger) arg2()).toLong();
-					// create Power(arg1, exp)
-					return prefix + "Power(" + arg1().internalJavaString(symbolsAsFactoryMethod, depth + 1,
-							useOperators, usePrefix, noSymbolPrefix) + "," + Long.toString(exp) + ")";
-
-				} catch (RuntimeException ex) {
-
-				}
-			}
-
+			// don't optimize if arg2() is integer
 		}
 		StringBuilder text = new StringBuilder(size() * 10);
 		if (temp.isSymbol()) {
@@ -1834,7 +1823,7 @@ public abstract class AbstractAST implements IASTMutable {
 			return text.toString();
 		}
 
-		if (isTimes() && size() == 3) {
+		if (isAST(F.Times, 3)) {
 			if (arg1().equals(F.CNPiHalf)) {
 				return prefix + "CNPiHalf";
 			}
@@ -1842,8 +1831,22 @@ public abstract class AbstractAST implements IASTMutable {
 				return prefix + "CPiHalf";
 			}
 			if (arg1().isMinusOne() && !arg2().isTimes()) {
+				if (arg2().isNumber()) {
+					IExpr num = ((INumber) arg2()).negate();
+					return num.internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators, usePrefix,
+							noSymbolPrefix);
+				}
 				return prefix + "Negate(" + arg2().internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators,
 						usePrefix, noSymbolPrefix) + ")";
+			}
+		} else if (isAST(F.Plus, 3)) {
+			if (arg2().isAST(F.Times, 3) && arg2().first().isMinusOne()) {
+				return prefix + "Subtract("
+						+ arg1().internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators, usePrefix,
+								noSymbolPrefix)
+						+ "," + arg2().second().internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators, usePrefix,
+								noSymbolPrefix)
+						+ ")";
 			}
 		}
 

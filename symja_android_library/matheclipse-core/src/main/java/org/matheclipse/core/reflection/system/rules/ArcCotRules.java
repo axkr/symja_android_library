@@ -21,7 +21,7 @@ public interface ArcCotRules {
     ISet(ArcCot(C0),
       Times(C1D2,Pi)),
     // ArcCot(2-Sqrt(3))=5/12*Pi
-    ISet(ArcCot(Plus(C2,Negate(CSqrt3))),
+    ISet(ArcCot(Subtract(C2,CSqrt3)),
       Times(QQ(5L,12L),Pi)),
     // ArcCot(-1+Sqrt(2))=3/8*Pi
     ISet(ArcCot(Plus(CN1,CSqrt2)),

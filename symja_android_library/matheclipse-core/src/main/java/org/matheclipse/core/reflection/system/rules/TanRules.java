@@ -22,7 +22,7 @@ public interface TanRules {
       C0),
     // Tan(Pi/12)=2-Sqrt(3)
     ISet(Tan(Times(QQ(1L,12L),Pi)),
-      Plus(C2,Negate(CSqrt3))),
+      Subtract(C2,CSqrt3)),
     // Tan(Pi/10)=Sqrt(1-2/Sqrt(5))
     ISet(Tan(Times(QQ(1L,10L),Pi)),
       Sqrt(Plus(C1,Times(CN2,C1DSqrt5)))),
@@ -58,13 +58,13 @@ public interface TanRules {
       CComplexInfinity),
     // Tan(7/12*Pi)=-2-Sqrt(3)
     ISet(Tan(Times(QQ(7L,12L),Pi)),
-      Plus(CN2,Negate(CSqrt3))),
+      Subtract(CN2,CSqrt3)),
     // Tan(3/5*Pi)=-Sqrt(5+2*Sqrt(5))
     ISet(Tan(Times(QQ(3L,5L),Pi)),
       Negate(Sqrt(Plus(C5,Times(C2,CSqrt5))))),
     // Tan(5/8*Pi)=-1-Sqrt(2)
     ISet(Tan(Times(QQ(5L,8L),Pi)),
-      Plus(CN1,Negate(CSqrt2))),
+      Subtract(CN1,CSqrt2)),
     // Tan(2/3*Pi)=-Sqrt(3)
     ISet(Tan(Times(QQ(2L,3L),Pi)),
       Negate(CSqrt3)),
@@ -82,7 +82,7 @@ public interface TanRules {
       Negate(C1DSqrt3)),
     // Tan(7/8*Pi)=1-Sqrt(2)
     ISet(Tan(Times(QQ(7L,8L),Pi)),
-      Plus(C1,Negate(CSqrt2))),
+      Subtract(C1,CSqrt2)),
     // Tan(9/10*Pi)=-Sqrt(1-2/Sqrt(5))
     ISet(Tan(Times(QQ(9L,10L),Pi)),
       Negate(Sqrt(Plus(C1,Times(CN2,C1DSqrt5))))),
@@ -97,25 +97,25 @@ public interface TanRules {
       Times(CI,Tanh(C1))),
     // Tan(Pi*x_?NumberQ):=If(x<1,-Tan((1-x)*Pi),If(x<2,Tan((-1+x)*Pi),Tan((x-2*Quotient(IntegerPart(x),2))*Pi)))/;x>1/2
     ISetDelayed(Tan(Times(Pi,PatternTest(x_,NumberQ))),
-      Condition(If(Less(x,C1),Negate(Tan(Times(Plus(C1,Negate(x)),Pi))),If(Less(x,C2),Tan(Times(Plus(CN1,x),Pi)),Tan(Times(Plus(x,Times(CN2,Quotient(IntegerPart(x),C2))),Pi)))),Greater(x,C1D2))),
+      Condition(If(Less(x,C1),Negate(Tan(Times(Subtract(C1,x),Pi))),If(Less(x,C2),Tan(Times(Plus(CN1,x),Pi)),Tan(Times(Plus(x,Times(CN2,Quotient(IntegerPart(x),C2))),Pi)))),Greater(x,C1D2))),
     // Tan(ArcSin(x_)):=x/Sqrt(1-x^2)
     ISetDelayed(Tan(ArcSin(x_)),
-      Times(x,Power(Plus(C1,Negate(Sqr(x))),CN1D2))),
+      Times(x,Power(Subtract(C1,Sqr(x)),CN1D2))),
     // Tan(ArcCos(x_)):=Sqrt(1-x^2)/x
     ISetDelayed(Tan(ArcCos(x_)),
-      Times(Power(x,-1),Sqrt(Plus(C1,Negate(Sqr(x)))))),
+      Times(Power(x,CN1),Sqrt(Subtract(C1,Sqr(x))))),
     // Tan(ArcTan(x_)):=x
     ISetDelayed(Tan(ArcTan(x_)),
       x),
     // Tan(ArcCot(x_)):=1/x
     ISetDelayed(Tan(ArcCot(x_)),
-      Power(x,-1)),
+      Power(x,CN1)),
     // Tan(ArcCsc(x_)):=1/(Sqrt(1-1/x^2)*x)
     ISetDelayed(Tan(ArcCsc(x_)),
-      Times(Power(Plus(C1,Negate(Power(x,-2))),CN1D2),Power(x,-1))),
+      Times(Power(Subtract(C1,Power(x,CN2)),CN1D2),Power(x,CN1))),
     // Tan(ArcSec(x_)):=Sqrt(1-1/x^2)*x
     ISetDelayed(Tan(ArcSec(x_)),
-      Times(Sqrt(Plus(C1,Negate(Power(x,-2)))),x)),
+      Times(Sqrt(Subtract(C1,Power(x,CN2))),x)),
     // Tan(I*Infinity)=I
     ISet(Tan(DirectedInfinity(CI)),
       CI),
