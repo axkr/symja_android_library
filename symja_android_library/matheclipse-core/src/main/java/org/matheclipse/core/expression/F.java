@@ -3407,7 +3407,7 @@ public class F {
 	public final static IFraction CN1D4 = AbstractFractionSym.valueOf(-1, 4);
 
 	/**
-	 * Constant double &quot;1.0&quot;
+	 * Constant double &quot;-1.0&quot;
 	 */
 	public final static Num CND1 = new Num(-1.0);
 
