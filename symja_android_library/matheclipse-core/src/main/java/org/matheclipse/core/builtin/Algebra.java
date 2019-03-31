@@ -3829,8 +3829,16 @@ public class Algebra {
 					IExpr temp;
 					long count;
 					long expandAllCounter = 0;
-
-					if (expr.isPlus()) {
+					if (expr.isTimes()) {
+						temp = tryTimesLog((IAST) expr);
+						if (temp.isPresent()) {
+							count = fComplexityFunction.apply(temp);
+							if (count <= minCounter) {
+								minCounter = count;
+								result = temp;
+							}
+						}
+					} else if (expr.isPlus()) {
 						temp = FactorTerms.factorTermsPlus((IAST) expr, EvalEngine.get());
 						if (temp.isPresent()) {
 							count = fComplexityFunction.apply(temp);
@@ -3851,8 +3859,27 @@ public class Algebra {
 								result = temp;
 							}
 						}
+
+						if (result.isPlus()) {
+							temp = tryPlusLog((IAST) result);
+						} else {
+							temp = tryPlusLog((IAST) expr);
+						}
+						if (temp.isPresent()) {
+							temp = fEngine.evaluate(temp);
+							// commonFactors[1] = F.Simplify.of(EvalEngine.get(), commonFactors[1]);
+							// temp = F.Times.of(commonFactors[0], commonFactors[1]);
+							count = fComplexityFunction.apply(temp);
+							if (count <= minCounter) {
+								minCounter = count;
+								result = temp;
+							}
+						}
 					}
 
+					if (result.isAST()) {
+						expr = result;
+					}
 					try {
 						temp = F.evalExpandAll(expr);
 						expandAllCounter = fComplexityFunction.apply(temp);
@@ -3865,6 +3892,9 @@ public class Algebra {
 						//
 					}
 
+					if (result.isAST()) {
+						expr = result;
+					}
 					if (((IAST) expr).hasTrigonometricFunction()) {
 
 						try {
@@ -4018,7 +4048,6 @@ public class Algebra {
 				if (ast.isPlus()) {
 					IASTAppendable basicPlus = F.PlusAlloc(ast.size());
 					IASTAppendable restPlus = F.PlusAlloc(ast.size());
-
 					ast.forEach(x -> {
 						if (x.accept(isBasicAST)) {
 							basicPlus.append(x);
@@ -4134,6 +4163,66 @@ public class Algebra {
 				return functionExpand(ast, minCounter, result);
 			}
 
+			/**
+			 * Simplify <code>Log(x)+Log(y)+p*Log(z)</code> if x, y, z are real numbers and p is an integer number
+			 * 
+			 * @param plusAST
+			 * @return
+			 */
+			private static IExpr tryPlusLog(IAST plusAST) {
+				if (plusAST.size() > 2) {
+					IASTAppendable logPlus = F.PlusAlloc(plusAST.size());
+					IExpr a1 = F.NIL;
+					boolean evaled = false;
+					for (int i = 1; i < plusAST.size(); i++) {
+						IExpr a2 = plusAST.get(i);
+						IExpr arg = F.NIL;
+						if (a2.isAST(F.Times, 3) && a2.first().isInteger() && //
+								a2.second().isLog() && a2.second().first().isReal()) {
+							arg = F.Power.of(a2.second().first(), a2.first());
+						} else if (a2.isLog() && a2.first().isReal()) {
+							arg = a2.first();
+						}
+						if (arg.isReal()) {
+							if (a1.isPresent()) {
+								a1 = a1.multiply(arg);
+								evaled = true;
+							} else {
+								a1 = arg;
+							}
+							continue;
+						}
+						logPlus.append(a2);
+					}
+					if (evaled) {
+						if (logPlus.size() == 1) {
+							return Log.of(a1);
+						} else {
+							logPlus.append(Log(a1));
+							return logPlus;
+						}
+					}
+				}
+				return F.NIL;
+			}
+
+			private static IExpr tryTimesLog(IAST timesAST) {
+				if (timesAST.size() > 2 && timesAST.first().isInteger() && !timesAST.first().isMinusOne()) {
+
+					for (int i = 2; i < timesAST.size(); i++) {
+						IExpr temp = timesAST.get(i);
+						IExpr arg = F.NIL;
+						if (temp.isLog() && temp.first().isReal()) {
+							IASTAppendable result = timesAST.removeAtClone(i);
+							result.append(F.Log(F.Power.of(temp.first(), timesAST.first())));
+							return result.removeAtClone(1);
+						}
+
+					}
+				}
+				return F.NIL;
+			}
+
 			private IExpr functionExpand(IExpr expr, long minCounter, IExpr result) {
 				if (fFullSimplify) {
 					try {
@@ -4171,7 +4260,7 @@ public class Algebra {
 				IASTAppendable restTimes = F.TimesAlloc(timesAST.size());
 				INumber number = null;
 				IExpr arg1 = timesAST.arg1();
-				
+
 				if (arg1.isNumber()) {
 					number = (INumber) arg1;
 				} else if (arg1.isPlus() && arg1.first().isNumber()) {
