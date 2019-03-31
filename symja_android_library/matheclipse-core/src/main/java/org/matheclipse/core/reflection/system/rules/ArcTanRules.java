@@ -71,11 +71,11 @@ public interface ArcTanRules {
     // ArcTan(-I*Infinity)=(-1)*1/2*Pi
     ISet(ArcTan(DirectedInfinity(CNI)),
       Times(CN1D2,Pi)),
-    // ArcTan(x_,y_):=(Pi*(-x+2*Sqrt(x^2)))/(4*y)/;x^2==y^2
-    ISetDelayed(ArcTan(x_,y_),
-      Condition(Times(Pi,Plus(Negate(x),Times(C2,Sqrt(Sqr(x)))),Power(Times(C4,y),-1)),Equal(Sqr(x),Sqr(y)))),
     // ArcTan(x_?RealNumberQ,y_?RealNumberQ):=If(x==0,If(y==0,Indeterminate,If(y>0,Pi/2,(-1)*1/2*Pi)),If(x>0,ArcTan(y/x),If(y>=0,ArcTan(y/x)+Pi,-Pi+ArcTan(y/x))))
     ISetDelayed(ArcTan(PatternTest(x_,RealNumberQ),PatternTest(y_,RealNumberQ)),
-      If(Equal(x,C0),If(Equal(y,C0),Indeterminate,If(Greater(y,C0),Times(C1D2,Pi),Times(CN1,C1D2,Pi))),If(Greater(x,C0),ArcTan(Times(Power(x,-1),y)),If(GreaterEqual(y,C0),Plus(ArcTan(Times(Power(x,-1),y)),Pi),Plus(Negate(Pi),ArcTan(Times(Power(x,-1),y)))))))
+      If(Equal(x,C0),If(Equal(y,C0),Indeterminate,If(Greater(y,C0),Times(C1D2,Pi),Times(CN1,C1D2,Pi))),If(Greater(x,C0),ArcTan(Times(Power(x,-1),y)),If(GreaterEqual(y,C0),Plus(ArcTan(Times(Power(x,-1),y)),Pi),Plus(Negate(Pi),ArcTan(Times(Power(x,-1),y))))))),
+    // ArcTan(x_?NumberQ,y_?NumberQ):=(Pi*(-x+2*Sqrt(x^2)))/(4*y)/;x^2==y^2
+    ISetDelayed(ArcTan(PatternTest(x_,NumberQ),PatternTest(y_,NumberQ)),
+      Condition(Times(Pi,Plus(Negate(x),Times(C2,Sqrt(Sqr(x)))),Power(Times(C4,y),-1)),Equal(Sqr(x),Sqr(y))))
   );
 }

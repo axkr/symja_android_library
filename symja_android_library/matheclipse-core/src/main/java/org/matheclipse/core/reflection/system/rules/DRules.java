@@ -248,9 +248,9 @@ public interface DRules {
     // D(Log(x_),{x_,n_Integer}):=(-1+n)!/((-1)^(1-n)*x^n)/;n>=0
     ISetDelayed(D(Log(x_),List(x_,$p(n, Integer))),
       Condition(Times(Power(CN1,Plus(CN1,n)),Power(Power(x,n),-1),Factorial(Plus(CN1,n))),GreaterEqual(n,C0))),
-    // D(ArcTan(f_,g_),x_?NotListQ):=(-g*D(f,x)+f*D(g,x))/(f^2+g^2)
+    // D(ArcTan(f_,g_),x_?NotListQ):=With({d=(-g*D(f,x)+f*D(g,x))/(f^2+g^2)},If(PossibleZeroQ(d),0,d))
     ISetDelayed(D(ArcTan(f_,g_),PatternTest(x_,NotListQ)),
-      Times(Power(Plus(Sqr(f),Sqr(g)),-1),Plus(Times(CN1,g,D(f,x)),Times(f,D(g,x))))),
+      With(List(Set(d,Times(Power(Plus(Sqr(f),Sqr(g)),-1),Plus(Times(CN1,g,D(f,x)),Times(f,D(g,x)))))),If(PossibleZeroQ(d),C0,d))),
     // D(BesselJ(f_,g_),x_?NotListQ):=1/2*(BesselJ(-1+f,g)-BesselJ(1+f,g))*D(g,x)+D(f,x)*Derivative(1,0)[BesselJ][f,g]
     ISetDelayed(D(BesselJ(f_,g_),PatternTest(x_,NotListQ)),
       Plus(Times(C1D2,Plus(BesselJ(Plus(CN1,f),g),Negate(BesselJ(Plus(C1,f),g))),D(g,x)),Times(D(f,x),$($(Derivative(C1,C0),BesselJ),f,g)))),

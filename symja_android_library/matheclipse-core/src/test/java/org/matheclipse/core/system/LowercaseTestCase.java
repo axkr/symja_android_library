@@ -502,11 +502,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"ArcTan(1/2)");
 
 		check("ArcTan(a, -a)", //
-				"((a-2*Sqrt(a^2))*Pi)/(4*a)");
+				"ArcTan(a,-a)");
 		check("ArcTan(-a, a)", //
-				"((a+2*Sqrt(a^2))*Pi)/(4*a)");
+				"ArcTan(-a,a)");
 		check("ArcTan(a, a)", //
-				"((-a+2*Sqrt(a^2))*Pi)/(4*a)");
+				"ArcTan(a,a)");
 		check("2*ArcTan(x)+4*ArcCot(x)", //
 				"Pi+2*ArcCot(x)");
 		check("7*ArcTan(x)+3*ArcCot(x)", //
@@ -2553,12 +2553,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testD() {
+		check("D((2*x*(Sqrt(d)*Sqrt(-e)+e*x))/(d+e*x^2),x)", //
+				"(-4*e*(Sqrt(d)*Sqrt(-e)+e*x)*x^2)/(d+e*x^2)^2+(2*e*x)/(d+e*x^2)+(2*(Sqrt(d)*Sqrt(-e)+e*x))/(d+e*x^\n"
+						+ "2)");
 		check("D(ArcTan(x,y),x)", //
 				"-y/(x^2+y^2)");
 		check("D(ArcTan(x,y),y)", //
 				"x/(x^2+y^2)");
-		// check("D(ArcTan(x,x),x)", //
-		// "0");
+		check("D(ArcTan(x,x),x)", //
+				"0");
 		check("D(Cosh(b*x),x)", //
 				"b*Sinh(b*x)");
 		check("D(Sinh(x),x)", //
