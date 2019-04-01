@@ -928,7 +928,9 @@ public final class LinearAlgebra {
 						if (o1.isMatrix() != null) {
 							list = (IAST) o1;
 							matrix1 = Convert.list2Matrix(list);
-							return Convert.matrix2List(matrix0.multiply(matrix1));
+							if (matrix1 != null) {
+								return Convert.matrix2List(matrix0.multiply(matrix1));
+							}
 						} else if (o1.isVector() != (-1)) {
 							list = (IAST) o1;
 							vector1 = Convert.list2Vector(list);
@@ -939,6 +941,7 @@ public final class LinearAlgebra {
 							return res;
 						}
 					}
+					engine.printMessage(ast.topHead() + ": Error in matrix");
 				} else if (o0.isVector() != (-1)) {
 					list = (IAST) o0;
 					vector0 = Convert.list2Vector(list);
@@ -955,20 +958,26 @@ public final class LinearAlgebra {
 							}
 						}
 					}
+					engine.printMessage(ast.topHead() + ": Error in vector");
 				}
 
-			} catch (final ClassCastException e) {
+				// } catch (final ClassCastException e) {
+				// if (Config.SHOW_STACKTRACE) {
+				// e.printStackTrace();
+				// }
+				// } catch (final IndexOutOfBoundsException e) {
+				// if (Config.SHOW_STACKTRACE) {
+				// e.printStackTrace();
+				// }
+			} catch (final RuntimeException e) {
+				engine.printMessage(ast.topHead() + ": " + e.getMessage());
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
-			} catch (final IndexOutOfBoundsException e) {
-				if (Config.SHOW_STACKTRACE) {
-					e.printStackTrace();
-				}
-			} catch (final org.hipparchus.exception.MathRuntimeException e) {
-				if (Config.SHOW_STACKTRACE) {
-					e.printStackTrace();
-				}
+				// } catch (final org.hipparchus.exception.MathRuntimeException e) {
+				// if (Config.SHOW_STACKTRACE) {
+				// e.printStackTrace();
+				// }
 			} finally {
 				engine.setTogetherMode(togetherMode);
 			}
@@ -2338,16 +2347,21 @@ public final class LinearAlgebra {
 				}
 				return Convert.matrix2List(resultMatrix);
 
-			} catch (final ClassCastException e) {
-				if (Config.SHOW_STACKTRACE) {
-					e.printStackTrace();
-				}
-			} catch (final ArithmeticException e) {
-				if (Config.SHOW_STACKTRACE) {
-					e.printStackTrace();
-				}
-				throw new NonNegativeIntegerExpected(ast, 2);
-			} catch (final IndexOutOfBoundsException e) {
+//			} catch (final ClassCastException e) {
+//				if (Config.SHOW_STACKTRACE) {
+//					e.printStackTrace();
+//				}
+//			} catch (final ArithmeticException e) {
+//				if (Config.SHOW_STACKTRACE) {
+//					e.printStackTrace();
+//				}
+//				throw new NonNegativeIntegerExpected(ast, 2);
+//			} catch (final IndexOutOfBoundsException e) {
+//				if (Config.SHOW_STACKTRACE) {
+//					e.printStackTrace();
+//				}
+			} catch (final RuntimeException e) {
+				engine.printMessage(ast.topHead()+": "+e.getMessage());
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}

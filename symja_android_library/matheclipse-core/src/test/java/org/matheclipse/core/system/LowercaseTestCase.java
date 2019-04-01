@@ -2902,6 +2902,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDet() {
+		// print error
+		check("Det({{1, 1, 1}, {2, 2, 2}})", //
+				"Det(\n" + "{{1,1,1},\n" + " {2,2,2}})");
+
 		check("Det({{42}})", "42");
 		check("Det({{x}})", "x");
 		check("Det({{1, 1, 0}, {1, 0, 1}, {0, 1, 1}})", "-2");
@@ -3167,6 +3171,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDot() {
+		// print error
+		check("Dot({{0,2},{-8,2}},{{{0},0},{0,3}})", //
+				"{{0,2},\n" + " {-8,2}}.\n" + "{{{0},0},\n" + " {0,3}}");
+
 		check("#1.#123 // FullForm", "Dot(Slot(1), Slot(123))");
 		check("{{1, 2}, {3.0, 4}, {5, 6}}.{1,1}", "{3.0,7.0,11.0}");
 		check("{{1, 2}, {3.0, 4}, {5, 6}}.{{1},{1}}", "{{3.0},\n" + " {7.0},\n" + " {11.0}}");
@@ -3689,7 +3697,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testExpand() {
 		// performance test
-		// check("f = (x + y + z + w)^15 ;Expand(f*(f+w));", //
+		// check("f = (x + y + z + w)^15;LeafCount(Expand(f*(f+w)))", //
 		// "?");
 		check("Expand((x + 3)^(5/2)+(x + 1)^(3/2))", //
 				"Sqrt(1+x)+x*Sqrt(1+x)+9*Sqrt(3+x)+6*x*Sqrt(3+x)+x^2*Sqrt(3+x)");
@@ -7435,9 +7443,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMatrixPower() {
-		check("MatrixPower({{1, 2}, {2, 5}}, -3)", "{{169,-70},\n" + " {-70,29}}");
-		check("MatrixPower({{1, 2}, {1, 1}}, 10)", "{{3363,4756},\n" + " {2378,3363}}");
-		check("MatrixPower({{1, 0}, {0}}, 2)", "MatrixPower({{1,0},{0}},2)");
+		// print error
+		check("MatrixPower({{2},{1}},2)", //
+				"MatrixPower({{2},{1}},2)");
+
+		check("MatrixPower({{1, 2}, {2, 5}}, -3)", //
+				"{{169,-70},\n" + " {-70,29}}");
+		check("MatrixPower({{1, 2}, {1, 1}}, 10)", //
+				"{{3363,4756},\n" + " {2378,3363}}");
+		check("MatrixPower({{1, 0}, {0}}, 2)", //
+				"MatrixPower({{1,0},{0}},2)");
 	}
 
 	public void testMatrixQ() {
@@ -12133,11 +12148,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-Log(4)");
 		check("Simplify(Log(6)-Log(2))", //
 				"Log(3)");
- 		check("Simplify(a+Log(1/6)+Log(1/7)+z())", //
+		check("Simplify(a+Log(1/6)+Log(1/7)+z())", //
 				"a-Log(42)+z()");
- 		check("Simplify(a+Log(1/6)+Log(1/7)+Log(3/4)+z())", //
+		check("Simplify(a+Log(1/6)+Log(1/7)+Log(3/4)+z())", //
 				"a-Log(56)+z()");
- 		check("Simplify(a+Log(1/6)-2*Log(1/7)+7*Log(3/4)+z())", //
+		check("Simplify(a+Log(1/6)-2*Log(1/7)+7*Log(3/4)+z())", //
 				"a+Log(35721/32768)+z()");
 		check("Simplify(1+n/2)", //
 				"1/2*(2+n)");

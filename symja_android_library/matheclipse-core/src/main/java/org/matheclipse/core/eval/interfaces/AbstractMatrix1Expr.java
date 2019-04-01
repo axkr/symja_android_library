@@ -31,11 +31,16 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 				}
 			}
 
-		} catch (final ClassCastException e) {
-			if (Config.SHOW_STACKTRACE) {
-				e.printStackTrace();
-			}
-		} catch (final IndexOutOfBoundsException e) {
+//		} catch (final ClassCastException e) {
+//			if (Config.SHOW_STACKTRACE) {
+//				e.printStackTrace();
+//			}
+//		} catch (final IndexOutOfBoundsException e) {
+//			if (Config.SHOW_STACKTRACE) {
+//				e.printStackTrace();
+//			}
+		} catch (final RuntimeException e) {
+			engine.printMessage(ast.topHead()+": "+e.getMessage());
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();
 			}
