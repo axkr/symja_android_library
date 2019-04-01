@@ -28,7 +28,7 @@ public class BasicPatternPropertiesTestCase extends TestCase {
 			assertEquals(Integer.toString(matcher.getLHSPriority()), priority);
 		} catch (Exception e) {
 			e.printStackTrace();
-			assertEquals(0, priority);
+			assertEquals("0", priority);
 		}
 	}
 

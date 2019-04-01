@@ -139,7 +139,7 @@ class SymjaMMACodeRunner implements Callable<TryResult> {
 			either = TryResult.createError(INTERUPTED_MSG);
 		} else {
 			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
+			// PrintWriter pw = new PrintWriter(sw);
 			// StackTraceUtils.sanitize(e).printStackTrace(pw);
 			String value = sw.toString();
 			value = printStacktrace(scriptName, value);

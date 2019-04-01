@@ -91,7 +91,7 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
 
 	private SymjaMMAAutocomplete gac;
 
-	private BeakerXUrlClassLoader beakerxUrlClassLoader;
+//	private BeakerXUrlClassLoader beakerxUrlClassLoader;
 
 	public SymjaMMAEvaluator(String id, String sId, CellExecutor cellExecutor, TempFolderFactory tempFolderFactory,
 			EvaluatorParameters evaluatorParameters, BeakerXClient beakerxClient,
@@ -125,7 +125,7 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
 
 	@Override
 	protected void addJarToClassLoader(PathToJar pathToJar) {
-		this.beakerxUrlClassLoader.addJar(pathToJar);
+//		this.beakerxUrlClassLoader.addJar(pathToJar);
 	}
 
 	@Override

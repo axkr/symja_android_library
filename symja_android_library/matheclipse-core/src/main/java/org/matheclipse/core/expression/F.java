@@ -5586,7 +5586,7 @@ public class F {
 	 * @return
 	 */
 	public static IAST Divide(final IExpr arg1, final IExpr arg2) {
-		return binaryAST2(Times, arg1, binaryAST2(Power, arg2, CN1));
+		return new AST2(Times, arg1, new AST2(Power, arg2, CN1));
 	}
 
 	public static IAST Divisible(final IExpr a0, final IExpr a1) {
@@ -7792,40 +7792,11 @@ public class F {
 		return function(Plus, a);
 	}
 
-	public static IAST Plus(final IExpr a0, final IExpr a1) {
-		if (a0 != null && a1 != null) {
-			if (a0.isPlus() || a1.isPlus()) {
-				int size = 0;
-				if (a0.isPlus()) {
-					size += ((IAST) a0).size();
-				} else {
-					size++;
-				}
-				if (a1.isPlus()) {
-					size += ((IAST) a1).size();
-				} else {
-					size++;
-				}
-				IASTAppendable result = PlusAlloc(size);
-				if (a0.isPlus()) {
-					result.appendArgs((IAST) a0);
-				} else {
-					result.append(a0);
-				}
-				if (a1.isPlus()) {
-					result.appendArgs((IAST) a1);
-				} else {
-					result.append(a1);
-				}
-				EvalAttributes.sort(result);
-				return result;
-			}
-			if (a0.compareTo(a1) > 0) {
-				// swap arguments
-				return binaryAST2(Plus, a1, a0);
-			}
+	public static IAST Plus(final IExpr a1, final IExpr a2) {
+		if (a1 != null && a2 != null) {
+			return binaryASTOrderless(IExpr::isPlus, F.Plus, a1, a2);
 		}
-		return binaryAST2(Plus, a0, a1);
+		return binaryAST2(Plus, a1, a2);
 	}
 
 	public static IAST Plus(final long num, final IExpr... a) {
@@ -8715,16 +8686,16 @@ public class F {
 	 * @return
 	 */
 	public static IAST Subtract(final IExpr arg1, final IExpr arg2) {
-		if (arg1.isPlus()) {
-			if (arg2.isZero()) {
-				return (IAST) arg1;
-			}
-			IASTAppendable clone = F.PlusAlloc(arg1.size() + 1);
-			clone.appendArgs((IAST) arg1);
-			clone.append(binaryAST2(Times, CN1, arg2));
-			return clone;
-		}
-		return binaryAST2(Plus, arg1, binaryAST2(Times, CN1, arg2));
+		// if (arg1.isPlus()) {
+		// if (arg2.isZero()) {
+		// return (IAST) arg1;
+		// }
+		// IASTAppendable clone = F.PlusAlloc(arg1.size() + 1);
+		// clone.appendArgs((IAST) arg1);
+		// clone.append(binaryAST2(Times, CN1, arg2));
+		// return clone;
+		// }
+		return new AST2(Plus, arg1, new AST2(Times, CN1, arg2));
 	}
 
 	public static IAST Sum(final IExpr a0, final IExpr a1) {
@@ -8871,38 +8842,36 @@ public class F {
 
 	public static IASTMutable Times(final IExpr a1, final IExpr a2) {
 		if (a1 != null && a2 != null) {
-			if (a1.isTimes() || a2.isTimes()) {
-				int size = 0;
-				if (a1.isTimes()) {
-					size += a1.size();
-				} else {
-					size++;
-				}
-				if (a2.isTimes()) {
-					size += a2.size();
-				} else {
-					size++;
-				}
-				IASTAppendable result = TimesAlloc(size);
-				if (a1.isTimes()) {
-					result.appendArgs((IAST) a1);
-				} else {
-					result.append(a1);
-				}
-				if (a2.isTimes()) {
-					result.appendArgs((IAST) a2);
-				} else {
-					result.append(a2);
-				}
-				EvalAttributes.sort(result);
-				return result;
-			}
-			if (a1.compareTo(a2) > 0) {
-				// swap arguments
-				return binary(Times, a2, a1);
-			}
+			return binaryASTOrderless(IExpr::isTimes, F.Times, a1, a2);
 		}
 		return binary(Times, a1, a2);
+	}
+
+	private static IASTMutable binaryASTOrderless(Predicate<IExpr> t, ISymbol symbol, final IExpr a1, final IExpr a2) {
+		final boolean test1 = t.test(a1);
+		final boolean test2 = t.test(a2);
+		if (test1 || test2) {
+			int size = test1 ? a1.size() : 1;
+			size += test1 ? a2.size() : 1;
+			IASTAppendable result = ast(symbol, size, false);
+			if (test1) {
+				result.appendArgs((IAST) a1);
+			} else {
+				result.append(a1);
+			}
+			if (test2) {
+				result.appendArgs((IAST) a2);
+			} else {
+				result.append(a2);
+			}
+			EvalAttributes.sort(result);
+			return result;
+		}
+		if (a1.compareTo(a2) > 0) {
+			// swap arguments
+			return binary(symbol, a2, a1);
+		}
+		return binary(symbol, a1, a2);
 	}
 
 	public static IAST Times(final long num, final IExpr... a) {

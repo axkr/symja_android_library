@@ -1716,6 +1716,7 @@ public class Algebra {
 
 						}
 					}
+					timesAST.setEvalFlags(IAST.IS_SORTED); 
 					expandedResult.append(timesAST.oneIdentity0());
 				}
 			}
