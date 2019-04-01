@@ -149,6 +149,7 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public int argSize() {
 		return SIZE - 1;
 	}
@@ -222,21 +223,14 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean exists(Predicate<? super IExpr> predicate, int startOffset) {
-		return (startOffset == 0) ? predicate.test(arg0) : false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public boolean exists(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
 		return (startOffset == 0) ? predicate.test(arg0, 0) : false;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
-			final Function<IExpr, IExpr> function) {
-		return filterAST;
+	public boolean exists(Predicate<? super IExpr> predicate, int startOffset) {
+		return (startOffset == 0) ? predicate.test(arg0) : false;
 	}
 
 	/** {@inheritDoc} */
@@ -253,14 +247,21 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean forAll(Predicate<? super IExpr> predicate, int startOffset) {
-		return (startOffset == 0) ? predicate.test(arg0) : true;
+	public IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
+			final Function<IExpr, IExpr> function) {
+		return filterAST;
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public boolean forAll(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
 		return (startOffset == 0) ? predicate.test(arg0, 0) : true;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean forAll(Predicate<? super IExpr> predicate, int startOffset) {
+		return (startOffset == 0) ? predicate.test(arg0) : true;
 	}
 
 	@Override
@@ -276,13 +277,6 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 		}
 	}
 
-	@Override
-	public void forEach(int start, int end, ObjIntConsumer<? super IExpr> action) {
-		if (start == 0) {
-			action.accept(arg0, 0);
-		}
-	}
-
 	/** {@inheritDoc} */
 	@Override
 	public void forEach(int startOffset, int endOffset, Consumer<? super IExpr> action) {
@@ -292,17 +286,18 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	}
 
 	@Override
+	public void forEach(int start, int end, ObjIntConsumer<? super IExpr> action) {
+		if (start == 0) {
+			action.accept(arg0, 0);
+		}
+	}
+
+	@Override
 	public IExpr get(int location) {
 		if (location == 0) {
 			return arg0;
 		}
 		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 1");
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public IExpr oneIdentity(IExpr defaultValue) {
-		return defaultValue;
 	}
 
 	@Override
@@ -345,6 +340,18 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isPlus() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isPower() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public boolean isSameHead(ISymbol head) {
 		return arg0 == head;
 	}
@@ -366,11 +373,23 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	public boolean isSameHeadSizeGE(ISymbol head, int length) {
 		return arg0 == head && length <= SIZE;
 	}
-
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean isTimes() {
+		return false;
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public IExpr last() {
 		return arg0;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public IExpr oneIdentity(IExpr defaultValue) {
+		return defaultValue;
 	}
 
 	@Override
@@ -397,6 +416,7 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 		}
 	}
 
+	@Override
 	public IAST removeFromEnd(int fromPosition) {
 		if (fromPosition == size()) {
 			return this;
@@ -444,9 +464,7 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	 */
 	@Override
 	public IExpr[] toArray() {
-		IExpr[] result = new IExpr[SIZE];
-		result[0] = arg0;
-		return result;
+		return new IExpr[] { arg0 }; 
 	}
 
 	@Override

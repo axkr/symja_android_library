@@ -3032,9 +3032,7 @@ public abstract class AbstractAST implements IASTMutable {
 		return head() == F.Times && 3 <= size();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean isTrigFunction() {
 		int id = headID();

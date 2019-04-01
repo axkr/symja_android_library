@@ -85,6 +85,7 @@ public final class AST3 extends AST2 {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public int argSize() {
 		return SIZE - 1;
 	}
@@ -112,6 +113,12 @@ public final class AST3 extends AST2 {
 
 	/** {@inheritDoc} */
 	@Override
+	public final boolean contains(Object object) {
+		return arg0.equals(object) || arg1.equals(object) || arg2.equals(object) || arg3.equals(object);
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public IASTMutable copy() {
 		return new AST3(arg0, arg1, arg2, arg3);
 	}
@@ -119,12 +126,6 @@ public final class AST3 extends AST2 {
 	@Override
 	public IASTAppendable copyAppendable() {
 		return new AST(arg0, arg1, arg2, arg3);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean contains(Object object) {
-		return arg0.equals(object) || arg1.equals(object) || arg2.equals(object) || arg3.equals(object);
 	}
 
 	@Override
@@ -149,22 +150,6 @@ public final class AST3 extends AST2 {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean exists(Predicate<? super IExpr> predicate, int startOffset) {
-		switch (startOffset) {
-		case 0:
-			return predicate.test(arg0) || predicate.test(arg1) || predicate.test(arg2) || predicate.test(arg3);
-		case 1:
-			return predicate.test(arg1) || predicate.test(arg2) || predicate.test(arg3);
-		case 2:
-			return predicate.test(arg2) || predicate.test(arg3);
-		case 3:
-			return predicate.test(arg3);
-		}
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public boolean exists(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
 		switch (startOffset) {
 		case 0:
@@ -182,27 +167,18 @@ public final class AST3 extends AST2 {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
-			final Function<IExpr, IExpr> function) {
-		IExpr expr = function.apply(arg1);
-		if (expr.isPresent()) {
-			filterAST.append(expr);
-		} else {
-			restAST.append(arg1);
+	public boolean exists(Predicate<? super IExpr> predicate, int startOffset) {
+		switch (startOffset) {
+		case 0:
+			return predicate.test(arg0) || predicate.test(arg1) || predicate.test(arg2) || predicate.test(arg3);
+		case 1:
+			return predicate.test(arg1) || predicate.test(arg2) || predicate.test(arg3);
+		case 2:
+			return predicate.test(arg2) || predicate.test(arg3);
+		case 3:
+			return predicate.test(arg3);
 		}
-		expr = function.apply(arg2);
-		if (expr.isPresent()) {
-			filterAST.append(expr);
-		} else {
-			restAST.append(arg2);
-		}
-		expr = function.apply(arg3);
-		if (expr.isPresent()) {
-			filterAST.append(expr);
-		} else {
-			restAST.append(arg3);
-		}
-		return filterAST;
+		return false;
 	}
 
 	/** {@inheritDoc} */
@@ -243,18 +219,27 @@ public final class AST3 extends AST2 {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean forAll(Predicate<? super IExpr> predicate, int startOffset) {
-		switch (startOffset) {
-		case 0:
-			return predicate.test(arg0) && predicate.test(arg1) && predicate.test(arg2) && predicate.test(arg3);
-		case 1:
-			return predicate.test(arg1) && predicate.test(arg2) && predicate.test(arg3);
-		case 2:
-			return predicate.test(arg2) && predicate.test(arg3);
-		case 3:
-			return predicate.test(arg3);
+	public final IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
+			final Function<IExpr, IExpr> function) {
+		IExpr expr = function.apply(arg1);
+		if (expr.isPresent()) {
+			filterAST.append(expr);
+		} else {
+			restAST.append(arg1);
 		}
-		return true;
+		expr = function.apply(arg2);
+		if (expr.isPresent()) {
+			filterAST.append(expr);
+		} else {
+			restAST.append(arg2);
+		}
+		expr = function.apply(arg3);
+		if (expr.isPresent()) {
+			filterAST.append(expr);
+		} else {
+			restAST.append(arg3);
+		}
+		return filterAST;
 	}
 
 	/** {@inheritDoc} */
@@ -276,48 +261,26 @@ public final class AST3 extends AST2 {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean forAll(Predicate<? super IExpr> predicate, int startOffset) {
+		switch (startOffset) {
+		case 0:
+			return predicate.test(arg0) && predicate.test(arg1) && predicate.test(arg2) && predicate.test(arg3);
+		case 1:
+			return predicate.test(arg1) && predicate.test(arg2) && predicate.test(arg3);
+		case 2:
+			return predicate.test(arg2) && predicate.test(arg3);
+		case 3:
+			return predicate.test(arg3);
+		}
+		return true;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public void forEach(Consumer<? super IExpr> action) {
 		action.accept(arg1);
 		action.accept(arg2);
 		action.accept(arg3);
-	}
-
-	@Override
-	public void forEach(int start, int end, ObjIntConsumer<? super IExpr> action) {
-		if (start < end) {
-			switch (start) {
-			case 0:
-				action.accept(arg0, 0);
-				if (start + 1 < end) {
-					action.accept(arg1, 1);
-					if (start + 2 < end) {
-						action.accept(arg2, 2);
-						if (start + 3 < end) {
-							action.accept(arg3, 3);
-						}
-					}
-				}
-				break;
-			case 1:
-				action.accept(arg1, 1);
-				if (start + 1 < end) {
-					action.accept(arg2, 2);
-					if (start + 2 < end) {
-						action.accept(arg3, 3);
-					}
-				}
-				break;
-			case 2:
-				action.accept(arg2, 2);
-				if (start + 1 < end) {
-					action.accept(arg3, 3);
-				}
-				break;
-			case 3:
-				action.accept(arg3, 3);
-				break;
-			}
-		}
 	}
 
 	/** {@inheritDoc} */
@@ -385,6 +348,44 @@ public final class AST3 extends AST2 {
 	}
 
 	@Override
+	public void forEach(int start, int end, ObjIntConsumer<? super IExpr> action) {
+		if (start < end) {
+			switch (start) {
+			case 0:
+				action.accept(arg0, 0);
+				if (start + 1 < end) {
+					action.accept(arg1, 1);
+					if (start + 2 < end) {
+						action.accept(arg2, 2);
+						if (start + 3 < end) {
+							action.accept(arg3, 3);
+						}
+					}
+				}
+				break;
+			case 1:
+				action.accept(arg1, 1);
+				if (start + 1 < end) {
+					action.accept(arg2, 2);
+					if (start + 2 < end) {
+						action.accept(arg3, 3);
+					}
+				}
+				break;
+			case 2:
+				action.accept(arg2, 2);
+				if (start + 1 < end) {
+					action.accept(arg3, 3);
+				}
+				break;
+			case 3:
+				action.accept(arg3, 3);
+				break;
+			}
+		}
+	}
+
+	@Override
 	public IExpr get(int location) {
 		switch (location) {
 		case 0:
@@ -410,7 +411,7 @@ public final class AST3 extends AST2 {
 			hashValue = (hashValue * 16777619) ^ (arg3.hashCode() & 0xff);
 		}
 		return hashValue;
-	} 
+	}
 
 	/** {@inheritDoc} */
 	@Override
@@ -422,6 +423,12 @@ public final class AST3 extends AST2 {
 	@Override
 	public boolean isAST3() {
 		return true;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isPower() {
+		return false;
 	}
 
 	/** {@inheritDoc} */
@@ -448,6 +455,7 @@ public final class AST3 extends AST2 {
 		return arg3;
 	}
 
+	@Override
 	public IAST removeFromEnd(int fromPosition) {
 		if (fromPosition == 1) {
 			return new AST0(arg0);
@@ -518,12 +526,7 @@ public final class AST3 extends AST2 {
 	 */
 	@Override
 	public IExpr[] toArray() {
-		IExpr[] result = new IExpr[SIZE];
-		result[0] = arg0;
-		result[1] = arg1;
-		result[2] = arg2;
-		result[3] = arg3;
-		return result;
+		return new IExpr[] { arg0, arg1, arg2, arg3 }; 
 	}
 
 }

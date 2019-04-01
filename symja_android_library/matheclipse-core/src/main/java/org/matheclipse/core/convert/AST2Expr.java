@@ -65,12 +65,12 @@ public class AST2Expr {
 			"ArithmeticGeometricMean", "ArcSin", "ArcSinh", "ArcTan", "ArcTanh", "Arg", "Array", "ArrayDepth",
 			"ArrayPad", "ArrayReshape", "Arrays", "ArrayQ", "Assumptions", "AtomQ", "Attributes", "BartlettWindow",
 			"Begin", "BeginPackage", "BellB", "BellY", "BernoulliB", "BernoulliDistribution", "BesselI", "BesselJ",
-			"BesselK", "BesselY", "Beta", "BetaRegularized", "BinarySerialize", "BinaryDeserialize", "BinCounts",
-			"Binomial", "BinomialDistribution", "BitLength", "BlackmanHarrisWindow", "BlackmanNuttallWindow",
-			"BlackmanWindow", "Blank", "BlankSequence", "BlankNullSequence", "Block", "Boole", "BooleanQ",
-			"BooleanConvert", "BooleanMinimize", "BooleanTable", "BooleanVariables", "BrayCurtisDistance", "Break",
-			"ByteArray", "ByteArrayQ", "CanberraDistance", "Cancel", "CarmichaelLambda", "CartesianProduct", "Cases",
-			"CatalanNumber", "Catch", "Catenate", "CDF", "Ceiling", "CentralMoment", "CForm",
+			"BesselK", "BesselY", "Beta", "BetaDistribution", "BetaRegularized", "BinarySerialize", "BinaryDeserialize",
+			"BinCounts", "Binomial", "BinomialDistribution", "BitLength", "BlackmanHarrisWindow",
+			"BlackmanNuttallWindow", "BlackmanWindow", "Blank", "BlankSequence", "BlankNullSequence", "Block", "Boole",
+			"BooleanQ", "BooleanConvert", "BooleanMinimize", "BooleanTable", "BooleanVariables", "BrayCurtisDistance",
+			"Break", "ByteArray", "ByteArrayQ", "CanberraDistance", "Cancel", "CarmichaelLambda", "CartesianProduct",
+			"Cases", "CatalanNumber", "Catch", "Catenate", "CDF", "Ceiling", "CentralMoment", "CForm",
 			"CharacteristicPolynomial", "ChebyshevT", "ChebyshevU", "ChessboardDistance", "ChineseRemainder",
 			"ChiSquareDistribution", "CholeskyDecomposition", "Chop", "CirclePoints", "Clear", "ClearAll",
 			"ClearAttributes", "Clip", "Coefficient", "CoefficientList", "CoefficientRules", "Colon", "Collect",
@@ -243,7 +243,7 @@ public class AST2Expr {
 	public static void initialize() {
 		Initializer.init();
 	}
-	
+
 	private int fPrecision;
 
 	private boolean fLowercaseEnabled;

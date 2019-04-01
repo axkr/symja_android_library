@@ -4507,7 +4507,7 @@ public final class Arithmetic {
 					return o0;
 				}
 			}
-			// note not a general rule
+			// note: not a general rule
 			// if (o0.isMinusOne() && o1.isPlus()) {
 			// return ((IAST) o1).map(x -> x.negate(), 1);
 			// }
@@ -4515,7 +4515,15 @@ public final class Arithmetic {
 			if (o0.equals(o1)) {
 				return F.Power(o0, C2); // o0.power(F.C2);
 			}
-
+			if (o0.isSymbol()) {
+				if (o1.isAtom()) {
+					return F.NIL;
+				}
+			} else if (o1.isSymbol()) {
+				if (o0.isAtom()) {
+					return F.NIL;
+				}
+			}
 			if (o0.isAST() || o1.isAST()) {
 				if (o0.isDirectedInfinity()) {
 					IExpr temp = eInfinity((IAST) o0, o1);
@@ -4535,10 +4543,9 @@ public final class Arithmetic {
 					IExpr power0Exponent = o0.exponent();
 					if (o0.equalsAt(1, o1)) {
 						// (x^a) * x
-						if (power0Exponent.isNumber() && !o1.isRational()) {
-							// avoid reevaluation of a root of a rational number (example: 2*Sqrt(2) )
-							return F.Power(o1, power0Exponent.inc());
-						} else if (!power0Exponent.isNumber()) {
+						if ((power0Exponent.isNumber() && !o1.isRational()) || //
+								!power0Exponent.isNumber()) {
+							// avoid re-evaluation of a root of a rational number (example: 2*Sqrt(2) ) 
 							return F.Power(o1, power0Exponent.inc());
 						}
 					}

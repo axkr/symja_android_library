@@ -1442,6 +1442,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("CDF(BernoulliDistribution(p),k)", //
 				"Piecewise({{0,k<0},{1-p,0<=k&&k<1}},1)");
+		check("CDF(BetaDistribution(a,b),k)", //
+				"Piecewise({{BetaRegularized(k,a,b),0<k<1},{1,k>=1}},0)");
 		check("CDF(BinomialDistribution(n, m),k)", //
 				"Piecewise({{BetaRegularized(1-m,n-Floor(k),1+Floor(k)),0<=k&&k<n},{1,k>=n}},0)");
 		check("CDF(ExponentialDistribution(n),k)", //
@@ -3699,6 +3701,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// performance test
 		// check("f = (x + y + z + w)^15;LeafCount(Expand(f*(f+w)))", //
 		// "?");
+
 		check("Expand((x + 3)^(5/2)+(x + 1)^(3/2))", //
 				"Sqrt(1+x)+x*Sqrt(1+x)+9*Sqrt(3+x)+6*x*Sqrt(3+x)+x^2*Sqrt(3+x)");
 		check("Expand((x + 1)^(5/2))", //
@@ -7546,7 +7549,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Mean({1.21, 3.4, 2.15, 4, 1.55})", "2.462");
 		check("Mean({a,b,c,d})", "1/4*(a+b+c+d)");
 
-		check("Mean(BernoulliDistribution(p))", "p");
+		check("Mean(BetaDistribution(a,b))", //
+				"a/(a+b)");
+		check("Mean(BernoulliDistribution(p))", //
+				"p");
 		check("Mean(BinomialDistribution(n, m))", "m*n");
 		check("Mean(ExponentialDistribution(n))", "1/n");
 		check("Mean(PoissonDistribution(p))", "p");
@@ -7586,6 +7592,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Median(BernoulliDistribution(p))", //
 				"Piecewise({{1,p>1/2}},0)");
+		check("Median(BetaDistribution(a,b))", //
+				"InverseBetaRegularized(1/2,a,b)");
 		check("Median(BinomialDistribution(n, m))", //
 				"Median(BinomialDistribution(n,m))");
 		check("Median(ExponentialDistribution(n))", //
@@ -9309,6 +9317,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1/(E^((k-n)^2/(2*m^2))*m*Sqrt(2*Pi))");
 		check("PDF(BernoulliDistribution(p),k)", //
 				"Piecewise({{1-p,k==0},{p,k==1}},0)");
+		check("PDF(BetaDistribution(a,b),k)", //
+				"Piecewise({{1/((1-k)^(1-b)*k^(1-a)*Beta(a,b)),0<k<1}},0)");
 		check("PDF(BinomialDistribution(n, m),k)", //
 				"Piecewise({{(m^k*Binomial(n,k))/(1-m)^(k-n),0<=k<=n}},0)");
 		check("PDF(ExponentialDistribution(n),k)", //
@@ -10691,6 +10701,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRandomVariate() {
+		// check("RandomVariate(BetaDistribution(0.5,0.6), {10})", //
+		// "{0.651565,0.0687826,0.53907,0.511176,0.0419515,0.946387,0.995215,0.0896617,0.00242461,0.607517}");
 		// check("RandomVariate(FrechetDistribution(0.5,0.6), {10})", //
 		// "{288.7521,2.9714,0.403198,2.0156,0.21531,0.0399206,0.665026,1.49444,434.9269,118.3019}");
 		// check("RandomVariate(GumbelDistribution(0.5,0.6), {10})", //
@@ -14776,8 +14788,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testVariance() {
-		check("Variance(BinomialDistribution(n, m))", "(1-m)*m*n");
-		check("Variance(BernoulliDistribution(n))", "(1-n)*n");
+		check("Variance(BinomialDistribution(n, m))", //
+				"(1-m)*m*n");
+		check("Variance(BernoulliDistribution(n))", //
+				"(1-n)*n");
+		check("Variance(BetaDistribution(a,b))", //
+				"(a*b)/((a+b)^2*(1+a+b))");
 		check("Variance(DiscreteUniformDistribution({l, r}))", "1/12*(-1+(1-l+r)^2)");
 		check("Variance(ErlangDistribution(n, m))", "n/m^2");
 		check("Variance(ExponentialDistribution(n))", "1/n^2");
