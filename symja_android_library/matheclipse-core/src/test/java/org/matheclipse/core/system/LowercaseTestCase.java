@@ -2904,7 +2904,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDet() {
-		// print error
+		// github #121 - print error
 		check("Det({{1, 1, 1}, {2, 2, 2}})", //
 				"Det(\n" + "{{1,1,1},\n" + " {2,2,2}})");
 
@@ -3030,21 +3030,31 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDiscriminant() {
-		check("Discriminant(x^10 - 5*x^7 - 3*x + 9, x)", "177945374758153510836");
+		// github #122
+		check("Discriminant((2*x^5)-(19*x^4)+(58*x^3)-(67*x^2)+(56*x)-48,x)", //
+				"0");
+		
+		check("Discriminant(x^10 - 5*x^7 - 3*x + 9, x)", //
+				"177945374758153510836");
 
-		check("Resultant(f+g*x+h*x^2,g+2*h*x, x)", "-g^2*h+4*f*h^2");
+		check("Resultant(f+g*x+h*x^2,g+2*h*x, x)", //
+				"-g^2*h+4*f*h^2");
 		check("Discriminant(x^(1/2), x)",
 				"The function: Discriminant(Sqrt(x),x) has wrong argument Sqrt(x) at position:1:\n"
 						+ "Polynomial expected!");
 
-		check("Discriminant(f+g*x+h*x^2, x)", "g^2-4*f*h");
-		check("Discriminant(a*x^2 + b*x + c, x)", "b^2-4*a*c");
-		check("Discriminant(x^10 - 5*x^7 - 3*x + 9, x)", "177945374758153510836");
-		check("Discriminant(a*x^3 + b*x^2 + c*x + g, x)", "b^2*c^2-4*a*c^3-4*b^3*g+18*a*b*c*g-27*a^2*g^2");
-		check("Discriminant(a*x^4 + b*x^3 + c*x^2 + d*x + e, x)",
-				"b^2*c^2*d^2-4*a*c^3*d^2-4*b^3*d^3+18*a*b*c*d^3-27*a^2*d^4+16*a*c^3*e-4*b^2*c^3*e+\n"
-						+ "18*b^3*c*d*e-80*a*b*c^2*d*e-6*a*b^2*d^2*e+144*a^2*c*d^2*e-27*b^4*e^2+144*a*b^2*c*e^\n"
-						+ "2-128*a^2*c^2*e^2-192*a^2*b*d*e^2+256*a^3*e^3");
+		check("Discriminant(f+g*x+h*x^2, x)", //
+				"g^2-4*f*h");
+		check("Discriminant(a*x^2 + b*x + c, x)", //
+				"b^2-4*a*c");
+		check("Discriminant(x^10 - 5*x^7 - 3*x + 9, x)", //
+				"177945374758153510836");
+		check("Discriminant(a*x^3 + b*x^2 + c*x + g, x)", //
+				"b^2*c^2-4*a*c^3-4*b^3*g+18*a*b*c*g-27*a^2*g^2");
+		check("Discriminant(a*x^4 + b*x^3 + c*x^2 + d*x + e, x)", //
+				"b^2*c^2*d^2-4*a*c^3*d^2-4*b^3*d^3+18*a*b*c*d^3-27*a^2*d^4-4*b^2*c^3*e+16*a*c^4*e+\n" + 
+				"18*b^3*c*d*e-80*a*b*c^2*d*e-6*a*b^2*d^2*e+144*a^2*c*d^2*e-27*b^4*e^2+144*a*b^2*c*e^\n" + 
+				"2-128*a^2*c^2*e^2-192*a^2*b*d*e^2+256*a^3*e^3");
 	}
 
 	public void testDistribute() {
@@ -3173,7 +3183,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDot() {
-		// print error
+		// github #121 - print error
 		check("Dot({{0,2},{-8,2}},{{{0},0},{0,3}})", //
 				"{{0,2},\n" + " {-8,2}}.\n" + "{{{0},0},\n" + " {0,3}}");
 
@@ -3927,13 +3937,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// 2)
 		// check("Factor(a*b+(4+4*x+x^2)^2)",//
 		// "16+a*b+32*x+24*x^2+8*x^3+x^4");
+		
+		// github #121
 		check("Factor(x^(12)-y^(12), GaussianIntegers->True)", //
 				"Factor(x^12-y^12,GaussianIntegers->True)");
+		
+		
 		check("Factor(1+x^2, GaussianIntegers->True)", //
 				"(-I+x)*(I+x)");
 		check("Factor(1+x^2, Extension->I)", //
 				"(-I+x)*(I+x)");
-		
+
 		// Homogenization example from
 		// https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
 		check("Factor(E^(3*x)-4*E^x+3*E^(-x))", //
@@ -3984,7 +3998,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "78-x^80-x^81+x^83+x^84)");
 		check("Factor(4*x^2+3, Extension->I)", "4*(3/4+x^2)");
 		check("Factor(3/4*x^2+9/16, Extension->I)", "3/4*(3/4+x^2)");
-		
+
 		check("Factor(x^10 - 1, Modulus -> 2)", //
 				"(1+x)^2*(1+x+x^2+x^3+x^4)^2");
 
@@ -7452,7 +7466,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMatrixPower() {
-		// print error
+		// github #121 - print error
 		check("MatrixPower({{2},{1}},2)", //
 				"MatrixPower({{2},{1}},2)");
 
