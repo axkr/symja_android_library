@@ -2,9 +2,14 @@
 
 **Note**: this repository contains the **Java 8** version of the project. The [NCalc](https://github.com/tranleduy2000/ncalc) and [Natural Calc](https://github.com/tranleduy2000/naturalcalc)  projects maintains a [Java 7 branch based on Retrolambda](https://github.com/tranleduy2000/symja_android_library).
 
+Use especially the "2nd" button in the following calculator interfaces:
+
 <a href="https://play.google.com/store/apps/details?id=com.duy.calc.casio.v2">
     <img src="en_badge_web_generic.png" alt="Google Play" width="200">
-<a/>
+</a>
+
+<a href="https://itunes.apple.com/us/app/ncalc-scientific-calculator/id1449106995?mt=8" style="display:inline-block;overflow:hidden;background:url(https://linkmaker.itunes.apple.com/en-us/badge-lrg.svg?releaseDate=2019-04-02&kind=iossoftware&bubble=apple_music) no-repeat;width:135px;height:40px;">
+</a>
 
 - [Quick start](#quick-start) 
 - [Features](#features)
