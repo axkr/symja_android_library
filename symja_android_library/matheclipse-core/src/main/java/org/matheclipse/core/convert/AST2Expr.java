@@ -50,13 +50,14 @@ public class AST2Expr {
 
 	public final static String[] SYMBOL_STRINGS = { "All", "Algebraics", "Automatic", "Axes", "AxesOrigin", "AxesStyle",
 			"Background", "Booleans", "CharacterEncoding", "ComplexInfinity", "Catalan", "Complexes",
-			"ComplexityFunction", "Constant", "Degree", "Disputed", "EulerGamma", "False", "Flat", "General",
-			"Glaisher", "GoldenRatio", "Heads", "HoldAll", "HoldComplete", "HoldAllComplete", "HoldFirst", "HoldRest",
-			"Indeterminate", "Infinity", "Integer", "Integers", "Khinchin", "Listable", "LongForm", "MaxIterations",
-			"MaxPoints", "Method", "Modulus", "NHoldAll", "NHoldFirst", "NHoldRest", "None", "Nonexistent",
-			"NotApplicable", "NotAvailable", "Null", "NumericFunction", "OneIdentity", "Orderless", "Pi",
-			"PrecisionGoal", "Primes", "Protected", "Rationals", "ReadProtected", "Real", "Reals", "Second", "Slot",
-			"SlotSequence", "String", "Symbol", "TooLarge", "Trig", "True", "Variable", "White", "Unknown" };
+			"ComplexityFunction", "Constant", "Degree", "Disputed", "EulerGamma", "Extension", "False", "Flat",
+			"GaussianIntegers", "General", "Glaisher", "GoldenRatio", "Heads", "HoldAll", "HoldComplete",
+			"HoldAllComplete", "HoldFirst", "HoldRest", "Indeterminate", "Infinity", "Integer", "Integers", "Khinchin",
+			"Listable", "LongForm", "MaxIterations", "MaxPoints", "Method", "Modulus", "NHoldAll", "NHoldFirst",
+			"NHoldRest", "None", "Nonexistent", "NotApplicable", "NotAvailable", "Null", "NumericFunction",
+			"OneIdentity", "Orderless", "Pi", "PrecisionGoal", "Primes", "Protected", "Rationals", "ReadProtected",
+			"Real", "Reals", "Second", "Slot", "SlotSequence", "String", "Symbol", "TooLarge", "Trig", "True",
+			"Variable", "White", "Unknown" };
 
 	public final static String[] FUNCTION_STRINGS = { "Abort", "Abs", "AbsArg", "Accumulate", "AddTo", "AllTrue", "And",
 			"AngleVector", "AnyTrue", "AntihermitianMatrixQ", "AntiSymmetric", "AntisymmetricMatrixQ", "Annuity",

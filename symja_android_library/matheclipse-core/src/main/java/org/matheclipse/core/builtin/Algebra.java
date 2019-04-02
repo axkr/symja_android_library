@@ -1716,7 +1716,7 @@ public class Algebra {
 
 						}
 					}
-					timesAST.setEvalFlags(IAST.IS_SORTED); 
+					timesAST.setEvalFlags(IAST.IS_SORTED);
 					expandedResult.append(timesAST.oneIdentity0());
 				}
 			}
@@ -2064,13 +2064,14 @@ public class Algebra {
 			if (option.isReal()) {
 				return factorModulus(expr, varList, factorSquareFree, option);
 			}
+
 			option = options.getOption("GaussianIntegers");
 			if (option.isTrue()) {
-				return factorComplex(expr, varList, F.Times, false, false);
+				return factorComplex(expr, varList, F.Times, false, false, engine);
 			}
 			option = options.getOption("Extension");
 			if (option.isImaginaryUnit()) {
-				return factorComplex(expr, varList, F.Times, false, false);
+				return factorComplex(expr, varList, F.Times, false, false, engine);
 			}
 			return F.NIL; // no evaluation
 		}
@@ -5032,15 +5033,27 @@ public class Algebra {
 	 *            the head of the result AST
 	 * @param noGCDLCM
 	 * @param numeric2Rational
-	 *            TODO
+	 *            transform numerical values to symbolic rational numbers
+	 * @param engine
 	 * @return
 	 * @throws JASConversionException
 	 */
 	public static IAST factorComplex(IExpr expr, List<IExpr> varList, ISymbol head, boolean noGCDLCM,
-			boolean numeric2Rational) throws JASConversionException {
-		JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
-		GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, numeric2Rational);
-		return factorComplex(polyRat, jas, varList, head, noGCDLCM);
+			boolean numeric2Rational, EvalEngine engine)  {
+		if (varList.size() > 1) {
+			engine.printMessage("Factor: GaussianIntegers for multivariate polynomials are not supported.");
+			return F.NIL;
+		}
+		try {
+			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
+			GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, numeric2Rational);
+			return factorComplex(polyRat, jas, varList, head, noGCDLCM);
+		} catch (RuntimeException rex) {
+			if (Config.SHOW_STACKTRACE) {
+				rex.printStackTrace();
+			}
+		}
+		return F.NIL;
 	}
 
 	public static IAST factorComplex(GenPolynomial<BigRational> polyRat, JASConvert<BigRational> jas,
