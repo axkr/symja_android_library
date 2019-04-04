@@ -3033,7 +3033,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// github #122
 		check("Discriminant((2*x^5)-(19*x^4)+(58*x^3)-(67*x^2)+(56*x)-48,x)", //
 				"0");
-		
+
 		check("Discriminant(x^10 - 5*x^7 - 3*x + 9, x)", //
 				"177945374758153510836");
 
@@ -3052,9 +3052,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Discriminant(a*x^3 + b*x^2 + c*x + g, x)", //
 				"b^2*c^2-4*a*c^3-4*b^3*g+18*a*b*c*g-27*a^2*g^2");
 		check("Discriminant(a*x^4 + b*x^3 + c*x^2 + d*x + e, x)", //
-				"b^2*c^2*d^2-4*a*c^3*d^2-4*b^3*d^3+18*a*b*c*d^3-27*a^2*d^4-4*b^2*c^3*e+16*a*c^4*e+\n" + 
-				"18*b^3*c*d*e-80*a*b*c^2*d*e-6*a*b^2*d^2*e+144*a^2*c*d^2*e-27*b^4*e^2+144*a*b^2*c*e^\n" + 
-				"2-128*a^2*c^2*e^2-192*a^2*b*d*e^2+256*a^3*e^3");
+				"b^2*c^2*d^2-4*a*c^3*d^2-4*b^3*d^3+18*a*b*c*d^3-27*a^2*d^4-4*b^2*c^3*e+16*a*c^4*e+\n"
+						+ "18*b^3*c*d*e-80*a*b*c^2*d*e-6*a*b^2*d^2*e+144*a^2*c*d^2*e-27*b^4*e^2+144*a*b^2*c*e^\n"
+						+ "2-128*a^2*c^2*e^2-192*a^2*b*d*e^2+256*a^3*e^3");
 	}
 
 	public void testDistribute() {
@@ -3937,12 +3937,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// 2)
 		// check("Factor(a*b+(4+4*x+x^2)^2)",//
 		// "16+a*b+32*x+24*x^2+8*x^3+x^4");
-		
+
 		// github #121
-		check("Factor(x^(12)-y^(12), GaussianIntegers->True)", //
-				"Factor(x^12-y^12,GaussianIntegers->True)");
-		
-		
+//		check("Factor(x^(12)-y^(12), GaussianIntegers->True)", //
+//				"Factor(x^12-y^12,GaussianIntegers->True)");
+		check("Factor(x^(2)+y^(2), GaussianIntegers->True)", //
+				"(-I*x+y)*(I*x+y)");
+
 		check("Factor(1+x^2, GaussianIntegers->True)", //
 				"(-I+x)*(I+x)");
 		check("Factor(1+x^2, Extension->I)", //

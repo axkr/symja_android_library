@@ -86,7 +86,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
 	public BuiltInSymbol(final String symbolName, int ordinal) {
 		super(symbolName, Context.SYSTEM);
-		// this(symbolName, null);
+		fEvaluator = DUMMY_EVALUATOR;
 		fOrdinal = ordinal;
 	}
 
@@ -158,22 +158,6 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	/** {@inheritDoc} */
 	@Override
 	public IEvaluator getEvaluator() {
-		// use "Double-Checked Locking" idiom
-		// https://en.wikipedia.org/wiki/Double-checked_locking
-		if (fEvaluator == null) {
-			synchronized (this) {
-				if (fEvaluator == null) {
-					fEvaluator = DUMMY_EVALUATOR;
-					// if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-					// SystemNamespace.DEFAULT.setEvaluator(this);
-					// } else {
-					// if (Character.isUpperCase(fSymbolName.charAt(0))) {
-					// SystemNamespace.DEFAULT.setEvaluator(this);
-					// }
-					// }
-				}
-			}
-		}
 		return fEvaluator;
 	}
 

@@ -103,18 +103,6 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	/**
 	 * The constructor creates a polynomial factory object.
 	 * 
-	 * @param cf
-	 *            factory for coefficients of type C.
-	 * @param v
-	 *            names for the variables.
-	 */
-	public ExprPolynomialRing(ExprRingFactory cf, IAST v) {
-		this(cf, v, v.argSize());
-	}
-
-	/**
-	 * The constructor creates a polynomial factory object.
-	 * 
 	 * @param listOfVariables
 	 *            names for the variables.
 	 */
@@ -166,8 +154,8 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 * @param n
 	 *            number of variables.
 	 */
-	public ExprPolynomialRing(ExprRingFactory cf, IAST listOfVariables, int n) {
-		this(cf, listOfVariables, n, ExprTermOrderByName.Lexicographic);
+	public ExprPolynomialRing(ExprRingFactory cf, IAST listOfVariables ) {
+		this(cf, listOfVariables, listOfVariables.argSize(), ExprTermOrderByName.Lexicographic);
 	}
 
 	/**
@@ -196,7 +184,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 * @param t
 	 *            a term order.
 	 */
-	public ExprPolynomialRing(ExprRingFactory cf, IAST listOfVariables, int n, ExprTermOrder t) {
+	private ExprPolynomialRing(ExprRingFactory cf, IAST listOfVariables, int n, ExprTermOrder t) {
 		this(cf, listOfVariables, n, t, false);
 	}
 

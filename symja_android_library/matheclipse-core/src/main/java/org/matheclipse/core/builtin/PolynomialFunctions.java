@@ -209,8 +209,7 @@ public class PolynomialFunctions {
 				}
 				ExpVectorLong expArr = new ExpVectorLong(exponents);
 				IExpr expr = F.evalExpandAll(ast.arg1(), engine).normal();
-				ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, listOfVariables,
-						listOfVariables.argSize());
+				ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, listOfVariables);
 				ExprPolynomial poly = ring.create(expr, true, false);
 				IExpr temp = poly.coefficient(expArr);
 				F.REMEMBER_AST_CACHE.put(ast, temp);

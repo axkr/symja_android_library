@@ -373,19 +373,19 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	public boolean isSameHeadSizeGE(ISymbol head, int length) {
 		return arg0 == head && length <= SIZE;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isTimes() {
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public IExpr last() {
 		return arg0;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public IExpr oneIdentity(IExpr defaultValue) {
@@ -464,7 +464,15 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	 */
 	@Override
 	public IExpr[] toArray() {
-		return new IExpr[] { arg0 }; 
+		return new IExpr[] { arg0 };
+	}
+
+	/**
+	 * Returns the ISymbol of the IAST. If the head itself is a IAST it will recursively call head().
+	 */
+	@Override
+	public final ISymbol topHead() {
+		return arg0 instanceof ISymbol ? (ISymbol) arg0 : arg0.topHead();
 	}
 
 	@Override

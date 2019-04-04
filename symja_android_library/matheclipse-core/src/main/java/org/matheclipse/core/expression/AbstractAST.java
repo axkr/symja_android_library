@@ -1844,8 +1844,8 @@ public abstract class AbstractAST implements IASTMutable {
 				return prefix + "Subtract("
 						+ arg1().internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators, usePrefix,
 								noSymbolPrefix)
-						+ "," + arg2().second().internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators, usePrefix,
-								noSymbolPrefix)
+						+ "," + arg2().second().internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators,
+								usePrefix, noSymbolPrefix)
 						+ ")";
 			}
 		}
@@ -3834,7 +3834,7 @@ public abstract class AbstractAST implements IASTMutable {
 	 * Returns the ISymbol of the IAST. If the head itself is a IAST it will recursively call head().
 	 */
 	@Override
-	public final ISymbol topHead() {
+	public ISymbol topHead() {
 		IExpr header = head();
 		return header instanceof ISymbol ? (ISymbol) header : header.topHead();
 	}

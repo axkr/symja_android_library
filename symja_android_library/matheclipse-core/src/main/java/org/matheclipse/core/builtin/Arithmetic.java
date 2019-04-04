@@ -4545,7 +4545,7 @@ public final class Arithmetic {
 						// (x^a) * x
 						if ((power0Exponent.isNumber() && !o1.isRational()) || //
 								!power0Exponent.isNumber()) {
-							// avoid re-evaluation of a root of a rational number (example: 2*Sqrt(2) ) 
+							// avoid re-evaluation of a root of a rational number (example: 2*Sqrt(2) )
 							return F.Power(o1, power0Exponent.inc());
 						}
 					}

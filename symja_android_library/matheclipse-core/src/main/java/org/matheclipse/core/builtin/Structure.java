@@ -1445,53 +1445,55 @@ public class Structure {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 5);
-
-			int lastIndex = ast.argSize();
-			boolean heads = false;
-			final Options options = new Options(ast.topHead(), ast, lastIndex, engine);
-			IExpr option = options.getOption("Heads");
-			if (option.isPresent()) {
-				lastIndex--;
-				if (option.isTrue()) {
-					heads = true;
-				}
-			} else {
-				Validate.checkRange(ast, 3, 4);
-			}
-
-			try {
-				IExpr arg1 = ast.arg1();
-				IExpr arg2 = ast.arg2();
-				if (lastIndex == 3) {
-					IASTAppendable result = F.ListAlloc(10);
-					java.util.function.Function<IExpr, IExpr> sf = x -> {
-						IAST a = F.unaryAST1(arg1, x);
-						result.append(a);
-						return F.NIL;
-					};
-
-					VisitorLevelSpecification level = new VisitorLevelSpecification(sf, ast.get(lastIndex), heads,
-							engine);
-
-					arg2.accept(level);
-					result.forEach(result.size(), x -> engine.evaluate(x));
-					// for (int i = 1; i < result.size(); i++) {
-					// engine.evaluate(result.get(i));
-					// }
-
-				} else {
-					if (arg2.isAST()) {
-						engine.evaluate(((IAST) arg2).map(x -> F.unaryAST1(arg1, x), 1));
-					} else {
-						engine.evaluate(arg2);
+			// Validate.checkRange(ast, 3, 5);
+			if (ast.size() >= 3 && ast.size() < 5) {
+				int lastIndex = ast.argSize();
+				boolean heads = false;
+				if (ast.size() > 3) {
+					final Options options = new Options(ast.topHead(), ast, lastIndex, engine);
+					IExpr option = options.getOption("Heads");
+					if (option.isPresent()) {
+						lastIndex--;
+						if (option.isTrue()) {
+							heads = true;
+						}
 					}
 				}
-				return F.Null;
-			} catch (final ReturnException e) {
-				return e.getValue();
-				// don't catch Throw[] here !
+
+				try {
+					IExpr arg1 = ast.arg1();
+					IExpr arg2 = ast.arg2();
+					if (lastIndex == 3) {
+						IASTAppendable result = F.ListAlloc(10);
+						java.util.function.Function<IExpr, IExpr> sf = x -> {
+							IAST a = F.unaryAST1(arg1, x);
+							result.append(a);
+							return F.NIL;
+						};
+
+						VisitorLevelSpecification level = new VisitorLevelSpecification(sf, ast.get(lastIndex), heads,
+								engine);
+
+						arg2.accept(level);
+						result.forEach(result.size(), x -> engine.evaluate(x));
+						// for (int i = 1; i < result.size(); i++) {
+						// engine.evaluate(result.get(i));
+						// }
+
+					} else {
+						if (arg2.isAST()) {
+							engine.evaluate(((IAST) arg2).map(x -> F.unaryAST1(arg1, x), 1));
+						} else {
+							engine.evaluate(arg2);
+						}
+					}
+					return F.Null;
+				} catch (final ReturnException e) {
+					return e.getValue();
+					// don't catch Throw[] here !
+				}
 			}
+			return F.NIL;
 		}
 
 	}
