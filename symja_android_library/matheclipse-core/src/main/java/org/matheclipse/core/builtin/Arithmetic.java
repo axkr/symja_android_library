@@ -1794,14 +1794,22 @@ public final class Arithmetic {
 				return Negate(Im(negExpr));
 			}
 			if (arg1.isTimes()) {
-				IExpr first = arg1.first();
+				IAST timesAST = (IAST) arg1;
+				for (int i = 1; i < timesAST.size(); i++) {
+					IExpr temp = timesAST.get(i);
+					if (temp.isRealResult()) {
+						return F.Times(temp, F.Im(timesAST.removeAtClone(i)));
+					}
+				}
+				IExpr first = timesAST.arg1();
 				if (first.isNumber()) {
-					IExpr rest = arg1.rest().oneIdentity1();
+					IExpr rest = timesAST.rest().oneIdentity1();
 					if (first.isReal()) {
 						return F.Times(first, F.Im(rest));
 					}
 					return F.Plus(F.Times(first.re(), F.Im(rest)), F.Times(first.im(), F.Re(rest)));
 				}
+				
 			}
 			if (arg1.isPlus()) {
 				return ((IAST) arg1).mapThread((IAST) F.Im(null), 1);
@@ -3863,9 +3871,16 @@ public final class Arithmetic {
 				return Negate(Re(negExpr));
 			}
 			if (expr.isTimes()) {
-				IExpr first = expr.first();
+				IAST timesAST = (IAST) expr;
+				for (int i = 1; i < timesAST.size(); i++) {
+					IExpr temp = timesAST.get(i);
+					if (temp.isRealResult()) {
+						return F.Times(temp, F.Re(timesAST.removeAtClone(i)));
+					}
+				}
+				IExpr first = timesAST.arg1();
 				if (first.isNumber()) {
-					IExpr rest = expr.rest().oneIdentity1();
+					IExpr rest = timesAST.rest().oneIdentity1();
 					if (first.isReal()) {
 						return F.Times(first, F.Re(expr.rest()));
 					}
@@ -3876,6 +3891,7 @@ public final class Arithmetic {
 
 					return F.Subtract(F.Times(first.re(), F.Re(rest)), F.Times(first.im(), F.Im(rest)));
 				}
+				
 			}
 			if (expr.isPlus()) {
 				return ((IAST) expr).mapThread((IAST) F.Re(null), 1);
