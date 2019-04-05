@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.Beta;
+import static org.matheclipse.core.expression.F.BetaRegularized;
 import static org.matheclipse.core.expression.F.Binomial;
 import static org.matheclipse.core.expression.F.ChebyshevT;
 import static org.matheclipse.core.expression.F.ChebyshevU;
@@ -53,7 +54,7 @@ import org.matheclipse.core.patternmatching.Matcher;
  */
 public class FunctionExpand extends AbstractEvaluator {
 
-	private final static Matcher MATCHER = new Matcher( );
+	private final static Matcher MATCHER = new Matcher();
 
 	/**
 	 * 
@@ -68,8 +69,8 @@ public class FunctionExpand extends AbstractEvaluator {
 					// [$ Beta(a, b)*(1 - (1 - z)^b*Sum((Pochhammer(b, k)*z^k)/k!, {k, 0, a - 1})) /; IntegerQ(a)&&a>0
 					// $]
 					F.Condition(
-							F.Times(F.Beta(a, b), F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Plus(F.C1, F.Negate(z)), b),
-									F.Sum(F.Times(F.Power(z, k), F.Power(F.Factorial(k), -1), F.Pochhammer(b, k)),
+							F.Times(F.Beta(a, b), F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Subtract(F.C1, z), b),
+									F.Sum(F.Times(F.Power(z, k), F.Power(F.Factorial(k), F.CN1), F.Pochhammer(b, k)),
 											F.List(k, F.C0, F.Plus(F.CN1, a)))))),
 							F.And(F.IntegerQ(a), F.Greater(a, F.C0)))); // $$);
 
@@ -77,33 +78,35 @@ public class FunctionExpand extends AbstractEvaluator {
 					// [$ Factorial(a-1)*Product((k+b)^(-1),{k,0,a-1}) /; IntegerQ(a)&&a>0 $]
 					F.Condition(
 							F.Times(F.Factorial(F.Plus(F.CN1, a)),
-									F.Product(F.Power(F.Plus(k, b), -1), F.List(k, F.C0, F.Plus(F.CN1, a)))),
+									F.Product(F.Power(F.Plus(k, b), F.CN1), F.List(k, F.C0, F.Plus(F.CN1, a)))),
 							F.And(F.IntegerQ(a), F.Greater(a, F.C0)))); // $$);
+
+			MATCHER.caseOf(BetaRegularized(z_, a_, b_), //
+					// [$ (Beta(z, a, b)*Gamma(a + b))/(Gamma(a)*Gamma(b)) $]
+					F.Times(F.Beta(z, a, b), F.Power(F.Times(F.Gamma(a), F.Gamma(b)), F.CN1), F.Gamma(F.Plus(a, b)))); // $$);
 
 			MATCHER.caseOf(Binomial(a_, b_), //
 					// [$ If(IntegerQ(b)&&Positive(b),Product(a-c,{c,0,b-1})/b!, If(IntegerQ(a)&&Positive(a),
 					// (a!*Sin(b*Pi))/(Product(b-c,{c,0,a})*Pi), Gamma(1 + a)/(Gamma(1 + b)*Gamma(1 - b + a))) ) $]
 					F.If(F.And(F.IntegerQ(b), F
 							.Positive(b)), F
-									.Times(F.Power(F
-											.Factorial(b), -1), F
-													.Product(F.Plus(a, F.Negate(c)),
-															F.List(c, F.C0, F.Plus(F.CN1, b)))),
+									.Times(F.Power(F.Factorial(b), F.CN1), F.Product(F.Subtract(a, c),
+											F.List(c, F.C0, F.Plus(F.CN1, b)))),
 							F.If(F.And(F.IntegerQ(a), F
 									.Positive(a)), F
 											.Times(F.Power(
-													F.Times(F.Product(F.Plus(b, F.Negate(c)), F.List(c, F.C0, a)),
+													F.Times(F.Product(F.Subtract(b, c), F.List(c, F.C0, a)),
 															F.Pi),
-													-1), F.Factorial(a), F.Sin(F.Times(b, F.Pi))),
+													F.CN1), F.Factorial(a), F.Sin(F.Times(b, F.Pi))),
 									F.Times(F.Gamma(F.Plus(F.C1, a)), F.Power(
 											F.Times(F.Gamma(F.Plus(F.C1, b)), F.Gamma(F.Plus(F.C1, F.Negate(b), a))),
-											-1))))); // $$);
+											F.CN1))))); // $$);
 
 			// CatalanNumber
 			MATCHER.caseOf(F.CatalanNumber(n_), //
 					// [$ (2^(2*n)*Gamma(1/2 + n))/(Sqrt(Pi)*Gamma(2 + n)) $]
 					F.Times(F.Power(F.C2, F.Times(F.C2, n)), F.Gamma(F.Plus(F.C1D2, n)),
-							F.Power(F.Times(F.Sqrt(F.Pi), F.Gamma(F.Plus(F.C2, n))), -1))); // $$);
+							F.Power(F.Times(F.Sqrt(F.Pi), F.Gamma(F.Plus(F.C2, n))), F.CN1))); // $$);
 			// ChebyshevT
 			MATCHER.caseOf(ChebyshevT(n_, x_), //
 					// [$ Cos(n*ArcCos(x)) $]
@@ -111,7 +114,7 @@ public class FunctionExpand extends AbstractEvaluator {
 			// ChebyshevU
 			MATCHER.caseOf(ChebyshevU(n_, x_), //
 					// [$ Sin((1 + n)*ArcCos(x))/(Sqrt(1 - x)*Sqrt(1 + x)) $]
-					F.Times(F.Power(F.Times(F.Sqrt(F.Plus(F.C1, F.Negate(x))), F.Sqrt(F.Plus(F.C1, x))), -1),
+					F.Times(F.Power(F.Times(F.Sqrt(F.Subtract(F.C1, x)), F.Sqrt(F.Plus(F.C1, x))), F.CN1),
 							F.Sin(F.Times(F.Plus(F.C1, n), F.ArcCos(x))))); // $$);
 
 			// Factorial
@@ -134,7 +137,7 @@ public class FunctionExpand extends AbstractEvaluator {
 					// [$ -((Pi*Csc(Pi*y)*Gamma(1 + x + y)*LegendreP(x, -y, z))/(2*Gamma(1 + x - y))) +
 					// (1/2)*Pi*Cot(Pi*y)*LegendreP(x, y, z) $]
 					F.Plus(F.Times(F.CN1, F.Pi, F.Csc(F.Times(F.Pi, y)),
-							F.Power(F.Times(F.C2, F.Gamma(F.Plus(F.C1, x, F.Negate(y)))), -1),
+							F.Power(F.Times(F.C2, F.Gamma(F.Plus(F.C1, x, F.Negate(y)))), F.CN1),
 							F.Gamma(F.Plus(F.C1, x, y)), F.LegendreP(x, F.Negate(y), z)),
 							F.Times(F.C1D2, F.Pi, F.Cot(F.Times(F.Pi, y)), F.LegendreP(x, y, z)))); // $$);
 

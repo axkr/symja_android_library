@@ -978,6 +978,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBetaRegularized() {
+		// TODO get Indeterminate
+		check("BetaRegularized(10^20., 10^30., 10.^20.)", //
+				"BetaRegularized(1.00000*10^20,1.00000*10^30,1.00000*10^20)");
+		
+		check("BetaRegularized({0.25, 0.5, 0.75}, 2.5, 0.5)",//
+				"{0.0117248,0.0755868,0.25317}");
 		check("BetaRegularized(0.99 , 255.0 , 2.0)", //
 				"0.273655");
 		check("BetaRegularized(2 , 2 , 3)", //
@@ -3596,9 +3602,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"2.866515718791937E-7");
 		check("Erfc(-0.28991)", //
 				"1.31819");
-		check("Erfc(-x) / 2", "1/2*(2-Erfc(x))");
-		checkNumeric("Erfc(1.0)", "0.15729920705028516");
-		check("Erfc(0)", "1");
+		// don't transform negative arg
+		check("Erfc(-x) / 2", //
+				"Erfc(-x)/2");
+		checkNumeric("Erfc(1.0)", //
+				"0.15729920705028516");
+		check("Erfc(0)", //
+				"1");
 	}
 
 	public void testErfi() {
@@ -3939,8 +3949,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "16+a*b+32*x+24*x^2+8*x^3+x^4");
 
 		// github #121
-//		check("Factor(x^(12)-y^(12), GaussianIntegers->True)", //
-//				"Factor(x^12-y^12,GaussianIntegers->True)");
+		// check("Factor(x^(12)-y^(12), GaussianIntegers->True)", //
+		// "Factor(x^12-y^12,GaussianIntegers->True)");
 		check("Factor(x^(2)+y^(2), GaussianIntegers->True)", //
 				"(-I*x+y)*(I*x+y)");
 
@@ -5171,6 +5181,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{Pi/180,1/2*(1+Sqrt(5))}");
 		check("FunctionExpand(Beta(z,3,b))", //
 				"(2*(1-(1-z)^b*(1+b*z+1/2*b*(1+b)*z^2)))/(b*(1+b)*(2+b))");
+		check("FunctionExpand(BetaRegularized(z, a, b))", //
+				"(Beta(z,a,b)*Gamma(a+b))/(Gamma(a)*Gamma(b))");
 	}
 
 	public void testGamma() {
@@ -13559,6 +13571,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{-1.169930812758687,-1.1040895136738123,-1.0,0.0,1.0,1.1040895136738123,1.169930812758687}");
 		checkNumeric("N(Surd( -2,  5),25)", "-1.1486983549970350067986269");
 
+	}
+
+	public void testSurvivalFunction() {
+		check("SurvivalFunction(GeometricDistribution(1/3), x)", //
+				"1-Piecewise({{1-(2/3)^(1+Floor(x)),x>=0}},0)");
+		check("SurvivalFunction(NormalDistribution(), {0.2, 0.3})", //
+				"{0.42074,0.382089}");
+		check("SurvivalFunction(BetaDistribution(1/2,1/2), {{0.0, 0.0}, {0.2, 0.2}, {0.3, 0.3}})", //
+				"{{1,1},{0.704833,0.704833},{0.63099,0.63099}}");
+		check("SurvivalFunction(NormalDistribution(0, 1), x)", //
+				"1-Erfc(-x/Sqrt(2))/2");
+		check("CDF(NormalDistribution(0, 1), x)", //
+				"Erfc(-x/Sqrt(2))/2");
 	}
 
 	public void testSwitch() {

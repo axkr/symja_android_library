@@ -103,7 +103,7 @@ public class DistributionTest extends AbstractTestCase {
 		check("Mean(NormalDistribution(m, s))", //
 				"m");
 		check("CDF(NormalDistribution( ), x)", //
-				"1/2*(2-Erfc(x/Sqrt(2)))");
+				"Erfc(-x/Sqrt(2))/2");
 		check("CDF(NormalDistribution(n,m), x)", //
 				"Erfc((n-x)/(Sqrt(2)*m))/2");
 		check("PDF(NormalDistribution( ), x)", //

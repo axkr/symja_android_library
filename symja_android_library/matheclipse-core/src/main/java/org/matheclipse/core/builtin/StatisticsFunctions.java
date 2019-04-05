@@ -103,6 +103,7 @@ public class StatisticsFunctions {
 			F.StandardDeviation.setEvaluator(new StandardDeviation());
 			F.Standardize.setEvaluator(new Standardize());
 			F.StudentTDistribution.setEvaluator(new StudentTDistribution());
+			F.SurvivalFunction.setEvaluator(new SurvivalFunction());
 			F.UniformDistribution.setEvaluator(new UniformDistribution());
 			F.Variance.setEvaluator(new Variance());
 			F.WeibullDistribution.setEvaluator(new WeibullDistribution());
@@ -4282,6 +4283,53 @@ public class StatisticsFunctions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	private final static class SurvivalFunction extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) { 
+			if (ast.isAST1() && ast.first().isAST()) {
+				IAST dist = (IAST) ast.arg1();
+				if (isDistribution(dist)) {
+					return F.Expand(F.Subtract(F.C1, F.CDF(dist)));
+				}
+				return F.NIL;
+			}
+			if (ast.isAST2() && ast.first().isAST()) {
+				IAST dist = (IAST) ast.arg1();
+				if (isDistribution(dist)) {
+					if (ast.arg2().isList()) {
+						return ((IAST)ast.arg2()).mapThread(ast, 2);
+						
+					}
+					return F.Expand(F.Subtract(F.C1, F.CDF(dist, ast.arg2())));
+				}
+				return F.NIL;
+			}
+			return F.NIL;
+		}
+
+		/**
+		 * Check if <code>dist</code> is a distribution AST.
+		 * 
+		 * @param dist
+		 * @return <code>F.NIL</code> if <code>dist</code> is not a distribution.
+		 */
+		private static boolean isDistribution(IAST dist) {
+			if (dist.head().isSymbol()) {
+				ISymbol head = (ISymbol) dist.head();
+				if (head instanceof IBuiltInSymbol) {
+					IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
+					if (evaluator instanceof IDistribution) {
+						return true;
+
+					}
+				}
+			}
+			return false;
 		}
 
 	}

@@ -2825,6 +2825,9 @@ public class F {
 	/***/
 	public final static IBuiltInSymbol SurfaceGraphics = F.initFinalSymbol("SurfaceGraphics", ID.SurfaceGraphics);
 
+	 /***/
+    public final static IBuiltInSymbol SurvivalFunction = F.initFinalSymbol("SurvivalFunction", ID.SurvivalFunction);
+
 	/**
 	 * Switch(expr, pattern1, value1, pattern2, value2, ...) - yields the first `value` for which `expr` matches the
 	 * corresponding pattern.
