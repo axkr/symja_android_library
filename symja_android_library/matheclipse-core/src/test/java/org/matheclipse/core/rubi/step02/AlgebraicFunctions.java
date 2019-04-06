@@ -7558,6 +7558,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {90}
 	public void test0943() {
+		fSeconds = 20;
 		check(//
 				"Integrate[x^5/((a + b*x)*(c + d*x)^2), x]", //
 				"((3*b^2*c^2 + 2*a*b*c*d + a^2*d^2)*x)/(b^3*d^4) - ((2*b*c + a*d)*x^2)/(2*b^2*d^3) + x^3/(3*b*d^2) - c^5/(d^5*(b*c - a*d)*(c + d*x)) - (a^5*Log[a + b*x])/(b^4*(b*c - a*d)^2) - (c^4*(4*b*c - 5*a*d)*Log[c + d*x])/(d^5*(b*c - a*d)^2)", //
@@ -7582,6 +7583,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {90}
 	public void test0946() {
+		fSeconds = 20;
 		check(//
 				"Integrate[x^2/((a + b*x)*(c + d*x)^2), x]", //
 				"c^2/(d^2*(b*c - a*d)*(c + d*x)) + (a^2*Log[a + b*x])/(b*(b*c - a*d)^2) + (c*(b*c - 2*a*d)*Log[c + d*x])/(d^2*(b*c - a*d)^2)", //
@@ -7590,6 +7592,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {78}
 	public void test0947() {
+		fSeconds = 20;
 		check(//
 				"Integrate[x/((a + b*x)*(c + d*x)^2), x]", //
 				"-(c/(d*(b*c - a*d)*(c + d*x))) - (a*Log[a + b*x])/(b*c - a*d)^2 + (a*Log[c + d*x])/(b*c - a*d)^2", //
@@ -7598,6 +7601,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {46}
 	public void test0948() {
+		fSeconds = 20;
 		check(//
 				"Integrate[1/((a + b*x)*(c + d*x)^2), x]", //
 				"1/((b*c - a*d)*(c + d*x)) + (b*Log[a + b*x])/(b*c - a*d)^2 - (b*Log[c + d*x])/(b*c - a*d)^2", //
@@ -7606,6 +7610,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {84}
 	public void test0949() {
+		fSeconds = 20;
 		check(//
 				"Integrate[1/(x*(a + b*x)*(c + d*x)^2), x]", //
 				"-(d/(c*(b*c - a*d)*(c + d*x))) + Log[x]/(a*c^2) - (b^2*Log[a + b*x])/(a*(b*c - a*d)^2) + (d*(2*b*c - a*d)*Log[c + d*x])/(c^2*(b*c - a*d)^2)", //
@@ -7614,6 +7619,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {90}
 	public void test0950() {
+		fSeconds = 20;
 		check(//
 				"Integrate[1/(x^2*(a + b*x)*(c + d*x)^2), x]", //
 				"-(1/(a*c^2*x)) + d^2/(c^2*(b*c - a*d)*(c + d*x)) - ((b*c + 2*a*d)*Log[x])/(a^2*c^3) + (b^3*Log[a + b*x])/(a^2*(b*c - a*d)^2) - (d^2*(3*b*c - 2*a*d)*Log[c + d*x])/(c^3*(b*c - a*d)^2)", //
@@ -7622,6 +7628,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {90}
 	public void test0951() {
+		fSeconds = 20;
 		check(//
 				"Integrate[1/(x^3*(a + b*x)*(c + d*x)^2), x]", //
 				"-1/(2*a*c^2*x^2) + (b*c + 2*a*d)/(a^2*c^3*x) - d^3/(c^3*(b*c - a*d)*(c + d*x)) + ((b^2*c^2 + 2*a*b*c*d + 3*a^2*d^2)*Log[x])/(a^3*c^4) - (b^4*Log[a + b*x])/(a^3*(b*c - a*d)^2) + (d^3*(4*b*c - 3*a*d)*Log[c + d*x])/(c^4*(b*c - a*d)^2)", //
@@ -7630,6 +7637,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {90}
 	public void test0952() {
+		fSeconds = 20;
 		check(//
 				"Integrate[x^5/((a + b*x)*(c + d*x)^3), x]", //
 				"-(((3*b*c + a*d)*x)/(b^2*d^4)) + x^2/(2*b*d^3) - c^5/(2*d^5*(b*c - a*d)*(c + d*x)^2) + (c^4*(4*b*c - 5*a*d))/(d^5*(b*c - a*d)^2*(c + d*x)) - (a^5*Log[a + b*x])/(b^3*(b*c - a*d)^3) + (c^3*(6*b^2*c^2 - 15*a*b*c*d + 10*a^2*d^2)*Log[c + d*x])/(d^5*(b*c - a*d)^3)", //
@@ -7638,6 +7646,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {90}
 	public void test0953() {
+		fSeconds = 20;
 		check(//
 				"Integrate[x^4/((a + b*x)*(c + d*x)^3), x]", //
 				"x/(b*d^3) + c^4/(2*d^4*(b*c - a*d)*(c + d*x)^2) - (c^3*(3*b*c - 4*a*d))/(d^4*(b*c - a*d)^2*(c + d*x)) + (a^4*Log[a + b*x])/(b^2*(b*c - a*d)^3) - (c^2*(3*b^2*c^2 - 8*a*b*c*d + 6*a^2*d^2)*Log[c + d*x])/(d^4*(b*c - a*d)^3)", //
@@ -7646,6 +7655,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {90}
 	public void test0954() {
+		fSeconds = 20;
 		check(//
 				"Integrate[x^3/((a + b*x)*(c + d*x)^3), x]", //
 				"-c^3/(2*d^3*(b*c - a*d)*(c + d*x)^2) + (c^2*(2*b*c - 3*a*d))/(d^3*(b*c - a*d)^2*(c + d*x)) - (a^3*Log[a + b*x])/(b*(b*c - a*d)^3) + (c*(b^2*c^2 - 3*a*b*c*d + 3*a^2*d^2)*Log[c + d*x])/(d^3*(b*c - a*d)^3)", //
@@ -7654,6 +7664,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {90}
 	public void test0955() {
+		fSeconds = 20;
 		check(//
 				"Integrate[x^2/((a + b*x)*(c + d*x)^3), x]", //
 				"c^2/(2*d^2*(b*c - a*d)*(c + d*x)^2) - (c*(b*c - 2*a*d))/(d^2*(b*c - a*d)^2*(c + d*x)) + (a^2*Log[a + b*x])/(b*c - a*d)^3 - (a^2*Log[c + d*x])/(b*c - a*d)^3", //
@@ -7662,6 +7673,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {78}
 	public void test0956() {
+		fSeconds = 20;
 		check(//
 				"Integrate[x/((a + b*x)*(c + d*x)^3), x]", //
 				"-c/(2*d*(b*c - a*d)*(c + d*x)^2) - a/((b*c - a*d)^2*(c + d*x)) - (a*b*Log[a + b*x])/(b*c - a*d)^3 + (a*b*Log[c + d*x])/(b*c - a*d)^3", //
@@ -7670,6 +7682,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {46}
 	public void test0957() {
+		fSeconds = 20;
 		check(//
 				"Integrate[1/((a + b*x)*(c + d*x)^3), x]", //
 				"1/(2*(b*c - a*d)*(c + d*x)^2) + b/((b*c - a*d)^2*(c + d*x)) + (b^2*Log[a + b*x])/(b*c - a*d)^3 - (b^2*Log[c + d*x])/(b*c - a*d)^3", //
@@ -7678,6 +7691,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {84}
 	public void test0958() {
+		fSeconds = 20;
 		check(//
 				"Integrate[1/(x*(a + b*x)*(c + d*x)^3), x]", //
 				"-d/(2*c*(b*c - a*d)*(c + d*x)^2) - (d*(2*b*c - a*d))/(c^2*(b*c - a*d)^2*(c + d*x)) + Log[x]/(a*c^3) - (b^3*Log[a + b*x])/(a*(b*c - a*d)^3) + (d*(3*b^2*c^2 - 3*a*b*c*d + a^2*d^2)*Log[c + d*x])/(c^3*(b*c - a*d)^3)", //
@@ -7686,6 +7700,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {90}
 	public void test0959() {
+		fSeconds = 20;
 		check(//
 				"Integrate[1/(x^2*(a + b*x)*(c + d*x)^3), x]", //
 				"-(1/(a*c^3*x)) + d^2/(2*c^2*(b*c - a*d)*(c + d*x)^2) + (d^2*(3*b*c - 2*a*d))/(c^3*(b*c - a*d)^2*(c + d*x)) - ((b*c + 3*a*d)*Log[x])/(a^2*c^4) + (b^4*Log[a + b*x])/(a^2*(b*c - a*d)^3) - (d^2*(6*b^2*c^2 - 8*a*b*c*d + 3*a^2*d^2)*Log[c + d*x])/(c^4*(b*c - a*d)^3)", //
@@ -7694,6 +7709,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {90}
 	public void test0960() {
+		fSeconds = 20;
 		check(//
 				"Integrate[(x^4*(c + d*x)^2)/(a + b*x)^2, x]", //
 				"(a^2*(3*b*c - 5*a*d)*(b*c - a*d)*x)/b^6 - (a*(b*c - 2*a*d)*(b*c - a*d)*x^2)/b^5 + ((b*c - 3*a*d)*(b*c - a*d)*x^3)/(3*b^4) + (d*(b*c - a*d)*x^4)/(2*b^3) + (d^2*x^5)/(5*b^2) - (a^4*(b*c - a*d)^2)/(b^7*(a + b*x)) - (2*a^3*(2*b*c - 3*a*d)*(b*c - a*d)*Log[a + b*x])/b^7", //
@@ -7702,6 +7718,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {90}
 	public void test0961() {
+		fSeconds = 20;
 		check(//
 				"Integrate[(x^3*(c + d*x)^2)/(a + b*x)^2, x]", //
 				"(-2*a*(b*c - 2*a*d)*(b*c - a*d)*x)/b^5 + ((b*c - 3*a*d)*(b*c - a*d)*x^2)/(2*b^4) + (2*d*(b*c - a*d)*x^3)/(3*b^3) + (d^2*x^4)/(4*b^2) + (a^3*(b*c - a*d)^2)/(b^6*(a + b*x)) + (a^2*(3*b*c - 5*a*d)*(b*c - a*d)*Log[a + b*x])/b^6", //
@@ -7710,6 +7727,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {90}
 	public void test0962() {
+		fSeconds = 20;
 		check(//
 				"Integrate[(x^2*(c + d*x)^2)/(a + b*x)^2, x]", //
 				"((b*c - 3*a*d)*(b*c - a*d)*x)/b^4 + (d*(b*c - a*d)*x^2)/b^3 + (d^2*x^3)/(3*b^2) - (a^2*(b*c - a*d)^2)/(b^5*(a + b*x)) - (2*a*(b*c - 2*a*d)*(b*c - a*d)*Log[a + b*x])/b^5", //
@@ -7718,6 +7736,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {78}
 	public void test0963() {
+		fSeconds = 20;
 		check(//
 				"Integrate[(x*(c + d*x)^2)/(a + b*x)^2, x]", //
 				"(2*d*(b*c - a*d)*x)/b^3 + (d^2*x^2)/(2*b^2) + (a*(b*c - a*d)^2)/(b^4*(a + b*x)) + ((b*c - 3*a*d)*(b*c - a*d)*Log[a + b*x])/b^4", //
@@ -7774,6 +7793,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {90}
 	public void test0970() {
+		fSeconds = 20;
 		check(//
 				"Integrate[(x^4*(c + d*x)^3)/(a + b*x)^2, x]", //
 				"(3*a^2*(b*c - 2*a*d)*(b*c - a*d)^2*x)/b^7 - (a*(2*b*c - 5*a*d)*(b*c - a*d)^2*x^2)/(2*b^6) + ((b*c - 4*a*d)*(b*c - a*d)^2*x^3)/(3*b^5) + (3*d*(b*c - a*d)^2*x^4)/(4*b^4) + (d^2*(3*b*c - 2*a*d)*x^5)/(5*b^3) + (d^3*x^6)/(6*b^2) - (a^4*(b*c - a*d)^3)/(b^8*(a + b*x)) - (a^3*(4*b*c - 7*a*d)*(b*c - a*d)^2*Log[a + b*x])/b^8", //

@@ -12204,6 +12204,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSimplify() {
+		check("Simplify(a/((a-I*b)*(a/(a-I*b)+(-I*b)/(a-I*b)))+(b*Sinh(x))/((a-I*b)*(a/(a-I*b)+(-I*b)/(a-I*b))))",  //
+				 "(a+b*Sinh(x))/(a-I*b)");
+		check("Simplify((a-I*b)*(a/(a-I*b)+(-I*b)/(a-I*b)))", //
+				"a-I*b");
 		check("Simplify(-2*Log(2))", //
 				"-Log(4)");
 		check("Simplify(Log(6)-Log(2))", //
@@ -12252,7 +12256,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"(-Cos(b*x)-b*x*Sin(b*x))/x^2");
 
 		check("Simplify(-(b/(2*Sqrt(c))+Sqrt(c)*x)^24+(a+b*x+c*x^2)^12)", //
-				"-(b/2+c*x)^24/c^12+(a+b*x+c*x^2)^12");
+				"-(b/(2*Sqrt(c))+Sqrt(c)*x)^24+(a+b*x+c*x^2)^12");
 		check("Simplify(-ArcTan((1+x)/Sqrt(2))/(2*Sqrt(2)))", //
 				"-ArcTan((1+x)/Sqrt(2))/(2*Sqrt(2))");
 		check("Simplify(1 + 1/GoldenRatio - GoldenRatio)", //
