@@ -19842,6 +19842,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {584}
 	public void test2476() {
+		fSeconds = 20;
 		check(//
 				"Integrate[(e*x)^m*(a + b*x^2)^2*(A + B*x^2)*(c + d*x^2)^2, x]", //
 				"(a^2*A*c^2*(e*x)^(1 + m))/(e*(1 + m)) + (a*c*(a*B*c + 2*A*(b*c + a*d))*(e*x)^(3 + m))/(e^3*(3 + m)) + ((2*a*B*c*(b*c + a*d) + A*(b^2*c^2 + 4*a*b*c*d + a^2*d^2))*(e*x)^(5 + m))/(e^5*(5 + m)) + ((a^2*B*d^2 + 2*a*b*d*(2*B*c + A*d) + b^2*c*(B*c + 2*A*d))*(e*x)^(7 + m))/(e^7*(7 + m)) + (b*d*(2*b*B*c + A*b*d + 2*a*B*d)*(e*x)^(9 + m))/(e^9*(9 + m)) + (b^2*B*d^2*(e*x)^(11 + m))/(e^11*(11 + m))", //
@@ -24730,6 +24731,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {379, 267}
 	public void test3087() {
+		fSeconds = 20;
 		check(//
 				"Integrate[(c + d*x)^3*(a + b*(c + d*x)^4)^3, x]", //
 				"(a + b*(c + d*x)^4)^4/(16*b*d)", //
