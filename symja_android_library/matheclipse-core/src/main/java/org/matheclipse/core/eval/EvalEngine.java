@@ -201,9 +201,9 @@ public class EvalEngine implements Serializable {
 	private boolean fRelaxedSyntax;
 
 	/**
-	 * The reap list object associated to the most enclosing <code>Reap()</code> statement. The odd indices in
+	 * The reap list object associated to the most enclosing <code>Reap()</code> statement. The even indices in
 	 * <code>java.util.List</code> contain the tag defined in <code>Sow()</code>. If no tag is defined in
-	 * <code>Sow()</code> tag <code>F.None</code> is used. The even indices in <code>java.util.List</code> contain the
+	 * <code>Sow()</code> tag <code>F.None</code> is used. The odd indices in <code>java.util.List</code> contain the
 	 * associated reap list for the tag.
 	 */
 	private transient java.util.List<IExpr> fReapList = null;
@@ -1843,9 +1843,9 @@ public class EvalEngine implements Serializable {
 	}
 
 	/**
-	 * Get the reap list object associated to the most enclosing <code>Reap()</code> statement. The odd indices in
+	 * Get the reap list object associated to the most enclosing <code>Reap()</code> statement. The even indices in
 	 * <code>java.util.List</code> contain the tag defined in <code>Sow()</code>. If no tag is defined in
-	 * <code>Sow()</code> tag <code>F.None</code> is used. The even indices in <code>java.util.List</code> contain the
+	 * <code>Sow()</code> tag <code>F.None</code> is used. The odd indices in <code>java.util.List</code> contain the
 	 * associated reap list for the tag.
 	 * 
 	 * @return the reapList
