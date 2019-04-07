@@ -373,12 +373,11 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST0()) {
+			if (ast.isAST0() || ast.isAST1()) {
 				throw ContinueException.CONST;
 			}
-			Validate.checkSize(ast, 1);
-
-			return F.NIL;
+			engine.printMessage("Continue: to much args in " + ast.toString());
+			return F.Hold(ast);
 		}
 
 		@Override
