@@ -311,6 +311,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
 
 	// {2734, 2732}
 	public void test0041() {
+		fSeconds=20;
 		check(//
 				"Integrate[Sqrt[a + b*Sinh[x]], x]", //
 				"((2*I)*EllipticE[Pi/4 - (I/2)*x, (2*b)/(I*a + b)]*Sqrt[a + b*Sinh[x]])/Sqrt[(a + b*Sinh[x])/(a - I*b)]", //
