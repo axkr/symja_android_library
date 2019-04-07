@@ -1936,13 +1936,21 @@ public final class Programming {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST1()) {
-				if (ast.arg1().isTrue()) {
-					throw ReturnException.RETURN_TRUE;
-				}
-				if (ast.arg1().isTrue()) {
+				IExpr arg1 = ast.arg1();
+				if (arg1.isFalse()) {
 					throw ReturnException.RETURN_FALSE;
 				}
-				throw new ReturnException(engine.evaluate(ast.arg1()));
+				if (arg1.isTrue()) {
+					throw ReturnException.RETURN_TRUE;
+				}
+				arg1 = engine.evaluate(arg1);
+				if (arg1.isFalse()) {
+					throw ReturnException.RETURN_FALSE;
+				}
+				if (arg1.isTrue()) {
+					throw ReturnException.RETURN_TRUE;
+				}
+				throw new ReturnException(arg1);
 			}
 			if (ast.isAST0()) {
 				throw new ReturnException();
@@ -2238,7 +2246,21 @@ public final class Programming {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST1()) {
-				throw new ThrowException(engine.evaluate(ast.arg1()));
+				IExpr arg1 = ast.arg1();
+				if (arg1.isFalse()) {
+					throw ThrowException.THROW_FALSE;
+				}
+				if (arg1.isTrue()) {
+					throw ThrowException.THROW_TRUE;
+				}
+				arg1 = engine.evaluate(arg1);
+				if (arg1.isFalse()) {
+					throw ThrowException.THROW_FALSE;
+				}
+				if (arg1.isTrue()) {
+					throw ThrowException.THROW_TRUE;
+				}
+				throw new ThrowException(arg1);
 			}
 			Validate.checkSize(ast, 2);
 
