@@ -770,7 +770,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 		F.ISet(F.$s("§$inversetrigfunctions"), F.List(F.ArcSin, F.ArcCos, F.ArcTan, F.ArcCot, F.ArcSec, F.ArcCsc));
 		F.ISet(F.$s("§$inversehyperbolicfunctions"),
 				F.List(F.ArcSinh, F.ArcCosh, F.ArcTanh, F.ArcCoth, F.ArcSech, F.ArcCsch));
-		F.ISet(F.$s("§$calculusfunctions"), F.List(F.D, Integrate, F.Sum, F.Product, F.Integrate,
+		F.ISet(F.$s("§$calculusfunctions"), F.List(F.D, F.Sum, F.Product, F.Integrate,
 				F.$rubi("Unintegrable"), F.$rubi("CannotIntegrate"), F.$rubi("Dif"), F.$rubi("Subst")));
 		F.ISet(F.$s("§$stopfunctions"), F.List(F.Hold, F.HoldForm, F.Defer, F.Pattern, F.If, F.Integrate,
 				F.$rubi("Unintegrable"), F.$rubi("CannotIntegrate")));
