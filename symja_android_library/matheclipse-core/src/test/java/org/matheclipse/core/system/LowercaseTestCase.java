@@ -1406,6 +1406,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCatch() {
+		check("Catch(f(Catch(Throw(a, u), u)), v)", //
+				"f(a)");
+		check("Catch(f(Catch(Throw(a, u), v)), u)", //
+				"a");
+		check("Catch(f(Catch(Throw(a, u), u)), v, f)", //
+				"f(a)");
+		check("Catch(f(Catch(Throw(a, u), v)), u, f)", //
+				"f(a,u)");
 		check("Catch(Scan(If(IntegerQ(#1),Null,Throw(False))&,{2,3});True)", "True");
 		check("Catch(Scan(If(IntegerQ(#1),Null,Throw(False))&,{b+a});True)", "False");
 		check("Catch(Scan(If(# > 5, Throw(#)) &, {2, 4, 6, 8}))", "6");

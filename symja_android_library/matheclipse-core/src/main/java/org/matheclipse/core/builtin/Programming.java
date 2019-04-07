@@ -214,10 +214,33 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() == 2) {
+			if (ast.size() >= 2 || ast.size() <= 4) {
 				try {
 					return engine.evaluate(ast.arg1());
 				} catch (final ThrowException e) {
+					if (ast.size() == 2) {
+						if (ThrowException.THROW_FALSE == e) {
+							return F.False;
+						} else if (ThrowException.THROW_TRUE == e) {
+							return F.True;
+						}
+						return e.getValue();
+					} else if (ast.size() == 3) {
+						IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
+						IExpr tag = engine.evaluate(e.getTag());
+						if (matcher.test(tag)) {
+							return e.getValue();
+						}
+						throw e;
+					} else if (ast.size() == 4) {
+						IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
+						IExpr head = engine.evaluate(ast.arg3());
+						IExpr tag = engine.evaluate(e.getTag());
+						if (matcher.test(tag)) {
+							return F.binaryAST2(head, e.getValue(), tag);
+						}
+						throw e;
+					}
 					return e.getValue();
 				}
 			}
@@ -227,7 +250,7 @@ public final class Programming {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
+			newSymbol.setAttributes(ISymbol.HOLDFIRST);
 		}
 
 	}
@@ -2325,6 +2348,9 @@ public final class Programming {
 					throw ThrowException.THROW_TRUE;
 				}
 				throw new ThrowException(arg1);
+			} else if (ast.isAST2()) {
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				throw new ThrowException(arg1, ast.arg2());
 			}
 			Validate.checkSize(ast, 2);
 
