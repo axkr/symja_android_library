@@ -4,6 +4,7 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -49,8 +50,6 @@ import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.parser.client.math.MathException;
 
 import com.google.common.cache.Cache;
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
 
 /**
  * The main evaluation algorithms for the .Symja computer algebra system
@@ -202,9 +201,12 @@ public class EvalEngine implements Serializable {
 	private boolean fRelaxedSyntax;
 
 	/**
-	 * List for results in <code>Reap[]</code> function.
+	 * The reap list object associated to the most enclosing <code>Reap()</code> statement. The odd indices in
+	 * <code>java.util.List</code> contain the tag defined in <code>Sow()</code>. If no tag is defined in
+	 * <code>Sow()</code> tag <code>F.None</code> is used. The even indices in <code>java.util.List</code> contain the
+	 * associated reap list for the tag.
 	 */
-	private transient IASTAppendable fReapList = null;
+	private transient java.util.List<IExpr> fReapList = null;
 
 	public transient Set<ISymbol> fModifiedVariablesList;
 
@@ -1841,9 +1843,14 @@ public class EvalEngine implements Serializable {
 	}
 
 	/**
+	 * Get the reap list object associated to the most enclosing <code>Reap()</code> statement. The odd indices in
+	 * <code>java.util.List</code> contain the tag defined in <code>Sow()</code>. If no tag is defined in
+	 * <code>Sow()</code> tag <code>F.None</code> is used. The even indices in <code>java.util.List</code> contain the
+	 * associated reap list for the tag.
+	 * 
 	 * @return the reapList
 	 */
-	public IASTAppendable getReapList() {
+	public java.util.List<IExpr> getReapList() {
 		return fReapList;
 	}
 
@@ -2230,7 +2237,7 @@ public class EvalEngine implements Serializable {
 	 * @param reapList
 	 *            the reapList to set
 	 */
-	public void setReapList(IASTAppendable reapList) {
+	public void setReapList(java.util.List<IExpr> reapList) {
 		this.fReapList = reapList;
 	}
 

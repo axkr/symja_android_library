@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -510,11 +509,11 @@ public final class Programming {
 
 		private static class DoIterator {
 
-			final List<? extends IIterator<IExpr>> fIterList;
+			final java.util.List<? extends IIterator<IExpr>> fIterList;
 			final EvalEngine fEngine;
 			int fIndex;
 
-			public DoIterator(final List<? extends IIterator<IExpr>> iterList, EvalEngine engine) {
+			public DoIterator(final java.util.List<? extends IIterator<IExpr>> iterList, EvalEngine engine) {
 				fIterList = iterList;
 				fEngine = engine;
 				fIndex = 0;
@@ -556,7 +555,7 @@ public final class Programming {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() >= 3) {
 				try {
-					final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
+					final java.util.List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
 					ast.forEach(2, ast.size(), x -> iterList.add(Iterator.create((IAST) x, engine)));
 					final DoIterator generator = new DoIterator(iterList, engine);
 					return generator.doIt(ast.arg1());
@@ -1861,27 +1860,64 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST1()) {
-				IASTAppendable oldList = engine.getReapList();
-				try {
-					IASTAppendable reapList = F.ListAlloc(10);
-					engine.setReapList(reapList);
+			java.util.List<IExpr> oldList = engine.getReapList();
+			try {
+				java.util.List<IExpr> reapList = new ArrayList<IExpr>();
+				engine.setReapList(reapList);
+				if (ast.isAST1()) {
 					IExpr expr = engine.evaluate(ast.arg1());
-					if (reapList.isAST0()) {
+					if (reapList.size() == 0) {
 						return F.List(expr, F.CEmptyList);
 					}
-					return F.List(expr, F.List(reapList));
-				} finally {
-					engine.setReapList(oldList);
+					IASTAppendable result = F.ListAlloc(reapList.size() / 2);
+					for (int i = 1; i < reapList.size(); i += 2) {
+						result.append(reapList.get(i));
+					}
+					return F.List(expr, result);
+				} else if (ast.isAST2() || ast.isAST3()) {
+					IExpr expr = engine.evaluate(ast.arg1());
+					IExpr arg2 = ast.arg2();
+					IExpr head = null;
+					if (ast.isAST3()) {
+						head = engine.evaluate(ast.arg3());
+					}
+					IPatternMatcher[] matcher;
+					if (arg2.isList()) {
+						IAST matcherAST = (IAST) arg2;
+						matcher = new IPatternMatcher[matcherAST.size() - 1];
+						for (int i = 1; i < matcherAST.size(); i++) {
+							matcher[i - 1] = engine.evalPatternMatcher(matcherAST.get(i));
+						}
+					} else {
+						matcher = new IPatternMatcher[] { engine.evalPatternMatcher(arg2) };
+					}
+					if (reapList.size() == 0) {
+						return F.List(expr, F.CEmptyList);
+					}
+					IASTAppendable result = F.ListAlloc(reapList.size() / 2);
+					for (int i = 1; i < reapList.size(); i += 2) {
+						for (int j = 0; j < matcher.length; j++) {
+							if (matcher[j].test(reapList.get(i - 1))) {
+								if (head == null) {
+									result.append(reapList.get(i));
+								} else {
+									result.append(F.binaryAST2(head, reapList.get(i - 1), reapList.get(i)));
+								}
+								break;
+							}
+						}
+					}
+					return F.List(expr, result);
 				}
+			} finally {
+				engine.setReapList(oldList);
 			}
-			Validate.checkSize(ast, 2);
 			return F.NIL;
 		}
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
+			newSymbol.setAttributes(ISymbol.HOLDFIRST);
 		}
 
 	}
@@ -1986,16 +2022,45 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST1()) {
-				IASTAppendable reapList = engine.getReapList();
-				IExpr expr = engine.evaluate(ast.arg1());
-				if (reapList != null) {
-					reapList.append(expr);
+			java.util.List<IExpr> reapList = engine.getReapList();
+			if (reapList != null) {
+				if (ast.isAST1()) {
+					IExpr arg1 = engine.evaluate(ast.arg1());
+					appendReapList(arg1, F.None, reapList);
+					return arg1;
+				} else if (ast.isAST2()) {
+					IExpr arg1 = engine.evaluate(ast.arg1());
+					IExpr tags = engine.evaluate(ast.arg2());
+					if (tags.isList()) {
+						IAST list = (IAST) tags;
+						for (int i = 1; i < list.size(); i++) {
+							if (reapList != null) {
+								appendReapList(arg1, list.get(i), reapList);
+							}
+						}
+
+					} else {
+						appendReapList(arg1, tags, reapList);
+						return arg1;
+					}
 				}
-				return expr;
 			}
-			Validate.checkSize(ast, 2);
 			return F.NIL;
+		}
+
+		private static void appendReapList(final IExpr expr, final IExpr tag, java.util.List<IExpr> reapList) {
+			for (int i = 0; i < reapList.size(); i += 2) {
+				IExpr currentTag = reapList.get(i);
+				if (tag.equals(currentTag)) {
+					IASTAppendable temp = (IASTAppendable) reapList.get(i + 1);
+					temp.append(expr);
+					return;
+				}
+			}
+			IASTAppendable temp = F.ListAlloc(10);
+			temp.append(expr);
+			reapList.add(tag);
+			reapList.add(temp);
 		}
 
 		@Override
