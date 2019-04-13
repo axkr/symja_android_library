@@ -3944,6 +3944,7 @@ public class F {
 
 	private static void createInverseFunctionMap() {
 		UNARY_INVERSE_FUNCTIONS.put(Abs, Function(Times(CN1, Slot1)));
+		UNARY_INVERSE_FUNCTIONS.put(ProductLog, Function(Times(Slot1, Power(E, Slot1))));
 		UNARY_INVERSE_FUNCTIONS.put(Cos, ArcCos);
 		UNARY_INVERSE_FUNCTIONS.put(Cot, ArcCot);
 		UNARY_INVERSE_FUNCTIONS.put(Csc, ArcCsc);
@@ -3970,6 +3971,13 @@ public class F {
 		UNARY_INVERSE_FUNCTIONS.put(ArcSinh, Sinh);
 		UNARY_INVERSE_FUNCTIONS.put(ArcTanh, Tanh);
 		UNARY_INVERSE_FUNCTIONS.put(Log, Exp);
+		UNARY_INVERSE_FUNCTIONS.put(Identity, Identity);
+		
+		UNARY_INVERSE_FUNCTIONS.put(Erf, InverseErf);
+		UNARY_INVERSE_FUNCTIONS.put(Erfc, InverseErfc);
+		
+		UNARY_INVERSE_FUNCTIONS.put(InverseErf, Erf);
+		UNARY_INVERSE_FUNCTIONS.put(InverseErfc, Erfc);
 	}
 
 	/**

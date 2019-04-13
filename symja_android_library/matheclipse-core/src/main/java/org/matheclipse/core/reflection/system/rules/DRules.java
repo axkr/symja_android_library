@@ -167,6 +167,9 @@ public interface DRules {
     // D(SinhIntegral(f_),x_?NotListQ):=D(f,x)*Sinh(f)/f
     ISetDelayed(D(SinhIntegral(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),Power(f,CN1),Sinh(f))),
+    // D(InverseFunction(f_)[x_],x_):=1/f'(InverseFunction(f)[x])/;FreeQ(f,x)
+    ISetDelayed(D($(InverseFunction(f_),x_),x_),
+      Condition(Power($($(Derivative(C1),f),$(InverseFunction(f),x)),CN1),FreeQ(f,x))),
     // D(ArcCos(x_),{x_,2}):=-x/(1-x^2)^(3/2)
     ISetDelayed(D(ArcCos(x_),List(x_,C2)),
       Times(CN1,x,Power(Subtract(C1,Sqr(x)),QQ(-3L,2L)))),

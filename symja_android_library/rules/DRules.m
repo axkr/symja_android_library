@@ -50,6 +50,9 @@
   D(SinIntegral(f_),x_?NotListQ):=D(f,x)*Sinc(f),
   D(SinhIntegral(f_),x_?NotListQ):=D(f,x)*Sinh(f)/f,
   
+  D(InverseFunction(f_)[x_],x_) := 1/Derivative(1)[f][InverseFunction(f)[x]] 
+    /; FreeQ(f,x),
+  
   D(ArcCos(x_), {x_, 2}) := -(x/(1 - x^2)^(3/2)),
   D(ArcCot(x_), {x_, 2}) := (2*x)/(1 + x^2)^2,
   D(ArcSin(x_), {x_, 2}) := x/(1 - x^2)^(3/2),

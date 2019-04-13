@@ -55,7 +55,6 @@ public class InverseFunction extends AbstractFunctionEvaluator {
 			if (temp != null) {
 				return temp;
 			}
-			return F.NIL;
 		}
 		return F.NIL;
 	}
