@@ -795,77 +795,76 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
+			if (ast.size() >= 2 && ast.size() <= 3) {
+				IExpr arg1 = ast.arg1();
 
-			IExpr arg1 = ast.arg1();
-
-			int maxIterations = Integer.MAX_VALUE;
-			if (ast.isAST2() && ast.arg2().isInteger()) {
-				maxIterations = Validate.checkIntType(ast, 2);
-			}
-
-			if (ast.isAST1() && arg1.isSqrt() && arg1.base().isInteger() && arg1.base().isPositive()) {
-				// Sqrt( d ) with d positive integer number
-				return sqrtContinuedFraction((IInteger) arg1.base());
-			}
-			if (arg1 instanceof INum) {
-				// arg1 = F.fraction(((INum) arg1).getRealPart());
-				return realToCF(((INum) arg1), maxIterations, engine);
-			} else if (arg1.isAST() || arg1.isSymbol() && arg1.isNumericFunction()) {
-				IExpr num = engine.evalN(arg1);
-				if (num instanceof INum) {
-					return realToCF(((INum) num), maxIterations, engine);
+				int maxIterations = Integer.MAX_VALUE;
+				if (ast.isAST2() && ast.arg2().isInteger()) {
+					maxIterations = Validate.checkIntType(ast, 2);
 				}
-			}
 
-			if (arg1.isRational()) {
-				IRational rat = (IRational) arg1;
-
-				IASTAppendable continuedFractionList;
-				if (rat.denominator().isOne()) {
-					continuedFractionList = F.ListAlloc(1);
-					continuedFractionList.append(rat.numerator());
-				} else if (rat.numerator().isOne()) {
-					continuedFractionList = F.ListAlloc(2);
-					continuedFractionList.append(F.C0);
-					continuedFractionList.append(rat.denominator());
-				} else {
-					IFraction temp = F.fraction(rat.numerator(), rat.denominator());
-					IInteger quotient;
-					IInteger remainder;
-					continuedFractionList = F.ListAlloc(10);
-					while (temp.denominator().compareInt(1) > 0 && (0 < maxIterations--)) {
-						quotient = temp.numerator().div(temp.denominator());
-						remainder = temp.numerator().mod(temp.denominator());
-						continuedFractionList.append(quotient);
-						temp = F.fraction(temp.denominator(), remainder);
-						if (temp.denominator().isOne()) {
-							continuedFractionList.append(temp.numerator());
-						}
+				if (ast.isAST1() && arg1.isSqrt() && arg1.base().isInteger() && arg1.base().isPositive()) {
+					// Sqrt( d ) with d positive integer number
+					return sqrtContinuedFraction((IInteger) arg1.base());
+				}
+				if (arg1 instanceof INum) {
+					// arg1 = F.fraction(((INum) arg1).getRealPart());
+					return realToContinuedFraction(((INum) arg1), maxIterations, engine);
+				} else if (arg1.isAST() || arg1.isSymbol() && arg1.isNumericFunction()) {
+					IExpr num = engine.evalN(arg1);
+					if (num instanceof INum) {
+						return realToContinuedFraction(((INum) num), maxIterations, engine);
 					}
 				}
-				return continuedFractionList;
 
+				if (arg1.isRational()) {
+					IRational rat = (IRational) arg1;
+
+					IASTAppendable continuedFractionList;
+					if (rat.denominator().isOne()) {
+						continuedFractionList = F.ListAlloc(1);
+						continuedFractionList.append(rat.numerator());
+					} else if (rat.numerator().isOne()) {
+						continuedFractionList = F.ListAlloc(2);
+						continuedFractionList.append(F.C0);
+						continuedFractionList.append(rat.denominator());
+					} else {
+						IFraction temp = F.fraction(rat.numerator(), rat.denominator());
+						IInteger quotient;
+						IInteger remainder;
+						continuedFractionList = F.ListAlloc(10);
+						while (temp.denominator().compareInt(1) > 0 && (0 < maxIterations--)) {
+							quotient = temp.numerator().div(temp.denominator());
+							remainder = temp.numerator().mod(temp.denominator());
+							continuedFractionList.append(quotient);
+							temp = F.fraction(temp.denominator(), remainder);
+							if (temp.denominator().isOne()) {
+								continuedFractionList.append(temp.numerator());
+							}
+						}
+					}
+					return continuedFractionList;
+
+				}
 			}
-
 			return F.NIL;
 		}
 
-		private static IAST realToCF(INum d, int limit, EvalEngine engine) {
-			final double D = d.getRealPart();
+		private static IAST realToContinuedFraction(INum value, int iterationLimit, EvalEngine engine) {
+			final double doubleValue = value.getRealPart();
 			IASTAppendable continuedFractionList = F.ListAlloc(10);
-			int ip = (int) D;
-			if (d.isNumIntValue()) {
-				continuedFractionList.append(F.ZZ((int) D));
+			int ip = (int) doubleValue;
+			if (value.isNumIntValue()) {
+				continuedFractionList.append(F.ZZ((int) Math.rint(doubleValue)));
 				return continuedFractionList;
 			}
 
 			int aNow = ip;
-			double tNow = D - aNow;
+			double tNow = doubleValue - aNow;
 			double tNext;
 			int aNext;
 			continuedFractionList.append(F.ZZ(aNow));
-			for (int i = 0; i < limit - 1; i++) {
+			for (int i = 0; i < iterationLimit - 1; i++) {
 				if (i >= 99) {
 					engine.printMessage(
 							"ContinuedFraction: calculations of double number values require a iteration limit less equal 100.");
@@ -887,7 +886,7 @@ public final class NumberTheory {
 
 		@Override
 		public void setUp(ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.NHOLDREST);
+			newSymbol.setAttributes(ISymbol.LISTABLE);
 		}
 
 	}
