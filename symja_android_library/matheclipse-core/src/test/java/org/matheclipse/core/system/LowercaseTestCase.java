@@ -1440,21 +1440,30 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCatalan() {
-		checkNumeric("N(Catalan)", "0.915965594177219");
+		checkNumeric("N(Catalan)", //
+				"0.915965594177219");
 	}
 
 	public void testCatalanNumber() {
-		checkNumeric("CatalanNumber(-10)", "0");
-		checkNumeric("CatalanNumber(-1)", "-1");
-		checkNumeric("CatalanNumber(0)", "1");
-		checkNumeric("CatalanNumber(1)", "1");
-		checkNumeric("CatalanNumber(3)", "5");
-		checkNumeric("CatalanNumber(10)", "16796");
+		checkNumeric("CatalanNumber(-10)", //
+				"0");
+		checkNumeric("CatalanNumber(-1)", //
+				"-1");
+		checkNumeric("CatalanNumber(0)", //
+				"1");
+		checkNumeric("CatalanNumber(1)", //
+				"1");
+		checkNumeric("CatalanNumber(3)", //
+				"5");
+		checkNumeric("CatalanNumber(10)", //
+				"16796");
 	}
 
 	public void testCatenate() {
-		check("Catenate({{1, 2, 3}, {4, 5}})", "{1,2,3,4,5}");
-		check("Catenate({{1,2,3},{a,b,c},{4,5,6}})", "{1,2,3,a,b,c,4,5,6}");
+		check("Catenate({{1, 2, 3}, {4, 5}})", //
+				"{1,2,3,4,5}");
+		check("Catenate({{1,2,3},{a,b,c},{4,5,6}})", //
+				"{1,2,3,a,b,c,4,5,6}");
 	}
 
 	public void testCDF() {
@@ -1517,45 +1526,67 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCeiling() {
-		check("Ceiling(-9/4)", "-2");
-		check("Ceiling(1/3)", "1");
-		check("Ceiling(-1/3)", "0");
-		check("Ceiling(1.2)", "2");
-		check("Ceiling(3/2)", "2");
-		check("Ceiling(1.3 + 0.7*I)", "2+I");
-		check("Ceiling(2.6, 0.5)", "3.0");
-		check("Ceiling(10.4, -1) ", "10");
-		check("Ceiling(-10.4, -1) ", "-11");
+		check("Ceiling(-9/4)", //
+				"-2");
+		check("Ceiling(1/3)", //
+				"1");
+		check("Ceiling(-1/3)", //
+				"0");
+		check("Ceiling(1.2)", //
+				"2");
+		check("Ceiling(3/2)", //
+				"2");
+		check("Ceiling(1.3 + 0.7*I)", //
+				"2+I");
+		check("Ceiling(2.6, 0.5)", //
+				"3.0");
+		check("Ceiling(10.4, -1) ", //
+				"10");
+		check("Ceiling(-10.4, -1) ", //
+				"-11");
 
-		check("Ceiling(1.5)", "2");
-		check("Ceiling(1.5 + 2.7*I)", "2+I*3");
+		check("Ceiling(1.5)", //
+				"2");
+		check("Ceiling(1.5 + 2.7*I)", //
+				"2+I*3");
 	}
 
 	public void testCentralMoment() {
-		check("CentralMoment({1.1, 1.2, 1.4, 2.1, 2.4}, 4)", "0.100845");
+		check("CentralMoment({1.1, 1.2, 1.4, 2.1, 2.4}, 4)", //
+				"0.100845");
 	}
 
 	public void testCharacteristicPolynomial() {
-		check("CharacteristicPolynomial({{a, b}, {c, d}}, x)", "-b*c+a*d-a*x-d*x+x^2");
-		check("CharacteristicPolynomial({{1, 1, 1}, {1, 1/2, 1/3}, {1, 2, 3}},x)", "-1/3-7/3*x+9/2*x^2-x^3");
+		check("CharacteristicPolynomial({{a, b}, {c, d}}, x)", //
+				"-b*c+a*d-a*x-d*x+x^2");
+		check("CharacteristicPolynomial({{1, 1, 1}, {1, 1/2, 1/3}, {1, 2, 3}},x)", //
+				"-1/3-7/3*x+9/2*x^2-x^3");
 		check("CharacteristicPolynomial(N({{1, 1, 1}, {1, 1/2, 1/3}, {1, 2, 3}}),x)", //
 				"-0.333333-2.33333*x+4.5*x^2.0-x^3.0");
-		check("CharacteristicPolynomial({{1, 2*I}, {3 + 4*I, 5}}, z)", "13-I*6-6*z+z^2");
+		check("CharacteristicPolynomial({{1, 2*I}, {3 + 4*I, 5}}, z)", //
+				"13-I*6-6*z+z^2");
 	}
 
 	public void testChebyshevT() {
-		check("ChebyshevT(-1/2, z)", "Cos(ArcCos(z)/2)");
-		check("ChebyshevT(1/2, z)", "Cos(ArcCos(z)/2)");
+		check("ChebyshevT(-1/2, z)", //
+				"Cos(ArcCos(z)/2)");
+		check("ChebyshevT(1/2, z)", //
+				"Cos(ArcCos(z)/2)");
 		check("ChebyshevT(1.5, 2+3*I)", //
 				"0.692609+I*9.74575");
-		check("ChebyshevT(8, x)", "1-32*x^2+160*x^4-256*x^6+128*x^8");
+		check("ChebyshevT(8, x)", //
+				"1-32*x^2+160*x^4-256*x^6+128*x^8");
 		// TODO add non-integer args implementation
 		// check("ChebyshevT(1 - I, 0.5)", "0.800143 + 1.08198 I");
 
-		check("ChebyshevT(n,0)", "Cos(1/2*n*Pi)");
-		check("ChebyshevT({0,1,2,3,4}, x)", "{1,x,-1+2*x^2,-3*x+4*x^3,1-8*x^2+8*x^4}");
-		check("ChebyshevT({0,-1,-2,-3,-4}, x)", "{1,x,-1+2*x^2,-3*x+4*x^3,1-8*x^2+8*x^4}");
-		check("ChebyshevT(10, x)", "-1+50*x^2-400*x^4+1120*x^6-1280*x^8+512*x^10");
+		check("ChebyshevT(n,0)", //
+				"Cos(1/2*n*Pi)");
+		check("ChebyshevT({0,1,2,3,4}, x)", //
+				"{1,x,-1+2*x^2,-3*x+4*x^3,1-8*x^2+8*x^4}");
+		check("ChebyshevT({0,-1,-2,-3,-4}, x)", //
+				"{1,x,-1+2*x^2,-3*x+4*x^3,1-8*x^2+8*x^4}");
+		check("ChebyshevT(10, x)", //
+				"-1+50*x^2-400*x^4+1120*x^6-1280*x^8+512*x^10");
 	}
 
 	public void testChebyshevU() {
@@ -1586,23 +1617,34 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testChessboardDistance() {
-		check("ChessboardDistance({-1, -1}, {1, 1})", "2");
+		check("ChessboardDistance({-1, -1}, {1, 1})", //
+				"2");
 	}
 
 	public void testChineseRemainder() {
-		check("ChineseRemainder({1,-15}, {284407855036305,47})", "8532235651089151");
-		check("ChineseRemainder({-2,-17}, {284407855036305,47})", "9669867071234368");
-		check("ChineseRemainder({2,17}, {284407855036305,47})", "3697302115471967");
-		check("ChineseRemainder({2123, 7213},{11,13})", "11");
+		check("ChineseRemainder({1,-15}, {284407855036305,47})", //
+				"8532235651089151");
+		check("ChineseRemainder({-2,-17}, {284407855036305,47})", //
+				"9669867071234368");
+		check("ChineseRemainder({2,17}, {284407855036305,47})", //
+				"3697302115471967");
+		check("ChineseRemainder({2123, 7213},{11,13})", //
+				"11");
 		// wikipedia example
-		check("ChineseRemainder({0,3,4},{3,4,5})", "39");
+		check("ChineseRemainder({0,3,4},{3,4,5})", //
+				"39");
 
-		check("ChineseRemainder({23},{17})", "6");
-		check("ChineseRemainder({91},{25})", "16");
-		check("ChineseRemainder({913},{25})", "13");
-		check("ChineseRemainder({3,4},{4,5})", "19");
+		check("ChineseRemainder({23},{17})", //
+				"6");
+		check("ChineseRemainder({91},{25})", //
+				"16");
+		check("ChineseRemainder({913},{25})", //
+				"13");
+		check("ChineseRemainder({3,4},{4,5})", //
+				"19");
 
-		check("ChineseRemainder({1, 2}, {6, 10})", "ChineseRemainder({1,2},{6,10})");
+		check("ChineseRemainder({1, 2}, {6, 10})", //
+				"ChineseRemainder({1,2},{6,10})");
 	}
 
 	public void testCholeskyDecomposition() {
@@ -1615,61 +1657,94 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testChop() {
-		check("Chop(0.00000000001)", "0");
+		check("Chop(0.00000000001)", //
+				"0");
 	}
 
 	public void testCirclePoints() {
 		// check("CirclePoints(3)", "{{Sqrt(3)/2,-1/2},{0,1},{-Sqrt(3)/2,-1/2}}");
-		check("CirclePoints(2)", "{{1,0},{-1,0}}");
+		check("CirclePoints(2)", //
+				"{{1,0},{-1,0}}");
 
-		check("CirclePoints(4)",
+		check("CirclePoints(4)", //
 				"{{1/Sqrt(2),-1/Sqrt(2)},{1/Sqrt(2),1/Sqrt(2)},{-1/Sqrt(2),1/Sqrt(2)},{-1/Sqrt(2),\n" + "-1/Sqrt(2)}}");
 		// check("CirclePoints(10)", "");
 	}
 
 	public void testClear() {
-		check("x=100;y=42", "42");
-		check("x", "100");
-		check("y", "42");
-		check("Clear(x,y)", "");
-		check("x", "x");
-		check("y", "y");
+		check("x=100;y=42", //
+				"42");
+		check("x", //
+				"100");
+		check("y", //
+				"42");
+		check("Clear(x,y)", //
+				"");
+		check("x", //
+				"x");
+		check("y", //
+				"y");
 	}
 
 	public void testClearAll() {
-		check("x=100;y=42", "42");
-		check("x", "100");
-		check("y", "42");
-		check("ClearAll(x,y)", "");
-		check("x", "x");
-		check("y", "y");
+		check("x=100;y=42", //
+				"42");
+		check("x", //
+				"100");
+		check("y", //
+				"42");
+		check("ClearAll(x,y)", //
+				"");
+		check("x", //
+				"x");
+		check("y", //
+				"y");
 	}
 
 	public void testClearAttributes() {
-		check("SetAttributes(f, {Orderless, Flat})", "");
-		check("Attributes(f)", "{Flat,Orderless}");
-		check("ClearAttributes(f, Flat)", "");
-		check("Attributes(f)", "{Orderless}");
-		check("ClearAttributes(f, Flat)", "");
-		check("Attributes(f)", "{Orderless}");
+		check("SetAttributes(f, {Orderless, Flat})", //
+				"");
+		check("Attributes(f)", //
+				"{Flat,Orderless}");
+		check("ClearAttributes(f, Flat)", //
+				"");
+		check("Attributes(f)", //
+				"{Orderless}");
+		check("ClearAttributes(f, Flat)", //
+				"");
+		check("Attributes(f)", //
+				"{Orderless}");
 	}
 
 	public void testClip() {
-		check("Clip(Tan(E),{-1/2,1/2})", "Tan(E)");
-		check("Clip(Tan(2*E),{-1/2,1/2})", "-1/2");
-		check("Clip(Tan(-2*E),{-1/2,1/2})", "1/2");
+		check("Clip(Tan(E),{-1/2,1/2})", //
+				"Tan(E)");
+		check("Clip(Tan(2*E),{-1/2,1/2})", //
+				"-1/2");
+		check("Clip(Tan(-2*E),{-1/2,1/2})", //
+				"1/2");
 
-		check("Clip(Tan(E), {-1/2,1/2}, {a,b})", "Tan(E)");
-		check("Clip(Tan(2*E), {-1/2,1/2}, {a,b})", "a");
-		check("Clip(Tan(-2*E), {-1/2,1/2}, {a,b})", "b");
+		check("Clip(Tan(E), {-1/2,1/2}, {a,b})", //
+				"Tan(E)");
+		check("Clip(Tan(2*E), {-1/2,1/2}, {a,b})", //
+				"a");
+		check("Clip(Tan(-2*E), {-1/2,1/2}, {a,b})", //
+				"b");
 
-		check("Clip(x)", "Clip(x)");
-		check("Clip(1)", "1");
-		check("Clip(-1)", "-1");
-		check("Clip(Sin(Pi/7))", "Sin(Pi/7)");
-		check("Clip(Tan(E))", "Tan(E)");
-		check("Clip(Tan(2*E))", "-1");
-		check("Clip(Tan(-2*E))", "1");
+		check("Clip(x)", //
+				"Clip(x)");
+		check("Clip(1)", //
+				"1");
+		check("Clip(-1)", //
+				"-1");
+		check("Clip(Sin(Pi/7))", //
+				"Sin(Pi/7)");
+		check("Clip(Tan(E))", //
+				"Tan(E)");
+		check("Clip(Tan(2*E))", //
+				"-1");
+		check("Clip(Tan(-2*E))", //
+				"1");
 
 	}
 
@@ -1759,51 +1834,86 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Part(coeff, 6,3,1)", //
 				"84*c^5");
 		// check("Apply(Plus,((Coefficient(x*(b+a),x,#1)*x^#1)&))", "");
-		check("Coefficient(x*y,y,1)", "x");
-		check("Coefficient(Sin(x*y),y,1)", "0");
-		check("Coefficient(x*y,y,Exponent(x*y,y))", "x");
+		check("Coefficient(x*y,y,1)", //
+				"x");
+		check("Coefficient(Sin(x*y),y,1)", //
+				"0");
+		check("Coefficient(x*y,y,Exponent(x*y,y))", //
+				"x");
 
-		check("Coefficient(Sin(a)^3*#1 + b*y + c, #1)", "Sin(a)^3");
-		check("Coefficient((#1 + 2)^2 + (#1 + 3)^3, #1, 0)", "31");
-		check("Coefficient(42*#1^2+y^3*#1^2+(#1 + 2)^2*(#1 + 2)^2,#1,2)", "66+y^3");
-		check("Coefficient(#1,#1,1)", "1");
-		check("Coefficient(#1^2,#1,2)", "1");
+		check("Coefficient(Sin(a)^3*#1 + b*y + c, #1)", //
+				"Sin(a)^3");
+		check("Coefficient((#1 + 2)^2 + (#1 + 3)^3, #1, 0)", //
+				"31");
+		check("Coefficient(42*#1^2+y^3*#1^2+(#1 + 2)^2*(#1 + 2)^2,#1,2)", //
+				"66+y^3");
+		check("Coefficient(#1,#1,1)", //
+				"1");
+		check("Coefficient(#1^2,#1,2)", //
+				"1");
 
-		check("Coefficient(Null,x,0)", "");
-		check("Coefficient(Null,x)", "0");
+		check("Coefficient(Null,x,0)", //
+				"");
+		check("Coefficient(Null,x)", //
+				"0");
 
-		check("Coefficient(Sin(x^2),x^2)", "0");
+		check("Coefficient(Sin(x^2),x^2)", //
+				"0");
 
-		check("Coefficient(Sin(x^2)^2,Sin(x^2),2)", "1");
-		check("Coefficient(2*Sin(x^2)^3,Sin(x^2),3)", "2");
-		check("Coefficient(f(x)+2*Sin(x^2)^3,Sin(x^2),3)", "2");
-		check("Coefficient(f(x^2)+2*f(x^2)^3,f(x^2),3)", "2");
+		check("Coefficient(Sin(x^2)^2,Sin(x^2),2)", //
+				"1");
+		check("Coefficient(2*Sin(x^2)^3,Sin(x^2),3)", //
+				"2");
+		check("Coefficient(f(x)+2*Sin(x^2)^3,Sin(x^2),3)", //
+				"2");
+		check("Coefficient(f(x^2)+2*f(x^2)^3,f(x^2),3)", //
+				"2");
 		check("ExpandAll((x + y)*(x + 2*y)*(3*x + 4*y + 5))", //
 				"5*x^2+3*x^3+15*x*y+13*x^2*y+10*y^2+18*x*y^2+8*y^3");
-		check("Coefficient(Sin(x^2),Sin(x^2))", "1");
-		check("Coefficient(x*(b+a),x,1)*x^1", "(a+b)*x");
-		check("Coefficient((x + 1)^3, x, 2)", "3");
-		check("Coefficient(a*x + b*y + c, x)", "a");
-		check("Coefficient(Sin(a)^3*x + b*y + c, x)", "Sin(a)^3");
-		check("Coefficient(Sin(a*x)^3*x + b*y + c, x)", "Sin(a*x)^3");
-		check("Coefficient((x + 2)^2 + (x + 3)^3, x, 0)", "31");
-		check("Coefficient(v,x,1)", "0");
-		check("Coefficient(42,x,0)", "42");
-		check("Coefficient(42*a,x,0)", "42*a");
-		check("Coefficient(x,x,1)", "1");
-		check("Coefficient(x^2,x,2)", "1");
+		check("Coefficient(Sin(x^2),Sin(x^2))", //
+				"1");
+		check("Coefficient(x*(b+a),x,1)*x^1", //
+				"(a+b)*x");
+		check("Coefficient((x + 1)^3, x, 2)", //
+				"3");
+		check("Coefficient(a*x + b*y + c, x)", //
+				"a");
+		check("Coefficient(Sin(a)^3*x + b*y + c, x)", //
+				"Sin(a)^3");
+		check("Coefficient(Sin(a*x)^3*x + b*y + c, x)", //
+				"Sin(a*x)^3");
+		check("Coefficient((x + 2)^2 + (x + 3)^3, x, 0)", //
+				"31");
+		check("Coefficient(v,x,1)", //
+				"0");
+		check("Coefficient(42,x,0)", //
+				"42");
+		check("Coefficient(42*a,x,0)", //
+				"42*a");
+		check("Coefficient(x,x,1)", //
+				"1");
+		check("Coefficient(x^2,x,2)", //
+				"1");
 		check("Coefficient(42*x^2+y^3*x^2+(x + 2)^2*(x + 2)^2,x,2)", //
 				"66+y^3");
 		check("Coefficient(2*x*a,x,1)", //
 				"2*a");
-		check("Coefficient(2*x*a,x,2)", "0");
-		check("Coefficient(2*x*a,x,3)", "0");
-		check("Coefficient(2*x*a,x,4)", "0");
-		check("Coefficient(2*x^2*a+x,x,1)", "1");
-		check("Coefficient(2*x^2*a,x,2)", "2*a");
-		check("Coefficient(2*x^3*a,x,3)", "2*a");
-		check("Coefficient(2*x^4*a,x,4)", "2*a");
-		check("Coefficient(0,x,0)", "0");
+		check("Coefficient(2*x*a,x,2)", //
+				"0");
+		check("Coefficient(2*x*a,x,3)", //
+				"0");
+		check("Coefficient(2*x*a,x,4)", //
+				"0");
+		check("Coefficient(2*x^2*a+x,x,1)", //
+				"1");
+		check("Coefficient(2*x^2*a,x,2)", //
+				"2*a");
+		check("Coefficient(2*x^3*a,x,3)", //
+				"2*a");
+		check("Coefficient(2*x^4*a,x,4)", //
+				"2*a");
+		check("Coefficient(0,x,0)", //
+				"0");
 
 		// allow multinomials
 		check("ExpandAll((x + y)^4)", //
@@ -1815,11 +1925,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Coefficient((x + y)^4,  y,4)", //
 				"1");
 
-		check("Expand((x + y)*(x + 2*y)*(3*x + 4*y + 5))", "5*x^2+3*x^3+15*x*y+13*x^2*y+10*y^2+18*x*y^2+8*y^3");
-		check("ExpandAll((x + y)*(x + 2*y)*(3*x + 4*y + 5))", "5*x^2+3*x^3+15*x*y+13*x^2*y+10*y^2+18*x*y^2+8*y^3");
-		check("Coefficient((x + y)*(x + 2*y)*(3*x + 4*y + 5), x^2*y)", "13");
-		check("Coefficient((x + y)*(x + 2*y)*(3*x + 4*y + 5), x*y^2)", "18");
-		check("Coefficient((x + y)*(x + 2*y)*(3*x + 4*y + 5), x*y)", "15");
+		check("Expand((x + y)*(x + 2*y)*(3*x + 4*y + 5))", //
+				"5*x^2+3*x^3+15*x*y+13*x^2*y+10*y^2+18*x*y^2+8*y^3");
+		check("ExpandAll((x + y)*(x + 2*y)*(3*x + 4*y + 5))", //
+				"5*x^2+3*x^3+15*x*y+13*x^2*y+10*y^2+18*x*y^2+8*y^3");
+		check("Coefficient((x + y)*(x + 2*y)*(3*x + 4*y + 5), x^2*y)", //
+				"13");
+		check("Coefficient((x + y)*(x + 2*y)*(3*x + 4*y + 5), x*y^2)", //
+				"18");
+		check("Coefficient((x + y)*(x + 2*y)*(3*x + 4*y + 5), x*y)", //
+				"15");
 		check("Coefficient((x + y)*(x + 2*y)*(3*x + 4*y + 5), y^3)", //
 				"8");
 
