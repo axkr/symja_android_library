@@ -1062,6 +1062,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"6");
 		check("f(3)", //
 				"f(3)");
+
+		// Rubi rules use Block variable names in "sub-rules":
+		check("Integrate(E^(E^x + x), x)", //
+				"E^E^x");
 	}
 
 	public void testBinCounts() {
@@ -2236,7 +2240,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{-2}");
 		check("(10+(2*Sqrt(10)))/(Sqrt(5)+Sqrt(2))+8/(1-Sqrt(5)) // N", //
 				"-2.0");
-		
+
 		check("ContinuedFraction(E,100)", //
 				"{2,1,2,1,1,4,1,1,6,1,1,8,1,1,10,1,1,12,1,1,11,3,2,1,3,1,73,6,1,1,1,1,1,2,31,1,1,\n"
 						+ "1,2,1,1,2,1,2,15,9,1,3,1,4,2,1,2,1,2,5,5659,1,11,1,1,2,1,1,198,15,5,2,1,1,1,1,2,\n"

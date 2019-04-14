@@ -4,7 +4,6 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -46,6 +45,7 @@ import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.parser.ExprParserFactory;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
+import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.parser.client.math.MathException;
 
@@ -894,24 +894,22 @@ public class EvalEngine implements Serializable {
 	}
 
 	public IExpr evalBlock(final IExpr expr, final IAST localVariablesList) {
-		java.util.IdentityHashMap<ISymbol, ISymbol> blockVariables = new IdentityHashMap<ISymbol, ISymbol>();
+		java.util.IdentityHashMap<ISymbol, IExpr> blockVariables = //
+				new IdentityHashMap<ISymbol, IExpr>();
+		java.util.IdentityHashMap<ISymbol, RulesData> blockVariablesRulesData = //
+				new IdentityHashMap<ISymbol, RulesData>();
 		IExpr result = F.NIL;
 		try {
-			Programming.rememberBlockVariables(localVariablesList, "", blockVariables, this);
-			result = expr.accept(new ModuleReplaceAll(blockVariables, this, ""));
-			if (result.isPresent()) {
-				result = evaluate(result);
-			} else {
-				result = evaluate(expr);
-			}
+			Programming.rememberBlockVariables(localVariablesList, blockVariables, blockVariablesRulesData, this);
+			result = evaluate(expr);
 		} finally {
 			if (blockVariables.size() > 0) {
 				// reset local variables to global ones
-				java.util.IdentityHashMap<ISymbol, IExpr> globalVariables = new IdentityHashMap<ISymbol, IExpr>();
-				for (Map.Entry<ISymbol, ISymbol> entry : blockVariables.entrySet()) {
-					globalVariables.put(entry.getValue(), entry.getKey());
+				for (Map.Entry<ISymbol, IExpr> entry : blockVariables.entrySet()) {
+					ISymbol symbol = entry.getKey();
+					symbol.assign(entry.getValue());
+					symbol.setRulesData(blockVariablesRulesData.get(symbol));
 				}
-				result = F.subst(result, globalVariables);
 			}
 		}
 		return result;
