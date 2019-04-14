@@ -420,12 +420,12 @@ public class SeriesFunctions {
 			}
 			if (!denominator.isNumber() || denominator.isZero()) {
 				ISymbol x = data.getSymbol();
-				denValue = engine.evalBlock(denominator, x, limitValue, true);
+				denValue = engine.evalModuleDummySymbol(denominator, x, limitValue, true);
 				if (denValue.equals(F.Indeterminate)) {
 					return F.NIL;
 				} else if (denValue.isZero() || denValue.isDirectedInfinity() || denValue.isComplexInfinity()
 						|| denValue.isIndeterminate()) {
-					numValue = engine.evalBlock(numerator, x, limitValue, true);
+					numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
 					if (numValue.isZero() || numValue.isDirectedInfinity() || numValue.isComplexInfinity()
 							|| numValue.isIndeterminate()) {
 						return lHospitalesRule(numerator, denominator, data);

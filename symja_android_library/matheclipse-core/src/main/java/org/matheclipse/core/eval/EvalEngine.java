@@ -894,21 +894,29 @@ public class EvalEngine implements Serializable {
 	}
 
 	public IExpr evalBlock(final IExpr expr, final IAST localVariablesList) {
-		java.util.IdentityHashMap<ISymbol, IExpr> blockVariables = //
-				new IdentityHashMap<ISymbol, IExpr>();
-		java.util.IdentityHashMap<ISymbol, RulesData> blockVariablesRulesData = //
-				new IdentityHashMap<ISymbol, RulesData>();
+		IExpr[] blockVariables = new IExpr[localVariablesList.size()];
+		RulesData[] blockVariablesRulesData = new RulesData[localVariablesList.size()];
 		IExpr result = F.NIL;
 		try {
 			Programming.rememberBlockVariables(localVariablesList, blockVariables, blockVariablesRulesData, this);
 			result = evaluate(expr);
 		} finally {
-			if (blockVariables.size() > 0) {
+			if (localVariablesList.size() > 0) {
 				// reset local variables to global ones
-				for (Map.Entry<ISymbol, IExpr> entry : blockVariables.entrySet()) {
-					ISymbol symbol = entry.getKey();
-					symbol.assign(entry.getValue());
-					symbol.setRulesData(blockVariablesRulesData.get(symbol));
+				ISymbol variableSymbol;
+				for (int i = 1; i < localVariablesList.size(); i++) {
+					if (localVariablesList.get(i).isSymbol()) {
+						variableSymbol = (ISymbol) localVariablesList.get(i);
+						variableSymbol.assign(blockVariables[i]);
+						variableSymbol.setRulesData(blockVariablesRulesData[i]);
+					} else if (localVariablesList.get(i).isAST(F.Set, 3)) {
+						final IAST setFun = (IAST) localVariablesList.get(i);
+						if (setFun.arg1().isSymbol()) {
+							variableSymbol = (ISymbol) setFun.arg1();
+							variableSymbol.assign(blockVariables[i]);
+							variableSymbol.setRulesData(blockVariablesRulesData[i]);
+						}
+					}
 				}
 			}
 		}
@@ -916,7 +924,7 @@ public class EvalEngine implements Serializable {
 	}
 
 	/**
-	 * Evaluate an expression for a local variable.
+	 * Evaluate an expression for a local &quot;dummy&quot; variable.
 	 * 
 	 * 
 	 * @param expr
@@ -928,7 +936,7 @@ public class EvalEngine implements Serializable {
 	 * @param quiet
 	 *            if <code>true</code> evaluate in quiet mode and suppress evaluation messages
 	 */
-	public IExpr evalBlock(IExpr expr, ISymbol symbol, IExpr localValue, boolean quiet) {
+	public IExpr evalModuleDummySymbol(IExpr expr, ISymbol symbol, IExpr localValue, boolean quiet) {
 		boolean quietMode = isQuietMode();
 		setQuietMode(quiet);
 		java.util.IdentityHashMap<ISymbol, ISymbol> blockVariables = new IdentityHashMap<ISymbol, ISymbol>();

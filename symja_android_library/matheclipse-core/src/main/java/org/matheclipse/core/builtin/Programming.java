@@ -2721,14 +2721,27 @@ public final class Programming {
 	 * @param engine
 	 *            the evaluation engine
 	 */
-	public static void rememberBlockVariables(IAST variablesList, final java.util.Map<ISymbol, IExpr> assignedValues,
-			final java.util.Map<ISymbol, RulesData> assignedRules, final EvalEngine engine) {
+	public static void rememberBlockVariables(IAST variablesList, final IExpr[] assignedValues,
+			final RulesData[] assignedRules, final EvalEngine engine) {
 		ISymbol variableSymbol;
 		for (int i = 1; i < variablesList.size(); i++) {
 			if (variablesList.get(i).isSymbol()) {
 				variableSymbol = (ISymbol) variablesList.get(i);
-				assignedValues.put(variableSymbol, variableSymbol.assignedValue());
-				assignedRules.put(variableSymbol, variableSymbol.getRulesData());
+				assignedValues[i] = variableSymbol.assignedValue();
+				assignedRules[i] = variableSymbol.getRulesData();
+			} else if (variablesList.get(i).isAST(F.Set, 3)) {
+				final IAST setFun = (IAST) variablesList.get(i);
+				if (setFun.arg1().isSymbol()) {
+					variableSymbol = (ISymbol) setFun.arg1();
+					assignedValues[i] = variableSymbol.assignedValue();
+					assignedRules[i] = variableSymbol.getRulesData();
+				}
+			}
+		}
+
+		for (int i = 1; i < variablesList.size(); i++) {
+			if (variablesList.get(i).isSymbol()) {
+				variableSymbol = (ISymbol) variablesList.get(i);
 				variableSymbol.assign(null);
 				variableSymbol.setRulesData(null);
 			} else {
@@ -2736,8 +2749,6 @@ public final class Programming {
 					final IAST setFun = (IAST) variablesList.get(i);
 					if (setFun.arg1().isSymbol()) {
 						variableSymbol = (ISymbol) setFun.arg1();
-						assignedValues.put(variableSymbol, variableSymbol.assignedValue());
-						assignedRules.put(variableSymbol, variableSymbol.getRulesData());
 						IExpr temp = engine.evaluate(setFun.arg2());
 						variableSymbol.assign(temp);
 						variableSymbol.setRulesData(null);
