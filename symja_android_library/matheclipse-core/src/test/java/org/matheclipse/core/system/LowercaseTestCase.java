@@ -2073,9 +2073,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCommonest() {
-		check("Commonest({b, a, c, 2, a, b, 1, 2}, 4)", "{b,a,2,c}");
-		check("Commonest({b, a, c, 2, a, b, 1, 2})", "{b,a,2}");
-		check("Commonest({1, 2, 2, 3, 3, 3, 4})", "{3}");
+		check("Commonest({b, a, c, 2, a, b, 1, 2}, 4)", //
+				"{b,a,2,c}");
+		check("Commonest({b, a, c, 2, a, b, 1, 2})", //
+				"{b,a,2}");
+		check("Commonest({1, 2, 2, 3, 3, 3, 4})", //
+				"{3}");
 	}
 
 	public void testComplement() {
@@ -15146,55 +15149,92 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testXor() {
-		check("Xor(False, True)", "True");
-		check("Xor(True, True)", "False");
-		check("Xor(a, False, b)", "Xor(a,b)");
-		check("Xor(a, b)", "Xor(a,b)");
+		check("Xor(False, True)", //
+				"True");
+		check("Xor(True, True)", //
+				"False");
+		check("Xor(a, False, b)", //
+				"Xor(a,b)");
+		check("Xor(a, b)", //
+				"Xor(a,b)");
 
-		check("Xor()", "False");
-		check("Xor(False)", "False");
-		check("Xor(True)", "True");
-		check("Xor(f(x))", "f(x)");
-		check("Xor(a,a)", "False");
-		check("Xor(a,a,a,b)", "Xor(a,b)");
-		check("Xor(a,c,a,b)", "Xor(b,c)");
-		check("Xor(True, False, False)", "True");
-		check("Xor(True, True, True)", "True");
-		check("Xor(True, True, True, True)", "False");
-		check("Xor(False, False, False, False)", "False");
-		check("Xor(True, False, True)", "False");
+		check("Xor()", //
+				"False");
+		check("Xor(False)", //
+				"False");
+		check("Xor(True)", //
+				"True");
+		check("Xor(f(x))", //
+				"f(x)");
+		check("Xor(a,a)", //
+				"False");
+		check("Xor(a,a,a,b)", //
+				"Xor(a,b)");
+		check("Xor(a,c,a,b)", //
+				"Xor(b,c)");
+		check("Xor(True, False, False)", //
+				"True");
+		check("Xor(True, True, True)", //
+				"True");
+		check("Xor(True, True, True, True)", //
+				"False");
+		check("Xor(False, False, False, False)", //
+				"False");
+		check("Xor(True, False, True)", //
+				"False");
 	}
 
 	public void testYuleDissimilarity() {
-		check("YuleDissimilarity({1, 0, 1, 1, 0}, {1, 1, 0, 1, 1})", "2");
-		check("YuleDissimilarity({True, False, True}, {True, True, False})", "2");
-		check("YuleDissimilarity({0, 0, 0, 0}, {0, 0, 0, 0})", "0");
-		check("YuleDissimilarity({0, 1, 0, 1}, {1, 0, 1, 0})", "2");
+		check("YuleDissimilarity({1, 0, 1, 1, 0}, {1, 1, 0, 1, 1})", //
+				"2");
+		check("YuleDissimilarity({True, False, True}, {True, True, False})", //
+				"2");
+		check("YuleDissimilarity({0, 0, 0, 0}, {0, 0, 0, 0})", //
+				"0");
+		check("YuleDissimilarity({0, 1, 0, 1}, {1, 0, 1, 0})", //
+				"2");
 	}
 
 	public void testZeta() {
-		check("Zeta(-3.0)", "0.00833333");
-		check("Zeta(4.0)", "1.08232");
-		check("Zeta(1.0+I)", "0.582158+I*(-0.926849)");
-		check("Zeta(-3.0+I*1.0^(-100))", "0.0143825+I*0.0103497");
+		check("Zeta(-3.0)", //
+				"0.00833333");
+		check("Zeta(4.0)", //
+				"1.08232");
+		check("Zeta(1.0+I)", //
+				"0.582158+I*(-0.926849)");
+		check("Zeta(-3.0+I*1.0^(-100))", //
+				"0.0143825+I*0.0103497");
 
-		check("Zeta(-1)", "-1/12");
+		check("Zeta(-1)", //
+				"-1/12");
 		check("Zeta(2)", //
 				"Pi^2/6");
 		// TODO add implementation
 		// check("Zeta(-2.5 + I)", "0.0235936 + 0.0014078*I");
-		check("Zeta(s, 0)", "Zeta(s)");
-		check("Zeta(s, 1/2)", "(-1+s^2)*Zeta(s)");
-		check("Zeta(s, -1)", "1+Zeta(s)");
-		check("Zeta(s, 2)", "-1+Zeta(s)");
-		check("Zeta(4, -12)", "638942263173398977/590436101122560000+Pi^4/90");
-		check("Zeta(11, -12)", "Zeta(11,-12)");
-		check("Zeta(-5, -12)", "158938415/252");
-		check("Zeta(6)", "Pi^6/945");
-		check("Zeta(-11)", "691/32760");
-		check("Zeta(-42)", "0");
-		check("Zeta(0)", "-1/2");
+		check("Zeta(s, 0)", //
+				"Zeta(s)");
+		check("Zeta(s, 1/2)", //
+				"(-1+s^2)*Zeta(s)");
+		check("Zeta(s, -1)", //
+				"1+Zeta(s)");
+		check("Zeta(s, 2)", //
+				"-1+Zeta(s)");
+		check("Zeta(4, -12)", //
+				"638942263173398977/590436101122560000+Pi^4/90");
+		check("Zeta(11, -12)", //
+				"Zeta(11,-12)");
+		check("Zeta(-5, -12)", //
+				"158938415/252");
+		check("Zeta(6)", //
+				"Pi^6/945");
+		check("Zeta(-11)", //
+				"691/32760");
+		check("Zeta(-42)", //
+				"0");
+		check("Zeta(0)", //
+				"-1/2");
 
-		check("Zeta(Infinity)", "1");
+		check("Zeta(Infinity)", //
+				"1");
 	}
 }
