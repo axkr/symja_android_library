@@ -2,6 +2,7 @@
  Log(1)=0, 
  Log(E)=1, 
  Log(E^(x_RealNumberQ)):=x, 
+ Log(E^(x_Complex)):=x + 2*I*Pi*Floor((Pi-Im(x)) / (2*Pi)), 
  Log(E^(I))=I, 
  Log(E^(-I))=(-I),
  Log(0.0)=Indeterminate,

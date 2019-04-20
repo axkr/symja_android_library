@@ -24,7 +24,7 @@ public abstract class AbstractTrigArg1 extends AbstractArg1 {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
-		return evaluateArg1(ast.arg1());
+		return evaluateArg1(ast.arg1(), engine);
 	}
 
 	@Override
@@ -43,7 +43,7 @@ public abstract class AbstractTrigArg1 extends AbstractArg1 {
 			}
 			return e1ComplexArg(((ComplexNum) arg1).complexValue());
 		}
-		return evaluateArg1(arg1);
+		return evaluateArg1(arg1, engine);
 	}
 
 	@Override
@@ -56,7 +56,7 @@ public abstract class AbstractTrigArg1 extends AbstractArg1 {
 		return F.NIL;
 	}
 
-	public IExpr evaluateArg1(final IExpr arg1) {
+	public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 		return F.NIL;
 	}
 }

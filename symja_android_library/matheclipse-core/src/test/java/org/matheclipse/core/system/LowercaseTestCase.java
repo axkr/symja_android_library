@@ -7218,6 +7218,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLog() {
+		check("Log(E^(7+13*I))", //
+				"7+I*13-I*4*Pi");
+		check("Log(E^(27*I))", //
+				"I*27-I*8*Pi");
 		check("Log(10*E) // Simplify", //
 				"1+Log(10)");
 		check("Log(10*E*x*y) // FunctionExpand", //

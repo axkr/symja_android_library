@@ -417,7 +417,7 @@ public final class NumberTheory {
 	private static class CarmichaelLambda extends AbstractTrigArg1 {
 
 		@Override
-		public IExpr evaluateArg1(final IExpr arg1) {
+		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 			if (arg1.isInteger()) {
 				try {
 					return ((IInteger) arg1).charmichaelLambda();
@@ -466,7 +466,7 @@ public final class NumberTheory {
 	private static class CatalanNumber extends AbstractTrigArg1 {
 
 		@Override
-		public IExpr evaluateArg1(final IExpr arg1) {
+		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 			if (arg1.isInteger()) {
 				return catalanNumber((IInteger) arg1);
 			}
@@ -1236,7 +1236,7 @@ public final class NumberTheory {
 	private static class Divisors extends AbstractTrigArg1 {
 
 		@Override
-		public IExpr evaluateArg1(final IExpr arg1) {
+		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 			if (arg1.isInteger()) {
 				IInteger i = (IInteger) arg1;
 				if (i.isNegative()) {
@@ -1366,7 +1366,7 @@ public final class NumberTheory {
 	private static class EulerE extends AbstractTrigArg1 {
 
 		@Override
-		public IExpr evaluateArg1(final IExpr arg1) {
+		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 			if (arg1.isInteger()) {
 				int n = ((IInteger) arg1).toIntDefault(-1);
 				if (n >= 0) {
@@ -1476,7 +1476,7 @@ public final class NumberTheory {
 	private static class EulerPhi extends AbstractTrigArg1 {
 
 		@Override
-		public IExpr evaluateArg1(final IExpr arg1) {
+		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 			if (arg1.isInteger()) {
 				try {
 					return ((IInteger) arg1).eulerPhi();
@@ -1738,7 +1738,7 @@ public final class NumberTheory {
 		 * See <a href="http://en.wikipedia.org/wiki/Factorial">Factorial</a>
 		 */
 		@Override
-		public IExpr evaluateArg1(final IExpr arg1) {
+		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 			if (arg1.isInteger()) {
 				if (arg1.isNegative()) {
 					return F.CComplexInfinity;
@@ -1824,7 +1824,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public IExpr evaluateArg1(final IExpr arg1) {
+		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 			if (arg1.isInteger()) {
 				if (!arg1.isNegative()) {
 					return factorial2((IInteger) arg1);
@@ -1989,7 +1989,7 @@ public final class NumberTheory {
 		 * sequence.</a>
 		 */
 		@Override
-		public IExpr evaluateArg1(final IExpr arg1) {
+		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 			if (arg1.isInteger()) {
 				int n = ((IInteger) arg1).toIntDefault(Integer.MIN_VALUE);
 				if (n > Integer.MIN_VALUE) {
@@ -2366,7 +2366,7 @@ public final class NumberTheory {
 	private static class LucasL extends AbstractTrigArg1 {
 
 		@Override
-		public IExpr evaluateArg1(final IExpr arg1) {
+		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 			if (arg1.isInteger()) {
 				int i = ((IInteger) arg1).toIntDefault(Integer.MIN_VALUE);
 				if (i > Integer.MIN_VALUE) {
@@ -2466,7 +2466,7 @@ public final class NumberTheory {
 	private static class MersennePrimeExponent extends AbstractTrigArg1 {
 
 		@Override
-		public IExpr evaluateArg1(final IExpr arg1) {
+		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 			if (arg1.isInteger() && arg1.isPositive()) {
 				int n = ((IInteger) arg1).toIntDefault(Integer.MIN_VALUE);
 				if (n > 0) {
@@ -2574,7 +2574,7 @@ public final class NumberTheory {
 	private static class MoebiusMu extends AbstractTrigArg1 {
 
 		@Override
-		public IExpr evaluateArg1(final IExpr arg1) {
+		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 			if (arg1.isInteger()) {
 				try {
 					return ((IInteger) arg1).moebiusMu();
@@ -3084,7 +3084,7 @@ public final class NumberTheory {
 	private static class PerfectNumber extends AbstractTrigArg1 {
 
 		@Override
-		public IExpr evaluateArg1(final IExpr arg1) {
+		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 			if (arg1.isInteger() && arg1.isPositive()) {
 				int n = ((IInteger) arg1).toIntDefault(Integer.MIN_VALUE);
 				if (n >= 0) {
@@ -3415,7 +3415,7 @@ public final class NumberTheory {
 		 * Number Theory - Finding Primitive Roots</a>
 		 */
 		@Override
-		public IExpr evaluateArg1(final IExpr arg1) {
+		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 			if (arg1.isInteger()) {
 				try {
 					IInteger[] roots = ((IInteger) arg1).primitiveRootList();
@@ -3814,7 +3814,7 @@ public final class NumberTheory {
 		}
 
 		@Override
-		public IExpr evaluateArg1(final IExpr arg1) {
+		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 			if (arg1.isInteger() && arg1.isPositive()) {
 				try {
 					long n = ((IInteger) arg1).toLong();

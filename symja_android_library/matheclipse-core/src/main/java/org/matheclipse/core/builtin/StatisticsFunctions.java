@@ -2978,7 +2978,7 @@ public class StatisticsFunctions {
 	private final static class Mean extends AbstractTrigArg1 {
 
 		@Override
-		public IExpr evaluateArg1(final IExpr arg1) {
+		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 			try {
 				if (arg1.isRealVector()) {
 					return F.num(StatUtils.mean(arg1.toDoubleVector()));
@@ -3107,7 +3107,7 @@ public class StatisticsFunctions {
 	private final static class Median extends AbstractTrigArg1 {
 
 		@Override
-		public IExpr evaluateArg1(final IExpr arg1) {
+		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 			if (arg1.isRealVector()) {
 				return F.num(StatUtils.percentile(arg1.toDoubleVector(), 50));
 			}

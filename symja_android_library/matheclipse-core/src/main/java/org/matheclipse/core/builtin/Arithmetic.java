@@ -249,7 +249,7 @@ public final class Arithmetic {
 		}
 
 		@Override
-		public IExpr evaluateArg1(final IExpr arg1) {
+		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 			if (arg1.isDirectedInfinity()) {
 				return F.CInfinity;
 			}
@@ -991,11 +991,11 @@ public final class Arithmetic {
 		public IExpr numericEval(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
 			IExpr arg1 = ast.arg1();
-			return evaluateArg1(arg1);
+			return evaluateArg1(arg1, engine);
 		}
 
 		@Override
-		public IExpr evaluateArg1(final IExpr arg1) {
+		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 			IExpr temp = conjugate(arg1);
 			if (temp.isPresent()) {
 				return temp;
