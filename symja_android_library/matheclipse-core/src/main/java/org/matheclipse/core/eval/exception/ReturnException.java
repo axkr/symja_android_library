@@ -22,7 +22,7 @@ public class ReturnException extends FlowControlException {
 	}
 
 	public ReturnException(@Nonnull final IExpr val) {
-		super("Return from a function definition.");
+		super();
 		value = val;
 	}
 

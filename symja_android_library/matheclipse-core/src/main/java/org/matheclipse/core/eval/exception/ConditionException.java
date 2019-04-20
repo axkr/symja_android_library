@@ -11,7 +11,7 @@ public class ConditionException extends FlowControlException {
 	final private IExpr value;
 
 	public ConditionException(final IExpr val) {
-		super("Condition[] exception.");
+		super();
 		value = val;
 	}
 

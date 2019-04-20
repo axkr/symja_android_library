@@ -146,9 +146,9 @@ public interface CscRules {
     // Csc(ArcTan(x_)):=Sqrt(1+x^2)/x
     ISetDelayed(Csc(ArcTan(x_)),
       Times(Power(x,CN1),Sqrt(Plus(C1,Sqr(x))))),
-    // Csc(ArcCot(x_)):=Sqrt(1+1/x^2)*x
+    // Csc(ArcCot(x_)):=Sqrt(1+x^2)
     ISetDelayed(Csc(ArcCot(x_)),
-      Times(Sqrt(Plus(C1,Power(x,CN2))),x)),
+      Sqrt(Plus(C1,Sqr(x)))),
     // Csc(ArcCsc(x_)):=x
     ISetDelayed(Csc(ArcCsc(x_)),
       x),

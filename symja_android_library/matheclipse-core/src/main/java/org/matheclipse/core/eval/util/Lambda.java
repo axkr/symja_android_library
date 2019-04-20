@@ -36,7 +36,7 @@ public class Lambda {
 
 	public static IExpr replaceSlotsOrElse(IExpr expr, final IAST slotsList, IExpr elseExpr) {
 		IExpr temp = expr.accept(new VisitorReplaceSlots(slotsList));
-		return temp.isPresent() ? temp : elseExpr;
+		return temp.orElse(elseExpr);
 	}
 
 	/**
@@ -52,7 +52,7 @@ public class Lambda {
 	public static IExpr replaceArgs(IExpr expr, final IAST exprsList) {
 		return expr.accept(new VisitorReplaceArgs(exprsList));
 	}
- 
+
 	/**
 	 * Append each argument of <code>ast</code> to <code>result</code> by applying the given <code>function</code> to
 	 * each argument.

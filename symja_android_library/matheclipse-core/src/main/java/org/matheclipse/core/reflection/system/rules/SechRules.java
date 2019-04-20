@@ -13,7 +13,7 @@ public interface SechRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 26, 6 };
+  final public static int[] SIZES = { 26, 7 };
 
   final public static IAST RULES = List(
     IInit(Sech, SIZES),
@@ -98,15 +98,18 @@ public interface SechRules {
     // Sech(ArcTanh(x_)):=Sqrt(1-x^2)
     ISetDelayed(Sech(ArcTanh(x_)),
       Sqrt(Subtract(C1,Sqr(x)))),
-    // Sech(ArcCoth(x_)):=Sqrt(1-1/x^2)
+    // Sech(ArcCoth(x_)):=(Sqrt(-1+x)*Sqrt(x+1))/x
     ISetDelayed(Sech(ArcCoth(x_)),
-      Sqrt(Subtract(C1,Power(x,CN2)))),
+      Times(Power(x,CN1),Sqrt(Plus(CN1,x)),Sqrt(Plus(x,C1)))),
     // Sech(ArcSech(x_)):=x
     ISetDelayed(Sech(ArcSech(x_)),
       x),
     // Sech(ArcCsch(x_)):=1/Sqrt(1+1/x^2)
     ISetDelayed(Sech(ArcCsch(x_)),
       Power(Plus(C1,Power(x,CN2)),CN1D2)),
+    // Sech(Log(x_)):=2/(x+1/x)
+    ISetDelayed(Sech(Log(x_)),
+      Times(C2,Power(Plus(x,Power(x,CN1)),CN1))),
     // Sech(Infinity)=0
     ISet(Sech(oo),
       C0),

@@ -29,6 +29,8 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
+import org.matheclipse.core.expression.BuiltInRubi;
+import org.matheclipse.core.expression.BuiltInSymbol;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.ExprRingFactory;
@@ -237,7 +239,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return an IExpr instance with the current expression as head(), and leaves as leaves().
 	 */
 	default IExpr apply(IExpr... leaves) {
-		return F.ast(leaves, head()); 
+		return F.ast(leaves, head());
 	}
 
 	/**
@@ -1364,6 +1366,26 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default boolean isExactNumber() {
 		return this instanceof IRational || this instanceof IComplex;
+	}
+
+	/**
+	 * Check if this expression is an even integer result otherwise return false.
+	 * 
+	 * @return <code>true</code> if this is an even integer result.
+	 */
+	default boolean isEvenResult() {
+		if (isInteger()) {
+			return ((IInteger) this).isEven();
+		}
+		if (isIntegerResult()) {
+			if (isTimes()) {
+				IAST timesAST = (IAST) this;
+				if (timesAST.exists(x -> x.isInteger() && ((IInteger) x).isEven())) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	/**

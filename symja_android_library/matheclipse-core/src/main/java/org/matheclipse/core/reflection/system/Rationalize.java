@@ -165,11 +165,7 @@ public class Rationalize extends AbstractFunctionEvaluator {
 				}
 			}
 			// try to convert into a fractional number
-			IExpr temp = ofNumbers(arg1, epsilon);
-			if (temp.isPresent()) {
-				return temp;
-			}
-			return arg1;
+			return ofNumbers(arg1, epsilon).orElse(arg1); 
 		} catch (Exception e) {
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();

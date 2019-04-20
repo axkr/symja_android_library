@@ -124,7 +124,7 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
 				writer.write('\n');
 			}
 
-			if ((fEvaluationResult.isPresent()) && !fEvaluationResult.equals(F.Null)) {
+			if (fEvaluationResult.isPresent() && !fEvaluationResult.equals(F.Null)) {
 				OutputFormFactory.get(fRelaxedSyntax).convert(writer, fEvaluationResult);
 			}
 			return fEvaluationResult;

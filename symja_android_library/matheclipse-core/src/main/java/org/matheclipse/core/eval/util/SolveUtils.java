@@ -37,7 +37,7 @@ public class SolveUtils {
 				IExpr arg1 = arg.first();
 				IExpr temp = org.matheclipse.core.reflection.system.Rationalize.ofNumbers(arg1);
 				if (temp.isPresent()) {
-					isNumeric[0]=true;
+					isNumeric[0] = true;
 					termsEqualZero.append(temp);
 				} else {
 					termsEqualZero.append(arg1);

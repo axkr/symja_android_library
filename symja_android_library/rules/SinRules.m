@@ -55,7 +55,7 @@ Sin(x_?NumberQ*Pi):=If(x<1, Sin((1-x)*Pi),If(x<2,-Sin((2-x)*Pi), Sin((x-2*Quotie
 Sin(ArcSin(x_)):=x,
 Sin(ArcCos(x_)):=(1-x^2)^(1/2),
 Sin(ArcTan(x_)):=x*(1+x^2)^(-1/2),
-Sin(ArcCot(x_)):=x^(-1)*(1+x^(-2))^(-1/2),
+Sin(ArcCot(x_)):=(1+x^2)^(-1/2),
 Sin(ArcCsc(x_)):=x^(-1),
 Sin(ArcSec(x_)):=(1-x^(-2))^(1/2),
 

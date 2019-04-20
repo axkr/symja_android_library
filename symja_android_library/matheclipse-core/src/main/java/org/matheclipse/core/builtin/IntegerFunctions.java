@@ -801,7 +801,7 @@ public class IntegerFunctions {
 				IExpr arg1 = ast.arg1();
 				ISignedNumber signedNumber = arg1.evalReal();
 				if (signedNumber != null) {
-					return signedNumberIntegerPart(signedNumber);
+					return  signedNumber.integerPart();
 				}
 				if (arg1.isIntegerResult()) {
 					return arg1;
@@ -818,15 +818,7 @@ public class IntegerFunctions {
 				// ISignedNumber#floor() or #ceil() may throw ArithmeticException
 			}
 			return F.NIL;
-		}
-
-		private IExpr signedNumberIntegerPart(ISignedNumber arg1) {
-			if (arg1.isNegative()) {
-				return arg1.ceilFraction();
-			} else {
-				return arg1.floorFraction();
-			}
-		}
+		} 
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {

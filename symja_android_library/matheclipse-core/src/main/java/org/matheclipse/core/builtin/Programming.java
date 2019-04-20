@@ -36,6 +36,7 @@ import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -410,8 +411,23 @@ public final class Programming {
 	}
 
 	/**
-	 * TODO implement &quot;Defer&quot; mode
+	 * <pre>
+	 * <code>Defer(expr)
+	 * </code>
+	 * </pre>
 	 * 
+	 * <blockquote>
+	 * <p>
+	 * <code>Defer</code> doesn't evaluate <code>expr</code> and didn't appear in the output
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Defer(3*2)
+	 * 3*2
+	 * </code>
+	 * </pre>
 	 */
 	private static class Defer extends AbstractCoreFunctionEvaluator {
 		@Override
@@ -1020,6 +1036,45 @@ public final class Programming {
 
 	}
 
+	/**
+	 * <pre>
+	 * <code>List(e1, e2, ..., ei)
+	 * </code>
+	 * </pre>
+	 * <p>
+	 * or
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>{e1, e2, ..., ei}
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * represents a list containing the elements <code>e1...ei</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * 'List' is the head of lists:
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Head({1, 2, 3})
+	 * List
+	 * </code>
+	 * </pre>
+	 * <p>
+	 * Lists can be nested:
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; {{a, b, {c, d}}}
+	 * {{a, b, {c, d}}}
+	 * </code>
+	 * </pre>
+	 */
 	private final static class ListFunction extends AbstractFunctionEvaluator implements ISetEvaluator {
 
 		@Override
@@ -1255,6 +1310,43 @@ public final class Programming {
 
 	}
 
+	/**
+	 * <pre>
+	 * <code>NestWhileList(f, expr, test)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * applies a function <code>f</code> repeatedly on an expression <code>expr</code>, until applying <code>test</code>
+	 * on the result no longer yields <code>True</code>. It returns a list of all intermediate results.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * <code>NestWhileList(f, expr, test, m)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * supplies the last <code>m</code> results to <code>test</code> (default value: <code>1</code>). It returns a list
+	 * of all intermediate results.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * <code>NestWhileList(f, expr, test, All)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * supplies all results gained so far to <code>test</code>. It returns a list of all intermediate results.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 */
 	private static class NestWhileList extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -1836,20 +1928,27 @@ public final class Programming {
 	}
 
 	/**
-	 * The call <code>Quiet( expr )</code> evaluates <code>expr</code> in &quot;quiet&quot; mode (i.e. no warning
-	 * messages are shown during evaluation).
+	 * <pre>
+	 * <code>Quiet(expr)
+	 * </code>
+	 * </pre>
 	 * 
+	 * <blockquote>
+	 * <p>
+	 * evaluates <code>expr</code> in &quot;quiet&quot; mode (i.e. no warning messages are shown during evaluation).
+	 * </p>
+	 * </blockquote>
 	 */
 	private static class Quiet extends AbstractCoreFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST1()) {
-				boolean quietMode = engine.isQuietMode();
+				boolean oldQuietMode = engine.isQuietMode();
 				try {
 					engine.setQuietMode(true);
 					return engine.evaluate(ast.arg1());
 				} finally {
-					engine.setQuietMode(quietMode);
+					engine.setQuietMode(oldQuietMode);
 				}
 			}
 			Validate.checkSize(ast, 2);
@@ -2721,18 +2820,34 @@ public final class Programming {
 	 * @param engine
 	 *            the evaluation engine
 	 */
-	public static void rememberBlockVariables(IAST variablesList, final IExpr[] assignedValues,
-			final RulesData[] assignedRules, final EvalEngine engine) {
+	public static void rememberBlockVariables(IAST variablesList, final ISymbol[] symbolList,
+			final IExpr[] assignedValues, final RulesData[] assignedRules, final EvalEngine engine) {
 		ISymbol variableSymbol;
+		ISymbol substitute;
 		for (int i = 1; i < variablesList.size(); i++) {
+			substitute = null;
 			if (variablesList.get(i).isSymbol()) {
 				variableSymbol = (ISymbol) variablesList.get(i);
+				if (variableSymbol.isBuiltInSymbol()) {
+					substitute = ((IBuiltInSymbol) variableSymbol).mapToGlobal(engine);
+					if (substitute != null) {
+						variableSymbol = substitute;
+					}
+				}
+				symbolList[i] = variableSymbol;
 				assignedValues[i] = variableSymbol.assignedValue();
 				assignedRules[i] = variableSymbol.getRulesData();
 			} else if (variablesList.get(i).isAST(F.Set, 3)) {
 				final IAST setFun = (IAST) variablesList.get(i);
 				if (setFun.arg1().isSymbol()) {
 					variableSymbol = (ISymbol) setFun.arg1();
+					if (variableSymbol.isBuiltInSymbol()) {
+						substitute = ((IBuiltInSymbol) variableSymbol).mapToGlobal(engine);
+						if (substitute != null) {
+							variableSymbol = substitute;
+						}
+					}
+					symbolList[i] = variableSymbol;
 					assignedValues[i] = variableSymbol.assignedValue();
 					assignedRules[i] = variableSymbol.getRulesData();
 				}
@@ -2741,14 +2856,14 @@ public final class Programming {
 
 		for (int i = 1; i < variablesList.size(); i++) {
 			if (variablesList.get(i).isSymbol()) {
-				variableSymbol = (ISymbol) variablesList.get(i);
+				variableSymbol = symbolList[i];
 				variableSymbol.assign(null);
 				variableSymbol.setRulesData(null);
 			} else {
 				if (variablesList.get(i).isAST(F.Set, 3)) {
 					final IAST setFun = (IAST) variablesList.get(i);
 					if (setFun.arg1().isSymbol()) {
-						variableSymbol = (ISymbol) setFun.arg1();
+						variableSymbol = symbolList[i];
 						IExpr temp = engine.evaluate(setFun.arg2());
 						variableSymbol.assign(temp);
 						variableSymbol.setRulesData(null);

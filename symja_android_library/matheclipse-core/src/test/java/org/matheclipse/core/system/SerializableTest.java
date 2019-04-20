@@ -117,6 +117,8 @@ public class SerializableTest extends TestCase {
 	}
 
 	public void testIntegrateDefinition() {
+		// do a dummy evaluation to load integration rules
+		F.Integrate.of(F.x, F.x);
 		RulesData rulesData = F.Integrate.getRulesData();
 		AbstractVisitor visitor = Share.createVisitor();
 		rulesData.accept(visitor);
@@ -132,7 +134,7 @@ public class SerializableTest extends TestCase {
 	}
 
 	public void testASTRealMatrix() {
-		equalsCopy(new ASTRealMatrix(new double[][] {{ 1.0, 2.0, 3.0},{3.3, 4.4, 5.5} }, false));
+		equalsCopy(new ASTRealMatrix(new double[][] { { 1.0, 2.0, 3.0 }, { 3.3, 4.4, 5.5 } }, false));
 
 		// PseudoInverse({{1,2,3},{3,4,5}})
 		EvalEngine engine = EvalEngine.get();

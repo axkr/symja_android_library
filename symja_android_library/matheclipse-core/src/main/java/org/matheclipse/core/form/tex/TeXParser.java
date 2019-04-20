@@ -10,6 +10,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.util.Lambda;
+import org.matheclipse.core.expression.BuiltInDummy;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -166,11 +167,11 @@ public class TeXParser {
 			}
 		}
 	}
-	
+
 	public static void initialize() {
 		Initializer.init();
 	}
-	
+
 	private static String toUnicodeString(final String unicodeInput, final String inputEncoding) {
 		final StringBuilder unicodeStringBuilder = new StringBuilder();
 		String unicodeString = null;
@@ -252,7 +253,8 @@ public class TeXParser {
 							if (position[0] == listSize) {
 								return lhs;
 							}
-						} else if (isNumericFunction || lhs.isBuiltInSymbol() || lhs.isFunction()) {
+						} else if (isNumericFunction || (lhs.isBuiltInSymbol() && !(lhs instanceof BuiltInDummy))
+								|| lhs.isFunction()) {
 							if (lhs.equals(F.Integrate)) {
 								ISymbol test = F.Dummy("test");
 								return integrate(list, position, test, test);

@@ -341,7 +341,7 @@ public class PredicateQ {
 
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
-			return arg1.isInteger() && ((IInteger) arg1).isEven();
+			return arg1.isEvenResult();
 		}
 
 		@Override

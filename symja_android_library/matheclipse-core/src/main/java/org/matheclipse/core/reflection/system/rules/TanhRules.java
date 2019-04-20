@@ -13,7 +13,7 @@ public interface TanhRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 10, 6 };
+  final public static int[] SIZES = { 10, 7 };
 
   final public static IAST RULES = List(
     IInit(Tanh, SIZES),
@@ -44,21 +44,24 @@ public interface TanhRules {
     // Tanh(ArcSinh(x_)):=x/Sqrt(1+x^2)
     ISetDelayed(Tanh(ArcSinh(x_)),
       Times(x,Power(Plus(C1,Sqr(x)),CN1D2))),
-    // Tanh(ArcCosh(x_)):=((1+x)*Sqrt((-1+x)/(1+x)))/x
+    // Tanh(ArcCosh(x_)):=Sqrt(-1+x)*Sqrt(x+1)/x
     ISetDelayed(Tanh(ArcCosh(x_)),
-      Times(Power(x,CN1),Plus(C1,x),Sqrt(Times(Plus(CN1,x),Power(Plus(C1,x),CN1))))),
+      Times(Sqrt(Plus(CN1,x)),Sqrt(Plus(x,C1)),Power(x,CN1))),
     // Tanh(ArcTanh(x_)):=x
     ISetDelayed(Tanh(ArcTanh(x_)),
       x),
     // Tanh(ArcCoth(x_)):=1/x
     ISetDelayed(Tanh(ArcCoth(x_)),
       Power(x,CN1)),
-    // Tanh(ArcSech(x_)):=Sqrt((1-x)/(1+x))*(1+x)
+    // Tanh(ArcSech(x_)):=x*Sqrt(-1+1/x)*Sqrt(1/x+1)
     ISetDelayed(Tanh(ArcSech(x_)),
-      Times(Sqrt(Times(Subtract(C1,x),Power(Plus(C1,x),CN1))),Plus(C1,x))),
+      Times(x,Sqrt(Plus(CN1,Power(x,CN1))),Sqrt(Plus(Power(x,CN1),C1)))),
     // Tanh(ArcCsch(x_)):=1/(Sqrt(1+1/x^2)*x)
     ISetDelayed(Tanh(ArcCsch(x_)),
       Power(Times(Sqrt(Plus(C1,Power(x,CN2))),x),CN1)),
+    // Tanh(Log(x_)):=(-1+x^2)/(1+x^2)
+    ISetDelayed(Tanh(Log(x_)),
+      Times(Plus(CN1,Sqr(x)),Power(Plus(C1,Sqr(x)),CN1))),
     // Tanh(Infinity)=1
     ISet(Tanh(oo),
       C1),

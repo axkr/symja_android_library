@@ -96,12 +96,7 @@ public class EvalAttributes {
 			IASTAppendable result = F.ast(ast.head(), newSize[0], false);
 			ast.forEach(expr -> {
 				if (expr.isAST(head)) {
-					IAST temp = flatten(head, (IAST) expr);
-					if (temp.isPresent()) {
-						result.appendArgs(temp);
-					} else {
-						result.appendArgs((IAST) expr);
-					}
+					result.appendArgs(flatten(head, (IAST) expr).orElse((IAST) expr));
 				} else {
 					result.append(expr);
 				}
@@ -144,12 +139,7 @@ public class EvalAttributes {
 			for (int i = 1; i < astSize; i++) {
 				expr = ast.get(i);
 				if (expr.isAST() && containsPosition(i, positions)) {
-					IAST temp = flattenAt(head, (IAST) expr, positions);
-					if (temp.isPresent()) {
-						result.appendArgs(temp);
-					} else {
-						result.appendArgs((IAST) expr);
-					}
+					result.appendArgs(flattenAt(head, (IAST) expr, positions).orElse((IAST) expr));
 				} else {
 					result.append(expr);
 				}

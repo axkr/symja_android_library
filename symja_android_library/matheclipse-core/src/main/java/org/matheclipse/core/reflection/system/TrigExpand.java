@@ -136,11 +136,14 @@ public class TrigExpand extends AbstractEvaluator {
 							// return expandCoshPlus(F.constantArray(F.Plus, theta, nInt), 1);
 							return expandCoshPlus(theta.constantArray(F.Plus, 0, nInt), 1);
 						} else if (ast.isAST(F.Csch, 2)) {
-							int nInt = n.toInt();
+							// Csch(theta)/ChebyshevU(n - 1, Cosh(theta))
+							return F.TrigExpand(F.Times(F.Csch(theta),
+									F.Power(F.ChebyshevU(F.Subtract(n, F.C1), F.Cosh(theta)), F.CN1)));
+							// int nInt = n.toInt();
 							// I^(n - 1)*2^(1 - n)* Product(Csch(theta + (I*k*Pi)/n], {k, 0, n - 1})
-							return F.Times(F.Power(F.C2, F.Plus(F.C1, F.Negate(n))), F.Power(F.CI, F.Plus(F.CN1, n)),
-									F.Product(F.Csch(F.Plus(theta, F.Times(F.CI, F.k, F.Power(n, -1), F.Pi))),
-											F.List(F.k, F.C0, F.Plus(F.CN1, n))));
+							// return F.Times(F.Power(F.C2, F.Plus(F.C1, F.Negate(n))), F.Power(F.CI, F.Plus(F.CN1, n)),
+							// F.Product(F.Csch(F.Plus(theta, F.Times(F.CI, F.k, F.Power(n, -1), F.Pi))),
+							// F.List(F.k, F.C0, F.Plus(F.CN1, n))));
 						} else if (ast.isAST(F.Sech, 2)) {
 							int nInt = n.toInt();
 							return expandSechPlus(theta.constantArray(F.Plus, 0, nInt), 1);

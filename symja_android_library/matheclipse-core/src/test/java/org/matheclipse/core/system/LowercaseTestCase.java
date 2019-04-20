@@ -2408,14 +2408,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCos() {
-		// check("Cos(5/8*Pi+2*x)", //
-		// "");
-		// check("Cos(3/4*Pi+2*x)", //
-		// "");
+		check("Refine(Cos(x+k*Pi), Element(k, Integers))", //
+				"(-1)^k*Cos(x)");
+		
+		check("Cos(5/8*Pi+2*x)", //
+				"-Sin(Pi/8+2*x)");
+		check("Cos(3/4*Pi+2*x)", //
+				"-Sin(Pi/4+2*x)");
+		check("Cos(Pi/4 - r/2 - s + x)", //
+				"Sin(Pi/4+r/2+s-x)");
 		check("Cos(I*x)-I*Sin(I*x)", //
 				"Cosh(x)+Sinh(x)");
 		check("Cos(3/4*Pi+x)", //
-				"-Cos(Pi/4-x)");
+				"-Sin(Pi/4+x)"); // -Cos(Pi/4-x)
 		check("Cos(-3/4*Pi+x)", //
 				"-Cos(Pi/4+x)");
 		check("Cos(e - Pi/2 + f*x)", //
@@ -2430,27 +2435,50 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-Sin(e+f*x)");
 		check("Cos(e-1+f*x)", //
 				"Cos(1-e-f*x)");
-		check("Cos(I*a+I*b*x)/b", "Cosh(a+b*x)/b");
-		check("Cos(ArcSin(x))", "Sqrt(1-x^2)");
-		check("Cos(ArcCos(x))", "x");
-		check("Cos(ArcTan(x))", "1/Sqrt(1+x^2)");
-		check("Cos(ArcCot(x))", "1/Sqrt(1+1/x^2)");
-		check("Cos(ArcCsc(x))", "Sqrt(1-1/x^2)");
-		check("Cos(ArcSec(x))", "1/x");
-		check("Cos(0)", "1");
-		check("Cos(3*Pi)", "-1");
-		check("Cos(1.5*Pi)", "0.0");
+		check("Cos(I*a+I*b*x)/b", //
+				"Cosh(a+b*x)/b");
+		check("Cos(ArcSin(x))", //
+				"Sqrt(1-x^2)");
+		check("Cos(ArcCos(x))", //
+				"x");
+		check("Cos(ArcTan(x))", //
+				"1/Sqrt(1+x^2)");
+		check("Cos(ArcCot(x))", //
+				"x/Sqrt(1+x^2)");
+		check("Cos(ArcCsc(x))", //
+				"Sqrt(1-1/x^2)");
+		check("Cos(ArcSec(x))", //
+				"1/x");
+		check("Cos(0)", //
+				"1");
+		check("Cos(3*Pi)", //
+				"-1");
+		check("Cos(1.5*Pi)", //
+				"0.0");
 
-		check("Cos(z+1/2*Pi)", "-Sin(z)");
-		check("Cos(Pi)", "-1");
-		check("Cos(z+Pi)", "-Cos(z)");
-		check("Cos(z+42*Pi)", "Cos(z)");
-		check("Cos(x+y+z+43*Pi)", "-Cos(x+y+z)");
-		check("Cos(z+42*a*Pi)", "Cos(42*a*Pi+z)");
-		check("Cos(Sqrt(x^2))", "Cos(x)");
+		check("Cos(z+1/2*Pi)", //
+				"-Sin(z)");
+		check("Cos(Pi)", //
+				"-1");
+		check("Cos(z+Pi)", //
+				"-Cos(z)");
+		check("Cos(z+42*Pi)", //
+				"Cos(z)");
+		check("Cos(x+y+z+43*Pi)", //
+				"-Cos(x+y+z)");
+		check("Cos(z+42*a*Pi)", //
+				"Cos(42*a*Pi+z)");
+		check("Cos(Sqrt(x^2))", //
+				"Cos(x)");
 	}
 
 	public void testCosh() {
+		check("Refine(Cosh(x+I*k*Pi), Element(k, Integers))", //
+				"(-1)^k*Cosh(x)");
+		check("Refine(Cosh(x-I*k*Pi), Element(k, Integers))", //
+				"(-1)^k*Cosh(x)");
+		check("Refine(Cosh(x+4*I*k*Pi), Element(k, Integers))", //
+				"Cosh(x)");
 		check("Cosh(Pi*I+x)", //
 				"-Cosh(x)");
 		check("Cosh(10*Pi*I+x)", //
@@ -2598,12 +2626,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCsc() {
-		check("Csc(5/7*Pi+x)", //
-				"Csc(2/7*Pi-x)");
-		check("Csc(3/4*Pi+x)", //
-				"Csc(Pi/4-x)");
 		check("Csc(-3/4*Pi+x)", //
 				"-Csc(Pi/4+x)");
+		
+		check("Csc(5/7*Pi+x)", //
+				"Sec(3/14*Pi+x)");
+		check("Csc(3/4*Pi+x)", //
+				"Sec(Pi/4+x)");
+		
 
 		check("Csc(e - Pi/2 + f*x)", //
 				"-Sec(e+f*x)");
@@ -2645,7 +2675,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Csc(ArcTan(x))", //
 				"Sqrt(1+x^2)/x");
 		check("Csc(ArcCot(x))", //
-				"Sqrt(1+1/x^2)*x");
+				"Sqrt(1+x^2)");
 		check("Csc(ArcCsc(x))", //
 				"x");
 		check("Csc(ArcSec(x))", //
@@ -2653,6 +2683,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCsch() {
+		check("Refine(Csch(x+I*k*Pi), Element(k, Integers))", //
+				"(-1)^k*Csch(x)");
+		check("Refine(Csch(x-I*k*Pi), Element(k, Integers))", //
+				"(-1)^k*Csch(x)");
+		check("Refine(Csch(x-42*I*k*Pi), Element(k, Integers))", //
+				"Csch(x)");
 		check("Csch(x)^m*Coth(x)^2", //
 				"Cosh(x)^2*Csch(x)^(2+m)");
 		check("Csch(0)", //
@@ -9980,7 +10016,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "$Aborted");
 		// check("TimeConstrained(1^3^3^3, 10)", //
 		// "1");
-
+		check("(I)^(-1)", //
+				"-I");
+		check("(I)^(-1+k)", //
+				"I^(-1+k)");
 		check("2^(2/3)*(-5+3*Sqrt[3])^(2/3)", //
 				"(2*(-5+3*Sqrt(3)))^(2/3)");
 		check("(-1095912791)^(2/3)", //
@@ -11084,6 +11123,31 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRefine() {
+		check("Refine((-1)^(43*k), Element(k, Integers))", //
+				"(-1)^k");
+		check("Refine((-1)^(42*k), Element(k, Integers))", //
+				"1");
+		check("Refine((-1)^(2+k), Element(k, Integers))", //
+				"(-1)^k");
+		check("Refine((-1)^(43+k), Element(k, Integers))", //
+				"(-1)^(1+k)");
+		check("Refine((-1)^(-43+k), Element(k, Integers))", //
+				"(-1)^(1+k)");
+		check("Refine((-1)^(4*k), Element(k, Integers))", //
+				"1");
+		
+		check("Refine(EvenQ(4*k), Element(k, Integers))", //
+				"True");
+		// for EvenQ result is undetermined
+		check("Refine(EvenQ(3*k), Element(k, Integers))", //
+				"False");
+		
+		// for OddQ we cann not determine if true/false
+		check("Refine(OddQ(4*k), Element(k, Integers))", //
+				"False");
+		check("Refine(OddQ(3*k), Element(k, Integers))", //
+				"False");
+		
 		check("Refine(a>0)", //
 				"a>0");
 		check("Refine(MoebiusMu(p),Element(p, Primes))", //
@@ -11164,7 +11228,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Refine(Sin(k*Pi), Element(k, Integers))", "0");
 		check("Sin(k*Pi)", "Sin(k*Pi)");
-		check("Refine(Cos(x+k*Pi), Element(k, Integers))", "(-1)^k*Cos(x)");
+		check("Refine(Cos(x+k*Pi), Element(k, Integers))", //
+				"(-1)^k*Cos(x)");
 
 		check("Refine(Floor(2*a + 1), Element(a, Integers))", "1+2*a");
 		check("Floor(2*a + 1)", "1+Floor(2*a)");
@@ -12185,10 +12250,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSec() {
-		check("Sec(5/7*Pi+x)", //
-				"-Sec(2/7*Pi-x)");
-		check("Sec(3/4*Pi+x)", //
+		check("-Sec(Pi/4-x)",//
 				"-Sec(Pi/4-x)");
+		check("-Sec(Pi/3-x)",//
+				"-Sec(Pi/3-x)");
+		check("Sec(5/7*Pi+x)", //
+				"-Csc(3/14*Pi+x)");
+		check("Sec(3/4*Pi+x)", //
+				"-Csc(Pi/4+x)");
 		check("Sec(-3/4*Pi+x)", //
 				"-Sec(Pi/4+x)");
 
@@ -12221,7 +12290,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSech() {
-
+		check("Refine(Sech(x+I*k*Pi), Element(k, Integers))", //
+				"(-1)^k*Sech(x)");
+		check("Refine(Sech(x-I*k*Pi), Element(k, Integers))", //
+				"(-1)^k*Sech(x)");
+		check("Refine(Sech(x-42*I*k*Pi), Element(k, Integers))", //
+				"Sech(x)");
+		check("Refine(Sech(x-43*I*k*Pi), Element(k, Integers))", //
+				"(-1)^k*Sech(x)");
+		
 		check("Sech(x)^m*Tanh(x)^2", //
 				"Sech(x)^(2+m)*Sinh(x)^2");
 		check("Sech(0)", //
@@ -12464,10 +12541,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testSin() {
 		// check("Sin(Quantity(90,\"Degree\"))",
 		// "");
+		check("Refine(Sin(x+k*Pi), Element(k, Integers))", //
+				"(-1)^k*Sin(x)");
 		check("Sin(3/4*Pi+x)", //
-				"Sin(Pi/4-x)");
+				"Cos(Pi/4+x)");
 		check("Sin(5/7*Pi+x)", //
-				"Sin(2/7*Pi-x)");
+				"Cos(3/14*Pi+x)");
 		check("Sin(-3/4*Pi+x)", //
 				"-Sin(Pi/4+x)");
 
@@ -12488,32 +12567,54 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Sin(e-1+f*x)", //
 				"-Sin(1-e-f*x)");
 
-		check("Sin(ArcSin(x))", "x");
-		check("Sin(ArcCos(x))", "Sqrt(1-x^2)");
-		check("Sin(ArcTan(x))", "x/Sqrt(1+x^2)");
-		check("Sin(ArcCot(x))", "1/(Sqrt(1+1/x^2)*x)");
-		check("Sin(ArcCsc(x))", "1/x");
-		check("Sin(ArcSec(x))", "Sqrt(1-1/x^2)");
+		check("Sin(ArcSin(x))", //
+				"x");
+		check("Sin(ArcCos(x))", //
+				"Sqrt(1-x^2)");
+		check("Sin(ArcTan(x))", //
+				"x/Sqrt(1+x^2)");
+		check("Sin(ArcCot(x))", //
+				"1/Sqrt(1+x^2)");
+		check("Sin(ArcCsc(x))", //
+				"1/x");
+		check("Sin(ArcSec(x))", //
+				"Sqrt(1-1/x^2)");
 
-		check("Sin(Pi/4)", "1/Sqrt(2)");
-		check("Sin(0)", "0");
-		checkNumeric("Sin(0.5)", "0.479425538604203");
-		check("Sin(3*Pi)", "0");
-		checkNumeric("Sin(1.0 + I)", "1.2984575814159773+I*0.6349639147847361");
+		check("Sin(Pi/4)", //
+				"1/Sqrt(2)");
+		check("Sin(0)", //
+				"0");
+		checkNumeric("Sin(0.5)", //
+				"0.479425538604203");
+		check("Sin(3*Pi)", //
+				"0");
+		checkNumeric("Sin(1.0 + I)", //
+				"1.2984575814159773+I*0.6349639147847361");
 
-		checkNumeric("Sin(1.1*Pi)", "-0.30901699437494773");
-		checkNumeric("Sin({-0.5,9.1})", "{-0.479425538604203,0.3190983623493521}");
-		checkNumeric("Sin({{0.5,1.1},{6.4,7.5}})",
+		checkNumeric("Sin(1.1*Pi)", //
+				"-0.30901699437494773");
+		checkNumeric("Sin({-0.5,9.1})", //
+				"{-0.479425538604203,0.3190983623493521}");
+		checkNumeric("Sin({{0.5,1.1},{6.4,7.5}})", //
 				"{{0.479425538604203,0.8912073600614354},\n" + " {0.11654920485049364,0.9379999767747389}}");
-		check("Sin({1,2})", "{Sin(1),Sin(2)}");
-		check("Sin(z+1/4*Pi)", "Sin(Pi/4+z)");
-		check("Sin(z+1/2*Pi)", "Cos(z)");
-		check("Sin(z+1/3*Pi)", "Sin(Pi/3+z)");
-		check("Sin(Pi)", "0");
-		check("Sin(z+Pi)", "-Sin(z)");
-		check("Sin(z+42*Pi)", "Sin(z)");
-		check("Sin(x+y+z+43*Pi)", "-Sin(x+y+z)");
-		check("Sin(z+42*a*Pi)", "Sin(42*a*Pi+z)");
+		check("Sin({1,2})", //
+				"{Sin(1),Sin(2)}");
+		check("Sin(z+1/4*Pi)", //
+				"Sin(Pi/4+z)");
+		check("Sin(z+1/2*Pi)", //
+				"Cos(z)");
+		check("Sin(z+1/3*Pi)", //
+				"Sin(Pi/3+z)");
+		check("Sin(Pi)", //
+				"0");
+		check("Sin(z+Pi)", //
+				"-Sin(z)");
+		check("Sin(z+42*Pi)", //
+				"Sin(z)");
+		check("Sin(x+y+z+43*Pi)", //
+				"-Sin(x+y+z)");
+		check("Sin(z+42*a*Pi)", //
+				"Sin(42*a*Pi+z)");
 	}
 
 	public void testSinc() {
@@ -14461,47 +14562,43 @@ public class LowercaseTestCase extends AbstractTestCase {
 				+ "{Sinh,Cosh,Tanh,Coth,Sech,Csch},"//
 				+ "{ArcSinh, ArcCosh, ArcTanh, ArcCoth, ArcSech, ArcCsch}) //" //
 				+ "Flatten // TableForm ", //
-				"Sinh(ArcSinh(x)) == x\n" + //
-						"Sinh(ArcCosh(x)) == (1+x)*Sqrt((-1+x)/(1+x))\n" + //
-						"Sinh(ArcTanh(x)) == x/Sqrt(1-x^2)\n" + //
-						"Sinh(ArcCoth(x)) == 1/(Sqrt(1-1/x^2)*x)\n" + //
-						"Sinh(ArcSech(x)) == ((1+x)*Sqrt((1-x)/(1+x)))/x\n" + //
-						"Sinh(ArcCsch(x)) == 1/x\n" + //
-						//
-						"Cosh(ArcSinh(x)) == Sqrt(1+x^2)\n" + //
-						"Cosh(ArcCosh(x)) == x\n" + //
-						"Cosh(ArcTanh(x)) == 1/Sqrt(1-x^2)\n" + //
-						"Cosh(ArcCoth(x)) == 1/Sqrt(1-1/x^2)\n" + //
-						"Cosh(ArcSech(x)) == 1/x\n" + //
-						"Cosh(ArcCsch(x)) == Sqrt(1+1/x^2)\n" + //
-						//
-						"Tanh(ArcSinh(x)) == x/Sqrt(1+x^2)\n" + //
-						"Tanh(ArcCosh(x)) == ((1+x)*Sqrt((-1+x)/(1+x)))/x\n" + //
-						"Tanh(ArcTanh(x)) == x\n" + //
-						"Tanh(ArcCoth(x)) == 1/x\n" + //
-						"Tanh(ArcSech(x)) == (1+x)*Sqrt((1-x)/(1+x))\n" + //
-						"Tanh(ArcCsch(x)) == 1/(Sqrt(1+1/x^2)*x)\n" + //
-						//
-						"Coth(ArcSinh(x)) == Sqrt(1+x^2)/x\n" + //
-						"Coth(ArcCosh(x)) == x/((1+x)*Sqrt((-1+x)/(1+x)))\n" + //
-						"Coth(ArcTanh(x)) == 1/x\n" + //
-						"Coth(ArcCoth(x)) == x\n" + //
-						"Coth(ArcSech(x)) == 1/((1+x)*Sqrt((1-x)/(1+x)))\n" + //
-						"Coth(ArcCsch(x)) == Sqrt(1+1/x^2)*x\n" + //
-						//
-						"Sech(ArcSinh(x)) == 1/Sqrt(1+x^2)\n" + //
-						"Sech(ArcCosh(x)) == 1/x\n" + //
-						"Sech(ArcTanh(x)) == Sqrt(1-x^2)\n" + //
-						"Sech(ArcCoth(x)) == Sqrt(1-1/x^2)\n" + //
-						"Sech(ArcSech(x)) == x\n" + //
-						"Sech(ArcCsch(x)) == 1/Sqrt(1+1/x^2)\n" + //
-						//
-						"Csch(ArcSinh(x)) == 1/x\n" + //
-						"Csch(ArcCosh(x)) == 1/((1+x)*Sqrt((-1+x)/(1+x)))\n" + //
-						"Csch(ArcTanh(x)) == Sqrt(1-x^2)/x\n" + //
-						"Csch(ArcCoth(x)) == Sqrt(1-1/x^2)*x\n" + //
-						"Csch(ArcSech(x)) == x/((1+x)*Sqrt((1-x)/(1+x)))\n" + //
-						"Csch(ArcCsch(x)) == x\n" + "");
+				"Sinh(ArcSinh(x)) == x\n" + 
+				"Sinh(ArcCosh(x)) == Sqrt(-1+x)*Sqrt(1+x)\n" + 
+				"Sinh(ArcTanh(x)) == x/Sqrt(1-x^2)\n" + 
+				"Sinh(ArcCoth(x)) == 1/(Sqrt(-1+x)*Sqrt(1+x))\n" + 
+				"Sinh(ArcSech(x)) == Sqrt(-1+1/x)*Sqrt(1+1/x)\n" + 
+				"Sinh(ArcCsch(x)) == 1/x\n" + 
+				"Cosh(ArcSinh(x)) == Sqrt(1+x^2)\n" + 
+				"Cosh(ArcCosh(x)) == x\n" + 
+				"Cosh(ArcTanh(x)) == 1/Sqrt(1-x^2)\n" + 
+				"Cosh(ArcCoth(x)) == 1/Sqrt(1-1/x^2)\n" + 
+				"Cosh(ArcSech(x)) == 1/x\n" + 
+				"Cosh(ArcCsch(x)) == Sqrt(1+1/x^2)\n" + 
+				"Tanh(ArcSinh(x)) == x/Sqrt(1+x^2)\n" + 
+				"Tanh(ArcCosh(x)) == (Sqrt(-1+x)*Sqrt(1+x))/x\n" + 
+				"Tanh(ArcTanh(x)) == x\n" + 
+				"Tanh(ArcCoth(x)) == 1/x\n" + 
+				"Tanh(ArcSech(x)) == Sqrt(-1+1/x)*Sqrt(1+1/x)*x\n" + 
+				"Tanh(ArcCsch(x)) == 1/(Sqrt(1+1/x^2)*x)\n" + 
+				"Coth(ArcSinh(x)) == Sqrt(1+x^2)/x\n" + 
+				"Coth(ArcCosh(x)) == x/(Sqrt(-1+x)*Sqrt(1+x))\n" + 
+				"Coth(ArcTanh(x)) == 1/x\n" + 
+				"Coth(ArcCoth(x)) == x\n" + 
+				"Coth(ArcSech(x)) == 1/(Sqrt(-1+1/x)*Sqrt(1+1/x)*x)\n" + 
+				"Coth(ArcCsch(x)) == Sqrt(1+1/x^2)*x\n" + 
+				"Sech(ArcSinh(x)) == 1/Sqrt(1+x^2)\n" + 
+				"Sech(ArcCosh(x)) == 1/x\n" + 
+				"Sech(ArcTanh(x)) == Sqrt(1-x^2)\n" + 
+				"Sech(ArcCoth(x)) == (Sqrt(-1+x)*Sqrt(1+x))/x\n" + 
+				"Sech(ArcSech(x)) == x\n" + 
+				"Sech(ArcCsch(x)) == 1/Sqrt(1+1/x^2)\n" + 
+				"Csch(ArcSinh(x)) == 1/x\n" + 
+				"Csch(ArcCosh(x)) == 1/(Sqrt(-1+x)*Sqrt(1+x))\n" + 
+				"Csch(ArcTanh(x)) == (Sqrt(1-x)*Sqrt(1+x))/x\n" + 
+				"Csch(ArcCoth(x)) == Sqrt(-1+x)*Sqrt(1+x)\n" + 
+				"Csch(ArcSech(x)) == x/((1+x)*Sqrt((1-x)/(1+x)))\n" + 
+				"Csch(ArcCsch(x)) == x\n" + 
+				"");
 		check("Outer((ToString(#1) <> \"(\" <> ToString(#2) <> \"(x)) == \" <> ToString(InputForm(#1(#2(x)))))&," //
 				+ "{Sin,Cos,Tan,Cot,Sec,Csc},"//
 				+ "{ArcSin, ArcCos, ArcTan, ArcCot, ArcSec, ArcCsc}) //" //
@@ -14509,14 +14606,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Sin(ArcSin(x)) == x\n" + //
 						"Sin(ArcCos(x)) == Sqrt(1-x^2)\n" + //
 						"Sin(ArcTan(x)) == x/Sqrt(1+x^2)\n" + //
-						"Sin(ArcCot(x)) == 1/(Sqrt(1+1/x^2)*x)\n" + //
+						"Sin(ArcCot(x)) == 1/Sqrt(1+x^2)\n" + //
 						"Sin(ArcSec(x)) == Sqrt(1-1/x^2)\n" + //
 						"Sin(ArcCsc(x)) == 1/x\n" + //
 						//
 						"Cos(ArcSin(x)) == Sqrt(1-x^2)\n" + //
 						"Cos(ArcCos(x)) == x\n" + //
 						"Cos(ArcTan(x)) == 1/Sqrt(1+x^2)\n" + //
-						"Cos(ArcCot(x)) == 1/Sqrt(1+1/x^2)\n" + //
+						"Cos(ArcCot(x)) == x/Sqrt(1+x^2)\n" + //
 						"Cos(ArcSec(x)) == 1/x\n" + //
 						"Cos(ArcCsc(x)) == Sqrt(1-1/x^2)\n" + //
 						//
@@ -14537,14 +14634,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 						"Sec(ArcSin(x)) == 1/Sqrt(1-x^2)\n" + //
 						"Sec(ArcCos(x)) == 1/x\n" + //
 						"Sec(ArcTan(x)) == Sqrt(1+x^2)\n" + //
-						"Sec(ArcCot(x)) == Sqrt(1+1/x^2)\n" + //
+						"Sec(ArcCot(x)) == Sqrt(1+x^2)/x\n" + //
 						"Sec(ArcSec(x)) == x\n" + //
 						"Sec(ArcCsc(x)) == 1/Sqrt(1-1/x^2)\n" + //
 						//
 						"Csc(ArcSin(x)) == 1/x\n" + //
 						"Csc(ArcCos(x)) == 1/Sqrt(1-x^2)\n" + //
 						"Csc(ArcTan(x)) == Sqrt(1+x^2)/x\n" + //
-						"Csc(ArcCot(x)) == Sqrt(1+1/x^2)*x\n" + //
+						"Csc(ArcCot(x)) == Sqrt(1+x^2)\n" + //
 						"Csc(ArcSec(x)) == 1/Sqrt(1-1/x^2)\n" + //
 						"Csc(ArcCsc(x)) == x\n" + //
 						"");
@@ -14622,7 +14719,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("TrigExpand( Csch(2*x) )", //
 				"1/2*Csch(x)*Sech(x)");
 		check("TrigExpand( Csch(3*x) )", //
-				"-Csch(x)/(4*(-3/4*Cosh(x)^2-Sinh(x)^2/4))");
+				"Csch(x)/(-1+4*Cosh(x)^2)");
+		check("TrigExpand( Csch(4*x) )", //
+				"Csch(x)/(-4*Cosh(x)+8*Cosh(x)^3)");
 		check("TrigExpand(Cosh(x)*Csch(2*x)*Sinh(x))", //
 				"1/2");
 		check("TrigExpand(Cos(x)*Csc(2*x)*Sin(x))", //

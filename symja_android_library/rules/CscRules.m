@@ -43,7 +43,7 @@
  Csc(ArcSin(x_)):=1/x,
  Csc(ArcCos(x_)):=(1-x^2)^(-1/2),
  Csc(ArcTan(x_)):=x^(-1)*(1+x^2)^(1/2),
- Csc(ArcCot(x_)):=(1+x^(-2))^(1/2)*x,
+ Csc(ArcCot(x_)):=(1+x^2)^(1/2),
  Csc(ArcCsc(x_)):=x,
  Csc(ArcSec(x_)):=(1-x^(-2))^(-1/2),
 

@@ -13,7 +13,7 @@ public interface SinhRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 19, 8 };
+  final public static int[] SIZES = { 19, 9 };
 
   final public static IAST RULES = List(
     IInit(Sinh, SIZES),
@@ -77,21 +77,24 @@ public interface SinhRules {
     // Sinh(ArcSinh(x_)):=x
     ISetDelayed(Sinh(ArcSinh(x_)),
       x),
-    // Sinh(ArcCosh(x_)):=Sqrt((-1+x)/(x+1))*(1+x)
+    // Sinh(ArcCosh(x_)):=Sqrt(x+1)*Sqrt(-1+x)
     ISetDelayed(Sinh(ArcCosh(x_)),
-      Times(Sqrt(Times(Power(Plus(x,C1),CN1),Plus(CN1,x))),Plus(C1,x))),
+      Times(Sqrt(Plus(x,C1)),Sqrt(Plus(CN1,x)))),
     // Sinh(ArcTanh(x_)):=x/Sqrt(1-x^2)
     ISetDelayed(Sinh(ArcTanh(x_)),
       Times(x,Power(Subtract(C1,Sqr(x)),CN1D2))),
-    // Sinh(ArcCoth(x_)):=1/(Sqrt(1-1/x^2)*x)
+    // Sinh(ArcCoth(x_)):=1/(Sqrt(-1+x)*Sqrt(x+1))
     ISetDelayed(Sinh(ArcCoth(x_)),
-      Power(Times(Sqrt(Subtract(C1,Power(x,CN2))),x),CN1)),
-    // Sinh(ArcSech(x_)):=((1+x)*Sqrt((1-x)/(1+x)))/x
+      Power(Times(Sqrt(Plus(CN1,x)),Sqrt(Plus(x,C1))),CN1)),
+    // Sinh(ArcSech(x_)):=Sqrt(1/x+1)*Sqrt(-1+1/x)
     ISetDelayed(Sinh(ArcSech(x_)),
-      Times(Power(x,CN1),Plus(C1,x),Sqrt(Times(Subtract(C1,x),Power(Plus(C1,x),CN1))))),
+      Times(Sqrt(Plus(Power(x,CN1),C1)),Sqrt(Plus(CN1,Power(x,CN1))))),
     // Sinh(ArcCsch(x_)):=1/x
     ISetDelayed(Sinh(ArcCsch(x_)),
       Power(x,CN1)),
+    // Sinh(Log(x_)):=-1/(2*x)+x/2
+    ISetDelayed(Sinh(Log(x_)),
+      Plus(Times(CN1D2,Power(x,CN1)),Times(C1D2,x))),
     // Sinh(Infinity)=Infinity
     ISet(Sinh(oo),
       oo),

@@ -866,8 +866,9 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 				}
 				j++;
 			}
+			return result;
 		}
-		return (IAST) result.orElse(this);
+		return this;
 	}
 
 	/** {@inheritDoc} */

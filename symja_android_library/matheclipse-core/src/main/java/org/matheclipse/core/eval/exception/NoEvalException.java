@@ -10,6 +10,6 @@ public class NoEvalException extends FlowControlException {
 	private static final long serialVersionUID = 3859495776051748837L;
 
 	public NoEvalException() {
-		super("This statement cannot be evaluated");
+		super();
 	}
 }

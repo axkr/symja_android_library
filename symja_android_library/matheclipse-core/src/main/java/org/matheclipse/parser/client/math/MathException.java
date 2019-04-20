@@ -1,6 +1,9 @@
 package org.matheclipse.parser.client.math;
 
+import javax.naming.ldap.ControlFactory;
+
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.exception.FlowControlException;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class MathException extends RuntimeException {
@@ -10,8 +13,14 @@ public class MathException extends RuntimeException {
 	 */
 	private static final long serialVersionUID = 3520033778672500363L;
 
+	/**
+	 * Constructs a new MathException with the specified detail <code>message=null</code>, <code>cause=null</code>,
+	 * <code>enableSuppression=false</code>, and <code>writableStackTrace=false</code> .
+	 * 
+	 * @see FlowControlException
+	 */
 	public MathException() {
-		super();
+		super(null, null, false, false);
 	}
 
 	public MathException(String message) {
@@ -46,6 +55,7 @@ public class MathException extends RuntimeException {
 	@Override
 	public synchronized Throwable fillInStackTrace() {
 		if (Config.SHOW_STACKTRACE) {
+			// doesn't fill the stack for FlowControlExceptions
 			return super.fillInStackTrace();
 		} else {
 			return this;

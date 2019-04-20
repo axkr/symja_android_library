@@ -307,11 +307,12 @@ public class Integrate extends AbstractFunctionEvaluator {
 			if (holdallAST.size() < 3) {
 				return F.NIL;
 			}
-			IExpr arg1 = engine.evaluateNull(holdallAST.arg1());
+			final IExpr a1 = holdallAST.arg1();
+			IExpr arg1 = engine.evaluateNull(a1);
 			if (arg1.isPresent()) {
 				evaled = true;
 			} else {
-				arg1 = holdallAST.arg1();
+				arg1 = a1;
 			}
 			if (arg1.isIndeterminate()) {
 				return F.Indeterminate;
@@ -570,7 +571,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 		}
 		return false;
 	}
- 
+
 	/**
 	 * See <a href="http://en.wikipedia.org/wiki/Integration_by_parts">Wikipedia- Integration by parts</a>
 	 * 
@@ -620,12 +621,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 						if (result.isPresent()) {
 							return result;
 						}
-						IExpr temp = callRestIntegrate(arg1, x, engine);
-						if (temp.isPresent()) {
-							return temp;
-						}
-						// RecursionLimitExceeded.throwIt(engine.getRecursionCounter(), ast);
-						return F.NIL;
+						return callRestIntegrate(arg1, x, engine);
 					}
 				} else {
 					newCache = true;
@@ -758,7 +754,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 			INIT_THREAD.run();
 		} else {
 			INIT_THREAD.start();
-		} 
+		}
 
 		F.ISet(F.$s("§simplifyflag"), F.False);
 
@@ -770,8 +766,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 		F.ISet(F.$s("§$inversetrigfunctions"), F.List(F.ArcSin, F.ArcCos, F.ArcTan, F.ArcCot, F.ArcSec, F.ArcCsc));
 		F.ISet(F.$s("§$inversehyperbolicfunctions"),
 				F.List(F.ArcSinh, F.ArcCosh, F.ArcTanh, F.ArcCoth, F.ArcSech, F.ArcCsch));
-		F.ISet(F.$s("§$calculusfunctions"), F.List(F.D, F.Sum, F.Product, F.Integrate,
-				F.$rubi("Unintegrable"), F.$rubi("CannotIntegrate"), F.$rubi("Dif"), F.$rubi("Subst")));
+		F.ISet(F.$s("§$calculusfunctions"), F.List(F.D, F.Sum, F.Product, F.Integrate, F.$rubi("Unintegrable"),
+				F.$rubi("CannotIntegrate"), F.$rubi("Dif"), F.$rubi("Subst")));
 		F.ISet(F.$s("§$stopfunctions"), F.List(F.Hold, F.HoldForm, F.Defer, F.Pattern, F.If, F.Integrate,
 				F.$rubi("Unintegrable"), F.$rubi("CannotIntegrate")));
 		F.ISet(F.$s("§$heldfunctions"), F.List(F.Hold, F.HoldForm, F.Defer, F.Pattern));

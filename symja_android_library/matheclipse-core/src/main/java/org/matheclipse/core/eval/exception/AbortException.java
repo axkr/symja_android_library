@@ -9,7 +9,7 @@ public class AbortException extends FlowControlException {
 	public final static AbortException ABORTED = new AbortException();
 	
 	public AbortException() {
-		super("Abort evaluation.");
+		super();
 	}
 
 }

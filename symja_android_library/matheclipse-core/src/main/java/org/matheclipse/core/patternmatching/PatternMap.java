@@ -437,10 +437,7 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 			if (result.isPresent()) {
 				if (result.isAST()) {
 					if (result.isFlatAST()) {
-						IExpr temp = EvalAttributes.flatten((IAST) result);
-						if (temp.isPresent()) {
-							result = temp;
-						}
+						result = EvalAttributes.flatten((IAST) result).orElse(result);
 					}
 					if (result.isOrderlessAST()) {
 						EvalAttributes.sort((IASTMutable) result);

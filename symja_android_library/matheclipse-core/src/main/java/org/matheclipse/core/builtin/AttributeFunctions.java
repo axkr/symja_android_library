@@ -49,12 +49,10 @@ public class AttributeFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
-			if (ast.arg1().isSymbol()) {
-				final ISymbol sym = ((ISymbol) ast.arg1());
-				return attributesList(sym);
+			if (ast.isAST1() && ast.arg1().isSymbol()) {
+				return attributesList(((ISymbol) ast.arg1()));
 			}
+
 			return F.NIL;
 		}
 
@@ -105,24 +103,24 @@ public class AttributeFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
-			if (ast.arg1().isSymbol()) {
-				IExpr arg2 = engine.evaluate(ast.arg2());
-				final ISymbol sym = ((ISymbol) ast.arg1());
-				return clearAttributes(sym, arg2, engine);
-			}
-			if (ast.arg1().isList()) {
-				IAST list = (IAST) ast.arg1();
-				IExpr arg2 = engine.evaluate(ast.arg2());
-				for (int i = 1; i < list.size(); i++) {
-					if (list.get(i).isSymbol()) {
-						final ISymbol sym = ((ISymbol) list.get(i));
-						clearAttributes(sym, arg2, engine);
-					}
+			if (ast.isAST2()) {
+				if (ast.arg1().isSymbol()) {
+					IExpr arg2 = engine.evaluate(ast.arg2());
+					final ISymbol sym = ((ISymbol) ast.arg1());
+					return clearAttributes(sym, arg2, engine);
 				}
-				return F.Null;
+				if (ast.arg1().isList()) {
+					IAST list = (IAST) ast.arg1();
+					IExpr arg2 = engine.evaluate(ast.arg2());
+					for (int i = 1; i < list.size(); i++) {
+						if (list.get(i).isSymbol()) {
+							final ISymbol sym = ((ISymbol) list.get(i));
+							clearAttributes(sym, arg2, engine);
+						}
+					}
+					return F.Null;
 
+				}
 			}
 			return F.NIL;
 		}
@@ -247,16 +245,16 @@ public class AttributeFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
-			if (ast.arg1().isSymbol()) {
-				IExpr arg2 = engine.evaluate(ast.arg2());
-				final ISymbol sym = ((ISymbol) ast.arg1());
-				return addAttributes(sym, arg2, engine);
-			}
-			if (ast.arg1().isList()) {
-				IAST list = (IAST) ast.arg1();
-				return setSymbolsAttributes(list, ast.arg2(), engine);
+			if (ast.isAST2()) {
+				if (ast.arg1().isSymbol()) {
+					IExpr arg2 = engine.evaluate(ast.arg2());
+					final ISymbol sym = ((ISymbol) ast.arg1());
+					return addAttributes(sym, arg2, engine);
+				}
+				if (ast.arg1().isList()) {
+					IAST list = (IAST) ast.arg1();
+					return setSymbolsAttributes(list, ast.arg2(), engine);
+				}
 			}
 			return F.NIL;
 		}

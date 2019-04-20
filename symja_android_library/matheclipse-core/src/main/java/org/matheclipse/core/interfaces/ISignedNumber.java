@@ -54,13 +54,25 @@ public interface ISignedNumber extends INumber {
 	 */
 	public double doubleValue();
 
+	public IInteger ceilFraction() throws ArithmeticException;
+
 	public IInteger floorFraction() throws ArithmeticException;
+
 	/**
 	 * Return the fractional part of this fraction
 	 * 
 	 * @return
 	 */
 	public ISignedNumber fractionalPart();
+
+	/**
+	 * Return the integer part of this number
+	 * 
+	 * @return
+	 */
+	default IInteger integerPart() {
+		return isNegative() ? ceilFraction() : floorFraction();
+	}
 
 	/** {@inheritDoc} */
 	@Override
@@ -91,11 +103,11 @@ public interface ISignedNumber extends INumber {
 	default boolean isNegativeResult() {
 		return isNegative();
 	}
-	
+
 	default boolean isNonNegativeResult() {
 		return !isNegative();
 	}
-	
+
 	/**
 	 * Test if this number is positive.
 	 * 
@@ -107,7 +119,7 @@ public interface ISignedNumber extends INumber {
 	default boolean isPositiveResult() {
 		return isPositive();
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isZero();

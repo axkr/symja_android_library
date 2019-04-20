@@ -13,7 +13,7 @@ public interface CschRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 15, 6 };
+  final public static int[] SIZES = { 15, 7 };
 
   final public static IAST RULES = List(
     IInit(Csch, SIZES),
@@ -59,21 +59,24 @@ public interface CschRules {
     // Csch(ArcSinh(x_)):=1/x
     ISetDelayed(Csch(ArcSinh(x_)),
       Power(x,CN1)),
-    // Csch(ArcCosh(x_)):=1/(Sqrt((-1+x)/(1+x))*(1+x))
+    // Csch(ArcCosh(x_)):=1/(Sqrt(-1+x)*Sqrt(x+1))
     ISetDelayed(Csch(ArcCosh(x_)),
-      Power(Times(Sqrt(Times(Plus(CN1,x),Power(Plus(C1,x),CN1))),Plus(C1,x)),CN1)),
-    // Csch(ArcTanh(x_)):=Sqrt(1-x^2)/x
+      Power(Times(Sqrt(Plus(CN1,x)),Sqrt(Plus(x,C1))),CN1)),
+    // Csch(ArcTanh(x_)):=Sqrt(x+1)*Sqrt(1-x)/x
     ISetDelayed(Csch(ArcTanh(x_)),
-      Times(Power(x,CN1),Sqrt(Subtract(C1,Sqr(x))))),
-    // Csch(ArcCoth(x_)):=Sqrt(1-1/x^2)*x
+      Times(Sqrt(Plus(x,C1)),Sqrt(Subtract(C1,x)),Power(x,CN1))),
+    // Csch(ArcCoth(x_)):=Sqrt(-1+x)*Sqrt(x+1)
     ISetDelayed(Csch(ArcCoth(x_)),
-      Times(Sqrt(Subtract(C1,Power(x,CN2))),x)),
+      Times(Sqrt(Plus(CN1,x)),Sqrt(Plus(x,C1)))),
     // Csch(ArcSech(x_)):=x/(Sqrt((1-x)/(1+x))*(1+x))
     ISetDelayed(Csch(ArcSech(x_)),
       Times(x,Power(Times(Sqrt(Times(Subtract(C1,x),Power(Plus(C1,x),CN1))),Plus(C1,x)),CN1))),
     // Csch(ArcCsch(x_)):=x
     ISetDelayed(Csch(ArcCsch(x_)),
       x),
+    // Csch(Log(x_)):=2/(-1/x+x)
+    ISetDelayed(Csch(Log(x_)),
+      Times(C2,Power(Plus(Negate(Power(x,CN1)),x),CN1))),
     // Csch(Infinity)=0
     ISet(Csch(oo),
       C0),

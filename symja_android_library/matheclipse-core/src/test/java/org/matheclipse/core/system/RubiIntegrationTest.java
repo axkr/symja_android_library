@@ -384,8 +384,8 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		IAST ast;
 		// NormalizeTrig[func_,m_.*(n_.*Pi+r_.)+s_.,b_,x_]
 		ast = NormalizeTrig(Sin, F.Plus(Times(F.C1D2, F.Plus(Times(F.C1D2, Pi), F.r)), F.s), F.CN1, F.x);
-		check(ast, "Cos[Pi/4-r/2-s+x]");
-
+		check(ast, "Sin[Pi/4+r/2+s-x]");
+		
 		ast = NormalizeTrig(F.ArcSin, F.Plus(Times(F.C1D3, F.Plus(Times(F.C1D2, Pi), F.r)), F.s), F.CN1, F.x);
 		check(ast, "ArcSin[Pi/6+r/3+s-x]");
 	}

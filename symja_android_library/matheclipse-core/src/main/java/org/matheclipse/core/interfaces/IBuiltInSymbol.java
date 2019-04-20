@@ -2,6 +2,9 @@ package org.matheclipse.core.interfaces;
 
 import java.util.function.Predicate;
 
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.F;
+
 /**
  * An expression representing a symbol (i.e. variable- constant- or function-name)
  * 
@@ -24,5 +27,9 @@ public interface IBuiltInSymbol extends ISymbol {
 	 * Define a predicate as the current evaluator which is associated to this symbol
 	 */
 	public void setPredicateQ(Predicate<IExpr> predicate);
+	
+	default public ISymbol mapToGlobal(EvalEngine engine) {
+		return null;
+	}
 
 }

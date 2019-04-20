@@ -222,7 +222,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 
 	/**
 	 * Split plusAST into two parts, a "rest" and a multiple of Pi/2. This assumes plusAST to be an Plus() expression.
-	 * The multiple of Pi returned in the second position is always a IRational number.
+	 * The multiple of Pi/2 returned in the second position is always a IRational number.
 	 * 
 	 * @param plusAST
 	 * @param engine
@@ -250,6 +250,75 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 			result.set(1, F.Subtract.of(plusAST, m2));
 			result.set(2, m2);
 			return result;
+		}
+		return F.NIL;
+	}
+
+	/**
+	 * This assumes plusAST to be an Plus() expression. The multiple of Pi returned is a IRational number or assumed to
+	 * be an expression with Integer result.
+	 * 
+	 * @param plusAST
+	 * @param engine
+	 * @return <code>F.NIL</code> if no multiple is found.
+	 */
+	public static IExpr peelOffPlusRational(final IAST plusAST, EvalEngine engine) {
+		IExpr k = null;
+		for (int i = 1; i < plusAST.size(); i++) {
+			IExpr temp = plusAST.get(i);
+			if (temp.equals(F.Pi)) {
+				k = F.C1;
+				return k;
+			}
+			if (temp.isTimes()) {
+				IExpr peeled = peelOfTimes((IAST) temp, F.Pi);
+				if (peeled.isPresent()) {
+					if (peeled.isRational() || peeled.isIntegerResult()) {
+						// k = temp.first();
+						return peeled;
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * This assumes plusAST to be an Plus() expression. The multiple of Pi returned is a IRational number or assumed to
+	 * be an expression with Integer result.
+	 * 
+	 * @param plusAST
+	 * @param engine
+	 * @return <code>F.NIL</code> if no multiple is found, otherwise return <code>List(rational-number, argument)</code>
+	 */
+	public static IAST peelOffPlusI(final IAST plusAST, EvalEngine engine) {
+		for (int i = 1; i < plusAST.size(); i++) {
+			final IExpr arg = plusAST.get(i);
+			if (arg.isTimes()) {
+				IExpr peeled = peelOfTimes((IAST) arg, F.Pi);
+				if (peeled.isPresent()) {
+					IExpr x = F.Times.of(F.CNI, peeled);
+					if (x.isRational() || x.isIntegerResult()) {
+						return F.List(x, arg);
+					}
+				}
+			}
+		}
+		return F.NIL;
+	}
+
+	/**
+	 * Try to split a periodic part from the Times() expression: <code>result == timesAST / period</code>
+	 * 
+	 * @param astTimes
+	 * @param period
+	 * @return <code>F.NIL</code> if no periodicity was found
+	 */
+	public static IExpr peelOfTimes(final IAST astTimes, final IExpr period) {
+		for (int i = 1; i < astTimes.size(); i++) {
+			if (astTimes.get(i).equals(period)) {
+				return astTimes.removeAtCopy(i).oneIdentity1();
+			}
 		}
 		return F.NIL;
 	}

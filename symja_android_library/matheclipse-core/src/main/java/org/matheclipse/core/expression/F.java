@@ -59,6 +59,8 @@ import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ConditionException;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
@@ -2825,8 +2827,8 @@ public class F {
 	/***/
 	public final static IBuiltInSymbol SurfaceGraphics = F.initFinalSymbol("SurfaceGraphics", ID.SurfaceGraphics);
 
-	 /***/
-    public final static IBuiltInSymbol SurvivalFunction = F.initFinalSymbol("SurvivalFunction", ID.SurvivalFunction);
+	/***/
+	public final static IBuiltInSymbol SurvivalFunction = F.initFinalSymbol("SurvivalFunction", ID.SurvivalFunction);
 
 	/**
 	 * Switch(expr, pattern1, value1, pattern2, value2, ...) - yields the first `value` for which `expr` matches the
@@ -3515,6 +3517,21 @@ public class F {
 	public static IAST CComplexInfinity;
 
 	/**
+	 * Represents <code>-Pi</code> as Symja expression <code>Times(CN1, Pi)</code>
+	 */
+	public static IAST CNPi;
+	
+	/**
+	 * Represents <code>-2*Pi</code> as Symja expression <code>Times(CN2, Pi)</code>
+	 */
+	public static IAST CN2Pi;
+
+	/**
+	 * Represents <code>2*Pi</code> as Symja expression <code>Times(C2, Pi)</code>
+	 */
+	public static IAST C2Pi;
+
+	/**
 	 * Represents <code>-Pi/2</code> as Symja expression <code>Times(CN1D2, Pi)</code>
 	 */
 	public static IAST CNPiHalf;
@@ -3714,6 +3731,9 @@ public class F {
 			CNIInfinity = unaryAST1(DirectedInfinity, CNI);
 			CComplexInfinity = headAST0(DirectedInfinity);
 
+			CNPi = binaryAST2(Times, CN1, Pi);
+			CN2Pi = binaryAST2(Times, CN2, Pi);
+			C2Pi = binaryAST2(Times, C2, Pi);
 			CNPiHalf = binaryAST2(Times, CN1D2, Pi);
 			CPiHalf = binaryAST2(Times, C1D2, Pi);
 
@@ -3972,10 +3992,10 @@ public class F {
 		UNARY_INVERSE_FUNCTIONS.put(ArcTanh, Tanh);
 		UNARY_INVERSE_FUNCTIONS.put(Log, Exp);
 		UNARY_INVERSE_FUNCTIONS.put(Identity, Identity);
-		
+
 		UNARY_INVERSE_FUNCTIONS.put(Erf, InverseErf);
 		UNARY_INVERSE_FUNCTIONS.put(Erfc, InverseErfc);
-		
+
 		UNARY_INVERSE_FUNCTIONS.put(InverseErf, Erf);
 		UNARY_INVERSE_FUNCTIONS.put(InverseErfc, Erfc);
 	}
@@ -4394,8 +4414,8 @@ public class F {
 				SYMBOL_OBSERVER.createUserSymbol(symbol);
 			}
 		} else {
-			// symbol = new BuiltInSymbol(name);
-			symbol = symbol(name);
+			symbol = new BuiltInDummy(name);
+			// symbol = symbol(name);
 			HIDDEN_SYMBOLS_MAP.put(name, symbol);
 			// if (symbol.isBuiltInSymbol()) {
 			// if (!setEval) {
@@ -5356,8 +5376,8 @@ public class F {
 		return new AST(head, a);
 	}
 
-	public static IAST Condition(final IExpr a0, final IExpr a1) {
-		return binaryAST2(Condition, a0, a1);
+	public static IAST Condition(final IExpr a1, final IExpr a2) {
+		return binaryAST2(Condition, a1, a2);
 	}
 
 	public static IAST ConditionalExpression(final IExpr a0, final IExpr a1) {
@@ -5974,10 +5994,7 @@ public class F {
 	public static IExpr expand(IExpr a, boolean expandNegativePowers, boolean distributePlus, boolean evalParts) {
 		if (a.isAST()) {
 			EvalEngine engine = EvalEngine.get();
-			IAST ast = engine.evalFlatOrderlessAttributesRecursive((IAST) a);
-			if (!ast.isPresent()) {
-				ast = (IAST) a;
-			}
+			IAST ast = engine.evalFlatOrderlessAttributesRecursive((IAST) a).orElse((IAST) a);
 			return Algebra.expand(ast, null, expandNegativePowers, distributePlus, evalParts).orElse(a);
 		}
 		return a;
@@ -6008,15 +6025,8 @@ public class F {
 	public static IExpr expandAll(IExpr a, boolean expandNegativePowers, boolean distributePlus) {
 		if (a.isAST()) {
 			EvalEngine engine = EvalEngine.get();
-			IAST ast = engine.evalFlatOrderlessAttributesRecursive((IAST) a);
-			if (!ast.isPresent()) {
-				ast = (IAST) a;
-			}
-			IExpr temp = Algebra.expandAll(ast, null, expandNegativePowers, distributePlus, engine);
-			if (temp.isPresent()) {
-				return temp;
-			}
-			return ast;
+			IAST ast = engine.evalFlatOrderlessAttributesRecursive((IAST) a).orElse((IAST) a);
+			return Algebra.expandAll(ast, null, expandNegativePowers, distributePlus, engine).orElse(ast);
 		}
 		return a;
 	}
@@ -8199,10 +8209,7 @@ public class F {
 	public static ISymbol symbol(final String symbolName, IAST assumptionAST, EvalEngine engine) {
 		ISymbol symbol = engine.getContextPath().symbol(symbolName, engine.getContext(), engine.isRelaxedSyntax());
 		if (assumptionAST != null) {
-			IExpr temp = Lambda.replaceSlots(assumptionAST, F.List(symbol));
-			if (!temp.isPresent()) {
-				temp = assumptionAST;
-			}
+			IExpr temp = Lambda.replaceSlots(assumptionAST, F.List(symbol)).orElse(assumptionAST);
 			if (temp.isAST()) {
 				IAssumptions assumptions = engine.getAssumptions();
 				if (assumptions == null) {
@@ -8229,10 +8236,7 @@ public class F {
 		// }
 		symbol = contextPath.getSymbol(symbolName, context, engine.isRelaxedSyntax());
 		if (assumptionAST != null) {
-			IExpr temp = Lambda.replaceSlots(assumptionAST, F.List(symbol));
-			if (!temp.isPresent()) {
-				temp = assumptionAST;
-			}
+			IExpr temp = Lambda.replaceSlots(assumptionAST, F.List(symbol)).orElse(assumptionAST);
 			if (temp.isAST()) {
 				IAssumptions assumptions = engine.getAssumptions();
 				if (assumptions == null) {

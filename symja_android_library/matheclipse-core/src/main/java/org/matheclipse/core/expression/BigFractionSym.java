@@ -106,15 +106,15 @@ public class BigFractionSym extends AbstractFractionSym {
 	 * @return Next bigger integer of <code>this</code>.
 	 */
 	@Override
-	public IFraction ceilFraction() {
+	public IInteger ceilFraction() {
 		if (isIntegral()) {
-			return this;
+			return F.ZZ(toBigNumerator());
 		}
 		BigInteger div = toBigNumerator().divide(toBigDenominator());
 		if (toBigNumerator().signum() > 0) {
 			div = div.add(BigInteger.ONE);
 		}
-		return AbstractFractionSym.valueOf(div, BigInteger.ONE);
+		return F.ZZ(div);
 	}
 
 	@Override

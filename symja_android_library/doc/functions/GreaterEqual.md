@@ -11,6 +11,7 @@ x >= y
 ```
 lhs >= rhs
 ```
+
 > represents the inequality `lhs >= rhs`.
  
 	
@@ -22,5 +23,4 @@ True
 
 >> {GreaterEqual(), GreaterEqual(x), GreaterEqual(1)}
 {True, True, True}
-``` 
- 
+```

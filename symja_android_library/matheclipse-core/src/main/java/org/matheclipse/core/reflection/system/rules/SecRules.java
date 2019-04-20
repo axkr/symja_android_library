@@ -146,9 +146,9 @@ public interface SecRules {
     // Sec(ArcTan(x_)):=Sqrt(1+x^2)
     ISetDelayed(Sec(ArcTan(x_)),
       Sqrt(Plus(C1,Sqr(x)))),
-    // Sec(ArcCot(x_)):=Sqrt(1+1/x^2)
+    // Sec(ArcCot(x_)):=Sqrt(1+x^2)/x
     ISetDelayed(Sec(ArcCot(x_)),
-      Sqrt(Plus(C1,Power(x,CN2)))),
+      Times(Power(x,CN1),Sqrt(Plus(C1,Sqr(x))))),
     // Sec(ArcSec(x_)):=x
     ISetDelayed(Sec(ArcSec(x_)),
       x),

@@ -61,11 +61,13 @@ import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.ArcCosRules;
@@ -243,7 +245,7 @@ public class ExpTrigsFunctions {
 			// don't check negative argument here - doesn't work with Rubi/MMA pattern matching
 			// IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1, false);
 			// if (negExpr.isPresent()) {
-			// return Plus(Negate(Pi), F.ArcCos(negExpr));
+			// return Subtract( Pi , F.ArcCos(negExpr));
 			// }
 			if (arg1.isCos() && arg1.first().isPositive()) {
 				// ArcCos(Cos(z))
@@ -1053,61 +1055,133 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
+
+			if (arg1.isPlus()) {
+				IExpr k = AbstractFunctionEvaluator.peelOffPlusRational((IAST) arg1, EvalEngine.get());
+				if (k != null) {
+					// arg1 == x + k*Pi
+					if (k.isRational()) {
+						IRational t = (IRational) k;
+						if (t.isLessThan(F.C0) || !F.C2.isGreaterThan(t)) {
+							// Cos(arg1-2*Pi*Floor(1/2*t))
+							return F.Cos(F.Plus(arg1, F.Times(F.CN2, F.Pi, F.Floor(F.Times(F.C1D2, t)))));
+						} else if (t.isLessThan(F.C1D2)) {// t < 1/2
+							IExpr temp = EvalEngine.get().evaluate(arg1.subtract(t.times(F.Pi)));
+							IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(temp);
+							if (negExpr.isPresent()) {
+								// Sin(1/2*Pi - arg1)
+								return F.Sin(F.Subtract(F.Times(F.C1D2, F.Pi), arg1));
+							}
+							return F.NIL;
+						} else if (t.isLessThan(F.C1)) {// t < 1
+							// -Sin(arg1-1/2*Pi)
+							return F.Negate(F.Sin(F.Plus(arg1, F.Times(F.CN1D2, F.Pi))));
+						} else if (t.isLessThan(F.C3D2)) {// t < 3/2
+							// -Cos(arg1-Pi)
+							return F.Negate(F.Cos(F.Subtract(arg1, F.Pi)));
+						} else {
+							// Sin(arg1-3/2*Pi)
+							return F.Sin(F.Plus(arg1, F.Times(F.CN3D2, F.Pi)));
+						}
+					} else if (k.isIntegerResult()) {
+						// (-1)^k * Cos( arg1 - k*Pi )
+						return F.Times(F.Power(F.CN1, k), F.Cos(F.Subtract(arg1, F.Times(k, F.Pi))));
+					}
+				}
+			}
+
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
 				return Cos(negExpr);
+			}
+
+			if (arg1.isTimes()) {
+				IAST timesAST = (IAST) arg1;
+				if (timesAST.size() == 3 && timesAST.arg1().isRational() && timesAST.arg2().isPi()) {
+					// t should be positive here!
+					IRational t = (IRational) timesAST.arg1();
+					if (t.isLessThan(F.C1D2)) {// t < 1/2
+						return F.NIL;
+					} else if (t.isLessThan(F.C1)) {// t < 1
+						// -Cos((1-t)*Pi)
+						return F.Negate(F.Cos(F.Times(F.Subtract(F.C1, t), F.Pi)));
+					} else if (t.isLessThan(F.C3D2)) {// t < 3/2
+						// -Cos((t-1)*Pi)
+						return F.Negate(F.Cos(F.Times(F.Subtract(t, F.C1), F.Pi)));
+					} else if (t.isLessThan(F.C2)) {// t < 2
+						// Cos((2-t)*Pi)
+						return F.Cos(F.Times(F.Subtract(F.C2, t), F.Pi));
+					}
+					// Cos((t-2*Quotient(IntegerPart(t),2))*Pi)
+					return F.Cos(F.Times(F.Pi, F.Plus(t, ExpTrigsFunctions.integerPartFolded2(t))));
+				}
+
+				IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
+				if (t.isPresent() && t.im().isZero()) {
+					// 1/2 * t
+					IExpr temp = EvalEngine.get().evaluate(F.Times(F.C1D2, t));
+					if (temp.isIntegerResult()) {
+						return F.C1;
+					}
+					// 1/2 * t - 1/2
+					temp = EvalEngine.get().evaluate(F.Subtract(temp, F.C1D2));
+					if (temp.isIntegerResult()) {
+						return F.CN1;
+					}
+
+					if (t.isIntegerResult()) {
+						return F.Power(F.CN1, t);
+					}
+
+					// t - 1/2
+					temp = EvalEngine.get().evaluate(F.Subtract(t, F.C1D2));
+					if (temp.isIntegerResult()) {
+						return F.C0;
+					}
+				}
+
 			}
 
 			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 			if (imPart.isPresent()) {
 				return F.Cosh(imPart);
 			}
-			// if (arg1.isPlus()) {
-			// IAST peel = AbstractFunctionEvaluator.peelOff((IAST) arg1, EvalEngine.get());
-			// if (peel.isPresent()) {
-			// IExpr m = peel.arg2();
-			// if (!m.isZero()) {
-			// IExpr x = peel.arg1();
-			// // cos(m)*cos(x) - sin(m)*sin(x)
-			// return F.Subtract(F.Times(F.Cos(m), F.Cos(x)), F.Times(F.Sin(m), F.Sin(x)));
+
+			// IAST parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, Pi);
+			// if (parts.isPresent()) {
+			// if (parts.arg2().isInteger()) {
+			// // period n*Pi
+			// IInteger i = (IInteger) parts.arg2();
+			// if (i.isEven()) {
+			// return Cos(parts.arg1());
+			// } else {
+			// return Negate(F.Cos(parts.arg1()));
 			// }
 			// }
+			// if (parts.arg2().isFraction()) {
+			// // period (n/m)*Pi
+			// IFraction f = (IFraction) parts.arg2();
+			// IInteger[] divRem = f.divideAndRemainder();
+			// IFraction rest = F.fraction(divRem[1], f.denominator());
+			// if (!NumberUtil.isZero(divRem[0])) {
+			// if (divRem[0].isEven()) {
+			// return Cos(Plus(parts.arg1(), Times(rest, Pi)));
 			// }
-			IAST parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, Pi);
-			if (parts.isPresent()) {
-				if (parts.arg2().isInteger()) {
-					// period n*Pi
-					IInteger i = (IInteger) parts.arg2();
-					if (i.isEven()) {
-						return Cos(parts.arg1());
-					} else {
-						return Negate(F.Cos(parts.arg1()));
-					}
-				}
-				if (parts.arg2().isFraction()) {
-					// period (n/m)*Pi
-					IFraction f = (IFraction) parts.arg2();
-					IInteger[] divRem = f.divideAndRemainder();
-					IFraction rest = F.fraction(divRem[1], f.denominator());
-					if (!NumberUtil.isZero(divRem[0])) {
-						if (divRem[0].isEven()) {
-							return Cos(Plus(parts.arg1(), Times(rest, Pi)));
-						}
-						return Negate(Cos(Plus(parts.arg1(), Times(rest, Pi))));
-					}
-					if (f.isGreaterThan(F.C1D2)) {
-						return F.Cos(F.Plus(F.Times(F.Subtract(f, C2), F.Pi), parts.arg1()));
-					}
-					if (rest.equals(F.C1D2) || rest.equals(F.CN1D2)) {
-						// Cos(z) == Sin(Pi/2 - z)
-						return Sin(Subtract(F.CPiHalf, arg1));
-					}
-				}
-				if (parts.arg2().isIntegerResult()) {
-					// period n*Pi
-					return Times(Power(CN1, parts.arg2()), Cos(parts.arg1()));
-				}
-			}
+			// return Negate(Cos(Plus(parts.arg1(), Times(rest, Pi))));
+			// }
+			// if (f.isGreaterThan(F.C1D2)) {
+			// return F.Cos(F.Plus(F.Times(F.Subtract(f, C2), F.Pi), parts.arg1()));
+			// }
+			// if (rest.equals(F.C1D2) || rest.equals(F.CN1D2)) {
+			// // Cos(z) == Sin(Pi/2 - z)
+			// return Sin(Subtract(F.CPiHalf, arg1));
+			// }
+			// }
+			// if (parts.arg2().isIntegerResult()) {
+			// // period n*Pi
+			// return Times(Power(CN1, parts.arg2()), Cos(parts.arg1()));
+			// }
+			// }
 
 			return F.NIL;
 		}
@@ -1177,6 +1251,32 @@ public class ExpTrigsFunctions {
 			if (arg1.isZero()) {
 				return F.CComplexInfinity;
 			}
+
+			if (arg1.isPlus()) {
+				IAST list = AbstractFunctionEvaluator.peelOffPlusI((IAST) arg1, EvalEngine.get());
+				if (list.isPresent()) {
+					IExpr k = list.arg1();
+					// arg1 == x - k/I * Pi
+					if (k.isRational()) {
+						IRational t = (IRational) k;
+						if (t.isLessThan(F.C0)) {
+							// Coth(arg1-I*Pi*IntegerPart(t) + I*Pi )
+							return F.Coth(F.Plus(arg1, F.Times(F.CNI, F.Pi, t.integerPart()), F.Times(F.CI, F.Pi)));
+						} else if (t.isLessThan(F.C1D2)) {// t < 1/2
+							return F.NIL;
+						} else if (t.isLessThan(F.C1)) {// t < 1
+							// Tanh(arg1-1/2*I*Pi)
+							return F.Tanh(F.Plus(arg1, F.Times(F.CN1D2, F.CI, F.Pi)));
+						}
+						// Coth( arg1 - I*Pi*IntegerPart(t) )
+						return F.Coth(F.Plus(arg1, F.Times(F.CNI, F.Pi, t.integerPart())));
+					} else if (k.isIntegerResult()) {
+						// Coth( arg1 - list.arg2() )
+						return F.Coth(F.Subtract(arg1, list.arg2()));
+					}
+				}
+			}
+
 			return F.NIL;
 		}
 
@@ -1234,51 +1334,136 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
+
+			if (arg1.isPlus()) {
+				IExpr k = AbstractFunctionEvaluator.peelOffPlusRational((IAST) arg1, EvalEngine.get());
+				if (k != null) {
+					// arg1 == x + k*Pi
+					if (k.isRational()) {
+						IRational t = (IRational) k;
+						if (t.isLessThan(F.C0)) {
+							// Csc(arg1 - 2*Pi*IntegerPart(1/2*t) + 2*Pi)
+							return F.Csc(F.Plus(arg1, F.Times(F.CN2Pi, F.IntegerPart(F.Times(F.C1D2, t))), F.C2Pi));
+						} else if (t.isLessThan(F.C1D2)) {// t < 1/2
+							return F.NIL;
+						} else if (t.isLessThan(F.C1)) {// t < 1
+							// Sec(arg1-1/2*Pi)
+							return F.Sec(F.Plus(arg1, F.Times(F.CN1D2, F.Pi)));
+						} else if (t.isLessThan(F.C2)) { // t < 2
+							// -Csc(arg1-Pi)
+							return F.Negate(F.Csc(F.Plus(arg1, F.CNPi)));
+						}
+						// Csc(arg1 - 2*Pi*IntegerPart(1/2*t) )
+						return F.Csc(F.Plus(arg1, F.Times(F.CN2Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
+					} else if (k.isIntegerResult()) {
+						// (-1)^k * Csc( arg1 - k*Pi )
+						return F.Times(F.Power(F.CN1, k), F.Csc(F.Subtract(arg1, F.Times(k, F.Pi))));
+					}
+				}
+			}
+
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
 				return Negate(Csc(negExpr));
 			}
+
+			if (arg1.isTimes()) {
+				IAST timesAST = (IAST) arg1;
+				if (timesAST.size() == 3 && timesAST.arg1().isRational() && timesAST.arg2().isPi()) {
+					// t should be positive here!
+					IRational t = (IRational) timesAST.arg1();
+					if (t.isLessThan(F.C1D2)) {// t < 1/2
+						return F.NIL;
+					} else if (t.isLessThan(F.C1)) {// t < 1
+						// Csc((1-t)*Pi)
+						return F.Csc(F.Times(F.Subtract(F.C1, t), F.Pi));
+					} else if (t.isLessThan(F.C2)) {// t < 2
+						// -Csc((2-t)*Pi)
+						return F.Negate(F.Csc(F.Times(F.Subtract(F.C2, t), F.Pi)));
+					}
+					// Csc((t-2*Quotient(IntegerPart(t),2))*Pi)
+					return F.Csc(F.Times(F.Pi, F.Plus(t, ExpTrigsFunctions.integerPartFolded2(t))));
+				}
+
+				IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
+				if (t.isPresent() && t.im().isZero()) {
+					if (t.isIntegerResult()) {
+						return F.CComplexInfinity;
+					}
+
+					// 1/2 * t
+					IExpr temp1 = EvalEngine.get().evaluate(F.Times(F.C1D2, t));
+					// 1/2 * t - 1/4
+					IExpr temp2 = EvalEngine.get().evaluate(F.Plus(temp1, F.CN1D4));
+					if (temp2.isIntegerResult()) {
+						return F.C1;
+					}
+					// 1/2 * t + 1/4
+					temp2 = EvalEngine.get().evaluate(F.Plus(temp1, F.C1D4));
+					if (temp2.isIntegerResult()) {
+						return F.CN1;
+					}
+					// t - 1/2
+					temp2 = EvalEngine.get().evaluate(F.Plus(t, F.CN1D2));
+					if (temp2.isIntegerResult()) {
+						// (-1) ^ (t-1/2)
+						return F.Power(F.CN1, temp2);
+					}
+
+				}
+
+			}
+
 			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 			if (imPart.isPresent()) {
 				return F.Times(F.CNI, F.Csch(imPart));
 			}
-			IAST parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, Pi);
-			if (parts.isPresent()) {
-				if (parts.arg2().isInteger()) {
-					// period 2*Pi
-					IInteger i = (IInteger) parts.arg2();
-					if (i.isEven()) {
-						return F.Csc(parts.arg1());
-					} else {
-						return F.Times(F.CN1, F.Csc(parts.arg1()));
-					}
-				}
-				if (parts.arg2().isFraction()) {
-					// period (n/m)*Pi
-					IFraction f = (IFraction) parts.arg2();
-					IInteger[] divRem = f.divideAndRemainder();
-					IFraction rest = F.fraction(divRem[1], f.denominator());
-					if (!divRem[0].isZero()) {
-						if (divRem[0].isEven()) {
-							return Csc(Plus(parts.arg1(), Times(rest, Pi)));
-						} else {
-							return Times(CN1, Csc(Plus(parts.arg1(), Times(rest, Pi))));
-						}
-					}
-					if (f.isGreaterThan(F.C1D2)) {
-						return F.Csc(F.Plus(F.Times(F.Subtract(f, C2), F.Pi), parts.arg1()));
-					}
-					if (rest.equals(C1D2) || rest.equals(F.CN1D2)) {
-						// Csc(z) == Sec(Pi/2 - z)
-						return Sec(Subtract(F.CPiHalf, arg1));
-					}
-				}
 
-				if (parts.arg2().isIntegerResult()) {
-					// period n*Pi
-					return Times(Power(CN1, parts.arg2()), Csc(parts.arg1()));
-				}
-			}
+			// IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+			// if (negExpr.isPresent()) {
+			// return Negate(Csc(negExpr));
+			// }
+			// IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+			// if (imPart.isPresent()) {
+			// return F.Times(F.CNI, F.Csch(imPart));
+			// }
+			// IAST parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, Pi);
+			// if (parts.isPresent()) {
+			// if (parts.arg2().isInteger()) {
+			// // period 2*Pi
+			// IInteger i = (IInteger) parts.arg2();
+			// if (i.isEven()) {
+			// return F.Csc(parts.arg1());
+			// } else {
+			// return F.Times(F.CN1, F.Csc(parts.arg1()));
+			// }
+			// }
+			// if (parts.arg2().isFraction()) {
+			// // period (n/m)*Pi
+			// IFraction f = (IFraction) parts.arg2();
+			// IInteger[] divRem = f.divideAndRemainder();
+			// IFraction rest = F.fraction(divRem[1], f.denominator());
+			// if (!divRem[0].isZero()) {
+			// if (divRem[0].isEven()) {
+			// return Csc(Plus(parts.arg1(), Times(rest, Pi)));
+			// } else {
+			// return Times(CN1, Csc(Plus(parts.arg1(), Times(rest, Pi))));
+			// }
+			// }
+			// if (f.isGreaterThan(F.C1D2)) {
+			// return F.Csc(F.Plus(F.Times(F.Subtract(f, C2), F.Pi), parts.arg1()));
+			// }
+			// if (rest.equals(C1D2) || rest.equals(F.CN1D2)) {
+			// // Csc(z) == Sec(Pi/2 - z)
+			// return Sec(Subtract(F.CPiHalf, arg1));
+			// }
+			// }
+			//
+			// if (parts.arg2().isIntegerResult()) {
+			// // period n*Pi
+			// return Times(Power(CN1, parts.arg2()), Csc(parts.arg1()));
+			// }
+			// }
 			return F.NIL;
 		}
 
@@ -1340,12 +1525,41 @@ public class ExpTrigsFunctions {
 			if (negExpr.isPresent()) {
 				return Cosh(negExpr);
 			}
+			if (arg1.isZero()) {
+				return F.C1;
+			}
+			if (arg1.isPlus()) {
+				IAST list = AbstractFunctionEvaluator.peelOffPlusI((IAST) arg1, EvalEngine.get());
+				if (list.isPresent()) {
+					IExpr k = list.arg1();
+					// arg1 == x - k/I * Pi
+					if (k.isRational()) {
+						IRational t = (IRational) k;
+						if (t.isLessThan(F.C0)) {
+							// Cosh(arg1-2*I*Pi*IntegerPart(1/2*t) + 2*I*Pi)
+							return F.Cosh(F.Plus(arg1, F.Times(F.CN2, F.CI, F.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
+									F.Times(F.C2, F.CI, F.Pi)));
+						} else if (t.isLessThan(F.C1D2)) {// t < 1/2
+							return F.NIL;
+						} else if (t.isLessThan(F.C1)) {// t < 1
+							// I * Sinh(arg1-1/2*I*Pi)
+							return F.Times(F.CI, F.Sinh(F.Plus(arg1, F.Times(F.CN1D2, F.CI, F.Pi))));
+						} else if (t.isLessThan(F.C2)) {// t < 2
+							// -Cosh(arg1 - I*Pi)
+							return F.Negate(F.Cosh(F.Subtract(arg1, F.Times(F.CI, F.Pi))));
+						}
+						// Cosh(arg1-2*I*Pi*IntegerPart(1/2*t) )
+						return F.Cosh(F.Plus(arg1, F.Times(F.CN2, F.CI, F.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
+					} else if (k.isIntegerResult()) {
+						// (-1)^k * Cosh( arg1 - list.arg2() )
+						return F.Times(F.Power(F.CN1, k), F.Cosh(F.Subtract(arg1, list.arg2())));
+					}
+				}
+			}
+
 			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 			if (imPart.isPresent()) {
 				return F.Cos(imPart);
-			}
-			if (arg1.isZero()) {
-				return F.C1;
 			}
 			return F.NIL;
 		}
@@ -1404,54 +1618,120 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
+
+			if (arg1.isPlus()) {
+				IExpr k = AbstractFunctionEvaluator.peelOffPlusRational((IAST) arg1, EvalEngine.get());
+				if (k != null) {
+					// arg1 == x + k*Pi
+					if (k.isRational()) {
+						IRational t = (IRational) k;
+						if (t.isLessThan(F.C0)) { // t < 0
+							// Cot(arg1 + Pi - Pi*IntegerPart(t))
+							return F.Cot(F.Plus(arg1, F.Pi, F.Times(F.CN1, F.Pi, t.integerPart())));
+						} else if (t.isLessThan(F.C1D2)) {// t < 1/2
+							return F.NIL;
+						} else if (t.isLessThan(F.C1)) {// t < 1
+							// -Tan(arg1-1/2*Pi)
+							return F.Negate(F.Tan(F.Plus(arg1, F.Times(F.CN1D2, F.Pi))));
+						} else {
+							// Cot(arg1 - Pi*IntegerPart(t))
+							return F.Cot(F.Plus(arg1, F.Times(F.CN1, F.Pi, t.integerPart())));
+						}
+					} else if (k.isIntegerResult()) {
+						// Cot( arg1 - k*Pi )
+						return F.Cot(F.Subtract(arg1, F.Times(k, F.Pi)));
+					}
+				}
+			}
+
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
 				return Negate(Cot(negExpr));
 			}
+
+			if (arg1.isTimes()) {
+				IAST timesAST = (IAST) arg1;
+				if (timesAST.size() == 3 && timesAST.arg1().isRational() && timesAST.arg2().isPi()) {
+					// t should be positive here!
+					IRational t = (IRational) timesAST.arg1();
+					if (t.isLessThan(F.C1D2)) {// t < 1/2
+						return F.NIL;
+					} else if (t.isLessThan(F.C1)) {// t < 1
+						// -Cot((1-t)*Pi)
+						return F.Negate(F.Cot(F.Times(F.Subtract(F.C1, t), F.Pi)));
+					} else if (t.isLessThan(F.C2)) {// t < 2
+						// Cot((t-1)*Pi)
+						return F.Cot(F.Times(F.Subtract(t, F.C1), F.Pi));
+					}
+					// Cot((t-2*Quotient(IntegerPart(t),2))*Pi)
+					return F.Cot(F.Times(F.Pi, F.Plus(t, ExpTrigsFunctions.integerPartFolded2(t))));
+				}
+				IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
+				if (t.isPresent() && t.im().isZero()) {
+					if (t.isIntegerResult()) {
+						return F.CComplexInfinity;
+					}
+					// t - 1/2
+					IExpr temp = EvalEngine.get().evaluate(F.Plus(t, F.CN1D2));
+					if (temp.isIntegerResult()) {
+						return F.C0;
+					}
+				}
+			}
+
 			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 			if (imPart.isPresent()) {
 				return Times(CNI, Coth(imPart));
 			}
 
-			if (arg1.isPlus()) {
-				IAST peel = AbstractFunctionEvaluator.peelOff((IAST) arg1, EvalEngine.get());
-				if (peel.isPresent()) {
-					IExpr m = peel.arg2();
-					if (m.isNegative()) {
-						IExpr x = peel.arg1();
-						return F.Negate(F.Tan(x));
-					}
-				}
-			}
-
-			IAST parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, Pi);
-			if (parts.isPresent()) {
-				if (parts.arg2().isInteger()) {
-					// period Pi
-					return Cot(parts.arg1());
-				}
-				if (parts.arg2().isFraction()) {
-					// period (n/m)*Pi
-					IFraction f = (IFraction) parts.arg2();
-					IInteger[] divRem = f.divideAndRemainder();
-					IFraction rest = F.fraction(divRem[1], f.denominator());
-					if (!divRem[0].isZero()) {
-						return Cot(Plus(parts.arg1(), Times(rest, Pi)));
-					}
-
-					if (rest.equals(C1D2)) {
-						// Cot(z) == Tan(Pi/2 - z)
-						return Tan(Subtract(Divide(Pi, C2), arg1));
-					}
-
-				}
-
-				if (parts.arg2().isIntegerResult()) {
-					// period Pi
-					return Cot(parts.arg1());
-				}
-
-			}
+			// IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+			// if (negExpr.isPresent()) {
+			// return Negate(Cot(negExpr));
+			// }
+			// IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+			// if (imPart.isPresent()) {
+			// return Times(CNI, Coth(imPart));
+			// }
+			//
+			// if (arg1.isPlus()) {
+			// IAST peel = AbstractFunctionEvaluator.peelOff((IAST) arg1, EvalEngine.get());
+			// if (peel.isPresent()) {
+			// IExpr m = peel.arg2();
+			// if (m.isNegative()) {
+			// IExpr x = peel.arg1();
+			// return F.Negate(F.Tan(x));
+			// }
+			// }
+			// }
+			//
+			// IAST parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, Pi);
+			// if (parts.isPresent()) {
+			// if (parts.arg2().isInteger()) {
+			// // period Pi
+			// return Cot(parts.arg1());
+			// }
+			// if (parts.arg2().isFraction()) {
+			// // period (n/m)*Pi
+			// IFraction f = (IFraction) parts.arg2();
+			// IInteger[] divRem = f.divideAndRemainder();
+			// IFraction rest = F.fraction(divRem[1], f.denominator());
+			// if (!divRem[0].isZero()) {
+			// return Cot(Plus(parts.arg1(), Times(rest, Pi)));
+			// }
+			//
+			// if (rest.equals(C1D2)) {
+			// // Cot(z) == Tan(Pi/2 - z)
+			// return Tan(Subtract(Divide(Pi, C2), arg1));
+			// }
+			//
+			// }
+			//
+			// if (parts.arg2().isIntegerResult()) {
+			// // period Pi
+			// return Cot(parts.arg1());
+			// }
+			//
+			// }
 			return F.NIL;
 		}
 
@@ -1519,6 +1799,34 @@ public class ExpTrigsFunctions {
 			}
 			if (arg1.isZero()) {
 				return F.CComplexInfinity;
+			}
+			if (arg1.isPlus()) {
+				IAST list = AbstractFunctionEvaluator.peelOffPlusI((IAST) arg1, EvalEngine.get());
+				if (list.isPresent()) {
+					IExpr k = list.arg1();
+					// arg1 == x - k/I * Pi
+					if (k.isRational()) {
+						IRational t = (IRational) k;
+						if (t.isLessThan(F.C0)) {
+							// Csch(arg1-2*I*Pi*IntegerPart(1/2*t) + 2*I*Pi)
+							return F.Csch(F.Plus(arg1, F.Times(F.CN2, F.CI, F.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
+									F.Times(F.C2, F.CI, F.Pi)));
+						} else if (t.isLessThan(F.C1D2)) {// t < 1/2
+							return F.NIL;
+						} else if (t.isLessThan(F.C1)) {// t < 1
+							// -I * Sech(arg1-1/2*I*Pi)
+							return F.Times(F.CNI, F.Sech(F.Plus(arg1, F.Times(F.CN1D2, F.CI, F.Pi))));
+						} else if (t.isLessThan(F.C2)) {// t < 2
+							// -Csch(arg1 - I*Pi)
+							return F.Negate(F.Csch(F.Subtract(arg1, F.Times(F.CI, F.Pi))));
+						}
+						// Csch(arg1-2*I*Pi*IntegerPart(1/2*t) )
+						return F.Csch(F.Plus(arg1, F.Times(F.CN2, F.CI, F.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
+					} else if (k.isIntegerResult()) {
+						// (-1)^k * Csch( arg1 - list.arg2() )
+						return F.Times(F.Power(F.CN1, k), F.Csch(F.Subtract(arg1, list.arg2())));
+					}
+				}
 			}
 			return F.NIL;
 		}
@@ -1802,54 +2110,135 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
+			if (arg1.isPlus()) {
+				IExpr k = AbstractFunctionEvaluator.peelOffPlusRational((IAST) arg1, EvalEngine.get());
+				if (k != null) {
+					// arg1 == x + k*Pi
+					if (k.isRational()) {
+						IRational t = (IRational) k;
+						if (t.isLessThan(F.C0)) {
+							// Sec(arg1 - 2*Pi*IntegerPart(1/2*t) + 2*Pi)
+							return F.Sec(F.Plus(arg1, F.Times(F.CN2Pi, F.IntegerPart(F.Times(F.C1D2, t))), F.C2Pi));
+						} else if (t.isLessThan(F.C1D2)) {// t < 1/2
+							return F.NIL;
+						} else if (t.isLessThan(F.C1)) {// t < 1
+							// -Csc(arg1-1/2*Pi)
+							return F.Negate(F.Csc(F.Plus(arg1, F.Times(F.CN1D2, F.Pi))));
+						} else if (t.isLessThan(F.C2)) { // t < 2
+							// -Sec(arg1-Pi)
+							return F.Negate(F.Sec(F.Plus(arg1, F.CNPi)));
+						}
+						// Sec(arg1 - 2*Pi*IntegerPart(1/2*t) )
+						return F.Sec(F.Plus(arg1, F.Times(F.CN2Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
+					} else if (k.isIntegerResult()) {
+						// (-1)^k * Sec( arg1 - k*Pi )
+						return F.Times(F.Power(F.CN1, k), F.Sec(F.Subtract(arg1, F.Times(k, F.Pi))));
+					}
+				}
+			}
+
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
 				return Sec(negExpr);
 			}
+
+			if (arg1.isTimes()) {
+				IAST timesAST = (IAST) arg1;
+				if (timesAST.size() == 3 && timesAST.arg1().isRational() && timesAST.arg2().isPi()) {
+					// t should be positive here!
+					IRational t = (IRational) timesAST.arg1();
+					if (t.isLessThan(F.C1D2)) {// t < 1/2
+						return F.NIL;
+					} else if (t.isLessThan(F.C1)) {// t < 1
+						// -Sec((1-t)*Pi)
+						return F.Negate(F.Sec(F.Times(F.Subtract(F.C1, t), F.Pi)));
+					} else if (t.isLessThan(F.C2)) {// t < 2
+						// Sec((2-t)*Pi)
+						return F.Sec(F.Times(F.Subtract(F.C2, t), F.Pi));
+					}
+					// Sec((t-2*Quotient(IntegerPart(t),2))*Pi)
+					return F.Sec(F.Times(F.Pi, F.Plus(t, ExpTrigsFunctions.integerPartFolded2(t))));
+				}
+
+				IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
+				if (t.isPresent() && t.im().isZero()) {
+					// 1/2 * t
+					IExpr temp1 = EvalEngine.get().evaluate(F.Times(F.C1D2, t));
+					if (temp1.isIntegerResult()) {
+						return F.C1;
+					}
+					// 1/2 * t - 1/2
+					IExpr temp2 = EvalEngine.get().evaluate(F.Plus(temp1, F.CN1D2));
+					if (temp2.isIntegerResult()) {
+						return F.CN1;
+					}
+					if (t.isIntegerResult()) {
+						return F.Power(F.CN1, t);
+					}
+
+					// t - 1/2
+					temp2 = EvalEngine.get().evaluate(F.Plus(t, F.CN1D2));
+					if (temp2.isIntegerResult()) {
+						return F.CComplexInfinity;
+					}
+
+				}
+
+			}
+
 			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 			if (imPart.isPresent()) {
 				return F.Sech(imPart);
 			}
-			IAST parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, Pi);
-			if (parts.isPresent()) {
-				if (parts.arg2().isInteger()) {
-					// period 2*Pi
-					IInteger i = (IInteger) parts.arg2();
-					if (i.isEven()) {
-						return Sec(parts.arg1());
-					} else {
-						return Negate(Sec(parts.arg1()));
-					}
-				}
 
-				if (parts.arg2().isFraction()) {
-					// period (n/m)*Pi
-					IFraction f = (IFraction) parts.arg2();
-					IInteger[] divRem = f.divideAndRemainder();
-					IFraction rest = F.fraction(divRem[1], f.denominator());
-					if (!divRem[0].isZero()) {
-						if (divRem[0].isEven()) {
-							return Sec(Plus(parts.arg1(), Times(rest, Pi)));
-						} else {
-							return Times(CN1, Sec(Plus(parts.arg1(), Times(rest, Pi))));
-						}
-					}
-					if (f.isGreaterThan(F.C1D2)) {
-						return F.Sec(F.Plus(F.Times(F.Subtract(f, C2), F.Pi), parts.arg1()));
-					}
-					if (rest.equals(F.CN1D2)) {
-						return Csc(parts.arg1());
-					}
-					if (rest.equals(C1D2)) {
-						return Times(CN1, Csc(parts.arg1()));
-					}
-				}
-
-				if (parts.arg2().isIntegerResult()) {
-					// period n*Pi
-					return Times(Power(CN1, parts.arg2()), Sec(parts.arg1()));
-				}
-			}
+			// IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+			// if (negExpr.isPresent()) {
+			// return Sec(negExpr);
+			// }
+			// IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+			// if (imPart.isPresent()) {
+			// return F.Sech(imPart);
+			// }
+			// IAST parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, Pi);
+			// if (parts.isPresent()) {
+			// if (parts.arg2().isInteger()) {
+			// // period 2*Pi
+			// IInteger i = (IInteger) parts.arg2();
+			// if (i.isEven()) {
+			// return Sec(parts.arg1());
+			// } else {
+			// return Negate(Sec(parts.arg1()));
+			// }
+			// }
+			//
+			// if (parts.arg2().isFraction()) {
+			// // period (n/m)*Pi
+			// IFraction f = (IFraction) parts.arg2();
+			// IInteger[] divRem = f.divideAndRemainder();
+			// IFraction rest = F.fraction(divRem[1], f.denominator());
+			// if (!divRem[0].isZero()) {
+			// if (divRem[0].isEven()) {
+			// return Sec(Plus(parts.arg1(), Times(rest, Pi)));
+			// } else {
+			// return Times(CN1, Sec(Plus(parts.arg1(), Times(rest, Pi))));
+			// }
+			// }
+			// if (f.isGreaterThan(F.C1D2)) {
+			// return F.Sec(F.Plus(F.Times(F.Subtract(f, C2), F.Pi), parts.arg1()));
+			// }
+			// if (rest.equals(F.CN1D2)) {
+			// return Csc(parts.arg1());
+			// }
+			// if (rest.equals(C1D2)) {
+			// return Times(CN1, Csc(parts.arg1()));
+			// }
+			// }
+			//
+			// if (parts.arg2().isIntegerResult()) {
+			// // period n*Pi
+			// return Times(Power(CN1, parts.arg2()), Sec(parts.arg1()));
+			// }
+			// }
 			return F.NIL;
 		}
 
@@ -1918,6 +2307,34 @@ public class ExpTrigsFunctions {
 			if (arg1.isZero()) {
 				return F.C0;
 			}
+			if (arg1.isPlus()) {
+				IAST list = AbstractFunctionEvaluator.peelOffPlusI((IAST) arg1, EvalEngine.get());
+				if (list.isPresent()) {
+					IExpr k = list.arg1();
+					// arg1 == x - k/I * Pi
+					if (k.isRational()) {
+						IRational t = (IRational) k;
+						if (t.isLessThan(F.C0)) {
+							// Sech(arg1-2*I*Pi*IntegerPart(1/2*t) + 2*I*Pi)
+							return F.Sech(F.Plus(arg1, F.Times(F.CN2, F.CI, F.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
+									F.Times(F.C2, F.CI, F.Pi)));
+						} else if (t.isLessThan(F.C1D2)) {// t < 1/2
+							return F.NIL;
+						} else if (t.isLessThan(F.C1)) {// t < 1
+							// -I * Csch(arg1-1/2*I*Pi)
+							return F.Times(F.CNI, F.Csch(F.Plus(arg1, F.Times(F.CN1D2, F.CI, F.Pi))));
+						} else if (t.isLessThan(F.C2)) {// t < 2
+							// -Sech(arg1 - I*Pi)
+							return F.Negate(F.Sech(F.Subtract(arg1, F.Times(F.CI, F.Pi))));
+						}
+						// Sech(arg1-2*I*Pi*IntegerPart(1/2*t) )
+						return F.Sech(F.Plus(arg1, F.Times(F.CN2, F.CI, F.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
+					} else if (k.isIntegerResult()) {
+						// (-1)^k * Sech( arg1 - list.arg2() )
+						return F.Times(F.Power(F.CN1, k), F.Sech(F.Subtract(arg1, list.arg2())));
+					}
+				}
+			}
 			return F.NIL;
 		}
 
@@ -1975,69 +2392,155 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
+
+			if (arg1.isPlus()) {
+				IExpr k = AbstractFunctionEvaluator.peelOffPlusRational((IAST) arg1, EvalEngine.get());
+				if (k != null) {
+					// arg1 == x + k*Pi
+					if (k.isRational()) {
+						IRational t = (IRational) k;
+						if (t.isLessThan(F.C0) || !F.C2.isGreaterThan(t)) {
+							// Sin(arg1-2*Pi*Floor(1/2*t))
+							return F.Sin(F.Plus(arg1, F.Times(F.CN2, F.Pi, F.Floor(F.Times(F.C1D2, t)))));
+						} else if (t.isLessThan(F.C1D2)) {// t < 1/2
+							// (arg1-t*Pi)
+							IExpr temp = EvalEngine.get().evaluate(arg1.subtract(t.times(F.Pi)));
+							IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(temp);
+							if (negExpr.isPresent()) {
+								// Cos(1/2*Pi - arg1)
+								return F.Cos(F.Subtract(F.Times(F.C1D2, F.Pi), arg1));
+							}
+
+						} else if (t.isLessThan(F.C1)) {// t < 1
+							// Cos(arg1-1/2*Pi)
+							return F.Cos(F.Plus(arg1, F.Times(F.CN1D2, F.Pi)));
+						} else if (t.isLessThan(F.C3D2)) {// t < 3/2
+							// -Sin(arg1-Pi)
+							return F.Negate(F.Sin(F.Subtract(arg1, F.Pi)));
+						} else { // t < 2
+							// -Cos(arg1-3/2*Pi)
+							return F.Negate(F.Cos(F.Plus(arg1, F.Times(F.CN3D2, F.Pi))));
+						}
+					} else if (k.isIntegerResult()) {
+						// (-1)^k * Sin( arg1 - k*Pi )
+						return F.Times(F.Power(F.CN1, k), F.Sin(F.Subtract(arg1, F.Times(k, F.Pi))));
+					}
+				}
+			}
+
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
 				return Negate(Sin(negExpr));
 			}
+
+			if (arg1.isTimes()) {
+				IAST timesAST = (IAST) arg1;
+				if (timesAST.size() == 3 && timesAST.arg1().isRational() && timesAST.arg2().isPi()) {
+					// t should be positive here!
+					IRational t = (IRational) timesAST.arg1();
+					if (t.isLessThan(F.C1D2)) {// t < 1/2
+						return F.NIL;
+					} else if (t.isLessThan(F.C1)) {// t < 1
+						// Sin((1-t)*Pi)
+						return F.Sin(F.Times(F.Subtract(F.C1, t), F.Pi));
+					} else if (t.isLessThan(F.C3D2)) {// t < 3/2
+						// -Sin((t-1)*Pi)
+						return F.Negate(F.Sin(F.Times(F.Subtract(t, F.C1), F.Pi)));
+					} else if (t.isLessThan(F.C2)) {// t < 2
+						// -Sin((2-t)*Pi)
+						return F.Negate(F.Sin(F.Times(F.Subtract(F.C2, t), F.Pi)));
+					}
+					// Sin((t-2*Quotient(IntegerPart(t),2))*Pi)
+					return F.Sin(F.Times(F.Pi, F.Plus(t, ExpTrigsFunctions.integerPartFolded2(t))));
+				}
+
+				IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
+				if (t.isPresent() && t.im().isZero()) {
+					if (t.isIntegerResult()) {
+						return F.C0;
+					}
+
+					// 1/2 * t
+					IExpr temp1 = EvalEngine.get().evaluate(F.Times(F.C1D2, t));
+					// 1/2 * t - 1/4
+					IExpr temp2 = EvalEngine.get().evaluate(F.Plus(temp1, F.CN1D4));
+					if (temp2.isIntegerResult()) {
+						return F.C1;
+					}
+					// 1/2 * t + 1/4
+					temp2 = EvalEngine.get().evaluate(F.Plus(temp1, F.C1D4));
+					if (temp2.isIntegerResult()) {
+						return F.CN1;
+					}
+					// t - 1/2
+					temp2 = EvalEngine.get().evaluate(F.Plus(t, F.CN1D2));
+					if (temp2.isIntegerResult()) {
+						// (-1) ^ (t-1/2)
+						return F.Power(F.CN1, temp2);
+					}
+
+				}
+
+			}
+
 			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 			if (imPart.isPresent()) {
 				return F.Times(F.CI, F.Sinh(imPart));
 			}
-			// if (arg1.isPlus()) {
-			// IAST peel = AbstractFunctionEvaluator.peelOff((IAST) arg1, EvalEngine.get());
-			// if (peel.isPresent()) {
-			// IExpr m = peel.arg2();
-			// if (!m.isZero()) {
-			// IExpr x = peel.arg1();
-			// return F.Plus(F.Times(F.Sin(m), F.Cos(x)), F.Times(F.Cos(m), F.Sin(x)));
+
+			// IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+			// if (negExpr.isPresent()) {
+			// return Negate(Sin(negExpr));
+			// }
+			// IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+			// if (imPart.isPresent()) {
+			// return F.Times(F.CI, F.Sinh(imPart));
+			// }
+			// IAST parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, Pi);
+			// if (parts.isPresent()) {
+			// if (parts.arg2().isInteger()) {
+			// // period n*Pi
+			// IInteger i = (IInteger) parts.arg2();
+			// if (i.isEven()) {
+			// return Sin(parts.arg1());
+			// } else {
+			// return Times(CN1, Sin(parts.arg1()));
 			// }
 			// }
+			//
+			// if (parts.arg2().isFraction()) {
+			// // period (n/m)*Pi
+			// IFraction f = (IFraction) parts.arg2();
+			// IInteger[] divRem = f.divideAndRemainder();
+			// IFraction rest = F.fraction(divRem[1], f.denominator());
+			// if (!divRem[0].isZero()) {
+			// if (divRem[0].isEven()) {
+			// return Sin(Plus(parts.arg1(), Times(rest, Pi)));
 			// }
-			IAST parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, Pi);
-			if (parts.isPresent()) {
-				if (parts.arg2().isInteger()) {
-					// period n*Pi
-					IInteger i = (IInteger) parts.arg2();
-					if (i.isEven()) {
-						return Sin(parts.arg1());
-					} else {
-						return Times(CN1, Sin(parts.arg1()));
-					}
-				}
-
-				if (parts.arg2().isFraction()) {
-					// period (n/m)*Pi
-					IFraction f = (IFraction) parts.arg2();
-					IInteger[] divRem = f.divideAndRemainder();
-					IFraction rest = F.fraction(divRem[1], f.denominator());
-					if (!divRem[0].isZero()) {
-						if (divRem[0].isEven()) {
-							return Sin(Plus(parts.arg1(), Times(rest, Pi)));
-						}
-						return Times(CN1, Sin(Plus(parts.arg1(), Times(rest, Pi))));
-					}
-					if (f.isGreaterThan(F.C1D2)) {
-						return F.Sin(F.Plus(F.Times(F.Subtract(f, C2), F.Pi), parts.arg1()));
-					}
-					if (rest.equals(C1D2)) {
-						// Sin(z) == Cos(Pi/2 - z)
-						return Cos(Subtract(F.CPiHalf, arg1));
-					}
-					if (rest.equals(F.CN1D2)) {
-						// Sin(z) == Cos(-Pi/2 - z)
-						return Negate(Cos(Subtract(F.CNPiHalf, arg1)));
-					}
-				}
-
-				if (parts.arg2().isIntegerResult()) {
-					// period n*Pi
-					return Times(Power(CN1, parts.arg2()), Sin(parts.arg1()));
-				}
-
-			}
-			if (arg1.isInterval1()) {
-				// return evalInterval(arg1);
-			}
+			// return Times(CN1, Sin(Plus(parts.arg1(), Times(rest, Pi))));
+			// }
+			// if (f.isGreaterThan(F.C1D2)) {
+			// return F.Sin(F.Plus(F.Times(F.Subtract(f, C2), F.Pi), parts.arg1()));
+			// }
+			// if (rest.equals(C1D2)) {
+			// // Sin(z) == Cos(Pi/2 - z)
+			// return Cos(Subtract(F.CPiHalf, arg1));
+			// }
+			// if (rest.equals(F.CN1D2)) {
+			// // Sin(z) == Cos(-Pi/2 - z)
+			// return Negate(Cos(Subtract(F.CNPiHalf, arg1)));
+			// }
+			// }
+			//
+			// if (parts.arg2().isIntegerResult()) {
+			// // period n*Pi
+			// return Times(Power(CN1, parts.arg2()), Sin(parts.arg1()));
+			// }
+			//
+			// }
+			// if (arg1.isInterval1()) {
+			// // return evalInterval(arg1);
+			// }
 			return F.NIL;
 		}
 
@@ -2261,6 +2764,34 @@ public class ExpTrigsFunctions {
 			if (arg1.isZero()) {
 				return F.C0;
 			}
+			if (arg1.isPlus()) {
+				IAST list = AbstractFunctionEvaluator.peelOffPlusI((IAST) arg1, EvalEngine.get());
+				if (list.isPresent()) {
+					IExpr k = list.arg1();
+					// arg1 == x - k/I * Pi
+					if (k.isRational()) {
+						IRational t = (IRational) k;
+						if (t.isLessThan(F.C0)) {
+							// Sinh(arg1-2*I*Pi*IntegerPart(1/2*t) + 2*I*Pi)
+							return F.Sinh(F.Plus(arg1, F.Times(F.CN2, F.CI, F.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
+									F.Times(F.C2, F.CI, F.Pi)));
+						} else if (t.isLessThan(F.C1D2)) {// t < 1/2
+							return F.NIL;
+						} else if (t.isLessThan(F.C1)) {// t < 1
+							// I * Cosh(arg1-1/2*I*Pi)
+							return F.Times(F.CI, F.Cosh(F.Plus(arg1, F.Times(F.CN1D2, F.CI, F.Pi))));
+						} else if (t.isLessThan(F.C2)) {// t < 2
+							// -Sinh(arg1 - I*Pi)
+							return F.Negate(F.Sinh(F.Subtract(arg1, F.Times(F.CI, F.Pi))));
+						}
+						// Sinh(arg1-2*I*Pi*IntegerPart(1/2*t) )
+						return F.Sinh(F.Plus(arg1, F.Times(F.CN2, F.CI, F.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
+					} else if (k.isIntegerResult()) {
+						// (-1)^k * Sinh( arg1 - list.arg2() )
+						return F.Times(F.Power(F.CN1, k), F.Sinh(F.Subtract(arg1, list.arg2())));
+					}
+				}
+			}
 			return F.NIL;
 		}
 
@@ -2318,53 +2849,120 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
+
+			if (arg1.isPlus()) {
+				IExpr k = AbstractFunctionEvaluator.peelOffPlusRational((IAST) arg1, EvalEngine.get());
+				if (k != null) {
+					// arg1 == x + k*Pi
+					if (k.isRational()) {
+						IRational t = (IRational) k;
+						if (t.isLessThan(F.C0)) { // t < 0
+							// Tan(arg1 + Pi - Pi*IntegerPart(t))
+							return F.Tan(F.Plus(arg1, F.Pi, F.Times(F.CNPi, t.integerPart())));
+						} else if (t.isLessThan(F.C1D2)) {// t < 1/2
+							return F.NIL;
+						} else if (t.isLessThan(F.C1)) {// t < 1
+							// -Cot(arg1-1/2*Pi)
+							return F.Negate(F.Cot(F.Plus(arg1, F.Times(F.CN1D2, F.Pi))));
+						}
+						// Tan(arg1 - Pi*IntegerPart(t))
+						return F.Tan(F.Plus(arg1, F.Times(F.CNPi, t.integerPart())));
+					} else if (k.isIntegerResult()) {
+						// Tan( arg1 - k*Pi )
+						return F.Tan(F.Subtract(arg1, F.Times(k, F.Pi)));
+					}
+				}
+			}
+
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
 				return Negate(Tan(negExpr));
 			}
+
+			if (arg1.isTimes()) {
+				IAST timesAST = (IAST) arg1;
+				if (timesAST.size() == 3 && timesAST.arg1().isRational() && timesAST.arg2().isPi()) {
+					// t should be positive here!
+					IRational t = (IRational) timesAST.arg1();
+					if (t.isLessThan(F.C1D2)) {// t < 1/2
+						return F.NIL;
+					} else if (t.equals(F.C1D2)) {// t == 1/2
+						return F.CComplexInfinity;
+					} else if (t.isLessThan(F.C1)) {// t < 1
+						// -Tan((1-t)*Pi)
+						return F.Negate(F.Tan(F.Times(F.Subtract(F.C1, t), F.Pi)));
+					} else if (t.isLessThan(F.C2)) {// t < 2
+						// Tan((t-1)*Pi)
+						return F.Tan(F.Times(F.Subtract(t, F.C1), F.Pi));
+					}
+					// Tan((t-2*Quotient(IntegerPart(t),2))*Pi)
+					return F.Tan(F.Times(F.Pi, F.Plus(t, ExpTrigsFunctions.integerPartFolded2(t))));
+				}
+				IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
+				if (t.isPresent() && t.im().isZero()) {
+					if (t.isIntegerResult()) {
+						return F.C0;
+					}
+					// t - 1/2
+					IExpr temp = EvalEngine.get().evaluate(F.Plus(t, F.CN1D2));
+					if (temp.isIntegerResult()) {
+						return F.CComplexInfinity;
+					}
+				}
+			}
+
 			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 			if (imPart.isPresent()) {
 				return F.Times(F.CI, F.Tanh(imPart));
 			}
 
-			if (arg1.isPlus()) {
-				IAST peel = AbstractFunctionEvaluator.peelOff((IAST) arg1, EvalEngine.get());
-				if (peel.isPresent()) {
-					IExpr m = peel.arg2();
-					if (m.isNegative()) {
-						IExpr x = peel.arg1();
-						return F.Negate(F.Cot(x));
-					}
-				}
-			}
-
-			IAST parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, F.Pi);
-			if (parts.isPresent()) {
-				if (parts.arg2().isInteger()) {
-					// period Pi
-					return F.Tan(parts.arg1());
-				}
-
-				if (parts.arg2().isFraction()) {
-					// period (n/m)*Pi
-					IFraction f = (IFraction) parts.arg2();
-					IInteger[] divRem = f.divideAndRemainder();
-					IFraction rest = F.fraction(divRem[1], f.denominator());
-					if (!divRem[0].isZero()) {
-						return Tan(Plus(parts.arg1(), Times(rest, Pi)));
-					}
-
-					if (rest.equals(C1D2)) {
-						// Tan(z) == Cot(Pi/2 - z)
-						return Cot(Subtract(Divide(Pi, C2), arg1));
-					}
-				}
-
-				if (parts.arg2().isIntegerResult()) {
-					// period Pi
-					return F.Tan(parts.arg1());
-				}
-			}
+			// IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+			// if (negExpr.isPresent()) {
+			// return Negate(Tan(negExpr));
+			// }
+			// IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+			// if (imPart.isPresent()) {
+			// return F.Times(F.CI, F.Tanh(imPart));
+			// }
+			//
+			// if (arg1.isPlus()) {
+			// IAST peel = AbstractFunctionEvaluator.peelOff((IAST) arg1, EvalEngine.get());
+			// if (peel.isPresent()) {
+			// IExpr m = peel.arg2();
+			// if (m.isNegative()) {
+			// IExpr x = peel.arg1();
+			// return F.Negate(F.Cot(x));
+			// }
+			// }
+			// }
+			//
+			// IAST parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, F.Pi);
+			// if (parts.isPresent()) {
+			// if (parts.arg2().isInteger()) {
+			// // period Pi
+			// return F.Tan(parts.arg1());
+			// }
+			//
+			// if (parts.arg2().isFraction()) {
+			// // period (n/m)*Pi
+			// IFraction f = (IFraction) parts.arg2();
+			// IInteger[] divRem = f.divideAndRemainder();
+			// IFraction rest = F.fraction(divRem[1], f.denominator());
+			// if (!divRem[0].isZero()) {
+			// return Tan(Plus(parts.arg1(), Times(rest, Pi)));
+			// }
+			//
+			// if (rest.equals(C1D2)) {
+			// // Tan(z) == Cot(Pi/2 - z)
+			// return Cot(Subtract(Divide(Pi, C2), arg1));
+			// }
+			// }
+			//
+			// if (parts.arg2().isIntegerResult()) {
+			// // period Pi
+			// return F.Tan(parts.arg1());
+			// }
+			// }
 			return F.NIL;
 		}
 
@@ -2433,6 +3031,32 @@ public class ExpTrigsFunctions {
 			if (arg1.isZero()) {
 				return F.C0;
 			}
+
+			if (arg1.isPlus()) {
+				IAST list = AbstractFunctionEvaluator.peelOffPlusI((IAST) arg1, EvalEngine.get());
+				if (list.isPresent()) {
+					IExpr k = list.arg1();
+					// arg1 == x - k/I * Pi
+					if (k.isRational()) {
+						IRational t = (IRational) k;
+						if (t.isLessThan(F.C0)) {
+							// Tanh(arg1-I*Pi*IntegerPart(t) + I*Pi )
+							return F.Tanh(F.Plus(arg1, F.Times(F.CNI, F.Pi, t.integerPart()), F.Times(F.CI, F.Pi)));
+						} else if (t.isLessThan(F.C1D2)) {// t < 1/2
+							return F.NIL;
+						} else if (t.isLessThan(F.C1)) {// t < 1
+							// Coth(arg1-1/2*I*Pi)
+							return F.Coth(F.Plus(arg1, F.Times(F.CN1D2, F.CI, F.Pi)));
+						}
+						// Tanh( arg1 - I*Pi*IntegerPart(t) )
+						return F.Tanh(F.Plus(arg1, F.Times(F.CNI, F.Pi, t.integerPart())));
+					} else if (k.isIntegerResult()) {
+						// Tanh( arg1 - list.arg2() )
+						return F.Tanh(F.Subtract(arg1, list.arg2()));
+					}
+				}
+			}
+
 			return F.NIL;
 		}
 
@@ -2608,6 +3232,18 @@ public class ExpTrigsFunctions {
 
 	private ExpTrigsFunctions() {
 
+	}
+
+	/**
+	 * <code>-2 * IntegerPart( IntegerPart(r) / 2 )</code>
+	 * 
+	 * @param r
+	 *            a rational number
+	 * @return
+	 */
+	private static IRational integerPartFolded2(IRational r) {
+		// -2 * IntegerPart( IntegerPart(r) / 2 )
+		return r.integerPart().multiply(F.C1D2).integerPart().multiply(F.CN2);
 	}
 
 }

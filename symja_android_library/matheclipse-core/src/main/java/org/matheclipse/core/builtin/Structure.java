@@ -564,6 +564,7 @@ public class Structure {
 				}
 				return F.NIL;
 			}
+			
 			if (ast.head().isAST()) {
 
 				final IAST function = (IAST) ast.head();

@@ -33,6 +33,7 @@
  Cosh(ArcCoth(x_)):=1/Sqrt(1 - x^(-2)),
  Cosh(ArcSech(x_)):=1/x,
  Cosh(ArcCsch(x_)):=Sqrt(1 + 1/x^2),
+ Cosh(Log(x_)):=(1/2)*x+(1/2)/x,
  
  Cosh(Infinity)=Infinity,
  Cosh(ComplexInfinity)=Indeterminate

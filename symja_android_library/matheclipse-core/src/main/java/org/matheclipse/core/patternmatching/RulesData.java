@@ -402,10 +402,7 @@ public final class RulesData implements Serializable {
 						pmEvaluator = (IPatternMatcher) patternEvaluator.clone();
 						if (showSteps) {
 							if (isShowSteps(pmEvaluator)) {
-								IExpr rhs = pmEvaluator.getRHS();
-								if (!rhs.isPresent()) {
-									rhs = F.Null;
-								}
+								IExpr rhs = pmEvaluator.getRHS().orElse(F.Null);
 								System.out.println(
 										" COMPLEX: " + pmEvaluator.getLHS().toString() + " := " + rhs.toString());
 							}

@@ -279,7 +279,7 @@ public abstract class AbstractFractionSym implements IFraction {
 	}
 
 	@Override
-	public abstract IFraction ceilFraction();
+	public abstract IInteger ceilFraction();
 
 	/** {@inheritDoc} */
 	@Override

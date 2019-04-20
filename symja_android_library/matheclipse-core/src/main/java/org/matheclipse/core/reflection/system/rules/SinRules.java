@@ -179,9 +179,9 @@ public interface SinRules {
     // Sin(ArcTan(x_)):=x/Sqrt(1+x^2)
     ISetDelayed(Sin(ArcTan(x_)),
       Times(x,Power(Plus(C1,Sqr(x)),CN1D2))),
-    // Sin(ArcCot(x_)):=1/(x*Sqrt(1+1/x^2))
+    // Sin(ArcCot(x_)):=1/Sqrt(1+x^2)
     ISetDelayed(Sin(ArcCot(x_)),
-      Times(Power(x,CN1),Power(Plus(C1,Power(x,CN2)),CN1D2))),
+      Power(Plus(C1,Sqr(x)),CN1D2)),
     // Sin(ArcCsc(x_)):=1/x
     ISetDelayed(Sin(ArcCsc(x_)),
       Power(x,CN1)),
