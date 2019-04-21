@@ -327,6 +327,7 @@ public class Exponentials extends AbstractRubiTestCase {
 
 	// {2288, 2283}
 	public void test0039() {
+		fSeconds=20;
 		check(//
 				"Integrate[(F^(e*(c + d*x))*H^(t*(r + s*x)))/(a + b*F^(e*(c + d*x))), x]", //
 				"(H^(t*(r + s*x))*Hypergeometric2F1[1, -((s*t*Log[H])/(d*e*Log[F])), 1 - (s*t*Log[H])/(d*e*Log[F]), -(a/(b*F^(e*(c + d*x))))])/(b*s*t*Log[H])", //
@@ -335,6 +336,7 @@ public class Exponentials extends AbstractRubiTestCase {
 
 	// {2288, 2283}
 	public void test0040() {
+		fSeconds=20;
 		check(//
 				"Integrate[(F^(e*(f + d*x))*H^(t*(r + s*x)))/(a + b*F^(e*(c + d*x))), x]", //
 				"(H^(t*(r + s*x))*Hypergeometric2F1[1, -((s*t*Log[H])/(d*e*Log[F])), 1 - (s*t*Log[H])/(d*e*Log[F]), -(a/(b*F^(e*(c + d*x))))])/(b*F^(e*(c - f))*s*t*Log[H])", //
