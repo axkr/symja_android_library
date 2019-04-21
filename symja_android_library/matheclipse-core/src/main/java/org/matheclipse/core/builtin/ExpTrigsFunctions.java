@@ -1816,10 +1816,10 @@ public class ExpTrigsFunctions {
 		}
 
 		@Override
-		public IExpr e1ObjArg(IExpr expr) {
-			if (expr.isPower()) {
-				IExpr base = expr.base();
-				IExpr exponent = expr.exponent();
+		public IExpr e1ObjArg(IExpr arg1) {
+			if (arg1.isPower()) {
+				IExpr base = arg1.base();
+				IExpr exponent = arg1.exponent();
 				// arg2*Log(arg1)
 				IExpr temp = F.eval(Times(exponent, F.Log(base)));
 				IExpr imTemp = F.eval(F.Im(temp));
@@ -1838,12 +1838,9 @@ public class ExpTrigsFunctions {
 				}
 
 			}
-
-			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(expr);
-			if (negExpr.isPresent()) {
-				if (negExpr.isPositiveResult()) {
-					return F.Plus(F.Log(negExpr), F.Times(CI, F.Pi));
-				}
+ 
+			if (arg1.isNegativeResult()) {
+				return F.Plus(F.Log(F.Negate(arg1)), F.Times(CI, F.Pi));
 			}
 			return F.NIL;
 		}

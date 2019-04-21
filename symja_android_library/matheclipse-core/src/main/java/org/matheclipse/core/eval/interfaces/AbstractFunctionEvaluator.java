@@ -95,8 +95,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 				return ((INumber) expression).negate();
 			}
 			return F.NIL;
-		}
-		if (expression.isAST()) {
+		} else if (expression.isAST()) {
 			if (checkTimesPlus && expression.isTimes()) {
 				IAST timesAST = ((IAST) expression);
 				IExpr arg1 = timesAST.arg1();
@@ -174,6 +173,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 			}
 		}
 		// if (expression.isNegativeResult()) {
+		// // doesn't work because of recursion calls
 		// return F.eval(F.Negate(expression));
 		// }
 		return F.NIL;
