@@ -11,6 +11,8 @@
  ArcCosh(I)=Log(I*(1+Sqrt(2))),
  
  ArcCosh(Infinity)=Infinity,
+ ArcCosh(-Infinity)=Infinity,
  ArcCosh(I*Infinity)=Infinity,
+ ArcCosh(-I*Infinity)=Infinity,
  ArcCosh(ComplexInfinity)=Infinity
 }

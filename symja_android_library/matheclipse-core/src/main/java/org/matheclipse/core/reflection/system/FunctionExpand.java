@@ -117,6 +117,30 @@ public class FunctionExpand extends AbstractEvaluator {
 					F.Times(F.Power(F.Times(F.Sqrt(F.Subtract(F.C1, x)), F.Sqrt(F.Plus(F.C1, x))), F.CN1),
 							F.Sin(F.Times(F.Plus(F.C1, n), F.ArcCos(x))))); // $$);
 
+			// CosIntegral
+			MATCHER.caseOf(F.CosIntegral(F.Times(F.CN1, x_)), //
+					// [$ CosIntegral(x) + Log(x) - Log(x)
+					// $]
+					F.Plus(F.CosIntegral(x), F.Negate(F.Log(x)), F.Log(x))); // $$);
+			MATCHER.caseOf(F.CosIntegral(F.Times(F.CI, x_)), //
+					// [$ CoshIntegral(x) - Log(x) + Log(I*x)
+					// $]
+					F.Plus(F.CoshIntegral(x), F.Negate(F.Log(x)), F.Log(F.Times(F.CI, x)))); // $$);
+			MATCHER.caseOf(F.CosIntegral(F.Times(F.CNI, x_)), //
+					// [$ CoshIntegral(x) - Log(x) + Log(-I*x)
+					// $]
+					F.Plus(F.CoshIntegral(x), F.Negate(F.Log(x)), F.Log(F.Times(F.CNI, x)))); // $$);
+			MATCHER.caseOf(F.CosIntegral(F.Power(F.Power(x_, F.C2), F.C1D2)), //
+					// [$ CosIntegral(x) + Log(Sqrt(x^2)) - Log(x)
+					// $]
+					F.Plus(F.CosIntegral(x), F.Negate(F.Log(x)), F.Log(F.Sqrt(F.Sqr(x))))); // $$);
+
+			// SinIntegral
+			MATCHER.caseOf(F.SinIntegral(F.Power(F.Power(x_, F.C2), F.C1D2)), //
+					// [$ (Sqrt(x^2)/x) * SinIntegral(x)
+					// $]
+					F.Times(F.Power(x, F.CN1), F.Sqrt(F.Sqr(x)), F.SinIntegral(x))); // $$);
+
 			// Factorial
 			MATCHER.caseOf(Factorial(x_), //
 					// [$ Gamma(1+x) $]
@@ -164,10 +188,21 @@ public class FunctionExpand extends AbstractEvaluator {
 					// [$ 1/2*(1+Sqrt(5)) $]
 					F.Times(F.C1D2, F.Plus(F.C1, F.CSqrt5))); // $$);
 
+			// Log
 			MATCHER.caseOf(F.Log(F.Times(m_, n_)), //
 					// [$ (Log(m)+Log(n)) /; Positive(m)
 					// $]
 					F.Condition(F.Plus(F.Log(m), F.Log(n)), F.Positive(m))); // $$);
+
+			// Log(x^(y_?( RealNumberQ(#) && (x>-1) && (#<1) )& ))
+			MATCHER.caseOf(
+					F.Log(F.Power(x_,
+							F.PatternTest(y_,
+									(F.Function(F.And(F.RealNumberQ(F.Slot1), F.Greater(F.Slot1, F.CN1),
+											F.Less(F.Slot1, F.C1))))))), //
+					// [$ (y * Log(x))
+					// $]
+					F.Times(y, F.Log(x))); // $$);
 
 			MATCHER.caseOf(F.BartlettWindow.of(x_), WindowFunctions.bartlettWindow(x));
 			MATCHER.caseOf(F.BlackmanHarrisWindow.of(x_), WindowFunctions.blackmanHarrisWindow(x));

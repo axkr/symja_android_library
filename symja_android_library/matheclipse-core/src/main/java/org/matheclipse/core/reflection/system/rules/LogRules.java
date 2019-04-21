@@ -23,8 +23,8 @@ public interface LogRules {
     // Log(E)=1
     ISet(Log(E),
       C1),
-    // Log(E^x_RealNumberQ):=x
-    ISetDelayed(Log(Exp($p(x,RealNumberQ))),
+    // Log(E^x_?RealNumberQ):=x
+    ISetDelayed(Log(Exp(PatternTest(x_,RealNumberQ))),
       x),
     // Log(E^x_Complex):=x+2*I*Pi*Floor((Pi-Im(x))/(2*Pi))
     ISetDelayed(Log(Exp($p(x,Complex))),
