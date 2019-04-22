@@ -502,7 +502,11 @@ public class TensorFunctions {
 	}
 
 	private static class TensorProduct extends AbstractNonOrderlessArgMultiple {
-
+		
+		public IExpr evaluateAST1(final IAST ast, EvalEngine engine) {
+			return ast.arg1();
+		}
+		
 		@Override
 		public IExpr e2ObjArg(IAST ast, final IExpr o0, final IExpr o1) {
 			if (o0.isList() && o1.isList()) {
