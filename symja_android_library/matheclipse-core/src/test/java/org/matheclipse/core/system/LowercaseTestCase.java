@@ -3842,6 +3842,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testErfi() {
+		check("Erfi(-42*I*x)", //
+				"-I*Erf(42*x)");
+		check("Erfi(43*I*x)", //
+				"I*Erf(43*x)");
 		check("Erfi((-1)^(1/4)*2.0^2)", //
 				"(I*1.0)*Erf(-2.82843+I*2.82843)");
 		check("Erfi(0)", //
@@ -9668,17 +9672,28 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPermutations() {
-		check("Permutations({1, 2, 3}, 2)", "{{},{1},{2},{3},{1,2},{1,3},{2,1},{2,3},{3,1},{3,2}}");
-		check("Permutations({1, 2, 3}, {2})", "{{1,2},{1,3},{2,1},{2,3},{3,1},{3,2}}");
-		check("Permutations({a,b,c})", "{{a,b,c},{a,c,b},{b,a,c},{b,c,a},{c,a,b},{c,b,a}}");
-		check("Permutations({a,b,c}, {2})", "{{a,b},{a,c},{b,a},{b,c},{c,a},{c,b}}");
+		// TODO
+		// check("Permutations({1, 2, 1} )", //
+		// "");
+		check("Permutations({1, 2, 3}, 2)", //
+				"{{},{1},{2},{3},{1,2},{1,3},{2,1},{2,3},{3,1},{3,2}}");
+		check("Permutations({1, 2, 3}, {2})", //
+				"{{1,2},{1,3},{2,1},{2,3},{3,1},{3,2}}");
+		check("Permutations({a,b,c})", //
+				"{{a,b,c},{a,c,b},{b,a,c},{b,c,a},{c,a,b},{c,b,a}}");
+		check("Permutations({a,b,c}, {2})", //
+				"{{a,b},{a,c},{b,a},{b,c},{c,a},{c,b}}");
 
-		check("Permutations({a},{0})", "{{}}");
-		check("Permutations({a,b,c,d},{3})",
+		check("Permutations({a},{0})", //
+				"{{}}");
+		check("Permutations({a,b,c,d},{3})", //
 				"{{a,b,c},{a,b,d},{a,c,b},{a,c,d},{a,d,b},{a,d,c},{b,a,c},{b,a,d},{b,c,a},{b,c,d},{b,d,a},{b,d,c},{c,a,b},{c,a,d},{c,b,a},{c,b,d},{c,d,a},{c,d,b},{d,a,b},{d,a,c},{d,b,a},{d,b,c},{d,c,a},{d,c,b}}");
-		check("Permutations({a,a,b})", "{{a,a,b},{a,b,a},{b,a,a}}");
-		check("Permutations({a,a,b,b})", "{{a,a,b,b},{a,b,a,b},{a,b,b,a},{b,a,a,b},{b,a,b,a},{b,b,a,a}}");
-		check("Permutations({a,a,b,b},{3})", "{{a,a,b},{a,b,a},{a,b,b},{b,a,a},{b,a,b},{b,b,a}}");
+		check("Permutations({a,a,b})", //
+				"{{a,a,b},{a,b,a},{b,a,a}}");
+		check("Permutations({a,a,b,b})", //
+				"{{a,a,b,b},{a,b,a,b},{a,b,b,a},{b,a,a,b},{b,a,b,a},{b,b,a,a}}");
+		check("Permutations({a,a,b,b},{3})", //
+				"{{a,a,b},{a,b,a},{a,b,b},{b,a,a},{b,a,b},{b,b,a}}");
 	}
 
 	public void testPiecewise() {
@@ -9707,43 +9722,72 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPlus() {
-		check("-Infinity+0.0", "-Infinity");
-		check("Infinity+0.0", "Infinity");
-		check("-Infinity+Sin(-2)", "-Infinity");
-		check("-Infinity+Log(2)", "-Infinity");
-		check("Infinity+Sin(-2)", "Infinity");
-		check("Infinity+Log(2)", "Infinity");
+		check("-Infinity+0.0", //
+				"-Infinity");
+		check("Infinity+0.0", //
+				"Infinity");
+		check("-Infinity+Sin(-2)", //
+				"-Infinity");
+		check("-Infinity+Log(2)", //
+				"-Infinity");
+		check("Infinity+Sin(-2)", //
+				"Infinity");
+		check("Infinity+Log(2)", //
+				"Infinity");
 
-		check("{1,2}+{4,5,6}", "{1,2}+{4,5,6}");
+		check("{1,2}+{4,5,6}", //
+				"{1,2}+{4,5,6}");
 		// check("2+4/3*2^b/c", //
 		// "2+2^(2+b)/(3*c)");
-		check("Refine(Infinity+x, x>0)", "Infinity");
+		check("Refine(Infinity+x, x>0)", //
+				"Infinity");
 
 		// String s = System.getProperty("os.name");
 		// if (s.contains("Windows")) {
-		check("N(Pi, 30) + N(E, 30)", "5.85987448204883847382293085463");
-		check("N(Pi, 30) + N(E, 30) // Precision", "30");
-		check("N(Pi, 30) + I", "3.14159265358979323846264338327+I*1");
-		check("N(Pi, 30) + E", "5.85987448204883832925824168169");
+		check("N(Pi, 30) + N(E, 30)", //
+				"5.85987448204883847382293085463");
+		check("N(Pi, 30) + N(E, 30) // Precision", //
+				"30");
+		check("N(Pi, 30) + I", //
+				"3.14159265358979323846264338327+I*1");
+		check("N(Pi, 30) + E", //
+				"5.85987448204883832925824168169");
 		// }
-		check("1 + 2", "3");
-		check("a + b + a", "2*a+b");
-		check("a + a + 3 * a", "5*a");
-		check("a + b + 4.5 + a + b + a + 2 + 1.5*b", "6.5+3.0*a+3.5*b");
-		check("Plus @@ {2, 4, 6}", "12");
-		check("Plus @@ Range(1000)", "500500");
-		check("a /. n_. + x_ :> {n, x}", "{0,a}");
-		check("-2*a - 2*b", "-2*a-2*b");
-		check("1 - I * Sqrt(3)", "1-I*Sqrt(3)");
-		check("Head(3 + 2*I)", "Complex");
+		check("1 + 2", //
+				"3");
+		check("a + b + a", //
+				"2*a+b");
+		check("a + a + 3 * a", //
+				"5*a");
+		check("a + b + 4.5 + a + b + a + 2 + 1.5*b", //
+				"6.5+3.0*a+3.5*b");
+		check("Plus @@ {2, 4, 6}", //
+				"12");
+		check("Plus @@ Range(1000)", //
+				"500500");
+		check("a /. n_. + x_ :> {n, x}", //
+				"{0,a}");
+		check("-2*a - 2*b", //
+				"-2*a-2*b");
+		check("1 - I * Sqrt(3)", //
+				"1-I*Sqrt(3)");
+		check("Head(3 + 2*I)", //
+				"Complex");
 
-		check("Interval({1,6})+Interval({0,2})", "Interval({1,8})");
-		check("Interval({a,b})+z", "z+Interval({a,b})");
-		check("(Interval({-1,1})+1/2)^2 - 1/4", "Interval({-1/4,2})");
-		check("f+Interval({a,b})+Interval({c,d})", "f+Interval({a+c,b+d})");
-		check("Interval({a,b})+Interval({c,d})", "Interval({a+c,b+d})");
-		check("1+Interval({2,3})", "Interval({3,4})");
-		check("Plus()", "0");
+		check("Interval({1,6})+Interval({0,2})", //
+				"Interval({1,8})");
+		check("Interval({a,b})+z", //
+				"z+Interval({a,b})");
+		check("(Interval({-1,1})+1/2)^2 - 1/4", //
+				"Interval({-1/4,2})");
+		check("f+Interval({a,b})+Interval({c,d})", //
+				"f+Interval({a+c,b+d})");
+		check("Interval({a,b})+Interval({c,d})", //
+				"Interval({a+c,b+d})");
+		check("1+Interval({2,3})", //
+				"Interval({3,4})");
+		check("Plus()", //
+				"0");
 	}
 
 	public void testPochhammer() {

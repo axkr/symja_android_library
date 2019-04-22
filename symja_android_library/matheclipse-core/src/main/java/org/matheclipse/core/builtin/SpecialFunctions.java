@@ -369,6 +369,10 @@ public class SpecialFunctions {
 			if (z.isComplexInfinity()) {
 				return F.Indeterminate;
 			}
+			if (z.isTimes() && z.first().isComplex() && z.first().re().isZero()) {
+				// I * Erf(-I*z)
+				return F.Times(F.I, F.Erf(F.Times(F.CNI, z)));
+			}
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
 			if (negExpr.isPresent()) {
 				return Negate(F.Erfi(negExpr));
