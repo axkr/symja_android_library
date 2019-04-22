@@ -4149,8 +4149,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "16+a*b+32*x+24*x^2+8*x^3+x^4");
 
 		// github #121
-		// check("Factor(x^(12)-y^(12), GaussianIntegers->True)", //
-		// "Factor(x^12-y^12,GaussianIntegers->True)");
+		check("Factor(x^(12)-y^(12), GaussianIntegers->True)", //
+				"-(-x+y)*(x+y)*(-I*x+y)*(I*x+y)*(x^2+x*y+y^2)*(x^2-x*y+y^2)*(-x^2-I*x*y+y^2)*(-x^\n" + 
+				"2+I*x*y+y^2)");
 		check("Factor(x^(2)+y^(2), GaussianIntegers->True)", //
 				"(-I*x+y)*(I*x+y)");
 
@@ -11169,7 +11170,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"(-1)^(1+k)");
 		check("Refine((-1)^(4*k), Element(k, Integers))", //
 				"1");
-		
+
 		check("Refine(Log(-3/4), x < 0)", //
 				"I*Pi-Log(4/3)");
 		check("Refine(Log(x), x < 0)", //

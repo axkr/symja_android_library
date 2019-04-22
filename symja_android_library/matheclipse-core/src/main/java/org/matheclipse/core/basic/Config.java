@@ -44,13 +44,13 @@ public class Config {
 	 * Maximum number for the leaf count of an expression so that <code>Simplify()</code> will try calling
 	 * <code>Factor()</code>.
 	 */
-	public static final int MAX_SIMPLIFY_FACTOR_LEAFCOUNT = 25;
+	public static final int MAX_SIMPLIFY_FACTOR_LEAFCOUNT = 50;
 
 	/**
 	 * Maximum number for the leaf count of an expression so that <code>Simplify()</code> will try calling
 	 * <code>Apart()</code>.
 	 */
-	public static final int MAX_SIMPLIFY_APART_LEAFCOUNT = 25;
+	public static final int MAX_SIMPLIFY_APART_LEAFCOUNT = 50;
 
 	/**
 	 * Maximum number for the leaf count of an expression so that <code>Simplify()</code> will try calling
