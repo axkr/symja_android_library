@@ -17,7 +17,6 @@
 	<classpathentry kind="lib" path="lib/log4j-core-2.5.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-android-1.7.25.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-over-slf4j-1.7.25.jar"/>
-	<classpathentry kind="lib" path="lib/jas-2.6.5961.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-core-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-fft-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-fitting-1.4.jar"/>
@@ -36,5 +35,6 @@
 	<classpathentry kind="lib" path="lib/guava-27.1-android.jar"/>
 	<classpathentry kind="lib" path="lib/failureaccess-1.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/logicng-1.5.0.jar"/>
+	<classpathentry kind="lib" path="lib/jas-2.6.5988.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

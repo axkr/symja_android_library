@@ -76,7 +76,7 @@
 			<dependency>
 				<groupId>de.uni-mannheim.rz.krum</groupId>
 				<artifactId>jas</artifactId>
-				<version>2.6.5961</version>
+				<version>2.6.5988</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apfloat</groupId>
