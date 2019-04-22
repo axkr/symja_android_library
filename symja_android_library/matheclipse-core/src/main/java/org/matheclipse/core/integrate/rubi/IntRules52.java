@@ -92,7 +92,7 @@ IIntegrate(2635,Int(Power(Times(b_DEFAULT,$($s("§sin"),Plus(c_DEFAULT,Times(d_D
     Condition(Plus(Negate(Simp(Times(b,Cos(Plus(c,Times(d,x))),Power(Times(b,Sin(Plus(c,Times(d,x)))),Subtract(n,C1)),Power(Times(d,n),CN1)),x)),Dist(Times(Sqr(b),Subtract(n,C1),Power(n,CN1)),Int(Power(Times(b,Sin(Plus(c,Times(d,x)))),Subtract(n,C2)),x),x)),And(FreeQ(List(b,c,d),x),GtQ(n,C1),IntegerQ(Times(C2,n)))));
 IIntegrate(2636,Int(Power(Times(b_DEFAULT,$($s("§sin"),Plus(c_DEFAULT,Times(d_DEFAULT,x_)))),n_),x_Symbol),
     Condition(Plus(Simp(Times(Cos(Plus(c,Times(d,x))),Power(Times(b,Sin(Plus(c,Times(d,x)))),Plus(n,C1)),Power(Times(b,d,Plus(n,C1)),CN1)),x),Dist(Times(Plus(n,C2),Power(Times(Sqr(b),Plus(n,C1)),CN1)),Int(Power(Times(b,Sin(Plus(c,Times(d,x)))),Plus(n,C2)),x),x)),And(FreeQ(List(b,c,d),x),LtQ(n,CN1),IntegerQ(Times(C2,n)))));
-IIntegrate(2637,Int($($s("§sin"),Plus(Times(C1D2,Pi),c_DEFAULT,Times(d_DEFAULT,x_))),x_Symbol),
+IIntegrate(2637,Int($($s("§sin"),Plus(CPiHalf,c_DEFAULT,Times(d_DEFAULT,x_))),x_Symbol),
     Condition(Simp(Times(Sin(Plus(c,Times(d,x))),Power(d,CN1)),x),FreeQ(List(c,d),x)));
 IIntegrate(2638,Int($($s("§sin"),Plus(c_DEFAULT,Times(d_DEFAULT,x_))),x_Symbol),
     Condition(Negate(Simp(Times(Cos(Plus(c,Times(d,x))),Power(d,CN1)),x)),FreeQ(List(c,d),x)));

@@ -162,13 +162,15 @@ public class VectorAnalysisFunctions {
 						// [$ {{(x^3*Conjugate(x)^3)/Abs(x)^6,0,0},{0,Cos(theta),-((x^2*Conjugate(x)*
 						// Sin(theta))/Abs(x)^3)},{0,(x*Conjugate(x)^2*Sin(theta))/Abs(x)^3,(x^3*Conjugate(x)^3*
 						// Cos(theta))/Abs(x)^6}} $]
-						F.List(F.List(F.Times(F.Power(x, 3), F.Power(F.Abs(x), -6), F.Power(F.Conjugate(x), 3)), F.C0,
-								F.C0),
+						F.List(F.List(
+								F.Times(F.Power(x, F.C3), F.Power(F.Abs(x), F.CN6), F.Power(F.Conjugate(x), F.C3)),
+								F.C0, F.C0),
 								F.List(F.C0, F.Cos(theta),
-										F.Times(F.CN1, F.Sqr(x), F.Power(F.Abs(x), -3), F.Conjugate(x), F.Sin(theta))),
-								F.List(F.C0, F.Times(x, F.Power(F.Abs(x), -3), F.Sqr(F.Conjugate(x)), F.Sin(theta)),
-										F.Times(F.Power(x, 3), F.Power(F.Abs(x), -6), F.Power(F.Conjugate(x), 3),
-												F.Cos(theta)))); // $$;
+										F.Times(F.CN1, F.Sqr(x), F.Power(F.Abs(x), F.CN3), F.Conjugate(x),
+												F.Sin(theta))),
+								F.List(F.C0, F.Times(x, F.Power(F.Abs(x), F.CN3), F.Sqr(F.Conjugate(x)), F.Sin(theta)),
+										F.Times(F.Power(x, F.C3), F.Power(F.Abs(x), F.CN6),
+												F.Power(F.Conjugate(x), F.C3), F.Cos(theta)))); // $$;
 					}
 					if (x.isZero()) {
 						return
@@ -176,12 +178,14 @@ public class VectorAnalysisFunctions {
 						// {{Cos(theta),0,(y^2*Conjugate(y)*Sin(theta))/Abs(y)^3},{0,(y^3*Conjugate(y)^3)/Abs(y)^6,0},{-((y*Conjugate(y)^2*Sin(theta))/Abs(y)^3),0,(y^3*Conjugate(y)^3*Cos(theta))/Abs(y)^6}}
 						// $]
 						F.List(F.List(F.Cos(theta), F.C0,
-								F.Times(F.Sqr(y), F.Power(F.Abs(y), -3), F.Conjugate(y), F.Sin(theta))),
-								F.List(F.C0, F.Times(F.Power(y, 3), F.Power(F.Abs(y), -6), F.Power(F.Conjugate(y), 3)),
+								F.Times(F.Sqr(y), F.Power(F.Abs(y), F.CN3), F.Conjugate(y), F.Sin(theta))),
+								F.List(F.C0,
+										F.Times(F.Power(y, F.C3), F.Power(F.Abs(y), F.CN6),
+												F.Power(F.Conjugate(y), F.C3)),
 										F.C0),
-								F.List(F.Times(F.CN1, y, F.Power(F.Abs(y), -3), F.Sqr(F.Conjugate(y)), F.Sin(theta)),
-										F.C0, F.Times(F.Power(y, 3), F.Power(F.Abs(y), -6), F.Power(F.Conjugate(y), 3),
-												F.Cos(theta)))); // $$;
+								F.List(F.Times(F.CN1, y, F.Power(F.Abs(y), F.CN3), F.Sqr(F.Conjugate(y)), F.Sin(theta)),
+										F.C0, F.Times(F.Power(y, F.C3), F.Power(F.Abs(y), F.CN6),
+												F.Power(F.Conjugate(y), F.C3), F.Cos(theta)))); // $$;
 					}
 					return F.NIL;
 				}
@@ -189,10 +193,10 @@ public class VectorAnalysisFunctions {
 					return
 					// [$ {{Cos(theta),-((z*Sin(theta))/Abs(z)),0},{(Conjugate(z)*Sin(theta))/Abs(z),(z*Conjugate(z)*
 					// Cos(theta))/Abs(z)^2,0},{0,0,(z*Conjugate(z))/Abs(z)^2}} $]
-					F.List(F.List(F.Cos(theta), F.Times(F.CN1, z, F.Power(F.Abs(z), -1), F.Sin(theta)), F.C0),
-							F.List(F.Times(F.Power(F.Abs(z), -1), F.Conjugate(z), F.Sin(theta)),
-									F.Times(z, F.Power(F.Abs(z), -2), F.Conjugate(z), F.Cos(theta)), F.C0),
-							F.List(F.C0, F.C0, F.Times(z, F.Power(F.Abs(z), -2), F.Conjugate(z)))); // $$;
+					F.List(F.List(F.Cos(theta), F.Times(F.CN1, z, F.Power(F.Abs(z), F.CN1), F.Sin(theta)), F.C0),
+							F.List(F.Times(F.Power(F.Abs(z), F.CN1), F.Conjugate(z), F.Sin(theta)),
+									F.Times(z, F.Power(F.Abs(z), F.CN2), F.Conjugate(z), F.Cos(theta)), F.C0),
+							F.List(F.C0, F.C0, F.Times(z, F.Power(F.Abs(z), F.CN2), F.Conjugate(z)))); // $$;
 				}
 				return F.NIL;
 			}

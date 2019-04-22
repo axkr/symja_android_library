@@ -19,7 +19,7 @@ public interface ArcCosRules {
     IInit(ArcCos, SIZES),
     // ArcCos(0)=Pi/2
     ISet(ArcCos(C0),
-      Times(C1D2,Pi)),
+      CPiHalf),
     // ArcCos(1/2)=Pi/3
     ISet(ArcCos(C1D2),
       Times(C1D3,Pi)),
@@ -58,10 +58,10 @@ public interface ArcCosRules {
       Pi),
     // ArcCos(I)=Pi/2+I*Log(-1+Sqrt(2))
     ISet(ArcCos(CI),
-      Plus(Times(C1D2,Pi),Times(CI,Log(Plus(CN1,CSqrt2))))),
+      Plus(CPiHalf,Times(CI,Log(Plus(CN1,CSqrt2))))),
     // ArcCos(-I)=Pi/2+I*Log(1+Sqrt(2))
     ISet(ArcCos(CNI),
-      Plus(Times(C1D2,Pi),Times(CI,Log(Plus(C1,CSqrt2))))),
+      Plus(CPiHalf,Times(CI,Log(Plus(C1,CSqrt2))))),
     // ArcCos(Infinity)=I*Infinity
     ISet(ArcCos(oo),
       DirectedInfinity(CI)),

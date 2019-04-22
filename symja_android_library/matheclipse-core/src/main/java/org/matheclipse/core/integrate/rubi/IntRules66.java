@@ -21,12 +21,12 @@ public class IntRules66 {
 
 		private static void init() {
 IIntegrate(3301,Int(Times(Power(Plus(c_DEFAULT,Times(d_DEFAULT,x_)),CN1),$($s("§sin"),Plus(e_DEFAULT,Times(Complex(C0,$p("fz")),f_DEFAULT,x_)))),x_Symbol),
-    Condition(Simp(Times(CoshIntegral(Plus(Times(c,f,$s("fz"),Power(d,CN1)),Times(f,$s("fz"),x))),Power(d,CN1)),x),And(FreeQ(List(c,d,e,f,$s("fz")),x),EqQ(Subtract(Times(d,Subtract(e,Times(C1D2,Pi))),Times(c,f,$s("fz"),CI)),C0))));
+    Condition(Simp(Times(CoshIntegral(Plus(Times(c,f,$s("fz"),Power(d,CN1)),Times(f,$s("fz"),x))),Power(d,CN1)),x),And(FreeQ(List(c,d,e,f,$s("fz")),x),EqQ(Subtract(Times(d,Subtract(e,CPiHalf)),Times(c,f,$s("fz"),CI)),C0))));
 IIntegrate(3302,Int(Times(Power(Plus(c_DEFAULT,Times(d_DEFAULT,x_)),CN1),$($s("§sin"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))),x_Symbol),
-    Condition(Simp(Times(CosIntegral(Plus(e,Times(CN1,C1D2,Pi),Times(f,x))),Power(d,CN1)),x),And(FreeQ(List(c,d,e,f),x),EqQ(Subtract(Times(d,Subtract(e,Times(C1D2,Pi))),Times(c,f)),C0))));
+    Condition(Simp(Times(CosIntegral(Plus(e,Times(CN1,C1D2,Pi),Times(f,x))),Power(d,CN1)),x),And(FreeQ(List(c,d,e,f),x),EqQ(Subtract(Times(d,Subtract(e,CPiHalf)),Times(c,f)),C0))));
 IIntegrate(3303,Int(Times(Power(Plus(c_DEFAULT,Times(d_DEFAULT,x_)),CN1),$($s("§sin"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))),x_Symbol),
     Condition(Plus(Dist(Cos(Times(Subtract(Times(d,e),Times(c,f)),Power(d,CN1))),Int(Times(Sin(Plus(Times(c,f,Power(d,CN1)),Times(f,x))),Power(Plus(c,Times(d,x)),CN1)),x),x),Dist(Sin(Times(Subtract(Times(d,e),Times(c,f)),Power(d,CN1))),Int(Times(Cos(Plus(Times(c,f,Power(d,CN1)),Times(f,x))),Power(Plus(c,Times(d,x)),CN1)),x),x)),And(FreeQ(List(c,d,e,f),x),NeQ(Subtract(Times(d,e),Times(c,f)),C0))));
-IIntegrate(3304,Int(Times(Power(Plus(c_DEFAULT,Times(d_DEFAULT,x_)),CN1D2),$($s("§sin"),Plus(Times(C1D2,Pi),e_DEFAULT,Times(f_DEFAULT,x_)))),x_Symbol),
+IIntegrate(3304,Int(Times(Power(Plus(c_DEFAULT,Times(d_DEFAULT,x_)),CN1D2),$($s("§sin"),Plus(CPiHalf,e_DEFAULT,Times(f_DEFAULT,x_)))),x_Symbol),
     Condition(Dist(Times(C2,Power(d,CN1)),Subst(Int(Cos(Times(f,Sqr(x),Power(d,CN1))),x),x,Sqrt(Plus(c,Times(d,x)))),x),And(FreeQ(List(c,d,e,f),x),ComplexFreeQ(f),EqQ(Subtract(Times(d,e),Times(c,f)),C0))));
 IIntegrate(3305,Int(Times(Power(Plus(c_DEFAULT,Times(d_DEFAULT,x_)),CN1D2),$($s("§sin"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))),x_Symbol),
     Condition(Dist(Times(C2,Power(d,CN1)),Subst(Int(Sin(Times(f,Sqr(x),Power(d,CN1))),x),x,Sqrt(Plus(c,Times(d,x)))),x),And(FreeQ(List(c,d,e,f),x),ComplexFreeQ(f),EqQ(Subtract(Times(d,e),Times(c,f)),C0))));

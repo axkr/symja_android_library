@@ -54,7 +54,7 @@ public interface CosRules {
     ISet(Cos(Times(QQ(5L,12L),Pi)),
       Times(C1D2,C1DSqrt2,Plus(CN1,CSqrt3))),
     // Cos(Pi/2)=0
-    ISet(Cos(Times(C1D2,Pi)),
+    ISet(Cos(CPiHalf),
       C0),
     // Cos(7/12*Pi)=-(-1+Sqrt(3))/(2*Sqrt(2))
     ISet(Cos(Times(QQ(7L,12L),Pi)),
@@ -162,7 +162,7 @@ public interface CosRules {
     ISet(Cos(Times(QQ(23L,12L),Pi)),
       Times(C1D2,C1DSqrt2,Plus(C1,CSqrt3))),
     // Cos(2*Pi)=1
-    ISet(Cos(Times(C2,Pi)),
+    ISet(Cos(C2Pi),
       C1),
     // Cos(I)=Cosh(1)
     ISet(Cos(CI),

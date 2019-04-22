@@ -19,7 +19,7 @@ public interface AbsRules {
     IInit(Abs, SIZES),
     // Abs(ArcTan(ComplexInfinity))=Pi/2
     ISet(Abs(ArcTan(CComplexInfinity)),
-      Times(C1D2,Pi)),
+      CPiHalf),
     // Abs(E)=E
     ISet(Abs(E),
       E),

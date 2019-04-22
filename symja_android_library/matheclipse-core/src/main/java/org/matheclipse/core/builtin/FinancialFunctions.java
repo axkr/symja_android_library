@@ -83,7 +83,7 @@ public class FinancialFunctions {
 			}
 			return //
 			// [$ -1 + (1 + a*b)^(1/b) $]
-			F.Plus(F.CN1, F.Power(F.Plus(F.C1, F.Times(a, b)), F.Power(b, -1))); // $$;
+			F.Plus(F.CN1, F.Power(F.Plus(F.C1, F.Times(a, b)), F.Power(b, F.CN1))); // $$;
 		}
 	}
 
@@ -109,18 +109,18 @@ public class FinancialFunctions {
 					if (c.isZero()) {
 						return //
 								// [$ -((p - p/((1 + b)^q)^(t/q))/(1 - (1 + b)^q)) $]
-						F.Times(F.CN1, F.Power(F.Plus(F.C1, F.Negate(F.Power(F.Plus(F.C1, b), q))), -1), F.Plus(p,
-								F.Times(F.CN1,
-										F.Power(F.Power(F.Power(F.Plus(F.C1, b), q), F.Times(F.Power(q, -1), t)), -1),
-										p))); // $$;
+						F.Times(F.CN1, F.Power(F.Subtract(F.C1, F.Power(F.Plus(F.C1, b), q)), F.CN1), F.Plus(p, F.Times(
+								F.CN1,
+								F.Power(F.Power(F.Power(F.Plus(F.C1, b), q), F.Times(F.Power(q, F.CN1), t)), F.CN1),
+								p))); // $$;
 					} else {
 						return //
 								// [$ (p*((1 + b)^q)^(-(t/q) + c/q)*(-1 + ((1 + b)^q)^(t/q)))/(-1 + (1 +
 								// b)^q) $]
-						F.Times(F.Power(F.Plus(F.CN1, F.Power(F.Plus(F.C1, b), q)), -1),
+						F.Times(F.Power(F.Plus(F.CN1, F.Power(F.Plus(F.C1, b), q)), F.CN1),
 								F.Power(F.Power(F.Plus(F.C1, b), q),
-										F.Plus(F.Times(F.CN1, F.Power(q, -1), t), F.Times(c, F.Power(q, -1)))),
-								F.Plus(F.CN1, F.Power(F.Power(F.Plus(F.C1, b), q), F.Times(F.Power(q, -1), t))), p); // $$;
+										F.Plus(F.Times(F.CN1, F.Power(q, F.CN1), t), F.Times(c, F.Power(q, F.CN1)))),
+								F.Plus(F.CN1, F.Power(F.Power(F.Plus(F.C1, b), q), F.Times(F.Power(q, F.CN1), t))), p); // $$;
 					}
 
 				} catch (RuntimeException rex) {
@@ -144,18 +144,20 @@ public class FinancialFunctions {
 					if (c.isZero()) {
 						return //
 								// [$ (p*((1 + b)^q)^(1 - t/q)*(-1 + ((1 + b)^q)^(t/q)))/(-1 + (1 + b)^q) $]
-						F.Times(F.Power(F.Plus(F.CN1, F.Power(F.Plus(F.C1, b), q)), -1),
-								F.Plus(F.CN1, F.Power(F.Power(F.Plus(F.C1, b), q), F.Times(F.Power(q, -1), t))),
-								F.Power(F.Power(F.Plus(F.C1, b), q), F.Plus(F.C1, F.Times(F.CN1, F.Power(q, -1), t))),
+						F.Times(F.Power(F.Plus(F.CN1, F.Power(F.Plus(F.C1, b), q)), F.CN1),
+								F.Plus(F.CN1, F.Power(F.Power(F.Plus(F.C1, b), q), F.Times(F.Power(q, F.CN1), t))),
+								F.Power(F.Power(F.Plus(F.C1, b), q),
+										F.Plus(F.C1, F.Times(F.CN1, F.Power(q, F.CN1), t))),
 								p); // $$;
 					} else {
 						return //
 								// [$ (p*((1 + b)^q)^(1 - t/q + c/q)*(-1 + ((1 + b)^q)^(t/q)))/(-1 + (1 +
 								// b)^q) $]
-						F.Times(F.Power(F.Plus(F.CN1, F.Power(F.Plus(F.C1, b), q)), -1),
+						F.Times(F.Power(F.Plus(F.CN1, F.Power(F.Plus(F.C1, b), q)), F.CN1),
 								F.Power(F.Power(F.Plus(F.C1, b), q),
-										F.Plus(F.C1, F.Times(F.CN1, F.Power(q, -1), t), F.Times(c, F.Power(q, -1)))),
-								F.Plus(F.CN1, F.Power(F.Power(F.Plus(F.C1, b), q), F.Times(F.Power(q, -1), t))), p); // $$;
+										F.Plus(F.C1, F.Times(F.CN1, F.Power(q, F.CN1), t),
+												F.Times(c, F.Power(q, F.CN1)))),
+								F.Plus(F.CN1, F.Power(F.Power(F.Plus(F.C1, b), q), F.Times(F.Power(q, F.CN1), t))), p); // $$;
 					}
 
 				} catch (RuntimeException rex) {

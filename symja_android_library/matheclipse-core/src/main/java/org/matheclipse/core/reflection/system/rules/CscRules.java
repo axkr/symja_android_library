@@ -51,7 +51,7 @@ public interface CscRules {
     ISet(Csc(Times(QQ(5L,12L),Pi)),
       Plus(Negate(CSqrt2),CSqrt6)),
     // Csc(Pi/2)=1
-    ISet(Csc(Times(C1D2,Pi)),
+    ISet(Csc(CPiHalf),
       C1),
     // Csc(7/12*Pi)=-Sqrt(2)+Sqrt(6)
     ISet(Csc(Times(QQ(7L,12L),Pi)),
@@ -135,7 +135,7 @@ public interface CscRules {
     ISet(Csc(Times(QQ(23L,12L),Pi)),
       Times(CN2,Sqrt(Plus(C2,CSqrt3)))),
     // Csc(2*Pi)=ComplexInfinity
-    ISet(Csc(Times(C2,Pi)),
+    ISet(Csc(C2Pi),
       CComplexInfinity),
     // Csc(ArcSin(x_)):=1/x
     ISetDelayed(Csc(ArcSin(x_)),

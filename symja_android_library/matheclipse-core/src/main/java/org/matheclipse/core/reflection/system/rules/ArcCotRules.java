@@ -19,7 +19,7 @@ public interface ArcCotRules {
     IInit(ArcCot, SIZES),
     // ArcCot(0)=Pi/2
     ISet(ArcCot(C0),
-      Times(C1D2,Pi)),
+      CPiHalf),
     // ArcCot(2-Sqrt(3))=5/12*Pi
     ISet(ArcCot(Subtract(C2,CSqrt3)),
       Times(QQ(5L,12L),Pi)),

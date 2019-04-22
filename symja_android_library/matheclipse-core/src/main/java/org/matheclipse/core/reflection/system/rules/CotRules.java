@@ -54,7 +54,7 @@ public interface CotRules {
     ISet(Cot(Times(QQ(5L,12L),Pi)),
       Subtract(C2,CSqrt3)),
     // Cot(Pi/2)=0
-    ISet(Cot(Times(C1D2,Pi)),
+    ISet(Cot(CPiHalf),
       C0),
     // Cot(7/12*Pi)=-2+Sqrt(3)
     ISet(Cot(Times(QQ(7L,12L),Pi)),

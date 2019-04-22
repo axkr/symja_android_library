@@ -70,24 +70,24 @@ public interface ArcSecRules {
       Times(QQ(7L,12L),Pi)),
     // ArcSec(I)=Pi/2+I*Log(Sqrt(2)+1)
     ISet(ArcSec(CI),
-      Plus(Times(C1D2,Pi),Times(CI,Log(Plus(C1,CSqrt2))))),
+      Plus(CPiHalf,Times(CI,Log(Plus(C1,CSqrt2))))),
     // ArcSec(-I)=Pi/2+I*Log(-1+Sqrt(2))
     ISet(ArcSec(CNI),
-      Plus(Times(C1D2,Pi),Times(CI,Log(Plus(CN1,CSqrt2))))),
+      Plus(CPiHalf,Times(CI,Log(Plus(CN1,CSqrt2))))),
     // ArcSec(Infinity)=Pi/2
     ISet(ArcSec(oo),
-      Times(C1D2,Pi)),
+      CPiHalf),
     // ArcSec(-Infinity)=Pi/2
     ISet(ArcSec(Noo),
-      Times(C1D2,Pi)),
+      CPiHalf),
     // ArcSec(I*Infinity)=Pi/2
     ISet(ArcSec(DirectedInfinity(CI)),
-      Times(C1D2,Pi)),
+      CPiHalf),
     // ArcSec(-I*Infinity)=Pi/2
     ISet(ArcSec(DirectedInfinity(CNI)),
-      Times(C1D2,Pi)),
+      CPiHalf),
     // ArcSec(ComplexInfinity)=Pi/2
     ISet(ArcSec(CComplexInfinity),
-      Times(C1D2,Pi))
+      CPiHalf)
   );
 }

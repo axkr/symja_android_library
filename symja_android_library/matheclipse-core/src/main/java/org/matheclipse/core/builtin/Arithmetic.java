@@ -3101,7 +3101,7 @@ public final class Arithmetic {
 						}
 					} else if (exponent.isTimes() && exponent.first().isInteger()) {
 						IInteger arg1Times = (IInteger) exponent.first();
-						return  F.Power(F.Power( F.CN1,arg1Times), exponent.rest().oneIdentity1());
+						return F.Power(F.Power(F.CN1, arg1Times), exponent.rest().oneIdentity1());
 					}
 				}
 			}

@@ -454,7 +454,7 @@ public abstract class AbstractAST implements IASTMutable {
 		public boolean isNonNegativeResult() {
 			return false;
 		}
-		
+
 		/** {@inheritDoc} */
 		@Override
 		public final boolean isNumericFunction() {
@@ -1860,10 +1860,15 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 
 		if (isAST(F.Times, 3)) {
-			if (arg1().equals(F.CNPiHalf)) {
+			if (equals(F.CNPi)) {
+				return prefix + "CNPi";
+			} else if (equals(F.CN2Pi)) {
+				return prefix + "CN2Pi";
+			} else if (equals(F.C2Pi)) {
+				return prefix + "C2Pi";
+			} else if (equals(F.CNPiHalf)) {
 				return prefix + "CNPiHalf";
-			}
-			if (arg1().equals(F.CPiHalf)) {
+			} else if (equals(F.CPiHalf)) {
 				return prefix + "CPiHalf";
 			}
 			if (arg1().isMinusOne() && !arg2().isTimes()) {

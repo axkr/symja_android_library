@@ -40,6 +40,6 @@ public interface ArcTanhRules {
       Times(CC(0L,1L,1L,2L),Pi)),
     // ArcTanh(ComplexInfinity)=Pi/2
     ISet(ArcTanh(CComplexInfinity),
-      Times(C1D2,Pi))
+      CPiHalf)
   );
 }

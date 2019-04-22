@@ -2,15 +2,11 @@ package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.C2;
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.CN1D2;
 import static org.matheclipse.core.expression.F.Cos;
 import static org.matheclipse.core.expression.F.Cosh;
 import static org.matheclipse.core.expression.F.Cot;
-import static org.matheclipse.core.expression.F.Csc;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Sec;
 import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Sinh;
 import static org.matheclipse.core.expression.F.Subtract;
@@ -83,8 +79,9 @@ public class TrigReduce extends AbstractEvaluator {
 							return trigReduceSinPower(base, n);
 						} else if (base.isCos()) {
 							return trigReduceCosPower(base, n);
-//						} else if (base.isTan()) {
-//							return F.Together(F.Times(trigReduceSinPower(base, n), F.Power(trigReduceCosPower(base, n), F.CN1)));
+							// } else if (base.isTan()) {
+							// return F.Together(F.Times(trigReduceSinPower(base, n), F.Power(trigReduceCosPower(base,
+							// n), F.CN1)));
 						}
 					}
 				}
@@ -143,28 +140,28 @@ public class TrigReduce extends AbstractEvaluator {
 	public void setUp(final ISymbol newSymbol) {
 		ORDERLESS_MATCHER.defineHashRule(Sin(x_), Cos(y_),
 				// [$ 1/2 * (Sin(x+y)+Sin(x-y)) $]
-				F.Times(F.C1D2, F.Plus(F.Sin(F.Plus(x, y)), F.Sin(F.Plus(x, F.Negate(y)))))); // $$);
+				F.Times(F.C1D2, F.Plus(F.Sin(F.Plus(x, y)), F.Sin(F.Subtract(x, y))))); // $$);
 		ORDERLESS_MATCHER.defineHashRule(Sin(x_), Sin(y_),
 				// [$ 1/2 * (Cos(x-y)-Cos(x+y)) $]
-				F.Times(F.C1D2, F.Plus(F.Cos(F.Plus(x, F.Negate(y))), F.Negate(F.Cos(F.Plus(x, y)))))); // $$);
+				F.Times(F.C1D2, F.Subtract(F.Cos(F.Subtract(x, y)), F.Cos(F.Plus(x, y))))); // $$);
 		ORDERLESS_MATCHER.defineHashRule(Cos(x_), Cos(y_),
 				// [$ 1/2 * (Cos(x+y)+Cos(x-y)) $]
-				F.Times(F.C1D2, F.Plus(F.Cos(F.Plus(x, y)), F.Cos(F.Plus(x, F.Negate(y)))))); // $$);
+				F.Times(F.C1D2, F.Plus(F.Cos(F.Plus(x, y)), F.Cos(F.Subtract(x, y))))); // $$);
 		ORDERLESS_MATCHER.defineHashRule(Sinh(x_), Cosh(y_),
 				// [$ 1/2 * (Sinh(x-y)+Sinh(x+y)) $]
-				F.Times(F.C1D2, F.Plus(F.Sinh(F.Plus(x, F.Negate(y))), F.Sinh(F.Plus(x, y))))); // $$);
+				F.Times(F.C1D2, F.Plus(F.Sinh(F.Subtract(x, y)), F.Sinh(F.Plus(x, y))))); // $$);
 		ORDERLESS_MATCHER.defineHashRule(Sin(x_), Tan(y_),
 				// [$ 1/2 * (Cos(x-y)-Cos(x+y)) * Sec(y) $]
-				F.Times(F.C1D2, F.Plus(F.Cos(F.Plus(x, F.Negate(y))), F.Negate(F.Cos(F.Plus(x, y)))), F.Sec(y))); // $$);
+				F.Times(F.C1D2, F.Subtract(F.Cos(F.Subtract(x, y)), F.Cos(F.Plus(x, y))), F.Sec(y))); // $$);
 		ORDERLESS_MATCHER.defineHashRule(Cos(x_), Tan(y_),
 				// [$ -(1/2) * (Sin(x-y)-Sin(x+y)) * Sec(y) $]
-				F.Times(F.CN1D2, F.Plus(F.Sin(F.Plus(x, F.Negate(y))), F.Negate(F.Sin(F.Plus(x, y)))), F.Sec(y))); // $$);
+				F.Times(F.CN1D2, F.Subtract(F.Sin(F.Subtract(x, y)), F.Sin(F.Plus(x, y))), F.Sec(y))); // $$);
 		ORDERLESS_MATCHER.defineHashRule(Cos(x_), Cot(y_),
 				// [$ 1/2 * (Cos(x-y)+Cos(x+y)) * Csc(y) $]
-				F.Times(F.C1D2, F.Plus(F.Cos(F.Plus(x, F.Negate(y))), F.Cos(F.Plus(x, y))), F.Csc(y))); // $$);
+				F.Times(F.C1D2, F.Plus(F.Cos(F.Subtract(x, y)), F.Cos(F.Plus(x, y))), F.Csc(y))); // $$);
 		ORDERLESS_MATCHER.defineHashRule(Sin(x_), Cot(y_),
 				// [$ 1/2 * (Sin(x-y)+Sin(x+y)) * Csc(y) $]
-				F.Times(F.C1D2, F.Plus(F.Sin(F.Plus(x, F.Negate(y))), F.Sin(F.Plus(x, y))), F.Csc(y))); // $$);
+				F.Times(F.C1D2, F.Plus(F.Sin(F.Subtract(x, y)), F.Sin(F.Plus(x, y))), F.Csc(y))); // $$);
 
 		newSymbol.setAttributes(ISymbol.LISTABLE);
 	}

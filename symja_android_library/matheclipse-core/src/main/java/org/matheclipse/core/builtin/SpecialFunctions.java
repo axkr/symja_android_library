@@ -757,7 +757,7 @@ public class SpecialFunctions {
 										return
 										// [$ z^(b1 + (1/2)*(-b1 + b2))*BesselJ(b1 - b2, 2*Sqrt(z)) $]
 										F.Times(F.Power(z, F.Plus(b1, F.Times(F.C1D2, F.Plus(F.Negate(b1), b2)))),
-												F.BesselJ(F.Plus(b1, F.Negate(b2)), F.Times(F.C2, F.Sqrt(z)))); // $$;
+												F.BesselJ(F.Subtract(b1, b2), F.Times(F.C2, F.Sqrt(z)))); // $$;
 									}
 									break;
 								}
@@ -776,7 +776,7 @@ public class SpecialFunctions {
 										return
 										// [$ (z^b1*Hypergeometric1F1Regularized(1 - a2 + b1, 1 + b1 - b2, z))/Gamma(a2
 										// - b1) $]
-										F.Times(F.Power(z, b1), F.Power(F.Gamma(F.Plus(a2, F.Negate(b1))), -1),
+										F.Times(F.Power(z, b1), F.Power(F.Gamma(F.Subtract(a2, b1)), F.CN1),
 												F.Hypergeometric1F1Regularized(F.Plus(F.C1, F.Negate(a2), b1),
 														F.Plus(F.C1, b1, F.Negate(b2)), z)); // $$;
 									}
@@ -799,14 +799,15 @@ public class SpecialFunctions {
 										// 1,0,0,0
 										return
 										// [$ z^(-1 + a1)/E^z^(-1) $]
-										F.Times(F.Power(F.Exp(F.Power(z, -1)), -1), F.Power(z, F.Plus(F.CN1, a1))); // $$;
+										F.Times(F.Power(F.Exp(F.Power(z, F.CN1)), F.CN1),
+												F.Power(z, F.Plus(F.CN1, a1))); // $$;
 									case 1:
 										// 1,0,0,1
 										IExpr b2 = l2.arg1();
 										if (z.isPositive()) {
 											return
 											// [$ (z^b2/Gamma(a1 - b2))*(z - 1)^(a1 - b2 - 1)*UnitStep(z - 1) $]
-											F.Times(F.Power(z, b2), F.Power(F.Gamma(F.Plus(a1, F.Negate(b2))), -1),
+											F.Times(F.Power(z, b2), F.Power(F.Gamma(F.Subtract(a1, b2)), F.CN1),
 													F.Power(F.Plus(F.CN1, z), F.Plus(F.CN1, a1, F.Negate(b2))),
 													F.UnitStep(F.Plus(F.CN1, z))); // $$;
 										}
@@ -851,9 +852,9 @@ public class SpecialFunctions {
 										// [$ (z^(-1 + a1)*Hypergeometric1F1Regularized(1 - a1 + b2, 1 - a1 + a2,
 										// 1/z))/Gamma(a1 - b2) $]
 										F.Times(F.Power(z, F.Plus(F.CN1, a1)),
-												F.Power(F.Gamma(F.Plus(a1, F.Negate(b2))), -1),
+												F.Power(F.Gamma(F.Subtract(a1, b2)), F.CN1),
 												F.Hypergeometric1F1Regularized(F.Plus(F.C1, F.Negate(a1), b2),
-														F.Plus(F.C1, F.Negate(a1), a2), F.Power(z, -1))); // $$;
+														F.Plus(F.C1, F.Negate(a1), a2), F.Power(z, F.CN1))); // $$;
 									}
 									break;
 								case 1:
@@ -866,7 +867,7 @@ public class SpecialFunctions {
 										// - a1 + a2, -(1/z)) $]
 										F.Times(F.Power(z, F.Plus(F.CN1, a1)), F.Gamma(F.Plus(F.C1, F.Negate(a1), b1)),
 												F.Hypergeometric1F1Regularized(F.Plus(F.C1, F.Negate(a1), b1),
-														F.Plus(F.C1, F.Negate(a1), a2), F.Negate(F.Power(z, -1)))); // $$;
+														F.Plus(F.C1, F.Negate(a1), a2), F.Negate(F.Power(z, F.CN1)))); // $$;
 									}
 									break;
 								}

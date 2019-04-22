@@ -30,7 +30,7 @@ public interface SincRules {
     ISet(Sinc(Times(C1D3,Pi)),
       Times(QQ(3L,2L),CSqrt3,Power(Pi,CN1))),
     // Sinc(Pi/2)=2/Pi
-    ISet(Sinc(Times(C1D2,Pi)),
+    ISet(Sinc(CPiHalf),
       Times(C2,Power(Pi,CN1))),
     // Sinc(Pi)=0
     ISet(Sinc(Pi),

@@ -49,7 +49,6 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.NonNegativeIntegerExpected;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -2347,21 +2346,21 @@ public final class LinearAlgebra {
 				}
 				return Convert.matrix2List(resultMatrix);
 
-//			} catch (final ClassCastException e) {
-//				if (Config.SHOW_STACKTRACE) {
-//					e.printStackTrace();
-//				}
-//			} catch (final ArithmeticException e) {
-//				if (Config.SHOW_STACKTRACE) {
-//					e.printStackTrace();
-//				}
-//				throw new NonNegativeIntegerExpected(ast, 2);
-//			} catch (final IndexOutOfBoundsException e) {
-//				if (Config.SHOW_STACKTRACE) {
-//					e.printStackTrace();
-//				}
+				// } catch (final ClassCastException e) {
+				// if (Config.SHOW_STACKTRACE) {
+				// e.printStackTrace();
+				// }
+				// } catch (final ArithmeticException e) {
+				// if (Config.SHOW_STACKTRACE) {
+				// e.printStackTrace();
+				// }
+				// throw new NonNegativeIntegerExpected(ast, 2);
+				// } catch (final IndexOutOfBoundsException e) {
+				// if (Config.SHOW_STACKTRACE) {
+				// e.printStackTrace();
+				// }
 			} catch (final RuntimeException e) {
-				engine.printMessage(ast.topHead()+": "+e.getMessage());
+				engine.printMessage(ast.topHead() + ": " + e.getMessage());
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
@@ -2732,7 +2731,7 @@ public final class LinearAlgebra {
 			}
 			IExpr function = // [$ (#1-(vec.#2)/(#2.#2)*#2)& $]
 					F.Function(F.Plus(F.Slot1,
-							F.Times(F.CN1, F.Dot(vec, F.Slot2), F.Power(F.Dot(F.Slot2, F.Slot2), -1), F.Slot2))); // $$;
+							F.Times(F.CN1, F.Dot(vec, F.Slot2), F.Power(F.Dot(F.Slot2, F.Slot2), F.CN1), F.Slot2))); // $$;
 			return F.eval(F.Fold(function, vec, vecmat));
 		});
 

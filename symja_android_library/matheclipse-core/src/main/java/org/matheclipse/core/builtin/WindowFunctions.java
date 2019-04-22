@@ -160,13 +160,13 @@ public class WindowFunctions {
 		// LessEqual, x, Less, -(1/4))},{1 - 24*x^2 - 48*x^3, Inequality(-(1/4), LessEqual, x, Less, 0)}, {1 - 24*x^2 +
 		// 48*x^3, 0 <= x <= 1/4}}, 0) $]
 		F.Piecewise(F.List(
-				F.List(F.Times(F.CN2, F.Power(F.Plus(F.CN1, F.Times(F.C2, x)), 3)),
+				F.List(F.Times(F.CN2, F.Power(F.Plus(F.CN1, F.Times(F.C2, x)), F.C3)),
 						F.And(F.Less(F.C1D4, x), F.LessEqual(x, F.C1D2))),
-				F.List(F.Times(F.C2, F.Power(F.Plus(F.C1, F.Times(F.C2, x)), 3)),
+				F.List(F.Times(F.C2, F.Power(F.Plus(F.C1, F.Times(F.C2, x)), F.C3)),
 						F.And(F.LessEqual(F.CN1D2, x), F.Less(x, F.CN1D4))),
-				F.List(F.Plus(F.C1, F.Times(F.ZZ(-24L), F.Sqr(x)), F.Times(F.ZZ(-48L), F.Power(x, 3))),
+				F.List(F.Plus(F.C1, F.Times(F.ZZ(-24L), F.Sqr(x)), F.Times(F.ZZ(-48L), F.Power(x, F.C3))),
 						F.And(F.LessEqual(F.CN1D4, x), F.Less(x, F.C0))),
-				F.List(F.Plus(F.C1, F.Times(F.ZZ(-24L), F.Sqr(x)), F.Times(F.ZZ(48L), F.Power(x, 3))),
+				F.List(F.Plus(F.C1, F.Times(F.ZZ(-24L), F.Sqr(x)), F.Times(F.ZZ(48L), F.Power(x, F.C3))),
 						F.LessEqual(F.C0, x, F.C1D4))),
 				F.C0); // $$;
 	}

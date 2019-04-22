@@ -1,15 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.C1D2;
-import static org.matheclipse.core.expression.F.CI;
-import static org.matheclipse.core.expression.F.CNI;
-import static org.matheclipse.core.expression.F.E;
-import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Sin;
-import static org.matheclipse.core.expression.F.Subtract;
-import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.x_;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.function.Predicate;
@@ -342,7 +332,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	 *            expression which doesn't contain the given <code>variabe</code>.
 	 * @param x
 	 *            the variable which should be eliminated.
-	 * @return <code>F.NIL</code> if we can't find an equation for the given <code>variable</code>.
+	 * @return <code>F.NIL</code> if we can't find an equation for the given variable <code>x</code>.
 	 */
 	private static IExpr extractVariable(IExpr exprWithVariable, IExpr exprWithoutVariable, Predicate<IExpr> predicate,
 			IExpr x, EvalEngine engine) {
@@ -441,10 +431,13 @@ public class Eliminate extends AbstractFunctionEvaluator {
 							final int moduleCounter = engine.incModuleCounter();
 							final String varAppend = "$" + moduleCounter;
 							IExpr c1 = F.Dummy("c" + varAppend);
+							final IExpr exprwovar = exprWithoutVariable;
 							return
-							// [$ {{x -> ConditionalExpression(2*I*Pi*c1 + Log(exprWithoutVariable), Element(c1, Integers))}} $]
-							F.List(F.List(F.Rule(x, F.ConditionalExpression(
-									F.Plus(F.Times(F.C2, F.CI, F.Pi, c1), F.Log(exprWithoutVariable)), F.Element(c1, F.Integers))))); // $$;
+							// [$ {{x -> ConditionalExpression(2*I*Pi*c1 + Log(exprwovar), Element(c1,
+							// Integers))}} $]
+							F.List(F.List(F.Rule(x,
+									F.ConditionalExpression(F.Plus(F.Times(F.C2, F.CI, F.Pi, c1), F.Log(exprwovar)),
+											F.Element(c1, F.Integers))))); // $$;
 						}
 						// a ^ f(x)
 						IExpr value = F.Divide(F.Log(exprWithoutVariable), F.Log(base));

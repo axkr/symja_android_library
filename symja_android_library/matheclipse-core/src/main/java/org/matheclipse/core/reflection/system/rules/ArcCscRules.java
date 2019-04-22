@@ -22,7 +22,7 @@ public interface ArcCscRules {
       CComplexInfinity),
     // ArcCsc(1)=Pi/2
     ISet(ArcCsc(C1),
-      Times(C1D2,Pi)),
+      CPiHalf),
     // ArcCsc(2/Sqrt(3))=Pi/3
     ISet(ArcCsc(Times(C2,C1DSqrt3)),
       Times(C1D3,Pi)),
