@@ -3695,9 +3695,7 @@ public class F {
 		try {
 			// long start = System.currentTimeMillis();
 			// System.out.println("Start");
-			Characters.initialize();
 			AST2Expr.initialize();
-			ASTNodeFactory.initialize();
 			ExprParserFactory.initialize();
 
 			PreemptStatus.setNotAllow();
