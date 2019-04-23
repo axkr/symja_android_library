@@ -188,6 +188,27 @@ public class FunctionExpand extends AbstractEvaluator {
 					// [$ 1/2*(1+Sqrt(5)) $]
 					F.Times(F.C1D2, F.Plus(F.C1, F.CSqrt5))); // $$);
 
+			// Power
+			MATCHER.caseOf(F.Power(F.E, F.ArcSinh(x_)), //
+					// [$ (x+Sqrt(1+x^2)) $]
+					F.Plus(x, F.Sqrt(F.Plus(F.C1, F.Sqr(x))))); // $$);
+			MATCHER.caseOf(F.Power(F.E, F.ArcCosh(x_)), //
+					// [$ (x+Sqrt(x-1)*Sqrt(x+1)) $]
+					F.Plus(x, F.Times(F.Sqrt(F.Plus(F.CN1, x)), F.Sqrt(F.Plus(x, F.C1))))); // $$);
+			MATCHER.caseOf(F.Power(F.E, F.ArcTanh(x_)), //
+					// [$ ((x+1)/Sqrt(1-x^2)) $]
+					F.Times(F.Plus(x, F.C1), F.Power(F.Subtract(F.C1, F.Sqr(x)), F.CN1D2))); // $$);
+			MATCHER.caseOf(F.Power(F.E, F.ArcCsch(x_)), //
+					// [$ (1/x+Sqrt(1+1/x^2)) $]
+					F.Plus(F.Power(x, F.CN1), F.Sqrt(F.Plus(F.C1, F.Power(x, F.CN2))))); // $$);
+			MATCHER.caseOf(F.Power(F.E, F.ArcSech(x_)), //
+					// [$ (1/x+Sqrt(1/x-1)*Sqrt(1/x+1)) $]
+					F.Plus(F.Power(x, F.CN1), F.Times(F.Sqrt(F.Plus(F.CN1, F.Power(x, F.CN1))),
+							F.Sqrt(F.Plus(F.Power(x, F.CN1), F.C1))))); // $$);
+			MATCHER.caseOf(F.Power(F.E, F.ArcCoth(x_)), //
+					// [$ (1/Sqrt((x-1)/(x+1))) $]
+					F.Power(F.Times(F.Power(F.Plus(x, F.C1), F.CN1), F.Plus(F.CN1, x)), F.CN1D2)); // $$);
+
 			// Log
 			MATCHER.caseOf(F.Log(F.Times(m_, n_)), //
 					// [$ (Log(m)+Log(n)) /; Positive(m)
