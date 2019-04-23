@@ -2415,9 +2415,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCos() {
+		check("Cos(I*a+I*b*x)/b", //
+				"Cosh(a+b*x)/b");
+		// TODO return Cosh((1 + 2*I)*a - 3*I*b*x)
+		check("Cos((-2+I)*a+3*b*x)", //
+				"Cosh((1+I*2)*a-I*3*b*x)");
+		
+		check("Cos(-2*a+3*b*x)", //
+				"Cos(2*a-3*b*x)");
+		check("Cos(-2*a-3*b*x)", //
+				"Cos(2*a+3*b*x)");
 		check("Refine(Cos(x+k*Pi), Element(k, Integers))", //
 				"(-1)^k*Cos(x)");
-
 		check("Cos(5/8*Pi+2*x)", //
 				"-Sin(Pi/8+2*x)");
 		check("Cos(3/4*Pi+2*x)", //
@@ -5344,7 +5353,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFunctionExpand() {
-		// Use Expand for Power() and Times() expressions
+		check("FunctionExpand(E^ArcSinh(x))", //
+				"x+Sqrt(1+x^2)");
+		check("FunctionExpand(E^ArcCosh(x))", //
+				"x+Sqrt(-1+x)*Sqrt(1+x)");
+		check("FunctionExpand(E^ArcTanh(x))", //
+				"(1+x)/Sqrt(1-x^2)");
+		check("FunctionExpand(E^ArcCsch(x))", //
+				"Sqrt(1+1/x^2)+1/x");
+		check("FunctionExpand(E^ArcSech(x))", //
+				"Sqrt(-1+1/x)*Sqrt(1+1/x)+1/x");
+		check("FunctionExpand(E^ArcCoth(x))", //
+				"1/Sqrt((-1+x)/(1+x))");
+		
 		check("FunctionExpand(Log(Sqrt(x^2)))", //
 				"Log(x^2)/2");
 		check("FunctionExpand(CosIntegral(Sqrt(x^2)))", //
@@ -12807,6 +12828,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSinIntegral() {
+		check("SinIntegral(-3/4*I*x)", //
+				"-I*SinhIntegral(3/4*x)");
 		check("SinIntegral(Infinity)", //
 				"Pi/2");
 		check("SinIntegral(-Infinity)", //
@@ -12822,6 +12845,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSinhIntegral() {
+		check("SinhIntegral(93/13*I*x)", //
+				"I*SinIntegral(93/13*x)");
 		check("SinIntegral(-x)", //
 				"-SinIntegral(x)");
 		check("SinhIntegral(Infinity)", //

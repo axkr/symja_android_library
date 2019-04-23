@@ -712,6 +712,10 @@ public class HypergeometricFunctions {
 			if (negExpr.isPresent()) {
 				return Negate(F.SinIntegral(negExpr));
 			}
+			if (arg1.isTimes() && arg1.first().isComplex() && arg1.first().re().isZero()) {
+				// I * SinhIntegral(-I*arg1)
+				return F.Times(F.I, F.SinhIntegral(F.Times(F.CNI, arg1)));
+			}
 			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 			if (imPart.isPresent()) {
 				return F.Times(F.CI, F.SinhIntegral(imPart));
@@ -744,6 +748,10 @@ public class HypergeometricFunctions {
 			}
 			if (arg1.isComplexInfinity()) {
 				return F.Indeterminate;
+			}
+			if (arg1.isTimes() && arg1.first().isComplex() && arg1.first().re().isZero()) {
+				// I * SinIntegral(-I*arg1)
+				return F.Times(F.I, F.SinIntegral(F.Times(F.CNI, arg1)));
 			}
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {

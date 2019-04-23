@@ -247,6 +247,7 @@ public class ExpTrigsFunctions {
 			// if (negExpr.isPresent()) {
 			// return Subtract( Pi , F.ArcCos(negExpr));
 			// }
+
 			if (arg1.isCos() && arg1.first().isPositive()) {
 				// ArcCos(Cos(z))
 				return arcCosCos(arg1);
@@ -535,14 +536,18 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+			IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CNI);
+			if (imPart.isPresent()) {
+				return F.Times(F.CNI, F.ArcCsch(imPart));
+			}
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
 				return Negate(ArcCsc(negExpr));
 			}
-			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
-			if (imPart.isPresent()) {
-				return F.Times(F.CNI, F.ArcCsch(imPart));
-			}
+			// IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+			// if (imPart.isPresent()) {
+			// return F.Times(F.CNI, F.ArcCsch(imPart));
+			// }
 			return F.NIL;
 		}
 
@@ -573,14 +578,18 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+			IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CI);
+			if (imPart.isPresent()) {
+				return F.Times(F.CI, F.ArcCsc(imPart));
+			}
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
 				return Negate(ArcCsch(negExpr));
 			}
-			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
-			if (imPart.isPresent()) {
-				return F.Times(F.CNI, F.ArcCsc(imPart));
-			}
+			// IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+			// if (imPart.isPresent()) {
+			// return F.Times(F.CNI, F.ArcCsc(imPart));
+			// }
 			return F.NIL;
 		}
 
@@ -712,14 +721,18 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+			IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CNI);
+			if (imPart.isPresent()) {
+				return F.Times(F.CI, F.ArcSinh(imPart));
+			}
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
 				return Negate(ArcSin(negExpr));
 			}
-			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
-			if (imPart.isPresent()) {
-				return F.Times(F.CI, F.ArcSinh(imPart));
-			}
+			// IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+			// if (imPart.isPresent()) {
+			// return F.Times(F.CI, F.ArcSinh(imPart));
+			// }
 			if (arg1.isSin() && arg1.first().isPositive()) {
 				// ArcSin(Sin(z))
 				return arcSinSin(arg1);
@@ -777,14 +790,18 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+			IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CNI);
+			if (imPart.isPresent()) {
+				return F.Times(F.CI, F.ArcSin(imPart));
+			}
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
 				return Negate(ArcSinh(negExpr));
 			}
-			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
-			if (imPart.isPresent()) {
-				return F.Times(F.CI, F.ArcSin(imPart));
-			}
+			// IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+			// if (imPart.isPresent()) {
+			// return F.Times(F.CI, F.ArcSin(imPart));
+			// }
 			return F.NIL;
 		}
 
@@ -814,14 +831,18 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr e1ObjArg(final IExpr arg1) {
+			IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CNI);
+			if (imPart.isPresent()) {
+				return F.Times(F.CI, F.ArcTanh(imPart));
+			}
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
 				return Negate(ArcTan(negExpr));
 			}
-			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
-			if (imPart.isPresent()) {
-				return F.Times(F.CI, F.ArcTanh(imPart));
-			}
+			// IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+			// if (imPart.isPresent()) {
+			// return F.Times(F.CI, F.ArcTanh(imPart));
+			// }
 			if (arg1.isTan() && arg1.first().isPositive()) {
 				// ArcTan(Tan(z))
 				return arcTanArcCotInverse(arg1);
@@ -956,14 +977,18 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+			IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CNI);
+			if (imPart.isPresent()) {
+				return F.Times(F.CI, F.ArcTan(imPart));
+			}
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
 				return Negate(ArcTanh(negExpr));
 			}
-			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
-			if (imPart.isPresent()) {
-				return F.Times(F.CI, F.ArcTan(imPart));
-			}
+			// IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+			// if (imPart.isPresent()) {
+			// return F.Times(F.CI, F.ArcTan(imPart));
+			// }
 			return F.NIL;
 		}
 
@@ -1090,6 +1115,10 @@ public class ExpTrigsFunctions {
 				}
 			}
 
+			IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CNI);
+			if (imPart.isPresent()) {
+				return F.Cosh(imPart);
+			}
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
 				return Cos(negExpr);
@@ -1142,10 +1171,10 @@ public class ExpTrigsFunctions {
 
 			}
 
-			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
-			if (imPart.isPresent()) {
-				return F.Cosh(imPart);
-			}
+			// IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+			// if (imPart.isPresent()) {
+			// return F.Cosh(imPart);
+			// }
 
 			return F.NIL;
 		}
@@ -1326,6 +1355,10 @@ public class ExpTrigsFunctions {
 				}
 			}
 
+			IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CNI);
+			if (imPart.isPresent()) {
+				return F.Times(F.CNI, F.Csch(imPart));
+			}
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
 				return Negate(Csc(negExpr));
@@ -1378,10 +1411,10 @@ public class ExpTrigsFunctions {
 
 			}
 
-			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
-			if (imPart.isPresent()) {
-				return F.Times(F.CNI, F.Csch(imPart));
-			}  
+			// IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+			// if (imPart.isPresent()) {
+			// return F.Times(F.CNI, F.Csch(imPart));
+			// }
 
 			return F.NIL;
 		}
@@ -1563,6 +1596,10 @@ public class ExpTrigsFunctions {
 				}
 			}
 
+			IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CNI);
+			if (imPart.isPresent()) {
+				return Times(CNI, Coth(imPart));
+			}
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
 				return Negate(Cot(negExpr));
@@ -1598,10 +1635,10 @@ public class ExpTrigsFunctions {
 				}
 			}
 
-			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
-			if (imPart.isPresent()) {
-				return Times(CNI, Coth(imPart));
-			}
+			// IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+			// if (imPart.isPresent()) {
+			// return Times(CNI, Coth(imPart));
+			// }
 
 			return F.NIL;
 		}
@@ -1838,7 +1875,7 @@ public class ExpTrigsFunctions {
 				}
 
 			}
- 
+
 			if (arg1.isNegativeResult()) {
 				return F.Plus(F.Log(F.Negate(arg1)), F.Times(CI, F.Pi));
 			}
@@ -2005,6 +2042,10 @@ public class ExpTrigsFunctions {
 				}
 			}
 
+			IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CNI);
+			if (imPart.isPresent()) {
+				return F.Sech(imPart);
+			}
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
 				return Sec(negExpr);
@@ -2054,10 +2095,10 @@ public class ExpTrigsFunctions {
 
 			}
 
-			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
-			if (imPart.isPresent()) {
-				return F.Sech(imPart);
-			}  
+			// IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+			// if (imPart.isPresent()) {
+			// return F.Sech(imPart);
+			// }
 
 			return F.NIL;
 		}
@@ -2248,6 +2289,10 @@ public class ExpTrigsFunctions {
 				}
 			}
 
+			IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CNI);
+			if (imPart.isPresent()) {
+				return F.Times(F.CI, F.Sinh(imPart));
+			}
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
 				return Negate(Sin(negExpr));
@@ -2303,11 +2348,11 @@ public class ExpTrigsFunctions {
 
 			}
 
-			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
-			if (imPart.isPresent()) {
-				return F.Times(F.CI, F.Sinh(imPart));
-			}
- 
+			// IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+			// if (imPart.isPresent()) {
+			// return F.Times(F.CI, F.Sinh(imPart));
+			// }
+
 			return F.NIL;
 		}
 
@@ -2641,6 +2686,10 @@ public class ExpTrigsFunctions {
 				}
 			}
 
+			IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CNI);
+			if (imPart.isPresent()) {
+				return F.Times(F.CI, F.Tanh(imPart));
+			}
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
 				return Negate(Tan(negExpr));
@@ -2678,11 +2727,11 @@ public class ExpTrigsFunctions {
 				}
 			}
 
-			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
-			if (imPart.isPresent()) {
-				return F.Times(F.CI, F.Tanh(imPart));
-			} 
-			
+			// IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+			// if (imPart.isPresent()) {
+			// return F.Times(F.CI, F.Tanh(imPart));
+			// }
+
 			return F.NIL;
 		}
 
