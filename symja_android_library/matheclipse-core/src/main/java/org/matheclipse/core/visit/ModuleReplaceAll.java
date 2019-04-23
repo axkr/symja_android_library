@@ -35,7 +35,7 @@ public class ModuleReplaceAll extends VisitorExpr {
 		this.moduleCounter = moduleCounter;
 	}
 
-	private IExpr apply(final IExpr arg) {
+	private IExpr apply(final ISymbol arg) {
 		IExpr temp = fModuleVariables.get(arg);
 		return temp != null ? temp : F.NIL;
 	}
@@ -50,11 +50,8 @@ public class ModuleReplaceAll extends VisitorExpr {
 		ISymbol symbol = element.getSymbol();
 		if (symbol != null) {
 			IExpr expr = apply(symbol);
-			if (expr.isPresent() && expr.isSymbol()) {
-				if (element.isPatternDefault()) {
-					return F.$p((ISymbol) expr, element.getHeadTest(), true);
-				}
-				return F.$p((ISymbol) expr, element.getHeadTest());
+			if (expr.isSymbol()) {
+				return F.$p((ISymbol) expr, element.getHeadTest(), element.isPatternDefault());
 			}
 		}
 		return F.NIL;
@@ -74,33 +71,13 @@ public class ModuleReplaceAll extends VisitorExpr {
 
 	@Override
 	public IExpr visit(IASTMutable ast) {
-		IAST temp;
 		if (ast.isSameHeadSizeGE(F.Function, 2)) {
-			temp = visitNestedScope(ast, true);
-			if (temp.isPresent()) {
-				return temp;
-			}
-			return F.NIL;
+			return visitNestedScope(ast, true);
 		} else if (ast.isWith()) {
-			temp = visitNestedScope(ast, false);
-			if (temp.isPresent()) {
-				return temp;
-			}
-			return ast;
+			return visitNestedScope(ast, false).orElse(ast);
 		} else if (ast.isModule()) {
-			temp = visitNestedScope(ast, false);
-			if (temp.isPresent()) {
-				return temp;
-			}
-			return ast;
-			// } else if (ast.isASTSizeGE(F.Block, 2)) {
-			// temp = visitNestedScope(ast, false);
-			// if (temp.isPresent()) {
-			// return temp;
-			// }
-			// return F.NIL;
+			return visitNestedScope(ast, false).orElse(ast);
 		}
-
 		return visitASTModule(ast);
 	}
 
@@ -114,7 +91,7 @@ public class ModuleReplaceAll extends VisitorExpr {
 	 */
 	private IAST visitNestedScope(IAST ast, boolean isFunction) {
 		IASTMutable result = F.NIL;
-		IAST localVariablesList = F.NIL;
+		IAST localVariablesList =  F.NIL;
 		if (ast.arg1().isSymbol()) {
 			localVariablesList = F.List(ast.arg1());
 		} else if (ast.arg1().isList()) {

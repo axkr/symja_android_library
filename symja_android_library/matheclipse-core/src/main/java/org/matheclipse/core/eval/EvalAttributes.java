@@ -54,9 +54,9 @@ public class EvalAttributes {
 			// already flattened
 			return F.NIL;
 		}
-		final ISymbol sym = ast.topHead();
-		if (ast.isAST(sym)) {
-			IASTAppendable result = flatten(sym, ast);
+		final IExpr sym = ast.head();
+		if (sym.isSymbol() && ast.isAST(sym)) {
+			IASTAppendable result = flatten((ISymbol) sym, ast);
 			if (result.isPresent()) {
 				result.addEvalFlags(IAST.IS_FLATTENED);
 				return result;

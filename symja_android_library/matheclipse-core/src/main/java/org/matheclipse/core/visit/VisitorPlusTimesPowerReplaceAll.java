@@ -27,11 +27,7 @@ public class VisitorPlusTimesPowerReplaceAll extends VisitorReplaceAll {
 		if (ast.isPlusTimesPower()) {
 			return visitAST(ast);
 		}
-		IExpr temp = fFunction.apply(ast);
-		if (temp.isPresent()) {
-			return temp;
-		}
-		return F.NIL;
+		return fFunction.apply(ast);
 	}
 
 	@Override

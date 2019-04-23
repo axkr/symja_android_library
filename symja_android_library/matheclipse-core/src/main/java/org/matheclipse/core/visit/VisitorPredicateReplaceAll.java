@@ -39,11 +39,7 @@ public class VisitorPredicateReplaceAll extends VisitorReplaceAll {
 		if (fPredicate.test(ast)) {
 			return visitAST(ast);
 		}
-		IExpr temp = fFunction.apply(ast);
-		if (temp.isPresent()) {
-			return temp;
-		}
-		return F.NIL;
+		return fFunction.apply(ast);
 	}
 
 }

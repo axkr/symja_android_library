@@ -522,10 +522,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 					Times(Times(Power(Plus(to, C1), Plus(Plus(p, Times(CN1, k)), C1)), Binomial(p, k)), BernoulliB(k)),
 					Power(Plus(Plus(p, Times(CN1, k)), C1), CN1)), List(k, C1, p)))));
 		}
-		if (!term1.isPresent()) {
-			return term2;
-		}
-		return Subtract(term2, term1);
+		return term1.isPresent() ? Subtract(term2, term1) : term2;
 	}
 
 	/**

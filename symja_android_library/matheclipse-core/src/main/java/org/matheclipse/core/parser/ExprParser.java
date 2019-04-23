@@ -171,6 +171,7 @@ public class ExprParser extends Scanner {
 
 	private IExpr convert(IASTMutable ast) {
 		IExpr head = ast.head();
+		IExpr expr = F.NIL;
 		if (ast.isAST(F.Hold) || ast.isAST(F.HoldForm)) {
 			return ast;
 		} else if (ast.isAST(F.N, 3)) {
@@ -190,39 +191,23 @@ public class ExprParser extends Scanner {
 				return F.Power(arg1Power.base(), arg1Power.exponent().negate());
 			}
 		} else if (ast.isSameHeadSizeGE(F.GreaterEqual, 3)) {
-			ISymbol compareHead = F.Greater;
-			return AST2Expr.rewriteLessGreaterAST(ast, compareHead);
+			return AST2Expr.rewriteLessGreaterAST(ast,  F.Greater);
 		} else if (ast.isSameHeadSizeGE(F.Greater, 3)) {
-			ISymbol compareHead = F.GreaterEqual;
-			return AST2Expr.rewriteLessGreaterAST(ast, compareHead);
+			return AST2Expr.rewriteLessGreaterAST(ast, F.GreaterEqual);
 		} else if (ast.isSameHeadSizeGE(F.LessEqual, 3)) {
-			ISymbol compareHead = F.Less;
-			return AST2Expr.rewriteLessGreaterAST(ast, compareHead);
+			return AST2Expr.rewriteLessGreaterAST(ast, F.Less);
 		} else if (ast.isSameHeadSizeGE(F.Less, 3)) {
-			ISymbol compareHead = F.LessEqual;
-			return AST2Expr.rewriteLessGreaterAST(ast, compareHead);
+			return AST2Expr.rewriteLessGreaterAST(ast, F.LessEqual);
 		} else if (head.equals(F.Pattern)) {
-			final IExpr expr = PatternMatching.Pattern.CONST.evaluate(ast, fEngine);
-			if (expr.isPresent()) {
-				return expr;
-			}
+			expr = PatternMatching.Pattern.CONST.evaluate(ast, fEngine);
 		} else if (head.equals(F.Blank)) {
-			final IExpr expr = PatternMatching.Blank.CONST.evaluate(ast, fEngine);
-			if (expr.isPresent()) {
-				return expr;
-			}
+			expr = PatternMatching.Blank.CONST.evaluate(ast, fEngine);
 		} else if (head.equals(F.Complex)) {
-			final IExpr expr = Arithmetic.CONST_COMPLEX.evaluate(ast, fEngine);
-			if (expr.isPresent()) {
-				return expr;
-			}
+			expr = Arithmetic.CONST_COMPLEX.evaluate(ast, fEngine);
 		} else if (head.equals(F.Rational)) {
-			final IExpr expr = Arithmetic.CONST_RATIONAL.evaluate(ast, fEngine);
-			if (expr.isPresent()) {
-				return expr;
-			}
+			expr = Arithmetic.CONST_RATIONAL.evaluate(ast, fEngine);
 		}
-		return ast;
+		return expr.orElse(ast);
 	}
 
 	private IExpr convertN(final IASTMutable function) {
@@ -576,7 +561,7 @@ public class ExprParser extends Scanner {
 			getNextToken();
 			IExpr defaultValue = parseExpression();
 			temp = F.Optional(temp, defaultValue);
-		} 
+		}
 		return parseArguments(temp);
 	}
 
@@ -655,7 +640,7 @@ public class ExprParser extends Scanner {
 			getNextToken();
 			IExpr defaultValue = parseExpression();
 			temp = F.Optional(temp, defaultValue);
-		} 
+		}
 		return temp;
 	}
 

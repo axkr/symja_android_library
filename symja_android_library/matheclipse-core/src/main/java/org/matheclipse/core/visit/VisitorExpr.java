@@ -105,8 +105,7 @@ public class VisitorExpr extends AbstractVisitor {
 	}
 
 	/**
-	 * Visit an <code>IAST</code> with the given head and no arguments (i.e.
-	 * <code>head[]</code>).
+	 * Visit an <code>IAST</code> with the given head and no arguments (i.e. <code>head[]</code>).
 	 * 
 	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
@@ -115,8 +114,7 @@ public class VisitorExpr extends AbstractVisitor {
 	}
 
 	/**
-	 * Visit an <code>IAST</code> with the given head and one argument (i.e.
-	 * <code>head[arg1]</code>).
+	 * Visit an <code>IAST</code> with the given head and one argument (i.e. <code>head[arg1]</code>).
 	 * 
 	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
@@ -125,8 +123,7 @@ public class VisitorExpr extends AbstractVisitor {
 	}
 
 	/**
-	 * Visit an <code>IAST</code> with the given head and two arguments (i.e.
-	 * <code>head[arg1, arg2]</code>).
+	 * Visit an <code>IAST</code> with the given head and two arguments (i.e. <code>head[arg1, arg2]</code>).
 	 * 
 	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
@@ -152,17 +149,13 @@ public class VisitorExpr extends AbstractVisitor {
 			temp = visit3(ast.head(), ast.arg1(), ast.arg2());
 			break;
 		}
-		if (temp.isPresent()) {
-			return temp;
-		}
-		return visitAST(ast);
+		return temp.orElseGet(() -> visitAST(ast));
 	}
 
 	/**
 	 * 
-	 * @return the cloned <code>IAST</code> with changed evaluated
-	 *         subexpressions, or <code>F.NIL</code>, if no evaluation is
-	 *         possible
+	 * @return the cloned <code>IAST</code> with changed evaluated subexpressions, or <code>F.NIL</code>, if no
+	 *         evaluation is possible
 	 */
 	protected IExpr visitAST(IAST ast) {
 		IExpr temp;

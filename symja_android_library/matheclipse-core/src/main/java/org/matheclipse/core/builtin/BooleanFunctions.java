@@ -190,8 +190,7 @@ public final class BooleanFunctions {
 			boolean evaled = false;
 
 			int index = 1;
-			IExpr temp;
-			IExpr sym;
+			IExpr temp = F.NIL;
 
 			IAST flattenedAST = EvalAttributes.flatten(ast);
 			if (flattenedAST.isPresent()) {
@@ -200,15 +199,45 @@ public final class BooleanFunctions {
 				flattenedAST = ast;
 			}
 
-			IASTAppendable result = flattenedAST.copyAppendable();
+			int start = -1;
+			for (int i = 1; i < flattenedAST.size(); i++) {
+				temp = flattenedAST.get(i);
+				if (temp.isBuiltInSymbol()) {
+					if (temp.isFalse()) {
+						return F.False;
+					} else if (temp.isTrue()) {
+						continue;
+					}
+				}
+
+				temp = engine.evaluateNull(temp);
+				if (temp.isPresent()) {
+					if (temp.isFalse()) {
+						return F.False;
+					} else if (temp.isTrue()) {
+						continue;
+					}
+					evaled = true;
+				} else {
+					temp = flattenedAST.get(i);
+				}
+				start = i;
+				break;
+			}
+			if (start < 0) {
+				return F.True;
+			}
+
+			IASTAppendable result = flattenedAST.copyFrom(start++);
+			result.set(index, temp);
+
 			int[] symbols = new int[flattenedAST.size()];
 			int[] notSymbols = new int[flattenedAST.size()];
-			for (int i = 1; i < flattenedAST.size(); i++) {
+			for (int i = start; i < flattenedAST.size(); i++) {
 				temp = flattenedAST.get(i);
 				if (temp.isFalse()) {
 					return F.False;
-				}
-				if (temp.isTrue()) {
+				} else if (temp.isTrue()) {
 					result.remove(index);
 					evaled = true;
 					continue;
@@ -218,8 +247,7 @@ public final class BooleanFunctions {
 				if (temp.isPresent()) {
 					if (temp.isFalse()) {
 						return F.False;
-					}
-					if (temp.isTrue()) {
+					} else if (temp.isTrue()) {
 						result.remove(index);
 						evaled = true;
 						continue;
@@ -233,7 +261,7 @@ public final class BooleanFunctions {
 				if (temp.isSymbol()) {
 					symbols[i] = flattenedAST.get(i).hashCode();
 				} else if (temp.isNot()) {
-					sym = temp.first();
+					IExpr sym = temp.first();
 					if (sym.isSymbol()) {
 						notSymbols[i] = sym.hashCode();
 					}
@@ -244,7 +272,7 @@ public final class BooleanFunctions {
 				if (symbols[i] != 0) {
 					for (int j = 1; j < notSymbols.length; j++) {
 						if (i != j && symbols[i] == notSymbols[j] && (result.equalsAt(i, result.get(j).first()))) {
-							// And[a, Not[a]] => True
+							// And[a, Not[a]] => False
 							return F.False;
 						}
 					}

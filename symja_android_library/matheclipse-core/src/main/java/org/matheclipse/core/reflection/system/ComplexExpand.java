@@ -88,7 +88,8 @@ public class ComplexExpand extends AbstractEvaluator {
 					// exponent*Arg(base)
 					IExpr inner = exponent.times(F.Arg(base));
 					// coeff*Cos(inner) + I*coeff*Sin(inner);
-					IExpr temp = F.Expand.of(fEngine, F.Plus(F.Times(coeff, F.Cos(inner)), F.Times(F.CI, coeff, F.Sin(inner))));
+					IExpr temp = F.Expand.of(fEngine,
+							F.Plus(F.Times(coeff, F.Cos(inner)), F.Times(F.CI, coeff, F.Sin(inner))));
 					return temp;
 				}
 			}
@@ -181,10 +182,7 @@ public class ComplexExpand extends AbstractEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 1, 2);
 		IExpr temp = Structure.threadLogicEquationOperators(ast.arg1(), ast, 1);
-		if (temp.isPresent()) {
-			return temp;
-		}
-		return complexExpand(ast.arg1(), engine);
+		return temp.orElseGet(() -> complexExpand(ast.arg1(), engine));
 	}
 
 	private static IExpr complexExpand(IExpr arg1, EvalEngine engine) {

@@ -160,11 +160,7 @@ public class VisitorReplaceAll extends VisitorExpr {
 
 	@Override
 	public IExpr visit(IASTMutable ast) {
-		IExpr temp = fFunction.apply(ast);
-		if (temp.isPresent()) {
-			return temp;
-		}
-		return visitAST(ast);
+		return fFunction.apply(ast).orElseGet(()->visitAST(ast));
 	}
 
 	@Override
