@@ -24,7 +24,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.AbstractVisitor;
 
 /**
- * The Matcher defines a pattern matching rule set.
+ * The Matcher defines a pattern matching rule set. The matcher doesn't try to match numbers or strings.
  *
  */
 public class Matcher implements Function<IExpr, IExpr> {
@@ -84,42 +84,12 @@ public class Matcher implements Function<IExpr, IExpr> {
 		}
 
 		@Override
-		public IExpr visit(IComplex element) {
-			return matcher.apply(element);
-		}
-
-		@Override
-		public IExpr visit(IComplexNum element) {
-			return matcher.apply(element);
-		}
-
-		@Override
-		public IExpr visit(IFraction element) {
-			return matcher.apply(element);
-		}
-
-		@Override
-		public IExpr visit(IInteger element) {
-			return matcher.apply(element);
-		}
-
-		@Override
-		public IExpr visit(INum element) {
-			return matcher.apply(element);
-		}
-
-		@Override
 		public IExpr visit(IPattern element) {
 			return matcher.apply(element);
 		}
 
 		@Override
 		public IExpr visit(IPatternSequence element) {
-			return matcher.apply(element);
-		}
-
-		@Override
-		public IExpr visit(IStringX element) {
 			return matcher.apply(element);
 		}
 
@@ -141,7 +111,7 @@ public class Matcher implements Function<IExpr, IExpr> {
 
 		@Override
 		IExpr evalMethod() {
-			IPatternMap pm=getPatternMap();
+			IPatternMap pm = getPatternMap();
 			IExpr arg1 = pm.getValue(0);
 			IExpr arg2 = pm.getValue(1);
 			return fRightHandSide.apply(arg1, arg2);
@@ -159,7 +129,7 @@ public class Matcher implements Function<IExpr, IExpr> {
 
 		@Override
 		IExpr evalMethod() {
-			IPatternMap pm=getPatternMap();
+			IPatternMap pm = getPatternMap();
 			IExpr arg1 = pm.getValue(0);
 			IExpr arg2 = pm.getValue(1);
 			return fRightHandSide.test(arg1, arg2) ? F.True : F.False;
@@ -176,7 +146,7 @@ public class Matcher implements Function<IExpr, IExpr> {
 
 		@Override
 		IExpr evalMethod() {
-			IPatternMap pm=getPatternMap();
+			IPatternMap pm = getPatternMap();
 			IExpr arg1 = pm.getValue(0);
 			return fRightHandSide.apply(arg1);
 		}
@@ -192,7 +162,7 @@ public class Matcher implements Function<IExpr, IExpr> {
 
 		@Override
 		IExpr evalMethod() {
-			IPatternMap pm=getPatternMap();
+			IPatternMap pm = getPatternMap();
 			return fRightHandSide.eval(pm);
 		}
 	}
@@ -207,7 +177,7 @@ public class Matcher implements Function<IExpr, IExpr> {
 
 		@Override
 		IExpr evalMethod() {
-			IPatternMap pm=getPatternMap();
+			IPatternMap pm = getPatternMap();
 			IExpr arg1 = pm.getValue(0);
 			return fRightHandSide.test(arg1) ? F.True : F.False;
 		}
@@ -221,7 +191,7 @@ public class Matcher implements Function<IExpr, IExpr> {
 	/**
 	 * The Matcher constructor
 	 */
-	public Matcher( ) {
+	public Matcher() {
 		this.rules = new RulesData(Context.SYSTEM);
 	}
 

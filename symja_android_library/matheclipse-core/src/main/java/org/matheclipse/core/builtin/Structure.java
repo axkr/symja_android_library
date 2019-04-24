@@ -7,6 +7,7 @@ import java.util.IdentityHashMap;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ReturnException;
@@ -564,7 +565,7 @@ public class Structure {
 				}
 				return F.NIL;
 			}
-			
+
 			if (ast.head().isAST()) {
 
 				final IAST function = (IAST) ast.head();
@@ -911,19 +912,36 @@ public class Structure {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 4);
-
-			final IExpr arg2 = ast.arg2();
-			if (arg2.isAST()) {
-				try {
-					final IExpr arg3 = ast.arg3();
-					if (arg3.isInteger()) {
-						final IExpr arg1 = ast.arg1();
-						IInteger i3 = (IInteger) arg3;
-						int n = i3.toInt();
-						return ((IAST) arg2).setAtCopy(n, F.unaryAST1(arg1, ((IAST) arg2).get(n)));
+			if (ast.size() == 4) {
+				final IExpr arg2 = ast.arg2();
+				if (arg2.isAST()) {
+					try {
+						final IAST list = (IAST) arg2;
+						final IExpr arg3 = ast.arg3();
+						if (arg3.isInteger()) {
+							final IExpr arg1 = ast.arg1();
+							int index = 0;
+							int n = arg3.toIntDefault(Integer.MIN_VALUE);
+							if (n == Integer.MIN_VALUE) {
+								engine.printMessage("MapAt: Part(" + arg3.toString() + ") is not availabe");
+								return F.NIL;
+							}
+							if (n < 0) {
+								index = list.size() + n;
+							} else {
+								index = n;
+							}
+							if (index < 0 || index >= list.size()) {
+								engine.printMessage("MapAt: Part(" + arg3.toString() + ") is not availabe");
+								return F.NIL;
+							}
+							return ((IAST) arg2).setAtCopy(index, F.unaryAST1(arg1, list.get(index)));
+						}
+					} catch (RuntimeException ae) {
+						if (Config.SHOW_STACKTRACE) {
+							ae.printStackTrace();
+						}
 					}
-				} catch (RuntimeException ae) {
 				}
 			}
 			return F.NIL;

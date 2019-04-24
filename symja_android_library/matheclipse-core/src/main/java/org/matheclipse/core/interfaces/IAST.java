@@ -295,6 +295,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not cloned).
 	 * 
 	 * @return a clone of this <code>IAST</code> instance.
+	 * @deprecated use {@link #copyAppendable()} or {@link #copy()}
 	 */
 	public IAST clone() throws CloneNotSupportedException;
 
@@ -346,15 +347,14 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 
 	/**
 	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied). In contrast
-	 * to the <code>clone()</code> method, this method returns exactly the same type for
-	 * <code>AST0, AST1, AST2,AST3</code>.
+	 * to the <code>copyAppendable()</code> method, this method returns exactly the same type for
+	 * <code>AST0, AST1, AST2, AST3</code> and tries to transform <code>AST</code> objects to <code>AST0, AST1, AST2, AST3</code> if
+	 * possible.
 	 * 
 	 * @return a copy of this <code>IAST</code> instance.
 	 */
 	@Override
-	default public IASTMutable copy() {
-		return copyAppendable();
-	}
+	public IASTMutable copy();
 
 	/**
 	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied). In contrast

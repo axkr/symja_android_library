@@ -135,44 +135,66 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAnd() {
-		check("a && b && True && c", "a&&b&&c");
-		
-		check("True && True && False", "False");
-		check("a && b && True && c", "a&&b&&c");
-		check("And()", "True");
-		check("And(4)", "4");
-		check("2 > 1 && Pi > 3", "True");
-		check("a && b && ! c", "a&&b&&!c");
-		check("x + 2*y == 3 && 4*x + 5*y == 6", "x+2*y==3&&4*x+5*y==6");
-		check("FullForm( And(x, And(y, z)) )", "And(x, y, z)");
-		check("And(x, True, z)", "x&&z");
-		check("And(x, False, z)", "False");
+		check("True && True && False", //
+				"False");
+		check("a && b && True && c", //
+				"a&&b&&c");
+		check("And()", //
+				"True");
+		check("And(4)", //
+				"4");
+		check("2 > 1 && Pi > 3", //
+				"True");
+		check("a && b && ! c", //
+				"a&&b&&!c");
+		check("x + 2*y == 3 && 4*x + 5*y == 6", //
+				"x+2*y==3&&4*x+5*y==6");
+		check("FullForm( And(x, And(y, z)) )", //
+				"And(x, y, z)");
+		check("And(x, True, z)", //
+				"x&&z");
+		check("And(x, False, z)", //
+				"False");
 	}
 
 	public void testAntihermitianMatrixQ() {
-		check("AntihermitianMatrixQ({{I, 3 + 4*I}, {-3 + 4*I, 0}})", "True");
-		check("AntihermitianMatrixQ({{I, 3 + 4*I}, {3 + 4*I, 0}})", "False");
-		check("AntihermitianMatrixQ(({{I, a, b},  {-Conjugate[a], 0, c}, {-Conjugate[b],-Conjugate[c],-I} }))", "True");
+		check("AntihermitianMatrixQ({{I, 3 + 4*I}, {-3 + 4*I, 0}})", //
+				"True");
+		check("AntihermitianMatrixQ({{I, 3 + 4*I}, {3 + 4*I, 0}})", //
+				"False");
+		check("AntihermitianMatrixQ(({{I, a, b},  {-Conjugate[a], 0, c}, {-Conjugate[b],-Conjugate[c],-I} }))", //
+				"True");
 	}
 
 	public void testAntisymmetricMatrixQ() {
-		check("AntisymmetricMatrixQ({{0, -2, 3}, {2, 0, -4}, {-3, 4, 0}})", "True");
+		check("AntisymmetricMatrixQ({{0, -2, 3}, {2, 0, -4}, {-3, 4, 0}})", //
+				"True");
 	}
 
 	public void testAngleVector() {
-		check("AngleVector(x)", "{Cos(x),Sin(x)}");
-		check("AngleVector(Pi/6)", "{Sqrt(3)/2,1/2}");
-		check("AngleVector(90*Degree)", "{0,1}");
-		check("AngleVector({1, 10}, a)", "{1+Cos(a),10+Sin(a)}");
+		check("AngleVector(x)", //
+				"{Cos(x),Sin(x)}");
+		check("AngleVector(Pi/6)", //
+				"{Sqrt(3)/2,1/2}");
+		check("AngleVector(90*Degree)", //
+				"{0,1}");
+		check("AngleVector({1, 10}, a)", //
+				"{1+Cos(a),10+Sin(a)}");
 	}
 
 	public void testAnyTrue() {
-		check("AnyTrue({}, EvenQ)", "False");
-		check("AnyTrue({1, 2, 3, 4, 5, 6}, EvenQ)", "True");
-		check("AnyTrue({1, 3, 5}, EvenQ)", "False");
-		check("AnyTrue({12, 16, x, 14, y}, # < 10 &)", "x<10||y<10");
-		check("AnyTrue({12, 16, x, 14, y}, TrueQ(# < 10) &)", "False");
-		check("AnyTrue(f(2, 7, 6), OddQ)", "True");
+		check("AnyTrue({}, EvenQ)", //
+				"False");
+		check("AnyTrue({1, 2, 3, 4, 5, 6}, EvenQ)", //
+				"True");
+		check("AnyTrue({1, 3, 5}, EvenQ)", //
+				"False");
+		check("AnyTrue({12, 16, x, 14, y}, # < 10 &)", //
+				"x<10||y<10");
+		check("AnyTrue({12, 16, x, 14, y}, TrueQ(# < 10) &)", //
+				"False");
+		check("AnyTrue(f(2, 7, 6), OddQ)", //
+				"True");
 	}
 
 	public void testApart() {
@@ -234,26 +256,40 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAppend() {
-		check("Append({1, 2, 3}, 4) ", "{1,2,3,4}");
-		check("Append(f(a, b), c)", "f(a,b,c)");
-		check("Append({a, b}, {c, d})  ", "{a,b,{c,d}}");
-		check("Append(a, b)", "Append(a,b)");
+		check("Append({1, 2, 3}, 4) ", //
+				"{1,2,3,4}");
+		check("Append(f(a, b), c)", //
+				"f(a,b,c)");
+		check("Append({a, b}, {c, d})  ", //
+				"{a,b,{c,d}}");
+		check("Append(a, b)", //
+				"Append(a,b)");
 	}
 
 	public void testAppendTo() {
-		check("s = {}", "{}");
-		check("AppendTo(s, 1)", "{1}");
-		check("s", "{1}");
+		check("s = {}", //
+				"{}");
+		check("AppendTo(s, 1)", //
+				"{1}");
+		check("s", //
+				"{1}");
 
-		check("y = f()", "f()");
-		check("AppendTo(y, x)", "f(x)");
-		check("y", "f(x)");
+		check("y = f()", //
+				"f()");
+		check("AppendTo(y, x)", //
+				"f(x)");
+		check("y", //
+				"f(x)");
 
-		check("AppendTo({}, 1)", "AppendTo({},1)");
-		check("AppendTo(a, b)", "AppendTo(a,b)");
+		check("AppendTo({}, 1)", //
+				"AppendTo({},1)");
+		check("AppendTo(a, b)", //
+				"AppendTo(a,b)");
 
-		check("$l = {1, 2, 4, 9};appendto($l, 16)", "{1,2,4,9,16}");
-		check("$l = {1, 2, 4, 9};appendto($l, 16);$l", "{1,2,4,9,16}");
+		check("$l = {1, 2, 4, 9};appendto($l, 16)", //
+				"{1,2,4,9,16}");
+		check("$l = {1, 2, 4, 9};appendto($l, 16);$l", //
+				"{1,2,4,9,16}");
 	}
 
 	public void testApply() {
@@ -278,28 +314,45 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Times @@ {1, 2, 3, 4}", //
 				"24");
-		check("f @@ {{a, b}, {c}, d}", "f({a,b},{c},d)");
-		check("apply(head, {3,4,5})", "Symbol");
-		check("apply(f, a)", "a");
-		check("apply(f, {a, \"string\", 3}, {-1})", "{a,string,3}");
-		check("table(i0^j, ##) & @@ {{i0, 3}, {j, 4}}", "{{1,1,1,1},{2,4,8,16},{3,9,27,81}}");
+		check("f @@ {{a, b}, {c}, d}", //
+				"f({a,b},{c},d)");
+		check("apply(head, {3,4,5})", //
+				"Symbol");
+		check("apply(f, a)", //
+				"a");
+		check("apply(f, {a, \"string\", 3}, {-1})", //
+				"{a,string,3}");
+		check("table(i0^j, ##) & @@ {{i0, 3}, {j, 4}}", //
+				"{{1,1,1,1},{2,4,8,16},{3,9,27,81}}");
 
-		check("apply(f, {{a, b, c}, {d, e}})", "f({a,b,c},{d,e})");
-		check("apply(f, {{a, b, c}, {d, e}}, {1})", "{f(a,b,c),f(d,e)}");
-		check("apply(f, {{a, b, c}, {d, e}}, {0, 1})", "f(f(a,b,c),f(d,e))");
+		check("apply(f, {{a, b, c}, {d, e}})", //
+				"f({a,b,c},{d,e})");
+		check("apply(f, {{a, b, c}, {d, e}}, {1})", //
+				"{f(a,b,c),f(d,e)}");
+		check("apply(f, {{a, b, c}, {d, e}}, {0, 1})", //
+				"f(f(a,b,c),f(d,e))");
 		// Apply down to level 2 (excluding level 0):
-		check("apply(f, {{{{{a}}}}}, 2)", "{f(f({{a}}))}");
+		check("apply(f, {{{{{a}}}}}, 2)", //
+				"{f(f({{a}}))}");
 
-		check("apply(f, {{{{{a}}}}}, {0, 2})", "f(f(f({{a}})))");
-		check("apply(f, {{{{{a}}}}}, Infinity)", "{f(f(f(f(a))))}");
-		check("apply(f, {{{{{a}}}}}, {0, Infinity})", "f(f(f(f(f(a)))))");
+		check("apply(f, {{{{{a}}}}}, {0, 2})", //
+				"f(f(f({{a}})))");
+		check("apply(f, {{{{{a}}}}}, Infinity)", //
+				"{f(f(f(f(a))))}");
+		check("apply(f, {{{{{a}}}}}, {0, Infinity})", //
+				"f(f(f(f(f(a)))))");
 
-		check("apply(f, {{{{{a}}}}}, -1)", "{f(f(f(f(a))))}");
-		check("apply(f, {{{{{a}}}}}, -2)", "{f(f(f(f(a))))}");
-		check("apply(f, {{{{{a}}}}}, -3)", "{f(f(f({a})))}");
+		check("apply(f, {{{{{a}}}}}, -1)", //
+				"{f(f(f(f(a))))}");
+		check("apply(f, {{{{{a}}}}}, -2)", //
+				"{f(f(f(f(a))))}");
+		check("apply(f, {{{{{a}}}}}, -3)", //
+				"{f(f(f({a})))}");
 
-		check("apply(f, {{{{{a}}}}}, {2, -3})", "{{f(f({a}))}}");
-		check("apply(f, h0(h1(h2(h3(h4(a))))), {2, -3})", "h0(h1(f(f(h4(a)))))");
+		check("apply(f, {{{{{a}}}}}, {2, -3})", //
+				"{{f(f({a}))}}");
+		check("apply(f, h0(h1(h2(h3(h4(a))))), {2, -3})", //
+				"h0(h1(f(f(h4(a)))))");
 
 		check("Apply(List,1+2+3)", //
 				"6");
@@ -339,14 +392,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ArcCos(Cos(5))", //
 				"-5+2*Pi");
 
-		check("ArcCos(0)", "Pi/2");
-		check("ArcCos(1)", "0");
-		check("Integrate(ArcCos(x), {x, -1, 1})", "Pi");
+		check("ArcCos(0)", //
+				"Pi/2");
+		check("ArcCos(1)", //
+				"0");
+		check("Integrate(ArcCos(x), {x, -1, 1})", //
+				"Pi");
 
-		check("arccos(-11)", "ArcCos(-11)");
-		check("arccos(-x)", "ArcCos(-x)");
-		check("D(ArcCos(x),x)", "-1/Sqrt(1-x^2)");
-		check("diff(ArcCos(x),x)", "-1/Sqrt(1-x^2)");
+		check("arccos(-11)", //
+				"ArcCos(-11)");
+		check("arccos(-x)", //
+				"ArcCos(-x)");
+		check("D(ArcCos(x),x)", //
+				"-1/Sqrt(1-x^2)");
+		check("diff(ArcCos(x),x)", //
+				"-1/Sqrt(1-x^2)");
 	}
 
 	public void testArcCosh() {
@@ -382,64 +442,100 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ArcCot(Cot(5))", //
 				"5-2*Pi");
 
-		check("ArcCot(0)", "Pi/2");
-		check("ArcCot(1)", "Pi/4");
+		check("ArcCot(0)", //
+				"Pi/2");
+		check("ArcCot(1)", //
+				"Pi/4");
 
-		check("arccot(complexinfinity)", "0");
-		check("arccot(0)", "Pi/2");
-		check("arccot(-11)", "-ArcCot(11)");
-		check("arccot(-x)", "-ArcCot(x)");
+		check("arccot(complexinfinity)", //
+				"0");
+		check("arccot(0)", //
+				"Pi/2");
+		check("arccot(-11)", //
+				"-ArcCot(11)");
+		check("arccot(-x)", //
+				"-ArcCot(x)");
 		check("D(ArcCot(x),x)", //
 				"-1/(1+x^2)");
 	}
 
 	public void testArcCoth() {
-		check("ArcCoth(0)", "I*1/2*Pi");
+		check("ArcCoth(0)", //
+				"I*1/2*Pi");
 		// TODO fails in bitbucket pipelines
 		// check("ArcCoth(0.0)", "I*1.5707963267948966");
 		// check("ArcCoth(0.5)", "0.5493061443340549+I*(-1.5707963267948966)");
-		check("ArcCoth(-x)", "-ArcCoth(x)");
-		check("ArcCoth(-1)", "-Infinity");
-		check("D(ArcCoth(x),x)", "1/(1-x^2)");
+		check("ArcCoth(-x)", //
+				"-ArcCoth(x)");
+		check("ArcCoth(-1)", //
+				"-Infinity");
+		check("D(ArcCoth(x),x)", //
+				"1/(1-x^2)");
 	}
 
 	public void testArcCsc() {
-		check("ArcCsc(3.5)", "0.289752");
-		check("ArcCsc(1.0+3.5*I)", "0.073021+I*(-0.261854)");
-		check("ArcCsc(1)", "Pi/2");
-		check("ArcCsc(-1)", "-Pi/2");
-		check("arccsc(0)", "ComplexInfinity");
-		check("arccsc(-x)", "-ArcCsc(x)");
-		check("D(ArcCsc(x),x)", "-1/(Sqrt(1-1/x^2)*x^2)");
+		check("ArcCsc(3.5)", //
+				"0.289752");
+		check("ArcCsc(1.0+3.5*I)", //
+				"0.073021+I*(-0.261854)");
+		check("ArcCsc(1)", //
+				"Pi/2");
+		check("ArcCsc(-1)", //
+				"-Pi/2");
+		check("arccsc(0)", //
+				"ComplexInfinity");
+		check("arccsc(-x)", //
+				"-ArcCsc(x)");
+		check("D(ArcCsc(x),x)", //
+				"-1/(Sqrt(1-1/x^2)*x^2)");
 	}
 
 	public void testArcCsch() {
-		check("arccsch(0)", "ComplexInfinity");
-		checkNumeric("ArcCsch(1.0)", "0.8813735870195429");
-		check("ArcCsch(-Infinity)", "0");
+		check("arccsch(0)", //
+				"ComplexInfinity");
+		checkNumeric("ArcCsch(1.0)", //
+				"0.8813735870195429");
+		check("ArcCsch(-Infinity)", //
+				"0");
 
-		check("arccsch(-x)", "-ArcCsch(x)");
-		check("diff(ArcCsch(x),x)", "-1/(Sqrt(1+x^2)*Abs(x))");
+		check("arccsch(-x)", //
+				"-ArcCsch(x)");
+		check("diff(ArcCsch(x),x)", //
+				"-1/(Sqrt(1+x^2)*Abs(x))");
 	}
 
 	public void testArcSec() {
-		check("ArcSec(3.5)", "1.28104");
-		check("ArcSec(1.0+3.5*I)", "1.49778+I*0.261854");
-		check("ArcSec(1)", "0");
-		check("ArcSec(-1)", "Pi");
-		check("ArcSec(0)", "ComplexInfinity");
-		check("ArcSec(-x)", "ArcSec(-x)");
-		check("diff(ArcSec(x),x)", "1/(Sqrt(1-1/x^2)*x^2)");
+		check("ArcSec(3.5)", //
+				"1.28104");
+		check("ArcSec(1.0+3.5*I)", //
+				"1.49778+I*0.261854");
+		check("ArcSec(1)", //
+				"0");
+		check("ArcSec(-1)", //
+				"Pi");
+		check("ArcSec(0)", //
+				"ComplexInfinity");
+		check("ArcSec(-x)", //
+				"ArcSec(-x)");
+		check("diff(ArcSec(x),x)", //
+				"1/(Sqrt(1-1/x^2)*x^2)");
 	}
 
 	public void testArcSech() {
-		check("ArcSech(0)", "Infinity");
-		check("ArcSech(0.0)", "Indeterminate");
-		check("ArcSech(1)", "0");
-		checkNumeric("ArcSech(0.5)", "1.3169578969248166");
-		check("ArcSech(-x)", "ArcSech(-x)");
-		check("ArcSech(-2)", "I*2/3*Pi");
-		check("D(ArcSech(x),x)", "-1/(x*Sqrt(1-x^2))");
+		check("ArcSech(0)", //
+				"Infinity");
+		check("ArcSech(0.0)", //
+				"Indeterminate");
+		check("ArcSech(1)", //
+				"0");
+		checkNumeric("ArcSech(0.5)", //
+				"1.3169578969248166");
+		check("ArcSech(-x)", //
+				"ArcSech(-x)");
+		check("ArcSech(-2)", //
+				"I*2/3*Pi");
+		check("D(ArcSech(x),x)", //
+				"-1/(x*Sqrt(1-x^2))");
 	}
 
 	public void testArcSin() {
@@ -458,24 +554,38 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ArcSin(Sin(5))", //
 				"5-2*Pi");
 
-		check("-3*ArcSin(x)-2*ArcCos(x)", "-Pi-ArcSin(x)");
-		check("-ArcSin(x)-2*ArcCos(x)", "-Pi/2-ArcCos(x)");
-		check("-5*ArcSin(x)-5*ArcCos(x)", "-5/2*Pi");
-		check("ArcSin(x)+ArcCos(x)", "Pi/2");
-		check("5*ArcSin(x)+5*ArcCos(x)", "5/2*Pi");
-		check("ArcSin(0)", "0");
-		check("ArcSin(1)", "Pi/2");
-		check("arcsin(-11)", "-ArcSin(11)");
-		check("arcsin(-x)", "-ArcSin(x)");
-		check("diff(ArcSin(x),x)", "1/Sqrt(1-x^2)");
+		check("-3*ArcSin(x)-2*ArcCos(x)", //
+				"-Pi-ArcSin(x)");
+		check("-ArcSin(x)-2*ArcCos(x)", //
+				"-Pi/2-ArcCos(x)");
+		check("-5*ArcSin(x)-5*ArcCos(x)", //
+				"-5/2*Pi");
+		check("ArcSin(x)+ArcCos(x)", //
+				"Pi/2");
+		check("5*ArcSin(x)+5*ArcCos(x)", //
+				"5/2*Pi");
+		check("ArcSin(0)", //
+				"0");
+		check("ArcSin(1)", //
+				"Pi/2");
+		check("arcsin(-11)", //
+				"-ArcSin(11)");
+		check("arcsin(-x)", //
+				"-ArcSin(x)");
+		check("diff(ArcSin(x),x)", //
+				"1/Sqrt(1-x^2)");
 	}
 
 	public void testArcSinh() {
-		check("ArcSinh(0)", "0");
-		check("ArcSinh(0.0)", "0.0");
-		checkNumeric("ArcSinh(1.0)", "0.8813735870195429");
+		check("ArcSinh(0)", //
+				"0");
+		check("ArcSinh(0.0)", //
+				"0.0");
+		checkNumeric("ArcSinh(1.0)", //
+				"0.8813735870195429");
 		// check("ArcSinh(-x)", "-ArcSinh(x)");
-		check("diff(ArcSinh(x),x)", "1/Sqrt(1+x^2)");
+		check("diff(ArcSinh(x),x)", //
+				"1/Sqrt(1+x^2)");
 	}
 
 	public void testArcTan() {
@@ -593,19 +703,30 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testArcTanh() {
 
-		check("ArcTanh(0)", "0");
-		check("ArcTanh(1)", "Infinity");
-		check("ArcTanh(2+I)", "ArcTanh(2+I)");
-		checkNumeric("ArcTanh(0.5 + 2*I)", "0.09641562020299621+I*1.1265564408348223");
+		check("ArcTanh(0)", //
+				"0");
+		check("ArcTanh(1)", //
+				"Infinity");
+		check("ArcTanh(2+I)", //
+				"ArcTanh(2+I)");
+		checkNumeric("ArcTanh(0.5 + 2*I)", //
+				"0.09641562020299621+I*1.1265564408348223");
 
-		check("ArcTanh(I)", "I*1/4*Pi");
-		check("ArcTanh(Infinity)", "-I*1/2*Pi");
-		check("ArcTanh(-Infinity)", "I*1/2*Pi");
-		check("ArcTanh(I*Infinity)", "I*1/2*Pi");
-		check("ArcTanh(ComplexInfinity)", "Pi/2");
+		check("ArcTanh(I)", //
+				"I*1/4*Pi");
+		check("ArcTanh(Infinity)", //
+				"-I*1/2*Pi");
+		check("ArcTanh(-Infinity)", //
+				"I*1/2*Pi");
+		check("ArcTanh(I*Infinity)", //
+				"I*1/2*Pi");
+		check("ArcTanh(ComplexInfinity)", //
+				"Pi/2");
 
-		check("ArcTanh(-x)", "-ArcTanh(x)");
-		check("D(ArcTanh(x),x)", "1/(1-x^2)");
+		check("ArcTanh(-x)", //
+				"-ArcTanh(x)");
+		check("D(ArcTanh(x),x)", //
+				"1/(1-x^2)");
 	}
 
 	public void testArg() {
@@ -638,25 +759,42 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Arg(I-Sqrt(3))", //
 				"5/6*Pi");
 		// issue #179
-		check("N(Arg(1+I*Sqrt(3)))", "1.0472");
+		check("N(Arg(1+I*Sqrt(3)))", //
+				"1.0472");
 
-		check("Arg(Pi)", "0");
-		check("Arg(-Pi*E)", "Pi");
+		check("Arg(Pi)", //
+				"0");
+		check("Arg(-Pi*E)", //
+				"Pi");
 
-		check("Arg(0)", "0");
-		check("Arg(1)", "0");
-		check("Arg(-1)", "Pi");
-		check("Arg(I)", "Pi/2");
-		check("Arg(1+I)", "Pi/4");
-		check("Arg(-I)", "-Pi/2");
-		check("Arg(-2*Sqrt(Pi))", "Pi");
-		check("Arg(Indeterminate)", "Indeterminate");
-		check("Arg(0)", "0");
-		check("Arg(10/3)", "0");
-		check("Arg(-10/3)", "Pi");
-		check("Arg(I*Infinity)", "Pi/2");
-		check("Arg(-I*Infinity)", "-Pi/2");
-		check("Arg(ComplexInfinity)", "Interval({-Pi,Pi})");
+		check("Arg(0)", //
+				"0");
+		check("Arg(1)", //
+				"0");
+		check("Arg(-1)", //
+				"Pi");
+		check("Arg(I)", //
+				"Pi/2");
+		check("Arg(1+I)", //
+				"Pi/4");
+		check("Arg(-I)", //
+				"-Pi/2");
+		check("Arg(-2*Sqrt(Pi))", //
+				"Pi");
+		check("Arg(Indeterminate)", //
+				"Indeterminate");
+		check("Arg(0)", //
+				"0");
+		check("Arg(10/3)", //
+				"0");
+		check("Arg(-10/3)", //
+				"Pi");
+		check("Arg(I*Infinity)", //
+				"Pi/2");
+		check("Arg(-I*Infinity)", //
+				"-Pi/2");
+		check("Arg(ComplexInfinity)", //
+				"Interval({-Pi,Pi})");
 	}
 
 	public void testArray() {
@@ -696,28 +834,47 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArrayDepth() {
-		check("ArrayDepth({{a,b},{c,d}})", "2");
-		check("ArrayDepth(x)", "0");
-		check("ArrayDepth({{1, 2}, {3, 4}})", "2");
-		check("ArrayDepth({1, 2, 3, 4})", "1");
-		check("ArrayDepth({{a, b}, {c}})", "1");
-		check("ArrayDepth(f(f(a, b), f(c, d)))", "2");
-		check("ArrayDepth(Array(a, {4, 5, 2}))", "3");
+		check("ArrayDepth({{a,b},{c,d}})", //
+				"2");
+		check("ArrayDepth(x)", //
+				"0");
+		check("ArrayDepth({{1, 2}, {3, 4}})", //
+				"2");
+		check("ArrayDepth({1, 2, 3, 4})", //
+				"1");
+		check("ArrayDepth({{a, b}, {c}})", //
+				"1");
+		check("ArrayDepth(f(f(a, b), f(c, d)))", //
+				"2");
+		check("ArrayDepth(Array(a, {4, 5, 2}))", //
+				"3");
 	}
 
 	public void testArrayQ() {
-		check("ArrayQ({1, 2, 3, 4})", "True");
-		check("ArrayQ({1, 2, {3}, 4})", "False");
-		check("ArrayQ({{1, 2}, {3}})", "False");
-		check("ArrayQ({{1, 2}, {3, 4}})", "True");
-		check("ArrayQ({1, 2, 3, 4}, 2)", "False");
-		check("ArrayQ({{1, 2}, {3, 4}},2)", "True");
-		check("ArrayQ({1, 2, 3, x}, 1, NumericQ)", "False");
-		check("ArrayQ({1, 2, 3, 4}, 1, NumericQ)", "True");
-		check("ArrayQ({{{E, 1}, {Pi, 2}}, {{Sin(1), Cos(2)}, {Sinh(1), Cosh(1)}}}, _, NumericQ)", "True");
-		check("ArrayQ({1, 2., E, Pi + I}, 1)", "True");
-		check("ArrayQ({{1,2},{3,4}},2,NumericQ)", "True");
-		check("ArrayQ({{a, b}, {c, d}},2,SymbolQ)", "True");
+		check("ArrayQ({1, 2, 3, 4})", //
+				"True");
+		check("ArrayQ({1, 2, {3}, 4})", //
+				"False");
+		check("ArrayQ({{1, 2}, {3}})", //
+				"False");
+		check("ArrayQ({{1, 2}, {3, 4}})", //
+				"True");
+		check("ArrayQ({1, 2, 3, 4}, 2)", //
+				"False");
+		check("ArrayQ({{1, 2}, {3, 4}},2)", //
+				"True");
+		check("ArrayQ({1, 2, 3, x}, 1, NumericQ)", //
+				"False");
+		check("ArrayQ({1, 2, 3, 4}, 1, NumericQ)", //
+				"True");
+		check("ArrayQ({{{E, 1}, {Pi, 2}}, {{Sin(1), Cos(2)}, {Sinh(1), Cosh(1)}}}, _, NumericQ)", //
+				"True");
+		check("ArrayQ({1, 2., E, Pi + I}, 1)", //
+				"True");
+		check("ArrayQ({{1,2},{3,4}},2,NumericQ)", //
+				"True");
+		check("ArrayQ({{a, b}, {c, d}},2,SymbolQ)", //
+				"True");
 	}
 
 	public void testArrayReshape() {
@@ -737,12 +894,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAtomQ() {
-		check("AtomQ(Sin(Pi))", "True");
-		check("AtomQ(x)", "True");
-		check("AtomQ(1.2)", "True");
-		check("AtomQ(2 + I)", "True");
-		check("AtomQ(2 / 3)", "True");
-		check("AtomQ(x + y)", "False");
+		check("AtomQ(Sin(Pi))", //
+				"True");
+		check("AtomQ(x)", //
+				"True");
+		check("AtomQ(1.2)", //
+				"True");
+		check("AtomQ(2 + I)", //
+				"True");
+		check("AtomQ(2 / 3)", //
+				"True");
+		check("AtomQ(x + y)", //
+				"False");
 	}
 
 	public void testArithmeticGeometricMean() {
@@ -923,8 +1086,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBernoulliB() {
-		check("BernoulliB(2)", "1/6");
-		check("Table(BernoulliB(k), {k, 0, 10})", "{1,-1/2,1/6,0,-1/30,0,1/42,0,-1/30,0,5/66}");
+		check("BernoulliB(2)", //
+				"1/6");
+		check("Table(BernoulliB(k), {k, 0, 10})", //
+				"{1,-1/2,1/6,0,-1/30,0,1/42,0,-1/30,0,5/66}");
 	}
 
 	public void testBesselJ() {
@@ -983,20 +1148,29 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Beta(10,b) // FunctionExpand", //
 				"362880/(b*(1+b)*(2+b)*(3+b)*(4+b)*(5+b)*(6+b)*(7+b)*(8+b)*(9+b))");
 
-		check("Beta(2.3, 3.2)", "0.0540298");
+		check("Beta(2.3, 3.2)", //
+				"0.0540298");
 
-		check("Beta(a, a+1)", "1/(a*(1+a)*CatalanNumber(a))");
-		check("Beta(b-1, b)", "1/((-1+b)*b*CatalanNumber(-1+b))");
+		check("Beta(a, a+1)", //
+				"1/(a*(1+a)*CatalanNumber(a))");
+		check("Beta(b-1, b)", //
+				"1/((-1+b)*b*CatalanNumber(-1+b))");
 
-		check("Beta(5,4)", "1/280");
-		check("Beta(5/2,7/2)", "3/256*Pi");
-		check("Beta(2.3,3.2)", "0.0540298");
+		check("Beta(5,4)", //
+				"1/280");
+		check("Beta(5/2,7/2)", //
+				"3/256*Pi");
+		check("Beta(2.3,3.2)", //
+				"0.0540298");
 		// check("Beta(2.5+I,1-I)", "0.05403");
 
-		check("Beta(a, 0)", "ComplexInfinity");
-		check("Beta(0,b)", "ComplexInfinity");
+		check("Beta(a, 0)", //
+				"ComplexInfinity");
+		check("Beta(0,b)", //
+				"ComplexInfinity");
 
-		check("Beta(-n-4, n+1)", "0");
+		check("Beta(-n-4, n+1)", //
+				"0");
 	}
 
 	public void testBetaRegularized() {
@@ -1149,58 +1323,89 @@ public class LowercaseTestCase extends AbstractTestCase {
 				+ "    1, 2, 3, 4}}))", //
 				"{-2.0,-3.0,-6.0,6.0,3.0,2.0,1.5}");
 
-		check("Binomial(k, -1)", "0");
-		check("Binomial(k, -1.4)", "Binomial(k,-1.4)");
-		check("Binomial(k, 0)", "1");
-		check("Binomial(40,1)", "40");
-		check("Binomial(40.0,1.0)", "40.0");
-		check("Binomial(40.3,1.2)", "76.37683");
-		check("Binomial(n, n+1)", "0");
-		check("Binomial(n, n+2)", "0");
-		check("Binomial(4,2)", "6");
-		check("Binomial(5,3)", "10");
+		check("Binomial(k, -1)", //
+				"0");
+		check("Binomial(k, -1.4)", //
+				"Binomial(k,-1.4)");
+		check("Binomial(k, 0)", //
+				"1");
+		check("Binomial(40,1)", //
+				"40");
+		check("Binomial(40.0,1.0)", //
+				"40.0");
+		check("Binomial(40.3,1.2)", //
+				"76.37683");
+		check("Binomial(n, n+1)", //
+				"0");
+		check("Binomial(n, n+2)", //
+				"0");
+		check("Binomial(4,2)", //
+				"6");
+		check("Binomial(5,3)", //
+				"10");
 
-		check("Binomial(n0, 2)", "1/2*(-1+n0)*n0");
-		check("Binomial(k/3, k)", "Binomial(k/3,k)");
-		check("Binomial(0, 0)", "1");
-		check("Binomial(1000, 500)",
+		check("Binomial(n0, 2)", //
+				"1/2*(-1+n0)*n0");
+		check("Binomial(k/3, k)", //
+				"Binomial(k/3,k)");
+		check("Binomial(0, 0)", //
+				"1");
+		check("Binomial(1000, 500)", //
 				"2702882409454365695156146936259752754961520084465482870073928751066254287055221\\\n"
 						+ "9389861248392450237016536260608502154610480220975005067991754989421969951847542\\\n"
 						+ "3665484263751733356162464079737887344364574161119497604571044985756287880514600\\\n"
 						+ "994219426752366915856603136862602484428109296905863799821216320");
-		check("Binomial(n0, n0)", "1");
-		check("Binomial(n0, 0)", "1");
-		check("Binomial(n0, n0-1)", "n0");
-		check("Binomial(n0, 1)", "n0");
-		check("Binomial(n0, 2)", "1/2*(-1+n0)*n0");
-		check("Binomial(n0, 3)", "1/6*(-2+n0)*(-1+n0)*n0");
+		check("Binomial(n0, n0)", //
+				"1");
+		check("Binomial(n0, 0)", //
+				"1");
+		check("Binomial(n0, n0-1)", //
+				"n0");
+		check("Binomial(n0, 1)", //
+				"n0");
+		check("Binomial(n0, 2)", //
+				"1/2*(-1+n0)*n0");
+		check("Binomial(n0, 3)", //
+				"1/6*(-2+n0)*(-1+n0)*n0");
 		// check("Binomial(-3, -5)", "0");
 
-		check("Binomial(k, 2)", "1/2*(-1+k)*k");
-		check("Binomial(k, 5)", "1/120*(-4+k)*(-3+k)*(-2+k)*(-1+k)*k");
-		check("Binomial(k, 6)", "Binomial(k,6)");
+		check("Binomial(k, 2)", //
+				"1/2*(-1+k)*k");
+		check("Binomial(k, 5)", //
+				"1/120*(-4+k)*(-3+k)*(-2+k)*(-1+k)*k");
+		check("Binomial(k, 6)", //
+				"Binomial(k,6)");
 	}
 
 	public void testBitLength() {
-		check("BitLength(1023)", "10");
-		check("BitLength(100) ", "7");
-		check("BitLength(-5)", "3");
-		check("BitLength(0)", "0");
-		check("BitLength(2^123-1)", "123");
-		check("BitLength(-(2^123-1))", "123");
-		check("", "");
-		check("", "");
-
+		check("BitLength(1023)", //
+				"10");
+		check("BitLength(100) ", //
+				"7");
+		check("BitLength(-5)", //
+				"3");
+		check("BitLength(0)", //
+				"0");
+		check("BitLength(2^123-1)", //
+				"123");
+		check("BitLength(-(2^123-1))", //
+				"123");
 	}
 
 	public void testBoole() {
-		check("Boole(2 == 2)", "1");
-		check("Boole(7 < 5)  ", "0");
-		check("Boole(a == 7)", "Boole(a==7)");
+		check("Boole(2 == 2)", //
+				"1");
+		check("Boole(7 < 5)  ", //
+				"0");
+		check("Boole(a == 7)", //
+				"Boole(a==7)");
 
-		check("{Boole(False), Boole(True)}", "{0,1}");
-		check("Boole({True, False, True, True, False})", "{1,0,1,1,0}");
-		check("Boole({a, False, b, True, f()})", "{Boole(a),0,Boole(b),1,Boole(f())}");
+		check("{Boole(False), Boole(True)}", //
+				"{0,1}");
+		check("Boole({True, False, True, True, False})", //
+				"{1,0,1,1,0}");
+		check("Boole({a, False, b, True, f()})", //
+				"{Boole(a),0,Boole(b),1,Boole(f())}");
 	}
 
 	public void testBooleanConvert() {
@@ -1215,44 +1420,78 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("BooleanConvert(a&&!b||!a&&c||b&&!c, \"DNF\")", //
 				"a&&!b||!a&&c||b&&!c");
 
-		check("BooleanConvert(Implies(x, y), \"CNF\")", "!x||y");
-		check("BooleanConvert(! (a && b), \"CNF\")", "!a||!b");
-		check("BooleanConvert(! (a || b || c), \"CNF\")", "!a&&!b&&!c");
-		check("BooleanConvert(Xor(x,y), \"CNF\")", "(x||y)&&(!x||!y)");
-		check("BooleanConvert(Xor(p,q,r),\"CNF\")", "(p||q||r)&&(p||!q||!r)&&(!p||q||!r)&&(!p||!q||r)");
-		check("BooleanConvert(Nand(p, q, r), \"CNF\")", "!p||!q||!r");
-		check("BooleanConvert(!Nand(p, q, r), \"CNF\")", "p&&q&&r");
-		check("BooleanConvert(Nor(p, q, r), \"CNF\")", "!p&&!q&&!r");
-		check("BooleanConvert(!Nor(p, q, r), \"CNF\")", "p||q||r");
-		check("BooleanConvert(! (a && b), \"CNF\")", "!a||!b");
-		check("BooleanConvert(! (a || b || c), \"CNF\")", "!a&&!b&&!c");
-		check("BooleanConvert(Equivalent(x, y, z), \"CNF\")", "(x||!y)&&(x||!z)&&(!x||y)&&(!x||z)&&(y||!z)&&(!y||z)");
+		check("BooleanConvert(Implies(x, y), \"CNF\")", //
+				"!x||y");
+		check("BooleanConvert(! (a && b), \"CNF\")", //
+				"!a||!b");
+		check("BooleanConvert(! (a || b || c), \"CNF\")", //
+				"!a&&!b&&!c");
+		check("BooleanConvert(Xor(x,y), \"CNF\")", //
+				"(x||y)&&(!x||!y)");
+		check("BooleanConvert(Xor(p,q,r),\"CNF\")", //
+				"(p||q||r)&&(p||!q||!r)&&(!p||q||!r)&&(!p||!q||r)");
+		check("BooleanConvert(Nand(p, q, r), \"CNF\")", //
+				"!p||!q||!r");
+		check("BooleanConvert(!Nand(p, q, r), \"CNF\")", //
+				"p&&q&&r");
+		check("BooleanConvert(Nor(p, q, r), \"CNF\")", //
+				"!p&&!q&&!r");
+		check("BooleanConvert(!Nor(p, q, r), \"CNF\")", //
+				"p||q||r");
+		check("BooleanConvert(! (a && b), \"CNF\")", //
+				"!a||!b");
+		check("BooleanConvert(! (a || b || c), \"CNF\")", //
+				"!a&&!b&&!c");
+		check("BooleanConvert(Equivalent(x, y, z), \"CNF\")", //
+				"(x||!y)&&(x||!z)&&(!x||y)&&(!x||z)&&(y||!z)&&(!y||z)");
 
-		check("BooleanConvert(Implies(x, y))", "!x||y");
-		check("BooleanConvert(! (a && b))", "!a||!b");
-		check("BooleanConvert(! (a || b || c))", "!a&&!b&&!c");
-		check("BooleanConvert(Xor(x,y))", "x&&!y||!x&&y");
-		check("BooleanConvert(Xor(p,q,r))", "p&&q&&r||p&&!q&&!r||!p&&q&&!r||!p&&!q&&r");
-		check("BooleanConvert(Nand(p, q, r))", "!p||!q||!r");
-		check("BooleanConvert(!Nand(p, q, r))", "p&&q&&r");
-		check("BooleanConvert(Nor(p, q, r))", "!p&&!q&&!r");
-		check("BooleanConvert(!Nor(p, q, r))", "p||q||r");
-		check("BooleanConvert(! (a && b))", "!a||!b");
-		check("BooleanConvert(! (a || b || c))", "!a&&!b&&!c");
-		check("BooleanConvert(Equivalent(x, y, z))", "x&&y&&z||!x&&!y&&!z");
+		check("BooleanConvert(Implies(x, y))", //
+				"!x||y");
+		check("BooleanConvert(! (a && b))", //
+				"!a||!b");
+		check("BooleanConvert(! (a || b || c))", //
+				"!a&&!b&&!c");
+		check("BooleanConvert(Xor(x,y))", //
+				"x&&!y||!x&&y");
+		check("BooleanConvert(Xor(p,q,r))", //
+				"p&&q&&r||p&&!q&&!r||!p&&q&&!r||!p&&!q&&r");
+		check("BooleanConvert(Nand(p, q, r))", //
+				"!p||!q||!r");
+		check("BooleanConvert(!Nand(p, q, r))", //
+				"p&&q&&r");
+		check("BooleanConvert(Nor(p, q, r))", //
+				"!p&&!q&&!r");
+		check("BooleanConvert(!Nor(p, q, r))", //
+				"p||q||r");
+		check("BooleanConvert(! (a && b))", //
+				"!a||!b");
+		check("BooleanConvert(! (a || b || c))", //
+				"!a&&!b&&!c");
+		check("BooleanConvert(Equivalent(x, y, z))", //
+				"x&&y&&z||!x&&!y&&!z");
 
-		check("BooleanConvert(Implies(x, y), \"DNF\")", "!x||y");
-		check("BooleanConvert(! (a && b), \"DNF\")", "!a||!b");
-		check("BooleanConvert(! (a || b || c), \"DNF\")", "!a&&!b&&!c");
-		check("BooleanConvert(Xor(x,y), \"DNF\")", "x&&!y||!x&&y");
-		check("BooleanConvert(Nand(p, q, r), \"DNF\")", "!p||!q||!r");
-		check("BooleanConvert(!Nand(p, q, r), \"DNF\")", "p&&q&&r");
-		check("BooleanConvert(Nor(p, q, r), \"DNF\")", "!p&&!q&&!r");
-		check("BooleanConvert(!Nor(p, q, r), \"DNF\")", "p||q||r");
-		check("BooleanConvert(! (a && b), \"DNF\")", "!a||!b");
-		check("BooleanConvert(! (a || b || c), \"DNF\")", "!a&&!b&&!c");
-		check("BooleanConvert(Equivalent(x, y, z), \"DNF\")", "x&&y&&z||!x&&!y&&!z");
-
+		check("BooleanConvert(Implies(x, y), \"DNF\")", //
+				"!x||y");
+		check("BooleanConvert(! (a && b), \"DNF\")", //
+				"!a||!b");
+		check("BooleanConvert(! (a || b || c), \"DNF\")", //
+				"!a&&!b&&!c");
+		check("BooleanConvert(Xor(x,y), \"DNF\")", //
+				"x&&!y||!x&&y");
+		check("BooleanConvert(Nand(p, q, r), \"DNF\")", //
+				"!p||!q||!r");
+		check("BooleanConvert(!Nand(p, q, r), \"DNF\")", //
+				"p&&q&&r");
+		check("BooleanConvert(Nor(p, q, r), \"DNF\")", //
+				"!p&&!q&&!r");
+		check("BooleanConvert(!Nor(p, q, r), \"DNF\")", //
+				"p||q||r");
+		check("BooleanConvert(! (a && b), \"DNF\")", //
+				"!a||!b");
+		check("BooleanConvert(! (a || b || c), \"DNF\")", //
+				"!a&&!b&&!c");
+		check("BooleanConvert(Equivalent(x, y, z), \"DNF\")", //
+				"x&&y&&z||!x&&!y&&!z");
 	}
 
 	public void testBooleanMinimize() {
@@ -1278,10 +1517,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBooleanQ() {
-		check("BooleanQ(True)", "True");
-		check("BooleanQ(False)", "True");
-		check("BooleanQ(f(x))", "False");
-		check("BooleanQ(Together(x/y + y/x))", "False");
+		check("BooleanQ(True)", //
+				"True");
+		check("BooleanQ(False)", //
+				"True");
+		check("BooleanQ(f(x))", //
+				"False");
+		check("BooleanQ(Together(x/y + y/x))", //
+				"False");
 	}
 
 	public void testBooleanTable() {
@@ -1296,21 +1539,30 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBooleanVariables() {
-		check("BooleanVariables(a || ! b && b)", "{a,b}");
-		check("BooleanVariables(Xor(a, And(b, Or(c, d))))", "{a,b,c,d}");
-		check("BooleanVariables(a && b || ! a && b)", "{a,b}");
-		check("BooleanVariables(Xor(p,q,r))", "{p,q,r}");
-		check("BooleanVariables(a + b*c)", "{}");
+		check("BooleanVariables(a || ! b && b)", //
+				"{a,b}");
+		check("BooleanVariables(Xor(a, And(b, Or(c, d))))", //
+				"{a,b,c,d}");
+		check("BooleanVariables(a && b || ! a && b)", //
+				"{a,b}");
+		check("BooleanVariables(Xor(p,q,r))", //
+				"{p,q,r}");
+		check("BooleanVariables(a + b*c)", //
+				"{}");
 	}
 
 	public void testBrayCurtisDistance() {
-		check("BrayCurtisDistance({-1, -1}, {10, 10})", "11/9");
+		check("BrayCurtisDistance({-1, -1}, {10, 10})", //
+				"11/9");
 	}
 
 	public void testBreak() {
-		check("n = 0", "0");
-		check("While(True, If(n>10, Break()); n=n+1)", "");
-		check("n", "11");
+		check("n = 0", //
+				"0");
+		check("While(True, If(n>10, Break()); n=n+1)", //
+				"");
+		check("n", //
+				"11");
 	}
 
 	public void testCancel() {
@@ -1389,33 +1641,57 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCases() {
-		check("Cases({a, 1, 2.5, \"string\"}, _Integer|_Real)", "{1,2.5}");
-		check("Cases(_Complex)[{1, 2*I, 3, 4-I, 5}]", "{I*2,4-I}");
-		check("Cases(1, 2)", "{}");
-		check("Cases(f(1, 2), 2)", "{2}");
-		check("Cases(f(f(1, 2), f(2)), 2)", "{}");
-		check("Cases(f(f(1, 2), f(2)), 2, 2)", "{2,2}");
-		check("Cases(f(f(1, 2), f(2), 2), 2, Infinity)", "{2,2,2}");
-		check("Cases({1, f(2), f(3, 3, 3), 4, f(5, 5)}, f(x__) :> Plus(x))", "{2,9,10}");
-		check("Cases({1, f(2), f(3, 3, 3), 4, f(5, 5)}, f(x__) -> Plus(x))", "{2,3,3,3,5,5}");
+		check("Cases({a, 1, 2.5, \"string\"}, _Integer|_Real)", //
+				"{1,2.5}");
+		check("Cases(_Complex)[{1, 2*I, 3, 4-I, 5}]", //
+				"{I*2,4-I}");
+		check("Cases(1, 2)", //
+				"{}");
+		check("Cases(f(1, 2), 2)", //
+				"{2}");
+		check("Cases(f(f(1, 2), f(2)), 2)", //
+				"{}");
+		check("Cases(f(f(1, 2), f(2)), 2, 2)", //
+				"{2,2}");
+		check("Cases(f(f(1, 2), f(2), 2), 2, Infinity)", //
+				"{2,2,2}");
+		check("Cases({1, f(2), f(3, 3, 3), 4, f(5, 5)}, f(x__) :> Plus(x))", //
+				"{2,9,10}");
+		check("Cases({1, f(2), f(3, 3, 3), 4, f(5, 5)}, f(x__) -> Plus(x))", //
+				"{2,3,3,3,5,5}");
 
-		check("Cases(_Complex)[{1, 2*I, 3, 4-I, 5}]", "{I*2,4-I}");
-		check("Cases({x, a, b, x, c}, Except(x))", "{a,b,c}");
-		check("Cases({a, 0, b, 1, c, 2, 3}, Except(1, _Integer))", "{0,2,3}");
-		check("Cases({1, 1, f(a), 2, 3, y, f(8), 9, f(10)}, _Integer)", "{1,1,2,3,9}");
-		check("Cases({1, 1, f(a), 2, 3, y, f(8), 9, f(10)}, _Integer, -1)", "{1,1,2,3,8,9,10}");
-		check("Cases({1, 1, f(a), 2, 3, y, f(8), 9, f(10)}, _Integer, -2)", "{}");
-		check("Cases({1, 1, f(a), 2, 3, y, f(8), 9, f(10)}, _Integer, {0,4})", "{1,1,2,3,8,9,10}");
+		check("Cases(_Complex)[{1, 2*I, 3, 4-I, 5}]", //
+				"{I*2,4-I}");
+		check("Cases({x, a, b, x, c}, Except(x))", //
+				"{a,b,c}");
+		check("Cases({a, 0, b, 1, c, 2, 3}, Except(1, _Integer))", //
+				"{0,2,3}");
+		check("Cases({1, 1, f(a), 2, 3, y, f(8), 9, f(10)}, _Integer)", //
+				"{1,1,2,3,9}");
+		check("Cases({1, 1, f(a), 2, 3, y, f(8), 9, f(10)}, _Integer, -1)", //
+				"{1,1,2,3,8,9,10}");
+		check("Cases({1, 1, f(a), 2, 3, y, f(8), 9, f(10)}, _Integer, -2)", //
+				"{}");
+		check("Cases({1, 1, f(a), 2, 3, y, f(8), 9, f(10)}, _Integer, {0,4})", //
+				"{1,1,2,3,8,9,10}");
 
-		check("Cases({1, 1, f(a), 2, 3, y, g(c,f(8)), 9, f(10)}, f(x_) -> x)", "{a,10}");
-		check("Cases({1, 1, f(a), 2, 3, y, g(c,f(8)), 9, f(10)}, f(x_) -> x, -2)", "{a,8,10}");
+		check("Cases({1, 1, f(a), 2, 3, y, g(c,f(8)), 9, f(10)}, f(x_) -> x)", //
+				"{a,10}");
+		check("Cases({1, 1, f(a), 2, 3, y, g(c,f(8)), 9, f(10)}, f(x_) -> x, -2)", //
+				"{a,8,10}");
 
-		check("Cases({3, -4, 5, -2}, x_ /; x < 0)", "{-4,-2}");
-		check("Cases({3, 4, x, x^2, x^3}, x^_)", "{x^2,x^3}");
-		check("Cases({3, 4, x, x^2, x^3}, x^n_ -> n)", "{2,3}");
-		check("Cases({{1, 2}, {2}, {3, 4, 1}, {5, 4}, {3, 3}}, {_, _})", "{{1,2},{5,4},{3,3}}");
-		check("Cases({{1, 2}, {2}, {3, 4, 1}, {5, 4}, {3, 3}}, {a_, b_} -> a + b)", "{3,9,6}");
-		check("Cases(Sqrt(Range(100)), _Integer, {1}, 3)", "{1,2,3}");
+		check("Cases({3, -4, 5, -2}, x_ /; x < 0)", //
+				"{-4,-2}");
+		check("Cases({3, 4, x, x^2, x^3}, x^_)", //
+				"{x^2,x^3}");
+		check("Cases({3, 4, x, x^2, x^3}, x^n_ -> n)", //
+				"{2,3}");
+		check("Cases({{1, 2}, {2}, {3, 4, 1}, {5, 4}, {3, 3}}, {_, _})", //
+				"{{1,2},{5,4},{3,3}}");
+		check("Cases({{1, 2}, {2}, {3, 4, 1}, {5, 4}, {3, 3}}, {a_, b_} -> a + b)", //
+				"{3,9,6}");
+		check("Cases(Sqrt(Range(100)), _Integer, {1}, 3)", //
+				"{1,2,3}");
 	}
 
 	public void testCatch() {
@@ -1427,18 +1703,28 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"f(a)");
 		check("Catch(f(Catch(Throw(a, u), v)), u, f)", //
 				"f(a,u)");
-		check("Catch(Scan(If(IntegerQ(#1),Null,Throw(False))&,{2,3});True)", "True");
-		check("Catch(Scan(If(IntegerQ(#1),Null,Throw(False))&,{b+a});True)", "False");
-		check("Catch(Scan(If(# > 5, Throw(#)) &, {2, 4, 6, 8}))", "6");
-		check("Catch(a; b; Throw(c); d; e)", "c");
-		check("$f(x_) := If(x > 10, Throw(overflow), x!);Catch($f(2) + $f(11))", "overflow");
-		check("$f(x_) := If(x > 10, Throw(overflow), x!);Catch($f(2) + $f(3))", "8");
-		check("catch(do(If(i0! > 10^10, throw(i0)), {i0, 100}))", "14");
-		check("Catch(If(# < 0, Throw(#)) & /@ {1, 2, 0, -1, 5, 6})", "-1");
-		check("Catch(a^2 + b^2 + c^2 /. b :> Throw(bbb))", "bbb");
+		check("Catch(Scan(If(IntegerQ(#1),Null,Throw(False))&,{2,3});True)", //
+				"True");
+		check("Catch(Scan(If(IntegerQ(#1),Null,Throw(False))&,{b+a});True)", //
+				"False");
+		check("Catch(Scan(If(# > 5, Throw(#)) &, {2, 4, 6, 8}))", //
+				"6");
+		check("Catch(a; b; Throw(c); d; e)", //
+				"c");
+		check("$f(x_) := If(x > 10, Throw(overflow), x!);Catch($f(2) + $f(11))", //
+				"overflow");
+		check("$f(x_) := If(x > 10, Throw(overflow), x!);Catch($f(2) + $f(3))", //
+				"8");
+		check("catch(do(If(i0! > 10^10, throw(i0)), {i0, 100}))", //
+				"14");
+		check("Catch(If(# < 0, Throw(#)) & /@ {1, 2, 0, -1, 5, 6})", //
+				"-1");
+		check("Catch(a^2 + b^2 + c^2 /. b :> Throw(bbb))", //
+				"bbb");
 		check("Catch({Catch({a, Throw(b), c}), d, e})", //
 				"{b,d,e}");
-		check("Catch(Throw /@ {a, b, c})", "a");
+		check("Catch(Throw /@ {a, b, c})", //
+				"a");
 		check("$f(x_) := (If(x < 0, Throw(\"negative\")); Sqrt(x));Catch(Sum($f(i0), {i0, 5, -5, -1}))", //
 				"negative");
 		// check("$lst={0,v1,n1};\n" +
@@ -2101,27 +2387,48 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testComplex() {
-		check("Complex(0,1)*2", "I*2");
-		check("Complex(a, I)", "Complex(a,I)");
-		check("a*((- 1/3 )*I)", "-I*1/3*a");
-		check("Head(2 + 3*I)", "Complex");
-		check("Complex(1, 2/3)", "1+I*2/3");
-		check("Abs(Complex(3, 4))", "5");
-		check("-2 / 3 - I", "-2/3-I");
-		check("Complex(10, 0)", "10");
-		check("0. + I", "I*1.0");
-		check("1 + 0*I", "1");
-		check("Head(1 + 0*I)", "Integer");
-		check("Complex(0.0, 0.0)", "0.0");
-		check("0.*I", "0.0");
-		check("0. + 0.*I", "0.0");
-		check("1. + 0.*I", "1.0");
-		check("0. + 1.*I", "I*1.0");
-		check("Complex(1, Complex(0, 1))", "0");
-		check("Complex(1, Complex(1, 0))", "1+I");
-		check("Complex(1, Complex(1, 1))", "I");
-		check("3/4+6/7", "45/28");
-		check("Complex(3/4,-(6/7)*I)", "45/28");
+		check("Complex(0,1)*2", //
+				"I*2");
+		check("Complex(a, I)", //
+				"Complex(a,I)");
+		check("a*((- 1/3 )*I)", //
+				"-I*1/3*a");
+		check("Head(2 + 3*I)", //
+				"Complex");
+		check("Complex(1, 2/3)", //
+				"1+I*2/3");
+		check("Abs(Complex(3, 4))", //
+				"5");
+		check("-2 / 3 - I", //
+				"-2/3-I");
+		check("Complex(10, 0)", //
+				"10");
+		check("0. + I", //
+				"I*1.0");
+		check("1 + 0*I", //
+				"1");
+		check("Head(1 + 0*I)", //
+				"Integer");
+		check("Complex(0.0, 0.0)", //
+				"0.0");
+		check("0.*I", //
+				"0.0");
+		check("0. + 0.*I", //
+				"0.0");
+		check("1. + 0.*I", //
+				"1.0");
+		check("0. + 1.*I", //
+				"I*1.0");
+		check("Complex(1, Complex(0, 1))", //
+				"0");
+		check("Complex(1, Complex(1, 0))", //
+				"1+I");
+		check("Complex(1, Complex(1, 1))", //
+				"I");
+		check("3/4+6/7", //
+				"45/28");
+		check("Complex(3/4,-(6/7)*I)", //
+				"45/28");
 	}
 
 	public void testComplexExpand() {
@@ -2149,22 +2456,33 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-Sin(2*x)/(Cos(2*x)-Cosh(2*y))+(I*Sinh(2*y))/(Cos(2*x)-Cosh(2*y))");
 		check("ComplexExpand(Csc(x+I*y))", //
 				"(-2*Cosh(y)*Sin(x))/(Cos(2*x)-Cosh(2*y))+(I*2*Cos(x)*Sinh(y))/(Cos(2*x)-Cosh(2*y))");
-		check("ComplexExpand(Sec(x+I*y))",
+		check("ComplexExpand(Sec(x+I*y))", //
 				"(2*Cos(x)*Cosh(y))/(Cos(2*x)+Cosh(2*y))+(I*2*Sin(x)*Sinh(y))/(Cos(2*x)+Cosh(2*y))");
-		check("ComplexExpand(Tan(x+I*y))", "Sin(2*x)/(Cos(2*x)+Cosh(2*y))+(I*Sinh(2*y))/(Cos(2*x)+Cosh(2*y))");
-		check("ComplexExpand(Cos(x))", "Cos(x)");
-		check("ComplexExpand(Sin(x))", "Sin(x)");
-		check("ComplexExpand(Cot(x))", "-Sin(2*x)/(-1+Cos(2*x))");
-		check("ComplexExpand(Csc(x))", "(-2*Sin(x))/(-1+Cos(2*x))");
-		check("ComplexExpand(Sec(x))", "(2*Cos(x))/(1+Cos(2*x))");
-		check("ComplexExpand(Tan(x))", "Sin(2*x)/(1+Cos(2*x))");
+		check("ComplexExpand(Tan(x+I*y))", //
+				"Sin(2*x)/(Cos(2*x)+Cosh(2*y))+(I*Sinh(2*y))/(Cos(2*x)+Cosh(2*y))");
+		check("ComplexExpand(Cos(x))", //
+				"Cos(x)");
+		check("ComplexExpand(Sin(x))", //
+				"Sin(x)");
+		check("ComplexExpand(Cot(x))", //
+				"-Sin(2*x)/(-1+Cos(2*x))");
+		check("ComplexExpand(Csc(x))", //
+				"(-2*Sin(x))/(-1+Cos(2*x))");
+		check("ComplexExpand(Sec(x))", //
+				"(2*Cos(x))/(1+Cos(2*x))");
+		check("ComplexExpand(Tan(x))", //
+				"Sin(2*x)/(1+Cos(2*x))");
 	}
 
 	public void testComplexInfinity() {
-		check("1 / ComplexInfinity", "0");
-		check("ComplexInfinity + ComplexInfinity", "Indeterminate");
-		check("ComplexInfinity * Infinity", "ComplexInfinity");
-		check("FullForm(ComplexInfinity)", "DirectedInfinity()");
+		check("1 / ComplexInfinity", //
+				"0");
+		check("ComplexInfinity + ComplexInfinity", //
+				"Indeterminate");
+		check("ComplexInfinity * Infinity", //
+				"ComplexInfinity");
+		check("FullForm(ComplexInfinity)", //
+				"DirectedInfinity()");
 	}
 
 	public void testComposeList() {
@@ -2180,40 +2498,65 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testComposition() {
-		check("Composition(u, v, w)[x, y]", "u(v(w(x,y)))");
-		check("Composition(1 + #^# &, a*# &, #/(# + 1) &)[x]", "1+((a*x)/(1+x))^((a*x)/(1+x))");
-		check("Composition(f, g, h) @@ {x, y, z}", "f(g(h(x,y,z)))");
+		check("Composition(u, v, w)[x, y]", //
+				"u(v(w(x,y)))");
+		check("Composition(1 + #^# &, a*# &, #/(# + 1) &)[x]", //
+				"1+((a*x)/(1+x))^((a*x)/(1+x))");
+		check("Composition(f, g, h) @@ {x, y, z}", //
+				"f(g(h(x,y,z)))");
 	}
 
 	public void testCompoundExpression() {
-		check("1; 2; 3;", "");
-		check("1; 2; 3", "3");
-		check("a=100", "100");
-		check("a=100;", "");
-		check("a", "100");
-		check("Catch($a = 2; Throw($a); $a = 5)", "2");
+		check("1; 2; 3;", //
+				"");
+		check("1; 2; 3", //
+				"3");
+		check("a=100", //
+				"100");
+		check("a=100;", //
+				"");
+		check("a", //
+				"100");
+		check("Catch($a = 2; Throw($a); $a = 5)", //
+				"2");
 	}
 
 	public void testCondition() {
-		check("fac(n_ /; n > 0) := n!", "");
-		check("fac(3)+fac(-4)", "6+fac(-4)");
+		check("fac(n_ /; n > 0) := n!", //
+				"");
+		check("fac(3)+fac(-4)", //
+				"6+fac(-4)");
 
-		check("Cases({3, -4, 5, -2}, x_ /; x < 0)", "{-4,-2}");
-		check("Cases({z(1, 1), z(-1, 1), z(-2, 2)}, z(x_ /; x < 0, y_))", "{z(-1,1),z(-2,2)}");
-		check("{1 + a, 2 + a, -3 + a} /. (x_ /; x < 0) + a -> p(x)", "{1+a,2+a,p(-3)}");
+		check("Cases({3, -4, 5, -2}, x_ /; x < 0)", //
+				"{-4,-2}");
+		check("Cases({z(1, 1), z(-1, 1), z(-2, 2)}, z(x_ /; x < 0, y_))", //
+				"{z(-1,1),z(-2,2)}");
+		check("{1 + a, 2 + a, -3 + a} /. (x_ /; x < 0) + a -> p(x)", //
+				"{1+a,2+a,p(-3)}");
 
-		check("{6, -7, 3, 2, -1, -2} /. x_ /; x < 0 -> w", "{6,w,3,2,w,w}");
-		check("f(3) /. f(x_) /; x>0 -> t", "t");
-		check("f(-3) /. f(x_) /; x>0 -> t", "f(-3)");
-		check("f(x_) := p(x) /; x>0", "");
-		check("f(3)", "p(3)");
-		check("f(-3)", "f(-3)");
+		check("{6, -7, 3, 2, -1, -2} /. x_ /; x < 0 -> w", //
+				"{6,w,3,2,w,w}");
+		check("f(3) /. f(x_) /; x>0 -> t", //
+				"t");
+		check("f(-3) /. f(x_) /; x>0 -> t", //
+				"f(-3)");
+		check("f(x_) := p(x) /; x>0", //
+				"");
+		check("f(3)", //
+				"p(3)");
+		check("f(-3)", //
+				"f(-3)");
 
-		check("f(x_) := Module({u}, u^2 /; ((u = x - 1) > 0))", "");
-		check("f(0)", "f(0)");
-		check("g(x_) := Module({a}, a = Prime(10^x); (FactorInteger(a + 1)) /; a < 10^6)", "");
-		check("g(4)", "{{2,1},{3,1},{5,1},{3491,1}}");
-		check("g(5)", "g(5)");
+		check("f(x_) := Module({u}, u^2 /; ((u = x - 1) > 0))", //
+				"");
+		check("f(0)", //
+				"f(0)");
+		check("g(x_) := Module({a}, a = Prime(10^x); (FactorInteger(a + 1)) /; a < 10^6)", //
+				"");
+		check("g(4)", //
+				"{{2,1},{3,1},{5,1},{3491,1}}");
+		check("g(5)", //
+				"g(5)");
 	}
 
 	public void testConditionalExpression() {
@@ -2277,23 +2620,31 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testConjugateTranspose() {
-		check("ConjugateTranspose({{1,2+I,3},{4,5-I,6},{7,8,9}})", "{{1,4,7},\n" + " {2-I,5+I,8},\n" + " {3,6,9}}");
-		check("ConjugateTranspose(N({{1,2+I,3},{4,5-I,6},{7,8,9}}))",
+		check("ConjugateTranspose({{1,2+I,3},{4,5-I,6},{7,8,9}})", //
+				"{{1,4,7},\n" + " {2-I,5+I,8},\n" + " {3,6,9}}");
+		check("ConjugateTranspose(N({{1,2+I,3},{4,5-I,6},{7,8,9}}))", //
 				"{{1.0,4.0,7.0},\n" + " {2.0+I*(-1.0),5.0+I*1.0,8.0},\n" + " {3.0,6.0,9.0}}");
 
-		check("ConjugateTranspose({{1, 2*I, 3}, {3 + 4*I, 5, I}})", "{{1,3-I*4},\n" + " {-I*2,5},\n" + " {3,-I}}");
+		check("ConjugateTranspose({{1, 2*I, 3}, {3 + 4*I, 5, I}})", //
+				"{{1,3-I*4},\n" + " {-I*2,5},\n" + " {3,-I}}");
 	}
 
 	public void testConstant() {
-		check("Attributes(E)", "{Constant}");
-		check("Solve(x + E == 0, E) ", "Solve(E+x==0,E)");
+		check("Attributes(E)", //
+				"{Constant}");
+		check("Solve(x + E == 0, E) ", //
+				"Solve(E+x==0,E)");
 	}
 
 	public void testConstantArray() {
-		check("ConstantArray(a, 3)", "{a,a,a}");
-		check("ConstantArray(a, {2, 3})", "{{a,a,a},{a,a,a}}");
-		check("ConstantArray(c, 10)", "{c,c,c,c,c,c,c,c,c,c}");
-		check("ConstantArray(c, {3, 4})", "{{c,c,c,c},{c,c,c,c},{c,c,c,c}}");
+		check("ConstantArray(a, 3)", //
+				"{a,a,a}");
+		check("ConstantArray(a, {2, 3})", //
+				"{{a,a,a},{a,a,a}}");
+		check("ConstantArray(c, 10)", //
+				"{c,c,c,c,c,c,c,c,c,c}");
+		check("ConstantArray(c, {3, 4})", //
+				"{{c,c,c,c},{c,c,c,c},{c,c,c,c}}");
 	}
 
 	public void testContext() {
@@ -2358,7 +2709,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testContinue() {
-		check("For(i=1, i<=8, i=i+1, If(Mod(i,2) == 0, Continue()); Print(i))", "");
+		check("For(i=1, i<=8, i=i+1, If(Mod(i,2) == 0, Continue()); Print(i))", //
+				"");
 	}
 
 	public void testContinuedFraction() {
@@ -2391,11 +2743,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "3,1,7,1,9,4,1,1,3,2,19,1,3,2,1,1,1,2,1,2,1,5,3,60}}");
 		check("ContinuedFraction(Sqrt(13))", "{3,{1,1,1,1,6}}");
 
-		check("ContinuedFraction(0.753)", "{0,1,3,20,1,1,2,1,1}");
-		check("ContinuedFraction(0.55)", "{0,1,1,4,2}");
-		check("ContinuedFraction(Pi,30)", "{3,7,15,1,292,1,1,1,2,1,3,1,14,3,3,23,1,1,7,4,35,1,1,1,2,3,3,3,3,1}");
-		check("ContinuedFraction(47/17)", "{2,1,3,4}");
-		check("ContinuedFraction(Sqrt(13),20)", "{3,1,1,1,1,6,1,1,1,1,6,1,1,1,1,6,1,1,1,1}");
+		check("ContinuedFraction(0.753)", //
+				"{0,1,3,20,1,1,2,1,1}");
+		check("ContinuedFraction(0.55)", //
+				"{0,1,1,4,2}");
+		check("ContinuedFraction(Pi,30)", //
+				"{3,7,15,1,292,1,1,1,2,1,3,1,14,3,3,23,1,1,7,4,35,1,1,1,2,3,3,3,3,1}");
+		check("ContinuedFraction(47/17)", //
+				"{2,1,3,4}");
+		check("ContinuedFraction(Sqrt(13),20)", //
+				"{3,1,1,1,1,6,1,1,1,1,6,1,1,1,1,6,1,1,1,1}");
 	}
 
 	public void testConvergents() {
@@ -2408,12 +2765,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCoprimeQ() {
-		check("CoprimeQ(7,3)", "True");
-		check("CoprimeQ(7)", "False");
-		check("CoprimeQ( )", "False");
-		check("CoprimeQ(8,9,11)", "True");
-		check("CoprimeQ({1, 2, 3, 4, 5}, 6)", "{True,False,False,False,True}");
-		check("CoprimeQ(2, 3, 5)", "True");
+		check("CoprimeQ(7,3)", //
+				"True");
+		check("CoprimeQ(7)", //
+				"False");
+		check("CoprimeQ( )", //
+				"False");
+		check("CoprimeQ(8,9,11)", //
+				"True");
+		check("CoprimeQ({1, 2, 3, 4, 5}, 6)", //
+				"{True,False,False,False,True}");
+		check("CoprimeQ(2, 3, 5)", //
+				"True");
 	}
 
 	public void testCos() {
@@ -2422,7 +2785,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// TODO return Cosh((1 + 2*I)*a - 3*I*b*x)
 		check("Cos((-2+I)*a+3*b*x)", //
 				"Cosh((1+I*2)*a-I*3*b*x)");
-		
+
 		check("Cos(-2*a+3*b*x)", //
 				"Cos(2*a-3*b*x)");
 		check("Cos(-2*a-3*b*x)", //
@@ -2527,23 +2890,27 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCanberraDistance() {
-		check("CanberraDistance({-1, -1}, {1, 1})", "2");
+		check("CanberraDistance({-1, -1}, {1, 1})", //
+				"2");
 	}
 
 	public void testCorrelation() {
-		check("Correlation({10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5}, {8.04, 6.95, 7.58, 8.81, 8.33, 9.96, 7.24, 4.26, 10.84, 4.82, 5.68})",
+		check("Correlation({10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5}, {8.04, 6.95, 7.58, 8.81, 8.33, 9.96, 7.24, 4.26, 10.84, 4.82, 5.68})", //
 				"0.816421");
 	}
 
 	public void testCosineDistance() {
-		check("N(CosineDistance({7, 9}, {71, 89}))", "0.0000759646");
-		check("CosineDistance({a, b}, {c, d})", "1-(a*c+b*d)/(Sqrt(Abs(a)^2+Abs(b)^2)*Sqrt(Abs(c)^2+Abs(d)^2))");
-		check("CosineDistance({a, b, c}, {x, y, z})",
+		check("N(CosineDistance({7, 9}, {71, 89}))", //
+				"0.0000759646");
+		check("CosineDistance({a, b}, {c, d})", //
+				"1-(a*c+b*d)/(Sqrt(Abs(a)^2+Abs(b)^2)*Sqrt(Abs(c)^2+Abs(d)^2))");
+		check("CosineDistance({a, b, c}, {x, y, z})", //
 				"1-(a*x+b*y+c*z)/(Sqrt(Abs(a)^2+Abs(b)^2+Abs(c)^2)*Sqrt(Abs(x)^2+Abs(y)^2+Abs(z)^\n" + "2))");
 	}
 
 	public void testCosIntegral() {
-		checkNumeric("CosIntegral(2.8)", "0.18648838964317638");
+		checkNumeric("CosIntegral(2.8)", //
+				"0.18648838964317638");
 	}
 
 	public void testCot() {
@@ -2598,33 +2965,49 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCoth() {
-		check("Coth(0)", "ComplexInfinity");
-		check("Coth(0.)", "ComplexInfinity");
+		check("Coth(0)", //
+				"ComplexInfinity");
+		check("Coth(0.)", //
+				"ComplexInfinity");
 	}
 
 	public void testCount() {
-		check("Count({3, 7, 10, 7, 5, 3, 7, 10}, 3)", "2");
-		check("Count({{a, a}, {a, a, a}, a}, a, {2})", "5");
-		check("count({a, b, a, a, b, c, b}, b)", "3");
-		check("count({a, b, f(g(b,a)), a, b, c, b}, b)", "3");
-		check("count({a, b, f(g(b,a)), a, b, c, b}, b, infinity)", "4");
-		check("count({a, b, f(g(b,a)), a, b, c, b}, b, {1,2})", "3");
-		check("count({a, b, f(g(b,a)), a, b, c, b}, b, {1,3})", "4");
-		check("count({a, b, f(g(b,a)), a, b, c, b}, b, 3)", "4");
-		check("count({a, b, f(g(b,a)), a, b, c, b}, b, {3})", "1");
-		check("count({a, b, f(g(b,a)), a, b, c, b}, b, {-1})", "4");
-		check("count({3, 4, x, x^2, x^3}, x^_)", "2");
+		check("Count({3, 7, 10, 7, 5, 3, 7, 10}, 3)", //
+				"2");
+		check("Count({{a, a}, {a, a, a}, a}, a, {2})", //
+				"5");
+		check("count({a, b, a, a, b, c, b}, b)", //
+				"3");
+		check("count({a, b, f(g(b,a)), a, b, c, b}, b)", //
+				"3");
+		check("count({a, b, f(g(b,a)), a, b, c, b}, b, infinity)", //
+				"4");
+		check("count({a, b, f(g(b,a)), a, b, c, b}, b, {1,2})", //
+				"3");
+		check("count({a, b, f(g(b,a)), a, b, c, b}, b, {1,3})", //
+				"4");
+		check("count({a, b, f(g(b,a)), a, b, c, b}, b, 3)", //
+				"4");
+		check("count({a, b, f(g(b,a)), a, b, c, b}, b, {3})", //
+				"1");
+		check("count({a, b, f(g(b,a)), a, b, c, b}, b, {-1})", //
+				"4");
+		check("count({3, 4, x, x^2, x^3}, x^_)", //
+				"2");
 	}
 
 	public void testCovariance() {
-		check("Covariance({0.2, 0.3, 0.1}, {0.3, 0.3, -0.2})", "0.025");
-		check("Covariance({a, b, c,d,e}, {x, y, z,v,w})",
+		check("Covariance({0.2, 0.3, 0.1}, {0.3, 0.3, -0.2})", //
+				"0.025");
+		check("Covariance({a, b, c,d,e}, {x, y, z,v,w})", //
 				"1/20*(-(a+b+c-4*d+e)*Conjugate(v)-(a+b+c+d-4*e)*Conjugate(w)-(-4*a+b+c+d+e)*Conjugate(x)-(a\n"
 						+ "-4*b+c+d+e)*Conjugate(y)-(a+b-4*c+d+e)*Conjugate(z))");
-		check("Covariance({a, b, c}, {x, y, z})",
+		check("Covariance({a, b, c}, {x, y, z})", //
 				"1/6*(-(-2*a+b+c)*Conjugate(x)-(a-2*b+c)*Conjugate(y)-(a+b-2*c)*Conjugate(z))");
-		check("Covariance({a, b}, {x, y})", "1/2*(a-b)*(Conjugate(x)-Conjugate(y))");
-		checkNumeric("Covariance({1.5, 3, 5, 10}, {2, 1.25, 15, 8})", "11.260416666666666");
+		check("Covariance({a, b}, {x, y})", //
+				"1/2*(a-b)*(Conjugate(x)-Conjugate(y))");
+		checkNumeric("Covariance({1.5, 3, 5, 10}, {2, 1.25, 15, 8})", //
+				"11.260416666666666");
 	}
 
 	public void testCross() {
@@ -2726,19 +3109,27 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCubeRoot() {
-		check("CubeRoot(16)", "2*2^(1/3)");
-		check("CubeRoot(-5)", "-5^(1/3)");
-		check("CubeRoot(-510000)", "-10*510^(1/3)");
-		check("CubeRoot(-5.1)", "-1.7213");
-		check("CubeRoot(b)", "b^(1/3)");
-		check("CubeRoot(-0.5)", "-0.793701");
+		check("CubeRoot(16)", //
+				"2*2^(1/3)");
+		check("CubeRoot(-5)", //
+				"-5^(1/3)");
+		check("CubeRoot(-510000)", //
+				"-10*510^(1/3)");
+		check("CubeRoot(-5.1)", //
+				"-1.7213");
+		check("CubeRoot(b)", //
+				"b^(1/3)");
+		check("CubeRoot(-0.5)", //
+				"-0.793701");
 
-		check("CubeRoot({-3, -2, -1, 0, 1, 2, 3})", "{-3^(1/3),-2^(1/3),-1,0,1,2^(1/3),3^(1/3)}");
-		check("CubeRoot(-2.)", "-1.25992");
+		check("CubeRoot({-3, -2, -1, 0, 1, 2, 3})", //
+				"{-3^(1/3),-2^(1/3),-1,0,1,2^(1/3),3^(1/3)}");
+		check("CubeRoot(-2.)", //
+				"-1.25992");
 	}
 
 	public void testCurl() {
-		check("Curl({f(x, y, z), g(x, y, z), h(x, y, z)}, {x, y, z})",
+		check("Curl({f(x, y, z), g(x, y, z), h(x, y, z)}, {x, y, z})", //
 				"{-Derivative(0,0,1)[g][x,y,z]+Derivative(0,1,0)[h][x,y,z],Derivative(0,0,1)[f][x,y,z]-Derivative(\n"
 						+ "1,0,0)[h][x,y,z],-Derivative(0,1,0)[f][x,y,z]+Derivative(1,0,0)[g][x,y,z]}");
 	}
@@ -2818,87 +3209,132 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Refine(D(Abs(x),x), Element(x, Reals))", //
 				"x/Abs(x)");
 
-		check("D(HarmonicNumber(x), x)", "Pi^2/6-HarmonicNumber(x,2)");
+		check("D(HarmonicNumber(x), x)", //
+				"Pi^2/6-HarmonicNumber(x,2)");
 
-		check("D(ArcCsc(x),{x,2})", "(-1+2*x^2)/(Sqrt(1-1/x^2)*x^3*(-1+x^2))");
-		check("D(ArcSec(x),{x,2})", "(1-2*x^2)/(Sqrt(1-1/x^2)*x^3*(-1+x^2))");
+		check("D(ArcCsc(x),{x,2})", //
+				"(-1+2*x^2)/(Sqrt(1-1/x^2)*x^3*(-1+x^2))");
+		check("D(ArcSec(x),{x,2})", //
+				"(1-2*x^2)/(Sqrt(1-1/x^2)*x^3*(-1+x^2))");
 
-		check("D(x*f(x)*f'(x), x)", "f(x)*f'(x)+x*f'(x)^2+x*f(x)*f''(x)");
-		check("D(f(x), x)", "f'(x)");
-		check("Sin'(2)", "Cos(2)");
-		check("D(Sin(x) + Cos(2*x), {x, 2}) /. x -> 0", "-4");
+		check("D(x*f(x)*f'(x), x)", //
+				"f(x)*f'(x)+x*f'(x)^2+x*f(x)*f''(x)");
+		check("D(f(x), x)", //
+				"f'(x)");
+		check("Sin'(2)", //
+				"Cos(2)");
+		check("D(Sin(x) + Cos(2*x), {x, 2}) /. x -> 0", //
+				"-4");
 
-		check("D(Sin(t), {t, 1})", "Cos(t)");
-		check("D(Derivative(0,1,0)[f][x,x*y,z+x^2],x)",
+		check("D(Sin(t), {t, 1})", //
+				"Cos(t)");
+		check("D(Derivative(0,1,0)[f][x,x*y,z+x^2],x)", //
 				"2*x*Derivative(0,1,1)[f][x,x*y,x^2+z]+y*Derivative(0,2,0)[f][x,x*y,x^2+z]+Derivative(\n"
 						+ "1,1,0)[f][x,x*y,x^2+z]");
 
-		check("D(x^3 + x^2, x)", "2*x+3*x^2");
-		check("D(x^3 + x^2, {x, 2})", "2+6*x");
-		check("D(Sin(Cos(x)), x)", "-Cos(Cos(x))*Sin(x)");
-		check("D(Sin(x), {x, 2})", "-Sin(x)");
-		check("D(Cos(t), {t, 2})", "-Cos(t)");
-		check("D(y, x)", "0");
-		check("D(x, x)", "1");
-		check("D(f(x), x)", "f'(x)");
+		check("D(x^3 + x^2, x)", //
+				"2*x+3*x^2");
+		check("D(x^3 + x^2, {x, 2})", //
+				"2+6*x");
+		check("D(Sin(Cos(x)), x)", //
+				"-Cos(Cos(x))*Sin(x)");
+		check("D(Sin(x), {x, 2})", //
+				"-Sin(x)");
+		check("D(Cos(t), {t, 2})", //
+				"-Cos(t)");
+		check("D(y, x)", //
+				"0");
+		check("D(x, x)", //
+				"1");
+		check("D(f(x), x)", //
+				"f'(x)");
 
-		check("D(f(x, x), x)", "Derivative(0,1)[f][x,x]+Derivative(1,0)[f][x,x]");
+		check("D(f(x, x), x)", //
+				"Derivative(0,1)[f][x,x]+Derivative(1,0)[f][x,x]");
 		// chain rule
-		check("D(f(2*x+1, 2*y, x+y), x)", "Derivative(0,0,1)[f][1+2*x,2*y,x+y]+2*Derivative(1,0,0)[f][1+2*x,2*y,x+y]");
-		check("D(f(x^2, x, 2*y), {x,2}, y) // Expand",
+		check("D(f(2*x+1, 2*y, x+y), x)", //
+				"Derivative(0,0,1)[f][1+2*x,2*y,x+y]+2*Derivative(1,0,0)[f][1+2*x,2*y,x+y]");
+		check("D(f(x^2, x, 2*y), {x,2}, y) // Expand", //
 				"2*Derivative(0,2,1)[f][x^2,x,2*y]+4*Derivative(1,0,1)[f][x^2,x,2*y]+8*x*Derivative(\n"
 						+ "1,1,1)[f][x^2,x,2*y]+8*x^2*Derivative(2,0,1)[f][x^2,x,2*y]");
 
-		check("D(x ^ 3 * Cos(y), {{x, y}})", "{3*x^2*Cos(y),-x^3*Sin(y)}");
-		check("D(Sin(x) * Cos(y), {{x,y}, 2})", "{{-Cos(y)*Sin(x),-Cos(x)*Sin(y)},{-Cos(x)*Sin(y),-Cos(y)*Sin(x)}}");
-		check("D(2/3*Cos(x) - 1/3*x*Cos(x)*Sin(x) ^ 2,x)//Expand  ",
+		check("D(x ^ 3 * Cos(y), {{x, y}})", //
+				"{3*x^2*Cos(y),-x^3*Sin(y)}");
+		check("D(Sin(x) * Cos(y), {{x,y}, 2})", //
+				"{{-Cos(y)*Sin(x),-Cos(x)*Sin(y)},{-Cos(x)*Sin(y),-Cos(y)*Sin(x)}}");
+		check("D(2/3*Cos(x) - 1/3*x*Cos(x)*Sin(x) ^ 2,x)//Expand  ", //
 				"-2/3*Sin(x)-2/3*x*Cos(x)^2*Sin(x)-1/3*Cos(x)*Sin(x)^2+1/3*x*Sin(x)^3");
-		check("D(f(#1), {#1,2})", "f''(#1)");
-		check("D((#1&)*(t),{t,4})", "0");
+		check("D(f(#1), {#1,2})", //
+				"f''(#1)");
+		check("D((#1&)*(t),{t,4})", //
+				"0");
 		// TODO allow Attributes(f) = {HoldAll}
-		check("Attributes(f) = {HoldAll}; Apart(f''(x + x))", "f''(2*x)");
-		check("Attributes(f) = {}; Apart(f''(x + x)) ", "f''(2*x)");
+		check("Attributes(f) = {HoldAll}; Apart(f''(x + x))", //
+				"f''(2*x)");
+		check("Attributes(f) = {}; Apart(f''(x + x)) ", //
+				"f''(2*x)");
 
-		check("D({#^2}, #)", "{2*#1}");
+		check("D({#^2}, #)", //
+				"{2*#1}");
 
 		// Koepf Seite 40-43
-		check("D(Sum(k*x^k, {k,0,10}),x)", "1+4*x+9*x^2+16*x^3+25*x^4+36*x^5+49*x^6+64*x^7+81*x^8+100*x^9");
-		check("D((x^2+3)*(3*x+2),x)", "2*x*(2+3*x)+3*(3+x^2)");
-		check("D(Sin(x^2),x)", "2*x*Cos(x^2)");
-		check("D((1+x^2)^Sin(x),x)", "(1+x^2)^Sin(x)*(Cos(x)*Log(1+x^2)+(2*x*Sin(x))/(1+x^2))");
-		check("D(Exp(x),x)", "E^x");
-		check("D((x^2+3)/(3*x+2),x)", "(-3*(3+x^2))/(2+3*x)^2+(2*x)/(2+3*x)");
+		check("D(Sum(k*x^k, {k,0,10}),x)", //
+				"1+4*x+9*x^2+16*x^3+25*x^4+36*x^5+49*x^6+64*x^7+81*x^8+100*x^9");
+		check("D((x^2+3)*(3*x+2),x)", //
+				"2*x*(2+3*x)+3*(3+x^2)");
+		check("D(Sin(x^2),x)", //
+				"2*x*Cos(x^2)");
+		check("D((1+x^2)^Sin(x),x)", //
+				"(1+x^2)^Sin(x)*(Cos(x)*Log(1+x^2)+(2*x*Sin(x))/(1+x^2))");
+		check("D(Exp(x),x)", //
+				"E^x");
+		check("D((x^2+3)/(3*x+2),x)", //
+				"(-3*(3+x^2))/(2+3*x)^2+(2*x)/(2+3*x)");
 
 		// others -----
-		check("D(InverseErf(x),x)", "1/2*E^InverseErf(x)^2*Sqrt(Pi)");
+		check("D(InverseErf(x),x)", //
+				"1/2*E^InverseErf(x)^2*Sqrt(Pi)");
 
-		check("D(f(Sqrt(x^2 + 1)), {x, 3})",
+		check("D(f(Sqrt(x^2 + 1)), {x, 3})", //
 				"(3*x^3*f'(Sqrt(1+x^2)))/(1+x^2)^(5/2)+(-3*x*f'(Sqrt(1+x^2)))/(1+x^2)^(3/2)+(-3*x^\n"
 						+ "3*f''(Sqrt(1+x^2)))/(1+x^2)^2+(3*x*f''(Sqrt(1+x^2)))/(1+x^2)+(x^3*Derivative(3)[f][Sqrt(\n"
 						+ "1+x^2)])/(1+x^2)^(3/2)");
 
-		check("f(x_) := x^5 + 6*x^3", "");
-		check("D(f(x), x)", "18*x^2+5*x^4");
-		check("f'(x)", "18*x^2+5*x^4");
-		check("D(f(x), x) /. x->5", "3575");
-		check("D(f(x), {x, 3}) /. x -> -1", "96");
+		check("f(x_) := x^5 + 6*x^3", //
+				"");
+		check("D(f(x), x)", //
+				"18*x^2+5*x^4");
+		check("f'(x)", //
+				"18*x^2+5*x^4");
+		check("D(f(x), x) /. x->5", //
+				"3575");
+		check("D(f(x), {x, 3}) /. x -> -1", //
+				"96");
 
-		check("D(x^2 * E^(5*y), x)", "2*E^(5*y)*x");
-		check("D(x^2 * E^(5*y), y)", "5*E^(5*y)*x^2");
-		check("D(x^2 * E^(5*y), {x,2}, {y,3})", "250*E^(5*y)");
+		check("D(x^2 * E^(5*y), x)", //
+				"2*E^(5*y)*x");
+		check("D(x^2 * E^(5*y), y)", //
+				"5*E^(5*y)*x^2");
+		check("D(x^2 * E^(5*y), {x,2}, {y,3})", //
+				"250*E^(5*y)");
 
-		check("D(Sin(g(x)) + g''(x), x)", "Cos(g(x))*g'(x)+Derivative(3)[g][x]");
+		check("D(Sin(g(x)) + g''(x), x)", //
+				"Cos(g(x))*g'(x)+Derivative(3)[g][x]");
 
-		check("D(Subscript(x, 1)^2 + Sin(Subscript(x, 1)*Subscript(x, 2)), Subscript(x, 1))",
+		check("D(Subscript(x, 1)^2 + Sin(Subscript(x, 1)*Subscript(x, 2)), Subscript(x, 1))", //
 				"2*Subscript(x,1)+Cos(Subscript(x,1)*Subscript(x,2))*Subscript(x,2)");
 
-		check("D({3*t^2, 4*t, Sin(t)}, t)", "{6*t,4,Cos(t)}");
-		check("D({x^n, {Exp(x), Log(x)}, {Sin(x), Cos(x), Tan(x)}}, x)",
+		check("D({3*t^2, 4*t, Sin(t)}, t)", //
+				"{6*t,4,Cos(t)}");
+		check("D({x^n, {Exp(x), Log(x)}, {Sin(x), Cos(x), Tan(x)}}, x)", //
 				"{n/x^(1-n),{E^x,1/x},{Cos(x),-Sin(x),Sec(x)^2}}");
-		check("D(x^2 + 5*y^3, {{x, y}})", "{2*x,15*y^2}");
-		check("D(x^2 + 5*y^3, {{x, y}, 2})", "{{2,0},{0,30*y}}");
-		check("D((x^2+5*y^3+z^4)/E^w,{{x,y}})", "{(2*x)/E^w,(15*y^2)/E^w}");
-		check("D(E^(-w)*(x^2 + 5*y^3 + z^4), {{{x, y}, {z, w}}})",
+		check("D(x^2 + 5*y^3, {{x, y}})", //
+				"{2*x,15*y^2}");
+		check("D(x^2 + 5*y^3, {{x, y}, 2})", //
+				"{{2,0},{0,30*y}}");
+		check("D((x^2+5*y^3+z^4)/E^w,{{x,y}})", //
+				"{(2*x)/E^w,(15*y^2)/E^w}");
+		check("D(E^(-w)*(x^2 + 5*y^3 + z^4), {{{x, y}, {z, w}}})", //
 				"{{(2*x)/E^w,(15*y^2)/E^w},{(4*z^3)/E^w,-(x^2+5*y^3+z^4)/E^w}}");
 		check("D(ExpIntegralEi(b*x),x)", //
 				"E^(b*x)/x");
@@ -2906,50 +3342,71 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testDefer() {
 		// check("Defer(3*2)", "3*2");
-		check("Defer(6/8)==6/8", "6/8==3/4");
+		check("Defer(6/8)==6/8", //
+				"6/8==3/4");
 	}
 
 	public void testDefinition() {
-		check("SetAttributes(f,Listable)", "");
-		check("f(x_):={x}", "");
-		check("Definition(f)", "Attributes(f)={Listable}\n" + "f(x_):={x}");
+		check("SetAttributes(f,Listable)", //
+				"");
+		check("f(x_):={x}", //
+				"");
+		check("Definition(f)", //
+				"Attributes(f)={Listable}\n" + "f(x_):={x}");
 	}
 
 	public void testDegree() {
-		check("Sin(30*Degree)", "1/2");
-		check("Degree == Pi / 180", "True");
-		check("Cos(Degree(x))", "Cos(Degree(x))");
-		checkNumeric("N(Degree)", "0.017453292519943295");
+		check("Sin(30*Degree)", //
+				"1/2");
+		check("Degree == Pi / 180", //
+				"True");
+		check("Cos(Degree(x))", //
+				"Cos(Degree(x))");
+		checkNumeric("N(Degree)", //
+				"0.017453292519943295");
 
-		check("Round(Pi/Degree^2)", "10313");
-		check("Pi/4 < 60*Degree < Pi", "True");
-		check("FullSimplify(Pi/Degree)", "180");
+		check("Round(Pi/Degree^2)", //
+				"10313");
+		check("Pi/4 < 60*Degree < Pi", //
+				"True");
+		check("FullSimplify(Pi/Degree)", //
+				"180");
 	}
 
 	public void testDelete() {
-		check("Delete({a, b, c, d}, 3)", "{a,b,d}");
-		check("Delete({a, b, c, d}, -2)", "{a,b,d}");
+		check("Delete({a, b, c, d}, 3)", //
+				"{a,b,d}");
+		check("Delete({a, b, c, d}, -2)", //
+				"{a,b,d}");
 	}
 
 	public void testDeleteCases() {
-		check("DeleteCases({a, 1, 2.5, \"string\"}, _Integer|_Real)", "{a,string}");
-		check("DeleteCases({a, b, 1, c, 2, 3}, _Symbol)", "{1,2,3}");
-		check("Sqrt(Range(10))", "{1,Sqrt(2),Sqrt(3),2,Sqrt(5),Sqrt(6),Sqrt(7),2*Sqrt(2),3,Sqrt(10)}");
+		check("DeleteCases({a, 1, 2.5, \"string\"}, _Integer|_Real)", //
+				"{a,string}");
+		check("DeleteCases({a, b, 1, c, 2, 3}, _Symbol)", //
+				"{1,2,3}");
+		check("Sqrt(Range(10))", //
+				"{1,Sqrt(2),Sqrt(3),2,Sqrt(5),Sqrt(6),Sqrt(7),2*Sqrt(2),3,Sqrt(10)}");
 
-		check("DeleteCases(Sqrt(Range(10)), _Integer, {1}, 3)",
+		check("DeleteCases(Sqrt(Range(10)), _Integer, {1}, 3)", //
 				"{Sqrt(2),Sqrt(3),Sqrt(5),Sqrt(6),Sqrt(7),2*Sqrt(2),Sqrt(10)}");
 
-		check("DeleteCases({1, 1, f(a), 2, 3, y, f(8), 9, f(10)}, _Integer)", "{f(a),y,f(8),f(10)}");
-		check("DeleteCases({1, 1, f(a), 2, 3, y, f(8), 9, f(10)}, _Integer, -1)", "{f(a),y,f(),f()}");
-		check("DeleteCases({1, 1, f(a), 2, 3, y, f(8), 9, f(10)}, _Integer, -2)", "{1,1,f(a),2,3,y,f(8),9,f(10)}");
-		check("DeleteCases({1, 1, f(a), 2, 3, y, f(8), 9, f(10)}, _Integer, {0,4})", "{f(a),y,f(),f()}");
+		check("DeleteCases({1, 1, f(a), 2, 3, y, f(8), 9, f(10)}, _Integer)", //
+				"{f(a),y,f(8),f(10)}");
+		check("DeleteCases({1, 1, f(a), 2, 3, y, f(8), 9, f(10)}, _Integer, -1)", //
+				"{f(a),y,f(),f()}");
+		check("DeleteCases({1, 1, f(a), 2, 3, y, f(8), 9, f(10)}, _Integer, -2)", //
+				"{1,1,f(a),2,3,y,f(8),9,f(10)}");
+		check("DeleteCases({1, 1, f(a), 2, 3, y, f(8), 9, f(10)}, _Integer, {0,4})", //
+				"{f(a),y,f(),f()}");
 
-		check("DeleteCases({1, 1, f(a), 2, 3, y, g(c,f(8)), 9, f(10)}, f(x_) -> x)",
+		check("DeleteCases({1, 1, f(a), 2, 3, y, g(c,f(8)), 9, f(10)}, f(x_) -> x)", //
 				"{1,1,f(a),2,3,y,g(c,f(8)),9,f(10)}");
-		check("DeleteCases({1, 1, f(a), 2, 3, y, g(c,f(8)), 9, f(10)}, f(x_) -> x, -2)",
+		check("DeleteCases({1, 1, f(a), 2, 3, y, g(c,f(8)), 9, f(10)}, f(x_) -> x, -2)", //
 				"{1,1,f(a),2,3,y,g(c,f(8)),9,f(10)}");
 
-		check("DeleteCases({1, 1, x, 2, 3, y, 9, y}, _Integer)", "{x,y,y}");
+		check("DeleteCases({1, 1, x, 2, 3, y, 9, y}, _Integer)", //
+				"{x,y,y}");
 
 		//
 		// check("Cases({3, -4, 5, -2}, x_ /; x < 0)", "{-4,-2}");
@@ -2963,16 +3420,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDeleteDuplicates() {
-		check("DeleteDuplicates({1, 7, 8, 4, 3, 4, 1, 9, 9, 2, 1})", "{1,7,8,4,3,9,2}");
-		check("DeleteDuplicates({3,2,1,2,3,4}, Less)", "{3,2,1}");
-		check("DeleteDuplicates({3,2,1,2,3,4}, Greater)", "{3,3,4}");
-		check("DeleteDuplicates({})", "{}");
+		check("DeleteDuplicates({1, 7, 8, 4, 3, 4, 1, 9, 9, 2, 1})", //
+				"{1,7,8,4,3,9,2}");
+		check("DeleteDuplicates({3,2,1,2,3,4}, Less)", //
+				"{3,2,1}");
+		check("DeleteDuplicates({3,2,1,2,3,4}, Greater)", //
+				"{3,3,4}");
+		check("DeleteDuplicates({})", //
+				"{}");
 	}
 
 	public void testDecrement() {
-		check("a = 5", "5");
-		check("a--", "5");
-		check("a", "4");
+		check("a = 5", //
+				"5");
+		check("a--", //
+				"5");
+		check("a", //
+				"4");
 	}
 
 	public void testDenominator() {
@@ -2989,117 +3453,199 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1");
 		check("Denominator(Csc(x), Trig->True)", //
 				"Sin(x)");
-		check("Denominator(Csc(x)^4)", "1");
-		check("Denominator(Csc(x)^4, Trig->True)", "Sin(x)^4");
-		check("Denominator(42*Csc(x))", "1");
-		check("Denominator(42*Csc(x), Trig->True)", "Sin(x)");
-		check("Denominator(42*Csc(x)^3)", "1");
-		check("Denominator(42*Csc(x)^3, Trig->True)", "Sin(x)^3");
-		check("Denominator(E^(-x)*x^(1/2))", "E^x");
+		check("Denominator(Csc(x)^4)", //
+				"1");
+		check("Denominator(Csc(x)^4, Trig->True)", //
+				"Sin(x)^4");
+		check("Denominator(42*Csc(x))", //
+				"1");
+		check("Denominator(42*Csc(x), Trig->True)", //
+				"Sin(x)");
+		check("Denominator(42*Csc(x)^3)", //
+				"1");
+		check("Denominator(42*Csc(x)^3, Trig->True)", //
+				"Sin(x)^3");
+		check("Denominator(E^(-x)*x^(1/2))", //
+				"E^x");
 
-		check("Denominator(Sec(x))", "1");
-		check("Denominator(Tan(x))", "1");
-		check("Denominator(Tan(x), Trig->True)", "Cos(x)");
+		check("Denominator(Sec(x))", //
+				"1");
+		check("Denominator(Tan(x))", //
+				"1");
+		check("Denominator(Tan(x), Trig->True)", //
+				"Cos(x)");
 
-		check("Denominator(a / b)", "b");
-		check("Denominator(2 / 3)", "3");
-		check("Denominator(a + b)", "1");
+		check("Denominator(a / b)", //
+				"b");
+		check("Denominator(2 / 3)", //
+				"3");
+		check("Denominator(a + b)", //
+				"1");
 	}
 
 	public void testDepth() {
-		check("Depth(x)", "1");
-		check("Depth(g(a))", "2");
-		check("Depth({{{a}, b}})", "4");
-		check("Depth(x + y)", "2");
+		check("Depth(x)", //
+				"1");
+		check("Depth(g(a))", //
+				"2");
+		check("Depth({{{a}, b}})", //
+				"4");
+		check("Depth(x + y)", //
+				"2");
 
-		check("Depth({{{{x}}}})", "5");
-		check("Depth(1 + 2*I)", "1");
-		check("Depth(f(a, b)[c])", "2");
+		check("Depth({{{{x}}}})", //
+				"5");
+		check("Depth(1 + 2*I)", //
+				"1");
+		check("Depth(f(a, b)[c])", //
+				"2");
 	}
 
 	public void testDerivative() {
-		check("h(x_):= 4 x / (x ^ 2 + 3*x + 5)", "");
-		check("extremes=Solve(h'(x)==0,x)", "{{x->-Sqrt(5)},{x->Sqrt(5)}}");
-		check("h''(x) /.extremes // N", "{1.65086,-0.064079}");
+		check("h(x_):= 4 x / (x ^ 2 + 3*x + 5)", //
+				"");
+		check("extremes=Solve(h'(x)==0,x)", //
+				"{{x->-Sqrt(5)},{x->Sqrt(5)}}");
+		check("h''(x) /.extremes // N", //
+				"{1.65086,-0.064079}");
 
-		check("h(x_):=Sin(x)+x^2", "");
-		check("h'(x)", "2*x+Cos(x)");
-		check("h'(0.5)", "1.87758");
-		check("h''(x)", "2-Sin(x)");
+		check("h(x_):=Sin(x)+x^2", //
+				"");
+		check("h'(x)", //
+				"2*x+Cos(x)");
+		check("h'(0.5)", //
+				"1.87758");
+		check("h''(x)", //
+				"2-Sin(x)");
 
-		check("h(x_):=x*Cos(x)", "");
-		check("h'", "Cos(#1)-Sin(#1)*#1&");
-		check("h''", "-2*Sin(#1)-Cos(#1)*#1&");
+		check("h(x_):=x*Cos(x)", //
+				"");
+		check("h'", //
+				"Cos(#1)-Sin(#1)*#1&");
+		check("h''", //
+				"-2*Sin(#1)-Cos(#1)*#1&");
 
-		check("y''", "Derivative(2)[y]");
+		check("y''", //
+				"Derivative(2)[y]");
 
-		check("Derivative(1)[Sin]", "Cos(#1)&");
+		check("Derivative(1)[Sin]", //
+				"Cos(#1)&");
 
-		check("Derivative(0)[#1^2&]", "#1^2&");
-		check("Derivative(1)[#1^2&]", "2*#1&");
-		check("Derivative(1)[3*# ^ 2+5*# ^ 3&] ", "6*#1+15*#1^2&");
-		check("Derivative(1)[# ^ 3&] ", "3*#1^2&");
-		check("Derivative(2)[# ^ 3&] ", "6*#1&");
-		check("Derivative(1)[E ^ #&] ", "E^#1&");
-		check("Derivative(1)[Sin]", "Cos(#1)&");
-		check("Derivative(3)[Sin]", "-Cos(#1)&");
-		check("Sin'(x)", "Cos(x)");
-		check("(# ^ 4&)''", "12*#1^2&");
+		check("Derivative(0)[#1^2&]", //
+				"#1^2&");
+		check("Derivative(1)[#1^2&]", //
+				"2*#1&");
+		check("Derivative(1)[3*# ^ 2+5*# ^ 3&] ", //
+				"6*#1+15*#1^2&");
+		check("Derivative(1)[# ^ 3&] ", //
+				"3*#1^2&");
+		check("Derivative(2)[# ^ 3&] ", //
+				"6*#1&");
+		check("Derivative(1)[E ^ #&] ", //
+				"E^#1&");
+		check("Derivative(1)[Sin]", //
+				"Cos(#1)&");
+		check("Derivative(3)[Sin]", //
+				"-Cos(#1)&");
+		check("Sin'(x)", //
+				"Cos(x)");
+		check("(# ^ 4&)''", //
+				"12*#1^2&");
 		// check("f'(x) // FullForm", "Derivative(1)[f][x]");
 		// TODO
 		// check("Derivative(1)[#2 Sin(#1)+Cos(#2)&]", "Cos(#1)*#2&");
 		// check("Derivative(1,2)[#2^3 Sin(#1)+Cos(#2)&]", "6*Cos(#1)*#2&");
 		// TODO Deriving with respect to an unknown parameter yields 0
 		// check("Derivative(1,2,1)[#2^3*Sin(#1)+Cos(#2)&]", "");
-		check("Derivative(0,0,0)[a+b+c]", "a+b+c");
+		check("Derivative(0,0,0)[a+b+c]", //
+				"a+b+c");
 		// TODO You can calculate the derivative of custom functions
 		// check("f(x_) := x ^ 2", "");
 		// check("f'(x)", "");
-		check("Derivative(2, 1)[h]", "Derivative(2,1)[h]");
-		check("Derivative(2, 0, 1, 0)[k(g)]", "Derivative(2,0,1,0)[k(g)]");
+		check("Derivative(2, 1)[h]", //
+				"Derivative(2,1)[h]");
+		check("Derivative(2, 0, 1, 0)[k(g)]", //
+				"Derivative(2,0,1,0)[k(g)]");
 
 		// parser tests
-		check("Hold(f'') // FullForm ", "Hold(Derivative(2)[f])");
-		check("Hold(f ' ') // FullForm ", "Hold(Derivative(2)[f])");
-		check("Hold(f '' '') // FullForm ", "Hold(Derivative(4)[f])");
-		check("Hold(Derivative(x)[4] ') // FullForm ", "Hold(Derivative(1)[Derivative(x)[4]])");
+		check("Hold(f'') // FullForm ", //
+				"Hold(Derivative(2)[f])");
+		check("Hold(f ' ') // FullForm ", //
+				"Hold(Derivative(2)[f])");
+		check("Hold(f '' '') // FullForm ", //
+				"Hold(Derivative(4)[f])");
+		check("Hold(Derivative(x)[4] ') // FullForm ", //
+				"Hold(Derivative(1)[Derivative(x)[4]])");
 
-		check("D(f(a,b),b)", "Derivative(0,1)[f][a,b]");
-		check("D(f(a,b),x)", "0");
-		check("g(u0_,u1_):=D(f(u0,u1),u1);g(a,b)", "Derivative(0,1)[f][a,b]");
-		check("Derivative(1)[ArcCoth]", "1/(1-#1^2)&");
-		check("y''", "Derivative(2)[y]");
-		check("y''(x)", "y''(x)");
-		check("y''''(x)", "Derivative(4)[y][x]");
+		check("D(f(a,b),b)", //
+				"Derivative(0,1)[f][a,b]");
+		check("D(f(a,b),x)", //
+				"0");
+		check("g(u0_,u1_):=D(f(u0,u1),u1);g(a,b)", //
+				"Derivative(0,1)[f][a,b]");
+		check("Derivative(1)[ArcCoth]", //
+				"1/(1-#1^2)&");
+		check("y''", //
+				"Derivative(2)[y]");
+		check("y''(x)", //
+				"y''(x)");
+		check("y''''(x)", //
+				"Derivative(4)[y][x]");
 
-		check("x*x^a", "x^(1+a)");
-		check("x/x^(1-x)", "x^x");
-		check("Derivative(0,1)[BesselJ][a, x]", "1/2*(BesselJ(-1+a,x)-BesselJ(1+a,x))");
-		check("Derivative(1,0)[Power][x, 4]", "4*x^3");
-		check("Derivative(1,0)[Power][x, y]", "y/x^(1-y)");
-		check("Derivative(1,1)[Power][x, 4]", "x^3+4*x^3*Log(x)");
-		check("Derivative(1,1)[Power][x, y]", "x^(-1+y)+(y*Log(x))/x^(1-y)");
-		check("Derivative(0,1)[Power][a, x]", "a^x*Log(a)");
-		check("Derivative(1,1)[Power][a, x]", "a^(-1+x)+(x*Log(a))/a^(1-x)");
-		check("Derivative(1,1)[Power][x, x]", "x^(-1+x)+x^x*Log(x)");
+		check("x*x^a", //
+				"x^(1+a)");
+		check("x/x^(1-x)", //
+				"x^x");
+		check("Derivative(0,1)[BesselJ][a, x]", //
+				"1/2*(BesselJ(-1+a,x)-BesselJ(1+a,x))");
+		check("Derivative(1,0)[Power][x, 4]", //
+				"4*x^3");
+		check("Derivative(1,0)[Power][x, y]", //
+				"y/x^(1-y)");
+		check("Derivative(1,1)[Power][x, 4]", //
+				"x^3+4*x^3*Log(x)");
+		check("Derivative(1,1)[Power][x, y]", //
+				"x^(-1+y)+(y*Log(x))/x^(1-y)");
+		check("Derivative(0,1)[Power][a, x]", //
+				"a^x*Log(a)");
+		check("Derivative(1,1)[Power][a, x]", //
+				"a^(-1+x)+(x*Log(a))/a^(1-x)");
+		check("Derivative(1,1)[Power][x, x]", //
+				"x^(-1+x)+x^x*Log(x)");
 
-		check("Hold((-1)*Sin(#)&[x])", "Hold(-Sin(#1)&[x])");
-		check("Hold(Derivative(1)[Cos][x])", "Hold(Cos'(x))");
-		check("Derivative(1)[Cos][x]", "-Sin(x)");
-		check("Derivative(1)[Sin][x]", "Cos(x)");
-		check("Derivative(4)[Cos][x]", "Cos(x)");
-		check("Derivative(1)[Tan]", "Sec(#1)^2&");
-		check("Derivative(2)[Tan]", "2*Sec(#1)^2*Tan(#1)&");
-		check("Derivative(4)[Log][x]", "-6/x^4");
-		check("Derivative(2)[ArcSin][x]", "x/(1-x^2)^(3/2)");
+		check("Hold((-1)*Sin(#)&[x])", //
+				"Hold(-Sin(#1)&[x])");
+		check("Hold(Derivative(1)[Cos][x])", //
+				"Hold(Cos'(x))");
+		check("Derivative(1)[Cos][x]", //
+				"-Sin(x)");
+		check("Derivative(1)[Sin][x]", //
+				"Cos(x)");
+		check("Derivative(4)[Cos][x]", //
+				"Cos(x)");
+		check("Derivative(1)[Tan]", //
+				"Sec(#1)^2&");
+		check("Derivative(2)[Tan]", //
+				"2*Sec(#1)^2*Tan(#1)&");
+		check("Derivative(4)[Log][x]", //
+				"-6/x^4");
+		check("Derivative(2)[ArcSin][x]", //
+				"x/(1-x^2)^(3/2)");
 
-		check("Derivative(1)[2]", "0&");
-		check("Derivative(1)[2][x,y,z]", "0");
-		check("Derivative(10)[2][x,y,z]", "0");
-		check("Derivative(10,9,8)[2][a,b,c]", "0");
-		check("Derivative(1)[Cos[3]][z]", "Cos(3)'[z]");
-		check("y = x^2 + 1; x = 1", "1");
-		check("y'", "0&");
+		check("Derivative(1)[2]", //
+				"0&");
+		check("Derivative(1)[2][x,y,z]", //
+				"0");
+		check("Derivative(10)[2][x,y,z]", //
+				"0");
+		check("Derivative(10,9,8)[2][a,b,c]", //
+				"0");
+		check("Derivative(1)[Cos[3]][z]", //
+				"Cos(3)'[z]");
+		check("y = x^2 + 1; x = 1", //
+				"1");
+		check("y'", //
+				"0&");
 	}
 
 	public void testDesignMatrix() {
@@ -3125,47 +3671,73 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Det({{1, 1, 1}, {2, 2, 2}})", //
 				"Det(\n" + "{{1,1,1},\n" + " {2,2,2}})");
 
-		check("Det({{42}})", "42");
-		check("Det({{x}})", "x");
-		check("Det({{1, 1, 0}, {1, 0, 1}, {0, 1, 1}})", "-2");
-		check("Det({{a11, a12},{a21,a22}})", "-a12*a21+a11*a22");
-		check("Det({{a,b,c},{d,e,f},{g,h,i}})", "-c*e*g+b*f*g+c*d*h-a*f*h-b*d*i+a*e*i");
+		check("Det({{42}})", //
+				"42");
+		check("Det({{x}})", //
+				"x");
+		check("Det({{1, 1, 0}, {1, 0, 1}, {0, 1, 1}})", //
+				"-2");
+		check("Det({{a11, a12},{a21,a22}})", //
+				"-a12*a21+a11*a22");
+		check("Det({{a,b,c},{d,e,f},{g,h,i}})", //
+				"-c*e*g+b*f*g+c*d*h-a*f*h-b*d*i+a*e*i");
 	}
 
 	public void testDiagonal() {
-		check("Diagonal({{1,2,3},{4,5,6},{7,8,9}})", "{1,5,9}");
-		check("Diagonal({{1,2,3},{4,5,6},{7,8,9}}, 1)", "{2,6}");
-		check("Diagonal({{1,2,3},{4,5,6},{7,8,9}}, -1)", "{4,8}");
+		check("Diagonal({{1,2,3},{4,5,6},{7,8,9}})", //
+				"{1,5,9}");
+		check("Diagonal({{1,2,3},{4,5,6},{7,8,9}}, 1)", //
+				"{2,6}");
+		check("Diagonal({{1,2,3},{4,5,6},{7,8,9}}, -1)", //
+				"{4,8}");
 	}
 
 	public void testDiceDissimilarity() {
-		check("DiceDissimilarity({1, 0, 1, 1, 0}, {1, 1, 0, 1, 1})", "3/7");
-		check("DiceDissimilarity({True, False, True}, {True, True, False})", "1/2");
-		check("DiceDissimilarity({1, 1, 1, 1}, {1, 1, 1, 1})", "0");
-		check("DiceDissimilarity({0, 0, 0, 0}, {1, 1, 1, 1})", "1");
+		check("DiceDissimilarity({1, 0, 1, 1, 0}, {1, 1, 0, 1, 1})", //
+				"3/7");
+		check("DiceDissimilarity({True, False, True}, {True, True, False})", //
+				"1/2");
+		check("DiceDissimilarity({1, 1, 1, 1}, {1, 1, 1, 1})", //
+				"0");
+		check("DiceDissimilarity({0, 0, 0, 0}, {1, 1, 1, 1})", //
+				"1");
 	}
 
 	public void testDifferences() {
-		check("Differences({ })", "{}");
-		check("Differences({a})", "{}");
-		check("Differences({a,b})", "{-a+b}");
-		check("Differences({a,b,c})", "{-a+b,-b+c}");
+		check("Differences({ })", //
+				"{}");
+		check("Differences({a})", //
+				"{}");
+		check("Differences({a,b})", //
+				"{-a+b}");
+		check("Differences({a,b,c})", //
+				"{-a+b,-b+c}");
 	}
 
 	public void testDigitQ() {
-		check("DigitQ(\"1234\")", "True");
-		check("DigitQ(\".\")", "False");
+		check("DigitQ(\"1234\")", //
+				"True");
+		check("DigitQ(\".\")", //
+				"False");
 	}
 
 	public void testDimensions() {
-		check("Dimensions({a, b})", "{2}");
-		check("Dimensions({{a, b, c}, {d, e, f}})", "{2,3}");
-		check("Dimensions({{a, b, c}, {d, e}, {f}})", "{3}");
-		check("Dimensions({{{{a, b}}}})", "{1,1,1,2}");
-		check("Dimensions({{{{a, b}}}}, 2)", "{1,1}");
-		check("Dimensions(f(f(x, y), f(a, b), f(s, t)))", "{3,2}");
-		check("Dimensions(f(g(x, y), g(a, b), g(s, t)))", "{3}");
-		check("Dimensions(Array(a, {2, 1, 4, 3}))", "{2,1,4,3}");
+		check("Dimensions({a, b})", //
+				"{2}");
+		check("Dimensions({{a, b, c}, {d, e, f}})", //
+				"{2,3}");
+		check("Dimensions({{a, b, c}, {d, e}, {f}})", //
+				"{3}");
+		check("Dimensions({{{{a, b}}}})", //
+				"{1,1,1,2}");
+		check("Dimensions({{{{a, b}}}}, 2)", //
+				"{1,1}");
+		check("Dimensions(f(f(x, y), f(a, b), f(s, t)))", //
+				"{3,2}");
+		check("Dimensions(f(g(x, y), g(a, b), g(s, t)))", //
+				"{3}");
+		check("Dimensions(Array(a, {2, 1, 4, 3}))", //
+				"{2,1,4,3}");
 	}
 
 	public void testDiscreteDelta() {
@@ -5102,6 +5674,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFoldList() {
+		check("FoldList(f, {})", //
+				"{}");
+		check("FoldList(f, g(a))", //
+				"g(a)");
+		check("FoldList(f, {a, b, c, d})", //
+				"{a,f(a,b),f(f(a,b),c),f(f(f(a,b),c),d)}");
+		check("FoldList(Plus,{1,2,3})", //
+				"{1,3,6}");
+
+		check("foldlist(f, x, h())", //
+				"h(x)");
+		check("foldlist(f, x, h(c))", //
+				"h(x,f(x,c))");
 		check("foldlist(#^2 + #1 &, 2, range(6))", //
 				"{2,6,42,1806,3263442,10650056950806,113423713055421844361000442}");
 		check("foldlist(f, x, {a, b, c, d})", //
@@ -5109,7 +5694,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("FoldList(Times, 1, Array(Prime, 10))", "");
 		check("foldlist(1/(#2 + #1) &, x, reverse({a, b, c}))", //
 				"{x,1/(c+x),1/(b+1/(c+x)),1/(a+1/(b+1/(c+x)))}");
-		check("", "");
+
 	}
 
 	public void testFor() {
@@ -5367,7 +5952,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Sqrt(-1+1/x)*Sqrt(1+1/x)+1/x");
 		check("FunctionExpand(E^ArcCoth(x))", //
 				"1/Sqrt((-1+x)/(1+x))");
-		
+
 		check("FunctionExpand(Log(Sqrt(x^2)))", //
 				"Log(x^2)/2");
 		check("FunctionExpand(CosIntegral(Sqrt(x^2)))", //
@@ -7554,7 +8139,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMapAt() {
-		check("MapAt(f, {a, b, c, d}, 2)", "{a,f(b),c,d}");
+		check("MapAt(f, a+b+c+d, 2)",//
+				"a+c+d+f(b)");
+		check("MapAt(f, {a, b, c, d}, 0)",//
+				"f(List)[a,b,c,d]");
+		
+		check("MapAt(f, {a, b, c, d}, -2)",//
+				"{a,b,f(c),d}");
+		check("MapAt(f, {a, b, c, d}, -5)",//
+				"f(List)[a,b,c,d]");
+		check("MapAt(f, {a, b, c, d}, -4)",//
+				"{f(a),b,c,d}");
+		
+		// print message:
+		check("MapAt(f, {a, b, c, d}, -6)",//
+				"MapAt(f,{a,b,c,d},-6)");
+		check("MapAt(f, {a, b, c, d}, 2)",//
+				"{a,f(b),c,d}");
 	}
 
 	public void testMapIndexed() {
@@ -9007,7 +9608,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testOneIdentity() {
 		check("SetAttributes(f, OneIdentity)", //
 				"");
-		check("f(a)",//
+		check("f(a)", //
 				"f(a)");
 	}
 

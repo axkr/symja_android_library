@@ -3574,7 +3574,10 @@ public class Algebra {
 				if (expr.isFunction()) {
 					expr = expr.first();
 					try {
-						int k = ((IInteger) ast.arg2()).toInt();
+						int k = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+						if (k < 0) {
+							return F.NIL;
+						}
 						final IAST variables = F.List(F.Slot1);
 						ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, variables);
 						ExprPolynomial polynomial = ring.create(expr, false, true);

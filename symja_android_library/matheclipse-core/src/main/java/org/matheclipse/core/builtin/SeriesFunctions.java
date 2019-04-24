@@ -1295,16 +1295,12 @@ public class SeriesFunctions {
 			}
 
 			if (x0.isReal()) {
-				try {
-					final int lowerLimit = ((ISignedNumber) x0).toInt();
-					if (lowerLimit != 0) {
-						// TODO support other cases than 0
-						return F.NIL;
-					}
-					x0 = F.integer(lowerLimit);
-				} catch (ClassCastException cce) {
-				} catch (ArithmeticException ae) {
+				final int lowerLimit = x0.toIntDefault(Integer.MIN_VALUE);
+				if (lowerLimit != 0) {
+					// TODO support other cases than 0
+					return F.NIL;
 				}
+				x0 = F.integer(lowerLimit);
 			}
 
 			final int degree = n.toIntDefault(Integer.MIN_VALUE);
