@@ -8996,15 +8996,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testOddQ() {
-		check("OddQ(1/(b-a*c)[[2]])", "False");
-		check("OddQ((1/(b-a*c))[[2]])//Trace", "{{(1/(b-a*c))[[2]],-1},True}");
+		check("OddQ(1/(b-a*c)[[2]])", //
+				"False");
+		check("OddQ((1/(b-a*c))[[2]])//Trace", //
+				"{{(1/(b-a*c))[[2]],-1},True}");
 		check("OddQ({1,3}) && OddQ({5,7})", //
 				"{True,True}&&{True,True}");
 	}
 
 	public void testOneIdentity() {
-		check("SetAttributes(f, OneIdentity)", "");
-		check("f(a)", "f(a)");
+		check("SetAttributes(f, OneIdentity)", //
+				"");
+		check("f(a)",//
+				"f(a)");
 	}
 
 	public void testOneIdentityOrderless() {
