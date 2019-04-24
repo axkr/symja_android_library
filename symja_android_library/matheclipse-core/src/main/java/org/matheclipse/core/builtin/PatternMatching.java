@@ -21,6 +21,7 @@ import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.exception.Validate;
+//import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -96,19 +97,21 @@ public final class PatternMatching {
 	private final static class Begin extends AbstractCoreFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() > 1) {
-				String contextName = Validate.checkContextName(ast, 1);
-				Context pack = EvalEngine.get().getContextPath().currentContext();
-				String packageName = pack.getContextName();
-				// if (packageName.equals(Context.GLOBAL_CONTEXT_NAME)) {
-				// completeContextName = contextName;
-				// } else {
-				// completeContextName = packageName.substring(0, packageName.length() - 1) + contextName;
-				// }
-				Context context = engine.begin(contextName, pack);
-				return F.stringx(context.completeContextName());
-			}
-			return F.NIL;
+			String contextName = Validate.checkContextName(ast, 1);
+			Context pack = EvalEngine.get().getContextPath().currentContext();
+			// String packageName = pack.getContextName();
+			// if (packageName.equals(Context.GLOBAL_CONTEXT_NAME)) {
+			// completeContextName = contextName;
+			// } else {
+			// completeContextName = packageName.substring(0, packageName.length() - 1) + contextName;
+			// }
+			Context context = engine.begin(contextName, pack);
+			return F.stringx(context.completeContextName());
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 		@Override
@@ -154,6 +157,11 @@ public final class PatternMatching {
 				return F.NIL;
 			}
 			return F.stringx(context.completeContextName());
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_0_0;
 		}
 
 		@Override
@@ -364,7 +372,6 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
 			ISymbol symbol = Validate.checkSymbolType(ast, 1);
 
 			PrintStream stream;
@@ -382,6 +389,11 @@ public final class PatternMatching {
 			}
 
 			return F.Null;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 		@Override
@@ -565,7 +577,6 @@ public final class PatternMatching {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (Config.isFileSystemEnabled(engine)) {
-				Validate.checkSize(ast, 2);
 
 				if (!(ast.arg1() instanceof IStringX)) {
 					throw new WrongNumberOfArguments(ast, 1, ast.argSize());
@@ -585,6 +596,11 @@ public final class PatternMatching {
 
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 		@Override
@@ -735,9 +751,12 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2);
-
 			return ast.arg1();
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 		@Override
@@ -812,8 +831,6 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			// Here we only validate the arguments
 			// Assignment of the message is handled in the Set() function
 			if (!ast.arg1().isSymbol()) {
@@ -828,6 +845,11 @@ public final class PatternMatching {
 			}
 
 			return F.Null;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		@Override
@@ -961,7 +983,6 @@ public final class PatternMatching {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (Config.isFileSystemEnabled(engine)) {
-				Validate.checkRange(ast, 3);
 
 				final int argSize = ast.argSize();
 				IStringX fileName = Validate.checkStringType(ast, argSize);
@@ -985,6 +1006,11 @@ public final class PatternMatching {
 				return F.Null;
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_INFINITY;
 		}
 
 		@Override
@@ -1027,23 +1053,25 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST2()) {
-				IExpr leftHandSide = ast.arg1();
-				if (leftHandSide.isAST()) {
-					leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
-				} else {
-					leftHandSide = engine.evaluate(leftHandSide);
-				}
-				IExpr arg2 = engine.evaluateNull(ast.arg2());
-				if (!arg2.isPresent()) {
-					if (leftHandSide.equals(ast.arg1())) {
-						return F.NIL;
-					}
-					return Rule(leftHandSide, ast.arg2());
-				}
-				return Rule(leftHandSide, arg2);
+			IExpr leftHandSide = ast.arg1();
+			if (leftHandSide.isAST()) {
+				leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
+			} else {
+				leftHandSide = engine.evaluate(leftHandSide);
 			}
-			return F.NIL;
+			IExpr arg2 = engine.evaluateNull(ast.arg2());
+			if (!arg2.isPresent()) {
+				if (leftHandSide.equals(ast.arg1())) {
+					return F.NIL;
+				}
+				return Rule(leftHandSide, ast.arg2());
+			}
+			return Rule(leftHandSide, arg2);
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		@Override
@@ -1069,18 +1097,22 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST2()) {
-				IExpr leftHandSide = ast.arg1();
-				if (leftHandSide.isAST()) {
-					leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
-				} else {
-					leftHandSide = engine.evaluate(leftHandSide);
-				}
-				if (!leftHandSide.equals(ast.arg1())) {
-					return RuleDelayed(leftHandSide, ast.arg2());
-				}
+
+			IExpr leftHandSide = ast.arg1();
+			if (leftHandSide.isAST()) {
+				leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
+			} else {
+				leftHandSide = engine.evaluate(leftHandSide);
+			}
+			if (!leftHandSide.equals(ast.arg1())) {
+				return RuleDelayed(leftHandSide, ast.arg2());
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		@Override
@@ -1196,8 +1228,6 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			final IExpr leftHandSide = ast.arg1();
 			final IExpr head = leftHandSide.head();
 			if (head.isBuiltInSymbol()) {
@@ -1214,6 +1244,11 @@ public final class PatternMatching {
 			}
 			return createPatternMatcher(leftHandSide, ast.arg2(), engine.isPackageMode(), engine);
 			// return (IExpr) result[1];
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		private static IExpr createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode,
@@ -1313,13 +1348,17 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
 			final IExpr leftHandSide = ast.arg1();
 			final IExpr rightHandSide = ast.arg2();
 
 			createPatternMatcher(leftHandSide, rightHandSide, engine.isPackageMode(), engine);
 
 			return F.Null;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		private static void createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode,
@@ -1396,8 +1435,6 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 4);
-
 			IExpr arg1 = ast.arg1();
 			if (arg1.isSymbol() && !arg1.isBuiltInSymbol()) {
 				ISymbol symbol = (ISymbol) arg1;
@@ -1419,6 +1456,11 @@ public final class PatternMatching {
 				return (IExpr) result[1];
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_3;
 		}
 
 		private static Object[] createPatternMatcher(ISymbol tagSetSymbol, IExpr leftHandSide, IExpr rightHandSide,
@@ -1458,8 +1500,6 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 4);
-
 			IExpr arg1 = ast.arg1();
 			if (arg1.isSymbol() && !arg1.isBuiltInSymbol()) {
 				ISymbol symbol = (ISymbol) arg1;
@@ -1471,6 +1511,11 @@ public final class PatternMatching {
 				return F.Null;
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_3;
 		}
 
 		private static Object[] createPatternMatcher(ISymbol lhsSymbol, IExpr leftHandSide, IExpr rightHandSide,
@@ -1533,8 +1578,6 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 1, 2);
-
 			final int moduleCounter = engine.incModuleCounter();
 			if (ast.isAST1()) {
 				if (ast.arg1().isSymbol()) {
@@ -1548,6 +1591,11 @@ public final class PatternMatching {
 			}
 			final String varAppend = "$" + moduleCounter;
 			return F.symbol(varAppend, engine);
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_0_1;
 		}
 
 		@Override
@@ -1617,7 +1665,6 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
 			final IExpr leftHandSide = ast.arg1();
 			if (leftHandSide.isList()) {
 				// thread over lists
@@ -1628,6 +1675,11 @@ public final class PatternMatching {
 			}
 			removePatternMatcher(leftHandSide, engine.isPackageMode(), engine);
 			return F.Null;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 		public void removePatternMatcher(IExpr leftHandSide, boolean packageMode, EvalEngine engine)
@@ -1674,7 +1726,6 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
 			final IExpr leftHandSide = ast.arg1();
 			IExpr rightHandSide = ast.arg2();
 			if (leftHandSide.isList()) {
@@ -1691,6 +1742,11 @@ public final class PatternMatching {
 			}
 			Object[] result = createPatternMatcher(leftHandSide, rightHandSide, false, engine);
 			return (IExpr) result[1];
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		private static Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode,
@@ -1739,13 +1795,17 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
 			final IExpr leftHandSide = ast.arg1();
 			final IExpr rightHandSide = ast.arg2();
 
 			createPatternMatcher(leftHandSide, rightHandSide, false, engine);
 
 			return F.Null;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		private static Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode,

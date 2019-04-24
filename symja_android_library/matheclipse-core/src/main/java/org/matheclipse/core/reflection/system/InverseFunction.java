@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -32,8 +33,7 @@ public class InverseFunction extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkSize(ast, 2);
+	public IExpr evaluate(final IAST ast, EvalEngine engine) { 
 		// ISymbol arg1 = Validate.checkSymbolType(ast, 1);
 		IExpr arg1 = ast.arg1();
 		if (arg1.isFunction()) {
@@ -57,6 +57,11 @@ public class InverseFunction extends AbstractFunctionEvaluator {
 			}
 		}
 		return F.NIL;
+	}
+	
+	@Override
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_1_1;
 	}
 
 	/**

@@ -227,8 +227,6 @@ public final class Combinatoric {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			int dim1 = ast.arg1().isVector();
 			int dim2 = ast.arg2().isVector();
 			if (dim1 == dim2 && dim1 > 0) {
@@ -265,7 +263,10 @@ public final class Combinatoric {
 			}
 			return F.NIL;
 		}
-
+		
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -463,8 +464,6 @@ public final class Combinatoric {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			int dim1 = ast.arg1().isVector();
 			int dim2 = ast.arg2().isVector();
 			if (dim1 == dim2 && dim1 > 0) {
@@ -502,6 +501,10 @@ public final class Combinatoric {
 			return F.NIL;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+		
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -512,8 +515,7 @@ public final class Combinatoric {
 
 		/** {@inheritDoc} */
 		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
+		public IExpr evaluate(final IAST ast, EvalEngine engine) { 
 			if (ast.arg1().isAST() && ast.arg2().isInteger()) {
 				final IAST listArg0 = (IAST) ast.arg1();
 				final ISymbol sym = listArg0.topHead();
@@ -541,6 +543,10 @@ public final class Combinatoric {
 			return F.NIL;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+		
 		private IAST createSinglePartition(final IAST listArg0, final ISymbol sym, final int[] permutationsIndex,
 				final int[] partitionsIndex) {
 			IASTAppendable partitionElement;
@@ -795,7 +801,6 @@ public final class Combinatoric {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
 			if (ast.arg1().isAST() && ast.arg2().isInteger()) {
 				final IAST listArg0 = (IAST) ast.arg1();
 				final int k = Validate.checkIntType(ast, 2);
@@ -808,14 +813,16 @@ public final class Combinatoric {
 			}
 			return F.NIL;
 		}
+		
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
 	}
 
 	private final static class MatchingDissimilarity extends AbstractEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			int dim1 = ast.arg1().isVector();
 			int dim2 = ast.arg2().isVector();
 			if (dim1 == dim2 && dim1 > 0) {
@@ -848,6 +855,10 @@ public final class Combinatoric {
 			return F.NIL;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+		
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -1195,8 +1206,6 @@ public final class Combinatoric {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			int dim1 = ast.arg1().isVector();
 			int dim2 = ast.arg2().isVector();
 			if (dim1 == dim2 && dim1 > 0) {
@@ -1243,6 +1252,10 @@ public final class Combinatoric {
 			return F.NIL;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+		
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -1253,8 +1266,6 @@ public final class Combinatoric {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			int dim1 = ast.arg1().isVector();
 			int dim2 = ast.arg2().isVector();
 			if (dim1 == dim2 && dim1 > 0) {
@@ -1296,6 +1307,10 @@ public final class Combinatoric {
 			return F.NIL;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+		
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -1306,8 +1321,6 @@ public final class Combinatoric {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			int dim1 = ast.arg1().isVector();
 			int dim2 = ast.arg2().isVector();
 			if (dim1 == dim2 && dim1 > 0) {
@@ -1352,6 +1365,10 @@ public final class Combinatoric {
 			return F.NIL;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+		
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -1579,8 +1596,6 @@ public final class Combinatoric {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			int dim1 = ast.arg1().isVector();
 			int dim2 = ast.arg2().isVector();
 			if (dim1 == dim2 && dim1 > 0) {
@@ -1627,6 +1642,10 @@ public final class Combinatoric {
 			return F.NIL;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+		
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}

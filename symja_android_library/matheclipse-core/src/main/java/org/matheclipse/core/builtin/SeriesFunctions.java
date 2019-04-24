@@ -26,7 +26,6 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
@@ -774,8 +773,6 @@ public class SeriesFunctions {
 	private final static class Normal extends AbstractFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			IExpr arg1 = ast.arg1();
 			if (arg1 instanceof ASTSeriesData) {
 				return ((ASTSeriesData) arg1).normal();
@@ -787,6 +784,10 @@ public class SeriesFunctions {
 			return F.NIL;
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
 	}
 
 	/**

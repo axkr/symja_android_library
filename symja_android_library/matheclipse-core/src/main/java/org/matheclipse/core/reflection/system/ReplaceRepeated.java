@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -18,7 +19,6 @@ public class ReplaceRepeated extends AbstractEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		try {
-			Validate.checkSize(ast, 3);
 			if (ast.arg2().isListOfLists()) {
 				IAST list = (IAST) ast.arg2();
 				IASTAppendable result = F.ListAlloc(list.size());
@@ -45,6 +45,11 @@ public class ReplaceRepeated extends AbstractEvaluator {
 		return F.NIL;
 	}
 
+	@Override
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_2_2;
+	}
+	
 	@Override
 	public void setUp(final ISymbol newSymbol) {
 		newSymbol.setAttributes(ISymbol.HOLDREST);

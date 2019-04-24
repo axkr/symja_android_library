@@ -234,13 +234,15 @@ public class PolynomialFunctions {
 	private static class CoefficientList extends AbstractFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			IExpr expr = F.evalExpandAll(ast.arg1(), engine).normal();
 			IAST list = Validate.checkSymbolOrSymbolList(ast, 2);
 			return coefficientList(expr, list);
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
 		// private static long univariateCoefficientList(IExpr polynomial, final ISymbol variable, List<IExpr>
 		// resultList)
 		// throws JASConversionException {
@@ -465,13 +467,16 @@ public class PolynomialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			int n = ast.arg1().toIntDefault(-1);
 			if (n >= 0) {
 				return cyclotomic(n, ast.arg2());
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		private static IExpr cyclotomic(int n, final IExpr x) {
@@ -551,7 +556,7 @@ public class PolynomialFunctions {
 	 */
 	private static class Discriminant extends AbstractFunctionEvaluator {
 		// b^2 - 4*a*c
-		private final static IExpr QUADRATIC = F.Plus(F.Sqr(F.b),F.Times(F.CN4,F.a,F.c));
+		private final static IExpr QUADRATIC = F.Plus(F.Sqr(F.b), F.Times(F.CN4, F.a, F.c));
 
 		// b^2*c^2 - 4*a*c^3 - 4*b^3*d + 18*a*b*c*d - 27*a^2*d^2
 		private final static IExpr CUBIC = F.Plus(F.Times(F.Sqr(F.b), F.Sqr(F.c)),
@@ -661,7 +666,6 @@ public class PolynomialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
 			IExpr arg2 = ast.arg2();
 			if (!arg2.isSymbol()) {
 				return F.NIL;
@@ -696,6 +700,11 @@ public class PolynomialFunctions {
 			} catch (RuntimeException ex) {
 				throw new WrongArgumentType(ast, expr, 1, "Polynomial expected!");
 			}
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		@Override
@@ -892,7 +901,6 @@ public class PolynomialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 4);
 			// TODO allow multinomials
 			IExpr arg3 = Validate.checkSymbolType(ast, 3);
 			ISymbol x = (ISymbol) arg3;
@@ -910,6 +918,11 @@ public class PolynomialFunctions {
 			}
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_3;
+		}
+		
 		private IExpr resultant(IExpr a, IExpr b, ISymbol x, EvalEngine engine) {
 			IExpr aExp = F.Exponent.of(engine, a, x);
 			IExpr bExp = F.Exponent.of(engine, b, x);
@@ -1231,11 +1244,14 @@ public class PolynomialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			return croots(ast.arg1(), false);
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+		
 		/**
 		 * Complex numeric roots intervals.
 		 * 
@@ -1334,8 +1350,6 @@ public class PolynomialFunctions {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			IExpr arg1 = ast.arg1();
 			if (arg1.isEqual()) {
 				IAST equalAST = (IAST) arg1;
@@ -1371,6 +1385,10 @@ public class PolynomialFunctions {
 			return F.NIL;
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
 	}
 
 	/**
@@ -1400,7 +1418,6 @@ public class PolynomialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
 			IExpr n = ast.arg1();
 			IExpr z = ast.arg2();
 			if (engine.isNumericMode() && n.isNumber() && z.isNumber()) {
@@ -1426,6 +1443,11 @@ public class PolynomialFunctions {
 			}
 
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		@Override
@@ -1462,7 +1484,6 @@ public class PolynomialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
 			IExpr n = ast.arg1();
 			IExpr z = ast.arg2();
 			if (engine.isNumericMode() && n.isNumber() && z.isNumber()) {
@@ -1514,6 +1535,11 @@ public class PolynomialFunctions {
 		}
 
 		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+
+		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 			super.setUp(newSymbol);
@@ -1546,7 +1572,6 @@ public class PolynomialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 4);
 			if (ast.arg2().isInteger() && ast.arg2().isInteger()) {
 				int n = ast.arg1().toIntDefault(Integer.MIN_VALUE);
 				int k = ast.arg2().toIntDefault(Integer.MIN_VALUE);
@@ -1567,6 +1592,11 @@ public class PolynomialFunctions {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_3;
 		}
 
 		@Override
@@ -1605,8 +1635,6 @@ public class PolynomialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			int degree = ast.arg1().toIntDefault(Integer.MIN_VALUE);
 			if (degree > Integer.MIN_VALUE) {
 				return PolynomialsUtils.createHermitePolynomial(degree, ast.arg2());
@@ -1614,6 +1642,10 @@ public class PolynomialFunctions {
 			return F.NIL;
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
 	}
 
 	/**

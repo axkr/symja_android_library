@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -14,11 +15,12 @@ public class Interpolation extends AbstractEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkSize(ast, 2);
 		int[] dims = ast.arg1().isMatrix();
-		if (dims != null) {
-			return F.InterpolatingFunction(ast.arg1());
-		}
-		return F.NIL;
+		return (dims != null) ? F.InterpolatingFunction(ast.arg1()) : F.NIL;
+	}
+
+	@Override
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_1_1;
 	}
 }

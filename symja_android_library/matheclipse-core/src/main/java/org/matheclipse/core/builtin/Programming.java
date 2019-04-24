@@ -121,12 +121,11 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST0()) {
-				throw AbortException.ABORTED;
-			}
-			Validate.checkSize(ast, 1);
+			throw AbortException.ABORTED;
+		}
 
-			return F.NIL;
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_0_0;
 		}
 
 		@Override
@@ -158,12 +157,11 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST0()) {
-				throw BreakException.CONST;
-			}
-			Validate.checkSize(ast, 1);
+			throw BreakException.CONST;
+		}
 
-			return F.NIL;
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_0_0;
 		}
 
 		@Override
@@ -193,16 +191,16 @@ public final class Programming {
 	private final static class Block extends AbstractCoreFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() == 3) {
-				if (ast.arg1().isList()) {
-					final IAST blockVariablesList = (IAST) ast.arg1();
-					return engine.evalBlock(ast.arg2(), blockVariablesList);
-				}
-
-				return F.NIL;
+			if (ast.arg1().isList()) {
+				final IAST blockVariablesList = (IAST) ast.arg1();
+				return engine.evalBlock(ast.arg2(), blockVariablesList);
 			}
-			Validate.checkSize(ast, 3);
+
 			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		@Override
@@ -216,38 +214,40 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() >= 2 || ast.size() <= 4) {
-				try {
-					return engine.evaluate(ast.arg1());
-				} catch (final ThrowException e) {
-					if (ast.size() == 2) {
-						if (ThrowException.THROW_FALSE == e) {
-							return F.False;
-						} else if (ThrowException.THROW_TRUE == e) {
-							return F.True;
-						}
-						return e.getValue();
-					} else if (ast.size() == 3) {
-						IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
-						IExpr tag = engine.evaluate(e.getTag());
-						if (matcher.test(tag)) {
-							return e.getValue();
-						}
-						throw e;
-					} else if (ast.size() == 4) {
-						IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
-						IExpr head = engine.evaluate(ast.arg3());
-						IExpr tag = engine.evaluate(e.getTag());
-						if (matcher.test(tag)) {
-							return F.binaryAST2(head, e.getValue(), tag);
-						}
-						throw e;
+
+			try {
+				return engine.evaluate(ast.arg1());
+			} catch (final ThrowException e) {
+				if (ast.size() == 2) {
+					if (ThrowException.THROW_FALSE == e) {
+						return F.False;
+					} else if (ThrowException.THROW_TRUE == e) {
+						return F.True;
 					}
 					return e.getValue();
+				} else if (ast.size() == 3) {
+					IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
+					IExpr tag = engine.evaluate(e.getTag());
+					if (matcher.test(tag)) {
+						return e.getValue();
+					}
+					throw e;
+				} else if (ast.size() == 4) {
+					IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
+					IExpr head = engine.evaluate(ast.arg3());
+					IExpr tag = engine.evaluate(e.getTag());
+					if (matcher.test(tag)) {
+						return F.binaryAST2(head, e.getValue(), tag);
+					}
+					throw e;
 				}
+				return e.getValue();
 			}
-			Validate.checkSize(ast, 2);
-			return F.NIL;
+
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_3;
 		}
 
 		@Override
@@ -353,17 +353,17 @@ public final class Programming {
 
 		@Override
 		public final IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST2()) {
-				if (engine.evalTrue(ast.arg2())) {
-					return ast.arg1();
-				}
-				if (engine.isEvalLHSMode()) {
-					return F.NIL;
-				}
-				throw new ConditionException(ast);
+			if (engine.evalTrue(ast.arg2())) {
+				return ast.arg1();
 			}
-			Validate.checkSize(ast, 3);
-			return F.NIL;
+			if (engine.isEvalLHSMode()) {
+				return F.NIL;
+			}
+			throw new ConditionException(ast);
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		@Override
@@ -397,11 +397,14 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST0() || ast.isAST1()) {
-				throw ContinueException.CONST;
-			}
-			engine.printMessage("Continue: to much args in " + ast.toString());
-			return F.Hold(ast);
+			// if (ast.isAST0() || ast.isAST1()) {
+			throw ContinueException.CONST;
+			// }
+			// return F.Hold(ast);
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_0_1;
 		}
 
 		@Override
@@ -593,20 +596,20 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() >= 3) {
-				try {
-					final java.util.List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
-					ast.forEach(2, ast.size(), x -> iterList.add(Iterator.create((IAST) x, engine)));
-					final DoIterator generator = new DoIterator(iterList, engine);
-					return generator.doIt(ast.arg1());
-				} catch (final ClassCastException e) {
-					// the iterators are generated only from IASTs
-				} catch (final NoEvalException e) {
-				}
-				return F.NIL;
+			try {
+				final java.util.List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
+				ast.forEach(2, ast.size(), x -> iterList.add(Iterator.create((IAST) x, engine)));
+				final DoIterator generator = new DoIterator(iterList, engine);
+				return generator.doIt(ast.arg1());
+			} catch (final ClassCastException e) {
+				// the iterators are generated only from IASTs
+			} catch (final NoEvalException e) {
 			}
-			Validate.checkRange(ast, 3);
 			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_INFINITY;
 		}
 
 		@Override
@@ -663,8 +666,6 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
-
 			try {
 				// use EvalEngine's iterationLimit only for evaluation control
 				// final int iterationLimit = engine.getIterationLimit();
@@ -703,6 +704,10 @@ public final class Programming {
 				engine.setNumericMode(false);
 			}
 
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
 		}
 
 		@Override
@@ -781,8 +786,6 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
-
 			try {
 				// use EvalEngine's iterationLimit only for evaluation control
 				// final int iterationLimit = engine.getIterationLimit();
@@ -823,6 +826,10 @@ public final class Programming {
 				engine.setNumericMode(false);
 			}
 
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
 		}
 
 		@Override
@@ -889,51 +896,51 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() >= 4 && ast.size() <= 5) {
-				// use EvalEngine's iterationLimit only for evaluation control
-				// final int iterationLimit = engine.getIterationLimit();
-				// int iterationCounter = 1;
+			// use EvalEngine's iterationLimit only for evaluation control
+			// final int iterationLimit = engine.getIterationLimit();
+			// int iterationCounter = 1;
 
-				// For(start, test, incr, body)
-				engine.evaluate(ast.arg1()); // start
-				IExpr test = ast.arg2();
-				IExpr incr = ast.arg3();
-				IExpr body = F.Null;
-				if (ast.size() == 5) {
-					body = ast.arg4();
-				}
-				boolean exit = false;
-				while (true) {
-					try {
-						if (!engine.evaluate(test).isTrue()) {
-							exit = true;
-							return F.Null;
-						}
-						if (ast.size() == 5) {
-							engine.evaluate(body);
-						}
-						// if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
-						// IterationLimitExceeded.throwIt(iterationCounter, ast);
-						// }
-					} catch (final BreakException e) {
+			// For(start, test, incr, body)
+			engine.evaluate(ast.arg1()); // start
+			IExpr test = ast.arg2();
+			IExpr incr = ast.arg3();
+			IExpr body = F.Null;
+			if (ast.size() == 5) {
+				body = ast.arg4();
+			}
+			boolean exit = false;
+			while (true) {
+				try {
+					if (!engine.evaluate(test).isTrue()) {
 						exit = true;
 						return F.Null;
-					} catch (final ContinueException e) {
-						// if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
-						// IterationLimitExceeded.throwIt(iterationCounter, ast);
-						// }
-						continue;
-					} catch (final ReturnException e) {
-						return e.getValue();
-					} finally {
-						if (!exit) {
-							engine.evaluate(incr);
-						}
+					}
+					if (ast.size() == 5) {
+						engine.evaluate(body);
+					}
+					// if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
+					// IterationLimitExceeded.throwIt(iterationCounter, ast);
+					// }
+				} catch (final BreakException e) {
+					exit = true;
+					return F.Null;
+				} catch (final ContinueException e) {
+					// if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
+					// IterationLimitExceeded.throwIt(iterationCounter, ast);
+					// }
+					continue;
+				} catch (final ReturnException e) {
+					return e.getValue();
+				} finally {
+					if (!exit) {
+						engine.evaluate(incr);
 					}
 				}
 			}
-			Validate.checkRange(ast, 4, 5);
-			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_4;
 		}
 
 		@Override
@@ -1004,29 +1011,29 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() >= 3 && ast.size() <= 5) {
-				final IExpr temp = engine.evaluate(ast.arg1());
+			final IExpr temp = engine.evaluate(ast.arg1());
 
-				if (temp.isFalse()) {
-					if (ast.size() >= 4) {
-						return ast.arg3();
-					}
-
-					return F.Null;
+			if (temp.isFalse()) {
+				if (ast.size() >= 4) {
+					return ast.arg3();
 				}
 
-				if (temp.equals(F.True)) {
-					return ast.arg2();
-				}
-
-				if (ast.size() == 5) {
-					return ast.arg4();
-				}
-
-				return F.NIL;
+				return F.Null;
 			}
-			Validate.checkRange(ast, 3, 5);
+
+			if (temp.equals(F.True)) {
+				return ast.arg2();
+			}
+
+			if (ast.size() == 5) {
+				return ast.arg4();
+			}
+
 			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_4;
 		}
 
 		@Override
@@ -1117,18 +1124,17 @@ public final class Programming {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST2()) {
-				if (ast.arg1().isList()) {
-					IExpr temp = moduleSubstVariables((IAST) ast.arg1(), ast.arg2(), engine);
-					if (temp.isPresent()) {
-						return engine.evaluate(temp);
-					}
+			if (ast.arg1().isList()) {
+				IExpr temp = moduleSubstVariables((IAST) ast.arg1(), ast.arg2(), engine);
+				if (temp.isPresent()) {
+					return engine.evaluate(temp);
 				}
-				return F.NIL;
 			}
-			Validate.checkSize(ast, 3);
 			return F.NIL;
+		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		@Override
@@ -1163,9 +1169,11 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 4);
-
 			return evaluateNest(ast, engine);
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_3;
 		}
 
 		public static IExpr evaluateNest(final IAST ast, EvalEngine engine) {
@@ -1216,9 +1224,11 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 4);
-
 			return evaluateNestList(ast, F.ListAlloc(), engine);
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_3;
 		}
 
 		public static IExpr evaluateNestList(final IAST ast, final IASTAppendable resultList, EvalEngine engine) {
@@ -1293,9 +1303,11 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 4);
-
 			return nestWhile(ast.arg2(), engine.evaluate(ast.arg3()), x -> F.unaryAST1(ast.arg1(), x), engine);
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_3;
 		}
 
 		public static IExpr nestWhile(final IExpr expr, final IExpr test, final Function<IExpr, IExpr> fn,
@@ -1351,11 +1363,13 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 4);
-
 			IExpr arg1 = ast.arg1();
 			return nestList(ast.arg2(), engine.evaluate(ast.arg3()), x -> F.unaryAST1(arg1, x), F.ListAlloc(), engine);
 			// Functors.append(F.ast(ast.arg1())), List(), engine);
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_3;
 		}
 
 		public static IAST nestList(final IExpr expr, final IExpr test, final Function<IExpr, IExpr> fn,
@@ -1568,18 +1582,19 @@ public final class Programming {
 				engine.setOnOffMode(true, null, false);
 				return F.Null;
 			}
-			if (ast.size() > 1) {
-				IExpr arg1 = ast.first();
-				if (ast.isAST2() && ast.second().equals(F.Unique)) {
-					return enableOnOffTrace(arg1, true, engine);
-				}
-				if (ast.isAST1()) {
-					return enableOnOffTrace(arg1, false, engine);
-				}
-			}
-			Validate.checkRange(ast, 1, 2);
 
+			IExpr arg1 = ast.first();
+			if (ast.isAST2() && ast.second().equals(F.Unique)) {
+				return enableOnOffTrace(arg1, true, engine);
+			}
+			if (ast.isAST1()) {
+				return enableOnOffTrace(arg1, false, engine);
+			}
 			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_0_1;
 		}
 
 		private IExpr enableOnOffTrace(IExpr arg1, boolean unique, EvalEngine engine) {
@@ -1942,17 +1957,18 @@ public final class Programming {
 	private static class Quiet extends AbstractCoreFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST1()) {
-				boolean oldQuietMode = engine.isQuietMode();
-				try {
-					engine.setQuietMode(true);
-					return engine.evaluate(ast.arg1());
-				} finally {
-					engine.setQuietMode(oldQuietMode);
-				}
+
+			boolean oldQuietMode = engine.isQuietMode();
+			try {
+				engine.setQuietMode(true);
+				return engine.evaluate(ast.arg1());
+			} finally {
+				engine.setQuietMode(oldQuietMode);
 			}
-			Validate.checkSize(ast, 2);
-			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 		@Override
@@ -2110,12 +2126,11 @@ public final class Programming {
 				}
 				throw new ReturnException(arg1);
 			}
-			if (ast.isAST0()) {
-				throw new ReturnException();
-			}
-			Validate.checkRange(ast, 1, 2);
+			throw new ReturnException();
+		}
 
-			return F.NIL;
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_0_1;
 		}
 
 		@Override
@@ -2323,8 +2338,6 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
-
 			long s = engine.getSeconds();
 			if (s > 0 || Config.TIMECONSTRAINED_NO_THREAD) {
 				// no new thread should be spawned
@@ -2400,6 +2413,10 @@ public final class Programming {
 			}
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
+
 		@Override
 		public void setUp(ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
@@ -2452,9 +2469,12 @@ public final class Programming {
 				IExpr arg1 = engine.evaluate(ast.arg1());
 				throw new ThrowException(arg1, ast.arg2());
 			}
-			Validate.checkSize(ast, 2);
 
 			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		@Override
@@ -2489,8 +2509,6 @@ public final class Programming {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			try {
 				final IExpr temp = ast.arg1();
 				IPatternMatcher matcher = null;
@@ -2505,6 +2523,10 @@ public final class Programming {
 				}
 			}
 			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		@Override
@@ -2655,33 +2677,35 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() >= 2 && ast.size() <= 3) {
-				// use EvalEngine's iterationLimit only for evaluation control
 
-				// While(test, body)
-				IExpr test = ast.arg1();
-				IExpr body = ast.isAST2() ? ast.arg2() : F.Null;
-				while (engine.evaluate(test).isTrue()) {
-					try {
-						if (ast.isAST2()) {
-							engine.evaluate(body);
-						}
-						// if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
-						// IterationLimitExceeded.throwIt(iterationCounter, ast);
-						// }
-					} catch (final BreakException e) {
-						return F.Null;
-					} catch (final ContinueException e) {
-						continue;
-					} catch (final ReturnException e) {
-						return e.getValue();
+			// use EvalEngine's iterationLimit only for evaluation control
+
+			// While(test, body)
+			IExpr test = ast.arg1();
+			IExpr body = ast.isAST2() ? ast.arg2() : F.Null;
+			while (engine.evaluate(test).isTrue()) {
+				try {
+					if (ast.isAST2()) {
+						engine.evaluate(body);
 					}
+					// if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
+					// IterationLimitExceeded.throwIt(iterationCounter, ast);
+					// }
+				} catch (final BreakException e) {
+					return F.Null;
+				} catch (final ContinueException e) {
+					continue;
+				} catch (final ReturnException e) {
+					return e.getValue();
 				}
-
-				return F.Null;
 			}
-			Validate.checkRange(ast, 2, 3);
-			return F.NIL;
+
+			return F.Null;
+
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		@Override
@@ -2706,20 +2730,21 @@ public final class Programming {
 	private final static class With extends AbstractCoreFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() == 3) {
-				if (ast.arg1().isList()) {
-					IExpr temp = withSubstVariables((IAST) ast.arg1(), ast.arg2(), engine);
-					if (temp.isPresent()) {
-						// System.out.println(temp);
-						return engine.evaluate(temp);
-					}
 
+			if (ast.arg1().isList()) {
+				IExpr temp = withSubstVariables((IAST) ast.arg1(), ast.arg2(), engine);
+				if (temp.isPresent()) {
+					// System.out.println(temp);
+					return engine.evaluate(temp);
 				}
 
-				return F.NIL;
 			}
-			Validate.checkSize(ast, 3);
+
 			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		@Override

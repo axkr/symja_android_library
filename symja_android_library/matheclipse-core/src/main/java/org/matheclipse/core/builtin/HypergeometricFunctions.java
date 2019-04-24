@@ -133,8 +133,6 @@ public class HypergeometricFunctions {
 
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			IExpr n = ast.arg1();
 			IExpr z = ast.arg2();
 			if (n.isZero()) {
@@ -153,6 +151,10 @@ public class HypergeometricFunctions {
 			return F.NIL;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+		
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -459,8 +461,6 @@ public class HypergeometricFunctions {
 
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			IExpr b = ast.arg1();
 			IExpr z = ast.arg2();
 			if (z.isZero()) {
@@ -481,6 +481,10 @@ public class HypergeometricFunctions {
 			return F.NIL;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+		
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -492,8 +496,6 @@ public class HypergeometricFunctions {
 
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 4);
-
 			IExpr a = ast.arg1();
 			if (a.isZero()) {
 				return F.C1;
@@ -558,6 +560,10 @@ public class HypergeometricFunctions {
 			}
 			return F.NIL;
 		}
+		
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_3;
+		}
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
@@ -573,8 +579,6 @@ public class HypergeometricFunctions {
 
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 5);
-
 			IExpr a = ast.arg1();
 			IExpr b = ast.arg2();
 			IExpr c = ast.arg3();
@@ -606,6 +610,10 @@ public class HypergeometricFunctions {
 				}
 			}
 			return F.NIL;
+		}
+		
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_4_4;
 		}
 
 		@Override

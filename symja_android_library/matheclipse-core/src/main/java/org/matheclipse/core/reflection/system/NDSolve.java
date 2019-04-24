@@ -5,6 +5,7 @@ import org.hipparchus.ode.OrdinaryDifferentialEquation;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -72,8 +73,6 @@ public class NDSolve extends AbstractFunctionEvaluator {
 		if (!ToggleFeature.DSOLVE) {
 			return F.NIL;
 		}
-		Validate.checkSize(ast, 4);
-
 		if (ast.arg3().isAST(F.List, 4)) {
 			try {
 				IAST uFunctionSymbols = Validate.checkSymbolOrSymbolList(ast, 2);
@@ -148,6 +147,11 @@ public class NDSolve extends AbstractFunctionEvaluator {
 			}
 		}
 		return F.NIL;
+	}
+	
+	@Override
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_3_3;
 	}
 
 	/**

@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.util.HashMap;
 import java.util.function.Function;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -180,14 +181,17 @@ public class Share extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkSize(ast, 2);
-
 		if (ast.arg1().isAST()) {
 			return F.integer(shareAST((IAST) ast.arg1()));
 		}
 		return F.C0;
 	}
 
+	@Override
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_1_1;
+	}
+	
 	/**
 	 * Try to share common sub-<code>IASTs</code> expressions with the same object-id internally to minimize memory
 	 * consumption and return the number of shared sub-expressions

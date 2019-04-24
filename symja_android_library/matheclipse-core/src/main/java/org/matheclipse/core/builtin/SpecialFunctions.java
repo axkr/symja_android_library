@@ -267,6 +267,10 @@ public class SpecialFunctions {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 			super.setUp(newSymbol);
 		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 	}
 
 	private final static class Erfc extends AbstractTrigArg1 implements INumeric {
@@ -343,8 +347,6 @@ public class SpecialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			IExpr z = ast.arg1();
 			if (z.isZero()) {
 				return F.C0;
@@ -378,6 +380,11 @@ public class SpecialFunctions {
 				return Negate(F.Erfi(negExpr));
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 		@Override
@@ -448,9 +455,12 @@ public class SpecialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 4);
-
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_3;
 		}
 
 		@Override
@@ -941,8 +951,6 @@ public class SpecialFunctions {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			IExpr arg1 = ast.arg1();
 			IExpr arg2 = ast.arg2();
 
@@ -985,6 +993,11 @@ public class SpecialFunctions {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		@Override
@@ -1134,8 +1147,6 @@ public class SpecialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			IExpr arg1 = ast.arg1();
 			IExpr arg2 = ast.arg2();
 			if (arg2.isZero()) {
@@ -1165,6 +1176,11 @@ public class SpecialFunctions {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		protected static double gammaEuler(double z) {
@@ -1219,8 +1235,6 @@ public class SpecialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			IExpr arg1 = ast.arg1();
 			IExpr arg2 = ast.arg2();
 			if (arg2.isZero()) {
@@ -1250,6 +1264,11 @@ public class SpecialFunctions {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		@Override

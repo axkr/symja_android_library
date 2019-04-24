@@ -8,6 +8,7 @@ import org.hipparchus.optim.linear.PivotSelectionRule;
 import org.hipparchus.optim.nonlinear.scalar.GoalType;
 import java.util.List;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -68,8 +69,6 @@ public class NMaximize extends NMinimize {
 
 	@Override
 	public IExpr numericEval(final IAST ast, EvalEngine engine) {
-		Validate.checkSize(ast, 3);
-
 		if (ast.arg1().isList() && ast.arg2().isList()) {
 			IAST list1 = (IAST) ast.arg1();
 			IAST list2 = (IAST) ast.arg2();
@@ -88,6 +87,11 @@ public class NMaximize extends NMinimize {
 			}
 		}
 		return F.NIL;
+	}
+	
+	@Override
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_2_2;
 	}
 
 }

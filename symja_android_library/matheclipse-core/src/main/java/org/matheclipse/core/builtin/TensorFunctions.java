@@ -380,7 +380,6 @@ public class TensorFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
 			if (ast.arg1().isList()) {
 				// same as Dimensions for List structures
 				return F.Dimensions(ast.arg1());
@@ -388,6 +387,10 @@ public class TensorFunctions {
 			return F.NIL;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+		
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -539,13 +542,16 @@ public class TensorFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
 			if (ast.arg1().isList()) {
 				IAST list = (IAST) ast.arg1();
 				List<Integer> intList = LinearAlgebra.dimensions((IAST) ast.arg1(), list.head(), Integer.MAX_VALUE);
 				return F.ZZ(intList.size());
 			}
 			return F.NIL;
+		}
+		
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 		@Override

@@ -3,6 +3,7 @@ package org.matheclipse.core.eval.interfaces;
 import org.hipparchus.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.ApcomplexNum;
@@ -24,8 +25,6 @@ public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkSize(ast, 2);
-
 		final IExpr arg1 = ast.arg1();
 		final IExpr result = e1ObjArg(arg1);
 		if (result.isPresent()) {
@@ -67,7 +66,10 @@ public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
 
 		return F.NIL;
 	}
-
+	@Override
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_1_1;
+	}
 	public IExpr e1ObjArg(final IExpr o) {
 		return F.NIL;
 	}

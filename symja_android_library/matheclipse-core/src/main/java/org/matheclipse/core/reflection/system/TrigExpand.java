@@ -12,6 +12,7 @@ import static org.matheclipse.core.expression.F.evalExpandAll;
 
 import java.util.function.Function;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.Structure;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -348,8 +349,6 @@ public class TrigExpand extends AbstractEvaluator {
 	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkSize(ast, 2);
-
 		IExpr temp = Structure.threadLogicEquationOperators(ast.arg1(), ast, 1);
 		if (temp.isPresent()) {
 			return temp;
@@ -362,6 +361,11 @@ public class TrigExpand extends AbstractEvaluator {
 			temp = result.accept(visitor);
 		} while (temp.isPresent());
 		return result;
+	}
+	
+	@Override
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_1_1;
 	}
 
 	@Override

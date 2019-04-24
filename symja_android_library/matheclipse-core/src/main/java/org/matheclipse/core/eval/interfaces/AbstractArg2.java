@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval.interfaces;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.ApcomplexNum;
@@ -235,9 +236,10 @@ public abstract class AbstractArg2 extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkSize(ast, 3);
-
 		return binaryOperator(ast, ast.arg1(), ast.arg2());
 	}
 
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_2_2;
+	}
 }

@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval.interfaces;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
@@ -97,6 +98,10 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 		return F.NIL;
 	}
 
+	public int[] expectedArgSize() {
+		return null;
+	}
+	
 	public HashedOrderlessMatcher getHashRuleMap() {
 		return null;
 	}

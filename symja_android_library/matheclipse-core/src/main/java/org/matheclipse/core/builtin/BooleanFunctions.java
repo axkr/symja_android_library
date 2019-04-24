@@ -101,14 +101,16 @@ public final class BooleanFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			if (ast.arg1().isAST()) {
 				IAST list = (IAST) ast.arg1();
 				IExpr head = ast.arg2();
 				return allTrue(list, head, engine);
 			}
 			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		/**
@@ -344,14 +346,16 @@ public final class BooleanFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			if (ast.arg1().isAST()) {
 				IAST list = (IAST) ast.arg1();
 				IExpr head = ast.arg2();
 				return anyTrue(list, head, engine);
 			}
 			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		/**
@@ -416,8 +420,6 @@ public final class BooleanFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			if (ast.arg1().isSymbol()) {
 				if (ast.arg1().isTrue()) {
 					return F.C1;
@@ -427,6 +429,10 @@ public final class BooleanFunctions {
 				}
 			}
 			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 		@Override
@@ -554,8 +560,6 @@ public final class BooleanFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			FormulaFactory factory = new FormulaFactory();
 			LogicFormula lf = new LogicFormula(factory);
 			Formula formula = lf.expr2BooleanFunction(ast.arg1());
@@ -567,6 +571,10 @@ public final class BooleanFunctions {
 			// TODO CNF form after minimizing blows up the formula.
 			// FormulaTransformation transformation = BooleanConvert.transformation(ast, engine);
 			// return lf.booleanFunction2Expr(formula.transform(transformation));
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 	}
 
@@ -670,9 +678,11 @@ public final class BooleanFunctions {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			return booleanVariables(ast.arg1());
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 		private static IAST booleanVariables(final IExpr expr) {
@@ -1637,8 +1647,6 @@ public final class BooleanFunctions {
 	private final static class Implies extends AbstractCoreFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			boolean evaled = false;
 			IExpr arg1 = engine.evaluateNull(ast.arg1());
 			if (arg1.isPresent()) {
@@ -1673,6 +1681,10 @@ public final class BooleanFunctions {
 				return F.Implies(arg1, arg2);
 			}
 			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		@Override
@@ -2325,29 +2337,29 @@ public final class BooleanFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
-			if (ast.isAST1()) {
-				IExpr arg1 = ast.arg1();
-				if (arg1.isReal()) {
-					return F.bool(arg1.isNegative());
-				}
-				if (arg1.isNumber()) {
-					return F.False;
-				}
-				ISignedNumber signedNumber = arg1.evalReal();
-				if (signedNumber != null) {
-					return F.bool(signedNumber.isNegative());
-				}
-				if (arg1.isNegativeInfinity()) {
-					return F.True;
-				}
-				if (arg1.isInfinity()) {
-					return F.False;
-				}
-				return F.NIL;
+			IExpr arg1 = ast.arg1();
+			if (arg1.isReal()) {
+				return F.bool(arg1.isNegative());
 			}
-			Validate.checkSize(ast, 2);
-
+			if (arg1.isNumber()) {
+				return F.False;
+			}
+			ISignedNumber signedNumber = arg1.evalReal();
+			if (signedNumber != null) {
+				return F.bool(signedNumber.isNegative());
+			}
+			if (arg1.isNegativeInfinity()) {
+				return F.True;
+			}
+			if (arg1.isInfinity()) {
+				return F.False;
+			}
 			return F.NIL;
+
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 		@Override

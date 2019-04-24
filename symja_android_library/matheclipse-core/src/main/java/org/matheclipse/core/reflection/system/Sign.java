@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.function.Function;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -61,10 +62,6 @@ public class Sign extends AbstractCoreFunctionEvaluator {
 	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkSize(ast, 2);
-
-		// IExpr arg1 = ast.arg1();
-
 		IExpr result = F.NIL;
 		IExpr arg1 = engine.evaluateNull(ast.arg1());
 		if (arg1.isPresent()) {
@@ -137,6 +134,11 @@ public class Sign extends AbstractCoreFunctionEvaluator {
 		return result;
 	}
 
+	@Override
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_1_1;
+	}
+	
 	public static IExpr numberSign(INumber arg1) {
 		if (arg1.isReal()) {
 			final int signum = ((ISignedNumber) arg1).sign();

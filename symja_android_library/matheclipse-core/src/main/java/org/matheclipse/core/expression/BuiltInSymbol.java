@@ -6,6 +6,7 @@ import java.util.function.DoubleFunction;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
@@ -34,11 +35,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 		/** {@inheritDoc} */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST1()) {
-				return predicate.test(engine.evaluate(ast.arg1())) ? F.True : F.False;
-			}
-			Validate.checkSize(ast, 2);
-			return F.NIL;
+			return predicate.test(engine.evaluate(ast.arg1())) ? F.True : F.False;
 		}
 
 		@Override
@@ -46,6 +43,9 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 			return predicate.test(engine.evaluate(arg1));
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
 	}
 
 	private static class DummyEvaluator implements IEvaluator {

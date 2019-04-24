@@ -91,7 +91,6 @@ public class FinancialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 4);
 			IExpr a = ast.arg1();
 			IExpr b = ast.arg2();
 			IExpr c = ast.arg3();
@@ -173,6 +172,10 @@ public class FinancialFunctions {
 				F.Times(a, F.Power(F.Plus(F.C1, b), c)); // $$;
 			}
 			return F.NIL;
+		}
+		
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_3;
 		}
 	}
 

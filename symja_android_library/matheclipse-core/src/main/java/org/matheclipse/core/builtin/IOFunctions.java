@@ -10,6 +10,82 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 
 public class IOFunctions {
 
+	/**
+	 * 
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
+	 */
+	private static class Initializer {
+
+		private static void init() {
+			// F.General.setEvaluator(new General());
+			F.Message.setEvaluator(new Message());
+			for (int i = 0; i < MESSAGES.length; i += 2) {
+				F.General.putMessage(IPatternMatcher.SET, MESSAGES[i], F.stringx(MESSAGES[i + 1]));
+			}
+		}
+	}
+
+	private static class Message extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.size() > 1) {
+				if (ast.arg1().isString()) {
+					String message = ast.arg1().toString();
+					for (int i = 2; i < ast.size(); i++) {
+						message = message.replaceAll("`" + (i - 1) + "`", ast.get(i).toString());
+					}
+					return F.stringx(": " + message);
+				}
+				if (ast.arg1().isAST(F.MessageName, 3)) {
+					IAST messageName = (IAST) ast.arg1();
+					String messageShortcut = messageName.arg2().toString();
+					if (messageName.arg1().isSymbol()) {
+						IExpr temp = message((ISymbol) messageName.arg1(), messageShortcut, ast);
+						if (temp.isPresent()) {
+							return temp;
+						}
+					}
+					return message(F.General, messageShortcut, ast);
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDFIRST);
+		}
+
+	}
+
+	public static final int[] ARGS_0_0 = new int[] { 0, 0 };
+	
+	public static final int[] ARGS_0_1 = new int[] { 0, 1 };
+	
+	public static final int[] ARGS_1_1 = new int[] { 1, 1 };
+
+	public static final int[] ARGS_1_2 = new int[] { 1, 2 };
+
+	public static final int[] ARGS_2_2 = new int[] { 2, 2 };
+
+	public static final int[] ARGS_1_3 = new int[] { 1, 3 };
+	
+	public static final int[] ARGS_2_3 = new int[] { 2, 3 };
+	
+	public static final int[] ARGS_2_4 = new int[] { 2, 4 };
+	
+	public static final int[] ARGS_3_3 = new int[] { 3, 3 };
+	
+	public static final int[] ARGS_3_4 = new int[] { 3, 4 };
+
+	public static final int[] ARGS_4_4 = new int[] { 4, 4 };
+	
+	public static final int[] ARGS_5_5 = new int[] { 5, 5 };
+	
+	public static final int[] ARGS_2_INFINITY = new int[] { 2, Integer.MAX_VALUE };
+	
 	private final static String[] MESSAGES = { //
 			"argb", "`1` called with `2` arguments; between `3` and `4` arguments are expected.", //
 			"argct", "`1` called with `2` arguments.", //
@@ -66,73 +142,75 @@ public class IOFunctions {
 			"ucdec", "An invalid unicode sequence was encountered and ignored." //
 	};
 
-	/**
-	 * 
-	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
-	 * initializer</a>
-	 */
-	private static class Initializer {
-
-		private static void init() {
-			// F.General.setEvaluator(new General());
-			F.Message.setEvaluator(new Message());
-			for (int i = 0; i < MESSAGES.length; i += 2) {
-				F.General.putMessage(IPatternMatcher.SET, MESSAGES[i], F.stringx(MESSAGES[i + 1]));
-			}
-		}
-	}
-
-	private static class Message extends AbstractEvaluator {
-
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() > 1) {
-				if (ast.arg1().isString()) {
-					String message = ast.arg1().toString();
-					for (int i = 2; i < ast.size(); i++) {
-						message = message.replaceAll("`" + (i - 1) + "`", ast.get(i).toString());
-					}
-					return F.stringx(": " + message);
-				}
-				if (ast.arg1().isAST(F.MessageName, 3)) {
-					IAST messageName = (IAST) ast.arg1();
-					String messageShortcut = messageName.arg2().toString();
-					if (messageName.arg1().isSymbol()) {
-						IExpr temp = message((ISymbol) messageName.arg1(), messageShortcut, ast);
-						if (temp.isPresent()) {
-							return temp;
-						}
-					}
-					return message(F.General, messageShortcut, ast);
-				}
-			}
-			return F.NIL;
-		}
-
-		@Override
-		public void setUp(ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDFIRST);
-		}
-
+	public static void initialize() {
+		Initializer.init();
 	}
 
 	public static IExpr message(ISymbol symbol, String messageShortcut, final IAST ast) {
 		IExpr temp = symbol.evalMessage(messageShortcut);
+		String message = null;
 		if (temp.isPresent()) {
-			String message = temp.toString();
-
-			if (message != null) {
-				for (int i = 2; i < ast.size(); i++) {
-					message = message.replaceAll("`" + (i - 1) + "`", ast.get(i).toString());
-				}
-				return F.stringx(symbol.toString() + ": " + message);
+			message = temp.toString();
+		} else {
+			temp = F.General.evalMessage(messageShortcut);
+			if (temp.isPresent()) {
+				message = temp.toString();
 			}
+		}
+		if (message != null) {
+			message = rawMessage(ast, message);
+			return F.stringx(symbol.toString() + ": " + message);
 		}
 		return F.NIL;
 	}
 
-	public static void initialize() {
-		Initializer.init();
+	public static IExpr printArgMessage(IAST ast, int[] expected, EvalEngine engine) {
+		final ISymbol topHead = ast.topHead();
+		int argSize = ast.argSize();
+		if (expected[0] == expected[1]) {
+			if (expected[0] == 1) {
+				printMessage(topHead, "argx", F.List(topHead, F.ZZ(argSize), F.ZZ(expected[0])), engine);
+				return F.NIL;
+			}
+			if (argSize == 1) {
+				printMessage(topHead, "argr", F.List(topHead, F.ZZ(expected[0])), engine);
+				return F.NIL;
+			}
+			printMessage(topHead, "argrx", F.List(topHead, F.ZZ(argSize), F.ZZ(expected[0])), engine);
+			return F.NIL;
+		}
+		printMessage(topHead, "argt", F.List(topHead, F.ZZ(argSize), F.ZZ(expected[0]), F.ZZ(expected[1])), engine);
+		return F.NIL;
+	}
+
+	public static boolean printMessage(ISymbol symbol, String messageShortcut, final IAST ast, EvalEngine engine) {
+		IExpr temp = symbol.evalMessage(messageShortcut);
+		String message = null;
+		if (temp.isPresent()) {
+			message = temp.toString();
+		} else {
+			temp = F.General.evalMessage(messageShortcut);
+			if (temp.isPresent()) {
+				message = temp.toString();
+			}
+		}
+		if (message != null) {
+			if (message != null) {
+				for (int i = 1; i < ast.size(); i++) {
+					message = message.replaceAll("`" + (i) + "`", ast.get(i).toString());
+				}
+				engine.printMessage(symbol.toString() + ": " + message);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static String rawMessage(final IAST ast, String message) {
+		for (int i = 2; i < ast.size(); i++) {
+			message = message.replaceAll("`" + (i - 1) + "`", ast.get(i).toString());
+		}
+		return message;
 	}
 
 	private IOFunctions() {

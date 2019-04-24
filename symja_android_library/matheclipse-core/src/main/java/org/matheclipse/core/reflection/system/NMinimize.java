@@ -13,6 +13,7 @@ import org.hipparchus.optim.linear.NonNegativeConstraint;
 import org.hipparchus.optim.linear.PivotSelectionRule;
 import org.hipparchus.optim.linear.SimplexSolver;
 import org.hipparchus.optim.nonlinear.scalar.GoalType;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.Expr2LP;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
@@ -83,8 +84,6 @@ public class NMinimize extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr numericEval(final IAST ast, EvalEngine engine) {
-		Validate.checkSize(ast, 3);
-
 		if (ast.arg1().isList() && ast.arg2().isList()) {
 			IAST list1 = (IAST) ast.arg1();
 			IAST list2 = (IAST) ast.arg2();
@@ -103,6 +102,11 @@ public class NMinimize extends AbstractFunctionEvaluator {
 			}
 		}
 		return F.NIL;
+	}
+	
+	@Override
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_2_2;
 	}
 
 	protected static LinearObjectiveFunction getObjectiveFunction(VariablesSet vars, IExpr objectiveFunction) {

@@ -1285,6 +1285,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBinomial() {
+		check("Binomial(a,b,c)", //
+				"Binomial(a,b,c)");
+		check("Binomial(a)", //
+				"Binomial(a)");
+		
 		check("Factorial(10)/Factorial(3)", //
 				"604800");
 		check("Gamma(11)/Gamma(4)", //
@@ -2780,6 +2785,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCos() {
+		// print argx message
+		check("Cos( )", //
+				"Cos()");
+		check("Cos(a,b)", //
+				"Cos(a,b)");
+		
 		check("Cos(I*a+I*b*x)/b", //
 				"Cosh(a+b*x)/b");
 		// TODO return Cosh((1 + 2*I)*a - 3*I*b*x)
@@ -8238,11 +8249,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMatchingDissimilarity() {
-		check("MatchingDissimilarity({1, 0, 1, 1, 0, 1, 1}, {0, 1, 1, 0, 0, 0, 1})", "4/7");
-		check("MatchingDissimilarity({1, 0, 1, 1, 0}, {1, 1, 0, 1, 1})", "3/5");
-		check("MatchingDissimilarity({True, False, True}, {True, True, False})", "2/3");
-		check("MatchingDissimilarity({1, 1, 1, 1}, {1, 1, 1, 1})", "0");
-		check("MatchingDissimilarity({0, 0, 0, 0}, {1, 1, 1, 1})", "1");
+		check("MatchingDissimilarity({1, 0, 1, 1, 0, 1, 1}, {0, 1, 1, 0, 0, 0, 1})", //
+				"4/7");
+		check("MatchingDissimilarity({1, 0, 1, 1, 0}, {1, 1, 0, 1, 1})",//
+				 "3/5");
+		check("MatchingDissimilarity({True, False, True}, {True, True, False})", //
+				"2/3");
+		check("MatchingDissimilarity({1, 1, 1, 1}, {1, 1, 1, 1})", //
+				"0");
+		check("MatchingDissimilarity({0, 0, 0, 0}, {1, 1, 1, 1})",//
+				 "1");
 	}
 
 	public void testMatchQ() {
@@ -8322,11 +8338,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMatrices() {
-		check("Table(a(i0, j), {i0, 2}, {j, 2})", "{{a(1,1),a(1,2)},{a(2,1),a(2,2)}}");
-		check("Array(a, {2, 2})", "{{a(1,1),a(1,2)},{a(2,1),a(2,2)}}");
-		check("ConstantArray(0, {3, 2})", "{{0,0},{0,0},{0,0}}");
-		check("DiagonalMatrix({a, b, c})", "{{a,0,0},\n" + " {0,b,0},\n" + " {0,0,c}}");
-		check("IdentityMatrix(3)", "{{1,0,0},\n" + " {0,1,0},\n" + " {0,0,1}}");
+		check("Table(a(i0, j), {i0, 2}, {j, 2})", //
+				"{{a(1,1),a(1,2)},{a(2,1),a(2,2)}}");
+		check("Array(a, {2, 2})", //
+				"{{a(1,1),a(1,2)},{a(2,1),a(2,2)}}");
+		check("ConstantArray(0, {3, 2})",//
+				 "{{0,0},{0,0},{0,0}}");
+		check("DiagonalMatrix({a, b, c})",//
+				 "{{a,0,0},\n" + " {0,b,0},\n" + " {0,0,c}}");
+		check("IdentityMatrix(3)", //
+				"{{1,0,0},\n" + " {0,1,0},\n" + " {0,0,1}}");
 	}
 
 	public void testMatrixExp() {
@@ -8367,10 +8388,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMatrixQ() {
-		check("MatrixQ({{a, b, f}, {c, d, e}})", "True");
-		check("MatrixQ({{1, 3}, {4.0, 3/2}}, NumberQ)", "True");
+		check("MatrixQ( )", //
+				"MatrixQ()");
+		check("MatrixQ({})", //
+				"False");
+		check("MatrixQ({{}})", //
+				"True");
+		check("MatrixQ({{}}, NumberQ)", //
+				"True");
+		check("MatrixQ({{a, b, f}, {c, d, e}})",//
+				 "True");
+		check("MatrixQ({{1, 3}, {4.0, 3/2}}, NumberQ)", //
+				"True");
 	}
-
+	 
 	public void testMatrixRank() {
 		check("MatrixRank({{1, 1, 0}, {1, 0, 1}, {0, 1, 1}})", //
 				"3");
@@ -8600,6 +8631,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMessage() {
+		check("Message(f::argx, 1, 2)", //
+				"f: 1 called with 2 arguments; 1 argument is expected.");
 		check("a::b:=\"Hello world\"", //
 				"");
 		check("Message(a::b)", //
@@ -8614,7 +8647,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Message(f::failure, f, x, y)", //
 				"f: f called with wrong argument; x, y.");
 		check("Message(Rule::argr, Rule, 2)", //
-				"General: Rule called with 1 argument; 2 arguments are expected.");
+				"Rule: Rule called with 1 argument; 2 arguments are expected.");
 
 	}
 
@@ -9551,9 +9584,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testNumberQ() {
-		check("NumberQ(3+I)", "True");
-		check("NumberQ(5!)", "True");
-		check("NumberQ(Pi)", "False");
+		check("NumberQ(3,4)", //
+				"NumberQ(3,4)");
+		check("NumberQ(3+I)", //
+				"True");
+		check("NumberQ(5!)",//
+				 "True");
+		check("NumberQ(Pi)",//
+				 "False");
 	}
 
 	public void testNumericQ() {
@@ -10764,6 +10802,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("TimeConstrained(1^3^3^3, 10)", //
 		// "1");
 
+		check("Power(a,b,c,d) // FullForm", //
+				"Power(a, Power(b, Power(c, d)))");
+		
 		check("Refine(Exp(I*k*Pi),Element(k,Integers))", //
 				"(-1)^k");
 

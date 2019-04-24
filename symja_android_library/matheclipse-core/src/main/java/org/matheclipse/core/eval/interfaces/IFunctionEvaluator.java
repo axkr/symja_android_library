@@ -83,4 +83,12 @@ public interface IFunctionEvaluator extends IEvaluator {
 	 */
 	public IExpr numericEval(IAST ast, EvalEngine engine);
 
+	/**
+	 * At index 0 return the &quot;from&quot;, at index 1 return the &quot;to&quot; number of arguments.
+	 * 
+	 * @return <code>null</code> is no range for the number of arguments is specified.
+	 */
+	default int[] expectedArgSize() {
+		return null;
+	}
 }

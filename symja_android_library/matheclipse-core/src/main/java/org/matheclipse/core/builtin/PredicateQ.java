@@ -5,7 +5,6 @@ import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra.InternalFindCommonFactorPlus;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
@@ -247,7 +246,7 @@ public class PredicateQ {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 4);
+			// Validate.checkRange(ast, 2, 4);
 
 			final IExpr arg1 = engine.evaluate(ast.arg1());
 			Predicate<IExpr> test = null;
@@ -270,6 +269,9 @@ public class PredicateQ {
 
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_3;
+		}
 	}
 
 	/**
@@ -448,6 +450,10 @@ public class PredicateQ {
 			}
 			return F.NIL;
 		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 	}
 
 	/**
@@ -532,6 +538,9 @@ public class PredicateQ {
 			return F.False;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 	}
 
 	/**
@@ -566,8 +575,8 @@ public class PredicateQ {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
+			// Validate.checkRange(ast, 2, 3);
+			// if (ast.size() == 2 || ast.size() == 3) {
 			final IExpr arg1 = engine.evaluate(ast.arg1());
 			int[] dims = arg1.isMatrix();
 			if (dims == null) {
@@ -589,6 +598,13 @@ public class PredicateQ {
 				}
 			}
 			return F.True;
+			// }
+			// IOFunctions.printMessage(F.MatrixQ, "argt", F.List(F.MatrixQ, F.ZZ(ast.argSize()), F.C1, F.C2), engine);
+			// return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		@Override
@@ -949,30 +965,32 @@ public class PredicateQ {
 	private final static class RealNumberQ extends AbstractCoreFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST1()) {
-				IExpr arg1 = engine.evaluate(ast.arg1());
-				if (arg1.isNumber()) {
-					if (arg1.isComplex() || arg1.isComplexNumeric()) {
-						return F.False;
-					}
-					return F.bool(arg1.isReal());
-				}
 
-				// CAUTION: the following can not be used because Rubi uses another definition
-				// IExpr temp = engine.evaluate(arg1);
-				// if (temp.isReal()) {
-				// return F.True;
-				// }
-				// if (temp.isNumericFunction()) {
-				// temp = engine.evalN(arg1);
-				// if (temp.isReal()) {
-				// return F.True;
-				// }
-				// }
-				return F.False;
+			IExpr arg1 = engine.evaluate(ast.arg1());
+			if (arg1.isNumber()) {
+				if (arg1.isComplex() || arg1.isComplexNumeric()) {
+					return F.False;
+				}
+				return F.bool(arg1.isReal());
 			}
-			Validate.checkSize(ast, 2);
-			return F.NIL;
+
+			// CAUTION: the following can not be used because Rubi uses another definition
+			// IExpr temp = engine.evaluate(arg1);
+			// if (temp.isReal()) {
+			// return F.True;
+			// }
+			// if (temp.isNumericFunction()) {
+			// temp = engine.evalN(arg1);
+			// if (temp.isReal()) {
+			// return F.True;
+			// }
+			// }
+			return F.False;
+
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 	}
 
@@ -1001,19 +1019,21 @@ public class PredicateQ {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
-			if (ast.isAST1()) {
-				final IExpr arg1 = engine.evaluate(ast.arg1());
-				int[] dims = arg1.isMatrix();
-				if (dims == null || dims[0] != dims[1]) {
-					// no square matrix
-					return F.False;
-				}
+			final IExpr arg1 = engine.evaluate(ast.arg1());
+			int[] dims = arg1.isMatrix();
+			if (dims == null || dims[0] != dims[1]) {
+				// no square matrix
+				return F.False;
 			}
-			Validate.checkSize(ast, 2);
+
+			// Validate.checkSize(ast, 2);
 
 			return F.True;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
 	}
 
 	/**
@@ -1047,8 +1067,6 @@ public class PredicateQ {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			final IExpr arg1 = engine.evaluate(ast.arg1());
 			int[] dims = arg1.isMatrix();
 			if (dims == null || dims[0] != dims[1]) {
@@ -1068,6 +1086,10 @@ public class PredicateQ {
 				}
 			}
 			return F.True;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 	}
@@ -1173,12 +1195,12 @@ public class PredicateQ {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST1()) {
-				// don't eval first argument
-				return F.bool(ast.arg1().isValue());
-			}
-			Validate.checkSize(ast, 2);
-			return F.NIL;
+			// don't eval first argument
+			return F.bool(ast.arg1().isValue());
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 		@Override
@@ -1220,7 +1242,6 @@ public class PredicateQ {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
 
 			final IExpr arg1 = engine.evaluate(ast.arg1());
 			int dim = arg1.isVector();
@@ -1244,6 +1265,9 @@ public class PredicateQ {
 			return F.True;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 	}
 
 	public static boolean isZeroTogether(IExpr expr, EvalEngine engine) {

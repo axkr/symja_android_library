@@ -34,6 +34,10 @@ public class AbstractNonOrderlessArgMultiple extends AbstractArg2 {
 		return F.NIL;
 	}
 
+	public int[] expectedArgSize() {
+		return null;
+	}
+	
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		int size = ast.size();

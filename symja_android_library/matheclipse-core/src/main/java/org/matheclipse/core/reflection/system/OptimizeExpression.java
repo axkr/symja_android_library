@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.Function;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -233,14 +234,17 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkSize(ast, 2);
-
 		if (ast.arg1().isAST()) {
 			return optimizeExpression((IAST) ast.arg1());
 		}
 		return F.NIL;
 	}
 
+	@Override
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_1_1;
+	}
+	
 	/**
 	 * Try to optimize/extract common sub-<code>IASTs</code> expressions to minimize the number of operations
 	 *

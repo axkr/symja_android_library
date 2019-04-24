@@ -84,8 +84,6 @@ public class IntegerFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			if (ast.arg1().isInteger()) {
 				IInteger iArg1 = (IInteger) ast.arg1();
 				BigInteger big = iArg1.toBigNumerator();
@@ -94,6 +92,10 @@ public class IntegerFunctions {
 			return F.NIL;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+		
 		@Override
 		public void setUp(ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
@@ -542,8 +544,6 @@ public class IntegerFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			IExpr arg1 = ast.arg1();
 			if (arg1.isNumber()) {
 				// Note: fractional part for a complex number returns a new complex number with the fractional parts of
@@ -599,6 +599,10 @@ public class IntegerFunctions {
 			return F.NIL;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+		
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.NHOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -795,8 +799,6 @@ public class IntegerFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			try {
 				IExpr arg1 = ast.arg1();
 				ISignedNumber signedNumber = arg1.evalReal();
@@ -820,6 +822,10 @@ public class IntegerFunctions {
 			return F.NIL;
 		} 
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+		
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.NHOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -934,8 +940,6 @@ public class IntegerFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 4);
-
 			if (ast.exists(x -> !x.isInteger())) {
 				return F.NIL;
 			}
@@ -953,6 +957,10 @@ public class IntegerFunctions {
 			return F.NIL;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_3;
+		}
+		
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
@@ -1139,8 +1147,6 @@ public class IntegerFunctions {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			try {
 				IExpr arg1 = engine.evaluate(ast.arg1());
 				ISignedNumber signedNumber = arg1.evalReal();
@@ -1171,6 +1177,10 @@ public class IntegerFunctions {
 			return F.NIL;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+		
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);

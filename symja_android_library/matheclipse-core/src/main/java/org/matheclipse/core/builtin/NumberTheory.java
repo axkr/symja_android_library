@@ -627,7 +627,6 @@ public final class NumberTheory {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
 			if (ast.arg1().isList() && ast.arg2().isList()) {
 				try {
 					long[] a = Validate.checkListOfLongs(ast.arg1(), Long.MIN_VALUE);
@@ -663,6 +662,10 @@ public final class NumberTheory {
 			return F.NIL;
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
 	}
 
 	/**
@@ -692,8 +695,6 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			if (ast.arg1().isList()) {
 				IAST list = (IAST) ast.arg1();
 				if (list.size() > 1) {
@@ -718,6 +719,11 @@ public final class NumberTheory {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 		@Override
@@ -958,7 +964,6 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
 			IExpr n = ast.arg1();
 			if (n.isNumericFunction()) {
 				if (n.isPositiveResult()) {
@@ -967,6 +972,11 @@ public final class NumberTheory {
 				return F.Times(F.CN1, F.Power(F.Negate(n), F.C1D3));
 			}
 			return F.Power(n, F.C1D3);
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 		@Override
@@ -1154,8 +1164,6 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			if (ast.arg1().isList()) {
 				// thread over first list
 				IAST list = (IAST) ast.arg1();
@@ -1177,6 +1185,11 @@ public final class NumberTheory {
 				return F.False;
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		/**
@@ -1283,8 +1296,6 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			IExpr arg1 = ast.arg1();
 			IExpr arg2 = ast.arg2();
 			if (arg1.isOne() && arg2.isOne()) {
@@ -1295,6 +1306,11 @@ public final class NumberTheory {
 				return divisorSigma(arg1, n);
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		private static IExpr divisorSigma(IExpr arg1, IInteger n) {
@@ -2039,11 +2055,14 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			BigInteger[] array = Validate.checkListOfBigIntegers(ast.arg1(), true);
 			BigInteger result = org.matheclipse.core.frobenius.FrobeniusNumber.frobeniusNumber(array);
 			return F.ZZ(result);
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 		@Override
@@ -2082,7 +2101,6 @@ public final class NumberTheory {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
 			if (!ast.arg1().isList()) {
 				throw new WrongNumberOfArguments(ast, 1, ast.argSize());
 			}
@@ -2103,6 +2121,11 @@ public final class NumberTheory {
 				return result;
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 		@Override
@@ -2232,8 +2255,6 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 4);
-
 			IExpr arg1 = ast.arg1();
 			IExpr arg2 = ast.arg2();
 			IExpr arg3 = ast.arg3();
@@ -2253,6 +2274,11 @@ public final class NumberTheory {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_3;
 		}
 
 		private IAST linearRecurrence(IAST list1, IAST list2, int n, EvalEngine engine) {
@@ -2320,8 +2346,6 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			IExpr arg1 = ast.arg1();
 			if (arg1.isOne()) {
 				return F.C1;
@@ -2349,6 +2373,11 @@ public final class NumberTheory {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 		@Override
@@ -2412,8 +2441,6 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			IExpr arg1 = ast.arg1();
 			if (arg1.isInteger()) {
 				if (arg1.isZero() || arg1.isOne() || arg1.isNegative()) {
@@ -2430,6 +2457,11 @@ public final class NumberTheory {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 		@Override
@@ -2515,8 +2547,6 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			IExpr arg1 = ast.arg1();
 			if (!arg1.isInteger() || arg1.isZero() || arg1.isOne() || arg1.isNegative()) {
 				return F.False;
@@ -2540,6 +2570,11 @@ public final class NumberTheory {
 			} catch (ArithmeticException ae) {
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 		@Override
@@ -2720,8 +2755,6 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			if (ast.arg1().isInteger() && ast.arg2().isInteger()) {
 				try {
 					IInteger k = ast.getInt(1);
@@ -2742,6 +2775,12 @@ public final class NumberTheory {
 			}
 			return F.NIL;
 		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+
 	}
 
 	/**
@@ -2876,8 +2915,6 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			IExpr arg1 = ast.arg1();
 			if (arg1.isZero()) {
 				return F.C1;
@@ -2916,6 +2953,11 @@ public final class NumberTheory {
 				return F.CInfinity;
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 		/**
@@ -2966,8 +3008,6 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			IExpr arg1 = ast.arg1();
 			if (arg1.isZero()) {
 				return F.C1;
@@ -3010,6 +3050,11 @@ public final class NumberTheory {
 				return F.CInfinity;
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 		/**
@@ -3115,8 +3160,6 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			IExpr arg1 = ast.arg1();
 			if (!arg1.isInteger() || arg1.isZero() || arg1.isOne() || arg1.isNegative()) {
 				return F.False;
@@ -3151,6 +3194,11 @@ public final class NumberTheory {
 		}
 
 		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+
+		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
 		}
@@ -3179,8 +3227,6 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			if (ast.arg1().isInteger()) {
 				int nthPrime = ((IInteger) ast.arg1()).toIntDefault(Integer.MIN_VALUE);
 				if (nthPrime < 0 || nthPrime > 103000000) {
@@ -3200,6 +3246,11 @@ public final class NumberTheory {
 		}
 
 		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+
+		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
 			super.setUp(newSymbol);
@@ -3210,8 +3261,6 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			IExpr arg1 = ast.arg1();
 			if (arg1.isNegative() || arg1.isOne() || arg1.isZero()) {
 				return F.C0;
@@ -3248,6 +3297,11 @@ public final class NumberTheory {
 			}
 
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 		@Override
@@ -3289,8 +3343,6 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			IExpr arg1 = ast.arg1();
 			if (arg1.isZero()) {
 				return F.NIL;
@@ -3316,6 +3368,11 @@ public final class NumberTheory {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 		@Override
@@ -3357,13 +3414,16 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			IExpr arg1 = ast.arg1();
 			if (arg1.isInteger()) {
 				return F.bool(Primality.isPrimePower(((IInteger) arg1).toBigNumerator()));
 			}
 			return F.False;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 		@Override
@@ -3643,8 +3703,6 @@ public final class NumberTheory {
 		/** {@inheritDoc} */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			IExpr nArg1 = ast.arg1();
 			IExpr mArg2 = ast.arg2();
 			if (nArg1.isNegative() || mArg2.isNegative()) {
@@ -3661,6 +3719,11 @@ public final class NumberTheory {
 			}
 
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		@Override
@@ -3698,8 +3761,6 @@ public final class NumberTheory {
 		/** {@inheritDoc} */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			try {
 				IExpr nArg1 = ast.arg1();
 				IExpr kArg2 = ast.arg2();
@@ -3737,6 +3798,11 @@ public final class NumberTheory {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		@Override

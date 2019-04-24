@@ -12,6 +12,7 @@ import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
+//import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -169,8 +170,6 @@ public class Structure {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 5);
-
 			IASTAppendable evaledAST = ast.copyAppendable();
 			evaledAST.setArgs(evaledAST.size(), i -> engine.evaluate(evaledAST.get(i)));
 			// for (int i = 1; i < evaledAST.size(); i++) {
@@ -185,8 +184,8 @@ public class Structure {
 				if (option.isTrue()) {
 					heads = true;
 				}
-			} else {
-				Validate.checkRange(evaledAST, 3, 4);
+//			} else {
+//				Validate.checkRange(evaledAST, 3, 4);
 			}
 
 			IExpr arg1 = evaledAST.arg1();
@@ -194,6 +193,10 @@ public class Structure {
 			return evalApply(arg1, arg2, evaledAST, lastIndex, heads, engine);
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_4;
+		}
+		
 		public static IExpr evalApply(IExpr f, IExpr expr, IAST evaledAST, int lastIndex, boolean heads,
 				EvalEngine engine) {
 
@@ -279,8 +282,6 @@ public class Structure {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			final IExpr arg1 = engine.evaluate(ast.arg1());
 			if (!(arg1.isAST())) {
 				return F.C1;
@@ -288,6 +289,10 @@ public class Structure {
 			return F.integer(depth((IAST) ast.arg1(), 1));
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+		
 		/**
 		 * Calculates the depth of an expression. Atomic expressions (no sublists) have depth <code>1</code> Example:
 		 * the nested list <code>[x,[y]]</code> has depth <code>3</code>
@@ -449,7 +454,6 @@ public class Structure {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2);
 
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			if (arg1.isAST()) {
@@ -487,6 +491,10 @@ public class Structure {
 			return F.NIL;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_3;
+		}
+		
 		@Override
 		public void setUp(ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
@@ -517,8 +525,6 @@ public class Structure {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3);
-
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			IExpr arg2 = engine.evaluate(ast.arg2());
 			if (arg1.isAST()) {
@@ -546,6 +552,10 @@ public class Structure {
 				}
 			}
 			return F.NIL;
+		}
+		
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		@Override
@@ -796,11 +806,13 @@ public class Structure {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			return F.integer(engine.evaluate(ast.arg1()).leafCount());
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+		
 	}
 
 	/**
@@ -859,8 +871,6 @@ public class Structure {
 	private static class Map extends AbstractFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 5);
-
 			int lastIndex = ast.argSize();
 			boolean heads = false;
 			final Options options = new Options(ast.topHead(), ast, lastIndex, engine);
@@ -870,8 +880,8 @@ public class Structure {
 				if (option.isTrue()) {
 					heads = true;
 				}
-			} else {
-				Validate.checkRange(ast, 3, 4);
+//			} else {
+//				Validate.checkRange(ast, 3, 4);
 			}
 
 			try {
@@ -890,14 +900,15 @@ public class Structure {
 			return F.NIL;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_4;
+		}
 	}
 
 	private static class MapAll extends AbstractFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3);
-
 			final IExpr arg1 = ast.arg1();
 			final VisitorLevelSpecification level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), 0,
 					Integer.MAX_VALUE, false);
@@ -905,7 +916,9 @@ public class Structure {
 			final IExpr result = ast.arg2().accept(level);
 			return result.isPresent() ? result : ast.arg2();
 		}
-
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
 	}
 
 	private static class MapAt extends AbstractFunctionEvaluator {
@@ -982,7 +995,6 @@ public class Structure {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
 
 			int lastIndex = ast.argSize();
 			boolean heads = false;
@@ -1013,7 +1025,9 @@ public class Structure {
 			}
 			return F.NIL;
 		}
-
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
 	}
 
 	/**
@@ -1129,8 +1143,6 @@ public class Structure {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
-
 			if (ast.arg2().isAST()) {
 				int level = 1;
 				if (ast.isAST3()) {
@@ -1158,7 +1170,9 @@ public class Structure {
 			}
 			return F.NIL;
 		}
-
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
 	}
 
 	/**
@@ -1194,8 +1208,6 @@ public class Structure {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			final int cp = ast.arg1().compareTo(ast.arg2());
 			if (cp < 0) {
 				return F.C1;
@@ -1203,8 +1215,11 @@ public class Structure {
 				return F.CN1;
 			}
 			return F.C0;
+		} 
+		
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
-
 	}
 
 	/**
@@ -1230,10 +1245,13 @@ public class Structure {
 	private final static class OrderedQ extends AbstractFunctionEvaluator implements Predicate<IAST> {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
 			return F.bool(test(((IAST) ast.arg1())));
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+		
 		@Override
 		public boolean test(IAST ast) {
 			return ast.compareAdjacent((x, y) -> x.isLEOrdered(y));
@@ -1317,8 +1335,6 @@ public class Structure {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
-
 			int headDepth = 1;
 			if (ast.isAST3()) {
 				if (!ast.arg3().isInteger()) {
@@ -1371,6 +1387,10 @@ public class Structure {
 			head.set(0, F.unaryAST1(p, head.head()));
 			return result;
 		}
+		
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
 	}
 
 	private final static class PatternOrder extends AbstractFunctionEvaluator {
@@ -1418,8 +1438,11 @@ public class Structure {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 1);
 			return F.Null;
+		}
+		
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_0_0;
 		}
 	}
 
@@ -1548,8 +1571,6 @@ public class Structure {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			if (ast.arg1().isAST()) {
 				IAST arg1 = (IAST) ast.arg1();
 				if (ast.isAST1() && (arg1.getEvalFlags() & IAST.IS_SORTED) == IAST.IS_SORTED) {
@@ -1573,6 +1594,9 @@ public class Structure {
 			}
 
 			return F.NIL;
+		}
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 	}
 
@@ -1607,12 +1631,14 @@ public class Structure {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			if (ast.arg1().isString()) {
 				return F.symbol(ast.arg1().toString(), engine);
 			}
 			return F.NIL;
+		}
+		
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 	}
 
@@ -1639,12 +1665,14 @@ public class Structure {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			if (ast.arg1().isSymbol()) {
 				return F.stringx(ast.arg1().toString());
 			}
 			return F.NIL;
+		}
+		
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 	}
 
@@ -1693,8 +1721,6 @@ public class Structure {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			if (!(ast.arg1().isAST())) {
 				return F.NIL;
 			}
@@ -1715,6 +1741,10 @@ public class Structure {
 			return F.NIL;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
+		
 		/**
 		 * Thread through all lists in the arguments of the IAST [i.e. the list header has the attribute
 		 * ISymbol.LISTABLE] example: Sin[{2,x,Pi}] ==> {Sin[2],Sin[x],Sin[Pi]}
@@ -1785,8 +1815,6 @@ public class Structure {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			if (ast.arg1().isAST()) {
 				IAST arg1AST = (IAST) ast.arg1();
 				IExpr arg1Head = arg1AST.head();
@@ -1808,6 +1836,10 @@ public class Structure {
 				return arg1AST;
 			}
 			return ast.arg1();
+		}
+		
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 	}
 

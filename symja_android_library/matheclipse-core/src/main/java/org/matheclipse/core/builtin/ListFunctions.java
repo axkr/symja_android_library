@@ -25,6 +25,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.IllegalArgument;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.Validate;
+//import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -47,7 +48,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.reflection.system.Product;
@@ -398,7 +398,7 @@ public final class ListFunctions {
 		@Override
 		public int toInt(final IExpr position) {
 			int val = position.toIntDefault(Integer.MIN_VALUE);
-			if (val<0) {
+			if (val < 0) {
 				return -1;
 			}
 			return val;
@@ -426,8 +426,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			IExpr arg1 = ast.arg1();
 			if (arg1.isAST()) {
 				IAST list = (IAST) arg1;
@@ -439,6 +437,10 @@ public final class ListFunctions {
 			return F.NIL;
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
 	}
 
 	/**
@@ -486,7 +488,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			IAST arg1AST = Validate.checkASTType(arg1, engine);
 			if (arg1AST == null) {
@@ -496,6 +497,10 @@ public final class ListFunctions {
 			return arg1AST.appendClone(arg2);
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
 	}
 
 	/**
@@ -568,7 +573,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
 			ISymbol sym = Validate.checkSymbolType(ast, 1, engine);
 			if (sym == null) {
 				return F.NIL;
@@ -580,6 +584,11 @@ public final class ListFunctions {
 				return results[1];
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		@Override
@@ -1090,7 +1099,7 @@ public final class ListFunctions {
 			}
 			return F.List();
 		}
-
+		
 		public static IAST cases(final IAST ast, final IExpr pattern, @Nonnull EvalEngine engine) {
 			if (pattern.isRuleAST()) {
 				Function<IExpr, IExpr> function = Functors.rules((IAST) pattern, engine);
@@ -1129,8 +1138,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			if (ast.arg1().isList()) {
 				IAST list = (IAST) ast.arg1();
 				int[] size = { 1 };
@@ -1150,6 +1157,10 @@ public final class ListFunctions {
 			return F.NIL;
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
 	}
 
 	private final static class Commonest extends AbstractEvaluator {
@@ -1546,7 +1557,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
 			final IExpr arg1 = engine.evaluate(ast.arg1());
 			final IExpr arg2 = engine.evaluate(ast.arg2());
 			if (arg1.isAST() && arg2.isInteger()) {
@@ -1570,6 +1580,10 @@ public final class ListFunctions {
 			return F.NIL;
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
 	}
 
 	/**
@@ -2011,8 +2025,12 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 4);
 			return evaluateNestList(ast, engine);
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_3;
 		}
 
 		private static IExpr evaluateNestList(final IAST ast, EvalEngine engine) {
@@ -2229,8 +2247,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 4);
-
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			IAST arg1AST = Validate.checkASTType(arg1, engine);
 			if (arg1AST == null) {
@@ -2256,6 +2272,10 @@ public final class ListFunctions {
 			return F.NIL;
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_3;
+		}
 	}
 
 	/**
@@ -2382,18 +2402,22 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() == 2) {
-				IExpr arg1 = engine.evaluate(ast.arg1());
-				if (arg1.isAST()) {
-					final IAST list = (IAST) arg1;
-					if (list.size() > 1) {
-						return list.last();
-					}
+
+			IExpr arg1 = engine.evaluate(ast.arg1());
+			if (arg1.isAST()) {
+				final IAST list = (IAST) arg1;
+				if (list.size() > 1) {
+					return list.last();
 				}
-				engine.printMessage("Last: Nonatomic expression expected");
-				return F.NIL;
 			}
-			return Validate.checkSize(ast, 2);
+			engine.printMessage("Last: Nonatomic expression expected");
+			return F.NIL;
+
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 	}
 

@@ -14,6 +14,7 @@ import javax.annotation.Nonnull;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.eval.exception.IllegalArgument;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
@@ -740,6 +741,12 @@ public class EvalEngine implements Serializable {
 			if (module instanceof IFunctionEvaluator) {
 				// evaluate a built-in function.
 				final IFunctionEvaluator functionEvaluator = (IFunctionEvaluator) module;
+				int[] expected;
+				if ((expected = functionEvaluator.expectedArgSize()) != null) {
+					if (ast.argSize() < expected[0] || ast.argSize() > expected[1]) {
+						return IOFunctions.printArgMessage(ast, expected, this);
+					}
+				}
 				IExpr result = fNumericMode ? //
 						functionEvaluator.numericEval(ast, this) : //
 						functionEvaluator.evaluate(ast, this);
