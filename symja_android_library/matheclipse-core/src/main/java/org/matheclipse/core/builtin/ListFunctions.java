@@ -397,14 +397,11 @@ public final class ListFunctions {
 
 		@Override
 		public int toInt(final IExpr position) {
-			if (position.isReal()) {
-				try {
-					return ((ISignedNumber) position).toInt();
-				} catch (ArithmeticException ae) {
-					//
-				}
+			int val = position.toIntDefault(Integer.MIN_VALUE);
+			if (val<0) {
+				return -1;
 			}
-			return -1;
+			return val;
 		}
 	}
 
@@ -2044,23 +2041,42 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 4);
-
-			return evaluateNestList(ast, F.ListAlloc(8), engine);
+			if (ast.size() == 3) {
+				return evaluateNestList3(ast, engine);
+			} else if (ast.size() == 4) {
+				return evaluateNestList4(ast, engine);
+			}
+			return F.NIL;
 		}
 
-		private static IAST evaluateNestList(final IAST ast, final IASTAppendable resultList, EvalEngine engine) {
-
-			try {
-				IExpr temp = engine.evaluate(ast.arg3());
-				if (temp.isAST()) {
-					final IAST list = (IAST) temp;
-					IExpr arg1 = engine.evaluate(ast.arg1());
-					IExpr arg2 = engine.evaluate(ast.arg2());
-					return foldLeft(arg2, list, 1, list.size(), (x, y) -> F.binaryAST2(arg1, x, y), resultList);
+		private static IAST evaluateNestList3(final IAST ast, EvalEngine engine) {
+			IExpr temp = engine.evaluate(ast.arg2());
+			if (temp.isAST()) {
+				IAST list = (IAST) temp;
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				if (list.size() == 1 || list.size() == 2) {
+					return list;
 				}
-			} catch (final ArithmeticException e) {
+				final IASTAppendable resultList = F.ast(list.head(), list.size(), false);
+				IExpr arg2 = list.arg1();
+				list = list.rest();
+				return foldLeft(arg2, list, 1, list.size(), (x, y) -> F.binaryAST2(arg1, x, y), resultList);
+			}
+			return F.NIL;
+		}
 
+		private static IAST evaluateNestList4(final IAST ast, EvalEngine engine) {
+
+			IExpr temp = engine.evaluate(ast.arg3());
+			if (temp.isAST()) {
+				final IAST list = (IAST) temp;
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				IExpr arg2 = engine.evaluate(ast.arg2());
+				if (list.size() == 1) {
+					return F.unaryAST1(list.head(), arg2);
+				}
+				final IASTAppendable resultList = F.ast(list.head(), list.size(), false);
+				return foldLeft(arg2, list, 1, list.size(), (x, y) -> F.binaryAST2(arg1, x, y), resultList);
 			}
 			return F.NIL;
 		}
@@ -5015,11 +5031,6 @@ public final class ListFunctions {
 				temp[0] = binaryFunction.apply(temp[0], list.get(i));
 				return temp[0];
 			});
-			// for (int i = from; i < end; i++) {
-			// elem = binaryFunction.apply(elem, list.get(i));
-			// resultCollection.append(elem);
-			// }
-
 		}
 		return resultCollection;
 	}
