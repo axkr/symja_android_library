@@ -1289,7 +1289,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Binomial(a,b,c)");
 		check("Binomial(a)", //
 				"Binomial(a)");
-		
+
 		check("Factorial(10)/Factorial(3)", //
 				"604800");
 		check("Gamma(11)/Gamma(4)", //
@@ -2790,7 +2790,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Cos()");
 		check("Cos(a,b)", //
 				"Cos(a,b)");
-		
+
 		check("Cos(I*a+I*b*x)/b", //
 				"Cosh(a+b*x)/b");
 		// TODO return Cosh((1 + 2*I)*a - 3*I*b*x)
@@ -6092,17 +6092,34 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"0");
 		// check("GammaRegularized(a,z1,z2)", "GammaRegularized(a,z1)-GammaRegularized(a,z2)");
 
-		check("GammaRegularized(1/2, z)", "Erfc(Sqrt(z))");
-		check("GammaRegularized(-4, z)", "0");
-		check("GammaRegularized(12, 0)", "1");
-		check("GammaRegularized(-42, 0)", "0");
+		check("GammaRegularized(1/2, z)", //
+				"Erfc(Sqrt(z))");
+		check("GammaRegularized(-4, z)", //
+				"0");
+		check("GammaRegularized(12, 0)", //
+				"1");
+		check("GammaRegularized(-42, 0)", //
+				"0");
 	}
 
 	public void testGather() {
-		check("Gather({{a, 1}, {b, 1}, {a, 2}, {d, 1}, {b, 3}}, (First(#1) == First(#2)) &)",
+		check("Gather({{a, 1}, {b, 1}, {a, 2}, {d, 1}, {b, 3}}, (First(#1) == First(#2)) &)", //
 				"{{{a,1},{a,2}},{{b,1},{b,3}},{{d,1}}}");
-		check("Gather({1,2,3,2,3,4,5,6,2,3})", "{{1},{2,2,2},{3,3,3},{4},{5},{6}}");
-		check("Gather(Range(0, 3, 1/3), Floor(#1) == Floor(#2) &)", "{{0,1/3,2/3},{1,4/3,5/3},{2,7/3,8/3},{3}}");
+		check("Gather({1,2,3,2,3,4,5,6,2,3})", //
+				"{{1},{2,2,2},{3,3,3},{4},{5},{6}}");
+		check("Gather(Range(0, 3, 1/3), Floor(#1) == Floor(#2) &)", //
+				"{{0,1/3,2/3},{1,4/3,5/3},{2,7/3,8/3},{3}}");
+	}
+
+	public void testGatherBy() {
+		check("rr=Range(10); GatherBy(rr, OddQ)", //
+				"{{1,3,5,7,9},{2,4,6,8,10}}");
+		check("GatherBy({{a,10},{b,5},{a,7},{b,3},{b,10}}, First)", //
+				"{{{a,10},{a,7}},{{b,5},{b,3},{b,10}}}");
+		check("Tuples({{a, b}, {1, 2}, {x, y}})", //
+				"{{a,1,x},{a,1,y},{a,2,x},{a,2,y},{b,1,x},{b,1,y},{b,2,x},{b,2,y}}");
+		check("GatherBy({{a,1,x},{a,1,y},{a,2,x},{a,2,y},{b,1,x},{b,1,y},{b,2,x},{b,2,y}}, {First,Last})", //
+				"{{{{a,1,x},{a,2,x}},{{a,1,y},{a,2,y}}},{{{b,1,x},{b,2,x}},{{b,1,y},{b,2,y}}}}");
 	}
 
 	public void testGegenbauerC() {
@@ -6168,19 +6185,31 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("GCD(1,I)", //
 				"1");
 
-		check("GCD()", "0");
-		check("GCD(10)", "10");
-		check("GCD(2, 3, 5)", "1");
-		check("GCD(1/3, 2/5, 3/7)", "1/105");
-		check("GCD(-3, 9)", "3");
-		check("GCD(b, a)", "GCD(a,b)");
+		check("GCD()", //
+				"0");
+		check("GCD(10)", //
+				"10");
+		check("GCD(2, 3, 5)", //
+				"1");
+		check("GCD(1/3, 2/5, 3/7)", //
+				"1/105");
+		check("GCD(-3, 9)", //
+				"3");
+		check("GCD(b, a)", //
+				"GCD(a,b)");
 
-		check("GCD(20, 30)", "10");
-		check("GCD(-20, 30)", "10");
-		check("GCD(20, -30)", "10");
-		check("GCD(-20, -30)", "10");
-		check("GCD(10, y)", "GCD(10,y)");
-		check("GCD(4, {10, 11, 12, 13, 14})", "{2,1,4,1,2}");
+		check("GCD(20, 30)", //
+				"10");
+		check("GCD(-20, 30)", //
+				"10");
+		check("GCD(20, -30)", //
+				"10");
+		check("GCD(-20, -30)", //
+				"10");
+		check("GCD(10, y)", //
+				"GCD(10,y)");
+		check("GCD(4, {10, 11, 12, 13, 14})", //
+				"{2,1,4,1,2}");
 	}
 
 	public void testGeometricMean() {
@@ -8150,22 +8179,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMapAt() {
-		check("MapAt(f, a+b+c+d, 2)",//
+		check("MapAt(f, a+b+c+d, 2)", //
 				"a+c+d+f(b)");
-		check("MapAt(f, {a, b, c, d}, 0)",//
+		check("MapAt(f, {a, b, c, d}, 0)", //
 				"f(List)[a,b,c,d]");
-		
-		check("MapAt(f, {a, b, c, d}, -2)",//
+
+		check("MapAt(f, {a, b, c, d}, -2)", //
 				"{a,b,f(c),d}");
-		check("MapAt(f, {a, b, c, d}, -5)",//
+		check("MapAt(f, {a, b, c, d}, -5)", //
 				"f(List)[a,b,c,d]");
-		check("MapAt(f, {a, b, c, d}, -4)",//
+		check("MapAt(f, {a, b, c, d}, -4)", //
 				"{f(a),b,c,d}");
-		
+
 		// print message:
-		check("MapAt(f, {a, b, c, d}, -6)",//
+		check("MapAt(f, {a, b, c, d}, -6)", //
 				"MapAt(f,{a,b,c,d},-6)");
-		check("MapAt(f, {a, b, c, d}, 2)",//
+		check("MapAt(f, {a, b, c, d}, 2)", //
 				"{a,f(b),c,d}");
 	}
 
@@ -8251,14 +8280,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testMatchingDissimilarity() {
 		check("MatchingDissimilarity({1, 0, 1, 1, 0, 1, 1}, {0, 1, 1, 0, 0, 0, 1})", //
 				"4/7");
-		check("MatchingDissimilarity({1, 0, 1, 1, 0}, {1, 1, 0, 1, 1})",//
-				 "3/5");
+		check("MatchingDissimilarity({1, 0, 1, 1, 0}, {1, 1, 0, 1, 1})", //
+				"3/5");
 		check("MatchingDissimilarity({True, False, True}, {True, True, False})", //
 				"2/3");
 		check("MatchingDissimilarity({1, 1, 1, 1}, {1, 1, 1, 1})", //
 				"0");
-		check("MatchingDissimilarity({0, 0, 0, 0}, {1, 1, 1, 1})",//
-				 "1");
+		check("MatchingDissimilarity({0, 0, 0, 0}, {1, 1, 1, 1})", //
+				"1");
 	}
 
 	public void testMatchQ() {
@@ -8342,10 +8371,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{a(1,1),a(1,2)},{a(2,1),a(2,2)}}");
 		check("Array(a, {2, 2})", //
 				"{{a(1,1),a(1,2)},{a(2,1),a(2,2)}}");
-		check("ConstantArray(0, {3, 2})",//
-				 "{{0,0},{0,0},{0,0}}");
-		check("DiagonalMatrix({a, b, c})",//
-				 "{{a,0,0},\n" + " {0,b,0},\n" + " {0,0,c}}");
+		check("ConstantArray(0, {3, 2})", //
+				"{{0,0},{0,0},{0,0}}");
+		check("DiagonalMatrix({a, b, c})", //
+				"{{a,0,0},\n" + " {0,b,0},\n" + " {0,0,c}}");
 		check("IdentityMatrix(3)", //
 				"{{1,0,0},\n" + " {0,1,0},\n" + " {0,0,1}}");
 	}
@@ -8396,12 +8425,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"True");
 		check("MatrixQ({{}}, NumberQ)", //
 				"True");
-		check("MatrixQ({{a, b, f}, {c, d, e}})",//
-				 "True");
+		check("MatrixQ({{a, b, f}, {c, d, e}})", //
+				"True");
 		check("MatrixQ({{1, 3}, {4.0, 3/2}}, NumberQ)", //
 				"True");
 	}
-	 
+
 	public void testMatrixRank() {
 		check("MatrixRank({{1, 1, 0}, {1, 0, 1}, {0, 1, 1}})", //
 				"3");
@@ -9588,10 +9617,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"NumberQ(3,4)");
 		check("NumberQ(3+I)", //
 				"True");
-		check("NumberQ(5!)",//
-				 "True");
-		check("NumberQ(Pi)",//
-				 "False");
+		check("NumberQ(5!)", //
+				"True");
+		check("NumberQ(Pi)", //
+				"False");
 	}
 
 	public void testNumericQ() {
@@ -10804,7 +10833,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Power(a,b,c,d) // FullForm", //
 				"Power(a, Power(b, Power(c, d)))");
-		
+
 		check("Refine(Exp(I*k*Pi),Element(k,Integers))", //
 				"(-1)^k");
 

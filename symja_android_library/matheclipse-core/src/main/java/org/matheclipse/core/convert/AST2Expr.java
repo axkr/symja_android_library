@@ -97,7 +97,7 @@ public class AST2Expr {
 			"FractionalPart", "FrechetDistribution", "FreeQ", "FresnelC", "FresnelS", "FrobeniusNumber",
 			"FrobeniusSolve", "FromCharacterCode", "FromContinuedFraction", "FromDigits", "FromPolarCoordinates",
 			"FullForm", "FullSimplify", "Function", "FunctionExpand", "Gamma", "GammaDistribution", "GammaRegularized",
-			"Gather", "GaussianWindow", "GCD", "GegenbauerC", "GeometricDistribution", "GeometricMean", "Get", "Grad",
+			"Gather","GatherBy", "GaussianWindow", "GCD", "GegenbauerC", "GeometricDistribution", "GeometricMean", "Get", "Grad",
 			"Graphics", "Graphics3D", "Greater", "GreaterEqual", "GroebnerBasis", "GumbelDistribution", "HammingWindow",
 			"HannWindow", "Haversine", "HarmonicNumber", "Head", "HeavisideTheta", "HermiteH", "HermitianMatrixQ",
 			"HilbertMatrix", "Hold", "HoldForm", "HoldPattern", "Horner", "HornerForm", "HurwitzZeta",

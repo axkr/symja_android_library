@@ -87,6 +87,7 @@ public final class ListFunctions {
 			F.Fold.setEvaluator(new Fold());
 			F.FoldList.setEvaluator(new FoldList());
 			F.Gather.setEvaluator(new Gather());
+			F.GatherBy.setEvaluator(new GatherBy());
 			F.Insert.setEvaluator(new Insert());
 			F.Intersection.setEvaluator(new Intersection());
 			F.Join.setEvaluator(new Join());
@@ -1099,7 +1100,7 @@ public final class ListFunctions {
 			}
 			return F.List();
 		}
-		
+
 		public static IAST cases(final IAST ast, final IExpr pattern, @Nonnull EvalEngine engine) {
 			if (pattern.isRuleAST()) {
 				Function<IExpr, IExpr> function = Functors.rules((IAST) pattern, engine);
@@ -2122,22 +2123,68 @@ public final class ListFunctions {
 				} else {
 					map = new TreeMap<IExpr, IASTAppendable>();
 				}
+				IASTAppendable result = F.ListAlloc();
 				for (int i = 1; i < arg1.size(); i++) {
 					IASTAppendable list = map.get(arg1.get(i));
 					if (list == null) {
-						map.put(arg1.get(i), F.ListAlloc(arg1.get(i)));
+						IASTAppendable subList = F.ListAlloc(arg1.get(i));
+						map.put(arg1.get(i), subList);
+						result.append(subList);
 					} else {
 						list.append(arg1.get(i));
 					}
 				}
+				return result;
+			}
+			return F.NIL;
+		}
 
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	private final static class GatherBy extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				return F.GatherBy(ast.arg1(), F.Identity);
+			}
+			if (ast.arg1().isAST()) {
+				IAST arg1 = (IAST) ast.arg1();
+				IExpr arg2 = ast.arg2();
+				if (arg2.isList()) {
+					if (arg2.size() == 1) {
+						return F.GatherBy(ast.arg1(), arg2.first());
+					}
+					if (arg2.size() == 3) {
+						return F.Map(F.Function(F.GatherBy(F.Slot1, arg2.second())), F.GatherBy(arg1, arg2.first()));
+					}
+					return F.NIL;
+				}
+				java.util.Map<IExpr, IASTAppendable> map = new TreeMap<IExpr, IASTAppendable>();
 				IASTAppendable result = F.ListAlloc(map.size());
-				for (Map.Entry<IExpr, IASTAppendable> entry : map.entrySet()) {
-					result.append(entry.getValue());
+				for (int i = 1; i < arg1.size(); i++) {
+					IExpr temp = engine.evaluate(F.unaryAST1(arg2, arg1.get(i)));
+					IASTAppendable list = map.get(temp);
+					if (list == null) {
+						IASTAppendable subList = F.ListAlloc(arg1.get(i));
+						map.put(temp, subList);
+						result.append(subList);
+					} else {
+						list.append(arg1.get(i));
+					}
 				}
 				return result;
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		@Override
