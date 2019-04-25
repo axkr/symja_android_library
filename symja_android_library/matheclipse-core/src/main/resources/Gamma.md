@@ -8,7 +8,7 @@ Gamma(z)
 
 ### Examples
 
-```  
+```
 >> Gamma(8)
 5040
 

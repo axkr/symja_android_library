@@ -6103,6 +6103,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGather() {
+		check("Gather({1, 7, 3, 7, 2, 3, 9})", //
+				"{{1},{7,7},{3,3},{2},{9}}");
+		check("Gather({1/3, 2/6, 1/9})", //
+				"{{1/3,1/3},{1/9}}");
+
 		check("Gather({{a, 1}, {b, 1}, {a, 2}, {d, 1}, {b, 3}}, (First(#1) == First(#2)) &)", //
 				"{{{a,1},{a,2}},{{b,1},{b,3}},{{d,1}}}");
 		check("Gather({1,2,3,2,3,4,5,6,2,3})", //
@@ -6112,6 +6117,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGatherBy() {
+		check("GatherBy({{1, 3}, {2, 2}, {1, 1}}, Total)", //
+				"{{{1,3},{2,2}},{{1,1}}}");
+		check("GatherBy({\"xy\", \"abc\", \"ab\"}, StringLength)", //
+				"{{xy,ab},{abc}}");
+		check("GatherBy({{2, 0}, {1, 5}, {1, 0}}, Last)", //
+				"{{{2,0},{1,0}},{{1,5}}}");
+		check("GatherBy({{1, 2}, {2, 1}, {3, 5}, {5, 1}, {2, 2, 2}}, {Total, Length})", //
+				"{{{{1,2},{2,1}}},{{{3,5}}},{{{5,1}},{{2,2,2}}}}");
+
 		check("rr=Range(10); GatherBy(rr, OddQ)", //
 				"{{1,3,5,7,9},{2,4,6,8,10}}");
 		check("GatherBy({{a,10},{b,5},{a,7},{b,3},{b,10}}, First)", //
@@ -6244,8 +6258,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGoldenRatio() {
-		check("N(GoldenRatio)", "1.61803");
-		check("Log(GoldenRatio)", "ArcCsch(2)");
+		check("N(GoldenRatio)", //
+				"1.61803");
+		check("Log(GoldenRatio)", //
+				"ArcCsch(2)");
 	}
 
 	public void testGrad() {
