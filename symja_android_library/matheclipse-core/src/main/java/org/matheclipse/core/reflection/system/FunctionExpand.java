@@ -23,6 +23,7 @@ import static org.matheclipse.core.expression.F.y_;
 import static org.matheclipse.core.expression.F.z;
 import static org.matheclipse.core.expression.F.z_;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.WindowFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -246,7 +247,6 @@ public class FunctionExpand extends AbstractEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkRange(ast, 2, 3);
 		IExpr arg1 = ast.arg1();
 		IExpr assumptionExpr = F.NIL;
 		if (ast.size() > 2) {
@@ -278,6 +278,10 @@ public class FunctionExpand extends AbstractEvaluator {
 
 		}
 		return MATCHER.replaceAll(arg1).orElse(arg1);
+	}
+
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_1_2;
 	}
 
 	@Override

@@ -867,8 +867,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
-
 			if (ast.arg1().isAST()) {
 				IAST arg1 = (IAST) ast.arg1();
 				int m = -1;
@@ -890,6 +888,11 @@ public final class ListFunctions {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
 		}
 
 		private static IExpr arrayPadMatrixAtom(IAST matrix, int[] dim, int m, int n, IExpr atom) {
@@ -1168,7 +1171,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
 			IAST list = Validate.checkListType(ast, 1);
 
 			int n = -1;
@@ -1216,6 +1218,11 @@ public final class ListFunctions {
 		}
 
 		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
+
+		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
 
@@ -1254,8 +1261,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3);
-
 			if (ast.arg1().isAST() && ast.arg2().isAST()) {
 
 				final IAST arg1 = (IAST) ast.arg1();
@@ -1271,6 +1276,11 @@ public final class ListFunctions {
 				return result;
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_INFINITY;
 		}
 
 		public static IAST complement(final IAST arg1, final IAST arg2) {
@@ -1532,8 +1542,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
-
 			final IExpr arg1 = engine.evaluate(ast.arg1());
 
 			final VisitorLevelSpecification level;
@@ -1548,6 +1556,10 @@ public final class ListFunctions {
 			return F.integer(mf.getCounter());
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
 	}
 
 	/**
@@ -1633,8 +1645,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 5);
-
 			final IExpr arg1 = engine.evaluate(ast.arg1());
 			if (arg1.isAST()) {
 				final IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
@@ -1666,6 +1676,11 @@ public final class ListFunctions {
 			return F.NIL;
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_4;
+		}
+
 		public static IAST deleteCases(final IAST ast, final IPatternMatcher matcher) {
 			IAST[] results = ast.filter(matcher);
 			return results[1];
@@ -1680,25 +1695,34 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * <pre><code>DeleteDuplicates(list)
-	 * </code></pre>
+	 * <pre>
+	 * <code>DeleteDuplicates(list)
+	 * </code>
+	 * </pre>
+	 * 
 	 * <blockquote>
-	 * <p>deletes duplicates from <code>list</code>.</p>
+	 * <p>
+	 * deletes duplicates from <code>list</code>.
+	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
-	 * <pre><code>&gt;&gt; DeleteDuplicates({1, 7, 8, 4, 3, 4, 1, 9, 9, 2, 1})
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; DeleteDuplicates({1, 7, 8, 4, 3, 4, 1, 9, 9, 2, 1})
 	 * {1,7,8,4,3,9,2} 
-	 * </code></pre>
-	 * <pre><code>&gt;&gt; DeleteDuplicates({3,2,1,2,3,4}, Less)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; DeleteDuplicates({3,2,1,2,3,4}, Less)
 	 * {3,2,1}
-	 * </code></pre>
+	 * </code>
+	 * </pre>
 	 */
 	private final static class DeleteDuplicates extends AbstractFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			IExpr test = F.Equal;
 			if (ast.isAST2()) {
 				test = ast.arg2();
@@ -1730,6 +1754,10 @@ public final class ListFunctions {
 			return F.NIL;
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 	}
 
 	/**
@@ -1784,8 +1812,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3);
-
 			IAST evaledAST = (IAST) engine.evalAttributes(F.Drop, ast);
 			if (!evaledAST.isPresent()) {
 				evaledAST = ast;
@@ -1810,6 +1836,11 @@ public final class ListFunctions {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_INFINITY;
 		}
 
 		@Override
@@ -1903,8 +1934,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
-
 			if (ast.arg1().isAST() && ast.arg2().isList()) {
 				IAST arg1 = (IAST) ast.arg1();
 				IAST arg2 = (IAST) ast.arg2();
@@ -1924,7 +1953,10 @@ public final class ListFunctions {
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
 		private static IExpr extract(final IAST list, final IAST position) {
 			final PositionConverter converter = new PositionConverter();
 			if ((position.size() > 1) && (position.arg1().isReal())) {
@@ -2034,10 +2066,15 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * <pre><code>Fold[f, x, {a, b}]
-	 * </code></pre>
+	 * <pre>
+	 * <code>Fold[f, x, {a, b}]
+	 * </code>
+	 * </pre>
+	 * 
 	 * <blockquote>
-	 * <p>returns <code>f[f[x, a], b]</code>, and this nesting continues for lists of arbitrary length.</p>
+	 * <p>
+	 * returns <code>f[f[x, a], b]</code>, and this nesting continues for lists of arbitrary length.
+	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
 	 */
@@ -2179,8 +2216,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			int size = ast.size();
 			if (ast.arg1().isAST()) {
 				IAST arg1 = (IAST) ast.arg1();
@@ -2205,6 +2240,11 @@ public final class ListFunctions {
 				return result;
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		@Override
@@ -2495,8 +2535,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3);
-
 			if (ast.exists(x -> x.isAtom())) {
 				return F.NIL;
 			}
@@ -2524,6 +2562,11 @@ public final class ListFunctions {
 				result.appendArgs((IAST) ast.get(i));
 			}
 			return result;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_INFINITY;
 		}
 
 		@Override
@@ -2637,8 +2680,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			if (arg1.isAST()) {
 				return F.integer(((IAST) arg1).argSize());
@@ -2646,6 +2687,10 @@ public final class ListFunctions {
 			return F.C0;
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
 	}
 
 	/**
@@ -2751,8 +2796,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 5);
-
 			int lastIndex = ast.argSize();
 			boolean heads = false;
 			final Options options = new Options(ast.topHead(), ast, lastIndex, engine);
@@ -2786,7 +2829,10 @@ public final class ListFunctions {
 			}
 			return F.List();
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_4;
+		}
 	}
 
 	/**
@@ -2819,8 +2865,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			try {
 				// throws MathException if Level isn't defined correctly
@@ -2832,6 +2876,10 @@ public final class ListFunctions {
 			return F.False;
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
 	}
 
 	/**
@@ -2869,7 +2917,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			if (arg1.isAST() && ((IAST) arg1).size() > 1) {
 				return ((IAST) arg1).removeAtCopy(((IAST) arg1).argSize());
@@ -2878,14 +2925,16 @@ public final class ListFunctions {
 			return F.NIL;
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
 	}
 
 	private final static class Nearest extends AbstractFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 4);
-
 			if (ast.arg1().isAST()) {
 				if (ast.size() == 3 && ast.arg2().isNumber()) {
 					IAST listArg1 = (IAST) ast.arg1();
@@ -2901,7 +2950,10 @@ public final class ListFunctions {
 
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_3;
+		}
 		/**
 		 * Gives the list of elements from <code>inputList</code> to which x is nearest.
 		 * 
@@ -2998,8 +3050,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 4);
-
 			if (ast.isAST1()) {
 				if (ast.arg1().isListOfLists()) {
 					IAST list = (IAST) ast.arg1();
@@ -3038,7 +3088,10 @@ public final class ListFunctions {
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_3;
+		}
 		public static IExpr padLeftAtom(IAST ast, int n, IExpr atom) {
 			int length = n - ast.size() + 1;
 			if (length > 0) {
@@ -3133,8 +3186,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 4);
-
 			if (ast.isAST1()) {
 				if (ast.arg1().isListOfLists()) {
 					IAST list = (IAST) ast.arg1();
@@ -3174,7 +3225,10 @@ public final class ListFunctions {
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_3;
+		}
 		public static IExpr padRightAtom(IAST ast, int n, IExpr atom) {
 			int length = n - ast.size() + 1;
 			if (length > 0) {
@@ -3439,7 +3493,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			IAST arg1AST = Validate.checkASTType(arg1, engine);
 			if (arg1AST == null) {
@@ -3448,7 +3501,10 @@ public final class ListFunctions {
 			IExpr arg2 = engine.evaluate(ast.arg2());
 			return arg1AST.appendAtClone(1, arg2);
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
 	}
 
 	/**
@@ -3548,7 +3604,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
 			ISymbol sym = Validate.checkSymbolType(ast, 1, engine);
 			if (sym == null) {
 				return F.NIL;
@@ -3562,7 +3617,10 @@ public final class ListFunctions {
 
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDFIRST);
@@ -3761,10 +3819,12 @@ public final class ListFunctions {
 				}
 				return F.NIL;
 			}
-			Validate.checkSize(ast, 3);
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDREST);
@@ -3845,8 +3905,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
-
 			try {
 				if (ast.isAST3()) {
 					if (ast.arg3().isList()) {
@@ -3883,7 +3941,10 @@ public final class ListFunctions {
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -3996,8 +4057,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			IExpr arg2 = engine.evaluate(ast.arg2());
 			if (arg1.isAST()) {
@@ -4010,7 +4069,10 @@ public final class ListFunctions {
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
 		public static IExpr riffleAtom(IAST arg1, final IExpr arg2) {
 			if (arg1.size() < 2) {
 				return arg1;
@@ -4087,8 +4149,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			if (arg1.isAST()) {
 				final IASTAppendable result = F.ast(arg1.head());
@@ -4111,7 +4171,10 @@ public final class ListFunctions {
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 	}
 
 	/**
@@ -4151,8 +4214,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			if (arg1.isAST()) {
 				final IASTAppendable result = F.ast(arg1.head());
@@ -4175,6 +4236,10 @@ public final class ListFunctions {
 			return F.NIL;
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 	}
 
 	/**
@@ -4217,8 +4282,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
-
 			int size = ast.size();
 			if (ast.arg1().isAST()) {
 				IAST list = (IAST) ast.arg1();
@@ -4233,6 +4296,11 @@ public final class ListFunctions {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
 		}
 
 		@Override
@@ -4297,8 +4365,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			if (ast.arg1().isAST()) {
 				IExpr predicateHead = F.Equal;
 				if (ast.isAST2()) {
@@ -4326,6 +4392,11 @@ public final class ListFunctions {
 				return result;
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		@Override
@@ -4363,12 +4434,15 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
 			if (ast.arg1().isAST()) {
 				return splitByFunction(ast.arg2().orNewList(), 1, (IAST) ast.arg1(), engine);
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		private IExpr splitByFunction(IAST functorList, int pos, IAST list, EvalEngine engine) {
@@ -4558,9 +4632,12 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3);
-
 			return evaluateTable(ast, List(), List(), engine);
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_INFINITY;
 		}
 
 		/**
@@ -4751,7 +4828,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
 			IAST list = Validate.checkListType(ast, 1);
 
 			int size = ast.size();
@@ -4764,6 +4840,11 @@ public final class ListFunctions {
 			}
 
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		@Override
@@ -4898,8 +4979,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3);
-
 			IAST evaledAST = (IAST) engine.evalAttributes(F.Take, ast);
 			if (!evaledAST.isPresent()) {
 				evaledAST = ast;
@@ -4925,7 +5004,10 @@ public final class ListFunctions {
 
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_INFINITY;
+		}
 		/**
 		 * Take the list elements according to the <code>sequenceSpecifications</code> for the list indexes.
 		 * 
@@ -5057,8 +5139,6 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			VisitorLevelSpecification level = null;
 			Function<IExpr, IExpr> tf = x -> x.isAST() ? ((IAST) x).setAtCopy(0, F.Plus) : x;
 
@@ -5089,6 +5169,10 @@ public final class ListFunctions {
 			return F.NIL;
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 	}
 
 	/**

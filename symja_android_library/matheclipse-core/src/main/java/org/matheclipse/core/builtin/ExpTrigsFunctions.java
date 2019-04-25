@@ -148,8 +148,6 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			IExpr arg1 = ast.first();
 			IExpr phi;
 			if (ast.isAST2()) {
@@ -184,6 +182,11 @@ public class ExpTrigsFunctions {
 			return F.List(F.Cos(phi), F.Sin(phi));
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
+		
 		@Override
 		public void setUp(ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);

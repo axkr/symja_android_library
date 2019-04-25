@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.builtin.ListFunctions.TableGenerator;
 import org.matheclipse.core.convert.VariablesSet;
@@ -147,8 +148,6 @@ public class Sum extends ListFunctions.Table implements SumRules {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkRange(ast, 3);
-
 		IExpr arg1 = ast.arg1();
 		if (arg1.isAST()) {
 			arg1 = F.expand(arg1, false, false, false);
@@ -262,7 +261,9 @@ public class Sum extends ListFunctions.Table implements SumRules {
 
 		return F.NIL;
 	}
-
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_2_INFINITY;
+	}
 	private IExpr collectConstantFactors(final IAST ast, IAST prod, VariablesSet variablesSet) {
 		IASTAppendable filterAST = F.TimesAlloc(16);
 		IASTAppendable restAST = F.TimesAlloc(16);

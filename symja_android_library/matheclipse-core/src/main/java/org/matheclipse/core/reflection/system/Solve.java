@@ -11,6 +11,7 @@ import org.hipparchus.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.builtin.PolynomialFunctions;
 import org.matheclipse.core.convert.Convert;
@@ -906,10 +907,11 @@ public class Solve extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkRange(ast, 3, 4);
 		return of(ast, false, engine);
 	}
-
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_2_3;
+	}
 	public static IExpr of(final IAST ast, boolean numeric, EvalEngine engine) {
 		boolean[] isNumeric = new boolean[] { false };
 		try {

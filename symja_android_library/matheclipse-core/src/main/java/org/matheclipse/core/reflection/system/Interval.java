@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -20,8 +21,6 @@ public class Interval extends AbstractEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkRange(ast, 2);
-
 		if (ast.isInterval1()) {
 			IAST list = (IAST) ast.arg1();
 			try {
@@ -36,7 +35,11 @@ public class Interval extends AbstractEvaluator {
 		}
 		return F.NIL;
 	}
-
+	
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_1_1;
+	}
+	
 	@Override
 	public void setUp(final ISymbol newSymbol) {
 	}

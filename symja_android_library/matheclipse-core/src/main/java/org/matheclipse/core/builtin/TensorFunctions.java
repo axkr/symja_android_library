@@ -124,8 +124,6 @@ public class TensorFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
-
 			if (ast.arg1().isList() && ast.arg2().isList()) {
 				IAST list = (IAST) ast.arg1();
 				IAST dims = (IAST) ast.arg2();
@@ -140,6 +138,10 @@ public class TensorFunctions {
 			return F.NIL;
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
 	}
 
 	/**
@@ -167,7 +169,6 @@ public class TensorFunctions {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
 
 			if (ast.arg1().isAST() && ast.arg2().isAST()) {
 				IAST kernel = (IAST) ast.arg1();
@@ -180,6 +181,11 @@ public class TensorFunctions {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 	}
 
@@ -209,8 +215,6 @@ public class TensorFunctions {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			if (ast.arg1().isAST() && ast.arg2().isAST()) {
 				IAST kernel = (IAST) ast.arg1();
 				IAST tensor = (IAST) ast.arg2();
@@ -221,6 +225,11 @@ public class TensorFunctions {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		public static IExpr listCorrelate(IAST kernel, int kernelSize, IAST tensor, int tensorSize) {
@@ -339,8 +348,6 @@ public class TensorFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 4);
-
 			if (ast.arg1().isAST()) {
 				IAST list = (IAST) ast.arg1();
 				ArrayIndexComparator comparator;
@@ -371,6 +378,11 @@ public class TensorFunctions {
 		}
 
 		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_3;
+		}
+
+		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
 
@@ -390,7 +402,7 @@ public class TensorFunctions {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -401,7 +413,6 @@ public class TensorFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
 			if (ast.arg1().isAST()) {
 				IAST tensor = (IAST) ast.arg1();
 				ArrayList<Integer> dims = LinearAlgebra.dimensions(tensor, tensor.head(), Integer.MAX_VALUE);
@@ -420,6 +431,11 @@ public class TensorFunctions {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		/**
@@ -505,11 +521,11 @@ public class TensorFunctions {
 	}
 
 	private static class TensorProduct extends AbstractNonOrderlessArgMultiple {
-		
+
 		public IExpr evaluateAST1(final IAST ast, EvalEngine engine) {
 			return ast.arg1();
 		}
-		
+
 		@Override
 		public IExpr e2ObjArg(IAST ast, final IExpr o0, final IExpr o1) {
 			if (o0.isList() && o1.isList()) {
@@ -549,7 +565,7 @@ public class TensorFunctions {
 			}
 			return F.NIL;
 		}
-		
+
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}

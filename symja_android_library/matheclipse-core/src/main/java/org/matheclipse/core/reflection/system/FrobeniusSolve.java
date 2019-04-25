@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.Lists;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -56,7 +57,6 @@ public class FrobeniusSolve extends AbstractEvaluator {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkRange(ast, 3, 4);
 		if (ast.arg1().isList()) {
 			IAST list = ast.getAST(1);
 			try {
@@ -95,7 +95,9 @@ public class FrobeniusSolve extends AbstractEvaluator {
 		}
 		return null;
 	}
-
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_2_3;
+	}
 	/** {@inheritDoc} */
 	@Override
 	public void setUp(final ISymbol newSymbol) {

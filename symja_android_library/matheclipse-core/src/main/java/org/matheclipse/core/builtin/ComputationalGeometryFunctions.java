@@ -24,10 +24,14 @@ public class ComputationalGeometryFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2);
 			if (ast.arg1().isList()) {
 			}
 			return F.NIL;
+		}
+		
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 	}
 

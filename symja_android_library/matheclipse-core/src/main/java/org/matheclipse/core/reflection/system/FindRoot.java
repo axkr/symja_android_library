@@ -16,6 +16,7 @@ import org.hipparchus.analysis.solvers.SecantSolver;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -159,8 +160,6 @@ public class FindRoot extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkRange(ast, 3);
-
 		// default: BracketingNthOrderBrentSolver
 		String method = "Brent";
 		int maxIterations = 100;
@@ -215,7 +214,9 @@ public class FindRoot extends AbstractFunctionEvaluator {
 		}
 		return F.NIL;
 	}
-
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_2_INFINITY;
+	}
 	private double findRoot(String method, int maxIterations, IAST list, ISignedNumber min, ISignedNumber max,
 			IExpr function, EvalEngine engine) {
 		ISymbol xVar = (ISymbol) list.arg1();

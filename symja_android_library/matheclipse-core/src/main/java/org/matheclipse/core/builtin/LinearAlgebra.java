@@ -540,8 +540,6 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, Integer.MAX_VALUE);
-
 			IExpr arg1 = ast.arg1();
 			if (ast.isAST2()) {
 				IExpr arg2 = ast.arg2();
@@ -582,7 +580,10 @@ public final class LinearAlgebra {
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_INFINITY;
+		}
 	}
 
 	/**
@@ -701,8 +702,6 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			final int[] dim = ast.arg1().isMatrix();
 			if (dim != null) {
 				int diff = 0;
@@ -729,7 +728,10 @@ public final class LinearAlgebra {
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -764,8 +766,6 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			if (ast.arg1().isAST()) {
 				IAST vector = (IAST) ast.arg1();
 				int m = vector.size();
@@ -776,7 +776,10 @@ public final class LinearAlgebra {
 			return F.NIL;
 
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -844,8 +847,6 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			int maximumLevel = Integer.MAX_VALUE;
 			if (ast.isAST2() && ast.arg2().isInteger()) {
 				maximumLevel = Validate.checkIntType(ast, 2);
@@ -860,7 +861,10 @@ public final class LinearAlgebra {
 			return F.List();
 
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -1409,8 +1413,6 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			int rowSize = 0;
 			int columnSize = 0;
 			if (ast.isAST1() && ast.arg1().isInteger()) {
@@ -1423,6 +1425,11 @@ public final class LinearAlgebra {
 				return F.NIL;
 			}
 			return F.matrix((i, j) -> F.QQ(1, i + j + 1), rowSize, columnSize);
+		}
+		
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 	}
 
@@ -1569,8 +1576,6 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 4, 5);
-
 			if (ast.arg2().isAST() && ast.arg3().isAST()) {
 				IExpr f = ast.arg1();
 				IAST list1 = (IAST) ast.arg2();
@@ -1589,6 +1594,11 @@ public final class LinearAlgebra {
 				return ic.inner();
 			}
 			return F.NIL;
+		}
+		
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_4;
 		}
 	}
 
@@ -2080,8 +2090,6 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			int[] dim = ast.arg1().isMatrix();
 			if (dim != null) {
 				IAST matrix = (IAST) ast.arg1();
@@ -2092,7 +2100,10 @@ public final class LinearAlgebra {
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 	}
 
 	/**
@@ -2574,8 +2585,6 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			IExpr arg1 = ast.arg1();
 			int dim = arg1.isVector();
 			if (dim > (-1)) {
@@ -2620,7 +2629,10 @@ public final class LinearAlgebra {
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 	}
 
 	/**
@@ -2666,8 +2678,6 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			IExpr normFunction = F.Norm;
 			if (ast.isAST2()) {
 				normFunction = ast.arg2();
@@ -2682,7 +2692,10 @@ public final class LinearAlgebra {
 			}
 			return F.Divide(ast.arg1(), norm);
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 	}
 
 	/**
@@ -2790,7 +2803,6 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
 			IExpr arg1 = ast.arg1();
 			int[] dim = arg1.isMatrix();
 			if (dim != null) {
@@ -2801,6 +2813,11 @@ public final class LinearAlgebra {
 				return engine.evaluate(result);
 			}
 			return F.NIL;
+		}
+		
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		@Override
@@ -2858,7 +2875,6 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
 			int dim1 = ast.arg1().isVector();
 			int dim2 = ast.arg2().isVector();
 			if (ast.size() == 4) {
@@ -2886,7 +2902,10 @@ public final class LinearAlgebra {
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -3315,8 +3334,6 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			// TODO generalize for tensors
 			IExpr arg1 = ast.arg1();
 			IExpr header = F.Plus;
@@ -3341,7 +3358,10 @@ public final class LinearAlgebra {
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -3443,8 +3463,6 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			if (ast.size() == 3) {
 				if (ast.arg1().isList() && ast.arg2().isList()) {
 					IAST tensor = (IAST) ast.arg1();
@@ -3462,6 +3480,11 @@ public final class LinearAlgebra {
 			return F.NIL;
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
+		
 		protected IExpr transform(final IExpr expr) {
 			return expr;
 		}
@@ -3538,8 +3561,6 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			if (ast.isAST2()) {
 				int n = Validate.checkIntType(ast, 1);
 				int k = Validate.checkIntType(ast, 2);
@@ -3563,15 +3584,16 @@ public final class LinearAlgebra {
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 	}
 
 	private static class UpperTriangularize extends AbstractFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			int[] dim = ast.arg1().isMatrix();
 			if (dim != null) {
 				IAST matrix = (IAST) ast.arg1();
@@ -3584,7 +3606,10 @@ public final class LinearAlgebra {
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 	}
 
 	/**

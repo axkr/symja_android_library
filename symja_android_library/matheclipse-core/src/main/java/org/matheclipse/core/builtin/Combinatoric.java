@@ -205,7 +205,6 @@ public final class Combinatoric {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3);
 			List<IAST> la = new ArrayList<IAST>(ast.argSize());
 			for (int i = 1; i < ast.size(); i++) {
 				if (ast.get(i).isList()) {
@@ -220,6 +219,11 @@ public final class Combinatoric {
 				result.append(iast);
 			}
 			return result;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_INFINITY;
 		}
 	}
 
@@ -263,10 +267,11 @@ public final class Combinatoric {
 			}
 			return F.NIL;
 		}
-		
+
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_2;
 		}
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -410,8 +415,6 @@ public final class Combinatoric {
 		/** {@inheritDoc} */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			IntRangeSpec range = IntRangeSpec.createNonNegative(ast, 2);
 			if (range != null) {
 				IExpr arg1 = ast.arg1();
@@ -458,6 +461,10 @@ public final class Combinatoric {
 			return F.NIL;
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 	}
 
 	private static class JaccardDissimilarity extends AbstractEvaluator {
@@ -504,7 +511,7 @@ public final class Combinatoric {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_2;
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -515,7 +522,7 @@ public final class Combinatoric {
 
 		/** {@inheritDoc} */
 		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) { 
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.arg1().isAST() && ast.arg2().isInteger()) {
 				final IAST listArg0 = (IAST) ast.arg1();
 				final ISymbol sym = listArg0.topHead();
@@ -546,7 +553,7 @@ public final class Combinatoric {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_2;
 		}
-		
+
 		private IAST createSinglePartition(final IAST listArg0, final ISymbol sym, final int[] permutationsIndex,
 				final int[] partitionsIndex) {
 			IASTAppendable partitionElement;
@@ -813,7 +820,7 @@ public final class Combinatoric {
 			}
 			return F.NIL;
 		}
-		
+
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_2;
 		}
@@ -858,7 +865,7 @@ public final class Combinatoric {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_2;
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -880,8 +887,6 @@ public final class Combinatoric {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
-
 			if (ast.arg1().isAST()) {
 				if (ast.arg2().isInteger()) {
 					final IAST f = (IAST) ast.arg1();
@@ -908,6 +913,10 @@ public final class Combinatoric {
 			return F.NIL;
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
 	}
 
 	/**
@@ -1144,8 +1153,6 @@ public final class Combinatoric {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			if (ast.arg1().isAST()) {
 				final IAST list = (IAST) ast.arg1();
 				int parts = list.argSize();
@@ -1179,6 +1186,11 @@ public final class Combinatoric {
 				return createPermutationsWithNParts(list, parts, result);
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		private IAST createPermutationsWithNParts(final IAST list, int parts, final IASTAppendable result) {
@@ -1255,7 +1267,7 @@ public final class Combinatoric {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_2;
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -1310,7 +1322,7 @@ public final class Combinatoric {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_2;
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -1368,7 +1380,7 @@ public final class Combinatoric {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_2;
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -1451,7 +1463,6 @@ public final class Combinatoric {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 1, 3);
 			if (ast.isAST0()) {
 				return F.NIL;
 			}
@@ -1494,6 +1505,11 @@ public final class Combinatoric {
 			return F.NIL;
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_0_2;
+		}
+
 		public static KSubsetsList createKSubsets(final IAST list, final int k, IAST resultList, final int offset) {
 			return new KSubsetsList(new KSubsets.KSubsetsIterable(list.size() - offset, k), list, k, resultList,
 					offset);
@@ -1507,8 +1523,6 @@ public final class Combinatoric {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			IExpr arg1 = ast.arg1();
 			if (ast.isAST1() && arg1.isList()) {
 				try {
@@ -1540,6 +1554,11 @@ public final class Combinatoric {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		/**
@@ -1645,7 +1664,7 @@ public final class Combinatoric {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_2;
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}

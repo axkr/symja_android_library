@@ -21,6 +21,7 @@ import static org.matheclipse.core.expression.F.Tan;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.integer;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.Structure;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -180,9 +181,12 @@ public class ComplexExpand extends AbstractEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkRange(ast, 1, 2);
 		IExpr temp = Structure.threadLogicEquationOperators(ast.arg1(), ast, 1);
 		return temp.orElseGet(() -> complexExpand(ast.arg1(), engine));
+	}
+
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_0_1;
 	}
 
 	private static IExpr complexExpand(IExpr arg1, EvalEngine engine) {

@@ -151,7 +151,6 @@ public class PolynomialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
 			IExpr cached = F.REMEMBER_AST_CACHE.getIfPresent(ast);
 			if (cached != null) {
 				return cached;
@@ -221,7 +220,10 @@ public class PolynomialFunctions {
 				return F.C0;
 			}
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
@@ -311,8 +313,6 @@ public class PolynomialFunctions {
 	private static class CoefficientRules extends AbstractFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, final EvalEngine engine) {
-			Validate.checkRange(ast, 2, 5);
-
 			IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 			VariablesSet eVar;
 			IAST symbolList = F.List();
@@ -360,7 +360,10 @@ public class PolynomialFunctions {
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_4;
+		}
 		/**
 		 * Get exponent vectors and coefficients of monomials of a polynomial expression.
 		 * 
@@ -734,7 +737,6 @@ public class PolynomialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
 			IExpr cached = F.REMEMBER_AST_CACHE.getIfPresent(ast);
 			if (cached != null) {
 				return cached;
@@ -827,7 +829,10 @@ public class PolynomialFunctions {
 			F.REMEMBER_AST_CACHE.put(ast, result);
 			return result;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
 		private static IExpr powerExponent(IAST powerAST, final IExpr form, final IPatternMatcher matcher,
 				EvalEngine engine) {
 			if (matcher.test(powerAST.base(), engine)) {
@@ -1095,7 +1100,6 @@ public class PolynomialFunctions {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
 			IAST variables;
 			if (ast.size() == 2) {
 				VariablesSet eVar = new VariablesSet(ast.arg1());
@@ -1121,7 +1125,10 @@ public class PolynomialFunctions {
 			// }
 			// return result;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 		/**
 		 * 
 		 * @param coefficients
@@ -1675,7 +1682,6 @@ public class PolynomialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
 			int degree = ast.arg1().toIntDefault(Integer.MIN_VALUE);
 			if (degree != Integer.MIN_VALUE) {
 				if (ast.size() == 4) {
@@ -1706,7 +1712,10 @@ public class PolynomialFunctions {
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
 	}
 
 	/**
@@ -1736,15 +1745,16 @@ public class PolynomialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
-
 			int degree = ast.arg1().toIntDefault(Integer.MIN_VALUE);
 			if (degree > Integer.MIN_VALUE) {
 				return PolynomialsUtils.createLegendrePolynomial(degree, ast.arg2());
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
 		@Override
 		public IAST getRuleAST() {
 			return RULES;
@@ -1779,11 +1789,12 @@ public class PolynomialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
-
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
 		@Override
 		public IAST getRuleAST() {
 			return RULES;

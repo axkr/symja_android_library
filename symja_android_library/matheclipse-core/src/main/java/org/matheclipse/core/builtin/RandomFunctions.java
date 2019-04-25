@@ -184,17 +184,18 @@ public final class RandomFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() >= 2 && ast.size() <= 3) {
-				if (ast.arg1().isAST()) {
-					int n = ast.isAST2() ? ast.arg2().toIntDefault(Integer.MIN_VALUE) : Integer.MAX_VALUE;
-					if (n >= 0) {
-						return shuffle((IAST) ast.arg1(), n);
-					}
+			if (ast.arg1().isAST()) {
+				int n = ast.isAST2() ? ast.arg2().toIntDefault(Integer.MIN_VALUE) : Integer.MAX_VALUE;
+				if (n >= 0) {
+					return shuffle((IAST) ast.arg1(), n);
 				}
-				return F.NIL;
 			}
-			Validate.checkRange(ast, 2, 3);
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		public static IAST shuffle(IAST list, int n) {

@@ -48,8 +48,6 @@ public class QuantityFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			try {
 				if (ast.size() == 2) {
 					IExpr arg1 = engine.evaluate(ast.arg1());
@@ -73,7 +71,10 @@ public class QuantityFunctions {
 
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 	}
 
 	/**
@@ -101,8 +102,6 @@ public class QuantityFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			try {
 				if (ast.size() == 2) {
 					IExpr arg1 = engine.evaluate(ast.arg1());
@@ -129,7 +128,10 @@ public class QuantityFunctions {
 
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 	}
 
 	/**
@@ -157,8 +159,6 @@ public class QuantityFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			try {
 				if (ast.size() == 2) {
 					IExpr arg1 = engine.evaluate(ast.arg1());
@@ -183,7 +183,10 @@ public class QuantityFunctions {
 
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 	}
 
 	public static void initialize() {

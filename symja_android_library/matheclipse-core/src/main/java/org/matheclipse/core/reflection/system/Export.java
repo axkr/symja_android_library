@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 import javax.imageio.ImageIO;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
@@ -34,8 +35,6 @@ public class Export extends AbstractEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (Config.isFileSystemEnabled(engine)) {
-			Validate.checkRange(ast, 3, 4);
-
 			if (!(ast.arg1() instanceof IStringX)) {
 				throw new WrongNumberOfArguments(ast, 1, ast.argSize());
 			}
@@ -100,7 +99,9 @@ public class Export extends AbstractEvaluator {
 		}
 		return F.NIL;
 	}
-
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_2_3;
+	}
 	/**
 	 * See the documentation of {@link CsvFormat}, {@link ImageFormat}, {@link MatlabExport}, and {@link ObjectFormat}
 	 * for information on how tensors are encoded in the respective format.

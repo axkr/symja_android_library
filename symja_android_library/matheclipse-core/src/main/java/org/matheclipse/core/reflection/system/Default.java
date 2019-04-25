@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -18,7 +19,6 @@ public class Default extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkRange(ast, 2, 4);
 		ISymbol symbol = Validate.checkSymbolType(ast, 1);
 
 		if (ast.size() > 2) {
@@ -28,5 +28,7 @@ public class Default extends AbstractFunctionEvaluator {
 			return symbol.getDefaultValue();
 		}
 	}
-
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_1_3;
+	}
 }

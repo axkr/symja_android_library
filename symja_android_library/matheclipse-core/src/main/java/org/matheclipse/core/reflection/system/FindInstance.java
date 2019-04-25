@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.BooleanFunctions;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -43,8 +44,6 @@ public class FindInstance extends Solve {
 	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkRange(ast, 3, 4);
-
 		IAST vars = Validate.checkSymbolOrSymbolList(ast, 2);
 		if (ast.isAST3()) {
 			if (ast.arg3().equals(F.Booleans)) {
@@ -63,5 +62,9 @@ public class FindInstance extends Solve {
 		}
 
 		return F.NIL;
+	}
+	
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_2_3;
 	}
 }

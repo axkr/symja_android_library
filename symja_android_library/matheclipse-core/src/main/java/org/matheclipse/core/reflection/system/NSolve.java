@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import org.matheclipse.core.builtin.Algebra;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.PolynomialFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -499,7 +500,6 @@ public class NSolve extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkRange(ast, 3, 4);
 		return Solve.of(ast, true, engine);
 //		IAST vars = Validate.checkSymbolOrSymbolList(ast, 2);
 //		IAST termsEqualZeroList = Validate.checkEquations(ast, 1);
@@ -543,5 +543,9 @@ public class NSolve extends AbstractFunctionEvaluator {
 //			}
 //			return F.NIL;
 //		}
+	}
+	
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_2_3;
 	}
 }

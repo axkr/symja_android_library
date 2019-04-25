@@ -10,6 +10,7 @@ import javax.imageio.ImageIO;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -41,8 +42,6 @@ public class Import extends AbstractEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (Config.isFileSystemEnabled(engine)) {
-			Validate.checkRange(ast, 2, 3);
-
 			if (!(ast.arg1() instanceof IStringX)) {
 				throw new WrongNumberOfArguments(ast, 1, ast.argSize());
 			}
@@ -102,7 +101,11 @@ public class Import extends AbstractEvaluator {
 		}
 		return F.NIL;
 	}
-
+	
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_1_2;
+	}
+	
 	public static IExpr of(File file, EvalEngine engine) throws IOException {
 		Filename filename = new Filename(file);
 		Extension extension = filename.extension();

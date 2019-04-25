@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -120,8 +121,6 @@ public class Outer extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkRange(ast, 4);
-
 		IExpr head = null;
 		for (int i = 2; i < ast.size(); i++) {
 			IExpr list = ast.get(i);
@@ -136,5 +135,9 @@ public class Outer extends AbstractFunctionEvaluator {
 		}
 		OuterAlgorithm algorithm = new OuterAlgorithm(ast, head);
 		return algorithm.outer(3, ast.arg2(), F.ast(F.List, ast.argSize(), false));
+	}
+	
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_3_INFINITY;
 	}
 }

@@ -32,27 +32,32 @@ public class FinancialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
 			return F.NIL;
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
 	}
 
 	private static class AnnuityDue extends AbstractEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
 			return F.NIL;
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
 	}
 
 	private static class EffectiveInterest extends AbstractEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
 			final IExpr a = ast.arg1();
 			if (ast.size() == 2) {
 				int dim = a.isVector();
@@ -73,6 +78,11 @@ public class FinancialFunctions {
 				return effectiveInterestFormula(a, b);
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		private IExpr effectiveInterestFormula(IExpr a, IExpr b) {
@@ -173,7 +183,7 @@ public class FinancialFunctions {
 			}
 			return F.NIL;
 		}
-		
+
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_3_3;
 		}

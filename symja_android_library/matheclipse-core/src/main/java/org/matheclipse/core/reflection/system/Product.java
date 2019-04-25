@@ -5,6 +5,7 @@ import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Times;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
@@ -103,8 +104,6 @@ public class Product extends ListFunctions.Table implements ProductRules {
 	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkRange(ast, 3);
-
 		IExpr arg1 = ast.arg1();
 		if (arg1.isAST()) {
 			arg1 = F.expand(arg1, false, false, false);
@@ -245,7 +244,11 @@ public class Product extends ListFunctions.Table implements ProductRules {
 		}
 		return F.NIL;
 	}
-
+	
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_2_INFINITY;
+	}
+	
 	@Override
 	public IExpr numericEval(final IAST functionList, EvalEngine engine) {
 		return evaluate(functionList, engine);

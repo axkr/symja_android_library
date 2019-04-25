@@ -536,8 +536,6 @@ public final class Arithmetic {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			IExpr arg1 = ast.arg1();
 			double delta = DEFAULT_CHOP_DELTA;
 			if (ast.isAST2() && ast.arg2() instanceof INum) {
@@ -560,6 +558,11 @@ public final class Arithmetic {
 			}
 
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		@Override
@@ -642,8 +645,6 @@ public final class Arithmetic {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 4);
-
 			IExpr x = ast.first();
 			if (ast.size() == 2) {
 				return clip(x);
@@ -684,6 +685,11 @@ public final class Arithmetic {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_3;
 		}
 
 		private IExpr clip(IExpr x) {
@@ -1141,7 +1147,6 @@ public final class Arithmetic {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 4);
 			IExpr arg1 = ast.arg1();
 			if (ast.size() == 2 && arg1.isList()) {
 				if (arg1.size() <= 2) {
@@ -1150,6 +1155,11 @@ public final class Arithmetic {
 				return F.ListConvolve(F.List(F.C1, F.CN1), arg1);
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_3;
 		}
 
 		@Override
@@ -1279,8 +1289,6 @@ public final class Arithmetic {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 1, 2);
-
 			if (ast.isAST1()) {
 				boolean numericMode = engine.isNumericMode();
 				boolean evaled = false;
@@ -1340,6 +1348,11 @@ public final class Arithmetic {
 			}
 			return F.NIL;
 
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_0_1;
 		}
 
 		public static IExpr timesInf(IAST inf, IExpr a2) {
@@ -1499,11 +1512,15 @@ public final class Arithmetic {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
 			if (ast.size() != 3) {
 				return unaryOperator(ast.arg1());
 			}
 			return binaryOperator(ast.arg1(), ast.arg2());
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		@Override
@@ -1658,8 +1675,6 @@ public final class Arithmetic {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			IExpr arg1 = ast.arg1();
 			if (ast.isAST2()) {
 				IExpr arg2 = ast.arg2();
@@ -1717,6 +1732,11 @@ public final class Arithmetic {
 			}
 
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		/**
@@ -1945,14 +1965,17 @@ public final class Arithmetic {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2);
-
 			if (ast.isAST1()) {
 				if (ast.arg1().isExactNumber()) {
 					return ast.arg1().abs();
 				}
 			}
 			return super.evaluate(ast, engine);
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_INFINITY;
 		}
 
 		/**
@@ -2077,8 +2100,6 @@ public final class Arithmetic {
 
 		@Override
 		public IExpr numericEval(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			final boolean numericMode = engine.isNumericMode();
 			final int oldPrecision = engine.getNumericPrecision();
 			try {
@@ -2093,6 +2114,11 @@ public final class Arithmetic {
 				engine.setNumericMode(numericMode);
 				engine.setNumericPrecision(oldPrecision);
 			}
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		@Override
@@ -2157,8 +2183,6 @@ public final class Arithmetic {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			IExpr arg1 = ast.arg1();
 			int[] dim = arg1.isMatrix(false);
 			if (dim == null || dim[0] <= 0 || dim[1] != 2) {
@@ -2237,6 +2261,11 @@ public final class Arithmetic {
 			}
 
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		private static IASTAppendable createPiecewise(IASTAppendable piecewiseAST, IAST resultList) {

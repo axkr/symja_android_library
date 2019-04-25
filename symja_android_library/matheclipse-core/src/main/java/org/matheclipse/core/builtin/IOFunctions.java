@@ -61,31 +61,41 @@ public class IOFunctions {
 	}
 
 	public static final int[] ARGS_0_0 = new int[] { 0, 0 };
-	
+
 	public static final int[] ARGS_0_1 = new int[] { 0, 1 };
+
+	public static final int[] ARGS_0_2 = new int[] { 0, 2 };
 	
 	public static final int[] ARGS_1_1 = new int[] { 1, 1 };
 
 	public static final int[] ARGS_1_2 = new int[] { 1, 2 };
 
+	public static final int[] ARGS_1_5 = new int[] { 1, 5 };
+
 	public static final int[] ARGS_2_2 = new int[] { 2, 2 };
 
 	public static final int[] ARGS_1_3 = new int[] { 1, 3 };
+
+	public static final int[] ARGS_1_4 = new int[] { 1, 4 };
 	
 	public static final int[] ARGS_2_3 = new int[] { 2, 3 };
-	
+
 	public static final int[] ARGS_2_4 = new int[] { 2, 4 };
-	
+
 	public static final int[] ARGS_3_3 = new int[] { 3, 3 };
-	
+
 	public static final int[] ARGS_3_4 = new int[] { 3, 4 };
 
 	public static final int[] ARGS_4_4 = new int[] { 4, 4 };
-	
+
 	public static final int[] ARGS_5_5 = new int[] { 5, 5 };
-	
+
+	public static final int[] ARGS_1_INFINITY = new int[] { 1, Integer.MAX_VALUE };
+
 	public static final int[] ARGS_2_INFINITY = new int[] { 2, Integer.MAX_VALUE };
 	
+	public static final int[] ARGS_3_INFINITY = new int[] { 3, Integer.MAX_VALUE };
+
 	private final static String[] MESSAGES = { //
 			"argb", "`1` called with `2` arguments; between `3` and `4` arguments are expected.", //
 			"argct", "`1` called with `2` arguments.", //

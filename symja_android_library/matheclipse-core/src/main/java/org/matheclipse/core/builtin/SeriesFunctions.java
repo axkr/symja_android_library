@@ -681,8 +681,6 @@ public class SeriesFunctions {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
-
 			IExpr arg1 = ast.arg1();
 			IExpr arg2 = ast.arg2();
 			if (!arg2.isRuleAST()) {
@@ -738,6 +736,11 @@ public class SeriesFunctions {
 			} finally {
 				engine.setNumericMode(numericMode);
 			}
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
 		}
 
 		@Override

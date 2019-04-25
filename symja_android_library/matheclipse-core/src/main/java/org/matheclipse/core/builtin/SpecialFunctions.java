@@ -92,8 +92,6 @@ public class SpecialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
-
 			if (ast.size() == 4) {
 				IExpr z = ast.arg1();
 				IExpr a = ast.arg2();
@@ -137,7 +135,10 @@ public class SpecialFunctions {
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -398,8 +399,6 @@ public class SpecialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
-
 			IExpr a = ast.arg1();
 			IExpr z = ast.arg2();
 			if (ast.isAST3()) {
@@ -442,7 +441,10 @@ public class SpecialFunctions {
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -591,8 +593,6 @@ public class SpecialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 4, 5);
-
 			if (ast.isAST3()) {
 				IExpr z = ast.arg1();
 				IExpr a = ast.arg2();
@@ -620,7 +620,10 @@ public class SpecialFunctions {
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_4;
+		}
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -633,8 +636,6 @@ public class SpecialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
-
 			IExpr a = ast.arg1();
 
 			if (ast.isAST3()) {
@@ -656,7 +657,10 @@ public class SpecialFunctions {
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -913,8 +917,6 @@ public class SpecialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			IExpr arg1 = ast.arg1();
 			if (ast.isAST1()) {
 				if (arg1.isPositive()) {
@@ -929,7 +931,10 @@ public class SpecialFunctions {
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 		@Override
 		public IAST getRuleAST() {
 			return RULES;
@@ -1101,8 +1106,6 @@ public class SpecialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			IExpr arg1 = ast.arg1();
 			if (ast.isAST1()) {
 
@@ -1111,7 +1114,10 @@ public class SpecialFunctions {
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 		@Override
 		public IAST getRuleAST() {
 			return RULES;

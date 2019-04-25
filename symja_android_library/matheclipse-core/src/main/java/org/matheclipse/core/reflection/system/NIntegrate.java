@@ -10,6 +10,7 @@ import org.hipparchus.analysis.integration.gauss.GaussIntegratorFactory;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.util.Precision;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrappedException;
@@ -132,8 +133,6 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkRange(ast, 3);
-
 		String method = "LegendreGauss";
 		int maxPoints = DEFAULT_MAX_POINTS;
 		int maxIterations = DEFAULT_MAX_ITERATIONS;
@@ -149,7 +148,8 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 				try {
 					maxPoints = ((ISignedNumber) option).toInt();
 				} catch (ArithmeticException ae) {
-					engine.printMessage("NIntegrate: "+"Error in option MaxPoints. Using default value: " + maxPoints);
+					engine.printMessage(
+							"NIntegrate: " + "Error in option MaxPoints. Using default value: " + maxPoints);
 				}
 			}
 			option = options.getOption("MaxIterations");
@@ -157,7 +157,8 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 				try {
 					maxIterations = ((ISignedNumber) option).toInt();
 				} catch (ArithmeticException ae) {
-					engine.printMessage("NIntegrate: "+"Error in option MaxIterations. Using default value: " + maxIterations);
+					engine.printMessage(
+							"NIntegrate: " + "Error in option MaxIterations. Using default value: " + maxIterations);
 				}
 			}
 			option = options.getOption("PrecisionGoal");
@@ -165,7 +166,8 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 				try {
 					precisionGoal = ((ISignedNumber) option).toInt();
 				} catch (ArithmeticException ae) {
-					engine.printMessage("NIntegrate: "+"Error in option PrecisionGoal. Using default value: " + precisionGoal);
+					engine.printMessage(
+							"NIntegrate: " + "Error in option PrecisionGoal. Using default value: " + precisionGoal);
 				}
 			}
 		}
@@ -190,7 +192,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 						if (Config.SHOW_STACKTRACE) {
 							e.printStackTrace();
 						}
-						engine.printMessage("NIntegrate: "+"(method=" + method + ") " + e.getMessage());
+						engine.printMessage("NIntegrate: " + "(method=" + method + ") " + e.getMessage());
 						// throw new WrappedException(e);
 					}
 				}
@@ -198,6 +200,10 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 
 		}
 		return F.NIL;
+	}
+
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_2_INFINITY;
 	}
 
 	@Override

@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.convert.VariablesSet;
@@ -69,8 +70,6 @@ public class MonomialList extends AbstractFunctionEvaluator {
 	 */
 	@Override
 	public IExpr evaluate(final IAST ast, final EvalEngine engine) {
-		Validate.checkRange(ast, 2, 5);
-
 		IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 		VariablesSet eVar;
 		IAST symbolList = F.List();
@@ -112,6 +111,10 @@ public class MonomialList extends AbstractFunctionEvaluator {
 			}
 		}
 		return F.NIL;
+	}
+
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_1_4;
 	}
 
 	/**

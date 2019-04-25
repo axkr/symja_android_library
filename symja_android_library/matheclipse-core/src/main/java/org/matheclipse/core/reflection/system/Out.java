@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LastCalculationsHistory;
 import org.matheclipse.core.eval.exception.Validate;
@@ -54,8 +55,6 @@ public class Out extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkRange(ast, 1, 2);
-
 		if (ast.isAST0()) {
 			final LastCalculationsHistory list = EvalEngine.get().getOutList();
 			if (list != null) {
@@ -72,5 +71,7 @@ public class Out extends AbstractFunctionEvaluator {
 		}
 		return F.NIL;
 	}
-
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_0_1;
+	}
 }

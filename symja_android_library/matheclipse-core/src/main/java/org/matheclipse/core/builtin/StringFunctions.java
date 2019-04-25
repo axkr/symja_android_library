@@ -400,7 +400,6 @@ public final class StringFunctions {
 	private final static class ToExpression extends AbstractFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
 			IExpr arg1 = ast.arg1();
 			if (arg1.isString()) {
 				ISymbol form = F.InputForm;
@@ -432,6 +431,12 @@ public final class StringFunctions {
 			}
 			return F.NIL;
 		}
+		
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
+		
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			TeXParser.initialize();

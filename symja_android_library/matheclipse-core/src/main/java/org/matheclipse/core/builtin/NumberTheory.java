@@ -151,7 +151,6 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
 			try {
 				IExpr arg1 = ast.arg1();
 				if (ast.isAST2()) {
@@ -196,6 +195,11 @@ public final class NumberTheory {
 		}
 
 		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
+
+		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
 		}
@@ -222,8 +226,6 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			if (ast.isAST1()) {
 				try {
 					int bn = ast.arg1().toIntDefault(Integer.MIN_VALUE);
@@ -237,6 +239,11 @@ public final class NumberTheory {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		@Override
@@ -1578,7 +1585,6 @@ public final class NumberTheory {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3);
 			IExpr arg;
 			for (int i = 1; i < ast.size(); i++) {
 				arg = ast.get(i);
@@ -1611,7 +1617,10 @@ public final class NumberTheory {
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_INFINITY;
+		}
 		public static BigInteger extendedGCD(final IAST ast, BigInteger[] subBezouts) {
 			BigInteger factor;
 			BigInteger gcd = ((IInteger) ast.arg1()).toBigNumerator();
@@ -2695,8 +2704,6 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 1);
-
 			if (ast.isAST1()) {
 				// (n) ==> 1
 				return F.C1;
@@ -2718,7 +2725,10 @@ public final class NumberTheory {
 			}
 			return F.NIL;
 		}
-
+		@Override
+		public int[] expectedArgSize() {
+			return null;
+		}
 		@Override
 		public void setUp(ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.ORDERLESS | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -2824,8 +2834,6 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			if (ast.isAST1() && ast.arg1().isInteger()) {
 				BigInteger primeBase = ((IInteger) ast.arg1()).toBigNumerator();
 				return F.integer(primeBase.nextProbablePrime());
@@ -2843,6 +2851,10 @@ public final class NumberTheory {
 			return F.NIL;
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
 	}
 
 	/**
@@ -3436,10 +3448,13 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			IExpr arg1 = ast.arg1();
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		@Override
@@ -3521,8 +3536,6 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			VariablesSet eVar = new VariablesSet(ast.arg1());
 			if (eVar.isSize(0)) {
 				IExpr arg1 = ast.arg1();
@@ -3559,6 +3572,11 @@ public final class NumberTheory {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		public static boolean isSquarefree(IExpr expr, List<IExpr> varList) throws JASConversionException {

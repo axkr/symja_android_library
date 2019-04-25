@@ -51,12 +51,12 @@ public final class OutputFunctions {
 			// return F.$str(stw.toString());
 			return F.NIL;
 		}
-		
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
-		
+
 		@Override
 		public void setUp(ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
@@ -92,10 +92,12 @@ public final class OutputFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			return F.stringx(engine.evaluate(ast.arg1()).fullFormString());
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
+
 		@Override
 		public void setUp(ISymbol newSymbol) {
 		}
@@ -197,8 +199,6 @@ public final class OutputFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			IExpr arg1 = ast.arg1();
 			if (arg1.isAST()) {
 
@@ -222,6 +222,11 @@ public final class OutputFunctions {
 
 			}
 			return arg1;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		@Override
@@ -296,8 +301,6 @@ public final class OutputFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			boolean strictJava = false;
 			boolean usePrefix = false;
@@ -309,6 +312,11 @@ public final class OutputFunctions {
 			}
 			String resultStr = javaForm(arg1, strictJava, usePrefix);
 			return F.$str(resultStr);
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		public static String javaForm(IExpr arg1, boolean strictJava, boolean usePrefix) {
@@ -338,7 +346,7 @@ public final class OutputFunctions {
 			mathMLUtil.toMathML(arg1, stw);
 			return F.stringx(stw.toString());
 		}
-		
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
@@ -382,7 +390,7 @@ public final class OutputFunctions {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
-		
+
 		@Override
 		public void setUp(ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
