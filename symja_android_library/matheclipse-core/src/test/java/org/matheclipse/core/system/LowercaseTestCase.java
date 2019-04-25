@@ -6117,6 +6117,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGatherBy() {
+		check("GatherBy({{1, 2}, {2, 1}, {3, 5}, {5, 1}, {2, 2, 2}}, {})", //
+				"{{{1,2}},{{2,1}},{{3,5}},{{5,1}},{{2,2,2}}}");
 		check("GatherBy({{1, 3}, {2, 2}, {1, 1}}, Total)", //
 				"{{{1,3},{2,2}},{{1,1}}}");
 		check("GatherBy({\"xy\", \"abc\", \"ab\"}, StringLength)", //
