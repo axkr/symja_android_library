@@ -1062,46 +1062,54 @@ public final class ListFunctions {
 			if (ast.isAST1()) {
 				return F.operatorFormAST1(ast);
 			}
-			Validate.checkRange(ast, 3, 5);
 
-			final IExpr arg1 = engine.evaluate(ast.arg1());
-			if (arg1.isAST()) {
-				final IExpr arg2 = engine.evalPattern(ast.arg2());
-				if (ast.isAST3() || ast.size() == 5) {
-					final IExpr arg3 = engine.evaluate(ast.arg3());
-					int maximumResults = -1;
-					if (ast.size() == 5) {
-						maximumResults = Validate.checkIntType(ast, 4);
-					}
-					IASTAppendable result = F.ListAlloc(8);
-					if (arg2.isRuleAST()) {
+			if (ast.size() >= 3 && ast.size() <= 5) {
+				final IExpr arg1 = engine.evaluate(ast.arg1());
+				if (arg1.isAST()) {
+					final IExpr arg2 = engine.evalPattern(ast.arg2());
+					if (ast.isAST3() || ast.size() == 5) {
+						final IExpr arg3 = engine.evaluate(ast.arg3());
+						int maximumResults = -1;
+						if (ast.size() == 5) {
+							maximumResults = Validate.checkIntType(ast, 4);
+						}
+						IASTAppendable result = F.ListAlloc(8);
+						if (arg2.isRuleAST()) {
+							try {
+								Function<IExpr, IExpr> function = Functors.rules((IAST) arg2, engine);
+								CasesRulesFunctor crf = new CasesRulesFunctor(function, result, maximumResults);
+								VisitorLevelSpecification level = new VisitorLevelSpecification(crf, arg3, false,
+										engine);
+								arg1.accept(level);
+
+							} catch (StopException se) {
+								// reached maximum number of results
+							}
+							return result;
+						}
+
 						try {
-							Function<IExpr, IExpr> function = Functors.rules((IAST) arg2, engine);
-							CasesRulesFunctor crf = new CasesRulesFunctor(function, result, maximumResults);
-							VisitorLevelSpecification level = new VisitorLevelSpecification(crf, arg3, false, engine);
+							final IPatternMatcher matcher = engine.evalPatternMatcher(arg2);
+							CasesPatternMatcherFunctor cpmf = new CasesPatternMatcherFunctor(matcher, result,
+									maximumResults);
+							VisitorLevelSpecification level = new VisitorLevelSpecification(cpmf, arg3, false, engine);
 							arg1.accept(level);
-
 						} catch (StopException se) {
 							// reached maximum number of results
 						}
 						return result;
+					} else {
+						return cases((IAST) arg1, arg2, engine);
 					}
-
-					try {
-						final IPatternMatcher matcher = engine.evalPatternMatcher(arg2);
-						CasesPatternMatcherFunctor cpmf = new CasesPatternMatcherFunctor(matcher, result,
-								maximumResults);
-						VisitorLevelSpecification level = new VisitorLevelSpecification(cpmf, arg3, false, engine);
-						arg1.accept(level);
-					} catch (StopException se) {
-						// reached maximum number of results
-					}
-					return result;
-				} else {
-					return cases((IAST) arg1, arg2, engine);
 				}
+				return F.List();
 			}
-			return F.List();
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_4;
 		}
 
 		public static IAST cases(final IAST ast, final IExpr pattern, @Nonnull EvalEngine engine) {
@@ -1953,10 +1961,12 @@ public final class ListFunctions {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_3;
 		}
+
 		private static IExpr extract(final IAST list, final IAST position) {
 			final PositionConverter converter = new PositionConverter();
 			if ((position.size() > 1) && (position.arg1().isReal())) {
@@ -2806,7 +2816,9 @@ public final class ListFunctions {
 					heads = true;
 				}
 			} else {
-				Validate.checkRange(ast, 3, 4);
+				if (ast.size() < 3 || ast.size() > 4) {
+					return F.NIL;
+				} 
 			}
 
 			if (!ast.arg1().isAtom()) {
@@ -2829,6 +2841,7 @@ public final class ListFunctions {
 			}
 			return F.List();
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_4;
@@ -2950,10 +2963,12 @@ public final class ListFunctions {
 
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_3;
 		}
+
 		/**
 		 * Gives the list of elements from <code>inputList</code> to which x is nearest.
 		 * 
@@ -3088,10 +3103,12 @@ public final class ListFunctions {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_3;
 		}
+
 		public static IExpr padLeftAtom(IAST ast, int n, IExpr atom) {
 			int length = n - ast.size() + 1;
 			if (length > 0) {
@@ -3225,10 +3242,12 @@ public final class ListFunctions {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_3;
 		}
+
 		public static IExpr padRightAtom(IAST ast, int n, IExpr atom) {
 			int length = n - ast.size() + 1;
 			if (length > 0) {
@@ -3501,6 +3520,7 @@ public final class ListFunctions {
 			IExpr arg2 = engine.evaluate(ast.arg2());
 			return arg1AST.appendAtClone(1, arg2);
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_2;
@@ -3617,10 +3637,12 @@ public final class ListFunctions {
 
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_2;
 		}
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDFIRST);
@@ -3821,10 +3843,12 @@ public final class ListFunctions {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
 		}
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDREST);
@@ -3941,10 +3965,12 @@ public final class ListFunctions {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_3;
 		}
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -4069,10 +4095,12 @@ public final class ListFunctions {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_2;
 		}
+
 		public static IExpr riffleAtom(IAST arg1, final IExpr arg2) {
 			if (arg1.size() < 2) {
 				return arg1;
@@ -4171,6 +4199,7 @@ public final class ListFunctions {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
@@ -5004,10 +5033,12 @@ public final class ListFunctions {
 
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_INFINITY;
 		}
+
 		/**
 		 * Take the list elements according to the <code>sequenceSpecifications</code> for the list indexes.
 		 * 

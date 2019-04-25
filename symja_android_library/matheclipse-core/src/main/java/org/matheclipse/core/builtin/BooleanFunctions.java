@@ -1356,7 +1356,6 @@ public final class BooleanFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			// Validate.checkRange(ast, 3);
 			if (ast.size() <= 2) {
 				return F.True;
 			}

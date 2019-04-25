@@ -2990,7 +2990,6 @@ public class Algebra {
 			// IAST temp = engine.evalArgs(ast, ISymbol.NOATTRIBUTE).orElse(ast);
 			// return F.bool(temp.arg1().isPolynomial(temp.arg2().orNewList()));
 			// }
-			// Validate.checkSize(ast, 3);
 			// return F.NIL;
 		}
 

@@ -184,8 +184,10 @@ public class Structure {
 				if (option.isTrue()) {
 					heads = true;
 				}
-//			} else {
-//				Validate.checkRange(evaledAST, 3, 4);
+			} else {
+				if (ast.size() < 3 || ast.size() > 4) {
+					return F.NIL;
+				}
 			}
 
 			IExpr arg1 = evaledAST.arg1();
@@ -196,7 +198,7 @@ public class Structure {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_4;
 		}
-		
+
 		public static IExpr evalApply(IExpr f, IExpr expr, IAST evaledAST, int lastIndex, boolean heads,
 				EvalEngine engine) {
 
@@ -292,7 +294,7 @@ public class Structure {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
-		
+
 		/**
 		 * Calculates the depth of an expression. Atomic expressions (no sublists) have depth <code>1</code> Example:
 		 * the nested list <code>[x,[y]]</code> has depth <code>3</code>
@@ -494,7 +496,7 @@ public class Structure {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_3;
 		}
-		
+
 		@Override
 		public void setUp(ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
@@ -553,7 +555,7 @@ public class Structure {
 			}
 			return F.NIL;
 		}
-		
+
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_2;
 		}
@@ -812,7 +814,7 @@ public class Structure {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
-		
+
 	}
 
 	/**
@@ -880,8 +882,8 @@ public class Structure {
 				if (option.isTrue()) {
 					heads = true;
 				}
-//			} else {
-//				Validate.checkRange(ast, 3, 4);
+				// } else {
+				// Validate.checkRange(ast, 3, 4);
 			}
 
 			try {
@@ -916,6 +918,7 @@ public class Structure {
 			final IExpr result = ast.arg2().accept(level);
 			return result.isPresent() ? result : ast.arg2();
 		}
+
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_2;
 		}
@@ -1025,6 +1028,7 @@ public class Structure {
 			}
 			return F.NIL;
 		}
+
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_3;
 		}
@@ -1170,6 +1174,7 @@ public class Structure {
 			}
 			return F.NIL;
 		}
+
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_3;
 		}
@@ -1215,8 +1220,8 @@ public class Structure {
 				return F.CN1;
 			}
 			return F.C0;
-		} 
-		
+		}
+
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_2;
 		}
@@ -1251,7 +1256,7 @@ public class Structure {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
-		
+
 		@Override
 		public boolean test(IAST ast) {
 			return ast.compareAdjacent((x, y) -> x.isLEOrdered(y));
@@ -1387,7 +1392,7 @@ public class Structure {
 			head.set(0, F.unaryAST1(p, head.head()));
 			return result;
 		}
-		
+
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_3;
 		}
@@ -1440,7 +1445,7 @@ public class Structure {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			return F.Null;
 		}
-		
+
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_0_0;
 		}
@@ -1595,6 +1600,7 @@ public class Structure {
 
 			return F.NIL;
 		}
+
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
 		}
@@ -1636,7 +1642,7 @@ public class Structure {
 			}
 			return F.NIL;
 		}
-		
+
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
@@ -1670,7 +1676,7 @@ public class Structure {
 			}
 			return F.NIL;
 		}
-		
+
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
@@ -1744,7 +1750,7 @@ public class Structure {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
 		}
-		
+
 		/**
 		 * Thread through all lists in the arguments of the IAST [i.e. the list header has the attribute
 		 * ISymbol.LISTABLE] example: Sin[{2,x,Pi}] ==> {Sin[2],Sin[x],Sin[Pi]}
@@ -1837,7 +1843,7 @@ public class Structure {
 			}
 			return ast.arg1();
 		}
-		
+
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
 		}

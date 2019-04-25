@@ -2881,7 +2881,6 @@ public class StatisticsFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			// Validate.checkSize(ast, 3);
 			return F.NIL;
 		}
 
@@ -3196,7 +3195,6 @@ public class StatisticsFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			// Validate.checkSize(ast, 3);
 			return F.NIL;
 		}
 
