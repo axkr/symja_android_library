@@ -9796,8 +9796,25 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("OptimizeExpression( Sin(x) + Cos(Sin(x)))", //
 				"{v1+Cos(v1),{v1->Sin(x)}}");
+
 		check("ReplaceRepeated@@OptimizeExpression( Sin(x) + Cos(Sin(x)))", //
 				"Cos(Sin(x))+Sin(x)");
+	}
+
+	public void testReplaceRepeated() {
+		check("a+b+c //. c->d", //
+				"a+b+d");
+		check("logrules = {Log(x_ * y_) :> Log(x) + Log(y), Log(x_^y_) :> y * Log(x)};", //
+				"");
+		check("Log(a * (b * c) ^ d ^ e * f) //. logrules", //
+				"Log(a)+d^e*(Log(b)+Log(c))+Log(f)");
+
+		// `ReplaceAll` just performs a single replacement:
+		check("Log(a * (b * c) ^ d ^ e * f) /. logrules", //
+				"Log(a)+Log((b*c)^d^e*f)");
+
+		check("Log(Sqrt(a*(b*c^d)^e)) //. logrules", //
+				"1/2*(Log(a)+e*(Log(b)+d*Log(c)))");
 
 		check("ReplaceRepeated(1/6*(3+3*v1+v2+a*(4+v2)), {v1->a^2, v2->Sqrt(5+6*a+5*v1)})", //
 				"1/6*(3+3*a^2+Sqrt(5+6*a+5*a^2)+a*(4+Sqrt(5+6*a+5*a^2)))");

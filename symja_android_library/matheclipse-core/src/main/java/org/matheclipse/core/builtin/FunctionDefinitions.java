@@ -120,9 +120,6 @@ public final class FunctionDefinitions {
 			Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
 
 			Rationalize.setEvaluator(new org.matheclipse.core.reflection.system.Rationalize());
-			Replace.setEvaluator(new org.matheclipse.core.reflection.system.Replace());
-			ReplaceList.setEvaluator(new org.matheclipse.core.reflection.system.ReplaceList());
-			ReplaceRepeated.setEvaluator(new org.matheclipse.core.reflection.system.ReplaceRepeated());
 			Share.setEvaluator(new org.matheclipse.core.reflection.system.Share());
 			Sign.setEvaluator(new org.matheclipse.core.reflection.system.Sign());
 			SignCmp.setEvaluator(new org.matheclipse.core.reflection.system.SignCmp());

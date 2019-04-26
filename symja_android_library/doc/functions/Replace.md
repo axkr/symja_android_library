@@ -18,3 +18,7 @@ Replace(expr, {lhs1 -> rhs1, lhs2 -> rhs2, ... } )
 >> Replace(x, {{e->q, x -> a}, {x -> b}})
 {a,b}
 ```
+
+
+### Related terms 
+[ReplaceAll](ReplaceAll.md), [ReplaceList](ReplaceList.md), [ReplacePart](ReplacePart.md), [ReplaceRepeated](ReplaceRepeated.md)

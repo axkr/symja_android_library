@@ -7,7 +7,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -19,6 +18,7 @@ import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -48,6 +48,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.reflection.system.Product;
@@ -105,8 +106,11 @@ public final class ListFunctions {
 			F.Range.setEvaluator(new Range());
 			F.Rest.setEvaluator(new Rest());
 			F.Reverse.setEvaluator(new Reverse());
+			F.Replace.setEvaluator(new Replace());
 			F.ReplaceAll.setEvaluator(new ReplaceAll());
+			F.ReplaceList.setEvaluator(new ReplaceList());
 			F.ReplacePart.setEvaluator(new ReplacePart());
+			F.ReplaceRepeated.setEvaluator(new ReplaceRepeated());
 			F.Riffle.setEvaluator(new Riffle());
 			F.RotateLeft.setEvaluator(new RotateLeft());
 			F.RotateRight.setEvaluator(new RotateRight());
@@ -2818,7 +2822,7 @@ public final class ListFunctions {
 			} else {
 				if (ast.size() < 3 || ast.size() > 4) {
 					return F.NIL;
-				} 
+				}
 			}
 
 			if (!ast.arg1().isAtom()) {
@@ -3761,6 +3765,218 @@ public final class ListFunctions {
 
 	/**
 	 * <pre>
+	 * Rationalize(expression)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * convert numerical real or imaginary parts in (sub-)expressions into rational numbers.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Rationalize(6.75)
+	 * 27/4
+	 * 
+	 * &gt;&gt; Rationalize(0.25+I*0.33333)
+	 * 1/4+I*33333/100000
+	 * </pre>
+	 */
+	private final static class Replace extends AbstractEvaluator {
+
+		private static final class ReplaceFunction implements Function<IExpr, IExpr> {
+			private final IAST ast;
+			private final EvalEngine engine;
+			private IExpr rules;
+
+			public ReplaceFunction(final IAST ast, final IExpr rules, final EvalEngine engine) {
+				this.ast = ast;
+				this.rules = rules;
+				this.engine = engine;
+			}
+
+			/**
+			 * Replace the <code>input</code> expression with the given rules.
+			 * 
+			 * @param input
+			 *            the expression which should be replaced by the given rules
+			 * @return the expression created by the replacements or <code>null</code> if no replacement occurs
+			 */
+			@Override
+			public IExpr apply(IExpr input) {
+				if (rules.isList()) {
+					for (IExpr element : (IAST) rules) {
+						if (element.isRuleAST()) {
+							IAST rule = (IAST) element;
+							Function<IExpr, IExpr> function = Functors.rules(rule, engine);
+							IExpr temp = function.apply(input);
+							if (temp.isPresent()) {
+								return temp;
+							}
+						} else {
+							WrongArgumentType wat = new WrongArgumentType(ast, ast, -1,
+									"Rule expression (x->y) expected: ");
+							throw wat;
+						}
+
+					}
+					return input;
+				}
+				if (rules.isRuleAST()) {
+					return replaceRule(input, (IAST) rules, engine);
+				} else {
+					WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
+					engine.printMessage("Replace: " + wat.getMessage());
+				}
+				return F.NIL;
+			}
+
+			public void setRule(IExpr rules) {
+				this.rules = rules;
+			}
+
+		}
+
+		private static IExpr replaceExpr(final IAST ast, IExpr arg1, IExpr rules, final EvalEngine engine) {
+			if (rules.isListOfLists()) {
+				IAST rulesList = (IAST) rules;
+				IASTAppendable result = F.ListAlloc(rulesList.size());
+
+				for (IExpr list : rulesList) {
+					IAST subList = (IAST) list;
+					IExpr temp = F.NIL;
+					for (IExpr element : subList) {
+						if (element.isRuleAST()) {
+							IAST rule = (IAST) element;
+							Function<IExpr, IExpr> function = Functors.rules(rule, engine);
+							temp = function.apply(arg1);
+							if (temp.isPresent()) {
+								break;
+							}
+						} else {
+							WrongArgumentType wat = new WrongArgumentType(ast, ast, -1,
+									"Rule expression (x->y) expected: ");
+							throw wat;
+						}
+					}
+					result.append(temp.orElse(arg1));
+				}
+				return result;
+			} else if (rules.isList()) {
+				for (IExpr element : (IAST) rules) {
+					if (element.isRuleAST()) {
+						IAST rule = (IAST) element;
+						Function<IExpr, IExpr> function = Functors.rules(rule, engine);
+						IExpr temp = function.apply(arg1);
+						if (temp.isPresent()) {
+							return temp;
+						}
+					} else {
+						WrongArgumentType wat = new WrongArgumentType(ast, ast, -1,
+								"Rule expression (x->y) expected: ");
+						throw wat;
+					}
+
+				}
+				return arg1;
+			}
+			if (rules.isRuleAST()) {
+				return replaceRule(arg1, (IAST) rules, engine);
+			} else {
+				WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
+				engine.printMessage("Replace: " + wat.getMessage());
+			}
+			return F.NIL;
+		}
+
+		private static IExpr replaceExprWithLevelSpecification(final IAST ast, IExpr arg1, IExpr rules,
+				IExpr exprLevelSpecification, EvalEngine engine) {
+			// use replaceFunction#setRule() method to set the current rules which
+			// are initialized with null
+			ReplaceFunction replaceFunction = new ReplaceFunction(ast, null, engine);
+			VisitorLevelSpecification level = new VisitorLevelSpecification(replaceFunction, exprLevelSpecification,
+					false, engine);
+
+			if (rules.isListOfLists()) {
+				IAST rulesList = (IAST) rules;
+				IASTAppendable result = F.ListAlloc(rulesList.size());
+				for (IExpr list : rulesList) {
+					IExpr temp = F.NIL;
+					IAST subList = (IAST) list;
+					for (IExpr element : subList) {
+						if (element.isRuleAST()) {
+							IAST rule = (IAST) element;
+							replaceFunction.setRule(rule);
+							temp = arg1.accept(level);
+							if (temp.isPresent()) {
+								break;
+							}
+						} else {
+							WrongArgumentType wat = new WrongArgumentType(ast, ast, -1,
+									"Rule expression (x->y) expected: ");
+							throw wat;
+						}
+					}
+					result.append(temp.orElse(arg1));
+				}
+				return result;
+			}
+
+			replaceFunction.setRule(rules);
+			return arg1.accept(level).orElse(arg1);
+		}
+
+		/**
+		 * Try to apply one single rule.
+		 * 
+		 * @param arg1
+		 * @param rule
+		 * @return
+		 */
+		private static IExpr replaceRule(IExpr arg1, IAST rule, EvalEngine engine) {
+			Function<IExpr, IExpr> function = Functors.rules(rule, engine);
+			IExpr temp = function.apply(arg1);
+			if (temp.isPresent()) {
+				return temp;
+			}
+			return arg1;
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				return F.operatorFormAST1(ast);
+			}
+			if (ast.size() < 3 || ast.size() > 4) {
+				return F.NIL;
+			}
+			try {
+				IExpr arg1 = ast.arg1();
+				IExpr rules = engine.evaluate(ast.arg2());
+				if (ast.isAST3()) {
+					// arg3 should contain a "level specification":
+					return replaceExprWithLevelSpecification(ast, arg1, rules, ast.arg3(), engine);
+				}
+				return replaceExpr(ast, arg1, rules, engine);
+			} catch (WrongArgumentType wat) {
+				engine.printMessage("Replace: " + wat.getMessage());
+			}
+			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_3;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDREST);
+		}
+	}
+
+	/**
+	 * <pre>
 	 * ReplaceAll(expr, i -&gt; new)
 	 * </pre>
 	 * <p>
@@ -3851,6 +4067,108 @@ public final class ListFunctions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDREST);
+		}
+	}
+
+	/**
+	 * <pre>
+	 * <code>ReplaceList(expr, lhs -&gt; rhs)
+	 * </code>
+	 * </pre>
+	 * <p>
+	 * or
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>ReplaceList(expr, lhs :&gt; rhs)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * replaces the left-hand-side pattern expression <code>lhs</code> in <code>expr</code> with the right-hand-side
+	 * <code>rhs</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; ReplaceList(a+b+c,(x_+y_) :&gt; {{x},{y}})
+	 * {{{a},{b+c}},{{b},{a+c}},{{c},{a+b}},{{a+b},{c}},{{a+c},{b}},{{b+c},{a}}} 
+	 * </code>
+	 * </pre>
+	 */
+	private final static class ReplaceList extends AbstractEvaluator {
+
+		private static IExpr replaceExpr(final IAST ast, IExpr arg1, IExpr rules, IASTAppendable result,
+				int maxNumberOfResults, final EvalEngine engine) {
+			if (rules.isList()) {
+				IAST rulesList = (IAST) rules;
+				IExpr temp = F.NIL;
+				for (IExpr element : rulesList) {
+					if (element.isRuleAST()) {
+						IAST rule = (IAST) element;
+						Function<IExpr, IExpr> function = Functors.listRules(rule, result, engine);
+						temp = function.apply(arg1);
+					} else {
+						WrongArgumentType wat = new WrongArgumentType(ast, ast, -1,
+								"Rule expression (x->y) expected: ");
+						throw wat;
+					}
+				}
+
+				return result;
+			}
+			if (rules.isRuleAST()) {
+				Function<IExpr, IExpr> function = Functors.listRules((IAST) rules, result, engine);
+				IExpr temp = function.apply(arg1);
+				if (temp.isPresent()) {
+					return temp;
+				}
+			} else {
+				WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
+				engine.printMessage("ReplaceList: " + wat.getMessage());
+			}
+			return result;
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (!ToggleFeature.REPLACE_LIST) {
+				return F.NIL;
+			}
+			if (ast.size() == 2 && ast.head().isAST(F.ReplaceList, 2)) {
+				return F.ReplaceList(ast.first(), ast.head().first());
+			}
+			if (ast.size() >= 3 && ast.size() <= 4) {
+				try {
+					int maxNumberOfResults = Integer.MAX_VALUE;
+					IExpr arg1 = ast.arg1();
+					IExpr rules = engine.evaluate(ast.arg2());
+					if (ast.isAST3()) {
+						IExpr arg3 = engine.evaluate(ast.arg3());
+						if (arg3.isReal()) {
+							maxNumberOfResults = ((ISignedNumber) arg3).toInt();
+						}
+					}
+					IASTAppendable result = F.ListAlloc();
+					return replaceExpr(ast, arg1, rules, result, maxNumberOfResults, engine);
+				} catch (ArithmeticException ae) {
+					engine.printMessage("ReplaceList: " + ae.getMessage());
+				} catch (WrongArgumentType wat) {
+					engine.printMessage("ReplaceList: " + wat.getMessage());
+				}
+				return F.List();
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			if (!ToggleFeature.REPLACE_LIST) {
+				return;
+			}
 			newSymbol.setAttributes(ISymbol.HOLDREST);
 		}
 	}
@@ -3974,6 +4292,102 @@ public final class ListFunctions {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
+	}
+
+	/**
+	 * <pre>
+	 * <code>ReplaceRepeated(expr, lhs -&gt; rhs)
+	 * 
+	 * expr //. lhs -&gt; rhs
+	 * </code>
+	 * </pre>
+	 * <p>
+	 * or
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>ReplaceRepeated(expr, lhs :&gt; rhs)
+	 * 
+	 * expr //. lhs :&gt; rhs
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * repeatedly applies the rule <code>lhs -&gt; rhs</code> to <code>expr</code> until the result no longer changes.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; a+b+c //. c-&gt;d
+	 * a+b+d
+	 * </code>
+	 * </pre>
+	 * <p>
+	 * Simplification of logarithms:
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; logrules = {Log(x_ * y_) :&gt; Log(x) + Log(y), Log(x_^y_) :&gt; y * Log(x)};
+	 * 
+	 * &gt;&gt; Log(a * (b * c) ^ d ^ e * f) //. logrules
+	 * Log(a)+d^e*(Log(b)+Log(c))+Log(f) 
+	 * </code>
+	 * </pre>
+	 * <p>
+	 * <code>ReplaceAll</code> just performs a single replacement:
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Log(a * (b * c) ^ d ^ e * f) /. logrules
+	 * Log(a)+Log((b*c)^d^e*f) 
+	 * </code>
+	 * </pre>
+	 * 
+	 */
+	private static final class ReplaceRepeated extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			try {
+				IExpr arg2 = engine.evaluate(ast.arg2());
+				if (arg2.isListOfLists()) {
+					IAST list = (IAST) arg2;
+					IASTAppendable result = F.ListAlloc(list.size());
+					for (IExpr subList : list) {
+						IExpr temp = engine.evaluate(subList);
+						if (temp.isAST()) {
+							result.append(ast.arg1().replaceRepeated((IAST) temp));
+						}
+					}
+					return result;
+				}
+				if (arg2.isAST()) {
+					IExpr temp = engine.evaluate(arg2);
+					if (temp.isAST()) {
+						return ast.arg1().replaceRepeated((IAST) temp);
+					}
+				} else {
+					WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
+					engine.printMessage("ReplaceRepeated: " + wat.getMessage());
+				}
+			} catch (WrongArgumentType wat) {
+				engine.printMessage("ReplaceRepeated: " + wat.getMessage());
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDREST);
+		}
+
 	}
 
 	/**

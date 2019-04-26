@@ -18,3 +18,6 @@ ReplaceList(expr, lhs :> rhs)
 {{{a},{b+c}},{{b},{a+c}},{{c},{a+b}},{{a+b},{c}},{{a+c},{b}},{{b+c},{a}}} 
 ```
 
+
+### Related terms 
+[Replace](Replace.md), [ReplaceAll](ReplaceAll.md), [ReplacePart](ReplacePart.md), [ReplaceRepeated](ReplaceRepeated.md)
