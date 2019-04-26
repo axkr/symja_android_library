@@ -4025,7 +4025,7 @@ public final class ListFunctions {
 			if (ast.size() == 3) {
 				try {
 					IExpr arg1 = ast.arg1();
-					IExpr arg2 = engine.evaluate(ast.arg2());
+					IExpr arg2 = ast.arg2();
 
 					if (arg2.isListOfRules()) {
 						return arg1.replaceAll((IAST) arg2).orElse(arg1);
@@ -4067,7 +4067,6 @@ public final class ListFunctions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDREST);
 		}
 	}
 
@@ -4138,6 +4137,10 @@ public final class ListFunctions {
 			if (!ToggleFeature.REPLACE_LIST) {
 				return F.NIL;
 			}
+			if (ast.isAST1()) {
+				return F.operatorFormAST1(ast);
+			}
+
 			if (ast.size() == 2 && ast.head().isAST(F.ReplaceList, 2)) {
 				return F.ReplaceList(ast.first(), ast.head().first());
 			}
@@ -4145,7 +4148,7 @@ public final class ListFunctions {
 				try {
 					int maxNumberOfResults = Integer.MAX_VALUE;
 					IExpr arg1 = ast.arg1();
-					IExpr rules = engine.evaluate(ast.arg2());
+					IExpr rules = ast.arg2();
 					if (ast.isAST3()) {
 						IExpr arg3 = engine.evaluate(ast.arg3());
 						if (arg3.isReal()) {
@@ -4169,7 +4172,6 @@ public final class ListFunctions {
 			if (!ToggleFeature.REPLACE_LIST) {
 				return;
 			}
-			newSymbol.setAttributes(ISymbol.HOLDREST);
 		}
 	}
 
@@ -4247,6 +4249,9 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				return F.operatorFormAST1(ast);
+			}
 			try {
 				if (ast.isAST3()) {
 					if (ast.arg3().isList()) {
@@ -4286,7 +4291,7 @@ public final class ListFunctions {
 
 		@Override
 		public int[] expectedArgSize() {
-			return IOFunctions.ARGS_2_3;
+			return IOFunctions.ARGS_1_3;
 		}
 
 		@Override
@@ -4350,8 +4355,12 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				return F.operatorFormAST1(ast);
+			}
+
 			try {
-				IExpr arg2 = engine.evaluate(ast.arg2());
+				IExpr arg2 = ast.arg2();
 				if (arg2.isListOfLists()) {
 					IAST list = (IAST) arg2;
 					IASTAppendable result = F.ListAlloc(list.size());
@@ -4364,10 +4373,7 @@ public final class ListFunctions {
 					return result;
 				}
 				if (arg2.isAST()) {
-					IExpr temp = engine.evaluate(arg2);
-					if (temp.isAST()) {
-						return ast.arg1().replaceRepeated((IAST) temp);
-					}
+					return ast.arg1().replaceRepeated((IAST) arg2);
 				} else {
 					WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
 					engine.printMessage("ReplaceRepeated: " + wat.getMessage());
@@ -4380,12 +4386,11 @@ public final class ListFunctions {
 
 		@Override
 		public int[] expectedArgSize() {
-			return IOFunctions.ARGS_2_2;
+			return IOFunctions.ARGS_1_2;
 		}
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDREST);
 		}
 
 	}

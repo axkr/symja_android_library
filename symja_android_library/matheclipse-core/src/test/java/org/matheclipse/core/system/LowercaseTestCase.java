@@ -9813,6 +9813,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Log(a * (b * c) ^ d ^ e * f) /. logrules", //
 				"Log(a)+Log((b*c)^d^e*f)");
 
+		check("{f(f(x)), f(x), g(f(x)), f(g(f(x)))} //. f(x_) -> x", //
+				"{x,x,g(x),g(x)}");
+		check("ReplaceRepeated(f(x_) -> x)[{f(f(x)), f(g(f(x)))}]", //
+				"{x,g(x)}");
 		check("Log(Sqrt(a*(b*c^d)^e)) //. logrules", //
 				"1/2*(Log(a)+e*(Log(b)+d*Log(c)))");
 
