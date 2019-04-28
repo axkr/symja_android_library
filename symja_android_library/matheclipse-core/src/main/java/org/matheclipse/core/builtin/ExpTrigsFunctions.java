@@ -186,7 +186,7 @@ public class ExpTrigsFunctions {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
 		}
-		
+
 		@Override
 		public void setUp(ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
@@ -1034,7 +1034,7 @@ public class ExpTrigsFunctions {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -1778,13 +1778,18 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			return F.Power(F.Sin(F.C1D2.times(ast.arg1())), F.C2);
+			if (ast.arg1().isNumber() || ast.arg1().isNumericFunction()) {
+				// 1/2 * (1-Cos(x))
+				return F.Times(F.C1D2, F.Subtract(F.C1, F.Cos(ast.arg1())));
+				// return F.Power(F.Sin(F.C1D2.times(ast.arg1())), F.C2);
+			}
+			return F.NIL;
 		}
-		
+
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
-		
+
 		@Override
 		public void setUp(ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -1796,13 +1801,16 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			return F.Times(F.C2, F.ArcSin(F.Sqrt(ast.arg1())));
+			if (ast.arg1().isNumber() || ast.arg1().isNumericFunction()) {
+				return F.Times(F.C2, F.ArcSin(F.Sqrt(ast.arg1())));
+			}
+			return F.NIL;
 		}
 
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
-		
+
 		@Override
 		public void setUp(ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -1934,7 +1942,7 @@ public class ExpTrigsFunctions {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);

@@ -26,7 +26,6 @@ import static org.matheclipse.core.expression.F.z_;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.WindowFunctions;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Options;
@@ -156,6 +155,15 @@ public class FunctionExpand extends AbstractEvaluator {
 							F.Plus(F.Times(F.C1D2, F.Fibonacci(m), F.LucasL(n)),
 									F.Times(F.C1D2, F.Fibonacci(n), F.LucasL(m))),
 							F.And(F.IntegerQ(m), F.Element(n, F.Integers)))); // $$);
+
+			// Haversine
+			MATCHER.caseOf(F.Haversine(x_), //
+					// [$ (1/2) * (1 - Cos(x)) $]
+					F.Times(F.C1D2, F.Subtract(F.C1, F.Cos(x)))); // $$);
+			// InverseHaversine
+			MATCHER.caseOf(F.InverseHaversine(x_), //
+					// [$ 2*ArcSin( Sqrt(x) ) $]
+					F.Times(F.C2, F.ArcSin(F.Sqrt(x)))); // $$);
 
 			// LegendreQ
 			MATCHER.caseOf(F.LegendreQ(x_, y_, z_), //

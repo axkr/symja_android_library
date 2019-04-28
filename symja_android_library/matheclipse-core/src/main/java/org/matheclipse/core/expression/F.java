@@ -2431,6 +2431,8 @@ public class F {
 	/** RandomInteger(n) - create a random integer number between `0` and `n`. */
 	public final static IBuiltInSymbol RandomInteger = F.initFinalSymbol("RandomInteger", ID.RandomInteger);
 
+	public final static IBuiltInSymbol RandomPrime = F.initFinalSymbol("RandomPrime", ID.RandomPrime);
+	
 	/** RandomReal() - create a random number between `0.0` and `1.0`. */
 	public final static IBuiltInSymbol RandomReal = F.initFinalSymbol("RandomReal", ID.RandomReal);
 
@@ -6338,6 +6340,10 @@ public class F {
 		return binaryAST2(HarmonicNumber, a0, a1);
 	}
 
+	public static IAST Haversine(final IExpr a) {
+		return unaryAST1(Haversine, a);
+	}
+	
 	public static IAST Head(final IExpr a) {
 		return unaryAST1(Head, a);
 	}
@@ -6761,6 +6767,10 @@ public class F {
 		return ternaryAST3(InverseGammaRegularized, a0, a1, a2);
 	}
 
+	public static IAST InverseHaversine(final IExpr a) {
+		return unaryAST1(InverseHaversine, a);
+	}
+	
 	public static IAST InverseLaplaceTransform(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(InverseLaplaceTransform, a0, a1, a2);
 	}

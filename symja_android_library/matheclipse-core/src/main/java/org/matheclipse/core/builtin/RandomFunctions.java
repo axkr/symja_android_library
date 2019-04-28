@@ -6,6 +6,7 @@ import java.math.BigInteger;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.hipparchus.util.MathArrays;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -26,6 +27,7 @@ public final class RandomFunctions {
 
 		private static void init() {
 			F.RandomInteger.setEvaluator(new RandomInteger());
+			F.RandomPrime.setEvaluator(new RandomPrime());
 			F.RandomChoice.setEvaluator(new RandomChoice());
 			F.RandomReal.setEvaluator(new RandomReal());
 			F.RandomSample.setEvaluator(new RandomSample());
@@ -102,12 +104,53 @@ public final class RandomFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.arg1().isInteger()) {
 				// RandomInteger(100) gives an integer between 0 and 100
-				BigInteger n = ((IInteger) ast.arg1()).toBigNumerator();
+				BigInteger upperLimit = ((IInteger) ast.arg1()).toBigNumerator();
+				boolean negative = false;
+				if (upperLimit.compareTo(BigInteger.ZERO) < 0) {
+					upperLimit = upperLimit.negate();
+					negative = true;
+				}
+				final int nlen = upperLimit.bitLength();
+				ThreadLocalRandom tlr = ThreadLocalRandom.current();
 				BigInteger r;
 				do {
-					r = new BigInteger(n.bitLength(), ThreadLocalRandom.current());
-				} while (r.compareTo(n) >= 0);
-				return F.integer(r);
+					r = new BigInteger(nlen, tlr);
+				} while (r.compareTo(upperLimit) > 0);
+				return F.integer(negative ? r.negate() : r);
+			}
+
+			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+	}
+
+	private final static class RandomPrime extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.arg1().isInteger()) {
+				try {
+					// RandomPrime(100) gives a prime integer between 2 and 100
+					BigInteger upperLimit = ((IInteger) ast.arg1()).toBigNumerator();
+					if (upperLimit.compareTo(BigInteger.ZERO) < 0) {
+						return engine.printMessage("RandomPrime: Positive integer value expected.");
+					}
+					final int nlen = upperLimit.bitLength();
+					ThreadLocalRandom tlr = ThreadLocalRandom.current();
+					BigInteger randomNumber;
+					do {
+						randomNumber = new BigInteger(nlen, 32, tlr);
+					} while (randomNumber.compareTo(upperLimit) > 0);
+					return F.integer(randomNumber);
+				} catch (RuntimeException rex) {
+					if (Config.SHOW_STACKTRACE) {
+						rex.printStackTrace();
+					}
+					return engine.printMessage("RandomPrime: There are no primes in the specified interval.");
+				}
 			}
 
 			return F.NIL;

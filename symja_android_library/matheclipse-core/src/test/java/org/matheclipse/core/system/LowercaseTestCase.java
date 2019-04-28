@@ -5951,6 +5951,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFunctionExpand() {
+		check("FunctionExpand(Haversine(hf))", //
+				"1/2*(1-Cos(hf))");
+		check("FunctionExpand(InverseHaversine(ihf))", //
+				"2*ArcSin(Sqrt(ihf))");
+
 		check("FunctionExpand(E^ArcSinh(x))", //
 				"x+Sqrt(1+x^2)");
 		check("FunctionExpand(E^ArcCosh(x))", //
@@ -6357,13 +6362,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHaversine() {
-		checkNumeric("Haversine(1.5)", "0.4646313991661485");
-		checkNumeric("Haversine(0.5 + 2 * I)", "-1.150818666457047+I*0.8694047522371576");
-		checkNumeric("Haversine(0.5)", "0.06120871905481365");
-		checkNumeric("Haversine(1.5+I)", "0.44542339697277344+I*0.5861286494553963");
-		check("Haversine(Pi/3)", "1/4");
-		check("Haversine(90*Degree)", "1/2");
-		check("Haversine({0, Pi/4, Pi/3, Pi/2})", "{0,1/4*(2-Sqrt(2)),1/4,1/2}");
+		checkNumeric("Haversine(1.5)", //
+				"0.46463139916614854");
+		checkNumeric("Haversine(0.5 + 2 * I)", //
+				"-1.1508186664570472+I*0.8694047522371582");
+		checkNumeric("Haversine(0.5)", //
+				"0.06120871905481362");
+		checkNumeric("Haversine(1.5+I)", //
+				"0.44542339697277356+I*0.5861286494553962");
+		check("Haversine(Pi/3)", //
+				"1/4");
+		check("Haversine(90*Degree)", //
+				"1/2");
+		check("Haversine({0, Pi/4, Pi/3, Pi/2})", //
+				"{0,1/2*(1-1/Sqrt(2)),1/4,1/2}");
 	}
 
 	public void testHead() {
@@ -11798,7 +11810,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRandom() {
+		// message: RandomPrime: Positive integer value expected.
+		check("RandomPrime(-11)", //
+				"RandomPrime(-11)");
+		// message: RandomPrime: There are no primes in the specified interval.
+		check("RandomPrime(1)", //
+				"RandomPrime(1)");
+		// check("RandomPrime(100000000000000000000000000)", //
+		// "87660272303062923753002687");
 		//
+
+		// check("RandomInteger(-10)", //
+		// "-4");
 		// check("RandomInteger(100)", "");
 		// check("RandomReal()", "0.53275");
 		//
@@ -14240,7 +14263,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Sort({4, 1.0, a, 3+I})", //
 				"{1.0,4,3+I,a}");
 	}
-	
+
 	public void testSortBy() {
 		check("SortBy({{5, 1}, {10, -1}}, Last)", //
 				"{{10,-1},{5,1}}");
