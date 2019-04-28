@@ -761,8 +761,7 @@ public class IntegerFunctions {
 					}
 				}
 				if (radix.isLessThan(F.C1)) {
-					engine.printMessage("IntegerLength: The base must be greater than 1");
-					return F.NIL;
+					return engine.printMessage("IntegerLength: The base must be greater than 1");
 				}
 				IInteger iArg1 = (IInteger) ast.arg1();
 				if (iArg1.isZero()) {
@@ -961,9 +960,8 @@ public class IntegerFunctions {
 				}
 				return arg1.modPow(arg2, arg3);
 			} catch (ArithmeticException ae) {
-				engine.printMessage("PowerMod: " + ae.getMessage());
+				return engine.printMessage("PowerMod: " + ae.getMessage());
 			}
-			return F.NIL;
 		}
 
 		public int[] expectedArgSize() {
@@ -1079,8 +1077,7 @@ public class IntegerFunctions {
 		public IExpr e2IntArg(final IInteger i0, final IInteger i1) {
 			try {
 				if (i1.isZero()) {
-					EvalEngine.get().printMessage("QuotientRemainder: division by zero");
-					return F.NIL;
+					return EvalEngine.get().printMessage("QuotientRemainder: division by zero");
 				}
 				IASTMutable list = F.ListAlloc(F.Null, F.Null);
 				list.set(1, i0.quotient(i1));
@@ -1091,8 +1088,7 @@ public class IntegerFunctions {
 				list.set(2, i0.mod(i1));
 				return list;
 			} catch (ArithmeticException ae) {
-				EvalEngine.get().printMessage("QuotientRemainder: " + ae.getMessage());
-				return F.NIL;
+				return EvalEngine.get().printMessage("QuotientRemainder: " + ae.getMessage());
 			}
 
 		}

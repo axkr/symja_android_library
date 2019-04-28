@@ -88,7 +88,7 @@ public class EllipticIntegrals {
 						b = -Math.asin(Math.sqrt(b));
 						return F.num(de.lab4inf.math.functions.IncompleteSecondEllipticIntegral.icseint(a, b));
 					} catch (RuntimeException rex) {
-						engine.printMessage("EllipticE: " + rex.getMessage());
+						return engine.printMessage("EllipticE: " + rex.getMessage());
 					}
 				}
 				IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
@@ -208,7 +208,7 @@ public class EllipticIntegrals {
 					b = -Math.asin(Math.sqrt(b));
 					return F.num(de.lab4inf.math.functions.IncompleteFirstEllipticIntegral.icfeint(a, b));
 				} catch (RuntimeException rex) {
-					engine.printMessage("EllipticF: " + rex.getMessage());
+					return engine.printMessage("EllipticF: " + rex.getMessage());
 				}
 			}
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
@@ -355,7 +355,7 @@ public class EllipticIntegrals {
 						c = -Math.asin(Math.sqrt(c));
 						return F.num(de.lab4inf.math.functions.IncompleteThirdEllipticIntegral.icteint(a, b, c));
 					} catch (RuntimeException rex) {
-						engine.printMessage("EllipticPi: " + rex.getMessage());
+						return engine.printMessage("EllipticPi: " + rex.getMessage());
 					}
 				}
 				if (m.equals(F.CPiHalf)) {

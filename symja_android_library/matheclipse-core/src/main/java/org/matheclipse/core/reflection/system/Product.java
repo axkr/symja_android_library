@@ -229,8 +229,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 					return F.NIL;
 				}
 			} catch (RecursionLimitExceeded rle) {
-				engine.printMessage("Product: Recursionlimit exceeded");
-				return F.NIL;
+				return engine.printMessage("Product: Recursionlimit exceeded");
 			}
 			if (ast.isAST2()) {
 				return temp;

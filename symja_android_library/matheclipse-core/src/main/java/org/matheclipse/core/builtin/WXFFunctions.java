@@ -54,7 +54,7 @@ public class WXFFunctions {
 						}
 					}
 				}
-				engine.printMessage("ByteArray: list of byte values expected");
+				return engine.printMessage("ByteArray: list of byte values expected");
 			}
 			return F.NIL;
 		}

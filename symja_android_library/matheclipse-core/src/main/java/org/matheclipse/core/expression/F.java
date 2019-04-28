@@ -2714,6 +2714,9 @@ public class F {
 	/** Sort(list) - sorts $list$ (or the leaves of any other expression) according to canonical ordering. */
 	public final static IBuiltInSymbol Sort = F.initFinalSymbol("Sort", ID.Sort);
 
+	/** Sort(list) - sorts $list$ (or the leaves of any other expression) according to canonical ordering. */
+	public final static IBuiltInSymbol SortBy = F.initFinalSymbol("SortBy", ID.SortBy);
+	
 	/** Sow(expr) - sends the value `expr` to the innermost `Reap`. */
 	public final static IBuiltInSymbol Sow = F.initFinalSymbol("Sow", ID.Sow);
 

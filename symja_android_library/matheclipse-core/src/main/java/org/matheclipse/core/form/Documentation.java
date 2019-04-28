@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.reflection.system.Names;
 
 public class Documentation {
 
@@ -16,7 +16,7 @@ public class Documentation {
 	}
 
 	public static void usageDocumentation(Appendable out, String name) {
-		IAST list = Names.getNamesByPrefix(name);
+		IAST list = IOFunctions.getNamesByPrefix(name);
 		try {
 			if (list.size() != 2) {
 				for (int i = 1; i < list.size(); i++) {

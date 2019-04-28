@@ -479,7 +479,7 @@ public class HypergeometricFunctions {
 				try {
 					return F.num(de.lab4inf.math.functions.HypergeometricLimitFunction.limitSeries(bDouble, zDouble));
 				} catch (RuntimeException rex) {
-					engine.printMessage("Hypergeometric0F1: " + rex.getMessage());
+					return engine.printMessage("Hypergeometric0F1: " + rex.getMessage());
 				}
 			}
 			return F.NIL;
@@ -531,7 +531,7 @@ public class HypergeometricFunctions {
 					try {
 						return F.num(de.lab4inf.math.functions.KummerFunction.kummer(aDouble, bDoube, zDouble));
 					} catch (RuntimeException rex) {
-						engine.printMessage("Hypergeometric1F1: " + rex.getMessage());
+						return engine.printMessage("Hypergeometric1F1: " + rex.getMessage());
 					}
 				}
 			}
@@ -610,7 +610,7 @@ public class HypergeometricFunctions {
 					return F.num(de.lab4inf.math.functions.HypergeometricGaussSeries.gaussSeries(aDouble, bDouble,
 							cDouble, zDouble));
 				} catch (RuntimeException rex) {
-					engine.printMessage("Hypergeometric2F1: " + rex.getMessage());
+					return engine.printMessage("Hypergeometric2F1: " + rex.getMessage());
 				}
 			}
 			return F.NIL;

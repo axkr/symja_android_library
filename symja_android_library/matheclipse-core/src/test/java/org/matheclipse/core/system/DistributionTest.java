@@ -88,7 +88,7 @@ public class DistributionTest extends AbstractTestCase {
 		check("PDF(GammaDistribution(a, b))", //
 				"Piecewise({{1/(b^a*E^(#1/b)*Gamma(a)*#1^(1-a)),#1>0}},0)&");
 		check("PDF(GammaDistribution(a, b, g, d))", //
-				"Piecewise({{g/(E^((-d+#1)/b)^g*b*Gamma(a)*((-d+#1)/b)^(1-a*g)),#1>d}},0)&");
+				"Piecewise({{g/(b*E^((-d+#1)/b)^g*Gamma(a)*((-d+#1)/b)^(1-a*g)),#1>d}},0)&");
 		check("Quantile(GammaDistribution(a, b), {1/4, 1/2, 3/4})", //
 				"{b*InverseGammaRegularized(a,0,1/4),b*InverseGammaRegularized(a,0,1/2),b*InverseGammaRegularized(a,\n"
 						+ "0,3/4)}");

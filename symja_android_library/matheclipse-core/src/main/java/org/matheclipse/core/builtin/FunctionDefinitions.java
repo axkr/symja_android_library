@@ -68,8 +68,6 @@ public final class FunctionDefinitions {
 	private static class Initializer {
 
 		private static void init() {
-			AbsArg.setEvaluator(new org.matheclipse.core.reflection.system.AbsArg());
-			BesselJ.setEvaluator(new org.matheclipse.core.reflection.system.BesselJ());
 			ComplexExpand.setEvaluator(new org.matheclipse.core.reflection.system.ComplexExpand());
 			CreateDirectory.setEvaluator(new org.matheclipse.core.reflection.system.CreateDirectory());
 			D.setEvaluator(new org.matheclipse.core.reflection.system.D());
@@ -84,7 +82,6 @@ public final class FunctionDefinitions {
 			FindInstance.setEvaluator(new org.matheclipse.core.reflection.system.FindInstance());
 			FindRoot.setEvaluator(new org.matheclipse.core.reflection.system.FindRoot());
 			FrobeniusSolve.setEvaluator(new org.matheclipse.core.reflection.system.FrobeniusSolve());
-			FromPolarCoordinates.setEvaluator(new org.matheclipse.core.reflection.system.FromPolarCoordinates());
 			FunctionExpand.setEvaluator(new org.matheclipse.core.reflection.system.FunctionExpand());
 			GroebnerBasis.setEvaluator(new org.matheclipse.core.reflection.system.GroebnerBasis());
 			HeavisideTheta.setEvaluator(new org.matheclipse.core.reflection.system.HeavisideTheta());
@@ -101,7 +98,6 @@ public final class FunctionDefinitions {
 			Maximize.setEvaluator(new org.matheclipse.core.reflection.system.Maximize());
 			Minimize.setEvaluator(new org.matheclipse.core.reflection.system.Minimize());
 			MonomialList.setEvaluator(new org.matheclipse.core.reflection.system.MonomialList());
-			Names.setEvaluator(new org.matheclipse.core.reflection.system.Names());
 			NDSolve.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve());
 			NFourierTransform.setEvaluator(new org.matheclipse.core.reflection.system.NFourierTransform());
 			NIntegrate.setEvaluator(new org.matheclipse.core.reflection.system.NIntegrate());
@@ -116,14 +112,10 @@ public final class FunctionDefinitions {
 			Plot3D.setEvaluator(new org.matheclipse.core.reflection.system.Plot3D());
 			Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
 
-			Rationalize.setEvaluator(new org.matheclipse.core.reflection.system.Rationalize());
 			Share.setEvaluator(new org.matheclipse.core.reflection.system.Share());
-			Sign.setEvaluator(new org.matheclipse.core.reflection.system.Sign());
-			SignCmp.setEvaluator(new org.matheclipse.core.reflection.system.SignCmp());
 			Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
 			Sum.setEvaluator(new org.matheclipse.core.reflection.system.Sum());
 			Taylor.setEvaluator(new org.matheclipse.core.reflection.system.Taylor());
-			ToPolarCoordinates.setEvaluator(new org.matheclipse.core.reflection.system.ToPolarCoordinates());
 			TrigExpand.setEvaluator(new org.matheclipse.core.reflection.system.TrigExpand());
 			TrigReduce.setEvaluator(new org.matheclipse.core.reflection.system.TrigReduce());
 			TrigToExp.setEvaluator(new org.matheclipse.core.reflection.system.TrigToExp());

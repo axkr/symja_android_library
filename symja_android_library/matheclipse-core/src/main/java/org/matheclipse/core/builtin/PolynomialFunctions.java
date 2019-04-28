@@ -1105,8 +1105,7 @@ public class PolynomialFunctions {
 				VariablesSet eVar = new VariablesSet(ast.arg1());
 				if (!eVar.isSize(1)) {
 					// factor only possible for univariate polynomials
-					engine.printMessage("NRoots: factorization only possible for univariate polynomials");
-					return F.NIL;
+					return engine.printMessage("NRoots: factorization only possible for univariate polynomials");
 				}
 				variables = eVar.getVarList();
 			} else {
@@ -1874,8 +1873,7 @@ public class PolynomialFunctions {
 	public static IAST roots(final IExpr arg1, IAST variables, EvalEngine engine) {
 		if (variables.size() != 2) {
 			// factor only possible for univariate polynomials
-			engine.printMessage("NRoots: factorization only possible for univariate polynomials");
-			return F.NIL;
+			return engine.printMessage("NRoots: factorization only possible for univariate polynomials");
 		}
 		IExpr expr = evalExpandAll(arg1, engine);
 

@@ -1001,7 +1001,7 @@ public final class PatternMatching {
 					writer.write(buf.toString());
 					writer.close();
 				} catch (IOException e) {
-					engine.printMessage("Put: file " + fileName.toString() + " I/O exception !");
+					return engine.printMessage("Put: file " + fileName.toString() + " I/O exception !");
 				}
 				return F.Null;
 			}

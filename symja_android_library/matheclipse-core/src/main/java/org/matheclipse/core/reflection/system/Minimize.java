@@ -76,11 +76,10 @@ public class Minimize extends AbstractFunctionEvaluator {
 						return F.CEmptyList;
 					}
 				} catch (RuntimeException rex) {
-					engine.printMessage("Minimize: exception occured:" + rex.getMessage());
-					return F.NIL;
+					return engine.printMessage("Minimize: exception occured:" + rex.getMessage());
 				}
 			}
-			engine.printMessage("Minimize: only unary functions in " + x + " are supported.");
+			return engine.printMessage("Minimize: only unary functions in " + x + " are supported.");
 		}
 		return F.NIL;
 	}

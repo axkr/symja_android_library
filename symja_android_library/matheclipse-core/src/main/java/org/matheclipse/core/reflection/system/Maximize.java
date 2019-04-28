@@ -59,11 +59,10 @@ public class Maximize extends AbstractFunctionEvaluator {
 						return F.CEmptyList;
 					}
 				} catch (RuntimeException rex) {
-					engine.printMessage("Maximize: exception occured:" + rex.getMessage());
-					return F.NIL;
+					return engine.printMessage("Maximize: exception occured:" + rex.getMessage());
 				}
 			}
-			engine.printMessage("Maximize: only unary functions in " + x + " are supported.");
+			return engine.printMessage("Maximize: only unary functions in " + x + " are supported.");
 		}
 		return F.NIL;
 	}

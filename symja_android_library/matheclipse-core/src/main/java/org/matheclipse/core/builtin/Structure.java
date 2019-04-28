@@ -74,6 +74,7 @@ public class Structure {
 			F.Quit.setEvaluator(new Quit());
 			F.Scan.setEvaluator(new Scan());
 			F.Sort.setEvaluator(new Sort());
+			F.SortBy.setEvaluator(new SortBy());
 			F.Symbol.setEvaluator(new Symbol());
 			F.SymbolName.setEvaluator(new SymbolName());
 			F.Thread.setEvaluator(new Thread());
@@ -223,7 +224,7 @@ public class Structure {
 					}
 				}
 			} catch (final MathException e) {
-				engine.printMessage("Apply: " + e.getMessage());
+				return engine.printMessage("Apply: " + e.getMessage());
 			} catch (final ArithmeticException e) {
 
 			}
@@ -897,9 +898,8 @@ public class Structure {
 				}
 				return arg2.accept(level).orElse(arg2);
 			} catch (final MathException e) {
-				engine.printMessage("Map: " + e.getMessage());
+				return engine.printMessage("Map: " + e.getMessage());
 			}
-			return F.NIL;
 		}
 
 		public int[] expectedArgSize() {
@@ -939,8 +939,7 @@ public class Structure {
 							int index = 0;
 							int n = arg3.toIntDefault(Integer.MIN_VALUE);
 							if (n == Integer.MIN_VALUE) {
-								engine.printMessage("MapAt: Part(" + arg3.toString() + ") is not availabe");
-								return F.NIL;
+								return engine.printMessage("MapAt: Part(" + arg3.toString() + ") is not availabe");
 							}
 							if (n < 0) {
 								index = list.size() + n;
@@ -1024,7 +1023,7 @@ public class Structure {
 					return level.visitAST(((IAST) arg2), new int[0]).orElse(arg2);
 				}
 			} catch (final MathException e) {
-				engine.printMessage("MapIndexed: " + e.getMessage());
+				return engine.printMessage("MapIndexed: " + e.getMessage());
 			}
 			return F.NIL;
 		}
@@ -1170,7 +1169,7 @@ public class Structure {
 				if (tensor.isAST(F.List, 1)) {
 					return tensor;
 				}
-				engine.printMessage("MapThread: argument 2 dimensions less than level.");
+				return engine.printMessage("MapThread: argument 2 dimensions less than level.");
 			}
 			return F.NIL;
 		}
@@ -1347,8 +1346,7 @@ public class Structure {
 				}
 				IInteger depth = (IInteger) ast.arg3();
 				if (depth.isNegative()) {
-					engine.printMessage("Non-negative integer expected at position 3 in Operate()");
-					return F.NIL;
+					return engine.printMessage("Non-negative integer expected at position 3 in Operate()");
 				}
 
 				headDepth = depth.toIntDefault(Integer.MIN_VALUE);
@@ -1595,6 +1593,83 @@ public class Structure {
 					return shallowCopy;
 				} catch (Exception ex) {
 
+				}
+			}
+
+			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
+	}
+
+	/**
+	 * <pre>
+	 * <code>Sort(list, f) 
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * sorts <code>list</code> (or the leaves of any other expression) according to canonical ordering of the keys that
+	 * are extracted from the <code>list</code>'s elements using <code>f</code>. Chunks of leaves that appear the same
+	 * under <code>f</code> are sorted according to their natural order (without applying <code>f</code>).
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * <code>Sort(f)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * creates an operator function that, when applied, sorts by <code>f</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; SortBy({{5, 1}, {10, -1}}, Last)
+	 * {{10,-1},{5,1}}
+	 * 
+	 * &gt;&gt; SortBy(Total)[{{5, 1}, {10, -9}}] 
+	 * {{10,-9},{5,1}}
+	 * </code>
+	 * </pre>
+	 */
+	private static class SortBy extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				return F.operatorFormAST1(ast);
+			}
+			if (ast.isAST2()) {
+				if (ast.arg1().isAST()) {
+					IAST arg1 = (IAST) ast.arg1();
+					IExpr arg2 = ast.arg2();
+
+					// sort a list of indices. after sorting, we reorder the leaves.
+					IASTAppendable sortAST = F.ListAlloc(arg1.size());
+					for (int i = 1; i < arg1.size(); i++) {
+						IExpr unary = F.unaryAST1(arg2, arg1.get(i));
+						unary = engine.evaluate(unary);
+						sortAST.append(F.binaryAST2(F.List, unary, F.ZZ(i)));
+					}
+
+					EvalAttributes.sort(sortAST);
+
+					IASTAppendable result = F.ast(arg1.head(), arg1.size(), false);
+					for (int i = 1; i < arg1.size(); i++) {
+						int sortedIndex = sortAST.get(i).second().toIntDefault(-1);
+						if (sortedIndex < 0) {
+							return F.NIL;
+						}
+						result.append(arg1.get(sortedIndex));
+					}
+					return result;
 				}
 			}
 

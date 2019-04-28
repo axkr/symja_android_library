@@ -87,7 +87,7 @@ public class Export extends AbstractEvaluator {
 				}
 
 			} catch (IOException ioe) {
-				engine.printMessage("Export: file " + arg1.toString() + " not found!");
+				return engine.printMessage("Export: file " + arg1.toString() + " not found!");
 			} finally {
 				if (writer != null) {
 					try {

@@ -4038,7 +4038,7 @@ public final class ListFunctions {
 							} else {
 								WrongArgumentType wat = new WrongArgumentType(ast, ast, -1,
 										"List of rule expressions (x->y) expected: ");
-								engine.printMessage(wat.getMessage());
+								return engine.printMessage(wat.getMessage());
 							}
 						}
 						return result;
@@ -4047,15 +4047,14 @@ public final class ListFunctions {
 					} else {
 						WrongArgumentType wat = new WrongArgumentType(ast, ast, -1,
 								"Rule expression (x->y) expected: ");
-						engine.printMessage(wat.getMessage());
+						return engine.printMessage(wat.getMessage());
 					}
 				} catch (WrongArgumentType wat) {
 					if (Config.SHOW_STACKTRACE) {
 						wat.printStackTrace();
 					}
-					engine.printMessage(wat.getMessage());
+					return engine.printMessage(wat.getMessage());
 				}
-				return F.NIL;
 			}
 			return F.NIL;
 		}
@@ -4127,7 +4126,7 @@ public final class ListFunctions {
 				}
 			} else {
 				WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
-				engine.printMessage("ReplaceList: " + wat.getMessage());
+				return engine.printMessage("ReplaceList: " + wat.getMessage());
 			}
 			return result;
 		}
@@ -4158,11 +4157,10 @@ public final class ListFunctions {
 					IASTAppendable result = F.ListAlloc();
 					return replaceExpr(ast, arg1, rules, result, maxNumberOfResults, engine);
 				} catch (ArithmeticException ae) {
-					engine.printMessage("ReplaceList: " + ae.getMessage());
+					return engine.printMessage("ReplaceList: " + ae.getMessage());
 				} catch (WrongArgumentType wat) {
-					engine.printMessage("ReplaceList: " + wat.getMessage());
+					return engine.printMessage("ReplaceList: " + wat.getMessage());
 				}
-				return F.List();
 			}
 			return F.NIL;
 		}
@@ -4284,9 +4282,8 @@ public final class ListFunctions {
 				}
 				return result;
 			} catch (WrongArgumentType wat) {
-				engine.printMessage(wat.getMessage());
+				return engine.printMessage(wat.getMessage());
 			}
-			return F.NIL;
 		}
 
 		@Override
@@ -4376,12 +4373,11 @@ public final class ListFunctions {
 					return ast.arg1().replaceRepeated((IAST) arg2);
 				} else {
 					WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
-					engine.printMessage("ReplaceRepeated: " + wat.getMessage());
+					return engine.printMessage("ReplaceRepeated: " + wat.getMessage());
 				}
 			} catch (WrongArgumentType wat) {
-				engine.printMessage("ReplaceRepeated: " + wat.getMessage());
+				return engine.printMessage("ReplaceRepeated: " + wat.getMessage());
 			}
-			return F.NIL;
 		}
 
 		@Override
@@ -4435,7 +4431,7 @@ public final class ListFunctions {
 				if (arg1.isAST() && ((IAST) arg1).size() > 1) {
 					return arg1.rest();
 				}
-				engine.printMessage("Rest: Nonatomic expression expected");
+				return engine.printMessage("Rest: Nonatomic expression expected");
 			}
 			return F.NIL;
 		}
@@ -4946,16 +4942,14 @@ public final class ListFunctions {
 				if (ast.size() == 2) {
 					int n = ast.arg1().toIntDefault(-1);
 					if (n < 0 || n == 0) {
-						engine.printMessage("Subdivide: argument 1 should be a positive integer.");
-						return F.NIL;
+						return engine.printMessage("Subdivide: argument 1 should be a positive integer.");
 					}
 					return Range.range(0, n + 1).map(x -> x.divide(ast.arg1()), 1);
 				}
 				if (ast.size() == 3) {
 					int n = ast.arg2().toIntDefault(-1);
 					if (n < 0 || n == 0) {
-						engine.printMessage("Subdivide: argument 2 should be a positive integer.");
-						return F.NIL;
+						return engine.printMessage("Subdivide: argument 2 should be a positive integer.");
 					}
 					IAST factorList = Range.range(0, n + 1).map(x -> x.divide(ast.arg2()), 1);
 					return ((IAST) factorList).map(x -> ast.arg1().times(x), 1);
@@ -4968,8 +4962,7 @@ public final class ListFunctions {
 					}
 					int n = ast.arg3().toIntDefault(-1);
 					if (n < 0 || n == 0) {
-						engine.printMessage("Subdivide: argument 3 should be a positive integer.");
-						return F.NIL;
+						return engine.printMessage("Subdivide: argument 3 should be a positive integer.");
 					}
 					IAST factorList = Range.range(0, n + 1).map(x -> x.divide(ast.arg3()), 1);
 					return ((IAST) factorList)
@@ -5439,11 +5432,10 @@ public final class ListFunctions {
 						return take(arg1, 0, sequ);
 					}
 				} else {
-					engine.printMessage("Take: Nonatomic expression expected at position 1");
+					return engine.printMessage("Take: Nonatomic expression expected at position 1");
 				}
 			} catch (final IllegalArgument e) {
-				engine.printMessage("Take: " + e.getMessage());
-				return F.NIL;
+				return engine.printMessage("Take: " + e.getMessage());
 			} catch (final Exception e) {
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();

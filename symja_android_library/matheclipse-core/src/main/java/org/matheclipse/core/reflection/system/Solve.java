@@ -940,9 +940,8 @@ public class Solve extends AbstractFunctionEvaluator {
 						if (Config.SHOW_STACKTRACE) {
 							rex.printStackTrace();
 						}
-						engine.printMessage("Solve: " + "Integer solution not found: " + rex.getMessage());
+						return engine.printMessage("Solve: " + "Integer solution not found: " + rex.getMessage());
 					}
-					return F.NIL;
 				}
 				if (!domain.equals(F.Reals) && !domain.equals(F.Complexes)) {
 					throw new WrongArgumentType(ast, ast.arg3(), 3, "Domain definition expected!");

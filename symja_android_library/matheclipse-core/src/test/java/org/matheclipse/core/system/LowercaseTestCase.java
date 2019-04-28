@@ -7043,14 +7043,27 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInverseCDF() {
-		check("InverseCDF[NormalDistribution[ ]]", //
+		check("InverseCDF(GammaDistribution(a,b,g,d))", //
+				"ConditionalExpression(Piecewise({{d+b*InverseGammaRegularized(a,0,#1)^(1/g),0<#1<\n"
+						+ "1},{d,#1<=0}},Infinity),0<=#1<=1)&");
+		check("InverseCDF(NormalDistribution(0,1))", //
 				"ConditionalExpression(-Sqrt(2)*InverseErfc(2*#1),0<=#1<=1)&");
-		check("InverseCDF[NormalDistribution[ ], p]", //
+		check("InverseCDF(NormalDistribution( ))", //
+				"ConditionalExpression(-Sqrt(2)*InverseErfc(2*#1),0<=#1<=1)&");
+		check("InverseCDF(NormalDistribution( ), p)", //
 				"ConditionalExpression(-Sqrt(2)*InverseErfc(2*p),0<=p<=1)");
-		check("InverseCDF[NormalDistribution[n,m]]", //
+		check("InverseCDF(NormalDistribution(n,m))", //
 				"ConditionalExpression(n-Sqrt(2)*m*InverseErfc(2*#1),0<=#1<=1)&");
-		check("InverseCDF[NormalDistribution[n,m], p]", //
+		check("InverseCDF(NormalDistribution(n,m), p)", //
 				"ConditionalExpression(n-Sqrt(2)*m*InverseErfc(2*p),0<=p<=1)");
+
+		check("InverseCDF(NormalDistribution(0, 1), {x, y})", //
+				"{ConditionalExpression(-Sqrt(2)*InverseErfc(2*x),0<=x<=1),ConditionalExpression(-Sqrt(\n"
+						+ "2)*InverseErfc(2*y),0<=y<=1)}");
+		check("InverseCDF(StudentTDistribution(n))", //
+				"ConditionalExpression(Piecewise({{-Sqrt(n)*Sqrt(-1+1/InverseBetaRegularized(2*#1,n/\n"
+						+ "2,1/2)),0<#1<1/2},{0,#1==1/2},{Sqrt(n)*Sqrt(-1+1/InverseBetaRegularized(2*(1-#1),n/\n"
+						+ "2,1/2)),1/2<#1<1},{-Infinity,#1<=0}},Infinity),0<=#1<=1)&");
 	}
 
 	public void testInverseErf() {
@@ -10343,12 +10356,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPDF() {
+
 		check("Table(PDF(NormalDistribution(m, 1.5), x), {m, {-1, 1, 2}},{x, {-1, 1, 2}}) ", //
 				"{{0.265962,0.10934,0.035994},{0.10934,0.265962,0.212965},{0.035994,0.212965,0.265962}}");
 		check("Table(PDF(NormalDistribution(0.0,1.0), x), {m, {-1, 1, 2}},{x, {-1, 1, 2}})//N ", //
 				"{{0.241971,0.241971,0.053991},{0.241971,0.241971,0.053991},{0.241971,0.241971,0.053991}}");
 		check("Table(PDF(NormalDistribution( ), x), {m, {-1, 1, 2}},{x, {-1, 1, 2}})//N ", //
 				"{{0.241971,0.241971,0.053991},{0.241971,0.241971,0.053991},{0.241971,0.241971,0.053991}}");
+
+		check("PDF(NormalDistribution(0, 1), {x, y})", //
+				"{1/(E^(x^2/2)*Sqrt(2*Pi)),1/(E^(y^2/2)*Sqrt(2*Pi))}");
 
 		check("PDF(NormalDistribution(n, m))", //
 				"1/(E^((-n+#1)^2/(2*m^2))*m*Sqrt(2*Pi))&");
@@ -14222,6 +14239,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{c,1},{a,2},{d,3}}");
 		check("Sort({4, 1.0, a, 3+I})", //
 				"{1.0,4,3+I,a}");
+	}
+	
+	public void testSortBy() {
+		check("SortBy({{5, 1}, {10, -1}}, Last)", //
+				"{{10,-1},{5,1}}");
+		check("SortBy(Total)[{{5, 1}, {10, -9}}]", //
+				"{{10,-9},{5,1}}");
 	}
 
 	public void testSow() {

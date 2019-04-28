@@ -360,8 +360,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 					return temp;
 				}
 			} catch (RecursionLimitExceeded rle) {
-				engine.printMessage("Sum: Recursionlimit exceeded");
-				return F.NIL;
+				return engine.printMessage("Sum: Recursionlimit exceeded");
 			}
 			// try {
 			// iterator.setUp();

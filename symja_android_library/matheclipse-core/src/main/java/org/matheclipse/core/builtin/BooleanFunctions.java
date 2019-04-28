@@ -1798,8 +1798,7 @@ public final class BooleanFunctions {
 
 				// return inequality(ast, engine);
 			} catch (WrongNumberOfArguments woa) {
-				engine.printMessage(woa.getMessage());
-				return F.NIL;
+				return engine.printMessage(woa.getMessage());
 			}
 		}
 

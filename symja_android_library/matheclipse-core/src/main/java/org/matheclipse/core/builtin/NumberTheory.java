@@ -46,6 +46,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -56,6 +57,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.numbertheory.Primality;
+import org.matheclipse.core.visit.VisitorExpr;
 import org.matheclipse.parser.client.math.MathException;
 
 import com.google.common.math.BigIntegerMath;
@@ -879,9 +881,8 @@ public final class NumberTheory {
 			continuedFractionList.append(F.ZZ(aNow));
 			for (int i = 0; i < iterationLimit - 1; i++) {
 				if (i >= 99) {
-					engine.printMessage(
+					return engine.printMessage(
 							"ContinuedFraction: calculations of double number values require a iteration limit less equal 100.");
-					return F.NIL;
 				}
 				double rec = 1.0 / tNow;
 				aNext = (int) rec;
@@ -1617,10 +1618,12 @@ public final class NumberTheory {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_INFINITY;
 		}
+
 		public static BigInteger extendedGCD(final IAST ast, BigInteger[] subBezouts) {
 			BigInteger factor;
 			BigInteger gcd = ((IInteger) ast.arg1()).toBigNumerator();
@@ -2725,10 +2728,12 @@ public final class NumberTheory {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return null;
 		}
+
 		@Override
 		public void setUp(ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.ORDERLESS | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -3514,6 +3519,158 @@ public final class NumberTheory {
 
 	/**
 	 * <pre>
+	 * Rationalize(expression)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * convert numerical real or imaginary parts in (sub-)expressions into rational numbers.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Rationalize(6.75)
+	 * 27/4
+	 * 
+	 * &gt;&gt; Rationalize(0.25+I*0.33333)
+	 * 1/4+I*33333/100000
+	 * </pre>
+	 */
+	private final static class Rationalize extends AbstractFunctionEvaluator {
+
+		private static class RationalizeVisitor extends VisitorExpr {
+			double epsilon;
+
+			public RationalizeVisitor(double epsilon) {
+				super();
+				this.epsilon = epsilon;
+			}
+
+			@Override
+			public IExpr visit(IASTMutable ast) {
+				if (ast.isNumericFunction()) {
+					ISignedNumber signedNumber = ast.evalReal();
+					if (signedNumber != null) {
+						return getRational(signedNumber);
+					}
+				}
+				return super.visitAST(ast);
+			}
+
+			@Override
+			public IExpr visit(IComplex element) {
+				return element;
+			}
+
+			@Override
+			public IExpr visit(IComplexNum element) {
+				return F.complex(element.getRealPart(), element.getImaginaryPart(), epsilon);
+			}
+
+			@Override
+			public IExpr visit(INum element) {
+				return F.fraction(element.getRealPart(), epsilon);
+			}
+
+			/**
+			 * 
+			 * @return <code>F.NIL</code>, if no evaluation is possible
+			 */
+			@Override
+			public IExpr visit(ISymbol element) {
+				if (element.isNumericFunction()) {
+					ISignedNumber signedNumber = element.evalReal();
+					if (signedNumber != null) {
+						return getRational(signedNumber);
+					}
+				}
+				return F.NIL;
+			}
+
+			private IRational getRational(ISignedNumber signedNumber) {
+				if (signedNumber.isRational()) {
+					return (IRational) signedNumber;
+				}
+				return F.fraction(signedNumber.doubleValue(), epsilon);
+			}
+		}
+
+		static class RationalizeNumericsVisitor extends VisitorExpr {
+			double epsilon;
+
+			public RationalizeNumericsVisitor(double epsilon) {
+				super();
+				this.epsilon = epsilon;
+			}
+
+			@Override
+			public IExpr visit(IASTMutable ast) {
+				return super.visitAST(ast);
+			}
+
+			@Override
+			public IExpr visit(IComplex element) {
+				return element;
+			}
+
+			@Override
+			public IExpr visit(IComplexNum element) {
+				return F.complex(element.getRealPart(), element.getImaginaryPart(), epsilon);
+			}
+
+			@Override
+			public IExpr visit(INum element) {
+				return F.fraction(element.getRealPart(), epsilon);
+			}
+
+			private IRational getRational(ISignedNumber signedNumber) {
+				if (signedNumber.isRational()) {
+					return (IRational) signedNumber;
+				}
+				return F.fraction(signedNumber.doubleValue(), epsilon);
+			}
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = ast.arg1();
+			double epsilon = Config.DOUBLE_EPSILON;
+			try {
+				if (ast.isAST2()) {
+					ISignedNumber epsilonExpr = ast.arg2().evalReal();
+					if (epsilonExpr == null) {
+						return F.NIL;
+					}
+					epsilon = epsilonExpr.doubleValue();
+					if (arg1.isNumericFunction()) {
+						// works more similar to MMA if we do this step:
+						arg1 = engine.evalN(arg1);
+					}
+				}
+				// try to convert into a fractional number
+				return rationalize(arg1, epsilon).orElse(arg1);
+			} catch (Exception e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			}
+
+			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE);
+		}
+	}
+
+	/**
+	 * <pre>
 	 * SquareFreeQ(n)
 	 * </pre>
 	 * 
@@ -3904,7 +4061,7 @@ public final class NumberTheory {
 					long n = ((IInteger) arg1).toLong();
 					return subFactorial(n);
 				} catch (ArithmeticException ae) {
-					EvalEngine.get().printMessage("Subfactorial: argument n is to big.");
+					return engine.printMessage("Subfactorial: argument n is to big.");
 				}
 			}
 			return F.NIL;
@@ -4017,6 +4174,7 @@ public final class NumberTheory {
 			F.PrimePowerQ.setEvaluator(new PrimePowerQ());
 			F.PrimitiveRoot.setEvaluator(new PrimitiveRoot());
 			F.PrimitiveRootList.setEvaluator(new PrimitiveRootList());
+			F.Rationalize.setEvaluator(new Rationalize());
 			F.SquareFreeQ.setEvaluator(new SquareFreeQ());
 			F.StirlingS1.setEvaluator(new StirlingS1());
 			F.StirlingS2.setEvaluator(new StirlingS2());
@@ -4380,5 +4538,27 @@ public final class NumberTheory {
 
 	private NumberTheory() {
 
+	}
+
+	/**
+	 * Rationalize only pure numeric numbers in expression <code>arg</code>.
+	 * 
+	 * @param arg1
+	 * @return <code>F.NIL</code> if no expression was transformed
+	 */
+	public static IExpr rationalize(IExpr arg1) {
+		return NumberTheory.rationalize(arg1, Config.DOUBLE_EPSILON);
+	}
+
+	/**
+	 * Rationalize only pure numeric numbers in expression <code>arg</code>.
+	 * 
+	 * @param arg1
+	 * @param epsilon
+	 * @return <code>F.NIL</code> if no expression was transformed
+	 */
+	public static IExpr rationalize(IExpr arg1, double epsilon) {
+		Rationalize.RationalizeNumericsVisitor rationalizeVisitor = new Rationalize.RationalizeNumericsVisitor(epsilon);
+		return arg1.accept(rationalizeVisitor);
 	}
 }

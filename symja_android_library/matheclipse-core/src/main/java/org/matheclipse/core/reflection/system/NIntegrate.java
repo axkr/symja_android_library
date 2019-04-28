@@ -145,31 +145,31 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 			}
 			option = options.getOption("MaxPoints");
 			if (option.isReal()) {
-				try {
-					maxPoints = ((ISignedNumber) option).toInt();
-				} catch (ArithmeticException ae) {
+				maxPoints = ((ISignedNumber) option).toIntDefault(-1);
+				if (maxPoints <= 0) {
 					engine.printMessage(
 							"NIntegrate: " + "Error in option MaxPoints. Using default value: " + maxPoints);
+					maxPoints = DEFAULT_MAX_POINTS;
 				}
 			}
 			option = options.getOption("MaxIterations");
 			if (option.isReal()) {
-				try {
-					maxIterations = ((ISignedNumber) option).toInt();
-				} catch (ArithmeticException ae) {
+				maxIterations = ((ISignedNumber) option).toIntDefault(-1);
+				if (maxIterations <= 0) {
 					engine.printMessage(
 							"NIntegrate: " + "Error in option MaxIterations. Using default value: " + maxIterations);
+					maxIterations = DEFAULT_MAX_ITERATIONS;
 				}
 			}
 			option = options.getOption("PrecisionGoal");
 			if (option.isReal()) {
-				try {
-					precisionGoal = ((ISignedNumber) option).toInt();
-				} catch (ArithmeticException ae) {
+				precisionGoal = ((ISignedNumber) option).toIntDefault(-1);
+				if (precisionGoal <= 0) {
 					engine.printMessage(
 							"NIntegrate: " + "Error in option PrecisionGoal. Using default value: " + precisionGoal);
+					precisionGoal = 16;
 				}
-			}
+			} 
 		}
 
 		if (ast.arg2().isList()) {

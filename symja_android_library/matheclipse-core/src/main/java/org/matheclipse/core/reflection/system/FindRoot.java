@@ -206,7 +206,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
 						if (Config.SHOW_STACKTRACE) {
 							mre.printStackTrace();
 						}
-						engine.printMessage("FindRoot: " + mre.getMessage());
+						return engine.printMessage("FindRoot: " + mre.getMessage());
 					}
 
 				}

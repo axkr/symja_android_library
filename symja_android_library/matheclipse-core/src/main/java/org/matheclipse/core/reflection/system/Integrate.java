@@ -340,14 +340,12 @@ public class Integrate extends AbstractFunctionEvaluator {
 						IExpr Fb = engine.evaluate(F.Limit(temp, F.Rule(xList.arg1(), xList.arg3())));
 						IExpr Fa = engine.evaluate(F.Limit(temp, F.Rule(xList.arg1(), xList.arg2())));
 						if (!Fb.isFree(F.DirectedInfinity, true) || !Fb.isFree(F.Indeterminate, true)) {
-							engine.printMessage(
+							return engine.printMessage(
 									"Not integrable: " + temp + " for limit " + xList.arg1() + " -> " + xList.arg3());
-							return F.NIL;
 						}
 						if (!Fa.isFree(F.DirectedInfinity, true) || !Fa.isFree(F.Indeterminate, true)) {
-							engine.printMessage(
+							return engine.printMessage(
 									"Not integrable: " + temp + " for limit " + xList.arg1() + " -> " + xList.arg2());
-							return F.NIL;
 						}
 						if (Fb.isAST() && Fa.isAST()) {
 							IExpr bDenominator = F.Denominator.of(engine, Fb);
@@ -643,15 +641,15 @@ public class Integrate extends AbstractFunctionEvaluator {
 				} catch (RecursionLimitExceeded rle) {
 					// engine.printMessage("Integrate(Rubi recursion): " + Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT
 					// + " exceeded: " + ast.toString());
-					engine.printMessage("Integrate(Rubi recursion): " + rle.getMessage());
 					engine.setRecursionLimit(limit);
+					return engine.printMessage("Integrate(Rubi recursion): " + rle.getMessage());
 				} catch (RuntimeException rex) {
 					if (Config.SHOW_STACKTRACE) {
 						rex.printStackTrace();
 					}
-					engine.printMessage("Integrate Rubi recursion limit " + Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT
-							+ " RuntimeException: " + ast.toString());
 					engine.setRecursionLimit(limit);
+					return engine.printMessage("Integrate Rubi recursion limit " + Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT
+							+ " RuntimeException: " + ast.toString());
 
 				}
 

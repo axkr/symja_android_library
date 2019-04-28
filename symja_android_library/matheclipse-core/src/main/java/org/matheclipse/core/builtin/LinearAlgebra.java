@@ -104,6 +104,7 @@ public final class LinearAlgebra {
 			F.Eigenvectors.setEvaluator(new Eigenvectors());
 			F.EuclideanDistance.setEvaluator(new EuclideanDistance());
 			F.FourierMatrix.setEvaluator(new FourierMatrix());
+			F.FromPolarCoordinates.setEvaluator(new FromPolarCoordinates());
 			F.HilbertMatrix.setEvaluator(new HilbertMatrix());
 			F.IdentityMatrix.setEvaluator(new IdentityMatrix());
 			F.Inner.setEvaluator(new Inner());
@@ -129,6 +130,7 @@ public final class LinearAlgebra {
 			F.SingularValueDecomposition.setEvaluator(new SingularValueDecomposition());
 			F.SquaredEuclideanDistance.setEvaluator(new SquaredEuclideanDistance());
 			F.ToeplitzMatrix.setEvaluator(new ToeplitzMatrix());
+			F.ToPolarCoordinates.setEvaluator(new ToPolarCoordinates());
 			F.Tr.setEvaluator(new Tr());
 			F.Transpose.setEvaluator(new Transpose());
 			F.UpperTriangularize.setEvaluator(new UpperTriangularize());
@@ -580,6 +582,7 @@ public final class LinearAlgebra {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_INFINITY;
@@ -728,10 +731,12 @@ public final class LinearAlgebra {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
 		}
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -776,10 +781,12 @@ public final class LinearAlgebra {
 			return F.NIL;
 
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
 		}
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -861,10 +868,12 @@ public final class LinearAlgebra {
 			return F.List();
 
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
 		}
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -961,7 +970,7 @@ public final class LinearAlgebra {
 							return res;
 						}
 					}
-					engine.printMessage(ast.topHead() + ": Error in matrix");
+					return engine.printMessage(ast.topHead() + ": Error in matrix");
 				} else if (o0.isVector() != (-1)) {
 					list = (IAST) o0;
 					vector0 = Convert.list2Vector(list);
@@ -978,7 +987,7 @@ public final class LinearAlgebra {
 							}
 						}
 					}
-					engine.printMessage(ast.topHead() + ": Error in vector");
+					return engine.printMessage(ast.topHead() + ": Error in vector");
 				}
 
 				// } catch (final ClassCastException e) {
@@ -1387,6 +1396,71 @@ public final class LinearAlgebra {
 
 	/**
 	 * <pre>
+	 * FromPolarCoordinates({r, t})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * return the cartesian coordinates for the polar coordinates <code>{r, t}</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * FromPolarCoordinates({r, t, p})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * return the cartesian coordinates for the polar coordinates <code>{r, t, p}</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; FromPolarCoordinates({r, t})
+	 * {r*Cos(t),r*Sin(t)}
+	 * 
+	 * &gt;&gt; FromPolarCoordinates({r, t, p})
+	 * {r*Cos(t),r*Cos(p)*Sin(t),r*Sin(p)*Sin(t)}
+	 * </pre>
+	 */
+	private final static class FromPolarCoordinates extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			int dim = ast.arg1().isVector();
+			if (dim > 0) {
+				IAST list = (IAST) ast.arg1();
+				if (dim == 2) {
+					IExpr r = list.arg1();
+					IExpr theta = list.arg2();
+					return F.List(F.Times(r, F.Cos(theta)), F.Times(r, F.Sin(theta)));
+				} else if (dim == 3) {
+					IExpr r = list.arg1();
+					IExpr theta = list.arg2();
+					IExpr phi = list.arg3();
+					return F.List(F.Times(r, F.Cos(theta)), F.Times(r, F.Cos(phi), F.Sin(theta)),
+							F.Times(r, F.Sin(theta), F.Sin(phi)));
+				}
+			} else if (ast.arg1().isList()) {
+				return ((IAST) ast.arg1()).mapThread(F.ListAlloc(ast.size()), ast, 1);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	/**
+	 * <pre>
 	 * HilbertMatrix(n)
 	 * </pre>
 	 * 
@@ -1426,7 +1500,7 @@ public final class LinearAlgebra {
 			}
 			return F.matrix((i, j) -> F.QQ(1, i + j + 1), rowSize, columnSize);
 		}
-		
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
@@ -1595,7 +1669,7 @@ public final class LinearAlgebra {
 			}
 			return F.NIL;
 		}
-		
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_3_4;
@@ -1869,12 +1943,10 @@ public final class LinearAlgebra {
 								&& vector.getDimension() <= matrix.getColumnDimension()) {
 							return underdeterminedSystem(mat, vec, engine);
 						}
-						engine.printMessage("LinearSolve: first argument is not a square matrix.");
-						return F.NIL;
+						return engine.printMessage("LinearSolve: first argument is not a square matrix.");
 					}
 					if (vector.getDimension() != matrix.getRowDimension()) {
-						engine.printMessage("LinearSolve: matrix row and vector have different dimensions.");
-						return F.NIL;
+						return engine.printMessage("LinearSolve: matrix row and vector have different dimensions.");
 					}
 					if (matrixDims[0] == 1 && matrixDims[1] >= 1) {
 						IExpr temp = eval1x1Matrix(matrix, vector, engine);
@@ -2100,6 +2172,7 @@ public final class LinearAlgebra {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
@@ -2412,14 +2485,13 @@ public final class LinearAlgebra {
 				// e.printStackTrace();
 				// }
 			} catch (final RuntimeException e) {
-				engine.printMessage(ast.topHead() + ": " + e.getMessage());
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
+				return engine.printMessage(ast.topHead() + ": " + e.getMessage());
 			} finally {
 				engine.setTogetherMode(togetherMode);
 			}
-			return F.NIL;
 		}
 
 		@Override
@@ -2629,6 +2701,7 @@ public final class LinearAlgebra {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
@@ -2692,6 +2765,7 @@ public final class LinearAlgebra {
 			}
 			return F.Divide(ast.arg1(), norm);
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
@@ -2814,7 +2888,7 @@ public final class LinearAlgebra {
 			}
 			return F.NIL;
 		}
-		
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
@@ -2902,10 +2976,12 @@ public final class LinearAlgebra {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_3;
 		}
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -3300,6 +3376,72 @@ public final class LinearAlgebra {
 
 	/**
 	 * <pre>
+	 * ToPolarCoordinates({x, y})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * return the polar coordinates for the cartesian coordinates <code>{x, y}</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * ToPolarCoordinates({x, y, z})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * return the polar coordinates for the cartesian coordinates <code>{x, y, z}</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; ToPolarCoordinates({x, y})
+	 * {Sqrt(x^2+y^2),ArcTan(x,y)}
+	 * 
+	 * &gt;&gt; ToPolarCoordinates({x, y, z})
+	 * {Sqrt(x^2+y^2+z^2),ArcCos(x/Sqrt(x^2+y^2+z^2)),ArcTan(y,z)}
+	 * </pre>
+	 */
+	private final static class ToPolarCoordinates extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			int dim = ast.arg1().isVector();
+			if (dim > 0) {
+				IAST list = (IAST) ast.arg1();
+				if (dim == 2) {
+					IExpr x = list.arg1();
+					IExpr y = list.arg2();
+					return F.List(F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y))), F.ArcTan(x, y));
+				} else if (dim == 3) {
+					IExpr x = list.arg1();
+					IExpr y = list.arg2();
+					IExpr z = list.arg3();
+					IAST sqrtExpr = F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y), F.Sqr(z)));
+					return F.List(sqrtExpr, F.ArcCos(F.Divide(x, sqrtExpr)), F.ArcTan(y, z));
+				}
+			} else if (ast.arg1().isList()) {
+				IAST list = (IAST) ast.arg1();
+				return list.mapThread(F.ListAlloc(list.size()), ast, 1);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	/**
+	 * <pre>
 	 * Tr(matrix)
 	 * </pre>
 	 * 
@@ -3358,10 +3500,12 @@ public final class LinearAlgebra {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
 		}
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -3484,7 +3628,7 @@ public final class LinearAlgebra {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
 		}
-		
+
 		protected IExpr transform(final IExpr expr) {
 			return expr;
 		}
@@ -3584,6 +3728,7 @@ public final class LinearAlgebra {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
@@ -3606,6 +3751,7 @@ public final class LinearAlgebra {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
@@ -3743,7 +3889,7 @@ public final class LinearAlgebra {
 		IExpr denominator = determinant2x2(matrix);
 		if (denominator.isZero()) {
 			if (!quiet) {
-				engine.printMessage("Row reduced linear equations have no solution.");
+				return engine.printMessage("Row reduced linear equations have no solution.");
 			}
 			return F.NIL;
 		}
@@ -3781,7 +3927,7 @@ public final class LinearAlgebra {
 		IExpr denominator = determinant3x3(denominatorMatrix);
 		if (denominator.isZero()) {
 			if (!quiet) {
-				engine.printMessage("Row reduced linear equations have no solution.");
+				return engine.printMessage("Row reduced linear equations have no solution.");
 			}
 			return F.NIL;
 		}
@@ -3929,8 +4075,7 @@ public final class LinearAlgebra {
 		IExpr lastVarCoefficient = rowReduced.getEntry(rows - 1, cols - 2);
 		if (lastVarCoefficient.isZero()) {
 			if (!rowReduced.getEntry(rows - 1, cols - 1).isZero()) {
-				engine.printMessage("Row reduced linear equations have no solution.");
-				return F.NIL;
+				return engine.printMessage("Row reduced linear equations have no solution.");
 			}
 		}
 		IASTAppendable list = F.ListAlloc(rows < cols - 1 ? cols - 1 : rows);

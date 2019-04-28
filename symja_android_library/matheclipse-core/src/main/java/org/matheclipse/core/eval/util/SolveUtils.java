@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval.util;
 
+import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -35,7 +36,7 @@ public class SolveUtils {
 			} else if (arg.isEqual()) {
 				// arg must be Equal(_, 0)
 				IExpr arg1 = arg.first();
-				IExpr temp = org.matheclipse.core.reflection.system.Rationalize.ofNumbers(arg1);
+				IExpr temp = NumberTheory.rationalize(arg1);
 				if (temp.isPresent()) {
 					isNumeric[0] = true;
 					termsEqualZero.append(temp);

@@ -255,7 +255,7 @@ public class CurveFitterFunctions {
 							}
 						}
 					} catch (MathException ex) {
-						engine.printMessage("FindFit: " + ex.getMessage());
+						return engine.printMessage("FindFit: " + ex.getMessage());
 					}
 				}
 			}
@@ -301,7 +301,7 @@ public class CurveFitterFunctions {
 						try {
 							return Convert.polynomialFunction2Expr(fitter.fit(obs.toList()), (ISymbol) ast.arg3());
 						} catch (MathException ex) {
-							engine.printMessage("Fit: " + ex.getMessage());
+							return engine.printMessage("Fit: " + ex.getMessage());
 						}
 					}
 				}

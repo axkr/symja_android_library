@@ -63,10 +63,10 @@ public class QuantityFunctions {
 					}
 				}
 			} catch (MathException e) {
-				engine.printMessage("Quantity: " + e.getMessage());
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
+				return engine.printMessage("Quantity: " + e.getMessage());
 			}
 
 			return F.NIL;
@@ -120,10 +120,10 @@ public class QuantityFunctions {
 					}
 				}
 			} catch (MathException e) {
-				engine.printMessage("QuantityMagnitude: " + e.getMessage());
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
+				return engine.printMessage("QuantityMagnitude: " + e.getMessage());
 			}
 
 			return F.NIL;
@@ -175,10 +175,10 @@ public class QuantityFunctions {
 					}
 				}
 			} catch (MathException e) {
-				engine.printMessage("UnitConvert: " + e.getMessage());
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
+				return engine.printMessage("UnitConvert: " + e.getMessage());
 			}
 
 			return F.NIL;

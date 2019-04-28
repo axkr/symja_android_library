@@ -307,9 +307,8 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 			}
 			return binaryOperator(ast.arg1(), ast.arg2());
 		}
-		engine.printMessage(ast.topHead() + ": " + ast.topHead()
+		return engine.printMessage(ast.topHead() + ": " + ast.topHead()
 				+ " function requires 1 or 2 arguments, but number of args equals: " + ast.argSize());
-		return F.NIL;
 	}
 
 }

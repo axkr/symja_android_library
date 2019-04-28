@@ -87,9 +87,9 @@ public class Import extends AbstractEvaluator {
 				}
 
 			} catch (IOException ioe) {
-				engine.printMessage("Import: file " + fileName + " not found!");
+				return engine.printMessage("Import: file " + fileName + " not found!");
 			} catch (SyntaxError se) {
-				engine.printMessage("Import: file " + fileName + " syntax error!");
+				return engine.printMessage("Import: file " + fileName + " syntax error!");
 			} finally {
 				if (reader != null) {
 					try {
