@@ -1055,10 +1055,12 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem091() {
-		check("HilbertMatrix(4)",
+		check("HilbertMatrix(4)", //
 				"{{1,1/2,1/3,1/4},\n" + " {1/2,1/3,1/4,1/5},\n" + " {1/3,1/4,1/5,1/6},\n" + " {1/4,1/5,1/6,1/7}}");
-		check("HilbertMatrix(2,3)", "{{1,1/2,1/3},\n" + " {1/2,1/3,1/4}}");
-		check("HilbertMatrix(3,2)", "{{1,1/2},\n" + " {1/2,1/3},\n" + " {1/3,1/4}}");
+		check("HilbertMatrix(2,3)", //
+				"{{1,1/2,1/3},\n" + " {1/2,1/3,1/4}}");
+		check("HilbertMatrix(3,2)", //
+				"{{1,1/2},\n" + " {1/2,1/3},\n" + " {1/3,1/4}}");
 	}
 
 	public void testSystem092() {

@@ -342,7 +342,7 @@ public class AST2Expr {
 				IExpr expr;
 				switch (functionID) {
 				case ID.N:
-					if (ast.isAST2()) {
+					if (ast.isAST2() && ast.arg2().isInteger()) {
 						try {
 							int precision = Validate.checkIntType(ast.arg2());
 							if (EvalEngine.isApfloat(precision)) {

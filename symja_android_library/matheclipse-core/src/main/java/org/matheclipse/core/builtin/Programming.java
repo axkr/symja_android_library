@@ -1176,7 +1176,11 @@ public final class Programming {
 		public static IExpr evaluateNest(final IAST ast, EvalEngine engine) {
 			IExpr arg3 = engine.evaluate(ast.arg3());
 			if (arg3.isInteger()) {
-				final int n = Validate.checkIntType(arg3);
+				int n = arg3.toIntDefault(Integer.MIN_VALUE);
+				if (n < 0) {
+					// Positive integer (less equal 2147483647) expected at position `2` in `1`.
+					return IOFunctions.printMessage(F.Nest, "intpm", F.List(ast, F.C3), engine);
+				}
 				return nest(ast.arg2(), n, x -> F.unaryAST1(ast.arg1(), x), engine);
 			}
 			return F.NIL;
@@ -1231,7 +1235,11 @@ public final class Programming {
 		public static IExpr evaluateNestList(final IAST ast, final IASTAppendable resultList, EvalEngine engine) {
 			IExpr arg3 = engine.evaluate(ast.arg3());
 			if (arg3.isInteger()) {
-				final int n = Validate.checkIntType(arg3);
+				int n = arg3.toIntDefault(Integer.MIN_VALUE);
+				if (n < 0) {
+					// Positive integer (less equal 2147483647) expected at position `2` in `1`.
+					return IOFunctions.printMessage(F.Nest, "intpm", F.List(ast, F.C3), engine);
+				}
 				IExpr arg1 = ast.arg1();
 				nestList(ast.arg2(), n, x -> F.unaryAST1(arg1, x), resultList, engine);
 				return resultList;
@@ -1814,56 +1822,44 @@ public final class Programming {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() >= 3) {
-				try {
-					IExpr arg1 = engine.evalLoop(ast.arg1());
-					if (arg1.isPresent()) {
-						if (!arg1.isAST()) {
-							IExpr result = ast.setAtCopy(1, arg1);
-							engine.printMessage("Part: " + result + " could not extract a part");
-							return result;
-						}
-					} else {
-						arg1 = ast.arg1();
-						if (!arg1.isAST()) {
-							return engine.printMessage("Part: " + ast + " could not extract a part");
-						}
+				IExpr arg1 = engine.evalLoop(ast.arg1());
+				if (arg1.isPresent()) {
+					if (!arg1.isAST()) {
+						IExpr result = ast.setAtCopy(1, arg1);
+						// Part specification `1` is longer than depth of object.
+						IOFunctions.printMessage(F.Part, "partd", F.List(result), engine);
+						// return the evaluated result:
+						return result;
 					}
-					IASTMutable evaledAST = F.NIL;
-
-					boolean numericMode = engine.isNumericMode();
-					IExpr temp;
-					try {
-						int astSize = ast.size();
-						for (int i = 2; i < astSize; i++) {
-							temp = engine.evalLoop(ast.get(i));
-							if (temp.isPresent()) {
-								if (evaledAST.isPresent()) {
-									evaledAST.set(i, temp);
-								} else {
-									evaledAST = ast.copy();
-									evaledAST.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
-									evaledAST.set(i, temp);
-								}
-							}
-						}
-					} finally {
-						engine.setNumericMode(numericMode);
+				} else {
+					arg1 = ast.arg1();
+					if (!arg1.isAST()) {
+						// Part specification `1` is longer than depth of object.
+						return IOFunctions.printMessage(F.Part, "partd", F.List(ast), engine);
 					}
-					if (evaledAST.isPresent()) {
-						return part(arg1, evaledAST, 2, engine);
-					}
-					return part(arg1, ast, 2, engine);
-				} catch (WrappedException we) {
-					if (Config.SHOW_STACKTRACE) {
-						we.printStackTrace();
-					}
-					engine.printMessage("Part: " + we.getMessage());
-				} catch (WrongArgumentType wat) {
-					if (Config.SHOW_STACKTRACE) {
-						wat.printStackTrace();
-					}
-					engine.printMessage("Part: " + wat.getMessage());
 				}
+				IAST arg1AST = (IAST) arg1;
+				IASTMutable evaledAST = F.NIL;
+
+				IExpr temp;
+
+				int astSize = ast.size();
+				for (int i = 2; i < astSize; i++) {
+					temp = engine.evalLoop(ast.get(i));
+					if (temp.isPresent()) {
+						if (evaledAST.isPresent()) {
+							evaledAST.set(i, temp);
+						} else {
+							evaledAST = ast.setAtCopy(i, temp);
+							evaledAST.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
+						}
+					}
+				}
+
+				if (evaledAST.isPresent()) {
+					return part(arg1AST, evaledAST, 2, engine);
+				}
+				return part(arg1AST, ast, 2, engine);
 			}
 			return F.NIL;
 		}
@@ -2349,7 +2345,8 @@ public final class Programming {
 					arg2 = ((ISignedNumber) arg2).ceilFraction();
 					seconds = ((ISignedNumber) arg2).toLong();
 				} else {
-					return engine.printMessage("TimeConstrained: " + ast.arg2().toString() + " is not a Java long value.");
+					return engine
+							.printMessage("TimeConstrained: " + ast.arg2().toString() + " is not a Java long value.");
 				}
 
 			} catch (ArithmeticException ae) {
@@ -2938,16 +2935,18 @@ public final class Programming {
 	 * Get the element stored at the given <code>position</code>.
 	 * 
 	 * @param ast
-	 * @param position
+	 * @param pos
+	 * @param engine
 	 * @return
 	 */
-	private static IExpr getIndex(IAST ast, int position) {
+	private static IExpr getIndex(IAST ast, final int pos, EvalEngine engine) {
+		int position = pos;
 		if (position < 0) {
 			position = ast.size() + position;
 		}
 		if ((position < 0) || (position >= ast.size())) {
-			throw new WrappedException(new IndexOutOfBoundsException(
-					"Part[] index " + position + " of " + ast.toString() + " is out of bounds."));
+			// Part `1` of `2` does not exist.
+			return IOFunctions.printMessage(F.Part, "partw", F.List(F.ZZ(pos), ast), engine);
 		}
 		return ast.get(position);
 	}
@@ -2965,11 +2964,7 @@ public final class Programming {
 	 *            the evaluation engine
 	 * @return
 	 */
-	public static IExpr part(final IExpr expr, final IAST ast, int pos, EvalEngine engine) {
-		if (!expr.isAST() || pos >= ast.size()) {
-			return expr;
-		}
-		final IAST arg1 = (IAST) expr;
+	public static IExpr part(final IAST arg1, final IAST ast, int pos, EvalEngine engine) {
 		final IExpr arg2 = engine.evaluate(ast.get(pos));
 		int p1 = pos + 1;
 		int[] span = arg2.isSpan(arg1.size());
@@ -2981,18 +2976,25 @@ public final class Programming {
 		} else if (arg2.equals(F.All)) {
 			return spanPart(ast, pos, arg1, arg2, 1, arg1.size() - 1, 1, p1, engine);
 		} else if (arg2.isReal()) {
-			final int indx = Validate.checkIntType(ast, pos, Integer.MIN_VALUE);
-			IExpr result = null;
-			result = getIndex(arg1, indx);
-			if (p1 < ast.size()) {
-				if (result.isAST()) {
-					return part(result, ast, p1, engine);
-				} else {
-					throw new WrongArgumentType(ast, arg1, pos,
-							"Wrong argument for Part[] function. Function or list expected.");
-				}
+			final int indx = ast.get(pos).toIntDefault(Integer.MIN_VALUE);
+			if (indx == Integer.MIN_VALUE) {
+				// Part `1` of `2` does not exist.
+				return IOFunctions.printMessage(F.Part, "partw", F.List(ast.get(pos), arg1), engine);
 			}
-			return result;
+			IExpr result = null;
+			result = getIndex(arg1, indx, engine);
+			if (result.isPresent()) {
+				if (p1 < ast.size()) {
+					if (result.isAST()) {
+						return part((IAST) result, ast, p1, engine);
+					} else {
+						// Part specification `1` is longer than depth of object.
+						return IOFunctions.printMessage(F.Part, "partd", F.List(result), engine);
+					}
+				}
+				return result;
+			}
+			return F.NIL;
 		} else if (arg2.isList()) {
 			IExpr temp = null;
 			final IAST list = (IAST) arg2;
@@ -3000,32 +3002,39 @@ public final class Programming {
 
 			for (int i = 1; i < list.size(); i++) {
 				final IExpr listArg = list.get(i);
-				if (listArg.isInteger()) {
-					IExpr ires = null;
-
-					final int indx = Validate.checkIntType(listArg, Integer.MIN_VALUE);
-					ires = getIndex(arg1, indx);
-					if (ires == null) {
-						return F.NIL;
+				if (listArg.isReal()) {
+					final int indx = listArg.toIntDefault(Integer.MIN_VALUE);
+					if (indx == Integer.MIN_VALUE) {
+						// Part `1` of `2` does not exist.
+						return IOFunctions.printMessage(F.Part, "partw", F.List(listArg, arg1), engine);
 					}
-					if (p1 < ast.size()) {
-						if (ires.isAST()) {
-							temp = part(ires, ast, p1, engine);
-							result.append(temp);
+					IExpr ires = getIndex(arg1, indx, engine);
+					if (ires.isPresent()) {
+						if (p1 < ast.size()) {
+							if (ires.isAST()) {
+								temp = part((IAST) ires, ast, p1, engine);
+								if (temp.isPresent()) {
+									result.append(temp);
+								} else {
+									// an error occurred
+									return F.NIL;
+								}
+							} else {
+								// Part specification `1` is longer than depth of object.
+								return IOFunctions.printMessage(F.Part, "partd", F.List(ires), engine);
+							}
 						} else {
-							throw new WrongArgumentType(ast, arg1, pos,
-									"Wrong argument for Part[] function. Function or list expected.");
+							result.append(ires);
 						}
 					} else {
-						result.append(ires);
+						return F.NIL;
 					}
 				}
 			}
 			return result;
 		}
-		throw new WrongArgumentType(ast, arg1, pos,
-				"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
-
+		// The expression `1` cannot be used as a part specification.
+		return IOFunctions.printMessage(F.Part, "pkspec1", F.List(arg2), engine);
 	}
 
 	private static IExpr spanPart(final IAST ast, int pos, IAST arg1, final IExpr arg2, int start, int last, int step,
@@ -3034,20 +3043,45 @@ public final class Programming {
 
 		if (step < 0 && start >= last) {
 			for (int i = start; i >= last; i += step) {
-				result.append(part(arg1.get(i), ast, p1, engine));
+				if (p1 >= ast.size()) {
+					result.append(arg1.get(i));
+					continue;
+				}
+				if (arg1.get(i).isAST()) {
+					IExpr temp = part((IAST) arg1.get(i), ast, p1, engine);
+					if (temp.isPresent()) {
+						result.append(temp);
+						continue;
+					}
+				}
+				// Part specification `1` is longer than depth of object.
+				return IOFunctions.printMessage(F.Part, "partd", F.List(arg1.get(i)), engine);
 			}
 		} else if (step > 0 && (last != 1 || start <= last)) {
 			for (int i = start; i <= last; i += step) {
-				result.append(part(arg1.get(i), ast, p1, engine));
+				if (p1 >= ast.size()) {
+					result.append(arg1.get(i));
+					continue;
+				} 
+				if (arg1.get(i).isAST()) {
+
+					IExpr temp = part((IAST) arg1.get(i), ast, p1, engine);
+					if (temp.isPresent()) {
+						result.append(temp);
+						continue;
+					}
+				}
+				// Part specification `1` is longer than depth of object.
+				return IOFunctions.printMessage(F.Part, "partd", F.List(arg1.get(i)), engine);
 			}
 		} else {
-			throw new WrongArgumentType(ast, arg2, pos,
-					"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
+			// The expression `1` cannot be used as a part specification.
+			return IOFunctions.printMessage(F.Part, "pkspec1", F.List(arg2), engine);
 		}
 		return result;
 	}
 
-	public static IExpr assignPart(final IExpr assignedExpr, final IAST part, int partPosition, IExpr value,
+	private static IExpr assignPart(final IExpr assignedExpr, final IAST part, int partPosition, IExpr value,
 			EvalEngine engine) {
 		if (!assignedExpr.isAST() || partPosition >= part.size()) {
 			return value;
@@ -3132,7 +3166,7 @@ public final class Programming {
 				"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
 	}
 
-	public static IExpr assignPart(final IExpr assignedExpr, final IAST part, int partPosition, IAST rhs, int rhsPos,
+	private static IExpr assignPart(final IExpr assignedExpr, final IAST part, int partPosition, IAST rhs, int rhsPos,
 			EvalEngine engine) {
 		if (!assignedExpr.isAST() || partPosition >= part.size()) {
 			return assignedExpr;

@@ -856,7 +856,11 @@ public final class LinearAlgebra {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			int maximumLevel = Integer.MAX_VALUE;
 			if (ast.isAST2() && ast.arg2().isInteger()) {
-				maximumLevel = Validate.checkIntType(ast, 2);
+				maximumLevel = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+				if (maximumLevel < 0) {
+					// Positive integer (less equal 2147483647) expected at position `2` in `1`.
+					return IOFunctions.printMessage(F.Dimensions, "intpm", F.List(ast, F.C2), engine);
+				}
 			}
 			if (ast.arg1().isAST()) {
 				if (maximumLevel > 0) {
@@ -1378,7 +1382,11 @@ public final class LinearAlgebra {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.arg1().isInteger()) {
-				int m = Validate.checkIntType(ast, 1);
+				final int m = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+				if (m < 0) {
+					// Positive integer (less equal 2147483647) expected at position `2` in `1`.
+					return IOFunctions.printMessage(F.FourierMatrix, "intpm", F.List(ast, F.C1), engine);
+				}
 				int[] count = new int[1];
 				count[0] = 1;
 				IAST scalar = F.Sqrt(F.QQ(1, m));
@@ -1490,11 +1498,23 @@ public final class LinearAlgebra {
 			int rowSize = 0;
 			int columnSize = 0;
 			if (ast.isAST1() && ast.arg1().isInteger()) {
-				rowSize = Validate.checkIntType(ast, 1);
+				rowSize = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+				if (rowSize < 0) {
+					// Positive integer (less equal 2147483647) expected at position `2` in `1`.
+					return IOFunctions.printMessage(F.HilbertMatrix, "intpm", F.List(ast, F.C1), engine);
+				}
 				columnSize = rowSize;
 			} else if (ast.isAST2() && ast.arg1().isInteger() && ast.arg2().isInteger()) {
-				rowSize = Validate.checkIntType(ast, 1);
-				columnSize = Validate.checkIntType(ast, 2);
+				rowSize = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+				if (rowSize < 0) {
+					// Positive integer (less equal 2147483647) expected at position `2` in `1`.
+					return IOFunctions.printMessage(F.HilbertMatrix, "intpm", F.List(ast, F.C1), engine);
+				}
+				columnSize = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+				if (columnSize < 0) {
+					// Positive integer (less equal 2147483647) expected at position `2` in `1`.
+					return IOFunctions.printMessage(F.HilbertMatrix, "intpm", F.List(ast, F.C2), engine);
+				}
 			} else {
 				return F.NIL;
 			}
@@ -1529,7 +1549,11 @@ public final class LinearAlgebra {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.arg1().isInteger()) {
-				int m = Validate.checkIntType(ast, 1);
+				int m = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+				if (m < 0) {
+					// Positive integer (less equal 2147483647) expected at position `2` in `1`.
+					return IOFunctions.printMessage(F.IdentityMatrix, "intpm", F.List(ast, F.C1), engine);
+				}
 				return F.matrix((i, j) -> i.equals(j) ? F.C1 : F.C0, m, m);
 			}
 			return F.NIL;
@@ -2438,10 +2462,10 @@ public final class LinearAlgebra {
 				if (matrix == null) {
 					return F.NIL;
 				}
-				int p = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
-				// if (p < 0) {
-				// return F.NIL;
-				// }
+				int p = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+				if (p == Integer.MIN_VALUE) {
+					return F.NIL;
+				}
 				if (p == 1) {
 					((IAST) ast.arg1()).addEvalFlags(IAST.IS_MATRIX);
 					return ast.arg1();
@@ -3360,7 +3384,11 @@ public final class LinearAlgebra {
 			}
 
 			if (ast.arg1().isInteger()) {
-				int m = Validate.checkIntType(ast, 1);
+				int m = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+				if (m < 0) {
+					// Positive integer (less equal 2147483647) expected at position `2` in `1`.
+					return IOFunctions.printMessage(F.ToeplitzMatrix, "intpm", F.List(ast, F.C1), engine);
+				}
 				int[] count = new int[1];
 				count[0] = 1;
 				return F.matrix((i, j) -> i <= j ? F.ZZ(j - i + 1) : F.ZZ(i - j + 1), m, m);
@@ -3706,8 +3734,17 @@ public final class LinearAlgebra {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST2()) {
-				int n = Validate.checkIntType(ast, 1);
-				int k = Validate.checkIntType(ast, 2);
+				int n = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+				if (n < 0) {
+					// Positive integer (less equal 2147483647) expected at position `2` in `1`.
+					return IOFunctions.printMessage(F.UnitVector, "intpm", F.List(ast, F.C1), engine);
+				}
+				int k = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+				if (k < 0) {
+					// Positive integer (less equal 2147483647) expected at position `2` in `1`.
+					return IOFunctions.printMessage(F.UnitVector, "intpm", F.List(ast, F.C2), engine);
+				}
+
 				if (k <= n) {
 					IASTAppendable vector = F.ListAlloc(n);
 					vector.appendArgs(0, n, i -> F.C0);
@@ -3718,7 +3755,11 @@ public final class LinearAlgebra {
 			}
 
 			if (ast.arg1().isInteger()) {
-				int k = Validate.checkIntType(ast, 1);
+				int k = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+				if (k < 0) {
+					// Positive integer (less equal 2147483647) expected at position `2` in `1`.
+					return IOFunctions.printMessage(F.UnitVector, "intpm", F.List(ast, F.C1), engine);
+				}
 				if (k == 1) {
 					return F.List(F.C1, F.C0);
 				}

@@ -814,8 +814,16 @@ public final class NumberTheory {
 				IExpr arg1 = ast.arg1();
 
 				int maxIterations = Integer.MAX_VALUE;
-				if (ast.isAST2() && ast.arg2().isInteger()) {
-					maxIterations = Validate.checkIntType(ast, 2);
+				if (ast.isAST2()) {
+					if (ast.arg2().isInteger()) {
+						maxIterations = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+						if (maxIterations < 0) {
+							// Positive integer (less equal 2147483647) expected at position `2` in `1`.
+							return IOFunctions.printMessage(F.ContinuedFraction, "intpm", F.List(ast, F.C2), engine);
+						}
+					} else {
+						return F.NIL;
+					}
 				}
 
 				if (ast.isAST1() && arg1.isSqrt() && arg1.base().isInteger() && arg1.base().isPositive()) {
@@ -2841,11 +2849,23 @@ public final class NumberTheory {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST1() && ast.arg1().isInteger()) {
 				BigInteger primeBase = ((IInteger) ast.arg1()).toBigNumerator();
+				if (primeBase.compareTo(BigInteger.ZERO) < 0) {
+					// Non-negative integer expected.
+					return IOFunctions.printMessage(F.NextPrime, "intnn", F.List(), engine);
+				}
 				return F.integer(primeBase.nextProbablePrime());
 			} else if (ast.isAST2() && ast.arg1().isInteger() && ast.arg2().isInteger()) {
-
 				BigInteger primeBase = ((IInteger) ast.arg1()).toBigNumerator();
-				final int n = Validate.checkIntType(ast, 2, 1);
+				if (primeBase.compareTo(BigInteger.ZERO) < 0) {
+					// Non-negative integer expected.
+					return IOFunctions.printMessage(F.NextPrime, "intnn", F.List(), engine);
+				}
+				final int n = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+				if (n < 0) {
+					// Positive integer (less equal 2147483647) expected at position `2` in `1`.
+					return IOFunctions.printMessage(F.NextPrime, "intpm", F.List(ast, F.C2), engine);
+				}
+
 				BigInteger temp = primeBase;
 				for (int i = 0; i < n; i++) {
 					temp = temp.nextProbablePrime();

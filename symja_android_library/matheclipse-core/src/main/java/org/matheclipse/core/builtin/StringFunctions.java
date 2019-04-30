@@ -58,24 +58,36 @@ public final class StringFunctions {
 
 			if (ast.arg1().isList()) {
 				final IAST list = (IAST) ast.arg1();
-				final StringBuilder buffer = new StringBuilder();
-				char ch;
-				for (int i = 1; i < list.size(); i++) {
-					if (list.get(i).isInteger()) {
-						ch = (char) Validate.checkIntType(list, i);
-						buffer.append(ch);
-					} else {
-						return F.NIL;
-					}
-				}
-				return StringX.valueOf(buffer);
+				return fromCharacterCode(list, ast, engine);
 			}
 			if (ast.arg1().isInteger()) {
-				final char ch = (char) Validate.checkIntType(ast, 1);
-				return StringX.valueOf(ch);
+				return fromCharacterCode(ast, ast, engine);
 			}
 
 			return F.NIL;
+		}
+
+		private static IExpr fromCharacterCode(final IAST charList, final IAST fromCharacterCodeAST,
+				EvalEngine engine) {
+			final StringBuilder buffer = new StringBuilder(charList.size());
+			char ch;
+			for (int i = 1; i < charList.size(); i++) {
+				if (charList.get(i).isInteger()) {
+					int unicode = charList.get(i).toIntDefault(Integer.MIN_VALUE);
+					if (unicode < 0 || unicode >= 1114112) {
+						// A character unicode, which should be a non-negative integer less than 1114112, is expected at
+						// position `2` in `1`.
+						return IOFunctions.printMessage(F.FromCharacterCode, "notunicode", F.List(charList, F.ZZ(i)),
+								engine);
+					}
+					ch = (char) unicode;
+
+					buffer.append(ch);
+				} else {
+					return F.NIL;
+				}
+			}
+			return StringX.valueOf(buffer);
 		}
 
 		@Override
@@ -134,7 +146,7 @@ public final class StringFunctions {
 
 			return F.bool(test(ast.arg1()));
 		}
-		
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
@@ -178,7 +190,7 @@ public final class StringFunctions {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
@@ -214,7 +226,7 @@ public final class StringFunctions {
 
 			return F.NIL;
 		}
-		
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_2;
@@ -270,7 +282,7 @@ public final class StringFunctions {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
@@ -331,7 +343,7 @@ public final class StringFunctions {
 
 			return F.NIL;
 		}
-		
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_2;
@@ -353,7 +365,7 @@ public final class StringFunctions {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
@@ -371,10 +383,12 @@ public final class StringFunctions {
 
 			return toCharacterCode(ast.arg1().toString(), "UTF-8", F.ListAlloc());
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
@@ -431,12 +445,12 @@ public final class StringFunctions {
 			}
 			return F.NIL;
 		}
-		
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			TeXParser.initialize();
@@ -452,6 +466,7 @@ public final class StringFunctions {
 			}
 			return F.$str(inputForm(ast.arg1(), true));
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
@@ -469,7 +484,7 @@ public final class StringFunctions {
 
 			return StringX.valueOf(toUnicodeString(ast.arg1().toString(), "UTF-8"));
 		}
-		
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;

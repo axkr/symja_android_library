@@ -149,6 +149,7 @@ public class IOFunctions {
 			"int", "Integer expected.", //
 			"intp", "Positive integer expected.", //
 			"intnn", "Non-negative integer expected.", //
+			"intpm", "Positive integer (less equal 2147483647) expected at position `2` in `1`.", //
 			"iterb", "Iterator does not have appropriate bounds.", //
 			"ivar", "`1` is not a valid variable.", //
 			"level", "Level specification `1` is not of the form n, {n}, or {m, n}.", //
@@ -157,15 +158,18 @@ public class IOFunctions {
 			"noopen", "Cannot open `1`.", //
 			"nord", "Invalid comparison with `1` attempted.", //
 			"normal", "Nonatomic expression expected.", //
+			"notunicode",
+			"A character unicode, which should be a non-negative integer less than 1114112, is expected at position `2` in `1`.", //
 			"noval", "Symbol `1` in part assignment does not have an immediate value.", //
 			"openx", "`1` is not open.", //
 			"optb", "Optional object `1` in `2` is not a single blank.", //
 			"ovfl", "Overflow occurred in computation.", //
-			"partd", "Part specification is longer than depth of object.", //
+			"partd", "Part specification `1` is longer than depth of object.", //
 			"partw", "Part `1` of `2` does not exist.", //
 			"plld", "Endpoints in `1` must be distinct machine-size real numbers.", //
 			"plln", "Limiting value `1` in `2` is not a machine-size real number.", //
 			"pspec", "Part specification `1` is neither an integer nor a list of integer.", //
+			"pkspec1", "The expression `1` cannot be used as a part specification.", // "
 			"seqs", "Sequence specification expected, but got `1`.", //
 			"setp", "Part assignment to `1` could not be made", //
 			"setps", "`1` in the part assignment is not a symbol.", //
@@ -208,21 +212,18 @@ public class IOFunctions {
 		int argSize = ast.argSize();
 		if (expected[0] == expected[1]) {
 			if (expected[0] == 1) {
-				printMessage(topHead, "argx", F.List(topHead, F.ZZ(argSize), F.ZZ(expected[0])), engine);
-				return F.NIL;
+				return printMessage(topHead, "argx", F.List(topHead, F.ZZ(argSize), F.ZZ(expected[0])), engine);
 			}
 			if (argSize == 1) {
-				printMessage(topHead, "argr", F.List(topHead, F.ZZ(expected[0])), engine);
-				return F.NIL;
+				return printMessage(topHead, "argr", F.List(topHead, F.ZZ(expected[0])), engine);
 			}
-			printMessage(topHead, "argrx", F.List(topHead, F.ZZ(argSize), F.ZZ(expected[0])), engine);
-			return F.NIL;
+			return printMessage(topHead, "argrx", F.List(topHead, F.ZZ(argSize), F.ZZ(expected[0])), engine);
 		}
-		printMessage(topHead, "argt", F.List(topHead, F.ZZ(argSize), F.ZZ(expected[0]), F.ZZ(expected[1])), engine);
-		return F.NIL;
+		return printMessage(topHead, "argt", F.List(topHead, F.ZZ(argSize), F.ZZ(expected[0]), F.ZZ(expected[1])),
+				engine);
 	}
 
-	public static boolean printMessage(ISymbol symbol, String messageShortcut, final IAST ast, EvalEngine engine) {
+	public static IAST printMessage(ISymbol symbol, String messageShortcut, final IAST ast, EvalEngine engine) {
 		IExpr temp = symbol.evalMessage(messageShortcut);
 		String message = null;
 		if (temp.isPresent()) {
@@ -239,10 +240,9 @@ public class IOFunctions {
 					message = message.replaceAll("`" + (i) + "`", ast.get(i).toString());
 				}
 				engine.printMessage(symbol.toString() + ": " + message);
-				return true;
 			}
 		}
-		return false;
+		return F.NIL;
 	}
 
 	private static String rawMessage(final IAST ast, String message) {
@@ -307,6 +307,7 @@ public class IOFunctions {
 		// }
 		// return list;
 	}
+
 	private IOFunctions() {
 
 	}
