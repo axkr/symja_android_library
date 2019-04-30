@@ -2981,8 +2981,7 @@ public final class Programming {
 				// Part `1` of `2` does not exist.
 				return IOFunctions.printMessage(F.Part, "partw", F.List(ast.get(pos), arg1), engine);
 			}
-			IExpr result = null;
-			result = getIndex(arg1, indx, engine);
+			IExpr result = getIndex(arg1, indx, engine);
 			if (result.isPresent()) {
 				if (p1 < ast.size()) {
 					if (result.isAST()) {
@@ -2998,7 +2997,7 @@ public final class Programming {
 		} else if (arg2.isList()) {
 			IExpr temp = null;
 			final IAST list = (IAST) arg2;
-			final IASTAppendable result = F.ListAlloc(list.size());
+			final IASTAppendable result = F.ast(arg1.head(), list.size(), false);
 
 			for (int i = 1; i < list.size(); i++) {
 				final IExpr listArg = list.get(i);
@@ -3062,7 +3061,7 @@ public final class Programming {
 				if (p1 >= ast.size()) {
 					result.append(arg1.get(i));
 					continue;
-				} 
+				}
 				if (arg1.get(i).isAST()) {
 
 					IExpr temp = part((IAST) arg1.get(i), ast, p1, engine);

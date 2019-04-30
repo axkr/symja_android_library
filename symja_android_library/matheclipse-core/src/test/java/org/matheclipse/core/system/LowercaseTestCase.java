@@ -10203,7 +10203,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPart() {
-
+		check("f(a, b, c)[[{2, 3}]]", //
+				"f(b,c)");
+		check("f(g(a, b), h(c, d))[[{1, 2}, {2}]]", //
+				"f(g(b),h(d))");
+		check("{d, e, a, b, c}[[{3,4,5,1,2}]]", //
+				"{a,b,c,d,e}");
+		
 		check("m = {a, b, c, d};", //
 				"");
 		check("m[[2]] += x", //
