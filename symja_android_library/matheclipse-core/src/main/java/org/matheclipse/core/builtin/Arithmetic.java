@@ -62,6 +62,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
+import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.expression.ASTSeriesData;
@@ -74,8 +75,10 @@ import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
+import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -364,19 +367,54 @@ public final class Arithmetic {
 			return (IASTMutable) F.Plus(null, value);
 		}
 
+		/**
+		 * Get the head symbol of this function.
+		 * 
+		 * @return
+		 */
 		protected ISymbol getFunctionSymbol() {
 			return F.AddTo;
 		}
 
+		/**
+		 * Get the corresponding arithmetic head symbol for the function symbol in <code>getFunctionSymbol()</code>
+		 * 
+		 * @return
+		 */
+		protected ISymbol getArithmeticSymbol() {
+			return F.Plus;
+		}
+
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			ISymbol sym = Validate.checkSymbolType(ast, 1);
-			IExpr arg2 = engine.evaluate(ast.arg2());
-			IExpr[] results = sym.reassignSymbolValue(getAST(arg2), getFunctionSymbol(), engine);
-			if (results != null) {
-				return results[1];
+			IExpr leftHandSide = ast.arg1();
+			final IExpr head = leftHandSide.head();
+			if (head.isBuiltInSymbol() && leftHandSide.isAST()) {
+				IEvaluator eval = ((IBuiltInSymbol) head).getEvaluator();
+				if (eval instanceof ISetEvaluator) {
+					IExpr temp = engine.evalLoop(leftHandSide);
+					if (!temp.isPresent()) {
+						return F.NIL;
+					}
+					IExpr rhs = engine.evaluate(F.binaryAST2(getArithmeticSymbol(), temp, ast.arg2()));
+					return ((ISetEvaluator) eval).evaluateSet(leftHandSide, rhs, engine);
+				}
 			}
-			return F.NIL;
+			if (leftHandSide.isSymbol()) {
+				ISymbol sym = (ISymbol) leftHandSide;
+				if (!sym.hasAssignedSymbolValue()) {
+					// `1` is not a variable with a value, so its value cannot be changed.
+					return IOFunctions.printMessage(getFunctionSymbol(), "rvalue", F.List(sym), engine);
+				}
+				IExpr arg2 = engine.evaluate(ast.arg2());
+				IExpr[] results = sym.reassignSymbolValue(getAST(arg2), getFunctionSymbol(), engine);
+				if (results != null) {
+					return results[1];
+				}
+				return F.NIL;
+			}
+			// `1` is not a variable with a value, so its value cannot be changed.
+			return IOFunctions.printMessage(getFunctionSymbol(), "rvalue", F.List(leftHandSide), engine);
 		}
 
 		public int[] expectedArgSize() {
@@ -1308,6 +1346,9 @@ public final class Arithmetic {
 			return F.DivideBy;
 		}
 
+		protected ISymbol getArithmeticSymbol() {
+			return F.Divide;
+		}
 	}
 
 	private final static class DirectedInfinity extends AbstractCoreFunctionEvaluator {
@@ -2216,7 +2257,8 @@ public final class Arithmetic {
 					}
 					return F.C0;
 				}
-				return engine.printMessage("Piecewise: Matrix with row-dimension > 0 and column-dimension == 2 expected!");
+				return engine
+						.printMessage("Piecewise: Matrix with row-dimension > 0 and column-dimension == 2 expected!");
 			}
 			IAST matrix = (IAST) arg1;
 			IExpr defaultValue = F.C0;
@@ -4450,6 +4492,10 @@ public final class Arithmetic {
 		protected ISymbol getFunctionSymbol() {
 			return F.SubtractFrom;
 		}
+
+		protected ISymbol getArithmeticSymbol() {
+			return F.Subtract;
+		}
 	}
 
 	/**
@@ -5410,6 +5456,9 @@ public final class Arithmetic {
 			return F.TimesBy;
 		}
 
+		protected ISymbol getArithmeticSymbol() {
+			return F.Times;
+		}
 	}
 
 	/**

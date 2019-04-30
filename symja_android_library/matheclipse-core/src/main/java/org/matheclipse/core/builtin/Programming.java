@@ -1872,8 +1872,8 @@ public final class Programming {
 					IExpr temp = symbol.assignedValue();
 					// RulesData rd = symbol.getRulesData();
 					if (temp == null) {
-						return engine.printMessage(
-								"Set: no value defined for symbol '" + symbol.toString() + "' in Part() expression.");
+						// `1` is not a variable with a value, so its value cannot be changed.
+						return IOFunctions.printMessage(F.Set, "rvalue", F.List(symbol), engine);
 					} else {
 						try {
 							if (rightHandSide.isList()) {

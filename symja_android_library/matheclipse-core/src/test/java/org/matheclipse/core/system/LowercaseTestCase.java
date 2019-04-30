@@ -96,37 +96,66 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{2*Abs(z),Arg(-z)}");
 		check("AbsArg(2*z)", //
 				"{2*Abs(z),Arg(z)}");
-		check("AbsArg({a, {b, c}})", "{{Abs(a),Arg(a)},{{Abs(b),Arg(b)},{Abs(c),Arg(c)}}}");
-		check("AbsArg({{1, -1, 0}, {0, 1}})", "{{{1,0},{1,Pi},{0,0}},{{0,0},{1,0}}}");
+		check("AbsArg({a, {b, c}})", //
+				"{{Abs(a),Arg(a)},{{Abs(b),Arg(b)},{Abs(c),Arg(c)}}}");
+		check("AbsArg({{1, -1, 0}, {0, 1}})", //
+				"{{{1,0},{1,Pi},{0,0}},{{0,0},{1,0}}}");
 
-		check("AbsArg(Gamma(-1/2))", "{2*Sqrt(Pi),Pi}");
+		check("AbsArg(Gamma(-1/2))", //
+				"{2*Sqrt(Pi),Pi}");
 
-		check("AbsArg({1, I, 0})", "{{1,0},{1,Pi/2},{0,0}}");
-		check("AbsArg(z) /. z -> {1, I, 0}", "{{1,1,0},{0,Pi/2,0}}");
+		check("AbsArg({1, I, 0})", //
+				"{{1,0},{1,Pi/2},{0,0}}");
+		check("AbsArg(z) /. z -> {1, I, 0}", //
+				"{{1,1,0},{0,Pi/2,0}}");
 	}
 
 	public void testAccumulate() {
-		check("Accumulate({{a, b}, {c, d}, {e, f}})", "{{a,b},{a+c,b+d},{a+c+e,b+d+f}}");
-		check("Accumulate({})", "{}");
-		check("Accumulate({a})", "{a}");
-		check("Accumulate({a, b})", "{a,a+b}");
-		check("Accumulate({a, b, c, d})", "{a,a+b,a+b+c,a+b+c+d}");
-		check("Accumulate(f(a, b, c, d))", "f(a,a+b,a+b+c,a+b+c+d)");
+		check("Accumulate({{a, b}, {c, d}, {e, f}})", //
+				"{{a,b},{a+c,b+d},{a+c+e,b+d+f}}");
+		check("Accumulate({})", //
+				"{}");
+		check("Accumulate({a})", //
+				"{a}");
+		check("Accumulate({a, b})", //
+				"{a,a+b}");
+		check("Accumulate({a, b, c, d})", //
+				"{a,a+b,a+b+c,a+b+c+d}");
+		check("Accumulate(f(a, b, c, d))", //
+				"f(a,a+b,a+b+c,a+b+c+d)");
 	}
 
 	public void testAddTo() {
-		check("a = 10", "10");
-		check("a += 2", "12");
-		check("a", "12");
+		// print: AddTo: d is not a variable with a value, so its value cannot be changed.
+		check("d += 7", //
+				"d+=7");
+		// print: AddTo: test is not a variable with a value, so its value cannot be changed.
+		check("\"test\" += 7", //
+				"test+=7");
+		// print: Part: Part specification k[[2]] is longer than depth of object.
+		check("k[[2]] += x", //
+				"k[[2]]+=x");
+		check("a = 10", //
+				"10");
+		check("a += 2", //
+				"12");
+		check("a", //
+				"12");
 	}
 
 	public void testAllTrue() {
-		check("AllTrue({}, EvenQ)", "True");
-		check("AllTrue({1, 2, 3, 4, 5, 6}, EvenQ)", "False");
-		check("AllTrue({2, 4, 6, 8}, EvenQ)", "True");
-		check("AllTrue({2, 6, x, 4, y}, # < 10 &)", "x<10&&y<10");
-		check("AllTrue({12, 16, x, 14, y}, TrueQ(# < 10) &)", "False");
-		check("AllTrue(f(1, 7, 3), OddQ)", "True");
+		check("AllTrue({}, EvenQ)", //
+				"True");
+		check("AllTrue({1, 2, 3, 4, 5, 6}, EvenQ)", //
+				"False");
+		check("AllTrue({2, 4, 6, 8}, EvenQ)", //
+				"True");
+		check("AllTrue({2, 6, x, 4, y}, # < 10 &)", //
+				"x<10&&y<10");
+		check("AllTrue({12, 16, x, 14, y}, TrueQ(# < 10) &)", //
+				"False");
+		check("AllTrue(f(1, 7, 3), OddQ)", //
+				"True");
 	}
 
 	public void testAlternatives() {
@@ -10174,7 +10203,29 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPart() {
-		
+
+		check("m = {a, b, c, d};", //
+				"");
+		check("m[[2]] += x", //
+				"b+x");
+		check("m", //
+				"{a,b+x,c,d}");
+
+		check("m[[2]] *= x", //
+				"x*(b+x)");
+		check("m", //
+				"{a,x*(b+x),c,d}");
+
+		check("m[[2]] -= y", //
+				"x*(b+x)-y");
+		check("m", //
+				"{a,x*(b+x)-y,c,d}");
+
+		check("m[[2]] /= z^2", //
+				"(x*(b+x)-y)/z^2");
+		check("m", //
+				"{a,(x*(b+x)-y)/z^2,c,d}");
+
 		// Part: Part 1000000000000 of a(x,y,z,f) does not exist.
 		check("{a(x,y,z,f),b,c,d}[[1,1000000000000]]", //
 				"{a(x,y,z,f),b,c,d}[[1,1000000000000]]");
@@ -10187,6 +10238,34 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// Part: Part specification asdf[[{1,2}]] is longer than depth of object.
 		check("Part[asdf,{1,2}]", //
 				"asdf[[{1,2}]]");
+
+		check("v = {a, b, c, d, e, f}", //
+				"{a,b,c,d,e,f}");
+		check("v[[2 ;; 4]] = x", //
+				"x");
+		check("v", //
+				"{a,x,x,x,e,f}");
+		check("f(g(a, b), g(c, d))[[2, 1]]", //
+				"c");
+		check("(1 + 2 * x^2 + y^2)[[3]]", //
+				"y^2");
+		check("{x -> 4, y -> 5}[[1, 2]]", //
+				"4");
+		check("{{a, b, c}, {d, e, f}}[[1]][[2]]", //
+				"b");
+		check("{{a, b, c}, {d, e, f}, {g, h, i}}[[{1, 3}, {2, 3}]]", //
+				"{{b,c},{h,i}}");
+		check("{a, b, c, d, e, f, g, h, i, j, k}[[3 ;; -3 ;; 2]]", //
+				"{c,e,g,i}");
+		check("{a, b, c, d, e, f, g, h, i, j, k}[[;; ;; 2]]", //
+				"{a,c,e,g,i,k}");
+
+		check("{{a, b, c}, {d, e, f}, {g, h, i}}[[All, 2]]", //
+				"{b,e,h}");
+		check("{a, b, c, d, e, f}[[-2]]", //
+				"e");
+		check("{a, b, c, d, e, f}[[{1, 3, 1, 2, -1, -1}]]", //
+				"{a,c,a,b,f,f}");
 
 		check("1/(b-a*c)[[2]]", //
 				"-1/(a*c)");
@@ -10227,12 +10306,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"b");
 		check("M[[1, 2]] = x", //
 				"x");
+		check("M[[2, 2]] = y", //
+				"y");
 		check("M", //
-				"{{a,x},{c,d}}");
+				"{{a,x},{c,y}}");
 		check("M[[1, 1+1]] = y", //
 				"y");
 		check("M", //
-				"{{a,y},{c,d}}");
+				"{{a,y},{c,y}}");
 		check("{1, 2, 3, 4}[[2;;4]]", //
 				"{2,3,4}");
 		check("{1, 2, 3, 4}[[2;;-1]]", //
@@ -10317,6 +10398,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"b");
 		check("{{a, b, c}, {d, e, f}}[[1, 2]]", //
 				"b");
+
 	}
 
 	public void testPartition() {
@@ -14456,10 +14538,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSpan() {
-		
-		check("{a, b, c, d, e, f, g, h}[[2 ;; -3]]",//
-				 "{b,c,d,e,f}");
-		
+
+		check("{a, b, c, d, e, f, g, h}[[2 ;; -3]]", //
+				"{b,c,d,e,f}");
+
 		check("FullForm( ;; )", //
 				"Span(1, All)");
 		check("FullForm(1;;4;;2)", //
@@ -14470,12 +14552,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Span(1, 3)");
 		// check("a ;; b ;; c ;; d", "(1;;d) (a;;b;;c)");
 
-		check("{a, b, c, d, e, f, g, h}[[2 ;; -3]]",//
-				 "{b,c,d,e,f}");
+		check("{a, b, c, d, e, f, g, h}[[2 ;; -3]]", //
+				"{b,c,d,e,f}");
 		check("{a, b, c, d, e, f, g, h}[[2 ;; 5]]", //
 				"{b,c,d,e}");
-		check("{a, b, c, d, e, f, g, h}[[2 ;; All]]",//
-				 "{b,c,d,e,f,g,h}");
+		check("{a, b, c, d, e, f, g, h}[[2 ;; All]]", //
+				"{b,c,d,e,f,g,h}");
 	}
 
 	public void testStandardize() {

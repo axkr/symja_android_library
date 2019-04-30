@@ -170,6 +170,7 @@ public class IOFunctions {
 			"plln", "Limiting value `1` in `2` is not a machine-size real number.", //
 			"pspec", "Part specification `1` is neither an integer nor a list of integer.", //
 			"pkspec1", "The expression `1` cannot be used as a part specification.", // "
+			"rvalue", "`1` is not a variable with a value, so its value cannot be changed.", //
 			"seqs", "Sequence specification expected, but got `1`.", //
 			"setp", "Part assignment to `1` could not be made", //
 			"setps", "`1` in the part assignment is not a symbol.", //
