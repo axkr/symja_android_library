@@ -1273,7 +1273,11 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		// &af; &#x2061;
 		// tag(buf, "mo", "&#x2061;");
 		tagStart(buf, "mrow");
-		tag(buf, "mo", "(");
+		if (fRelaxedSyntax) {
+			tag(buf, "mo", "(");
+		} else {
+			tag(buf, "mo", "[");
+		}
 		tagStart(buf, "mrow");
 		for (int i = 1; i < ast.size(); i++) {
 			convert(buf, ast.get(i), Integer.MIN_VALUE, false);
@@ -1282,7 +1286,11 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			}
 		}
 		tagEnd(buf, "mrow");
-		tag(buf, "mo", ")");
+		if (fRelaxedSyntax) {
+			tag(buf, "mo", ")");
+		} else {
+			tag(buf, "mo", "]");
+		}
 		tagEnd(buf, "mrow");
 		tagEnd(buf, "mrow");
 
@@ -2019,19 +2027,27 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	public void init() {
 		plusPrec = ASTNodeFactory.PLUS_PRECEDENCE;// ASTNodeFactory.MMA_STYLE_FACTORY.get("Plus").getPrecedence();
 
-		CONVERTERS.put(F.Sin, new MMLFunction(this, "sin"));
-		CONVERTERS.put(F.Cos, new MMLFunction(this, "cos"));
-		CONVERTERS.put(F.Tan, new MMLFunction(this, "tan"));
-		CONVERTERS.put(F.Cot, new MMLFunction(this, "cot"));
-		CONVERTERS.put(F.ArcSin, new MMLFunction(this, "arcsin"));
-		CONVERTERS.put(F.ArcCos, new MMLFunction(this, "arccos"));
-		CONVERTERS.put(F.ArcTan, new MMLFunction(this, "arctan"));
-		CONVERTERS.put(F.ArcCot, new MMLFunction(this, "arccot"));
-		CONVERTERS.put(F.ArcSinh, new MMLFunction(this, "arcsinh"));
-		CONVERTERS.put(F.ArcCosh, new MMLFunction(this, "arccosh"));
-		CONVERTERS.put(F.ArcTanh, new MMLFunction(this, "arctanh"));
-		CONVERTERS.put(F.ArcCoth, new MMLFunction(this, "arccoth"));
-		CONVERTERS.put(F.Log, new MMLFunction(this, "log"));
+		if (Config.MATHML_TRIG_LOWERCASE) {
+			CONVERTERS.put(F.Sin, new MMLFunction(this, "sin"));
+			CONVERTERS.put(F.Cos, new MMLFunction(this, "cos"));
+			CONVERTERS.put(F.Csc, new MMLFunction(this, "csc"));
+			CONVERTERS.put(F.Tan, new MMLFunction(this, "tan"));
+			CONVERTERS.put(F.Sec, new MMLFunction(this, "sec"));
+			CONVERTERS.put(F.Cot, new MMLFunction(this, "cot"));
+			CONVERTERS.put(F.ArcSin, new MMLFunction(this, "arcsin"));
+			CONVERTERS.put(F.ArcCos, new MMLFunction(this, "arccos"));
+			CONVERTERS.put(F.ArcCsc, new MMLFunction(this, "arccsc"));
+			CONVERTERS.put(F.ArcSec, new MMLFunction(this, "arcsec"));
+			CONVERTERS.put(F.ArcTan, new MMLFunction(this, "arctan"));
+			CONVERTERS.put(F.ArcCot, new MMLFunction(this, "arccot"));
+			CONVERTERS.put(F.ArcSinh, new MMLFunction(this, "arcsinh"));
+			CONVERTERS.put(F.ArcCosh, new MMLFunction(this, "arccosh"));
+			CONVERTERS.put(F.ArcCsch, new MMLFunction(this, "arccsch"));
+			CONVERTERS.put(F.ArcCoth, new MMLFunction(this, "arccoth"));
+			CONVERTERS.put(F.ArcSech, new MMLFunction(this, "arcsech"));
+			CONVERTERS.put(F.ArcTanh, new MMLFunction(this, "arctanh"));
+			CONVERTERS.put(F.Log, new MMLFunction(this, "log"));
+		}
 
 		// operTab.put("Sum", new MMLSum(this));
 		// operTab.put("Integrate", new MMLIntegrate(this));

@@ -241,6 +241,11 @@ public class Config {
 	public static final int MACHINE_PRECISION = 16;
 
 	/**
+	 * Print trigonometric functions in lower case characters.
+	 */
+	public static boolean MATHML_TRIG_LOWERCASE = true;
+	
+	/**
 	 * Enable tests and functions which use the local files. Don't use <code>final</code> here because of grpc
 	 * interface.
 	 */
