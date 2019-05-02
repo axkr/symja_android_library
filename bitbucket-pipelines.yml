@@ -4,4 +4,4 @@ pipelines:
   default:
     - step:
         script:
-          - cd symja_android_library && mvn clean install
+          - cd symja_android_library && mvn clean install -pl matheclipse-core
