@@ -3408,20 +3408,28 @@ public class MainTestCase extends AbstractTestCase {
 				"x==1");
 		check("-1/2*(-I*3^(1/2)+1)", //
 				"1/2*(-1+I*Sqrt(3))");
-		check("Roots(x^3-3*x-2==0, x)", "x==-1||x==2");
+		check("Roots(x^3-3*x-2==0, x)", //
+				"x==-1||x==2");
 
-		check("Roots((x^2-1)/(x-1)==0, x)", "x==-1");
+		check("Roots((x^2-1)/(x-1)==0, x)",//
+				 "x==-1");
 		check("Roots(3/4*x^2+9/16==0, x)", //
 				"x==I*1/2*Sqrt(3)||x==-I*1/2*Sqrt(3)");
 
-		check("Factor(3*x^2+6)", "3*(2+x^2)");
-		check("Factor(3/4*x^2+9/16)", "3/16*(3+4*x^2)");
-		check("Factor(3/4*x^2+9/16+7)", "1/16*(121+12*x^2)");
-		check("Factor(3/4*x^2+9/16*x+7)", "1/16*(112+9*x+12*x^2)");
+		check("Factor(3*x^2+6)", //
+				"3*(2+x^2)");
+		check("Factor(3/4*x^2+9/16)", //
+				"3/16*(3+4*x^2)");
+		check("Factor(3/4*x^2+9/16+7)", //
+				"1/16*(121+12*x^2)");
+		check("Factor(3/4*x^2+9/16*x+7)",//
+				 "1/16*(112+9*x+12*x^2)");
 
-		check("Roots(x^2 - 4*x + 8==0, x)", "x==2-I*2||x==2+I*2");
+		check("Roots(x^2 - 4*x + 8==0, x)", //
+				"x==2-I*2||x==2+I*2");
 		// not reduccible with current factor method
-		check("Factor(x^4-2*x^3+2*x^2-4*x+4)", "4-4*x+2*x^2-2*x^3+x^4");
+		check("Factor(x^4-2*x^3+2*x^2-4*x+4)", //
+				"4-4*x+2*x^2-2*x^3+x^4");
 		// check("Roots(x^6 - 4*x^3 + 8==0, x)",
 		// "x==-1-I||x==-1+I||x==1/2-I*1/2-Sqrt(I*6)/2||x==1/2-I*1/2+Sqrt(I*6)/2||x==1/2+I*1/\n"
 		// + "2-Sqrt(-I*6)/2||x==1/2+I*1/2+Sqrt(-I*6)/2");

@@ -76,7 +76,9 @@ public abstract class AbstractRubiTestCase extends TestCase {
 					return expectedResult;
 				}
 
-				expected = fEvaluator.eval(F.PossibleZeroQ(F.Subtract(result, expected)));
+				IExpr temp = fEvaluator.eval(F.Subtract(result, expected));
+				// System.out.println(temp.toString());
+				expected = fEvaluator.eval(F.PossibleZeroQ(temp));
 				if (expected.isTrue()) {
 					// the expressions are structurally equal
 					return expectedResult;

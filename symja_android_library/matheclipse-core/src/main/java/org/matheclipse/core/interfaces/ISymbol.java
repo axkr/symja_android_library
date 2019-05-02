@@ -360,6 +360,14 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 */
 	public boolean isLocked(boolean packageMode);
 
+	default boolean isConstantAttribute() {
+		return (getAttributes() & CONSTANT) == CONSTANT;
+	}
+
+	default boolean isNumericFunctionAttribute() {
+		return ((getAttributes() & NUMERICFUNCTION) == NUMERICFUNCTION);
+	}
+
 	/**
 	 * Tests if this symbols name equals the given string
 	 * 

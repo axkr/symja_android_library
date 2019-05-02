@@ -5082,6 +5082,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFactor() {
+		check("Simplify((-I*a+b)*(I*Cosh(x)+Sinh(x)))", //
+				"(a+I*b)*(Cosh(x)-I*Sinh(x))");
+		check("Factor(a*Cosh(x) + I*b*Cosh(x) - I*a*Sinh(x) + b*Sinh(x))", //
+				"(-I*a+b)*(I*Cosh(x)+Sinh(x))");
 		// TODO return (2 + 2 x + 3 x ^ 2 + x ^ 4) / ((1 + x) ^ 2 (1 + x ^ 2) ^
 		// 2)
 		// check("Factor(a*b+(4+4*x+x^2)^2)",//
@@ -5092,6 +5096,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-(-x+y)*(x+y)*(-I*x+y)*(I*x+y)*(x^2+x*y+y^2)*(x^2-x*y+y^2)*(-x^2-I*x*y+y^2)*(-x^\n" + "2+I*x*y+y^2)");
 		check("Factor(x^(2)+y^(2), GaussianIntegers->True)", //
 				"(-I*x+y)*(I*x+y)");
+		check("Factor(Sin(x), GaussianIntegers->True)", //
+				"Sin(x)");
 
 		check("Factor(1+x^2, GaussianIntegers->True)", //
 				"(-I+x)*(I+x)");
@@ -5104,6 +5110,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"((-1+E^x)*(1+E^x)*(-3+E^(2*x)))/E^x");
 		check("Factor(E^x+E^(2*x))", //
 				"E^x*(1+E^x)");
+		
+		check("Factor(Sin(x))", //
+				"Sin(x)");
 
 		// TODO https://github.com/kredel/java-algebra-system/issues/8
 		check("Factor(a*c+(b*c+a*d)*x+b*d*x^2)", //

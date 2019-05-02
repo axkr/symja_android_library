@@ -8,26 +8,9 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-
-//final class PowerPolynomialSubstitutions extends PolynomialSubstitutions {
-//	public PowerPolynomialSubstitutions(IAST listOfVariables) {
-//		super(listOfVariables);
-//	}
-//
-//	protected void substituteExpression(final IExpr exprPoly) {
-//		ISymbol symbol = substitutedExpr.get(exprPoly);
-//		if (symbol != null) {
-//			return;
-//		}
-//		final int moduleCounter = EvalEngine.get().incModuleCounter();
-//		final String varAppend = "$" + moduleCounter;
-//		ISymbol newSymbol = F.Dummy("jas" + varAppend);// , engine);
-//		substitutedVariables.put(newSymbol, exprPoly);
-//		substitutedExpr.put(exprPoly, newSymbol);
-//	}
-//}
 
 /**
  * Forward and backward substitutions of expressions for polynomials. See
@@ -35,7 +18,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Homogenization</a>
  * 
  */
-public class PolynomialSubstitutions {
+public class PolynomialHomogenization {
 	/**
 	 * The names of the variables from the unsubstituted polynomials.
 	 */
@@ -54,25 +37,13 @@ public class PolynomialSubstitutions {
 	/**
 	 * Forward and backward substitutions of expressions for polynomials. See
 	 * <a href="https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf">3.5
-	 * Homogenization</a>
+	 * Homogenization</a> (page 112)
 	 * 
 	 * @param listOfVariables
 	 *            names for the variables.
 	 */
-	public PolynomialSubstitutions(IAST listOfVariables) {
+	public PolynomialHomogenization(IAST listOfVariables) {
 		vars = listOfVariables;
-	}
-
-	/**
-	 * Forward and backward substitutions of expressions for polynomials. See
-	 * <a href="https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf">3.5
-	 * Homogenization</a>
-	 * 
-	 * @param listOfVariables
-	 * @return
-	 */
-	public static PolynomialSubstitutions buildSubs(IAST listOfVariables) {
-		return new PolynomialSubstitutions(listOfVariables);
 	}
 
 	// private void substitute(final IExpr exprPoly) {
@@ -157,36 +128,35 @@ public class PolynomialSubstitutions {
 	// substitutedExpr.put(exprPoly, newSymbol);
 	// }
 
-	public IExpr replaceAll(final IExpr exprPoly) {
-		return replaceAll(exprPoly, false, true);
-	}
+	// public IExpr replaceAll(final IExpr exprPoly) {
+	// return replaceAll(exprPoly, true);
+	// }
 
-	public IExpr replaceAll(final IExpr exprPoly, boolean coefficient, boolean checkNegativeExponents)
-			throws ArithmeticException, ClassCastException {
-		int ix = ExpVectorLong.indexVar(exprPoly, vars);
+	/**
+	 * Forward substitution - transforming the expression into a polynomial expression by introducing &quot;substitution
+	 * variables&quot;. After transforming the polynomial expression may be solvable by a polynomial factorization.
+	 * 
+	 * @param expression
+	 * @return
+	 * @throws ArithmeticException
+	 * @throws ClassCastException
+	 */
+	public IExpr replaceForward(final IExpr expression) throws ArithmeticException, ClassCastException {
+		int ix = ExpVectorLong.indexVar(expression, vars);
 		if (ix >= 0) {
-			return exprPoly;
+			return expression;
 		}
-		if (exprPoly instanceof IAST) {
-			final IAST ast = (IAST) exprPoly;
-			if (ast.isPlus()) {
-				IASTAppendable plus = F.PlusAlloc(ast.size());
-				IExpr expr = ast.arg1();
-				plus.append(replaceAll(expr, coefficient, checkNegativeExponents));
+		if (expression instanceof IAST) {
+			final IAST ast = (IAST) expression;
+			if (ast.isPlus() || ast.isTimes()) {
+				IASTAppendable newAST = F.ast(ast.head(), ast.size(), false);
+				IExpr temp = ast.arg1();
+				newAST.append(replaceForward(temp));
 				for (int i = 2; i < ast.size(); i++) {
-					expr = ast.get(i);
-					plus.append(replaceAll(expr, coefficient, checkNegativeExponents));
+					temp = ast.get(i);
+					newAST.append(replaceForward(temp));
 				}
-				return plus;
-			} else if (ast.isTimes()) {
-				IASTAppendable times = F.TimesAlloc(ast.size());
-				IExpr expr = ast.arg1();
-				times.append(replaceAll(expr, coefficient, checkNegativeExponents));
-				for (int i = 2; i < ast.size(); i++) {
-					expr = ast.get(i);
-					times.append(replaceAll(expr, coefficient, checkNegativeExponents));
-				}
-				return times;
+				return newAST;
 			} else if (ast.isPower()) {
 				final IExpr base = ast.base();
 				if (!base.has(x -> vars.isMember(x), true)) {
@@ -213,24 +183,26 @@ public class PolynomialSubstitutions {
 				}
 				return ast;
 			}
-			if (coefficient) {
-				return exprPoly;
-			}
-			if (exprPoly.isFree(Predicates.in(vars), true)) {
-				return exprPoly;
-			}
-			return replaceExpression(exprPoly);
+//			if (expression.isFree(Predicates.in(vars), true)) {
+//				return expression;
+//			}
+			return replaceExpression(expression);
 		}
-		return exprPoly;
+		return expression;
 	}
 
-	private ISymbol replaceExpression(final IExpr exprPoly) {
+	private IExpr replaceExpression(final IExpr exprPoly) {
 		if (exprPoly.isSymbol()) {
 			return (ISymbol) exprPoly;
 		}
 		ISymbol symbol = substitutedExpr.get(exprPoly);
 		if (symbol != null) {
 			return symbol;
+		}
+		if (exprPoly.isAST() && exprPoly.head().isBuiltInSymbol()) {
+			if (!((IBuiltInSymbol) exprPoly.head()).isNumericFunctionAttribute()) {
+				return exprPoly;
+			}
 		}
 		final int moduleCounter = EvalEngine.get().incModuleCounter();
 		final String varAppend = "$" + moduleCounter;
@@ -241,11 +213,30 @@ public class PolynomialSubstitutions {
 	}
 
 	/**
+	 * Backward substitution - transforming the expression back by replacing the introduce &quot;substitution
+	 * variables&quot;.
+	 * 
+	 * @param expression
+	 * @return
+	 */
+	public IExpr replaceBackward(final IExpr expression) {
+		return F.subst(expression, substitutedVariables);
+	}
+
+	/**
 	 * Variables (ISymbols) which are substituted from the original polynomial (backward substitution) returned in a
 	 * <code>IdentityHashMap</code>.
 	 */
 	public java.util.IdentityHashMap<ISymbol, IExpr> substitutedVariables() {
 		return substitutedVariables;
+	}
+
+	public java.util.Set<ISymbol> substitutedVariablesSet() {
+		return substitutedVariables.keySet();
+	}
+
+	public int size() {
+		return substitutedVariables.size();
 	}
 
 	/**

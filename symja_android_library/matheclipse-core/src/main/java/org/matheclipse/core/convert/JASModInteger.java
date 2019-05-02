@@ -67,6 +67,13 @@ public class JASModInteger {
 		this.fPolyFactory = new GenPolynomialRing<ModLong>(fRingFactory, fVariables.size(), fTermOrder, vars);
 	}
 
+	/**
+	 * Convert the given expression into a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial
+	 * 
+	 * @param exprPoly 
+	 * @return
+	 * @throws JASConversionException
+	 */
 	public GenPolynomial<ModLong> expr2JAS(final IExpr exprPoly) throws JASConversionException {
 		try {
 			return expr2Poly(exprPoly, false);
@@ -168,11 +175,11 @@ public class JASModInteger {
 				for (int i = 0; i < fVariables.size(); i++) {
 					if (fVariables.get(i).equals(base)) {
 						int exponent = ast.exponent().toIntDefault(Integer.MIN_VALUE);
-//						int exponent = -1;
-//						try {
-//							exponent = Validate.checkPowerExponent(ast);
-//						} catch (WrongArgumentType e) {
-//						}
+						// int exponent = -1;
+						// try {
+						// exponent = Validate.checkPowerExponent(ast);
+						// } catch (WrongArgumentType e) {
+						// }
 						if (exponent < 0) {
 							throw new ArithmeticException(
 									"JASConvert:expr2Poly - invalid exponent: " + ast.exponent().toString());
@@ -234,12 +241,12 @@ public class JASModInteger {
 				for (int i = 0; i < fVariables.size(); i++) {
 					if (fVariables.get(i).equals(base)) {
 						int exponent = ast.exponent().toIntDefault(Integer.MIN_VALUE);
-//						int exponent = -1;
-//						try {
-//							exponent = Validate.checkPowerExponent(ast);
-//						} catch (WrongArgumentType e) {
-//							//
-//						}
+						// int exponent = -1;
+						// try {
+						// exponent = Validate.checkPowerExponent(ast);
+						// } catch (WrongArgumentType e) {
+						// //
+						// }
 						if (exponent < 0) {
 							throw new ArithmeticException(
 									"JASConvert:expr2Poly - invalid exponent: " + ast.exponent().toString());
@@ -323,8 +330,8 @@ public class JASModInteger {
 		return true;
 	}
 
-	public static ModLongRing option2ModLongRing(ISignedNumber option) {
-		// TODO convert to long value
+	public static ModLongRing option2ModLongRing(ISignedNumber option) throws ArithmeticException {
+		// maybe throw ArithmeticException
 		long longValue = option.toLong();
 		final BigInteger value = BigInteger.valueOf(longValue);
 		return new ModLongRing(longValue, value.isProbablePrime(32));

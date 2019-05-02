@@ -415,7 +415,7 @@ public abstract class AbstractFractionSym implements IFraction {
 	public ISignedNumber re() {
 		return this;
 	}
-
+	
 	@Override
 	public double reDoubleValue() {
 		return doubleValue();

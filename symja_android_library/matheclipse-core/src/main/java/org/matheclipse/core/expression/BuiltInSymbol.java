@@ -152,7 +152,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluateHead(IAST ast, EvalEngine engine) {
-		return isConstant() ? F.NIL : super.evaluateHead(ast, engine);
+		return isConstantAttribute() ? F.NIL : super.evaluateHead(ast, engine);
 	}
 
 	/** {@inheritDoc} */

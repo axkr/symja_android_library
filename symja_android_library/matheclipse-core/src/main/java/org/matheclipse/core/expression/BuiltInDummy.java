@@ -585,12 +585,6 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isConstant() {
-		return (fAttributes & CONSTANT) == CONSTANT;
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public boolean isNegative() {
 		if (isNumericFunction()) {
 			IExpr temp = F.evaln(this);
@@ -603,7 +597,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
 	@Override
 	public boolean isNumericFunction() {
-		if (isConstant()) {
+		if (isConstantAttribute()) {
 			return true;
 		}
 
@@ -626,7 +620,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 		if (variables.isAST0()) {
 			return true;
 		}
-		if (isConstant()) {
+		if (isConstantAttribute()) {
 			return true;
 		}
 		return variables.exists(x -> this.equals(x));
@@ -690,7 +684,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isVariable() {
-		return (fAttributes & CONSTANT) != CONSTANT;
+		return !isConstantAttribute();
 	}
 
 	/** {@inheritDoc} */

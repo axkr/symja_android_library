@@ -560,7 +560,7 @@ public final class Validate {
 	 * @return null if the argument is not a variable
 	 */
 	public static ISymbol checkIsVariable(IAST ast, int position, EvalEngine engine) {
-		if (ast.get(position).isSymbol() && !ast.get(position).isConstant()) {
+		if (ast.get(position).isSymbol() && !ast.get(position).isConstantAttribute()) {
 			return (ISymbol) ast.get(position);
 		}
 		engine.printMessage(ast.get(position).toString() + " is not a valid variable");

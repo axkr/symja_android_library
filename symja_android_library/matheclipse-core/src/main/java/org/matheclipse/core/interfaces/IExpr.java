@@ -1209,7 +1209,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @see #isRealResult()
 	 * @see #isNumericFunction()
 	 */
-	default boolean isConstant() {
+	default boolean isConstantAttribute() {
 		return false;
 	}
 
@@ -2020,7 +2020,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @see #isRealResult()
 	 */
 	default boolean isNumericFunction() {
-		return isNumber() || isConstant();
+		return isNumber() || isConstantAttribute();
 	}
 
 	/**
@@ -2685,7 +2685,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * Test if this expression is a symbol which doesn't has attribute <code>Constant</code>.
 	 * 
 	 * @return
-	 * @see #isConstant()
+	 * @see #isConstantAttribute()
 	 * @see #isSymbol()
 	 */
 	default boolean isVariable() {

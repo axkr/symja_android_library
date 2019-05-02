@@ -573,12 +573,6 @@ public class Symbol implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isConstant() {
-		return (fAttributes & CONSTANT) == CONSTANT;
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public boolean isNegative() {
 		if (isNumericFunction()) {
 			IExpr temp = F.evaln(this);
@@ -591,7 +585,7 @@ public class Symbol implements ISymbol, Serializable {
 
 	@Override
 	public boolean isNumericFunction() {
-		if (isConstant()) {
+		if (isConstantAttribute()) {
 			return true;
 		}
 		if (fValue != null) {

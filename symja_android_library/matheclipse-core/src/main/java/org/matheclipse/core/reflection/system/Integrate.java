@@ -607,8 +607,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 		boolean quietMode = engine.isQuietMode();
 		ISymbol head = arg1.topHead();
 
-		if ((head.getAttributes() & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION
-				|| INT_RUBI_FUNCTIONS.contains(head) || head.getSymbolName().startsWith("§")) {
+		if (head.isNumericFunctionAttribute() || INT_RUBI_FUNCTIONS.contains(head)
+				|| head.getSymbolName().startsWith("§")) {
 
 			boolean newCache = false;
 			try {
@@ -648,8 +648,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 						rex.printStackTrace();
 					}
 					engine.setRecursionLimit(limit);
-					return engine.printMessage("Integrate Rubi recursion limit " + Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT
-							+ " RuntimeException: " + ast.toString());
+					return engine.printMessage("Integrate Rubi recursion limit "
+							+ Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT + " RuntimeException: " + ast.toString());
 
 				}
 

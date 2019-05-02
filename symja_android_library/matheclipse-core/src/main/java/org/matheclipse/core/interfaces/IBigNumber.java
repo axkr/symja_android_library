@@ -13,4 +13,18 @@ public interface IBigNumber extends INumber {
 	 * @return
 	 */
 	public INumber numericNumber();
+
+	/**
+	 * Get the real part as rational number
+	 * 
+	 * @return
+	 */
+	public IRational reRational();
+
+	/**
+	 * Get the imaginary part as rational number
+	 * 
+	 * @return
+	 */
+	public IRational imRational();
 }

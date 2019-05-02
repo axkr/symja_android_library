@@ -2632,8 +2632,7 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNumericFunction() {
-		if (head().isSymbol()
-				&& (((ISymbol) head()).getAttributes() & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION) {
+		if (head().isSymbol() && ((ISymbol) head()).isNumericFunctionAttribute()) {
 			// check if all arguments are &quot;numeric&quot;
 			return forAll(x -> x.isNumericFunction());
 		}
@@ -2644,7 +2643,7 @@ public abstract class AbstractAST implements IASTMutable {
 	@Override
 	public boolean isNumericMode() {
 		ISymbol symbol = topHead();
-		if (isList() || (symbol.getAttributes() & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION) {
+		if (isList() || symbol.isNumericFunctionAttribute()) {
 			// check if one of the arguments is &quot;numeric&quot;
 			for (int i = 1; i < size(); i++) {
 				if (get(i).isNumericMode()) {
@@ -3111,7 +3110,7 @@ public abstract class AbstractAST implements IASTMutable {
 		if (isNumber()) {
 			return true;
 		}
-		if (isConstant()) {
+		if (isConstantAttribute()) {
 			return true;
 		}
 		IExpr temp = F.eval(F.Times(this, F.Power(this, F.CN1)));

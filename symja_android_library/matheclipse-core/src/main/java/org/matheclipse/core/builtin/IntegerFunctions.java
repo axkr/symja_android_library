@@ -556,7 +556,7 @@ public class IntegerFunctions {
 				// the real and imaginary part.
 				return ((INumber) arg1).fractionalPart();
 			}
-			if (arg1.isConstant()) {
+			if (arg1.isConstantAttribute()) {
 				if (arg1.isE() || //
 						arg1.equals(F.Khinchin)) {
 					return F.Plus(F.CN2, arg1);

@@ -966,7 +966,7 @@ public final class Arithmetic {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
+			newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.NUMERICFUNCTION);
 		}
 	}
 
@@ -990,7 +990,8 @@ public final class Arithmetic {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
+			// don't set NUMERICFUNCTION
+			// newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
 		}
 	}
 
@@ -1307,7 +1308,7 @@ public final class Arithmetic {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
+			newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		}
 	}
 
@@ -1469,7 +1470,7 @@ public final class Arithmetic {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			// don't set ISymbol.NUMERICFUNCTION);
-			newSymbol.setAttributes(ISymbol.HOLDALL);
+			newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE);
 		}
 
 	}
@@ -2114,6 +2115,10 @@ public final class Arithmetic {
 			return engine.printMessage("Minus: exactly 1 argument expected");
 		}
 
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		}
 	}
 
 	/**
@@ -2352,7 +2357,8 @@ public final class Arithmetic {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.NUMERICFUNCTION);
+			// don't set NUMERICFUNCTION
+			newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
 	}
 
@@ -4540,7 +4546,7 @@ public final class Arithmetic {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
+			newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		}
 	}
 
@@ -5478,8 +5484,9 @@ public final class Arithmetic {
 					return F.Power(power0Arg1, power0Arg2.plus(power1Arg2));
 				}
 				if (power0Arg2.equals(power1Arg2)) {
-					if (power1Arg1.isPositive() && power0Arg1.isReal() && (power1Arg1.isReal()
-							|| power1Arg1.isConstant() || (power1Arg1.isPlus() && power1Arg1.first().isReal()))) {
+					if (power1Arg1.isPositive() && power0Arg1.isReal()
+							&& (power1Arg1.isReal() || power1Arg1.isConstantAttribute()
+									|| (power1Arg1.isPlus() && power1Arg1.first().isReal()))) {
 						if (power0Arg1.isPositive()) {
 							// a^(c)*b^(c) => (a*b) ^c
 							return F.Power(power0Arg1.times(power1Arg1), power0Arg2);

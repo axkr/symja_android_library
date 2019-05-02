@@ -103,6 +103,10 @@ public interface IRational extends ISignedNumber, IBigNumber {
 		return numerator();
 	}
 
+	default IRational imRational() {
+		return F.C0;
+	}
+
 	/**
 	 * <p>
 	 * Returns <code>this mod m</code>, a non-negative value less than m. This differs from <code>this % m</code>, which
@@ -127,7 +131,7 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	default IRational mod(final IRational m) {
 		return subtract(m.multiply(this.divideBy(m).floorFraction()));
 	}
- 
+
 	public IRational multiply(IRational parm1);
 
 	@Override
@@ -159,6 +163,10 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	 *             if {@code 0^0} is given.
 	 */
 	public IRational pow(final long exp) throws ArithmeticException;
+
+	default IRational reRational() {
+		return this;
+	}
 
 	public IRational subtract(IRational parm1);
 

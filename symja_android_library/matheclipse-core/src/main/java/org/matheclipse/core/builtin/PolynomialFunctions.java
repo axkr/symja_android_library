@@ -220,10 +220,12 @@ public class PolynomialFunctions {
 				return F.C0;
 			}
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_3;
 		}
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
@@ -360,10 +362,12 @@ public class PolynomialFunctions {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_4;
 		}
+
 		/**
 		 * Get exponent vectors and coefficients of monomials of a polynomial expression.
 		 * 
@@ -829,10 +833,12 @@ public class PolynomialFunctions {
 			F.REMEMBER_AST_CACHE.put(ast, result);
 			return result;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_3;
 		}
+
 		private static IExpr powerExponent(IAST powerAST, final IExpr form, final IPatternMatcher matcher,
 				EvalEngine engine) {
 			if (matcher.test(powerAST.base(), engine)) {
@@ -927,7 +933,7 @@ public class PolynomialFunctions {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_3_3;
 		}
-		
+
 		private IExpr resultant(IExpr a, IExpr b, ISymbol x, EvalEngine engine) {
 			IExpr aExp = F.Exponent.of(engine, a, x);
 			IExpr bExp = F.Exponent.of(engine, b, x);
@@ -1124,10 +1130,12 @@ public class PolynomialFunctions {
 			// }
 			// return result;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
 		}
+
 		/**
 		 * 
 		 * @param coefficients
@@ -1257,7 +1265,7 @@ public class PolynomialFunctions {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
-		
+
 		/**
 		 * Complex numeric roots intervals.
 		 * 
@@ -1711,6 +1719,7 @@ public class PolynomialFunctions {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_3;
@@ -1750,10 +1759,12 @@ public class PolynomialFunctions {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_3;
 		}
+
 		@Override
 		public IAST getRuleAST() {
 			return RULES;
@@ -1790,10 +1801,12 @@ public class PolynomialFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_3;
 		}
+
 		@Override
 		public IAST getRuleAST() {
 			return RULES;
@@ -2241,7 +2254,7 @@ public class PolynomialFunctions {
 			}
 			// }
 			IASTAppendable newResult = F.ListAlloc(8);
-			IAST factorRational = Algebra.factorRational(polyRat, jas, varList, F.List);
+			IAST factorRational = Algebra.factorRational(polyRat, jas, F.List);
 			for (int i = 1; i < factorRational.size(); i++) {
 				temp = F.evalExpand(factorRational.get(i));
 				IAST quarticResultList = QuarticSolver.solve(temp, variables.arg1());
@@ -2256,7 +2269,7 @@ public class PolynomialFunctions {
 					}
 				} else {
 					polyRat = jas.expr2JAS(temp, numericSolutions);
-					IAST factorComplex = Algebra.factorComplex(polyRat, jas, varList, F.List, true);
+					IAST factorComplex = Algebra.factorComplex(polyRat, jas, F.List);
 					for (int k = 1; k < factorComplex.size(); k++) {
 						temp = F.evalExpand(factorComplex.get(k));
 						quarticResultList = QuarticSolver.solve(temp, variables.arg1());

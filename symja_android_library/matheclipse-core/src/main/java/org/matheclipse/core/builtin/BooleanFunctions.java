@@ -944,7 +944,7 @@ public final class BooleanFunctions {
 					return IExpr.COMPARE_TERNARY.TRUE;
 				}
 			}
-			if (o0.isConstant() && o1.isConstant()) {
+			if (o0.isConstantAttribute() && o1.isConstantAttribute()) {
 				return IExpr.COMPARE_TERNARY.FALSE;
 			}
 
@@ -963,7 +963,7 @@ public final class BooleanFunctions {
 				}
 				return IExpr.COMPARE_TERNARY.FALSE;
 			}
-			if (difference.isConstant()) {
+			if (difference.isConstantAttribute()) {
 				return IExpr.COMPARE_TERNARY.FALSE;
 			}
 

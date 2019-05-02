@@ -189,7 +189,7 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public void setUp(ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
+			// don't set NUMERICFUNCTION
 		}
 
 	}
