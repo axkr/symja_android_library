@@ -909,9 +909,11 @@ public class Solve extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		return of(ast, false, engine);
 	}
+
 	public int[] expectedArgSize() {
 		return IOFunctions.ARGS_2_3;
 	}
+
 	public static IExpr of(final IAST ast, boolean numeric, EvalEngine engine) {
 		boolean[] isNumeric = new boolean[] { false };
 		try {
@@ -1335,9 +1337,6 @@ public class Solve extends AbstractFunctionEvaluator {
 				list.appendAll(subSolutionSet);
 				return list;
 			}
-			// if (isTimesEvaled && !resultList.isPresent()) {
-			// return F.ListAlloc();
-			// }
 			return resultList;
 		} catch (RuntimeException rex) {
 			if (Config.SHOW_STACKTRACE) {
@@ -1350,15 +1349,18 @@ public class Solve extends AbstractFunctionEvaluator {
 	private static void solveTimesAST(IAST times, IAST termsEqualZeroList, IAST inequationsList, IAST variables,
 			EvalEngine engine, Set<IExpr> subSolutionSet, int i) {
 		IAST temp;
-		IAST splittedList = splitNumeratorDenominator(times, engine, false);
-		if (splittedList.arg2().isFree(Predicates.in(variables), true)) {
-			for (int j = 1; j < times.size(); j++) {
-				if (!times.get(j).isFree(Predicates.in(variables), true)) {
-					// try to get a solution from this Times() factor
-					IASTMutable clonedEqualZeroList = termsEqualZeroList.setAtCopy(i, times.get(j));
-					temp = solveEquations(clonedEqualZeroList, inequationsList, variables, 0, engine);
-					if (temp.size() > 1) {
-						temp.copyTo(subSolutionSet);
+		for (int j = 1; j < times.size(); j++) {
+			if (!times.get(j).isFree(Predicates.in(variables), true)) {
+				// try to get a solution from this Times() factor
+				IASTMutable clonedEqualZeroList = termsEqualZeroList.setAtCopy(i, times.get(j));
+				temp = solveEquations(clonedEqualZeroList, inequationsList, variables, 0, engine);
+				if (temp.size() > 1) {
+					for (int k = 1; k < temp.size(); k++) {
+						IExpr solution = temp.get(k);
+						IExpr zeroCrossCheck = engine.evalN(F.ReplaceAll(times, solution));
+						if (zeroCrossCheck.isZero()) {
+							subSolutionSet.add(solution);
+						}
 					}
 				}
 			}

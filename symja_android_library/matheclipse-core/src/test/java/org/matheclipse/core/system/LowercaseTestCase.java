@@ -865,12 +865,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{0,0,0,0,0},{0,1,2,0,0},{0,3,4,0,0},{0,0,0,0,0},{0,0,0,0,0}}");
 		check("ArrayPad({{1, 2}, {3, 4}}, 2)", //
 				"{{0,0,0,0,0,0},{0,0,0,0,0,0},{0,0,1,2,0,0},{0,0,3,4,0,0},{0,0,0,0,0,0},{0,0,0,0,\n" + "0,0}}");
-		check("ArrayPad({1, 2, 3}, {2,4})",//
-				 "{0,0,1,2,3,0,0,0,0}");
+		check("ArrayPad({1, 2, 3}, {2,4})", //
+				"{0,0,1,2,3,0,0,0,0}");
 		check("ArrayPad({1, 2, 3}, 1)", //
 				"{0,1,2,3,0}");
-		check("ArrayPad({1, 2, 3}, 2, x)",//
-				 "{x,x,1,2,3,x,x}");
+		check("ArrayPad({1, 2, 3}, 2, x)", //
+				"{x,x,1,2,3,x,x}");
 	}
 
 	public void testArrayDepth() {
@@ -5082,14 +5082,91 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFactor() {
-		check("Simplify((-I*a+b)*(I*Cosh(x)+Sinh(x)))", //
-				"(a+I*b)*(Cosh(x)-I*Sinh(x))");
+		check("Factor(Cos(x)-I*Sin(x) )", //
+				"Cos(x)-I*Sin(x)"); 
+		check("Factor((Cos(x)-I*Sin(x))/(I*Cos(x)-Sin(x)))", //
+				"(Cos(x)-I*Sin(x))/(I*Cos(x)-Sin(x))"); 
+		
+		// example from paper
+		// https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+		check("Factor(4^(2*x+1)*5^(x-2)-6^(1-x))", //
+				"-6*5^x*(-2^(1+4*x)/75+1/(5^x*6^x))");
+
+		check("Factor(E^x+E^(2*x))", //
+				"E^x*(1+E^x)");
+
+		// example from paper
+		// https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+		check("Factor(Log(2,x)+4*Log(x,2)-5)", //
+				"((-4*Log(2)+Log(x))*(-Log(2)+Log(x)))/(Log(2)*Log(x))");
+		// TODO reduce negative signs
+		// ((Log(2) - Log(x))*(4*Log(2) - Log(x)))/(Log(2)*Log(x))
+
+		check("Factor( (4*a^2-5*a*b+b^2)/(a*b) )", //
+				"((-4*a+b)*(-a+b))/(a*b)");
+
+		// example from paper
+		check("Factor(3*Tan(3*x)-Tan(x)+2)", //
+				"3*(2/3-Tan(x)/3+Tan(3*x))");
+		check("TrigToExp(3*Tan(3*x)-Tan(x)+2)", //
+				"2+(-I*(E^(-I*x)-E^(I*x)))/(E^(-I*x)+E^(I*x))+(I*3*(E^(-I*3*x)-E^(I*3*x)))/(E^(-\n"
+						+ "I*3*x)+E^(I*3*x))");
+		check("Factor(2+(-I*(E^(-I*x)-E^(I*x)))/(E^(-I*x)+E^(I*x))+(I*3*(E^(-I*3*x)-E^(I*3*x)))/(E^(-I*3*x)+E^(I*3*x)))", //
+				"((2-I*2)*(I+(-1/2-I*1/2)*E^(I*2*x)+E^(I*4*x)))/((-1-I*E^(I*x)+E^(I*2*x))*(-1+I*E^(I*x)+E^(\n"
+						+ "I*2*x)))");
+
+		// example from paper
+		check("Factor(3*Sech(x)^2+4*Tanh(x)+1)", //
+				"4*(1/4+3/4*Sech(x)^2+Tanh(x))");
+		check("TrigToExp(3*Sech(x)^2+4*Tanh(x)+1)", //
+				"1+12/(E^(-x)+E^x)^2+4*(-1/(E^x*(E^(-x)+E^x))+E^x/(E^(-x)+E^x))");
+
+		// example from paper
+		check("Factor(Log(x+1)+Log(x-1)-3)", //
+				"-3+Log(-1+x)+Log(1+x)");
+		check("TrigToExp(Log(x+1)+Log(x-1)-3)", //
+				"-3+Log(-1+x)+Log(1+x)");
+
+		// example from paper
+		check("Factor(E^(3*x)-4*E^x+3*E^(-x))", //
+				"((-1+E^x)*(1+E^x)*(-3+E^(2*x)))/E^x");
+
+		// example from paper
+		check("Factor(Cosh(x)-3*Sinh(y))", //
+				"-3*(-Cosh(x)/3+Sinh(y))");
+
+		// 1/(E^x*2) + E^x/2 + 3/(E^y*2) - (3*E^y)/2
+		check("TrigToExp(Cosh(x)-3*Sinh(y))", //
+				"1/(2*E^x)+E^x/2-3*(-1/(2*E^y)+E^y/2)");
+		check("TrigToExp(Cosh(x))", //
+				"1/(2*E^x)+E^x/2");
+		check("TrigToExp(Sinh(x))", //
+				"-1/(2*E^x)+E^x/2");
+
+		// example from paper
+		check("Factor(2*Sinh(x)+6*Cosh(y)-5)", //
+				"2*(-5/2+3*Cosh(y)+Sinh(x))");
+		check("TrigToExp(2*Sinh(x)+6*Cosh(y)-5)", //
+				"-5+2*(-1/(2*E^x)+E^x/2)+6*(1/(2*E^y)+E^y/2)");
+
+		// example from paper
+		check("TrigToExp(Cos(x) + Cos(3*x) + Cos(5*x))", //
+				"1/(2*E^(I*5*x))+1/(2*E^(I*3*x))+1/(2*E^(I*x))+E^(I*x)/2+E^(I*3*x)/2+E^(I*5*x)/2");
+		//
+		// // TODO determine more factors
+		check("Factor(1/(2*E^(I*5*x))+1/(2*E^(I*3*x))+1/(2*E^(I*x))+E^(I*x)/2+E^(I*3*x)/2+E^(I*5*x)/2)", //
+				"((-I+E^(I*x))*(I+E^(I*x))*(1-E^(I*x)+E^(I*2*x))*(1+E^(I*x)+E^(I*2*x))*(-1-I*E^(I*x)+E^(\n"
+						+ "I*2*x))*(-1+I*E^(I*x)+E^(I*2*x)))/(2*E^(I*5*x))");
+		// ((1/2)*(1 + E^(2*I*x))*(1 - E^(I*x) + E^(2*I*x))*(1 + E^(I*x) + E^(2*I*x))*
+		// (1 - E^(2*I*x) + E^(4*I*x)))/E^(5*I*x)
+		check("Factor(TrigToExp(Cos(x) + Cos(3*x) + Cos(5*x)))", //
+				"((-I+E^(I*x))*(I+E^(I*x))*(1-E^(I*x)+E^(I*2*x))*(1+E^(I*x)+E^(I*2*x))*(-1-I*E^(I*x)+E^(\n"
+						+ "I*2*x))*(-1+I*E^(I*x)+E^(I*2*x)))/(2*E^(I*5*x))");
+
 		check("Factor(a*Cosh(x) + I*b*Cosh(x) - I*a*Sinh(x) + b*Sinh(x))", //
 				"(-I*a+b)*(I*Cosh(x)+Sinh(x))");
-		// TODO return (2 + 2 x + 3 x ^ 2 + x ^ 4) / ((1 + x) ^ 2 (1 + x ^ 2) ^
-		// 2)
-		// check("Factor(a*b+(4+4*x+x^2)^2)",//
-		// "16+a*b+32*x+24*x^2+8*x^3+x^4");
+		check("Factor(a*b+(4+4*x+x^2)^2)", //
+				"16+a*b+32*x+24*x^2+8*x^3+x^4");
 
 		// github #121
 		check("Factor(x^(12)-y^(12), GaussianIntegers->True)", //
@@ -5110,7 +5187,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"((-1+E^x)*(1+E^x)*(-3+E^(2*x)))/E^x");
 		check("Factor(E^x+E^(2*x))", //
 				"E^x*(1+E^x)");
-		
+
 		check("Factor(Sin(x))", //
 				"Sin(x)");
 
@@ -14912,6 +14989,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSimplify() {
+		check("Simplify((Cos(x)-I*Sin(x))/(I*Cos(x)-Sin(x)))", //
+				"-I*Cos(2*x)-Sin(2*x)"); // -I*Cos(2*x)-Sin(2*x)
+		
+		
+		check("Expand((-I*a+b)*(I*Cosh(x)+Sinh(x)))", //
+				"a*Cosh(x)+I*b*Cosh(x)-I*a*Sinh(x)+b*Sinh(x)");
+		check("Factor(TrigToExp( a*Cosh(x)+I*b*Cosh(x)-I*a*Sinh(x)+b*Sinh(x) ))", //
+				"((1/2+I*1/2)*(-I*a+b)*(I+E^(2*x)))/E^x");
+		check("Simplify((-I*a+b)*(I*Cosh(x)+Sinh(x)))", //
+				"(a+I*b)*(Cosh(x)-I*Sinh(x))");
 		check("Simplify(Element(x, Reals), x>0)", //
 				"True");
 		check("Simplify(Sin(n*Pi), Element(n, Integers))", //
@@ -14938,8 +15025,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-(-9+Sqrt(57))*x^2");
 		check("Simplify(-a/(-b+a*c))", //
 				"a/(b-a*c)");
-		check("Simplify((Cos(x)-I*Sin(x))/(I*Cos(x)-Sin(x)))", //
-				"-I*Cos(2*x)-Sin(2*x)");
 		check("Simplify(1/(Cos(x)+I*Sin(x))-(c+d*x)^n)", //
 				"-(c+d*x)^n+Cos(x)-I*Sin(x)");
 		check("Simplify(1/(Cos(x)+I*Sin(x)))", //
@@ -15254,6 +15339,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		// check("Solve(4^(2*x+1)*5^(x-2)-6^(1-x)==0,x)", //
+		// "");
+		check("Solve(Log(2,x)+4*Log(x,2)-5==0,x)", //
+				"{{x->2},{x->16}}");
+		check("Solve(x^(1/Log(2))-1==0,x)", //
+				"{{x->1}}");
 		check("{Re @ #, Im @ #} & /@ Last @@@ Solve(x^3 + 3 == 0, x)", //
 				"{{3^(1/3)/2,3^(5/6)/2},{-3^(1/3),0},{3^(1/3)/2,-3^(5/6)/2}}");
 		check("Solve((x^2 + 2)*(x^2 - 2) == 0, x, Reals)", //

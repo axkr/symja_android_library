@@ -625,7 +625,7 @@ public class JASConvert<C extends RingElem<C>> {
 		BigRational re = coeff.getRe();
 		BigRational im = coeff.getIm();
 		monomTimes.append(
-				F.complex(F.fraction(re.numerator(), re.denominator()), F.fraction(im.numerator(), im.denominator())));
+				F.complex(F.fraction(re.numerator(), re.denominator()).normalize(), F.fraction(im.numerator(), im.denominator()).normalize()));
 		return expVectorToExpr(exp, monomTimes);
 	}
 

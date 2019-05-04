@@ -5,11 +5,13 @@ import java.util.IdentityHashMap;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -46,92 +48,6 @@ public class PolynomialHomogenization {
 		vars = listOfVariables;
 	}
 
-	// private void substitute(final IExpr exprPoly) {
-	// substitute(exprPoly, false, true);
-	// }
-
-	// private void substitute(final IExpr exprPoly, boolean coefficient, boolean checkNegativeExponents)
-	// throws ArithmeticException, ClassCastException {
-	// int ix = ExpVectorLong.indexVar(exprPoly, vars);
-	// if (ix >= 0) {
-	// return;
-	// }
-	// if (exprPoly instanceof IAST) {
-	// final IAST ast = (IAST) exprPoly;
-	// if (ast.isPlus()) {
-	// IExpr expr = ast.arg1();
-	// substitute(expr, coefficient, checkNegativeExponents);
-	// for (int i = 2; i < ast.size(); i++) {
-	// expr = ast.get(i);
-	// substitute(expr, coefficient, checkNegativeExponents);
-	// }
-	// return;
-	// } else if (ast.isTimes()) {
-	// IExpr expr = ast.arg1();
-	// substitute(expr, coefficient, checkNegativeExponents);
-	// for (int i = 2; i < ast.size(); i++) {
-	// expr = ast.get(i);
-	// substitute(expr, coefficient, checkNegativeExponents);
-	// }
-	// return;
-	// } else if (ast.isPower()) {
-	// final IExpr base = ast.base();
-	// IExpr exp = ast.exponent();
-	// // if (exp.isTimes()) {
-	// // int exponent = exp.first().toIntDefault(Integer.MIN_VALUE);
-	// // if (exponent > 0) {
-	// // substitute(base, coefficient, checkNegativeExponents);
-	// // } else {
-	// // substituteExpression(ast);
-	// // }
-	// // }
-	// int exponent = exp.toIntDefault(Integer.MIN_VALUE);
-	// if (exponent > 0) {
-	// ix = ExpVectorLong.indexVar(base, vars);
-	// if (ix >= 0) {
-	// return;
-	// }
-	// substitute(base, coefficient, checkNegativeExponents);
-	// } else {
-	// substituteExpression(ast);
-	// }
-	// return;
-	// }
-	// if (coefficient) {
-	// return;
-	// }
-	// if (exprPoly.isFree(Predicates.in(vars), true)) {
-	// return;
-	// }
-	// substituteExpression(exprPoly);
-	// return;
-	// } else if (exprPoly instanceof ISymbol) {
-	// if (coefficient) {
-	// return;
-	// }
-	// return;
-	//
-	// } else if (exprPoly.isNumber()) {
-	// return;
-	// }
-	// }
-
-	// private void substituteExpression(final IExpr exprPoly) {
-	// ISymbol symbol = substitutedExpr.get(exprPoly);
-	// if (symbol != null) {
-	// return;
-	// }
-	// final int moduleCounter = EvalEngine.get().incModuleCounter();
-	// final String varAppend = "$" + moduleCounter;
-	// ISymbol newSymbol = F.Dummy("jas" + varAppend);// , engine);
-	// substitutedVariables.put(newSymbol, exprPoly);
-	// substitutedExpr.put(exprPoly, newSymbol);
-	// }
-
-	// public IExpr replaceAll(final IExpr exprPoly) {
-	// return replaceAll(exprPoly, true);
-	// }
-
 	/**
 	 * Forward substitution - transforming the expression into a polynomial expression by introducing &quot;substitution
 	 * variables&quot;. After transforming the polynomial expression may be solvable by a polynomial factorization.
@@ -159,36 +75,68 @@ public class PolynomialHomogenization {
 				return newAST;
 			} else if (ast.isPower()) {
 				final IExpr base = ast.base();
-				if (!base.has(x -> vars.isMember(x), true)) {
-					IExpr exp = ast.exponent();
-					if (exp.isTimes()) {
-						int exponent = exp.first().toIntDefault(Integer.MIN_VALUE);
-						if (exponent > 0) {
-							IExpr rest = exp.rest().oneIdentity1();
-							return F.Power(replaceExpression(base.power(rest)), exponent);
-						}
-						return replaceExpression(ast);
+				IExpr exp = ast.exponent();
+				if (exp.isTimes()) {
+					return replaceTimes(ast, base, exp);
+				} else if (exp.isPlus()) {// && base.isExactNumber()) {
+					// ex: 4^(2*x+3)
+					IAST plusAST = (IAST) exp;
+					if (plusAST.first().isInteger()) {
+						IExpr coefficient = F.Power.of(base, plusAST.first());
+						return F.Times(replaceForward(coefficient), replaceForward(F.Power(base, plusAST.rest().oneIdentity0())));
 					}
-					int exponent = exp.toIntDefault(Integer.MIN_VALUE);
-					if (exponent > 0) {
-						if (base.isSymbol()) {
-							return ast;
-						}
-						ix = ExpVectorLong.indexVar(base, vars);
-						if (ix >= 0) {
-							return ast;
-						}
-					}
-					return replaceExpression(ast);
 				}
-				return ast;
+
+				int exponent = exp.toIntDefault(Integer.MIN_VALUE);
+				if (exponent == Integer.MIN_VALUE) {
+					return replaceExpression(ast);
+				} else if (exponent > 0) {
+					if (base.isSymbol()) {
+						// if (base.isConstantAttribute()) {
+						// return F.Power(replaceExpression(base), exponent);
+						// }
+						return ast;
+					}
+					ix = ExpVectorLong.indexVar(base, vars);
+					if (ix >= 0) {
+						return ast;
+					}
+					return F.Power(replaceExpression(base), exponent);
+				}
+				return replaceExpression(ast);
 			}
-//			if (expression.isFree(Predicates.in(vars), true)) {
-//				return expression;
-//			}
 			return replaceExpression(expression);
 		}
 		return expression;
+	}
+
+	private IExpr replaceTimes(final IAST ast, final IExpr base, IExpr exp) {
+		IExpr first = exp.first();
+		if (first.isComplex() && ((IComplex) first).reRational().isZero()) {
+			IRational imPart = ((IComplex) first).imRational();
+			int exponent = imPart.toIntDefault(Integer.MIN_VALUE);
+			if (exponent == Integer.MIN_VALUE) {
+				return replaceExpression(ast);
+			} else if (exponent > 0) {
+				IASTMutable restExponent = ((IAST) exp).setAtCopy(1, F.CI);
+				return F.Power(replaceExpression(base.power(restExponent)), exponent);
+				// } else {
+				// IASTMutable restExponent = ((IAST) exp).setAtCopy(1, F.CNI);
+				// return F.Power(replaceExpression(base.power(restExponent)), -exponent);
+			}
+			return replaceExpression(ast);
+		}
+		int exponent = first.toIntDefault(Integer.MIN_VALUE);
+		if (exponent == Integer.MIN_VALUE) {
+			return replaceExpression(ast);
+		} else if (exponent > 0) {
+			IExpr rest = exp.rest().oneIdentity1();
+			return F.Power(replaceExpression(base.power(rest)), exponent);
+			// } else {
+			// IASTMutable restExponent = ((IAST) exp).setAtCopy(1, F.CN1);
+			// return F.Power(replaceExpression(base.power(restExponent)), -exponent);
+		}
+		return replaceExpression(ast);
 	}
 
 	private IExpr replaceExpression(final IExpr exprPoly) {

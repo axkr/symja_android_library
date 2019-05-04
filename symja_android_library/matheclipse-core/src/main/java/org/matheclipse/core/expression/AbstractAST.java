@@ -3208,7 +3208,7 @@ public abstract class AbstractAST implements IASTMutable {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @deprecated use {@link #isZero()} instead.
+	 *   use {@link #isZero()} instead.
 	 */
 	// @Deprecated
 	// @Override
