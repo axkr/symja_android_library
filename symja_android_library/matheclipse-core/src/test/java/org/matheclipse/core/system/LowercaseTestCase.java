@@ -5082,11 +5082,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFactor() {
-		check("Factor(Cos(x)-I*Sin(x) )", //
-				"Cos(x)-I*Sin(x)"); 
-		check("Factor((Cos(x)-I*Sin(x))/(I*Cos(x)-Sin(x)))", //
-				"(Cos(x)-I*Sin(x))/(I*Cos(x)-Sin(x))"); 
+		check("Factor((a*d*e+(c*d^2+a*e^2)*x+c*d*e*x^2)^(3/2))", //
+				"((a*e+c*d*x)*(d+e*x))^(3/2)");
 		
+		check("Factor(Cos(x)-I*Sin(x) )", //
+				"Cos(x)-I*Sin(x)");
+		check("Factor((Cos(x)-I*Sin(x))/(I*Cos(x)-Sin(x)))", //
+				"(Cos(x)-I*Sin(x))/(I*Cos(x)-Sin(x))");
+
 		// example from paper
 		// https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
 		check("Factor(4^(2*x+1)*5^(x-2)-6^(1-x))", //
@@ -14991,8 +14994,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testSimplify() {
 		check("Simplify((Cos(x)-I*Sin(x))/(I*Cos(x)-Sin(x)))", //
 				"-I*Cos(2*x)-Sin(2*x)"); // -I*Cos(2*x)-Sin(2*x)
-		
-		
+
 		check("Expand((-I*a+b)*(I*Cosh(x)+Sinh(x)))", //
 				"a*Cosh(x)+I*b*Cosh(x)-I*a*Sinh(x)+b*Sinh(x)");
 		check("Factor(TrigToExp( a*Cosh(x)+I*b*Cosh(x)-I*a*Sinh(x)+b*Sinh(x) ))", //

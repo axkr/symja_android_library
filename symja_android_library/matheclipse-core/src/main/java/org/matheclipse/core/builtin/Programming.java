@@ -1598,7 +1598,7 @@ public final class Programming {
 		}
 
 		public int[] expectedArgSize() {
-			return IOFunctions.ARGS_0_1;
+			return IOFunctions.ARGS_0_2;
 		}
 
 		private IExpr enableOnOffTrace(IExpr arg1, boolean unique, EvalEngine engine) {
@@ -2375,10 +2375,14 @@ public final class Programming {
 				}
 				return F.$Aborted;
 			} catch (Exception e) {
-				Throwable re = e.getCause();
-				if (re instanceof RecursionLimitExceeded) {
-					throw (RecursionLimitExceeded) re;
+				if (ast.isAST3()) {
+					// e.printStackTrace();
+					return ast.arg3();
 				}
+				// Throwable re = e.getCause();
+				// if (re instanceof RecursionLimitExceeded) {
+				// throw (RecursionLimitExceeded) re;
+				// }
 				if (Config.DEBUG) {
 					e.printStackTrace();
 				}

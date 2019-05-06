@@ -1911,8 +1911,8 @@ public class Algebra {
 					IExpr[] parts = Algebra.getNumeratorDenominator((IAST) expr, engine);
 					if (!parts[1].isOne()) {
 						try {
-							IExpr numerator = factorExpr(F.Factor(parts[0]), parts[0], eVar, engine);
-							IExpr denomimator = factorExpr(F.Factor(parts[1]), parts[1], eVar, engine);
+							IExpr numerator = factorExpr(F.Factor(parts[0]), parts[0], eVar, false, engine);
+							IExpr denomimator = factorExpr(F.Factor(parts[1]), parts[1], eVar, false, engine);
 							return F.Divide(numerator, denomimator);
 						} catch (JASConversionException e) {
 							if (Config.DEBUG) {
@@ -1930,7 +1930,7 @@ public class Algebra {
 					return factorWithOption(ast, expr, varList, false, engine);
 				}
 
-				return factorExpr(ast, expr, eVar, engine);
+				return factorExpr(ast, expr, eVar, false, engine);
 
 			} catch (JASConversionException e) {
 				if (Config.DEBUG) {
@@ -1944,7 +1944,7 @@ public class Algebra {
 			return IOFunctions.ARGS_1_2;
 		}
 
-		private IExpr factorExpr(final IAST ast, IExpr expr, VariablesSet eVar, EvalEngine engine) {
+		public IExpr factorExpr(final IAST ast, IExpr expr, VariablesSet eVar, boolean factorSquareFree,  EvalEngine engine) {
 			if (expr.isAST()) {
 				IExpr temp;
 				// if (expr.isPower()&&expr.base().isPlus()) {
@@ -1952,14 +1952,20 @@ public class Algebra {
 				// temp = factorExpr(ast, expr.base(), varList);
 				// temp = F.Power(temp, expr.exponent());
 				// } else
-				if (expr.isTimes()) {
+				if (expr.isPower()) {
+					IExpr p = factorExpr((IAST) expr, expr.base(), eVar,factorSquareFree, engine);
+					if (!p.equals(expr.base())) {
+						return F.Power(p, expr.exponent());
+					}
+					return expr;
+				} else if (expr.isTimes()) {
 					// System.out.println(ast.toString());
 					temp = ((IAST) expr).map(x -> {
 						if (x.isPlus()) {
-							return factorExpr(ast, x, eVar, engine);
+							return factorExpr(ast, x, eVar, factorSquareFree, engine);
 						}
 						if (x.isPower() && x.base().isPlus()) {
-							IExpr p = factorExpr(ast, x.base(), eVar, engine);
+							IExpr p = factorExpr(ast, x.base(), eVar, factorSquareFree,engine);
 							if (!p.equals(x.base())) {
 								return F.Power(p, x.exponent());
 							}
@@ -1968,7 +1974,7 @@ public class Algebra {
 					}, 1);
 				} else {
 					// System.out.println("leafCount " + expr.leafCount());
-					temp = factor((IAST) expr, eVar, false, engine);
+					temp = factor((IAST) expr, eVar, factorSquareFree, engine);
 				}
 				if (temp.isPresent()) {
 					F.REMEMBER_AST_CACHE.put(ast, temp);
@@ -1978,7 +1984,7 @@ public class Algebra {
 			return expr;
 		}
 
-		public static IExpr factor(IAST expr, VariablesSet eVar, boolean factorSquareFree, EvalEngine engine)
+		private static IExpr factor(IAST expr, VariablesSet eVar, boolean factorSquareFree, EvalEngine engine)
 				throws JASConversionException {
 			if (Config.MAX_FACTOR_LEAFCOUNT > 0 && expr.leafCount() > Config.MAX_FACTOR_LEAFCOUNT) {
 				return expr;
@@ -2133,8 +2139,8 @@ public class Algebra {
 				if (ast.isAST2()) {
 					return factorWithOption(ast, expr, varList, true, engine);
 				}
-				if (expr.isAST()) {
-					return factor((IAST) expr, eVar, true, engine);
+				if (expr.isAST()) { 
+					return factorExpr((IAST) expr, (IAST) expr, eVar, true, engine);
 				}
 				return expr;
 

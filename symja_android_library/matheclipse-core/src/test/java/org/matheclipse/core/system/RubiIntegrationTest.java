@@ -834,7 +834,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
 				"-5+Sqrt(x)/2-4/(-1+3*x)");
 		
 		check("Simplify(-5+4/3*1/(1/3-x)+Sqrt(x)/2)", //
-				"-5+Sqrt(x)/2-4/(-1+3*x)");
+				"-5+4/(1-3*x)+Sqrt(x)/2");
 		check("PowerExpand(ln(3*(1/3-x)))", //
 				"Log(3)+Log(1/3-x)");
 	}

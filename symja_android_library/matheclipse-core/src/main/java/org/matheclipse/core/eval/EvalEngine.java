@@ -401,6 +401,10 @@ public class EvalEngine implements Serializable {
 		engine.fOutList = fOutList;
 		engine.fOutListDisabled = fOutListDisabled;
 		engine.fOutPrintStream = fOutPrintStream;
+		engine.fOnOffMap = fOnOffMap;
+		engine.fOnOffMode = fOnOffMode;
+		engine.fOnOffUnique = fOnOffUnique;
+		engine.fOnOffUniqueMap = fOnOffUniqueMap;
 		engine.fPackageMode = fPackageMode;
 		engine.fQuietMode = fQuietMode;
 		engine.fReapList = fReapList;

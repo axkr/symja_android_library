@@ -185,7 +185,7 @@ public class Config {
 	/**
 	 * Define the recursion limit for <code>Integrate#integrateByRubiRules()</code> method.
 	 */
-	public static int INTEGRATE_RUBI_RULES_RECURSION_LIMIT = 75;
+	public static int INTEGRATE_RUBI_RULES_RECURSION_LIMIT = 100;
 
 	/**
 	 * Define the Rubi time limit for the <code>TimeConstrained()</code> function.
