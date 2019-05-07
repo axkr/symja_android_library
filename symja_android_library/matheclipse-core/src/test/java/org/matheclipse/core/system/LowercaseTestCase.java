@@ -329,6 +329,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testApply() {
+		check("Apply(f)[p(x, y)]", //
+				"f(x,y)");
+		check("Apply(f)[aaa]", //
+				"aaa");
 		//
 		check("Apply(f, p[x][q[y]], {1}, Heads -> True)", //
 				"f(x)[f(y)]");
@@ -5084,7 +5088,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testFactor() {
 		check("Factor((a*d*e+(c*d^2+a*e^2)*x+c*d*e*x^2)^(3/2))", //
 				"((a*e+c*d*x)*(d+e*x))^(3/2)");
-		
+
 		check("Factor(Cos(x)-I*Sin(x) )", //
 				"Cos(x)-I*Sin(x)");
 		check("Factor((Cos(x)-I*Sin(x))/(I*Cos(x)-Sin(x)))", //
@@ -6094,6 +6098,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFlattenAt() {
+		check("FlattenAt(2)[{a, {b, c}, {d, e}, {f}}]", //
+				"{a,b,c,{d,e},{f}}");
 		check("FlattenAt({a, {b, c}, {d, e}, {f}}, 2)", //
 				"{a,b,c,{d,e},{f}}");
 		check("FlattenAt({a, g(b,c), {d, e}, {f}}, 2)", //
@@ -9258,6 +9264,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMapThread() {
+		check("MapThread(f)[ {{a, b, c}, {x, y, z}}]", //
+				"{f(a,x),f(b,y),f(c,z)}");
 		check("MapThread(f, {}, 1)", //
 				"{}");
 		check("MapThread(f, {a, b}, 1)", //
@@ -14696,6 +14704,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testScan() {
+		check("Scan(Print)[{a, b, c}]", //
+				"");
+		check("Scan[Print, {1, 2, 3}, Heads->True]", //
+				"");
 		check("Scan(($u(#) = x) &, {55, 11, 77, 88});{$u(76), $u(77), $u(78)}", //
 				"{$u(76),x,$u(78)}");
 		check("Map(If(# > 5, #, False) &, {2, 4, 6, 8})", //
@@ -14708,7 +14720,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{1,Pi,3,1/2,Sqrt(3)}");
 		check("Scan(Return, {1, 2})", //
 				"1");
-	}
+		check("Reap(Scan(Sow, -(ArcTan((1 + 2*x)/Sqrt(3))/Sqrt(3)) + (1/3)*Log(1 - x) - (1/6)*Log(1 + x + x^2), {-1}))[[2, 1]]", //
+				"{-1,3,-1/2,3,-1/2,1,2,x,1/3,1,-1,x,-1/6,1,x,x,2}");
+	} 
 
 	public void testSec() {
 		check("-Sec(Pi/4-x)", //
@@ -14811,6 +14825,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSequence() {
+		check("{Sequence( ),a}", //
+				"{a}");
+		check("f(a, Sequence( ),b,c)", //
+				"f(a,b,c)");
+		check("{u, u, u} /. u -> Sequence(a, b, c)", //
+				"{a,b,c,a,b,c,a,b,c}");
 		check("f(a, Sequence(b, c), d)", //
 				"f(a,b,c,d)");
 		check("$u = Sequence(a, b, c)", //
@@ -15296,7 +15316,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testSlot() {
 		// check("x^2+x", "x+x^2");
-
+		check("(# &)[a, b, c]", //
+				"a");
 		check("f = If(#1 == 1, 1, #1*#0(#1 - 1)) &", //
 				"If(#1==1,1,#1*#0[-1+#1])&");
 		check("f(10)", //
@@ -15317,6 +15338,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSlotSequence() {
+		check("(## &)[a, b, c]", //
+				"Sequence(a,b,c)");
+		check("(##2 &)[a, b, c]", //
+				"Sequence(b,c)");
+		check("(##4 &)[a, b, c]", //
+				"Sequence()");
+		check("(##5 &)[a, b, c]", //
+				"##5");
+		check("(##-1 &)[a, b, c]", //
+				"-1+a+b+c");
+		check("(##2-7 &)[a, b, c]", //
+				"-7+b+c");
 		check("##", //
 				"##1");
 		check("##42", //

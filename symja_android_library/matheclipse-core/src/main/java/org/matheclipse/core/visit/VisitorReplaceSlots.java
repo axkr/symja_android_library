@@ -21,20 +21,34 @@ public class VisitorReplaceSlots extends VisitorExpr {
 	}
 
 	private IExpr getSlot(IntegerSym ii) {
-		int i = ii.toInt();
-		if (i == 0) {
-			// #0 represents the head expression
-			return astSlots.head();
+		int i = ii.toIntDefault(Integer.MIN_VALUE);
+		if (i >= 0) {
+			if (i == 0) {
+				// #0 represents the head expression
+				return astSlots.head();
+			}
+			if (i > 0 && i < astSlots.size()) {
+				return astSlots.get(i);
+			}
 		}
-		if (i > 0 && i < astSlots.size()) {
-			return astSlots.get(i);
+		return F.NIL;
+	}
+
+	private IExpr getSlotSequence(IntegerSym ii) {
+		int i = ii.toIntDefault(Integer.MIN_VALUE);
+		if (i >= 0 && i <= astSlots.size()) {
+			IASTAppendable result = F.ast(F.Sequence, astSlots.size(), false);
+			for (int j = i; j < astSlots.size(); j++) {
+				result.append(astSlots.get(j));
+			}
+			return result;
 		}
 		return F.NIL;
 	}
 
 	private int getSlotSequence(IASTAppendable ast, int pos, IntegerSym ii) {
-		int i = ii.toInt();
-		if (i > 0 && i < astSlots.size()) {
+		int i = ii.toIntDefault(Integer.MIN_VALUE);
+		if (i >= 0 && i < astSlots.size()) {
 			ast.remove(pos);
 			for (int j = i; j < astSlots.size(); j++) {
 				ast.append(pos++, astSlots.get(j));
@@ -45,8 +59,11 @@ public class VisitorReplaceSlots extends VisitorExpr {
 
 	@Override
 	public IExpr visit(IASTMutable ast) {
-		if (ast.isSlot() && ast.arg1() instanceof IntegerSym) {
+		if (ast.isSlot() && ast.arg1().isInteger()) {
 			return getSlot((IntegerSym) ast.arg1());
+		}
+		if (ast.isSlotSequence() && ast.arg1().isInteger()) {
+			return getSlotSequence((IntegerSym) ast.arg1());
 		}
 		return visitAST(ast);
 	}
@@ -62,7 +79,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
 			if (!ast.get(i).isFunction()) {
 				if (ast.get(i).isSlotSequence()) {
 					IAST slotSequence = (IAST) ast.get(i);
-					if (slotSequence.arg1() instanceof IntegerSym) {
+					if (slotSequence.arg1().isInteger()) {
 						// something may be evaluated - return a new IAST:
 						result = ast.copyAppendable();
 						j = getSlotSequence(result, i, (IntegerSym) slotSequence.arg1());
@@ -86,7 +103,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
 				if (!ast.get(i).isFunction()) {
 					if (ast.get(i).isSlotSequence()) {
 						IAST slotSequence = (IAST) ast.get(i);
-						if (slotSequence.arg1() instanceof IntegerSym) {
+						if (slotSequence.arg1().isInteger()) {
 							j = getSlotSequence(result, j, (IntegerSym) slotSequence.arg1());
 							i++;
 						}

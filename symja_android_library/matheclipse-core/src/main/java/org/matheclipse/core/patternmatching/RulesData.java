@@ -392,12 +392,12 @@ public final class RulesData implements Serializable {
 					patternHash = ((IAST) expr).patternHashCode();
 				}
 				for (IPatternMatcher patternEvaluator : fPatternDownRules) {
-//					 if (patternEvaluator.fLhsPatternExpr.isAST(F.Integrate)) {
-//					 System.out.println(((IPatternMatcher) patternEvaluator).getLHSPriority());
-//					 if (((IPatternMatcher) patternEvaluator).getLHSPriority() == 613) {
-//					 System.out.println("Debug from this line");
-//					 }
-//					 }
+					// if (patternEvaluator.fLhsPatternExpr.isAST(F.Integrate)) {
+					// System.out.println(((IPatternMatcher) patternEvaluator).getLHSPriority());
+					// if (((IPatternMatcher) patternEvaluator).getLHSPriority() == 2932) {
+					// System.out.println("Debug from this line");
+					// }
+					// }
 					if (patternEvaluator.isPatternHashAllowed(patternHash)) {
 						pmEvaluator = (IPatternMatcher) patternEvaluator.clone();
 						if (showSteps) {

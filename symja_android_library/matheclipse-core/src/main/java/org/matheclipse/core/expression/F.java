@@ -1250,7 +1250,7 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol Gather = F.initFinalSymbol("Gather", ID.Gather);
-	
+
 	/***/
 	public final static IBuiltInSymbol GatherBy = F.initFinalSymbol("GatherBy", ID.GatherBy);
 
@@ -2432,7 +2432,7 @@ public class F {
 	public final static IBuiltInSymbol RandomInteger = F.initFinalSymbol("RandomInteger", ID.RandomInteger);
 
 	public final static IBuiltInSymbol RandomPrime = F.initFinalSymbol("RandomPrime", ID.RandomPrime);
-	
+
 	/** RandomReal() - create a random number between `0.0` and `1.0`. */
 	public final static IBuiltInSymbol RandomReal = F.initFinalSymbol("RandomReal", ID.RandomReal);
 
@@ -2718,7 +2718,7 @@ public class F {
 
 	/** Sort(list) - sorts $list$ (or the leaves of any other expression) according to canonical ordering. */
 	public final static IBuiltInSymbol SortBy = F.initFinalSymbol("SortBy", ID.SortBy);
-	
+
 	/** Sow(expr) - sends the value `expr` to the innermost `Reap`. */
 	public final static IBuiltInSymbol Sow = F.initFinalSymbol("Sow", ID.Sow);
 
@@ -3528,7 +3528,7 @@ public class F {
 	 * Represents <code>-Pi</code> as Symja expression <code>Times(CN1, Pi)</code>
 	 */
 	public static IAST CNPi;
-	
+
 	/**
 	 * Represents <code>-2*Pi</code> as Symja expression <code>Times(CN2, Pi)</code>
 	 */
@@ -6283,11 +6283,11 @@ public class F {
 	public static IAST GammaRegularized(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(GammaRegularized, a0, a1, a2);
 	}
-	
+
 	public static IAST Gather(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Gather, a0, a1);
 	}
-	
+
 	public static IAST GatherBy(final IExpr a0, final IExpr a1) {
 		return binaryAST2(GatherBy, a0, a1);
 	}
@@ -6343,7 +6343,7 @@ public class F {
 	public static IAST Haversine(final IExpr a) {
 		return unaryAST1(Haversine, a);
 	}
-	
+
 	public static IAST Head(final IExpr a) {
 		return unaryAST1(Head, a);
 	}
@@ -6770,7 +6770,7 @@ public class F {
 	public static IAST InverseHaversine(final IExpr a) {
 		return unaryAST1(InverseHaversine, a);
 	}
-	
+
 	public static IAST InverseLaplaceTransform(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(InverseLaplaceTransform, a0, a1, a2);
 	}
@@ -7316,7 +7316,7 @@ public class F {
 	public static IAST Map(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(Map, a0, a1, a2);
 	}
-	
+
 	public static IAST MapThread(final IExpr a0, final IExpr a1) {
 		return binaryAST2(MapThread, a0, a1);
 	}
@@ -9093,9 +9093,30 @@ public class F {
 		return AbstractIntegerSym.valueOf(integerValue);
 	}
 
-	public static IExpr operatorFormAST1(final IAST ast) {
-		if (ast.head().isAST1() && ast.isAST1()) {
-			return binaryAST2(ast.topHead(), ast.arg1(), ((IAST) ast.head()).arg1());
+	/**
+	 * The operator form <code>op(f)[expr]</code> is transformed to <code>op(expr, f)</code>
+	 * 
+	 * @param ast1Arg
+	 *            an IAST with condition <code>ast1Arg.head().isAST1() && ast1Arg.isAST1()</code>
+	 * @return
+	 */
+	public static IExpr operatorFormAppend(final IAST ast1Arg) {
+		if (ast1Arg.head().isAST1() && ast1Arg.isAST1()) {
+			return binaryAST2(ast1Arg.topHead(), ast1Arg.arg1(), ((IAST) ast1Arg.head()).arg1());
+		}
+		return NIL;
+	}
+
+	/**
+	 * The operator form <code>op(f)[expr]</code> is transformed to <code>op(f, expr)</code>
+	 * 
+	 * @param ast1Arg
+	 *            an IAST with condition <code>ast1Arg.head().isAST1() && ast1Arg.isAST1()</code>
+	 * @return
+	 */
+	public static IExpr operatorFormPrepend(final IAST ast1Arg) {
+		if (ast1Arg.head().isAST1() && ast1Arg.isAST1()) {
+			return binaryAST2(ast1Arg.topHead(), ((IAST) ast1Arg.head()).arg1(), ast1Arg.arg1());
 		}
 		return NIL;
 	}

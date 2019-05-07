@@ -1064,7 +1064,7 @@ public final class ListFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST1()) {
-				return F.operatorFormAST1(ast);
+				return F.operatorFormAppend(ast);
 			}
 
 			if (ast.size() >= 3 && ast.size() <= 5) {
@@ -3418,7 +3418,7 @@ public final class ListFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST1()) {
-				return F.operatorFormAST1(ast);
+				return F.operatorFormAppend(ast);
 			}
 			if (ast.size() < 3) {
 				return F.NIL;
@@ -3946,7 +3946,7 @@ public final class ListFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST1()) {
-				return F.operatorFormAST1(ast);
+				return F.operatorFormAppend(ast);
 			}
 			if (ast.size() < 3 || ast.size() > 4) {
 				return F.NIL;
@@ -4020,7 +4020,7 @@ public final class ListFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST1()) {
-				return F.operatorFormAST1(ast);
+				return F.operatorFormAppend(ast);
 			}
 			if (ast.size() == 3) {
 				try {
@@ -4137,7 +4137,7 @@ public final class ListFunctions {
 				return F.NIL;
 			}
 			if (ast.isAST1()) {
-				return F.operatorFormAST1(ast);
+				return F.operatorFormAppend(ast);
 			}
 
 			if (ast.size() == 2 && ast.head().isAST(F.ReplaceList, 2)) {
@@ -4248,7 +4248,7 @@ public final class ListFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST1()) {
-				return F.operatorFormAST1(ast);
+				return F.operatorFormAppend(ast);
 			}
 			try {
 				if (ast.isAST3()) {
@@ -4353,7 +4353,7 @@ public final class ListFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST1()) {
-				return F.operatorFormAST1(ast);
+				return F.operatorFormAppend(ast);
 			}
 
 			try {

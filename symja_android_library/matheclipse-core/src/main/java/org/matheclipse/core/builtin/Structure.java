@@ -171,6 +171,9 @@ public class Structure {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				return F.operatorFormPrepend(ast);
+			}
 			IASTAppendable evaledAST = ast.copyAppendable();
 			evaledAST.setArgs(evaledAST.size(), i -> engine.evaluate(evaledAST.get(i)));
 			// for (int i = 1; i < evaledAST.size(); i++) {
@@ -197,7 +200,7 @@ public class Structure {
 		}
 
 		public int[] expectedArgSize() {
-			return IOFunctions.ARGS_2_4;
+			return IOFunctions.ARGS_1_4;
 		}
 
 		public static IExpr evalApply(IExpr f, IExpr expr, IAST evaledAST, int lastIndex, boolean heads,
@@ -528,6 +531,9 @@ public class Structure {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				return F.operatorFormAppend(ast);
+			}
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			IExpr arg2 = engine.evaluate(ast.arg2());
 			if (arg1.isAST()) {
@@ -558,7 +564,7 @@ public class Structure {
 		}
 
 		public int[] expectedArgSize() {
-			return IOFunctions.ARGS_2_2;
+			return IOFunctions.ARGS_1_2;
 		}
 
 		@Override
@@ -874,6 +880,10 @@ public class Structure {
 	private static class Map extends AbstractFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				return F.operatorFormPrepend(ast);
+			}
+
 			int lastIndex = ast.argSize();
 			boolean heads = false;
 			final Options options = new Options(ast.topHead(), ast, lastIndex, engine);
@@ -903,7 +913,7 @@ public class Structure {
 		}
 
 		public int[] expectedArgSize() {
-			return IOFunctions.ARGS_2_4;
+			return IOFunctions.ARGS_1_4;
 		}
 	}
 
@@ -1146,6 +1156,9 @@ public class Structure {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				return F.operatorFormPrepend(ast);
+			}
 			if (ast.arg2().isAST()) {
 				int level = 1;
 				if (ast.isAST3()) {
@@ -1175,7 +1188,7 @@ public class Structure {
 		}
 
 		public int[] expectedArgSize() {
-			return IOFunctions.ARGS_2_3;
+			return IOFunctions.ARGS_1_3;
 		}
 	}
 
@@ -1491,6 +1504,9 @@ public class Structure {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			// Validate.checkRange(ast, 3, 5);
+			if (ast.isAST1()) {
+				return F.operatorFormPrepend(ast);
+			}
 			if (ast.size() >= 3 && ast.size() < 5) {
 				int lastIndex = ast.argSize();
 				boolean heads = false;
@@ -1527,7 +1543,7 @@ public class Structure {
 
 					} else {
 						if (arg2.isAST()) {
-							engine.evaluate(((IAST) arg2).map(x -> F.unaryAST1(arg1, x), 1));
+							engine.evaluate(((IAST) arg2).map(x -> F.unaryAST1(arg1, x), heads ? 0 : 1));
 						} else {
 							engine.evaluate(arg2);
 						}
@@ -1541,6 +1557,9 @@ public class Structure {
 			return F.NIL;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_4;
+		}
 	}
 
 	/**
@@ -1644,7 +1663,7 @@ public class Structure {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST1()) {
-				return F.operatorFormAST1(ast);
+				return F.operatorFormAppend(ast);
 			}
 			if (ast.isAST2()) {
 				if (ast.arg1().isAST()) {
