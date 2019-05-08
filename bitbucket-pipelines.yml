@@ -5,4 +5,4 @@ pipelines:
     - step:
         size: 2x # Double resources available for this step.
         script:
-          - cd symja_android_library && mvn clean install -pl matheclipse-core
+          - cd symja_android_library && mvn clean install
