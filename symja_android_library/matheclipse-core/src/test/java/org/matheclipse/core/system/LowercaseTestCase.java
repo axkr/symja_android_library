@@ -2696,6 +2696,119 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{c,c,c,c},{c,c,c,c},{c,c,c,c}}");
 	}
 
+	public void testContainsAny() {
+		check("ContainsAny({b, a, b}, {a, b, c})", //
+				"True");
+		check("ContainsAny({d,f,e}, {a, b, c})", //
+				"False");
+		check("ContainsAny({ }, {a, b, c})", //
+				"False");
+
+		check("ContainsAny(1, {1,2,3})", //
+				"ContainsAny(1,{1,2,3})");
+		check("ContainsAny({1,2,3}, 4)", //
+				"ContainsAny({1,2,3},4)");
+
+		check("ContainsAny({1.0,2.0}, {1,2,3})", //
+				"False");
+		check("ContainsAny({1.0,2.0}, {1,2,3}, SameTest->Equal)", //
+				"True");
+	}
+
+	public void testContainsAll() {
+		check("ContainsAll({b,a,b,c}, {a, b})", //
+				"True");
+		check("ContainsAll({b,a,b,c}, {a, b, d})", //
+				"False");
+		check("ContainsAll({b, a, d}, {a, b, c})", //
+				"False");
+		check("ContainsAll({ }, {a, b, c})", //
+				"False");
+		check("ContainsAll({a, b, c},{ })", //
+				"True");
+
+		check("ContainsAll(1, {1,2,3})", //
+				"ContainsAll(1,{1,2,3})");
+		check("ContainsAll({1,2,3}, 4)", //
+				"ContainsAll({1,2,3},4)");
+
+		check("ContainsAll({1.0,2.0}, {1,2,3})", //
+				"False");
+		check("ContainsAll({1.0,2.0}, {1,2,3}, SameTest->Equal)", //
+				"False");
+
+		check("ContainsAll({1,2,3}, {1.0,2.0})", //
+				"False");
+		check("ContainsAll({1,2,3}, {1.0,2.0}, SameTest->Equal)", //
+				"True");
+	}
+
+	public void testContainsOnly() {
+		check("ContainsOnly({b, a, a}, {a, b, c})", //
+				"True");
+		check("ContainsOnly({b, a, d}, {a, b, c})", //
+				"False");
+		check("ContainsOnly({ }, {a, b, c})", //
+				"True");
+
+		check("ContainsOnly(1, {1,2,3})", //
+				"ContainsOnly(1,{1,2,3})");
+		check("ContainsOnly({1,2,3}, 4)", //
+				"ContainsOnly({1,2,3},4)");
+
+		check("ContainsOnly({1.0,2.0}, {1,2,3})", //
+				"False");
+		check("ContainsOnly({1.0,2.0}, {1,2,3}, SameTest->Equal)", //
+				"True");
+	}
+
+	public void testContainsExactly() {
+		check("ContainsExactly({b,a,b,c}, {a, b,c})", //
+				"True");
+		check("ContainsExactly({b,a,d,d}, {a, b,c})", //
+				"False");
+		check("ContainsExactly({b, a, d}, {a, b, c})", //
+				"False");
+		check("ContainsExactly({ }, {a, b, c})", //
+				"False");
+		check("ContainsExactly({a, b, c},{ })", //
+				"False");
+
+		check("ContainsExactly(1, {1,2,3})", //
+				"ContainsExactly(1,{1,2,3})");
+		check("ContainsExactly({1,2,3}, 4)", //
+				"ContainsExactly({1,2,3},4)");
+
+		check("ContainsExactly({1.0,2.0}, {1,2,3})", //
+				"False");
+		check("ContainsExactly({1.0,2.0}, {1,2,3}, SameTest->Equal)", //
+				"False");
+
+		check("ContainsExactly({1,2,3}, {1.0,2.0})", //
+				"False");
+		check("ContainsExactly({1,2,1,2}, {1.0,2.0}, SameTest->Equal)", //
+				"True");
+	}
+
+	public void testContainsNone() {
+		check("ContainsNone({d,f,e}, {a, b, c})", //
+				"True");
+		check("ContainsNone({b, a, b}, {a, b, c})", //
+				"False");
+		check("ContainsNone({ }, {a, b, c})", //
+				"True");
+
+		check("ContainsNone(1, {1,2,3})", //
+				"ContainsNone(1,{1,2,3})");
+		check("ContainsNone({1,2,3}, 4)", //
+				"ContainsNone({1,2,3},4)");
+
+		check("ContainsNone({1.0,2.0}, {1,2,3})", //
+				"True");
+		check("ContainsNone({1.0,2.0}, {1,2,3}, SameTest->Equal)", //
+				"False");
+	}
+
 	public void testContext() {
 		check("Context(a)", //
 				"Global`");
