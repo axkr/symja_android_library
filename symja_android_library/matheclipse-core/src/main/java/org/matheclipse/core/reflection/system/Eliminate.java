@@ -432,11 +432,9 @@ public class Eliminate extends AbstractFunctionEvaluator {
 							IExpr c1 = F.C(1);
 							final IExpr exprwovar = exprWithoutVariable;
 							return
-							// [$ {{x -> ConditionalExpression(2*I*Pi*C[1] + Log(exprwovar), Element(C[1],
-							// Integers))}} $]
-							F.List(F.List(F.Rule(x,
-									F.ConditionalExpression(F.Plus(F.Times(F.C2, F.CI, F.Pi, c1), F.Log(exprwovar)),
-											F.Element(c1, F.Integers))))); // $$;
+							// [$ ConditionalExpression(2*I*Pi*c1 + Log(exprwovar), Element(c1, Integers)) $]
+							F.ConditionalExpression(F.Plus(F.Times(F.C2, F.CI, F.Pi, c1), F.Log(exprwovar)),
+									F.Element(c1, F.Integers)); // $$;
 						}
 						// a ^ f(x)
 						IExpr value = F.Divide(F.Log(exprWithoutVariable), F.Log(base));
@@ -551,7 +549,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	public int[] expectedArgSize() {
 		return IOFunctions.ARGS_2_2;
 	}
-	
+
 	private static IExpr resultAsAndEquations(IAST result) {
 		if (result.isList()) {
 			if (result.equals(F.CEmptyList)) {

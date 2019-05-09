@@ -15497,7 +15497,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testSolve() {
 		// {{x -> ConditionalExpression[2*I*Pi*C[1] + Log[b], Element[C[1], Integers]]}}
 		 check("Solve(E^x==b,x)", //
-				 "{{x->{{x->ConditionalExpression(I*2*Pi*C(1)+Log(b),Element(C(1),Integers))}}}}");
+				 "{{x->ConditionalExpression(I*2*Pi*C(1)+Log(b),Element(C(1),Integers))}}");
 		 check("Solve(a^x==42,x)", //
 				 "{{x->Log(42)/Log(a)}}");
 		// check("Solve(2+(-I*(E^(-I*x)-E^(I*x)))/(E^(-I*x)+E^(I*x))+(I*3*(E^(-I*3*x)-E^(I*3*x)))/(E^(-I*3*x)+E^(I*3*x))==0,x)",
