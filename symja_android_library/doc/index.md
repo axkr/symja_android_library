@@ -280,6 +280,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [ConjugateTranspose](functions/ConjugateTranspose.md)
 * [Constant](functions/Constant.md)
 * [ConstantArray](functions/ConstantArray.md)
+* [ContainsOnly](functions/ContainsOnly.md)
 * [Context](functions/Context.md)
 * [Continue](functions/Continue.md)
 * [ContinuedFraction](functions/ContinuedFraction.md)
