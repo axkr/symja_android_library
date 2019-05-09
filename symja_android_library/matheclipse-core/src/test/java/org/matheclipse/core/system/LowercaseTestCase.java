@@ -6162,6 +6162,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFoldList() {
+		// A002110 Primorial numbers: product of first n primes.
+		// https://oeis.org/A002110
+		check("FoldList(Times, 1, Prime(Range(20)))", //
+				"{1,2,6,30,210,2310,30030,510510,9699690,223092870,6469693230,200560490130,\n"
+						+ "7420738134810,304250263527210,13082761331670030,614889782588491410,\n"
+						+ "32589158477190044730,1922760350154212639070,117288381359406970983270,\n"
+						+ "7858321551080267055879090,557940830126698960967415390}");
+
 		check("FoldList(f, {})", //
 				"{}");
 		check("FoldList(f, g(a))", //
@@ -14722,7 +14730,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1");
 		check("Reap(Scan(Sow, -(ArcTan((1 + 2*x)/Sqrt(3))/Sqrt(3)) + (1/3)*Log(1 - x) - (1/6)*Log(1 + x + x^2), {-1}))[[2, 1]]", //
 				"{-1,3,-1/2,3,-1/2,1,2,x,1/3,1,-1,x,-1/6,1,x,x,2}");
-	} 
+	}
 
 	public void testSec() {
 		check("-Sec(Pi/4-x)", //
