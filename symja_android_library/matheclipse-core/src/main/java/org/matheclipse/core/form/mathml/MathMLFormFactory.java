@@ -115,6 +115,29 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		}
 	}
 
+	private final static class C extends AbstractConverter {
+
+		/**
+		 * Convert C(1) to <code><msub><mi>c</mi><mn>1</mn></msub></code>
+		 * 
+		 * @param buf
+		 *            StringBuilder for MathML output
+		 * @param f
+		 *            The math function which should be converted to MathML
+		 */
+		@Override
+		public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+			if (f.isAST1() && f.head().equals(F.C) && f.arg1().isInteger()) {
+				fFactory.tagStart(buf, "msub");
+				buf.append("<mi>c</mi>");
+				fFactory.convert(buf, f.arg1(), Integer.MIN_VALUE, false);
+				fFactory.tagEnd(buf, "msub");
+				return true;
+			}
+			return false;
+		}
+	}
+
 	private final static class Ceiling extends AbstractConverter {
 
 		/**
@@ -168,6 +191,22 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
 				fFactory.tagEnd(buf, "mrow");
 				fFactory.tagEnd(buf, "mfrac");
+				return true;
+			}
+			return false;
+		}
+	}
+
+	private final static class Element extends AbstractConverter {
+
+		@Override
+		public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+			if (f.isAST2()) {
+				fFactory.tagStart(buf, "mrow");
+				fFactory.convert(buf, f.arg1(), Integer.MIN_VALUE, false);
+				buf.append("<mo>&#8712;</mo>");
+				fFactory.convert(buf, f.arg2(), Integer.MIN_VALUE, false);
+				fFactory.tagEnd(buf, "mrow");
 				return true;
 			}
 			return false;
@@ -2132,15 +2171,22 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		CONSTANT_EXPRS.put(F.Glaisher, "<mi>A</mi>");
 		CONSTANT_EXPRS.put(F.EulerGamma, "<mi>&#x03B3;</mi>");
 		CONSTANT_EXPRS.put(F.Khinchin, "<mi>K</mi>");
-
+		
+		CONSTANT_EXPRS.put(F.Complexes, "<mi>&#8450;</mi>");
+		CONSTANT_EXPRS.put(F.Integers, "<mi>&#8484;</mi>");
+		CONSTANT_EXPRS.put(F.Rationals, "<mi>&#8474;</mi>");
+		CONSTANT_EXPRS.put(F.Reals, "<mi>&#8477;</mi>");
+		
 		CONVERTERS.put(F.Abs, new Abs());
 		CONVERTERS.put(F.And, new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("And").getPrecedence(), "&#x2227;"));
 		CONVERTERS.put(F.Binomial, new Binomial());
+		CONVERTERS.put(F.C, new C());
 		CONVERTERS.put(F.Ceiling, new Ceiling());
 		CONVERTERS.put(F.CompoundExpression,
 				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("CompoundExpression").getPrecedence(), ";"));
 		CONVERTERS.put(F.D, new D());
 		CONVERTERS.put(F.Dot, new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("Dot").getPrecedence(), "."));
+		CONVERTERS.put(F.Element, new Element());
 		CONVERTERS.put(F.Equal, new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("Equal").getPrecedence(), "=="));
 		CONVERTERS.put(F.Factorial,
 				new MMLPostfix("!", ASTNodeFactory.MMA_STYLE_FACTORY.get("Factorial").getPrecedence()));

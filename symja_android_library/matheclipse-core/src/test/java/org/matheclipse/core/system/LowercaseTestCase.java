@@ -15495,12 +15495,24 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		// {{x -> ConditionalExpression[2*I*Pi*C[1] + Log[b], Element[C[1], Integers]]}}
+		 check("Solve(E^x==b,x)", //
+				 "{{x->{{x->ConditionalExpression(I*2*Pi*C(1)+Log(b),Element(C(1),Integers))}}}}");
+		 check("Solve(a^x==42,x)", //
+				 "{{x->Log(42)/Log(a)}}");
+		// check("Solve(2+(-I*(E^(-I*x)-E^(I*x)))/(E^(-I*x)+E^(I*x))+(I*3*(E^(-I*3*x)-E^(I*3*x)))/(E^(-I*3*x)+E^(I*3*x))==0,x)",
+		// //
+		// "((2-I*2)*(I+(-1/2-I*1/2)*E^(I*2*x)+E^(I*4*x)))/((-1-I*E^(I*x)+E^(I*2*x))*(-1+I*E^(I*x)+E^(\n"
+		// + "I*2*x)))");
+
 		// check("Solve(4^(2*x+1)*5^(x-2)-6^(1-x)==0,x)", //
 		// "");
 		check("Solve(Log(2,x)+4*Log(x,2)-5==0,x)", //
 				"{{x->2},{x->16}}");
 		check("Solve(x^(1/Log(2))-1==0,x)", //
 				"{{x->1}}");
+		check("Solve(Log((x-1)*(x+1))==0,x)", //
+				"{{x->-Sqrt(2)},{x->Sqrt(2)}}");
 		check("{Re @ #, Im @ #} & /@ Last @@@ Solve(x^3 + 3 == 0, x)", //
 				"{{3^(1/3)/2,3^(5/6)/2},{-3^(1/3),0},{3^(1/3)/2,-3^(5/6)/2}}");
 		check("Solve((x^2 + 2)*(x^2 - 2) == 0, x, Reals)", //
@@ -15514,8 +15526,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Solve(Sqrt(5*x-25)-Sqrt(x-1)==2,x)", //
 				"{{x->10}}");
 
-		// check("Solve(E^x==b,x)", //
-		// "{{x->{{x->ConditionalExpression(I*2*c$2*Pi+Log(b),Element(c$2,Integers))}}}}");
 		check("Solve(Sqrt(x+6)-Sqrt(x-1)==1,x)", //
 				"{{x->10}}");
 

@@ -429,12 +429,10 @@ public class Eliminate extends AbstractFunctionEvaluator {
 					} else if (base.isFree(predicate, true)) {
 						if (base.isE()) {
 							// E ^ f(x)
-							final int moduleCounter = engine.incModuleCounter();
-							final String varAppend = "$" + moduleCounter;
-							IExpr c1 = F.Dummy("c" + varAppend);
+							IExpr c1 = F.C(1);
 							final IExpr exprwovar = exprWithoutVariable;
 							return
-							// [$ {{x -> ConditionalExpression(2*I*Pi*c1 + Log(exprwovar), Element(c1,
+							// [$ {{x -> ConditionalExpression(2*I*Pi*C[1] + Log(exprwovar), Element(C[1],
 							// Integers))}} $]
 							F.List(F.List(F.Rule(x,
 									F.ConditionalExpression(F.Plus(F.Times(F.C2, F.CI, F.Pi, c1), F.Log(exprwovar)),

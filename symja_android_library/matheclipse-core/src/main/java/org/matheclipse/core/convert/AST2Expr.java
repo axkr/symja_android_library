@@ -42,7 +42,7 @@ import org.matheclipse.parser.client.eval.DoubleNode;
  */
 public class AST2Expr {
 
-	public final static String[] UPPERCASE_SYMBOL_STRINGS = { "D", "E", "I", "N", "O" };
+	public final static String[] UPPERCASE_SYMBOL_STRINGS = { "C", "D", "E", "I", "N", "O" };
 
 	public final static String[] DOLLAR_STRINGS = { "$Aborted", "$Context", "$CreationDate", "$ContextPath",
 			"$DisplayFunction", "$HistoryLength", "$IterationLimit", "$Line", "$MachineEpsilon", "$MachinePrecision",
