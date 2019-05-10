@@ -728,7 +728,7 @@ public class F {
 	/***/
 	public final static IBuiltInSymbol ContainsNone = F.initFinalSymbol("ContainsNone", ID.ContainsNone);
 
-	/***/
+	/** ContainsOnly(list1, list2) - yields True if `list1` contains only elements that appear in `list2`. */
 	public final static IBuiltInSymbol ContainsOnly = F.initFinalSymbol("ContainsOnly", ID.ContainsOnly);
 
 	/** Context(symbol) - return the context of the given symbol. */
@@ -899,6 +899,9 @@ public class F {
 	 * Discriminant(poly, var) - computes the discriminant of the polynomial `poly` with respect to the variable `var`.
 	 */
 	public final static IBuiltInSymbol Discriminant = F.initFinalSymbol("Discriminant", ID.Discriminant);
+
+	/***/
+	public final static IBuiltInSymbol DisjointQ = F.initFinalSymbol("DisjointQ", ID.DisjointQ);
 
 	/***/
 	public final static IBuiltInSymbol Disputed = F.initFinalSymbol("Disputed", ID.Disputed);
@@ -1518,6 +1521,9 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol Interpolation = F.initFinalSymbol("Interpolation", ID.Interpolation);
+
+	/***/
+	public final static IBuiltInSymbol IntersectingQ = F.initFinalSymbol("IntersectingQ", ID.IntersectingQ);
 
 	/** Intersection(set1, set2, ...) - get the intersection set from `set1` and `set2` .... */
 	public final static IBuiltInSymbol Intersection = F.initFinalSymbol("Intersection", ID.Intersection);
@@ -2836,6 +2842,9 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol Subscript = F.initFinalSymbol("Subscript", ID.Subscript);
+
+	/***/
+	public final static IBuiltInSymbol SubsetQ = F.initFinalSymbol("SubsetQ", ID.SubsetQ);
 
 	/** Subsets(list) - finds a list of all possible subsets of `list`. */
 	public final static IBuiltInSymbol Subsets = F.initFinalSymbol("Subsets", ID.Subsets);

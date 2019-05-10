@@ -4077,6 +4077,31 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "2-128*a^2*c^2*e^2-192*a^2*b*d*e^2+256*a^3*e^3");
 	}
 
+	public void testDisjointQ() {
+		check("DisjointQ(f(d,f,e), f(a, b, c))", //
+				"True");
+		check("DisjointQ(f(b, a, b), f(a, b, c))", //
+				"False");
+		
+		// same as ContainsNone
+		check("DisjointQ({d,f,e}, {a, b, c})", //
+				"True");
+		check("DisjointQ({b, a, b}, {a, b, c})", //
+				"False");
+		check("DisjointQ({ }, {a, b, c})", //
+				"True");
+
+		check("DisjointQ(1, {1,2,3})", //
+				"DisjointQ(1,{1,2,3})");
+		check("DisjointQ({1,2,3}, 4)", //
+				"DisjointQ({1,2,3},4)");
+
+		check("DisjointQ({1.0,2.0}, {1,2,3})", //
+				"True");
+		check("DisjointQ({1.0,2.0}, {1,2,3}, SameTest->Equal)", //
+				"False");
+	}
+	
 	public void testDistribute() {
 		check("Distribute((a + b).(x + y + z))", //
 				"a.x+a.y+a.z+b.x+b.y+b.z");
@@ -7847,6 +7872,33 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Inequality(-1,lest,0,Less,1)");
 	}
 
+	public void testIntersectingQ() {
+		check("IntersectingQ(f(b, a, b,d), f(c,c,c,d))", //
+				"True");
+		check("IntersectingQ(f(b, a, b,d), f(e,g))", //
+				"False");
+		
+		// same as ContainsAny
+		check("IntersectingQ({b, a, b}, {a, b, c})", //
+				"True");
+		check("IntersectingQ({b, a, b,d}, {c,c,c,d})", //
+				"True");
+		check("IntersectingQ({d,f,e}, {a, b, c})", //
+				"False");
+		check("IntersectingQ({ }, {a, b, c})", //
+				"False");
+
+		check("IntersectingQ(1, {1,2,3})", //
+				"IntersectingQ(1,{1,2,3})");
+		check("IntersectingQ({1,2,3}, 4)", //
+				"IntersectingQ({1,2,3},4)");
+
+		check("IntersectingQ({1.0,2.0}, {1,2,3})", //
+				"False");
+		check("IntersectingQ({1.0,2.0}, {1,2,3}, SameTest->Equal)", //
+				"True");
+	}
+	
 	public void testIntersection() {
 		check("Intersection({a,a,b,c})", //
 				"{a,b,c}");
@@ -10089,7 +10141,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testNames() {
 		check("Names(\"Int*\" )",
-				"{Interval,IntegerDigits,IntegerExponent,IntegerLength,IntegerPart,IntegerPartitions,IntegerQ,Integrate,Interpolation,InterpolatingFunction,InterpolatingPolynomial,Intersection,Integer,Integers}");
+				"{Interval,IntegerDigits,IntegerExponent,IntegerLength,IntegerPart,IntegerPartitions,IntegerQ,Integrate,Interpolation,InterpolatingFunction,InterpolatingPolynomial,IntersectingQ,Intersection,Integer,Integers}");
 		check("Names(\"Integer*\" )",
 				"{IntegerDigits,IntegerExponent,IntegerLength,IntegerPart,IntegerPartitions,IntegerQ,Integer,Integers}");
 		check("Names(\"IntegerPart\" )", "{IntegerPart}");
@@ -16480,6 +16532,43 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("Subfactorial(10000)", "Subfactorial(10000)");
 	}
 
+	public void testSubsetQ() {
+		check("SubsetQ(f(b,a,b,c), f(c, c, c))", //
+				"True");
+		check("SubsetQ(f(b,a,b,c), f(a, b, d))", //
+				"False");
+		
+		// same as ContainsAll
+		check("SubsetQ({b,a,b,c}, {a, b})", //
+				"True");
+		check("SubsetQ({b,a,b,c}, {c, c, c})", //
+				"True");
+		check("SubsetQ({b,a,b,c}, {a, b, d})", //
+				"False");
+		check("SubsetQ({b, a, d}, {a, b, c})", //
+				"False");
+		check("SubsetQ({ }, {a, b, c})", //
+				"False");
+		check("SubsetQ({ },{ })", //
+				"True");
+		check("SubsetQ({a, b, c},{ })", //
+				"True");
+
+		check("SubsetQ(1, {1,2,3})", //
+				"SubsetQ(1,{1,2,3})");
+		check("SubsetQ({1,2,3}, 4)", //
+				"SubsetQ({1,2,3},4)");
+
+		check("SubsetQ({1.0,2.0}, {1,2,3})", //
+				"False");
+		check("SubsetQ({1.0,2.0}, {1,2,3}, SameTest->Equal)", //
+				"False");
+
+		check("SubsetQ({1,2,3}, {1.0,2.0})", //
+				"False");
+		check("SubsetQ({1,2,3}, {1.0,2.0}, SameTest->Equal)", //
+				"True");
+	}
 	public void testSubsets() {
 		// https://oeis.org/A018900 - Sum of two distinct powers of 2
 		check("Union(Total/@Subsets(2^Range(0, 10), {2}))", //
