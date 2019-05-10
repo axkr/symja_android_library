@@ -566,6 +566,7 @@ public class Logarithms extends AbstractRubiTestCase {
 
 	// {2447}
 	public void test0129() {
+		fSeconds = 120;
 		check(//
 				"Integrate[Log[(-2*x*(d*Sqrt[-(e/d)] - e*x))/(d + e*x^2)]/(d + e*x^2), x]", //
 				"(Sqrt[-(e/d)]*PolyLog[2, 1 + (2*x*(d*Sqrt[-(e/d)] - e*x))/(d + e*x^2)])/(2*e)", //
@@ -574,6 +575,7 @@ public class Logarithms extends AbstractRubiTestCase {
 
 	// {2447}
 	public void test0130() {
+		fSeconds = 120;
 		check(//
 				"Integrate[Log[(2*x*((d*Sqrt[e])/Sqrt[-d] + e*x))/(d + e*x^2)]/(d + e*x^2), x]", //
 				"-PolyLog[2, 1 + (2*Sqrt[e]*x*(Sqrt[-d] - Sqrt[e]*x))/(d + e*x^2)]/(2*Sqrt[-d]*Sqrt[e])", //
@@ -582,6 +584,7 @@ public class Logarithms extends AbstractRubiTestCase {
 
 	// {2447}
 	public void test0131() {
+		fSeconds = 120;
 		check(//
 				"Integrate[Log[(-2*x*((d*Sqrt[e])/Sqrt[-d] - e*x))/(d + e*x^2)]/(d + e*x^2), x]", //
 				"PolyLog[2, 1 - (2*Sqrt[e]*x*(Sqrt[-d] + Sqrt[e]*x))/(d + e*x^2)]/(2*Sqrt[-d]*Sqrt[e])", //
@@ -590,6 +593,7 @@ public class Logarithms extends AbstractRubiTestCase {
 
 	// {2447}
 	public void test0132() {
+		fSeconds = 120;
 		check(//
 				"Integrate[Log[(2*x*(Sqrt[d]*Sqrt[-e] + e*x))/(d + e*x^2)]/(d + e*x^2), x]", //
 				"PolyLog[2, 1 - (2*x*(Sqrt[d]*Sqrt[-e] + e*x))/(d + e*x^2)]/(2*Sqrt[d]*Sqrt[-e])", //
@@ -598,6 +602,7 @@ public class Logarithms extends AbstractRubiTestCase {
 
 	// {2447}
 	public void test0133() {
+		fSeconds = 120;
 		check(//
 				"Integrate[Log[(-2*x*(Sqrt[d]*Sqrt[-e] - e*x))/(d + e*x^2)]/(d + e*x^2), x]", //
 				"-PolyLog[2, 1 + (2*x*(Sqrt[d]*Sqrt[-e] - e*x))/(d + e*x^2)]/(2*Sqrt[d]*Sqrt[-e])", //

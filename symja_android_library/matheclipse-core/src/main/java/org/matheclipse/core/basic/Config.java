@@ -56,7 +56,7 @@ public class Config {
 	 * Maximum number for the leaf count of an expression so that <code>Simplify()</code> will try calling
 	 * <code>Together()</code>.
 	 */
-	public static final int MAX_SIMPLIFY_TOGETHER_LEAFCOUNT = 60;
+	public static final int MAX_SIMPLIFY_TOGETHER_LEAFCOUNT = 65;
 
 	static {
 		EXPR_CACHE = CacheBuilder.newBuilder().maximumSize(MAX_EXPR_CACHE_SIZE).weakKeys().weakValues().build();

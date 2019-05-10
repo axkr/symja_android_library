@@ -10375,7 +10375,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {1588}
 	public void test1347() {
-		fSeconds = 120;
+		fSeconds = 240;
 		check(//
 				"Integrate[x*(a + b*x + c*x^2 + d*x^3)^p*(2*a + b*(3 + p)*x + c*(4 + 2*p)*x^2 + d*(5 + 3*p)*x^3), x]", //
 				"x^2*(a + b*x + c*x^2 + d*x^3)^(1 + p)", //
