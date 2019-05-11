@@ -63,7 +63,7 @@ public class FindInstance extends Solve {
 		}
 		if (ast.size() > 2) {
 			try {
-				if (ast.arg1().isBooleanResult()) {
+				if (ast.arg1().isBooleanFormula()) {
 					LogicFormula lf = new LogicFormula();
 					// Variable[] variables = lf.ast2Variable(vars);
 					formula = lf.expr2BooleanFunction(ast.arg1());

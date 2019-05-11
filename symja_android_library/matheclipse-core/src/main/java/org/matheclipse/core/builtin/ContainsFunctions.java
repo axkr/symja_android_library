@@ -16,6 +16,7 @@ import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IPredicate;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -38,19 +39,19 @@ public class ContainsFunctions {
 
 	}
 
-	private static class DisjointQ extends ContainsNone {
+	private static class DisjointQ extends ContainsNone implements IPredicate {
 		public boolean validateArgs(IExpr arg1, IExpr arg2, EvalEngine engine) {
 			return arg1.isAST() && arg2.isAST(arg1.head());
 		}
 	}
 
-	private static class IntersectingQ extends ContainsAny {
+	private static class IntersectingQ extends ContainsAny implements IPredicate {
 		public boolean validateArgs(IExpr arg1, IExpr arg2, EvalEngine engine) {
 			return arg1.isAST() && arg2.isAST(arg1.head());
 		}
 	}
 
-	private static class SubsetQ extends ContainsAll {
+	private static class SubsetQ extends ContainsAll implements IPredicate {
 		public boolean validateArgs(IExpr arg1, IExpr arg2, EvalEngine engine) {
 			return arg1.isAST() && arg2.isAST(arg1.head());
 		}

@@ -32,10 +32,13 @@ import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBooleanFormula;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IComparatorFunction;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IPredicate;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -181,7 +184,7 @@ public final class BooleanFunctions {
 	 * a &amp;&amp; b &amp;&amp; c
 	 * </pre>
 	 */
-	private static class And extends AbstractCoreFunctionEvaluator {
+	private static class And extends AbstractCoreFunctionEvaluator implements IBooleanFormula {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -783,7 +786,7 @@ public final class BooleanFunctions {
 	 * </pre>
 	 */
 
-	public static class Equal extends AbstractFunctionEvaluator implements ITernaryComparator {
+	public static class Equal extends AbstractFunctionEvaluator implements ITernaryComparator, IComparatorFunction {
 
 		/**
 		 * Create the result for a <code>simplifyCompare()</code> step
@@ -1018,7 +1021,7 @@ public final class BooleanFunctions {
 	 * True
 	 * </pre>
 	 */
-	private final static class Equivalent extends AbstractFunctionEvaluator {
+	private final static class Equivalent extends AbstractFunctionEvaluator implements IBooleanFormula {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1221,7 +1224,8 @@ public final class BooleanFunctions {
 	 * {True, True, True}
 	 * </pre>
 	 */
-	public static class Greater extends AbstractCoreFunctionEvaluator implements ITernaryComparator {
+	public static class Greater extends AbstractCoreFunctionEvaluator
+			implements ITernaryComparator, IComparatorFunction {
 		public final static Greater CONST = new Greater();
 
 		/**
@@ -1650,7 +1654,7 @@ public final class BooleanFunctions {
 	 * Implies(a,Implies(b,c))
 	 * </pre>
 	 */
-	private final static class Implies extends AbstractCoreFunctionEvaluator {
+	private final static class Implies extends AbstractCoreFunctionEvaluator implements IBooleanFormula {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			boolean evaled = false;
@@ -1699,7 +1703,7 @@ public final class BooleanFunctions {
 		}
 	}
 
-	private final static class Inequality extends AbstractEvaluator {
+	private final static class Inequality extends AbstractEvaluator implements IComparatorFunction {
 		final static IBuiltInSymbol[] COMPARATOR_SYMBOLS = { F.Greater, F.GreaterEqual, F.Less, F.LessEqual };
 
 		private int getCompSign(IExpr e) {
@@ -2265,7 +2269,7 @@ public final class BooleanFunctions {
 	 * True
 	 * </pre>
 	 */
-	private final static class Nand extends AbstractCoreFunctionEvaluator {
+	private final static class Nand extends AbstractCoreFunctionEvaluator implements IBooleanFormula {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2596,7 +2600,7 @@ public final class BooleanFunctions {
 	 * False
 	 * </pre>
 	 */
-	private static class Nor extends AbstractCoreFunctionEvaluator {
+	private static class Nor extends AbstractCoreFunctionEvaluator implements IBooleanFormula {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2666,7 +2670,7 @@ public final class BooleanFunctions {
 	 * !b
 	 * </pre>
 	 */
-	private static class Not extends AbstractArg1 {
+	private static class Not extends AbstractArg1 implements IBooleanFormula {
 
 		@Override
 		public IExpr e1ObjArg(final IExpr o) {
@@ -2740,7 +2744,7 @@ public final class BooleanFunctions {
 	 * a || b
 	 * </pre>
 	 */
-	private static class Or extends AbstractCoreFunctionEvaluator {
+	private static class Or extends AbstractCoreFunctionEvaluator implements IBooleanFormula {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2933,7 +2937,7 @@ public final class BooleanFunctions {
 	 * {True,False}
 	 * </pre>
 	 */
-	private final static class SameQ extends AbstractCoreFunctionEvaluator {
+	private final static class SameQ extends AbstractCoreFunctionEvaluator implements IPredicate, IComparatorFunction {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() > 1) {
@@ -3128,7 +3132,7 @@ public final class BooleanFunctions {
 	 * True
 	 * </pre>
 	 */
-	private final static class SatisfiableQ extends AbstractFunctionEvaluator {
+	private final static class SatisfiableQ extends AbstractFunctionEvaluator implements IPredicate {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -3251,7 +3255,7 @@ public final class BooleanFunctions {
 	 * <li><a href="https://en.wikipedia.org/wiki/Tautology_(logic)">Wikipedia - Tautology (logic)</a></li>
 	 * </ul>
 	 */
-	private static class TautologyQ extends AbstractFunctionEvaluator {
+	private static class TautologyQ extends AbstractFunctionEvaluator implements IPredicate {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -3364,7 +3368,7 @@ public final class BooleanFunctions {
 	 * False
 	 * </pre>
 	 */
-	private static class TrueQ extends AbstractFunctionEvaluator {
+	private static class TrueQ extends AbstractFunctionEvaluator implements IPredicate {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -3513,7 +3517,8 @@ public final class BooleanFunctions {
 	 * True
 	 * </pre>
 	 */
-	private final static class UnsameQ extends AbstractCoreFunctionEvaluator {
+	private final static class UnsameQ extends AbstractCoreFunctionEvaluator
+			implements IPredicate, IComparatorFunction {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -3584,7 +3589,7 @@ public final class BooleanFunctions {
 	 * Xor(a,b)
 	 * </pre>
 	 */
-	private static class Xor extends AbstractFunctionEvaluator {
+	private static class Xor extends AbstractFunctionEvaluator implements IBooleanFormula {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {

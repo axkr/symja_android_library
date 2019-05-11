@@ -1148,17 +1148,30 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is a boolean function (i.e. a number, a symbol or a boolean function where all arguments
-	 * are also &quot;boolean functions&quot;)
+	 * Test if this expression is a boolean formula (i.e. a symbol or a boolean function
+	 * <code>And, Equivalent, Nand, Nor, Not, Or, Xor</code> where all arguments are also &quot;boolean formulas&quot;)
 	 * 
-	 * @return <code>true</code>, if the given expression is a boolean function or value.
+	 * @return <code>true</code>, if the given expression is a boolean formula or a symbol.
+	 * @see #isRealResult()
+	 */
+	default boolean isBooleanFormula() {
+		return false;
+	}
+
+	/**
+	 * Test if this expression is a boolean function (i.e. a symbol or a boolean function like for example
+	 * <code>And, Equivalent, Equal, Greater, GreaterEqual, Less, LessEqual, Nand, Nor, Not, Or, Xor,...</code> where
+	 * all arguments are also &quot;boolean functions&quot;) or a symbol or some builtin predicates like for example
+	 * <code>IntegerQ, EvenQ, PrimeQ,....</code>
+	 * 
+	 * @return <code>true</code>, if the given expression is a boolean function or a symbol.
 	 * @see #isRealResult()
 	 */
 	default boolean isBooleanResult() {
 		if (F.True.equals(AbstractAssumptions.assumeBoolean(this))) {
 			return true;
 		}
-		return false;
+		return isBooleanFormula();
 	}
 
 	/**
@@ -1229,11 +1242,41 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	/**
 	 * Test if this expression is a <code>IBuiltInSymbol</code> symbol and the evaluator implements
+	 * <code>IBooleanFormula</code>.
+	 * 
+	 * @return
+	 */
+	default boolean isBooleanFormulaSymbol() {
+		return false;
+	}
+
+	/**
+	 * Test if this expression is a <code>IBuiltInSymbol</code> symbol and the evaluator implements
+	 * <code>IComparatorFunction</code>.
+	 * 
+	 * @return
+	 */
+	default boolean isComparatorFunctionSymbol() {
+		return false;
+	}
+
+	/**
+	 * Test if this expression is a <code>IBuiltInSymbol</code> symbol and the evaluator implements
 	 * <code>ICoreFunctionEvaluator</code> (see package <code>org.matheclipse.core.builtin.function</code>).
 	 * 
 	 * @return
 	 */
 	default boolean isCoreFunctionSymbol() {
+		return false;
+	}
+
+	/**
+	 * Test if this expression is a <code>IBuiltInSymbol</code> symbol and the evaluator implements
+	 * <code>IPrediacte</code>.
+	 * 
+	 * @return
+	 */
+	default boolean isPredicateFunctionSymbol() {
 		return false;
 	}
 

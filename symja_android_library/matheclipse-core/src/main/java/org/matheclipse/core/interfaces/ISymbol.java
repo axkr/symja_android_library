@@ -350,7 +350,7 @@ public interface ISymbol extends IExpr {
 
 	/** {@inheritDoc} */
 	@Override
-	default boolean isBooleanResult() {
+	default boolean isBooleanFormula() {
 		if (isConstantAttribute() && !(isTrue() || isFalse())) {
 			return false;
 		}
