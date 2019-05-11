@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -21,7 +22,7 @@ import org.matheclipse.core.patternmatching.RulesData;
  * An expression representing a symbol (i.e. variable- constant- or function-name)
  * 
  */
-public interface ISymbol extends IExpr { // Variable<IExpr>
+public interface ISymbol extends IExpr {
 
 	/**
 	 * ISymbol attribute to indicate that a symbols evaluation should be printed to Console with System.out.println();
@@ -258,6 +259,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * @return <code>null</code>, if no value is assigned.
 	 * @deprecated use {@link #assignedValue()} instead
 	 */
+	@Deprecated
 	default IExpr get() {
 		return assignedValue();
 	}
@@ -346,6 +348,20 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 */
 	boolean hasOrderlessFlatAttribute();
 
+	/** {@inheritDoc} */
+	@Override
+	default boolean isBooleanResult() {
+		if (isConstantAttribute() && !(isTrue() || isFalse())) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	default boolean isConstantAttribute() {
+		return (getAttributes() & CONSTANT) == CONSTANT;
+	}
+
 	/**
 	 * Gives <code>true</code> if the system is in server mode and cannot be modified
 	 * 
@@ -359,10 +375,6 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * @return
 	 */
 	public boolean isLocked(boolean packageMode);
-
-	default boolean isConstantAttribute() {
-		return (getAttributes() & CONSTANT) == CONSTANT;
-	}
 
 	default boolean isNumericFunctionAttribute() {
 		return ((getAttributes() & NUMERICFUNCTION) == NUMERICFUNCTION);
@@ -422,6 +434,15 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public IExpr of(EvalEngine engine, IExpr... args);
 
 	/**
+	 * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>.
+	 * 
+	 * @param args
+	 *            the arguments for which this function symbol should be evaluated
+	 * @return
+	 */
+	public IExpr of(IExpr... args);
+
+	/**
 	 * This method returns <code>F.NIL</code> if no evaluation was possible. Evaluate this symbol for the arguments as
 	 * function <code>symbol(arg1, arg2, .... ,argN)</code>.
 	 * 
@@ -432,15 +453,6 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * @return <code>F.NIL</code> if no evaluation was possible.
 	 */
 	public IExpr ofNIL(EvalEngine engine, IExpr... args);
-
-	/**
-	 * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>.
-	 * 
-	 * @param args
-	 *            the arguments for which this function symbol should be evaluated
-	 * @return
-	 */
-	public IExpr of(IExpr... args);
 
 	/**
 	 * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code> to a boolean
@@ -640,6 +652,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * 
 	 * @deprecated use {@link #assign(IExpr)} instead
 	 */
+	@Deprecated
 	default void set(IExpr value) {
 		assign(value);
 	}

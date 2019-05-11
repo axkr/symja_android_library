@@ -1148,6 +1148,20 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is a boolean function (i.e. a number, a symbol or a boolean function where all arguments
+	 * are also &quot;boolean functions&quot;)
+	 * 
+	 * @return <code>true</code>, if the given expression is a boolean function or value.
+	 * @see #isRealResult()
+	 */
+	default boolean isBooleanResult() {
+		if (F.True.equals(AbstractAssumptions.assumeBoolean(this))) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * Test if this expression is a symbol (instanceof IBuiltInSymbol)
 	 * 
 	 * @return
@@ -1357,16 +1371,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is an exact number. I.e. an instance of type <code>IRational</code> or
-	 * <code>IComplex</code>.
-	 * 
-	 * @return
-	 */
-	default boolean isExactNumber() {
-		return this instanceof IRational || this instanceof IComplex;
-	}
-
-	/**
 	 * Check if this expression is an even integer result otherwise return false.
 	 * 
 	 * @return <code>true</code> if this is an even integer result.
@@ -1384,6 +1388,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Test if this expression is an exact number. I.e. an instance of type <code>IRational</code> or
+	 * <code>IComplex</code>.
+	 * 
+	 * @return
+	 */
+	default boolean isExactNumber() {
+		return this instanceof IRational || this instanceof IComplex;
 	}
 
 	/**

@@ -1,8 +1,11 @@
 package org.matheclipse.core.reflection.system;
 
+import org.logicng.formulas.Formula;
+import org.logicng.formulas.Variable;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.convert.LogicFormula;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -45,16 +48,42 @@ public class FindInstance extends Solve {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		IAST vars = Validate.checkSymbolOrSymbolList(ast, 2);
+		Formula formula = null;
+		int maxChoices = 1;
+		if (ast.size() == 4) {
+			maxChoices = ast.arg3().toIntDefault(Integer.MIN_VALUE);
+			if (maxChoices < 0) {
+				maxChoices = 1;
+			}
+		} else if (ast.size() >= 3) {
+			maxChoices = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+			if (maxChoices < 0) {
+				maxChoices = 1;
+			}
+		}
+		if (ast.size() > 2) {
+			try {
+				if (ast.arg1().isBooleanResult()) {
+					LogicFormula lf = new LogicFormula();
+					// Variable[] variables = lf.ast2Variable(vars);
+					formula = lf.expr2BooleanFunction(ast.arg1());
+					if (ast.isAST2()) {
+						return BooleanFunctions.solveInstances(ast.arg1(), vars, maxChoices);
+					}
+				}
+			} catch (RuntimeException rex) {
+			}
+		}
 		if (ast.isAST3()) {
-			if (ast.arg3().equals(F.Booleans)) {
-				return BooleanFunctions.solveInstances(ast.arg1(), vars, 1);
+			if (ast.arg3().equals(F.Booleans) || formula != null) {
+				return BooleanFunctions.solveInstances(ast.arg1(), vars, maxChoices);
 			}
 			throw new WrongArgumentType(ast, ast.arg3(), 3, "Booleans expected!");
 		}
 		IASTMutable termsEqualZeroList = Validate.checkEquations(ast, 1);
 
 		try {
-			return solveEquations(termsEqualZeroList, F.List(), vars, 1, engine);
+			return solveEquations(termsEqualZeroList, F.List(), vars, maxChoices, engine);
 		} catch (RuntimeException rex) {
 			if (Config.SHOW_STACKTRACE) {
 				rex.printStackTrace();
@@ -63,7 +92,7 @@ public class FindInstance extends Solve {
 
 		return F.NIL;
 	}
-	
+
 	public int[] expectedArgSize() {
 		return IOFunctions.ARGS_2_3;
 	}

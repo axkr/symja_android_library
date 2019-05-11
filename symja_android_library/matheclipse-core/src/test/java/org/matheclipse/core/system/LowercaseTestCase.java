@@ -5886,13 +5886,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFindInstance() {
+		check("FindInstance((a || b || c) && (! a || ! b || ! c) && True, {a, b, c}, 2)",
+				"{{a->False,b->True,c->False},{a->False,b->True,c->True}}");
+		
 		check("FindInstance(2*Sin(x)==1/2,x)", //
 				"{{x->ArcSin(1/4)}}");
 
 		check("FindInstance({x^2==4,x+y^2==6}, {x,y})", //
 				"{{x->-2,y->2*Sqrt(2)}}");
 		check("FindInstance(x+5.0==a,x)", "{{x->-5.0+a}}");
-
+		
+		
 		check("FindInstance(Xor(a, b, c, d) && (a || b) && ! (c || d), {a, b, c, d}, Booleans)",
 				"{{a->False,b->True,c->False,d->False}}");
 
@@ -6597,10 +6601,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFullSimplify() {
+//		check("Factor((d^2+2*d*e*x^2+e^2*x^4))",//
+//				"(d+e*x^2)^2");
 //		check("Together(D( 1-(2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2),x))",//
 //				"(-2*d^2*Sqrt(-e/d)-4*d*e*x+2*d*e*Sqrt(-e/d)*x^2)/(d^2+2*d*e*x^2+e^2*x^4)");
 		check("FullSimplify(D( 1-(2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2),x))",//
 				"(d*(-2*d*Sqrt(-e/d)-4*e*x+2*e*Sqrt(-e/d)*x^2))/(d+e*x^2)^2");
+		
 		
 		check("p = Expand((x + 1)^2 (x + 2)^2 (x + 3)^3)", //
 				"108+432*x+711*x^2+625*x^3+318*x^4+94*x^5+15*x^6+x^7");
@@ -14602,6 +14609,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSatisfiabilityInstances() {
+		check("SatisfiabilityInstances((a || b || c) && (! a || ! b || ! c), {a, b, c},All)",
+				"{{False,True,False},{False,True,True},{True,False,True},{True,False,False},{False,False,True},{True,True,False}}");
 		check("SatisfiabilityInstances(a&&!(b||!c), {b,a,c}, All )", //
 				"{{False,True,True}}");
 		check("SatisfiabilityInstances(a&&!(b||!c), {a,b,c}, All )", //

@@ -413,7 +413,13 @@ public abstract class AbstractAST implements IASTMutable {
 		public boolean isASTSizeGE(IExpr header, int length) {
 			return false;
 		}
-
+		
+		/** {@inheritDoc} */
+		@Override
+		public boolean isBooleanResult() {
+			return false;
+		}
+		
 		/** {@inheritDoc} */
 		@Override
 		public boolean isIntegerResult() {
@@ -2438,6 +2444,25 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isBooleanResult() {
+		IExpr symbol = head();
+		if (symbol.isSymbol()) {
+			if (symbol.equals(F.And) || symbol.equals(F.Or) || symbol.equals(F.Equivalent) || symbol.equals(F.Not)
+					|| symbol.equals(F.Nand) || symbol.equals(F.Nor) || symbol.equals(F.Xor)) {
+				for (int i = 1; i < size(); i++) {
+					if (get(i).isBooleanResult()) {
+						continue;
+					}
+					return false;
+				}
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public boolean isIntegerResult() {
 		ISymbol symbol = topHead();
 		if (symbol.equals(F.Floor) || symbol.equals(F.Ceiling) || symbol.equals(F.IntegerPart)) {
@@ -3208,7 +3233,7 @@ public abstract class AbstractAST implements IASTMutable {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 *   use {@link #isZero()} instead.
+	 * use {@link #isZero()} instead.
 	 */
 	// @Deprecated
 	// @Override
