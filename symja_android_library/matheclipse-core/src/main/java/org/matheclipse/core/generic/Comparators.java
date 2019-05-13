@@ -30,7 +30,8 @@ public class Comparators {
 
 		@Override
 		public int compare(final IExpr o1, final IExpr o2) {
-			return -1 * o1.compareTo(o2);
+			return o2.compareTo(o1);
+//			return -1 * o1.compareTo(o2);
 		}
 	}
 

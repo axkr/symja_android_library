@@ -4082,7 +4082,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"True");
 		check("DisjointQ(f(b, a, b), f(a, b, c))", //
 				"False");
-		
+
 		// same as ContainsNone
 		check("DisjointQ({d,f,e}, {a, b, c})", //
 				"True");
@@ -4101,7 +4101,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("DisjointQ({1.0,2.0}, {1,2,3}, SameTest->Equal)", //
 				"False");
 	}
-	
+
 	public void testDistribute() {
 		check("Distribute((a + b).(x + y + z))", //
 				"a.x+a.y+a.z+b.x+b.y+b.z");
@@ -5887,16 +5887,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testFindInstance() {
 		check("FindInstance((a || b || c) && (! a || ! b || ! c) && True, {a, b, c}, 2)",
-				"{{a->False,b->True,c->False},{a->False,b->True,c->True}}");
-		
+				"{{a->False,b->True,c->True},{a->False,b->True,c->False}}");
+
 		check("FindInstance(2*Sin(x)==1/2,x)", //
 				"{{x->ArcSin(1/4)}}");
 
 		check("FindInstance({x^2==4,x+y^2==6}, {x,y})", //
 				"{{x->-2,y->2*Sqrt(2)}}");
 		check("FindInstance(x+5.0==a,x)", "{{x->-5.0+a}}");
-		
-		
+
 		check("FindInstance(Xor(a, b, c, d) && (a || b) && ! (c || d), {a, b, c, d}, Booleans)",
 				"{{a->False,b->True,c->False,d->False}}");
 
@@ -6601,14 +6600,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFullSimplify() {
-//		check("Factor((d^2+2*d*e*x^2+e^2*x^4))",//
-//				"(d+e*x^2)^2");
-//		check("Together(D( 1-(2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2),x))",//
-//				"(-2*d^2*Sqrt(-e/d)-4*d*e*x+2*d*e*Sqrt(-e/d)*x^2)/(d^2+2*d*e*x^2+e^2*x^4)");
-		check("FullSimplify(D( 1-(2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2),x))",//
+		// check("Factor((d^2+2*d*e*x^2+e^2*x^4))",//
+		// "(d+e*x^2)^2");
+		// check("Together(D( 1-(2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2),x))",//
+		// "(-2*d^2*Sqrt(-e/d)-4*d*e*x+2*d*e*Sqrt(-e/d)*x^2)/(d^2+2*d*e*x^2+e^2*x^4)");
+		check("FullSimplify(D( 1-(2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2),x))", //
 				"(d*(-2*d*Sqrt(-e/d)-4*e*x+2*e*Sqrt(-e/d)*x^2))/(d+e*x^2)^2");
-		
-		
+
 		check("p = Expand((x + 1)^2 (x + 2)^2 (x + 3)^3)", //
 				"108+432*x+711*x^2+625*x^3+318*x^4+94*x^5+15*x^6+x^7");
 		check("FullSimplify(p)", //
@@ -7889,7 +7887,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"True");
 		check("IntersectingQ(f(b, a, b,d), f(e,g))", //
 				"False");
-		
+
 		// same as ContainsAny
 		check("IntersectingQ({b, a, b}, {a, b, c})", //
 				"True");
@@ -7910,7 +7908,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("IntersectingQ({1.0,2.0}, {1,2,3}, SameTest->Equal)", //
 				"True");
 	}
-	
+
 	public void testIntersection() {
 		check("Intersection({a,a,b,c})", //
 				"{a,b,c}");
@@ -14610,20 +14608,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testSatisfiabilityInstances() {
 		check("SatisfiabilityInstances((a || b || c) && (! a || ! b || ! c), {a, b, c},All)",
-				"{{False,True,False},{False,True,True},{True,False,True},{True,False,False},{False,False,True},{True,True,False}}");
+				"{{True,True,False},{True,False,True},{True,False,False},{False,True,True},{False,True,False},{False,False,True}}");
 		check("SatisfiabilityInstances(a&&!(b||!c), {b,a,c}, All )", //
 				"{{False,True,True}}");
 		check("SatisfiabilityInstances(a&&!(b||!c), {a,b,c}, All )", //
 				"{{True,False,True}}");
 
 		check("SatisfiabilityInstances(a || b, {a, b}, All)", //
-				"{{False,True},{True,True},{True,False}}");
+				"{{True,True},{True,False},{False,True}}");
 		check("SatisfiabilityInstances(Equivalent(a, b), {a, b}, 4)", //
-				"{{False,False},{True,True}}");
+				"{{True,True},{False,False}}");
 		check("SatisfiabilityInstances(Equivalent(a, b), {a, b})", //
 				"{{False,False}}");
 		check("SatisfiabilityInstances(Xor(a, b, c), {a, b, c}, 2^3)", //
-				"{{False,True,False},{True,True,True},{False,False,True},{True,False,False}}");
+				"{{True,True,True},{True,False,False},{False,True,False},{False,False,True}}");
 
 		check("SatisfiabilityInstances(a&&!(b||!c) )", //
 				"{{True,False,True}}");
@@ -14631,7 +14629,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("SatisfiabilityInstances((a || b) && (! a || ! b) )", //
 				"{{False,True}}");
 		check("SatisfiabilityInstances((a || b) && (! a || ! b), {a, b}, All)", //
-				"{{False,True},{True,False}}");
+				"{{True,False},{False,True}}");
 
 		check("SatisfiabilityInstances(!Implies(Implies(a, b) && ! b, ! a))", //
 				"{}");
@@ -14642,13 +14640,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSatisfiableQ() {
-		check("SatisfiableQ(a&&!(b||!c) )", "True");
-		check("SatisfiableQ((a || b) && (! a || ! b) )", "True");
-		check("SatisfiableQ((a || b) && (! a || ! b), {a, b})", "True");
+		check("SatisfiableQ(a&&!(b||!c) )", //
+				"True");
+		check("SatisfiableQ((a || b) && (! a || ! b) )",//
+				"True");
+		check("SatisfiableQ((a || b) && (! a || ! b), {a, b})",//
+				"True");
 
-		check("SatisfiableQ(!Implies(Implies(a, b) && ! b, ! a))", "False");
-		check("SatisfiableQ((a && b) && (! a || ! b) )", "False");
-		check("SatisfiableQ((a && b) && (! a || ! b), {a, b})", "False");
+		check("SatisfiableQ(!Implies(Implies(a, b) && ! b, ! a))", //
+				"False");
+		check("SatisfiableQ((a && b) && (! a || ! b) )",//
+				"False");
+		check("SatisfiableQ((a && b) && (! a || ! b), {a, b})",//
+				"False");
 		check("SatisfiableQ((Equivalent(b11D, b21U)) && (Equivalent(b12D, b22U)) && \n"
 				+ " (Equivalent(b13D, b23U)) && (Equivalent(b14D, b24U)) && \n"
 				+ " (Equivalent(b15D, b25U)) && (Equivalent(b21D, b31U)) && \n"
@@ -14886,7 +14890,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				+ " Implies(b44R,  !c45a &&  !c45b &&  !c45c && c45d &&  !c45e) && \n"
 				+ " Implies(b51R, c51a &&  !c51b &&  !c51c &&  !c51d &&  !c51e) &&  !b52R && \n"
 				+ " Implies(b53R,  !c54a &&  !c54b && c54c &&  !c54d &&  !c54e) && \n"
-				+ " Implies(b54R,  !c54a &&  !c54b &&  !c54c &&  !c54d && c54e))", "False");
+				+ " Implies(b54R,  !c54a &&  !c54b &&  !c54c &&  !c54d && c54e))",//
+				"False");
 
 	}
 
@@ -15562,10 +15567,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testSolve() {
 		// {{x -> ConditionalExpression[2*I*Pi*C[1] + Log[b], Element[C[1], Integers]]}}
-		 check("Solve(E^x==b,x)", //
-				 "{{x->ConditionalExpression(I*2*Pi*C(1)+Log(b),Element(C(1),Integers))}}");
-		 check("Solve(a^x==42,x)", //
-				 "{{x->Log(42)/Log(a)}}");
+		check("Solve(E^x==b,x)", //
+				"{{x->ConditionalExpression(I*2*Pi*C(1)+Log(b),Element(C(1),Integers))}}");
+		check("Solve(a^x==42,x)", //
+				"{{x->Log(42)/Log(a)}}");
 		// check("Solve(2+(-I*(E^(-I*x)-E^(I*x)))/(E^(-I*x)+E^(I*x))+(I*3*(E^(-I*3*x)-E^(I*3*x)))/(E^(-I*3*x)+E^(I*3*x))==0,x)",
 		// //
 		// "((2-I*2)*(I+(-1/2-I*1/2)*E^(I*2*x)+E^(I*4*x)))/((-1-I*E^(I*x)+E^(I*2*x))*(-1+I*E^(I*x)+E^(\n"
@@ -15752,7 +15757,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Solve(Abs(x^2-1) ==0,{x})", //
 				"{{x->-1},{x->1}}");
 		check("Solve(Xor(a, b, c, d) && (a || b) && ! (c || d), {a, b, c, d}, Booleans)", //
-				"{{a->False,b->True,c->False,d->False},{a->True,b->False,c->False,d->False}}");
+				"{{a->True,b->False,c->False,d->False},{a->False,b->True,c->False,d->False}}");
 		check("Solve({x^2-11==y, x+y==-9}, {x,y})", //
 				"{{x->-2,y->-7},{x->1,y->-10}}");
 
@@ -16551,7 +16556,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"True");
 		check("SubsetQ(f(b,a,b,c), f(a, b, d))", //
 				"False");
-		
+
 		// same as ContainsAll
 		check("SubsetQ({b,a,b,c}, {a, b})", //
 				"True");
@@ -16583,6 +16588,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("SubsetQ({1,2,3}, {1.0,2.0}, SameTest->Equal)", //
 				"True");
 	}
+
 	public void testSubsets() {
 		// https://oeis.org/A018900 - Sum of two distinct powers of 2
 		check("Union(Total/@Subsets(2^Range(0, 10), {2}))", //
@@ -17412,6 +17418,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTimes() {
+		check("False*Log(x+y)", //
+				"False*Log(x+y)");
 		check("Csch(x)^3 * Sinh(x)^(-2)", //
 				"Csch(x)^5");
 		check("Csch(x)^3 * Sinh(x)^7", //

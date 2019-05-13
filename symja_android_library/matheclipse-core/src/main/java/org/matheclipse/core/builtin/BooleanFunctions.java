@@ -11,6 +11,8 @@ import org.logicng.formulas.FormulaTransformation;
 import org.logicng.formulas.Variable;
 import org.logicng.solvers.MiniSat;
 import org.logicng.solvers.SATSolver;
+import org.logicng.solvers.sat.MiniSatConfig;
+import org.logicng.solvers.sat.MiniSatConfig.Builder;
 import org.logicng.transformations.cnf.CNFFactorization;
 import org.logicng.transformations.dnf.DNFFactorization;
 import org.logicng.transformations.qmc.QuineMcCluskeyAlgorithm;
@@ -29,6 +31,7 @@ import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.StringX;
+import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -3757,6 +3760,7 @@ public final class BooleanFunctions {
 					lf.literals2BooleanList(assignments.get(i).literals(), map) //
 			);
 		}
+		EvalAttributes.sort(list, Comparators.ExprReverseComparator.CONS);
 		return list;
 	}
 
@@ -3787,14 +3791,16 @@ public final class BooleanFunctions {
 					lf.literals2VariableList(assignments.get(i).literals(), map) //
 			);
 		}
+		EvalAttributes.sort(list, Comparators.ExprReverseComparator.CONS);
 		return list;
 	}
 
 	public static List<Assignment> logicNGSatisfiabilityInstances(IExpr booleanExpression, Variable[] vars,
-			LogicFormula lf, int maxChoices) {
+			LogicFormula lf, int maxChoices) { 
 
 		final Formula formula = lf.expr2BooleanFunction(booleanExpression);
-		final SATSolver miniSat = MiniSat.miniSat(lf.getFactory());
+		// MiniSatConfig config = new MiniSatConfig.Builder().initialPhase(true).build();
+		final SATSolver miniSat = MiniSat.miniSat(lf.getFactory()); // , config);
 		miniSat.add(formula);
 		return miniSat.enumerateAllModels(vars);
 	}
