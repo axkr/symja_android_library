@@ -10,12 +10,15 @@ import javax.annotation.Nonnull;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.Pattern;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.visit.VisitorReplaceAllWithPatternFlags;
 
 /**
  * Interface for mapping ISymbol objects to int values.
@@ -85,6 +88,10 @@ public interface IPatternMap extends Cloneable {
 			return true;
 		}
 
+		public boolean isValueAssigned() {
+			return false;
+		}
+
 		@Override
 		public boolean isFreeOfPatternSymbols(IExpr substitutedExpr) {
 			return true;
@@ -117,8 +124,12 @@ public interface IPatternMap extends Cloneable {
 			return SIZE;
 		}
 
+		public IExpr substitute(IExpr symbolOrPatternObject) {
+			return F.NIL;
+		}
+
 		@Override
-		public IExpr substitutePatternOrSymbols(IExpr lhsPatternExpr) {
+		public IExpr substitutePatternOrSymbols(IExpr lhsPatternExpr, boolean onlyNamedPatterns) {
 			return lhsPatternExpr;
 		}
 
@@ -223,6 +234,15 @@ public interface IPatternMap extends Cloneable {
 			return fValue1 != null;
 		}
 
+		public boolean isValueAssigned() {
+			if (fValue1 != null) {
+				if (fSymbol1 instanceof ISymbol) {
+					return true;
+				}
+			}
+			return false;
+		}
+
 		@Override
 		public boolean isFreeOfPatternSymbols(IExpr substitutedExpr) {
 			if (isAllPatternsAssigned()) {
@@ -282,38 +302,12 @@ public interface IPatternMap extends Cloneable {
 			return SIZE;
 		}
 
-		@Override
-		public IExpr substitutePatternOrSymbols(IExpr lhsPatternExpr) {
-			IExpr result = lhsPatternExpr.replaceAll(input -> {
-				if (input instanceof IPatternObject) {
-					IExpr symbolOrPatternObject = ((IPatternObject) input).getSymbol();
-					if (symbolOrPatternObject == null) {
-						symbolOrPatternObject = input;
-					}
-					// compare object references with operator '==' here !
-					if (symbolOrPatternObject == fSymbol1) {
-						return fValue1 != null ? fValue1 : F.NIL;
-					}
-				}
-				return F.NIL;
-			});
-
-			if (result.isPresent()) {
-				if (result.isAST()) {
-					if (result.isFlatAST()) {
-						IExpr temp = EvalAttributes.flatten((IAST) result);
-						if (temp.isPresent()) {
-							result = temp;
-						}
-					}
-					if (result.isOrderlessAST()) {
-						EvalAttributes.sort((IASTMutable) result);
-					}
-				}
-				return result;
+		public IExpr substitute(IExpr symbolOrPatternObject) {
+			// compare object references with operator '==' here !
+			if (symbolOrPatternObject == fSymbol1) {
+				return fValue1 != null ? fValue1 : F.NIL;
 			}
-
-			return lhsPatternExpr;
+			return F.NIL;
 		}
 
 		@Override
@@ -454,6 +448,21 @@ public interface IPatternMap extends Cloneable {
 		}
 
 		@Override
+		public boolean isValueAssigned() {
+			if (fValue1 != null) {
+				if (fSymbol1 instanceof ISymbol) {
+					return true;
+				}
+			}
+			if (fValue2 != null) {
+				if (fSymbol2 instanceof ISymbol) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		@Override
 		public boolean isFreeOfPatternSymbols(IExpr substitutedExpr) {
 			if (isAllPatternsAssigned()) {
 				return true;
@@ -521,41 +530,15 @@ public interface IPatternMap extends Cloneable {
 			return SIZE;
 		}
 
-		@Override
-		public IExpr substitutePatternOrSymbols(IExpr lhsPatternExpr) {
-			IExpr result = lhsPatternExpr.replaceAll(input -> {
-				if (input instanceof IPatternObject) {
-					IExpr symbolOrPatternObject = ((IPatternObject) input).getSymbol();
-					if (symbolOrPatternObject == null) {
-						symbolOrPatternObject = input;
-					}
-					// compare object references with operator '==' here !
-					if (symbolOrPatternObject == fSymbol1) {
-						return fValue1 != null ? fValue1 : F.NIL;
-					}
-					if (symbolOrPatternObject == fSymbol2) {
-						return fValue2 != null ? fValue2 : F.NIL;
-					}
-				}
-				return F.NIL;
-			});
-
-			if (result.isPresent()) {
-				if (result.isAST()) {
-					if (result.isFlatAST()) {
-						IExpr temp = EvalAttributes.flatten((IAST) result);
-						if (temp.isPresent()) {
-							result = temp;
-						}
-					}
-					if (result.isOrderlessAST()) {
-						EvalAttributes.sort((IASTMutable) result);
-					}
-				}
-				return result;
+		public IExpr substitute(IExpr symbolOrPatternObject) {
+			// compare object references with operator '==' here !
+			if (symbolOrPatternObject == fSymbol1) {
+				return fValue1 != null ? fValue1 : F.NIL;
 			}
-
-			return lhsPatternExpr;
+			if (symbolOrPatternObject == fSymbol2) {
+				return fValue2 != null ? fValue2 : F.NIL;
+			}
+			return F.NIL;
 		}
 
 		@Override
@@ -728,6 +711,26 @@ public interface IPatternMap extends Cloneable {
 		}
 
 		@Override
+		public boolean isValueAssigned() {
+			if (fValue1 != null) {
+				if (fSymbol1 instanceof ISymbol) {
+					return true;
+				}
+			}
+			if (fValue2 != null) {
+				if (fSymbol2 instanceof ISymbol) {
+					return true;
+				}
+			}
+			if (fValue3 != null) {
+				if (fSymbol3 instanceof ISymbol) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		@Override
 		public boolean isFreeOfPatternSymbols(IExpr substitutedExpr) {
 			if (isAllPatternsAssigned()) {
 				return true;
@@ -804,44 +807,18 @@ public interface IPatternMap extends Cloneable {
 			return SIZE;
 		}
 
-		@Override
-		public IExpr substitutePatternOrSymbols(IExpr lhsPatternExpr) {
-			IExpr result = lhsPatternExpr.replaceAll(input -> {
-				if (input instanceof IPatternObject) {
-					IExpr symbolOrPatternObject = ((IPatternObject) input).getSymbol();
-					if (symbolOrPatternObject == null) {
-						symbolOrPatternObject = input;
-					}
-					// compare object references with operator '==' here !
-					if (symbolOrPatternObject == fSymbol1) {
-						return fValue1 != null ? fValue1 : F.NIL;
-					}
-					if (symbolOrPatternObject == fSymbol2) {
-						return fValue2 != null ? fValue2 : F.NIL;
-					}
-					if (symbolOrPatternObject == fSymbol3) {
-						return fValue3 != null ? fValue3 : F.NIL;
-					}
-				}
-				return F.NIL;
-			});
-
-			if (result.isPresent()) {
-				if (result.isAST()) {
-					if (result.isFlatAST()) {
-						IExpr temp = EvalAttributes.flatten((IAST) result);
-						if (temp.isPresent()) {
-							result = temp;
-						}
-					}
-					if (result.isOrderlessAST()) {
-						EvalAttributes.sort((IASTMutable) result);
-					}
-				}
-				return result;
+		public IExpr substitute(IExpr symbolOrPatternObject) {
+			// compare object references with operator '==' here !
+			if (symbolOrPatternObject == fSymbol1) {
+				return fValue1 != null ? fValue1 : F.NIL;
 			}
-
-			return lhsPatternExpr;
+			if (symbolOrPatternObject == fSymbol2) {
+				return fValue2 != null ? fValue2 : F.NIL;
+			}
+			if (symbolOrPatternObject == fSymbol3) {
+				return fValue3 != null ? fValue3 : F.NIL;
+			}
+			return F.NIL;
 		}
 
 		@Override
@@ -1087,6 +1064,21 @@ public interface IPatternMap extends Cloneable {
 			return true;
 		}
 
+		public boolean isValueAssigned() {
+			if (fSymbolsOrPatternValues != null) {
+				// at least one pattern has a value assigned?
+				final int length = fSymbolsOrPatternValues.length;
+				for (int i = 0; i < length; i++) {
+					if (fSymbolsOrPatternValues[i] != null) {
+						if (fSymbolsOrPattern[i] instanceof ISymbol) {
+							return true;
+						}
+					}
+				}
+			}
+			return false;
+		}
+
 		/**
 		 * Returns true if the given expression contains no patterns
 		 * 
@@ -1190,50 +1182,15 @@ public interface IPatternMap extends Cloneable {
 			return 0;
 		}
 
-		/**
-		 * Substitute all patterns and symbols in the given expression with the current value of the corresponding
-		 * internal pattern values arrays
-		 * 
-		 * @param lhsPatternExpr
-		 *            left-hand-side expression which may contain pattern objects
-		 * 
-		 * @return <code>F.NIL</code> if substitutions isn't possible
-		 */
-		public IExpr substitutePatternOrSymbols(final IExpr lhsPatternExpr) {
-			if (fSymbolsOrPatternValues != null) {
-				IExpr result = lhsPatternExpr.replaceAll(input -> {
-					if (input instanceof IPatternObject) {
-						IExpr symbolOrPatternObject = ((IPatternObject) input).getSymbol();
-						if (symbolOrPatternObject == null) {
-							symbolOrPatternObject = input;
-						}
-						final int length = fSymbolsOrPattern.length;
-						for (int i = 0; i < length; i++) {
-							// compare object references with operator '==' here !
-							if (symbolOrPatternObject == fSymbolsOrPattern[i]) {
-								return fSymbolsOrPatternValues[i] != null ? fSymbolsOrPatternValues[i] : F.NIL;
-							}
-						}
-					}
-					return F.NIL;
-				});
-
-				if (result.isPresent()) {
-					if (result.isAST()) {
-						if (result.isFlatAST()) {
-							IExpr temp = EvalAttributes.flatten((IAST) result);
-							if (temp.isPresent()) {
-								result = temp;
-							}
-						}
-						if (result.isOrderlessAST()) {
-							EvalAttributes.sort((IASTMutable) result);
-						}
-					}
-					return result;
+		public IExpr substitute(IExpr symbolOrPatternObject) {
+			final int length = fSymbolsOrPattern.length;
+			for (int i = 0; i < length; i++) {
+				// compare object references with operator '==' here !
+				if (symbolOrPatternObject == fSymbolsOrPattern[i]) {
+					return fSymbolsOrPatternValues[i] != null ? fSymbolsOrPatternValues[i] : F.NIL;
 				}
 			}
-			return lhsPatternExpr;
+			return F.NIL;
 		}
 
 		/**
@@ -1482,7 +1439,7 @@ public interface IPatternMap extends Cloneable {
 	public boolean isFreeOfPatternSymbols(IExpr substitutedExpr);
 
 	default boolean isPatternTest(IExpr expr, IExpr patternTest, EvalEngine engine) {
-		final IExpr temp = substitutePatternOrSymbols(expr).orElse(expr);
+		final IExpr temp = substitutePatternOrSymbols(expr, false).orElse(expr);
 		final IASTMutable test = (IASTMutable) F.unaryAST1(patternTest, null);
 		if (temp.isSequence()) {
 			return ((IAST) temp).forAll((x, i) -> {
@@ -1498,11 +1455,18 @@ public interface IPatternMap extends Cloneable {
 	}
 
 	/**
-	 * Returns true if the given expression contains no patterns
+	 * Returns true if the pattern matcher contains no patterns
 	 * 
 	 * @return
 	 */
 	public boolean isRuleWithoutPatterns();
+
+	/**
+	 * Returns true if the pattern matcher contains at least one value assigned.
+	 * 
+	 * @return
+	 */
+	public boolean isValueAssigned();
 
 	/**
 	 * Reset the values to the values in the given array
@@ -1525,16 +1489,94 @@ public interface IPatternMap extends Cloneable {
 	 */
 	public int size();
 
+	public IExpr substitute(IExpr symbolOrPatternObject);
+
 	/**
 	 * Substitute all patterns and symbols in the given expression with the current value of the corresponding internal
 	 * pattern values arrays
 	 * 
 	 * @param lhsPatternExpr
 	 *            left-hand-side expression which may contain pattern objects
+	 * @param onlyNamedPatterns
+	 *            TODO
 	 * 
 	 * @return <code>F.NIL</code> if substitutions isn't possible
 	 */
-	public IExpr substitutePatternOrSymbols(final IExpr lhsPatternExpr);
+	default IExpr substitutePatternOrSymbols(final IExpr lhsPatternExpr, boolean onlyNamedPatterns) {
+		VisitorReplaceAllWithPatternFlags visitor = new VisitorReplaceAllWithPatternFlags(input -> {
+			if (input instanceof IPatternObject) {
+				if (onlyNamedPatterns && !(input instanceof Pattern)) {
+					return F.NIL;
+				}
+				IExpr symbolOrPatternObject = ((IPatternObject) input).getSymbol();
+				if (symbolOrPatternObject == null) {
+					if (onlyNamedPatterns) {
+						return F.NIL;
+					}
+					symbolOrPatternObject = input;
+				}
+				return substitute(symbolOrPatternObject);
+			}
+			return F.NIL;
+		}, onlyNamedPatterns);
+		IExpr result = lhsPatternExpr.accept(visitor);
+
+		if (result.isPresent()) {
+			// set the eval flags
+			result.isFreeOfPatterns();
+			return result;
+		}
+		return lhsPatternExpr;
+	}
+
+	default IAST substituteASTPatternOrSymbols(final IAST lhsPatternExpr, boolean onlyNamedPatterns) {
+		VisitorReplaceAllWithPatternFlags visitor = new VisitorReplaceAllWithPatternFlags(input -> {
+			if (input instanceof IPatternObject) {
+				if (onlyNamedPatterns && !(input instanceof Pattern)) {
+					return F.NIL;
+				}
+				IExpr symbolOrPatternObject = ((IPatternObject) input).getSymbol();
+				if (symbolOrPatternObject == null) {
+					if (onlyNamedPatterns) {
+						return F.NIL;
+					}
+					symbolOrPatternObject = input;
+				}
+				return substitute(symbolOrPatternObject);
+			}
+			return F.NIL;
+		}, onlyNamedPatterns);
+
+		IASTMutable result = F.NIL;
+		for (int i = 1; i < lhsPatternExpr.size(); i++) {
+			IExpr temp = lhsPatternExpr.get(i).accept(visitor);
+			if (temp.isPresent()) {
+				if (!result.isPresent()) {
+					result = lhsPatternExpr.setAtCopy(i, temp);
+				} else {
+					result.set(i, temp);
+				}
+			}
+		}
+
+		if (result.isPresent()) {
+			if (result.isFlatAST()) {
+				IASTMutable temp = EvalAttributes.flatten((IAST) result);
+				if (temp.isPresent()) {
+					result = temp;
+				}
+			}
+			// don't test for OneIdentity attribute here !
+			if (result.isOrderlessAST()) {
+				EvalAttributes.sort(result);
+			}
+			// set the eval flags
+			result.isFreeOfPatterns();
+//			System.out.println("  " + lhsPatternExpr.toString() + " -> " + result.toString());
+			return result;
+		}
+		return lhsPatternExpr;
+	}
 
 	/**
 	 * Substitute all symbols in the given expression with the current value of the corresponding internal pattern

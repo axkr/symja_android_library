@@ -7,6 +7,7 @@ import org.matheclipse.combinatoric.MultisetPartitionsIterator;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher.StackMatcher;
 
@@ -32,10 +33,8 @@ public class OrderlessStepVisitor extends FlatOrderlessStepVisitor implements IS
 
 	@Override
 	protected boolean matchSinglePartition(int[][] result, @Nonnull StackMatcher stackMatcher) {
-		// IAST partitionElement;
-		// if (Config.SHOW_STACKTRACE == true) {
-		// }
 		int lastStackSize = stackMatcher.size();
+		IExpr[] patternValues = fPatternMap.copyPattern();
 		boolean matched = true;
 		try {
 
@@ -56,27 +55,15 @@ public class OrderlessStepVisitor extends FlatOrderlessStepVisitor implements IS
 					}
 				} else {
 					throw new WrongNumberOfArguments(list, 1, n);
-					// } else {
-					// partitionElement = F.ast(fSymbol, n, false);
-					// for (int i = 0; i < n; i++) {
-					// partitionElement.add((IExpr) array[result[j][i]]);
-					// }
-					// if (!stackMatcher.push(fLhsPatternAST.get(j + 1),
-					// partitionElement)) {
-					// matched = false;
-					// return false;
-					// }
 				}
 			}
 
-			if (!stackMatcher.matchRest()) {
-				matched = false;
-				return false;
-			}
-			return true;
+			matched = stackMatcher.matchRest();
+			return matched;
 		} finally {
 			if (!matched) {
 				stackMatcher.removeFrom(lastStackSize);
+				fPatternMap.resetPattern(patternValues);
 			}
 		}
 	}

@@ -3142,6 +3142,9 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem421() {
+		check("MatchQ(powered(h,h), powered(x_ ^ (a_.), x_))", //
+				"True");
+		
 		check("MatchQ(I, Complex(0,x_))", "True");
 
 		check("MatchQ(linear(a+42+60*c,h), linear(a_. + b_. * x_, x_))", "False");
@@ -3152,7 +3155,8 @@ public class MainTestCase extends AbstractTestCase {
 
 		check("MatchQ(I, Complex(0,x_))", "True");
 		check("MatchQ(Sin(x)^3, Sin(a_.*x_)^n_?IntegerQ)", "True");
-		check("MatchQ(powered(h,h), powered(x_ ^ a_., x_))", "True");
+		check("MatchQ(powered(h,h), powered(x_ ^ a_., x_))", //
+				"True");
 		check("MatchQ(powered(h^3,h), powered(x_ ^ a_., x_))", "True");
 		check("MatchQ(42, _?IntegerQ)", "True");
 		check("MatchQ(a+b+c+d, HoldPattern(Times(_,_)))", "False");

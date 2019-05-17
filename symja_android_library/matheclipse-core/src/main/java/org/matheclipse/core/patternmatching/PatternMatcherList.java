@@ -53,7 +53,7 @@ public class PatternMatcherList extends PatternMatcherAndEvaluator {
 		} else {
 			patternMap = getPatternMap();
 			patternMap.initPattern();
-			if (matchExpr(fLhsPatternExpr, leftHandSide, engine, new StackMatcher(engine), true)) {
+			if (matchExpr(fLhsPatternExpr, leftHandSide, engine, new StackMatcher(engine))) {
 
 				if (RulesData.showSteps) {
 					if (fLhsPatternExpr.head().equals(F.Integrate)) {

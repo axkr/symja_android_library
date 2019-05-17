@@ -22,7 +22,6 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
 	protected ISymbol fSymbol;
 	protected StackMatcher stackMatcher;
 	protected IPatternMap fPatternMap;
-	protected IExpr[] patternValues;
 	protected IAST fLhsPatternAST;
 	protected final boolean fOneIdentity;
 
@@ -37,20 +36,13 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
 		this.fSymbol = sym;
 		this.stackMatcher = stackMatcher;
 		this.fPatternMap = patternMap;
-		// copy pattern values to local variable
-		this.patternValues = patternMap.copyPattern();
 		this.fLhsPatternAST = lhsPatternAST;
 		this.fOneIdentity = oneIdentity;
 	}
 
 	@Override
 	public boolean visit(int[][] result) {
-		if (matchSinglePartition(result, stackMatcher)) {
-			return false; // stop iterating and calling this visitor
-		}
-		// reset pattern values:
-		fPatternMap.resetPattern(patternValues);
-		return true;
+		return !matchSinglePartition(result, stackMatcher); 
 	}
 
 	/**
@@ -62,10 +54,9 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
 	 */
 	protected boolean matchSinglePartition(int[][] result, @Nonnull StackMatcher stackMatcher) {
 		IASTAppendable partitionElement;
-		// if (Config.SHOW_STACKTRACE == true) {
-		// }
 		int lastStackSize = stackMatcher.size();
 		boolean matched = true;
+		IExpr[] patternValues = fPatternMap.copyPattern();
 		try {
 
 			for (int j = 0; j < result.length; j++) {
@@ -101,6 +92,7 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
 		} finally {
 			if (!matched) {
 				stackMatcher.removeFrom(lastStackSize);
+				fPatternMap.resetPattern(patternValues);
 			}
 		}
 	}

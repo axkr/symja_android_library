@@ -7738,7 +7738,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("Limit(1/9*x*(9-x^2)^(3/2)*Hypergeometric2F1(1,2,3/2,x^2/9),x->3)", //
 		// "");
 
-		// see github #1206
+		// see github #128 - expensive JUnit test
+		// check("Integrate(((a+b)/(a^(1/3)+b^(1/3))-(a*b)^(1/3))/(a^(1/3)-b^(1/3))^2,a)", //
+		// "a+3/2*a^(2/3)*b^(1/3)+6*a^(1/3)*b^(2/3)-3/2*a^(1/3)*(a*b)^(1/3)-6*b^(1/3)*(a*b)^(\n"
+		// + "1/3)+(3*b*(a*b)^(1/3))/(a^(1/3)*(a^(1/3)-b^(1/3)))+(-9*b^(2/3)*(a*b)^(1/3)*Log(a^(\n"
+		// +
+		// "1/3)-b^(1/3)))/a^(1/3)+3*b*Log(a-a^(2/3)*b^(1/3)-a^(1/3)*b^(2/3)+b)+9*b^(4/3)*Rubi`subst[Integrate(a/(a^\n"
+		// + "3-4/3*a*b^(2/3)+16/27*b),a),a,a^(1/3)-b^(1/3)/3]");
+
+		// see github #120
 		check("Integrate(Ln(x)^2, {x,0,2})", //
 				"4-4*Log(2)+2*Log(2)^2");
 		check("Integrate(Ln(x)^2, {x,0,2}) // N", //
@@ -11167,6 +11175,39 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testOrderless() {
+		check("SetAttributes(to, Orderless)", //
+				"");
+		check("to(b_.*x_^3, x_) := {b,x}", //
+				"");
+
+		check("to(x, x)", //
+				"to(x,x)");
+		check("to(a*x, x)", //
+				"to(x,a*x)");
+		check("to(x^3, x)", //
+				"{1,x}");
+		check("to(a*x^3, x)", //
+				"{a,x}");
+		check("to(a*x*z, x)", //
+				"to(x,a*x*z)");
+		check("to(a*x^3*z, x)", //
+				"{a*z,x}");
+
+		check("to(b_.*x_^n_., x_) := {b,n,x}", //
+				"");
+
+		check("to(x, x)", //
+				"{1,1,x}");
+		check("to(a*x, x)", //
+				"{a,1,x}");
+		check("to(x^2, x)", //
+				"{1,2,x}");
+		check("to(a*x^2, x)", //
+				"{a,2,x}");
+		check("to(a*x*z, x)", //
+				"{a*z,1,x}");
+		check("to(a*x^2*z, x)", //
+				"{a*z,2,x}");
 		// see https://github.com/mathics/Mathics/issues/747
 		check("SetAttributes(ordl,{OneIdentity,Orderless});ordl(p,p,p)/.ordl(p_.,p_.):>p", //
 				"ordl(p,p,p)");
@@ -11183,6 +11224,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{Flat,Orderless}");
 		check("f(a, b, c) /. f(a, c) -> d", //
 				"f(b,d)");
+
 	}
 
 	public void testOrthogonalize() {
@@ -13862,6 +13904,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testReplaceAll() {
+		check("g(a + b + c + d, b + d) /. g(x_ + y_, x_) -> p(x, y)", //
+				"p(b+d,a+c)");
+
 		check("2*x*y /. {x -> a, y -> b}", //
 				"2*a*b");
 		check("2*x*y /. {2*x -> a, 2*x*y -> b}", //
@@ -14642,16 +14687,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testSatisfiableQ() {
 		check("SatisfiableQ(a&&!(b||!c) )", //
 				"True");
-		check("SatisfiableQ((a || b) && (! a || ! b) )",//
+		check("SatisfiableQ((a || b) && (! a || ! b) )", //
 				"True");
-		check("SatisfiableQ((a || b) && (! a || ! b), {a, b})",//
+		check("SatisfiableQ((a || b) && (! a || ! b), {a, b})", //
 				"True");
 
 		check("SatisfiableQ(!Implies(Implies(a, b) && ! b, ! a))", //
 				"False");
-		check("SatisfiableQ((a && b) && (! a || ! b) )",//
+		check("SatisfiableQ((a && b) && (! a || ! b) )", //
 				"False");
-		check("SatisfiableQ((a && b) && (! a || ! b), {a, b})",//
+		check("SatisfiableQ((a && b) && (! a || ! b), {a, b})", //
 				"False");
 		check("SatisfiableQ((Equivalent(b11D, b21U)) && (Equivalent(b12D, b22U)) && \n"
 				+ " (Equivalent(b13D, b23U)) && (Equivalent(b14D, b24U)) && \n"
@@ -14890,7 +14935,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				+ " Implies(b44R,  !c45a &&  !c45b &&  !c45c && c45d &&  !c45e) && \n"
 				+ " Implies(b51R, c51a &&  !c51b &&  !c51c &&  !c51d &&  !c51e) &&  !b52R && \n"
 				+ " Implies(b53R,  !c54a &&  !c54b && c54c &&  !c54d &&  !c54e) && \n"
-				+ " Implies(b54R,  !c54a &&  !c54b &&  !c54c &&  !c54d && c54e))",//
+				+ " Implies(b54R,  !c54a &&  !c54b &&  !c54c &&  !c54d && c54e))", //
 				"False");
 
 	}

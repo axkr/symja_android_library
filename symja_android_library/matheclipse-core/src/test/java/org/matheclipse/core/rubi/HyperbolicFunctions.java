@@ -158,6 +158,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
 
 	// {2671}
 	public void test0026() {
+		fSeconds =20;
 		check(//
 				"Integrate[Cosh[x]^2/(1 + I*Sinh[x])^3, x]", //
 				"((I/3)*Cosh[x]^3)/(1 + I*Sinh[x])^3", //
@@ -839,6 +840,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
 
 	// {3131}
 	public void test0134() {
+		fSeconds=2000;
 		check(//
 				"Integrate[(A + C*Sinh[x])/(a + b*Cosh[x] - b*Sinh[x]), x]", //
 				"((2*a*A - b*C)*x)/(2*a^2) + (C*Cosh[x])/(2*a) + ((2*a*A*b + a^2*C - b^2*C)*Log[a + b*Cosh[x] - b*Sinh[x]])/(2*a^2*b) + (C*Sinh[x])/(2*a)", //
