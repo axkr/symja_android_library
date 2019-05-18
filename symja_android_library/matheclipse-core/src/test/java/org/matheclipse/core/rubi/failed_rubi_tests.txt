@@ -16,12 +16,6 @@ test0132 - Integrate[Log[(2*x*(Sqrt[d]*Sqrt[-e] + e*x))/(d + e*x^2)]/(d + e*x^2)
 test0133 - Integrate[Log[(-2*x*(Sqrt[d]*Sqrt[-e] - e*x))/(d + e*x^2)]/(d + e*x^2), x]
 SpecialFunctions
 TrigFunctions
-test0143 - Integrate[Sqrt[a + b*Sin[e + f*x]]/(Sqrt[g*Sin[e + f*x]]*(c + c*Sin[e + f*x])), x]
-test0144 - Integrate[Sqrt[g*Sin[e + f*x]]/(Sqrt[a + b*Sin[e + f*x]]*(c + d*Sin[e + f*x])), x]
-test0145 - Integrate[Sqrt[g*Sin[e + f*x]]/((a + b*Sin[e + f*x])*Sqrt[c + d*Sin[e + f*x]]), x]
-test0146 - Integrate[(Csc[e + f*x]*Sqrt[a + b*Sin[e + f*x]])/Sqrt[c + d*Sin[e + f*x]], x]
-test0149 - Integrate[(a + a*Sin[e + f*x])^m*(c - c*Sin[e + f*x])^n*(B*(m - n) - B*(1 + m + n)*Sin[e + f*x]), x]
-test0150 - Integrate[(a - a*Sin[e + f*x])^m*(c + c*Sin[e + f*x])^n*(B*(m - n) + B*(1 + m + n)*Sin[e + f*x]), x]
 test0255 - Integrate[(1 + Cos[c + d*x])/(Cos[c + d*x]^(3/2)*Sqrt[2 + 3*Cos[c + d*x]]), x]
 test0256 - Integrate[(1 + Cos[c + d*x])/(Cos[c + d*x]^(3/2)*Sqrt[-2 + 3*Cos[c + d*x]]), x]
 test0257 - Integrate[(1 + Cos[c + d*x])/(Cos[c + d*x]^(3/2)*Sqrt[3 + 2*Cos[c + d*x]]), x]
@@ -32,7 +26,6 @@ test0275 - Integrate[((1 - x)^(-1/2 + p)*(1 + x)^(1/2 + p))/(c*x)^(2*(1 + p)), x
 test0276 - Integrate[(1 + x/a)^(n/2)/(x^2*(1 - x/a)^(n/2)), x]
 test0486 - Integrate[1/(Sqrt[3 - 3*Sqrt[3] + 2*Sqrt[3]*x^2]*Sqrt[3 + (-3 + Sqrt[3])*x^2]), x]
 test1047 - Integrate[(a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2)^p, x]
-test1171 - Integrate[1/Sqrt[3 + 9*x^2 + 2*x^4], x]
-test1172 - Integrate[1/Sqrt[3 + 8*x^2 + 2*x^4], x]
-test1174 - Integrate[1/Sqrt[3 + 6*x^2 + 2*x^4], x]
 test1242 - Integrate[(1 + Sqrt[c/a]*x^2)/((d + e*x^2)*Sqrt[a + b*x^2 + c*x^4]), x]
+test1327 - Integrate[x^7*(b + c*x + d*x^2)^7*(b + 2*c*x + 3*d*x^2), x]
+test1335 - Integrate[x*(2*c + 3*d*x)*(a + c*x^2 + d*x^3)^7, x]

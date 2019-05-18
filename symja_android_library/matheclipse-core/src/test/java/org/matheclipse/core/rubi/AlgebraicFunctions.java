@@ -9714,7 +9714,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {1468, 629}
 	public void test1252() {
-		fSeconds = 30;
+		fSeconds = 40;
 		check(//
 				"Integrate[x^2*(b + 2*c*x^3)*(-a + b*x^3 + c*x^6)^13, x]", //
 				"(a - b*x^3 - c*x^6)^14/42", //
@@ -10221,6 +10221,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {1588}
 	public void test1327() {
+		fSeconds=20;
 		check(//
 				"Integrate[x^7*(b + c*x + d*x^2)^7*(b + 2*c*x + 3*d*x^2), x]", //
 				"(x^8*(b + c*x + d*x^2)^8)/8", //
@@ -10285,6 +10286,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {1588}
 	public void test1335() {
+		fSeconds=20;
 		check(//
 				"Integrate[x*(2*c + 3*d*x)*(a + c*x^2 + d*x^3)^7, x]", //
 				"(a + c*x^2 + d*x^3)^8/8", //

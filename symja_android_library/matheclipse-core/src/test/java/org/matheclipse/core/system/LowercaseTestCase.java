@@ -6121,11 +6121,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("SetAttributes(f, Flat)", //
 				"");
-		check("f(a, f(b, c))", //
-				"f(a,b,c)");
 
 		check("f(a, b, c) /. f(a, b) -> d", //
 				"f(d,c)");
+		check("f(a, f(b, c))", //
+				"f(a,b,c)");
 		check("SetAttributes({u, v}, Flat)", //
 				"");
 		check("u(x_) := {x}", //
@@ -7344,13 +7344,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHypergeometric2F1() {
+		// Hypergeometric2F1(1 - n, -n, 2, 1) == CatalanNumber(n)
+		check("Hypergeometric2F1(-3, -4, 2, 1)==CatalanNumber(4)", //
+				"True");
 
 		check("Hypergeometric2F1(1,2,3/2,x^2/9)", //
 				"3/2*(1/3*Sqrt(1-x^2/9)*Sqrt(x^2)+ArcSin(Sqrt(x^2)/3))/((1-x^2/9)^(3/2)*Sqrt(x^2))");
 
-		// Hypergeometric2F1(1 - n, -n, 2, 1) == CatalanNumber(n)
-		check("Hypergeometric2F1(-3, -4, 2, 1)==CatalanNumber(4)", //
-				"True");
 		check("Hypergeometric2F1(-2,b,c,1)", //
 				"(-b+b^2+c-2*b*c+c^2)/(c*(1+c))");
 
@@ -7738,13 +7738,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("Limit(1/9*x*(9-x^2)^(3/2)*Hypergeometric2F1(1,2,3/2,x^2/9),x->3)", //
 		// "");
 
-		// see github #128 - expensive JUnit test
+		// see github #128
+		check("Integrate(a/(a^3-4/3*a*b^(2/3)+16/27*b),a)", //
+				"-1/(3*a-2*b^(1/3))+Log(3*a-2*b^(1/3))/(3*b^(1/3))-Log(3*a+4*b^(1/3))/(3*b^(1/3))");
+		check("Simplify(D(-1/(3*a-2*b^(1/3))+Log(3*a-2*b^(1/3))/(3*b^(1/3))-Log(3*a+4*b^(1/3))/(3*b^(1/3)),a))", //
+				"3/(3*a-2*b^(1/3))^2+1/(3*a*b^(1/3)-2*b^(2/3))-1/(3*a*b^(1/3)+4*b^(2/3))");
+		// expensive JUnit test
 		// check("Integrate(((a+b)/(a^(1/3)+b^(1/3))-(a*b)^(1/3))/(a^(1/3)-b^(1/3))^2,a)", //
-		// "a+3/2*a^(2/3)*b^(1/3)+6*a^(1/3)*b^(2/3)-3/2*a^(1/3)*(a*b)^(1/3)-6*b^(1/3)*(a*b)^(\n"
-		// + "1/3)+(3*b*(a*b)^(1/3))/(a^(1/3)*(a^(1/3)-b^(1/3)))+(-9*b^(2/3)*(a*b)^(1/3)*Log(a^(\n"
-		// +
-		// "1/3)-b^(1/3)))/a^(1/3)+3*b*Log(a-a^(2/3)*b^(1/3)-a^(1/3)*b^(2/3)+b)+9*b^(4/3)*Rubi`subst[Integrate(a/(a^\n"
-		// + "3-4/3*a*b^(2/3)+16/27*b),a),a,a^(1/3)-b^(1/3)/3]");
+		// "a+3/2*a^(2/3)*b^(1/3)+6*a^(1/3)*b^(2/3)+(-3*b^(4/3))/(a^(1/3)-b^(1/3))-3/2*a^(1/\n" +
+		// "3)*(a*b)^(1/3)-6*b^(1/3)*(a*b)^(1/3)+(3*b*(a*b)^(1/3))/(a^(1/3)*(a^(1/3)-b^(1/3)))+\n" +
+		// "3*b*Log(a^(1/3)-b^(1/3))+(-9*b^(2/3)*(a*b)^(1/3)*Log(a^(1/3)-b^(1/3)))/a^(1/3)-3*b*Log(a^(\n" +
+		// "1/3)+b^(1/3))+3*b*Log(a-a^(2/3)*b^(1/3)-a^(1/3)*b^(2/3)+b)");
 
 		// see github #120
 		check("Integrate(Ln(x)^2, {x,0,2})", //

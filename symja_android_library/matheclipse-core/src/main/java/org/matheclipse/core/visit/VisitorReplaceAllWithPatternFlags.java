@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -31,37 +32,45 @@ public class VisitorReplaceAllWithPatternFlags extends VisitorReplaceAll {
 		if (temp.isPresent()) {
 			return temp;
 		}
-//		ISymbol symbol = element.getSymbol();
-//		if (symbol != null) {
-//			IExpr expr = fFunction.apply(symbol);
-//			if (expr.isPresent() && expr.isSymbol()) {
-//				if (element.isPatternDefault()) {
-//					return F.$p((ISymbol) expr, element.getHeadTest(), true);
-//				}
-//				return F.$p((ISymbol) expr, element.getHeadTest());
-//			}
-//		}
+		// ISymbol symbol = element.getSymbol();
+		// if (symbol != null) {
+		// IExpr expr = fFunction.apply(symbol);
+		// if (expr.isPresent() && expr.isSymbol()) {
+		// if (element.isPatternDefault()) {
+		// return F.$p((ISymbol) expr, element.getHeadTest(), true);
+		// }
+		// return F.$p((ISymbol) expr, element.getHeadTest());
+		// }
+		// }
 		return F.NIL;
 	}
-	
+
 	@Override
 	public IExpr visit(IPatternSequence element) {
 		IExpr temp = fFunction.apply(element);
 		if (temp.isPresent()) {
 			return temp;
 		}
-//		ISymbol symbol = element.getSymbol();
-//		if (symbol != null) {
-//			IExpr expr = fFunction.apply(symbol);
-//			if (expr.isPresent() && expr.isSymbol()) {
-//				return F.$ps((ISymbol) expr, element.getHeadTest(), element.isDefault(), element.isNullSequence());
-//			}
-//		}
+		// ISymbol symbol = element.getSymbol();
+		// if (symbol != null) {
+		// IExpr expr = fFunction.apply(symbol);
+		// if (expr.isPresent() && expr.isSymbol()) {
+		// return F.$ps((ISymbol) expr, element.getHeadTest(), element.isDefault(), element.isNullSequence());
+		// }
+		// }
 		return F.NIL;
 	}
-	
+
 	@Override
 	public IExpr visit(IASTMutable ast) {
+		// int functionID = ast.headID();
+		// if (functionID > ID.UNKNOWN) {
+		// if (functionID == ID.HoldPattern || functionID == ID.Literal || functionID == ID.Condition
+		// || functionID == ID.Alternatives || functionID == ID.Except || functionID == ID.Complex
+		// || functionID == ID.Rational || functionID == ID.Optional || functionID == ID.PatternTest) {
+		// return F.NIL;
+		// }
+		// }
 		IExpr result = (IASTMutable) super.visit(ast);
 		if (result.isPresent()) {
 			if (result.isAST()) {
