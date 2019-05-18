@@ -318,8 +318,12 @@ public class ComplexNum implements IComplexNum {
 		return fComplex.divide(that);
 	}
 
-	public ComplexNum divide(final ComplexNum that) throws ArithmeticException {
-		return newInstance(fComplex.divide(that.fComplex));
+	public IComplexNum divide(final IComplexNum that) {
+		if (that instanceof ApcomplexNum) {
+			return ApcomplexNum.valueOf(fComplex.getReal(), fComplex.getImaginary(), ((ApcomplexNum) that).precision())
+					.divide((ApcomplexNum) that);
+		}
+		return newInstance(fComplex.divide(((ComplexNum) that).fComplex));
 	}
 
 	@Override
@@ -651,8 +655,13 @@ public class ComplexNum implements IComplexNum {
 	 * @throws NullArgumentException
 	 *             if {@code subtrahend} is {@code null}.
 	 */
-	public ComplexNum subtract(final ComplexNum subtrahend) {
-		return newInstance(fComplex.subtract(subtrahend.fComplex));
+	public IComplexNum subtract(final IComplexNum subtrahend) {
+		if (subtrahend instanceof ApcomplexNum) {
+			return ApcomplexNum
+					.valueOf(fComplex.getReal(), fComplex.getImaginary(), ((ApcomplexNum) subtrahend).precision())
+					.subtract(subtrahend);
+		}
+		return newInstance(fComplex.subtract(((ComplexNum) subtrahend).fComplex));
 	}
 
 	/**

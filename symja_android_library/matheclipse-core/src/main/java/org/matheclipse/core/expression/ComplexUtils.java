@@ -18,6 +18,7 @@
 
 package org.matheclipse.core.expression;
 
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.parser.client.math.MathUtils;
 
 /**
@@ -115,9 +116,10 @@ public class ComplexUtils {
             return ComplexNum.NaN;
         }
 
-        return ComplexNum.I.multiply(
-            log(ComplexNum.I.add(z).divide(ComplexNum.I.subtract(z))))
-            .divide(ComplexNum.valueOf(2.0, 0.0));
+        IComplexNum temp = ComplexNum.I.add(z).divide(ComplexNum.I.subtract(z));
+		return ComplexNum.I.multiply(
+            log(temp.complexNumValue()))
+            .divide(ComplexNum.valueOf(2.0, 0.0)).complexNumValue();
     }
 
     /**
@@ -478,7 +480,7 @@ public class ComplexUtils {
      * @throws NullPointerException if <code>z</code> is null
      */
     public static ComplexNum sqrt1z(final ComplexNum z) {
-        return sqrt(ComplexNum.ONE.subtract(z.multiply(z)));
+        return sqrt(ComplexNum.ONE.subtract(z.multiply(z)).complexNumValue());
     }
 
     /**

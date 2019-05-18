@@ -446,9 +446,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Evaluate the expression to a <code>INumber</code> value.
+	 * Evaluate the expression to a <code>Complex</code> value.
 	 * 
-	 * @return <code>null</code> if the conversion is not possible.
+	 * @return  
 	 */
 	default Complex evalComplex() {
 		if (isNumber()) {

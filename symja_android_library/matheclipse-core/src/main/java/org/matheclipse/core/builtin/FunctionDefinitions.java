@@ -1,7 +1,5 @@
 package org.matheclipse.core.builtin;
 
-import static org.matheclipse.core.expression.F.AbsArg;
-import static org.matheclipse.core.expression.F.BesselJ;
 import static org.matheclipse.core.expression.F.ComplexExpand;
 import static org.matheclipse.core.expression.F.CreateDirectory;
 import static org.matheclipse.core.expression.F.D;
@@ -16,7 +14,6 @@ import static org.matheclipse.core.expression.F.Export;
 import static org.matheclipse.core.expression.F.FindInstance;
 import static org.matheclipse.core.expression.F.FindRoot;
 import static org.matheclipse.core.expression.F.FrobeniusSolve;
-import static org.matheclipse.core.expression.F.FromPolarCoordinates;
 import static org.matheclipse.core.expression.F.FunctionExpand;
 import static org.matheclipse.core.expression.F.GroebnerBasis;
 import static org.matheclipse.core.expression.F.HeavisideTheta;
@@ -39,7 +36,6 @@ import static org.matheclipse.core.expression.F.NIntegrate;
 import static org.matheclipse.core.expression.F.NMaximize;
 import static org.matheclipse.core.expression.F.NMinimize;
 import static org.matheclipse.core.expression.F.NSolve;
-import static org.matheclipse.core.expression.F.Names;
 import static org.matheclipse.core.expression.F.NonCommutativeMultiply;
 import static org.matheclipse.core.expression.F.OptimizeExpression;
 import static org.matheclipse.core.expression.F.Out;
@@ -47,17 +43,15 @@ import static org.matheclipse.core.expression.F.Outer;
 import static org.matheclipse.core.expression.F.Plot;
 import static org.matheclipse.core.expression.F.Plot3D;
 import static org.matheclipse.core.expression.F.Product;
-import static org.matheclipse.core.expression.F.Rationalize;
 import static org.matheclipse.core.expression.F.Share;
-import static org.matheclipse.core.expression.F.Sign;
-import static org.matheclipse.core.expression.F.SignCmp;
 import static org.matheclipse.core.expression.F.Solve;
 import static org.matheclipse.core.expression.F.Sum;
 import static org.matheclipse.core.expression.F.Taylor;
-import static org.matheclipse.core.expression.F.ToPolarCoordinates;
 import static org.matheclipse.core.expression.F.TrigExpand;
 import static org.matheclipse.core.expression.F.TrigReduce;
 import static org.matheclipse.core.expression.F.TrigToExp;
+
+import org.matheclipse.core.expression.F;
 
 public final class FunctionDefinitions {
 	/**
@@ -81,6 +75,7 @@ public final class FunctionDefinitions {
 			ExpToTrig.setEvaluator(new org.matheclipse.core.reflection.system.ExpToTrig());
 			FindInstance.setEvaluator(new org.matheclipse.core.reflection.system.FindInstance());
 			FindRoot.setEvaluator(new org.matheclipse.core.reflection.system.FindRoot());
+			F.Fourier.setEvaluator(new org.matheclipse.core.reflection.system.Fourier());
 			FrobeniusSolve.setEvaluator(new org.matheclipse.core.reflection.system.FrobeniusSolve());
 			FunctionExpand.setEvaluator(new org.matheclipse.core.reflection.system.FunctionExpand());
 			GroebnerBasis.setEvaluator(new org.matheclipse.core.reflection.system.GroebnerBasis());
@@ -91,6 +86,7 @@ public final class FunctionDefinitions {
 			InterpolatingPolynomial.setEvaluator(new org.matheclipse.core.reflection.system.InterpolatingPolynomial());
 			Interpolation.setEvaluator(new org.matheclipse.core.reflection.system.Interpolation());
 			Interval.setEvaluator(new org.matheclipse.core.reflection.system.Interval());
+			F.InverseFourier.setEvaluator(new org.matheclipse.core.reflection.system.InverseFourier());
 			InverseFunction.setEvaluator(new org.matheclipse.core.reflection.system.InverseFunction());
 			InverseLaplaceTransform.setEvaluator(new org.matheclipse.core.reflection.system.InverseLaplaceTransform());
 			LaplaceTransform.setEvaluator(new org.matheclipse.core.reflection.system.LaplaceTransform());

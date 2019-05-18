@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.complex.Complex;
 import org.hipparchus.linear.Array2DRowFieldMatrix;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayFieldVector;
@@ -12,6 +13,7 @@ import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
@@ -23,6 +25,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -215,10 +218,8 @@ public class Convert {
 	 * @param listVector
 	 * @return <code>null</code> if the conversion isn't possible.
 	 * @throws ClassCastException
-	 * @throws IndexOutOfBoundsException
 	 */
-	public static FieldVector<IExpr> list2Vector(final IAST listVector)
-			throws ClassCastException, IndexOutOfBoundsException {
+	public static FieldVector<IExpr> list2Vector(final IAST listVector) throws ClassCastException {
 		if (listVector == null) {
 			return null;
 		}
@@ -234,6 +235,39 @@ public class Convert {
 			elements[i] = listVector.get(i + 1);
 		}
 		return new ArrayFieldVector<IExpr>(elements, false);
+	}
+
+	public static Complex[] list2Complex(final IAST vector) throws ClassCastException {
+		if (vector == null) {
+			return null;
+		}
+		final Object header = vector.head();
+		if (header != F.List) {
+			return null;
+		}
+
+		final int size = vector.argSize();
+
+		final Complex[] elements = new Complex[size];
+		EvalEngine engine = EvalEngine.get();
+		for (int i = 0; i < size; i++) {
+			IExpr element = vector.get(i + 1); 
+			elements[i] = engine.evalComplex(element);
+		}
+		return elements;
+	}
+
+	public static IAST toVector(Complex[] vector) throws ClassCastException {
+		if (vector == null) {
+			return null;
+		}
+		IASTAppendable result = F.ListAlloc(vector.length);
+
+		EvalEngine engine = EvalEngine.get();
+		for (int i = 0; i < vector.length; i++) {
+			result.append(F.complexNum(vector[i]));
+		}
+		return result;
 	}
 
 	/**

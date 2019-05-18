@@ -6365,6 +6365,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"f(b)>c");
 	}
 
+	public void testFourier() {
+		check("Fourier({1 + 2*I, 3 + 11*I})", //
+				"{2.82843+I*9.19239,-1.41421+I*(-6.36396)}");
+		check("Fourier({1,2,0,0})", //
+				"{1.5,0.5+I*1.0,-0.5,0.5+I*(-1.0)}");
+
+		// Fourier: Argument {1,2,0,0,7} is restricted to vectors with a length of power of 2.
+		check("Fourier({1,2,0,0,7})", //
+				"Fourier({1,2,0,0,7})");
+	}
+
 	public void testFourierMatrix() {
 		check("FourierMatrix(4)", //
 				"{{1/2,1/2,1/2,1/2},\n" + " {1/2,I*1/2,-1/2,-I*1/2},\n" + " {1/2,-1/2,1/2,-1/2},\n"
@@ -7739,6 +7750,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "");
 
 		// see github #128
+		// check("Apart(a/((8/3*a*b^(2/3)-16/9*b)^2*(4/3*a*b^(2/3)+16/9*b)))", //
+		// "a/(a^3-4/3*a*b^(2/3)+16/27*b)");
 		check("Integrate(a/(a^3-4/3*a*b^(2/3)+16/27*b),a)", //
 				"-1/(3*a-2*b^(1/3))+Log(3*a-2*b^(1/3))/(3*b^(1/3))-Log(3*a+4*b^(1/3))/(3*b^(1/3))");
 		check("Simplify(D(-1/(3*a-2*b^(1/3))+Log(3*a-2*b^(1/3))/(3*b^(1/3))-Log(3*a+4*b^(1/3))/(3*b^(1/3)),a))", //
@@ -8115,6 +8128,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{0.47693627620446977,0.6840703496566226,0.8134198475976184,0.9061938024368233}");
 		checkNumeric("InverseErfc(-1/{2., 3., 4., 5.})", //
 				"{InverseErfc(-0.5),InverseErfc(-0.3333333333333333),InverseErfc(-0.25),InverseErfc(-0.2)}");
+	}
+
+	public void testInverseFourier() {
+		check("InverseFourier({2.82843+I*9.19239,-1.41421+I*(-6.36396)})", //
+				"{1.0+I*2.0,3.0+I*11.0}");
+		check("InverseFourier({1.5,0.5+I*1.0,-0.5,0.5+I*(-1.0)})", //
+				"{1.0,2.0+I*2.22045*10^-16,0.0,I*(-2.22045*10^-16)}");
+
+		// InverseFourier: Argument {1,2,0,0,7} is restricted to vectors with a length of power of 2.
+		check("InverseFourier({1,2,0,0,7})", //
+				"InverseFourier({1,2,0,0,7})");
 	}
 
 	public void testInverseFunction() {
