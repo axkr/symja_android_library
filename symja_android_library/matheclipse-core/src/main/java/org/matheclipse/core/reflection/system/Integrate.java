@@ -490,9 +490,13 @@ public class Integrate extends AbstractFunctionEvaluator {
 					IExpr[] parts = Algebra.fractionalParts(arg1, true);
 					if (parts != null) {
 						IExpr temp = Algebra.partsApart(parts, x, engine);
-						if (temp.isPlus()) {
-							return mapIntegrate((IAST) temp, x);
+						if (temp.isPresent() && !temp.equals(arg1)) {
+							return F.Integrate(temp, x);
+							// return mapIntegrate((IAST) temp, x);
 						}
+						// if (temp.isPlus()) {
+						// return mapIntegrate((IAST) temp, x);
+						// }
 						// return Algebra.partialFractionDecompositionRational(new
 						// PartialFractionIntegrateGenerator(x),parts, x);
 					}
