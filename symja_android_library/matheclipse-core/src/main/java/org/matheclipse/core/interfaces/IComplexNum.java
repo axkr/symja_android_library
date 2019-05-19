@@ -20,10 +20,12 @@ public interface IComplexNum extends INumber {
 	 */
 	public double dabs();
 
+	public IComplexNum divide(IComplexNum val);
+	
 	public double getImaginaryPart();
 
 	public double getRealPart();
-
+	
 	@Override
 	default long leafCount() {
 		return 3;

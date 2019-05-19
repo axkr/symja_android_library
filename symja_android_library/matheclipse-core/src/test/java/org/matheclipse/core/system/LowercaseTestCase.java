@@ -13688,6 +13688,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testReap() {
+		check("depthFirstPreorder(expr_) := Module(\n" + "  {stack = {expr, {}}, el = expr},\n" + "  Reap(\n"
+				+ "    While(stack =!= {},\n" + "      {el, stack} = stack;\n" + "      Sow(el);\n"
+				+ "      If(Not(AtomQ(el)),\n" + "       Do(stack = {el[[j]], stack}, {j, Length(el), 1, -1}));\n"
+				+ "      );\n" + "    )[[2, 1]]\n" + "  )", //
+				"");
+		check("depthFirstPreorder({{1, {2, 3}}, {4, 5}})", //
+				"{{{1,{2,3}},{4,5}},{1,{2,3}},1,{2,3},2,3,{4,5},4,5}");
+
 		check("Reap(Sow(1); Sow(2); Sow(3))", //
 				"{3,{{1,2,3}}}");
 		check("Reap(Sow(1, {x, x}); Sow(1); Sow(2); Sow(3, x) )", //
@@ -13932,6 +13940,29 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testReplaceAll() {
+		// prints
+		// {{1,{2,3}},{4,5}}
+		// {1,{2,3}}
+		// {2,3}
+		// {4,5}
+		check("{{1, {2, 3}}, {4, 5}} /. {_, _} ? Print -> Null;", //
+				"");
+		// prints:
+		// {{1,{2,3}},{4,5}}
+		// List
+		// {1,{2,3}}
+		// List
+		// 1
+		// {2,3}
+		// List
+		// 2
+		// 3
+		// {4,5}
+		// List
+		// 4
+		// 5
+		check("{{1, {2, 3}}, {4, 5}} /. _?Print -> Null;", //
+				"");
 		check("g(a + b + c + d, b + d) /. g(x_ + y_, x_) -> p(x, y)", //
 				"p(b+d,a+c)");
 
@@ -14969,6 +15000,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testScan() {
+		// TODO e1 ~ e2 ~ e3 => e2[e1, e3]
+		// check("(Print@#; #0 ~Scan~ #)& @ {{1, {2, 3}}, {4, 5}}", //
+		// "");
+
+		// prints
+		// 1
+		// 2
+		// 3
+		// {2,3}
+		// {1,{2,3}}
+		// 4
+		// 5
+		// {4,5}
+		// {{1,{2,3}},{4,5}}
+		check("expr = {{1, {2, 3}}, {4, 5}}; Scan(Print, expr, {0, -1})", //
+				"");
+
 		check("Scan(Print)[{a, b, c}]", //
 				"");
 		check("Scan[Print, {1, 2, 3}, Heads->True]", //

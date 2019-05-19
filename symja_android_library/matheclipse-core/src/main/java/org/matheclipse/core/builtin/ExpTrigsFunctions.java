@@ -894,7 +894,7 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr e1DblComArg(final IComplexNum c) {
-			return ComplexUtils.atan((ComplexNum) c);
+			return ComplexUtils.atan(c);
 		}
 
 		@Override
@@ -1843,7 +1843,7 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr e1DblComArg(final IComplexNum arg1) {
-			return ComplexUtils.log((ComplexNum) arg1);
+			return ComplexUtils.log(arg1);
 		}
 
 		@Override

@@ -144,25 +144,6 @@ public class ComplexNum implements IComplexNum {
 	}
 
 	/**
-	 * Returns a {@code Complex} whose value is {@code (this + addend)}. Uses the definitional formula
-	 * <p>
-	 * {@code (a + bi) + (c + di) = (a+c) + (b+d)i}
-	 * </p>
-	 * If either {@code this} or {@code addend} has a {@code NaN} value in either part, {@link #NaN} is returned;
-	 * otherwise {@code Infinite} and {@code NaN} values are returned in the parts of the result according to the rules
-	 * for {@link java.lang.Double} arithmetic.
-	 *
-	 * @param addend
-	 *            Value to be added to this {@code Complex}.
-	 * @return {@code this + addend}.
-	 * @throws NullArgumentException
-	 *             if {@code addend} is {@code null}.
-	 */
-	public Complex add(final Complex addend) {
-		return fComplex.add(addend);
-	}
-
-	/**
 	 * Returns a {@code ComplexNum} whose value is {@code (this + addend)}. Uses the definitional formula
 	 * <p>
 	 * {@code (a + bi) + (c + di) = (a+c) + (b+d)i}
@@ -177,15 +158,14 @@ public class ComplexNum implements IComplexNum {
 	 * @throws NullArgumentException
 	 *             if {@code addend} is {@code null}.
 	 */
-	public ComplexNum add(final ComplexNum addend) {
+	private ComplexNum add(final ComplexNum addend) {
 		return newInstance(fComplex.add(addend.fComplex));
 	}
 
 	@Override
 	public IComplexNum add(final IComplexNum val) {
 		if (val instanceof ApcomplexNum) {
-			return ApcomplexNum.valueOf(fComplex.getReal(), fComplex.getImaginary(), ((ApcomplexNum) val).precision())
-					.add(val);
+			return ApcomplexNum.valueOf(fComplex, ((ApcomplexNum) val).precision()).add(val);
 		}
 		return newInstance(fComplex.add(((ComplexNum) val).fComplex));
 	}
@@ -310,18 +290,9 @@ public class ComplexNum implements IComplexNum {
 		return dabs(fComplex);
 	}
 
-	/**
-	 * @param that
-	 * @return
-	 */
-	public Complex divide(final Complex that) {
-		return fComplex.divide(that);
-	}
-
 	public IComplexNum divide(final IComplexNum that) {
 		if (that instanceof ApcomplexNum) {
-			return ApcomplexNum.valueOf(fComplex.getReal(), fComplex.getImaginary(), ((ApcomplexNum) that).precision())
-					.divide((ApcomplexNum) that);
+			return ApcomplexNum.valueOf(fComplex, ((ApcomplexNum) that).precision()).divide((ApcomplexNum) that);
 		}
 		return newInstance(fComplex.divide(((ComplexNum) that).fComplex));
 	}
@@ -550,8 +521,7 @@ public class ComplexNum implements IComplexNum {
 	@Override
 	public IComplexNum multiply(final IComplexNum val) {
 		if (val instanceof ApcomplexNum) {
-			return ApcomplexNum.valueOf(fComplex.getReal(), fComplex.getImaginary(), ((ApcomplexNum) val).precision())
-					.multiply(val);
+			return ApcomplexNum.valueOf(fComplex, ((ApcomplexNum) val).precision()).multiply(val);
 		}
 		return newInstance(fComplex.multiply(((ComplexNum) val).fComplex));
 	}
@@ -622,25 +592,6 @@ public class ComplexNum implements IComplexNum {
 	}
 
 	/**
-	 * Returns a {@code Complex} whose value is {@code (this - subtrahend)}. Uses the definitional formula
-	 * <p>
-	 * {@code (a + bi) - (c + di) = (a-c) + (b-d)i}
-	 * </p>
-	 * If either {@code this} or {@code subtrahend} has a {@code NaN]} value in either part, {@link #NaN} is returned;
-	 * otherwise infinite and {@code NaN} values are returned in the parts of the result according to the rules for
-	 * {@link java.lang.Double} arithmetic.
-	 *
-	 * @param subtrahend
-	 *            value to be subtracted from this {@code Complex}.
-	 * @return {@code this - subtrahend}.
-	 * @throws NullArgumentException
-	 *             if {@code subtrahend} is {@code null}.
-	 */
-	public Complex subtract(final Complex subtrahend) {
-		return fComplex.subtract(subtrahend);
-	}
-
-	/**
 	 * Returns a {@code ComplexNum} whose value is {@code (this - subtrahend)}. Uses the definitional formula
 	 * <p>
 	 * {@code (a + bi) - (c + di) = (a-c) + (b-d)i}
@@ -657,9 +608,7 @@ public class ComplexNum implements IComplexNum {
 	 */
 	public IComplexNum subtract(final IComplexNum subtrahend) {
 		if (subtrahend instanceof ApcomplexNum) {
-			return ApcomplexNum
-					.valueOf(fComplex.getReal(), fComplex.getImaginary(), ((ApcomplexNum) subtrahend).precision())
-					.subtract(subtrahend);
+			return ApcomplexNum.valueOf(fComplex, ((ApcomplexNum) subtrahend).precision()).subtract(subtrahend);
 		}
 		return newInstance(fComplex.subtract(((ComplexNum) subtrahend).fComplex));
 	}

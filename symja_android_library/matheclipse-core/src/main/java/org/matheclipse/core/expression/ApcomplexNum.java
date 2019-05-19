@@ -44,6 +44,11 @@ public class ApcomplexNum implements IComplexNum {
 				new Apfloat(new BigDecimal(imaginary), precision)));
 	}
 
+	public static ApcomplexNum valueOf(final Complex c, long precision) {
+		return valueOf(new Apcomplex(new Apfloat(new BigDecimal(c.getReal()), precision),
+				new Apfloat(new BigDecimal(c.getImaginary()), precision)));
+	}
+	
 	/**
 	 * Create a <code>ApcomplexNum</code> complex number from the real and imaginary <code>BigInteger</code> parts.
 	 * 
@@ -212,6 +217,11 @@ public class ApcomplexNum implements IComplexNum {
 
 	public ApcomplexNum divide(final ApcomplexNum that) throws ArithmeticException {
 		return valueOf(fApcomplex.divide(that.fApcomplex));
+	}
+	
+	@Override
+	public IComplexNum divide(final IComplexNum val) {
+		return valueOf(fApcomplex.divide(((ApcomplexNum) val).fApcomplex));
 	}
 
 	@Override
@@ -507,7 +517,7 @@ public class ApcomplexNum implements IComplexNum {
 	public boolean equalsInt(int i) {
 		return false;
 	}
-
+ 
 	/** {@inheritDoc} */
 	@Override
 	public ISignedNumber im() {
