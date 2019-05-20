@@ -946,7 +946,7 @@ public class EvalEngine implements Serializable {
 		}
 		throw new WrongArgumentType(expr, "Conversion into a double numeric value is not possible!");
 	}
-	
+
 	final public Complex evalComplex(final IExpr expr) {
 		if (expr.isReal()) {
 			return new Complex(((ISignedNumber) expr).doubleValue());
@@ -1721,8 +1721,8 @@ public class EvalEngine implements Serializable {
 	 * @return
 	 */
 	private IAST flattenSequences(final IAST ast) {
-		IASTAppendable[] seqResult = new IASTAppendable[1];
-		seqResult[0] = F.NIL;
+		IASTAppendable[] seqResult = new IASTAppendable[] { F.NIL };
+
 		ast.forEach((x, i) -> {
 			if (x.isSequence()) {
 				IAST seq = (IAST) x;
@@ -1731,6 +1731,11 @@ public class EvalEngine implements Serializable {
 					seqResult[0].appendArgs(ast, i);
 				}
 				seqResult[0].appendArgs(seq);
+			} else if (x.equals(F.Nothing)) {
+				if (!seqResult[0].isPresent()) {
+					seqResult[0] = F.ast(ast.head(), ast.size() - 1, false);
+					seqResult[0].appendArgs(ast, i);
+				}
 			} else if (seqResult[0].isPresent()) {
 				seqResult[0].append(x);
 			}

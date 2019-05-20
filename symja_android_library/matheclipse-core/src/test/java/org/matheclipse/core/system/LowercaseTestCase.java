@@ -10792,6 +10792,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("!ForAll(x, f(x))", "Exists(x,!f(x))");
 	}
 
+	public void testNothing() {
+		check("{1, 2, Nothing, 4, 5, Nothing}", //
+				"{1,2,4,5}");
+		check("ReplacePart({a, b, c, d, e, f, g}, {1 -> Nothing, 3 -> Nothing})", //
+				"{b,d,e,f,g}");
+	}
+	
 	public void testNSolve() {
 		// check("125*2^(3-2*z)", //
 		// "");
@@ -15136,7 +15143,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Select(Range(100), Mod(#, 3) == 1 && Mod(#, 5) == 1 &)", //
 				"{1,16,31,46,61,76,91}");
 	}
-
+	
 	public void testSequence() {
 		check("{Sequence( ),a}", //
 				"{a}");

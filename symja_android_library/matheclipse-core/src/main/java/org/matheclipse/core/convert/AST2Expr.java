@@ -54,7 +54,7 @@ public class AST2Expr {
 			"GaussianIntegers", "General", "Glaisher", "GoldenRatio", "Heads", "HoldAll", "HoldComplete",
 			"HoldAllComplete", "HoldFirst", "HoldRest", "Indeterminate", "Infinity", "Integer", "Integers", "Khinchin",
 			"Listable", "LongForm", "MaxIterations", "MaxPoints", "Method", "Modulus", "NHoldAll", "NHoldFirst",
-			"NHoldRest", "None", "Nonexistent", "NotApplicable", "NotAvailable", "Null", "NumericFunction",
+			"NHoldRest", "None", "Nothing", "Nonexistent", "NotApplicable", "NotAvailable", "Null", "NumericFunction",
 			"OneIdentity", "Orderless", "Pi", "PrecisionGoal", "Primes", "Protected", "Rationals", "ReadProtected",
 			"Real", "Reals", "SameTest", "Second", "Slot", "SlotSequence", "String", "Symbol", "TooLarge", "Trig",
 			"True", "Variable", "White", "Unknown" };

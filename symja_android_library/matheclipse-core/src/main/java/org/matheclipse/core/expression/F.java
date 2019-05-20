@@ -1786,6 +1786,8 @@ public class F {
     /** Not(expr) - Logical Not function (negation). Returns `True` if the statement is `False`. Returns `False` if the `expr` is `True`*/
     public final static IBuiltInSymbol Not = F.initFinalSymbol("Not", ID.Not);
 
+    public final static IBuiltInSymbol Nothing = F.initFinalSymbol("Nothing", ID.Nothing);
+    
     /***/
     public final static IBuiltInSymbol NotApplicable = F.initFinalSymbol("NotApplicable", ID.NotApplicable);
 
