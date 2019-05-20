@@ -54,6 +54,8 @@ public class Show2SVG {
 		EvalEngine engine = EvalEngine.get();
 		IAST numericAST = (IAST) engine.evalN(ast);
 		Dimensions2D dim = new Dimensions2D(350, 350);
+		// TODO change to these rgb(24.720000%, 24.000000%, 60.000000%); 
+		dim.setColorRGB("blue");
 		if (numericAST.size() > 2) {
 			final Options options = new Options(numericAST.topHead(), numericAST, 2, engine);
 			IExpr option = options.getOption("PlotRange");
@@ -262,10 +264,9 @@ public class Show2SVG {
 			buf.append("<circle ");
 			double xAxisScalingFactor = dim.getXScale();
 			double yAxisScalingFactor = dim.getYScale();
-
 			double x1 = ((ISignedNumber) point.arg1()).doubleValue();
 			double y1 = ((ISignedNumber) point.arg2()).doubleValue();
-			double r = 1.0;
+			double r = 2.166667;
 			// x="0.000000" y="0.000000" width="350.000000" height="350.000000"
 			double cx = (x1 - xMin) * xAxisScalingFactor;
 			double cy = (yMax - y1) * yAxisScalingFactor;
