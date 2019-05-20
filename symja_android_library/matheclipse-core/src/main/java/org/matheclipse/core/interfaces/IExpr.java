@@ -2711,7 +2711,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isTrigFunction() {
 		return false;
 	}
-
+	
+	/**
+	 * Test if this expression is a special pattern-matching function (i.e. Alternatives, Except,...)
+	 * 
+	 * @return
+	 */
+	default boolean isPatternMatchingFunction() {
+		return false;
+	}
+	
 	/**
 	 * Test if this expression equals the symbol <code>True</code>.
 	 * 

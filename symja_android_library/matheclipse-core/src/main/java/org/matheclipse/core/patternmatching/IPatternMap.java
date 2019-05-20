@@ -1350,7 +1350,11 @@ public interface IPatternMap extends Cloneable {
 		int[] listEvalFlags = new int[] { IAST.NO_FLAG };
 		lhsPatternExpr.forEach(x -> {
 			if (x.isAST()) {
-				listEvalFlags[0] |= determinePatternsRecursive(patternIndexMap, (IAST) x, priority, ruleWithoutPattern,
+				final IAST lhsPatternAST = (IAST) x;
+				if (lhsPatternAST.isPatternMatchingFunction()) {
+					listEvalFlags[0] |= IAST.CONTAINS_PATTERN ;
+				}
+				listEvalFlags[0] |= determinePatternsRecursive(patternIndexMap, lhsPatternAST, priority, ruleWithoutPattern,
 						treeLevel + 1);
 				priority[0] -= 11;
 				if (x.isPatternDefault()) {

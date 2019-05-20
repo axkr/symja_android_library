@@ -2386,6 +2386,11 @@ public abstract class AbstractAST implements IASTMutable {
 		if ((getEvalFlags() & IAST.CONTAINS_PATTERN_EXPR) != IAST.NO_FLAG) {
 			return false;
 		}
+
+		if (isPatternMatchingFunction()) {
+			addEvalFlags(IAST.CONTAINS_PATTERN);
+			return false;
+		}
 		boolean isFreeOfPatterns = true;
 		for (int i = 0; i < size(); i++) {
 			// all elements including head element
@@ -3122,6 +3127,19 @@ public abstract class AbstractAST implements IASTMutable {
 			}
 			if (size() == 3) {
 				return id == ID.ArcTan;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public boolean isPatternMatchingFunction() {
+		int id = headID();
+		if (id >= 0) {
+			if (size() >= 2) {
+				return id == ID.HoldPattern || id == ID.Literal || id == ID.Condition || id == ID.Alternatives || //
+						id == ID.Except || id == ID.Complex || id == ID.Rational || id == ID.Optional || //
+						id == ID.PatternTest;
 			}
 		}
 		return false;

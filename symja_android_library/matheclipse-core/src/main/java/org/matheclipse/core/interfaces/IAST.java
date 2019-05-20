@@ -993,6 +993,12 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	@Override
 	public boolean isTrigFunction();
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean isPatternMatchingFunction();
 
 	/**
 	 * Returns an iterator over the elements in this list starting with offset <b>1</b>.
