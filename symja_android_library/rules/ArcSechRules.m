@@ -12,8 +12,8 @@
  ArcSech(-2)=2/3*Pi*I,  
  ArcSech(1+Sqrt(5))=2/5*Pi*I,
  ArcSech(-1-Sqrt(5))=3/5*Pi*I,
- ArcSech(I)=(-1/2)*Pi*I+Log(Sqrt(2)+1),
- ArcSech(-I)=1/2*Pi*I+Log(Sqrt(2)+1),
+ (*  ArcSech(I)=(-1/2)*Pi*I+Log(Sqrt(2)+1),
+     ArcSech(-I)=1/2*Pi*I+Log(Sqrt(2)+1),  *)
    
  ArcSech(Infinity)=1/2*Pi*I,
  ArcSech(-Infinity)=1/2*Pi*I,

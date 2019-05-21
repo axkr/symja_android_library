@@ -8,7 +8,7 @@
  ArcCosh(-Sqrt(3)/2)=5/6*I*Pi,
  ArcCosh(1)=0,
  ArcCosh(-1)=PI*I,
- ArcCosh(I)=Log(I*(1+Sqrt(2))),
+ (* ArcCosh(I)=Log(I*(1+Sqrt(2))), *)
  
  ArcCosh(Infinity)=Infinity,
  ArcCosh(-Infinity)=Infinity,

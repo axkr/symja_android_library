@@ -13,7 +13,7 @@ public interface ArcSinhRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 9, 0 };
+  final public static int[] SIZES = { 8, 0 };
 
   final public static IAST RULES = List(
     IInit(ArcSinh, SIZES),
@@ -32,9 +32,6 @@ public interface ArcSinhRules {
     // ArcSinh(I)=Pi*I/2
     ISet(ArcSinh(CI),
       Times(CC(0L,1L,1L,2L),Pi)),
-    // ArcSinh(1)=Log(Sqrt(2)+1)
-    ISet(ArcSinh(C1),
-      Log(Plus(C1,CSqrt2))),
     // ArcSinh(Infinity)=Infinity
     ISet(ArcSinh(oo),
       oo),

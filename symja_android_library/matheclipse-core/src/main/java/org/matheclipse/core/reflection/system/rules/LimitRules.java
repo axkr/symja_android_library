@@ -52,7 +52,7 @@ public interface LimitRules {
       E),
     // Limit((1+a_/x_)^x_,x_Symbol->Infinity)=E^a/;FreeQ(a,x)
     ISet(Limit(Power(Plus(C1,Times(a_,Power(x_,CN1))),x_),Rule(x_Symbol,oo)),
-      Exp(a)),
+      Condition(Exp(a),FreeQ(a,x))),
     // Limit(HarmonicNumber(y_Symbol,s_Integer),x_Symbol->Infinity):=Module({v=s/2},((-1)^(v+1)*(2*Pi)^(2*v)*BernoulliB(2*v))/(2*(2*v)!))/;EvenQ(s)&&Positive(s)
     ISetDelayed(Limit(HarmonicNumber(y_Symbol,$p(s, Integer)),Rule(x_Symbol,oo)),
       Condition(Module(List(Set(v,Times(C1D2,s))),Times(Power(CN1,Plus(v,C1)),Power(C2Pi,Times(C2,v)),BernoulliB(Times(C2,v)),Power(Times(C2,Factorial(Times(C2,v))),CN1))),And(EvenQ(s),Positive(s)))),

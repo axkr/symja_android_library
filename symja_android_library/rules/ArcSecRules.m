@@ -16,8 +16,8 @@
  ArcSec(-1-Sqrt(5))=3/5*Pi,
  ArcSec(Sqrt(2)+Sqrt(6))=5/12*Pi,    
  ArcSec(-Sqrt(2)-Sqrt(6))=7/12*Pi,
- ArcSec(I)=Pi/2+I*Log(Sqrt(2)+1),
- ArcSec(-I)=Pi/2+I*Log(Sqrt(2)-1),
+ (*  ArcSec(I)=Pi/2+I*Log(Sqrt(2)+1),
+ ArcSec(-I)=Pi/2+I*Log(Sqrt(2)-1),   *)
  
  ArcSec(Infinity)=Pi/2,
  ArcSec(-Infinity)=Pi/2,

@@ -13,7 +13,7 @@ public interface ArcSecRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 24, 0 };
+  final public static int[] SIZES = { 22, 0 };
 
   final public static IAST RULES = List(
     IInit(ArcSec, SIZES),
@@ -68,12 +68,6 @@ public interface ArcSecRules {
     // ArcSec(-Sqrt(2)-Sqrt(6))=7/12*Pi
     ISet(ArcSec(Subtract(Negate(CSqrt2),CSqrt6)),
       Times(QQ(7L,12L),Pi)),
-    // ArcSec(I)=Pi/2+I*Log(Sqrt(2)+1)
-    ISet(ArcSec(CI),
-      Plus(CPiHalf,Times(CI,Log(Plus(C1,CSqrt2))))),
-    // ArcSec(-I)=Pi/2+I*Log(-1+Sqrt(2))
-    ISet(ArcSec(CNI),
-      Plus(CPiHalf,Times(CI,Log(Plus(CN1,CSqrt2))))),
     // ArcSec(Infinity)=Pi/2
     ISet(ArcSec(oo),
       CPiHalf),

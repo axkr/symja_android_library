@@ -13,7 +13,7 @@ public interface ArcSechRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 20, 0 };
+  final public static int[] SIZES = { 18, 0 };
 
   final public static IAST RULES = List(
     IInit(ArcSech, SIZES),
@@ -56,12 +56,6 @@ public interface ArcSechRules {
     // ArcSech(-1-Sqrt(5))=3/5*Pi*I
     ISet(ArcSech(Subtract(CN1,CSqrt5)),
       Times(CC(0L,1L,3L,5L),Pi)),
-    // ArcSech(I)=-1/2*Pi*I+Log(Sqrt(2)+1)
-    ISet(ArcSech(CI),
-      Plus(Times(CC(0L,1L,-1L,2L),Pi),Log(Plus(C1,CSqrt2)))),
-    // ArcSech(-I)=1/2*Pi*I+Log(Sqrt(2)+1)
-    ISet(ArcSech(CNI),
-      Plus(Times(CC(0L,1L,1L,2L),Pi),Log(Plus(C1,CSqrt2)))),
     // ArcSech(Infinity)=1/2*Pi*I
     ISet(ArcSech(oo),
       Times(CC(0L,1L,1L,2L),Pi)),

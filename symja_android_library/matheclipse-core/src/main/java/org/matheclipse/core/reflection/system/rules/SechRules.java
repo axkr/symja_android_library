@@ -107,9 +107,9 @@ public interface SechRules {
     // Sech(ArcCsch(x_)):=1/Sqrt(1+1/x^2)
     ISetDelayed(Sech(ArcCsch(x_)),
       Power(Plus(C1,Power(x,CN2)),CN1D2)),
-    // Sech(Log(x_)):=2/(x+1/x)
+    // Sech(Log(x_)):=(2*x)/(x+x^2)
     ISetDelayed(Sech(Log(x_)),
-      Times(C2,Power(Plus(x,Power(x,CN1)),CN1))),
+      Times(C2,x,Power(Plus(x,Sqr(x)),CN1))),
     // Sech(Infinity)=0
     ISet(Sech(oo),
       C0),

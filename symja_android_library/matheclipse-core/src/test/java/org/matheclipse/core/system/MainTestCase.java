@@ -1182,9 +1182,14 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem111() {
-		check("ArcCos(I)", "Pi/2+I*Log(-1+Sqrt(2))");
-		check("Exp(Pi*I)", "-1");
-		check("E^(Pi*I)", "-1");
+		// no simplification
+		// check("ArcCos(I)", "Pi/2+I*Log(-1+Sqrt(2))");
+		check("ArcCos(I)", //
+				"ArcCos(I)");
+		check("Exp(Pi*I)", //
+				"-1");
+		check("E^(Pi*I)", //
+				"-1");
 	}
 
 	public void testSystem112() {
@@ -3144,7 +3149,7 @@ public class MainTestCase extends AbstractTestCase {
 	public void testSystem421() {
 		check("MatchQ(powered(h,h), powered(x_ ^ (a_.), x_))", //
 				"True");
-		
+
 		check("MatchQ(I, Complex(0,x_))", "True");
 
 		check("MatchQ(linear(a+42+60*c,h), linear(a_. + b_. * x_, x_))", "False");
@@ -3415,8 +3420,8 @@ public class MainTestCase extends AbstractTestCase {
 		check("Roots(x^3-3*x-2==0, x)", //
 				"x==-1||x==2");
 
-		check("Roots((x^2-1)/(x-1)==0, x)",//
-				 "x==-1");
+		check("Roots((x^2-1)/(x-1)==0, x)", //
+				"x==-1");
 		check("Roots(3/4*x^2+9/16==0, x)", //
 				"x==I*1/2*Sqrt(3)||x==-I*1/2*Sqrt(3)");
 
@@ -3426,8 +3431,8 @@ public class MainTestCase extends AbstractTestCase {
 				"3/16*(3+4*x^2)");
 		check("Factor(3/4*x^2+9/16+7)", //
 				"1/16*(121+12*x^2)");
-		check("Factor(3/4*x^2+9/16*x+7)",//
-				 "1/16*(112+9*x+12*x^2)");
+		check("Factor(3/4*x^2+9/16*x+7)", //
+				"1/16*(112+9*x+12*x^2)");
 
 		check("Roots(x^2 - 4*x + 8==0, x)", //
 				"x==2-I*2||x==2+I*2");
