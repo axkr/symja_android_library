@@ -78,11 +78,8 @@ public final class RulesData implements Serializable {
 			return true;
 		} else if (a1.isAST()) {
 
-			int functionID = a1.headID();
-			if (functionID > ID.UNKNOWN) {
-				if (a1.isCondition() || a1.isPatternTest() || a1.isAlternatives() || a1.isExcept() || a1.isOptional()) {
-					return true;
-				}
+			if (a1.isPatternMatchingFunction()) {
+				return true;
 			}
 
 			IAST arg1 = (IAST) a1;
@@ -383,7 +380,9 @@ public final class RulesData implements Serializable {
 			}
 		}
 
+		boolean evalRHSMode = engine.isEvalRHSMode();
 		try {
+			engine.setEvalRHSMode(true);
 			IPatternMatcher pmEvaluator;
 			if (fPatternDownRules != null) {
 				IExpr result;
@@ -461,6 +460,8 @@ public final class RulesData implements Serializable {
 			}
 		} catch (CloneNotSupportedException cnse) {
 			cnse.printStackTrace();
+		} finally {
+			engine.setEvalRHSMode(evalRHSMode);
 		}
 		return F.NIL;
 	}

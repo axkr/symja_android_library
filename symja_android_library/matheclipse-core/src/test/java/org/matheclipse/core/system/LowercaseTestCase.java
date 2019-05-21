@@ -9941,30 +9941,50 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMin() {
-		check("Min(Interval({1,2}))", "1");
+		check("Min(Interval({1,2}))", //
+				"1");
 
-		check("Refine(Min(-Infinity,x), x>0)", "-Infinity");
-		check("Refine(Min(-Infinity,x,y), x>0&&y>0)", "-Infinity");
-		check("Refine(Min(-Infinity,x,y), x>0)", "Min(y,-Infinity)");
-		check("Refine(Min(x,-Infinity), x>0)", "-Infinity");
-		check("Refine(Min(x,y,-Infinity), x>0&&y>0)", "-Infinity");
+		check("Refine(Min(-Infinity,x), x>0)", //
+				"-Infinity");
+		check("Refine(Min(-Infinity,x,y), x>0&&y>0)", //
+				"-Infinity");
+		check("Refine(Min(-Infinity,x,y), x>0)", //
+				"Min(y,-Infinity)");
+		check("Refine(Min(x,-Infinity), x>0)", //
+				"-Infinity");
+		check("Refine(Min(x,y,-Infinity), x>0&&y>0)", //
+				"-Infinity");
 
-		check("Refine(Min(Infinity,x), x>0)", "x");
-		check("Refine(Min(Infinity,x,y), x>0&&y>0)", "Min(x,y)");
-		check("Refine(Min(x,Infinity), x>0)", "x");
-		check("Refine(Min(x,y,Infinity), x>0&&y>0)", "Min(x,y)");
-		check("Refine(Min(x,y,Infinity), x>0&&y>0)", "Min(x,y)");
+		check("Refine(Min(Infinity,x), x>0)", //
+				"x");
+		check("Refine(Min(Infinity,x,y), x>0&&y>0)", //
+				"Min(x,y)");
+		check("Refine(Min(x,Infinity), x>0)", //
+				"x");
+		check("Refine(Min(x,y,Infinity), x>0&&y>0)", //
+				"Min(x,y)");
+		check("Refine(Min(x,y,Infinity), x>0&&y>0)", //
+				"Min(x,y)");
 
-		check("Refine(Infinity<x, x>0)", "False");
+		check("Refine(Infinity<x, x>0)", //
+				"False");
 
-		check("Min(5, x, -3, y, 40)", "Min(-3,x,y)");
-		check("Min(4, -8, 1)", "-8");
-		check("Min({1,2},3,{-3,3.5,-Infinity},{{1/2}})", "-Infinity");
-		check("Min(x, y)", "Min(x,y)");
-		check("Min(5, x, -3, y, 40)", "Min(-3,x,y)");
-		check("Min()", "Infinity");
-		check("Min(x)", "x");
-		check("Min(Abs(x), Abs(y))", "Min(Abs(x),Abs(y))");
+		check("Min(5, x, -3, y, 40)", //
+				"Min(-3,x,y)");
+		check("Min(4, -8, 1)", //
+				"-8");
+		check("Min({1,2},3,{-3,3.5,-Infinity},{{1/2}})", //
+				"-Infinity");
+		check("Min(x, y)", //
+				"Min(x,y)");
+		check("Min(5, x, -3, y, 40)", //
+				"Min(-3,x,y)");
+		check("Min()", //
+				"Infinity");
+		check("Min(x)", //
+				"x");
+		check("Min(Abs(x), Abs(y))", //
+				"Min(Abs(x),Abs(y))");
 	}
 
 	public void testMinimize() {
@@ -9976,10 +9996,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMinus() {
-		check("Minus(a)", "-a");
-		check("-a //FullForm", "Times(-1, a)");
-		check("-(x - 2/3)", "2/3-x");
-		check("-Range(10)", "{-1,-2,-3,-4,-5,-6,-7,-8,-9,-10}");
+		check("Minus(a)", //
+				"-a");
+		check("-a //FullForm", //
+				"Times(-1, a)");
+		check("-(x - 2/3)", //
+				"2/3-x");
+		check("-Range(10)", //
+				"{-1,-2,-3,-4,-5,-6,-7,-8,-9,-10}");
 	}
 
 	public void testMissingQ() {
@@ -9998,53 +10022,78 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"42-13*Pi");
 		check("Mod(-42,Pi)", //
 				"-42+14*Pi");
-		check("Mod(-10,3)", "2");
-		check("Mod(10,3)", "1");
-		check("Mod(10,-3)", "-2");
-		check("Mod(-10,-3)", "-1");
+		check("Mod(-10,3)", //
+				"2");
+		check("Mod(10,3)", //
+				"1");
+		check("Mod(10,-3)", //
+				"-2");
+		check("Mod(-10,-3)", //
+				"-1");
 
-		check("Mod(-23,7)", "5");
-		check("Mod(23,7)", "2");
-		check("Mod(23,-7)", "-5");
-		check("Mod(-23,-7)", "-2");
+		check("Mod(-23,7)", //
+				"5");
+		check("Mod(23,7)", //
+				"2");
+		check("Mod(23,-7)", //
+				"-5");
+		check("Mod(-23,-7)", //
+				"-2");
 
-		check("Mod(14, 6)", "2");
-		check("Mod(-3,4)", "1");
-		check("Mod(-3,-4)", "-3");
-		check("Mod(2,-4)", "-2");
-		check("Mod(3,-4)", "-1");
-		check("Mod(5,0)", "Indeterminate");
+		check("Mod(14, 6)", //
+				"2");
+		check("Mod(-3,4)", //
+				"1");
+		check("Mod(-3,-4)", //
+				"-3");
+		check("Mod(2,-4)", //
+				"-2");
+		check("Mod(3,-4)", //
+				"-1");
+		check("Mod(5,0)", //
+				"Indeterminate");
 	}
 
 	public void testModule() {
 		// check("num=Sin(3*I);Module({v=N(num)},If(PossibleZeroQ(Re(v)),Im(v)>0,Re(v)>0))",
 		// "True");
 		// check("Module({x=5}, Hold(x))", "Hold(x$1)");
-		check("xm=10;Module({xm=xm}, xm=xm+1;xm)", "11");
-		check("xm=10;Module({xm=xm}, xm=xm+1;xm);xm", "10");
-		check("xm=10;Module({t=xm}, xm=xm+1;t)", "10");
-		check("xm=10;Module({t=xm}, xm=xm+1;t);xm", "11");
-		check("Module({a}, Block({a}, a))", "a$5");
-		check("Module({a}, Block({}, a))", "a$6");
-		check("t === Module({t}, t)", "False");
-		check("$g(x_) := Module({v=x},int(v,x)/;v=!=x);$g(f(x))", "$g(f(x))");
-		check("$g(x_) := Module({v=x},int1(v,x)/;v===x);$g(f(x))", "int1(f(x),f(x))");
-		check("$h(x_) := Module({$u}, $u^2 /; (($u = x - 1) > 0));$h(6)", "25");
-		checkNumeric("$f(x0_) :=\n" + " Module({x = x0},\n" + "  While(x > 0, x = Log(x));\n" + "  x\n" + "  );$f(2.0)",
+		 
+		check("xm=10;Module({xm=xm}, xm=xm+1;xm);xm", //
+				"10");
+		check("xm=10;Module({t=xm}, xm=xm+1;t)", //
+				"10");
+		check("xm=10;Module({t=xm}, xm=xm+1;t);xm", //
+				"11");
+		check("Module({a}, Block({a}, a))", //
+				"a$4");
+		check("Module({a}, Block({}, a))", //
+				"a$5");
+		check("t === Module({t}, t)", //
+				"False");
+		check("$g(x_) := Module({v=x},int(v,x)/;v=!=x);$g(f(x))", //
+				"$g(f(x))");
+		check("$g(x_) := Module({v=x},int1(v,x)/;v===x);$g(f(x))", //
+				"int1(f(x),f(x))");
+		check("$h(x_) := Module({$u}, $u^2 /; (($u = x - 1) > 0));$h(6)", //
+				"25");
+		checkNumeric("$f(x0_) :=\n" + " Module({x = x0},\n" + "  While(x > 0, x = Log(x));\n" + "  x\n" + "  );$f(2.0)", //
 				"-0.36651292058166435");
 
 		check("$fib(n_) :=\n" + " Module({$f},\n" + "  $f(1) = $f(2) = 1;\n"
-				+ "  $f(i0_) := $f(i0) = $f(i0 - 1) + $f(i0 - 2);\n" + "  $f(n)\n" + "  );$fib(5)", "5");
+				+ "  $f(i0_) := $f(i0) = $f(i0 - 1) + $f(i0 - 2);\n" + "  $f(n)\n" + "  );$fib(5)", //
+				"5");
 
 		check("$gcd(m0_, n0_) :=\n" + " Module({m = m0, n = n0},\n" + "  While(n != 0, {m, n} = {n, Mod(m, n)});\n"
-				+ "  m\n" + "  );$gcd(18, 21)", "3");
+				+ "  m\n" + "  );$gcd(18, 21)", //
+				"3");
 
 		check("{Module({x}, x), Module({x}, x)}", //
-				"{x$15,x$16}");
+				"{x$14,x$15}");
 		check("Module({e = Expand((1 + x)^5)}, Function(x, e))", //
-				"Function(x$17,e$17)");
+				"Function(x$16,e$16)");
 		check("Module({a,b}, Block({c}, c+a))", //
-				"a$18+c");
+				"a$17+c");
 
 		if (Config.SERVER_MODE == false) {
 			check("f(x0_) :=\n" + " Module({x = x0},\n" + "  While(x > 0, x = Log(x));\n" + "  x\n" + "  );f(2.0)",
@@ -10057,7 +10106,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 					+ "  m\n" + "  );myGCD(18, 21)", "3");
 		}
 
-		check("xm=10;Module({xm=xm}, xm=xm+1;Print(xm));xm", "10");
+		check("xm=10;Module({xm=xm}, xm=xm+1;Print(xm));xm", //
+				"10");
 		check("Module({var1=2*2,var2=var1}, {var1,var2})", //
 				"{4,var1}");
 		check("Module({x=y,y=z,z=3}, Print({Hold(x),Hold(y),Hold(z)});{x,y,z})", //
@@ -10065,9 +10115,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Module({x,f}, f(0)=0;f(x_):=f(x-1)+x;f(3))", //
 				"6");
 		check("Module({x},Function(y,x+y))", //
-				"Function(y$26,x$26+y$26)");
+				"Function(y$25,x$25+y$25)");
 		// check("Module({y},Function(y,x+y))",//
 		// "x$22$23+y");
+		
+		check("Module({x}, g2(x_)=Integrate(Sqrt(1+z^2),{z,0,x}));Table(g2(i),{i,3})", //
+				"{1/Sqrt(2)+ArcSinh(1)/2,Sqrt(5)+ArcSinh(2)/2,3*Sqrt(5/2)+ArcSinh(3)/2}");
 	}
 
 	public void testMoebiusMu() {
@@ -13953,6 +14006,27 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testReplaceAll() {
+		check("{x,Sin(x),x^2,x*y,x+y,g(y,x),h(x,y,z)} /. f_Power :> (f /. x->10)", //
+				"{x,Sin(x),100,x*y,x+y,g(y,x),h(x,y,z)}");
+		check("{x,Sin(x),x^2,x*y,x+y,g(y,x),h(x,y,z)} /. Sin(x_) -> Sin(10)", //
+				"{x,Sin(10),x^2,x*y,x+y,g(y,x),h(x,y,z)}");
+		check("{x,Sin(x),x^2,x*y,x+y,g(y,x),h(x,y,z),Cos(y)} /. HoldPattern(Plus(t__)) :> (Plus(t) /. x->10)", //
+				"{x,Sin(x),x^2,x*y,10+y,g(y,x),h(x,y,z),Cos(y)}");
+		check("{x,Sin(x),x^2,x*y,x+y,g(y,x),h(x,y,z),Cos(y)} /. Plus(t__) :> (Plus(t) /. x->10)", //
+				"{10,Sin(10),100,10*y,10+y,g(y,10),h(10,y,z),Cos(y)}");
+
+		check("{x,Sin(x),x^2,x*y,x+y,g(y,x),h(x,y,z),Cos(y)} /. Power(t__) :> (Power(t) /. x->10)", //
+				"{10,Sin(10),100,10*y,10+y,g(y,10),h(10,y,z),Cos(y)}");
+		check("{x,Sin(x),x^2,x*y,x+y,g(y,x),h(x,y,z),Cos(y)} /. HoldPattern(Power(t__)) :> (Power(t) /. x->10)", //
+				"{x,Sin(x),100,x*y,x+y,g(y,x),h(x,y,z),Cos(y)}");
+
+		check("{f(x),g(x),f(x,y),Sin(x+y),f(),f(x,y,z),Cos(y)} /. f(t__) :> a*f(t)", //
+				"{a*f(x),g(x),a*f(x,y),Sin(x+y),f(),a*f(x,y,z),Cos(y)}");
+		check("{f(x),g(x),f(x,y),Sin(x+y),f(),f(x,y,z),Cos(y)} /. x_f :> a*x", //
+				"{a*f(x),g(x),a*f(x,y),Sin(x+y),a*f(),a*f(x,y,z),Cos(y)}");
+		check("{f(x),g(x),f(x,y),Sin(x+y),f(),f(x,y,z),Cos(y)} /. f(t___) :> a*f(t)", //
+				"{a*f(x),g(x),a*f(x,y),Sin(x+y),a*f(),a*f(x,y,z),Cos(y)}");
+
 		// prints
 		// {{1,{2,3}},{4,5}}
 		// {1,{2,3}}
@@ -14053,6 +14127,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("f(a) + f(b) /. f(x_) -> x^2", //
 				"a^2+b^2");
+		check("(x_ /; x < 0)", //
+				"x_/;x<0");
 		check("{1 + a, 2 + a, -3 + a} /. (x_ /; x < 0) + a -> p(x)", //
 				"{1+a,2+a,p(-3)}");
 		check("$fac(x_ /; x > 0) := x!;$fac(6) + $fac(-4)", //

@@ -352,13 +352,13 @@ public final class Programming {
 
 		@Override
 		public final IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (engine.evalTrue(ast.arg2())) {
-				return ast.arg1();
+			if (engine.isEvalRHSMode()) {
+				if (engine.evalTrue(ast.arg2())) {
+					return ast.arg1();
+				}
+				throw new ConditionException(ast);
 			}
-			if (engine.isEvalLHSMode()) {
-				return F.NIL;
-			}
-			throw new ConditionException(ast);
+			return F.NIL;
 		}
 
 		public int[] expectedArgSize() {
@@ -2933,7 +2933,7 @@ public final class Programming {
 			return result.orElse(withBlock);
 		}
 		return F.NIL;
-	}
+	} 
 
 	/**
 	 * Get the element stored at the given <code>position</code>.

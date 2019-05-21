@@ -155,6 +155,8 @@ public class EvalEngine implements Serializable {
 
 	transient boolean fEvalLHSMode;
 
+	transient boolean fEvalRHSMode;
+
 	/**
 	 * @see Config#isFileSystemEnabled();
 	 */
@@ -393,6 +395,7 @@ public class EvalEngine implements Serializable {
 		engine.fContextPath = fContextPath.copy();
 		engine.fErrorPrintStream = fErrorPrintStream;
 		engine.fEvalLHSMode = fEvalLHSMode;
+		engine.fEvalRHSMode = fEvalRHSMode;
 		engine.fFileSystemEnabled = fFileSystemEnabled;
 		engine.fIterationLimit = fIterationLimit;
 		engine.fModifiedVariablesList = fModifiedVariablesList;
@@ -1868,6 +1871,7 @@ public class EvalEngine implements Serializable {
 		fNumericMode = false;
 		fTogetherMode = false;
 		fEvalLHSMode = false;
+		fEvalRHSMode = false;
 		fOnOffMode = false;
 		fOnOffUnique = false;
 		fOnOffUniqueMap = null;
@@ -1902,6 +1906,14 @@ public class EvalEngine implements Serializable {
 	 */
 	public final boolean isEvalLHSMode() {
 		return fEvalLHSMode;
+	}
+
+	public final boolean isEvalRHSMode() {
+		return fEvalRHSMode;
+	}
+
+	public final void setEvalRHSMode(boolean evalRHSMode) {
+		fEvalRHSMode = evalRHSMode;
 	}
 
 	public final boolean isFileSystemEnabled() {
@@ -2052,9 +2064,9 @@ public class EvalEngine implements Serializable {
 		fNumericPrecision = 15;
 		fNumericMode = false;
 		fEvalLHSMode = false;
+		fEvalRHSMode = false;
 		fRecursionCounter = 0;
 		fTogetherMode = false;
-		fEvalLHSMode = false;
 		fTraceMode = false;
 		fTraceStack = null;
 		fStopRequested = false;
