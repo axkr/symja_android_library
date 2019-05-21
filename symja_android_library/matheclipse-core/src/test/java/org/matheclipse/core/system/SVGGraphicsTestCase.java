@@ -14,10 +14,11 @@ public class SVGGraphicsTestCase extends AbstractTestCase {
 	public void testPoint001() {
 
 		checkSVGGraphics("Show(Graphics(Point({0, 0})))",
-				"<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"-1.666667 -1.666667 353.333333 353.333333\" width=\"350px\" height=\"350px\">\n"
-						+ "<circle cx=\"175.0\" cy=\"175.0\" r=\"1.0\" \n"
-						+ "      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 0.0%); fill-opacity: 1\" />\n"
-						+ "\n" + "</svg>");
+				"<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"-1.666667 -1.666667 353.333333 353.333333\" width=\"350px\" height=\"350px\">\n" + 
+				"<circle cx=\"175.0\" cy=\"175.0\" r=\"2.16667\" \n" + 
+				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 100.0%); fill-opacity: 1\" />\n" + 
+				"\n" + 
+				"</svg>");
 
 	}
 
@@ -25,28 +26,28 @@ public class SVGGraphicsTestCase extends AbstractTestCase {
 
 		checkSVGGraphics("Show(Graphics(Point(Table({t, Sin(t)}, {t, 0, 2*Pi, 2*Pi/10}))))",
 				"<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"-1.666667 -1.666667 353.333333 353.333333\" width=\"350px\" height=\"350px\">\n" + 
-				"<circle cx=\"0.0\" cy=\"175.0\" r=\"1.0\" \n" + 
-				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 0.0%); fill-opacity: 1\" />\n" + 
-				"<circle cx=\"35.0\" cy=\"66.84405\" r=\"1.0\" \n" + 
-				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 0.0%); fill-opacity: 1\" />\n" + 
-				"<circle cx=\"70.0\" cy=\"0.0\" r=\"1.0\" \n" + 
-				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 0.0%); fill-opacity: 1\" />\n" + 
-				"<circle cx=\"105.0\" cy=\"0.0\" r=\"1.0\" \n" + 
-				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 0.0%); fill-opacity: 1\" />\n" + 
-				"<circle cx=\"140.0\" cy=\"66.84405\" r=\"1.0\" \n" + 
-				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 0.0%); fill-opacity: 1\" />\n" + 
-				"<circle cx=\"175.0\" cy=\"175.0\" r=\"1.0\" \n" + 
-				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 0.0%); fill-opacity: 1\" />\n" + 
-				"<circle cx=\"210.0\" cy=\"283.15595\" r=\"1.0\" \n" + 
-				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 0.0%); fill-opacity: 1\" />\n" + 
-				"<circle cx=\"245.0\" cy=\"350.0\" r=\"1.0\" \n" + 
-				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 0.0%); fill-opacity: 1\" />\n" + 
-				"<circle cx=\"280.0\" cy=\"350.0\" r=\"1.0\" \n" + 
-				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 0.0%); fill-opacity: 1\" />\n" + 
-				"<circle cx=\"315.0\" cy=\"283.15595\" r=\"1.0\" \n" + 
-				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 0.0%); fill-opacity: 1\" />\n" + 
-				"<circle cx=\"350.0\" cy=\"175.0\" r=\"1.0\" \n" + 
-				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 0.0%); fill-opacity: 1\" />\n" + 
+				"<circle cx=\"0.0\" cy=\"175.0\" r=\"2.16667\" \n" + 
+				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 100.0%); fill-opacity: 1\" />\n" + 
+				"<circle cx=\"35.0\" cy=\"66.84405\" r=\"2.16667\" \n" + 
+				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 100.0%); fill-opacity: 1\" />\n" + 
+				"<circle cx=\"70.0\" cy=\"0.0\" r=\"2.16667\" \n" + 
+				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 100.0%); fill-opacity: 1\" />\n" + 
+				"<circle cx=\"105.0\" cy=\"0.0\" r=\"2.16667\" \n" + 
+				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 100.0%); fill-opacity: 1\" />\n" + 
+				"<circle cx=\"140.0\" cy=\"66.84405\" r=\"2.16667\" \n" + 
+				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 100.0%); fill-opacity: 1\" />\n" + 
+				"<circle cx=\"175.0\" cy=\"175.0\" r=\"2.16667\" \n" + 
+				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 100.0%); fill-opacity: 1\" />\n" + 
+				"<circle cx=\"210.0\" cy=\"283.15595\" r=\"2.16667\" \n" + 
+				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 100.0%); fill-opacity: 1\" />\n" + 
+				"<circle cx=\"245.0\" cy=\"350.0\" r=\"2.16667\" \n" + 
+				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 100.0%); fill-opacity: 1\" />\n" + 
+				"<circle cx=\"280.0\" cy=\"350.0\" r=\"2.16667\" \n" + 
+				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 100.0%); fill-opacity: 1\" />\n" + 
+				"<circle cx=\"315.0\" cy=\"283.15595\" r=\"2.16667\" \n" + 
+				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 100.0%); fill-opacity: 1\" />\n" + 
+				"<circle cx=\"350.0\" cy=\"175.0\" r=\"2.16667\" \n" + 
+				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 100.0%); fill-opacity: 1\" />\n" + 
 				"\n" + 
 				"</svg>");
 
@@ -89,7 +90,7 @@ public class SVGGraphicsTestCase extends AbstractTestCase {
 		checkSVGGraphics("Show(Graphics({Rectangle({1, 1})}))",
 				"<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"-1.666667 -1.666667 353.333333 353.333333\" width=\"350px\" height=\"350px\">\n"
 						+ "<rect x=\"0.0\" y=\"0.0\" width=\"350.0\" height=\"350.0\" \n"
-						+ "      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 0.0%); stroke-opacity: 1; stroke-width: 0.666667px; fill-opacity: 1\" />\n"
+						+ "      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 100.0%); stroke-opacity: 1; stroke-width: 0.666667px; fill-opacity: 1\" />\n"
 						+ "\n" + "</svg>");
 
 	}
@@ -123,7 +124,7 @@ public class SVGGraphicsTestCase extends AbstractTestCase {
 		checkSVGGraphics("Show(Graphics({Rectangle({1, 1})}, Axes -> True, PlotRange -> {{-2, 1.5}, {-1, 1.5}}))",
 				"<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"-1.666667 -1.666667 353.333333 353.333333\" width=\"350px\" height=\"350px\">\n"
 						+ "<rect x=\"300.0\" y=\"-70.0\" width=\"100.0\" height=\"140.0\" \n"
-						+ "      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 0.0%); stroke-opacity: 1; stroke-width: 0.666667px; fill-opacity: 1\" />\n"
+						+ "      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 100.0%); stroke-opacity: 1; stroke-width: 0.666667px; fill-opacity: 1\" />\n"
 						+ "<polyline points=\"200.0,0.0 200.0,350.0\" style=\"stroke: rgb(0.000000%, 0.000000%, 0.000000%); stroke-opacity: 1; stroke-width: 0.666667px; fill: none\"/>\n"
 						+ "<polyline points=\"0.0,140.0 350.0,140.0\" style=\"stroke: rgb(0.000000%, 0.000000%, 0.000000%); stroke-opacity: 1; stroke-width: 0.666667px; fill: none\"/>\n"
 						+ "\n" + "</svg>");
