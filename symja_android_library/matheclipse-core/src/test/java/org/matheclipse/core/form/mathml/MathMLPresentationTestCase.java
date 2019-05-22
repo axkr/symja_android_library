@@ -91,7 +91,13 @@ public class MathMLPresentationTestCase extends TestCase {
 		check("Sqrt(-4*I)",
 				"<msqrt><mrow><mrow><mo>(</mo><mn>-4</mn><mo>)</mo></mrow><mo>&#0183;</mo><mrow><mi>&#x2148;</mi></mrow></mrow></msqrt>");
 		check("DirectedInfinity()",
-				"<mrow><mi>DirectedInfinity</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow></mrow><mo>)</mo></mrow></mrow>");
+				"<mi>ComplexInfinity</mi>");
+		check("DirectedInfinity(-1)",
+				"<mrow><mo>-</mo><mi>&#x221E;</mi></mrow>");
+		check("DirectedInfinity(I)",
+				"<mrow><mrow><mi>&#x2148;</mi></mrow><mo>&#0183;</mo><mi>Infinity</mi></mrow>");
+		check("DirectedInfinity(-I)",
+				"<mrow><mrow><mrow><mo>-</mo><mi>&#x2148;</mi></mrow></mrow><mo>&#0183;</mo><mi>Infinity</mi></mrow>");
 		check("Integrate(f(x), x)",
 				"<mo>&#x222B;</mo><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow><mrow><mo>&#x2146;</mo><mi>x</mi></mrow>");
 

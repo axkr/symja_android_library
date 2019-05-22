@@ -2577,6 +2577,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCondition() {
+		check("x /; x > 0", //
+				"x/;x>0");
+		check("x /; (10==10)", //
+				"x/;10==10");
+
 		check("fac(n_ /; n > 0) := n!", //
 				"");
 		check("fac(3)+fac(-4)", //
@@ -10058,7 +10063,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("num=Sin(3*I);Module({v=N(num)},If(PossibleZeroQ(Re(v)),Im(v)>0,Re(v)>0))",
 		// "True");
 		// check("Module({x=5}, Hold(x))", "Hold(x$1)");
-		 
+
 		check("xm=10;Module({xm=xm}, xm=xm+1;xm);xm", //
 				"10");
 		check("xm=10;Module({t=xm}, xm=xm+1;t)", //
@@ -10118,7 +10123,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Function(y$25,x$25+y$25)");
 		// check("Module({y},Function(y,x+y))",//
 		// "x$22$23+y");
-		
+
 		check("Module({x}, g2(x_)=Integrate(Sqrt(1+z^2),{z,0,x}));Table(g2(i),{i,3})", //
 				"{1/Sqrt(2)+ArcSinh(1)/2,Sqrt(5)+ArcSinh(2)/2,3*Sqrt(5/2)+ArcSinh(3)/2}");
 	}
@@ -12454,7 +12459,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "$Aborted");
 		// check("TimeConstrained(1^3^3^3, 10)", //
 		// "1");
-
+		check("0^(-1)", //
+				"ComplexInfinity");
 		check("Power(a,b,c,d) // FullForm", //
 				"Power(a, Power(b, Power(c, d)))");
 
