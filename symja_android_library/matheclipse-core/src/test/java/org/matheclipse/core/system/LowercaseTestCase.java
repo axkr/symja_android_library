@@ -2099,6 +2099,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCoefficient() {
+		// TODO
+		// check("Coefficient(2*x*y+5*x^3,x^3,0)", //
+		// "0");
+		check("Coefficient(x*y,z,0)", //
+				"x*y");
+		check("Coefficient(2*x*y+5*x^3,2*x)", //
+				"y");
+		check("Coefficient((2*x)^7*y+5*x^3,x^3)", //
+				"5");
+		check("Coefficient(2*x *y+5*x^3,x^3)", //
+				"5");
+
+		check("Coefficient(Cos(x*y), Cos(x*y))", //
+				"1");
 		check("Coefficient(2*x^2,x^2)", //
 				"2");
 		check("Coefficient(2*x^4,x^2)", //
@@ -2291,6 +2305,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCoefficientList() {
+		check("CoefficientList(2*x*y+5*x^3,2*x)", //
+				"{5*x^3+2*x*y}");
+		check("CoefficientList((2*x)^7*y+5*x^3,x^3)", //
+				"{128*x^7*y,5}");
+		check("CoefficientList(2*x *y+5*x^3,x^3)", //
+				"{2*x*y,5}");
+
+		check("CoefficientList(Cos(x*y), Cos(x*y))", //
+				"{0,1}");
 		// http://oeis.org/A000045 - Fibonacci numbers
 		check("CoefficientList(Series(-(x/(-1 + x + x^2)), {x, 0, 20}), x)", //
 				"{0,1,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765}");
@@ -5095,6 +5118,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testExponent() {
+
+		check("Exponent((2*x )^7*y+5*x^3,x^3)", //
+				"7/3");
+		check("Exponent(2*x *y+5*x^3,x^3)", //
+				"1");
+		check("Exponent(2*x*y+5*x^3,2*x)", //
+				"1");
+		check("Exponent(Cos(x*y), Cos(x*y))", //
+				"1");
 		check("Exponent(x^3,x^2)", //
 				"3/2");
 		check("Exponent(x^a,x^2)", //
@@ -12247,6 +12279,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialQ() {
+		check("PolynomialQ(x^(1/2) + 6*Sin(x), {})", //
+				"True");
+		// only 1 arg gives always True ?
+		check("PolynomialQ(x^(1/2) + 6*Sin(x))", //
+				"True");
+
+		check("PolynomialQ(Cos(x*y), Cos(x*y))", //
+				"True");
 		check("PolynomialQ(x^3,x^2)", //
 				"False");
 		check("PolynomialQ(2*x^3,x^2)", //

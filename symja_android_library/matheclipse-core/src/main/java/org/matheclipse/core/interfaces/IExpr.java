@@ -2303,7 +2303,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default boolean isPolynomialOfMaxDegree(ISymbol variable, long maxDegree) {
-		return isPolynomial(variable);
+		return isPolynomial(F.List(variable));
 	}
 
 	/**

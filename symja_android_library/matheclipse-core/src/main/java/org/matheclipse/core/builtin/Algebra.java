@@ -1944,7 +1944,8 @@ public class Algebra {
 			return IOFunctions.ARGS_1_2;
 		}
 
-		public IExpr factorExpr(final IAST ast, IExpr expr, VariablesSet eVar, boolean factorSquareFree,  EvalEngine engine) {
+		public IExpr factorExpr(final IAST ast, IExpr expr, VariablesSet eVar, boolean factorSquareFree,
+				EvalEngine engine) {
 			if (expr.isAST()) {
 				IExpr temp;
 				// if (expr.isPower()&&expr.base().isPlus()) {
@@ -1953,7 +1954,7 @@ public class Algebra {
 				// temp = F.Power(temp, expr.exponent());
 				// } else
 				if (expr.isPower()) {
-					IExpr p = factorExpr((IAST) expr, expr.base(), eVar,factorSquareFree, engine);
+					IExpr p = factorExpr((IAST) expr, expr.base(), eVar, factorSquareFree, engine);
 					if (!p.equals(expr.base())) {
 						return F.Power(p, expr.exponent());
 					}
@@ -1965,7 +1966,7 @@ public class Algebra {
 							return factorExpr(ast, x, eVar, factorSquareFree, engine);
 						}
 						if (x.isPower() && x.base().isPlus()) {
-							IExpr p = factorExpr(ast, x.base(), eVar, factorSquareFree,engine);
+							IExpr p = factorExpr(ast, x.base(), eVar, factorSquareFree, engine);
 							if (!p.equals(x.base())) {
 								return F.Power(p, x.exponent());
 							}
@@ -2139,7 +2140,7 @@ public class Algebra {
 				if (ast.isAST2()) {
 					return factorWithOption(ast, expr, varList, true, engine);
 				}
-				if (expr.isAST()) { 
+				if (expr.isAST()) {
 					return factorExpr((IAST) expr, (IAST) expr, eVar, true, engine);
 				}
 				return expr;
@@ -3007,7 +3008,18 @@ public class Algebra {
 			if (ast.isAST2()) {
 				IExpr arg1 = engine.evaluate(ast.arg1());
 				IExpr arg2 = engine.evaluate(ast.arg2());
-				return F.bool(arg1.isPolynomial(arg2.orNewList()));
+
+				IAST variablesList = F.NIL;
+				if (arg2.isList()) {
+					variablesList = (IAST) arg2;
+				} else {
+					variablesList = F.List(arg2);
+				}
+				IAST subst = substituteVariablesInPolynomial(arg1, variablesList, "§PolynomialQ");
+				return F.bool(subst.arg1().isPolynomial((IAST) subst.arg2()));
+			}
+			if (ast.isAST1()) {
+				return F.True;
 			}
 			return F.False;
 			// if (ast.isAST2()) {
@@ -3015,6 +3027,11 @@ public class Algebra {
 			// return F.bool(temp.arg1().isPolynomial(temp.arg2().orNewList()));
 			// }
 			// return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		@Override
@@ -5748,6 +5765,31 @@ public class Algebra {
 			}
 		}
 		return temp;
+	}
+
+	/**
+	 * If AST structures are available in the variableList create dummy variables and replace these expressions in
+	 * polyExpr.
+	 * 
+	 * @param polyExpr
+	 * @param variablesList
+	 *            a list of variables, which aren't necessarily symbols
+	 * @param dummyStr
+	 * @return <code>F.List(polyExpr, substitutedVariableList)</code>
+	 */
+	public static IAST substituteVariablesInPolynomial(IExpr polyExpr, IAST variablesList, String dummyStr) {
+		IASTAppendable substitutedVariableList = F.ListAlloc(variablesList.size());
+		for (int i = 1; i < variablesList.size(); i++) {
+			IExpr listArg = variablesList.get(i);
+			if (listArg.isAST() && !listArg.isPower()) {
+				ISymbol dummy = F.Dummy(dummyStr + i);
+				polyExpr = F.subst(polyExpr, F.Rule(listArg, dummy));
+				substitutedVariableList.append(dummy);
+			} else {
+				substitutedVariableList.append(listArg);
+			}
+		}
+		return F.List(polyExpr, substitutedVariableList);
 	}
 
 	public static void initialize() {

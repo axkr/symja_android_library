@@ -4,6 +4,8 @@ import static org.matheclipse.core.expression.F.List;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.AST;
@@ -31,11 +33,13 @@ public class Object2Expr {
 	 * null object          F.Null symbol
 	 * IExpr                IExpr type
 	 * Boolean              True or False symbol
-	 * BigInteger           Integer value  
-	 * BigDecimal           <code>Num</code> with doubleValue() value
-	 * Double               <code>Num</code> with doubleValue() value
-	 * Float                <code>Num</code> with doubleValue() value
-	 * Number               Integer with longValue() value
+	 * BigInteger           Symja Integer value  
+	 * BigDecimal           Symja <code>Num</code> with doubleValue() value
+	 * Double               Symja <code>Num</code> with doubleValue() value
+	 * Float                Symja <code>Num</code> with doubleValue() value
+	 * Integer              Symja Integer with longValue() value
+	 * Long                 Symja Integer with longValue() value
+	 * Number               Symja <code>Num</code> with doubleValue() value
 	 * java.util.Collection list of elements 
 	 *                      1..nth element of the list give the elements of the List()
 	 * Object[]             a list of converted objects  
@@ -68,13 +72,25 @@ public class Object2Expr {
 			if (obj instanceof Double) {
 				return F.num(((Double) obj).doubleValue());
 			}
+			if (obj instanceof Integer) {
+				return F.num(((Integer) obj).longValue());
+			}
+			if (obj instanceof Long) {
+				return F.num(((Long) obj).longValue());
+			}
 			if (obj instanceof AtomicDouble) {
 				return F.num(((AtomicDouble) obj).doubleValue());
+			}
+			if (obj instanceof AtomicInteger) {
+				return F.ZZ(((AtomicInteger) obj).longValue());
+			}
+			if (obj instanceof AtomicLong) {
+				return F.ZZ(((AtomicLong) obj).longValue());
 			}
 			if (obj instanceof Float) {
 				return F.num(((Float) obj).doubleValue());
 			}
-			return F.integer(((Number) obj).longValue());
+			return F.num(((Number) obj).doubleValue());
 		}
 		if (obj instanceof String) {
 			final ExprParser parser = new ExprParser(EvalEngine.get());

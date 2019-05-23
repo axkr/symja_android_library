@@ -429,8 +429,8 @@ public final class StringFunctions {
 				}
 				try {
 					if (form.equals(F.InputForm)) {
-						ExprParser fParser = new ExprParser(engine);
-						IExpr temp = fParser.parse(arg1.toString());
+						ExprParser parser = new ExprParser(engine);
+						IExpr temp = parser.parse(arg1.toString());
 						return temp;
 					} else if (form.equals(F.TeXForm)) {
 						TeXParser texParser = new TeXParser(engine);

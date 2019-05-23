@@ -162,38 +162,38 @@ public class PolynomialFunctions {
 			// array of corresponding exponents for the list of variables
 			long[] exponents = null;
 
-			if (arg2.isTimes()) {
-				// Times(x, y^a,...)
-				IAST arg2AST = (IAST) arg2;
-				VariablesSet eVar = new VariablesSet(arg2AST);
-				listOfVariables = eVar.getVarList();
-				exponents = new long[listOfVariables.argSize()];
-				for (int i = 0; i < exponents.length; i++) {
-					exponents[i] = 0L;
-				}
-				for (int i = 1; i < arg2AST.size(); i++) {
-					long value = 1L;
-					IExpr a1 = arg2AST.get(i);
-					if (a1.isPower() && a1.exponent().isInteger()) {
-						a1 = arg2AST.get(i).base();
-						IInteger ii = (IInteger) arg2AST.get(i).exponent();
-						try {
-							value = ii.toLong();
-						} catch (ArithmeticException ae) {
-							return F.NIL;
-						}
-					}
-
-					if (!setExponent(listOfVariables, a1, exponents, value)) {
-						return F.NIL;
-					}
-				}
-			} else {
-				listOfVariables = F.ListAlloc();
-				listOfVariables.append(arg2);
-				exponents = new long[1];
-				exponents[0] = 1;
-			}
+			// if (arg2.isTimes()) {
+			// // Times(x, y^a,...)
+			// IAST arg2AST = (IAST) arg2;
+			// VariablesSet eVar = new VariablesSet(arg2AST);
+			// listOfVariables = eVar.getVarList();
+			// exponents = new long[listOfVariables.argSize()];
+			// for (int i = 0; i < exponents.length; i++) {
+			// exponents[i] = 0L;
+			// }
+			// for (int i = 1; i < arg2AST.size(); i++) {
+			// long value = 1L;
+			// IExpr a1 = arg2AST.get(i);
+			// if (a1.isPower() && a1.exponent().isInteger()) {
+			// a1 = arg2AST.get(i).base();
+			// IInteger ii = (IInteger) arg2AST.get(i).exponent();
+			// try {
+			// value = ii.toLong();
+			// } catch (ArithmeticException ae) {
+			// return F.NIL;
+			// }
+			// }
+			//
+			// if (!setExponent(listOfVariables, a1, exponents, value)) {
+			// return F.NIL;
+			// }
+			// }
+			// } else {
+			listOfVariables = F.ListAlloc();
+			listOfVariables.append(arg2);
+			exponents = new long[1];
+			exponents[0] = 1;
+			// }
 
 			try {
 				long n = 1;
@@ -208,6 +208,9 @@ public class PolynomialFunctions {
 				}
 				ExpVectorLong expArr = new ExpVectorLong(exponents);
 				IExpr expr = F.evalExpandAll(ast.arg1(), engine).normal();
+				IAST subst = Algebra.substituteVariablesInPolynomial(expr, listOfVariables, "§Coefficient");
+				expr = subst.arg1();
+				listOfVariables = (IASTAppendable) subst.arg2();
 				ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, listOfVariables);
 				ExprPolynomial poly = ring.create(expr, true, false);
 				IExpr temp = poly.coefficient(expArr);
@@ -239,7 +242,7 @@ public class PolynomialFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr expr = F.evalExpandAll(ast.arg1(), engine).normal();
-			IAST list = Validate.checkSymbolOrSymbolList(ast, 2);
+			IAST list = ast.arg2().orNewList();
 			return coefficientList(expr, list);
 		}
 
@@ -328,9 +331,6 @@ public class PolynomialFunctions {
 				symbolList = Validate.checkSymbolOrSymbolList(ast, 2);
 				varList = new ArrayList<IExpr>(symbolList.argSize());
 				symbolList.forEach(x -> varList.add(x));
-				// for (int i = 1; i < symbolList.size(); i++) {
-				// varList.add(symbolList.get(i));
-				// }
 			}
 			TermOrder termOrder = TermOrderByName.Lexicographic;
 			try {
@@ -501,7 +501,6 @@ public class PolynomialFunctions {
 			if (x.isZero()) {
 				return F.C1;
 			}
-			// IASTAppendable result = F.PlusAlloc(n + 1);
 			if (LongMath.isPrime(n)) {
 				return F.sum(i -> x.power(i), 0, n - 1);
 			}
@@ -746,10 +745,11 @@ public class PolynomialFunctions {
 				return cached;
 			}
 
-			final IExpr form = engine.evalPattern(ast.arg2());
+			IExpr form = engine.evalPattern(ast.arg2());
 			if (form.isList()) {
 				return ((IAST) form).mapThread(ast, 2);
 			}
+
 			ISymbol sym = F.Max;
 			if (ast.isAST3()) {
 				final IExpr arg3 = engine.evaluate(ast.arg3());
@@ -767,6 +767,9 @@ public class PolynomialFunctions {
 			// }
 			// }
 			IExpr expr = F.evalExpandAll(ast.arg1(), engine).normal();
+			IAST subst = Algebra.substituteVariablesInPolynomial(expr, F.List(form), "§Exponent");
+			expr = subst.arg1();
+			form = subst.arg2().first();
 			// if (expr.isTimes()) {
 			// expr =F.Distribute.of(expr);
 			// }
@@ -811,7 +814,6 @@ public class PolynomialFunctions {
 				}
 
 			} else if (expr.isSymbol()) {
-				// final PatternMatcher matcher = new PatternMatcherEvalEngine(form, engine);
 				final IPatternMatcher matcher = engine.evalPatternMatcher(form);
 				if (matcher.test(expr)) {
 					collector.add(F.C1);
@@ -2269,7 +2271,7 @@ public class PolynomialFunctions {
 					}
 				} else {
 					polyRat = jas.expr2JAS(temp, numericSolutions);
-					IAST factorComplex = Algebra.factorComplex(temp,polyRat, jas, F.List);
+					IAST factorComplex = Algebra.factorComplex(temp, polyRat, jas, F.List);
 					for (int k = 1; k < factorComplex.size(); k++) {
 						temp = F.evalExpand(factorComplex.get(k));
 						quarticResultList = QuarticSolver.solve(temp, variables.arg1());

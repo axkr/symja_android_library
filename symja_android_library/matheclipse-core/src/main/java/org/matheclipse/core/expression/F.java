@@ -84,9 +84,11 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.parser.ExprParserFactory;
 import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.parser.client.SyntaxError;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -4395,15 +4397,58 @@ public class F {
 	/**
 	 * Converts an arbitrary expression to a type that can be used inside Symja.
 	 * 
-	 * For example, it will convert Java <code>Integer</code> into instance of <code>IntegerSym</code>,
-	 * <code>Double</code> into instances of <code>Num</code>, etc.
+	 * <pre>
+	 * Java Object       -&gt; Symja object
+	 * -------------------------------------
+	 * null object          F.Null symbol
+	 * IExpr                IExpr type
+	 * Boolean              True or False symbol
+	 * BigInteger           Integer value  
+	 * BigDecimal           <code>Num</code> with doubleValue() value
+	 * Double               <code>Num</code> with doubleValue() value
+	 * Float                <code>Num</code> with doubleValue() value
+	 * Integer              Symja Integer with longValue() value
+	 * Long                 Symja Integer with longValue() value
+	 * Number               Symja <code>Num</code> with doubleValue() value
+	 * java.util.Collection list of elements 
+	 *                      1..nth element of the list give the elements of the List()
+	 * Object[]             a list of converted objects  
+	 * int[]                a list of <code>IntegerSym</code> integer values
+	 * double[]             a vector ASTRealVector of <code>double</code> values
+	 * double[][]           a matrix ASTRealMatrix of <code>double</code> values
+	 * Complex[]            a list of <code>ComplexNum</code> values
+	 * boolean[]            a list of True or False symbols
 	 * 
+	 * </pre>
 	 * 
-	 * @param object
-	 * @return
 	 */
 	public static IExpr symjify(final Object object) {
 		return Object2Expr.convert(object);
+	}
+
+	/**
+	 * Parses a Java string to a Symja expression. May throw an SyntaxError exception, if the string couldn't be parsed.
+	 * 
+	 * @param str
+	 *            the epression which should be parsed
+	 * @return
+	 * @throws SyntaxError
+	 */
+	public static IExpr symjify(final String str) throws SyntaxError {
+		ExprParser parser = new ExprParser(EvalEngine.get());
+		return parser.parse(str);
+	}
+
+	public static IExpr symjify(final long value) {
+		return F.ZZ(value);
+	}
+
+	public static IExpr symjify(final double value) {
+		return F.num(value);
+	}
+
+	public static IExpr symjify(final boolean value) {
+		return value ? F.True : F.False;
 	}
 
 	/**
