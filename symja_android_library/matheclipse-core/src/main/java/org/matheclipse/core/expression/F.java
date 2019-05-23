@@ -4395,7 +4395,7 @@ public class F {
 	}
 
 	/**
-	 * Converts an arbitrary expression to a type that can be used inside Symja.
+	 * Converts and evaluates arbitrary expressiona to a Symja type.
 	 * 
 	 * <pre>
 	 * Java Object       -&gt; Symja object
@@ -4423,7 +4423,24 @@ public class F {
 	 * 
 	 */
 	public static IExpr symjify(final Object object) {
-		return Object2Expr.convert(object);
+		return symjify(object, true);
+	}
+
+	public static IExpr symjify(final Object object, boolean evaluate) {
+		IExpr temp = Object2Expr.convert(object);
+		return evaluate ? eval(temp) : temp;
+	}
+
+	/**
+	 * Parses and evaluates a Java string to a Symja expression. May throw an SyntaxError exception, if the string couldn't be parsed.
+	 * 
+	 * @param str
+	 *            the epression which should be parsed
+	 * @return
+	 * @throws SyntaxError
+	 */
+	public static IExpr symjify(final String str) throws SyntaxError { 
+		return symjify(str, true);
 	}
 
 	/**
@@ -4431,12 +4448,16 @@ public class F {
 	 * 
 	 * @param str
 	 *            the epression which should be parsed
+	 * @param evaluate
+	 *            if true evaluate the parsed string
 	 * @return
 	 * @throws SyntaxError
 	 */
-	public static IExpr symjify(final String str) throws SyntaxError {
-		ExprParser parser = new ExprParser(EvalEngine.get());
-		return parser.parse(str);
+	public static IExpr symjify(final String str, boolean evaluate) throws SyntaxError {
+		EvalEngine engine = EvalEngine.get();
+		ExprParser parser = new ExprParser(engine);
+		IExpr temp = parser.parse(str);
+		return evaluate ? engine.evaluate(temp) : temp;
 	}
 
 	public static IExpr symjify(final long value) {

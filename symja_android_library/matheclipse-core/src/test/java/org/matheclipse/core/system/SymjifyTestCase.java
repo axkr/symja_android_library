@@ -4,7 +4,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * 
+ * Test F.symjify()
  */
 public class SymjifyTestCase extends AbstractTestCase {
 	public SymjifyTestCase(String name) {
@@ -13,7 +13,7 @@ public class SymjifyTestCase extends AbstractTestCase {
 
 	public void test001() {
 		IExpr expr = F.symjify("(a+(b+c))");
-		assertEquals(expr.fullFormString(), "Plus(a, Plus(b, c))");
+		assertEquals(expr.fullFormString(), "Plus(a, b, c)");
 		assertEquals(expr.toString(), "a+b+c");
 	}
 	
