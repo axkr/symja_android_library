@@ -153,13 +153,6 @@ With the following command you can build a fat jar which contains all needed cla
 mvn assembly:single -pl matheclipse-core
 ```
 
-The *Excelsior JET Maven Plugin* provides Maven users with an easy way to compile their applications
-down to optimized native Windows, OS X, or Linux executables with [Excelsior JET](http://excelsiorjet.com).
-
-```
-mvn jet:build -pl matheclipse-core
-```
-
 ### Getting started
 
 First, you'll need a Java Development Kit compatible with Java 8 or later.
