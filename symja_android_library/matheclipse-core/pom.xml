@@ -102,15 +102,7 @@
 			</resource>
 		</resources>
 		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>com.excelsiorjet</groupId>
-					<artifactId>excelsior-jet-maven-plugin</artifactId>
-					<version>1.3.0</version>
-					<configuration>
-						<mainClass>org.matheclipse.core.eval.MMAConsole</mainClass>
-					</configuration>
-				</plugin>
+			<plugins> 
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>exec-maven-plugin</artifactId>
