@@ -1,6 +1,7 @@
 package org.matheclipse.core.eval;
 
 import java.io.StringWriter;
+import java.util.concurrent.Callable;
 
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
@@ -8,16 +9,32 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
-public class EvalControlledCallable extends EvalCallable {
+public class EvalControlledCallable implements Callable<IExpr> {
+	protected final EvalEngine fEngine;
+	private IExpr fExpr;
+
 	public EvalControlledCallable(EvalEngine engine) {
-		super(engine);
+		fEngine = engine;
 	}
 
+	public void setExpr(IExpr fExpr) {
+		this.fExpr = fExpr;
+	}
+	
 	@Override
 	public IExpr call() throws Exception {
+		EvalEngine.remove();
+		EvalEngine.set(fEngine);
 		final StringWriter buf = new StringWriter();
 		try {
-			return super.call();
+			fEngine.reset();
+			IExpr temp = fEngine.evaluate(fExpr);
+			if (!fEngine.isOutListDisabled()) {
+				fEngine.addOut(temp);
+			}
+			return temp;
+		} catch (org.matheclipse.core.eval.exception.TimeoutException e) {
+			return F.$Aborted;
 		} catch (final SyntaxError se) {
 			String msg = se.getMessage();
 			System.err.println(msg);
@@ -48,4 +65,8 @@ public class EvalControlledCallable extends EvalCallable {
 		return F.$Aborted;
 	}
 
+
+	public void cancel() {
+		fEngine.setStopRequested(true);
+	}
 }

@@ -286,6 +286,10 @@ public class VariablesSet {
 		return list;
 	}
 
+	public void clear() {
+		fVariablesSet.clear();
+	}
+
 	/**
 	 * Searches the set for the specified object.
 	 * 

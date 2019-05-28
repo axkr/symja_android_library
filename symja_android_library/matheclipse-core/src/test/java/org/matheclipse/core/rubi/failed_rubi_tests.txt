@@ -1,7 +1,6 @@
 Exponentials
 HyperbolicFunctions
 IndependentTestSuites
-test0118 - Integrate[(x*(-Sqrt[-4 + x^2] + x^2*Sqrt[-4 + x^2] - 4*Sqrt[-1 + x^2] + x^2*Sqrt[-1 + x^2]))/((4 - 5*x^2 + x^4)*(1 + Sqrt[-4 + x^2] + Sqrt[-1 + x^2])), x]
 InverseHyperbolicFunctions
 test0041 - Integrate[(a + I*b*ArcSin[1 - I*d*x^2])^(-1), x]
 test0042 - Integrate[(a + I*b*ArcSin[1 - I*d*x^2])^(-2), x]
@@ -20,12 +19,9 @@ test0255 - Integrate[(1 + Cos[c + d*x])/(Cos[c + d*x]^(3/2)*Sqrt[2 + 3*Cos[c + d
 test0256 - Integrate[(1 + Cos[c + d*x])/(Cos[c + d*x]^(3/2)*Sqrt[-2 + 3*Cos[c + d*x]]), x]
 test0257 - Integrate[(1 + Cos[c + d*x])/(Cos[c + d*x]^(3/2)*Sqrt[3 + 2*Cos[c + d*x]]), x]
 test0258 - Integrate[(1 + Cos[c + d*x])/(Sqrt[3 - 2*Cos[c + d*x]]*Cos[c + d*x]^(3/2)), x]
-test0534 - Integrate[(Cos[x] - I*Sin[x])/(Cos[x] + I*Sin[x]), x]
 AlgebraicFunctions
 test0275 - Integrate[((1 - x)^(-1/2 + p)*(1 + x)^(1/2 + p))/(c*x)^(2*(1 + p)), x]
 test0276 - Integrate[(1 + x/a)^(n/2)/(x^2*(1 - x/a)^(n/2)), x]
 test0486 - Integrate[1/(Sqrt[3 - 3*Sqrt[3] + 2*Sqrt[3]*x^2]*Sqrt[3 + (-3 + Sqrt[3])*x^2]), x]
 test1047 - Integrate[(a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2)^p, x]
 test1242 - Integrate[(1 + Sqrt[c/a]*x^2)/((d + e*x^2)*Sqrt[a + b*x^2 + c*x^4]), x]
-test1327 - Integrate[x^7*(b + c*x + d*x^2)^7*(b + 2*c*x + 3*d*x^2), x]
-test1335 - Integrate[x*(2*c + 3*d*x)*(a + c*x^2 + d*x^3)^7, x]

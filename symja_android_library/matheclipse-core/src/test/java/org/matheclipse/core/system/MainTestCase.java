@@ -670,27 +670,39 @@ public class MainTestCase extends AbstractTestCase {
 
 	public void testSystem038() {
 		// bitbucket issue#15
-		check("Together(-(2*x-6)^(-1)-2*(-x+2)*(2*x-6)^(-2))", "-1/(-18+12*x-2*x^2)");
-		check("Simplify(-(2*x-6)^(-1)-2*(-x+2)*(2*x-6)^(-2))", "1/(2*(3-x)^2)");
+		check("Together(-(2*x-6)^(-1)-2*(-x+2)*(2*x-6)^(-2))", //
+				"-1/(-18+12*x-2*x^2)");
+		check("Simplify(-(2*x-6)^(-1)-2*(-x+2)*(2*x-6)^(-2))", //
+				"1/(2*(3-x)^2)");
 
-		check("D(Cosh(x),x)", "Sinh(x)"); // issue#39
-		check("D(x^4, x)", "4*x^3");
+		check("D(Cosh(x),x)", //
+				"Sinh(x)"); // issue#39
+		check("D(x^4, x)", //
+				"4*x^3");
 		check("D((-x+2)/(2*x-6), x)", //
 				"(-2*(2-x))/(6-2*x)^2-1/(-6+2*x)");
-		check("D((2*x-6)^(-1), x)", "-2/(6-2*x)^2");
+		check("D((2*x-6)^(-1), x)", //
+				"-2/(6-2*x)^2");
 
 		// (-x+2)*(2*x-6)^(-2)*2
 
-		check("D((1+x^2)^Sin(x),x)", "(1+x^2)^Sin(x)*(Cos(x)*Log(1+x^2)+(2*x*Sin(x))/(1+x^2))");
-		check("D(Sin(x^2),x)", "2*x*Cos(x^2)");
-		check("D(Sin(x)^2,x)", "2*Cos(x)*Sin(x)");
-		check("D(f(Sin(x)),{x,3})", "-Cos(x)*f'(Sin(x))-3*Cos(x)*Sin(x)*f''(Sin(x))+Cos(x)^3*Derivative(3)[f][Sin(x)]");
+		check("D((1+x^2)^Sin(x),x)", //
+				"(1+x^2)^Sin(x)*(Cos(x)*Log(1+x^2)+(2*x*Sin(x))/(1+x^2))");
+		check("D(Sin(x^2),x)", //
+				"2*x*Cos(x^2)");
+		check("D(Sin(x)^2,x)", //
+				"2*Cos(x)*Sin(x)");
+		check("D(f(Sin(x)),{x,3})", //
+				"-Cos(x)*f'(Sin(x))-3*Cos(x)*Sin(x)*f''(Sin(x))+Cos(x)^3*Derivative(3)[f][Sin(x)]");
 
-		check("D(f(x)/g(x), x)", "f'(x)/g(x)+(-f(x)*g'(x))/g(x)^2");
+		check("D(f(x)/g(x), x)", //
+				"f'(x)/g(x)+(-f(x)*g'(x))/g(x)^2");
 
-		check("Trace(D(Sin(x),x))", "{{NotListQ(x),True},{{D(x,x),1},1*Cos(x),Cos(x)},Cos(x)}");
-		check("D(Sin(x)^Cos(x),x)", "(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)");
-		check("Trace(D(Sin(x)^Cos(x),x))",
+		check("Trace(D(Sin(x),x))", //
+				"{{NotListQ(x),True},{{D(x,x),1},1*Cos(x),Cos(x)},Cos(x)}");
+		check("D(Sin(x)^Cos(x),x)", //
+				"(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)");
+		check("Trace(D(Sin(x)^Cos(x),x))", //
 				"{{{IntegerQ(#1)&&#1<0&[Cos(x)],IntegerQ(Cos(x))&&Cos(x)<0,{IntegerQ(Cos(x)),False},False}},Sin(x)^Cos(x)*(D(Cos(x),x)*Log(Sin(x))+(Cos(x)*D(Sin(x),x))/Sin(x)),{{IntegerQ(#1)&&#1<\n"
 						+ "0&[Cos(x)],IntegerQ(Cos(x))&&Cos(x)<0,{IntegerQ(Cos(x)),False},False}},{{{{NotListQ(x),True},{{D(x,x),\n"
 						+ "1},(-1)*1*Sin(x),-Sin(x)},-Sin(x)},Log(Sin(x))*-Sin(x),-Log(Sin(x))*Sin(x)},{{{NotListQ(x),True},{{D(x,x),\n"
@@ -702,7 +714,8 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem039() {
-		check("a+a", "2*a");
+		check("a+a", //
+				"2*a");
 
 		// test numericMode:
 	}
@@ -3853,9 +3866,12 @@ public class MainTestCase extends AbstractTestCase {
 
 	public void testNCalcGithub42() {
 		// https://github.com/tranleduy2000/ncalc/issues/42
-		check("D((x+2)/(x-3),x)", "1/(-3+x)-(2+x)/(3-x)^2");
-		check("Together(1/(-3+x)-(2+x)/(3-x)^2)", "-5/(9-6*x+x^2)");
-		check("Simplify(1/(-3+x)-(2+x)/(3-x)^2)", "-5/(3-x)^2");
+		check("D((x+2)/(x-3),x)", //
+				"1/(-3+x)-(2+x)/(3-x)^2");
+		check("Together(1/(-3+x)-(2+x)/(3-x)^2)", //
+				"-5/(9-6*x+x^2)");
+		check("Simplify(1/(-3+x)-(2+x)/(3-x)^2)", //
+				"-5/(3-x)^2");
 	}
 
 	// public void testOutputformats() {

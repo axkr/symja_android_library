@@ -160,7 +160,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	public final static int CONTAINS_NUMERIC_ARG = 0x00010000;
 
-	// public final static int DEFER_AST = 0x00020000;
+	public final static int BUILT_IN_EVALED = 0x00040000;
 
 	/**
 	 * Add an evaluation flag to the existing ones.
@@ -348,8 +348,8 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	/**
 	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied). In contrast
 	 * to the <code>copyAppendable()</code> method, this method returns exactly the same type for
-	 * <code>AST0, AST1, AST2, AST3</code> and tries to transform <code>AST</code> objects to <code>AST0, AST1, AST2, AST3</code> if
-	 * possible.
+	 * <code>AST0, AST1, AST2, AST3</code> and tries to transform <code>AST</code> objects to
+	 * <code>AST0, AST1, AST2, AST3</code> if possible.
 	 * 
 	 * @return a copy of this <code>IAST</code> instance.
 	 */
@@ -993,7 +993,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	@Override
 	public boolean isTrigFunction();
-	
+
 	/**
 	 * {@inheritDoc}
 	 */

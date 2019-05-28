@@ -2,16 +2,18 @@ package org.matheclipse.core.polynomials;
 
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.Map;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -21,20 +23,25 @@ import org.matheclipse.core.interfaces.ISymbol;
  * 
  */
 public class PolynomialHomogenization {
-	/**
-	 * The names of the variables from the unsubstituted polynomials.
-	 */
-	private final IAST vars;
 
 	/**
 	 * Variables (ISymbols) which are substituted from the original polynomial (backward substitution).
 	 */
-	protected java.util.IdentityHashMap<ISymbol, IExpr> substitutedVariables = new IdentityHashMap<ISymbol, IExpr>();
+	private java.util.Map<ISymbol, IExpr> substitutedVariables = new IdentityHashMap<ISymbol, IExpr>();
+
+	/**
+	 * Variables (ISymbols) which are substituted from the original polynomial (backward substitution).
+	 */
+	private java.util.Map<ISymbol, IASTAppendable> variablesLCMAST = null;
+
+	private java.util.Map<ISymbol, IInteger> variablesLCM = null;
 
 	/**
 	 * Expressions which are substituted with variables(ISymbol) from the original polynomial (forward substitution).
 	 */
-	protected java.util.HashMap<IExpr, ISymbol> substitutedExpr = new HashMap<IExpr, ISymbol>();
+	private java.util.HashMap<IExpr, ISymbol> substitutedExpr = new HashMap<IExpr, ISymbol>();
+
+	private EvalEngine engine;
 
 	/**
 	 * Forward and backward substitutions of expressions for polynomials. See
@@ -43,9 +50,52 @@ public class PolynomialHomogenization {
 	 * 
 	 * @param listOfVariables
 	 *            names for the variables.
+	 * @param engine
+	 *            the evaluation engine
 	 */
-	public PolynomialHomogenization(IAST listOfVariables) {
-		vars = listOfVariables;
+	public PolynomialHomogenization(IAST listOfVariables, EvalEngine engine) {
+		this.engine = engine;
+	}
+
+	/**
+	 * Lazy initialization for map <code>symbol -> list-of-least-common-multiple-factors</code>.
+	 * 
+	 * @return
+	 */
+	private Map<ISymbol, IASTAppendable> getSymbol2IntegerAST() {
+		if (variablesLCMAST == null) {
+			variablesLCMAST = new IdentityHashMap<ISymbol, IASTAppendable>();
+		}
+		return variablesLCMAST;
+	}
+
+	/**
+	 * Lazy initialization for map <code>symbol -> least-common-multiple-factors</code>.
+	 * 
+	 * @return
+	 */
+	private Map<ISymbol, IInteger> getSymbol2LCM() {
+		if (variablesLCM == null) {
+			variablesLCM = new IdentityHashMap<ISymbol, IInteger>();
+		}
+		return variablesLCM;
+	}
+
+	/**
+	 * Determine the <code>least-common-multiple-factor </code> associated with a symbol.
+	 * 
+	 * @param x
+	 * @return
+	 */
+	private IInteger getLCM(IExpr x) {
+		if (variablesLCM == null) {
+			return F.C1;
+		}
+		IInteger i = variablesLCM.get(x);
+		if (i == null) {
+			return F.C1;
+		}
+		return i;
 	}
 
 	/**
@@ -58,24 +108,169 @@ public class PolynomialHomogenization {
 	 * @throws ClassCastException
 	 */
 	public IExpr replaceForward(final IExpr expression) throws ArithmeticException, ClassCastException {
-		int ix = ExpVectorLong.indexVar(expression, vars);
-		if (ix >= 0) {
-			return expression;
+		determineLCM(expression);
+		if (variablesLCMAST != null) {
+			for (Map.Entry<ISymbol, IASTAppendable> entry : variablesLCMAST.entrySet()) {
+				IASTAppendable denominatorLCMAST = entry.getValue();
+				IInteger denominatorLCM = F.C1;
+				if (denominatorLCMAST.isAST0()) {
+				} else if (denominatorLCMAST.isAST1()) {
+					denominatorLCM = (IInteger) denominatorLCMAST.arg1();
+				} else {
+					denominatorLCM = (IInteger) engine.evaluate(denominatorLCMAST);
+				}
+				if (!denominatorLCM.isOne()) {
+					getSymbol2LCM().put(entry.getKey(), denominatorLCM);
+				}
+			}
 		}
+		return replaceForwardRecursive(expression);
+	}
+
+	public IExpr[] replaceForward(final IExpr numerator, final IExpr denominator)
+			throws ArithmeticException, ClassCastException {
+		determineLCM(numerator);
+		determineLCM(denominator);
+		if (variablesLCMAST != null) {
+			for (Map.Entry<ISymbol, IASTAppendable> entry : variablesLCMAST.entrySet()) {
+				IASTAppendable denominatorLCMAST = entry.getValue();
+				IInteger denominatorLCM = F.C1;
+				if (denominatorLCMAST.isAST0()) {
+				} else if (denominatorLCMAST.isAST1()) {
+					denominatorLCM = (IInteger) denominatorLCMAST.arg1();
+				} else {
+					denominatorLCM = (IInteger) engine.evaluate(denominatorLCMAST);
+				}
+				if (!denominatorLCM.isOne()) {
+					getSymbol2LCM().put(entry.getKey(), denominatorLCM);
+				}
+			}
+		}
+
+		IExpr[] result = new IExpr[2];
+		result[0] = replaceForwardRecursive(numerator);
+		result[1] = replaceForwardRecursive(denominator);
+		return result;
+	}
+
+	private void determineLCM(final IExpr expression) {
+		if (expression instanceof IAST) {
+			final IAST ast = (IAST) expression;
+			if (ast.isPlus() || ast.isTimes()) {
+				for (int i = 1; i < ast.size(); i++) {
+					determineLCM(ast.get(i));
+				}
+				return;
+			} else if (ast.isPower()) {
+				IExpr exp = ast.exponent();
+				IExpr base = ast.base();
+				if (exp.isReal()) {
+
+					IInteger lcm = F.C1;
+					IRational rat = ((ISignedNumber) exp).rationalFactor();
+					if (!rat.isInteger()) {
+						IInteger denominator = rat.denominator();
+						if (denominator.isNegative()) {
+							denominator = denominator.negate();
+						}
+						lcm = denominator;
+					}
+					// if (base.isTimes()) {
+					//
+					// }
+					replaceExpressionLCM(base, lcm);
+					return;
+				}
+				if (exp.isTimes()) {
+					determineTimes(ast, base, (IAST) exp);
+					// ((IAST) exp).forEach(x -> determineLCM(F.Power(base, x)));
+					return;
+				} else if (exp.isPlus()) {// && base.isExactNumber()) {
+					// ex: 4^(2*x+3)
+					IAST plusAST = (IAST) exp;
+					if (plusAST.first().isInteger()) {
+						determineLCM(F.Power.of(base, plusAST.first()));
+						determineLCM(F.Power.of(base, plusAST.rest().oneIdentity0()));
+						return;
+					}
+				}
+				replaceExpressionLCM(ast, F.C1);
+				return;
+			}
+			replaceExpressionLCM(expression, F.C1);
+			return;
+		}
+		if (expression instanceof ISymbol) {
+			replaceExpressionLCM(expression, F.C1);
+		}
+	}
+
+	private void determineTimes(final IAST ast, final IExpr base, IAST timesExponent) {
+		IExpr first = timesExponent.first();
+		if (first.isComplex() && ((IComplex) first).reRational().isZero()) {
+			IRational pureImPart = ((IComplex) first).imRational();
+			int exponent = pureImPart.toIntDefault(Integer.MIN_VALUE);
+			if (exponent == Integer.MIN_VALUE) {
+				replaceExpressionLCM(ast, F.C1);
+				return;
+			} else if (exponent > 0) {
+				IASTMutable restExponent = ((IAST) timesExponent).setAtCopy(1, F.CI);
+				replaceExpressionLCM(base.power(restExponent), F.C1);
+				return;
+			}
+			replaceExpressionLCM(ast, F.C1);
+			return;
+		}
+		int exponent = first.toIntDefault(Integer.MIN_VALUE);
+		if (exponent == Integer.MIN_VALUE) {
+			replaceExpressionLCM(ast, F.C1);
+			return;
+		} else if (exponent > 0) {
+			IExpr rest = timesExponent.rest().oneIdentity1();
+			replaceExpressionLCM(base.power(rest), F.C1);
+			return;
+		}
+		replaceExpressionLCM(ast, F.C1);
+	}
+
+	/**
+	 * Forward substitution - transforming the expression into a polynomial expression by introducing &quot;substitution
+	 * variables&quot;. After transforming the polynomial expression may be solvable by a polynomial factorization.
+	 * 
+	 * @param expression
+	 * @param denominatorLCM
+	 *            LCM of the denominators of the real exponents of Power() expressions
+	 * @return
+	 * @throws ArithmeticException
+	 * @throws ClassCastException
+	 */
+	private IExpr replaceForwardRecursive(final IExpr expression) throws ArithmeticException, ClassCastException {
 		if (expression instanceof IAST) {
 			final IAST ast = (IAST) expression;
 			if (ast.isPlus() || ast.isTimes()) {
 				IASTAppendable newAST = F.ast(ast.head(), ast.size(), false);
 				IExpr temp = ast.arg1();
-				newAST.append(replaceForward(temp));
+				newAST.append(replaceForwardRecursive(temp));
 				for (int i = 2; i < ast.size(); i++) {
 					temp = ast.get(i);
-					newAST.append(replaceForward(temp));
+					newAST.append(replaceForwardRecursive(temp));
 				}
 				return newAST;
 			} else if (ast.isPower()) {
-				final IExpr base = ast.base();
+				IExpr power = replaceExpression(ast);
+				if (power.isPresent()) {
+					return power;
+				}
+				final IExpr b = ast.base();
 				IExpr exp = ast.exponent();
+				if (exp.isReal()) {
+					IExpr base = replacePower(b, (ISignedNumber) exp);
+					if (base.isPresent()) {
+						return base;
+					}
+				}
+				IExpr base = b;
+
 				if (exp.isTimes()) {
 					return replaceTimes(ast, base, exp);
 				} else if (exp.isPlus()) {// && base.isExactNumber()) {
@@ -83,29 +278,17 @@ public class PolynomialHomogenization {
 					IAST plusAST = (IAST) exp;
 					if (plusAST.first().isInteger()) {
 						IExpr coefficient = F.Power.of(base, plusAST.first());
-						return F.Times(replaceForward(coefficient), replaceForward(F.Power(base, plusAST.rest().oneIdentity0())));
+						return F.Times(replaceForwardRecursive(coefficient),
+								replaceForwardRecursive(F.Power(base, plusAST.rest().oneIdentity0())));
 					}
 				}
 
-				int exponent = exp.toIntDefault(Integer.MIN_VALUE);
-				if (exponent == Integer.MIN_VALUE) {
-					return replaceExpression(ast);
-				} else if (exponent > 0) {
-					if (base.isSymbol()) {
-						// if (base.isConstantAttribute()) {
-						// return F.Power(replaceExpression(base), exponent);
-						// }
-						return ast;
-					}
-					ix = ExpVectorLong.indexVar(base, vars);
-					if (ix >= 0) {
-						return ast;
-					}
-					return F.Power(replaceExpression(base), exponent);
-				}
-				return replaceExpression(ast);
+				return ast;
 			}
 			return replaceExpression(expression);
+		}
+		if (expression.isSymbol()) {
+			return replaceExpression(expression).orElse(expression);
 		}
 		return expression;
 	}
@@ -116,13 +299,10 @@ public class PolynomialHomogenization {
 			IRational imPart = ((IComplex) first).imRational();
 			int exponent = imPart.toIntDefault(Integer.MIN_VALUE);
 			if (exponent == Integer.MIN_VALUE) {
-				return replaceExpression(ast);
+				return replaceExpression(ast).orElse(ast);
 			} else if (exponent > 0) {
 				IASTMutable restExponent = ((IAST) exp).setAtCopy(1, F.CI);
 				return F.Power(replaceExpression(base.power(restExponent)), exponent);
-				// } else {
-				// IASTMutable restExponent = ((IAST) exp).setAtCopy(1, F.CNI);
-				// return F.Power(replaceExpression(base.power(restExponent)), -exponent);
 			}
 			return replaceExpression(ast);
 		}
@@ -132,32 +312,79 @@ public class PolynomialHomogenization {
 		} else if (exponent > 0) {
 			IExpr rest = exp.rest().oneIdentity1();
 			return F.Power(replaceExpression(base.power(rest)), exponent);
-			// } else {
-			// IASTMutable restExponent = ((IAST) exp).setAtCopy(1, F.CN1);
-			// return F.Power(replaceExpression(base.power(restExponent)), -exponent);
 		}
-		return replaceExpression(ast);
+		return replaceExpression(ast).orElse(ast);
+	}
+
+	private IExpr replaceExpressionLCM(final IExpr exprPoly, IInteger lcm) {
+		if (exprPoly.isAST() || exprPoly.isSymbol()) {
+			ISymbol newSymbol = substitutedExpr.get(exprPoly);
+			if (newSymbol != null) {
+				if (!lcm.isOne()) {
+					IASTAppendable ast = getSymbol2IntegerAST().get(newSymbol);
+					if (ast == null) {
+						IASTAppendable list = F.ast(F.LCM);
+						list.append(lcm);
+						getSymbol2IntegerAST().put(newSymbol, list);
+					} else {
+						ast.append(lcm);
+					}
+				}
+				return newSymbol;
+			}
+			final int moduleCounter = engine.incModuleCounter();
+			final String varAppend = "$" + moduleCounter;
+			newSymbol = F.Dummy("jas" + varAppend);// , engine);
+			substitutedVariables.put(newSymbol, exprPoly);
+			substitutedExpr.put(exprPoly, newSymbol);
+
+			if (!lcm.isOne()) {
+				IASTAppendable list = F.ast(F.LCM);
+				list.append(lcm);
+				getSymbol2IntegerAST().put(newSymbol, list);
+			}
+
+			return newSymbol;
+		}
+		return exprPoly;
 	}
 
 	private IExpr replaceExpression(final IExpr exprPoly) {
-		if (exprPoly.isSymbol()) {
-			return (ISymbol) exprPoly;
-		}
 		ISymbol symbol = substitutedExpr.get(exprPoly);
 		if (symbol != null) {
-			return symbol;
-		}
-		if (exprPoly.isAST() && exprPoly.head().isBuiltInSymbol()) {
-			if (!((IBuiltInSymbol) exprPoly.head()).isNumericFunctionAttribute()) {
-				return exprPoly;
+			IInteger lcm = getLCM(symbol);
+			if (lcm.isOne()) {
+				return symbol;
 			}
+			return F.Power(symbol, lcm);
 		}
-		final int moduleCounter = EvalEngine.get().incModuleCounter();
-		final String varAppend = "$" + moduleCounter;
-		ISymbol newSymbol = F.Dummy("jas" + varAppend);// , engine);
-		substitutedVariables.put(newSymbol, exprPoly);
-		substitutedExpr.put(exprPoly, newSymbol);
-		return newSymbol;
+		return F.NIL;
+	}
+
+	private IExpr replacePower(final IExpr exprPoly, ISignedNumber exp) {
+		ISymbol symbol = substitutedExpr.get(exprPoly);
+		if (symbol != null) {
+			IInteger lcm = getLCM(symbol);
+			if (lcm.isOne()) {
+				lcm = F.C1;
+			}
+			if (lcm.isOne() && exp.isInteger()) {
+				return F.Power(symbol, exp);
+			}
+
+			IRational rat = ((ISignedNumber) exp).rationalFactor();
+			IInteger intExp = rat.multiply(lcm).numerator();
+			int exponent = intExp.toIntDefault(Integer.MIN_VALUE);
+			if (exponent != Integer.MIN_VALUE) {
+				if (exponent == 1) {
+					return symbol;
+				}
+				return F.Power(symbol, exponent);
+			}
+
+			return F.Power(symbol, F.Times(lcm, exp));
+		}
+		return F.NIL;
 	}
 
 	/**
@@ -168,14 +395,27 @@ public class PolynomialHomogenization {
 	 * @return
 	 */
 	public IExpr replaceBackward(final IExpr expression) {
-		return F.subst(expression, substitutedVariables);
+		IExpr temp = F.subst(expression, x -> {
+			if (x.isSymbol()) {
+				IExpr t = substitutedVariables.get(x);
+				if (t != null) {
+					IInteger denominatorLCM = getLCM(x);
+					if (denominatorLCM.isOne()) {
+						return t;
+					}
+					return F.Power(t, F.fraction(F.C1, denominatorLCM));
+				}
+			}
+			return F.NIL;
+		});
+		return engine.evaluate(temp);
 	}
 
 	/**
 	 * Variables (ISymbols) which are substituted from the original polynomial (backward substitution) returned in a
 	 * <code>IdentityHashMap</code>.
 	 */
-	public java.util.IdentityHashMap<ISymbol, IExpr> substitutedVariables() {
+	public java.util.Map<ISymbol, IExpr> substitutedVariables() {
 		return substitutedVariables;
 	}
 
@@ -187,11 +427,4 @@ public class PolynomialHomogenization {
 		return substitutedVariables.size();
 	}
 
-	/**
-	 * Expressions which are substituted with variables(ISymbol) from the original polynomial (forward substitution)
-	 * returned in a Map.
-	 */
-	private java.util.Map<IExpr, ISymbol> substitutedExpressions() {
-		return substitutedExpr;
-	}
 }

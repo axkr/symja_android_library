@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -421,7 +422,7 @@ public class ExprEvaluator {
 	 * @throws SyntaxError
 	 */
 	public IExpr evaluateWithTimeout(final String inputExpression, long timeoutDuration, TimeUnit timeUnit,
-			boolean interruptible, EvalCallable call) {
+			boolean interruptible, EvalControlledCallable call) {
 		if (inputExpression != null) {
 			// F.join();
 			EvalEngine.set(engine);
@@ -430,15 +431,18 @@ public class ExprEvaluator {
 				fExpr = engine.parse(inputExpression);
 				if (fExpr != null) {
 					final ExecutorService executor = Executors.newSingleThreadExecutor();
+					EvalControlledCallable  work = call == null ? new EvalControlledCallable(engine) : call;
+					work.setExpr(fExpr);
 					try {
 						F.await();
 						TimeLimiter timeLimiter = SimpleTimeLimiter.create(executor); // Executors.newSingleThreadExecutor());
-						EvalCallable work = call == null ? new EvalCallable(engine) : call;
-						work.setExpr(fExpr);
 						return timeLimiter.callWithTimeout(work, timeoutDuration, timeUnit);
 					} catch (org.matheclipse.core.eval.exception.TimeoutException e) {
 						return F.$Aborted;
 					} catch (java.util.concurrent.TimeoutException e) {
+						if (Config.SHOW_STACKTRACE) {
+							e.printStackTrace();
+						}
 						// Throwable t = e.getCause();
 						// if (t instanceof RuntimeException) {
 						// throw (RuntimeException) t;
@@ -456,7 +460,7 @@ public class ExprEvaluator {
 						}
 						return F.Null;
 					} finally {
-						engine.setStopRequested(true);
+						work.cancel();
 						executor.shutdown(); // Disable new tasks from being submitted
 						try {
 							// Wait a while for existing tasks to terminate

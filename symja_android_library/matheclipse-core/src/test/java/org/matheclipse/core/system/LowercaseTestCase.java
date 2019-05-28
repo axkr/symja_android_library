@@ -5267,6 +5267,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFactor() {
+		 check("Factor(x+2*Sqrt(x)+1)", //
+				 "(1+Sqrt(x))^2");
+		check("Factor(4^(2*x+1)*5^(x-2)-6^(1-x))", //
+				"-6*5^x*(-2^(1+4*x)/75+1/(5^x*6^x))");
+		// check("Factor(E^x+E^(2*x))", //
+		// "E^x*(1+E^x)");
+
+		check("Factor(r^2+k*q*Q*r^4-E*r^6)", //
+				"r^2*(1+k*q*Q*r^2-E*r^4)");
+		check("Factor(x+2*Sqrt(x)+1)", //
+				"(1+Sqrt(x))^2");
 		check("Factor((a*d*e+(c*d^2+a*e^2)*x+c*d*e*x^2)^(3/2))", //
 				"((a*e+c*d*x)*(d+e*x))^(3/2)");
 
@@ -7798,7 +7809,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Integrate(a/(a^3-4/3*a*b^(2/3)+16/27*b),a)", //
 				"-1/(3*a-2*b^(1/3))+Log(3*a-2*b^(1/3))/(3*b^(1/3))-Log(3*a+4*b^(1/3))/(3*b^(1/3))");
 		check("Simplify(D(-1/(3*a-2*b^(1/3))+Log(3*a-2*b^(1/3))/(3*b^(1/3))-Log(3*a+4*b^(1/3))/(3*b^(1/3)),a))", //
-				"3/(3*a-2*b^(1/3))^2+1/(3*a*b^(1/3)-2*b^(2/3))-1/(3*a*b^(1/3)+4*b^(2/3))");
+				"(27*a)/(27*a^3-36*a*b^(2/3)+16*b)");// "3/(3*a-2*b^(1/3))^2+1/(3*a*b^(1/3)-2*b^(2/3))-1/(3*a*b^(1/3)+4*b^(2/3))");
 		// expensive JUnit test
 		// check("Integrate(((a+b)/(a^(1/3)+b^(1/3))-(a*b)^(1/3))/(a^(1/3)-b^(1/3))^2,a)", //
 		// "a+3/2*a^(2/3)*b^(1/3)+6*a^(1/3)*b^(2/3)+(-3*b^(4/3))/(a^(1/3)-b^(1/3))-3/2*a^(1/\n" +
@@ -10095,7 +10106,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("num=Sin(3*I);Module({v=N(num)},If(PossibleZeroQ(Re(v)),Im(v)>0,Re(v)>0))",
 		// "True");
 		// check("Module({x=5}, Hold(x))", "Hold(x$1)");
-
+		
 		check("xm=10;Module({xm=xm}, xm=xm+1;xm);xm", //
 				"10");
 		check("xm=10;Module({t=xm}, xm=xm+1;t)", //
@@ -10158,6 +10169,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Module({x}, g2(x_)=Integrate(Sqrt(1+z^2),{z,0,x}));Table(g2(i),{i,3})", //
 				"{1/Sqrt(2)+ArcSinh(1)/2,Sqrt(5)+ArcSinh(2)/2,3*Sqrt(5/2)+ArcSinh(3)/2}");
+		
+		check("v=Null;Module({w=v},Catch(Scan(Function(If(False ,Throw(False))),u); w))", //
+				"");
 	}
 
 	public void testMoebiusMu() {
@@ -14548,12 +14562,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "2+a*b+b^2-a*c-b*c-a*d-b*d+c*d-a*e-b*e+c*e+d*e)^2");
 		check("PolynomialRemainder(-2+x^2-2*x*y+y^2,-5+4*x-2*x^3+2*y+3*x^2*y,y)",
 				"-2+x^2-(-5+4*x-2*x^3)*(-(-5+4*x-2*x^3)/(2+3*x^2)^2+(-2*x)/(2+3*x^2))");
-		check("Resultant((x-y)^2-2 , y^3-5, y)", "17-60*x+12*x^2-10*x^3-6*x^4+x^6");
-		check("Resultant(x^2 - 2*x + 7, x^3 - x + 5, x)", "265");
-		check("Resultant(x^2 + 2*x , x-c, x)", "2*c+c^2");
+		check("Resultant((x-y)^2-2 , y^3-5, y)", //
+				"17-60*x+12*x^2-10*x^3-6*x^4+x^6");
+		check("Resultant(x^2 - 2*x + 7, x^3 - x + 5, x)", //
+				"265");
+		check("Resultant(x^2 + 2*x , x-c, x)", //
+				"2*c+c^2");
 
-		check("Resultant(x^2 - 4, x^2 + 4*x + 4, x)", "0");
-		check("Resultant(3*x + 9, 6*x^3 - 3*x + 12, x)", "-3807");
+		check("Resultant(x^2 - 4, x^2 + 4*x + 4, x)", //
+				"0");
+		check("Resultant(3*x + 9, 6*x^3 - 3*x + 12, x)", //
+				"-3807");
 
 		// check("Resultant[a x^3 + b x^2 + c x + f, f x^3 + c x^2 + b x + a,
 		// x]", "");
@@ -15463,7 +15482,26 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1/Sign(z)");
 	}
 
+	// public void testSimplify0() {
+	// check("Factor(1/((1+x)*(1/(2*x*(1+x))-ArcTan(Sqrt(x))/(2*x^(3/2)))))", //
+	// "2/((1+x)*(1/(x*(1+x))-ArcTan(Sqrt(x))/x^(3/2)))");
+	// check("Simplify(1/((1+x)*(1/(2*x*(1+x))-ArcTan(Sqrt(x))/(2*x^(3/2)))))", //
+	// "(-2*x^(3/2))/(-Sqrt(x) + (1 + x)*ArcTan(Sqrt(x)))");
+	// }
+
 	public void testSimplify() {
+		// check("Simplify(1/((1+x)*(1/(2*x*(1+x))-ArcTan(Sqrt(x))/(2*x^(3/2)))))", //
+		// "(-2*x^(3/2))/(-Sqrt(x) + (1 + x)*ArcTan(Sqrt(x)))");
+		// check("Simplify((-1/(Sqrt(x)*(1+x))+(-1-x)/(2*x^(3/2)*(1+x)))/(1+x))", //
+		// "(-1 - 3*x)/(2*x^(3/2)*(1 + x)^2)");
+		// check("Simplify(1/(ArcTan(Sqrt(x))/(-1/(Sqrt(x)*(1+x)^2)-1/(2*x^(3/2)*(1+x))))", //
+		// "(-2*x^(3/2)*(1 + x)^2*ArcTan(Sqrt(x)))/(1 + 3*x)");
+		//
+		// check("Simplify((1+(-2*x*(d*Sqrt(-e/d)+e*x))/(d+e*x^2))/((d+e*x^2)*((-4*e*(d*Sqrt(-e/d)+e*x)*x^2)/(d+e*x^2)^2+(2*e*x)/(d+e*x^2)+(2*(d*Sqrt(-e/d)+e*x))/(d+e*x^2))))",
+		// //
+		// "(-d+2*d*Sqrt(-e/d)*x+e*x^2)/(2*d*(-d*Sqrt(-e/d)-2*e*x+e*Sqrt(-e/d)*x^2))");//"-Sqrt(-(e/d))/(2*e)");
+		check("Simplify((x*(-Sqrt(-4+x^2)+x^2*Sqrt(-4+x^2)-4*Sqrt(-1+x^2)+x^2*Sqrt(-1+x^2)))/((4-5*x^2+x^4)*(x/Sqrt(-4+x^2)+x/Sqrt(-1+x^2))))", //
+				"1");
 		check("Simplify((Cos(x)-I*Sin(x))/(I*Cos(x)-Sin(x)))", //
 				"-I*Cos(2*x)-Sin(2*x)"); // -I*Cos(2*x)-Sin(2*x)
 
@@ -15495,7 +15533,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"a+Log(35721/32768)+z()");
 		check("Simplify(1+n/2)", //
 				"1/2*(2+n)");
-		check("Simplify((9-Sqrt[57])*x^2)", //
+		check("Simplify((9-Sqrt(57))*x^2)", //
 				"-(-9+Sqrt(57))*x^2");
 		check("Simplify(-a/(-b+a*c))", //
 				"a/(b-a*c)");

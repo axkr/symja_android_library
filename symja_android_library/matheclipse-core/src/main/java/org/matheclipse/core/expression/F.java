@@ -8801,7 +8801,7 @@ public class F {
 	 * 
 	 * @param expr
 	 * @param function
-	 *            if the unary functions <code>apply()</code> method returns <code>null</code> the expression isn't
+	 *            if the unary functions <code>apply()</code> method returns <code>F.NIL</code> the expression isn't
 	 *            substituted.
 	 * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or the substituted
 	 *         expression.

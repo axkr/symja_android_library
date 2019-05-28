@@ -239,8 +239,8 @@ public class JASConvert<C extends RingElem<C>> {
 			return new GenPolynomial(fPolyFactory, c);
 		} else {
 			// "ComplexRing expected"
-			throw new JASConversionException( );
-//			throw new ClassCastException(complexValue.toString());
+			throw new JASConversionException();
+			// throw new ClassCastException(complexValue.toString());
 			// return new GenPolynomial(fPolyFactory, r);
 		}
 	}
@@ -352,7 +352,7 @@ public class JASConvert<C extends RingElem<C>> {
 					// }
 					if (exponent < 0) {
 						throw new JASConversionException();
-//								"JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
+						// "JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
 					}
 					try {
 						return fPolyFactory.univariate(base.getSymbolName(), exponent);
@@ -369,8 +369,8 @@ public class JASConvert<C extends RingElem<C>> {
 					// }
 					if (exponent < 0) {
 						throw new JASConversionException();
-//						throw new ArithmeticException(
-//								"JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
+						// throw new ArithmeticException(
+						// "JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
 					}
 					try {
 						return fPolyFactory.univariate(base.toString(), exponent);
@@ -403,8 +403,8 @@ public class JASConvert<C extends RingElem<C>> {
 				return fraction2Poly(frac);
 			}
 		}
-		throw new JASConversionException( );
-//		throw new ClassCastException(exprPoly.toString());
+		throw new JASConversionException();
+		// throw new ClassCastException(exprPoly.toString());
 	}
 
 	private boolean expVectorToExpr(ExpVector exp, IASTAppendable monomTimes) {
@@ -441,7 +441,7 @@ public class JASConvert<C extends RingElem<C>> {
 	public Object[] factorTerms(GenPolynomial<BigRational> poly) {
 		return PolyUtil.integerFromRationalCoefficientsFactor(fBigIntegerPolyFactory, poly);
 	}
-
+  
 	/**
 	 * Convert a fractional number into a jas polynomial.
 	 * 
@@ -624,8 +624,8 @@ public class JASConvert<C extends RingElem<C>> {
 	public boolean monomialToExpr(Complex<BigRational> coeff, ExpVector exp, IASTAppendable monomTimes) {
 		BigRational re = coeff.getRe();
 		BigRational im = coeff.getIm();
-		monomTimes.append(
-				F.complex(F.fraction(re.numerator(), re.denominator()).normalize(), F.fraction(im.numerator(), im.denominator()).normalize()));
+		monomTimes.append(F.complex(F.fraction(re.numerator(), re.denominator()).normalize(),
+				F.fraction(im.numerator(), im.denominator()).normalize()));
 		return expVectorToExpr(exp, monomTimes);
 	}
 

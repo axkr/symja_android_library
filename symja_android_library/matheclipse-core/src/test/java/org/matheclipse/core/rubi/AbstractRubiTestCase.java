@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import java.util.concurrent.TimeUnit;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.eval.EvalControlledCallable;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
@@ -48,7 +49,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
 		}
 
 		if (result.isFree(F.Integrate)) {
-			if (manuallyCheckedResult != null) {
+			if (manuallyCheckedResult != null&& !Algebra.DEBUG) {
 				manuallyCheckedResult = manuallyCheckedResult.trim();
 				if (manuallyCheckedResult.length() > 0) {
 					if (manuallyCheckedResult.equals(result.toString())) {

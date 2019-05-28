@@ -222,6 +222,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
 
 	// {6686}
 	public void test0026() {
+		fSeconds=20;
 		check(//
 				"Integrate[ArcTan[Sqrt[x]]/(Sqrt[x]*(1 + x)), x]", //
 				"ArcTan[Sqrt[x]]^2", //

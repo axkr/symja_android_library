@@ -755,19 +755,25 @@ public class EvalEngine implements Serializable {
 						return IOFunctions.printArgMessage(ast, expected, this);
 					}
 				}
+				if (!fNumericMode && ((ast.getEvalFlags() & IAST.BUILT_IN_EVALED) == IAST.BUILT_IN_EVALED)
+						&& fAssumptions == null) {
+					return F.NIL;
+				}
 				IExpr result = fNumericMode ? //
 						functionEvaluator.numericEval(ast, this) : //
 						functionEvaluator.evaluate(ast, this);
 				if (result.isPresent()) {
-					// if (symbol.equals(F.Simplify) || symbol.equals(F.FullSimplify)) {
-					// System.out.println(ast.toString());
-					// System.out.println(result.toString());
-					// System.out.println();
-					// }
 					return result;
+
 				}
 				if (((ISymbol.DELAYED_RULE_EVALUATION & attr) == ISymbol.DELAYED_RULE_EVALUATION)) {
 					return symbol.evalDownRule(this, ast);
+				} else {
+					if (!fNumericMode && fAssumptions == null
+							&& (((ISymbol.HOLDALLCOMPLETE | ISymbol.NHOLDALL) & attr) == ISymbol.NOATTRIBUTE)) {
+						ast.addEvalFlags(IAST.BUILT_IN_EVALED);
+						return F.NIL;
+					}
 				}
 			}
 		}
@@ -1168,14 +1174,10 @@ public class EvalEngine implements Serializable {
 					if (fOnOffMode) {
 						printOnOffTrace(expr, temp);
 					}
+					// if (temp.topHead().getContext().equals(Context.RUBI)) {
+					// printOnOffTrace(expr, temp);
+					// }
 
-					// if (temp == F.Null&&!expr.isAST(F.SetDelayed)) {
-					// System.out.println(expr.toString());
-					// }
-					// if (expr.isAST(F.Integrate)) {
-					// System.out.println("(0):" + expr.toString());
-					// System.out.println("(1) --> " + temp.toString());
-					// }
 					result = temp;
 					long iterationCounter = 1;
 					while (true) {
