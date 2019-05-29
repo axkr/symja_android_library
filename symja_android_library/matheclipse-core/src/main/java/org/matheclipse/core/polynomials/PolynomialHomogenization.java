@@ -103,11 +103,9 @@ public class PolynomialHomogenization {
 	 * variables&quot;. After transforming the polynomial expression may be solvable by a polynomial factorization.
 	 * 
 	 * @param expression
-	 * @return
-	 * @throws ArithmeticException
-	 * @throws ClassCastException
+	 * @return the polynomial expression
 	 */
-	public IExpr replaceForward(final IExpr expression) throws ArithmeticException, ClassCastException {
+	public IExpr replaceForward(final IExpr expression) {
 		determineLCM(expression);
 		if (variablesLCMAST != null) {
 			for (Map.Entry<ISymbol, IASTAppendable> entry : variablesLCMAST.entrySet()) {
@@ -127,8 +125,16 @@ public class PolynomialHomogenization {
 		return replaceForwardRecursive(expression);
 	}
 
-	public IExpr[] replaceForward(final IExpr numerator, final IExpr denominator)
-			throws ArithmeticException, ClassCastException {
+	/**
+	 * Forward substitution - transforming the numerator and denominator expression into polynomial expressions by
+	 * introducing &quot;substitution variables&quot;. After transforming the polynomial expression may be solvable by a
+	 * polynomial factorization. 
+	 * 
+	 * @param numerator
+	 * @param denominator
+	 * @return polynomial numerator at index '0'; and polynomial denominator at index '1'
+	 */
+	public IExpr[] replaceForward(final IExpr numerator, final IExpr denominator) {
 		determineLCM(numerator);
 		determineLCM(denominator);
 		if (variablesLCMAST != null) {
@@ -393,6 +399,7 @@ public class PolynomialHomogenization {
 	 * 
 	 * @param expression
 	 * @return
+	 * @see #replaceForward(IExpr)
 	 */
 	public IExpr replaceBackward(final IExpr expression) {
 		IExpr temp = F.subst(expression, x -> {

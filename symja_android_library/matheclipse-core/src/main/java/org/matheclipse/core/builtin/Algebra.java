@@ -80,7 +80,7 @@ import org.matheclipse.core.visit.AbstractVisitorBoolean;
 import org.matheclipse.core.visit.VisitorExpr;
 import org.matheclipse.parser.client.SyntaxError;
 
-import com.google.common.math.LongMath; 
+import com.google.common.math.LongMath;
 
 import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigRational;
@@ -4993,36 +4993,33 @@ public class Algebra {
 	 * for the given expressions <code>numeratorPolynomial</code> and <code>denominatorPolynomial</code>.
 	 * 
 	 * 
-	 * @param numeratorPolynomial
-	 *            a <code>BigRational</code> polynomial which could be converted to JAS polynomial
-	 * @param denominatorPolynomial
-	 *            a <code>BigRational</code> polynomial which could be converted to JAS polynomial
+	 * @param numerator
+	 *            an expression which should be converted to JAS polynomial (using substitutions)
+	 * @param denominator
+	 *            a expression which could be converted to JAS polynomial (using substitutions)
 	 * @return <code>null</code> if the expressions couldn't be converted to JAS polynomials or gcd equals 1
 	 * @throws JASConversionException
 	 */
 	public static IExpr[] cancelGCD(final IExpr numerator, final IExpr denominator) throws JASConversionException {
-		IExpr numeratorPolynomial = numerator;
-		IExpr denominatorPolynomial = denominator;
 		try {
-			if (denominatorPolynomial.isInteger() && numeratorPolynomial.isPlus()) {
-				IExpr[] result = Cancel.cancelPlusIntegerGCD((IAST) numeratorPolynomial,
-						(IInteger) denominatorPolynomial);
+			if (denominator.isInteger() && numerator.isPlus()) {
+				IExpr[] result = Cancel.cancelPlusIntegerGCD((IAST) numerator, (IInteger) denominator);
 				if (result != null) {
 					return result;
 				}
 			}
 
-			VariablesSet eVar = new VariablesSet(numeratorPolynomial);
-			eVar.addVarList(denominatorPolynomial);
+			VariablesSet eVar = new VariablesSet(numerator);
+			eVar.addVarList(denominator);
 			if (eVar.size() == 0) {
 				return null;
 			}
 
 			IAST vars = eVar.getVarList();
 			PolynomialHomogenization substitutions = new PolynomialHomogenization(vars, EvalEngine.get());
-			IExpr[] subst = substitutions.replaceForward(numeratorPolynomial, denominatorPolynomial);
-			numeratorPolynomial = subst[0];
-			denominatorPolynomial = subst[1];
+			IExpr[] subst = substitutions.replaceForward(numerator, denominator);
+			IExpr numeratorPolynomial = subst[0];
+			IExpr denominatorPolynomial = subst[1];
 			if (substitutions.size() > 0) {
 				eVar.clear();
 				eVar.addAll(substitutions.substitutedVariablesSet());
@@ -5057,14 +5054,7 @@ public class Algebra {
 			} catch (RuntimeException rex) {
 
 			}
-			// ExprPolynomialRing ring = new ExprPolynomialRing(vars);
-			// ExprPolynomial pol1 = ring.create(numeratorPolynomial);
-			// ExprPolynomial pol2 = ring.create(denominatorPolynomial);
 			List<IExpr> varList = eVar.getVarList().copyTo();
-			// JASIExpr jas = new JASIExpr(varList, true);
-			// GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
-			// GenPolynomial<IExpr> p2 = jas.expr2IExprJAS(pol2);
-
 			ComplexRing<BigRational> cfac = new ComplexRing<BigRational>(BigRational.ZERO);
 			JASConvert<Complex<BigRational>> jas = new JASConvert<Complex<BigRational>>(varList, cfac);
 			GenPolynomial<Complex<BigRational>> p1 = jas.expr2JAS(numeratorPolynomial, false);
