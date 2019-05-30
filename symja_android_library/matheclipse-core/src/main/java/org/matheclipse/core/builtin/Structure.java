@@ -18,7 +18,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
-import org.matheclipse.core.eval.util.Options;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
@@ -181,8 +181,8 @@ public class Structure {
 			// }
 			int lastIndex = evaledAST.argSize();
 			boolean heads = false;
-			final Options options = new Options(evaledAST.topHead(), evaledAST, lastIndex, engine);
-			IExpr option = options.getOption("Heads");
+			final OptionArgs options = new OptionArgs(evaledAST.topHead(), evaledAST, lastIndex, engine);
+			IExpr option = options.getOption(F.Heads);
 			if (option.isPresent()) {
 				lastIndex--;
 				if (option.isTrue()) {
@@ -886,8 +886,8 @@ public class Structure {
 
 			int lastIndex = ast.argSize();
 			boolean heads = false;
-			final Options options = new Options(ast.topHead(), ast, lastIndex, engine);
-			IExpr option = options.getOption("Heads");
+			final OptionArgs options = new OptionArgs(ast.topHead(), ast, lastIndex, engine);
+			IExpr option = options.getOption(F.Heads);
 			if (option.isPresent()) {
 				lastIndex--;
 				if (option.isTrue()) {
@@ -1010,8 +1010,8 @@ public class Structure {
 
 			int lastIndex = ast.argSize();
 			boolean heads = false;
-			final Options options = new Options(ast.topHead(), ast, lastIndex, engine);
-			IExpr option = options.getOption("Heads");
+			final OptionArgs options = new OptionArgs(ast.topHead(), ast, lastIndex, engine);
+			IExpr option = options.getOption(F.Heads);
 			if (option.isPresent()) {
 				lastIndex--;
 				if (option.isTrue()) {
@@ -1511,8 +1511,8 @@ public class Structure {
 				int lastIndex = ast.argSize();
 				boolean heads = false;
 				if (ast.size() > 3) {
-					final Options options = new Options(ast.topHead(), ast, lastIndex, engine);
-					IExpr option = options.getOption("Heads");
+					final OptionArgs options = new OptionArgs(ast.topHead(), ast, lastIndex, engine);
+					IExpr option = options.getOption(F.Heads);
 					if (option.isPresent()) {
 						lastIndex--;
 						if (option.isTrue()) {

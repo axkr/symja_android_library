@@ -19,7 +19,7 @@ import edu.jas.poly.TermOrderByName;
  * could be used for an integer <code>n</code> in a function like <code>Factor(polynomial, Modulus-&gt;2)</code>.
  * 
  */
-public class Options {
+public class OptionArgs {
 	private IAST fDefaultOptionsList;
 
 	private IASTAppendable fCurrentOptionsList;
@@ -40,7 +40,8 @@ public class Options {
 	 * @param startIndex
 	 *            the index from which to look for options defined in <code>currentOptionsList</code>
 	 */
-	public Options(final ISymbol symbol, final IAST currentOptionsList, final int startIndex, final EvalEngine engine) {
+	public OptionArgs(final ISymbol symbol, final IAST currentOptionsList, final int startIndex,
+			final EvalEngine engine) {
 		fEngine = engine;
 		// get the List of pre-defined options:
 		final IExpr temp = fEngine.evaluate(Options(symbol));
@@ -74,7 +75,7 @@ public class Options {
 	 * @param endIndex
 	 *            the index from which to look for options defined in <code>currentOptionsList</code>
 	 */
-	public Options(final ISymbol symbol, final IAST currentOptionsList, final int startIndex, final int endIndex,
+	public OptionArgs(final ISymbol symbol, final IAST currentOptionsList, final int startIndex, final int endIndex,
 			final EvalEngine engine) {
 		fEngine = engine;
 		// get the List of pre-defined options:
@@ -111,7 +112,7 @@ public class Options {
 	 * @param optionExpr
 	 *            the value which should be defined for the option
 	 */
-	public Options(final ISymbol symbol, final IExpr optionExpr, final EvalEngine engine) {
+	public OptionArgs(final ISymbol symbol, final IExpr optionExpr, final EvalEngine engine) {
 		fEngine = engine;
 		// get the List of pre-defined options:
 		final IExpr temp = fEngine.evaluate(Options(symbol));
@@ -125,64 +126,36 @@ public class Options {
 	}
 
 	/**
-	 * Get the option from the internal options list and check if it's <code>true</code> or <code>false</code>.
+	 * Get the option from the internal options list and check if it's set to <code>F.True</code>.
 	 * 
-	 * @param optionString
-	 *            the option string
+	 * @param option
+	 *            the option
 	 * @return <code>true</code> if the option is set to <code>True</code> or <code>false</code> otherwise.
 	 */
-	public boolean isOption(final String optionString) {
-		return getOption(optionString).isTrue();
+	public boolean isTrue(final ISymbol option) {
+		return getOption(option).isTrue();
 	}
 
 	/**
-	 * Get the option from the internal options list.
+	 * If option 'Automatic' is set, return 'F.NIL'.
 	 * 
-	 * @param optionString
-	 *            the option string
-	 * @return the found option value or <code>F.NIL</code> if the option is not available
+	 * @param option
+	 * @return
 	 */
-	public IExpr getOption(final String optionString) {
-		IAST[] rule = new IAST[1];
-		if (fCurrentOptionsList != null) {
-			try {
-				if (fCurrentOptionsList.exists(x -> {
-					if (x.isAST()) {
-						IAST temp = (IAST) x;
-						if (temp.isRuleAST() && temp.arg1().toString().equalsIgnoreCase(optionString)) {
-							rule[0] = temp;
-							return true;
-						}
-					}
-					return false;
-				})) {
-					return rule[0].arg2();
-				}
-			} catch (Exception e) {
-
-			}
+	public IExpr getOptionAutomatic(final ISymbol option) {
+		IExpr temp = getOption(option);
+		if (temp == F.Automatic) {
+			return F.NIL;
 		}
-		if (fDefaultOptionsList != null) {
-			try {
-				if (fDefaultOptionsList.exists(x -> {
-					if (x.isAST()) {
-						IAST temp = (IAST) x;
-						if (temp.isRuleAST() && temp.arg1().toString().equalsIgnoreCase(optionString)) {
-							rule[0] = temp;
-							return true;
-						}
-					}
-					return false;
-				}, 1)) {
-					return rule[0].arg2();
-				}
-			} catch (Exception e) {
-
-			}
-		}
-		return F.NIL;
+		return temp;
 	}
 
+	/**
+	 * Get the option which ist set in the options argument <code>option -&gt; ...</code>.
+	 * 
+	 * @param option
+	 * @return the found option value or <code>F.NIL</code> if the option is not available.
+	 */
 	public IExpr getOption(final ISymbol option) {
 		IAST[] rule = new IAST[1];
 		if (fCurrentOptionsList != null) {
@@ -243,29 +216,43 @@ public class Options {
 		return options;
 	}
 
-	public TermOrder getMonomialOrder(final IAST ast, final TermOrder defaultTermOrder) {
+	/**
+	 * Map the <code>MonomialOrder-&gt;...</code> option to JAS TermOrder.
+	 * 
+	 * @param defaultTermOrder
+	 *            the term order which should be used as default if no MonomialOrder option is set.
+	 * @return
+	 */
+	public TermOrder monomialOrder(final TermOrder defaultTermOrder) {
 		TermOrder termOrder = defaultTermOrder;
-		IExpr option = getOption("MonomialOrder");
+		IExpr option = getOption(F.MonomialOrder);
 		if (option.isSymbol()) {
-			String orderStr = option.toString();
-			termOrder = getMonomialOrder(orderStr, termOrder);
+			// String orderStr = option.toString();
+			termOrder = monomialOrder((ISymbol) option, termOrder);
 		}
 		return termOrder;
 	}
 
-	public static TermOrder getMonomialOrder(String orderStr, TermOrder defaultTermOrder) {
+	/**
+	 * Map the polynomial order option symbol to JAS TermOrder.
+	 * 
+	 * @param orderOption
+	 * @param defaultTermOrder
+	 * @return
+	 */
+	public static TermOrder monomialOrder(ISymbol orderOption, TermOrder defaultTermOrder) {
 		TermOrder termOrder = defaultTermOrder;
-		if (orderStr.equalsIgnoreCase("Lexicographic")) {
+		if (orderOption == F.Lexicographic) {
 			termOrder = TermOrderByName.Lexicographic;
-		} else if (orderStr.equalsIgnoreCase("NegativeLexicographic")) {
+		} else if (orderOption == F.NegativeLexicographic) {
 			termOrder = TermOrderByName.NegativeLexicographic;
-		} else if (orderStr.equalsIgnoreCase("DegreeLexicographic")) {
+		} else if (orderOption == F.DegreeLexicographic) {
 			termOrder = TermOrderByName.DegreeLexicographic;
-		} else if (orderStr.equalsIgnoreCase("DegreeReverseLexicographic")) {
+		} else if (orderOption == F.DegreeReverseLexicographic) {
 			termOrder = TermOrderByName.DegreeReverseLexicographic;
-		} else if (orderStr.equalsIgnoreCase("NegativeDegreeLexicographic")) {
+		} else if (orderOption == F.NegativeDegreeLexicographic) {
 			termOrder = TermOrderByName.NegativeDegreeLexicographic;
-		} else if (orderStr.equalsIgnoreCase("NegativeDegreeReverseLexicographic")) {
+		} else if (orderOption == F.NegativeDegreeReverseLexicographic) {
 			termOrder = TermOrderByName.NegativeDegreeReverseLexicographic;
 		}
 		return termOrder;

@@ -1,5 +1,7 @@
 package org.matheclipse.core.interfaces;
 
+import org.matheclipse.core.expression.F;
+
 /**
  * An IEvaluator can be linked to an ISymbol to define
  * the evaluation behaviour of the symbol at creation time.
@@ -18,4 +20,8 @@ public interface IEvaluator {
 	 * @param newSymbol the symbol which should be set up
 	 */
 	public void setUp(ISymbol newSymbol);
+	
+	default IAST options() {
+		return F.NIL;
+	}
 }

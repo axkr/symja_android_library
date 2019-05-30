@@ -38,7 +38,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
-import org.matheclipse.core.eval.util.Options;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
@@ -1959,8 +1959,8 @@ public final class NumberTheory {
 					return F.NIL;
 				}
 				if (ast.size() == 3) {
-					final Options options = new Options(ast.topHead(), ast, 2, engine);
-					IExpr option = options.getOption("GaussianIntegers");
+					final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
+					IExpr option = options.getOption(F.GaussianIntegers);
 					if (option.isTrue()) {
 						BigInteger re = BigInteger.ONE;
 						if (arg1.isInteger()) {
@@ -3766,8 +3766,8 @@ public final class NumberTheory {
 
 		public static boolean isSquarefreeWithOption(final IAST lst, IExpr expr, List<IExpr> varList,
 				final EvalEngine engine) throws JASConversionException {
-			final Options options = new Options(lst.topHead(), lst, 2, engine);
-			IExpr option = options.getOption("Modulus");
+			final OptionArgs options = new OptionArgs(lst.topHead(), lst, 2, engine);
+			IExpr option = options.getOption(F.Modulus);
 			if (option.isReal()) {
 
 				// found "Modulus" option => use ModIntegerRing

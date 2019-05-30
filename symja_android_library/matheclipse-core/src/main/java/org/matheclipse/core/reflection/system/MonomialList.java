@@ -15,14 +15,14 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.util.Options;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
-import org.matheclipse.core.interfaces.IStringX;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.ExprTermOrder;
@@ -87,12 +87,12 @@ public class MonomialList extends AbstractFunctionEvaluator {
 		TermOrder termOrder = TermOrderByName.Lexicographic;
 		try {
 			if (ast.size() > 3) {
-				if (ast.arg3() instanceof IStringX) {
-					String orderStr = ast.arg3().toString(); // NegativeLexicographic
-					termOrder = Options.getMonomialOrder(orderStr, termOrder);
+				if (ast.arg3().isSymbol()) {
+					// String orderStr = ast.arg3().toString(); // NegativeLexicographic
+					termOrder = OptionArgs.monomialOrder((ISymbol) ast.arg3(), termOrder);
 				}
-				final Options options = new Options(ast.topHead(), ast, 2, engine);
-				IExpr option = options.getOption("Modulus");
+				final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
+				IExpr option = options.getOption(F.Modulus);
 				if (option.isReal()) {
 					return monomialListModulus(expr, varList, termOrder, option);
 				}

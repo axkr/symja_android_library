@@ -2,7 +2,7 @@ package org.matheclipse.core.eval.interfaces;
 
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.util.Options;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -27,7 +27,7 @@ public abstract class AbstractCorePredicateEvaluator extends AbstractCoreFunctio
 	 */
 	abstract public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine);
 
-	public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine, Options options) {
+	public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine, OptionArgs options) {
 		return false;
 	}
 
@@ -43,7 +43,7 @@ public abstract class AbstractCorePredicateEvaluator extends AbstractCoreFunctio
 			}
 		}
 		if (ast.size() == 3) {
-			Options options = new Options(ast.topHead(), ast, 2, engine);
+			OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
 			return F.bool(evalArg1Boole(arg1, engine, options));
 		}
 		return F.bool(evalArg1Boole(arg1, engine));

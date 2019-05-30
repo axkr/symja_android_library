@@ -2368,32 +2368,33 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{0}->1+x+x^3+x^4+x^6+x^7+O(x)^9}");
 		check("CoefficientRules((x + y)^3)", //
 				"{{3,0}->1,{2,1}->3,{1,2}->3,{0,3}->1}");
-		check("CoefficientRules( a*x*y^2 + b*x^2*z, {x, y, z}, \"DegreeReverseLexicographic\")",
+		check("CoefficientRules( a*x*y^2 + b*x^2*z, {x, y, z}, DegreeReverseLexicographic)",//
 				"{{1,2,0}->a,{2,0,1}->b}");
 
 		check("CoefficientRules((x + y)^3)", "{{3,0}->1,{2,1}->3,{1,2}->3,{0,3}->1}");
 		// check("CoefficientRules(x^2 y^2 + x^3, {x, y})", "{x^3,x^2*y^2}");
 		// check("CoefficientRules(x^2 y^2 + x^3, {x,
 		// y},\"DegreeLexicographic\")", "{x^2*y^2,x^3}");
-		check("CoefficientRules((x + 1)^5, x, Modulus -> 2)", "{{5}->1,{4}->1,{1}->1,{0}->1}");
+		check("CoefficientRules((x + 1)^5, x, Modulus -> 2)",//
+				"{{5}->1,{4}->1,{1}->1,{0}->1}");
 
-		check("CoefficientRules(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z})",
+		check("CoefficientRules(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z})",//
 				"{{5,4,2}->-10,{2,5,3}->7,{2,1,5}->-10,{1,5,4}->-7,{1,4,3}->6,{1,3,3}->6,{1,2,1}->\n"
 						+ "3,{0,4,1}->1,{0,2,1}->-7,{0,0,5}->2}");
 
-		check("CoefficientRules(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, \"NegativeLexicographic\")",
+		check("CoefficientRules(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, NegativeLexicographic)",//
 				"{{0,0,5}->2,{0,2,1}->-7,{0,4,1}->1,{1,2,1}->3,{1,3,3}->6,{1,4,3}->6,{1,5,4}->-7,{\n"
 						+ "2,1,5}->-10,{2,5,3}->7,{5,4,2}->-10}");
-		check("CoefficientRules(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, \"DegreeLexicographic\")",
+		check("CoefficientRules(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, DegreeLexicographic)",//
 				"{{5,4,2}->-10,{2,5,3}->7,{1,5,4}->-7,{2,1,5}->-10,{1,4,3}->6,{1,3,3}->6,{0,4,1}->\n"
 						+ "1,{0,0,5}->2,{1,2,1}->3,{0,2,1}->-7}");
-		check("CoefficientRules(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, \"NegativeDegreeReverseLexicographic\")",
+		check("CoefficientRules(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, NegativeDegreeReverseLexicographic)",//
 				"{{0,2,1}->-7,{1,2,1}->3,{0,4,1}->1,{0,0,5}->2,{1,3,3}->6,{1,4,3}->6,{2,1,5}->-10,{\n"
 						+ "2,5,3}->7,{1,5,4}->-7,{5,4,2}->-10}");
-		check("CoefficientRules(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, \"DegreeReverseLexicographic\")",
+		check("CoefficientRules(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, DegreeReverseLexicographic)",//
 				"{{5,4,2}->-10,{2,5,3}->7,{1,5,4}->-7,{1,4,3}->6,{2,1,5}->-10,{1,3,3}->6,{0,4,1}->\n"
 						+ "1,{0,0,5}->2,{1,2,1}->3,{0,2,1}->-7}");
-		check("CoefficientRules(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, \"NegativeDegreeLexicographic\")",
+		check("CoefficientRules(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, NegativeDegreeLexicographic)",//
 				"{{0,2,1}->-7,{1,2,1}->3,{0,4,1}->1,{0,0,5}->2,{1,3,3}->6,{2,1,5}->-10,{1,4,3}->6,{\n"
 						+ "2,5,3}->7,{1,5,4}->-7,{5,4,2}->-10}");
 	}
@@ -5267,145 +5268,186 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFactor() {
-		 check("Factor(x+2*Sqrt(x)+1)", //
-				 "(1+Sqrt(x))^2");
+		System.out.println( );
+		System.out.print('.');
+		check("Factor(x+2*Sqrt(x)+1)", //
+				"(1+Sqrt(x))^2");
+		System.out.print('.');
 		check("Factor(4^(2*x+1)*5^(x-2)-6^(1-x))", //
 				"-6*5^x*(-2^(1+4*x)/75+1/(5^x*6^x))");
 		// check("Factor(E^x+E^(2*x))", //
 		// "E^x*(1+E^x)");
-
+		System.out.print('.');
 		check("Factor(r^2+k*q*Q*r^4-E*r^6)", //
 				"r^2*(1+k*q*Q*r^2-E*r^4)");
+		System.out.print('.');
 		check("Factor(x+2*Sqrt(x)+1)", //
 				"(1+Sqrt(x))^2");
+		System.out.print('.');
 		check("Factor((a*d*e+(c*d^2+a*e^2)*x+c*d*e*x^2)^(3/2))", //
 				"((a*e+c*d*x)*(d+e*x))^(3/2)");
-
+		System.out.print('.');
 		check("Factor(Cos(x)-I*Sin(x) )", //
 				"Cos(x)-I*Sin(x)");
+		System.out.print('.');
 		check("Factor((Cos(x)-I*Sin(x))/(I*Cos(x)-Sin(x)))", //
 				"(Cos(x)-I*Sin(x))/(I*Cos(x)-Sin(x))");
 
 		// example from paper
 		// https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+		System.out.print('.');
 		check("Factor(4^(2*x+1)*5^(x-2)-6^(1-x))", //
 				"-6*5^x*(-2^(1+4*x)/75+1/(5^x*6^x))");
-
+		System.out.print('.');
 		check("Factor(E^x+E^(2*x))", //
 				"E^x*(1+E^x)");
 
 		// example from paper
 		// https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+		System.out.print('.');
 		check("Factor(Log(2,x)+4*Log(x,2)-5)", //
 				"((-4*Log(2)+Log(x))*(-Log(2)+Log(x)))/(Log(2)*Log(x))");
 		// TODO reduce negative signs
 		// ((Log(2) - Log(x))*(4*Log(2) - Log(x)))/(Log(2)*Log(x))
-
+		System.out.print('.');
 		check("Factor( (4*a^2-5*a*b+b^2)/(a*b) )", //
 				"((-4*a+b)*(-a+b))/(a*b)");
 
 		// example from paper
+		System.out.print('.');
 		check("Factor(3*Tan(3*x)-Tan(x)+2)", //
 				"3*(2/3-Tan(x)/3+Tan(3*x))");
+		System.out.print('.');
 		check("TrigToExp(3*Tan(3*x)-Tan(x)+2)", //
 				"2+(-I*(E^(-I*x)-E^(I*x)))/(E^(-I*x)+E^(I*x))+(I*3*(E^(-I*3*x)-E^(I*3*x)))/(E^(-\n"
 						+ "I*3*x)+E^(I*3*x))");
+		System.out.print('.');
 		check("Factor(2+(-I*(E^(-I*x)-E^(I*x)))/(E^(-I*x)+E^(I*x))+(I*3*(E^(-I*3*x)-E^(I*3*x)))/(E^(-I*3*x)+E^(I*3*x)))", //
 				"((2-I*2)*(I+(-1/2-I*1/2)*E^(I*2*x)+E^(I*4*x)))/((-1-I*E^(I*x)+E^(I*2*x))*(-1+I*E^(I*x)+E^(\n"
 						+ "I*2*x)))");
 
 		// example from paper
+		System.out.print('.');
 		check("Factor(3*Sech(x)^2+4*Tanh(x)+1)", //
 				"4*(1/4+3/4*Sech(x)^2+Tanh(x))");
+		System.out.print('.');
 		check("TrigToExp(3*Sech(x)^2+4*Tanh(x)+1)", //
 				"1+12/(E^(-x)+E^x)^2+4*(-1/(E^x*(E^(-x)+E^x))+E^x/(E^(-x)+E^x))");
 
 		// example from paper
+		System.out.print('.');
 		check("Factor(Log(x+1)+Log(x-1)-3)", //
 				"-3+Log(-1+x)+Log(1+x)");
+		System.out.print('.');
 		check("TrigToExp(Log(x+1)+Log(x-1)-3)", //
 				"-3+Log(-1+x)+Log(1+x)");
 
 		// example from paper
+		System.out.print('.');
 		check("Factor(E^(3*x)-4*E^x+3*E^(-x))", //
 				"((-1+E^x)*(1+E^x)*(-3+E^(2*x)))/E^x");
 
 		// example from paper
+		System.out.print('.');
 		check("Factor(Cosh(x)-3*Sinh(y))", //
 				"-3*(-Cosh(x)/3+Sinh(y))");
 
 		// 1/(E^x*2) + E^x/2 + 3/(E^y*2) - (3*E^y)/2
+		System.out.print('.');
 		check("TrigToExp(Cosh(x)-3*Sinh(y))", //
 				"1/(2*E^x)+E^x/2-3*(-1/(2*E^y)+E^y/2)");
+		System.out.print('.');
 		check("TrigToExp(Cosh(x))", //
 				"1/(2*E^x)+E^x/2");
+		System.out.print('.');
 		check("TrigToExp(Sinh(x))", //
 				"-1/(2*E^x)+E^x/2");
 
 		// example from paper
+		System.out.print('.');
 		check("Factor(2*Sinh(x)+6*Cosh(y)-5)", //
 				"2*(-5/2+3*Cosh(y)+Sinh(x))");
+		System.out.print('.');
 		check("TrigToExp(2*Sinh(x)+6*Cosh(y)-5)", //
 				"-5+2*(-1/(2*E^x)+E^x/2)+6*(1/(2*E^y)+E^y/2)");
 
 		// example from paper
+		System.out.print('.');
 		check("TrigToExp(Cos(x) + Cos(3*x) + Cos(5*x))", //
 				"1/(2*E^(I*5*x))+1/(2*E^(I*3*x))+1/(2*E^(I*x))+E^(I*x)/2+E^(I*3*x)/2+E^(I*5*x)/2");
 		//
 		// // TODO determine more factors
+		System.out.print('.');
 		check("Factor(1/(2*E^(I*5*x))+1/(2*E^(I*3*x))+1/(2*E^(I*x))+E^(I*x)/2+E^(I*3*x)/2+E^(I*5*x)/2)", //
 				"((-I+E^(I*x))*(I+E^(I*x))*(1-E^(I*x)+E^(I*2*x))*(1+E^(I*x)+E^(I*2*x))*(-1-I*E^(I*x)+E^(\n"
 						+ "I*2*x))*(-1+I*E^(I*x)+E^(I*2*x)))/(2*E^(I*5*x))");
 		// ((1/2)*(1 + E^(2*I*x))*(1 - E^(I*x) + E^(2*I*x))*(1 + E^(I*x) + E^(2*I*x))*
 		// (1 - E^(2*I*x) + E^(4*I*x)))/E^(5*I*x)
+		System.out.print('.');
 		check("Factor(TrigToExp(Cos(x) + Cos(3*x) + Cos(5*x)))", //
 				"((-I+E^(I*x))*(I+E^(I*x))*(1-E^(I*x)+E^(I*2*x))*(1+E^(I*x)+E^(I*2*x))*(-1-I*E^(I*x)+E^(\n"
 						+ "I*2*x))*(-1+I*E^(I*x)+E^(I*2*x)))/(2*E^(I*5*x))");
 
+		System.out.print('.');
 		check("Factor(a*Cosh(x) + I*b*Cosh(x) - I*a*Sinh(x) + b*Sinh(x))", //
 				"(-I*a+b)*(I*Cosh(x)+Sinh(x))");
+		System.out.print('.');
 		check("Factor(a*b+(4+4*x+x^2)^2)", //
 				"16+a*b+32*x+24*x^2+8*x^3+x^4");
 
 		// github #121
+		System.out.print('.');
 		check("Factor(x^(12)-y^(12), GaussianIntegers->True)", //
 				"-(-x+y)*(x+y)*(-I*x+y)*(I*x+y)*(x^2+x*y+y^2)*(x^2-x*y+y^2)*(-x^2-I*x*y+y^2)*(-x^\n" + "2+I*x*y+y^2)");
+		System.out.print('.');
 		check("Factor(x^(2)+y^(2), GaussianIntegers->True)", //
 				"(-I*x+y)*(I*x+y)");
+		System.out.print('.');
 		check("Factor(Sin(x), GaussianIntegers->True)", //
 				"Sin(x)");
 
+		System.out.print('.');
 		check("Factor(1+x^2, GaussianIntegers->True)", //
 				"(-I+x)*(I+x)");
+		System.out.print('.');
 		check("Factor(1+x^2, Extension->I)", //
 				"(-I+x)*(I+x)");
 
 		// Homogenization example from
 		// https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+		System.out.print('.');
 		check("Factor(E^(3*x)-4*E^x+3*E^(-x))", //
 				"((-1+E^x)*(1+E^x)*(-3+E^(2*x)))/E^x");
+		System.out.print('.');
 		check("Factor(E^x+E^(2*x))", //
 				"E^x*(1+E^x)");
-
+		System.out.print('.');
 		check("Factor(Sin(x))", //
 				"Sin(x)");
 
 		// TODO https://github.com/kredel/java-algebra-system/issues/8
+		System.out.print('.');
 		check("Factor(a*c+(b*c+a*d)*x+b*d*x^2)", //
 				"(a+b*x)*(c+d*x)");
 
+		System.out.print('.');
 		check("Factor(b*c*n-a*d*n)", //
 				"(b*c-a*d)*n");
+		System.out.print('.');
 		check("Factor(a*b*(4+4*x+x^2)^2)", //
 				"a*b*(2+x)^4");
-
+		
+		System.out.print('.');
 		check("Factor(x^2 - y^2)", //
 				"(x-y)*(x+y)");
+		System.out.print('.');
 		check("Factor(1 / (x^2+2*x+1) + 1 / (x^4+2*x^2+1))", //
 				"(2+2*x+3*x^2+x^4)/((1+x)^2*(1+x^2)^2)");
 
+		System.out.print('.');
 		check("Factor({x+x^2})", //
 				"{x*(1+x)}");
+		System.out.print('.');
 		check("Factor(x^259+1)", //
 				"(1+x)*(1-x+x^2-x^3+x^4-x^5+x^6)*(1-x+x^2-x^3+x^4-x^5+x^6-x^7+x^8-x^9+x^10-x^11+x^\n"
 						+ "12-x^13+x^14-x^15+x^16-x^17+x^18-x^19+x^20-x^21+x^22-x^23+x^24-x^25+x^26-x^27+x^\n"
@@ -5419,6 +5461,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "145+x^146-x^150-x^151-x^152-x^153+x^157+x^158+x^159+x^160-x^164-x^165-x^166-x^\n"
 						+ "167+x^171+x^172+x^173+x^174-x^178-x^179-x^180-x^181+x^187+x^188-x^194-x^195+x^\n"
 						+ "201+x^202-x^208-x^209+x^215+x^216)");
+		System.out.print('.');
 		check("Factor(x^258-1)", //
 				"(-1+x)*(1+x)*(1-x+x^2)*(1+x+x^2)*(1-x+x^2-x^3+x^4-x^5+x^6-x^7+x^8-x^9+x^10-x^11+x^\n"
 						+ "12-x^13+x^14-x^15+x^16-x^17+x^18-x^19+x^20-x^21+x^22-x^23+x^24-x^25+x^26-x^27+x^\n"
@@ -5433,24 +5476,33 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "30+x^31-x^33-x^34+x^36+x^37-x^39-x^40+x^42-x^44-x^45+x^47+x^48-x^50-x^51+x^53+x^\n"
 						+ "54-x^56-x^57+x^59+x^60-x^62-x^63+x^65+x^66-x^68-x^69+x^71+x^72-x^74-x^75+x^77+x^\n"
 						+ "78-x^80-x^81+x^83+x^84)");
+		System.out.print('.');
 		check("Factor(4*x^2+3, Extension->I)", //
 				"4*(3/4+x^2)");
+		System.out.print('.');
 		check("Factor(3/4*x^2+9/16, Extension->I)", //
 				"3/4*(3/4+x^2)");
 
+		System.out.print('.');
 		check("Factor(x^10 - 1, Modulus -> 2)", //
 				"(1+x)^2*(1+x+x^2+x^3+x^4)^2");
 
+		System.out.print('.');
 		check("factor(-1+x^16)", //
 				"(-1+x)*(1+x)*(1+x^2)*(1+x^4)*(1+x^8)");
+		System.out.print('.');
 		check("factor((-3)*x^3 +10*x^2-11*x+4)", //
 				"(1-x)^2*(4-3*x)");
+		System.out.print('.');
 		check("factor(x^2-a^2)", //
 				"(-a+x)*(a+x)");
-		// is sometimes inperformant, if it calls
+		
+		// is sometimes slow, if it calls
 		// FactorAbstract#factorsSquarefreeKronecker()
+		System.out.print('.');
 		check("factor(2*x^3*y - 2*a^2*x*y - 3*a^2*x^2 + 3*a^4)", //
 				"(-a+x)*(a+x)*(-3*a^2+2*x*y)");
+		System.out.print('.');
 		check("expand((x+a)*(-x+a)*(-2*x*y+3*a^2))", //
 				"3*a^4-3*a^2*x^2-2*a^2*x*y+2*x^3*y");
 	}
@@ -10106,7 +10158,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("num=Sin(3*I);Module({v=N(num)},If(PossibleZeroQ(Re(v)),Im(v)>0,Re(v)>0))",
 		// "True");
 		// check("Module({x=5}, Hold(x))", "Hold(x$1)");
-		
+
 		check("xm=10;Module({xm=xm}, xm=xm+1;xm);xm", //
 				"10");
 		check("xm=10;Module({t=xm}, xm=xm+1;t)", //
@@ -10169,7 +10221,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Module({x}, g2(x_)=Integrate(Sqrt(1+z^2),{z,0,x}));Table(g2(i),{i,3})", //
 				"{1/Sqrt(2)+ArcSinh(1)/2,Sqrt(5)+ArcSinh(2)/2,3*Sqrt(5/2)+ArcSinh(3)/2}");
-		
+
 		check("v=Null;Module({w=v},Catch(Scan(Function(If(False ,Throw(False))),u); w))", //
 				"");
 	}
@@ -10213,28 +10265,32 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMonomialList() {
-		check("MonomialList((x + y)^3)", "{x^3,3*x^2*y,3*x*y^2,y^3}");
-		check("MonomialList(x^2*y^2 + x^3, {x, y})", "{x^3,x^2*y^2}");
-		check("MonomialList(x^2*y^2 + x^3, {x, y},\"DegreeLexicographic\")", "{x^2*y^2,x^3}");
-		check("MonomialList((x + 1)^5, x, Modulus -> 2)", "{x^5,x^4,x,1}");
+		check("MonomialList((x + y)^3)", //
+				"{x^3,3*x^2*y,3*x*y^2,y^3}");
+		check("MonomialList(x^2*y^2 + x^3, {x, y})", //
+				"{x^3,x^2*y^2}");
+		check("MonomialList(x^2*y^2 + x^3, {x, y},DegreeLexicographic)", //
+				"{x^2*y^2,x^3}");
+		check("MonomialList((x + 1)^5, x, Modulus -> 2)", //
+				"{x^5,x^4,x,1}");
 
-		check("MonomialList(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z})",
+		check("MonomialList(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z})", //
 				"{-10*x^5*y^4*z^2,7*x^2*y^5*z^3,-10*x^2*y*z^5,-7*x*y^5*z^4,6*x*y^4*z^3,6*x*y^3*z^\n"
 						+ "3,3*x*y^2*z,y^4*z,-7*y^2*z,2*z^5}");
 
-		check("MonomialList(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, \"NegativeLexicographic\")",
+		check("MonomialList(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, NegativeLexicographic)", //
 				"{2*z^5,-7*y^2*z,y^4*z,3*x*y^2*z,6*x*y^3*z^3,6*x*y^4*z^3,-7*x*y^5*z^4,-10*x^2*y*z^\n"
 						+ "5,7*x^2*y^5*z^3,-10*x^5*y^4*z^2}");
-		check("MonomialList(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, \"DegreeLexicographic\")",
+		check("MonomialList(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, DegreeLexicographic)", //
 				"{-10*x^5*y^4*z^2,7*x^2*y^5*z^3,-7*x*y^5*z^4,-10*x^2*y*z^5,6*x*y^4*z^3,6*x*y^3*z^\n"
 						+ "3,y^4*z,2*z^5,3*x*y^2*z,-7*y^2*z}");
-		check("MonomialList(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y *z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, \"NegativeDegreeReverseLexicographic\")",
+		check("MonomialList(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y *z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, NegativeDegreeReverseLexicographic)", //
 				"{-7*y^2*z,3*x*y^2*z,y^4*z,2*z^5,6*x*y^3*z^3,6*x*y^4*z^3,-10*x^2*y*z^5,7*x^2*y^5*z^\n"
 						+ "3,-7*x*y^5*z^4,-10*x^5*y^4*z^2}");
-		check("MonomialList(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, \"DegreeReverseLexicographic\")",
+		check("MonomialList(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, DegreeReverseLexicographic)", //
 				"{-10*x^5*y^4*z^2,7*x^2*y^5*z^3,-7*x*y^5*z^4,6*x*y^4*z^3,-10*x^2*y*z^5,6*x*y^3*z^\n"
 						+ "3,y^4*z,2*z^5,3*x*y^2*z,-7*y^2*z}");
-		check("MonomialList(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, \"NegativeDegreeLexicographic\")",
+		check("MonomialList(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, NegativeDegreeLexicographic)", //
 				"{-7*y^2*z,3*x*y^2*z,y^4*z,2*z^5,6*x*y^3*z^3,-10*x^2*y*z^5,6*x*y^4*z^3,7*x^2*y^5*z^\n"
 						+ "3,-7*x*y^5*z^4,-10*x^5*y^4*z^2}");
 	}
@@ -11164,6 +11220,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1/6*(3+3*a^2+Sqrt(5+6*a+5*a^2)+a*(4+Sqrt(5+6*a+5*a^2)))");
 		check("ReplaceRepeated(1/6*(3+3*v1+v2+a*(4+v2)), {v2->Sqrt(5+6*a+5*v1), v1->a^2})", //
 				"1/6*(3+3*a^2+Sqrt(5+6*a+5*a^2)+a*(4+Sqrt(5+6*a+5*a^2)))");
+	}
+
+	public void testOptions() {
+		check("Options(Plus)", //
+				"{}");
+		check("Options(Factor)", //
+				"{GaussianIntegers->False,Modulus->0}");
 	}
 
 	public void testOptional() {

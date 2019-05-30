@@ -15,7 +15,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.util.Options;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.generic.UnaryNumerical;
@@ -138,12 +138,12 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 		int maxIterations = DEFAULT_MAX_ITERATIONS;
 		int precisionGoal = 16; // automatic scale value
 		if (ast.size() >= 4) {
-			final Options options = new Options(ast.topHead(), ast, 3, engine);
-			IExpr option = options.getOption("Method");
+			final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
+			IExpr option = options.getOption(F.Method);
 			if (option.isSymbol()) {
 				method = option.toString();
 			}
-			option = options.getOption("MaxPoints");
+			option = options.getOption(F.MaxPoints);
 			if (option.isReal()) {
 				maxPoints = ((ISignedNumber) option).toIntDefault(-1);
 				if (maxPoints <= 0) {
@@ -152,7 +152,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 					maxPoints = DEFAULT_MAX_POINTS;
 				}
 			}
-			option = options.getOption("MaxIterations");
+			option = options.getOption(F.MaxIterations);
 			if (option.isReal()) {
 				maxIterations = ((ISignedNumber) option).toIntDefault(-1);
 				if (maxIterations <= 0) {
@@ -161,7 +161,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 					maxIterations = DEFAULT_MAX_ITERATIONS;
 				}
 			}
-			option = options.getOption("PrecisionGoal");
+			option = options.getOption(F.PrecisionGoal);
 			if (option.isReal()) {
 				precisionGoal = ((ISignedNumber) option).toIntDefault(-1);
 				if (precisionGoal <= 0) {
@@ -169,7 +169,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 							"NIntegrate: " + "Error in option PrecisionGoal. Using default value: " + precisionGoal);
 					precisionGoal = 16;
 				}
-			} 
+			}
 		}
 
 		if (ast.arg2().isList()) {

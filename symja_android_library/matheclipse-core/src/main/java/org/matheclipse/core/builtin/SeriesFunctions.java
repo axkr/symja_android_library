@@ -13,7 +13,7 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Assumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
-import org.matheclipse.core.eval.util.Options;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.WL;
@@ -701,8 +701,8 @@ public class SeriesFunctions {
 				engine.setNumericMode(false);
 				int direction = DIRECTION_TWO_SIDED; // no direction as default
 				if (ast.isAST3()) {
-					final Options options = new Options(ast.topHead(), ast, 2, engine);
-					IExpr option = options.getOption("Direction");
+					final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
+					IExpr option = options.getOption(F.Direction);
 					if (option.isPresent()) {
 						if (option.isOne()) {
 							direction = DIRECTION_FROM_BELOW;

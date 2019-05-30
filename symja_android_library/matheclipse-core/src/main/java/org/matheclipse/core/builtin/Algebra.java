@@ -49,7 +49,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
-import org.matheclipse.core.eval.util.Options;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -1123,8 +1123,8 @@ public class Algebra {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			boolean trig = false;
 			if (ast.isAST2()) {
-				final Options options = new Options(ast.topHead(), ast, 2, engine);
-				IExpr option = options.getOption("Trig");
+				final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
+				IExpr option = options.getOption(F.Trig);
 
 				if (option.isTrue()) {
 					trig = true;
@@ -1151,6 +1151,11 @@ public class Algebra {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+
+		@Override
+		public IAST options() {
+			return F.List(F.Rule(F.Trig, F.False));
 		}
 
 		/**
@@ -1893,6 +1898,11 @@ public class Algebra {
 	private static class Factor extends AbstractFunctionEvaluator {
 
 		@Override
+		public IAST options() {
+			return F.List(F.Rule(F.GaussianIntegers, F.False), F.Rule(F.Modulus, F.C0));
+		}
+
+		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.arg1().isList()) {
 				IAST list = (IAST) ast.arg1();
@@ -2090,17 +2100,17 @@ public class Algebra {
 		 */
 		public static IExpr factorWithOption(final IAST ast, IExpr expr, List<IExpr> varList, boolean factorSquareFree,
 				final EvalEngine engine) throws JASConversionException {
-			final Options options = new Options(ast.topHead(), ast, 2, engine);
-			IExpr option = options.getOption("Modulus");
-			if (option.isReal()) {
+			final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
+			IExpr option = options.getOption(F.Modulus);
+			if (option.isInteger() && !option.isZero()) {
 				return factorModulus(expr, varList, factorSquareFree, option);
 			}
 			if (!factorSquareFree) {
-				option = options.getOption("GaussianIntegers");
+				option = options.getOption(F.GaussianIntegers);
 				if (option.isTrue()) {
 					return factorComplex(expr, varList, F.Times, engine);
 				}
-				option = options.getOption("Extension");
+				option = options.getOption(F.Extension);
 				if (option.isImaginaryUnit()) {
 					return factorComplex(expr, varList, F.Times, engine);
 				}
@@ -2488,8 +2498,8 @@ public class Algebra {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			boolean trig = false;
 			if (ast.isAST2()) {
-				final Options options = new Options(ast.topHead(), ast, 2, engine);
-				IExpr option = options.getOption("Trig");
+				final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
+				IExpr option = options.getOption(F.Trig);
 
 				if (option.isTrue()) {
 					trig = true;
@@ -2516,6 +2526,11 @@ public class Algebra {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+
+		@Override
+		public IAST options() {
+			return F.List(F.Rule(F.Trig, F.False));
 		}
 
 		/**
@@ -2603,9 +2618,9 @@ public class Algebra {
 			if (ast.size() == 5) {
 				// List<IExpr> varList = r;
 				List<IExpr> varList = eVar.getVarList().copyTo();
-				final Options options = new Options(ast.topHead(), ast, 4, engine);
-				IExpr option = options.getOption("Modulus");
-				if (option.isReal()) {
+				final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
+				IExpr option = options.getOption(F.Modulus);
+				if (option.isInteger() && !option.isZero()) {
 					try {
 						// found "Modulus" option => use ModIntegerRing
 						ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((ISignedNumber) option);
@@ -2694,6 +2709,11 @@ public class Algebra {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+
+		@Override
+		public IAST options() {
+			return F.List(F.Rule(F.Modulus, F.C0));
 		}
 	}
 
@@ -2803,9 +2823,9 @@ public class Algebra {
 		}
 
 		private IExpr gcdWithOption(final IAST ast, IExpr expr, VariablesSet eVar, final EvalEngine engine) {
-			final Options options = new Options(ast.topHead(), ast, ast.argSize(), engine);
-			IExpr option = options.getOption("Modulus");
-			if (option.isReal()) {
+			final OptionArgs options = new OptionArgs(ast.topHead(), ast, ast.argSize(), engine);
+			IExpr option = options.getOption(F.Modulus);
+			if (option.isInteger() && !option.isZero()) {
 				return modulusGCD(ast, expr, eVar, option);
 			}
 			return F.NIL;
@@ -2847,6 +2867,11 @@ public class Algebra {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+
+		@Override
+		public IAST options() {
+			return F.List(F.Rule(F.Modulus, F.C0));
 		}
 	}
 
@@ -2897,9 +2922,9 @@ public class Algebra {
 			// ASTRange r = new ASTRange(eVar.getVarList(), 1);
 			IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 			if (ast.size() > 3) {
-				final Options options = new Options(ast.topHead(), ast, ast.argSize(), engine);
-				IExpr option = options.getOption("Modulus");
-				if (option.isReal()) {
+				final OptionArgs options = new OptionArgs(ast.topHead(), ast, ast.argSize(), engine);
+				IExpr option = options.getOption(F.Modulus);
+				if (option.isInteger() && !option.isZero()) {
 					try {
 						// found "Modulus" option => use ModIntegerRing
 						List<IExpr> varList = eVar.getVarList().copyTo();
@@ -2969,6 +2994,11 @@ public class Algebra {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+
+		@Override
+		public IAST options() {
+			return F.List(F.Rule(F.Modulus, F.C0));
 		}
 	}
 
@@ -3079,9 +3109,9 @@ public class Algebra {
 				IExpr arg2 = F.evalExpandAll(ast.arg2(), engine);
 
 				if (ast.size() == 5) {
-					final Options options = new Options(ast.topHead(), ast, 4, engine);
-					IExpr option = options.getOption("Modulus");
-					if (option.isReal()) {
+					final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
+					IExpr option = options.getOption(F.Modulus);
+					if (option.isInteger() && !option.isZero()) {
 						IExpr[] result = quotientRemainderModInteger(arg1, arg2, variable, option);
 						if (result == null) {
 							return F.NIL;
@@ -3097,6 +3127,11 @@ public class Algebra {
 				return result[0];
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public IAST options() {
+			return F.List(F.Rule(F.Modulus, F.C0));
 		}
 
 	}
@@ -3169,9 +3204,9 @@ public class Algebra {
 			IExpr arg2 = F.evalExpandAll(ast.arg2(), engine);
 
 			if (ast.size() == 5) {
-				final Options options = new Options(ast.topHead(), ast, 4, engine);
-				IExpr option = options.getOption("Modulus");
-				if (option.isReal()) {
+				final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
+				IExpr option = options.getOption(F.Modulus);
+				if (option.isInteger() && !option.isZero()) {
 					IExpr[] result = quotientRemainderModInteger(arg1, arg2, variable, option);
 					if (result == null) {
 						return F.NIL;
@@ -3211,6 +3246,10 @@ public class Algebra {
 			return null;
 		}
 
+		@Override
+		public IAST options() {
+			return F.List(F.Rule(F.Modulus, F.C0));
+		}
 	}
 
 	/**
@@ -3249,9 +3288,9 @@ public class Algebra {
 			IExpr arg2 = F.evalExpandAll(ast.arg2(), engine);
 
 			if (ast.size() == 5) {
-				final Options options = new Options(ast.topHead(), ast, 4, engine);
-				IExpr option = options.getOption("Modulus");
-				if (option.isReal()) {
+				final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
+				IExpr option = options.getOption(F.Modulus);
+				if (option.isInteger() && !option.isZero()) {
 					IExpr[] result = quotientRemainderModInteger(arg1, arg2, variable, option);
 					if (result == null) {
 						return F.NIL;
@@ -3269,6 +3308,11 @@ public class Algebra {
 
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_3_4;
+		}
+
+		@Override
+		public IAST options() {
+			return F.List(F.Rule(F.Modulus, F.C0));
 		}
 	}
 
@@ -3416,7 +3460,7 @@ public class Algebra {
 			if (ast.arg1().isAST()) {
 				boolean assumptions = false;
 				if (ast.isAST2()) {
-					final Options options = new Options(ast.topHead(), ast, ast.argSize(), engine);
+					final OptionArgs options = new OptionArgs(ast.topHead(), ast, ast.argSize(), engine);
 					IExpr option = options.getOption(Assumptions);
 					if (option.isTrue()) {
 						// found "Assumptions -> True"
@@ -3442,6 +3486,11 @@ public class Algebra {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+
+		@Override
+		public IAST options() {
+			return F.List(F.Rule(F.Assumptions, F.Automatic));
 		}
 	}
 
@@ -4477,12 +4526,12 @@ public class Algebra {
 				if (!arg2.isRule()) {
 					assumptionExpr = arg2;
 				}
-				final Options options = new Options(ast.topHead(), ast, 2, engine);
-				IExpr option = options.getOption("Assumptions");
-				if (option.isPresent()) {
+				final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
+				IExpr option = options.getOption(F.Assumptions);
+				if (option.isPresent() && !option.equals(F.$Assumptions)) {
 					assumptionExpr = option;
 				}
-				complexityFunctionHead = options.getOption("ComplexityFunction");
+				complexityFunctionHead = options.getOptionAutomatic(F.ComplexityFunction);
 			}
 
 			IAssumptions oldAssumptions = engine.getAssumptions();
@@ -4532,6 +4581,11 @@ public class Algebra {
 
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_INFINITY;
+		}
+
+		@Override
+		public IAST options() {
+			return F.List(F.Rule(F.Assumptions, F.$Assumptions), F.Rule(F.ComplexityFunction, F.Automatic));
 		}
 
 		private IExpr simplifyStep(IExpr arg1, Function<IExpr, Long> complexityFunction, long minCounter, IExpr result,

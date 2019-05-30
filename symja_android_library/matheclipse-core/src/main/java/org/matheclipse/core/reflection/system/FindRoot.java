@@ -22,7 +22,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Assumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
-import org.matheclipse.core.eval.util.Options;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.generic.UnaryNumerical;
@@ -164,12 +164,12 @@ public class FindRoot extends AbstractFunctionEvaluator {
 		String method = "Brent";
 		int maxIterations = 100;
 		if (ast.size() >= 4) {
-			final Options options = new Options(ast.topHead(), ast, 3, engine);
-			IExpr optionMaxIterations = options.getOption("MaxIterations");
+			final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
+			IExpr optionMaxIterations = options.getOption(F.MaxIterations);
 			if (optionMaxIterations.isReal()) {
 				maxIterations = ((ISignedNumber) optionMaxIterations).toInt();
 			}
-			IExpr optionMethod = options.getOption("Method");
+			IExpr optionMethod = options.getOption(F.Method);
 			if (optionMethod.isSymbol()) {
 				method = optionMethod.toString();
 			} else {
@@ -214,9 +214,11 @@ public class FindRoot extends AbstractFunctionEvaluator {
 		}
 		return F.NIL;
 	}
+
 	public int[] expectedArgSize() {
 		return IOFunctions.ARGS_2_INFINITY;
 	}
+
 	private double findRoot(String method, int maxIterations, IAST list, ISignedNumber min, ISignedNumber max,
 			IExpr function, EvalEngine engine) {
 		ISymbol xVar = (ISymbol) list.arg1();
@@ -243,7 +245,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
 				solver = new IllinoisSolver();
 			} else if (method.equalsIgnoreCase("Pegasus")) {
 				solver = new PegasusSolver();
-			} else if (max == null||method.equalsIgnoreCase("Newton")) {
+			} else if (max == null || method.equalsIgnoreCase("Newton")) {
 				try {
 					NewtonRaphsonSolver nrs = new NewtonRaphsonSolver();
 					if (max == null) {

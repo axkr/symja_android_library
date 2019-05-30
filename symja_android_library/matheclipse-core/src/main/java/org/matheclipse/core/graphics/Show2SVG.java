@@ -6,7 +6,7 @@ import java.util.Locale;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.util.Options;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -54,16 +54,16 @@ public class Show2SVG {
 		EvalEngine engine = EvalEngine.get();
 		IAST numericAST = (IAST) engine.evalN(ast);
 		Dimensions2D dim = new Dimensions2D(350, 350);
-		// TODO change to these rgb(24.720000%, 24.000000%, 60.000000%); 
+		// TODO change to these rgb(24.720000%, 24.000000%, 60.000000%);
 		dim.setColorRGB("blue");
 		if (numericAST.size() > 2) {
-			final Options options = new Options(numericAST.topHead(), numericAST, 2, engine);
-			IExpr option = options.getOption("PlotRange");
+			final OptionArgs options = new OptionArgs(numericAST.topHead(), numericAST, 2, engine);
+			IExpr option = options.getOption(F.PlotRange);
 			if (option.isListOfLists() && option.size() == 3) {
 				IAST list = (IAST) option;
 				dim.setPlotRange(list.getAST(1), list.getAST(2));
 			}
-			option = options.getOption("Axes");
+			option = options.getOption(F.Axes);
 			if (option.isTrue()) {
 				dim.setAxes(true);
 			}

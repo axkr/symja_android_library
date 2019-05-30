@@ -28,7 +28,7 @@ import org.matheclipse.core.builtin.WindowFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
-import org.matheclipse.core.eval.util.Options;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -262,8 +262,8 @@ public class FunctionExpand extends AbstractEvaluator {
 			if (!arg2.isRule()) {
 				assumptionExpr = arg2;
 			}
-			final Options options = new Options(ast.topHead(), ast, 2, engine);
-			assumptionExpr = options.getOption("Assumptions").orElse(assumptionExpr);
+			final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
+			assumptionExpr = options.getOption(F.Assumptions).orElse(assumptionExpr);
 		}
 		if (assumptionExpr.isPresent()) {
 			if (assumptionExpr.isAST()) {

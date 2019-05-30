@@ -9,7 +9,7 @@ import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.util.Options;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -26,11 +26,11 @@ public class NFourierTransform extends AbstractFunctionEvaluator {
 		ISymbol t = Validate.checkSymbolType(ast, 2);
 		// IExpr omega = ast.arg3();
 		if (ast.size() > 4) {
-			final Options options = new Options(ast.topHead(), ast, 4, engine);
-			IExpr optionFourierParameters = options.getOption("FourierParameters");
-			if (optionFourierParameters.isList()) {
-				// analyze the parameters, if they are correct
-			}
+//			final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
+//			IExpr optionFourierParameters = options.getOption(F.FourierParameters);
+//			if (optionFourierParameters.isList()) {
+//				// analyze the parameters, if they are correct
+//			}
 		}
 
 		UnivariateFunction f = new UnaryNumerical(expr, t, engine);

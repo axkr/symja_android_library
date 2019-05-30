@@ -7,7 +7,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.Assumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
-import org.matheclipse.core.eval.util.Options;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.interfaces.IAST;
@@ -236,8 +236,8 @@ public class AssumptionFunctions {
 	}
 
 	public static IAssumptions determineAssumptions(final ISymbol symbol, final IExpr arg2, EvalEngine engine) {
-		final Options options = new Options(symbol, arg2, engine);
-		IExpr option = options.getOption("Assumptions");
+		final OptionArgs options = new OptionArgs(symbol, arg2, engine);
+		IExpr option = options.getOption(F.Assumptions);
 		if (option.isPresent()) {
 			return Assumptions.getInstance(option);
 		} else {

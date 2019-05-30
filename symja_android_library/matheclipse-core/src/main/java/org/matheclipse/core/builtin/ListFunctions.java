@@ -35,7 +35,7 @@ import org.matheclipse.core.eval.util.ISequence;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.eval.util.LevelSpec;
 import org.matheclipse.core.eval.util.LevelSpecification;
-import org.matheclipse.core.eval.util.Options;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.eval.util.Sequence;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Comparators;
@@ -2812,8 +2812,8 @@ public final class ListFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			int lastIndex = ast.argSize();
 			boolean heads = false;
-			final Options options = new Options(ast.topHead(), ast, lastIndex, engine);
-			IExpr option = options.getOption("Heads");
+			final OptionArgs options = new OptionArgs(ast.topHead(), ast, lastIndex, engine);
+			IExpr option = options.getOption(F.Heads);
 			if (option.isPresent()) {
 				lastIndex--;
 				if (option.isTrue()) {
@@ -2850,6 +2850,7 @@ public final class ListFunctions {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_4;
 		}
+		 
 	}
 
 	/**
@@ -3440,8 +3441,8 @@ public final class ListFunctions {
 					return position((IAST) arg1, arg2, level, Integer.MAX_VALUE, engine);
 				}
 				if (ast.size() >= 4) {
-					final Options options = new Options(ast.topHead(), ast, 2, engine);
-					IExpr option = options.getOption("Heads");
+					final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
+					IExpr option = options.getOption(F.Heads);
 					if (option.isPresent()) {
 						if (option.isTrue()) {
 							final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE, true);
@@ -3465,6 +3466,7 @@ public final class ListFunctions {
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.NHOLDALL);
 		}
+		
 	}
 
 	/**

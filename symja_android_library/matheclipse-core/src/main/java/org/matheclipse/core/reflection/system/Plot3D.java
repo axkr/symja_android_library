@@ -22,7 +22,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Represents the Plot3D function
  * 
- * @see org.matheclipse.core.eval.util.Options
+ * @see org.matheclipse.core.eval.util.OptionArgs
  */
 public class Plot3D extends AbstractEvaluator {
 	/**

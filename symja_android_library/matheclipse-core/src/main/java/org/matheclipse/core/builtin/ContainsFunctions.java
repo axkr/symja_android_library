@@ -10,7 +10,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractNonOrderlessArgMultiple;
-import org.matheclipse.core.eval.util.Options;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
@@ -69,8 +69,8 @@ public class ContainsFunctions {
 			if (validateArgs(ast.arg1(), ast.arg2(), engine)) {
 				if (ast.isAST3()) {
 					// determine option SameTest
-					final Options options = new Options(ast.topHead(), ast, 2, engine);
-					IExpr option = options.getOption(F.SameTest);
+					final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
+					IExpr option = options.getOptionAutomatic(F.SameTest);
 					if (option.isPresent()) {
 						sameTest = option;
 					}
@@ -102,6 +102,11 @@ public class ContainsFunctions {
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_3;
+		}
+
+		@Override
+		public IAST options() {
+			return F.List(F.Rule(F.SameTest, F.Automatic));
 		}
 	}
 

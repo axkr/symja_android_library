@@ -7,7 +7,7 @@ import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.util.Options;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -26,16 +26,25 @@ import edu.jas.poly.TermOrder;
 import edu.jas.poly.TermOrderByName;
 
 /**
- * <pre>GroebnerBasis({polynomial-list},{variable-list})
+ * <pre>
+ * GroebnerBasis({polynomial-list},{variable-list})
  * </pre>
- * <blockquote><p>returns a Gröbner basis for the <code>polynomial-list</code> and <code>variable-list</code>.</p>
+ * 
+ * <blockquote>
+ * <p>
+ * returns a Gröbner basis for the <code>polynomial-list</code> and <code>variable-list</code>.
+ * </p>
  * </blockquote>
- * <p>See:</p>
+ * <p>
+ * See:
+ * </p>
  * <ul>
  * <li><a href="https://en.wikipedia.org/wiki/Gröbner_basis">Wikipedia - Gröbner basis</a></li>
  * </ul>
  * <h3>Examples</h3>
- * <pre>&gt;&gt; GroebnerBasis({x*y-2*y, 2*y^2-x^2}, {y, x})
+ * 
+ * <pre>
+ * &gt;&gt; GroebnerBasis({x*y-2*y, 2*y^2-x^2}, {y, x})
  * {-2*x^2+x^3,-2*y+x*y,-x^2+2*y^2}
  * 
  * &gt;&gt; GroebnerBasis({x*y-2*y, 2*y^2-x^2}, {x, y})
@@ -66,8 +75,8 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 			}
 			TermOrder termOrder = TermOrderByName.Lexicographic;
 			if (ast.size() > 3) {
-				final Options options = new Options(ast.topHead(), ast, ast.argSize(), engine);
-				termOrder = options.getMonomialOrder(ast, termOrder);
+				final OptionArgs options = new OptionArgs(ast.topHead(), ast, ast.argSize(), engine);
+				termOrder = options.monomialOrder(termOrder);
 			}
 
 			IAST polys = (IAST) ast.arg1();
@@ -153,7 +162,6 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 			varList.add((ISymbol) listOfVariables.get(i));
 		}
 
-		
 		List<GenPolynomial<BigRational>> polyList = new ArrayList<GenPolynomial<BigRational>>(
 				listOfPolynomials.argSize());
 		TermOrder termOrder = TermOrderByName.IGRLEX;
@@ -176,7 +184,7 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 		GroebnerBaseAbstract<BigRational> engine = GBAlgorithmBuilder
 				.<BigRational>polynomialRing(jas.getPolynomialRingFactory()).fractionFree().syzygyPairlist().build();
 		List<GenPolynomial<BigRational>> opl = engine.GB(polyList);
-		IASTAppendable resultList = F.ListAlloc(opl.size()+rest.size());
+		IASTAppendable resultList = F.ListAlloc(opl.size() + rest.size());
 		// convert rational to integer coefficients and add
 		// polynomial to result list
 		for (GenPolynomial<BigRational> p : opl) {

@@ -8,7 +8,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
-import org.matheclipse.core.eval.util.Options;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -641,8 +641,8 @@ public class PredicateQ {
 			boolean heads = false;
 			int size = ast.size();
 			if (ast.size() > 3) {
-				final Options options = new Options(ast.topHead(), ast, 3, size, engine);
-				if (options.isOption("Heads")) {
+				final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, size, engine);
+				if (options.isTrue(F.Heads)) {
 					heads = true;
 				}
 				int pos = options.getLastPosition();
@@ -893,8 +893,8 @@ public class PredicateQ {
 		 * <code>GaussianIntegers->True</code> is set.
 		 */
 		@Override
-		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine, Options options) {
-			IExpr option = options.getOption("GaussianIntegers");
+		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine, OptionArgs options) {
+			IExpr option = options.getOption(F.GaussianIntegers);
 			if (!option.isTrue()) {
 				return evalArg1Boole(arg1, engine);
 			}

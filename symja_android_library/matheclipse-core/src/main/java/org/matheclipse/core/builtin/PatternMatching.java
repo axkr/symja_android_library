@@ -28,7 +28,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
-import org.matheclipse.core.eval.util.Options;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
@@ -79,6 +79,7 @@ public final class PatternMatching {
 			F.Literal.setEvaluator(new Literal());
 			F.MessageName.setEvaluator(new MessageName());
 			F.Optional.setEvaluator(Optional.CONST);
+			F.Options.setEvaluator(new Options());
 			F.Pattern.setEvaluator(Pattern.CONST);
 			F.Put.setEvaluator(new Put());
 			F.Rule.setEvaluator(new Rule());
@@ -773,8 +774,8 @@ public final class PatternMatching {
 			if (ast.size() == 2 || ast.size() == 3) {
 				boolean longForm = true;
 				if (ast.size() == 3) {
-					final Options options = new Options(ast.topHead(), ast, 2, engine);
-					IExpr option = options.getOption("LongForm");
+					final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
+					IExpr option = options.getOption(F.LongForm);
 					if (option.isFalse()) {
 						longForm = false;
 					}
@@ -933,6 +934,29 @@ public final class PatternMatching {
 		public void setUp(ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
+	}
+
+	private final static class Options extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST1() && ast.arg1().isBuiltInSymbol()) {
+				IBuiltInSymbol sym = (IBuiltInSymbol) ast.arg1();
+				IEvaluator evaluator = sym.getEvaluator();
+				IAST list = evaluator.options();
+				if (list.isPresent()) {
+					return list;
+				}
+				return F.CEmptyList;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+
 	}
 
 	public final static class Pattern extends AbstractCoreFunctionEvaluator {
