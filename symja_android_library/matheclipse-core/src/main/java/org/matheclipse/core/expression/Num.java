@@ -377,7 +377,7 @@ public class Num implements INum {
 	}
 
 	@Override
-	public boolean isGreaterThan(ISignedNumber that) {
+	public boolean isGT(ISignedNumber that) {
 		return fDouble > that.doubleValue();
 	}
 
@@ -389,7 +389,7 @@ public class Num implements INum {
 	}
 
 	@Override
-	public boolean isLessThan(ISignedNumber that) {
+	public boolean isLT(ISignedNumber that) {
 		return fDouble < that.doubleValue();
 	}
 

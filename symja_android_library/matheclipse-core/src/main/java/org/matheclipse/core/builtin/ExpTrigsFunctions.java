@@ -1092,10 +1092,10 @@ public class ExpTrigsFunctions {
 					// arg1 == x + k*Pi
 					if (k.isRational()) {
 						IRational t = (IRational) k;
-						if (t.isLessThan(F.C0) || !F.C2.isGreaterThan(t)) {
+						if (t.isLT(F.C0) || F.C2.isLE(t)) {
 							// Cos(arg1-2*Pi*Floor(1/2*t))
 							return F.Cos(F.Plus(arg1, F.Times(F.CN2, F.Pi, F.Floor(F.Times(F.C1D2, t)))));
-						} else if (t.isLessThan(F.C1D2)) {// t < 1/2
+						} else if (t.isLT(F.C1D2)) {// t < 1/2
 							IExpr temp = engine.evaluate(arg1.subtract(t.times(F.Pi)));
 							IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(temp);
 							if (negExpr.isPresent()) {
@@ -1103,10 +1103,10 @@ public class ExpTrigsFunctions {
 								return F.Sin(F.Subtract(F.Times(F.C1D2, F.Pi), arg1));
 							}
 							return F.NIL;
-						} else if (t.isLessThan(F.C1)) {// t < 1
+						} else if (t.isLT(F.C1)) {// t < 1
 							// -Sin(arg1-1/2*Pi)
 							return F.Negate(F.Sin(F.Plus(arg1, F.Times(F.CN1D2, F.Pi))));
-						} else if (t.isLessThan(F.C3D2)) {// t < 3/2
+						} else if (t.isLT(F.C3D2)) {// t < 3/2
 							// -Cos(arg1-Pi)
 							return F.Negate(F.Cos(F.Subtract(arg1, F.Pi)));
 						} else {
@@ -1134,15 +1134,15 @@ public class ExpTrigsFunctions {
 				if (timesAST.size() == 3 && timesAST.arg1().isRational() && timesAST.arg2().isPi()) {
 					// t should be positive here!
 					IRational t = (IRational) timesAST.arg1();
-					if (t.isLessThan(F.C1D2)) {// t < 1/2
+					if (t.isLT(F.C1D2)) {// t < 1/2
 						return F.NIL;
-					} else if (t.isLessThan(F.C1)) {// t < 1
+					} else if (t.isLT(F.C1)) {// t < 1
 						// -Cos((1-t)*Pi)
 						return F.Negate(F.Cos(F.Times(F.Subtract(F.C1, t), F.Pi)));
-					} else if (t.isLessThan(F.C3D2)) {// t < 3/2
+					} else if (t.isLT(F.C3D2)) {// t < 3/2
 						// -Cos((t-1)*Pi)
 						return F.Negate(F.Cos(F.Times(F.Subtract(t, F.C1), F.Pi)));
-					} else if (t.isLessThan(F.C2)) {// t < 2
+					} else if (t.isLT(F.C2)) {// t < 2
 						// Cos((2-t)*Pi)
 						return F.Cos(F.Times(F.Subtract(F.C2, t), F.Pi));
 					}
@@ -1257,12 +1257,12 @@ public class ExpTrigsFunctions {
 					// arg1 == x - k/I * Pi
 					if (k.isRational()) {
 						IRational t = (IRational) k;
-						if (t.isLessThan(F.C0)) {
+						if (t.isLT(F.C0)) {
 							// Coth(arg1-I*Pi*IntegerPart(t) + I*Pi )
 							return F.Coth(F.Plus(arg1, F.Times(F.CNI, F.Pi, t.integerPart()), F.Times(F.CI, F.Pi)));
-						} else if (t.isLessThan(F.C1D2)) {// t < 1/2
+						} else if (t.isLT(F.C1D2)) {// t < 1/2
 							return F.NIL;
-						} else if (t.isLessThan(F.C1)) {// t < 1
+						} else if (t.isLT(F.C1)) {// t < 1
 							// Tanh(arg1-1/2*I*Pi)
 							return F.Tanh(F.Plus(arg1, F.Times(F.CN1D2, F.CI, F.Pi)));
 						}
@@ -1339,15 +1339,15 @@ public class ExpTrigsFunctions {
 					// arg1 == x + k*Pi
 					if (k.isRational()) {
 						IRational t = (IRational) k;
-						if (t.isLessThan(F.C0)) {
+						if (t.isLT(F.C0)) {
 							// Csc(arg1 - 2*Pi*IntegerPart(1/2*t) + 2*Pi)
 							return F.Csc(F.Plus(arg1, F.Times(F.CN2Pi, F.IntegerPart(F.Times(F.C1D2, t))), F.C2Pi));
-						} else if (t.isLessThan(F.C1D2)) {// t < 1/2
+						} else if (t.isLT(F.C1D2)) {// t < 1/2
 							return F.NIL;
-						} else if (t.isLessThan(F.C1)) {// t < 1
+						} else if (t.isLT(F.C1)) {// t < 1
 							// Sec(arg1-1/2*Pi)
 							return F.Sec(F.Plus(arg1, F.Times(F.CN1D2, F.Pi)));
-						} else if (t.isLessThan(F.C2)) { // t < 2
+						} else if (t.isLT(F.C2)) { // t < 2
 							// -Csc(arg1-Pi)
 							return F.Negate(F.Csc(F.Plus(arg1, F.CNPi)));
 						}
@@ -1374,12 +1374,12 @@ public class ExpTrigsFunctions {
 				if (timesAST.size() == 3 && timesAST.arg1().isRational() && timesAST.arg2().isPi()) {
 					// t should be positive here!
 					IRational t = (IRational) timesAST.arg1();
-					if (t.isLessThan(F.C1D2)) {// t < 1/2
+					if (t.isLT(F.C1D2)) {// t < 1/2
 						return F.NIL;
-					} else if (t.isLessThan(F.C1)) {// t < 1
+					} else if (t.isLT(F.C1)) {// t < 1
 						// Csc((1-t)*Pi)
 						return F.Csc(F.Times(F.Subtract(F.C1, t), F.Pi));
-					} else if (t.isLessThan(F.C2)) {// t < 2
+					} else if (t.isLT(F.C2)) {// t < 2
 						// -Csc((2-t)*Pi)
 						return F.Negate(F.Csc(F.Times(F.Subtract(F.C2, t), F.Pi)));
 					}
@@ -1492,16 +1492,16 @@ public class ExpTrigsFunctions {
 					// arg1 == x - k/I * Pi
 					if (k.isRational()) {
 						IRational t = (IRational) k;
-						if (t.isLessThan(F.C0)) {
+						if (t.isLT(F.C0)) {
 							// Cosh(arg1-2*I*Pi*IntegerPart(1/2*t) + 2*I*Pi)
 							return F.Cosh(F.Plus(arg1, F.Times(F.CN2, F.CI, F.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
 									F.Times(F.C2, F.CI, F.Pi)));
-						} else if (t.isLessThan(F.C1D2)) {// t < 1/2
+						} else if (t.isLT(F.C1D2)) {// t < 1/2
 							return F.NIL;
-						} else if (t.isLessThan(F.C1)) {// t < 1
+						} else if (t.isLT(F.C1)) {// t < 1
 							// I * Sinh(arg1-1/2*I*Pi)
 							return F.Times(F.CI, F.Sinh(F.Plus(arg1, F.Times(F.CN1D2, F.CI, F.Pi))));
-						} else if (t.isLessThan(F.C2)) {// t < 2
+						} else if (t.isLT(F.C2)) {// t < 2
 							// -Cosh(arg1 - I*Pi)
 							return F.Negate(F.Cosh(F.Subtract(arg1, F.Times(F.CI, F.Pi))));
 						}
@@ -1582,12 +1582,12 @@ public class ExpTrigsFunctions {
 					// arg1 == x + k*Pi
 					if (k.isRational()) {
 						IRational t = (IRational) k;
-						if (t.isLessThan(F.C0)) { // t < 0
+						if (t.isLT(F.C0)) { // t < 0
 							// Cot(arg1 + Pi - Pi*IntegerPart(t))
 							return F.Cot(F.Plus(arg1, F.Pi, F.Times(F.CN1, F.Pi, t.integerPart())));
-						} else if (t.isLessThan(F.C1D2)) {// t < 1/2
+						} else if (t.isLT(F.C1D2)) {// t < 1/2
 							return F.NIL;
-						} else if (t.isLessThan(F.C1)) {// t < 1
+						} else if (t.isLT(F.C1)) {// t < 1
 							// -Tan(arg1-1/2*Pi)
 							return F.Negate(F.Tan(F.Plus(arg1, F.Times(F.CN1D2, F.Pi))));
 						} else {
@@ -1615,12 +1615,12 @@ public class ExpTrigsFunctions {
 				if (timesAST.size() == 3 && timesAST.arg1().isRational() && timesAST.arg2().isPi()) {
 					// t should be positive here!
 					IRational t = (IRational) timesAST.arg1();
-					if (t.isLessThan(F.C1D2)) {// t < 1/2
+					if (t.isLT(F.C1D2)) {// t < 1/2
 						return F.NIL;
-					} else if (t.isLessThan(F.C1)) {// t < 1
+					} else if (t.isLT(F.C1)) {// t < 1
 						// -Cot((1-t)*Pi)
 						return F.Negate(F.Cot(F.Times(F.Subtract(F.C1, t), F.Pi)));
-					} else if (t.isLessThan(F.C2)) {// t < 2
+					} else if (t.isLT(F.C2)) {// t < 2
 						// Cot((t-1)*Pi)
 						return F.Cot(F.Times(F.Subtract(t, F.C1), F.Pi));
 					}
@@ -1720,16 +1720,16 @@ public class ExpTrigsFunctions {
 					// arg1 == x - k/I * Pi
 					if (k.isRational()) {
 						IRational t = (IRational) k;
-						if (t.isLessThan(F.C0)) {
+						if (t.isLT(F.C0)) {
 							// Csch(arg1-2*I*Pi*IntegerPart(1/2*t) + 2*I*Pi)
 							return F.Csch(F.Plus(arg1, F.Times(F.CN2, F.CI, F.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
 									F.Times(F.C2, F.CI, F.Pi)));
-						} else if (t.isLessThan(F.C1D2)) {// t < 1/2
+						} else if (t.isLT(F.C1D2)) {// t < 1/2
 							return F.NIL;
-						} else if (t.isLessThan(F.C1)) {// t < 1
+						} else if (t.isLT(F.C1)) {// t < 1
 							// -I * Sech(arg1-1/2*I*Pi)
 							return F.Times(F.CNI, F.Sech(F.Plus(arg1, F.Times(F.CN1D2, F.CI, F.Pi))));
-						} else if (t.isLessThan(F.C2)) {// t < 2
+						} else if (t.isLT(F.C2)) {// t < 2
 							// -Csch(arg1 - I*Pi)
 							return F.Negate(F.Csch(F.Subtract(arg1, F.Times(F.CI, F.Pi))));
 						}
@@ -1835,7 +1835,7 @@ public class ExpTrigsFunctions {
 		}
 
 		public IExpr e1FraArg(final IFraction f) {
-			if (f.isPositive() && f.isLessThan(F.C1)) {
+			if (f.isPositive() && f.isLT(F.C1)) {
 				return F.Negate(F.Log(f.inverse()));
 			}
 			return F.NIL;
@@ -1879,8 +1879,8 @@ public class ExpTrigsFunctions {
 				IExpr temp = F.eval(Times(exponent, F.Log(base)));
 				IExpr imTemp = F.eval(F.Im(temp));
 				if (imTemp.isReal()) {
-					if (((ISignedNumber) imTemp).isGreaterThan(F.num(-1 * Math.PI))
-							&& ((ISignedNumber) imTemp).isLessThan(F.num(Math.PI))) {
+					if (((ISignedNumber) imTemp).isGT(F.num(-1 * Math.PI))
+							&& ((ISignedNumber) imTemp).isLT(F.num(Math.PI))) {
 						// Log(arg1 ^ arg2) == arg2*Log(arg1) ||| -Pi <
 						// Im(arg2*Log(arg1)) < Pi
 						return temp;
@@ -2042,15 +2042,15 @@ public class ExpTrigsFunctions {
 					// arg1 == x + k*Pi
 					if (k.isRational()) {
 						IRational t = (IRational) k;
-						if (t.isLessThan(F.C0)) {
+						if (t.isLT(F.C0)) {
 							// Sec(arg1 - 2*Pi*IntegerPart(1/2*t) + 2*Pi)
 							return F.Sec(F.Plus(arg1, F.Times(F.CN2Pi, F.IntegerPart(F.Times(F.C1D2, t))), F.C2Pi));
-						} else if (t.isLessThan(F.C1D2)) {// t < 1/2
+						} else if (t.isLT(F.C1D2)) {// t < 1/2
 							return F.NIL;
-						} else if (t.isLessThan(F.C1)) {// t < 1
+						} else if (t.isLT(F.C1)) {// t < 1
 							// -Csc(arg1-1/2*Pi)
 							return F.Negate(F.Csc(F.Plus(arg1, F.Times(F.CN1D2, F.Pi))));
-						} else if (t.isLessThan(F.C2)) { // t < 2
+						} else if (t.isLT(F.C2)) { // t < 2
 							// -Sec(arg1-Pi)
 							return F.Negate(F.Sec(F.Plus(arg1, F.CNPi)));
 						}
@@ -2077,12 +2077,12 @@ public class ExpTrigsFunctions {
 				if (timesAST.size() == 3 && timesAST.arg1().isRational() && timesAST.arg2().isPi()) {
 					// t should be positive here!
 					IRational t = (IRational) timesAST.arg1();
-					if (t.isLessThan(F.C1D2)) {// t < 1/2
+					if (t.isLT(F.C1D2)) {// t < 1/2
 						return F.NIL;
-					} else if (t.isLessThan(F.C1)) {// t < 1
+					} else if (t.isLT(F.C1)) {// t < 1
 						// -Sec((1-t)*Pi)
 						return F.Negate(F.Sec(F.Times(F.Subtract(F.C1, t), F.Pi)));
-					} else if (t.isLessThan(F.C2)) {// t < 2
+					} else if (t.isLT(F.C2)) {// t < 2
 						// Sec((2-t)*Pi)
 						return F.Sec(F.Times(F.Subtract(F.C2, t), F.Pi));
 					}
@@ -2196,16 +2196,16 @@ public class ExpTrigsFunctions {
 					// arg1 == x - k/I * Pi
 					if (k.isRational()) {
 						IRational t = (IRational) k;
-						if (t.isLessThan(F.C0)) {
+						if (t.isLT(F.C0)) {
 							// Sech(arg1-2*I*Pi*IntegerPart(1/2*t) + 2*I*Pi)
 							return F.Sech(F.Plus(arg1, F.Times(F.CN2, F.CI, F.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
 									F.Times(F.C2, F.CI, F.Pi)));
-						} else if (t.isLessThan(F.C1D2)) {// t < 1/2
+						} else if (t.isLT(F.C1D2)) {// t < 1/2
 							return F.NIL;
-						} else if (t.isLessThan(F.C1)) {// t < 1
+						} else if (t.isLT(F.C1)) {// t < 1
 							// -I * Csch(arg1-1/2*I*Pi)
 							return F.Times(F.CNI, F.Csch(F.Plus(arg1, F.Times(F.CN1D2, F.CI, F.Pi))));
-						} else if (t.isLessThan(F.C2)) {// t < 2
+						} else if (t.isLT(F.C2)) {// t < 2
 							// -Sech(arg1 - I*Pi)
 							return F.Negate(F.Sech(F.Subtract(arg1, F.Times(F.CI, F.Pi))));
 						}
@@ -2281,10 +2281,10 @@ public class ExpTrigsFunctions {
 					// arg1 == x + k*Pi
 					if (k.isRational()) {
 						IRational t = (IRational) k;
-						if (t.isLessThan(F.C0) || !F.C2.isGreaterThan(t)) {
+						if (t.isLT(F.C0) || F.C2.isLE(t)) {
 							// Sin(arg1-2*Pi*Floor(1/2*t))
 							return F.Sin(F.Plus(arg1, F.Times(F.CN2, F.Pi, F.Floor(F.Times(F.C1D2, t)))));
-						} else if (t.isLessThan(F.C1D2)) {// t < 1/2
+						} else if (t.isLT(F.C1D2)) {// t < 1/2
 							// (arg1-t*Pi)
 							IExpr temp = engine.evaluate(arg1.subtract(t.times(F.Pi)));
 							IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(temp);
@@ -2293,10 +2293,10 @@ public class ExpTrigsFunctions {
 								return F.Cos(F.Subtract(F.Times(F.C1D2, F.Pi), arg1));
 							}
 
-						} else if (t.isLessThan(F.C1)) {// t < 1
+						} else if (t.isLT(F.C1)) {// t < 1
 							// Cos(arg1-1/2*Pi)
 							return F.Cos(F.Plus(arg1, F.Times(F.CN1D2, F.Pi)));
-						} else if (t.isLessThan(F.C3D2)) {// t < 3/2
+						} else if (t.isLT(F.C3D2)) {// t < 3/2
 							// -Sin(arg1-Pi)
 							return F.Negate(F.Sin(F.Subtract(arg1, F.Pi)));
 						} else { // t < 2
@@ -2324,15 +2324,15 @@ public class ExpTrigsFunctions {
 				if (timesAST.size() == 3 && timesAST.arg1().isRational() && timesAST.arg2().isPi()) {
 					// t should be positive here!
 					IRational t = (IRational) timesAST.arg1();
-					if (t.isLessThan(F.C1D2)) {// t < 1/2
+					if (t.isLT(F.C1D2)) {// t < 1/2
 						return F.NIL;
-					} else if (t.isLessThan(F.C1)) {// t < 1
+					} else if (t.isLT(F.C1)) {// t < 1
 						// Sin((1-t)*Pi)
 						return F.Sin(F.Times(F.Subtract(F.C1, t), F.Pi));
-					} else if (t.isLessThan(F.C3D2)) {// t < 3/2
+					} else if (t.isLT(F.C3D2)) {// t < 3/2
 						// -Sin((t-1)*Pi)
 						return F.Negate(F.Sin(F.Times(F.Subtract(t, F.C1), F.Pi)));
-					} else if (t.isLessThan(F.C2)) {// t < 2
+					} else if (t.isLT(F.C2)) {// t < 2
 						// -Sin((2-t)*Pi)
 						return F.Negate(F.Sin(F.Times(F.Subtract(F.C2, t), F.Pi)));
 					}
@@ -2604,16 +2604,16 @@ public class ExpTrigsFunctions {
 					// arg1 == x - k/I * Pi
 					if (k.isRational()) {
 						IRational t = (IRational) k;
-						if (t.isLessThan(F.C0)) {
+						if (t.isLT(F.C0)) {
 							// Sinh(arg1-2*I*Pi*IntegerPart(1/2*t) + 2*I*Pi)
 							return F.Sinh(F.Plus(arg1, F.Times(F.CN2, F.CI, F.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
 									F.Times(F.C2, F.CI, F.Pi)));
-						} else if (t.isLessThan(F.C1D2)) {// t < 1/2
+						} else if (t.isLT(F.C1D2)) {// t < 1/2
 							return F.NIL;
-						} else if (t.isLessThan(F.C1)) {// t < 1
+						} else if (t.isLT(F.C1)) {// t < 1
 							// I * Cosh(arg1-1/2*I*Pi)
 							return F.Times(F.CI, F.Cosh(F.Plus(arg1, F.Times(F.CN1D2, F.CI, F.Pi))));
-						} else if (t.isLessThan(F.C2)) {// t < 2
+						} else if (t.isLT(F.C2)) {// t < 2
 							// -Sinh(arg1 - I*Pi)
 							return F.Negate(F.Sinh(F.Subtract(arg1, F.Times(F.CI, F.Pi))));
 						}
@@ -2689,12 +2689,12 @@ public class ExpTrigsFunctions {
 					// arg1 == x + k*Pi
 					if (k.isRational()) {
 						IRational t = (IRational) k;
-						if (t.isLessThan(F.C0)) { // t < 0
+						if (t.isLT(F.C0)) { // t < 0
 							// Tan(arg1 + Pi - Pi*IntegerPart(t))
 							return F.Tan(F.Plus(arg1, F.Pi, F.Times(F.CNPi, t.integerPart())));
-						} else if (t.isLessThan(F.C1D2)) {// t < 1/2
+						} else if (t.isLT(F.C1D2)) {// t < 1/2
 							return F.NIL;
-						} else if (t.isLessThan(F.C1)) {// t < 1
+						} else if (t.isLT(F.C1)) {// t < 1
 							// -Cot(arg1-1/2*Pi)
 							return F.Negate(F.Cot(F.Plus(arg1, F.Times(F.CN1D2, F.Pi))));
 						}
@@ -2721,14 +2721,14 @@ public class ExpTrigsFunctions {
 				if (timesAST.size() == 3 && timesAST.arg1().isRational() && timesAST.arg2().isPi()) {
 					// t should be positive here!
 					IRational t = (IRational) timesAST.arg1();
-					if (t.isLessThan(F.C1D2)) {// t < 1/2
+					if (t.isLT(F.C1D2)) {// t < 1/2
 						return F.NIL;
 					} else if (t.equals(F.C1D2)) {// t == 1/2
 						return F.CComplexInfinity;
-					} else if (t.isLessThan(F.C1)) {// t < 1
+					} else if (t.isLT(F.C1)) {// t < 1
 						// -Tan((1-t)*Pi)
 						return F.Negate(F.Tan(F.Times(F.Subtract(F.C1, t), F.Pi)));
-					} else if (t.isLessThan(F.C2)) {// t < 2
+					} else if (t.isLT(F.C2)) {// t < 2
 						// Tan((t-1)*Pi)
 						return F.Tan(F.Times(F.Subtract(t, F.C1), F.Pi));
 					}
@@ -2829,12 +2829,12 @@ public class ExpTrigsFunctions {
 					// arg1 == x - k/I * Pi
 					if (k.isRational()) {
 						IRational t = (IRational) k;
-						if (t.isLessThan(F.C0)) {
+						if (t.isLT(F.C0)) {
 							// Tanh(arg1-I*Pi*IntegerPart(t) + I*Pi )
 							return F.Tanh(F.Plus(arg1, F.Times(F.CNI, F.Pi, t.integerPart()), F.Times(F.CI, F.Pi)));
-						} else if (t.isLessThan(F.C1D2)) {// t < 1/2
+						} else if (t.isLT(F.C1D2)) {// t < 1/2
 							return F.NIL;
-						} else if (t.isLessThan(F.C1)) {// t < 1
+						} else if (t.isLT(F.C1)) {// t < 1
 							// Coth(arg1-1/2*I*Pi)
 							return F.Coth(F.Plus(arg1, F.Times(F.CN1D2, F.CI, F.Pi)));
 						}

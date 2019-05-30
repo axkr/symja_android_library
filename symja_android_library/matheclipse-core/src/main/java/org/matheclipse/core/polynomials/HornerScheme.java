@@ -23,10 +23,10 @@ public class HornerScheme {
 
 			@Override
 			public int compare(ISignedNumber arg0, ISignedNumber arg1) {
-				if (arg0.isGreaterThan(arg1)) {
+				if (arg0.isGT(arg1)) {
 					return 1;
 				}
-				if (arg0.isLessThan(arg1)) {
+				if (arg0.isLT(arg1)) {
 					return -1;
 				}
 				return 0;
@@ -49,7 +49,7 @@ public class HornerScheme {
 			for (Iterator<ISignedNumber> iter = map.keySet().iterator(); iter.hasNext();) {
 				ISignedNumber exponent = iter.next();
 				IExpr coefficient = getCoefficient(exponent);
-				if (exponent.isLessThan(F.CD1)) {
+				if (exponent.isLT(F.CD1)) {
 					if (exponent.compareTo(F.CD0) == 0) {
 						result.append(coefficient);
 					} else {
@@ -83,7 +83,7 @@ public class HornerScheme {
 			for (Iterator<ISignedNumber> iter = map.keySet().iterator(); iter.hasNext();) {
 				ISignedNumber exponent = iter.next();
 				IExpr coefficient = getCoefficient(exponent);
-				if (exponent.isLessThan(F.C1)) {
+				if (exponent.isLT(F.C1)) {
 					if (exponent.compareTo(F.C0) == 0) {
 						result.append(coefficient);
 					} else {

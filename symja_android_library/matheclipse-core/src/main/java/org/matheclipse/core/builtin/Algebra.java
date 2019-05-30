@@ -192,11 +192,11 @@ public class Algebra {
 										return false;
 									}
 									if (exponent.isNegative()) {
-										if (value.isLessThan(exponent)) {
+										if (value.isLT(exponent)) {
 											entry.setValue(exponent);
 										}
 									} else {
-										if (value.isGreaterThan(exponent)) {
+										if (value.isGT(exponent)) {
 											entry.setValue(exponent);
 										}
 									}
@@ -209,7 +209,7 @@ public class Algebra {
 									if (value.isMinusOne()) {
 										return false;
 									}
-									if (value.isGreaterThan(F.C1)) {
+									if (value.isGT(F.C1)) {
 										entry.setValue(F.C1);
 									}
 									foundValue = true;
@@ -243,11 +243,11 @@ public class Algebra {
 									return false;
 								}
 								if (exponent.isNegative()) {
-									if (value.isLessThan(exponent)) {
+									if (value.isLT(exponent)) {
 										entry.setValue(exponent);
 									}
 								} else {
-									if (value.isGreaterThan(exponent)) {
+									if (value.isGT(exponent)) {
 										entry.setValue(exponent);
 									}
 								}
@@ -263,7 +263,7 @@ public class Algebra {
 								if (value.isMinusOne()) {
 									return false;
 								}
-								if (value.isGreaterThan(F.C1)) {
+								if (value.isGT(F.C1)) {
 									entry.setValue(F.C1);
 								}
 							}

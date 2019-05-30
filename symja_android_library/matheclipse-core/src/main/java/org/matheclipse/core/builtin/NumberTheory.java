@@ -3062,7 +3062,7 @@ public final class NumberTheory {
 
 				try {
 					IInteger n = (IInteger) arg1;
-					if (n.isLessThan(F.ZZ(201))) {
+					if (n.isLT(F.ZZ(201))) {
 						IExpr result = F.REMEMBER_INTEGER_CACHE.get(ast, new Callable<IExpr>() {
 							@Override
 							public IExpr call() throws Exception {

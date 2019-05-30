@@ -1301,7 +1301,7 @@ public final class BooleanFunctions {
 			// don't compare strings
 			if (a0.isReal()) {
 				if (a1.isReal()) {
-					return ((ISignedNumber) a0).isGreaterThan((ISignedNumber) a1) ? IExpr.COMPARE_TERNARY.TRUE
+					return ((ISignedNumber) a0).isGT((ISignedNumber) a1) ? IExpr.COMPARE_TERNARY.TRUE
 							: IExpr.COMPARE_TERNARY.FALSE;
 				} else if (a1.isInfinity()) {
 					return IExpr.COMPARE_TERNARY.FALSE;

@@ -198,7 +198,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
 
 	public static boolean assumeLessThan(final IExpr expr, ISignedNumber number) {
 		if (expr.isReal()) {
-			return ((ISignedNumber) expr).isLessThan(number);
+			return ((ISignedNumber) expr).isLT(number);
 		}
 		if (expr.isNumber()) {
 			return false;
@@ -243,7 +243,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
 
 	public static boolean assumeGreaterEqual(final IExpr expr, final ISignedNumber number) {
 		if (expr.isReal()) {
-			return !((ISignedNumber) expr).isLessThan(number);
+			return !((ISignedNumber) expr).isLT(number);
 		}
 		if (expr.isNumber()) {
 			return false;
@@ -288,7 +288,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
 
 	public static boolean assumeGreaterThan(final IExpr expr, ISignedNumber number) {
 		if (expr.isReal()) {
-			return ((ISignedNumber) expr).isGreaterThan(number);
+			return ((ISignedNumber) expr).isGT(number);
 		}
 		if (expr.isNumber()) {
 			return false;

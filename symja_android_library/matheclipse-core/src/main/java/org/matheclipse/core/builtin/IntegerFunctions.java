@@ -596,7 +596,7 @@ public class IntegerFunctions {
 			try {
 				ISignedNumber signedNumber = arg1.evalReal();
 				if (signedNumber != null && //
-						(signedNumber.isLessThan(F.C1) || signedNumber.isGreaterThan(F.CN1))) {
+						(signedNumber.isLT(F.C1) || signedNumber.isGT(F.CN1))) {
 					return arg1;
 				}
 			} catch (Exception ex) {
@@ -760,7 +760,7 @@ public class IntegerFunctions {
 						return F.NIL;
 					}
 				}
-				if (radix.isLessThan(F.C1)) {
+				if (radix.isLT(F.C1)) {
 					return engine.printMessage("IntegerLength: The base must be greater than 1");
 				}
 				IInteger iArg1 = (IInteger) ast.arg1();

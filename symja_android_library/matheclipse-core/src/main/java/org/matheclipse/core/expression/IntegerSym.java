@@ -451,7 +451,7 @@ public class IntegerSym extends AbstractIntegerSym {
 	}
 
 	@Override
-	public boolean isGreaterThan(ISignedNumber obj) {
+	public boolean isGT(ISignedNumber obj) {
 		if (obj instanceof IntegerSym) {
 			return fIntValue > ((IntegerSym) obj).fIntValue;
 		}
@@ -473,7 +473,7 @@ public class IntegerSym extends AbstractIntegerSym {
 	}
 
 	@Override
-	public boolean isLessThan(ISignedNumber obj) {
+	public boolean isLT(ISignedNumber obj) {
 		if (obj instanceof IntegerSym) {
 			return fIntValue < ((IntegerSym) obj).fIntValue;
 		}

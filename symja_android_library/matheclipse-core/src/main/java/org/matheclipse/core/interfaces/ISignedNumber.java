@@ -79,18 +79,56 @@ public interface ISignedNumber extends INumber {
 	public ISignedNumber inverse();
 
 	/**
-	 * Test if <code>this</code> signed number is greater <code>than</code> that signed number..
+	 * Test if <code>this</code> signed number is greater than <code>that</code> signed number..
 	 * 
 	 * @return <code>this > that</code>
 	 */
-	public boolean isGreaterThan(ISignedNumber that);
+	public boolean isGT(ISignedNumber that);
 
 	/**
-	 * Test if <code>this</code> signed number is less <code>than</code> that signed number..
+	 * Test if <code>this</code> signed number is greater equal than <code>that</code> signed number.
+	 * 
+	 * @return <code>this > that</code>
+	 */
+	default boolean isGE(ISignedNumber that) {
+		return !isLT(that);
+	}
+
+	/**
+	 * 
+	 * @param that
+	 * @return
+	 * @deprecated use #isGT()
+	 */
+	default boolean isGreaterThan(ISignedNumber that) {
+		return isGT(that);
+	}
+
+	/**
+	 * Test if <code>this</code> signed number is less than <code>that</code> signed number.
 	 * 
 	 * @return <code>this < that</code>
 	 */
-	public boolean isLessThan(ISignedNumber that);
+	public boolean isLT(ISignedNumber that);
+
+	/**
+	 * Test if <code>this</code> signed number is less equal than <code>that</code> signed number.
+	 * 
+	 * @return <code>this > that</code>
+	 */
+	default boolean isLE(ISignedNumber that) {
+		return !isGT(that);
+	}
+
+	/**
+	 * 
+	 * @param that
+	 * @return
+	 * @deprecated use #isLT()
+	 */
+	default boolean isLessThan(ISignedNumber that) {
+		return isLT(that);
+	}
 
 	/**
 	 * Test if this number is negative.

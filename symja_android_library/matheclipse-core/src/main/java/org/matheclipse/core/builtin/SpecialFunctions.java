@@ -1117,7 +1117,7 @@ public class SpecialFunctions {
 					ISignedNumber num = (ISignedNumber) temp;
 					if (num.isOne()) {
 						return F.Indeterminate;
-					} else if (num.isGreaterThan(F.C1)) {
+					} else if (num.isGT(F.C1)) {
 						return F.Zeta(arg1);
 					} else {
 						return F.CComplexInfinity;

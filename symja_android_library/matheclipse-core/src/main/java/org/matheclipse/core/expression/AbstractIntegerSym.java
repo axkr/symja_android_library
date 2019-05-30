@@ -492,7 +492,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		if (numerator != 1) {
 			b = b.pow(numerator);
 		}
-		if (b.isLessThan(F.C8)) {
+		if (b.isLT(F.C8)) {
 			return F.NIL;
 		}
 
@@ -895,7 +895,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		while (m.compareTo(n) < 0) {
 			b = m.gcd(n).isOne();
 			for (int i = 0; i < d.length; i++) {
-				b = b && m.modPow(d[i], n).isGreaterThan(F.C1);
+				b = b && m.modPow(d[i], n).isGT(F.C1);
 			}
 			if (b) {
 				resultArray[k++] = m;

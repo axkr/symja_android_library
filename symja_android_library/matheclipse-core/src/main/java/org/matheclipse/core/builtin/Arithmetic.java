@@ -758,20 +758,20 @@ public final class Arithmetic {
 		private IExpr clip(IExpr x) {
 			if (x.isReal()) {
 				ISignedNumber real = (ISignedNumber) x;
-				if (real.isGreaterThan(F.C1)) {
+				if (real.isGT(F.C1)) {
 					return F.C1;
 				}
-				if (real.isLessThan(F.CN1)) {
+				if (real.isLT(F.CN1)) {
 					return F.CN1;
 				}
 				return x;
 			}
 			ISignedNumber real = x.evalReal();
 			if (real != null) {
-				if (real.isGreaterThan(F.C1)) {
+				if (real.isGT(F.C1)) {
 					return F.C1;
 				}
-				if (real.isLessThan(F.CN1)) {
+				if (real.isLT(F.CN1)) {
 					return F.CN1;
 				}
 				return x;
@@ -798,20 +798,20 @@ public final class Arithmetic {
 		private IExpr clip(IExpr x, ISignedNumber min, ISignedNumber max, IExpr vMin, IExpr vMax) {
 			if (x.isReal()) {
 				ISignedNumber real = (ISignedNumber) x;
-				if (real.isGreaterThan(max)) {
+				if (real.isGT(max)) {
 					return vMax;
 				}
-				if (real.isLessThan(min)) {
+				if (real.isLT(min)) {
 					return vMin;
 				}
 				return x;
 			}
 			ISignedNumber real = x.evalReal();
 			if (real != null) {
-				if (real.isGreaterThan(max)) {
+				if (real.isGT(max)) {
 					return vMax;
 				}
-				if (real.isLessThan(min)) {
+				if (real.isLT(min)) {
 					return vMin;
 				}
 				return x;
@@ -3314,7 +3314,7 @@ public final class Arithmetic {
 					}
 				}
 			} else {
-				if (base.isFraction() && base.isPositive() && ((IFraction) base).isLessThan(F.C1)) {
+				if (base.isFraction() && base.isPositive() && ((IFraction) base).isLT(F.C1)) {
 					IExpr o1negExpr = AbstractFunctionEvaluator.getPowerNegativeExpression(exponent, true);
 					if (o1negExpr.isPresent()) {
 						return F.Power(base.inverse(), o1negExpr);
@@ -3392,14 +3392,14 @@ public final class Arithmetic {
 			}
 			if (exponent.isFraction() && base.isRational()) {
 
-				if (((IFraction) exponent).isGreaterThan(F.C1)) {
+				if (((IFraction) exponent).isGT(F.C1)) {
 					// exponent > 1
 					IInteger expNumerator = ((IFraction) exponent).numerator();
 					IInteger expDenominator = ((IFraction) exponent).denominator();
 					IInteger expDiv = expNumerator.div(expDenominator);
 					IInteger expMod = expNumerator.mod(expDenominator);
 					return F.Times(base.power(expDiv), base.power(F.QQ(expMod, expDenominator)));
-				} else if (((IFraction) exponent).isLessThan(F.CN1)) {
+				} else if (((IFraction) exponent).isLT(F.CN1)) {
 					// exponent < -1
 					IInteger expNumerator = ((IFraction) exponent).numerator().negate();
 					IInteger expDenominator = ((IFraction) exponent).denominator();
@@ -4910,7 +4910,7 @@ public final class Arithmetic {
 					return q.times(o1);
 				} else if (o0.isNegative() && o1.isLog() && o1.first().isFraction() && o0.isReal()) {
 					IFraction f = (IFraction) o1.first();
-					if (f.isPositive() && f.isLessThan(F.C1)) {
+					if (f.isPositive() && f.isLT(F.C1)) {
 						// -<number> * Log(<fraction>) -> <number> * Log(<fraction>.inverse())
 						return o0.negate().times(F.Log(f.inverse()));
 					}

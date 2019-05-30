@@ -471,7 +471,7 @@ public class ApfloatNum implements INum {
 	}
 
 	@Override
-	public boolean isLessThan(ISignedNumber that) {
+	public boolean isLT(ISignedNumber that) {
 		if (that instanceof ApfloatNum) {
 			return fApfloat.compareTo(((ApfloatNum) that).fApfloat) < 0;
 		}
@@ -479,7 +479,7 @@ public class ApfloatNum implements INum {
 	}
 
 	@Override
-	public boolean isGreaterThan(ISignedNumber that) {
+	public boolean isGT(ISignedNumber that) {
 		if (that instanceof ApfloatNum) {
 			return fApfloat.compareTo(((ApfloatNum) that).fApfloat) > 0;
 		}

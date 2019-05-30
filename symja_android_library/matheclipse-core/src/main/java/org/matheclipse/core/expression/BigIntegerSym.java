@@ -481,7 +481,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	}
 
 	@Override
-	public boolean isGreaterThan(ISignedNumber obj) {
+	public boolean isGT(ISignedNumber obj) {
 		if (obj instanceof BigIntegerSym) {
 			return fBigIntValue.compareTo(((BigIntegerSym) obj).fBigIntValue) > 0;
 		}
@@ -500,7 +500,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	}
 
 	@Override
-	public boolean isLessThan(ISignedNumber obj) {
+	public boolean isLT(ISignedNumber obj) {
 		if (obj instanceof BigIntegerSym) {
 			return fBigIntValue.compareTo(((BigIntegerSym) obj).fBigIntValue) < 0;
 		}
