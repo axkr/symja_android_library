@@ -1,17 +1,15 @@
 package org.matheclipse.core.visit;
 
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternSequence;
-import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Replace all occurrences of expressions where the given <code>function.apply()</code> method returns a non
@@ -30,6 +28,9 @@ public class VisitorReplaceAllWithPatternFlags extends VisitorReplaceAll {
 	public IExpr visit(IPattern element) {
 		IExpr temp = fFunction.apply(element);
 		if (temp.isPresent()) {
+			if (temp.isOneIdentityAST1()) {
+				return temp.first();
+			}
 			return temp;
 		}
 		// ISymbol symbol = element.getSymbol();
@@ -49,6 +50,9 @@ public class VisitorReplaceAllWithPatternFlags extends VisitorReplaceAll {
 	public IExpr visit(IPatternSequence element) {
 		IExpr temp = fFunction.apply(element);
 		if (temp.isPresent()) {
+			if (temp.isOneIdentityAST1()) {
+				return temp.first();
+			}
 			return temp;
 		}
 		// ISymbol symbol = element.getSymbol();
@@ -63,37 +67,51 @@ public class VisitorReplaceAllWithPatternFlags extends VisitorReplaceAll {
 
 	@Override
 	public IExpr visit(IASTMutable ast) {
-		// int functionID = ast.headID();
-		// if (functionID > ID.UNKNOWN) {
-		// if (functionID == ID.HoldPattern || functionID == ID.Literal || functionID == ID.Condition
-		// || functionID == ID.Alternatives || functionID == ID.Except || functionID == ID.Complex
-		// || functionID == ID.Rational || functionID == ID.Optional || functionID == ID.PatternTest) {
-		// return F.NIL;
-		// }
-		// }
-		IExpr result = (IASTMutable) super.visit(ast);
-		if (result.isPresent()) {
-			if (result.isAST()) {
-				if (result.isFlatAST()) {
-					IExpr temp = EvalAttributes.flatten((IAST) result);
-					if (temp.isPresent()) {
-						result = temp;
-					}
-				}
-				if (result.isOneIdentityAST1()) {
-					result = result.first();
-				} else if (result.isOrderlessAST()) {
-					EvalAttributes.sort((IASTMutable) result);
-				}
-				// if (onlyNamedPatterns) {
-				// System.out.println(" " + lhsPatternExpr.toString() + " -> " + result.toString());
-				// }
-			}
-			// if (result instanceof IASTMutable) {
-			// ((IASTMutable) result).setEvalFlags(ast.getEvalFlags() & IAST.CONTAINS_PATTERN_EXPR);
-			// }
-			return result;
+		if (ast.isPatternMatchingFunction()) {
+			return F.NIL;
 		}
+
+		int i = fOffset;
+		int size = ast.size();
+		IASTMutable result = F.NIL;
+		while (i < size) {
+			IExpr temp = ast.get(i).accept(this);
+			if (temp.isPresent()) {
+				// something was evaluated - return a new IAST:
+				result = ast.setAtCopy(i++, temp);
+				while (i < size) {
+					temp = ast.get(i).accept(this);
+					if (temp.isPresent()) {
+						result.set(i, temp);
+					}
+					i++;
+				}
+
+				if (result.isAST()) {
+					if (result.isFlatAST()) {
+						IASTAppendable flattened = EvalAttributes.flatten((IAST) result);
+						if (flattened.isPresent()) {
+							result = flattened;
+						}
+					}
+					if (result.isOneIdentityAST1()) {
+						return result.first();
+					} else if (result.isOrderlessAST()) {
+						EvalAttributes.sort((IASTMutable) result);
+					}
+					// if (onlyNamedPatterns) {
+					// System.out.println(" " + lhsPatternExpr.toString() + " -> " + result.toString());
+					// }
+				}
+				// if (result instanceof IASTMutable) {
+				// ((IASTMutable) result).setEvalFlags(ast.getEvalFlags() & IAST.CONTAINS_PATTERN_EXPR);
+				// }
+				return result;
+				
+			}
+			i++;
+		} 
+		
 		return F.NIL;
 	}
 
