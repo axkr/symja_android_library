@@ -1552,7 +1552,11 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr e1ApfloatArg(Apfloat arg1) {
-			return F.num(ApfloatMath.cos(arg1).divide(ApfloatMath.sin(arg1)));
+			Apfloat denom = ApfloatMath.sin(arg1);
+			if (denom.equals(Apfloat.ZERO)) {
+				return F.CComplexInfinity;
+			}
+			return F.num(ApfloatMath.cos(arg1).divide(denom));
 		}
 
 		@Override
@@ -1562,7 +1566,11 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr e1DblArg(final double arg1) {
-			return F.num(Math.cos(arg1) / Math.sin(arg1));
+			double denom = Math.sin(arg1);
+			if (F.isZero(denom)) {
+				return F.CComplexInfinity;
+			}
+			return F.num(Math.cos(arg1) / denom);
 		}
 
 		@Override
@@ -2658,7 +2666,7 @@ public class ExpTrigsFunctions {
 		}
 
 		@Override
-		public IExpr e1ApfloatArg(Apfloat arg1) {
+		public IExpr e1ApfloatArg(Apfloat arg1) { 
 			return F.num(ApfloatMath.tan(arg1));
 		}
 
@@ -2668,7 +2676,7 @@ public class ExpTrigsFunctions {
 		}
 
 		@Override
-		public IExpr e1DblArg(final double arg1) {
+		public IExpr e1DblArg(final double arg1) { 
 			return F.num(Math.tan(arg1));
 		}
 

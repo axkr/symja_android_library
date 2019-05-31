@@ -41,8 +41,8 @@ public abstract class AbstractTrigArg1 extends AbstractArg1 {
 				}
 				return e1ComplexArg(((ComplexNum) arg1).complexValue());
 			}
-		} catch (Exception ex) {
-			EvalEngine.get().printMessage(ast.topHead().toString() + ": " + ex.getMessage());
+		} catch (RuntimeException rex) {
+			EvalEngine.get().printMessage(ast.topHead().toString() + ": " + rex.getMessage());
 			return F.NIL;
 		}
 		return evaluateArg1(arg1, engine);

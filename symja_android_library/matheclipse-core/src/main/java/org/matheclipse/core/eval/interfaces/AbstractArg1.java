@@ -38,16 +38,21 @@ public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
 		final int hier = ast.arg1().hierarchy();
 		if (hier <= IExpr.INTEGERID) {
 			if (hier <= IExpr.DOUBLECOMPLEXID) {
-				if (hier == IExpr.DOUBLEID) {
-					if (arg1 instanceof ApfloatNum) {
-						return e1ApfloatArg(((ApfloatNum) arg1).apfloatValue());
+				try {
+					if (hier == IExpr.DOUBLEID) {
+						if (arg1 instanceof ApfloatNum) {
+							return e1ApfloatArg(((ApfloatNum) arg1).apfloatValue());
+						}
+						return e1DblArg(((Num) arg1).doubleValue());
 					}
-					return e1DblArg(((Num) arg1).doubleValue());
+					if (arg1 instanceof ApcomplexNum) {
+						return e1ApcomplexArg(((ApcomplexNum) arg1).apcomplexValue());
+					}
+					return e1ComplexArg(((ComplexNum) arg1).complexValue());
+				} catch (RuntimeException rex) {
+//					EvalEngine.get().printMessage(ast.topHead().toString() + ": " + rex.getMessage());
+					return F.NIL;
 				}
-				if (arg1 instanceof ApcomplexNum) {
-					return e1ApcomplexArg(((ApcomplexNum) arg1).apcomplexValue());
-				}
-				return e1ComplexArg(((ComplexNum) arg1).complexValue());
 			} else {
 				return e1IntArg((IInteger) arg1);
 			}
@@ -62,14 +67,16 @@ public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
 					return e1SymArg((ISymbol) ast.arg1());
 				}
 			}
-		} 
+		}
 
 		return F.NIL;
 	}
+
 	@Override
 	public int[] expectedArgSize() {
 		return IOFunctions.ARGS_1_1;
 	}
+
 	public IExpr e1ObjArg(final IExpr o) {
 		return F.NIL;
 	}
@@ -85,7 +92,7 @@ public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
 	public IExpr e1ComplexArg(final Complex c) {
 		return F.NIL;
 	}
-	
+
 	public IExpr e1ApcomplexArg(final Apcomplex c) {
 		return F.NIL;
 	}

@@ -2622,6 +2622,7 @@ public abstract class AbstractAST implements IASTMutable {
 	@Override
 	public boolean isNegative() {
 		if (isNumericFunction()) {
+
 			IExpr result = EvalEngine.get().evalN(this);
 			if (result.isReal()) {
 				return result.isNegative();

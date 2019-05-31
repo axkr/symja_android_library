@@ -110,80 +110,56 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 		return F.NIL;
 	}
 
-	public IExpr binaryOperator(final IExpr o0, final IExpr o1) {
+	public IExpr binaryOperator(IAST ast, final IExpr o0, final IExpr o1) {
 		IExpr result = F.NIL;
-		if (o0 instanceof ApcomplexNum) {
-			if (o1.isNumber()) {
-				result = e2ApcomplexArg((ApcomplexNum) o0,
-						((INumber) o1).apcomplexNumValue(((ApcomplexNum) o0).precision()));
+		try {
+			if (o0 instanceof ApcomplexNum) {
+				if (o1.isNumber()) {
+					result = e2ApcomplexArg((ApcomplexNum) o0,
+							((INumber) o1).apcomplexNumValue(((ApcomplexNum) o0).precision()));
+				}
+			} else if (o1 instanceof ApcomplexNum) {
+				if (o0.isNumber()) {
+					result = e2ApcomplexArg(((INumber) o0).apcomplexNumValue(((ApcomplexNum) o1).precision()),
+							(ApcomplexNum) o1);
+				}
+			} else if (o0 instanceof ComplexNum) {
+				if (o1.isNumber()) {
+					result = e2DblComArg((ComplexNum) o0, ((INumber) o1).complexNumValue());
+				}
+			} else if (o1 instanceof ComplexNum) {
+				if (o0.isNumber()) {
+					result = e2DblComArg(((INumber) o0).complexNumValue(), (ComplexNum) o1);
+				}
 			}
-			if (result.isPresent()) {
-				return result;
-			}
-			return e2ObjArg(o0, o1);
-		} else if (o1 instanceof ApcomplexNum) {
-			if (o0.isNumber()) {
-				result = e2ApcomplexArg(((INumber) o0).apcomplexNumValue(((ApcomplexNum) o1).precision()),
-						(ApcomplexNum) o1);
-			}
-			if (result.isPresent()) {
-				return result;
-			}
-			return e2ObjArg(o0, o1);
-		} else if (o0 instanceof ComplexNum) {
-			if (o1.isNumber()) {
-				result = e2DblComArg((ComplexNum) o0, ((INumber) o1).complexNumValue());
-			}
-			if (result.isPresent()) {
-				return result;
-			}
-			return e2ObjArg(o0, o1);
-		} else if (o1 instanceof ComplexNum) {
-			if (o0.isNumber()) {
-				result = e2DblComArg(((INumber) o0).complexNumValue(), (ComplexNum) o1);
-			}
-			if (result.isPresent()) {
-				return result;
-			}
-			return e2ObjArg(o0, o1);
-		}
 
-		if (o0 instanceof ApfloatNum) {
-			if (o1.isReal()) {
-				result = e2ApfloatArg((ApfloatNum) o0,
-						((ISignedNumber) o1).apfloatNumValue(((ApfloatNum) o0).precision()));
-			}
-			if (result.isPresent()) {
-				return result;
-			}
-			return e2ObjArg(o0, o1);
-		} else if (o1 instanceof ApfloatNum) {
-			if (o0.isReal()) {
-				result = e2ApfloatArg(((ISignedNumber) o0).apfloatNumValue(((ApfloatNum) o1).precision()),
-						(ApfloatNum) o1);
-			}
-			if (result.isPresent()) {
-				return result;
-			}
-			return e2ObjArg(o0, o1);
-		} else if (o0 instanceof Num) {
-			if (o1.isReal()) {
-				result = e2DblArg((Num) o0, ((ISignedNumber) o1).numValue());
-			}
-			if (result.isPresent()) {
-				return result;
-			}
-			return e2ObjArg(o0, o1);
-		} else if (o1 instanceof Num) {
-			if (o0.isReal()) {
-				result = e2DblArg(((ISignedNumber) o0).numValue(), (Num) o1);
-			}
-			if (result.isPresent()) {
-				return result;
-			}
-			return e2ObjArg(o0, o1);
-		}
+			if (o0 instanceof ApfloatNum) {
+				if (o1.isReal()) {
+					result = e2ApfloatArg((ApfloatNum) o0,
+							((ISignedNumber) o1).apfloatNumValue(((ApfloatNum) o0).precision()));
+				}
+			} else if (o1 instanceof ApfloatNum) {
+				if (o0.isReal()) {
+					result = e2ApfloatArg(((ISignedNumber) o0).apfloatNumValue(((ApfloatNum) o1).precision()),
+							(ApfloatNum) o1);
+				}
+			} else if (o0 instanceof Num) {
+				if (o1.isReal()) {
+					result = e2DblArg((Num) o0, ((ISignedNumber) o1).numValue());
+				}
+			} else if (o1 instanceof Num) {
+				if (o0.isReal()) {
+					result = e2DblArg(((ISignedNumber) o0).numValue(), (Num) o1);
+				}
 
+			}
+			if (result.isPresent()) {
+				return result;
+			}
+		} catch (RuntimeException rex) {
+			// EvalEngine.get().printMessage(ast.topHead().toString() + ": " + rex.getMessage());
+			return F.NIL;
+		}
 		result = e2ObjArg(o0, o1);
 		if (result.isPresent()) {
 			return result;
@@ -305,7 +281,7 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 			if (ast.size() != 3) {
 				return unaryOperator(ast.arg1());
 			}
-			return binaryOperator(ast.arg1(), ast.arg2());
+			return binaryOperator(ast, ast.arg1(), ast.arg2());
 		}
 		return engine.printMessage(ast.topHead() + ": " + ast.topHead()
 				+ " function requires 1 or 2 arguments, but number of args equals: " + ast.argSize());

@@ -1582,7 +1582,7 @@ public final class Arithmetic {
 			if (ast.size() != 3) {
 				return unaryOperator(ast.arg1());
 			}
-			return binaryOperator(ast.arg1(), ast.arg2());
+			return binaryOperator(ast, ast.arg1(), ast.arg2());
 		}
 
 		@Override

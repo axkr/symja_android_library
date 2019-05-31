@@ -2368,33 +2368,33 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{0}->1+x+x^3+x^4+x^6+x^7+O(x)^9}");
 		check("CoefficientRules((x + y)^3)", //
 				"{{3,0}->1,{2,1}->3,{1,2}->3,{0,3}->1}");
-		check("CoefficientRules( a*x*y^2 + b*x^2*z, {x, y, z}, DegreeReverseLexicographic)",//
+		check("CoefficientRules( a*x*y^2 + b*x^2*z, {x, y, z}, DegreeReverseLexicographic)", //
 				"{{1,2,0}->a,{2,0,1}->b}");
 
 		check("CoefficientRules((x + y)^3)", "{{3,0}->1,{2,1}->3,{1,2}->3,{0,3}->1}");
 		// check("CoefficientRules(x^2 y^2 + x^3, {x, y})", "{x^3,x^2*y^2}");
 		// check("CoefficientRules(x^2 y^2 + x^3, {x,
 		// y},\"DegreeLexicographic\")", "{x^2*y^2,x^3}");
-		check("CoefficientRules((x + 1)^5, x, Modulus -> 2)",//
+		check("CoefficientRules((x + 1)^5, x, Modulus -> 2)", //
 				"{{5}->1,{4}->1,{1}->1,{0}->1}");
 
-		check("CoefficientRules(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z})",//
+		check("CoefficientRules(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z})", //
 				"{{5,4,2}->-10,{2,5,3}->7,{2,1,5}->-10,{1,5,4}->-7,{1,4,3}->6,{1,3,3}->6,{1,2,1}->\n"
 						+ "3,{0,4,1}->1,{0,2,1}->-7,{0,0,5}->2}");
 
-		check("CoefficientRules(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, NegativeLexicographic)",//
+		check("CoefficientRules(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, NegativeLexicographic)", //
 				"{{0,0,5}->2,{0,2,1}->-7,{0,4,1}->1,{1,2,1}->3,{1,3,3}->6,{1,4,3}->6,{1,5,4}->-7,{\n"
 						+ "2,1,5}->-10,{2,5,3}->7,{5,4,2}->-10}");
-		check("CoefficientRules(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, DegreeLexicographic)",//
+		check("CoefficientRules(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, DegreeLexicographic)", //
 				"{{5,4,2}->-10,{2,5,3}->7,{1,5,4}->-7,{2,1,5}->-10,{1,4,3}->6,{1,3,3}->6,{0,4,1}->\n"
 						+ "1,{0,0,5}->2,{1,2,1}->3,{0,2,1}->-7}");
-		check("CoefficientRules(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, NegativeDegreeReverseLexicographic)",//
+		check("CoefficientRules(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, NegativeDegreeReverseLexicographic)", //
 				"{{0,2,1}->-7,{1,2,1}->3,{0,4,1}->1,{0,0,5}->2,{1,3,3}->6,{1,4,3}->6,{2,1,5}->-10,{\n"
 						+ "2,5,3}->7,{1,5,4}->-7,{5,4,2}->-10}");
-		check("CoefficientRules(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, DegreeReverseLexicographic)",//
+		check("CoefficientRules(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, DegreeReverseLexicographic)", //
 				"{{5,4,2}->-10,{2,5,3}->7,{1,5,4}->-7,{1,4,3}->6,{2,1,5}->-10,{1,3,3}->6,{0,4,1}->\n"
 						+ "1,{0,0,5}->2,{1,2,1}->3,{0,2,1}->-7}");
-		check("CoefficientRules(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, NegativeDegreeLexicographic)",//
+		check("CoefficientRules(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z}, NegativeDegreeLexicographic)", //
 				"{{0,2,1}->-7,{1,2,1}->3,{0,4,1}->1,{0,0,5}->2,{1,3,3}->6,{2,1,5}->-10,{1,4,3}->6,{\n"
 						+ "2,5,3}->7,{1,5,4}->-7,{5,4,2}->-10}");
 	}
@@ -3124,6 +3124,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCot() {
+		check("Cot(0.0)", //
+				"ComplexInfinity");
+		check("Cot(0)", //
+				"ComplexInfinity");
 		// check("Cot(z-Pi/3)", //
 		// "-Tan(Pi/6+z)");
 		check("Cot(e-Pi/2+f*x)", //
@@ -5268,7 +5272,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFactor() {
-		System.out.println( );
+		System.out.println();
 		System.out.print('.');
 		check("Factor(x+2*Sqrt(x)+1)", //
 				"(1+Sqrt(x))^2");
@@ -5436,7 +5440,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		System.out.print('.');
 		check("Factor(a*b*(4+4*x+x^2)^2)", //
 				"a*b*(2+x)^4");
-		
+
 		System.out.print('.');
 		check("Factor(x^2 - y^2)", //
 				"(x-y)*(x+y)");
@@ -5496,7 +5500,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		System.out.print('.');
 		check("factor(x^2-a^2)", //
 				"(-a+x)*(a+x)");
-		
+
 		// is sometimes slow, if it calls
 		// FactorAbstract#factorsSquarefreeKronecker()
 		System.out.print('.');
@@ -7852,6 +7856,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIntegrate() {
+		check("Integrate(Log(x^3)/E^(2+x),{x,1,2})", //
+				"(3*ExpIntegralEi(-2))/E^2+(-3*ExpIntegralEi(-1))/E^2-Log(8)/E^4");
 		// check("Limit(1/9*x*(9-x^2)^(3/2)*Hypergeometric2F1(1,2,3/2,x^2/9),x->3)", //
 		// "");
 
@@ -11852,6 +11858,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPatternAndRules() {
+		check("f(a_.*x_^j_.,x_):={a,x,j}; f(a*x*z,x)", //
+				"{a*z,x,1}");
+		check("f(a_.*x_^j_.,x_):={a,x,j}; f(a*b*x^3,x)", //
+				"{a*b,x,3}");
+		check("f(a_.*x_^j_.,x_):={a,x,j}; f(a*b*x^3*y*z,x)", //
+				"{a*b*y*z,x,3}");
+
 		check("a + b + c /. a + b -> t", //
 				"c+t");
 		check("a + 2 + b + c + x * y /. n_Integer + s__Symbol + rest_ -> {n, s, rest}", //
@@ -17546,6 +17559,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTan() {
+		check("Tan(Pi / 2.0)", //
+				"1.63312*10^16");
 		// TODO
 		// check("Tan(z-Pi/3)", //
 		// "-Cot(Pi/6+z)");

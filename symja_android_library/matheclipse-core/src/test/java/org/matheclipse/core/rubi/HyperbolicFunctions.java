@@ -769,7 +769,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
 	// {3133}
 	public void test0125() {
 		check(//
-				"Integrate[(B*Cosh[x] + C*Sinh[x])/(b*Cosh[x] + c*Sinh[x]), x]", //
+				"On[All,Unique];Integrate[(B*Cosh[x] + C*Sinh[x])/(b*Cosh[x] + c*Sinh[x]), x]", //
 				"((b*B - c*C)*x)/(b^2 - c^2) - ((B*c - b*C)*Log[b*Cosh[x] + c*Sinh[x]])/(b^2 - c^2)", //
 				3133);
 	}
