@@ -36,5 +36,6 @@
 	<classpathentry kind="lib" path="lib/failureaccess-1.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/logicng-1.5.1.jar"/>
 	<classpathentry kind="lib" path="lib/jas-2.6.5988.jar"/>
+	<classpathentry kind="lib" path="lib/compiler-1.0.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
