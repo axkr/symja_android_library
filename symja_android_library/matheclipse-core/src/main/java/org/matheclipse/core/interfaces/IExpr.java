@@ -448,7 +448,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	/**
 	 * Evaluate the expression to a <code>Complex</code> value.
 	 * 
-	 * @return  
+	 * @return
 	 */
 	default Complex evalComplex() {
 		if (isNumber()) {
@@ -803,9 +803,10 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @param useOperators
 	 *            use operators instead of function names for representation of Plus, Times, Power,...
 	 * @param usePrefix
-	 *            use the <code>F....</code> class prefix for genrating Java code.
+	 *            use the <code>F....</code> class prefix for generating Java code.
 	 * @param noSymbolPrefix
-	 *            TODO
+	 *            for symbols like <code>x,y,z,...</code> don't use the <code>F....</code> class prefix for code
+	 *            generation
 	 * @return the internal Java form of this expression
 	 */
 	default String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
@@ -2711,7 +2712,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isTrigFunction() {
 		return false;
 	}
-	
+
 	/**
 	 * Test if this expression is a special pattern-matching function (i.e. Alternatives, Except,...)
 	 * 
@@ -2720,7 +2721,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isPatternMatchingFunction() {
 		return false;
 	}
-	
+
 	/**
 	 * Test if this expression equals the symbol <code>True</code>.
 	 * 

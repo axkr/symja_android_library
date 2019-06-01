@@ -275,6 +275,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	public IExpr arg5();
 
+	@Override
 	default int argSize() {
 		return size() - 1;
 	}
@@ -297,6 +298,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return a clone of this <code>IAST</code> instance.
 	 * @deprecated use {@link #copyAppendable()} or {@link #copy()}
 	 */
+	@Deprecated
 	public IAST clone() throws CloneNotSupportedException;
 
 	/**
@@ -443,6 +445,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *            the expr which should be tested for equality
 	 * @return
 	 */
+	@Override
 	public boolean equalsAt(int position, final IExpr expr);
 
 	/**
@@ -616,6 +619,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return <code>-1</code> if no position was found
 	 * @deprecated use {@link #indexOf(IExpr)} instead
 	 */
+	@Deprecated
 	default public int findFirstEquals(final IExpr expr) {
 		return indexOf(expr);
 	}
@@ -956,6 +960,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	public boolean isFreeAt(int position, final IExpr pattern);
 
+	@Override
 	default boolean isNotDefined() {
 		if (isIndeterminate() || isDirectedInfinity()) {
 			return true;
@@ -967,6 +972,12 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 		}
 		return false;
 	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean isPatternMatchingFunction();
 
 	/**
 	 * Check if the object at index 0 (i.e. the head of the list) is the same object as <code>head</code> and if the
@@ -993,12 +1004,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	@Override
 	public boolean isTrigFunction();
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean isPatternMatchingFunction();
 
 	/**
 	 * Returns an iterator over the elements in this list starting with offset <b>1</b>.
@@ -1036,19 +1041,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public IAST map(final Function<IExpr, IExpr> functor, final int startOffset);
 
 	/**
-	 * Set the head element of this list
-	 */
-	// public void setHeader(IExpr expr);
-
-	/**
-	 * Returns an iterator over the elements in this list starting with offset <b>0</b>.
-	 * 
-	 * 
-	 * @return an iterator over this list values.
-	 */
-	// public Iterator<IExpr> iterator0();
-
-	/**
 	 * Maps the elements of this IAST with the elements of the <code>secondAST</code>.
 	 * 
 	 * @param resultAST
@@ -1060,6 +1052,19 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *             if the secondAST size is lesser than this AST size
 	 */
 	public IAST map(IASTAppendable resultAST, IAST secondAST, BiFunction<IExpr, IExpr, IExpr> function);
+
+	/**
+	 * Set the head element of this list
+	 */
+	// public void setHeader(IExpr expr);
+
+	/**
+	 * Returns an iterator over the elements in this list starting with offset <b>0</b>.
+	 * 
+	 * 
+	 * @return an iterator over this list values.
+	 */
+	// public Iterator<IExpr> iterator0();
 
 	/**
 	 * Append the mapped ranges elements directly to the given <code>list</code>
@@ -1253,6 +1258,14 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public IASTAppendable prependClone(IExpr expr);
 
 	/**
+	 * Removes all objects which satisfy the given predicate.
+	 * 
+	 * @param predicate
+	 * @return <code>F.NIL</code> if no element could be removed
+	 */
+	public IASTAppendable remove(Predicate<? super IExpr> predicate);
+
+	/**
 	 * Removes the object at the specified location from this {@code IAST}.
 	 * 
 	 * @param location
@@ -1264,14 +1277,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *             if {@code location < 0 || >= size()}
 	 */
 	// public IExpr remove(int location);
-
-	/**
-	 * Removes all objects which satisfy the given predicate.
-	 * 
-	 * @param predicate
-	 * @return <code>F.NIL</code> if no element could be removed
-	 */
-	public IASTAppendable remove(Predicate<? super IExpr> predicate);
 
 	/**
 	 * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and remove the
@@ -1340,6 +1345,15 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 			throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(firstPosition) + ", Size: " + size());
 		}
 	}
+
+	/**
+	 * Removes all the elements from this list which satisfies the given predicate and return the result as a new List
+	 * 
+	 * @param predicate
+	 *            the predicate which filters each element in the range
+	 * @return the resulting ASTs in the 0-th and 1-st element of the array
+	 */
+	public IAST removeIf(Predicate<? super IExpr> predicate);
 
 	/** {@inheritDoc} */
 	@Override
@@ -1432,6 +1446,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return the <b>number of elements</b> in this {@code IAST}.
 	 * @see #argSize()
 	 */
+	@Override
 	public int size();
 
 	/**
