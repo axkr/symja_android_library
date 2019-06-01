@@ -10,6 +10,10 @@ import org.matheclipse.core.parser.ExprParser;
 
 import com.itranswarp.compiler.JavaStringCompiler;
 
+/**
+ * Example for <a href="https://github.com/axkr/symja_android_library/issues/132">github #132</a>
+ *
+ */
 public class CompileFunction {
 
 	public static void main(String[] args) {
@@ -43,19 +47,20 @@ public class CompileFunction {
 		}
 	}
 
-	static final String JAVA_SOURCE_CODE = "/* an inmemory compiled function */           \n"//
-			+ "package org.matheclipse.core.compile;                                      \n"//
-			+ "                                                                           \n"//
-			+ "import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;     \n"//
-			+ "import org.matheclipse.core.interfaces.IExpr;                              \n"//
-			+ "import org.matheclipse.core.interfaces.IAST;                               \n"//
-			+ "import org.matheclipse.core.eval.EvalEngine;                               \n"//
-			+ "import org.matheclipse.core.expression.F;                                  \n"//
-			+ "                                                                           \n"//
-			+ "public class CompiledFunction extends AbstractFunctionEvaluator {          \n"//
-			+ "    public IExpr evaluate(final IAST ast, EvalEngine engine){              \n"//
-			+ "        IExpr x = ast.arg1();                                              \n"//
-			+ "        return engine.evaluate({$expression});                             \n"//
-			+ "    }                                                                      \n"//
-			+ "}                                                                          \n";
+	static final String JAVA_SOURCE_CODE = //
+			"/* an in-memory compiled function */                                      \n"//
+					+ "package org.matheclipse.core.compile;                                      \n"//
+					+ "                                                                           \n"//
+					+ "import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;     \n"//
+					+ "import org.matheclipse.core.interfaces.IExpr;                              \n"//
+					+ "import org.matheclipse.core.interfaces.IAST;                               \n"//
+					+ "import org.matheclipse.core.eval.EvalEngine;                               \n"//
+					+ "import org.matheclipse.core.expression.F;                                  \n"//
+					+ "                                                                           \n"//
+					+ "public class CompiledFunction extends AbstractFunctionEvaluator {          \n"//
+					+ "    public IExpr evaluate(final IAST ast, EvalEngine engine){              \n"//
+					+ "        IExpr x = ast.arg1();                                              \n"//
+					+ "        return engine.evaluate({$expression});                             \n"//
+					+ "    }                                                                      \n"//
+					+ "}                                                                          \n";
 }
