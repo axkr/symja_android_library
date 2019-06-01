@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import static org.matheclipse.core.expression.F.ComplexExpand;
+import static org.matheclipse.core.expression.F.Compile;
 import static org.matheclipse.core.expression.F.CreateDirectory;
 import static org.matheclipse.core.expression.F.D;
 import static org.matheclipse.core.expression.F.DSolve;
@@ -64,6 +65,7 @@ public final class FunctionDefinitions {
 
 		private static void init() {
 			ComplexExpand.setEvaluator(new org.matheclipse.core.reflection.system.ComplexExpand());
+			Compile.setEvaluator(new org.matheclipse.core.reflection.system.Compile());
 			CreateDirectory.setEvaluator(new org.matheclipse.core.reflection.system.CreateDirectory());
 			D.setEvaluator(new org.matheclipse.core.reflection.system.D());
 			Default.setEvaluator(new org.matheclipse.core.reflection.system.Default());
@@ -120,7 +122,6 @@ public final class FunctionDefinitions {
 			TrigToExp.setEvaluator(new org.matheclipse.core.reflection.system.TrigToExp());
 		}
 	}
-
 
 	public static void initialize() {
 		Initializer.init();

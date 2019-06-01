@@ -597,6 +597,9 @@ public class F {
     /***/
     public final static IBuiltInSymbol Compile = F.initFinalSymbol("Compile", ID.Compile);
 
+    /***/
+    public final static IBuiltInSymbol CompiledFunction = F.initFinalSymbol("CompiledFunction", ID.Compile);
+    
     /** Complement (set1, set2) - get the complement set from `set1` and `set2`.*/
     public final static IBuiltInSymbol Complement = F.initFinalSymbol("Complement", ID.Complement);
 

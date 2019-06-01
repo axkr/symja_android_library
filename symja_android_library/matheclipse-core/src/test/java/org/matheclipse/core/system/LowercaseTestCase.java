@@ -2564,6 +2564,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"DirectedInfinity()");
 	}
 
+	public void testCompile() {
+		if (ToggleFeature.COMPILE) {
+			check("f=Compile({x}, E^3-Cos(Pi^2/x)); ", //
+					"");
+			check(" f(1.4567)", //
+					"19.20421");
+			
+			check("f=Compile({x}, x^3+Cos(x^2)); ", //
+					"");
+			check(" f(1.4567)", //
+					"2.56739");
+		}
+	}
+
 	public void testComposeList() {
 		check("ComposeList({f,g,h}, x)", //
 				"{x,f(x),g(f(x)),h(g(f(x)))}");
@@ -3716,6 +3730,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDerivative() {
+		check("f''(k^(1/3) x) - f(k^(1/3) x) == 0 /. x -> (x k^(-1/3))", //
+				"-f(x)+f''(x)==0");
 		check("h(x_):= 4 x / (x ^ 2 + 3*x + 5)", //
 				"");
 		check("extremes=Solve(h'(x)==0,x)", //

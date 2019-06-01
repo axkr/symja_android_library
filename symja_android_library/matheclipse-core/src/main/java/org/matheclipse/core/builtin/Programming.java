@@ -31,6 +31,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
+import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
@@ -64,7 +65,7 @@ public final class Programming {
 			F.Break.setEvaluator(new Break());
 			F.Block.setEvaluator(new Block());
 			F.Catch.setEvaluator(new Catch());
-			F.Compile.setEvaluator(new Compile());
+			F.CompiledFunction.setEvaluator(new CompiledFunction());
 			F.CompoundExpression.setEvaluator(new CompoundExpression());
 			F.Condition.setEvaluator(new Condition());
 			F.Continue.setEvaluator(new Continue());
@@ -257,17 +258,6 @@ public final class Programming {
 
 	}
 
-	private static class Compile extends AbstractCoreFunctionEvaluator {
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (!ToggleFeature.COMPILE) {
-				return F.NIL;
-			}
-			return engine.printMessage("Compile: Compile() function not implemented! ");
-		}
-
-	}
-
 	/**
 	 * <pre>
 	 * CompoundExpression(expr1, expr2, ...)
@@ -408,6 +398,32 @@ public final class Programming {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	private final static class CompiledFunction extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr head = ast.head();
+			if (head instanceof DataExpr) {
+				try {
+					DataExpr data = (DataExpr) head;
+					if (data.head() == F.CompiledFunction) {
+						AbstractFunctionEvaluator fun = (AbstractFunctionEvaluator) data.toData();
+						return fun.evaluate(ast, engine);
+					}
+				} catch (RuntimeException rex) {
+					engine.printMessage("CompiledFunction: " + rex.getMessage());
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
 
 	}
@@ -2933,7 +2949,7 @@ public final class Programming {
 			return result.orElse(withBlock);
 		}
 		return F.NIL;
-	} 
+	}
 
 	/**
 	 * Get the element stored at the given <code>position</code>.
