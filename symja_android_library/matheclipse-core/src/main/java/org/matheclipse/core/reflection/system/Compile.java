@@ -17,6 +17,10 @@ import org.matheclipse.core.interfaces.IExpr;
 
 import com.itranswarp.compiler.JavaStringCompiler;
 
+/**
+ * 
+ *
+ */
 public class Compile extends AbstractCoreFunctionEvaluator {
 	static final String JAVA_SOURCE_CODE = //
 			"/* an in-memory compiled function */                                      \n"//

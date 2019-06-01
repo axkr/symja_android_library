@@ -92,6 +92,10 @@
 			<groupId>org.logicng</groupId>
 			<artifactId>logicng</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.itranswarp</groupId>
+			<artifactId>compiler</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -102,7 +106,7 @@
 			</resource>
 		</resources>
 		<pluginManagement>
-			<plugins> 
+			<plugins>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>exec-maven-plugin</artifactId>
