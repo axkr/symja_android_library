@@ -431,10 +431,11 @@ public class Eliminate extends AbstractFunctionEvaluator {
 							// E ^ f(x)
 							IExpr c1 = F.C(1);
 							final IExpr exprwovar = exprWithoutVariable;
-							return
-							// [$ ConditionalExpression(2*I*Pi*c1 + Log(exprwovar), Element(c1, Integers)) $]
-							F.ConditionalExpression(F.Plus(F.Times(F.C2, F.CI, F.Pi, c1), F.Log(exprwovar)),
-									F.Element(c1, F.Integers)); // $$;
+							IExpr temp =
+									// [$ ConditionalExpression(2*I*Pi*c1 + Log(exprwovar), Element(c1, Integers)) $]
+									F.ConditionalExpression(F.Plus(F.Times(F.C2, F.CI, F.Pi, c1), F.Log(exprwovar)),
+											F.Element(c1, F.Integers)); // $$;
+							return extractVariable(exponent, temp, predicate, x, engine);
 						}
 						// a ^ f(x)
 						IExpr value = F.Divide(F.Log(exprWithoutVariable), F.Log(base));

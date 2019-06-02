@@ -1221,6 +1221,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is the ConditionalExpression function <code>ConditionalExpression[&lt;arg1&gt;, &lt;arg2&gt;]</code>
+	 * 
+	 * @return
+	 */
+	default boolean isConditionalExpression() {
+		return false;
+	}
+
+	/**
 	 * Test if this expression is the function <code>Conjugate[&lt;arg&gt;]</code>
 	 * 
 	 * @return

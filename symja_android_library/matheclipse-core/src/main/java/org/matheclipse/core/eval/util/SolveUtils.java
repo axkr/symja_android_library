@@ -16,6 +16,9 @@ public class SolveUtils {
 	 * return the entry as solution.
 	 * 
 	 * @param list
+	 * @param solution
+	 * @param isNumeric
+	 *            set isNumeric[0] = true, if an expression must be rationalized
 	 * @return
 	 */
 	public static IASTMutable[] filterSolveLists(IAST list, IASTMutable solution, boolean[] isNumeric) {

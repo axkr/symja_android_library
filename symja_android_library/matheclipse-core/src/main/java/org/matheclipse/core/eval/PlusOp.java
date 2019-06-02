@@ -305,7 +305,7 @@ public class PlusOp {
 	public static IExpr plus(IAST plusAST) {
 		IAST temp = EvalEngine.get().evalFlatOrderlessAttributesRecursive(plusAST).orElse(plusAST);
 		IExpr expr = Arithmetic.CONST_PLUS.evaluate(temp, EvalEngine.get());
-		return expr.orElseGet(()->plusAST.oneIdentity0());
+		return expr.orElseGet(() -> plusAST.oneIdentity0());
 	}
 
 	/**
@@ -319,14 +319,7 @@ public class PlusOp {
 		final IAST plus = F.Plus(a1, a2);
 		return Arithmetic.CONST_PLUS.evaluate(plus, EvalEngine.get()).orElse(plus);
 	}
-
-	/**
-	 * Use interval arithmetic to add to interval objects
-	 * 
-	 * @param o0
-	 * @param o1
-	 * @return
-	 */
+	
 	private IExpr plusInterval(final IExpr o0, final IExpr o1) {
 		return F.Interval(F.List(o0.lower().plus(o1.lower()), o0.upper().plus(o1.upper())));
 	}

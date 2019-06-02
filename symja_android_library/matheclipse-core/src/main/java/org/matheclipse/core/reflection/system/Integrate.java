@@ -491,7 +491,10 @@ public class Integrate extends AbstractFunctionEvaluator {
 					if (parts != null) {
 						IExpr temp = Algebra.partsApart(parts, x, engine);
 						if (temp.isPresent() && !temp.equals(arg1)) {
-							return F.Integrate(temp, x);
+							if (temp.isPlus()) {
+								return mapIntegrate((IAST) temp, x);
+							}
+							// return F.Integrate(temp, x);
 							// return mapIntegrate((IAST) temp, x);
 						}
 						// if (temp.isPlus()) {

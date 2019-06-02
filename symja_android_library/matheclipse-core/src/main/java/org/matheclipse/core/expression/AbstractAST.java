@@ -2199,6 +2199,12 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isConditionalExpression() {
+		return head() == F.ConditionalExpression && size() == 3;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public final boolean isConjugate() {
 		return isSameHead(F.Conjugate, 2);
 	}

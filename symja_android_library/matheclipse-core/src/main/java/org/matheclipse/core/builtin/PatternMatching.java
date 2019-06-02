@@ -1254,19 +1254,29 @@ public final class PatternMatching {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			final IExpr leftHandSide = ast.arg1();
 			final IExpr head = leftHandSide.head();
+			
+			IExpr rightHandSide = ast.arg2();
+			try {
+				rightHandSide = engine.evaluate(rightHandSide);
+			} catch (final ConditionException e) {
+				// System.out.println("Condition[] in right-hand-side of Set[]");
+			} catch (final ReturnException e) {
+				rightHandSide = e.getValue();
+			}
+			
 			if (head.isBuiltInSymbol()) {
 				if (leftHandSide.isAST()) {
 					IBuiltInSymbol symbol = (IBuiltInSymbol) head;
 					IEvaluator eval = symbol.getEvaluator();
 					if (eval instanceof ISetEvaluator) {
-						IExpr temp = ((ISetEvaluator) eval).evaluateSet(leftHandSide, ast.arg2(), engine);
+						IExpr temp = ((ISetEvaluator) eval).evaluateSet(leftHandSide, rightHandSide, engine);
 						if (temp.isPresent()) {
 							return temp;
 						}
 					}
 				}
 			}
-			return createPatternMatcher(leftHandSide, ast.arg2(), engine.isPackageMode(), engine);
+			return createPatternMatcher(leftHandSide, rightHandSide, engine.isPackageMode(), engine);
 			// return (IExpr) result[1];
 		}
 
@@ -1279,13 +1289,13 @@ public final class PatternMatching {
 				final EvalEngine engine) throws RuleCreationError {
 			int[] flags = new int[] { IPatternMatcher.NOFLAG };
 			leftHandSide = evalLHS(leftHandSide, flags, engine);
-			try {
-				rightHandSide = engine.evaluate(rightHandSide);
-			} catch (final ConditionException e) {
-				// System.out.println("Condition[] in right-hand-side of Set[]");
-			} catch (final ReturnException e) {
-				rightHandSide = e.getValue();
-			}
+//			try {
+//				rightHandSide = engine.evaluate(rightHandSide);
+//			} catch (final ConditionException e) {
+//				// System.out.println("Condition[] in right-hand-side of Set[]");
+//			} catch (final ReturnException e) {
+//				rightHandSide = e.getValue();
+//			}
 			if (leftHandSide.isAST()) {
 				if (leftHandSide.isAST(F.MessageName, 3) && leftHandSide.first().isSymbol()) {
 					// Set[MessageName(f,"usage"),"text")

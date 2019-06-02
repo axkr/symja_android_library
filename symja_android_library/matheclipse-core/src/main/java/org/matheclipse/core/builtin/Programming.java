@@ -1904,8 +1904,9 @@ public final class Programming {
 								return rightHandSide;
 							}
 						} catch (RuntimeException npe) {
-							return engine.printMessage("Set: wrong argument for Part[] function: " + part.toString()
+							engine.printMessage("Set: wrong argument for Part[] function: " + part.toString()
 									+ " selects no part expression.");
+							return rightHandSide;
 						}
 					}
 				}

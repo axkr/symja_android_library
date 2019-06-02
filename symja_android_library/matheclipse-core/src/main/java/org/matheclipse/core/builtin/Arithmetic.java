@@ -4849,7 +4849,9 @@ public final class Arithmetic {
 				if (o1.isOne()) {
 					return o0;
 				}
+
 			}
+			
 			// note: not a general rule
 			// if (o0.isMinusOne() && o1.isPlus()) {
 			// return ((IAST) o1).map(x -> x.negate(), 1);
@@ -4857,7 +4859,8 @@ public final class Arithmetic {
 
 			if (o0.equals(o1)) {
 				return F.Power(o0, C2); // o0.power(F.C2);
-			}
+			} 
+			
 			if (o0.isSymbol()) {
 				if (o1.isAtom()) {
 					return F.NIL;
