@@ -39,8 +39,10 @@ public final class StringFunctions {
 			F.StringJoin.setEvaluator(new StringJoin());
 			F.StringLength.setEvaluator(new StringLength());
 			F.StringReplace.setEvaluator(new StringReplace());
+			F.StringRiffle.setEvaluator(new StringRiffle());
 			F.StringTake.setEvaluator(new StringTake());
 			F.SyntaxLength.setEvaluator(new SyntaxLength());
+			F.TextString.setEvaluator(new TextString());
 			F.ToCharacterCode.setEvaluator(new ToCharacterCode());
 			F.ToExpression.setEvaluator(new ToExpression());
 			F.ToString.setEvaluator(new ToString());
@@ -327,6 +329,78 @@ public final class StringFunctions {
 		}
 	}
 
+	private static class StringRiffle extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = ast.arg1();
+			String sep1 = " ";
+			String sep2 = "\n";
+			String left = "";
+			String right = "";
+			boolean isListOfLists = arg1.isListOfLists();
+			if (isListOfLists) {
+				sep1 = "\n";
+				sep2 = " ";
+			}
+			if (ast.size() >= 3) {
+				IExpr arg2 = ast.arg2();
+				if (arg2.isString()) {
+					sep1 = arg2.toString();
+				} else if (arg2.isAST(F.List, 4)) {
+					IAST list = (IAST) arg2;
+					left = list.arg1().toString();
+					sep1 = list.arg2().toString();
+					right = list.arg3().toString();
+				}
+			}
+			if (ast.isAST3()) {
+				IExpr arg3 = ast.arg3();
+				if (arg3.isString()) {
+					sep2 = arg3.toString();
+				}
+			}
+			if (isListOfLists) {
+				StringBuilder buf = new StringBuilder();
+				IAST list1 = (IAST) arg1;
+				buf.append(left);
+				for (int i = 1; i < list1.size(); i++) {
+					IAST row = (IAST) list1.get(i);
+					for (int j = 1; j < row.size(); j++) {
+						TextString.of(row.get(j), buf);
+						if (j < row.size() - 1) {
+							buf.append(sep2);
+						}
+					}
+					if (i < list1.size() - 1) {
+						buf.append(sep1);
+					}
+				}
+				buf.append(right);
+				return F.stringx(buf.toString());
+			} else if (arg1.isList()) {
+				StringBuilder buf = new StringBuilder();
+				IAST list1 = (IAST) arg1;
+				buf.append(left);
+				for (int j = 1; j < list1.size(); j++) {
+					TextString.of(list1.get(j), buf);
+					if (j < list1.size() - 1) {
+						buf.append(sep1);
+					}
+				}
+				buf.append(right);
+				return F.stringx(buf.toString());
+			}
+			return engine.printMessage("StringRiffle: list expected as first argument");
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_3;
+		}
+
+	}
+
 	private static class StringTake extends AbstractFunctionEvaluator {
 
 		@Override
@@ -369,6 +443,37 @@ public final class StringFunctions {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+
+	}
+
+	private static class TextString extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = ast.arg1();
+			return of(arg1);
+		}
+
+		private static IExpr of(IExpr arg1) {
+			if (arg1.isString()) {
+				return arg1;
+			}
+			return F.stringx(arg1.toString());
+		}
+
+		protected static void of(IExpr arg1, StringBuilder buf) {
+			if (arg1.isString()) {
+				buf.append(((IStringX) arg1).toString());
+				return;
+			}
+			buf.append(arg1.toString());
+
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 	}
@@ -464,7 +569,7 @@ public final class StringFunctions {
 			if (ast.arg1().isString()) {
 				return ast.arg1();
 			}
-			return F.$str(inputForm(ast.arg1(), true));
+			return F.stringx(inputForm(ast.arg1(), true));
 		}
 
 		@Override

@@ -2467,6 +2467,9 @@ public class F {
     public final static IBuiltInSymbol StringReplace = F.initFinalSymbol("StringReplace", ID.StringReplace);
 
     /***/
+    public final static IBuiltInSymbol StringRiffle = F.initFinalSymbol("StringRiffle", ID.StringRiffle);
+    
+    /***/
     public final static IBuiltInSymbol StringTake = F.initFinalSymbol("StringTake", ID.StringTake);
 
     /** StruveH(n, z) - returns the Struve function `H_n(z)`.*/
@@ -2574,6 +2577,9 @@ public class F {
     /** TeXForm(expr) - returns the TeX form of the evaluated `expr`. */
     public final static IBuiltInSymbol TeXForm = F.initFinalSymbol("TeXForm", ID.TeXForm);
 
+    /***/
+    public final static IBuiltInSymbol TextString = F.initFinalSymbol("TextString", ID.TextString);
+    
     /***/
     public final static IBuiltInSymbol TensorDimensions = F.initFinalSymbol("TensorDimensions", ID.TensorDimensions);
 

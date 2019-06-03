@@ -15969,8 +15969,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "I*2*Pi*C(1),Element(C(1),Integers))},{x->ConditionalExpression(I*2*Pi*C(1)+Log(3),Element(C(\n"
 						+ "1),Integers))/2}}");
 		check("NSolve(E^(3*x)-4*E^x+3*E^(-x)==0,x)", //
-				"{{x->0.5*ConditionalExpression(1.09861+(I*6.28319)*C(1.0),Element(C(1),Integers))},{x->ConditionalExpression(I*3.14159+(I*6.28319)*C(1.0),Element(C(\n" + 
-				"1),Integers))},{x->ConditionalExpression((I*6.28319)*C(1.0),Element(C(1),Integers))}}");
+				"{{x->0.5*ConditionalExpression(1.09861+(I*6.28319)*C(1.0),Element(C(1),Integers))},{x->ConditionalExpression(I*3.14159+(I*6.28319)*C(1.0),Element(C(\n"
+						+ "1),Integers))},{x->ConditionalExpression((I*6.28319)*C(1.0),Element(C(1),Integers))}}");
 
 		check("Solve(1+E^x==0,x)", //
 				"{{x->ConditionalExpression(I*Pi+I*2*Pi*C(1),Element(C(1),Integers))}}");
@@ -16857,6 +16857,24 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testStringReplace() {
 		check("StringReplace(\"abbaabbaa\", \"ab\" -> \"X\")", //
 				"XbaXbaa");
+	}
+
+	public void testStringRiffle() {
+		check("StringRiffle({\"a\", \"b\", \"c\", \"d\", \"e\"})",//
+				"a b c d e");
+		check("StringRiffle({\"a\", \"b\", \"c\", \"d\", \"e\"}, {\"(\", \" \", \")\"})",//
+				"(a b c d e)");
+		check("StringRiffle({{\"a\", \"b\", \"c\"}, {\"d\", \"e\", \"f\"}})", //
+				"a b c\n" + 
+				"d e f");
+		check("StringRiffle({{\"a\", \"b\", \"c\"}, {\"d\", \"e\", \"f\"}}, \"\\n\", \"\\t\")", //
+				"a	b	c\n" + 
+				"d	e	f");
+		check("StringRiffle(Range(10), \", \")", //
+				"1, 2, 3, 4, 5, 6, 7, 8, 9, 10");
+		check("StringRiffle({{\"a\", \"b\", \"c\"}, {\"d\", \"e\", \"f\"}}, {\"(\", \"\\n\", \")\"},\"-\")", //
+				"(a-b-c\n" + 
+				"d-e-f)");
 	}
 
 	public void testStringTake() {
@@ -17771,6 +17789,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("TeXForm(fgh(a,b))", //
 				"\\text{fgh}(a,b)");
+	}
+
+	public void testTextString() {
+		check("TextString(10) // InputForm", //
+				"\"10\"");
 	}
 
 	public void testThread() {
