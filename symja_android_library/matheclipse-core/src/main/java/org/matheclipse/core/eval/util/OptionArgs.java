@@ -137,6 +137,17 @@ public class OptionArgs {
 	}
 
 	/**
+	 * Get the option from the internal options list and check if it's set to <code>F.False</code>.
+	 * 
+	 * @param option
+	 *            the option
+	 * @return <code>true</code> if the option is set to <code>False</code> or <code>false</code> otherwise.
+	 */
+	public boolean isFalse(final ISymbol option) {
+		return getOption(option).isFalse();
+	}
+
+	/**
 	 * If option 'Automatic' is set, return 'F.NIL'.
 	 * 
 	 * @param option

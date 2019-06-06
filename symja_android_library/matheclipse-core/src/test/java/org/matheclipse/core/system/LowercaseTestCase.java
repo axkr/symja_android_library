@@ -1116,6 +1116,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBellY() {
+		// check("x + Sum(x^m/(m!*(m - 1)!) * BellY(Table({(m + k - 2)!, -(k - 1)! * c(k)}, {k, 2, m})), {m, 2, 4}) ",
+		// //
+		// "");
 		check("BellY(2,1,{1/2,0})", //
 				"0");
 
@@ -1127,6 +1130,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"3*x2^2+4*x1*x3");
 		check("With({n = 7, k = 2}, BellY(n, k, Array(x, n)))", //
 				"35*x(3)*x(4)+21*x(2)*x(5)+7*x(1)*x(6)");
+
 	}
 
 	public void testBernoulliB() {
@@ -5287,7 +5291,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{a,b},d}");
 	}
 
-	public void testFactor() {
+	public void testFactor() { 
 		System.out.println();
 		System.out.print('.');
 		check("Factor(x+2*Sqrt(x)+1)", //
@@ -16860,21 +16864,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStringRiffle() {
-		check("StringRiffle({\"a\", \"b\", \"c\", \"d\", \"e\"})",//
+		check("StringRiffle({\"a\", \"b\", \"c\", \"d\", \"e\"})", //
 				"a b c d e");
-		check("StringRiffle({\"a\", \"b\", \"c\", \"d\", \"e\"}, {\"(\", \" \", \")\"})",//
+		check("StringRiffle({\"a\", \"b\", \"c\", \"d\", \"e\"}, {\"(\", \" \", \")\"})", //
 				"(a b c d e)");
 		check("StringRiffle({{\"a\", \"b\", \"c\"}, {\"d\", \"e\", \"f\"}})", //
-				"a b c\n" + 
-				"d e f");
+				"a b c\n" + "d e f");
 		check("StringRiffle({{\"a\", \"b\", \"c\"}, {\"d\", \"e\", \"f\"}}, \"\\n\", \"\\t\")", //
-				"a	b	c\n" + 
-				"d	e	f");
+				"a	b	c\n" + "d	e	f");
 		check("StringRiffle(Range(10), \", \")", //
 				"1, 2, 3, 4, 5, 6, 7, 8, 9, 10");
 		check("StringRiffle({{\"a\", \"b\", \"c\"}, {\"d\", \"e\", \"f\"}}, {\"(\", \"\\n\", \")\"},\"-\")", //
-				"(a-b-c\n" + 
-				"d-e-f)");
+				"(a-b-c\n" + "d-e-f)");
 	}
 
 	public void testStringTake() {

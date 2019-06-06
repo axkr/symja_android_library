@@ -1588,7 +1588,25 @@ public class PolynomialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.arg2().isInteger() && ast.arg2().isInteger()) {
+			int[] dim = ast.arg1().isMatrix();
+			if (ast.isAST1() && dim != null) {
+				IAST matrixArg1 = (IAST) ast.arg1();
+
+				if (dim[0] == 1) {
+					if (dim[1] == 1) {
+						IAST row = (IAST) matrixArg1.arg1();
+						return row.arg1();
+					} else if (dim[1] >= 2) {
+						IAST row = (IAST) matrixArg1.arg1();
+						return row.apply(F.Times);
+					}
+				}
+				return F.NIL;
+			}
+			if (ast.isAST2()) {
+				return F.NIL;
+			}
+			if (ast.arg1().isInteger() && ast.arg2().isInteger()) {
 				int n = ast.arg1().toIntDefault(Integer.MIN_VALUE);
 				int k = ast.arg2().toIntDefault(Integer.MIN_VALUE);
 				if (n < 0 || k < 0 || //
@@ -1612,7 +1630,7 @@ public class PolynomialFunctions {
 
 		@Override
 		public int[] expectedArgSize() {
-			return IOFunctions.ARGS_3_3;
+			return IOFunctions.ARGS_1_3;
 		}
 
 		@Override

@@ -775,8 +775,7 @@ public final class PatternMatching {
 				boolean longForm = true;
 				if (ast.size() == 3) {
 					final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
-					IExpr option = options.getOption(F.LongForm);
-					if (option.isFalse()) {
+					if (options.isFalse(F.LongForm)) {
 						longForm = false;
 					}
 				}
@@ -805,12 +804,20 @@ public final class PatternMatching {
 					stream.println(temp.toString());
 				}
 				if (longForm) {
-					Documentation.printDocumentation(s, symbol.getSymbolName());
+					try {
+						Documentation.printDocumentation(stream, symbol.getSymbolName());
 
-					IAST function = F.Attributes(symbol);
-					temp = engine.evaluate(F.Attributes(symbol));
-					if (temp.isPresent()) {
-						stream.println(function.toString() + " = " + temp.toString());
+						IAST function = F.Attributes(symbol);
+						temp = engine.evaluate(F.Attributes(symbol));
+						if (temp.isPresent()) {
+							stream.println(function.toString() + " = " + temp.toString());
+						}
+
+						stream.println(symbol.definitionToString());
+					} catch (IOException ioe) {
+						if (Config.SHOW_STACKTRACE) {
+							ioe.printStackTrace();
+						}
 					}
 				}
 				return F.Null;
@@ -1254,7 +1261,7 @@ public final class PatternMatching {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			final IExpr leftHandSide = ast.arg1();
 			final IExpr head = leftHandSide.head();
-			
+
 			IExpr rightHandSide = ast.arg2();
 			try {
 				rightHandSide = engine.evaluate(rightHandSide);
@@ -1263,7 +1270,7 @@ public final class PatternMatching {
 			} catch (final ReturnException e) {
 				rightHandSide = e.getValue();
 			}
-			
+
 			if (head.isBuiltInSymbol()) {
 				if (leftHandSide.isAST()) {
 					IBuiltInSymbol symbol = (IBuiltInSymbol) head;
@@ -1289,13 +1296,13 @@ public final class PatternMatching {
 				final EvalEngine engine) throws RuleCreationError {
 			int[] flags = new int[] { IPatternMatcher.NOFLAG };
 			leftHandSide = evalLHS(leftHandSide, flags, engine);
-//			try {
-//				rightHandSide = engine.evaluate(rightHandSide);
-//			} catch (final ConditionException e) {
-//				// System.out.println("Condition[] in right-hand-side of Set[]");
-//			} catch (final ReturnException e) {
-//				rightHandSide = e.getValue();
-//			}
+			// try {
+			// rightHandSide = engine.evaluate(rightHandSide);
+			// } catch (final ConditionException e) {
+			// // System.out.println("Condition[] in right-hand-side of Set[]");
+			// } catch (final ReturnException e) {
+			// rightHandSide = e.getValue();
+			// }
 			if (leftHandSide.isAST()) {
 				if (leftHandSide.isAST(F.MessageName, 3) && leftHandSide.first().isSymbol()) {
 					// Set[MessageName(f,"usage"),"text")
