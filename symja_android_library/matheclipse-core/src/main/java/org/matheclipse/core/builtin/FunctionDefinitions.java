@@ -96,14 +96,10 @@ public final class FunctionDefinitions {
 			LinearProgramming.setEvaluator(new org.matheclipse.core.reflection.system.LinearProgramming());
 			F.ListLinePlot.setEvaluator(new org.matheclipse.core.reflection.system.ListLinePlot());
 			F.ListPlot.setEvaluator(new org.matheclipse.core.reflection.system.ListPlot());
-			Maximize.setEvaluator(new org.matheclipse.core.reflection.system.Maximize());
-			Minimize.setEvaluator(new org.matheclipse.core.reflection.system.Minimize());
 			MonomialList.setEvaluator(new org.matheclipse.core.reflection.system.MonomialList());
 			NDSolve.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve());
 			NFourierTransform.setEvaluator(new org.matheclipse.core.reflection.system.NFourierTransform());
 			NIntegrate.setEvaluator(new org.matheclipse.core.reflection.system.NIntegrate());
-			NMaximize.setEvaluator(new org.matheclipse.core.reflection.system.NMaximize());
-			NMinimize.setEvaluator(new org.matheclipse.core.reflection.system.NMinimize());
 			NonCommutativeMultiply.setEvaluator(new org.matheclipse.core.reflection.system.NonCommutativeMultiply());
 			NSolve.setEvaluator(new org.matheclipse.core.reflection.system.NSolve());
 			OptimizeExpression.setEvaluator(new org.matheclipse.core.reflection.system.OptimizeExpression());

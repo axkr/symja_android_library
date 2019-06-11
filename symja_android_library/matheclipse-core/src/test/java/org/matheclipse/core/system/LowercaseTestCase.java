@@ -837,6 +837,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Interval({-Pi,Pi})");
 	}
 
+	public void testArgMax() {
+		check("Maximize(-2*x^2 - 3*x + 5, x)", //
+				"{49/8,{x->-3/4}}");
+		check("ArgMax(-2*x^2 - 3*x + 5, x)", //
+				"-3/4");
+	}
+
+	public void testArgMin() {
+		check("Minimize(2*x^2 - 3*x + 5, x)", //
+				"{31/8,{x->3/4}}");
+		check("ArgMin(2*x^2 - 3*x + 5, x)", //
+				"3/4");
+	}
+
 	public void testArray() {
 		check("Array(Cos(#/4)&, 12, 4)", //
 				"{Cos(1),Cos(5/4),Cos(3/2),Cos(7/4),Cos(2),Cos(9/4),Cos(5/2),Cos(11/4),Cos(3),Cos(\n"
@@ -4739,6 +4753,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEqual() {
+		check("Tan(5*ArcTan(29/278) + 7 ArcTan(3/79))==1", //
+				"True");
 		check("-I==1", //
 				"False");
 		check("1/2*(1+Sqrt(5))==GoldenRatio", //
@@ -5291,7 +5307,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{a,b},d}");
 	}
 
-	public void testFactor() { 
+	public void testFactor() {
 		System.out.println();
 		System.out.print('.');
 		check("Factor(x+2*Sqrt(x)+1)", //
@@ -7116,6 +7132,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"GeometricMean({})");
 		check("GeometricMean({2, 6, 5, 15, 10, 1})", //
 				"3^(1/3)*Sqrt(10)");
+		check("GeometricMean({{5, 10}, {2, 1}, {4, 3}, {12, 15}})", //
+				"{2*30^(1/4),2^(1/4)*Sqrt(15)}");
 		checkNumeric("GeometricMean(N({2, 6, 5, 15, 10, 1}))", //
 				"4.56079359657056");
 	}
@@ -7232,6 +7250,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{4-y^2+y^4-4*z+z^2+y^2*z^2,-2*x-y+y^3+x*z+y*z^2,2+x*y-z,-1+x^2+y^2+z^2}");
 		check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x*y - z + 2, z^2 - 3 + x,x - y^2 + 1}, {x, y, z})", //
 				"{1}");
+	}
+
+	public void testHarmonicMean() {
+		check("HarmonicMean({a,b,c,d})", //
+				"4/(1/a+1/b+1/c+1/d)");
+		check("HarmonicMean({{1, 2}, {5, 10}, {5, 2}, {4, 8}})", //
+				"{80/33,160/49}");
 	}
 
 	public void testHarmonicNumber() {
@@ -7646,7 +7671,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("{And(True, Indeterminate), And(False, Indeterminate)}", //
 				"{Indeterminate,False}");
 		check("Indeterminate==Indeterminate", //
-				"False");
+				"Indeterminate==Indeterminate");
 		check("Indeterminate===Indeterminate", //
 				"True");
 		check("{Re(Indeterminate), Im(Indeterminate)}", //

@@ -85,6 +85,7 @@ public class StatisticsFunctions {
 			F.GeometricMean.setEvaluator(new GeometricMean());
 			F.GeometricDistribution.setEvaluator(new GeometricDistribution());
 			F.GumbelDistribution.setEvaluator(new GumbelDistribution());
+			F.HarmonicMean.setEvaluator(new HarmonicMean());
 			F.HypergeometricDistribution.setEvaluator(new HypergeometricDistribution());
 			F.InverseCDF.setEvaluator(new InverseCDF());
 			F.KolmogorovSmirnovTest.setEvaluator(new KolmogorovSmirnovTest());
@@ -997,7 +998,8 @@ public class StatisticsFunctions {
 								.toIntDefault(Integer.MIN_VALUE);
 					}
 					if (index < 0 || index >= res.length) {
-						return engine.printMessage("BinCounts: determined not allowed bin index for " + temp.toString());
+						return engine
+								.printMessage("BinCounts: determined not allowed bin index for " + temp.toString());
 					}
 					res[index - xMin]++;
 				}
@@ -1900,12 +1902,22 @@ public class StatisticsFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			IAST arg1 = Validate.checkASTType(ast, 1);
-			if (arg1.isRealVector()) {
-				return F.num(StatUtils.geometricMean(arg1.toDoubleVector()));
-			}
-			if (arg1.size() > 1) {
-				return F.Power(arg1.setAtCopy(0, F.Times), F.fraction(1, arg1.argSize()));
+			IExpr arg1 = ast.arg1();
+			if (arg1.isList() && arg1.size() > 1) {
+				IAST list = (IAST) arg1;
+
+				int[] dim = list.isMatrix();
+				if (dim == null && arg1.isListOfLists()) {
+					return F.NIL;
+				}
+				if (dim != null) {
+					IAST matrix = list;
+					return matrix.mapMatrixColumns(dim, x -> F.GeometricMean(x));
+				}
+				if (arg1.isRealVector()) {
+					return F.num(StatUtils.geometricMean(arg1.toDoubleVector()));
+				}
+				return F.Power(list.apply(F.Times), F.fraction(1, arg1.argSize()));
 			}
 			return F.NIL;
 		}
@@ -2142,6 +2154,37 @@ public class StatisticsFunctions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	private static class HarmonicMean extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = ast.arg1();
+			if (arg1.isList() && arg1.size() > 1) {
+				IAST list = (IAST) arg1;
+
+				int[] dim = list.isMatrix();
+				if (dim == null && arg1.isListOfLists()) {
+					return F.NIL;
+				}
+				if (dim != null) {
+					IAST matrix = list;
+					return matrix.mapMatrixColumns(dim, x -> F.HarmonicMean(x));
+				}
+
+				IASTMutable result = list.apply(F.Plus);
+				result.map(result, x -> F.Divide(F.C1, x));
+				return F.Times(F.ZZ(list.argSize()), F.Power(result, F.CN1));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 	}

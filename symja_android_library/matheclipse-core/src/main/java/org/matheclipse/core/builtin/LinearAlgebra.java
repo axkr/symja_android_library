@@ -36,6 +36,7 @@ import java.util.List;
 
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.linear.BlockFieldMatrix;
+import org.hipparchus.linear.BlockRealMatrix;
 import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.EigenDecomposition;
 import org.hipparchus.linear.FieldDecompositionSolver;
@@ -1805,17 +1806,6 @@ public final class LinearAlgebra {
 						IASTAppendable jacobiRow = F.ListAlloc(variablesSize);
 						return jacobiRow.appendArgs(variablesSize, j -> F.D(vector.get(i), vars.get(j)));
 					});
-					// IASTAppendable jacobiRow = null;
-					// for (int i = 1; i < vectorSize; i++) {
-					// jacobiRow = F.ListAlloc(variablesSize);
-					// final int ii = i;
-					// jacobiRow.appendArgs(variablesSize, j -> F.D(vector.get(ii), vars.get(j)));
-					// // for (int j = 1; j < variablesSize; j++) {
-					// // jacobiRow.append(F.D(vector.get(i), variables.get(j)));
-					// // }
-					// jacobiMatrix.append(jacobiRow);
-					// }
-					// return jacobiMatrix;
 				}
 			}
 

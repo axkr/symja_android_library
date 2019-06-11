@@ -189,7 +189,8 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public IASTAppendable appendClone(IExpr expr);
 
 	/**
-	 * Apply the given head to this expression (i.e. create a list clone and replace the old head with the given one)
+	 * Apply the given head to this expression (i.e. create a list copy and replace the old head with the given one).
+	 * <code>F.List(a,b,c).apply(F.Max)</code> gives <code>Max(a,b,c)</code> 
 	 * 
 	 * @param head
 	 * @return

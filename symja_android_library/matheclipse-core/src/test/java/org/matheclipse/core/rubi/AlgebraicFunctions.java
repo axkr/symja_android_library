@@ -10227,7 +10227,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
 	// {1588}
 	public void test1327() {
-		fSeconds=40;
+		fSeconds=60;
 		check(//
 				"Integrate[x^7*(b + c*x + d*x^2)^7*(b + 2*c*x + 3*d*x^2), x]", //
 				"(x^8*(b + c*x + d*x^2)^8)/8", //

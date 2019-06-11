@@ -56,6 +56,7 @@ public class Structure {
 
 		private static void init() {
 			F.Apply.setEvaluator(new Apply());
+			F.ByteCount.setEvaluator(new ByteCount());
 			F.Depth.setEvaluator(new Depth());
 			F.Flatten.setEvaluator(new Flatten());
 			F.FlattenAt.setEvaluator(new FlattenAt());
@@ -239,6 +240,17 @@ public class Structure {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
 
+	}
+
+	private static class ByteCount extends AbstractCoreFunctionEvaluator {
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
 	}
 
 	/**
