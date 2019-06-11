@@ -892,7 +892,7 @@ public final class BooleanFunctions {
 		 */
 		protected IExpr.COMPARE_TERNARY prepareCompare(final IExpr arg1, final IExpr arg2, EvalEngine engine) {
 			if (arg1.isIndeterminate() || arg2.isIndeterminate()) {
-				return IExpr.COMPARE_TERNARY.FALSE;
+				return IExpr.COMPARE_TERNARY.UNDEFINED;
 			}
 			if (arg1.isList() && arg2.isList()) {
 				IAST list1 = (IAST) arg1;
@@ -954,14 +954,9 @@ public final class BooleanFunctions {
 				return IExpr.COMPARE_TERNARY.FALSE;
 			}
 
-			if (o0.isNumber() && o1.isNumber()) {
-				return IExpr.COMPARE_TERNARY.FALSE;
-			}
-
 			if ((o0 instanceof StringX) && (o1 instanceof StringX)) {
 				return IExpr.COMPARE_TERNARY.FALSE;
 			}
-
 			IExpr difference = F.eval(F.Subtract(o0, o1));
 			if (difference.isNumber()) {
 				if (difference.isZero()) {
@@ -970,6 +965,10 @@ public final class BooleanFunctions {
 				return IExpr.COMPARE_TERNARY.FALSE;
 			}
 			if (difference.isConstantAttribute()) {
+				return IExpr.COMPARE_TERNARY.FALSE;
+			}
+
+			if (o0.isNumber() && o1.isNumber()) {
 				return IExpr.COMPARE_TERNARY.FALSE;
 			}
 
