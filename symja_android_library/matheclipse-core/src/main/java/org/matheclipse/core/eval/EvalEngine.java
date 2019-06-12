@@ -829,13 +829,13 @@ public class EvalEngine implements Serializable {
 			if (result.isPresent()) {
 				return result;
 			}
-
+			
 			IASTMutable resultList = evalArgs(tempAST, attr);
 			if (resultList.isPresent()) {
 				returnResult = resultList;
 				tempAST = returnResult;
 			}
-
+			
 			if ((ISymbol.LISTABLE & attr) == ISymbol.LISTABLE
 					&& !((tempAST.getEvalFlags() & IAST.IS_LISTABLE_THREADED) == IAST.IS_LISTABLE_THREADED)) {
 				// thread over the lists
@@ -1564,9 +1564,9 @@ public class EvalEngine implements Serializable {
 	 */
 	private IExpr evalTagSetPlusTimes(IAST ast) {
 		if (ast.isPlus()) {
-			return UtilityFunctionCtors.evalRubiDistPlus(ast);
+			return UtilityFunctionCtors.evalRubiDistPlus(ast, this);
 		} else if (ast.isTimes()) {
-			return UtilityFunctionCtors.evalRubiDistTimes(ast);
+			return UtilityFunctionCtors.evalRubiDistTimes(ast, this);
 		}
 		return F.NIL;
 	}

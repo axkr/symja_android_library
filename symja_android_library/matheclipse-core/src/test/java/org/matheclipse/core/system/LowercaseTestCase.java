@@ -14403,6 +14403,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testReplaceList() {
+		check("ReplaceList({b*x, a*b*x*z, x}, {a_*x_,a_.*x_^y_.*z_, x_ } -> {a,x,y,z})", //
+				"{{b,x,1,a*z}}");
 		check("ReplaceList({a, b, b, b, c, c, a}, {___, x_, x_, ___} -> x)", //
 				"{b,b,c}");
 
