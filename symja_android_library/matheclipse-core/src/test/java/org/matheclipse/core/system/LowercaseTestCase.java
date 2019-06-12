@@ -1632,6 +1632,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"11");
 	}
 
+	public void testByteArray() {
+		check("ba=ByteArray(\"AQIDBAUGBwg=\")", //
+				"ByteArray[8 Bytes]"); 
+		check("Normal(ba)", //
+				"{1,2,3,4,5,6,7,8}"); 
+	}
+	
 	public void testCancel() {
 
 		// see rubi rule 27:
