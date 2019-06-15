@@ -3344,7 +3344,7 @@ public class F {
 
 	public final static ISymbol ASymbol = initFinalHiddenSymbol("A");
 	public final static ISymbol BSymbol = initFinalHiddenSymbol("B");
-	public final static ISymbol CSymbol = initFinalHiddenSymbol("C");
+	public final static ISymbol CSymbol = F.C; //initFinalHiddenSymbol("C");
 	public final static ISymbol FSymbol = initFinalHiddenSymbol("F");
 	public final static ISymbol GSymbol = initFinalHiddenSymbol("G");
 	public final static ISymbol PSymbol = initFinalHiddenSymbol("P");
