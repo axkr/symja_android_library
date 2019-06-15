@@ -260,6 +260,7 @@ public class TeXConverterTestCase extends TestCase {
 
 	public void checkEval(String strEval, String strResult) {
 		IExpr expr = texConverter.toExpression(strEval);
+		EvalEngine.get().reset();
 		expr = EvalEngine.get().evaluate(expr);
 		assertEquals(expr.toString(), strResult);
 	}

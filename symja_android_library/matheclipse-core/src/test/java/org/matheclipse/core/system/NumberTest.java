@@ -50,9 +50,9 @@ public class NumberTest extends TestCase {
 	public void testNumberFormat() {
 		StringBuilder buf = new StringBuilder();
 		try {
-			DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
-			DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
-			OutputFormFactory factory = OutputFormFactory.get(true, false, decimalFormat);
+			// DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
+			// DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
+			OutputFormFactory factory = OutputFormFactory.get(true, false, 5,7);
 
 			IExpr expr = F.num("12345.123456789");
 			factory.convert(buf, expr);

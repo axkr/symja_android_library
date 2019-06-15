@@ -77,6 +77,10 @@ public class Example {
 			// print: 3628800
 			System.out.println("Out[9]: " + result.toString());
 
+			function = F.Function(F.Divide(F.Gamma(F.Plus(F.C1, F.Slot1)), F.Gamma(F.Plus(F.C1, F.Slot2))));
+			// eval function ( Gamma(1+#1)/Gamma(1+#2) ) & [23,20]
+			result = util.evalFunction(function, "23", "20");
+			System.out.println("Out[10]: " + result.toString());
 		} catch (SyntaxError e) {
 			// catch Symja parser errors here
 			System.out.println(e.getMessage());

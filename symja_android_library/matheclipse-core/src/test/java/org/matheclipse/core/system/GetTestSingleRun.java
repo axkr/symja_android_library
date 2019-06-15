@@ -173,9 +173,9 @@ public class GetTestSingleRun extends TestCase {
 		ExprEvaluator fEvaluator = new ExprEvaluator(engine, false, 100);
 		fEvaluator.getEvalEngine().setFileSystemEnabled(true);
 
-		DecimalFormatSymbols usSymbols = new DecimalFormatSymbols(Locale.US);
-		DecimalFormat decimalFormat = new DecimalFormat("0.0####", usSymbols);
-		OutputFormFactory fOutputFactory = OutputFormFactory.get(false, false, decimalFormat);
+		// DecimalFormatSymbols usSymbols = new DecimalFormatSymbols(Locale.US);
+		// DecimalFormat decimalFormat = new DecimalFormat("0.0####", usSymbols);
+		OutputFormFactory fOutputFactory = OutputFormFactory.get(false, false, 5,7);
 
 		final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
 		final List<ASTNode> node = parser.parsePackage(VECTOR_ANALYSIS);

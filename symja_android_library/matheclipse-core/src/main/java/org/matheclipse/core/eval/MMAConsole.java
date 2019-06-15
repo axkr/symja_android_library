@@ -360,11 +360,9 @@ public class MMAConsole {
 		EvalEngine engine = new EvalEngine(false);
 		fEvaluator = new ExprEvaluator(engine, false, 100);
 		fEvaluator.getEvalEngine().setFileSystemEnabled(true);
-		DecimalFormatSymbols usSymbols = new DecimalFormatSymbols(Locale.US);
-		DecimalFormat decimalFormat = new DecimalFormat("0.0####", usSymbols);
-		fOutputFactory = OutputFormFactory.get(false, false, decimalFormat);
-		fOutputTraditionalFactory = OutputFormFactory.get(true, false, decimalFormat);
-		fInputFactory = OutputFormFactory.get(false, false, decimalFormat);
+		fOutputFactory = OutputFormFactory.get(false, false, 5, 7);
+		fOutputTraditionalFactory = OutputFormFactory.get(true, false, 5, 7);
+		fInputFactory = OutputFormFactory.get(false, false, 5, 7);
 		fInputFactory.setQuotes(true);
 	}
 

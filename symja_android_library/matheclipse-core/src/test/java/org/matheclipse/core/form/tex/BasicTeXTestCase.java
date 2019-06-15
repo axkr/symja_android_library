@@ -208,7 +208,7 @@ public class BasicTeXTestCase extends TestCase {
 		check("EulerGamma", "\\gamma");
 		check("Pi", "\\pi");
 		check("E", "e");
-		
+
 		// check("Catalan", "");
 		// check("Degree", "");
 		//
@@ -228,7 +228,8 @@ public class BasicTeXTestCase extends TestCase {
 
 	public void testTeX023() {
 		// issue #117
-		check("5*3^(5*x)*Log(3)", "5\\cdot 3^{5\\,x}\\,\\log (3)");
+		check("5*3^(5*x)*Log(3)", //
+				"5\\cdot 3^{5\\,x}\\,\\log (3)");
 	}
 
 	public void testTeX024() {
@@ -237,6 +238,13 @@ public class BasicTeXTestCase extends TestCase {
 		check("\"hello\nthis is & and < to > \\\" world\"", //
 				"\\textnormal{hello\n" + //
 						"this is \\& and $<$ to $>$ \" world}");
+	}
+
+	public void testTeX025() {
+		StringWriter stw = new StringWriter();
+		TeXUtilities localTexUtil = new TeXUtilities(EvalEngine.get(), true, 5, 7);
+		localTexUtil.toTeX("1.3 - 1.0", stw);
+		assertEquals(stw.toString(), "0.3");
 	}
 
 	public void check(String strEval, String strResult) {

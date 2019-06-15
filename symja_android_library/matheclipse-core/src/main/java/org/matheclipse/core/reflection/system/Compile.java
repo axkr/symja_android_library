@@ -56,7 +56,7 @@ public class Compile extends AbstractCoreFunctionEvaluator {
 					variablesBuf.append("double " + variables.get(i) + " = engine.evalDouble(ast.get(" + i + "));\n");
 				}
 				IExpr expression = ast.arg2();
-				DoubleFormFactory factory = DoubleFormFactory.get(true, false, null);
+				DoubleFormFactory factory = DoubleFormFactory.get(true, false);
 				StringBuilder buf = new StringBuilder();
 				factory.convert(buf, expression);
 				String source = JAVA_SOURCE_CODE.replace("{$variables}", variablesBuf.toString());

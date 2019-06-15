@@ -91,7 +91,7 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
 
 	private SymjaMMAAutocomplete gac;
 
-//	private BeakerXUrlClassLoader beakerxUrlClassLoader;
+	// private BeakerXUrlClassLoader beakerxUrlClassLoader;
 
 	public SymjaMMAEvaluator(String id, String sId, CellExecutor cellExecutor, TempFolderFactory tempFolderFactory,
 			EvaluatorParameters evaluatorParameters, BeakerXClient beakerxClient,
@@ -102,11 +102,11 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
 		EvalEngine engine = new EvalEngine(false);
 		fEvaluator = new ExprEvaluator(engine, false, 100);
 		fEvaluator.getEvalEngine().setFileSystemEnabled(true);
-		DecimalFormatSymbols usSymbols = new DecimalFormatSymbols(Locale.US);
-		DecimalFormat decimalFormat = new DecimalFormat("0.0####", usSymbols);
-		fOutputFactory = OutputFormFactory.get(false, false, decimalFormat);
-		fOutputTraditionalFactory = OutputFormFactory.get(true, false, decimalFormat);
-		fInputFactory = OutputFormFactory.get(false, false, decimalFormat);
+		// DecimalFormatSymbols usSymbols = new DecimalFormatSymbols(Locale.US);
+		// DecimalFormat decimalFormat = new DecimalFormat("0.0####", usSymbols);
+		fOutputFactory = OutputFormFactory.get(false, false, 5, 7);
+		fOutputTraditionalFactory = OutputFormFactory.get(true, false, 5, 7);
+		fInputFactory = OutputFormFactory.get(false, false, 5, 7);
 		fInputFactory.setQuotes(true);
 		fUsedForm = TEXFORM;
 	}
@@ -125,7 +125,7 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
 
 	@Override
 	protected void addJarToClassLoader(PathToJar pathToJar) {
-//		this.beakerxUrlClassLoader.addJar(pathToJar);
+		// this.beakerxUrlClassLoader.addJar(pathToJar);
 	}
 
 	@Override
@@ -178,6 +178,7 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
 
 	/**
 	 * Set the mode for the output format possible values <code>input, output, tex, java, traditional</code>
+	 * 
 	 * @param symjaMMACodeRunner
 	 * @param trimmedInput
 	 * @return

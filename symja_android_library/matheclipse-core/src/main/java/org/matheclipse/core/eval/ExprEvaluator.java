@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -431,7 +431,7 @@ public class ExprEvaluator {
 				fExpr = engine.parse(inputExpression);
 				if (fExpr != null) {
 					final ExecutorService executor = Executors.newSingleThreadExecutor();
-					EvalControlledCallable  work = call == null ? new EvalControlledCallable(engine) : call;
+					EvalControlledCallable work = call == null ? new EvalControlledCallable(engine) : call;
 					work.setExpr(fExpr);
 					try {
 						F.await();
@@ -514,6 +514,45 @@ public class ExprEvaluator {
 			}
 		}
 		return Double.NaN;
+	}
+
+	/**
+	 * <p>
+	 * Evaluate a function with header <code>head</code> and arguments <code>args</code> by parsing the string
+	 * <code>args</code> to <code>IExpr</code> and applying the head on these arguments. I.e.
+	 * <code> head [ args[0], args[1], ...] </code>
+	 * </p>
+	 * 
+	 * <pre>
+	 * IAST head = F.Function(F.Divide(F.Gamma(F.Plus(F.C1, F.Slot1)), F.Gamma(F.Plus(F.C1, F.Slot2))));
+	 * // eval function ( Gamma(1+#1)/Gamma(1+#2) ) & [23,20]
+	 * IExpr result = util.evalFunction(head, "23", "20");
+	 * System.out.println("Out[1]: " + result.toString());
+	 * </pre>
+	 * 
+	 * @param head
+	 *            the head of the function.
+	 * @param args
+	 *            the arguments given as parsable strings
+	 * @return <code>F.NIL</code> if the evaluation wasn't possible
+	 */
+	public IExpr evalFunction(IExpr head, String... args) {
+
+		try {
+			if (args != null) {
+				IExpr[] exprArgs = new IExpr[args.length];
+
+				for (int i = 0; i < args.length; i++) {
+					exprArgs[i] = eval(args[i]);
+				}
+				IAST function = F.ast(exprArgs, head);
+
+				return eval(function);
+			}
+		} catch (RuntimeException rex) {
+
+		}
+		return F.NIL;
 	}
 
 	/**

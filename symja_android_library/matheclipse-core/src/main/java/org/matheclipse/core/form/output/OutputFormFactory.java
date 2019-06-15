@@ -67,12 +67,15 @@ public class OutputFormFactory {
 	private boolean fQuotes = false;
 	private boolean fEmpty = true;
 	private int fColumnCounter;
-	private NumberFormat fNumberFormat = null;
+	private int fExponentFigures;
+	private int fSignificantFigures;
 
-	private OutputFormFactory(final boolean relaxedSyntax, final boolean reversed, NumberFormat numberFormat) {
+	private OutputFormFactory(final boolean relaxedSyntax, final boolean reversed, int exponentFigures,
+			int significantFigures) {
 		fRelaxedSyntax = relaxedSyntax;
 		fPlusReversed = reversed;
-		fNumberFormat = numberFormat;
+		fExponentFigures = exponentFigures;
+		fSignificantFigures = significantFigures;
 	}
 
 	public void reset() {
@@ -105,7 +108,7 @@ public class OutputFormFactory {
 	 * @return
 	 */
 	public static OutputFormFactory get(final boolean relaxedSyntax, final boolean plusReversed) {
-		return get(relaxedSyntax, plusReversed, null);
+		return get(relaxedSyntax, plusReversed, -1, -1);
 	}
 
 	/**
@@ -118,13 +121,13 @@ public class OutputFormFactory {
 	 * @param plusReversed
 	 *            if <code>true</code> the arguments of the <code>Plus()</code> function will be printed in reversed
 	 *            order
-	 * @param numberFormat
-	 *            define the decimal format output for double values
+	 * @param exponentFigures
+	 * @param significantFigures
 	 * @return
 	 */
-	public static OutputFormFactory get(final boolean relaxedSyntax, final boolean plusReversed,
-			NumberFormat numberFormat) {
-		return new OutputFormFactory(relaxedSyntax, plusReversed, numberFormat);
+	public static OutputFormFactory get(final boolean relaxedSyntax, final boolean plusReversed, int exponentFigures,
+			int significantFigures) {
+		return new OutputFormFactory(relaxedSyntax, plusReversed, exponentFigures, significantFigures);
 	}
 
 	/**
@@ -174,9 +177,9 @@ public class OutputFormFactory {
 	}
 
 	private String convertDoubleToFormattedString(double dValue) {
-		if (fNumberFormat != null) {
+		if (fSignificantFigures > 0) {
 			StringBuilder buf = new StringBuilder();
-			DoubleToMMA.doubleToMMA(buf, dValue, 5, 7);
+			DoubleToMMA.doubleToMMA(buf, dValue, fExponentFigures, fSignificantFigures);
 			return buf.toString();
 		}
 		return Double.toString(dValue);
@@ -1242,7 +1245,7 @@ public class OutputFormFactory {
 		boolean parentheses = false;
 		if (arg1.isAST()) {
 			final Operator operator = getOperator(arg1.topHead());
-			if (operator != null ) {
+			if (operator != null) {
 				parentheses = true;
 			}
 		} else if (!arg1.isSymbol()) {

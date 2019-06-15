@@ -68,7 +68,9 @@ public class DoubleFormFactory {
 	private boolean fQuotes = false;
 	private boolean fEmpty = true;
 	private int fColumnCounter;
-	private NumberFormat fNumberFormat = null;
+	private int fExponentFigures;
+	private int fSignificantFigures;
+
 	private final static Map<ISymbol, String> FUNCTIONS_STR = new HashMap<ISymbol, String>();
 
 	static {
@@ -94,10 +96,12 @@ public class DoubleFormFactory {
 
 	}
 
-	private DoubleFormFactory(final boolean relaxedSyntax, final boolean reversed, NumberFormat numberFormat) {
+	private DoubleFormFactory(final boolean relaxedSyntax, final boolean reversed, int exponentFigures,
+			int significantFigures) {
 		fRelaxedSyntax = relaxedSyntax;
 		fPlusReversed = reversed;
-		fNumberFormat = numberFormat;
+		fExponentFigures = exponentFigures;
+		fSignificantFigures = significantFigures;
 	}
 
 	public void reset() {
@@ -130,7 +134,7 @@ public class DoubleFormFactory {
 	 * @return
 	 */
 	public static DoubleFormFactory get(final boolean relaxedSyntax, final boolean plusReversed) {
-		return get(relaxedSyntax, plusReversed, null);
+		return get(relaxedSyntax, plusReversed, -1, -1);
 	}
 
 	/**
@@ -143,13 +147,13 @@ public class DoubleFormFactory {
 	 * @param plusReversed
 	 *            if <code>true</code> the arguments of the <code>Plus()</code> function will be printed in reversed
 	 *            order
-	 * @param numberFormat
-	 *            define the decimal format output for double values
+	 * @param exponentFigures
+	 * @param significantFigures
 	 * @return
 	 */
-	public static DoubleFormFactory get(final boolean relaxedSyntax, final boolean plusReversed,
-			NumberFormat numberFormat) {
-		return new DoubleFormFactory(relaxedSyntax, plusReversed, numberFormat);
+	public static DoubleFormFactory get(final boolean relaxedSyntax, final boolean plusReversed, int exponentFigures,
+			int significantFigures) {
+		return new DoubleFormFactory(relaxedSyntax, plusReversed, exponentFigures, significantFigures);
 	}
 
 	/**
@@ -199,13 +203,12 @@ public class DoubleFormFactory {
 	}
 
 	private String convertDoubleToFormattedString(double dValue) {
-		if (fNumberFormat != null) {
+		if (fSignificantFigures > 0) {
 			StringBuilder buf = new StringBuilder();
-			DoubleToMMA.doubleToMMA(buf, dValue, 5, 7);
+			DoubleToMMA.doubleToMMA(buf, dValue, fExponentFigures, fSignificantFigures);
 			return buf.toString();
 		}
 		return Double.toString(dValue);
-		// return fNumberFormat == null ? Double.toString(dValue) : fNumberFormat.format(dValue);
 	}
 
 	private void convertDoubleString(final Appendable buf, final String d, final int precedence,

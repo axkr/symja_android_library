@@ -227,9 +227,9 @@ public class ExprEvaluatorTest extends TestCase {
 			assertEquals("1.7999999999999998", buf.toString());
 
 			buf = new StringWriter();
-			DecimalFormatSymbols usSymbols = new DecimalFormatSymbols(Locale.US);
-			DecimalFormat decimalFormat = new DecimalFormat("0.0####", usSymbols);
-			OutputFormFactory.get(true, false, decimalFormat).convert(buf, expr);
+			// DecimalFormatSymbols usSymbols = new DecimalFormatSymbols(Locale.US);
+			// DecimalFormat decimalFormat = new DecimalFormat("0.0####", usSymbols);
+			OutputFormFactory.get(true, false, 5,7).convert(buf, expr);
 			assertEquals("1.8", buf.toString());
 
 			expr = util.eval("10.0^-15");

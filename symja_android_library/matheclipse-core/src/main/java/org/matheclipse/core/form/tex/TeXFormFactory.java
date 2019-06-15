@@ -10,6 +10,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -1037,21 +1038,25 @@ public class TeXFormFactory {
 
 	private int plusPrec;
 
-	protected NumberFormat fNumberFormat = null;
-
+	// protected NumberFormat fNumberFormat = null;
+	private int fExponentFigures;
+	private int fSignificantFigures;
+	
 	/**
 	 * Constructor
 	 */
 	public TeXFormFactory() {
-		this("", null);
+		this(-1,-1);
 	}
 
-	public TeXFormFactory(final String tagPrefix) {
-		this(tagPrefix, null);
-	}
-
-	public TeXFormFactory(final String tagPrefix, NumberFormat numberFormat) {
-		fNumberFormat = numberFormat;
+	/**
+	 * 
+	 * @param exponentFigures
+	 * @param significantFigures
+	 */
+	public TeXFormFactory(int exponentFigures, int significantFigures) { 
+		fExponentFigures = exponentFigures;
+		fSignificantFigures = significantFigures;
 		init();
 	}
 
@@ -1254,7 +1259,12 @@ public class TeXFormFactory {
 	}
 
 	protected String convertDoubleToFormattedString(double dValue) {
-		return fNumberFormat == null ? Double.toString(dValue) : fNumberFormat.format(dValue);
+		if (fSignificantFigures > 0) {
+			StringBuilder buf = new StringBuilder();
+			DoubleToMMA.doubleToMMA(buf, dValue, fExponentFigures, fSignificantFigures);
+			return buf.toString();
+		}
+		return Double.toString(dValue);
 	}
 
 	public void convertFraction(final StringBuilder buf, final IFraction f, final int precedence) {
@@ -1396,8 +1406,8 @@ public class TeXFormFactory {
 		}
 		buf.append(convertedSymbol.toString());
 		return;
-	}
-
+	} 
+	
 	public void init() {
 		plusPrec = ASTNodeFactory.RELAXED_STYLE_FACTORY.get("Plus").getPrecedence();
 		// timesPrec =

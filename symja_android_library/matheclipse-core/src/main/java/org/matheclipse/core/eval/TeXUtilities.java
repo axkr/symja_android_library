@@ -22,8 +22,7 @@ public class TeXUtilities {
 	 * 
 	 * @param evalEngine
 	 * @param relaxedSyntax
-	 *            if <code>true</code> use '(...)' instead of '[...]' to
-	 *            parenthesize the arguments of a function.
+	 *            if <code>true</code> use '(...)' instead of '[...]' to parenthesize the arguments of a function.
 	 */
 	public TeXUtilities(final EvalEngine evalEngine, final boolean relaxedSyntax) {
 		fEvalEngine = evalEngine;
@@ -33,9 +32,17 @@ public class TeXUtilities {
 		fParser = new ExprParser(evalEngine, relaxedSyntax);
 	}
 
+	public TeXUtilities(final EvalEngine evalEngine, final boolean relaxedSyntax, int exponentFigures,
+			int significantFigures) {
+		fEvalEngine = evalEngine;
+		// set the thread local instance
+		EvalEngine.set(evalEngine);
+		fTeXFactory = new TeXFormFactory(exponentFigures, significantFigures);
+		fParser = new ExprParser(evalEngine, relaxedSyntax);
+	}
+
 	/**
-	 * Converts the inputExpression string into a TeX expression and writes the
-	 * result to the given <code>Writer</code>
+	 * Converts the inputExpression string into a TeX expression and writes the result to the given <code>Writer</code>
 	 * 
 	 * @param inputExpression
 	 * @param out
@@ -54,8 +61,7 @@ public class TeXUtilities {
 	}
 
 	/**
-	 * Converts the objectExpression into a TeX expression and writes the result
-	 * to the given <code>Writer</code>
+	 * Converts the objectExpression into a TeX expression and writes the result to the given <code>Writer</code>
 	 * 
 	 * @param objectExpression
 	 * @param out

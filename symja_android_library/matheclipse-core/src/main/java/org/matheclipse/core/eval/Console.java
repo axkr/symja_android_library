@@ -305,12 +305,10 @@ public class Console {
 	 */
 	public Console() {
 		fEvaluator = new ExprEvaluator(false, 100);
-		DecimalFormatSymbols usSymbols = new DecimalFormatSymbols(Locale.US);
-		DecimalFormat decimalFormat = new DecimalFormat("0.0####", usSymbols);
-		fOutputFactory = OutputFormFactory.get(true, false, decimalFormat);
+		fOutputFactory = OutputFormFactory.get(true, false, 5, 7);
 		fEvaluator.getEvalEngine().setFileSystemEnabled(true);
-		fOutputTraditionalFactory = OutputFormFactory.get(true, false, decimalFormat);
-		fInputFactory = OutputFormFactory.get(true, false, decimalFormat);
+		fOutputTraditionalFactory = OutputFormFactory.get(true, false, 5, 7);
+		fInputFactory = OutputFormFactory.get(true, false, 5, 7);
 		fInputFactory.setQuotes(true);
 	}
 
@@ -648,7 +646,7 @@ public class Console {
 	public String readString(final PrintWriter out, final String prompt) {
 		printPrompt(out, prompt);
 		return readString();
-	} 
+	}
 
 	/**
 	 * Get the default rules textfile name, which should be loaded at startup. This file replaces the default built-in
