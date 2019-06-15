@@ -62,7 +62,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 		IAST uFunction1Arg = F.NIL;
 		IExpr arg2 = ast.arg2();
 		IExpr xVar = ast.arg3();
-		if (arg2.isAST1()&& arg2.first().equals(xVar)) {
+		if (arg2.isAST1() && arg2.first().equals(xVar)) {
 			uFunction1Arg = (IAST) arg2;
 		} else if (arg2.isSymbol() && ast.arg3().isSymbol()) {
 			uFunction1Arg = F.unaryAST1(arg2, xVar);
@@ -96,7 +96,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 	public int[] expectedArgSize() {
 		return IOFunctions.ARGS_3_3;
 	}
-	
+
 	/**
 	 * Solve unary ODE.
 	 * 
@@ -112,7 +112,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 			IExpr[] boundaryCondition, EvalEngine engine) {
 		IAST listOfVariables = F.List(uFunction1Arg);
 		if (listOfEquations.size() <= 2) {
-			IExpr C_1 = F.unaryAST1(F.CSymbol, F.C1); // constant C(1)
+			IExpr C_1 = F.unaryAST1(F.C, F.C1); // constant C(1)
 			IExpr equation = listOfEquations.arg1();
 			IExpr temp = solveSingleODE(equation, xVar, listOfVariables, C_1, engine);
 			if (!temp.isPresent()) {
@@ -299,7 +299,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 		return new IExpr[] { m, n };
 	}
 
-	private static IExpr odeSeparable(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y, IExpr C_1 ) {
+	private static IExpr odeSeparable(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y, IExpr C_1) {
 		if (n.isOne()) {
 			IExpr fxExpr = F.NIL;
 			IExpr gyExpr = F.NIL;
