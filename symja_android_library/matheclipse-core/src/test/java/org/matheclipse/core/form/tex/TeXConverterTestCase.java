@@ -251,7 +251,7 @@ public class TeXConverterTestCase extends TestCase {
 				"Limit((e^x+(-1)*1)/(2*x),x->0)");
 		checkEval("\\lim_{x\\to 0}{\\frac{e^x-1}{2x}}", //
 				"Log(e)/2");
-	}
+	} 
 	
 	public void check(String strEval, String strResult) {
 		IExpr expr = texConverter.toExpression(strEval);

@@ -1,15 +1,21 @@
 package org.matheclipse.core.form.tex;
 
+import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.HashMap;
 
+import org.apfloat.Apcomplex;
+import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.Iterator;
+import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -33,6 +39,15 @@ import org.matheclipse.parser.client.operator.ASTNodeFactory;
  * 
  */
 public class TeXFormFactory {
+	/**
+	 * The conversion wasn't called with an operator preceding the <code>IExpr</code> object.
+	 */
+	public final static boolean NO_PLUS_CALL = false;
+
+	/**
+	 * The conversion was called with a &quot;+&quot; operator preceding the <code>IExpr</code> object.
+	 */
+	public final static boolean PLUS_CALL = true;
 
 	private static abstract class AbstractConverter {
 		protected TeXFormFactory fFactory;
@@ -814,7 +829,7 @@ public class TeXFormFactory {
 
 		public final static int PLUS_CALL = 1;
 
-		public static Times CONST = new Times();
+		// public static Times CONST = new Times();
 
 		public Times() {
 			super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence(), "\\,");
@@ -1041,12 +1056,12 @@ public class TeXFormFactory {
 	// protected NumberFormat fNumberFormat = null;
 	private int fExponentFigures;
 	private int fSignificantFigures;
-	
+
 	/**
 	 * Constructor
 	 */
 	public TeXFormFactory() {
-		this(-1,-1);
+		this(-1, -1);
 	}
 
 	/**
@@ -1054,10 +1069,63 @@ public class TeXFormFactory {
 	 * @param exponentFigures
 	 * @param significantFigures
 	 */
-	public TeXFormFactory(int exponentFigures, int significantFigures) { 
+	public TeXFormFactory(int exponentFigures, int significantFigures) {
 		fExponentFigures = exponentFigures;
 		fSignificantFigures = significantFigures;
 		init();
+	}
+
+	public void convertApcomplex(final StringBuilder buf, final Apcomplex dc, final int precedence, boolean caller) {
+		if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
+			if (caller == PLUS_CALL) {
+				buf.append(" + ");
+				caller = false;
+			}
+			buf.append("\\left( ");
+		}
+		Apfloat realPart = dc.real();
+		Apfloat imaginaryPart = dc.imag();
+		boolean realZero = realPart.equals(Apcomplex.ZERO);
+		boolean imaginaryZero = imaginaryPart.equals(Apcomplex.ZERO);
+		if (realZero && imaginaryZero) {
+			convertDoubleString(buf, "0.0", ASTNodeFactory.PLUS_PRECEDENCE, false);
+		} else {
+			if (!realZero) {
+				buf.append(convertApfloat(realPart));
+				if (!imaginaryZero) {
+					buf.append(" + ");
+					final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
+					convertDoubleString(buf, convertApfloat(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE,
+							isNegative);
+					buf.append("\\,"); // InvisibleTimes
+					buf.append("i ");
+				}
+			} else {
+				if (caller == PLUS_CALL) {
+					buf.append("+");
+					caller = false;
+				}
+
+				final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
+				convertDoubleString(buf, convertApfloat(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
+				buf.append("\\,"); // InvisibleTimes
+				buf.append("i ");
+			}
+		}
+		if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
+			buf.append("\\right) ");
+		}
+	}
+
+	public static String convertApfloat(Apfloat num) {
+		String str = num.toString();
+		int index = str.indexOf('e');
+		if (index > 0) {
+			String exponentStr = str.substring(index + 1);
+			String result = str.substring(0, index);
+			return result + "*10^" + exponentStr;
+		}
+		return str;
 	}
 
 	public void convert(final StringBuilder buf, final Object o, final int precedence) {
@@ -1104,6 +1172,10 @@ public class TeXFormFactory {
 			return;
 		}
 		if (o instanceof IComplexNum) {
+			if (o instanceof ApcomplexNum) {
+				convertApcomplex(buf, ((ApcomplexNum) o).apcomplexValue(), precedence, NO_PLUS_CALL);
+				return;
+			}
 			convertDoubleComplex(buf, (IComplexNum) o, precedence);
 			return;
 		}
@@ -1194,9 +1266,10 @@ public class TeXFormFactory {
 		if (isNegative && (precedence > plusPrec)) {
 			buf.append("\\left( ");
 		}
-		buf.append(convertDoubleToFormattedString(d.getRealPart()));
-		if (isNegative && (precedence > plusPrec)) {
-			buf.append("\\right) ");
+		if (d instanceof Num) {
+			convertDoubleString(buf, convertDoubleToFormattedString(d.getRealPart()), precedence, isNegative);
+		} else {
+			convertDoubleString(buf, convertApfloat(((ApfloatNum) d).apfloatValue()), precedence, isNegative);
 		}
 	}
 
@@ -1254,6 +1327,17 @@ public class TeXFormFactory {
 		buf.append("\\,"); // InvisibleTimes
 		buf.append("i ");
 		if (precedence > plusPrec) {
+			buf.append("\\right) ");
+		}
+	}
+
+	private void convertDoubleString(final StringBuilder buf, final String d, final int precedence,
+			final boolean isNegative) {
+		if (isNegative && (ASTNodeFactory.PLUS_PRECEDENCE < precedence)) {
+			buf.append("\\left( ");
+		}
+		buf.append(d);
+		if (isNegative && (ASTNodeFactory.PLUS_PRECEDENCE < precedence)) {
 			buf.append("\\right) ");
 		}
 	}
@@ -1406,8 +1490,8 @@ public class TeXFormFactory {
 		}
 		buf.append(convertedSymbol.toString());
 		return;
-	} 
-	
+	}
+
 	public void init() {
 		plusPrec = ASTNodeFactory.RELAXED_STYLE_FACTORY.get("Plus").getPrecedence();
 		// timesPrec =
