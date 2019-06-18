@@ -9293,6 +9293,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLog() {
+		// github #134
+		check("Log(10,1)", //
+				"0");
+		
 		check("Log(E^(7+13*I))", //
 				"7+I*13-I*4*Pi");
 		check("Log(E^(27*I))", //
@@ -15998,6 +16002,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		check("Solve(30*x/0.0002==30,{x})", //
+				"{{x->0.0002}}");
+		check("Solve(30*x/0.000000002==30,x)", //
+				"{{x->2.00000*10^-9}}");
+		
 		// check("Factor(E^(3*x)-4*E^x+3*E^(-x))", //
 		// "((-1+E^x)*(1+E^x)*(-3+E^(2*x)))/E^x");
 		check("Solve((-3+E^(2*x))==0,x)", //

@@ -25,7 +25,6 @@
  Log(a_,-1):=I*Pi*Log(a)^(-1),
  Log(E,z_):=Log(z),
  Log(1,z_)=ComplexInfinity,
- Log(-1,z_):=(-I/Pi)*Log(z),
- Log(a_,1)=Indeterminate
+ Log(-1,z_):=(-I/Pi)*Log(z) 
  
 }
