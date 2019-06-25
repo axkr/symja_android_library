@@ -1333,7 +1333,7 @@ public final class BooleanFunctions {
 				return compareGreaterIntervalTernary(a0.lower(), a0.upper(), a1.lower(), a1.upper());
 			}
 
-			if (a0.equals(a1) && !a0.isList()) {
+			if (a0.equals(a1) && a0.isRealResult() && a1.isRealResult() && !a0.isList()) {
 				return IExpr.COMPARE_TERNARY.FALSE;
 			}
 
@@ -1487,8 +1487,14 @@ public final class BooleanFunctions {
 		 */
 		final protected IExpr simplifyCompare(IExpr a1, IExpr a2, IBuiltInSymbol originalHead,
 				IBuiltInSymbol oppositeHead, boolean setTrue) {
-			IExpr lhs;
-			IExpr rhs;
+			if (a1.isInfinity() && a2.isInfinity()) {
+				return F.False;
+			}
+			if (a1.isNegativeInfinity() && a2.isNegativeInfinity()) {
+				return F.False;
+			}
+			IExpr lhs = F.NIL;
+			IExpr rhs = F.NIL;
 			boolean useOppositeHeader = false;
 			if (a2.isNumericFunction()) {
 				lhs = a1;
@@ -1497,7 +1503,7 @@ public final class BooleanFunctions {
 				lhs = a2;
 				rhs = a1;
 				useOppositeHeader = true;
-			} else {
+			} else if (a1.isRealResult() && a2.isRealResult()) {
 				lhs = F.eval(F.Subtract(a1, a2));
 				rhs = F.C0;
 				if (lhs.isReal()) {
@@ -1611,13 +1617,19 @@ public final class BooleanFunctions {
 		/** {@inheritDoc} */
 		@Override
 		protected IExpr simplifyCompare(IExpr a1, IExpr a2) {
+			if (a1.isInfinity() && a2.isInfinity()) {
+				return F.True;
+			}
+			if (a1.isNegativeInfinity() && a2.isNegativeInfinity()) {
+				return F.True;
+			}
 			return simplifyCompare(a1, a2, F.GreaterEqual, F.LessEqual, true);
 		}
 
 		/** {@inheritDoc} */
 		@Override
 		public IExpr.COMPARE_TERNARY compareTernary(final IExpr a0, final IExpr a1) {
-			if (a0.equals(a1)) {
+			if (a0.equals(a1) && a0.isRealResult() && a1.isRealResult()) {
 				return IExpr.COMPARE_TERNARY.TRUE;
 			}
 			return super.compareTernary(a0, a1);
@@ -1878,6 +1890,12 @@ public final class BooleanFunctions {
 		/** {@inheritDoc} */
 		@Override
 		protected IExpr simplifyCompare(IExpr a1, IExpr a2) {
+			if (a1.isInfinity() && a2.isInfinity()) {
+				return F.False;
+			}
+			if (a1.isNegativeInfinity() && a2.isNegativeInfinity()) {
+				return F.False;
+			}
 			return simplifyCompare(a1, a2, F.Less, F.Greater, false);
 		}
 
@@ -1952,6 +1970,12 @@ public final class BooleanFunctions {
 		/** {@inheritDoc} */
 		@Override
 		protected IExpr simplifyCompare(IExpr a1, IExpr a2) {
+			if (a1.isInfinity() && a2.isInfinity()) {
+				return F.True;
+			}
+			if (a1.isNegativeInfinity() && a2.isNegativeInfinity()) {
+				return F.True;
+			}
 			return simplifyCompare(a1, a2, F.LessEqual, F.GreaterEqual, false);
 		}
 
@@ -1959,7 +1983,7 @@ public final class BooleanFunctions {
 		@Override
 		public IExpr.COMPARE_TERNARY compareTernary(final IExpr a0, final IExpr a1) {
 			// don't compare strings
-			if (a0.equals(a1)) {
+			if (a0.equals(a1) && a0.isRealResult() && a1.isRealResult()) {
 				return IExpr.COMPARE_TERNARY.TRUE;
 			}
 			// swap arguments
