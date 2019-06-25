@@ -1221,7 +1221,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is the ConditionalExpression function <code>ConditionalExpression[&lt;arg1&gt;, &lt;arg2&gt;]</code>
+	 * Test if this expression is the ConditionalExpression function
+	 * <code>ConditionalExpression[&lt;arg1&gt;, &lt;arg2&gt;]</code>
 	 * 
 	 * @return
 	 */
@@ -1747,6 +1748,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @see #isVector()
 	 */
 	default boolean isListOfLists() {
+		return false;
+	}
+
+	/**
+	 * Test if this expression is a list of DirectedEdge or UndirectedEdge
+	 * 
+	 * @return
+	 */
+	default boolean isListOfEdges() {
 		return false;
 	}
 

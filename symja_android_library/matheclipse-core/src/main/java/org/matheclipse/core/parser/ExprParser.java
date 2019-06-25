@@ -191,7 +191,7 @@ public class ExprParser extends Scanner {
 				return F.Power(arg1Power.base(), arg1Power.exponent().negate());
 			}
 		} else if (ast.isSameHeadSizeGE(F.GreaterEqual, 3)) {
-			return AST2Expr.rewriteLessGreaterAST(ast,  F.Greater);
+			return AST2Expr.rewriteLessGreaterAST(ast, F.Greater);
 		} else if (ast.isSameHeadSizeGE(F.Greater, 3)) {
 			return AST2Expr.rewriteLessGreaterAST(ast, F.GreaterEqual);
 		} else if (ast.isSameHeadSizeGE(F.LessEqual, 3)) {
@@ -821,7 +821,7 @@ public class ExprParser extends Scanner {
 	}
 
 	protected boolean isOperatorCharacters() {
-		return fFactory.getOperatorCharacters().indexOf(fCurrentChar) >= 0;
+		return fFactory.isOperatorChar(fCurrentChar);// getOperatorCharacters().indexOf(fCurrentChar) >= 0;
 	}
 
 	final protected List<Operator> getOperator() {
@@ -836,7 +836,7 @@ public class ExprParser extends Scanner {
 			lastOperatorPosition = fCurrentPosition;
 		}
 		getChar();
-		while (fFactory.getOperatorCharacters().indexOf(fCurrentChar) >= 0) {
+		while (fFactory.isOperatorChar(fCurrentChar)) {
 			lastChar = fCurrentChar;
 			fOperatorString = new String(fInputString, startPosition, fCurrentPosition - startPosition);
 			list = fFactory.getOperatorList(fOperatorString);

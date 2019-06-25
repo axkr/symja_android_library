@@ -97,17 +97,7 @@ public class Object2Expr {
 			return parser.parse((String) obj);
 		}
 		if (obj instanceof java.util.Collection) {
-			final java.util.Collection<?> lst = (java.util.Collection<?>) obj;
-			if (lst.size() == 0) {
-				return List();
-			} else {
-				int size = lst.size();
-				IASTAppendable list = F.ast(F.List, size, false);
-				for (Object element : lst) {
-					list.append(convert(element));
-				}
-				return list;
-			}
+			return convertList((java.util.Collection<?>)obj);
 		}
 		if (obj instanceof org.hipparchus.complex.Complex) {
 			org.hipparchus.complex.Complex cmp = (org.hipparchus.complex.Complex) obj;
@@ -150,6 +140,19 @@ public class Object2Expr {
 			return list;
 		}
 		return F.$str(obj.toString());
+	}
+
+	public static IExpr convertList(java.util.Collection<?> lst) {
+		if (lst.size() == 0) {
+			return List();
+		} else {
+			int size = lst.size();
+			IASTAppendable list = F.ast(F.List, size, false);
+			for (Object element : lst) {
+				list.append(convert(element));
+			}
+			return list;
+		}
 	}
 
 	public static IAST convertComplex(boolean evalComplex, org.hipparchus.complex.Complex[] array)

@@ -15,7 +15,7 @@ import org.matheclipse.core.visit.IVisitorLong;
  * 
  * @see org.matheclipse.core.interfaces.IDataExpr
  */
-public class DataExpr implements IDataExpr {
+public class DataExpr<T> implements IDataExpr<T> {
 
 	/**
 	 * 
@@ -28,14 +28,14 @@ public class DataExpr implements IDataExpr {
 	 * @param value
 	 * @return
 	 */
-	public static DataExpr newInstance(final IBuiltInSymbol head, final Object value) {
+	public static <T> DataExpr<T> newInstance(final IBuiltInSymbol head, final T value) {
 		return new DataExpr(head, value);
 	}
 
 	private IBuiltInSymbol fHead;
-	private Object fData;
+	private T fData;
 
-	private DataExpr(final IBuiltInSymbol head, final Object data) {
+	private DataExpr(final IBuiltInSymbol head, final T data) {
 		fHead = head;
 		fData = data;
 	}
@@ -113,7 +113,7 @@ public class DataExpr implements IDataExpr {
 	}
 
 	@Override
-	public Object toData() {
+	public T toData() {
 		return fData;
 	}
 

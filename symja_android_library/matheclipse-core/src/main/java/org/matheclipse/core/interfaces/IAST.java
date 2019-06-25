@@ -798,6 +798,17 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public IExpr get(int location);
 
 	/**
+	 * Returns the element at the specified location in this {@code IAST}.
+	 * 
+	 * @param location
+	 *            the index of the element to return.
+	 * @return the element at the specified location.
+	 * @throws IndexOutOfBoundsException
+	 *             if {@code location < 0 || >= size()}
+	 */
+	public IExpr get(IInteger location);
+	
+	/**
 	 * Casts an <code>IExpr</code> at position <code>index</code> to an <code>IAST</code>.
 	 * 
 	 * @param index

@@ -590,7 +590,7 @@ public class Parser extends Scanner {
 	}
 
 	protected boolean isOperatorCharacters() {
-		return fFactory.getOperatorCharacters().indexOf(fCurrentChar) >= 0;
+		return fFactory.isOperatorChar(fCurrentChar);
 	}
 
 	/**
@@ -610,7 +610,7 @@ public class Parser extends Scanner {
 			lastOperatorPosition = fCurrentPosition;
 		}
 		getChar();
-		while (fFactory.getOperatorCharacters().indexOf(fCurrentChar) >= 0) {
+		while (fFactory.isOperatorChar(fCurrentChar)) {
 			lastChar = fCurrentChar;
 			fOperatorString = new String(fInputString, startPosition, fCurrentPosition - startPosition);
 			list = fFactory.getOperatorList(fOperatorString);

@@ -26,18 +26,18 @@ import org.matheclipse.parser.client.operator.Operator;
  * 
  */
 public interface IParserFactory {
+	
 	/**
 	 * The default set of characters, which could form an operator
 	 * 
 	 */
 	public final static String BASIC_OPERATOR_CHARACTERS = ".-:=<>*+;!^|&/@?";
-	 
 
 	/**
-	 * The set of characters, which could form an operator
+	 * Check if the ch is in the set of operator characters.
 	 * 
 	 */
-	public String getOperatorCharacters();
+	public boolean isOperatorChar(char ch);
 
 	/**
 	 * Get the identifier to operator map

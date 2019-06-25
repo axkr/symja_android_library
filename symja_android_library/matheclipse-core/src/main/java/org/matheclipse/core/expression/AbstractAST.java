@@ -446,6 +446,12 @@ public abstract class AbstractAST implements IASTMutable {
 
 		/** {@inheritDoc} */
 		@Override
+		public final boolean isListOfEdges() {
+			return false;
+		}
+
+		/** {@inheritDoc} */
+		@Override
 		public final boolean isListOfRules() {
 			return false;
 		}
@@ -1507,6 +1513,11 @@ public abstract class AbstractAST implements IASTMutable {
 	public IExpr get(int location) {
 		throw new UnsupportedOperationException();
 	}
+	
+	@Override
+	public IExpr get(IInteger location) {
+		return get(location.toIntDefault(Integer.MIN_VALUE));
+	}
 
 	/**
 	 * Casts an <code>IExpr</code> at position <code>index</code> to an <code>IAST</code>.
@@ -2557,6 +2568,22 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isListOfEdges() {
+		if (head().equals(F.List)) {
+			for (int i = 1; i < size(); i++) {
+				if (!(get(i).isAST(F.DirectedEdge, 3) || get(i).isAST(F.UndirectedEdge, 3)
+						|| get(i).isAST(F.Rule, 3))) {
+					// the row is no list
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public boolean isListOfRules() {
 		if (head().equals(F.List)) {
 			for (int i = 1; i < size(); i++) {
@@ -2950,6 +2977,9 @@ public abstract class AbstractAST implements IASTMutable {
 			}
 			return true;
 		}
+//		if (isInfinity()||isNegativeInfinity()) {
+//			return true;
+//		}
 		return false;
 	}
 

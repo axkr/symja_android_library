@@ -4,10 +4,10 @@ package org.matheclipse.core.interfaces;
  * (I)nterface for a (Object) expressions
  * 
  */
-public interface IDataExpr extends IExpr {
+public interface IDataExpr<T> extends IExpr {
 	/**
 	 * 
 	 * @return the data part of the IDataExpr
 	 */
-	public Object toData();
+	public T toData();
 }

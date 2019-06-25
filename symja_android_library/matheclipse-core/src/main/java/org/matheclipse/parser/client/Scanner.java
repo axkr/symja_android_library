@@ -523,12 +523,6 @@ public abstract class Scanner {
 			getNextChar();
 			fToken = TT_EOF;
 
-			if (isOperatorCharacters()) {
-				fOperList = getOperator();
-				fToken = TT_OPERATOR;
-				return;
-			}
-
 			if ((fCurrentChar != '\t') && (fCurrentChar != '\r') && (fCurrentChar != ' ')) {
 				if (fCurrentChar == '\n') {
 					fRowCounter++;
@@ -621,19 +615,19 @@ public abstract class Scanner {
 					}
 
 					break;
-				case '.':
-					// token = TT_DOT;
-					if (isValidPosition()) {
-						if (Character.isDigit(fCurrentChar)) {
-							// don't increment fCurrentPosition (see
-							// getNumberString())
-							// fCurrentPosition++;
-							fToken = TT_DIGIT; // floating-point number
-							break;
-						}
-					}
-
-					break;
+				// case '.':
+				// // token = TT_DOT;
+				// if (isValidPosition()) {
+				// if (Character.isDigit(fCurrentChar)) {
+				// // don't increment fCurrentPosition (see
+				// // getNumberString())
+				// // fCurrentPosition++;
+				// fToken = TT_DIGIT; // floating-point number
+				// break;
+				// }
+				// }
+				//
+				// break;
 				case '"':
 					fToken = TT_STRING;
 
@@ -655,14 +649,32 @@ public abstract class Scanner {
 							break;
 						}
 					}
-
 					break;
 				default:
-					if (Characters.CharacterNamesMap.containsKey(String.valueOf(fCurrentChar))) {
-						fToken = TT_IDENTIFIER;
+					if (isOperatorCharacters()) {
+						fOperList = getOperator();
+						fToken = TT_OPERATOR;
 						return;
 					}
-					throwSyntaxError("unexpected character: '" + fCurrentChar + "'");
+					if (fCurrentChar == '.') {
+						// token = TT_DOT;
+						if (isValidPosition()) {
+							if (Character.isDigit(fCurrentChar)) {
+								// don't increment fCurrentPosition (see
+								// getNumberString())
+								// fCurrentPosition++;
+								fToken = TT_DIGIT; // floating-point number
+								break;
+							}
+						}
+						break;
+					} else {
+						if (Characters.CharacterNamesMap.containsKey(String.valueOf(fCurrentChar))) {
+							fToken = TT_IDENTIFIER;
+							return;
+						}
+						throwSyntaxError("unexpected character: '" + fCurrentChar + "'");
+					}
 				}
 
 				if (fToken == TT_EOF) {

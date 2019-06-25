@@ -53,9 +53,9 @@ public class Characters {
 			"Dalet", "\u2138", "Dash", "\u2013", "Degree", "\u00B0", "DeleteKey", "\uF7D0", "Del", "\u2207", "Delta",
 			"\u03B4", "DescendingEllipsis", "\u22F1", "DHacek", "\u010F", "Diameter", "\u2300", "Diamond", "\u22C4",
 			"DiamondSuit", "\u2662", "DifferenceDelta", "\u2206", "DifferentialD", "\uF74C", "Digamma", "\u03DD",
-			"DiscreteRatio", "\uF4A4", "DiscreteShift", "\uF4A3", "DiscretionaryHyphen", "\u00AD",
-			"DiscretionaryLineSeparator", "\uF76E", "DiscretionaryParagraphSeparator", "\uF76F", "Divide", "\u00F7",
-			"DotEqual", "\u2250", "DotlessI", "\u0131", "DotlessJ", "\uF700", "DottedSquare", "\uF751",
+			"DirectedEdge", "\uF3D5", "DiscreteRatio", "\uF4A4", "DiscreteShift", "\uF4A3", "DiscretionaryHyphen",
+			"\u00AD", "DiscretionaryLineSeparator", "\uF76E", "DiscretionaryParagraphSeparator", "\uF76F", "Divide",
+			"\u00F7", "DotEqual", "\u2250", "DotlessI", "\u0131", "DotlessJ", "\uF700", "DottedSquare", "\uF751",
 			"DoubleContourIntegral", "\u222F", "DoubleDagger", "\u2021", "DoubledGamma", "\uF74A", "DoubleDownArrow",
 			"\u21D3", "DoubledPi", "\uF749", "DoubleLeftArrow", "\u21D0", "DoubleLeftRightArrow", "\u21D4",
 			"DoubleLeftTee", "\u2AE4", "DoubleLongLeftArrow", "\u27F8", "DoubleLongLeftRightArrow", "\u27FA",
@@ -227,18 +227,18 @@ public class Characters {
 			"\uF7BE", "Tau", "\u03C4", "THacek", "\u0165", "Therefore", "\u2234", "Theta", "\u03B8", "ThickSpace",
 			"\u2005", "ThinSpace", "\u2009", "Thorn", "\u00FE", "Tilde", "\u223C", "TildeEqual", "\u2243",
 			"TildeFullEqual", "\u2245", "TildeTilde", "\u2248", "Times", "\u00D7", "Trademark", "\u2122", "Transpose",
-			"\uF3C7", "UAcute", "\u00FA", "UDoubleAcute", "\u0171", "UDoubleDot", "\u00FC", "UGrave", "\u00F9", "UHat",
-			"\u00FB", "UnderBrace", "\uFE38", "UnderBracket", "\u23B5", "UnderParenthesis", "\uFE36", "Union", "\u22C3",
-			"UnionPlus", "\u228E", "UpArrow", "\u2191", "UpArrowBar", "\u2912", "UpArrowDownArrow", "\u21C5",
-			"UpDownArrow", "\u2195", "UpEquilibrium", "\u296E", "UpperLeftArrow", "\u2196", "UpperRightArrow", "\u2197",
-			"UpPointer", "\u25B4", "Upsilon", "\u03C5", "UpTee", "\u22A5", "UpTeeArrow", "\u21A5", "Uranus", "\u2645",
-			"URing", "\u016F", "Vee", "\u22C1", "Venus", "\u2640", "VerticalBar", "\u2223", "VerticalEllipsis",
-			"\u22EE", "VerticalLine", "\u2502", "VerticalSeparator", "\uF432", "VerticalTilde", "\u2240",
-			"VeryThinSpace", "\u200A", "WarningSign", "\uF725", "WatchIcon", "\u231A", "Wedge", "\u22C0",
-			"WeierstrassP", "\u2118", "WhiteBishop", "\u2657", "WhiteKing", "\u2654", "WhiteKnight", "\u2658",
-			"WhitePawn", "\u2659", "WhiteQueen", "\u2655", "WhiteRook", "\u2656", "Wolf", "\uF720", "Xi", "\u03BE",
-			"Xnor", "\uF4A2", "Xor", "\u22BB", "YAcute", "\u00FD", "YDoubleDot", "\u00FF", "Yen", "\u00A5", "Zeta",
-			"\u03B6", "ZHacek", "\u017E" };
+			"\uF3C7", "TwoWayRule", "\uF120", "UndirectedEdge", "\uF3D4", "UAcute", "\u00FA", "UDoubleAcute", "\u0171", "UDoubleDot", "\u00FC",
+			"UGrave", "\u00F9", "UHat", "\u00FB", "UnderBrace", "\uFE38", "UnderBracket", "\u23B5", "UnderParenthesis",
+			"\uFE36", "Union", "\u22C3", "UnionPlus", "\u228E", "UpArrow", "\u2191", "UpArrowBar", "\u2912",
+			"UpArrowDownArrow", "\u21C5", "UpDownArrow", "\u2195", "UpEquilibrium", "\u296E", "UpperLeftArrow",
+			"\u2196", "UpperRightArrow", "\u2197", "UpPointer", "\u25B4", "Upsilon", "\u03C5", "UpTee", "\u22A5",
+			"UpTeeArrow", "\u21A5", "Uranus", "\u2645", "URing", "\u016F", "Vee", "\u22C1", "Venus", "\u2640",
+			"VerticalBar", "\u2223", "VerticalEllipsis", "\u22EE", "VerticalLine", "\u2502", "VerticalSeparator",
+			"\uF432", "VerticalTilde", "\u2240", "VeryThinSpace", "\u200A", "WarningSign", "\uF725", "WatchIcon",
+			"\u231A", "Wedge", "\u22C0", "WeierstrassP", "\u2118", "WhiteBishop", "\u2657", "WhiteKing", "\u2654",
+			"WhiteKnight", "\u2658", "WhitePawn", "\u2659", "WhiteQueen", "\u2655", "WhiteRook", "\u2656", "Wolf",
+			"\uF720", "Xi", "\u03BE", "Xnor", "\uF4A2", "Xor", "\u22BB", "YAcute", "\u00FD", "YDoubleDot", "\u00FF",
+			"Yen", "\u00A5", "Zeta", "\u03B6", "ZHacek", "\u017E" };
 
 	/**
 	 * 
@@ -266,7 +266,7 @@ public class Characters {
 	static {
 		Characters.initialize();
 	}
-	
+
 	/**
 	 * Return the name for a given unicode character.
 	 * 

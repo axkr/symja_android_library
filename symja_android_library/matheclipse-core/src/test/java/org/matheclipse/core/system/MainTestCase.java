@@ -1305,7 +1305,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("-1/3*x>6", "x<-18");
 		check("1/3+x>6", "x>17/3");
 		check("-1/3+x>6", "x>19/3");
-		check("2*x+1>3*x", "x<1");
+		check("2*x+1>3*x", "1+2*x>3*x");
 
 		check("Sin(Pi/100)>Sin(Pi/101)", "True");
 	}
