@@ -9826,6 +9826,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMathMLForm() {
+		check("MathMLForm( f(#,#3)&  )", //
+				"<?xml version=\"1.0\"?>\n" + 
+				"<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n" + 
+				"<math mode=\"display\">\n" + 
+				"<mrow><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>#1</mi><mo>,</mo><mi>#3</mi></mrow><mo>)</mo></mrow></mrow><mo>&amp;</mo></mrow></math>");
 		check("MathMLForm(D(sin(x)*cos(x),x))", "<?xml version=\"1.0\"?>\n"
 				+ "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
 				+ "<math mode=\"display\">\n"
@@ -17849,6 +17854,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTeXForm() {
+		check("TeXForm( f(#,#3)&  )", //
+				"f(\\text{$\\#$1},\\text{$\\#$3})\\&");
+		check("TeXForm( f(#,#3)*2&  )", //
+				"2\\,f(\\text{$\\#$1},\\text{$\\#$3})\\&");
 		check("TeXForm(N(1.1+Pi*I,30))", //
 				"1.1 + 3.14159265358979323846264338327\\,i ");
 		check("TeXForm(N(Pi,30))", //

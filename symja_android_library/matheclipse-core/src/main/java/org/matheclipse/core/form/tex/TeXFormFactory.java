@@ -1505,6 +1505,7 @@ public class TeXFormFactory {
 		operTab.put("D", new D());
 		operTab.put("DirectedInfinity", new DirectedInfinity());
 		operTab.put("Floor", new UnaryFunction(" \\left \\lfloor ", " \\right \\rfloor "));
+		operTab.put("Function", new UnaryFunction("", "\\&"));
 		operTab.put("HarmonicNumber", new HarmonicNumber());
 		operTab.put("HurwitzZeta", new Zeta());
 		operTab.put("Integrate", new Integrate());
@@ -1516,6 +1517,7 @@ public class TeXFormFactory {
 		operTab.put("Power", new Power());
 		operTab.put("Product", new Product());
 		operTab.put("Rational", new Rational());
+		operTab.put("Slot", new UnaryFunction("\\text{$\\#$", "}"));
 		operTab.put("Sqrt", new UnaryFunction("\\sqrt{", "}"));
 		operTab.put("Subscript", new Subscript());
 		operTab.put("Subsuperscript", new Subsuperscript());
