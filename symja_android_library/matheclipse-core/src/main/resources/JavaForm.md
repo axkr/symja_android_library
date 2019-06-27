@@ -6,6 +6,20 @@ JavaForm(expr)
 
 > returns the Symja Java form of the `expr`. In Java you can use the created Symja expressions.
 
+```
+JavaForm(expr, Float)
+
+or
+
+JavaForm(expr, Float->True)
+```
+
+> returns the `java.lang.Math` form of the `expr`.  
+
+See:  
+* [docs.oracle.com - java.lang.Math](https://docs.oracle.com/javase/8/docs/api/java/lang/Math.html) 
+
+
 ### Examples
 
 JavaForm can add the `F.` prefix for class `org.matheclipse.core.expression.F` if you set `prefix->True`:
@@ -34,4 +48,11 @@ You can use `Hold` to suppress the evaluation:
 >> JavaForm(Hold(D(sin(x)*cos(x),x)), prefix->True)
 "F.D(F.Times(F.Sin(F.x),F.Cos(F.x)),F.x)"
 ```
- 
+
+Generate output for `java.lang.Math` `double` or `float` expressions:
+
+```
+>> JavaForm(E^3-Cos(Pi^2/x), Float) 
+Math.pow(Math.E,3)-Math.cos(Math.pow(Math.PI,2)/x)
+```
+

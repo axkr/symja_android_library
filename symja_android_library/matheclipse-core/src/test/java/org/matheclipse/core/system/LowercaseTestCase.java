@@ -8456,6 +8456,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testJavaForm() {
+		check("JavaForm(E^3-Cos(Pi^2/x), Prefix->True)", //
+				"F.Subtract(F.Exp(F.C3),F.Cos(F.Times(F.Sqr(F.Pi),F.Power(F.x,F.CN1))))");
+		check("JavaForm(E^3-Cos(Pi^2/x), Float->True)", //
+				"Math.pow(Math.E,3)-Math.cos(Math.pow(Math.PI,2)/x)");
+		check("JavaForm(E^3-Cos(Pi^2/x), Float)", //
+				"Math.pow(Math.E,3)-Math.cos(Math.pow(Math.PI,2)/x)");
+		
 		check("JavaForm(Hold(D(sin(x)*cos(x),x)), prefix->True)", //
 				"F.D(F.Times(F.Sin(F.x),F.Cos(F.x)),F.x)");
 		check("JavaForm(Hold(D(sin(x)*cos(x),x)))", //
@@ -8472,6 +8479,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"F.Plus(F.CC(31L,4L,1L,1L),F.a,F.b,F.x,F.Sqr(F.x),F.y)");
 		check("JavaForm(a+b+x^2+I+7+3/4+x+y)", //
 				"Plus(CC(31L,4L,1L,1L),a,b,x,Sqr(x),y)");
+	}
+
+	public void testJSForm() {
+		check("JSForm(E^3-Cos(Pi^2/x) )", //
+				"Math.pow(Math.E,3)-Math.cos(Math.pow(Math.PI,2)/x)");
 	}
 
 	public void testJoin() {
@@ -9827,10 +9839,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testMathMLForm() {
 		check("MathMLForm( f(#,#3)&  )", //
-				"<?xml version=\"1.0\"?>\n" + 
-				"<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n" + 
-				"<math mode=\"display\">\n" + 
-				"<mrow><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>#1</mi><mo>,</mo><mi>#3</mi></mrow><mo>)</mo></mrow></mrow><mo>&amp;</mo></mrow></math>");
+				"<?xml version=\"1.0\"?>\n"
+						+ "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
+						+ "<math mode=\"display\">\n"
+						+ "<mrow><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>#1</mi><mo>,</mo><mi>#3</mi></mrow><mo>)</mo></mrow></mrow><mo>&amp;</mo></mrow></math>");
 		check("MathMLForm(D(sin(x)*cos(x),x))", "<?xml version=\"1.0\"?>\n"
 				+ "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
 				+ "<math mode=\"display\">\n"

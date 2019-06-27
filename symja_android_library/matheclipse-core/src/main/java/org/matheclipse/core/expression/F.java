@@ -966,7 +966,7 @@ public class F {
     /** EulerPhi(n) - compute Euler's totient function.*/
     public final static IBuiltInSymbol EulerPhi = F.initFinalSymbol("EulerPhi", ID.EulerPhi);
 
-    /***/
+    /** EulerianGraphQ(graph) - returns `True` if `graph` is an eulerian graph, and `False` otherwise.*/
     public final static IBuiltInSymbol EulerianGraphQ = F.initFinalSymbol("EulerianGraphQ", ID.EulerianGraphQ);
 
     /***/
@@ -1056,13 +1056,13 @@ public class F {
     /** Fibonacci(n) - returns the Fibonacci number of the integer `n` */
     public final static IBuiltInSymbol Fibonacci = F.initFinalSymbol("Fibonacci", ID.Fibonacci);
 
-    /***/
+    /** FindEulerianCycle(graph) - find an eulerian cycle in the `graph`.*/
     public final static IBuiltInSymbol FindEulerianCycle = F.initFinalSymbol("FindEulerianCycle", ID.FindEulerianCycle);
 
     /** FindFit(list-of-data-points, function, parameters, variable) - solve a least squares problem using the Levenberg-Marquardt algorithm.*/
     public final static IBuiltInSymbol FindFit = F.initFinalSymbol("FindFit", ID.FindFit);
 
-    /***/
+    /** FindHamiltonianCycle(graph) - find an hamiltonian cycle in the `graph`.*/
     public final static IBuiltInSymbol FindHamiltonianCycle = F.initFinalSymbol("FindHamiltonianCycle", ID.FindHamiltonianCycle);
 
     /** FindInstance(equations, vars) - attempts to find one solution which solves the `equations` for the variables `vars`.*/
@@ -1071,10 +1071,10 @@ public class F {
     /** FindRoot(f, {x, xmin, xmax}) - searches for a numerical root of `f` for the variable `x`, in the range `xmin` to `xmax`. */
     public final static IBuiltInSymbol FindRoot = F.initFinalSymbol("FindRoot", ID.FindRoot);
 
-    /***/
+    /** FindShortestPath(graph, source, destination) - find a shortest path in the `graph` from `source` to `destination`.*/
     public final static IBuiltInSymbol FindShortestPath = F.initFinalSymbol("FindShortestPath", ID.FindShortestPath);
 
-    /***/
+    /** FindShortestTour({{p11, p12}, {p21, p22}, {p31, p32}, ...}) - find a shortest tour in the `graph` with minimum `EuclideanDistance`.*/
     public final static IBuiltInSymbol FindShortestTour = F.initFinalSymbol("FindShortestTour", ID.FindShortestTour);
 
     /** First(expr) - returns the first element in `expr`.*/
@@ -1103,6 +1103,9 @@ public class F {
 
     /** FlattenAt(expr, position) - flattens out nested lists at the given `position` in `expr`.*/
     public final static IBuiltInSymbol FlattenAt = F.initFinalSymbol("FlattenAt", ID.FlattenAt);
+
+    /***/
+    public final static IBuiltInSymbol Float = F.initFinalSymbol("Float", ID.Float);
 
     /** Floor(expr) - gives the smallest integer less than or equal `expr`. */
     public final static IBuiltInSymbol Floor = F.initFinalSymbol("Floor", ID.Floor);
@@ -1254,7 +1257,7 @@ public class F {
     /** GumbelDistribution(a, b) - returns a Gumbel distribution.*/
     public final static IBuiltInSymbol GumbelDistribution = F.initFinalSymbol("GumbelDistribution", ID.GumbelDistribution);
 
-    /***/
+    /** HamiltonianGraphQ(graph) - returns `True` if `graph` is an hamiltonian graph, and `False` otherwise.*/
     public final static IBuiltInSymbol HamiltonianGraphQ = F.initFinalSymbol("HamiltonianGraphQ", ID.HamiltonianGraphQ);
 
     /***/
@@ -1472,6 +1475,9 @@ public class F {
 
     /** InverseSeries( series ) - return the inverse series. */
     public final static IBuiltInSymbol InverseSeries = F.initFinalSymbol("InverseSeries", ID.InverseSeries);
+
+    /***/
+    public final static IBuiltInSymbol JSForm = F.initFinalSymbol("JSForm", ID.JSForm);
 
     /** JaccardDissimilarity(u, v) - returns the Jaccard-Needham dissimilarity between the two boolean 1-D lists `u` and `v`, which is defined as `(c_tf + c_ft) / (c_tt + c_ft + c_tf)`, where n is `len(u)` and `c_ij` is the number of occurrences of `u(k)=i` and `v(k)=j` for `k<n`.*/
     public final static IBuiltInSymbol JaccardDissimilarity = F.initFinalSymbol("JaccardDissimilarity", ID.JaccardDissimilarity);

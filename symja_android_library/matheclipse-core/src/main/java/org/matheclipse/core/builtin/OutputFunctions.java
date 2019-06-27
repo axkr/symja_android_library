@@ -13,6 +13,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.form.output.DoubleFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -34,6 +35,7 @@ public final class OutputFunctions {
 			F.HornerForm.setEvaluator(new HornerForm());
 			F.InputForm.setEvaluator(new InputForm());
 			F.JavaForm.setEvaluator(new JavaForm());
+			F.JSForm.setEvaluator(new JSForm());
 			F.MathMLForm.setEvaluator(new MathMLForm());
 			F.TableForm.setEvaluator(new TableForm());
 			F.TeXForm.setEvaluator(new TeXForm());
@@ -301,17 +303,40 @@ public final class OutputFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			IExpr arg1 = engine.evaluate(ast.arg1());
-			boolean strictJava = false;
-			boolean usePrefix = false;
-			if (ast.isAST2()) {
-				IExpr arg2 = engine.evaluate(ast.arg2());
-				final OptionArgs options = new OptionArgs(ast.topHead(), arg2, engine);
-				strictJava = options.isTrue(F.Strict);
-				usePrefix = options.isTrue(F.Prefix);
+			try {
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				boolean floatJava = false;
+				boolean strictJava = false;
+				boolean usePrefix = false;
+				if (ast.isAST2()) {
+					IExpr arg2 = engine.evaluate(ast.arg2());
+					if (arg2 == F.Float) {
+						floatJava = true;
+					} else if (arg2 == F.Strict) {
+						strictJava = true;
+					} else if (arg2 == F.Prefix) {
+						usePrefix = true;
+					} else {
+						final OptionArgs options = new OptionArgs(ast.topHead(), arg2, engine);
+						floatJava = options.isTrue(F.Float);
+						strictJava = options.isTrue(F.Strict);
+						usePrefix = options.isTrue(F.Prefix);
+					}
+				}
+				if (floatJava) {
+					DoubleFormFactory factory = DoubleFormFactory.get(true, false);
+					StringBuilder buf = new StringBuilder();
+					factory.convert(buf, arg1);
+					return F.$str(buf.toString());
+				}
+				String resultStr = javaForm(arg1, strictJava, usePrefix);
+				return F.$str(resultStr);
+			} catch (Exception rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
+				return engine.printMessage("JavaForm: " + rex.getMessage());
 			}
-			String resultStr = javaForm(arg1, strictJava, usePrefix);
-			return F.$str(resultStr);
 		}
 
 		@Override
@@ -321,6 +346,31 @@ public final class OutputFunctions {
 
 		public static String javaForm(IExpr arg1, boolean strictJava, boolean usePrefix) {
 			return arg1.internalJavaString(strictJava, 0, false, usePrefix, false);
+		}
+
+	}
+
+	private static class JSForm extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			try {
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				DoubleFormFactory factory = DoubleFormFactory.get(true, false);
+				StringBuilder buf = new StringBuilder();
+				factory.convert(buf, arg1);
+				return F.$str(buf.toString());
+			} catch (Exception rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
+				return engine.printMessage("JavaForm: " + rex.getMessage());
+			}
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 	}

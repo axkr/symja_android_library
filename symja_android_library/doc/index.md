@@ -173,6 +173,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Expression types](expression-types.md) 
 
 ## Reference of built-in symbols
+
 * [Abort](functions/Abort.md)
 * [Abs](functions/Abs.md)
 * [AbsArg](functions/AbsArg.md)
@@ -481,6 +482,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [JacobiSymbol](functions/JacobiSymbol.md)
 * [JavaForm](functions/JavaForm.md)
 * [Join](functions/Join.md)
+* [JSForm](functions/JSForm.md)
 * [Khinchin](functions/Khinchin.md)
 * [KolmogorovSmirnovTest](functions/KolmogorovSmirnovTest.md)
 * [KroneckerDelta](functions/KroneckerDelta.md)
