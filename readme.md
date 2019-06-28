@@ -205,10 +205,11 @@ If you have any questions about using or developing for this project, send me an
 
 If you would like to use parts of the system here are some of the associated licenses:
 
-* the [JAS Java Algebra System](http://krum.rz.uni-mannheim.de/jas/) is published under the (LESSER) GNU GENERAL PUBLIC LICENSE licence. The Java bytecode is dual licenced also under the Apache 2.0 licence to allow usage in Android projects.  
-* the [apfloat project](https://github.com/mtommila/apfloat) is published under the (LESSER) GNU GENERAL PUBLIC LICENSE licence. 
-* the [LogicNG project](https://github.com/logic-ng/LogicNG) is published under the Apache software licence
-* the [Hipparchus Mathematics Library](https://www.hipparchus.org/) is published under the Apache software licence
+* the [JAS Java Algebra System](http://krum.rz.uni-mannheim.de/jas/) is published under the (LESSER) GNU GENERAL PUBLIC LICENSE license. The Java bytecode is dual licenced also under the Apache 2.0 license to allow usage in Android projects.  
+* the [apfloat project](https://github.com/mtommila/apfloat) is published under the (LESSER) GNU GENERAL PUBLIC LICENSE license. 
+* the [LogicNG project](https://github.com/logic-ng/LogicNG) is published under the Apache software license
+* the [Hipparchus Mathematics Library](https://www.hipparchus.org/) is published under the Apache software license
+* the [JGraphT Library](https://jgrapht.org/)  is published under the Eclipse Public License (EPL) or (LESSER) GNU GENERAL PUBLIC LICENSE license. 
 * the Symja parser libraries (org.matheclipse.parser* packages) are published under the APACHE LICENSE Version 2.0.
 
 [1]: mailto:axelclk@gmail.com
