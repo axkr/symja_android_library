@@ -252,6 +252,10 @@ public class BasicTeXTestCase extends TestCase {
 				"a\\to b");
 		check("UndirectedEdge(a,b)",
 				"a\\leftrightarrow b");
+		check("Graph({1,2,3},{1<->2,2<->3})", //
+				"\\text{Graph}(\\{1,2,3\\},\\{1\\leftrightarrow 2,2\\leftrightarrow 3\\})");
+		check("Graph({1,2,3},{1->2,2->3})", //
+				"\\text{Graph}(\\{1,2,3\\},\\{1\\to 2,2\\to 3\\})");
 	}
 	
 	public void check(String strEval, String strResult) {
