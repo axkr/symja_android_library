@@ -3,6 +3,7 @@
 ```
 Exponent(polynomial, x)
 ```
+
 > gives the maximum power with which `x` appears in the expanded form of `polynomial`.
  
 ### Examples

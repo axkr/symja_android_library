@@ -7730,9 +7730,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 			check("Import(\"c:\\\\temp\\\\dotgraph.dot\")", //
 					"Graph[([1, 2, 3], [(1,2), (2,3), (3,1)])]");
 			
-			check("Export(\"c:\\\\temp\\\\dotgraph.graphml\",Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1}))", //
+			check("Export(\"c:\\\\temp\\\\dotgraph.graphml\",Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1}),\"GraphML\")", //
 					"c:\\temp\\dotgraph.graphml");
-			check("Import(\"c:\\\\temp\\\\dotgraph.graphml\")", //
+			check("Import(\"c:\\\\temp\\\\dotgraph.graphml\", \"GraphML\")", //
 					"Graph[([1, 2, 3], [(1,2), (2,3), (3,1)])]");
 			
 			check("Export(\"c:\\\\temp\\\\out.wxf\", {{5.7, 4.3}, {-1.2, 7.8}, {a, f(x)}}, \"WXF\")", //
