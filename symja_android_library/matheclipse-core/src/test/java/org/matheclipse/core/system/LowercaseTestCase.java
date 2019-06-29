@@ -6208,6 +6208,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{14+5*Sqrt(2),{1,6,9,13,16,17,18,19,14,10,7,11,15,12,8,5,4,3,2,1}}");
 	}
 
+	public void testFindSpanningTree() {
+		check("g=Graph({1,2,3,4,5,6,7,8},\n"
+				+ "{UndirectedEdge(1,2),UndirectedEdge(1,3),UndirectedEdge(1,4),UndirectedEdge(3,4),UndirectedEdge(2,6),\n"
+				+ "UndirectedEdge(3,6),UndirectedEdge(5,3),UndirectedEdge(5,4),UndirectedEdge(5,6),UndirectedEdge(5,7),\n"
+				+ "UndirectedEdge(5,8),UndirectedEdge(6,7),UndirectedEdge(7,8),UndirectedEdge(4,8)});", //
+				"");
+
+		check("FindSpanningTree(g)", //
+				"Graph[([1, 2, 3, 4, 6, 5, 7, 8], [(1,2), (1,3), (1,4), (2,6), (5,3), (5,7), (5,8)])]");
+	}
+
 	public void testFindShortestPath() {
 		check("FindShortestPath({1 -> 2, 2 -> 3, 3 -> 1,  3 -> 4, 4 -> 5, 3 -> 5},1,4)", //
 				"{1,2,3,4}");
@@ -6221,12 +6232,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGraph() {
+
+		check("Graph({1,2,3,4,5,6,7,8},\n"
+				+ "{UndirectedEdge(1,2),UndirectedEdge(1,3),UndirectedEdge(1,4),UndirectedEdge(3,4),UndirectedEdge(2,6),\n"
+				+ "UndirectedEdge(3,6),UndirectedEdge(5,3),UndirectedEdge(5,4),UndirectedEdge(5,6),UndirectedEdge(5,7),\n"
+				+ "UndirectedEdge(5,8),UndirectedEdge(6,7),UndirectedEdge(7,8),UndirectedEdge(4,8)})", //
+				"Graph[([1, 2, 3, 4, 5, 6, 7, 8], [(1,2), (1,3), (1,4), (3,4), (2,6), (3,6), (5,3), (5,4), (5,6), (5,7), (5,8), (6,7), (7,8), (4,8)])]");
+
 		check("Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1})", //
 				"Graph[([1, 2, 3], [(1,2), (2,3), (3,1)])]");
 		check("Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1})", //
 				"Graph[([1, 2, 3], [(1,2), (2,3), (3,1)])]");
 		check("Graph({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1})", //
 				"Graph[([1, 2, 3, 4], [(1,2), (2,3), (3,1), (1,3), (3,4), (4,1)])]");
+
 	}
 
 	public void testFirst() {
@@ -7704,6 +7723,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testImportExport() {
 		if (Config.FILESYSTEM_ENABLED) {
+//			check("Export(\"c:\\\\temp\\\\testgraph.csv\",Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1}))", //
+//					"c:\\temp\\testgraph.csv");
+			check("Export(\"c:\\\\temp\\\\dotgraph.dot\",Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1}))", //
+					"c:\\temp\\dotgraph.dot");
+			check("Import(\"c:\\\\temp\\\\dotgraph.dot\")", //
+					"Graph[([1, 2, 3], [(1,2), (2,3), (3,1)])]");
+			
+			check("Export(\"c:\\\\temp\\\\dotgraph.graphml\",Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1}))", //
+					"c:\\temp\\dotgraph.graphml");
+			check("Import(\"c:\\\\temp\\\\dotgraph.graphml\")", //
+					"Graph[([1, 2, 3], [(1,2), (2,3), (3,1)])]");
+			
 			check("Export(\"c:\\\\temp\\\\out.wxf\", {{5.7, 4.3}, {-1.2, 7.8}, {a, f(x)}}, \"WXF\")", //
 					"c:\\temp\\out.wxf");
 			check("Import(\"c:\\\\temp\\\\out.wxf\", \"WXF\")", //
@@ -8462,7 +8493,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Math.pow(Math.E,3)-Math.cos(Math.pow(Math.PI,2)/x)");
 		check("JavaForm(E^3-Cos(Pi^2/x), Float)", //
 				"Math.pow(Math.E,3)-Math.cos(Math.pow(Math.PI,2)/x)");
-		
+
 		check("JavaForm(Hold(D(sin(x)*cos(x),x)), prefix->True)", //
 				"F.D(F.Times(F.Sin(F.x),F.Cos(F.x)),F.x)");
 		check("JavaForm(Hold(D(sin(x)*cos(x),x)))", //

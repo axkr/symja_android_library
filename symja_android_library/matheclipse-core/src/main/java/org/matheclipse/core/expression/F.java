@@ -1077,6 +1077,8 @@ public class F {
     /** FindShortestTour({{p11, p12}, {p21, p22}, {p31, p32}, ...}) - find a shortest tour in the `graph` with minimum `EuclideanDistance`.*/
     public final static IBuiltInSymbol FindShortestTour = F.initFinalSymbol("FindShortestTour", ID.FindShortestTour);
 
+    public final static IBuiltInSymbol FindSpanningTree = F.initFinalSymbol("FindSpanningTree", ID.FindSpanningTree);
+
     /** First(expr) - returns the first element in `expr`.*/
     public final static IBuiltInSymbol First = F.initFinalSymbol("First", ID.First);
 
@@ -5915,7 +5917,19 @@ public class F {
 	public static IAST FindFit(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
 		return quaternary(FindFit, a0, a1, a2, a3);
 	}
-
+	
+	public static IAST FindShortestPath(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(FindShortestPath, a0, a1, a2);
+	}
+	
+	public static IAST FindShortestTour(final IExpr a0) {
+		return unaryAST1(FindShortestTour, a0);
+	}
+	
+	public static IAST FindSpanningTree(final IExpr a0) {
+		return unaryAST1(FindSpanningTree, a0);
+	}
+	
 	public static IAST Fit(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(Fit, a0, a1, a2);
 	}

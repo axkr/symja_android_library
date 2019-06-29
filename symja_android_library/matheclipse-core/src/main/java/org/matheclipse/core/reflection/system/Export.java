@@ -1,26 +1,37 @@
 package org.matheclipse.core.reflection.system;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.nio.charset.Charset;
 
 import javax.imageio.ImageIO;
 
+import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.io.CSVExporter;
+import org.jgrapht.io.ComponentNameProvider;
+import org.jgrapht.io.DOTExporter;
+import org.jgrapht.io.ExportException;
+import org.jgrapht.io.GraphExporter;
+import org.jgrapht.io.GraphMLExporter;
+import org.jgrapht.io.IntegerComponentNameProvider;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
+import org.matheclipse.core.io.Extension;
 
-import ch.ethz.idsc.tensor.io.Extension;
-import ch.ethz.idsc.tensor.io.Filename;
 import ch.ethz.idsc.tensor.io.ImageFormat;
 
 /**
@@ -38,19 +49,26 @@ public class Export extends AbstractEvaluator {
 			if (!(ast.arg1() instanceof IStringX)) {
 				throw new WrongNumberOfArguments(ast, 1, ast.argSize());
 			}
-			String format = "Data";
+			IStringX arg1 = (IStringX) ast.arg1();
+			Extension format = Extension.exportFilename(arg1.toString());
 			if (ast.size() == 4) {
 				if (!(ast.arg3() instanceof IStringX)) {
 					throw new WrongNumberOfArguments(ast, 3, ast.argSize());
 				}
-				format = ((IStringX) ast.arg3()).toString();
+				// format = ((IStringX) ast.arg3()).toString();
+				format = Extension.exportExtension(((IStringX) ast.arg3()).toString());
 			}
-			IStringX arg1 = (IStringX) ast.arg1();
+
 			IExpr arg2 = ast.arg2();
 			FileWriter writer = null;
 			try {
 				writer = new FileWriter(arg1.toString());
-				if (format.equals("Table")) {
+				if (arg2 instanceof DataExpr && arg2.head() == F.Graph) {
+					graphExport(((DataExpr<Graph>) arg2).toData(), writer, format);
+					return arg1;
+				}
+
+				if (format.equals(Extension.TABLE)) {
 					int[] dims = arg2.isMatrix();
 					if (dims != null) {
 						for (int j = 0; j < dims[0]; j++) {
@@ -75,11 +93,11 @@ public class Export extends AbstractEvaluator {
 
 						}
 					}
-				} else if (format.equals("Data")) {
+				} else if (format.equals(Extension.DAT)) {
 					File file = new File(arg1.toString());
 					com.google.common.io.Files.write(arg2.toString(), file, Charset.defaultCharset());
 					return arg1;
-				} else if (format.equals("WXF")) {
+				} else if (format.equals(Extension.WXF)) {
 					File file = new File(arg1.toString());
 					byte[] bArray = WL.serialize(arg2);
 					com.google.common.io.Files.write(bArray, file);
@@ -88,6 +106,8 @@ public class Export extends AbstractEvaluator {
 
 			} catch (IOException ioe) {
 				return engine.printMessage("Export: file " + arg1.toString() + " not found!");
+			} catch (Exception ex) {
+				return engine.printMessage("Export: file " + arg1.toString() + " - " + ex.getMessage());
 			} finally {
 				if (writer != null) {
 					try {
@@ -99,9 +119,37 @@ public class Export extends AbstractEvaluator {
 		}
 		return F.NIL;
 	}
+
+	private static final ComponentNameProvider<IExpr> nameProvider = v -> String.valueOf(v);
+
+	void graphExport(Graph<IExpr, DefaultEdge> g, Writer writer, Extension format)
+			throws ExportException, UnsupportedEncodingException {
+		switch (format) {
+		case DOT:
+			DOTExporter<IExpr, DefaultEdge> dotExporter = new DOTExporter<>(new IntegerComponentNameProvider<>(), null,
+					null, null, null);
+			dotExporter.putGraphAttribute("overlap", "false");
+			dotExporter.putGraphAttribute("splines", "true");
+
+			dotExporter.exportGraph(g, writer);
+			return;
+		case GRAPHML:
+			GraphExporter<IExpr, DefaultEdge> graphMLExporter = new GraphMLExporter<>();
+			graphMLExporter.exportGraph(g, writer);
+			return;
+		default:
+		}
+
+		// DEFAULT: return CSV file
+		CSVExporter<IExpr, DefaultEdge> exporter = new CSVExporter<IExpr, DefaultEdge>(nameProvider,
+				org.jgrapht.io.CSVFormat.EDGE_LIST, ';');
+		exporter.exportGraph(g, writer);
+	}
+
 	public int[] expectedArgSize() {
 		return IOFunctions.ARGS_2_3;
 	}
+
 	/**
 	 * See the documentation of {@link CsvFormat}, {@link ImageFormat}, {@link MatlabExport}, and {@link ObjectFormat}
 	 * for information on how tensors are encoded in the respective format.
@@ -112,11 +160,8 @@ public class Export extends AbstractEvaluator {
 	 * @throws IOException
 	 */
 	public static void of(File file, IAST tensor) throws IOException {
-		Filename filename = new Filename(file);
-		// if (filename.hasExtension("csv"))
-		// Files.write(file.toPath(), (Iterable<String>) CsvFormat.of(tensor)::iterator);
-		// else
-		Extension extension = filename.extension();
+		String filename = file.getName();
+		Extension extension = Extension.exportFilename(filename); 
 		if (extension.equals(Extension.JPG))
 			ImageIO.write(ImageFormat.jpg(tensor), "jpg", file);
 		// else if (filename.hasExtension("m"))

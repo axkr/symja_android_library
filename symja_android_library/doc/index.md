@@ -386,6 +386,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [FindRoot](functions/FindRoot.md)
 * [FindShortestPath](functions/FindShortestPath.md)
 * [FindShortestTour](functions/FindShortestTour.md)
+* [FindSpanningTree](functions/FindSpanningTree.md)
 * [First](functions/First.md)
 * [Fit](functions/Fit.md)
 * [FiveNum](functions/FiveNum.md)

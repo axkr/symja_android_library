@@ -101,6 +101,10 @@
 			<artifactId>jgrapht-core</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.jgrapht</groupId>
+			<artifactId>jgrapht-io</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.gavaghan</groupId>
 			<artifactId>geodesy</artifactId>
 		</dependency>

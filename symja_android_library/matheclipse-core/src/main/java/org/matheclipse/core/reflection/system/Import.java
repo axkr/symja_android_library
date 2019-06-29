@@ -3,31 +3,42 @@ package org.matheclipse.core.reflection.system;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
+import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.io.Attribute;
+import org.jgrapht.io.DOTImporter;
+import org.jgrapht.io.EdgeProvider;
+import org.jgrapht.io.GraphMLImporter;
+import org.jgrapht.io.ImportException;
+import org.jgrapht.io.VertexProvider;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
+import org.matheclipse.core.io.Extension;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
 
-import ch.ethz.idsc.tensor.io.Extension;
-import ch.ethz.idsc.tensor.io.Filename;
 import ch.ethz.idsc.tensor.io.ImageFormat;
 
 /**
@@ -47,19 +58,27 @@ public class Import extends AbstractEvaluator {
 			}
 
 			IStringX arg1 = (IStringX) ast.arg1();
+			Extension format = Extension.importFilename(arg1.toString());
 			String fileName = arg1.toString();
-			String format = "String";
+
 			if (ast.size() > 2) {
 				if (!(ast.arg2() instanceof IStringX)) {
 					throw new WrongNumberOfArguments(ast, 2, ast.argSize());
 				}
-				format = ((IStringX) ast.arg2()).toString();
+				format = Extension.importExtension(((IStringX) ast.arg2()).toString());
 			}
 			FileReader reader = null;
 
 			try {
+				File file = new File(fileName);
+				switch (format) {
+				case DOT:
+				case GRAPHML:
+					// graph Format
+					reader = new FileReader(fileName);
+					return graphImport(reader, format, engine);
 
-				if (format.equals("Table")) {
+				case TABLE:
 					reader = new FileReader(fileName);
 					AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
 					final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
@@ -77,19 +96,19 @@ public class Import extends AbstractEvaluator {
 						rowList.append(columnList);
 					}
 					return rowList;
-				} else if (format.equals("String")) {
-					File file = new File(fileName);
+				case STRING:
 					return of(file, engine);
-				} else if (format.equals("WXF")) {
-					File file = new File(fileName);
+				case WXF:
 					byte[] byteArray = com.google.common.io.Files.toByteArray(file);
 					return WL.deserialize(byteArray);
+				default:
 				}
-
 			} catch (IOException ioe) {
 				return engine.printMessage("Import: file " + fileName + " not found!");
 			} catch (SyntaxError se) {
 				return engine.printMessage("Import: file " + fileName + " syntax error!");
+			} catch (Exception ex) {
+				return engine.printMessage("Import: file " + fileName + " - " + ex.getMessage());
 			} finally {
 				if (reader != null) {
 					try {
@@ -101,14 +120,15 @@ public class Import extends AbstractEvaluator {
 		}
 		return F.NIL;
 	}
-	
+
 	public int[] expectedArgSize() {
 		return IOFunctions.ARGS_1_2;
 	}
-	
+
 	public static IExpr of(File file, EvalEngine engine) throws IOException {
-		Filename filename = new Filename(file);
-		Extension extension = filename.extension();
+		String filename = file.getName();
+		Extension extension = Extension.importFilename(filename);
+		// Extension extension = filename.extension();
 		if (extension.equals(Extension.JPG) || extension.equals(Extension.PNG)) {
 			// if (filename.hasExtension("jpg") || filename.hasExtension("png")) {
 			return ImageFormat.from(ImageIO.read(file));
@@ -121,4 +141,44 @@ public class Import extends AbstractEvaluator {
 		return ast2Expr.convert(node);
 	}
 
+	private GraphMLImporter<IExpr, DefaultEdge> createGraphImporter(Graph<IExpr, DefaultEdge> g,
+			Map<String, Map<String, Attribute>> vertexAttributes,
+			Map<DefaultEdge, Map<String, Attribute>> edgeAttributes, EvalEngine engine) {
+		return createGraphImporter(g, (label, attributes) -> {
+			vertexAttributes.put(label, attributes);
+			return engine.parse(label);
+		}, (from, to, label, attributes) -> {
+			DefaultEdge e = g.getEdgeSupplier().get();
+			edgeAttributes.put(e, attributes);
+			return e;
+		});
+	}
+
+	private GraphMLImporter<IExpr, DefaultEdge> createGraphImporter(Graph<IExpr, DefaultEdge> g,
+			VertexProvider<IExpr> vp, EdgeProvider<IExpr, DefaultEdge> ep) {
+		return new GraphMLImporter<IExpr, DefaultEdge>(vp, ep);
+	}
+
+	private IExpr graphImport(Reader reader, Extension format, EvalEngine engine) throws ImportException {
+		Graph<IExpr, DefaultEdge> result;
+		switch (format) {
+		case DOT:
+			DOTImporter<IExpr, DefaultEdge> dotImporter = new DOTImporter<IExpr, DefaultEdge>(
+					(label, attributes) -> engine.parse(label), (from, to, label, attributes) -> new DefaultEdge());
+
+			result = new DefaultDirectedGraph<IExpr, DefaultEdge>(DefaultEdge.class);
+			dotImporter.importGraph(result, reader);
+			return DataExpr.newInstance(F.Graph, result);
+		case GRAPHML:
+			result = new DefaultDirectedGraph<IExpr, DefaultEdge>(DefaultEdge.class);
+			Map<String, Map<String, Attribute>> vertexAttributes = new HashMap<>();
+			Map<DefaultEdge, Map<String, Attribute>> edgeAttributes = new HashMap<DefaultEdge, Map<String, Attribute>>();
+			GraphMLImporter<IExpr, DefaultEdge> graphmlImporter = createGraphImporter(result, vertexAttributes,
+					edgeAttributes, engine);
+			graphmlImporter.importGraph(result, reader);
+			return DataExpr.newInstance(F.Graph, result);
+		default:
+		}
+		return F.NIL;
+	}
 }

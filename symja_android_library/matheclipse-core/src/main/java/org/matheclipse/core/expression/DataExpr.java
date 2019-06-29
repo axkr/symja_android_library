@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import org.jgrapht.graph.DefaultDirectedGraph;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IDataExpr;
@@ -119,6 +120,12 @@ public class DataExpr<T> implements IDataExpr<T> {
 
 	@Override
 	public String toString() {
+		if (fHead.equals(F.Graph)) {
+			if (fData instanceof DefaultDirectedGraph) {
+				DefaultDirectedGraph g = (DefaultDirectedGraph) fData;
+				 
+			}
+		}
 		if (fHead.equals(F.ByteArray)) {
 			return fHead.toString() + "[" + ((byte[]) fData).length + " Bytes]";
 		}
