@@ -1,6 +1,8 @@
 package org.matheclipse.core.expression;
 
+import org.jgrapht.graph.AbstractBaseGraph;
 import org.jgrapht.graph.DefaultDirectedGraph;
+import org.matheclipse.core.builtin.GraphFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IDataExpr;
@@ -95,6 +97,12 @@ public class DataExpr<T> implements IDataExpr<T> {
 	/** {@inheritDoc} */
 	@Override
 	public String fullFormString() {
+		if (fHead.equals(F.Graph)) {
+			if (fData instanceof AbstractBaseGraph) {
+				AbstractBaseGraph<IExpr, IExprEdge> g = (AbstractBaseGraph<IExpr, IExprEdge>) fData;
+				return GraphFunctions.graphToIExpr(g).fullFormString();
+			}
+		}
 		return fHead + "(" + fData.toString() + ")";
 	}
 
@@ -121,9 +129,9 @@ public class DataExpr<T> implements IDataExpr<T> {
 	@Override
 	public String toString() {
 		if (fHead.equals(F.Graph)) {
-			if (fData instanceof DefaultDirectedGraph) {
-				DefaultDirectedGraph g = (DefaultDirectedGraph) fData;
-				 
+			if (fData instanceof AbstractBaseGraph) {
+				AbstractBaseGraph<IExpr, IExprEdge> g = (AbstractBaseGraph<IExpr, IExprEdge>) fData;
+				return GraphFunctions.graphToIExpr(g).toString();
 			}
 		}
 		if (fHead.equals(F.ByteArray)) {

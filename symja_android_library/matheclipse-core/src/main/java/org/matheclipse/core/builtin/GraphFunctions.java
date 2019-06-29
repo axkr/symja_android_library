@@ -6,6 +6,7 @@ import java.util.Set;
 import org.hipparchus.util.MathArrays;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
+import org.jgrapht.GraphType;
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.cycle.HierholzerEulerianCycle;
 import org.jgrapht.alg.interfaces.EulerianCycleAlgorithm;
@@ -15,8 +16,9 @@ import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.alg.spanning.BoruvkaMinimumSpanningTree;
 import org.jgrapht.alg.tour.HeldKarpTSP;
+import org.jgrapht.graph.AbstractBaseGraph;
 import org.jgrapht.graph.DefaultDirectedGraph;
-import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.DefaultUndirectedGraph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.matheclipse.core.basic.Config;
@@ -25,6 +27,8 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.IExprEdge;
+import org.matheclipse.core.expression.IExprWeightedEdge;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IDataExpr;
@@ -61,12 +65,12 @@ public class GraphFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			try {
 				if (ast.isAST1()) {
-					DataExpr<org.jgrapht.Graph<IExpr, DefaultEdge>> g = createGraph(ast.arg1());
+					DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> g = createGraph(ast.arg1());
 					if (g != null) {
 						return g;
 					}
 				} else if (ast.isAST2()) {
-					DataExpr<org.jgrapht.Graph<IExpr, DefaultEdge>> g = createGraph(ast.arg1(), ast.arg2());
+					DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> g = createGraph(ast.arg1(), ast.arg2());
 					if (g != null) {
 						return g;
 					}
@@ -99,8 +103,8 @@ public class GraphFunctions {
 							int rowDim = dim[0];
 							int colDim = dim[1];
 							if (colDim == 2) {
-								Graph<IInteger, DefaultWeightedEdge> g = new SimpleWeightedGraph<>(
-										DefaultWeightedEdge.class);
+								Graph<IInteger, IExprWeightedEdge> g = new SimpleWeightedGraph<>(
+										IExprWeightedEdge.class);
 								for (int i = 1; i <= rowDim; i++) {
 									g.addVertex(F.ZZ(i));
 								}
@@ -110,7 +114,7 @@ public class GraphFunctions {
 												MathArrays.distance(matrix[i], matrix[j]));
 									}
 								}
-								GraphPath<IInteger, DefaultWeightedEdge> tour = new HeldKarpTSP<IInteger, DefaultWeightedEdge>()
+								GraphPath<IInteger, IExprWeightedEdge> tour = new HeldKarpTSP<IInteger, IExprWeightedEdge>()
 										.getTour(g);
 
 								List<IInteger> tourPositions = tour.getVertexList();
@@ -149,14 +153,14 @@ public class GraphFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			try {
 				if (ast.isAST1()) {
-					DataExpr<org.jgrapht.Graph<IExpr, DefaultEdge>> dex = createGraph(ast.arg1());
+					DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> dex = createGraph(ast.arg1());
 					if (dex == null) {
 						return F.NIL;
 					}
-					Graph<IExpr, DefaultEdge> g = dex.toData();
-					SpanningTreeAlgorithm<DefaultEdge> k = new BoruvkaMinimumSpanningTree<IExpr, DefaultEdge>(g);
-					Set<DefaultEdge> edgeSet = k.getSpanningTree().getEdges(); 
-					Graph<IExpr, DefaultEdge> gResult = new DefaultDirectedGraph<IExpr, DefaultEdge>(DefaultEdge.class);
+					Graph<IExpr, IExprEdge> g = dex.toData();
+					SpanningTreeAlgorithm<IExprEdge> k = new BoruvkaMinimumSpanningTree<IExpr, IExprEdge>(g);
+					Set<IExprEdge> edgeSet = k.getSpanningTree().getEdges();
+					Graph<IExpr, IExprEdge> gResult = new DefaultDirectedGraph<IExpr, IExprEdge>(IExprEdge.class);
 					Graphs.addAllEdges(gResult, g, edgeSet);
 					return DataExpr.newInstance(F.Graph, gResult);
 				}
@@ -180,13 +184,13 @@ public class GraphFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			try {
 				if (ast.isAST1()) {
-					DataExpr<org.jgrapht.Graph<IExpr, DefaultEdge>> dex = createGraph(ast.arg1());
+					DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> dex = createGraph(ast.arg1());
 					if (dex == null) {
 						return F.NIL;
 					}
 
-					Graph<IExpr, DefaultEdge> g = dex.toData();
-					GraphPath<IExpr, DefaultEdge> path = eulerianCycle(g);
+					Graph<IExpr, IExprEdge> g = dex.toData();
+					GraphPath<IExpr, IExprEdge> path = eulerianCycle(g);
 					if (path != null) {
 						// Graph is Eulerian
 						return F.True;
@@ -212,13 +216,13 @@ public class GraphFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			try {
 				if (ast.isAST1()) {
-					DataExpr<org.jgrapht.Graph<IExpr, DefaultEdge>> dex = createGraph(ast.arg1());
+					DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> dex = createGraph(ast.arg1());
 					if (dex == null) {
 						return F.NIL;
 					}
 
-					Graph<IExpr, DefaultEdge> g = dex.toData();
-					GraphPath<IExpr, DefaultEdge> path = hamiltonianCycle(g);
+					Graph<IExpr, IExprEdge> g = dex.toData();
+					GraphPath<IExpr, IExprEdge> path = hamiltonianCycle(g);
 					if (path != null) {
 						// Graph is Hamiltonian
 						return F.True;
@@ -244,13 +248,13 @@ public class GraphFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			try {
 				if (ast.isAST1()) {
-					DataExpr<org.jgrapht.Graph<IExpr, DefaultEdge>> dex = createGraph(ast.arg1());
+					DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> dex = createGraph(ast.arg1());
 					if (dex == null) {
 						return F.NIL;
 					}
 
-					Graph<IExpr, DefaultEdge> g = dex.toData();
-					GraphPath<IExpr, DefaultEdge> path = eulerianCycle(g);
+					Graph<IExpr, IExprEdge> g = dex.toData();
+					GraphPath<IExpr, IExprEdge> path = eulerianCycle(g);
 					if (path == null) {
 						// Graph is not Eulerian
 						return F.CEmptyList;
@@ -282,13 +286,13 @@ public class GraphFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			try {
 				if (ast.isAST1()) {
-					DataExpr<org.jgrapht.Graph<IExpr, DefaultEdge>> dex = createGraph(ast.arg1());
+					DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> dex = createGraph(ast.arg1());
 					if (dex == null) {
 						return F.NIL;
 					}
 
-					Graph<IExpr, DefaultEdge> g = dex.toData();
-					GraphPath<IExpr, DefaultEdge> path = hamiltonianCycle(g);
+					Graph<IExpr, IExprEdge> g = dex.toData();
+					GraphPath<IExpr, IExprEdge> path = hamiltonianCycle(g);
 					if (path == null) {
 						// Graph is not Hamiltonian
 						return F.CEmptyList;
@@ -319,16 +323,16 @@ public class GraphFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			try {
-				DataExpr<org.jgrapht.Graph<IExpr, DefaultEdge>> dex = createGraph(ast.arg1());
+				DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> dex = createGraph(ast.arg1());
 				if (dex == null) {
 					return F.NIL;
 				}
 
-				Graph<IExpr, DefaultEdge> g = dex.toData();
+				Graph<IExpr, IExprEdge> g = dex.toData();
 
-				DijkstraShortestPath<IExpr, DefaultEdge> dijkstraAlg = new DijkstraShortestPath<>(g);
-				SingleSourcePaths<IExpr, DefaultEdge> iPaths = dijkstraAlg.getPaths(ast.arg2());
-				GraphPath<IExpr, DefaultEdge> path = iPaths.getPath(ast.arg3());
+				DijkstraShortestPath<IExpr, IExprEdge> dijkstraAlg = new DijkstraShortestPath<>(g);
+				SingleSourcePaths<IExpr, IExprEdge> iPaths = dijkstraAlg.getPaths(ast.arg2());
+				GraphPath<IExpr, IExprEdge> path = iPaths.getPath(ast.arg3());
 
 				return Object2Expr.convertList(path.getVertexList());
 			} catch (RuntimeException rex) {
@@ -351,12 +355,18 @@ public class GraphFunctions {
 	 * @param arg1
 	 * @return
 	 */
-	private static DataExpr<org.jgrapht.Graph<IExpr, DefaultEdge>> createGraph(final IExpr arg1) {
+	private static DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> createGraph(final IExpr arg1) {
 		if (arg1.head().equals(F.Graph) && arg1 instanceof IDataExpr) {
-			return (DataExpr<org.jgrapht.Graph<IExpr, DefaultEdge>>) arg1;
+			return (DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>>) arg1;
 		}
-		if (arg1.isListOfEdges()) {
-			Graph<IExpr, DefaultEdge> g = new DefaultDirectedGraph<IExpr, DefaultEdge>(DefaultEdge.class);
+		Graph<IExpr, IExprEdge> g;
+		GraphType t = arg1.isListOfEdges();
+		if (t != null) {
+			if (t.isDirected()) {
+				g = new DefaultDirectedGraph<IExpr, IExprEdge>(IExprEdge.class);
+			} else {
+				g = new DefaultUndirectedGraph<IExpr, IExprEdge>(IExprEdge.class);
+			}
 			IAST list = (IAST) arg1;
 			for (int i = 1; i < list.size(); i++) {
 				IAST edge = list.getAST(i);
@@ -371,16 +381,22 @@ public class GraphFunctions {
 		return null;
 	}
 
-	private static DataExpr<org.jgrapht.Graph<IExpr, DefaultEdge>> createGraph(final IExpr vertices,
-			final IExpr edges) {
+	private static DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> createGraph(final IExpr vertices, final IExpr edges) {
 		if (vertices.isList()) {
-			Graph<IExpr, DefaultEdge> g = new DefaultDirectedGraph<IExpr, DefaultEdge>(DefaultEdge.class);
-			IAST list = (IAST) vertices;
-			for (int i = 1; i < vertices.size(); i++) {
-				g.addVertex(list.get(i));
-			}
+			Graph<IExpr, IExprEdge> g;
+			GraphType t = edges.isListOfEdges();
+			if (t != null) {
+				if (t.isDirected()) {
+					g = new DefaultDirectedGraph<IExpr, IExprEdge>(IExprEdge.class);
+				} else {
+					g = new DefaultUndirectedGraph<IExpr, IExprEdge>(IExprEdge.class);
+				}
+				// Graph<IExpr, IExprEdge> g = new DefaultDirectedGraph<IExpr, IExprEdge>(IExprEdge.class);
+				IAST list = (IAST) vertices;
+				for (int i = 1; i < vertices.size(); i++) {
+					g.addVertex(list.get(i));
+				}
 
-			if (edges.isListOfEdges()) {
 				list = (IAST) edges;
 				for (int i = 1; i < list.size(); i++) {
 					IAST edge = list.getAST(i);
@@ -399,8 +415,8 @@ public class GraphFunctions {
 	 * @param g
 	 * @return <code>null</code> if no eulerian cycle can be created
 	 */
-	private static GraphPath<IExpr, DefaultEdge> eulerianCycle(Graph<IExpr, DefaultEdge> g) {
-		EulerianCycleAlgorithm<IExpr, DefaultEdge> eca = new HierholzerEulerianCycle<>();
+	private static GraphPath<IExpr, IExprEdge> eulerianCycle(Graph<IExpr, IExprEdge> g) {
+		EulerianCycleAlgorithm<IExpr, IExprEdge> eca = new HierholzerEulerianCycle<>();
 		try {
 			return eca.getEulerianCycle(g);
 		} catch (IllegalArgumentException iae) {
@@ -409,8 +425,8 @@ public class GraphFunctions {
 		return null;
 	}
 
-	private static GraphPath<IExpr, DefaultEdge> hamiltonianCycle(Graph<IExpr, DefaultEdge> g) {
-		HamiltonianCycleAlgorithm<IExpr, DefaultEdge> eca = new HeldKarpTSP<>();
+	private static GraphPath<IExpr, IExprEdge> hamiltonianCycle(Graph<IExpr, IExprEdge> g) {
+		HamiltonianCycleAlgorithm<IExpr, IExprEdge> eca = new HeldKarpTSP<>();
 		try {
 			return eca.getTour(g);
 		} catch (IllegalArgumentException iae) {
@@ -425,6 +441,34 @@ public class GraphFunctions {
 
 	private GraphFunctions() {
 
+	}
+
+	/**
+	 * Convert a graph into an IExpr object.
+	 * 
+	 * @param g
+	 * @return
+	 */
+	public static IExpr graphToIExpr(AbstractBaseGraph<IExpr, IExprEdge> g) {
+		Set<IExpr> vertexSet = g.vertexSet();
+		IASTAppendable vertexes = F.ListAlloc(vertexSet.size());
+		for (IExpr expr : vertexSet) {
+			vertexes.append(expr);
+		}
+		Set<IExprEdge> edgeSet = g.edgeSet();
+		IASTAppendable edges = F.ListAlloc(edgeSet.size());
+		GraphType type = g.getType();
+		if (type.isDirected()) {
+			for (IExprEdge edge : edgeSet) {
+				edges.append(F.DirectedEdge(edge.lhs(), edge.rhs()));
+			}
+		} else {
+			for (IExprEdge edge : edgeSet) {
+				edges.append(F.UndirectedEdge(edge.lhs(), edge.rhs()));
+			}
+		}
+		IExpr graph = F.Graph(vertexes, edges);
+		return graph;
 	}
 
 }

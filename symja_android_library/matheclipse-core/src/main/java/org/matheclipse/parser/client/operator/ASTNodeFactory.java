@@ -175,13 +175,14 @@ public class ASTNodeFactory implements INodeParserFactory {
 			"Dot", "Not", "PreMinus", "SameQ", "RuleDelayed", "GreaterEqual", "Condition", "Colon", "//", "DivideBy",
 			"Or", "Span", "Equal", "StringJoin", "Unequal", "Decrement", "SubtractFrom", "PrePlus", "RepeatedNull",
 			"UnsameQ", "Rule", "UpSetDelayed", "PreIncrement", "Function", "Greater", "PreDecrement", "Subtract",
-			"SetDelayed", "Alternatives", "AddTo", "Repeated", "ReplaceAll", "TagSet", "TwoWayRule", "Directed>Edge",
-			"Undirected>Edge" };
+			"SetDelayed", "Alternatives", "AddTo", "Repeated", "ReplaceAll", "TagSet", "TwoWayRule", "TwoWayRule", "DirectedEdge",
+			"UndirectedEdge" };
 
 	static final String[] OPERATOR_STRINGS = { "::", "<<", "?", "//@", "*=", "+", "^=", ";", "@", "/@", "=.", "@@",
 			"@@@", "//.", "<", "&&", "/", "=", "++", "!!", "<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>", ">=",
 			"/;", ":", "//", "/=", "||", ";;", "==", "<>", "!=", "--", "-=", "+", "...", "=!=", "->", "^:=", "++", "&",
 			">", "--", "-", ":=", "|", "+=", "..", "/.", "/:", //
+			"<->", // TwoWayRule
 			"\uF120", // TwoWayRule
 			"\uF3D5", // DirectedEdge
 			"\uF3D4"// UndirectedEdge
@@ -323,6 +324,7 @@ public class ASTNodeFactory implements INodeParserFactory {
 					new InfixOperator("+=", "AddTo", 100, InfixOperator.RIGHT_ASSOCIATIVE),
 					new PostfixOperator("..", "Repeated", 170),
 					new InfixOperator("/.", "ReplaceAll", 110, InfixOperator.LEFT_ASSOCIATIVE), TAG_SET_OPERATOR,
+					new InfixOperator("<->", "TwoWayRule", 125, InfixOperator.RIGHT_ASSOCIATIVE),
 					new InfixOperator("\uF120", "TwoWayRule", 125, InfixOperator.RIGHT_ASSOCIATIVE),
 					new InfixOperator("\uF3D5", "DirectedEdge", 120, InfixOperator.RIGHT_ASSOCIATIVE),
 					new InfixOperator("\uF3D4", "UndirectedEdge", 120, InfixOperator.RIGHT_ASSOCIATIVE) };

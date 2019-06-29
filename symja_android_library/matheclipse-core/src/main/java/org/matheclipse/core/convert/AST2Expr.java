@@ -168,7 +168,7 @@ public class AST2Expr {
 			"TimeConstrained", "Times", "TimesBy", "TimeValue", "Timing", "ToCharacterCode", "ToExpression",
 			"ToeplitzMatrix", "Together", "ToPolarCoordinates", "ToRadicals", "ToString", "Total", "ToUnicode", "Tr",
 			"Trace", "TraditionalForm", "Transpose", "TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "TukeyWindow",
-			"Tuples", "Undefined", "Underoverscript", "UndirectedEdge", "Unequal", "Unevaluated", "Unprotect",
+			"Tuples", "TwoWayRule", "Undefined", "Underoverscript", "UndirectedEdge", "Unequal", "Unevaluated", "Unprotect",
 			"UniformDistribution", "Union", "Unique", "UnitaryMatrixQ", "UnitConvert", "Unitize", "UnitStep",
 			"UnitVector", "UnsameQ", "Unset", "UpperCaseQ", "UpperTriangularize", "UpSet", "UpSetDelayed", "ValueQ",
 			"VandermondeMatrix", "Variables", "Variance", "VectorAngle", "VectorQ", "WeibullDistribution", "Which",

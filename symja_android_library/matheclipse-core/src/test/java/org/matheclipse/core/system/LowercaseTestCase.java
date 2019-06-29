@@ -6189,15 +6189,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testFindEulerianCycle() {
 		check("FindEulerianCycle({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1 })", //
-				"{DirectedEdge(4,1),DirectedEdge(1,3),DirectedEdge(3,1),DirectedEdge(1,2),DirectedEdge(\n"
-						+ "2,3),DirectedEdge(3,4)}");
+				"{4->1,1->3,3->1,1->2,2->3,3->4}");
 		check("FindEulerianCycle({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1, 4 -> 7})", //
 				"{}");
 	}
 
 	public void testFindHamiltonianCycle() {
 		check("FindHamiltonianCycle({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1 })", //
-				"{DirectedEdge(1,2),DirectedEdge(2,3),DirectedEdge(3,4),DirectedEdge(4,1)}");
+				"{1->2,2->3,3->4,4->1}");
 		check("FindHamiltonianCycle({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1, 4 -> 7})", //
 				"{}");
 	}
@@ -6216,7 +6215,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"");
 
 		check("FindSpanningTree(g)", //
-				"Graph[([1, 2, 3, 4, 6, 5, 7, 8], [(1,2), (1,3), (1,4), (2,6), (5,3), (5,7), (5,8)])]");
+				"Graph({1,2,3,4,6,5,7,8},{1->2,1->3,1->4,2->6,5->3,5->7,5->8})");
 	}
 
 	public void testFindShortestPath() {
@@ -6232,19 +6231,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGraph() {
-
+		check("Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1})", //
+				"Graph({1,2,3},{1<->2,2<->3,3<->1})");
+		check("Graph({1,2,3},{1<->2,2<->3,3<->1})", //
+				"Graph({1,2,3},{1<->2,2<->3,3<->1})");
+		
+		check("Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1})", //
+				"Graph({1,2,3},{1->2,2->3,3->1})");
+		check("Graph({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1})", //
+				"Graph({1,2,3,4},{1->2,2->3,3->1,1->3,3->4,4->1})");
+		
 		check("Graph({1,2,3,4,5,6,7,8},\n"
 				+ "{UndirectedEdge(1,2),UndirectedEdge(1,3),UndirectedEdge(1,4),UndirectedEdge(3,4),UndirectedEdge(2,6),\n"
 				+ "UndirectedEdge(3,6),UndirectedEdge(5,3),UndirectedEdge(5,4),UndirectedEdge(5,6),UndirectedEdge(5,7),\n"
 				+ "UndirectedEdge(5,8),UndirectedEdge(6,7),UndirectedEdge(7,8),UndirectedEdge(4,8)})", //
-				"Graph[([1, 2, 3, 4, 5, 6, 7, 8], [(1,2), (1,3), (1,4), (3,4), (2,6), (3,6), (5,3), (5,4), (5,6), (5,7), (5,8), (6,7), (7,8), (4,8)])]");
-
-		check("Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1})", //
-				"Graph[([1, 2, 3], [(1,2), (2,3), (3,1)])]");
-		check("Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1})", //
-				"Graph[([1, 2, 3], [(1,2), (2,3), (3,1)])]");
-		check("Graph({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1})", //
-				"Graph[([1, 2, 3, 4], [(1,2), (2,3), (3,1), (1,3), (3,4), (4,1)])]");
+				"Graph({1,2,3,4,5,6,7,8},{1<->2,1<->3,1<->4,3<->4,2<->6,3<->6,5<->3,5<->4,5<->6,5<->7,5<->8,6<->7,7<->8,4<->8})");
 
 	}
 
@@ -7723,18 +7724,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testImportExport() {
 		if (Config.FILESYSTEM_ENABLED) {
-//			check("Export(\"c:\\\\temp\\\\testgraph.csv\",Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1}))", //
-//					"c:\\temp\\testgraph.csv");
+			// check("Export(\"c:\\\\temp\\\\testgraph.csv\",Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3
+			// \\[DirectedEdge] 1}))", //
+			// "c:\\temp\\testgraph.csv");
 			check("Export(\"c:\\\\temp\\\\dotgraph.dot\",Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1}))", //
 					"c:\\temp\\dotgraph.dot");
 			check("Import(\"c:\\\\temp\\\\dotgraph.dot\")", //
 					"Graph[([1, 2, 3], [(1,2), (2,3), (3,1)])]");
-			
+
 			check("Export(\"c:\\\\temp\\\\dotgraph.graphml\",Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1}),\"GraphML\")", //
 					"c:\\temp\\dotgraph.graphml");
 			check("Import(\"c:\\\\temp\\\\dotgraph.graphml\", \"GraphML\")", //
 					"Graph[([1, 2, 3], [(1,2), (2,3), (3,1)])]");
-			
+
 			check("Export(\"c:\\\\temp\\\\out.wxf\", {{5.7, 4.3}, {-1.2, 7.8}, {a, f(x)}}, \"WXF\")", //
 					"c:\\temp\\out.wxf");
 			check("Import(\"c:\\\\temp\\\\out.wxf\", \"WXF\")", //

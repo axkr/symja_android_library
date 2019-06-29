@@ -951,6 +951,29 @@ public class OutputFormFactory {
 			}
 			if (list.head().isSymbol()) {
 				ISymbol head = (ISymbol) list.head();
+				int functionID = head.ordinal();
+				if (functionID > ID.UNKNOWN) {
+					switch (functionID) {
+					case ID.TwoWayRule:
+					case ID.UndirectedEdge:
+						if (list.isAST2()) {
+							convert(buf, list.arg1());
+							buf.append("<->");
+							convert(buf, list.arg2());
+							return;
+						}
+						break;
+					case ID.DirectedEdge:
+						if (list.isAST2()) {
+							convert(buf, list.arg1());
+							buf.append("->");
+							convert(buf, list.arg2());
+							return;
+						}
+						break;
+					}
+				}
+
 				final Operator operator = getOperator(head);
 				if (operator != null) {
 					if (operator instanceof PostfixOperator) {
@@ -965,7 +988,6 @@ public class OutputFormFactory {
 					}
 				}
 
-				int functionID = head.ordinal();
 				if (functionID > ID.UNKNOWN) {
 					switch (functionID) {
 					case ID.Quantity:
@@ -1061,7 +1083,9 @@ public class OutputFormFactory {
 			convertAST(buf, list);
 			return;
 		}
-		if (o instanceof ISignedNumber) {
+		if (o instanceof ISignedNumber)
+
+		{
 			convertNumber(buf, (ISignedNumber) o, precedence, NO_PLUS_CALL);
 			return;
 		}
@@ -1081,6 +1105,7 @@ public class OutputFormFactory {
 			convertPattern(buf, (IPatternObject) o);
 			return;
 		}
+
 		convertString(buf, o.toString());
 	}
 

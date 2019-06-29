@@ -26,10 +26,12 @@ import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.jgrapht.GraphType;
+import org.jgrapht.graph.DefaultGraphType;
+import org.jgrapht.graph.DefaultGraphType.Builder;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
-import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.builtin.Structure.LeafCount;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -45,21 +47,16 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
-import org.matheclipse.core.interfaces.IComplex;
-import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IDiscreteDistribution;
 import org.matheclipse.core.interfaces.IDistribution;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.ISignedNumber;
-import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.IUnaryIndexFunction;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
@@ -71,7 +68,6 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
-import org.matheclipse.core.visit.VisitorBooleanLevelSpecification;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -446,8 +442,8 @@ public abstract class AbstractAST implements IASTMutable {
 
 		/** {@inheritDoc} */
 		@Override
-		public final boolean isListOfEdges() {
-			return false;
+		public final GraphType isListOfEdges() {
+			return null;
 		}
 
 		/** {@inheritDoc} */
@@ -1513,7 +1509,7 @@ public abstract class AbstractAST implements IASTMutable {
 	public IExpr get(int location) {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	@Override
 	public IExpr get(IInteger location) {
 		return get(location.toIntDefault(Integer.MIN_VALUE));
@@ -2568,18 +2564,27 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isListOfEdges() {
+	public GraphType isListOfEdges() {
 		if (head().equals(F.List)) {
+			boolean directed = true;
 			for (int i = 1; i < size(); i++) {
-				if (!(get(i).isAST(F.DirectedEdge, 3) || get(i).isAST(F.UndirectedEdge, 3)
-						|| get(i).isAST(F.Rule, 3))) {
-					// the row is no list
-					return false;
+				if (get(i).isAST(F.DirectedEdge, 3) || get(i).isAST(F.Rule, 3)) {
+					continue;
 				}
+				if (!(get(i).isAST(F.UndirectedEdge, 3) || get(i).isAST(F.TwoWayRule, 3))) {
+					// the row is no list
+					return null;
+				}
+				directed = false;
 			}
-			return true;
+
+			Builder builder = new DefaultGraphType.Builder();
+			if (directed) {
+				return builder.directed().build();
+			}
+			return builder.undirected().build();
 		}
-		return false;
+		return null;
 	}
 
 	/** {@inheritDoc} */
@@ -2977,9 +2982,9 @@ public abstract class AbstractAST implements IASTMutable {
 			}
 			return true;
 		}
-//		if (isInfinity()||isNegativeInfinity()) {
-//			return true;
-//		}
+		// if (isInfinity()||isNegativeInfinity()) {
+		// return true;
+		// }
 		return false;
 	}
 
