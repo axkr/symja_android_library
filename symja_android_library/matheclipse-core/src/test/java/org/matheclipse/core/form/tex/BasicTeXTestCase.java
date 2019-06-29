@@ -246,7 +246,14 @@ public class BasicTeXTestCase extends TestCase {
 		localTexUtil.toTeX("1.3 - 1.0", stw);
 		assertEquals(stw.toString(), "0.3");
 	}
-
+	
+	public void testTeX026() {
+		check("DirectedEdge(a,b)",
+				"a\\to b");
+		check("UndirectedEdge(a,b)",
+				"a\\leftrightarrow b");
+	}
+	
 	public void check(String strEval, String strResult) {
 		StringWriter stw = new StringWriter();
 		texUtil.toTeX(strEval, stw);

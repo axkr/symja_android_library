@@ -1179,6 +1179,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
 	private void convertAST(final StringBuilder buf, final IAST ast, final int precedence) {
 		final IAST list = ast;
+
 		IExpr header = list.head();
 		if (!header.isSymbol()) {
 			// print expressions like: f(#1, y)& [x]
@@ -1231,6 +1232,30 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			convertFunctionArgs(buf, list);
 			return;
 		}
+
+		int functionID = ((ISymbol) list.head()).ordinal();
+		if (functionID > ID.UNKNOWN) {
+			switch (functionID) {
+			case ID.TwoWayRule:
+			case ID.UndirectedEdge:
+				if (list.isAST2()) {
+					convert(buf, list.arg1(), precedence, false);
+					buf.append("<->");
+					convert(buf, list.arg2(), precedence, false);
+					return;
+				}
+				break;
+			case ID.DirectedEdge:
+				if (list.isAST2()) {
+					convert(buf, list.arg1(), precedence, false);
+					buf.append("->");
+					convert(buf, list.arg2(), precedence, false);
+					return;
+				}
+				break;
+			}
+		}
+
 		ISymbol head = list.topHead();
 		final org.matheclipse.parser.client.operator.Operator operator = OutputFormFactory.getOperator(head);
 		if (operator != null) {
@@ -1256,48 +1281,59 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			convertList(buf, list);
 			return;
 		}
-		if (head.equals(F.Part) && (list.size() >= 3)) {
-			convertPart(buf, list);
-			return;
-		}
+		if (functionID > ID.UNKNOWN) {
+			switch (functionID) {
+			case ID.Part:
 
-		if (head.equals(F.Slot) && (list.isAST1()) && (list.arg1() instanceof IInteger)) {
-			convertSlot(buf, list);
-			return;
-		}
-		if (head.equals(F.SlotSequence) && (list.isAST1()) && (list.arg1() instanceof IInteger)) {
-			convertSlotSequence(buf, list);
-			return;
-		}
-		if ((head.equals(F.HoldForm) || head.equals(F.Defer)) && (list.isAST1())) {
-			convert(buf, list.arg1(), precedence, false);
-			return;
-		}
-
-		if (head.equals(F.DirectedInfinity)) {
-			if (list.isDirectedInfinity()) { // head.equals(F.DirectedInfinity))
-				if (list.isAST0()) {
-					convertSymbol(buf, F.ComplexInfinity);
+				if ((list.size() >= 3)) {
+					convertPart(buf, list);
 					return;
 				}
-				if (list.isAST1()) {
-					if (list.arg1().isOne()) {
-						convertSymbol(buf, F.Infinity);
-						return;
-					} else if (list.arg1().isMinusOne()) {
-						convert(buf, F.Times(F.CN1, F.Infinity), precedence, false);
-						return;
-					} else if (list.arg1().isImaginaryUnit()) {
-						convert(buf, F.Times(F.CI, F.Infinity), precedence, false);
-						return;
-					} else if (list.arg1().isNegativeImaginaryUnit()) {
-						convert(buf, F.Times(F.CNI, F.Infinity), precedence, false);
+				break;
+			case ID.Slot:
+				if ((list.isAST1()) && (list.arg1() instanceof IInteger)) {
+					convertSlot(buf, list);
+					return;
+				}
+				break;
+			case ID.SlotSequence:
+				if ((list.isAST1()) && (list.arg1() instanceof IInteger)) {
+					convertSlotSequence(buf, list);
+					return;
+				}
+				break;
+			case ID.Defer:
+			case ID.HoldForm:
+				if ((list.isAST1())) {
+					convert(buf, list.arg1(), precedence, false);
+					return;
+				}
+				break;
+			case ID.DirectedInfinity:
+				if (list.isDirectedInfinity()) { // head.equals(F.DirectedInfinity))
+					if (list.isAST0()) {
+						convertSymbol(buf, F.ComplexInfinity);
 						return;
 					}
+					if (list.isAST1()) {
+						if (list.arg1().isOne()) {
+							convertSymbol(buf, F.Infinity);
+							return;
+						} else if (list.arg1().isMinusOne()) {
+							convert(buf, F.Times(F.CN1, F.Infinity), precedence, false);
+							return;
+						} else if (list.arg1().isImaginaryUnit()) {
+							convert(buf, F.Times(F.CI, F.Infinity), precedence, false);
+							return;
+						} else if (list.arg1().isNegativeImaginaryUnit()) {
+							convert(buf, F.Times(F.CNI, F.Infinity), precedence, false);
+							return;
+						}
+					}
 				}
+				break;
 			}
 		}
-
 		// if (head.equals(F.SeriesData) && (list.size() == 7)) {
 		// if (convertSeriesData(buf, list, precedence)) {
 		// return;
@@ -1351,19 +1387,9 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			tag(buf, "mo", "(");
 		}
 		if (!isReZero) {
-			convertFraction(buf, c.getRealPart(), plusPrec, caller);
-			// if (isImNegative) {
-			// tag(buf, "mo", "-");
-			// } else {
-			// tag(buf, "mo", "+");
-			// }
+			convertFraction(buf, c.getRealPart(), plusPrec, caller); 
 		}
-
-		// else {
-		// if (isImNegative) {
-		// tag(buf, "mo", "-");
-		// }
-		// }
+ 
 		if (isImOne) {
 			tagStart(buf, "mrow");
 			if (isReZero) {

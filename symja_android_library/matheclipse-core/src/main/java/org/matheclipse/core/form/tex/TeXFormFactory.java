@@ -15,6 +15,7 @@ import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.interfaces.IAST;
@@ -1572,6 +1573,8 @@ public class TeXFormFactory {
 				ASTNodeFactory.MMA_STYLE_FACTORY.get("Alternatives").getPrecedence(), "\\text{|}"));
 		operTab.put("Equal",
 				new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Equal").getPrecedence(), " = "));
+		operTab.put("DirectedEdge",
+				new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("DirectedEdge").getPrecedence(), "\\to "));
 		operTab.put("Divide", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Divide").getPrecedence(),
 				"\\text{/}"));
 		operTab.put("Apply", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Apply").getPrecedence(),
@@ -1617,6 +1620,9 @@ public class TeXFormFactory {
 				new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Set").getPrecedence(), " = "));
 		operTab.put("SetDelayed", new AbstractOperator(this,
 				ASTNodeFactory.MMA_STYLE_FACTORY.get("SetDelayed").getPrecedence(), "\\text{:=}\\,"));
+		operTab.put("UndirectedEdge",
+				new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("UndirectedEdge").getPrecedence(), "\\leftrightarrow "));
+		
 		operTab.put("Sin", new TeXFunction(this, "sin "));
 		operTab.put("Cos", new TeXFunction(this, "cos "));
 		operTab.put("Tan", new TeXFunction(this, "tan "));

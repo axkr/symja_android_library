@@ -15,6 +15,9 @@
  */
 package org.matheclipse.parser.client.operator;
 
+import com.google.common.escape.Escaper;
+import com.google.common.escape.UnicodeEscaper;
+
 public abstract class Operator {
 	protected String fFunctionName;
 
