@@ -179,6 +179,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [AbsArg](functions/AbsArg.md)
 * [Accumulate](functions/Accumulate.md)
 * [AddTo](functions/AddTo.md)
+* [AdjacencyMatrix](functions/AdjacencyMatrix.md)
 * [All](functions/All.md)
 * [AllTrue](functions/AllTrue.md)
 * [Alternatives](functions/Alternatives.md)

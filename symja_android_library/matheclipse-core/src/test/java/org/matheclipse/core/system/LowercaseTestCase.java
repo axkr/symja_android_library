@@ -52,6 +52,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAbs() {
+		check("Abs(x*Sign(x))", //
+				"Abs(x*Sign(x))");
+		check("Abs(Abs(x))", //
+				"Abs(x)");
 		check("Abs(E-Pi)", //
 				"-E+Pi");
 		check("Abs(x^2)", //
@@ -146,6 +150,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"12");
 		check("a", //
 				"12");
+	}
+
+	public void testAdjacencyMatrix() {
+		check("AdjacencyMatrix(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}))", //
+				"{{0,1,1,0},\n" + //
+						" {0,0,1,0},\n" + //
+						" {0,0,0,0},\n" + //
+						" {0,1,0,0}}");
+		check("AdjacencyMatrix(Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1}))", //
+				"{{0,1,1},\n" + //
+						" {1,0,1},\n" + //
+						" {1,1,0}}");
+		check("AdjacencyMatrix(Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1}))", //
+				"{{0,1,0},\n" + //
+						" {0,0,1},\n" + //
+						" {1,0,0}}");
 	}
 
 	public void testAllTrue() {
@@ -6235,12 +6255,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Graph({1,2,3},{1<->2,2<->3,3<->1})");
 		check("Graph({1,2,3},{1<->2,2<->3,3<->1})", //
 				"Graph({1,2,3},{1<->2,2<->3,3<->1})");
-		
+
 		check("Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1})", //
 				"Graph({1,2,3},{1->2,2->3,3->1})");
 		check("Graph({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1})", //
 				"Graph({1,2,3,4},{1->2,2->3,3->1,1->3,3->4,4->1})");
-		
+
 		check("Graph({1,2,3,4,5,6,7,8},\n"
 				+ "{UndirectedEdge(1,2),UndirectedEdge(1,3),UndirectedEdge(1,4),UndirectedEdge(3,4),UndirectedEdge(2,6),\n"
 				+ "UndirectedEdge(3,6),UndirectedEdge(5,3),UndirectedEdge(5,4),UndirectedEdge(5,6),UndirectedEdge(5,7),\n"
