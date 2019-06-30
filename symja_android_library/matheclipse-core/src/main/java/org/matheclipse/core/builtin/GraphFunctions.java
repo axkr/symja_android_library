@@ -46,13 +46,18 @@ public class GraphFunctions {
 		private static void init() {
 			F.Graph.setEvaluator(new GraphCTor());
 			F.AdjacencyMatrix.setEvaluator(new AdjacencyMatrix());
+			F.EdgeList.setEvaluator(new EdgeList());
+			F.EdgeQ.setEvaluator(new EdgeQ());
 			F.EulerianGraphQ.setEvaluator(new EulerianGraphQ());
 			F.FindEulerianCycle.setEvaluator(new FindEulerianCycle());
 			F.FindHamiltonianCycle.setEvaluator(new FindHamiltonianCycle());
 			F.FindShortestPath.setEvaluator(new FindShortestPath());
 			F.FindShortestTour.setEvaluator(new FindShortestTour());
 			F.FindSpanningTree.setEvaluator(new FindSpanningTree());
+			F.GraphQ.setEvaluator(new GraphQ());
 			F.HamiltonianGraphQ.setEvaluator(new HamiltonianGraphQ());
+			F.VertexList.setEvaluator(new VertexList());
+			F.VertexQ.setEvaluator(new VertexQ());
 		}
 	}
 
@@ -87,6 +92,31 @@ public class GraphFunctions {
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
+		}
+	}
+
+	private static class GraphQ extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			try {
+				if (ast.isAST1()) {
+					DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> dex = createGraph(ast.arg1());
+					if (dex != null) {
+						return F.True;
+					}
+				}
+			} catch (RuntimeException rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
+			}
+			return F.False;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 	}
 
@@ -204,6 +234,61 @@ public class GraphFunctions {
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
+		}
+	}
+
+	private static class EdgeList extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			try {
+				if (ast.isAST1()) {
+					DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> dex = createGraph(ast.arg1());
+					if (dex == null) {
+						return F.NIL;
+					}
+					Graph<IExpr, IExprEdge> g = dex.toData();
+					return edgesToIExpr(g);
+				}
+			} catch (RuntimeException rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+	}
+
+	private static class EdgeQ extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			try {
+
+				if (ast.isAST2() && ast.arg2().isEdge()) {
+					IAST edge = (IAST) ast.arg2();
+					DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> dex = createGraph(ast.arg1());
+					if (dex != null) {
+						Graph<IExpr, IExprEdge> g = dex.toData();
+						return F.bool(g.containsEdge(edge.first(), edge.second()));
+					}
+				}
+			} catch (RuntimeException rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
+			}
+			return F.False;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 	}
 
@@ -378,6 +463,66 @@ public class GraphFunctions {
 		}
 	}
 
+	private static class VertexList extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			try {
+				if (ast.isAST1()) {
+					DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> dex = createGraph(ast.arg1());
+					if (dex == null) {
+						return F.NIL;
+					}
+					Graph<IExpr, IExprEdge> g = dex.toData();
+					return vertexToIExpr(g);
+					// Set<IExpr> vertexSet = g.vertexSet();
+					// int size = vertexSet.size();
+					// IASTAppendable result = F.ListAlloc(size);
+					// for (IExpr expr : vertexSet) {
+					// result.append(expr);
+					// }
+					// return result;
+				}
+			} catch (RuntimeException rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+	}
+
+	private static class VertexQ extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			try {
+				if (ast.isAST2()) {
+					DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> dex = createGraph(ast.arg1());
+					if (dex != null) {
+						Graph<IExpr, IExprEdge> g = dex.toData();
+						return F.bool(g.containsVertex(ast.arg2()));
+					}
+				}
+			} catch (RuntimeException rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
+			}
+			return F.False;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+	}
+
 	/**
 	 * Create an internal DataExpr Graph.
 	 * 
@@ -479,11 +624,22 @@ public class GraphFunctions {
 	 * @return
 	 */
 	public static IExpr graphToIExpr(AbstractBaseGraph<IExpr, IExprEdge> g) {
+		IASTAppendable vertexes = vertexToIExpr(g);
+		IASTAppendable edges = edgesToIExpr(g);
+		IExpr graph = F.Graph(vertexes, edges);
+		return graph;
+	}
+
+	private static IASTAppendable vertexToIExpr(Graph<IExpr, IExprEdge> g) {
 		Set<IExpr> vertexSet = g.vertexSet();
 		IASTAppendable vertexes = F.ListAlloc(vertexSet.size());
 		for (IExpr expr : vertexSet) {
 			vertexes.append(expr);
 		}
+		return vertexes;
+	}
+
+	private static IASTAppendable edgesToIExpr(Graph<IExpr, IExprEdge> g) {
 		Set<IExprEdge> edgeSet = g.edgeSet();
 		IASTAppendable edges = F.ListAlloc(edgeSet.size());
 		GraphType type = g.getType();
@@ -496,8 +652,7 @@ public class GraphFunctions {
 				edges.append(F.UndirectedEdge(edge.lhs(), edge.rhs()));
 			}
 		}
-		IExpr graph = F.Graph(vertexes, edges);
-		return graph;
+		return edges;
 	}
 
 	public static IAST graphToAdjacencyMatrix(Graph<IExpr, IExprEdge> g) {

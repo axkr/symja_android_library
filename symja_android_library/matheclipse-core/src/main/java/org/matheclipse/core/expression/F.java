@@ -246,7 +246,7 @@ public class F {
     /** AddTo(x, dx) - is equivalent to `x = x + dx`.*/
     public final static IBuiltInSymbol AddTo = F.initFinalSymbol("AddTo", ID.AddTo);
 
-    /***/
+    /** AdjacencyMatrix(graph) - convert the `graph` into a adjacency matrix.*/
     public final static IBuiltInSymbol AdjacencyMatrix = F.initFinalSymbol("AdjacencyMatrix", ID.AdjacencyMatrix);
 
     /***/
@@ -897,8 +897,11 @@ public class F {
     /***/
     public final static IBuiltInSymbol EdgeCount = F.initFinalSymbol("EdgeCount", ID.EdgeCount);
 
-    /***/
+    /** EdgeList(graph) - convert the `graph` into a list of edges. */
     public final static IBuiltInSymbol EdgeList = F.initFinalSymbol("EdgeList", ID.EdgeList);
+
+    /***/
+    public final static IBuiltInSymbol EdgeQ = F.initFinalSymbol("EdgeQ", ID.EdgeQ);
 
     /** EffectiveInterest(i, n) - returns an effective interest rate object.*/
     public final static IBuiltInSymbol EffectiveInterest = F.initFinalSymbol("EffectiveInterest", ID.EffectiveInterest);
@@ -1244,6 +1247,9 @@ public class F {
 
     /***/
     public final static IBuiltInSymbol GraphData = F.initFinalSymbol("GraphData", ID.GraphData);
+
+    /***/
+    public final static IBuiltInSymbol GraphQ = F.initFinalSymbol("GraphQ", ID.GraphQ);
 
     /***/
     public final static IBuiltInSymbol Graphics = F.initFinalSymbol("Graphics", ID.Graphics);
@@ -2849,6 +2855,12 @@ public class F {
 
     /** VectorQ(v) - returns `True` if `v` is a list of elements which are not themselves lists.*/
     public final static IBuiltInSymbol VectorQ = F.initFinalSymbol("VectorQ", ID.VectorQ);
+
+    /** VertexList(graph) - convert the `graph` into a list of vertices.*/
+    public final static IBuiltInSymbol VertexList = F.initFinalSymbol("VertexList", ID.VertexList);
+
+    /***/
+    public final static IBuiltInSymbol VertexQ = F.initFinalSymbol("VertexQ", ID.VertexQ);
 
     /***/
     public final static IBuiltInSymbol ViewPoint = F.initFinalSymbol("ViewPoint", ID.ViewPoint);

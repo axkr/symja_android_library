@@ -2568,14 +2568,20 @@ public abstract class AbstractAST implements IASTMutable {
 		if (head().equals(F.List)) {
 			boolean directed = true;
 			for (int i = 1; i < size(); i++) {
-				if (get(i).isAST(F.DirectedEdge, 3) || get(i).isAST(F.Rule, 3)) {
-					continue;
-				}
-				if (!(get(i).isAST(F.UndirectedEdge, 3) || get(i).isAST(F.TwoWayRule, 3))) {
-					// the row is no list
+				IExpr temp = get(i);
+				if (temp.isAST2() && temp.head().isBuiltInSymbol()) {
+					IBuiltInSymbol symbol = (IBuiltInSymbol) temp.head();
+					if (symbol == F.DirectedEdge || symbol == F.Rule) {
+						continue;
+					}
+					if (!(symbol == F.UndirectedEdge || symbol == F.TwoWayRule)) {
+						// the row is no list of edges
+						return null;
+					}
+					directed = false;
+				} else {
 					return null;
 				}
-				directed = false;
 			}
 
 			Builder builder = new DefaultGraphType.Builder();
@@ -2585,6 +2591,17 @@ public abstract class AbstractAST implements IASTMutable {
 			return builder.undirected().build();
 		}
 		return null;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isEdge() {
+		if (isAST2() && head().isBuiltInSymbol()) {
+			IBuiltInSymbol symbol = (IBuiltInSymbol) head();
+			return (symbol == F.DirectedEdge || symbol == F.UndirectedEdge || symbol == F.Rule
+					|| symbol == F.TwoWayRule);
+		}
+		return false;
 	}
 
 	/** {@inheritDoc} */

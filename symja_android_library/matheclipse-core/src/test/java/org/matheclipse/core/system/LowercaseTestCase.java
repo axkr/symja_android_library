@@ -4499,6 +4499,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{2030,4,21}");
 	}
 
+	public void testEdgeList() {
+		check("EdgeList(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}))", //
+				"{1->2,2->3,1->3,4->2}");
+		check("EdgeList(Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1}))", //
+				"{1<->2,2<->3,3<->1}");
+		check("EdgeList(Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1}))", //
+				"{1->2,2->3,3->1}");
+	}
+
+	public void testEdgeQ() {
+		check("EdgeQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}),2 -> 3)", //
+				"True");
+		check("EdgeQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}),2 -> 4)", //
+				"False");
+	}
+
 	public void testEffectiveInterest() {
 		if (ToggleFeature.FINANCE) {
 			check("EffectiveInterest(a,b)", //
@@ -6267,6 +6283,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 				+ "UndirectedEdge(5,8),UndirectedEdge(6,7),UndirectedEdge(7,8),UndirectedEdge(4,8)})", //
 				"Graph({1,2,3,4,5,6,7,8},{1<->2,1<->3,1<->4,3<->4,2<->6,3<->6,5<->3,5<->4,5<->6,5<->7,5<->8,6<->7,7<->8,4<->8})");
 
+	}
+	
+	public void testGraphQ() {
+		check("GraphQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}) )", //
+				"True");
+		check("GraphQ( Sin(x) )", //
+				"False");
 	}
 
 	public void testFirst() {
@@ -19191,6 +19214,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"True");
 		check("VectorQ({1, 1/2, 3, I}, NumberQ)", //
 				"True");
+	}
+
+	public void testVertexList() {
+		check("VertexList(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}))", //
+				"{1,2,3,4}");
+		check("VertexList(Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1}))", //
+				"{1,2,3}");
+		check("VertexList(Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1}))", //
+				"{1,2,3}");
+	}
+
+	public void testVertexQ() {
+		check("VertexQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}),3)", //
+				"True");
+		check("VertexQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}),5)", //
+				"False");
 	}
 
 	public void testWhich() {

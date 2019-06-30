@@ -1763,6 +1763,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is an DirectedEdge, UndirectedEdge, Rule, TwoWayRule.
+	 * 
+	 * @return
+	 */
+	default boolean isEdge() {
+		return false;
+	}
+
+	/**
 	 * Test if this expression is a list of rules (head Rule or RuleDelayed)
 	 * 
 	 * @return
