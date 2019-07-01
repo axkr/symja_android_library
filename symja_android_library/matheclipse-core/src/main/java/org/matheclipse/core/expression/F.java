@@ -900,8 +900,11 @@ public class F {
     /** EdgeList(graph) - convert the `graph` into a list of edges. */
     public final static IBuiltInSymbol EdgeList = F.initFinalSymbol("EdgeList", ID.EdgeList);
 
-    /***/
+    /** EdgeQ(graph, edge) - test if `edge` is an edge in the `graph` object.*/
     public final static IBuiltInSymbol EdgeQ = F.initFinalSymbol("EdgeQ", ID.EdgeQ);
+
+    /***/
+    public final static IBuiltInSymbol EdgeWeight = F.initFinalSymbol("EdgeWeight", ID.EdgeWeight);
 
     /** EffectiveInterest(i, n) - returns an effective interest rate object.*/
     public final static IBuiltInSymbol EffectiveInterest = F.initFinalSymbol("EffectiveInterest", ID.EffectiveInterest);
@@ -1248,7 +1251,7 @@ public class F {
     /***/
     public final static IBuiltInSymbol GraphData = F.initFinalSymbol("GraphData", ID.GraphData);
 
-    /***/
+    /** GraphQ(expr) - test if `expr` is a graph object.*/
     public final static IBuiltInSymbol GraphQ = F.initFinalSymbol("GraphQ", ID.GraphQ);
 
     /***/
@@ -1461,7 +1464,7 @@ public class F {
     /***/
     public final static IBuiltInSymbol InverseBetaRegularized = F.initFinalSymbol("InverseBetaRegularized", ID.InverseBetaRegularized);
 
-    /***/
+    /** InverseCDF(dist, q) - returns the inverse cumulative distribution for the distribution `dist` as a function of `q` */
     public final static IBuiltInSymbol InverseCDF = F.initFinalSymbol("InverseCDF", ID.InverseCDF);
 
     /** InverseErf(z) - returns the inverse error function of `z`.*/
@@ -2859,7 +2862,7 @@ public class F {
     /** VertexList(graph) - convert the `graph` into a list of vertices.*/
     public final static IBuiltInSymbol VertexList = F.initFinalSymbol("VertexList", ID.VertexList);
 
-    /***/
+    /** VertexQ(graph, vertex) - test if `vertex` is a vertex in the `graph` object.*/
     public final static IBuiltInSymbol VertexQ = F.initFinalSymbol("VertexQ", ID.VertexQ);
 
     /***/
@@ -2867,6 +2870,9 @@ public class F {
 
     /** WeibullDistribution(a, b) - returns a Weibull distribution.*/
     public final static IBuiltInSymbol WeibullDistribution = F.initFinalSymbol("WeibullDistribution", ID.WeibullDistribution);
+
+    /***/
+    public final static IBuiltInSymbol WeightedAdjacencyMatrix = F.initFinalSymbol("WeightedAdjacencyMatrix", ID.WeightedAdjacencyMatrix);
 
     /** Which(cond1, expr1, cond2, expr2, ...) - yields `expr1` if `cond1` evaluates to `True`, `expr2` if `cond2` evaluates to `True`, etc.*/
     public final static IBuiltInSymbol Which = F.initFinalSymbol("Which", ID.Which);

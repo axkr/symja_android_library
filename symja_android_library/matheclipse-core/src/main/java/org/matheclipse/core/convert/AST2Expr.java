@@ -90,9 +90,9 @@ public class AST2Expr {
 			"DigitQ", "Dimensions", "DiracDelta", "DiscreteDelta", "DiscreteUniformDistribution", "DirectedEdge",
 			"DirectedInfinity", "Direction", "DirichletWindow", "Discriminant", "DisjointQ", "Distribute",
 			"Distributed", "Div", "Divide", "DivideBy", "Divisible", "Divisors", "DivisorSigma", "Do", "Dot", "Drop",
-			"DSolve", "EasterSunday", "EdgeCount", "EdgeList", "EdgeQ", "EffectiveInterest", "Eigenvalues",
-			"Eigenvectors", "Element", "ElementData", "Eliminate", "EllipticE", "EllipticF", "EllipticK", "EllipticPi",
-			"End", "EndPackage", "Equal", "Equivalent", "Erf", "Erfc", "Erfi", "ErlangDistribution",
+			"DSolve", "EasterSunday", "EdgeCount", "EdgeList", "EdgeQ", "EdgeWeight", "EffectiveInterest",
+			"Eigenvalues", "Eigenvectors", "Element", "ElementData", "Eliminate", "EllipticE", "EllipticF", "EllipticK",
+			"EllipticPi", "End", "EndPackage", "Equal", "Equivalent", "Erf", "Erfc", "Erfi", "ErlangDistribution",
 			"EuclideanDistance", "EulerE", "EulerianGraphQ", "EulerPhi", "Evaluate", "EvenQ", "ExactNumberQ", "Except",
 			"Exists", "Exp", "Expand", "ExpandAll", "Expectation", "ExponentialDistribution", "ExpIntegralE",
 			"ExpIntegralEi", "Exponent", "Export", "ExportString", "ExpToTrig", "ExtendedGCD", "Extract", "Factor",
@@ -172,8 +172,8 @@ public class AST2Expr {
 			"Unprotect", "UniformDistribution", "Union", "Unique", "UnitaryMatrixQ", "UnitConvert", "Unitize",
 			"UnitStep", "UnitVector", "UnsameQ", "Unset", "UpperCaseQ", "UpperTriangularize", "UpSet", "UpSetDelayed",
 			"ValueQ", "VandermondeMatrix", "Variables", "Variance", "VectorAngle", "VectorQ", "VertexList", "VertexQ",
-			"WeibullDistribution", "Which", "While", "With", "WriteString", "Xor", "YuleDissimilarity", "ZeroSymmetric",
-			"Zeta" };
+			"WeibullDistribution", "WeightedAdjacencyMatrix", "Which", "While", "With", "WriteString", "Xor",
+			"YuleDissimilarity", "ZeroSymmetric", "Zeta" };
 
 	public static Map<String, Integer> RUBI_STATISTICS_MAP;
 

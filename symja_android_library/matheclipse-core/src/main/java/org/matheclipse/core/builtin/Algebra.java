@@ -4398,7 +4398,7 @@ public class Algebra {
 						expr = F.eval(F.FunctionExpand(expr));
 						count = fComplexityFunction.apply(expr);
 						if (count < minCounter) {
-							minCounter = count;
+							// minCounter = count;
 							result = expr;
 						}
 					} catch (WrongArgumentType wat) {
@@ -4411,7 +4411,7 @@ public class Algebra {
 							expr = F.eval(F.FunctionExpand(expr));
 							count = fComplexityFunction.apply(expr);
 							if (count <= minCounter) {
-								minCounter = count;
+//								minCounter = count;
 								result = expr;
 							}
 						} catch (WrongArgumentType wat) {

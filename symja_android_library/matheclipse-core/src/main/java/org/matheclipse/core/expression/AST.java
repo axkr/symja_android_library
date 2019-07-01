@@ -58,6 +58,11 @@ public class AST extends HMArrayList implements Externalizable {
 		IAST fDelegate;
 		int fFirstIndex;
 
+		public ASTProxy() {
+			super();
+			// needed for serialization
+		}
+
 		public ASTProxy(IAST delegate, int firstIndex) {
 			this.fDelegate = delegate;
 			this.fFirstIndex = firstIndex;
