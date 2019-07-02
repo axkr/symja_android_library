@@ -6267,6 +6267,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGraph() {
+		check("Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{2.0,3.0,4.0}})", //
+				"Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{2.0,3.0,4.0}})");
+		check("Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1}, {EdgeWeight -> {2, 3, 4}})", //
+				"Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{2.0,3.0,4.0}})");
+		
 		check("Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1})", //
 				"Graph({1,2,3},{1<->2,2<->3,3<->1})");
 		check("Graph({1,2,3},{1<->2,2<->3,3<->1})", //
@@ -6284,7 +6289,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Graph({1,2,3,4,5,6,7,8},{1<->2,1<->3,1<->4,3<->4,2<->6,3<->6,5<->3,5<->4,5<->6,5<->7,5<->8,6<->7,7<->8,4<->8})");
 
 	}
-	
+
 	public void testGraphQ() {
 		check("GraphQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}) )", //
 				"True");

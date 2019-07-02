@@ -56,7 +56,12 @@ public class OptionArgs {
 			int size = currentOptionsList.size();
 			this.fCurrentOptionsList = F.ListAlloc(size);
 			for (int i = startIndex; i < size; i++) {
-				this.fCurrentOptionsList.append(1, currentOptionsList.get(i));
+				if (currentOptionsList.get(i).isListOfRules()) {
+					IAST listOfRules = (IAST) currentOptionsList.get(i);
+					this.fCurrentOptionsList.appendAll(listOfRules, 1, listOfRules.size());
+				} else {
+					this.fCurrentOptionsList.append(currentOptionsList.get(i));
+				}
 			}
 		}
 	}

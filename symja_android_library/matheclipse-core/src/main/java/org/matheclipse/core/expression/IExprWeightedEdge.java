@@ -25,7 +25,7 @@ public class IExprWeightedEdge extends DefaultWeightedEdge {
 		return (IExpr) getTarget();
 	}
 
-	protected double weight() {
+	public double weight() {
 		return getWeight();
 	}
 }

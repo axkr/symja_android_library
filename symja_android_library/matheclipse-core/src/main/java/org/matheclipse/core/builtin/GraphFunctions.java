@@ -18,13 +18,14 @@ import org.jgrapht.alg.spanning.BoruvkaMinimumSpanningTree;
 import org.jgrapht.alg.tour.HeldKarpTSP;
 import org.jgrapht.graph.AbstractBaseGraph;
 import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import org.jgrapht.graph.DefaultUndirectedGraph;
-import org.jgrapht.graph.DefaultWeightedEdge;
-import org.jgrapht.graph.SimpleWeightedGraph;
+import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IExprEdge;
@@ -75,10 +76,43 @@ public class GraphFunctions {
 					if (g != null) {
 						return g;
 					}
-				} else if (ast.isAST2()) {
-					DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> g = createGraph(ast.arg1(), ast.arg2());
-					if (g != null) {
-						return g;
+				} else if (ast.size() >= 3 && ast.arg1().isList()) {
+					IExpr edgeWeight = F.NIL;
+					final OptionArgs options = new OptionArgs(F.Graph, ast, 2, engine);
+					IExpr option = options.getOption(F.EdgeWeight);
+					if (option.isPresent() && !option.equals(F.Automatic)) {
+						edgeWeight = option;
+					}
+					GraphType t = ast.arg1().isListOfEdges();
+					if (t != null) {
+						if (edgeWeight.isList()) {
+							DataExpr<org.jgrapht.Graph<IExpr, IExprWeightedEdge>> g = createWeightedGraph(F.NIL,
+									(IAST) ast.arg1(), (IAST) edgeWeight);
+							if (g != null) {
+								return g;
+							}
+						} else {
+							DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> g = createGraph(F.NIL, (IAST) ast.arg1());
+							if (g != null) {
+								return g;
+							}
+						}
+					} else {
+						if (edgeWeight.isList()) {
+							DataExpr<org.jgrapht.Graph<IExpr, IExprWeightedEdge>> g = createWeightedGraph(
+									(IAST) ast.arg1(), (IAST) ast.arg1(), (IAST) edgeWeight);
+							if (g != null) {
+								return g;
+							}
+						} else {
+							if (ast.arg2().isList()) {
+								DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> g = createGraph((IAST) ast.arg1(),
+										(IAST) ast.arg2());
+								if (g != null) {
+									return g;
+								}
+							}
+						}
 					}
 				}
 			} catch (RuntimeException rex) {
@@ -90,8 +124,13 @@ public class GraphFunctions {
 		}
 
 		@Override
+		public IAST options() {
+			return F.List(F.Rule(F.EdgeWeight, F.Automatic));
+		}
+
+		@Override
 		public int[] expectedArgSize() {
-			return IOFunctions.ARGS_1_2;
+			return IOFunctions.ARGS_1_INFINITY;
 		}
 	}
 
@@ -134,14 +173,14 @@ public class GraphFunctions {
 							int rowDim = dim[0];
 							int colDim = dim[1];
 							if (colDim == 2) {
-								Graph<IInteger, IExprWeightedEdge> g = new SimpleWeightedGraph<>(
+								Graph<IInteger, IExprWeightedEdge> g = new DefaultUndirectedWeightedGraph<>(
 										IExprWeightedEdge.class);
 								for (int i = 1; i <= rowDim; i++) {
 									g.addVertex(F.ZZ(i));
 								}
 								for (int i = 0; i < rowDim; i++) {
 									for (int j = i + 1; j < rowDim; j++) {
-										g.setEdgeWeight(g.addEdge(F.ZZ(i + 1), F.ZZ(j + 1)), // EuclideanInstance
+										g.setEdgeWeight(g.addEdge(F.ZZ(i + 1), F.ZZ(j + 1)), // EuclideanDistance
 												MathArrays.distance(matrix[i], matrix[j]));
 									}
 								}
@@ -541,43 +580,95 @@ public class GraphFunctions {
 			} else {
 				g = new DefaultUndirectedGraph<IExpr, IExprEdge>(IExprEdge.class);
 			}
+
 			IAST list = (IAST) arg1;
 			for (int i = 1; i < list.size(); i++) {
 				IAST edge = list.getAST(i);
 				g.addVertex(edge.arg1());
 				g.addVertex(edge.arg2());
 				g.addEdge(edge.arg1(), edge.arg2());
-
 			}
+
 			return DataExpr.newInstance(F.Graph, g);
 		}
 
 		return null;
 	}
 
-	private static DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> createGraph(final IExpr vertices, final IExpr edges) {
-		if (vertices.isList()) {
-			Graph<IExpr, IExprEdge> g;
-			GraphType t = edges.isListOfEdges();
-			if (t != null) {
-				if (t.isDirected()) {
-					g = new DefaultDirectedGraph<IExpr, IExprEdge>(IExprEdge.class);
-				} else {
-					g = new DefaultUndirectedGraph<IExpr, IExprEdge>(IExprEdge.class);
-				}
-				// Graph<IExpr, IExprEdge> g = new DefaultDirectedGraph<IExpr, IExprEdge>(IExprEdge.class);
-				IAST list = (IAST) vertices;
-				for (int i = 1; i < vertices.size(); i++) {
-					g.addVertex(list.get(i));
-				}
+	/**
+	 * Create an internal DataExpr Graph.
+	 * 
+	 * @param arg1
+	 * @return
+	 */
+	private static DataExpr<org.jgrapht.Graph<IExpr, IExprWeightedEdge>> createWeightedGraph(final IAST vertices,
+			final IAST arg1, final IAST edgeWeight) {
+		if (arg1.size() != edgeWeight.size()) {
+			return null;
+		}
+		Graph<IExpr, IExprWeightedEdge> g;
+		GraphType t = arg1.isListOfEdges();
+		if (t != null) {
 
-				list = (IAST) edges;
+			if (t.isDirected()) {
+				g = new DefaultDirectedWeightedGraph<IExpr, IExprWeightedEdge>(IExprWeightedEdge.class);
+			} else {
+				g = new DefaultUndirectedWeightedGraph<IExpr, IExprWeightedEdge>(IExprWeightedEdge.class);
+			}
+
+			IAST list = (IAST) arg1;
+			for (int i = 1; i < list.size(); i++) {
+				IAST edge = list.getAST(i);
+				g.addVertex(edge.arg1());
+				g.addVertex(edge.arg2());
+				g.addEdge(edge.arg1(), edge.arg2());
+			}
+
+			if (t.isDirected()) {
+				DefaultDirectedWeightedGraph gw = (DefaultDirectedWeightedGraph<IExpr, IExprWeightedEdge>) g;
 				for (int i = 1; i < list.size(); i++) {
 					IAST edge = list.getAST(i);
-					g.addEdge(edge.arg1(), edge.arg2());
+					gw.setEdgeWeight(edge.arg1(), edge.arg2(), edgeWeight.get(i).evalDouble());
 				}
-				return DataExpr.newInstance(F.Graph, g);
+			} else {
+				DefaultUndirectedWeightedGraph gw = (DefaultUndirectedWeightedGraph<IExpr, IExprWeightedEdge>) g;
+				for (int i = 1; i < list.size(); i++) {
+					IAST edge = list.getAST(i);
+					gw.setEdgeWeight(edge.arg1(), edge.arg2(), edgeWeight.get(i).evalDouble());
+				}
 			}
+
+			return DataExpr.newInstance(F.Graph, g);
+		}
+
+		return null;
+	}
+
+	private static DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> createGraph(final IAST vertices, final IAST edges) {
+
+		Graph<IExpr, IExprEdge> g;
+		GraphType t = edges.isListOfEdges();
+		if (t != null) {
+			if (t.isDirected()) {
+				g = new DefaultDirectedGraph<IExpr, IExprEdge>(IExprEdge.class);
+			} else {
+				g = new DefaultUndirectedGraph<IExpr, IExprEdge>(IExprEdge.class);
+			}
+			if (vertices.isList()) {
+				// Graph<IExpr, IExprEdge> g = new DefaultDirectedGraph<IExpr, IExprEdge>(IExprEdge.class);
+				for (int i = 1; i < vertices.size(); i++) {
+					g.addVertex(vertices.get(i));
+				}
+			}
+
+			for (int i = 1; i < edges.size(); i++) {
+				IAST edge = edges.getAST(i);
+				g.addVertex(edge.arg1());
+				g.addVertex(edge.arg2());
+				g.addEdge(edge.arg1(), edge.arg2());
+			}
+
+			return DataExpr.newInstance(F.Graph, g);
 		}
 
 		return null;
@@ -630,7 +721,14 @@ public class GraphFunctions {
 		return graph;
 	}
 
-	private static IASTAppendable vertexToIExpr(Graph<IExpr, IExprEdge> g) {
+	public static IExpr weightedGraphToIExpr(AbstractBaseGraph<IExpr, IExprWeightedEdge> g) {
+		IASTAppendable vertexes = vertexToIExpr(g);
+		IASTAppendable[] res = weightedEdgesToIExpr(g);
+		IExpr graph = F.Graph(vertexes, res[0], F.List(F.Rule(F.EdgeWeight, res[1])));
+		return graph;
+	}
+
+	private static IASTAppendable vertexToIExpr(Graph<IExpr, ?> g) {
 		Set<IExpr> vertexSet = g.vertexSet();
 		IASTAppendable vertexes = F.ListAlloc(vertexSet.size());
 		for (IExpr expr : vertexSet) {
@@ -653,6 +751,34 @@ public class GraphFunctions {
 			}
 		}
 		return edges;
+	}
+
+	/**
+	 * Return an array of 2 lists. At index 0 the list of edges. At index 1 the list of corresponding weights.
+	 * 
+	 * @param graph
+	 * 
+	 * @return an array of 2 lists. At index 0 the list of edges. At index 1 the list of corresponding weights.
+	 */
+	private static IASTAppendable[] weightedEdgesToIExpr(Graph<IExpr, IExprWeightedEdge> graph) {
+
+		Set<IExprWeightedEdge> edgeSet = (Set<IExprWeightedEdge>) graph.edgeSet();
+		IASTAppendable edges = F.ListAlloc(edgeSet.size());
+		IASTAppendable weights = F.ListAlloc(edgeSet.size());
+		GraphType type = graph.getType();
+		if (type.isDirected()) {
+			for (IExprWeightedEdge edge : edgeSet) {
+				edges.append(F.DirectedEdge(edge.lhs(), edge.rhs()));
+				weights.append(F.num(edge.weight()));
+			}
+		} else {
+			for (IExprWeightedEdge edge : edgeSet) {
+				edges.append(F.UndirectedEdge(edge.lhs(), edge.rhs()));
+				weights.append(F.num(edge.weight()));
+			}
+		}
+		return new IASTAppendable[] { edges, weights };
+
 	}
 
 	public static IAST graphToAdjacencyMatrix(Graph<IExpr, IExprEdge> g) {

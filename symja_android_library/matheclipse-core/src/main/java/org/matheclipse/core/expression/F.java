@@ -6162,6 +6162,10 @@ public class F {
 
 	public static IAST Graph(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Graph, a0, a1);
+	}  
+	
+	public static IAST Graph(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(Graph, a0, a1, a2);
 	}
 
 	public static IASTAppendable Graphics() {
