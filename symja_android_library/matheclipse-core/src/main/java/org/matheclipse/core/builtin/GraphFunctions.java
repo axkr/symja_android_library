@@ -3,6 +3,10 @@ package org.matheclipse.core.builtin;
 import java.util.List;
 import java.util.Set;
 
+import org.gavaghan.geodesy.Ellipsoid;
+import org.gavaghan.geodesy.GeodeticCalculator;
+import org.gavaghan.geodesy.GeodeticMeasurement;
+import org.gavaghan.geodesy.GlobalPosition;
 import org.hipparchus.util.MathArrays;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
@@ -175,9 +179,12 @@ public class GraphFunctions {
 							if (colDim == 2) {
 								Graph<IInteger, IExprWeightedEdge> g = new DefaultUndirectedWeightedGraph<>(
 										IExprWeightedEdge.class);
+								// define the vertices as integer numbers 1..rowDim
 								for (int i = 1; i <= rowDim; i++) {
 									g.addVertex(F.ZZ(i));
 								}
+
+								// create all possible edges between the given vertices
 								for (int i = 0; i < rowDim; i++) {
 									for (int j = i + 1; j < rowDim; j++) {
 										g.setEdgeWeight(g.addEdge(F.ZZ(i + 1), F.ZZ(j + 1)), // EuclideanDistance
@@ -187,26 +194,71 @@ public class GraphFunctions {
 								GraphPath<IInteger, IExprWeightedEdge> tour = new HeldKarpTSP<IInteger, IExprWeightedEdge>()
 										.getTour(g);
 
+								// calculate the shortest tour from the sum of distances and
+								// create list of vertices for the shortest tour
 								List<IInteger> tourPositions = tour.getVertexList();
-								IASTAppendable tourList = F.ListAlloc(tourPositions.size());
+								IASTAppendable shortestTourList = F.ListAlloc(tourPositions.size());
 								IASTAppendable sum = F.PlusAlloc(tourPositions.size());
 								IInteger lastPosition = tourPositions.get(tourPositions.size() - 1);
-								tourList.append(lastPosition);
+								shortestTourList.append(lastPosition);
 								for (int i = tourPositions.size() - 2; i >= 0; i--) {
 									IInteger position = tourPositions.get(i);
-									tourList.append(position);
+									shortestTourList.append(position);
 									sum.append(F.EuclideanDistance(m.get(lastPosition), m.get(position)));
 									lastPosition = position;
 								}
-								return F.List(sum, tourList);
+								return F.List(sum, shortestTourList);
 							}
+						}
+					} else if (ast.arg1().isList()) {
+						IAST list = (IAST) ast.arg1();
+						if (list.size() > 2 && list.forAll(x -> (x.toData() instanceof GlobalPosition))) {
+							int rowDim = list.size() - 1;
+							Graph<IInteger, IExprWeightedEdge> g = new DefaultUndirectedWeightedGraph<>(
+									IExprWeightedEdge.class);
+							// define the vertices as integer numbers 1..rowDim
+							for (int i = 1; i <= rowDim; i++) {
+								g.addVertex(F.ZZ(i));
+							}
+
+							GeodeticCalculator geoCalc = new GeodeticCalculator();
+							Ellipsoid reference = Ellipsoid.WGS84;
+							// create all possible edges between the given vertices
+							for (int i = 0; i < rowDim - 1; i++) {
+								GlobalPosition p1 = (GlobalPosition) list.get(i + 1).toData();
+								for (int j = i + 1; j < rowDim; j++) {
+									GlobalPosition p2 = (GlobalPosition) list.get(j + 1).toData();
+									GeodeticMeasurement gm = geoCalc.calculateGeodeticMeasurement(reference, p1, p2);
+									g.setEdgeWeight(g.addEdge(F.ZZ(i + 1), F.ZZ(j + 1)), // GeoDistance
+											gm.getPointToPointDistance());
+								}
+
+							}
+							GraphPath<IInteger, IExprWeightedEdge> tour = new HeldKarpTSP<IInteger, IExprWeightedEdge>()
+									.getTour(g);
+
+							// calculate the shortest tour from the sum of distances and
+							// create list of vertices for the shortest tour
+							List<IInteger> tourPositions = tour.getVertexList();
+							IASTAppendable shortestTourList = F.ListAlloc(tourPositions.size());
+							IASTAppendable sum = F.PlusAlloc(tourPositions.size());
+							IInteger lastPosition = tourPositions.get(tourPositions.size() - 1);
+							shortestTourList.append(lastPosition);
+							for (int i = tourPositions.size() - 2; i >= 0; i--) {
+								IInteger position = tourPositions.get(i);
+								shortestTourList.append(position);
+								sum.append(F.GeoDistance(list.get(lastPosition), list.get(position)));
+								lastPosition = position;
+							}
+							return F.List(sum, shortestTourList);
+
 						}
 					}
 				}
 			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
-					rex.printStackTrace();
-				}
+				// if (Config.SHOW_STACKTRACE) {
+				rex.printStackTrace();
+				// }
 			}
 			return F.NIL;
 		}

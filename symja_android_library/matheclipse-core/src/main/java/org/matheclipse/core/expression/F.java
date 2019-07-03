@@ -6151,6 +6151,10 @@ public class F {
 	public static IAST GegenbauerC(final IExpr a0, final IExpr a1) {
 		return binaryAST2(GegenbauerC, a0, a1);
 	}
+	
+	public static IAST GeoDistance(final IExpr a0, final IExpr a1) {
+		return binaryAST2(GeoDistance, a0, a1);
+	}
 
 	public static IAST GeometricMean(final IExpr a0) {
 		return unaryAST1(GeometricMean, a0);
