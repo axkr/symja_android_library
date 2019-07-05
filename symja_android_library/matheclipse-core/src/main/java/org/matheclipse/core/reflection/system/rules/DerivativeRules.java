@@ -80,7 +80,7 @@ public interface DerivativeRules {
       Sin(Times(C1D2,Pi,Sqr(Slot1)))),
     // Gamma->Gamma(#1)*PolyGamma(#1)
     Rule(Gamma,
-      Times(Gamma(Slot1),PolyGamma(Slot1))),
+      Times(Gamma(Slot1),PolyGamma(C0,Slot1))),
     // HarmonicNumber->Pi^2/6-HarmonicNumber(#1,2)
     Rule(HarmonicNumber,
       Subtract(Times(QQ(1L,6L),Sqr(Pi)),HarmonicNumber(Slot1,C2))),
@@ -172,7 +172,7 @@ public interface DerivativeRules {
       Times(Slot1,Power(Subtract(C1,Sqr(Slot1)),QQ(-3L,2L)))),
     // Gamma->Gamma(#1)*PolyGamma(#1)^2+Gamma(#1)*PolyGamma(1,#1)
     Rule(Gamma,
-      Plus(Times(Gamma(Slot1),PolyGamma(C1,Slot1)),Times(Gamma(Slot1),Sqr(PolyGamma(Slot1))))),
+      Plus(Times(Gamma(Slot1),Sqr(PolyGamma(C0,Slot1))),Times(Gamma(Slot1),PolyGamma(C1,Slot1)))),
     // Log->-1/#1^2
     Rule(Log,
       Negate(Power(Slot1,CN2))),

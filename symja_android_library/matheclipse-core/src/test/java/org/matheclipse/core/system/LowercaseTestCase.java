@@ -12436,10 +12436,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolyGamma() {
-		check("PolyGamma(-1,1)", //
-				"0");
+		check("PolyGamma(0,-42)", //
+				"ComplexInfinity");
+		check("PolyGamma(-1,z)", //
+				"LogGamma(z)");
+		check("PolyGamma(-1,0)", //
+				"Infinity");
+		check("PolyGamma(-1,12)", //
+				"Log(39916800)");
+		check("PolyGamma(-1,-7)", //
+				"Infinity");
 		check("PolyGamma(-1)", //
 				"ComplexInfinity");
+		check("PolyGamma(-1,1)", //
+				"0");
 		check("PolyGamma(-2)", //
 				"ComplexInfinity");
 		check("PolyGamma(1)", //

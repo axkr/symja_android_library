@@ -1066,15 +1066,22 @@ public class SpecialFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr arg1 = ast.arg1();
 			if (ast.isAST1()) {
-				if (arg1.isPositive()) {
-
-				} else {
-					if (arg1.isInteger()) {
+				if (arg1.isMinusOne()) {
+					return F.CComplexInfinity;
+				}
+				return F.PolyGamma(F.C0, arg1);
+			}
+			if (ast.isAST2()) {
+				IExpr arg2 = ast.arg2();
+				if (arg1.isMinusOne()) {
+					return F.LogGamma(arg2);
+				}
+				if (arg2.isIntegerResult() && arg2.isNegativeResult()) {
+					IExpr nu = arg1.re();
+					if (nu.isReal() && ((ISignedNumber) nu).isGT(F.CN1)) {
 						return F.CComplexInfinity;
 					}
 				}
-			} else {
-				IExpr arg2 = ast.arg2();
 			}
 			return F.NIL;
 		}
