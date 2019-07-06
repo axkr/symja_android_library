@@ -1540,6 +1540,20 @@ public final class Arithmetic {
 		}
 
 		@Override
+		public IExpr e1ApcomplexArg(Apcomplex arg1) {
+			return F.complexNum(ApcomplexMath.gamma(arg1));
+		}
+
+		@Override
+		public IExpr e1ApfloatArg(Apfloat arg1) {
+			try {
+				return F.num(ApfloatMath.gamma(arg1));
+			} catch (ArithmeticException ae) {
+				return F.complexNum(ApcomplexMath.gamma(new Apcomplex(arg1, Apcomplex.ZERO)));
+			}
+		}
+
+		@Override
 		public IExpr e1DblComArg(final IComplexNum c) {
 			if (pComplex == null) {
 				// lazy initialization
@@ -4851,7 +4865,7 @@ public final class Arithmetic {
 				}
 
 			}
-			
+
 			// note: not a general rule
 			// if (o0.isMinusOne() && o1.isPlus()) {
 			// return ((IAST) o1).map(x -> x.negate(), 1);
@@ -4859,8 +4873,8 @@ public final class Arithmetic {
 
 			if (o0.equals(o1)) {
 				return F.Power(o0, C2); // o0.power(F.C2);
-			} 
-			
+			}
+
 			if (o0.isSymbol()) {
 				if (o1.isAtom()) {
 					return F.NIL;
