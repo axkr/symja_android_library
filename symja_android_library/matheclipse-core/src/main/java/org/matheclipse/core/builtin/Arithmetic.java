@@ -1540,7 +1540,7 @@ public final class Arithmetic {
 		}
 
 		@Override
-		public IExpr e1ApcomplexArg(Apcomplex arg1) {
+		public IExpr e1ApcomplexArg(Apcomplex arg1) { 
 			return F.complexNum(ApcomplexMath.gamma(arg1));
 		}
 
@@ -1555,6 +1555,8 @@ public final class Arithmetic {
 
 		@Override
 		public IExpr e1DblComArg(final IComplexNum c) {
+			// Apcomplex gamma = ApcomplexMath.gamma(c.apcomplexNumValue(Config.MACHINE_PRECISION).apcomplexValue());
+			// return F.complexNum(gamma.real().doubleValue(), gamma.imag().doubleValue());
 			if (pComplex == null) {
 				// lazy initialization
 				pComplex = new org.hipparchus.complex.Complex[p.length];

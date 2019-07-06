@@ -4,6 +4,9 @@ import java.io.StringWriter;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.TeXUtilities;
+import org.matheclipse.core.expression.ASTRealMatrix;
+import org.matheclipse.core.expression.ASTRealVector;
+import org.matheclipse.core.interfaces.IExpr;
 
 import junit.framework.TestCase;
 
@@ -246,21 +249,37 @@ public class BasicTeXTestCase extends TestCase {
 		localTexUtil.toTeX("1.3 - 1.0", stw);
 		assertEquals(stw.toString(), "0.3");
 	}
-	
+
 	public void testTeX026() {
-		check("DirectedEdge(a,b)",
-				"a\\to b");
-		check("UndirectedEdge(a,b)",
-				"a\\leftrightarrow b");
+		check("DirectedEdge(a,b)", "a\\to b");
+		check("UndirectedEdge(a,b)", "a\\leftrightarrow b");
 		check("Graph({1,2,3},{1<->2,2<->3})", //
 				"\\text{Graph}(\\{1,2,3\\},\\{1\\leftrightarrow 2,2\\leftrightarrow 3\\})");
 		check("Graph({1,2,3},{1->2,2->3})", //
 				"\\text{Graph}(\\{1,2,3\\},\\{1\\to 2,2\\to 3\\})");
 	}
-	
+
+	public void testTeX027() {
+		check(new ASTRealMatrix(new double[][] { { 1.0, 2.0, 3.0 }, { 3.3, 4.4, 5.5 } }, false), //
+				"\\left(\n" + "\\begin{array}{ccc}\n" + "1.0 & 2.0 & 3.0 \\\\\n" + "3.3 & 4.4 & 5.5 \n"
+						+ "\\end{array}\n" + "\\right) ");
+	}
+
+	public void testTeX028() {
+		check(new ASTRealVector(new double[] { 1.0, 2.0, 3.0 }, false), //
+				"\\{1.0,2.0,3.0\\}");
+	}
+
 	public void check(String strEval, String strResult) {
 		StringWriter stw = new StringWriter();
 		texUtil.toTeX(strEval, stw);
+		assertEquals(stw.toString(), strResult);
+
+	}
+
+	public void check(IExpr expr, String strResult) {
+		StringWriter stw = new StringWriter();
+		texUtil.toTeX(expr, stw);
 		assertEquals(stw.toString(), strResult);
 
 	}
