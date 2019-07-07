@@ -113,7 +113,7 @@ IIntegrate(2445,Int(Times(Power(Plus(a_DEFAULT,Times(Log(Times(c_DEFAULT,Power(T
 IIntegrate(2446,Int(Times(Power(Plus(a_DEFAULT,Times(Log(Times(c_DEFAULT,Power(Times(d_DEFAULT,Power(Plus(e_DEFAULT,Times(f_DEFAULT,x_)),m_DEFAULT)),n_))),b_DEFAULT)),p_DEFAULT),$p("§afx")),x_Symbol),
     Condition(Unintegrable(Times($s("§afx"),Power(Plus(a,Times(b,Log(Times(c,Power(Times(d,Power(Plus(e,Times(f,x)),m)),n))))),p)),x),And(FreeQ(List(a,b,c,d,e,f,m,n,p),x),AlgebraicFunctionQ($s("§afx"),x,True))));
 IIntegrate(2447,Int(Times(Log(u_),Power($p("§pq"),m_DEFAULT)),x_Symbol),
-    Condition(With(List(Set(CSymbol,FullSimplify(Times(Power($s("§pq"),m),Subtract(C1,u),Power(D(u,x),CN1))))),Condition(Simp(Times(CSymbol,PolyLog(C2,Subtract(C1,u))),x),FreeQ(CSymbol,x))),And(IntegerQ(m),PolyQ($s("§pq"),x),RationalFunctionQ(u,x),LeQ(Part(RationalFunctionExponents(u,x),C2),Expon($s("§pq"),x)))));
+    Condition(With(List(Set(C,FullSimplify(Times(Power($s("§pq"),m),Subtract(C1,u),Power(D(u,x),CN1))))),Condition(Simp(Times(C,PolyLog(C2,Subtract(C1,u))),x),FreeQ(C,x))),And(IntegerQ(m),PolyQ($s("§pq"),x),RationalFunctionQ(u,x),LeQ(Part(RationalFunctionExponents(u,x),C2),Expon($s("§pq"),x)))));
 IIntegrate(2448,Int(Log(Times(c_DEFAULT,Power(Plus(d_,Times(e_DEFAULT,Power(x_,n_))),p_DEFAULT))),x_Symbol),
     Condition(Subtract(Simp(Times(x,Log(Times(c,Power(Plus(d,Times(e,Power(x,n))),p)))),x),Dist(Times(e,n,p),Int(Times(Power(x,n),Power(Plus(d,Times(e,Power(x,n))),CN1)),x),x)),FreeQ(List(c,d,e,n,p),x)));
 IIntegrate(2449,Int(Power(Plus(a_DEFAULT,Times(Log(Times(c_DEFAULT,Power(Plus(d_,Times(e_DEFAULT,Power(x_,CN1))),p_DEFAULT))),b_DEFAULT)),q_),x_Symbol),

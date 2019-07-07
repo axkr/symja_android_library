@@ -9597,12 +9597,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLogGamma() {
+		check("LogGamma(-11/2)", //
+				"LogGamma(-11/2)");
+		check("LogGamma(1/2)", //
+				"Log(Pi)/2");
+		check("LogGamma(11/2)", //
+				"Log(945/32*Sqrt(Pi))"); 
+		check("LogGamma(43/2)", //
+				"Log(13113070457687988603440625/2097152*Sqrt(Pi))"); 
 		check("LogGamma(7.7)", //
 				"7.92654");
 		check("LogGamma(-I*Infinity)", //
 				"ComplexInfinity");
 		check("LogGamma(6)", //
 				"Log(120)");
+		check("LogGamma(1)", //
+				"0");
 		check("LogGamma(0)", //
 				"Infinity");
 		check("LogGamma(-6)", //
@@ -14564,8 +14574,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testReplacePart() {
-		check("ReplacePart({a, b, c}, {{1}, {2}} -> t)", //
-				"{t,t,c}");
+		// TODO github #135
+		// check("ReplacePart({{1, 2}, {3,4}}, {x_, x_} -> -1)", //
+		// "");
 		check("ReplacePart({a, b, c}, 1 -> t)", //
 				"{t,b,c}");
 		check("ReplacePart({{a, b}, {c, d}}, {2, 1} -> t)", //

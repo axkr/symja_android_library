@@ -1798,7 +1798,6 @@ public abstract class AbstractAST implements IASTMutable {
 				return F.QQ((IInteger) arg1(), (IInteger) arg2()).internalJavaString(symbolsAsFactoryMethod, depth,
 						useOperators, usePrefix, noSymbolPrefix);
 			}
-			return arg1().internalJavaString(symbolsAsFactoryMethod, depth, useOperators, usePrefix, noSymbolPrefix);
 		}
 		if (isPower()) {
 			if (arg1().isInteger() && arg2().isMinusOne()) {

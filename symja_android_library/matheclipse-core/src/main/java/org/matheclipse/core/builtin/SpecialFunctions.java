@@ -48,6 +48,7 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.LogGammaRules;
 import org.matheclipse.core.reflection.system.rules.PolyGammaRules;
 import org.matheclipse.core.reflection.system.rules.PolyLogRules;
 import org.matheclipse.core.reflection.system.rules.ProductLogRules;
@@ -817,16 +818,20 @@ public class SpecialFunctions {
 
 	}
 
-	private static class LogGamma extends AbstractTrigArg1 implements INumeric {
+	private static class LogGamma extends AbstractTrigArg1 implements LogGammaRules, INumeric {
+		@Override
+		public IAST getRuleAST() {
+			return RULES;
+		}
 
 		@Override
 		public IExpr e1DblArg(final double arg1) {
 			try {
-				if (arg1 > 0) {
-					return Num.valueOf(de.lab4inf.math.functions.Gamma.lngamma(arg1));
-				}
 				if (F.isZero(arg1)) {
 					return F.CInfinity;
+				}
+				if (arg1 > 0.0) {
+					return Num.valueOf(de.lab4inf.math.functions.Gamma.lngamma(arg1));
 				}
 			} catch (final MathIllegalStateException e) {
 			}
@@ -839,6 +844,9 @@ public class SpecialFunctions {
 				throw new UnsupportedOperationException();
 			}
 			try {
+				if (F.isZero(stack[top])) {
+					return Double.POSITIVE_INFINITY;
+				}
 				return de.lab4inf.math.functions.Gamma.lngamma(stack[top]);
 			} catch (final MathIllegalStateException e) {
 			}
@@ -858,8 +866,7 @@ public class SpecialFunctions {
 				if (arg1.isInteger()) {
 					return F.Log(F.Factorial(arg1.dec()));
 				}
-			}
-			if (arg1.isNegative()) {
+			} else if (arg1.isNegative()) {
 				if (arg1.isInteger()) {
 					return F.CInfinity;
 				}

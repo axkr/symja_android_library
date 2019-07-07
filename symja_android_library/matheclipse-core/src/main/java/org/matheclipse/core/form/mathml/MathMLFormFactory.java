@@ -1714,20 +1714,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		}
 	}
 
-	public void convertList(final StringBuilder buf, final IAST list) {
-		// if (list instanceof ASTRealVector) {
-		// ((ASTRealVector) list).toString(buf);
-		// return;
-		// }
-		// if (list instanceof ASTRealMatrix) {
-		// ((ASTRealMatrix) list).toString(buf, fEmpty);
-		// fColumnCounter = 1;
-		// fEmpty = false;
-		// return;
-		// }
-		// if (list.isEvalFlagOn(IAST.IS_MATRIX)) {
-		// }
-
+	public void convertList(final StringBuilder buf, final IAST list) { 
 		tagStart(buf, "mrow");
 		tag(buf, "mo", "{");
 		if (list.size() > 1) {
