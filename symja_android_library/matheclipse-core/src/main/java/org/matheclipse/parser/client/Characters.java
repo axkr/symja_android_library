@@ -255,7 +255,7 @@ public class Characters {
 			CharacterNamesMap.put(NamedCharactersMap.get("ImaginaryI"), "I");
 			CharacterNamesMap.put(NamedCharactersMap.get("ImaginaryJ"), "I");
 			CharacterNamesMap.put(NamedCharactersMap.get("Pi"), "Pi");
-
+			CharacterNamesMap.put(NamedCharactersMap.get("Degree"), "Degree");
 		}
 	}
 

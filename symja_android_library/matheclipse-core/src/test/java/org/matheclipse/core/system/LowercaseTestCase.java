@@ -3629,6 +3629,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDegree() {
+		check("\\[Pi]", //
+				"Pi");
+		check("\\[Degree]", //
+				"Pi/180");
+		check("\u00B0", //
+				"Pi/180");
+		check("Sin(30*\\[Pi])", //
+				"0");
+		check("Sin(30*\\[Degree])", //
+				"1/2");
+		check("Sin(30\\[Degree])", //
+				"1/2");
 		check("Sin(30*Degree)", //
 				"1/2");
 		check("Degree == Pi / 180", //
@@ -9602,9 +9614,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("LogGamma(1/2)", //
 				"Log(Pi)/2");
 		check("LogGamma(11/2)", //
-				"Log(945/32*Sqrt(Pi))"); 
+				"Log(945/32*Sqrt(Pi))");
 		check("LogGamma(43/2)", //
-				"Log(13113070457687988603440625/2097152*Sqrt(Pi))"); 
+				"Log(13113070457687988603440625/2097152*Sqrt(Pi))");
 		check("LogGamma(7.7)", //
 				"7.92654");
 		check("LogGamma(-I*Infinity)", //
