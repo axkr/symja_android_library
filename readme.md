@@ -1,6 +1,7 @@
 ## Symja Library - Java Symbolic Math System
 
-**Note**: this repository contains the **Java 8** version of the project. The [NCalc](https://github.com/tranleduy2000/ncalc) and [Natural Calc](https://github.com/tranleduy2000/naturalcalc)  projects maintains a [Java 7 branch based on Retrolambda](https://github.com/tranleduy2000/symja_android_library).
+**Note**: this repository contains the **Java 8** version of the project. The [NCalc](https://github.com/tranleduy2000/ncalc) Android calculator project 
+maintains a [Java 7 Android branch](https://github.com/tranleduy2000/symja_android_library) of the [Android *.AAR library](https://github.com/tranleduy2000/symja_android_library/releases).
 
 Use especially the "2nd" button in the following calculator interfaces:
 
