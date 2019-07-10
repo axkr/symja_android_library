@@ -4430,6 +4430,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDrop() {
+		check("Drop({}, 0)", //
+				"{}");
+		check("Drop({}, 1)", //
+				"Drop({},1)");
+		
 		check("Drop({a, b, c, d}, 3)", //
 				"{d}");
 		check("Drop({a, b, c, d}, -2)", //
