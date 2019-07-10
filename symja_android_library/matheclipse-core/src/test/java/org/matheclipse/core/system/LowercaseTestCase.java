@@ -3659,10 +3659,27 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDelete() {
+		// TODO
+		// check("Delete({{1,2},{3,4}},{{1,2},{2,1},{2,1}})", //
+		// "{{1},{4}}");
+		
+		check("Delete({ }, 0)", //
+				"Sequence()");
+		// print Cannot delete position 5 in {a,b,c,d}
+		check("Delete({a, b, c, d}, 5)", //
+				"Delete({a,b,c,d},5)");
+		
 		check("Delete({a, b, c, d}, 3)", //
 				"{a,b,d}");
 		check("Delete({a, b, c, d}, -2)", //
 				"{a,b,d}");
+		
+		check("Delete({{1,2},{3,4}},{1,2})", //
+				"{{1},{3,4}}");
+		// check("Delete({{1,2},{3,4}},{{1,2},{2,1}})", //
+		// "{{1},{4}}");
+		// check("Delete({{1,2},{3,4}},{{1,2},{2,1},{2,1}})", //
+		// "{{1},{4}}");
 	}
 
 	public void testDeleteCases() {

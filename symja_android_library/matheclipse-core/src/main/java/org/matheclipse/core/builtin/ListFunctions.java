@@ -1584,23 +1584,101 @@ public final class ListFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			final IExpr arg1 = engine.evaluate(ast.arg1());
 			final IExpr arg2 = engine.evaluate(ast.arg2());
-			if (arg1.isAST() && arg2.isInteger()) {
-				final IAST list1 = (IAST) arg1;
+			if (arg1.isAST()) {
+				final IAST list = (IAST) arg1;
+				if (arg2.isInteger()) {
+					int indx = 0;
+					try {
+						indx = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
+						if (indx < 0) {
+							// negative n counts from the end
+							indx = list.size() + indx;
+						}
+						if (indx == 0 && list.size() == 1) {
+							return F.Sequence();
+						}
+						return list.removeAtCopy(indx);
+					} catch (final RuntimeException rex) {
+						if (Config.DEBUG) {
+							rex.printStackTrace();
+						}
+						return engine
+								.printMessage("Cannot delete position " + arg2.toString() + " in " + arg1.toString());
+					}
+				} else if (arg2.isList()) {
+					final IAST indxList = (IAST) arg2;
+					if (indxList.isListOfLists()) {
+//						IAST result = list;
+//						for (int i = 1; i < indxList.size(); i++) {
+//							result = deleteListOfPositions(result, (IAST) indxList.get(i), engine);
+//							if (!result.isPresent()) {
+//								return F.NIL;
+//							}
+//						}
+//						return result;
+					} else {
 
-				try {
-					int indx = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
-					if (indx < 0) {
-						// negative n counts from the end
-						indx = list1.size() + indx;
+						return deleteListOfPositions(list, indxList, engine);
 					}
-					return list1.removeAtCopy(indx);
-				} catch (final IndexOutOfBoundsException e) {
-					if (Config.DEBUG) {
-						e.printStackTrace();
-					}
-					return F.NIL;
 				}
+			}
+			return F.NIL;
+		}
 
+		/**
+		 * Remove a list of <code>int</code> positions from the <code>list</code>.
+		 * 
+		 * @param list
+		 *            the list in which sub-positions should be removed
+		 * @param listOfIntPositions
+		 *            a list of int positions <code>{2,4,-3,5,...}</code>
+		 * @param engine
+		 *            the evaluation engine
+		 * @return
+		 */
+		private IAST deleteListOfPositions(final IAST list, final IAST listOfIntPositions, EvalEngine engine) {
+			int[] indx;
+			try {
+				indx = Validate.checkListOfInts(listOfIntPositions, Integer.MIN_VALUE, Integer.MAX_VALUE);
+				return deletePartRecursive(list, indx, 0);
+			} catch (final RuntimeException rex) {
+				if (Config.DEBUG) {
+					rex.printStackTrace();
+				}
+				return engine.printMessage(
+						"Cannot delete position " + listOfIntPositions.toString() + " in " + list.toString());
+			}
+		}
+
+		/**
+		 * Delete the position index recursively from the list.
+		 * 
+		 * @param list
+		 *            the list in which sub-positions should be removed
+		 * @param indx
+		 *            a list of int sub-positions from <code>list</code>
+		 * @param indxPosition
+		 *            the current position in <code>indx</code>. Increased by 1 in each recursion step.
+		 * @return
+		 */
+		private IAST deletePartRecursive(IAST list, int[] indx, int indxPosition) {
+			int position = indx[indxPosition];
+			if (position < 0) {
+				// negative n counts from the end
+				position = list.size() + position;
+			}
+			if (indxPosition == indx.length - 1) {
+				if (position == 0 && list.size() == 1) {
+					return F.Sequence();
+				}
+				return list.removeAtCopy(position);
+			}
+			IExpr temp = list.get(position);
+			if (temp.isAST()) {
+				IAST subResult = deletePartRecursive((IAST) temp, indx, indxPosition + 1);
+				if (subResult.isPresent()) {
+					return list.setAtCopy(position, subResult);
+				}
 			}
 			return F.NIL;
 		}
@@ -2849,7 +2927,7 @@ public final class ListFunctions {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_4;
 		}
-		 
+
 	}
 
 	/**
@@ -3465,7 +3543,7 @@ public final class ListFunctions {
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.NHOLDALL);
 		}
-		
+
 	}
 
 	/**
