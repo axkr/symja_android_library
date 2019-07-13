@@ -61,9 +61,12 @@ public class ContainsFunctions {
 		final static ContainsAny CONST = new ContainsAny();
 
 		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			if (ast.isAST1()) {
-				return F.operatorFormAppend(ast);
+				ast = F.operatorFormAppend(ast);
+				if (!ast.isPresent()) {
+					return F.NIL;
+				}
 			}
 			IExpr sameTest = F.SameQ;
 			if (validateArgs(ast.arg1(), ast.arg2(), engine)) {

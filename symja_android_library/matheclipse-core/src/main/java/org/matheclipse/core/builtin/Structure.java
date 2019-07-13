@@ -171,9 +171,12 @@ public class Structure {
 	private final static class Apply extends AbstractCoreFunctionEvaluator {
 
 		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			if (ast.isAST1()) {
-				return F.operatorFormPrepend(ast);
+				ast = F.operatorFormPrepend(ast);
+				if (!ast.isPresent()) {
+					return F.NIL;
+				}
 			}
 			IASTAppendable evaledAST = ast.copyAppendable();
 			evaledAST.setArgs(evaledAST.size(), i -> engine.evaluate(evaledAST.get(i)));
@@ -542,9 +545,12 @@ public class Structure {
 	private final static class FlattenAt extends AbstractCoreFunctionEvaluator {
 
 		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			if (ast.isAST1()) {
-				return F.operatorFormAppend(ast);
+				ast = F.operatorFormAppend(ast);
+				if (!ast.isPresent()) {
+					return F.NIL;
+				}
 			}
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			IExpr arg2 = engine.evaluate(ast.arg2());
@@ -891,9 +897,12 @@ public class Structure {
 	 */
 	private static class Map extends AbstractFunctionEvaluator {
 		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			if (ast.isAST1()) {
-				return F.operatorFormPrepend(ast);
+				ast = F.operatorFormPrepend(ast);
+				if (!ast.isPresent()) {
+					return F.NIL;
+				}
 			}
 
 			int lastIndex = ast.argSize();
@@ -1167,9 +1176,12 @@ public class Structure {
 		}
 
 		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			if (ast.isAST1()) {
-				return F.operatorFormPrepend(ast);
+				ast = F.operatorFormPrepend(ast);
+				if (!ast.isPresent()) {
+					return F.NIL;
+				}
 			}
 			if (ast.arg2().isAST()) {
 				int level = 1;
@@ -1514,10 +1526,13 @@ public class Structure {
 	private final static class Scan extends Map {
 
 		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			// Validate.checkRange(ast, 3, 5);
 			if (ast.isAST1()) {
-				return F.operatorFormPrepend(ast);
+				ast = F.operatorFormPrepend(ast);
+				if (!ast.isPresent()) {
+					return F.NIL;
+				}
 			}
 			if (ast.size() >= 3 && ast.size() < 5) {
 				int lastIndex = ast.argSize();
@@ -1673,9 +1688,12 @@ public class Structure {
 	private static class SortBy extends AbstractFunctionEvaluator {
 
 		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			if (ast.isAST1()) {
-				return F.operatorFormAppend(ast);
+				ast = F.operatorFormAppend(ast);
+				if (!ast.isPresent()) {
+					return F.NIL;
+				}
 			}
 			if (ast.isAST2()) {
 				if (ast.arg1().isAST()) {

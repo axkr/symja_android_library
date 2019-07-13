@@ -8987,7 +8987,7 @@ public class F {
 	 *            an IAST with condition <code>ast1Arg.head().isAST1() && ast1Arg.isAST1()</code>
 	 * @return
 	 */
-	public static IExpr operatorFormAppend(final IAST ast1Arg) {
+	public static IAST operatorFormAppend(final IAST ast1Arg) {
 		if (ast1Arg.head().isAST1() && ast1Arg.isAST1()) {
 			return binaryAST2(ast1Arg.topHead(), ast1Arg.arg1(), ((IAST) ast1Arg.head()).arg1());
 		}
@@ -8995,13 +8995,27 @@ public class F {
 	}
 
 	/**
+	 * The binary operator form <code>op(f, g)[expr]</code> is transformed to <code>op(expr, f, g)</code>
+	 * 
+	 * @param astArg
+	 *            an IAST with condition <code>astArg.head().isAST2() && astArg.isAST1()</code>
+	 * @return
+	 */
+	public static IAST operatorFormAppend2(final IAST astArg) {
+		if (astArg.head().isAST2() && astArg.isAST1()) {
+			return ternaryAST3(astArg.topHead(), astArg.arg1(), ((IAST) astArg.head()).arg1(), ((IAST) astArg.head()).arg2());
+		}
+		return NIL;
+	}
+	
+	/**
 	 * The operator form <code>op(f)[expr]</code> is transformed to <code>op(f, expr)</code>
 	 * 
 	 * @param ast1Arg
 	 *            an IAST with condition <code>ast1Arg.head().isAST1() && ast1Arg.isAST1()</code>
 	 * @return
 	 */
-	public static IExpr operatorFormPrepend(final IAST ast1Arg) {
+	public static IAST operatorFormPrepend(final IAST ast1Arg) {
 		if (ast1Arg.head().isAST1() && ast1Arg.isAST1()) {
 			return binaryAST2(ast1Arg.topHead(), ((IAST) ast1Arg.head()).arg1(), ast1Arg.arg1());
 		}

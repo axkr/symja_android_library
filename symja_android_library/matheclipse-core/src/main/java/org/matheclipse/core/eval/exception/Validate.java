@@ -608,15 +608,16 @@ public final class Validate {
 	/**
 	 * Check if the expression is an AST.
 	 * 
-	 * @throws WrongArgumentType
-	 *             if it's not an AST.
+	 * @param expr
+	 * @param engine
+	 * @return <code>F.NIL</code> if the expression is no <code>IAST</code> object.
 	 */
 	public static IAST checkASTType(IExpr expr, EvalEngine engine) {
 		if (expr.isAST()) {
 			return (IAST) expr;
 		}
 		engine.printMessage("Nonatomic expression expected.");
-		return null;
+		return F.NIL;
 	}
 
 	private Validate() {

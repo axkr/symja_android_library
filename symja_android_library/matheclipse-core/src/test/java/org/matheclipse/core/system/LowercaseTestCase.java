@@ -3684,6 +3684,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "{{1},{4}}");
 		// check("Delete({{1,2},{3,4}},{{1,2},{2,1},{2,1}})", //
 		// "{{1},{4}}");
+
+		// test operator form
+		check("Delete(pos)", //
+				"Delete(pos)");
+		check("Delete(pos)[x]", //
+				"Delete(pos)[x]");
+		check("Delete(2)[{1,2,3,4}]", //
+				"{1,3,4}");
 	}
 
 	public void testDeleteCases() {
@@ -7954,11 +7962,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"0");
 	}
 
-	public void testInsert() {
+	public void testInsert() { 
 		check("Insert({a, b, c, d, e}, x, 3)", //
 				"{a,b,x,c,d,e}");
 		check("Insert({a, b, c, d, e}, x, -2)", //
 				"{a,b,c,d,x,e}");
+
+		// test operator form
+		check("Insert(e, pos)", //
+				"Insert(e,pos)");
+		check("Insert(e, pos)[x]", //
+				"Insert(e,pos)[x]");
+		check("Insert(2, -1)[{a, b, c, d, e}]", //
+				"{a,b,c,d,e,2}");
+		check("Insert(2, -2)[{a, b, c, d, e}]", //
+				"{a,b,c,d,2,e}");
 	}
 
 	public void testInteger() {
@@ -13373,6 +13391,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{a,b},c,d}");
 		check("Prepend(a, b)", //
 				"Prepend(a,b)");
+		
+		// operator form
+		check("Prepend(a)[{c, d}]", //
+				"{a,c,d}");
 	}
 
 	public void testPrependTo() {
