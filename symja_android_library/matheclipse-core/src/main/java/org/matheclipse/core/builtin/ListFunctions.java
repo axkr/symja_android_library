@@ -397,7 +397,7 @@ public final class ListFunctions {
 					return F.C2;
 				}
 			}
-			return F.integer(i);
+			return F.ZZ(i);
 		}
 
 		@Override
@@ -1594,8 +1594,8 @@ public final class ListFunctions {
 							// negative n counts from the end
 							indx = list.size() + indx;
 						}
-						if (indx == 0 && list.size() == 1) {
-							return F.Sequence();
+						if (indx == 0) {
+							return list.setAtCopy(0, F.Sequence);
 						}
 						return list.removeAtCopy(indx);
 					} catch (final RuntimeException rex) {
@@ -1608,14 +1608,14 @@ public final class ListFunctions {
 				} else if (arg2.isList()) {
 					final IAST indxList = (IAST) arg2;
 					if (indxList.isListOfLists()) {
-//						IAST result = list;
-//						for (int i = 1; i < indxList.size(); i++) {
-//							result = deleteListOfPositions(result, (IAST) indxList.get(i), engine);
-//							if (!result.isPresent()) {
-//								return F.NIL;
-//							}
-//						}
-//						return result;
+						// IAST result = list;
+						// for (int i = 1; i < indxList.size(); i++) {
+						// result = deleteListOfPositions(result, (IAST) indxList.get(i), engine);
+						// if (!result.isPresent()) {
+						// return F.NIL;
+						// }
+						// }
+						// return result;
 					} else {
 
 						return deleteListOfPositions(list, indxList, engine);
@@ -1666,10 +1666,13 @@ public final class ListFunctions {
 			if (position < 0) {
 				// negative n counts from the end
 				position = list.size() + position;
+				if (position<=0) {
+					return F.NIL;
+				}
 			}
 			if (indxPosition == indx.length - 1) {
-				if (position == 0 && list.size() == 1) {
-					return F.Sequence();
+				if (position == 0) {
+					return list.setAtCopy(0, F.Sequence);
 				}
 				return list.removeAtCopy(position);
 			}
@@ -2023,22 +2026,41 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.arg1().isAST() && ast.arg2().isList()) {
-				IAST arg1 = (IAST) ast.arg1();
-				IAST arg2 = (IAST) ast.arg2();
-				if (arg2.isListOfLists()) {
-					final int arg2Size = arg2.size();
-					IASTAppendable result = F.ListAlloc(arg2Size);
-					for (int i = 1; i < arg2Size; i++) {
-						IExpr temp = extract(arg1, arg2.getAST(i));
-						if (!temp.isPresent()) {
+			if (ast.arg1().isAST()) {
+				IAST list = (IAST) ast.arg1();
+
+				if (ast.arg2().isInteger()) {
+					int indx = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+					if (indx == Integer.MIN_VALUE) {
+						return F.NIL;
+					}
+					if (indx < 0) {
+						// negative n counts from the end
+						indx = list.size() + indx;
+						if (indx <= 0) {
+							// == 0 - for MMA behaviour
 							return F.NIL;
 						}
-						result.append(temp);
 					}
-					return result;
+					if (indx >= 0 && indx <= list.size()) {
+						return list.get(indx);
+					}
+				} else if (ast.arg2().isList()) {
+					IAST arg2 = (IAST) ast.arg2();
+					if (arg2.isListOfLists()) {
+						final int arg2Size = arg2.size();
+						IASTAppendable result = F.ListAlloc(arg2Size);
+						for (int i = 1; i < arg2Size; i++) {
+							IExpr temp = extract(list, arg2.getAST(i));
+							if (!temp.isPresent()) {
+								return F.NIL;
+							}
+							result.append(temp);
+						}
+						return result;
+					}
+					return extract(list, arg2);
 				}
-				return extract(arg1, arg2);
 			}
 			return F.NIL;
 		}
@@ -5794,6 +5816,7 @@ public final class ListFunctions {
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
 		}
+
 	}
 
 	/**

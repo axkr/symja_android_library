@@ -3662,20 +3662,24 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// TODO
 		// check("Delete({{1,2},{3,4}},{{1,2},{2,1},{2,1}})", //
 		// "{{1},{4}}");
-		
+
+		check("Delete(a+b+c,0)", //
+				"Sequence(a,b,c)");
 		check("Delete({ }, 0)", //
 				"Sequence()");
 		// print Cannot delete position 5 in {a,b,c,d}
 		check("Delete({a, b, c, d}, 5)", //
 				"Delete({a,b,c,d},5)");
-		
+
 		check("Delete({a, b, c, d}, 3)", //
 				"{a,b,d}");
 		check("Delete({a, b, c, d}, -2)", //
 				"{a,b,d}");
-		
+
 		check("Delete({{1,2},{3,4}},{1,2})", //
 				"{{1},{3,4}}");
+		check("Delete({{1,2},{3,4}},{1,0})", //
+				"{1,2,{3,4}}");
 		// check("Delete({{1,2},{3,4}},{{1,2},{2,1}})", //
 		// "{{1},{4}}");
 		// check("Delete({{1,2},{3,4}},{{1,2},{2,1},{2,1}})", //
@@ -4434,7 +4438,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{}");
 		check("Drop({}, 1)", //
 				"Drop({},1)");
-		
+
 		check("Drop({a, b, c, d}, 3)", //
 				"{d}");
 		check("Drop({a, b, c, d}, -2)", //
@@ -5380,8 +5384,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testExtract() {
+		check("Extract(a+b+c,2)", //
+				"b");
+		check("Extract(a+b+c,0)", //
+				"Plus");
+		check("Extract(a+b+c,-4)", //
+				"Extract(a+b+c,-4)");
 		check("Extract(a + b + c, {2})", //
 				"b");
+		check("Extract(a+b+c,{{2},{3}})", //
+				"{b,c}");
 		check("Extract({{a, b}, {c, d}}, {{1}, {2, 2}})", //
 				"{{a,b},d}");
 	}
@@ -8881,6 +8893,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLeafCount() {
+		check("LeafCount(1 + x + y^a)", //
+				"6");
+		check("LeafCount(f(x, y))", //
+				"3");
+		check("LeafCount({1 / 3, 1 + I})", //
+				"7");
+		check("LeafCount(Sqrt(2))", //
+				"5");
+		check("LeafCount(100!)", //
+				"1");
+		check("LeafCount(f(1, 2)[x, y])", //
+				"5");
 		check("LeafCount(10+I)", //
 				"3");
 	}
