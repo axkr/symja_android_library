@@ -1,4 +1,4 @@
-package org.matheclipse.core.examples;
+package org.matheclipse.core.mathcell;
 
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;

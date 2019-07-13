@@ -344,6 +344,11 @@ public class Console {
 		fOutputTraditionalFactory = OutputFormFactory.get(true, false, 5, 7);
 		fInputFactory = OutputFormFactory.get(true, false, 5, 7);
 		fInputFactory.setQuotes(true);
+		F.$PreRead.assign(//
+				F.Function(F.ReplaceAll(F.Unevaluated(F.Slot1), //
+						F.List(F.RuleDelayed(F.binaryAST2(F.Plot, F.x_, F.y_), F.Manipulate(F.binaryAST2(F.Plot, F.x, F.y))), //
+								F.RuleDelayed(F.ternaryAST3(F.Plot3D, F.x_, F.y_, F.z_), F.Manipulate(F.ternaryAST3(F.Plot3D, F.x, F.y, F.z))//
+								)))));
 	}
 
 	/**

@@ -15,6 +15,10 @@ where the value of the variable `a` can be manipulated by a slider in the range 
  
 ```
 >> Manipulate(Plot(Sin(x)*Cos(1 + a*x), {x, 0, 2*Pi}), {a,0,10}) 
+```
+
+A 3D surface plot control:
 
 ```
-  
+>> Manipulate(Plot3D(Sin(a*x*y), {x, -1.5, 1.5}, {y, -1.5, 1.5}), {a,1,5})
+```

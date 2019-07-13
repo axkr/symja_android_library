@@ -114,7 +114,7 @@ public class Plot extends AbstractEvaluator {
 				}
 			}
 		}
-		return F.Null;
+		return F.NIL;
 	}
 
 	/**

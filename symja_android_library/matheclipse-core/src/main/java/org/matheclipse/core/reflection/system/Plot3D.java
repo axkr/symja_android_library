@@ -95,7 +95,7 @@ public class Plot3D extends AbstractEvaluator {
 				}
 			}
 		}
-		return F.Null;
+		return F.NIL;
 	}
 
 	/**

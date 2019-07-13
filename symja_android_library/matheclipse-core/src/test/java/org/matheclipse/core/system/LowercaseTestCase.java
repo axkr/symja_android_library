@@ -7962,7 +7962,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"0");
 	}
 
-	public void testInsert() { 
+	public void testInsert() {
 		check("Insert({a, b, c, d, e}, x, 3)", //
 				"{a,b,x,c,d,e}");
 		check("Insert({a, b, c, d, e}, x, -2)", //
@@ -8527,11 +8527,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("InverseFunction((a*#)/(c*#) &)", //
 				"InverseFunction((a*#1)/(c*#1)&)");
 		check("InverseFunction((a*#)/(c*# + d) &)", //
-				"(d*#1)/(a*(1+(-c*#1)/a))&");
+				"(#1*d)/(a*(1+(-#1*c)/a))&");
 		check("InverseFunction((a*# + b)/(c*# + d) &)", //
-				"(-b+d*#1)/(a-c*#1)&");
+				"(-b+#1*d)/(a-#1*c)&");
 		check("InverseFunction((a * # + b)&)", //
-				"(-b+#1)/a&");
+				"(#1-b)/a&");
 		check("InverseFunction(Abs)", //
 				"-#1&");
 		check("InverseFunction(Sin)", //
@@ -13391,7 +13391,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{a,b},c,d}");
 		check("Prepend(a, b)", //
 				"Prepend(a,b)");
-		
+
 		// operator form
 		check("Prepend(a)[{c, d}]", //
 				"{a,c,d}");
@@ -15711,6 +15711,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSequence() {
+		check("Hold(a, Sequence(b, c))", //
+				"Hold(a,b,c)");
 		check("{Sequence( ),a}", //
 				"{a}");
 		check("f(a, Sequence( ),b,c)", //
@@ -15803,7 +15805,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testSetDelayed() {
 		check("Attributes(SetDelayed)  ", //
-				"{HoldAll}");
+				"{HoldAll,SequenceHold}");
 		check("a = 1", //
 				"1");
 		check("x := a", //
@@ -18058,7 +18060,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("TeXForm( f(#,#3)&  )", //
 				"f(\\text{$\\#$1},\\text{$\\#$3})\\&");
 		check("TeXForm( f(#,#3)*2&  )", //
-				"2\\,f(\\text{$\\#$1},\\text{$\\#$3})\\&");
+				"f(\\text{$\\#$1},\\text{$\\#$3})\\,2\\&");
 		check("TeXForm(N(1.1+Pi*I,30))", //
 				"1.1 + 3.14159265358979323846264338327\\,i ");
 		check("TeXForm(N(Pi,30))", //
@@ -18563,9 +18565,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ToRadicals(Root((-3*#-1)&, 1))", //
 				"-1/3");
 		check("ToRadicals(Sin(Root((#^7-#^2-#+a)&, 1)))", //
-				"Sin(Root(a-#1-#1^2+#1^7&,1))");
+				"Sin(Root(-#1-#1^2+#1^7+a&,1))");
 		check("ToRadicals(Root((#^7-#^2-#+a)&, 1)+Root((#^6-#^2-#+a)&, 1))", //
-				"Root(a-#1-#1^2+#1^6&,1)+Root(a-#1-#1^2+#1^7&,1)");
+				"Root(-#1-#1^2+#1^6+a&,1)+Root(-#1-#1^2+#1^7+a&,1)");
 		check("ToRadicals(Root((#^3-#^2-#+a)&, 1))", //
 				"1/3+4/3*2^(1/3)/(11+Sqrt(-256+(11-27*a)^2)-27*a)^(1/3)+(11+Sqrt(-256+(11-27*a)^2)\n"
 						+ "-27*a)^(1/3)/(3*2^(1/3))");
@@ -19007,6 +19009,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"False");
 		check("a!=a!=a!=a", //
 				"False");
+	}
+
+	public void testUnevaluate() {
+		check("f(x_) := x^2", //
+				"");
+		check("ReplaceAll(Unevaluated(f(3)), 3 -> 1)", //
+				"1");
 	}
 
 	public void testUnion() {
