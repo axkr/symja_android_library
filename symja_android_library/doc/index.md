@@ -530,6 +530,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [MachineNumberQ](functions/MachineNumberQ.md)
 * [MangoldtLambda](functions/MangoldtLambda.md)
 * [ManhattanDistance](functions/ManhattanDistance.md)
+* [Manipulate](functions/Manipulate.md)
 * [Map](functions/Map.md)
 * [MapIndexed](functions/MapIndexed.md)
 * [MapThread](functions/MapThread.md)
@@ -803,3 +804,4 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Xor](functions/Xor.md)
 * [YuleDissimilarity](functions/YuleDissimilarity.md)
 * [Zeta](functions/Zeta.md)
+

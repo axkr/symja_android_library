@@ -18,6 +18,7 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -580,6 +581,17 @@ public class MMAConsole {
 							if (show.size() > 1 && show.arg1().isSameHeadSizeGE(F.Graphics, 2)) {
 								return Console.openSVGOnDesktop(show);
 							}
+						} catch (Exception ex) {
+							if (Config.SHOW_STACKTRACE) {
+								ex.printStackTrace();
+							}
+						}
+					} else if (result.isAST(F.JSFormData, 3) && result.second().toString().equals("mathcell")) {
+						try {
+							String manipulateStr = ((IAST) result).arg1().toString();
+							String html = Console.MATHCELL_PAGE;
+							html = html.replaceAll("`1`", manipulateStr);
+							return Console.openHTMLOnDesktop(html);
 						} catch (Exception ex) {
 							if (Config.SHOW_STACKTRACE) {
 								ex.printStackTrace();
