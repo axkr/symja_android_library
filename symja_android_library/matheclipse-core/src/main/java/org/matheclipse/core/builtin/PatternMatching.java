@@ -1107,7 +1107,7 @@ public final class PatternMatching {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
+			newSymbol.setAttributes(ISymbol.HOLDALL|ISymbol.SEQUENCEHOLD);
 		}
 	}
 
@@ -1148,7 +1148,7 @@ public final class PatternMatching {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
+			newSymbol.setAttributes(ISymbol.HOLDALL|ISymbol.SEQUENCEHOLD);
 		}
 	}
 
@@ -1324,7 +1324,7 @@ public final class PatternMatching {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
+			newSymbol.setAttributes(ISymbol.HOLDALL|ISymbol.SEQUENCEHOLD);
 		}
 
 	}
@@ -1411,7 +1411,7 @@ public final class PatternMatching {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
+			newSymbol.setAttributes(ISymbol.HOLDALL|ISymbol.SEQUENCEHOLD);
 		}
 
 	}
@@ -1532,7 +1532,7 @@ public final class PatternMatching {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
+			newSymbol.setAttributes(ISymbol.HOLDALL|ISymbol.SEQUENCEHOLD);
 		}
 
 	}
@@ -1580,7 +1580,7 @@ public final class PatternMatching {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
+			newSymbol.setAttributes(ISymbol.HOLDALL|ISymbol.SEQUENCEHOLD);
 		}
 
 	}

@@ -656,6 +656,7 @@ public class Structure {
 		public void setUp(final ISymbol newSymbol) {
 			// don't set HOLDALL - the arguments are evaluated before applying the 'function
 			// head'
+			newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
 	}
 

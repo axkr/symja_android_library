@@ -66,10 +66,15 @@ public interface ISymbol extends IExpr {
 	public final static int HOLDCOMPLETE = HOLDALL | 0x0080;
 
 	/**
+	 * ISymbol attribute for a function, where no <code>Sequence()</code> argument should be flattend out
+	 */
+	public final static int SEQUENCEHOLD = 0x00040000;
+
+	/**
 	 * ISymbol attribute for a function, where no argument should be evaluated
 	 * 
 	 */
-	public final static int HOLDALLCOMPLETE = HOLDCOMPLETE | 0x0100;
+	public final static int HOLDALLCOMPLETE = HOLDCOMPLETE | SEQUENCEHOLD | 0x0100;
 
 	/**
 	 * ISymbol attribute for a function with lists as arguments

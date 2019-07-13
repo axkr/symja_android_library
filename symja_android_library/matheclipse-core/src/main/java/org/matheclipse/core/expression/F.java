@@ -224,6 +224,9 @@ public class F {
 	public final static IBuiltInSymbol $PrePrint = F.initFinalSymbol("$PrePrint", ID.$PrePrint);
 
 	/***/
+	public final static IBuiltInSymbol $PreRead = F.initFinalSymbol("$PreRead", ID.$PreRead);
+
+	/***/
 	public final static IBuiltInSymbol $RecursionLimit = F.initFinalSymbol("$RecursionLimit", ID.$RecursionLimit);
 
 	/***/
@@ -2835,7 +2838,9 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol Sequence = F.initFinalSymbol("Sequence", ID.Sequence);
-
+	
+	public final static IBuiltInSymbol SequenceHold = F.initFinalSymbol("SequenceHold", ID.SequenceHold);
+	
 	/** Series(expr, {x, x0, n}) - create a power series of `expr` up to order `(x- x0)^n` at the point `x = x0` */
 	public final static IBuiltInSymbol Series = F.initFinalSymbol("Series", ID.Series);
 
@@ -7658,6 +7663,10 @@ public class F {
 		return unaryAST1(MachineNumberQ, a0);
 	}
 
+	public static IAST Manipulate(final IExpr a0) {
+		return unaryAST1(Manipulate, a0);
+	}
+
 	public static IAST Manipulate(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Manipulate, a0, a1);
 	}
@@ -8176,6 +8185,14 @@ public class F {
 		return binaryAST2(Piecewise, a0, a1);
 	}
 
+	public static IAST Plot(final IExpr a0, final IExpr a1) {
+		return binaryAST2(Plot, a0, a1);
+	}
+	
+	public static IAST Plot3D(final IExpr a0, final IExpr a1) {
+		return binaryAST2(Plot3D, a0, a1);
+	}
+	
 	public static IExpr plus(IExpr a, Integer i) {
 		return Plus(a, integer(i.longValue()));
 	}

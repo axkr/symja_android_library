@@ -28,7 +28,14 @@ public class EvalControlledCallable implements Callable<IExpr> {
 		final StringWriter buf = new StringWriter();
 		try {
 			fEngine.reset();
-			IExpr temp = fEngine.evaluate(fExpr);
+			IExpr preRead = F.$PreRead.assignedValue();
+			IExpr temp;
+			if (preRead != null && preRead.isPresent()) {
+				temp = fEngine.evaluate(F.unaryAST1(preRead, fExpr));
+			} else {
+				temp = fEngine.evaluate(fExpr);
+			}
+//			IExpr temp = fEngine.evaluate(fExpr);
 			if (!fEngine.isOutListDisabled()) {
 				fEngine.addOut(temp);
 			}

@@ -333,7 +333,13 @@ public class ExprEvaluator {
 		// F.join();
 		EvalEngine.set(engine);
 		engine.reset();
-		IExpr temp = engine.evaluate(expr);
+		IExpr preRead = F.$PreRead.assignedValue();
+		IExpr temp;
+		if (preRead != null && preRead.isPresent()) {
+			temp = engine.evaluate(F.unaryAST1(preRead, expr));
+		} else {
+			temp = engine.evaluate(expr);
+		}
 		if (!engine.isOutListDisabled()) {
 			engine.addOut(temp);
 		}

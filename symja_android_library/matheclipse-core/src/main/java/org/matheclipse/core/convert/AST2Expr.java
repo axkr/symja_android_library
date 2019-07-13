@@ -47,7 +47,7 @@ public class AST2Expr {
 	public final static String[] DOLLAR_STRINGS = { "$Aborted", "$Assumptions", "$Context", "$CreationDate",
 			"$ContextPath", "$DisplayFunction", "$HistoryLength", "$HomeDirectory", "$IterationLimit", "$Line",
 			"$MachineEpsilon", "$MachinePrecision", "$MaxMachineNumber", "$MessageList", "$MinMachineNumber",
-			"$PrePrint", "$RecursionLimit", "$UserName", "$Version" };
+			"$PrePrint", "$PreRead", "$RecursionLimit", "$UserName", "$Version" };
 
 	public final static String[] SYMBOL_STRINGS = { "All", "Algebraics", "Automatic", "Axes", "AxesOrigin", "AxesStyle",
 			"Background", "Booleans", "CharacterEncoding", "ComplexInfinity", "Catalan", "Complexes",
@@ -59,8 +59,8 @@ public class AST2Expr {
 			"NegativeDegreeReverseLexicographic", "NegativeLexicographic", "NHoldAll", "NHoldFirst", "NHoldRest",
 			"None", "Nothing", "Nonexistent", "NotApplicable", "NotAvailable", "Null", "NumericFunction", "OneIdentity",
 			"Orderless", "Pi", "PrecisionGoal", "Primes", "Protected", "Rationals", "ReadProtected", "Real", "Reals",
-			"SameTest", "Second", "Slot", "SlotSequence", "Strict", "String", "Symbol", "TooLarge", "Trig", "True",
-			"Variable", "White", "Unknown", "ViewPoint" };
+			"SameTest", "Second", "SequenceHold", "Slot", "SlotSequence", "Strict", "String", "Symbol", "TooLarge",
+			"Trig", "True", "Variable", "White", "Unknown", "ViewPoint" };
 
 	public final static String[] FUNCTION_STRINGS = { "Abort", "Abs", "AbsArg", "Accumulate", "AddTo",
 			"AdjacencyMatrix", "AllTrue", "And", "AngleVector", "AnyTrue", "AntihermitianMatrixQ", "AntiSymmetric",
