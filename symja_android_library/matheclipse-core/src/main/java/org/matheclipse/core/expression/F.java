@@ -783,7 +783,7 @@ public class F {
     /***/
     public final static IBuiltInSymbol DegreeReverseLexicographic = F.initFinalSymbol("DegreeReverseLexicographic", ID.DegreeReverseLexicographic);
 
-    /***/
+    /** Delete(expr, n) - returns `expr` with part `n` removed. */
     public final static IBuiltInSymbol Delete = F.initFinalSymbol("Delete", ID.Delete);
 
     /** DeleteCases(list, pattern) - returns the elements of `list` that do not match `pattern`.*/
@@ -1218,7 +1218,7 @@ public class F {
     /***/
     public final static IBuiltInSymbol General = F.initFinalSymbol("General", ID.General);
 
-    /***/
+    /** GeoDistance({latitude1,longitude1}, {latitude2,longitude2}) - returns the geodesic distance between `{latitude1,longitude1}` and `{latitude2,longitude2}`.*/
     public final static IBuiltInSymbol GeoDistance = F.initFinalSymbol("GeoDistance", ID.GeoDistance);
 
     /***/
@@ -1670,6 +1670,9 @@ public class F {
 
     /** ManhattanDistance(u, v) - returns the Manhattan distance between `u` and `v`, which is the number of horizontal or vertical moves in the grid like Manhattan city layout to get from `u` to `v`.*/
     public final static IBuiltInSymbol ManhattanDistance = F.initFinalSymbol("ManhattanDistance", ID.ManhattanDistance);
+
+    /***/
+    public final static IBuiltInSymbol Manipulate = F.initFinalSymbol("Manipulate", ID.Manipulate);
 
     /***/
     public final static IBuiltInSymbol MantissaExponent = F.initFinalSymbol("MantissaExponent", ID.MantissaExponent);
@@ -2150,9 +2153,6 @@ public class F {
 
     /** PreIncrement(x) - increments `x` by `1`, returning the new value of `x`. */
     public final static IBuiltInSymbol PreIncrement = F.initFinalSymbol("PreIncrement", ID.PreIncrement);
-
-    /***/
-//    public final static IBuiltInSymbol PrePlus = F.initFinalSymbol("PrePlus", ID.PrePlus);
 
     /***/
     public final static IBuiltInSymbol Precision = F.initFinalSymbol("Precision", ID.Precision);
@@ -7172,6 +7172,10 @@ public class F {
 		return unaryAST1(MachineNumberQ, a0);
 	}
 
+	public static IAST Manipulate(final IExpr a0, final IExpr a1) {
+		return binaryAST2(Manipulate, a0, a1);
+	}
+	
 	public static IAST Map(final IExpr a0) {
 
 		return unaryAST1(Map, a0);

@@ -2406,10 +2406,11 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isFreeOfPatterns() {
-		if ((getEvalFlags() & IAST.CONTAINS_NO_PATTERN) == IAST.CONTAINS_NO_PATTERN) {
+		final int evalFlags = getEvalFlags();
+		if ((evalFlags & IAST.CONTAINS_NO_PATTERN) == IAST.CONTAINS_NO_PATTERN) {
 			return true;
 		}
-		if ((getEvalFlags() & IAST.CONTAINS_PATTERN_EXPR) != IAST.NO_FLAG) {
+		if ((evalFlags & IAST.CONTAINS_PATTERN_EXPR) != IAST.NO_FLAG) {
 			return false;
 		}
 
@@ -3205,9 +3206,9 @@ public abstract class AbstractAST implements IASTMutable {
 	}
 
 	@Override
-	public boolean isPatternMatchingFunction() {
-		int id = headID();
-		if (id >= 0) {
+	public final boolean isPatternMatchingFunction() {
+		final int id = headID();
+		if (id >= ID.Alternatives && id <= ID.Rational) {
 			if (size() >= 2) {
 				return id == ID.HoldPattern || id == ID.Literal || id == ID.Condition || id == ID.Alternatives || //
 						id == ID.Except || id == ID.Complex || id == ID.Rational || id == ID.Optional || //
