@@ -15,6 +15,8 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.DoubleFormFactory;
+import org.matheclipse.core.form.output.JavaDoubleFormFactory;
+import org.matheclipse.core.form.output.JavaScriptFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -443,14 +445,14 @@ public final class OutputFunctions {
 	}
 
 	public static String toJavaDouble(final IExpr arg1) throws IOException {
-		DoubleFormFactory factory = DoubleFormFactory.get(true, false);
+		DoubleFormFactory factory = JavaDoubleFormFactory.get(true, false);
 		StringBuilder buf = new StringBuilder();
 		factory.convert(buf, arg1);
 		return buf.toString();
 	}
 
 	public static String toJavaScript(final IExpr arg1) throws IOException {
-		DoubleFormFactory factory = DoubleFormFactory.get(true, false);
+		DoubleFormFactory factory = JavaScriptFormFactory.get(true, false);
 		StringBuilder buf = new StringBuilder();
 		factory.convert(buf, arg1);
 		return buf.toString();

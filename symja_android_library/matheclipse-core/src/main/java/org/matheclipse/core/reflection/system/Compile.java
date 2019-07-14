@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import java.io.IOException;
 import java.util.Map;
 
 import org.matheclipse.core.basic.Config;
@@ -12,6 +11,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.DoubleFormFactory;
+import org.matheclipse.core.form.output.JavaDoubleFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -56,7 +56,7 @@ public class Compile extends AbstractCoreFunctionEvaluator {
 					variablesBuf.append("double " + variables.get(i) + " = engine.evalDouble(ast.get(" + i + "));\n");
 				}
 				IExpr expression = ast.arg2();
-				DoubleFormFactory factory = DoubleFormFactory.get(true, false);
+				DoubleFormFactory factory = JavaDoubleFormFactory.get(true, false);
 				StringBuilder buf = new StringBuilder();
 				factory.convert(buf, expression);
 				String source = JAVA_SOURCE_CODE.replace("{$variables}", variablesBuf.toString());

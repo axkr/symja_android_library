@@ -1542,26 +1542,34 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public double applyAsDouble(double operand) {
-			return Math.cos(operand) / Math.sin(operand);
+			return 1.0D / Math.tan(operand);
 		}
 
 		@Override
 		public IExpr e1ApcomplexArg(Apcomplex arg1) {
-			return F.complexNum(ApcomplexMath.cos(arg1).divide(ApcomplexMath.sin(arg1)));
+			Apcomplex denominator = ApcomplexMath.sin(arg1);
+			if (denominator.equals(Apcomplex.ZERO)) {
+				return F.CComplexInfinity;
+			}
+			return F.complexNum(ApcomplexMath.cos(arg1).divide(denominator));
 		}
 
 		@Override
 		public IExpr e1ApfloatArg(Apfloat arg1) {
-			Apfloat denom = ApfloatMath.sin(arg1);
-			if (denom.equals(Apfloat.ZERO)) {
+			Apfloat denominator = ApfloatMath.sin(arg1);
+			if (denominator.equals(Apfloat.ZERO)) {
 				return F.CComplexInfinity;
 			}
-			return F.num(ApfloatMath.cos(arg1).divide(denom));
+			return F.num(ApfloatMath.cos(arg1).divide(denominator));
 		}
 
 		@Override
 		public IExpr e1ComplexArg(final Complex arg1) {
-			return F.complexNum(arg1.cos().divide(arg1.sin()));
+			Complex denominator = arg1.sin();
+			if (denominator.equals(Complex.ZERO)) {
+				return F.CComplexInfinity;
+			}
+			return F.complexNum(arg1.cos().divide(denominator));
 		}
 
 		@Override

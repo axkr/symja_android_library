@@ -2,9 +2,6 @@ package org.matheclipse.core.form.output;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.text.NumberFormat;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -48,7 +45,7 @@ import ch.ethz.idsc.tensor.qty.IQuantity;
  * Converts an internal <code>IExpr</code> into a user readable string.
  * 
  */
-public class DoubleFormFactory {
+public abstract class DoubleFormFactory {
 	/**
 	 * The conversion wasn't called with an operator preceding the <code>IExpr</code> object.
 	 */
@@ -71,32 +68,7 @@ public class DoubleFormFactory {
 	private int fExponentFigures;
 	private int fSignificantFigures;
 
-	private final static Map<ISymbol, String> FUNCTIONS_STR = new HashMap<ISymbol, String>();
-
-	static {
-
-		FUNCTIONS_STR.put(F.Abs, "Math.abs");
-
-		FUNCTIONS_STR.put(F.ArcCos, "Math.acos");
-		FUNCTIONS_STR.put(F.ArcSin, "Math.asin");
-		FUNCTIONS_STR.put(F.ArcTan, "Math.atan");
-
-		FUNCTIONS_STR.put(F.Ceiling, "Math.ceil");
-		FUNCTIONS_STR.put(F.Cos, "Math.cos");
-		FUNCTIONS_STR.put(F.Cosh, "Math.cosh");
-		FUNCTIONS_STR.put(F.Floor, "Math.floor");
-
-		FUNCTIONS_STR.put(F.Log, "Math.log");
-		FUNCTIONS_STR.put(F.Power, "Math.pow");
-
-		FUNCTIONS_STR.put(F.Sin, "Math.sin");
-		FUNCTIONS_STR.put(F.Sinh, "Math.sinh");
-		FUNCTIONS_STR.put(F.Tan, "Math.tan");
-		FUNCTIONS_STR.put(F.Tanh, "Math.tanh");
-
-	}
-
-	private DoubleFormFactory(final boolean relaxedSyntax, final boolean reversed, int exponentFigures,
+	public DoubleFormFactory(final boolean relaxedSyntax, final boolean reversed, int exponentFigures,
 			int significantFigures) {
 		fRelaxedSyntax = relaxedSyntax;
 		fPlusReversed = reversed;
@@ -106,65 +78,6 @@ public class DoubleFormFactory {
 
 	public void reset() {
 		fColumnCounter = 0;
-	}
-
-	/**
-	 * Get an <code>OutputFormFactory</code> for converting an internal expression to a user readable string.
-	 * 
-	 * @param relaxedSyntax
-	 *            If <code>true</code> use paranthesis instead of square brackets and ignore case for functions, i.e.
-	 *            sin() instead of Sin[]. If <code>true</code> use single square brackets instead of double square
-	 *            brackets for extracting parts of an expression, i.e. {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
-	 * @return
-	 */
-	public static DoubleFormFactory get(final boolean relaxedSyntax) {
-		return get(relaxedSyntax, false);
-	}
-
-	/**
-	 * Get an <code>OutputFormFactory</code> for converting an internal expression to a user readable string.
-	 * 
-	 * @param relaxedSyntax
-	 *            if <code>true</code> use paranthesis instead of square brackets and ignore case for functions, i.e.
-	 *            sin() instead of Sin[]. If <code>true</code> use single square brackets instead of double square
-	 *            brackets for extracting parts of an expression, i.e. {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
-	 * @param plusReversed
-	 *            if <code>true</code> the arguments of the <code>Plus()</code> function will be printed in reversed
-	 *            order
-	 * @return
-	 */
-	public static DoubleFormFactory get(final boolean relaxedSyntax, final boolean plusReversed) {
-		return get(relaxedSyntax, plusReversed, -1, -1);
-	}
-
-	/**
-	 * Get an <code>OutputFormFactory</code> for converting an internal expression to a user readable string.
-	 * 
-	 * @param relaxedSyntax
-	 *            if <code>true</code> use paranthesis instead of square brackets and ignore case for functions, i.e.
-	 *            sin() instead of Sin[]. If <code>true</code> use single square brackets instead of double square
-	 *            brackets for extracting parts of an expression, i.e. {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
-	 * @param plusReversed
-	 *            if <code>true</code> the arguments of the <code>Plus()</code> function will be printed in reversed
-	 *            order
-	 * @param exponentFigures
-	 * @param significantFigures
-	 * @return
-	 */
-	public static DoubleFormFactory get(final boolean relaxedSyntax, final boolean plusReversed, int exponentFigures,
-			int significantFigures) {
-		return new DoubleFormFactory(relaxedSyntax, plusReversed, exponentFigures, significantFigures);
-	}
-
-	/**
-	 * Get an <code>OutputFormFactory</code> for converting an internal expression to a user readable string, with
-	 * <code>relaxedSyntax</code> set to false.
-	 * 
-	 * @return
-	 * @see #get(boolean)
-	 */
-	public static DoubleFormFactory get() {
-		return get(false);
 	}
 
 	public void convertDouble(final Appendable buf, final INum d, final int precedence, boolean caller)
@@ -1440,6 +1353,8 @@ public class DoubleFormFactory {
 		append(buf, "]");
 	}
 
+	public abstract String functionHead(ISymbol symbol);
+
 	/**
 	 * Write a function into the given <code>Appendable</code>.
 	 * 
@@ -1450,7 +1365,7 @@ public class DoubleFormFactory {
 	public void convertAST(final Appendable buf, final IAST function) throws IOException {
 		IExpr head = function.head();
 		if (head.isSymbol()) {
-			String str = FUNCTIONS_STR.get((ISymbol) head);
+			String str = functionHead((ISymbol) head);
 			if (str != null) {
 				buf.append(str);
 				if (function.isAST(F.ArcTan, 3)) {
