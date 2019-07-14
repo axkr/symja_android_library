@@ -157,6 +157,7 @@ public abstract class AbstractTestCase extends TestCase {
 	protected void setUp() {
 		try {
 			synchronized (fScriptManager) {
+				Config.USE_MATHCELL = false;
 				EvalEngine engine = new EvalEngine();
 				fScriptEngine = new MathScriptEngine(engine);// fScriptManager.getEngineByExtension("m");
 				fScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
