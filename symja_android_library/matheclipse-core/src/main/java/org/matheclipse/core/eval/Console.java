@@ -41,6 +41,7 @@ public class Console {
 	protected final static String MATHCELL_PAGE = //
 			"<html>\n" + //
 					"<head>\n" + //
+					"<meta charset=\"utf-8\">\n" + //
 					"<title>MathCell</title>\n" + //
 					"<link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\">\n" + //
 					"<style></style>\n" + //
@@ -49,6 +50,8 @@ public class Console {
 					"<body>\n" + //
 					"\n" + //
 					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.3.0/build/mathcell.js\"></script>\n"
+					+ //
+					"<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
 					+ //
 					"\n" + //
 					"<p style=\"text-align: center; line-height: 2\"><span style=\"font-size: 20pt\">MathCell</span></p>\n"
@@ -338,17 +341,20 @@ public class Console {
 	 * Create a console which appends each evaluation output in a history list.
 	 */
 	public Console() {
+		// activate MathCell JavaScript output for Plot, Plot3D
+		Config.USE_MATHCELL = true;
 		fEvaluator = new ExprEvaluator(false, 100);
 		fOutputFactory = OutputFormFactory.get(true, false, 5, 7);
 		fEvaluator.getEvalEngine().setFileSystemEnabled(true);
 		fOutputTraditionalFactory = OutputFormFactory.get(true, false, 5, 7);
 		fInputFactory = OutputFormFactory.get(true, false, 5, 7);
 		fInputFactory.setQuotes(true);
-		F.$PreRead.assign(//
-				F.Function(F.ReplaceAll(F.Unevaluated(F.Slot1), //
-						F.List(F.RuleDelayed(F.binaryAST2(F.Plot, F.x_, F.y_), F.Manipulate(F.binaryAST2(F.Plot, F.x, F.y))), //
-								F.RuleDelayed(F.ternaryAST3(F.Plot3D, F.x_, F.y_, F.z_), F.Manipulate(F.ternaryAST3(F.Plot3D, F.x, F.y, F.z))//
-								)))));
+		// F.$PreRead.assign(//
+		// F.Function(F.ReplaceAll(F.Unevaluated(F.Slot1), //
+		// F.List(F.RuleDelayed(F.binaryAST2(F.Plot, F.x_, F.y_), F.Manipulate(F.binaryAST2(F.Plot, F.x, F.y))), //
+		// F.RuleDelayed(F.ternaryAST3(F.Plot3D, F.x_, F.y_, F.z_), F.Manipulate(F.ternaryAST3(F.Plot3D, F.x, F.y,
+		// F.z))//
+		// )))));
 	}
 
 	/**

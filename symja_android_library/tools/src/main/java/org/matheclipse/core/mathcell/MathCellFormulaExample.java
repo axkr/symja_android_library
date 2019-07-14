@@ -7,7 +7,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
-public class MathCellSurfaceExample {
+public class MathCellFormulaExample {
 	private final static String WEB_PAGE = //
 			"<html>\n" + //
 					"<head>\n" + //
@@ -46,7 +46,8 @@ public class MathCellSurfaceExample {
 	public static void main(String[] args) {
 		try {
 			ExprEvaluator util = new ExprEvaluator();
-			IExpr result = util.eval("Manipulate(Plot3D(Sin(a*x*y), {x, -1.5, 1.5}, {y, -1.5, 1.5}), {a,1,5})");
+			//Manipulate[Factor[x^n + 1], {n, 10, 100, 1}]
+			IExpr result = util.eval("Manipulate(Factor(x^n + 1), {n, 1, 5, 1})");
 			if (result.isAST(F.JSFormData, 3) && result.second().toString().equals("mathcell")) {
 				String manipulateStr = ((IAST) result).arg1().toString();
 				String js = WEB_PAGE;

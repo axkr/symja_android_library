@@ -37,6 +37,9 @@ public class Plot3D extends AbstractEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		if (Config.USE_MATHCELL) {
+			return F.Manipulate.of(engine, ast);
+		}
 		// ISymbol optionsArray[] = new ISymbol[] { f.BoxRatios, f.PlotRange };
 		if ((ast.size() >= 4) && ast.arg2().isList() && ast.arg3().isList()) {
 			try {

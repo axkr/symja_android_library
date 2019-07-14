@@ -40,6 +40,9 @@ public class Plot extends AbstractEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		if (Config.USE_MATHCELL) {
+			return F.Manipulate.of(engine, ast);
+		}
 		if ((ast.size() >= 3) && (ast.size() <= 4) && ast.arg2().isList()) {
 			try {
 				final IAST rangeList = (IAST) ast.arg2();
