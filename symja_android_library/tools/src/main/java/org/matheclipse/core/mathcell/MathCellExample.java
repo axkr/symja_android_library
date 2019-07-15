@@ -19,7 +19,7 @@ public class MathCellExample {
 					"\n" + //
 					"<body>\n" + //
 					"\n" + //
-					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.3.0/build/mathcell.js\"></script>\n"
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.7.0/build/mathcell.js\"></script>\n"
 					+ //
 					"<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>" +//
 					"\n" + //
