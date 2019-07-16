@@ -21,11 +21,11 @@ public class ManipulateFunction {
 					"parent.update = function( id ) {\n" + //
 					"\n" + //
 					// " var phase = document.getElementById( id + 'phase' ).value;\n" + //
-					"  `2`" + //
+					"`2`" + //
 					"\n" + //
-					"  `3`" + //
+					"`3`" + //
 					"\n" + //
-					"  `4`" + //
+					"`4`" + //
 					// " var p2 = plot( x => Math.cos(x-phase), [0, 2*Math.PI], { color: 'purple' } );\n" + //
 					// "\n" + //
 					// " var data = [ p1, p2 ];\n" + //
@@ -111,37 +111,44 @@ public class ManipulateFunction {
 			ISymbol plotSymbolX = (ISymbol) plotRangeX.arg1();
 
 			String js = MATHCELL;
-			if (ast.isAST2()) {
+			if (ast.size() >= 3) {
 				if (ast.arg2().isList()) {
-					IAST sliderRange = (IAST) ast.arg2();
-					if (sliderRange.isAST3() && sliderRange.arg1().isSymbol()) {
-						String sliderSymbol = OutputFunctions.toJavaScript(sliderRange.arg1());
+					// { type: 'slider', min: 0, max: 2*Math.PI, name: 'phase', label: 'phase' }
+					StringBuilder slider = new StringBuilder();
+					// var a = document.getElementById( id + 'a' ).value;
+					StringBuilder variable = new StringBuilder();
+					for (int i = 2; i < ast.size(); i++) {
+						if (ast.get(i).isList()) {
+							IAST sliderRange = (IAST) ast.get(i);
+							if (sliderRange.isAST3() && sliderRange.arg1().isSymbol()) {
+								String sliderSymbol = OutputFunctions.toJavaScript(sliderRange.arg1());
+								if (i > 2) {
+									slider.append(", ");
+								}
+								slider.append("{ type: 'slider', min: ");
+								slider.append(OutputFunctions.toJavaScript(sliderRange.arg2()));
+								slider.append(", max: ");
+								slider.append(OutputFunctions.toJavaScript(sliderRange.arg3()));
+								slider.append(", name: '");
+								slider.append(sliderSymbol);
+								slider.append("', label: '");
+								slider.append(sliderSymbol);
+								slider.append("' }\n");
 
-						// { type: 'slider', min: 0, max: 2*Math.PI, name: 'phase', label: 'phase' }
+								variable.append("var ");
+								variable.append(sliderSymbol);
+								// variable.append(" = getVariable( id, '");
+								variable.append(" = document.getElementById( id + '");
+								variable.append(sliderSymbol);
+								variable.append("' ).value;\n");
 
-						StringBuilder slider = new StringBuilder();
-						slider.append("{ type: 'slider', min: ");
-						slider.append(OutputFunctions.toJavaScript(sliderRange.arg2()));
-						slider.append(", max: ");
-						slider.append(OutputFunctions.toJavaScript(sliderRange.arg3()));
-						slider.append(", name: '");
-						slider.append(sliderSymbol);
-						slider.append("', label: '");
-						slider.append(sliderSymbol);
-						slider.append("' }\n");
-						js = js.replace("`1`", slider.toString());
-
-						// var a = document.getElementById( id + 'a' ).value;
-						StringBuilder variable = new StringBuilder();
-						variable.append("var ");
-						variable.append(sliderSymbol);
-
-						// variable.append(" = getVariable( id, '");
-						variable.append(" = document.getElementById( id + '");
-						variable.append(sliderSymbol);
-						variable.append("' ).value;\n");
-						js = js.replace("`2`", variable.toString());
+							}
+						} else {
+							break;
+						}
 					}
+					js = js.replace("`1`", slider.toString());
+					js = js.replace("`2`", variable.toString());
 				}
 			} else {
 				js = js.replace("`1`", "");
@@ -150,8 +157,9 @@ public class ManipulateFunction {
 
 			// function z1(x,y) { return [ x, y, Math.sin( a * x * y ) ]; }
 			StringBuilder function = new StringBuilder();
-			function.append("function z1(");
+
 			if (plotID == ID.Plot3D) {
+				function.append("function z1(");
 				ISymbol plotSymbolY = (ISymbol) plotRangeY.arg1();
 				function.append(OutputFunctions.toJavaScript(plotSymbolX));
 				function.append(",");
@@ -164,28 +172,35 @@ public class ManipulateFunction {
 				function.append(OutputFunctions.toJavaScript(plot.arg1()));
 				function.append(" ]; }\n");
 			} else {
-				// if (plotID == ID.ParametricPlot) {
-				// function.append(OutputFunctions.toJavaScript(plotSymbolX));
-				// function.append(") { return ");
-				// function.append(OutputFunctions.toJavaScript(plot.arg1()));
-				// function.append("; }\n");
-				// } else {
-				function.append(OutputFunctions.toJavaScript(plotSymbolX));
-				function.append(") { return ");
-				function.append(OutputFunctions.toJavaScript(plot.arg1()));
-				function.append("; }\n");
-				// }
+				if (plot.arg1().isList()) {
+					IAST listOfFunctions = (IAST) plot.arg1();
+					for (int i = 1; i < listOfFunctions.size(); i++) {
+						function.append("function z");
+						function.append(i);
+						function.append("(");
+						function.append(OutputFunctions.toJavaScript(plotSymbolX));
+						function.append(") { return ");
+						function.append(OutputFunctions.toJavaScript(listOfFunctions.get(i)));
+						function.append("; }\n");
+					}
+				} else {
+					function.append("function z1(");
+					function.append(OutputFunctions.toJavaScript(plotSymbolX));
+					function.append(") { return ");
+					function.append(OutputFunctions.toJavaScript(plot.arg1()));
+					function.append("; }\n");
+				}
 			}
 			js = js.replace("`3`", function.toString());
 
 			// plot( x => (Math.sin(x*(1+a*x))), [0, 2*Math.PI], { } )
 			StringBuilder graphicControl = new StringBuilder();
-			graphicControl.append("var p1 = ");
 
 			if (plotID == ID.Plot3D) {
 				if (!plotRangeY.isPresent()) {
 					return F.NIL;
 				}
+				graphicControl.append("var p1 = ");
 				graphicControl.append("parametric( z1, ");
 				range(graphicControl, plotRangeX);
 				graphicControl.append(", ");
@@ -194,16 +209,44 @@ public class ManipulateFunction {
 
 				graphicControl.append("  var config = { type: 'threejs' };\n");
 			} else {
-				graphicControl.append("plot( z1, ");
-				range(graphicControl, plotRangeX);
-				graphicControl.append(", { } );\n\n\n");
+				if (plot.arg1().isList()) {
+					IAST listOfFunctions = (IAST) plot.arg1();
+					for (int i = 1; i < listOfFunctions.size(); i++) {
+						graphicControl.append("var p");
+						graphicControl.append(i);
+						graphicControl.append(" = ");
+						graphicControl.append("plot( z");
+						graphicControl.append(i);
+						graphicControl.append(", ");
+						range(graphicControl, plotRangeX);
+						graphicControl.append(", { } );\n");
+					}
+				} else {
+					graphicControl.append("var p1 = ");
+					graphicControl.append("plot( z1, ");
+					range(graphicControl, plotRangeX);
+					graphicControl.append(", { } );\n");
+				}
 
-				graphicControl.append("  var config = { type: 'svg' };\n");
+				graphicControl.append("var config = { type: 'svg' };\n");
 			}
 
 			// var data = [ p1, p2 ];
-			graphicControl.append("  var data = [ p1 ];\n\n");
-			graphicControl.append("  evaluate( id, data, config );\n\n");
+			if (plot.arg1().isList()) {
+				IAST listOfFunctions = (IAST) plot.arg1();
+				graphicControl.append("var data = [ ");
+				for (int i = 1; i < listOfFunctions.size(); i++) {
+					graphicControl.append("p");
+					graphicControl.append(i);
+					if (i < listOfFunctions.size() - 1) {
+						graphicControl.append(", ");
+					}
+				}
+				graphicControl.append(" ];\n");
+			} else {
+				graphicControl.append("var data = [ p1 ];\n");
+			}
+			graphicControl.append("evaluate( id, data, config );\n");
 			js = js.replace("`4`", graphicControl.toString());
 
 			return F.JSFormData(js, "mathcell");
@@ -296,7 +339,7 @@ public class ManipulateFunction {
 
 		@Override
 		public int[] expectedArgSize() {
-			return IOFunctions.ARGS_1_2;
+			return IOFunctions.ARGS_1_INFINITY;
 		}
 
 		@Override
