@@ -119,29 +119,8 @@ public class ManipulateFunction {
 					StringBuilder variable = new StringBuilder();
 					for (int i = 2; i < ast.size(); i++) {
 						if (ast.get(i).isList()) {
-							IAST sliderRange = (IAST) ast.get(i);
-							if (sliderRange.isAST3() && sliderRange.arg1().isSymbol()) {
-								String sliderSymbol = OutputFunctions.toJavaScript(sliderRange.arg1());
-								if (i > 2) {
-									slider.append(", ");
-								}
-								slider.append("{ type: 'slider', min: ");
-								slider.append(OutputFunctions.toJavaScript(sliderRange.arg2()));
-								slider.append(", max: ");
-								slider.append(OutputFunctions.toJavaScript(sliderRange.arg3()));
-								slider.append(", name: '");
-								slider.append(sliderSymbol);
-								slider.append("', label: '");
-								slider.append(sliderSymbol);
-								slider.append("' }\n");
-
-								variable.append("var ");
-								variable.append(sliderSymbol);
-								// variable.append(" = getVariable( id, '");
-								variable.append(" = document.getElementById( id + '");
-								variable.append(sliderSymbol);
-								variable.append("' ).value;\n");
-
+							if (!createSingleSlider(ast, i, slider, variable)) {
+								return F.NIL;
 							}
 						} else {
 							break;
@@ -250,6 +229,54 @@ public class ManipulateFunction {
 			js = js.replace("`4`", graphicControl.toString());
 
 			return F.JSFormData(js, "mathcell");
+		}
+
+		private static boolean createSingleSlider(final IAST ast, int i, StringBuilder slider, StringBuilder variable)
+				throws IOException {
+			IAST sliderRange = (IAST) ast.get(i);
+			if (sliderRange.isAST3()) {
+				String sliderSymbol;
+				String defaultValue = null;
+				String label;
+				if (sliderRange.arg1().isList()) {
+					IAST sliderParameters = (IAST) sliderRange.arg1();
+					if (sliderParameters.size() < 4) {
+						return false;
+					}
+					sliderSymbol = OutputFunctions.toJavaScript(sliderParameters.arg1());
+					defaultValue = OutputFunctions.toJavaScript(sliderRange.arg2());
+					label = OutputFunctions.toJavaScript(sliderParameters.arg3());
+				} else {
+					sliderSymbol = OutputFunctions.toJavaScript(sliderRange.arg1());
+					label = sliderSymbol;
+				}
+				if (i > 2) {
+					slider.append(", ");
+				}
+				slider.append("{ type: 'slider', min: ");
+				slider.append(OutputFunctions.toJavaScript(sliderRange.arg2()));
+				slider.append(", max: ");
+				slider.append(OutputFunctions.toJavaScript(sliderRange.arg3()));
+
+				if (defaultValue != null) {
+					slider.append(", default: ");
+					slider.append(defaultValue);
+				}
+				slider.append(", name: '");
+				slider.append(sliderSymbol);
+				slider.append("', label: '");
+				slider.append(label);
+				slider.append("' }\n");
+
+				variable.append("var ");
+				variable.append(sliderSymbol);
+				// variable.append(" = getVariable( id, '");
+				variable.append(" = document.getElementById( id + '");
+				variable.append(sliderSymbol);
+				variable.append("' ).value;\n");
+				return true;
+			}
+			return false;
 		}
 
 		/**

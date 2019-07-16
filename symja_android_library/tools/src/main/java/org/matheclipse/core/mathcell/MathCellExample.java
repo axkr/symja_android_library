@@ -19,8 +19,9 @@ public class MathCellExample {
 					"\n" + //
 					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.7.0/build/mathcell.js\"></script>\n"
 					+ //
-					//"<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
-					//+ //
+						// "<script
+						// src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
+						// + //
 					"\n" + //
 					"<p style=\"text-align: center; line-height: 2\"><span style=\"font-size: 20pt\">MathCell</span></p>\n"
 					+ //
@@ -46,7 +47,11 @@ public class MathCellExample {
 	public static void main(String[] args) {
 		try {
 			ExprEvaluator util = new ExprEvaluator();
-			IExpr result = util.eval("Manipulate(Plot({Sin(a*x+b),Cos(a*x+b)}, {x, -3*Pi, 3*Pi} ),{a,1,3},{b,1,3})");
+
+			IExpr result = util.eval(
+					"Manipulate(Plot(Sin(a*x + b), {x, 0, 6}), " //
+					+ "{{a, 2, \"Multiplier\"}, 1, 4}, {{b, 0, \"Phase\"}, 0, 10})");
+			// IExpr result = util.eval("Manipulate(Plot({Sin(a*x+b),Cos(a*x+b)}, {x, -3*Pi, 3*Pi} ),{a,1,3},{b,1,3})");
 			// IExpr result = util.eval("Manipulate(Plot(Sin(x)*Cos(1 + a*x), {x, 0, 2*Pi}), {a,0,10})");
 			if (result.isAST(F.JSFormData, 3) && result.second().toString().equals("mathcell")) {
 				String manipulateStr = ((IAST) result).arg1().toString();
