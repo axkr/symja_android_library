@@ -147,20 +147,20 @@ public abstract class Scanner {
 	 */
 	final static protected int TT_NEWLINE = 150;
 
-	// ----------------optimized identifier managment------------------
-	static final String string_a = "a", string_b = "b", string_c = "c", string_d = "d", string_e = "e", string_f = "f",
-			string_g = "g", string_h = "h", string_i = "i", string_j = "j", string_k = "k", string_l = "l",
-			string_m = "m", string_n = "n", string_o = "o", string_p = "p", string_q = "q", string_r = "r",
-			string_s = "s", string_t = "t", string_u = "u", string_v = "v", string_w = "w", string_x = "x",
-			string_y = "y", string_z = "z";
+	// ----------------optimized identifier management------------------
+	private static final String string_a = "a", string_b = "b", string_c = "c", string_d = "d", string_e = "e",
+			string_f = "f", string_g = "g", string_h = "h", string_i = "i", string_j = "j", string_k = "k",
+			string_l = "l", string_m = "m", string_n = "n", string_o = "o", string_p = "p", string_q = "q",
+			string_r = "r", string_s = "s", string_t = "t", string_u = "u", string_v = "v", string_w = "w",
+			string_x = "x", string_y = "y", string_z = "z";
 
-	static final String string_A = "A", string_B = "B", string_C = "C", string_D = "D", string_E = "E", string_F = "F",
-			string_G = "G", string_H = "H", string_I = "I", string_J = "J", string_K = "K", string_L = "L",
-			string_M = "M", string_N = "N", string_O = "O", string_P = "P", string_Q = "Q", string_R = "R",
-			string_S = "S", string_T = "T", string_U = "U", string_V = "V", string_W = "W", string_X = "X",
-			string_Y = "Y", string_Z = "Z";
+	private static final String string_A = "A", string_B = "B", string_C = "C", string_D = "D", string_E = "E",
+			string_F = "F", string_G = "G", string_H = "H", string_I = "I", string_J = "J", string_K = "K",
+			string_L = "L", string_M = "M", string_N = "N", string_O = "O", string_P = "P", string_Q = "Q",
+			string_R = "R", string_S = "S", string_T = "T", string_U = "U", string_V = "V", string_W = "W",
+			string_X = "X", string_Y = "Y", string_Z = "Z";
 
-	static final String var_a = "$a", var_b = "$b", var_c = "$c", var_d = "$d", var_e = "$e", var_f = "$f",
+	private static final String var_a = "$a", var_b = "$b", var_c = "$c", var_d = "$d", var_e = "$e", var_f = "$f",
 			var_g = "$g", var_h = "$h", var_i = "$i", var_j = "$j", var_k = "$k", var_l = "$l", var_m = "$m",
 			var_n = "$n", var_o = "$o", var_p = "$p", var_q = "$q", var_r = "$r", var_s = "$s", var_t = "$t",
 			var_u = "$u", var_v = "$v", var_w = "$w", var_x = "$x", var_y = "$y", var_z = "$z";
@@ -402,15 +402,14 @@ public abstract class Scanner {
 				break;
 			}
 		}
-		final String line = new String(fInputString, fCurrentColumnStartPosition, eol - fCurrentColumnStartPosition);
-		return line;
+		return new String(fInputString, fCurrentColumnStartPosition, eol - fCurrentColumnStartPosition);
 	}
 
 	/**
 	 * Parse an identifier string (function, constant or variable name) and the correponding context if possible.
 	 * 
-	 * @return an array which contains &quot;the main identifier&quot; at offset 0 and &quot;context(or null)&quot; at
-	 *         offset 1.
+	 * @return an array which contains &quot;the main identifier&quot; at offset 0 and &quot;context(or
+	 *         <code>null</code>)&quot; at offset 1.
 	 */
 	protected String[] getIdentifier() {
 		int startPosition = fCurrentPosition - 1;
@@ -424,14 +423,6 @@ public abstract class Scanner {
 				|| (fCurrentChar == '`')) {
 			if (fCurrentChar == '`') {
 				contextIndex = fCurrentPosition - 1;
-				// } else if (fCurrentChar == ':') {
-				// if ((fCurrentChar == ':') && fInputString.length > fCurrentPosition
-				// && fInputString[fCurrentPosition] == ':') {
-				// // for Rubi identifiers integrate::PolyQ etc
-				// getChar();
-				// getChar();
-				// }
-				// break;
 			}
 			getChar();
 		}
@@ -450,11 +441,14 @@ public abstract class Scanner {
 		int endPosition = fCurrentPosition--;
 		final int length = (--endPosition) - startPosition;
 		if (length == 1) {
-			String name = Characters.CharacterNamesMap.get(String.valueOf(fInputString[startPosition]));
-			if (name != null) {
-				return new String[] { name, context };
+			String name = optimizedCurrentTokenSource1(startPosition);
+			if (name == null) {
+				name = Characters.CharacterNamesMap.get(String.valueOf(fInputString[startPosition]));
+				if (name != null) {
+					return new String[] { name, context };
+				}
 			}
-			return new String[] { optimizedCurrentTokenSource1(startPosition), context };
+			return new String[] { new String(fInputString, startPosition, 1), context };
 		}
 		if (length == 2 && fInputString[startPosition] == '$') {
 			return new String[] { optimizedCurrentTokenSource2(startPosition), context };
@@ -467,8 +461,9 @@ public abstract class Scanner {
 	 * 
 	 * @return
 	 * @throws SyntaxError
+	 *             if the number couldn't be parsed as Java <code>int</code> value.
 	 */
-	protected int getInteger() throws SyntaxError {
+	protected int getJavaInt() throws SyntaxError {
 		final String number = getIntegerString();
 		int intValue = 0;
 		try {
@@ -615,19 +610,6 @@ public abstract class Scanner {
 					}
 
 					break;
-				// case '.':
-				// // token = TT_DOT;
-				// if (isValidPosition()) {
-				// if (Character.isDigit(fCurrentChar)) {
-				// // don't increment fCurrentPosition (see
-				// // getNumberString())
-				// // fCurrentPosition++;
-				// fToken = TT_DIGIT; // floating-point number
-				// break;
-				// }
-				// }
-				//
-				// break;
 				case '"':
 					fToken = TT_STRING;
 
@@ -657,12 +639,10 @@ public abstract class Scanner {
 						return;
 					}
 					if (fCurrentChar == '.') {
-						// token = TT_DOT;
 						if (isValidPosition()) {
 							if (Character.isDigit(fCurrentChar)) {
 								// don't increment fCurrentPosition (see
 								// getNumberString())
-								// fCurrentPosition++;
 								fToken = TT_DIGIT; // floating-point number
 								break;
 							}
@@ -764,11 +744,8 @@ public abstract class Scanner {
 					if (fCurrentChar != ' ') {
 						dFlag = true;
 					}
-
-					getChar();
-				} else {
-					getChar();
 				}
+				getChar();
 			}
 			if (dFlag) {
 				numFormat = -1;
@@ -979,7 +956,7 @@ public abstract class Scanner {
 	 * Return constant strings for variables of length 1.
 	 * 
 	 * @param startPosition
-	 * @return
+	 * @return <code>null</code> if no predefined constant string can be found
 	 */
 	final private String optimizedCurrentTokenSource1(final int startPosition) {
 		// return always the same String build only once
@@ -1090,7 +1067,7 @@ public abstract class Scanner {
 		case 'Z':
 			return string_Z;
 		default:
-			return new String(fInputString, startPosition, 1);
+			return null;
 		}
 	}
 

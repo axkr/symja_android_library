@@ -265,7 +265,7 @@ public class Parser extends Scanner {
 			int countPercent = 1;
 			getNextToken();
 			if (fToken == TT_DIGIT) {
-				countPercent = getInteger();
+				countPercent = getJavaInt();
 				out.add(fFactory.createInteger(countPercent));
 				return out;
 			}
@@ -282,7 +282,7 @@ public class Parser extends Scanner {
 			getNextToken();
 			final FunctionNode slot = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Slot));
 			if (fToken == TT_DIGIT) {
-				slot.add(fFactory.createInteger(getInteger()));
+				slot.add(fFactory.createInteger(getJavaInt()));
 			} else {
 				slot.add(fFactory.createInteger(1));
 			}

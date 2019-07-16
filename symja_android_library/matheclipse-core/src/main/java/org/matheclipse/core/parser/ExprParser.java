@@ -410,7 +410,7 @@ public class ExprParser extends Scanner {
 			int countPercent = 1;
 			getNextToken();
 			if (fToken == TT_DIGIT) {
-				countPercent = getInteger();
+				countPercent = getJavaInt();
 				out.append(F.integer(countPercent));
 				return out;
 			}
@@ -426,7 +426,7 @@ public class ExprParser extends Scanner {
 
 			getNextToken();
 			if (fToken == TT_DIGIT) {
-				int slotNumber = getInteger();
+				int slotNumber = getJavaInt();
 				if (slotNumber == 1) {
 					return parseArguments(F.Slot1);
 				} else if (slotNumber == 2) {
