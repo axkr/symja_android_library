@@ -356,6 +356,10 @@ public final class OutputFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			try {
 				IExpr arg1 = engine.evaluate(ast.arg1());
+				if (arg1.isAST(F.JSFormData, 3)) {
+					String manipulateStr = ((IAST) arg1).arg1().toString();
+					return F.$str(manipulateStr);
+				}
 				return F.$str(toJavaScript(arg1));
 			} catch (Exception rex) {
 				if (Config.SHOW_STACKTRACE) {

@@ -29,7 +29,7 @@ public class ManipulateFunction {
 					// " var p2 = plot( x => Math.cos(x-phase), [0, 2*Math.PI], { color: 'purple' } );\n" + //
 					// "\n" + //
 					// " var data = [ p1, p2 ];\n" + //
-					"\n" + //
+					// "\n" + //
 					// " var config = { type: 'svg' };\n" + //
 					// "\n" + //
 					// " evaluate( id, data, config );\n" + //
@@ -320,14 +320,13 @@ public class ManipulateFunction {
 				StringBuilder variable = new StringBuilder();
 				variable.append("var ");
 				variable.append(sliderSymbol);
- 
-				
+
 				// variable.append(" = document.getElementById( id + '");
 				variable.append(" = getVariable(id, '");
 				variable.append(sliderSymbol);
 				// variable.append("' ).value;\n");
 				variable.append("');\n");
-				
+
 				js = js.replace("`2`", variable.toString());
 
 				js = js.replace("`3`", "");
