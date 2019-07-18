@@ -18,6 +18,7 @@ public class MathCellSurfaceExample {
 					"</head>\n" + //
 					"\n" + //
 					"<body>\n" + //
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.0/build/math.js\"></script>" + //
 					"\n" + //
 					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.7.0/build/mathcell.js\"></script>\n"
 					+ //

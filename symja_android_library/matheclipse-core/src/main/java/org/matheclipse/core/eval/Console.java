@@ -48,16 +48,15 @@ public class Console {
 					"</head>\n" + //
 					"\n" + //
 					"<body>\n" + //
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.0/build/math.js\"></script>" + //
+					"\n" + //
 					"\n" + //
 					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.7.0/build/mathcell.js\"></script>\n"
 					+ //
 					"<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
 					+ //
 					"\n" + //
-					"<p style=\"text-align: center; line-height: 2\"><span style=\"font-size: 20pt\">MathCell</span></p>\n"
-					+ //
-					"\n" + //
-					"<div class=\"mathcell\" style=\"height: 4in\">\n" + //
+					"<div class=\"mathcell\" style=\"width: 100%; height: 100%\">\n" + //
 					"<script>\n" + //
 					"\n" + //
 					"var parent = document.scripts[ document.scripts.length - 1 ].parentNode;\n" + //
