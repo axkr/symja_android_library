@@ -4,6 +4,7 @@ import static org.matheclipse.core.expression.F.List;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -58,6 +59,34 @@ import org.matheclipse.core.visit.VisitorRemoveLevelSpecification;
 import org.matheclipse.parser.client.math.MathException;
 
 public final class ListFunctions {
+
+	private interface IVariablesFunction {
+		public IExpr evaluate(final ISymbol[] variables, final IExpr[] index);
+	}
+
+	private static class TableFunction implements IVariablesFunction {
+		final EvalEngine fEngine;
+
+		final IExpr fValue;
+
+		public TableFunction(final EvalEngine engine, final IExpr value) {
+			fEngine = engine;
+			fValue = value;
+		}
+
+		@Override
+		public IExpr evaluate(final ISymbol[] variables, final IExpr[] index) {
+			HashMap<ISymbol, IExpr> map = new HashMap<ISymbol, IExpr>();
+			for (int i = 0; i < variables.length; i++) {
+				if (variables[i] != null) {
+					map.put(variables[i], index[i]);
+				}
+			}
+			IExpr temp = map.size() == 0 ? fValue : fValue.replaceAll(map).orElse(fValue);
+			return fEngine.evaluate(temp);
+		}
+	}
+
 	/**
 	 * 
 	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
@@ -147,7 +176,7 @@ public final class ListFunctions {
 		int toInt(T position);
 	}
 
-	public static class MultipleConstArrayFunction implements IArrayFunction {
+	public static class MultipleConstArrayFunction implements IVariablesFunction {
 		final IExpr fConstantExpr;
 
 		public MultipleConstArrayFunction(final IExpr expr) {
@@ -155,7 +184,7 @@ public final class ListFunctions {
 		}
 
 		@Override
-		public IExpr evaluate(final IExpr[] index) {
+		public IExpr evaluate(final ISymbol[] variables, final IExpr[] index) {
 			return fConstantExpr;
 		}
 	}
@@ -215,24 +244,27 @@ public final class ListFunctions {
 
 		final IAST fPrototypeList;
 
-		final IArrayFunction fFunction;
+		final IVariablesFunction fFunction;
 
 		int fIndex;
 
 		private IExpr[] fCurrentIndex;
 
+		private ISymbol[] fCurrentVariable;
+
 		public TableGenerator(final List<? extends IIterator<IExpr>> iterList, final IAST prototypeList,
-				final IArrayFunction function) {
+				final IVariablesFunction function) {
 			this(iterList, prototypeList, function, (IExpr) null);
 		}
 
 		public TableGenerator(final List<? extends IIterator<IExpr>> iterList, final IAST prototypeList,
-				final IArrayFunction function, IExpr defaultValue) {
+				final IVariablesFunction function, IExpr defaultValue) {
 			fIterList = iterList;
 			fPrototypeList = prototypeList;
 			fFunction = function;
 			fIndex = 0;
 			fCurrentIndex = new IExpr[iterList.size()];
+			fCurrentVariable = new ISymbol[iterList.size()];
 			fDefaultValue = defaultValue;
 		}
 
@@ -246,6 +278,7 @@ public final class ListFunctions {
 						if (fPrototypeList.head().equals(F.Plus) || fPrototypeList.head().equals(F.Times)) {
 							if (iter.hasNext()) {
 								fCurrentIndex[index] = iter.next();
+								fCurrentVariable[index] = iter.getVariable();
 								IExpr temp = table();
 								if (temp == null) {
 									temp = fDefaultValue;
@@ -271,7 +304,7 @@ public final class ListFunctions {
 				return fDefaultValue;
 
 			}
-			return fFunction.evaluate(fCurrentIndex);
+			return fFunction.evaluate(fCurrentVariable, fCurrentIndex);
 		}
 
 		public IExpr tableThrow() {
@@ -284,6 +317,7 @@ public final class ListFunctions {
 						if (fPrototypeList.head().equals(F.Plus) || fPrototypeList.head().equals(F.Times)) {
 							if (iter.hasNext()) {
 								fCurrentIndex[index] = iter.next();
+								fCurrentVariable[index] = iter.getVariable();
 								IExpr temp = table();
 								if (temp == null) {
 									temp = fDefaultValue;
@@ -309,7 +343,7 @@ public final class ListFunctions {
 				return fDefaultValue;
 
 			}
-			return fFunction.evaluate(fCurrentIndex);
+			return fFunction.evaluate(fCurrentVariable, fCurrentIndex);
 		}
 
 		private IExpr tablePlus(IExpr temp, final IIterator<IExpr> iter, final int index) {
@@ -318,6 +352,7 @@ public final class ListFunctions {
 			num = (INumber) temp;
 			while (iter.hasNext()) {
 				fCurrentIndex[index] = iter.next();
+				fCurrentVariable[index] = iter.getVariable();
 				temp = table();
 				if (temp == null) {
 					temp = fDefaultValue;
@@ -338,6 +373,7 @@ public final class ListFunctions {
 			num = (INumber) temp;
 			while (iter.hasNext()) {
 				fCurrentIndex[index] = iter.next();
+				fCurrentVariable[index] = iter.getVariable();
 				temp = table();
 				if (temp == null) {
 					temp = fDefaultValue;
@@ -373,6 +409,7 @@ public final class ListFunctions {
 			}
 			while (iter.hasNext()) {
 				fCurrentIndex[index] = iter.next();
+				fCurrentVariable[index] = iter.getVariable();
 				IExpr temp = table();
 				if (temp == null) {
 					result.append(fDefaultValue);
@@ -705,7 +742,7 @@ public final class ListFunctions {
 	 */
 	private final static class Array extends AbstractCoreFunctionEvaluator {
 
-		private static class MultipleArrayFunction implements IArrayFunction {
+		private static class MultipleArrayFunction implements IVariablesFunction {
 			final EvalEngine fEngine;
 
 			final IAST fHeadAST;
@@ -716,7 +753,7 @@ public final class ListFunctions {
 			}
 
 			@Override
-			public IExpr evaluate(final IExpr[] index) {
+			public IExpr evaluate(final ISymbol[] variables, final IExpr[] index) {
 				final IASTAppendable ast = fHeadAST.copyAppendable();
 				return fEngine.evaluate(ast.appendArgs(0, index.length, i -> index[i]));
 			}
@@ -3820,13 +3857,13 @@ public final class ListFunctions {
 	 * </pre>
 	 */
 	private final static class Range extends AbstractEvaluator {
-		private static class UnaryRangeFunction implements IArrayFunction {
+		private static class UnaryRangeFunction implements IVariablesFunction {
 
 			public UnaryRangeFunction() {
 			}
 
 			@Override
-			public IExpr evaluate(final IExpr[] index) {
+			public IExpr evaluate(final ISymbol[] variables, final IExpr[] index) {
 				return index[0];
 			}
 		}
@@ -5209,22 +5246,6 @@ public final class ListFunctions {
 	 */
 	public static class Table extends AbstractFunctionEvaluator {
 
-		private static class UnaryArrayFunction implements IArrayFunction {
-			final EvalEngine fEngine;
-
-			final IExpr fValue;
-
-			public UnaryArrayFunction(final EvalEngine engine, final IExpr value) {
-				fEngine = engine;
-				fValue = value;
-			}
-
-			@Override
-			public IExpr evaluate(final IExpr[] index) {
-				return fEngine.evaluate(fValue);
-			}
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			return evaluateTable(ast, List(), List(), engine);
@@ -5261,7 +5282,7 @@ public final class ListFunctions {
 					}
 
 					final TableGenerator generator = new TableGenerator(iterList, resultList,
-							new UnaryArrayFunction(engine, ast.arg1()), defaultValue);
+							new TableFunction(engine, ast.arg1()), defaultValue);
 					return generator.table();
 				}
 			} catch (final ClassCastException e) {
@@ -5285,7 +5306,7 @@ public final class ListFunctions {
 					}
 
 					final TableGenerator generator = new TableGenerator(iterList, resultList,
-							new UnaryArrayFunction(engine, ast.arg1()), defaultValue);
+							new TableFunction(engine, ast.arg1()), defaultValue);
 					return generator.tableThrow();
 				}
 			} catch (final ClassCastException e) {
@@ -5317,7 +5338,7 @@ public final class ListFunctions {
 				iterList.add(iter);
 
 				final TableGenerator generator = new TableGenerator(iterList, resultList,
-						new UnaryArrayFunction(EvalEngine.get(), expr), defaultValue);
+						new TableFunction(EvalEngine.get(), expr), defaultValue);
 				return generator.table();
 			} catch (final ClassCastException e) {
 				// the iterators are generated only from IASTs

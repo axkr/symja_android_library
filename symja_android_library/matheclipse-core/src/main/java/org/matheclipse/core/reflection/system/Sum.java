@@ -261,9 +261,11 @@ public class Sum extends ListFunctions.Table implements SumRules {
 
 		return F.NIL;
 	}
+
 	public int[] expectedArgSize() {
 		return IOFunctions.ARGS_2_INFINITY;
 	}
+
 	private IExpr collectConstantFactors(final IAST ast, IAST prod, VariablesSet variablesSet) {
 		IASTAppendable filterAST = F.TimesAlloc(16);
 		IASTAppendable restAST = F.TimesAlloc(16);

@@ -17788,6 +17788,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTable() {
+		check("Table(Sum(k^n, {k, 0, m}), {n, 1, 5, 1})", //
+				"{1/2*m*(1+m),m/6+m^2/2+m^3/3,m^2/4+m^3/2+m^4/4,-m/30+m^3/3+m^4/2+m^5/5,-m^2/12+5/\n" + //
+				"12*m^4+m^5/2+m^6/6}");
 		check("Table(f(x), {x, a, a+1})", //
 				"{f(a),f(1+a)}");
 		check("s=0;Table(s=i+s, {i, 0, 7})", //
