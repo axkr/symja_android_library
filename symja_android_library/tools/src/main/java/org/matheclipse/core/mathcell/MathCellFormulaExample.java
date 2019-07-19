@@ -1,5 +1,6 @@
 package org.matheclipse.core.mathcell;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -19,7 +20,7 @@ public class MathCellFormulaExample {
 					"\n" + //
 					"<body>\n" + //
 					"\n" + 
-					//"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.0/build/math.js\"></script>" + //
+				    "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.1/build/math.js\"></script>" + //
 					"\n" + //
 					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.7.0/build/mathcell.js\"></script>\n"
 					+ //
@@ -47,6 +48,7 @@ public class MathCellFormulaExample {
 
 	public static void main(String[] args) {
 		try {
+			Config.USE_MATHCELL=true;
 			ExprEvaluator util = new ExprEvaluator();
 			//Manipulate[Factor[x^n + 1], {n, 10, 100, 1}]
 			IExpr result = util.eval("Manipulate(Factor(x^n + 1), {n, 1, 5, 1})");

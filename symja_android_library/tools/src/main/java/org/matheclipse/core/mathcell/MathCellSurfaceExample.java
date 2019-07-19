@@ -1,5 +1,6 @@
 package org.matheclipse.core.mathcell;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -11,20 +12,22 @@ public class MathCellSurfaceExample {
 	private final static String WEB_PAGE = //
 			"<html>\n" + //
 					"<head>\n" + //
-					"<meta charset=\"utf-8\">\n" +//
+					"<meta charset=\"utf-8\">\n" + //
 					"<title>MathCell</title>\n" + //
 					"<link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\">\n" + //
 					"<style></style>\n" + //
 					"</head>\n" + //
 					"\n" + //
 					"<body>\n" + //
-					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.0/build/math.js\"></script>" + //
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.1/build/math.js\"></script>" + //
 					"\n" + //
 					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.7.0/build/mathcell.js\"></script>\n"
 					+ //
-					"<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>" +//
+					"<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
+					+ //
 					"\n" + //
-					"<p style=\"text-align: center; line-height: 2\"><span style=\"font-size: 20pt\">MathCell</span></p>\n" + //
+					"<p style=\"text-align: center; line-height: 2\"><span style=\"font-size: 20pt\">MathCell</span></p>\n"
+					+ //
 					"\n" + //
 					"<div class=\"mathcell\" style=\"height: 4in\">\n" + //
 					"<script>\n" + //
@@ -46,6 +49,7 @@ public class MathCellSurfaceExample {
 
 	public static void main(String[] args) {
 		try {
+			Config.USE_MATHCELL = true;
 			ExprEvaluator util = new ExprEvaluator();
 			IExpr result = util.eval("Manipulate(Plot3D(Sin(a*x*y), {x, -1.5, 1.5}, {y, -1.5, 1.5}), {a,1,5})");
 			if (result.isAST(F.JSFormData, 3) && result.second().toString().equals("mathcell")) {

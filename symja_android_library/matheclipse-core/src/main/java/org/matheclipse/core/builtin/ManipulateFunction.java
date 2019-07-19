@@ -8,6 +8,7 @@ import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.interfaces.IAST;
@@ -64,7 +65,7 @@ public class ManipulateFunction {
 							plotRangeY = (IAST) plot.arg3();
 						}
 						if (plotRangeX.isAST3() && plotRangeX.arg1().isSymbol()) {
-							return createSliderWithPlot(ast, plot, plotRangeX, plotRangeY);
+							return createSliderWithPlot(ast, plot, plotRangeX, plotRangeY, engine);
 						}
 					}
 				} else if (ast.arg2().isList() && ast.isAST2()) {
@@ -105,9 +106,19 @@ public class ManipulateFunction {
 		 * @return
 		 * @throws IOException
 		 */
-		private static IExpr createSliderWithPlot(final IAST ast, IAST plot, IAST plotRangeX, IAST plotRangeY)
-				throws IOException {
+		private static IExpr createSliderWithPlot(final IAST ast, IAST plot, IAST plotRangeX, IAST plotRangeY,
+				EvalEngine engine) throws IOException {
 			int plotID = plot.headID();
+
+			final OptionArgs options;
+			if (plotID == ID.Plot3D) {
+				options = new OptionArgs(plot.topHead(), plot, 4, engine);
+//			} else if (plotID == ID.Plot) {
+//				options = new OptionArgs(plot.topHead(), plot, 3, engine);
+			} else {
+				options = new OptionArgs(plot.topHead(), plot, 3, engine);
+			}
+
 			ISymbol plotSymbolX = (ISymbol) plotRangeX.arg1();
 
 			String js = MATHCELL;
@@ -199,15 +210,28 @@ public class ManipulateFunction {
 						graphicControl.append(", ");
 						range(graphicControl, plotRangeX);
 						graphicControl.append(", { } );\n");
+
+						graphicControl.append("var config = { type: 'svg' };\n");
 					}
 				} else {
 					graphicControl.append("var p1 = ");
 					graphicControl.append("plot( z1, ");
 					range(graphicControl, plotRangeX);
 					graphicControl.append(", { } );\n");
+
+					graphicControl.append("var config = { type: 'svg'");
+					IExpr option = options.getOption(F.PlotRange);
+					if (option.isAST(F.List, 3)) {
+						// var config = { type: 'svg', yMin: -5, yMax: 5 };
+						graphicControl.append(", yMin: ");
+						graphicControl.append(OutputFunctions.toJavaScript(option.first()));
+						graphicControl.append(", yMax: ");
+						graphicControl.append(OutputFunctions.toJavaScript(option.second()));
+					}
+					graphicControl.append(" };\n");
+
 				}
 
-				graphicControl.append("var config = { type: 'svg' };\n");
 			}
 
 			// var data = [ p1, p2 ];

@@ -115,7 +115,7 @@ public abstract class DoubleFormFactory {
 		convertDoubleString(buf, convertDoubleToFormattedString(doubleValue), 0, false);
 	}
 
-	private String convertDoubleToFormattedString(double dValue) {
+	protected String convertDoubleToFormattedString(double dValue) {
 		if (fSignificantFigures > 0) {
 			StringBuilder buf = new StringBuilder();
 			DoubleToMMA.doubleToMMA(buf, dValue, fExponentFigures, fSignificantFigures);
@@ -124,7 +124,7 @@ public abstract class DoubleFormFactory {
 		return Double.toString(dValue);
 	}
 
-	private void convertDoubleString(final Appendable buf, final String d, final int precedence,
+	protected void convertDoubleString(final Appendable buf, final String d, final int precedence,
 			final boolean isNegative) throws IOException {
 		if (isNegative && (ASTNodeFactory.PLUS_PRECEDENCE < precedence)) {
 			append(buf, "(");
@@ -1029,7 +1029,7 @@ public abstract class DoubleFormFactory {
 		convertString(buf, o.toString());
 	}
 
-	private boolean convertOperator(final Operator operator, final IAST list, final Appendable buf,
+	protected boolean convertOperator(final Operator operator, final IAST list, final Appendable buf,
 			final int precedence, ISymbol head) throws IOException {
 		if ((operator instanceof PrefixOperator) && (list.isAST1())) {
 			convertPrefixOperator(buf, list, (PrefixOperator) operator, precedence);
