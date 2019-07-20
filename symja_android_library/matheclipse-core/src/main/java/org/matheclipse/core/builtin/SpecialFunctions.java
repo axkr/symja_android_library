@@ -22,8 +22,6 @@ import static org.matheclipse.core.expression.F.QQ;
 import static org.matheclipse.core.expression.F.Sqr;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.Zeta;
-import static org.matheclipse.core.expression.F.x;
-import static org.matheclipse.core.expression.F.y;
 
 import java.math.BigDecimal;
 import java.util.function.DoubleUnaryOperator;
@@ -32,9 +30,11 @@ import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
+import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractArg12;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
@@ -72,6 +72,7 @@ public class SpecialFunctions {
 			F.BesselJ.setEvaluator(new BesselJ());
 			F.Beta.setEvaluator(new Beta());
 			F.BetaRegularized.setEvaluator(new BetaRegularized());
+			F.DirichletEta.setEvaluator(new DirichletEta());
 			F.Erf.setEvaluator(new Erf());
 			F.Erfc.setEvaluator(new Erfc());
 			F.Erfi.setEvaluator(new Erfi());
@@ -339,6 +340,54 @@ public class SpecialFunctions {
 			super.setUp(newSymbol);
 		}
 
+	}
+
+	private final static class DirichletEta extends AbstractArg1 {
+
+		@Override
+		public IExpr e1DblArg(final double d) {
+			if (F.isEqual(1.0, d)) {
+				return F.num(Math.log(2.0));
+			}
+			return e1ComplexArg(Complex.valueOf(d));
+		}
+
+		@Override
+		public IExpr e1ComplexArg(final Complex c) {
+			// mathcell formula
+			// return mul( zeta(x), sub( 1, pow( 2, sub(1,x) ) )
+			Complex zeta;
+			if (F.isEqual(c.getReal(), 1.0) && F.isZero(c.getImaginary())) {
+				zeta = Complex.valueOf(Math.log(2.0), 0.0);
+			} else {
+				de.lab4inf.math.Complex x = new de.lab4inf.math.sets.ComplexNumber(c.getReal(), c.getImaginary());
+				x = de.lab4inf.math.functions.Zeta.zeta(x);
+				zeta = Complex.valueOf(x.real(), x.imag());
+			}
+			Complex dirichletEta = zeta
+					.multiply(Complex.ONE.subtract(Complex.valueOf(2.0).pow(Complex.ONE.subtract(c))));
+			return F.complex(dirichletEta.getReal(), dirichletEta.getImaginary());
+		}
+
+		@Override
+		public IExpr e1ObjArg(final IExpr arg1) {
+			if (arg1.isMinusOne()) {
+				return F.C1D4;
+			}
+			if (arg1.isZero()) {
+				return F.C1D2;
+			}
+			if (arg1.isOne()) {
+				return F.Log(F.C2);
+			}
+			return NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
 	}
 
 	/**

@@ -4189,7 +4189,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("DirectedInfinity(x) + DirectedInfinity(y) /. {x -> 1, y -> -1}", //
 				"Indeterminate");
 	}
-
+	public void testDirichletEta() {
+		check("DirichletEta(1)", //
+				"Log(2)");
+		check("DirichletEta(1.0)", //
+				"0.693147");
+		check("Table(DirichletEta(x), {x, -4, 4}) // N", //
+				"{0.0,-0.125,0.0,0.25,0.5,0.693147,0.822467,0.901543,0.947033}");
+	}
 	public void testDiscriminant() {
 		// github #122
 		check("Discriminant((2*x^5)-(19*x^4)+(58*x^3)-(67*x^2)+(56*x)-48,x)", //
