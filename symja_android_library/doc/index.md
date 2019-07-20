@@ -620,6 +620,8 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Permutations](functions/Permutations.md)
 * [Pi](functions/Pi.md)
 * [Piecewise](functions/Piecewise.md)
+* [Plot](functions/Plot.md)
+* [Plot3D](functions/Plot3D.md)
 * [Plus](functions/Plus.md)
 * [Pochhammer](functions/Pochhammer.md)
 * [PoissonDistribution](functions/PoissonDistribution.md)
@@ -804,4 +806,3 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Xor](functions/Xor.md)
 * [YuleDissimilarity](functions/YuleDissimilarity.md)
 * [Zeta](functions/Zeta.md)
-
