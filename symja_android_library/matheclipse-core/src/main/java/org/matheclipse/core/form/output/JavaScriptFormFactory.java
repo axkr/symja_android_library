@@ -53,6 +53,13 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 	static {
 
 		if (Config.USE_MATHCELL) {
+			FUNCTIONS_STR.put(F.DirichletEta, "dirichletEta");
+			FUNCTIONS_STR.put(F.InverseWeierstrassP, "inverseWeierstrassP");
+			FUNCTIONS_STR.put(F.WeierstrassHalfPeriods, "weierstrassHalfPeriods");
+			FUNCTIONS_STR.put(F.WeierstrassInvariants, "weierstrassInvariants");
+			FUNCTIONS_STR.put(F.WeierstrassP, "weierstrassP");
+			FUNCTIONS_STR.put(F.WeierstrassPPrime, "weierstrassPPrime");
+			
 			FUNCTIONS_STR.put(F.Abs, "abs");
 			FUNCTIONS_STR.put(F.Arg, "arg");
 
