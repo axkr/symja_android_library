@@ -26,7 +26,7 @@ A 3D surface plot control:
 Display a slider for the generated formulas:
 
 ```
-Manipulate(Factor(x^n + 1), {n, 1, 5, 1})
+>> Manipulate(Factor(x^n + 1), {n, 1, 5, 1})
 ```
 
 With `JSForm` you can display the generated JavaScript form of the `Manipulate` function
