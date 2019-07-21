@@ -1,59 +1,8 @@
 package org.matheclipse.core.builtin;
 
-import static org.matheclipse.core.expression.F.ComplexExpand;
-import static org.matheclipse.core.expression.F.Compile;
-import static org.matheclipse.core.expression.F.CreateDirectory;
-import static org.matheclipse.core.expression.F.D;
-import static org.matheclipse.core.expression.F.DSolve;
-import static org.matheclipse.core.expression.F.Default;
-import static org.matheclipse.core.expression.F.Derivative;
-import static org.matheclipse.core.expression.F.EasterSunday;
-import static org.matheclipse.core.expression.F.ElementData;
-import static org.matheclipse.core.expression.F.Eliminate;
-import static org.matheclipse.core.expression.F.ExpToTrig;
-import static org.matheclipse.core.expression.F.Export;
-import static org.matheclipse.core.expression.F.FindInstance;
-import static org.matheclipse.core.expression.F.FindRoot;
-import static org.matheclipse.core.expression.F.FrobeniusSolve;
-import static org.matheclipse.core.expression.F.FunctionExpand;
-import static org.matheclipse.core.expression.F.GroebnerBasis;
-import static org.matheclipse.core.expression.F.HeavisideTheta;
-import static org.matheclipse.core.expression.F.Horner;
-import static org.matheclipse.core.expression.F.Import;
-import static org.matheclipse.core.expression.F.InterpolatingFunction;
-import static org.matheclipse.core.expression.F.InterpolatingPolynomial;
-import static org.matheclipse.core.expression.F.Interpolation;
-import static org.matheclipse.core.expression.F.Interval;
-import static org.matheclipse.core.expression.F.InverseFunction;
-import static org.matheclipse.core.expression.F.InverseLaplaceTransform;
-import static org.matheclipse.core.expression.F.LaplaceTransform;
-import static org.matheclipse.core.expression.F.LinearProgramming;
-import static org.matheclipse.core.expression.F.Maximize;
-import static org.matheclipse.core.expression.F.Minimize;
-import static org.matheclipse.core.expression.F.MonomialList;
-import static org.matheclipse.core.expression.F.NDSolve;
-import static org.matheclipse.core.expression.F.NFourierTransform;
-import static org.matheclipse.core.expression.F.NIntegrate;
-import static org.matheclipse.core.expression.F.NMaximize;
-import static org.matheclipse.core.expression.F.NMinimize;
-import static org.matheclipse.core.expression.F.NSolve;
-import static org.matheclipse.core.expression.F.NonCommutativeMultiply;
-import static org.matheclipse.core.expression.F.OptimizeExpression;
-import static org.matheclipse.core.expression.F.Out;
-import static org.matheclipse.core.expression.F.Outer;
-import static org.matheclipse.core.expression.F.Plot;
-import static org.matheclipse.core.expression.F.Plot3D;
-import static org.matheclipse.core.expression.F.Product;
-import static org.matheclipse.core.expression.F.Share;
-import static org.matheclipse.core.expression.F.Solve;
-import static org.matheclipse.core.expression.F.Sum;
-import static org.matheclipse.core.expression.F.Taylor;
-import static org.matheclipse.core.expression.F.TrigExpand;
-import static org.matheclipse.core.expression.F.TrigReduce;
-import static org.matheclipse.core.expression.F.TrigToExp;
+import static org.matheclipse.core.expression.F.*; 
 
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.reflection.system.InverseFourier;
 
 public final class FunctionDefinitions {
 	/**
@@ -105,6 +54,7 @@ public final class FunctionDefinitions {
 			OptimizeExpression.setEvaluator(new org.matheclipse.core.reflection.system.OptimizeExpression());
 			Out.setEvaluator(new org.matheclipse.core.reflection.system.Out());
 			Outer.setEvaluator(new org.matheclipse.core.reflection.system.Outer());
+			ParametricPlot.setEvaluator(new org.matheclipse.core.reflection.system.ParametricPlot());
 			Plot.setEvaluator(new org.matheclipse.core.reflection.system.Plot());
 			Plot3D.setEvaluator(new org.matheclipse.core.reflection.system.Plot3D());
 			Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
