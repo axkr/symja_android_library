@@ -609,6 +609,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Outer](functions/Outer.md)
 * [PadLeft](functions/PadLeft.md)
 * [PadRight](functions/PadRight.md)
+* [ParametricPlot](functions/ParametricPlot.md)
 * [Part](functions/Part.md)
 * [Partition](functions/Partition.md)
 * [PartitionsP](functions/PartitionsP.md)

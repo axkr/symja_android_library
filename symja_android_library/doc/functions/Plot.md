@@ -23,4 +23,4 @@ With `JSForm` you can display the generated JavaScript form of the `Manipulate` 
 ```
 
 ### Related terms 
-[JSForm](JSForm.md) [Manipulate](Manipulate.md) [Plot3D](Plot3D.md)
+[JSForm](JSForm.md) [Manipulate](Manipulate.md) [ParametricPlot](ParametricPlot.md) [Plot3D](Plot3D.md)
