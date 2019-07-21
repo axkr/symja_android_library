@@ -218,7 +218,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 			if (result.isPresent()) {
 				return result;
 			}
-			return e2ObjArg(null, o0, o1);
+			return e2ObjArg(ast, o0, o1);
 		}
 
 		if (o0 instanceof IInteger) {
@@ -249,7 +249,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 				return e2ComArg((IComplex) o0, (IComplex) o1);
 			}
 		}
-		result = e2ObjArg(null, o0, o1);
+		result = e2ObjArg(ast, o0, o1);
 		if (result.isPresent()) {
 			return result;
 		}

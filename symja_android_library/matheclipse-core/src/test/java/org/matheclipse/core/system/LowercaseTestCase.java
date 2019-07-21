@@ -4189,6 +4189,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("DirectedInfinity(x) + DirectedInfinity(y) /. {x -> 1, y -> -1}", //
 				"Indeterminate");
 	}
+
 	public void testDirichletEta() {
 		check("DirichletEta(1)", //
 				"Log(2)");
@@ -4197,6 +4198,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Table(DirichletEta(x), {x, -4, 4}) // N", //
 				"{0.0,-0.125,0.0,0.25,0.5,0.693147,0.822467,0.901543,0.947033}");
 	}
+
 	public void testDiscriminant() {
 		// github #122
 		check("Discriminant((2*x^5)-(19*x^4)+(58*x^3)-(67*x^2)+(56*x)-48,x)", //
@@ -5133,8 +5135,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testExpand() {
 		// performance test
-		// check("f = (x + y + z + w)^15;LeafCount(Expand(f*(f+w)))", //
+		// check("Expand((x + y + z + w)^15 * ((x + y + z + w)^15+w));", //
 		// "?");
+		// check("test = (x + y + z + w)^15;Length(Expand(test*(test+w)))", //
+		// "6272");
 
 		check("Expand((x + 3)^(5/2)+(x + 1)^(3/2))", //
 				"Sqrt(1+x)+x*Sqrt(1+x)+9*Sqrt(3+x)+6*x*Sqrt(3+x)+x^2*Sqrt(3+x)");
@@ -5486,6 +5490,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-3+Log(-1+x)+Log(1+x)");
 		System.out.print('.');
 		check("TrigToExp(Log(x+1)+Log(x-1)-3)", //
+				"-3+Log(-1+x)+Log(1+x)");
+		check("-3+Log(1+x)+Log(-1+x)", //
 				"-3+Log(-1+x)+Log(1+x)");
 
 		// example from paper
@@ -17797,7 +17803,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testTable() {
 		check("Table(Sum(k^n, {k, 0, m}), {n, 1, 5, 1})", //
 				"{1/2*m*(1+m),m/6+m^2/2+m^3/3,m^2/4+m^3/2+m^4/4,-m/30+m^3/3+m^4/2+m^5/5,-m^2/12+5/\n" + //
-				"12*m^4+m^5/2+m^6/6}");
+						"12*m^4+m^5/2+m^6/6}");
 		check("Table(f(x), {x, a, a+1})", //
 				"{f(a),f(1+a)}");
 		check("s=0;Table(s=i+s, {i, 0, 7})", //

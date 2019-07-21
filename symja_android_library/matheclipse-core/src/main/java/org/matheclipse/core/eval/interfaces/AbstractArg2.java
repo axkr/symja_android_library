@@ -190,12 +190,12 @@ public abstract class AbstractArg2 extends AbstractFunctionEvaluator {
 	 * 
 	 * @param ast
 	 *            the original ast which has 2 arguments
-	 * @param o0
-	 * @param o1
+	 * @param arg1
+	 * @param arg2
 	 * 
 	 * @return <code>F#NIL</code> if no evaluation is possible.
 	 */
-	public IExpr e2ObjArg(IAST ast, final IExpr o0, final IExpr o1) {
+	public IExpr e2ObjArg(IAST ast, final IExpr arg1, final IExpr arg2) {
 		return F.NIL;
 	}
 

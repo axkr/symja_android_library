@@ -938,9 +938,9 @@ public final class LinearAlgebra {
 		}
 
 		@Override
-		public IExpr e2ObjArg(IAST ast, final IExpr o0, final IExpr o1) {
+		public IExpr e2ObjArg(IAST ast, final IExpr arg1, final IExpr arg2) {
 
-			IExpr temp = numericalDot(o0, o1);
+			IExpr temp = numericalDot(arg1, arg2);
 			if (temp.isPresent()) {
 				return temp;
 			}
@@ -955,18 +955,18 @@ public final class LinearAlgebra {
 				engine.setTogetherMode(true);
 				IAST list;
 
-				if (o0.isMatrix() != null) {
-					list = (IAST) o0;
+				if (arg1.isMatrix() != null) {
+					list = (IAST) arg1;
 					matrix0 = Convert.list2Matrix(list);
 					if (matrix0 != null) {
-						if (o1.isMatrix() != null) {
-							list = (IAST) o1;
+						if (arg2.isMatrix() != null) {
+							list = (IAST) arg2;
 							matrix1 = Convert.list2Matrix(list);
 							if (matrix1 != null) {
 								return Convert.matrix2List(matrix0.multiply(matrix1));
 							}
-						} else if (o1.isVector() != (-1)) {
-							list = (IAST) o1;
+						} else if (arg2.isVector() != (-1)) {
+							list = (IAST) arg2;
 							vector1 = Convert.list2Vector(list);
 							IAST res = Convert.vector2List(matrix0.operate(vector1));
 							if (res == null) {
@@ -976,16 +976,16 @@ public final class LinearAlgebra {
 						}
 					}
 					return engine.printMessage(ast.topHead() + ": Error in matrix");
-				} else if (o0.isVector() != (-1)) {
-					list = (IAST) o0;
+				} else if (arg1.isVector() != (-1)) {
+					list = (IAST) arg1;
 					vector0 = Convert.list2Vector(list);
 					if (vector0 != null) {
-						if (o1.isMatrix() != null) {
-							list = (IAST) o1;
+						if (arg2.isMatrix() != null) {
+							list = (IAST) arg2;
 							matrix1 = Convert.list2Matrix(list);
 							return Convert.vector2List(matrix1.preMultiply(vector0));
-						} else if (o1.isVector() != (-1)) {
-							list = (IAST) o1;
+						} else if (arg2.isVector() != (-1)) {
+							list = (IAST) arg2;
 							vector1 = Convert.list2Vector(list);
 							if (vector1 != null) {
 								return vector0.dotProduct(vector1);

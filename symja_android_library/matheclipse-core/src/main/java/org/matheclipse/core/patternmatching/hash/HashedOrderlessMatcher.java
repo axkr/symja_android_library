@@ -132,7 +132,7 @@ public class HashedOrderlessMatcher {
 				return setIsHashEvaledFlag(temp);
 			}
 		}
-		orderlessAST.setEvalFlags(IAST.IS_HASH_EVALED);
+		orderlessAST.addEvalFlags(IAST.IS_HASH_EVALED);
 		return F.NIL;
 	}
 

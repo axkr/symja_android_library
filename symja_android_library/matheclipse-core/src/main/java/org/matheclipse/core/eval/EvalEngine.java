@@ -859,7 +859,7 @@ public class EvalEngine implements Serializable {
 
 			if (astSize > 2 && (ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
 				// commutative symbol
-				EvalAttributes.sort(tempAST);
+				EvalAttributes.sortWithFlags(tempAST);
 			}
 			return returnResult;
 		}
@@ -1054,14 +1054,14 @@ public class EvalEngine implements Serializable {
 					if ((result = EvalAttributes.flatten(resultList)).isPresent()) {
 						resultList = result;
 						if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
-							EvalAttributes.sort(resultList);
+							EvalAttributes.sortWithFlags(resultList);
 						}
 						resultList.addEvalFlags(IAST.IS_FLAT_ORDERLESS_EVALED);
 						return resultList;
 					}
 				}
 				if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
-					EvalAttributes.sort(resultList);
+					EvalAttributes.sortWithFlags(resultList);
 				}
 			}
 			resultList.addEvalFlags(IAST.IS_FLAT_ORDERLESS_EVALED);
@@ -1074,14 +1074,14 @@ public class EvalEngine implements Serializable {
 			if ((result = EvalAttributes.flatten(ast)).isPresent()) {
 				resultList = result;
 				if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
-					EvalAttributes.sort(resultList);
+					EvalAttributes.sortWithFlags(resultList);
 				}
 				resultList.addEvalFlags(IAST.IS_FLAT_ORDERLESS_EVALED);
 				return resultList;
 			}
 		}
 		if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
-			if (EvalAttributes.sort((IASTMutable) ast)) {
+			if (EvalAttributes.sortWithFlags((IASTMutable) ast)) {
 				ast.addEvalFlags(IAST.IS_FLAT_ORDERLESS_EVALED);
 				return ast;
 			}
@@ -1543,7 +1543,7 @@ public class EvalEngine implements Serializable {
 	 */
 	private IExpr evalSetOrderless(IAST ast, final int attr, boolean noEvaluation, int level) {
 		if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
-			EvalAttributes.sort((IASTMutable) ast);
+			EvalAttributes.sortWithFlags((IASTMutable) ast);
 			if (level > 0 && !noEvaluation && ast.isFreeOfPatterns()) {
 				if (ast.isPlus()) {
 					return Arithmetic.CONST_PLUS.evaluate(ast, this);

@@ -527,8 +527,8 @@ public class TensorFunctions {
 		}
 
 		@Override
-		public IExpr e2ObjArg(IAST ast, final IExpr o0, final IExpr o1) {
-			if (o0.isList() && o1.isList()) {
+		public IExpr e2ObjArg(IAST ast, final IExpr arg1, final IExpr arg2) {
+			if (arg1.isList() && arg2.isList()) {
 				// TODO
 				// IAST tensor1 = (IAST) o0;
 				// IAST tensor2 = (IAST) o0;
