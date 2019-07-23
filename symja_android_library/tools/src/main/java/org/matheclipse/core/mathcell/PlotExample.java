@@ -49,15 +49,13 @@ public class PlotExample {
 
 	public static void main(String[] args) {
 		try {
-			Config.USE_MATHCELL=true;
+			Config.USE_MATHCELL = true;
 			ExprEvaluator util = new ExprEvaluator();
-			
-			IExpr result = util.eval(
-					"Plot3D(Sin(x + y^2), {x, -3, 3}, {y, -2, 2})");
-//			IExpr result = util.eval(
-//					"Manipulate(Plot(Sin(a*x + b), {x, 0, 6}), {{a, 2, \"Multiplier\"}, 1, 4}, {{b, 0, \"Phase\"}, 0, 10})");
+
+			// IExpr result = util.eval(
+			// "Manipulate(Plot(Sin(a*x + b), {x, 0, 6}), {{a, 2, \"Multiplier\"}, 1, 4}, {{b, 0, \"Phase\"}, 0, 10})");
 			// IExpr result = util.eval("Manipulate(Plot({Sin(a*x+b),Cos(a*x+b)}, {x, -3*Pi, 3*Pi} ),{a,1,3},{b,1,3})");
-			// IExpr result = util.eval("Manipulate(Plot(Sin(x)*Cos(1 + a*x), {x, 0, 2*Pi}), {a,0,10})");
+			IExpr result = util.eval("Manipulate(Plot(Sin(x)*Cos(1 + a*x), {x, 0, 2*Pi}), {a,0,10})");
 			if (result.isAST(F.JSFormData, 3) && result.second().toString().equals("mathcell")) {
 				String manipulateStr = ((IAST) result).arg1().toString();
 				String js = WEB_PAGE;
