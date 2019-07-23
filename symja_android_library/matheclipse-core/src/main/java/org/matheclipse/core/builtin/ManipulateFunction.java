@@ -54,7 +54,10 @@ public class ManipulateFunction {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			try {
-				if (ast.arg1().isAST(F.Plot) || //
+				if (ast.arg1().isAST(F.ListPlot)) {
+					IAST plot = (IAST) ast.arg1();
+					return createSliderWithListPlot(ast, plot, engine);
+				} else if (ast.arg1().isAST(F.Plot) || //
 						ast.arg1().isAST(F.ParametricPlot) || //
 						ast.arg1().isAST(F.Plot3D)) {
 					IAST plot = (IAST) ast.arg1();
@@ -119,31 +122,13 @@ public class ManipulateFunction {
 				options = new OptionArgs(plot.topHead(), plot, 3, engine);
 			}
 
-			ISymbol plotSymbolX = (ISymbol) plotRangeX.arg1();
-
 			String js = MATHCELL;
-			if (ast.size() >= 3) {
-				if (ast.arg2().isList()) {
-					// { type: 'slider', min: 0, max: 2*Math.PI, name: 'phase', label: 'phase' }
-					StringBuilder slider = new StringBuilder();
-					// var a = document.getElementById( id + 'a' ).value;
-					StringBuilder variable = new StringBuilder();
-					for (int i = 2; i < ast.size(); i++) {
-						if (ast.get(i).isList()) {
-							if (!createSingleSlider(ast, i, slider, variable)) {
-								return F.NIL;
-							}
-						} else {
-							break;
-						}
-					}
-					js = js.replace("`1`", slider.toString());
-					js = js.replace("`2`", variable.toString());
-				}
-			} else {
-				js = js.replace("`1`", "");
-				js = js.replace("`2`", "");
+			js = createSlidersFromList(ast, js);
+			if (js == null) {
+				return F.NIL;
 			}
+
+			ISymbol plotSymbolX = (ISymbol) plotRangeX.arg1();
 
 			// function z1(x,y) { return [ x, y, Math.sin( a * x * y ) ]; }
 			StringBuilder function = new StringBuilder();
@@ -292,10 +277,128 @@ public class ManipulateFunction {
 			return F.JSFormData(js, "mathcell");
 		}
 
+		private static String createSlidersFromList(final IAST ast, String js) throws IOException {
+			if (ast.size() >= 3) {
+				if (ast.arg2().isList()) {
+					// { type: 'slider', min: 0, max: 2*Math.PI, name: 'phase', label: 'phase' }
+					StringBuilder slider = new StringBuilder();
+					// var a = document.getElementById( id + 'a' ).value;
+					StringBuilder variable = new StringBuilder();
+					for (int i = 2; i < ast.size(); i++) {
+						if (ast.get(i).isList()) {
+							if (!createSingleSlider(ast, i, slider, variable)) {
+								return null;
+							}
+						} else {
+							break;
+						}
+					}
+					js = js.replace("`1`", slider.toString());
+					js = js.replace("`2`", variable.toString());
+				}
+			} else {
+				js = js.replace("`1`", "");
+				js = js.replace("`2`", "");
+			}
+			return js;
+		}
+
+		private static IExpr createSliderWithListPlot(final IAST ast, IAST plot, EvalEngine engine) throws IOException {
+			final OptionArgs options = new OptionArgs(plot.topHead(), plot, 2, engine);
+
+			String js = MATHCELL;
+			js = createSlidersFromList(ast, js);
+			if (js == null) {
+				return F.NIL;
+			}
+
+			if (plot.size() < 2) {
+				return F.NIL;
+			}
+			IExpr arg1 = plot.arg1();
+			if (!arg1.isList()) {
+				arg1 = engine.evaluate(arg1);
+			}
+			if (arg1.isList()) {
+				IAST pointList = (IAST) arg1;
+				int[] dimension = pointList.isMatrix();
+				if (dimension != null) {
+					if (dimension[1] == 2) {
+						StringBuilder function = new StringBuilder();
+						function.append("var data = [\n");
+						// point( [ 2*Math.random() - 1, 2*Math.random() - 1, 2*Math.random() - 1 ],
+						// { color: 'hsl(' + 360*Math.random() + ',100%,50%)', size: 5 } )
+						for (int i = 1; i < pointList.size(); i++) {
+							IAST rowList = (IAST) pointList.get(i);
+							function.append("point( [ ");
+							function.append(OutputFunctions.toJavaScript(rowList.arg1()));
+							function.append(",");
+							function.append(OutputFunctions.toJavaScript(rowList.arg2()));
+							function.append("], ");
+							function.append(" {size: 2 } )");
+							if (i < pointList.size() - 1) {
+								function.append(",");
+							}
+							function.append("\n");
+						}
+						function.append("];");
+
+						js = js.replace("`3`", function.toString());
+
+						StringBuilder graphicControl = new StringBuilder();
+
+						// var config = dim === 'two' ? { type: 'svg', ticks: false }
+						// : { type: 'threejs', axesLabels: false };
+						graphicControl.append("var config = { type: 'svg' };\n");
+						graphicControl.append("evaluate( id, data, config );\n");
+						js = js.replace("`4`", graphicControl.toString());
+
+						return F.JSFormData(js, "mathcell");
+					}
+					return F.NIL;
+				} else {
+					StringBuilder function = new StringBuilder();
+					function.append("var data = [\n");
+					// point( [ 2*Math.random() - 1, 2*Math.random() - 1, 2*Math.random() - 1 ],
+					// { color: 'hsl(' + 360*Math.random() + ',100%,50%)', size: 5 } )
+					for (int i = 1; i < pointList.size(); i++) {
+						function.append("point( [ ");
+						function.append(i);
+						function.append(",");
+						function.append(OutputFunctions.toJavaScript(pointList.get(i)));
+						function.append("], ");
+						function.append(" {size: 2 } )");
+						if (i < pointList.size() - 1) {
+							function.append(",");
+						}
+						function.append("\n");
+					}
+					function.append("];");
+
+					js = js.replace("`3`", function.toString());
+
+					StringBuilder graphicControl = new StringBuilder();
+
+					// var config = dim === 'two' ? { type: 'svg', ticks: false }
+					// : { type: 'threejs', axesLabels: false };
+					graphicControl.append("var config = { type: 'svg' };\n");
+					graphicControl.append("evaluate( id, data, config );\n");
+					js = js.replace("`4`", graphicControl.toString());
+
+					return F.JSFormData(js, "mathcell");
+				}
+			}
+			return F.NIL;
+		}
+
 		private static boolean createSingleSlider(final IAST ast, int i, StringBuilder slider, StringBuilder variable)
 				throws IOException {
 			IAST sliderRange = (IAST) ast.get(i);
-			if (sliderRange.isAST3()) {
+			if (sliderRange.isAST3() || sliderRange.size() == 5) {
+				IExpr step = null;
+				if (sliderRange.size() == 5) {
+					step = sliderRange.arg4();
+				}
 				String sliderSymbol;
 				String defaultValue = null;
 				String label;
@@ -318,7 +421,10 @@ public class ManipulateFunction {
 				slider.append(OutputFunctions.toJavaScript(sliderRange.arg2()));
 				slider.append(", max: ");
 				slider.append(OutputFunctions.toJavaScript(sliderRange.arg3()));
-
+				if (step != null) {
+					slider.append(", step: ");
+					slider.append(OutputFunctions.toJavaScript(step));
+				}
 				if (defaultValue != null) {
 					slider.append(", default: ");
 					slider.append(defaultValue);

@@ -39,6 +39,9 @@ public class ListPlot extends AbstractEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		if (Config.USE_MATHCELL) {
+			return F.Manipulate.of(engine, ast);
+		}
 		if ((ast.size() == 2) && ast.arg1().isList()) {
 			try {
 				double xMinD = Double.MAX_VALUE;
