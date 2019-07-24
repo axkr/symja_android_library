@@ -45,6 +45,7 @@ public final class FunctionDefinitions {
 			LinearProgramming.setEvaluator(new org.matheclipse.core.reflection.system.LinearProgramming());
 			F.ListLinePlot.setEvaluator(new org.matheclipse.core.reflection.system.ListLinePlot());
 			F.ListPlot.setEvaluator(new org.matheclipse.core.reflection.system.ListPlot());
+			F.ListPlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ListPlot3D());
 			MonomialList.setEvaluator(new org.matheclipse.core.reflection.system.MonomialList());
 			NDSolve.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve());
 			NFourierTransform.setEvaluator(new org.matheclipse.core.reflection.system.NFourierTransform());

@@ -32,13 +32,16 @@ public class ListLinePlot extends AbstractEvaluator {
 	/**
 	 * Constructor for the singleton
 	 */
-//	public final static ListLinePlot CONST = new ListLinePlot();
+	// public final static ListLinePlot CONST = new ListLinePlot();
 
 	public ListLinePlot() {
 	}
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		if (Config.USE_MATHCELL) {
+			return F.Manipulate.of(engine, ast);
+		}
 		if ((ast.size() == 2) && ast.arg1().isList()) {
 			try {
 				double xMinD = Double.MAX_VALUE;
@@ -118,7 +121,7 @@ public class ListLinePlot extends AbstractEvaluator {
 		}
 		return F.NIL;
 	}
- 
+
 	@Override
 	public void setUp(final ISymbol newSymbol) {
 	}
