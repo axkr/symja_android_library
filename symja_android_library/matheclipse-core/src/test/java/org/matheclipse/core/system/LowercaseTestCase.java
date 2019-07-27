@@ -14022,6 +14022,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRandom() {
+		
 		// message: RandomPrime: Positive integer value expected.
 		check("RandomPrime(-11)", //
 				"RandomPrime(-11)");
@@ -14032,6 +14033,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "87660272303062923753002687");
 		//
 
+		// check("RandomInteger()", //
+		// "0");
 		// check("RandomInteger(-10)", //
 		// "-4");
 		// check("RandomInteger(100)", "");

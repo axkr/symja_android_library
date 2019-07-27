@@ -102,28 +102,48 @@ public final class RandomFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST0()) {
+				ThreadLocalRandom tlr = ThreadLocalRandom.current();
+				return randomBigInteger(BigInteger.ONE, false, tlr);
+			}
 			if (ast.arg1().isInteger()) {
 				// RandomInteger(100) gives an integer between 0 and 100
+				ThreadLocalRandom tlr = ThreadLocalRandom.current();
 				BigInteger upperLimit = ((IInteger) ast.arg1()).toBigNumerator();
 				boolean negative = false;
 				if (upperLimit.compareTo(BigInteger.ZERO) < 0) {
 					upperLimit = upperLimit.negate();
 					negative = true;
 				}
-				final int nlen = upperLimit.bitLength();
-				ThreadLocalRandom tlr = ThreadLocalRandom.current();
-				BigInteger r;
-				do {
-					r = new BigInteger(nlen, tlr);
-				} while (r.compareTo(upperLimit) > 0);
-				return F.integer(negative ? r.negate() : r);
+				if (ast.isAST2()) {
+					int size = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+					if (size >= 0) {
+						IASTAppendable list = F.ListAlloc(size);
+						for (int i = 0; i < size; i++) {
+							list.append(randomBigInteger(upperLimit, negative, tlr));
+						}
+						return list;
+					}
+
+				} else {
+					return randomBigInteger(upperLimit, negative, tlr);
+				}
 			}
 
 			return F.NIL;
 		}
 
+		private IExpr randomBigInteger(BigInteger upperLimit, boolean negative, ThreadLocalRandom tlr) {
+			BigInteger r;
+			final int nlen = upperLimit.bitLength();
+			do {
+				r = new BigInteger(nlen, tlr);
+			} while (r.compareTo(upperLimit) > 0);
+			return F.integer(negative ? r.negate() : r);
+		}
+
 		public int[] expectedArgSize() {
-			return IOFunctions.ARGS_1_1;
+			return IOFunctions.ARGS_0_2;
 		}
 	}
 

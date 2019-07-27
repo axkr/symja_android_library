@@ -12,6 +12,7 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.GraphFunctions;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -19,6 +20,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.ASCIIPrettyPrinter3;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
@@ -351,6 +353,7 @@ public class MMAConsole {
 	 */
 	public MMAConsole() {
 		Config.USE_MATHCELL = true;
+		Config.USE_VISJS = true;
 		EvalEngine engine = new EvalEngine(false);
 		fEvaluator = new ExprEvaluator(engine, false, 100);
 		EvalEngine evalEngine = fEvaluator.getEvalEngine();
@@ -359,11 +362,12 @@ public class MMAConsole {
 		fOutputTraditionalFactory = OutputFormFactory.get(true, false, 5, 7);
 		fInputFactory = OutputFormFactory.get(false, false, 5, 7);
 		fInputFactory.setQuotes(true);
-//		F.$PreRead.assign(//
-//				F.Function(F.ReplaceAll(F.Unevaluated(F.Slot1), //
-//						F.List(F.RuleDelayed(F.binaryAST2(F.Plot, F.x_, F.y_), F.Manipulate(F.binaryAST2(F.Plot, F.x, F.y))), //
-//								F.RuleDelayed(F.ternaryAST3(F.Plot3D, F.x_, F.y_, F.z_), F.Manipulate(F.ternaryAST3(F.Plot3D, F.x, F.y, F.z))//
-//								)))));
+		// F.$PreRead.assign(//
+		// F.Function(F.ReplaceAll(F.Unevaluated(F.Slot1), //
+		// F.List(F.RuleDelayed(F.binaryAST2(F.Plot, F.x_, F.y_), F.Manipulate(F.binaryAST2(F.Plot, F.x, F.y))), //
+		// F.RuleDelayed(F.ternaryAST3(F.Plot3D, F.x_, F.y_, F.z_), F.Manipulate(F.ternaryAST3(F.Plot3D, F.x, F.y,
+		// F.z))//
+		// )))));
 	}
 
 	/**
@@ -584,6 +588,13 @@ public class MMAConsole {
 							if (Config.SHOW_STACKTRACE) {
 								ex.printStackTrace();
 							}
+						}
+					} else if (result.head().equals(F.Graph) && result instanceof IDataExpr) {
+						String javaScriptStr = GraphFunctions.graphToJSForm((IDataExpr) result);
+						if (javaScriptStr != null) {
+							String html = Console.VISJS_PAGE;
+							html = html.replaceAll("`1`", javaScriptStr);
+							return Console.openHTMLOnDesktop(html);
 						}
 					} else if (result.isAST(F.JSFormData, 3) && result.second().toString().equals("mathcell")) {
 						try {

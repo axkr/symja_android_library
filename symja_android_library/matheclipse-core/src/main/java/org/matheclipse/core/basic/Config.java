@@ -244,7 +244,7 @@ public class Config {
 	 * Print trigonometric functions in lower case characters.
 	 */
 	public static boolean MATHML_TRIG_LOWERCASE = true;
-	
+
 	/**
 	 * Enable tests and functions which use the local files. Don't use <code>final</code> here because of grpc
 	 * interface.
@@ -299,6 +299,13 @@ public class Config {
 	 */
 	public static boolean PACKAGE_MODE = true;
 
+	/**
+	 * Use mathcell JavaScript library for the <code>Manipulate()</code> function
+	 */
 	public static boolean USE_MATHCELL = false;
-	 
+
+	/**
+	 * Use visjs.org JavaScript library for visualizing graph theory objects
+	 */
+	public static boolean USE_VISJS = false;
 }

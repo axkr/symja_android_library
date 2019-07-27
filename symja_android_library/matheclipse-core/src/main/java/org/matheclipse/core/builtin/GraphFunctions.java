@@ -1,6 +1,8 @@
 package org.matheclipse.core.builtin;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.gavaghan.geodesy.Ellipsoid;
@@ -40,6 +42,10 @@ import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 
+/**
+ * Functions for graph theory algorithms.
+ *
+ */
 public class GraphFunctions {
 	/**
 	 * 
@@ -842,6 +848,157 @@ public class GraphFunctions {
 			array[indx++] = expr;
 		}
 		return F.matrix((i, j) -> g.containsEdge(array[i], array[j]) ? F.C1 : F.C0, size, size);
+	}
+
+	/**
+	 * Convert a Graph into a JavaScript visjs.org form
+	 * 
+	 * @param graphExpr
+	 * @return
+	 */
+	public static String graphToJSForm(IDataExpr graphExpr) {
+
+		DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> graph = (DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>>) graphExpr;
+		AbstractBaseGraph<IExpr, ?> g = (AbstractBaseGraph<IExpr, ?>) graph.toData();
+		Map<IExpr, Integer> map = new HashMap<IExpr, Integer>();
+		StringBuilder buf = new StringBuilder();
+		if (g.getType().isWeighted()) {
+			weightedGraphToVisjs(map, buf, (AbstractBaseGraph<IExpr, IExprWeightedEdge>) g);
+		} else {
+			graphToVisjs(map, buf, (AbstractBaseGraph<IExpr, IExprEdge>) g);
+		}
+		return buf.toString();
+	}
+
+	public static void graphToVisjs(Map<IExpr, Integer> map, StringBuilder buf, AbstractBaseGraph<IExpr, IExprEdge> g) {
+		vertexToVisjs(map, buf, g);
+		edgesToVisjs(map, buf, g);
+	}
+
+	public static void weightedGraphToVisjs(Map<IExpr, Integer> map, StringBuilder buf,
+			AbstractBaseGraph<IExpr, IExprWeightedEdge> g) {
+		vertexToVisjs(map, buf, g);
+		weightedEdgesToVisjs(map, buf, g);
+	}
+
+	private static void vertexToVisjs(Map<IExpr, Integer> map, StringBuilder buf, Graph<IExpr, ?> g) {
+		Set<IExpr> vertexSet = g.vertexSet();
+		IASTAppendable vertexes = F.ListAlloc(vertexSet.size());
+		buf.append("var nodes = new vis.DataSet([\n");
+		boolean first = true;
+		int counter = 1;
+		for (IExpr expr : vertexSet) {
+			// {id: 1, label: 'Node 1'},
+			if (first) {
+				buf.append("  {id: ");
+			} else {
+				buf.append(", {id: ");
+			}
+			buf.append(counter);
+			map.put(expr, counter++);
+			buf.append(", label: '");
+			buf.append(expr.toString());
+			buf.append("'}\n");
+			first = false;
+		}
+		buf.append("]);\n");
+	}
+
+	private static void edgesToVisjs(Map<IExpr, Integer> map, StringBuilder buf, Graph<IExpr, IExprEdge> g) {
+		Set<IExprEdge> edgeSet = g.edgeSet();
+		IASTAppendable edges = F.ListAlloc(edgeSet.size());
+		GraphType type = g.getType();
+		boolean first = true;
+		if (type.isDirected()) {
+			buf.append("var edges = new vis.DataSet([\n");
+			for (IExprEdge edge : edgeSet) {
+				// {from: 1, to: 3},
+				if (first) {
+					buf.append("  {from: ");
+				} else {
+					buf.append(", {from: ");
+				}
+				buf.append(map.get(edge.lhs()));
+				buf.append(", to: ");
+				buf.append(map.get(edge.rhs()));
+				// , arrows: { to: { enabled: true, type: 'arrow'}}
+				buf.append(" , arrows: { to: { enabled: true, type: 'arrow'}}");
+				buf.append("}\n");
+				first = false;
+			}
+			buf.append("]);\n");
+		} else {
+			//
+			buf.append("var edges = new vis.DataSet([\n");
+			for (IExprEdge edge : edgeSet) {
+				// {from: 1, to: 3},
+				if (first) {
+					buf.append("  {from: ");
+				} else {
+					buf.append(", {from: ");
+				}
+				buf.append(map.get(edge.lhs()));
+				buf.append(", to: ");
+				buf.append(map.get(edge.rhs()));
+				buf.append("}\n");
+				first = false;
+			}
+			buf.append("]);\n");
+		}
+	}
+
+	private static void weightedEdgesToVisjs(Map<IExpr, Integer> map, StringBuilder buf,
+			Graph<IExpr, IExprWeightedEdge> graph) {
+
+		Set<IExprWeightedEdge> edgeSet = (Set<IExprWeightedEdge>) graph.edgeSet();
+		IASTAppendable edges = F.ListAlloc(edgeSet.size());
+		IASTAppendable weights = F.ListAlloc(edgeSet.size());
+		GraphType type = graph.getType();
+		boolean first = true;
+		if (type.isDirected()) {
+			buf.append("var edges = new vis.DataSet([\n");
+			for (IExprWeightedEdge edge : edgeSet) {
+				// {from: 1, to: 3},
+				if (first) {
+					buf.append("  {from: ");
+				} else {
+					buf.append(", {from: ");
+				}
+
+				buf.append(map.get(edge.lhs()));
+				buf.append(", to: ");
+				buf.append(map.get(edge.rhs()));
+
+				buf.append(", label: '");
+				buf.append(edge.weight());
+				buf.append("'");
+				// , arrows: { to: { enabled: true, type: 'arrow'}}
+				buf.append(" , arrows: { to: { enabled: true, type: 'arrow'}}");
+				buf.append("}\n");
+				first = false;
+			}
+			buf.append("]);\n");
+		} else {
+			buf.append("var edges = new vis.DataSet([\n");
+			for (IExprWeightedEdge edge : edgeSet) {
+				// {from: 1, to: 3},
+				if (first) {
+					buf.append("  {from: ");
+				} else {
+					buf.append(", {from: ");
+				}
+
+				buf.append(map.get(edge.lhs()));
+				buf.append(", to: ");
+				buf.append(map.get(edge.rhs()));
+				buf.append(", label: '");
+				buf.append(edge.weight());
+				buf.append("'");
+				buf.append("}\n");
+				first = false;
+			}
+			buf.append("]);\n");
+		}
 	}
 
 }
