@@ -195,6 +195,9 @@ public class AST2Expr {
 	public static final String TIMES_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "times" : "Times";
 	public static final String TRUE_STRING = "true";// : "True";
 
+	/**
+	 * SuggestTree for all <code>DOLLAR_STRINGS, SYMBOL_STRINGS, FUNCTION_STRINGS</code>
+	 */
 	private static SuggestTree SUGGEST_TREE = null;
 
 	public static SuggestTree getSuggestTree() {

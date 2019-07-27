@@ -465,7 +465,67 @@ public class ManipulateFunction {
 		private static boolean createSingleSlider(final IAST ast, int i, StringBuilder slider, StringBuilder variable)
 				throws IOException {
 			IAST sliderRange = (IAST) ast.get(i);
-			if (sliderRange.isAST3() || sliderRange.size() == 5) {
+			if (sliderRange.isAST2() && sliderRange.arg2().isList()) {
+				//  assume arg2 is list of button definitions
+				IAST listOfButtons = (IAST) sliderRange.arg2();
+				String sliderSymbol;
+				String defaultValue = null;
+				String label;
+				if (sliderRange.arg1().isList()) {
+					IAST sliderParameters = (IAST) sliderRange.arg1();
+					if (sliderParameters.size() < 4) {
+						return false;
+					}
+					sliderSymbol = OutputFunctions.toJavaScript(sliderParameters.arg1());
+					defaultValue = OutputFunctions.toJavaScript(sliderRange.arg2());
+					label = OutputFunctions.toJavaScript(sliderParameters.arg3());
+				} else {
+					sliderSymbol = OutputFunctions.toJavaScript(sliderRange.arg1());
+					label = sliderSymbol;
+				}
+				if (i > 2) {
+					slider.append(", ");
+				}
+				slider.append("{ type: 'buttons', values: [");
+				for (int j = 1; j < listOfButtons.size(); j++) {
+					slider.append("'");
+					slider.append(OutputFunctions.toJavaScript(listOfButtons.get(j)));
+					slider.append("'");
+					if (j < listOfButtons.size() - 1) {
+						slider.append(",");
+					}
+				}
+				slider.append("]");
+				slider.append(", labels: [");
+				for (int j = 1; j < listOfButtons.size(); j++) {
+					slider.append("'");
+					slider.append(listOfButtons.get(j).toString());
+					slider.append("'");
+					if (j < listOfButtons.size() - 1) {
+						slider.append(",");
+					}
+				}
+				slider.append("]");
+
+				if (defaultValue != null) {
+					slider.append(", default: ");
+					slider.append(defaultValue);
+				}
+				slider.append(", name: '");
+				slider.append(sliderSymbol);
+				slider.append("', label: '");
+				slider.append(label);
+				slider.append("' }\n");
+
+				variable.append("var ");
+				variable.append(sliderSymbol);
+				// variable.append(" = document.getElementById( id + '");
+				variable.append(" = getVariable(id, '");
+				variable.append(sliderSymbol);
+				// variable.append("' ).value;\n");
+				variable.append("');\n");
+				return true;
+			} else if (sliderRange.isAST3() || sliderRange.size() == 5) {
 				IExpr step = null;
 				if (sliderRange.size() == 5) {
 					step = sliderRange.arg4();

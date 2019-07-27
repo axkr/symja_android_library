@@ -63,12 +63,12 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 			FUNCTIONS_STR.put(F.SphericalBesselY, "sphericalBesselY");
 			FUNCTIONS_STR.put(F.SphericalHankelH1, "sphericalHankel1");
 			FUNCTIONS_STR.put(F.SphericalHankelH2, "sphericalHankel2");
-			
+
 			FUNCTIONS_STR.put(F.WeierstrassHalfPeriods, "weierstrassHalfPeriods");
 			FUNCTIONS_STR.put(F.WeierstrassInvariants, "weierstrassInvariants");
 			FUNCTIONS_STR.put(F.WeierstrassP, "weierstrassP");
 			FUNCTIONS_STR.put(F.WeierstrassPPrime, "weierstrassPPrime");
-			
+
 			FUNCTIONS_STR.put(F.Abs, "abs");
 			FUNCTIONS_STR.put(F.Arg, "arg");
 
@@ -237,6 +237,18 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		return FUNCTIONS_STR.get(symbol);
 	}
 
+	public void convertSymbol(final Appendable buf, final ISymbol symbol) throws IOException {
+	 
+		if (symbol.isBuiltInSymbol()) {
+			String str = functionHead((ISymbol) symbol);
+			if (str != null) {
+				buf.append(str); 
+				return;
+			} 
+		}
+		super.convertSymbol(buf,symbol); 
+	}
+	
 	/**
 	 * Get an <code>JavaScriptFormFactory</code> for converting an internal expression to a user readable string, with
 	 * <code>relaxedSyntax</code> set to false.
@@ -258,6 +270,14 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 					buf.append("2");
 				}
 				convertArgs(buf, head, function);
+				return;
+			}
+			if (Config.USE_MATHCELL && function.headID() < 0) {
+				buf.append("eval(");
+				convert(buf, head);
+				buf.append(").apply(null, [");
+				convertArgs(buf, head, function);
+				buf.append("])");
 				return;
 			}
 		}
