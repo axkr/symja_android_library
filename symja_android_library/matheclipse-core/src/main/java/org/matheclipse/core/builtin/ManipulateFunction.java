@@ -466,7 +466,7 @@ public class ManipulateFunction {
 				throws IOException {
 			IAST sliderRange = (IAST) ast.get(i);
 			if (sliderRange.isAST2() && sliderRange.arg2().isList()) {
-				//  assume arg2 is list of button definitions
+				// assume arg2 is list of button definitions
 				IAST listOfButtons = (IAST) sliderRange.arg2();
 				String sliderSymbol;
 				String defaultValue = null;
@@ -588,26 +588,29 @@ public class ManipulateFunction {
 		 * @param formula
 		 *            the formula which should be evaluated into a table
 		 * @param sliderRange
-		 * @param step
+		 * @param stepExpr
 		 * @param engine
 		 * @return
 		 * @throws IOException
 		 */
-		private static IExpr createSliderWithFormulas(IExpr formula, IAST sliderRange, IExpr step, EvalEngine engine)
+		private static IExpr createSliderWithFormulas(IExpr formula, IAST sliderRange, IExpr stepExpr, EvalEngine engine)
 				throws IOException {
 			IExpr list = engine.evaluate(F.Table(formula, sliderRange));
 			if (list.isList() && list.size() > 1) {
 				IAST listOfFormulas = (IAST) list;
 				String sliderSymbol = OutputFunctions.toJavaScript(sliderRange.arg1());
+				String min = OutputFunctions.toJavaScript(sliderRange.arg2());
+				String max = OutputFunctions.toJavaScript(sliderRange.arg3());
+				String step = OutputFunctions.toJavaScript(stepExpr);
 				String js = MATHCELL;
 				// { type: 'slider', min: 1, max: 5, step: 1, name: 'n', label: 'n' }
 				StringBuilder slider = new StringBuilder();
 				slider.append("{ type: 'slider', min: ");
-				slider.append(OutputFunctions.toJavaScript(sliderRange.arg2()));
+				slider.append(min);
 				slider.append(", max: ");
-				slider.append(OutputFunctions.toJavaScript(sliderRange.arg3()));
+				slider.append(max);
 				slider.append(", step: ");
-				slider.append(OutputFunctions.toJavaScript(step));
+				slider.append(step);
 				slider.append(", name: '");
 				slider.append(sliderSymbol);
 				slider.append("', label: '");
@@ -640,11 +643,16 @@ public class ManipulateFunction {
 					// TODO implement better backslash escaping
 					texForm = texForm.replace("\\", "\\\\\\\\");
 					graphicControl.append(texForm);
-					graphicControl.append("', ");
+					graphicControl.append("'");
+					if (i < listOfFormulas.size() - 1) {
+						graphicControl.append(",\n");
+					}
 				}
 				graphicControl.append(" ];\n\n");
 
-				graphicControl.append("  var data = '\\\\\\\\[' + expressions[n-1] + '\\\\\\\\]';\n\n");
+				graphicControl.append("  var data = '\\\\\\\\[' + expressions[n-");
+				graphicControl.append(min);
+				graphicControl.append("] + '\\\\\\\\]';\n\n");
 				graphicControl.append("  data = data.replace( /\\\\\\\\/g, '&#92;' );\n\n");
 				graphicControl.append("  var config = {type: 'text', center: true };\n\n");
 				graphicControl.append("  evaluate( id, data, config );\n\n");
