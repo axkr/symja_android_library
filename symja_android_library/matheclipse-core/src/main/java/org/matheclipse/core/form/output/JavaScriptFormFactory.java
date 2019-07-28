@@ -238,17 +238,17 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 	}
 
 	public void convertSymbol(final Appendable buf, final ISymbol symbol) throws IOException {
-	 
+
 		if (symbol.isBuiltInSymbol()) {
 			String str = functionHead((ISymbol) symbol);
 			if (str != null) {
-				buf.append(str); 
+				buf.append(str);
 				return;
-			} 
+			}
 		}
-		super.convertSymbol(buf,symbol); 
+		super.convertSymbol(buf, symbol);
 	}
-	
+
 	/**
 	 * Get an <code>JavaScriptFormFactory</code> for converting an internal expression to a user readable string, with
 	 * <code>relaxedSyntax</code> set to false.
@@ -273,11 +273,12 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 				return;
 			}
 			if (Config.USE_MATHCELL && function.headID() < 0) {
-				buf.append("eval(");
+				// avoid generating JavaScript eval(head) here
+				buf.append("(window[");
 				convert(buf, head);
-				buf.append(").apply(null, [");
+				buf.append("](");
 				convertArgs(buf, head, function);
-				buf.append("])");
+				buf.append("))");
 				return;
 			}
 		}
