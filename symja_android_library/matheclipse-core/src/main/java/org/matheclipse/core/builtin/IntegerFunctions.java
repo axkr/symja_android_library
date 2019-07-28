@@ -95,7 +95,7 @@ public class IntegerFunctions {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
-		
+
 		@Override
 		public void setUp(ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
@@ -196,10 +196,12 @@ public class IntegerFunctions {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
 		}
+
 		public IExpr evalCeiling(IExpr arg1) {
 			if (arg1.isNumber()) {
 				return ((INumber) arg1).ceilFraction();
@@ -320,10 +322,12 @@ public class IntegerFunctions {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_3;
 		}
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
@@ -370,10 +374,12 @@ public class IntegerFunctions {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
 		}
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
@@ -491,10 +497,12 @@ public class IntegerFunctions {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
 		}
+
 		public IExpr evalFloor(IExpr arg1) {
 			if (arg1.isNumber()) {
 				return ((INumber) arg1).floorFraction();
@@ -595,10 +603,13 @@ public class IntegerFunctions {
 			// }
 			try {
 				ISignedNumber signedNumber = arg1.evalReal();
-				if (signedNumber != null && //
-						(signedNumber.isLT(F.C1) && signedNumber.isGT(F.CN1))) {
-					// arg1 is in the interval ]-1, 1[
-					return arg1;
+				if (signedNumber != null) {
+					if (signedNumber.isLT(F.C1) && signedNumber.isGT(F.CN1)) {
+						// arg1 is in the interval ]-1, 1[
+						return arg1;
+					}
+					IInteger intValue = signedNumber.integerPart();
+					return F.Subtract(arg1, intValue);
 				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -609,7 +620,7 @@ public class IntegerFunctions {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.NHOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -662,10 +673,12 @@ public class IntegerFunctions {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
 		}
+
 		private IExpr fromDigits(IAST list, IExpr radix) {
 			IASTAppendable result = F.PlusAlloc(list.size());
 			int exp = 0;
@@ -774,10 +787,12 @@ public class IntegerFunctions {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
 		}
+
 		@Override
 		public void setUp(ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
@@ -812,7 +827,7 @@ public class IntegerFunctions {
 				IExpr arg1 = ast.arg1();
 				ISignedNumber signedNumber = arg1.evalReal();
 				if (signedNumber != null) {
-					return  signedNumber.integerPart();
+					return signedNumber.integerPart();
 				}
 				if (arg1.isIntegerResult()) {
 					return arg1;
@@ -829,12 +844,12 @@ public class IntegerFunctions {
 				// ISignedNumber#floor() or #ceil() may throw ArithmeticException
 			}
 			return F.NIL;
-		} 
+		}
 
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.NHOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -897,7 +912,8 @@ public class IntegerFunctions {
 				return F.Subtract(arg1, F.Times(arg2, F.Floor(F.num(arg1.evalDouble() / arg2.evalDouble()))));
 			}
 			if (arg1.isNumericFunction() && arg2.isNumericFunction()) {
-				return F.Subtract(arg1, F.Times(arg2, F.Floor(F.complexNum(arg1.evalComplex().divide(arg2.evalComplex())))));
+				return F.Subtract(arg1,
+						F.Times(arg2, F.Floor(F.complexNum(arg1.evalComplex().divide(arg2.evalComplex())))));
 			}
 			return F.NIL;
 		}
@@ -968,7 +984,7 @@ public class IntegerFunctions {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_3_3;
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
@@ -1186,7 +1202,7 @@ public class IntegerFunctions {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);

@@ -6725,8 +6725,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFractionalPart() {
+		check("FractionalPart(test)", //
+				"FractionalPart(test)");
+		check("FractionalPart({-2.4, -2.5, -3.0})", //
+				"{-0.4,-0.5,0.0}");
+		check("FractionalPart(14/32)", //
+				"7/16");
+		check("FractionalPart(4/(1 + 3 I))", //
+				"2/5-I*1/5");
 		check("FractionalPart(Pi^20)", //
-				"FractionalPart(Pi^20)");
+				"-8769956796+Pi^20");
 		check("FractionalPart(I*Infinity)", //
 				"I*Interval({0,1})");
 		check("FractionalPart(-I*Infinity)", //
@@ -8082,6 +8090,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIntegerPart() {
+		check("IntegerPart(Pi^20)", //
+				"8769956796");
 		check("IntegerPart(2^128-1)", //
 				"340282366920938463463374607431768211455");
 		check("IntegerPart(Infinity)", //
