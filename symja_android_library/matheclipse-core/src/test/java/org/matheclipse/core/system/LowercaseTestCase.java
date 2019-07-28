@@ -3382,6 +3382,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCubeRoot() {
+		check("CubeRoot(3 + 4*I)", //
+				"(3+I*4)^(1/3)");
 		check("CubeRoot(16)", //
 				"2*2^(1/3)");
 		check("CubeRoot(-5)", //

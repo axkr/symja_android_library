@@ -190,7 +190,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 
 	/**
 	 * Apply the given head to this expression (i.e. create a list copy and replace the old head with the given one).
-	 * <code>F.List(a,b,c).apply(F.Max)</code> gives <code>Max(a,b,c)</code> 
+	 * <code>F.List(a,b,c).apply(F.Max)</code> gives <code>Max(a,b,c)</code>
 	 * 
 	 * @param head
 	 * @return
@@ -807,7 +807,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *             if {@code location < 0 || >= size()}
 	 */
 	public IExpr get(IInteger location);
-	
+
 	/**
 	 * Casts an <code>IExpr</code> at position <code>index</code> to an <code>IAST</code>.
 	 * 
@@ -1462,11 +1462,21 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public int size();
 
 	/**
-	 * Returns a sequential {@link Stream} with the specified range of the specified array as its source.
+	 * Returns a sequential {@link Stream} which starts at index <code>1</code>of the specified array as its source.
 	 *
 	 * @return a {@code Stream} for the internal array range
 	 */
 	public Stream<IExpr> stream();
+
+	/**
+	 * Returns a sequential {@link Stream} which starts at index <code>0</code> of the specified array.
+	 * 
+	 * @return a {@code Stream} for the internal array range
+	 * @throws ArrayIndexOutOfBoundsException
+	 */
+	default Stream<IExpr> stream0() {
+		return stream(0, size());
+	}
 
 	/**
 	 * Returns a sequential {@link Stream} with the specified range of the specified array as its source.

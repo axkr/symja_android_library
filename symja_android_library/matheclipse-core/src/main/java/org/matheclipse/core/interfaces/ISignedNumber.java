@@ -68,7 +68,7 @@ public interface ISignedNumber extends INumber {
 	/**
 	 * Return the integer part of this number
 	 * 
-	 * This method raises ArithmeticException if a numeric value cannot be represented by an longtype. 
+	 * This method raises ArithmeticException if a numeric value cannot be represented by an longtype.
 	 * 
 	 * @return
 	 */
@@ -232,6 +232,50 @@ public interface ISignedNumber extends INumber {
 	 */
 	public int toInt() throws ArithmeticException;
 
+	/**
+	 * This real number is in the interval <code>[from, to]</code> inclusive
+	 * 
+	 * @param from
+	 * @param to
+	 * @return
+	 */
+	default boolean isRange(ISignedNumber from, ISignedNumber to) {
+		return isGE(from) && isLE(to);
+	}
+	
+	/**
+	 * This real number is in the interval <code>]from, to[</code> exclusive
+	 * 
+	 * @param from
+	 * @param to
+	 * @return
+	 */
+	default boolean isRangeExclExcl(ISignedNumber from, ISignedNumber to) {
+		return isGT(from) && isLT(to);
+	}
+
+	/**
+	 * This real number is in the interval <code>]from, to]</code> 
+	 * 
+	 * @param from
+	 * @param to
+	 * @return
+	 */
+	default boolean isRangeExclIncl(ISignedNumber from, ISignedNumber to) {
+		return isGT(from) && isLE(to);
+	}
+	
+	/**
+	 * This real number is in the interval <code>]from, to]</code> 
+	 * 
+	 * @param from
+	 * @param to
+	 * @return
+	 */
+	default boolean isRangeInclExcl(ISignedNumber from, ISignedNumber to) {
+		return isGE(from) && isLT(to);
+	}
+	
 	/**
 	 * Converts this number to <code>long</code>; unlike {@link #longValue} this method raises
 	 * {@link ArithmeticException} if this number cannot be represented by a <code>long</code> type.

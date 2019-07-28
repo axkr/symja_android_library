@@ -564,25 +564,6 @@ public class IntegerFunctions {
 				// the real and imaginary part.
 				return ((INumber) arg1).fractionalPart();
 			}
-			if (arg1.isConstantAttribute()) {
-				if (arg1.isE() || //
-						arg1.equals(F.Khinchin)) {
-					return F.Plus(F.CN2, arg1);
-				}
-				if (arg1.isPi()) {
-					return F.Plus(F.CN3, arg1);
-				}
-				if (arg1.equals(F.GoldenRatio) || //
-						arg1.equals(F.Glaisher)) {
-					return F.Plus(F.CN1, arg1);
-				}
-				if (arg1.equals(F.Catalan) || //
-						arg1.equals(F.Degree) || //
-						arg1.equals(F.EulerGamma)) {
-					return arg1;
-				}
-				return F.NIL;
-			}
 			if (arg1.isInfinity() || arg1.isComplexInfinity()) {
 				return F.Interval(F.List(F.C0, F.C1));
 			}
@@ -604,7 +585,7 @@ public class IntegerFunctions {
 			try {
 				ISignedNumber signedNumber = arg1.evalReal();
 				if (signedNumber != null) {
-					if (signedNumber.isLT(F.C1) && signedNumber.isGT(F.CN1)) {
+					if (signedNumber.isRangeExclExcl(F.CN1,F.C1)) {
 						// arg1 is in the interval ]-1, 1[
 						return arg1;
 					}

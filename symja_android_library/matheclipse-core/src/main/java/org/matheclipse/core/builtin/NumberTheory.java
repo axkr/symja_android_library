@@ -982,10 +982,12 @@ public final class NumberTheory {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr n = ast.arg1();
 			if (n.isNumericFunction()) {
-				if (n.isPositiveResult()) {
-					return F.Power(n, F.C1D3);
+				if (!n.isComplex() && !n.isComplexNumeric()) {
+					if (n.isPositiveResult()) {
+						return F.Power(n, F.C1D3);
+					}
+					return F.Times(F.CN1, F.Power(F.Negate(n), F.C1D3));
 				}
-				return F.Times(F.CN1, F.Power(F.Negate(n), F.C1D3));
 			}
 			return F.Power(n, F.C1D3);
 		}

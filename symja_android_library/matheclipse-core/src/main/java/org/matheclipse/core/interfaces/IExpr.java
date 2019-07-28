@@ -3628,7 +3628,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default Object toData() {
 		return null;
 	}
-	
+
 	/**
 	 * Convert this object into a <code>double[]</code> matrix.
 	 * 
@@ -3658,6 +3658,17 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default int toIntDefault(int defaultValue) {
 		return defaultValue;
+	}
+
+	/**
+	 * Converts this number to an <code>int</code> value; unlike {@link #intValue} this method returns
+	 * <code>Integer.MIN_VALUE</code> if the value of this integer isn't in the range <code>Integer.MIN_VALUE</code> to
+	 * <code>Integer.MAX_VALUE</code> or the expression is not convertible to the <code>int</code> range.
+	 * 
+	 * @return the numeric value represented by this integer after conversion to type <code>int</code>.
+	 */
+	default int toIntDefault() {
+		return toIntDefault(Integer.MIN_VALUE);
 	}
 
 	/**

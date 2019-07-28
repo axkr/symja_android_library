@@ -7,9 +7,9 @@ import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 
+import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
-import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -446,6 +446,22 @@ public interface ISymbol extends IExpr {
 	 * @return
 	 */
 	public IExpr of(IExpr... args);
+
+	default IExpr of(Number... args) {
+		IExpr[] array = new IExpr[args.length];
+		for (int i = 0; i < array.length; i++) {
+			array[i] = Object2Expr.convert(args[i]);
+		}
+		return of(array);
+	}
+
+	default IExpr of(Boolean... args) {
+		IExpr[] array = new IExpr[args.length];
+		for (int i = 0; i < array.length; i++) {
+			array[i] = args[i].booleanValue() ? F.True : F.False;
+		}
+		return of(array);
+	}
 
 	/**
 	 * This method returns <code>F.NIL</code> if no evaluation was possible. Evaluate this symbol for the arguments as
