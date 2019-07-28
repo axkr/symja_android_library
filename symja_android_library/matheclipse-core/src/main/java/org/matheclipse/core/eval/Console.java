@@ -95,7 +95,7 @@ public class Console {
 					"<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
 					+ //
 					"\n" + //
-					"<div class=\"mathcell\" style=\"width: 100%; height: 100%\">\n" + //
+					"<div class=\"mathcell\" style=\"width: 100%; height: 100%; padding: .25in .5in .5in .5in;\">\n" + //
 					"<script>\n" + //
 					"\n" + //
 					"var parent = document.scripts[ document.scripts.length - 1 ].parentNode;\n" + //
