@@ -65,7 +65,8 @@ public class ManipulateFunction {
 					IAST plot = (IAST) ast.arg1();
 					if (plot.size() >= 3 && plot.arg2().isList()) {
 						IAST plotRangeX = (IAST) plot.arg2();
-						IAST plotRangeY = F.NIL;
+						// TODO find better default Y plot range instead of [-5, 5] 
+						IAST plotRangeY = F.List(F.CN5, F.C5);
 						if (plot.size() >= 4 && plot.arg3().isList()) {
 							plotRangeY = (IAST) plot.arg3();
 						}
@@ -261,11 +262,14 @@ public class ManipulateFunction {
 					graphicControl.append("var config = { type: 'svg'");
 					IExpr option = options.getOption(F.PlotRange);
 					if (option.isAST(F.List, 3)) {
+						plotRangeY = F.List(option.first(), option.second());
+					}
+					if (plotRangeY.isAST(F.List, 3)) {
 						// var config = { type: 'svg', yMin: -5, yMax: 5 };
 						graphicControl.append(", yMin: ");
-						graphicControl.append(OutputFunctions.toJavaScript(option.first()));
+						graphicControl.append(OutputFunctions.toJavaScript(plotRangeY.arg1()));
 						graphicControl.append(", yMax: ");
-						graphicControl.append(OutputFunctions.toJavaScript(option.second()));
+						graphicControl.append(OutputFunctions.toJavaScript(plotRangeY.arg2()));
 					}
 					graphicControl.append(" };\n");
 
@@ -593,8 +597,8 @@ public class ManipulateFunction {
 		 * @return
 		 * @throws IOException
 		 */
-		private static IExpr createSliderWithFormulas(IExpr formula, IAST sliderRange, IExpr stepExpr, EvalEngine engine)
-				throws IOException {
+		private static IExpr createSliderWithFormulas(IExpr formula, IAST sliderRange, IExpr stepExpr,
+				EvalEngine engine) throws IOException {
 			IExpr list = engine.evaluate(F.Table(formula, sliderRange));
 			if (list.isList() && list.size() > 1) {
 				IAST listOfFormulas = (IAST) list;
