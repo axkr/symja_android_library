@@ -6725,6 +6725,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFractionalPart() {
+		check("FractionalPart(Pi^20)", //
+				"FractionalPart(Pi^20)");
 		check("FractionalPart(I*Infinity)", //
 				"I*Interval({0,1})");
 		check("FractionalPart(-I*Infinity)", //
@@ -14022,7 +14024,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRandom() {
-		
+
 		// message: RandomPrime: Positive integer value expected.
 		check("RandomPrime(-11)", //
 				"RandomPrime(-11)");
