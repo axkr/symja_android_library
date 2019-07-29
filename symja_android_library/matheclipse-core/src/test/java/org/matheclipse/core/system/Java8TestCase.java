@@ -10,10 +10,9 @@ import static org.matheclipse.core.expression.F.e;
 
 import java.util.Comparator;
 import java.util.IntSummaryStatistics;
-import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -57,32 +56,32 @@ public class Java8TestCase extends AbstractTestCase {
 	}
 
 	public void testTransform() {
-		IAST ast = List(C10, a, b, c, d, e);
-		List<String> listOfStrings = ast.stream()//
-				.map(IExpr::toString)//
-				.collect(Collectors.toList());
-		assertEquals("[10, a, b, c, d, e]", listOfStrings.toString());
+		IAST ast = List(C10, F.CND1, F.C1D3, F.CI, a, F.Pi, F.C2Pi, F.CSqrt2);
+		IASTAppendable result = ast.stream()//
+				.map(IExpr::head)//
+				.collect(IASTAppendable.toAST(F.List, ast.argSize()));
+		assertEquals("{Integer,Real,Rational,Complex,Symbol,Symbol,Times,Power}", result.toString());
 
-		listOfStrings = ast.stream0()//
-				.map(IExpr::toString)//
-				.collect(Collectors.toList());
-		assertEquals("[List, 10, a, b, c, d, e]", listOfStrings.toString());
+		result = ast.stream0()//
+				.map(IExpr::head)//
+				.collect(IASTAppendable.toAST(F.ListAlloc(11)));
+		assertEquals("{Symbol,Integer,Real,Rational,Complex,Symbol,Symbol,Times,Power}", result.toString());
 	}
 
 	public void testFiltering() {
 		IAST ast = (IAST) F.List.of(10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
 
 		// filtering using Predicate
-		List<IExpr> resultList = ast.stream() //
+		IASTAppendable resultList = ast.stream() //
 				.filter(x -> F.PrimeQ.ofQ(x)) //
-				.collect(Collectors.toList());
-		assertEquals("[11, 13, 17, 19]", resultList.toString());
+				.collect(IASTAppendable.toAST(F.ListAlloc(11)));
+		assertEquals("{11,13,17,19}", resultList.toString());
 
 		// count based filtering
 		resultList = ast.stream() //
 				.skip(2).limit(2) //
-				.collect(Collectors.toList());
-		assertEquals("[12, 13]", resultList.toString());
+				.collect(IASTAppendable.toAST(F.ListAlloc(11)));
+		assertEquals("{12,13}", resultList.toString());
 	}
 
 	public void testSearching() {
@@ -102,11 +101,11 @@ public class Java8TestCase extends AbstractTestCase {
 	public void testReordering() {
 		IAST ast = (IAST) F.List.of(10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
 
-		List<IExpr> reversedList = ast.stream() //
+		IASTAppendable reversedList = ast.stream() //
 				.sorted(Comparator.comparing(IExpr::evalNumber) //
 						.reversed()) //
-				.collect(Collectors.toList());
-		assertEquals("[19, 18, 17, 16, 15, 14, 13, 12, 11, 10]", reversedList.toString());
+				.collect(IASTAppendable.toAST(F.ListAlloc(11)));
+		assertEquals("{19,18,17,16,15,14,13,12,11,10}", reversedList.toString());
 	}
 
 	public void testStatistics() {
@@ -142,17 +141,23 @@ public class Java8TestCase extends AbstractTestCase {
 	public void testGrouping() {
 		IAST ast = (IAST) F.List.of(10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
 
-		// Grouping numbers by prime
-		java.util.Map<Boolean, List<IExpr>> exprByPrime = ast.stream().collect(Collectors.groupingBy(//
+		IASTAppendable prototype = F.ListAlloc(10);
+		prototype.append(F.C0);
+		prototype.append(F.C0);
+		prototype.append(F.C0);
+
+		// append numbers grouped by prime to the prototype
+		java.util.Map<Boolean, AST> exprByPrime = ast.stream().collect(Collectors.groupingBy(//
 				F.PrimeQ::ofQ, //
-				Collectors.toList()));
-		assertEquals("{false=[10, 12, 14, 15, 16, 18], true=[11, 13, 17, 19]}", exprByPrime.toString());
+				IASTAppendable.toAST(prototype)));
+		assertEquals("{false={0,0,0,10,12,14,15,16,18}, true={0,0,0,11,13,17,19}}", exprByPrime.toString());
 
 		exprByPrime = ast.stream()//
 				.collect(Collectors.groupingBy(//
 						F.PrimeQ::ofQ, //
-						Collectors.mapping(x -> x.greater(F.ZZ(15)), Collectors.toList())));
-		assertEquals("{false=[False, False, False, False, True, True], true=[False, False, True, True]}",
+						Collectors.mapping(x -> x.greater(F.ZZ(15)), //
+								IASTAppendable.toAST(F.List, 10))));
+		assertEquals("{false={False,False,False,False,True,True}, true={False,False,True,True}}",
 				exprByPrime.toString());
 
 		java.util.Map<Boolean, Double> averageInt = ast.stream()//

@@ -1,9 +1,19 @@
 package org.matheclipse.core.interfaces;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
+
+import org.matheclipse.core.expression.AST;
+import org.matheclipse.core.expression.F;
 
 /**
  * 
@@ -33,6 +43,77 @@ import java.util.function.IntFunction;
  * <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">Directed acyclic graph</a>
  */
 public interface IASTAppendable extends IASTMutable {
+
+	static final class CollectorImpl<T, A, R> implements Collector<T, A, R> {
+		private final Supplier<A> supplier;
+		private final BiConsumer<A, T> accumulator;
+		private final BinaryOperator<A> combiner;
+
+		CollectorImpl(Supplier<A> supplier, BiConsumer<A, T> accumulator, BinaryOperator<A> combiner) {
+			this.supplier = supplier;
+			this.accumulator = accumulator;
+			this.combiner = combiner;
+		}
+
+		@Override
+		public BiConsumer<A, T> accumulator() {
+			return accumulator;
+		}
+
+		@Override
+		public Supplier<A> supplier() {
+			return supplier;
+		}
+
+		@Override
+		public BinaryOperator<A> combiner() {
+			return combiner;
+		}
+
+		@Override
+		public Function<A, R> finisher() {
+			return i -> (R) i;
+		}
+
+		@Override
+		public Set<Characteristics> characteristics() {
+			return Collections.emptySet();
+		}
+	}
+
+	/**
+	 * Returns a {@code Collector} that appends the input expressions into a {@code AST}, in encounter order.
+	 *
+	 * @return a {@code Collector} that appends the input expressions into a {@code AST}, in encounter order.
+	 */
+	public static Collector<IExpr, ?, AST> toAST(final IExpr head, final int initialCapacity) {
+		final Supplier<AST> supplier = () -> (AST) F.ast(head, initialCapacity, false);
+		return new CollectorImpl<IExpr, AST, AST>(supplier, AST::append, (r1, r2) -> {
+			r1.append(r2);
+			return r1;
+		});
+	}
+
+	/**
+	 * Returns a {@code Collector} that appends the input expressions into a {@code AST}, in encounter order.
+	 *
+	 * @return a {@code Collector} that appends the input expressions into a {@code AST}, in encounter order.
+	 */
+	public static Collector<IExpr, ?, AST> toAST(final IExpr head) {
+		return toAST(head, 5);
+	}
+
+	/**
+	 * Returns a {@code Collector} that appends the input expressions into the <code>appendable</code>
+	 *
+	 * @return a {@code Collector} that appends the input expressions into the <code>appendable</code>
+	 */
+	public static Collector<IExpr, ?, AST> toAST(final IASTAppendable appendable) {
+		return new CollectorImpl<IExpr, AST, AST>(() -> (AST) appendable.copyAppendable(), AST::append, (r1, r2) -> {
+			r1.append(r2);
+			return r1;
+		});
+	}
 
 	/**
 	 * Adds the specified expression at the end of this {@code List}.
