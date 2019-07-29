@@ -308,4 +308,86 @@ public class Config {
 	 * Use visjs.org JavaScript library for visualizing graph theory objects
 	 */
 	public static boolean USE_VISJS = false;
+
+	/**
+	 * HTML template for the <a href="https://visjs.org/">VIS-network</a>
+	 */
+	public final static String VISJS_PAGE = //
+			"<html>\n" + //
+					"<head>\n" + //
+					"<meta charset=\"utf-8\">\n" + //
+					"<head>\n" + //
+					"  <title>VIS-Network</title>\n" + //
+					"\n" + //
+					"  <script type=\"text/javascript\" src=\"https://cdn.jsdelivr.net/npm/vis-network@5.0.0/dist/vis-network.min.js\"></script>\n"
+					+ //
+					"  <style type=\"text/css\">\n" + //
+					"    #mynetwork {\n" + //
+					"      width: 600px;\n" + //
+					"      height: 400px;\n" + //
+					"      border: 1px solid lightgray;\n" + //
+					"    }\n" + //
+					"  </style>\n" + //
+					"</head>\n" + //
+					"<body>\n" + //
+					"\n" + //
+					"<h1>VIS-Network</h1>\n" + //
+					"\n" + //
+					"<div id=\"vis\"></div>\n" + //
+					"\n" + //
+					"<script type=\"text/javascript\">\n" + //
+					"`1`\n" + //
+					"  // create a network\n" + //
+					"  var container = document.getElementById('vis');\n" + //
+					"  var data = {\n" + //
+					"    nodes: nodes,\n" + //
+					"    edges: edges\n" + //
+					"  };\n" + //
+					"  var options = {};\n" + //
+					"  var network = new vis.Network(container, data, options);\n" + //
+					"</script>\n" + //
+					"\n" + //
+					"\n" + //
+					"</body>\n" + //
+					"</html>";//
+
+	/**
+	 * HTML template for the <a href="https://github.com/paulmasson/mathcell">MathCell</a> and
+	 * <a href="https://github.com/paulmasson/math">Math</a> JavaScript libraries.
+	 */
+	public final static String MATHCELL_PAGE = //
+			"<html>\n" + //
+					"<head>\n" + //
+					"<meta charset=\"utf-8\">\n" + //
+					"<title>MathCell</title>\n" + //
+					"<link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\">\n" + //
+					"<style></style>\n" + //
+					"</head>\n" + //
+					"\n" + //
+					"<body>\n" + //
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.2/build/math.js\"></script>" + //
+					"\n" + //
+					"\n" + //
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.7.0/build/mathcell.js\"></script>\n"
+					+ //
+					"<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
+					+ //
+					"\n" + //
+					"<div class=\"mathcell\" style=\"width: 100%; height: 100%; padding: .25in .5in .5in .5in;\">\n" + //
+					"<script>\n" + //
+					"\n" + //
+					"var parent = document.scripts[ document.scripts.length - 1 ].parentNode;\n" + //
+					"\n" + //
+					"var id = generateId();\n" + //
+					"parent.id = id;\n" + //
+					"\n" + //
+					"`1`\n" + //
+					"\n" + //
+					"parent.update( id );\n" + //
+					"\n" + //
+					"</script>\n" + //
+					"</div>\n" + //
+					"\n" + //
+					"</body>\n" + //
+					"</html>";//
 }

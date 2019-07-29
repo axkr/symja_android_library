@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -62,6 +63,7 @@ import org.matheclipse.core.builtin.WXFFunctions;
 import org.matheclipse.core.builtin.WindowFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.Object2Expr;
+import org.matheclipse.core.eval.Console;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -76,6 +78,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
+import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -9162,6 +9165,55 @@ public class F {
 			// ---
 		}
 		return stringx(string);
+	}
+
+	/**
+	 * Show the result in an HTML page with the help of the Java <code>Desktop.getDesktop().open()</code> method. On
+	 * some platforms the Desktop API may not be supported; use the <code>isDesktopSupported()</code> method todetermine
+	 * if the current desktop is supported.
+	 * 
+	 * @param expr
+	 * @return
+	 * @throws IOException
+	 */
+	public static String show(IExpr expr) {
+		if (expr.isSameHeadSizeGE(Show, 2)) {
+			try {
+				IAST show = (IAST) expr;
+				if (show.size() > 1 && show.arg1().isSameHeadSizeGE(Graphics, 2)) {
+					return Console.openSVGOnDesktop(show);
+				}
+			} catch (Exception ex) {
+				if (Config.SHOW_STACKTRACE) {
+					ex.printStackTrace();
+				}
+			}
+		} else if (expr.head().equals(Graph) && expr instanceof IDataExpr) {
+			String javaScriptStr = GraphFunctions.graphToJSForm((IDataExpr) expr);
+			if (javaScriptStr != null) {
+				try {
+					String html = Config.VISJS_PAGE;
+					html = html.replaceAll("`1`", javaScriptStr);
+					return Console.openHTMLOnDesktop(html);
+				} catch (Exception ex) {
+					if (Config.SHOW_STACKTRACE) {
+						ex.printStackTrace();
+					}
+				}
+			}
+		} else if (expr.isAST(JSFormData, 3) && expr.second().toString().equals("mathcell")) {
+			try {
+				String manipulateStr = ((IAST) expr).arg1().toString();
+				String html = Config.MATHCELL_PAGE;
+				html = html.replaceAll("`1`", manipulateStr);
+				return Console.openHTMLOnDesktop(html);
+			} catch (Exception ex) {
+				if (Config.SHOW_STACKTRACE) {
+					ex.printStackTrace();
+				}
+			}
+		}
+		return null;
 	}
 
 }

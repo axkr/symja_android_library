@@ -578,36 +578,10 @@ public class MMAConsole {
 					if (result.isAST(F.Graphics)) {// || result.isAST(F.Graphics3D)) {
 						outExpr = F.Show(outExpr);
 					}
-					if (outExpr.isSameHeadSizeGE(F.Show, 2)) {
-						try {
-							IAST show = (IAST) outExpr;
-							if (show.size() > 1 && show.arg1().isSameHeadSizeGE(F.Graphics, 2)) {
-								return Console.openSVGOnDesktop(show);
-							}
-						} catch (Exception ex) {
-							if (Config.SHOW_STACKTRACE) {
-								ex.printStackTrace();
-							}
-						}
-					} else if (result.head().equals(F.Graph) && result instanceof IDataExpr) {
-						String javaScriptStr = GraphFunctions.graphToJSForm((IDataExpr) result);
-						if (javaScriptStr != null) {
-							String html = Console.VISJS_PAGE;
-							html = html.replaceAll("`1`", javaScriptStr);
-							return Console.openHTMLOnDesktop(html);
-						}
-					} else if (result.isAST(F.JSFormData, 3) && result.second().toString().equals("mathcell")) {
-						try {
-							String manipulateStr = ((IAST) result).arg1().toString();
-							String html = Console.MATHCELL_PAGE;
-							html = html.replaceAll("`1`", manipulateStr);
-							return Console.openHTMLOnDesktop(html);
-						} catch (Exception ex) {
-							if (Config.SHOW_STACKTRACE) {
-								ex.printStackTrace();
-							}
-						}
-					}
+					String html = F.show(outExpr);
+					if (html != null) {
+						return html;
+					} 
 				}
 
 				StringBuilder strBuffer = new StringBuilder();

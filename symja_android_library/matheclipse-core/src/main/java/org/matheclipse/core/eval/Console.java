@@ -8,17 +8,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.GraphFunctions;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -27,7 +23,6 @@ import org.matheclipse.core.form.output.ASCIIPrettyPrinter3;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.graphics.Show2SVG;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
@@ -39,80 +34,6 @@ import org.matheclipse.parser.client.math.MathException;
  * See {@link MMAConsole}
  */
 public class Console {
-	protected final static String VISJS_PAGE = //
-			"<html>\n" + //
-					"<head>\n" + //
-					"<meta charset=\"utf-8\">\n" + //
-					"<head>\n" + //
-					"  <title>VIS-Network</title>\n" + //
-					"\n" + //
-					"  <script type=\"text/javascript\" src=\"https://cdn.jsdelivr.net/npm/vis-network@5.0.0/dist/vis-network.min.js\"></script>\n"
-					+ //
-					"  <style type=\"text/css\">\n" + //
-					"    #mynetwork {\n" + //
-					"      width: 600px;\n" + //
-					"      height: 400px;\n" + //
-					"      border: 1px solid lightgray;\n" + //
-					"    }\n" + //
-					"  </style>\n" + //
-					"</head>\n" + //
-					"<body>\n" + //
-					"\n" + //
-					"<h1>VIS-Network</h1>\n" + //
-					"\n" + //
-					"<div id=\"vis\"></div>\n" + //
-					"\n" + //
-					"<script type=\"text/javascript\">\n" + //
-					"`1`\n" + //
-					"  // create a network\n" + //
-					"  var container = document.getElementById('vis');\n" + //
-					"  var data = {\n" + //
-					"    nodes: nodes,\n" + //
-					"    edges: edges\n" + //
-					"  };\n" + //
-					"  var options = {};\n" + //
-					"  var network = new vis.Network(container, data, options);\n" + //
-					"</script>\n" + //
-					"\n" + //
-					"\n" + //
-					"</body>\n" + //
-					"</html>";//
-	protected final static String MATHCELL_PAGE = //
-			"<html>\n" + //
-					"<head>\n" + //
-					"<meta charset=\"utf-8\">\n" + //
-					"<title>MathCell</title>\n" + //
-					"<link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\">\n" + //
-					"<style></style>\n" + //
-					"</head>\n" + //
-					"\n" + //
-					"<body>\n" + //
-					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.2/build/math.js\"></script>" + //
-					"\n" + //
-					"\n" + //
-					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.7.0/build/mathcell.js\"></script>\n"
-					+ //
-					"<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
-					+ //
-					"\n" + //
-					"<div class=\"mathcell\" style=\"width: 100%; height: 100%; padding: .25in .5in .5in .5in;\">\n" + //
-					"<script>\n" + //
-					"\n" + //
-					"var parent = document.scripts[ document.scripts.length - 1 ].parentNode;\n" + //
-					"\n" + //
-					"var id = generateId();\n" + //
-					"parent.id = id;\n" + //
-					"\n" + //
-					"`1`\n" + //
-					"\n" + //
-					"parent.update( id );\n" + //
-					"\n" + //
-					"</script>\n" + //
-					"</div>\n" + //
-					"\n" + //
-					"</body>\n" + //
-					"</html>";//
-
 	/**
 	 * 60 seconds timeout limit as the default value for Symja expression evaluation.
 	 */
@@ -590,35 +511,9 @@ public class Console {
 				if (result.isAST(F.Graphics)) {// || result.isAST(F.Graphics3D)) {
 					outExpr = F.Show(outExpr);
 				}
-				if (outExpr.isSameHeadSizeGE(F.Show, 2)) {
-					try {
-						IAST show = (IAST) outExpr;
-						if (show.size() > 1 && show.arg1().isSameHeadSizeGE(F.Graphics, 2)) {
-							return openSVGOnDesktop(show);
-						}
-					} catch (Exception ex) {
-						if (Config.SHOW_STACKTRACE) {
-							ex.printStackTrace();
-						}
-					}
-				} else if (result.head().equals(F.Graph) && result instanceof IDataExpr) {
-					String javaScriptStr = GraphFunctions.graphToJSForm((IDataExpr) result);
-					if (javaScriptStr != null) {
-						String html = VISJS_PAGE;
-						html = html.replaceAll("`1`", javaScriptStr);
-						return Console.openHTMLOnDesktop(html);
-					}
-				} else if (result.isAST(F.JSFormData, 3) && result.second().toString().equals("mathcell")) {
-					try {
-						String manipulateStr = ((IAST) result).arg1().toString();
-						String html = MATHCELL_PAGE;
-						html = html.replaceAll("`1`", manipulateStr);
-						return Console.openHTMLOnDesktop(html);
-					} catch (Exception ex) {
-						if (Config.SHOW_STACKTRACE) {
-							ex.printStackTrace();
-						}
-					}
+				String html = F.show(outExpr);
+				if (html != null) {
+					return html;
 				}
 			}
 			StringBuilder strBuffer = new StringBuilder();
