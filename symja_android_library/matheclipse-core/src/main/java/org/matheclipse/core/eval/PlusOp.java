@@ -3,12 +3,15 @@ package org.matheclipse.core.eval;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+
+import org.matheclipse.parser.client.math.MathException;
 
 import ch.ethz.idsc.tensor.qty.IQuantity;
 
@@ -148,130 +151,138 @@ public class PlusOp {
 			return F.Indeterminate;
 		}
 
-		if (numberValue != null && numberValue.isDirectedInfinity()) {
-			if (numberValue.isComplexInfinity()) {
-				if (arg.isDirectedInfinity()) {
-					return F.Indeterminate;
-				}
-				numberValue = F.CComplexInfinity;
-				evaled = true;
-				return F.NIL;
-			} else if (numberValue.isInfinity()) {
-				if (arg.isRealResult()) {
+		try {
+			if (numberValue != null && numberValue.isDirectedInfinity()) {
+				if (numberValue.isComplexInfinity()) {
+					if (arg.isDirectedInfinity()) {
+						return F.Indeterminate;
+					}
+					numberValue = F.CComplexInfinity;
 					evaled = true;
 					return F.NIL;
-				}
-			} else if (numberValue.isNegativeInfinity()) {
-				if (arg.isRealResult()) {
-					evaled = true;
-					return F.NIL;
-				}
-			}
-		}
-
-		if (arg.isDirectedInfinity()) {
-			if (numberValue == null) {
-				numberValue = arg;
-				if (arg.isComplexInfinity()) {
-					if (plusMap.size() > 0) {
+				} else if (numberValue.isInfinity()) {
+					if (arg.isRealResult()) {
 						evaled = true;
+						return F.NIL;
+					}
+				} else if (numberValue.isNegativeInfinity()) {
+					if (arg.isRealResult()) {
+						evaled = true;
+						return F.NIL;
 					}
 				}
-				return F.NIL;
 			}
-			if (arg.isInfinity()) {
-				numberValue = infinityPlus(numberValue);
-				if (numberValue.isIndeterminate()) {
-					return F.Indeterminate;
+
+			if (arg.isDirectedInfinity()) {
+				if (numberValue == null) {
+					numberValue = arg;
+					if (arg.isComplexInfinity()) {
+						if (plusMap.size() > 0) {
+							evaled = true;
+						}
+					}
+					return F.NIL;
 				}
-				evaled = true;
-				return F.NIL;
-			} else if (arg.isNegativeInfinity()) {
-				numberValue = negativeInfinityPlus(numberValue);
-				if (numberValue.isIndeterminate()) {
-					return F.Indeterminate;
+				if (arg.isInfinity()) {
+					numberValue = infinityPlus(numberValue);
+					if (numberValue.isIndeterminate()) {
+						return F.Indeterminate;
+					}
+					evaled = true;
+					return F.NIL;
+				} else if (arg.isNegativeInfinity()) {
+					numberValue = negativeInfinityPlus(numberValue);
+					if (numberValue.isIndeterminate()) {
+						return F.Indeterminate;
+					}
+					evaled = true;
+					return F.NIL;
+				} else if (arg.isComplexInfinity()) {
+					if (numberValue.isDirectedInfinity()) {
+						return F.Indeterminate;
+					}
+					numberValue = F.CComplexInfinity;
+					evaled = true;
+					return F.NIL;
 				}
-				evaled = true;
-				return F.NIL;
-			} else if (arg.isComplexInfinity()) {
-				if (numberValue.isDirectedInfinity()) {
-					return F.Indeterminate;
+			} else if (arg.isNumber()) {
+				if (arg.isZero()) {
+					evaled = true;
+					return F.NIL;
 				}
-				numberValue = F.CComplexInfinity;
-				evaled = true;
-				return F.NIL;
-			}
-		} else if (arg.isNumber()) {
-			if (arg.isZero()) {
-				evaled = true;
-				return F.NIL;
-			}
-			if (numberValue == null) {
-				numberValue = arg;
-				return F.NIL;
-			}
-			if (numberValue.isNumber()) {
-				numberValue = numberValue.plus(arg);
-				evaled = true;
-				return F.NIL;
-			}
-			if (numberValue.isInfinity()) {
-				numberValue = infinityPlus(arg);
-				if (numberValue.isIndeterminate()) {
-					return F.Indeterminate;
+				if (numberValue == null) {
+					numberValue = arg;
+					return F.NIL;
 				}
-				evaled = true;
-				return F.NIL;
-			}
-			if (numberValue.isNegativeInfinity()) {
-				numberValue = negativeInfinityPlus(arg);
-				if (numberValue.isIndeterminate()) {
-					return F.Indeterminate;
+				if (numberValue.isNumber()) {
+					numberValue = numberValue.plus(arg);
+					evaled = true;
+					return F.NIL;
 				}
+				if (numberValue.isInfinity()) {
+					numberValue = infinityPlus(arg);
+					if (numberValue.isIndeterminate()) {
+						return F.Indeterminate;
+					}
+					evaled = true;
+					return F.NIL;
+				}
+				if (numberValue.isNegativeInfinity()) {
+					numberValue = negativeInfinityPlus(arg);
+					if (numberValue.isIndeterminate()) {
+						return F.Indeterminate;
+					}
+					evaled = true;
+					return F.NIL;
+				}
+				return F.NIL;
+			} else if (arg.isInterval1()) {
+				if (numberValue == null) {
+					numberValue = arg;
+					return F.NIL;
+				}
+				numberValue = plusInterval(numberValue, arg);
 				evaled = true;
 				return F.NIL;
-			}
-			return F.NIL;
-		} else if (arg.isInterval1()) {
-			if (numberValue == null) {
-				numberValue = arg;
+			} else if (arg.isQuantity()) {
+				if (numberValue == null) {
+					numberValue = arg;
+					return F.NIL;
+				}
+				IQuantity q = (IQuantity) arg;
+				numberValue = q.plus(numberValue);
+				if (numberValue.isPresent()) {
+					evaled = true;
+				}
 				return F.NIL;
-			}
-			numberValue = plusInterval(numberValue, arg);
-			evaled = true;
-			return F.NIL;
-		} else if (arg.isQuantity()) {
-			if (numberValue == null) {
-				numberValue = arg;
+			} else if (arg instanceof ASTSeriesData) {
+				if (numberValue == null) {
+					numberValue = arg;
+					return F.NIL;
+				}
+				numberValue = ((ASTSeriesData) arg).plus(numberValue);
+				evaled = true;
 				return F.NIL;
-			}
-			IQuantity q = (IQuantity) arg;
-			numberValue = q.plus(numberValue);
-			evaled = true;
-			return F.NIL;
-		} else if (arg instanceof ASTSeriesData) {
-			if (numberValue == null) {
-				numberValue = arg;
-				return F.NIL;
-			}
-			numberValue = ((ASTSeriesData) arg).plus(numberValue);
-			evaled = true;
-			return F.NIL;
-		} else if (arg.isTimes()) {
-			IAST timesAST = (IAST) arg;
-			if (timesAST.arg1().isNumber()) {
-				if (addMerge(timesAST.rest().oneIdentity1(), timesAST.arg1())) {
+			} else if (arg.isTimes()) {
+				IAST timesAST = (IAST) arg;
+				if (timesAST.arg1().isNumber()) {
+					if (addMerge(timesAST.rest().oneIdentity1(), timesAST.arg1())) {
+						evaled = true;
+					}
+					return F.NIL;
+				}
+				if (addMerge(timesAST, F.C1)) {
 					evaled = true;
 				}
 				return F.NIL;
 			}
-			if (addMerge(timesAST, F.C1)) {
+			if (addMerge(arg, F.C1)) {
 				evaled = true;
 			}
-			return F.NIL;
-		}
-		if (addMerge(arg, F.C1)) {
-			evaled = true;
+		} catch (MathException mex) {
+			if (Config.SHOW_STACKTRACE) {
+				mex.printStackTrace();
+			}
 		}
 		return F.NIL;
 	}
@@ -319,7 +330,7 @@ public class PlusOp {
 		final IAST plus = F.Plus(a1, a2);
 		return Arithmetic.CONST_PLUS.evaluate(plus, EvalEngine.get()).orElse(plus);
 	}
-	
+
 	private IExpr plusInterval(final IExpr o0, final IExpr o1) {
 		return F.Interval(F.List(o0.lower().plus(o1.lower()), o0.upper().plus(o1.upper())));
 	}

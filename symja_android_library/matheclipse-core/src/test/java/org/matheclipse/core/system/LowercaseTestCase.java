@@ -1584,12 +1584,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testBooleanMinimize() {
 		check("BooleanMinimize((a&&b&&!c)||(a&&!b&&c)||(a&&!c&&d)||(!a&&b&&c)||(b&&c&&!d)||(b&&!c&&d)||(!b&&c&&d))", //
 				"a&&b&&!c||a&&!b&&d||a&&c&&!d||!a&&b&&d||!a&&c&&d||b&&c&&!d");
-		
-		
+ 
 		// https://github.com/logic-ng/LogicNG/issues/23
-//		a4 & a2 & a0 | a5 & a2 & a0 | a4 & a3 & a0 | a5 & a3 & a0 | a4 & a2 & a1 | a5 & a2 & a1 | a4 & a3 & a1 | a5 & a3 & a1 
-//		a8 & a6 | a9 & a6 | a8 & a7 | a9 & a7 
-//		a10 | a11 | a12
+		// a4 & a2 & a0 | a5 & a2 & a0 | a4 & a3 & a0 | a5 & a3 & a0 | a4 & a2 & a1 | a5 & a2 & a1 | a4 & a3 & a1 | a5 &
+		// a3 & a1
+		// a8 & a6 | a9 & a6 | a8 & a7 | a9 & a7
+		// a10 | a11 | a12
 		check("BooleanMinimize(a4 && a2 && a0 || a5 && a2 && a0 || a4 && a3 && a0 || a5 && a3 && a0 || a4 && a2 && a1 || a5 && a2 && a1 || a4 && a3 && a1 || a5 && a3 && a1)", //
 				"a0&&a2&&a4||a0&&a2&&a5||a0&&a3&&a4||a0&&a3&&a5||a1&&a2&&a4||a1&&a2&&a5||a1&&a3&&a4||a1&&a3&&a5");
 		check("BooleanMinimize(a8 && a6 || a9 && a6 || a8 && a7 || a9 && a7)", //
@@ -1598,8 +1598,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"a10||a11||a12||a0&&a2&&a4||a0&&a2&&a5||a0&&a3&&a4||a0&&a3&&a5||a1&&a2&&a4||a1&&a2&&a5||a1&&a3&&a4||a1&&a3&&a5||a6&&a8||a6&&a9||a7&&a8||a7&&a9");
 		check("BooleanMinimize((a0 || a1) && (a2 || a3) && (a4 || a5) || (a6 || a7) && (a8 || a9) || a10 || a11 || a12)", //
 				"a10||a11||a12||a0&&a2&&a4||a0&&a2&&a5||a0&&a3&&a4||a0&&a3&&a5||a1&&a2&&a4||a1&&a2&&a5||a1&&a3&&a4||a1&&a3&&a5||a6&&a8||a6&&a9||a7&&a8||a7&&a9");
-		
-		
+
 		check("BooleanMinimize(!e && !d && c && b && a || !c && !f && !b && a || !f && a && !c && b || !i && f && h && !a || c && d && b && a || !b && g && a || !j && !h && !a)", //
 				"a&&b&&c&&d||a&&b&&c&&!e||a&&!b&&g||a&&!c&&!f||!a&&f&&h&&!i||!a&&!h&&!j");
 		check("BooleanMinimize((A && !B || !A && B) && "//
@@ -1614,7 +1613,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"b");
 		check("BooleanMinimize(Equivalent(x, y, z))", //
 				"x&&y&&z||!x&&!y&&!z");
-		
+
 		// TODO CNF form not supported
 		// check("BooleanMinimize((a&&!b)||(!a&&b)||(b&&!c)||(!b&&c), \"CNF\")", //
 		// "(a||b||c)&&(!a||!b||!c)");
@@ -13940,6 +13939,28 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testQuantity() {
 		if (ToggleFeature.QUANTITY) {
+//			check("Quantity(60, \"s\")==Quantity(1, \"min\")", 
+//					"");
+//			check("Table(i, {i, Quantity(5, \"s\"), Quantity(1, \"min\"),  Quantity(4, \"s\")})", 
+//					"");
+			
+			// github #139
+			check("-2+Quantity(1, \"ft\")", //
+					"-2+1[ft]");
+			check("Quantity(9.8, \"m\")/Quantity(1, \"s\")", //
+					"9.8[m*s^-1]");
+			check("Quantity(9.8, \"m\")/Quantity(0, \"s\")", //
+					"ComplexInfinity[m*s^-1]");
+			check("Quantity(0, \"s\")^(-1)", //
+					"ComplexInfinity[s^-1]");
+			check("2*Quantity(1, \"ft\")", //
+					"2[ft]");
+			check("0+Quantity(1, \"ft\")", //
+					"1[ft]");
+			
+			check("0*Quantity(1, \"ft\")", //
+					"0[ft]");
+
 			check("Quantity(\"m\")", //
 					"1[m]");
 			check("Quantity(3.25, \"m *rad\")", //
