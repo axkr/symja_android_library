@@ -4,6 +4,7 @@ import static org.matheclipse.core.expression.F.Divide;
 import static org.matheclipse.core.expression.F.Less;
 import static org.matheclipse.core.expression.F.Subtract;
 
+import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -17,6 +18,9 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+
+import ch.ethz.idsc.tensor.qty.IQuantity;
+import ch.ethz.idsc.tensor.qty.IUnit;
 
 /**
  * Create iterators for functions like <code>Table()</code>, <code>Sum()</code> or <code>Product()</code>
@@ -533,6 +537,193 @@ public class Iterator {
 		}
 	}
 
+	public static class QuantityIterator implements IIterator<IExpr> {
+		IQuantity count;
+
+		IQuantity lowerLimit;
+
+		IQuantity upperLimit;
+
+		IQuantity step;
+
+		final ISymbol variable;
+
+		IExpr variableValue = null;
+
+		final IUnit unit;
+
+		final IQuantity originalLowerLimit;
+
+		final IQuantity originalUpperLimit;
+
+		final IQuantity originalStep;
+
+		public QuantityIterator(final ISymbol symbol, IQuantity lowerLimit, IQuantity upperLimit,
+				final IQuantity step) {
+			this.unit = lowerLimit.unit();
+			if (!lowerLimit.unit().equals(unit)) {
+				lowerLimit = (IQuantity) QuantityFunctions.unitConvert(lowerLimit, unit);
+			}
+			if (!upperLimit.unit().equals(unit)) {
+				upperLimit = (IQuantity) QuantityFunctions.unitConvert(upperLimit, unit);
+			}
+			this.variable = symbol;
+			this.lowerLimit = lowerLimit;
+			this.upperLimit = upperLimit;
+			this.step = step;
+			this.originalLowerLimit = lowerLimit;
+			this.originalUpperLimit = upperLimit;
+			this.originalStep = step;
+		}
+
+		public QuantityIterator(final ISymbol symbol, IQuantity lowerLimit, IQuantity upperLimit) {
+			this.unit = lowerLimit.unit();
+			if (!lowerLimit.unit().equals(unit)) {
+				lowerLimit = (IQuantity) QuantityFunctions.unitConvert(lowerLimit, unit);
+			}
+			if (!upperLimit.unit().equals(unit)) {
+				upperLimit = (IQuantity) QuantityFunctions.unitConvert(upperLimit, unit);
+			}
+			this.step = IQuantity.of(F.C1, unit);
+			this.variable = symbol;
+			this.lowerLimit = lowerLimit;
+			this.upperLimit = upperLimit;
+			this.originalLowerLimit = lowerLimit;
+			this.originalUpperLimit = upperLimit;
+			this.originalStep = step;
+		}
+
+		public QuantityIterator(final ISymbol symbol, IQuantity upperLimit) {
+			this.unit = upperLimit.unit();
+			if (!upperLimit.unit().equals(unit)) {
+				upperLimit = (IQuantity) QuantityFunctions.unitConvert(upperLimit, unit);
+			}
+			this.lowerLimit = IQuantity.of(F.C1, unit);
+			this.step = IQuantity.of(F.C1, unit);
+			this.variable = symbol;
+			this.upperLimit = upperLimit;
+			this.originalLowerLimit = lowerLimit;
+			this.originalUpperLimit = upperLimit;
+			this.originalStep = step;
+		}
+
+		@Override
+		public int allocHint() {
+			// TODO allocate hint
+
+			// IRational temp = lowerLimit.subtract(upperLimit).divideBy(step);
+			// IInteger hint = temp.numerator().div(temp.denominator());
+			// int alloc = hint.toInt();
+			// if (alloc < 0) {
+			// return (-alloc) + 1;
+			// }
+			// return alloc + 1;
+			return 10;
+		}
+
+		@Override
+		public IExpr getLowerLimit() {
+			return originalLowerLimit;
+		}
+
+		@Override
+		public IExpr getStep() {
+			return originalStep;
+		}
+
+		@Override
+		public IExpr getUpperLimit() {
+			return originalUpperLimit;
+		}
+
+		@Override
+		public ISymbol getVariable() {
+			return variable;
+		}
+
+		/**
+		 * Tests if this enumeration contains more elements.
+		 * 
+		 * @return <code>true</code> if this enumeration contains more elements; <code>false</code> otherwise.
+		 */
+		@Override
+		public boolean hasNext() {
+			if (step.isNegative()) {
+				return count.greaterEqualThan(upperLimit).isTrue();
+			}
+			return count.lessEqualThan(upperLimit).isTrue();
+		}
+
+		@Override
+		public boolean isNumericFunction() {
+			return true;
+		}
+
+		@Override
+		public boolean isSetIterator() {
+			return variable != null;
+		}
+
+		@Override
+		public boolean isValidVariable() {
+			return variable != null;
+		}
+
+		/**
+		 * Returns the next element of this enumeration.
+		 * 
+		 * @return the next element of this enumeration.
+		 */
+		@Override
+		public IExpr next() {
+			final IQuantity temp = count;
+			if (variable != null) {
+				variable.assign(temp);
+			}
+			count = (IQuantity) count.plus(step);
+			return temp;
+		}
+
+		/**
+		 * Not implemented; throws UnsupportedOperationException
+		 * 
+		 */
+		@Override
+		public void remove() throws UnsupportedOperationException {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public boolean setUp() {
+			count = lowerLimit;
+			if (step.isNegative()) {
+				if (lowerLimit.lessThan(upperLimit).isTrue()) {
+					return false;
+				}
+			} else {
+				if (lowerLimit.greaterThan(upperLimit).isTrue()) {
+					return false;
+				}
+			}
+			if (variable != null) {
+				variableValue = variable.assignedValue();
+				variable.assign(originalLowerLimit);
+			}
+			return true;
+		}
+
+		/**
+		 * Method Declaration.
+		 * 
+		 */
+		@Override
+		public void tearDown() {
+			if (variable != null) {
+				variable.assign(variableValue);
+			}
+		}
+	}
+
 	public static class ISignedNumberIterator implements IIterator<IExpr> {
 		ISignedNumber count;
 
@@ -877,6 +1068,8 @@ public class Iterator {
 					} catch (ArithmeticException ae) {
 						//
 					}
+				} else if (upperLimit.isQuantity()) {
+					return new QuantityIterator(variable, (IQuantity) upperLimit);
 				} else if (upperLimit.isReal()) {
 					return new ISignedNumberIterator(variable, F.C1, (ISignedNumber) upperLimit, F.C1);
 				}
@@ -908,6 +1101,8 @@ public class Iterator {
 					} catch (ArithmeticException ae) {
 						//
 					}
+				} else if (upperLimit.isQuantity()) {
+					return new QuantityIterator(variable, (IQuantity) upperLimit);
 				} else if (upperLimit.isReal()) {
 					return new ISignedNumberIterator(variable, F.C1, (ISignedNumber) upperLimit, F.C1);
 				}
@@ -941,6 +1136,8 @@ public class Iterator {
 					} catch (ArithmeticException ae) {
 						//
 					}
+				} else if (lowerLimit.isQuantity() && upperLimit.isQuantity()) {
+					return new QuantityIterator(variable, (IQuantity) lowerLimit, (IQuantity) upperLimit);
 				} else if (lowerLimit.isReal() && upperLimit.isReal()) {
 					ISignedNumber iLowerLimit = (ISignedNumber) lowerLimit;
 					ISignedNumber iUpperLimit = (ISignedNumber) upperLimit;
@@ -977,6 +1174,9 @@ public class Iterator {
 					} catch (ArithmeticException ae) {
 						//
 					}
+				} else if (lowerLimit.isQuantity() && upperLimit.isQuantity() && step.isQuantity()) {
+					return new QuantityIterator(variable, (IQuantity) lowerLimit, (IQuantity) upperLimit,
+							(IQuantity) step);
 				} else if (lowerLimit.isReal() && upperLimit.isReal() && step.isReal()) {
 					return new ISignedNumberIterator(variable, (ISignedNumber) lowerLimit, (ISignedNumber) upperLimit,
 							(ISignedNumber) step);
@@ -991,6 +1191,8 @@ public class Iterator {
 			}
 
 			return new ExprIterator(variable, evalEngine, lowerLimit, upperLimit, step, fNumericMode);
+		} catch (RuntimeException rex) {
+			throw new ClassCastException();
 		} finally {
 			evalEngine.setNumericMode(localNumericMode);
 		}
@@ -1044,6 +1246,8 @@ public class Iterator {
 					} catch (ArithmeticException ae) {
 						//
 					}
+				} else if (upperLimit.isQuantity()) {
+					return new QuantityIterator(symbol, (IQuantity) upperLimit);
 				} else if (upperLimit.isReal()) {
 					return new ISignedNumberIterator(variable, F.C1, (ISignedNumber) upperLimit, F.C1);
 				}
@@ -1071,6 +1275,8 @@ public class Iterator {
 					} catch (ArithmeticException ae) {
 						//
 					}
+				} else if (lowerLimit.isQuantity() && upperLimit.isQuantity()) {
+					return new QuantityIterator(symbol, (IQuantity) lowerLimit, (IQuantity) upperLimit);
 				} else if (lowerLimit.isReal() && upperLimit.isReal()) {
 					return new ISignedNumberIterator(variable, (ISignedNumber) lowerLimit, (ISignedNumber) upperLimit,
 							F.C1);
@@ -1101,6 +1307,9 @@ public class Iterator {
 					} catch (ArithmeticException ae) {
 						//
 					}
+				} else if (lowerLimit.isQuantity() && upperLimit.isQuantity() && step.isQuantity()) {
+					return new QuantityIterator(symbol, (IQuantity) lowerLimit, (IQuantity) upperLimit,
+							(IQuantity) step);
 				} else if (lowerLimit.isReal() && upperLimit.isReal() && step.isReal()) {
 					return new ISignedNumberIterator(variable, (ISignedNumber) lowerLimit, (ISignedNumber) upperLimit,
 							(ISignedNumber) step);
@@ -1113,6 +1322,8 @@ public class Iterator {
 				variable = null;
 			}
 			return new ExprIterator(variable, evalEngine, lowerLimit, upperLimit, step, fNumericMode);
+		} catch (RuntimeException rex) {
+			throw new ClassCastException();
 		} finally {
 			evalEngine.setNumericMode(localNumericMode);
 		}

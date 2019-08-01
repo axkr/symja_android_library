@@ -47,10 +47,13 @@ public interface IQuantity extends IExpr, Comparable<IExpr> {
 	 */
 	static IExpr of(IExpr value, IUnit unit) {
 		if (value instanceof IQuantity) {
-//			return value;
 			throw MathException.of(value);
 		}
 		return QuantityImpl.of(value, unit);
+	}
+	
+	static IQuantity of(ISignedNumber value, IUnit unit) {
+		return new QuantityImpl(value, null, unit);
 	}
 
 	/**

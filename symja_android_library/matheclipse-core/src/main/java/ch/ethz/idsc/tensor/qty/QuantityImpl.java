@@ -38,7 +38,7 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 
 	}
 
-	private QuantityImpl(IExpr value, String unitString, IUnit unit) {
+	/* package */ QuantityImpl(IExpr value, String unitString, IUnit unit) {
 		this.arg1 = value;
 		this.unitString = unitString;
 		this.unit = unit;
@@ -113,8 +113,9 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 	public int compareTo(IExpr scalar) {
 		if (scalar instanceof IQuantity) {
 			IQuantity quantity = (IQuantity) scalar;
-			if (unit.equals(quantity.unit()))
+			if (unit.equals(quantity.unit())) {
 				return arg1.compareTo(quantity.value());
+			}
 		}
 		return super.compareTo(scalar);
 	}

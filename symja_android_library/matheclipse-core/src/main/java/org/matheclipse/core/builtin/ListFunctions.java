@@ -3921,6 +3921,7 @@ public final class ListFunctions {
 					final TableGenerator generator = new TableGenerator(iterList, resultList, new UnaryRangeFunction());
 					return generator.table();
 				}
+			} catch (final ArithmeticException e) {
 			} catch (final ClassCastException e) {
 				// the iterators are generated only from IASTs
 			}
@@ -5285,9 +5286,10 @@ public final class ListFunctions {
 							new TableFunction(engine, ast.arg1()), defaultValue);
 					return generator.table();
 				}
+			} catch (final NoEvalException e) {
 			} catch (final ClassCastException e) {
 				// the iterators are generated only from IASTs
-			} catch (final NoEvalException e) {
+			
 			}
 			return F.NIL;
 		}
@@ -5309,9 +5311,10 @@ public final class ListFunctions {
 							new TableFunction(engine, ast.arg1()), defaultValue);
 					return generator.tableThrow();
 				}
+			} catch (final NoEvalException e) {
 			} catch (final ClassCastException e) {
 				// the iterators are generated only from IASTs
-			} catch (final NoEvalException e) {
+			
 			}
 			return F.NIL;
 		}

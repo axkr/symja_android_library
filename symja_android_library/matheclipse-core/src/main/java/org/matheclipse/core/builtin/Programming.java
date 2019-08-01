@@ -615,9 +615,9 @@ public final class Programming {
 				ast.forEach(2, ast.size(), x -> iterList.add(Iterator.create((IAST) x, engine)));
 				final DoIterator generator = new DoIterator(iterList, engine);
 				return generator.doIt(ast.arg1());
+			} catch (final NoEvalException e) {
 			} catch (final ClassCastException e) {
 				// the iterators are generated only from IASTs
-			} catch (final NoEvalException e) {
 			}
 			return F.NIL;
 		}

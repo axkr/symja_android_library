@@ -169,9 +169,8 @@ public class QuantityFunctions {
 					IExpr arg1 = engine.evaluate(ast.arg1());
 					IExpr arg2 = engine.evaluate(ast.arg2());
 					if (arg1.isQuantity()) {
-						ch.ethz.idsc.tensor.qty.UnitConvert unitConvert = ch.ethz.idsc.tensor.qty.UnitConvert.SI();
 						IUnit unit = IUnit.of(arg2.toString());
-						return unitConvert.to(unit).apply(arg1);
+						return unitConvert((IQuantity)arg1, unit);
 					}
 				}
 			} catch (MathException e) {
@@ -183,6 +182,7 @@ public class QuantityFunctions {
 
 			return F.NIL;
 		}
+		
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
@@ -196,5 +196,8 @@ public class QuantityFunctions {
 	private QuantityFunctions() {
 
 	}
-
+	public  static IExpr unitConvert(IQuantity arg1, IUnit unit) {
+		ch.ethz.idsc.tensor.qty.UnitConvert unitConvert = ch.ethz.idsc.tensor.qty.UnitConvert.SI();
+		return unitConvert.to(unit).apply(arg1);
+	}
 }
