@@ -1189,6 +1189,9 @@ public class F {
     /** FromPolarCoordinates({r, t}) - return the cartesian coordinates for the polar coordinates `{r, t}`.*/
     public final static IBuiltInSymbol FromPolarCoordinates = F.initFinalSymbol("FromPolarCoordinates", ID.FromPolarCoordinates);
 
+    /***/
+    public final static IBuiltInSymbol Full = F.initFinalSymbol("Full", ID.Full);
+
     /** FullForm(expression) - shows the internal representation of the given `expression`.*/
     public final static IBuiltInSymbol FullForm = F.initFinalSymbol("FullForm", ID.FullForm);
 
@@ -1639,13 +1642,13 @@ public class F {
     /** ListCorrelate(kernel-list, tensor-list) - create the correlation of the `kernel-list` with `tensor-list`.*/
     public final static IBuiltInSymbol ListCorrelate = F.initFinalSymbol("ListCorrelate", ID.ListCorrelate);
 
-    /***/
+    /** ListLinePlot( { list-of-points } ) - generate a JavaScript list line plot control for the `list-of-points`.*/
     public final static IBuiltInSymbol ListLinePlot = F.initFinalSymbol("ListLinePlot", ID.ListLinePlot);
 
-    /***/
+    /** ListPlot( { list-of-points } ) - generate a JavaScript list plot control for the `list-of-points`.*/
     public final static IBuiltInSymbol ListPlot = F.initFinalSymbol("ListPlot", ID.ListPlot);
 
-    /***/
+    /** ListPlot3D( { list-of-points } ) - generate a JavaScript list plot 3D control for the `list-of-points`.*/
     public final static IBuiltInSymbol ListPlot3D = F.initFinalSymbol("ListPlot3D", ID.ListPlot3D);
 
     /** ListQ(expr) - tests whether `expr` is a `List`.*/

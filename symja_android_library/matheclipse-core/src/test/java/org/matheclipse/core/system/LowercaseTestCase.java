@@ -1584,7 +1584,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testBooleanMinimize() {
 		check("BooleanMinimize((a&&b&&!c)||(a&&!b&&c)||(a&&!c&&d)||(!a&&b&&c)||(b&&c&&!d)||(b&&!c&&d)||(!b&&c&&d))", //
 				"a&&b&&!c||a&&!b&&d||a&&c&&!d||!a&&b&&d||!a&&c&&d||b&&c&&!d");
- 
+
 		// https://github.com/logic-ng/LogicNG/issues/23
 		// a4 & a2 & a0 | a5 & a2 & a0 | a4 & a3 & a0 | a5 & a3 & a0 | a4 & a2 & a1 | a5 & a2 & a1 | a4 & a3 & a1 | a5 &
 		// a3 & a1
@@ -13939,11 +13939,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testQuantity() {
 		if (ToggleFeature.QUANTITY) {
-//			check("Quantity(60, \"s\")==Quantity(1, \"min\")", 
-//					"");
-//			check("Table(i, {i, Quantity(5, \"s\"), Quantity(1, \"min\"),  Quantity(4, \"s\")})", 
-//					"");
-			
+			// check("Quantity(60, \"s\")==Quantity(1, \"min\")",
+			// "");
+			// check("Table(i, {i, Quantity(5, \"s\"), Quantity(1, \"min\"), Quantity(4, \"s\")})",
+			// "");
+
 			// github #139
 			check("-2+Quantity(1, \"ft\")", //
 					"-2+1[ft]");
@@ -13957,7 +13957,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 					"2[ft]");
 			check("0+Quantity(1, \"ft\")", //
 					"1[ft]");
-			
+
 			check("0*Quantity(1, \"ft\")", //
 					"0[ft]");
 
@@ -18465,6 +18465,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testToeplitzMatrix() {
+		check("ToeplitzMatrix({1, 2, 3, 4, 5, 6}, {1, a, b, c})", //
+				"{{1,a,b,c},\n" + //
+						" {2,1,a,b},\n" + //
+						" {3,2,1,a},\n" + //
+						" {4,3,2,1},\n" + //
+						" {5,4,3,2},\n" + //
+						" {6,5,4,3}}");
+
+		check("ToeplitzMatrix({1, a, b, c}, {1, 2, 3, 4, 5, 6})", //
+				"{{1,2,3,4,5,6},\n" +  //
+				" {a,1,2,3,4,5},\n" +  //
+				" {b,a,1,2,3,4},\n" +  //
+				" {c,b,a,1,2,3}}");
+
 		check("ToeplitzMatrix(-3)", //
 				"ToeplitzMatrix(-3)");
 		check("ToeplitzMatrix(3)", //

@@ -3364,7 +3364,19 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.arg1().isAST()) {
+			if (ast.isAST2()) {
+				if (ast.arg1().isList() && ast.arg2().isList()) {
+					IAST vector1 = (IAST) ast.arg1();
+					IAST vector2 = (IAST) ast.arg2();
+					int numberOfRows = vector1.argSize();
+					int numberOfColumns = vector2.argSize();
+					return F.matrix((i, j) -> i <= j ? vector2.get(j - i + 1) : vector1.get(i - j + 1), numberOfRows, numberOfColumns);
+					
+				}
+
+				return F.NIL;
+			}
+			if (ast.arg1().isList()) {
 				IAST vector = (IAST) ast.arg1();
 				int m = vector.argSize();
 				return F.matrix((i, j) -> i <= j ? vector.get(j - i + 1) : vector.get(i - j + 1), m, m);
@@ -3385,7 +3397,7 @@ public final class LinearAlgebra {
 
 		@Override
 		public int[] expectedArgSize() {
-			return IOFunctions.ARGS_1_1;
+			return IOFunctions.ARGS_1_2;
 		}
 	}
 
