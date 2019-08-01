@@ -65,7 +65,7 @@ public class ManipulateFunction {
 					IAST plot = (IAST) ast.arg1();
 					if (plot.size() >= 3 && plot.arg2().isList()) {
 						IAST plotRangeX = (IAST) plot.arg2();
-						// TODO find better default Y plot range instead of [-5, 5] 
+						// TODO find better default Y plot range instead of [-5, 5]
 						IAST plotRangeY = F.List(F.CN5, F.C5);
 						if (plot.size() >= 4 && plot.arg3().isList()) {
 							plotRangeY = (IAST) plot.arg3();
@@ -123,6 +123,22 @@ public class ManipulateFunction {
 				// options = new OptionArgs(plot.topHead(), plot, 3, engine);
 			} else {
 				options = new OptionArgs(plot.topHead(), plot, 3, engine);
+			}
+			IExpr plotRange = options.getOption(F.PlotRange);
+			IAST optionPlotRange = F.NIL;
+			if (plotRange.isPresent()) {
+				if (plotRange.isAST(F.List, 3)) {
+					optionPlotRange = F.List(F.Full, F.List(plotRange.first(), plotRange.second()));
+				} else if (plotRange.isReal()) {
+					if (plotID == ID.Plot) {
+						optionPlotRange = F.List(F.Full, F.List(plotRange.negate(), plotRange));
+					} else if (plotID == ID.ListPlot || plotID == ID.ListLinePlot) {
+						optionPlotRange = F.List(F.Full, F.List(F.C0, plotRange));
+					} else if (plotID == ID.ParametricPlot) {
+						optionPlotRange = F.List(F.List(plotRange.negate(), plotRange), //
+								F.List(plotRange.negate(), plotRange));
+					}
+				}
 			}
 
 			String js = MATHCELL;
@@ -260,9 +276,11 @@ public class ManipulateFunction {
 					}
 
 					graphicControl.append("var config = { type: 'svg'");
-					IExpr option = options.getOption(F.PlotRange);
-					if (option.isAST(F.List, 3)) {
-						plotRangeY = F.List(option.first(), option.second());
+					if (optionPlotRange.isPresent()) {
+						IExpr option = optionPlotRange.arg2();
+						if (option.isAST(F.List, 3)) {
+							plotRangeY = F.List(option.first(), option.second());
+						}
 					}
 					if (plotRangeY.isAST(F.List, 3)) {
 						// var config = { type: 'svg', yMin: -5, yMax: 5 };
