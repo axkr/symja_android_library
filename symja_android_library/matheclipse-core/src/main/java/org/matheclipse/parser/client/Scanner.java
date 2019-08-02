@@ -28,11 +28,6 @@ public abstract class Scanner {
 	final static protected int TT_EOF = 0;
 
 	/**
-	 * Token type: floating point number
-	 */
-	final static protected int TT_FLOATING_POINT = 10;
-
-	/**
 	 * Token type: opening bracket for function arguments
 	 */
 	final static protected int TT_ARGUMENTS_OPEN = 12;
@@ -278,7 +273,7 @@ public abstract class Scanner {
 	protected List<Operator> fOperList;
 
 	/**
-	 * Row counter for reporting syntax errors.
+	 * Row counter for reporting the row where a syntax error occurred.
 	 */
 	protected int fRowCounter;
 
@@ -406,7 +401,7 @@ public abstract class Scanner {
 	}
 
 	/**
-	 * Parse an identifier string (function, constant or variable name) and the correponding context if possible.
+	 * Parse an identifier string (function, constant or variable name) and the corresponding context if possible.
 	 * 
 	 * @return an array which contains &quot;the main identifier&quot; at offset 0 and &quot;context(or
 	 *         <code>null</code>)&quot; at offset 1.
