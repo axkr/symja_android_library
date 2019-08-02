@@ -3739,7 +3739,7 @@ public final class BooleanFunctions {
 	public static IExpr equalNull(final IExpr a1, final IExpr a2, EvalEngine engine) {
 		if (a1.isExactNumber() && a2.isExactNumber()) {
 			if (a1.isQuantity() && a2.isQuantity()) {
-				return F.bool(quantityEquals((IQuantity) a1, (IQuantity) a2));
+				return quantityEquals((IQuantity) a1, (IQuantity) a2);
 			}
 			return a1.equals(a2) ? F.True : F.False;
 		}
@@ -3758,19 +3758,54 @@ public final class BooleanFunctions {
 		return Equal.simplifyCompare(F.Equal, arg1, arg2);
 	}
 
-	private static boolean quantityEquals(IQuantity q1, IQuantity q2) {
-		if (!q1.unit().equals(q2.unit())) {
-			ch.ethz.idsc.tensor.qty.UnitConvert unitConvert = ch.ethz.idsc.tensor.qty.UnitConvert.SI();
-			q2 = (IQuantity) unitConvert.to(q1.unit()).apply(q2);
+	/**
+	 * If the <code>IQuantity#equals()</code> method could be executed because the same unit types could be derived for
+	 * comparison, return the result <code>F.True or F.False</code> otherwise return <code>F.NIL</code>.
+	 * 
+	 * @param q1
+	 * @param q2
+	 * @return <code>F.NIL</code> is the evaluation wasn't possible
+	 */
+	private static IExpr quantityEquals(IQuantity q1, IQuantity q2) {
+		try {
+			if (!q1.unit().equals(q2.unit())) {
+				ch.ethz.idsc.tensor.qty.UnitConvert unitConvert = ch.ethz.idsc.tensor.qty.UnitConvert.SI();
+				q2 = (IQuantity) unitConvert.to(q1.unit()).apply(q2);
+			}
+			if (q1.unit().equals(q2.unit())) {
+				return F.bool(q1.value().equals(q2.value()));
+			}
+		} catch (RuntimeException rex) {
+			//
 		}
-		if (q1.unit().equals(q2.unit())) {
-			return q1.value().equals(q2.value());
+		return F.NIL;
+	}
+	
+	/**
+	 * If the <code>IQuantity#equals()</code> method could be executed because the same unit types could be derived for
+	 * comparison, return the result <code>F.True or F.False</code> otherwise return <code>F.NIL</code>.
+	 * 
+	 * @param q1
+	 * @param q2
+	 * @return <code>F.NIL</code> is the evaluation wasn't possible
+	 */
+	private static IExpr quantityUnequals(IQuantity q1, IQuantity q2) {
+		try {
+			if (!q1.unit().equals(q2.unit())) {
+				ch.ethz.idsc.tensor.qty.UnitConvert unitConvert = ch.ethz.idsc.tensor.qty.UnitConvert.SI();
+				q2 = (IQuantity) unitConvert.to(q1.unit()).apply(q2);
+			}
+			if (q1.unit().equals(q2.unit())) {
+				return F.bool(!q1.value().equals(q2.value()));
+			}
+		} catch (RuntimeException rex) {
+			//
 		}
-		return false;
+		return F.NIL;
 	}
 
 	/**
-	 * If the <code>IQuantity#compareTo()</code> method could be executed because the same types could be used for
+	 * If the <code>IQuantity#compareTo()</code> method could be executed because the same unit types could be used for
 	 * comparison, return the result <code>-1, 0 or 1</code> otherwise return <code>Integer.MIN_VALUE</code>
 	 * 
 	 * @param q1
@@ -3779,12 +3814,16 @@ public final class BooleanFunctions {
 	 *         different unit types
 	 */
 	private static int quantityCompareTo(IQuantity q1, IQuantity q2) {
-		if (!q1.unit().equals(q2.unit())) {
-			ch.ethz.idsc.tensor.qty.UnitConvert unitConvert = ch.ethz.idsc.tensor.qty.UnitConvert.SI();
-			q2 = (IQuantity) unitConvert.to(q1.unit()).apply(q2);
-		}
-		if (q1.unit().equals(q2.unit())) {
-			return q1.value().compareTo(q2.value());
+		try {
+			if (!q1.unit().equals(q2.unit())) {
+				ch.ethz.idsc.tensor.qty.UnitConvert unitConvert = ch.ethz.idsc.tensor.qty.UnitConvert.SI();
+				q2 = (IQuantity) unitConvert.to(q1.unit()).apply(q2);
+			}
+			if (q1.unit().equals(q2.unit())) {
+				return q1.value().compareTo(q2.value());
+			}
+		} catch (RuntimeException rex) {
+			//
 		}
 		return Integer.MIN_VALUE;
 	}
@@ -3801,7 +3840,7 @@ public final class BooleanFunctions {
 	public static IExpr unequalNull(IExpr a1, IExpr a2, EvalEngine engine) {
 		if (a1.isExactNumber() && a2.isExactNumber()) {
 			if (a1.isQuantity() && a2.isQuantity()) {
-				return F.bool(quantityEquals((IQuantity) a1, (IQuantity) a2));
+				return quantityUnequals((IQuantity) a1, (IQuantity) a2);
 			}
 			return a1.equals(a2) ? F.False : F.True;
 		}

@@ -13968,20 +13968,24 @@ public class LowercaseTestCase extends AbstractTestCase {
 			check("Quantity(1, \"min\")<=Quantity(60, \"s\")", //
 					"True");
 
+			// leave unevaluated because of different unit types
+			check("Quantity(1,\"s\")==Quantity(1,\"m\")", //
+							"1[s]==1[m]");
+			
 			check("Quantity(60, \"s\")==Quantity(1, \"min\")", //
 					"True");
 			check("Quantity(1, \"min\")==Quantity(60, \"s\")", //
 					"True");
 
 			check("Quantity(60, \"s\")!=Quantity(1, \"min\")", //
-					"True");
+					"False");
 			check("Quantity(1, \"min\")!=Quantity(60, \"s\")", //
-					"True");
+					"False");
 
 			check("Quantity(42, \"s\")!=Quantity(1, \"min\")", //
-					"False");
+					"True");
 			check("Quantity(42, \"min\")!=Quantity(60, \"s\")", //
-					"False");
+					"True");
 
 			// github #139
 			check("-2+Quantity(1, \"ft\")", //
