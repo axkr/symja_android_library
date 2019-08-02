@@ -108,7 +108,12 @@ public final class AST3 extends AST2 {
 	 */
 	@Override
 	public IAST clone() {
-		return new AST3(arg0, arg1, arg2, arg3);
+		AST3 result=(AST3)super.clone();
+		result.arg0=arg0;
+		result.arg1=arg1;
+		result.arg2=arg2;
+		result.arg3=arg3;
+		return result;
 	}
 
 	/** {@inheritDoc} */

@@ -97,15 +97,19 @@ public class AST2 extends AST1 {
 	}
 
 	/**
-	 * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity as this
-	 * {@code HMArrayList}.
+	 * Returns a new {@code AST2} with the same elements, the same size and the same capacity as this
+	 * {@code AST2}.
 	 * 
 	 * @return a shallow copy of this {@code ArrayList}
 	 * @see java.lang.Cloneable
 	 */
 	@Override
 	public IAST clone() {
-		return new AST(arg0, arg1, arg2);
+		AST2 result=(AST2)super.clone();
+		result.arg0=arg0;
+		result.arg1=arg1;
+		result.arg2=arg2;
+		return result;
 	}
 
 	/** {@inheritDoc} */

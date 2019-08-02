@@ -103,7 +103,10 @@ public class AST1 extends AST0 {
 	 */
 	@Override
 	public IAST clone() {
-		return new AST(arg0, arg1);
+		AST1 result=(AST1)super.clone();
+		result.arg0=arg0;
+		result.arg1=arg1;
+		return result;
 	}
 
 	/** {@inheritDoc} */

@@ -173,15 +173,16 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	// }
 
 	/**
-	 * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity as this
-	 * {@code HMArrayList}.
+	 * Returns a new {@code AST0} with the same elements, the same size and the same capacity as this
+	 * {@code AST0}.
 	 * 
 	 * @return a shallow copy of this {@code ArrayList}
 	 * @see java.lang.Cloneable
 	 */
 	@Override
 	public IAST clone() {
-		return new AST(arg0);
+		AST0 result = new AST0(arg0);
+		return result;
 	}
 
 	/** {@inheritDoc} */
@@ -208,7 +209,7 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 		}
 		if (obj instanceof AbstractAST) {
 			final IAST list = (IAST) obj;
-			if (arg0 != ((AbstractAST) list).head() && arg0 instanceof ISymbol) {
+			if (arg0 != list.head() && arg0 instanceof ISymbol) {
 				// compared with ISymbol object identity
 				return false;
 			}

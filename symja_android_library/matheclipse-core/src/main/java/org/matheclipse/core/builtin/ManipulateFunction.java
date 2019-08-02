@@ -328,7 +328,7 @@ public class ManipulateFunction {
 		}
 
 		private static IExpr createSliderWithListPlot(final IAST ast, IAST plot, EvalEngine engine) throws IOException {
-			final OptionArgs options = new OptionArgs(plot.topHead(), plot, 2, engine);
+			// final OptionArgs options = new OptionArgs(plot.topHead(), plot, 2, engine);
 
 			String js = MATHCELL;
 			js = createSlidersFromList(ast, js);
