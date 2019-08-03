@@ -4,9 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringWriter;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
 
 import javax.script.AbstractScriptEngine;
 import javax.script.Bindings;
@@ -19,6 +16,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.EvalUtilities;
 import org.matheclipse.core.eval.exception.AbortException;
+import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
@@ -131,6 +129,18 @@ public class MathScriptEngine extends AbstractScriptEngine {
 			}
 			try {
 				return printResult(F.$Aborted, relaxedSyntax);
+			} catch (IOException e1) {
+				if (Config.DEBUG) {
+					e.printStackTrace();
+				}
+				return e1.getMessage();
+			}
+		} catch (final FailedException e) {
+			if (Config.SHOW_STACKTRACE) {
+				e.printStackTrace();
+			}
+			try {
+				return printResult(F.$Failed, relaxedSyntax);
 			} catch (IOException e1) {
 				if (Config.DEBUG) {
 					e.printStackTrace();

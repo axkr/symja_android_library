@@ -4,9 +4,15 @@ public class BuiltInRubi extends BuiltInDummy {
 	public BuiltInRubi(final String symbolName) {
 		super(symbolName);
 	}
-	
+
 	@Override
 	public final Context getContext() {
 		return Context.RUBI;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isProtected() {
+		return true;
 	}
 }

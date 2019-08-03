@@ -236,6 +236,12 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	final public boolean isPi() {
 		return this == F.Pi;
 	}
+	
+	/** {@inheritDoc} */
+	@Override
+	final public boolean isProtected() {
+		return true;
+	}
 
 	/** {@inheritDoc} */
 	@Override

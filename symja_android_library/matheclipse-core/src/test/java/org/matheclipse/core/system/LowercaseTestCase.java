@@ -3640,6 +3640,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDefinition() {
+		check("g(abc_):={abc}", //
+				"");
+		check("g(abc_):={abc}", //
+				"");
+		check("Definition(g)", //
+				"Attributes(g)={}\n" + //
+						"g(abc_):={abc}");
+
 		check("SetAttributes(f,Listable)", //
 				"");
 		check("f(x_):={x}", //
@@ -13970,8 +13978,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 			// leave unevaluated because of different unit types
 			check("Quantity(1,\"s\")==Quantity(1,\"m\")", //
-							"1[s]==1[m]");
-			
+					"1[s]==1[m]");
+
 			check("Quantity(60, \"s\")==Quantity(1, \"min\")", //
 					"True");
 			check("Quantity(1, \"min\")==Quantity(60, \"s\")", //
@@ -15847,6 +15855,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSet() {
+		check("aVar=10", //
+				"10");
+		// integer not allowed as header is (Protected)
+		check("aVar[x_]:={x}", //
+				"$Failed");
+
 		// check("A = {{1, 2}, {3, 4}}", "{{1,2},{3,4}}");
 		// check("A[[;;, 2]] = {6, 7} ", "{6,7}");
 		// check("A", "{{1,6},{3,7}}");

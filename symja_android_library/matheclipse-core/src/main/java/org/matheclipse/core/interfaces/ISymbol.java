@@ -384,6 +384,11 @@ public interface ISymbol extends IExpr {
 	default boolean isNumericFunctionAttribute() {
 		return ((getAttributes() & NUMERICFUNCTION) == NUMERICFUNCTION);
 	}
+	
+	default boolean isProtected() {
+		return ((getAttributes() & PROTECTED) == PROTECTED);
+	}
+	
 
 	/**
 	 * Tests if this symbols name equals the given string

@@ -660,6 +660,12 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isProtected() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public final boolean isString(final String str) {
 		return fSymbolName.equals(str);
 	}

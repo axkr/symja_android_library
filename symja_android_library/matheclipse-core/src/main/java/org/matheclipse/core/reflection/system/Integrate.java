@@ -8,6 +8,7 @@ import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -17,7 +18,9 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
+import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.ContextPath;
@@ -663,6 +666,10 @@ public class Integrate extends AbstractFunctionEvaluator {
 			} catch (AbortException ae) {
 				if (Config.DEBUG) {
 					ae.printStackTrace();
+				}
+			} catch (final FailedException fe) {
+				if (Config.DEBUG) {
+					fe.printStackTrace();
 				}
 			} finally {
 				engine.setRecursionLimit(limit);

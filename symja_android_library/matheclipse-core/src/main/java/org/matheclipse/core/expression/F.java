@@ -197,6 +197,8 @@ public class F {
     public final static IBuiltInSymbol $DisplayFunction = F.initFinalSymbol("$DisplayFunction", ID.$DisplayFunction);
 
     /***/
+    public final static IBuiltInSymbol $Failed = F.initFinalSymbol("$Failed", ID.$Failed);
+    /***/
     public final static IBuiltInSymbol $HistoryLength = F.initFinalSymbol("$HistoryLength", ID.$HistoryLength);
 
     /***/

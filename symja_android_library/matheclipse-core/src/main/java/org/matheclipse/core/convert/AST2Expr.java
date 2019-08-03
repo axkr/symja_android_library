@@ -45,8 +45,8 @@ public class AST2Expr {
 	public final static String[] UPPERCASE_SYMBOL_STRINGS = { "C", "D", "E", "I", "N", "O" };
 
 	public final static String[] DOLLAR_STRINGS = { "$Aborted", "$Assumptions", "$Context", "$CreationDate",
-			"$ContextPath", "$DisplayFunction", "$HistoryLength", "$HomeDirectory", "$IterationLimit", "$Line",
-			"$MachineEpsilon", "$MachinePrecision", "$MaxMachineNumber", "$MessageList", "$MinMachineNumber",
+			"$ContextPath", "$DisplayFunction", "$Failed", "$HistoryLength", "$HomeDirectory", "$IterationLimit",
+			"$Line", "$MachineEpsilon", "$MachinePrecision", "$MaxMachineNumber", "$MessageList", "$MinMachineNumber",
 			"$PrePrint", "$PreRead", "$RecursionLimit", "$UserName", "$Version" };
 
 	public final static String[] SYMBOL_STRINGS = { "All", "Algebraics", "Automatic", "Axes", "AxesOrigin", "AxesStyle",

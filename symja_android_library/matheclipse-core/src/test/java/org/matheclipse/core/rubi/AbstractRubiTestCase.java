@@ -10,6 +10,7 @@ import org.matheclipse.core.eval.EvalControlledCallable;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.exception.AbortException;
+import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -118,6 +119,15 @@ public abstract class AbstractRubiTestCase extends TestCase {
 		} catch (final AbortException re) {
 			try {
 				return printResult(F.$Aborted, expectedResult, manuallyCheckedResult);
+			} catch (IOException e) {
+				Validate.printException(buf, e);
+				System.err.println(buf.toString());
+				System.err.flush();
+				return "";
+			}
+		} catch (final FailedException re) {
+			try {
+				return printResult(F.$Failed, expectedResult, manuallyCheckedResult);
 			} catch (IOException e) {
 				Validate.printException(buf, e);
 				System.err.println(buf.toString());

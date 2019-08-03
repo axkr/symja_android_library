@@ -1455,7 +1455,20 @@ public class EvalEngine implements Serializable {
 	}
 
 	private IExpr evalSetAttributesRecursive(IAST ast, boolean noEvaluation, boolean evalNumericFunction, int level) {
-		final ISymbol symbol = ast.topHead();
+		// final ISymbol symbol = ast.topHead();
+		IExpr head = ast.head();
+		if (!head.isPattern()) {
+			IExpr headResult = head.evaluate(this);
+			if (headResult.isPresent()) {
+				ast = ast.apply(headResult);
+				head = headResult;
+			}
+		}
+		ISymbol symbol = head.topHead();
+		if (head.isSymbol()) {
+			symbol = (ISymbol) head;
+		}
+
 		if (symbol.isBuiltInSymbol()) {
 			// call so that attributes may be set in
 			// AbstractFunctionEvaluator#setUp() method
