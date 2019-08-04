@@ -45,7 +45,7 @@ public class AST1 extends AST0 {
 	/**
 	 * The first argument of this function.
 	 */
-	IExpr arg1;
+	protected IExpr arg1;
 
 	/**
 	 * ctor for deserialization
@@ -62,7 +62,7 @@ public class AST1 extends AST0 {
 	 * @param arg1
 	 *            the first argument of the function
 	 */
-	protected AST1(IExpr head, IExpr arg1) {
+	public AST1(IExpr head, IExpr arg1) {
 		super(head);
 		this.arg1 = arg1;
 	}

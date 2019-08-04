@@ -44,7 +44,7 @@ public final class AST3 extends AST2 {
 	/**
 	 * The third argument of this function.
 	 */
-	IExpr arg3;
+	protected IExpr arg3;
 
 	/**
 	 * ctor for deserialization

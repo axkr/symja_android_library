@@ -44,7 +44,7 @@ public class AST2 extends AST1 {
 	/**
 	 * The second argument of this function.
 	 */
-	IExpr arg2;
+	protected IExpr arg2;
 
 	/**
 	 * ctor for deserialization
