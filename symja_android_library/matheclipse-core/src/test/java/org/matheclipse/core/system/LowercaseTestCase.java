@@ -6332,6 +6332,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{}");
 	}
 
+	public void testFindVertexCover() {
+		check("FindVertexCover({UndirectedEdge(2,1), UndirectedEdge(1,3), UndirectedEdge(3,6), UndirectedEdge(6,1),"//
+				+ " UndirectedEdge(4,6), UndirectedEdge(1,5), UndirectedEdge(5,4) })", //
+				"{1,6,4}");
+		check("FindVertexCover({UndirectedEdge(1,2), UndirectedEdge(2,3), UndirectedEdge(3,4), UndirectedEdge(3,6),"//
+				+ " UndirectedEdge(3,7), UndirectedEdge(6,4), UndirectedEdge(4,7), UndirectedEdge(4,5), UndirectedEdge(5,1)})", //
+				"{3,4,1}");
+		
+		// print: Graph must be undirected
+		// TODO implement for directed graphs
+		check("FindVertexCover({DirectedEdge(2,1), DirectedEdge(1,3), DirectedEdge(3,6), DirectedEdge(6,1),"//
+				+ " DirectedEdge(4,6), DirectedEdge(1,5), DirectedEdge(5,4) })", //
+				"FindVertexCover({2->1,1->3,3->6,6->1,4->6,1->5,5->4})");
+
+	}
+
 	public void testFindShortestTour() {
 		check("FindShortestTour({GeoPosition[{41, 20}], GeoPosition[{5, 20}], GeoPosition[{49, 32}], " //
 				+ "GeoPosition[{53, 28}], GeoPosition[{47, 29}]})", //

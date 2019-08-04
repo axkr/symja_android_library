@@ -19,9 +19,11 @@ import org.jgrapht.alg.interfaces.EulerianCycleAlgorithm;
 import org.jgrapht.alg.interfaces.HamiltonianCycleAlgorithm;
 import org.jgrapht.alg.interfaces.ShortestPathAlgorithm.SingleSourcePaths;
 import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm;
+import org.jgrapht.alg.interfaces.VertexCoverAlgorithm;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.alg.spanning.BoruvkaMinimumSpanningTree;
 import org.jgrapht.alg.tour.HeldKarpTSP;
+import org.jgrapht.alg.vertexcover.GreedyVCImpl;
 import org.jgrapht.graph.AbstractBaseGraph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
@@ -62,6 +64,7 @@ public class GraphFunctions {
 			F.EulerianGraphQ.setEvaluator(new EulerianGraphQ());
 			F.FindEulerianCycle.setEvaluator(new FindEulerianCycle());
 			F.FindHamiltonianCycle.setEvaluator(new FindHamiltonianCycle());
+			F.FindVertexCover.setEvaluator(new FindVertexCover());
 			F.FindShortestPath.setEvaluator(new FindShortestPath());
 			F.FindShortestTour.setEvaluator(new FindShortestTour());
 			F.FindSpanningTree.setEvaluator(new FindSpanningTree());
@@ -515,6 +518,43 @@ public class GraphFunctions {
 					}
 					return list;
 				}
+			} catch (RuntimeException rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+	}
+
+	private static class FindVertexCover extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			try {
+				if (ast.isAST1()) {
+					DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> dex = createGraph(ast.arg1());
+					if (dex == null) {
+						return F.NIL;
+					}
+					Graph<IExpr, IExprEdge> g = dex.toData();
+					// ChordalityInspector<IExpr, IExprEdge> inspector = new ChordalityInspector<IExpr, IExprEdge>(g);
+					VertexCoverAlgorithm<IExpr> greedy = new GreedyVCImpl<>(g);
+					VertexCoverAlgorithm.VertexCover<IExpr> cover = greedy.getVertexCover();
+					if (cover == null) {
+						return F.List();
+					}
+					IASTAppendable result = F.ListAlloc(10);
+					cover.forEach(x -> result.append(x));
+					return result;
+				}
+			} catch (IllegalArgumentException iae) {
+				return engine.printMessage("Graph must be undirected");
 			} catch (RuntimeException rex) {
 				if (Config.SHOW_STACKTRACE) {
 					rex.printStackTrace();
