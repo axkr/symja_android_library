@@ -61,7 +61,7 @@ public class PatternsTest extends AbstractTestCase {
 	}
 
 	public void testComplicatedPatternRule() {
-		IExpr expr = F.Integrate(F.unary(F.unary(F.Derivative(F.n_), F.f_), F.x_), F.x_Symbol);
+		IExpr expr = F.Integrate(F.unaryAST1(F.unaryAST1(F.Derivative(F.n_), F.f_), F.x_), F.x_Symbol);
 		assertEquals("Integrate[Derivative[n_][f_][x_],x_Symbol]", expr.toString());
 		boolean isComplicated = RulesData.isComplicatedPatternRule(expr);
 		assertTrue(isComplicated);

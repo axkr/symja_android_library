@@ -44,7 +44,7 @@ public class SimplifyCountTest extends AbstractTestCase {
 		c = F.headAST0(F.f).leafCountSimplify();
 		assertEquals(c, 1);
 
-		c = F.binary(F.f, F.x, F.y).leafCountSimplify();
+		c = F.binaryAST2(F.f, F.x, F.y).leafCountSimplify();
 		assertEquals(c, 3);
 
 		c = F.num(100.123).leafCountSimplify();
