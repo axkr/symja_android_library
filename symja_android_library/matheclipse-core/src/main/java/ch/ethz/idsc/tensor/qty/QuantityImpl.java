@@ -348,6 +348,9 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 		/** at this point the implication holds: azero == bzero */
 		if (scalar instanceof IQuantity) {
 			IQuantity quantity = (IQuantity) scalar;
+			if (!unit.equals(quantity.unit())) {
+				quantity =  (IQuantity) UnitConvert.SI().to(unit).apply(quantity);
+			}
 			if (unit.equals(quantity.unit()))
 				return ofUnit(arg1.add(quantity.value())); // 0[m] + 0[m] gives 0[m]
 			else if (azero)
