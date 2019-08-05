@@ -13963,12 +13963,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testQuantity() {
 		if (ToggleFeature.QUANTITY) {
+			check("Quantity(1, \"min\") + Quantity(120, \"min\")", //
+					"121[min]");
 			check("Quantity(1, \"min\") + Quantity(50, \"s\")", //
 					"110[s]");
 			check("Quantity(50, \"s\") + Quantity(1, \"min\") ", //
 					"110[s]");
 			
-			check("Quantity(50, \"min\") + Quantity(1, \"s\") ", //
+			check("Quantity(50, \"min\") + Quantity(1, \"s\")", //
 					"3001/60[min]");
 			
 			check("Table(i, {i, Quantity(5, \"s\"), Quantity(1, \"m\"), Quantity(4, \"s\")})", //
