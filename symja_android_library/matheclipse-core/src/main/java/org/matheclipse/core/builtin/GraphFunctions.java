@@ -69,6 +69,7 @@ public class GraphFunctions {
 			F.FindShortestTour.setEvaluator(new FindShortestTour());
 			F.FindSpanningTree.setEvaluator(new FindSpanningTree());
 			F.GraphQ.setEvaluator(new GraphQ());
+
 			F.HamiltonianGraphQ.setEvaluator(new HamiltonianGraphQ());
 			F.VertexList.setEvaluator(new VertexList());
 			F.VertexQ.setEvaluator(new VertexQ());

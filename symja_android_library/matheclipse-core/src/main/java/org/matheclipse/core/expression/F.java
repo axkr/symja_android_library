@@ -36,6 +36,7 @@ import org.matheclipse.core.builtin.ExpTrigsFunctions;
 import org.matheclipse.core.builtin.FinancialFunctions;
 import org.matheclipse.core.builtin.FunctionDefinitions;
 import org.matheclipse.core.builtin.GeodesyFunctions;
+import org.matheclipse.core.builtin.GraphDataFunctions;
 import org.matheclipse.core.builtin.GraphFunctions;
 import org.matheclipse.core.builtin.HypergeometricFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
@@ -4258,6 +4259,7 @@ public class F {
 			WindowFunctions.initialize();
 			MinMaxFunctions.initialize();
 			GraphFunctions.initialize();
+			GraphDataFunctions.initialize();
 			GeodesyFunctions.initialize();
 			ManipulateFunction.initialize();
 			ComputationalGeometryFunctions.initialize();
