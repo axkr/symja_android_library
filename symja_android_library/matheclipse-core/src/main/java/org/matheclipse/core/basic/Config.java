@@ -158,6 +158,13 @@ public class Config {
 	public static boolean SERVER_MODE = false;
 
 	/**
+	 * <code>true</code> if it's allowed to delete the <code>Protected</code> attribute from a symbol. In <i>server
+	 * mode</i> this flag should be set to <code>false</code>. <br/>
+	 * 
+	 */
+	public static boolean UNPROTECT_ALLOWED = true;
+
+	/**
 	 * See <a href="http://en.wikipedia.org/wiki/Machine_epsilon">Wikipedia: Machine epsilon</a>
 	 */
 	public static double DOUBLE_EPSILON = Precision.EPSILON;

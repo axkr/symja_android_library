@@ -905,7 +905,7 @@ public class Symbol implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final void setAttributes(final int attributes) {
+	public void setAttributes(final int attributes) {
 		fAttributes = attributes;
 		if (isLocked()) {
 			throw new RuleCreationError(this);

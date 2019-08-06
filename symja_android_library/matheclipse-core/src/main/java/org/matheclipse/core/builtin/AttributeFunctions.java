@@ -25,6 +25,8 @@ public class AttributeFunctions {
 			F.Attributes.setEvaluator(new Attributes());
 			F.ClearAttributes.setEvaluator(new ClearAttributes());
 			F.SetAttributes.setEvaluator(new SetAttributes());
+			F.Protect.setEvaluator(new Protect());
+			F.Unprotect.setEvaluator(new Unprotect());
 		}
 	}
 
@@ -49,8 +51,19 @@ public class AttributeFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST1() && ast.arg1().isSymbol()) {
-				return attributesList(((ISymbol) ast.arg1()));
+			if (ast.isAST1()) {
+				if (ast.arg1().isSymbol()) {
+					return attributesList(((ISymbol) ast.arg1()));
+				}
+				if (ast.arg1().isList()) {
+					IAST list = (IAST) ast.arg1();
+					if (list.exists(x -> !x.isSymbol())) {
+						return F.NIL;
+					}
+					final IASTAppendable result = F.ListAlloc(list.size());
+					list.forEach(x -> result.append(attributesList(((ISymbol) x))));
+					return result;
+				}
 			}
 
 			return F.NIL;
@@ -217,6 +230,58 @@ public class AttributeFunctions {
 
 	}
 
+	private final static class Protect extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.exists(x -> !x.isSymbol())) {
+				return F.NIL;
+			}
+			final IASTAppendable result = F.ListAlloc(ast.size());
+			ast.forEach(x -> {
+				ISymbol symbol = (ISymbol) x;
+				if (!symbol.isProtected()) {
+					symbol.addAttributes(ISymbol.PROTECTED);
+					result.append(x);
+				}
+			});
+			return result;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
+	private final static class Unprotect extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (Config.UNPROTECT_ALLOWED) {
+				if (ast.exists(x -> !x.isSymbol())) {
+					return F.NIL;
+				} 
+
+				final IASTAppendable result = F.ListAlloc(ast.size());
+				ast.forEach(x -> {
+					ISymbol symbol = (ISymbol) x;
+					if (symbol.isProtected()) {
+						symbol.clearAttributes(ISymbol.PROTECTED);
+						result.append(x);
+					}
+				});
+				return result;
+			}
+			return engine.printMessage("Unprotect: not allowed. Set Config.UNPROTECT_ALLOWED if necessary");
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
 	/**
 	 * <pre>
 	 * SetAttributes(symbol, attrib)
@@ -377,18 +442,6 @@ public class AttributeFunctions {
 			result.append(F.Flat);
 		}
 
-		if ((attributes & ISymbol.LISTABLE) != ISymbol.NOATTRIBUTE) {
-			result.append(F.Listable);
-		}
-
-		if ((attributes & ISymbol.ONEIDENTITY) != ISymbol.NOATTRIBUTE) {
-			result.append(F.OneIdentity);
-		}
-
-		if ((attributes & ISymbol.ORDERLESS) != ISymbol.NOATTRIBUTE) {
-			result.append(F.Orderless);
-		}
-
 		if ((attributes & ISymbol.HOLDALLCOMPLETE) == ISymbol.HOLDALLCOMPLETE) {
 			result.append(F.HoldAllComplete);
 		} else if ((attributes & ISymbol.HOLDCOMPLETE) == ISymbol.HOLDCOMPLETE) {
@@ -404,8 +457,9 @@ public class AttributeFunctions {
 				result.append(F.HoldRest);
 			}
 		}
-		if ((attributes & ISymbol.SEQUENCEHOLD) == ISymbol.SEQUENCEHOLD) {
-			result.append(F.SequenceHold);
+		
+		if ((attributes & ISymbol.LISTABLE) != ISymbol.NOATTRIBUTE) {
+			result.append(F.Listable);
 		}
 
 		if ((attributes & ISymbol.NHOLDALL) == ISymbol.NHOLDALL) {
@@ -423,6 +477,23 @@ public class AttributeFunctions {
 		if ((attributes & ISymbol.NUMERICFUNCTION) != ISymbol.NOATTRIBUTE) {
 			result.append(F.NumericFunction);
 		}
+		
+		if ((attributes & ISymbol.ONEIDENTITY) != ISymbol.NOATTRIBUTE) {
+			result.append(F.OneIdentity);
+		}
+
+		if ((attributes & ISymbol.ORDERLESS) != ISymbol.NOATTRIBUTE) {
+			result.append(F.Orderless);
+		}
+		
+		if ((attributes & ISymbol.PROTECTED) != ISymbol.NOATTRIBUTE) {
+			result.append(F.Protected);
+		}
+
+		if ((attributes & ISymbol.SEQUENCEHOLD) == ISymbol.SEQUENCEHOLD) {
+			result.append(F.SequenceHold);
+		}
+
 		return result;
 	}
 

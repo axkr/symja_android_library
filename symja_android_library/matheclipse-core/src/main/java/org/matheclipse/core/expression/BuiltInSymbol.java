@@ -8,6 +8,7 @@ import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
@@ -89,6 +90,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 		super(symbolName, Context.SYSTEM);
 		fEvaluator = DUMMY_EVALUATOR;
 		fOrdinal = ordinal;
+		fAttributes = ISymbol.PROTECTED;
 	}
 
 	// private BuiltInSymbol(final String symbolName, final IEvaluator evaluator) {
@@ -191,16 +193,16 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
 	/** {@inheritDoc} */
 	@Override
-	public  boolean isBooleanFormulaSymbol() {
+	public boolean isBooleanFormulaSymbol() {
 		return fEvaluator instanceof IBooleanFormula;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
-	public  boolean isComparatorFunctionSymbol() {
+	public boolean isComparatorFunctionSymbol() {
 		return fEvaluator instanceof IComparatorFunction;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPredicateFunctionSymbol() {
@@ -235,12 +237,6 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	@Override
 	final public boolean isPi() {
 		return this == F.Pi;
-	}
-	
-	/** {@inheritDoc} */
-	@Override
-	final public boolean isProtected() {
-		return true;
 	}
 
 	/** {@inheritDoc} */
@@ -291,6 +287,12 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 			}
 		}
 		return F.NIL;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final void setAttributes(final int attributes) {
+		super.setAttributes(attributes | ISymbol.PROTECTED);
 	}
 
 	/** {@inheritDoc} */
