@@ -6407,13 +6407,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testGraphData() {
 		check("GraphData(\"PappusGraph\")", //
 				"Graph({1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18}," //
-				+ "{1<->2,1<->3,1<->4,2<->5,2<->6,5<->7,5<->8,7<->9,7<->\n" + //
-				"10,9<->3,9<->11,3<->12,4<->13,4<->14,6<->15,6<->16,8<->13,8<->17,10<->16,10<->18,11<->17,11<->14,12<->15,12<->18,15<->17,13<->18,16<->\n" + 
-				"14})");
+						+ "{1<->2,1<->3,1<->4,2<->5,2<->6,5<->7,5<->8,7<->9,7<->\n" + //
+						"10,9<->3,9<->11,3<->12,4<->13,4<->14,6<->15,6<->16,8<->13,8<->17,10<->16,10<->18,11<->17,11<->14,12<->15,12<->18,15<->17,13<->18,16<->\n"
+						+ "14})");
 		check("GraphData(\"PetersenGraph\")", //
 				"Graph({1,2,3,4,5,6,7,8,9,10},{1<->3,1<->2,2<->6,3<->5,3<->4,4<->8,5<->7,5<->6,6<->10,7<->9,7<->8,8<->2,9<->1,9<->10,10<->4})");
 	}
-	
+
 	public void testGraphQ() {
 		check("GraphQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}) )", //
 				"True");
@@ -10232,6 +10232,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Max(Abs(x), Abs(y))", "Max(Abs(x),Abs(y))");
 	}
 
+	public void testMaxFilter() {
+		check("MaxFilter({1, 2, 3, 2, 1}, 1)", //
+				"{2,3,3,3,2}");
+		check("MaxFilter({0, 3, 8, 2}, 1)", //
+				"{3,8,8,8}");
+		check("MaxFilter({a,b,c}, 1)", //
+				"{Max(a,b),Max(a,b,c),Max(b,c)}");
+	}
+	
 	public void testMaximize() {
 		check("Maximize(-x^4-7*x^3+2*x^2 - 42,x)", //
 				"{-42-7*(-21/8-Sqrt(505)/8)^3+2*(21/8+Sqrt(505)/8)^2-(21/8+Sqrt(505)/8)^4,{x->-21/\n"
@@ -10276,6 +10285,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Mean(WeibullDistribution(n, m))", "m*Gamma(1+1/n)");
 	}
 
+	public void testMeanFilter() {
+		check("MeanFilter({-3, 3, 6, 0, 0, 3, -3, -9}, 2)", //
+				"{2,3/2,6/5,12/5,6/5,-9/5,-9/4,-3}");
+		check("MeanFilter({1, 2, 3, 2, 1}, 1)", //
+				"{3/2,2,7/3,2,3/2}");
+		check("MeanFilter({0, 3, 8, 2}, 1)", //
+				"{3/2,11/3,13/3,5}");
+		check("MeanFilter({a,b,c}, 1)", //
+				"{1/2*(a+b),1/3*(a+b+c),1/2*(b+c)}");
+	}
+	
 	public void testMeanDeviation() {
 		check("MeanDeviation({a, b, c})", "1/3*(Abs(a+1/3*(-a-b-c))+Abs(b+1/3*(-a-b-c))+Abs(1/3*(-a-b-c)+c))");
 		check("MeanDeviation({{1, 2}, {4, 8}, {5, 3}, {2, 15}})", "{3/2,9/2}");
@@ -10326,6 +10346,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Median(WeibullDistribution(a, b, m))", "m+b*Log(2)^(1/a)");
 	}
 
+	public void testMedianFilter() {
+		// Wikipedia example with "shrinking the window near the boundaries"
+		check("MedianFilter({2,3,80,6}, 1)", //
+				"{5/2,3,6,43}");
+		
+		check("MedianFilter({1, 2, 3, 2, 1}, 1)", //
+				"{3/2,2,2,2,3/2}");
+		check("MedianFilter({0, 3, 8, 2}, 1)", //
+				"{3/2,3,3,5}");
+		check("MedianFilter({a,b,c}, 1)", //
+				"{1/2*(a+b),b,1/2*(b+c)}");
+	}
+	
 	public void testMeijerG() {
 		check("MeijerG({{}, {0.33}}, {{Pi}, {E}}, {-0.5,0.5})", //
 				"{(0.0864683+I*0.0412186)*Hypergeometric1F1Regularized(3.81159,1.42331,-0.5),-0.0957901*Hypergeometric1F1Regularized(3.81159,1.42331,0.5)}");
@@ -10486,6 +10519,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Min(Abs(x),Abs(y))");
 	}
 
+	public void testMinFilter() {
+		check("MinFilter({1, 2, 3, 2, 1}, 1)", //
+				"{1,1,2,1,1}");
+		check("MinFilter({0, 3, 8, 2}, 1)", //
+				"{0,0,2,2}");
+		check("MinFilter({a,b,c}, 1)", //
+				"{Min(a,b),Min(a,b,c),Min(b,c)}");
+	}
+	
 	public void testMinimize() {
 		check("Minimize(x^4+7*x^3-2*x^2 + 42, x)", //
 				"{42+7*(-21/8-Sqrt(505)/8)^3-2*(21/8+Sqrt(505)/8)^2+(21/8+Sqrt(505)/8)^4,{x->-21/\n"
@@ -14423,6 +14465,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRefine() {
+		check("Refine(2*Im(x)+3, x>3)", //
+				"3");
 		check("Refine(x<x, x>0)", //
 				"False");
 		check("Refine(x>=x, x>0)", //
@@ -16018,6 +16062,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSign() {
+		check("Sign(Sign(z))", //
+				"Sign(z)");
+		check("Sign(Exp(z))", //
+				"E^(I*Im(z))");
+
 		check("Sign(2+I)", //
 				"(2+I)/Sqrt(5)");
 		check("Sign(1+I*Sqrt(3))", //
@@ -16081,6 +16130,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testSimplify() {
+		check("Simplify({Im(Exp(I*Pi/5)* x), Im(2*x + I)}, x > 3)", //
+				"{Im(E^(I*1/5*Pi)*x),1}");
+		
 		// check("Simplify(1/((1+x)*(1/(2*x*(1+x))-ArcTan(Sqrt(x))/(2*x^(3/2)))))", //
 		// "(-2*x^(3/2))/(-Sqrt(x) + (1 + x)*ArcTan(Sqrt(x)))");
 		// check("Simplify((-1/(Sqrt(x)*(1+x))+(-1-x)/(2*x^(3/2)*(1+x)))/(1+x))", //
