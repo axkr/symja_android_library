@@ -3533,7 +3533,7 @@ public class Algebra {
 			// r = 3*b*d - c^2
 			IExpr r = Plus(Negate(F.Sqr(c)), Times(F.C3, b, d));
 			// q = 9*b*c*d - 2*c^3 - 27*a*d^2
-			IExpr q = Plus(Times(F.CN2, Power(c, 3)), Times(F.C9, b, c, d), Times(F.ZZ(-27L), a, F.Sqr(d)));
+			IExpr q = Plus(Times(F.CN2, Power(c, 3)), Times(F.C9, b, c, d), Times(F.ZZ(-27), a, F.Sqr(d)));
 			// p = (q + Sqrt(q^2 + 4 r^3))^(1/3)
 			IExpr p = Power(Plus(q, F.Sqrt(Plus(F.Sqr(q), Times(F.C4, Power(r, 3))))), F.C1D3);
 			// -(c/(3*d)) + (E^((2*I*Pi*(k - 1))/3)*p)/(3*2^(1/3)*d) -
@@ -3564,12 +3564,12 @@ public class Algebra {
 
 			// t = Sqrt(-4*(c^2 - 3*b*d + 12*a*e)^3 + (2*c^3 - 9*c*(b*d + 8*a*e) + 27*(a*d^2
 			// + b^2*e))^2)
-			IExpr t = F.Sqrt(Plus(Times(F.CN4, Power(Plus(F.Sqr(c), Times(F.CN3, b, d), Times(F.ZZ(12L), a, e)), 3)),
+			IExpr t = F.Sqrt(Plus(Times(F.CN4, Power(Plus(F.Sqr(c), Times(F.CN3, b, d), Times(F.ZZ(12), a, e)), 3)),
 					F.Sqr(Plus(Times(F.CN9, c, Plus(Times(b, d), Times(F.C8, a, e))),
-							Times(F.ZZ(27L), Plus(Times(a, F.Sqr(d)), Times(F.Sqr(b), e))), Times(C2, Power(c, 3))))));
+							Times(F.ZZ(27), Plus(Times(a, F.Sqr(d)), Times(F.Sqr(b), e))), Times(C2, Power(c, 3))))));
 			// s = (t + 2*c^3 - 9*c*(b*d + 8*a*e) + 27*(a*d^2 + b^2*e))^(1/3)
 			IExpr s = Power(Plus(Times(C2, Power(c, 3)), t, Times(F.CN9, c, Plus(Times(b, d), Times(F.C8, a, e))),
-					Times(F.ZZ(27L), Plus(Times(a, F.Sqr(d)), Times(F.Sqr(b), e)))), F.C1D3);
+					Times(F.ZZ(27), Plus(Times(a, F.Sqr(d)), Times(F.Sqr(b), e)))), F.C1D3);
 
 			// eps1 = (1/2)*Sqrt((2^(1/3)*(c^2 - 3*b*d + 12*a*e))/ (3*s*e) + (3*d^2 +
 			// 2*2^(2/3)*s*e - 8*c*e)/ (12 e^2))
@@ -3579,13 +3579,13 @@ public class Algebra {
 									Plus(Times(F.C3, F.Sqr(d)), Times(F.CN8, c, e),
 											Times(C2, e, s, Power(C2, F.QQ(2L, 3L)))),
 									Power(e, -2)),
-							Times(F.C1D3, Plus(F.Sqr(c), Times(F.CN3, b, d), Times(F.ZZ(12L), a, e)), Power(C2, F.C1D3),
+							Times(F.C1D3, Plus(F.Sqr(c), Times(F.CN3, b, d), Times(F.ZZ(12), a, e)), Power(C2, F.C1D3),
 									Power(e, -1), Power(s, -1)))));
 
 			// u = -((2^(1/3)*s^2 + 2*c^2 - 6*b*d + 24*a*e)/ (2^(2/3)*s*e)) + 8*eps1^2
 			IExpr u = Plus(Times(F.C8, F.Sqr(eps1)),
 					Times(F.CN1,
-							Plus(Times(C2, F.Sqr(c)), Times(F.CN6, b, d), Times(F.ZZ(24L), a, e),
+							Plus(Times(C2, F.Sqr(c)), Times(F.CN6, b, d), Times(F.ZZ(24), a, e),
 									Times(Power(C2, F.C1D3), F.Sqr(s))),
 							Power(C2, F.QQ(-2L, 3L)), Power(e, -1), Power(s, -1)));
 

@@ -244,8 +244,6 @@ public class PolynomialHomogenization {
 	 * variables&quot;. After transforming the polynomial expression may be solvable by a polynomial factorization.
 	 * 
 	 * @param expression
-	 * @param denominatorLCM
-	 *            LCM of the denominators of the real exponents of Power() expressions
 	 * @return
 	 * @throws ArithmeticException
 	 * @throws ClassCastException

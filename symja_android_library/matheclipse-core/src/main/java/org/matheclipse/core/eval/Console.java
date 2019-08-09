@@ -330,26 +330,26 @@ public class Console {
 			final String arg = args[i];
 
 			if (arg.equals("-code") || arg.equals("-c")) {
-				try {
-					String outputExpression = interpreter(args[i + 1]);
-					if (outputExpression.length() > 0) {
-						stdout.print(outputExpression);
-					}
-					throw ReturnException.RETURN_TRUE;
-				} catch (final ArrayIndexOutOfBoundsException aioobe) {
-					final String msg = "You must specify a command when " + "using the -code argument";
+				if (i + 1 >= args.length) {
+					final String msg = "You must specify an additional command when using the -code argument";
 					stdout.println(msg);
 					throw ReturnException.RETURN_FALSE;
 				}
+				String outputExpression = interpreter(args[i + 1]);
+				if (outputExpression.length() > 0) {
+					stdout.print(outputExpression);
+				}
+				throw ReturnException.RETURN_TRUE;
 			} else if (arg.equals("-function") || arg.equals("-f")) {
-				try {
-					function = args[i + 1];
-					i++;
-				} catch (final ArrayIndexOutOfBoundsException aioobe) {
-					final String msg = "You must specify a function when " + "using the -function argument";
+				if (i + 1 >= args.length) {
+					final String msg = "You must specify a function when using the -function argument";
 					stdout.println(msg);
 					throw ReturnException.RETURN_FALSE;
 				}
+
+				function = args[i + 1];
+				i++;
+
 			} else if (arg.equals("-args") || arg.equals("-a")) {
 				try {
 					if (function != null) {
@@ -396,15 +396,15 @@ public class Console {
 					return;
 				}
 			} else if (arg.equals("-default") || arg.equals("-d")) {
-				try {
-					fDefaultSystemRulesFilename = args[i + 1];
-					fEvaluator.eval(F.Get(args[i + 1]));
-					i++;
-				} catch (final ArrayIndexOutOfBoundsException aioobe) {
-					final String msg = "You must specify a file when " + "using the -d argument";
+				if (i + 1 >= args.length) {
+					final String msg = "You must specify a file when using the -d argument";
 					stdout.println(msg);
-					return;
+					throw ReturnException.RETURN_FALSE;
 				}
+				fDefaultSystemRulesFilename = args[i + 1];
+				fEvaluator.eval(F.Get(args[i + 1]));
+				i++;
+
 				// } else if (arg.equals("-pp")) {
 				// fPrettyPrinter = true;
 			} else if (arg.charAt(0) == '-') {

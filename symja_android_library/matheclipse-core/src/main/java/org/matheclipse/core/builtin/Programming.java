@@ -55,7 +55,8 @@ public final class Programming {
 
 	/**
 	 * 
-	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static initializer</a>
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
 	 */
 	private static class Initializer {
 
@@ -308,8 +309,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * places an additional constraint on <code>pattern</code> that only allows it to match if <code>expr</code> evaluates to
-	 * <code>True</code>.
+	 * places an additional constraint on <code>pattern</code> that only allows it to match if <code>expr</code>
+	 * evaluates to <code>True</code>.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -487,8 +488,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * evaluates <code>expr</code> <code>max</code> times, substituting <code>i</code> in <code>expr</code> with values from
-	 * <code>1</code> to <code>max</code>.
+	 * evaluates <code>expr</code> <code>max</code> times, substituting <code>i</code> in <code>expr</code> with values
+	 * from <code>1</code> to <code>max</code>.
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -737,8 +738,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * starting with <code>expr</code>, iteratively applies <code>f</code> until the result no longer changes, and returns a list of all
-	 * intermediate results.
+	 * starting with <code>expr</code>, iteratively applies <code>f</code> until the result no longer changes, and
+	 * returns a list of all intermediate results.
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -858,8 +859,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * evaluates <code>start</code>, and then iteratively <code>body</code> and <code>incr</code> as long as test evaluates to
-	 * <code>True</code>.
+	 * evaluates <code>start</code>, and then iteratively <code>body</code> and <code>incr</code> as long as test
+	 * evaluates to <code>True</code>.
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -969,8 +970,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns <code>pos</code> if <code>cond</code> evaluates to <code>True</code>, and <code>neg</code> if it evaluates to
-	 * <code>False</code>.
+	 * returns <code>pos</code> if <code>cond</code> evaluates to <code>True</code>, and <code>neg</code> if it
+	 * evaluates to <code>False</code>.
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -1011,7 +1012,8 @@ public final class Programming {
 	 * </p>
 	 * </blockquote> </blockquote>
 	 * <p>
-	 * You might use comments (inside <code>(*</code> and <code>*)</code>) to make the branches of <code>If</code> more readable:
+	 * You might use comments (inside <code>(*</code> and <code>*)</code>) to make the branches of <code>If</code> more
+	 * readable:
 	 * </p>
 	 * 
 	 * <pre>
@@ -1162,7 +1164,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * starting with <code>expr</code>, iteratively applies <code>f</code> <code>n</code> times and returns the final result.
+	 * starting with <code>expr</code>, iteratively applies <code>f</code> <code>n</code> times and returns the final
+	 * result.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -1220,8 +1223,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * starting with <code>expr</code>, iteratively applies <code>f</code> <code>n</code> times and returns a list of all intermediate
-	 * results.
+	 * starting with <code>expr</code>, iteratively applies <code>f</code> <code>n</code> times and returns a list of
+	 * all intermediate results.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -1283,8 +1286,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * applies a function <code>f</code> repeatedly on an expression <code>expr</code>, until applying <code>test</code> on the result
-	 * no longer yields <code>True</code>.
+	 * applies a function <code>f</code> repeatedly on an expression <code>expr</code>, until applying <code>test</code>
+	 * on the result no longer yields <code>True</code>.
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -1348,8 +1351,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * applies a function <code>f</code> repeatedly on an expression <code>expr</code>, until applying <code>test</code> on the result
-	 * no longer yields <code>True</code>. It returns a list of all intermediate results.
+	 * applies a function <code>f</code> repeatedly on an expression <code>expr</code>, until applying <code>test</code>
+	 * on the result no longer yields <code>True</code>. It returns a list of all intermediate results.
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -1360,8 +1363,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * supplies the last <code>m</code> results to <code>test</code> (default value: <code>1</code>). It returns a list of all
-	 * intermediate results.
+	 * supplies the last <code>m</code> results to <code>test</code> (default value: <code>1</code>). It returns a list
+	 * of all intermediate results.
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -1513,8 +1516,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * switch on the interactive trace only for the <code>head</code>s defined in the list. The output is printed in the defined
-	 * <code>out</code> stream.
+	 * switch on the interactive trace only for the <code>head</code>s defined in the list. The output is printed in the
+	 * defined <code>out</code> stream.
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -1533,8 +1536,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * switch on the interactive trace only for the defined <code>head</code> s. The output is printed only once for a combination of
-	 * <em>unevaluated</em> input expression and <em>evaluated</em> output expression.
+	 * switch on the interactive trace only for the defined <code>head</code> s. The output is printed only once for a
+	 * combination of <em>unevaluated</em> input expression and <em>evaluated</em> output expression.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -1989,8 +1992,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * gives the result of evaluating <code>expr</code>, together with all values sown during this evaluation. Values sown with
-	 * different tags are given in different lists.
+	 * gives the result of evaluating <code>expr</code>, together with all values sown during this evaluation. Values
+	 * sown with different tags are given in different lists.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -2177,9 +2180,7 @@ public final class Programming {
 					if (tags.isList()) {
 						IAST list = (IAST) tags;
 						for (int i = 1; i < list.size(); i++) {
-							if (reapList != null) {
-								appendReapList(arg1, list.get(i), reapList);
-							}
+							appendReapList(arg1, list.get(i), reapList);
 						}
 
 					} else {
@@ -2511,8 +2512,8 @@ public final class Programming {
 	 */
 	private static class Trace extends AbstractCoreFunctionEvaluator {
 		/**
-		 * Trace the evaluation steps for a given expression. The resulting trace expression list is wrapped by Hold (i.e.
-		 * <code>Hold[{...}]</code>.
+		 * Trace the evaluation steps for a given expression. The resulting trace expression list is wrapped by Hold
+		 * (i.e. <code>Hold[{...}]</code>.
 		 * 
 		 */
 		@Override
@@ -2572,8 +2573,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * yields <code>expr1</code> if <code>cond1</code> evaluates to <code>True</code>, <code>expr2</code> if <code>cond2</code>
-	 * evaluates to <code>True</code>, etc.
+	 * yields <code>expr1</code> if <code>cond1</code> evaluates to <code>True</code>, <code>expr2</code> if
+	 * <code>cond2</code> evaluates to <code>True</code>, etc.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -2595,8 +2596,8 @@ public final class Programming {
 	 * &gt;&gt; Which(False, a)
 	 * </pre>
 	 * <p>
-	 * If a test does not evaluate to <code>True</code> or <code>False</code>, evaluation stops and a <code>Which</code> expression
-	 * containing the remaining cases is returned:
+	 * If a test does not evaluate to <code>True</code> or <code>False</code>, evaluation stops and a <code>Which</code>
+	 * expression containing the remaining cases is returned:
 	 * </p>
 	 * 
 	 * <pre>
@@ -2729,7 +2730,8 @@ public final class Programming {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * evaluates <code>expr</code> for the <code>list_of_local_variables</code> by replacing the local variables in <code>expr</code>.
+	 * evaluates <code>expr</code> for the <code>list_of_local_variables</code> by replacing the local variables in
+	 * <code>expr</code>.
 	 * </p>
 	 * </blockquote>
 	 */
@@ -2761,10 +2763,13 @@ public final class Programming {
 	}
 
 	/**
-	 * Remember which local variable names (appended with the module counter) we use in the given <code>variablesMap</code>.
+	 * Remember which local variable names (appended with the module counter) we use in the given
+	 * <code>variablesMap</code>.
 	 * 
-	 * @param variablesList initializer variables list from the <code>Module</code> function
-	 * @param variablesMap  the resulting module variables map
+	 * @param variablesList
+	 *            initializer variables list from the <code>Module</code> function
+	 * @param variablesMap
+	 *            the resulting module variables map
 	 * @return
 	 */
 	private static boolean rememberWithVariables(IAST variablesList, final java.util.Map<ISymbol, IExpr> variablesMap,
@@ -2792,12 +2797,17 @@ public final class Programming {
 	}
 
 	/**
-	 * Remember which local variable names (appended with the module counter) we use in the given <code>variablesMap</code>.
+	 * Remember which local variable names (appended with the module counter) we use in the given
+	 * <code>variablesMap</code>.
 	 * 
-	 * @param variablesList initializer variables list from the <code>Module</code> function
-	 * @param varAppend     the module counter string which aer appended to the variable names.
-	 * @param variablesMap  the resulting module variables map
-	 * @param engine        the evaluation engine
+	 * @param variablesList
+	 *            initializer variables list from the <code>Module</code> function
+	 * @param varAppend
+	 *            the module counter string which aer appended to the variable names.
+	 * @param variablesMap
+	 *            the resulting module variables map
+	 * @param engine
+	 *            the evaluation engine
 	 */
 	public static boolean rememberModuleVariables(IAST variablesList, final String varAppend,
 			final java.util.Map<ISymbol, IExpr> variablesMap, final EvalEngine engine) {
@@ -2831,12 +2841,17 @@ public final class Programming {
 	}
 
 	/**
-	 * Remember which local variable names we use in the given <code>assignedValues</code> and <code>assignedRules</code>.
+	 * Remember which local variable names we use in the given <code>assignedValues</code> and
+	 * <code>assignedRules</code>.
 	 * 
-	 * @param variablesList  initializer variables list from the <code>Block</code> function
-	 * @param assignedValues the variables mapped to their values (IExpr) before evaluating the block
-	 * @param assignedRules  the variables mapped to their rules (RulesData) before evaluating the block
-	 * @param engine         the evaluation engine
+	 * @param variablesList
+	 *            initializer variables list from the <code>Block</code> function
+	 * @param assignedValues
+	 *            the variables mapped to their values (IExpr) before evaluating the block
+	 * @param assignedRules
+	 *            the variables mapped to their rules (RulesData) before evaluating the block
+	 * @param engine
+	 *            the evaluation engine
 	 */
 	public static void rememberBlockVariables(IAST variablesList, final ISymbol[] symbolList,
 			final IExpr[] assignedValues, final RulesData[] assignedRules, final EvalEngine engine) {
@@ -2894,8 +2909,11 @@ public final class Programming {
 	/**
 	 * Substitute the variable names from the list with temporary dummy variable names in the &quot;module-block&quot;..
 	 * 
-	 * @param intializerList list of variables which should be substituted by appending <code>$<number></code> to the variable names
-	 * @param moduleBlock    the module block where the variables should be replaced with temporary variables
+	 * @param intializerList
+	 *            list of variables which should be substituted by appending <code>$<number></code> to the variable
+	 *            names
+	 * @param moduleBlock
+	 *            the module block where the variables should be replaced with temporary variables
 	 * @param engine
 	 * @return
 	 */
@@ -2913,8 +2931,11 @@ public final class Programming {
 	/**
 	 * Substitute the variable names from the list with temporary dummy variable names in the &quot;with-block&quot;..
 	 * 
-	 * @param intializerList list of variables which should be substituted by appending <code>$<number></code> to the variable names
-	 * @param withBlock      the with block where the variables should be replaced with temporary variables
+	 * @param intializerList
+	 *            list of variables which should be substituted by appending <code>$<number></code> to the variable
+	 *            names
+	 * @param withBlock
+	 *            the with block where the variables should be replaced with temporary variables
 	 * @param engine
 	 * @return
 	 */
@@ -2952,10 +2973,14 @@ public final class Programming {
 	/**
 	 * Get the <code>Part[...]</code> of an expression. If the expression is no <code>IAST</code> return the expression.
 	 * 
-	 * @param expr   the expression from which parts should be extracted
-	 * @param ast    the <code>Part[...]</code> expression
-	 * @param pos    the index position from which the sub-expressions should be extracted
-	 * @param engine the evaluation engine
+	 * @param arg1
+	 *            the expression from which parts should be extracted
+	 * @param ast
+	 *            the <code>Part[...]</code> expression
+	 * @param pos
+	 *            the index position from which the sub-expressions should be extracted
+	 * @param engine
+	 *            the evaluation engine
 	 * @return
 	 */
 	public static IExpr part(final IAST arg1, final IAST ast, int pos, EvalEngine engine) {
@@ -3263,7 +3288,8 @@ public final class Programming {
 	/**
 	 * Assign the <code>value</code> to the given position in the left-hand-side. <code>lhs[[position]] = value</code>
 	 * 
-	 * @param lhs          left-hand-side
+	 * @param lhs
+	 *            left-hand-side
 	 * @param partPosition
 	 * @param value
 	 * @return
@@ -3280,17 +3306,19 @@ public final class Programming {
 	}
 
 	/**
-	 * Call <code>assignPart(element, ast, pos, value, engine)</code> recursively and assign the result to the given position in the
-	 * result. <code>result[[position]] = resultValue</code>
+	 * Call <code>assignPart(element, ast, pos, value, engine)</code> recursively and assign the result to the given
+	 * position in the result. <code>result[[position]] = resultValue</code>
 	 * 
 	 * @param expr
 	 * @param element
 	 * @param partPosition
 	 * @param pos
-	 * @param result       will be cloned if an assignment occurs and returned by this method
+	 * @param result
+	 *            will be cloned if an assignment occurs and returned by this method
 	 * @param position
 	 * @param value
-	 * @param engine       the evaluation engineF
+	 * @param engine
+	 *            the evaluation engineF
 	 * @return the (cloned and value assigned) result AST from input
 	 */
 	private static IASTAppendable assignPartSpanValue(IAST expr, IExpr element, final IAST part, int partPosition,

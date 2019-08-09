@@ -59,7 +59,7 @@ public class ComplexUtils {
 	 * Returns {@link ComplexNum#NaN} if either real or imaginary part of the input argument is <code>NaN</code> or
 	 * infinite.
 	 *
-	 * @param z
+	 * @param val
 	 *            the value whose inverse cosine is to be returned
 	 * @return the inverse cosine of <code>z</code>
 	 * @throws NullPointerException
@@ -90,7 +90,7 @@ public class ComplexUtils {
 	 * Returns {@link ComplexNum#NaN} if either real or imaginary part of the input argument is <code>NaN</code> or
 	 * infinite.
 	 *
-	 * @param z
+	 * @param val
 	 *            the value whose inverse sine is to be returned.
 	 * @return the inverse sine of <code>z</code>.
 	 * @throws NullPointerException
@@ -121,7 +121,7 @@ public class ComplexUtils {
 	 * Returns {@link ComplexNum#NaN} if either real or imaginary part of the input argument is <code>NaN</code> or
 	 * infinite.
 	 *
-	 * @param z
+	 * @param val
 	 *            the value whose inverse tangent is to be returned
 	 * @return the inverse tangent of <code>z</code>
 	 * @throws NullPointerException
@@ -167,7 +167,7 @@ public class ComplexUtils {
 	 * cos(&plusmn;INFINITY &plusmn; INFINITY i) = NaN + NaN i</code>
 	 * </pre>
 	 *
-	 * @param z
+	 * @param val
 	 *            the value whose cosine is to be returned
 	 * @return the cosine of <code>z</code>
 	 * @throws NullPointerException
@@ -216,7 +216,7 @@ public class ComplexUtils {
 	 * <p>
 	 * Throws <code>NullPointerException</code> if z is null.
 	 *
-	 * @param z
+	 * @param val
 	 *            the value whose hyperbolic cosine is to be returned.
 	 * @return the hyperbolic cosine of <code>z</code>.
 	 */
@@ -264,7 +264,7 @@ public class ComplexUtils {
 	 * <p>
 	 * Throws <code>NullPointerException</code> if z is null.
 	 *
-	 * @param z
+	 * @param val
 	 *            the value
 	 * @return <i>e</i><sup><code>z</code></sup>
 	 */
@@ -314,7 +314,7 @@ public class ComplexUtils {
 	 * 
 	 * Throws <code>NullPointerException</code> if z is null.
 	 *
-	 * @param z
+	 * @param val
 	 *            the value.
 	 * @return ln <code>z</code>.
 	 */
@@ -420,7 +420,7 @@ public class ComplexUtils {
 	 *
 	 * Throws <code>NullPointerException</code> if z is null.
 	 *
-	 * @param z
+	 * @param val
 	 *            the value whose sine is to be returned.
 	 * @return the sine of <code>z</code>.
 	 */
@@ -464,7 +464,7 @@ public class ComplexUtils {
 	 * sinh(&plusmn;INFINITY + i) = &plusmn; INFINITY + INFINITY i
 	 * sinh(&plusmn;INFINITY &plusmn; INFINITY i) = NaN + NaN i</code></pre
 	 *
-	 * @param z
+	 * @param val
 	 *            the value whose hyperbolic sine is to be returned
 	 * @return the hyperbolic sine of <code>z</code>
 	 * @throws NullPointerException
@@ -525,7 +525,7 @@ public class ComplexUtils {
 	 * </code>
 	 * </pre>
 	 *
-	 * @param z
+	 * @param val
 	 *            the value whose square root is to be returned
 	 * @return the square root of <code>z</code>
 	 * @throws NullPointerException
@@ -600,7 +600,7 @@ public class ComplexUtils {
 	 * tan(&plusmn;&pi/2 + 0 i) = &plusmn;INFINITY + NaN i</code>
 	 * </pre>
 	 *
-	 * @param z
+	 * @param val
 	 *            the value whose tangent is to be returned
 	 * @return the tangent of <code>z</code>
 	 * @throws NullPointerException
@@ -650,7 +650,7 @@ public class ComplexUtils {
 	 * tanh(0 + (&pi/2)i) = NaN + INFINITY i</code>
 	 * </pre>
 	 *
-	 * @param z
+	 * @param val
 	 *            the value whose hyperbolic tangent is to be returned
 	 * @return the hyperbolic tangent of <code>z</code>
 	 * @throws NullPointerException

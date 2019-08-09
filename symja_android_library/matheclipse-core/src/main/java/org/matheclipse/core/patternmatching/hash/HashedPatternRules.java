@@ -61,31 +61,9 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj instanceof HashedPatternRules) {
+		boolean test = super.equals(obj);
+		if (test && obj instanceof HashedPatternRules) {
 			HashedPatternRules other = (HashedPatternRules) obj;
-			if (hash1 != other.hash1) {
-				return false;
-			}
-			if (hash2 != other.hash2) {
-				return false;
-			}
-			if (fLHSPattern1 == null) {
-				if (other.fLHSPattern1 != null) {
-					return false;
-				}
-			} else if (!fLHSPattern1.equals(other.fLHSPattern1)) {
-				return false;
-			}
-			if (fLHSPattern2 == null) {
-				if (other.fLHSPattern2 != null) {
-					return false;
-				}
-			} else if (!fLHSPattern2.equals(other.fLHSPattern2)) {
-				return false;
-			}
 			if (fCondition == null) {
 				if (other.fCondition != null) {
 					return false;
@@ -103,6 +81,7 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
 			return true;
 		}
 		return false;
+
 	}
 
 	/**

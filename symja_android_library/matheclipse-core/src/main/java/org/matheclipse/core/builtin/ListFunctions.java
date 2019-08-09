@@ -2095,7 +2095,7 @@ public final class ListFunctions {
 							return F.NIL;
 						}
 					}
-					if (indx >= 0 && indx <= list.size()) {
+					if (indx <= list.size()) {
 						return list.get(indx);
 					}
 				} else if (ast.arg2().isList()) {

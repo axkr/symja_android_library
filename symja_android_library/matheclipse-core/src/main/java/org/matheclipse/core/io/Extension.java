@@ -92,7 +92,7 @@ public enum Extension {
 	 * Determine <code>Extension</code> format from the filename's extension. If no <code>Extension</code> can be
 	 * determined return <code>STRING</code>.
 	 * 
-	 * @param extensionString
+	 * @param filename
 	 * @return
 	 */
 	public static Extension importFilename(String filename) {
