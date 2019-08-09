@@ -318,10 +318,11 @@ public class AST2Expr {
 	}
 
 	/**
-	 * Converts a parsed ASTNode expression into an IExpr expression
+	 * Converts a parsed ASTNode expression into a Symja IExpr expression
 	 * 
-	 * @param engine
-	 *            TODO
+	 * @param node
+	 *            the parsed ASTNode
+	 * @return the Symja expression
 	 */
 	private IExpr convertNode(ASTNode node) throws ConversionException {
 		if (node == null) {

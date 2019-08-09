@@ -1017,7 +1017,8 @@ public interface IPatternMap extends Cloneable {
 		/**
 		 * Return the matched value for the given pattern object
 		 * 
-		 * @param pExpr
+		 * @param pattern
+		 *            the pattern object
 		 * @return <code>null</code> if no matched expression exists
 		 */
 		public IExpr getValue(@Nonnull IPatternObject pattern) {
@@ -1437,7 +1438,8 @@ public interface IPatternMap extends Cloneable {
 	/**
 	 * Return the matched value for the given pattern object
 	 * 
-	 * @param pExpr
+	 * @param pattern
+	 *            the pattern object
 	 * @return <code>null</code> if no matched expression exists
 	 */
 	public IExpr getValue(@Nonnull IPatternObject pattern);

@@ -4061,34 +4061,6 @@ public class F {
 	 * Create a pattern for pattern-matching and term rewriting
 	 * 
 	 * @param symbol
-	 * @param check
-	 *            additional condition which should be checked in pattern-matching
-	 * @param defaultValue
-	 *            use this <code>defaultValue</code> in pattern-matching if an argument is optional
-	 * @return IPattern
-	 */
-	// public static IPattern pattern(final ISymbol symbol, final IExpr check, final IExpr defaultValue) {
-	// return org.matheclipse.core.expression.Pattern.valueOf(symbol, check, defaultValue);
-	// }
-
-	/**
-	 * Create a pattern for pattern-matching and term rewriting
-	 * 
-	 * @param symbolName
-	 * @param check
-	 *            additional condition which should be checked in pattern-matching
-	 * @param defaultValue
-	 *            use this <code>defaultValue</code> in pattern-matching if an argument is optional
-	 * @return IPattern
-	 */
-	// public static IPattern $p(@Nonnull final String symbolName, final IExpr check, final IExpr defaultValue) {
-	// return org.matheclipse.core.expression.Pattern.valueOf($s(symbolName), check, defaultValue);
-	// }
-
-	/**
-	 * Create a pattern for pattern-matching and term rewriting
-	 * 
-	 * @param symbol
 	 * @return IPattern
 	 */
 	public static IPatternSequence $ps(final ISymbol symbol) {

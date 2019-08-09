@@ -151,8 +151,6 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 *            factory for coefficients of type C.
 	 * @param listOfVariables
 	 *            names for the variables.
-	 * @param n
-	 *            number of variables.
 	 */
 	public ExprPolynomialRing(ExprRingFactory cf, IAST listOfVariables ) {
 		this(cf, listOfVariables, listOfVariables.argSize(), ExprTermOrderByName.Lexicographic);

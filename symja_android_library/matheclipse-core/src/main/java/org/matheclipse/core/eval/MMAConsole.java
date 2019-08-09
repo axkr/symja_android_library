@@ -215,45 +215,6 @@ public class MMAConsole {
 		}
 	}
 
-	/**
-	 * Load the documentation from resources folder if available and print to output.
-	 * 
-	 * @param symbolName
-	 */
-	// private static void printDocumentation(String symbolName) {
-	// // read markdown file
-	// String fileName = symbolName + ".md";
-	//
-	// // Get file from resources folder
-	// ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-	//
-	// try {
-	// InputStream is = classloader.getResourceAsStream(fileName);
-	// final BufferedReader f = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-	// String line;
-	// boolean emptyLine = false;
-	// while ((line = f.readLine()) != null) {
-	// if (line.startsWith("```")) {
-	// continue;
-	// }
-	// if (line.trim().length() == 0) {
-	// if (emptyLine) {
-	// continue;
-	// }
-	// emptyLine = true;
-	// } else {
-	// emptyLine = false;
-	// }
-	// stdout.println(line);
-	// }
-	// stdout.flush();
-	// f.close();
-	// is.close();
-	// } catch (IOException e) {
-	// e.printStackTrace();
-	// }
-	// }
-
 	private String resultPrinter(String inputExpression) {
 		String outputExpression = interpreter(inputExpression);
 		if (outputExpression.length() > 0) {
@@ -262,12 +223,6 @@ public class MMAConsole {
 		}
 		return outputExpression;
 	}
-
-	// private void prettyPrinter(String inputExpression) {
-	// stdout.println();
-	// String[] outputExpression = prettyPrinter3Lines(inputExpression);
-	// ASCIIPrettyPrinter3.prettyPrinter(stdout, outputExpression, "Out[" + COUNTER + "]: ");
-	// }
 
 	/**
 	 * Prints the usage of how to use this class to stdout

@@ -503,25 +503,6 @@ public interface ISymbol extends IExpr {
 	public boolean ofQ(IExpr... args);
 
 	/**
-	 * Delete the topmost placeholder from the local variable stack
-	 * 
-	 */
-	// public void popLocalVariable();
-
-	/**
-	 * Create a new variable placeholder on the symbols variable stack
-	 * 
-	 */
-	// public void pushLocalVariable();
-
-	/**
-	 * Create a new variable placeholder on the symbols variable stack and set the local value
-	 * 
-	 * @param localValue
-	 */
-	// public void pushLocalVariable(IExpr localValue);
-
-	/**
 	 * Get the ordinal number of this built-in symbol in the enumeration of built-in symbols. If this is no built-in
 	 * symbol return <code>-1</code> (ID.UNKNOWN)
 	 * 

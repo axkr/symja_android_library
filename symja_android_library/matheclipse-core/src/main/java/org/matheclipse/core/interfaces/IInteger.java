@@ -225,7 +225,7 @@ public interface IInteger extends IRational {
 	 * mod(8, 4) == 0
 	 * </pre>
 	 * 
-	 * @param that
+	 * @param m
 	 * @return
 	 * @throws ArithmeticException
 	 *             - if m <= 0

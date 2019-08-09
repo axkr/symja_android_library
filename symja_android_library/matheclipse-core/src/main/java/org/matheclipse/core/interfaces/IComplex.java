@@ -30,7 +30,7 @@ public interface IComplex extends IBigNumber {
 	 * Returns this number raised at the specified exponent. See
 	 * <a href="https://en.wikipedia.org/wiki/Exponentiation_by_squaring">Wikipedia - Exponentiation by squaring</a>
 	 * 
-	 * @param exp
+	 * @param n
 	 *            the exponent.
 	 * @return <code>this<sup>exp</sup></code>
 	 * @throws ArithmeticException

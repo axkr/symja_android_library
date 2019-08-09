@@ -930,7 +930,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * Find the first argument position, which fulfills the <code>predicate</code>. The search starts at index
 	 * <code>1</code>.
 	 * 
-	 * @param expr
+	 * @param predicate
 	 * @return <code>-1</code> if no position was found
 	 */
 	public int indexOf(Predicate<? super IExpr> predicate);
@@ -1303,7 +1303,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and remove the
 	 * element at the given <code>position</code>.
 	 * 
-	 * @param i
+	 * @param position
 	 * @return an IAST with removed element at the given position.
 	 */
 	public IASTMutable removeAtCopy(int position);

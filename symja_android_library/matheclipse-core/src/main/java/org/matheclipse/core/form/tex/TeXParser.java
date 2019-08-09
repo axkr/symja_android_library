@@ -355,51 +355,6 @@ public class TeXParser {
 	}
 
 	/**
-	 * Get the position there the <code>d</code> of the the <code>dx</code> in the integral definition ends.
-	 * 
-	 * @param parentList
-	 * @param start
-	 * @return
-	 */
-	// private Object[] dxPosition(NodeList list, int start) {
-	// Object[] result = null;
-	// int[] dxPosition = new int[] { start };
-	// while (dxPosition[0] < list.getLength()) {
-	// Node nd = list.item(dxPosition[0]++);
-	// if (nd.getNodeName().equals("mi") && //
-	// nd.getTextContent().equals("d")) {
-	// if (dxPosition[0] < list.getLength()) {
-	// nd = list.item(dxPosition[0]);
-	// if (nd.getNodeName().equals("mi")) {
-	// result = new Object[4];
-	// result[0] = new Integer(dxPosition[0]);
-	// IExpr x = identifier(list, dxPosition);
-	// result[1] = new Integer(dxPosition[0]);
-	// result[2] = x;
-	// result[3] = F.C1;
-	// break;
-	// }
-	// }
-	// } else if (nd.getNodeName().equals("mfrac")) {
-	// IExpr frac = mfrac(nd.getChildNodes());
-	// if (frac.isTimes() && frac.first().isSymbol()) {
-	// ISymbol d = (ISymbol) frac.first();
-	// String dStr = ((ISymbol) d).getSymbolName();
-	// if (dStr.startsWith("d")) {
-	// result = new Object[4];
-	// result[0] = new Integer(dxPosition[0]);
-	// result[1] = new Integer(dxPosition[0]);
-	// result[2] = F.$s(dStr.substring(1));
-	// result[3] = frac.second();
-	// break;
-	// }
-	// }
-	// }
-	// }
-	// return result;
-	// }
-
-	/**
 	 * Create an identifier from multiple <code>&lt;mi&gt;</code> expressions.
 	 * 
 	 * @param list
@@ -635,13 +590,14 @@ public class TeXParser {
 						arg2 = F.List(dummySymbol, a1);
 					}
 				}
-
-				while (position[0] < parentList.getLength()) {
-					if (head.equals(F.Integrate)) {
-						return integrate(parentList, position, dummySymbol, arg2);
-					} else {
-						IExpr arg1 = convert(parentList, position, null, Integer.MAX_VALUE);
-						return F.binaryAST2(head, arg1, arg2);
+				if (parentList != null) {
+					while (position[0] < parentList.getLength()) {
+						if (head.equals(F.Integrate)) {
+							return integrate(parentList, position, dummySymbol, arg2);
+						} else {
+							IExpr arg1 = convert(parentList, position, null, Integer.MAX_VALUE);
+							return F.binaryAST2(head, arg1, arg2);
+						}
 					}
 				}
 			}
@@ -706,7 +662,7 @@ public class TeXParser {
 					}
 				}
 
-				if (position[0] < parentList.getLength()) {
+				if (parentList != null && position[0] < parentList.getLength()) {
 					IExpr arg1 = convert(parentList, position, null, Integer.MAX_VALUE);
 					return F.binaryAST2(head, arg1, arg2);
 				}
