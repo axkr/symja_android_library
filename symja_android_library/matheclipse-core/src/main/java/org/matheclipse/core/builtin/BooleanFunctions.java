@@ -203,7 +203,7 @@ public final class BooleanFunctions {
 			int index = 1;
 			IExpr temp = F.NIL;
 
-			IAST flattenedAST = EvalAttributes.flatten(ast);
+			IAST flattenedAST = EvalAttributes.flattenDeep(ast);
 			if (flattenedAST.isPresent()) {
 				evaled = true;
 			} else {
@@ -1396,11 +1396,15 @@ public final class BooleanFunctions {
 		}
 
 		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			if (ast.size() <= 2) {
 				return F.True;
 			}
 
+			IASTAppendable flattened;
+			if ((flattened = EvalAttributes.flattenDeep(ast)).isPresent()) {
+				ast = flattened;
+			}
 			IExpr temp = engine.evalAttributes((ISymbol) ast.head(), ast);
 			if (temp.isPresent()) {
 				return temp;
@@ -1487,7 +1491,7 @@ public final class BooleanFunctions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.FLAT);
+			// don't assign ISymbol.FLAT
 		}
 
 		/**
@@ -2105,7 +2109,7 @@ public final class BooleanFunctions {
 				}
 			}
 
-			IAST resultList = EvalAttributes.flatten(F.List, ast);
+			IAST resultList = EvalAttributes.flattenDeep(F.List, ast);
 			if (resultList.isPresent()) {
 				return maximum(resultList, true);
 			}
@@ -2244,7 +2248,7 @@ public final class BooleanFunctions {
 				}
 			}
 
-			IAST resultList = EvalAttributes.flatten(F.List, ast);
+			IAST resultList = EvalAttributes.flattenDeep(F.List, ast);
 			if (resultList.isPresent()) {
 				return minimum(resultList, true);
 			}
@@ -2826,7 +2830,7 @@ public final class BooleanFunctions {
 			}
 
 			boolean evaled = false;
-			IAST flattenedAST = EvalAttributes.flatten(ast);
+			IAST flattenedAST = EvalAttributes.flattenDeep(ast);
 			if (flattenedAST.isPresent()) {
 				evaled = true;
 			} else {
@@ -3780,7 +3784,7 @@ public final class BooleanFunctions {
 		}
 		return F.NIL;
 	}
-	
+
 	/**
 	 * If the <code>IQuantity#equals()</code> method could be executed because the same unit types could be derived for
 	 * comparison, return the result <code>F.True or F.False</code> otherwise return <code>F.NIL</code>.

@@ -163,7 +163,7 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 			IAST temp;
 			if (f.topHead().hasFlatAttribute()) {
 				// associative
-				if ((temp = EvalAttributes.flatten(f)).isPresent()) {
+				if ((temp = EvalAttributes.flattenDeep(f)).isPresent()) {
 					ast = temp;
 				}
 			}

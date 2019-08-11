@@ -1479,7 +1479,7 @@ public class Algebra {
 			}
 
 			private static IExpr flattenOneIdentity(IAST result, IExpr defaultValue) {
-				return EvalAttributes.flatten(result).orElse(result).oneIdentity(defaultValue);
+				return EvalAttributes.flattenDeep(result).orElse(result).oneIdentity(defaultValue);
 			}
 
 			/**

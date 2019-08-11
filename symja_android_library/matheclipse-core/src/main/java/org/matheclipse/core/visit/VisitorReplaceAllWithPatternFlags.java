@@ -89,7 +89,7 @@ public class VisitorReplaceAllWithPatternFlags extends VisitorReplaceAll {
 
 				if (result.isAST()) {
 					if (result.isFlatAST()) {
-						IASTAppendable flattened = EvalAttributes.flatten((IAST) result);
+						IASTAppendable flattened = EvalAttributes.flattenDeep((IAST) result);
 						if (flattened.isPresent()) {
 							result = flattened;
 						}

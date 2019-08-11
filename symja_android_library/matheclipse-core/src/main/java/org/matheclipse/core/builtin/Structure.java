@@ -479,7 +479,7 @@ public class Structure {
 			if (arg1.isAST()) {
 				IAST arg1AST = (IAST) arg1;
 				if (ast.isAST1()) {
-					IAST resultList = EvalAttributes.flatten(arg1AST.topHead(), (IAST) arg1);
+					IAST resultList = EvalAttributes.flattenDeep(arg1AST.topHead(), (IAST) arg1);
 					if (resultList.isPresent()) {
 						return resultList;
 					}
