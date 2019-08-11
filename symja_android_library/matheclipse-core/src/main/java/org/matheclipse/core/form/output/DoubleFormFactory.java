@@ -423,6 +423,15 @@ public abstract class DoubleFormFactory {
 			buf.append("Math.PI");
 			return;
 		}
+		if (symbol.isConstantAttribute()) {
+			try {
+				double value = EvalEngine.get().evalDouble(symbol);
+				buf.append("(" + value + ")");
+				return;
+			} catch (RuntimeException rex) {
+				//
+			}
+		}
 		Context context = symbol.getContext();
 		if (context == Context.DUMMY) {
 			append(buf, symbol.getSymbolName());

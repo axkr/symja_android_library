@@ -4,6 +4,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -26,7 +27,10 @@ public class ParametricPlot extends AbstractEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (Config.USE_MATHCELL) {
-			return F.Manipulate.of(engine, ast);
+			IExpr temp = F.Manipulate.of(engine, ast);
+			if (temp.headID() == ID.JSFormData) {
+				return temp;
+			}
 		}
 		return F.NIL;
 	}

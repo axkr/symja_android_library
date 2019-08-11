@@ -15,6 +15,7 @@ import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.graphics.Dimensions2D;
 import org.matheclipse.core.interfaces.IAST;
@@ -35,7 +36,10 @@ public class ListPlot3D extends AbstractEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (Config.USE_MATHCELL) {
-			return F.Manipulate.of(engine, ast);
+			IExpr temp = F.Manipulate.of(engine, ast);
+			if (temp.headID() == ID.JSFormData) {
+				return temp;
+			}
 		}
 		return F.NIL;
 	}

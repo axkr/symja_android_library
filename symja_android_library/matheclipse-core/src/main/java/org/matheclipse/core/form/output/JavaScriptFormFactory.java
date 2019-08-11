@@ -36,6 +36,7 @@ import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.math.MathException;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
@@ -338,6 +339,9 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 					buf.append(")");
 					return;
 				}
+			}
+			if (function.headID() > 0) {
+				throw new MathException("illegal JavaScript arg");
 			}
 		} else {
 			if (function.isPower()) {

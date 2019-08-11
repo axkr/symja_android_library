@@ -12,6 +12,7 @@ import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.generic.BinaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -38,7 +39,10 @@ public class Plot3D extends AbstractEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (Config.USE_MATHCELL) {
-			return F.Manipulate.of(engine, ast);
+			IExpr temp = F.Manipulate.of(engine, ast);
+			if (temp.headID() == ID.JSFormData) {
+				return temp;
+			}
 		}
 		// ISymbol optionsArray[] = new ISymbol[] { f.BoxRatios, f.PlotRange };
 		if ((ast.size() >= 4) && ast.arg2().isList() && ast.arg3().isList()) {
