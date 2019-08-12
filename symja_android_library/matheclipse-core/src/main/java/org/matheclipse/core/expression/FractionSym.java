@@ -176,28 +176,28 @@ public class FractionSym extends AbstractFractionSym {
 
 	@Override
 	public int compareTo(IExpr expr) {
-		if (expr instanceof IRational) {
-			if (expr instanceof FractionSym) {
-				FractionSym temp = (FractionSym) expr;
-				if (temp.fDenominator == fDenominator) {
-					return fNumerator < temp.fNumerator ? -1 : fNumerator == temp.fNumerator ? 0 : 1;
-				}
-				long valt = (long) fNumerator * (long) temp.fDenominator;
-				long valo = (long) fDenominator * (long) temp.fNumerator;
-				return valt < valo ? -1 : valt == valo ? 0 : 1;
+		if (expr instanceof FractionSym) {
+			final FractionSym temp = (FractionSym) expr;
+			final int numerator = temp.fNumerator;
+			if (temp.fDenominator == fDenominator) {
+				return (fNumerator < numerator) ? -1 : ((fNumerator == numerator) ? 0 : 1);
 			}
-			if (expr instanceof AbstractIntegerSym) {
-				return compareTo(new BigFractionSym(((AbstractIntegerSym) expr).toBigNumerator(), BigInteger.ONE));
-			}
-			if (expr instanceof BigFractionSym) {
+			long valt = (long) fNumerator * (long) temp.fDenominator;
+			long valo = (long) fDenominator * (long) numerator;
+			return valt < valo ? -1 : valt == valo ? 0 : 1;
+		} else if (expr instanceof IRational) {
+			if (expr instanceof IntegerSym) {
+				return compareInt(((IntegerSym) expr).fIntValue);
+			} else if (expr instanceof BigIntegerSym) {
+				return new BigFractionSym(((AbstractIntegerSym) expr).toBigNumerator().negate(), BigInteger.ONE)
+						.compareTo(this);
+			} else if (expr instanceof BigFractionSym) {
 				return -expr.compareTo(this);
 			}
-		}
-		if (expr.isReal()) {
+		} else if (expr.isReal()) {
 			return Double.compare(doubleValue(), ((ISignedNumber) expr).doubleValue());
 		}
 		return -1;
-		// return super.compareTo(expr);
 	}
 
 	@Override

@@ -168,7 +168,7 @@ public class Num implements INum {
 		if (expr.isReal()) {
 			return Double.compare(fDouble, ((ISignedNumber) expr).doubleValue());
 		}
-		return INum.super.compareTo(expr);
+		return -1; //INum.super.compareTo(expr);
 	}
 
 	@Override

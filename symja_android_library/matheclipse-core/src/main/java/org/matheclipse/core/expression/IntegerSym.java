@@ -131,28 +131,27 @@ public class IntegerSym extends AbstractIntegerSym {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as this
-	 * expression is canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive
+	 * integer as this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
+		if (expr instanceof IntegerSym) {
+			final int num = ((IntegerSym) expr).fIntValue;
+			return (fIntValue < num) ? -1 : ((num == fIntValue) ? 0 : 1);
+		}
 		if (expr instanceof IRational) {
-			if (expr instanceof IntegerSym) {
-				int num = ((IntegerSym) expr).fIntValue;
-				return fIntValue < num ? -1 : num == fIntValue ? 0 : 1;
+			if (expr instanceof AbstractFractionSym) {
+				return -((AbstractFractionSym) expr).compareTo(AbstractFractionSym.valueOf(fIntValue));
 			}
 			if (expr instanceof BigIntegerSym) {
 				return -expr.compareTo(this);
 			}
-			if (expr instanceof AbstractFractionSym) {
-				return -((AbstractFractionSym) expr).compareTo(AbstractFractionSym.valueOf(fIntValue));
-			}
-		}
-		if (expr.isReal()) {
+		} else if (expr.isReal()) {
 			return Double.compare(fIntValue, ((ISignedNumber) expr).doubleValue());
 		}
 		return -1;
-//		return super.compareTo(expr);
+		// return super.compareTo(expr);
 	}
 
 	@Override
@@ -705,8 +704,10 @@ public class IntegerSym extends AbstractIntegerSym {
 	 * Returns the nth-root of this integer.
 	 * 
 	 * @return <code>k<code> such as <code>k^n <= this < (k + 1)^n</code>
-	 * @throws IllegalArgumentException if {@code this < 0}
-	 * @throws ArithmeticException      if this integer is negative and n is even.
+	 * @throws IllegalArgumentException
+	 *             if {@code this < 0}
+	 * @throws ArithmeticException
+	 *             if this integer is negative and n is even.
 	 */
 	@Override
 	public IExpr nthRoot(int n) throws ArithmeticException {
@@ -866,8 +867,8 @@ public class IntegerSym extends AbstractIntegerSym {
 	/**
 	 * Returns the integer square root of this integer.
 	 * 
-	 * @return <code>k<code> such as <code>k^2 <= this < (k + 1)^2</code>. If this integer is negative or it's impossible to find a
-	 *         square root return <code>F.Sqrt(this)</code>.
+	 * @return <code>k<code> such as <code>k^2 <= this < (k + 1)^2</code>. If this integer is negative or it's
+	 *         impossible to find a square root return <code>F.Sqrt(this)</code>.
 	 */
 	public IExpr sqrt() {
 		try {
