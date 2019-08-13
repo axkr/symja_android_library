@@ -1084,12 +1084,11 @@ public abstract class DoubleFormFactory {
 
 	public static Operator getOperator(ISymbol head) {
 		Operator operator = null;
-		if (head == F.Plus || head == F.Times) {
-			if (head == F.Plus) {
-				operator = ASTNodeFactory.MMA_STYLE_FACTORY.get("Plus");
-			} else if (head == F.Times) {
-				operator = ASTNodeFactory.MMA_STYLE_FACTORY.get("Times");
-			}
+		if (head == F.Plus || head == F.Times || head == F.Equal || head == F.Unequal || head == F.Less
+				|| head == F.LessEqual || head == F.Greater || head == F.GreaterEqual || head == F.And || head == F.Or
+				|| head == F.Not) {
+			String str = head.toString();
+			operator = ASTNodeFactory.MMA_STYLE_FACTORY.get(str);
 		}
 		return operator;
 	}

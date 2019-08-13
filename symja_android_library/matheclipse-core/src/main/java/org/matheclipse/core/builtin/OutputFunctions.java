@@ -365,7 +365,7 @@ public final class OutputFunctions {
 				if (Config.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
-				return engine.printMessage("JavaForm: " + rex.getMessage());
+				return engine.printMessage("JSForm: " + rex.getMessage());
 			}
 		}
 
