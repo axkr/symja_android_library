@@ -41,8 +41,8 @@ public class UnaryNumerical implements Function<IExpr, IExpr>, UnivariateDiffere
 		fVariable = v;
 		fFunction = fn;
 		fEngine = engine;
-		IExpr temp = engine.evaluate(F.D(fFunction, fVariable));
 		if (firstDerivative) {
+			IExpr temp = engine.evaluate(F.D(fFunction, fVariable));
 			fFirstDerivative = new UnaryNumerical(temp, fVariable, engine, false);
 		}
 	}
