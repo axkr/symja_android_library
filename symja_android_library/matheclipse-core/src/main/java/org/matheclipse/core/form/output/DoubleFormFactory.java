@@ -1082,7 +1082,7 @@ public abstract class DoubleFormFactory {
 		return false;
 	}
 
-	public static Operator getOperator(ISymbol head) {
+	public Operator getOperator(ISymbol head) {
 		Operator operator = null;
 		if (head == F.Plus || head == F.Times || head == F.Equal || head == F.Unequal || head == F.Less
 				|| head == F.LessEqual || head == F.Greater || head == F.GreaterEqual || head == F.And || head == F.Or
@@ -1370,6 +1370,15 @@ public abstract class DoubleFormFactory {
 	 * @throws IOException
 	 */
 	public void convertAST(final Appendable buf, final IAST function) throws IOException {
+		if (function.isNumericFunction()) {
+			try {
+				double value = EvalEngine.get().evalDouble(function);
+				buf.append("(" + value + ")");
+				return;
+			} catch (RuntimeException rex) {
+				//
+			}
+		}
 		IExpr head = function.head();
 		if (head.isSymbol()) {
 			String str = functionHead((ISymbol) head);
