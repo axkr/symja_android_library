@@ -180,10 +180,7 @@ public class ManipulateFunction {
 				} else {
 					function.append("function z1(");
 					function.append(OutputFunctions.toJavaScript(plotSymbolX));
-					function.append(") { ");
-					if (!plot.arg1().isAST(F.Piecewise)) {
-						function.append("return ");
-					}
+					function.append(") { return "); 
 					function.append(OutputFunctions.toJavaScript(plot.arg1()));
 					function.append("; }\n");
 				}
