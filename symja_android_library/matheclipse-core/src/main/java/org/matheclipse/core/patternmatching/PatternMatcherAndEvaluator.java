@@ -314,6 +314,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	public final IPatternMap determinePatterns() {
 		int[] result = new int[] { IPatternMap.DEFAULT_RULE_PRIORITY };
 		IPatternMap patternMap = IPatternMap.determinePatterns(fLhsPatternExpr, result);
+		fLHSPriority=result[0];
 		// int result = super.determinePatterns();
 		if (fRightHandSide != null) {
 			if (fRightHandSide.isCondition()) {

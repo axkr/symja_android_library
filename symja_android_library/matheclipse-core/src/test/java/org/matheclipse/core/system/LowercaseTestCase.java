@@ -1273,7 +1273,25 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBlankSequence() {
-		check("f(x__,y__,z__):={x,y,z}/;Print({x},{y},{z})", //
+		
+		check("Clear(f);f(___,y__?(#>2&)):={y}", //
+				"");
+		check("{f(2,3),f(1,1,1,2),f(112,1,1,3,4)}", //
+				"{{3},f(1,1,1,2),{3,4}}");
+		
+		check("Clear(f);f(x__Integer)=2", //
+				"2");
+		check("{f(2,3),f(a,2),f(2,a),f(2)}", //
+				"{2,f(a,2),f(2,a),2}");
+		
+		check("Clear(f);f(x__Real) := Plus(x)/Length({x})", //
+				"");
+		check("{f(1.0,4.0),f(2,2),f(1.0,a)}", //
+				"{2.5,f(2,2),f(1.0,a)}");
+
+		
+		
+		check("Clear(f);f(x__,y__,z__):={x,y,z}/;Print({x},{y},{z})", //
 				"");
 		check("f(a,b,c,d,e)", "f(a,b,c,d,e)");
 		// print the possible matches
@@ -2678,6 +2696,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCondition() {
+		check("q(i_,j_):=q(i,j)=q(i-1,j)+q(i,j-1);q(i_,j_)/;i<0||j<0=0;q(0,0)=1", //
+				"1");
+		check("Definition(q)", //
+				"Attributes(q)={}\n" + "q(0,0)=1\n" + "q(i_,j_)=0/;i<0||j<0\n"
+						+ "q(i_,j_):=q(i,j)=q(-1+i,j)+q(i,-1+j)");
+		check("q(5,5)", //
+				"252");
+
+		check("Condition(Condition(cond(x_),x>1),x<2):=Denominator(x)", //
+				"");
+		check("cond(3/2)", //
+				"2");
+		check("cond(0)", //
+				"cond(0)");
+
 		check("x /; x > 0", //
 				"x/;x>0");
 		check("x /; (10==10)", //
@@ -7087,6 +7120,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Function(And(Equal(a, b), Equal(c, d)))");
 		check("FullForm(Mod(#, 3) == 1 && Mod(#, 5) == 1 &)", //
 				"Function(And(Equal(Mod(Slot(1), 3), 1), Equal(Mod(Slot(1), 5), 1)))");
+
+		check("({#1,Plus(##2)}&) @@@(Range/@Range(2,3))", "{{1,2},{1,5}}");
+		check("(#[[1]]+#[[2]]&) /@{{1,2},{3,4,5},{6,7}}", "{3,7,13}");
+		check("((#+##&) @@#&) /@{{1,2},{2,2,2},{3,4}}", "{4,8,10}");
+
+		check("Function({x,y},x y)[2,3]", "6");
+		check("Function(x,2 x)[5]", "10");
+		check("(Function@@{{x},x==2})[2]", "True");
 	}
 
 	public void testFunctionExpand() {
@@ -11645,6 +11686,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testReplaceRepeated() {
+
+		check("f(g(x),y)//.{f(x_,y_):>k(g(x),g(y)),g(g(x_)):>g(x)}", //
+				"k(g(x),g(y))");
+		check("x//.x -> 1", //
+				"1");
+
 		check("a+b+c //. c->d", //
 				"a+b+d");
 		check("logrules = {Log(x_ * y_) :> Log(x) + Log(y), Log(x_^y_) :> y * Log(x)};", //
@@ -14653,6 +14700,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testReplace() {
+
+		check("Replace(x,x -> 1)", //
+				"1");
+		check("Replace({x,y},x -> 1)", //
+				"{x,y}");
+		check("Replace({x,y},{_,_} -> 1)", //
+				"1");
+		check("Replace({x,y,z},x -> 1,1)", //
+				"{1,y,z}");
+		check("Replace({{x},x,{{x}}},x -> 1,2)", //
+				"{{1},1,{{x}}}");
+		check("Replace({x,{x}},x -> 1,{2})", //
+				"{x,{1}}");
+		check("Replace({x,x(x)},x -> 1,2)", //
+				"{1,x(1)}");
+
 		// By default, only the top level is searched for matches
 		check("Replace(1 + x, {x -> 2})", //
 				"1+x");
@@ -14698,6 +14761,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testReplaceAll() {
+
+		check("{x,y,z}/.x -> 1", "{1,y,z}");
+		check("{x(x),y}/.x -> 1", "{1[1],y}");
+		check("{{x,y}}/.x:>Sequence[2,3]", "{{2,3,y}}");
+		check("{{x,y},y}/.{_,_} -> {1,1}", "{1,1}");
+
 		check("{x,Sin(x),x^2,x*y,x+y,g(y,x),h(x,y,z)} /. f_Power :> (f /. x->10)", //
 				"{x,Sin(x),100,x*y,x+y,g(y,x),h(x,y,z)}");
 		check("{x,Sin(x),x^2,x*y,x+y,g(y,x),h(x,y,z)} /. Sin(x_) -> Sin(10)", //
@@ -18088,6 +18157,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{2^a+a,2^(a+b)+a+b,2^(a+2*b)+a+2*b,2^(a+3*b)+a+3*b,2^(a+4*b)+a+4*b,2^(a+5*b)+a+5*b}");
 		check("Table(a, {a, Pi, 2*Pi, Pi / 2})", //
 				"{Pi,3/2*Pi,2*Pi}");
+
+		check("b := 3 ; a := 1+b ; Length(Table(a*x^2,{x,-1.0,1.0605456,0.060606062},{y,-a+b^2,a+b^2,0.160606062}))", //
+				"34");
 	}
 
 	public void testTake() {

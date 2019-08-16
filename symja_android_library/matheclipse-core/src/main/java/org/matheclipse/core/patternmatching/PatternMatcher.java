@@ -321,6 +321,9 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			int[] priority = new int[] { IPatternMap.DEFAULT_RULE_PRIORITY };
 			fPatternMap = determinePatterns(priority);
 			this.fLHSPriority = priority[0];
+			if (patternExpr.isCondition()) {
+				this.fLHSPriority -= 100;
+			}
 		}
 	}
 
@@ -635,7 +638,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 					return true;
 				}
 				final int lastPosition = lhsPatternAST.argSize();
-				if (lhsPatternAST.get(lastPosition).isAST(F.PatternTest, 3)) {
+				if (lastPosition == 1 && lhsPatternAST.get(lastPosition).isAST(F.PatternTest, 3)) {
 					if (lhsPatternAST.size() <= lhsEvalSize) {
 						IAST patternTest = (IAST) lhsPatternAST.get(lastPosition);
 						if (patternTest.arg1().isPatternSequence(false)) {

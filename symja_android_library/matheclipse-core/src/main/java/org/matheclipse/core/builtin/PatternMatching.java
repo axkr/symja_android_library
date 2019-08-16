@@ -1420,7 +1420,7 @@ public final class PatternMatching {
 	private static IExpr setDownRule(IExpr leftHandSide, int flags, IExpr rightHandSide, boolean packageMode) {
 		// final Object[] result = new Object[] { null, rightHandSide };
 		if (leftHandSide.isAST()) {
-			final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
+			final ISymbol lhsSymbol = determineRuleTag((IAST) leftHandSide);
 			if (lhsSymbol.isProtected()) {
 				IOFunctions.printMessage(F.SetDelayed, "write", F.List(lhsSymbol, leftHandSide), EvalEngine.get());
 				throw new FailedException();
@@ -1439,6 +1439,20 @@ public final class PatternMatching {
 		}
 
 		throw new RuleCreationError(leftHandSide);
+	}
+
+	private static ISymbol determineRuleTag(IExpr leftHandSide) {
+		while (leftHandSide.isCondition()) {
+			if (leftHandSide.first().isAST()) {
+				leftHandSide = (IAST) leftHandSide.first();
+				continue;
+			}
+			break;
+		}
+		if (leftHandSide.isSymbol()) {
+			return (ISymbol) leftHandSide;
+		}
+		return leftHandSide.topHead();
 	}
 
 	public static IExpr setDownRule(int flags, IExpr leftHandSide, IExpr rightHandSide, boolean packageMode) {
@@ -1471,7 +1485,8 @@ public final class PatternMatching {
 				symbol.putMessage(IPatternMatcher.SET_DELAYED, messageName, message);
 				return;
 			}
-			final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
+			final ISymbol lhsSymbol = determineRuleTag((IAST) leftHandSide);
+			// final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
 			if (lhsSymbol.isProtected()) {
 				IOFunctions.printMessage(F.SetDelayed, "write", F.List(lhsSymbol, leftHandSide), EvalEngine.get());
 				throw new FailedException();

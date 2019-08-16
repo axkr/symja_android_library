@@ -599,7 +599,7 @@ public final class RulesData implements Serializable {
 
 		final PatternMatcherAndEvaluator pmEvaluator;
 		int patternHash = 0;
-		if (!isComplicatedPatternRule(leftHandSide)) {
+		if (!isComplicatedPatternRule(leftHandSide) && !leftHandSide.isCondition()) {
 			patternHash = ((IAST) leftHandSide).patternHashCode();
 		}
 		if (leftHandSide.isAST(F.Integrate)) {
