@@ -58,9 +58,9 @@ To get an idea of the kinds of expressions Symja handles, see the [tests in this
 
 > [D(Sin(x^3), x)](http://matheclipse.org/input?i=D(Sin(x^3),%20x))
 
-> [Factor(-1+x^16)](matheclipse.org/input?i=Factor(-1%2Bx^16))
+> [Factor(-1+x^16)](http://matheclipse.org/input?i=Factor(-1%2Bx^16))
 
-> [Manipulate(Plot3D(Sin(a*x*y), {x, -1.5, 1.5}, {y, -1.5, 1.5}), {a,1,5})](http://matheclipse.org/input?i=Manipulate(Plot3D(Sin(a*x*y),%20{x,%20-1.5,%201.5},%20{y,%20-1.5,%201.5}),%20{a,1,5}))
+> [Manipulate(Plot3D(Sin(a * x * y), {x, -1.5, 1.5}, {y, -1.5, 1.5}), {a,1,5})](http://matheclipse.org/input?i=Manipulate(Plot3D(Sin(a*x*y),%20{x,%20-1.5,%201.5},%20{y,%20-1.5,%201.5}),%20{a,1,5}))
  
 >[Plot(Piecewise({{x^2, x < 0}, {x, x >= 0&&x<1},{Cos(x-1), x >= 1}}), {x, -2, 12})](http://matheclipse.org/input?i=Plot(Piecewise({{x^2,%20x%20%3C%200},%20{x,%20x%20%3E=%200%26%26x%3C1},{Cos(x-1),%20x%20%3E=%201}}),%20{x,%20-2,%2012}))
 
