@@ -54,61 +54,51 @@ To get an idea of the kinds of expressions Symja handles, see the [tests in this
 
 #### Web Examples
 
- 
->> [Manipulate(Plot3D(Sin(a*x*y), {x, -1.5, 1.5}, {y, -1.5, 1.5}), {a,1,5})](http://matheclipse.org/input?i=Manipulate(Plot3D(Sin(a*x*y),%20{x,%20-1.5,%201.5},%20{y,%20-1.5,%201.5}),%20{a,1,5}))
- 
->> [Plot(Piecewise({{x^2, x < 0}, {x, x >= 0&&x<1},{Cos(x-1), x >= 1}}), {x, -2, 12})](http://matheclipse.org/input?i=Plot(Piecewise({{x^2,%20x%20%3C%200},%20{x,%20x%20%3E=%200%26%26x%3C1},{Cos(x-1),%20x%20%3E=%201}}),%20{x,%20-2,%2012}))
+> [FactorInteger(2^15-5)](http://matheclipse.org/input?i=FactorInteger(2^15-5))
 
+> [D(Sin(x^3), x)](http://matheclipse.org/input?i=D(Sin(x^3),%20x))
+
+> [Factor(-1+x^16)](matheclipse.org/input?i=Factor(-1%2Bx^16))
+
+> [Manipulate(Plot3D(Sin(a*x*y), {x, -1.5, 1.5}, {y, -1.5, 1.5}), {a,1,5})](http://matheclipse.org/input?i=Manipulate(Plot3D(Sin(a*x*y),%20{x,%20-1.5,%201.5},%20{y,%20-1.5,%201.5}),%20{a,1,5}))
+ 
+>[Plot(Piecewise({{x^2, x < 0}, {x, x >= 0&&x<1},{Cos(x-1), x >= 1}}), {x, -2, 12})](http://matheclipse.org/input?i=Plot(Piecewise({{x^2,%20x%20%3C%200},%20{x,%20x%20%3E=%200%26%26x%3C1},{Cos(x-1),%20x%20%3E=%201}}),%20{x,%20-2,%2012}))
+
+> [Refine(Abs(n*Abs(m)),n<0)](http://matheclipse.org/input?i=Refine(Abs(n*Abs(m)),%20n%3C0))
+
+> [Inverse({{1,2},{3,4}})](http://matheclipse.org/input?i=Inverse({{1,2},{3,4}}))
+
+> [Det({{1,2},{3,4}})](http://matheclipse.org/input?i=Det({{1,2},{3,4}}))
+
+> [Integrate(Cos(x)^5, x)](http://matheclipse.org/input?i=Integrate(Cos(x)^5,%20x))
 
 ```mma
->>> 24/60
+>> 24/60
 2/5
 
->>> N(24/60)
+>> N(24/60)
 0.4
 
->>> sin(30*degree)
+>> sin(30*degree)
 1/2
 
->>> sin(pi/2)
+>> sin(pi/2)
 1
 
->>> a+a+4*b^2+3*b^2
+>> a+a+4*b^2+3*b^2
 2*a+7*b^2
 
->>> solve({x^2-11==y, x+y==-9}, {x,y})
+>> solve({x^2-11==y, x+y==-9}, {x,y})
 {{x->-2,y->-7},{x->1,y->-10}}
 
->>> dsolve({y'(x)==y(x)+2,y(0)==1},y(x), x)
+>> dsolve({y'(x)==y(x)+2,y(0)==1},y(x), x)
 {{y(x)->-2+3*E^x}}
-
->>> integrate(cos(x)^5, x)
--2/3*Sin(x)^3+Sin(x)^5/5+Sin(x)
-
->>> D(sin(x^3), x)
-3*x^2*Cos(x^3)
-
->>> factor(-1+x^16)
-(-1+x)*(1+x)*(1+x^2)*(1+x^4)*(1+x^8)
-
->>> factor(5+x^12, Modulus->7)
+ 
+>> factor(5+x^12, Modulus->7)
 (2+x^3)*(4+x^6)*(5+x^3)
 
->>> expand((-1+x)*(1+x)*(1+x^2)*(1+x^4)*(1+x^8))
--1+x^16
-
->>> det({{1,2},{3,4}})
--2
-
->>> inverse({{1,2},{3,4}})
-{{-2,1},
- {3/2,-1/2}}
-
->>> factorinteger(2^15-5)
-{{3,1},{67,1},{163,1}}
-
->>> refine(abs(n*abs(m)), n<0)
--n*Abs(m)
+>> expand((-1+x)*(1+x)*(1+x^2)*(1+x^4)*(1+x^8))
+-1+x^16 
 ```
 
 
