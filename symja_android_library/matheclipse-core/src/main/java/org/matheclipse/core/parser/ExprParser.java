@@ -172,44 +172,67 @@ public class ExprParser extends Scanner {
 	}
 
 	private IExpr convert(IASTMutable ast) {
-		IExpr head = ast.head();
-		IExpr expr = F.NIL;
-		if (ast.isAST(F.Hold) || ast.isAST(F.HoldForm)) {
-			return ast;
-		} else if (ast.isAST(F.N, 3)) {
-			return convertN(ast);
-		} else if (ast.isAST(F.Sqrt, 2)) {
-			// rewrite from input: Sqrt(x) => Power(x, 1/2)
-			return F.Power(ast.arg1(), F.C1D2);
-		} else if (ast.isAST(F.Exp, 2)) {
-			// rewrite from input: Exp(x) => E^x
-			return F.Power(F.E, ast.arg1());
-		} else if (ast.isPower() && ast.base().isPower() && ast.exponent().isMinusOne()) {
-			IAST arg1Power = (IAST) ast.base();
-			if (arg1Power.exponent().isNumber()) {
-				// Division operator
-				// rewrite from input: Power(Power(x, <number>),-1) => Power(x,
-				// - <number>)
-				return F.Power(arg1Power.base(), arg1Power.exponent().negate());
+		int headID = ast.headID();
+		if (headID >= ID.Blank) {
+			IExpr expr = F.NIL;
+			// ID.Blank is lowest integer >ID in switch statement
+			switch (headID) {
+			case ID.Exp:
+				if (ast.isAST(F.Exp, 2)) {
+					// rewrite from input: Exp(x) => E^x
+					return F.Power(F.E, ast.arg1());
+				}
+				break;
+
+			case ID.Hold:
+			case ID.HoldForm:
+				return ast; 
+
+			case ID.N:
+				if (ast.isAST(F.N, 3)) {
+					return convertN(ast);
+				}
+				break;
+
+			case ID.Sqrt:
+				if (ast.isAST(F.Sqrt, 2)) {
+					// rewrite from input: Sqrt(x) => Power(x, 1/2)
+					return F.Power(ast.arg1(), F.C1D2);
+				}
+				break;
+
+			case ID.Power:
+				if (ast.isPower() && ast.base().isPower() && ast.exponent().isMinusOne()) {
+					IAST arg1Power = (IAST) ast.base();
+					if (arg1Power.exponent().isNumber()) {
+						// Division operator
+						// rewrite from input: Power(Power(x, <number>),-1) => Power(x,
+						// - <number>)
+						return F.Power(arg1Power.base(), arg1Power.exponent().negate());
+					}
+				}
+				break;
+
+			case ID.Pattern:
+				expr = PatternMatching.Pattern.CONST.evaluate(ast, fEngine);
+				break;
+
+			case ID.Blank:
+				expr = PatternMatching.Blank.CONST.evaluate(ast, fEngine);
+				break;
+
+			case ID.Complex:
+				expr = Arithmetic.CONST_COMPLEX.evaluate(ast, fEngine);
+				break;
+
+			case ID.Rational:
+				expr = Arithmetic.CONST_RATIONAL.evaluate(ast, fEngine);
+				break;
+
 			}
-			// } else if (ast.isSameHeadSizeGE(F.GreaterEqual, 3)) {
-			// return AST2Expr.rewriteLessGreaterAST(ast, F.Greater);
-			// } else if (ast.isSameHeadSizeGE(F.Greater, 3)) {
-			// return AST2Expr.rewriteLessGreaterAST(ast, F.GreaterEqual);
-			// } else if (ast.isSameHeadSizeGE(F.LessEqual, 3)) {
-			// return AST2Expr.rewriteLessGreaterAST(ast, F.Less);
-			// } else if (ast.isSameHeadSizeGE(F.Less, 3)) {
-			// return AST2Expr.rewriteLessGreaterAST(ast, F.LessEqual);
-		} else if (head.equals(F.Pattern)) {
-			expr = PatternMatching.Pattern.CONST.evaluate(ast, fEngine);
-		} else if (head.equals(F.Blank)) {
-			expr = PatternMatching.Blank.CONST.evaluate(ast, fEngine);
-		} else if (head.equals(F.Complex)) {
-			expr = Arithmetic.CONST_COMPLEX.evaluate(ast, fEngine);
-		} else if (head.equals(F.Rational)) {
-			expr = Arithmetic.CONST_RATIONAL.evaluate(ast, fEngine);
+			return expr.orElse(ast);
 		}
-		return expr.orElse(ast);
+		return ast;
 	}
 
 	private IExpr convertN(final IASTMutable function) {
