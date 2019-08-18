@@ -106,17 +106,18 @@ public class AST2Expr {
 			"FromDigits", "FromPolarCoordinates", "FullForm", "FullSimplify", "Function", "FunctionExpand", "Gamma",
 			"GammaDistribution", "GammaRegularized", "Gather", "GatherBy", "GaussianMatrix", "GaussianWindow", "GCD",
 			"GegenbauerC", "GeodesyData", "GeoDistance", "GeometricDistribution", "GeometricMean", "GeoPosition", "Get",
-			"Grad", "Graph", "GraphData", "Graphics", "Graphics3D", "GraphQ", "Greater", "GreaterEqual",
-			"GroebnerBasis", "GumbelDistribution", "HamiltonianGraphQ", "HammingWindow", "HankelH1", "HankelH2",
-			"HannWindow", "Haversine", "HarmonicMean", "HarmonicNumber", "Head", "HeavisideTheta", "HermiteH",
-			"HermitianMatrixQ", "HilbertMatrix", "Hold", "HoldForm", "HoldPattern", "Horner", "HornerForm",
-			"HurwitzZeta", "HypergeometricDistribution", "HypergeometricPFQ", "Hypergeometric0F1", "Hypergeometric1F1",
-			"Hypergeometric1F1Regularized", "Hypergeometric2F1", "HypergeometricPFQRegularized", "Identity",
-			"IdentityMatrix", "If", "Im", "Implies", "Import", "Increment", "Inequality", "InexactNumberQ", "Infix",
-			"Inner", "InputForm", "Insert", "Information", "Interval", "IntegerDigits", "IntegerExponent",
-			"IntegerLength", "IntegerPart", "IntegerPartitions", "IntegerQ", "Integrate", "Interpolation",
-			"InterpolatingFunction", "InterpolatingPolynomial", "IntersectingQ", "Intersection", "Inverse",
-			"InverseFourier", "InverseBetaRegularized", "InverseCDF", "InverseErf", "InverseErfc", "InverseFunction",
+			"Grad", "Graph", "GraphCenter", "GraphData", "GraphDiameter", "Graphics", "Graphics3D", "GraphPeriphery",
+			"GraphQ", "GraphRadius", "Greater", "GreaterEqual", "GroebnerBasis", "GumbelDistribution",
+			"HamiltonianGraphQ", "HammingWindow", "HankelH1", "HankelH2", "HannWindow", "Haversine", "HarmonicMean",
+			"HarmonicNumber", "Head", "HeavisideTheta", "HermiteH", "HermitianMatrixQ", "HilbertMatrix", "Hold",
+			"HoldForm", "HoldPattern", "Horner", "HornerForm", "HurwitzZeta", "HypergeometricDistribution",
+			"HypergeometricPFQ", "Hypergeometric0F1", "Hypergeometric1F1", "Hypergeometric1F1Regularized",
+			"Hypergeometric2F1", "HypergeometricPFQRegularized", "Identity", "IdentityMatrix", "If", "Im", "Implies",
+			"Import", "Increment", "Inequality", "InexactNumberQ", "Infix", "Inner", "InputForm", "Insert",
+			"Information", "Interval", "IntegerDigits", "IntegerExponent", "IntegerLength", "IntegerPart",
+			"IntegerPartitions", "IntegerQ", "Integrate", "Interpolation", "InterpolatingFunction",
+			"InterpolatingPolynomial", "IntersectingQ", "Intersection", "Inverse", "InverseFourier",
+			"InverseBetaRegularized", "InverseCDF", "InverseErf", "InverseErfc", "InverseFunction",
 			"InverseGammaRegularized", "InverseHaversine", "InverseLaplaceTransform", "InverseSeries",
 			"InverseWeierstrassP", "JaccardDissimilarity", "JacobiMatrix", "JacobiSymbol", "JacobiZeta", "JavaForm",
 			"JSForm", "JSFormData", "Join", "KnownUnitQ", "KolmogorovSmirnovTest", "KOrderlessPartitions",
@@ -174,10 +175,10 @@ public class AST2Expr {
 			"Tuples", "TwoWayRule", "Undefined", "Underoverscript", "UndirectedEdge", "Unequal", "Unevaluated",
 			"UniformDistribution", "Union", "Unique", "UnitaryMatrixQ", "UnitConvert", "Unitize", "UnitStep",
 			"UnitVector", "Unprotect", "UnsameQ", "Unset", "UpperCaseQ", "UpperTriangularize", "UpSet", "UpSetDelayed",
-			"ValueQ", "VandermondeMatrix", "Variables", "Variance", "VectorAngle", "VectorQ", "VertexList", "VertexQ",
-			"WeibullDistribution", "WeierstrassHalfPeriods", "WeierstrassInvariants", "WeierstrassP",
-			"WeierstrassPPrime", "WeightedAdjacencyMatrix", "Which", "While", "With", "WriteString", "Xor",
-			"YuleDissimilarity", "ZeroSymmetric", "Zeta" };
+			"ValueQ", "VandermondeMatrix", "Variables", "Variance", "VectorAngle", "VectorQ", "VertexEccentricity",
+			"VertexList", "VertexQ", "WeibullDistribution", "WeierstrassHalfPeriods", "WeierstrassInvariants",
+			"WeierstrassP", "WeierstrassPPrime", "WeightedAdjacencyMatrix", "Which", "While", "With", "WriteString",
+			"Xor", "YuleDissimilarity", "ZeroSymmetric", "Zeta" };
 
 	public static Map<String, Integer> RUBI_STATISTICS_MAP;
 
@@ -591,5 +592,5 @@ public class AST2Expr {
 			return F.symbol(lowercaseStr, fEngine);
 		}
 	}
- 
+
 }

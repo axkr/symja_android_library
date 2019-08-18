@@ -6380,8 +6380,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFindShortestTour() {
-		check("FindShortestTour({GeoPosition[{41, 20}], GeoPosition[{5, 20}], GeoPosition[{49, 32}], " //
-				+ "GeoPosition[{53, 28}], GeoPosition[{47, 29}]})", //
+		check("FindShortestTour({GeoPosition({41, 20}), GeoPosition({5, 20}), GeoPosition({49, 32}), " //
+				+ "GeoPosition({53, 28}), GeoPosition({47, 29})})", //
 				"{6852.02461316151[mi],{1,2,5,3,4,1}}");
 		check("FindShortestTour({{1, 1}, {1, 2}, {1, 3}, {1, 4}, {1, 5}, {2, 1}, {2, 3}, {2, 5}, {3, 1}, {3, 2},"//
 				+ " {3, 4}, {3, 5}, {4, 1}, {4, 3}, {4, 5}, {5, 1}, {5, 2}, {5, 3}, {5, 4}})", //
@@ -6445,6 +6445,57 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Graph({1,2,3,4,5,6,7,8,9,10},{1<->3,1<->2,2<->6,3<->5,3<->4,4<->8,5<->7,5<->6,6<->10,7<->9,7<->8,8<->2,9<->1,9<->10,10<->4})");
 	}
 
+	public void testGraphCenter() {
+		check("GraphCenter(Graph({DirectedEdge(1, 2), DirectedEdge(2, 3), DirectedEdge(3, 1),  DirectedEdge(3, 4), DirectedEdge(4, 5), DirectedEdge(5, 3)}))", //
+				"{3}");
+		
+		check("GraphCenter(Graph({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)}, "
+				+ //
+				"{EdgeWeight->{1.6,2.0,1.4,1.9,0.62}}))", //
+				"{1,3}");
+		check("GraphCenter({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)})", //
+				"{1,3}");
+	}
+	
+	public void testGraphDiameter() {
+		check("GraphDiameter(Graph({DirectedEdge(1, 2), DirectedEdge(2, 3), DirectedEdge(3, 1),  DirectedEdge(3, 4), DirectedEdge(4, 5), DirectedEdge(5, 3)}))", //
+				"4");
+		
+		check("GraphDiameter(Graph({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)}, "
+				+ //
+				"{EdgeWeight->{1.6,2.0,1.4,1.9,0.62}}))", //
+				"2.52");
+		check("GraphDiameter({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)})", //
+				"2");
+	}
+
+	public void testGraphRadius() {
+		check("GraphRadius(Graph({DirectedEdge(1, 2), DirectedEdge(2, 3), DirectedEdge(3, 1),  DirectedEdge(3, 4), DirectedEdge(4, 5), DirectedEdge(5, 3)}))", //
+				"2");
+
+		check("GraphRadius(Graph({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)}, "
+				+ //
+				"{EdgeWeight->{1.6,2.0,1.4,1.9,0.62}}))", //
+				"2.0");
+		check("GraphRadius({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)})", //
+				"1");
+	}
+
+	public void testGraphPeriphery() {
+		check("GraphPeriphery(Graph({DirectedEdge(1, 2), DirectedEdge(2, 3), DirectedEdge(3, 1),  DirectedEdge(3, 4), DirectedEdge(4, 5), DirectedEdge(5, 3)}))", //
+				"{1,4}");
+		
+		check("GraphPeriphery(Graph({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)}, "
+				+ //
+				"{EdgeWeight->{1.6,2.0,1.4,1.9,0.62}}))", //
+				"{2,4}");
+		check("GraphPeriphery({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)})", //
+				"{2,4}");
+		
+		check("GraphPeriphery({UndirectedEdge(1, 2), UndirectedEdge(2, 3), UndirectedEdge(3, 1), UndirectedEdge(3, 4), UndirectedEdge(3, 4), UndirectedEdge(4, 5), UndirectedEdge(5, 3)})", //
+				"{1,2,4,5}");
+	}
+	
 	public void testGraphQ() {
 		check("GraphQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}) )", //
 				"True");
@@ -8346,10 +8397,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{1,2,3,5,8,5}");
 	}
 
-	public void testInequality() { 
+	public void testInequality() {
 		// check("Inequality(-1,Less,0,Lest,1)", //
 		// "Inequality(0,Lest,1)");
-		
+
 		check("Inequality(-1,Less,0,LessEqual,a,Less,3,Less,4,Less,5,Less,b,Less,10,Less,11)", //
 				"0<=a<3<5<b<10");
 
@@ -8376,7 +8427,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Inequality(-1,Less,a,Less,-2)", //
 				"False");
 		check("Inequality(-Pi,Less,0,GreaterEqual,a)", //
-				"0>=a"); 
+				"0>=a");
 		check("Inequality(0,Less,a,Greater,0,Greater,k)", //
 				"0<a&&a>0>k");
 		check("Inequality(0,Greater,a,Less,0)", //
@@ -19683,6 +19734,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{1,2,3}");
 	}
 
+	public void testVertexEccentricity() {
+		check("VertexEccentricity({1 -> 2, 2 -> 3, 3 -> 1, 3 -> 4, 4 -> 5, 5 -> 3}, 1)", //
+				"4");
+		
+		check("VertexEccentricity(Graph({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)}, "
+				+ //
+				"{EdgeWeight->{1.6,1.4,0.62,1.9,2.1}}), 4)", //
+				"2.22");
+		check("VertexEccentricity({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)}, 4)", //
+				"2");
+		
+	}
+	
 	public void testVertexQ() {
 		check("VertexQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}),3)", //
 				"True");

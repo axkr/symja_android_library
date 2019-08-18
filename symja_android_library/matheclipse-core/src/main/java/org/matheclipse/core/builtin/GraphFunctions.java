@@ -21,6 +21,7 @@ import org.jgrapht.alg.interfaces.ShortestPathAlgorithm.SingleSourcePaths;
 import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm;
 import org.jgrapht.alg.interfaces.VertexCoverAlgorithm;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
+import org.jgrapht.alg.shortestpath.GraphMeasurer;
 import org.jgrapht.alg.spanning.BoruvkaMinimumSpanningTree;
 import org.jgrapht.alg.tour.HeldKarpTSP;
 import org.jgrapht.alg.vertexcover.GreedyVCImpl;
@@ -32,6 +33,7 @@ import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.DataExpr;
@@ -43,6 +45,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INum;
 
 /**
  * Functions for graph theory algorithms.
@@ -58,6 +61,10 @@ public class GraphFunctions {
 
 		private static void init() {
 			F.Graph.setEvaluator(new GraphCTor());
+			F.GraphCenter.setEvaluator(new GraphCenter());
+			F.GraphDiameter.setEvaluator(new GraphDiameter());
+			F.GraphPeriphery.setEvaluator(new GraphPeriphery());
+			F.GraphRadius.setEvaluator(new GraphRadius());
 			F.AdjacencyMatrix.setEvaluator(new AdjacencyMatrix());
 			F.EdgeList.setEvaluator(new EdgeList());
 			F.EdgeQ.setEvaluator(new EdgeQ());
@@ -69,8 +76,8 @@ public class GraphFunctions {
 			F.FindShortestTour.setEvaluator(new FindShortestTour());
 			F.FindSpanningTree.setEvaluator(new FindSpanningTree());
 			F.GraphQ.setEvaluator(new GraphQ());
-
 			F.HamiltonianGraphQ.setEvaluator(new HamiltonianGraphQ());
+			F.VertexEccentricity.setEvaluator(new VertexEccentricity());
 			F.VertexList.setEvaluator(new VertexList());
 			F.VertexQ.setEvaluator(new VertexQ());
 		}
@@ -148,6 +155,111 @@ public class GraphFunctions {
 		}
 	}
 
+	private static class GraphCenter extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			try {
+				DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> dex = createGraph(ast.arg1());
+				if (dex == null) {
+					return F.NIL;
+				}
+				Graph<IExpr, IExprEdge> g = dex.toData();
+
+				GraphMeasurer<IExpr, IExprEdge> graphMeasurer = new GraphMeasurer<>(g);
+				Set<IExpr> centerSet = graphMeasurer.getGraphCenter();
+				IASTAppendable list = F.ListAlloc(centerSet.size());
+				list.appendAll(centerSet);
+				return list;
+			} catch (RuntimeException rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+	}
+
+	private static class GraphDiameter extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			try {
+				DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> dex = createGraph(ast.arg1());
+				if (dex == null) {
+					return F.NIL;
+				}
+				Graph<IExpr, IExprEdge> g = dex.toData();
+				GraphMeasurer<IExpr, IExprEdge> graphMeasurer = new GraphMeasurer<>(g);
+				INum diameter = F.num(graphMeasurer.getDiameter());
+				if (isWeightedGraph(g)) {
+					return diameter;
+				}
+				int intDiameter = diameter.toIntDefault();
+				if (intDiameter != Integer.MIN_VALUE) {
+					return F.ZZ(intDiameter);
+				}
+				return diameter;
+			} catch (RuntimeException rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+	}
+
+	private static class GraphPeriphery extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			try {
+				DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> dex = createGraph(ast.arg1());
+				if (dex == null) {
+					return F.NIL;
+				}
+				Graph<IExpr, IExprEdge> g = dex.toData();
+				// boolean pseudoDiameter = false;
+				// if (ast.isAST2()) {
+				// final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
+				// IExpr option = options.getOption(F.Method);
+				//
+				// if (option.isPresent() && option.toString().equals("PseudoDiameter")) {
+				// pseudoDiameter = true;
+				// } else if (!option.isPresent()) {
+				// return engine.printMessage("GraphPeriphery: Option PseudoDiameter expected!");
+				// }
+				// }
+
+				GraphMeasurer<IExpr, IExprEdge> graphMeasurer = new GraphMeasurer<>(g);
+				Set<IExpr> centerSet = graphMeasurer.getGraphPeriphery();
+				IASTAppendable list = F.ListAlloc(centerSet.size());
+				list.appendAll(centerSet);
+				return list;
+			} catch (RuntimeException rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+	}
+
 	private static class GraphQ extends AbstractEvaluator {
 
 		@Override
@@ -165,6 +277,41 @@ public class GraphFunctions {
 				}
 			}
 			return F.False;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+	}
+
+	private static class GraphRadius extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			try {
+				DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> dex = createGraph(ast.arg1());
+				if (dex == null) {
+					return F.NIL;
+				}
+				Graph<IExpr, IExprEdge> g = dex.toData();
+
+				GraphMeasurer<IExpr, IExprEdge> graphMeasurer = new GraphMeasurer<>(g);
+				INum radius = F.num(graphMeasurer.getRadius());
+				if (isWeightedGraph(g)) {
+					return radius;
+				}
+				int intRadius = radius.toIntDefault();
+				if (intRadius != Integer.MIN_VALUE) {
+					return F.ZZ(intRadius);
+				}
+				return radius;
+			} catch (RuntimeException rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
+			}
+			return F.NIL;
 		}
 
 		@Override
@@ -601,6 +748,46 @@ public class GraphFunctions {
 		}
 	}
 
+	private static class VertexEccentricity extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			try {
+				DataExpr<org.jgrapht.Graph<IExpr, IExprEdge>> dex = createGraph(ast.arg1());
+				if (dex == null) {
+					return F.NIL;
+				}
+				Graph<IExpr, IExprEdge> g = dex.toData();
+
+				GraphMeasurer<IExpr, IExprEdge> graphMeasurer = new GraphMeasurer<>(g);
+				Map<IExpr, Double> centerSet = graphMeasurer.getVertexEccentricityMap();
+				Double dValue = centerSet.get(ast.arg2());
+				if (dValue != null) {
+					INum vertexEccentricity = F.num(dValue);
+					if (isWeightedGraph(g)) {
+						return vertexEccentricity;
+					}
+					int intVertexEccentricity = vertexEccentricity.toIntDefault();
+					if (intVertexEccentricity != Integer.MIN_VALUE) {
+						return F.ZZ(intVertexEccentricity);
+					}
+					return vertexEccentricity;
+				}
+
+			} catch (RuntimeException rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+	}
+
 	private static class VertexList extends AbstractEvaluator {
 
 		@Override
@@ -801,6 +988,18 @@ public class GraphFunctions {
 
 	public static void initialize() {
 		Initializer.init();
+	}
+
+	/**
+	 * Test if the graph is instance of <code>DefaultDirectedWeightedGraph</code> or
+	 * <code>DefaultUndirectedWeightedGraph</code>
+	 * 
+	 * @param graph
+	 *            the graph which should be tested.
+	 * @return <code>true</code> if the graph is a weighted graph
+	 */
+	private static boolean isWeightedGraph(Graph<IExpr, IExprEdge> graph) {
+		return graph instanceof DefaultDirectedWeightedGraph || graph instanceof DefaultUndirectedWeightedGraph;
 	}
 
 	private GraphFunctions() {
