@@ -157,6 +157,8 @@ public class ASTNodeFactory implements INodeParserFactory {
 
 	public final static int TAG_SET_PRECEDENCE = 40;
 
+	public final static int EQUAL_PRECEDENCE = 290;
+
 	public final static int PLUS_PRECEDENCE = 310;
 
 	public final static int TIMES_PRECEDENCE = 400;
@@ -175,8 +177,8 @@ public class ASTNodeFactory implements INodeParserFactory {
 			"Dot", "Not", "PreMinus", "SameQ", "RuleDelayed", "GreaterEqual", "Condition", "Colon", "//", "DivideBy",
 			"Or", "Span", "Equal", "StringJoin", "Unequal", "Decrement", "SubtractFrom", "PrePlus", "RepeatedNull",
 			"UnsameQ", "Rule", "UpSetDelayed", "PreIncrement", "Function", "Greater", "PreDecrement", "Subtract",
-			"SetDelayed", "Alternatives", "AddTo", "Repeated", "ReplaceAll", "TagSet", "TwoWayRule", "TwoWayRule", "DirectedEdge",
-			"UndirectedEdge" };
+			"SetDelayed", "Alternatives", "AddTo", "Repeated", "ReplaceAll", "TagSet", "TwoWayRule", "TwoWayRule",
+			"DirectedEdge", "UndirectedEdge" };
 
 	static final String[] OPERATOR_STRINGS = { "::", "<<", "?", "//@", "*=", "+", "^=", ";", "@", "/@", "=.", "@@",
 			"@@@", "//.", "<", "&&", "/", "=", "++", "!!", "<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>", ">=",
@@ -306,7 +308,7 @@ public class ASTNodeFactory implements INodeParserFactory {
 					new InfixOperator("/=", "DivideBy", 100, InfixOperator.RIGHT_ASSOCIATIVE),
 					new InfixOperator("||", "Or", 213, InfixOperator.NONE),
 					new InfixOperator(";;", "Span", 305, InfixOperator.NONE),
-					new InfixOperator("==", "Equal", 290, InfixOperator.NONE),
+					new InfixOperator("==", "Equal", EQUAL_PRECEDENCE, InfixOperator.NONE),
 					new InfixOperator("<>", "StringJoin", 600, InfixOperator.NONE),
 					new InfixOperator("!=", "Unequal", 290, InfixOperator.NONE),
 					new PostfixOperator("--", "Decrement", 660),

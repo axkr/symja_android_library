@@ -22,6 +22,8 @@ package org.matheclipse.parser.client.ast;
 public interface IConstantOperators {
 	public final static String All = "All";
 	
+	public final static String Inequality = "Inequality";
+	
 	/**
 	 * Head for lists (i.e. {a,b,c,...} )
 	 */

@@ -910,6 +910,14 @@ public abstract class Scanner {
 	}
 
 	abstract protected boolean isOperatorCharacters();
+	
+
+
+	protected static final boolean isComparatorOperator(String operatorString) {
+		return operatorString.equals("==") || operatorString.equals("!=") || //
+				operatorString.equals(">") || operatorString.equals(">=") || //
+				operatorString.equals("<") || operatorString.equals("<=");
+	}
 
 	/**
 	 * Test if the current position in the parsed input string is less than the input strings length.

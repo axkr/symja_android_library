@@ -608,4 +608,16 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
+	
+	public void testParser44() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("-1<0<=a<4<5<b<10<11");
+			assertEquals(obj.toString(),
+					"Inequality(-1, Less, 0, LessEqual, a, Less, 4, Less, 5, Less, b, Less, 10, Less, 11)");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
 }

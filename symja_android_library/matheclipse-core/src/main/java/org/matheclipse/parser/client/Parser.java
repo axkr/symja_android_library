@@ -19,8 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.expression.F;
-import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FunctionNode;
 import org.matheclipse.parser.client.ast.IConstantOperators;
@@ -929,24 +928,86 @@ public class Parser extends Scanner {
 		ASTNode rhs;
 		rhs = parseLookaheadOperator(infixOperator.getPrecedence());
 		lhs = infixOperator.createFunction(fFactory, lhs, rhs);
-		String infixOperatorString = infixOperator.getOperatorString();
-		while (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
-				&& infixOperatorString.equals(fOperatorString)) {
-			getNextToken();
-			if (";".equals(infixOperatorString)) {
-				if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
-						|| fToken == TT_PRECEDENCE_CLOSE || fToken == TT_COMMA) {
-					((FunctionNode) lhs).add(fFactory.createSymbol("Null"));
-					break;
+		if (lhs instanceof FunctionNode) {
+			FunctionNode ast = ((FunctionNode) lhs);
+			String infixOperatorString = infixOperator.getOperatorString();
+			if (isComparatorOperator(infixOperatorString)) {
+				while (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
+						&& isComparatorOperator(fOperatorString)) {
+					if (!infixOperator.isOperator(fOperatorString)) {
+						// rewrite to Inequality
+						return parseInequality(ast, infixOperator);
+					}
+					getNextToken();
+					while (fToken == TT_NEWLINE) {
+						getNextToken();
+					}
+					rhs = parseLookaheadOperator(infixOperator.getPrecedence());
+					ast.add(rhs);
 				}
+				return ast;
 			}
+
+			while (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
+					&& infixOperatorString.equals(fOperatorString)) {
+				getNextToken();
+				if (";".equals(infixOperatorString)) {
+					if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
+							|| fToken == TT_PRECEDENCE_CLOSE || fToken == TT_COMMA) {
+						((FunctionNode) lhs).add(fFactory.createSymbol("Null"));
+						break;
+					}
+				}
+				while (fToken == TT_NEWLINE) {
+					getNextToken();
+				}
+				rhs = parseLookaheadOperator(infixOperator.getPrecedence());
+				ast.add(rhs);
+			}
+		} else {
+			if (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
+					&& infixOperator.isOperator(fOperatorString)) {
+				throwSyntaxError("Operator: \'" + fOperatorString + "\' not created properly (no grouping defined)");
+			}
+		}
+		return lhs;
+	}
+
+	/**
+	 * Rewrite a chain of different comparator operators to an <code>Inequality(...)</code> expression.
+	 * 
+	 * @param ast
+	 *            the ast which should be rewritten
+	 * @param infixOperator
+	 * @return
+	 */
+	private ASTNode parseInequality(final FunctionNode ast, final InfixOperator infixOperator) {
+		// rewrite to Inequality
+		SymbolNode head = (SymbolNode) ast.get(0);
+		final FunctionNode result = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Inequality));
+		for (int i = 1; i < ast.size(); i++) {
+			result.add(ast.get(i));
+			result.add(head);
+		}
+		InfixOperator compareOperator = determineBinaryOperator();
+		result.set(result.size() - 1, fFactory.createSymbol(compareOperator.getFunctionName()));
+		getNextToken();
+		while (fToken == TT_NEWLINE) {
+			getNextToken();
+		}
+		int precedence = infixOperator.getPrecedence();
+		result.add(parseLookaheadOperator(precedence));
+
+		while (fToken == TT_OPERATOR && isComparatorOperator(fOperatorString)) {
+			compareOperator = determineBinaryOperator();
+			result.add(fFactory.createSymbol(compareOperator.getFunctionName()));
+			getNextToken();
 			while (fToken == TT_NEWLINE) {
 				getNextToken();
 			}
-			rhs = parseLookaheadOperator(infixOperator.getPrecedence());
-			((FunctionNode) lhs).add(rhs);
+			result.add(parseLookaheadOperator(precedence));
 		}
-		return lhs;
+		return result;
 	}
 
 	private ASTNode parseLookaheadOperator(final int min_precedence) {

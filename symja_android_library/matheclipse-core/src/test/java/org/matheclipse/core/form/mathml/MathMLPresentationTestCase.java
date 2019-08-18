@@ -338,6 +338,14 @@ public class MathMLPresentationTestCase extends TestCase {
 				"<mrow><mi>Graph</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mrow><mo>{</mo><mrow><mn>1</mn><mo>,</mo><mn>2</mn><mo>,</mo><mn>3</mn></mrow><mo>}</mo></mrow><mo>,</mo><mrow><mo>{</mo><mrow><mrow><mn>1</mn><mo>-&gt;</mo><mn>2</mn></mrow><mo>,</mo><mrow><mn>2</mn><mo>-&gt;</mo><mn>3</mn></mrow></mrow><mo>}</mo></mrow></mrow><mo>)</mo></mrow></mrow>");
 	}
 
+	public void testInequality() {
+		IExpr expr = EvalEngine.get().evaluate("Inequality(c,Less,0,Less,a)");
+		check(expr, "<mrow><mi>c</mi><mo>&lt;</mo><mn>0</mn><mo>&lt;</mo><mi>a</mi></mrow>");
+		
+		expr = EvalEngine.get().evaluate("Inequality(a,Less,0,LessEqual,b, Equal,c, Unequal,d)");
+		check(expr, "<mrow><mi>a</mi><mo>&lt;</mo><mn>0</mn><mo>&lt;=</mo><mi>b</mi><mo>==</mo><mi>c</mi><mo>!=</mo><mi>d</mi></mrow>");
+	}
+
 	public void check(String strEval, String strResult) {
 		StringWriter stw = new StringWriter();
 		mathUtil.toMathML(strEval, stw);

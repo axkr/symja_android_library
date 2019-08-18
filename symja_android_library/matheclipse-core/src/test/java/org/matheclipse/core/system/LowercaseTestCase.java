@@ -1273,24 +1273,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBlankSequence() {
-		
+
 		check("Clear(f);f(___,y__?(#>2&)):={y}", //
 				"");
 		check("{f(2,3),f(1,1,1,2),f(112,1,1,3,4)}", //
 				"{{3},f(1,1,1,2),{3,4}}");
-		
+
 		check("Clear(f);f(x__Integer)=2", //
 				"2");
 		check("{f(2,3),f(a,2),f(2,a),f(2)}", //
 				"{2,f(a,2),f(2,a),2}");
-		
+
 		check("Clear(f);f(x__Real) := Plus(x)/Length({x})", //
 				"");
 		check("{f(1.0,4.0),f(2,2),f(1.0,a)}", //
 				"{2.5,f(2,2),f(1.0,a)}");
 
-		
-		
 		check("Clear(f);f(x__,y__,z__):={x,y,z}/;Print({x},{y},{z})", //
 				"");
 		check("f(a,b,c,d,e)", "f(a,b,c,d,e)");
@@ -7692,6 +7690,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHold() {
+		check("Hold(1<2<3!=a<2==3) // FullForm", //
+				"Hold(Inequality(1, Less, 2, Less, 3, Unequal, a, Less, 2, Equal, 3))");
 		check("Hold(3*2)", //
 				"Hold(3*2)");
 		check("Hold(2+2)", //
@@ -8346,12 +8346,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{1,2,3,5,8,5}");
 	}
 
-	public void testInequality() {
+	public void testInequality() { 
 		// check("Inequality(-1,Less,0,Lest,1)", //
 		// "Inequality(0,Lest,1)");
+		
+		check("Inequality(-1,Less,0,LessEqual,a,Less,3,Less,4,Less,5,Less,b,Less,10,Less,11)", //
+				"0<=a<3<5<b<10");
 
 		check("Inequality(c,Less,0,Less,a)", //
-				"Inequality(c,Less,0,Less,a)");
+				"c<0<a");
 		check("Inequality(-Pi,Less,0,LessEqual,Pi)", //
 				"True");
 		check("Inequality(c,Less,0)", //
@@ -8367,36 +8370,36 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Inequality()");
 
 		check("Inequality(-1,Less,a,Less,0,Less,1)", //
-				"Inequality(-1,Less,a,Less,0)");
+				"-1<a<0");
 		check("Inequality(-1,Less,0,Less,a,Less,1)", //
-				"Inequality(0,Less,a,Less,1)");
+				"0<a<1");
 		check("Inequality(-1,Less,a,Less,-2)", //
 				"False");
 		check("Inequality(-Pi,Less,0,GreaterEqual,a)", //
-				"0>=a");
+				"0>=a"); 
 		check("Inequality(0,Less,a,Greater,0,Greater,k)", //
-				"0<a&&Inequality(a,Greater,0,Greater,k)");
+				"0<a&&a>0>k");
 		check("Inequality(0,Greater,a,Less,0)", //
 				"0>a&&a<0");
 		check("Inequality(0,Less,a,Less,1)", //
-				"Inequality(0,Less,a,Less,1)");
+				"0<a<1");
 		check("0<a && a<1", //
 				"0<a&&a<1");
 		check("Inequality(a,Less,b,LessEqual,c)", //
-				"Inequality(a,Less,b,LessEqual,c)");
+				"a<b<=c");
 
 		check("Inequality(a,Less,b,LessEqual,c,Equal,d,GreaterEqual,e,Greater,f)", //
-				"Inequality(a,Less,b,LessEqual,c,Equal,d)&&Inequality(d,GreaterEqual,e,Greater,f)");
+				"a<b<=c==d&&d>=e>f");
 		check("Inequality(a,Greater,b,GreaterEqual,c,Equal,d,LessEqual,e,Less,f)", //
-				"Inequality(a,Greater,b,GreaterEqual,c,Equal,d)&&Inequality(d,LessEqual,e,Less,f)");
+				"a>b>=c==d&&d<=e<f");
 		check("Inequality(a,Greater,b,GreaterEqual,c,Equal,d,GreaterEqual,e,Less,f)", //
-				"Inequality(a,Greater,b,GreaterEqual,c,Equal,d,GreaterEqual,e)&&e<f");
+				"a>b>=c==d>=e&&e<f");
 		check("Inequality(a,Greater,1,GreaterEqual,c,Equal,d,GreaterEqual,5,Less,f)", //
 				"False");
 		check("a<1<2<3<4<=b", //
-				"a<1&&4<=b");
+				"a<1<4<=b");
 		check("a<1<2<3<4<=b<5", //
-				"(a<1&&4<=b)<5");
+				"a<1<4<=b<5");
 		check("Inequality(-1,Less,0,Lest,1)", //
 				"Inequality(-1,Less,0,lest,1)");
 		check("Inequality(-1,Lest,0,Less,1)", //
@@ -14353,6 +14356,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRange() {
+		check("Range(1,1+1/2,1/2)", //
+				"{1,3/2}");
+		check("Range(1,1.25,0.1)", //
+				"{1.0,1.1,1.2}");
 		check("Range(5.0)", //
 				"{1,2,3,4,5}");
 		check("Range(-5.0)", //
@@ -16586,6 +16593,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+
+		check("Solve({x^2-11==y, x+y==-9}, {x,y})", //
+				"{{x->-2,y->-7},{x->1,y->-10}}");
+
 		check("Solve(30*x/0.0002==30,{x})", //
 				"{{x->0.0002}}");
 		check("Solve(30*x/0.000000002==30,x)", //

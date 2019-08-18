@@ -397,29 +397,29 @@ public class AST2Expr {
 						}
 					}
 					break;
-				case ID.GreaterEqual:
-					if (ast.isSameHeadSizeGE(F.GreaterEqual, 3)) {
-						ISymbol compareHead = F.Greater;
-						return rewriteLessGreaterAST(ast, compareHead);
-					}
-					break;
-				case ID.Greater:
-					if (ast.isSameHeadSizeGE(F.Greater, 3)) {
-						ISymbol compareHead = F.GreaterEqual;
-						return rewriteLessGreaterAST(ast, compareHead);
-					}
-					break;
-				case ID.LessEqual:
-					if (ast.isSameHeadSizeGE(F.LessEqual, 3)) {
-						ISymbol compareHead = F.Less;
-						return rewriteLessGreaterAST(ast, compareHead);
-					}
-					break;
-				case ID.Less:
-					if (ast.isSameHeadSizeGE(F.Less, 3)) {
-						ISymbol compareHead = F.LessEqual;
-						return rewriteLessGreaterAST(ast, compareHead);
-					}
+				// case ID.GreaterEqual:
+				// if (ast.isSameHeadSizeGE(F.GreaterEqual, 3)) {
+				// ISymbol compareHead = F.Greater;
+				// return rewriteLessGreaterAST(ast, compareHead);
+				// }
+				// break;
+				// case ID.Greater:
+				// if (ast.isSameHeadSizeGE(F.Greater, 3)) {
+				// ISymbol compareHead = F.GreaterEqual;
+				// return rewriteLessGreaterAST(ast, compareHead);
+				// }
+				// break;
+				// case ID.LessEqual:
+				// if (ast.isSameHeadSizeGE(F.LessEqual, 3)) {
+				// ISymbol compareHead = F.Less;
+				// return rewriteLessGreaterAST(ast, compareHead);
+				// }
+				// break;
+				// case ID.Less:
+				// if (ast.isSameHeadSizeGE(F.Less, 3)) {
+				// ISymbol compareHead = F.LessEqual;
+				// return rewriteLessGreaterAST(ast, compareHead);
+				// }
 				case ID.Pattern:
 					expr = PatternMatching.Pattern.CONST.evaluate(ast, fEngine);
 					if (expr.isPresent()) {
@@ -591,39 +591,5 @@ public class AST2Expr {
 			return F.symbol(lowercaseStr, fEngine);
 		}
 	}
-
-	/**
-	 * Convert less or greater relations on input. Example: convert expressions like <code>a &lt; b &lt;= c</code> to
-	 * <code>Less[a,b]&&LessEqual[b,c]</code>.
-	 * 
-	 * @param ast
-	 * @param compareHead
-	 * @return
-	 */
-	public static IExpr rewriteLessGreaterAST(final IASTMutable ast, ISymbol compareHead) {
-		IExpr temp;
-		boolean evaled = false;
-		IASTAppendable andAST = F.And();
-		for (int i = 1; i < ast.size(); i++) {
-			temp = ast.get(i);
-			if (temp.isSameHeadSizeGE(compareHead, 3)) {
-				IAST lt = (IAST) temp;
-				andAST.append(lt);
-				ast.set(i, lt.last());
-				evaled = true;
-			}
-		}
-		if (evaled) {
-			andAST.append(ast);
-			return andAST;
-		} else {
-			return ast;
-		}
-	}
-
-	// public static void main(String[] args) {
-	// for (int i = 0; i < FUNCTION_STRINGS.length; i++) {
-	// System.out.println(FUNCTION_STRINGS[i]);
-	// }
-	// }
+ 
 }

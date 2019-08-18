@@ -1763,7 +1763,8 @@ public final class BooleanFunctions {
 	}
 
 	private final static class Inequality extends AbstractEvaluator implements IComparatorFunction {
-		final static IBuiltInSymbol[] COMPARATOR_SYMBOLS = { F.Greater, F.GreaterEqual, F.Less, F.LessEqual };
+		final static IBuiltInSymbol[] COMPARATOR_SYMBOLS = { F.Equal, F.Greater, F.GreaterEqual, F.Less, F.LessEqual,
+				F.Unequal };
 
 		private int getCompSign(IExpr e) {
 			if (e.isSymbol()) {
@@ -1826,11 +1827,12 @@ public final class BooleanFunctions {
 					}
 				}
 				IASTAppendable res = F.ast(F.Inequality);
+				IExpr lastOp = F.NIL;
 				for (int i = 0; i < (ast.size() - 1) / 2; i++) {
 					IExpr lhs = ast.get(2 * i + 1);
-					if (res.size() > 1) {
-						lhs = res.get(res.size() - 1);
-					}
+					// if (res.size() > 1) {
+					// lhs = res.get(res.size() - 1);
+					// }
 					IExpr op = ast.get(2 * i + 2);
 					IExpr rhs = ast.get(2 * i + 3);
 					for (int rhsI = 2 * i + 3; rhsI < ast.size(); rhsI += 2) {
@@ -1842,10 +1844,16 @@ public final class BooleanFunctions {
 					IExpr evalRes = engine.evaluate(F.binaryAST2(op, lhs, rhs));
 					if (!evalRes.isTrue()) {
 						if (engine.evaluate(F.SameQ(lhs, res.get(res.size() - 1))).isFalse()) {
+							if (lastOp.isPresent() && res.size() > 2) {
+								res.append(lastOp);
+							}
 							res.append(lhs);
 						}
 						res.append(op);
 						res.append(rhs);
+						lastOp = F.NIL;
+					} else {
+						lastOp = op;
 					}
 				}
 				if (res.size() == 1) {

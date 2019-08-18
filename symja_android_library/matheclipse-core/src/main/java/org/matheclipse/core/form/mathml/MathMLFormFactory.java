@@ -23,6 +23,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -1259,6 +1260,11 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		int functionID = ((ISymbol) list.head()).ordinal();
 		if (functionID > ID.UNKNOWN) {
 			switch (functionID) {
+			case ID.Inequality:
+				if (list.size() > 3 && convertInequality(buf, list, precedence)) {
+					return;
+				}
+				break;
 			case ID.Part:
 
 				if ((list.size() >= 3)) {
@@ -1343,6 +1349,67 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
 	}
 
+	private boolean convertInequality(final StringBuilder buf, final IAST inequality, final int precedence) {
+		int operPrecedence = ASTNodeFactory.EQUAL_PRECEDENCE;
+		StringBuilder tempBuffer = new StringBuilder();
+		
+		tagStart(tempBuffer, "mrow");
+		if (operPrecedence < precedence) {
+			// append(buf, "(");
+			tag(tempBuffer, "mo", "(");
+		}
+		 
+		final int listSize = inequality.size();
+		int i = 1;
+		while (i < listSize) {
+			convert(tempBuffer, inequality.get(i++), operPrecedence, false); 
+			if (i == listSize) {
+				if (operPrecedence < precedence) {
+					// append(buf, ")");
+					tag(tempBuffer, "mo", ")");
+				}
+				tagEnd(tempBuffer, "mrow");
+				buf.append(tempBuffer);
+				return true;
+			}
+			IExpr head = inequality.get(i++);
+			if (head.isBuiltInSymbol()) {
+				int id = ((IBuiltInSymbol) head).ordinal();
+				switch (id) {
+				case ID.Equal:
+					tag(tempBuffer, "mo", "=="); 
+					break;
+				case ID.Greater:
+					tag(tempBuffer, "mo", "&gt;"); 
+					break;
+				case ID.GreaterEqual:
+					tag(tempBuffer, "mo", "&gt;="); 
+					break;
+				case ID.Less:
+					tag(tempBuffer, "mo", "&lt;"); 
+					break;
+				case ID.LessEqual:
+					tag(tempBuffer, "mo", "&lt;="); 
+					break;
+				case ID.Unequal:
+					tag(tempBuffer, "mo", "!="); 
+					break;
+				default:
+					return false;
+				}
+			} else {
+				return false;
+			}
+		}
+		if (operPrecedence < precedence) {
+			// append(buf, ")");
+			tag(tempBuffer, "mo", ")");
+		}
+		tagEnd(tempBuffer, "mrow");
+		buf.append(tempBuffer);
+		return true;
+	}
+	
 	@Override
 	public void convertComplex(final StringBuilder buf, final IComplex c, final int precedence, boolean caller) {
 		boolean isReZero = c.getRealPart().isZero();
@@ -1691,7 +1758,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			// append(buf, oper.getOperatorString());
 			tag(buf, "mo", oper.getOperatorString());
 			convert(buf, list.get(i), oper.getPrecedence(), false);
-		}
+		} 
 		if (oper.getPrecedence() < precedence) {
 			// append(buf, ")");
 			tag(buf, "mo", ")");

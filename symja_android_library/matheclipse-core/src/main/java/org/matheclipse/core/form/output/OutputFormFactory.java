@@ -24,6 +24,7 @@ import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -990,6 +991,11 @@ public class OutputFormFactory {
 
 				if (functionID > ID.UNKNOWN) {
 					switch (functionID) {
+					case ID.Inequality:
+						if (list.size() > 3 && convertInequality(buf, list, precedence)) {
+							return;
+						}
+						break;
 					case ID.Quantity:
 						// if (head.equals(F.SeriesData) && (list.size() == 7)) {
 						if (list instanceof IQuantity) {
@@ -1107,6 +1113,60 @@ public class OutputFormFactory {
 		}
 
 		convertString(buf, o.toString());
+	}
+
+	private boolean convertInequality(final Appendable buf, final IAST inequality, final int precedence)
+			throws IOException {
+		int operPrecedence = ASTNodeFactory.EQUAL_PRECEDENCE;
+		StringBuilder tempBuffer = new StringBuilder();
+		if (operPrecedence < precedence) {
+			append(tempBuffer, "(");
+		}
+		final int listSize = inequality.size();
+		int i = 1;
+		while (i < listSize) {
+			convert(tempBuffer, inequality.get(i++));
+			if (i == listSize) {
+				if (operPrecedence < precedence) {
+					append(tempBuffer, ")");
+				}
+				buf.append(tempBuffer);
+				return true;
+			}
+			IExpr head = inequality.get(i++);
+			if (head.isBuiltInSymbol()) {
+				int id = ((IBuiltInSymbol) head).ordinal();
+				switch (id) {
+				case ID.Equal:
+					tempBuffer.append("==");
+					break;
+				case ID.Greater:
+					tempBuffer.append(">");
+					break;
+				case ID.GreaterEqual:
+					tempBuffer.append(">=");
+					break;
+				case ID.Less:
+					tempBuffer.append("<");
+					break;
+				case ID.LessEqual:
+					tempBuffer.append("<=");
+					break;
+				case ID.Unequal:
+					tempBuffer.append("!=");
+					break;
+				default:
+					return false;
+				}
+			} else {
+				return false;
+			}
+		}
+		if (operPrecedence < precedence) {
+			append(tempBuffer, ")");
+		}
+		buf.append(tempBuffer);
+		return true;
 	}
 
 	private boolean convertOperator(final Operator operator, final IAST list, final Appendable buf,

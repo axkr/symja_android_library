@@ -29,10 +29,12 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.NumStr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IStringX;
@@ -190,14 +192,14 @@ public class ExprParser extends Scanner {
 				// - <number>)
 				return F.Power(arg1Power.base(), arg1Power.exponent().negate());
 			}
-		} else if (ast.isSameHeadSizeGE(F.GreaterEqual, 3)) {
-			return AST2Expr.rewriteLessGreaterAST(ast, F.Greater);
-		} else if (ast.isSameHeadSizeGE(F.Greater, 3)) {
-			return AST2Expr.rewriteLessGreaterAST(ast, F.GreaterEqual);
-		} else if (ast.isSameHeadSizeGE(F.LessEqual, 3)) {
-			return AST2Expr.rewriteLessGreaterAST(ast, F.Less);
-		} else if (ast.isSameHeadSizeGE(F.Less, 3)) {
-			return AST2Expr.rewriteLessGreaterAST(ast, F.LessEqual);
+			// } else if (ast.isSameHeadSizeGE(F.GreaterEqual, 3)) {
+			// return AST2Expr.rewriteLessGreaterAST(ast, F.Greater);
+			// } else if (ast.isSameHeadSizeGE(F.Greater, 3)) {
+			// return AST2Expr.rewriteLessGreaterAST(ast, F.GreaterEqual);
+			// } else if (ast.isSameHeadSizeGE(F.LessEqual, 3)) {
+			// return AST2Expr.rewriteLessGreaterAST(ast, F.Less);
+			// } else if (ast.isSameHeadSizeGE(F.Less, 3)) {
+			// return AST2Expr.rewriteLessGreaterAST(ast, F.LessEqual);
 		} else if (head.equals(F.Pattern)) {
 			expr = PatternMatching.Pattern.CONST.evaluate(ast, fEngine);
 		} else if (head.equals(F.Blank)) {
@@ -1144,6 +1146,25 @@ public class ExprParser extends Scanner {
 		lhs = createInfixFunction(infixOperator, lhs, rhs);
 		if (lhs instanceof IASTAppendable) {
 			IASTAppendable ast = (IASTAppendable) lhs;
+			int headID = ast.headID();
+			if ((headID >= ID.Equal && headID <= ID.Unequal) && //
+					(headID == ID.Equal || headID == ID.Greater || headID == ID.GreaterEqual || headID == ID.Less
+							|| headID == ID.LessEqual || headID == ID.Unequal)) {
+				while (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
+						&& isComparatorOperator(fOperatorString)) {
+					if (!infixOperator.isOperator(fOperatorString)) {
+						// rewrite to Inequality
+						return parseInequality(ast, infixOperator);
+					}
+					getNextToken();
+					while (fToken == TT_NEWLINE) {
+						getNextToken();
+					}
+					rhs = parseLookaheadOperator(infixOperator.getPrecedence());
+					ast.append(rhs);
+				}
+				return ast;
+			}
 			while (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
 					&& infixOperator.isOperator(fOperatorString)) {
 				getNextToken();
@@ -1160,6 +1181,7 @@ public class ExprParser extends Scanner {
 				rhs = parseLookaheadOperator(infixOperator.getPrecedence());
 				ast.append(rhs);
 			}
+
 			return ast;
 		} else {
 			if (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
@@ -1168,6 +1190,43 @@ public class ExprParser extends Scanner {
 			}
 		}
 		return lhs;
+	}
+
+	/**
+	 * Rewrite a chain of different comparator operators to an <code>Inequality(...)</code> expression.
+	 * 
+	 * @param ast
+	 *            the ast which should be rewritten
+	 * @param infixOperator
+	 * @return
+	 */
+	private IExpr parseInequality(final IAST ast, final InfixExprOperator infixOperator) {
+		// rewrite to Inequality
+		IBuiltInSymbol head = (IBuiltInSymbol) ast.head();
+		IASTAppendable result = F.ast(F.Inequality, ast.size() + 2, false);
+		ast.forEach(x -> {
+			result.append(x);
+			result.append(head);
+		});
+		InfixExprOperator compareOperator = determineBinaryOperator();
+		result.set(result.size() - 1, F.$s(compareOperator.getFunctionName()));
+		getNextToken();
+		while (fToken == TT_NEWLINE) {
+			getNextToken();
+		}
+		int precedence = infixOperator.getPrecedence();
+		result.append(parseLookaheadOperator(precedence));
+
+		while (fToken == TT_OPERATOR && isComparatorOperator(fOperatorString)) {
+			compareOperator = determineBinaryOperator();
+			result.append(F.$s(compareOperator.getFunctionName()));
+			getNextToken();
+			while (fToken == TT_NEWLINE) {
+				getNextToken();
+			}
+			result.append(parseLookaheadOperator(precedence));
+		}
+		return result;
 	}
 
 	private final IExpr parsePostfixOperator(IExpr lhs, PostfixExprOperator postfixOperator) {
