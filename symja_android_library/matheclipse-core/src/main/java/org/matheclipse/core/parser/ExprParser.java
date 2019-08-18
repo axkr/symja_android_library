@@ -186,7 +186,7 @@ public class ExprParser extends Scanner {
 
 			case ID.Hold:
 			case ID.HoldForm:
-				return ast; 
+				return ast;
 
 			case ID.N:
 				if (ast.isAST(F.N, 3)) {
@@ -251,8 +251,7 @@ public class ExprParser extends Scanner {
 		return function;
 	}
 
-	private IExpr convertSymbol(final String nodeStr, final String context) {
-		// if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+	private IExpr convertSymbolOnInput(final String nodeStr, final String context) {
 		if (fRelaxedSyntax) {
 			if (nodeStr.length() == 1) {
 				if (nodeStr.equals("I")) {
@@ -381,14 +380,15 @@ public class ExprParser extends Scanner {
 
 	private IExpr getFactor(final int min_precedence) throws SyntaxError {
 		IExpr temp = null;
-
-		if (fToken == TT_IDENTIFIER) {
+		switch (fToken) {
+		case TT_IDENTIFIER:
 			temp = getSymbol();
 			if (temp.isSymbol() && fToken >= TT_BLANK && fToken <= TT_BLANK_COLON) {
 				temp = getBlankPatterns(temp);
 			}
 			return parseArguments(temp);
-		} else if (fToken == TT_PRECEDENCE_OPEN) {
+
+		case TT_PRECEDENCE_OPEN:
 			fRecursionDepth++;
 			try {
 				getNextToken();
@@ -415,23 +415,29 @@ public class ExprParser extends Scanner {
 			}
 			return temp;
 
-		} else if (fToken == TT_LIST_OPEN) {
+		case TT_LIST_OPEN:
 			fRecursionDepth++;
 			try {
 				return getList();
 			} finally {
 				fRecursionDepth--;
 			}
-		} else if (fToken >= TT_BLANK && fToken <= TT_BLANK_COLON) {
+
+		case TT_BLANK:
+		case TT_BLANK_BLANK:
+		case TT_BLANK_BLANK_BLANK:
+		case TT_BLANK_OPTIONAL:
+		case TT_BLANK_COLON:
 			return getBlanks(temp);
-		} else if (fToken == TT_DIGIT) {
+
+		case TT_DIGIT:
 			return getNumber(false);
-		} else if (fToken == TT_STRING) {
+
+		case TT_STRING:
 			return getString();
-		} else if (fToken == TT_PERCENT) {
 
+		case TT_PERCENT:
 			final IASTAppendable out = F.ast(F.Out);
-
 			int countPercent = 1;
 			getNextToken();
 			if (fToken == TT_DIGIT) {
@@ -447,8 +453,8 @@ public class ExprParser extends Scanner {
 
 			out.append(F.integer(-countPercent));
 			return parseArguments(out);
-		} else if (fToken == TT_SLOT) {
 
+		case TT_SLOT:
 			getNextToken();
 			if (fToken == TT_DIGIT) {
 				int slotNumber = getJavaInt();
@@ -460,12 +466,10 @@ public class ExprParser extends Scanner {
 				final IASTAppendable slot = F.ast(F.Slot);
 				slot.append(F.ZZ(slotNumber));
 				return parseArguments(slot);
-			} else {
-				return parseArguments(F.Slot1);
 			}
+			return parseArguments(F.Slot1);
 
-		} else if (fToken == TT_SLOTSEQUENCE) {
-
+		case TT_SLOTSEQUENCE:
 			getNextToken();
 			final IASTAppendable slotSequencce = F.ast(F.SlotSequence);
 			if (fToken == TT_DIGIT) {
@@ -474,23 +478,15 @@ public class ExprParser extends Scanner {
 				slotSequencce.append(F.C1);
 			}
 			return parseArguments(slotSequencce);
-			// final FunctionNode slotSequencce =
-			// fFactory.createFunction(fFactory.createSymbol(IConstantOperators.SlotSequence));
-			// if (fToken == TT_DIGIT) {
-			// slotSequencce.add(getNumber(false));
-			// } else {
-			// slotSequencce.add(fFactory.createInteger(1));
-			// }
-			// return parseArguments(slotSequencce);
-		}
-		switch (fToken) {
 
 		case TT_PRECEDENCE_CLOSE:
 			throwSyntaxError("Too much closing ) in factor.");
 			break;
+
 		case TT_LIST_CLOSE:
 			throwSyntaxError("Too much closing } in factor.");
 			break;
+
 		case TT_ARGUMENTS_CLOSE:
 			throwSyntaxError("Too much closing ] in factor.");
 			break;
@@ -508,7 +504,8 @@ public class ExprParser extends Scanner {
 	 * @return
 	 */
 	private IExpr getBlanks(IExpr temp) {
-		if (fToken == TT_BLANK) {
+		switch (fToken) {
+		case TT_BLANK:
 			if (isWhitespace()) {
 				getNextToken();
 				temp = F.$b();
@@ -524,8 +521,8 @@ public class ExprParser extends Scanner {
 					// temp = fFactory.createPattern(null, null);
 				}
 			}
-
-		} else if (fToken == TT_BLANK_BLANK) {
+			break;
+		case TT_BLANK_BLANK:
 			// read '__'
 			if (isWhitespace()) {
 				getNextToken();
@@ -542,7 +539,8 @@ public class ExprParser extends Scanner {
 					// temp = fFactory.createPattern2(null, null);
 				}
 			}
-		} else if (fToken == TT_BLANK_BLANK_BLANK) {
+			break;
+		case TT_BLANK_BLANK_BLANK:
 			// read '___'
 			if (isWhitespace()) {
 				getNextToken();
@@ -559,7 +557,8 @@ public class ExprParser extends Scanner {
 					// temp = fFactory.createPattern3(null, null);
 				}
 			}
-		} else if (fToken == TT_BLANK_OPTIONAL) {
+			break;
+		case TT_BLANK_OPTIONAL:
 			// read '_.'
 			if (isWhitespace()) {
 				getNextToken();
@@ -576,12 +575,15 @@ public class ExprParser extends Scanner {
 					// temp = fFactory.createPattern(null, null, true);
 				}
 			}
-		} else if (fToken == TT_BLANK_COLON) {
+			break;
+		case TT_BLANK_COLON:
 			// read '_:'
 			getNextToken();
 			IExpr defaultValue = parseExpression();
 			temp = F.Optional(F.$b(), defaultValue);
+			break;
 		}
+
 		if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
 			getNextToken();
 			IExpr defaultValue = parseExpression();
@@ -599,7 +601,8 @@ public class ExprParser extends Scanner {
 	private IExpr getBlankPatterns(final IExpr head) {
 		IExpr temp = head;
 		final ISymbol symbol = (ISymbol) head;
-		if (fToken == TT_BLANK) {
+		switch (fToken) {
+		case TT_BLANK:
 			// read '_'
 			if (isWhitespace()) {
 				temp = F.$p(symbol, null);
@@ -613,7 +616,8 @@ public class ExprParser extends Scanner {
 					temp = F.$p(symbol, null);
 				}
 			}
-		} else if (fToken == TT_BLANK_BLANK) {
+			break;
+		case TT_BLANK_BLANK:
 			// read '__'
 			if (isWhitespace()) {
 				temp = F.$ps(symbol, null);
@@ -627,7 +631,8 @@ public class ExprParser extends Scanner {
 					temp = F.$ps(symbol, null);
 				}
 			}
-		} else if (fToken == TT_BLANK_BLANK_BLANK) {
+			break;
+		case TT_BLANK_BLANK_BLANK:
 			// read '___'
 			if (isWhitespace()) {
 				temp = F.$ps(symbol, null, false, true);
@@ -641,7 +646,8 @@ public class ExprParser extends Scanner {
 					temp = F.$ps(symbol, null, false, true);
 				}
 			}
-		} else if (fToken == TT_BLANK_OPTIONAL) {
+			break;
+		case TT_BLANK_OPTIONAL:
 			// read '_.'
 			if (isWhitespace()) {
 				temp = F.$p(symbol, null, true);
@@ -655,11 +661,13 @@ public class ExprParser extends Scanner {
 					temp = F.$p(symbol, null, true);
 				}
 			}
-		} else if (fToken == TT_BLANK_COLON) {
+			break;
+		case TT_BLANK_COLON:
 			// read '_:'
 			getNextToken();
 			IExpr defaultValue = parseExpression();
 			temp = F.Optional(F.$p(symbol), defaultValue);
+			break;
 		}
 		if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
 			getNextToken();
@@ -975,8 +983,7 @@ public class ExprParser extends Scanner {
 			throwSyntaxError("Invalid identifier: " + identifierContext[0] + " detected.");
 		}
 
-		final IExpr symbol = convertSymbol(identifierContext[0], identifierContext[1]);
-		// final ISymbol symbol = F.$s(identifier);
+		final IExpr symbol = convertSymbolOnInput(identifierContext[0], identifierContext[1]);
 		getNextToken();
 		return symbol;
 	}
