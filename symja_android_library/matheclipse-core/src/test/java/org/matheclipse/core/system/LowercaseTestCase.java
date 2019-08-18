@@ -2654,6 +2654,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 					"");
 			check(" f(1.4567)", //
 					"2.56739");
+			
+			check("f=Compile({x}, x^3+Gamma(x^2)); ", //
+					"");
+			check(" f(1.4567)", //
+					"4.14894");
 		}
 	}
 
@@ -8785,9 +8790,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("JavaForm(E^3-Cos(Pi^2/x), Prefix->True)", //
 				"F.Subtract(F.Exp(F.C3),F.Cos(F.Times(F.Sqr(F.Pi),F.Power(F.x,F.CN1))))");
 		check("JavaForm(E^3-Cos(Pi^2/x), Float->True)", //
-				"Math.pow(Math.E,3)-Math.cos(Math.pow(Math.PI,2)/x)");
+				"(20.085536923187664)-Math.cos((9.869604401089358)/x)");
 		check("JavaForm(E^3-Cos(Pi^2/x), Float)", //
-				"Math.pow(Math.E,3)-Math.cos(Math.pow(Math.PI,2)/x)");
+				"(20.085536923187664)-Math.cos((9.869604401089358)/x)");
 
 		check("JavaForm(Hold(D(sin(x)*cos(x),x)), prefix->True)", //
 				"F.D(F.Times(F.Sin(F.x),F.Cos(F.x)),F.x)");

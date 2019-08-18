@@ -36,6 +36,7 @@ import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.math.MathException;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
@@ -145,6 +146,15 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
 	}
 
 	public void convertAST(final Appendable buf, final IAST function) throws IOException {
+		if (function.isNumericFunction()) {
+			try {
+				double value = EvalEngine.get().evalDouble(function);
+				buf.append("(" + value + ")");
+				return;
+			} catch (RuntimeException rex) {
+				//
+			}
+		}
 		IExpr head = function.head();
 		if (head.isSymbol()) {
 			String str = functionHead((ISymbol) head);
@@ -157,29 +167,37 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
 				return;
 			}
 		}
-		if (function.isPower()) {
-			IExpr base = function.base();
-			IExpr exponent = function.exponent();
-			if (exponent.isMinusOne()) {
-				buf.append("(1.0/");
-				convert(buf, base);
-				buf.append(")");
+		if (function.headID() > 0) {
+			if (function.isPower()) {
+				IExpr base = function.base();
+				IExpr exponent = function.exponent();
+				if (exponent.isMinusOne()) {
+					buf.append("(1.0/");
+					convert(buf, base);
+					buf.append(")");
+					return;
+				}
+				if (exponent.isNumEqualRational(F.C1D2)) {
+					buf.append("Math.sqrt(");
+					convert(buf, base);
+					buf.append(")");
+					return;
+				}
+				if (exponent.isNumEqualRational(F.C1D3)) {
+					buf.append("Math.cbrt(");
+					convert(buf, base);
+					buf.append(")");
+					return;
+				}
+				buf.append("Math.pow");
+				convertArgs(buf, head, function);
 				return;
 			}
-			if (exponent.isNumEqualRational(F.C1D2)) {
-				buf.append("Math.sqrt(");
-				convert(buf, base);
-				buf.append(")");
-				return;
-			}
-			if (exponent.isNumEqualRational(F.C1D3)) {
-				buf.append("Math.cbrt(");
-				convert(buf, base);
-				buf.append(")");
-				return; 
-			}
-			buf.append("Math.pow");
+			buf.append("F.");
+			buf.append(head.toString());
+			buf.append(".ofN(");
 			convertArgs(buf, head, function);
+			buf.append(")");
 			return;
 		}
 		if (function.isInfinity()) {
