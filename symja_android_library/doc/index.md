@@ -304,6 +304,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Cyclotomic](functions/Cyclotomic.md)
 * [D](functions/D.md)
 * [Decrement](functions/Decrement.md)
+* [Default](functions/Default.md)
 * [Defer](functions/Defer.md)
 * [Definition](functions/Definition.md)
 * [Degree](functions/Degree.md)

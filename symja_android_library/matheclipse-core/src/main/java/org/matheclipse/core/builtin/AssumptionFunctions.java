@@ -80,13 +80,13 @@ public class AssumptionFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			final IExpr arg2 = engine.evaluate(ast.arg2());
-			IExpr truthValue;
+		
 			if (arg2.isSymbol()) {
 				final IExpr arg1 = engine.evaluate(ast.arg1());
 				if (arg1.isAST(F.Alternatives)) {
 					IAST list = (IAST) arg1;
 					for (int i = 1; i < list.size(); i++) {
-						truthValue = assumeDomain(arg1, (ISymbol) arg2);
+						IExpr truthValue = assumeDomain(arg1, (ISymbol) arg2);
 						if (truthValue.isPresent()) {
 							return truthValue;
 						}

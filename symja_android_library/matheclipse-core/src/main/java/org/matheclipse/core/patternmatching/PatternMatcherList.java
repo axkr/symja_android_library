@@ -2,6 +2,7 @@ package org.matheclipse.core.patternmatching;
 
 import javax.annotation.Nonnull;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
@@ -11,13 +12,12 @@ import org.matheclipse.core.interfaces.IExpr;
 
 public class PatternMatcherList extends PatternMatcherAndEvaluator {
 	IASTAppendable fReplaceList;
-	
+
 	public IASTAppendable getReplaceList() {
 		return fReplaceList;
 	}
 
-	public PatternMatcherList(final int setSymbol, final IExpr leftHandSide,
-			final IExpr rightHandSide) {
+	public PatternMatcherList(final int setSymbol, final IExpr leftHandSide, final IExpr rightHandSide) {
 		super(setSymbol, leftHandSide, rightHandSide, true, 0);
 		fReplaceList = F.ListAlloc();
 	}
@@ -44,8 +44,6 @@ public class PatternMatcherList extends PatternMatcherAndEvaluator {
 				if (!(fLhsPatternExpr.isFlatAST() && leftHandSide.isFlatAST())) {
 					return F.NIL;
 				}
-				// replaceSubExpressionOrderlessFlat() below implements equals matching for
-				// special cases, if the AST is Orderless or Flat
 			}
 			if (fLhsPatternExpr.size() == leftHandSide.size()) {
 				return F.NIL;
@@ -74,7 +72,9 @@ public class PatternMatcherList extends PatternMatcherAndEvaluator {
 					}
 					return result;
 				} catch (final ConditionException e) {
-					logConditionFalse(leftHandSide, fLhsPatternExpr, fRightHandSide);
+					if (Config.SHOW_STACKTRACE) {
+						logConditionFalse(leftHandSide, fLhsPatternExpr, fRightHandSide);
+					}
 					return F.NIL;
 				} catch (final ReturnException e) {
 					return e.getValue();
@@ -85,7 +85,7 @@ public class PatternMatcherList extends PatternMatcherAndEvaluator {
 
 		return F.NIL;
 	}
-	
+
 	@Override
 	public boolean checkRHSCondition(EvalEngine engine) {
 		IPatternMap patternMap = getPatternMap();

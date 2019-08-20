@@ -3376,7 +3376,7 @@ public class StatisticsFunctions {
 				IAST vector = (IAST) ast.arg1();
 				int size = vector.size();
 				IASTAppendable sum = F.PlusAlloc(size);
-				final IExpr mean = F.eval(F.Mean(F.Negate(vector)));
+				final IExpr mean = F.Mean.of(engine, F.Negate(vector));
 				vector.forEach(x -> sum.append(F.Abs(F.Plus(x, mean))));
 				return F.Times(F.Power(F.ZZ(size - 1), -1), sum);
 			}

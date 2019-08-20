@@ -18,9 +18,8 @@ public class Documentation {
 	public static void usageDocumentation(Appendable out, String name) {
 		IAST list = IOFunctions.getNamesByPrefix(name);
 		try {
-			if (list.size() != 2) {
+			if (list.size() != 2) { 
 				for (int i = 1; i < list.size(); i++) {
-
 					out.append(list.get(i).toString());
 					if (i != list.argSize()) {
 						out.append(", ");

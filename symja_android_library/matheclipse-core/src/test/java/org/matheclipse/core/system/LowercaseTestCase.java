@@ -2654,7 +2654,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 					"");
 			check(" f(1.4567)", //
 					"2.56739");
-			
+
 			check("f=Compile({x}, x^3+Gamma(x^2)); ", //
 					"");
 			check(" f(1.4567)", //
@@ -3667,6 +3667,26 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{(2*x)/E^w,(15*y^2)/E^w},{(4*z^3)/E^w,-(x^2+5*y^3+z^4)/E^w}}");
 		check("D(ExpIntegralEi(b*x),x)", //
 				"E^(b*x)/x");
+	}
+
+	public void testDefault() {
+		check("Default(test) = 1", //
+				"1");
+		check("test(x_., y_.) = {x, y}", //
+				"{x,y}");
+		check("test(a)", //
+				"{a,1}");
+		check("test( )", //
+				"{1,1}");
+		
+		check("Default(Plus)", //
+				"0");
+		check("Default(Power)", //
+				"Default(Power)");
+		check("Default(Power, 2)", //
+				"1");
+		check("Default(Times)", //
+				"1");
 	}
 
 	public void testDefer() {
@@ -6453,7 +6473,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testGraphCenter() {
 		check("GraphCenter(Graph({DirectedEdge(1, 2), DirectedEdge(2, 3), DirectedEdge(3, 1),  DirectedEdge(3, 4), DirectedEdge(4, 5), DirectedEdge(5, 3)}))", //
 				"{3}");
-		
+
 		check("GraphCenter(Graph({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)}, "
 				+ //
 				"{EdgeWeight->{1.6,2.0,1.4,1.9,0.62}}))", //
@@ -6461,11 +6481,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("GraphCenter({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)})", //
 				"{1,3}");
 	}
-	
+
 	public void testGraphDiameter() {
 		check("GraphDiameter(Graph({DirectedEdge(1, 2), DirectedEdge(2, 3), DirectedEdge(3, 1),  DirectedEdge(3, 4), DirectedEdge(4, 5), DirectedEdge(5, 3)}))", //
 				"4");
-		
+
 		check("GraphDiameter(Graph({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)}, "
 				+ //
 				"{EdgeWeight->{1.6,2.0,1.4,1.9,0.62}}))", //
@@ -6489,18 +6509,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testGraphPeriphery() {
 		check("GraphPeriphery(Graph({DirectedEdge(1, 2), DirectedEdge(2, 3), DirectedEdge(3, 1),  DirectedEdge(3, 4), DirectedEdge(4, 5), DirectedEdge(5, 3)}))", //
 				"{1,4}");
-		
+
 		check("GraphPeriphery(Graph({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)}, "
 				+ //
 				"{EdgeWeight->{1.6,2.0,1.4,1.9,0.62}}))", //
 				"{2,4}");
 		check("GraphPeriphery({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)})", //
 				"{2,4}");
-		
+
 		check("GraphPeriphery({UndirectedEdge(1, 2), UndirectedEdge(2, 3), UndirectedEdge(3, 1), UndirectedEdge(3, 4), UndirectedEdge(3, 4), UndirectedEdge(4, 5), UndirectedEdge(5, 3)})", //
 				"{1,2,4,5}");
 	}
-	
+
 	public void testGraphQ() {
 		check("GraphQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}) )", //
 				"True");
@@ -19742,16 +19762,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testVertexEccentricity() {
 		check("VertexEccentricity({1 -> 2, 2 -> 3, 3 -> 1, 3 -> 4, 4 -> 5, 5 -> 3}, 1)", //
 				"4");
-		
+
 		check("VertexEccentricity(Graph({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)}, "
 				+ //
 				"{EdgeWeight->{1.6,1.4,0.62,1.9,2.1}}), 4)", //
 				"2.22");
 		check("VertexEccentricity({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)}, 4)", //
 				"2");
-		
+
 	}
-	
+
 	public void testVertexQ() {
 		check("VertexQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}),3)", //
 				"True");

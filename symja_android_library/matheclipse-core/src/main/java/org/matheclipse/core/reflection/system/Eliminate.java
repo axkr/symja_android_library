@@ -493,7 +493,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 		for (int i = 0; i < analyzerList.size(); i++) {
 			IExpr variableExpr = eliminateAnalyze(analyzerList.get(i).getExpr(), variable, engine);
 			if (variableExpr.isPresent()) {
-				variableExpr = F.eval(variableExpr);
+				variableExpr = engine.evaluate(variableExpr);
 				IExpr expr;
 				IAST rule = F.Rule(variable, variableExpr);
 				analyzerList.remove(i);

@@ -407,7 +407,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 					return F.NIL;
 				}
 
-				result = integrateByRubiRules(fx, x, ast);
+				result = integrateByRubiRules(fx, x, ast, engine);
 				if (result.isPresent()) {
 					return result;
 				}
@@ -590,18 +590,18 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * 
 	 * @return
 	 */
-	private static IExpr integratePolynomialByParts(IAST ast, final IAST arg1, IExpr symbol) {
+	private static IExpr integratePolynomialByParts(IAST ast, final IAST arg1, IExpr symbol, EvalEngine engine) {
 		IASTAppendable fTimes = F.TimesAlloc(arg1.size());
 		IASTAppendable gTimes = F.TimesAlloc(arg1.size());
 		collectPolynomialTerms(arg1, symbol, gTimes, fTimes);
 		IExpr g = gTimes.oneIdentity1();
 		IExpr f = fTimes.oneIdentity1();
-		// confLICTS WITH RUBI 4.5 INTEGRATION RULES
-		// ONLY call integrateBy Parts for simple Times() expression
+		// conflicts with Rubi 4.5 integration rules
+		// only call integrateByParts for simple Times() expressions
 		if (f.isOne() || g.isOne()) {
 			return F.NIL;
 		}
-		return integrateByParts(f, g, symbol);
+		return integrateByParts(f, g, symbol, engine);
 	}
 
 	/**
@@ -611,8 +611,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * @param ast
 	 * @return
 	 */
-	private static IExpr integrateByRubiRules(IAST arg1, IExpr x, IAST ast) {
-		EvalEngine engine = EvalEngine.get();
+	private static IExpr integrateByRubiRules(IAST arg1, IExpr x, IAST ast, EvalEngine engine) {
+		// EvalEngine engine = EvalEngine.get();
 		int limit = engine.getRecursionLimit();
 		boolean quietMode = engine.isQuietMode();
 		ISymbol head = arg1.topHead();
@@ -696,14 +696,13 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * @param x
 	 * @return <code>f(x) * g(x) - Integrate(f(x) * g'(x),x )</code>
 	 */
-	private static IExpr integrateByParts(IExpr f, IExpr g, IExpr x) {
-		EvalEngine engine = EvalEngine.get();
+	private static IExpr integrateByParts(IExpr f, IExpr g, IExpr x, EvalEngine engine) {
 		int limit = engine.getRecursionLimit();
 		try {
 			if (limit <= 0 || limit > Config.INTEGRATE_BY_PARTS_RECURSION_LIMIT) {
 				engine.setRecursionLimit(Config.INTEGRATE_BY_PARTS_RECURSION_LIMIT);
 			}
-			IExpr firstIntegrate = F.eval(F.Integrate(f, x));
+			IExpr firstIntegrate = engine.evaluate(F.Integrate(f, x));
 			if (!firstIntegrate.isFreeAST(Integrate)) {
 				return F.NIL;
 			}

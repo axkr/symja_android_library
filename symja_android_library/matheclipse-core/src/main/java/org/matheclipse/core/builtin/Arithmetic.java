@@ -2566,18 +2566,12 @@ public final class Arithmetic {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			int size = ast.size();
-			if (size == 1) {
-				return F.C0;
-			}
-			if (size == 2 && ast.head() == F.Plus) {
-				return ast.arg1();
-			}
 			if (ast.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
 				return F.NIL;
 			}
+			final int size = ast.size();
 			if (size > 2) {
-				PlusOp plusOp = new PlusOp(size);
+				PlusOp plusOp = new PlusOp(size); 
 				for (int i = 1; i < size; i++) {
 					final IExpr temp = plusOp.plus(ast.get(i));
 					if (temp.isPresent()) {
@@ -2587,9 +2581,7 @@ public final class Arithmetic {
 				if (plusOp.isEvaled()) {
 					return plusOp.getSum();
 				}
-			}
 
-			if (size > 2) {
 				IExpr temp = evaluateHashsRepeated(ast, engine);
 				if (temp.isAST(F.Plus, 2)) {
 					return temp.first();
@@ -2598,6 +2590,13 @@ public final class Arithmetic {
 					ast.addEvalFlags(IAST.BUILT_IN_EVALED);
 				}
 				return temp;
+			} else {
+				if (size == 1) {
+					return F.C0;
+				}
+				if (size == 2 && ast.head() == F.Plus) {
+					return ast.arg1();
+				}
 			}
 
 			ast.addEvalFlags(IAST.BUILT_IN_EVALED);
@@ -4204,7 +4203,7 @@ public final class Arithmetic {
 					return F.Power(F.Sign(arg1.base()), arg1.exponent());
 				}
 				if (arg1.base().isE()) {
-					// E^z   == >   E^(I*Im(z))
+					// E^z == > E^(I*Im(z))
 					return F.Power(F.E, F.Times(F.CI, F.Im(arg1.exponent())));
 				}
 			} else if (arg1.isAST(F.Sign, 2)) {

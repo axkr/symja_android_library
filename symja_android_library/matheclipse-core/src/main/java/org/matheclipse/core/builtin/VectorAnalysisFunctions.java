@@ -129,9 +129,10 @@ public class VectorAnalysisFunctions {
 			if (ast.arg2().isVector() > 0) {
 				IAST variables = (IAST) ast.arg2();
 				IASTAppendable dList = F.ListAlloc(variables.argSize());
-				for (int i = 1; i < variables.size(); i++) {
-					dList.append(engine.evaluate(F.D(function, variables.get(i))));
-				}
+				variables.forEach(x -> dList.append(engine.evaluate(F.D(function, x))));
+				// for (int i = 1; i < variables.size(); i++) {
+				// dList.append(engine.evaluate(F.D(function, variables.get(i))));
+				// }
 				return dList;
 			}
 

@@ -166,37 +166,49 @@ public class LogicFormula {
 				switch (functionID) {
 				case ID.And:
 					if (ast.isAnd()) {
-						Formula[] result = new Formula[ast.argSize()];
-						for (int i = 1; i < ast.size(); i++) {
-							result[i - 1] = expr2BooleanFunction(ast.get(i));
-						}
+						final Formula[] result = new Formula[ast.argSize()];
+						ast.forEach((x, i) -> {
+							result[i - 1] = expr2BooleanFunction(x);
+						});
+						// for (int i = 1; i < ast.size(); i++) {
+						// result[i - 1] = expr2BooleanFunction(ast.get(i));
+						// }
 						return factory.and(result);
 					}
 					break;
 				case ID.Or:
 					if (ast.isOr()) {
-						Formula[] result = new Formula[ast.argSize()];
-						for (int i = 1; i < ast.size(); i++) {
-							result[i - 1] = expr2BooleanFunction(ast.get(i));
-						}
+						final Formula[] result = new Formula[ast.argSize()];
+						ast.forEach((x, i) -> {
+							result[i - 1] = expr2BooleanFunction(x);
+						});
+						// for (int i = 1; i < ast.size(); i++) {
+						// result[i - 1] = expr2BooleanFunction(ast.get(i));
+						// }
 						return factory.or(result);
 					}
 					break;
 				case ID.Nand:
 					if (ast.isSameHeadSizeGE(F.Nand, 3)) {
-						Formula[] result = new Formula[ast.argSize()];
-						for (int i = 1; i < ast.size(); i++) {
-							result[i - 1] = factory.not(expr2BooleanFunction(ast.get(i)));
-						}
+						final Formula[] result = new Formula[ast.argSize()];
+						ast.forEach((x, i) -> {
+							result[i - 1] = factory.not(expr2BooleanFunction(x));
+						});
+						// for (int i = 1; i < ast.size(); i++) {
+						// result[i - 1] = factory.not(expr2BooleanFunction(ast.get(i)));
+						// }
 						return factory.or(result);
 					}
 					break;
 				case ID.Nor:
 					if (ast.isSameHeadSizeGE(F.Nor, 3)) {
 						Formula[] result = new Formula[ast.argSize()];
-						for (int i = 1; i < ast.size(); i++) {
-							result[i - 1] = factory.not(expr2BooleanFunction(ast.get(i)));
-						}
+						ast.forEach((x, i) -> {
+							result[i - 1] = factory.not(expr2BooleanFunction(x));
+						});
+						// for (int i = 1; i < ast.size(); i++) {
+						// result[i - 1] = factory.not(expr2BooleanFunction(ast.get(i)));
+						// }
 						return factory.and(result);
 					}
 					break;
@@ -299,7 +311,7 @@ public class LogicFormula {
 		}
 		return list;
 	}
- 
+
 	public IAST literals2VariableList(final SortedSet<Literal> literals, Map<String, Integer> map) {
 		IASTAppendable list = F.ast(F.List, map.size(), true);
 

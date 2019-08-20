@@ -1943,7 +1943,7 @@ public class UtilityFunctionCtors {
 			if (temp.isAST(Dist) && temp.size() == 4) {
 				IAST dist = engine.evalArgs((IAST) temp, ISymbol.NOATTRIBUTE).orElse((IAST) temp);
 				temp = astTimes.removeAtCopy(i).oneIdentity1();
-				temp = F.eval(temp);
+				temp = engine.evaluate(temp);
 				if (!temp.isMinusOne()) {
 					// System.out.println("w_*Dist[u_,v_,x_]");
 					// Dist[ temp *u,v,x]

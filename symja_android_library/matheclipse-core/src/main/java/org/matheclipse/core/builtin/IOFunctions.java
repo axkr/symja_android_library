@@ -237,7 +237,7 @@ public class IOFunctions {
 				message = temp.toString();
 			}
 		}
-		if (message != null) {
+		if (message != null) { 
 			for (int i = 1; i < ast.size(); i++) {
 				message = message.replace("`" + (i) + "`", ast.get(i).toString());
 			}

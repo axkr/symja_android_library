@@ -49,7 +49,8 @@ public class Structure {
 
 	/**
 	 * 
-	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static initializer</a>
+	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
+	 * initializer</a>
 	 */
 	private static class Initializer {
 
@@ -266,8 +267,8 @@ public class Structure {
 	 * </p>
 	 * </blockquote>
 	 * <p>
-	 * The depth of an expression is defined as one plus the maximum number of <code>Part</code> indices required to reach any part of
-	 * <code>expr</code>, except for heads.
+	 * The depth of an expression is defined as one plus the maximum number of <code>Part</code> indices required to
+	 * reach any part of <code>expr</code>, except for heads.
 	 * </p>
 	 * <h3>Examples</h3>
 	 * 
@@ -314,8 +315,8 @@ public class Structure {
 		}
 
 		/**
-		 * Calculates the depth of an expression. Atomic expressions (no sublists) have depth <code>1</code> Example: the nested list
-		 * <code>[x,[y]]</code> has depth <code>3</code>
+		 * Calculates the depth of an expression. Atomic expressions (no sublists) have depth <code>1</code> Example:
+		 * the nested list <code>[x,[y]]</code> has depth <code>3</code>
 		 * 
 		 * @param headOffset
 		 * 
@@ -432,8 +433,8 @@ public class Structure {
 	 * {{{1, 2}, {4}}, {{3}, {5, 6}}}
 	 * </pre>
 	 * <p>
-	 * Level 4 specified in {{2}, {1}, {3}, {4}} exceeds the levels, 3, which can be flattened together in {{{1, 2}, {3}}, {{4}, {5,
-	 * 6}}}.
+	 * Level 4 specified in {{2}, {1}, {3}, {4}} exceeds the levels, 3, which can be flattened together in {{{1, 2},
+	 * {3}}, {{4}, {5, 6}}}.
 	 * </p>
 	 * 
 	 * <pre>
@@ -1002,8 +1003,8 @@ public class Structure {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * applies <code>f</code> to each part on the first level of <code>expr</code> and appending the elements position as a list in the
-	 * second argument.
+	 * applies <code>f</code> to each part on the first level of <code>expr</code> and appending the elements position
+	 * as a list in the second argument.
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -1013,8 +1014,8 @@ public class Structure {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * applies <code>f</code> to each level specified by <code>levelspec</code> of <code>expr</code> and appending the elements position
-	 * as a list in the second argument.
+	 * applies <code>f</code> to each level specified by <code>levelspec</code> of <code>expr</code> and appending the
+	 * elements position as a list in the second argument.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -1071,8 +1072,8 @@ public class Structure {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns '{<code>f</code>(<code>a1</code>, <code>b1</code>, &hellip;), <code>f</code>(<code>a2</code>, <code>b2</code>, &hellip;),
-	 * &hellip;}'.<br />
+	 * returns '{<code>f</code>(<code>a1</code>, <code>b1</code>, &hellip;), <code>f</code>(<code>a2</code>,
+	 * <code>b2</code>, &hellip;), &hellip;}'.<br />
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -1111,7 +1112,8 @@ public class Structure {
 	 * MapThread(f, {{a, b}, {c, d}}, 2)
 	 * </pre>
 	 * <p>
-	 * Incompatible dimensions of objects at positions {2, 1} and {2, 2} of MapThread(f, {{a}, {b, c}}); dimensions are 1 and 2.<br />
+	 * Incompatible dimensions of objects at positions {2, 1} and {2, 2} of MapThread(f, {{a}, {b, c}}); dimensions are
+	 * 1 and 2.<br />
 	 * </p>
 	 * 
 	 * <pre>
@@ -1162,9 +1164,11 @@ public class Structure {
 				} else {
 					list = EvalAttributes.threadList(lst, F.List, F.List, size);
 					IASTAppendable result = F.ListAlloc(size);
-					for (int i = 1; i < list.size(); i++) {
-						recursiveMapThread(recursionLevel + 1, (IAST) list.get(i), result);
-					}
+					final int level = recursionLevel + 1;
+					list.forEach(x -> recursiveMapThread(level, (IAST) x, result));
+					// for (int i = 1; i < list.size(); i++) {
+					// recursiveMapThread(recursionLevel + 1, (IAST) list.get(i), result);
+					// }
 					if (resultList != null) {
 						resultList.append(result);
 					}
@@ -1222,8 +1226,8 @@ public class Structure {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * is <code>0</code> if <code>a</code> equals <code>b</code>. Is <code>-1</code> or <code>1</code> according to canonical order of
-	 * <code>a</code> and <code>b</code>.
+	 * is <code>0</code> if <code>a</code> equals <code>b</code>. Is <code>-1</code> or <code>1</code> according to
+	 * canonical order of <code>a</code> and <code>b</code>.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -1239,8 +1243,8 @@ public class Structure {
 	private final static class Order extends AbstractFunctionEvaluator {
 
 		/**
-		 * Compares the first expression with the second expression for order. Returns 1, 0, -1 as this expression is canonical less than,
-		 * equal to, or greater than the specified expression. <br>
+		 * Compares the first expression with the second expression for order. Returns 1, 0, -1 as this expression is
+		 * canonical less than, equal to, or greater than the specified expression. <br>
 		 * <br>
 		 * (<b>Implementation note</b>: see the different results in the <code>IExpr#compareTo(IExpr)</code> method)
 		 * 
@@ -1657,9 +1661,9 @@ public class Structure {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * sorts <code>list</code> (or the leaves of any other expression) according to canonical ordering of the keys that are extracted
-	 * from the <code>list</code>'s elements using <code>f</code>. Chunks of leaves that appear the same under <code>f</code> are sorted
-	 * according to their natural order (without applying <code>f</code>).
+	 * sorts <code>list</code> (or the leaves of any other expression) according to canonical ordering of the keys that
+	 * are extracted from the <code>list</code>'s elements using <code>f</code>. Chunks of leaves that appear the same
+	 * under <code>f</code> are sorted according to their natural order (without applying <code>f</code>).
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -1875,12 +1879,14 @@ public class Structure {
 		}
 
 		/**
-		 * Thread through all lists in the arguments of the IAST [i.e. the list header has the attribute ISymbol.LISTABLE] example:
-		 * Sin[{2,x,Pi}] ==> {Sin[2],Sin[x],Sin[Pi]}
+		 * Thread through all lists in the arguments of the IAST [i.e. the list header has the attribute
+		 * ISymbol.LISTABLE] example: Sin[{2,x,Pi}] ==> {Sin[2],Sin[x],Sin[Pi]}
 		 * 
 		 * @param list
-		 * @param head    the head over which
-		 * @param mapHead the arguments head (typically <code>ast.head()</code>)
+		 * @param head
+		 *            the head over which
+		 * @param mapHead
+		 *            the arguments head (typically <code>ast.head()</code>)
 		 * @return
 		 */
 		public static IAST threadList(final IAST list, IExpr head, IExpr mapHead) {
@@ -1971,12 +1977,16 @@ public class Structure {
 	}
 
 	/**
-	 * Maps the elements of the <code>expr</code> with the cloned <code>replacement</code>. <code>replacement</code> is an IAST where
-	 * the argument at the given position will be replaced by the currently mapped element. Thread over the following headers:
+	 * Maps the elements of the <code>expr</code> with the cloned <code>replacement</code>. <code>replacement</code> is
+	 * an IAST where the argument at the given position will be replaced by the currently mapped element. Thread over
+	 * the following headers:
 	 * <code>F.And, F.Or, F.Xor, F.Nand, F.Nor, F.Not, F.Implies, F.Equivalent, F.Equal,F.Unequal, F.Less, F.Greater, F.LessEqual, F.GreaterEqual</code>
 	 * 
-	 * @param expr        typically the first element of <code>replacement</code> ast.
-	 * @param replacement an IAST there the argument at the given position is replaced by the currently mapped argument of this IAST.
+	 * @param expr
+	 *            typically the first element of <code>replacement</code> ast.
+	 * @param replacement
+	 *            an IAST there the argument at the given position is replaced by the currently mapped argument of this
+	 *            IAST.
 	 * @param position
 	 * @return
 	 */
@@ -1992,12 +2002,16 @@ public class Structure {
 	}
 
 	/**
-	 * Maps the elements of the <code>expr</code> with the cloned <code>replacement</code>. <code>replacement</code> is an IAST where
-	 * the argument at the given position will be replaced by the currently mapped element. Thread over the following headers:
+	 * Maps the elements of the <code>expr</code> with the cloned <code>replacement</code>. <code>replacement</code> is
+	 * an IAST where the argument at the given position will be replaced by the currently mapped element. Thread over
+	 * the following headers:
 	 * <code>F.Plus, F.And, F.Or, F.Xor, F.Nand, F.Nor, F.Not, F.Implies, F.Equivalent, F.Equal,F.Unequal, F.Less, F.Greater, F.LessEqual, F.GreaterEqual</code>
 	 * 
-	 * @param expr        typically the first element of <code>replacement</code> ast.
-	 * @param replacement an IAST there the argument at the given position is replaced by the currently mapped argument of this IAST.
+	 * @param expr
+	 *            typically the first element of <code>replacement</code> ast.
+	 * @param replacement
+	 *            an IAST there the argument at the given position is replaced by the currently mapped argument of this
+	 *            IAST.
 	 * @param position
 	 * @return
 	 */
@@ -2013,13 +2027,17 @@ public class Structure {
 	}
 
 	/**
-	 * Maps the elements of the <code>expr</code> with the cloned <code>replacement</code>. <code>replacement</code> is an IAST where
-	 * the argument at the given position will be replaced by the currently mapped element. Thread over the following headers:
+	 * Maps the elements of the <code>expr</code> with the cloned <code>replacement</code>. <code>replacement</code> is
+	 * an IAST where the argument at the given position will be replaced by the currently mapped element. Thread over
+	 * the following headers:
 	 * <code>F.List F.And, F.Or, F.Xor, F.Nand, F.Nor, F.Not, F.Implies, F.Equivalent, F.Equal,F.Unequal, F.Less, F.Greater, F.LessEqual, F.GreaterEqual</code>
 	 * 
 	 * 
-	 * @param expr        typically the first element of <code>replacement</code> ast.
-	 * @param replacement an IAST there the argument at the given position is replaced by the currently mapped argument of this IAST.
+	 * @param expr
+	 *            typically the first element of <code>replacement</code> ast.
+	 * @param replacement
+	 *            an IAST there the argument at the given position is replaced by the currently mapped argument of this
+	 *            IAST.
 	 * @param position
 	 * @return
 	 */
