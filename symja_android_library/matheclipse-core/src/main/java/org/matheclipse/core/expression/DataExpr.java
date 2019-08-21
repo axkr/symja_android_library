@@ -36,9 +36,9 @@ public class DataExpr<T> implements IDataExpr<T> {
 	}
 
 	private IBuiltInSymbol fHead;
-	private T fData;
+	protected T fData;
 
-	private DataExpr(final IBuiltInSymbol head, final T data) {
+	protected DataExpr(final IBuiltInSymbol head, final T data) {
 		fHead = head;
 		fData = data;
 	}

@@ -11,9 +11,9 @@ import org.jgrapht.graph.builder.GraphTypeBuilder;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
-import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IExprEdge;
+import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -67,7 +67,7 @@ public class GraphDataFunctions {
 						Supplier<Graph> supplier = GRAPH_MAP.get(graphName);
 						if (supplier != null) {
 							Graph<IExpr, IExprEdge> g = supplier.get();
-							return DataExpr.newInstance(F.Graph, g);
+							return GraphExpr.newInstance(g);
 						}
 						return engine.printMessage(
 								"GraphData: no value associated with the specified graph name: " + graphName);
