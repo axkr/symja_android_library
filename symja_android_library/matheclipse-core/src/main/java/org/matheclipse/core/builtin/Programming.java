@@ -20,6 +20,7 @@ import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.BreakException;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ContinueException;
+import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.ReturnException;
@@ -1891,6 +1892,9 @@ public final class Programming {
 						// `1` is not a variable with a value, so its value cannot be changed.
 						return IOFunctions.printMessage(F.Set, "rvalue", F.List(symbol), engine);
 					} else {
+						if (symbol.isProtected()) {
+							return IOFunctions.printMessage(F.Set, "write", F.List(symbol), EvalEngine.get());
+						}
 						try {
 							if (rightHandSide.isList()) {
 								IExpr res = Programming.assignPart(temp, part, 2, (IAST) rightHandSide, 1, engine);

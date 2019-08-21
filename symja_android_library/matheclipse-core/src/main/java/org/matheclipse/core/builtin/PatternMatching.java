@@ -363,13 +363,16 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide, EvalEngine engine) {
-			if (leftHandSide.isAST(F.Default)) {
+			if (leftHandSide.isAST(F.Default) && leftHandSide.size() > 1) {
+				ISymbol symbol = (ISymbol) leftHandSide.first();
+				if (symbol.isProtected()) {
+					IOFunctions.printMessage(F.Default, "write", F.List(symbol, leftHandSide), EvalEngine.get());
+					throw new FailedException();
+				}
 				if (leftHandSide.size() == 2 && leftHandSide.first().isSymbol()) {
-					ISymbol symbol = (ISymbol) leftHandSide.first();
 					symbol.setDefaultValue(rightHandSide);
 					return rightHandSide;
 				} else if (leftHandSide.size() == 3 && leftHandSide.first().isSymbol()) {
-					ISymbol symbol = (ISymbol) leftHandSide.first();
 					int pos = leftHandSide.second().toIntDefault();
 					if (pos > 1) {
 						symbol.setDefaultValue(rightHandSide);

@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -151,6 +152,10 @@ public class AttributeFunctions {
 				if (Config.SERVER_MODE && (sym.toString().charAt(0) != '$')) {
 					throw new RuleCreationError(sym);
 				}
+			}
+			if (sym .isProtected()) {
+				IOFunctions.printMessage(F.ClearAttributes, "write", F.List(sym), EvalEngine.get());
+				throw new FailedException();
 			}
 			if (attributes.isSymbol()) {
 				ISymbol attribute = (ISymbol) attributes;
@@ -363,6 +368,10 @@ public class AttributeFunctions {
 		 * @param attribute
 		 */
 		private static void addAttributes(final ISymbol sym, ISymbol attribute) {
+			if (sym .isProtected()) {
+				IOFunctions.printMessage(F.SetAttributes, "write", F.List(sym), EvalEngine.get());
+				throw new FailedException();
+			}
 			int functionID = attribute.ordinal();
 			if (functionID > ID.UNKNOWN) {
 				switch (functionID) {
