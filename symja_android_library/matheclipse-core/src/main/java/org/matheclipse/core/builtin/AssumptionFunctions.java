@@ -80,20 +80,14 @@ public class AssumptionFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			final IExpr arg2 = engine.evaluate(ast.arg2());
-		
+
 			if (arg2.isSymbol()) {
+				final ISymbol domain = (ISymbol) arg2;
 				final IExpr arg1 = engine.evaluate(ast.arg1());
 				if (arg1.isAST(F.Alternatives)) {
-					IAST list = (IAST) arg1;
-					for (int i = 1; i < list.size(); i++) {
-						IExpr truthValue = assumeDomain(arg1, (ISymbol) arg2);
-						if (truthValue.isPresent()) {
-							return truthValue;
-						}
-					}
-					return F.True;
+					return ((IAST) arg1).findFirst(x -> assumeDomain(x, domain)); 
 				} else {
-					return assumeDomain(arg1, (ISymbol) arg2);
+					return assumeDomain(arg1, domain);
 				}
 			}
 			return F.NIL;
@@ -103,10 +97,19 @@ public class AssumptionFunctions {
 			return IOFunctions.ARGS_2_2;
 		}
 
-		private IExpr assumeDomain(final IExpr arg1, final ISymbol arg2) {
-			if (arg2.isBuiltInSymbol()) {
+		/**
+		 * Return F.True or F.False if expr is assumed to be in the <code>domain</code> or not to be in the
+		 * <code>domain</code>.
+		 * 
+		 * @param arg1
+		 * @param domain
+		 * @return F.True or F.False if expr is assumed to be in the <code>domain</code> or not to be in the
+		 *         <code>domain</code>. In all other cases return <code>F.NIL</code>.
+		 */
+		private IExpr assumeDomain(final IExpr arg1, final ISymbol domain) {
+			if (domain.isBuiltInSymbol()) {
 				ISymbol truthValue;
-				int symbolID = ((IBuiltInSymbol) arg2).ordinal();
+				int symbolID = ((IBuiltInSymbol) domain).ordinal();
 				switch (symbolID) {
 				case ID.Algebraics:
 					truthValue = AbstractAssumptions.assumeAlgebraic(arg1);

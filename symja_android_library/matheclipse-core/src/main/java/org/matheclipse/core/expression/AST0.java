@@ -292,6 +292,18 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 		}
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public int indexOf(Predicate<? super IExpr> predicate) {
+		return -1;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr findFirst(Function<IExpr, IExpr> function) {
+		return F.NIL;
+	}
+
 	@Override
 	public IExpr get(int location) {
 		if (location == 0) {

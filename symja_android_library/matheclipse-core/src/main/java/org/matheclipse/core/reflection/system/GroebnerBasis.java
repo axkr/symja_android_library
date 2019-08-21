@@ -190,9 +190,7 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 		for (GenPolynomial<BigRational> p : opl) {
 			resultList.append(jas.integerPoly2Expr((GenPolynomial<BigInteger>) jas.factorTerms(p)[2]));
 		}
-		for (int i = 1; i < rest.size(); i++) {
-			resultList.append(rest.get(i));
-		}
+		resultList.appendArgs(rest); 
 		return resultList;
 	}
 

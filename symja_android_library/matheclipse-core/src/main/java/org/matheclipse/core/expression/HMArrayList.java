@@ -718,7 +718,32 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 			action.accept(array[i]);
 		}
 	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public final int indexOf(Predicate<? super IExpr> predicate) {
+		int start = firstIndex + 1;
+		for (int i = start; i < lastIndex; i++) {
+			if (predicate.test(array[i])) {
+				return i;
+			}
+		}
+		return -1;
+	}
 
+	/** {@inheritDoc} */
+	@Override
+	public final IExpr findFirst(Function<IExpr, IExpr> function) {
+		int start = firstIndex + 1;
+		for (int i = start; i < lastIndex; i++) {
+			IExpr temp = function.apply(array[i]);
+			if (temp.isPresent()) {
+				return temp;
+			}
+		} 
+		return F.NIL;
+	}
+	
 	@Override
 	public final IExpr get(int location) {
 		return array[firstIndex + location];

@@ -228,7 +228,8 @@ public interface IASTAppendable extends IASTMutable {
 	public boolean appendAll(IExpr[] args, int startPosition, int endPosition);
 
 	/**
-	 * Appends all of the arguments (starting from offset <code>1</code>) in the specified AST to the end of this AST.
+	 * Appends all of the arguments (starting from offset <code>1</code>) in the specified <code>ast</code> to the end
+	 * of <code>this</code> AST.
 	 * 
 	 * @param ast
 	 *            AST containing elements to be added to this AST

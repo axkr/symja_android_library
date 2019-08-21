@@ -281,6 +281,21 @@ public class AST1 extends AST0 {
 		}
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public   int indexOf(Predicate<? super IExpr> predicate) {
+		if (predicate.test(arg1)) {
+			return 1;
+		} 
+		return -1;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public   IExpr findFirst(Function<IExpr, IExpr> function) {
+		return function.apply(arg1); 
+	}
+
 	@Override
 	public IExpr get(int location) {
 		if (location == 0) {

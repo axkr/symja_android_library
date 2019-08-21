@@ -20,7 +20,6 @@ import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.BreakException;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ContinueException;
-import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.ReturnException;
@@ -32,8 +31,8 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
-import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.data.CompiledFunctionExpr;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -408,13 +407,9 @@ public final class Programming {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr head = ast.head();
-			if (head instanceof DataExpr) {
+			if (head instanceof CompiledFunctionExpr) {
 				try {
-					DataExpr data = (DataExpr) head;
-					if (data.head() == F.CompiledFunction) {
-						AbstractFunctionEvaluator fun = (AbstractFunctionEvaluator) data.toData();
-						return fun.evaluate(ast, engine);
-					}
+					return ((CompiledFunctionExpr) head).evaluate(ast, engine);
 				} catch (RuntimeException rex) {
 					engine.printMessage("CompiledFunction: " + rex.getMessage());
 				}

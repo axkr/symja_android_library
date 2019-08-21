@@ -8,9 +8,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> {
-	/**
-	 * 
-	 */
+ 
 	private static final long serialVersionUID = 6160043985328230156L;
 
 	/**
@@ -26,7 +24,12 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> {
 	protected GraphExpr(final Graph<IExpr, T> graph) {
 		super(F.Graph, graph);
 	}
-
+ 
+	@Override
+	public IExpr copy() {
+		return new GraphExpr<T>(fData);
+	}
+	
 	/**
 	 * Test if the graph is instance of <code>DefaultDirectedWeightedGraph</code> or
 	 * <code>DefaultUndirectedWeightedGraph</code>

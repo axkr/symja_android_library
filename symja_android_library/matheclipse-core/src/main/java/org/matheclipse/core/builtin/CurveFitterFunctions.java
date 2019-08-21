@@ -100,9 +100,10 @@ public class CurveFitterFunctions {
 				this.gradientList = gradientList;
 				this.listOfRules = F.ListAlloc(gradientList.size());
 				this.listOfRules.append(F.Rule(x, F.Null));
-				for (int i = 1; i < listOfSymbols.size(); i++) {
-					this.listOfRules.append(F.Rule(listOfSymbols.get(i), F.Null));
-				}
+				listOfSymbols.forEach(arg -> this.listOfRules.append(F.Rule(arg, F.Null)));
+				// for (int i = 1; i < listOfSymbols.size(); i++) {
+				// this.listOfRules.append(F.Rule(listOfSymbols.get(i), F.Null));
+				// }
 			}
 
 			private void createSubstitutionRules(double t, double... parameters) {
@@ -172,9 +173,10 @@ public class CurveFitterFunctions {
 		 */
 		private static IExpr convertToRulesList(IAST listOfSymbols, double[] values) {
 			IASTAppendable result = F.ListAlloc(listOfSymbols.size());
-			for (int i = 1; i < listOfSymbols.size(); i++) {
-				result.append(F.Rule(listOfSymbols.get(i), F.num(values[i - 1])));
-			}
+			listOfSymbols.forEach((arg, i) -> result.append(F.Rule(arg, F.num(values[i - 1]))));
+			// for (int i = 1; i < listOfSymbols.size(); i++) {
+			// result.append(F.Rule(listOfSymbols.get(i), F.num(values[i - 1])));
+			// }
 			return result;
 		}
 
@@ -309,7 +311,7 @@ public class CurveFitterFunctions {
 
 			return F.NIL;
 		}
-		
+
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_3_3;
 		}

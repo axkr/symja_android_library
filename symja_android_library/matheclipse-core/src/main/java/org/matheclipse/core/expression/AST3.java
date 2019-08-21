@@ -389,6 +389,36 @@ public final class AST3 extends AST2 {
 			}
 		}
 	}
+	
+	
+	/** {@inheritDoc} */
+	@Override
+	public   int indexOf(Predicate<? super IExpr> predicate) {
+		if (predicate.test(arg1)) {
+			return 1;
+		}
+		if (predicate.test(arg2)) {
+			return 2;
+		}
+		if (predicate.test(arg3)) {
+			return 3;
+		}
+		return -1;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public   IExpr findFirst(Function<IExpr, IExpr> function) {
+		IExpr temp = function.apply(arg1);
+		if (temp.isPresent()) {
+			return temp;
+		} 
+		temp = function.apply(arg2);
+		if (temp.isPresent()) {
+			return temp;
+		}
+		return function.apply(arg3);
+	}
 
 	@Override
 	public IExpr get(int location) {

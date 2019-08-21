@@ -27,9 +27,9 @@ import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
-import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.WL;
+import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -168,7 +168,7 @@ public class Import extends AbstractEvaluator {
 
 			result = new DefaultDirectedGraph<IExpr, DefaultEdge>(DefaultEdge.class);
 			dotImporter.importGraph(result, reader);
-			return DataExpr.newInstance(F.Graph, result);
+			return GraphExpr.newInstance(result);
 		case GRAPHML:
 			result = new DefaultDirectedGraph<IExpr, DefaultEdge>(DefaultEdge.class);
 			Map<String, Map<String, Attribute>> vertexAttributes = new HashMap<>();
@@ -176,7 +176,7 @@ public class Import extends AbstractEvaluator {
 			GraphMLImporter<IExpr, DefaultEdge> graphmlImporter = createGraphImporter(result, vertexAttributes,
 					edgeAttributes, engine);
 			graphmlImporter.importGraph(result, reader);
-			return DataExpr.newInstance(F.Graph, result);
+			return GraphExpr.newInstance(result);
 		default:
 		}
 		return F.NIL;

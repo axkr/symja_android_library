@@ -117,24 +117,28 @@ public class AttributeFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST2()) {
-				if (ast.arg1().isSymbol()) {
-					IExpr arg2 = engine.evaluate(ast.arg2());
-					final ISymbol sym = ((ISymbol) ast.arg1());
-					return clearAttributes(sym, arg2, engine);
-				}
-				if (ast.arg1().isList()) {
-					IAST list = (IAST) ast.arg1();
-					IExpr arg2 = engine.evaluate(ast.arg2());
-					for (int i = 1; i < list.size(); i++) {
-						if (list.get(i).isSymbol()) {
-							final ISymbol sym = ((ISymbol) list.get(i));
-							clearAttributes(sym, arg2, engine);
-						}
+			try {
+				if (ast.isAST2()) {
+					if (ast.arg1().isSymbol()) {
+						IExpr arg2 = engine.evaluate(ast.arg2());
+						final ISymbol sym = ((ISymbol) ast.arg1());
+						return clearAttributes(sym, arg2, engine);
 					}
-					return F.Null;
+					if (ast.arg1().isList()) {
+						IAST list = (IAST) ast.arg1();
+						IExpr arg2 = engine.evaluate(ast.arg2());
+						for (int i = 1; i < list.size(); i++) {
+							if (list.get(i).isSymbol()) {
+								final ISymbol sym = ((ISymbol) list.get(i));
+								clearAttributes(sym, arg2, engine);
+							}
+						}
+						return F.Null;
 
+					}
 				}
+			} catch (RuntimeException rex) {
+				//
 			}
 			return F.NIL;
 		}
@@ -153,7 +157,7 @@ public class AttributeFunctions {
 					throw new RuleCreationError(sym);
 				}
 			}
-			if (sym .isProtected()) {
+			if (sym.isProtected()) {
 				IOFunctions.printMessage(F.ClearAttributes, "write", F.List(sym), EvalEngine.get());
 				throw new FailedException();
 			}
@@ -164,10 +168,11 @@ public class AttributeFunctions {
 			} else {
 				if (attributes.isList()) {
 					final IAST lst = (IAST) attributes;
-					for (int i = 1; i < lst.size(); i++) {
-						ISymbol attribute = (ISymbol) lst.get(i);
-						clearAttributes(sym, attribute);
-					}
+					lst.forEach(x -> clearAttributes(sym, (ISymbol) x));
+					// for (int i = 1; i < lst.size(); i++) {
+					// ISymbol attribute = (ISymbol) lst.get(i);
+					// clearAttributes(sym, attribute);
+					// }
 					return F.Null;
 				}
 			}
@@ -266,7 +271,7 @@ public class AttributeFunctions {
 			if (Config.UNPROTECT_ALLOWED) {
 				if (ast.exists(x -> !x.isSymbol())) {
 					return F.NIL;
-				} 
+				}
 
 				final IASTAppendable result = F.ListAlloc(ast.size());
 				ast.forEach(x -> {
@@ -318,16 +323,20 @@ public class AttributeFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST2()) {
-				if (ast.arg1().isSymbol()) {
-					IExpr arg2 = engine.evaluate(ast.arg2());
-					final ISymbol sym = ((ISymbol) ast.arg1());
-					return addAttributes(sym, arg2, engine);
+			try {
+				if (ast.isAST2()) {
+					if (ast.arg1().isSymbol()) {
+						IExpr arg2 = engine.evaluate(ast.arg2());
+						final ISymbol sym = ((ISymbol) ast.arg1());
+						return addAttributes(sym, arg2, engine);
+					}
+					if (ast.arg1().isList()) {
+						IAST list = (IAST) ast.arg1();
+						return setSymbolsAttributes(list, ast.arg2(), engine);
+					}
 				}
-				if (ast.arg1().isList()) {
-					IAST list = (IAST) ast.arg1();
-					return setSymbolsAttributes(list, ast.arg2(), engine);
-				}
+			} catch (RuntimeException rex) {
+				//
 			}
 			return F.NIL;
 		}
@@ -352,10 +361,11 @@ public class AttributeFunctions {
 				return F.Null;
 			} else if (attributes.isList()) {
 				final IAST lst = (IAST) attributes;
-				for (int i = 1; i < lst.size(); i++) {
-					ISymbol attribute = (ISymbol) lst.get(i);
-					addAttributes(sym, attribute);
-				}
+				lst.forEach(x -> addAttributes(sym, (ISymbol) x));
+				// for (int i = 1; i < lst.size(); i++) {
+				// ISymbol attribute = (ISymbol) lst.get(i);
+				// addAttributes(sym, attribute);
+				// }
 				return F.Null;
 			}
 			return F.Null;
@@ -368,7 +378,7 @@ public class AttributeFunctions {
 		 * @param attribute
 		 */
 		private static void addAttributes(final ISymbol sym, ISymbol attribute) {
-			if (sym .isProtected()) {
+			if (sym.isProtected()) {
 				IOFunctions.printMessage(F.SetAttributes, "write", F.List(sym), EvalEngine.get());
 				throw new FailedException();
 			}
@@ -466,7 +476,7 @@ public class AttributeFunctions {
 				result.append(F.HoldRest);
 			}
 		}
-		
+
 		if ((attributes & ISymbol.LISTABLE) != ISymbol.NOATTRIBUTE) {
 			result.append(F.Listable);
 		}
@@ -486,7 +496,7 @@ public class AttributeFunctions {
 		if ((attributes & ISymbol.NUMERICFUNCTION) != ISymbol.NOATTRIBUTE) {
 			result.append(F.NumericFunction);
 		}
-		
+
 		if ((attributes & ISymbol.ONEIDENTITY) != ISymbol.NOATTRIBUTE) {
 			result.append(F.OneIdentity);
 		}
@@ -494,7 +504,7 @@ public class AttributeFunctions {
 		if ((attributes & ISymbol.ORDERLESS) != ISymbol.NOATTRIBUTE) {
 			result.append(F.Orderless);
 		}
-		
+
 		if ((attributes & ISymbol.PROTECTED) != ISymbol.NOATTRIBUTE) {
 			result.append(F.Protected);
 		}

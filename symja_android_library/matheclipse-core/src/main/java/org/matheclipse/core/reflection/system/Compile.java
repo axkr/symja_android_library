@@ -8,8 +8,8 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.data.CompiledFunctionExpr;
 import org.matheclipse.core.form.output.DoubleFormFactory;
 import org.matheclipse.core.form.output.JavaDoubleFormFactory;
 import org.matheclipse.core.interfaces.IAST;
@@ -68,7 +68,7 @@ public class Compile extends AbstractCoreFunctionEvaluator {
 				Class<?> clazz = compiler.loadClass("org.matheclipse.core.compile.CompiledFunction", results);
 
 				AbstractFunctionEvaluator fun = (AbstractFunctionEvaluator) clazz.newInstance();
-				return DataExpr.newInstance(F.CompiledFunction, fun);
+				return CompiledFunctionExpr.newInstance(fun);
 			} catch (Exception rex) {
 				if (Config.SHOW_STACKTRACE) {
 					rex.printStackTrace();

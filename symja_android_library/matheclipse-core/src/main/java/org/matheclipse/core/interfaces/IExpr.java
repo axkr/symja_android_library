@@ -3625,9 +3625,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return times(that);
 	}
 
-	default Object toData() {
-		return null;
-	}
+//	default Object toData() {
+//		return null;
+//	}
 
 	/**
 	 * Convert this object into a <code>double[]</code> matrix.

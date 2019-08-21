@@ -6,8 +6,8 @@ import org.gavaghan.geodesy.GeodeticMeasurement;
 import org.gavaghan.geodesy.GlobalPosition;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
-import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.data.GeoPositionExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -29,15 +29,15 @@ public class GeodesyFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Object lhs = ast.arg1().toData();
-			Object rhs = ast.arg2().toData();
-			if (lhs instanceof GlobalPosition && rhs instanceof GlobalPosition) {
+			IExpr lhs = ast.arg1();
+			IExpr rhs = ast.arg2();
+			if (lhs instanceof GeoPositionExpr && rhs instanceof GeoPositionExpr) {
 				GeodeticCalculator geoCalc = new GeodeticCalculator();
 				Ellipsoid reference = Ellipsoid.WGS84;
 
-				GlobalPosition p1=(GlobalPosition)lhs;
-				GlobalPosition p2=(GlobalPosition)rhs;
-				
+				GlobalPosition p1 = ((GeoPositionExpr) lhs).toData();
+				GlobalPosition p2 = ((GeoPositionExpr) rhs).toData();
+
 				GeodeticMeasurement gm = geoCalc.calculateGeodeticMeasurement(reference, p1, p2);
 				return F.UnitConvert(F.Quantity(F.num(gm.getPointToPointDistance()), F.stringx("m")), F.stringx("mi"));
 			}
@@ -71,9 +71,9 @@ public class GeodesyFunctions {
 				if (ast.arg1().isList()) {
 					double[] list1 = ((IAST) ast.arg1()).toDoubleVector();
 					if (list1.length == 2) {
-						return DataExpr.newInstance(F.GeoPosition, new GlobalPosition(list1[0], list1[1], 0.0));
+						return GeoPositionExpr.newInstance(new GlobalPosition(list1[0], list1[1], 0.0));
 					} else if (list1.length == 3) {
-						return DataExpr.newInstance(F.GeoPosition, new GlobalPosition(list1[0], list1[1], list1[2]));
+						return GeoPositionExpr.newInstance(new GlobalPosition(list1[0], list1[1], list1[2]));
 					}
 
 				}

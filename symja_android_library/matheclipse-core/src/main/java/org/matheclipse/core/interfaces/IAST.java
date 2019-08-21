@@ -936,6 +936,15 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public int indexOf(Predicate<? super IExpr> predicate);
 
 	/**
+	 * Find the first argument position, where the the <code>function</code> doesn't return <code>F.NIL</code>. The
+	 * search starts at index <code>1</code>.
+	 * 
+	 * @param predicate
+	 * @return <code>F.NIL</code> if no position was found
+	 */
+	public IExpr findFirst(Function<IExpr, IExpr> function);
+
+	/**
 	 * Test if this AST contains no argument
 	 * 
 	 * @return

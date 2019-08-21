@@ -3678,7 +3678,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{a,1}");
 		check("test( )", //
 				"{1,1}");
-		
+
 		check("Default(Plus)", //
 				"0");
 		check("Default(Power)", //
@@ -4718,6 +4718,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testElement() {
+		check("Element(a | b | c, Reals)", //
+				"Element(a|b|c,Reals)");
+		check("Element(a | 2 | c, Reals)", //
+				"True");
 		check("Element(pi, reals)", //
 				"True");
 		check("Element(sin, reals)", //

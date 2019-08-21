@@ -1911,12 +1911,16 @@ public final class Arithmetic {
 			}
 			if (arg1.isTimes()) {
 				IAST timesAST = (IAST) arg1;
-				for (int i = 1; i < timesAST.size(); i++) {
-					IExpr temp = timesAST.get(i);
-					if (temp.isRealResult()) {
-						return F.Times(temp, F.Im(timesAST.removeAtClone(i)));
-					}
+				int position = timesAST.indexOf(x -> x.isRealResult());
+				if (position > 0) {
+					return F.Times(timesAST.get(position), F.Im(timesAST.removeAtClone(position)));
 				}
+				// for (int i = 1; i < timesAST.size(); i++) {
+				// IExpr temp = timesAST.get(i);
+				// if (temp.isRealResult()) {
+				// return F.Times(temp, F.Im(timesAST.removeAtClone(i)));
+				// }
+				// }
 				IExpr first = timesAST.arg1();
 				if (first.isNumber()) {
 					IExpr rest = timesAST.rest().oneIdentity1();
@@ -2571,18 +2575,22 @@ public final class Arithmetic {
 			}
 			final int size = ast.size();
 			if (size > 2) {
-				PlusOp plusOp = new PlusOp(size); 
-				for (int i = 1; i < size; i++) {
-					final IExpr temp = plusOp.plus(ast.get(i));
-					if (temp.isPresent()) {
-						return temp;
-					}
+				PlusOp plusOp = new PlusOp(size);
+				IExpr temp = ast.findFirst(x -> plusOp.plus(x));
+				if (temp.isPresent()) {
+					return temp;
 				}
+				// for (int i = 1; i < size; i++) {
+				// final IExpr temp = plusOp.plus(ast.get(i));
+				// if (temp.isPresent()) {
+				// return temp;
+				// }
+				// }
 				if (plusOp.isEvaled()) {
 					return plusOp.getSum();
 				}
 
-				IExpr temp = evaluateHashsRepeated(ast, engine);
+				temp = evaluateHashsRepeated(ast, engine);
 				if (temp.isAST(F.Plus, 2)) {
 					return temp.first();
 				}
@@ -4044,12 +4052,16 @@ public final class Arithmetic {
 			}
 			if (expr.isTimes()) {
 				IAST timesAST = (IAST) expr;
-				for (int i = 1; i < timesAST.size(); i++) {
-					IExpr temp = timesAST.get(i);
-					if (temp.isRealResult()) {
-						return F.Times(temp, F.Re(timesAST.removeAtClone(i)));
-					}
+				int position = timesAST.indexOf(x -> x.isRealResult());
+				if (position > 0) {
+					return F.Times(timesAST.get(position), F.Re(timesAST.removeAtClone(position)));
 				}
+				// for (int i = 1; i < timesAST.size(); i++) {
+				// IExpr temp = timesAST.get(i);
+				// if (temp.isRealResult()) {
+				// return F.Times(temp, F.Re(timesAST.removeAtClone(i)));
+				// }
+				// }
 				IExpr first = timesAST.arg1();
 				if (first.isNumber()) {
 					IExpr rest = timesAST.rest().oneIdentity1();

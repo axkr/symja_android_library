@@ -1753,13 +1753,25 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final int indexOf(Predicate<? super IExpr> predicate) {
+	public int indexOf(Predicate<? super IExpr> predicate) {
 		for (int i = 1; i < size(); i++) {
 			if (predicate.test(get(i))) {
 				return i;
 			}
 		}
 		return -1;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr findFirst(Function<IExpr, IExpr> function) {
+		for (int i = 1; i < size(); i++) {
+			IExpr temp = function.apply(get(i));
+			if (temp.isPresent()) {
+				return temp;
+			}
+		}
+		return F.NIL;
 	}
 
 	/** {@inheritDoc} */

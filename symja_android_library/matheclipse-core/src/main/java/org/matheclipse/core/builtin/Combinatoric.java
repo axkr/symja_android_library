@@ -1527,11 +1527,14 @@ public final class Combinatoric {
 			if (ast.isAST1() && arg1.isList()) {
 				try {
 					IAST list = (IAST) arg1;
-					for (int i = 1; i < list.size(); i++) {
-						if (!list.get(i).isAST()) {
-							return F.NIL;
-						}
+					if (list.exists(x->!x.isAST())) {
+						return F.NIL;
 					}
+//					for (int i = 1; i < list.size(); i++) {
+//						if (!list.get(i).isAST()) {
+//							return F.NIL;
+//						}
+//					}
 					IASTAppendable result = F.ListAlloc(16);
 					IAST temp = F.List();
 					tuplesOfLists(list, 1, result, temp);

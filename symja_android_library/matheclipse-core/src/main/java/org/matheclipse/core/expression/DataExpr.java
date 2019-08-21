@@ -18,22 +18,9 @@ import org.matheclipse.core.visit.IVisitorLong;
  * 
  * @see org.matheclipse.core.interfaces.IDataExpr
  */
-public class DataExpr<T> implements IDataExpr<T> {
-
-	/**
-	 * 
-	 */
+public abstract class DataExpr<T> implements IDataExpr<T> {
+ 
 	private static final long serialVersionUID = 4987827851920443376L;
-
-	/**
-	 * Be cautious with this method, no new internal IExpr object is created
-	 * 
-	 * @param value
-	 * @return
-	 */
-	public static <T> DataExpr<T> newInstance(final IBuiltInSymbol head, final T value) {
-		return new DataExpr(head, value);
-	}
 
 	private IBuiltInSymbol fHead;
 	protected T fData;
@@ -71,11 +58,6 @@ public class DataExpr<T> implements IDataExpr<T> {
 	@Override
 	public long accept(IVisitorLong visitor) {
 		return 0L;
-	}
-
-	@Override
-	public IExpr copy() {
-		return new DataExpr(fHead, fData);
 	}
 
 	@Override
@@ -132,7 +114,8 @@ public class DataExpr<T> implements IDataExpr<T> {
 			if (fData instanceof AbstractBaseGraph) {
 				AbstractBaseGraph<IExpr, ?> g = (AbstractBaseGraph<IExpr, ?>) fData;
 				if (g.getType().isWeighted()) {
-					return GraphFunctions.weightedGraphToIExpr((AbstractBaseGraph<IExpr, IExprWeightedEdge>) g).toString();
+					return GraphFunctions.weightedGraphToIExpr((AbstractBaseGraph<IExpr, IExprWeightedEdge>) g)
+							.toString();
 				}
 				return GraphFunctions.graphToIExpr((AbstractBaseGraph<IExpr, IExprEdge>) g).toString();
 			}

@@ -240,10 +240,8 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 		IASTAppendable derivativeHead2 = F.ast(derivativeHead1);
 		derivativeHead2.append(header);
 		IASTAppendable derivativeAST = F.ast(derivativeHead2, size, false);
-		args.forEach(x -> derivativeAST.append(x));
-		// for (int i = 1; i < size; i++) {
-		// derivativeAST.append(args.get(i));
-		// }
+		derivativeAST.appendArgs(args);
+		// args.forEach(x -> derivativeAST.append(x));
 		return derivativeAST;
 	}
 

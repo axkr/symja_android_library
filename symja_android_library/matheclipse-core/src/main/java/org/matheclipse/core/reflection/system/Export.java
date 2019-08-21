@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -24,9 +23,10 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
-import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.IExprEdge;
 import org.matheclipse.core.expression.WL;
+import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
@@ -63,8 +63,8 @@ public class Export extends AbstractEvaluator {
 			FileWriter writer = null;
 			try {
 				writer = new FileWriter(arg1.toString());
-				if (arg2 instanceof DataExpr && arg2.head() == F.Graph) {
-					graphExport(((DataExpr<Graph>) arg2).toData(), writer, format);
+				if (arg2 instanceof GraphExpr) {
+					graphExport(((GraphExpr<DefaultEdge>) arg2).toData(), writer, format);
 					return arg1;
 				}
 
@@ -161,7 +161,7 @@ public class Export extends AbstractEvaluator {
 	 */
 	public static void of(File file, IAST tensor) throws IOException {
 		String filename = file.getName();
-		Extension extension = Extension.exportFilename(filename); 
+		Extension extension = Extension.exportFilename(filename);
 		if (extension.equals(Extension.JPG))
 			ImageIO.write(ImageFormat.jpg(tensor), "jpg", file);
 		// else if (filename.hasExtension("m"))
