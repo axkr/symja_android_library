@@ -65,6 +65,7 @@ public final class Programming {
 			F.Break.setEvaluator(new Break());
 			F.Block.setEvaluator(new Block());
 			F.Catch.setEvaluator(new Catch());
+			F.Check.setEvaluator(new Check());
 			F.CompiledFunction.setEvaluator(new CompiledFunction());
 			F.CompoundExpression.setEvaluator(new CompoundExpression());
 			F.Condition.setEvaluator(new Condition());
@@ -75,6 +76,7 @@ public final class Programming {
 			F.FixedPointList.setEvaluator(new FixedPointList());
 			F.For.setEvaluator(new For());
 			F.If.setEvaluator(new If());
+			F.Interrupt.setEvaluator(new Interrupt());
 			F.List.setEvaluator(new ListFunction());
 			F.Module.setEvaluator(new Module());
 			F.Nest.setEvaluator(new Nest());
@@ -254,6 +256,34 @@ public final class Programming {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDFIRST);
+		}
+
+	}
+
+	private final static class Check extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			// messageShortcut may be null
+			String messageShortcut = engine.getMessageShortcut();
+			try {
+				engine.setMessageShortcut(null);
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				if (engine.getMessageShortcut() != null) {
+					return ast.arg2();
+				}
+				return arg1;
+			} finally {
+				engine.setMessageShortcut(messageShortcut);
+			}
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
 		}
 
 	}
@@ -1048,6 +1078,23 @@ public final class Programming {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+
+	}
+
+	private final static class Interrupt extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			throw new AbortException();
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_0_0;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
 		}
 
 	}

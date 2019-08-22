@@ -146,6 +146,7 @@ public class IOFunctions {
 			"heads", "Heads `1` and `2` are expected to be the same.", //
 			"ilsnn", "Single or list of non-negative integers expected at position `1`.", //
 			"indet", "Indeterminate expression `1` encountered.", //
+			"infy", "Infinite expression `1` encountered.", //
 			"innf", "Non-negative integer or Infinity expected at position `1`.", //
 			"int", "Integer expected.", //
 			"intp", "Positive integer expected.", //
@@ -241,6 +242,7 @@ public class IOFunctions {
 			for (int i = 1; i < ast.size(); i++) {
 				message = message.replace("`" + (i) + "`", ast.get(i).toString());
 			}
+			engine.setMessageShortcut(messageShortcut);
 			engine.printMessage(symbol.toString() + ": " + message);
 		}
 

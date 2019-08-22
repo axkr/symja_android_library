@@ -2976,12 +2976,14 @@ public final class Arithmetic {
 		public IExpr e2DblArg(final INum base, final INum exponent) {
 			if (base.isZero()) {
 				if (exponent.isNegative()) {
-					EvalEngine.get().printMessage("Infinite expression 0^(negative number)");
+					IOFunctions.printMessage(F.Power, "infy", F.List(F.Power(F.C0, exponent)), EvalEngine.get());
+					// EvalEngine.get().printMessage("Infinite expression 0^(negative number)");
 					return F.CComplexInfinity;
 				}
 				if (exponent.isZero()) {
 					// 0^0
-					EvalEngine.get().printMessage("Infinite expression 0^0");
+					IOFunctions.printMessage(F.Power, "indet", F.List(F.Power(F.C0, F.C0)), EvalEngine.get());
+					// EvalEngine.get().printMessage("Infinite expression 0^0");
 					return F.Indeterminate;
 				}
 			}
@@ -3611,20 +3613,21 @@ public final class Arithmetic {
 			EvalEngine engine = EvalEngine.get();
 			if (exponent.isZero()) {
 				// 0^0
-				// TODO add a real log message
-				// throw new DivisionByZero("0^0");
-				engine.printMessage("Infinite expression 0^0");
+				// engine.printMessage("Infinite expression 0^0");
+				IOFunctions.printMessage(F.Power, "indet", F.List(F.Power(F.C0, F.C0)), EvalEngine.get());
 				return F.Indeterminate;
 			}
 
 			IExpr a = exponent.re();
 			if (a.isReal()) {
 				if (a.isNegative()) {
-					engine.printMessage("Infinite expression 0^(negative number)");
+					// engine.printMessage("Infinite expression 0^(negative number)");
+					IOFunctions.printMessage(F.Power, "infy", F.List(F.Power(F.C0, a)), EvalEngine.get());
 					return F.CComplexInfinity;
 				}
 				if (a.isZero()) {
-					engine.printMessage("Infinite expression 0^0.");
+					// engine.printMessage("Infinite expression 0^0.");
+					IOFunctions.printMessage(F.Power, "indet", F.List(F.Power(F.C0, F.C0)), EvalEngine.get());
 					return F.Indeterminate;
 				}
 				return F.C0;
@@ -3633,17 +3636,20 @@ public final class Arithmetic {
 				IExpr temp = engine.evalN(a);
 				if (temp.isReal()) {
 					if (temp.isNegative()) {
-						engine.printMessage("Infinite expression 0^(negative number)");
+						IOFunctions.printMessage(F.Power, "infy", F.List(F.Power(F.C0, temp)), EvalEngine.get());
+						// engine.printMessage("Infinite expression 0^(negative number)");
 						return F.CComplexInfinity;
 					}
 					if (temp.isZero()) {
-						engine.printMessage("Infinite expression 0^0.");
+						IOFunctions.printMessage(F.Power, "indet", F.List(F.Power(F.C0, F.C0)), EvalEngine.get());
+						// engine.printMessage("Infinite expression 0^0.");
 						return F.Indeterminate;
 					}
 					return F.C0;
 				}
 				if (temp.isComplex() || temp.isComplexNumeric()) {
-					engine.printMessage("Indeterminate expression 0 ^ (complex number) encountered.");
+					IOFunctions.printMessage(F.Power, "indet", F.List(F.Power(F.C0, temp)), EvalEngine.get());
+					// engine.printMessage("Indeterminate expression 0 ^ (complex number) encountered.");
 					return F.Indeterminate;
 				}
 			}

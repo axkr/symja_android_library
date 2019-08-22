@@ -1996,6 +1996,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"13-I*6-6*z+z^2");
 	}
 
+	public void testCheck() {
+		check("Check(2^(3), failure)", //
+				"8");
+		check("Check(0^(-42), failure)", //
+				"failure");
+		check("Check(0^0, failure)", //
+				"failure");
+	}
+
 	public void testChebyshevT() {
 		check("ChebyshevT(-1/2, z)", //
 				"Cos(ArcCos(z)/2)");
@@ -8513,6 +8522,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"True");
 	}
 
+	public void testInterrupt() {
+		check("Print(test1); Interrupt(); Print(test2)", //
+				"$Aborted");
+	}
+
 	public void testIntersection() {
 		check("Intersection({a,a,b,c})", //
 				"{a,b,c}");
@@ -10924,11 +10938,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testNames() {
 		check("Names(\"Int*\" )",
-				"{Interval,IntegerDigits,IntegerExponent,IntegerLength,IntegerPart,IntegerPartitions,IntegerQ,Integrate,Interpolation,InterpolatingFunction,InterpolatingPolynomial,IntersectingQ,Intersection,Integer,Integers}");
+				"{Interval,IntegerDigits,IntegerExponent,IntegerLength,IntegerPart,IntegerPartitions,IntegerQ,Integrate,Interpolation,InterpolatingFunction,InterpolatingPolynomial,IntersectingQ,Interrupt,Intersection,Integer,Integers}");
 		check("Names(\"Integer*\" )",
 				"{IntegerDigits,IntegerExponent,IntegerLength,IntegerPart,IntegerPartitions,IntegerQ,Integer,Integers}");
 		check("Names(\"IntegerPart\" )", "{IntegerPart}");
-		// check("Names(\"*\" )", "{}");
 	}
 
 	public void testNand() {
