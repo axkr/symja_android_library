@@ -117,6 +117,14 @@ public class FunctionExpand extends AbstractEvaluator {
 					F.Times(F.Power(F.Times(F.Sqrt(F.Subtract(F.C1, x)), F.Sqrt(F.Plus(F.C1, x))), F.CN1),
 							F.Sin(F.Times(F.Plus(F.C1, n), F.ArcCos(x))))); // $$);
 
+			// Cos
+			MATCHER.caseOf(F.Cos(F.Sqrt(F.Sqr(x_))), //
+					F.Cos(x));
+			// Sin
+			MATCHER.caseOf(F.Sin(F.Sqrt(F.Sqr(x_))), //
+					// [$ (Sqrt(x^2)*Sin(x))/x $]
+					F.Times(F.Power(x, F.CN1), F.Sqrt(F.Sqr(x)), F.Sin(x))); // $$);
+
 			// CosIntegral
 			MATCHER.caseOf(F.CosIntegral(F.Times(F.CN1, x_)), //
 					// [$ CosIntegral(x) + Log(x) - Log(x)

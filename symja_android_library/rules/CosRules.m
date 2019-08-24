@@ -57,8 +57,6 @@ Cos(ArcTan(x_)):=(1+x^2)^(-1/2),
 Cos(ArcCot(x_)):=x*(1+x^2)^(-1/2),
 Cos(ArcCsc(x_)):=(1-x^(-2))^(1/2),
 Cos(ArcSec(x_)):=x^(-1),
-
-Cos(Sqrt(x_^2)):=Cos(x),  
 	 
 Cos(I*Infinity)=Infinity,
 Cos(-I*Infinity)=Infinity,
