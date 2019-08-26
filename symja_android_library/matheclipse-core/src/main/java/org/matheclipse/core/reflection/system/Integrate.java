@@ -509,7 +509,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 				}
 			}
 		}
-		if (arg1.isTrigFunction()) {
+		if (arg1.isTrigFunction()||arg1.isHyperbolicFunction()) {
 			// https://github.com/RuleBasedIntegration/Rubi/issues/12
 			IExpr temp = engine.evaluate(F.TrigToExp(arg1));
 			return engine.evaluate(F.Integrate(temp, x));

@@ -22,8 +22,6 @@ import org.matheclipse.core.patternmatching.Matcher;
   System.out.println(matcher.apply(Sin(y)));
 ```
 
-A more advanced usage of the `Matcher` class can be found in the `TrigToExp()` function:
-* [org.matheclipse.core.reflection.system.TrigToExp](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/TrigToExp.java)
 
 
 

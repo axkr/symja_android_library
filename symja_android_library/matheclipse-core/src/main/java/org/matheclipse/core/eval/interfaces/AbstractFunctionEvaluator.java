@@ -255,7 +255,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 	}
 
 	/**
-	 * This assumes plusAST to be an Plus() expression. The multiple of Pi returned is a IRational number or assumed to
+	 * This assumes plusAST to be a Plus() expression. The multiple of Pi returned is a IRational number or assumed to
 	 * be an expression with Integer result.
 	 * 
 	 * @param plusAST
@@ -451,7 +451,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 
 	public static IExpr getComplexExpr(final IExpr expr, IExpr factor) {
 		if (expr.isComplex() && (expr.re().isZero() || expr.re().isNegative())) {
-			return F.Times(factor, expr); 
+			return F.Times(factor, expr);
 		} else {
 			if (expr.isTimes() && expr.first().isComplex()) {
 				IComplex arg1 = (IComplex) expr.first();

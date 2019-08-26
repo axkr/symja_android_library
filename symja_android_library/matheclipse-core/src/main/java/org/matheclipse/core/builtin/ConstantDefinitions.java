@@ -78,6 +78,7 @@ public class ConstantDefinitions {
 			F.E.setEvaluator(new E());
 			F.EulerGamma.setEvaluator(new EulerGamma());
 			F.Glaisher.setEvaluator(new Glaisher());
+			F.GoldenAngle.setEvaluator(new GoldenAngle());
 			F.GoldenRatio.setEvaluator(new GoldenRatio());
 			F.I.setEvaluator(new I());
 			F.Infinity.setEvaluator(new Infinity());
@@ -450,7 +451,34 @@ public class ConstantDefinitions {
 		}
 
 	}
+	 
+	private static class GoldenAngle extends AbstractSymbolEvaluator implements ISignedNumberConstant {
+		final static public double GOLDEN_ANGLE =  2.3999632297286533222315555066336138531249990110581;
+		@Override
+		public IExpr evaluate(final ISymbol symbol) {
+			// (3-Sqrt(5))*Pi
+			// return F.Times(F.Subtract(F.C3, F.Sqrt(F.C5)), F.Pi);
+			return F.NIL;
+		}
 
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.CONSTANT);
+		}
+
+		@Override
+		public IExpr numericEval(final ISymbol symbol) {
+			return F.num(GOLDEN_ANGLE);
+		}
+
+		@Override
+		public double evalReal() {
+			return GOLDEN_ANGLE;
+		}
+
+	}
+
+	
 	/**
 	 * <pre>
 	 * GoldenRatio

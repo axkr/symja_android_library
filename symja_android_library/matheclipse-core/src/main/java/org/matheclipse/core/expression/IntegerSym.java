@@ -195,6 +195,20 @@ public class IntegerSym extends AbstractIntegerSym {
 
 		return res;
 	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public IInteger iquo(final IInteger that) {
+		BigInteger[] largeRes = toBigNumerator().divideAndRemainder(that.toBigNumerator());
+		return valueOf(largeRes[0]);
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public IInteger irem(final IInteger that) {
+		BigInteger[] largeRes = toBigNumerator().divideAndRemainder(that.toBigNumerator());
+		return valueOf(largeRes[1]);
+	}
 
 	@Override
 	public ISignedNumber divideBy(ISignedNumber that) {

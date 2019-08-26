@@ -52,6 +52,7 @@ import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -78,7 +79,6 @@ import org.matheclipse.core.polynomials.PartialFractionGenerator;
 import org.matheclipse.core.polynomials.PolynomialHomogenization;
 import org.matheclipse.core.visit.AbstractVisitorBoolean;
 import org.matheclipse.core.visit.VisitorExpr;
-import org.matheclipse.parser.client.SyntaxError;
 
 import com.google.common.math.LongMath;
 
@@ -2357,7 +2357,7 @@ public class Algebra {
 						if (list.isList()) {
 							IExpr x = variableList.arg1();
 							IASTAppendable result = F.TimesAlloc(list.size());
-							list.forEach(arg->result.append(F.Plus(x, arg)));
+							list.forEach(arg -> result.append(F.Plus(x, arg)));
 							// for (int i = 1; i < list.size(); i++) {
 							// result.append(F.Plus(x, list.get(i)));
 							// }
@@ -4013,6 +4013,26 @@ public class Algebra {
 								result = temp;
 							}
 						}
+						// } else if (expr.isExp() && expr.second().isTimes()) {
+						// IAST times = (IAST) expr.second();
+						// IExpr i = Times.of(times, F.CNI, F.Power(F.Pi, F.CN1));
+						// if (i.isRational()) {
+						// IRational rat = (IRational) i;
+						// if (rat.isGT(F.C1) || rat.isLE(F.CN1)) {
+						// IInteger t = rat.trunc();
+						// t = t.add(t.mod(F.C2));
+						// // exp(I*(i - t)*Pi)
+						// return F.Exp.of(F.Times(F.CI, F.Pi, F.Subtract(i, t)));
+						// } else {
+						// IRational t1 = rat.multiply(F.C6).normalize();
+						// IRational t2 = rat.multiply(F.C4).normalize();
+						// if (t1.isInteger() || t2.isInteger()) {
+						// // Cos(- I*times) + I*Sin(- I*times)
+						// return F.Plus.of(F.Cos(F.Times(F.CNI, times)),
+						// F.Times(F.CI, F.Sin(F.Times(F.CNI, times))));
+						// }
+						// }
+						// }
 					}
 
 					if (result.isAST()) {
@@ -4335,6 +4355,15 @@ public class Algebra {
 							return powerSimplified;
 						}
 					}
+					// } else {
+					// temp = tryTransformations(ast);
+					// if (temp.isPresent()) {
+					// long count = fComplexityFunction.apply(temp);
+					// if (count < minCounter[0]) {
+					// minCounter[0] = count;
+					// result = temp;
+					// }
+					// }
 				}
 
 				temp = F.evalExpandAll(ast);
@@ -4527,8 +4556,25 @@ public class Algebra {
 			if (arg1.isAtom() && ast.isAST1()) {
 				return arg1;
 			}
-			if (arg1.isList()) {
-				return ((IAST) arg1).mapThread(ast, 1);
+			if (arg1.isAST()) {
+				IAST list1 = (IAST) arg1;
+				int headID = list1.headID();
+				switch (headID) {
+				case ID.List:
+					return list1.mapThread(ast, 1);
+				case ID.Equal:
+				case ID.Unequal:
+				case ID.Greater:
+				case ID.GreaterEqual:
+				case ID.Less:
+				case ID.LessEqual:
+					if (list1.size() == 3 && !list1.arg2().isZero()) {
+						IExpr sub = ast.topHead().of(F.Subtract(list1.arg1(), list1.arg2()));
+						return ast.setAtClone(1, F.binaryAST2(list1.head(), sub, F.C0));
+					}
+					break;
+				}
+
 			}
 
 			IExpr result = F.REMEMBER_AST_CACHE.getIfPresent(ast);
@@ -4578,8 +4624,14 @@ public class Algebra {
 
 				}
 
-				IExpr temp = arg1.replaceAll(F.List(F.Rule(F.GoldenRatio, F.Times(F.C1D2, F.Plus(F.C1, F.Sqrt(F.C5)))),
-						F.Rule(F.Degree, F.Divide(F.Pi, F.ZZ(180)))));
+				IExpr temp = arg1.replaceAll(F.List(//
+						F.Rule(F.GoldenAngle, //
+								F.Times(F.Subtract(F.C3, F.Sqrt(F.C5)), F.Pi)), //
+						F.Rule(F.GoldenRatio, //
+								F.Times(F.C1D2, F.Plus(F.C1, F.Sqrt(F.C5)))), //
+						F.Rule(F.Degree, //
+								F.Divide(F.Pi, F.ZZ(180))) //
+				));
 				if (temp.isPresent()) {
 					arg1 = temp;
 				}

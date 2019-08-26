@@ -201,10 +201,13 @@ public class FunctionExpand extends AbstractEvaluator {
 			MATCHER.caseOf(F.Degree, //
 					// [$ Pi/180 $]
 					F.Times(F.QQ(1L, 180L), F.Pi)); // $$);
+			MATCHER.caseOf(F.GoldenAngle, //
+					// [$ (3-Sqrt(5))*Pi $]
+					F.Times(F.Subtract(F.C3, F.CSqrt5), F.Pi)); // $$);
 			MATCHER.caseOf(F.GoldenRatio, //
 					// [$ 1/2*(1+Sqrt(5)) $]
 					F.Times(F.C1D2, F.Plus(F.C1, F.CSqrt5))); // $$);
-
+			
 			// Power
 			MATCHER.caseOf(F.Power(F.E, F.ArcSinh(x_)), //
 					// [$ (x+Sqrt(1+x^2)) $]

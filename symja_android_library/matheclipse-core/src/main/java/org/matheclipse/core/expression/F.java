@@ -1278,6 +1278,9 @@ public class F {
     /** Glaisher constant.*/
     public final static IBuiltInSymbol Glaisher = F.initFinalSymbol("Glaisher", ID.Glaisher);
 
+    /** */
+    public final static IBuiltInSymbol GoldenAngle = F.initFinalSymbol("GoldenAngle", ID.GoldenAngle);
+    
     /** GoldenRatio - is the golden ratio.*/
     public final static IBuiltInSymbol GoldenRatio = F.initFinalSymbol("GoldenRatio", ID.GoldenRatio);
 

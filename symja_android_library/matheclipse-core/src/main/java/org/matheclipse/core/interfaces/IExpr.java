@@ -2366,6 +2366,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isPower() {
 		return false;
 	}
+	
+	/**
+	 * Test if this expression is the function <code>Power[&lt;arg1&gt;, &lt;arg2&gt;]</code>
+	 * 
+	 * @return
+	 */
+	default boolean isExp() {
+		return isPower() && first().isE();
+	}
 
 	/**
 	 * <p>
@@ -2740,6 +2749,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default boolean isTrigFunction() {
+		return false;
+	}
+	
+	/**
+	 * Test if this expression is a hyperbolic function.
+	 * 
+	 * @return
+	 */
+	default boolean isHyperbolicFunction() {
 		return false;
 	}
 
@@ -3500,6 +3518,10 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return F.NIL;
 	}
 
+	default IExpr rewrite(int functionID) {
+		return F.NIL;
+	}
+	
 	/**
 	 * Get the second element of this <code>AST</code> list (i.e. get(2)). Return <code>F.NIL</code> if this object
 	 * isn't an <code>AST</code>.

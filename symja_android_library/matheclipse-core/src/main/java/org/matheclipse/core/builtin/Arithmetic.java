@@ -3366,6 +3366,28 @@ public final class Arithmetic {
 				if (expandedFunction.isPlus()) {
 					return powerEPlus((IAST) expandedFunction);
 				}
+
+				if (expandedFunction.isTimes()) {
+					IAST times = (IAST)expandedFunction;
+					IExpr i = Times.of(times, F.CNI, F.Power(F.Pi, F.CN1));
+					if (i.isRational()) {
+						IRational rat = (IRational) i;
+						if (rat.isGT(F.C1) || rat.isLE(F.CN1)) {
+							IInteger t = rat.trunc();
+							t = t.add(t.irem(F.C2));
+							// exp(I*(i - t)*Pi)
+							return F.Exp.of(F.Times(F.CI, F.Pi, F.Subtract(i, t)));
+						} else {
+							IRational t1 = rat.multiply(F.C6).normalize();
+							IRational t2 = rat.multiply(F.C4).normalize();
+							if (t1.isInteger() || t2.isInteger()) {
+								// Cos(- I*times) + I*Sin(- I*times)
+								return F.Plus.of(F.Cos(F.Times(F.CNI, times)),
+										F.Times(F.CI, F.Sin(F.Times(F.CNI, times))));
+							}
+						}
+					}
+				}
 			}
 
 			if (base.isAST()) {

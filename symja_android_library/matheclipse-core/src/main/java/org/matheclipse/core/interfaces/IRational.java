@@ -191,4 +191,8 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	 */
 	public BigInteger toBigNumerator();
 
+	default IInteger trunc() {
+		return isNegative() ? ceil() : floor();
+	}
+
 }

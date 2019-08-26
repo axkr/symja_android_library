@@ -224,6 +224,20 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		return res;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public IInteger irem(final IInteger that) {
+		BigInteger[] largeRes = fBigIntValue.divideAndRemainder(that.toBigNumerator()); 
+		return valueOf(largeRes[1]);
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public IInteger iquo(final IInteger that) {
+		BigInteger[] largeRes = fBigIntValue.divideAndRemainder(that.toBigNumerator()); 
+		return valueOf(largeRes[0]);
+	}
+	
 	@Override
 	public ISignedNumber divideBy(ISignedNumber that) {
 		if (that instanceof BigIntegerSym) {
