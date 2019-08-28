@@ -226,7 +226,7 @@ public class BasicTeXTestCase extends TestCase {
 	public void testTeX022() {
 		// issue #116
 		check("-I*1/2*Sqrt(2)", //
-				"\\left( \\frac{-1}{2}\\,i \\right) \\,\\sqrt{2}");
+				"\\frac{ - i }{\\sqrt{2}}");
 	}
 
 	public void testTeX023() {

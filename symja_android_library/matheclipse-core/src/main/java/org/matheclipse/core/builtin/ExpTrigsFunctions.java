@@ -1284,9 +1284,9 @@ public class ExpTrigsFunctions {
 		}
 
 		public IExpr rewriteExp(IExpr arg1, EvalEngine engine) {
-			if (arg1.isTrigFunction() || arg1.isHyperbolicFunction()) {
-				arg1 = arg1.rewrite(ID.Exp);
-			}
+			// if (arg1.isTrigFunction() || arg1.isHyperbolicFunction()) {
+			// arg1 = arg1.rewrite(ID.Exp);
+			// }
 			return
 			// [$ Exp(arg1*I)/ 2 + Exp(-arg1*I)/ 2 $]
 			F.Plus(F.Times(F.C1D2, F.Exp(F.Times(arg1, F.CI))), F.Times(F.C1D2, F.Exp(F.Times(F.CN1, arg1, F.CI)))); // $$;
@@ -2616,9 +2616,9 @@ public class ExpTrigsFunctions {
 		}
 
 		public IExpr rewriteExp(IExpr arg1, EvalEngine engine) {
-			if (arg1.isTrigFunction() || arg1.isHyperbolicFunction()) {
-				arg1 = arg1.rewrite(ID.Exp);
-			}
+			// if (arg1.isTrigFunction() || arg1.isHyperbolicFunction()) {
+			// arg1 = arg1.rewrite(ID.Exp);
+			// }
 			return
 			// [$ Exp(arg1*I) / (2*I) - Exp(-arg1*I) / (2*I) $]
 			F.Plus(F.Times(F.CN1, F.Power(F.Times(F.C2, F.CI), F.CN1), F.Exp(F.Times(F.CN1, arg1, F.CI))),
@@ -2956,14 +2956,13 @@ public class ExpTrigsFunctions {
 		}
 
 		public IExpr rewriteExp(IExpr arg1, EvalEngine engine) {
-			if (arg1.isTrigFunction() || arg1.isHyperbolicFunction()) {
-				arg1 = arg1.rewrite(ID.Exp);
-			}
-			IAST negexp = F.Exp(F.Times(arg1, F.CNI));
-			IAST posexp = F.Exp(F.Times(arg1, F.CI));
+			// if (arg1.isTrigFunction() || arg1.isHyperbolicFunction()) {
+			// arg1 = arg1.rewrite(ID.Exp);
+			// }
 			return
-			// [$ I*(negExp - posExp)/(negExp + posExp) $]
-			F.Times(F.CI, F.Subtract(negexp, posexp), F.Power(F.Plus(negexp, posexp), F.CN1)); // $$;
+			// [$ (I*(E^((-I)*arg1) - E^(I*arg1)))/(E^((-I)*arg1) + E^(I*arg1)) $]
+			F.Times(F.CI, F.Subtract(F.Exp(F.Times(F.CNI, arg1)), F.Exp(F.Times(F.CI, arg1))),
+					F.Power(F.Plus(F.Exp(F.Times(F.CNI, arg1)), F.Exp(F.Times(F.CI, arg1))), F.CN1)); // $$;
 		}
 	}
 

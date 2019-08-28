@@ -1,42 +1,16 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.ArcCos;
-import static org.matheclipse.core.expression.F.ArcCosh;
-import static org.matheclipse.core.expression.F.ArcCot;
-import static org.matheclipse.core.expression.F.ArcCoth;
-import static org.matheclipse.core.expression.F.ArcCsc;
-import static org.matheclipse.core.expression.F.ArcCsch;
-import static org.matheclipse.core.expression.F.ArcSec;
-import static org.matheclipse.core.expression.F.ArcSech;
-import static org.matheclipse.core.expression.F.ArcSin;
-import static org.matheclipse.core.expression.F.ArcSinh;
-import static org.matheclipse.core.expression.F.ArcTan;
-import static org.matheclipse.core.expression.F.ArcTanh;
-import static org.matheclipse.core.expression.F.Cos;
-import static org.matheclipse.core.expression.F.Cosh;
-import static org.matheclipse.core.expression.F.Cot;
-import static org.matheclipse.core.expression.F.Coth;
-import static org.matheclipse.core.expression.F.Csc;
-import static org.matheclipse.core.expression.F.Csch;
-import static org.matheclipse.core.expression.F.Sec;
-import static org.matheclipse.core.expression.F.Sech;
-import static org.matheclipse.core.expression.F.Sin;
-import static org.matheclipse.core.expression.F.Sinh;
-import static org.matheclipse.core.expression.F.Tan;
-import static org.matheclipse.core.expression.F.Tanh;
-import static org.matheclipse.core.expression.F.x_;
-import static org.matheclipse.core.expression.F.y_;
+import java.util.function.Function;
 
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.Structure;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
-import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.patternmatching.Matcher;
+import org.matheclipse.core.visit.VisitorReplaceAllDFS;
 
 /**
  * <pre>
@@ -75,13 +49,15 @@ public class TrigToExp extends AbstractEvaluator {
 		}
 
 		IExpr arg1 = ast.arg1();
-		return arg1.replaceAll(x -> {
+		Function<IExpr, IExpr> fun = x -> {
 			IExpr t = x.rewrite(ID.Exp);
 			if (!t.isPresent()) {
-				t = x.rewrite(ID.Log);
+				return x.rewrite(ID.Log);
 			}
-			return t;
-		}).orElse(arg1);
+			return t.rewrite(ID.Log).orElse(t);
+		};
+		VisitorReplaceAllDFS dfs = new VisitorReplaceAllDFS(fun, 1);
+		return arg1.accept(dfs).orElse(arg1); 
 	}
 
 	@Override

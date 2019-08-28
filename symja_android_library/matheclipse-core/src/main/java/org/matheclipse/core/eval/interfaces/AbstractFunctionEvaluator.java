@@ -14,6 +14,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.AST2;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
@@ -320,6 +321,32 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 				return astTimes.removeAtCopy(i).oneIdentity1();
 			}
 		}
+		return F.NIL;
+	}
+
+	/**
+	 * Try to split a periodic part from the Times() expression: <code>result == timesAST / period</code>
+	 * 
+	 * @param astTimes
+	 * @param period1
+	 * @param period2
+	 * @return <code>F.NIL</code> if no periodicity was found
+	 */
+	public static IExpr peelOfTimes(final IAST astTimes, final IExpr period1, final IExpr period2) {
+		IASTAppendable result = F.NIL;
+		for (int i = 1; i < astTimes.size(); i++) {
+			if (astTimes.get(i).equals(period1)) {
+				result = astTimes.copyAppendable();
+				result.remove(i);
+				for (int j = 1; j < result.size(); j++) {
+					if (result.get(j).equals(period2)) {
+						result.remove(j);
+						return result;
+					}
+				}
+				return F.NIL;
+			}
+		} 
 		return F.NIL;
 	}
 

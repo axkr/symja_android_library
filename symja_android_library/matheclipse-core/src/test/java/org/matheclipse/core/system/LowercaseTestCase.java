@@ -2610,7 +2610,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ComplexExpand(2^(4/3))", //
 				"2*2^(1/3)");
 		check("ComplexExpand((-2)^(4/3))", //
-				"-2*(1/2^(2/3)+I*1/2*2^(1/3)*Sqrt(3))");
+				"-2*(1/2^(2/3)+(I*Sqrt(3))/2^(2/3))");
 		check("ComplexExpand(a*(b+c))", "a*b+a*c");
 		check("ComplexExpand((-1)^(1/3)*(1+I*Sqrt(3)))", //
 				"1/2+I*1/2*Sqrt(3)+(I*1/2-Sqrt(3)/2)*Sqrt(3)");
@@ -5442,8 +5442,34 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testExpToTrig() {
+		check("TrigToExp(Sin(x))", //
+				"(I*1/2)/E^(I*x)-I*1/2*E^(I*x)");
+		check("ExpToTrig((I*1/2)/E^(I*x))", //
+				"I*1/2*Cos(x)+Sin(x)/2");
 		check("ExpToTrig(TrigToExp(Sin(x)))", //
 				"Sin(x)");
+		
+		check("ExpToTrig((-1)^(1/3))",//
+				"1/2+I*1/2*Sqrt(3)");
+		check("ExpToTrig(Sqrt(I))",//
+				"(1+I)/Sqrt(2)");
+		
+		check("Log(-17)", //
+				"I*Pi+Log(17)");
+		check("Cosh(a+b) // TrigExpand", //
+				"Cosh(a)*Cosh(b)+Sinh(a)*Sinh(b)");
+		
+		check("ExpToTrig((-17)^a)", //
+				"(Cos(a*Pi)+I*Sin(a*Pi))*(Cosh(a*Log(17))+Sinh(a*Log(17)))");
+		check("ExpToTrig((-17/19)^a)", //
+				"(Cos(a*Pi)+I*Sin(a*Pi))*(Cosh(a*Log(19/17))-Sinh(a*Log(19/17)))");
+		check("ExpToTrig(I^a)", //
+				"Cos(1/2*a*Pi)+I*Sin(1/2*a*Pi)");
+		check("ExpToTrig(Exp(x) - Exp(-x))", //
+				"2*Sinh(x)");
+		check("ExpToTrig(Exp(x) - Exp(-x))", //
+				"2*Sinh(x)");
+		
 		check("ExpToTrig(Exp(I*x) == -1)", //
 				"Cos(x)+I*Sin(x)==-1");
 		check("ExpToTrig(Exp(x)-Exp(-x))", //
@@ -13213,6 +13239,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPower() {
+		check("Sqrt(-1)*(-1)^(1/10)", //
+				"(-1)^(3/5)");
+		
+		check("(-1)^(2/3)",//
+				"(-1)^(2/3)");
+		check("1/2*Sqrt(2)",//
+				"1/Sqrt(2)");
+		check("I*1/2*Sqrt(2)",//
+				"I/Sqrt(2)");
+		
+		
 		check("E^(I*2/3*Pi)", //
 				"-1/2+I*1/2*Sqrt(3)");
 		check("E^((-11/6)*I*Pi)", //
@@ -17205,37 +17242,41 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testSolveIssue130() {
-		check("Sqrt(1-x)+Sqrt(3+x)", "Sqrt(1-x)+Sqrt(3+x)");
-		check("Sqrt(-1)*(-1)^(1/10)", "(-1)^(3/5)");
-		check("-1*Sqrt(-1)*(-1)^(1/10)", "-(-1)^(3/5)");
-		check("Solve(x^10-1==0,x)",
+		check("Sqrt(1-x)+Sqrt(3+x)", //
+				"Sqrt(1-x)+Sqrt(3+x)");
+		check("Sqrt(-1)*(-1)^(1/10)", //
+				"(-1)^(3/5)");
+		check("-1*Sqrt(-1)*(-1)^(1/10)", //
+				"-(-1)^(3/5)");
+		check("Solve(x^10-1==0,x)",//
 				"{{x->-1},{x->1},{x->-(-1)^(1/5)},{x->(-1)^(1/5)},{x->-(-1)^(2/5)},{x->(-1)^(2/5)},{x->-(\n"
 						+ "-1)^(3/5)},{x->(-1)^(3/5)},{x->-(-1)^(4/5)},{x->(-1)^(4/5)}}");
 
 		// check("Trace(Solve(x^6-b==0,x))",
 		// "???");
-		check("Solve(x^4+b==0,x)", "{{x->(-1)^(1/4)*b^(1/4)},{x->-(-1)^(1/4)*b^(1/4)},{x->(-1)^(3/4)*b^(1/4)},{x->-(\n"
+		check("Solve(x^4+b==0,x)", //
+				"{{x->(-1)^(1/4)*b^(1/4)},{x->-(-1)^(1/4)*b^(1/4)},{x->(-1)^(3/4)*b^(1/4)},{x->-(\n"
 				+ "-1)^(3/4)*b^(1/4)}}");
 		check("Solve(x^4-b==0,x)", //
 				"{{x->(-1)^(1/4)*(-b)^(1/4)},{x->-(-1)^(1/4)*(-b)^(1/4)},{x->(-1)^(3/4)*(-b)^(1/4)},{x->-(\n"
 						+ "-1)^(3/4)*(-b)^(1/4)}}");
-		check("Solve(x^8+b==0,x)",
+		check("Solve(x^8+b==0,x)",//
 				"{{x->(-1)^(1/8)*b^(1/8)},{x->-(-1)^(1/8)*b^(1/8)},{x->(-1)^(3/8)*b^(1/8)},{x->-(\n"
 						+ "-1)^(3/8)*b^(1/8)},{x->(-1)^(5/8)*b^(1/8)},{x->-(-1)^(5/8)*b^(1/8)},{x->(-1)^(7/\n"
 						+ "8)*b^(1/8)},{x->-(-1)^(7/8)*b^(1/8)}}");
-		check("Solve(x^8-b==0,x)",
+		check("Solve(x^8-b==0,x)",//
 				"{{x->(-1)^(1/8)*(-b)^(1/8)},{x->-(-1)^(1/8)*(-b)^(1/8)},{x->(-1)^(3/8)*(-b)^(1/8)},{x->-(\n"
 						+ "-1)^(3/8)*(-b)^(1/8)},{x->(-1)^(5/8)*(-b)^(1/8)},{x->-(-1)^(5/8)*(-b)^(1/8)},{x->(\n"
 						+ "-1)^(7/8)*(-b)^(1/8)},{x->-(-1)^(7/8)*(-b)^(1/8)}}");
 		check("Solve(x^10+b==0,x)", "{{x->-I*b^(1/10)},{x->I*b^(1/10)},{x->(-1)^(1/10)*b^(1/10)},{x->-(-1)^(1/10)*b^(\n"
 				+ "1/10)},{x->(-1)^(3/10)*b^(1/10)},{x->-(-1)^(3/10)*b^(1/10)},{x->(-1)^(7/10)*b^(1/\n"
 				+ "10)},{x->-(-1)^(7/10)*b^(1/10)},{x->(-1)^(9/10)*b^(1/10)},{x->-(-1)^(9/10)*b^(1/\n" + "10)}}");
-		check("Solve(x^10-b==0,x)",
+		check("Solve(x^10-b==0,x)",//
 				"{{x->-I*(-b)^(1/10)},{x->I*(-b)^(1/10)},{x->(-1)^(1/10)*(-b)^(1/10)},{x->-(-1)^(\n"
 						+ "1/10)*(-b)^(1/10)},{x->(-1)^(3/10)*(-b)^(1/10)},{x->-(-1)^(3/10)*(-b)^(1/10)},{x->(\n"
 						+ "-1)^(7/10)*(-b)^(1/10)},{x->-(-1)^(7/10)*(-b)^(1/10)},{x->(-1)^(9/10)*(-b)^(1/10)},{x->-(\n"
 						+ "-1)^(9/10)*(-b)^(1/10)}}");
-		check("Solve(x^6+b==0,x)",
+		check("Solve(x^6+b==0,x)",//
 				"{{x->-I*b^(1/6)},{x->I*b^(1/6)},{x->(-1)^(1/6)*b^(1/6)},{x->-(-1)^(1/6)*b^(1/6)},{x->(\n"
 						+ "-1)^(5/6)*b^(1/6)},{x->-(-1)^(5/6)*b^(1/6)}}");
 		check("Solve(x^6-b==0,x)",
@@ -19328,6 +19369,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTrigToExp() {
+		check("TrigToExp(Cos(Sin(x)))", //
+				"1/(2*E^(I*((I*1/2)/E^(I*x)-I*1/2*E^(I*x))))+" + //
+						"E^(I*((I*1/2)/E^(I*x)-I*1/2*E^(I*x)))/\n" + "2");
 		check("Map(# == TrigToExp(#)&," //
 				+ "{ArcSinh(x), ArcCosh(x), ArcTanh(x)," //
 				+ "ArcCoth(x), ArcSech(x), ArcCsch(x)}) // TableForm", //
