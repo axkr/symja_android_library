@@ -91,7 +91,7 @@ public class ModuleReplaceAll extends VisitorExpr {
 	 */
 	private IAST visitNestedScope(IAST ast, boolean isFunction) {
 		IASTMutable result = F.NIL;
-		IAST localVariablesList =  F.NIL;
+		IAST localVariablesList = F.NIL;
 		if (ast.arg1().isSymbol()) {
 			localVariablesList = F.List(ast.arg1());
 		} else if (ast.arg1().isList()) {
@@ -175,27 +175,23 @@ public class ModuleReplaceAll extends VisitorExpr {
 
 	private IExpr visitASTModule(IAST ast) {
 		IExpr temp;
-		IASTMutable result = F.NIL;
 		int i = fOffset;
-		while (i < ast.size()) {
+		final int size = ast.size();
+		while (i < size) {
 			temp = ast.get(i).accept(this);
 			if (temp.isPresent()) {
 				// something was evaluated - return a new IAST:
-				result = ast.copy();
-				result.set(i++, temp);
-				break;
+				IASTMutable result = ast.setAtCopy(i++, temp);
+				ast.forEach(i, size, (x, j) -> {
+					IExpr t = x.accept(this);
+					if (t.isPresent()) {
+						result.set(j, t);
+					}
+				});
+				return result;
 			}
 			i++;
 		}
-		if (result.isPresent()) {
-			while (i < ast.size()) {
-				temp = ast.get(i).accept(this);
-				if (temp.isPresent()) {
-					result.set(i, temp);
-				}
-				i++;
-			}
-		}
-		return result;
+		return F.NIL;
 	}
 }
