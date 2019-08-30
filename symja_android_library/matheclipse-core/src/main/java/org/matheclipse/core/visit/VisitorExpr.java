@@ -18,7 +18,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Visit every node of an <code>IExpr</code> expression.
  */
-public class VisitorExpr extends AbstractVisitor {
+public abstract class VisitorExpr extends AbstractVisitor {
 
 	public VisitorExpr() {
 	}
@@ -159,33 +159,24 @@ public class VisitorExpr extends AbstractVisitor {
 	 */
 	protected IExpr visitAST(IAST ast) {
 		IExpr temp;
-		IASTAppendable result = F.NIL;
+		// IASTAppendable result = F.NIL;
 		int i = 1;
 		int size = ast.size();
 		while (i < size) {
 			temp = ast.get(i).accept(this);
 			if (temp.isPresent()) {
 				// something was evaluated - return a new IAST:
-				result = ast.copyAppendable();
-				for (int j = 1; j < i; j++) {
-					result.set(j, ast.get(j));
-				}
-				result.set(i++, temp);
-				break;
+				IASTMutable result = ast.setAtCopy(i++, temp);
+				ast.forEach(i, size, (x, j) -> {
+					IExpr t = x.accept(this);
+					if (t.isPresent()) {
+						result.set(j, t);
+					}
+				});
+				return result;
 			}
 			i++;
 		}
-		if (result.isPresent()) {
-			while (i < size) {
-				temp = ast.get(i).accept(this);
-				if (temp.isPresent()) {
-					result.set(i, temp);
-				} else {
-					result.set(i, ast.get(i));
-				}
-				i++;
-			}
-		}
-		return result;
+		return F.NIL;
 	}
 }

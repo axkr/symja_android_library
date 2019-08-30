@@ -175,13 +175,12 @@ public class VisitorReplaceAll extends VisitorExpr {
 			if (temp.isPresent()) {
 				// something was evaluated - return a new IAST:
 				IASTMutable result = ast.setAtCopy(i++, temp);
-				while (i < size) {
-					temp = ast.get(i).accept(this);
-					if (temp.isPresent()) {
-						result.set(i, temp);
+				ast.forEach(i, size, (x, j) -> {
+					IExpr t = x.accept(this);
+					if (t.isPresent()) {
+						result.set(j, t);
 					}
-					i++;
-				}
+				}); 
 				return postProcessing(result);
 
 			}

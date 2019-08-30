@@ -129,27 +129,23 @@ public class VisitorReplaceAllLambda extends VisitorExpr {
 	@Override
 	protected IExpr visitAST(IAST ast) {
 		IExpr temp;
-		IASTMutable result = F.NIL;
 		int i = fOffset;
 		int size = ast.size();
 		while (i < size) {
 			temp = ast.get(i).accept(this);
 			if (temp.isPresent()) {
 				// something was evaluated - return a new IAST:
-				result = ast.setAtCopy(i++, temp);
-				break;
+				IASTMutable result = ast.setAtCopy(i++, temp);
+				ast.forEach(i, size, (x, j) -> {
+					IExpr t = x.accept(this);
+					if (t.isPresent()) {
+						result.set(j, t);
+					}
+				}); 
+				return result;
 			}
 			i++;
 		}
-		if (result.isPresent()) {
-			while (i < size) {
-				temp = ast.get(i).accept(this);
-				if (temp.isPresent()) {
-					result.set(i, temp);
-				}
-				i++;
-			}
-		}
-		return result;
+		return F.NIL;
 	}
 }
