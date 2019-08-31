@@ -695,7 +695,10 @@ public final class Validate {
 	private static IExpr checkEquationAndInequation(IExpr eq) {
 		if (eq.isEqual()) {
 			IAST equal = (IAST) eq;
-			final IExpr[] arr = new IExpr[] { F.evalExpandAll(F.Subtract(equal.arg1(), equal.arg2())), F.C0 };
+			IExpr subtract = EvalEngine.get().evaluate(F.Subtract(equal.arg1(), equal.arg2()));
+			final IExpr[] arr = new IExpr[] { //
+					subtract.isTimes() ? subtract : F.evalExpandAll(subtract), //
+					F.C0 };
 			return F.function(F.Equal, arr);
 		}
 		if (eq.isAST()) {

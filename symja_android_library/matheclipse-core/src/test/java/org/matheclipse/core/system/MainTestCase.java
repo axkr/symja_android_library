@@ -3442,7 +3442,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("Roots((x^2-1)/(x-1)==0, x)", //
 				"x==-1");
 		check("Roots(3/4*x^2+9/16==0, x)", //
-				"x==I*1/2*Sqrt(3)||x==-I*1/2*Sqrt(3)");
+				"x==-I*1/2*Sqrt(3)||x==I*1/2*Sqrt(3)");
 
 		check("Factor(3*x^2+6)", //
 				"3*(2+x^2)");
