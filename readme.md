@@ -111,7 +111,7 @@ public class Example {
 			// print: Cos(x)^2-Sin(x)^2
 			System.out.println("Out[3]: " + result.toString());
 
-			// evaluate the last result (% or $ans contains "last answer")
+			// evaluate the last result (% contains "last answer")
 			result = util.eval("%+cos(x)^2");
 			// print: 2*Cos(x)^2-Sin(x)^2
 			System.out.println("Out[4]: " + result.toString());
@@ -122,8 +122,6 @@ public class Example {
 			System.out.println("Out[5]: " + result.toString());
 
 			// set the value of a variable "a" to 10
-			// Note: in server mode the variable name must have a preceding '$'
-			// character
 			result = util.eval("a=10");
 			// print: 10
 			System.out.println("Out[6]: " + result.toString());
@@ -152,6 +150,7 @@ public class Example {
 			function = F.Function(F.Divide(F.Gamma(F.Plus(F.C1, F.Slot1)), F.Gamma(F.Plus(F.C1, F.Slot2))));
 			// eval function ( Gamma(1+#1)/Gamma(1+#2) ) & [23,20]
 			result = util.evalFunction(function, "23", "20");
+			// print: 10626
 			System.out.println("Out[10]: " + result.toString());
 		} catch (SyntaxError e) {
 			// catch Symja parser errors here
