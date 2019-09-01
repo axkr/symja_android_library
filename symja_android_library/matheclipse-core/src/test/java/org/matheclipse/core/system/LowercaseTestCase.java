@@ -6190,18 +6190,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "9*x^2+12*x^3+4*x^4+36*x*y+48*x^2*y+16*x^3*y+36*y^2+48*x*y^2+16*x^2*y^2");
 		// check("FactorTerms(9*x^2+12*x^3+4*x^4+36*x*y+48*x^2*y+16*x^3*y+36*y^2+48*x*y^2+16*x^2*y^2, y)",//
 		// "");
+
+		// TODO create simpler form
+		// check("FactorTerms(2*a*x^2*y + 2*x^2*y + 4*a*x^2 + 4*x^2 + 4*a^2*y^2 + 4*a*y^2 + 8*a^2*y + 2*a*y - 6*y -
+		// 12*a- 12, x)", //
+		// "");
+
 		check("FactorTerms(100*Log(2))", //
 				"100*Log(2)");
 		check("FactorTerms(-136+40*Sqrt(17))", //
 				"8*(-17+5*Sqrt(17))");
-		// TODO create simpler form
-		check("FactorTerms(2*a*x^2*y + 2*x^2*y + 4*a*x^2 + 4*x^2 + 4*a^2*y^2 + 4*a*y^2 + 8*a^2*y + 2*a*y - 6*y - 12*a- 12, x)", //
-				"(x+Sqrt(48+96*a+48*a^2+48*y+64*a*y-16*a^2*y-32*a^3*y+12*y^2-8*a*y^2-52*a^2*y^2\n"
-						+ "-32*a^3*y^2-8*a*y^3-16*a^2*y^3-8*a^3*y^3)/(4+4*a+2*y+2*a*y))*(x-Sqrt(48+96*a+48*a^\n"
-						+ "2+48*y+64*a*y-16*a^2*y-32*a^3*y+12*y^2-8*a*y^2-52*a^2*y^2-32*a^3*y^2-8*a*y^3-16*a^\n"
-						+ "2*y^3-8*a^3*y^3)/(4+4*a+2*y+2*a*y))");
+
 		check("FactorTerms(x^2 - y^2, x)", //
-				"(x-y)*(x+y)");
+				"x^2-y^2");
 		check("factorterms(3 + 6*x + 3*x^2)", //
 				"3*(1+2*x+x^2)");
 	}
@@ -6269,6 +6270,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFindInstance() {
+
 		check("FindInstance((a || b || c) && (! a || ! b || ! c) && True, {a, b, c}, 2)",
 				"{{a->False,b->True,c->True},{a->False,b->True,c->False}}");
 
@@ -6276,7 +6278,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{x->ArcSin(1/4)}}");
 
 		check("FindInstance({x^2==4,x+y^2==6}, {x,y})", //
-				"{{x->-2,y->2*Sqrt(2)}}");
+				"{{x->-2,y->-2*Sqrt(2)}}");
 		check("FindInstance(x+5.0==a,x)", "{{x->-5.0+a}}");
 
 		check("FindInstance(Xor(a, b, c, d) && (a || b) && ! (c || d), {a, b, c, d}, Booleans)",
@@ -16758,7 +16760,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1");
 	}
 
-	public void testSolve1() {
+	public void testSolve() {
+		check("Solve((5.0*x)/y==(0.8*y)/x,x)", //
+				"{{x->-0.4*y},{x->0.4*y}}");
 		// TODO improve method QuarticSolver#quadraticSolve()
 		// check("Solve(a*x^2+b==0,x)", //
 		// "");
@@ -16784,17 +16788,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Solve(3*(x+a)*(x-b)==0,x)", //
 				"{{x->-a},{x->b}}");
 		check("Solve(a*x^2+b==0,x)", //
-				"{{x->(-I*Sqrt(a*b))/a},{x->(I*Sqrt(a*b))/a}}");
+				"{{x->(-I*Sqrt(b))/Sqrt(a)},{x->(I*Sqrt(b))/Sqrt(a)}}");
 		check("Solve(x^2+2*x+1==0,x)", //
 				"{{x->-1},{x->-1}}");
-		//  TODO simplify result
+		// TODO simplify result
 		check("Solve(-5*Sqrt(14)*x-14*x^2*Sqrt(83)-10==0,x)", //
-				"{{x->(-5*Sqrt(14)-Sqrt(350-560*Sqrt(83)))/(28*Sqrt(83))},{x->(-5*Sqrt(14)+Sqrt(\n" + 
-				"350-560*Sqrt(83)))/(28*Sqrt(83))}}");
-		
+				"{{x->(-5*Sqrt(14)-Sqrt(350-560*Sqrt(83)))/(28*Sqrt(83))},{x->(-5*Sqrt(14)+Sqrt(\n"
+						+ "350-560*Sqrt(83)))/(28*Sqrt(83))}}");
+
 		check("Solve(8*x^3-26x^2+3x+9==0,x)", //
 				"{{x->-1/2},{x->3/4},{x->3}}");
-		
+
 		check("Solve((a*x^2+1)==0,x)", //
 				"{{x->-I/Sqrt(a)},{x->I/Sqrt(a)}}");
 		check("Solve(Sqrt(x)-2*x+x^2==0,x)", //
@@ -17074,7 +17078,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("z=22.13904248493947", // 7
 				"22.13904248493947");
 		checkNumeric("Solve(x/y==z/x,x)", //
-				"{{x->-81.08825721072823},{x->81.08825721072823}}");
+				"{{x->-81.08825721072822},{x->81.08825721072822}}");
 	}
 
 	// public void testSolve2() {

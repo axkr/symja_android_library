@@ -2351,6 +2351,28 @@ public class Algebra {
 				result.append(jas.integerPoly2Expr(iPoly));
 				return result;
 			} catch (JASConversionException e1) {
+//				try {
+//					if (variableList.isAST1()) {
+//						IAST list = PolynomialFunctions.rootsOfExprPolynomial(expr, variableList, true);
+//						if (list.isList()) {
+//							IExpr x = variableList.arg1();
+//							IASTAppendable result = F.TimesAlloc(list.size());
+//							list.forEach(arg -> result.append(F.Plus(x, arg)));
+//							// for (int i = 1; i < list.size(); i++) {
+//							// result.append(F.Plus(x, list.get(i)));
+//							// }
+//							return result;
+//						}
+//					}
+//				} catch (ClassCastException e2) {
+//					if (Config.SHOW_STACKTRACE) {
+//						e2.printStackTrace();
+//					}
+//				} catch (JASConversionException e2) {
+//					if (Config.SHOW_STACKTRACE) {
+//						e2.printStackTrace();
+//					}
+//				}
 
 			}
 			return ast.arg1();

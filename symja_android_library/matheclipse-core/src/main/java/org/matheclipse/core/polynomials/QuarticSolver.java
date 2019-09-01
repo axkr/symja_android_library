@@ -4,7 +4,6 @@ import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.C1D3;
-import static org.matheclipse.core.expression.F.C1D4;
 import static org.matheclipse.core.expression.F.C2;
 import static org.matheclipse.core.expression.F.C3;
 import static org.matheclipse.core.expression.F.C4;
@@ -13,10 +12,8 @@ import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.CN1D4;
 import static org.matheclipse.core.expression.F.CN3;
 import static org.matheclipse.core.expression.F.CN4;
-import static org.matheclipse.core.expression.F.Cos;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.QQ;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.ZZ;
@@ -30,7 +27,6 @@ import javax.annotation.Nonnull;
 
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -513,29 +509,43 @@ public class QuarticSolver {
 				}
 			} else {
 				if (b.isZero()) {
-					IExpr nominator = a.times(c);
-					if (nominator.equals(a)) {
-						IExpr discriminant = F.evalExpand(nominator.negate());
-						IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(discriminant);
-						if (negExpr.isPresent()) {
-							nominator = negExpr;
-							discriminant = F.CI;
-						} else {
-							discriminant = F.C1;
-						}
-						result.append(Times(discriminant, Power(F.Sqrt(nominator), -1L)));
-						result.append(Times(discriminant.negate(), Power(F.Sqrt(nominator), -1L)));
+					// a*x^2 + c == 0
+					IExpr rhs = F.Divide.of(F.Negate(c), a);
+					IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(rhs);
+					if (negExpr.isPresent()) {
+						IExpr numerator = F.Numerator.of(negExpr);
+						IExpr denominator = F.Denominator.of(negExpr);
+						result.append(Times.of(F.CI.negate(), F.Divide(surdSqrt(numerator), surdSqrt(denominator))));
+						result.append(Times.of(F.CI, F.Divide(surdSqrt(numerator), surdSqrt(denominator))));
 					} else {
-						IExpr discriminant = F.evalExpand(nominator.negate());
-						IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(discriminant);
-						if (negExpr.isPresent()) {
-							discriminant = F.Times(F.CI, negExpr.sqrt());
-						} else {
-							discriminant = discriminant.sqrt();
-						}
-						result.append(Times(discriminant, Power(a, -1L)));
-						result.append(Times(discriminant.negate(), Power(a, -1L)));
+						IExpr numerator = F.Numerator.of(rhs);
+						IExpr denominator = F.Denominator.of(rhs);
+						result.append(Times.of(F.CN1, F.Divide(surdSqrt(numerator), surdSqrt(denominator))));
+						result.append(F.Divide.of(surdSqrt(numerator), surdSqrt(denominator)));
 					}
+					// IExpr nominator = a.times(c);
+					// if (nominator.equals(a)) {
+					// IExpr discriminant = F.evalExpand(nominator.negate());
+					// IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(discriminant);
+					// if (negExpr.isPresent()) {
+					// nominator = negExpr;
+					// discriminant = F.CI;
+					// } else {
+					// discriminant = F.C1;
+					// }
+					// result.append(Times(discriminant, Power(F.Sqrt(nominator), -1L)));
+					// result.append(Times(discriminant.negate(), Power(F.Sqrt(nominator), -1L)));
+					// } else {
+					// IExpr discriminant = F.evalExpand(nominator.negate());
+					// IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(discriminant);
+					// if (negExpr.isPresent()) {
+					// discriminant = F.Times(F.CI, negExpr.sqrt());
+					// } else {
+					// discriminant = discriminant.sqrt();
+					// }
+					// result.append(Times(discriminant, Power(a, -1L)));
+					// result.append(Times(discriminant.negate(), Power(a, -1L)));
+					// }
 				} else {
 					IExpr discriminant = F.evalExpand(Plus(F.Sqr(b), a.times(c).times(F.C4).negate()));
 					discriminant = discriminant.sqrt();
@@ -550,6 +560,38 @@ public class QuarticSolver {
 			}
 		}
 		return result;
+	}
+	
+	private static IExpr surdSqrt(IExpr arg) {
+		if (arg.isTimes()) {
+			IAST times = (IAST) arg;
+			for (int i = 1; i < times.size(); i++) {
+				IExpr x = times.get(i);
+				if (x.isPower() && x.exponent().isReal()) {
+					if (x.exponent().isEvenResult()) {
+						IASTAppendable res1 = F.TimesAlloc(times.size());
+						res1.appendArgs(times, i);
+						IASTAppendable res2 = F.Times();
+						res2.append(F.Power(x.base(), F.Divide(x.exponent(), F.C2)));
+						for (int j = i + 1; j < times.size(); j++) {
+							x = times.get(j);
+							if (x.isPower() && x.exponent().isReal() && x.exponent().isEvenResult()) {
+								res2.append(F.Power(x.base(), F.Divide(x.exponent(), F.C2)));
+							} else {
+								res1.append(x);
+							}
+						}
+						return F.Times(res2, F.Sqrt(res1));
+					}
+				}
+			}
+		} else if (arg.isPower() && arg.exponent().isReal()) {
+			IAST x = (IAST) arg;
+			if (x.exponent().isEvenResult()) {
+				return F.Power(x.base(), F.Divide(x.exponent(), F.C2));
+			}
+		}
+		return F.Sqrt(arg);
 	}
 
 	/**
