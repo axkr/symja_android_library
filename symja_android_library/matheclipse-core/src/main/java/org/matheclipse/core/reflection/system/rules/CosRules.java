@@ -13,7 +13,7 @@ public interface CosRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 55, 6 };
+  final public static int[] SIZES = { 55, 12 };
 
   final public static IAST RULES = List(
     IInit(Cos, SIZES),
@@ -170,21 +170,39 @@ public interface CosRules {
     // Cos(ArcSin(x_)):=Sqrt(1-x^2)
     ISetDelayed(Cos(ArcSin(x_)),
       Sqrt(Subtract(C1,Sqr(x)))),
+    // Cos(2*ArcSin(x_)):=1-2*x^2
+    ISetDelayed(Cos(Times(C2,ArcSin(x_))),
+      Plus(C1,Times(CN2,Sqr(x)))),
     // Cos(ArcCos(x_)):=x
     ISetDelayed(Cos(ArcCos(x_)),
       x),
+    // Cos(2*ArcCos(x_)):=-1+2*x^2
+    ISetDelayed(Cos(Times(C2,ArcCos(x_))),
+      Plus(CN1,Times(C2,Sqr(x)))),
     // Cos(ArcTan(x_)):=1/Sqrt(1+x^2)
     ISetDelayed(Cos(ArcTan(x_)),
       Power(Plus(C1,Sqr(x)),CN1D2)),
-    // Cos(ArcCot(x_)):=x/Sqrt(1+x^2)
+    // Cos(2*ArcTan(x_)):=(1-x^2)/(1+x^2)
+    ISetDelayed(Cos(Times(C2,ArcTan(x_))),
+      Times(Subtract(C1,Sqr(x)),Power(Plus(C1,Sqr(x)),CN1))),
+    // Cos(ArcCot(x_)):=1/Sqrt(1+1/x^2)
     ISetDelayed(Cos(ArcCot(x_)),
-      Times(x,Power(Plus(C1,Sqr(x)),CN1D2))),
+      Power(Plus(C1,Power(x,CN2)),CN1D2)),
+    // Cos(2*ArcCot(x_)):=(-1+x^2)/(1+x^2)
+    ISetDelayed(Cos(Times(C2,ArcCot(x_))),
+      Times(Plus(CN1,Sqr(x)),Power(Plus(C1,Sqr(x)),CN1))),
     // Cos(ArcCsc(x_)):=Sqrt(1-1/x^2)
     ISetDelayed(Cos(ArcCsc(x_)),
       Sqrt(Subtract(C1,Power(x,CN2)))),
+    // Cos(2*ArcCsc(x_)):=(-2+x^2)/x^2
+    ISetDelayed(Cos(Times(C2,ArcCsc(x_))),
+      Times(Power(x,CN2),Plus(CN2,Sqr(x)))),
     // Cos(ArcSec(x_)):=1/x
     ISetDelayed(Cos(ArcSec(x_)),
       Power(x,CN1)),
+    // Cos(2*ArcSec(x_)):=(2-x^2)/x^2
+    ISetDelayed(Cos(Times(C2,ArcSec(x_))),
+      Times(Power(x,CN2),Subtract(C2,Sqr(x)))),
     // Cos(I*Infinity)=Infinity
     ISet(Cos(DirectedInfinity(CI)),
       oo),

@@ -53,9 +53,13 @@ Sin(I)=I*Sinh(1),
 Sin(x_?NumberQ*Pi):=If(x<1, Sin((1-x)*Pi),If(x<2,-Sin((2-x)*Pi), Sin((x-2*Quotient(IntegerPart(x),2))*Pi) ) ) /; x>=1/2,
 
 Sin(ArcSin(x_)):=x,
+Sin(2*ArcSin(x_)):=2*x*(1-x)^(1/2)*(1+x)^(1/2),
 Sin(ArcCos(x_)):=(1-x^2)^(1/2),
+Sin(2*ArcCos(x_)):=2*x*(1-x)^(1/2)*(1+x)^(1/2),
 Sin(ArcTan(x_)):=x*(1+x^2)^(-1/2),
+Sin(2*ArcTan(x_)):=2*x*(1+x^2)^(-1),
 Sin(ArcCot(x_)):=(1+x^2)^(-1/2),
+Sin(2*ArcCot(x_)):=2*x*(1+x^2)^(-1),
 Sin(ArcCsc(x_)):=x^(-1),
 Sin(ArcSec(x_)):=(1-x^(-2))^(1/2),
 

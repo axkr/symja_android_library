@@ -2,13 +2,14 @@ package org.matheclipse.core.expression;
 
 import java.io.IOException;
 import java.io.ObjectStreamException;
+import java.util.function.BiFunction;
 import java.util.function.DoubleFunction;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
@@ -318,6 +319,6 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
 	private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
 		stream.writeInt(fOrdinal);
-	}
+	} 
 
 }

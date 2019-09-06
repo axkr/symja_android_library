@@ -51,8 +51,8 @@ public class MathMLPresentationTestCase extends TestCase {
 				"<mtext>hello</mtext><mspace linebreak='newline' /><mtext>this&nbsp;is&nbsp;&amp;&nbsp;and&nbsp;&lt;&nbsp;to&nbsp;&gt;&nbsp;&quot;&nbsp;world</mtext><mspace linebreak='newline' />");
 
 		check("x /.y", "<mrow><mi>x</mi><mo>/.</mo><mi>y</mi></mrow>");
-		check("f(x_,y_):={x,y}/;x>y",
-				"<mrow><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mtext>x_</mtext><mspace linebreak='newline' /><mo>,</mo><mtext>y_</mtext><mspace linebreak='newline' /></mrow><mo>)</mo></mrow></mrow><mo>:=</mo><mrow><mrow><mo>{</mo><mrow><mi>x</mi><mo>,</mo><mi>y</mi></mrow><mo>}</mo></mrow><mo>/;</mo><mrow><mi>x</mi><mo>&gt;</mo><mi>y</mi></mrow></mrow></mrow>");
+		check("f(x_,y_):={x,y}/;x>y", //
+				"<mrow><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mtext>x_</mtext><mo>,</mo><mtext>y_</mtext></mrow><mo>)</mo></mrow></mrow><mo>:=</mo><mrow><mrow><mo>{</mo><mrow><mi>x</mi><mo>,</mo><mi>y</mi></mrow><mo>}</mo></mrow><mo>/;</mo><mrow><mi>x</mi><mo>&gt;</mo><mi>y</mi></mrow></mrow></mrow>");
 
 		check("f(x)&",
 				"<mrow><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow><mo>&amp;</mo></mrow>");
@@ -70,7 +70,7 @@ public class MathMLPresentationTestCase extends TestCase {
 		check(F.complexNum(-0.5, -4.0), //
 				"<mrow><mn>-0.5</mn><mo>-</mo><mn>4.0</mn><mo>&#0183;</mo><mi>&#x2148;</mi></mrow>");
 		check(F.pattern(F.x), //
-				"<mtext>x_</mtext><mspace linebreak='newline' />");
+				"<mtext>x_</mtext>");
 		check(F.complexNum(0.5, 4.0), //
 				"<mrow><mn>0.5</mn><mo>+</mo><mn>4.0</mn><mo>&#0183;</mo><mi>&#x2148;</mi></mrow>");
 		check(F.complexNum(-0.5, -4.0), //
@@ -364,6 +364,12 @@ public class MathMLPresentationTestCase extends TestCase {
 
 	}
 
+	public void testMissing() {
+		IExpr expr = EvalEngine.get().evaluate("Missing(\"test1\", \"test2\")");
+		check(expr,
+				"<mrow><mi>Missing</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mtext>test1</mtext><mo>,</mo><mtext>test2</mtext></mrow><mo>)</mo></mrow></mrow>");
+	}
+	
 	/**
 	 * The JUnit setup method
 	 */

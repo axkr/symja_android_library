@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.text.NumberFormat;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -35,6 +36,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.trie.Tries;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.PostfixOperator;
@@ -1004,17 +1006,17 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	/**
 	 * Table for constant symbols
 	 */
-	public final static HashMap<String, Object> CONSTANT_SYMBOLS = new HashMap<String, Object>(199);
+	public final static Map<String, Object> CONSTANT_SYMBOLS = Tries.forStrings();
 
 	/**
 	 * Table for constant expressions
 	 */
-	public final static HashMap<IExpr, String> CONSTANT_EXPRS = new HashMap<IExpr, String>(199);
+	public final static HashMap<IExpr, String> CONSTANT_EXPRS = new HashMap<IExpr, String>();
 
 	/**
 	 * Description of the Field
 	 */
-	public final static HashMap<String, AbstractConverter> OPERATORS = new HashMap<String, AbstractConverter>(199);
+	public final static Map<String, AbstractConverter> OPERATORS = Tries.forStrings();
 
 	private int plusPrec;
 
@@ -1352,17 +1354,17 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	private boolean convertInequality(final StringBuilder buf, final IAST inequality, final int precedence) {
 		int operPrecedence = ASTNodeFactory.EQUAL_PRECEDENCE;
 		StringBuilder tempBuffer = new StringBuilder();
-		
+
 		tagStart(tempBuffer, "mrow");
 		if (operPrecedence < precedence) {
 			// append(buf, "(");
 			tag(tempBuffer, "mo", "(");
 		}
-		 
+
 		final int listSize = inequality.size();
 		int i = 1;
 		while (i < listSize) {
-			convert(tempBuffer, inequality.get(i++), operPrecedence, false); 
+			convert(tempBuffer, inequality.get(i++), operPrecedence, false);
 			if (i == listSize) {
 				if (operPrecedence < precedence) {
 					// append(buf, ")");
@@ -1377,22 +1379,22 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 				int id = ((IBuiltInSymbol) head).ordinal();
 				switch (id) {
 				case ID.Equal:
-					tag(tempBuffer, "mo", "=="); 
+					tag(tempBuffer, "mo", "==");
 					break;
 				case ID.Greater:
-					tag(tempBuffer, "mo", "&gt;"); 
+					tag(tempBuffer, "mo", "&gt;");
 					break;
 				case ID.GreaterEqual:
-					tag(tempBuffer, "mo", "&gt;="); 
+					tag(tempBuffer, "mo", "&gt;=");
 					break;
 				case ID.Less:
-					tag(tempBuffer, "mo", "&lt;"); 
+					tag(tempBuffer, "mo", "&lt;");
 					break;
 				case ID.LessEqual:
-					tag(tempBuffer, "mo", "&lt;="); 
+					tag(tempBuffer, "mo", "&lt;=");
 					break;
 				case ID.Unequal:
-					tag(tempBuffer, "mo", "!="); 
+					tag(tempBuffer, "mo", "!=");
 					break;
 				default:
 					return false;
@@ -1409,7 +1411,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		buf.append(tempBuffer);
 		return true;
 	}
-	
+
 	@Override
 	public void convertComplex(final StringBuilder buf, final IComplex c, final int precedence, boolean caller) {
 		boolean isReZero = c.getRealPart().isZero();
@@ -1430,9 +1432,9 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			tag(buf, "mo", "(");
 		}
 		if (!isReZero) {
-			convertFraction(buf, c.getRealPart(), plusPrec, caller); 
+			convertFraction(buf, c.getRealPart(), plusPrec, caller);
 		}
- 
+
 		if (isImOne) {
 			tagStart(buf, "mrow");
 			if (isReZero) {
@@ -1758,7 +1760,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			// append(buf, oper.getOperatorString());
 			tag(buf, "mo", oper.getOperatorString());
 			convert(buf, list.get(i), oper.getPrecedence(), false);
-		} 
+		}
 		if (oper.getPrecedence() < precedence) {
 			// append(buf, ")");
 			tag(buf, "mo", ")");
@@ -1781,7 +1783,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		}
 	}
 
-	public void convertList(final StringBuilder buf, final IAST list) { 
+	public void convertList(final StringBuilder buf, final IAST list) {
 		tagStart(buf, "mrow");
 		tag(buf, "mo", "{");
 		if (list.size() > 1) {
@@ -2058,13 +2060,16 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	@Override
 	public void convertString(final StringBuilder buf, final String str) {
 		String[] splittedStr = str.split("\\n");
-		for (int i = 0; i < splittedStr.length; i++) {
+		final int splittedStrLength = splittedStr.length;
+		for (int i = 0; i < splittedStrLength; i++) {
 			tagStart(buf, "mtext");
 			String text = splittedStr[i].replaceAll("\\&", "&amp;").replaceAll("\\<", "&lt;").replaceAll("\\>", "&gt;");
 			text = text.replaceAll("\\\"", "&quot;").replaceAll(" ", "&nbsp;");
 			buf.append(text);
 			tagEnd(buf, "mtext");
-			buf.append("<mspace linebreak='newline' />");
+			if (splittedStrLength > 1) {
+				buf.append("<mspace linebreak='newline' />");
+			}
 		}
 
 	}
@@ -2237,7 +2242,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		CONVERTERS.put(F.CompoundExpression,
 				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("CompoundExpression").getPrecedence(), ";"));
 		CONVERTERS.put(F.D, new D());
-		CONVERTERS.put(F.DirectedEdge, new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("DirectedEdge").getPrecedence(), "-&gt;"));
+		CONVERTERS.put(F.DirectedEdge,
+				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("DirectedEdge").getPrecedence(), "-&gt;"));
 		CONVERTERS.put(F.Dot, new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("Dot").getPrecedence(), "."));
 		CONVERTERS.put(F.Element, new Element());
 		CONVERTERS.put(F.Equal, new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("Equal").getPrecedence(), "=="));
@@ -2272,8 +2278,10 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		CONVERTERS.put(F.Sqrt, new Sqrt());
 		CONVERTERS.put(F.Sum, new Sum());
 		CONVERTERS.put(F.Times, new Times());
-		CONVERTERS.put(F.TwoWayRule, new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("TwoWayRule").getPrecedence(), "&lt;-&gt;"));
-		CONVERTERS.put(F.UndirectedEdge, new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("UndirectedEdge").getPrecedence(), "&lt;-&gt;"));
+		CONVERTERS.put(F.TwoWayRule,
+				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("TwoWayRule").getPrecedence(), "&lt;-&gt;"));
+		CONVERTERS.put(F.UndirectedEdge,
+				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("UndirectedEdge").getPrecedence(), "&lt;-&gt;"));
 		CONVERTERS.put(F.Unequal,
 				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("Unequal").getPrecedence(), "!="));
 	}

@@ -6,7 +6,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IExpr;
 
 public class Documentation {
 
@@ -15,18 +17,29 @@ public class Documentation {
 		usageDocumentation(out, name);
 	}
 
+	public static IExpr findDocumentation(String trimmedInput) {
+		StringBuilder out = new StringBuilder();
+		String name = trimmedInput.substring(1);
+		usageDocumentation(out, name);
+		String str = out.toString();
+		if (str.length()==0) {
+			return F.Missing(F.stringx("UnknownSymbol"), F.stringx(trimmedInput));
+		}
+		return F.stringx(str);
+	}
+
 	public static void usageDocumentation(Appendable out, String name) {
 		IAST list = IOFunctions.getNamesByPrefix(name);
 		try {
-			if (list.size() != 2) { 
+			if (list.size() > 2) {
 				for (int i = 1; i < list.size(); i++) {
 					out.append(list.get(i).toString());
 					if (i != list.argSize()) {
 						out.append(", ");
 					}
 				}
+				out.append("\n");
 			}
-			out.append("\n");
 			if (list.size() == 2) {
 				Documentation.printDocumentation(out, list.arg1().toString());
 			} else if (list.size() == 1

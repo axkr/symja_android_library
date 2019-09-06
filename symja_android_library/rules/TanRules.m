@@ -32,7 +32,9 @@ Tan(Pi*x_?NumberQ):=If(x<1,(-1)*Tan((1-x)*Pi),If(x<2,Tan((x-1)*Pi),Tan((x-2*Quot
 Tan(ArcSin(x_)):=x*(1-x^2)^(-1/2),
 Tan(ArcCos(x_)):=(1-x^2)^(1/2)/x,
 Tan(ArcTan(x_)):=x,
+Tan(2*ArcTan(x_)):=-2*x/(-1+x^2),
 Tan(ArcCot(x_)):=1/x,
+Tan(2*ArcCot(x_)):=2*x/(-1+x^2),
 Tan(ArcCsc(x_)):=(1-x^(-2))^(-1/2)*x^(-1),
 Tan(ArcSec(x_)):=(1-x^(-2))^(1/2)*x,
 	 

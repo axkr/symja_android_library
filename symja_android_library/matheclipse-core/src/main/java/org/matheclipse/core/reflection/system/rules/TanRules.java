@@ -13,7 +13,7 @@ public interface TanRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 29, 7 };
+  final public static int[] SIZES = { 29, 9 };
 
   final public static IAST RULES = List(
     IInit(Tan, SIZES),
@@ -107,9 +107,15 @@ public interface TanRules {
     // Tan(ArcTan(x_)):=x
     ISetDelayed(Tan(ArcTan(x_)),
       x),
+    // Tan(2*ArcTan(x_)):=-2*x/(-1+x^2)
+    ISetDelayed(Tan(Times(C2,ArcTan(x_))),
+      Times(CN2,x,Power(Plus(CN1,Sqr(x)),CN1))),
     // Tan(ArcCot(x_)):=1/x
     ISetDelayed(Tan(ArcCot(x_)),
       Power(x,CN1)),
+    // Tan(2*ArcCot(x_)):=2*x/(-1+x^2)
+    ISetDelayed(Tan(Times(C2,ArcCot(x_))),
+      Times(C2,x,Power(Plus(CN1,Sqr(x)),CN1))),
     // Tan(ArcCsc(x_)):=1/(Sqrt(1-1/x^2)*x)
     ISetDelayed(Tan(ArcCsc(x_)),
       Times(Power(Subtract(C1,Power(x,CN2)),CN1D2),Power(x,CN1))),

@@ -1,6 +1,7 @@
 package org.matheclipse.core.form.tex;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -29,6 +30,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.trie.Tries;
 import org.matheclipse.parser.client.Characters;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 
@@ -1037,7 +1039,7 @@ public class TeXFormFactory {
 	/**
 	 * Table for constant symbols
 	 */
-	public final static HashMap<String, Object> CONSTANT_SYMBOLS = new HashMap<String, Object>(199);
+	public final static Map<String, Object> CONSTANT_SYMBOLS = Tries.forStrings();
 
 	/**
 	 * Table for constant expressions
@@ -1188,7 +1190,7 @@ public class TeXFormFactory {
 	}
 
 	public void convertAST(StringBuilder buf, final IAST f, int precedence) {
-		
+
 		int functionID = ((ISymbol) f.head()).ordinal();
 		if (functionID > ID.UNKNOWN) {
 			switch (functionID) {
@@ -1199,7 +1201,7 @@ public class TeXFormFactory {
 				break;
 			}
 		}
-		
+
 		convertHead(buf, f.head());
 		buf.append("(");
 		for (int i = 1; i < f.size(); i++) {
@@ -1215,15 +1217,15 @@ public class TeXFormFactory {
 	private boolean convertInequality(final StringBuilder buf, final IAST inequality, final int precedence) {
 		int operPrecedence = ASTNodeFactory.EQUAL_PRECEDENCE;
 		StringBuilder tempBuffer = new StringBuilder();
-		
+
 		if (operPrecedence < precedence) {
 			tempBuffer.append("(");
 		}
-		 
+
 		final int listSize = inequality.size();
 		int i = 1;
 		while (i < listSize) {
-			convert(tempBuffer, inequality.get(i++), 0); 
+			convert(tempBuffer, inequality.get(i++), 0);
 			if (i == listSize) {
 				if (operPrecedence < precedence) {
 					tempBuffer.append(")");
@@ -1242,7 +1244,7 @@ public class TeXFormFactory {
 					tempBuffer.append(" > ");
 					break;
 				case ID.GreaterEqual:
-					tempBuffer.append( "\\geq ");
+					tempBuffer.append("\\geq ");
 					break;
 				case ID.Less:
 					tempBuffer.append(" < ");
@@ -1266,7 +1268,7 @@ public class TeXFormFactory {
 		buf.append(tempBuffer);
 		return true;
 	}
-	
+
 	public void convertAST(StringBuilder buf, final IAST f, String headString) {
 		buf.append(headString);
 		buf.append("(");
@@ -1633,8 +1635,8 @@ public class TeXFormFactory {
 				new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Less").getPrecedence(), " < "));
 		operTab.put(F.PreIncrement, new PreOperator(this,
 				ASTNodeFactory.MMA_STYLE_FACTORY.get("PreIncrement").getPrecedence(), "\\text{++}"));
-		operTab.put(F.Unequal, new AbstractOperator(this,
-				ASTNodeFactory.MMA_STYLE_FACTORY.get("Unequal").getPrecedence(), "\\neq "));
+		operTab.put(F.Unequal,
+				new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Unequal").getPrecedence(), "\\neq "));
 		operTab.put(F.Or,
 				new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Or").getPrecedence(), " \\lor "));
 		// operTab.put(F.PrePlus,

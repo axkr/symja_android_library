@@ -66,16 +66,23 @@ public class MMAConsoleTestSingleRun extends TestCase {
 		String[] args = new String[] { "-c", "Integrate[Sin[x]^2,x]" };
 		check(args, "x/2-1/2*Cos[x]*Sin[x]");
 	}
-	
+
 	public void test005() {
 		String[] args = new String[] { "-c", "FullSimplify[Cosh[x]+Sinh[x]]" };
 		check(args, "E^x");
 	}
-	
+
 	public void testInput() {
 		assertEquals("f[x]", console.interpreter("f[x]"));
 		assertEquals("x/2-1/2*Cos[x]*Sin[x]", console.interpreter("Integrate[Sin[x]^2,x]"));
 	}
-	
-	
+
+	public void testDoc() {
+		assertEquals("Sin, Sinc, SingularValueDecomposition, Sinh, SinIntegral, SinhIntegral",
+				console.interpreter("?Sin*"));
+	}
+
+	public void testMissingDoc() {
+		assertEquals("Missing[UnknownSymbol,?sin*]", console.interpreter("?sin*"));
+	}
 }

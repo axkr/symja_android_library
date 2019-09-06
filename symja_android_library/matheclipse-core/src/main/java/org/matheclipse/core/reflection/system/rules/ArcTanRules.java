@@ -13,7 +13,7 @@ public interface ArcTanRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 18, 0 };
+  final public static int[] SIZES = { 22, 0 };
 
   final public static IAST RULES = List(
     IInit(ArcTan, SIZES),
@@ -26,9 +26,15 @@ public interface ArcTanRules {
     // ArcTan(2-Sqrt(3))=Pi/12
     ISet(ArcTan(Subtract(C2,CSqrt3)),
       Times(QQ(1L,12L),Pi)),
+    // ArcTan(-2+Sqrt(3))=-Pi/12
+    ISet(ArcTan(Plus(CN2,CSqrt3)),
+      Times(QQ(-1L,12L),Pi)),
     // ArcTan(-1+Sqrt(2))=Pi/8
     ISet(ArcTan(Plus(CN1,CSqrt2)),
       Times(QQ(1L,8L),Pi)),
+    // ArcTan(1-Sqrt(2))=-Pi/8
+    ISet(ArcTan(Subtract(C1,CSqrt2)),
+      Times(QQ(-1L,8L),Pi)),
     // ArcTan(1/Sqrt(3))=Pi/6
     ISet(ArcTan(C1DSqrt3),
       Times(QQ(1L,6L),Pi)),
@@ -53,6 +59,12 @@ public interface ArcTanRules {
     // ArcTan(2+Sqrt(3))=5/12*Pi
     ISet(ArcTan(Plus(C2,CSqrt3)),
       Times(QQ(5L,12L),Pi)),
+    // ArcTan(Sqrt(5-2*Sqrt(5)))=Pi/5
+    ISet(ArcTan(Sqrt(Plus(C5,Times(CN2,CSqrt5)))),
+      Times(QQ(1L,5L),Pi)),
+    // ArcTan(Sqrt(5+2*Sqrt(5)))=2/5*Pi
+    ISet(ArcTan(Sqrt(Plus(C5,Times(C2,CSqrt5)))),
+      Times(QQ(2L,5L),Pi)),
     // ArcTan(I)=I*Infinity
     ISet(ArcTan(CI),
       DirectedInfinity(CI)),

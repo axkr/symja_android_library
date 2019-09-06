@@ -13,7 +13,7 @@ public interface SinRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 55, 7 };
+  final public static int[] SIZES = { 55, 11 };
 
   final public static IAST RULES = List(
     IInit(Sin, SIZES),
@@ -173,15 +173,27 @@ public interface SinRules {
     // Sin(ArcSin(x_)):=x
     ISetDelayed(Sin(ArcSin(x_)),
       x),
+    // Sin(2*ArcSin(x_)):=2*x*Sqrt(1-x)*Sqrt(1+x)
+    ISetDelayed(Sin(Times(C2,ArcSin(x_))),
+      Times(C2,x,Sqrt(Subtract(C1,x)),Sqrt(Plus(C1,x)))),
     // Sin(ArcCos(x_)):=Sqrt(1-x^2)
     ISetDelayed(Sin(ArcCos(x_)),
       Sqrt(Subtract(C1,Sqr(x)))),
+    // Sin(2*ArcCos(x_)):=2*x*Sqrt(1-x)*Sqrt(1+x)
+    ISetDelayed(Sin(Times(C2,ArcCos(x_))),
+      Times(C2,x,Sqrt(Subtract(C1,x)),Sqrt(Plus(C1,x)))),
     // Sin(ArcTan(x_)):=x/Sqrt(1+x^2)
     ISetDelayed(Sin(ArcTan(x_)),
       Times(x,Power(Plus(C1,Sqr(x)),CN1D2))),
+    // Sin(2*ArcTan(x_)):=(2*x)/(1+x^2)
+    ISetDelayed(Sin(Times(C2,ArcTan(x_))),
+      Times(C2,x,Power(Plus(C1,Sqr(x)),CN1))),
     // Sin(ArcCot(x_)):=1/Sqrt(1+x^2)
     ISetDelayed(Sin(ArcCot(x_)),
       Power(Plus(C1,Sqr(x)),CN1D2)),
+    // Sin(2*ArcCot(x_)):=(2*x)/(1+x^2)
+    ISetDelayed(Sin(Times(C2,ArcCot(x_))),
+      Times(C2,x,Power(Plus(C1,Sqr(x)),CN1))),
     // Sin(ArcCsc(x_)):=1/x
     ISetDelayed(Sin(ArcCsc(x_)),
       Power(x,CN1)),

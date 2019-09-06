@@ -13,8 +13,23 @@ import junit.framework.TestCase;
  * Test <code>org.matheclipse.core.eval.Console</code> app.
  */
 public class ConsoleTestCase extends TestCase {
+	Console console;
+
 	public ConsoleTestCase(String name) {
 		super(name);
+	}
+
+	/**
+	 * The JUnit setup method
+	 */
+	@Override
+	protected void setUp() {
+		try {
+			console = new Console();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	private void check(String[] args, String result) {
@@ -45,5 +60,15 @@ public class ConsoleTestCase extends TestCase {
 	public void test003() {
 		String[] args = new String[] { "-c", "f(x_,y_):={x,y}; f(a,b)" };
 		check(args, "{a,b}");
+	}
+
+	public void testDoc() {
+		assertEquals("Sin, Sinc, SingularValueDecomposition, Sinh, SinIntegral, SinhIntegral\n" + 
+				"",
+				console.interpreter("?Sin*"));
+	}
+
+	public void testMissingDoc() {
+		assertEquals("Missing(UnknownSymbol,?sin*)", console.interpreter("?sin*"));
 	}
 }

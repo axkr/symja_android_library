@@ -3157,7 +3157,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Cos(ArcTan(x))", //
 				"1/Sqrt(1+x^2)");
 		check("Cos(ArcCot(x))", //
-				"x/Sqrt(1+x^2)");
+				"1/Sqrt(1+1/x^2)");
 		check("Cos(ArcCsc(x))", //
 				"Sqrt(1-1/x^2)");
 		check("Cos(ArcSec(x))", //
@@ -12735,6 +12735,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPlus() {
+		check("1-{0,1,2}", //
+				"{1,0,-1}");
 		check("-Infinity+0.0", //
 				"-Infinity");
 		check("Infinity+0.0", //
@@ -16509,6 +16511,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSin() {
+		check("Sin(5*Pi/12)",
+				"(1+Sqrt(3))/(2*Sqrt(2))");
 		// check("Sin(Quantity(90,\"Degree\"))",
 		// "");
 		check("Sin(-37/3*Pi+x)", //
@@ -19177,7 +19181,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 						"Cos(ArcSin(x)) == Sqrt(1-x^2)\n" + //
 						"Cos(ArcCos(x)) == x\n" + //
 						"Cos(ArcTan(x)) == 1/Sqrt(1+x^2)\n" + //
-						"Cos(ArcCot(x)) == x/Sqrt(1+x^2)\n" + //
+						"Cos(ArcCot(x)) == 1/Sqrt(1+1/x^2)\n" + //
 						"Cos(ArcSec(x)) == 1/x\n" + //
 						"Cos(ArcCsc(x)) == Sqrt(1-1/x^2)\n" + //
 						//

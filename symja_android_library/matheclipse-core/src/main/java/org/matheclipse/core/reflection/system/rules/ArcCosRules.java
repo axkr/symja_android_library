@@ -13,7 +13,7 @@ public interface ArcCosRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 18, 0 };
+  final public static int[] SIZES = { 21, 0 };
 
   final public static IAST RULES = List(
     IInit(ArcCos, SIZES),
@@ -41,6 +41,9 @@ public interface ArcCosRules {
     // ArcCos(Sqrt(2+Sqrt(2))/2)=Pi/8
     ISet(ArcCos(Times(C1D2,Sqrt(Plus(C2,CSqrt2)))),
       Times(QQ(1L,8L),Pi)),
+    // ArcCos(Sqrt(2-Sqrt(2))/2)=3/8*Pi
+    ISet(ArcCos(Times(C1D2,Sqrt(Subtract(C2,CSqrt2)))),
+      Times(QQ(3L,8L),Pi)),
     // ArcCos(-Sqrt(2+Sqrt(2))/2)=7/8*Pi
     ISet(ArcCos(Times(CN1D2,Sqrt(Plus(C2,CSqrt2)))),
       Times(QQ(7L,8L),Pi)),
@@ -50,6 +53,12 @@ public interface ArcCosRules {
     // ArcCos((-1-Sqrt(3))/(2*Sqrt(2)))=11/12*Pi
     ISet(ArcCos(Times(C1D2,C1DSqrt2,Subtract(CN1,CSqrt3))),
       Times(QQ(11L,12L),Pi)),
+    // ArcCos(1/4*(-1+Sqrt(5)))=2/5*Pi
+    ISet(ArcCos(Times(C1D4,Plus(CN1,CSqrt5))),
+      Times(QQ(2L,5L),Pi)),
+    // ArcCos(1/4*(Sqrt(5)+1))=Pi/5
+    ISet(ArcCos(Times(C1D4,Plus(C1,CSqrt5))),
+      Times(QQ(1L,5L),Pi)),
     // ArcCos(1)=0
     ISet(ArcCos(C1),
       C0),

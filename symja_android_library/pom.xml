@@ -157,7 +157,7 @@
 			<dependency>
 				<groupId>org.logicng</groupId>
 				<artifactId>logicng</artifactId>
-				<version>1.5.2</version>
+				<version>1.6.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.itranswarp</groupId>

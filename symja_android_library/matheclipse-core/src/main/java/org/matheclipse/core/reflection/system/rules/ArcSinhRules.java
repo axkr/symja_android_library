@@ -24,7 +24,7 @@ public interface ArcSinhRules {
     ISet(ArcSinh(CC(0L,1L,1L,2L)),
       Times(CC(0L,1L,1L,6L),Pi)),
     // ArcSinh(I/2*Sqrt(2))=Pi*I/4
-    ISet(ArcSinh(Times(CC(0L,1L,1L,2L),CSqrt2)),
+    ISet(ArcSinh(Times(CI,C1DSqrt2)),
       Times(CC(0L,1L,1L,4L),Pi)),
     // ArcSinh(I/2*Sqrt(3))=Pi*I/3
     ISet(ArcSinh(Times(CC(0L,1L,1L,2L),CSqrt3)),

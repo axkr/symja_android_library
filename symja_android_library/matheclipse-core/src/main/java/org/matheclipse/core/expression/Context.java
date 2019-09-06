@@ -4,11 +4,13 @@ import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.trie.Tries;
 
 public class Context implements Serializable {
 
@@ -17,7 +19,7 @@ public class Context implements Serializable {
 	/**
 	 * The map for predefined (context &quot;System&quot;) symbols
 	 */
-	public final static HashMap<String, ISymbol> PREDEFINED_SYMBOLS_MAP = new HashMap<String, ISymbol>(2053);
+	public final static Map<String, ISymbol> PREDEFINED_SYMBOLS_MAP = Tries.forStrings();
 
 	public final static String DUMMY_CONTEXT_NAME = "DUMMY`";
 
@@ -39,7 +41,7 @@ public class Context implements Serializable {
 
 	private transient Context parentContext;
 
-	private HashMap<String, ISymbol> symbolTable;
+	private Map<String, ISymbol> symbolTable;
 
 	public final static String GLOBAL_CONTEXT_NAME = "Global`";
 
@@ -51,7 +53,7 @@ public class Context implements Serializable {
 		this(contextName, parentContext, new HashMap<String, ISymbol>());
 	}
 
-	private Context(String contextName, Context parentContext, HashMap<String, ISymbol> symbolTable) {
+	private Context(String contextName, Context parentContext, Map<String, ISymbol> symbolTable) {
 		this.symbolTable = symbolTable;
 		this.contextName = contextName;
 		this.parentContext = parentContext;
@@ -61,7 +63,8 @@ public class Context implements Serializable {
 		if (this == SYSTEM) {
 			return SYSTEM;
 		}
-		return new Context(contextName, parentContext, (HashMap<String, ISymbol>) symbolTable.clone());
+		return new Context(contextName, parentContext,
+				(Map<String, ISymbol>) ((HashMap<String, ISymbol>) symbolTable).clone());
 	}
 
 	public Set<Entry<String, ISymbol>> entrySet() {

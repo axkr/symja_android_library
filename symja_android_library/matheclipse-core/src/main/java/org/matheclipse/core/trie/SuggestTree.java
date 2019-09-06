@@ -21,7 +21,7 @@
  *
  * (MIT License)
  */
-package org.matheclipse.core.eval.util;
+package org.matheclipse.core.trie;
 
 import java.util.Arrays;
 import java.util.NoSuchElementException;

@@ -1,15 +1,16 @@
 package org.matheclipse.parser.client;
 
-import java.util.HashMap;
 import java.util.Map;
+
+import org.matheclipse.core.trie.Tries;
 
 public class Characters {
 
-	public static Map<String, String> NamedCharactersMap = new HashMap<String, String>(1409);
+	public static Map<String, String> NamedCharactersMap = Tries.forStrings();
 
-	private static Map<String, String> ReversedNamedCharactersMap = new HashMap<String, String>(1409);
+	private static Map<String, String> ReversedNamedCharactersMap = Tries.forStrings();
 
-	public static Map<String, String> CharacterNamesMap = new HashMap<String, String>();
+	public static Map<String, String> CharacterNamesMap = Tries.forStrings();
 
 	private final static String[] NamedCharacters = { "AAcute", "\u00E1", "ABar", "\u0101", "ACup", "\u0103",
 			"ADoubleDot", "\u00E4", "AE", "\u00E6", "AGrave", "\u00E0", "AHat", "\u00E2", "Aleph", "\u2135",
@@ -227,18 +228,18 @@ public class Characters {
 			"\uF7BE", "Tau", "\u03C4", "THacek", "\u0165", "Therefore", "\u2234", "Theta", "\u03B8", "ThickSpace",
 			"\u2005", "ThinSpace", "\u2009", "Thorn", "\u00FE", "Tilde", "\u223C", "TildeEqual", "\u2243",
 			"TildeFullEqual", "\u2245", "TildeTilde", "\u2248", "Times", "\u00D7", "Trademark", "\u2122", "Transpose",
-			"\uF3C7", "TwoWayRule", "\uF120", "UndirectedEdge", "\uF3D4", "UAcute", "\u00FA", "UDoubleAcute", "\u0171", "UDoubleDot", "\u00FC",
-			"UGrave", "\u00F9", "UHat", "\u00FB", "UnderBrace", "\uFE38", "UnderBracket", "\u23B5", "UnderParenthesis",
-			"\uFE36", "Union", "\u22C3", "UnionPlus", "\u228E", "UpArrow", "\u2191", "UpArrowBar", "\u2912",
-			"UpArrowDownArrow", "\u21C5", "UpDownArrow", "\u2195", "UpEquilibrium", "\u296E", "UpperLeftArrow",
-			"\u2196", "UpperRightArrow", "\u2197", "UpPointer", "\u25B4", "Upsilon", "\u03C5", "UpTee", "\u22A5",
-			"UpTeeArrow", "\u21A5", "Uranus", "\u2645", "URing", "\u016F", "Vee", "\u22C1", "Venus", "\u2640",
-			"VerticalBar", "\u2223", "VerticalEllipsis", "\u22EE", "VerticalLine", "\u2502", "VerticalSeparator",
-			"\uF432", "VerticalTilde", "\u2240", "VeryThinSpace", "\u200A", "WarningSign", "\uF725", "WatchIcon",
-			"\u231A", "Wedge", "\u22C0", "WeierstrassP", "\u2118", "WhiteBishop", "\u2657", "WhiteKing", "\u2654",
-			"WhiteKnight", "\u2658", "WhitePawn", "\u2659", "WhiteQueen", "\u2655", "WhiteRook", "\u2656", "Wolf",
-			"\uF720", "Xi", "\u03BE", "Xnor", "\uF4A2", "Xor", "\u22BB", "YAcute", "\u00FD", "YDoubleDot", "\u00FF",
-			"Yen", "\u00A5", "Zeta", "\u03B6", "ZHacek", "\u017E" };
+			"\uF3C7", "TwoWayRule", "\uF120", "UndirectedEdge", "\uF3D4", "UAcute", "\u00FA", "UDoubleAcute", "\u0171",
+			"UDoubleDot", "\u00FC", "UGrave", "\u00F9", "UHat", "\u00FB", "UnderBrace", "\uFE38", "UnderBracket",
+			"\u23B5", "UnderParenthesis", "\uFE36", "Union", "\u22C3", "UnionPlus", "\u228E", "UpArrow", "\u2191",
+			"UpArrowBar", "\u2912", "UpArrowDownArrow", "\u21C5", "UpDownArrow", "\u2195", "UpEquilibrium", "\u296E",
+			"UpperLeftArrow", "\u2196", "UpperRightArrow", "\u2197", "UpPointer", "\u25B4", "Upsilon", "\u03C5",
+			"UpTee", "\u22A5", "UpTeeArrow", "\u21A5", "Uranus", "\u2645", "URing", "\u016F", "Vee", "\u22C1", "Venus",
+			"\u2640", "VerticalBar", "\u2223", "VerticalEllipsis", "\u22EE", "VerticalLine", "\u2502",
+			"VerticalSeparator", "\uF432", "VerticalTilde", "\u2240", "VeryThinSpace", "\u200A", "WarningSign",
+			"\uF725", "WatchIcon", "\u231A", "Wedge", "\u22C0", "WeierstrassP", "\u2118", "WhiteBishop", "\u2657",
+			"WhiteKing", "\u2654", "WhiteKnight", "\u2658", "WhitePawn", "\u2659", "WhiteQueen", "\u2655", "WhiteRook",
+			"\u2656", "Wolf", "\uF720", "Xi", "\u03BE", "Xnor", "\uF4A2", "Xor", "\u22BB", "YAcute", "\u00FD",
+			"YDoubleDot", "\u00FF", "Yen", "\u00A5", "Zeta", "\u03B6", "ZHacek", "\u017E" };
 
 	/**
 	 * 
@@ -277,7 +278,7 @@ public class Characters {
 	public static String unicodeName(String unicode) {
 		if (ReversedNamedCharactersMap.size() == 0) {
 			// create unicode to name map
-			ReversedNamedCharactersMap = new HashMap<String, String>(1409);
+			ReversedNamedCharactersMap = Tries.forStrings();
 			for (int i = 0; i < NamedCharacters.length; i += 2) {
 				ReversedNamedCharactersMap.put(NamedCharacters[i + 1], NamedCharacters[i]);
 			}

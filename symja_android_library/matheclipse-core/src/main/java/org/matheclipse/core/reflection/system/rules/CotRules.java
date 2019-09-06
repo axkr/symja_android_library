@@ -13,7 +13,7 @@ public interface CotRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 28, 6 };
+  final public static int[] SIZES = { 28, 8 };
 
   final public static IAST RULES = List(
     IInit(Cot, SIZES),
@@ -101,9 +101,15 @@ public interface CotRules {
     // Cot(ArcTan(x_)):=1/x
     ISetDelayed(Cot(ArcTan(x_)),
       Power(x,CN1)),
+    // Cot(2*ArcTan(x_)):=(1-x^2)/(2*x)
+    ISetDelayed(Cot(Times(C2,ArcTan(x_))),
+      Times(Subtract(C1,Sqr(x)),Power(Times(C2,x),CN1))),
     // Cot(ArcCot(x_)):=x
     ISetDelayed(Cot(ArcCot(x_)),
       x),
+    // Cot(2*ArcCot(x_)):=(-1+x^2)/(2*x)
+    ISetDelayed(Cot(Times(C2,ArcCot(x_))),
+      Times(Plus(CN1,Sqr(x)),Power(Times(C2,x),CN1))),
     // Cot(ArcCsc(x_)):=Sqrt(1-1/x^2)*x
     ISetDelayed(Cot(ArcCsc(x_)),
       Times(Sqrt(Subtract(C1,Power(x,CN2))),x)),
