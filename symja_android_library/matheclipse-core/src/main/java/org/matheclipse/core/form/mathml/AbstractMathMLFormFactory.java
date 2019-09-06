@@ -1,7 +1,7 @@
 package org.matheclipse.core.form.mathml;
 
 import java.text.NumberFormat;
-import java.util.HashMap;
+import java.util.Map;
 
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -10,6 +10,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.trie.Tries;
 
 /**
  * Abstract Factory for generating MathML output
@@ -19,10 +20,10 @@ abstract public class AbstractMathMLFormFactory {
 
 	public final static boolean USE_IDENTIFIERS = false;
 
-	public final static HashMap<String, String> ENTITY_TABLE = new HashMap<String, String>(199);
+	public final static Map<String, String> ENTITY_TABLE = Tries.forStrings();
 
 	protected NumberFormat fNumberFormat = null;
-	
+
 	private final String fTagPrefix;
 
 	/**
@@ -31,7 +32,7 @@ abstract public class AbstractMathMLFormFactory {
 	public AbstractMathMLFormFactory() {
 		this("", null);
 	}
-	
+
 	public AbstractMathMLFormFactory(final String tagPrefix, NumberFormat numberFormat) {
 		// fExprFactory = exprFactory;
 		fTagPrefix = tagPrefix;
@@ -41,7 +42,7 @@ abstract public class AbstractMathMLFormFactory {
 	protected String convertDoubleToFormattedString(double dValue) {
 		return fNumberFormat == null ? Double.toString(dValue) : fNumberFormat.format(dValue);
 	}
-	
+
 	public void entity(final StringBuilder buf, final String tag) {
 		if (USE_IDENTIFIERS) {
 			buf.append(tag);
@@ -82,7 +83,7 @@ abstract public class AbstractMathMLFormFactory {
 	 *
 	 * @return
 	 */
-//	abstract public String getReflectionNamespace();
+	// abstract public String getReflectionNamespace();
 
 	/**
 	 * Determine the converter of the heads symbol string
@@ -90,7 +91,7 @@ abstract public class AbstractMathMLFormFactory {
 	 * @param headString
 	 * @return
 	 */
-//	abstract public IConverter reflection(String headString);
+	// abstract public IConverter reflection(String headString);
 
 	/**
 	 * convert a double nummber
