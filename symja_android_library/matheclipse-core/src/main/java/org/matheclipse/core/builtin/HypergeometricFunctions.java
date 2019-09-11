@@ -11,8 +11,8 @@ import static org.matheclipse.core.expression.F.Times;
 
 import java.util.function.DoubleUnaryOperator;
 
+import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
@@ -45,6 +45,7 @@ public class HypergeometricFunctions {
 			F.Hypergeometric0F1.setEvaluator(new Hypergeometric0F1());
 			F.Hypergeometric1F1.setEvaluator(new Hypergeometric1F1());
 			F.Hypergeometric2F1.setEvaluator(new Hypergeometric2F1());
+			// F.HypergeometricU.setEvaluator(new HypergeometricU());
 			F.LogIntegral.setEvaluator(new LogIntegral());
 			F.SinIntegral.setEvaluator(new SinIntegral());
 			F.SinhIntegral.setEvaluator(new SinhIntegral());
@@ -506,7 +507,7 @@ public class HypergeometricFunctions {
 				try {
 					return F.num(de.lab4inf.math.functions.HypergeometricLimitFunction.limitSeries(bDouble, zDouble));
 				} catch (RuntimeException rex) {
-					return engine.printMessage(ast.topHead() + ": "  + rex.getMessage());
+					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
 				}
 			}
 			return F.NIL;
@@ -558,7 +559,7 @@ public class HypergeometricFunctions {
 					try {
 						return F.num(de.lab4inf.math.functions.KummerFunction.kummer(aDouble, bDoube, zDouble));
 					} catch (RuntimeException rex) {
-						return engine.printMessage(ast.topHead() + ": "  + rex.getMessage());
+						return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
 					}
 				}
 			}

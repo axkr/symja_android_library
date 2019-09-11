@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -238,7 +239,7 @@ public class IOFunctions {
 				message = temp.toString();
 			}
 		}
-		if (message != null) { 
+		if (message != null) {
 			for (int i = 1; i < ast.size(); i++) {
 				message = message.replace("`" + (i) + "`", ast.get(i).toString());
 			}
@@ -270,6 +271,7 @@ public class IOFunctions {
 			exact = false;
 		}
 		SuggestTree suggestTree = AST2Expr.getSuggestTree();
+		name = Config.PARSER_USE_LOWERCASE_SYMBOLS ? name.toLowerCase() : name;
 		Node n = suggestTree.getAutocompleteSuggestions(name);
 		if (n != null) {
 			IASTAppendable list = F.ListAlloc(n.listLength());
@@ -293,6 +295,7 @@ public class IOFunctions {
 			return list;
 		}
 		SuggestTree suggestTree = AST2Expr.getSuggestTree();
+		namePrefix = Config.PARSER_USE_LOWERCASE_SYMBOLS ? namePrefix.toLowerCase() : namePrefix;
 		Node n = suggestTree.getAutocompleteSuggestions(namePrefix);
 		if (n != null) {
 			for (int i = 0; i < n.listLength(); i++) {

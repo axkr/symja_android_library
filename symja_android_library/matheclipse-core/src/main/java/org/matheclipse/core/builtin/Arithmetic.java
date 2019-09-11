@@ -31,7 +31,7 @@ import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.fraction;
+import static org.matheclipse.core.expression.F.QQ;
 import static org.matheclipse.core.expression.F.integer;
 import static org.matheclipse.core.expression.F.num;
 import static org.matheclipse.core.expression.F.x;
@@ -103,6 +103,12 @@ import org.matheclipse.core.reflection.system.rules.PowerRules;
 import ch.ethz.idsc.tensor.qty.IQuantity;
 
 public final class Arithmetic {
+	private static int g = 7;
+	private static double[] p = { 0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313,
+			-176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6,
+			1.5056327351493116e-7 };
+	private static org.hipparchus.complex.Complex[] pComplex = null;
+
 	public final static Plus CONST_PLUS = new Plus();
 	public final static Times CONST_TIMES = new Times();
 	public final static Power CONST_POWER = new Power();
@@ -596,12 +602,10 @@ public final class Arithmetic {
 	 * </pre>
 	 */
 	private static class Chop extends AbstractCoreFunctionEvaluator {
-		public final static double DEFAULT_CHOP_DELTA = 1.0e-10;
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr arg1 = ast.arg1();
-			double delta = DEFAULT_CHOP_DELTA;
+			double delta = Config.DEFAULT_CHOP_DELTA;
 			if (ast.isAST2() && ast.arg2() instanceof INum) {
 				delta = ((INum) ast.arg2()).getRealPart();
 			}
@@ -1500,45 +1504,6 @@ public final class Arithmetic {
 	 * </pre>
 	 */
 	private final static class Gamma extends AbstractArg12 implements GammaRules {
-		private static int g = 7;
-		private static double[] p = { 0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313,
-				-176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6,
-				1.5056327351493116e-7 };
-		private org.hipparchus.complex.Complex[] pComplex = null;
-
-		/**
-		 * The Lanczos approximation is a method for computing the gamma function numerically.
-		 * 
-		 * See <a href="https://en.wikipedia.org/wiki/Lanczos_approximation">Lanczos approximation</a>
-		 * 
-		 * @param z
-		 * @return
-		 */
-		private org.hipparchus.complex.Complex lanczosApproxGamma(org.hipparchus.complex.Complex z) {
-			// if (z.abs() <= 1.0) {
-			// de.lab4inf.math.sets.ComplexNumber cc = new de.lab4inf.math.sets.ComplexNumber(z.getReal(),
-			// z.getImaginary());
-			// de.lab4inf.math.Complex gResult = de.lab4inf.math.functions.Gamma.gamma(cc);
-			// return new org.hipparchus.complex.Complex(gResult.real(), gResult.imag());
-			// }
-
-			if (z.getReal() < 0.5) {
-				// Pi / ( Sin(Pi * z) * Gamma(1 - z) )
-				return lanczosApproxGamma(z.negate().add(1.0)).multiply(z.multiply(Math.PI).sin()).pow(-1.0)
-						.multiply(Math.PI);
-			} else {
-				z = z.subtract(1.0);
-				org.hipparchus.complex.Complex x = pComplex[0];
-				for (int i = 1; i < g + 2; i++) {
-					// x += p[i] / (z+i)
-					x = x.add(pComplex[i].divide(z.add(i)));
-				}
-				org.hipparchus.complex.Complex t = z.add(g).add(0.5);
-				// Sqrt(2 * Pi) * Pow(t, z + 0.5) * Exp(-t) * x
-				return t.pow(z.add(0.5)).multiply(t.negate().exp()).multiply(x).multiply(Math.sqrt(2 * Math.PI));
-			}
-
-		}
 
 		@Override
 		public IExpr e1ApcomplexArg(Apcomplex arg1) {
@@ -1558,13 +1523,7 @@ public final class Arithmetic {
 		public IExpr e1DblComArg(final IComplexNum c) {
 			// Apcomplex gamma = ApcomplexMath.gamma(c.apcomplexNumValue(Config.MACHINE_PRECISION).apcomplexValue());
 			// return F.complexNum(gamma.real().doubleValue(), gamma.imag().doubleValue());
-			if (pComplex == null) {
-				// lazy initialization
-				pComplex = new org.hipparchus.complex.Complex[p.length];
-				for (int i = 0; i < p.length; i++) {
-					pComplex[i] = new org.hipparchus.complex.Complex(p[i]);
-				}
-			}
+
 			// TODO improve lanczos approx:
 			return F.complexNum(lanczosApproxGamma(c.evalComplex()));
 		}
@@ -1806,7 +1765,7 @@ public final class Arithmetic {
 					return C1;
 				}
 
-				return fraction(harmonicNumber(n));
+				return QQ(harmonicNumber(n));
 			}
 			if (arg1.isInfinity()) {
 				return arg1;
@@ -2885,7 +2844,189 @@ public final class Arithmetic {
 	 * a^b
 	 * </pre>
 	 */
-	public static class Power extends AbstractArg2 implements INumeric, PowerRules {
+	public static class Power extends AbstractFunctionEvaluator implements INumeric, PowerRules {
+
+		public static IExpr binaryOperator(IAST ast, final IExpr base, final IExpr exponent) {
+			if (base.isNumeric() && exponent.isNumeric()) {
+				IExpr result = e2NumericArg(ast, base, exponent);
+				if (result.isPresent()) {
+					return result;
+				}
+			}
+
+			if (exponent.isDirectedInfinity()) {
+				IExpr temp = evalDirectedInfinityArg2(base, (IAST) exponent);
+				if (temp.isPresent()) {
+					return temp;
+				}
+			}
+			if (base.isDirectedInfinity()) {
+				IExpr temp = evalDirectedInfinityArg1((IAST) base, exponent);
+				if (temp.isPresent()) {
+					return temp;
+				}
+			}
+
+			if (base.isZero()) {
+				return powerZeroArg1(exponent);
+			}
+			if (base.isAST()) {
+				if (base.isInterval1()) {
+					if (exponent.isInteger()) {
+						IInteger ii = (IInteger) exponent;
+						return powerInterval(base, ii);
+					}
+				} else if (base.isQuantity()) {
+					IQuantity q = (IQuantity) base;
+					return q.power(exponent);
+				} else if (base instanceof ASTSeriesData) {
+					int exp = exponent.toIntDefault(Integer.MIN_VALUE);
+					if (exp != Integer.MIN_VALUE) {
+						return ((ASTSeriesData) base).pow(exp);
+					}
+					return F.NIL;
+				}
+			}
+
+			if (exponent.isReal()) {
+				if (exponent.isZero()) {
+					return (base.isInfinity() || base.isNegativeInfinity()) ? F.Indeterminate : F.C1;
+				}
+				if (exponent.isOne()) {
+					return base;
+				}
+				if (exponent.isInteger()) {
+					if (base.isInteger()) {
+						return integerInteger((IInteger) base, (IInteger) exponent);
+					}
+					if (base instanceof IFraction) {
+						return fractionInteger((IFraction) base, (IInteger) exponent);
+					}
+					if (base instanceof IComplex) {
+						return complexInteger((IComplex) base, (IInteger) exponent);
+					}
+					if (base.isAtom()) {
+						return F.NIL;
+					}
+				}
+			}
+
+			if (base.isOne()) {
+				return F.C1;
+			}
+			if (base.isMinusOne()) {
+				// if (exponent.isInteger()) {
+				// return (((IInteger) exponent).isEven()) ? F.C1 : F.CN1;
+				// }
+				if (exponent.isEvenResult()) {
+					return F.C1;
+				}
+				if (exponent.isIntegerResult()) {
+					if (exponent.isPlus() && exponent.first().isInteger()) {
+						IInteger arg1Plus = (IInteger) exponent.first();
+						if (!arg1Plus.isOne()) {
+							IInteger factor = (((IInteger) exponent.first()).isEven()) ? F.C1 : F.CN1;
+							if (factor.isMinusOne()) {
+								return F.Power(F.CN1, F.Plus(1, exponent.rest().oneIdentity1()));
+							}
+							return F.Times(factor, F.Power(F.CN1, exponent.rest().oneIdentity1()));
+						}
+					} else if (exponent.isTimes() && exponent.first().isInteger()) {
+						IInteger arg1Times = (IInteger) exponent.first();
+						return F.Power(F.Power(F.CN1, arg1Times), exponent.rest().oneIdentity1());
+					}
+				}
+			}
+
+			IExpr result = e2ObjArg(ast, base, exponent);
+			if (result.isPresent()) {
+				return result;
+			}
+
+			if (base instanceof IInteger) {
+				if (exponent instanceof IFraction) {
+					return fractionFraction(F.fraction((IInteger) base, F.C1), (IFraction) exponent);
+				}
+				if (exponent instanceof IComplex) {
+					return complexComplex(F.complex((IInteger) base, F.C0), (IComplex) exponent);
+				}
+				return F.NIL;
+			}
+
+			if (base instanceof IFraction) {
+				if (exponent instanceof IFraction) {
+					return fractionFraction((IFraction) base, (IFraction) exponent);
+				}
+				if (exponent instanceof IComplex) {
+					return complexComplex(F.complex((IFraction) base), (IComplex) exponent);
+				}
+				return F.NIL;
+			}
+
+			if (base instanceof IComplex) {
+				if (exponent instanceof IFraction) {
+					return complexFraction((IComplex) base, (IFraction) exponent);
+				}
+				if (exponent instanceof IComplex) {
+					return complexComplex((IComplex) base, (IComplex) exponent);
+				}
+			}
+
+			return F.NIL;
+		}
+
+		private static IExpr e2NumericArg(IAST ast, final IExpr o0, final IExpr o1) {
+			try {
+				IExpr result = F.NIL;
+				if (o0 instanceof ApcomplexNum) {
+					if (o1.isNumber()) {
+						result = e2ApcomplexArg((ApcomplexNum) o0,
+								((INumber) o1).apcomplexNumValue(((ApcomplexNum) o0).precision()));
+					}
+				} else if (o1 instanceof ApcomplexNum) {
+					if (o0.isNumber()) {
+						result = e2ApcomplexArg(((INumber) o0).apcomplexNumValue(((ApcomplexNum) o1).precision()),
+								(ApcomplexNum) o1);
+					}
+				} else if (o0 instanceof ComplexNum) {
+					if (o1.isNumber()) {
+						result = e2DblComArg((ComplexNum) o0, ((INumber) o1).complexNumValue());
+					}
+				} else if (o1 instanceof ComplexNum) {
+					if (o0.isNumber()) {
+						result = e2DblComArg(((INumber) o0).complexNumValue(), (ComplexNum) o1);
+					}
+				}
+
+				if (o0 instanceof ApfloatNum) {
+					if (o1.isReal()) {
+						result = e2ApfloatArg((ApfloatNum) o0,
+								((ISignedNumber) o1).apfloatNumValue(((ApfloatNum) o0).precision()));
+					}
+				} else if (o1 instanceof ApfloatNum) {
+					if (o0.isReal()) {
+						result = e2ApfloatArg(((ISignedNumber) o0).apfloatNumValue(((ApfloatNum) o1).precision()),
+								(ApfloatNum) o1);
+					}
+				} else if (o0 instanceof Num) {
+					if (o1.isReal()) {
+						result = e2DblArg((Num) o0, ((ISignedNumber) o1).numValue());
+					}
+				} else if (o1 instanceof Num) {
+					if (o0.isReal()) {
+						result = e2DblArg(((ISignedNumber) o0).numValue(), (Num) o1);
+					}
+				}
+				if (result.isPresent()) {
+					return result;
+				}
+				return e2ObjArg(null, o0, o1);
+			} catch (RuntimeException rex) {
+				// EvalEngine.get().printMessage(ast.topHead().toString() + ": " + rex.getMessage());
+			}
+
+			return F.NIL;
+		}
 
 		/**
 		 * <p>
@@ -2931,7 +3072,7 @@ public final class Arithmetic {
 		 * 
 		 * @return <code>{nth-root, rest factor}</code> or <code>null</code> if the root is not available
 		 */
-		private IInteger[] calculateRoot(IInteger a, IInteger root) {
+		private static IInteger[] calculateRoot(IInteger a, IInteger root) {
 			if (a.isOne() || a.isMinusOne()) {
 				return null;
 			}
@@ -2947,18 +3088,15 @@ public final class Arithmetic {
 			return null;
 		}
 
-		@Override
-		public IExpr e2ApcomplexArg(final ApcomplexNum base, final ApcomplexNum exponent) {
+		private static IExpr e2ApcomplexArg(final ApcomplexNum base, final ApcomplexNum exponent) {
 			return base.pow(exponent);
 		}
 
-		@Override
-		public IExpr e2ApfloatArg(final ApfloatNum base, final ApfloatNum exponent) {
+		private static IExpr e2ApfloatArg(final ApfloatNum base, final ApfloatNum exponent) {
 			return base.pow(exponent);
 		}
 
-		@Override
-		public IExpr e2ComArg(final IComplex base, final IComplex exponent) {
+		private static IExpr complexComplex(final IComplex base, final IComplex exponent) {
 			if (base.getImaginaryPart().isZero()) {
 				IRational a = base.getRealPart();
 				IRational b = exponent.getRealPart();
@@ -2972,8 +3110,7 @@ public final class Arithmetic {
 			return F.NIL;
 		}
 
-		@Override
-		public IExpr e2DblArg(final INum base, final INum exponent) {
+		private static IExpr e2DblArg(final INum base, final INum exponent) {
 			if (base.isZero()) {
 				if (exponent.isNegative()) {
 					IOFunctions.printMessage(F.Power, "infy", F.List(F.Power(F.C0, exponent)), EvalEngine.get());
@@ -2999,14 +3136,30 @@ public final class Arithmetic {
 			return base.pow(exponent);
 		}
 
-		@Override
-		public IExpr e2DblComArg(final IComplexNum base, final IComplexNum exponent) {
+		private static IExpr e2DblComArg(final IComplexNum base, final IComplexNum exponent) {
 			return base.pow(exponent);
 		}
 
-		@Override
-		public IExpr e2FraArg(IFraction base, IFraction exponent) {
+		private static IExpr fractionInteger(IFraction base, IInteger exponent) {
 			if (base.numerator().isZero()) {
+				return F.C0;
+			}
+
+			if (exponent.isZero()) {
+				return F.C1;
+			}
+			// exponent is integer
+			IInteger exp = exponent.numerator();
+			if (exp.isNegative()) {
+				IInteger negExponent = exp.negate();
+				return F.Rational(base.denominator().power(negExponent), base.numerator().power(negExponent));
+			}
+			return F.Rational(base.numerator().power(exp), base.denominator().power(exp));
+		}
+
+		private static IExpr fractionFraction(IFraction base, IFraction exponent) {
+			IInteger baseNumerator = base.numerator();
+			if (baseNumerator.isZero()) {
 				return F.C0;
 			}
 
@@ -3014,8 +3167,9 @@ public final class Arithmetic {
 				return F.C1;
 			}
 
-			if (base.numerator().isOne() && !base.denominator().isOne()) {
-				return F.Power(base.denominator(), exponent.negate());
+			IInteger baseDenominator = base.denominator();
+			if (baseNumerator.isOne() && !baseDenominator.isOne()) {
+				return F.Power(baseDenominator, exponent.negate());
 			}
 
 			// if (exponent.equals(F.C1D2)) {
@@ -3031,104 +3185,26 @@ public final class Arithmetic {
 				}
 			}
 
-			if (exponent.isNegative() && !base.denominator().isOne()) {
+			IInteger exponentDenominator = exponent.denominator();
+			if (exponent.isNegative() && !baseDenominator.isOne()) {
 				return F.Power(base.inverse(), exponent.negate());
 			}
-
-			if (!exponent.denominator().isOne()) {
-				IExpr temp = rationalPower(base.numerator(), base.denominator(), exponent);
-				if (temp.isPresent()) {
-					return temp;
-				}
-
-				// done in e2Obj
-				// IInteger a;
-				// IInteger b;
-				// IFraction f0Temp = base;
-				//
-				// if (base.sign() < 0) {
-				// f0Temp = f0Temp.negate();
-				// }
-				// if (exponent.isNegative()) {
-				// a = f0Temp.denominator();
-				// b = f0Temp.numerator();
-				// } else {
-				// a = f0Temp.numerator();
-				// b = f0Temp.denominator();
-				// }
-				//
-				// // example: (-27)^(2/3) or 8^(1/3)
-				// if (!exponent.numerator().isOne()) {
-				// try {
-				// int exp = exponent.numerator().toInt();
-				// if (exp < 0) {
-				// exp *= (-1);
-				// }
-				// a = a.pow(exp);
-				// b = b.pow(exp);
-				// } catch (ArithmeticException e) {
-				// return F.NIL;
-				// }
-				// }
-				//
-				// final IInteger root = exponent.denominator();
-				// IInteger[] new_numer = calculateRoot(a, root);
-				// IInteger[] new_denom = calculateRoot(b, root);
-				// final IFraction new_root = F.fraction(C1, root);
-				//
-				// if (new_numer != null) {
-				// if (new_denom != null) {
-				// IRational p0 = null;
-				// if (new_denom[1].isOne()) {
-				// p0 = new_numer[1];
-				// } else {
-				// p0 = fraction(new_numer[1], new_denom[1]);
-				// }
-				// if (base.sign() < 0) {
-				// return Times(fraction(new_numer[0], new_denom[0]), Power(p0.negate(), new_root));
-				// }
-				// return Times(fraction(new_numer[0], new_denom[0]), Power(p0, new_root));
-				// } else {
-				// if (a.isOne()) {
-				// return F.NIL;
-				// }
-				// IRational p0 = null;
-				// if (b.isOne()) {
-				// p0 = new_numer[1];
-				// } else {
-				// p0 = fraction(new_numer[1], b);
-				// }
-				// if (base.sign() < 0) {
-				// return Times(new_numer[0], Power(p0.negate(), new_root));
-				// }
-				// return Times(new_numer[0], Power(p0, new_root));
-				// }
-				// } else {
-				// if (new_denom != null) {
-				// if (b.isOne()) {
-				// return F.NIL;
-				// }
-				// IRational p0 = null;
-				// if (new_denom[1].isOne()) {
-				// p0 = a;
-				// } else {
-				// p0 = F.fraction(a, new_denom[1]);
-				// }
-				// if (base.sign() < 0) {
-				// return Times(fraction(C1, new_denom[0]), Power(p0.negate(), new_root));
-				// }
-				// return Times(fraction(C1, new_denom[0]), Power(p0, new_root));
-				// }
-				// }
-				//
-
-				return F.NIL;
+			if (exponentDenominator.isOne()) {
+				return fractionInteger(base, exponent.numerator());
 			}
-			return F.Power(base, exponent);
+
+			IExpr temp = rationalPower(baseNumerator, baseDenominator, exponent);
+			if (temp.isPresent()) {
+				return temp;
+			}
+
+			return F.NIL;
 		}
 
-		@Override
-		public IExpr e2IntArg(final IInteger base, final IInteger exponent) {
+		private static IExpr integerInteger(final IInteger base, final IInteger exponent) {
+			if (base.isMinusOne()) {
+				return (((IInteger) exponent).isEven()) ? F.C1 : F.CN1;
+			}
 			if (base.isZero()) {
 				// all other cases see e2ObjArg
 				return F.NIL;
@@ -3151,7 +3227,7 @@ public final class Arithmetic {
 		 *            must be a <code>DirectedInfinity[...]</code> expression
 		 * @return
 		 */
-		private IExpr e2NumberDirectedInfinity(final INumber arg1, final IAST arg2) {
+		private static IExpr e2NumberDirectedInfinity(final INumber arg1, final IAST arg2) {
 			int comp = arg1.compareAbsValueToOne();
 			switch (comp) {
 			case 1:
@@ -3188,177 +3264,113 @@ public final class Arithmetic {
 			return F.NIL;
 		}
 
-		@Override
-		public IExpr e2ObjArg(IAST ast, final IExpr base, final IExpr exponent) {
-			if (exponent.isDirectedInfinity()) {
-				IExpr temp = evalDirectedInfinityArg2(base, (IAST) exponent);
-				if (temp.isPresent()) {
-					return temp;
-				}
-			}
-			if (base.isDirectedInfinity()) {
-				IExpr temp = evalDirectedInfinityArg1((IAST) base, exponent);
-				if (temp.isPresent()) {
-					return temp;
-				}
-			}
-			if (base.isZero()) {
-				return powerZeroArg1(exponent);
-			}
-			if (base.isInterval1()) {
-				if (exponent.isInteger()) {
-					IInteger ii = (IInteger) exponent;
-					return powerInterval(base, ii);
-				}
-			} else if (base.isQuantity()) {
-				IQuantity q = (IQuantity) base;
-				return q.power(exponent);
-			} else if (base instanceof ASTSeriesData) {
-				int exp = exponent.toIntDefault(Integer.MIN_VALUE);
-				if (exp != Integer.MIN_VALUE) {
-					return ((ASTSeriesData) base).pow(exp);
-				}
-			}
+		private static IExpr e2ObjArg(IAST ast, final IExpr base, final IExpr exponent) {
 
-			if (exponent.isZero()) {
-				return (base.isInfinity() || base.isNegativeInfinity()) ? F.Indeterminate : F.C1;
-			}
-
-			if (exponent.isOne()) {
-				return base;
-			}
-
-			if (base.isOne()) {
-				return F.C1;
-			}
-
-			if (base.isMinusOne()) {
-				if (exponent.isInteger()) {
-					return (((IInteger) exponent).isEven()) ? F.C1 : F.CN1;
-				}
-				if (exponent.isEvenResult()) {
-					return F.C1;
-				}
-				if (exponent.isIntegerResult()) {
-					if (exponent.isPlus() && exponent.first().isInteger()) {
-						IInteger arg1Plus = (IInteger) exponent.first();
-						if (!arg1Plus.isOne()) {
-							IInteger factor = (((IInteger) exponent.first()).isEven()) ? F.C1 : F.CN1;
-							if (factor.isMinusOne()) {
-								return F.Power(F.CN1, F.Plus(1, exponent.rest().oneIdentity1()));
-							}
-							return F.Times(factor, F.Power(F.CN1, exponent.rest().oneIdentity1()));
+			if (base.isReal() || exponent.isReal()) {
+				if (exponent.isReal()) {
+					if (base.isPower()) {
+						final IExpr baseArg1 = base.base();
+						final IExpr exponentArg1 = base.exponent();
+						if (exponentArg1.isReal() && baseArg1.isNonNegativeResult()) {
+							// (base ^ exponent) ^ arg2 ==> base ^ (exponent * arg2)
+							return F.Power(baseArg1, exponentArg1.times(exponent));
 						}
-					} else if (exponent.isTimes() && exponent.first().isInteger()) {
-						IInteger arg1Times = (IInteger) exponent.first();
-						return F.Power(F.Power(F.CN1, arg1Times), exponent.rest().oneIdentity1());
 					}
-				}
-			}
-
-			if (exponent.isReal()) {
-				if (base.isPower()) {
-					final IExpr baseArg1 = base.base();
-					final IExpr exponentArg1 = base.exponent();
-					if (exponentArg1.isReal() && baseArg1.isNonNegativeResult()) {
-						// (base ^ exponent) ^ arg2 ==> base ^ (exponent * arg2)
-						return F.Power(baseArg1, exponentArg1.times(exponent));
-					}
-				}
-				if (base.isComplex() && exponent.isFraction() && exponent.isPositive()) {
-					IExpr temp = powerComplexFraction((IComplex) base, (IFraction) exponent);
-					if (temp.isPresent()) {
-						return temp;
-					}
-				}
-				ISignedNumber is1 = (ISignedNumber) exponent;
-				if (base.isInfinity()) {
-					if (is1.isNegative()) {
-						return F.C0;
-					} else {
-						return F.CInfinity;
-					}
-				} else if (base.isPower() && is1.isNumIntValue() && is1.isPositive()) {
-					final IExpr baseExponent = base.exponent();
-					if (baseExponent.isNumIntValue() && baseExponent.isPositive()) {
-						// (x*n)^m => x ^(n*m)
-						return Power(base.base(), is1.times(baseExponent));
-					}
-				} else if (base.isNegativeInfinity()) {
-					if (exponent.isInteger()) {
-						IInteger ii = (IInteger) exponent;
-						if (ii.isNegative()) {
+					// if (base.isComplex() && exponent.isFraction() && exponent.isPositive()) {
+					// IExpr temp = powerComplexFraction((IComplex) base, (IFraction) exponent);
+					// if (temp.isPresent()) {
+					// return temp;
+					// }
+					// }
+					ISignedNumber is1 = (ISignedNumber) exponent;
+					if (base.isInfinity()) {
+						if (is1.isNegative()) {
 							return F.C0;
 						} else {
-							if (ii.isOdd()) {
-								return F.CNInfinity;
-							} else {
-								return F.CInfinity;
-							}
+							return F.CInfinity;
 						}
-					} else {
-						int exp = exponent.toIntDefault(Integer.MIN_VALUE);
-						if (exp != Integer.MIN_VALUE) {
-							if (exp < 0) {
+					} else if (base.isPower() && is1.isNumIntValue() && is1.isPositive()) {
+						final IExpr baseExponent = base.exponent();
+						if (baseExponent.isNumIntValue() && baseExponent.isPositive()) {
+							// (x*n)^m => x ^(n*m)
+							return Power(base.base(), is1.times(baseExponent));
+						}
+					} else if (base.isNegativeInfinity()) {
+						if (exponent.isInteger()) {
+							IInteger ii = (IInteger) exponent;
+							if (ii.isNegative()) {
 								return F.C0;
 							} else {
-								if ((exp & 0x1) == 0x1) {
+								if (ii.isOdd()) {
 									return F.CNInfinity;
 								} else {
 									return F.CInfinity;
 								}
 							}
-						}
-					}
-				}
-				if (exponent.isMinusOne() || exponent.isInteger()) {
-					if (base.isNumber()) {
-						if (exponent.isMinusOne()) {
-							return ((INumber) base).inverse();
-						}
-						try {
-							long n = ((IInteger) exponent).toLong();
-							return ((INumber) base).power(n);
-						} catch (ArithmeticException ae) {
-
-						}
-					} else {
-						IExpr o1negExpr = F.NIL;
-						if (exponent.isInteger() && ((IInteger) exponent).isEven()) {
-							o1negExpr = AbstractFunctionEvaluator.getPowerNegativeExpression(base, true);
 						} else {
-							o1negExpr = AbstractFunctionEvaluator.getPowerNegativeExpression(base, false);
-						}
-						if (o1negExpr.isPresent()) {
-							if (exponent.isMinusOne()) {
-								return Times(CN1, Power(o1negExpr, CN1));
-							} else {
-								IInteger ii = (IInteger) exponent;
-								if (ii.isEven()) {
-									return Power(o1negExpr, exponent);
+							int exp = exponent.toIntDefault(Integer.MIN_VALUE);
+							if (exp != Integer.MIN_VALUE) {
+								if (exp < 0) {
+									return F.C0;
+								} else {
+									if ((exp & 0x1) == 0x1) {
+										return F.CNInfinity;
+									} else {
+										return F.CInfinity;
+									}
 								}
 							}
 						}
-						if (exponent.isMinusOne() && base.isTimes()) {
-							IExpr temp = powerTimesInverse((IAST) base, (ISignedNumber) exponent);
-							if (temp.isPresent()) {
-								return temp;
+					}
+					if (exponent.isMinusOne() || exponent.isInteger()) {
+						if (base.isNumber()) {
+							if (exponent.isMinusOne()) {
+								return ((INumber) base).inverse();
+							}
+							try {
+								long n = ((IInteger) exponent).toLong();
+								return ((INumber) base).power(n);
+							} catch (ArithmeticException ae) {
+
+							}
+						} else {
+							IExpr o1negExpr = F.NIL;
+							if (exponent.isInteger() && ((IInteger) exponent).isEven()) {
+								o1negExpr = AbstractFunctionEvaluator.getPowerNegativeExpression(base, true);
+							} else {
+								o1negExpr = AbstractFunctionEvaluator.getPowerNegativeExpression(base, false);
+							}
+							if (o1negExpr.isPresent()) {
+								if (exponent.isMinusOne()) {
+									return Times(CN1, Power(o1negExpr, CN1));
+								} else {
+									IInteger ii = (IInteger) exponent;
+									if (ii.isEven()) {
+										return Power(o1negExpr, exponent);
+									}
+								}
+							}
+							if (exponent.isMinusOne() && base.isTimes()) {
+								IExpr temp = powerTimesInverse((IAST) base, (ISignedNumber) exponent);
+								if (temp.isPresent()) {
+									return temp;
+								}
 							}
 						}
 					}
-				}
-			} else {
-				if (base.isFraction() && base.isPositive() && ((IFraction) base).isLT(F.C1)) {
-					IExpr o1negExpr = AbstractFunctionEvaluator.getPowerNegativeExpression(exponent, true);
-					if (o1negExpr.isPresent()) {
-						return F.Power(base.inverse(), o1negExpr);
+				} else {
+					if (base.isFraction() && base.isPositive() && ((IFraction) base).isLT(F.C1)) {
+						IExpr o1negExpr = AbstractFunctionEvaluator.getPowerNegativeExpression(exponent, true);
+						if (o1negExpr.isPresent()) {
+							return F.Power(base.inverse(), o1negExpr);
+						}
 					}
 				}
-			}
 
-			if (base.isReal() && base.isNegative() && exponent.isNumEqualRational(F.C1D2)) {
-				// extract I for sqrt
-				return F.Times(F.CI, F.Power(F.Negate(base), exponent));
+				if (base.isReal() && base.isNegative() && exponent.isNumEqualRational(F.C1D2)) {
+					// extract I for sqrt
+					return F.Times(F.CI, F.Power(F.Negate(base), exponent));
+				}
 			}
 
 			if (base.isE() && (exponent.isPlusTimesPower())) {
@@ -3464,7 +3476,6 @@ public final class Arithmetic {
 					return F.Times(F.Power(base.power(expDiv), F.CN1),
 							F.Power(base.power(F.QQ(expMod, expDenominator)), F.CN1));
 				} else if (base.isNegative() && ((IFraction) exponent).isNegative()) {
-					//
 					return F.Times(F.CN1, F.Power(F.CN1, F.C1.add(exponent)), F.Power(base.negate(), exponent));
 				}
 				if (base.isRational() && !ast.isAllExpanded()) {
@@ -3493,38 +3504,51 @@ public final class Arithmetic {
 			return F.NIL;
 		}
 
-		public IExpr evalDirectedInfinityArg1(final IAST arg1, final IExpr arg2) {
-			if (arg2.isZero()) {
+		/**
+		 * <code>DirectedInfinity(...) ^ exponent</code>
+		 * 
+		 * @param directedInfinity
+		 * @param exponent
+		 * @return <code>F.NIL</code> if evaluation is not possible
+		 */
+		private static IExpr evalDirectedInfinityArg1(final IAST directedInfinity, final IExpr exponent) {
+			if (exponent.isZero()) {
 				return F.Indeterminate;
 			}
-			if (arg1.isComplexInfinity()) {
-				if (arg2.isReal()) {
-					if (arg2.isNegative()) {
+			if (directedInfinity.isComplexInfinity()) {
+				if (exponent.isReal()) {
+					if (exponent.isNegative()) {
 						return F.C0;
 					}
 					return F.CComplexInfinity;
 				}
 				return F.Indeterminate;
 			}
-			if (arg2.isOne()) {
-				return arg1;
+			if (exponent.isOne()) {
+				return directedInfinity;
 			}
-			if (arg2.isMinusOne()) {
+			if (exponent.isMinusOne()) {
 				return F.C0;
 			}
 			return F.NIL;
 		}
 
-		public IExpr evalDirectedInfinityArg2(final IExpr arg1, final IAST arg2) {
-			if (arg2.isComplexInfinity()) {
+		/**
+		 * <code>base ^ DirectedInfinity(...)</code>
+		 * 
+		 * @param base
+		 * @param directedInfinity
+		 * @return <code>F.NIL</code> if evaluation is not possible
+		 */
+		private static IExpr evalDirectedInfinityArg2(final IExpr base, final IAST directedInfinity) {
+			if (directedInfinity.isComplexInfinity()) {
 				return F.Indeterminate;
 			}
 
-			if (arg1.isOne() || arg1.isMinusOne() || arg1.isImaginaryUnit() || arg1.isNegativeImaginaryUnit()) {
+			if (base.isOne() || base.isMinusOne() || base.isImaginaryUnit() || base.isNegativeImaginaryUnit()) {
 				return F.Indeterminate;
 			}
-			IAST directedInfinity = (IAST) arg2;
-			if (arg1.isZero()) {
+			if (base.isZero()) {
 				if (directedInfinity.isInfinity()) {
 					// 0 ^ Inf
 					return F.C0;
@@ -3535,7 +3559,7 @@ public final class Arithmetic {
 				}
 				return F.Indeterminate;
 			}
-			if (arg1.isInfinity()) {
+			if (base.isInfinity()) {
 				if (directedInfinity.isInfinity()) {
 					// Inf ^ Inf
 					return F.CComplexInfinity;
@@ -3546,7 +3570,7 @@ public final class Arithmetic {
 				}
 				return F.Indeterminate;
 			}
-			if (arg1.isNegativeInfinity()) {
+			if (base.isNegativeInfinity()) {
 				if (directedInfinity.isInfinity()) {
 					// (-Inf) ^ Inf
 					return F.CComplexInfinity;
@@ -3557,7 +3581,7 @@ public final class Arithmetic {
 				}
 				return F.Indeterminate;
 			}
-			if (arg1.isComplexInfinity()) {
+			if (base.isComplexInfinity()) {
 				if (directedInfinity.isInfinity()) {
 					// ComplexInfinity ^ Inf
 					return F.CComplexInfinity;
@@ -3568,7 +3592,7 @@ public final class Arithmetic {
 				}
 				return F.Indeterminate;
 			}
-			if (arg1.isDirectedInfinity()) {
+			if (base.isDirectedInfinity()) {
 				if (directedInfinity.isInfinity()) {
 					return F.CComplexInfinity;
 				}
@@ -3578,13 +3602,13 @@ public final class Arithmetic {
 				return F.Indeterminate;
 			}
 
-			if (arg1.isNumber()) {
-				IExpr temp = e2NumberDirectedInfinity((INumber) arg1, directedInfinity);
+			if (base.isNumber()) {
+				IExpr temp = e2NumberDirectedInfinity((INumber) base, directedInfinity);
 				if (temp.isPresent()) {
 					return temp;
 				}
 			} else {
-				IExpr a1 = F.evaln(arg1);
+				IExpr a1 = F.evaln(base);
 				if (a1.isNumber()) {
 					IExpr temp = e2NumberDirectedInfinity((INumber) a1, directedInfinity);
 					if (temp.isPresent()) {
@@ -3631,7 +3655,7 @@ public final class Arithmetic {
 		 *            the exponent of the 0-Power expression
 		 * @return
 		 */
-		private IExpr powerZeroArg1(final IExpr exponent) {
+		private static IExpr powerZeroArg1(final IExpr exponent) {
 			EvalEngine engine = EvalEngine.get();
 			if (exponent.isZero()) {
 				// 0^0
@@ -3685,7 +3709,7 @@ public final class Arithmetic {
 		 * @param plus
 		 * @return
 		 */
-		private IAST powerEPlus(IAST plus) {
+		private static IAST powerEPlus(IAST plus) {
 			IASTAppendable multiplicationFactors = F.NIL;
 			IASTAppendable plusClone = F.NIL;
 			for (int i = plus.argSize(); i > 0; i--) {
@@ -3717,57 +3741,58 @@ public final class Arithmetic {
 		}
 
 		/**
-		 * <code> complexNumber ^ fractionNumber</code>
+		 * <code> complex-number ^ fraction-number</code>
 		 * 
-		 * @param complexNumber
-		 * @param fractionNumber
+		 * @param base
+		 * @param exponent
 		 * @return
 		 */
-		private IExpr powerComplexFraction(final IComplex complexNumber, final IFraction fractionNumber) {
-			if (complexNumber.isImaginaryUnit()) {
-				return F.Power(F.CN1, F.C1D2.times(fractionNumber));
-			} else if (complexNumber.isNegativeImaginaryUnit()) {
-				IInteger numerator = fractionNumber.numerator();
-				IInteger denominator = fractionNumber.denominator();
-				IInteger div = numerator.div(denominator);
-				if (div.isOdd()) {
-					div = div.subtract(F.C1);
-				}
-				IRational rat = fractionNumber.subtract(div);
-				numerator = rat.numerator();
-				denominator = rat.denominator().multiply(F.C2);
-				return F.Times(F.CN1, F.Power(F.CNI, div),
-						F.Power(F.CN1, F.fraction(denominator.subtract(numerator), denominator)));
-			}
-			return F.NIL;
-		}
-
-		@Override
-		public IExpr eComFraArg(final IComplex base, final IFraction exponent) {
-			if (exponent.isNumEqualRational(F.C1D2) && base.getRealPart().isZero()) {
-				// square root of pure imaginary number
-				IRational im = base.getImaginaryPart();
-				boolean negative = false;
-				im = im.divideBy(F.C2);
-				if (im.isNegative()) {
-					im = im.negate();
-					negative = true;
-				}
-				if (NumberUtil.isPerfectSquare(im)) {
-					IExpr temp = F.Sqrt(im);
-					if (negative) {
-						// Sqrt(im.negate()) - I * Sqrt(im);
-						return F.Plus(temp, F.Times(F.CNI, temp));
+		private static IExpr complexFraction(final IComplex base, final IFraction exponent) {
+			if (base.getRealPart().isZero()) {
+				if (exponent.isNumEqualRational(F.C1D2)) {
+					// square root of pure imaginary number
+					IRational im = base.getImaginaryPart();
+					boolean negative = false;
+					im = im.divideBy(F.C2);
+					if (im.isNegative()) {
+						im = im.negate();
+						negative = true;
 					}
-					// Sqrt(im.negate()) + I * Sqrt(im);
-					return F.Plus(temp, F.Times(F.CI, temp));
+					if (NumberUtil.isPerfectSquare(im)) {
+						IExpr temp = F.Sqrt(im);
+						if (negative) {
+							// Sqrt(im.negate()) - I * Sqrt(im);
+							return F.Plus(temp, F.Times(F.CNI, temp));
+						}
+						// Sqrt(im.negate()) + I * Sqrt(im);
+						return F.Plus(temp, F.Times(F.CI, temp));
+					}
+				} else if (exponent.isNumEqualRational(F.CN1D2)) {
+					// -(-1)^(3/4)
+					return F.Times(F.CN1, F.Power(F.CN1, F.C3D4));
+				}
+			}
+			if (base.isComplex() && exponent.isPositive()) {
+				if (base.isImaginaryUnit()) {
+					return F.Power(F.CN1, F.C1D2.times(exponent));
+				} else if (base.isNegativeImaginaryUnit()) {
+					IInteger numerator = exponent.numerator();
+					IInteger denominator = exponent.denominator();
+					IInteger div = numerator.div(denominator);
+					if (div.isOdd()) {
+						div = div.subtract(F.C1);
+					}
+					IRational rat = exponent.subtract(div);
+					numerator = rat.numerator();
+					denominator = rat.denominator().multiply(F.C2);
+					return F.Times(F.CN1, F.Power(F.CNI, div),
+							F.Power(F.CN1, F.fraction(denominator.subtract(numerator), denominator)));
 				}
 			}
 			return F.NIL;
 		}
 
-		@Override
-		public IExpr eComIntArg(final IComplex base, final IInteger exponent) {
+		private static IExpr complexInteger(final IComplex base, final IInteger exponent) {
 			if (base.isZero()) {
 				return F.C0;
 			}
@@ -3794,7 +3819,10 @@ public final class Arithmetic {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			int size = ast.size();
+			final int size = ast.size();
+			if (size == 3) {
+				return binaryOperator(ast, ast.arg1(), ast.arg2());
+			}
 			if (ast.head() == F.Power) {
 				if (size == 1) {
 					return F.C1;
@@ -3802,13 +3830,12 @@ public final class Arithmetic {
 				if (size == 2) {
 					return ast.arg1();
 				}
-				if (size > 3) {
-					IASTAppendable temp = ast.removeAtClone(size - 1);
-					temp.set(temp.size() - 1, F.Power(ast.get(size - 2), ast.get(size - 1)));
-					return temp;
-				}
+				// size > 3
+				IASTAppendable temp = ast.removeAtClone(size - 1);
+				temp.set(temp.size() - 1, F.Power(ast.get(size - 2), ast.get(size - 1)));
+				return temp;
 			}
-			return super.evaluate(ast, engine);
+			return F.NIL;
 		}
 
 		public int[] expectedArgSize() {
@@ -5805,6 +5832,51 @@ public final class Arithmetic {
 		}
 
 		return F.NIL;
+	}
+
+	/**
+	 * The Lanczos approximation is a method for computing the gamma function numerically.
+	 * 
+	 * See <a href="https://en.wikipedia.org/wiki/Lanczos_approximation">Lanczos approximation</a>
+	 * 
+	 * @param z
+	 * @return
+	 */
+	public static org.hipparchus.complex.Complex lanczosApproxGamma(org.hipparchus.complex.Complex z) {
+		// if (z.abs() <= 1.0) {
+		// de.lab4inf.math.sets.ComplexNumber cc = new de.lab4inf.math.sets.ComplexNumber(z.getReal(),
+		// z.getImaginary());
+		// de.lab4inf.math.Complex gResult = de.lab4inf.math.functions.Gamma.gamma(cc);
+		// return new org.hipparchus.complex.Complex(gResult.real(), gResult.imag());
+		// }
+
+		if (pComplex == null) {
+			// lazy initialization
+			pComplex = new org.hipparchus.complex.Complex[p.length];
+			for (int i = 0; i < p.length; i++) {
+				pComplex[i] = new org.hipparchus.complex.Complex(p[i]);
+			}
+		}
+
+		// if (F.isZero(z.getImaginary())) {
+		// return new org.hipparchus.complex.Complex(org.hipparchus.special.Gamma.gamma(z.getReal()));
+		// }
+		if (z.getReal() < 0.5) {
+			// Pi / ( Sin(Pi * z) * Gamma(1 - z) )
+			return lanczosApproxGamma(z.negate().add(1.0)).multiply(z.multiply(Math.PI).sin()).pow(-1.0)
+					.multiply(Math.PI);
+		} else {
+			z = z.subtract(1.0);
+			org.hipparchus.complex.Complex x = pComplex[0];
+			for (int i = 1; i < g + 2; i++) {
+				// x += p[i] / (z+i)
+				x = x.add(pComplex[i].divide(z.add(i)));
+			}
+			org.hipparchus.complex.Complex t = z.add(g).add(0.5);
+			// Sqrt(2 * Pi) * Pow(t, z + 0.5) * Exp(-t) * x
+			return t.pow(z.add(0.5)).multiply(t.negate().exp()).multiply(x).multiply(Math.sqrt(2 * Math.PI));
+		}
+
 	}
 
 	public static void initialize() {

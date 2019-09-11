@@ -63,12 +63,12 @@ public class ConsoleTestCase extends TestCase {
 	}
 
 	public void testDoc() {
-		assertEquals("Sin, Sinc, SingularValueDecomposition, Sinh, SinIntegral, SinhIntegral\n" + 
-				"",
+		assertEquals("Sin, Sinc, SingularValueDecomposition, Sinh, SinIntegral, SinhIntegral\n",
 				console.interpreter("?Sin*"));
 	}
 
 	public void testMissingDoc() {
-		assertEquals("Missing(UnknownSymbol,?sin*)", console.interpreter("?sin*"));
+		assertEquals("Sin, Sinc, SingularValueDecomposition, Sinh, SinIntegral, SinhIntegral\n",
+				console.interpreter("?sin*"));
 	}
 }

@@ -12,6 +12,6 @@ public class PowerOp {
 	 * @return
 	 */
 	public static IExpr power(IExpr base, IExpr exponent) {
-		return Arithmetic.CONST_POWER.binaryOperator(F.NIL, base, exponent).orElseGet(()->F.Power(base, exponent));
+		return Arithmetic.Power.binaryOperator(F.NIL, base, exponent).orElseGet(()->F.Power(base, exponent));
 	}
 }

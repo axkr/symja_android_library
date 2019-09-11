@@ -169,11 +169,20 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testPower() {
-		check("(0.0+I*0.0)^10.0", "0.0");
+		check("(2/3)^(-2)", //
+				"9/4");
+		
+		check("(2/3)^(-2)", //
+				"9/4");
+		check("(0.0+I*0.0)^10.0", //
+				"0.0");
 
-		check("(Infinity)^(-Infinity)", "0");
-		check("(ComplexInfinity)^(-Infinity)", "0");
-		check("(ComplexInfinity)^(Infinity)", "ComplexInfinity");
+		check("(Infinity)^(-Infinity)", //
+				"0");
+		check("(ComplexInfinity)^(-Infinity)", //
+				"0");
+		check("(ComplexInfinity)^(Infinity)",//
+				"ComplexInfinity");
 		check("(-1)^(-Infinity)", "Indeterminate");
 		check("(-10)^(-Infinity)", "0");
 		check("(10)^(Infinity)", "Infinity");
@@ -188,8 +197,10 @@ public class MainTestCase extends AbstractTestCase {
 		check("0^a", "0^a");
 
 		check("(z^a)^b", "(z^a)^b");
-		check("z^a^b", "z^a^b");
-		check("(2/3)^(-2)", "9/4");
+		check("z^a^b",//
+				"z^a^b");
+		check("(2/3)^(-2)", //
+				"9/4");
 		check("(0.0+I*0.0)^10.0", "0.0");
 		check("(4+I*3)^720", //
 				"-116167855361272797036694467869451869602145196288671871518854133570041727318170\\\n"

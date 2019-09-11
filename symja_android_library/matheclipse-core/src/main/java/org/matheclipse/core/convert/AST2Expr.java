@@ -63,47 +63,48 @@ public class AST2Expr {
 			"String", "Symbol", "TooLarge", "Trig", "True", "Variable", "White", "Unknown", "ViewPoint" };
 
 	public final static String[] FUNCTION_STRINGS = { "Abort", "Abs", "AbsArg", "Accumulate", "AddTo",
-			"AdjacencyMatrix", "AiryAi", "AiryBi", "AllTrue", "And", "AngleVector", "AnyTrue", "AntihermitianMatrixQ",
-			"AntiSymmetric", "AntisymmetricMatrixQ", "Annuity", "AnnuityDue", "AlgebraicNumber", "Alternatives",
-			"Apart", "AppellF1", "Append", "AppendTo", "Apply", "ArcCos", "ArcCosh", "ArcCot", "ArcCoth", "ArcCsc",
-			"ArcCsch", "ArcSec", "ArcSech", "ArithmeticGeometricMean", "ArcSin", "ArcSinh", "ArcTan", "ArcTanh", "Arg",
-			"ArgMax", "ArgMin", "Array", "ArrayDepth", "ArrayPad", "ArrayReshape", "Arrays", "ArrayQ", "Assumptions",
-			"AtomQ", "Attributes", "BartlettWindow", "Begin", "BeginPackage", "BellB", "BellY", "BernoulliB",
-			"BernoulliDistribution", "BesselI", "BesselJ", "BesselK", "BesselY", "Beta", "BetaDistribution",
-			"BetaRegularized", "BinarySerialize", "BinaryDeserialize", "BinCounts", "Binomial", "BinomialDistribution",
-			"BitLength", "BlackmanHarrisWindow", "BlackmanNuttallWindow", "BlackmanWindow", "Blank", "BlankSequence",
-			"BlankNullSequence", "Block", "Boole", "BooleanQ", "BooleanConvert", "BooleanMinimize", "BooleanTable",
-			"BooleanVariables", "BrayCurtisDistance", "Break", "ByteArray", "ByteArrayQ", "ByteCount",
-			"CanberraDistance", "Cancel", "CarmichaelLambda", "CartesianProduct", "Cases", "CatalanNumber", "Catch",
-			"Catenate", "CDF", "Ceiling", "CentralMoment", "CForm", "CharacteristicPolynomial", "ChebyshevT",
-			"ChebyshevU", "Check", "ChessboardDistance", "ChineseRemainder", "ChiSquareDistribution",
-			"CholeskyDecomposition", "Chop", "CirclePoints", "Clear", "ClearAll", "ClearAttributes", "Clip",
-			"Coefficient", "CoefficientList", "CoefficientRules", "Colon", "Collect", "Commonest", "CompatibleUnitQ",
-			"Complement", "Compile", "CompiledFunction", "Complex", "ComplexExpand", "ComposeList", "ComposeSeries",
-			"Composition", "CompoundExpression", "Condition", "ConditionalExpression", "ConnectedGraphQ", "Conjugate",
-			"ConjugateTranspose", "ConstantArray", "ContainsAll", "ContainsAny", "ContainsNone", "ContainsExactly",
-			"ContainsOnly", "Context", "Continue", "ContinuedFraction", "Convergents", "ConvexHullMesh", "CoprimeQ",
-			"Correlation", "Cos", "Cosh", "CosineDistance", "CosIntegral", "CoshIntegral", "Cot", "Coth", "Count",
-			"Covariance", "CreateDirectory", "Cross", "Csc", "Csch", "CubeRoot", "Curl", "Cyclotomic", "Decrement",
-			"Default", "Defer", "Definition", "Delete", "DeleteCases", "DeleteDuplicates", "Denominator", "Depth",
-			"Derivative", "DesignMatrix", "Det", "Diagonal", "DiagonalMatrix", "DiceDissimilarity", "Differences",
-			"DigitQ", "Dimensions", "DiracDelta", "DirichletEta", "DiscreteDelta", "DiscreteUniformDistribution",
-			"DirectedEdge", "DirectedInfinity", "Direction", "DirichletWindow", "Discriminant", "DisjointQ",
-			"Distribute", "Distributed", "Div", "Divide", "DivideBy", "Divisible", "Divisors", "DivisorSigma", "Do",
-			"Dot", "Drop", "DSolve", "EasterSunday", "EdgeCount", "EdgeList", "EdgeQ", "EdgeWeight",
-			"EffectiveInterest", "Eigenvalues", "Eigenvectors", "Element", "ElementData", "Eliminate", "EllipticE",
-			"EllipticF", "EllipticK", "EllipticPi", "End", "EndPackage", "Equal", "Equivalent", "Erf", "Erfc", "Erfi",
-			"ErlangDistribution", "EuclideanDistance", "EulerE", "EulerianGraphQ", "EulerPhi", "Evaluate", "EvenQ",
-			"ExactNumberQ", "Except", "Exists", "Exp", "Expand", "ExpandAll", "Expectation", "ExponentialDistribution",
-			"ExpIntegralE", "ExpIntegralEi", "Exponent", "Export", "ExportString", "ExpToTrig", "ExtendedGCD",
-			"Extract", "Factor", "Factorial", "Factorial2", "FactorInteger", "FactorSquareFree", "FactorSquareFreeList",
-			"FactorTerms", "Flatten", "FlattenAt", "FlatTopWindow", "Fibonacci", "FindEulerianCycle", "FindFit",
-			"FindEdgeCover", "FindIndependentEdgeSet", "FindIndependentVertexSet", "FindHamiltonianCycle",
-			"FindInstance", "FindRoot", "FindShortestPath", "FindShortestTour", "FindSpanningTree", "FindVertexCover",
-			"First", "Fit", "FiveNum", "FixedPoint", "FixedPointList", "Floor", "Fold", "FoldList", "For", "ForAll",
-			"Fourier", "FourierMatrix", "FRatioDistribution", "FractionalPart", "FrechetDistribution", "FreeQ",
-			"FresnelC", "FresnelS", "FrobeniusNumber", "FrobeniusSolve", "FromCharacterCode", "FromContinuedFraction",
-			"FromDigits", "FromPolarCoordinates", "FullForm", "FullSimplify", "Function", "FunctionExpand", "Gamma",
+			"AdjacencyMatrix", "AiryAi", "AiryAiPrime", "AiryBi", "AiryBiPrime", "AllTrue", "And", "AngleVector",
+			"AnyTrue", "AntihermitianMatrixQ", "AntiSymmetric", "AntisymmetricMatrixQ", "Annuity", "AnnuityDue",
+			"AlgebraicNumber", "Alternatives", "Apart", "AppellF1", "Append", "AppendTo", "Apply", "ArcCos", "ArcCosh",
+			"ArcCot", "ArcCoth", "ArcCsc", "ArcCsch", "ArcSec", "ArcSech", "ArithmeticGeometricMean", "ArcSin",
+			"ArcSinh", "ArcTan", "ArcTanh", "Arg", "ArgMax", "ArgMin", "Array", "ArrayDepth", "ArrayPad",
+			"ArrayReshape", "Arrays", "ArrayQ", "Assumptions", "AtomQ", "Attributes", "BartlettWindow", "Begin",
+			"BeginPackage", "BellB", "BellY", "BernoulliB", "BernoulliDistribution", "BesselI", "BesselJ", "BesselK",
+			"BesselY", "Beta", "BetaDistribution", "BetaRegularized", "BinarySerialize", "BinaryDeserialize",
+			"BinCounts", "Binomial", "BinomialDistribution", "BitLength", "BlackmanHarrisWindow",
+			"BlackmanNuttallWindow", "BlackmanWindow", "Blank", "BlankSequence", "BlankNullSequence", "Block", "Boole",
+			"BooleanQ", "BooleanConvert", "BooleanMinimize", "BooleanTable", "BooleanVariables", "BrayCurtisDistance",
+			"Break", "ByteArray", "ByteArrayQ", "ByteCount", "CanberraDistance", "Cancel", "CarmichaelLambda",
+			"CartesianProduct", "Cases", "CatalanNumber", "Catch", "Catenate", "CDF", "Ceiling", "CentralMoment",
+			"CForm", "CharacteristicPolynomial", "ChebyshevT", "ChebyshevU", "Check", "ChessboardDistance",
+			"ChineseRemainder", "ChiSquareDistribution", "CholeskyDecomposition", "Chop", "CirclePoints", "Clear",
+			"ClearAll", "ClearAttributes", "Clip", "Coefficient", "CoefficientList", "CoefficientRules", "Colon",
+			"Collect", "Commonest", "CompatibleUnitQ", "Complement", "Compile", "CompiledFunction", "Complex",
+			"ComplexExpand", "ComposeList", "ComposeSeries", "Composition", "CompoundExpression", "Condition",
+			"ConditionalExpression", "ConnectedGraphQ", "Conjugate", "ConjugateTranspose", "ConstantArray",
+			"ContainsAll", "ContainsAny", "ContainsNone", "ContainsExactly", "ContainsOnly", "Context", "Continue",
+			"ContinuedFraction", "Convergents", "ConvexHullMesh", "CoprimeQ", "Correlation", "Cos", "Cosh",
+			"CosineDistance", "CosIntegral", "CoshIntegral", "Cot", "Coth", "Count", "Covariance", "CreateDirectory",
+			"Cross", "Csc", "Csch", "CubeRoot", "Curl", "Cyclotomic", "Decrement", "Default", "Defer", "Definition",
+			"Delete", "DeleteCases", "DeleteDuplicates", "Denominator", "Depth", "Derivative", "DesignMatrix", "Det",
+			"Diagonal", "DiagonalMatrix", "DiceDissimilarity", "Differences", "DigitQ", "Dimensions", "DiracDelta",
+			"DirichletEta", "DiscreteDelta", "DiscreteUniformDistribution", "DirectedEdge", "DirectedInfinity",
+			"Direction", "DirichletWindow", "Discriminant", "DisjointQ", "Distribute", "Distributed", "Div", "Divide",
+			"DivideBy", "Divisible", "Divisors", "DivisorSigma", "Do", "Dot", "Drop", "DSolve", "EasterSunday",
+			"EdgeCount", "EdgeList", "EdgeQ", "EdgeWeight", "EffectiveInterest", "Eigenvalues", "Eigenvectors",
+			"Element", "ElementData", "Eliminate", "EllipticE", "EllipticF", "EllipticK", "EllipticPi", "End",
+			"EndPackage", "Equal", "Equivalent", "Erf", "Erfc", "Erfi", "ErlangDistribution", "EuclideanDistance",
+			"EulerE", "EulerianGraphQ", "EulerPhi", "Evaluate", "EvenQ", "ExactNumberQ", "Except", "Exists", "Exp",
+			"Expand", "ExpandAll", "Expectation", "ExponentialDistribution", "ExpIntegralE", "ExpIntegralEi",
+			"Exponent", "Export", "ExportString", "ExpToTrig", "ExtendedGCD", "Extract", "Factor", "Factorial",
+			"Factorial2", "FactorInteger", "FactorSquareFree", "FactorSquareFreeList", "FactorTerms", "Flatten",
+			"FlattenAt", "FlatTopWindow", "Fibonacci", "FindEulerianCycle", "FindFit", "FindEdgeCover",
+			"FindIndependentEdgeSet", "FindIndependentVertexSet", "FindHamiltonianCycle", "FindInstance", "FindRoot",
+			"FindShortestPath", "FindShortestTour", "FindSpanningTree", "FindVertexCover", "First", "Fit", "FiveNum",
+			"FixedPoint", "FixedPointList", "Floor", "Fold", "FoldList", "For", "ForAll", "Fourier", "FourierMatrix",
+			"FRatioDistribution", "FractionalPart", "FrechetDistribution", "FreeQ", "FresnelC", "FresnelS",
+			"FrobeniusNumber", "FrobeniusSolve", "FromCharacterCode", "FromContinuedFraction", "FromDigits",
+			"FromPolarCoordinates", "FullForm", "FullSimplify", "Function", "FunctionExpand", "Gamma",
 			"GammaDistribution", "GammaRegularized", "Gather", "GatherBy", "GaussianMatrix", "GaussianWindow", "GCD",
 			"GegenbauerC", "GeodesyData", "GeoDistance", "GeometricDistribution", "GeometricMean", "GeoPosition", "Get",
 			"Grad", "Graph", "GraphCenter", "GraphData", "GraphDiameter", "Graphics", "Graphics3D", "GraphPeriphery",
@@ -111,13 +112,13 @@ public class AST2Expr {
 			"HamiltonianGraphQ", "HammingWindow", "HankelH1", "HankelH2", "HannWindow", "Haversine", "HarmonicMean",
 			"HarmonicNumber", "Head", "HeavisideTheta", "HermiteH", "HermitianMatrixQ", "HilbertMatrix", "Hold",
 			"HoldForm", "HoldPattern", "Horner", "HornerForm", "HurwitzZeta", "HypergeometricDistribution",
-			"HypergeometricPFQ", "Hypergeometric0F1", "Hypergeometric1F1", "Hypergeometric1F1Regularized",
-			"Hypergeometric2F1", "HypergeometricPFQRegularized", "Identity", "IdentityMatrix", "If", "Im", "Implies",
-			"Import", "Increment", "Inequality", "InexactNumberQ", "Infix", "Inner", "InputForm", "Insert",
-			"Information", "Interval", "IntegerDigits", "IntegerExponent", "IntegerLength", "IntegerPart",
-			"IntegerPartitions", "IntegerQ", "Integrate", "Interpolation", "InterpolatingFunction",
-			"InterpolatingPolynomial", "IntersectingQ", "Interrupt", "Intersection", "Inverse", "InverseFourier",
-			"InverseBetaRegularized", "InverseCDF", "InverseErf", "InverseErfc", "InverseFunction",
+			"HypergeometricPFQ", "HypergeometricU", "Hypergeometric0F1", "Hypergeometric1F1",
+			"Hypergeometric1F1Regularized", "Hypergeometric2F1", "HypergeometricPFQRegularized", "Identity",
+			"IdentityMatrix", "If", "Im", "Implies", "Import", "Increment", "Inequality", "InexactNumberQ", "Infix",
+			"Inner", "InputForm", "Insert", "Information", "Interval", "IntegerDigits", "IntegerExponent",
+			"IntegerLength", "IntegerPart", "IntegerPartitions", "IntegerQ", "Integrate", "Interpolation",
+			"InterpolatingFunction", "InterpolatingPolynomial", "IntersectingQ", "Interrupt", "Intersection", "Inverse",
+			"InverseFourier", "InverseBetaRegularized", "InverseCDF", "InverseErf", "InverseErfc", "InverseFunction",
 			"InverseGammaRegularized", "InverseHaversine", "InverseLaplaceTransform", "InverseSeries",
 			"InverseWeierstrassP", "JaccardDissimilarity", "JacobiMatrix", "JacobiSymbol", "JacobiZeta", "JavaForm",
 			"JSForm", "JSFormData", "Join", "KnownUnitQ", "KolmogorovSmirnovTest", "KOrderlessPartitions",
@@ -191,7 +192,7 @@ public class AST2Expr {
 
 	/**
 	 * Aliases which are mapped to the standard function symbols.
-	 */ 
+	 */
 	public static final Map<String, String> PREDEFINED_ALIASES_MAP = Tries.forStrings();
 
 	public static final String TIMES_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "times" : "Times";
@@ -203,23 +204,31 @@ public class AST2Expr {
 	private static SuggestTree SUGGEST_TREE = null;
 
 	public static SuggestTree getSuggestTree() {
+
 		synchronized (AST2Expr.class) {
 			if (SUGGEST_TREE == null) {
 				SUGGEST_TREE = new SuggestTree(100);
 				synchronized (SUGGEST_TREE) {
 					for (String str : FUNCTION_STRINGS) {
-						SUGGEST_TREE.put(str, 2);
+						if (str.length() > 1) {
+							SUGGEST_TREE.put(str.toLowerCase(), 2);
+						}
 					}
 					for (String str : SYMBOL_STRINGS) {
-						SUGGEST_TREE.put(str, 1);
+						if (str.length() > 1) {
+							SUGGEST_TREE.put(str.toLowerCase(), 1);
+						}
 					}
 					for (String str : DOLLAR_STRINGS) {
-						SUGGEST_TREE.put(str, 1);
+						if (str.length() > 1) {
+							SUGGEST_TREE.put(str.toLowerCase(), 1);
+						}
 					}
 				}
 			}
+			return SUGGEST_TREE;
 		}
-		return SUGGEST_TREE;
+
 	}
 
 	/**
@@ -398,29 +407,6 @@ public class AST2Expr {
 						}
 					}
 					break;
-				// case ID.GreaterEqual:
-				// if (ast.isSameHeadSizeGE(F.GreaterEqual, 3)) {
-				// ISymbol compareHead = F.Greater;
-				// return rewriteLessGreaterAST(ast, compareHead);
-				// }
-				// break;
-				// case ID.Greater:
-				// if (ast.isSameHeadSizeGE(F.Greater, 3)) {
-				// ISymbol compareHead = F.GreaterEqual;
-				// return rewriteLessGreaterAST(ast, compareHead);
-				// }
-				// break;
-				// case ID.LessEqual:
-				// if (ast.isSameHeadSizeGE(F.LessEqual, 3)) {
-				// ISymbol compareHead = F.Less;
-				// return rewriteLessGreaterAST(ast, compareHead);
-				// }
-				// break;
-				// case ID.Less:
-				// if (ast.isSameHeadSizeGE(F.Less, 3)) {
-				// ISymbol compareHead = F.LessEqual;
-				// return rewriteLessGreaterAST(ast, compareHead);
-				// }
 				case ID.Pattern:
 					expr = PatternMatching.Pattern.CONST.evaluate(ast, fEngine);
 					if (expr.isPresent()) {

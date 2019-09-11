@@ -25,6 +25,7 @@ import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.AssumptionFunctions;
 import org.matheclipse.core.builtin.AttributeFunctions;
+import org.matheclipse.core.builtin.BesselFunctions;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.Combinatoric;
 import org.matheclipse.core.builtin.ComputationalGeometryFunctions;
@@ -96,8 +97,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.parser.ExprParserFactory;
 import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
-import org.matheclipse.core.trie.Tries;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.core.trie.Tries;
 import org.matheclipse.parser.client.SyntaxError;
 
 import com.google.common.cache.Cache;
@@ -265,7 +266,13 @@ public class F {
 	public final static IBuiltInSymbol AiryAi = F.initFinalSymbol("AiryAi", ID.AiryAi);
 
 	/***/
+	public final static IBuiltInSymbol AiryAiPrime = F.initFinalSymbol("AiryAiPrime", ID.AiryAiPrime);
+
+	/***/
 	public final static IBuiltInSymbol AiryBi = F.initFinalSymbol("AiryBi", ID.AiryBi);
+
+	/***/
+	public final static IBuiltInSymbol AiryBiPrime = F.initFinalSymbol("AiryBiPrime", ID.AiryBiPrime);
 
 	/***/
 	public final static IBuiltInSymbol AlgebraicNumber = F.initFinalSymbol("AlgebraicNumber", ID.AlgebraicNumber);
@@ -1608,6 +1615,9 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol HypergeometricPFQ = F.initFinalSymbol("HypergeometricPFQ", ID.HypergeometricPFQ);
+
+	/***/
+	public final static IBuiltInSymbol HypergeometricU = F.initFinalSymbol("HypergeometricU", ID.HypergeometricU);
 
 	/***/
 	public final static IBuiltInSymbol HypergeometricPFQRegularized = F.initFinalSymbol("HypergeometricPFQRegularized",
@@ -4290,6 +4300,7 @@ public class F {
 			ListFunctions.initialize();
 			Combinatoric.initialize();
 			IntegerFunctions.initialize();
+			BesselFunctions.initialize();
 			SpecialFunctions.initialize();
 			StringFunctions.initialize();
 			OutputFunctions.initialize();
@@ -5514,7 +5525,7 @@ public class F {
 	 * @param arg
 	 *            a numeric number
 	 * @param delta
-	 *            the delta for which
+	 *            the delta for which the number should be set to zero
 	 * @return <code>arg</code> if the argument couldn't be chopped
 	 */
 	public static INumber chopNumber(INumber arg, double delta) {
@@ -5523,16 +5534,52 @@ public class F {
 				return C0;
 			}
 		} else if (arg instanceof IComplexNum) {
-			if (isZero(((IComplexNum) arg).getRealPart(), delta)) {
-				if (isZero(((IComplexNum) arg).getImaginaryPart(), delta)) {
+			Complex c = ((IComplexNum) arg).evalComplex();
+			if (isZero(c.getReal(), delta)) {
+				if (isZero(c.getImaginary(), delta)) {
 					return C0;
 				}
-				return complexNum(0.0, ((IComplexNum) arg).getImaginaryPart());
+				return complexNum(0.0, c.getImaginary());
 			}
-			if (isZero(((IComplexNum) arg).getImaginaryPart(), delta)) {
+			if (isZero(c.getImaginary(), delta)) {
 				return num(((IComplexNum) arg).getRealPart());
 			}
 
+		}
+		return arg;
+	}
+
+	/**
+	 * Set real or imaginary parts of a numeric argument to zero, those absolute value is less than
+	 * <code>Config.DEFAULT_CHOP_DELTA</code>
+	 * 
+	 * @param arg
+	 *            a numeric number
+	 * @return <code>arg</code> if the argument couldn't be chopped
+	 */
+	public static org.hipparchus.complex.Complex chopComplex(org.hipparchus.complex.Complex arg) {
+		return chopComplex(arg, Config.DEFAULT_CHOP_DELTA);
+	}
+
+	/**
+	 * Set real or imaginary parts of a numeric argument to zero, those absolute value is less than a delta.
+	 * 
+	 * @param arg
+	 *            a numeric number
+	 * @param delta
+	 *            the delta for which the number should be set to zero
+	 * @return <code>arg</code> if the argument couldn't be chopped
+	 */
+	public static org.hipparchus.complex.Complex chopComplex(org.hipparchus.complex.Complex arg, double delta) {
+		org.hipparchus.complex.Complex c = arg;
+		if (isZero(c.getReal(), delta)) {
+			if (isZero(c.getImaginary(), delta)) {
+				return org.hipparchus.complex.Complex.ZERO;
+			}
+			return new org.hipparchus.complex.Complex(0.0, c.getImaginary());
+		}
+		if (isZero(c.getImaginary(), delta)) {
+			return new org.hipparchus.complex.Complex(c.getReal());
 		}
 		return arg;
 	}
@@ -7899,7 +7946,7 @@ public class F {
 	public static IAST Missing(final IExpr a0) {
 		return new AST1(Missing, a0);
 	}
-	
+
 	public static IAST Missing(final IExpr a0, final IExpr a1) {
 		return new AST2(Missing, a0, a1);
 	}
