@@ -920,14 +920,17 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr e2ObjArg(final IExpr x, final IExpr y) {
-			if (x.isZero() && y.isReal()) {
+			if (x.isZero() && y.isRealResult()) {
 				if (y.isZero()) {
 					return F.Indeterminate;
 				}
-				if (y.isPositive()) {
+				if (y.isPositiveResult()) {
 					return F.CPiHalf;
 				}
-				return F.CNPiHalf;
+				if (y.isNegativeResult()) {
+					return F.CNPiHalf;
+				}
+				return F.NIL;
 			}
 			if (y.isZero() && x.isNumericFunction() && !x.isZero()) {
 				return F.Times(F.Subtract(F.C1, x.unitStep()), F.Pi);
