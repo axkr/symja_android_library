@@ -3767,7 +3767,7 @@ public final class BooleanFunctions {
 			return F.True;
 		}
 
-		return Equal.simplifyCompare(F.Equal, arg1, arg2);
+		return Equal.simplifyCompare(F.Equal, a1, a2 );
 	}
 
 	/**
