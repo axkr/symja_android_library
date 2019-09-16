@@ -2351,28 +2351,28 @@ public class Algebra {
 				result.append(jas.integerPoly2Expr(iPoly));
 				return result;
 			} catch (JASConversionException e1) {
-//				try {
-//					if (variableList.isAST1()) {
-//						IAST list = PolynomialFunctions.rootsOfExprPolynomial(expr, variableList, true);
-//						if (list.isList()) {
-//							IExpr x = variableList.arg1();
-//							IASTAppendable result = F.TimesAlloc(list.size());
-//							list.forEach(arg -> result.append(F.Plus(x, arg)));
-//							// for (int i = 1; i < list.size(); i++) {
-//							// result.append(F.Plus(x, list.get(i)));
-//							// }
-//							return result;
-//						}
-//					}
-//				} catch (ClassCastException e2) {
-//					if (Config.SHOW_STACKTRACE) {
-//						e2.printStackTrace();
-//					}
-//				} catch (JASConversionException e2) {
-//					if (Config.SHOW_STACKTRACE) {
-//						e2.printStackTrace();
-//					}
-//				}
+				// try {
+				// if (variableList.isAST1()) {
+				// IAST list = PolynomialFunctions.rootsOfExprPolynomial(expr, variableList, true);
+				// if (list.isList()) {
+				// IExpr x = variableList.arg1();
+				// IASTAppendable result = F.TimesAlloc(list.size());
+				// list.forEach(arg -> result.append(F.Plus(x, arg)));
+				// // for (int i = 1; i < list.size(); i++) {
+				// // result.append(F.Plus(x, list.get(i)));
+				// // }
+				// return result;
+				// }
+				// }
+				// } catch (ClassCastException e2) {
+				// if (Config.SHOW_STACKTRACE) {
+				// e2.printStackTrace();
+				// }
+				// } catch (JASConversionException e2) {
+				// if (Config.SHOW_STACKTRACE) {
+				// e2.printStackTrace();
+				// }
+				// }
 
 			}
 			return ast.arg1();
@@ -4255,6 +4255,8 @@ public class Algebra {
 								return fEngine.evaluate(temp);
 							}
 						}
+						
+						result = functionExpand(ast, minCounter[0], result);
 					}
 
 					return result;
@@ -4570,7 +4572,7 @@ public class Algebra {
 				case ID.LessEqual:
 					if (list1.size() == 3 && !list1.arg2().isZero()) {
 						IExpr sub = ast.topHead().of(F.Subtract(list1.arg1(), list1.arg2()));
-						return ast.setAtClone(1, F.binaryAST2(list1.head(), sub, F.C0));
+						return F.binaryAST2(list1.head(), sub, F.C0);
 					}
 					break;
 				}
