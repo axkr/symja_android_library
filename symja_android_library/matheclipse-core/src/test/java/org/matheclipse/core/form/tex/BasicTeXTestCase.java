@@ -279,6 +279,11 @@ public class BasicTeXTestCase extends TestCase {
 
 	}
 	
+	public void testTeX30() {
+		check("Quantity(3,\"m\")", //
+				"\\text{Quantity}(3,\\textnormal{m})");
+	}
+	
 	public void check(String strEval, String strResult) {
 		StringWriter stw = new StringWriter();
 		texUtil.toTeX(strEval, stw);
