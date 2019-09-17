@@ -1,7 +1,9 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.builtin.functions.EllipticFunctionsJS;
+import org.matheclipse.core.builtin.functions.EllipticIntegralsJS;
+import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -24,7 +26,13 @@ public class EllipticIntegrals {
 			F.EllipticF.setEvaluator(new EllipticF());
 			F.EllipticK.setEvaluator(new EllipticK());
 			F.EllipticPi.setEvaluator(new EllipticPi());
+			F.EllipticTheta.setEvaluator(new EllipticTheta());
 			F.JacobiZeta.setEvaluator(new JacobiZeta());
+			
+			F.WeierstrassHalfPeriods.setEvaluator(new WeierstrassHalfPeriods());
+			F.WeierstrassInvariants.setEvaluator(new WeierstrassInvariants());
+			F.WeierstrassP.setEvaluator(new WeierstrassP());
+			F.WeierstrassPPrime.setEvaluator(new WeierstrassPPrime());
 		}
 	}
 
@@ -80,15 +88,28 @@ public class EllipticIntegrals {
 					return F.EllipticE(m);
 				}
 
-				if (z instanceof INum && m instanceof INum) {
-					double a = ((ISignedNumber) z).doubleValue();
-					double b = ((ISignedNumber) m).doubleValue();
+				// if (z instanceof INum && m instanceof INum) {
+				// double a = ((ISignedNumber) z).doubleValue();
+				// double b = ((ISignedNumber) m).doubleValue();
+				// try {
+				// // see github #109
+				// b = -Math.asin(Math.sqrt(b));
+				// return F.num(de.lab4inf.math.functions.IncompleteSecondEllipticIntegral.icseint(a, b));
+				// } catch (RuntimeException rex) {
+				// return engine.printMessage("EllipticE: " + rex.getMessage());
+				// }
+				// }
+				if (z.isReal() && m.isReal()) {
 					try {
-						// see github #109
-						b = -Math.asin(Math.sqrt(b));
-						return F.num(de.lab4inf.math.functions.IncompleteSecondEllipticIntegral.icseint(a, b));
-					} catch (RuntimeException rex) {
-						return engine.printMessage("EllipticE: " + rex.getMessage());
+						return F.complexNum(EllipticIntegralsJS.ellipticE(z.evalDouble(), m.evalDouble()));
+					} catch (RuntimeException rte) {
+						return engine.printMessage("EllipticE: " + rte.getMessage());
+					}
+				} else if (z.isNumeric() && m.isNumeric()) {
+					try {
+						return F.complexNum(EllipticIntegralsJS.ellipticE(z.evalComplex(), m.evalComplex()));
+					} catch (RuntimeException rte) {
+						return engine.printMessage("EllipticE: " + rte.getMessage());
 					}
 				}
 				IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
@@ -130,10 +151,12 @@ public class EllipticIntegrals {
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
 		}
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -200,17 +223,31 @@ public class EllipticIntegrals {
 					return F.CComplexInfinity;
 				}
 			}
-			if (z instanceof INum && m instanceof INum) {
-				double a = ((ISignedNumber) z).doubleValue();
-				double b = ((ISignedNumber) m).doubleValue();
+			// if (z instanceof INum && m instanceof INum) {
+			// double a = ((ISignedNumber) z).doubleValue();
+			// double b = ((ISignedNumber) m).doubleValue();
+			// try {
+			// // see github #109
+			// b = -Math.asin(Math.sqrt(b));
+			// return F.num(de.lab4inf.math.functions.IncompleteFirstEllipticIntegral.icfeint(a, b));
+			// } catch (RuntimeException rex) {
+			// return engine.printMessage("EllipticF: " + rex.getMessage());
+			// }
+			// }
+			if (z.isReal() && m.isReal()) {
 				try {
-					// see github #109
-					b = -Math.asin(Math.sqrt(b));
-					return F.num(de.lab4inf.math.functions.IncompleteFirstEllipticIntegral.icfeint(a, b));
-				} catch (RuntimeException rex) {
-					return engine.printMessage("EllipticF: " + rex.getMessage());
+					return F.complexNum(EllipticIntegralsJS.ellipticF(z.evalDouble(), m.evalDouble()));
+				} catch (RuntimeException rte) {
+					return engine.printMessage("EllipticF: " + rte.getMessage());
+				}
+			} else if (z.isNumeric() && m.isNumeric()) {
+				try {
+					return F.complexNum(EllipticIntegralsJS.ellipticF(z.evalComplex(), m.evalComplex()));
+				} catch (RuntimeException rte) {
+					return engine.printMessage("EllipticF: " + rte.getMessage());
 				}
 			}
+
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
 			if (negExpr.isPresent()) {
 				// EllipticF(-z,m) = -EllipticF(z,m)
@@ -288,6 +325,19 @@ public class EllipticIntegrals {
 				// (8 Pi^(3/2))/Gamma(-(1/4))^2
 				return F.Times(F.C8, F.Power(F.Pi, F.QQ(3L, 2L)), F.Power(F.Gamma(F.CN1D4), -2));
 			}
+			if (m.isReal()) {
+				try {
+					return F.complexNum(EllipticIntegralsJS.ellipticK(m.evalDouble()));
+				} catch (RuntimeException rte) {
+					return engine.printMessage("EllipticK: " + rte.getMessage());
+				}
+			} else if (m.isNumeric()) {
+				try {
+					return F.complexNum(EllipticIntegralsJS.ellipticK(m.evalComplex()));
+				} catch (RuntimeException rte) {
+					return engine.printMessage("EllipticK: " + rte.getMessage());
+				}
+			}
 			if (m.isNumber()) {
 				// EllipticK(m_) := Pi/(2*ArithmeticGeometricMean(1,Sqrt(1-m)))
 				return F.Times(F.C1D2, F.Pi,
@@ -344,21 +394,39 @@ public class EllipticIntegrals {
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			IExpr n = ast.arg1();
-			IExpr m = ast.arg2();
+
 			if (ast.isAST3()) {
-				if (n instanceof INum && m instanceof INum && ast.arg3() instanceof INum) {
-					double a = ((ISignedNumber) n).doubleValue();
-					double b = ((ISignedNumber) m).doubleValue();
-					double c = ((ISignedNumber) ast.arg3()).doubleValue();
+				IExpr x = ast.arg2();
+				IExpr m = ast.arg3();
+				// if (n instanceof INum && x instanceof INum && m instanceof INum) {
+				// double a = ((ISignedNumber) n).doubleValue();
+				// double b = ((ISignedNumber) x).doubleValue();
+				// double c = ((ISignedNumber) m).doubleValue();
+				// try {
+				// // see github #109
+				// c = -Math.asin(Math.sqrt(c));
+				// return F.num(de.lab4inf.math.functions.IncompleteThirdEllipticIntegral.icteint(a, b, c));
+				// } catch (RuntimeException rex) {
+				// return engine.printMessage("EllipticPi: " + rex.getMessage());
+				// }
+				// }
+				if (n.isReal() && x.isReal() && m.isReal()) {
 					try {
-						// see github #109
-						c = -Math.asin(Math.sqrt(c));
-						return F.num(de.lab4inf.math.functions.IncompleteThirdEllipticIntegral.icteint(a, b, c));
-					} catch (RuntimeException rex) {
-						return engine.printMessage("EllipticPi: " + rex.getMessage());
+						return F.complexNum(
+								EllipticIntegralsJS.ellipticPi(n.evalDouble(), x.evalDouble(), m.evalDouble()));
+					} catch (RuntimeException rte) {
+						return engine.printMessage("EllipticPi: " + rte.getMessage());
+					}
+				} else if (n.isNumeric() && x.isNumeric() && m.isNumeric()) {
+					try {
+						return F.complexNum(
+								EllipticIntegralsJS.ellipticPi(n.evalComplex(), x.evalComplex(), m.evalComplex()));
+					} catch (RuntimeException rte) {
+						return engine.printMessage("EllipticPi: " + rte.getMessage());
 					}
 				}
-				if (m.equals(F.CPiHalf)) {
+
+				if (x.equals(F.CPiHalf)) {
 					if (n.isZero()) {
 						// EllipticPi(0,Pi/2,z) = EllipticK(z)
 						return F.EllipticK(ast.arg3());
@@ -370,10 +438,11 @@ public class EllipticIntegrals {
 					return F.EllipticPi(n, ast.arg3());
 				}
 				if (n.isZero()) {
-					return F.EllipticF(m, ast.arg3());
+					return F.EllipticF(x, ast.arg3());
 				}
 				return F.NIL;
 			}
+			IExpr m = ast.arg2();
 			if (n.isZero()) {
 				return F.EllipticK(m);
 			}
@@ -392,21 +461,97 @@ public class EllipticIntegrals {
 				// EllipticE(n)/(1 - n)
 				return F.Times(F.Power(F.Plus(F.C1, F.Negate(n)), -1), F.EllipticE(n));
 			}
+			// if (n.isReal() && m.isReal()) {
+			// double a = ((ISignedNumber) n).doubleValue();
+			// double b = ((ISignedNumber) m).doubleValue();
+			// try {
+			// return F.num(de.lab4inf.math.functions.CompleteThirdEllipticIntegral.cteint(a, b));
+			// } catch (RuntimeException rex) {
+			// engine.printMessage("EllipticPi: " + rex.getMessage());
+			// }
+			// }
 			if (n.isReal() && m.isReal()) {
-				double a = ((ISignedNumber) n).doubleValue();
-				double b = ((ISignedNumber) m).doubleValue();
 				try {
-					return F.num(de.lab4inf.math.functions.CompleteThirdEllipticIntegral.cteint(a, b));
-				} catch (RuntimeException rex) {
-					engine.printMessage("EllipticPi: " + rex.getMessage());
+					return F.complexNum(EllipticIntegralsJS.ellipticPi(n.evalDouble(), Math.PI / 2, m.evalDouble()));
+				} catch (RuntimeException rte) {
+					return engine.printMessage("EllipticPi: " + rte.getMessage());
+				}
+			} else if (n.isNumeric() && m.isNumeric()) {
+				try {
+					return F.complexNum(EllipticIntegralsJS.ellipticPi(n.evalComplex(),
+							new org.hipparchus.complex.Complex(Math.PI / 2), m.evalComplex()));
+				} catch (RuntimeException rte) {
+					return engine.printMessage("EllipticPi: " + rte.getMessage());
 				}
 			}
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_3;
 		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
+
+	private static class EllipticTheta extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			IExpr n = ast.arg1();
+			int a = n.toIntDefault();
+			if (ast.isAST3()) {
+				IExpr x = ast.arg2();
+				IExpr m = ast.arg3();
+
+				if (a >= 1 && a <= 4) {
+					if (x.isReal() && m.isReal()) {
+						try {
+							return F.complexNum(EllipticFunctionsJS.jacobiTheta(a, x.evalDouble(), m.evalDouble()));
+						} catch (RuntimeException rte) {
+							return engine.printMessage("EllipticTheta: " + rte.getMessage());
+						}
+					} else if (x.isNumeric() && m.isNumeric()) {
+						try {
+							return F.complexNum(EllipticFunctionsJS.jacobiTheta(a, x.evalComplex(), m.evalComplex()));
+						} catch (RuntimeException rte) {
+							return engine.printMessage("EllipticTheta: " + rte.getMessage());
+						}
+					}
+				}
+				return F.NIL;
+			}
+
+			IExpr m = ast.arg2();
+			if (a >= 1 && a <= 4) {
+				if (m.isReal()) {
+					try {
+						return F.complexNum(EllipticFunctionsJS.jacobiTheta(a, 0.0, m.evalDouble()));
+					} catch (RuntimeException rte) {
+						return engine.printMessage("EllipticTheta: " + rte.getMessage());
+					}
+				} else if (m.isNumeric()) {
+					try {
+						return F.complexNum(EllipticFunctionsJS.jacobiTheta(a, org.hipparchus.complex.Complex.ZERO,
+								m.evalComplex()));
+					} catch (RuntimeException rte) {
+						return engine.printMessage("EllipticTheta: " + rte.getMessage());
+					}
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -445,6 +590,146 @@ public class EllipticIntegrals {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
+
+	private static class WeierstrassHalfPeriods extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			if (ast.arg1().isVector() == 2) {
+				IAST list = (IAST) ast.arg1();
+				IExpr g2 = list.arg1();
+				IExpr g3 = list.arg2();
+				if (g2.isNumeric() && g3.isNumeric()) {
+					try {
+						org.hipparchus.complex.Complex[] invariants=EllipticFunctionsJS.weierstrassHalfPeriods(g2.evalComplex(), g3.evalComplex());
+						return Object2Expr.convertComplex(false, invariants);
+					} catch (RuntimeException rte) {
+						return engine.printMessage("WeierstrassHalfPeriods: " + rte.getMessage());
+					}
+				}
+			}
+
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
+	
+	private static class WeierstrassInvariants extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			if (ast.arg1().isVector() == 2) {
+				IAST list = (IAST) ast.arg1();
+				IExpr g2 = list.arg1();
+				IExpr g3 = list.arg2();
+				if (g2.isNumeric() && g3.isNumeric()) {
+					try {
+						org.hipparchus.complex.Complex[] invariants=EllipticFunctionsJS.weierstrassInvariants(g2.evalComplex(), g3.evalComplex());
+						return Object2Expr.convertComplex(false, invariants);
+					} catch (RuntimeException rte) {
+						return engine.printMessage("WeierstrassInvariants: " + rte.getMessage());
+					}
+				}
+			}
+
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
+
+	private static class WeierstrassP extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			IExpr u = ast.arg1();
+			if (u.isZero()) {
+				return F.CComplexInfinity;
+			}
+			if (ast.arg2().isVector() == 2) {
+				IAST list = (IAST) ast.arg2();
+				IExpr g2 = list.arg1();
+				IExpr g3 = list.arg2();
+				if (u.isNumeric() && g2.isNumeric() && g3.isNumeric()) {
+					try {
+						return F.complexNum(
+								EllipticFunctionsJS.weierstrassP(u.evalComplex(), g2.evalComplex(), g3.evalComplex()));
+					} catch (RuntimeException rte) {
+						return engine.printMessage("WeierstrassP: " + rte.getMessage());
+					}
+				}
+			}
+
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
+
+	private static class WeierstrassPPrime extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			IExpr u = ast.arg1();
+			if (u.isZero()) {
+				return F.CComplexInfinity;
+			}
+			if (ast.arg2().isVector() == 2) {
+				IAST list = (IAST) ast.arg2();
+				IExpr g2 = list.arg1();
+				IExpr g3 = list.arg2();
+				if (u.isNumeric() && g2.isNumeric() && g3.isNumeric()) {
+					try {
+						return F.complexNum(EllipticFunctionsJS.weierstrassPPrime(u.evalComplex(), g2.evalComplex(),
+								g3.evalComplex()));
+					} catch (RuntimeException rte) {
+						return engine.printMessage("WeierstrassPPrime: " + rte.getMessage());
+					}
+				}
+			}
+
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
 			super.setUp(newSymbol);
 		}
 	}
