@@ -384,11 +384,10 @@ public interface ISymbol extends IExpr {
 	default boolean isNumericFunctionAttribute() {
 		return ((getAttributes() & NUMERICFUNCTION) == NUMERICFUNCTION);
 	}
-	
+
 	default boolean isProtected() {
 		return ((getAttributes() & PROTECTED) == PROTECTED);
 	}
-	
 
 	/**
 	 * Tests if this symbols name equals the given string
@@ -407,6 +406,18 @@ public interface ISymbol extends IExpr {
 	 * @return
 	 */
 	public boolean isSymbolName(String name);
+
+	/**
+	 * Returns <code>true</code>, if this symbol is in the set of defined <code>ids</code>.  
+	 * 
+	 * @param ids
+	 *            the symbol ordinal number
+	 * @return
+	 * @see org.matheclipse.core.expression.ID
+	 */
+	default boolean isSymbolID(int... ids) {
+		return false;
+	}
 
 	@Override
 	default public IExpr[] linear(IExpr variable) {
@@ -463,11 +474,11 @@ public interface ISymbol extends IExpr {
 	default double ofN(double... args) {
 		IExpr[] array = new IExpr[args.length];
 		for (int i = 0; i < array.length; i++) {
-			array[i] = F.num(args[i]); 
+			array[i] = F.num(args[i]);
 		}
-		return of(array).evalDouble(); 
+		return of(array).evalDouble();
 	}
-	
+
 	default IExpr of(Boolean... args) {
 		IExpr[] array = new IExpr[args.length];
 		for (int i = 0; i < array.length; i++) {

@@ -1,49 +1,22 @@
 package org.matheclipse.core.form.output;
 
 import java.io.IOException;
-import java.math.BigInteger;
-import java.text.NumberFormat;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.apfloat.Apcomplex;
-import org.apfloat.Apfloat;
-import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Algebra;
-import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.expression.ASTRealMatrix;
-import org.matheclipse.core.expression.ASTRealVector;
-import org.matheclipse.core.expression.ASTSeriesData;
-import org.matheclipse.core.expression.ApcomplexNum;
-import org.matheclipse.core.expression.ApfloatNum;
-import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.Num;
-import org.matheclipse.core.form.DoubleToMMA;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IFraction;
-import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.INum;
-import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.IPatternObject;
-import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.math.MathException;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
-import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
-import org.matheclipse.parser.client.operator.PostfixOperator;
-import org.matheclipse.parser.client.operator.PrefixOperator;
-
-import ch.ethz.idsc.tensor.qty.IQuantity;
 
 /**
  * Converts an internal <code>IExpr</code> into a user readable string.
@@ -51,10 +24,13 @@ import ch.ethz.idsc.tensor.qty.IQuantity;
  */
 public class JavaScriptFormFactory extends DoubleFormFactory {
 	/**
-	 * If <code>true</code> the <code>Piecewise()</code> function was used in an expression, which need to do inline operators with the
-	 * JavaScript ternary operator. If <code>false</code> the converter will use <code>if(...){...}</code> statements.
+	 * If <code>true</code> the <code>Piecewise()</code> function was used in an expression, which need to do inline
+	 * operators with the JavaScript ternary operator. If <code>false</code> the converter will use
+	 * <code>if(...){...}</code> statements.
 	 */
 	public boolean INLINE_PIECEWISE = true;
+
+	private List<String> sliderNames;
 
 	private final static Map<ISymbol, String> FUNCTIONS_STR = new HashMap<ISymbol, String>();
 
@@ -188,9 +164,15 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		}
 	}
 
-	private JavaScriptFormFactory(final boolean relaxedSyntax, final boolean reversed, int exponentFigures,
+	public JavaScriptFormFactory(final boolean relaxedSyntax, final boolean reversed, int exponentFigures,
 			int significantFigures) {
 		super(relaxedSyntax, reversed, exponentFigures, significantFigures);
+	}
+
+	public JavaScriptFormFactory(final boolean relaxedSyntax, final boolean reversed, int exponentFigures,
+			int significantFigures, List<String> sliderNames) {
+		super(relaxedSyntax, reversed, exponentFigures, significantFigures);
+		this.sliderNames = sliderNames;
 	}
 
 	/**
@@ -253,6 +235,10 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 				buf.append(str);
 				return;
 			}
+		}
+		if (sliderNames != null && sliderNames.contains(symbol.toString())) {
+			buf.append(symbol.toString() + ".Value()");
+			return;
 		}
 		super.convertSymbol(buf, symbol);
 	}
@@ -360,7 +346,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 				if (dim != null && dim[1] == 2) {
 					IAST list = (IAST) function.arg1();
 					if (INLINE_PIECEWISE) {
-						// use the ternary operator 
+						// use the ternary operator
 						int size = list.size();
 						for (int i = 1; i < size; i++) {
 							IAST row = (IAST) list.get(i);
@@ -470,8 +456,16 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 	public Operator getOperator(ISymbol head) {
 		if (Config.USE_MATHCELL) {
 			Operator operator = null;
-			if (head == F.Equal || head == F.Unequal || head == F.Less || head == F.LessEqual || head == F.Greater
-					|| head == F.GreaterEqual || head == F.And || head == F.Or || head == F.Not) {
+			if (head.isSymbolID(ID.Equal, ID.Unequal, ID.Less, ID.LessEqual, ID.Greater, ID.GreaterEqual, ID.And, ID.Or,
+					ID.Not)) {
+				String str = head.toString();
+				operator = ASTNodeFactory.MMA_STYLE_FACTORY.get(str);
+			}
+			return operator;
+		} else if (Config.USE_JSXGRAPH) {
+			Operator operator = null;
+			if (head.isSymbolID(ID.Plus, ID.Times, ID.Equal, ID.Unequal, ID.Less, ID.LessEqual, ID.Greater,
+					ID.GreaterEqual, ID.And, ID.Or, ID.Not)) {
 				String str = head.toString();
 				operator = ASTNodeFactory.MMA_STYLE_FACTORY.get(str);
 			}

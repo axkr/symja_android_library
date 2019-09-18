@@ -247,6 +247,16 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	}
 
 	/** {@inheritDoc} */
+	final public boolean isSymbolID(int... ids) {
+		for (int i = 0; i < ids.length; i++) {
+			if (fOrdinal==ids[i]) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/** {@inheritDoc} */
 	@Override
 	final public boolean isTrue() {
 		return this == F.True;

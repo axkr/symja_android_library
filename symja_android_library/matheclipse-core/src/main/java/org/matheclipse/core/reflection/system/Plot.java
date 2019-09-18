@@ -41,7 +41,7 @@ public class Plot extends AbstractEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (Config.USE_MATHCELL) {
+		if (Config.USE_MATHCELL || Config.USE_JSXGRAPH) {
 			IExpr temp = F.Manipulate.of(engine, ast);
 			if (temp.headID() == ID.JSFormData) {
 				return temp;

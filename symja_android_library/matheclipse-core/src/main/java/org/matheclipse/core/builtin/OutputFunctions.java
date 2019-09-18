@@ -3,6 +3,8 @@ package org.matheclipse.core.builtin;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
@@ -456,7 +458,11 @@ public final class OutputFunctions {
 	}
 
 	public static String toJavaScript(final IExpr arg1) throws IOException {
-		DoubleFormFactory factory = JavaScriptFormFactory.get(true, false);
+		return toJavaScript(arg1, new ArrayList<String>());
+	}
+
+	public static String toJavaScript(final IExpr arg1, List<String> sliderNames) throws IOException {
+		DoubleFormFactory factory = new JavaScriptFormFactory(true, false, -1, -1, sliderNames);
 		StringBuilder buf = new StringBuilder();
 		factory.convert(buf, arg1);
 		return buf.toString();
