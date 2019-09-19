@@ -446,7 +446,6 @@ public class EllipticFunctionsJS {
 
 	public static Complex inverseWeierstrassP(Complex x, Complex g2, Complex g3) {
 
-		// if ( !isComplex(x) ) x = new Complex(x);
 		Complex[] sol = weierstrassRoots(g2, g3);
 		Complex e1 = sol[0];
 		Complex e2 = sol[1];

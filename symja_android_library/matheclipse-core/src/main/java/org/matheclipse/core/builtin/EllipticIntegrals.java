@@ -27,6 +27,8 @@ public class EllipticIntegrals {
 			F.EllipticK.setEvaluator(new EllipticK());
 			F.EllipticPi.setEvaluator(new EllipticPi());
 			F.EllipticTheta.setEvaluator(new EllipticTheta());
+			
+//			F.InverseWeierstrassP.setEvaluator(new InverseWeierstrassP());
 			F.JacobiZeta.setEvaluator(new JacobiZeta());
 			
 			F.WeierstrassHalfPeriods.setEvaluator(new WeierstrassHalfPeriods());
@@ -559,6 +561,40 @@ public class EllipticIntegrals {
 		}
 	}
 
+//	private static class InverseWeierstrassP extends AbstractFunctionEvaluator {
+//
+//		@Override
+//		public IExpr evaluate(IAST ast, EvalEngine engine) {
+//			IExpr u = ast.arg1();
+//			if (ast.arg2().isVector() == 2) {
+//				IAST list = (IAST) ast.arg2();
+//				IExpr g2 = list.arg1();
+//				IExpr g3 = list.arg2();
+//				if (u.isNumeric() && g2.isNumeric() && g3.isNumeric()) {
+//					try {
+//						return F.complexNum(
+//								EllipticFunctionsJS.inverseWeierstrassP(u.evalComplex(), g2.evalComplex(), g3.evalComplex()));
+//					} catch (RuntimeException rte) {
+//						return engine.printMessage("InverseWeierstrassP: " + rte.getMessage());
+//					}
+//				}
+//			}
+//
+//			return F.NIL;
+//		}
+//
+//		@Override
+//		public int[] expectedArgSize() {
+//			return IOFunctions.ARGS_2_2;
+//		}
+//
+//		@Override
+//		public void setUp(final ISymbol newSymbol) {
+//			newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
+//			super.setUp(newSymbol);
+//		}
+//	}
+	
 	private static class JacobiZeta extends AbstractFunctionEvaluator {
 
 		@Override

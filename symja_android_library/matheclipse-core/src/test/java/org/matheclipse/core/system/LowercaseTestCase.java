@@ -8160,7 +8160,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Hypergeometric2F1(0.5,0.333,0.666,1)", //
 				"Hypergeometric2F1(0.333,0.5,0.666,1.0)");
 	}
-
+	
 	public void testI() {
 		check("(3+I)*(3-I)", //
 				"10");
@@ -9238,6 +9238,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"3*E^t+2*Cos(2*t)");
 	}
 
+
+	public void testInverseWeierstrassP() {
+//		check("InverseWeierstrassP(2.0,{1,2})", //
+//				"-0.715096");
+//		 check("Table[InverseWeierstrassP[x, {1, 2}], {x, 2.0, 6.0}]",
+//				 "");
+	}
+	
 	public void testLaplaceTransform() {
 		check("LaplaceTransform(E^2,t,-3+s)", //
 				"E^2/(-3+s)");

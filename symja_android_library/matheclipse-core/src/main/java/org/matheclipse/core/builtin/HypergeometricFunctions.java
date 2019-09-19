@@ -11,6 +11,7 @@ import static org.matheclipse.core.expression.F.Times;
 
 import java.util.function.DoubleUnaryOperator;
 
+import org.matheclipse.core.builtin.functions.EllipticFunctionsJS;
 import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;

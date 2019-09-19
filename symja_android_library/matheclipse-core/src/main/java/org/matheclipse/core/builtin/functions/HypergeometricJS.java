@@ -168,7 +168,7 @@ public class HypergeometricJS {
 				converging = true;
 			}
 			if (i > terms) {
-				throw new ArithmeticException("Hypergeometric2F0: not converging after" + terms + " terms");
+				throw new ArithmeticException("Hypergeometric2F0: not converging after " + terms + " terms");
 			}
 
 			s = s.add(s);
@@ -192,7 +192,7 @@ public class HypergeometricJS {
 
 		while (Math.abs(p) > tolerance) {
 
-			p *= x * a * b / i;
+			p *= (x * a * b) / i;
 
 			if (Math.abs(p) > Math.abs(pLast) && converging) {
 				break; // prevent runaway sum
@@ -201,7 +201,7 @@ public class HypergeometricJS {
 				converging = true;
 			}
 			if (i > terms) {
-				throw new ArithmeticException("Hypergeometric2F0: not converging after" + terms + " terms");
+				throw new ArithmeticException("Hypergeometric2F0: not converging after " + terms + " terms");
 			}
 			s += p;
 			a++;
