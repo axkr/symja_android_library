@@ -188,7 +188,7 @@ public class HypergeometricJS {
 		double s = 1;
 		double p = 1, pLast = p;
 		boolean converging = false;
-		int i = 1;
+		double i = 1;
 
 		while (Math.abs(p) > tolerance) {
 
