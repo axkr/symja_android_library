@@ -37,8 +37,9 @@ public class JSXGraphPlotExample {
 		try {
 			Config.USE_JSXGRAPH = true;
 			ExprEvaluator util = new ExprEvaluator();
-
-			IExpr result = util.eval("Manipulate(Plot(x^n, {x, 0, 1.5}, PlotRange->{-1,2}), {n,1,100})");
+			
+			IExpr result = util.eval("Manipulate(Plot(Sin(x)*Cos(1 + a*x), {x, 0, 2*Pi}, PlotRange->{-1,2}), {a,0,10})");
+//			IExpr result = util.eval("Manipulate(Plot(x^n, {x, 0, 1.5}, PlotRange->{-1,2}), {n,1,100})");
 			if (result.isAST(F.JSFormData, 3) && result.second().toString().equals("jsxgraph")) {
 				String manipulateStr = ((IAST) result).arg1().toString();
 				String js = WEB_PAGE;

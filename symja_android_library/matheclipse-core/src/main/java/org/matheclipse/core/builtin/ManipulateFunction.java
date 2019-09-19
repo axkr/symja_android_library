@@ -84,18 +84,18 @@ public class ManipulateFunction {
 							return createSliderWithPlot(ast, plot, plotRangeX, plotRangeY, engine);
 						}
 					}
-				} else if (ast.arg2().isList() && ast.isAST2()) {
-					IExpr formula = ast.arg1();
-					IAST sliderRange = (IAST) ast.arg2();
-					IExpr step = F.C1;
-					if (sliderRange.size() == 4 || sliderRange.size() == 5) {
-						if (sliderRange.size() == 5) {
-							step = sliderRange.arg4();
-						}
-						if (sliderRange.arg1().isSymbol()) {
-							return createSliderWithFormulas(formula, sliderRange, step, engine);
-						}
-					}
+					// } else if (ast.arg2().isList() && ast.isAST2()) {
+					// IExpr formula = ast.arg1();
+					// IAST sliderRange = (IAST) ast.arg2();
+					// IExpr step = F.C1;
+					// if (sliderRange.size() == 4 || sliderRange.size() == 5) {
+					// if (sliderRange.size() == 5) {
+					// step = sliderRange.arg4();
+					// }
+					// if (sliderRange.arg1().isSymbol()) {
+					// return createSliderWithFormulas(formula, sliderRange, step, engine);
+					// }
+					// }
 				}
 			} catch (IOException ioex) {
 				if (Config.SHOW_STACKTRACE) {
@@ -269,47 +269,10 @@ public class ManipulateFunction {
 				} else {
 					graphicControl.append("var p1 = ");
 					graphicControl.append("board.create('functiongraph',[z1,0,1], {strokeWidth:2});");
-
-					// graphicControl.append("plot( z1, ");
-					// range(graphicControl, plotRangeX, -1);
-					// graphicControl.append(", { } );\n");
-
-					// if (plot.arg1().isList()) {
-					// IAST listOfFunctions = (IAST) plot.arg1();
-					// graphicControl.append("var data = [ ");
-					// for (int i = 1; i < listOfFunctions.size(); i++) {
-					// graphicControl.append("p");
-					// graphicControl.append(i);
-					// if (i < listOfFunctions.size() - 1) {
-					// graphicControl.append(", ");
-					// }
-					// }
-					// graphicControl.append(" ];\n");
-					// } else {
-					// graphicControl.append("var data = [ p1 ];\n");
-					// }
-
-					// graphicControl.append("var config = { type: 'svg'");
-					// if (optionPlotRange.isPresent()) {
-					// IExpr option = optionPlotRange.arg2();
-					// if (option.isAST(F.List, 3)) {
-					// plotRangeY = F.List(option.first(), option.second());
-					// }
-					// }
-					// if (plotRangeY.isAST(F.List, 3)) {
-					// // var config = { type: 'svg', yMin: -5, yMax: 5 };
-					// graphicControl.append(", yMin: ");
-					// graphicControl.append(OutputFunctions.toJavaScript(plotRangeY.arg1()));
-					// graphicControl.append(", yMax: ");
-					// graphicControl.append(OutputFunctions.toJavaScript(plotRangeY.arg2()));
-					// }
-					// graphicControl.append(" };\n");
-
 				}
 
 			}
 
-			// graphicControl.append("evaluate( id, data, config );\n");
 			js = js.replace("`4`", graphicControl.toString());
 
 			return F.JSFormData(js, "jsxgraph");
@@ -384,7 +347,7 @@ public class ManipulateFunction {
 								function.append(", {straightFirst:false, straightLast:false, strokeWidth:2});\n");
 								lastList = rowList;
 							}
-						} else { 
+						} else {
 							for (int i = 1; i < pointList.size(); i++) {
 								IAST rowList = (IAST) pointList.get(i);
 								function.append("board.create('point', [");
@@ -392,99 +355,99 @@ public class ManipulateFunction {
 								function.append(",");
 								function.append(OutputFunctions.toJavaScript(rowList.arg2(), sliderNames));
 								function.append("], ");
-								function.append(" {name:'', face:'o', size: 2 } );\n"); 
+								function.append(" {name:'', face:'o', size: 2 } );\n");
 							}
 						}
-
-						js = js.replace("`3`", function.toString());
-
-						StringBuilder graphicControl = new StringBuilder(); 
-						js = js.replace("`4`", graphicControl.toString());
-
-						return F.JSFormData(js, "jsxgraph");
-					}
-					if (dimension[1] == 3) {
-						StringBuilder function = new StringBuilder();
-
-						function.append("var data = [\n");
-						// point( [ x, y, z ],
-						// { color: 'hsl(' + 360*Math.random() + ',100%,50%)', size: 5 } )
-						for (int i = 1; i < pointList.size(); i++) {
-							IAST rowList = (IAST) pointList.get(i);
-							function.append("point( [ ");
-							function.append(OutputFunctions.toJavaScript(rowList.arg1()));
-							function.append(",");
-							function.append(OutputFunctions.toJavaScript(rowList.arg2()));
-							function.append(",");
-							function.append(OutputFunctions.toJavaScript(rowList.arg3()));
-							function.append("], ");
-							function.append(" {size: 2 } )");
-							if (i < pointList.size() - 1) {
-								function.append(",");
-							}
-							function.append("\n");
-						}
-						function.append("];");
 
 						js = js.replace("`3`", function.toString());
 
 						StringBuilder graphicControl = new StringBuilder();
-
-						// var config = dim === 'two' ? { type: 'svg', ticks: false }
-						// : { type: 'threejs', axesLabels: false };
-						graphicControl.append("var config = { type: 'threejs' };\n");
-						graphicControl.append("evaluate( id, data, config );\n");
 						js = js.replace("`4`", graphicControl.toString());
 
 						return F.JSFormData(js, "jsxgraph");
 					}
+					// if (dimension[1] == 3) {
+					// StringBuilder function = new StringBuilder();
+					//
+					// function.append("var data = [\n");
+					// // point( [ x, y, z ],
+					// // { color: 'hsl(' + 360*Math.random() + ',100%,50%)', size: 5 } )
+					// for (int i = 1; i < pointList.size(); i++) {
+					// IAST rowList = (IAST) pointList.get(i);
+					// function.append("point( [ ");
+					// function.append(OutputFunctions.toJavaScript(rowList.arg1()));
+					// function.append(",");
+					// function.append(OutputFunctions.toJavaScript(rowList.arg2()));
+					// function.append(",");
+					// function.append(OutputFunctions.toJavaScript(rowList.arg3()));
+					// function.append("], ");
+					// function.append(" {size: 2 } )");
+					// if (i < pointList.size() - 1) {
+					// function.append(",");
+					// }
+					// function.append("\n");
+					// }
+					// function.append("];");
+					//
+					// js = js.replace("`3`", function.toString());
+					//
+					// StringBuilder graphicControl = new StringBuilder();
+					//
+					// // var config = dim === 'two' ? { type: 'svg', ticks: false }
+					// // : { type: 'threejs', axesLabels: false };
+					// graphicControl.append("var config = { type: 'threejs' };\n");
+					// graphicControl.append("evaluate( id, data, config );\n");
+					// js = js.replace("`4`", graphicControl.toString());
+					//
+					// return F.JSFormData(js, "jsxgraph");
+					// }
 					return F.NIL;
 				} else {
-					StringBuilder function = new StringBuilder();
-					if (ast.arg1().isAST(F.ListLinePlot)) {
-						function.append("var data = [ listPlot( [\n");
-						for (int i = 1; i < pointList.size(); i++) {
-							function.append("[ ");
-							function.append(i);
-							function.append(",");
-							function.append(OutputFunctions.toJavaScript(pointList.get(i)));
-							function.append("] ");
-							if (i < pointList.size() - 1) {
-								function.append(",");
-							}
-							function.append("\n");
-						}
-						function.append("], { })];");
-					} else {
-						function.append("var data = [\n");
-						// point( [ 2*Math.random() - 1, 2*Math.random() - 1, 2*Math.random() - 1 ],
-						// { color: 'hsl(' + 360*Math.random() + ',100%,50%)', size: 5 } )
-						for (int i = 1; i < pointList.size(); i++) {
-							function.append("point( [ ");
-							function.append(i);
-							function.append(",");
-							function.append(OutputFunctions.toJavaScript(pointList.get(i)));
-							function.append("], ");
-							function.append(" {size: 2 } )");
-							if (i < pointList.size() - 1) {
-								function.append(",");
-							}
-							function.append("\n");
-						}
-						function.append("];");
-					}
-
-					js = js.replace("`3`", function.toString());
-
-					StringBuilder graphicControl = new StringBuilder();
-
-					// var config = dim === 'two' ? { type: 'svg', ticks: false }
-					// : { type: 'threejs', axesLabels: false };
-					graphicControl.append("var config = { type: 'svg' };\n");
-					graphicControl.append("evaluate( id, data, config );\n");
-					js = js.replace("`4`", graphicControl.toString());
-
-					return F.JSFormData(js, "jsxgraph");
+					// StringBuilder function = new StringBuilder();
+					// if (ast.arg1().isAST(F.ListLinePlot)) {
+					// function.append("var data = [ listPlot( [\n");
+					// for (int i = 1; i < pointList.size(); i++) {
+					// function.append("[ ");
+					// function.append(i);
+					// function.append(",");
+					// function.append(OutputFunctions.toJavaScript(pointList.get(i)));
+					// function.append("] ");
+					// if (i < pointList.size() - 1) {
+					// function.append(",");
+					// }
+					// function.append("\n");
+					// }
+					// function.append("], { })];");
+					// } else {
+					// function.append("var data = [\n");
+					// // point( [ 2*Math.random() - 1, 2*Math.random() - 1, 2*Math.random() - 1 ],
+					// // { color: 'hsl(' + 360*Math.random() + ',100%,50%)', size: 5 } )
+					// for (int i = 1; i < pointList.size(); i++) {
+					// function.append("point( [ ");
+					// function.append(i);
+					// function.append(",");
+					// function.append(OutputFunctions.toJavaScript(pointList.get(i)));
+					// function.append("], ");
+					// function.append(" {size: 2 } )");
+					// if (i < pointList.size() - 1) {
+					// function.append(",");
+					// }
+					// function.append("\n");
+					// }
+					// function.append("];");
+					// }
+					//
+					// js = js.replace("`3`", function.toString());
+					//
+					// StringBuilder graphicControl = new StringBuilder();
+					//
+					// // var config = dim === 'two' ? { type: 'svg', ticks: false }
+					// // : { type: 'threejs', axesLabels: false };
+					// graphicControl.append("var config = { type: 'svg' };\n");
+					// graphicControl.append("evaluate( id, data, config );\n");
+					// js = js.replace("`4`", graphicControl.toString());
+					//
+					// return F.JSFormData(js, "jsxgraph");
 				}
 			}
 			return F.NIL;
@@ -493,69 +456,7 @@ public class ManipulateFunction {
 		private static boolean createSingleSlider(final IAST ast, int i, StringBuilder slider, StringBuilder variable,
 				List<String> sliderNames) throws IOException {
 			IAST sliderRange = (IAST) ast.get(i);
-			if (sliderRange.isAST2() && sliderRange.arg2().isList()) {
-				// assume arg2 is list of button definitions
-				IAST listOfButtons = (IAST) sliderRange.arg2();
-				String sliderSymbol;
-				String defaultValue = null;
-				String label;
-				if (sliderRange.arg1().isList()) {
-					IAST sliderParameters = (IAST) sliderRange.arg1();
-					if (sliderParameters.size() < 4) {
-						return false;
-					}
-					sliderSymbol = OutputFunctions.toJavaScript(sliderParameters.arg1());
-					sliderNames.add(sliderSymbol);
-					defaultValue = OutputFunctions.toJavaScript(sliderRange.arg2());
-					label = OutputFunctions.toJavaScript(sliderParameters.arg3());
-				} else {
-					sliderSymbol = OutputFunctions.toJavaScript(sliderRange.arg1());
-					label = sliderSymbol;
-					sliderNames.add(sliderSymbol);
-				}
-				if (i > 2) {
-					slider.append(", ");
-				}
-				slider.append("{ type: 'buttons', values: [");
-				for (int j = 1; j < listOfButtons.size(); j++) {
-					slider.append("'");
-					slider.append(OutputFunctions.toJavaScript(listOfButtons.get(j)));
-					slider.append("'");
-					if (j < listOfButtons.size() - 1) {
-						slider.append(",");
-					}
-				}
-				slider.append("]");
-				slider.append(", labels: [");
-				for (int j = 1; j < listOfButtons.size(); j++) {
-					slider.append("'");
-					slider.append(listOfButtons.get(j).toString());
-					slider.append("'");
-					if (j < listOfButtons.size() - 1) {
-						slider.append(",");
-					}
-				}
-				slider.append("]");
-
-				if (defaultValue != null) {
-					slider.append(", default: ");
-					slider.append(defaultValue);
-				}
-				slider.append(", name: '");
-				slider.append(sliderSymbol);
-				slider.append("', label: '");
-				slider.append(label);
-				slider.append("' }\n");
-
-				variable.append("var ");
-				variable.append(sliderSymbol);
-				// variable.append(" = document.getElementById( id + '");
-				variable.append(" = getVariable(id, '");
-				variable.append(sliderSymbol);
-				// variable.append("' ).value;\n");
-				variable.append("');\n");
-				return true;
-			} else if (sliderRange.isAST3() || sliderRange.size() == 5) {
+			if (sliderRange.isAST3() || sliderRange.size() == 5) {
 				IExpr step = null;
 				if (sliderRange.size() == 5) {
 					step = sliderRange.arg4();
@@ -621,77 +522,77 @@ public class ManipulateFunction {
 		 * @return
 		 * @throws IOException
 		 */
-		private static IExpr createSliderWithFormulas(IExpr formula, IAST sliderRange, IExpr stepExpr,
-				EvalEngine engine) throws IOException {
-			IExpr list = engine.evaluate(F.Table(formula, sliderRange));
-			if (list.isList() && list.size() > 1) {
-				IAST listOfFormulas = (IAST) list;
-				String sliderSymbol = OutputFunctions.toJavaScript(sliderRange.arg1());
-				String min = OutputFunctions.toJavaScript(sliderRange.arg2());
-				String max = OutputFunctions.toJavaScript(sliderRange.arg3());
-				String step = OutputFunctions.toJavaScript(stepExpr);
-				String js = JSXGRAPH;
-				// { type: 'slider', min: 1, max: 5, step: 1, name: 'n', label: 'n' }
-				StringBuilder slider = new StringBuilder();
-				slider.append("{ type: 'slider', min: ");
-				slider.append(min);
-				slider.append(", max: ");
-				slider.append(max);
-				slider.append(", step: ");
-				slider.append(step);
-				slider.append(", name: '");
-				slider.append(sliderSymbol);
-				slider.append("', label: '");
-				slider.append(sliderSymbol);
-				slider.append("' }\n");
-				js = js.replace("`1`", slider.toString());
-
-				StringBuilder variable = new StringBuilder();
-				variable.append("var ");
-				variable.append(sliderSymbol);
-
-				// variable.append(" = document.getElementById( id + '");
-				variable.append(" = getVariable(id, '");
-				variable.append(sliderSymbol);
-				// variable.append("' ).value;\n");
-				variable.append("');\n");
-
-				js = js.replace("`2`", variable.toString());
-
-				js = js.replace("`3`", "");
-
-				TeXUtilities texUtil = new TeXUtilities(engine, true);
-				StringBuilder graphicControl = new StringBuilder();
-				graphicControl.append("var expressions = [ ");
-				for (int i = 1; i < listOfFormulas.size(); i++) {
-					StringWriter stw = new StringWriter();
-					texUtil.toTeX(listOfFormulas.get(i), stw);
-					graphicControl.append("'");
-					String texForm = stw.toString();
-					// TODO implement better backslash escaping
-					texForm = texForm.replace("\\", "\\\\\\\\");
-					graphicControl.append(texForm);
-					graphicControl.append("'");
-					if (i < listOfFormulas.size() - 1) {
-						graphicControl.append(",\n");
-					}
-				}
-				graphicControl.append(" ];\n\n");
-
-				graphicControl.append("  var data = '\\\\\\\\[' + expressions[n-");
-				graphicControl.append(min);
-				graphicControl.append("] + '\\\\\\\\]';\n\n");
-				graphicControl.append("  data = data.replace( /\\\\\\\\/g, '&#92;' );\n\n");
-				graphicControl.append("  var config = {type: 'text', center: true };\n\n");
-				graphicControl.append("  evaluate( id, data, config );\n\n");
-				graphicControl.append("  MathJax.Hub.Queue( [ 'Typeset', MathJax.Hub, id ] );\n");
-
-				js = js.replace("`4`", graphicControl.toString());
-
-				return F.JSFormData(js, "jsxgraph");
-			}
-			return F.NIL;
-		}
+		// private static IExpr createSliderWithFormulas(IExpr formula, IAST sliderRange, IExpr stepExpr,
+		// EvalEngine engine) throws IOException {
+		// IExpr list = engine.evaluate(F.Table(formula, sliderRange));
+		// if (list.isList() && list.size() > 1) {
+		// IAST listOfFormulas = (IAST) list;
+		// String sliderSymbol = OutputFunctions.toJavaScript(sliderRange.arg1());
+		// String min = OutputFunctions.toJavaScript(sliderRange.arg2());
+		// String max = OutputFunctions.toJavaScript(sliderRange.arg3());
+		// String step = OutputFunctions.toJavaScript(stepExpr);
+		// String js = JSXGRAPH;
+		// // { type: 'slider', min: 1, max: 5, step: 1, name: 'n', label: 'n' }
+		// StringBuilder slider = new StringBuilder();
+		// slider.append("{ type: 'slider', min: ");
+		// slider.append(min);
+		// slider.append(", max: ");
+		// slider.append(max);
+		// slider.append(", step: ");
+		// slider.append(step);
+		// slider.append(", name: '");
+		// slider.append(sliderSymbol);
+		// slider.append("', label: '");
+		// slider.append(sliderSymbol);
+		// slider.append("' }\n");
+		// js = js.replace("`1`", slider.toString());
+		//
+		// StringBuilder variable = new StringBuilder();
+		// variable.append("var ");
+		// variable.append(sliderSymbol);
+		//
+		// // variable.append(" = document.getElementById( id + '");
+		// variable.append(" = getVariable(id, '");
+		// variable.append(sliderSymbol);
+		// // variable.append("' ).value;\n");
+		// variable.append("');\n");
+		//
+		// js = js.replace("`2`", variable.toString());
+		//
+		// js = js.replace("`3`", "");
+		//
+		// TeXUtilities texUtil = new TeXUtilities(engine, true);
+		// StringBuilder graphicControl = new StringBuilder();
+		// graphicControl.append("var expressions = [ ");
+		// for (int i = 1; i < listOfFormulas.size(); i++) {
+		// StringWriter stw = new StringWriter();
+		// texUtil.toTeX(listOfFormulas.get(i), stw);
+		// graphicControl.append("'");
+		// String texForm = stw.toString();
+		// // TODO implement better backslash escaping
+		// texForm = texForm.replace("\\", "\\\\\\\\");
+		// graphicControl.append(texForm);
+		// graphicControl.append("'");
+		// if (i < listOfFormulas.size() - 1) {
+		// graphicControl.append(",\n");
+		// }
+		// }
+		// graphicControl.append(" ];\n\n");
+		//
+		// graphicControl.append(" var data = '\\\\\\\\[' + expressions[n-");
+		// graphicControl.append(min);
+		// graphicControl.append("] + '\\\\\\\\]';\n\n");
+		// graphicControl.append(" data = data.replace( /\\\\\\\\/g, '&#92;' );\n\n");
+		// graphicControl.append(" var config = {type: 'text', center: true };\n\n");
+		// graphicControl.append(" evaluate( id, data, config );\n\n");
+		// graphicControl.append(" MathJax.Hub.Queue( [ 'Typeset', MathJax.Hub, id ] );\n");
+		//
+		// js = js.replace("`4`", graphicControl.toString());
+		//
+		// return F.JSFormData(js, "jsxgraph");
+		// }
+		// return F.NIL;
+		// }
 
 		private static void pureRange(StringBuilder graphicControl, IAST plotRange, int steps) throws IOException {
 			graphicControl.append(OutputFunctions.toJavaScript(plotRange.arg2()));

@@ -310,6 +310,7 @@ public class MMAConsole {
 	 */
 	public MMAConsole() {
 		Config.USE_MATHCELL = true;
+		Config.USE_JSXGRAPH = false;
 		Config.USE_VISJS = true;
 		EvalEngine engine = new EvalEngine(false);
 		fEvaluator = new ExprEvaluator(engine, false, 100);
