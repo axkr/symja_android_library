@@ -261,8 +261,10 @@ public class BasicTeXTestCase extends TestCase {
 
 	public void testTeX027() {
 		check(new ASTRealMatrix(new double[][] { { 1.0, 2.0, 3.0 }, { 3.3, 4.4, 5.5 } }, false), //
-				"\\left(\n" + "\\begin{array}{ccc}\n" + "1.0 & 2.0 & 3.0 \\\\\n" + "3.3 & 4.4 & 5.5 \n"
-						+ "\\end{array}\n" + "\\right) ");
+				"\\begin{pmatrix}\n" + //
+				" 1.0 & 2.0 & 3.0 \\\\\n" + //
+				" 3.3 & 4.4 & 5.5 \\\\\n" + //
+				"\\end{pmatrix}");
 	}
 
 	public void testTeX028() {
@@ -284,6 +286,15 @@ public class BasicTeXTestCase extends TestCase {
 				"\\text{Quantity}(3,\\textnormal{m})");
 	}
 	
+	public void testTeX31() {
+		check("a&&b||c", //
+				"a \\land b \\lor c");
+	}
+	 
+	public void testTeX32() {
+		check("{{a,b,c},{a,c,b},{c,a,b}}", //
+				"\\{\\{a,b,c\\},\\{a,c,b\\},\\{c,a,b\\}\\}");
+	}
 	public void check(String strEval, String strResult) {
 		StringWriter stw = new StringWriter();
 		texUtil.toTeX(strEval, stw);

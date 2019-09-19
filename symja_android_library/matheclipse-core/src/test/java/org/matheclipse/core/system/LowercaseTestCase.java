@@ -18846,8 +18846,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("TeXForm({{a,b},c})", //
 				"\\{\\{a,b\\},c\\}");
 		check("TeXForm({{a, b, c}, {d, e, f}})", //
-				"\\left(\n" + "\\begin{array}{ccc}\n" + "a & b & c \\\\\n" + "d & e & f \n" + "\\end{array}\n"
-						+ "\\right) ");
+				"\\{\\{a,b,c\\},\\{d,e,f\\}\\}");
 
 		check("TeXForm(Integrate(f(x),x))", //
 				"\\int  f(x)\\,\\mathrm{d}x");

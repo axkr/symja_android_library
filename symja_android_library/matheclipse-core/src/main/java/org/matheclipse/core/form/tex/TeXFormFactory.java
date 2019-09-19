@@ -10,6 +10,8 @@ import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.Iterator;
+import org.matheclipse.core.expression.ASTRealMatrix;
+import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
@@ -312,33 +314,59 @@ public class TeXFormFactory {
 		@Override
 		public boolean convert(final StringBuilder buf, final IAST ast, final int precedence) {
 
-			int[] dims = ast.isMatrix();
-			if (dims != null) {
-				// create a LaTeX matrix
-				buf.append("\\left(\n\\begin{array}{");
-				for (int i = 0; i < dims[1]; i++) {
-					buf.append("c");
-				}
-				buf.append("}\n");
-				if (ast.size() > 1) {
-					for (int i = 1; i < ast.size(); i++) {
-						IAST row = ast.getAST(i);
+			if ((ast instanceof ASTRealMatrix) || //
+					(ast.getEvalFlags() & IAST.IS_MATRIX) == IAST.IS_MATRIX) {
+				int[] dims = ast.isMatrix();
+				if (dims != null) {
+					// create a LaTeX matrix
+
+					// problem with KaTeX?
+					// buf.append("\\left(\n\\begin{array}{");
+					// for (int i = 0; i < dims[1]; i++) {
+					// buf.append("c");
+					// }
+					// buf.append("}\n");
+					// if (ast.size() > 1) {
+					// for (int i = 1; i < ast.size(); i++) {
+					// IAST row = ast.getAST(i);
+					// for (int j = 1; j < row.size(); j++) {
+					// fFactory.convert(buf, row.get(j), 0);
+					// if (j < row.argSize()) {
+					// buf.append(" & ");
+					// }
+					// }
+					// if (i < ast.argSize()) {
+					// buf.append(" \\\\\n");
+					// } else {
+					//
+					// buf.append(" \n");
+					// }
+					// }
+					// }
+					// buf.append("\\end{array}\n\\right) ");
+
+					final IAST matrix = ast;
+					buf.append("\\begin{pmatrix}\n");
+					IAST row;
+					for (int i = 1; i < matrix.size(); i++) {
+						row = (IAST) matrix.get(i);
 						for (int j = 1; j < row.size(); j++) {
+							buf.append(' ');
 							fFactory.convert(buf, row.get(j), 0);
+							buf.append(' ');
 							if (j < row.argSize()) {
-								buf.append(" & ");
+								buf.append('&');
 							}
 						}
-						if (i < ast.argSize()) {
-							buf.append(" \\\\\n");
-						} else {
-
-							buf.append(" \n");
-						}
+						buf.append("\\\\\n");
 					}
+
+					buf.append("\\end{pmatrix}");
+					return true;
 				}
-				buf.append("\\end{array}\n\\right) ");
-			} else if ((ast.getEvalFlags() & IAST.IS_VECTOR) == IAST.IS_VECTOR) {
+			}
+
+			if ((ast.getEvalFlags() & IAST.IS_VECTOR) == IAST.IS_VECTOR) {
 				// create a LaTeX row vector
 				// \begin{pmatrix} x & y \end{pmatrix}
 				buf.append("\\begin{pmatrix} ");
