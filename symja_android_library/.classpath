@@ -41,6 +41,6 @@
 	<classpathentry kind="lib" path="lib/commons-text-1.6.jar"/>
 	<classpathentry kind="lib" path="lib/apfloat-1.9.0.jar"/>
 	<classpathentry kind="lib" path="lib/commonmark-0.13.0.jar"/>
-	<classpathentry kind="lib" path="lib/logicng-1.6.0.jar"/>
+	<classpathentry kind="lib" path="lib/logicng-1.6.1.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
