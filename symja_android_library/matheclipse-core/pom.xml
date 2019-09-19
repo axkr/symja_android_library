@@ -17,6 +17,10 @@
 			<artifactId>commonmark</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>com.atlassian.commonmark</groupId>
+			<artifactId>commonmark-ext-gfm-tables</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>de.uni-mannheim.rz.krum</groupId>
 			<artifactId>jas</artifactId>
 		</dependency>

@@ -5,8 +5,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.Locale;
+import java.util.Set;
 
+import org.commonmark.Extension;
+import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
@@ -43,9 +47,10 @@ public class MarkdownToHTML {
 							File file = new File(sourceLocation + "/" + files[i]);
 							String html;
 							try {
-								Parser parser = Parser.builder().build();
+								Set<Extension> EXTENSIONS = Collections.singleton(TablesExtension.create());
+								Parser parser = Parser.builder().extensions(EXTENSIONS).build();
 								Node document = parser.parse(Files.asCharSource(file, Charsets.UTF_8).read());
-								HtmlRenderer renderer = HtmlRenderer.builder().build();
+								HtmlRenderer renderer = HtmlRenderer.builder().extensions(EXTENSIONS).build();
 								html = renderer.render(document);
 								if (javadoc) {
 									String[] lines = html.split("\\n");

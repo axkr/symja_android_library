@@ -63,6 +63,11 @@
 				<version>0.13.0</version>
 			</dependency>
 			<dependency>
+				<groupId>com.atlassian.commonmark</groupId>
+				<artifactId>commonmark-ext-gfm-tables</artifactId>
+				<version>0.13.0</version>
+			</dependency>
+			<dependency>
 				<groupId>de.uni-mannheim.rz.krum</groupId>
 				<artifactId>jas</artifactId>
 				<version>2.6.5988</version>
