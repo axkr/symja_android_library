@@ -77,7 +77,7 @@ public class IncompleteThirdEllipticIntegral extends L4MFunction {
             x = c - 1;
             y = c - k2;
             z = c;
-            // Carlson has opposite sign for n in his diffinition of &Pi;(...) (61)
+            // Carlson has opposite sign for n in his definition of &Pi;(...) (61)
             // using +n instead of -n compared to A&ST
             t = rf(x, y, z) + n / 3 * rj(x, y, z, z - n);
 

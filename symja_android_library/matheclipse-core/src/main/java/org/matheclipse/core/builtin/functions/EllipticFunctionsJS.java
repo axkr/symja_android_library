@@ -21,6 +21,17 @@ public class EllipticFunctionsJS {
 		if (n < 1 || n > 4) {
 			throw new ArithmeticException("Undefined Jacobi theta index");
 		}
+
+		if (F.isZero(q)) {
+			switch (n) {
+			case 1:
+			case 2:
+				return Complex.ZERO;
+			case 3:
+			case 4:
+				return Complex.ONE;
+			}
+		}
 		// dlmf.nist.gov/20.2 to reduce overflow
 		if (Math.abs(x) > Math.PI) {
 
@@ -117,6 +128,17 @@ public class EllipticFunctionsJS {
 			throw new ArithmeticException("Undefined Jacobi theta index");
 		}
 
+		if (F.isZero(q)) {
+			switch (n) {
+			case 1:
+			case 2:
+				return Complex.ZERO;
+			case 3:
+			case 4:
+				return Complex.ONE;
+			}
+		}
+		
 		Complex piTau = q.log().divide(Complex.I);
 
 		// dlmf.nist.gov/20.2 to reduce overflow

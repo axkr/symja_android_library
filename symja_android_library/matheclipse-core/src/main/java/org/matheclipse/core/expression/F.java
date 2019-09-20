@@ -7422,6 +7422,16 @@ public class F {
 	public static boolean isZero(double value) {
 		return isZero(value, Config.MACHINE_EPSILON);
 	}
+	
+	/**
+	 * Test if the absolute value is less <code>Config.DOUBLE_EPSILON</code>.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static boolean isZero(org.hipparchus.complex.Complex value) {
+		return isZero(value.getReal(), Config.MACHINE_EPSILON)&& isZero(value.getImaginary(), Config.MACHINE_EPSILON);
+	}
 
 	/**
 	 * Test if the absolute value is less than the given epsilon.

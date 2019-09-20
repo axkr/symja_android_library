@@ -5013,7 +5013,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{1.26549+I*0.162237,1.30064+I*0.18478,1.33866+I*0.213052,1.37925+I*0.249038,1.42127+I*0.29538,1.46203+I*0.355241,1.49611+I*0.431362,1.51493+I*0.523542,1.50924+I*0.625146}");
 	}
 
-	public void testEllipticPi() {
+	public void testEllipticPi() { 
 		check("Table(EllipticPi(x+I,0.5), {x,-2.0, 2.0, 1/4})", //
 				"{0.978856+I*0.171427,1.01788+I*0.193752,1.06089+I*0.221026,1.10832+I*0.254803,1.16047+I*0.297252," //
 						+ "1.21733+I*0.351426,1.27808+I*0.421604,1.34015+I*0.513624,1.39738+I*0.63483,1.437+I*0.79243," //
@@ -5047,6 +5047,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEllipticTheta() {
+		check("EllipticTheta(1,0,x)", //
+				"0");
+		check("EllipticTheta(1,x,0)", //
+				"0");
+		check("EllipticTheta(2,x,0)", //
+				"0");
+		check("EllipticTheta(3,x,0)", //
+				"1");
+		check("EllipticTheta(4,x,0)", //
+				"1");
+		check("EllipticTheta(1,Pi,1/2)", //
+				"0");
+		check("EllipticTheta({1, 2, 3, 4}, z, q)", //
+				"{EllipticTheta(1,z,q),EllipticTheta(2,z,q),EllipticTheta(3,z,q),EllipticTheta(4,z,q)}");
+		
 		check("EllipticTheta(3, 0.4+I, 0.5 )", //
 				"2.89461+I*(-6.54061)");
 		check("EllipticTheta(1, 2., 1/3)", //
@@ -5072,7 +5087,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		// TODO: improve for case "EllipticTheta: Unsupported elliptic nome"
 		check("EllipticTheta(3, 0.4+I, 0.5+I)", //
-				"EllipticTheta(3.0,0.4+I*1.0,0.5+I*1.0)");
+				"EllipticTheta(3,0.4+I*1.0,0.5+I*1.0)");
 	}
 
 	public void testJacobiZeta() {
