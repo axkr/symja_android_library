@@ -5091,6 +5091,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testJacobiZeta() {
+//		check("JacobiZeta(2,0.5)", //
+//				"-0.117772");
+		
 		check("JacobiZeta(z, 0)", //
 				"0");
 		check("JacobiZeta(-5/4, 1)", //
