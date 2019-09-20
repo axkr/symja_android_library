@@ -285,6 +285,18 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 				return;
 			}
 		}
+		if (function.isList()) {
+			// interpret List() as javascript array
+			buf.append("[");
+			for (int i = 1; i < function.size(); i++) {
+				convert(buf, function.get(i));
+				if (i < function.size() - 1) {
+					buf.append(",");
+				}
+			}
+			buf.append("]");
+			return;
+		}
 		if (Config.USE_MATHCELL) {
 			if (function.isPlus() || function.isTimes()) {
 				if (function.size() >= 3) {

@@ -97,13 +97,9 @@ public class ManipulateFunction {
 					// }
 					// }
 				}
-			} catch (IOException ioex) {
+			} catch (Exception ex) {
 				if (Config.SHOW_STACKTRACE) {
-					ioex.printStackTrace();
-				}
-			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
-					rex.printStackTrace();
+					ex.printStackTrace();
 				}
 			}
 			return F.NIL;
@@ -644,7 +640,7 @@ public class ManipulateFunction {
 					if (plot.size() >= 3 && plot.arg2().isList()) {
 						IAST plotRangeX = (IAST) plot.arg2();
 						// TODO find better default Y plot range instead of [-5, 5]
-						IAST plotRangeY = F.List(F.CN5, F.C5);
+						IAST plotRangeY = F.NIL;
 						if (plot.size() >= 4 && plot.arg3().isList()) {
 							plotRangeY = (IAST) plot.arg3();
 						}
@@ -665,13 +661,9 @@ public class ManipulateFunction {
 						}
 					}
 				}
-			} catch (IOException ioex) {
+			} catch (Exception ex) {
 				if (Config.SHOW_STACKTRACE) {
-					ioex.printStackTrace();
-				}
-			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
-					rex.printStackTrace();
+					ex.printStackTrace();
 				}
 			}
 			return F.NIL;
@@ -729,39 +721,41 @@ public class ManipulateFunction {
 
 			// function z1(x,y) { return [ x, y, Math.sin( a * x * y ) ]; }
 			StringBuilder function = new StringBuilder();
-
-			if (plotID == ID.Plot3D) {
-				function.append("function z1(");
-				ISymbol plotSymbolY = (ISymbol) plotRangeY.arg1();
-				function.append(OutputFunctions.toJavaScript(plotSymbolX));
-				function.append(",");
-				function.append(OutputFunctions.toJavaScript(plotSymbolY));
-				function.append(") { return [ ");
-				function.append(OutputFunctions.toJavaScript(plotSymbolX));
-				function.append(", ");
-				function.append(OutputFunctions.toJavaScript(plotSymbolY));
-				function.append(", ");
-				function.append(OutputFunctions.toJavaScript(plot.arg1()));
-				function.append(" ]; }\n");
+			IAST listOfFunctions;
+			if (plot.arg1().isList()) {
+				listOfFunctions = (IAST) plot.arg1();
 			} else {
-				if (plot.arg1().isList()) {
-					IAST listOfFunctions = (IAST) plot.arg1();
-					for (int i = 1; i < listOfFunctions.size(); i++) {
-						function.append("function z");
-						function.append(i);
-						function.append("(");
-						function.append(OutputFunctions.toJavaScript(plotSymbolX));
-						function.append(") { return ");
-						function.append(OutputFunctions.toJavaScript(listOfFunctions.get(i)));
-						function.append("; }\n");
-					}
-				} else {
-					function.append("function z1(");
+				listOfFunctions = F.unaryAST1(F.List, plot.arg1());
+			}
+			if (plotID == ID.Plot3D) {
+				if (!plotRangeY.isPresent()) {
+					return F.NIL;
+				}
+				for (int i = 1; i < listOfFunctions.size(); i++) {
+					function.append("function z" + i + "(");
+					ISymbol plotSymbolY = (ISymbol) plotRangeY.arg1();
+					function.append(OutputFunctions.toJavaScript(plotSymbolX));
+					function.append(",");
+					function.append(OutputFunctions.toJavaScript(plotSymbolY));
+					function.append(") { return [ ");
+					function.append(OutputFunctions.toJavaScript(plotSymbolX));
+					function.append(", ");
+					function.append(OutputFunctions.toJavaScript(plotSymbolY));
+					function.append(", ");
+					function.append(OutputFunctions.toJavaScript(listOfFunctions.get(i)));
+					function.append(" ]; }\n");
+				}
+			} else {
+				for (int i = 1; i < listOfFunctions.size(); i++) {
+					function.append("function z");
+					function.append(i);
+					function.append("(");
 					function.append(OutputFunctions.toJavaScript(plotSymbolX));
 					function.append(") { return ");
-					function.append(OutputFunctions.toJavaScript(plot.arg1()));
+					function.append(OutputFunctions.toJavaScript(listOfFunctions.get(i)));
 					function.append("; }\n");
 				}
+
 			}
 			js = js.replace("`3`", function.toString());
 
@@ -772,104 +766,76 @@ public class ManipulateFunction {
 				if (!plotRangeY.isPresent()) {
 					return F.NIL;
 				}
-				graphicControl.append("var p1 = ");
-				graphicControl.append("parametric( z1, ");
-				range(graphicControl, plotRangeX, -1);
-				graphicControl.append(", ");
-				range(graphicControl, plotRangeY, -1);
-				graphicControl.append(", { colormap: (x,y) => ( 1 - Math.sin(x*y) ) / 2 } );\n\n\n");
-
-				graphicControl.append("  var config = { type: 'threejs' };\n");
-				graphicControl.append("  var data = [ p1 ];\n");
-			} else {
-				if (plot.arg1().isList()) {
-					IAST listOfFunctions = (IAST) plot.arg1();
-					if (plotID == ID.ParametricPlot) {
-						graphicControl.append("var data = [ parametric( ");
-						graphicControl.append(OutputFunctions.toJavaScript(plotSymbolX));
-						graphicControl.append(" => [");
-						for (int i = 1; i < listOfFunctions.size(); i++) {
-							graphicControl.append("z");
-							graphicControl.append(i);
-							graphicControl.append("(");
-							graphicControl.append(OutputFunctions.toJavaScript(plotSymbolX));
-							graphicControl.append(")");
-							if (i < listOfFunctions.size() - 1) {
-								graphicControl.append(",");
-							}
-						}
-						graphicControl.append("], ");
-						range(graphicControl, plotRangeX, 1500);
-						graphicControl.append(", { } )];\n");
-					} else {
-						for (int i = 1; i < listOfFunctions.size(); i++) {
-							graphicControl.append("var p");
-							graphicControl.append(i);
-							graphicControl.append(" = ");
-							graphicControl.append("plot( z");
-							graphicControl.append(i);
-							graphicControl.append(", ");
-							range(graphicControl, plotRangeX, -1);
-							graphicControl.append(", { } );\n");
-						}
-
-						// var data = [ p1, p2 ];
-						if (plot.arg1().isList()) {
-							// listOfFunctions = (IAST) plot.arg1();
-							graphicControl.append("var data = [ ");
-							for (int i = 1; i < listOfFunctions.size(); i++) {
-								graphicControl.append("p");
-								graphicControl.append(i);
-								if (i < listOfFunctions.size() - 1) {
-									graphicControl.append(", ");
-								}
-							}
-							graphicControl.append(" ];\n");
-						} else {
-							graphicControl.append("var data = [ p1 ];\n");
-						}
-
-					}
-					graphicControl.append("var config = { type: 'svg' };\n");
-				} else {
-					graphicControl.append("var p1 = ");
-					graphicControl.append("plot( z1, ");
+				for (int i = 1; i < listOfFunctions.size(); i++) {
+					graphicControl.append("var p" + i + " = ");
+					graphicControl.append("parametric( z" + i + ", ");
 					range(graphicControl, plotRangeX, -1);
-					graphicControl.append(", { } );\n");
+					graphicControl.append(", ");
+					range(graphicControl, plotRangeY, -1);
+					graphicControl.append(", { colormap: (x,y) => ( 1 - Math.sin(x*y) ) / 2 } );\n");
+				}
+				graphicControl.append("\n  var config = { type: 'threejs' };\n");
+				graphicControl.append("  var data = [");
+				for (int i = 1; i < listOfFunctions.size(); i++) {
+					graphicControl.append("p" + i);
+					if (i < listOfFunctions.size() - 1) {
+						graphicControl.append(",");
+					}
+					;
+				}
+				graphicControl.append("];\n");
+			} else {
+				if (plotID == ID.ParametricPlot) {
+					graphicControl.append("var data = [ parametric( ");
+					graphicControl.append(OutputFunctions.toJavaScript(plotSymbolX));
+					graphicControl.append(" => [");
+					for (int i = 1; i < listOfFunctions.size(); i++) {
+						graphicControl.append("z" + i + "(");
+						graphicControl.append(OutputFunctions.toJavaScript(plotSymbolX));
+						graphicControl.append(")");
+						if (i < listOfFunctions.size() - 1) {
+							graphicControl.append(",");
+						}
+					}
+					graphicControl.append("], ");
+					range(graphicControl, plotRangeX, 1500);
+					graphicControl.append(", { } )];\n");
+				} else {
+					for (int i = 1; i < listOfFunctions.size(); i++) {
+						graphicControl.append("var p" + i + " = plot( z" + i + ", ");
+						range(graphicControl, plotRangeX, -1);
+						graphicControl.append(", { } );\n");
+					}
 
 					// var data = [ p1, p2 ];
-					if (plot.arg1().isList()) {
-						IAST listOfFunctions = (IAST) plot.arg1();
-						graphicControl.append("var data = [ ");
-						for (int i = 1; i < listOfFunctions.size(); i++) {
-							graphicControl.append("p");
-							graphicControl.append(i);
-							if (i < listOfFunctions.size() - 1) {
-								graphicControl.append(", ");
-							}
-						}
-						graphicControl.append(" ];\n");
-					} else {
-						graphicControl.append("var data = [ p1 ];\n");
-					}
-
-					graphicControl.append("var config = { type: 'svg'");
-					if (optionPlotRange.isPresent()) {
-						IExpr option = optionPlotRange.arg2();
-						if (option.isAST(F.List, 3)) {
-							plotRangeY = F.List(option.first(), option.second());
+					// if (plot.arg1().isList()) {
+					// listOfFunctions = (IAST) plot.arg1();
+					graphicControl.append("var data = [ ");
+					for (int i = 1; i < listOfFunctions.size(); i++) {
+						graphicControl.append("p");
+						graphicControl.append(i);
+						if (i < listOfFunctions.size() - 1) {
+							graphicControl.append(", ");
 						}
 					}
-					if (plotRangeY.isAST(F.List, 3)) {
-						// var config = { type: 'svg', yMin: -5, yMax: 5 };
-						graphicControl.append(", yMin: ");
-						graphicControl.append(OutputFunctions.toJavaScript(plotRangeY.arg1()));
-						graphicControl.append(", yMax: ");
-						graphicControl.append(OutputFunctions.toJavaScript(plotRangeY.arg2()));
-					}
-					graphicControl.append(" };\n");
+					graphicControl.append(" ];\n");
 
 				}
+				graphicControl.append("var config = { type: 'svg' ");
+				if (optionPlotRange.isPresent()) {
+					IExpr option = optionPlotRange.arg2();
+					if (option.isAST(F.List, 3)) {
+						plotRangeY = F.List(option.first(), option.second());
+					}
+				}
+				if (plotRangeY.isAST(F.List, 3)) {
+					// var config = { type: 'svg', yMin: -5, yMax: 5 };
+					graphicControl.append(", yMin: ");
+					graphicControl.append(OutputFunctions.toJavaScript(plotRangeY.arg1()));
+					graphicControl.append(", yMax: ");
+					graphicControl.append(OutputFunctions.toJavaScript(plotRangeY.arg2()));
+				}
+				graphicControl.append(" };\n");
 
 			}
 

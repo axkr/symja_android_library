@@ -85,6 +85,9 @@ public class MMAConsole {
 	static {
 		// distinguish between lower- and uppercase identifiers
 		Config.PARSER_USE_LOWERCASE_SYMBOLS = false;
+		Config.USE_MATHCELL = true;
+		Config.USE_JSXGRAPH = false;
+		Config.USE_VISJS = true;
 		F.initSymbols(null, null, true);
 
 	}
@@ -309,9 +312,6 @@ public class MMAConsole {
 	 * Create a console which appends each evaluation output in a history list.
 	 */
 	public MMAConsole() {
-		Config.USE_MATHCELL = true;
-		Config.USE_JSXGRAPH = false;
-		Config.USE_VISJS = true;
 		EvalEngine engine = new EvalEngine(false);
 		fEvaluator = new ExprEvaluator(engine, false, 100);
 		EvalEngine evalEngine = fEvaluator.getEvalEngine();
