@@ -431,6 +431,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Glaisher](functions/Glaisher.md)
 * [GoldenRatio](functions/GoldenRatio.md)
 * [Grad](functions/Grad.md)
+* [Graph](functions/Graph.md)
 * [GraphCenter](functions/GraphCenter.md)
 * [GraphDiameter](functions/GraphDiameter.md)
 * [GraphPeriphery](functions/GraphPeriphery.md)
