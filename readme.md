@@ -54,6 +54,8 @@ To get an idea of the kinds of expressions Symja handles, see the [tests in this
 
 #### Web Examples
 
+> [Solve({x^2==4,x+y^2==6}, {x,y})](http://matheclipse.org/input?i=Solve({x^2==4,x%2By^2==6},%20{x,y}))
+
 > [FactorInteger(2^15-5)](http://matheclipse.org/input?i=FactorInteger(2^15-5))
 
 > [D(Sin(x^3), x)](http://matheclipse.org/input?i=D(Sin(x^3),%20x))
