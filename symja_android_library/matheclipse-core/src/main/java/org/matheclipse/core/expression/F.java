@@ -1072,7 +1072,7 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol EllipticTheta = F.initFinalSymbol("EllipticTheta", ID.EllipticTheta);
-	
+
 	/** End( ) - end a context definition started with `Begin` */
 	public final static IBuiltInSymbol End = F.initFinalSymbol("End", ID.End);
 
@@ -4905,6 +4905,10 @@ public class F {
 		return StringX.valueOf(str);
 	}
 
+	final static public IStringX $str(final String str, final short mimeType) {
+		return StringX.valueOf(str, mimeType);
+	}
+
 	// --- generated source codes:
 	public static IAST Abs(final IExpr a0) {
 		return new AST1(Abs, a0);
@@ -7422,7 +7426,7 @@ public class F {
 	public static boolean isZero(double value) {
 		return isZero(value, Config.MACHINE_EPSILON);
 	}
-	
+
 	/**
 	 * Test if the absolute value is less <code>Config.DOUBLE_EPSILON</code>.
 	 * 
@@ -7430,7 +7434,7 @@ public class F {
 	 * @return
 	 */
 	public static boolean isZero(org.hipparchus.complex.Complex value) {
-		return isZero(value.getReal(), Config.MACHINE_EPSILON)&& isZero(value.getImaginary(), Config.MACHINE_EPSILON);
+		return isZero(value.getReal(), Config.MACHINE_EPSILON) && isZero(value.getImaginary(), Config.MACHINE_EPSILON);
 	}
 
 	/**
@@ -9161,13 +9165,30 @@ public class F {
 	}
 
 	/**
-	 * Create a string expression
+	 * Create a Symja string expression with mime type TEXT_PLAIN.
 	 * 
 	 * @param str
 	 * @return
+	 * @see IStringX#TEXT_PLAIN
 	 */
 	final static public IStringX stringx(final String str) {
 		return StringX.valueOf(str);
+	}
+
+	/**
+	 * reate a Symja string expression.
+	 * 
+	 * @param str
+	 * @param mimeType
+	 *            the mime type of the string
+	 * @return
+	 * @see IStringX#TEXT_PLAIN
+	 * @see IStringX#TEXT_LATEX
+	 * @see IStringX#TEXT_MATHML
+	 * @see IStringX#TEXT_HTML
+	 */
+	final static public IStringX stringx(final String str, final short mimeType) {
+		return StringX.valueOf(str, mimeType);
 	}
 
 	/**

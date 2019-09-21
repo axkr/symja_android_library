@@ -6635,6 +6635,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHamiltonianGraphQ() {
+		check("HamiltonianGraphQ(Graph({1,2,3},{1<->2,2<->3,3<->1}))", //
+				"True");
+		check("HamiltonianGraphQ(Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{2.0,3.0,4.0}}))", //
+				"True");
+		
 		check("HamiltonianGraphQ({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1 })", //
 				"True");
 		check("HamiltonianGraphQ({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1, 4 -> 7})", //

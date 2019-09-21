@@ -20,6 +20,7 @@ import org.matheclipse.core.visit.IVisitorLong;
  * @see org.matheclipse.core.interfaces.IStringX
  */
 public class StringX implements IStringX {
+
 	public final static Collator US_COLLATOR = Collator.getInstance(Locale.US);
 	/**
 	 * 
@@ -51,16 +52,30 @@ public class StringX implements IStringX {
 	}
 
 	/**
-	 * Be cautious with this method, no new internal String object is created
+	 * Mime type <code>IStringX#TEXT_PLAIN</code> will be used.
 	 * 
 	 * @param value
+	 *            the internal Java string value
 	 * @return
 	 */
 	protected static StringX newInstance(final String value) {
-		StringX d;
-		d = new StringX(null);
-		d.fString = value;
-		return d;
+		return new StringX(value);
+	}
+
+	/**
+	 * 
+	 * @param value
+	 *            the internal Java string value
+	 * @param mimeType
+	 *            the mime type of the string
+	 * @return
+	 * @see IStringX#TEXT_PLAIN
+	 * @see IStringX#TEXT_LATEX
+	 * @see IStringX#TEXT_MATHML
+	 * @see IStringX#TEXT_HTML
+	 */
+	protected static StringX newInstance(final String value, short mimeType) {
+		return new StringX(value, mimeType);
 	}
 
 	/**
@@ -137,13 +152,25 @@ public class StringX implements IStringX {
 		return newInstance(String.valueOf(obj));
 	}
 
+	public static StringX valueOf(final Object obj, final short mimeType) {
+		return newInstance(String.valueOf(obj), mimeType);
+	}
+
 	public static StringX valueOf(final StringBuilder builder) {
 		return newInstance(builder.toString());
 	}
 
+	private short fMimeType;
+
 	private String fString;
 
 	private StringX(final String str) {
+		fMimeType = TEXT_PLAIN;
+		fString = str;
+	}
+
+	private StringX(final String str, short mimeType) {
+		fMimeType = mimeType;
 		fString = str;
 	}
 
@@ -253,6 +280,9 @@ public class StringX implements IStringX {
 		return fString.endsWith(suffix);
 	}
 
+	/**
+	 * Equals doesn't compare the mime type.
+	 */
 	@Override
 	public boolean equals(final Object obj) {
 		if (this == obj) {
@@ -265,6 +295,8 @@ public class StringX implements IStringX {
 	}
 
 	/**
+	 * <code>equalsIgnoreCase</code> doesn't compare the mime type.
+	 * 
 	 * @param anotherString
 	 * @return
 	 */
@@ -302,6 +334,10 @@ public class StringX implements IStringX {
 	 */
 	public void getChars(final int srcBegin, final int srcEnd, final char[] dst, final int dstBegin) {
 		fString.getChars(srcBegin, srcEnd, dst, dstBegin);
+	}
+
+	public short getMimeType() {
+		return fMimeType;
 	}
 
 	@Override
@@ -477,10 +513,7 @@ public class StringX implements IStringX {
 		return fString.subSequence(start, end);
 	}
 
-	/**
-	 * @param beginIndex
-	 * @return
-	 */
+	@Override
 	public String substring(final int beginIndex) {
 		return fString.substring(beginIndex);
 	}

@@ -21,6 +21,7 @@ import org.matheclipse.core.form.output.JavaDoubleFormFactory;
 import org.matheclipse.core.form.output.JavaScriptFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.HornerScheme;
 
@@ -97,7 +98,7 @@ public final class OutputFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			return F.stringx(engine.evaluate(ast.arg1()).fullFormString());
+			return F.stringx(engine.evaluate(ast.arg1()).fullFormString(), IStringX.APPLICATION_SYMJA);
 		}
 
 		@Override
@@ -123,7 +124,7 @@ public final class OutputFunctions {
 						sb.append(list.get(i).toString());
 						sb.append("\n");
 					}
-					return F.stringx(sb.toString());
+					return F.stringx(sb.toString(), IStringX.TEXT_PLAIN);
 				}
 			}
 			return F.NIL;
@@ -249,9 +250,9 @@ public final class OutputFunctions {
 			if (ast.isAST1()) {
 				IExpr arg1 = engine.evaluate(ast.arg1());
 				if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-					return F.stringx(StringFunctions.inputForm(arg1, true));
+					return F.stringx(StringFunctions.inputForm(arg1, true), IStringX.APPLICATION_SYMJA);
 				}
-				return F.stringx(StringFunctions.inputForm(arg1, false));
+				return F.stringx(StringFunctions.inputForm(arg1, false), IStringX.APPLICATION_SYMJA);
 			}
 			return F.NIL;
 		}
@@ -329,10 +330,10 @@ public final class OutputFunctions {
 					}
 				}
 				if (floatJava) {
-					return F.$str(toJavaDouble(arg1));
+					return F.$str(toJavaDouble(arg1), IStringX.APPLICATION_JAVA);
 				}
 				String resultStr = javaForm(arg1, strictJava, usePrefix);
-				return F.$str(resultStr);
+				return F.$str(resultStr, IStringX.APPLICATION_JAVA);
 			} catch (Exception rex) {
 				if (Config.SHOW_STACKTRACE) {
 					rex.printStackTrace();
@@ -360,9 +361,9 @@ public final class OutputFunctions {
 				IExpr arg1 = engine.evaluate(ast.arg1());
 				if (arg1.isAST(F.JSFormData, 3)) {
 					String manipulateStr = ((IAST) arg1).arg1().toString();
-					return F.$str(manipulateStr);
+					return F.$str(manipulateStr, IStringX.APPLICATION_JAVASCRIPT);
 				}
-				return F.$str(toJavaScript(arg1));
+				return F.$str(toJavaScript(arg1), IStringX.APPLICATION_JAVASCRIPT);
 			} catch (Exception rex) {
 				if (Config.SHOW_STACKTRACE) {
 					rex.printStackTrace();
@@ -397,7 +398,7 @@ public final class OutputFunctions {
 			IExpr arg1 = ast.arg1();
 			StringWriter stw = new StringWriter();
 			mathMLUtil.toMathML(arg1, stw);
-			return F.stringx(stw.toString());
+			return F.stringx(stw.toString(), IStringX.TEXT_MATHML);
 		}
 
 		@Override
@@ -436,7 +437,7 @@ public final class OutputFunctions {
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			StringWriter stw = new StringWriter();
 			texUtil.toTeX(arg1, stw);
-			return F.$str(stw.toString());
+			return F.$str(stw.toString(), IStringX.TEXT_LATEX);
 		}
 
 		@Override
