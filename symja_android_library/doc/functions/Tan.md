@@ -8,6 +8,9 @@ Tan(expr)
  
 `Tan(expr)` will evaluate automatically in the case `expr` is a multiple of `Pi`.
 
+See:
+* [Wikipedia - Trigonometric functions](https://en.wikipedia.org/wiki/Trigonometric_functions)
+
 ### Examples
 ```
 >> Tan(1/4*Pi)

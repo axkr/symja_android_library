@@ -5013,7 +5013,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{1.26549+I*0.162237,1.30064+I*0.18478,1.33866+I*0.213052,1.37925+I*0.249038,1.42127+I*0.29538,1.46203+I*0.355241,1.49611+I*0.431362,1.51493+I*0.523542,1.50924+I*0.625146}");
 	}
 
-	public void testEllipticPi() { 
+	public void testEllipticPi() {
 		check("Table(EllipticPi(x+I,0.5), {x,-2.0, 2.0, 1/4})", //
 				"{0.978856+I*0.171427,1.01788+I*0.193752,1.06089+I*0.221026,1.10832+I*0.254803,1.16047+I*0.297252," //
 						+ "1.21733+I*0.351426,1.27808+I*0.421604,1.34015+I*0.513624,1.39738+I*0.63483,1.437+I*0.79243," //
@@ -5061,7 +5061,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"0");
 		check("EllipticTheta({1, 2, 3, 4}, z, q)", //
 				"{EllipticTheta(1,z,q),EllipticTheta(2,z,q),EllipticTheta(3,z,q),EllipticTheta(4,z,q)}");
-		
+
 		check("EllipticTheta(3, 0.4+I, 0.5 )", //
 				"2.89461+I*(-6.54061)");
 		check("EllipticTheta(1, 2., 1/3)", //
@@ -5091,9 +5091,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testJacobiZeta() {
-//		check("JacobiZeta(2,0.5)", //
-//				"-0.117772");
-		
+		// check("JacobiZeta(2,0.5)", //
+		// "-0.117772");
+
 		check("JacobiZeta(z, 0)", //
 				"0");
 		check("JacobiZeta(-5/4, 1)", //
@@ -5109,7 +5109,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEqual() {
-		//https://github.com/axkr/symja_android_library/issues/142
+		// https://github.com/axkr/symja_android_library/issues/142
 		check("20-x*y*(x+y)==0", //
 				"x*y*(x+y)==20");
 		check("Tan(5*ArcTan(29/278) + 7 ArcTan(3/79))==1", //
@@ -6580,6 +6580,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFindEulerianCycle() {
+		check("FindEulerianCycle(Graph({1 -> 2, 2 -> 3, 3 -> 4, 4 -> 1}))", //
+				"{4->1,1->2,2->3,3->4}");
 		check("FindEulerianCycle({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1 })", //
 				"{4->1,1->3,3->1,1->2,2->3,3->4}");
 		check("FindEulerianCycle({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1, 4 -> 7})", //
@@ -6587,6 +6589,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFindHamiltonianCycle() {
+		check("FindHamiltonianCycle( {1 -> 2, 2 -> 3, 3 -> 4, 4 -> 1} )", //
+				"{1->2,2->3,3->4,4->1}");
 		check("FindHamiltonianCycle({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1 })", //
 				"{1->2,2->3,3->4,4->1}");
 		check("FindHamiltonianCycle({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1, 4 -> 7})", //
@@ -6639,7 +6643,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"True");
 		check("HamiltonianGraphQ(Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{2.0,3.0,4.0}}))", //
 				"True");
-		
+
 		check("HamiltonianGraphQ({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1 })", //
 				"True");
 		check("HamiltonianGraphQ({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1, 4 -> 7})", //
@@ -8183,7 +8187,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Hypergeometric2F1(0.5,0.333,0.666,1)", //
 				"Hypergeometric2F1(0.333,0.5,0.666,1.0)");
 	}
-	
+
 	public void testI() {
 		check("(3+I)*(3-I)", //
 				"10");
@@ -9261,14 +9265,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"3*E^t+2*Cos(2*t)");
 	}
 
-
 	public void testInverseWeierstrassP() {
-//		check("InverseWeierstrassP(2.0,{1,2})", //
-//				"-0.715096");
-//		 check("Table[InverseWeierstrassP[x, {1, 2}], {x, 2.0, 6.0}]",
-//				 "");
+		// check("InverseWeierstrassP(2.0,{1,2})", //
+		// "-0.715096");
+		// check("Table[InverseWeierstrassP[x, {1, 2}], {x, 2.0, 6.0}]",
+		// "");
 	}
-	
+
 	public void testLaplaceTransform() {
 		check("LaplaceTransform(E^2,t,-3+s)", //
 				"E^2/(-3+s)");
@@ -20172,8 +20175,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// TODO improve see discussion: https://github.com/paulmasson/math/issues/7
 		check("WeierstrassHalfPeriods({1.0, 2.0*I} )", //
 				"{1.30139+I*(-0.299127),2.30366+I*0.703139}");
-		
-		
+
 		check("WeierstrassHalfPeriods({1.0, 2.0 } )", //
 				"{1.30836,0.654182+I*1.22937}");
 		check("Table(WeierstrassHalfPeriods({1.0,x*I} ), {x,-2.0, 2.0, 1/4})", //

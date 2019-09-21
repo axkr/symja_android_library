@@ -6,6 +6,10 @@ Sec(z)
 
 > returns the secant of `z`.
  
+
+See:
+* [Wikipedia - Trigonometric functions](https://en.wikipedia.org/wiki/Trigonometric_functions)
+
 ### Examples
 ```
 >> Sec(0)  

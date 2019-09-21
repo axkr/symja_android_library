@@ -8,6 +8,7 @@ GraphQ(expr)
 
 
 See:
+* [Wikipedia - Graph](https://en.wikipedia.org/wiki/Graph_(discrete_mathematics))
 * [Wikipedia - Graph theory](https://en.wikipedia.org/wiki/Graph_theory)
  
 

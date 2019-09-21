@@ -5,7 +5,11 @@ Cot(expr)
 ```
 
 > the cotangent function.
- 
+
+
+See:
+* [Wikipedia - Trigonometric functions](https://en.wikipedia.org/wiki/Trigonometric_functions)
+
 ### Examples
 ```
 >> Cot(Pi/4)
