@@ -12,6 +12,9 @@ Floor(expr, a)
 
 > gives the smallest multiple of `a` less than or equal to `expr`. 
 
+See:  
+* [Wikipedia - Floor and ceiling functions](https://en.wikipedia.org/wiki/Floor_and_ceiling_functions)
+
 ### Examples
 
 ```
@@ -40,13 +43,15 @@ Floor(expr, a)
 -11    
 ```
 
-For complex `expr`, take the floor of real an imaginary parts.    
+For complex `expr`, take the floor of real an imaginary parts.
+
 ```
 >> Floor(1.5 + 2.7*I)    
 1+I*2   
 ```
 
-For negative `a`, the smallest multiple of `a` greater than or equal to `expr` is returned.    
+For negative `a`, the smallest multiple of `a` greater than or equal to `expr` is returned.
+   
 ```
 >> Floor(10.4, -1)    
 11    

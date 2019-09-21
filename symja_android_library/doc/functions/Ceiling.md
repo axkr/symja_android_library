@@ -12,6 +12,11 @@ Ceiling(expr, a)
 
 > gives the first multiple of `a` greater than or equal to `expr`. 
 
+
+See:  
+* [Wikipedia - Floor and ceiling functions](https://en.wikipedia.org/wiki/Floor_and_ceiling_functions)
+
+
 ### Examples
 
 ```
