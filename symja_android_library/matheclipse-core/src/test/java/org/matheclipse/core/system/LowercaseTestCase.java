@@ -257,6 +257,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAntihermitianMatrixQ() {
+		check("AntihermitianMatrixQ({{42, 7 + 11*I}, {-7 + 11*I, 21}})", //
+				"True");
 		check("AntihermitianMatrixQ({{I, 3 + 4*I}, {-3 + 4*I, 0}})", //
 				"True");
 		check("AntihermitianMatrixQ({{I, 3 + 4*I}, {3 + 4*I, 0}})", //
@@ -266,6 +268,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAntisymmetricMatrixQ() {
+		check("AntisymmetricMatrixQ({{42, 7 + 11*I}, {-7 + 11*I, 21}})", //
+				"False");
 		check("AntisymmetricMatrixQ({{0, -2, 3}, {2, 0, -4}, {-3, 4, 0}})", //
 				"True");
 	}
@@ -1034,6 +1038,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArithmeticGeometricMean() {
+		check("ArithmeticGeometricMean({1.0, 2.0, 3.0, 4.0}, 42.0)", //
+				"{12.874,14.88314,16.37375,17.62155}");
 		check("ArithmeticGeometricMean(a, 1/a)", // orderless
 				"ArithmeticGeometricMean(1/a,a)");
 		check("ArithmeticGeometricMean(a, 0)", //
@@ -1215,6 +1221,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBernoulliB() {
+		check("BernoulliB(42)", //
+				"1520097643918070802691/1806");
 		check("BernoulliB(2)", //
 				"1/6");
 		check("Table(BernoulliB(k), {k, 0, 10})", //
@@ -19155,6 +19163,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testTimeValue() {
 		if (ToggleFeature.FINANCE) {
+			check("TimeValue(Annuity(100, 12), .01, 0)", //
+					"1125.508");
+			check("TimeValue(Annuity(100, 12), EffectiveInterest(.01, 0.25), 12)", //
+					"1268.515");
+			check("TimeValue(AnnuityDue(100, 12), 0.1, 0)", //
+					"749.5061");
+			
 			check("TimeValue(Annuity(500,36,q), b, c)", //
 					"(500*(-1+((1+b)^q)^(36/q)))/((-1+(1+b)^q)*((1+b)^q)^(36/q-c/q))");
 			check("TimeValue(AnnuityDue(500,36,q), b, c)", //

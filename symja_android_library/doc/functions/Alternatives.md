@@ -9,6 +9,7 @@ or
 ```
 p1 | p2 | ... | p_i
 ```
+
 > is a pattern that matches any of the patterns `p1, p2,...., p_i`.
  
 ### Examples

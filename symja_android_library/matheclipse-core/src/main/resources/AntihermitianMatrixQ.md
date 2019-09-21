@@ -9,3 +9,9 @@ AntihermitianMatrixQ(m)
 See:
 * [Wikipedia - Skew-Hermitian matrix](https://en.wikipedia.org/wiki/Skew-Hermitian_matrix)
  
+### Examples
+
+```
+>> AntihermitianMatrixQ({{42, 7 + 11*I}, {-7 + 11*I, 21}}) 
+True 
+```

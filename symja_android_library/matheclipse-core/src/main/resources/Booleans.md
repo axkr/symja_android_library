@@ -11,3 +11,6 @@ Booleans
 >> Solve(Xor(a, b, c, d) && (a || b) && ! (c || d), {a, b, c, d}, Booleans)
 {{a->False,b->True,c->False,d->False},{a->True,b->False,c->False,d->False}}
 ```
+
+### Related terms 
+[Solve](Solve.md) 

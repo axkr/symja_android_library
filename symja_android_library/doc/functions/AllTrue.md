@@ -2,17 +2,20 @@
 
 ``` 
 AllTrue({expr1, expr2, ...}, test)
-``` 
+```
+
 > returns `True` if all applications of `test` to `expr1, expr2, ...` evaluate to `True`.
 
 ```
 AllTrue(list, test, level)
 ```
+
 > returns `True` if all applications of `test` to items of `list` at `level` evaluate to `True`.
 
 ```
 AllTrue(test)
 ```
+
 > gives an operator that may be applied to expressions.
 
 ### Examples
