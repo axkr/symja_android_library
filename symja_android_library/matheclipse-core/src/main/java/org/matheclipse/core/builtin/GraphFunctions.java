@@ -120,7 +120,7 @@ public class GraphFunctions {
 						}
 					} else {
 						if (edgeWeight.isList()) {
-							GraphExpr<IExprWeightedEdge> gex = createWeightedGraph((IAST) ast.arg1(), (IAST) ast.arg1(),
+							GraphExpr<IExprWeightedEdge> gex = createWeightedGraph((IAST) ast.arg1(), (IAST) ast.arg2(),
 									(IAST) edgeWeight);
 							if (gex != null) {
 								return gex;
