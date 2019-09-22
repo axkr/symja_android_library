@@ -11,6 +11,7 @@ x == y
 ```
 lhs == rhs
 ```
+
 > represents the equation `lhs = rhs`.
  
 	

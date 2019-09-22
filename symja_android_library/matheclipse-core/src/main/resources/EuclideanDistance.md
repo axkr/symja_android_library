@@ -5,7 +5,11 @@ EuclideanDistance(u, v)
 
 > returns the euclidean distance between `u` and `v`.
 
+See
+* [Wikipedia - Euclidean distance](https://en.wikipedia.org/wiki/Euclidean_distance)
+
 ### Examples
+
 ```
 >> EuclideanDistance({-1, -1}, {1, 1})
 2*Sqrt(2)

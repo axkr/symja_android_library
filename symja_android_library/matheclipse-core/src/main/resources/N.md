@@ -1,20 +1,23 @@
 ## N
 
-``` 
+```
 N(expr)
-``` 
+```
+
 > gives the numerical value of `expr`.  
 
 
-``` 
+```
 N(expr, precision)
-``` 
+```
+
 > evaluates `expr` numerically with a precision of `prec` digits.  
 
 
 **Note**: the upper case identifier `N` is different from the lower case identifier `n`.
  
 ### Examples 
+
 ``` 
 >> N(Pi)
 3.141592653589793
@@ -27,5 +30,8 @@ N(expr, precision)
 
 >> N(1/7, 5)
 1.4285714285714285714e-1
-``` 
+```
+
+### Related terms 
+[EvalF](EvalF.md)
  

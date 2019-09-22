@@ -7,7 +7,7 @@ EllipticK(z)
 > returns the complete elliptic integral of the first kind. 
    
 
-See:
+See
 * [Wikipedia - Elliptic integral - Complete elliptic integral of the first kind)](https://en.wikipedia.org/wiki/Elliptic_integral#Complete_elliptic_integral_of_the_first_kind)
 
 ### Examples

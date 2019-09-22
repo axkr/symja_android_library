@@ -16,15 +16,14 @@ False
 True
 ```
 
-If all expressions do not evaluate to 'True' or 'False', 'Equivalent'
-returns a result in symbolic form:
+If all expressions do not evaluate to `True` or `False`, `Equivalent` returns a result in symbolic form:
 
 ```
 >> Equivalent(a, b, c)
 Equivalent(a,b,c)
 ```
 
-Otherwise, 'Equivalent' returns a result in DNF
+Otherwise, `Equivalent` returns a result in DNF
 
 ```
 >> Equivalent(a, b, True, c)

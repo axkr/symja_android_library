@@ -1,12 +1,13 @@
 ## Expand
 
-``` 
+```
 Expand(expr)
-``` 
+```
  
 > expands out positive rational powers and products of sums in `expr`.
 
 ### Examples
+
 ```
 >> Expand((x + y) ^ 3)
 x^3+3*x^2*y+3*x*y^2+y^3
@@ -28,17 +29,20 @@ a^2*c^2+2*a*b*c^2+b^2*c^2+2*a^2*c*d+4*a*b*c*d+2*b^2*c*d+a^2*d^2+2*a*b*d^2+b^2*d^
 ```
 
 `Expand` expands out rational powers by expanding the `Floor()` part of the rational powers number:
+
 ```
 >> Expand((x + 3)^(5/2)+(x + 1)^(3/2)) Sqrt(1+x)+x*Sqrt(1+x)+9*Sqrt(3+x)+6*x*Sqrt(3+x)+x^2*Sqrt(3+x)
 ```
 
 `Expand` expands items in lists and rules:  
+
 ```  
 >> Expand({4 (x + y), 2 (x + y) -> 4 (x + y)})  
 {4*x+4*y,2*(x+y)->4*(x+y)} 
 ```
 
-`Expand` does not change any other expression.  
+`Expand` does not change any other expression. 
+ 
 ```
 >> Expand(Sin(x*(1 + y)))  
 Sin(x*(1+y)) 

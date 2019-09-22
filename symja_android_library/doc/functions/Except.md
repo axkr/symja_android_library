@@ -1,13 +1,15 @@
 ## Except
 
-``` 
+```
 Except(c)
-``` 
+```
+
 > represents a pattern object that matches any expression except those matching `c`.
 
-``` 
+```
 Except(c, p)
-``` 
+```
+
 > represents a pattern object that matches `p` but not `c`.
  
 ### Examples

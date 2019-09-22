@@ -5,6 +5,7 @@ ExactNumberQ(expr)
 > returns `True` if `expr` is an exact number, and `False` otherwise.
 
 ### Examples
+
 ```
 >> ExactNumberQ(10)
 True

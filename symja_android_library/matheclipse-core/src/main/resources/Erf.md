@@ -6,9 +6,14 @@ Erf(z)
 
 > returns the error function of `z`.
  
+See
+* [Wikipedia - Error function](https://en.wikipedia.org/wiki/Error_function)
+
 ### Examples
+
 `Erf(z)` is an odd function:
-```  
+
+```
 >> Erf(-x)
 -Erf(x)
  
