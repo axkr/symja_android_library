@@ -6,6 +6,7 @@ Drop(expr, n)
 > returns `expr` with the first `n` leaves removed.
 
 ### Examples
+
 ```
 >> Drop({a, b, c, d}, 3)
 {d}
@@ -18,6 +19,7 @@ Drop(expr, n)
 ```
 
 Drop a submatrix:
+
 ```
 >> A = Table(i*10 + j, {i, 4}, {j, 4})
 {{11,12,13,14},{21,22,23,24},{31,32,33,34},{41,42,43,44}}
@@ -32,7 +34,8 @@ Drop a submatrix:
 {2, 3, 5, 6, 8, 9}
 ```
 
-Cannot drop positions -5 through -2 in {1, 2, 3, 4, 5, 6}.
+Cannot drop positions `-5` through `-2` in `{1, 2, 3, 4, 5, 6}`.
+
 ```
 >> Drop(Range(6), {-5, -2, -2}) 
 Drop({1, 2, 3, 4, 5, 6}, {-5, -2, -2})

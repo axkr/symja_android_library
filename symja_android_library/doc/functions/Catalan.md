@@ -4,7 +4,7 @@
 
 See:
 * [Wikipedia - Catalan's constant](http://en.wikipedia.org/wiki/Catalan%27s_constant)
- 
+
 ### Examples
 
 ```

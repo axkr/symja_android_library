@@ -6,6 +6,9 @@ Infinity
 
 > represents an infinite real quantity.
 
+See 
+* [Wikipedia - Infinity](https://en.wikipedia.org/wiki/Infinity) 
+
 ### Examples
 
 ```

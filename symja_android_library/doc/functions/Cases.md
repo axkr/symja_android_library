@@ -11,6 +11,7 @@ Cases(list, pattern, ls)
 > returns the elements matching at levelspec `ls`.
 
 ### Examples
+
 ```
 >> Cases({a, 1, 2.5, \"string\"}, _Integer|_Real)
 {1,2.5}

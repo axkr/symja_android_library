@@ -1,16 +1,17 @@
 ## Divide
 
-```  
+```
 Divide(a, b)
 
 a / b
-```   
+```
+
 > represents the division of  `a` by `b`. 
  
 
 ### Examples
 
-```   
+```
 >> 30 / 5
 6
 
@@ -22,6 +23,7 @@ Pi / 4
 ```
 
 Use `N` or a decimal point to force numeric evaluation:
+
 ```
 >> Pi / 4.0
 0.7853981633974483
@@ -31,6 +33,7 @@ Use `N` or a decimal point to force numeric evaluation:
 ```
 
 Nested divisions:
+
 ```
 >> a / b / c
 a/(b*c)
@@ -48,8 +51,8 @@ a/(b*c)
 0.25
  
 >> 10 / 3 // FullForm
-"Rational(10,3)"
+Rational(10,3)
  
 >> a / b // FullForm
-"Times(a, Power(b, -1))"
-``` 
+Times(a, Power(b, -1))
+```

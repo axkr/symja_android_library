@@ -9,11 +9,13 @@ ClearAttributes(symbol, attrib)
 ### Examples
 
 ```
->> SetAttributes(f, Flat)    
+>> SetAttributes(f, Flat)
+
 >> Attributes(f)    
 {Flat}    
  
->> ClearAttributes(f, Flat)    
+>> ClearAttributes(f, Flat)
+
 >> Attributes(f)    
 {}  
 ```

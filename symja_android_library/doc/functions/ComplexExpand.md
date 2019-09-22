@@ -6,8 +6,9 @@ ComplexExpand(expr)
 
 > get the expanded `expr`. All variable symbols in `expr` are assumed to be non complex numbers.
 
-See:  
+See  
 * [Wikipedia - List of trigonometric identities](http://en.wikipedia.org/wiki/List_of_trigonometric_identities)
+* [Wikipedia - Complex number](https://en.wikipedia.org/wiki/Complex_number) 
 
 ### Examples
 

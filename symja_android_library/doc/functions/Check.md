@@ -3,7 +3,7 @@
 ```
 Check(expr, failure)
 ```
- 
+
 > evaluates `expr`, and returns the result, unless messages were generated, in which case  `failure` will be returned.
 
 ### Examples

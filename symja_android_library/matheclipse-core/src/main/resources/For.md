@@ -15,9 +15,13 @@ For(start, test)
 ```
 > runs the loop without any body.  
   
+See:  
+* [Wikipedia - For loop](https://en.wikipedia.org/wiki/For_loop)
+  
 ### Examples
 
-Compute the factorial of 10 using 'For':
+Compute the factorial of 10 using `For`:
+
 ``` 
 >> n := 1
 >> For(i=1, i<=10, i=i+1, n = n * i)
@@ -34,3 +38,6 @@ True
 >> n
 120
 ```
+
+### Related terms 
+[Break](Break.md), [Continue](Continue.md), [Do](Do.md), [While](While.md) 

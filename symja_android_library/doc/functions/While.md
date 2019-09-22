@@ -23,3 +23,6 @@ Compute the GCD of two numbers:
 >> i = 1; While(True, If(i^2 > 100, Return(i + 1), i++))
 12
 ```
+
+### Related terms 
+[Break](Break.md), [Continue](Continue.md), [Do](Do.md), [For](For.md) 

@@ -6,6 +6,10 @@ CoefficientList(polynomial, variable)
 
 > get the coefficient list of a univariate `polynomial`.
  
+
+See:  
+* [Wikipedia - Coefficient](http://en.wikipedia.org/wiki/Coefficient)
+
 ### Examples
 
 ```

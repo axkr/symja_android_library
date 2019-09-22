@@ -1,16 +1,23 @@
 ## DirectedInfinity
 
-``` 
+```
 DirectedInfinity(z)
-``` 
+```
+
 > represents an infinite multiple of the complex number `z`.
 
-``` 
+```
 DirectedInfinity()
-``` 
+```
+
 > is the same as `ComplexInfinity`.
 
+
+See 
+* [Wikipedia - Infinity](https://en.wikipedia.org/wiki/Infinity) 
+
 ### Examples
+
 ``` 
 >> DirectedInfinity(1)
 Infinity
@@ -26,6 +33,7 @@ DirectedInfinity((1+I)/Sqrt(2))
 ```
 
 Indeterminate expression -Infinity + Infinity encountered.
+
 ```
 >> DirectedInfinity(1) + DirectedInfinity(-1)
 Indeterminate

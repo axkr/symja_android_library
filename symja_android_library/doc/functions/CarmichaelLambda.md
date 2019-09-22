@@ -10,6 +10,7 @@ See:
 * [Wikipedia - Carmichael function](https://en.wikipedia.org/wiki/Carmichael_function)
 
 ## Examples
+
 ```
 >> CarmichaelLambda(35)
 12

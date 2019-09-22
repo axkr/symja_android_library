@@ -12,6 +12,8 @@ Complex(a, b)
 
 > constructs the complex number `a + I * b`.
 
+See 
+* [Wikipedia - Complex number](https://en.wikipedia.org/wiki/Complex_number) 
 
 ### Examples
 

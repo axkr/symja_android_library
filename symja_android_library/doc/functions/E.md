@@ -4,7 +4,8 @@
 
 **Note**: the upper case identifier `E` is different from the lower case identifier `e`.
  
-### Examples 
+### Examples
+
 ``` 
 >> Exp(1)
 E

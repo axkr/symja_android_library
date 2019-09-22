@@ -8,7 +8,7 @@ Coefficient(polynomial, variable, exponent)
 
 
 See:  
-* [Wikipedia - Coefficient Coefficient](http://en.wikipedia.org/wiki/Coefficient)
+* [Wikipedia - Coefficient](http://en.wikipedia.org/wiki/Coefficient)
   
 ### Examples
 
@@ -56,6 +56,7 @@ The line below can be used to get pieces of the result above.  Specifically `coe
 >> coeff[[6]]
 {{0,0,21*c^5,0,0,0,0,0},{0,-84*c^5,0,0,0,0,0,0},{84*c^5,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0}}
 ```
+
 * `Part(coeff,6,1,3)` is `21*c^5` the coefficient of `(x^(6 - 1) * y^(1 - 1) * z^(3 - 1)) = (x^5 * z^2)` in poly. 
 * `Part(coeff,6,2,2)` is `(-84*c^5)` the coefficient of `(x^(6 - 1) * y^(2 - 1) * z^(2 - 1)) = (x^5 * y * z)` in poly. 
 * `Part(coeff,6,3,1)` is `(84*c^5)` the coeficient of `(x^(6 - 1) * y^(3 - 1) * z^(1 - 1)) = (x^5 * y^2)` in poly.
