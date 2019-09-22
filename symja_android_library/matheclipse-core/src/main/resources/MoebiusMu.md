@@ -11,7 +11,6 @@ MoebiusMu(expr)
 * `MoebiusMu(n) = −1` if `n` is a square-free integer with an odd number of prime factors.
 * `MoebiusMu(n) = 0` if `n` has a squared prime factor.
 
-
 See:
 * [Wikipedia - Möbius function](https://en.wikipedia.org/wiki/M%C3%B6bius_function)
 

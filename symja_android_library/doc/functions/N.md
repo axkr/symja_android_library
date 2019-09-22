@@ -31,7 +31,7 @@ N(expr, precision)
 >> N(1/7, 5)
 1.4285714285714285714e-1
 ```
-
+ 
 ### Related terms 
 [EvalF](EvalF.md)
  

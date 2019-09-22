@@ -6,7 +6,7 @@ Maximize(unary-function, variable)
 
 > returns the maximum of the unary function for the given `variable`.
 	
-See:
+See
 * [Wikipedia - Derivative test](https://en.wikipedia.org/wiki/Derivative_test)
 	
 ### Examples

@@ -1,14 +1,16 @@
 ## MatrixRank
+
 ```
 MatrixRank(matrix)
 ```
 
 > returns the rank of `matrix`.
  
-See:
+See
 * [Wikipedia - Rank (linear algebra](https://en.wikipedia.org/wiki/Rank_%28linear_algebra%29)
 
 ### Examples
+
 ```
 >> MatrixRank({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})
 2

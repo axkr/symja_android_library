@@ -1,16 +1,19 @@
 ## LowerTriangularize
 
-``` 
+```
 LowerTriangularize(matrix)
 ```
 
 > create a lower triangular matrix from the given `matrix`.
 
-``` 
+```
 LowerTriangularize(matrix, n)
 ```
 
 > create a lower triangular matrix from the given `matrix` below the `n`-th subdiagonal.
+
+See
+* [Wikipedia - Triangular matrix](https://en.wikipedia.org/wiki/Triangular_matrix)
 
 ### Examples
  

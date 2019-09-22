@@ -1,11 +1,15 @@
 ## JacobiMatrix
+
 ```
 JacobiMatrix(matrix, var)
 ```
 
 > creates a Jacobian matrix.
 
-See:  
-* [Wikipedia - Jacobian](http://en.wikipedia.org/wiki/Jacobian) 
 
-  
+### Examples 
+
+```
+>> JacobiMatrix({f(u),f(v),f(w),f(x)}, {u,v,w})
+{{f'(u),0,0},{0,f'(v),0},{0,0,f'(w)},{0,0,0}}
+```

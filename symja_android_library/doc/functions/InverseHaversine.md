@@ -5,7 +5,12 @@ InverseHaversine(z)
 ```
 
 > returns the inverse haversine function of `z`.
- 
+
+
+See
+* [Wikipedia - Versine](https://en.wikipedia.org/wiki/Versine#ahav)
+
+
 ### Examples
 ```
 >> InverseHaversine(0.5)

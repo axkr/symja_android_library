@@ -11,6 +11,7 @@ x < y
 ```
 lhs < rhs
 ```
+
 > represents the inequality `lhs < rhs`.
  
 	
@@ -22,5 +23,5 @@ True
 
 >> {Less(), Less(x), Less(1)}
 {True, True, True}
-``` 
+```
  

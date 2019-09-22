@@ -1,7 +1,9 @@
 ## MemberQ
+
 ```
 MemberQ(list, pattern)
 ```
+
 > returns `True` if pattern matches any element of `list`, or `False` otherwise.
 
 ### Examples

@@ -1,10 +1,13 @@
 ## MachineNumberQ
+
 ```
 MachineNumberQ(expr)
 ```
+
 > returns `True` if `expr` is a machine-precision real or complex number.
 
 ### Examples
+
 ```
 >> MachineNumberQ(3.14159265358979324)
 False

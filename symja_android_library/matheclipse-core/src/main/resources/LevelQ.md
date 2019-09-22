@@ -1,10 +1,13 @@
 ## LevelQ
-```  
+
+```
 LevelQ(expr)
 ```
+
 > tests whether `expr` is a valid level specification.
 	
 ### Examples
+
 ```
 >> LevelQ(2)
 True

@@ -9,8 +9,9 @@ LaplaceTransform(f,t,s)
 See:
 * [Wikipedia - Laplace transform](https://en.wikipedia.org/wiki/Laplace_transform)
 
-### Examples 
-```  
+### Examples
+
+```
 >> LaplaceTransform(t^2*Exp(2+3*t), t, s)
 (-2*E^2)/(3-s)^3
 ```

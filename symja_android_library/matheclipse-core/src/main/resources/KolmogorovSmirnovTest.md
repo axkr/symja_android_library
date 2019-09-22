@@ -20,7 +20,7 @@ KolmogorovSmirnovTest(data, distribution, "TestData")
 
 ### Examples
 
-``` 
+```
 >> data = { 0.53236606, -1.36750258, -1.47239199, -0.12517888, -1.24040594, 1.90357309,
             -0.54429527, 2.22084140, -1.17209146, -0.68824211, -1.75068914, 0.48505896,
             2.75342248, -0.90675303, -1.05971929, 0.49922388, -1.23214498, 0.79284888,
@@ -35,5 +35,5 @@ KolmogorovSmirnovTest(data, distribution, "TestData")
 
 >> KolmogorovSmirnovTest(data, NormalDistribution(), "TestData")
 {0.0930213,0.744855}
-```  
+```
 

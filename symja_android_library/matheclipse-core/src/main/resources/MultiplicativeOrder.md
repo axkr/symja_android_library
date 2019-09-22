@@ -6,8 +6,7 @@ MultiplicativeOrder(a, n)
 
 > gives the multiplicative order `a` modulo `n`.
 
-See:
-
+See
 * [Wikipedia: Multiplicative order](https://en.wikipedia.org/wiki/Multiplicative_order)
 
 ### Examples

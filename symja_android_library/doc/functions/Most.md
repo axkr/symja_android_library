@@ -3,6 +3,7 @@
 ```
 Most(expr)
 ```
+
 > returns `expr` with the last element removed.
 
 `Most(expr)` is equivalent to `expr[[;;-2]]`.
@@ -17,7 +18,8 @@ Most(expr)
 a+b
 ```
 
-Nonatomic expression expected.
+Nonatomic expressions are expected.
+
 ```
 >> Most(x) 
 Most(x)

@@ -1,11 +1,14 @@
 ## ListQ
-``` 
+
+```
 ListQ(expr)
-``` 
+```
+
 > tests whether `expr` is a `List`.
 
 ### Examples
-``` 
+
+```
 >> ListQ({1, 2, 3})
 True
 
@@ -14,4 +17,4 @@ True
 
 >> ListQ(x)
 False
-``` 
+```

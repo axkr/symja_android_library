@@ -1,12 +1,17 @@
 ## Log10
 
-``` 
+```
 Log10(z)
-``` 
+```
+
 > returns the base-`10` logarithm of `z`. `Log10(z)` will be converted to `Log(z)/Log(10)` in symbolic mode.
 
+See
+* [Wikipedia - Logarithm](https://en.wikipedia.org/wiki/Logarithm)
+
 ### Examples 
-``` 
+
+```
 >> Log10(1000)    
 3    
  
@@ -15,4 +20,4 @@ Log10(z)
  
 >> Log10(E ^ 3)    
 3/Log(10)   
-``` 
+```

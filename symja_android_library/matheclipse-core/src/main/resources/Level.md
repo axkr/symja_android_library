@@ -1,34 +1,39 @@
 ## Level
-``` 
+
+```
 Level(expr, levelspec)
 ```
+
 > gives a list of all sub-expressions of `expr` at the level(s) specified by `levelspec`.
 
 Level uses standard level specifications:
 
-``` 
+```
 n
 ```
+
 > levels `1` through `n`
 
 ```
 Infinity
 ```
+
 > all levels from level `1`
 
 
 ```
 {n}
 ```
+
 > level `n` only
 
 ```
 {m, n}
 ```
+
 > levels `m` through `n`
 
-Level 0 corresponds to the whole expression.
-A negative level `-n` consists of parts with depth `n`.
+Level 0 corresponds to the whole expression. A negative level `-n` consists of parts with depth `n`.
 
 ### Examples
 

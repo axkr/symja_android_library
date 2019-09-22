@@ -11,7 +11,7 @@ ListLinePlot( { list-of-points } )
 ### Examples
 
 In the console apps, this command shows an HTML page with a JavaScript list line plot control.
- 
+
 ```
 >> Manipulate(ListLinePlot(Table({Sin(t), Cos(t*a)}, {t, 50})), {a,1,4,1})
 ```

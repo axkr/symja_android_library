@@ -1,12 +1,17 @@
 ## Log2
 
-``` 
+```
 Log2(z)
-``` 
+```
+
 > returns the base-`2` logarithm of `z`. `Log2(z)` will be converted to `Log(z)/Log(2)` in symbolic mode.
 
-### Examples 
-``` 
+See
+* [Wikipedia - Logarithm](https://en.wikipedia.org/wiki/Logarithm)
+
+### Examples
+
+```
 >> Log2(4 ^ 8)    
 16    
 

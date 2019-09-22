@@ -12,7 +12,7 @@ LinearRecurrence(list1, list2, {n})
 
 > solve the linear recurrence and return the `n`-th element of the list.
 
-See:
+See
 * [Wikipedia - Recurrence relation](https://en.wikipedia.org/wiki/Recurrence_relation)
 * [OEIS - Recurrence - Linear recurrences with constant coefficients](http://oeis.org/wiki/Recurrence#Linear_recurrences_with_constant_coefficients)
 

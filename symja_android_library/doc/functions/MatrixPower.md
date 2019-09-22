@@ -6,6 +6,9 @@ MatrixPower(matrix, n)
 
 > computes the `n`th power of a `matrix`
 
+See
+* [Wikipedia - Matrix multiplication - Powers of a matrix](https://en.wikipedia.org/wiki/Matrix_multiplication#Powers_of_a_matrix)
+
 ### Examples
 
 ```

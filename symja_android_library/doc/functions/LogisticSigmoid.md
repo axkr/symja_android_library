@@ -1,12 +1,17 @@
 ## LogisticSigmoid
 
-``` 
+```
 LogisticSigmoid(z)
-``` 
+```
+
 > returns the logistic sigmoid of `z`.
 
-### Examples 
-```  
+See
+* [Wikipedia - Logistic function](https://en.wikipedia.org/wiki/Logistic_function)
+
+### Examples
+
+```
 >> LogisticSigmoid(0.5)
 0.6224593312018546
  
@@ -18,4 +23,4 @@ LogisticSigmoid(z)
  
 >> LogisticSigmoid(I*Pi)
 LogisticSigmoid(I*Pi)
-``` 
+```

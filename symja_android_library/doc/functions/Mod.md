@@ -1,11 +1,16 @@
 ## Mod
+
 ```
 Mod(x, m)
 ```
 
 > returns `x` modulo `m`.
  
+See
+* [Wikipedia - Modulo_operation](https://en.wikipedia.org/wiki/Modulo_operation)
+
 ### Examples
+
 ```
 >> Mod(14, 6)
 2
@@ -14,7 +19,9 @@ Mod(x, m)
 >> Mod(-3, -4)
 -3
 ```
+
 The argument 0 should be nonzero
+
 ```
 >> Mod(5, 0) 
 Mod(5, 0)

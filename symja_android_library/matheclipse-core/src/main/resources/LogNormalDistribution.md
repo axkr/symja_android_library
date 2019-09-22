@@ -6,7 +6,7 @@ LogNormalDistribution(m, s)
 
 > returns a log-normal distribution.
     
-See:  
+See
 * [Wikipedia - Log-normal distribution](https://en.wikipedia.org/wiki/Log-normal_distribution)
  
 

@@ -6,8 +6,7 @@ Multinomial(n1, n2, ...)
 
 > gives the multinomial coefficient `(n1+n2+...)!/(n1! n2! ...)`.
 
-See:
-
+See
 * [Wikipedia: Multinomial coefficient](http://en.wikipedia.org/wiki/Multinomial_coefficient)
 
 ### Examples

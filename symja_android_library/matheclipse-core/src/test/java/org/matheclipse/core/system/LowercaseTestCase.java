@@ -9077,8 +9077,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"0");
 		check("JaccardDissimilarity({0, 0, 0, 0}, {1, 1, 1, 1})", //
 				"1");
-	}
-
+	} 
+	
 	public void testJacobiSymbol() {
 		check("JacobiSymbol(10^10+1, Prime(1000))", //
 				"1");

@@ -9,16 +9,19 @@ Max(e_1, e_2, ..., e_i)
 ### Examples
 
 Maximum of a series of numbers:
+
 ```
 >> Max(4, -8, 1)
 4
 ```
 
 `Max` flattens lists in its arguments:
+
 ```
 >> Max({1,2},3,{-3,3.5,-Infinity},{{1/2}})
 3.5
 ```
+
 
 `Max` with symbolic arguments remains in symbolic form:
 ```

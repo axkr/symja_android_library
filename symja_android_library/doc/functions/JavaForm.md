@@ -22,10 +22,10 @@ See:
 
 ### Examples
 
-JavaForm can add the `F.` prefix for class `org.matheclipse.core.expression.F` if you set `prefix->True`:
+JavaForm can add the `F.` prefix for class `org.matheclipse.core.expression.F` if you set `Prefix->True`:
 
 ```
->> JavaForm(D(sin(x)*cos(x),x), prefix->True)
+>> JavaForm(D(sin(x)*cos(x),x), Prefix->True)
 "F.Plus(F.Sqr(F.Cos(F.x)),F.Negate(F.Sqr(F.Sin(F.x))))"
 
 >> JavaForm(I/2*E^((-I)*x)-I/2*E^(I*x))

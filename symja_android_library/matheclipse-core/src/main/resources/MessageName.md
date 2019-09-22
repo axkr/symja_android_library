@@ -14,7 +14,6 @@ symbol::msg
 
 ### Examples
 
- 
 The second parameter 'tag' is interpreted as a string.
 
 ```

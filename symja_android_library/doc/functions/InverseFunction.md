@@ -6,8 +6,9 @@ InverseFunction(head)
 
 > returns the inverse function for the symbol `head`.
  
-### Examples 
-```  
+### Examples
+
+```
 >> InverseFunction(Sin)
 ArcSin
 ```
