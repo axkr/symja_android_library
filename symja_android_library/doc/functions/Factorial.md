@@ -8,7 +8,7 @@ n!
 
 > returns the factorial number of the integer `n`
 
-See: 
+See 
 * [Wikipedia - Factorial](https://en.wikipedia.org/wiki/Factorial)
 
 ### Examples

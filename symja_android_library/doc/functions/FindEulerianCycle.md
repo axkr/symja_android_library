@@ -6,6 +6,10 @@
 
 > find an eulerian cycle in the `graph`.
  
+See
+* [Wikipedia - Eulerian path](https://en.wikipedia.org/wiki/Eulerian_path)
+
+
 ### Examples
 
 ```

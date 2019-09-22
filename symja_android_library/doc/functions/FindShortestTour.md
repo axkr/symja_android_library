@@ -6,7 +6,7 @@
 
 > find a shortest tour in the `graph` with minimum `EuclideanDistance`.
  
-See:  
+See  
 * [Wikipedia - Travelling salesman problem](https://en.wikipedia.org/wiki/Travelling_salesman_problem)
 
 ### Related terms 

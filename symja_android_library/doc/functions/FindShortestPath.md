@@ -6,6 +6,8 @@
 
 > find a shortest path in the `graph` from `source` to `destination`.
  
+See
+* [Wikipedia - Shortest path problem](https://en.wikipedia.org/wiki/Shortest_path_problem)
 
 ### Related terms 
 [GraphCenter](GraphCenter.md), [GraphDiameter](GraphDiameter.md), [GraphPeriphery](GraphPeriphery.md), [GraphRadius](GraphRadius.md), [AdjacencyMatrix](AdjacencyMatrix.md), [EdgeList](EdgeList.md),
