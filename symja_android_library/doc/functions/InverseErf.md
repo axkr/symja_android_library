@@ -5,9 +5,15 @@ InverseErf(z)
 ```
 
 > returns the inverse error function of `z`.
+
+
+See
+* [Wikipedia - Error_function - Inverse functions](https://en.wikipedia.org/wiki/Error_function#Inverse_functions) 
  
 ### Examples
+
 `InverseErf(z)` is an odd function:
+
 ```  
 >> InverseErf /@ {-1, 0, 1}    
 {-Infinity, 0, Infinity}     

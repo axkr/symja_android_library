@@ -34,5 +34,8 @@ E^(-E^((k-n)/m)+(k-n)/m)/m
 >> Table(PDF(NormalDistribution( ), x), {m, {-1, 1, 2}},{x, {-1, 1, 2}})//N  
 {{0.24197,0.24197,0.05399},{0.24197,0.24197,0.05399},{0.24197,0.24197,0.05399}}
 ```
-  
+
+
+### Related terms 
+[CDF](CDF.md), [InverseCDF](InverseCDF.md) 
 

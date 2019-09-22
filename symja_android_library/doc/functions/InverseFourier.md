@@ -6,6 +6,9 @@ InverseFourier(vector-of-complex-numbers)
 
 > Inverse discrete Fourier transform of a `vector-of-complex-numbers`. Fourier transform is restricted to vectors with length of power of 2.  
 
+See
+* [Wikipedia - Discrete Fourier transform - Inverse transform](https://en.wikipedia.org/wiki/Discrete_Fourier_transform#Inverse_transform)
+
 ### Examples 
 
 ```

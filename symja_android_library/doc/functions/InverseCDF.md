@@ -27,3 +27,6 @@ InverseCDF(dist)
 >> InverseCDF[NormalDistribution[0, 1], x]
 ConditionalExpression(-Sqrt(2)*InverseErfc(2*#1),0<=#1<=1)&
 ```
+
+### Related terms 
+[CDF](CDF.md), [PDF](PDF.md)  

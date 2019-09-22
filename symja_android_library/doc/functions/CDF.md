@@ -32,3 +32,6 @@ See:
 ```
   
 
+### Related terms 
+[InverseCDF](InverseCDF.md), [PDF](PDF.md)  
+
