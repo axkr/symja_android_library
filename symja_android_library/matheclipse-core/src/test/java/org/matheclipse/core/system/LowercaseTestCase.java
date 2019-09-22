@@ -6606,6 +6606,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFindVertexCover() {
+		// example from wikipedia: https://en.wikipedia.org/wiki/Vertex_cover
+		check("FindVertexCover({1<->2,1<->3,2<->3,3<->4,3<->5,3<->6})", //
+				"{3,1}");
+		
 		check("FindVertexCover({UndirectedEdge(2,1), UndirectedEdge(1,3), UndirectedEdge(3,6), UndirectedEdge(6,1),"//
 				+ " UndirectedEdge(4,6), UndirectedEdge(1,5), UndirectedEdge(5,4) })", //
 				"{1,6,4}");
