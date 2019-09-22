@@ -6,6 +6,9 @@ Fourier(vector-of-complex-numbers)
 
 > Discrete Fourier transform of a `vector-of-complex-numbers`. Fourier transform is restricted to vectors with length of power of 2.  
 
+See
+* [Wikipedia - Fourier](https://reference.wolfram.com/language/ref/Fourier.html)
+
 ### Examples 
 
 ```

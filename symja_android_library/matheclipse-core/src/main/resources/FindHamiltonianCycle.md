@@ -6,7 +6,7 @@
 
 > find an hamiltonian cycle in the `graph`.
  
-See:
+See
 * [Wikipedia - Hamiltonian path](https://en.wikipedia.org/wiki/Hamiltonian_path)
 * [Wikipedia - Hamiltonian path problem](https://en.wikipedia.org/wiki/Hamiltonian_path_problem)
 

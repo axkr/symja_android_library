@@ -6,6 +6,9 @@ Haversine(z)
 
 > returns the haversine function of `z`.
  
+See:
+* [Wikipedia - Haversine formula](https://en.wikipedia.org/wiki/Haversine_formula)
+
 ### Examples
 ```
 >> Haversine(1.5)

@@ -45,3 +45,6 @@ For complex `expr`, take the ceiling of real and imaginary parts.
 >> Ceiling(-10.4, -1)    
 -11
 ```
+
+### Related terms 
+[IntegerPart](IntegerPart.md), [Floor](Floor.md), [FractionalPart](FractionalPart.md), [Round](Round.md)

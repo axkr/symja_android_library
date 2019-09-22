@@ -26,6 +26,7 @@ a
 ```
 
 If the second branch is not specified, `Null` is taken:
+
 >> If(1<2, a)
 a
  
@@ -34,6 +35,7 @@ Null
 ```
 
 You might use comments (inside `(*` and `*)`) to make the branches of `If` more readable:
+
 ```
 >> If(a, (*then*) b, (*else*) c);
 ```

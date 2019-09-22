@@ -1,4 +1,5 @@
 ## FreeQ
+
 ```
 FreeQ(`expr`, `x`)
 ```
@@ -6,6 +7,7 @@ FreeQ(`expr`, `x`)
 > returns 'True' if `expr` does not contain the expression `x`.
 
 ### Examples
+
 ```
 >> FreeQ(y, x)
 True

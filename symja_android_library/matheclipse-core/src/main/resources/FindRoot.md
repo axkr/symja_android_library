@@ -18,6 +18,9 @@ FindRoot(f, {x, xmin, xmax}, Method->method_name)
 
 > searches for a numerical root of `f` for the variable `x`, with one of the following method names:
 
+See
+* [Wikipedia - Root-finding algorithm](https://en.wikipedia.org/wiki/Root-finding_algorithm)
+
 #### Brent
 
 Implements the Brent algorithm for finding zeros of real univariate functions (`BracketingNthOrderBrentSolver`). 

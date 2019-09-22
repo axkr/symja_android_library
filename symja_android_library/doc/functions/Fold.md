@@ -8,5 +8,7 @@ Fold[f, x, {a, b}]
 
 ### Examples
  
-
- 
+```
+>> Fold(test, t1, {a, b, c, d})
+test(test(test(test(t1,a),b),c),d)
+```

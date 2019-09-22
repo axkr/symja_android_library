@@ -70,3 +70,6 @@ Check nesting Complex
 >> Complex(1, Complex(1, 1))
 I
 ```
+
+### Related terms 
+[I](I.md), [Im](Im.md), [Re](Re.md)

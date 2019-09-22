@@ -12,6 +12,10 @@ IntegerPartitions(n, k)
 
 > lists the possible ways to partition `n` into smaller integers, using up to `k` elements.
 
+See
+* [Wikipedia - Partition (number theory)](https://en.wikipedia.org/wiki/Partition_(number_theory))
+
+
 ### Examples
 
 ``` 

@@ -11,8 +11,10 @@ IntegerExponent(n, b)
 ```
 >> IntegerExponent(16, 2)
 4
+
 >> IntegerExponent(-510000)
 4
+
 >> IntegerExponent(10, b)
 IntegerExponent(10, b)
 ```

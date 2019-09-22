@@ -8,7 +8,7 @@ n!!
 
 > returns the double factorial number of the integer `n`.
  
-See:  
+See
 * [Wikipedia - Double Factorial](https://en.wikipedia.org/wiki/Factorial#Double_factorial)
 
 ### Examples

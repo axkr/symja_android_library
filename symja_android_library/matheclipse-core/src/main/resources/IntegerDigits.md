@@ -12,6 +12,9 @@ IntegerDigits(n, base, padLeft)
 
 >  pads the result list on the left with maximum `padLeft` zeros.
 
+See
+* [Wikipedia - Radix](https://en.wikipedia.org/wiki/Radix)
+
 ### Examples
 
 ```

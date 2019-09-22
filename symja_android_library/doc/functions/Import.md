@@ -1,6 +1,6 @@
 ## Import
 
-``` 
+```
 Import("path-to-filename", "WXF")
 ```
  
@@ -35,5 +35,4 @@ Graph({1, 2, 3}, {(1,2), (2,3), (3,1)})
 ```
 
 ### Related terms
-
 [Export](Export.md)

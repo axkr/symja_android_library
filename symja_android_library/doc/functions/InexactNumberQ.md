@@ -1,10 +1,13 @@
 ## InexactNumberQ
+
 ```
 InexactNumberQ(expr)
 ```
+
 > returns `True` if `expr` is not an exact number, and `False` otherwise.
 
 ### Examples
+
 ```
 >> InexactNumberQ(a)
 False
@@ -17,7 +20,9 @@ False
 ```
 
 `InexactNumberQ` can be applied to complex numbers:
+
 ```
 >> InexactNumberQ(4.0+I)    
 True
 ```
+

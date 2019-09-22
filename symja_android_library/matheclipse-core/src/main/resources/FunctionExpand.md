@@ -1,10 +1,10 @@
 ## FunctionExpand
 
 ```
-FunctionExpand(f) 
+FunctionExpand(expression) 
 ```
 
-> expands the special function `f`.
+> expands the special function `expression`.
 
 ### Examples
 

@@ -23,3 +23,6 @@ x^3/3
 >> Integrate(Tan(x) ^ 5, x)
 -Log(Cos(x))-Tan(x)^2/2+Tan(x)^4/4
 ```
+
+### Related terms 
+[Int](Int.md) 

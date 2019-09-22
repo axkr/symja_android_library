@@ -6,6 +6,9 @@ HarmonicNumber(n)
 
 > returns the `n`th harmonic number.  
  
+See
+* [Wikipedia - Harmonic number](https://en.wikipedia.org/wiki/Harmonic_number)
+ 
 ### Examples
 
 ```

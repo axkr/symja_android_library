@@ -6,6 +6,9 @@ Fibonacci(n)
 
 > returns the Fibonacci number of the integer `n` 
 
+See 
+* [Wikipedia - Fibonacci number](https://en.wikipedia.org/wiki/Fibonacci_number)
+
 ### Examples
 
 ```

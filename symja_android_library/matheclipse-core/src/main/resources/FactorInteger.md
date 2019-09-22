@@ -13,6 +13,10 @@ FactorInteger(n, GaussianIntegers->True)
 > for gaussian integers you can set the option `GaussianIntegers->True`
 
 
+See 
+* [Wikipedia - Integer factorization](https://en.wikipedia.org/wiki/Integer_factorization)
+
+
 ### Examples  
 
 ```

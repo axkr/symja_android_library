@@ -12,7 +12,7 @@ Floor(expr, a)
 
 > gives the smallest multiple of `a` less than or equal to `expr`. 
 
-See:  
+See
 * [Wikipedia - Floor and ceiling functions](https://en.wikipedia.org/wiki/Floor_and_ceiling_functions)
 
 ### Examples
@@ -59,3 +59,6 @@ For negative `a`, the smallest multiple of `a` greater than or equal to `expr` i
 >> Floor(-10.4, -1)    
 -10    
 ```
+
+### Related terms 
+[IntegerPart](IntegerPart.md), [Ceiling](Ceiling.md), [FractionalPart](FractionalPart.md), [Round](Round.md)

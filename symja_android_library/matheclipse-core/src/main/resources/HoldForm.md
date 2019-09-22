@@ -4,7 +4,7 @@
 HoldForm(expr)
 ```
 
-> `HoldForm` doesn't evaluate `expr` and didn't appear in the output
+> `HoldForm` doesn't evaluate `expr` and didn't appear in the output.
  
 
 ### Examples

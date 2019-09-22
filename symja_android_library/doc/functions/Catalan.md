@@ -1,5 +1,9 @@
 ## Catalan 
 
+```
+Catalan
+```
+
 > Catalan's constant
 
 See:

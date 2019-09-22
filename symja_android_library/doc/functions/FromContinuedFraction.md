@@ -6,7 +6,7 @@ FromContinuedFraction({n1, n2, ...})
 
 > return the number which represents the continued fraction list `{n1, n2, ...}`.
   
-See:  
+See
 * [Wikipedia - Continued fraction](https://en.wikipedia.org/wiki/Continued_fraction)
  
 ### Examples
@@ -18,4 +18,6 @@ See:
 >> ContinuedFraction(157/68)
 {2,3,4,5}
 ```
-  
+ 
+### Related terms 
+[ContinuedFraction](ContinuedFraction.md)

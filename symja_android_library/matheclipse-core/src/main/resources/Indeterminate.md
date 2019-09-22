@@ -1,11 +1,13 @@
 ## Indeterminate
 
-``` 
+```
 Indeterminate 
-``` 
+```
+
 > represents an indeterminate result.
  
-### Examples 
+### Examples
+
 ``` 
 >> 0^0
 Indeterminate

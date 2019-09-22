@@ -17,6 +17,6 @@ See:
 >> InterpolatingPolynomial({{1,7},{3,11},{5,27}},x)
 (3/2*x-5/2)*(x-1)+7
 ```
-
+ 
 ### Related terms 
 [InterpolatingFunction](InterpolatingFunction.md) 

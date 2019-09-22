@@ -16,7 +16,7 @@ One might be very surprised that the following line evaluates to `True`!
 True
 ```
 
-When the line above is evaluated  `Times(p__)` evaluates to `(p__)` before the kernel checks to see if the pattern matches. `MatchQ` then determines if `And(x,y,z)` matches the pattern `(p__)` and it does because `And(x,y,z)` is itself a sequence of one.
+When the line above is evaluated  `Times(p__)` evaluates to `(p__)` before Symja checks to see if the pattern matches. `MatchQ` then determines if `And(x,y,z)` matches the pattern `(p__)` and it does because `And(x,y,z)` is itself a sequence of one.
 
 Now the next line also evaluates to `True` because both `( And(p__) )` and `( Times(p__) )` evaluate to `( p__ )`.
 

@@ -8,7 +8,7 @@ FullForm(expression)
 
 ### Examples
 
-FullForm shows the difference in the internal expression representation:
+FullForm shows the difference in the internal expression representation for the `Times` operator:
 
 ```  
 >> FullForm(x(x+1))

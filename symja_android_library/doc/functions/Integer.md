@@ -7,6 +7,7 @@ Integer
 > is the head of integers.
 
 ### Examples
+
 ```
 >> Head(5)
 Integer

@@ -6,6 +6,10 @@ Gamma(z)
 
 > is the gamma function on the complex number `z`.
 
+
+See
+* [Wikipedia - Gamma function](https://en.wikipedia.org/wiki/Gamma_function) 
+
 ### Examples
 
 ```

@@ -29,6 +29,12 @@ Display a slider for the generated formulas:
 >> Manipulate(Factor(x^n + 1), {n, 1, 5, 1})
 ```
 
+Display buttons to change the plotted function:
+
+```
+>> Manipulate(Plot(f(x), {x, 0, 2*Pi}), {f, {Sin, Cos, Tan, Cot}})
+```
+
 With `JSForm` you can display the generated JavaScript form of the `Manipulate` function
 
 ```

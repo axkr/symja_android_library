@@ -26,4 +26,6 @@ Of course this would work with lists of arbitrary expressions, not only numbers.
 >> Complement({3, 2, 7, 5, 2, 2, 3, 4, 5, 6, 1}, {2, 3}, {4, 6, 27, 23})
 {1,5,7}
 ```
- 
+
+### Related terms 
+[Intersection](Intersection.md), [Union](Union.md)  
