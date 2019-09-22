@@ -495,7 +495,7 @@ public class GraphFunctions {
 						return F.NIL;
 					}
 					Graph<IExpr, IExprEdge> g = gex.toData();
-					return edgesToIExpr(g);
+					return edgesToIExpr(g)[0];
 				}
 			} catch (RuntimeException rex) {
 				if (Config.SHOW_STACKTRACE) {
@@ -1001,9 +1001,11 @@ public class GraphFunctions {
 	 */
 	public static IExpr graphToIExpr(AbstractBaseGraph<IExpr, IExprEdge> g) {
 		IASTAppendable vertexes = vertexToIExpr(g);
-		IASTAppendable edges = edgesToIExpr(g);
-		IExpr graph = F.Graph(vertexes, edges);
-		return graph;
+		IASTAppendable[] edgeData = edgesToIExpr(g);
+		if (edgeData[1] == null) {
+			return F.Graph(vertexes, edgeData[0]);
+		}
+		return F.Graph(vertexes, edgeData[0], F.List(F.Rule(F.EdgeWeight, edgeData[1])));
 	}
 
 	public static IExpr weightedGraphToIExpr(AbstractBaseGraph<IExpr, IExprWeightedEdge> g) {
@@ -1022,20 +1024,71 @@ public class GraphFunctions {
 		return vertexes;
 	}
 
-	private static IASTAppendable edgesToIExpr(Graph<IExpr, IExprEdge> g) {
-		Set<IExprEdge> edgeSet = g.edgeSet();
+	private static IASTAppendable[] edgesToIExpr(Graph<IExpr, ?> g) {
+		Set<Object> edgeSet = (Set<Object>) g.edgeSet();
 		IASTAppendable edges = F.ListAlloc(edgeSet.size());
+		IASTAppendable weights = F.ListAlloc(edgeSet.size());
+		boolean hasWeights = false;
 		GraphType type = g.getType();
-		if (type.isDirected()) {
-			for (IExprEdge edge : edgeSet) {
-				edges.append(F.DirectedEdge(edge.lhs(), edge.rhs()));
-			}
-		} else {
-			for (IExprEdge edge : edgeSet) {
-				edges.append(F.UndirectedEdge(edge.lhs(), edge.rhs()));
+
+		for (Object edge : edgeSet) {
+			if (edge instanceof IExprWeightedEdge) {
+				hasWeights = true;
+				IExprWeightedEdge weightedEdge = (IExprWeightedEdge) edge;
+				if (type.isDirected()) {
+					edges.append(F.DirectedEdge(weightedEdge.lhs(), weightedEdge.rhs()));
+				} else {
+					edges.append(F.UndirectedEdge(weightedEdge.lhs(), weightedEdge.rhs()));
+				}
+				weights.append(F.num(weightedEdge.weight()));
+			} else if (edge instanceof IExprEdge) {
+				IExprEdge exprEdge = (IExprEdge) edge;
+				if (type.isDirected()) {
+					edges.append(F.DirectedEdge(exprEdge.lhs(), exprEdge.rhs()));
+				} else {
+					edges.append(F.UndirectedEdge(exprEdge.lhs(), exprEdge.rhs()));
+				}
 			}
 		}
-		return edges;
+		if (hasWeights) {
+			return new IASTAppendable[] { edges, weights };
+		}
+		return new IASTAppendable[] { edges, null };
+		// return edges;
+		// GraphType type = g.getType();
+		// if (type.isDirected()) {
+		// if (type.isWeighted()) {
+		// Set<IExprWeightedEdge> edgeSet = (Set<IExprWeightedEdge>) g.edgeSet();
+		// IASTAppendable edges = F.ListAlloc(edgeSet.size());
+		// for (IExprWeightedEdge edge : edgeSet) {
+		// edges.append(F.DirectedEdge(edge.lhs(), edge.rhs()));
+		// }
+		// return edges;
+		// } else {
+		// Set<IExprEdge> edgeSet = (Set<IExprEdge>) g.edgeSet();
+		// IASTAppendable edges = F.ListAlloc(edgeSet.size());
+		// for (IExprEdge edge : edgeSet) {
+		// edges.append(F.DirectedEdge(edge.lhs(), edge.rhs()));
+		// }
+		// return edges;
+		// }
+		// } else {
+		// if (type.isWeighted()) {
+		// Set<IExprWeightedEdge> edgeSet = (Set<IExprWeightedEdge>) g.edgeSet();
+		// IASTAppendable edges = F.ListAlloc(edgeSet.size());
+		// for (IExprWeightedEdge edge : edgeSet) {
+		// edges.append(F.UndirectedEdge(edge.lhs(), edge.rhs()));
+		// }
+		// return edges;
+		// } else {
+		// Set<IExprEdge> edgeSet = (Set<IExprEdge>) g.edgeSet();
+		// IASTAppendable edges = F.ListAlloc(edgeSet.size());
+		// for (IExprEdge edge : edgeSet) {
+		// edges.append(F.UndirectedEdge(edge.lhs(), edge.rhs()));
+		// }
+		// return edges;
+		// }
+		// }
 	}
 
 	/**

@@ -6631,6 +6631,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFindSpanningTree() {
+		// example from Wikipedia https://en.wikipedia.org/wiki/Minimum_spanning_tree
+		check("FindSpanningTree(Graph({a,b,c,d,e,f},{a<->b,a<->d,b<->c,b<->d,b<->e,c<->e,c<->f,d<->e,e<->f}," //
+				+ "{EdgeWeight->{1.0,3.0,6.0,5.0,1.0,5.0,2.0,1.0,4.0}}))", //
+				"Graph({a,b,d,e,c,f},{a->b,d->e,c->f,b->e,e->f},{EdgeWeight->{1.0,1.0,2.0,1.0,4.0}})");
+
 		check("g=Graph({1,2,3,4,5,6,7,8},\n"
 				+ "{UndirectedEdge(1,2),UndirectedEdge(1,3),UndirectedEdge(1,4),UndirectedEdge(3,4),UndirectedEdge(2,6),\n"
 				+ "UndirectedEdge(3,6),UndirectedEdge(5,3),UndirectedEdge(5,4),UndirectedEdge(5,6),UndirectedEdge(5,7),\n"
@@ -19169,7 +19174,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 					"1268.515");
 			check("TimeValue(AnnuityDue(100, 12), 0.1, 0)", //
 					"749.5061");
-			
+
 			check("TimeValue(Annuity(500,36,q), b, c)", //
 					"(500*(-1+((1+b)^q)^(36/q)))/((-1+(1+b)^q)*((1+b)^q)^(36/q-c/q))");
 			check("TimeValue(AnnuityDue(500,36,q), b, c)", //
