@@ -85,8 +85,7 @@ public class MMAConsole {
 	static {
 		// distinguish between lower- and uppercase identifiers
 		Config.PARSER_USE_LOWERCASE_SYMBOLS = false;
-		Config.USE_MATHCELL = true;
-		Config.USE_JSXGRAPH = false;
+		Config.USE_MANIPULATE_JS = true;
 		Config.USE_VISJS = true;
 		F.initSymbols(null, null, true);
 

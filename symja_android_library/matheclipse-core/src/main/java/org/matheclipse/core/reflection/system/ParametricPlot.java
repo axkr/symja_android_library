@@ -26,7 +26,7 @@ public class ParametricPlot extends AbstractEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (Config.USE_MATHCELL || Config.USE_JSXGRAPH) {
+		if (Config.USE_MANIPULATE_JS) {
 			IExpr temp = F.Manipulate.of(engine, ast);
 			if (temp.headID() == ID.JSFormData) {
 				return temp;

@@ -302,8 +302,7 @@ public class Console {
 	 */
 	public Console() {
 		// activate MathCell JavaScript output for Plot, Plot3D
-		Config.USE_MATHCELL = true;
-		Config.USE_JSXGRAPH = false;
+		Config.USE_MANIPULATE_JS = true; 
 		Config.USE_VISJS = true;
 		fEvaluator = new ExprEvaluator(false, 100);
 		fOutputFactory = OutputFormFactory.get(true, false, 5, 7);
