@@ -12,7 +12,6 @@ PDF(distribution, {list} )
 
 > returns the probability density function of the values of list. 
 
-
 See:
 * [Wikipedia - probability density function](https://en.wikipedia.org/wiki/Probability_density_function)
 

@@ -3,19 +3,22 @@
 ```
 Permutations(list)
 ```
+
 > gives all possible orderings of the items in `list`.
      
 ```	 
 Permutations(list, n)
 ```
+
 > gives permutations up to length `n`.
 		
 ```
 Permutations(list, {n})
 ```
+
 > finds a list of all possible permutations containing exactly `n` elements.
 	
-See:  
+See 
 * [Wikipedia - Permutation](https://en.wikipedia.org/wiki/Permutation)
 	 
 ### Examples

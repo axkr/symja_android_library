@@ -12,6 +12,9 @@ Partition(list, n, d)
 
 > partitions `list` into sublists of length `n` which overlap `d` indices.
 
+See
+* [Wikipedia - Partition of a set](https://en.wikipedia.org/wiki/Partition_of_a_set)
+
 ### Examples
 
 ``` 
@@ -23,4 +26,4 @@ Partition(list, n, d)
  
 >> Partition({a, b, c, d, e}, 2)
 {{a,b},{c,d}}
-``` 
+```
