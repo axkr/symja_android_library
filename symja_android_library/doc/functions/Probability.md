@@ -7,7 +7,7 @@ Probability(pure-function, data-set)
 > returns the probability of the `pure-function` for the given `data-set`. 
    
 
-See:
+See
 * [Wikipedia - Probability](https://en.wikipedia.org/wiki/Probability)
 
 ### Examples

@@ -1,11 +1,14 @@
 ## PowerMod
+
 ```
 PowerMod(x, y, m)
 ```
 
 > computes `x^y` modulo `m`.
 
-	
+See
+* [Wikipedia - Exponentiation](https://en.wikipedia.org/wiki/Modular_exponentiation)
+
 ### Examples
 
 ```

@@ -6,7 +6,7 @@ PoissonDistribution(m)
 
 > returns a Poisson distribution.
     
-See:  
+See
 * [Wikipedia - Poisson distribution](https://en.wikipedia.org/wiki/Poisson_distribution)
  
 

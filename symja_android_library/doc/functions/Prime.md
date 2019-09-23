@@ -6,6 +6,9 @@ Prime(n)
 
 > returns the `n`th prime number.
  
+See
+* [Wikipedia - Prime number](https://en.wikipedia.org/wiki/Prime_number)
+
 ### Examples
 
 ```

@@ -1,11 +1,16 @@
 ## PrimitiveRootList
+
 ```
 PrimitiveRootList(n)
 ```
 
 > returns the list of the primitive roots of `n`.
  
+See
+* [Wikipedia - Primitive root modulo n](https://en.wikipedia.org/wiki/Primitive_root_modulo_n)
+
 ### Examples
+
 ```
 >> PrimitiveRootList(37)
 {2,5,13,15,17,18,19,20,22,24,32,35}

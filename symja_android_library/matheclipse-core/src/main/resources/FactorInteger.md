@@ -15,7 +15,7 @@ FactorInteger(n, GaussianIntegers->True)
 
 See 
 * [Wikipedia - Integer factorization](https://en.wikipedia.org/wiki/Integer_factorization)
-
+* [Wikipedia - Prime number](https://en.wikipedia.org/wiki/Prime_number)
 
 ### Examples  
 

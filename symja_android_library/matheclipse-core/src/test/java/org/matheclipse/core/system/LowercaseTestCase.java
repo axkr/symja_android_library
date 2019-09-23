@@ -6609,7 +6609,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// example from wikipedia: https://en.wikipedia.org/wiki/Vertex_cover
 		check("FindVertexCover({1<->2,1<->3,2<->3,3<->4,3<->5,3<->6})", //
 				"{3,1}");
-		
+
 		check("FindVertexCover({UndirectedEdge(2,1), UndirectedEdge(1,3), UndirectedEdge(3,6), UndirectedEdge(6,1),"//
 				+ " UndirectedEdge(4,6), UndirectedEdge(1,5), UndirectedEdge(5,4) })", //
 				"{1,6,4}");
@@ -7126,7 +7126,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testFourier() {
 		check("Fourier({1,2-I, -I, -1+2*I})", //
 				"{1.0,2.0+I*2.0,I*(-1.0),-1.0+I*(-1.0)}");
-		
+
 		check("Fourier({1 + 2*I, 3 + 11*I})", //
 				"{2.82843+I*9.19239,-1.41421+I*(-6.36396)}");
 		check("Fourier({1,2,0,0})", //
@@ -7790,7 +7790,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"521.4298968444851[mi]");
 		check("UnitConvert(GeoDistance({59.914, 10.752}, {52.523, 13.412}),\"km\")", //
 				"839.1600759072911[km]");
-		
+
 		check("GeoDistance({37, -109}, {40.113, -88.261})", //
 				"1140.8428557329898[mi]");
 		check("GeoDistance({30, 40}, {-40, 120})", //
@@ -8044,8 +8044,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// example from https://en.wikipedia.org/wiki/Hermitian_matrix
 		check("HermitianMatrixQ({{2, 2 + I, 4}, {2-I, 3, I}, {4, -I, 1}})", //
 				"True");
-		
-		
+
 		check("HermitianMatrixQ({{1, 3 + 4*I}, {3 - 4*I, 2}})", //
 				"True");
 		check("HermitianMatrixQ({{1, 3 + 3*I}, {3 - 4*I, 2}})", //
@@ -9077,8 +9076,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"0");
 		check("JaccardDissimilarity({0, 0, 0, 0}, {1, 1, 1, 1})", //
 				"1");
-	} 
-	
+	}
+
 	public void testJacobiSymbol() {
 		check("JacobiSymbol(10^10+1, Prime(1000))", //
 				"1");
@@ -13190,6 +13189,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialGCD() {
+		// wikipedia example https://en.wikipedia.org/wiki/Polynomial_greatest_common_divisor
+		check("PolynomialGCD(x^2 + 7*x + 6, x^2-5*x-6)", //
+				"1+x");
+
 		check("PolynomialGCD(a,b )", //
 				"1");
 		check("PolynomialGCD(e*x^2 + d, ( -2*d*e^2*Sqrt(-e/d) )*x + 2*d*e^2 )", //
@@ -13232,6 +13235,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialLCM() {
+		// wikipedia example https://en.wikipedia.org/wiki/Polynomial_greatest_common_divisor
+		check("PolynomialLCM(x^2 + 7*x + 6, x^2-5*x-6)", //
+				"-36-36*x+x^2+x^3");
+
 		// TODO difference to MMA the product is expanded out although GCD==1
 		check("PolynomialLCM(a+b*x,c+d*x)", //
 				"a*c+b*c*x+a*d*x+b*d*x^2");
@@ -13265,6 +13272,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialQ() {
+		check("PolynomialQ(x^2 + 7*x + 6)", //
+				"True");
 		check("PolynomialQ(x^(1/2) + 6*Sin(x), {})", //
 				"True");
 		// only 1 arg gives always True ?
@@ -13339,7 +13348,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialQuotient() {
-
+		check("PolynomialQuotient(x^2 + 7*x + 6, x^2-5*x-6, x)", //
+				"1");
 		check("PolynomialQuotient(a+b*x,1,x)^3", //
 				"(a+b*x)^3");
 		check("PolynomialQuotient(x^2, x + a,x)", //
@@ -13355,6 +13365,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialQuotientRemainder() {
+		check("PolynomialQuotientRemainder(x^2 + 7*x + 6, x^2-5*x-6, x)", //
+				"{1,12+12*x}");
 		check("PolynomialQuotientRemainder[a,b,x]", //
 				"{a/b,0}");
 		check("PolynomialQuotientRemainder(e*x^2 + d, ( -2*d*e^2*Sqrt(-e/d) )*x + 2*d*e^2, x )", //
@@ -13373,6 +13385,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialRemainder() {
+		check("PolynomialRemainder(x^2 + 7*x + 6, x^2-5*x-6, x)", //
+				"12+12*x");
 		check("PolynomialRemainder(1,Sin(e+f*x),x)", //
 				"PolynomialRemainder(1,Sin(e+f*x),x)");
 		check("PolynomialRemainder(x^2, x + a,x)", //
@@ -14158,6 +14172,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPrimitiveRootList() {
+		check("PrimitiveRootList(14)", //
+				"{3,5}");
 		check("PrimitiveRootList(2*Prime(5))", //
 				"{7,13,17,19}");
 		check("PrimitiveRootList(9)", //

@@ -14,7 +14,7 @@ In the console apps, this command shows an HTML page with a JavaScript of a 3D s
 
 ```
 >> Plot3D(Sin(x*y), {x, -1.5, 1.5}, {y, -1.5, 1.5}) 
-```  
+```
 
 With `JSForm` you can display the generated JavaScript form of the `Manipulate` function
 

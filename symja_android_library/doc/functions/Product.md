@@ -15,9 +15,11 @@ Product(expr, {i, imin, imax, di})
 ```
 Product(expr, {i, imin, imax}, {j, jmin, jmax}, ...)
 ```
->> evaluates `expr` as a multiple sum, with `{i, ...}, {j, ...}, ...` being in outermost-to-innermost order.
+
+> evaluates `expr` as a multiple sum, with `{i, ...}, {j, ...}, ...` being in outermost-to-innermost order.
 		
 ### Examples
+
 ```
 >> Product(k, {k, 1, 10})
 3628800
@@ -33,12 +35,14 @@ x^110
 ```
 
 Symbolic products involving the factorial are evaluated:
+
 ```
 >> Product(k, {k, 3, n})
 n! / 2
 ```
 
 Evaluate the `n`th primorial:
+
 ```
 >> primorial(0) = 1;
 >> primorial(n_Integer) := Product(Prime(k), {k, 1, n});

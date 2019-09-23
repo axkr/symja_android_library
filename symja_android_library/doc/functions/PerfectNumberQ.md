@@ -17,4 +17,3 @@ See
 >> Select(Range(1000), PerfectNumberQ)
 {6,28,496}
 ```
-  

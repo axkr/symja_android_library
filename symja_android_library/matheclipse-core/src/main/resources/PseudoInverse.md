@@ -1,12 +1,13 @@
 ## PseudoInverse
+
 ```
 PseudoInverse(matrix)
 ```
 
 > computes the Moore-Penrose pseudoinverse of the `matrix`. If `matrix` is invertible, the pseudoinverse equals the inverse.
 
-See:
-* [Wikipedia: Moore-Penrose pseudoinverse](https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_pseudoinverse)
+See
+* [Wikipedia - Moore-Penrose pseudoinverse](https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_pseudoinverse)
  
 ### Examples
 
@@ -25,6 +26,7 @@ See:
 ```
 
 Argument {1, {2}} at position 1 is not a non-empty rectangular matrix.
+
 ``` 
 >> PseudoInverse({1, {2}})
 PseudoInverse({1, {2}})

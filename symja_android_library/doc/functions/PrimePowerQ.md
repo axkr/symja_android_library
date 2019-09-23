@@ -7,6 +7,7 @@ PrimePowerQ(n)
 > returns `True` if `n` is a power of a prime number.
 
 ### Examples
+
 ```
 >> PrimePowerQ(9)
 True

@@ -25,6 +25,9 @@ is computed as:
 
 Use `Inverse({{2,1},{1,1}})` or `MatrixPower({{2,1},{1,1}},2)` to calculate matrix inverses and powers.
 
+See
+* [Wikipedia - Exponentiation](https://en.wikipedia.org/wiki/Exponentiation)
+
 ### Examples
  
 ```
@@ -121,6 +124,6 @@ I^I
 >> a ^ b
 a^b
 ```
-
+ 
 ### Related terms 
 [MatrixPower](MatrixPower.md), [Times](Times.md)

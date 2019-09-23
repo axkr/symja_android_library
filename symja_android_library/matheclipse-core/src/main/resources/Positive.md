@@ -14,6 +14,7 @@ True
 ```
 
 `Positive` returns `False` if `x` is zero or a complex number:
+
 ```
 >> Positive(0)
 False
@@ -29,5 +30,4 @@ Positive(x)
 
 >> Positive(Sin({11, 14}))
 {False, True}
-``` 
- 
+```

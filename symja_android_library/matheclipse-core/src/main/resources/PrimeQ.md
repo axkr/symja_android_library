@@ -12,10 +12,9 @@ PrimeQ(n, GaussianIntegers->True)
 
 > returns `True` if `n` is a Gaussian prime number.  
 
-For very large numbers, `PrimeQ` uses [probabilistic prime testing](https://en.wikipedia.org/wiki/Prime_number#Primality_testing_versus_primality_proving), so it might be wrong sometimes   
-(a number might be composite even though `PrimeQ` says it is prime).
+For very large numbers, `PrimeQ` uses [probabilistic prime testing](https://en.wikipedia.org/wiki/Prime_number#Primality_testing_versus_primality_proving), so it might be wrong sometimes (i.e. a number might be composite even though `PrimeQ` says it is prime).
 
-See:
+See
 * [Wikipedia - Prime number](https://en.wikipedia.org/wiki/Prime_number)
 * [Wikipedia - Gaussian primes](https://en.wikipedia.org/wiki/Gaussian_integer#Gaussian_primes)
 
