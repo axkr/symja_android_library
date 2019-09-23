@@ -268,9 +268,10 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		if (head.isSymbol()) {
 			String str = functionHead((ISymbol) head);
 			if (str != null) {
-				buf.append(str);
 				if (function.isAST(F.ArcTan, 3)) {
-					buf.append("2");
+					buf.append("Math.atan2");
+				} else {
+					buf.append(str);
 				}
 				convertArgs(buf, head, function);
 				return;
