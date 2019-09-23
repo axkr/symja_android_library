@@ -18,9 +18,9 @@ public class PiecewisePlotExample {
 					"\n" + //
 					"<body>\n" + //
 					"\n" + //
-					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.3/build/math.js\"></script>" + //
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.4/build/math.js\"></script>" + //
 					"\n" + //
-					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.7.0/build/mathcell.js\"></script>\n"
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.7.5/build/mathcell.js\"></script>\n"
 					+ //
 						// "<script
 						// src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
