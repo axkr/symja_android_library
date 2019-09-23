@@ -6,6 +6,9 @@ Denominator(expr)
 
 > gives the denominator in `expr`.
 
+See
+* [Wikipedia - Fraction (mathematics)](https://en.wikipedia.org/wiki/Fraction_(mathematics))
+
 ### Examples
 
 ```

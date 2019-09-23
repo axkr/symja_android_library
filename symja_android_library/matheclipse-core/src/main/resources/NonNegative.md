@@ -11,4 +11,4 @@ NonNegative(x)
 ```
 >> {Positive(0), NonNegative(0)}
 {False,True}
-``` 
+```

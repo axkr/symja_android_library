@@ -1,4 +1,5 @@
 ## Ordering
+
 ```
 Ordering(list)
 ```
@@ -24,7 +25,11 @@ Ordering(list, n, head)
 
 > calculate the first `n` indexes of the  permutation list of the elements in the sorted `list` using comparator operation `head`.
 
+See
+* [Wikipedia - Order theory](https://en.wikipedia.org/wiki/Order_theory)
+
 ### Examples
+
 ```
 >> Ordering({1,3,4,2,5,9,6})
 {1,4,2,3,5,7,6}

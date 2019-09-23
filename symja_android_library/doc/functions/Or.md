@@ -6,6 +6,9 @@ Or(expr1, expr2, ...)'
 
 > `expr1 || expr2 || ...` evaluates each expression in turn, returning `True` as soon as an expression evaluates to `True`. If all expressions evaluate to `False`, `Or` returns `False`.
 
+See
+* [Wikipedia - Logical disjunction](https://en.wikipedia.org/wiki/Logical_disjunction)
+
 ### Examples
 
 ```

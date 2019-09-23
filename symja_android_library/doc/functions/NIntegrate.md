@@ -15,6 +15,7 @@ See:
 ```
 
 LegendreGauss is the default method for numerical integration
+
 ```
 >> NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->LegendreGauss)
 -0.0208333333333333
@@ -30,6 +31,7 @@ LegendreGauss is the default method for numerical integration
 ```
 
 Other options include `MaxIterations` and `MaxPoints`
+
 ```
 >> NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Trapezoid, MaxIterations->5000)
 -0.0208333271245165

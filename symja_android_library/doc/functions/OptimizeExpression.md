@@ -5,7 +5,10 @@ OptimizeExpression(function)
 ```
 
 > common subexpressions elimination for a complicated `function` by generating "dummy" variables for these subexpressions.
- 
+
+See
+* [Wikipedia - Common subexpression elimination](https://en.wikipedia.org/wiki/Common_subexpression_elimination)
+
 ## Examples
 
 

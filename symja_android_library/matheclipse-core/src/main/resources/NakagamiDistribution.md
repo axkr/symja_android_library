@@ -6,7 +6,7 @@ NakagamiDistribution(m, o)
 
 > returns a Nakagami distribution.
     
-See:  
+See 
 * [Wikipedia - Nakagami distribution](https://en.wikipedia.org/wiki/Nakagami_distribution)
  
 

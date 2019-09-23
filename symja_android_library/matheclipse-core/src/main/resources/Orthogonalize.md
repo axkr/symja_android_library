@@ -6,7 +6,7 @@ Orthogonalize(matrix)
 
 > returns a basis for the orthogonalized set of vectors defined by `matrix`.
  
-See:
+See
 * [Wikipedia - Gram–Schmidt process (linear algebra](https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process)
 
 ### Examples

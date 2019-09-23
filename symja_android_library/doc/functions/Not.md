@@ -12,6 +12,9 @@ or
 
 > Logical Not function (negation). Returns `True` if the statement is `False`. Returns `False` if the `expr` is `True`
 
+See
+* [Wikipedia - Negation](https://en.wikipedia.org/wiki/Negation)
+
 ### Examples
 
 ```

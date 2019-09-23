@@ -8,6 +8,7 @@ Orderless
 
 See  
 * [Wikipedia - Commutative property](https://en.wikipedia.org/wiki/Commutative_property)
+* [Wikipedia - Order theory](https://en.wikipedia.org/wiki/Order_theory)
 
 ### Examples
 

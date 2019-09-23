@@ -32,7 +32,7 @@ See:
 
 Argument {1, {2}} at position 1 is not a non-empty rectangular matrix.
   
-``` 
+```
 >> NullSpace({1, {2}})    
 NullSpace({1, {2}})   
 ```

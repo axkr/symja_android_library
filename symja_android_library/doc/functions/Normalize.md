@@ -22,6 +22,7 @@ See:
 * [Wikipedia - Unit vector](https://en.wikipedia.org/wiki/Unit_vector)
 
 ### Examples
+
 ```
 >> Normalize({1, 1, 1, 1})
 {1/2,1/2,1/2,1/2}

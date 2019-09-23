@@ -20,9 +20,11 @@ NestWhileList(f, expr, test, All)
 
 ### Examples
 
- 
- 
+Divide by 2 until the result is no longer an integer:
 
-
+``` 
+>> NestWhileList(#/2&, 10000, IntegerQ) 
+{10000,5000,2500,1250,625,625/2}
+```
 
 

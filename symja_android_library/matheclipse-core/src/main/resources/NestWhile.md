@@ -18,6 +18,7 @@ NestWhile(f, expr, test, All)
 ### Examples
 
 Divide by 2 until the result is no longer an integer:
+
 ``` 
 >> NestWhile(#/2&, 10000, IntegerQ)
 625/2

@@ -15,6 +15,3 @@ True
 >> NumericQ(Sqrt(3))
 True
 ```
- 
-
-

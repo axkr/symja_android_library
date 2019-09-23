@@ -11637,6 +11637,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testNestWhileList() {
+		check("NestWhileList(#/2&, 10000, IntegerQ)", //
+				"{10000,5000,2500,1250,625,625/2}");
 		check("NestWhileList(#^2 &, 2, # < 256 &)", //
 				"{2,4,16,256}");
 		check("NestWhileList(#/2 &, 123456, EvenQ)", //

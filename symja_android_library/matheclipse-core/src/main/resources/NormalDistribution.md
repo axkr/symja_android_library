@@ -12,7 +12,7 @@ NormalDistribution()
 
 > returns the standard normal distribution for `m = 0` and `s = 1`.
 
-See:  
+See
 * [Wikipedia - Normal distribution](https://en.wikipedia.org/wiki/Normal_distribution)
 
 ### Examples
