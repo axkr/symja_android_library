@@ -295,6 +295,14 @@ public class BasicTeXTestCase extends TestCase {
 		check("{{a,b,c},{a,c,b},{c,a,b}}", //
 				"\\{\\{a,b,c\\},\\{a,c,b\\},\\{c,a,b\\}\\}");
 	}
+	
+
+	public void testTeX033() {
+		IExpr expr = EvalEngine.get().evaluate("2.7*6");
+		check(expr, //
+				"16.2"); 
+	}
+	
 	public void check(String strEval, String strResult) {
 		StringWriter stw = new StringWriter();
 		texUtil.toTeX(strEval, stw);
@@ -317,7 +325,7 @@ public class BasicTeXTestCase extends TestCase {
 		try {
 			// F.initSymbols();
 			EvalEngine engine = new EvalEngine();
-			texUtil = new TeXUtilities(engine, true);
+			texUtil = new TeXUtilities(engine, true, 5, 7);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

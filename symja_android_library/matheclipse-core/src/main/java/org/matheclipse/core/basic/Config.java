@@ -310,7 +310,7 @@ public class Config {
 	 * Use JavaScript libraryies for the <code>Manipulate()</code> function
 	 */
 	public static boolean USE_MANIPULATE_JS = false;
-	
+
 	/**
 	 * Use visjs.org JavaScript library for visualizing graph theory objects
 	 */
@@ -368,7 +368,6 @@ public class Config {
 					"<meta charset=\"utf-8\">\n" + //
 					"<title>MathCell</title>\n" + //
 					"<link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\">\n" + //
-					"<style></style>\n" + //
 					"</head>\n" + //
 					"\n" + //
 					"<body>\n" + //
@@ -392,6 +391,38 @@ public class Config {
 					"\n" + //
 					"parent.update( id );\n" + //
 					"\n" + //
+					"</script>\n" + //
+					"</div>\n" + //
+					"\n" + //
+					"</body>\n" + //
+					"</html>";//
+
+	/**
+	 * HTML template for JSXGraph
+	 */
+	public final static String JSXGRAPH_PAGE = //
+			"<html>\n" + //
+					"<head>\n" + //
+					"<meta charset=\"utf-8\">\n" + //
+					"<title>JSXGraph</title>\n" + //
+					"</head>\n" + //
+					"\n" + //
+					"<body>\n" + //
+					"\n" + //
+					"<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.3.5/jsxgraph.css\" />\n"
+					+ //
+					"<script src='https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.3.5/jsxgraphcore.js'\n" + //
+					"        type='text/javascript'></script>\n" + //
+					"<script src='https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.3.5/geonext.min.js'\n" + //
+					"        type='text/javascript'></script>\n" + //
+					"\n" + //
+					"<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"
+					+ //
+					"<script>\n" + //
+					"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-10.0,2.0,10.0,-2.0]});\n"
+					+ "board.suspendUpdate();\n" + //
+					"`1`\n" + //
+					"board.unsuspendUpdate();\n" + //
 					"</script>\n" + //
 					"</div>\n" + //
 					"\n" + //
