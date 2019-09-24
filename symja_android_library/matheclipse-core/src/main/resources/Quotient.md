@@ -6,13 +6,19 @@ Quotient(m, n)
 
 > computes the integer quotient of `m` and `n`.
 
+See 
+* [Wikipedia - Quotient](https://en.wikipedia.org/wiki/Quotient)
+* [Wikipedia - Remainder](https://en.wikipedia.org/wiki/Remainder)
+
 ### Examples
+
 ```
 >> Quotient(23, 7)
 3
 ```
  
-Infinite expression Quotient(13, 0) encountered.
+Infinite expression `Quotient(13, 0)` encountered.
+
 ```
 >> Quotient(13, 0)
 ComplexInfinity

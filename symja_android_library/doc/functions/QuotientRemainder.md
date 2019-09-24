@@ -6,7 +6,12 @@ QuotientRemainder(m, n)
 
 > computes a list of the quotient and remainder from division of `m` and `n`.
 
+See 
+* [Wikipedia - Quotient](https://en.wikipedia.org/wiki/Quotient)
+* [Wikipedia - Remainder](https://en.wikipedia.org/wiki/Remainder)
+
 ### Examples
+
 ```
 >> QuotientRemainder(23, 7)
 {3,2}

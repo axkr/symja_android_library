@@ -3,10 +3,12 @@
 ```
 Riffle(list1, list2)
 ```
+
 > insert elements of `list2` between the elements of `list1`.
  
 
 ### Examples
+
 ```
 >> Riffle({a, b, c}, x)
 {a,x,b,x,c}

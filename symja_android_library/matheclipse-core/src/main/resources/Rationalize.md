@@ -3,6 +3,7 @@
 ```
 Rationalize(expression)
 ```
+
 > convert numerical real or imaginary parts in (sub-)expressions into rational numbers.
  
 

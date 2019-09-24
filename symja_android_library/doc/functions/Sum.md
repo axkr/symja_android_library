@@ -15,22 +15,26 @@ Sum(expr, {i, imin, imax, di})
 ```
 Sum(expr, {i, imin, imax}, {j, jmin, jmax}, ...)
 ```
->> evaluates `expr` as a multiple sum, with `{i, ...}, {j, ...}, ...` being in outermost-to-innermost order.
+
+> evaluates `expr` as a multiple sum, with `{i, ...}, {j, ...}, ...` being in outermost-to-innermost order.
 		
 ### Examples
+
 ```
 >> Sum(k, {k, 1, 10})    
 55    
 ```
 
 Double sum:   
-``` 
+
+```
 >> Sum(i * j, {i, 1, 10}, {j, 1, 10})    
 3025    
 ```
 
 Symbolic sums are evaluated: 
-```  
+
+```
 >> Sum(k, {k, 1, n})    
 1/2*n*(1+n)
 
@@ -44,13 +48,15 @@ Symbolic sums are evaluated:
 HarmonicNumber(n, 2)    
 ```
 
-Verify algebraic identities:    
+Verify algebraic identities:   
+ 
 ```
 >> Simplify(Sum(x ^ 2, {x, 1, y}) - y * (y + 1) * (2 * y + 1) / 6)   
 0     
 ```
  
-Infinite sums:    
+Infinite sums:  
+  
 ```
 >> Sum(1 / 2 ^ i, {i, 1, Infinity})    
 1    

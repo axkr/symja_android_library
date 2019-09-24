@@ -13,6 +13,9 @@ See:
 
 ```
 >> Refine(Sin(k*Pi), Element(k, Integers))
-0
+0 
+
+>> Refine(D(Abs(x),x), Element(x, Reals)) 
+x/Abs(x) 
 ```
 

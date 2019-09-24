@@ -12,7 +12,7 @@ Quantile(list, {q1, q2, ...})
 
 > returns a list of the `q`-Quantiles of `list`. 
 
-See:
+See
 * [Wikipedia - Quantile](https://en.wikipedia.org/wiki/Quantile)
 
 `Quantile` can be applied to the following distributions:
@@ -23,7 +23,7 @@ See:
 
 ### Examples
 
-``` 
+```
 >> Quantile({1,2}, 0.5)
 1
 

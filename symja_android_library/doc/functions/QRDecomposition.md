@@ -1,12 +1,16 @@
 ## QRDecomposition
 
 ```
-QRDecomposition(matrix)
+QRDecomposition(A)
 ```
 
-> computes the QR decomposition of the `matrix`.
+> computes the QR decomposition of the matrix `A`. The QR decomposition is a decomposition of a matrix `A` into a product `A = Q.R` of an unitary matrix `Q` and an upper triangular matrix `R`. 
+
+See 
+* [Wikipedia - QR decomposition](https://en.wikipedia.org/wiki/QR_decomposition)
 
 ### Examples
+
 ```
 >> QRDecomposition({{1, 2}, {3, 4}, {5, 6}})
 {

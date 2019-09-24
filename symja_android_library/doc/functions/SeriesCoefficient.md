@@ -12,4 +12,3 @@ SeriesCoefficient(expr, {x, x0, n})
 >> SeriesCoefficient(Sin(x),{x,f+g,n}) 
 Piecewise({{Sin(f+g+1/2*n*Pi)/n!,n>=0}},0)
 ```
-    

@@ -3,6 +3,7 @@
 ```
 Take(expr, n)
 ```
+
 > returns `expr` with all but the first `n` leaves removed.
 
 ### Examples

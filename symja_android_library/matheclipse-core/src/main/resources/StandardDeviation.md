@@ -3,6 +3,7 @@
 ```
 StandardDeviation(list)
 ```
+
 > computes the standard deviation of `list`. `list` may consist of numerical values or symbols. Numerical values may be real or complex.
 
 `StandardDeviation({{a1, a2, ...}, {b1, b2, ...}, ...})` will yield
@@ -13,6 +14,9 @@ StandardDeviation(list)
 > [BernoulliDistribution](BernoulliDistribution.md), [BinomialDistribution](BinomialDistribution.md), [DiscreteUniformDistribution](DiscreteUniformDistribution.md), [ErlangDistribution](ErlangDistribution.md), [ExponentialDistribution](ExponentialDistribution.md), [FrechetDistribution](FrechetDistribution.md), 
 [GammaDistribution](GammaDistribution.md), [GeometricDistribution](GeometricDistribution.md), [GumbelDistribution](GumbelDistribution.md), [HypergeometricDistribution](HypergeometricDistribution.md), [LogNormalDistribution](LogNormalDistribution.md), [NakagamiDistribution](NakagamiDistribution.md), [NormalDistribution](NormalDistribution.md), 
 [PoissonDistribution](PoissonDistribution.md), [StudentTDistribution](StudentTDistribution.md), [WeibullDistribution](WeibullDistribution.md) 
+
+See
+* [Wikipedia - Standard deviation](https://en.wikipedia.org/wiki/Standard_deviation)
 
 ### Examples
 

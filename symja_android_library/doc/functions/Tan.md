@@ -12,6 +12,7 @@ See:
 * [Wikipedia - Trigonometric functions](https://en.wikipedia.org/wiki/Trigonometric_functions)
 
 ### Examples
+
 ```
 >> Tan(1/4*Pi)
 1

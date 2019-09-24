@@ -1,19 +1,23 @@
 ## Set
 
-``` 
+```
 Set(expr, value)
 
 expr = value
-``` 
+```
+
 > evaluates `value` and assigns it to `expr`.
 
-``` 
+```
 {s1, s2, s3} = {v1, v2, v3}
-``` 
+```
+
 > sets multiple symbols `(s1, s2, ...)` to the corresponding values `(v1, v2, ...)`.
 
 ### Examples
-`Set` can be used to give a symbol a value:  
+
+`Set` can be used to give a symbol a value: 
+
 ```   
 >> a = 3    
 3  
@@ -22,7 +26,8 @@ expr = value
 3
 ```
  
-You can set multiple values at once using lists:    
+You can set multiple values at once using lists: 
+   
 ```
 >> {a, b, c} = {10, 2, 3}    
 {10,2,3}    
@@ -34,7 +39,8 @@ You can set multiple values at once using lists:
 10    
 ```
 
-`Set` evaluates its right-hand side immediately and assigns it to the left-hand side:   
+`Set` evaluates its right-hand side immediately and assigns it to the left-hand side: 
+  
 ``` 
 >> a    
 1    
@@ -49,14 +55,16 @@ You can set multiple values at once using lists:
 1    
 ```
 
-'Set' always returns the right-hand side, which you can again use in an assignment:    
+'Set' always returns the right-hand side, which you can again use in an assignment: 
+   
 ```
 >> a = b = c = 2    
 >> a == b == c == 2    
 True    
 ```
 
-'Set' supports assignments to parts:    
+'Set' supports assignments to parts:
+    
 ```
 >> A = {{1, 2}, {3, 4}}    
 >> A[[1, 2]] = 5    
@@ -73,9 +81,10 @@ True
 ```
  
 Set a submatrix: 
+
 ```   
 >> B = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}    
 >> B[[1;;2, 2;;-1]] = {{t, u}, {y, z}}   
 >> B    
 {{1, t, u}, {4, y, z}, {7, 8, 9}}    
-```   
+```

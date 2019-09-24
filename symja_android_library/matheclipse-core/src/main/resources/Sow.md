@@ -10,4 +10,7 @@ Sow(expr)
 ```
 >> Reap(Sow(3); Sow(1))
 {1,{{3,1}}}
-``` 
+```
+
+### Related terms
+[Reap](Reap.md)

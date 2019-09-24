@@ -35,12 +35,14 @@ f(x)
 ```
 
 Simplify with an assumption:
+
 ```
 >> Simplify(Sqrt(x^2), Assumptions -> x>0)
 x
 ```
 
 For `Assumptions` you can define the assumption directly as second argument:
+
 ```
 >> Simplify(Sqrt(x^2), x>0)
 x
@@ -52,6 +54,7 @@ Abs(x)
 ```
 
 With this "complexity function" the `Abs` expression gets a "heavier weight".
+
 ```
 >> complexity(x_) := 2*Count(x, _Abs, {0, 10}) + LeafCount(x)
 

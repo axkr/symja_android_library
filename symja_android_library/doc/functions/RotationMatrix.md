@@ -6,6 +6,8 @@ RotationMatrix(theta)
 
 > yields a rotation matrix for the angle `theta`.
 
+See
+* [Wikipedia - Rotation matrix](https://en.wikipedia.org/wiki/Rotation_matrix)
 
 ### Examples
 

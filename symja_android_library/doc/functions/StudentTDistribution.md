@@ -6,7 +6,7 @@ StudentTDistribution(v)
 
 > returns a Student's t-distribution.
     
-See:  
+See
 * [Wikipedia - Student's t-distribution](https://en.wikipedia.org/wiki/Student%27s_t-distribution)
  
 

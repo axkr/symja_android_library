@@ -1,16 +1,19 @@
 ## SingularValueDecomposition
+
 ```
 SingularValueDecomposition(matrix)
 ```
+
 > calculates the singular value decomposition for the `matrix`.
 
-'SingularValueDecomposition' returns `u`, `s`, `w` such that `matrix =u s v`,
-`u' u`=1, `v' v`=1, and `s` is diagonal.
+`SingularValueDecomposition` returns `u`, `s`, `w` such that `matrix =u s v`,
+`u' u=1`, `v' v=1`, and `s` is diagonal.
 
 See:
 * [Wikipedia: Singular value decomposition](https://en.wikipedia.org/wiki/Singular_value_decomposition)
 
 ### Examples
+
 ```
 >> SingularValueDecomposition({{1.5, 2.0}, {2.5, 3.0}}) 
 {
@@ -23,6 +26,7 @@ See:
 ```
 
 Symbolic SVD is not implemented, performing numerically.
+
 ```
 >> SingularValueDecomposition({{3/2, 2}, {5/2, 3}}) 
 {
@@ -35,6 +39,7 @@ Symbolic SVD is not implemented, performing numerically.
 ```
 
 Argument {1, {2}} at position 1 is not a non-empty rectangular matrix.
+
 ```
 >> SingularValueDecomposition({1, {2}})
 SingularValueDecomposition({1, {2}})

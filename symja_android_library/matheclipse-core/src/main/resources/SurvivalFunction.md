@@ -18,6 +18,9 @@ SurvivalFunction(dist)
 
 > returns the survival function as a pure function. 
 
+See
+* [Wikipedia - Survival function](https://en.wikipedia.org/wiki/Survival_function)
+ 
 ### Examples
 
 ```

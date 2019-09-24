@@ -24,4 +24,7 @@ Max(Infinity,y)
 
 >> Sin(k*Pi)
 Sin(k*Pi)
+
+>> Refine(D(Abs(x),x), Element(x, Reals)) 
+x/Abs(x)
 ```  

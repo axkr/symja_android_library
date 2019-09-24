@@ -28,7 +28,7 @@ See:
  {0,0,0}}
 ```
 
-Argument {{1, 0}, {0}} at position 1 is not a non-empty rectangular matrix.
+Argument `{{1, 0}, {0}}` at position `1` is not a non-empty rectangular matrix.
 
 ```
 >> RowReduce({{1, 0}, {0}})   

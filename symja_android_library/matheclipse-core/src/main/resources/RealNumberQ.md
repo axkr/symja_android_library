@@ -4,7 +4,11 @@ RealNumberQ(expr)
 ```
 > returns `True` if `expr` is an explicit number with no imaginary component.
 
+See
+* [Wikipedia - Complex number](https://en.wikipedia.org/wiki/Complex_number)
+
 ### Examples
+
 ```
 >> RealNumberQ[10]
  = True

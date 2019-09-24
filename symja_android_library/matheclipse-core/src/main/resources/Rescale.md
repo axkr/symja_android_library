@@ -29,5 +29,5 @@ Rescale(x,{xmin, xmax},{ymin, ymax})
 
 >> Rescale(x,{xmin, xmax},{ymin, ymax})
 (x*(ymax-ymin))/(xmax-xmin)-(xmin*ymax-xmax*ymin)/(xmax-xmin)
-```  
+```
 

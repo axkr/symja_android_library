@@ -4583,6 +4583,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDo() {
+		check("g(x_) := (Do(If(x < 0, Return(0)), {i, {2, 1, 0, -1}}); x)", //
+				"");
+		check("g(-1)", //
+				"-1");
+		
 		// http://oeis.org/A005132 - Recaman's sequence
 		check("a = {1}; Do( If( a[ [ -1 ] ] - n > 0 && Position( a, a[ [ -1 ] ] - n ) == {}, a = Append( a, a[ [ -1 ] ] - n ), a = Append( a, a[ [ -1 ] ] + n ) ), {n, 2, 70} ); a", //
 				"{1,3,6,2,7,13,20,12,21,11,22,10,23,9,24,8,25,43,62,42,63,41,18,42,17,43,16,44,15,\n"
@@ -8832,6 +8837,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Interval({1,1})", //
 				"Interval({1,1})");
 
+		check("Interval({1.5, 6}) * Interval({0.1, 2.7})", //
+				"Interval({0.15,16.2})");
 		check("Interval({1, 6}) * Interval({0, 2})", //
 				"Interval({0,12})");
 		check("Interval({1, 6}) + Interval({0, 2})", //
@@ -18603,6 +18610,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSymmetricMatrixQ() {
+		// example from https://en.wikipedia.org/wiki/Symmetric_matrix
+		check("SymmetricMatrixQ({{1,7,3}, {7,4,-5}, {3,-5,6}})", //
+				"True");
+		
 		check("SymmetricMatrixQ({{1, 3 + 4*I}, {3 - 4*I, 2}})", //
 				"False");
 		check("SymmetricMatrixQ({{1, 3 + 3*I}, {3 + 3*I, 2}})", //
@@ -18839,6 +18850,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTautologyQ() {
+		// https://en.wikipedia.org/wiki/Tautology_(logic)
+		check("TautologyQ(a || !a)", //
+				"True");
+		
 		check("TautologyQ((a || b) && (! a || ! b))", //
 				"False");
 		check("TautologyQ((a || b) || (! a && ! b))", //

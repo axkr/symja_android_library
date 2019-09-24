@@ -1,7 +1,7 @@
-## Sort
+## SortBy
 
 ```
-Sort(list, f) 
+SortBy(list, f) 
 ```
 
 > sorts `list` (or the leaves of any other expression) according to canonical ordering of the keys that are extracted from the `list`'s elements using `f`. Chunks of leaves that appear the same under `f` are sorted according to their natural order (without applying `f`).
@@ -21,3 +21,4 @@ Sort(f)
 >> SortBy(Total)[{{5, 1}, {10, -9}}] 
 {{10,-9},{5,1}}
 ```
+

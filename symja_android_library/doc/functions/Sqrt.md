@@ -6,7 +6,11 @@ Sqrt(expr)
 
 > returns the square root of `expr`.
  
+See
+* [Wikipedia - Square root](https://en.wikipedia.org/wiki/Square_root)
+
 ### Examples
+
 ```
 >> Sqrt(4)
 2
@@ -22,6 +26,7 @@ a
 ```
 
 Complex numbers:
+
 ```
 >> Sqrt(-4)
 I*2

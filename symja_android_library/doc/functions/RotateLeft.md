@@ -13,6 +13,7 @@ RotateLeft(list, n)
 > rotates the items of `list` by `n` items to the left.
 
 ### Examples
+
 ```
 >> RotateLeft({1, 2, 3})
 {2,3,1}

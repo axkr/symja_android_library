@@ -9,6 +9,7 @@ or
 ```
 ReplaceList(expr, lhs :> rhs)
 ```
+
 > replaces the left-hand-side pattern expression `lhs` in `expr` with the right-hand-side `rhs`.
  
 ### Examples

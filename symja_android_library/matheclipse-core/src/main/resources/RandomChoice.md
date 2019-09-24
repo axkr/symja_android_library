@@ -3,6 +3,7 @@
 ```
 RandomChoice({arg1, arg2, arg3,...})
 ```
+
 > chooses a random `arg` from the list.
  
 ### Examples

@@ -7,7 +7,7 @@ Nest(f, expr, n)
 
 ### Examples
  
-``` 
+```
 >> Nest(f, x, 3)
 f(f(f(x)))
  

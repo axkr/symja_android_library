@@ -12,8 +12,11 @@ Rational(a, b)
 
 > constructs the rational number `a / b`.
 
+See 
+* [Wikipedia - Rational number](https://en.wikipedia.org/wiki/Rational_number)
 
 ### Examples
+
 ```
 >> Head(1/2)
 Rational

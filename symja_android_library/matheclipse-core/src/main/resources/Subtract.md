@@ -1,16 +1,17 @@
 ## Subtract
 
-```  
+```
 Subtract(a, b)
 
 a - b
-```   
+```
+
 > represents the subtraction of `b` from `a`. 
  
 
 ### Examples
 
-```   
+```
 >> 5 - 3
 2
 

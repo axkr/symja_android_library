@@ -6,6 +6,9 @@ SquareMatrixQ(m)
 
 > returns `True` if `m` is a square matrix.
 
+See
+* [Wikipedia - Matrix (mathematics)](https://en.wikipedia.org/wiki/Matrix_(mathematics))
+
 ### Examples
 
 ```
