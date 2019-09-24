@@ -1,6 +1,6 @@
 ## VertexQ
 
-``` 
+```
 VertexQ(graph, vertex)
 ```
 
@@ -10,7 +10,6 @@ VertexQ(graph, vertex)
 See:
 * [Wikipedia - Graph theory](https://en.wikipedia.org/wiki/Graph_theory)
  
-
 ### Examples
 
 ```

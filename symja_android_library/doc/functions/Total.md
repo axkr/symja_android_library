@@ -20,6 +20,7 @@ Total(list, {n})
   
 
 ### Examples
+
 ```
 >> Total({1, 2, 3})
 6

@@ -12,4 +12,3 @@ ToExpression("string", form)
 >> ToExpression("1 + 2 - x \\times 4 \\div 5", TeXForm)
 3-4/5*x
 ```
-  

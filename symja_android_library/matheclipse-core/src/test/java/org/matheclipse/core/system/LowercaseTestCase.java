@@ -18006,6 +18006,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Debian<>6");
 		check("\"Debian\" <> ToString(6)", //
 				"Debian6");
+		check("\"Java\" <> ToString(8)", //
+				"Java8");
+		check("StringJoin(\"Java\", ToString(8))", //
+				"Java8");
 	}
 
 	public void testStringLength() {

@@ -14,11 +14,9 @@ Any object is the same as itself:
 
 ```
 >> a=!=a
- = False
-```
+False
 
-```
->> 1=!=1
+>> 1=!=1.0
 True
 ```
 

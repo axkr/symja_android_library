@@ -4,7 +4,7 @@
 AbsArg(expr)
 ```
 
-> returns a list the 2 values of the real or complex number `Abs(expr), Arg(expr)`.
+> returns a list of 2 values of the complex number `Abs(expr), Arg(expr)`.
 
 ### Examples
 

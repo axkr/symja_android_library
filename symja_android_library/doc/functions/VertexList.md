@@ -1,12 +1,12 @@
 ## VertexList
 
-``` 
+```
 VertexList(graph)
 ```
 
 > convert the `graph` into a list of vertices.
 
-See:
+See
 * [Wikipedia - Graph theory](https://en.wikipedia.org/wiki/Graph_theory)
 
 ### Examples

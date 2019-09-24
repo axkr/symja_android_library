@@ -6,7 +6,8 @@ VertexEccentricity(graph, vertex)
 
 > compute the eccentricity of `vertex` in the `graph`. It's the length of the longest shortest path from the `vertex` to every other vertex in the `graph`.
 
-
+See
+* [Wikipedia - Distance (graph_theory)](https://en.wikipedia.org/wiki/Distance_(graph_theory))
 
 ### Related terms 
 [GraphCenter](GraphCenter.md), [GraphDiameter](GraphDiameter.md), [GraphPeriphery](GraphPeriphery.md), [GraphRadius](GraphRadius.md), [AdjacencyMatrix](AdjacencyMatrix.md), [EdgeList](EdgeList.md),

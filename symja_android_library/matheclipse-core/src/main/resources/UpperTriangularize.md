@@ -12,7 +12,6 @@ UpperTriangularize(matrix, n)
 
 > create a upper triangular matrix from the given `matrix` above the `n`-th subdiagonal.
 
-
 See
 * [Wikipedia - Triangular matrix](https://en.wikipedia.org/wiki/Triangular_matrix)
 

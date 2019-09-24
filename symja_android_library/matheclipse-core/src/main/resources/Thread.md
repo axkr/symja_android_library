@@ -1,4 +1,5 @@
 ## Thread
+
 ```
 Thread(f(args)
 ```

@@ -12,7 +12,7 @@ UniformDistribution( )
 
 > returns a uniform distribution with `min = 0` and `max = 1`.
 
-See:  
+See 
 * [Wikipedia - Uniform distribution (continous)1](https://en.wikipedia.org/wiki/Uniform_distribution_(continuous))
  
 

@@ -1,4 +1,5 @@
 ## Through
+
 ```
 Through(p(f)[x])
 ```
@@ -6,6 +7,7 @@ Through(p(f)[x])
 > gives `p(f(x))`. 
 
 ### Examples
+
 ```
 >> Through(f(g)[x])
 f(g(x))

@@ -13,6 +13,7 @@ See: [Wikipedia: Exclusive or](https://en.wikipedia.org/wiki/Exclusive_or)
 ```
 >> Xor(False, True)
 True
+
 >> Xor(True, True)
 False
 ```
@@ -22,14 +23,19 @@ If an expression does not evaluate to `True` or `False`, `Xor` returns a result 
 ```
 >> Xor(a, False, b)
 Xor(a,b)
+
 >> Xor()
 False
+
 >> Xor(a)
 a
+
 >> Xor(False)
 False
+
 >> Xor(True)
 True
+
 >> Xor(a, b)
 Xor(a,b)
 ```

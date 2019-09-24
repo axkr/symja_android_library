@@ -7,7 +7,7 @@ TimeValue(p, i, n)
 > returns a time value calculation.
   
 
-See:
+See
 * [Wikipedia - Time value of money](https://en.wikipedia.org/wiki/Time_value_of_money)
  
  

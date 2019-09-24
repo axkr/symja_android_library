@@ -19,4 +19,3 @@ Suppress the output of the result:
 >> Timing(FactorInteger(3225275494496681);)
 {0.393,Null}
 ```
-   

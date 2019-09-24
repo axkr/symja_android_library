@@ -12,6 +12,9 @@ ToeplitzMatrix(vector)
 
 > gives a toeplitz matrix of the elements of `vector`.
 
+See
+* [Wikipedia - Toeplitz matrix](https://en.wikipedia.org/wiki/Toeplitz_matrix)
+
 ### Examples
  
 ```

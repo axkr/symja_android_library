@@ -5,7 +5,7 @@ TrigExpand(expr)
 ```
 
 > expands out trigonometric expressions in `expr`.
- 
+
 ### Examples
 
 ```
