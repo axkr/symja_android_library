@@ -303,6 +303,40 @@ public class BasicTeXTestCase extends TestCase {
 				"16.2"); 
 	}
 	
+	public void testTeX034() {
+		IExpr expr = EvalEngine.get().evaluate("ComplexInfinity");
+		check(expr, //
+				"ComplexInfinity"); 
+	}
+	
+	public void testTeX035() {
+		IExpr expr = EvalEngine.get().evaluate("a[[1]]");
+		check(expr, //
+				"a[[1]]"); 
+		expr = EvalEngine.get().evaluate("test[[1,2,3]]");
+		check(expr, //
+				"\\text{test}[[1,2,3]]"); 
+	}
+	
+	public void testTeX036() {
+		try {
+		IExpr expr = new EvalEngine(true).evaluate("HoldForm(f(x,y))");
+		check(expr, //
+				"f(x,y)"); 
+		expr = new EvalEngine(true).evaluate("Defer(f(x,y))");
+		check(expr, //
+				"f(x,y)"); 
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void testTeX037() {
+		IExpr expr = EvalEngine.get().evaluate("f(#,#3,##)");
+		check(expr, //
+				"f(\\text{$\\#$1},\\text{$\\#$3},\\text{$\\#\\#$1})"); 
+	} 
+	
 	public void check(String strEval, String strResult) {
 		StringWriter stw = new StringWriter();
 		texUtil.toTeX(strEval, stw);
@@ -324,7 +358,7 @@ public class BasicTeXTestCase extends TestCase {
 	protected void setUp() {
 		try {
 			// F.initSymbols();
-			EvalEngine engine = new EvalEngine();
+			EvalEngine engine = new EvalEngine(true);
 			texUtil = new TeXUtilities(engine, true, 5, 7);
 		} catch (Exception e) {
 			e.printStackTrace();

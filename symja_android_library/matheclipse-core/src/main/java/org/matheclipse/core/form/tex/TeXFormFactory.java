@@ -196,7 +196,10 @@ public class TeXFormFactory {
 		/** {@inheritDoc} */
 		@Override
 		public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
-			if (f.isAST1()) {
+			if (f.isComplexInfinity()) {
+				buf.append("ComplexInfinity");
+				return true;
+			} else if (f.isAST1()) {
 				if (f.arg1().isOne()) {
 					buf.append("\\infty");
 					return true;
@@ -204,7 +207,18 @@ public class TeXFormFactory {
 					buf.append("- \\infty");
 					return true;
 				}
+			}
+			return false;
+		}
+	}
 
+	private final static class HoldForm extends AbstractConverter {
+
+		/** {@inheritDoc} */
+		@Override
+		public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+			if (f.size() == 2) {
+				fFactory.convert(buf, f.arg1(), 0);
 				return true;
 			}
 			return false;
@@ -518,6 +532,28 @@ public class TeXFormFactory {
 			return fOperator;
 		}
 
+	}
+
+	private final static class Part extends AbstractConverter {
+
+		/** {@inheritDoc} */
+		@Override
+		public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+			if (f.size() > 2) {
+				fFactory.convertHead(buf, f.arg1());
+				buf.append("[[");
+				int argSize = f.argSize();
+				for (int i = 2; i <= argSize; i++) {
+					fFactory.convert(buf, f.get(i), 0);
+					if (i < argSize) {
+						buf.append(",");
+					}
+				}
+				buf.append("]]");
+				return true;
+			}
+			return false;
+		}
 	}
 
 	private final static class Plus extends AbstractOperator {
@@ -1440,7 +1476,7 @@ public class TeXFormFactory {
 		}
 	}
 
-	public void convertHead(final StringBuilder buf, final Object obj) {
+	public void convertHead(final StringBuilder buf, final IExpr obj) {
 		if (obj instanceof ISymbol) {
 			String str = ((ISymbol) obj).getSymbolName();
 			final Object ho = CONSTANT_SYMBOLS.get(((ISymbol) obj).getSymbolName());
@@ -1450,23 +1486,27 @@ public class TeXFormFactory {
 				return;
 			}
 
-			if (str.length() == 1) {
-				buf.append(str);
-			} else {
-				buf.append("\\text{");
-				String header = str;
-				if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-					str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(header);
-					if (str != null) {
-						header = str;
-					}
-				}
-				buf.append(header);
-				buf.append('}');
-			}
+			convertHeader(buf, str);
 			return;
 		}
 		convert(buf, obj, 0);
+	}
+
+	private void convertHeader(final StringBuilder buf, String str) {
+		if (str.length() == 1) {
+			buf.append(str);
+		} else {
+			buf.append("\\text{");
+			String header = str;
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(header);
+				if (str != null) {
+					header = str;
+				}
+			}
+			buf.append(header);
+			buf.append('}');
+		}
 	}
 
 	public void convertInteger(final StringBuilder buf, final IInteger i, final int precedence) {
@@ -1574,10 +1614,12 @@ public class TeXFormFactory {
 		operTab.put(F.CompoundExpression,
 				new AbstractOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("CompoundExpression").getPrecedence(), ", "));
 		operTab.put(F.D, new D());
+		operTab.put(F.Defer, new HoldForm());
 		operTab.put(F.DirectedInfinity, new DirectedInfinity());
 		operTab.put(F.Floor, new UnaryFunction(" \\left \\lfloor ", " \\right \\rfloor "));
 		operTab.put(F.Function, new UnaryFunction("", "\\&"));
 		operTab.put(F.HarmonicNumber, new HarmonicNumber());
+		operTab.put(F.HoldForm, new HoldForm());
 		operTab.put(F.HurwitzZeta, new Zeta());
 		operTab.put(F.Integrate, new Integrate());
 		operTab.put(F.Limit, new Limit());
@@ -1586,11 +1628,13 @@ public class TeXFormFactory {
 		operTab.put(F.$RealVector, new List());
 		operTab.put(F.MatrixForm, new MatrixForm());
 		operTab.put(F.TableForm, new TableForm());
+		operTab.put(F.Part, new Part());
 		operTab.put(F.Plus, new Plus());
 		operTab.put(F.Power, new Power());
 		operTab.put(F.Product, new Product());
 		operTab.put(F.Rational, new Rational());
 		operTab.put(F.Slot, new UnaryFunction("\\text{$\\#$", "}"));
+		operTab.put(F.SlotSequence, new UnaryFunction("\\text{$\\#\\#$", "}"));
 		operTab.put(F.Sqrt, new UnaryFunction("\\sqrt{", "}"));
 		operTab.put(F.Subscript, new Subscript());
 		operTab.put(F.Subsuperscript, new Subsuperscript());
