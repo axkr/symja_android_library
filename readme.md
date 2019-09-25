@@ -25,7 +25,6 @@ Use especially the "2nd" button in the following calculator interfaces:
 Read the [Symja Manual](symja_android_library/doc/index.md) for the description of the Symja language or [browse the available functions](symja_android_library/doc/functions/). We encourage everyone to participate in our [Wiki](https://github.com/axkr/symja_android_library/wiki).
 
 [![Join the chat at https://gitter.im/symja_android_library/Lobby](https://badges.gitter.im/symja_android_library/Lobby.svg)](https://gitter.im/symja_android_library/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-<span class="badge-patreon"><a href="https://www.patreon.com/symja" title="Donate to this project using Patreon"><img src="https://img.shields.io/badge/patreon-donate-yellow.svg" alt="Patreon donate button" /></a></span>
 
 ### Features
 
