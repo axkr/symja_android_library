@@ -20278,6 +20278,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testWeierstrassP() {
+		check("WeierstrassP(z, {0, 0}) ", //
+				"1/z^2");
+		check("WeierstrassP(z, {3, 1}) ", //
+				"1+3/2*Cot(Sqrt(3/2)*z)^2");
 		check("WeierstrassP(5., {1, 2}) ", //
 				"18.35051+I*1.32213*10^-9");
 		check("WeierstrassP(12., {3, 2}) ", //
@@ -20299,6 +20303,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testWeierstrassPPrime() {
+		check("WeierstrassPPrime(z, {0, 0}) ", //
+				"-2/z^3");
+		check("WeierstrassPPrime(z, {3, 1}) ", //
+				"-3*Sqrt(3/2)*Cot(Sqrt(3/2)*z)*Csc(Sqrt(3/2)*z)^2");
+		
 		check("WeierstrassPPrime(2.0, {1,2} )", //
 				"8.39655+I*1.76202*10^-10");
 		check("WeierstrassPPrime(5., {1, 2}) ", //

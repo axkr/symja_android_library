@@ -735,6 +735,13 @@ public class EllipticIntegrals {
 				IAST list = (IAST) ast.arg2();
 				IExpr g2 = list.arg1();
 				IExpr g3 = list.arg2();
+				if (g2.isZero() && g3.isZero()) {
+					return F.Power(u, F.CN2);
+				}
+				if (g2.isNumEqualInteger(F.C3) && g3.isOne()) {
+					// 1 + (3/2) Cot(Sqrt(3/2)*u)^2
+					return F.Plus(F.C1, F.Times(F.C3D2, F.Sqr(F.Cot(F.Times(F.Sqrt(F.C3D2), u)))));
+				}
 				if (u.isNumeric() && g2.isNumeric() && g3.isNumeric()) {
 					try {
 						return F.complexNum(
@@ -772,6 +779,13 @@ public class EllipticIntegrals {
 				IAST list = (IAST) ast.arg2();
 				IExpr g2 = list.arg1();
 				IExpr g3 = list.arg2();
+				if (g2.isZero() && g3.isZero()) {
+					return F.Times(F.CN2, F.Power(u, F.CN3));
+				}
+				if (g2.isNumEqualInteger(F.C3) && g3.isOne()) {
+					// -3 * Sqrt(3/2) * Cot(Sqrt(3/2)*u) * Csc(Sqrt(3/2)*u)^2
+					return F.Times(F.CN3, F.Sqrt(F.C3D2), F.Cot(F.Times(F.Sqrt(F.C3D2), u)), F.Sqr(F.Csc(F.Times(F.Sqrt(F.C3D2), u))));
+				}
 				if (u.isNumeric() && g2.isNumeric() && g3.isNumeric()) {
 					try {
 						return F.complexNum(EllipticFunctionsJS.weierstrassPPrime(u.evalComplex(), g2.evalComplex(),
