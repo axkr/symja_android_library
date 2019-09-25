@@ -307,9 +307,9 @@ public class Config {
 	public static boolean PACKAGE_MODE = true;
 
 	/**
-	 * Use JavaScript libraryies for the <code>Manipulate()</code> function
+	 * Use JavaScript libraries for the <code>Manipulate()</code> function
 	 */
-	public static boolean USE_MANIPULATE_JS = false;
+	public static boolean USE_MANIPULATE_JS = true;
 
 	/**
 	 * Use visjs.org JavaScript library for visualizing graph theory objects

@@ -43,7 +43,7 @@ public abstract class BasePlotExample {
 					"\n" + //
 					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.4/build/math.js\"></script>" + //
 					"\n" + //
-					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.7.5/build/mathcell.js\"></script>\n"
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.7.7/build/mathcell.js\"></script>\n"
 					+ //
 					"<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>" +//
 					"\n" + //
@@ -74,7 +74,6 @@ public abstract class BasePlotExample {
 
 	public void generateHTML() {
 		try {
-			Config.USE_MANIPULATE_JS = true;
 			ExprEvaluator util = new ExprEvaluator();
 
 			IExpr result = util.eval(exampleFunction());
