@@ -968,23 +968,24 @@ public class ManipulateFunction {
 			if (ast.arg2().isList()) {
 				double xDelta = (boundingbox[2] - boundingbox[0]) / 10;
 				double yDelta = (boundingbox[1] - boundingbox[3]) / 10;
-				double xPos1 = boundingbox[0] + xDelta;
-				double xPos2 = boundingbox[2] - xDelta;
-				double yPos = boundingbox[1] - yDelta;
+				double xPos1Slider = boundingbox[0] + xDelta;
+				double xPos2Slider = boundingbox[2] - xDelta;
+				double yPosSlider = boundingbox[1] - yDelta;
 				StringBuilder slider = new StringBuilder();
-				StringBuilder variable = new StringBuilder();
 				for (int i = 2; i < ast.size(); i++) {
 					if (ast.get(i).isList()) {
-						if (!jsxgraphSingleSlider((IAST) ast.getAST(i), slider, variable, sliderNames, xPos1, xPos2,
-								yPos, toJS)) {
+						if (!jsxgraphSingleSlider((IAST) ast.getAST(i), slider, sliderNames, xPos1Slider, xPos2Slider,
+								yPosSlider, toJS)) {
 							return null;
 						}
-						yPos -= yDelta;
+						yPosSlider -= yDelta;
 					} else {
 						break;
 					}
 				}
 				js = js.replace("`1`", slider.toString());
+				// TODO cleanup
+				StringBuilder variable = new StringBuilder();
 				js = js.replace("`2`", variable.toString());
 			}
 		} else {
@@ -999,6 +1000,7 @@ public class ManipulateFunction {
 		if (plot.size() < 2) {
 			return F.NIL;
 		}
+		// xmin, ymax, xmax, ymin
 		double[] boundingbox = new double[] { -5.0, 5.0, 5.0, -5.0 };
 		String js = JSXGRAPH;
 		List<String> sliderNames = new ArrayList<String>();
@@ -1135,6 +1137,14 @@ public class ManipulateFunction {
 			boundingbox[3] = -5.0;
 		}
 
+		double xDelta = (boundingbox[2] - boundingbox[0]) / 20;
+		double yDelta = (boundingbox[1] - boundingbox[3]) / 20;
+		// add some "padding"
+		boundingbox[0] = boundingbox[0] - xDelta;// xMin
+		boundingbox[2] = boundingbox[2] + xDelta;// xMAx
+		boundingbox[1] = boundingbox[1] + yDelta;// yMax
+		boundingbox[3] = boundingbox[3] - yDelta;// yMin
+
 		List<String> sliderNames = new ArrayList<String>();
 		js = jsxgraphSlidersFromList(ast, js, boundingbox, sliderNames, toJS);
 
@@ -1192,8 +1202,8 @@ public class ManipulateFunction {
 		}
 	}
 
-	private static boolean jsxgraphSingleSlider(final IAST sliderRange, StringBuilder slider, StringBuilder variable,
-			List<String> sliderNames, double x1, double x2, double y, JavaScriptFormFactory toJS) {
+	private static boolean jsxgraphSingleSlider(final IAST sliderRange, StringBuilder slider, List<String> sliderNames,
+			double xPos1Slider, double xPos2Slider, double yPosSlider, JavaScriptFormFactory toJS) {
 
 		if (sliderRange.isAST3() || sliderRange.size() == 5) {
 			IExpr step = null;
@@ -1222,13 +1232,13 @@ public class ManipulateFunction {
 			slider.append(" = board.create('slider',");
 
 			slider.append("[[");
-			slider.append(x1);
+			slider.append(xPos1Slider);
 			slider.append(",");
-			slider.append(y);
+			slider.append(yPosSlider);
 			slider.append("],[");
-			slider.append(x2);
+			slider.append(xPos2Slider);
 			slider.append(",");
-			slider.append(y);
+			slider.append(yPosSlider);
 			slider.append("],[");
 			toJS.convert(slider, sliderRange.arg2());
 			slider.append(",");
