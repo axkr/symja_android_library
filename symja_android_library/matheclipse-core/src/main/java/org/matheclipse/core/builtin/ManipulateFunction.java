@@ -799,7 +799,7 @@ public class ManipulateFunction {
 
 		String js = JSXGRAPH;
 		List<String> sliderNames = new ArrayList<String>();
-		js = jsxgraphSlidersFromList(ast, js, null, sliderNames, null);
+		js = jsxgraphSlidersFromList(ast, js, null, null);
 		if (js == null) {
 			return F.NIL;
 		}
@@ -924,6 +924,14 @@ public class ManipulateFunction {
 		return F.JSFormData(js, "jsxgraph");
 	}
 
+	/**
+	 * Add all slider names to the sliderNames list.
+	 * 
+	 * @param ast
+	 *            from position 2 to size()-1 there maybe some <code>Manipulate</code> sliders defined
+	 * @param sliderNames
+	 *            collect the names of the sliders
+	 */
 	private static void jsxgraphSliderNamesFromList(final IAST ast, List<String> sliderNames) {
 		if (ast.size() >= 3) {
 			if (ast.arg2().isList()) {
@@ -940,11 +948,17 @@ public class ManipulateFunction {
 		}
 	}
 
+	/**
+	 * Add the slider name to the sliderNames list.
+	 * 
+	 * @param sliderRange
+	 *            a single <code>List(slider-name,...)</code> representing a slider definition
+	 * @param sliderNames
+	 *            collect the names of the sliders
+	 * @return
+	 */
 	private static boolean jsxgraphSingleSliderName(final IAST sliderRange, List<String> sliderNames) {
 		if (sliderRange.isAST3() || sliderRange.size() == 5) {
-			// if (sliderRange.size() == 5) {
-			// step = sliderRange.arg4();
-			// }
 			String sliderSymbol;
 			if (sliderRange.arg1().isList()) {
 				IAST sliderParameters = (IAST) sliderRange.arg1();
@@ -962,8 +976,23 @@ public class ManipulateFunction {
 		return false;
 	}
 
+	/**
+	 * Create JSXGraph sliders.
+	 * 
+	 * @param ast
+	 *            from position 2 to size()-1 there maybe some <code>Manipulate</code> sliders defined
+	 * @param js
+	 *            the JSXGraph JavaScript template
+	 * @param boundingbox
+	 *            an array of double values (length 4) which describes the bounding box
+	 *            <code>[xMin, yMAx, xMax, yMin]</code>
+	 * @param sliderNames
+	 * @param toJS
+	 *            the Symja to JavaScript converter factory
+	 * @return
+	 */
 	private static String jsxgraphSlidersFromList(final IAST ast, String js, double[] boundingbox,
-			List<String> sliderNames, JavaScriptFormFactory toJS) {
+			JavaScriptFormFactory toJS) {
 		if (ast.size() >= 3) {
 			if (ast.arg2().isList()) {
 				double xDelta = (boundingbox[2] - boundingbox[0]) / 10;
@@ -974,8 +1003,8 @@ public class ManipulateFunction {
 				StringBuilder slider = new StringBuilder();
 				for (int i = 2; i < ast.size(); i++) {
 					if (ast.get(i).isList()) {
-						if (!jsxgraphSingleSlider((IAST) ast.getAST(i), slider, sliderNames, xPos1Slider, xPos2Slider,
-								yPosSlider, toJS)) {
+						if (!jsxgraphSingleSlider((IAST) ast.getAST(i), slider, xPos1Slider, xPos2Slider, yPosSlider,
+								toJS)) {
 							return null;
 						}
 						yPosSlider -= yDelta;
@@ -1122,6 +1151,22 @@ public class ManipulateFunction {
 		return F.NIL;
 	}
 
+	/**
+	 * Create JSXGraph bounding box and sliders.
+	 * 
+	 * @param ast
+	 *            from position 2 to size()-1 there maybe some <code>Manipulate</code> sliders defined
+	 * @param boundingbox
+	 *            an array of double values (length 4) which describes the bounding box
+	 *            <code>[xMin, yMAx, xMax, yMin]</code>
+	 * @param js
+	 *            the JSXGraph JavaScript template
+	 * @param function
+	 *            the generated JavaScript function
+	 * @param toJS
+	 *            the Symja to JavaScript converter factory
+	 * @return
+	 */
 	private static IExpr jsxgraphBoundingBox(IAST ast, double[] boundingbox, String js, String function,
 			JavaScriptFormFactory toJS) {
 		if (F.isFuzzyEquals(Double.MAX_VALUE, boundingbox[0], 1e-10)) {
@@ -1146,7 +1191,7 @@ public class ManipulateFunction {
 		boundingbox[3] = boundingbox[3] - yPadding;// yMin
 
 		List<String> sliderNames = new ArrayList<String>();
-		js = jsxgraphSlidersFromList(ast, js, boundingbox, sliderNames, toJS);
+		js = jsxgraphSlidersFromList(ast, js, boundingbox, toJS);
 
 		js = js.replace("`3`", function);
 
@@ -1202,8 +1247,39 @@ public class ManipulateFunction {
 		}
 	}
 
-	private static boolean jsxgraphSingleSlider(final IAST sliderRange, StringBuilder slider, List<String> sliderNames,
-			double xPos1Slider, double xPos2Slider, double yPosSlider, JavaScriptFormFactory toJS) {
+	/**
+	 * Create JSXGraph sliders.
+	 * 
+	 * @param ast
+	 *            from positon 2 to size()-1 there maybe some <code>Manipulate</code> sliders defined
+	 * @param js
+	 *            the JSXGraph JavaScript template
+	 * @param boundingbox
+	 *            an array of double values (length 4) which describes the bounding box
+	 *            <code>[xMin, yMAx, xMax, yMin]</code>
+	 * @param sliderNames
+	 * @param toJS
+	 * @return
+	 */
+
+	/**
+	 * Generate a single JSXGraph JavaScript slider.
+	 * 
+	 * @param sliderRange
+	 * @param slider
+	 * @param sliderNames
+	 * @param xPos1Slider
+	 *            x start position of slider
+	 * @param xPos2Slider
+	 *            x end position of slider
+	 * @param yPosSlider
+	 *            y position of slider
+	 * @param toJS
+	 *            the Symja to JavaScript converter factory
+	 * @return <code>true</code> if successfully generated
+	 */
+	private static boolean jsxgraphSingleSlider(final IAST sliderRange, StringBuilder slider, double xPos1Slider,
+			double xPos2Slider, double yPosSlider, JavaScriptFormFactory toJS) {
 
 		if (sliderRange.isAST3() || sliderRange.size() == 5) {
 			IExpr step = null;
@@ -1219,13 +1295,13 @@ public class ManipulateFunction {
 					return false;
 				}
 				sliderSymbol = OutputFunctions.toJSXGraph(sliderParameters.arg1());
-				sliderNames.add(sliderSymbol);
+				// sliderNames.add(sliderSymbol);
 				defaultValue = OutputFunctions.toJSXGraph(sliderRange.arg2());
 				label = OutputFunctions.toJSXGraph(sliderParameters.arg3());
 			} else {
 				sliderSymbol = OutputFunctions.toJSXGraph(sliderRange.arg1());
 				label = sliderSymbol;
-				sliderNames.add(sliderSymbol);
+				// sliderNames.add(sliderSymbol);
 			}
 			slider.append("var ");
 			slider.append(sliderSymbol);
