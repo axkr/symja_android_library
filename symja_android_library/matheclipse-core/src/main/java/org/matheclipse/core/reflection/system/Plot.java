@@ -46,6 +46,7 @@ public class Plot extends AbstractEvaluator {
 			if (temp.headID() == ID.JSFormData) {
 				return temp;
 			}
+			return F.NIL;
 		}
 		if ((ast.size() >= 3) && (ast.size() <= 4) && ast.arg2().isList()) {
 			try {

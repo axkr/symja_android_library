@@ -145,7 +145,7 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
 		return get(false);
 	}
 
-	public void convertAST(final Appendable buf, final IAST function) throws IOException {
+	public void convertAST(final StringBuilder buf, final IAST function)  {
 		if (function.isNumericFunction()) {
 			try {
 				double value = EvalEngine.get().evalDouble(function);

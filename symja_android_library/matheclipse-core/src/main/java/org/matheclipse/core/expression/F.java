@@ -1,5 +1,9 @@
 package org.matheclipse.core.expression;
 
+import java.awt.Desktop;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.HashMap;
@@ -15,7 +19,6 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
 
-import org.apache.commons.text.StringEscapeUtils;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatContext;
@@ -67,7 +70,6 @@ import org.matheclipse.core.builtin.WXFFunctions;
 import org.matheclipse.core.builtin.WindowFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.Object2Expr;
-import org.matheclipse.core.eval.Console;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -76,6 +78,7 @@ import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.generic.Functors;
+import org.matheclipse.core.graphics.Show2SVG;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -9817,7 +9820,7 @@ public class F {
 			try {
 				IAST show = (IAST) expr;
 				if (show.size() > 1 && show.arg1().isSameHeadSizeGE(Graphics, 2)) {
-					return Console.openSVGOnDesktop(show);
+					return openSVGOnDesktop(show);
 				}
 			} catch (Exception ex) {
 				if (Config.SHOW_STACKTRACE) {
@@ -9830,7 +9833,7 @@ public class F {
 				try {
 					String html = Config.VISJS_PAGE;
 					html = html.replaceAll("`1`", javaScriptStr);
-					return Console.openHTMLOnDesktop(html);
+					return openHTMLOnDesktop(html);
 				} catch (Exception ex) {
 					if (Config.SHOW_STACKTRACE) {
 						ex.printStackTrace();
@@ -9841,10 +9844,10 @@ public class F {
 			IAST jsFormData = (IAST) expr;
 			if (jsFormData.arg2().toString().equals("mathcell")) {
 				try {
-					String manipulateStr =jsFormData.arg1().toString();
+					String manipulateStr = jsFormData.arg1().toString();
 					String html = Config.MATHCELL_PAGE;
 					html = html.replaceAll("`1`", manipulateStr);
-					return Console.openHTMLOnDesktop(html);
+					return openHTMLOnDesktop(html);
 				} catch (Exception ex) {
 					if (Config.SHOW_STACKTRACE) {
 						ex.printStackTrace();
@@ -9853,9 +9856,9 @@ public class F {
 			} else if (jsFormData.arg2().toString().equals("jsxgraph")) {
 				try {
 					String manipulateStr = jsFormData.arg1().toString();
-					String html =  Config.JSXGRAPH_PAGE;
+					String html = Config.JSXGRAPH_PAGE;
 					html = html.replaceAll("`1`", manipulateStr);
-					return Console.openHTMLOnDesktop(html);
+					return openHTMLOnDesktop(html);
 				} catch (Exception ex) {
 					if (Config.SHOW_STACKTRACE) {
 						ex.printStackTrace();
@@ -9866,4 +9869,23 @@ public class F {
 		return null;
 	}
 
+	public static String openSVGOnDesktop(IAST show) throws IOException {
+		StringBuilder stw = new StringBuilder();
+		Show2SVG.graphicsToSVG(show.getAST(1), stw);
+		File temp = File.createTempFile("tempfile", ".svg");
+		BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
+		bw.write(stw.toString());
+		bw.close();
+		Desktop.getDesktop().open(temp);
+		return temp.toString();
+	}
+
+	public static String openHTMLOnDesktop(String html) throws IOException {
+		File temp = File.createTempFile("tempfile", ".html");
+		BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
+		bw.write(html);
+		bw.close();
+		Desktop.getDesktop().open(temp);
+		return temp.toString();
+	}
 }

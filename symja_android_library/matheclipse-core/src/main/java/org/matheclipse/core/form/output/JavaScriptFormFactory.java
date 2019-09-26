@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -40,130 +42,130 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 	private final static Map<ISymbol, String> FUNCTIONS_STR_MATHCELL = new HashMap<ISymbol, String>();
 	private final static Map<ISymbol, String> FUNCTIONS_STR_PURE_JS = new HashMap<ISymbol, String>();
 	static {
- 
-			FUNCTIONS_STR_MATHCELL.put(F.AiryAi, "airyAi");
-			FUNCTIONS_STR_MATHCELL.put(F.AiryBi, "airyBi");
-			FUNCTIONS_STR_MATHCELL.put(F.DirichletEta, "dirichletEta");
-			FUNCTIONS_STR_MATHCELL.put(F.HankelH1, "hankel1");
-			FUNCTIONS_STR_MATHCELL.put(F.HankelH2, "hankel2");
-			FUNCTIONS_STR_MATHCELL.put(F.InverseWeierstrassP, "inverseWeierstrassP");
-			FUNCTIONS_STR_MATHCELL.put(F.SphericalBesselJ, "sphericalBesselJ");
-			FUNCTIONS_STR_MATHCELL.put(F.SphericalBesselY, "sphericalBesselY");
-			FUNCTIONS_STR_MATHCELL.put(F.SphericalHankelH1, "sphericalHankel1");
-			FUNCTIONS_STR_MATHCELL.put(F.SphericalHankelH2, "sphericalHankel2");
 
-			FUNCTIONS_STR_MATHCELL.put(F.WeierstrassHalfPeriods, "weierstrassHalfPeriods");
-			FUNCTIONS_STR_MATHCELL.put(F.WeierstrassInvariants, "weierstrassInvariants");
-			FUNCTIONS_STR_MATHCELL.put(F.WeierstrassP, "weierstrassP");
-			FUNCTIONS_STR_MATHCELL.put(F.WeierstrassPPrime, "weierstrassPPrime");
+		FUNCTIONS_STR_MATHCELL.put(F.AiryAi, "airyAi");
+		FUNCTIONS_STR_MATHCELL.put(F.AiryBi, "airyBi");
+		FUNCTIONS_STR_MATHCELL.put(F.DirichletEta, "dirichletEta");
+		FUNCTIONS_STR_MATHCELL.put(F.HankelH1, "hankel1");
+		FUNCTIONS_STR_MATHCELL.put(F.HankelH2, "hankel2");
+		FUNCTIONS_STR_MATHCELL.put(F.InverseWeierstrassP, "inverseWeierstrassP");
+		FUNCTIONS_STR_MATHCELL.put(F.SphericalBesselJ, "sphericalBesselJ");
+		FUNCTIONS_STR_MATHCELL.put(F.SphericalBesselY, "sphericalBesselY");
+		FUNCTIONS_STR_MATHCELL.put(F.SphericalHankelH1, "sphericalHankel1");
+		FUNCTIONS_STR_MATHCELL.put(F.SphericalHankelH2, "sphericalHankel2");
 
-			FUNCTIONS_STR_MATHCELL.put(F.Abs, "abs");
-			FUNCTIONS_STR_MATHCELL.put(F.Arg, "arg");
+		FUNCTIONS_STR_MATHCELL.put(F.WeierstrassHalfPeriods, "weierstrassHalfPeriods");
+		FUNCTIONS_STR_MATHCELL.put(F.WeierstrassInvariants, "weierstrassInvariants");
+		FUNCTIONS_STR_MATHCELL.put(F.WeierstrassP, "weierstrassP");
+		FUNCTIONS_STR_MATHCELL.put(F.WeierstrassPPrime, "weierstrassPPrime");
 
-			FUNCTIONS_STR_MATHCELL.put(F.BesselJ, "besselJ");
-			FUNCTIONS_STR_MATHCELL.put(F.BesselY, "besselY");
-			FUNCTIONS_STR_MATHCELL.put(F.BesselI, "besselI");
-			FUNCTIONS_STR_MATHCELL.put(F.BesselK, "besselK");
+		FUNCTIONS_STR_MATHCELL.put(F.Abs, "abs");
+		FUNCTIONS_STR_MATHCELL.put(F.Arg, "arg");
 
-			// FUNCTIONS_STR_MATHCELL.put(F.Hankel1, "hankel1");
-			// FUNCTIONS_STR_MATHCELL.put(F.Hankel2, "hankel2");
+		FUNCTIONS_STR_MATHCELL.put(F.BesselJ, "besselJ");
+		FUNCTIONS_STR_MATHCELL.put(F.BesselY, "besselY");
+		FUNCTIONS_STR_MATHCELL.put(F.BesselI, "besselI");
+		FUNCTIONS_STR_MATHCELL.put(F.BesselK, "besselK");
 
-			// FUNCTIONS_STR_MATHCELL.put(F.AiryAi, "airyAi");
-			// FUNCTIONS_STR_MATHCELL.put(F.AiryBi, "airyBi");
+		// FUNCTIONS_STR_MATHCELL.put(F.Hankel1, "hankel1");
+		// FUNCTIONS_STR_MATHCELL.put(F.Hankel2, "hankel2");
 
-			FUNCTIONS_STR_MATHCELL.put(F.EllipticF, "ellipticF");
-			FUNCTIONS_STR_MATHCELL.put(F.EllipticK, "ellipticK");
-			FUNCTIONS_STR_MATHCELL.put(F.EllipticE, "ellipticE");
-			FUNCTIONS_STR_MATHCELL.put(F.EllipticPi, "ellipticPi");
+		// FUNCTIONS_STR_MATHCELL.put(F.AiryAi, "airyAi");
+		// FUNCTIONS_STR_MATHCELL.put(F.AiryBi, "airyBi");
 
-			FUNCTIONS_STR_MATHCELL.put(F.JacobiZeta, "jacobiZeta");
-			FUNCTIONS_STR_MATHCELL.put(F.Factorial, "factorial");
-			FUNCTIONS_STR_MATHCELL.put(F.Factorial2, "factorial2");
-			FUNCTIONS_STR_MATHCELL.put(F.Binomial, "binomial");
-			FUNCTIONS_STR_MATHCELL.put(F.LogGamma, "logGamma");
-			FUNCTIONS_STR_MATHCELL.put(F.Gamma, "gamma");
-			FUNCTIONS_STR_MATHCELL.put(F.Beta, "beta");
-			FUNCTIONS_STR_MATHCELL.put(F.Erf, "erf");
-			FUNCTIONS_STR_MATHCELL.put(F.Erfc, "erfc");
+		FUNCTIONS_STR_MATHCELL.put(F.EllipticF, "ellipticF");
+		FUNCTIONS_STR_MATHCELL.put(F.EllipticK, "ellipticK");
+		FUNCTIONS_STR_MATHCELL.put(F.EllipticE, "ellipticE");
+		FUNCTIONS_STR_MATHCELL.put(F.EllipticPi, "ellipticPi");
 
-			FUNCTIONS_STR_MATHCELL.put(F.Hypergeometric0F1, "hypergeometric0F1");
-			FUNCTIONS_STR_MATHCELL.put(F.Hypergeometric1F1, "hypergeometric1F1");
-			// FUNCTIONS_STR_MATHCELL.put(F.Hypergeometric2??, "hypergeometric2F0");
-			FUNCTIONS_STR_MATHCELL.put(F.Hypergeometric2F1, "hypergeometric2F1");
+		FUNCTIONS_STR_MATHCELL.put(F.JacobiZeta, "jacobiZeta");
+		FUNCTIONS_STR_MATHCELL.put(F.Factorial, "factorial");
+		FUNCTIONS_STR_MATHCELL.put(F.Factorial2, "factorial2");
+		FUNCTIONS_STR_MATHCELL.put(F.Binomial, "binomial");
+		FUNCTIONS_STR_MATHCELL.put(F.LogGamma, "logGamma");
+		FUNCTIONS_STR_MATHCELL.put(F.Gamma, "gamma");
+		FUNCTIONS_STR_MATHCELL.put(F.Beta, "beta");
+		FUNCTIONS_STR_MATHCELL.put(F.Erf, "erf");
+		FUNCTIONS_STR_MATHCELL.put(F.Erfc, "erfc");
 
-			FUNCTIONS_STR_MATHCELL.put(F.Exp, "exp");
+		FUNCTIONS_STR_MATHCELL.put(F.Hypergeometric0F1, "hypergeometric0F1");
+		FUNCTIONS_STR_MATHCELL.put(F.Hypergeometric1F1, "hypergeometric1F1");
+		// FUNCTIONS_STR_MATHCELL.put(F.Hypergeometric2??, "hypergeometric2F0");
+		FUNCTIONS_STR_MATHCELL.put(F.Hypergeometric2F1, "hypergeometric2F1");
 
-			FUNCTIONS_STR_MATHCELL.put(F.ProductLog, "lambertW");
-			FUNCTIONS_STR_MATHCELL.put(F.Chop, "chop");
-			FUNCTIONS_STR_MATHCELL.put(F.KroneckerDelta, "kronecker");
+		FUNCTIONS_STR_MATHCELL.put(F.Exp, "exp");
 
-			FUNCTIONS_STR_MATHCELL.put(F.HermiteH, "hermite");
-			FUNCTIONS_STR_MATHCELL.put(F.LaguerreL, "laguerre");
-			FUNCTIONS_STR_MATHCELL.put(F.ChebyshevT, "chebyshevT");
-			FUNCTIONS_STR_MATHCELL.put(F.ChebyshevU, "chebyshevU");
-			FUNCTIONS_STR_MATHCELL.put(F.LegendreP, "legendreP");
-			// FUNCTIONS_STR_MATHCELL.put(F.SpheriacelHarmonic, "sphericalHarmonic");
+		FUNCTIONS_STR_MATHCELL.put(F.ProductLog, "lambertW");
+		FUNCTIONS_STR_MATHCELL.put(F.Chop, "chop");
+		FUNCTIONS_STR_MATHCELL.put(F.KroneckerDelta, "kronecker");
 
-			FUNCTIONS_STR_MATHCELL.put(F.Sin, "sin");
-			FUNCTIONS_STR_MATHCELL.put(F.Cos, "cos");
-			FUNCTIONS_STR_MATHCELL.put(F.Tan, "tan");
-			FUNCTIONS_STR_MATHCELL.put(F.Cot, "cot");
-			FUNCTIONS_STR_MATHCELL.put(F.Sec, "sec");
-			FUNCTIONS_STR_MATHCELL.put(F.Csc, "csc");
+		FUNCTIONS_STR_MATHCELL.put(F.HermiteH, "hermite");
+		FUNCTIONS_STR_MATHCELL.put(F.LaguerreL, "laguerre");
+		FUNCTIONS_STR_MATHCELL.put(F.ChebyshevT, "chebyshevT");
+		FUNCTIONS_STR_MATHCELL.put(F.ChebyshevU, "chebyshevU");
+		FUNCTIONS_STR_MATHCELL.put(F.LegendreP, "legendreP");
+		// FUNCTIONS_STR_MATHCELL.put(F.SpheriacelHarmonic, "sphericalHarmonic");
 
-			FUNCTIONS_STR_MATHCELL.put(F.ArcSin, "arcsin");
-			FUNCTIONS_STR_MATHCELL.put(F.ArcCos, "arccos");
-			FUNCTIONS_STR_MATHCELL.put(F.ArcTan, "arctan");
-			FUNCTIONS_STR_MATHCELL.put(F.ArcCot, "arccot");
-			FUNCTIONS_STR_MATHCELL.put(F.ArcSec, "arcsec");
-			FUNCTIONS_STR_MATHCELL.put(F.ArcCsc, "arccsc");
+		FUNCTIONS_STR_MATHCELL.put(F.Sin, "sin");
+		FUNCTIONS_STR_MATHCELL.put(F.Cos, "cos");
+		FUNCTIONS_STR_MATHCELL.put(F.Tan, "tan");
+		FUNCTIONS_STR_MATHCELL.put(F.Cot, "cot");
+		FUNCTIONS_STR_MATHCELL.put(F.Sec, "sec");
+		FUNCTIONS_STR_MATHCELL.put(F.Csc, "csc");
 
-			FUNCTIONS_STR_MATHCELL.put(F.Sinh, "sinh");
-			FUNCTIONS_STR_MATHCELL.put(F.Cosh, "cosh");
-			FUNCTIONS_STR_MATHCELL.put(F.Tanh, "tanh");
-			FUNCTIONS_STR_MATHCELL.put(F.Coth, "coth");
-			FUNCTIONS_STR_MATHCELL.put(F.Sech, "sech");
-			FUNCTIONS_STR_MATHCELL.put(F.Csch, "csch");
+		FUNCTIONS_STR_MATHCELL.put(F.ArcSin, "arcsin");
+		FUNCTIONS_STR_MATHCELL.put(F.ArcCos, "arccos");
+		FUNCTIONS_STR_MATHCELL.put(F.ArcTan, "arctan");
+		FUNCTIONS_STR_MATHCELL.put(F.ArcCot, "arccot");
+		FUNCTIONS_STR_MATHCELL.put(F.ArcSec, "arcsec");
+		FUNCTIONS_STR_MATHCELL.put(F.ArcCsc, "arccsc");
 
-			FUNCTIONS_STR_MATHCELL.put(F.ArcSinh, "arcsinh");
-			FUNCTIONS_STR_MATHCELL.put(F.ArcCosh, "arccosh");
-			FUNCTIONS_STR_MATHCELL.put(F.ArcTanh, "arctanh");
-			FUNCTIONS_STR_MATHCELL.put(F.ArcCoth, "arccoth");
-			FUNCTIONS_STR_MATHCELL.put(F.ArcSech, "arcsech");
-			FUNCTIONS_STR_MATHCELL.put(F.ArcCsch, "arccsch");
+		FUNCTIONS_STR_MATHCELL.put(F.Sinh, "sinh");
+		FUNCTIONS_STR_MATHCELL.put(F.Cosh, "cosh");
+		FUNCTIONS_STR_MATHCELL.put(F.Tanh, "tanh");
+		FUNCTIONS_STR_MATHCELL.put(F.Coth, "coth");
+		FUNCTIONS_STR_MATHCELL.put(F.Sech, "sech");
+		FUNCTIONS_STR_MATHCELL.put(F.Csch, "csch");
 
-			FUNCTIONS_STR_MATHCELL.put(F.Sinc, "sinc");
-			FUNCTIONS_STR_MATHCELL.put(F.Zeta, "zeta");
-			// FUNCTIONS_STR_MATHCELL.put(F.DirichletEta, "dirichletEta");
-			FUNCTIONS_STR_MATHCELL.put(F.BernoulliB, "bernoulli");
- 
-			FUNCTIONS_STR_PURE_JS.put(F.Abs, "Math.abs");
+		FUNCTIONS_STR_MATHCELL.put(F.ArcSinh, "arcsinh");
+		FUNCTIONS_STR_MATHCELL.put(F.ArcCosh, "arccosh");
+		FUNCTIONS_STR_MATHCELL.put(F.ArcTanh, "arctanh");
+		FUNCTIONS_STR_MATHCELL.put(F.ArcCoth, "arccoth");
+		FUNCTIONS_STR_MATHCELL.put(F.ArcSech, "arcsech");
+		FUNCTIONS_STR_MATHCELL.put(F.ArcCsch, "arccsch");
 
-			FUNCTIONS_STR_PURE_JS.put(F.ArcCos, "Math.acos");
-			FUNCTIONS_STR_PURE_JS.put(F.ArcCosh, "Math.acosh");
-			FUNCTIONS_STR_PURE_JS.put(F.ArcSin, "Math.asin");
-			FUNCTIONS_STR_PURE_JS.put(F.ArcSinh, "Math.asinh");
-			FUNCTIONS_STR_PURE_JS.put(F.ArcTan, "Math.atan");
-			FUNCTIONS_STR_PURE_JS.put(F.ArcTanh, "Math.atanh");
+		FUNCTIONS_STR_MATHCELL.put(F.Sinc, "sinc");
+		FUNCTIONS_STR_MATHCELL.put(F.Zeta, "zeta");
+		// FUNCTIONS_STR_MATHCELL.put(F.DirichletEta, "dirichletEta");
+		FUNCTIONS_STR_MATHCELL.put(F.BernoulliB, "bernoulli");
 
-			FUNCTIONS_STR_PURE_JS.put(F.Ceiling, "Math.ceil");
-			FUNCTIONS_STR_PURE_JS.put(F.Cos, "Math.cos");
-			FUNCTIONS_STR_PURE_JS.put(F.Cosh, "Math.cosh");
-			FUNCTIONS_STR_PURE_JS.put(F.Exp, "Math.exp");
-			FUNCTIONS_STR_PURE_JS.put(F.Floor, "Math.floor");
+		FUNCTIONS_STR_PURE_JS.put(F.Abs, "Math.abs");
 
-			FUNCTIONS_STR_PURE_JS.put(F.Log, "Math.log");
-			FUNCTIONS_STR_PURE_JS.put(F.Max, "Math.max");
-			FUNCTIONS_STR_PURE_JS.put(F.Min, "Math.min");
-			// Power is handled by coding
-			// FUNCTIONS_STR_PURE_JS.put(F.Power, "Math.pow");
+		FUNCTIONS_STR_PURE_JS.put(F.ArcCos, "Math.acos");
+		FUNCTIONS_STR_PURE_JS.put(F.ArcCosh, "Math.acosh");
+		FUNCTIONS_STR_PURE_JS.put(F.ArcSin, "Math.asin");
+		FUNCTIONS_STR_PURE_JS.put(F.ArcSinh, "Math.asinh");
+		FUNCTIONS_STR_PURE_JS.put(F.ArcTan, "Math.atan");
+		FUNCTIONS_STR_PURE_JS.put(F.ArcTanh, "Math.atanh");
 
-			FUNCTIONS_STR_PURE_JS.put(F.Sign, "Math.sign");
-			FUNCTIONS_STR_PURE_JS.put(F.Sin, "Math.sin");
-			FUNCTIONS_STR_PURE_JS.put(F.Sinh, "Math.sinh");
-			FUNCTIONS_STR_PURE_JS.put(F.Tan, "Math.tan");
-			FUNCTIONS_STR_PURE_JS.put(F.Tanh, "Math.tanh");
- 
+		FUNCTIONS_STR_PURE_JS.put(F.Ceiling, "Math.ceil");
+		FUNCTIONS_STR_PURE_JS.put(F.Cos, "Math.cos");
+		FUNCTIONS_STR_PURE_JS.put(F.Cosh, "Math.cosh");
+		FUNCTIONS_STR_PURE_JS.put(F.Exp, "Math.exp");
+		FUNCTIONS_STR_PURE_JS.put(F.Floor, "Math.floor");
+
+		FUNCTIONS_STR_PURE_JS.put(F.Log, "Math.log");
+		FUNCTIONS_STR_PURE_JS.put(F.Max, "Math.max");
+		FUNCTIONS_STR_PURE_JS.put(F.Min, "Math.min");
+		// Power is handled by coding
+		// FUNCTIONS_STR_PURE_JS.put(F.Power, "Math.pow");
+
+		FUNCTIONS_STR_PURE_JS.put(F.Sign, "Math.sign");
+		FUNCTIONS_STR_PURE_JS.put(F.Sin, "Math.sin");
+		FUNCTIONS_STR_PURE_JS.put(F.Sinh, "Math.sinh");
+		FUNCTIONS_STR_PURE_JS.put(F.Tan, "Math.tan");
+		FUNCTIONS_STR_PURE_JS.put(F.Tanh, "Math.tanh");
+
 	}
 
 	public JavaScriptFormFactory(final boolean relaxedSyntax, final boolean reversed, int exponentFigures,
@@ -233,7 +235,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		return FUNCTIONS_STR_PURE_JS.get(symbol);
 	}
 
-	public void convertSymbol(final Appendable buf, final ISymbol symbol) throws IOException {
+	public void convertSymbol(final StringBuilder buf, final ISymbol symbol) {
 
 		if (symbol.isBuiltInSymbol()) {
 			String str = functionHead((ISymbol) symbol);
@@ -260,7 +262,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		return get(false);
 	}
 
-	public void convertAST(final Appendable buf, final IAST function) throws IOException {
+	public void convertAST(final StringBuilder buf, final IAST function) {
 		if (function.isNumericFunction()) {
 			try {
 				double value = EvalEngine.get().evalDouble(function);
@@ -459,8 +461,8 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		convertArgs(buf, head, function);
 	}
 
-	protected boolean convertOperator(final Operator operator, final IAST list, final Appendable buf,
-			final int precedence, ISymbol head) throws IOException {
+	protected boolean convertOperator(final Operator operator, final IAST list, final StringBuilder buf,
+			final int precedence, ISymbol head) {
 		if (!super.convertOperator(operator, list, buf, precedence, head)) {
 			if (javascriptFlavor == USE_MATHCELL) {
 				convertAST(buf, list);
@@ -474,27 +476,34 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 
 	public Operator getOperator(ISymbol head) {
 		if (javascriptFlavor == USE_MATHCELL) {
-			Operator operator = null;
 			if (head.isSymbolID(ID.Equal, ID.Unequal, ID.Less, ID.LessEqual, ID.Greater, ID.GreaterEqual, ID.And, ID.Or,
 					ID.Not)) {
-				String str = head.toString();
-				operator = ASTNodeFactory.MMA_STYLE_FACTORY.get(str);
+				return OutputFormFactory.getOperator(head);
+				// String str = head.toString();
+				// if (fRelaxedSyntax) {
+				// operator = ASTNodeFactory.RELAXED_STYLE_FACTORY.get(str.toLowerCase());
+				// } else {
+				// operator = ASTNodeFactory.MMA_STYLE_FACTORY.get(str);
+				// }
 			}
-			return operator;
+			return null;
 		} else if (javascriptFlavor == USE_JSXGRAPH) {
-			Operator operator = null;
 			if (head.isSymbolID(ID.Plus, ID.Times, ID.Equal, ID.Unequal, ID.Less, ID.LessEqual, ID.Greater,
 					ID.GreaterEqual, ID.And, ID.Or, ID.Not)) {
-				String str = head.toString();
-				operator = ASTNodeFactory.MMA_STYLE_FACTORY.get(str);
+				return OutputFormFactory.getOperator(head);
+				// String str = head.toString();
+				// if (fRelaxedSyntax) {
+				// operator = ASTNodeFactory.RELAXED_STYLE_FACTORY.get(str.toLowerCase());
+				// } else {
+				// operator = ASTNodeFactory.MMA_STYLE_FACTORY.get(str);
+				// }
 			}
-			return operator;
+			return null;
 		}
 		return super.getOperator(head);
 	}
 
-	public void convertComplex(final Appendable buf, final IComplex c, final int precedence, boolean caller)
-			throws IOException {
+	public void convertComplex(final StringBuilder buf, final IComplex c, final int precedence, boolean caller) {
 		buf.append("complex(");
 		convertFraction(buf, c.getRealPart(), 0, NO_PLUS_CALL);
 		buf.append(",");
@@ -502,8 +511,8 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		buf.append(")");
 	}
 
-	public void convertDoubleComplex(final Appendable buf, final IComplexNum dc, final int precedence, boolean caller)
-			throws IOException {
+	public void convertDoubleComplex(final StringBuilder buf, final IComplexNum dc, final int precedence,
+			boolean caller) {
 		buf.append("complex(");
 		convertDoubleString(buf, convertDoubleToFormattedString(dc.getRealPart()), 0, false);
 		buf.append(",");

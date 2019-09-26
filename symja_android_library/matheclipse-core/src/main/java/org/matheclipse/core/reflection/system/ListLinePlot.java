@@ -45,6 +45,7 @@ public class ListLinePlot extends AbstractEvaluator {
 			if (temp.headID() == ID.JSFormData) {
 				return temp;
 			}
+			return F.NIL;
 		}
 		if ((ast.size() == 2) && ast.arg1().isList()) {
 			try {

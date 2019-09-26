@@ -121,7 +121,7 @@ public class Config {
 	 * names,...), with the exception of symbols with only one character (i.e. the variable &quot;i&quot; is different
 	 * from the imaginary unit &quot;I&quot;)
 	 */
-	public static boolean PARSER_USE_LOWERCASE_SYMBOLS = true;
+	public static boolean PARSER_USE_LOWERCASE_SYMBOLS = false;
 
 	/**
 	 * If <code>true</code> the parser doesn't allow "square brackets" instead of "parentheses" for enclosing function
@@ -326,7 +326,7 @@ public class Config {
 					"<head>\n" + //
 					"  <title>VIS-Network</title>\n" + //
 					"\n" + //
-					"  <script type=\"text/javascript\" src=\"https://cdn.jsdelivr.net/npm/vis-network@5.0.0/dist/vis-network.min.js\"></script>\n"
+					"  <script type=\"text/javascript\" src=\"https://cdn.jsdelivr.net/npm/vis-network@6.0.0/dist/vis-network.min.js\"></script>\n"
 					+ //
 					"  <style type=\"text/css\">\n" + //
 					"    #mynetwork {\n" + //
@@ -374,7 +374,7 @@ public class Config {
 					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.4/build/math.js\"></script>" + //
 					"\n" + //
 					"\n" + //
-					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.7.5/build/mathcell.js\"></script>\n"
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.7.7/build/mathcell.js\"></script>\n"
 					+ //
 					"<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
 					+ //
@@ -419,10 +419,11 @@ public class Config {
 					"<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"
 					+ //
 					"<script>\n" + //
-					"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-10.0,2.0,10.0,-2.0]});\n"
-					+ "board.suspendUpdate();\n" + //
+					// "var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true});\n" + //
+					// ,boundingbox:[-7.0,5.0,4.0,-3.0]
+					// "board.suspendUpdate();\n" + //
 					"`1`\n" + //
-					"board.unsuspendUpdate();\n" + //
+					// "board.unsuspendUpdate();\n" + //
 					"</script>\n" + //
 					"</div>\n" + //
 					"\n" + //

@@ -1566,7 +1566,7 @@ public class TeXFormFactory {
 			}
 		}
 		if (context.equals(Context.SYSTEM) || context.isGlobal()) {
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS && context.equals(Context.SYSTEM)) {
 				String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
 				if (str != null) {
 					headStr = str;

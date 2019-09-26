@@ -84,13 +84,6 @@ public class Console {
 	private static PrintWriter stderr = new PrintWriter(new OutputStreamWriter(System.err, StandardCharsets.UTF_8),
 			true);
 
-	static {
-		// distinguish between lower- and uppercase identifiers
-		Config.PARSER_USE_LOWERCASE_SYMBOLS = true;
-		Config.USE_VISJS = true;
-		F.initSymbols(null, null, true);
-	}
-	
 	public static void runConsole(final String args[], PrintWriter out, PrintWriter err) {
 		stdout = out;
 		stderr = err;
@@ -98,6 +91,9 @@ public class Console {
 	}
 
 	public static void main(final String args[]) {
+		Config.PARSER_USE_LOWERCASE_SYMBOLS = true;
+		Config.USE_VISJS = true;
+		F.initSymbols(null, null, true);
 		Console console;
 		try {
 			console = new Console();
@@ -542,26 +538,6 @@ public class Console {
 
 	}
 
-	public static String openSVGOnDesktop(IAST show) throws IOException {
-		StringBuilder stw = new StringBuilder();
-		Show2SVG.graphicsToSVG(show.getAST(1), stw);
-		File temp = File.createTempFile("tempfile", ".svg");
-		BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
-		bw.write(stw.toString());
-		bw.close();
-		Desktop.getDesktop().open(temp);
-		return temp.toString();
-	}
-
-	public static String openHTMLOnDesktop(String html) throws IOException {
-		File temp = File.createTempFile("tempfile", ".html");
-		BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
-		bw.write(html);
-		bw.close();
-		Desktop.getDesktop().open(temp);
-		return temp.toString();
-	}
-
 	// private String[] prettyPrinter3Lines(final String inputExpression) {
 	// IExpr result;
 	//
@@ -620,7 +596,7 @@ public class Console {
 	 * 
 	 */
 
-	public void printPrompt(final PrintWriter out, final String prompt) {
+	private void printPrompt(final PrintWriter out, final String prompt) {
 		out.print(prompt);
 		out.flush();
 	}
@@ -631,7 +607,7 @@ public class Console {
 	 * @return the input string (without the newline)
 	 */
 
-	public String readString() {
+	private String readString() {
 		final StringBuilder input = new StringBuilder();
 		final BufferedReader in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
 		boolean done = false;
@@ -668,7 +644,7 @@ public class Console {
 	 * @return the input string (without the newline)
 	 */
 
-	public String readString(final PrintWriter out, final String prompt) {
+	private String readString(final PrintWriter out, final String prompt) {
 		printPrompt(out, prompt);
 		return readString();
 	}
@@ -679,7 +655,7 @@ public class Console {
 	 * 
 	 * @return default rules textfile name
 	 */
-	public String getDefaultSystemRulesFilename() {
+	private String getDefaultSystemRulesFilename() {
 		return fDefaultSystemRulesFilename;
 	}
 
@@ -689,21 +665,21 @@ public class Console {
 	 * @param extension
 	 *            the file extension i.e. *.svg *.html
 	 */
-	private static void openInBrowser(String fileContent, String extension) {
-		File temp;
-		try {
-			temp = File.createTempFile("document", ".htm");
-			BufferedWriter out = new BufferedWriter(new FileWriter(temp));
-			out.write(fileContent);
-			out.close();
-
-			stdout.println(temp.toURI().toString());
-
-			java.awt.Desktop.getDesktop().browse(temp.toURI());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+	// private static void openInBrowser(String fileContent, String extension) {
+	// File temp;
+	// try {
+	// temp = File.createTempFile("document", ".htm");
+	// BufferedWriter out = new BufferedWriter(new FileWriter(temp));
+	// out.write(fileContent);
+	// out.close();
+	//
+	// stdout.println(temp.toURI().toString());
+	//
+	// java.awt.Desktop.getDesktop().browse(temp.toURI());
+	// } catch (IOException e) {
+	// e.printStackTrace();
+	// }
+	// }
 
 	// private static void openURL(String url) {
 	// if (Desktop.isDesktopSupported()) {

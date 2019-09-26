@@ -82,14 +82,6 @@ public class MMAConsole {
 	private static PrintWriter stderr = new PrintWriter(new OutputStreamWriter(System.err, StandardCharsets.UTF_8),
 			true);
 
-	static {
-		// distinguish between lower- and uppercase identifiers
-		Config.PARSER_USE_LOWERCASE_SYMBOLS = false;
-		Config.USE_VISJS = true;
-		F.initSymbols(null, null, true);
-
-	}
-
 	public static void runConsole(final String args[], PrintWriter out, PrintWriter err) {
 		stdout = out;
 		stderr = err;
@@ -97,7 +89,10 @@ public class MMAConsole {
 	}
 
 	public static void main(final String args[]) {
-
+		// distinguish between lower- and uppercase identifiers
+		Config.PARSER_USE_LOWERCASE_SYMBOLS = false;
+		Config.USE_VISJS = true;
+		F.initSymbols(null, null, true);
 		MMAConsole console;
 		try {
 			console = new MMAConsole();
@@ -105,7 +100,7 @@ public class MMAConsole {
 			e1.printStackTrace();
 			return;
 		}
-		 
+
 		String trimmedInput = null;
 		try {
 			console.setArgs(args);
@@ -428,7 +423,8 @@ public class MMAConsole {
 	/**
 	 * Evaluates the given string-expression and returns the result in <code>OutputForm</code>
 	 * 
-	 * @param trimmedInput a trimmed input string
+	 * @param trimmedInput
+	 *            a trimmed input string
 	 * @return
 	 */
 	public String interpreter(final String trimmedInput) {
