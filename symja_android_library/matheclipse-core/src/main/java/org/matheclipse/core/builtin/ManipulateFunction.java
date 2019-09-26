@@ -1137,13 +1137,13 @@ public class ManipulateFunction {
 			boundingbox[3] = -5.0;
 		}
 
-		double xDelta = (boundingbox[2] - boundingbox[0]) / 20;
-		double yDelta = (boundingbox[1] - boundingbox[3]) / 20;
-		// add some "padding"
-		boundingbox[0] = boundingbox[0] - xDelta;// xMin
-		boundingbox[2] = boundingbox[2] + xDelta;// xMAx
-		boundingbox[1] = boundingbox[1] + yDelta;// yMax
-		boundingbox[3] = boundingbox[3] - yDelta;// yMin
+		// add some "padding" around bounding box
+		double xPadding = (boundingbox[2] - boundingbox[0]) / 20;
+		double yPadding = (boundingbox[1] - boundingbox[3]) / 20;
+		boundingbox[0] = boundingbox[0] - xPadding;// xMin
+		boundingbox[2] = boundingbox[2] + xPadding;// xMax
+		boundingbox[1] = boundingbox[1] + yPadding;// yMax
+		boundingbox[3] = boundingbox[3] - yPadding;// yMin
 
 		List<String> sliderNames = new ArrayList<String>();
 		js = jsxgraphSlidersFromList(ast, js, boundingbox, sliderNames, toJS);
