@@ -4587,7 +4587,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"");
 		check("g(-1)", //
 				"-1");
-		
+
 		// http://oeis.org/A005132 - Recaman's sequence
 		check("a = {1}; Do( If( a[ [ -1 ] ] - n > 0 && Position( a, a[ [ -1 ] ] - n ) == {}, a = Append( a, a[ [ -1 ] ] - n ), a = Append( a, a[ [ -1 ] ] + n ) ), {n, 2, 70} ); a", //
 				"{1,3,6,2,7,13,20,12,21,11,22,10,23,9,24,8,25,43,62,42,63,41,18,42,17,43,16,44,15,\n"
@@ -9146,6 +9146,110 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"a+b");
 		check("JSForm(E^3-Cos(Pi^2/x) )", //
 				"(20.085536923187664)-Math.cos((9.869604401089358)/x)");
+		// Mathcell syntax
+		check("JSForm(Manipulate(Plot(Sin(x)*Cos(1 + a*x), {x, 0, 2*Pi}, PlotRange->{-1,2}), {a,0,10}))", //
+				"MathCell( id, [ { type: 'slider', min: 0, max: 10, name: 'a', label: 'a' }\n" + //
+						" ] );\n" + //
+						"\n" + //
+						"parent.update = function( id ) {\n" + //
+						"\n" + //
+						"var a = getVariable(id, 'a');\n" + //
+						"\n" + //
+						"function z1(x) { return mul(sin(x),cos(add(1,mul(a,x)))); }\n" + //
+						"\n" + //
+						"var p1 = plot( z1, [0, (6.283185307179586)], { } );\n" + //
+						"var data = [ p1 ];\n" + //
+						"var config = { type: 'svg' , yMin: -1, yMax: 2 };\n" + //
+						"evaluate( id, data, config );\n" + //
+						"\n" + //
+						"}");
+		// Mathcell syntax / generate TeX for MathJAX
+		check("JSForm(Manipulate(Factor(x^n + 1), {n, 1, 5, 1}))", //
+				"MathCell( id, [ { type: 'slider', min: 1, max: 5, step: 1, name: 'n', label: 'n' }\n" + //
+						" ] );\n" + //
+						"\n" + //
+						"parent.update = function( id ) {\n" + //
+						"\n" + //
+						"var n = getVariable(id, 'n');\n" + //
+						"\n" + //
+						"\n" + //
+						"var expressions = [ '1+x',\n" + //
+						"'1+x^{2}',\n" + //
+						"'\\\\\\\\left( 1+x\\\\\\\\right) \\\\\\\\,\\\\\\\\left( 1 - x+x^{2}\\\\\\\\right) ',\n" + //
+						"'1+x^{4}',\n" + //
+						"'\\\\\\\\left( 1+x\\\\\\\\right) \\\\\\\\,\\\\\\\\left( 1 - x+x^{2} - x^{3}+x^{4}\\\\\\\\right) ' ];\n"
+						+ //
+						"\n" + //
+						"  var data = '\\\\\\\\[' + expressions[n-1] + '\\\\\\\\]';\n" + //
+						"\n" + //
+						"  data = data.replace( /\\\\\\\\/g, '&#92;' );\n" + //
+						"\n" + //
+						"  var config = {type: 'text', center: true };\n" + //
+						"\n" + //
+						"  evaluate( id, data, config );\n" + //
+						"\n" + //
+						"  MathJax.Hub.Queue( [ 'Typeset', MathJax.Hub, id ] );\n" + //
+						"\n" + //
+						"}");
+		// JSXGraph syntax
+		check("JSForm(ListPlot(Prime(Range(25))))", //
+				"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-1.3,101.75,27.3,-2.75]});\n" + //
+						"board.suspendUpdate();\n" + //
+						"\n" + //
+						"board.create('point', [function() {return 1;},function() {return 2;}],  {name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 2;},function() {return 3;}],  {name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 3;},function() {return 5;}],  {name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 4;},function() {return 7;}],  {name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 5;},function() {return 11;}],  {name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 6;},function() {return 13;}],  {name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 7;},function() {return 17;}],  {name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 8;},function() {return 19;}],  {name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 9;},function() {return 23;}],  {name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 10;},function() {return 29;}],  {name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 11;},function() {return 31;}],  {name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 12;},function() {return 37;}],  {name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 13;},function() {return 41;}],  {name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 14;},function() {return 43;}],  {name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 15;},function() {return 47;}],  {name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 16;},function() {return 53;}],  {name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 17;},function() {return 59;}],  {name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 18;},function() {return 61;}],  {name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 19;},function() {return 67;}],  {name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 20;},function() {return 71;}],  {name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 21;},function() {return 73;}],  {name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 22;},function() {return 79;}],  {name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 23;},function() {return 83;}],  {name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 24;},function() {return 89;}],  {name:'', face:'o', size: 2 } );\n"
+						+ //
+						"board.create('point', [function() {return 25;},function() {return 97;}],  {name:'', face:'o', size: 2 } );\n"
+						+ //
+						"\n" + //
+						"\n" + //
+						"board.unsuspendUpdate();\n" + //
+						"");
 	}
 
 	public void testJoin() {
@@ -18617,7 +18721,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// example from https://en.wikipedia.org/wiki/Symmetric_matrix
 		check("SymmetricMatrixQ({{1,7,3}, {7,4,-5}, {3,-5,6}})", //
 				"True");
-		
+
 		check("SymmetricMatrixQ({{1, 3 + 4*I}, {3 - 4*I, 2}})", //
 				"False");
 		check("SymmetricMatrixQ({{1, 3 + 3*I}, {3 + 3*I, 2}})", //
@@ -18857,7 +18961,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// https://en.wikipedia.org/wiki/Tautology_(logic)
 		check("TautologyQ(a || !a)", //
 				"True");
-		
+
 		check("TautologyQ((a || b) && (! a || ! b))", //
 				"False");
 		check("TautologyQ((a || b) || (! a && ! b))", //
@@ -20307,7 +20411,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-2/z^3");
 		check("WeierstrassPPrime(z, {3, 1}) ", //
 				"-3*Sqrt(3/2)*Cot(Sqrt(3/2)*z)*Csc(Sqrt(3/2)*z)^2");
-		
+
 		check("WeierstrassPPrime(2.0, {1,2} )", //
 				"8.39655+I*1.76202*10^-10");
 		check("WeierstrassPPrime(5., {1, 2}) ", //

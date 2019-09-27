@@ -1,6 +1,7 @@
 package org.matheclipse.core.form.output;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -170,14 +171,27 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 
 	public JavaScriptFormFactory(final boolean relaxedSyntax, final boolean reversed, int exponentFigures,
 			int significantFigures) {
-		this(relaxedSyntax, reversed, exponentFigures, significantFigures, null, USE_PURE_JS);
+		this(relaxedSyntax, reversed, exponentFigures, significantFigures, USE_PURE_JS);
 	}
 
+	/**
+	 * JavaScript converter constructor.
+	 * 
+	 * @param relaxedSyntax
+	 * @param reversed
+	 * @param exponentFigures
+	 * @param significantFigures
+	 * @param javascriptFlavor
+	 */
 	public JavaScriptFormFactory(final boolean relaxedSyntax, final boolean reversed, int exponentFigures,
-			int significantFigures, List<String> sliderNames, int javascriptFlavor) {
+			int significantFigures, int javascriptFlavor) {
 		super(relaxedSyntax, reversed, exponentFigures, significantFigures);
-		this.sliderNames = sliderNames;
+		this.sliderNames = new ArrayList<String>();
 		this.javascriptFlavor = javascriptFlavor;
+	}
+
+	public void appendSlider(String sliderName) {
+		sliderNames.add(sliderName);
 	}
 
 	/**

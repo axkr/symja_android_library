@@ -26,8 +26,6 @@ public class ManipulateFunction {
 					"\n" + //
 					"`3`" + //
 					"\n" + //
-					"`4`" + //
-					"\n" + //
 					"";
 
 	private final static String MATHCELL = //
@@ -35,7 +33,6 @@ public class ManipulateFunction {
 					"\n" + //
 					"parent.update = function( id ) {\n" + //
 					"\n" + //
-					// " var phase = document.getElementById( id + 'phase' ).value;\n" + //
 					"`2`" + //
 					"\n" + //
 					"`3`" + //
@@ -52,71 +49,11 @@ public class ManipulateFunction {
 	private static class Initializer {
 
 		private static void init() {
-			// if (Config.USE_JSXGRAPH) {
-			// F.Manipulate.setEvaluator(new ManipulateJSXGraph());
-			// }
 			if (Config.USE_MANIPULATE_JS) {
 				F.Manipulate.setEvaluator(new Manipulate());
 			}
 		}
 	}
-
-	// private static class ManipulateJSXGraph extends AbstractEvaluator {
-	//
-	// @Override
-	// public IExpr evaluate(final IAST ast, EvalEngine engine) {
-	// try {
-	// if (ast.arg1().isAST(F.ListLinePlot) || //
-	// ast.arg1().isAST(F.ListPlot) || //
-	// ast.arg1().isAST(F.ListPlot3D)) {
-	// IAST plot = (IAST) ast.arg1();
-	// return jsxgraphSliderWithListPlot(ast, plot, engine);
-	// } else if (ast.arg1().isAST(F.Plot) || //
-	// ast.arg1().isAST(F.ParametricPlot) || //
-	// ast.arg1().isAST(F.Plot3D)) {
-	// IAST plot = (IAST) ast.arg1();
-	// if (plot.size() >= 3 && plot.arg2().isList()) {
-	// IAST plotRangeX = (IAST) plot.arg2();
-	// // TODO find better default Y plot range instead of [-5, 5]
-	// IAST plotRangeY = F.List(F.CN5, F.C5);
-	// if (plot.size() >= 4 && plot.arg3().isList()) {
-	// plotRangeY = (IAST) plot.arg3();
-	// }
-	// if (plotRangeX.isAST3() && plotRangeX.arg1().isSymbol()) {
-	// return jsxgraphSliderWithPlot(ast, plot, plotRangeX, plotRangeY, engine);
-	// }
-	// }
-	// // } else if (ast.arg2().isList() && ast.isAST2()) {
-	// // IExpr formula = ast.arg1();
-	// // IAST sliderRange = (IAST) ast.arg2();
-	// // IExpr step = F.C1;
-	// // if (sliderRange.size() == 4 || sliderRange.size() == 5) {
-	// // if (sliderRange.size() == 5) {
-	// // step = sliderRange.arg4();
-	// // }
-	// // if (sliderRange.arg1().isSymbol()) {
-	// // return createSliderWithFormulas(formula, sliderRange, step, engine);
-	// // }
-	// // }
-	// }
-	// } catch (Exception ex) {
-	// if (Config.SHOW_STACKTRACE) {
-	// ex.printStackTrace();
-	// }
-	// }
-	// return F.NIL;
-	// }
-	//
-	// @Override
-	// public int[] expectedArgSize() {
-	// return IOFunctions.ARGS_1_INFINITY;
-	// }
-	//
-	// @Override
-	// public void setUp(final ISymbol newSymbol) {
-	// newSymbol.setAttributes(ISymbol.HOLDALL);
-	// }
-	// }
 
 	private static class Manipulate extends AbstractEvaluator {
 
@@ -192,8 +129,9 @@ public class ManipulateFunction {
 	 */
 	private static IExpr mathcellSliderWithPlot(final IAST ast, IAST plot, IAST plotRangeX, IAST plotRangeY,
 			EvalEngine engine) {
-		int plotID = plot.headID();
+		JavaScriptFormFactory toJS = new JavaScriptFormFactory(true, false, -1, -1, JavaScriptFormFactory.USE_MATHCELL);
 
+		int plotID = plot.headID();
 		final OptionArgs options;
 		if (plotID == ID.Plot3D) {
 			options = new OptionArgs(plot.topHead(), plot, 4, engine);
@@ -220,7 +158,7 @@ public class ManipulateFunction {
 		}
 
 		String js = MATHCELL;
-		js = mathcellSlidersFromList(ast, js);
+		js = mathcellSlidersFromList(ast, js, toJS);
 		if (js == null) {
 			return F.NIL;
 		}
@@ -242,15 +180,15 @@ public class ManipulateFunction {
 			for (int i = 1; i < listOfFunctions.size(); i++) {
 				function.append("function z" + i + "(");
 				ISymbol plotSymbolY = (ISymbol) plotRangeY.arg1();
-				function.append(OutputFunctions.toMathcell(plotSymbolX));
+				toJS.convert(function, plotSymbolX);
 				function.append(",");
-				function.append(OutputFunctions.toMathcell(plotSymbolY));
+				toJS.convert(function, plotSymbolY);
 				function.append(") { return [ ");
-				function.append(OutputFunctions.toMathcell(plotSymbolX));
+				toJS.convert(function, plotSymbolX);
 				function.append(", ");
-				function.append(OutputFunctions.toMathcell(plotSymbolY));
+				toJS.convert(function, plotSymbolY);
 				function.append(", ");
-				function.append(OutputFunctions.toMathcell(listOfFunctions.get(i)));
+				toJS.convert(function, listOfFunctions.get(i));
 				function.append(" ]; }\n");
 			}
 		} else {
@@ -258,9 +196,9 @@ public class ManipulateFunction {
 				function.append("function z");
 				function.append(i);
 				function.append("(");
-				function.append(OutputFunctions.toMathcell(plotSymbolX));
+				toJS.convert(function, plotSymbolX);
 				function.append(") { return ");
-				function.append(OutputFunctions.toMathcell(listOfFunctions.get(i)));
+				toJS.convert(function, listOfFunctions.get(i));
 				function.append("; }\n");
 			}
 
@@ -277,9 +215,9 @@ public class ManipulateFunction {
 			for (int i = 1; i < listOfFunctions.size(); i++) {
 				graphicControl.append("var p" + i + " = ");
 				graphicControl.append("parametric( z" + i + ", ");
-				mathcellRange(graphicControl, plotRangeX, -1);
+				mathcellRange(graphicControl, plotRangeX, -1, toJS);
 				graphicControl.append(", ");
-				mathcellRange(graphicControl, plotRangeY, -1);
+				mathcellRange(graphicControl, plotRangeY, -1, toJS);
 				graphicControl.append(", { colormap: (x,y) => ( 1 - Math.sin(x*y) ) / 2 } );\n");
 			}
 			graphicControl.append("\n  var config = { type: 'threejs' };\n");
@@ -295,23 +233,23 @@ public class ManipulateFunction {
 		} else {
 			if (plotID == ID.ParametricPlot) {
 				graphicControl.append("var data = [ parametric( ");
-				graphicControl.append(OutputFunctions.toMathcell(plotSymbolX));
+				toJS.convert(graphicControl, plotSymbolX);
 				graphicControl.append(" => [");
 				for (int i = 1; i < listOfFunctions.size(); i++) {
 					graphicControl.append("z" + i + "(");
-					graphicControl.append(OutputFunctions.toMathcell(plotSymbolX));
+					toJS.convert(graphicControl, plotSymbolX);
 					graphicControl.append(")");
 					if (i < listOfFunctions.size() - 1) {
 						graphicControl.append(",");
 					}
 				}
 				graphicControl.append("], ");
-				mathcellRange(graphicControl, plotRangeX, 1500);
+				mathcellRange(graphicControl, plotRangeX, 1500, toJS);
 				graphicControl.append(", { } )];\n");
 			} else {
 				for (int i = 1; i < listOfFunctions.size(); i++) {
 					graphicControl.append("var p" + i + " = plot( z" + i + ", ");
-					mathcellRange(graphicControl, plotRangeX, -1);
+					mathcellRange(graphicControl, plotRangeX, -1, toJS);
 					graphicControl.append(", { } );\n");
 				}
 
@@ -339,9 +277,9 @@ public class ManipulateFunction {
 			if (plotRangeY.isAST(F.List, 3)) {
 				// var config = { type: 'svg', yMin: -5, yMax: 5 };
 				graphicControl.append(", yMin: ");
-				graphicControl.append(OutputFunctions.toMathcell(plotRangeY.arg1()));
+				toJS.convert(graphicControl, plotRangeY.arg1());
 				graphicControl.append(", yMax: ");
-				graphicControl.append(OutputFunctions.toMathcell(plotRangeY.arg2()));
+				toJS.convert(graphicControl, plotRangeY.arg2());
 			}
 			graphicControl.append(" };\n");
 
@@ -353,7 +291,7 @@ public class ManipulateFunction {
 		return F.JSFormData(js, "mathcell");
 	}
 
-	private static String mathcellSlidersFromList(final IAST ast, String js) {
+	private static String mathcellSlidersFromList(final IAST ast, String js, JavaScriptFormFactory toJS) {
 		if (ast.size() >= 3) {
 			if (ast.arg2().isList()) {
 				// { type: 'slider', min: 0, max: 2*Math.PI, name: 'phase', label: 'phase' }
@@ -362,7 +300,7 @@ public class ManipulateFunction {
 				StringBuilder variable = new StringBuilder();
 				for (int i = 2; i < ast.size(); i++) {
 					if (ast.get(i).isList()) {
-						if (!mathcellSingleSlider(ast, i, slider, variable)) {
+						if (!mathcellSingleSlider(ast, i, slider, variable, toJS)) {
 							return null;
 						}
 					} else {
@@ -381,9 +319,9 @@ public class ManipulateFunction {
 
 	private static IExpr mathcellSliderWithListPlot(final IAST ast, IAST plot, EvalEngine engine) {
 		// final OptionArgs options = new OptionArgs(plot.topHead(), plot, 2, engine);
-
+		JavaScriptFormFactory toJS = new JavaScriptFormFactory(true, false, -1, -1, JavaScriptFormFactory.USE_MATHCELL);
 		String js = MATHCELL;
-		js = mathcellSlidersFromList(ast, js);
+		js = mathcellSlidersFromList(ast, js, toJS);
 		if (js == null) {
 			return F.NIL;
 		}
@@ -407,9 +345,9 @@ public class ManipulateFunction {
 						for (int i = 1; i < pointList.size(); i++) {
 							IAST rowList = (IAST) pointList.get(i);
 							function.append("[ ");
-							function.append(OutputFunctions.toMathcell(rowList.arg1()));
+							toJS.convert(function, rowList.arg1());
 							function.append(",");
-							function.append(OutputFunctions.toMathcell(rowList.arg2()));
+							toJS.convert(function, rowList.arg2());
 							function.append("] ");
 							if (i < pointList.size() - 1) {
 								function.append(",");
@@ -424,9 +362,9 @@ public class ManipulateFunction {
 						for (int i = 1; i < pointList.size(); i++) {
 							IAST rowList = (IAST) pointList.get(i);
 							function.append("point( [ ");
-							function.append(OutputFunctions.toMathcell(rowList.arg1()));
+							toJS.convert(function, rowList.arg1());
 							function.append(",");
-							function.append(OutputFunctions.toMathcell(rowList.arg2()));
+							toJS.convert(function, rowList.arg2());
 							function.append("], ");
 							function.append(" {size: 2 } )");
 							if (i < pointList.size() - 1) {
@@ -458,11 +396,11 @@ public class ManipulateFunction {
 					for (int i = 1; i < pointList.size(); i++) {
 						IAST rowList = (IAST) pointList.get(i);
 						function.append("point( [ ");
-						function.append(OutputFunctions.toMathcell(rowList.arg1()));
+						toJS.convert(function, rowList.arg1());
 						function.append(",");
-						function.append(OutputFunctions.toMathcell(rowList.arg2()));
+						toJS.convert(function, rowList.arg2());
 						function.append(",");
-						function.append(OutputFunctions.toMathcell(rowList.arg3()));
+						toJS.convert(function, rowList.arg3());
 						function.append("], ");
 						function.append(" {size: 2 } )");
 						if (i < pointList.size() - 1) {
@@ -493,7 +431,7 @@ public class ManipulateFunction {
 						function.append("[ ");
 						function.append(i);
 						function.append(",");
-						function.append(OutputFunctions.toMathcell(pointList.get(i)));
+						toJS.convert(function, pointList.get(i));
 						function.append("] ");
 						if (i < pointList.size() - 1) {
 							function.append(",");
@@ -509,7 +447,7 @@ public class ManipulateFunction {
 						function.append("point( [ ");
 						function.append(i);
 						function.append(",");
-						function.append(OutputFunctions.toMathcell(pointList.get(i)));
+						toJS.convert(function, pointList.get(i));
 						function.append("], ");
 						function.append(" {size: 2 } )");
 						if (i < pointList.size() - 1) {
@@ -536,7 +474,8 @@ public class ManipulateFunction {
 		return F.NIL;
 	}
 
-	private static boolean mathcellSingleSlider(final IAST ast, int i, StringBuilder slider, StringBuilder variable) {
+	private static boolean mathcellSingleSlider(final IAST ast, int i, StringBuilder slider, StringBuilder variable,
+			JavaScriptFormFactory toJS) {
 		IAST sliderRange = (IAST) ast.get(i);
 		if (sliderRange.isAST2() && sliderRange.arg2().isList()) {
 			// assume arg2 is list of button definitions
@@ -549,11 +488,11 @@ public class ManipulateFunction {
 				if (sliderParameters.size() < 4) {
 					return false;
 				}
-				sliderSymbol = OutputFunctions.toMathcell(sliderParameters.arg1());
-				defaultValue = OutputFunctions.toMathcell(sliderRange.arg2());
-				label = OutputFunctions.toMathcell(sliderParameters.arg3());
+				sliderSymbol = toJS.toString(sliderParameters.arg1());
+				defaultValue = toJS.toString(sliderRange.arg2());
+				label = toJS.toString(sliderParameters.arg3());
 			} else {
-				sliderSymbol = OutputFunctions.toMathcell(sliderRange.arg1());
+				sliderSymbol = toJS.toString(sliderRange.arg1());
 				label = sliderSymbol;
 			}
 			if (i > 2) {
@@ -562,7 +501,7 @@ public class ManipulateFunction {
 			slider.append("{ type: 'buttons', values: [");
 			for (int j = 1; j < listOfButtons.size(); j++) {
 				slider.append("'");
-				slider.append(OutputFunctions.toMathcell(listOfButtons.get(j)));
+				toJS.convert(slider, listOfButtons.get(j));
 				slider.append("'");
 				if (j < listOfButtons.size() - 1) {
 					slider.append(",");
@@ -611,23 +550,23 @@ public class ManipulateFunction {
 				if (sliderParameters.size() < 4) {
 					return false;
 				}
-				sliderSymbol = OutputFunctions.toMathcell(sliderParameters.arg1());
-				defaultValue = OutputFunctions.toMathcell(sliderRange.arg2());
-				label = OutputFunctions.toMathcell(sliderParameters.arg3());
+				sliderSymbol = toJS.toString(sliderParameters.arg1());
+				defaultValue = toJS.toString(sliderRange.arg2());
+				label = toJS.toString(sliderParameters.arg3());
 			} else {
-				sliderSymbol = OutputFunctions.toMathcell(sliderRange.arg1());
+				sliderSymbol = toJS.toString(sliderRange.arg1());
 				label = sliderSymbol;
 			}
 			if (i > 2) {
 				slider.append(", ");
 			}
 			slider.append("{ type: 'slider', min: ");
-			slider.append(OutputFunctions.toMathcell(sliderRange.arg2()));
+			toJS.convert(slider, sliderRange.arg2());
 			slider.append(", max: ");
-			slider.append(OutputFunctions.toMathcell(sliderRange.arg3()));
+			toJS.convert(slider, sliderRange.arg3());
 			if (step != null) {
 				slider.append(", step: ");
-				slider.append(OutputFunctions.toMathcell(step));
+				toJS.convert(slider, step);
 			}
 			if (defaultValue != null) {
 				slider.append(", default: ");
@@ -668,13 +607,14 @@ public class ManipulateFunction {
 	 */
 	private static IExpr mathcellSliderWithFormulas(IExpr formula, IAST sliderRange, IExpr stepExpr,
 			EvalEngine engine) {
+		JavaScriptFormFactory toJS = new JavaScriptFormFactory(true, false, -1, -1, JavaScriptFormFactory.USE_MATHCELL);
 		IExpr list = engine.evaluate(F.Table(formula, sliderRange));
 		if (list.isList() && list.size() > 1) {
 			IAST listOfFormulas = (IAST) list;
-			String sliderSymbol = OutputFunctions.toMathcell(sliderRange.arg1());
-			String min = OutputFunctions.toMathcell(sliderRange.arg2());
-			String max = OutputFunctions.toMathcell(sliderRange.arg3());
-			String step = OutputFunctions.toMathcell(stepExpr);
+			String sliderSymbol = toJS.toString(sliderRange.arg1());
+			String min = toJS.toString(sliderRange.arg2());
+			String max = toJS.toString(sliderRange.arg3());
+			String step = toJS.toString(stepExpr);
 			String js = MATHCELL;
 			// { type: 'slider', min: 1, max: 5, step: 1, name: 'n', label: 'n' }
 			StringBuilder slider = new StringBuilder();
@@ -695,10 +635,8 @@ public class ManipulateFunction {
 			variable.append("var ");
 			variable.append(sliderSymbol);
 
-			// variable.append(" = document.getElementById( id + '");
 			variable.append(" = getVariable(id, '");
 			variable.append(sliderSymbol);
-			// variable.append("' ).value;\n");
 			variable.append("');\n");
 
 			js = js.replace("`2`", variable.toString());
@@ -738,16 +676,18 @@ public class ManipulateFunction {
 		return F.NIL;
 	}
 
-	private static void mathcellRange(StringBuilder graphicControl, IAST plotRange, int steps) {
+	private static void mathcellRange(StringBuilder graphicControl, IAST plotRange, int steps,
+			JavaScriptFormFactory toJS) {
 		graphicControl.append("[");
-		mathcellRangeArgs(graphicControl, plotRange, steps);
+		mathcellRangeArgs(graphicControl, plotRange, steps, toJS);
 		graphicControl.append("]");
 	}
 
-	private static void mathcellRangeArgs(StringBuilder graphicControl, IAST plotRange, int steps) {
-		graphicControl.append(OutputFunctions.toMathcell(plotRange.arg2()));
+	private static void mathcellRangeArgs(StringBuilder graphicControl, IAST plotRange, int steps,
+			JavaScriptFormFactory toJS) {
+		toJS.convert(graphicControl, plotRange.arg2());
 		graphicControl.append(", ");
-		graphicControl.append(OutputFunctions.toMathcell(plotRange.arg3()));
+		toJS.convert(graphicControl, plotRange.arg3());
 		if (steps > 0) {
 			graphicControl.append(", ");
 			graphicControl.append(steps);
@@ -768,176 +708,176 @@ public class ManipulateFunction {
 	 * @throws IOException
 	 * @deprecated there are untested changes from ListPLot, ListLinePlot to slider behaviour
 	 */
-	private static IExpr jsxgraphSliderWithPlot(final IAST ast, IAST plot, IAST plotRangeX, IAST plotRangeY,
-			EvalEngine engine) {
-		int plotID = plot.headID();
-
-		final OptionArgs options;
-		if (plotID == ID.Plot3D) {
-			options = new OptionArgs(plot.topHead(), plot, 4, engine);
-			// } else if (plotID == ID.Plot) {
-			// options = new OptionArgs(plot.topHead(), plot, 3, engine);
-		} else {
-			options = new OptionArgs(plot.topHead(), plot, 3, engine);
-		}
-		IExpr plotRange = options.getOption(F.PlotRange);
-		IAST optionPlotRange = F.NIL;
-		if (plotRange.isPresent()) {
-			if (plotRange.isAST(F.List, 3)) {
-				optionPlotRange = F.List(F.Full, F.List(plotRange.first(), plotRange.second()));
-			} else if (plotRange.isReal()) {
-				if (plotID == ID.Plot) {
-					optionPlotRange = F.List(F.Full, F.List(plotRange.negate(), plotRange));
-				} else if (plotID == ID.ListPlot || plotID == ID.ListLinePlot) {
-					optionPlotRange = F.List(F.Full, F.List(F.C0, plotRange));
-				} else if (plotID == ID.ParametricPlot) {
-					optionPlotRange = F.List(F.List(plotRange.negate(), plotRange), //
-							F.List(plotRange.negate(), plotRange));
-				}
-			}
-		}
-
-		String js = JSXGRAPH;
-		List<String> sliderNames = new ArrayList<String>();
-		js = jsxgraphSlidersFromList(ast, js, null, null);
-		if (js == null) {
-			return F.NIL;
-		}
-
-		ISymbol plotSymbolX = (ISymbol) plotRangeX.arg1();
-
-		// function z1(x,y) { return [ x, y, Math.sin( a * x * y ) ]; }
-		StringBuilder function = new StringBuilder();
-
-		if (plotID == ID.Plot3D) {
-			function.append("function z1(");
-			ISymbol plotSymbolY = (ISymbol) plotRangeY.arg1();
-			function.append(OutputFunctions.toJSXGraph(plotSymbolX));
-			function.append(",");
-			function.append(OutputFunctions.toJSXGraph(plotSymbolY));
-			function.append(") { return [ ");
-			function.append(OutputFunctions.toJSXGraph(plotSymbolX));
-			function.append(", ");
-			function.append(OutputFunctions.toJSXGraph(plotSymbolY));
-			function.append(", ");
-			function.append(OutputFunctions.toJSXGraph(plot.arg1(), sliderNames));
-			function.append(" ]; }\n");
-		} else {
-			if (plot.arg1().isList()) {
-				IAST listOfFunctions = (IAST) plot.arg1();
-				for (int i = 1; i < listOfFunctions.size(); i++) {
-					function.append("function z");
-					function.append(i);
-					function.append("(");
-					function.append(OutputFunctions.toJSXGraph(plotSymbolX));
-					function.append(") { return ");
-					function.append(OutputFunctions.toJSXGraph(listOfFunctions.get(i), sliderNames));
-					function.append("; }\n");
-				}
-			} else {
-				function.append("function z1(");
-				function.append(OutputFunctions.toJSXGraph(plotSymbolX));
-				function.append(") { return ");
-				function.append(OutputFunctions.toJSXGraph(plot.arg1(), sliderNames));
-				function.append("; }\n");
-			}
-		}
-		js = js.replace("`3`", function.toString());
-
-		// plot( x => (Math.sin(x*(1+a*x))), [0, 2*Math.PI], { } )
-		StringBuilder graphicControl = new StringBuilder();
-
-		if (plotID == ID.Plot3D) {
-			if (!plotRangeY.isPresent()) {
-				return F.NIL;
-			}
-			graphicControl.append("var p1 = ");
-			graphicControl.append("parametric( z1, ");
-			jsxgraphRange(graphicControl, plotRangeX, -1);
-			graphicControl.append(", ");
-			jsxgraphRange(graphicControl, plotRangeY, -1);
-			graphicControl.append(", { colormap: (x,y) => ( 1 - Math.sin(x*y) ) / 2 } );\n\n\n");
-
-			graphicControl.append("  var config = { type: 'threejs' };\n");
-			graphicControl.append("  var data = [ p1 ];\n");
-		} else {
-			if (plot.arg1().isList()) {
-				IAST listOfFunctions = (IAST) plot.arg1();
-				if (plotID == ID.ParametricPlot) {
-					graphicControl.append("board.create('curve',[");
-					// graphicControl.append(OutputFunctions.toJSXGraph(plotSymbolX));
-					// graphicControl.append(" => [");
-					for (int i = 1; i < listOfFunctions.size(); i++) {
-						graphicControl.append("function(t){return z");
-						graphicControl.append(i);
-						graphicControl.append("(");
-						graphicControl.append(OutputFunctions.toJSXGraph(plotSymbolX));
-						graphicControl.append(");}");
-						if (i < listOfFunctions.size() - 1) {
-							graphicControl.append(",");
-						}
-					}
-					graphicControl.append(", ");
-					jsxgraphRangeArgs(graphicControl, plotRangeX, -1);
-					graphicControl.append("]");
-					graphicControl.append(", { } );\n");
-				} else {
-					for (int i = 1; i < listOfFunctions.size(); i++) {
-						graphicControl.append("var p");
-						graphicControl.append(i);
-						graphicControl.append(" = ");
-						graphicControl.append("board.create('functiongraph',[z");
-						graphicControl.append(i);
-						graphicControl.append(",0,1], {strokeWidth:2});");
-						graphicControl.append(", ");
-						jsxgraphRange(graphicControl, plotRangeX, -1);
-						graphicControl.append(", { } );\n");
-					}
-
-					// var data = [ p1, p2 ];
-					if (plot.arg1().isList()) {
-						// listOfFunctions = (IAST) plot.arg1();
-						graphicControl.append("var data = [ ");
-						for (int i = 1; i < listOfFunctions.size(); i++) {
-							graphicControl.append("p");
-							graphicControl.append(i);
-							if (i < listOfFunctions.size() - 1) {
-								graphicControl.append(", ");
-							}
-						}
-						graphicControl.append(" ];\n");
-					} else {
-						graphicControl.append("var data = [ p1 ];\n");
-					}
-
-				}
-				// graphicControl.append("var config = { type: 'svg' };\n");
-			} else {
-				graphicControl.append("var p1 = ");
-				graphicControl.append("board.create('functiongraph',[z1,0,1], {strokeWidth:2});");
-			}
-
-		}
-
-		js = js.replace("`4`", graphicControl.toString());
-
-		return F.JSFormData(js, "jsxgraph");
-	}
+	// private static IExpr jsxgraphSliderWithPlot(final IAST ast, IAST plot, IAST plotRangeX, IAST plotRangeY,
+	// EvalEngine engine) {
+	// int plotID = plot.headID();
+	//
+	// final OptionArgs options;
+	// if (plotID == ID.Plot3D) {
+	// options = new OptionArgs(plot.topHead(), plot, 4, engine);
+	// // } else if (plotID == ID.Plot) {
+	// // options = new OptionArgs(plot.topHead(), plot, 3, engine);
+	// } else {
+	// options = new OptionArgs(plot.topHead(), plot, 3, engine);
+	// }
+	// IExpr plotRange = options.getOption(F.PlotRange);
+	// IAST optionPlotRange = F.NIL;
+	// if (plotRange.isPresent()) {
+	// if (plotRange.isAST(F.List, 3)) {
+	// optionPlotRange = F.List(F.Full, F.List(plotRange.first(), plotRange.second()));
+	// } else if (plotRange.isReal()) {
+	// if (plotID == ID.Plot) {
+	// optionPlotRange = F.List(F.Full, F.List(plotRange.negate(), plotRange));
+	// } else if (plotID == ID.ListPlot || plotID == ID.ListLinePlot) {
+	// optionPlotRange = F.List(F.Full, F.List(F.C0, plotRange));
+	// } else if (plotID == ID.ParametricPlot) {
+	// optionPlotRange = F.List(F.List(plotRange.negate(), plotRange), //
+	// F.List(plotRange.negate(), plotRange));
+	// }
+	// }
+	// }
+	//
+	// String js = JSXGRAPH;
+	// JavaScriptFormFactory toJS = new JavaScriptFormFactory(true, false, -1, -1, JavaScriptFormFactory.USE_JSXGRAPH);
+	// jsxgraphSliderNamesFromList(ast, toJS);
+	// if (js == null) {
+	// return F.NIL;
+	// }
+	//
+	// ISymbol plotSymbolX = (ISymbol) plotRangeX.arg1();
+	//
+	// // function z1(x,y) { return [ x, y, Math.sin( a * x * y ) ]; }
+	// StringBuilder function = new StringBuilder();
+	//
+	// if (plotID == ID.Plot3D) {
+	// function.append("function z1(");
+	// ISymbol plotSymbolY = (ISymbol) plotRangeY.arg1();
+	// toJS.convert(function, plotSymbolX);
+	// function.append(",");
+	// toJS.convert(function, plotSymbolY);
+	// function.append(") { return [ ");
+	// toJS.convert(function, plotSymbolX);
+	// function.append(", ");
+	// toJS.convert(function, plotSymbolY);
+	// function.append(", ");
+	// toJS.convert(function, plot.arg1());
+	// function.append(" ]; }\n");
+	// } else {
+	// if (plot.arg1().isList()) {
+	// IAST listOfFunctions = (IAST) plot.arg1();
+	// for (int i = 1; i < listOfFunctions.size(); i++) {
+	// function.append("function z");
+	// function.append(i);
+	// function.append("(");
+	// toJS.convert(function, plotSymbolX);
+	// function.append(") { return ");
+	// toJS.convert(function, listOfFunctions.get(i));
+	// function.append("; }\n");
+	// }
+	// } else {
+	// function.append("function z1(");
+	// toJS.convert(function, plotSymbolX);
+	// function.append(") { return ");
+	// toJS.convert(function, plot.arg1());
+	// function.append("; }\n");
+	// }
+	// }
+	// js = js.replace("`3`", function.toString());
+	//
+	// // plot( x => (Math.sin(x*(1+a*x))), [0, 2*Math.PI], { } )
+	// StringBuilder graphicControl = new StringBuilder();
+	//
+	// if (plotID == ID.Plot3D) {
+	// if (!plotRangeY.isPresent()) {
+	// return F.NIL;
+	// }
+	// graphicControl.append("var p1 = ");
+	// graphicControl.append("parametric( z1, ");
+	// jsxgraphRange(graphicControl, plotRangeX, -1, toJS);
+	// graphicControl.append(", ");
+	// jsxgraphRange(graphicControl, plotRangeY, -1, toJS);
+	// graphicControl.append(", { colormap: (x,y) => ( 1 - Math.sin(x*y) ) / 2 } );\n\n\n");
+	//
+	// graphicControl.append(" var config = { type: 'threejs' };\n");
+	// graphicControl.append(" var data = [ p1 ];\n");
+	// } else {
+	// if (plot.arg1().isList()) {
+	// IAST listOfFunctions = (IAST) plot.arg1();
+	// if (plotID == ID.ParametricPlot) {
+	// graphicControl.append("board.create('curve',[");
+	// // graphicControl.append(OutputFunctions.toJSXGraph(plotSymbolX));
+	// // graphicControl.append(" => [");
+	// for (int i = 1; i < listOfFunctions.size(); i++) {
+	// graphicControl.append("function(t){return z");
+	// graphicControl.append(i);
+	// graphicControl.append("(");
+	// toJS.convert(graphicControl, plotSymbolX);
+	// graphicControl.append(");}");
+	// if (i < listOfFunctions.size() - 1) {
+	// graphicControl.append(",");
+	// }
+	// }
+	// graphicControl.append(", ");
+	// jsxgraphRangeArgs(graphicControl, plotRangeX, -1, toJS);
+	// graphicControl.append("]");
+	// graphicControl.append(", { } );\n");
+	// } else {
+	// for (int i = 1; i < listOfFunctions.size(); i++) {
+	// graphicControl.append("var p");
+	// graphicControl.append(i);
+	// graphicControl.append(" = ");
+	// graphicControl.append("board.create('functiongraph',[z");
+	// graphicControl.append(i);
+	// graphicControl.append(",0,1], {strokeWidth:2});");
+	// graphicControl.append(", ");
+	// jsxgraphRange(graphicControl, plotRangeX, -1, toJS);
+	// graphicControl.append(", { } );\n");
+	// }
+	//
+	// // var data = [ p1, p2 ];
+	// if (plot.arg1().isList()) {
+	// // listOfFunctions = (IAST) plot.arg1();
+	// graphicControl.append("var data = [ ");
+	// for (int i = 1; i < listOfFunctions.size(); i++) {
+	// graphicControl.append("p");
+	// graphicControl.append(i);
+	// if (i < listOfFunctions.size() - 1) {
+	// graphicControl.append(", ");
+	// }
+	// }
+	// graphicControl.append(" ];\n");
+	// } else {
+	// graphicControl.append("var data = [ p1 ];\n");
+	// }
+	//
+	// }
+	// // graphicControl.append("var config = { type: 'svg' };\n");
+	// } else {
+	// graphicControl.append("var p1 = ");
+	// graphicControl.append("board.create('functiongraph',[z1,0,1], {strokeWidth:2});");
+	// }
+	//
+	// }
+	//
+	// js = js.replace("`4`", graphicControl.toString());
+	//
+	// return F.JSFormData(js, "jsxgraph");
+	// }
 
 	/**
-	 * Add all slider names to the sliderNames list.
+	 * Add all slider names to the toJS slider names.
 	 * 
 	 * @param ast
 	 *            from position 2 to size()-1 there maybe some <code>Manipulate</code> sliders defined
-	 * @param sliderNames
-	 *            collect the names of the sliders
+	 * @param toJS
+	 *            the Symja to JavaScript converter factory
 	 */
-	private static void jsxgraphSliderNamesFromList(final IAST ast, List<String> sliderNames) {
+	private static void jsxgraphSliderNamesFromList(final IAST ast, JavaScriptFormFactory toJS) {
 		if (ast.size() >= 3) {
 			if (ast.arg2().isList()) {
 				for (int i = 2; i < ast.size(); i++) {
 					if (ast.get(i).isList()) {
-						if (!jsxgraphSingleSliderName((IAST) ast.get(i), sliderNames)) {
+						if (!jsxgraphSingleSliderName((IAST) ast.get(i), toJS)) {
 							return;
 						}
 					} else {
@@ -949,15 +889,15 @@ public class ManipulateFunction {
 	}
 
 	/**
-	 * Add the slider name to the sliderNames list.
+	 * Add the slider name to the toJS slider names.
 	 * 
 	 * @param sliderRange
 	 *            a single <code>List(slider-name,...)</code> representing a slider definition
-	 * @param sliderNames
-	 *            collect the names of the sliders
+	 * @param toJS
+	 *            the Symja to JavaScript converter factory
 	 * @return
 	 */
-	private static boolean jsxgraphSingleSliderName(final IAST sliderRange, List<String> sliderNames) {
+	private static boolean jsxgraphSingleSliderName(final IAST sliderRange, JavaScriptFormFactory toJS) {
 		if (sliderRange.isAST3() || sliderRange.size() == 5) {
 			String sliderSymbol;
 			if (sliderRange.arg1().isList()) {
@@ -965,12 +905,13 @@ public class ManipulateFunction {
 				if (sliderParameters.size() < 4) {
 					return false;
 				}
-				sliderSymbol = OutputFunctions.toJSXGraph(sliderParameters.arg1());
-				sliderNames.add(sliderSymbol);
+				;
+				sliderSymbol = sliderParameters.arg1().toString();
+				toJS.appendSlider(sliderSymbol);
 			} else {
-				sliderSymbol = OutputFunctions.toJSXGraph(sliderRange.arg1());
+				sliderSymbol = sliderRange.arg1().toString();
 			}
-			sliderNames.add(sliderSymbol);
+			toJS.appendSlider(sliderSymbol);
 			return true;
 		}
 		return false;
@@ -1013,13 +954,9 @@ public class ManipulateFunction {
 					}
 				}
 				js = js.replace("`1`", slider.toString());
-				// TODO cleanup
-				StringBuilder variable = new StringBuilder();
-				js = js.replace("`2`", variable.toString());
 			}
 		} else {
 			js = js.replace("`1`", "");
-			js = js.replace("`2`", "");
 		}
 		return js;
 	}
@@ -1032,10 +969,8 @@ public class ManipulateFunction {
 		// xmin, ymax, xmax, ymin
 		double[] boundingbox = new double[] { -5.0, 5.0, 5.0, -5.0 };
 		String js = JSXGRAPH;
-		List<String> sliderNames = new ArrayList<String>();
-		jsxgraphSliderNamesFromList(ast, sliderNames);
-		JavaScriptFormFactory toJS = new JavaScriptFormFactory(true, false, -1, -1, sliderNames,
-				JavaScriptFormFactory.USE_JSXGRAPH);
+		JavaScriptFormFactory toJS = new JavaScriptFormFactory(true, false, -1, -1, JavaScriptFormFactory.USE_JSXGRAPH);
+		jsxgraphSliderNamesFromList(ast, toJS);
 		IExpr arg1 = plot.arg1();
 		if (!arg1.isList()) {
 			arg1 = engine.evaluate(arg1);
@@ -1096,12 +1031,6 @@ public class ManipulateFunction {
 						}
 					}
 					return jsxgraphBoundingBox(ast, boundingbox, js, function.toString(), toJS);
-					// js = js.replace("`3`", function.toString());
-					//
-					// StringBuilder graphicControl = new StringBuilder();
-					// js = js.replace("`4`", graphicControl.toString());
-					//
-					// return F.JSFormData(js, "jsxgraph");
 				}
 				return F.NIL;
 			} else {
@@ -1190,14 +1119,13 @@ public class ManipulateFunction {
 		boundingbox[1] = boundingbox[1] + yPadding;// yMax
 		boundingbox[3] = boundingbox[3] - yPadding;// yMin
 
-		List<String> sliderNames = new ArrayList<String>();
 		js = jsxgraphSlidersFromList(ast, js, boundingbox, toJS);
 
-		js = js.replace("`3`", function);
+		js = js.replace("`2`", function);
 
 		StringBuilder graphicControl = new StringBuilder();
 
-		js = js.replace("`4`", graphicControl.toString());
+		js = js.replace("`3`", graphicControl.toString());
 
 		StringBuilder jsControl = new StringBuilder();
 		jsControl.append("var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[");
@@ -1294,12 +1222,12 @@ public class ManipulateFunction {
 				if (sliderParameters.size() < 4) {
 					return false;
 				}
-				sliderSymbol = OutputFunctions.toJSXGraph(sliderParameters.arg1());
+				sliderSymbol = sliderParameters.arg1().toString();
 				// sliderNames.add(sliderSymbol);
-				defaultValue = OutputFunctions.toJSXGraph(sliderRange.arg2());
-				label = OutputFunctions.toJSXGraph(sliderParameters.arg3());
+				defaultValue = toJS.toString(sliderRange.arg2());
+				label = toJS.toString(sliderParameters.arg3());
 			} else {
-				sliderSymbol = OutputFunctions.toJSXGraph(sliderRange.arg1());
+				sliderSymbol = sliderRange.arg1().toString();
 				label = sliderSymbol;
 				// sliderNames.add(sliderSymbol);
 			}
@@ -1341,112 +1269,21 @@ public class ManipulateFunction {
 		return false;
 	}
 
-	/**
-	 * <p>
-	 * Evaluate <code>Table( &lt;formula&gt;, &lt;sliderRange&gt; )</code>. If the result is a list, then convert this
-	 * list in a JavaScript list of LaTeX formulas, which could be rendered with MathJAX.
-	 * </p>
-	 * 
-	 * @param formula
-	 *            the formula which should be evaluated into a table
-	 * @param sliderRange
-	 * @param stepExpr
-	 * @param engine
-	 * @return
-	 * @throws IOException
-	 */
-	// private static IExpr createSliderWithFormulas(IExpr formula, IAST sliderRange, IExpr stepExpr,
-	// EvalEngine engine) throws IOException {
-	// IExpr list = engine.evaluate(F.Table(formula, sliderRange));
-	// if (list.isList() && list.size() > 1) {
-	// IAST listOfFormulas = (IAST) list;
-	// String sliderSymbol = OutputFunctions.toJSXGraph(sliderRange.arg1());
-	// String min = OutputFunctions.toJSXGraph(sliderRange.arg2());
-	// String max = OutputFunctions.toJSXGraph(sliderRange.arg3());
-	// String step = OutputFunctions.toJSXGraph(stepExpr);
-	// String js = JSXGRAPH;
-	// // { type: 'slider', min: 1, max: 5, step: 1, name: 'n', label: 'n' }
-	// StringBuilder slider = new StringBuilder();
-	// slider.append("{ type: 'slider', min: ");
-	// slider.append(min);
-	// slider.append(", max: ");
-	// slider.append(max);
-	// slider.append(", step: ");
-	// slider.append(step);
-	// slider.append(", name: '");
-	// slider.append(sliderSymbol);
-	// slider.append("', label: '");
-	// slider.append(sliderSymbol);
-	// slider.append("' }\n");
-	// js = js.replace("`1`", slider.toString());
-	//
-	// StringBuilder variable = new StringBuilder();
-	// variable.append("var ");
-	// variable.append(sliderSymbol);
-	//
-	// // variable.append(" = document.getElementById( id + '");
-	// variable.append(" = getVariable(id, '");
-	// variable.append(sliderSymbol);
-	// // variable.append("' ).value;\n");
-	// variable.append("');\n");
-	//
-	// js = js.replace("`2`", variable.toString());
-	//
-	// js = js.replace("`3`", "");
-	//
-	// TeXUtilities texUtil = new TeXUtilities(engine, true);
-	// StringBuilder graphicControl = new StringBuilder();
-	// graphicControl.append("var expressions = [ ");
-	// for (int i = 1; i < listOfFormulas.size(); i++) {
-	// StringWriter stw = new StringWriter();
-	// texUtil.toTeX(listOfFormulas.get(i), stw);
-	// graphicControl.append("'");
-	// String texForm = stw.toString();
-	// // TODO implement better backslash escaping
-	// texForm = texForm.replace("\\", "\\\\\\\\");
-	// graphicControl.append(texForm);
-	// graphicControl.append("'");
-	// if (i < listOfFormulas.size() - 1) {
-	// graphicControl.append(",\n");
-	// }
-	// }
-	// graphicControl.append(" ];\n\n");
-	//
-	// graphicControl.append(" var data = '\\\\\\\\[' + expressions[n-");
-	// graphicControl.append(min);
-	// graphicControl.append("] + '\\\\\\\\]';\n\n");
-	// graphicControl.append(" data = data.replace( /\\\\\\\\/g, '&#92;' );\n\n");
-	// graphicControl.append(" var config = {type: 'text', center: true };\n\n");
-	// graphicControl.append(" evaluate( id, data, config );\n\n");
-	// graphicControl.append(" MathJax.Hub.Queue( [ 'Typeset', MathJax.Hub, id ] );\n");
-	//
-	// js = js.replace("`4`", graphicControl.toString());
-	//
-	// return F.JSFormData(js, "jsxgraph");
-	// }
-	// return F.NIL;
-	// }
-
-	private static void jsxgraphRangeArgs(StringBuilder graphicControl, IAST plotRange, int steps) {
-		graphicControl.append(OutputFunctions.toJSXGraph(plotRange.arg2()));
+	private static void jsxgraphRangeArgs(StringBuilder graphicControl, IAST plotRange, int steps,
+			JavaScriptFormFactory toJS) {
+		toJS.convert(graphicControl, plotRange.arg2());
 		graphicControl.append(", ");
-		graphicControl.append(OutputFunctions.toJSXGraph(plotRange.arg3()));
+		toJS.convert(graphicControl, plotRange.arg3());
 		if (steps > 0) {
 			graphicControl.append(", ");
 			graphicControl.append(steps);
 		}
 	}
 
-	private static void jsxgraphRange(StringBuilder graphicControl, IAST plotRange, int steps) {
+	private static void jsxgraphRange(StringBuilder graphicControl, IAST plotRange, int steps,
+			JavaScriptFormFactory toJS) {
 		graphicControl.append("[");
-		jsxgraphRangeArgs(graphicControl, plotRange, steps);
-		// graphicControl.append(OutputFunctions.toJSXGraph(plotRange.arg2()));
-		// graphicControl.append(", ");
-		// graphicControl.append(OutputFunctions.toJSXGraph(plotRange.arg3()));
-		// if (steps > 0) {
-		// graphicControl.append(", ");
-		// graphicControl.append(steps);
-		// }
+		jsxgraphRangeArgs(graphicControl, plotRange, steps, toJS);
 		graphicControl.append("]");
 	}
 
@@ -1460,7 +1297,4 @@ public class ManipulateFunction {
 
 	}
 
-	// public static void main(String[] args) {
-	// System.out.println(OutputFunctions.toJSXGraph(F.Sin(F.Times(F.C3,F.x,F.y)), null));
-	// }
 }

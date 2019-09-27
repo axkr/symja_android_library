@@ -459,36 +459,7 @@ public final class OutputFunctions {
 	}
 
 	public static String toJavaScript(final IExpr arg1) {
-		return toJavaScript(arg1, new ArrayList<String>());
-	}
-
-	public static String toJavaScript(final IExpr arg1, List<String> sliderNames) {
-		DoubleFormFactory factory = new JavaScriptFormFactory(true, false, -1, -1, sliderNames,
-				JavaScriptFormFactory.USE_PURE_JS);
-		StringBuilder buf = new StringBuilder();
-		factory.convert(buf, arg1);
-		return buf.toString();
-	}
-
-	public static String toMathcell(final IExpr arg1) {
-		return toMathcell(arg1, new ArrayList<String>());
-	}
-
-	public static String toMathcell(final IExpr arg1, List<String> sliderNames) {
-		DoubleFormFactory factory = new JavaScriptFormFactory(true, false, -1, -1, sliderNames,
-				JavaScriptFormFactory.USE_MATHCELL);
-		StringBuilder buf = new StringBuilder();
-		factory.convert(buf, arg1);
-		return buf.toString();
-	}
-
-	public static String toJSXGraph(final IExpr arg1) {
-		return toJSXGraph(arg1, new ArrayList<String>());
-	}
-
-	public static String toJSXGraph(final IExpr arg1, List<String> sliderNames) {
-		DoubleFormFactory factory = new JavaScriptFormFactory(true, false, -1, -1, sliderNames,
-				JavaScriptFormFactory.USE_JSXGRAPH);
+		DoubleFormFactory factory = new JavaScriptFormFactory(true, false, -1, -1, JavaScriptFormFactory.USE_PURE_JS);
 		StringBuilder buf = new StringBuilder();
 		factory.convert(buf, arg1);
 		return buf.toString();
