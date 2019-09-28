@@ -15954,6 +15954,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1.24");
 		check("Round(-1.235512, -0.01)", //
 				"-1.24");
+		check("Round(1.234512, 1/100)", //
+				"123/100");
+		check("Round(-1.235512, 1/100)", //
+				"-31/25");
 		
 		check("Round(-1.235512, -100)", //
 				"0");
