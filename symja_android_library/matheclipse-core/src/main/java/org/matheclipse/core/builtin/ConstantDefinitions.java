@@ -8,6 +8,8 @@ import java.util.Properties;
 
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
+import org.apfloat.Apint;
+import org.apfloat.Aprational;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
@@ -330,6 +332,13 @@ public class ConstantDefinitions {
 		}
 
 		@Override
+		public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
+			// Pi / 180
+			Apfloat pi = ApfloatMath.pi(engine.getNumericPrecision());
+			return F.num(pi.divide(new Apint(180)));
+		}
+
+		@Override
 		public IExpr numericEval(final ISymbol symbol) {
 			return F.num(DEGREE);
 		}
@@ -451,9 +460,10 @@ public class ConstantDefinitions {
 		}
 
 	}
-	 
+
 	private static class GoldenAngle extends AbstractSymbolEvaluator implements ISignedNumberConstant {
-		final static public double GOLDEN_ANGLE =  2.3999632297286533222315555066336138531249990110581;
+		final static public double GOLDEN_ANGLE = 2.3999632297286533222315555066336138531249990110581;
+
 		@Override
 		public IExpr evaluate(final ISymbol symbol) {
 			// (3-Sqrt(5))*Pi
@@ -464,6 +474,14 @@ public class ConstantDefinitions {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.CONSTANT);
+		}
+
+		@Override
+		public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
+			// (3-Sqrt(5)) * Pi
+			Apfloat pi = ApfloatMath.pi(engine.getNumericPrecision());
+			Apfloat five = new Apfloat(5, engine.getNumericPrecision());
+			return F.num(ApfloatMath.sqrt(five).negate().add(new Apint(3)).multiply(pi));
 		}
 
 		@Override
@@ -478,7 +496,6 @@ public class ConstantDefinitions {
 
 	}
 
-	
 	/**
 	 * <pre>
 	 * GoldenRatio
@@ -515,6 +532,14 @@ public class ConstantDefinitions {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.CONSTANT);
+		}
+
+		@Override
+		public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
+			// (1/2)*(1+Sqrt(5))
+			Apfloat five = new Apfloat(5, engine.getNumericPrecision());
+			Apfloat half = new Aprational(Apint.ONE, new Apint(2));
+			return F.num(ApfloatMath.sqrt(five).add(Apfloat.ONE).multiply(half));
 		}
 
 		@Override
