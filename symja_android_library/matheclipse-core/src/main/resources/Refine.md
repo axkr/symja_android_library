@@ -27,4 +27,7 @@ Sin(k*Pi)
 
 >> Refine(D(Abs(x),x), Element(x, Reals)) 
 x/Abs(x)
+
+>> Refine(2/3*Round(x), Element(x,Integers))
+2/3*x
 ```  
