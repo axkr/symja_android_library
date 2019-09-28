@@ -15966,6 +15966,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"230");
 		check("Round(226, -10)", //
 				"230");
+		check("Round({12.5, 62.1, 68.3, 74.5, 80.7}, 5)", //
+				"{10,60,70,75,80}");
 		check("Round({5, 15, 25, 35, 45}, 10)", //
 				"{0,20,20,40,40}");
 		check("Round(75.345677/7.56)", //
