@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -62,7 +63,8 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 
 		FUNCTIONS_STR_MATHCELL.put(F.Abs, "abs");
 		FUNCTIONS_STR_MATHCELL.put(F.Arg, "arg");
-
+		FUNCTIONS_STR_MATHCELL.put(F.Chop, "chop");
+		
 		FUNCTIONS_STR_MATHCELL.put(F.BesselJ, "besselJ");
 		FUNCTIONS_STR_MATHCELL.put(F.BesselY, "besselY");
 		FUNCTIONS_STR_MATHCELL.put(F.BesselI, "besselI");
@@ -78,7 +80,8 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		FUNCTIONS_STR_MATHCELL.put(F.EllipticK, "ellipticK");
 		FUNCTIONS_STR_MATHCELL.put(F.EllipticE, "ellipticE");
 		FUNCTIONS_STR_MATHCELL.put(F.EllipticPi, "ellipticPi");
-
+		FUNCTIONS_STR_MATHCELL.put(F.EllipticTheta, "jacobiTheta");
+		
 		FUNCTIONS_STR_MATHCELL.put(F.JacobiZeta, "jacobiZeta");
 		FUNCTIONS_STR_MATHCELL.put(F.Factorial, "factorial");
 		FUNCTIONS_STR_MATHCELL.put(F.Factorial2, "factorial2");
@@ -95,6 +98,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		FUNCTIONS_STR_MATHCELL.put(F.Hypergeometric2F1, "hypergeometric2F1");
 
 		FUNCTIONS_STR_MATHCELL.put(F.Exp, "exp");
+		FUNCTIONS_STR_MATHCELL.put(F.Log, "log");
 
 		FUNCTIONS_STR_MATHCELL.put(F.ProductLog, "lambertW");
 		FUNCTIONS_STR_MATHCELL.put(F.Chop, "chop");
@@ -134,12 +138,24 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		FUNCTIONS_STR_MATHCELL.put(F.ArcCoth, "arccoth");
 		FUNCTIONS_STR_MATHCELL.put(F.ArcSech, "arcsech");
 		FUNCTIONS_STR_MATHCELL.put(F.ArcCsch, "arccsch");
-
+		
+		
 		FUNCTIONS_STR_MATHCELL.put(F.Sinc, "sinc");
 		FUNCTIONS_STR_MATHCELL.put(F.Zeta, "zeta");
 		// FUNCTIONS_STR_MATHCELL.put(F.DirichletEta, "dirichletEta");
 		FUNCTIONS_STR_MATHCELL.put(F.BernoulliB, "bernoulli");
-
+		
+		FUNCTIONS_STR_MATHCELL.put(F.Ceiling, "Math.ceil");
+		FUNCTIONS_STR_MATHCELL.put(F.Floor, "Math.floor");
+		FUNCTIONS_STR_MATHCELL.put(F.IntegerPart, "Math.trunc");
+		FUNCTIONS_STR_MATHCELL.put(F.Max, "Math.max");
+		FUNCTIONS_STR_MATHCELL.put(F.Min, "Math.min");
+		FUNCTIONS_STR_MATHCELL.put(F.Round, "Math.round");
+		FUNCTIONS_STR_MATHCELL.put(F.Sign, "Math.sign");
+		
+		//
+		// pure JavaScript mappings
+		//
 		FUNCTIONS_STR_PURE_JS.put(F.Abs, "Math.abs");
 
 		FUNCTIONS_STR_PURE_JS.put(F.ArcCos, "Math.acos");
@@ -154,13 +170,14 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		FUNCTIONS_STR_PURE_JS.put(F.Cosh, "Math.cosh");
 		FUNCTIONS_STR_PURE_JS.put(F.Exp, "Math.exp");
 		FUNCTIONS_STR_PURE_JS.put(F.Floor, "Math.floor");
+		FUNCTIONS_STR_PURE_JS.put(F.IntegerPart, "Math.trunc");
 
 		FUNCTIONS_STR_PURE_JS.put(F.Log, "Math.log");
 		FUNCTIONS_STR_PURE_JS.put(F.Max, "Math.max");
 		FUNCTIONS_STR_PURE_JS.put(F.Min, "Math.min");
 		// Power is handled by coding
 		// FUNCTIONS_STR_PURE_JS.put(F.Power, "Math.pow");
-
+		FUNCTIONS_STR_PURE_JS.put(F.Round, "Math.round");
 		FUNCTIONS_STR_PURE_JS.put(F.Sign, "Math.sign");
 		FUNCTIONS_STR_PURE_JS.put(F.Sin, "Math.sin");
 		FUNCTIONS_STR_PURE_JS.put(F.Sinh, "Math.sinh");
@@ -290,6 +307,9 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		if (head.isSymbol()) {
 			String str = functionHead((ISymbol) head);
 			if (str != null) {
+				if (function.isASTSizeGE(F.Round, 3)) {
+					throw new MathException("illegal JavaScript arg");
+				}
 				if (function.isAST(F.ArcTan, 3)) {
 					buf.append("Math.atan2");
 				} else {
