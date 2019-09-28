@@ -11,6 +11,8 @@ import java.math.RoundingMode;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.builtin.Combinatoric.Subsets;
 import org.matheclipse.core.builtin.Combinatoric.Subsets.KSubsetsList;
@@ -26,6 +28,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.numbertheory.Primality;
 
 import com.google.common.math.BigIntegerMath;
+import com.google.common.math.DoubleMath;
 
 /**
  * IInteger implementation which delegates most of the methods to the BigInteger methods.
@@ -158,8 +161,8 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as this
-	 * expression is canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive
+	 * integer as this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
@@ -178,7 +181,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 			return Double.compare(fBigIntValue.doubleValue(), ((ISignedNumber) expr).doubleValue());
 		}
 		return -1;
-//		return super.compareTo(expr);
+		// return super.compareTo(expr);
 	}
 
 	@Override
@@ -227,17 +230,17 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	/** {@inheritDoc} */
 	@Override
 	public IInteger irem(final IInteger that) {
-		BigInteger[] largeRes = fBigIntValue.divideAndRemainder(that.toBigNumerator()); 
+		BigInteger[] largeRes = fBigIntValue.divideAndRemainder(that.toBigNumerator());
 		return valueOf(largeRes[1]);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public IInteger iquo(final IInteger that) {
-		BigInteger[] largeRes = fBigIntValue.divideAndRemainder(that.toBigNumerator()); 
+		BigInteger[] largeRes = fBigIntValue.divideAndRemainder(that.toBigNumerator());
 		return valueOf(largeRes[0]);
 	}
-	
+
 	@Override
 	public ISignedNumber divideBy(ISignedNumber that) {
 		if (that instanceof BigIntegerSym) {
@@ -676,8 +679,10 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	 * Returns the nth-root of this integer.
 	 * 
 	 * @return <code>k<code> such as <code>k^n <= this < (k + 1)^n</code>
-	 * @throws IllegalArgumentException if {@code this < 0}
-	 * @throws ArithmeticException      if this integer is negative and n is even.
+	 * @throws IllegalArgumentException
+	 *             if {@code this < 0}
+	 * @throws ArithmeticException
+	 *             if this integer is negative and n is even.
 	 */
 	@Override
 	public IExpr nthRoot(int n) throws ArithmeticException {
@@ -794,8 +799,8 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	/**
 	 * Returns the integer square root of this integer.
 	 * 
-	 * @return <code>k<code> such as <code>k^2 <= this < (k + 1)^2</code>. If this integer is negative or it's impossible to find a
-	 *         square root return <code>F.Sqrt(this)</code>.
+	 * @return <code>k<code> such as <code>k^2 <= this < (k + 1)^2</code>. If this integer is negative or it's
+	 *         impossible to find a square root return <code>F.Sqrt(this)</code>.
 	 */
 	public IExpr sqrt() {
 		try {

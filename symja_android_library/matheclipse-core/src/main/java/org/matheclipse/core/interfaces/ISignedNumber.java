@@ -204,6 +204,14 @@ public interface ISignedNumber extends INumber {
 	public IInteger round();
 
 	/**
+	 * Round <code>this</code> number to the closest <code>ISignedNumber</code> multiple of the <code>factor</code>.
+	 * 
+	 * @param factor
+	 * @return the closest integer to the argument.
+	 */
+	public ISignedNumber roundClosest(ISignedNumber factor);
+
+	/**
 	 * Returns the signum function of this number (i.e., -1, 0 or 1 as the value of this number is negative, zero or
 	 * positive).
 	 * 
@@ -242,7 +250,7 @@ public interface ISignedNumber extends INumber {
 	default boolean isRange(ISignedNumber from, ISignedNumber to) {
 		return isGE(from) && isLE(to);
 	}
-	
+
 	/**
 	 * This real number is in the interval <code>]from, to[</code> exclusive
 	 * 
@@ -255,7 +263,7 @@ public interface ISignedNumber extends INumber {
 	}
 
 	/**
-	 * This real number is in the interval <code>]from, to]</code> 
+	 * This real number is in the interval <code>]from, to]</code>
 	 * 
 	 * @param from
 	 * @param to
@@ -264,9 +272,9 @@ public interface ISignedNumber extends INumber {
 	default boolean isRangeExclIncl(ISignedNumber from, ISignedNumber to) {
 		return isGT(from) && isLE(to);
 	}
-	
+
 	/**
-	 * This real number is in the interval <code>]from, to]</code> 
+	 * This real number is in the interval <code>]from, to]</code>
 	 * 
 	 * @param from
 	 * @param to
@@ -275,7 +283,7 @@ public interface ISignedNumber extends INumber {
 	default boolean isRangeInclExcl(ISignedNumber from, ISignedNumber to) {
 		return isGE(from) && isLT(to);
 	}
-	
+
 	/**
 	 * Converts this number to <code>long</code>; unlike {@link #longValue} this method raises
 	 * {@link ArithmeticException} if this number cannot be represented by a <code>long</code> type.
