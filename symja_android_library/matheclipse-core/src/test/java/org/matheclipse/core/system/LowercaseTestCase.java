@@ -7654,6 +7654,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGammaRegularized() {
+		check("GammaRegularized(1, 1.5)",//
+				"0.22313");
+		check("GammaRegularized(2,  2.2)",//
+				"0.35457");
+		check("GammaRegularized(2,  3.3)",//
+				"0.158598");
+		check("GammaRegularized(2,  3.3, 3.4)",//
+				"0.0117552");
+						
 		// TODO improve output Format to E^(-x)-E^(-y)
 		check("GammaRegularized(1,x,y)", //
 				"E^(-x)-1/E^y");
@@ -7669,6 +7678,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1");
 		check("GammaRegularized(-42, 0)", //
 				"0");
+		check("GammaRegularized(1, x)", //
+				"E^(-x)");
 	}
 
 	public void testGather() {
