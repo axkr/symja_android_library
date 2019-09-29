@@ -13,6 +13,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.RandomDataGenerator;
 import org.hipparchus.stat.StatUtils;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -1513,6 +1514,15 @@ public class StatisticsFunctions {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
+				if (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument()) {
+					try {
+						return F.num(
+								new org.hipparchus.distribution.continuous.FDistribution(n.evalDouble(), m.evalDouble()) //
+										.cumulativeProbability(k.evalDouble()));
+					} catch (RuntimeException rex) {
+						//
+					}
+				}
 				IExpr function =
 						// [$ Piecewise({{BetaRegularized((#*n)/(m + #*n), n/2, m/2), # > 0}}, 0) & $]
 						F.Function(F.Piecewise(F.List(F.List(
@@ -1529,6 +1539,15 @@ public class StatisticsFunctions {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
+				if (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument()) {
+					try {
+						return F.num(
+								new org.hipparchus.distribution.continuous.FDistribution(n.evalDouble(), m.evalDouble()) //
+										.inverseCumulativeProbability(k.evalDouble()));
+					} catch (RuntimeException rex) {
+						//
+					}
+				}
 				IExpr function =
 						// [$ ( ConditionalExpression(Piecewise({{(m*(-1 + 1/InverseBetaRegularized(1, -#, m/2,
 						// n/2)))/n, 0 < # < 1}, {0, # <= 0}}, Infinity), 0 <= # <= 1)& ) $]
@@ -1754,6 +1773,15 @@ public class StatisticsFunctions {
 				//
 				IExpr a = dist.arg1();
 				IExpr b = dist.arg2();
+				if (a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument()) {
+					try {
+						return F.num(new org.hipparchus.distribution.continuous.GammaDistribution(a.evalDouble(),
+								b.evalDouble()) //
+										.cumulativeProbability(k.evalDouble()));
+					} catch (RuntimeException rex) {
+						//
+					}
+				}
 				IExpr function =
 						// [$ (Piecewise({{GammaRegularized(a, 0, #/b), # > 0}}, 0)&) $]
 						F.Function(F.Piecewise(
@@ -1789,6 +1817,15 @@ public class StatisticsFunctions {
 				//
 				IExpr a = dist.arg1();
 				IExpr b = dist.arg2();
+				if (a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument()) {
+					try {
+						return F.num(new org.hipparchus.distribution.continuous.GammaDistribution(a.evalDouble(),
+								b.evalDouble()) //
+										.inverseCumulativeProbability(k.evalDouble()));
+					} catch (RuntimeException rex) {
+						//
+					}
+				}
 				IExpr function =
 						// [$ ( ConditionalExpression(Piecewise({{b*InverseGammaRegularized(a, 0, #), 0 < # < 1}, {0, #
 						// <= 0}}, Infinity), 0 <= # <= 1)& ) $]
@@ -2115,6 +2152,17 @@ public class StatisticsFunctions {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
+				if (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument()) {
+					try {
+						final double z = (k.evalDouble() - n.evalDouble()) / m.evalDouble();
+						return F.num(1.0 - FastMath.exp(-FastMath.exp(z)));
+						// return F.num(1.0-new
+						// org.hipparchus.distribution.continuous.GumbelDistribution(n.evalDouble(), m.evalDouble()) //
+						// .cumulativeProbability(k.evalDouble()));
+					} catch (RuntimeException rex) {
+						//
+					}
+				}
 				IExpr function =
 						// [$ (1 - E^(-E^((# - n)/m))) & $]
 						F.Function(F.Subtract(F.C1,
@@ -2129,6 +2177,23 @@ public class StatisticsFunctions {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
+				if (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument()) {
+					try {
+						double p = k.evalDouble();
+						MathUtils.checkRangeInclusive(p, 0, 1);
+						if (F.isZero(p)) {
+							return F.CNInfinity;
+						} else if (F.isEqual(p, 1.0)) {
+							return F.CInfinity;
+						}
+						return F.num(n.evalDouble() + m.evalDouble() * FastMath.log(-FastMath.log(1.0-p)) );
+						// return F.num(new org.hipparchus.distribution.continuous.GumbelDistribution(n.evalDouble(),
+						// m.evalDouble()) //
+						// .inverseCumulativeProbability(k.evalDouble()));
+					} catch (RuntimeException rex) {
+						//
+					}
+				}
 				IExpr function =
 						// [$ ( ConditionalExpression(Piecewise({{n + m*Log(-Log(1 - #)), 0 < # < 1}, {-Infinity, # <=
 						// 0}}, Infinity), 0 <= # <= 1)& ) $]

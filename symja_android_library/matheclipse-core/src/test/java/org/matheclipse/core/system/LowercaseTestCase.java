@@ -1998,6 +1998,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"0.259182");
 		check("CDF(ExponentialDistribution(3), 0.9)", //
 				"0.932794");
+		check("CDF(FRatioDistribution(2,3), 0.1)", //
+				"0.0922695");
+		check("CDF(FRatioDistribution(2,3), 0.9)", //
+				"0.505894");
+		check("CDF(GammaDistribution(2,3), 0.1)", //
+				"0.000543363");
+		check("CDF(GammaDistribution(2,3), 0.9)", //
+				"0.0369363");
+		check("CDF(GumbelDistribution(2,3), 0.1)", //
+				"0.411877");
+		check("CDF(GumbelDistribution(2,3), 0.9)", //
+				"0.499947");
 		
 		// github #56
 		check("CDF(NormalDistribution(),-0.41)", //
@@ -8985,6 +8997,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"0.0351202");
 		check("InverseCDF(ExponentialDistribution(3), 0.9)", //
 				"0.767528");
+		check("InverseCDF(FRatioDistribution(2,3), 0.1)", //
+				"0.109149");
+		check("InverseCDF(FRatioDistribution(2,3), 0.9)", //
+				"5.46238");
+		check("InverseCDF(GammaDistribution(2,3), 0.1)", //
+				"1.59543");
+		check("InverseCDF(GammaDistribution(2,3), 0.9)", //
+				"11.66916");
+		check("InverseCDF(GumbelDistribution(2,3), 0.1)", //
+				"-4.7511");
+		check("InverseCDF(GumbelDistribution(2,3), 0.9)", //
+				"4.5021");
+		
 		
 		check("InverseCDF(GammaDistribution(a,b,g,d))", //
 				"ConditionalExpression(Piecewise({{d+b*InverseGammaRegularized(a,0,#1)^(1/g),0<#1<\n"
