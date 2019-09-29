@@ -8,11 +8,11 @@ import java.util.function.Supplier;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.ApfloatMath;
 import org.hipparchus.distribution.RealDistribution;
-import org.hipparchus.distribution.continuous.TDistribution;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.RandomDataGenerator;
 import org.hipparchus.stat.StatUtils;
+import org.hipparchus.util.FastMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -628,7 +628,7 @@ public class StatisticsFunctions {
 				//
 				IExpr a = dist.arg1();
 				IExpr b = dist.arg2();
-				if (a.isNumeric() || b.isNumeric() || k.isNumeric()) {
+				if (a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument()) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.BetaDistribution(a.evalDouble(),
 								b.evalDouble()) //
@@ -654,7 +654,7 @@ public class StatisticsFunctions {
 				//
 				IExpr a = dist.arg1();
 				IExpr b = dist.arg2();
-				if (a.isNumeric() || b.isNumeric() || k.isNumeric()) {
+				if (a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument()) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.BetaDistribution(a.evalDouble(),
 								b.evalDouble()) //
@@ -1293,6 +1293,14 @@ public class StatisticsFunctions {
 		public IExpr cdf(IAST dist, IExpr k) {
 			if (dist.isAST1()) {
 				IExpr v = dist.arg1();
+				if (v.isNumericArgument() || k.isNumericArgument()) {
+					try {
+						return F.num(new org.hipparchus.distribution.continuous.ChiSquaredDistribution(v.evalDouble()) //
+								.cumulativeProbability(k.evalDouble()));
+					} catch (RuntimeException rex) {
+						//
+					}
+				}
 				IExpr function =
 						// [$ Piecewise({{GammaRegularized(v/2, 0, #/2), # > 0}}, 0) & $]
 						F.Function(F.Piecewise(
@@ -1308,6 +1316,14 @@ public class StatisticsFunctions {
 		public IExpr inverseCDF(IAST dist, IExpr k) {
 			if (dist.isAST1()) {
 				IExpr v = dist.arg1();
+				if (v.isNumericArgument() || k.isNumericArgument()) {
+					try {
+						return F.num(new org.hipparchus.distribution.continuous.ChiSquaredDistribution(v.evalDouble()) //
+								.inverseCumulativeProbability(k.evalDouble()));
+					} catch (RuntimeException rex) {
+						//
+					}
+				}
 				IExpr function =
 						// [$ ( ConditionalExpression(Piecewise({{2*InverseGammaRegularized(v/2, 0, #), 0 < # < 1}, {0,
 						// # <= 0}}, Infinity), 0 <= # <= 1)& ) $]
@@ -2928,6 +2944,21 @@ public class StatisticsFunctions {
 		public IExpr cdf(IAST dist, IExpr k) {
 			if (dist.isAST1()) {
 				IExpr n = dist.arg1();
+				if (n.isNumericArgument() || k.isNumericArgument()) {
+					try {
+						double x = k.evalDouble();
+						if (x <= 0.0) {
+							return F.CD0;
+						}
+						return F.num(1.0 - FastMath.exp(-x * n.evalDouble()));
+
+						// return F.num(new
+						// org.hipparchus.distribution.continuous.ExponentialDistribution(n.evalDouble()) //
+						// .cumulativeProbability(k.evalDouble()));
+					} catch (RuntimeException rex) {
+						//
+					}
+				}
 				IExpr function =
 						// [$ (Piecewise({{1 - E^((-#)*n), # >= 0}}, 0)) & $]
 						F.Function(F.Piecewise(F.List(F.List(F.Subtract(F.C1, F.Exp(F.Times(F.CN1, F.Slot1, n))),
@@ -2941,6 +2972,20 @@ public class StatisticsFunctions {
 		public IExpr inverseCDF(IAST dist, IExpr k) {
 			if (dist.isAST1()) {
 				IExpr n = dist.arg1();
+				if (n.isNumericArgument() || k.isNumericArgument()) {
+					try {
+						double x = k.evalDouble();
+						if (F.isEqual(x, 1.0)) {
+							return F.CInfinity;
+						}
+						return F.num(-FastMath.log(1.0 - x) / n.evalDouble());
+						// return F.num(new
+						// org.hipparchus.distribution.continuous.ExponentialDistribution(n.evalDouble()) //
+						// .inverseCumulativeProbability(k.evalDouble()));
+					} catch (RuntimeException rex) {
+						//
+					}
+				}
 				IExpr function =
 						// [$ ( ConditionalExpression(Piecewise({{-(Log(1 - #)/n), # < 1}}, Infinity), 0 <= # <= 1)& )
 						// $]
@@ -4660,7 +4705,7 @@ public class StatisticsFunctions {
 		public IExpr cdf(IAST dist, IExpr k) {
 			if (dist.isAST1()) {
 				IExpr n = dist.arg1();
-				if (n.isNumeric() || k.isNumeric()) {
+				if (n.isNumericArgument() || k.isNumericArgument()) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.TDistribution(n.evalDouble()) //
 								.cumulativeProbability(k.evalDouble()));
@@ -4690,7 +4735,7 @@ public class StatisticsFunctions {
 		public IExpr inverseCDF(IAST dist, IExpr k) {
 			if (dist.isAST1()) {
 				IExpr n = dist.arg1();
-				if (n.isNumeric() || k.isNumeric()) {
+				if (n.isNumericArgument() || k.isNumericArgument()) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.TDistribution(n.evalDouble()) //
 								.inverseCumulativeProbability(k.evalDouble()));

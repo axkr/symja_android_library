@@ -707,6 +707,7 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			boolean numericMode = engine.isNumericMode();
 			try {
 				// use EvalEngine's iterationLimit only for evaluation control
 				// final int iterationLimit = engine.getIterationLimit();
@@ -741,7 +742,7 @@ public final class Programming {
 				return current;
 
 			} finally {
-				engine.setNumericMode(false);
+				engine.setNumericMode(numericMode);
 			}
 
 		}
@@ -826,6 +827,7 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			boolean numericMode = engine.isNumericMode();
 			try {
 				// use EvalEngine's iterationLimit only for evaluation control
 				// final int iterationLimit = engine.getIterationLimit();
@@ -862,7 +864,7 @@ public final class Programming {
 				return list;
 
 			} finally {
-				engine.setNumericMode(false);
+				engine.setNumericMode(numericMode);
 			}
 
 		}
