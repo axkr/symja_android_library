@@ -127,6 +127,7 @@ public class IOFunctions {
 	public static final int[] ARGS_3_INFINITY = new int[] { 3, Integer.MAX_VALUE };
 
 	private final static String[] MESSAGES = { //
+			"argillegal", "illegal arguments: \"`1`\" in `2`", //
 			"argb", "`1` called with `2` arguments; between `3` and `4` arguments are expected.", //
 			"argct", "`1` called with `2` arguments.", //
 			"argctu", "`1` called with 1 argument.", //

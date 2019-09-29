@@ -1985,6 +1985,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCDF() {
+		
+		check("CDF(BetaDistribution(2,3), 0.1)", //
+				"0.0523");
+		check("CDF(BetaDistribution(2,3), 0.9)", //
+				"0.9963");
+		
 		// github #56
 		check("CDF(NormalDistribution(),-0.41)", //
 				"0.340903");
@@ -8936,6 +8942,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInverseBetaRegularized() {
+		check("InverseBetaRegularized(10, 12.0, 0.5)", //
+				"InverseBetaRegularized(10.0,12.0,0.5)");
+		check("InverseBetaRegularized(0.1, 12.0, 0.5)", //
+				"0.891295");
+		check("InverseBetaRegularized(0.8, 1, 2)", //
+				"0.552786");
+		check("Table(InverseBetaRegularized(s, 2, 3), {s, 0, 1,0.1})", //
+				"{0.0,0.142559,0.212317,0.272384,0.329167,0.385728,0.4445,0.508405,0.582454,0.679539,1.0}");
 		check("InverseBetaRegularized(0,42,b)", //
 				"0");
 		check("InverseBetaRegularized(1,47.11,b)", //
@@ -8947,6 +8961,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInverseCDF() {
+		// https://github.com/axkr/symja_android_library/issues/147
+		check("InverseCDF(StudentTDistribution(24), 0.95)", //
+				"1.71088");
+		check("InverseCDF(BetaDistribution(2,3), 0.1)", //
+				"0.142559");
+		check("InverseCDF(BetaDistribution(2,3), 0.9)", //
+				"0.679539");
 		check("InverseCDF(GammaDistribution(a,b,g,d))", //
 				"ConditionalExpression(Piecewise({{d+b*InverseGammaRegularized(a,0,#1)^(1/g),0<#1<\n"
 						+ "1},{d,#1<=0}},Infinity),0<=#1<=1)&");
@@ -15958,14 +15979,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"123/100");
 		check("Round(-1.235512, 1/100)", //
 				"-31/25");
-		
+
 		check("Round(-1.235512, -100)", //
 				"0");
 		check("Round(-1.235512, 0)", //
 				"Indeterminate");
 		check("Refine(2/3*Round(x), Element(x,Integers))", //
 				"2/3*x");
-		
+
 		check("Round(226, 10)", //
 				"230");
 		check("Round(226, -10)", //
@@ -18508,7 +18529,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("SurvivalFunction(NormalDistribution(), {0.2, 0.3})", //
 				"{0.42074,0.382089}");
 		check("SurvivalFunction(BetaDistribution(1/2,1/2), {{0.0, 0.0}, {0.2, 0.2}, {0.3, 0.3}})", //
-				"{{1,1},{0.704833,0.704833},{0.63099,0.63099}}");
+				"{{1.0,1.0},{0.704833,0.704833},{0.63099,0.63099}}");
 		check("SurvivalFunction(NormalDistribution(0, 1), x)", //
 				"1-Erfc(-x/Sqrt(2))/2");
 		check("CDF(NormalDistribution(0, 1), x)", //

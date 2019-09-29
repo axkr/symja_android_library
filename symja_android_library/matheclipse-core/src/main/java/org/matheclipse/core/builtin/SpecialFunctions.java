@@ -31,6 +31,8 @@ import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.hipparchus.complex.Complex;
+import org.hipparchus.distribution.continuous.BetaDistribution;
+import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -57,8 +59,6 @@ import org.matheclipse.core.reflection.system.rules.ProductLogRules;
 import org.matheclipse.core.reflection.system.rules.StieltjesGammaRules;
 import org.matheclipse.core.reflection.system.rules.StruveHRules;
 import org.matheclipse.core.reflection.system.rules.StruveLRules;
-
-import de.lab4inf.math.functions.Bessel;
 
 public class SpecialFunctions {
 	/**
@@ -92,8 +92,6 @@ public class SpecialFunctions {
 			F.Zeta.setEvaluator(new Zeta());
 		}
 	}
-
-	
 
 	private static class Beta extends AbstractFunctionEvaluator {
 
@@ -652,30 +650,42 @@ public class SpecialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST3()) {
-				IExpr z = ast.arg1();
-				IExpr a = ast.arg2();
-				IExpr b = ast.arg3();
-				if (a.isPositiveResult()) {
-					if (z.isZero()) {
-						return F.C0;
+			try {
+				if (ast.isAST3()) {
+					IExpr z = ast.arg1();
+					IExpr a = ast.arg2();
+					IExpr b = ast.arg3();
+					if (a.isPositiveResult()) {
+						if (z.isZero()) {
+							return F.C0;
+						}
+						if (z.isOne()) {
+							return F.C1;
+						}
 					}
-					if (z.isOne()) {
-						return F.C1;
+					if (z.isNumeric() && a.isNumeric() && b.isNumeric()) {
+						BetaDistribution beta = new BetaDistribution(a.evalDouble(), b.evalDouble());
+						return F.num(beta.inverseCumulativeProbability(z.evalDouble()));
 					}
-				}
-			} else {
-				IExpr z1 = ast.arg1();
-				IExpr z2 = ast.arg2();
-				if (z2.isZero()) {
-					return z1;
-				}
-				IExpr a = ast.arg3();
-				IExpr b = ast.arg4();
-				if (z1.isZero()) {
-					return F.InverseBetaRegularized(z2, a, b);
-				}
+				} else {
+					IExpr z1 = ast.arg1();
+					IExpr z2 = ast.arg2();
+					if (z2.isZero()) {
+						return z1;
+					}
+					IExpr a = ast.arg3();
+					IExpr b = ast.arg4();
+					if (z1.isZero()) {
+						return F.InverseBetaRegularized(z2, a, b);
+					}
 
+				}
+			} catch (MathIllegalArgumentException miae) {
+				return IOFunctions.printMessage(F.InverseBetaRegularized, "argillegal",
+						F.List(F.stringx(miae.getMessage()), ast), engine);
+			} catch (RuntimeException rex) {
+				return IOFunctions.printMessage(F.InverseBetaRegularized, "argillegal",
+						F.List(F.stringx(rex.getMessage()), ast), engine);
 			}
 			return F.NIL;
 		}
