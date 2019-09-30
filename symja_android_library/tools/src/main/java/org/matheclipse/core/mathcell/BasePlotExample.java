@@ -20,17 +20,19 @@ public abstract class BasePlotExample {
 
 			IExpr result = util.eval(exampleFunction());
 			if (result.isAST(F.JSFormData, 3)) {
+				String js;
 				if (result.second().toString().equals("mathcell")) {
 					String manipulateStr = ((IAST) result).arg1().toString();
-					String js = Config.MATHCELL_PAGE;
+					js = Config.MATHCELL_PAGE;
 					js = js.replaceAll("`1`", manipulateStr);
-					System.out.println(js);
 				} else {
 					String manipulateStr = ((IAST) result).arg1().toString();
-					String js = Config.JSXGRAPH_PAGE;
+					js = Config.JSXGRAPH_PAGE;
 					js = js.replaceAll("`1`", manipulateStr);
-					System.out.println(js);
+
 				}
+				System.out.println(js);
+				F.openHTMLOnDesktop(js);
 			}
 		} catch (SyntaxError e) {
 			// catch Symja parser errors here
