@@ -171,9 +171,9 @@ public class StatisticsFunctions {
 	public interface ICDF {
 		static final IExpr CDF_NUMERIC_THRESHOLD = F.num(1e-14);
 
-		public IExpr cdf(IAST dist, IExpr x);
+		public IExpr cdf(IAST dist, IExpr x, EvalEngine engine);
 
-		public IExpr inverseCDF(IAST dist, IExpr x);
+		public IExpr inverseCDF(IAST dist, IExpr x, EvalEngine engine);
 		// default IExpr inverseCDF(IAST dist, IExpr x) {
 		// return F.NIL;
 		// }
@@ -201,7 +201,7 @@ public class StatisticsFunctions {
 									IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
 									if (evaluator instanceof ICDF) {
 										ICDF inverseCDF = (ICDF) evaluator;
-										return inverseCDF.inverseCDF(dist, xArg);
+										return inverseCDF.inverseCDF(dist, xArg, engine);
 									}
 								}
 							}
@@ -422,7 +422,7 @@ public class StatisticsFunctions {
 									IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
 									if (evaluator instanceof ICDF) {
 										ICDF cdf = (ICDF) evaluator;
-										return cdf.cdf(dist, xArg);
+										return cdf.cdf(dist, xArg, engine);
 									}
 								}
 							}
@@ -544,7 +544,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr cdf(IAST dist, IExpr k) {
+		public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST1()) {
 				IExpr p = dist.arg1();
 				IExpr function =
@@ -561,7 +561,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr inverseCDF(IAST dist, IExpr k) {
+		public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST1()) {
 				IExpr p = dist.arg1();
 				IExpr function =
@@ -624,12 +624,13 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr cdf(IAST dist, IExpr k) {
+		public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST2()) {
 				//
 				IExpr a = dist.arg1();
 				IExpr b = dist.arg2();
-				if (a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument()) {
+				if (!engine.isApfloat() && //
+						(a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.BetaDistribution(a.evalDouble(),
 								b.evalDouble()) //
@@ -650,12 +651,13 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr inverseCDF(IAST dist, IExpr k) {
+		public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST2()) {
 				//
 				IExpr a = dist.arg1();
 				IExpr b = dist.arg2();
-				if (a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument()) {
+				if (!engine.isApfloat() && //
+						(a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.BetaDistribution(a.evalDouble(),
 								b.evalDouble()) //
@@ -1152,7 +1154,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr cdf(IAST dist, IExpr k) {
+		public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
@@ -1170,7 +1172,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr inverseCDF(IAST dist, IExpr k) {
+		public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
 			return F.NIL;
 		}
 
@@ -1291,10 +1293,11 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr cdf(IAST dist, IExpr k) {
+		public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST1()) {
 				IExpr v = dist.arg1();
-				if (v.isNumericArgument() || k.isNumericArgument()) {
+				if (!engine.isApfloat() && //
+						(v.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.ChiSquaredDistribution(v.evalDouble()) //
 								.cumulativeProbability(k.evalDouble()));
@@ -1314,10 +1317,11 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr inverseCDF(IAST dist, IExpr k) {
+		public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST1()) {
 				IExpr v = dist.arg1();
-				if (v.isNumericArgument() || k.isNumericArgument()) {
+				if (!engine.isApfloat() && //
+						(v.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.ChiSquaredDistribution(v.evalDouble()) //
 								.inverseCumulativeProbability(k.evalDouble()));
@@ -1510,11 +1514,12 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr cdf(IAST dist, IExpr k) {
+		public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
-				if (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument()) {
+				if (!engine.isApfloat() && //
+						(n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(
 								new org.hipparchus.distribution.continuous.FDistribution(n.evalDouble(), m.evalDouble()) //
@@ -1535,11 +1540,12 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr inverseCDF(IAST dist, IExpr k) {
+		public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
-				if (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument()) {
+				if (!engine.isApfloat() && //
+						(n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(
 								new org.hipparchus.distribution.continuous.FDistribution(n.evalDouble(), m.evalDouble()) //
@@ -1661,7 +1667,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr cdf(IAST dist, IExpr k) {
+		public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
@@ -1677,7 +1683,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr inverseCDF(IAST dist, IExpr k) {
+		public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
@@ -1768,12 +1774,13 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr cdf(IAST dist, IExpr k) {
+		public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST2()) {
 				//
 				IExpr a = dist.arg1();
 				IExpr b = dist.arg2();
-				if (a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument()) {
+				if (!engine.isApfloat() && //
+						(a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.GammaDistribution(a.evalDouble(),
 								b.evalDouble()) //
@@ -1812,12 +1819,13 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr inverseCDF(IAST dist, IExpr k) {
+		public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST2()) {
 				//
 				IExpr a = dist.arg1();
 				IExpr b = dist.arg2();
-				if (a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument()) {
+				if (!engine.isApfloat() && //
+						(a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.GammaDistribution(a.evalDouble(),
 								b.evalDouble()) //
@@ -2035,7 +2043,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr cdf(IAST dist, IExpr k) {
+		public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST1()) {
 				IExpr n = dist.arg1();
 				IExpr function =
@@ -2050,7 +2058,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr inverseCDF(IAST dist, IExpr k) {
+		public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
 			return F.NIL;
 		}
 
@@ -2148,11 +2156,12 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr cdf(IAST dist, IExpr k) {
+		public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
-				if (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument()) {
+				if (!engine.isApfloat() && //
+						(n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						final double z = (k.evalDouble() - n.evalDouble()) / m.evalDouble();
 						return F.num(1.0 - FastMath.exp(-FastMath.exp(z)));
@@ -2173,11 +2182,12 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr inverseCDF(IAST dist, IExpr k) {
+		public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
-				if (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument()) {
+				if (!engine.isApfloat() && //
+						(n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						double p = k.evalDouble();
 						MathUtils.checkRangeInclusive(p, 0, 1);
@@ -2186,7 +2196,7 @@ public class StatisticsFunctions {
 						} else if (F.isEqual(p, 1.0)) {
 							return F.CInfinity;
 						}
-						return F.num(n.evalDouble() + m.evalDouble() * FastMath.log(-FastMath.log(1.0-p)) );
+						return F.num(n.evalDouble() + m.evalDouble() * FastMath.log(-FastMath.log(1.0 - p)));
 						// return F.num(new org.hipparchus.distribution.continuous.GumbelDistribution(n.evalDouble(),
 						// m.evalDouble()) //
 						// .inverseCumulativeProbability(k.evalDouble()));
@@ -2365,7 +2375,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr cdf(IAST dist, IExpr k) {
+		public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST3()) {
 				IExpr n = dist.arg1();
 				IExpr ns = dist.arg2();
@@ -2402,7 +2412,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr inverseCDF(IAST dist, IExpr k) {
+		public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
 			return F.NIL;
 		}
 
@@ -2649,7 +2659,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr cdf(IAST dist, IExpr k) {
+		public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
 			IExpr[] minMax = minmax(dist);
 			if (minMax != null) {
 				IExpr a = minMax[0];
@@ -2667,7 +2677,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr inverseCDF(IAST dist, IExpr k) {
+		public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
 			IExpr[] minMax = minmax(dist);
 			if (minMax != null) {
 				IExpr a = minMax[0];
@@ -2779,7 +2789,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr cdf(IAST dist, IExpr k) {
+		public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
@@ -2794,7 +2804,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr inverseCDF(IAST dist, IExpr k) {
+		public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
@@ -3006,10 +3016,11 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr cdf(IAST dist, IExpr k) {
+		public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST1()) {
 				IExpr n = dist.arg1();
-				if (n.isNumericArgument() || k.isNumericArgument()) {
+				if (!engine.isApfloat() && //
+						(n.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						double x = k.evalDouble();
 						if (x <= 0.0) {
@@ -3034,10 +3045,11 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr inverseCDF(IAST dist, IExpr k) {
+		public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST1()) {
 				IExpr n = dist.arg1();
-				if (n.isNumericArgument() || k.isNumericArgument()) {
+				if (!engine.isApfloat() && //
+						(n.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						double x = k.evalDouble();
 						if (F.isEqual(x, 1.0)) {
@@ -3324,7 +3336,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr cdf(IAST dist, IExpr k) {
+		public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
@@ -3344,7 +3356,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr inverseCDF(IAST dist, IExpr k) {
+		public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
@@ -3661,7 +3673,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr cdf(IAST dist, IExpr k) {
+		public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
@@ -3677,7 +3689,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr inverseCDF(IAST dist, IExpr k) {
+		public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
@@ -3849,7 +3861,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr cdf(IAST dist, IExpr k) {
+		public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST0()) {
 				IExpr function =
 						// [$ ( (1/2)*Erfc(-(#/Sqrt(2))) & ) $]
@@ -3869,7 +3881,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr inverseCDF(IAST dist, IExpr k) {
+		public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST0()) {
 				IExpr function =
 						// [$ (ConditionalExpression((-Sqrt(2))*InverseErfc(2*#1), 0 <= #1 <= 1) & ) $]
@@ -4181,7 +4193,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr cdf(IAST dist, IExpr k) {
+		public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST1()) {
 				IExpr p = dist.arg1();
 				//
@@ -4195,7 +4207,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr inverseCDF(IAST dist, IExpr k) {
+		public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
 			return F.NIL;
 		}
 
@@ -4767,10 +4779,11 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr cdf(IAST dist, IExpr k) {
+		public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST1()) {
 				IExpr n = dist.arg1();
-				if (n.isNumericArgument() || k.isNumericArgument()) {
+				if (!engine.isApfloat() && //
+						(n.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.TDistribution(n.evalDouble()) //
 								.cumulativeProbability(k.evalDouble()));
@@ -4797,10 +4810,11 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr inverseCDF(IAST dist, IExpr k) {
+		public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST1()) {
 				IExpr n = dist.arg1();
-				if (n.isNumericArgument() || k.isNumericArgument()) {
+				if (!engine.isApfloat() && //
+						(n.isNumericArgument() || k.isNumericArgument())) {
 					try {
 						return F.num(new org.hipparchus.distribution.continuous.TDistribution(n.evalDouble()) //
 								.inverseCumulativeProbability(k.evalDouble()));
@@ -5017,7 +5031,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr cdf(IAST dist, IExpr k) {
+		public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
 			IExpr[] minMax = minmax(dist);
 			if (minMax != null) {
 				IExpr a = minMax[0];
@@ -5035,7 +5049,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr inverseCDF(IAST dist, IExpr k) {
+		public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
 			IExpr[] minMax = minmax(dist);
 			if (minMax != null) {
 				IExpr a = minMax[0];
@@ -5278,7 +5292,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr cdf(IAST dist, IExpr k) {
+		public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
@@ -5299,7 +5313,7 @@ public class StatisticsFunctions {
 		}
 
 		@Override
-		public IExpr inverseCDF(IAST dist, IExpr k) {
+		public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();

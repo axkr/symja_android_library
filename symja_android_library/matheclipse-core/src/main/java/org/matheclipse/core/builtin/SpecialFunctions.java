@@ -31,7 +31,6 @@ import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.hipparchus.complex.Complex;
-import org.hipparchus.distribution.continuous.BetaDistribution;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.special.Gamma;
@@ -102,7 +101,7 @@ public class SpecialFunctions {
 				IExpr z = ast.arg1();
 				IExpr a = ast.arg2();
 				IExpr b = ast.arg3();
-				if (engine.isNumericMode() && z.isReal() && a.isReal() && b.isReal()) {
+				if (engine.isDoubleMode() && z.isReal() && a.isReal() && b.isReal()) {
 					double zDouble = ((ISignedNumber) z).doubleValue();
 					double aDouble = ((ISignedNumber) a).doubleValue();
 					double bDouble = ((ISignedNumber) b).doubleValue();
@@ -119,7 +118,7 @@ public class SpecialFunctions {
 			if (a.isZero() || b.isZero()) {
 				return F.CComplexInfinity;
 			}
-			if (engine.isNumericMode() && a.isReal() && b.isReal() && a.isPositive() && b.isPositive()) {
+			if (engine.isDoubleMode() && a.isReal() && b.isReal() && a.isPositive() && b.isPositive()) {
 				double d = de.lab4inf.math.functions.Beta.beta(((ISignedNumber) a).doubleValue(),
 						((ISignedNumber) b).doubleValue());
 				return F.num(d);
@@ -164,7 +163,7 @@ public class SpecialFunctions {
 					IExpr z = ast.arg1();
 					IExpr a = ast.arg2();
 					IExpr n = ast.arg3();
-					if (engine.isNumericMode()) {
+					if (engine.isDoubleMode()) {
 						double zn = engine.evalDouble(z);
 						double an = engine.evalDouble(a);
 						double nn = engine.evalDouble(n);
@@ -460,7 +459,7 @@ public class SpecialFunctions {
 				IExpr z1 = ast.arg2();
 				if (ast.isAST3()) {
 					IExpr z2 = ast.arg3();
-					if (engine.isNumericMode() && //
+					if (engine.isDoubleMode() && //
 							a.isNumericFunction() && z1.isNumericFunction()) {
 						double x = a.evalDouble();
 						return F.num(org.hipparchus.special.Gamma.regularizedGammaQ(x, z1.evalDouble()) - //
@@ -488,7 +487,7 @@ public class SpecialFunctions {
 				} else if (a.isInteger() && a.isNegative()) {
 					return F.C0;
 				}
-				if (engine.isNumericMode() && //
+				if (engine.isDoubleMode() && //
 						a.isNumericFunction() && z1.isNumericFunction()) {
 					return F.num(org.hipparchus.special.Gamma.regularizedGammaQ(a.evalDouble(), z1.evalDouble()));
 				}
@@ -681,9 +680,11 @@ public class SpecialFunctions {
 							return F.C1;
 						}
 					}
-					if (engine.isNumericMode() && //
+					if (engine.isDoubleMode() && //
 							(z.isNumericFunction() && a.isNumericFunction() && b.isNumericFunction())) {
-						BetaDistribution beta = new BetaDistribution(a.evalDouble(), b.evalDouble());
+						org.hipparchus.distribution.continuous.BetaDistribution beta = //
+								new org.hipparchus.distribution.continuous.BetaDistribution(a.evalDouble(),
+										b.evalDouble());
 						return F.num(beta.inverseCumulativeProbability(z.evalDouble()));
 					}
 				} else {

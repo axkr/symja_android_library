@@ -165,7 +165,7 @@ public class EvalEngine implements Serializable {
 	transient String fSessionID;
 
 	transient String fMessageShortcut;
-	
+
 	/**
 	 * If <code>true</code> the engine evaluates in &quot;Trace()&quot; function mode.
 	 * 
@@ -664,11 +664,11 @@ public class EvalEngine implements Serializable {
 
 		// don't test for OneIdentity here! OneIdentity will only be used in "structural pattern-matching".
 		// Functions like Times and PLus implement OneIdentity as extra transformation!
-		
+
 		if ((result = evalArgs(ast, attr)).isPresent()) {
 			return result;
 		}
-		
+
 		final IExpr arg1 = ast.arg1();
 		if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 			if (arg1.head().equals(symbol)) {
@@ -1799,10 +1799,10 @@ public class EvalEngine implements Serializable {
 		return fIterationLimit;
 	}
 
-	public String getMessageShortcut( ) {
+	public String getMessageShortcut() {
 		return fMessageShortcut;
 	}
-	
+
 	/**
 	 * Get the list of modified variables
 	 * 
@@ -1904,7 +1904,7 @@ public class EvalEngine implements Serializable {
 		fStopRequested = false;
 		fSeconds = 0;
 		fModifiedVariablesList = null;
-		fMessageShortcut=null;
+		fMessageShortcut = null;
 		fContextPathStack = new Stack<ContextPath>();
 		fContextPath = ContextPath.initialContext();
 		REMEMBER_AST_CACHE = null;
@@ -1949,6 +1949,14 @@ public class EvalEngine implements Serializable {
 	 */
 	public final boolean isNumericMode() {
 		return fNumericMode;
+	}
+
+	/**
+	 * @return <code>true</code> if the EvalEngine runs in numeric mode and Java <code>double</code> numbers should be
+	 *         used for evaluating numeric functions.
+	 */
+	public final boolean isDoubleMode() {
+		return fNumericMode && !isApfloat();
 	}
 
 	/**
@@ -2096,7 +2104,7 @@ public class EvalEngine implements Serializable {
 		fStopRequested = false;
 		fSeconds = 0;
 		fModifiedVariablesList = null;
-		fMessageShortcut=null;
+		fMessageShortcut = null;
 		REMEMBER_AST_CACHE = null;
 
 		if (fOnOffMode && fOnOffUnique) {
@@ -2141,11 +2149,10 @@ public class EvalEngine implements Serializable {
 		fIterationLimit = i;
 	}
 
-	
 	public void setMessageShortcut(final String messageShortcut) {
 		fMessageShortcut = messageShortcut;
 	}
-	
+
 	/**
 	 * @param b
 	 */
