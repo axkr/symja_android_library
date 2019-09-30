@@ -9230,7 +9230,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 						"\n" + //
 						"var a = getVariable(id, 'a');\n" + //
 						"\n" + //
-						"function z1(x) { return mul(sin(x),cos(add(1,mul(a,x)))); }\n" + //
+						"function z1(x) { return mul(cos(add(1,mul(a,x))),sin(x)); }\n" + //
 						"\n" + //
 						"var p1 = plot( z1, [0, (6.283185307179586)], { } );\n" + //
 						"var data = [ p1 ];\n" + //
