@@ -64,7 +64,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		FUNCTIONS_STR_MATHCELL.put(F.Abs, "abs");
 		FUNCTIONS_STR_MATHCELL.put(F.Arg, "arg");
 		FUNCTIONS_STR_MATHCELL.put(F.Chop, "chop");
-		
+
 		FUNCTIONS_STR_MATHCELL.put(F.BesselJ, "besselJ");
 		FUNCTIONS_STR_MATHCELL.put(F.BesselY, "besselY");
 		FUNCTIONS_STR_MATHCELL.put(F.BesselI, "besselI");
@@ -81,7 +81,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		FUNCTIONS_STR_MATHCELL.put(F.EllipticE, "ellipticE");
 		FUNCTIONS_STR_MATHCELL.put(F.EllipticPi, "ellipticPi");
 		FUNCTIONS_STR_MATHCELL.put(F.EllipticTheta, "jacobiTheta");
-		
+
 		FUNCTIONS_STR_MATHCELL.put(F.JacobiZeta, "jacobiZeta");
 		FUNCTIONS_STR_MATHCELL.put(F.Factorial, "factorial");
 		FUNCTIONS_STR_MATHCELL.put(F.Factorial2, "factorial2");
@@ -138,13 +138,12 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		FUNCTIONS_STR_MATHCELL.put(F.ArcCoth, "arccoth");
 		FUNCTIONS_STR_MATHCELL.put(F.ArcSech, "arcsech");
 		FUNCTIONS_STR_MATHCELL.put(F.ArcCsch, "arccsch");
-		
-		
+
 		FUNCTIONS_STR_MATHCELL.put(F.Sinc, "sinc");
 		FUNCTIONS_STR_MATHCELL.put(F.Zeta, "zeta");
 		// FUNCTIONS_STR_MATHCELL.put(F.DirichletEta, "dirichletEta");
 		FUNCTIONS_STR_MATHCELL.put(F.BernoulliB, "bernoulli");
-		
+
 		FUNCTIONS_STR_MATHCELL.put(F.Ceiling, "Math.ceil");
 		FUNCTIONS_STR_MATHCELL.put(F.Floor, "Math.floor");
 		FUNCTIONS_STR_MATHCELL.put(F.IntegerPart, "Math.trunc");
@@ -152,7 +151,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		FUNCTIONS_STR_MATHCELL.put(F.Min, "Math.min");
 		FUNCTIONS_STR_MATHCELL.put(F.Round, "Math.round");
 		FUNCTIONS_STR_MATHCELL.put(F.Sign, "Math.sign");
-		
+
 		//
 		// pure JavaScript mappings
 		//
@@ -379,6 +378,12 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 				buf.append("pow");
 				convertArgs(buf, head, function);
 				return;
+			} else if (function.isInfinity()) {
+				buf.append("Number.POSITIVE_INFINITY");
+				return;
+			} else if (function.isNegativeInfinity()) {
+				buf.append("Number.NEGATIVE_INFINITY");
+				return;
 			} else if (function.head() == F.Log) {
 				if (function.isAST1()) {
 					IExpr arg1 = function.first();
@@ -403,6 +408,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 					if (INLINE_PIECEWISE) {
 						// use the ternary operator
 						int size = list.size();
+						buf.append("(");
 						for (int i = 1; i < size; i++) {
 							IAST row = (IAST) list.get(i);
 							if (i > 1) {
@@ -418,12 +424,13 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 						if (function.isAST2()) {
 							convert(buf, function.second());
 						} else {
-							buf.append(" NaN ");
+							buf.append(" Number.NaN ");
 						}
 						buf.append(" )");
 						for (int i = 2; i < size; i++) {
 							buf.append(" )");
 						}
+						buf.append(")");
 						return;
 					} else {
 						// use if... statements
@@ -446,12 +453,22 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 						if (function.isAST2()) {
 							convert(buf, function.second());
 						} else {
-							buf.append(" return NaN; ");
+							buf.append(" return Number.NaN; ");
 						}
 						buf.append("}");
 						return;
 					}
 				}
+			} else if (function.head() == F.ConditionalExpression && function.size() == 3) {
+				IExpr arg1 = function.arg1();
+				IExpr arg2 = function.arg2();
+				// use the ternary operator
+				buf.append("((");
+				convert(buf, arg2);
+				buf.append(") ? (");
+				convert(buf, arg1);
+				buf.append(") : ( Number.NaN ))");
+				return;
 			}
 			if (function.headID() > 0) {
 				throw new MathException("illegal JavaScript arg");

@@ -168,10 +168,11 @@ public class ManipulateFunction {
 		// function z1(x,y) { return [ x, y, Math.sin( a * x * y ) ]; }
 		StringBuilder function = new StringBuilder();
 		IAST listOfFunctions;
-		if (plot.arg1().isList()) {
-			listOfFunctions = (IAST) plot.arg1();
+		IExpr plotFunction = engine.evaluate(plot.arg1());
+		if (plotFunction.isList()) {
+			listOfFunctions = (IAST)plotFunction;
 		} else {
-			listOfFunctions = F.unaryAST1(F.List, plot.arg1());
+			listOfFunctions = F.unaryAST1(F.List, plotFunction);
 		}
 		if (plotID == ID.Plot3D) {
 			if (!plotRangeY.isPresent()) {
