@@ -2010,6 +2010,27 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"0.411877");
 		check("CDF(GumbelDistribution(2,3), 0.9)", //
 				"0.499947");
+		check("CDF(LogNormalDistribution(2,3), 0.1)", //
+				"0.0757583");
+		check("CDF(LogNormalDistribution(2,3), 0.9)", //
+				"0.241406");
+		check("CDF(NakagamiDistribution(2,3), 0.1)", //
+				"0.0000221237");
+		check("CDF(NakagamiDistribution(2,3), 0.9)", //
+				"0.102568");
+		check("CDF(NormalDistribution(2,3), 0.1)", //
+				"0.263258");
+		check("CDF(NormalDistribution(2,3), 0.9)", //
+				"0.356934");
+		check("CDF(UniformDistribution({0,1}), 0.1)", //
+				"0.1");
+		check("CDF(UniformDistribution({0,1}), 0.9)", //
+				"0.9");
+		check("CDF(WeibullDistribution(2,3), 0.1)", //
+				"0.00111049");
+		check("CDF(WeibullDistribution(2,3), 0.9)", //
+				"0.0860688");
+		
 		
 		// github #56
 		check("CDF(NormalDistribution(),-0.41)", //
@@ -2019,7 +2040,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Table(CDF(NormalDistribution(0, s), x), {s, {.75, 1, 2}}, {x, -6,6}) // N", //
 				"{{6.22096*10^-16,1.30839*10^-11,4.82130*10^-8,0.0000316712,0.00383038,0.0912112,0.5,0.908789,0.99617,0.999968,1.0,1.0,1.0},{9.86588*10^-10,2.86652*10^-7,0.0000316712,0.0013499,0.0227501,0.158655,0.5,0.841345,0.97725,0.99865,0.999968,1.0,1.0},{0.0013499,0.00620967,0.0227501,0.0668072,0.158655,0.308538,0.5,0.691462,0.841345,0.933193,0.97725,0.99379,0.99865}}");
 		checkNumeric("Table(CDF(NormalDistribution(0, s), x), {s, {.75, 1, 2}}, {x, -6,6}) // N", //
-				"{{6.22096057427182E-16,1.3083924686053115E-11,4.82130336511414E-8,3.167124183311996E-5,0.0038303805675897395,0.0912112197258679,0.5,0.9087887802741321,0.9961696194324102,0.9999683287581669,0.9999999517869663,0.999999999986916,0.9999999999999993},{9.865876450377014E-10,2.866515718791945E-7,3.167124183311996E-5,0.0013498980316300957,0.022750131948179216,0.15865525393145705,0.5,0.8413447460685429,0.9772498680518208,0.9986501019683699,0.9999683287581669,0.9999997133484281,0.9999999990134123},{0.0013498980316300957,0.0062096653257761375,0.022750131948179216,0.06680720126885807,0.15865525393145705,0.30853753872598694,0.5,0.691462461274013,0.8413447460685429,0.9331927987311419,0.9772498680518208,0.9937903346742238,0.9986501019683699}}");
+				"{{6.220960574271835E-16,1.308392468605314E-11,4.821303365114145E-8,3.167124183311997E-5,0.0038303805675897404,0.09121121972586804,0.5,0.9087887802741319,0.9961696194324102,0.9999683287581669,0.9999999517869663,0.999999999986916,0.9999999999999993},{9.865876450377004E-10,2.8665157187919423E-7,3.167124183311997E-5,0.001349898031630095,0.022750131948179167,0.15865525393145702,0.5,0.841344746068543,0.9772498680518208,0.9986501019683699,0.9999683287581669,0.9999997133484281,0.9999999990134123},{0.001349898031630095,0.0062096653257761305,0.022750131948179167,0.06680720126885803,0.15865525393145702,0.308537538725987,0.5,0.691462461274013,0.841344746068543,0.9331927987311419,0.9772498680518208,0.9937903346742238,0.9986501019683699}}");
 
 		check("CDF(NormalDistribution(n, m),k)", //
 				"Erfc((-k+n)/(Sqrt(2)*m))/2");
@@ -9020,7 +9041,26 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-4.7511");
 		check("InverseCDF(GumbelDistribution(2,3), 0.9)", //
 				"4.5021");
-		
+		check("InverseCDF(LogNormalDistribution(2,3), 0.1)", //
+				"0.15808");
+		check("InverseCDF(LogNormalDistribution(2,3), 0.9)", //
+				"345.3833");
+		check("InverseCDF(NakagamiDistribution(2,3), 0.1)", //
+				"0.89315");
+		check("InverseCDF(NakagamiDistribution(2,3), 0.9)", //
+				"2.41549");
+		check("InverseCDF(NormalDistribution(2,3), 0.1)", //
+				"-1.84465");
+		check("InverseCDF(NormalDistribution(2,3), 0.9)", //
+				"5.84465");
+		check("InverseCDF(UniformDistribution({0,1}), 0.1)", //
+				"0.1");
+		check("InverseCDF(UniformDistribution({0,1}), 0.9)", //
+				"0.9");
+		check("InverseCDF(WeibullDistribution(2,3), 0.1)", //
+				"0.973779");
+		check("InverseCDF(WeibullDistribution(2,3), 0.9)", //
+				"4.55228");
 		
 		check("InverseCDF(GammaDistribution(a,b,g,d))", //
 				"ConditionalExpression(Piecewise({{d+b*InverseGammaRegularized(a,0,#1)^(1/g),0<#1<\n"
@@ -13039,7 +13079,47 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPDF() {
-
+		check("PDF(BetaDistribution(2,3), 0.1)", //
+				"0.972");
+		check("PDF(BetaDistribution(2,3), 0.9)", //
+				"0.108");
+		check("PDF(ChiSquareDistribution(3), 0.1)", //
+				"0.120004");
+		check("PDF(ChiSquareDistribution(3), 0.9)", //
+				"0.241323");
+		check("PDF(FRatioDistribution(2,3), 0.1)", //
+				"0.850997");
+		check("PDF(FRatioDistribution(2,3), 0.9)", //
+				"0.308816");
+		check("PDF(GammaDistribution(2,3), 0.1)", //
+				"0.0107468");
+		check("PDF(GammaDistribution(2,3), 0.9)", //
+				"0.0740818");
+		check("PDF(LogNormalDistribution(2,3), 0.1)", //
+				"0.475483");
+		check("PDF(LogNormalDistribution(2,3), 0.9)", //
+				"0.115505");
+		check("PDF(NakagamiDistribution(2,3), 0.1)", //
+				"0.000882983");
+		check("PDF(NakagamiDistribution(2,3), 0.9)", //
+				"0.377621");
+		check("PDF(NormalDistribution(2,3), 0.1)", //
+				"0.108815");
+		check("PDF(NormalDistribution(2,3), 0.9)", //
+				"0.124335");
+		check("PDF(StudentTDistribution(3), 0.1)", //
+				"0.365114");
+		check("PDF(StudentTDistribution(3), 0.9)", //
+				"0.227883");
+		check("PDF(UniformDistribution({0,1}), 0.1)", //
+				"1");
+		check("PDF(UniformDistribution({0,1}), 0.9)", //
+				"1");
+		check("PDF(WeibullDistribution(2,3), 0.1)", //
+				"0.0221975");
+		check("PDF(WeibullDistribution(2,3), 0.9)", //
+				"0.182786");
+		
 		check("Table(PDF(NormalDistribution(m, 1.5), x), {m, {-1, 1, 2}},{x, {-1, 1, 2}}) ", //
 				"{{0.265962,0.10934,0.035994},{0.10934,0.265962,0.212965},{0.035994,0.212965,0.265962}}");
 		check("Table(PDF(NormalDistribution(0.0,1.0), x), {m, {-1, 1, 2}},{x, {-1, 1, 2}})//N ", //
