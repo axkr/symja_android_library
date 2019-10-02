@@ -13,11 +13,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 
 public class Show2SVG {
-	//
-	// private static class Dimensions2D {
-	//
-	//
-	// }
 
 	private static final DecimalFormatSymbols US_SYNBOLS = new DecimalFormatSymbols(Locale.US);
 	protected static final DecimalFormat FORMATTER = new DecimalFormat("0.0####", US_SYNBOLS);
@@ -269,13 +264,7 @@ public class Show2SVG {
 			double r = 2.166667;
 			// x="0.000000" y="0.000000" width="350.000000" height="350.000000"
 			double cx = (x1 - xMin) * xAxisScalingFactor;
-			double cy = (yMax - y1) * yAxisScalingFactor;
-			if (F.isZero(cx)) {
-				cx = dim.width / 2.0;
-			}
-			if (F.isZero(cy)) {
-				cy = dim.height / 2.0;
-			}
+			double cy = (yMax - y1) * yAxisScalingFactor; 
 			buf.append("cx=\"");
 			buf.append(FORMATTER.format(cx));
 			buf.append("\" cy=\"");
