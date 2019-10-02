@@ -93,6 +93,7 @@ public class Console {
 	public static void main(final String args[]) {
 		Config.PARSER_USE_LOWERCASE_SYMBOLS = true;
 		Config.USE_VISJS = true;
+		Config.FILESYSTEM_ENABLED = true;
 		F.initSymbols(null, null, true);
 		Console console;
 		try {

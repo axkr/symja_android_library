@@ -1,5 +1,9 @@
 package org.matheclipse.core.builtin;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +32,10 @@ public class IOFunctions {
 	private static class Initializer {
 
 		private static void init() {
+			if (Config.FILESYSTEM_ENABLED) {
+				F.Input.setEvaluator(new Input());
+				F.InputString.setEvaluator(new InputString());
+			}
 			// F.General.setEvaluator(new General());
 			F.Message.setEvaluator(new Message());
 			F.Names.setEvaluator(new Names());
@@ -69,6 +77,48 @@ public class IOFunctions {
 			newSymbol.setAttributes(ISymbol.HOLDFIRST);
 		}
 
+	}
+
+	private final static class InputString extends AbstractFunctionEvaluator {
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			return inputString(ast, engine);
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_0_1;
+		}
+	}
+
+	private final static class Input extends AbstractFunctionEvaluator {
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr str = inputString(ast, engine);
+			if (str.isPresent()) {
+				return engine.evaluate(str.toString());
+			}
+			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_0_1;
+		}
+	}
+
+	private static IExpr inputString(final IAST ast, EvalEngine engine) {
+		final BufferedReader in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
+		try {
+			if (ast.isAST1()) {
+				engine.getOutPrintStream().print(ast.arg1().toString());
+			}
+			final String str = in.readLine();
+			if (str != null) {
+				return F.stringx(str);
+			}
+		} catch (final IOException e1) {
+			e1.printStackTrace();
+		}
+		return F.NIL;
 	}
 
 	private final static class Names extends AbstractFunctionEvaluator {
