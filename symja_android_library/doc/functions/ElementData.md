@@ -30,6 +30,9 @@ ElementData(n, "property")
 
 >> ElementData(73, "ElectronConfiguration")
 {{2},{2,6},{2,6,10},{2,6,10,14},{2,6,3},{2}}
+
+>> ListPlot(Table(ElementData(z, "AtomicRadius"), {z, 118}))
+
 ```
 
 Some properties are not appropriate for certain elements:
