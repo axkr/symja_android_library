@@ -530,6 +530,9 @@ public class F {
     /** Break() - exits a `For`, `While`, or `Do` loop.*/
     public final static IBuiltInSymbol Break = F.initFinalSymbol("Break", ID.Break);
 
+    /***/
+    public final static IBuiltInSymbol Button = F.initFinalSymbol("Button", ID.Button);
+
     /** ByteArray({list-of-byte-values}) - converts the `list-of-byte-values` into a byte array.*/
     public final static IBuiltInSymbol ByteArray = F.initFinalSymbol("ByteArray", ID.ByteArray);
 
@@ -553,6 +556,9 @@ public class F {
 
     /** Cancel(expr) - cancels out common factors in numerators and denominators.*/
     public final static IBuiltInSymbol Cancel = F.initFinalSymbol("Cancel", ID.Cancel);
+
+    /***/
+    public final static IBuiltInSymbol CancelButton = F.initFinalSymbol("CancelButton", ID.CancelButton);
 
     /** CarmichaelLambda(n) -  the Carmichael function of `n`*/
     public final static IBuiltInSymbol CarmichaelLambda = F.initFinalSymbol("CarmichaelLambda", ID.CarmichaelLambda);
@@ -640,6 +646,9 @@ public class F {
 
     /***/
     public final static IBuiltInSymbol Colon = F.initFinalSymbol("Colon", ID.Colon);
+
+    /***/
+    public final static IBuiltInSymbol Column = F.initFinalSymbol("Column", ID.Column);
 
     /***/
     public final static IBuiltInSymbol Commonest = F.initFinalSymbol("Commonest", ID.Commonest);
@@ -800,6 +809,9 @@ public class F {
     /** Default(symbol) - `Default` returns the default value associated with the `symbol` for a pattern default `_.` expression.*/
     public final static IBuiltInSymbol Default = F.initFinalSymbol("Default", ID.Default);
 
+    /***/
+    public final static IBuiltInSymbol DefaultButton = F.initFinalSymbol("DefaultButton", ID.DefaultButton);
+
     /** Defer(expr) - `Defer` doesn't evaluate `expr` and didn't appear in the output*/
     public final static IBuiltInSymbol Defer = F.initFinalSymbol("Defer", ID.Defer);
 
@@ -845,8 +857,14 @@ public class F {
     /** DiagonalMatrix(list) - gives a matrix with the values in `list` on its diagonal and zeroes elsewhere.*/
     public final static IBuiltInSymbol DiagonalMatrix = F.initFinalSymbol("DiagonalMatrix", ID.DiagonalMatrix);
 
-    /***/
+    /** DialogInput() - if the file system is enabled, the user can input a string in a dialog box. */
     public final static IBuiltInSymbol DialogInput = F.initFinalSymbol("DialogInput", ID.DialogInput);
+
+    /***/
+    public final static IBuiltInSymbol DialogNotebook = F.initFinalSymbol("DialogNotebook", ID.DialogNotebook);
+
+    /***/
+    public final static IBuiltInSymbol DialogReturn = F.initFinalSymbol("DialogReturn", ID.DialogReturn);
 
     /** DiceDissimilarity(u, v) - returns the Dice dissimilarity between the two boolean 1-D lists `u` and `v`, which is defined as `(c_tf + c_ft) / (2 * c_tt + c_ft + c_tf)`, where n is `len(u)` and `c_ij` is the number of occurrences of `u(k)=i` and `v(k)=j` for `k<n`.   */
     public final static IBuiltInSymbol DiceDissimilarity = F.initFinalSymbol("DiceDissimilarity", ID.DiceDissimilarity);
@@ -925,6 +943,9 @@ public class F {
 
     /** Drop(expr, n) - returns `expr` with the first `n` leaves removed.*/
     public final static IBuiltInSymbol Drop = F.initFinalSymbol("Drop", ID.Drop);
+
+    /***/
+    public final static IBuiltInSymbol Dynamic = F.initFinalSymbol("Dynamic", ID.Dynamic);
 
     /** Euler's constant E*/
     public final static IBuiltInSymbol E = F.initFinalSymbol("E", ID.E);
@@ -1487,13 +1508,16 @@ public class F {
     /** Inner(f, x, y, g) - computes a generalized inner product of `x` and `y`, using a multiplication function `f` and an addition function `g`.*/
     public final static IBuiltInSymbol Inner = F.initFinalSymbol("Inner", ID.Inner);
 
-    /***/
+    /** Input() - if the file system is enabled, the user can input an expression. After input this expression will be evaluated immediately.*/
     public final static IBuiltInSymbol Input = F.initFinalSymbol("Input", ID.Input);
+
+    /***/
+    public final static IBuiltInSymbol InputField = F.initFinalSymbol("InputField", ID.InputField);
 
     /***/
     public final static IBuiltInSymbol InputForm = F.initFinalSymbol("InputForm", ID.InputForm);
 
-    /***/
+    /** InputString() - if the file system is enabled, the user can input a string. */
     public final static IBuiltInSymbol InputString = F.initFinalSymbol("InputString", ID.InputString);
 
     /***/
@@ -2762,7 +2786,7 @@ public class F {
     /** SyntaxQ(str) - is `True` if the given `str` is a string which has the correct syntax.*/
     public final static IBuiltInSymbol SyntaxQ = F.initFinalSymbol("SyntaxQ", ID.SyntaxQ);
 
-    /***/
+    /** SystemDialogInput("FileOpen") - if the file system is enabled, open a file chooser dialog box. */
     public final static IBuiltInSymbol SystemDialogInput = F.initFinalSymbol("SystemDialogInput", ID.SystemDialogInput);
 
     /** Table(expr, {i, n}) - evaluates `expr` with `i` ranging from `1` to `n`, returning a list of the results.*/
@@ -2809,6 +2833,9 @@ public class F {
 
     /***/
     public final static IBuiltInSymbol TensorSymmetry = F.initFinalSymbol("TensorSymmetry", ID.TensorSymmetry);
+
+    /***/
+    public final static IBuiltInSymbol TextCell = F.initFinalSymbol("TextCell", ID.TextCell);
 
     /***/
     public final static IBuiltInSymbol TextString = F.initFinalSymbol("TextString", ID.TextString);
