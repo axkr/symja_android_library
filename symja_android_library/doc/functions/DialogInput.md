@@ -9,10 +9,10 @@ DialogInput()
 
 
 ```
-DialogInput("string")
+DialogInput("info-string")
 ```
  
-> if the file system is enabled, additionally show the `string` in the dialog box.
+> if the file system is enabled, additionally show the `info-string` in the dialog box.
 
  
 

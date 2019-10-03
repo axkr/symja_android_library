@@ -5,7 +5,7 @@
 Input()
 ```
  
-> if the file system is enabled, the user can input an expression. After input this expression will be evakuated immediately.
+> if the file system is enabled, the user can input an expression. After input this expression will be evaluated immediately.
 
 
 ```
