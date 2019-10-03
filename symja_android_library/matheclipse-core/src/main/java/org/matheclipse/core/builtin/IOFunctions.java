@@ -1,11 +1,17 @@
 package org.matheclipse.core.builtin;
 
+import java.awt.Color;
+import java.awt.Desktop;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.JColorChooser;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileSystemView;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
@@ -33,8 +39,10 @@ public class IOFunctions {
 
 		private static void init() {
 			if (Config.FILESYSTEM_ENABLED) {
+				F.DialogInput.setEvaluator(new DialogInput());
 				F.Input.setEvaluator(new Input());
 				F.InputString.setEvaluator(new InputString());
+				F.SystemDialogInput.setEvaluator(new SystemDialogInput());
 			}
 			// F.General.setEvaluator(new General());
 			F.Message.setEvaluator(new Message());
@@ -90,12 +98,61 @@ public class IOFunctions {
 		}
 	}
 
+	private final static class SystemDialogInput extends AbstractFunctionEvaluator {
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (Desktop.isDesktopSupported() && ast.arg1().isString()) {
+				String type = ast.arg1().toString().toLowerCase();
+				if (type.equals("fileopen")) {
+					JFileChooser j = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+					j.setApproveButtonText("Open");
+					// FileNameExtensionFilter restrict = new FileNameExtensionFilter("Only .txt files", "txt");
+					// j.addChoosableFileFilter(restrict);
+					int r = j.showSaveDialog(null);
+					if (r == JFileChooser.APPROVE_OPTION) {
+						return F.stringx(j.getSelectedFile().getAbsolutePath());
+					}
+
+				} else if (type.equals("filesave")) {
+					JFileChooser j = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+					j.setApproveButtonText("Save");
+					int r = j.showSaveDialog(null);
+					if (r == JFileChooser.APPROVE_OPTION) {
+						return F.stringx(j.getSelectedFile().getAbsolutePath());
+					}
+				} else if (type.equals("directory")) {
+					JFileChooser j = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+					j.setApproveButtonText("Select");
+					j.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+					int r = j.showSaveDialog(null);
+					if (r == JFileChooser.APPROVE_OPTION) {
+						return F.stringx(j.getSelectedFile().getAbsolutePath());
+					}
+				} else if (type.equals("color")) {
+					Color color = JColorChooser.showDialog(null, "ColorChooser", null);
+					if (color != null) {
+						return F.stringx(Integer.toString(color.getRGB()));
+					}
+				}
+			}
+			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
+	}
+
 	private final static class Input extends AbstractFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			IExpr str = inputString(ast, engine);
-			if (str.isPresent()) {
-				return engine.evaluate(str.toString());
+			try {
+				IExpr str = inputString(ast, engine);
+				if (str.isPresent()) {
+					return engine.evaluate(str.toString());
+				}
+			} catch (final RuntimeException e1) {
+				//
 			}
 			return F.NIL;
 		}
@@ -115,10 +172,31 @@ public class IOFunctions {
 			if (str != null) {
 				return F.stringx(str);
 			}
-		} catch (final IOException e1) {
-			e1.printStackTrace();
+		} catch (final Exception e1) {
+			//
 		}
 		return F.NIL;
+	}
+
+	private final static class DialogInput extends AbstractFunctionEvaluator {
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (Desktop.isDesktopSupported()) {
+				String message = "";
+				if (ast.isAST1()) {
+					message = ast.arg1().toString();
+				}
+				String str = JOptionPane.showInputDialog(message);
+				if (str != null) {
+					return F.stringx(str);
+				}
+			}
+			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
 	}
 
 	private final static class Names extends AbstractFunctionEvaluator {

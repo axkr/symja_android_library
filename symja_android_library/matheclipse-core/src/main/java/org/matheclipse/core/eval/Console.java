@@ -37,9 +37,9 @@ import org.matheclipse.parser.client.math.MathException;
  */
 public class Console {
 	/**
-	 * 60 seconds timeout limit as the default value for Symja expression evaluation.
+	 * No timeout limit as the default value for Symja expression evaluation.
 	 */
-	private long fSeconds = 60;
+	private long fSeconds = -1;
 
 	private final static int OUTPUTFORM = 0;
 

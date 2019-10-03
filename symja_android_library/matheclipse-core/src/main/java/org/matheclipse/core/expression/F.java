@@ -845,6 +845,9 @@ public class F {
     /** DiagonalMatrix(list) - gives a matrix with the values in `list` on its diagonal and zeroes elsewhere.*/
     public final static IBuiltInSymbol DiagonalMatrix = F.initFinalSymbol("DiagonalMatrix", ID.DiagonalMatrix);
 
+    /***/
+    public final static IBuiltInSymbol DialogInput = F.initFinalSymbol("DialogInput", ID.DialogInput);
+
     /** DiceDissimilarity(u, v) - returns the Dice dissimilarity between the two boolean 1-D lists `u` and `v`, which is defined as `(c_tf + c_ft) / (2 * c_tt + c_ft + c_tf)`, where n is `len(u)` and `c_ij` is the number of occurrences of `u(k)=i` and `v(k)=j` for `k<n`.   */
     public final static IBuiltInSymbol DiceDissimilarity = F.initFinalSymbol("DiceDissimilarity", ID.DiceDissimilarity);
 
@@ -2758,6 +2761,9 @@ public class F {
 
     /** SyntaxQ(str) - is `True` if the given `str` is a string which has the correct syntax.*/
     public final static IBuiltInSymbol SyntaxQ = F.initFinalSymbol("SyntaxQ", ID.SyntaxQ);
+
+    /***/
+    public final static IBuiltInSymbol SystemDialogInput = F.initFinalSymbol("SystemDialogInput", ID.SystemDialogInput);
 
     /** Table(expr, {i, n}) - evaluates `expr` with `i` ranging from `1` to `n`, returning a list of the results.*/
     public final static IBuiltInSymbol Table = F.initFinalSymbol("Table", ID.Table);
