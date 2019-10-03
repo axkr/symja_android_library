@@ -1,24 +1,36 @@
 package org.matheclipse.core.builtin;
 
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Desktop;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JButton;
 import javax.swing.JColorChooser;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.filechooser.FileSystemView;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.DialogReturnException;
+import org.matheclipse.core.eval.exception.ReturnException;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -39,7 +51,9 @@ public class IOFunctions {
 
 		private static void init() {
 			if (Config.FILESYSTEM_ENABLED) {
+				F.Button.setEvaluator(new Button());
 				F.DialogInput.setEvaluator(new DialogInput());
+				F.DialogReturn.setEvaluator(new DialogReturn());
 				F.Input.setEvaluator(new Input());
 				F.InputString.setEvaluator(new InputString());
 				F.SystemDialogInput.setEvaluator(new SystemDialogInput());
@@ -51,6 +65,20 @@ public class IOFunctions {
 				F.General.putMessage(IPatternMatcher.SET, MESSAGES[i], F.stringx(MESSAGES[i + 1]));
 			}
 		}
+	}
+
+	private static class Button extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDREST);
+		}
+
 	}
 
 	private static class Message extends AbstractEvaluator {
@@ -182,23 +210,162 @@ public class IOFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (Desktop.isDesktopSupported()) {
-				String message = "";
-				if (ast.isAST1()) {
-					message = ast.arg1().toString();
+				IAST dialogNoteBook = null;
+				if (ast.isAST2() && ast.arg2().isAST(F.DialogNotebook, 2)) {
+					dialogNoteBook = (IAST) ast.arg2();
+				} else if (ast.isAST1() && ast.arg1().isAST(F.DialogNotebook, 2)) {
+					dialogNoteBook = (IAST) ast.arg1();
 				}
-				String str = JOptionPane.showInputDialog(message);
-				if (str != null) {
-					return F.stringx(str);
+				if (dialogNoteBook == null) {
+					return dialogNoteBook;
+				}
+				IAST list;
+				if (dialogNoteBook.arg1().isList()) {
+					list = (IAST) dialogNoteBook.arg1();
+				} else {
+					list = F.List(dialogNoteBook.arg1());
+				}
+
+				JDialog dialog = new JDialog();
+				dialog.setTitle("DialogInput");
+				dialog.setSize(320, 200);
+				dialog.setModal(true);
+				// dialog.setLayout(new FlowLayout(FlowLayout.LEFT));
+				// dialog.setLayout(new GridLayout(list.argSize(), 1));
+				IExpr[] result = new IExpr[] { F.NIL };
+				if (addComponents(dialog, list, dialog, engine, result)) {
+					dialog.setVisible(true);
+					if (result[0].isPresent()) {
+						return result[0];
+					}
 				}
 			}
 			return F.NIL;
 		}
 
+		private static boolean addComponents(Container container, IAST list, JDialog dialog, EvalEngine engine,
+				IExpr result[]) {
+			for (int i = 1; i < list.size(); i++) {
+				IExpr arg = list.get(i);
+				int headID = list.get(i).headID();
+				if (headID > 0) {
+					switch (headID) {
+					case ID.Button:
+						if (arg.size() == 3) {
+							JButton button = new JButton(arg.first().toString());
+							container.add(button);
+							final IExpr arg2 = arg.second();
+							button.addActionListener(new ActionListener() {
+								@Override
+								public void actionPerformed(ActionEvent e) {
+									try {
+										engine.evaluate(arg2);
+									} catch (DialogReturnException rex) {
+										result[0] = rex.getValue();
+										dialog.dispose();
+									} catch (RuntimeException rex) {
+										//
+									}
+								}
+							});
+
+						} else {
+							return false;
+						}
+						break;
+					case ID.Column:
+						if (arg.size() == 2) {
+							IAST column;
+							if (arg.first().isList()) {
+								column = (IAST) arg.first();
+							} else {
+								column = F.List(arg.first());
+							}
+							JPanel columnPanel = new JPanel();
+							columnPanel.setLayout(new GridLayout(column.argSize(), 1));
+							container.add(columnPanel);
+							if (!addComponents(columnPanel, column, dialog, engine, result)) {
+								return false;
+							}
+						} else {
+							return false;
+						}
+						break;
+					case ID.Row:
+						if (arg.size() == 2) {
+							IAST row;
+							if (arg.first().isList()) {
+								row = (IAST) arg.first();
+							} else {
+								row = F.List(arg.first());
+							}
+							JPanel rowPanel = new JPanel();
+							rowPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+							container.add(rowPanel);
+							if (!addComponents(rowPanel, row, dialog, engine, result)) {
+								return false;
+							}
+						} else {
+							return false;
+						}
+						break;
+					case ID.TextCell:
+						if (arg.size() == 2) {
+							JLabel label = new JLabel(arg.first().toString());
+							container.add(label);
+						} else {
+							return false;
+						}
+						break;
+					default:
+						return false;
+					}
+				} else {
+					return false;
+				}
+			}
+			return true;
+		}
+
 		public int[] expectedArgSize() {
-			return IOFunctions.ARGS_1_1;
+			return IOFunctions.ARGS_1_2;
 		}
 	}
 
+	private final static class DialogReturn extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				IExpr arg1 = ast.arg1();
+				if (arg1.isFalse()) {
+					throw DialogReturnException.DIALOG_RETURN_FALSE;
+				}
+				if (arg1.isTrue()) {
+					throw DialogReturnException.DIALOG_RETURN_TRUE;
+				}
+				arg1 = engine.evaluate(arg1);
+				if (arg1.isFalse()) {
+					throw DialogReturnException.DIALOG_RETURN_FALSE;
+				}
+				if (arg1.isTrue()) {
+					throw DialogReturnException.DIALOG_RETURN_TRUE;
+				}
+				throw new DialogReturnException(arg1);
+			}
+			throw new DialogReturnException();
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_0_1;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+	
 	private final static class Names extends AbstractFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {

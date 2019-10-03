@@ -158,7 +158,7 @@ public class AST2Expr {
 			"RegularExpression", "Remove", "Repeated", "RepeatedNull", "Replace", "ReplaceAll", "ReplaceList",
 			"ReplacePart", "ReplaceRepeated", "Rescale", "Rest", "Resultant", "Return", "Reverse", "Riffle",
 			"RogersTanimotoDissimilarity", "RootIntervals", "Root", "RootOf", "Roots", "RotateLeft", "RotateRight",
-			"RotationMatrix", "Round", "RowReduce", "Rule", "RuleDelayed", "RussellRaoDissimilarity", "Surd", "SameQ",
+			"RotationMatrix", "Round", "Row", "RowReduce", "Rule", "RuleDelayed", "RussellRaoDissimilarity", "Surd", "SameQ",
 			"SatisfiabilityCount", "SatisfiabilityInstances", "SatisfiableQ", "Scan", "Sec", "Sech", "Select",
 			"Sequence", "Series", "SeriesCoefficient", "SeriesData", "Set", "SetAttributes", "SetDelayed", "Share",
 			"Show", "Sign", "SignCmp", "Simplify", "Sin", "Sinc", "SingularValueDecomposition", "Sinh", "SinIntegral",

@@ -16,6 +16,7 @@ public abstract class BasePlotExample {
 
 	public void generateHTML() {
 		try {
+			Config.FILESYSTEM_ENABLED=true;
 			ExprEvaluator util = new ExprEvaluator();
 
 			IExpr result = util.eval(exampleFunction());
@@ -33,6 +34,8 @@ public abstract class BasePlotExample {
 				}
 				System.out.println(js);
 				F.openHTMLOnDesktop(js);
+			} else {
+				System.out.println(result.toString());
 			}
 		} catch (SyntaxError e) {
 			// catch Symja parser errors here

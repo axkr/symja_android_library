@@ -2513,6 +2513,8 @@ public class F {
     /** Round(expr) - round a given `expr` to nearest integer.*/
     public final static IBuiltInSymbol Round = F.initFinalSymbol("Round", ID.Round);
 
+    public final static IBuiltInSymbol Row = F.initFinalSymbol("Row", ID.Row);
+    
     /** RowReduce(matrix) - returns the reduced row-echelon form of `matrix`.*/
     public final static IBuiltInSymbol RowReduce = F.initFinalSymbol("RowReduce", ID.RowReduce);
 

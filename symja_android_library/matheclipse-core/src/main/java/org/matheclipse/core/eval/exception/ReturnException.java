@@ -15,7 +15,7 @@ public class ReturnException extends FlowControlException {
 	
 	public final static ReturnException RETURN_TRUE = new ReturnException(F.True);
 	
-	final private IExpr value;
+	final protected IExpr value;
 
 	public ReturnException() {
 		this(F.Null);
