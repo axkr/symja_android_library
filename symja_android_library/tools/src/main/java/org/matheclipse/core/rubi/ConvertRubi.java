@@ -34,6 +34,12 @@ public class ConvertRubi {
 			+ " * rule-based integrator</a>.\n" + " *  \n" + " */\n" + "public class IntRules";
 
 	private static final String FOOTER = "}\n}\n";
+
+	/**
+	 * Maximum number of rules which should be generated per file.
+	 * 
+	 * See <a href="https://github.com/axkr/symja_android_library/issues/149">Github issue 149</a>
+	 */
 	private static int NUMBER_OF_RULES_PER_FILE = 25;
 
 	public static List<ASTNode> parseFileToList(String fileName) {
