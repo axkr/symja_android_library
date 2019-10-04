@@ -36,7 +36,7 @@ public class ConvertRubiUtilityFunctions {
 
 	private static final String FOOTER = "}\n}\n";
 
-	private static int NUMBER_OF_RULES_PER_FILE = 90;
+	private static int NUMBER_OF_RULES_PER_FILE = 25;
 
 	public static List<ASTNode> parseFileToList(String fileName) {
 		try {
