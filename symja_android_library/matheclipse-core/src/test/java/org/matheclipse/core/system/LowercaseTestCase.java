@@ -2351,9 +2351,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{243,405,270,90,15,1}");
 		// http://oeis.org/A133314
 		check("b(0) = 1; " //
-				+ "b(n_) := b(n)=-Sum(Binomial(n, j)*a(j)*b(n-j), {j, 1, n}); row(0) = {1}; " //
-				+ "row(n_) := Coefficient(b(n), #)& /@ (Times @@ (a /@ #)&) /@ IntegerPartitions(n); " //
-				+ "Table(row(n), {n, 0, 8}) // Flatten", //
+				+ "b(n_) := b(n)=-Sum(Binomial(n, j)*a(j)*b(n-j), {j, 1, n}); crow(0) = {1}; " //
+				+ "crow(n_) := Coefficient(b(n), #)& /@ (Times @@ (a /@ #)&) /@ IntegerPartitions(n); " //
+				+ "Table(crow(n), {n, 0, 8}) // Flatten", //
 				"{1,-1,-1,2,-1,6,-6,-1,8,6,-36,24,-1,10,20,-60,-90,240,-120,-1,12,30,-90,20,-360,\n"
 						+ "480,-90,1080,-1800,720,-1,14,42,-126,70,-630,840,-420,-630,5040,-4200,2520,\n"
 						+ "-12600,15120,-5040,-1,16,56,-168,112,-1008,1344,70,-1680,-1260,10080,-8400,-1680,\n"
@@ -9253,6 +9253,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testJSForm() {
+		check("JSForm(Cot(x))", //
+				"(1/Math.tan(x))");
+		check("JSForm(ArcCot(x))", //
+				"((Math.PI/2.0)-Math.atan(x))");
+		check("JSForm( Piecewise({{x^2, x < 0}, {x, x >= 0&&x<1},{Cos(x-1), x >= 1}}) )", //
+				"((x<0) ? Math.pow(x,2) : ((x>=0&&x<1) ? x : ((x>=1) ? Math.cos(1-x) : ( 0 ) ) ))");  
+		check("JSForm(ConditionalExpression(Log(1- q), 0 <=q<=1))", //
+				"((0<=q<=1) ? (Math.log(1-q)) : ( Number.NaN ))");  
 		check("JSForm(x < 10 && y > 1)", //
 				"x<10&&y>1");
 		check("JSForm(a<b)", //
@@ -13310,7 +13318,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testPochhammer() {
 		// http://oeis.org/A054654
-		check("row(n_) := Reverse( CoefficientList( (-1)^n*Pochhammer(-x, n), x) ); Flatten( Table(row(n), {n, 0, 8}))", //
+		check("crow(n_) := Reverse( CoefficientList( (-1)^n*Pochhammer(-x, n), x) ); Flatten( Table(crow(n), {n, 0, 8}))", //
 				"{1,1,0,1,-1,0,1,-3,2,0,1,-6,11,-6,0,1,-10,35,-50,24,0,1,-15,85,-225,274,-120,0,1,\n"
 						+ "-21,175,-735,1624,-1764,720,0,1,-28,322,-1960,6769,-13132,13068,-5040,0}");
 		check("Pochhammer(0, 0)", //
