@@ -32,7 +32,7 @@ public abstract class AbstractTrigArg1 extends AbstractArg1 {
 		try {
 			if (arg1 instanceof INum) {
 				if (arg1 instanceof ApfloatNum) {
-					return e1ApfloatArg(((ApfloatNum) arg1).apfloatValue());
+					return e1ApfloatArg(((INum) arg1).apfloatValue(((INum) arg1).precision()));
 				}
 				return e1DblArg(((Num) arg1).doubleValue());
 			} else if (arg1 instanceof IComplexNum) {

@@ -299,7 +299,7 @@ public class StatisticsFunctions {
 
 		@Override
 		public IExpr e2ApfloatArg(final ApfloatNum a, final ApfloatNum b) {
-			return F.num(ApfloatMath.agm(a.apfloatValue(), b.apfloatValue()));
+			return F.num(ApfloatMath.agm(a.apfloatValue(a.precision()), b.apfloatValue(b.precision())));
 		}
 
 		@Override

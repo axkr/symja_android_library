@@ -273,6 +273,11 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	}
 
 	@Override
+	public Apfloat  apfloatValue(long precision) {
+		return new Apfloat(toBigNumerator(), precision);
+	}
+	
+	@Override
 	public IInteger ceil() {
 		return this;
 	}

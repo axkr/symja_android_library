@@ -133,8 +133,13 @@ public class Num implements INum {
 	@Override
 	public ApfloatNum apfloatNumValue(long precision) {
 		return ApfloatNum.valueOf(fDouble, precision);
+	} 
+	
+	@Override
+	public Apfloat apfloatValue(long precision) {
+		return new Apfloat(new BigDecimal(fDouble), precision);
 	}
-
+	
 	/** {@inheritDoc} */
 	@Override
 	public IInteger ceilFraction() {

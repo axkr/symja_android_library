@@ -111,18 +111,23 @@ public class ApfloatNum implements INum {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNegative() {
-		return fApfloat.compareTo(Apcomplex.ZERO) < 0;
+		return fApfloat.signum() == -1;
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPositive() {
-		return fApfloat.compareTo(Apcomplex.ZERO) > 0;
+		return fApfloat.signum() > 0;
 	}
 
 	@Override
 	public boolean equalsInt(final int i) {
-		return fApfloat.intValue() == i;
+		try {
+			return fApfloat.intValueExact() == i;
+		} catch (RuntimeException rex) {
+			// ArithmeticException
+		}
+		return false;
 	}
 
 	@Override
@@ -209,12 +214,12 @@ public class ApfloatNum implements INum {
 
 	@Override
 	public ISignedNumber divideBy(ISignedNumber that) {
-		return valueOf(fApfloat.divide(((ApfloatNum) that).fApfloat));
+		return valueOf(fApfloat.divide(that.apfloatValue(fApfloat.precision())));
 	}
 
 	@Override
 	public ISignedNumber subtractFrom(ISignedNumber that) {
-		return valueOf(fApfloat.subtract(((ApfloatNum) that).fApfloat));
+		return valueOf(fApfloat.subtract(that.apfloatValue(fApfloat.precision())));
 	}
 
 	/**
@@ -225,7 +230,8 @@ public class ApfloatNum implements INum {
 		return fApfloat.doubleValue();
 	}
 
-	public Apfloat apfloatValue() {
+	@Override
+	public Apfloat apfloatValue(long precision) {
 		return fApfloat;
 	}
 
@@ -235,7 +241,7 @@ public class ApfloatNum implements INum {
 			return true;
 		}
 		if (arg0 instanceof ApfloatNum) {
-			return fApfloat == ((ApfloatNum) arg0).fApfloat;
+			return fApfloat.equals(((ApfloatNum) arg0).fApfloat);
 		}
 		return false;
 	}
@@ -244,8 +250,6 @@ public class ApfloatNum implements INum {
 	public boolean isSame(IExpr expression, double epsilon) {
 		if (expression instanceof ApfloatNum) {
 			return fApfloat.equals(((ApfloatNum) expression).fApfloat);
-			// return F.isZero(fDouble - ((ApfloatNum) expression).fDouble,
-			// epsilon);
 		}
 		return false;
 	}
@@ -272,21 +276,18 @@ public class ApfloatNum implements INum {
 	 */
 	@Override
 	public int toInt() throws ArithmeticException {
-		int i = fApfloat.intValue();
-		if (i == Integer.MAX_VALUE || i == Integer.MIN_VALUE) {
-			throw new ArithmeticException("ApfloatNum:toInt: number out of range");
-		}
-		return i;
+		return fApfloat.intValueExact();
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public int toIntDefault(int defaultValue) {
-		int i = fApfloat.intValue();
-		if (i == Integer.MAX_VALUE || i == Integer.MIN_VALUE) {
-			return defaultValue;
+		try {
+			return fApfloat.intValueExact();
+		} catch (RuntimeException rex) {
+			// ArithmeticException
 		}
-		return i;
+		return defaultValue;
 	}
 
 	/**
@@ -294,11 +295,7 @@ public class ApfloatNum implements INum {
 	 */
 	@Override
 	public long toLong() throws ArithmeticException {
-		long l = fApfloat.longValue();
-		if (l == Long.MAX_VALUE || l == Long.MIN_VALUE) {
-			throw new ArithmeticException("ApfloatNum:toLong: number out of range");
-		}
-		return l;
+		return fApfloat.longValueExact();
 	}
 
 	@Override
@@ -407,7 +404,7 @@ public class ApfloatNum implements INum {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isZero() {
-		return fApfloat.equals(Apcomplex.ZERO);
+		return fApfloat.signum() == 0;
 	}
 
 	@Override
@@ -423,6 +420,7 @@ public class ApfloatNum implements INum {
 		return F.num(ApfloatMath.round(fApfloat.divide(factor), 1, RoundingMode.HALF_EVEN).multiply(factor));
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int sign() {
 		return fApfloat.signum();

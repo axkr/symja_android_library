@@ -1395,7 +1395,7 @@ public class TeXFormFactory {
 		if (d instanceof Num) {
 			convertDoubleString(buf, convertDoubleToFormattedString(d.getRealPart()), precedence, isNegative);
 		} else {
-			convertDoubleString(buf, convertApfloat(((ApfloatNum) d).apfloatValue()), precedence, isNegative);
+			convertDoubleString(buf, convertApfloat(((INum) d).apfloatValue(d.precision())), precedence, isNegative);
 		}
 	}
 

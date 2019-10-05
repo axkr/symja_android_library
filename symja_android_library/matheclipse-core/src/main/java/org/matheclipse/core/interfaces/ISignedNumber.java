@@ -1,6 +1,6 @@
 package org.matheclipse.core.interfaces;
 
-import org.matheclipse.core.eval.util.AbstractAssumptions;
+import org.apfloat.Apfloat;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 
@@ -23,6 +23,8 @@ public interface ISignedNumber extends INumber {
 	 */
 	public ApfloatNum apfloatNumValue(long precision);
 
+	public Apfloat apfloatValue(long precision);
+	
 	/** {@inheritDoc} */
 	@Override
 	default IExpr complexArg() {

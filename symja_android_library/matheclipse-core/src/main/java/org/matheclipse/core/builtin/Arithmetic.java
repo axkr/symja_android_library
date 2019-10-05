@@ -2484,7 +2484,7 @@ public final class Arithmetic {
 			if (number instanceof Num) {
 				complexNumber = F.complexNum(((Num) number).doubleValue());
 			} else {
-				complexNumber = F.complexNum(((ApfloatNum) number).apfloatValue());
+				complexNumber = F.complexNum(number.apfloatValue(number.precision()));
 			}
 			for (int i = start; i < ast.size(); i++) {
 				IExpr temp = ast.get(i);
@@ -2493,7 +2493,7 @@ public final class Arithmetic {
 					if (number instanceof Num) {
 						complexNumber = complexNumber.add(F.complexNum(((Num) number).doubleValue()));
 					} else {
-						complexNumber = complexNumber.add(F.complexNum(((ApfloatNum) number).apfloatValue()));
+						complexNumber = complexNumber.add(F.complexNum(number.apfloatValue(number.precision())));
 					}
 				} else if (temp instanceof IComplexNum) {
 					if (complexNumber instanceof ApcomplexNum) {
@@ -5117,7 +5117,7 @@ public final class Arithmetic {
 			if (number instanceof Num) {
 				complexNumber = F.complexNum(((Num) number).doubleValue());
 			} else {
-				complexNumber = F.complexNum(((ApfloatNum) number).apfloatValue());
+				complexNumber = F.complexNum(number.apfloatValue(number.precision()));
 			}
 			for (int i = start; i < ast.size(); i++) {
 				IExpr temp = ast.get(i);
@@ -5126,7 +5126,7 @@ public final class Arithmetic {
 					if (number instanceof Num) {
 						complexNumber = complexNumber.multiply(F.complexNum(((Num) number).doubleValue()));
 					} else {
-						complexNumber = complexNumber.multiply(F.complexNum(((ApfloatNum) number).apfloatValue()));
+						complexNumber = complexNumber.multiply(F.complexNum(number.apfloatValue(number.precision())));
 					}
 				} else if (temp instanceof IComplexNum) {
 					if (complexNumber instanceof ApcomplexNum) {

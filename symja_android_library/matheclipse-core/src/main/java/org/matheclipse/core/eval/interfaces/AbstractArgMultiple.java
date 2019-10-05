@@ -167,7 +167,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 				result = e2DblArg((INum) o0, F.num((IFraction) o1));
 			} else if (o1 instanceof IComplexNum) {
 				if (o0 instanceof ApfloatNum) {
-					result = e2DblComArg(F.complexNum(((ApfloatNum) o0).apfloatValue()), (IComplexNum) o1);
+					result = e2DblComArg(F.complexNum(((INum) o0).apfloatValue(((INum) o0).precision())), (IComplexNum) o1);
 				} else {
 					result = e2DblComArg(F.complexNum(((INum) o0).getRealPart()), (IComplexNum) o1);
 				}
@@ -184,7 +184,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 				result = e2DblArg(F.num((IFraction) o0), (INum) o1);
 			} else if (o0 instanceof IComplexNum) {
 				if (o1 instanceof ApfloatNum) {
-					result = e2DblComArg((IComplexNum) o0, F.complexNum(((ApfloatNum) o1).apfloatValue()));
+					result = e2DblComArg((IComplexNum) o0, F.complexNum(((INum) o1).apfloatValue(((INum) o1).precision())));
 				} else {
 					result = e2DblComArg((IComplexNum) o0, F.complexNum(((INum) o1).getRealPart()));
 				}

@@ -161,7 +161,7 @@ public class OutputFormFactory {
 		if (d instanceof Num) {
 			convertDoubleString(buf, convertDoubleToFormattedString(doubleValue), precedence, isNegative);
 		} else {
-			convertDoubleString(buf, convertApfloat(((ApfloatNum) d).apfloatValue()), precedence, isNegative);
+			convertDoubleString(buf, convertApfloat(d.apfloatValue(d.precision())), precedence, isNegative);
 		}
 	}
 

@@ -43,7 +43,7 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 			if (hier <= IExpr.DOUBLECOMPLEXID) {
 				if (hier == IExpr.DOUBLEID) {
 					if (arg0 instanceof ApfloatNum) {
-						return e1ApfloatArg(((ApfloatNum) arg0).apfloatValue());
+						return e1ApfloatArg(((ApfloatNum) arg0).apfloatValue(((ApfloatNum) arg0).precision()));
 					}
 					return e1DblArg((INum) arg0);
 				}

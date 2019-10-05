@@ -1505,7 +1505,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		}
 
 		if (d instanceof ApfloatNum) {
-			convertApfloat(buf, ((ApfloatNum) d).apfloatValue(), precedence);
+			convertApfloat(buf, d.apfloatValue(d.precision()), precedence);
 		} else {
 			tagStart(buf, "mn");
 			buf.append(convertDoubleToFormattedString(d.getRealPart()));
