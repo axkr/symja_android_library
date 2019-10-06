@@ -365,7 +365,7 @@ public class IOFunctions {
 		}
 
 	}
-	
+
 	private final static class Names extends AbstractFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -541,6 +541,17 @@ public class IOFunctions {
 			}
 			engine.setMessageShortcut(messageShortcut);
 			engine.printMessage(symbol.toString() + ": " + message);
+		}
+
+		return F.NIL;
+	}
+
+	public static IAST printMessage(ISymbol symbol, Exception ex, EvalEngine engine) {
+		String message = ex.getMessage();
+		if (message != null) {
+			engine.printMessage(symbol.toString() + ": " + message);
+		} else {
+			engine.printMessage(symbol.toString() + ": " + ex.getClass().toString());
 		}
 
 		return F.NIL;

@@ -4959,6 +4959,15 @@ public final class Arithmetic {
 			// return ((IAST) arg2).map(x -> x.negate(), 1);
 			// }
 
+			if (arg1.isInterval1() || arg2.isInterval1()) {
+				if (arg1.isRealResult() || arg2.isRealResult() || //
+						(arg1.isInterval1() && arg2.isInterval1())) {
+					return timesInterval(arg1, arg2);
+				}
+				// donn't create Power(...,...)
+				return F.NIL;
+			}
+
 			if (arg1.equals(arg2)) {
 				return F.Power(arg1, C2);
 			}
@@ -5012,13 +5021,6 @@ public final class Arithmetic {
 							if (temp.isPresent()) {
 								return temp;
 							}
-						}
-					}
-					break;
-				case ID.Interval:
-					if (arg1.isInterval1()) {
-						if (arg2.isInterval1() || arg2.isReal()) {
-							return timesInterval(arg1, arg2);
 						}
 					}
 					break;

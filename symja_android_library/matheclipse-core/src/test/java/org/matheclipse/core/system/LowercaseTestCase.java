@@ -1985,7 +1985,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCDF() {
-		
+
 		check("CDF(BetaDistribution(2,3), 0.1)", //
 				"0.0523");
 		check("CDF(BetaDistribution(2,3), 0.9)", //
@@ -2030,8 +2030,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"0.00111049");
 		check("CDF(WeibullDistribution(2,3), 0.9)", //
 				"0.0860688");
-		
-		
+
 		// github #56
 		check("CDF(NormalDistribution(),-0.41)", //
 				"0.340903");
@@ -7517,6 +7516,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("(Function@@{{x},x==2})[2]", "True");
 	}
 
+	public void testFunctionRange() {
+		// TODO
+//		check("FunctionRange(Sqrt(Sin(2*x)),x,y)", //
+//				"0<=y<=1");
+		check("FunctionRange(Sin(x)*Cos(x),x,y)", //
+				"-1<=y<=1");
+		check("FunctionRange(Sin(x),x,y)", //
+				"-1<=y<=1");
+		check("FunctionRange(Cos(x),x,y)", //
+				"-1<=y<=1");
+	}
+
 	public void testFunctionExpand() {
 		check("FunctionExpand(Degree)", //
 				"Pi/180");
@@ -7675,15 +7686,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGammaRegularized() {
-		check("GammaRegularized(1, 1.5)",//
+		check("GammaRegularized(1, 1.5)", //
 				"0.22313");
-		check("GammaRegularized(2,  2.2)",//
+		check("GammaRegularized(2,  2.2)", //
 				"0.35457");
-		check("GammaRegularized(2,  3.3)",//
+		check("GammaRegularized(2,  3.3)", //
 				"0.158598");
-		check("GammaRegularized(2,  3.3, 3.4)",//
+		check("GammaRegularized(2,  3.3, 3.4)", //
 				"0.0117552");
-						
+
 		// TODO improve output Format to E^(-x)-E^(-y)
 		check("GammaRegularized(1,x,y)", //
 				"E^(-x)-1/E^y");
@@ -8890,8 +8901,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("Sin(Interval({4, 7}))", "Interval({-1,Sin(7)})");
 		// check("Sin(Interval({2, 7}))", "Interval({-1,Sin(2)})");
 		// check("Sin(Interval({2, 8}))", "Interval({-1,1})");
-
-		check("Interval({-1,1})/Infinity", "0");
+		check("Interval({3,-1})", //
+				"Interval({-1,3})");
+		check("Interval({-1,1})*Interval({-1,1})", //
+				"Interval({-1,1})");
+		check("Interval({-1,1})/Infinity", //
+				"0");
 		check("Interval({1,1})", //
 				"Interval({1,1})");
 
@@ -8929,7 +8944,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"False");
 		check("3<=Pi", //
 				"True");
-		// check("Max(Interval({4,2}))", "4");
+
 		check("Interval({5,8})>2", //
 				"True");
 		check("Interval({3,4})>Pi", //
@@ -9016,7 +9031,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// https://github.com/axkr/symja_android_library/issues/147
 		check("InverseCDF(StudentTDistribution(24), 0.95)", //
 				"1.71088");
-		
+
 		check("InverseCDF(BetaDistribution(2,3), 0.1)", //
 				"0.142559");
 		check("InverseCDF(BetaDistribution(2,3), 0.9)", //
@@ -9061,7 +9076,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"0.973779");
 		check("InverseCDF(WeibullDistribution(2,3), 0.9)", //
 				"4.55228");
-		
+
 		check("InverseCDF(GammaDistribution(a,b,g,d))", //
 				"ConditionalExpression(Piecewise({{d+b*InverseGammaRegularized(a,0,#1)^(1/g),0<#1<\n"
 						+ "1},{d,#1<=0}},Infinity),0<=#1<=1)&");
@@ -9258,9 +9273,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("JSForm(ArcCot(x))", //
 				"((Math.PI/2.0)-Math.atan(x))");
 		check("JSForm( Piecewise({{x^2, x < 0}, {x, x >= 0&&x<1},{Cos(x-1), x >= 1}}) )", //
-				"((x<0) ? Math.pow(x,2) : ((x>=0&&x<1) ? x : ((x>=1) ? Math.cos(1-x) : ( 0 ) ) ))");  
+				"((x<0) ? Math.pow(x,2) : ((x>=0&&x<1) ? x : ((x>=1) ? Math.cos(1-x) : ( 0 ) ) ))");
 		check("JSForm(ConditionalExpression(Log(1- q), 0 <=q<=1))", //
-				"((0<=q<=1) ? (Math.log(1-q)) : ( Number.NaN ))");  
+				"((0<=q<=1) ? (Math.log(1-q)) : ( Number.NaN ))");
 		check("JSForm(x < 10 && y > 1)", //
 				"x<10&&y>1");
 		check("JSForm(a<b)", //
@@ -9271,21 +9286,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"(20.085536923187664)-Math.cos((9.869604401089358)/x)");
 		// Mathcell syntax
 		check("JSForm(Manipulate(Plot(Sin(x)*Cos(1 + a*x), {x, 0, 2*Pi}, PlotRange->{-1,2}), {a,0,10}))", //
-				"MathCell( id, [ { type: 'slider', min: 0, max: 10, name: 'a', label: 'a' }\n" + //
-						" ] );\n" + //
-						"\n" + //
-						"parent.update = function( id ) {\n" + //
-						"\n" + //
-						"var a = getVariable(id, 'a');\n" + //
-						"\n" + //
-						"function z1(x) { return mul(cos(add(1,mul(a,x))),sin(x)); }\n" + //
-						"\n" + //
-						"var p1 = plot( z1, [0, (6.283185307179586)], { } );\n" + //
-						"var data = [ p1 ];\n" + //
-						"var config = { type: 'svg' , yMin: -1, yMax: 2 };\n" + //
-						"evaluate( id, data, config );\n" + //
-						"\n" + //
-						"}");
+				"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.3141592653589793,2.15,6.5973445725385655,-1.15]});\n" + 
+				"board.suspendUpdate();\n" + 
+				"var a = board.create('slider',[[0.37699111843077515,1.8199999999999998],[5.906194188748811,1.8199999999999998],[0,0,10]],{name:'a'});\n" + 
+				"\n" + 
+				"function z1(x) { return mul(cos(add(1,mul(a.Value(),x))),sin(x)); }\n" + 
+				"var p1 = board.create('functiongraph',[z1, 0, (6.283185307179586)]);\n" + 
+				"var data = [ p1 ];\n" + 
+				"\n" + 
+				"\n" + 
+				"board.unsuspendUpdate();\n" + 
+				"");
 		// Mathcell syntax / generate TeX for MathJAX
 		check("JSForm(Manipulate(Factor(x^n + 1), {n, 1, 5, 1}))", //
 				"MathCell( id, [ { type: 'slider', min: 1, max: 5, step: 1, name: 'n', label: 'n' }\n" + //
@@ -10278,6 +10289,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLog() {
+		check("Log(Interval({0, 3}))", //
+				"Interval({-Infinity,Log(3)})");
+		check("Log(Interval({-1, 3}))", //
+				"Log(Interval({-1,3}))");
 		// github #134
 		check("Log(10,1)", //
 				"0");
@@ -11905,6 +11920,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testNIntegrate() {
+		// github #150
+		// checkNumeric("NIntegrate(1/x, {x, 0, 1}, MaxPoints->1000)", //
+		// "14.97094172112369");
+
 		// github #61
 		// these methods correctly show "NIntegrate(method=method-nsme) maximal count (xxxxx) exceeded"
 		checkNumeric("NIntegrate(1/x, {x,0,5}, Method->Romberg)", //
@@ -13127,7 +13146,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"0.0221975");
 		check("PDF(WeibullDistribution(2,3), 0.9)", //
 				"0.182786");
-		
+
 		check("Table(PDF(NormalDistribution(m, 1.5), x), {m, {-1, 1, 2}},{x, {-1, 1, 2}}) ", //
 				"{{0.265962,0.10934,0.035994},{0.10934,0.265962,0.212965},{0.035994,0.212965,0.265962}}");
 		check("Table(PDF(NormalDistribution(0.0,1.0), x), {m, {-1, 1, 2}},{x, {-1, 1, 2}})//N ", //
@@ -17103,7 +17122,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSin() {
-		check("Sin(5*Pi/12)", "(1+Sqrt(3))/(2*Sqrt(2))");
+		check("Sin(Interval({-Infinity,Infinity}))", //
+				"Interval({-1,1})");
+		check("Sin(5*Pi/12)", //
+				"(1+Sqrt(3))/(2*Sqrt(2))");
 		// check("Sin(Quantity(90,\"Degree\"))",
 		// "");
 		check("Sin(-37/3*Pi+x)", //

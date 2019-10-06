@@ -126,6 +126,7 @@ public class Algebra {
 			F.FactorSquareFreeList.setEvaluator(new FactorSquareFreeList());
 			F.FactorTerms.setEvaluator(new FactorTerms());
 			F.FullSimplify.setEvaluator(new FullSimplify());
+			F.FunctionRange.setEvaluator(new FunctionRange());
 			F.Numerator.setEvaluator(new Numerator());
 
 			F.PolynomialExtendedGCD.setEvaluator(new PolynomialExtendedGCD());
@@ -2482,6 +2483,50 @@ public class Algebra {
 		}
 	}
 
+	private final static class FunctionRange extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr function = ast.arg1();
+			IExpr xExpr = ast.arg2();
+			IExpr yExpr = ast.arg3();
+			IBuiltInSymbol domain=F.Reals;
+			if (xExpr.isSymbol() && yExpr.isSymbol()) {
+				ISymbol x = (ISymbol) xExpr;
+				ISymbol y = (ISymbol) yExpr;
+				IExpr f = function.replaceAll(F.Rule(x, F.Interval(F.CNInfinity, F.CInfinity))).orElse(function);
+				IExpr result = engine.evaluate(f);
+				if (result.isInterval1()) {
+					IAST list = (IAST) result.first();
+					if (list.arg1().isReal()) {
+						if (list.arg2().isReal()) {
+							return F.LessEqual(list.arg1(), y, list.arg2());
+						} else if (list.arg2().isInfinity()) {
+							return F.GreaterEqual(y, list.arg1());
+						}
+					} else if (list.arg2().isReal()) {
+						if (list.arg1().isNegativeInfinity()) {
+							return F.LessEqual(y, list.arg2());
+						}
+					}
+				} else if (domain.equals(F.Reals)) {
+//					if (result.isPower()) {
+//						
+//					}
+				}
+				// if (function.isSin() || function.isCos()) {
+				// return F.LessEqual(F.CN1, y, F.C1);
+				// }
+			}
+			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_3;
+		}
+
+	}
+
 	/**
 	 * <h2>Numerator</h2>
 	 * 
@@ -4255,7 +4300,7 @@ public class Algebra {
 								return fEngine.evaluate(temp);
 							}
 						}
-						
+
 						result = functionExpand(ast, minCounter[0], result);
 					}
 

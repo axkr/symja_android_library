@@ -429,6 +429,14 @@ public abstract class AbstractAST implements IASTMutable {
 			return false;
 		}
 
+		public final boolean isInterval() {
+			return false;
+		}
+
+		public final boolean isInterval1() {
+			return false;
+		}
+
 		/** {@inheritDoc} */
 		@Override
 		public boolean isList() {
@@ -2543,7 +2551,7 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isInterval() {
+	public boolean isInterval() {
 		if (isSameHeadSizeGE(F.Interval, 2)) {
 			for (int i = 1; i < size(); i++) {
 				if (!(get(i).isVector() == 2)) {
@@ -2557,7 +2565,7 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isInterval1() {
+	public boolean isInterval1() {
 		return isSameHead(F.Interval, 2) && arg1().isAST(F.List, 3);
 	}
 

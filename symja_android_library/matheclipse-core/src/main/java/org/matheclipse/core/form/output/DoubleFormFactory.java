@@ -97,7 +97,7 @@ public abstract class DoubleFormFactory {
 		if (d instanceof Num) {
 			convertDoubleString(buf, convertDoubleToFormattedString(doubleValue), precedence, isNegative);
 		} else {
-			convertDoubleString(buf, convertApfloat( d.apfloatValue(d.precision())), precedence, isNegative);
+			convertDoubleString(buf, convertApfloat(d.apfloatValue(d.precision())), precedence, isNegative);
 		}
 	}
 
@@ -415,6 +415,12 @@ public abstract class DoubleFormFactory {
 			return;
 		} else if (symbol == F.Pi) {
 			buf.append("Math.PI");
+			return;
+		} else if (symbol == F.False) {
+			buf.append("false");
+			return;
+		} else if (symbol == F.True) {
+			buf.append("true");
 			return;
 		}
 		if (symbol.isConstantAttribute()) {
@@ -1069,17 +1075,17 @@ public abstract class DoubleFormFactory {
 	}
 
 	public Operator getOperator(ISymbol head) {
-//		Operator operator = null;
+		// Operator operator = null;
 		if (head == F.Plus || head == F.Times || head == F.Equal || head == F.Unequal || head == F.Less
 				|| head == F.LessEqual || head == F.Greater || head == F.GreaterEqual || head == F.And || head == F.Or
 				|| head == F.Not) {
 			return OutputFormFactory.getOperator(head);
-//			String str = head.toString();
-//			operator = ASTNodeFactory.MMA_STYLE_FACTORY.get(str);
+			// String str = head.toString();
+			// operator = ASTNodeFactory.MMA_STYLE_FACTORY.get(str);
 		}
 		return null;
-	} 
-	
+	}
+
 	public void convertSlot(final StringBuilder buf, final IAST list) {
 		try {
 			final int slot = ((ISignedNumber) list.arg1()).toInt();

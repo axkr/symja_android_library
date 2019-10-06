@@ -72,14 +72,23 @@ public class ManipulateFunction {
 					IAST plot = (IAST) ast.arg1();
 					if (plot.size() >= 3 && plot.arg2().isList()) {
 						IAST plotRangeX = (IAST) plot.arg2();
-						// TODO find better default Y plot range instead of [-5, 5]
 						IAST plotRangeY = F.NIL;
 						if (plot.size() >= 4 && plot.arg3().isList()) {
 							plotRangeY = (IAST) plot.arg3();
 						}
+						if (ast.size() >= 3) {
+							if (ast.arg2().isList()) {
+								IAST sliderRange = (IAST) ast.arg2();
+								if (sliderRange.isAST2() && sliderRange.arg2().isList()) {
+									// assumption: button should be displayed
+									return mathcellSliderWithPlot(ast, plot, plotRangeX, plotRangeY, engine);
+								}
+							}
+						}
+
 						if (plotRangeX.isAST3() && plotRangeX.arg1().isSymbol()) {
-							// return jsxgraphSliderWithPlot(ast, plot, plotRangeX, plotRangeY, engine);
-							return mathcellSliderWithPlot(ast, plot, plotRangeX, plotRangeY, engine);
+							return jsxgraphSliderWithPlot(ast, plot, plotRangeX, engine);
+							// return mathcellSliderWithPlot(ast, plot, plotRangeX, plotRangeY, engine);
 						}
 					}
 				} else if (ast.arg1().isAST(F.Plot3D)) {
@@ -109,9 +118,10 @@ public class ManipulateFunction {
 					}
 				}
 			} catch (Exception ex) {
-				// if (Config.SHOW_STACKTRACE) {
-				ex.printStackTrace();
-				// }
+				if (Config.SHOW_STACKTRACE) {
+					ex.printStackTrace();
+				}
+				return IOFunctions.printMessage(F.Manipulate, ex, engine);
 			}
 			return F.NIL;
 		}
@@ -514,9 +524,19 @@ public class ManipulateFunction {
 			}
 			slider.append("{ type: 'buttons', values: [");
 			for (int j = 1; j < listOfButtons.size(); j++) {
-				slider.append("'");
-				toJS.convert(slider, listOfButtons.get(j));
-				slider.append("'");
+				if (listOfButtons.get(j).isFalse() || //
+						listOfButtons.get(j).isTrue()) {
+					// replace true and false values with 0, 1
+					if (listOfButtons.get(j).isFalse()) {
+						slider.append("0");
+					} else {
+						slider.append("1");
+					}
+				} else {
+					slider.append("'");
+					toJS.convert(slider, listOfButtons.get(j));
+					slider.append("'");
+				}
 				if (j < listOfButtons.size() - 1) {
 					slider.append(",");
 				}
@@ -944,8 +964,7 @@ public class ManipulateFunction {
 	 * @return
 	 * @throws IOException
 	 */
-	private static IExpr jsxgraphSliderWithPlot(final IAST ast, IAST plot, IAST plotRangeX, IAST plotRangeY,
-			EvalEngine engine) {
+	private static IExpr jsxgraphSliderWithPlot(final IAST ast, IAST plot, IAST plotRangeX, EvalEngine engine) {
 		int plotID = plot.headID();
 
 		final OptionArgs options;
@@ -956,27 +975,34 @@ public class ManipulateFunction {
 		} else {
 			options = new OptionArgs(plot.topHead(), plot, 3, engine);
 		}
-		IExpr plotRange = options.getOption(F.PlotRange);
-		IAST optionPlotRange = F.NIL;
-		if (plotRange.isPresent()) {
-			if (plotRange.isAST(F.List, 3)) {
-				optionPlotRange = F.List(F.Full, F.List(plotRange.first(), plotRange.second()));
-			} else if (plotRange.isReal()) {
-				if (plotID == ID.Plot) {
-					optionPlotRange = F.List(F.Full, F.List(plotRange.negate(), plotRange));
-				} else if (plotID == ID.ListPlot || plotID == ID.ListLinePlot) {
-					optionPlotRange = F.List(F.Full, F.List(F.C0, plotRange));
-				} else if (plotID == ID.ParametricPlot) {
-					optionPlotRange = F.List(F.List(plotRange.negate(), plotRange), //
-							F.List(plotRange.negate(), plotRange));
+
+		double plotRangeYMax = Double.MIN_VALUE;
+		double plotRangeYMin = Double.MAX_VALUE;
+		IExpr plotRangeY = options.getOption(F.PlotRange);
+		// IAST optionPlotRange = F.NIL;
+		if (plotRangeY.isPresent()) {
+			if (plotRangeY.isAST(F.List, 3)) {
+				try {
+					plotRangeYMin = engine.evalDouble(plotRangeY.first());
+					plotRangeYMax = engine.evalDouble(plotRangeY.second());
+				} catch (RuntimeException rex) {
 				}
+			}
+			// optionPlotRange = F.List(F.Full, F.List(plotRange.first(), plotRange.second()));
+		} else if (plotRangeY.isReal()) {
+			if (plotID == ID.Plot) {
+				// optionPlotRange = F.List(F.Full, F.List(plotRange.negate(), plotRange));
+			} else if (plotID == ID.ParametricPlot) {
+				// optionPlotRange = F.List(F.List(plotRange.negate(), plotRange), //
+				// F.List(plotRange.negate(), plotRange));
 			}
 		}
 
 		// xmin, ymax, xmax, ymin
-		double[] boundingbox = new double[] { -5.0, 5.0, 5.0, -5.0 };
+		double[] boundingbox = new double[] { Double.MAX_VALUE, Double.MIN_VALUE, Double.MIN_VALUE, Double.MAX_VALUE };
 		String js = JSXGRAPH;
-		JavaScriptFormFactory toJS = new JavaScriptFormFactory(true, false, -1, -1, JavaScriptFormFactory.USE_JSXGRAPH);
+		JavaScriptFormFactory toJS = new JavaScriptFormFactory(true, false, -1, -1, JavaScriptFormFactory.USE_MATHCELL);
+
 		jsxgraphSliderNamesFromList(ast, toJS);
 		IExpr arg1 = engine.evaluate(plot.arg1());
 		if (!arg1.isList()) {
@@ -984,41 +1010,57 @@ public class ManipulateFunction {
 		}
 
 		ISymbol plotSymbolX = (ISymbol) plotRangeX.arg1();
-
+		double plotRangeXMax = Double.MIN_VALUE;
+		double plotRangeXMin = Double.MAX_VALUE;
+		if (plotRangeX.isAST(F.List, 4)) {
+			try {
+				plotRangeXMin = engine.evalDouble(plotRangeX.arg2());
+				plotRangeXMax = engine.evalDouble(plotRangeX.arg3());
+			} catch (RuntimeException rex) {
+			}
+		}
 		// function z1(x,y) { return [ x, y, Math.sin( a * x * y ) ]; }
 		StringBuilder function = new StringBuilder();
 
-		// if (plot.arg1().isList()) {
-		IAST listOfFunctions = (IAST) arg1;
-		for (int i = 1; i < listOfFunctions.size(); i++) {
-			function.append("function z");
-			function.append(i);
-			function.append("(");
-			toJS.convert(function, plotSymbolX);
-			function.append(") { return ");
-			toJS.convert(function, listOfFunctions.get(i));
-			function.append("; }\n");
-		}
-		// } else {
-		// function.append("function z1(");
-		// toJS.convert(function, plotSymbolX);
-		// function.append(") { return ");
-		// toJS.convert(function, arg1);
-		// function.append("; }\n");
-		// }
-
-		// js = js.replace("`2`", function.toString());
-
-		// plot( x => (Math.sin(x*(1+a*x))), [0, 2*Math.PI], { } )
-		// StringBuilder graphicControl = new StringBuilder();
-
-		boundingbox = new double[] { 0.0, Double.MIN_VALUE, listOfFunctions.size(), Double.MAX_VALUE };
+		// boundingbox = new double[] { 0.0, Double.MIN_VALUE, listOfFunctions.size(), Double.MAX_VALUE };
 		if (plotID == ID.ParametricPlot) {
+			IAST listOfFunctions = (IAST) arg1;
+			int[] dim = arg1.isMatrix();
+			if (dim == null) {
+				if (listOfFunctions.size() != 3) {
+					return F.NIL;
+				}
+			} else {
+				if (dim[1] != 2) {
+					return F.NIL;
+				}
+				listOfFunctions = (IAST) listOfFunctions.arg1();
+			}
+
+			for (int i = 1; i < listOfFunctions.size(); i++) {
+				function.append("function z");
+				function.append(i);
+				function.append("(");
+				toJS.convert(function, plotSymbolX);
+				function.append(") { return ");
+				toJS.convert(function, listOfFunctions.get(i));
+				function.append("; }\n");
+				ISymbol sym = F.Dummy("$z" + i);
+				IExpr functionRange = F.FunctionRange.of(engine, listOfFunctions.get(i), plotSymbolX, sym);
+				if (i == 1) {
+					xBoundingBoxFunctionRange(engine, boundingbox, functionRange);
+				} else {
+					yBoundingBoxFunctionRange(engine, boundingbox, functionRange);
+				}
+			}
+
 			function.append("board.create('curve',[");
 			// graphicControl.append(OutputFunctions.toJSXGraph(plotSymbolX));
 			// graphicControl.append(" => [");
 			for (int i = 1; i < listOfFunctions.size(); i++) {
-				function.append("function(t){return z");
+				function.append("function(");
+				toJS.convert(function, plotSymbolX);
+				function.append("){return z");
 				function.append(i);
 				function.append("(");
 				toJS.convert(function, plotSymbolX);
@@ -1031,33 +1073,74 @@ public class ManipulateFunction {
 			jsxgraphRangeArgs(function, plotRangeX, -1, toJS);
 			function.append("]");
 			function.append(", { } );\n");
-		} else {
-			for (int i = 1; i < listOfFunctions.size(); i++) {
-				function.append("var p");
-				function.append(i);
-				function.append(" = ");
-				function.append("board.create('functiongraph',[z");
-				function.append(i);
-				function.append(", ");
-				jsxgraphRangeArgs(function, plotRangeX, -1, toJS);
-				// jsxgraphRange(function, plotRangeX, -1, toJS);
-				function.append("]);\n");
+			if (!F.isFuzzyEquals(Double.MAX_VALUE, plotRangeXMin, 1e-10)
+					&& F.isFuzzyEquals(Double.MAX_VALUE, boundingbox[0], 1e-10)) {
+				boundingbox[0] = plotRangeXMin;
 			}
-
-			// listOfFunctions = (IAST) plot.arg1();
-			function.append("var data = [ ");
-			for (int i = 1; i < listOfFunctions.size(); i++) {
-				function.append("p");
-				function.append(i);
-				if (i < listOfFunctions.size() - 1) {
-					function.append(", ");
-				}
+			if (!F.isFuzzyEquals(Double.MIN_VALUE, plotRangeYMax, 1e-10)) {
+				boundingbox[1] = plotRangeYMax;
 			}
-			function.append(" ];\n");
+			if (!F.isFuzzyEquals(Double.MIN_VALUE, plotRangeXMax, 1e-10)
+					&& F.isFuzzyEquals(Double.MIN_VALUE, boundingbox[0], 1e-10)) {
+				boundingbox[2] = plotRangeXMax;
+			}
+			if (!F.isFuzzyEquals(Double.MAX_VALUE, plotRangeYMin, 1e-10)) {
+				boundingbox[3] = plotRangeYMin;
+			}
 			return jsxgraphBoundingBox(ast, boundingbox, js, function.toString(), toJS);
+
 		}
 
-		return F.NIL;
+		IAST listOfFunctions = (IAST) arg1;
+		for (int i = 1; i < listOfFunctions.size(); i++) {
+			function.append("function z");
+			function.append(i);
+			function.append("(");
+			toJS.convert(function, plotSymbolX);
+			function.append(") { return ");
+			toJS.convert(function, listOfFunctions.get(i));
+			function.append("; }\n");
+			ISymbol sym = F.Dummy("$z" + i);
+			IExpr functionRange = F.FunctionRange.of(engine, listOfFunctions.get(i), plotSymbolX, sym);
+			yBoundingBoxFunctionRange(engine, boundingbox, functionRange);
+		}
+
+		for (int i = 1; i < listOfFunctions.size(); i++) {
+			function.append("var p");
+			function.append(i);
+			function.append(" = ");
+			function.append("board.create('functiongraph',[z");
+			function.append(i);
+			function.append(", ");
+			jsxgraphRangeArgs(function, plotRangeX, -1, toJS);
+			// jsxgraphRange(function, plotRangeX, -1, toJS);
+			function.append("]);\n");
+		}
+
+		// listOfFunctions = (IAST) plot.arg1();
+		function.append("var data = [ ");
+		for (int i = 1; i < listOfFunctions.size(); i++) {
+			function.append("p");
+			function.append(i);
+			if (i < listOfFunctions.size() - 1) {
+				function.append(", ");
+			}
+		}
+		function.append(" ];\n");
+		if (!F.isFuzzyEquals(Double.MAX_VALUE, plotRangeXMin, 1e-10)) {
+			boundingbox[0] = plotRangeXMin;
+		}
+		if (!F.isFuzzyEquals(Double.MIN_VALUE, plotRangeYMax, 1e-10)) {
+			boundingbox[1] = plotRangeYMax;
+		}
+		if (!F.isFuzzyEquals(Double.MIN_VALUE, plotRangeXMax, 1e-10)) {
+			boundingbox[2] = plotRangeXMax;
+		}
+		if (!F.isFuzzyEquals(Double.MAX_VALUE, plotRangeYMin, 1e-10)) {
+			boundingbox[3] = plotRangeYMin;
+		}
+		return jsxgraphBoundingBox(ast, boundingbox, js, function.toString(), toJS);
+
 	}
 
 	/**
@@ -1112,7 +1195,7 @@ public class ManipulateFunction {
 		// xmin, ymax, xmax, ymin
 		double[] boundingbox = new double[] { -5.0, 5.0, 5.0, -5.0 };
 		String js = JSXGRAPH;
-		JavaScriptFormFactory toJS = new JavaScriptFormFactory(true, false, -1, -1, JavaScriptFormFactory.USE_JSXGRAPH);
+		JavaScriptFormFactory toJS = new JavaScriptFormFactory(true, false, -1, -1, JavaScriptFormFactory.USE_MATHCELL);
 		jsxgraphSliderNamesFromList(ast, toJS);
 		IExpr arg1 = plot.arg1();
 		if (!arg1.isList()) {
@@ -1300,6 +1383,100 @@ public class ManipulateFunction {
 		} catch (RuntimeException rex) {
 			//
 		}
+	}
+
+	private static void xBoundingBoxFunctionRange(EvalEngine engine, double[] boundingbox, IExpr functionRange) {
+		IExpr l = F.NIL;
+		IExpr u = F.NIL;
+		if ((functionRange.isAST(F.LessEqual, 4) || functionRange.isAST(F.Less, 4)) //
+				&& functionRange.second().isSymbol()) {
+			l = functionRange.getAt(1);
+			u = functionRange.getAt(3);
+		} else if ((functionRange.isAST(F.GreaterEqual, 4) || functionRange.isAST(F.Greater, 4)) //
+				&& functionRange.second().isSymbol()) {
+			u = functionRange.getAt(1);
+			l = functionRange.getAt(3);
+		} else if ((functionRange.isAST(F.LessEqual, 3) || functionRange.isAST(F.Less, 4)) //
+				&& functionRange.first().isSymbol()) {
+			u = functionRange.second();
+		} else if ((functionRange.isAST(F.GreaterEqual, 3) || functionRange.isAST(F.Greater, 4)) //
+				&& functionRange.first().isSymbol()) {
+			l = functionRange.second();
+		}
+
+		if (l.isPresent()) {
+			try {
+				double xValue = engine.evalDouble(l);
+				if (Double.isFinite(xValue)) {
+					if (xValue < boundingbox[0]) { // min
+						boundingbox[0] = xValue;
+					}
+				}
+			} catch (RuntimeException rex) {
+				//
+			}
+		}
+		if (u.isPresent()) {
+			try {
+				double xValue = engine.evalDouble(u);
+				if (Double.isFinite(xValue)) {
+					if (xValue > boundingbox[2]) { // max
+						boundingbox[2] = xValue;
+					}
+				}
+			} catch (RuntimeException rex) {
+				//
+			}
+
+		}
+
+	}
+
+	private static void yBoundingBoxFunctionRange(EvalEngine engine, double[] boundingbox, IExpr functionRange) {
+		IExpr l = F.NIL;
+		IExpr u = F.NIL;
+		if ((functionRange.isAST(F.LessEqual, 4) || functionRange.isAST(F.Less, 4)) //
+				&& functionRange.second().isSymbol()) {
+			l = functionRange.getAt(1);
+			u = functionRange.getAt(3);
+		} else if ((functionRange.isAST(F.GreaterEqual, 4) || functionRange.isAST(F.Greater, 4)) //
+				&& functionRange.second().isSymbol()) {
+			u = functionRange.getAt(1);
+			l = functionRange.getAt(3);
+		} else if ((functionRange.isAST(F.LessEqual, 3) || functionRange.isAST(F.Less, 4)) //
+				&& functionRange.first().isSymbol()) {
+			u = functionRange.second();
+		} else if ((functionRange.isAST(F.GreaterEqual, 3) || functionRange.isAST(F.Greater, 4)) //
+				&& functionRange.first().isSymbol()) {
+			l = functionRange.second();
+		}
+
+		if (l.isPresent()) {
+			try {
+				double yValue = engine.evalDouble(l);
+				if (Double.isFinite(yValue)) {
+					if (yValue < boundingbox[3]) { // min
+						boundingbox[3] = yValue;
+					}
+				}
+			} catch (RuntimeException rex) {
+				//
+			}
+		}
+		if (u.isPresent()) {
+			try {
+				double yValue = engine.evalDouble(u);
+				if (Double.isFinite(yValue)) {
+					if (yValue > boundingbox[1]) { // max
+						boundingbox[1] = yValue;
+					}
+				}
+			} catch (RuntimeException rex) {
+				//
+			}
+
+		}
+
 	}
 
 	private static void yBoundingBox(EvalEngine engine, double[] boundingbox, IExpr yExpr) {

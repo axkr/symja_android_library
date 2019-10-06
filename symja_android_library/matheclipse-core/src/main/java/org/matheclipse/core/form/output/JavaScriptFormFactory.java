@@ -307,7 +307,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 			String str = functionHead((ISymbol) head);
 			if (str != null) {
 				if (function.isASTSizeGE(F.Round, 3)) {
-					throw new MathException("illegal JavaScript arg");
+					throw new MathException("Cannot convert to JavaScript: " + function.toString());
 				}
 				if (function.isAST(F.ArcTan, 3)) {
 					buf.append("Math.atan2");
@@ -470,9 +470,6 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 				buf.append(") : ( Number.NaN ))");
 				return;
 			}
-			if (function.headID() > 0) {
-				throw new MathException("illegal JavaScript arg");
-			}
 		} else {
 			if (function.isPower()) {
 				IExpr base = function.base();
@@ -584,6 +581,26 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 				return;
 			}
 		}
+
+		if (function.head() == F.If && function.size() >= 3 && function.size() <= 4) {
+			// use the ternary operator
+			buf.append("((");
+			convert(buf, function.arg1());
+			buf.append(") ? (");
+			convert(buf, function.arg2());
+			buf.append(") : ( ");
+			if (function.size() == 4) {
+				convert(buf, function.arg3());
+			} else {
+				buf.append("Number.NaN");
+			}
+			buf.append(" ))");
+			return;
+		}
+		if (function.headID() > 0) {
+			throw new MathException("Cannot convert to JavaScript. Function head: " + function.head());
+		}
+		
 		convert(buf, head);
 		convertArgs(buf, head, function);
 	}

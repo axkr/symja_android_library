@@ -1262,6 +1262,9 @@ public class F {
     /** FunctionExpand(expression) - expands the special function `expression`.*/
     public final static IBuiltInSymbol FunctionExpand = F.initFinalSymbol("FunctionExpand", ID.FunctionExpand);
 
+    /***/
+    public final static IBuiltInSymbol FunctionRange = F.initFinalSymbol("FunctionRange", ID.FunctionRange);
+
     /** GCD(n1, n2, ...) - computes the greatest common divisor of the given integers. */
     public final static IBuiltInSymbol GCD = F.initFinalSymbol("GCD", ID.GCD);
 
@@ -2513,8 +2516,9 @@ public class F {
     /** Round(expr) - round a given `expr` to nearest integer.*/
     public final static IBuiltInSymbol Round = F.initFinalSymbol("Round", ID.Round);
 
+    /***/
     public final static IBuiltInSymbol Row = F.initFinalSymbol("Row", ID.Row);
-    
+
     /** RowReduce(matrix) - returns the reduced row-echelon form of `matrix`.*/
     public final static IBuiltInSymbol RowReduce = F.initFinalSymbol("RowReduce", ID.RowReduce);
 
