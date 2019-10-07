@@ -104,10 +104,20 @@ import ch.ethz.idsc.tensor.qty.IQuantity;
 
 public final class Arithmetic {
 	private static int g = 7;
-	private static double[] p = { 0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313,
-			-176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6,
-			1.5056327351493116e-7 };
-	private static org.hipparchus.complex.Complex[] pComplex = null;
+	// private static double[] p = { 0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313,
+	// -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6,
+	// 1.5056327351493116e-7 };
+	private static org.hipparchus.complex.Complex[] pComplex = new org.hipparchus.complex.Complex[] {
+			new org.hipparchus.complex.Complex(0.99999999999980993), //
+			new org.hipparchus.complex.Complex(676.5203681218851), //
+			new org.hipparchus.complex.Complex(-1259.1392167224028), //
+			new org.hipparchus.complex.Complex(771.32342877765313), //
+			new org.hipparchus.complex.Complex(-176.61502916214059), //
+			new org.hipparchus.complex.Complex(12.507343278686905), //
+			new org.hipparchus.complex.Complex(-0.13857109526572012), //
+			new org.hipparchus.complex.Complex(9.9843695780195716e-6), //
+			new org.hipparchus.complex.Complex(1.5056327351493116e-7) //
+	};
 
 	public final static Plus CONST_PLUS = new Plus();
 	public final static Times CONST_TIMES = new Times();
@@ -5851,14 +5861,6 @@ public final class Arithmetic {
 		// de.lab4inf.math.Complex gResult = de.lab4inf.math.functions.Gamma.gamma(cc);
 		// return new org.hipparchus.complex.Complex(gResult.real(), gResult.imag());
 		// }
-
-		if (pComplex == null) {
-			// lazy initialization
-			pComplex = new org.hipparchus.complex.Complex[p.length];
-			for (int i = 0; i < p.length; i++) {
-				pComplex[i] = new org.hipparchus.complex.Complex(p[i]);
-			}
-		}
 
 		// if (F.isZero(z.getImaginary())) {
 		// return new org.hipparchus.complex.Complex(org.hipparchus.special.Gamma.gamma(z.getReal()));

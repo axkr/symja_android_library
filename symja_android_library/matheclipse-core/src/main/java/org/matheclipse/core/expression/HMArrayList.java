@@ -595,9 +595,9 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 			return true;
 		}
 		if (obj instanceof AbstractAST) {
-			if (obj instanceof AST0) {
-				return obj.equals(this);
-			}
+//			if (obj instanceof AST0) {
+//				return obj.equals(this);
+//			}
 			IExpr head = array[firstIndex];
 			if (head != ((AbstractAST) obj).head() && head instanceof ISymbol) {
 				// compared with ISymbol object identity
