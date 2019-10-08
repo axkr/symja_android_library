@@ -6,6 +6,12 @@ TreeForm(expr)
 
 > create a tree visualization from the given expression `expr`.
 
+```
+TreeForm(expr, n)
+```
+
+> create a tree visualization from the given expression `expr` from level `0` to `n`.
+
 See:  
 * [Wikipedia - Binary expression tree](https://en.wikipedia.org/wiki/Binary_expression_tree) 
 

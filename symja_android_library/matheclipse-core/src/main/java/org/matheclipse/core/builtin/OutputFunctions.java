@@ -502,14 +502,21 @@ public final class OutputFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			try {
+				int maxLevel = Integer.MAX_VALUE;
+				if (ast.isAST2()) {
+					maxLevel = ast.arg2().toIntDefault();
+					if (maxLevel < 0) {
+						return F.NIL;
+					}
+				}
 				IExpr arg1 = engine.evaluate(ast.arg1());
 				List<Pair<String, Integer>> vertexList = new ArrayList<Pair<String, Integer>>();
 				List<Pair<Integer, Integer>> edgeList = new ArrayList<Pair<Integer, Integer>>();
 				StringBuilder jsControl = new StringBuilder();
-				if (arg1.isAST()) {
+				if (maxLevel > 0 && arg1.isAST()) {
 					IAST tree = (IAST) arg1;
 					int[] currentCount = new int[] { 1 };
-					treeToGraph(tree, 0, currentCount, vertexList, edgeList);
+					treeToGraph(tree, 0, maxLevel, currentCount, vertexList, edgeList);
 					vertexToVisjs(jsControl, vertexList);
 					edgesToVisjs(jsControl, edgeList);
 					return F.JSFormData(jsControl.toString(), "treeform");
@@ -528,24 +535,26 @@ public final class OutputFunctions {
 			}
 		}
 
-		private static void treeToGraph(IAST tree, final int level, int[] currentCount,
+		private static void treeToGraph(IAST tree, final int level, final int maxLevel, int[] currentCount,
 				List<Pair<String, Integer>> vertexList, List<Pair<Integer, Integer>> edgeList) {
 			vertexList.add(new Pair<String, Integer>(tree.head().toString(), Integer.valueOf(level)));
 			int currentNode = vertexList.size();
+			final int nextLevel = level + 1;
 			for (int i = 1; i < tree.size(); i++) {
 				currentCount[0]++;
 				edgeList.add(new Pair<Integer, Integer>(currentNode, currentCount[0]));
-				if (tree.get(i).isAST()) {
-					treeToGraph((IAST) tree.get(i), level + 1, currentCount, vertexList, edgeList);
+				IExpr arg = tree.get(i);
+				if (nextLevel >= maxLevel || !arg.isAST()) {
+					vertexList.add(new Pair<String, Integer>(arg.toString(), nextLevel));
 				} else {
-					vertexList.add(new Pair<String, Integer>(tree.get(i).toString(), level + 1));
+					treeToGraph((IAST) arg, nextLevel, maxLevel, currentCount, vertexList, edgeList);
 				}
 			}
 		}
 
 		@Override
 		public int[] expectedArgSize() {
-			return IOFunctions.ARGS_1_1;
+			return IOFunctions.ARGS_1_2;
 		}
 
 	}
