@@ -11469,8 +11469,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testN() {
-		check("{1, 2} /. x_Integer -> N(x)", "{1,2}");
-		check("{1, 2} /. x_Integer :> N(x)", "{1.0,2.0}");
+		// TODO don't switch to numeric mode for Sqrt(10)
+		check("Sqrt(10)*(0.25)^x", "3.16228*0.25^x");
+
+		check("{1, 2} /. x_Integer -> N(x)", //
+				"{1,2}");
+		check("{1, 2} /. x_Integer :> N(x)", //
+				"{1.0,2.0}");
 		// check("N(Pi)", "3.141592653589793");
 		// check("N(Pi, 50)", "3.1415926535897932384626433832795028841971693993751");
 		// check("N(1/7)", "0.14285714285714285");
@@ -19731,6 +19736,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "2)}},{{a(1,3,1),a(1,3,2)},{a(2,3,1),a(2,3,2)}}}");
 		check("Transpose({{1, 2, 3}, {4, 5, 6}})", //
 				"{{1,4},\n" + " {2,5},\n" + " {3,6}}");
+	}
+
+	public void testTreeForm() {
+		check("TreeForm(a+b)", //
+				"JSFormData(var nodes = new vis.DataSet([\n" + //
+						"  {id: 1, label: 'Plus', level: 0}\n" + //
+						", {id: 2, label: 'a', level: 1}\n" + //
+						", {id: 3, label: 'b', level: 1}\n" + //
+						"]);\n" + //
+						"var edges = new vis.DataSet([\n" + //
+						"  {from: 1, to: 2 , arrows: { to: { enabled: true, type: 'arrow'}}}\n" + //
+						", {from: 1, to: 3 , arrows: { to: { enabled: true, type: 'arrow'}}}\n" + //
+						"]);\n" + //
+						",treeform)");
 	}
 
 	public void testTr() {

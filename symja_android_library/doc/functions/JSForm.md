@@ -1,7 +1,7 @@
 ## JSForm
  
 ```
-JSForm(expre)
+JSForm(expr)
 ```
 
 > returns the JavaScript form of the `expr`.  

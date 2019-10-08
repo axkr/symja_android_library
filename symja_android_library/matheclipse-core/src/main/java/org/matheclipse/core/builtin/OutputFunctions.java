@@ -6,6 +6,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jgrapht.alg.util.Pair;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
@@ -45,6 +46,7 @@ public final class OutputFunctions {
 			F.MathMLForm.setEvaluator(new MathMLForm());
 			F.TableForm.setEvaluator(new TableForm());
 			F.TeXForm.setEvaluator(new TeXForm());
+			F.TreeForm.setEvaluator(new TreeForm());
 		}
 	}
 
@@ -449,6 +451,103 @@ public final class OutputFunctions {
 		public void setUp(ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
+	}
+
+	private static class TreeForm extends AbstractCoreFunctionEvaluator {
+		private static void vertexToVisjs(StringBuilder buf, List<Pair<String, Integer>> vertexSet) {
+			buf.append("var nodes = new vis.DataSet([\n");
+			boolean first = true;
+			int counter = 1;
+			for (Pair<String, Integer> expr : vertexSet) {
+				// {id: 1, label: 'Node 1'},
+				if (first) {
+					buf.append("  {id: ");
+				} else {
+					buf.append(", {id: ");
+				}
+				buf.append(counter++);
+				buf.append(", label: '");
+				buf.append(expr.getFirst().toString());
+				buf.append("', level: ");
+				buf.append(expr.getSecond().toString());
+				buf.append("}\n");
+				first = false;
+			}
+			buf.append("]);\n");
+		}
+
+		private static void edgesToVisjs(StringBuilder buf, List<Pair<Integer, Integer>> edgeSet) {
+			boolean first = true;
+
+			buf.append("var edges = new vis.DataSet([\n");
+			for (Pair<Integer, Integer> edge : edgeSet) {
+				// {from: 1, to: 3},
+				if (first) {
+					buf.append("  {from: ");
+				} else {
+					buf.append(", {from: ");
+				}
+				buf.append(edge.getFirst());
+				buf.append(", to: ");
+				buf.append(edge.getSecond());
+				// , arrows: { to: { enabled: true, type: 'arrow'}}
+				buf.append(" , arrows: { to: { enabled: true, type: 'arrow'}}");
+				buf.append("}\n");
+				first = false;
+			}
+			buf.append("]);\n");
+
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			try {
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				List<Pair<String, Integer>> vertexList = new ArrayList<Pair<String, Integer>>();
+				List<Pair<Integer, Integer>> edgeList = new ArrayList<Pair<Integer, Integer>>();
+				StringBuilder jsControl = new StringBuilder();
+				if (arg1.isAST()) {
+					IAST tree = (IAST) arg1;
+					int[] currentCount = new int[] { 1 };
+					treeToGraph(tree, 0, currentCount, vertexList, edgeList);
+					vertexToVisjs(jsControl, vertexList);
+					edgesToVisjs(jsControl, edgeList);
+					return F.JSFormData(jsControl.toString(), "treeform");
+				} else {
+					vertexList.add(new Pair<String, Integer>(arg1.toString(), Integer.valueOf(0)));
+					vertexToVisjs(jsControl, vertexList);
+					edgesToVisjs(jsControl, edgeList);
+					return F.JSFormData(jsControl.toString(), "treeform");
+				}
+
+			} catch (Exception rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
+				return engine.printMessage("TreeForm: " + rex.getMessage());
+			}
+		}
+
+		private static void treeToGraph(IAST tree, final int level, int[] currentCount,
+				List<Pair<String, Integer>> vertexList, List<Pair<Integer, Integer>> edgeList) {
+			vertexList.add(new Pair<String, Integer>(tree.head().toString(), Integer.valueOf(level)));
+			int currentNode = vertexList.size();
+			for (int i = 1; i < tree.size(); i++) {
+				currentCount[0]++;
+				edgeList.add(new Pair<Integer, Integer>(currentNode, currentCount[0]));
+				if (tree.get(i).isAST()) {
+					treeToGraph((IAST) tree.get(i), level + 1, currentCount, vertexList, edgeList);
+				} else {
+					vertexList.add(new Pair<String, Integer>(tree.get(i).toString(), level + 1));
+				}
+			}
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+
 	}
 
 	public static String toJavaDouble(final IExpr arg1) throws IOException {

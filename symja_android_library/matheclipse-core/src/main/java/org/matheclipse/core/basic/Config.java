@@ -350,7 +350,8 @@ public class Config {
 					"    nodes: nodes,\n" + //
 					"    edges: edges\n" + //
 					"  };\n" + //
-					"  var options = {};\n" + //
+					"`2`\n" + //
+					// " var options = {};\n" + //
 					"  var network = new vis.Network(container, data, options);\n" + //
 					"</script>\n" + //
 					"\n" + //
@@ -411,8 +412,8 @@ public class Config {
 					"\n" + //
 					"<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.3.5/jsxgraph.css\" />\n"
 					+ //
-					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.4/build/math.js\"\\n></script>"+
-					"<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.3.5/jsxgraphcore.js\"\n" + //
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.4/build/math.js\"\\n></script>"
+					+ "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.3.5/jsxgraphcore.js\"\n" + //
 					"        type='text/javascript'></script>\n" + //
 					"<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.3.5/geonext.min.js\"\n" + //
 					"        type='text/javascript'></script>\n" + //

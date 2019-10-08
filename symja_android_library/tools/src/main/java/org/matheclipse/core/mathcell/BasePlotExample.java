@@ -26,6 +26,29 @@ public abstract class BasePlotExample {
 					String manipulateStr = ((IAST) result).arg1().toString();
 					js = Config.MATHCELL_PAGE;
 					js = js.replaceAll("`1`", manipulateStr);
+				} else if (result.second().toString().equals("treeform")) {
+					String manipulateStr = ((IAST) result).arg1().toString();
+					js = Config.VISJS_PAGE;
+					js = js.replaceAll("`1`", manipulateStr);
+					js = js.replaceAll("`2`", //
+							"  var options = {\n" + //
+							"		  edges: {\n" + //
+							"              smooth: {\n" + //
+							"                  type: 'cubicBezier',\n" + //
+							"                  forceDirection:  'vertical',\n" + //
+							"                  roundness: 0.4\n" + //
+							"              }\n" + //
+							"          },\n" + //
+							"          layout: {\n" + //
+							"              hierarchical: {\n" + //
+							"                  direction: \"UD\"\n" + //
+							"              }\n" + //
+							"          },\n" + //
+							"          nodes: {\n" + 
+							"            shape: 'box'\n" + 
+							"          },\n" + //
+							"          physics:false\n" + //
+							"      }; ");
 				} else {
 					String manipulateStr = ((IAST) result).arg1().toString();
 					js = Config.JSXGRAPH_PAGE;
