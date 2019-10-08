@@ -1,4 +1,4 @@
-package org.matheclipse.core.convert;
+package org.matheclipse.core.examples;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * Display an ASCII tree of a Symja expression
  *
  */
-public class TreeForm {
+public class ASCIITreeForm {
 
 	static class TreeNode<T> {
 		private T data;
@@ -76,7 +76,7 @@ public class TreeForm {
 	}
 
 	public static void main(String[] args) {
-		IExpr expr = F.Plus(F.x, F.Times(F.Pi, F.Sin(F.y)));
+		IExpr expr = F.Plus(F.x, F.Times(F.Pi, F.Sin(F.y),F.z));
 		TreeNode<String> tn1 = convert(expr);
 
 		// Print:
@@ -86,6 +86,7 @@ public class TreeForm {
 		// | +-Pi
 		// | +-Sin
 		// |  +-y
+		// | +-z
 
 		System.out.println(asciiDisplay(tn1));
 	}
