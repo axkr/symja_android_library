@@ -2485,38 +2485,103 @@ public class Algebra {
 
 	private final static class FunctionRange extends AbstractCoreFunctionEvaluator {
 
+		private final static class FunctionRangeRealsVisitor extends VisitorExpr {
+			final EvalEngine engine;
+
+			public FunctionRangeRealsVisitor(EvalEngine engine) {
+				super();
+				this.engine = engine;
+			}
+
+			/** {@inheritDoc} */
+			@Override
+			public IExpr visit3(IExpr head, IExpr arg1, IExpr arg2) {
+				boolean evaled = false;
+				IExpr x1 = arg1;
+				IExpr result = arg1.accept(this);
+				if (result.isPresent()) {
+					evaled = true;
+					x1 = result;
+				}
+				IExpr x2 = arg2;
+				result = arg2.accept(this);
+				if (result.isPresent()) {
+					evaled = true;
+					x2 = result;
+				}
+				if (head.equals(Power)) {
+					if (x1.isInterval1()) {
+						IAST interval = (IAST) x1;
+						IExpr l = interval.lower();
+						IExpr u = interval.upper();
+						if (x2.isMinusOne()) {
+							if (F.GreaterEqual.ofQ(engine, l, F.C1)) {
+								// [>= 1, u]
+								return F.Interval(F.Power(u, x2), F.Power(l, x2));
+							} 
+						}
+						if (l.isNegativeResult() && u.isPositiveResult()) {
+							if (x2.isPositiveResult()) {
+								return F.Interval(F.C0, F.Power(u, x2));
+							}
+							if (x2.isEvenResult()) {
+								return F.Interval(F.C0, F.Power(u, x2));
+							} else if (x2.isFraction() && ((IFraction) x2).denominator().isEven()) {
+								return F.Interval(F.C0, F.Power(u, x2));
+							}
+						}
+					}
+				}
+				if (evaled) {
+					return F.binaryAST2(head, x1, x2);
+				}
+				return F.NIL;
+			}
+
+		}
+
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr function = ast.arg1();
 			IExpr xExpr = ast.arg2();
 			IExpr yExpr = ast.arg3();
-			IBuiltInSymbol domain=F.Reals;
+			IBuiltInSymbol domain = F.Reals;
 			if (xExpr.isSymbol() && yExpr.isSymbol()) {
 				ISymbol x = (ISymbol) xExpr;
 				ISymbol y = (ISymbol) yExpr;
 				IExpr f = function.replaceAll(F.Rule(x, F.Interval(F.CNInfinity, F.CInfinity))).orElse(function);
 				IExpr result = engine.evaluate(f);
 				if (result.isInterval1()) {
-					IAST list = (IAST) result.first();
-					if (list.arg1().isReal()) {
-						if (list.arg2().isReal()) {
-							return F.LessEqual(list.arg1(), y, list.arg2());
-						} else if (list.arg2().isInfinity()) {
-							return F.GreaterEqual(y, list.arg1());
-						}
-					} else if (list.arg2().isReal()) {
-						if (list.arg1().isNegativeInfinity()) {
-							return F.LessEqual(y, list.arg2());
+					return convertInterval(result, y);
+				} else if (domain.equals(F.Reals)) {
+					IExpr temp = result;
+					while (temp.isPresent()) {
+						temp = temp.accept(new FunctionRangeRealsVisitor(engine));
+						if (temp.isPresent()) {
+							result = engine.evaluate(temp);
+							temp = result;
 						}
 					}
-				} else if (domain.equals(F.Reals)) {
-//					if (result.isPower()) {
-//						
-//					}
+					if (result.isInterval1()) {
+						return convertInterval(result, y);
+					}
 				}
-				// if (function.isSin() || function.isCos()) {
-				// return F.LessEqual(F.CN1, y, F.C1);
-				// }
+			}
+			return F.NIL;
+		}
+
+		private IExpr convertInterval(IExpr result, ISymbol y) {
+			IAST list = (IAST) result.first();
+			if (list.arg1().isRealResult()) {
+				if (list.arg2().isRealResult()) {
+					return F.LessEqual(list.arg1(), y, list.arg2());
+				} else if (list.arg2().isInfinity()) {
+					return F.GreaterEqual(y, list.arg1());
+				}
+			} else if (list.arg2().isRealResult()) {
+				if (list.arg1().isNegativeInfinity()) {
+					return F.LessEqual(y, list.arg2());
+				}
 			}
 			return F.NIL;
 		}
