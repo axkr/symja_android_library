@@ -5034,6 +5034,10 @@ public class F {
 	public static IAST Apply(final IExpr a0, final IExpr a1) {
 		return new AST2(Apply, a0, a1);
 	}
+	
+	public static IAST Array(final IExpr a0, final IExpr a1) {
+		return new AST2(Array, a0, a1);
+	}
 
 	public static IAST ArcCos(final IExpr a0) {
 		return new AST1(ArcCos, a0);
@@ -8724,6 +8728,10 @@ public class F {
 		return new AST2(Quotient, a0, a1);
 	}
 
+	public static IAST RandomReal(final IExpr a0) {
+		return new AST1(RandomReal, a0);
+	}
+	
 	public static IAST RandomVariate(final IExpr a0) {
 		return new AST1(RandomVariate, a0);
 	}

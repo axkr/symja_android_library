@@ -2,7 +2,6 @@
 package org.matheclipse.core.builtin;
 
 import java.math.BigInteger;
-//import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.hipparchus.util.MathArrays;
@@ -202,12 +201,38 @@ public final class RandomFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST0()) {
-				// RandomReal() gives a double value between 0.0 and 1.0
-				double r = Math.random();
-				return F.num(r);
+			try {
+				if (ast.isAST0()) {
+					// RandomReal() gives a double value between 0.0 and 1.0
+					ThreadLocalRandom tlr = ThreadLocalRandom.current();
+					double r = tlr.nextDouble();
+					return F.num(r);
+				} else if (ast.isAST1()) {
+					if (ast.arg1().isAST(F.List, 3)) {
+						double min = engine.evalDouble(ast.arg1().first());
+						double max = engine.evalDouble(ast.arg1().second());
+						ThreadLocalRandom tlr = ThreadLocalRandom.current();
+						return F.num(tlr.nextDouble(min, max));
+					} else {
+						double max = engine.evalDouble(ast.arg1());
+						ThreadLocalRandom tlr = ThreadLocalRandom.current();
+						return F.num(tlr.nextDouble(max));
+					}
+				} else if (ast.isAST2()) {
+					if (ast.arg2().isList()) {
+						IAST list = (IAST) ast.arg2();
+						IExpr[] arr = new IExpr[list.size()];
+						arr[0] = F.RandomReal(ast.arg1());
+						for (int i = 1; i < list.size(); i++) {
+							arr[i] = F.List(list.get(i));
+						}
+						return F.ast(arr, F.Table);
+						// F.Table(F.RandomReal(ast.arg1()), ast.arg2());
+					}
+				}
+			} catch (RuntimeException rex) {
+				//
 			}
-
 			return F.NIL;
 		}
 

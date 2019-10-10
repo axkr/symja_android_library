@@ -119,6 +119,44 @@ public final class OutputFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST1()) {
 				IExpr arg1 = engine.evaluate(ast.arg1());
+				int[] dim = arg1.isMatrix();
+				if (dim != null) {
+					IAST matrix = (IAST) arg1;
+					StringBuilder[] sb = new StringBuilder[dim[0]];
+					for (int j = 0; j < dim[0]; j++) {
+						sb[j] = new StringBuilder();
+					}
+					int rowLength = 0;
+					for (int i = 0; i < dim[1]; i++) {
+						int columnLength = 0;
+						for (int j = 0; j < dim[0]; j++) {
+							String str = matrix.getPart(j + 1, i + 1).toString();
+							if (str.length() > columnLength) {
+								columnLength = str.length();
+							}
+							sb[j].append(str);
+						}
+						if (i < dim[1] - 1) {
+							rowLength += columnLength + 1;
+						} else {
+							rowLength += columnLength;
+						}
+						for (int j = 0; j < dim[0]; j++) {
+							int rest = rowLength - sb[j].length();
+							for (int k = 0; k < rest; k++) {
+								sb[j].append(' ');
+							}
+						}
+					}
+					StringBuilder result = new StringBuilder();
+					for (int i = 0; i < dim[0]; i++) {
+						result.append(sb[i]);
+						if (i < dim[0] - 1) {
+							result.append("\n");
+						}
+					}
+					return F.stringx(result.toString(), IStringX.TEXT_PLAIN);
+				}
 				if (arg1.isList()) {
 					IAST list = (IAST) arg1;
 					StringBuilder sb = new StringBuilder();
@@ -134,6 +172,11 @@ public final class OutputFunctions {
 
 		@Override
 		public void setUp(ISymbol newSymbol) {
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 	}
 

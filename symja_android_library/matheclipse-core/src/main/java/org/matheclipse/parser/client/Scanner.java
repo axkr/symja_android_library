@@ -237,6 +237,54 @@ public abstract class Scanner {
 		return "";
 	}
 
+	public static boolean isBalancedCode(CharSequence sourceCode) {
+		Stack<Character> openBracketStack = new Stack<Character>();
+
+		for (int j = 0; j < sourceCode.length(); j++) {
+			char ch = sourceCode.charAt(j);
+			switch (ch) {
+			case '{':
+			case '(':
+			case '[':
+				openBracketStack.push(ch);
+				break;
+			case '}':
+				if (openBracketStack.isEmpty()) {
+					return false;
+				}
+				ch = openBracketStack.pop();
+				if (!(ch == '{')) {
+					return false;
+				}
+				break;
+			case ')':
+				if (openBracketStack.isEmpty()) {
+					return false;
+				}
+				ch = openBracketStack.pop();
+				if (!(ch == '(')) {
+					return false;
+				}
+				break;
+			case ']':
+				if (openBracketStack.isEmpty()) {
+					return false;
+				}
+				ch = openBracketStack.pop();
+				if (!(ch == '[')) {
+					return false;
+				}
+				break;
+			default:
+				// do nothing
+			}
+		}
+		if (!openBracketStack.isEmpty()) {
+			return false;
+		}
+		return true;
+	}
+	
 	/**
 	 * Current parser input string
 	 */
