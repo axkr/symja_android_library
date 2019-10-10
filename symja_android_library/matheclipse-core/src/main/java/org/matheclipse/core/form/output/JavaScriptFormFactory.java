@@ -70,6 +70,10 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		FUNCTIONS_STR_MATHCELL.put(F.BesselI, "besselI");
 		FUNCTIONS_STR_MATHCELL.put(F.BesselK, "besselK");
 
+		// TODO see math.js - https://github.com/paulmasson/math
+		// FUNCTIONS_STR_MATHCELL.put(F.BesselJZero, "besselJZero ");
+		// FUNCTIONS_STR_MATHCELL.put(F.BesselYZero, "besselYZero ");
+
 		// FUNCTIONS_STR_MATHCELL.put(F.Hankel1, "hankel1");
 		// FUNCTIONS_STR_MATHCELL.put(F.Hankel2, "hankel2");
 
@@ -602,7 +606,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		if (function.headID() > 0) {
 			throw new MathException("Cannot convert to JavaScript. Function head: " + function.head());
 		}
-		
+
 		convert(buf, head);
 		convertArgs(buf, head, function);
 	}
