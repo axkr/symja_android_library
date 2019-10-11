@@ -429,8 +429,8 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	@Override
 	public boolean isList() {
 		return true;
-	}
-
+	} 
+	
 	/** {@inheritDoc} */
 	@Override
 	public final int[] isMatrix(boolean setMatrixFormat) {

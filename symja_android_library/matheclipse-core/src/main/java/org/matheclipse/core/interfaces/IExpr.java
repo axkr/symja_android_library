@@ -1741,6 +1741,10 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return false;
 	}
 
+	default boolean isList(Predicate<IExpr> pred) {
+		return false;
+	}
+	
 	/**
 	 * Test if this expression is a list of lists
 	 * 

@@ -9901,59 +9901,68 @@ public class F {
 				}
 			}
 		} else if (expr.isAST(JSFormData, 3)) {
-			IAST jsFormData = (IAST) expr;
-			if (jsFormData.arg2().toString().equals("mathcell")) {
-				try {
-					String manipulateStr = jsFormData.arg1().toString();
-					String html = Config.MATHCELL_PAGE;
-					html = html.replaceAll("`1`", manipulateStr);
-					return openHTMLOnDesktop(html);
-				} catch (Exception ex) {
-					if (Config.SHOW_STACKTRACE) {
-						ex.printStackTrace();
-					}
+			return printJSFormData(expr);
+		} else if (expr.isList(x->x.isAST(JSFormData, 3))) {
+			StringBuilder buf=new StringBuilder();
+			((IAST)expr).forEach(x->buf.append(printJSFormData(x)));
+			return buf.toString();
+		}
+		return null;
+	}
+
+	private static String printJSFormData(IExpr expr) {
+		IAST jsFormData = (IAST) expr;
+		if (jsFormData.arg2().toString().equals("mathcell")) {
+			try {
+				String manipulateStr = jsFormData.arg1().toString();
+				String html = Config.MATHCELL_PAGE;
+				html = html.replaceAll("`1`", manipulateStr);
+				return openHTMLOnDesktop(html);
+			} catch (Exception ex) {
+				if (Config.SHOW_STACKTRACE) {
+					ex.printStackTrace();
 				}
-			} else if (jsFormData.arg2().toString().equals("jsxgraph")) {
-				try {
-					String manipulateStr = jsFormData.arg1().toString();
-					String html = Config.JSXGRAPH_PAGE;
-					html = html.replaceAll("`1`", manipulateStr);
-					return openHTMLOnDesktop(html);
-				} catch (Exception ex) {
-					if (Config.SHOW_STACKTRACE) {
-						ex.printStackTrace();
-					}
+			}
+		} else if (jsFormData.arg2().toString().equals("jsxgraph")) {
+			try {
+				String manipulateStr = jsFormData.arg1().toString();
+				String html = Config.JSXGRAPH_PAGE;
+				html = html.replaceAll("`1`", manipulateStr);
+				return openHTMLOnDesktop(html);
+			} catch (Exception ex) {
+				if (Config.SHOW_STACKTRACE) {
+					ex.printStackTrace();
 				}
-			} else if (jsFormData.arg2().toString().equals("treeform")) {
-				try {
-					String manipulateStr = jsFormData.arg1().toString();
-					String html = Config.VISJS_PAGE;
-					html = html.replaceAll("`1`", manipulateStr);
-					html = html.replaceAll("`2`", //
-							"  var options = {\n" + //
-							"		  edges: {\n" + //
-							"              smooth: {\n" + //
-							"                  type: 'cubicBezier',\n" + //
-							"                  forceDirection:  'vertical',\n" + //
-							"                  roundness: 0.4\n" + //
-							"              }\n" + //
-							"          },\n" + //
-							"          layout: {\n" + //
-							"              hierarchical: {\n" + //
-							"                  direction: \"UD\"\n" + //
-							"              }\n" + //
-							"          },\n" + //
-							"          nodes: {\n" + 
-							"            shape: 'box'\n" + 
-							"          },\n" + //
-							"          physics:false\n" + //	
-							"      }; "//
-							);
-					return openHTMLOnDesktop(html);
-				} catch (Exception ex) {
-					if (Config.SHOW_STACKTRACE) {
-						ex.printStackTrace();
-					}
+			}
+		} else if (jsFormData.arg2().toString().equals("treeform")) {
+			try {
+				String manipulateStr = jsFormData.arg1().toString();
+				String html = Config.VISJS_PAGE;
+				html = html.replaceAll("`1`", manipulateStr);
+				html = html.replaceAll("`2`", //
+						"  var options = {\n" + //
+						"		  edges: {\n" + //
+						"              smooth: {\n" + //
+						"                  type: 'cubicBezier',\n" + //
+						"                  forceDirection:  'vertical',\n" + //
+						"                  roundness: 0.4\n" + //
+						"              }\n" + //
+						"          },\n" + //
+						"          layout: {\n" + //
+						"              hierarchical: {\n" + //
+						"                  direction: \"UD\"\n" + //
+						"              }\n" + //
+						"          },\n" + //
+						"          nodes: {\n" + 
+						"            shape: 'box'\n" + 
+						"          },\n" + //
+						"          physics:false\n" + //	
+						"      }; "//
+						);
+				return openHTMLOnDesktop(html);
+			} catch (Exception ex) {
+				if (Config.SHOW_STACKTRACE) {
+					ex.printStackTrace();
 				}
 			}
 		}

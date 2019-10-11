@@ -987,14 +987,24 @@ public class ManipulateFunction {
 					plotRangeYMax = engine.evalDouble(plotRangeY.second());
 				} catch (RuntimeException rex) {
 				}
-			}
-			// optionPlotRange = F.List(F.Full, F.List(plotRange.first(), plotRange.second()));
-		} else if (plotRangeY.isReal()) {
-			if (plotID == ID.Plot) {
-				// optionPlotRange = F.List(F.Full, F.List(plotRange.negate(), plotRange));
-			} else if (plotID == ID.ParametricPlot) {
-				// optionPlotRange = F.List(F.List(plotRange.negate(), plotRange), //
-				// F.List(plotRange.negate(), plotRange));
+				// optionPlotRange = F.List(F.Full, F.List(plotRange.first(), plotRange.second()));
+			} else if (plotRangeY.isReal()) {
+				if (plotID == ID.Plot) {
+					try {
+						plotRangeYMin = engine.evalDouble(plotRangeY.negate());
+						plotRangeYMax = engine.evalDouble(plotRangeY);
+					} catch (RuntimeException rex) {
+					}
+					// optionPlotRange = F.List(F.Full, F.List(plotRange.negate(), plotRange));
+				} else if (plotID == ID.ParametricPlot) {
+					try {
+						plotRangeYMin = engine.evalDouble(plotRangeY.negate());
+						plotRangeYMax = engine.evalDouble(plotRangeY);
+					} catch (RuntimeException rex) {
+					}
+					// optionPlotRange = F.List(F.List(plotRange.negate(), plotRange), //
+					// F.List(plotRange.negate(), plotRange));
+				}
 			}
 		}
 
@@ -1019,6 +1029,16 @@ public class ManipulateFunction {
 			} catch (RuntimeException rex) {
 			}
 		}
+		if (plotID == ID.ParametricPlot && //
+				plotRangeYMax != Double.MIN_VALUE && //
+				plotRangeYMin != Double.MAX_VALUE) {
+			try {
+				plotRangeXMin = plotRangeYMin;
+				plotRangeXMax = plotRangeYMax;
+			} catch (RuntimeException rex) {
+			}
+		}
+
 		// function z1(x,y) { return [ x, y, Math.sin( a * x * y ) ]; }
 		StringBuilder function = new StringBuilder();
 
@@ -1081,7 +1101,7 @@ public class ManipulateFunction {
 				boundingbox[1] = plotRangeYMax;
 			}
 			if (!F.isFuzzyEquals(Double.MIN_VALUE, plotRangeXMax, 1e-10)
-					&& F.isFuzzyEquals(Double.MIN_VALUE, boundingbox[0], 1e-10)) {
+					&& F.isFuzzyEquals(Double.MIN_VALUE, boundingbox[2], 1e-10)) {
 				boundingbox[2] = plotRangeXMax;
 			}
 			if (!F.isFuzzyEquals(Double.MAX_VALUE, plotRangeYMin, 1e-10)) {
