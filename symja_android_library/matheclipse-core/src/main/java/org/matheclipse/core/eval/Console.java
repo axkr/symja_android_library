@@ -617,9 +617,15 @@ public class Console {
 			while (!done) {
 				final String s = in.readLine();
 				if (s != null) {
+					if (s.trim().length()==0) {
+						done = true;
+						break;
+					}
 					if ((s.length() > 0) && (s.charAt(s.length() - 1) != '\\')) {
 						input.append(s);
-						done = true;
+						if (org.matheclipse.parser.client.Scanner.isBalancedCode(input)) {
+							done = true;
+						}
 					} else {
 						if (s.length() > 1) {
 							input.append(s.substring(0, s.length() - 1));
