@@ -15,7 +15,7 @@ Read through these guidelines before you get started:
 
 ### Questions & Concerns
 
-If you have any questions about using or developing for this project, send me an [email][1]!
+If you have any questions about using or developing for this project, send a question in the [Gitter chat group][5] or directly via [email][1].
 
 ### Issues & Bugs
 
@@ -32,8 +32,8 @@ that simply states "X/Y/Z isn't working!" will be ignored.
 Submit an [issue][2] to request a new feature. Features fall into one of two
 categories:
 
-1. **Major**: Major changes should be discussed with me via [email][1]. I'm
-always open to suggestions and will get back to you as soon as I can!
+1. **Major**: Major changes should be discussed in the [Gitter chat group][5]. We're
+always open to suggestions and will get back to you as soon as we can!
 2. **Minor**: A minor feature can simply be added via a [pull request][3].
 
 ### Submitting Pull Requests
@@ -52,3 +52,4 @@ to ensure you aren't duplicating anyone's work. Then, do the following:
 [2]: https://github.com/axkr/symja_android_library/issues/new
 [3]: https://github.com/axkr/symja_android_library/compare
 [4]: https://github.com/axkr/symja_android_library/pulls
+[5]: https://gitter.im/symja_android_library/Lobby
