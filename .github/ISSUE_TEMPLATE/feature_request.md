@@ -18,3 +18,7 @@ A clear and concise description of any alternative solutions or features you've 
 
 **Additional context**
 Add any other context or screenshots about the feature request here.
+
+If necessary discuss the feature in the [Gitter chat group][1].
+
+[1]: https://gitter.im/symja_android_library/Lobby
