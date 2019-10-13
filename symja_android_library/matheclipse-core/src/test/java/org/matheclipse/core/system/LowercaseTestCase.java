@@ -6429,6 +6429,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFibonacci() {
+		check("Fibonacci(-10, x)", //
+				"-5*x-20*x^3-21*x^5-8*x^7-x^9");
+		check("Fibonacci(11, x)", //
+				"1+15*x^2+35*x^4+28*x^6+9*x^8+x^10");
+		check("Fibonacci(50, x)", //
+				"25*x+2600*x^3+80730*x^5+1184040*x^7+10015005*x^9+54627300*x^11+206253075*x^13+\n" + 
+				"565722720*x^15+1166803110*x^17+1855967520*x^19+2319959400*x^21+2310789600*x^23+\n" + 
+				"1852482996*x^25+1203322288*x^27+635745396*x^29+273438880*x^31+95548245*x^33+\n" + 
+				"26978328*x^35+6096454*x^37+1086008*x^39+148995*x^41+15180*x^43+1081*x^45+48*x^47+x^\n" + 
+				"49");
+		check("Table(Fibonacci(n, x), {n, 5})", //
+				"{1,x,1+x^2,2*x+x^3,1+3*x^2+x^4}");
+		
 		check("Table(Fibonacci(n), {n, 45})", //
 				"{1,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711,\n"
 						+ "28657,46368,75025,121393,196418,317811,514229,832040,1346269,2178309,3524578,\n"
@@ -6441,6 +6454,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1");
 		check("Fibonacci(10)", //
 				"55");
+		check("Fibonacci(-51)", //
+				"20365011074");
+		check("Fibonacci(-52)", //
+				"-32951280099");
 		check("Fibonacci(200)", //
 				"280571172992510140037611932413038677189525");
 		check("Table(Fibonacci(-n), {n, 10})", //
@@ -10509,6 +10526,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLucasL() {
+		check("LucasL(-10, x)", //
+				"2+25*x^2+50*x^4+35*x^6+10*x^8+x^10");
+		check("LucasL(-11, x)", //
+				"-11*x-55*x^3-77*x^5-44*x^7-11*x^9-x^11");
 		check("LucasL(50, x)", //
 				"2+625*x^2+32500*x^4+672750*x^6+7400250*x^8+50075025*x^10+227613750*x^12+\n" + 
 				"736618125*x^14+1767883500*x^16+3241119750*x^18+4639918800*x^20+5272635000*x^22+\n" + 
@@ -10518,7 +10539,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Table(LucasL(n, x), {n, 5})", //
 				"{x,2+x^2,3*x+x^3,2+4*x^2+x^4,5*x+5*x^3+x^5}");
 		
-		
+		check("LucasL(-11)", //
+				"-199");
+		check("LucasL(-12)", //
+				"322");
 		check("Table(LucasL(n), {n, 20})", //
 				"{1,3,4,7,11,18,29,47,76,123,199,322,521,843,1364,2207,3571,5778,9349,15127}");
 		check("LucasL(1000)", //
