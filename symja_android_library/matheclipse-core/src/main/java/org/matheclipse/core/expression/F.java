@@ -3394,10 +3394,10 @@ public class F {
 
 	/** Transpose(m) - transposes rows and columns in the matrix `m`. */
 	public final static IBuiltInSymbol Transpose = F.initFinalSymbol("Transpose", ID.Transpose);
-	
+
 	/***/
 	public final static IBuiltInSymbol TreeForm = F.initFinalSymbol("TreeForm", ID.TreeForm);
-	
+
 	/***/
 	public final static IBuiltInSymbol Trig = F.initFinalSymbol("Trig", ID.Trig);
 
@@ -5034,7 +5034,7 @@ public class F {
 	public static IAST Apply(final IExpr a0, final IExpr a1) {
 		return new AST2(Apply, a0, a1);
 	}
-	
+
 	public static IAST Array(final IExpr a0, final IExpr a1) {
 		return new AST2(Array, a0, a1);
 	}
@@ -6653,6 +6653,10 @@ public class F {
 		return new AST1(Fibonacci, a0);
 	}
 
+	public static IAST Fibonacci(final IExpr a0, final IExpr a1) {
+		return new AST2(Fibonacci, a0, a1);
+	}
+
 	public static IAST FindFit(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
 		return quaternary(FindFit, a0, a1, a2, a3);
 	}
@@ -7865,6 +7869,10 @@ public class F {
 		return new AST1(LucasL, a);
 	}
 
+	public static IAST LucasL(final IExpr a, final IExpr b) {
+		return new AST2(LucasL, a, b);
+	}
+
 	/**
 	 * <pre>
 	 * MachineNumberQ(expr)
@@ -8731,7 +8739,7 @@ public class F {
 	public static IAST RandomReal(final IExpr a0) {
 		return new AST1(RandomReal, a0);
 	}
-	
+
 	public static IAST RandomVariate(final IExpr a0) {
 		return new AST1(RandomVariate, a0);
 	}
@@ -9902,9 +9910,9 @@ public class F {
 			}
 		} else if (expr.isAST(JSFormData, 3)) {
 			return printJSFormData(expr);
-		} else if (expr.isList(x->x.isAST(JSFormData, 3))) {
-			StringBuilder buf=new StringBuilder();
-			((IAST)expr).forEach(x->buf.append(printJSFormData(x)));
+		} else if (expr.isList(x -> x.isAST(JSFormData, 3))) {
+			StringBuilder buf = new StringBuilder();
+			((IAST) expr).forEach(x -> buf.append(printJSFormData(x)));
 			return buf.toString();
 		}
 		return null;
@@ -9941,24 +9949,22 @@ public class F {
 				html = html.replaceAll("`1`", manipulateStr);
 				html = html.replaceAll("`2`", //
 						"  var options = {\n" + //
-						"		  edges: {\n" + //
-						"              smooth: {\n" + //
-						"                  type: 'cubicBezier',\n" + //
-						"                  forceDirection:  'vertical',\n" + //
-						"                  roundness: 0.4\n" + //
-						"              }\n" + //
-						"          },\n" + //
-						"          layout: {\n" + //
-						"              hierarchical: {\n" + //
-						"                  direction: \"UD\"\n" + //
-						"              }\n" + //
-						"          },\n" + //
-						"          nodes: {\n" + 
-						"            shape: 'box'\n" + 
-						"          },\n" + //
-						"          physics:false\n" + //	
-						"      }; "//
-						);
+								"		  edges: {\n" + //
+								"              smooth: {\n" + //
+								"                  type: 'cubicBezier',\n" + //
+								"                  forceDirection:  'vertical',\n" + //
+								"                  roundness: 0.4\n" + //
+								"              }\n" + //
+								"          },\n" + //
+								"          layout: {\n" + //
+								"              hierarchical: {\n" + //
+								"                  direction: \"UD\"\n" + //
+								"              }\n" + //
+								"          },\n" + //
+								"          nodes: {\n" + "            shape: 'box'\n" + "          },\n" + //
+								"          physics:false\n" + //
+								"      }; "//
+				);
 				return openHTMLOnDesktop(html);
 			} catch (Exception ex) {
 				if (Config.SHOW_STACKTRACE) {

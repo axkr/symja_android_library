@@ -57,6 +57,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.numbertheory.Primality;
+import org.matheclipse.core.polynomials.PolynomialsUtils;
 import org.matheclipse.core.visit.VisitorExpr;
 import org.matheclipse.parser.client.math.MathException;
 
@@ -2017,7 +2018,7 @@ public final class NumberTheory {
 	 * 280571172992510140037611932413038677189525
 	 * </pre>
 	 */
-	private static class Fibonacci extends AbstractTrigArg1 {
+	private static class Fibonacci extends AbstractFunctionEvaluator {
 
 		/**
 		 * <p>
@@ -2027,14 +2028,24 @@ public final class NumberTheory {
 		 * sequence.</a>
 		 */
 		@Override
-		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = ast.arg1();
 			if (arg1.isInteger()) {
 				int n = ((IInteger) arg1).toIntDefault(Integer.MIN_VALUE);
 				if (n > Integer.MIN_VALUE) {
+					if (ast.isAST2()) {
+						// TODO add fibonacci polynomials
+						return F.NIL;
+					}
 					return fibonacci(n);
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		@Override
@@ -2414,21 +2425,67 @@ public final class NumberTheory {
 	 * </p>
 	 * See: <a href= "https://en.wikipedia.org/wiki/Lucas_number">Wikipedia: Lucas number</a>
 	 */
-	private static class LucasL extends AbstractTrigArg1 {
+	private static class LucasL extends AbstractFunctionEvaluator {
 
 		@Override
-		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = ast.arg1();
 			if (arg1.isInteger()) {
-				int i = ((IInteger) arg1).toIntDefault(Integer.MIN_VALUE);
-				if (i > Integer.MIN_VALUE) {
-					if (i < 0) {
-						i *= (-1);
+				int n = ((IInteger) arg1).toIntDefault(Integer.MIN_VALUE);
+				if (n > Integer.MIN_VALUE) {
+					if (n < 0) {
+						n *= (-1);
+					}
+					if (ast.isAST2()) {
+						return lucasLPolynomial(n, ast.arg2(), engine);
 					}
 					// LucasL(n) = Fibonacci(n-1) + Fibonacci(n+1)
-					return fibonacci(i - 1).add(fibonacci(i + 1));
+					return fibonacci(n - 1).add(fibonacci(n + 1));
 				}
 			}
 			return F.NIL;
+		}
+
+		/**
+		 * Create LucasL polynomial with recurrence.
+		 * 
+		 * @param n
+		 *            an integer <code>n >= 0</code>
+		 * @param x
+		 *            the variable expression of the polynomial
+		 * @return
+		 */
+		private static IExpr lucasLPolynomial(int n, IExpr x, final EvalEngine engine) {
+			if (n == 0) {
+				return F.C2;
+			}
+			if (n == 1) {
+				return x;
+			}
+			try {
+				IExpr result = F.REMEMBER_AST_CACHE.get(F.LucasL(F.ZZ(n), x), new Callable<IExpr>() {
+					@Override
+					public IExpr call() throws Exception {
+						IExpr result = F.Expand.of(engine, F.Plus(F.Times(x, lucasLPolynomial(n - 1, x, engine)),
+								lucasLPolynomial(n - 2, x, engine)));
+
+						return result;
+					}
+
+				});
+
+				return result;
+			} catch (Exception e) {
+				if (Config.DEBUG) {
+					e.printStackTrace();
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 
 		@Override
