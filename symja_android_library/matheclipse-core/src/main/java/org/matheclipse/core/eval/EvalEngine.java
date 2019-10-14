@@ -102,7 +102,7 @@ public class EvalEngine implements Serializable {
 
 	/**
 	 * Check if the <code>ApfloatNum</code> number type should be used instead of the <code>Num</code> type and the
-	 * <code>ApcomplexxNum</code> number type should be used instead of the <code>ComplexNum</code> type for numeric
+	 * <code>ApcomplexNum</code> number type should be used instead of the <code>ComplexNum</code> type for numeric
 	 * evaluations.
 	 * 
 	 * @param precision
@@ -111,7 +111,7 @@ public class EvalEngine implements Serializable {
 	 * @see ApfloatNum
 	 * @see ApcomplexNum
 	 */
-	public static boolean isApfloat(int precision) {
+	public static boolean isApfloat(long precision) {
 		return precision > Config.MACHINE_PRECISION;
 	}
 
@@ -194,7 +194,7 @@ public class EvalEngine implements Serializable {
 	/**
 	 * The precision for numeric operations.
 	 */
-	protected int fNumericPrecision;
+	protected long fNumericPrecision;
 
 	protected int fRecursionLimit;
 
@@ -1812,7 +1812,7 @@ public class EvalEngine implements Serializable {
 		return fModifiedVariablesList;
 	}
 
-	public int getNumericPrecision() {
+	public long getNumericPrecision() {
 		return fNumericPrecision;
 	}
 
@@ -2166,12 +2166,12 @@ public class EvalEngine implements Serializable {
 	 * @param b
 	 * @param precision
 	 */
-	public void setNumericMode(final boolean b, int precision) {
+	public void setNumericMode(final boolean b, long precision) {
 		fNumericMode = b;
 		fNumericPrecision = precision;
 	}
 
-	public void setNumericPrecision(int precision) {
+	public void setNumericPrecision(long precision) {
 		fNumericPrecision = precision;
 	}
 

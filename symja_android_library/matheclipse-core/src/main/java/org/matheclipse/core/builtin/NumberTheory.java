@@ -2038,6 +2038,23 @@ public final class NumberTheory {
 					}
 					return fibonacci(n);
 				}
+			} else if (arg1.isNumeric()) {
+				INumber n = ((INumber) arg1).evaluatePrecision(engine);
+				if (ast.isAST2() && ast.arg2().isNumeric()) {
+					INumber x = ((INumber) ast.arg2()).evaluatePrecision(engine);
+					return
+					// [$ ((x + Sqrt(4 + x^2))^n/2^n - (2^n*Cos(n*Pi))/(x + Sqrt(4 + x^2))^n)/Sqrt(4 + x^2) $]
+					F.Times(F.Power(F.Plus(F.C4, F.Sqr(x)), F.CN1D2),
+							F.Plus(F.Times(F.Power(F.Power(F.C2, n), F.CN1),
+									F.Power(F.Plus(x, F.Sqrt(F.Plus(F.C4, F.Sqr(x)))), n)),
+									F.Times(F.CN1, F.Power(F.C2, n),
+											F.Power(F.Power(F.Plus(x, F.Sqrt(F.Plus(F.C4, F.Sqr(x)))), n), F.CN1),
+											F.Cos(F.Times(n, F.Pi))))); // $$;
+				}
+				return
+				// [$ ( GoldenRatio^n - Cos(Pi*n) * GoldenRatio^(-n) ) / Sqrt(5) $]
+				F.Times(F.C1DSqrt5, F.Plus(F.Power(F.GoldenRatio, n),
+						F.Times(F.CN1, F.Power(F.GoldenRatio, F.Negate(n)), F.Cos(F.Times(F.Pi, n))))); // $$;
 			}
 			return F.NIL;
 		}
@@ -2476,55 +2493,35 @@ public final class NumberTheory {
 					if (ast.isAST2()) {
 						return lucasLPolynomialIterative(n, ast.arg2(), engine);
 					}
-					int iArg = n; 
+					int iArg = n;
 					if (n < 0) {
 						n *= (-1);
 					}
 					// LucasL(n) = Fibonacci(n-1) + Fibonacci(n+1)
-					IExpr lucalsL= fibonacci(n - 1).add(fibonacci(n + 1));
+					IExpr lucalsL = fibonacci(n - 1).add(fibonacci(n + 1));
 					if (iArg < 0 && ((iArg & 0x00000001) == 0x00000001)) {
 						return F.Negate(lucalsL);
 					}
-					
+
 					return lucalsL;
 				}
-			}
-			return F.NIL;
-		}
-
-		/**
-		 * Create LucasL polynomial with recurrence.
-		 * 
-		 * @param n
-		 *            an integer <code>n >= 0</code>
-		 * @param x
-		 *            the variable expression of the polynomial
-		 * @return
-		 */
-		private static IExpr lucasLPolynomial(int n, IExpr x, final EvalEngine engine) {
-			if (n == 0) {
-				return F.C2;
-			}
-			if (n == 1) {
-				return x;
-			}
-			try {
-				IExpr result = F.REMEMBER_AST_CACHE.get(F.LucasL(F.ZZ(n), x), new Callable<IExpr>() {
-					@Override
-					public IExpr call() throws Exception {
-						IExpr result = F.Expand.of(engine, F.Plus(F.Times(x, lucasLPolynomial(n - 1, x, engine)),
-								lucasLPolynomial(n - 2, x, engine)));
-
-						return result;
-					}
-
-				});
-
-				return result;
-			} catch (Exception e) {
-				if (Config.DEBUG) {
-					e.printStackTrace();
+			} else if (arg1.isNumeric()) {
+				INumber n = ((INumber) arg1).evaluatePrecision(engine);
+				if (ast.isAST2() && ast.arg2().isNumeric()) {
+					INumber x = ((INumber) ast.arg2()).evaluatePrecision(engine);
+					return
+					// [$ (x/2 + Sqrt(1 + x^2/4))^n + Cos(n*Pi)/(x/2 + Sqrt(1 + x^2/4))^n $]
+					F.Plus(F.Power(F.Plus(F.Times(F.C1D2, x), F.Sqrt(F.Plus(F.C1, F.Times(F.C1D4, F.Sqr(x))))), n),
+							F.Times(F.Power(
+									F.Power(F.Plus(F.Times(F.C1D2, x), F.Sqrt(F.Plus(F.C1, F.Times(F.C1D4, F.Sqr(x))))),
+											n),
+									F.CN1), F.Cos(F.Times(n, F.Pi)))); // $$;
 				}
+				return
+				// [$ GoldenRatio^n + Cos(Pi*n) * GoldenRatio^(-n) $]
+				F.Plus(F.Power(F.GoldenRatio, n),
+						F.Times(F.Cos(F.Times(F.Pi, n)), F.Power(F.GoldenRatio, F.Negate(n)))); // $$;
+
 			}
 			return F.NIL;
 		}
@@ -2538,7 +2535,7 @@ public final class NumberTheory {
 		 *            the variable expression of the polynomial
 		 * @return
 		 */
-		public IExpr lucasLPolynomialIterative(int n, IExpr x, final EvalEngine engine) {
+		private static IExpr lucasLPolynomialIterative(int n, IExpr x, final EvalEngine engine) {
 			int iArg = n;
 			if (n < 0) {
 				n *= (-1);
@@ -2549,6 +2546,9 @@ public final class NumberTheory {
 				return previousLucasL;
 			}
 			if (n == 1) {
+				if (iArg < 0) {
+					return F.Negate(lucalsL);
+				}
 				return lucalsL;
 			}
 

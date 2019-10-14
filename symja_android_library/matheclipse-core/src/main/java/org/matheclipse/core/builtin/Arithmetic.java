@@ -2161,9 +2161,9 @@ public final class Arithmetic {
 		@Override
 		public IExpr numericEval(final IAST ast, EvalEngine engine) {
 			final boolean numericMode = engine.isNumericMode();
-			final int oldPrecision = engine.getNumericPrecision();
+			final long oldPrecision = engine.getNumericPrecision();
 			try {
-				int numericPrecision = Config.MACHINE_PRECISION;
+				long numericPrecision = Config.MACHINE_PRECISION;
 				if (ast.isAST2()) {
 					IExpr arg2 = engine.evaluateNonNumeric(ast.arg2());
 					numericPrecision = Validate.checkIntType(arg2);
