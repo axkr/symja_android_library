@@ -62,7 +62,7 @@ public class ApfloatNum implements INum {
 		return new ApfloatNum(n.divide(d));
 	}
 
-	public static ApfloatNum valueOf(final String value, int precision) {
+	public static ApfloatNum valueOf(final String value, long precision) {
 		return new ApfloatNum(value, precision);
 	}
 
@@ -138,7 +138,7 @@ public class ApfloatNum implements INum {
 		// }
 		return F.NIL;
 	}
-
+	
 	@Override
 	public ISignedNumber evalReal() {
 		return this;
@@ -156,7 +156,7 @@ public class ApfloatNum implements INum {
 
 	@Override
 	public INum multiply(final INum val) {
-		return valueOf(fApfloat.multiply(((ApfloatNum) val).fApfloat));
+		return valueOf(fApfloat.multiply(val.apfloatValue(fApfloat.precision())));
 	}
 
 	@Override

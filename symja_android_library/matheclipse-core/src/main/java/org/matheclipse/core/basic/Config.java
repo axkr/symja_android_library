@@ -245,7 +245,7 @@ public class Config {
 	/**
 	 * Use <code>Num</code> objects for numeric calculations up to 16 digits precision.
 	 */
-	public static final int MACHINE_PRECISION = 16;
+	public static final long MACHINE_PRECISION = 16L;
 
 	/**
 	 * Print trigonometric functions in lower case characters.

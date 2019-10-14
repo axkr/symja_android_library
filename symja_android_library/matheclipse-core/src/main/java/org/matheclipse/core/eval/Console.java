@@ -84,7 +84,7 @@ public class Console {
 	private static PrintWriter stderr = new PrintWriter(new OutputStreamWriter(System.err, StandardCharsets.UTF_8),
 			true);
 
-	public static void runConsole(final String args[], PrintWriter out, PrintWriter err) {
+	/* package private */ static void runConsole(final String args[], PrintWriter out, PrintWriter err) {
 		stdout = out;
 		stderr = err;
 		main(args);
@@ -426,7 +426,7 @@ public class Console {
 	 *            a trimmed input string
 	 * @return
 	 */
-	public String interpreter(final String trimmedInput) {
+	/* package private */ String interpreter(final String trimmedInput) {
 		IExpr result;
 		final StringWriter buf = new StringWriter();
 		try {
@@ -617,7 +617,7 @@ public class Console {
 			while (!done) {
 				final String s = in.readLine();
 				if (s != null) {
-					if (s.trim().length()==0) {
+					if (s.trim().length() == 0) {
 						done = true;
 						break;
 					}

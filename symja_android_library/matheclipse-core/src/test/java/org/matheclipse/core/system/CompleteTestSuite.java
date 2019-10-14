@@ -1,8 +1,10 @@
 package org.matheclipse.core.system;
 
+import org.matheclipse.core.eval.ConsoleTestCase;
 import org.matheclipse.core.form.mathml.MathMLPresentationTestCase;
 import org.matheclipse.core.form.tex.BasicTeXTestCase;
 import org.matheclipse.core.form.tex.TeXConverterTestCase;
+import org.matheclipse.core.system.archunit.ArchUnitTests;
 import org.matheclipse.parser.test.BracketBalancerTestCase;
 import org.matheclipse.parser.test.ParserTestCase;
 import org.matheclipse.parser.test.RelaxedParserTestCase;
@@ -70,6 +72,7 @@ public class CompleteTestSuite extends TestCase {
 		suite.addTestSuite(AssumptionTestCase.class);
 		suite.addTestSuite(WXFTestCase.class);
 		suite.addTestSuite(IntegerTestCase.class);
+		suite.addTestSuite(ArchUnitTests.class);
 		
 		return suite;
 

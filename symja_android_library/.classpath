@@ -14,7 +14,6 @@
 	<classpathentry kind="lib" path="lib/antlr4-runtime-4.7.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-api-2.5.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-core-2.5.jar"/>
-	<classpathentry kind="lib" path="lib/slf4j-android-1.7.25.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-over-slf4j-1.7.25.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-core-1.5.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-fft-1.5.jar"/>
@@ -43,5 +42,8 @@
 	<classpathentry kind="lib" path="lib/logicng-1.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/commonmark-ext-gfm-tables-0.13.0.jar"/>
 	<classpathentry kind="lib" path="lib/apfloat-1.9.1.jar"/>
+	<classpathentry kind="lib" path="lib/archunit-0.11.0.jar"/>
+	<classpathentry kind="lib" path="lib/archunit-junit4-0.11.0.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-simple-1.7.25.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

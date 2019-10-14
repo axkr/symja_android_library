@@ -31,6 +31,10 @@ public class ApcomplexNum implements IComplexNum {
 		return new ApcomplexNum(value);
 	}
 
+	public static ApcomplexNum valueOf(final Apfloat real) {
+		return new ApcomplexNum(real);
+	}
+
 	public static ApcomplexNum valueOf(final Apfloat real, final Apfloat imag) {
 		return new ApcomplexNum(real, imag);
 	}
@@ -48,7 +52,7 @@ public class ApcomplexNum implements IComplexNum {
 		return valueOf(new Apcomplex(new Apfloat(new BigDecimal(c.getReal()), precision),
 				new Apfloat(new BigDecimal(c.getImaginary()), precision)));
 	}
-	
+
 	/**
 	 * Create a <code>ApcomplexNum</code> complex number from the real and imaginary <code>BigInteger</code> parts.
 	 * 
@@ -65,7 +69,7 @@ public class ApcomplexNum implements IComplexNum {
 	 * @return a new <code>ApcomplexNum</code> complex number object
 	 */
 	public static ApcomplexNum valueOf(final BigInteger realNumerator, final BigInteger realDenominator,
-			final BigInteger imagNumerator, final BigInteger imagDenominator, int precision) {
+			final BigInteger imagNumerator, final BigInteger imagDenominator, long precision) {
 		Apfloat real = new Apfloat(realNumerator, precision).divide(new Apfloat(realDenominator, precision));
 		Apfloat imag = new Apfloat(imagNumerator, precision).divide(new Apfloat(imagDenominator, precision));
 		return new ApcomplexNum(real, imag);
@@ -96,6 +100,10 @@ public class ApcomplexNum implements IComplexNum {
 
 	private ApcomplexNum(Apcomplex complex) {
 		fApcomplex = complex;
+	}
+
+	private ApcomplexNum(Apfloat real) {
+		fApcomplex = new Apcomplex(real);
 	}
 
 	private ApcomplexNum(Apfloat real, Apfloat imag) {
@@ -218,7 +226,7 @@ public class ApcomplexNum implements IComplexNum {
 	public ApcomplexNum divide(final ApcomplexNum that) throws ArithmeticException {
 		return valueOf(fApcomplex.divide(that.fApcomplex));
 	}
-	
+
 	@Override
 	public IComplexNum divide(final IComplexNum val) {
 		return valueOf(fApcomplex.divide(((ApcomplexNum) val).fApcomplex));
@@ -407,7 +415,7 @@ public class ApcomplexNum implements IComplexNum {
 	public IComplexNum subtract(final IComplexNum val) {
 		return valueOf(fApcomplex.subtract(((ApcomplexNum) val).fApcomplex));
 	}
-	
+
 	/**
 	 * @param that
 	 * @return
@@ -517,7 +525,7 @@ public class ApcomplexNum implements IComplexNum {
 	public boolean equalsInt(int i) {
 		return false;
 	}
- 
+
 	/** {@inheritDoc} */
 	@Override
 	public ISignedNumber im() {

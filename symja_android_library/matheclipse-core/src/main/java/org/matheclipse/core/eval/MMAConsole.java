@@ -82,7 +82,7 @@ public class MMAConsole {
 	private static PrintWriter stderr = new PrintWriter(new OutputStreamWriter(System.err, StandardCharsets.UTF_8),
 			true);
 
-	public static void runConsole(final String args[], PrintWriter out, PrintWriter err) {
+	/* package private */ static void runConsole(final String args[], PrintWriter out, PrintWriter err) {
 		stdout = out;
 		stderr = err;
 		main(args);
@@ -428,7 +428,7 @@ public class MMAConsole {
 	 *            a trimmed input string
 	 * @return
 	 */
-	public String interpreter(final String trimmedInput) {
+	/* package private */ String interpreter(final String trimmedInput) {
 		IExpr result;
 		final StringWriter buf = new StringWriter();
 		try {
@@ -507,7 +507,7 @@ public class MMAConsole {
 	 * 
 	 */
 
-	public void printPrompt(final PrintWriter out, final String prompt) {
+	private void printPrompt(final PrintWriter out, final String prompt) {
 		out.print(prompt);
 		out.flush();
 	}
@@ -570,7 +570,7 @@ public class MMAConsole {
 	 * @return the input string (without the newline)
 	 */
 
-	public String readString(final PrintWriter out) {
+	private String readString(final PrintWriter out) {
 		final StringBuilder input = new StringBuilder();
 		final BufferedReader in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
 		boolean done = false;
@@ -579,7 +579,7 @@ public class MMAConsole {
 			while (!done) {
 				final String s = in.readLine();
 				if (s != null) {
-					if (s.trim().length()==0) {
+					if (s.trim().length() == 0) {
 						done = true;
 						break;
 					}
@@ -613,7 +613,7 @@ public class MMAConsole {
 	 * @return the input string (without the newline)
 	 */
 
-	public String readString(final PrintWriter out, final String prompt) {
+	private String readString(final PrintWriter out, final String prompt) {
 		printPrompt(out, prompt);
 		return readString(out);
 	}
@@ -624,7 +624,7 @@ public class MMAConsole {
 	 * 
 	 * @return default rules textfile name
 	 */
-	public String getDefaultSystemRulesFilename() {
+	private String getDefaultSystemRulesFilename() {
 		return fDefaultSystemRulesFilename;
 	}
 }
