@@ -44,7 +44,7 @@ public class AST2Expr {
 
 	public final static String[] UPPERCASE_SYMBOL_STRINGS = { "C", "D", "E", "I", "N", "O" };
 
-	public final static String[] DOLLAR_STRINGS = { "$Aborted", "$Assumptions", "$Context", "$CreationDate",
+	public final static String[] DOLLAR_STRINGS = { "$Aborted", "$Assumptions", "$Cancel", "$Context", "$CreationDate",
 			"$ContextPath", "$DisplayFunction", "$Failed", "$HistoryLength", "$HomeDirectory", "$IterationLimit",
 			"$Line", "$MachineEpsilon", "$MachinePrecision", "$MaxMachineNumber", "$MessageList", "$MinMachineNumber",
 			"$PrePrint", "$PreRead", "$RecursionLimit", "$UserName", "$Version" };
@@ -52,13 +52,13 @@ public class AST2Expr {
 	public final static String[] SYMBOL_STRINGS = { "All", "Algebraics", "Automatic", "Axes", "AxesOrigin", "AxesStyle",
 			"Background", "Booleans", "CharacterEncoding", "ComplexInfinity", "Catalan", "Complexes",
 			"ComplexityFunction", "Constant", "Degree", "DegreeLexicographic", "DegreeReverseLexicographic", "Disputed",
-			"EliminationOrder", "EulerGamma", "Extension", "False", "Flat", "Float", "Full", "GaussianIntegers",
+			"EliminationOrder", "EulerGamma", "Expression", "Extension", "False", "Flat", "Float", "Full", "GaussianIntegers",
 			"General", "Glaisher", "GoldenAngle", "GoldenRatio", "Heads", "HoldAll", "HoldComplete", "HoldAllComplete",
 			"HoldFirst", "HoldRest", "Indeterminate", "Infinity", "Integer", "Integers", "Khinchin", "Lexicographic",
 			"Listable", "LongForm", "MaxIterations", "MaxPoints", "Method", "Modulus", "MonomialOrder",
 			"NegativeDegreeLexicographic", "NegativeDegreeReverseLexicographic", "NegativeLexicographic", "NHoldAll",
 			"NHoldFirst", "NHoldRest", "None", "Nothing", "Nonexistent", "NotApplicable", "NotAvailable", "Null",
-			"NumericFunction", "OneIdentity", "Orderless", "Pi", "PrecisionGoal", "Primes", "Protected", "Rationals",
+			"Number","NumericFunction", "OneIdentity", "Orderless", "Pi", "PrecisionGoal", "Primes", "Protected", "Rationals",
 			"ReadProtected", "Real", "Reals", "SameTest", "Second", "SequenceHold", "Slot", "SlotSequence", "Strict",
 			"String", "Symbol", "TooLarge", "Trig", "True", "Variable", "White", "Unknown", "ViewPoint" };
 

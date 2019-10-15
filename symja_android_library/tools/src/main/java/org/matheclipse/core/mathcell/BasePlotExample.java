@@ -66,6 +66,7 @@ public abstract class BasePlotExample {
 		} catch (MathException me) {
 			// catch Symja math errors here
 			System.out.println(me.getMessage());
+			me.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();
 		} catch (final StackOverflowError soe) {

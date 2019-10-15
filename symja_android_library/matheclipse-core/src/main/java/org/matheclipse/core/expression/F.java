@@ -192,6 +192,9 @@ public class F {
 	public final static IBuiltInSymbol $Assumptions = F.initFinalSymbol("$Assumptions", ID.$Assumptions);
 
 	/***/
+	public final static IBuiltInSymbol $Cancel = F.initFinalSymbol("$Cancel", ID.$Cancel);
+
+	/***/
 	public final static IBuiltInSymbol $Context = F.initFinalSymbol("$Context", ID.$Context);
 
 	/***/
@@ -1834,7 +1837,7 @@ public class F {
 	public final static IBuiltInSymbol InverseWeierstrassP = F.initFinalSymbol("InverseWeierstrassP",
 			ID.InverseWeierstrassP);
 
-	/** JSForm(expre) - returns the JavaScript form of the `expr`. */
+	/** JSForm(expr) - returns the JavaScript form of the `expr`. */
 	public final static IBuiltInSymbol JSForm = F.initFinalSymbol("JSForm", ID.JSForm);
 
 	/***/
@@ -3395,7 +3398,7 @@ public class F {
 	/** Transpose(m) - transposes rows and columns in the matrix `m`. */
 	public final static IBuiltInSymbol Transpose = F.initFinalSymbol("Transpose", ID.Transpose);
 
-	/***/
+	/** TreeForm(expr) - create a tree visualization from the given expression `expr`. */
 	public final static IBuiltInSymbol TreeForm = F.initFinalSymbol("TreeForm", ID.TreeForm);
 
 	/***/
@@ -5473,6 +5476,10 @@ public class F {
 		return new AST1(Cancel, a);
 	}
 
+	public static IAST CancelButton() {
+		return new AST0(CancelButton);
+	}
+
 	public static IAST CarmichaelLambda(final IExpr a0) {
 		return new AST1(CarmichaelLambda, a0);
 	}
@@ -6040,6 +6047,14 @@ public class F {
 
 	public static IAST Det(final IExpr a0) {
 		return new AST1(Det, a0);
+	}
+
+	public static IAST DialogReturn() {
+		return new AST0(DialogReturn);
+	}
+
+	public static IAST DialogReturn(final IExpr a0) {
+		return new AST1(DialogReturn, a0);
 	}
 
 	/**
@@ -9591,6 +9606,10 @@ public class F {
 		return ast;
 	}
 
+	public static IAST ToExpression(final IExpr a0) {
+		return new AST1(ToExpression, a0);
+	}
+	
 	public static IAST Together(final IExpr a0) {
 		return new AST1(Together, a0);
 	}

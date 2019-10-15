@@ -158,7 +158,7 @@ public interface ISymbol extends IExpr {
 	public void addAttributes(final int attributes);
 
 	/**
-	 * Set the value of the local variable on top of the local variable stack
+	 * Set the value of this variable
 	 * 
 	 */
 	public void assign(IExpr value);
@@ -408,7 +408,7 @@ public interface ISymbol extends IExpr {
 	public boolean isSymbolName(String name);
 
 	/**
-	 * Returns <code>true</code>, if this symbol is in the set of defined <code>ids</code>.  
+	 * Returns <code>true</code>, if this symbol is in the set of defined <code>ids</code>.
 	 * 
 	 * @param ids
 	 *            the symbol ordinal number

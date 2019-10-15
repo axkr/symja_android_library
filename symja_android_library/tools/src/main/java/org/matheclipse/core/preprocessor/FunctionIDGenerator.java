@@ -10,6 +10,9 @@ public class FunctionIDGenerator {
 	final static String HEADER = //
 			"package org.matheclipse.core.expression;\n" + //
 					"\n" + //
+					"/**\n" + //
+					" * Generated with class <code>org.matheclipse.core.preprocessor.FunctionIDGenerator</code>\n" + //
+					" */\n" + //
 					"public class ID {\n";
 
 	public static void main(String[] args) {
