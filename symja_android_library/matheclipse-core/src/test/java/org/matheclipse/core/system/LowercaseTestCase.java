@@ -3245,6 +3245,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCos() {
+		check("Cos(1.20000000000000000000000)", //
+				"3.623577544766735776383733*10^-1");
+
 		// print argx message
 		check("Cos( )", //
 				"Cos()");
@@ -3996,7 +3999,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"E^(b+2*c)*y^m");
 		check("Denominator(a^-b/x)", //
 				"a^b*x");
-		
+
 		// github #151
 		check("N(Denominator(Pi/E))", //
 				"2.71828");
@@ -5784,7 +5787,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		System.out.println();
 		System.out.print('.');
 		check("Factor(x+2*Sqrt(x)+1)", //
-				"(1+Sqrt(x))^2"); 
+				"(1+Sqrt(x))^2");
 		// check("Factor(E^x+E^(2*x))", //
 		// "E^x*(1+E^x)");
 		System.out.print('.');
@@ -9246,7 +9249,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("ArcSin(1.3038404810405297)",
 		// "1.5707963267948966+I*(-7.610396837318266e-1)");
 		checkNumeric("ArcSin(1.3038404810405297)", //
-				"1.5707963267948966+I*(-0.7610396837318266)");
+				"1.5707963267948966+I*(-7.6103968373182658*10^-1)");
 		checkNumeric("InverseHaversine(1.7)", //
 				"3.141592653589793+I*(-1.5220793674636532)");
 	}
@@ -11531,14 +11534,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testN() {
-		
+
 		// github #151
 		check("N(Integrate(Sin(x*Pi/3), {x, 1, 2}))", //
 				"0.95493");
 		check("expr=Integrate(Sin(x*Pi/3), {x, 1, 2}); N(expr)", //
 				"0.95493");
-		
-		
+
 		// TODO don't switch to numeric mode for Sqrt(10)
 		check("Sqrt(10)*(0.25)^x", "3.16228*0.25^x");
 
@@ -12264,12 +12266,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testNumerator() {
-		
+
 		check("Numerator( a*x^n*y^- m*Exp(a - b - 2 c + 3 d) )", //
 				"a*E^(a+3*d)*x^n");
 		check("Numerator(a^-b/x)", //
 				"1");
-		
+
 		// github #151
 		check("N(Numerator(Cos(Pi)/Pi))", //
 				"-1.0");

@@ -42,10 +42,11 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 		if (hier <= IExpr.INTEGERID) {
 			if (hier <= IExpr.DOUBLECOMPLEXID) {
 				if (hier == IExpr.DOUBLEID) {
-					if (arg0 instanceof ApfloatNum) {
-						return e1ApfloatArg(((ApfloatNum) arg0).apfloatValue(((ApfloatNum) arg0).precision()));
+					INumber x = ((INumber) arg0).evaluatePrecision(EvalEngine.get());
+					if (x instanceof ApfloatNum) {
+						return e1ApfloatArg(((ApfloatNum) x).apfloatValue(((ApfloatNum) x).precision()));
 					}
-					return e1DblArg((INum) arg0);
+					return e1DblArg((INum) x);
 				}
 				if (arg0 instanceof ApcomplexNum) {
 					return e1ApcomplexArg(((ApcomplexNum) arg0).apcomplexValue());
@@ -112,53 +113,58 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 
 	public IExpr binaryOperator(IAST ast, final IExpr o0, final IExpr o1) {
 		IExpr result = F.NIL;
-		try {
-			if (o0 instanceof ApcomplexNum) {
-				if (o1.isNumber()) {
-					result = e2ApcomplexArg((ApcomplexNum) o0,
-							((INumber) o1).apcomplexNumValue(((ApcomplexNum) o0).precision()));
-				}
-			} else if (o1 instanceof ApcomplexNum) {
-				if (o0.isNumber()) {
-					result = e2ApcomplexArg(((INumber) o0).apcomplexNumValue(((ApcomplexNum) o1).precision()),
-							(ApcomplexNum) o1);
-				}
-			} else if (o0 instanceof ComplexNum) {
-				if (o1.isNumber()) {
-					result = e2DblComArg((ComplexNum) o0, ((INumber) o1).complexNumValue());
-				}
-			} else if (o1 instanceof ComplexNum) {
-				if (o0.isNumber()) {
-					result = e2DblComArg(((INumber) o0).complexNumValue(), (ComplexNum) o1);
-				}
-			}
-
-			if (o0 instanceof ApfloatNum) {
-				if (o1.isReal()) {
-					result = e2ApfloatArg((ApfloatNum) o0,
-							((ISignedNumber) o1).apfloatNumValue(((ApfloatNum) o0).precision()));
-				}
-			} else if (o1 instanceof ApfloatNum) {
-				if (o0.isReal()) {
-					result = e2ApfloatArg(((ISignedNumber) o0).apfloatNumValue(((ApfloatNum) o1).precision()),
-							(ApfloatNum) o1);
-				}
-			} else if (o0 instanceof Num) {
-				if (o1.isReal()) {
-					result = e2DblArg((Num) o0, ((ISignedNumber) o1).numValue());
-				}
-			} else if (o1 instanceof Num) {
-				if (o0.isReal()) {
-					result = e2DblArg(((ISignedNumber) o0).numValue(), (Num) o1);
+		if (o0.isNumeric() || o1.isNumeric()) {
+			try {
+				EvalEngine engine = EvalEngine.get();
+				INumber arg1=  ((INumber) o0).evaluatePrecision(engine);
+				INumber arg2=  ((INumber) o1).evaluatePrecision(engine);
+				if (arg1 instanceof ApcomplexNum) {
+					if (arg2.isNumber()) {
+						result = e2ApcomplexArg((ApcomplexNum) arg1,
+								((INumber) arg2).apcomplexNumValue(((ApcomplexNum) arg1).precision()));
+					}
+				} else if (arg2 instanceof ApcomplexNum) {
+					if (arg1.isNumber()) {
+						result = e2ApcomplexArg(((INumber) arg1).apcomplexNumValue(((ApcomplexNum) arg2).precision()),
+								(ApcomplexNum) arg2);
+					}
+				} else if (arg1 instanceof ComplexNum) {
+					if (arg2.isNumber()) {
+						result = e2DblComArg((ComplexNum) arg1, ((INumber) arg2).complexNumValue());
+					}
+				} else if (arg2 instanceof ComplexNum) {
+					if (arg1.isNumber()) {
+						result = e2DblComArg(((INumber) arg1).complexNumValue(), (ComplexNum) arg2);
+					}
 				}
 
+				if (arg1 instanceof ApfloatNum) {
+					if (arg2.isReal()) {
+						result = e2ApfloatArg((ApfloatNum) arg1,
+								((ISignedNumber) arg2).apfloatNumValue(((ApfloatNum) arg1).precision()));
+					}
+				} else if (arg2 instanceof ApfloatNum) {
+					if (arg1.isReal()) {
+						result = e2ApfloatArg(((ISignedNumber) arg1).apfloatNumValue(((ApfloatNum) arg2).precision()),
+								(ApfloatNum) arg2);
+					}
+				} else if (arg1 instanceof Num) {
+					if (arg2.isReal()) {
+						result = e2DblArg((Num) arg1, ((ISignedNumber) arg2).numValue());
+					}
+				} else if (arg2 instanceof Num) {
+					if (arg1.isReal()) {
+						result = e2DblArg(((ISignedNumber) arg1).numValue(), (Num) arg2);
+					}
+
+				}
+				if (result.isPresent()) {
+					return result;
+				}
+			} catch (RuntimeException rex) {
+				// EvalEngine.get().printMessage(ast.topHead().toString() + ": " + rex.getMessage());
+				return F.NIL;
 			}
-			if (result.isPresent()) {
-				return result;
-			}
-		} catch (RuntimeException rex) {
-			// EvalEngine.get().printMessage(ast.topHead().toString() + ": " + rex.getMessage());
-			return F.NIL;
 		}
 		result = e2ObjArg(o0, o1);
 		if (result.isPresent()) {
@@ -203,12 +209,14 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 			if (o1 instanceof IComplex) {
 				return e2ComArg((IComplex) o0, (IComplex) o1);
 			}
+			return F.NIL;
 		}
 
 		if (o0 instanceof ISymbol) {
 			if (o1 instanceof ISymbol) {
 				return e2SymArg((ISymbol) o0, (ISymbol) o1);
 			}
+			return F.NIL;
 		}
 
 		if (o0 instanceof IAST) {
