@@ -4,7 +4,7 @@
 Numerator(expr)
 ```
 
-> gives the numerator in `expr`. 
+> gives the numerator in `expr`. Numerator collects expressions with non negative exponents.
 
 See
 * [Wikipedia - Fraction (mathematics)](https://en.wikipedia.org/wiki/Fraction_(mathematics))
