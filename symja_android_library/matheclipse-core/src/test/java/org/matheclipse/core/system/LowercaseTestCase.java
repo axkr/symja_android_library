@@ -11525,6 +11525,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testN() {
+		
+		// github #151
+		check("N(Integrate(Sin(x*Pi/3), {x, 1, 2}))", //
+				"0.95493");
+		check("expr=Integrate(Sin(x*Pi/3), {x, 1, 2}); N(expr)", //
+				"0.95493");
+		
+		
 		// TODO don't switch to numeric mode for Sqrt(10)
 		check("Sqrt(10)*(0.25)^x", "3.16228*0.25^x");
 
