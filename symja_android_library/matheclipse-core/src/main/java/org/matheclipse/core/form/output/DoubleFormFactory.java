@@ -574,7 +574,7 @@ public abstract class DoubleFormFactory {
 
 	private void convertTimesFraction(final StringBuilder buf, final IAST timesAST, final InfixOperator oper,
 			final int precedence, boolean caller) {
-		IExpr[] parts = Algebra.fractionalPartsTimesPower(timesAST, true, false, false, false, false);
+		IExpr[] parts = Algebra.fractionalPartsTimesPower(timesAST, true, false, false, false, false, false);
 		if (parts == null) {
 			convertTimesOperator(buf, timesAST, oper, precedence, caller);
 			return;

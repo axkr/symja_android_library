@@ -397,27 +397,31 @@ public class Algebra {
 		 * @param powerAST
 		 *            a power expression (a^b)
 		 * @param trig
-		 *            TODO
+		 *            if <code>true</code> get the "trigonometric form" of the given function. Example: Csc[x] gives
+		 *            Sin[x].
+		 * @param splitPowerPlusExponents
+		 *            split <code>Power()</code> expressions with <code>Plus()</code> exponents like
+		 *            <code>a^(-x+y)</code> into numerator <code>a^y</code> and denominator <code>a^x</code>
 		 * @return the numerator and denominator expression
 		 */
-		public static IExpr[] fractionalPartsPower(final IAST powerAST, boolean trig) {
+		public static IExpr[] fractionalPartsPower(final IAST powerAST, boolean trig, boolean splitPowerPlusExponents) {
 			IExpr[] parts = new IExpr[2];
 			parts[0] = F.C1;
 
-			IExpr arg1 = powerAST.arg1();
-			IExpr exponent = powerAST.arg2();
+			IExpr base = powerAST.base();
+			IExpr exponent = powerAST.exponent();
 			if (exponent.isReal()) {
 				ISignedNumber sn = (ISignedNumber) exponent;
 				if (sn.isMinusOne()) {
-					parts[1] = arg1;
+					parts[1] = base;
 					return parts;
 				} else if (sn.isNegative()) {
-					parts[1] = F.Power(arg1, sn.negate());
+					parts[1] = F.Power(base, sn.negate());
 					return parts;
 				} else {
-					if (sn.isInteger() && arg1.isAST()) {
+					if (sn.isInteger() && base.isAST()) {
 						// positive integer
-						IAST function = (IAST) arg1;
+						IAST function = (IAST) base;
 						// if (function.isTimes()) {
 						// IExpr[] partsArg1 = fractionalPartsTimesPower(function, true, true, trig,
 						// true);
@@ -438,10 +442,23 @@ public class Algebra {
 						}
 					}
 				}
+			} else if (splitPowerPlusExponents && exponent.isPlus()) {
+				// base ^ (a+b+c...)
+				IAST plusAST = (IAST) exponent;
+				IAST[] result = plusAST.filter((Function<IExpr, IExpr>) x -> {
+					IExpr positiveExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(x);
+					if (positiveExpr.isPresent()) {
+						return positiveExpr;
+					}
+					return F.NIL;
+				});
+				parts[1] = base.power(result[0].oneIdentity0());
+				parts[0] = base.power(result[1].oneIdentity0());
+				return parts;
 			}
-			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(exponent);
-			if (negExpr.isPresent()) {
-				parts[1] = F.Power(arg1, negExpr);
+			IExpr positiveExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(exponent);
+			if (positiveExpr.isPresent()) {
+				parts[1] = F.Power(base, positiveExpr);
 				return parts;
 			}
 			return null;
@@ -1399,7 +1416,7 @@ public class Algebra {
 				} else if (ast.isTimes()) {
 					// (a+b)*(c+d)...
 
-					IExpr[] temp = fractionalPartsTimesPower(ast, false, false, false, evalParts, true);
+					IExpr[] temp = fractionalPartsTimesPower(ast, false, false, false, evalParts, true, true);
 					IExpr tempExpr;
 					if (temp == null) {
 						return expandTimes(ast);
@@ -5661,18 +5678,23 @@ public class Algebra {
 	 * @param splitFractionalNumbers
 	 *            split a fractional number into numerator and denominator
 	 * @param trig
-	 *            try to find a trigonometric numerator/denominator form (Example: Csc[x] gives 1 / Sin[x])
+	 *            try to find a trigonometric numerator/denominator form (Example: <code>Csc[x]</code> gives
+	 *            <code>1 / Sin[x]</code>)
 	 * @param evalParts
 	 *            evaluate the determined numerator and denominator parts
 	 * @param negateNumerDenom
 	 *            negate numerator and denominator, if they are both negative
+	 * @param splitPowerPlusExponents
+	 *            split <code>Power()</code> expressions with <code>Plus()</code> exponents like <code>a^(-x+y)</code>
+	 *            into numerator <code>a^y</code> and denominator <code>a^x</code>
 	 * @return the numerator and denominator expression and an optional fractional number (maybe <code>null</code>), if
 	 *         splitNumeratorOne is <code>true</code>.
 	 */
 	public static IExpr[] fractionalPartsTimesPower(final IAST timesPower, boolean splitNumeratorOne,
-			boolean splitFractionalNumbers, boolean trig, boolean evalParts, boolean negateNumerDenom) {
+			boolean splitFractionalNumbers, boolean trig, boolean evalParts, boolean negateNumerDenom,
+			boolean splitPowerPlusExponents) {
 		if (timesPower.isPower()) {
-			IExpr[] parts = Apart.fractionalPartsPower(timesPower, trig);
+			IExpr[] parts = Apart.fractionalPartsPower(timesPower, trig, splitPowerPlusExponents);
 			if (parts != null) {
 				return parts;
 			}
@@ -5709,7 +5731,7 @@ public class Algebra {
 						}
 					}
 				} else if (arg.isPower()) {
-					IExpr[] parts = Apart.fractionalPartsPower((IAST) arg, trig);
+					IExpr[] parts = Apart.fractionalPartsPower((IAST) arg, trig, splitPowerPlusExponents);
 					if (parts != null) {
 						if (!parts[0].isOne()) {
 							numerator.append(parts[0]);
@@ -5791,9 +5813,9 @@ public class Algebra {
 		if (arg.isAST()) {
 			IAST ast = (IAST) arg;
 			if (arg.isTimes()) {
-				parts = fractionalPartsTimesPower(ast, false, true, trig, true, true);
+				parts = fractionalPartsTimesPower(ast, false, true, trig, true, true, true);
 			} else if (arg.isPower()) {
-				parts = Apart.fractionalPartsPower(ast, trig);
+				parts = Apart.fractionalPartsPower(ast, trig, true);
 			} else {
 				IExpr numerForm = Numerator.getTrigForm(ast, trig);
 				if (numerForm.isPresent()) {

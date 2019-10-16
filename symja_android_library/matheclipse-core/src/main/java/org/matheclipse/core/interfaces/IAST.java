@@ -1230,7 +1230,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 
 	/**
 	 * Get the argument at index 1, if the <code>size() == 2</code> or the complete ast if the <code>size() > 2</code>
-	 * If the <code>size() == 1</code> return <code>01</code>.
+	 * If the <code>size() == 1</code> return <code>0</code>.
 	 * 
 	 * @return
 	 */

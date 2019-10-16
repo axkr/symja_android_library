@@ -3988,6 +3988,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDenominator() {
+		check("Denominator(-1/p^(1-n))", //
+				"p");
+		check("Numerator(-1/p^(1-n))", //
+				"-p^n");
+		check("Denominator( a*x^n*y^- m*Exp(a - b - 2 c + 3 d) )", //
+				"E^(b+2*c)*y^m");
+		check("Denominator(a^-b/x)", //
+				"a^b*x");
+		
 		// github #151
 		check("N(Denominator(Pi/E))", //
 				"2.71828");
@@ -5775,15 +5784,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		System.out.println();
 		System.out.print('.');
 		check("Factor(x+2*Sqrt(x)+1)", //
-				"(1+Sqrt(x))^2");
-		System.out.print('.');
-		check("Factor(4^(2*x+1)*5^(x-2)-6^(1-x))", //
-				"-6*5^x*(-2^(1+4*x)/75+1/(5^x*6^x))");
+				"(1+Sqrt(x))^2"); 
 		// check("Factor(E^x+E^(2*x))", //
 		// "E^x*(1+E^x)");
 		System.out.print('.');
 		check("Factor(r^2+k*q*Q*r^4-E*r^6)", //
-				"r^2*(1+k*q*Q*r^2-E*r^4)");
+				"-r^2*(-1-k*q*Q*r^2+E*r^4)");
 		System.out.print('.');
 		check("Factor(x+2*Sqrt(x)+1)", //
 				"(1+Sqrt(x))^2");
@@ -5801,7 +5807,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
 		System.out.print('.');
 		check("Factor(4^(2*x+1)*5^(x-2)-6^(1-x))", //
-				"-6*5^x*(-2^(1+4*x)/75+1/(5^x*6^x))");
+				"(2^(2-x)*(-75/2+2^(5*x)*3^x*5^x))/(25*3^x)");
 		System.out.print('.');
 		check("Factor(E^x+E^(2*x))", //
 				"E^x*(1+E^x)");
@@ -12258,6 +12264,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testNumerator() {
+		
+		check("Numerator( a*x^n*y^- m*Exp(a - b - 2 c + 3 d) )", //
+				"a*E^(a+3*d)*x^n");
+		check("Numerator(a^-b/x)", //
+				"1");
+		
 		// github #151
 		check("N(Numerator(Cos(Pi)/Pi))", //
 				"-1.0");

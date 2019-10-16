@@ -573,7 +573,7 @@ public class SeriesFunctions {
 			IExpr y = F.Power(x, F.CN1); // substituting by 1/x
 			IExpr temp = F.evalQuiet(F.subst(arg1, x, y));
 			if (temp.isTimes()) {
-				IExpr[] parts = Algebra.fractionalPartsTimesPower((IAST) temp, false, false, true, true, true);
+				IExpr[] parts = Algebra.fractionalPartsTimesPower((IAST) temp, false, false, true, true, true, true);
 				if (parts != null) {
 					if (!parts[1].isOne()) { // denominator != 1
 						LimitData ndData = new LimitData(x, F.C0, F.Rule(x, F.C0), data.getDirection());
@@ -592,7 +592,7 @@ public class SeriesFunctions {
 			if (!isFreeResult.arg1().isOne()) {
 				return F.Times(isFreeResult.arg1(), data.limit(isFreeResult.arg2()));
 			}
-			IExpr[] parts = Algebra.fractionalPartsTimesPower(timesAST, false, false, true, true, true);
+			IExpr[] parts = Algebra.fractionalPartsTimesPower(timesAST, false, false, true, true, true, true);
 			if (parts == null) {
 				IAST[] timesPolyFiltered = timesAST.filter((Predicate<IExpr>) x -> x.isPolynomial(data.symbol));
 				if (timesPolyFiltered[0].size() > 1 && timesPolyFiltered[1].size() > 1) {
