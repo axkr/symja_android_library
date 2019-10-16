@@ -661,6 +661,7 @@ public class IOFunctions {
 			"locked", "Symbol `1` is locked.", //
 			"matsq", "Argument `1` is not a non-empty square matrix.", //
 			"noopen", "Cannot open `1`.", //
+			"nonopt", "Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule or a list of rules.",//
 			"nord", "Invalid comparison with `1` attempted.", //
 			"normal", "Nonatomic expression expected.", //
 			"notunicode",

@@ -28,6 +28,8 @@ public class OptionArgs {
 
 	private int fLastPosition = -1;
 
+	private int fInvalidPosition = -1;
+
 	/**
 	 * Construct special <i>Options</i> used in evaluation of function symbols (i.e. <code>Modulus-&gt;n</code> is an
 	 * option which could be used for an integer <code>n</code> in a function like
@@ -39,9 +41,32 @@ public class OptionArgs {
 	 *            the AST where the option could be defined starting at position <code>startIndex</code>
 	 * @param startIndex
 	 *            the index from which to look for options defined in <code>currentOptionsList</code>
+	 * @param engine
+	 *            the evaluation engine
 	 */
 	public OptionArgs(final ISymbol symbol, final IAST currentOptionsList, final int startIndex,
 			final EvalEngine engine) {
+		this(symbol, currentOptionsList, startIndex, engine, false);
+	}
+
+	/**
+	 * Construct special <i>Options</i> used in evaluation of function symbols (i.e. <code>Modulus-&gt;n</code> is an
+	 * option which could be used for an integer <code>n</code> in a function like
+	 * <code>Factor(polynomial, Modulus-&gt;2)</code>.
+	 * 
+	 * @param symbol
+	 *            the options symbol for determining &quot;default option values&quot;
+	 * @param currentOptionsList
+	 *            the AST where the option could be defined starting at position <code>startIndex</code>
+	 * @param startIndex
+	 *            the index from which to look for options defined in <code>currentOptionsList</code>
+	 * @param engine
+	 *            the evaluation engine
+	 * @param evaluate
+	 *            do an extra evaluation step for each potential option argument
+	 */
+	public OptionArgs(final ISymbol symbol, final IAST currentOptionsList, final int startIndex,
+			final EvalEngine engine, boolean evaluate) {
 		fEngine = engine;
 		// get the List of pre-defined options:
 		final IExpr temp = fEngine.evaluate(Options(symbol));
@@ -56,14 +81,26 @@ public class OptionArgs {
 			int size = currentOptionsList.size();
 			this.fCurrentOptionsList = F.ListAlloc(size);
 			for (int i = startIndex; i < size; i++) {
-				if (currentOptionsList.get(i).isListOfRules()) {
-					IAST listOfRules = (IAST) currentOptionsList.get(i);
+				IExpr arg = currentOptionsList.get(i);
+				arg = evaluate ? engine.evaluate(arg) : arg;
+				if (arg.isListOfRules()) {
+					IAST listOfRules = (IAST) arg;
 					this.fCurrentOptionsList.appendAll(listOfRules, 1, listOfRules.size());
+				} else if (arg.isRule()) {
+					this.fCurrentOptionsList.append(arg);
 				} else {
-					this.fCurrentOptionsList.append(currentOptionsList.get(i));
+					fInvalidPosition = i;
 				}
 			}
 		}
+	}
+
+	public boolean isInvalidPosition() {
+		return fInvalidPosition >= 0;
+	}
+
+	public int getInvalidPosition() {
+		return fInvalidPosition;
 	}
 
 	/**

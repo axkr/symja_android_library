@@ -3988,6 +3988,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDenominator() {
+		// github #151
+		check("N(Denominator(Pi/E))", //
+				"2.71828");
+
+		// test undefined option message in stderr:
+		check("Denominator(x, y)", //
+				"Denominator(x,y)");
+
 		check("Denominator(a/(b*c))", //
 				"b*c");
 		check("Denominator(a^2*b)", //
@@ -12242,28 +12250,51 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testNumerator() {
-		check("Numerator(a / b)", "a");
-		check("Numerator(a^2*b)", "a^2*b");
-		check("Numerator(a^2*b^-2)", "a^2");
-		check("Numerator(a^2*b^-a*c)", "a^2*c");
+		// github #151
+		check("N(Numerator(Cos(Pi)/Pi))", //
+				"-1.0");
 
-		check("Numerator(Csc(x))", "Csc(x)");
-		check("Numerator(Csc(x), Trig->True)", "1");
-		check("Numerator(Csc(x)^4)", "Csc(x)^4");
-		check("Numerator(Csc(x)^4, Trig->True)", "1");
-		check("Numerator(42*Csc(x))", "42*Csc(x)");
-		check("Numerator(42*Csc(x), Trig->True)", "42");
-		check("Numerator(42*Csc(x)^3)", "42*Csc(x)^3");
-		check("Numerator(42*Csc(x)^3, Trig->True)", "42");
-		check("Numerator(E^(-x)*x^(1/2))", "Sqrt(x)");
+		check("Numerator(a / b)", //
+				"a");
+		check("Numerator(a^2*b)", //
+				"a^2*b");
+		check("Numerator(a^2*b^-2)", //
+				"a^2");
+		check("Numerator(a^2*b^-a*c)", //
+				"a^2*c");
 
-		check("Numerator(Sec(x))", "Sec(x)");
-		check("Numerator(Sec(x), Trig->True)", "1");
-		check("Numerator(Tan(x))", "Tan(x)");
-		check("Numerator(Tan(x), Trig->True)", "Sin(x)");
+		check("Numerator(Csc(x))", //
+				"Csc(x)");
+		check("Numerator(Csc(x), Trig->True)", //
+				"1");
+		check("Numerator(Csc(x)^4)", //
+				"Csc(x)^4");
+		check("Numerator(Csc(x)^4, Trig->True)", //
+				"1");
+		check("Numerator(42*Csc(x))", //
+				"42*Csc(x)");
+		check("Numerator(42*Csc(x), Trig->True)", //
+				"42");
+		check("Numerator(42*Csc(x)^3)", //
+				"42*Csc(x)^3");
+		check("Numerator(42*Csc(x)^3, Trig->True)", //
+				"42");
+		check("Numerator(E^(-x)*x^(1/2))", //
+				"Sqrt(x)");
 
-		check("Numerator(2 / 3)", "2");
-		check("Numerator(a + b)", "a+b");
+		check("Numerator(Sec(x))", //
+				"Sec(x)");
+		check("Numerator(Sec(x), Trig->True)", //
+				"1");
+		check("Numerator(Tan(x))", //
+				"Tan(x)");
+		check("Numerator(Tan(x), Trig->True)", //
+				"Sin(x)");
+
+		check("Numerator(2 / 3)", //
+				"2");
+		check("Numerator(a + b)", //
+				"a+b");
 	}
 
 	public void testOddQ() {
