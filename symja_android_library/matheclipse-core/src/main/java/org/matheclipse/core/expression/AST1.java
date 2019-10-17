@@ -62,7 +62,7 @@ public class AST1 extends AST0 {
 	 * @param arg1
 	 *            the first argument of the function
 	 */
-	public AST1(IExpr head, IExpr arg1) {
+	/*package private */ AST1(IExpr head, IExpr arg1) {
 		super(head);
 		this.arg1 = arg1;
 	}

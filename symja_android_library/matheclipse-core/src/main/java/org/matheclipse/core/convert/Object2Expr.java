@@ -78,7 +78,7 @@ public class Object2Expr {
 			return F.complexNum(cmp.getReal(), cmp.getImaginary());
 		}
 		if (obj instanceof int[]) {
-			return AST.newInstance(F.List, (int[]) obj);
+			return F.ast(F.List, (int[]) obj);
 		}
 		if (obj instanceof double[]) {
 			return new ASTRealVector((double[]) obj, true);
@@ -97,7 +97,7 @@ public class Object2Expr {
 			// return list;
 		}
 		if (obj instanceof org.hipparchus.complex.Complex[]) {
-			return AST.newInstance(F.List, false, (org.hipparchus.complex.Complex[]) obj);
+			return F.ast(F.List, (org.hipparchus.complex.Complex[]) obj);
 		}
 		if (obj instanceof Object[]) {
 			final Object[] array = (Object[]) obj;
@@ -162,6 +162,6 @@ public class Object2Expr {
 
 	public static IAST convertComplex(boolean evalComplex, org.hipparchus.complex.Complex[] array)
 			throws ConversionException {
-		return AST.newInstance(F.List, evalComplex, array);
+		return F.ast(F.List, evalComplex, array);
 	}
 }

@@ -61,7 +61,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	/**
 	 * Constructs a new instance of list with capacity <code>10</code>.
 	 */
-	public HMArrayList() {
+	/*package protected */ HMArrayList() {
 		this(10);
 	}
 
@@ -72,7 +72,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	 * @param collection
 	 *            the collection of elements to add.
 	 */
-	public HMArrayList(Collection<? extends IExpr> collection) {
+	/*package protected */ HMArrayList(Collection<? extends IExpr> collection) {
 		firstIndex = hashValue = 0;
 		Object[] objects = collection.toArray();
 		int size = objects.length;
@@ -91,7 +91,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	 * @param arguments
 	 *            the argument expressions
 	 */
-	public HMArrayList(IExpr headExpr, IExpr... arguments) {
+	/*package protected */ HMArrayList(IExpr headExpr, IExpr... arguments) {
 		firstIndex = hashValue = 0;
 		lastIndex = arguments.length + 1;
 		switch (lastIndex) {

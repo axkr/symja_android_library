@@ -192,7 +192,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 		// IExpr[] result = new IExpr[2];
 		// result[0] = F.C0;
 		// result[1] = F.C1;
-		AST2 result = new AST2(F.List, F.C0, F.C1);
+		IASTMutable result = F.binaryAST2(F.List, F.C0, F.C1);
 		if (expr.equals(period)) {
 			return result;
 		}
@@ -245,7 +245,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 			}
 		}
 		if (k != null) {
-			AST2 result = new AST2(F.List, plusAST, F.C0);
+			IASTMutable result = F.binaryAST2(F.List, plusAST, F.C0);
 			IExpr m1 = F.Times(k.mod(F.C1D2), F.Pi);
 			IExpr m2 = F.Subtract.of(engine, F.Times(k, F.Pi), m1);
 			result.set(1, F.Subtract.of(plusAST, m2));

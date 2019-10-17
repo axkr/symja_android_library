@@ -69,6 +69,7 @@ import org.matheclipse.core.builtin.VectorAnalysisFunctions;
 import org.matheclipse.core.builtin.WXFFunctions;
 import org.matheclipse.core.builtin.WindowFunctions;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.convert.ConversionException;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -5288,6 +5289,18 @@ public class F {
 		return new AST(head, arr);
 	}
 
+	public static IASTAppendable ast(final ISymbol head, final int[] arr) {
+		return AST.newInstance(head, arr);
+	}
+
+	public static IASTAppendable ast(final ISymbol head, final org.hipparchus.complex.Complex[] arr) {
+		return AST.newInstance(head, false, arr);
+	}
+
+	public static IASTAppendable ast(final ISymbol head, boolean evalComplex, org.hipparchus.complex.Complex[] arr) {
+		return AST.newInstance(head, evalComplex, arr);
+	}
+
 	/**
 	 * <pre>
 	 * AtomQ(x)
@@ -9609,7 +9622,7 @@ public class F {
 	public static IAST ToExpression(final IExpr a0) {
 		return new AST1(ToExpression, a0);
 	}
-	
+
 	public static IAST Together(final IExpr a0) {
 		return new AST1(Together, a0);
 	}

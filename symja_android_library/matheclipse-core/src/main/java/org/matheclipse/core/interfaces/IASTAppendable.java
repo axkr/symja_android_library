@@ -86,9 +86,9 @@ public interface IASTAppendable extends IASTMutable {
 	 *
 	 * @return a {@code Collector} that appends the input expressions into a {@code AST}, in encounter order.
 	 */
-	public static Collector<IExpr, ?, AST> toAST(final IExpr head, final int initialCapacity) {
-		final Supplier<AST> supplier = () -> (AST) F.ast(head, initialCapacity, false);
-		return new CollectorImpl<IExpr, AST, AST>(supplier, AST::append, (r1, r2) -> {
+	public static Collector<IExpr, ?, IASTAppendable> toAST(final IExpr head, final int initialCapacity) {
+		final Supplier<IASTAppendable> supplier = () -> (IASTAppendable) F.ast(head, initialCapacity, false);
+		return new CollectorImpl<IExpr, IASTAppendable, IASTAppendable>(supplier, IASTAppendable::append, (r1, r2) -> {
 			r1.append(r2);
 			return r1;
 		});
@@ -99,7 +99,7 @@ public interface IASTAppendable extends IASTMutable {
 	 *
 	 * @return a {@code Collector} that appends the input expressions into a {@code AST}, in encounter order.
 	 */
-	public static Collector<IExpr, ?, AST> toAST(final IExpr head) {
+	public static Collector<IExpr, ?, IASTAppendable> toAST(final IExpr head) {
 		return toAST(head, 5);
 	}
 
@@ -108,8 +108,8 @@ public interface IASTAppendable extends IASTMutable {
 	 *
 	 * @return a {@code Collector} that appends the input expressions into the <code>appendable</code>
 	 */
-	public static Collector<IExpr, ?, AST> toAST(final IASTAppendable appendable) {
-		return new CollectorImpl<IExpr, AST, AST>(() -> (AST) appendable.copyAppendable(), AST::append, (r1, r2) -> {
+	public static Collector<IExpr, ?, IASTAppendable> toAST(final IASTAppendable appendable) {
+		return new CollectorImpl<IExpr, IASTAppendable, IASTAppendable>(() -> (IASTAppendable) appendable.copyAppendable(), IASTAppendable::append, (r1, r2) -> {
 			r1.append(r2);
 			return r1;
 		});

@@ -323,7 +323,7 @@ public class AST extends HMArrayList implements Externalizable {
 		super(0);
 	}
 
-	public AST(IExpr head, IExpr... es) {
+	/*package private */ AST(IExpr head, IExpr... es) {
 		super(head, es);
 	}
 
@@ -332,7 +332,7 @@ public class AST extends HMArrayList implements Externalizable {
 	 * 
 	 * @param es
 	 */
-	AST(IExpr[] es) {
+	/*package private */ AST(IExpr[] es) {
 		super(es);
 	}
 

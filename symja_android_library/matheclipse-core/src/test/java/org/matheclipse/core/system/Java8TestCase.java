@@ -12,7 +12,6 @@ import java.util.Comparator;
 import java.util.IntSummaryStatistics;
 import java.util.stream.Collectors;
 
-import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -147,7 +146,7 @@ public class Java8TestCase extends AbstractTestCase {
 		prototype.append(F.C0);
 
 		// append numbers grouped by prime to the prototype
-		java.util.Map<Boolean, AST> exprByPrime = ast.stream().collect(Collectors.groupingBy(//
+		java.util.Map<Boolean, IASTAppendable> exprByPrime = ast.stream().collect(Collectors.groupingBy(//
 				F.PrimeQ::ofQ, //
 				IASTAppendable.toAST(prototype)));
 		assertEquals("{false={0,0,0,10,12,14,15,16,18}, true={0,0,0,11,13,17,19}}", exprByPrime.toString());
@@ -171,22 +170,22 @@ public class Java8TestCase extends AbstractTestCase {
 	public static void testParallel() {
 		// simple example - real word example needs more preparing
 		IAST range = (IAST) F.Range.of(1000);
-		
+
 		System.out.println("Normal...");
 		long start = System.currentTimeMillis();
-		range.stream().forEach(x->System.out.print(x.toString()+","));
+		range.stream().forEach(x -> System.out.print(x.toString() + ","));
 		long end = System.currentTimeMillis();
 		System.out.println();
 		System.out.println("Time: " + (end - start));
 
 		System.out.println("Parallel...");
- 		IAST range2 = (IAST) F.Range.of(1000);
+		IAST range2 = (IAST) F.Range.of(1000);
 		long start2 = System.currentTimeMillis();
-		range2.stream().parallel().forEach(x->System.out.print(x.toString()+","));
+		range2.stream().parallel().forEach(x -> System.out.print(x.toString() + ","));
 		long end2 = System.currentTimeMillis();
 		System.out.println();
 		System.out.println("Time: " + (end2 - start2));
 
 	}
-	
+
 }

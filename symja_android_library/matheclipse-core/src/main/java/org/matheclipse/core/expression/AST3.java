@@ -65,7 +65,7 @@ public final class AST3 extends AST2 {
 	 * @param arg3
 	 *            the thirs argument of the function
 	 */
-	public AST3(IExpr head, IExpr arg1, IExpr arg2, IExpr arg3) {
+	/* package private */ AST3(IExpr head, IExpr arg1, IExpr arg2, IExpr arg3) {
 		super(head, arg1, arg2);
 		this.arg3 = arg3;
 	}
@@ -108,11 +108,11 @@ public final class AST3 extends AST2 {
 	 */
 	@Override
 	public IAST clone() {
-		AST3 result=(AST3)super.clone();
-		result.arg0=arg0;
-		result.arg1=arg1;
-		result.arg2=arg2;
-		result.arg3=arg3;
+		AST3 result = (AST3) super.clone();
+		result.arg0 = arg0;
+		result.arg1 = arg1;
+		result.arg2 = arg2;
+		result.arg3 = arg3;
 		return result;
 	}
 
@@ -389,11 +389,10 @@ public final class AST3 extends AST2 {
 			}
 		}
 	}
-	
-	
+
 	/** {@inheritDoc} */
 	@Override
-	public   int indexOf(Predicate<? super IExpr> predicate) {
+	public int indexOf(Predicate<? super IExpr> predicate) {
 		if (predicate.test(arg1)) {
 			return 1;
 		}
@@ -408,11 +407,11 @@ public final class AST3 extends AST2 {
 
 	/** {@inheritDoc} */
 	@Override
-	public   IExpr findFirst(Function<IExpr, IExpr> function) {
+	public IExpr findFirst(Function<IExpr, IExpr> function) {
 		IExpr temp = function.apply(arg1);
 		if (temp.isPresent()) {
 			return temp;
-		} 
+		}
 		temp = function.apply(arg2);
 		if (temp.isPresent()) {
 			return temp;
@@ -561,7 +560,7 @@ public final class AST3 extends AST2 {
 	 */
 	@Override
 	public IExpr[] toArray() {
-		return new IExpr[] { arg0, arg1, arg2, arg3 }; 
+		return new IExpr[] { arg0, arg1, arg2, arg3 };
 	}
 
 }
