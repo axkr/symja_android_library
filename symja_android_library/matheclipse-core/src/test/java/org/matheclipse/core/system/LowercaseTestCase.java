@@ -7473,6 +7473,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFullSimplify() {
+		check("FullSimplify(Sqrt(2) + Sqrt(3) - Sqrt(5 + 2*Sqrt(6)))", //
+				"0");
 		check("FullSimplify(Cos(n*ArcCos(x)) == ChebyshevT(n, x))", //
 				"True");
 
@@ -7579,6 +7581,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFunctionExpand() {
+		check("FunctionExpand(Sqrt(5/6 + 2*Sqrt(1/6)))", //
+				"1/Sqrt(2)+1/Sqrt(3)");
+		check("FunctionExpand(Sqrt(3+2*Sqrt(2)))", //
+				"1+Sqrt(2)");
+		check("FunctionExpand(Sqrt(5+2*Sqrt(6)))", //
+				"Sqrt(2)+Sqrt(3)");
+
 		check("FunctionExpand(Degree)", //
 				"Pi/180");
 		check("FunctionExpand(GoldenRatio)", //
@@ -7687,6 +7696,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGamma() {
+
+		check("Gamma(2.3 + I)", //
+				"0.719141+I*0.540614");
+		check("Gamma(2.20000000000000000000000000000000000000000)", //
+				"1.101802490879712732769141986222996480824186");
 		check("N(Gamma(100.000000000000000000000000000+374.000000000000000000000000000*I), 30)", //
 				"4.74294943677064514689542753376*10^1+I*(-3.27488916473624576880974867017*10^1)");
 		check("Gamma(1/2, a*x)", //
@@ -13448,6 +13462,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPochhammer() {
+		check("Pochhammer(m, n) // FunctionExpand", //
+				"Gamma(m+n)/Gamma(m)");
+		check("Pochhammer(2.4, 8.5)", //
+				"2.31022*10^6");
+		check("Pochhammer(1.011111111111000000000000000, 8)", //
+				"4.1552275849087711206044715725*10^4");
+
 		// http://oeis.org/A054654
 		check("crow(n_) := Reverse( CoefficientList( (-1)^n*Pochhammer(-x, n), x) ); Flatten( Table(crow(n), {n, 0, 8}))", //
 				"{1,1,0,1,-1,0,1,-3,2,0,1,-6,11,-6,0,1,-10,35,-50,24,0,1,-15,85,-225,274,-120,0,1,\n"

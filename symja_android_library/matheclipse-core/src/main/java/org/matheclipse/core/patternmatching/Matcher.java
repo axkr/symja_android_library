@@ -11,15 +11,9 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
-import org.matheclipse.core.interfaces.IComplex;
-import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IFraction;
-import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternSequence;
-import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.AbstractVisitor;
 
@@ -30,14 +24,22 @@ import org.matheclipse.core.visit.AbstractVisitor;
 public class Matcher implements Function<IExpr, IExpr> {
 	private static class MatcherVisitor extends AbstractVisitor {
 		final Matcher matcher;
+		final Function<IAST, IExpr> function;
 
-		public MatcherVisitor(Matcher matcher) {
+		public MatcherVisitor(Matcher matcher, Function<IAST, IExpr> function) {
 			this.matcher = matcher;
+			this.function = function;
 		}
 
 		@Override
 		public IExpr visit(IASTMutable ast) {
 			IAST list = ast;
+			if (function != null) {
+				IExpr temp = function.apply(list);
+				if (temp.isPresent()) {
+					return temp;
+				}
+			}
 			boolean evaled = false;
 			IExpr temp = matcher.apply(list);
 			if (temp.isPresent()) {
@@ -282,7 +284,20 @@ public class Matcher implements Function<IExpr, IExpr> {
 	 * @return <code>F.NIL</code> if no rule of the rule set matched an expression.
 	 */
 	public IExpr replaceAll(IExpr expression) {
-		return expression.accept(new MatcherVisitor(this));
+		return replaceAll(expression, null);
+	}
+
+	/**
+	 * Replace all (sub-) expressions with the given rule set. If no substitution matches, the method returns the given
+	 * <code>expression</code>.
+	 * 
+	 * @param expression
+	 * @param function
+	 *            if not <code>null</code> evaluate before the rules apply
+	 * @return <code>F.NIL</code> if no rule of the rule set matched an expression.
+	 */
+	public IExpr replaceAll(IExpr expression, Function<IAST, IExpr> function) {
+		return expression.accept(new MatcherVisitor(this, function));
 	}
 
 	// public static IExpr evalTest(PatternMap pm) {

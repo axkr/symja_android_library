@@ -32,8 +32,10 @@ import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.Matcher;
+import org.matheclipse.core.polynomials.QuarticSolver;
 
 /**
  * <pre>
@@ -181,7 +183,10 @@ public class FunctionExpand extends AbstractEvaluator {
 							F.Power(F.Times(F.C2, F.Gamma(F.Plus(F.C1, x, F.Negate(y)))), F.CN1),
 							F.Gamma(F.Plus(F.C1, x, y)), F.LegendreP(x, F.Negate(y), z)),
 							F.Times(F.C1D2, F.Pi, F.Cot(F.Times(F.Pi, y)), F.LegendreP(x, y, z)))); // $$);
-
+			// Pochhammer
+			MATCHER.caseOf(F.Pochhammer(x_, y_), //
+					// [$ Gamma(x+y)/Gamma(x) $]
+					F.Times(F.Power(F.Gamma(x), F.CN1), F.Gamma(F.Plus(x, y)))); // $$);
 			// PolyGamma
 			MATCHER.caseOf(F.PolyGamma(F.CN2, F.C1), //
 					// [$ (1/2)*(Log(2)+Log(Pi)) $]
@@ -207,7 +212,7 @@ public class FunctionExpand extends AbstractEvaluator {
 			MATCHER.caseOf(F.GoldenRatio, //
 					// [$ 1/2*(1+Sqrt(5)) $]
 					F.Times(F.C1D2, F.Plus(F.C1, F.CSqrt5))); // $$);
-			
+
 			// Power
 			MATCHER.caseOf(F.Power(F.E, F.ArcSinh(x_)), //
 					// [$ (x+Sqrt(1+x^2)) $]
@@ -264,6 +269,46 @@ public class FunctionExpand extends AbstractEvaluator {
 	public FunctionExpand() {
 	}
 
+	private static IExpr beforeRules(IAST ast) {
+		if (ast.isSqrt() && ast.base().isAST(F.Plus, 3)) {
+			IAST plus = (IAST) ast.base();
+			final IExpr arg1 = plus.arg1();
+			final IExpr arg2 = plus.arg2();
+			if (arg1.isRational()) {
+				return nestedSquareRoots((IRational) arg1, arg2);
+			}
+		}
+		return F.NIL;
+	}
+
+	/**
+	 * 
+	 * See: <a href="// https://en.wikipedia.org/wiki/Nested_radical#Two_nested_square_roots">Wikipedia - Nested radical
+	 * - Two nested square roots</a>
+	 * 
+	 * @param arg1
+	 * @param arg2
+	 * @return
+	 */
+	private static IExpr nestedSquareRoots(final IRational arg1, final IExpr arg2) {
+		// (arg2/2) ^ 2
+		IExpr squared = F.eval(F.Sqr(F.Divide(arg2, F.C2)));
+		if (squared.isRealResult()) {
+			IAST list = QuarticSolver.quadraticSolve(F.C1, arg1.negate(), squared);
+			if (list.isAST2()) {
+				IExpr a = F.eval(list.arg1());
+				if (a.isNumber()) {
+					IExpr b = F.eval(list.arg2());
+					if (b.isNumber()) {
+						// System.out.println(a.toString() + ", " + b.toString());
+						return F.Plus(F.Sqrt(a), F.Sqrt(b));
+					}
+				}
+			}
+		}
+		return F.NIL;
+	}
+
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		IExpr arg1 = ast.arg1();
@@ -288,7 +333,7 @@ public class FunctionExpand extends AbstractEvaluator {
 				if (assumptions != null) {
 					try {
 						engine.setAssumptions(assumptions);
-						return MATCHER.replaceAll(arg1).orElse(arg1);
+						return MATCHER.replaceAll(arg1, FunctionExpand::beforeRules).orElse(arg1);
 					} finally {
 						engine.setAssumptions(oldAssumptions);
 					}
@@ -296,7 +341,7 @@ public class FunctionExpand extends AbstractEvaluator {
 			}
 
 		}
-		return MATCHER.replaceAll(arg1).orElse(arg1);
+		return MATCHER.replaceAll(arg1, FunctionExpand::beforeRules).orElse(arg1);
 	}
 
 	public int[] expectedArgSize() {
