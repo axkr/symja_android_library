@@ -4,7 +4,10 @@
 FunctionExpand(expression) 
 ```
 
-> expands the special function `expression`.
+> expands the special function `expression`. `FunctionExpand` expands simple nested radicals.
+
+See
+* [Wikipedia - Nested radical](https://en.wikipedia.org/wiki/Nested_radical) 
 
 ### Examples
 
