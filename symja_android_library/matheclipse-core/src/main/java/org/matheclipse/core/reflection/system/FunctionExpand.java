@@ -291,16 +291,16 @@ public class FunctionExpand extends AbstractEvaluator {
 	 * @return
 	 */
 	private static IExpr nestedSquareRoots(final IRational arg1, final IExpr arg2) {
+		final EvalEngine engine = EvalEngine.get();
 		// (arg2/2) ^ 2
-		IExpr squared = F.eval(F.Sqr(F.Divide(arg2, F.C2)));
+		IExpr squared = engine.evaluate(F.Sqr(F.Divide(arg2, F.C2)));
 		if (squared.isRealResult()) {
 			IAST list = QuarticSolver.quadraticSolve(F.C1, arg1.negate(), squared);
 			if (list.isAST2()) {
-				IExpr a = F.eval(list.arg1());
-				if (a.isNumber()) {
-					IExpr b = F.eval(list.arg2());
-					if (b.isNumber()) {
-						// System.out.println(a.toString() + ", " + b.toString());
+				IExpr a = engine.evaluate(list.arg1());
+				if (a.isRational()) {
+					IExpr b = engine.evaluate(list.arg2());
+					if (b.isRational()) {
 						return F.Plus(F.Sqrt(a), F.Sqrt(b));
 					}
 				}
