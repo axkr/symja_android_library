@@ -18,6 +18,9 @@ Product(expr, {i, imin, imax}, {j, jmin, jmax}, ...)
 
 > evaluates `expr` as a multiple sum, with `{i, ...}, {j, ...}, ...` being in outermost-to-innermost order.
 		
+See
+* [Wikipedia - Multiplication - Capital_pi_notation](https://en.wikipedia.org/wiki/Multiplication#Capital_pi_notation)
+
 ### Examples
 
 ```
