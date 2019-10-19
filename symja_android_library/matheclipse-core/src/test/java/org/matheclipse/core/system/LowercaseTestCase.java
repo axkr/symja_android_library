@@ -18489,6 +18489,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSum() {
+		check("Sum((b+i*d)*a^i, {i,0,n})", //
+				"((-1+a^(1+n))*b)/(-1+a)+(d*(a+a^(1+n)*(-1-n+a*n)))/(1-a)^2");
+		
+		check("Sum(i*a^i, {i,0,n})", //
+				"(a+a^(1+n)*(-1-n+a*n))/(1-a)^2");
+		check("Sum(i*a^i, {i,1,n})", //
+				"(a+a^(1+n)*(-1-n+a*n))/(1-a)^2");
+		
+		check("Sum(a^i, {i,0,n})", //
+				"(-1+a^(1+n))/(-1+a)");
+		check("Sum((3/7)^i, {i,1,n})", //
+				"-1+7/4*(1-(3/7)^(1+n))");
+		check("Sum((3/7)^i, {i,0,n})", //
+				"7/4*(1-(3/7)^(1+n))");
 
 		// prints RecursionLimitExeceeded
 		check("Sum(f(x), {x, x, x+1})", //

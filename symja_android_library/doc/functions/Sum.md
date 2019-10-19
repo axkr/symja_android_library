@@ -18,6 +18,10 @@ Sum(expr, {i, imin, imax}, {j, jmin, jmax}, ...)
 
 > evaluates `expr` as a multiple sum, with `{i, ...}, {j, ...}, ...` being in outermost-to-innermost order.
 		
+		
+See
+* [Wikipedia - Summation](https://en.wikipedia.org/wiki/Summation)
+
 ### Examples
 
 ```

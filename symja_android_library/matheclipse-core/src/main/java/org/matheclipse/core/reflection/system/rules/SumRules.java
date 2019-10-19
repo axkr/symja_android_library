@@ -9,9 +9,6 @@ import org.matheclipse.core.interfaces.IAST;
  */
 public interface SumRules {
   final public static IAST RULES1 = List(
-    // Sum(c_^i_,{i_Symbol,1,n_Symbol}):=(c*(-1+c^n))/(-1+c)/;FreeQ(c,i)&&FreeQ(n,i)
-    ISetDelayed(Sum(Power(c_,i_),List(i_Symbol,C1,n_Symbol)),
-      Condition(Times(c,Plus(CN1,Power(c,n)),Power(Plus(CN1,c),CN1)),And(FreeQ(c,i),FreeQ(n,i)))),
     // Sum(c_^i_,{i_Symbol,1,Infinity}):=-c/(-1+c)/;FreeQ(c,i)&&(!NumberQ(c)||c>-1&&c<1)
     ISetDelayed(Sum(Power(c_,i_),List(i_Symbol,C1,oo)),
       Condition(Times(CN1,c,Power(Plus(CN1,c),CN1)),And(FreeQ(c,i),Or(Not(NumberQ(c)),And(Greater(c,CN1),Less(c,C1)))))),
@@ -32,6 +29,12 @@ public interface SumRules {
       Condition(Plus(Times(Plus(Times(Floor(Log(a,n)),Power(a,Plus(Floor(Log(a,n)),C1))),Times(CN1,Plus(Floor(Log(a,n)),C1),Power(a,Floor(Log(a,n)))),C1),Power(Plus(CN1,a),CN1)),Times(Plus(Negate(Power(a,Floor(Log(a,n)))),n),Ceiling(Log(a,n)))),And(FreeQ(a,i),FreeQ(n,i))))
   );
   final public static IAST RULES2 = List(
+    // Sum(c_^i_,{i_Symbol,0,n_Symbol}):=(-1+c^(1+n))/(-1+c)/;FreeQ(c,i)&&FreeQ(n,i)
+    ISetDelayed(Sum(Power(c_,i_),List(i_Symbol,C0,n_Symbol)),
+      Condition(Times(Power(Plus(CN1,c),CN1),Plus(CN1,Power(c,Plus(C1,n)))),And(FreeQ(c,i),FreeQ(n,i)))),
+    // Sum(i_*c_^i_,{i_Symbol,0,n_Symbol}):=(c+c^(1+n)*(-1-n+c*n))/(1-c)^2/;FreeQ(c,i)&&FreeQ(n,i)
+    ISetDelayed(Sum(Times(i_,Power(c_,i_)),List(i_Symbol,C0,n_Symbol)),
+      Condition(Times(Power(Subtract(C1,c),CN2),Plus(c,Times(Power(c,Plus(C1,n)),Plus(CN1,Negate(n),Times(c,n))))),And(FreeQ(c,i),FreeQ(n,i)))),
     // Sum(Binomial(n_,i_),{i_Symbol,0,n_Symbol}):=2^n/;FreeQ(n,i)
     ISetDelayed(Sum(Binomial(n_,i_),List(i_Symbol,C0,n_Symbol)),
       Condition(Power(C2,n),FreeQ(n,i))),
