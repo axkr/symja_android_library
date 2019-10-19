@@ -1174,6 +1174,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBellB() {
+		check("BellB(1/2,z)", //
+				"BellB(1/2,z)");
+		
 		check("BellB(10,x)", //
 				"x+511*x^2+9330*x^3+34105*x^4+42525*x^5+22827*x^6+5880*x^7+750*x^8+45*x^9+x^10");
 		check("BellB(0,z)", //

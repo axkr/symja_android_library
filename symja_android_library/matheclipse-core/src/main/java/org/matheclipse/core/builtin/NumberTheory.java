@@ -156,39 +156,43 @@ public final class NumberTheory {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			try {
 				IExpr arg1 = ast.arg1();
+				int n = arg1.toIntDefault(Integer.MIN_VALUE);
+				if (n < 0) {
+					if (arg1.isNumber()) {
+						return IOFunctions.printMessage(F.BellB, "intnm", F.List(ast, F.C1), engine);
+					}
+				}
 				if (ast.isAST2()) {
 					IExpr z = ast.arg2();
-					if (arg1.isZero()) {
+					if (n == 0) {
 						return F.C1;
 					}
-					if (arg1.isOne()) {
+					if (n == 1) {
 						return z;
-					}
-					if (z.isZero() && arg1.isPositive() && arg1.isIntegerResult()) {
-						return F.C0;
 					}
 					if (z.isOne()) {
 						return F.BellB(arg1);
 					}
-				}
-
-				int n = arg1.toIntDefault(Integer.MIN_VALUE);
-				if (n >= 0) {
-					if (ast.isAST2()) {
-						IExpr z = ast.arg2();
+					if (n > 1) {
+						if (z.isZero() && n > 0) {
+							return F.C0;
+						}
 						if (!z.isOne()) {
 							// bell polynomials: Sum(StirlingS2(n, k)* z^k, {k, 0, n})
 							return bellBPolynomial(n, z);
 						}
 					}
-
+				} else {
 					// bell numbers start here
-					if (arg1.isZero()) {
+					if (n == 0) {
 						return F.C1;
 					}
-					IInteger bellB = bellNumber(n);
-					return bellB;
+					if (n > 0) {
+						IInteger bellB = bellNumber(n);
+						return bellB;
+					}
 				}
+
 			} catch (RuntimeException rex) {
 				if (Config.SHOW_STACKTRACE) {
 					rex.printStackTrace();

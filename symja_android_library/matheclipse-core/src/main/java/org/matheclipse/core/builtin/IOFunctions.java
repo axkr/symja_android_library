@@ -654,6 +654,7 @@ public class IOFunctions {
 			"int", "Integer expected.", //
 			"intp", "Positive integer expected.", //
 			"intnn", "Non-negative integer expected.", //
+			"intnm", "Non-negative machine-sized integer expected at position `2` in `1`.", //
 			"intpm", "Positive integer (less equal 2147483647) expected at position `2` in `1`.", //
 			"iterb", "Iterator does not have appropriate bounds.", //
 			"ivar", "`1` is not a valid variable.", //
