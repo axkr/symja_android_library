@@ -1166,7 +1166,7 @@ public final class ListFunctions {
 		public static IAST cases(final IAST ast, final IExpr pattern, @Nonnull EvalEngine engine) {
 			if (pattern.isRuleAST()) {
 				Function<IExpr, IExpr> function = Functors.rules((IAST) pattern, engine);
-				IAST[] results = ast.filter(function);
+				IAST[] results = ast.filterNIL(function);
 				return results[0];
 			}
 			final IPatternMatcher matcher = engine.evalPatternMatcher(pattern);

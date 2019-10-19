@@ -539,14 +539,16 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 
 	/**
 	 * Select all elements by applying the <code>function</code> to each argument in this <code>AST</code> and append
-	 * the result elements for which the function returns non-null elements to the <code>0th element</code> of the
-	 * result array, or otherwise append it to the <code>1st element</code> of the result array.
+	 * the result elements for which the function returns non <code>F.NIL</code> elements to the
+	 * <code>0th element</code> of the result array, or otherwise append it to the <code>1st element</code> of the
+	 * result array.
 	 * 
 	 * @param function
 	 *            the function which filters each argument in this AST by returning a <code>result != F.NIL</code> .
 	 * @return the resulting ASTs in the 0-th and 1-st element of the array
+	 * @see F#NIL
 	 */
-	public IASTAppendable[] filter(final Function<IExpr, IExpr> function);
+	public IASTAppendable[] filterNIL(final Function<IExpr, IExpr> function);
 
 	/**
 	 * Select all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and append

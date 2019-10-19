@@ -594,7 +594,7 @@ public class SeriesFunctions {
 			}
 			IExpr[] parts = Algebra.fractionalPartsTimesPower(timesAST, false, false, true, true, true, true);
 			if (parts == null) {
-				IAST[] timesPolyFiltered = timesAST.filter((Predicate<IExpr>) x -> x.isPolynomial(data.symbol));
+				IAST[] timesPolyFiltered = timesAST.filter(x -> x.isPolynomial(data.symbol));
 				if (timesPolyFiltered[0].size() > 1 && timesPolyFiltered[1].size() > 1) {
 					parts = new IExpr[] { timesPolyFiltered[1].oneIdentity1(),
 							F.Power(timesPolyFiltered[0].oneIdentity1(), F.CN1) };

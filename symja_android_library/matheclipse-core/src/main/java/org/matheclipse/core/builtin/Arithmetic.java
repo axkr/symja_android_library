@@ -297,7 +297,7 @@ public final class Arithmetic {
 			}
 
 			if (arg1.isTimes()) {
-				IASTAppendable[] result = ((IAST) arg1).filter(new AbsTimesFunction());
+				IASTAppendable[] result = ((IAST) arg1).filterNIL(new AbsTimesFunction());
 				if (result[0].size() > 1) {
 					if (result[1].size() > 1) {
 						result[0].append(F.Abs(result[1]));
@@ -4268,7 +4268,7 @@ public final class Arithmetic {
 					return F.Sign(directedInfininty.arg1());
 				}
 			} else if (arg1.isTimes()) {
-				IASTAppendable[] res = ((IAST) arg1).filter(new SignTimesFunction());
+				IASTAppendable[] res = ((IAST) arg1).filterNIL(new SignTimesFunction());
 				if (res[0].size() > 1) {
 					if (res[1].size() > 1) {
 						res[0].append(F.Sign(res[1]));

@@ -1283,12 +1283,12 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IASTAppendable[] filter(final Function<IExpr, IExpr> function) {
+	public final IASTAppendable[] filterNIL(final Function<IExpr, IExpr> function) {
 		IASTAppendable[] result = new IASTAppendable[2];
 		result[0] = copyHead();
 		result[1] = copyHead();
-		filterFunction(result[0], result[1], function);
-		return result;
+		 filterFunction(result[0], result[1], function); 
+		return result; 
 	}
 
 	/** {@inheritDoc} */
@@ -1368,14 +1368,14 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/**
 	 * Select all elements by applying the <code>function</code> to each argument in this <code>AST</code> and append
-	 * the result elements for which the <code>function</code> returns non-null elements to the <code>filterAST</code>,
+	 * the result elements for which the <code>function</code> returns non <code>F.NIL</code> elements to the <code>filterAST</code>,
 	 * or otherwise append the argument to the <code>restAST</code>.
 	 * 
 	 * @param filterAST
-	 *            the non-null elements which were returned by the <code>function#apply()</code> method
+	 *            the non <code>F.NIL</code> elements which were returned by the <code>function#apply()</code> method
 	 * @param restAST
 	 *            the arguments in this <code>AST</code> for which the <code>function#apply()</code> method returned
-	 *            <code>null</code>
+	 *            <code>F.NIL</code>
 	 * @param function
 	 *            the function which filters each argument by returning a value which unequals <code>F.NIL</code>
 	 * @return the given <code>filterAST</code>

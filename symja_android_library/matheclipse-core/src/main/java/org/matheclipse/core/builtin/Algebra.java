@@ -445,13 +445,7 @@ public class Algebra {
 			} else if (splitPowerPlusExponents && exponent.isPlus()) {
 				// base ^ (a+b+c...)
 				IAST plusAST = (IAST) exponent;
-				IAST[] result = plusAST.filter((Function<IExpr, IExpr>) x -> {
-					IExpr positiveExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(x);
-					if (positiveExpr.isPresent()) {
-						return positiveExpr;
-					}
-					return F.NIL;
-				});
+				IAST[] result = plusAST.filterNIL(AbstractFunctionEvaluator::getNormalizedNegativeExpression);
 				parts[1] = base.power(result[0].oneIdentity0());
 				parts[0] = base.power(result[1].oneIdentity0());
 				return parts;

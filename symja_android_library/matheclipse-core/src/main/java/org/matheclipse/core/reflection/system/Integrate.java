@@ -159,8 +159,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 			org.matheclipse.core.integrate.rubi.UtilityFunctions28.initialize();
 			org.matheclipse.core.integrate.rubi.UtilityFunctions29.initialize();
 			org.matheclipse.core.integrate.rubi.UtilityFunctions30.initialize();
-			org.matheclipse.core.integrate.rubi.UtilityFunctions31.initialize(); 
-			
+			org.matheclipse.core.integrate.rubi.UtilityFunctions31.initialize();
+
 			// org.matheclipse.core.integrate.rubi.UtilityFunctions.init();
 		}
 
@@ -366,7 +366,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 			org.matheclipse.core.integrate.rubi.IntRules197.initialize();
 			org.matheclipse.core.integrate.rubi.IntRules198.initialize();
 			org.matheclipse.core.integrate.rubi.IntRules199.initialize();
-			
+
 			org.matheclipse.core.integrate.rubi.IntRules200.initialize();
 			org.matheclipse.core.integrate.rubi.IntRules201.initialize();
 			org.matheclipse.core.integrate.rubi.IntRules202.initialize();
@@ -572,7 +572,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 				}
 
 				if (arg1.isTimes()) {
-					IAST[] temp = ((IAST) arg1).filter((Predicate<IExpr>) arg -> arg.isFree(x));
+					IAST[] temp = ((IAST) arg1).filter(arg -> arg.isFree(x));
 					IExpr free = temp[0].oneIdentity1();
 					if (!free.isOne()) {
 						IExpr rest = temp[1].oneIdentity1();
@@ -668,7 +668,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 				}
 			}
 		}
-		if (arg1.isTrigFunction()||arg1.isHyperbolicFunction()) {
+		if (arg1.isTrigFunction() || arg1.isHyperbolicFunction()) {
 			// https://github.com/RuleBasedIntegration/Rubi/issues/12
 			IExpr temp = engine.evaluate(F.TrigToExp(arg1));
 			return engine.evaluate(F.Integrate(temp, x));
