@@ -4380,6 +4380,9 @@ public final class NumberTheory {
 	 * @return
 	 */
 	public static IInteger risingFactorial(int n, int k) {
+		if (k == 0) {
+			return F.C1;
+		}
 		IInteger result = AbstractIntegerSym.valueOf(n);
 		for (int i = n + 1; i < n + k; i++) {
 			result = result.multiply(i);

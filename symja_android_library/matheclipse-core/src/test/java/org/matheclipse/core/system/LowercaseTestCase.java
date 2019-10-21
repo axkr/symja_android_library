@@ -1211,11 +1211,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "");
 		check("BellY(2,1,{1/2,0})", //
 				"0");
-
+		check("BellY(5, 2, {1})", //
+				"0");
+		check("BellY(5, 2, {1,2})", //
+				"0");
+		check("BellY(5, 2, {1,2,3})", //
+				"60");
+		check("BellY(5, 8, {1,2,3})", //
+				"0");
+		
 		// https://en.wikipedia.org/wiki/Bell_polynomials
 		check("BellY(6, 2, {x1, x2, x3, x4, x5})", //
 				"10*x3^2+15*x2*x4+6*x1*x5");
-
+		check("BellY(6, 3, {x1, x2, x3, x4})", //
+				"15*x2^3+60*x1*x2*x3+15*x1^2*x4");
+		
 		check("BellY(4, 2, {x1, x2, x3})", //
 				"3*x2^2+4*x1*x3");
 		check("With({n = 7, k = 2}, BellY(n, k, Array(x, n)))", //
