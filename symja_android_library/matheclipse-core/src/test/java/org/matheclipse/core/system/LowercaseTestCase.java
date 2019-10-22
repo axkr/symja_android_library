@@ -5858,6 +5858,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFactor() {
+		check("Factor(x^(-6)+1)", //
+				"(1+x^2)*(1-x^2+x^4))/x^6");
 		System.out.println();
 		System.out.print('.');
 		check("Factor(x+2*Sqrt(x)+1)", //

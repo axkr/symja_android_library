@@ -7,6 +7,7 @@
 > find a shortest path in the `graph` from `source` to `destination`.
  
 See
+* [Wikipedia - Pathfinding](https://en.wikipedia.org/wiki/Pathfinding)
 * [Wikipedia - Shortest path problem](https://en.wikipedia.org/wiki/Shortest_path_problem)
 
 ### Related terms 

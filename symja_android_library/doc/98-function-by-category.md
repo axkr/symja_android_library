@@ -1,11 +1,13 @@
 - [Combinatorial](#combinatorial)
 - [Comparison](#comparison)
 - [Control flow statements](#control-flow-statements)
+- [Formatting output](#formatting-output)
 - [Graph theory](#graph-theory)
 - [Linear algebra](#linear-algebra)
 - [Logic](#logic)
 - [Number theory](#number-theory)
 - [Pattern matching](#pattern-matching)
+- [Plot functions](#plot-functions)
 - [Solvers](#solvers)
 
 ## Combinatorial
@@ -77,6 +79,14 @@
 * [Switch](functions/Switch.md)
 * [Which](functions/Which.md)
 * [While](functions/While.md)
+
+## Formatting output
+
+* [HornerForm](functions/HornerForm.md)
+* [MatrixForm](functions/GraphCenter.md)
+* [MathMLForm](functions/MathMLForm.md) 
+* [TeXForm](functions/TeXForm.md)
+* [TreeForm](functions/TreeForm.md)
 
 ## Graph theory
 
@@ -209,6 +219,16 @@
 * [RuleDelayed](functions/RuleDelayed.md)
 * [Set](functions/Set.md)
 * [SetDelayed](functions/SetDelayed.md)
+
+## Plot functions
+
+* [ListLinePlot](functions/ListLinePlot.md)
+* [ListPlot](functions/ListPlot.md)
+* [ListPlot3D](functions/ListPlot3D.md)
+* [Manipulate](functions/Manipulate.md)
+* [ParametricPlot](functions/ParametricPlot.md) 
+* [Plot](functions/Plot.md) 
+* [Plot3D](functions/Plot3D.md)
 
 ## Solvers
 
