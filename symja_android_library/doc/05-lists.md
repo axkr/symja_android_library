@@ -1,12 +1,14 @@
 ## Lists
 
 Lists can be entered in Symja with curly braces `{` and `}`:
+
 ```
 >> mylist = {a, b, c, d}
 {a,b,c,d}
 ```
 
 There are various functions for constructing lists:
+
 ```
 >> Range(5)
 {1,2,3,4,5}
@@ -22,18 +24,21 @@ There are various functions for constructing lists:
 ```
 
 The number of elements of a list can be determined with `Length`:
+
 ```
 >> Length(mylist)
 4
 ```
 
 Elements can be extracted using double square braces:
+
 ```
 >> mylist[[3]]
 c
 ```
 
 Negative indices count from the end:
+
 ```
 >> mylist[[-3]]
 b
@@ -45,6 +50,7 @@ Lists can be nested:
 ```
 
 There are various ways of extracting elements from a list:
+
 ```
 >> mymatrix[[2, 1]]
 3
@@ -86,6 +92,7 @@ Lists can be used to assign values to multiple variables at once:
 ```
 
 Many operations, like addition and multiplication, “thread” over lists, i.e. lists are combined element-wise:
+
 ```
 >> {1, 2, 3} + {4, 5, 6}
 {5,7,9}
@@ -95,6 +102,7 @@ Many operations, like addition and multiplication, “thread” over lists, i.e.
 ```
 
 It is an error to combine lists with unequal lengths:
+
 ```
 >> {1, 2} + {4, 5, 6}
 Lists of unequal length cannot be combined: {1,2}+{4,5,6}

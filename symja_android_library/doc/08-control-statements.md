@@ -74,22 +74,3 @@ Inside For, While, and Do loops, Break() exits the loop and Continue() continues
 2
 3
 ```
-
-## Functions Reference
-* [Abort](functions/Abort.md)
-* [Block](functions/Block.md)
-* [Break](functions/Break.md)
-* [CompoundExpression](functions/CompoundExpression.md)
-* [Continue](functions/Continue.md)
-* [Do](functions/Do.md)
-* [FixedPoint](functions/FixedPoint.md)
-* [FixedPointList](functions/FixedPointList.md)
-* [For](functions/For.md)
-* [If](functions/If.md)
-* [Nest](functions/Nest.md)
-* [NestList](functions/NestList.md)
-* [NestWhile](functions/NestWhile.md)
-* [Return](functions/Return.md)
-* [Switch](functions/Switch.md)
-* [Which](functions/Which.md)
-* [While](functions/While.md)
