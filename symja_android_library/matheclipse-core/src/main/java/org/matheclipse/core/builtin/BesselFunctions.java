@@ -27,8 +27,10 @@ public class BesselFunctions {
 			F.AiryBiPrime.setEvaluator(new AiryBiPrime());
 			F.BesselI.setEvaluator(new BesselI());
 			F.BesselJ.setEvaluator(new BesselJ());
+			F.BesselJZero.setEvaluator(new BesselJZero());
 			F.BesselK.setEvaluator(new BesselK());
 			F.BesselY.setEvaluator(new BesselY());
+			F.BesselYZero.setEvaluator(new BesselYZero());
 			F.HankelH1.setEvaluator(new HankelH1());
 			F.HankelH2.setEvaluator(new HankelH2());
 			F.SphericalBesselJ.setEvaluator(new SphericalBesselJ());
@@ -326,13 +328,68 @@ public class BesselFunctions {
 		}
 	}
 
+	private final static class BesselJZero extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr n = ast.arg1();
+			IExpr z = ast.arg2();
+			final int k = z.toIntDefault(Integer.MIN_VALUE);
+
+			if (k > 0 && n.isNumeric()) {
+				try {
+					// numeric mode evaluation
+					if (n.isReal()) {
+						return F.num(BesselJS.besselJZero(n.evalDouble(), k));
+					}
+				} catch (RuntimeException rte) {
+					return engine.printMessage("BesselJZero: " + rte.getMessage());
+				}
+			}
+
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		}
+	}
+
 	private final static class BesselI extends AbstractFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr n = ast.arg1();
 			IExpr z = ast.arg2();
-			final int order = n.toIntDefault(Integer.MIN_VALUE);
-
+			// final int order = n.toIntDefault(Integer.MIN_VALUE);
+			if (z.isZero()) {
+				if (n.isZero()) {
+					return F.C1;
+				}
+				if (n.isInteger()) {
+					return F.C0;
+				}
+				IExpr re = n.re();
+				if (re.isPositiveResult()) {
+					return F.C0;
+				}
+				if (re.isNegativeResult() && n.isNumber() && !n.isInteger()) {
+					return F.ComplexInfinity;
+				}
+				if (re.isZero() && n.isNumber() && !n.isZero()) {
+					return F.Indeterminate;
+				}
+			}
+			if (n.isNumber() && //
+					(z.isDirectedInfinity(F.CI) || //
+							z.isDirectedInfinity(F.CNI))) {
+				return F.C0;
+			}
 			if (n.isReal() && z.isReal()) {
 				try {
 					return F.complexNum(BesselJS.besselI(n.evalDouble(), z.evalDouble()));
@@ -370,8 +427,24 @@ public class BesselFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr n = ast.arg1();
 			IExpr z = ast.arg2();
-			final int order = n.toIntDefault(Integer.MIN_VALUE);
-
+			// final int order = n.toIntDefault(Integer.MIN_VALUE);
+			if (z.isZero()) {
+				if (n.isZero()) {
+					return F.CInfinity;
+				}
+				IExpr re = n.re();
+				if (re.isZero() && n.isNumber() && !n.isZero()) {
+					return F.Indeterminate;
+				}
+				if (re.isNumber() && !re.isZero()) {
+					return F.ComplexInfinity;
+				}
+			}
+			if (n.isNumber() && //
+					(z.isDirectedInfinity(F.CI) || //
+							z.isDirectedInfinity(F.CNI))) {
+				return F.C0;
+			}
 			if (n.isReal() && z.isReal()) {
 				try {
 					return F.complexNum(BesselJS.besselK(n.evalDouble(), z.evalDouble()));
@@ -408,8 +481,25 @@ public class BesselFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr n = ast.arg1();
 			IExpr z = ast.arg2();
-			final int order = n.toIntDefault(Integer.MIN_VALUE);
+			// final int order = n.toIntDefault(Integer.MIN_VALUE);
 
+			if (z.isZero()) {
+				if (n.isZero()) {
+					return F.CNInfinity;
+				}
+				IExpr re = n.re();
+				if (re.isZero() && n.isNumber() && !n.isZero()) {
+					return F.Indeterminate;
+				}
+				if (re.isNumber() && !re.isZero()) {
+					return F.ComplexInfinity;
+				}
+			}
+			if (n.isNumber() && //
+					(z.isInfinity() || //
+							z.isNegativeInfinity())) {
+				return F.C0;
+			}
 			if (n.isReal() && z.isReal()) {
 				try {
 					return F.complexNum(BesselJS.besselY(n.evalDouble(), z.evalDouble()));
@@ -426,6 +516,39 @@ public class BesselFunctions {
 				} catch (RuntimeException rte) {
 					return engine.printMessage("BesselI: " + rte.getMessage());
 				}
+			}
+
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		}
+	}
+
+	private final static class BesselYZero extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr n = ast.arg1();
+			IExpr z = ast.arg2();
+			final int k = z.toIntDefault(Integer.MIN_VALUE);
+
+			if (k > 0 && n.isNumeric()) {
+				// try {
+				// // numeric mode evaluation
+				// if (n.isReal()) {
+				// return F.num(BesselJS.besselYZero(n.evalDouble(), k));
+				// }
+				// } catch (RuntimeException rte) {
+				// return engine.printMessage("BesselYZero: " + rte.getMessage());
+				// }
 			}
 
 			return F.NIL;

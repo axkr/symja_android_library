@@ -1176,7 +1176,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testBellB() {
 		check("BellB(1/2,z)", //
 				"BellB(1/2,z)");
-		
+
 		check("BellB(10,x)", //
 				"x+511*x^2+9330*x^3+34105*x^4+42525*x^5+22827*x^6+5880*x^7+750*x^8+45*x^9+x^10");
 		check("BellB(0,z)", //
@@ -1219,13 +1219,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"60");
 		check("BellY(5, 8, {1,2,3})", //
 				"0");
-		
+
 		// https://en.wikipedia.org/wiki/Bell_polynomials
 		check("BellY(6, 2, {x1, x2, x3, x4, x5})", //
 				"10*x3^2+15*x2*x4+6*x1*x5");
 		check("BellY(6, 3, {x1, x2, x3, x4})", //
 				"15*x2^3+60*x1*x2*x3+15*x1^2*x4");
-		
+
 		check("BellY(4, 2, {x1, x2, x3})", //
 				"3*x2^2+4*x1*x3");
 		check("With({n = 7, k = 2}, BellY(n, k, Array(x, n)))", //
@@ -1243,30 +1243,29 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBesselI() {
+		checkNumeric("BesselI(I+1, -I*Infinity)", //
+				"0");
+		checkNumeric("BesselI(42, I*Infinity)", //
+				"0");
+		
+		checkNumeric("BesselI(0, 0)", //
+				"1");
+		checkNumeric("BesselI(4, 0)", //
+				"0");
+		checkNumeric("BesselI(-42, 0)", //
+				"0");
+		checkNumeric("BesselI(-42.5, 0)", //
+				"ComplexInfinity");
+		checkNumeric("BesselI(I, 0)", //
+				"Indeterminate");
+		
+		
 		checkNumeric("BesselI(0,2.0 )", //
 				"2.279585302336067");
 		checkNumeric("BesselI(3 + I, 1.5 - I)", //
 				"-0.2566499289085075+I*0.04927707435312517");
 		checkNumeric("BesselI({0, 1, 2}, 1.)", //
 				"{1.2660658777520082,0.565159103992485,0.1357476697670383}");
-	}
-
-	public void testBesselK() {
-		checkNumeric("BesselK(0,0.53)", //
-				"0.876560380458217");
-		checkNumeric("BesselK(0,4.0)", //
-				"0.011159676384823675");
-		checkNumeric("BesselK(1 + I, 3.0  - 2* I)", //
-				"-0.022510755137173245+I*0.016960737347051183");
-	}
-
-	public void testBesselY() {
-		checkNumeric("BesselY(0,2.5)", //
-				"0.49807035955610557");
-		checkNumeric("BesselY(0,1.0)", //
-				"0.08825696423952921");
-		checkNumeric("BesselY(0.5*I, 3.0 - I)", //
-				"1.0468646059976179+I*0.8847844476971232");
 	}
 
 	public void testBesselJ() {
@@ -1322,6 +1321,68 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-0.39715");
 		check("BesselJ(1, {0.5, 1.0, 1.5})", //
 				"{0.242268,0.440051,0.557937}");
+	}
+
+	public void testBesselJZero() {
+		checkNumeric("BesselJZero(0.0,1)", //
+				"2.404825524156817");
+		checkNumeric("BesselJZero(0.0,2)", //
+				"5.520077944691967");
+		checkNumeric("BesselJZero(1.0,5)", //
+				"16.470629751205134");
+		checkNumeric("BesselJZero(0, {1, 2, 3}) // N", //
+				"{2.404825524156817,5.520077944691967,8.653727993213547}");
+		checkNumeric("BesselJZero(1, 1)/Pi // N", //
+				"1.2196698399880057");
+	}
+
+	public void testBesselK() {
+		checkNumeric("BesselK(I+1, -I*Infinity)", //
+				"0");
+		checkNumeric("BesselK(42, I*Infinity)", //
+				"0");
+		
+		checkNumeric("BesselK(0, 0)", //
+				"Infinity");
+		checkNumeric("BesselK(4, 0)", //
+				"ComplexInfinity");
+		checkNumeric("BesselK(I, 0)", //
+				"Indeterminate");
+		
+		checkNumeric("BesselK(0,0.53)", //
+				"0.876560380458217");
+		checkNumeric("BesselK(0,4.0)", //
+				"0.011159676384823675");
+		checkNumeric("BesselK(1 + I, 3.0  - 2* I)", //
+				"-0.022510755137173245+I*0.016960737347051183");
+	}
+
+	public void testBesselY() {
+		checkNumeric("BesselY(I+1, -Infinity)", //
+				"0");
+		checkNumeric("BesselY(42, Infinity)", //
+				"0");
+		
+		checkNumeric("BesselY(0, 0)", //
+				"-Infinity");
+		checkNumeric("BesselY(4, 0)", //
+				"ComplexInfinity");
+		checkNumeric("BesselY(I, 0)", //
+				"Indeterminate");
+		
+		checkNumeric("BesselY(0,2.5)", //
+				"0.49807035955610557");
+		checkNumeric("BesselY(0,1.0)", //
+				"0.08825696423952921");
+		checkNumeric("BesselY(0.5*I, 3.0 - I)", //
+				"1.0468646059976179+I*0.8847844476971232");
+	}
+
+	public void testBesselYZero() {
+//		checkNumeric("BesselYZero(0.0,2)", //
+//				" "); 
+//		checkNumeric("BesselYZero(0.0,1)", //
+//				" "); 
 	}
 
 	public void testBeta() {
@@ -18504,12 +18565,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testSum() {
 		check("Sum((b+i*d)*a^i, {i,0,n})", //
 				"((-1+a^(1+n))*b)/(-1+a)+(d*(a+a^(1+n)*(-1-n+a*n)))/(1-a)^2");
-		
+
 		check("Sum(i*a^i, {i,0,n})", //
 				"(a+a^(1+n)*(-1-n+a*n))/(1-a)^2");
 		check("Sum(i*a^i, {i,1,n})", //
 				"(a+a^(1+n)*(-1-n+a*n))/(1-a)^2");
-		
+
 		check("Sum(a^i, {i,0,n})", //
 				"(-1+a^(1+n))/(-1+a)");
 		check("Sum((3/7)^i, {i,1,n})", //
