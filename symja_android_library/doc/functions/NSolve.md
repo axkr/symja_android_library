@@ -12,7 +12,7 @@ NSolve(equations, vars, domain)
 
 > attempts to solve `equations` for the variables `vars` in the given `domain`.
 
-**Note:** `NSolve` calls `[Solve](Solve.md)` in numeric mode.
+**Note:** `NSolve` calls [Solve](Solve.md) in numeric mode.
 
 ### Examples
 
