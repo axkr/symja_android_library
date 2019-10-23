@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -593,7 +594,7 @@ public class Num implements INum {
 	}
 
 	@Override
-	public ISignedNumber roundClosest(ISignedNumber multiple) {
+	public ISignedNumber roundClosest(ISignedNumber multiple) { 
 		if (multiple.isRational()) {
 			return F.integer(DoubleMath.roundToBigInteger(fDouble / multiple.doubleValue(), RoundingMode.HALF_EVEN))
 					.multiply((IRational) multiple);

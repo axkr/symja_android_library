@@ -11,6 +11,7 @@ import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.hipparchus.util.ArithmeticUtils;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
@@ -273,10 +274,10 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	}
 
 	@Override
-	public Apfloat  apfloatValue(long precision) {
+	public Apfloat apfloatValue(long precision) {
 		return new Apfloat(toBigNumerator(), precision);
 	}
-	
+
 	@Override
 	public IInteger ceil() {
 		return this;
@@ -626,13 +627,11 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
 	@Override
 	public ISignedNumber roundClosest(ISignedNumber multiple) {
-		if (multiple.isRational()) {
-			IInteger ii = this.divideBy((IRational) multiple).round();
-			return ii.multiply((IRational) multiple);
+		if (!multiple.isRational()) {
+			multiple = F.fraction(multiple.doubleValue(), Config.DOUBLE_EPSILON);
 		}
-		Apfloat value = this.apfloatNumValue(15L).fApfloat;
-		Apfloat factor = multiple.apfloatNumValue(15L).fApfloat;
-		return F.num(ApfloatMath.round(value.divide(factor), 1, RoundingMode.HALF_EVEN).multiply(factor));
+		IInteger ii = this.divideBy((IRational) multiple).round();
+		return ii.multiply((IRational) multiple);
 	}
 
 	@Override

@@ -138,7 +138,7 @@ public class ApfloatNum implements INum {
 		// }
 		return F.NIL;
 	}
-	
+
 	@Override
 	public ISignedNumber evalReal() {
 		return this;
@@ -415,9 +415,10 @@ public class ApfloatNum implements INum {
 
 	@Override
 	public ISignedNumber roundClosest(ISignedNumber multiple) {
-		final long precision = precision();
-		Apfloat factor = multiple.apfloatNumValue(precision).fApfloat;
-		return F.num(ApfloatMath.round(fApfloat.divide(factor), 1, RoundingMode.HALF_EVEN).multiply(factor));
+		throw new ArithmeticException("Apfloat: Round closest not implemented");
+		// final long precision = precision();
+		// Apfloat factor = multiple.apfloatNumValue(precision).fApfloat;
+		// return F.num(ApfloatMath.round(fApfloat.divide(factor), precision, RoundingMode.HALF_EVEN).multiply(factor));
 	}
 
 	/** {@inheritDoc} */

@@ -1247,7 +1247,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"0");
 		checkNumeric("BesselI(42, I*Infinity)", //
 				"0");
-		
+
 		checkNumeric("BesselI(0, 0)", //
 				"1");
 		checkNumeric("BesselI(4, 0)", //
@@ -1258,8 +1258,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"ComplexInfinity");
 		checkNumeric("BesselI(I, 0)", //
 				"Indeterminate");
-		
-		
+
 		checkNumeric("BesselI(0,2.0 )", //
 				"2.279585302336067");
 		checkNumeric("BesselI(3 + I, 1.5 - I)", //
@@ -1341,14 +1340,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"0");
 		checkNumeric("BesselK(42, I*Infinity)", //
 				"0");
-		
+
 		checkNumeric("BesselK(0, 0)", //
 				"Infinity");
 		checkNumeric("BesselK(4, 0)", //
 				"ComplexInfinity");
 		checkNumeric("BesselK(I, 0)", //
 				"Indeterminate");
-		
+
 		checkNumeric("BesselK(0,0.53)", //
 				"0.876560380458217");
 		checkNumeric("BesselK(0,4.0)", //
@@ -1362,14 +1361,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"0");
 		checkNumeric("BesselY(42, Infinity)", //
 				"0");
-		
+
 		checkNumeric("BesselY(0, 0)", //
 				"-Infinity");
 		checkNumeric("BesselY(4, 0)", //
 				"ComplexInfinity");
 		checkNumeric("BesselY(I, 0)", //
 				"Indeterminate");
-		
+
 		checkNumeric("BesselY(0,2.5)", //
 				"0.49807035955610557");
 		checkNumeric("BesselY(0,1.0)", //
@@ -1379,10 +1378,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBesselYZero() {
-//		checkNumeric("BesselYZero(0.0,2)", //
-//				" "); 
-//		checkNumeric("BesselYZero(0.0,1)", //
-//				" "); 
+		// checkNumeric("BesselYZero(0.0,2)", //
+		// " ");
+		// checkNumeric("BesselYZero(0.0,1)", //
+		// " ");
 	}
 
 	public void testBeta() {
@@ -5859,7 +5858,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testFactor() {
 		check("Factor(x^(-6)+1)", //
-				"(1+x^2)*(1-x^2+x^4))/x^6");
+				"((1+x^2)*(1-x^2+x^4))/x^6");
 		System.out.println();
 		System.out.print('.');
 		check("Factor(x+2*Sqrt(x)+1)", //
@@ -16332,6 +16331,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testRound() {
 		// github #145
 		// TODO add tests for big (Apfloat) numbers
+		// Rationalize(2.1675 => 867/400
+		check("Round(Rationalize(867/400),10^(-3))", //
+				"271/125");
+		check("Round(Rationalize(2.1675),10^(-3))", //
+				"271/125");
+		check("Round(2.1675, 0.001)", //
+				"2.168");
+		check("Round(2.1675, 1/1000)", //
+				"271/125");
+		check("Round(500,10^(-3))", //
+				"500");
+		check("Round(500, 10)", //
+				"500");
+
+		check("Round(75.345677/7.56)", //
+				"10");
 		check("Round(1.234512, 0.01)", //
 				"1.23");
 		check("Round(-1.234512, 0.01)", //

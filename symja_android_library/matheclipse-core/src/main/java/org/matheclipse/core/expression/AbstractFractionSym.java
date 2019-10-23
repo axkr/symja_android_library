@@ -433,13 +433,11 @@ public abstract class AbstractFractionSym implements IFraction {
 
 	@Override
 	public ISignedNumber roundClosest(ISignedNumber multiple) {
-		if (multiple.isRational()) {
-			IInteger ii = this.divideBy((IRational) multiple).round();
-			return ii.multiply((IRational) multiple);
+		if (!multiple.isRational()) {
+			multiple = F.fraction(multiple.doubleValue(), Config.DOUBLE_EPSILON);
 		}
-		Apfloat value = this.apfloatNumValue(15L).fApfloat;
-		Apfloat factor = multiple.apfloatNumValue(15L).fApfloat;
-		return F.num(ApfloatMath.round(value.divide(factor), 1, RoundingMode.HALF_EVEN).multiply(factor));
+		IInteger ii = this.divideBy((IRational) multiple).round();
+		return ii.multiply((IRational) multiple);
 	}
 
 	@Override
