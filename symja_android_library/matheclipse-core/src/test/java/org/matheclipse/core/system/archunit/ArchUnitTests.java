@@ -95,7 +95,8 @@ public class ArchUnitTests extends TestCase {
 	}
 
 	public void testJGraphT() {
-		// LogicNG library
+		// JGraphT library
+		// TODO reduce package dependencies
 		JavaClasses importedClasses = new ClassFileImporter().importPackages("org");
 
 		ArchRule myRule = classes().that().resideInAPackage("org.jgrapht..").//
