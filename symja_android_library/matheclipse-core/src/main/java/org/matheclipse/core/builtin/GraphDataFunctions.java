@@ -12,7 +12,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.IExprEdge;
+import org.matheclipse.core.expression.data.ExprEdge;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -67,7 +67,7 @@ public class GraphDataFunctions {
 						String graphName = ((IStringX) ast.arg1()).toString();
 						Supplier<Graph> supplier = GRAPH_MAP.get(graphName);
 						if (supplier != null) {
-							Graph<IExpr, IExprEdge> g = supplier.get();
+							Graph<IExpr, ExprEdge> g = supplier.get();
 							return GraphExpr.newInstance(g);
 						}
 						return engine.printMessage(
@@ -102,9 +102,9 @@ public class GraphDataFunctions {
 	 * bipartite 3-regular undirected graph with 18 vertices and 27 edges.
 	 * 
 	 */
-	private static Graph<IExpr, IExprEdge> pappusGraph() {
-		Graph<IExpr, IExprEdge> g = GraphTypeBuilder.undirected().allowingMultipleEdges(false).allowingSelfLoops(false)
-				.vertexSupplier(new IntegerSupplier(1)).edgeClass(IExprEdge.class).buildGraph();
+	private static Graph<IExpr, ExprEdge> pappusGraph() {
+		Graph<IExpr, ExprEdge> g = GraphTypeBuilder.undirected().allowingMultipleEdges(false).allowingSelfLoops(false)
+				.vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class).buildGraph();
 		// new NamedGraphGenerator<Integer, DefaultEdge>().generatePappusGraph(g);
 		HashMap<IExpr, IExpr> vertexMap = new HashMap<>();
 		// vertexMap.clear();
@@ -118,18 +118,18 @@ public class GraphDataFunctions {
 		return g;
 	}
 
-	private static Graph<IExpr, IExprEdge> petersenGraph() {
-		Graph<IExpr, IExprEdge> g = GraphTypeBuilder //
+	private static Graph<IExpr, ExprEdge> petersenGraph() {
+		Graph<IExpr, ExprEdge> g = GraphTypeBuilder //
 				.undirected().allowingMultipleEdges(false).allowingSelfLoops(false)//
-				.vertexSupplier(new IntegerSupplier(1)).edgeClass(IExprEdge.class)//
+				.vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class)//
 				.buildGraph();
-		GeneralizedPetersenGraphGenerator<IExpr, IExprEdge> gpgg = new GeneralizedPetersenGraphGenerator<>(5, 2);
+		GeneralizedPetersenGraphGenerator<IExpr, ExprEdge> gpgg = new GeneralizedPetersenGraphGenerator<>(5, 2);
 		gpgg.generateGraph(g);
 		return g;
 	}
 
 	// --------------Helper methods-----------------/
-	private static IExpr addVertex(HashMap<IExpr, IExpr> vertexMap, Graph<IExpr, IExprEdge> targetGraph, int i) {
+	private static IExpr addVertex(HashMap<IExpr, IExpr> vertexMap, Graph<IExpr, ExprEdge> targetGraph, int i) {
 		IInteger intNumber = F.ZZ(i);
 		if (!vertexMap.containsKey(intNumber)) {
 			vertexMap.put(intNumber, targetGraph.addVertex());
@@ -137,13 +137,13 @@ public class GraphDataFunctions {
 		return vertexMap.get(intNumber);
 	}
 
-	private static void addEdge(HashMap<IExpr, IExpr> vertexMap, Graph<IExpr, IExprEdge> targetGraph, int i, int j) {
+	private static void addEdge(HashMap<IExpr, IExpr> vertexMap, Graph<IExpr, ExprEdge> targetGraph, int i, int j) {
 		IExpr u = addVertex(vertexMap, targetGraph, i);
 		IExpr v = addVertex(vertexMap, targetGraph, j);
 		targetGraph.addEdge(u, v);
 	}
 
-	private static void addCycle(HashMap<IExpr, IExpr> vertexMap, Graph<IExpr, IExprEdge> targetGraph, int array[]) {
+	private static void addCycle(HashMap<IExpr, IExpr> vertexMap, Graph<IExpr, ExprEdge> targetGraph, int array[]) {
 		for (int i = 0; i < array.length; i++) {
 			addEdge(vertexMap, targetGraph, array[i], array[(i + 1) % array.length]);
 		}

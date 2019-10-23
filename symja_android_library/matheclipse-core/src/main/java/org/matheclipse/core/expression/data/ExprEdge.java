@@ -1,4 +1,4 @@
-package org.matheclipse.core.expression;
+package org.matheclipse.core.expression.data;
 
 import org.jgrapht.graph.DefaultEdge;
 import org.matheclipse.core.interfaces.IExpr;
@@ -7,13 +7,13 @@ import org.matheclipse.core.interfaces.IExpr;
  * Create a DefaultEdge for usage in jgrapht.org library
  *
  */
-public class IExprEdge extends DefaultEdge {
+public class ExprEdge extends DefaultEdge {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -2672050124122743886L;
 
-	public IExprEdge() {
+	public ExprEdge() {
 		super();
 	}
 

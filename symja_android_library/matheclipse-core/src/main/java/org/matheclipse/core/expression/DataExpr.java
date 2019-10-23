@@ -4,6 +4,8 @@ import org.jgrapht.graph.AbstractBaseGraph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.matheclipse.core.builtin.GraphFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.data.ExprEdge;
+import org.matheclipse.core.expression.data.ExprWeightedEdge;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
@@ -81,7 +83,7 @@ public abstract class DataExpr<T> implements IDataExpr<T> {
 	public String fullFormString() {
 		if (fHead.equals(F.Graph)) {
 			if (fData instanceof AbstractBaseGraph) {
-				AbstractBaseGraph<IExpr, IExprEdge> g = (AbstractBaseGraph<IExpr, IExprEdge>) fData;
+				AbstractBaseGraph<IExpr, ExprEdge> g = (AbstractBaseGraph<IExpr, ExprEdge>) fData;
 				return GraphFunctions.graphToIExpr(g).fullFormString();
 			}
 		}
@@ -114,10 +116,10 @@ public abstract class DataExpr<T> implements IDataExpr<T> {
 			if (fData instanceof AbstractBaseGraph) {
 				AbstractBaseGraph<IExpr, ?> g = (AbstractBaseGraph<IExpr, ?>) fData;
 				if (g.getType().isWeighted()) {
-					return GraphFunctions.weightedGraphToIExpr((AbstractBaseGraph<IExpr, IExprWeightedEdge>) g)
+					return GraphFunctions.weightedGraphToIExpr((AbstractBaseGraph<IExpr, ExprWeightedEdge>) g)
 							.toString();
 				}
-				return GraphFunctions.graphToIExpr((AbstractBaseGraph<IExpr, IExprEdge>) g).toString();
+				return GraphFunctions.graphToIExpr((AbstractBaseGraph<IExpr, ExprEdge>) g).toString();
 			}
 		}
 		if (fHead.equals(F.ByteArray)) {
