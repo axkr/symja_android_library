@@ -294,7 +294,8 @@ public class FunctionExpand extends AbstractEvaluator {
 	 */
 	private static IExpr nestedSquareRoots(IRational arg1, IExpr arg2) {
 		if (arg1.isNegative()) {
-			return nestedSquareRoots(arg1.negate(), arg2.negate()).map(x -> F.Times(F.CI, x));
+			return nestedSquareRoots(arg1.negate(), arg2.negate()).//
+					map(x -> F.Times(F.CI, x));
 		} else {
 			final EvalEngine engine = EvalEngine.get();
 			boolean arg2IsNegative = false;
