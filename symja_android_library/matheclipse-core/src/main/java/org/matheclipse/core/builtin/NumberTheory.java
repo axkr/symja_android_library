@@ -3777,10 +3777,10 @@ public final class NumberTheory {
 				return super.visitAST(ast);
 			}
 
-			@Override
-			public IExpr visit(IComplex element) {
-				return element;
-			}
+//			@Override
+//			public IExpr visit(IComplex element) {
+//				return element;
+//			}
 
 			@Override
 			public IExpr visit(IComplexNum element) {
@@ -3792,12 +3792,12 @@ public final class NumberTheory {
 				return F.fraction(element.getRealPart(), epsilon);
 			}
 
-			private IRational getRational(ISignedNumber signedNumber) {
-				if (signedNumber.isRational()) {
-					return (IRational) signedNumber;
-				}
-				return F.fraction(signedNumber.doubleValue(), epsilon);
-			}
+//			private IRational getRational(ISignedNumber signedNumber) {
+//				if (signedNumber.isRational()) {
+//					return (IRational) signedNumber;
+//				}
+//				return F.fraction(signedNumber.doubleValue(), epsilon);
+//			}
 		}
 
 		@Override

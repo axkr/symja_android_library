@@ -8286,6 +8286,10 @@ public class F {
 		return new AST2(Rational, a0, a1);
 	}
 
+	public static IAST Rationalize(final IExpr a0) {
+		return new AST1(Rationalize, a0);
+	}
+	
 	public static IExpr Re(final IExpr a0) {
 		if (a0 != null && a0.isNumber()) {
 			return ((INumber) a0).re();

@@ -16,6 +16,7 @@ import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
+import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
@@ -469,7 +470,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 			if (holdallAST.size() < 3) {
 				return F.NIL;
 			}
-			final IExpr a1 = holdallAST.arg1();
+			final IExpr a1 = NumberTheory.rationalize(holdallAST.arg1()).orElse(holdallAST.arg1());
 			IExpr arg1 = engine.evaluateNull(a1);
 			if (arg1.isPresent()) {
 				evaled = true;

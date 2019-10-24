@@ -7548,7 +7548,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFullSimplify() {
-		// #github #152 
+		// #github #152
 		check("FullSimplify(Sqrt(-9-4*Sqrt(5)))", //
 				"I*(2+Sqrt(5))");
 		check("FullSimplify( Sqrt(-9+4*Sqrt(5)))", //
@@ -7558,10 +7558,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("FullSimplify(Sqrt(9+4*Sqrt(5)))", //
 				"2+Sqrt(5)");
 		check("FullSimplify(-Sqrt(9-4*Sqrt(5))+Sqrt(9+4*Sqrt(5)))", //
-				"4"); 
+				"4");
 		check("-Sqrt(9-4*Sqrt(5))+Sqrt(9+4*Sqrt(5.0))", //
-				"4.0"); 
-		
+				"4.0");
+
 		check("FullSimplify(Sqrt(2) + Sqrt(3) - Sqrt(5 + 2*Sqrt(6)))", //
 				"0");
 		check("FullSimplify(Cos(n*ArcCos(x)) == ChebyshevT(n, x))", //
@@ -8836,6 +8836,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIntegrate() {
+		// see github #153
+		check("Integrate(E^(-x^2.0),{x,-1/2,1/2})", //
+				"Sqrt(Pi)*Erf(1/2)");
+		check("Integrate(E^(-x^2.0),{x,-1/2,1/2}) //N", //
+				"0.922562");
+		check("N(Integrate(E^(-x^2),{x,-1/2,1/2}))", //
+				"0.922562");
+		
 		check("Integrate(Log(x^3)/E^(2+x),{x,1,2})", //
 				"(3*ExpIntegralEi(-2))/E^2+(-3*ExpIntegralEi(-1))/E^2-Log(8)/E^4");
 		// check("Limit(1/9*x*(9-x^2)^(3/2)*Hypergeometric2F1(1,2,3/2,x^2/9),x->3)", //

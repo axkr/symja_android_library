@@ -426,9 +426,10 @@ public final class RulesData implements Serializable {
 						if (result.isPresent()) {
 							// if (patternEvaluator.fLhsPatternExpr.isAST(F.Integrate)) {
 							// System.out.println(((IPatternMatcher) patternEvaluator).toString());
-							// if (((IPatternMatcher) patternEvaluator).getLHSPriority() == 6686) {
-							// System.out.println("Debug from this line");
-							// }
+							// // if (((IPatternMatcher) patternEvaluator).getLHSPriority() == 6686) {
+							// System.out.println("Rule number: "+((IPatternMatcher)
+							// patternEvaluator).getLHSPriority());
+							// // }
 							// }
 							if (Config.SHOW_STACKTRACE) {
 								if (isShowPriority(pmEvaluator)) {
