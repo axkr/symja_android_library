@@ -7548,6 +7548,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFullSimplify() {
+		// #github #152 
+		check("FullSimplify(Sqrt(-9-4*Sqrt(5)))", //
+				"I*(2+Sqrt(5))");
+		check("FullSimplify( Sqrt(-9+4*Sqrt(5)))", //
+				"I*(-2+Sqrt(5))");
+		check("FullSimplify( Sqrt(9-4*Sqrt(5)))", //
+				"-2+Sqrt(5)");
+		check("FullSimplify(Sqrt(9+4*Sqrt(5)))", //
+				"2+Sqrt(5)");
+		check("FullSimplify(-Sqrt(9-4*Sqrt(5))+Sqrt(9+4*Sqrt(5)))", //
+				"4"); 
+		check("-Sqrt(9-4*Sqrt(5))+Sqrt(9+4*Sqrt(5.0))", //
+				"4.0"); 
+		
 		check("FullSimplify(Sqrt(2) + Sqrt(3) - Sqrt(5 + 2*Sqrt(6)))", //
 				"0");
 		check("FullSimplify(Cos(n*ArcCos(x)) == ChebyshevT(n, x))", //

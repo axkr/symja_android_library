@@ -5,6 +5,7 @@ import static org.matheclipse.core.expression.F.BetaRegularized;
 import static org.matheclipse.core.expression.F.Binomial;
 import static org.matheclipse.core.expression.F.ChebyshevT;
 import static org.matheclipse.core.expression.F.ChebyshevU;
+import static org.matheclipse.core.expression.F.Cos;
 import static org.matheclipse.core.expression.F.Factorial;
 import static org.matheclipse.core.expression.F.a;
 import static org.matheclipse.core.expression.F.a_;
@@ -27,6 +28,7 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.WindowFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
@@ -290,18 +292,34 @@ public class FunctionExpand extends AbstractEvaluator {
 	 * @param arg2
 	 * @return
 	 */
-	private static IExpr nestedSquareRoots(final IRational arg1, final IExpr arg2) {
-		final EvalEngine engine = EvalEngine.get();
-		// (arg2/2) ^ 2
-		IExpr squared = engine.evaluate(F.Sqr(F.Divide(arg2, F.C2)));
-		if (squared.isRealResult()) {
-			IAST list = QuarticSolver.quadraticSolve(F.C1, arg1.negate(), squared);
-			if (list.isAST2()) {
-				IExpr a = engine.evaluate(list.arg1());
-				if (a.isRational()) {
-					IExpr b = engine.evaluate(list.arg2());
-					if (b.isRational()) {
-						return F.Plus(F.Sqrt(a), F.Sqrt(b));
+	private static IExpr nestedSquareRoots(IRational arg1, IExpr arg2) {
+		if (arg1.isNegative()) {
+			IExpr result = nestedSquareRoots(arg1.negate(), arg2.negate());
+			if (result.isPresent()) {
+				return F.Times(F.CI, result);
+			}
+		} else {
+			final EvalEngine engine = EvalEngine.get();
+			boolean arg2IsNegative = false;
+			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg2);
+			if (negExpr.isPresent()) {
+				arg2 = negExpr;
+				arg2IsNegative = true;
+			}
+			// (arg2/2) ^ 2
+			IExpr squared = engine.evaluate(F.Sqr(F.Divide(arg2, F.C2)));
+			if (squared.isRealResult()) {
+				IAST list = QuarticSolver.quadraticSolve(F.C1, arg1.negate(), squared);
+				if (list.isAST2()) {
+					IExpr a = engine.evaluate(list.arg1());
+					if (a.isRational()) {
+						IExpr b = engine.evaluate(list.arg2());
+						if (b.isRational()) {
+							if (arg2IsNegative) {
+								return F.Plus(F.Sqrt(a), F.Negate(F.Sqrt(b)));
+							}
+							return F.Plus(F.Sqrt(a), F.Sqrt(b));
+						}
 					}
 				}
 			}
