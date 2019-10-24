@@ -580,7 +580,13 @@ public abstract class AbstractAST implements IASTMutable {
 		public final boolean isZERO() {
 			return false;
 		}
-
+		
+		@Override
+		public IExpr map(Function<? super IExpr,? extends IExpr> mapper) {
+			return this;
+		}
+		
+		@Override
 		public final IAST orElse(final IAST other) {
 			return other;
 		}

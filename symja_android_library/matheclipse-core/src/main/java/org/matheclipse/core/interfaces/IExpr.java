@@ -1744,7 +1744,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isList(Predicate<IExpr> pred) {
 		return false;
 	}
-	
+
 	/**
 	 * Test if this expression is a list of lists
 	 * 
@@ -2370,7 +2370,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isPower() {
 		return false;
 	}
-	
+
 	/**
 	 * Test if this expression is the function <code>Power[&lt;arg1&gt;, &lt;arg2&gt;]</code>
 	 * 
@@ -2755,7 +2755,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isTrigFunction() {
 		return false;
 	}
-	
+
 	/**
 	 * Test if this expression is a hyperbolic function.
 	 * 
@@ -2977,6 +2977,19 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default IExpr minus(final IExpr that) {
 		return subtract(that);
+	}
+
+	/**
+	 * If a value is present (i.e. this unequals F.NIL), apply the provided mapping function to it, and if the result is
+	 * non-NIL, return the result. Otherwise return <code>F.NIL</code>
+	 * 
+	 * @param mapper
+	 *            a mapping function to apply to the value, if present
+	 * @return an IExpr describing the result of applying a mapping function to the value of this object, if a value is
+	 *         present, otherwise return <code>F.NIL</code>.
+	 */
+	default IExpr map(Function<? super IExpr, ? extends IExpr> mapper) {
+		return mapper.apply(this);
 	}
 
 	default IExpr mod(final IExpr that) {
@@ -3525,7 +3538,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default IExpr rewrite(int functionID) {
 		return F.NIL;
 	}
-	
+
 	/**
 	 * Get the second element of this <code>AST</code> list (i.e. get(2)). Return <code>F.NIL</code> if this object
 	 * isn't an <code>AST</code>.
@@ -3651,9 +3664,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return times(that);
 	}
 
-//	default Object toData() {
-//		return null;
-//	}
+	// default Object toData() {
+	// return null;
+	// }
 
 	/**
 	 * Convert this object into a <code>double[]</code> matrix.
