@@ -2,8 +2,8 @@ package org.matheclipse.core.system;
 
 import java.util.SortedMap;
 
-import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.polynomials.ExprRingFactory;
 
 import edu.jas.arith.BigRational;
 import edu.jas.poly.Complex;

@@ -29,7 +29,6 @@ public final class FunctionDefinitions {
 			F.Fourier.setEvaluator(new org.matheclipse.core.reflection.system.Fourier());
 			FrobeniusSolve.setEvaluator(new org.matheclipse.core.reflection.system.FrobeniusSolve());
 			FunctionExpand.setEvaluator(new org.matheclipse.core.reflection.system.FunctionExpand());
-			GroebnerBasis.setEvaluator(new org.matheclipse.core.reflection.system.GroebnerBasis());
 			HeavisideTheta.setEvaluator(new org.matheclipse.core.reflection.system.HeavisideTheta());
 			Horner.setEvaluator(new org.matheclipse.core.reflection.system.Horner());
 			Import.setEvaluator(new org.matheclipse.core.reflection.system.Import());
@@ -37,15 +36,14 @@ public final class FunctionDefinitions {
 			InterpolatingPolynomial.setEvaluator(new org.matheclipse.core.reflection.system.InterpolatingPolynomial());
 			Interpolation.setEvaluator(new org.matheclipse.core.reflection.system.Interpolation());
 			Interval.setEvaluator(new org.matheclipse.core.reflection.system.Interval());
-			F.InverseFourier.setEvaluator(new org.matheclipse.core.reflection.system.InverseFourier());
+			InverseFourier.setEvaluator(new org.matheclipse.core.reflection.system.InverseFourier());
 			InverseFunction.setEvaluator(new org.matheclipse.core.reflection.system.InverseFunction());
 			InverseLaplaceTransform.setEvaluator(new org.matheclipse.core.reflection.system.InverseLaplaceTransform());
 			LaplaceTransform.setEvaluator(new org.matheclipse.core.reflection.system.LaplaceTransform());
 			LinearProgramming.setEvaluator(new org.matheclipse.core.reflection.system.LinearProgramming());
-			F.ListLinePlot.setEvaluator(new org.matheclipse.core.reflection.system.ListLinePlot());
-			F.ListPlot.setEvaluator(new org.matheclipse.core.reflection.system.ListPlot());
-			F.ListPlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ListPlot3D());
-			MonomialList.setEvaluator(new org.matheclipse.core.reflection.system.MonomialList());
+			ListLinePlot.setEvaluator(new org.matheclipse.core.reflection.system.ListLinePlot());
+			ListPlot.setEvaluator(new org.matheclipse.core.reflection.system.ListPlot());
+			ListPlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ListPlot3D());
 			NDSolve.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve());
 			NFourierTransform.setEvaluator(new org.matheclipse.core.reflection.system.NFourierTransform());
 			NIntegrate.setEvaluator(new org.matheclipse.core.reflection.system.NIntegrate());

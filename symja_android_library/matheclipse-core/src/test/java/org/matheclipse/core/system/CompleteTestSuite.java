@@ -72,7 +72,7 @@ public class CompleteTestSuite extends TestCase {
 		suite.addTestSuite(AssumptionTestCase.class);
 		suite.addTestSuite(WXFTestCase.class);
 		suite.addTestSuite(IntegerTestCase.class);
-		suite.addTestSuite(ArchUnitTests.class);
+//		suite.addTestSuite(ArchUnitTests.class);
 		
 		return suite;
 

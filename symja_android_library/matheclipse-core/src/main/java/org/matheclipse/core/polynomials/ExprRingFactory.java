@@ -1,17 +1,17 @@
-package org.matheclipse.core.expression;
+package org.matheclipse.core.polynomials;
 
 import java.io.Reader;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Random;
 
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
 import edu.jas.structure.RingFactory;
 
 /**
- * Singleton ring factory class. Defines tests for field and query of
- * characteristic.
+ * Singleton ring factory class.
  * 
  */
 public class ExprRingFactory implements RingFactory<IExpr> {
@@ -73,7 +73,7 @@ public class ExprRingFactory implements RingFactory<IExpr> {
 	public IExpr getZERO() {
 		return F.C0;
 	}
-	
+
 	@Override
 	public IExpr copy(IExpr c) {
 		return null;

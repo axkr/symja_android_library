@@ -11,18 +11,12 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
-import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.patternmatching.IPatternMatcher;
-
 import edu.jas.kern.PrettyPrint;
 import edu.jas.kern.Scripting;
 import edu.jas.structure.RingFactory;
@@ -152,7 +146,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 * @param listOfVariables
 	 *            names for the variables.
 	 */
-	public ExprPolynomialRing(ExprRingFactory cf, IAST listOfVariables ) {
+	public ExprPolynomialRing(ExprRingFactory cf, IAST listOfVariables) {
 		this(cf, listOfVariables, listOfVariables.argSize(), ExprTermOrderByName.Lexicographic);
 	}
 

@@ -8,7 +8,6 @@ import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -21,7 +20,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.ContextPath;
@@ -34,12 +32,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.RulesData;
 
 import com.google.common.cache.CacheBuilder;
-
-import edu.jas.arith.BigInteger;
-import edu.jas.arith.BigRational;
-import edu.jas.poly.ExpVector;
-import edu.jas.poly.GenPolynomial;
-import edu.jas.poly.Monomial;
 
 /**
  * <pre>
@@ -692,52 +684,6 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 */
 	private static IExpr mapIntegrate(IAST ast, final IExpr x) {
 		return ast.mapThread(F.Integrate(null, x), 1);
-	}
-
-	/**
-	 * Check if the polynomial has maximum degree 2 in 1 variable and return the coefficients.
-	 * 
-	 * @param poly
-	 * @return <code>false</code> if the polynomials degree > 2 and number of variables <> 1
-	 */
-	public static boolean isQuadratic(GenPolynomial<BigRational> poly, BigRational[] result) {
-		if (poly.degree() <= 2 && poly.numberOfVariables() == 1) {
-			result[0] = BigRational.ZERO;
-			result[1] = BigRational.ZERO;
-			result[2] = BigRational.ZERO;
-			for (Monomial<BigRational> monomial : poly) {
-				BigRational coeff = monomial.coefficient();
-				ExpVector exp = monomial.exponent();
-				for (int i = 0; i < exp.length(); i++) {
-					result[(int) exp.getVal(i)] = coeff;
-				}
-			}
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * Check if the polynomial has maximum degree 2 in 1 variable and return the coefficients.
-	 * 
-	 * @param poly
-	 * @return <code>false</code> if the polynomials degree > 2 and number of variables <> 1
-	 */
-	public static boolean isQuadratic(GenPolynomial<BigInteger> poly, BigInteger[] result) {
-		if (poly.degree() <= 2 && poly.numberOfVariables() == 1) {
-			result[0] = BigInteger.ZERO;
-			result[1] = BigInteger.ZERO;
-			result[2] = BigInteger.ZERO;
-			for (Monomial<BigInteger> monomial : poly) {
-				BigInteger coeff = monomial.coefficient();
-				ExpVector exp = monomial.exponent();
-				for (int i = 0; i < exp.length(); i++) {
-					result[(int) exp.getVal(i)] = coeff;
-				}
-			}
-			return true;
-		}
-		return false;
 	}
 
 	/**

@@ -1,6 +1,5 @@
 package org.matheclipse.core.eval.util;
 
-import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Options;
 import static org.matheclipse.core.expression.F.ReplaceAll;
 
@@ -10,9 +9,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-
-import edu.jas.poly.TermOrder;
-import edu.jas.poly.TermOrderByName;
 
 /**
  * Managing <i>Options</i> used in evaluation of function symbols (i.e. <code>Modulus-&gt;n</code> is an option which
@@ -267,48 +263,6 @@ public class OptionArgs {
 			return (IAST) fEngine.evaluate(ReplaceAll(options, fDefaultOptionsList));
 		}
 		return options;
-	}
-
-	/**
-	 * Map the <code>MonomialOrder-&gt;...</code> option to JAS TermOrder.
-	 * 
-	 * @param defaultTermOrder
-	 *            the term order which should be used as default if no MonomialOrder option is set.
-	 * @return
-	 */
-	public TermOrder monomialOrder(final TermOrder defaultTermOrder) {
-		TermOrder termOrder = defaultTermOrder;
-		IExpr option = getOption(F.MonomialOrder);
-		if (option.isSymbol()) {
-			// String orderStr = option.toString();
-			termOrder = monomialOrder((ISymbol) option, termOrder);
-		}
-		return termOrder;
-	}
-
-	/**
-	 * Map the polynomial order option symbol to JAS TermOrder.
-	 * 
-	 * @param orderOption
-	 * @param defaultTermOrder
-	 * @return
-	 */
-	public static TermOrder monomialOrder(ISymbol orderOption, TermOrder defaultTermOrder) {
-		TermOrder termOrder = defaultTermOrder;
-		if (orderOption == F.Lexicographic) {
-			termOrder = TermOrderByName.Lexicographic;
-		} else if (orderOption == F.NegativeLexicographic) {
-			termOrder = TermOrderByName.NegativeLexicographic;
-		} else if (orderOption == F.DegreeLexicographic) {
-			termOrder = TermOrderByName.DegreeLexicographic;
-		} else if (orderOption == F.DegreeReverseLexicographic) {
-			termOrder = TermOrderByName.DegreeReverseLexicographic;
-		} else if (orderOption == F.NegativeDegreeLexicographic) {
-			termOrder = TermOrderByName.NegativeDegreeLexicographic;
-		} else if (orderOption == F.NegativeDegreeReverseLexicographic) {
-			termOrder = TermOrderByName.NegativeDegreeReverseLexicographic;
-		}
-		return termOrder;
 	}
 
 }
