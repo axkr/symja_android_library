@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 
 import org.matheclipse.combinatoric.AbstractListStepVisitor;
 import org.matheclipse.combinatoric.NumberPartitionsIterator;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -42,7 +43,7 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
 
 	@Override
 	public boolean visit(int[][] result) {
-		return !matchSinglePartition(result, stackMatcher); 
+		return !matchSinglePartition(result, stackMatcher);
 	}
 
 	/**

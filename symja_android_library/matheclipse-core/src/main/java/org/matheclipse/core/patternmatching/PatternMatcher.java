@@ -133,7 +133,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	 * 
 	 */
 	@SuppressWarnings("serial")
-	public final class StackMatcher extends ArrayDeque<Entry> {
+	/* package private */ final class StackMatcher extends ArrayDeque<Entry> {
 		final EvalEngine fEngine;
 
 		public StackMatcher(EvalEngine engine) {
