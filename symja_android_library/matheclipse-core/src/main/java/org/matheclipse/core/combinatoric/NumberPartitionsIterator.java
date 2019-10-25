@@ -1,4 +1,4 @@
-package org.matheclipse.combinatoric;
+package org.matheclipse.core.combinatoric;
 
 /**
  * Partition a set and visit all steps of the algorithm with an <code>IStepVisitor</code>

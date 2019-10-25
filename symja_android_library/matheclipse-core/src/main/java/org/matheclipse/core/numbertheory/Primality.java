@@ -12,9 +12,9 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.matheclipse.combinatoric.KSubsets;
-import org.matheclipse.combinatoric.KSubsets.KSubsetsList;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.combinatoric.KSubsets;
+import org.matheclipse.core.combinatoric.KSubsets.KSubsetsList;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.expression.AbstractIntegerSym;

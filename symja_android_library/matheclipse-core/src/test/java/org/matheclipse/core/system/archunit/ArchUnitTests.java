@@ -84,6 +84,23 @@ public class ArchUnitTests extends TestCase {
 		myRule.check(importedClasses);
 	}
 
+	/**
+	 * <p>
+	 * Split in packages <code>org.matheclipse.core..</code> and <code>org.matheclipse.parser..</code>.
+	 * <code>org.matheclipse.parser..</code> should not call Symja <code>IExpr</code> object hierarchy.
+	 * </p>
+	 * <b>Note:</b>The <code>ExprParser</code> in package <code>org.matheclipse.core.parser..</code> is allowed to call
+	 * Symja <code>IExpr</<code> object hierarchy.
+	 */
+	public void testNoIExprInParser() {
+		JavaClasses importedClasses = new ClassFileImporter().importPackages("org.matheclipse");
+
+		ArchRule rule = classes().that().haveSimpleName("IExpr").or().haveSimpleName("IAST").//
+				should().onlyBeAccessed().byAnyPackage(//
+						"org.matheclipse.core..");
+		rule.check(importedClasses);
+	}
+
 	public void testLogicNG() {
 		// LogicNG library
 		JavaClasses importedClasses = new ClassFileImporter().importPackages("org");

@@ -23,6 +23,7 @@ import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.FlowControlException;
 import org.matheclipse.core.eval.exception.IllegalArgument;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -55,7 +56,6 @@ import org.matheclipse.core.reflection.system.Product;
 import org.matheclipse.core.reflection.system.Sum;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
 import org.matheclipse.core.visit.VisitorRemoveLevelSpecification;
-import org.matheclipse.parser.client.math.MathException;
 
 public final class ListFunctions {
 
@@ -1022,9 +1022,9 @@ public final class ListFunctions {
 		 *
 		 */
 		@SuppressWarnings("serial")
-		private static class StopException extends MathException {
+		private static class StopException extends FlowControlException {
 			public StopException() {
-				super("Stop Cases() evaluation");
+				super();
 			}
 		}
 

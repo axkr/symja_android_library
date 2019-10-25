@@ -1,7 +1,7 @@
 package org.matheclipse.core.patternmatching;
 
-import org.matheclipse.combinatoric.IStepVisitor;
-import org.matheclipse.combinatoric.MultisetPartitionsIterator;
+import org.matheclipse.core.combinatoric.IStepVisitor;
+import org.matheclipse.core.combinatoric.MultisetPartitionsIterator;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;

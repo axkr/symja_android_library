@@ -2,8 +2,8 @@ package org.matheclipse.core.patternmatching;
 
 import javax.annotation.Nonnull;
 
-import org.matheclipse.combinatoric.IStepVisitor;
-import org.matheclipse.combinatoric.MultisetPartitionsIterator;
+import org.matheclipse.core.combinatoric.IStepVisitor;
+import org.matheclipse.core.combinatoric.MultisetPartitionsIterator;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;

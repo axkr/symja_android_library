@@ -5,7 +5,6 @@ import java.math.RoundingMode;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
-import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -572,12 +571,7 @@ public class Num implements INum {
 	public double pow(final int exp) {
 		return Math.pow(fDouble, exp);
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.matheclipse.parser.interfaces.IDouble#pow(org.matheclipse.parser. interfaces .IDouble)
-	 */
+ 
 	@Override
 	public INum pow(final INum val) {
 		return valueOf(Math.pow(fDouble, val.getRealPart()));

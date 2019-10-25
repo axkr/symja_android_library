@@ -1,4 +1,4 @@
-package org.matheclipse.combinatoric;
+package org.matheclipse.core.combinatoric;
 
 public interface IStepVisitor {
 

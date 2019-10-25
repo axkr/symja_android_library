@@ -1,10 +1,6 @@
 package org.matheclipse.parser.client.math;
 
-import javax.naming.ldap.ControlFactory;
-
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.eval.exception.FlowControlException;
-import org.matheclipse.core.interfaces.IExpr;
 
 public class MathException extends RuntimeException {
 
@@ -19,7 +15,7 @@ public class MathException extends RuntimeException {
 	 * @throws Exception
 	 *             if any of the listed tensors is null
 	 */
-	public static MathException of(IExpr... exprs) {
+	public static MathException of(Object... exprs) {
 		StringBuilder buf = new StringBuilder();
 		for (int i = 0; i < exprs.length; i++) {
 			buf.append(exprs[i].toString());
@@ -34,7 +30,6 @@ public class MathException extends RuntimeException {
 	 * Constructs a new MathException with the specified detail <code>message=null</code>, <code>cause=null</code>,
 	 * <code>enableSuppression=false</code>, and <code>writableStackTrace=false</code> .
 	 * 
-	 * @see FlowControlException
 	 */
 	public MathException() {
 		super(null, null, false, false);

@@ -22,7 +22,6 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.math.MathException;
 
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModIntegerRing;

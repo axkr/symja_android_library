@@ -104,7 +104,6 @@ import org.matheclipse.core.parser.ExprParserFactory;
 import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.trie.Tries;
-import org.matheclipse.parser.client.SyntaxError;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -4321,7 +4320,7 @@ public class F {
 	 * @return
 	 * @throws SyntaxError
 	 */
-	public static IExpr symjify(final String str) throws SyntaxError {
+	public static IExpr symjify(final String str) {
 		return symjify(str, true);
 	}
 
@@ -4335,7 +4334,7 @@ public class F {
 	 * @return
 	 * @throws SyntaxError
 	 */
-	public static IExpr symjify(final String str, boolean evaluate) throws SyntaxError {
+	public static IExpr symjify(final String str, boolean evaluate) {
 		EvalEngine engine = EvalEngine.get();
 		ExprParser parser = new ExprParser(engine);
 		IExpr temp = parser.parse(str);
