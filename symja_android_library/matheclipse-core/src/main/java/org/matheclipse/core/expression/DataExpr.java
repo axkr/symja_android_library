@@ -1,7 +1,6 @@
 package org.matheclipse.core.expression;
 
 import org.jgrapht.graph.AbstractBaseGraph;
-import org.jgrapht.graph.DefaultDirectedGraph;
 import org.matheclipse.core.builtin.GraphFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.data.ExprEdge;
@@ -21,7 +20,7 @@ import org.matheclipse.core.visit.IVisitorLong;
  * @see org.matheclipse.core.interfaces.IDataExpr
  */
 public abstract class DataExpr<T> implements IDataExpr<T> {
- 
+
 	private static final long serialVersionUID = 4987827851920443376L;
 
 	private IBuiltInSymbol fHead;

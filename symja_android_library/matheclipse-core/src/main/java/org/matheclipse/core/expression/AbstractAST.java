@@ -580,12 +580,12 @@ public abstract class AbstractAST implements IASTMutable {
 		public final boolean isZERO() {
 			return false;
 		}
-		
+
 		@Override
-		public IExpr map(Function<? super IExpr,? extends IExpr> mapper) {
+		public IExpr map(Function<? super IExpr, ? extends IExpr> mapper) {
 			return this;
 		}
-		
+
 		@Override
 		public final IAST orElse(final IAST other) {
 			return other;
@@ -1293,8 +1293,8 @@ public abstract class AbstractAST implements IASTMutable {
 		IASTAppendable[] result = new IASTAppendable[2];
 		result[0] = copyHead();
 		result[1] = copyHead();
-		 filterFunction(result[0], result[1], function); 
-		return result; 
+		filterFunction(result[0], result[1], function);
+		return result;
 	}
 
 	/** {@inheritDoc} */
@@ -1374,8 +1374,8 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/**
 	 * Select all elements by applying the <code>function</code> to each argument in this <code>AST</code> and append
-	 * the result elements for which the <code>function</code> returns non <code>F.NIL</code> elements to the <code>filterAST</code>,
-	 * or otherwise append the argument to the <code>restAST</code>.
+	 * the result elements for which the <code>function</code> returns non <code>F.NIL</code> elements to the
+	 * <code>filterAST</code>, or otherwise append the argument to the <code>restAST</code>.
 	 * 
 	 * @param filterAST
 	 *            the non <code>F.NIL</code> elements which were returned by the <code>function#apply()</code> method

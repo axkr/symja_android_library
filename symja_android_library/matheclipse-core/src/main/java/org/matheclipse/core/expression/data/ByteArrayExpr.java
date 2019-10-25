@@ -1,9 +1,6 @@
 package org.matheclipse.core.expression.data;
 
 import org.gavaghan.geodesy.GlobalPosition;
-import org.jgrapht.Graph;
-import org.jgrapht.graph.DefaultDirectedWeightedGraph;
-import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;

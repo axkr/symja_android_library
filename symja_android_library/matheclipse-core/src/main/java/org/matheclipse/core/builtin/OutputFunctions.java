@@ -6,7 +6,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jgrapht.alg.util.Pair;
+import static java.util.AbstractMap.*;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
@@ -497,11 +497,11 @@ public final class OutputFunctions {
 	}
 
 	private static class TreeForm extends AbstractCoreFunctionEvaluator {
-		private static void vertexToVisjs(StringBuilder buf, List<Pair<String, Integer>> vertexSet) {
+		private static void vertexToVisjs(StringBuilder buf, List<SimpleImmutableEntry<String, Integer>> vertexSet) {
 			buf.append("var nodes = new vis.DataSet([\n");
 			boolean first = true;
 			int counter = 1;
-			for (Pair<String, Integer> expr : vertexSet) {
+			for (SimpleImmutableEntry<String, Integer> expr : vertexSet) {
 				// {id: 1, label: 'Node 1'},
 				if (first) {
 					buf.append("  {id: ");
@@ -510,29 +510,29 @@ public final class OutputFunctions {
 				}
 				buf.append(counter++);
 				buf.append(", label: '");
-				buf.append(expr.getFirst().toString());
+				buf.append(expr.getKey().toString());
 				buf.append("', level: ");
-				buf.append(expr.getSecond().toString());
+				buf.append(expr.getValue().toString());
 				buf.append("}\n");
 				first = false;
 			}
 			buf.append("]);\n");
 		}
 
-		private static void edgesToVisjs(StringBuilder buf, List<Pair<Integer, Integer>> edgeSet) {
+		private static void edgesToVisjs(StringBuilder buf, List<SimpleImmutableEntry<Integer, Integer>> edgeSet) {
 			boolean first = true;
 
 			buf.append("var edges = new vis.DataSet([\n");
-			for (Pair<Integer, Integer> edge : edgeSet) {
+			for (SimpleImmutableEntry<Integer, Integer> edge : edgeSet) {
 				// {from: 1, to: 3},
 				if (first) {
 					buf.append("  {from: ");
 				} else {
 					buf.append(", {from: ");
 				}
-				buf.append(edge.getFirst());
+				buf.append(edge.getKey());
 				buf.append(", to: ");
-				buf.append(edge.getSecond());
+				buf.append(edge.getValue());
 				// , arrows: { to: { enabled: true, type: 'arrow'}}
 				buf.append(" , arrows: { to: { enabled: true, type: 'arrow'}}");
 				buf.append("}\n");
@@ -553,8 +553,8 @@ public final class OutputFunctions {
 					}
 				}
 				IExpr arg1 = engine.evaluate(ast.arg1());
-				List<Pair<String, Integer>> vertexList = new ArrayList<Pair<String, Integer>>();
-				List<Pair<Integer, Integer>> edgeList = new ArrayList<Pair<Integer, Integer>>();
+				List<SimpleImmutableEntry<String, Integer>> vertexList = new ArrayList<SimpleImmutableEntry<String, Integer>>();
+				List<SimpleImmutableEntry<Integer, Integer>> edgeList = new ArrayList<SimpleImmutableEntry<Integer, Integer>>();
 				StringBuilder jsControl = new StringBuilder();
 				if (maxLevel > 0 && arg1.isAST()) {
 					IAST tree = (IAST) arg1;
@@ -564,7 +564,7 @@ public final class OutputFunctions {
 					edgesToVisjs(jsControl, edgeList);
 					return F.JSFormData(jsControl.toString(), "treeform");
 				} else {
-					vertexList.add(new Pair<String, Integer>(arg1.toString(), Integer.valueOf(0)));
+					vertexList.add(new SimpleImmutableEntry<String, Integer>(arg1.toString(), Integer.valueOf(0)));
 					vertexToVisjs(jsControl, vertexList);
 					edgesToVisjs(jsControl, edgeList);
 					return F.JSFormData(jsControl.toString(), "treeform");
@@ -579,16 +579,16 @@ public final class OutputFunctions {
 		}
 
 		private static void treeToGraph(IAST tree, final int level, final int maxLevel, int[] currentCount,
-				List<Pair<String, Integer>> vertexList, List<Pair<Integer, Integer>> edgeList) {
-			vertexList.add(new Pair<String, Integer>(tree.head().toString(), Integer.valueOf(level)));
+				List<SimpleImmutableEntry<String, Integer>> vertexList, List<SimpleImmutableEntry<Integer, Integer>> edgeList) {
+			vertexList.add(new SimpleImmutableEntry<String, Integer>(tree.head().toString(), Integer.valueOf(level)));
 			int currentNode = vertexList.size();
 			final int nextLevel = level + 1;
 			for (int i = 1; i < tree.size(); i++) {
 				currentCount[0]++;
-				edgeList.add(new Pair<Integer, Integer>(currentNode, currentCount[0]));
+				edgeList.add(new SimpleImmutableEntry<Integer, Integer>(currentNode, currentCount[0]));
 				IExpr arg = tree.get(i);
 				if (nextLevel >= maxLevel || !arg.isAST()) {
-					vertexList.add(new Pair<String, Integer>(arg.toString(), nextLevel));
+					vertexList.add(new SimpleImmutableEntry<String, Integer>(arg.toString(), nextLevel));
 				} else {
 					treeToGraph((IAST) arg, nextLevel, maxLevel, currentCount, vertexList, edgeList);
 				}

@@ -84,8 +84,48 @@ public class GraphFunctions {
 	}
 
 	/**
-	 * <code>Graph</code> constructor.
-	 *
+	 * <pre>
+	 * <code>Graph({edge1,...,edgeN})
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * create a graph from the given edges <code>edge1,...,edgeN</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)">Wikipedia - Graph</a></li>
+	 * <li><a href="https://en.wikipedia.org/wiki/Graph_theory">Wikipedia - Graph theory</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * A directed graph:
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Graph({1 -&gt; 2, 2 -&gt; 3, 3 -&gt; 4, 4 -&gt; 1})  
+	 * </code>
+	 * </pre>
+	 * <p>
+	 * An undirected graph:
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Graph({1 &lt;-&gt; 2, 2 &lt;-&gt; 3, 3 &lt;-&gt; 4, 4 &lt;-&gt; 1})   
+	 * </code>
+	 * </pre>
+	 * <p>
+	 * An undirected weighted graph:
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Graph({1 &lt;-&gt; 2, 2 &lt;-&gt; 3, 3 &lt;-&gt; 4, 4 &lt;-&gt; 1},{EdgeWeight-&gt;{2.0,3.0,4.0, 5.0}})   
+	 * </code>
+	 * </pre>
 	 */
 	private static class GraphCTor extends AbstractEvaluator {
 
@@ -154,6 +194,26 @@ public class GraphFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>GraphCenter(graph)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * compute the <code>graph</code> center. The center of a <code>graph</code> is the set of vertices of graph
+	 * eccentricity equal to the <code>graph</code> radius.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Graph_center">Wikipedia - Graph center</a></li>
+	 * <li><a href="https://en.wikipedia.org/wiki/Graph_theory">Wikipedia - Graph theory</a></li>
+	 * </ul>
+	 */
 	private static class GraphCenter extends AbstractEvaluator {
 
 		@Override
@@ -184,6 +244,26 @@ public class GraphFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>GraphDiameter(graph)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * return the diameter of the <code>graph</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Distance_(graph_theory)#Related_concepts">Wikipedia - Distance (graph
+	 * theory) - Related concepts</a></li>
+	 * <li><a href="https://en.wikipedia.org/wiki/Graph_theory">Wikipedia - Graph theory</a></li>
+	 * </ul>
+	 */
 	private static class GraphDiameter extends AbstractEvaluator {
 
 		@Override
@@ -218,6 +298,19 @@ public class GraphFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>GraphPeriphery(graph)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * compute the <code>graph</code> periphery. The periphery of a <code>graph</code> is the set of vertices of graph
+	 * eccentricity equal to the graph diameter.
+	 * </p>
+	 * </blockquote>
+	 */
 	private static class GraphPeriphery extends AbstractEvaluator {
 
 		@Override
@@ -259,6 +352,35 @@ public class GraphFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>GraphQ(expr)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * test if <code>expr</code> is a graph object.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)">Wikipedia - Graph</a></li>
+	 * <li><a href="https://en.wikipedia.org/wiki/Graph_theory">Wikipedia - Graph theory</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; GraphQ(Graph({1 -&gt; 2, 2 -&gt; 3, 1 -&gt; 3, 4 -&gt; 2}) ) 
+	 * True
+	 * 				
+	 * &gt;&gt; GraphQ( Sin(x) ) 
+	 * False
+	 * </code>
+	 * </pre>
+	 */
 	private static class GraphQ extends AbstractEvaluator {
 
 		@Override
@@ -284,6 +406,22 @@ public class GraphFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>GraphRadius(graph)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * return the radius of the <code>graph</code>.
+	 * </p>
+	 * </blockquote>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Distance_(graph_theory)#Related_concepts">Wikipedia - Distance (graph
+	 * theory) - Related concepts</a></li>
+	 * </ul>
+	 */
 	private static class GraphRadius extends AbstractEvaluator {
 
 		@Override
@@ -319,6 +457,26 @@ public class GraphFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code> FindShortestTour({{p11, p12}, {p21, p22}, {p31, p32}, ...})
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * find a shortest tour in the <code>graph</code> with minimum <code>EuclideanDistance</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Travelling_salesman_problem">Wikipedia - Travelling salesman
+	 * problem</a></li>
+	 * </ul>
+	 * <h3>Related terms</h3>
+	 */
 	private static class FindShortestTour extends AbstractEvaluator {
 
 		@Override
@@ -425,6 +583,30 @@ public class GraphFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code> FindSpanningTree(graph)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * find the minimum spanning tree in the <code>graph</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Minimum_spanning_tree">Wikipedia - Minimum spanning tree</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; FindSpanningTree(Graph({a,b,c,d,e,f},{a&lt;-&gt;b,a&lt;-&gt;d,b&lt;-&gt;c,b&lt;-&gt;d,b&lt;-&gt;e,c&lt;-&gt;e,c&lt;-&gt;f,d&lt;-&gt;e,e&lt;-&gt;f}, {EdgeWeight-&gt;{1.0,3.0,6.0,5.0,1.0,5.0,2.0,1.0,4.0}}))
+	 * </code>
+	 * </pre>
+	 */
 	private static class FindSpanningTree extends AbstractEvaluator {
 
 		@Override
@@ -456,6 +638,34 @@ public class GraphFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>AdjacencyMatrix(graph)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * convert the <code>graph</code> into a adjacency matrix.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Adjacency_matrix">Wikipedia - Adjacency matrix</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; AdjacencyMatrix(Graph({1 -&gt; 2, 2 -&gt; 3, 1 -&gt; 3, 4 -&gt; 2})) 
+	 * {{0,1,1,0}, 
+	 *  {0,0,1,0}, 
+	 *  {0,0,0,0}, 
+	 *  {0,1,0,0}}
+	 * </code>
+	 * </pre>
+	 */
 	private static class AdjacencyMatrix extends AbstractEvaluator {
 
 		@Override
@@ -484,6 +694,31 @@ public class GraphFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>EdgeList(graph)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * convert the <code>graph</code> into a list of edges.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Graph_theory">Wikipedia - Graph theory</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; EdgeList(Graph({1 -&gt; 2, 2 -&gt; 3, 1 -&gt; 3, 4 -&gt; 2})) 
+	 * {1-&gt;2,2-&gt;3,1-&gt;3,4-&gt;2}
+	 * </code>
+	 * </pre>
+	 */
 	private static class EdgeList extends AbstractEvaluator {
 
 		@Override
@@ -511,6 +746,34 @@ public class GraphFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>EdgeQ(graph, edge)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * test if <code>edge</code> is an edge in the <code>graph</code> object.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Graph_theory">Wikipedia - Graph theory</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; EdgeQ(Graph({1 -&gt; 2, 2 -&gt; 3, 1 -&gt; 3, 4 -&gt; 2}),2 -&gt; 3) 
+	 * True
+	 * 
+	 * &gt;&gt; EdgeQ(Graph({1 -&gt; 2, 2 -&gt; 3, 1 -&gt; 3, 4 -&gt; 2}),2 -&gt; 4) 
+	 * False
+	 * </code>
+	 * </pre>
+	 */
 	private static class EdgeQ extends AbstractEvaluator {
 
 		@Override
@@ -539,6 +802,18 @@ public class GraphFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>EulerianGraphQ(graph)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>graph</code> is an eulerian graph, and <code>False</code> otherwise.
+	 * </p>
+	 * </blockquote>
+	 */
 	private static class EulerianGraphQ extends AbstractEvaluator {
 
 		@Override
@@ -571,6 +846,33 @@ public class GraphFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>HamiltonianGraphQ(graph)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>graph</code> is an hamiltonian graph, and <code>False</code> otherwise.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Hamiltonian_path">Wikipedia - Hamiltonian path</a></li>
+	 * <li><a href="https://en.wikipedia.org/wiki/Hamiltonian_path_problem">Wikipedia - Hamiltonian path
+	 * problem</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; HamiltonianGraphQ(Graph({1 -&gt; 2, 2 -&gt; 3, 3 -&gt; 4, 4 -&gt; 1}))
+	 * True
+	 * </code>
+	 * </pre>
+	 */
 	private static class HamiltonianGraphQ extends AbstractEvaluator {
 
 		@Override
@@ -603,6 +905,37 @@ public class GraphFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code> FindEulerianCycle(graph)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * find an eulerian cycle in the <code>graph</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Eulerian_path">Wikipedia - Eulerian path</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; FindEulerianCycle(Graph({1 -&gt; 2, 2 -&gt; 3, 3 -&gt; 4, 4 -&gt; 1}))
+	 * {4-&gt;1,1-&gt;2,2-&gt;3,3-&gt;4}
+	 * </code>
+	 * </pre>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; FindEulerianCycle(Graph({1 -&gt; 2, 2 -&gt; 3, 3 -&gt; 4, 3 -&gt; 1}))
+	 * {}
+	 * </code>
+	 * </pre>
+	 */
 	private static class FindEulerianCycle extends AbstractEvaluator {
 
 		@Override
@@ -641,6 +974,33 @@ public class GraphFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code> FindHamiltonianCycle(graph)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * find an hamiltonian cycle in the <code>graph</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Hamiltonian_path">Wikipedia - Hamiltonian path</a></li>
+	 * <li><a href="https://en.wikipedia.org/wiki/Hamiltonian_path_problem">Wikipedia - Hamiltonian path
+	 * problem</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; FindHamiltonianCycle( {1 -&gt; 2, 2 -&gt; 3, 3 -&gt; 4, 4 -&gt; 1} )
+	 * {1-&gt;2,2-&gt;3,3-&gt;4,4-&gt;1}
+	 * </code>
+	 * </pre>
+	 */
 	private static class FindHamiltonianCycle extends AbstractEvaluator {
 
 		@Override
@@ -679,6 +1039,32 @@ public class GraphFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code> FindVertexCover(graph)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * algorithm to find a vertex cover for a <code>graph</code>. A vertex cover is a set of vertices that touches all
+	 * the edges in the graph.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Vertex_cover">Wikipedia - Vertex cover</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; FindVertexCover({1&lt;-&gt;2,1&lt;-&gt;3,2&lt;-&gt;3,3&lt;-&gt;4,3&lt;-&gt;5,3&lt;-&gt;6})
+	 * {3,1}
+	 * </code>
+	 * </pre>
+	 */
 	private static class FindVertexCover extends AbstractEvaluator {
 
 		@Override
@@ -716,6 +1102,25 @@ public class GraphFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code> FindShortestPath(graph, source, destination)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * find a shortest path in the <code>graph</code> from <code>source</code> to <code>destination</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Pathfinding">Wikipedia - Pathfinding</a></li>
+	 * <li><a href="https://en.wikipedia.org/wiki/Shortest_path_problem">Wikipedia - Shortest path problem</a></li>
+	 * </ul>
+	 */
 	private static class FindShortestPath extends AbstractEvaluator {
 
 		@Override
@@ -747,6 +1152,25 @@ public class GraphFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>VertexEccentricity(graph, vertex)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * compute the eccentricity of <code>vertex</code> in the <code>graph</code>. It's the length of the longest
+	 * shortest path from the <code>vertex</code> to every other vertex in the <code>graph</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Distance_(graph_theory)">Wikipedia - Distance (graph_theory)</a></li>
+	 * </ul>
+	 */
 	private static class VertexEccentricity extends AbstractEvaluator {
 
 		@Override
@@ -787,6 +1211,31 @@ public class GraphFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>VertexList(graph)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * convert the <code>graph</code> into a list of vertices.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Graph_theory">Wikipedia - Graph theory</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; VertexList(Graph({1 -&gt; 2, 2 -&gt; 3, 1 -&gt; 3, 4 -&gt; 2})) 
+	 * {1,2,3,4}
+	 * </code>
+	 * </pre>
+	 */
 	private static class VertexList extends AbstractEvaluator {
 
 		@Override
@@ -821,6 +1270,34 @@ public class GraphFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>VertexQ(graph, vertex)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * test if <code>vertex</code> is a vertex in the <code>graph</code> object.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Graph_theory">Wikipedia - Graph theory</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; VertexQ(Graph({1 -&gt; 2, 2 -&gt; 3, 1 -&gt; 3, 4 -&gt; 2}),3) 
+	 * True
+	 * 
+	 * &gt;&gt; VertexQ(Graph({1 -&gt; 2, 2 -&gt; 3, 1 -&gt; 3, 4 -&gt; 2}),5) 
+	 * False
+	 * </code>
+	 * </pre>
+	 */
 	private static class VertexQ extends AbstractEvaluator {
 
 		@Override
@@ -901,7 +1378,7 @@ public class GraphFunctions {
 				g = new DefaultUndirectedWeightedGraph<IExpr, ExprWeightedEdge>(ExprWeightedEdge.class);
 			}
 
-			IAST list = (IAST) arg1;
+			IAST list = arg1;
 			for (int i = 1; i < list.size(); i++) {
 				IAST edge = list.getAST(i);
 				g.addVertex(edge.arg1());
@@ -1063,7 +1540,7 @@ public class GraphFunctions {
 	 */
 	private static IASTAppendable[] weightedEdgesToIExpr(Graph<IExpr, ExprWeightedEdge> graph) {
 
-		Set<ExprWeightedEdge> edgeSet = (Set<ExprWeightedEdge>) graph.edgeSet();
+		Set<ExprWeightedEdge> edgeSet = graph.edgeSet();
 		IASTAppendable edges = F.ListAlloc(edgeSet.size());
 		IASTAppendable weights = F.ListAlloc(edgeSet.size());
 		GraphType type = graph.getType();
@@ -1193,7 +1670,7 @@ public class GraphFunctions {
 	private static void weightedEdgesToVisjs(Map<IExpr, Integer> map, StringBuilder buf,
 			Graph<IExpr, ExprWeightedEdge> graph) {
 
-		Set<ExprWeightedEdge> edgeSet = (Set<ExprWeightedEdge>) graph.edgeSet();
+		Set<ExprWeightedEdge> edgeSet = graph.edgeSet();
 		IASTAppendable edges = F.ListAlloc(edgeSet.size());
 		IASTAppendable weights = F.ListAlloc(edgeSet.size());
 		GraphType type = graph.getType();
