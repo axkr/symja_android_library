@@ -5,12 +5,10 @@ import java.util.function.UnaryOperator;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.parser.client.math.MathException;
 
 import ch.ethz.idsc.tensor.qty.IQuantity;
 import ch.ethz.idsc.tensor.qty.IUnit;
@@ -62,7 +60,7 @@ public class QuantityFunctions {
 						return IQuantity.of(arg1, IUnit.of(arg2.toString()));
 					}
 				}
-			} catch (MathException e) {
+			} catch (RuntimeException e) {
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
@@ -71,6 +69,7 @@ public class QuantityFunctions {
 
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
@@ -119,7 +118,7 @@ public class QuantityFunctions {
 						return suo.apply(arg1);
 					}
 				}
-			} catch (MathException e) {
+			} catch (RuntimeException e) {
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
@@ -128,6 +127,7 @@ public class QuantityFunctions {
 
 			return F.NIL;
 		}
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
@@ -170,10 +170,10 @@ public class QuantityFunctions {
 					IExpr arg2 = engine.evaluate(ast.arg2());
 					if (arg1.isQuantity()) {
 						IUnit unit = IUnit.of(arg2.toString());
-						return unitConvert((IQuantity)arg1, unit);
+						return unitConvert((IQuantity) arg1, unit);
 					}
 				}
-			} catch (MathException e) {
+			} catch (RuntimeException e) {
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
@@ -182,7 +182,7 @@ public class QuantityFunctions {
 
 			return F.NIL;
 		}
-		
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
@@ -196,7 +196,8 @@ public class QuantityFunctions {
 	private QuantityFunctions() {
 
 	}
-	public  static IExpr unitConvert(IQuantity arg1, IUnit unit) {
+
+	public static IExpr unitConvert(IQuantity arg1, IUnit unit) {
 		ch.ethz.idsc.tensor.qty.UnitConvert unitConvert = ch.ethz.idsc.tensor.qty.UnitConvert.SI();
 		return unitConvert.to(unit).apply(arg1);
 	}

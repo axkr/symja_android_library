@@ -31,7 +31,6 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.IArrayFunction;
 import org.matheclipse.core.eval.util.ISequence;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.eval.util.LevelSpec;
@@ -3046,7 +3045,7 @@ public final class ListFunctions {
 				// throws MathException if Level isn't defined correctly
 				new VisitorLevelSpecification(null, arg1, false, engine);
 				return F.True;
-			} catch (MathException me) {
+			} catch (RuntimeException rex) {
 				// thrown in VisitorLevelSpecification ctor
 			}
 			return F.False;
@@ -5289,7 +5288,7 @@ public final class ListFunctions {
 			} catch (final NoEvalException e) {
 			} catch (final ClassCastException e) {
 				// the iterators are generated only from IASTs
-			
+
 			}
 			return F.NIL;
 		}
@@ -5314,7 +5313,7 @@ public final class ListFunctions {
 			} catch (final NoEvalException e) {
 			} catch (final ClassCastException e) {
 				// the iterators are generated only from IASTs
-			
+
 			}
 			return F.NIL;
 		}
@@ -5778,7 +5777,7 @@ public final class ListFunctions {
 					try {
 						engine.setThrowError(true);
 						return engine.evaluate(temp);
-					} catch (MathException mex) {
+					} catch (RuntimeException rex) {
 						return F.NIL;
 					} finally {
 						engine.setThrowError(te);

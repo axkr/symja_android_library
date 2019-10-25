@@ -8,7 +8,6 @@ import org.hipparchus.fitting.SimpleCurveFitter;
 import org.hipparchus.fitting.WeightedObservedPoints;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -17,7 +16,6 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.math.MathException;
 
 public class CurveFitterFunctions {
 	/**
@@ -256,7 +254,7 @@ public class CurveFitterFunctions {
 								return convertToRulesList(listOfSymbols, values);
 							}
 						}
-					} catch (MathException ex) {
+					} catch (RuntimeException ex) {
 						return engine.printMessage("FindFit: " + ex.getMessage());
 					}
 				}
@@ -302,7 +300,7 @@ public class CurveFitterFunctions {
 					if (addWeightedObservedPoints(data, obs)) {
 						try {
 							return Convert.polynomialFunction2Expr(fitter.fit(obs.toList()), (ISymbol) ast.arg3());
-						} catch (MathException ex) {
+						} catch (RuntimeException ex) {
 							return engine.printMessage("Fit: " + ex.getMessage());
 						}
 					}

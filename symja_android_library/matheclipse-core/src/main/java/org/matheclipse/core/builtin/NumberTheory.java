@@ -57,9 +57,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.numbertheory.Primality;
-import org.matheclipse.core.polynomials.PolynomialsUtils;
 import org.matheclipse.core.visit.VisitorExpr;
-import org.matheclipse.parser.client.math.MathException;
 
 import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
@@ -3125,9 +3123,7 @@ public final class NumberTheory {
 					if (result != null) {
 						return result;
 					}
-				} catch (ArithmeticException e) {
-					// e.printStackTrace();
-				} catch (MathException e) {
+				} catch (RuntimeException rex) {
 					// e.printStackTrace();
 				} catch (ExecutionException e) {
 					// e.printStackTrace();
@@ -3224,7 +3220,7 @@ public final class NumberTheory {
 					}
 				} catch (ArithmeticException e) {
 					// e.printStackTrace();
-				} catch (MathException e) {
+				} catch (RuntimeException rex) {
 					// e.printStackTrace();
 				} catch (ExecutionException e) {
 					// e.printStackTrace();
@@ -3777,10 +3773,10 @@ public final class NumberTheory {
 				return super.visitAST(ast);
 			}
 
-//			@Override
-//			public IExpr visit(IComplex element) {
-//				return element;
-//			}
+			// @Override
+			// public IExpr visit(IComplex element) {
+			// return element;
+			// }
 
 			@Override
 			public IExpr visit(IComplexNum element) {
@@ -3792,12 +3788,12 @@ public final class NumberTheory {
 				return F.fraction(element.getRealPart(), epsilon);
 			}
 
-//			private IRational getRational(ISignedNumber signedNumber) {
-//				if (signedNumber.isRational()) {
-//					return (IRational) signedNumber;
-//				}
-//				return F.fraction(signedNumber.doubleValue(), epsilon);
-//			}
+			// private IRational getRational(ISignedNumber signedNumber) {
+			// if (signedNumber.isRational()) {
+			// return (IRational) signedNumber;
+			// }
+			// return F.fraction(signedNumber.doubleValue(), epsilon);
+			// }
 		}
 
 		@Override

@@ -37,7 +37,6 @@ import org.matheclipse.core.visit.AbstractVisitorLong;
 import org.matheclipse.core.visit.IndexedLevel;
 import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
-import org.matheclipse.parser.client.math.MathException;
 
 public class Structure {
 	private final static Set<ISymbol> LOGIC_EQUATION_HEADS = Collections
@@ -230,10 +229,8 @@ public class Structure {
 						return expr;
 					}
 				}
-			} catch (final MathException e) {
+			} catch (final RuntimeException e) {
 				return engine.printMessage("Apply: " + e.getMessage());
-			} catch (final ArithmeticException e) {
-
 			}
 			return F.NIL;
 		}
@@ -929,7 +926,7 @@ public class Structure {
 					level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), 1, heads);
 				}
 				return arg2.accept(level).orElse(arg2);
-			} catch (final MathException e) {
+			} catch (final RuntimeException e) {
 				return engine.printMessage("Map: " + e.getMessage());
 			}
 		}
@@ -1054,7 +1051,7 @@ public class Structure {
 				if (arg2.isAST()) {
 					return level.visitAST(((IAST) arg2), new int[0]).orElse(arg2);
 				}
-			} catch (final MathException e) {
+			} catch (final RuntimeException e) {
 				return engine.printMessage("MapIndexed: " + e.getMessage());
 			}
 			return F.NIL;
