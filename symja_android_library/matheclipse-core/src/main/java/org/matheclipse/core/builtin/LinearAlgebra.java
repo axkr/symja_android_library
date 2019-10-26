@@ -49,6 +49,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -2425,7 +2426,9 @@ public final class LinearAlgebra {
 					} else {
 						return underdeterminedSystem(mat, vec, engine);
 					}
-				} catch (final Exception e) {
+				} catch (LimitException le) {
+					throw le;
+				} catch (final RuntimeException e) {
 					if (Config.SHOW_STACKTRACE) {
 						e.printStackTrace();
 					}

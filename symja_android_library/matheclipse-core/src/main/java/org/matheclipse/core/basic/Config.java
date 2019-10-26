@@ -62,7 +62,12 @@ public class Config {
 	 * Maximum output size in characters for an output form (i.e. TeXForm, MathMLForm,...I)
 	 */
 	public static int MAX_OUTPUT_SIZE = Integer.MAX_VALUE;
-	
+
+	/**
+	 * Maximum number of elements which could be allocated for an AST
+	 **/
+	public static int MAX_AST_SIZE = Integer.MAX_VALUE;
+
 	static {
 		EXPR_CACHE = CacheBuilder.newBuilder().maximumSize(MAX_EXPR_CACHE_SIZE).weakKeys().weakValues().build();
 	}

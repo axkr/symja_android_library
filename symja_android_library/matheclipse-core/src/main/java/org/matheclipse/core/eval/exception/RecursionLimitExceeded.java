@@ -8,11 +8,9 @@ import org.matheclipse.parser.client.math.MathException;
  * Exception which will be thrown, if the recursion limit of the evaluation
  * stack was exceeded.
  */
-public class RecursionLimitExceeded extends MathException {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 9179261773009842147L;
+public class RecursionLimitExceeded extends LimitException {
+
+	private static final long serialVersionUID = 3610700158103716674L;
 
 	int fLimit;
 

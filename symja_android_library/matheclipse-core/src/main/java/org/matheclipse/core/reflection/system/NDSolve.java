@@ -7,6 +7,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -139,6 +140,8 @@ public class NDSolve extends AbstractFunctionEvaluator {
 
 					}
 				}
+			} catch (LimitException le) {
+				throw le;
 			} catch (RuntimeException rex) {
 				if (Config.SHOW_STACKTRACE) {
 					rex.printStackTrace();

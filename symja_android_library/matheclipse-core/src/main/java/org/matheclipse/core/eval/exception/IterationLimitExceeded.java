@@ -7,12 +7,13 @@ import org.matheclipse.parser.client.math.MathException;
  * Exception which will be thrown, if the iteration limit of the evaluation loop
  * was exceeded.
  */
-public class IterationLimitExceeded extends MathException {
+public class IterationLimitExceeded extends LimitException {
+
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 4334847679009499117L;
-
+	private static final long serialVersionUID = -5953619629034039117L;
+	
 	/**
 	 * 
 	 */

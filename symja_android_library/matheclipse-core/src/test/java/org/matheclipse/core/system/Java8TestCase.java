@@ -168,24 +168,27 @@ public class Java8TestCase extends AbstractTestCase {
 	}
 
 	public static void testParallel() {
-		// simple example - real word example needs more preparing
-		IAST range = (IAST) F.Range.of(1000);
+		try {
+			// simple example - real word example needs more preparing
+			IAST range = (IAST) F.Range.of(1000);
 
-		System.out.println("Normal...");
-		long start = System.currentTimeMillis();
-		range.stream().forEach(x -> System.out.print(x.toString() + ","));
-		long end = System.currentTimeMillis();
-		System.out.println();
-		System.out.println("Time: " + (end - start));
+			System.out.println("Normal...");
+			long start = System.currentTimeMillis();
+			range.stream().forEach(x -> System.out.print(x.toString() + ","));
+			long end = System.currentTimeMillis();
+			System.out.println();
+			System.out.println("Time: " + (end - start));
 
-		System.out.println("Parallel...");
-		IAST range2 = (IAST) F.Range.of(1000);
-		long start2 = System.currentTimeMillis();
-		range2.stream().parallel().forEach(x -> System.out.print(x.toString() + ","));
-		long end2 = System.currentTimeMillis();
-		System.out.println();
-		System.out.println("Time: " + (end2 - start2));
-
+			System.out.println("Parallel...");
+			IAST range2 = (IAST) F.Range.of(1000);
+			long start2 = System.currentTimeMillis();
+			range2.stream().parallel().forEach(x -> System.out.print(x.toString() + ","));
+			long end2 = System.currentTimeMillis();
+			System.out.println();
+			System.out.println("Time: " + (end2 - start2));
+		} catch (RuntimeException rex) {
+			fail();
+		}
 	}
 
 }

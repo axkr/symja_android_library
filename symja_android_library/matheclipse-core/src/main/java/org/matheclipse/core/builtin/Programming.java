@@ -3,7 +3,6 @@ package org.matheclipse.core.builtin;
 import static org.matheclipse.core.expression.F.Divide;
 import static org.matheclipse.core.expression.F.List;
 
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -16,6 +15,7 @@ import java.util.function.Function;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.BreakException;
 import org.matheclipse.core.eval.exception.ConditionException;
@@ -1988,7 +1988,7 @@ public final class Programming {
 					}
 				}
 			});
-			if (!convert[0] ) {
+			if (!convert[0]) {
 				stream.println("ERROR-IN-OUTPUTFORM");
 				return F.Null;
 			}
@@ -2363,6 +2363,8 @@ public final class Programming {
 				} catch (org.matheclipse.core.eval.exception.TimeoutException e) {
 					return F.$Aborted;
 				} catch (final RecursionLimitExceeded re) {
+					throw re;
+				} catch (final ASTElementLimitExceeded re) {
 					throw re;
 				} catch (final RuntimeException rex) {
 					if (Config.SHOW_STACKTRACE) {

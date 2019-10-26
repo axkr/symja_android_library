@@ -34,7 +34,9 @@ import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -61,7 +63,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	/**
 	 * Constructs a new instance of list with capacity <code>10</code>.
 	 */
-	/*package protected */ HMArrayList() {
+	/* package protected */ HMArrayList() {
 		this(10);
 	}
 
@@ -72,7 +74,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	 * @param collection
 	 *            the collection of elements to add.
 	 */
-	/*package protected */ HMArrayList(Collection<? extends IExpr> collection) {
+	/* package protected */ HMArrayList(Collection<? extends IExpr> collection) {
 		firstIndex = hashValue = 0;
 		Object[] objects = collection.toArray();
 		int size = objects.length;
@@ -91,7 +93,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	 * @param arguments
 	 *            the argument expressions
 	 */
-	/*package protected */ HMArrayList(IExpr headExpr, IExpr... arguments) {
+	/* package protected */ HMArrayList(IExpr headExpr, IExpr... arguments) {
 		firstIndex = hashValue = 0;
 		lastIndex = arguments.length + 1;
 		switch (lastIndex) {
@@ -595,9 +597,9 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 			return true;
 		}
 		if (obj instanceof AbstractAST) {
-//			if (obj instanceof AST0) {
-//				return obj.equals(this);
-//			}
+			// if (obj instanceof AST0) {
+			// return obj.equals(this);
+			// }
 			IExpr head = array[firstIndex];
 			if (head != ((AbstractAST) obj).head() && head instanceof ISymbol) {
 				// compared with ISymbol object identity
@@ -718,7 +720,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 			action.accept(array[i]);
 		}
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public final int indexOf(Predicate<? super IExpr> predicate) {
@@ -740,10 +742,10 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 			if (temp.isPresent()) {
 				return temp;
 			}
-		} 
+		}
 		return F.NIL;
 	}
-	
+
 	@Override
 	public final IExpr get(int location) {
 		return array[firstIndex + location];
@@ -930,6 +932,9 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	}
 
 	private static IExpr[] newElementArray(int size) {
+		if (Config.MAX_AST_SIZE < size) {
+			throw new ASTElementLimitExceeded(size);
+		}
 		return new IExpr[size];
 	}
 

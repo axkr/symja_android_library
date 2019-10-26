@@ -26,6 +26,7 @@ import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
+import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -219,6 +220,8 @@ public class PolynomialFunctions {
 				IExpr temp = poly.coefficient(expArr);
 				F.REMEMBER_AST_CACHE.put(ast, temp);
 				return temp;
+			} catch (LimitException le) {
+				throw le;
 			} catch (RuntimeException ae) {
 				if (Config.SHOW_STACKTRACE) {
 					ae.printStackTrace();
@@ -2166,6 +2169,8 @@ public class PolynomialFunctions {
 				return F.List();
 			}
 			return poly.coefficientList();
+		} catch (LimitException le) {
+			throw le;
 		} catch (RuntimeException ex) {
 			if (Config.SHOW_STACKTRACE) {
 				ex.printStackTrace();
