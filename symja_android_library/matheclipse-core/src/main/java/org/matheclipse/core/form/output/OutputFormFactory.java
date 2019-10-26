@@ -503,7 +503,7 @@ public class OutputFormFactory {
 	}
 
 	public void convertHead(final Appendable buf, final IExpr obj) throws IOException {
-		convert(buf, obj);
+		convert(buf, obj, Integer.MIN_VALUE, false);
 	}
 
 	private void convertPlusOperator(final Appendable buf, final IAST plusAST, final InfixOperator oper,
@@ -536,7 +536,7 @@ public class OutputFormFactory {
 		} else {
 			if (plusArg.isNegativeSigned()) {
 				// special case negative number or -Infinity...
-				convert(buf, plusArg);
+				convert(buf, plusArg, Integer.MIN_VALUE, false);
 			} else {
 				if (caller == PLUS_CALL) {
 					append(buf, "+");
@@ -602,7 +602,7 @@ public class OutputFormFactory {
 			} else {
 				if (plusArg.isNumber() && (((INumber) plusArg).complexSign() < 0)) {
 					// special case negative number:
-					convert(buf, plusArg);
+					convert(buf, plusArg, Integer.MIN_VALUE, false);
 				} else {
 					if (i < size) {
 						append(buf, operatorStr);
@@ -885,8 +885,23 @@ public class OutputFormFactory {
 		return buf.toString();
 	}
 
-	public void convert(final Appendable buf, final IExpr o) throws IOException {
-		convert(buf, o, Integer.MIN_VALUE, false);
+	public boolean convert(final Appendable buf, final IExpr o) {
+		try {
+			convert(buf, o, Integer.MIN_VALUE, false);
+			if (buf instanceof CharSequence) {
+				if (((CharSequence) buf).length() >= Config.MAX_OUTPUT_SIZE) {
+					return false;
+				}
+			}
+			return true;
+		} catch (IOException ioe) {
+		} catch (RuntimeException rex) {
+			if (Config.SHOW_STACKTRACE) {
+				rex.printStackTrace();
+			}
+		} catch (OutOfMemoryError oome) {
+		}
+		return false;
 	}
 
 	private void convertNumber(final Appendable buf, final INumber o, final int precedence, boolean caller)
@@ -931,7 +946,7 @@ public class OutputFormFactory {
 							int n = ((IInteger) a1Head.arg1()).toInt();
 							if (n == 1 || n == 2) {
 								IExpr symbolOrAST = headAST.arg1();
-								convert(buf, symbolOrAST);
+								convert(buf, symbolOrAST, Integer.MIN_VALUE, false);
 								if (n == 1) {
 									append(buf, "'");
 								} else if (n == 2) {
@@ -958,17 +973,17 @@ public class OutputFormFactory {
 					case ID.TwoWayRule:
 					case ID.UndirectedEdge:
 						if (list.isAST2()) {
-							convert(buf, list.arg1());
+							convert(buf, list.arg1(), Integer.MIN_VALUE, false);
 							buf.append("<->");
-							convert(buf, list.arg2());
+							convert(buf, list.arg2(), Integer.MIN_VALUE, false);
 							return;
 						}
 						break;
 					case ID.DirectedEdge:
 						if (list.isAST2()) {
-							convert(buf, list.arg1());
+							convert(buf, list.arg1(), Integer.MIN_VALUE, false);
 							buf.append("->");
-							convert(buf, list.arg2());
+							convert(buf, list.arg2(), Integer.MIN_VALUE, false);
 							return;
 						}
 						break;
@@ -1036,7 +1051,7 @@ public class OutputFormFactory {
 					case ID.Defer:
 					case ID.HoldForm:
 						if (list.isAST1()) {
-							convert(buf, list.arg1());
+							convert(buf, list.arg1(), Integer.MIN_VALUE, false);
 							return;
 						}
 						break;
@@ -1071,9 +1086,9 @@ public class OutputFormFactory {
 						break;
 					case ID.Optional:
 						if (list.isAST2() && (list.arg1().isBlank() || list.arg1().isPattern())) {
-							convert(buf, list.arg1());
+							convert(buf, list.arg1(), Integer.MIN_VALUE, false);
 							buf.append(":");
-							convert(buf, list.arg2());
+							convert(buf, list.arg2(), Integer.MIN_VALUE, false);
 							return;
 						}
 						break;
@@ -1125,7 +1140,7 @@ public class OutputFormFactory {
 		final int listSize = inequality.size();
 		int i = 1;
 		while (i < listSize) {
-			convert(tempBuffer, inequality.get(i++));
+			convert(tempBuffer, inequality.get(i++), Integer.MIN_VALUE, false);
 			if (i == listSize) {
 				if (operPrecedence < precedence) {
 					append(tempBuffer, ")");
@@ -1303,7 +1318,7 @@ public class OutputFormFactory {
 		append(buf, "{");
 		final int listSize = list.size();
 		if (listSize > 1) {
-			convert(buf, list.arg1());
+			convert(buf, list.arg1(), Integer.MIN_VALUE, false);
 		}
 		for (int i = 2; i < listSize; i++) {
 			append(buf, ",");
@@ -1312,7 +1327,7 @@ public class OutputFormFactory {
 				append(buf, ' ');
 
 			}
-			convert(buf, list.get(i));
+			convert(buf, list.get(i), Integer.MIN_VALUE, false);
 		}
 		append(buf, "}");
 	}
@@ -1339,13 +1354,13 @@ public class OutputFormFactory {
 		if (parentheses) {
 			append(buf, "(");
 		}
-		convert(buf, arg1);
+		convert(buf, arg1, Integer.MIN_VALUE, false);
 		if (parentheses) {
 			append(buf, ")");
 		}
 		append(buf, "[[");
 		for (int i = 2; i < list.size(); i++) {
-			convert(buf, list.get(i));
+			convert(buf, list.get(i), Integer.MIN_VALUE, false);
 			if (i < list.argSize()) {
 				append(buf, ",");
 			}
@@ -1485,7 +1500,7 @@ public class OutputFormFactory {
 	public void convertFunctionArgs(final Appendable buf, final IAST list) throws IOException {
 		append(buf, "[");
 		for (int i = 1; i < list.size(); i++) {
-			convert(buf, list.get(i));
+			convert(buf, list.get(i), Integer.MIN_VALUE, false);
 			if (i < list.argSize()) {
 				append(buf, ",");
 			}
@@ -1502,7 +1517,7 @@ public class OutputFormFactory {
 	 */
 	public void convertAST(final Appendable buf, final IAST function) throws IOException {
 		IExpr head = function.head();
-		convert(buf, head);
+		convert(buf, head, Integer.MIN_VALUE, false);
 		convertArgs(buf, head, function);
 	}
 
@@ -1516,11 +1531,11 @@ public class OutputFormFactory {
 		}
 		final int functionSize = function.size();
 		if (functionSize > 1) {
-			convert(buf, function.arg1());
+			convert(buf, function.arg1(), Integer.MIN_VALUE, false);
 		}
 		for (int i = 2; i < functionSize; i++) {
 			append(buf, ",");
-			convert(buf, function.get(i));
+			convert(buf, function.get(i), Integer.MIN_VALUE, false);
 		}
 		if (head.isAST()) {
 			append(buf, "]");

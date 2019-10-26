@@ -1075,7 +1075,9 @@ public final class PatternMatching {
 					final StringBuilder buf = new StringBuilder();
 					for (int i = 1; i < argSize; i++) {
 						IExpr temp = engine.evaluate(ast.get(i));
-						OutputFormFactory.get().convert(buf, temp);
+						if (!OutputFormFactory.get().convert(buf, temp)) {
+							return engine.printMessage("Put: file " + fileName.toString() + "ERROR-IN_OUTPUTFORM");
+						}
 						buf.append('\n');
 						if (i < argSize - 1) {
 							buf.append('\n');

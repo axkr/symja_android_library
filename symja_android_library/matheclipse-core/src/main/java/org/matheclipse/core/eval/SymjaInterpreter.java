@@ -44,8 +44,8 @@ public class SymjaInterpreter extends EvalUtilities {
 	 * Evaluate the expression assigned to this interpreter.
 	 * 
 	 * @param function
-	 *            <code>null</code> if you like to evaluate in symbolic mode;
-	 *            &quot;N&quot; if you like to evaluate in numeric mode
+	 *            <code>null</code> if you like to evaluate in symbolic mode; &quot;N&quot; if you like to evaluate in
+	 *            numeric mode
 	 * @return
 	 */
 	public String interpreter(String function) {
@@ -81,9 +81,11 @@ public class SymjaInterpreter extends EvalUtilities {
 				if (result.equals(F.Null)) {
 					return buf.toString();
 				}
-				OutputFormFactory.get(true).convert(buf, result);
+				if (OutputFormFactory.get(true).convert(buf, result)) {
+					return buf.toString();
+				}
 			}
-			return buf.toString();
+			return "ERROR-IN-OUTPUTFORM";
 		} catch (final RuntimeException re) {
 			Throwable me = re.getCause();
 			if (me instanceof MathException) {
@@ -102,10 +104,9 @@ public class SymjaInterpreter extends EvalUtilities {
 	}
 
 	/**
-	 * Parse the <code>codeString</code> into an <code>IExpr</code> and if
-	 * <code>function</code> unequals <code>null</code>, replace all occurences
-	 * of slot <code>#</code> in the function with the parsed expression. After
-	 * that evaluate the given expression.
+	 * Parse the <code>codeString</code> into an <code>IExpr</code> and if <code>function</code> unequals
+	 * <code>null</code>, replace all occurences of slot <code>#</code> in the function with the parsed expression.
+	 * After that evaluate the given expression.
 	 * 
 	 * @param function
 	 * @return
@@ -141,9 +142,11 @@ public class SymjaInterpreter extends EvalUtilities {
 					if (result.equals(F.Null)) {
 						return buf.toString();
 					}
-					OutputFormFactory.get(true).convert(buf, result);
+					if (OutputFormFactory.get(true).convert(buf, result)) {
+						return buf.toString();
+					}
 				}
-				return buf.toString();
+				return "ERROR-IN-OUTPUTFORM";
 			}
 		} catch (final RuntimeException re) {
 			Throwable me = re.getCause();
@@ -163,8 +166,8 @@ public class SymjaInterpreter extends EvalUtilities {
 	 * Evaluate the expression assigned to this interpreter.
 	 * 
 	 * @param function
-	 *            <code>null</code> if you like to evaluate in symbolic mode;
-	 *            &quot;N&quot; if you like to evaluate in numeric mode
+	 *            <code>null</code> if you like to evaluate in symbolic mode; &quot;N&quot; if you like to evaluate in
+	 *            numeric mode
 	 */
 	public void eval(String function) {
 		String result = interpreter(function);
@@ -172,9 +175,8 @@ public class SymjaInterpreter extends EvalUtilities {
 	}
 
 	/**
-	 * Parse the <code>codeString</code> into an <code>IExpr</code> and if
-	 * <code>function</code> unequals <code>null</code>, replace all occurences
-	 * of the slot <code>#</code> in the function with the parsed expression.
+	 * Parse the <code>codeString</code> into an <code>IExpr</code> and if <code>function</code> unequals
+	 * <code>null</code>, replace all occurences of the slot <code>#</code> in the function with the parsed expression.
 	 * After that evaluate the given expression.
 	 * 
 	 * @param function

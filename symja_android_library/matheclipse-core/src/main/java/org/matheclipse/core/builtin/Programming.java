@@ -1977,21 +1977,21 @@ public final class Programming {
 			}
 			final StringBuilder buf = new StringBuilder();
 			OutputFormFactory out = OutputFormFactory.get();
+			boolean[] convert = new boolean[] { true };
 			ast.forEach(x -> {
 				IExpr temp = engine.evaluate(x);
 				if (temp instanceof IStringX) {
 					buf.append(temp.toString());
 				} else {
-					try {
-						out.convert(buf, temp);
-					} catch (IOException e) {
-						stream.println(e.getMessage());
-						if (Config.DEBUG) {
-							e.printStackTrace();
-						}
+					if (convert[0] && !out.convert(buf, temp)) {
+						convert[0] = true;
 					}
 				}
 			});
+			if (!convert[0] ) {
+				stream.println("ERROR-IN-OUTPUTFORM");
+				return F.Null;
+			}
 			stream.println(buf.toString());
 			return F.Null;
 		}

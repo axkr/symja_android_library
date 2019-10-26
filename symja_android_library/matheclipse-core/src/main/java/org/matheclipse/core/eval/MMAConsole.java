@@ -526,8 +526,11 @@ public class MMAConsole {
 			case TRADITIONALFORM:
 				StringBuilder traditionalBuffer = new StringBuilder();
 				fOutputTraditionalFactory.reset();
-				fOutputTraditionalFactory.convert(traditionalBuffer, result);
-				return traditionalBuffer.toString();
+				if (fOutputTraditionalFactory.convert(traditionalBuffer, result)) {
+					return traditionalBuffer.toString();
+				} else {
+					return "ERROR-IN-TRADITIONALFORM";
+				}
 			case PRETTYFORM:
 				ASCIIPrettyPrinter3 prettyBuffer = new ASCIIPrettyPrinter3();
 				prettyBuffer.convert(result);
@@ -538,8 +541,11 @@ public class MMAConsole {
 			case INPUTFORM:
 				StringBuilder inputBuffer = new StringBuilder();
 				fInputFactory.reset();
-				fInputFactory.convert(inputBuffer, result);
-				return inputBuffer.toString();
+				if (fInputFactory.convert(inputBuffer, result)) {
+					return inputBuffer.toString();
+				} else {
+					return "ERROR-IN-INPUTFORM";
+				}
 			default:
 				if (Desktop.isDesktopSupported()) {
 					IExpr outExpr = result;
@@ -554,8 +560,11 @@ public class MMAConsole {
 
 				StringBuilder strBuffer = new StringBuilder();
 				fOutputFactory.reset();
-				fOutputFactory.convert(strBuffer, result);
-				return strBuffer.toString();
+				if (fOutputFactory.convert(strBuffer, result)) {
+					return strBuffer.toString();
+				} else {
+					return "ERROR-IN-OUTPUTFORM";
+				}
 			}
 		} finally {
 

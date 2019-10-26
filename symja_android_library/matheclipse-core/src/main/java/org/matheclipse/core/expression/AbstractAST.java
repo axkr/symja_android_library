@@ -4112,16 +4112,11 @@ public abstract class AbstractAST implements IASTMutable {
 	public String toString() {
 		try {
 			StringBuilder sb = new StringBuilder();
-			OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax()).convert(sb, this);
-			return sb.toString();
-		} catch (IOException ioe) {
-			if (Config.SHOW_STACKTRACE) {
-				ioe.printStackTrace();
+			if (OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax()).convert(sb, this)) {
+				return sb.toString();
 			}
-		} catch (RuntimeException e1) {
-		}
+			sb = null;
 
-		try {
 			final StringBuilder buf = new StringBuilder();
 			if (size() > 0 && isList()) {
 				buf.append('{');
@@ -4152,7 +4147,7 @@ public abstract class AbstractAST implements IASTMutable {
 			} else {
 				return toFullFormString();
 			}
-		} catch (NullPointerException e) {
+		} catch (RuntimeException e) {
 			if (Config.SHOW_STACKTRACE) {
 				System.out.println(fullFormString());
 			}

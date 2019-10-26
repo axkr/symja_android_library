@@ -1197,10 +1197,10 @@ public class TeXFormFactory {
 
 	public boolean convert(final StringBuilder buf, final IExpr o, final int precedence) {
 		try {
+			convertInternal(buf, o, precedence);
 			if (buf.length() >= Config.MAX_OUTPUT_SIZE) {
 				return false;
 			}
-			convertInternal(buf, o, precedence);
 			return true;
 		} catch (RuntimeException rex) {
 			if (Config.SHOW_STACKTRACE) {

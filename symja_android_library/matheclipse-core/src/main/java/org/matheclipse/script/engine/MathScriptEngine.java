@@ -203,15 +203,17 @@ public class MathScriptEngine extends AbstractScriptEngine {
 			return "";
 		}
 		final StringWriter buf = new StringWriter();
+		OutputFormFactory off;
 		if (fDecimalFormat != null) {
-			// DecimalFormatSymbols usSymbols = new DecimalFormatSymbols(Locale.US);
-			// DecimalFormat decimalFormat = new DecimalFormat(fDecimalFormat, usSymbols);
-			OutputFormFactory.get(relaxedSyntax, false, 5, 7).convert(buf, result);
+			off = OutputFormFactory.get(relaxedSyntax, false, 5, 7);
 		} else {
-			OutputFormFactory.get(relaxedSyntax).convert(buf, result);
+			off = OutputFormFactory.get(relaxedSyntax);
 		}
-		// print the result in the console
-		return buf.toString();
+		if (off.convert(buf, result)) {
+			// print the result in the console
+			return buf.toString();
+		}
+		return "ERROR-IN-OUTPUTFORM";
 	}
 
 	@Override

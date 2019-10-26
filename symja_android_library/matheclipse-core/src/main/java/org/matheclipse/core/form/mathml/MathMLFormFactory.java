@@ -1042,10 +1042,10 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	@Override
 	public boolean convert(final StringBuilder buf, final IExpr o, final int precedence, boolean isASTHead) {
 		try {
+			convertInternal(buf, o, precedence, isASTHead);
 			if (buf.length() >= Config.MAX_OUTPUT_SIZE) {
 				return false;
 			}
-			convertInternal(buf, o, precedence, isASTHead);
 			return true;
 		} catch (RuntimeException rex) {
 			if (Config.SHOW_STACKTRACE) {

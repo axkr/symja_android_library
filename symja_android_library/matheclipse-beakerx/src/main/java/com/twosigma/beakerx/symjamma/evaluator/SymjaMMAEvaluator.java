@@ -228,8 +228,11 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
 		case SymjaMMAEvaluator.TRADITIONALFORM:
 			StringBuilder traditionalBuffer = new StringBuilder();
 			fOutputTraditionalFactory.reset();
-			fOutputTraditionalFactory.convert(traditionalBuffer, (IExpr) result);
-			return TryResult.createResult(traditionalBuffer.toString());
+			if (fOutputTraditionalFactory.convert(traditionalBuffer, (IExpr) result)) {
+				return TryResult.createResult(traditionalBuffer.toString());
+			} else {
+				return TryResult.createResult("ERROR-IN-TRADITIONALFORM");
+			}
 		// case SymjaMMAEvaluator.PRETTYFORM:
 		// ASCIIPrettyPrinter3 prettyBuffer = new ASCIIPrettyPrinter3();
 		// prettyBuffer.convert(result);
@@ -240,8 +243,11 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
 		case SymjaMMAEvaluator.INPUTFORM:
 			StringBuilder inputBuffer = new StringBuilder();
 			fInputFactory.reset();
-			fInputFactory.convert(inputBuffer, (IExpr) result);
-			return TryResult.createResult(inputBuffer.toString());
+			if (fInputFactory.convert(inputBuffer, (IExpr) result)) {
+				return TryResult.createResult(inputBuffer.toString());
+			} else {
+				return TryResult.createResult("ERROR-IN-INPUTFORM");
+			}
 		case SymjaMMAEvaluator.TEXFORM:
 			final TeXFormFactory fTeXFactory = new TeXFormFactory();
 			final StringBuilder texBuilder = new StringBuilder();

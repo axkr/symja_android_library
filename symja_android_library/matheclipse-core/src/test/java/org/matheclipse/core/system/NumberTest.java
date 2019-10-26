@@ -6,6 +6,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
@@ -52,12 +53,16 @@ public class NumberTest extends TestCase {
 		try {
 			// DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
 			// DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
-			OutputFormFactory factory = OutputFormFactory.get(true, false, 5,7);
+			OutputFormFactory factory = OutputFormFactory.get(true, false, 5, 7);
 
 			IExpr expr = F.num("12345.123456789");
-			factory.convert(buf, expr);
-		} catch (IOException e) {
-			e.printStackTrace();
+			if (!factory.convert(buf, expr)) {
+				fail();
+			}
+		} catch (RuntimeException rex) {
+			if (Config.SHOW_STACKTRACE) {
+				rex.printStackTrace();
+			}
 		}
 		assertEquals(buf.toString(), "12345.12");
 	}

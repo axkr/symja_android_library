@@ -145,10 +145,10 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 	@Override
 	public boolean convert(final StringBuilder buf, final IExpr o, final int precedence, boolean caller) {
 		try {
+			convertInternal(buf, o, precedence, caller);
 			if (buf.length() >= Config.MAX_OUTPUT_SIZE) {
 				return false;
 			}
-			convertInternal(buf, o, precedence, caller);
 			return true;
 		} catch (RuntimeException rex) {
 			if (Config.SHOW_STACKTRACE) {

@@ -125,7 +125,9 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
 			}
 
 			if (fEvaluationResult.isPresent() && !fEvaluationResult.equals(F.Null)) {
-				OutputFormFactory.get(fRelaxedSyntax).convert(writer, fEvaluationResult);
+				if(!OutputFormFactory.get(fRelaxedSyntax).convert(writer, fEvaluationResult)) {
+					// TODO define error message?
+				}
 			}
 			return fEvaluationResult;
 		} catch (final Exception e) {
