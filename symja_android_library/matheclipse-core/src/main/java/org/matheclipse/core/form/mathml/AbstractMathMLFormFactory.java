@@ -165,13 +165,7 @@ abstract public class AbstractMathMLFormFactory {
 	 */
 	abstract public void convertHead(StringBuilder buf, IExpr obj);
 
-	/**
-	 * general entry point for converting an object
-	 *
-	 * @param buf
-	 * @param d
-	 * @param precedence
-	 */
-	abstract public void convert(StringBuilder buf, IExpr o, int precedence, boolean isASTHead);
+	abstract public boolean convert(StringBuilder buf, IExpr o, int precedence, boolean isASTHead);
 
+	abstract void convertInternal(StringBuilder buf, IExpr o, int precedence, boolean isASTHead);
 }

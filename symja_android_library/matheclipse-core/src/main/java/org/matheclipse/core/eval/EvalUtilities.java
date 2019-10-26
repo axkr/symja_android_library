@@ -224,19 +224,20 @@ public class EvalUtilities extends MathMLUtilities {
 
 	/** {@inheritDoc} */
 	@Override
-	synchronized public void toMathML(final String inputExpression, final Writer out) {
+	synchronized public boolean toMathML(final String inputExpression, final Writer out) {
 		try {
 			EvalEngine.set(fEvalEngine);
 			fEvalEngine.reset();
 			final IExpr result = evaluate(inputExpression);
 			if (result.isPresent()) {
-				toMathML(result, out);
+				return toMathML(result, out);
 			}
 		} catch (final Throwable e) {
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();
 			}
 		}
+		return false;
 	}
 
 }

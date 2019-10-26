@@ -27,7 +27,7 @@ import org.matheclipse.parser.client.operator.ASTNodeFactory;
 public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 
 	private static abstract class AbstractConverter implements IConverter {
-		protected AbstractMathMLFormFactory fFactory;
+		protected MathMLContentFormFactory fFactory;
 
 		public AbstractConverter() {
 		}
@@ -36,7 +36,7 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 		 * @param factory
 		 */
 		@Override
-		public void setFactory(final AbstractMathMLFormFactory factory) {
+		public void setFactory(final MathMLContentFormFactory factory) {
 			fFactory = factory;
 		}
 
@@ -53,7 +53,7 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 		 */
 		public boolean convert(StringBuilder buffer, IAST function, int precedence);
 
-		public void setFactory(final AbstractMathMLFormFactory factory);
+		public void setFactory(final MathMLContentFormFactory factory);
 	}
 
 	private final static class MMLContentFunction extends AbstractConverter {
@@ -79,7 +79,7 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 			fFactory.tagStart(buf, "apply");
 			fFactory.tagStartEnd(buf, fFunctionName);
 			for (int i = 1; i < f.size(); i++) {
-				fFactory.convert(buf, f.get(i), Integer.MIN_VALUE, false);
+				fFactory.convertInternal(buf, f.get(i), Integer.MIN_VALUE, false);
 			}
 			fFactory.tagEnd(buf, "apply");
 			return true;
@@ -143,7 +143,23 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 	}
 
 	@Override
-	public void convert(final StringBuilder buf, final IExpr o, final int precedence, boolean caller) {
+	public boolean convert(final StringBuilder buf, final IExpr o, final int precedence, boolean caller) {
+		try {
+			if (buf.length() >= Config.MAX_OUTPUT_SIZE) {
+				return false;
+			}
+			convertInternal(buf, o, precedence, caller);
+			return true;
+		} catch (RuntimeException rex) {
+			if (Config.SHOW_STACKTRACE) {
+				rex.printStackTrace();
+			}
+		} catch (OutOfMemoryError oome) {
+		}
+		return false;
+	}
+
+	public void convertInternal(final StringBuilder buf, final IExpr o, final int precedence, boolean caller) {
 		if (o instanceof IAST) {
 			final IAST f = ((IAST) o);
 			// System.out.println(f.getHeader().toString());
@@ -219,7 +235,7 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 		tag(buf, "mo", "(");
 		tagStart(buf, "mrow");
 		for (int i = 1; i < ast.size(); i++) {
-			convert(buf, ast.get(i), Integer.MIN_VALUE, false);
+			convertInternal(buf, ast.get(i), Integer.MIN_VALUE, false);
 			if (i < ast.argSize()) {
 				tag(buf, "mo", ",");
 			}
@@ -304,7 +320,7 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 			tag(buf, "mo", "&#x2061;");
 			return;
 		}
-		convert(buf, obj, Integer.MIN_VALUE, false);
+		convertInternal(buf, obj, Integer.MIN_VALUE, false);
 	}
 
 	@Override

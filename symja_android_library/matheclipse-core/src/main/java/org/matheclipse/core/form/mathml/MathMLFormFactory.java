@@ -66,7 +66,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			fFactory.tagStart(buf, "mrow");
 			// fFactory.tag(buf, "mo", "&LeftBracketingBar;");
 			fFactory.tag(buf, "mo", "&#10072;");
-			fFactory.convert(buf, f.arg1(), Integer.MIN_VALUE, false);
+			fFactory.convertInternal(buf, f.arg1(), Integer.MIN_VALUE, false);
 			// fFactory.tag(buf, "mo", "&RightBracketingBar;");
 			fFactory.tag(buf, "mo", "&#10072;");
 			fFactory.tagEnd(buf, "mrow");
@@ -76,7 +76,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	}
 
 	private static abstract class AbstractConverter implements IConverter {
-		protected AbstractMathMLFormFactory fFactory;
+		protected MathMLFormFactory fFactory;
 
 		public AbstractConverter() {
 		}
@@ -85,7 +85,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		 * @param factory
 		 */
 		@Override
-		public void setFactory(final AbstractMathMLFormFactory factory) {
+		public void setFactory(final MathMLFormFactory factory) {
 			fFactory = factory;
 		}
 
@@ -110,8 +110,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			fFactory.tagStart(buf, "mrow");
 			fFactory.tag(buf, "mo", "(");
 			fFactory.tagStart(buf, "mfrac", "linethickness=\"0\"");
-			fFactory.convert(buf, f.arg1(), Integer.MIN_VALUE, false);
-			fFactory.convert(buf, f.arg2(), Integer.MIN_VALUE, false);
+			fFactory.convertInternal(buf, f.arg1(), Integer.MIN_VALUE, false);
+			fFactory.convertInternal(buf, f.arg2(), Integer.MIN_VALUE, false);
 			fFactory.tagEnd(buf, "mfrac");
 			fFactory.tag(buf, "mo", ")");
 			fFactory.tagEnd(buf, "mrow");
@@ -134,7 +134,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			if (f.isAST1() && f.head().equals(F.C) && f.arg1().isInteger()) {
 				fFactory.tagStart(buf, "msub");
 				buf.append("<mi>c</mi>");
-				fFactory.convert(buf, f.arg1(), Integer.MIN_VALUE, false);
+				fFactory.convertInternal(buf, f.arg1(), Integer.MIN_VALUE, false);
 				fFactory.tagEnd(buf, "msub");
 				return true;
 			}
@@ -160,7 +160,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			fFactory.tagStart(buf, "mrow");
 			// LeftCeiling &#002308;
 			fFactory.tag(buf, "mo", "&#x2308;");
-			fFactory.convert(buf, f.arg1(), Integer.MIN_VALUE, false);
+			fFactory.convertInternal(buf, f.arg1(), Integer.MIN_VALUE, false);
 			// RightCeiling &#x02309;
 			fFactory.tag(buf, "mo", "&#x2309;");
 			fFactory.tagEnd(buf, "mrow");
@@ -186,12 +186,12 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 				// &PartialD; &x02202;
 				fFactory.tag(buf, "mo", "&#x2202;");
 
-				fFactory.convert(buf, f.arg1(), Integer.MIN_VALUE, false);
+				fFactory.convertInternal(buf, f.arg1(), Integer.MIN_VALUE, false);
 				fFactory.tagEnd(buf, "mrow");
 				fFactory.tagStart(buf, "mrow");
 				// &PartialD; &x02202
 				fFactory.tag(buf, "mo", "&#x2202;");
-				fFactory.convert(buf, f.arg2(), Integer.MIN_VALUE, false);
+				fFactory.convertInternal(buf, f.arg2(), Integer.MIN_VALUE, false);
 
 				fFactory.tagEnd(buf, "mrow");
 				fFactory.tagEnd(buf, "mfrac");
@@ -207,9 +207,9 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
 			if (f.isAST2()) {
 				fFactory.tagStart(buf, "mrow");
-				fFactory.convert(buf, f.arg1(), Integer.MIN_VALUE, false);
+				fFactory.convertInternal(buf, f.arg1(), Integer.MIN_VALUE, false);
 				buf.append("<mo>&#8712;</mo>");
-				fFactory.convert(buf, f.arg2(), Integer.MIN_VALUE, false);
+				fFactory.convertInternal(buf, f.arg2(), Integer.MIN_VALUE, false);
 				fFactory.tagEnd(buf, "mrow");
 				return true;
 			}
@@ -235,7 +235,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			fFactory.tagStart(buf, "mrow");
 			// &LeftFloor; &x0230A;
 			fFactory.tag(buf, "mo", "&#x230A;");
-			fFactory.convert(buf, f.arg1(), Integer.MIN_VALUE, false);
+			fFactory.convertInternal(buf, f.arg1(), Integer.MIN_VALUE, false);
 			// &RightFloor; &#0230B;
 			fFactory.tag(buf, "mo", "&#x230B;");
 			fFactory.tagEnd(buf, "mrow");
@@ -260,7 +260,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 				return false;
 			}
 			fFactory.tagStart(buf, "mrow");
-			fFactory.convert(buf, f.arg1(), Integer.MIN_VALUE, false);
+			fFactory.convertInternal(buf, f.arg1(), Integer.MIN_VALUE, false);
 			fFactory.tag(buf, "mo", "&amp;");
 			fFactory.tagEnd(buf, "mrow");
 			return true;
@@ -278,7 +278,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		 */
 		public boolean convert(StringBuilder buffer, IAST function, int precedence);
 
-		public void setFactory(final AbstractMathMLFormFactory factory);
+		public void setFactory(final MathMLFormFactory factory);
 	}
 
 	private final static class Integrate extends AbstractConverter {
@@ -295,7 +295,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
 		public boolean iteratorStep(final StringBuilder buf, final String mathSymbol, final IAST f, int i) {
 			if (i >= f.size()) {
-				fFactory.convert(buf, f.arg1(), Integer.MIN_VALUE, false);
+				fFactory.convertInternal(buf, f.arg1(), Integer.MIN_VALUE, false);
 				return true;
 			}
 			if (f.get(i).isList()) {
@@ -305,8 +305,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 					fFactory.tagStart(buf, "msubsup");
 					// &Integral; &#x222B;
 					fFactory.tag(buf, "mo", mathSymbol);
-					fFactory.convert(buf, list.arg2(), Integer.MIN_VALUE, false);
-					fFactory.convert(buf, list.arg3(), Integer.MIN_VALUE, false);
+					fFactory.convertInternal(buf, list.arg2(), Integer.MIN_VALUE, false);
+					fFactory.convertInternal(buf, list.arg3(), Integer.MIN_VALUE, false);
 					fFactory.tagEnd(buf, "msubsup");
 					if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
 						return false;
@@ -376,7 +376,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 						temp = vector.get(i);
 						fFactory.tagStart(buf, "mtr");
 						fFactory.tagStart(buf, "mtd", "columnalign=\"center\"");
-						fFactory.convert(buf, temp, Integer.MIN_VALUE, false);
+						fFactory.convertInternal(buf, temp, Integer.MIN_VALUE, false);
 						fFactory.tagEnd(buf, "mtd");
 						fFactory.tagEnd(buf, "mtr");
 					}
@@ -403,7 +403,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 					for (int j = 1; j < temp.size(); j++) {
 
 						fFactory.tagStart(buf, "mtd", "columnalign=\"center\"");
-						fFactory.convert(buf, temp.get(j), Integer.MIN_VALUE, false);
+						fFactory.convertInternal(buf, temp.get(j), Integer.MIN_VALUE, false);
 						fFactory.tagEnd(buf, "mtd");
 					}
 					fFactory.tagEnd(buf, "mtr");
@@ -447,7 +447,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
 			fFactory.tag(buf, "mo", "(");
 			for (int i = 1; i < f.size(); i++) {
-				fFactory.convert(buf, f.get(i), Integer.MIN_VALUE, false);
+				fFactory.convertInternal(buf, f.get(i), Integer.MIN_VALUE, false);
 				if (i < f.argSize()) {
 					fFactory.tag(buf, "mo", ",");
 				}
@@ -486,7 +486,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			fFactory.tagStart(buf, fFirstTag);
 			precedenceOpen(buf, precedence);
 			for (int i = 1; i < f.size(); i++) {
-				fFactory.convert(buf, f.get(i), fPrecedence, false);
+				fFactory.convertInternal(buf, f.get(i), fPrecedence, false);
 				if (i < f.argSize()) {
 					if (fOperator.compareTo("") != 0) {
 						fFactory.tag(buf, "mo", fOperator);
@@ -540,7 +540,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 				if (fPrecedence <= precedence) {
 					fFactory.tag(buf, "mo", "(");
 				}
-				fFactory.convert(buf, f.arg1(), fPrecedence, false);
+				fFactory.convertInternal(buf, f.arg1(), fPrecedence, false);
 				fFactory.tag(buf, "mo", fOperator);
 				if (fPrecedence <= precedence) {
 					fFactory.tag(buf, "mo", ")");
@@ -571,7 +571,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			fFactory.tagStart(buf, "mrow");
 			// &not; &#x00AC;
 			fFactory.tag(buf, "mo", "&#x00AC;");
-			fFactory.convert(buf, f.arg1(), Integer.MIN_VALUE, false);
+			fFactory.convertInternal(buf, f.arg1(), Integer.MIN_VALUE, false);
 			fFactory.tagEnd(buf, "mrow");
 			return true;
 		}
@@ -624,7 +624,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 							fFactory.tag(buf, "mo", "+");
 						}
 					}
-					fFactory.convert(buf, expr, fPrecedence, false);
+					fFactory.convertInternal(buf, expr, fPrecedence, false);
 				}
 			}
 			precedenceClose(buf, precedence);
@@ -674,14 +674,14 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 				}
 			}
 			if (useMROOT > 0 && exp.isOne()) {
-				fFactory.convert(buf, arg1, Integer.MIN_VALUE, false);
+				fFactory.convertInternal(buf, arg1, Integer.MIN_VALUE, false);
 			} else {
 				if (exp.isNegative()) {
 					exp = exp.negate();
 					fFactory.tagStart(buf, "mfrac");
-					fFactory.convert(buf, F.C1, Integer.MIN_VALUE, false);
+					fFactory.convertInternal(buf, F.C1, Integer.MIN_VALUE, false);
 					if (exp.isOne()) {
-						fFactory.convert(buf, arg1, Integer.MIN_VALUE, false);
+						fFactory.convertInternal(buf, arg1, Integer.MIN_VALUE, false);
 					} else {
 						convert(buf, F.Power(arg1, exp), Integer.MIN_VALUE);
 					}
@@ -689,8 +689,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 				} else {
 					precedenceOpen(buf, precedence);
 					fFactory.tagStart(buf, "msup");
-					fFactory.convert(buf, arg1, fPrecedence, false);
-					fFactory.convert(buf, exp, fPrecedence, false);
+					fFactory.convertInternal(buf, arg1, fPrecedence, false);
+					fFactory.convertInternal(buf, exp, fPrecedence, false);
 					fFactory.tagEnd(buf, "msup");
 					precedenceClose(buf, precedence);
 				}
@@ -698,7 +698,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			if (useMROOT == 1) {
 				fFactory.tagEnd(buf, "msqrt");
 			} else if (useMROOT == 2) {
-				fFactory.convert(buf, den, fPrecedence, false);
+				fFactory.convertInternal(buf, den, fPrecedence, false);
 				fFactory.tagEnd(buf, "mroot");
 			}
 			return true;
@@ -736,8 +736,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
 			// <mfrac><mi>k</mi><mn>2</mn></mfrac>
 			fFactory.tagStart(buf, "mfrac");
-			fFactory.convert(buf, f.arg1(), Integer.MIN_VALUE, false);
-			fFactory.convert(buf, f.arg2(), Integer.MIN_VALUE, false);
+			fFactory.convertInternal(buf, f.arg1(), Integer.MIN_VALUE, false);
+			fFactory.convertInternal(buf, f.arg2(), Integer.MIN_VALUE, false);
 			fFactory.tagEnd(buf, "mfrac");
 
 			return true;
@@ -760,7 +760,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 				return false;
 			}
 			fFactory.tagStart(buf, "msqrt");
-			fFactory.convert(buf, f.arg1(), Integer.MIN_VALUE, false);
+			fFactory.convertInternal(buf, f.arg1(), Integer.MIN_VALUE, false);
 			fFactory.tagEnd(buf, "msqrt");
 			return true;
 		}
@@ -783,7 +783,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
 		public boolean iteratorStep(final StringBuilder buf, final String mathSymbol, final IAST f, int i) {
 			if (i >= f.size()) {
-				fFactory.convert(buf, f.arg1(), Integer.MIN_VALUE, false);
+				fFactory.convertInternal(buf, f.arg1(), Integer.MIN_VALUE, false);
 				return true;
 			}
 			fFactory.tagStart(buf, "mrow");
@@ -796,9 +796,9 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 					fFactory.tagStart(buf, "mrow");
 					fFactory.convertSymbol(buf, iterator.getVariable());
 					fFactory.tag(buf, "mo", "=");
-					fFactory.convert(buf, iterator.getLowerLimit(), Integer.MIN_VALUE, false);
+					fFactory.convertInternal(buf, iterator.getLowerLimit(), Integer.MIN_VALUE, false);
 					fFactory.tagEnd(buf, "mrow");
-					fFactory.convert(buf, iterator.getUpperLimit(), Integer.MIN_VALUE, false);
+					fFactory.convertInternal(buf, iterator.getUpperLimit(), Integer.MIN_VALUE, false);
 					fFactory.tagEnd(buf, "munderover");
 					if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
 						return false;
@@ -881,12 +881,12 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 				if (numerator.isTimes()) {
 					convertTimesOperator(buf, (IAST) numerator, precedence, MathMLFormFactory.NO_PLUS_CALL);
 				} else {
-					fFactory.convert(buf, numerator, fPrecedence, false);
+					fFactory.convertInternal(buf, numerator, fPrecedence, false);
 				}
 				if (denominator.isTimes()) {
 					convertTimesOperator(buf, (IAST) denominator, precedence, MathMLFormFactory.NO_PLUS_CALL);
 				} else {
-					fFactory.convert(buf, denominator, Integer.MIN_VALUE, false);
+					fFactory.convertInternal(buf, denominator, Integer.MIN_VALUE, false);
 				}
 				fFactory.tagEnd(buf, "mfrac");
 			} else {
@@ -920,14 +920,14 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 					if (size == 2) {
 						fFactory.tagStart(buf, fFirstTag);
 						precedenceOpen(buf, precedence);
-						fFactory.convert(buf, arg1, fPrecedence, false);
+						fFactory.convertInternal(buf, arg1, fPrecedence, false);
 					} else {
 						if (caller == MathMLFormFactory.NO_PLUS_CALL) {
 							noPrecedenceOpenCall = true;
 							fFactory.tagStart(buf, fFirstTag);
 							fFactory.tag(buf, "mo", "-");
 							if (size == 3) {
-								fFactory.convert(buf, timesAST.arg2(), fPrecedence, false);
+								fFactory.convertInternal(buf, timesAST.arg2(), fPrecedence, false);
 								fFactory.tagEnd(buf, fFirstTag);
 								return true;
 							}
@@ -943,11 +943,11 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 					if (size == 2) {
 						fFactory.tagStart(buf, fFirstTag);
 						precedenceOpen(buf, precedence);
-						fFactory.convert(buf, arg1, fPrecedence, false);
+						fFactory.convertInternal(buf, arg1, fPrecedence, false);
 					} else {
 						if (caller == MathMLFormFactory.PLUS_CALL) {
 							if (size == 3) {
-								fFactory.convert(buf, timesAST.arg2(), fPrecedence, false);
+								fFactory.convertInternal(buf, timesAST.arg2(), fPrecedence, false);
 								return true;
 							}
 							fFactory.tagStart(buf, fFirstTag);
@@ -970,7 +970,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 						fFactory.tagStart(buf, fFirstTag);
 						precedenceOpen(buf, precedence);
 					}
-					fFactory.convert(buf, arg1, fPrecedence, false);
+					fFactory.convertInternal(buf, arg1, fPrecedence, false);
 					if (fOperator.length() > 0) {
 						fFactory.tag(buf, "mo", fOperator);
 					}
@@ -978,7 +978,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			}
 
 			for (int i = 2; i < size; i++) {
-				fFactory.convert(buf, timesAST.get(i), fPrecedence, false);
+				fFactory.convertInternal(buf, timesAST.get(i), fPrecedence, false);
 				if ((i < timesAST.argSize()) && (fOperator.length() > 0)) {
 					fFactory.tag(buf, "mo", fOperator);
 				}
@@ -1040,7 +1040,23 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	}
 
 	@Override
-	public void convert(final StringBuilder buf, final IExpr o, final int precedence, boolean isASTHead) {
+	public boolean convert(final StringBuilder buf, final IExpr o, final int precedence, boolean isASTHead) {
+		try {
+			if (buf.length() >= Config.MAX_OUTPUT_SIZE) {
+				return false;
+			}
+			convertInternal(buf, o, precedence, isASTHead);
+			return true;
+		} catch (RuntimeException rex) {
+			if (Config.SHOW_STACKTRACE) {
+				rex.printStackTrace();
+			}
+		} catch (OutOfMemoryError oome) {
+		}
+		return false;
+	}
+
+	void convertInternal(final StringBuilder buf, final IExpr o, final int precedence, boolean isASTHead) {
 		String str = CONSTANT_EXPRS.get(o);
 		if (str != null) {
 			buf.append(str);
@@ -1161,11 +1177,11 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		}
 		final int functionSize = function.size();
 		if (functionSize > 1) {
-			convert(buf, function.arg1(), Integer.MIN_VALUE, false);
+			convertInternal(buf, function.arg1(), Integer.MIN_VALUE, false);
 		}
 		for (int i = 2; i < functionSize; i++) {
 			tag(buf, "mo", ",");
-			convert(buf, function.get(i), Integer.MIN_VALUE, false);
+			convertInternal(buf, function.get(i), Integer.MIN_VALUE, false);
 		}
 		if (head.isAST()) {
 			// append(buf, "]");
@@ -1198,7 +1214,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 						if (n == 1 || n == 2) {
 							tagStart(buf, "mrow");
 							IExpr symbolOrAST = headAST.arg1();
-							convert(buf, symbolOrAST, Integer.MIN_VALUE, false);
+							convertInternal(buf, symbolOrAST, Integer.MIN_VALUE, false);
 							if (n == 1) {
 								tag(buf, "mo", "'");
 							} else if (n == 2) {
@@ -1212,7 +1228,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 							tagStart(buf, "mrow");
 							IExpr symbolOrAST = headAST.arg1();
 							tagStart(buf, "msup");
-							convert(buf, symbolOrAST, Integer.MIN_VALUE, false);
+							convertInternal(buf, symbolOrAST, Integer.MIN_VALUE, false);
 							tagStart(buf, "mrow");
 							tag(buf, "mo", "(");
 							tagStart(buf, "mn");
@@ -1231,7 +1247,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 				}
 			}
 
-			convert(buf, header, Integer.MIN_VALUE, false);
+			convertInternal(buf, header, Integer.MIN_VALUE, false);
 			convertFunctionArgs(buf, list);
 			return;
 		}
@@ -1289,7 +1305,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			case ID.Defer:
 			case ID.HoldForm:
 				if ((list.isAST1())) {
-					convert(buf, list.arg1(), precedence, false);
+					convertInternal(buf, list.arg1(), precedence, false);
 					return;
 				}
 				break;
@@ -1304,13 +1320,13 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 							convertSymbol(buf, F.Infinity);
 							return;
 						} else if (list.arg1().isMinusOne()) {
-							convert(buf, F.Times(F.CN1, F.Infinity), precedence, false);
+							convertInternal(buf, F.Times(F.CN1, F.Infinity), precedence, false);
 							return;
 						} else if (list.arg1().isImaginaryUnit()) {
-							convert(buf, F.Times(F.CI, F.Infinity), precedence, false);
+							convertInternal(buf, F.Times(F.CI, F.Infinity), precedence, false);
 							return;
 						} else if (list.arg1().isNegativeImaginaryUnit()) {
-							convert(buf, F.Times(F.CNI, F.Infinity), precedence, false);
+							convertInternal(buf, F.Times(F.CNI, F.Infinity), precedence, false);
 							return;
 						}
 					}
@@ -1335,7 +1351,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		}
 		tagStart(buf, "mrow");
 		for (int i = 1; i < ast.size(); i++) {
-			convert(buf, ast.get(i), Integer.MIN_VALUE, false);
+			convertInternal(buf, ast.get(i), Integer.MIN_VALUE, false);
 			if (i < ast.argSize()) {
 				tag(buf, "mo", ",");
 			}
@@ -1364,7 +1380,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		final int listSize = inequality.size();
 		int i = 1;
 		while (i < listSize) {
-			convert(tempBuffer, inequality.get(i++), operPrecedence, false);
+			convertInternal(tempBuffer, inequality.get(i++), operPrecedence, false);
 			if (i == listSize) {
 				if (operPrecedence < precedence) {
 					// append(buf, ")");
@@ -1665,7 +1681,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	public void convertFunctionArgs(final StringBuilder buf, final IAST list) {
 		tag(buf, "mo", "[");
 		for (int i = 1; i < list.size(); i++) {
-			convert(buf, list.get(i), Integer.MIN_VALUE, false);
+			convertInternal(buf, list.get(i), Integer.MIN_VALUE, false);
 			if (i < list.argSize()) {
 				tag(buf, "mo", ",");
 			}
@@ -1690,7 +1706,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			tag(buf, "mo", "&#x2061;");
 			return;
 		}
-		convert(buf, obj, Integer.MIN_VALUE, false);
+		convertInternal(buf, obj, Integer.MIN_VALUE, false);
 	}
 
 	public void convertInfixOperator(final StringBuilder buf, final IAST list, final InfixOperator oper,
@@ -1713,7 +1729,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 				// }
 				// }
 			}
-			convert(buf, list.arg1(), oper.getPrecedence(), false);
+			convertInternal(buf, list.arg1(), oper.getPrecedence(), false);
 			if (oper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE && list.arg1().head().equals(list.head())) {
 				// append(buf, ")");
 				tag(buf, "mo", ")");
@@ -1733,7 +1749,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 				// append(buf, "(");
 				tag(buf, "mo", "(");
 			}
-			convert(buf, list.arg2(), oper.getPrecedence(), false);
+			convertInternal(buf, list.arg2(), oper.getPrecedence(), false);
 			if (oper.getGrouping() == InfixOperator.LEFT_ASSOCIATIVE && list.arg2().head().equals(list.head())) {
 				// append(buf, ")");
 				tag(buf, "mo", ")");
@@ -1753,13 +1769,13 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			tag(buf, "mo", "(");
 		}
 		if (list.size() > 1) {
-			convert(buf, list.arg1(), oper.getPrecedence(), false);
+			convertInternal(buf, list.arg1(), oper.getPrecedence(), false);
 		}
 
 		for (int i = 2; i < list.size(); i++) {
 			// append(buf, oper.getOperatorString());
 			tag(buf, "mo", oper.getOperatorString());
-			convert(buf, list.get(i), oper.getPrecedence(), false);
+			convertInternal(buf, list.get(i), oper.getPrecedence(), false);
 		}
 		if (oper.getPrecedence() < precedence) {
 			// append(buf, ")");
@@ -1788,10 +1804,10 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		tag(buf, "mo", "{");
 		if (list.size() > 1) {
 			tagStart(buf, "mrow");
-			convert(buf, list.arg1(), 0, false);
+			convertInternal(buf, list.arg1(), 0, false);
 			for (int i = 2; i < list.size(); i++) {
 				tag(buf, "mo", ",");
-				convert(buf, list.get(i), 0, false);
+				convertInternal(buf, list.get(i), 0, false);
 			}
 			tagEnd(buf, "mrow");
 		}
@@ -1885,11 +1901,11 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		if (!(arg1 instanceof IAST)) {
 			tag(buf, "mo", "(");
 		}
-		convert(buf, arg1, Integer.MIN_VALUE, false);
+		convertInternal(buf, arg1, Integer.MIN_VALUE, false);
 		tag(buf, "mo", "[[");
 
 		for (int i = 2; i < list.size(); i++) {
-			convert(buf, list.get(i), Integer.MIN_VALUE, false);
+			convertInternal(buf, list.get(i), Integer.MIN_VALUE, false);
 			if (i < list.argSize()) {
 				tag(buf, "mo", ",");
 			}
@@ -1909,7 +1925,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			// append(buf, "(");
 			tag(buf, "mo", "(");
 		}
-		convert(buf, list.arg1(), oper.getPrecedence(), false);
+		convertInternal(buf, list.arg1(), oper.getPrecedence(), false);
 		// append(buf, oper.getOperatorString());
 		tag(buf, "mo", oper.getOperatorString());
 		if (oper.getPrecedence() <= precedence) {
@@ -1928,7 +1944,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		}
 		// append(buf, oper.getOperatorString());
 		tag(buf, "mo", oper.getOperatorString());
-		convert(buf, list.arg1(), oper.getPrecedence(), false);
+		convertInternal(buf, list.arg1(), oper.getPrecedence(), false);
 		if (oper.getPrecedence() <= precedence) {
 			// append(buf, ")");
 			tag(buf, "mo", ")");
@@ -1985,7 +2001,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			plusArg = F.Power(F.O(x.subtract(x0)), F.fraction(power, den).normalize());
 			if (!plusArg.isZero()) {
 				tag(tempBuffer, "mo", "+");
-				convert(tempBuffer, plusArg, Integer.MIN_VALUE, false);
+				convertInternal(tempBuffer, plusArg, Integer.MIN_VALUE, false);
 				call = PLUS_CALL;
 			}
 
@@ -2031,7 +2047,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			}
 		}
 		if (!plusArg.isZero()) {
-			convert(buf, plusArg, Integer.MIN_VALUE, false);
+			convertInternal(buf, plusArg, Integer.MIN_VALUE, false);
 			call = PLUS_CALL;
 		}
 		return call;

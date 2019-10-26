@@ -58,7 +58,7 @@ public class MathMLContentUtilities {
 		final StringBuilder buf = new StringBuilder();
 
 		if (objectExpression != null) {
-			fMathMLFactory.convert(buf, objectExpression, Integer.MIN_VALUE, false);
+			fMathMLFactory.convertInternal(buf, objectExpression, Integer.MIN_VALUE, false);
 			try {
 
 				out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
