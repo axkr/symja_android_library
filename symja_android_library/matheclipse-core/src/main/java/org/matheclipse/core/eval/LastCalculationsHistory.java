@@ -68,6 +68,9 @@ public class LastCalculationsHistory implements Serializable {
 		}
 
 		if (index <= 0) {
+			if (index == Integer.MIN_VALUE) {
+				return F.NIL;
+			}
 			index *= -1;
 			if (fMaximumCapacity < index) {
 				return F.NIL;
