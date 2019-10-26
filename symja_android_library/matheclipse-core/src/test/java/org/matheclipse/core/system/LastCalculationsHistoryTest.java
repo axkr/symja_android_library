@@ -59,7 +59,7 @@ public class LastCalculationsHistoryTest extends TestCase {
 		assertEquals(history.entry(11), F.NIL);
 		assertEquals(history.entry(10), F.NIL);
 		history.add(F.ZZ(22));
-		assertEquals(history.entry(22).toString(), "22");
-
+		assertEquals(history.entry(Integer.MAX_VALUE), F.NIL);
+		assertEquals(history.entry(Integer.MIN_VALUE), F.NIL);
 	}
 }
