@@ -246,9 +246,12 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
 			final TeXFormFactory fTeXFactory = new TeXFormFactory();
 			final StringBuilder texBuilder = new StringBuilder();
 			texBuilder.append("$$");
-			fTeXFactory.convert(texBuilder, (IExpr) result, 0);
-			texBuilder.append("$$");
-			return TryResult.createResult(new LatexNotebookOutput(texBuilder.toString()));
+			if (fTeXFactory.convert(texBuilder, (IExpr) result, 0)) {
+				texBuilder.append("$$");
+				return TryResult.createResult(new LatexNotebookOutput(texBuilder.toString()));
+			} else {
+				return TryResult.createResult("ERROR-IN-TEXFORM");
+			}
 		}
 		return TryResult.createResult(result);
 	}

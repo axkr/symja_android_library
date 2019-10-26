@@ -75,13 +75,17 @@ public class TeXUtilities {
 				fEvalEngine.reset();
 				result = fEvalEngine.evalHoldPattern((IAST) objectExpression, true, true);
 			}
-			fTeXFactory.convert(buf, result, 0);
 			try {
-				out.write(buf.toString());
+				if (fTeXFactory.convert(buf, result, 0)) {
+					out.write(buf.toString());
+				} else {
+					out.write("ERROR-IN-TEXFORM");
+				}
 			} catch (final Throwable e) {
 				// parsedExpression == null ==> fError occured
 			}
 		}
+
 	}
 
 	public void stopRequest() {

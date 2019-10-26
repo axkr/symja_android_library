@@ -9,6 +9,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
@@ -94,7 +95,7 @@ public class TeXFormFactory {
 		public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
 			precedenceOpen(buf, precedence);
 			for (int i = 1; i < f.size(); i++) {
-				fFactory.convert(buf, f.get(i), fPrecedence);
+				fFactory.convertInternal(buf, f.get(i), fPrecedence);
 				if (i < f.argSize()) {
 					if (fOperator.compareTo("") != 0) {
 						buf.append(fOperator);
@@ -129,9 +130,9 @@ public class TeXFormFactory {
 				return false;
 			}
 			buf.append('{');
-			fFactory.convert(buf, f.arg1(), 0);
+			fFactory.convertInternal(buf, f.arg1(), 0);
 			buf.append("\\choose ");
-			fFactory.convert(buf, f.arg2(), 0);
+			fFactory.convertInternal(buf, f.arg2(), 0);
 			buf.append('}');
 			return true;
 		}
@@ -155,7 +156,7 @@ public class TeXFormFactory {
 			boolean imZero = arg2.isZero();
 
 			if (!reZero) {
-				fFactory.convert(buf, arg1, 0);
+				fFactory.convertInternal(buf, arg1, 0);
 			}
 			if (!imZero) {
 				if (!reZero && !arg2.isNegativeSigned()) {
@@ -164,7 +165,7 @@ public class TeXFormFactory {
 				if (arg2.isMinusOne()) {
 					buf.append(" - ");
 				} else if (!arg2.isOne()) {
-					fFactory.convert(buf, arg2, 0);
+					fFactory.convertInternal(buf, arg2, 0);
 					buf.append("\\,"); // InvisibleTimes
 				}
 				buf.append("\\imag");
@@ -181,9 +182,9 @@ public class TeXFormFactory {
 			if (f.isAST2()) {
 
 				buf.append("\\frac{d}{{d");
-				fFactory.convert(buf, f.arg2(), 0);
+				fFactory.convertInternal(buf, f.arg2(), 0);
 				buf.append("}}");
-				fFactory.convert(buf, f.arg1(), 0);
+				fFactory.convertInternal(buf, f.arg1(), 0);
 
 				return true;
 			}
@@ -218,7 +219,7 @@ public class TeXFormFactory {
 		@Override
 		public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
 			if (f.size() == 2) {
-				fFactory.convert(buf, f.arg1(), 0);
+				fFactory.convertInternal(buf, f.arg1(), 0);
 				return true;
 			}
 			return false;
@@ -232,14 +233,14 @@ public class TeXFormFactory {
 		public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
 			if (f.isAST1()) {
 				buf.append("H_");
-				fFactory.convert(buf, f.arg1(), 0);
+				fFactory.convertInternal(buf, f.arg1(), 0);
 				return true;
 			} else if (f.isAST2()) {
 				buf.append("H_");
-				fFactory.convert(buf, f.arg1(), 0);
+				fFactory.convertInternal(buf, f.arg1(), 0);
 
 				buf.append("^{(");
-				fFactory.convert(buf, f.arg2(), 0);
+				fFactory.convertInternal(buf, f.arg2(), 0);
 				buf.append(")}");
 				return true;
 			}
@@ -261,7 +262,7 @@ public class TeXFormFactory {
 		public boolean iteratorStep(final StringBuilder buf, final String mathSymbol, final IAST f, int i) {
 			if (i >= f.size()) {
 				buf.append(" ");
-				fFactory.convert(buf, f.arg1(), 0);
+				fFactory.convertInternal(buf, f.arg1(), 0);
 				return true;
 			}
 			if (f.get(i).isList()) {
@@ -270,9 +271,9 @@ public class TeXFormFactory {
 					ISymbol symbol = (ISymbol) list.arg1();
 					buf.append(mathSymbol);
 					buf.append("_{");
-					fFactory.convert(buf, list.arg2(), 0);
+					fFactory.convertInternal(buf, list.arg2(), 0);
 					buf.append("}^{");
-					fFactory.convert(buf, list.arg3(), 0);
+					fFactory.convertInternal(buf, list.arg3(), 0);
 					buf.append('}');
 					if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
 						return false;
@@ -366,7 +367,7 @@ public class TeXFormFactory {
 						row = (IAST) matrix.get(i);
 						for (int j = 1; j < row.size(); j++) {
 							buf.append(' ');
-							fFactory.convert(buf, row.get(j), 0);
+							fFactory.convertInternal(buf, row.get(j), 0);
 							buf.append(' ');
 							if (j < row.argSize()) {
 								buf.append('&');
@@ -386,7 +387,7 @@ public class TeXFormFactory {
 				buf.append("\\begin{pmatrix} ");
 				if (ast.size() > 1) {
 					for (int j = 1; j < ast.size(); j++) {
-						fFactory.convert(buf, ast.get(j), 0);
+						fFactory.convertInternal(buf, ast.get(j), 0);
 						if (j < ast.argSize()) {
 							buf.append(" & ");
 						}
@@ -396,10 +397,10 @@ public class TeXFormFactory {
 			} else {
 				buf.append("\\{");
 				if (ast.size() > 1) {
-					fFactory.convert(buf, ast.arg1(), 0);
+					fFactory.convertInternal(buf, ast.arg1(), 0);
 					for (int i = 2; i < ast.size(); i++) {
 						buf.append(',');
-						fFactory.convert(buf, ast.get(i), 0);
+						fFactory.convertInternal(buf, ast.get(i), 0);
 					}
 				}
 				buf.append("\\}");
@@ -428,7 +429,7 @@ public class TeXFormFactory {
 					for (int i = 1; i < vector.size(); i++) {
 						element = vector.get(i);
 						buf.append(' ');
-						fFactory.convert(buf, element, 0);
+						fFactory.convertInternal(buf, element, 0);
 						buf.append(' ');
 						if (i < vector.argSize()) {
 							buf.append('&');
@@ -444,7 +445,7 @@ public class TeXFormFactory {
 					row = (IAST) matrix.get(i);
 					for (int j = 1; j < row.size(); j++) {
 						buf.append(' ');
-						fFactory.convert(buf, row.get(j), 0);
+						fFactory.convertInternal(buf, row.get(j), 0);
 						buf.append(' ');
 						if (j < row.argSize()) {
 							buf.append('&');
@@ -480,7 +481,7 @@ public class TeXFormFactory {
 					for (int i = 1; i < vector.size(); i++) {
 						element = vector.get(i);
 						buf.append(' ');
-						fFactory.convert(buf, element, 0);
+						fFactory.convertInternal(buf, element, 0);
 						buf.append(' ');
 						if (i < vector.argSize()) {
 							buf.append("\\\\\n");
@@ -500,7 +501,7 @@ public class TeXFormFactory {
 					row = (IAST) matrix.get(i);
 					for (int j = 1; j < row.size(); j++) {
 						buf.append(' ');
-						fFactory.convert(buf, row.get(j), 0);
+						fFactory.convertInternal(buf, row.get(j), 0);
 						buf.append(' ');
 						if (j < row.argSize()) {
 							buf.append('&');
@@ -544,7 +545,7 @@ public class TeXFormFactory {
 				buf.append("[[");
 				int argSize = f.argSize();
 				for (int i = 2; i <= argSize; i++) {
-					fFactory.convert(buf, f.get(i), 0);
+					fFactory.convertInternal(buf, f.get(i), 0);
 					if (i < argSize) {
 						buf.append(",");
 					}
@@ -584,7 +585,7 @@ public class TeXFormFactory {
 							buf.append("+");
 						}
 					}
-					fFactory.convert(buf, expr, fPrecedence);
+					fFactory.convertInternal(buf, expr, fPrecedence);
 				}
 			}
 			precedenceClose(buf, precedence);
@@ -610,7 +611,7 @@ public class TeXFormFactory {
 				return false;
 			}
 			precedenceOpen(buf, precedence);
-			fFactory.convert(buf, f.arg1(), fPrecedence);
+			fFactory.convertInternal(buf, f.arg1(), fPrecedence);
 			buf.append(fOperator);
 			precedenceClose(buf, precedence);
 			return true;
@@ -650,16 +651,16 @@ public class TeXFormFactory {
 			IExpr arg2 = f.arg2();
 			if (arg2.isNumEqualRational(F.C1D2)) {
 				buf.append("\\sqrt{");
-				fFactory.convert(buf, arg1, fPrecedence);
+				fFactory.convertInternal(buf, arg1, fPrecedence);
 				buf.append('}');
 				return true;
 			}
 			if (arg2.isFraction()) {
 				if (((IFraction) arg2).numerator().isOne()) {
 					buf.append("\\sqrt[");
-					fFactory.convert(buf, ((IFraction) arg2).denominator(), fPrecedence);
+					fFactory.convertInternal(buf, ((IFraction) arg2).denominator(), fPrecedence);
 					buf.append("]{");
-					fFactory.convert(buf, arg1, fPrecedence);
+					fFactory.convertInternal(buf, arg1, fPrecedence);
 					buf.append('}');
 					return true;
 				}
@@ -674,7 +675,7 @@ public class TeXFormFactory {
 			// http://en.wikibooks.org/wiki/LaTeX/Mathematics#Powers_and_indices
 			// For powers with more than one digit, surround the power with {}.
 			buf.append('{');
-			fFactory.convert(buf, arg2, 0);
+			fFactory.convertInternal(buf, arg2, 0);
 			buf.append('}');
 			precedenceClose(buf, precedence);
 			return true;
@@ -699,7 +700,7 @@ public class TeXFormFactory {
 			}
 			precedenceOpen(buf, precedence);
 			buf.append(fOperator);
-			fFactory.convert(buf, f.arg1(), fPrecedence);
+			fFactory.convertInternal(buf, f.arg1(), fPrecedence);
 			precedenceClose(buf, precedence);
 			return true;
 		}
@@ -743,9 +744,9 @@ public class TeXFormFactory {
 			}
 			precedenceOpen(buf, precedence);
 			buf.append("\\frac{");
-			fFactory.convert(buf, f.arg1(), fPrecedence);
+			fFactory.convertInternal(buf, f.arg1(), fPrecedence);
 			buf.append("}{");
-			fFactory.convert(buf, f.arg2(), fPrecedence);
+			fFactory.convertInternal(buf, f.arg2(), fPrecedence);
 			buf.append('}');
 			precedenceClose(buf, precedence);
 			return true;
@@ -779,11 +780,11 @@ public class TeXFormFactory {
 			IExpr arg2 = f.arg2();
 			IExpr arg3 = f.arg3();
 
-			fFactory.convert(buf, arg1, Integer.MAX_VALUE);
+			fFactory.convertInternal(buf, arg1, Integer.MAX_VALUE);
 			buf.append("_");
-			fFactory.convert(buf, arg2, Integer.MAX_VALUE);
+			fFactory.convertInternal(buf, arg2, Integer.MAX_VALUE);
 			buf.append("^");
-			fFactory.convert(buf, arg3, Integer.MAX_VALUE);
+			fFactory.convertInternal(buf, arg3, Integer.MAX_VALUE);
 			return true;
 		}
 	}
@@ -825,7 +826,7 @@ public class TeXFormFactory {
 					buf.append(" = ");
 					fFactory.convertSubExpr(buf, iterator.getLowerLimit(), 0);
 					buf.append("}^{");
-					fFactory.convert(buf, iterator.getUpperLimit(), 0);
+					fFactory.convertInternal(buf, iterator.getUpperLimit(), 0);
 					buf.append('}');
 					if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
 						return false;
@@ -880,7 +881,7 @@ public class TeXFormFactory {
 			buf.append(fFunctionName);
 			buf.append('(');
 			for (int i = 1; i < f.size(); i++) {
-				fFactory.convert(buf, f.get(i), 0);
+				fFactory.convertInternal(buf, f.get(i), 0);
 				if (i < f.argSize()) {
 					buf.append(',');
 				}
@@ -943,21 +944,21 @@ public class TeXFormFactory {
 				if (numerator.isTimes()) {
 					convertTimesOperator(buf, (IAST) numerator, fPrecedence, NO_SPECIAL_CALL);
 				} else {
-					fFactory.convert(buf, numerator, precedence);
+					fFactory.convertInternal(buf, numerator, precedence);
 				}
 				buf.append("}{");
 				// insert denominator in buffer:
 				if (denominator.isTimes()) {
 					convertTimesOperator(buf, (IAST) denominator, fPrecedence, NO_SPECIAL_CALL);
 				} else {
-					fFactory.convert(buf, denominator, precedence);
+					fFactory.convertInternal(buf, denominator, precedence);
 				}
 				buf.append('}');
 			} else {
 				if (numerator.isTimes()) {
 					convertTimesOperator(buf, (IAST) numerator, fPrecedence, NO_SPECIAL_CALL);
 				} else {
-					fFactory.convert(buf, numerator, precedence);
+					fFactory.convertInternal(buf, numerator, precedence);
 				}
 			}
 
@@ -973,12 +974,12 @@ public class TeXFormFactory {
 				if (arg1.isMinusOne()) {
 					if (size == 2) {
 						precedenceOpen(buf, precedence);
-						fFactory.convert(buf, arg1, fPrecedence);
+						fFactory.convertInternal(buf, arg1, fPrecedence);
 					} else {
 						if (caller == PLUS_CALL) {
 							buf.append(" - ");
 							if (size == 3) {
-								fFactory.convert(buf, timesAST.arg2(), fPrecedence);
+								fFactory.convertInternal(buf, timesAST.arg2(), fPrecedence);
 								return true;
 							}
 						} else {
@@ -989,12 +990,12 @@ public class TeXFormFactory {
 				} else if (arg1.isOne()) {
 					if (size == 2) {
 						precedenceOpen(buf, precedence);
-						fFactory.convert(buf, arg1, fPrecedence);
+						fFactory.convertInternal(buf, arg1, fPrecedence);
 					} else {
 						if (caller == PLUS_CALL) {
 							if (size == 3) {
 								buf.append(" + ");
-								fFactory.convert(buf, timesAST.arg2(), fPrecedence);
+								fFactory.convertInternal(buf, timesAST.arg2(), fPrecedence);
 								return true;
 							}
 						} else {
@@ -1012,7 +1013,7 @@ public class TeXFormFactory {
 					} else {
 						precedenceOpen(buf, precedence);
 					}
-					fFactory.convert(buf, arg1, fPrecedence);
+					fFactory.convertInternal(buf, arg1, fPrecedence);
 					if (fOperator.compareTo("") != 0) {
 						if (size > 2) {
 							if (timesAST.arg1().isNumber() && isTeXNumberDigit(timesAST.arg2())) {
@@ -1031,9 +1032,9 @@ public class TeXFormFactory {
 
 			for (int i = 2; i < size; i++) {
 				if (i == 2 && (arg1.isOne() || arg1.isMinusOne())) {
-					fFactory.convert(buf, timesAST.get(i), precedence);
+					fFactory.convertInternal(buf, timesAST.get(i), precedence);
 				} else {
-					fFactory.convert(buf, timesAST.get(i), fPrecedence);
+					fFactory.convertInternal(buf, timesAST.get(i), fPrecedence);
 				}
 				if ((i < timesAST.argSize()) && (fOperator.compareTo("") != 0)) {
 					if (timesAST.arg1().isNumber() && isTeXNumberDigit(timesAST.get(i + 1))) {
@@ -1085,7 +1086,7 @@ public class TeXFormFactory {
 				return false;
 			}
 			buf.append(pre);
-			fFactory.convert(buf, f.arg1(), 0);
+			fFactory.convertInternal(buf, f.arg1(), 0);
 			buf.append(post);
 			return true;
 		}
@@ -1194,7 +1195,23 @@ public class TeXFormFactory {
 		return str;
 	}
 
-	public void convert(final StringBuilder buf, final Object o, final int precedence) {
+	public boolean convert(final StringBuilder buf, final IExpr o, final int precedence) {
+		try {
+			if (buf.length() >= Config.MAX_OUTPUT_SIZE) {
+				return false;
+			}
+			convertInternal(buf, o, precedence);
+			return true;
+		} catch (RuntimeException rex) {
+			if (Config.SHOW_STACKTRACE) {
+				rex.printStackTrace();
+			}
+		} catch (OutOfMemoryError oome) {
+		}
+		return false;
+	}
+
+	private void convertInternal(final StringBuilder buf, final Object o, final int precedence) {
 		if (o instanceof IExpr) {
 			IExpr expr = (IExpr) o;
 			String str = CONSTANT_EXPRS.get(expr);
@@ -1269,7 +1286,7 @@ public class TeXFormFactory {
 		convertHead(buf, f.head());
 		buf.append("(");
 		for (int i = 1; i < f.size(); i++) {
-			convert(buf, f.get(i), 0);
+			convertInternal(buf, f.get(i), 0);
 			if (i < f.argSize()) {
 				buf.append(',');
 			}
@@ -1289,7 +1306,7 @@ public class TeXFormFactory {
 		final int listSize = inequality.size();
 		int i = 1;
 		while (i < listSize) {
-			convert(tempBuffer, inequality.get(i++), 0);
+			convertInternal(tempBuffer, inequality.get(i++), 0);
 			if (i == listSize) {
 				if (operPrecedence < precedence) {
 					tempBuffer.append(")");
@@ -1337,7 +1354,7 @@ public class TeXFormFactory {
 		buf.append(headString);
 		buf.append("(");
 		for (int i = 1; i < f.size(); i++) {
-			convert(buf, f.get(i), 0);
+			convertInternal(buf, f.get(i), 0);
 			if (i < f.argSize()) {
 				buf.append(',');
 			}
@@ -1367,7 +1384,7 @@ public class TeXFormFactory {
 		IRational re = c.getRealPart();
 		IRational im = c.getImaginaryPart();
 		if (!re.isZero()) {
-			convert(buf, re, 0);
+			convertInternal(buf, re, 0);
 			if (im.compareInt(0) >= 0) {
 				buf.append(" + ");
 			} else {
@@ -1375,7 +1392,7 @@ public class TeXFormFactory {
 				im = im.negate();
 			}
 		}
-		convert(buf, im, 0);
+		convertInternal(buf, im, 0);
 		buf.append("\\,"); // InvisibleTimes
 		buf.append("i ");
 		if (precedence > plusPrec) {
@@ -1489,7 +1506,7 @@ public class TeXFormFactory {
 			convertHeader(buf, str);
 			return;
 		}
-		convert(buf, obj, 0);
+		convertInternal(buf, obj, 0);
 	}
 
 	private void convertHeader(final StringBuilder buf, String str) {
@@ -1542,7 +1559,7 @@ public class TeXFormFactory {
 		if (o.isAST()) {
 			buf.append("{");
 		}
-		convert(buf, o, precedence);
+		convertInternal(buf, o, precedence);
 		if (o.isAST()) {
 			buf.append("}");
 		}

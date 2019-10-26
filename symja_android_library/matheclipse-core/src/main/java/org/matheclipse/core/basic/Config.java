@@ -58,6 +58,11 @@ public class Config {
 	 */
 	public static final int MAX_SIMPLIFY_TOGETHER_LEAFCOUNT = 65;
 
+	/**
+	 * Maximum output size in characters for an output form (i.e. TeXForm, MathMLForm,...I)
+	 */
+	public static int MAX_OUTPUT_SIZE = Integer.MAX_VALUE;
+	
 	static {
 		EXPR_CACHE = CacheBuilder.newBuilder().maximumSize(MAX_EXPR_CACHE_SIZE).weakKeys().weakValues().build();
 	}
