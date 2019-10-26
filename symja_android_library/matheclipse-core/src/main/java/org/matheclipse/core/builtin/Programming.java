@@ -2364,11 +2364,11 @@ public final class Programming {
 					return F.$Aborted;
 				} catch (final RecursionLimitExceeded re) {
 					throw re;
-				} catch (final RuntimeException re) {
+				} catch (final RuntimeException rex) {
 					if (Config.SHOW_STACKTRACE) {
-						re.printStackTrace();
+						rex.printStackTrace();
 					}
-					fEngine.printMessage("TimeConstrained: " + re.getMessage());
+					fEngine.printMessage("TimeConstrained: " + rex.getMessage());
 				} catch (final Exception e) {
 					fEngine.printMessage("TimeConstrained: " + e.getMessage());
 				} catch (final OutOfMemoryError e) {
@@ -2437,15 +2437,21 @@ public final class Programming {
 					return ast.arg3();
 				}
 				return F.$Aborted;
+			} catch (RuntimeException rex) {
+				// Appengine example: com.google.apphosting.api.DeadlineExceededException
+				if (ast.isAST3()) {
+					// e.printStackTrace();
+					return ast.arg3();
+				}
+				if (Config.DEBUG) {
+					rex.printStackTrace();
+				}
+				return F.Null;
 			} catch (Exception e) {
 				if (ast.isAST3()) {
 					// e.printStackTrace();
 					return ast.arg3();
 				}
-				// Throwable re = e.getCause();
-				// if (re instanceof RecursionLimitExceeded) {
-				// throw (RecursionLimitExceeded) re;
-				// }
 				if (Config.DEBUG) {
 					e.printStackTrace();
 				}
