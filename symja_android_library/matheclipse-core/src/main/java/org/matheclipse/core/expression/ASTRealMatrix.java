@@ -87,7 +87,8 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	 *            if <code>true</code> allocate new memory and copy all elements from the matrix
 	 */
 	public ASTRealMatrix(double[][] matrix, boolean deepCopy) {
-		if (Config.MAX_AST_SIZE < matrix.length) {
+		if (Config.MAX_AST_SIZE < matrix.length|| //
+				Config.MAX_AST_SIZE < matrix[0].length) {
 			throw new ASTElementLimitExceeded(matrix.length * matrix[0].length);
 		}
 		this.matrix = new Array2DRowRealMatrix(matrix, deepCopy);
@@ -102,7 +103,8 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	 *            if <code>true</code> allocate new memory and copy all elements from the matrix
 	 */
 	public ASTRealMatrix(RealMatrix matrix, boolean deepCopy) {
-		if (Config.MAX_AST_SIZE < matrix.getRowDimension()) {
+		if (Config.MAX_AST_SIZE < matrix.getRowDimension() || //
+				Config.MAX_AST_SIZE < matrix.getColumnDimension()) {
 			throw new ASTElementLimitExceeded(matrix.getRowDimension() * matrix.getColumnDimension());
 		}
 		if (deepCopy) {
