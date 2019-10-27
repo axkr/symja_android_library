@@ -15,6 +15,7 @@ import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -79,8 +80,12 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 	 * 
 	 * @param vector
 	 * @param deepCopy
+	 *            if <code>true</code> allocate new memory and copy all elements from the vector
 	 */
 	public ASTRealVector(double[] vector, boolean deepCopy) {
+		if (Config.MAX_AST_SIZE < vector.length) {
+			throw new ASTElementLimitExceeded(vector.length);
+		}
 		this.vector = new ArrayRealVector(vector, deepCopy);
 	}
 
@@ -90,9 +95,12 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 	 * @param vector
 	 *            the vector which should be wrapped in this object.
 	 * @param deepCopy
-	 *            TODO
+	 *            if <code>true</code> allocate new memory and copy all elements from the vector
 	 */
 	public ASTRealVector(RealVector vector, boolean deepCopy) {
+		if (Config.MAX_AST_SIZE < vector.getDimension()) {
+			throw new ASTElementLimitExceeded(vector.getDimension());
+		}
 		if (deepCopy) {
 			this.vector = vector.copy();
 		} else {
@@ -385,9 +393,9 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 	}
 
 	public double getEntry(int location) {
-		return vector.getEntry(location - 1); 
+		return vector.getEntry(location - 1);
 	}
-	
+
 	public RealVector getRealVector() {
 		return vector;
 	}
@@ -434,7 +442,7 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 	public boolean isList() {
 		return true;
 	}
-	
+
 	public boolean isNaN() {
 		return vector.isNaN();
 	}
@@ -551,8 +559,9 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 	}
 
 	public ASTRealVector subtract(ASTRealVector that) {
-		return new ASTRealVector(vector.subtract(that.vector),false);
+		return new ASTRealVector(vector.subtract(that.vector), false);
 	}
+
 	/**
 	 * Returns a new array containing all elements contained in this {@code ArrayList}.
 	 * 

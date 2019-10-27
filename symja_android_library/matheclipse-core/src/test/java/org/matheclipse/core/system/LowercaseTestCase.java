@@ -8843,7 +8843,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"0.922562");
 		check("N(Integrate(E^(-x^2),{x,-1/2,1/2}))", //
 				"0.922562");
-		
+
 		check("Integrate(Log(x^3)/E^(2+x),{x,1,2})", //
 				"(3*ExpIntegralEi(-2))/E^2+(-3*ExpIntegralEi(-1))/E^2-Log(8)/E^4");
 		// check("Limit(1/9*x*(9-x^2)^(3/2)*Hypergeometric2F1(1,2,3/2,x^2/9),x->3)", //
@@ -9159,6 +9159,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInverse() {
+		check("Inverse({{a,b,c}, {d,e,f}, {x,y,z}})", //
+				"{{(f*y-e*z)/(c*e*x-b*f*x-c*d*y+a*f*y+b*d*z-a*e*z),(-c*y+b*z)/(c*e*x-b*f*x-c*d*y+a*f*y+b*d*z-a*e*z),(c*e-b*f)/(c*e*x-b*f*x-c*d*y+a*f*y+b*d*z-a*e*z)},\n"
+						+ //
+						" {(f*x-d*z)/(-c*e*x+b*f*x+c*d*y-a*f*y-b*d*z+a*e*z),(-c*x+a*z)/(-c*e*x+b*f*x+c*d*y-a*f*y-b*d*z+a*e*z),(c*d-a*f)/(-c*e*x+b*f*x+c*d*y-a*f*y-b*d*z+a*e*z)},\n"
+						+ //
+						" {(-e*x+d*y)/(-c*e*x+b*f*x+c*d*y-a*f*y-b*d*z+a*e*z),(b*x-a*y)/(-c*e*x+b*f*x+c*d*y-a*f*y-b*d*z+a*e*z),(-b*d+a*e)/(-c*e*x+b*f*x+c*d*y-a*f*y-b*d*z+a*e*z)}}");
 		check("Inverse({{1, 2, 0}, {2, 3, 0}, {3, 4, 1}})", //
 				"{{-3,2,0},\n" + " {2,-1,0},\n" + " {1,-2,1}}");
 		check("Inverse({{1, 0}, {0, 0}})", //
@@ -9166,7 +9172,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Inverse({{1, 0, 0}, {0, Sqrt(3)/2, 1/2}, {0,-1 / 2, Sqrt(3)/2}})", //
 				"{{1,0,0},\n" + " {0,Sqrt(3)/2,-1/2},\n" + " {0,1/2,Sqrt(3)/2}}");
 		check("Inverse({{u, v}, {v, u}})", //
-				"{{u/(u^2-v^2),-v/(u^2-v^2)},\n" + " {-v/(u^2-v^2),u/(u^2-v^2)}}");
+				"{{u/(u^2-v^2),-v/(u^2-v^2)},\n" + //
+						" {-v/(u^2-v^2),u/(u^2-v^2)}}");
+		check("Inverse({{1.4, 2}, {3, -6.7}})", //
+				"{{0.435631,0.130039},\n" + //
+						" {0.195059,-0.0910273}}");
+		check("Inverse(HilbertMatrix(5))", //
+				"{{25,-300,1050,-1400,630},\n" + //
+						" {-300,4800,-18900,26880,-12600},\n" + //
+						" {1050,-18900,79380,-117600,56700},\n" + //
+						" {-1400,26880,-117600,179200,-88200},\n" + //
+						" {630,-12600,56700,-88200,44100}}");
+		check("Inverse({{u, v}, {v, u}}).{{u, v}, {v, u}}  // Simplify", //
+				"{{1,0},{0,1}}");
+		check("Inverse({{1,2}, {1,2}})", //
+				"Inverse({{1,2},{1,2}})");
 	}
 
 	public void testInverseBetaRegularized() {
@@ -10138,6 +10158,36 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testLimit() {
+		check("Limit(Cosh(x) , x->3)", //
+				"Cosh(3)");
+		check("Limit(x^3-4*x^2+6, x->-Infinity)", //
+				"-Infinity");
+		check("Limit(42, x->Infinity)", //
+				"42");
+		check("Limit(x^2-x^4, x->Infinity)", //
+				"-Infinity");
+		check("Limit((4*x^3-3*x+2)/(2*x^3+2*x-1), x->Infinity)", //
+				"2");
+		check("Limit((x^2-3*x+2)/(x^3+2*x-1), x->Infinity)", //
+				"0");
+		check("Limit(Sqrt(3*x-2), x->-Infinity)", //
+				"Limit(Sqrt(-2+3*x),x->-Infinity)");
+		// TODO return Infinity
+		// check("Limit((3*x^2-6)^(-1/3), x->-Infinity)", //
+		// "Infinity");
+
+		check("Limit((x-1)^2/(x^2-1), x->1)", //
+				"0");
+		check("Limit((x-1)/(x^2-1), x->1)", //
+				"1/2");
+		check("Limit((x^2-4)/(x-2), x->2)", //
+				"4");
+		check("Limit((x^3-1)/(x^2-1), x->1)", //
+				"3/2");
+		// TODO
+		// check("Limit((x^2-1)/(x-1)^2, x->1)", //
+		// "Indeterminate");
+
 		// github #120
 		check("Limit( x*Log(x) , x->0)", //
 				"0");
@@ -14951,7 +15001,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPseudoInverse() {
-		check("PseudoInverse({1, {2}})", "PseudoInverse({1,{2}})");
+		check("PseudoInverse({{1,2}, {1,2}})", //
+				"{{0.1,0.1},\n" + " {0.2,0.2}}");
+		check("PseudoInverse({1, {2}})", //
+				"PseudoInverse({1,{2}})");
 		check("PseudoInverse(PseudoInverse({{1, 2}, {2, 3}, {3, 4}}))", //
 				"{{1.0,2.0},\n" + //
 						" {2.0,3.0},\n" + //

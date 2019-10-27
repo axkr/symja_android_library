@@ -35,6 +35,7 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.Structure.LeafCount;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
@@ -4034,6 +4035,9 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public double[] toDoubleVector() {
+		if (Config.MAX_AST_SIZE < size()) {
+			throw new ASTElementLimitExceeded(size());
+		}
 		double[] result = new double[argSize()];
 		ISignedNumber signedNumber;
 		for (int i = 1; i < size(); i++) {
