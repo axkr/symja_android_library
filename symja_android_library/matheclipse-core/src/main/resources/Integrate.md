@@ -12,7 +12,9 @@ Integrate(f, {x,a,b})
  
 > computes the definite integral of `f` with respect to `x` from `a` to `b`.
 
-See: [Wikipedia: Integral](https://en.wikipedia.org/wiki/Integral)
+See: 
+- [Wikipedia: Integral](https://en.wikipedia.org/wiki/Integral)
+- [Wikipedia: Antiderivative](https://en.wikipedia.org/wiki/Antiderivative)
 
 ### Examples
 
