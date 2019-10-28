@@ -73,7 +73,7 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	 * @param head
 	 *            the head of the function
 	 */
-	/*package private */ AST0(IExpr head) {
+	/* package private */ AST0(IExpr head) {
 		super();
 		this.arg0 = head;
 	}
@@ -89,7 +89,8 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	 */
 	@Override
 	public IExpr arg1() {
-		throw new UnsupportedOperationException();
+		// be compatible with get() contract
+		throw new IndexOutOfBoundsException("Index: 1, Size: " + size());
 	}
 
 	/**
@@ -103,7 +104,8 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	 */
 	@Override
 	public IExpr arg2() {
-		throw new UnsupportedOperationException();
+		// be compatible with get() contract
+		throw new IndexOutOfBoundsException("Index: 2, Size: " + size());
 	}
 
 	/**
@@ -117,7 +119,8 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	 */
 	@Override
 	public IExpr arg3() {
-		throw new UnsupportedOperationException();
+		// be compatible with get() contract
+		throw new IndexOutOfBoundsException("Index: 3, Size: " + size());
 	}
 
 	/**
@@ -131,7 +134,8 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	 */
 	@Override
 	public IExpr arg4() {
-		throw new UnsupportedOperationException();
+		// be compatible with get() contract
+		throw new IndexOutOfBoundsException("Index: 4, Size: " + size());
 	}
 
 	/**
@@ -145,7 +149,8 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	 */
 	@Override
 	public IExpr arg5() {
-		throw new UnsupportedOperationException();
+		// be compatible with get() contract
+		throw new IndexOutOfBoundsException("Index: 5, Size: " + size());
 	}
 
 	/** {@inheritDoc} */
@@ -159,18 +164,6 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 		// empty set:
 		return new HashSet<IExpr>();
 	}
-
-	/**
-	 * Removes all elements from this {@code ArrayList}, leaving it empty.
-	 * 
-	 * @see #isEmpty
-	 * @see #size
-	 */
-	// @Override
-	// public void clear() {
-	// hashValue = 0;
-	// throw new UnsupportedOperationException();
-	// }
 
 	/**
 	 * Returns a new {@code AST0} with the same elements, the same size and the same capacity as this {@code AST0}.

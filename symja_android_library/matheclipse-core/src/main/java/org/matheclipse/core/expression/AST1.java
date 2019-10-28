@@ -62,7 +62,7 @@ public class AST1 extends AST0 {
 	 * @param arg1
 	 *            the first argument of the function
 	 */
-	/*package private */ AST1(IExpr head, IExpr arg1) {
+	/* package private */ AST1(IExpr head, IExpr arg1) {
 		super(head);
 		this.arg1 = arg1;
 	}
@@ -103,9 +103,9 @@ public class AST1 extends AST0 {
 	 */
 	@Override
 	public IAST clone() {
-		AST1 result=(AST1)super.clone();
-		result.arg0=arg0;
-		result.arg1=arg1;
+		AST1 result = (AST1) super.clone();
+		result.arg0 = arg0;
+		result.arg1 = arg1;
 		return result;
 	}
 
@@ -283,17 +283,17 @@ public class AST1 extends AST0 {
 
 	/** {@inheritDoc} */
 	@Override
-	public   int indexOf(Predicate<? super IExpr> predicate) {
+	public int indexOf(Predicate<? super IExpr> predicate) {
 		if (predicate.test(arg1)) {
 			return 1;
-		} 
+		}
 		return -1;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public   IExpr findFirst(Function<IExpr, IExpr> function) {
-		return function.apply(arg1); 
+	public IExpr findFirst(Function<IExpr, IExpr> function) {
+		return function.apply(arg1);
 	}
 
 	@Override
@@ -369,19 +369,19 @@ public class AST1 extends AST0 {
 	public boolean isSameHeadSizeGE(ISymbol head, int length) {
 		return arg0 == head && length <= SIZE;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isTimes() {
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public IExpr last() {
 		return arg1;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public IExpr oneIdentity(IExpr defaultValue) {
@@ -443,7 +443,7 @@ public class AST1 extends AST0 {
 	 */
 	@Override
 	public IExpr[] toArray() {
-		return new IExpr[] { arg0, arg1 }; 
+		return new IExpr[] { arg0, arg1 };
 	}
 
 }
