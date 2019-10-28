@@ -26,12 +26,12 @@ public abstract class BasePlotExample {
 				if (result.second().toString().equals("mathcell")) {
 					String manipulateStr = ((IAST) result).arg1().toString();
 					js = Config.MATHCELL_PAGE;
-					js = js.replaceAll("`1`", manipulateStr);
+					js = StringUtils.replace(js, "`1`", manipulateStr);
 				} else if (result.second().toString().equals("treeform")) {
 					String manipulateStr = ((IAST) result).arg1().toString();
 					js = Config.VISJS_PAGE;
-					js = js.replaceAll("`1`", manipulateStr);
-					js = js.replaceAll("`2`", //
+					js = StringUtils.replace(js, "`1`", manipulateStr);
+					js = StringUtils.replace(js, "`2`",   //
 							"  var options = {\n" + //
 									"		  edges: {\n" + //
 									"              smooth: {\n" + //
@@ -52,11 +52,10 @@ public abstract class BasePlotExample {
 					String jsStr = ((IAST) result).arg1().toString();
 					js = Config.TRACEFORM_PAGE;
 					js = StringUtils.replace(js, "`1`", jsStr);
-					// js = js.replaceAll("`1`", jsStr);
 				} else {
 					String manipulateStr = ((IAST) result).arg1().toString();
 					js = Config.JSXGRAPH_PAGE;
-					js = js.replaceAll("`1`", manipulateStr);
+					js = StringUtils.replace(js, "`1`", manipulateStr);
 				}
 				System.out.println(js);
 				F.openHTMLOnDesktop(js);

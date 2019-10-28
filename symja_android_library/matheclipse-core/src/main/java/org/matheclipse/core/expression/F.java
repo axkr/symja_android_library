@@ -9962,8 +9962,8 @@ public class F {
 			if (javaScriptStr != null) {
 				try {
 					String html = Config.VISJS_PAGE;
-					html = html.replaceAll("`1`", javaScriptStr);
-					html = html.replaceAll("`2`", "var options = {};");
+					html = StringUtils.replace(html, "`1`", javaScriptStr);
+					html = StringUtils.replace(html, "`2`", "var options = {};");
 					return openHTMLOnDesktop(html);
 				} catch (Exception ex) {
 					if (Config.SHOW_STACKTRACE) {
@@ -9987,7 +9987,7 @@ public class F {
 			try {
 				String manipulateStr = jsFormData.arg1().toString();
 				String html = Config.MATHCELL_PAGE;
-				html = html.replaceAll("`1`", manipulateStr);
+				html = StringUtils.replace(html, "`1`", manipulateStr);
 				return openHTMLOnDesktop(html);
 			} catch (Exception ex) {
 				if (Config.SHOW_STACKTRACE) {
@@ -9998,7 +9998,7 @@ public class F {
 			try {
 				String manipulateStr = jsFormData.arg1().toString();
 				String html = Config.JSXGRAPH_PAGE;
-				html = html.replaceAll("`1`", manipulateStr);
+				html = StringUtils.replace(html, "`1`", manipulateStr);
 				return openHTMLOnDesktop(html);
 			} catch (Exception ex) {
 				if (Config.SHOW_STACKTRACE) {
@@ -10009,8 +10009,8 @@ public class F {
 			try {
 				String manipulateStr = jsFormData.arg1().toString();
 				String html = Config.VISJS_PAGE;
-				html = html.replaceAll("`1`", manipulateStr);
-				html = html.replaceAll("`2`", //
+				html = StringUtils.replace(html, "`1`", manipulateStr);
+				html = StringUtils.replace(html, "`2`", //
 						"  var options = {\n" + //
 								"		  edges: {\n" + //
 								"              smooth: {\n" + //

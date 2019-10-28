@@ -29,6 +29,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileSystemView;
 
+import org.apache.commons.lang3.StringUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -662,7 +663,8 @@ public class IOFunctions {
 			"locked", "Symbol `1` is locked.", //
 			"matsq", "Argument `1` is not a non-empty square matrix.", //
 			"noopen", "Cannot open `1`.", //
-			"nonopt", "Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule or a list of rules.",//
+			"nonopt",
+			"Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule or a list of rules.", //
 			"nord", "Invalid comparison with `1` attempted.", //
 			"normal", "Nonatomic expression expected.", //
 			"notunicode",
@@ -745,7 +747,7 @@ public class IOFunctions {
 		}
 		if (message != null) {
 			for (int i = 1; i < ast.size(); i++) {
-				message = message.replace("`" + (i) + "`", ast.get(i).toString());
+				message = StringUtils.replace(message, "`" + (i) + "`", ast.get(i).toString());
 			}
 			engine.setMessageShortcut(messageShortcut);
 			engine.printMessage(symbol.toString() + ": " + message);
@@ -767,7 +769,7 @@ public class IOFunctions {
 
 	private static String rawMessage(final IAST ast, String message) {
 		for (int i = 2; i < ast.size(); i++) {
-			message = message.replace("`" + (i - 1) + "`", ast.get(i).toString());
+			message = StringUtils.replace(message, "`" + (i - 1) + "`", ast.get(i).toString());
 		}
 		return message;
 	}

@@ -1,5 +1,6 @@
 package org.matheclipse.core.visjs;
 
+import org.apache.commons.lang3.StringUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.GraphFunctions;
 import org.matheclipse.core.eval.ExprEvaluator;
@@ -70,7 +71,7 @@ public class SimpleVisGraphExample {
 				String javaScriptStr = GraphFunctions.graphToJSForm((IDataExpr) result);
 				if (javaScriptStr != null) {
 					String js = VISJS_PAGE;
-					js = js.replaceAll("`1`", javaScriptStr);
+					js = StringUtils.replace(js, "`1`", javaScriptStr);
 					System.out.println(js);
 				}
 			}

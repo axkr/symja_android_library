@@ -4,6 +4,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
@@ -331,12 +332,12 @@ public class ManipulateFunction {
 						break;
 					}
 				}
-				js = js.replace("`1`", slider.toString());
-				js = js.replace("`2`", variable.toString());
+				js = StringUtils.replace(js, "`1`", slider.toString());
+				js = StringUtils.replace(js, "`2`", variable.toString());
 			}
 		} else {
-			js = js.replace("`1`", "");
-			js = js.replace("`2`", "");
+			js = StringUtils.replace(js, "`1`", "");
+			js = StringUtils.replace(js, "`2`", "");
 		}
 		return js;
 	}
@@ -663,7 +664,7 @@ public class ManipulateFunction {
 			slider.append("', label: '");
 			slider.append(sliderSymbol);
 			slider.append("' }\n");
-			js = js.replace("`1`", slider.toString());
+			js = StringUtils.replace(js, "`1`", slider.toString());
 
 			StringBuilder variable = new StringBuilder();
 			variable.append("var ");
@@ -673,9 +674,8 @@ public class ManipulateFunction {
 			variable.append(sliderSymbol);
 			variable.append("');\n");
 
-			js = js.replace("`2`", variable.toString());
-
-			js = js.replace("`3`", "");
+			js = StringUtils.replace(js, "`2`", variable.toString());
+			js = StringUtils.replace(js, "`3`", "");
 
 			TeXUtilities texUtil = new TeXUtilities(engine, true);
 			StringBuilder graphicControl = new StringBuilder();
@@ -1199,10 +1199,10 @@ public class ManipulateFunction {
 						break;
 					}
 				}
-				js = js.replace("`1`", slider.toString());
+				js = StringUtils.replace(js, "`1`", slider.toString());
 			}
 		} else {
-			js = js.replace("`1`", "");
+			js = StringUtils.replace(js, "`1`", "");
 		}
 		return js;
 	}
