@@ -4767,9 +4767,9 @@ public class Algebra {
 
 				IExpr temp = arg1.replaceAll(F.List(//
 						F.Rule(F.GoldenAngle, //
-								F.Times(F.Subtract(F.C3, F.Sqrt(F.C5)), F.Pi)), //
+								F.Times(F.Subtract(F.C3, F.CSqrt5), F.Pi)), //
 						F.Rule(F.GoldenRatio, //
-								F.Times(F.C1D2, F.Plus(F.C1, F.Sqrt(F.C5)))), //
+								F.Times(F.C1D2, F.Plus(F.C1, F.CSqrt5))), //
 						F.Rule(F.Degree, //
 								F.Divide(F.Pi, F.ZZ(180))) //
 				));
