@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
@@ -96,6 +97,7 @@ public final class Programming {
 			F.Timing.setEvaluator(new Timing());
 			F.Throw.setEvaluator(new Throw());
 			F.Trace.setEvaluator(new Trace());
+			F.TraceForm.setEvaluator(new TraceForm());
 			F.Unevaluated.setEvaluator(new Unevaluated());
 			F.Which.setEvaluator(new Which());
 			F.While.setEvaluator(new While());
@@ -2586,6 +2588,86 @@ public final class Programming {
 				if (Config.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
+			}
+			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+
+	}
+
+	private static class TraceForm extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.head() == F.TraceForm) {
+				try {
+					IASTMutable trace = ast.copy();
+					trace.set(0, F.Trace);
+					final IExpr temp = engine.evaluate(trace);
+					StringBuilder jsControl = new StringBuilder();
+
+					createTree(jsControl, temp);
+					return F.JSFormData(jsControl.toString(), "traceform");
+				} catch (RuntimeException rex) {
+					if (Config.SHOW_STACKTRACE) {
+						rex.printStackTrace();
+					}
+				}
+			}
+			return F.NIL;
+		}
+
+		private static IExpr createTree(StringBuilder jsControl, IExpr traceExpr) {
+			if (traceExpr.isList()) {
+				IExpr l = F.NIL;
+				IAST list = (IAST) traceExpr;
+				jsControl.append("<ul>");
+				for (int i = 1; i < list.size(); i++) {
+					IExpr arg = list.get(i);
+					if (arg.isAST(F.HoldForm, 2)) {
+						jsControl.append("<li>\n");
+						String html = StringEscapeUtils.escapeHtml4(arg.first().toString());
+						jsControl.append(html);
+						jsControl.append("</li>\n");
+					} else if (arg.isList()) {
+						IExpr last = arg.last();
+						if (last.isAST(F.HoldForm, 2)) {
+							jsControl.append("<li>\n");
+							l = last.first();
+							String html = StringEscapeUtils.escapeHtml4(l.toString());
+							jsControl.append(html);
+							createTree(jsControl, arg);
+							jsControl.append("</li>\n");
+						} else {
+							// StringBuilder subControl = new StringBuilder();
+							// IExpr sub = createTree(subControl, arg);
+							// jsControl.append("<li>{\n");
+							// if (sub.isPresent()) {
+							// String html = StringEscapeUtils.escapeHtml4(sub.toString());
+							// jsControl.append(html);
+							// }
+							jsControl.append("<li>{\n");
+							createTree(jsControl, arg);
+							jsControl.append("}</li>\n");
+
+						}
+					} else {
+						jsControl.append("<li>\n");
+						String html = StringEscapeUtils.escapeHtml4(arg.toString());
+						jsControl.append(html);
+						jsControl.append("</li>\n");
+					}
+				}
+				jsControl.append("</ul>");
+				return l;
 			}
 			return F.NIL;
 		}

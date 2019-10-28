@@ -19,6 +19,7 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatContext;
@@ -3411,6 +3412,9 @@ public class F {
 
 	/** Trace(expr) - return the evaluation steps which are used to get the result. */
 	public final static IBuiltInSymbol Trace = F.initFinalSymbol("Trace", ID.Trace);
+
+	/***/
+	public final static IBuiltInSymbol TraceForm = F.initFinalSymbol("TraceForm", ID.TraceForm);
 
 	/***/
 	public final static IBuiltInSymbol TraditionalForm = F.initFinalSymbol("TraditionalForm", ID.TraditionalForm);
@@ -10024,6 +10028,17 @@ public class F {
 								"          physics:false\n" + //
 								"      }; "//
 				);
+				return openHTMLOnDesktop(html);
+			} catch (Exception ex) {
+				if (Config.SHOW_STACKTRACE) {
+					ex.printStackTrace();
+				}
+			}
+		} else if (jsFormData.arg2().toString().equals("traceform")) {
+			try {
+				String jsStr = jsFormData.arg1().toString();
+				String html = Config.TRACEFORM_PAGE;
+				html = StringUtils.replace(html, "`1`", jsStr);
 				return openHTMLOnDesktop(html);
 			} catch (Exception ex) {
 				if (Config.SHOW_STACKTRACE) {

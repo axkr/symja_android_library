@@ -1,5 +1,6 @@
 package org.matheclipse.core.mathcell;
 
+import org.apache.commons.lang3.StringUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
@@ -16,7 +17,7 @@ public abstract class BasePlotExample {
 
 	public void generateHTML() {
 		try {
-			Config.FILESYSTEM_ENABLED=true;
+			Config.FILESYSTEM_ENABLED = true;
 			ExprEvaluator util = new ExprEvaluator();
 
 			IExpr result = util.eval(exampleFunction());
@@ -32,28 +33,30 @@ public abstract class BasePlotExample {
 					js = js.replaceAll("`1`", manipulateStr);
 					js = js.replaceAll("`2`", //
 							"  var options = {\n" + //
-							"		  edges: {\n" + //
-							"              smooth: {\n" + //
-							"                  type: 'cubicBezier',\n" + //
-							"                  forceDirection:  'vertical',\n" + //
-							"                  roundness: 0.4\n" + //
-							"              }\n" + //
-							"          },\n" + //
-							"          layout: {\n" + //
-							"              hierarchical: {\n" + //
-							"                  direction: \"UD\"\n" + //
-							"              }\n" + //
-							"          },\n" + //
-							"          nodes: {\n" + 
-							"            shape: 'box'\n" + 
-							"          },\n" + //
-							"          physics:false\n" + //
-							"      }; ");
+									"		  edges: {\n" + //
+									"              smooth: {\n" + //
+									"                  type: 'cubicBezier',\n" + //
+									"                  forceDirection:  'vertical',\n" + //
+									"                  roundness: 0.4\n" + //
+									"              }\n" + //
+									"          },\n" + //
+									"          layout: {\n" + //
+									"              hierarchical: {\n" + //
+									"                  direction: \"UD\"\n" + //
+									"              }\n" + //
+									"          },\n" + //
+									"          nodes: {\n" + "            shape: 'box'\n" + "          },\n" + //
+									"          physics:false\n" + //
+									"      }; ");
+				} else if (result.second().toString().equals("traceform")) {
+					String jsStr = ((IAST) result).arg1().toString();
+					js = Config.TRACEFORM_PAGE;
+					js = StringUtils.replace(js, "`1`", jsStr);
+					// js = js.replaceAll("`1`", jsStr);
 				} else {
 					String manipulateStr = ((IAST) result).arg1().toString();
 					js = Config.JSXGRAPH_PAGE;
 					js = js.replaceAll("`1`", manipulateStr);
-
 				}
 				System.out.println(js);
 				F.openHTMLOnDesktop(js);
