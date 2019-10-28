@@ -70,7 +70,6 @@ import org.matheclipse.core.builtin.VectorAnalysisFunctions;
 import org.matheclipse.core.builtin.WXFFunctions;
 import org.matheclipse.core.builtin.WindowFunctions;
 import org.matheclipse.core.convert.AST2Expr;
-import org.matheclipse.core.convert.ConversionException;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -105,6 +104,7 @@ import org.matheclipse.core.parser.ExprParserFactory;
 import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.trie.Tries;
+import org.matheclipse.parser.client.SyntaxError;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -4204,10 +4204,10 @@ public class F {
 			CListC1 = unaryAST1(List, C1);
 			CListC2 = unaryAST1(List, C2);
 
-			CListC1C1 = binaryAST2(List, C1, C1);
-			CListC1C2 = binaryAST2(List, C1, C2);
-			CListC2C1 = binaryAST2(List, C2, C1);
-			CListC2C2 = binaryAST2(List, C2, C2);
+			CListC1C1 = new B2.List(C1, C1);
+			CListC1C2 = new B2.List(C1, C2);
+			CListC2C1 = new B2.List(C2, C1);
+			CListC2C2 = new B2.List(C2, C2);
 
 			CInfinity = unaryAST1(DirectedInfinity, C1);
 			oo = CInfinity;
@@ -4223,19 +4223,19 @@ public class F {
 			CNPiHalf = binaryAST2(Times, CN1D2, Pi);
 			CPiHalf = binaryAST2(Times, C1D2, Pi);
 
-			CSqrt2 = binaryAST2(Power, C2, C1D2);
-			CSqrt3 = binaryAST2(Power, C3, C1D2);
-			CSqrt5 = binaryAST2(Power, C5, C1D2);
-			CSqrt6 = binaryAST2(Power, C6, C1D2);
-			CSqrt7 = binaryAST2(Power, C7, C1D2);
-			CSqrt10 = binaryAST2(Power, C10, C1D2);
+			CSqrt2 = new B2.Power(C2, C1D2);
+			CSqrt3 = new B2.Power(C3, C1D2);
+			CSqrt5 = new B2.Power(C5, C1D2);
+			CSqrt6 = new B2.Power(C6, C1D2);
+			CSqrt7 = new B2.Power(C7, C1D2);
+			CSqrt10 = new B2.Power(C10, C1D2);
 
-			C1DSqrt2 = binaryAST2(Power, C2, CN1D2);
-			C1DSqrt3 = binaryAST2(Power, C3, CN1D2);
-			C1DSqrt5 = binaryAST2(Power, C5, CN1D2);
-			C1DSqrt6 = binaryAST2(Power, C6, CN1D2);
-			C1DSqrt7 = binaryAST2(Power, C7, CN1D2);
-			C1DSqrt10 = binaryAST2(Power, C10, CN1D2);
+			C1DSqrt2 = new B2.Power(C2, CN1D2);
+			C1DSqrt3 = new B2.Power(C3, CN1D2);
+			C1DSqrt5 = new B2.Power(C5, CN1D2);
+			C1DSqrt6 = new B2.Power(C6, CN1D2);
+			C1DSqrt7 = new B2.Power(C7, CN1D2);
+			C1DSqrt10 = new B2.Power(C10, CN1D2);
 
 			Slot1 = unaryAST1(Slot, C1);
 			Slot2 = unaryAST1(Slot, C2);
@@ -5035,7 +5035,7 @@ public class F {
 	}
 
 	public static IAST And(final IExpr a0, final IExpr a1) {
-		return new AST2(And, a0, a1);
+		return new B2.And(a0, a1);
 	}
 
 	public static IAST Apart(final IExpr a0) {
@@ -5972,7 +5972,7 @@ public class F {
 	}
 
 	public static IAST Condition(final IExpr a1, final IExpr a2) {
-		return new AST2(Condition, a1, a2);
+		return new B2.Condition(a1, a2);
 	}
 
 	public static IAST ConditionalExpression(final IExpr a0, final IExpr a1) {
@@ -6000,7 +6000,7 @@ public class F {
 	}
 
 	public static IAST Cos(final IExpr a0) {
-		return new AST1(Cos, a0);
+		return new B1.Cos(a0);
 	}
 
 	public static IAST Cosh(final IExpr a0) {
@@ -6239,7 +6239,7 @@ public class F {
 	 * @return
 	 */
 	public static IAST Divide(final IExpr arg1, final IExpr arg2) {
-		return new AST2(Times, arg1, new AST2(Power, arg2, CN1));
+		return new AST2(Times, arg1, new B2.Power(arg2, CN1));
 	}
 
 	public static IAST Divisible(final IExpr a0, final IExpr a1) {
@@ -6307,7 +6307,7 @@ public class F {
 	}
 
 	public static IAST Equal(final IExpr a0, final IExpr a1) {
-		return new AST2(Equal, a0, a1);
+		return new B2.Equal(a0, a1);
 	}
 
 	public static IAST Equivalent(final IExpr a0, final IExpr a1) {
@@ -6580,7 +6580,7 @@ public class F {
 	}
 
 	public static IAST Exp(final IExpr a0) {
-		return new AST2(Power, E, a0);
+		return new B2.Power(E, a0);
 	}
 
 	public static IAST ExpToTrig(final IExpr a0) {
@@ -6830,7 +6830,7 @@ public class F {
 	}
 
 	public static IAST FreeQ(final IExpr a0, final IExpr a1) {
-		return new AST2(FreeQ, a0, a1);
+		return new B2.FreeQ(a0, a1);
 	}
 
 	public static IAST FrechetDistribution(final IExpr a0, final IExpr a1) {
@@ -6950,11 +6950,11 @@ public class F {
 	}
 
 	public static IAST Greater(final IExpr a0, final IExpr a1) {
-		return new AST2(Greater, a0, a1);
+		return new B2.Greater(a0, a1);
 	}
 
 	public static IAST GreaterEqual(final IExpr a0, final IExpr a1) {
-		return new AST2(GreaterEqual, a0, a1);
+		return new B2.GreaterEqual(a0, a1);
 	}
 
 	public static IAST GumbelDistribution() {
@@ -7298,11 +7298,11 @@ public class F {
 	 * </pre>
 	 */
 	public static IAST IntegerQ(final IExpr a) {
-		return new AST1(IntegerQ, a);
+		return new B1.IntegerQ(a);
 	}
 
 	public static IAST Integrate(final IExpr a0, final IExpr a1) {
-		return new AST2(Integrate, a0, a1);
+		return new B2.Integrate(a0, a1);
 	}
 
 	public static IAST Interpolation(final IExpr list) {
@@ -7630,7 +7630,7 @@ public class F {
 	}
 
 	public static IAST Less(final IExpr a0, final IExpr a1) {
-		return new AST2(Less, a0, a1);
+		return new B2.Less(a0, a1);
 	}
 
 	public static IAST Less(final IExpr a0, final IExpr a1, final IExpr a2) {
@@ -7646,7 +7646,7 @@ public class F {
 	}
 
 	public static IAST LessEqual(final IExpr a0, final IExpr a1) {
-		return new AST2(LessEqual, a0, a1);
+		return new B2.LessEqual(a0, a1);
 	}
 
 	public static IAST LessEqual(final IExpr a0, final IExpr a1, final IExpr a2) {
@@ -7806,7 +7806,7 @@ public class F {
 				if (a[0].equals(F.C2)) {
 					return F.CListC2;
 				}
-				return new AST1(List, a[0]);
+				return new B1.List(a[0]);
 			}
 			break;
 		case 2:
@@ -7826,7 +7826,7 @@ public class F {
 						return F.CListC2C2;
 					}
 				}
-				return new AST2(List, a[0], a[1]);
+				return new B2.List(a[0], a[1]);
 			}
 			break;
 		case 3:
@@ -7885,7 +7885,7 @@ public class F {
 	}
 
 	public static IAST Log(final IExpr a0) {
-		return new AST1(Log, a0);
+		return new B1.Log(a0);
 	}
 
 	public static IAST Log(final IExpr a0, final IExpr a1) {
@@ -8244,7 +8244,7 @@ public class F {
 	}
 
 	public static IAST Not(final IExpr a) {
-		return new AST1(Not, a);
+		return new B1.Not(a);
 	}
 
 	public static IAST NotElement(final IExpr a0, final IExpr a1) {
@@ -8428,7 +8428,7 @@ public class F {
 	}
 
 	public static IAST Or(final IExpr a0, final IExpr a1) {
-		return new AST2(Or, a0, a1);
+		return new B2.Or(a0, a1);
 	}
 
 	public static IAST Or(final IExpr... a) {
@@ -8542,7 +8542,7 @@ public class F {
 		if (a1 != null && a2 != null) {
 			return binaryASTOrderless(IExpr::isPlus, F.Plus, a1, a2);
 		}
-		return new AST2(Plus, a1, a2);
+		return new B2.Plus(a1, a2);
 	}
 
 	public static IAST Plus(final long num, final IExpr... a) {
@@ -8577,7 +8577,7 @@ public class F {
 	}
 
 	public static IAST PolynomialQ(final IExpr a0, final IExpr a1) {
-		return new AST2(PolynomialQ, a0, a1);
+		return new B2.PolynomialQ(a0, a1);
 	}
 
 	public static IAST PolynomialQuotient(final IExpr a0, final IExpr a1, final IExpr a2) {
@@ -8605,11 +8605,11 @@ public class F {
 	}
 
 	public static IAST pow(final IExpr a0, final IExpr a1) {
-		return new AST2(Power, a0, a1);
+		return new B2.Power(a0, a1);
 	}
 
 	public static IAST Power(final IExpr a0, final IExpr a1) {
-		return new AST2(Power, a0, a1);
+		return new B2.Power(a0, a1);
 	}
 
 	public static IExpr Power(final IExpr a0, final long exp) {
@@ -8628,7 +8628,7 @@ public class F {
 				return C1;
 			}
 		}
-		return new AST2(Power, a0, integer(exp));
+		return new B2.Power(a0, integer(exp));
 	}
 
 	public static IAST PowerExpand(final IExpr a0) {
@@ -9192,7 +9192,7 @@ public class F {
 	}
 
 	public static IAST Sin(final IExpr a0) {
-		return new AST1(Sin, a0);
+		return new B1.Sin(a0);
 	}
 
 	public static IAST Sinc(final IExpr a0) {
@@ -9247,7 +9247,7 @@ public class F {
 	 * @return
 	 */
 	public static IAST Sqr(final IExpr x) {
-		return new AST2(Power, x, C2);
+		return new B2.Power(x, C2);
 	}
 
 	/**
@@ -9257,11 +9257,11 @@ public class F {
 	 * @return
 	 */
 	public static IAST Sqrt(final IExpr x) {
-		return new AST2(Power, x, C1D2);
+		return new B2.Power(x, C1D2);
 	}
 
 	public static IAST Sqrt(int n) {
-		return new AST2(Power, F.ZZ(n), C1D2);
+		return new B2.Power(F.ZZ(n), C1D2);
 	}
 
 	public static IAST StandardDeviation(final IExpr a0) {
@@ -9526,7 +9526,7 @@ public class F {
 	}
 
 	public static IAST Tan(final IExpr a0) {
-		return new AST1(Tan, a0);
+		return new B1.Tan(a0);
 	}
 
 	public static IAST Tanh(final IExpr a0) {
@@ -9613,7 +9613,7 @@ public class F {
 		if (a1 != null && a2 != null) {
 			return binaryASTOrderless(IExpr::isTimes, F.Times, a1, a2);
 		}
-		return binary(Times, a1, a2);
+		return new B2.Times(a1, a2);
 	}
 
 	private static IASTMutable binaryASTOrderless(Predicate<IExpr> t, ISymbol symbol, final IExpr a1, final IExpr a2) {
@@ -9638,9 +9638,9 @@ public class F {
 		}
 		if (a1.compareTo(a2) > 0) {
 			// swap arguments
-			return binary(symbol, a2, a1);
+			return binaryAST2(symbol, a2, a1);
 		}
-		return binary(symbol, a1, a2);
+		return binaryAST2(symbol, a1, a2);
 	}
 
 	public static IAST Times(final long num, final IExpr... a) {
@@ -9773,7 +9773,7 @@ public class F {
 	}
 
 	public static IAST With(final IExpr a0, final IExpr a1) {
-		return new AST2(With, a0, a1);
+		return new B2.With(a0, a1);
 	}
 
 	/**

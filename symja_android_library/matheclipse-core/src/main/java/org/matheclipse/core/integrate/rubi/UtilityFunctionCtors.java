@@ -1,6 +1,5 @@
 package org.matheclipse.core.integrate.rubi;
 
-import static org.matheclipse.core.expression.F.Integrate;
 import static org.matheclipse.core.expression.F.ast;
 import static org.matheclipse.core.expression.F.function;
 import static org.matheclipse.core.expression.F.initFinalHiddenSymbol;
@@ -10,9 +9,7 @@ import static org.matheclipse.core.expression.F.senary;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
-import org.matheclipse.core.expression.AST1;
-import org.matheclipse.core.expression.AST2;
-import org.matheclipse.core.expression.AST3;
+import org.matheclipse.core.expression.B2;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -202,7 +199,7 @@ public class UtilityFunctionCtors {
 	 */
 	public static IAST Int(final IExpr a0, final IExpr a1) {
 		// Integrate.setAttributes(ISymbol.CONSOLE_OUTPUT);
-		return F.binaryAST2(Integrate, a0, a1);
+		return F.Integrate(a0, a1); 
 	}
 
 	public static IAST IntBinomialQ(final IExpr... a) {
