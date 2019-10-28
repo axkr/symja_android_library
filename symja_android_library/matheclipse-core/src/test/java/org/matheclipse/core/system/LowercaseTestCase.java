@@ -8836,6 +8836,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIntegrate() {
+		check("Integrate((x-1)^3,{x,-2,2})", //
+				"-20");
+		
+		check("Integrate(x^2,{x,-2,2})", //
+				"16/3");
+		check("Integrate((x-1)^2,{x,-2,2})", //
+				"28/3");
+		check("Integrate(x^3,{x,-2,2})", //
+				"0");
+		check("Integrate((x-1)^3,{x,-2,2})", //
+				"-20");
+		
 		// see github #153
 		check("Integrate(E^(-x^2.0),{x,-1/2,1/2})", //
 				"Sqrt(Pi)*Erf(1/2)");

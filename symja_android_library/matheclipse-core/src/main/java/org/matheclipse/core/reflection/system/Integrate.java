@@ -492,15 +492,23 @@ public class Integrate extends AbstractFunctionEvaluator {
 					IExpr temp = engine.evaluate(copy);
 					if (temp.isFreeAST(F.Integrate)) {
 						// F(b)-F(a)
-						IExpr Fb = engine.evaluate(F.Limit(temp, F.Rule(xList.arg1(), xList.arg3())));
-						IExpr Fa = engine.evaluate(F.Limit(temp, F.Rule(xList.arg1(), xList.arg2())));
+						IExpr a = xList.arg2();
+						IExpr b = xList.arg3();
+						IExpr Fb = engine.evaluate(F.Limit(temp, F.Rule(xList.arg1(), b)));
+						IExpr Fa = engine.evaluate(F.Limit(temp, F.Rule(xList.arg1(), a)));
 						if (!Fb.isFree(F.DirectedInfinity, true) || !Fb.isFree(F.Indeterminate, true)) {
 							return engine.printMessage(
-									"Not integrable: " + temp + " for limit " + xList.arg1() + " -> " + xList.arg3());
+									"Not integrable: " + temp + " for limit " + xList.arg1() + " -> " + b);
 						}
 						if (!Fa.isFree(F.DirectedInfinity, true) || !Fa.isFree(F.Indeterminate, true)) {
 							return engine.printMessage(
-									"Not integrable: " + temp + " for limit " + xList.arg1() + " -> " + xList.arg2());
+									"Not integrable: " + temp + " for limit " + xList.arg1() + " -> " + a);
+						}
+						if (a.isNegativeResult() && b.isPositiveResult()) {
+							IExpr Fzero = engine.evaluate(F.Limit(temp, F.Rule(xList.arg1(), F.C0)));
+							if (!Fzero.isFree(F.DirectedInfinity, true) || !Fzero.isFree(F.Indeterminate, true)) {
+								return F.Plus(F.Subtract(Fb, Fzero), F.Subtract(Fzero, Fa));
+							}
 						}
 						if (Fb.isAST() && Fa.isAST()) {
 							IExpr bDenominator = F.Denominator.of(engine, Fb);
