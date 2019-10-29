@@ -491,33 +491,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 					IAST copy = holdallAST.setAtCopy(2, xList.arg1());
 					IExpr temp = engine.evaluate(copy);
 					if (temp.isFreeAST(F.Integrate)) {
-						// F(b)-F(a)
-						IExpr a = xList.arg2();
-						IExpr b = xList.arg3();
-						IExpr Fb = engine.evaluate(F.Limit(temp, F.Rule(xList.arg1(), b)));
-						IExpr Fa = engine.evaluate(F.Limit(temp, F.Rule(xList.arg1(), a)));
-						if (!Fb.isFree(F.DirectedInfinity, true) || !Fb.isFree(F.Indeterminate, true)) {
-							return engine.printMessage(
-									"Not integrable: " + temp + " for limit " + xList.arg1() + " -> " + b);
-						}
-						if (!Fa.isFree(F.DirectedInfinity, true) || !Fa.isFree(F.Indeterminate, true)) {
-							return engine.printMessage(
-									"Not integrable: " + temp + " for limit " + xList.arg1() + " -> " + a);
-						}
-						if (a.isNegativeResult() && b.isPositiveResult()) {
-							IExpr Fzero = engine.evaluate(F.Limit(temp, F.Rule(xList.arg1(), F.C0)));
-							if (!Fzero.isFree(F.DirectedInfinity, true) || !Fzero.isFree(F.Indeterminate, true)) {
-								return F.Plus(F.Subtract(Fb, Fzero), F.Subtract(Fzero, Fa));
-							}
-						}
-						if (Fb.isAST() && Fa.isAST()) {
-							IExpr bDenominator = F.Denominator.of(engine, Fb);
-							IExpr aDenominator = F.Denominator.of(engine, Fa);
-							if (bDenominator.equals(aDenominator)) {
-								return F.Divide(F.Subtract(F.Numerator(Fb), F.Numerator(Fa)), bDenominator);
-							}
-						}
-						return F.Subtract(Fb, Fa);
+						return definiteIntegral(temp, xList, engine);
 					}
 				}
 				return F.NIL;
@@ -615,6 +589,50 @@ public class Integrate extends AbstractFunctionEvaluator {
 		} finally {
 			engine.setNumericMode(numericMode);
 		}
+	}
+
+	/**
+	 * <p>
+	 * Given a <code>function</code> of a real variable <code>x</code> and an interval <code>[a, b]</code> of the real
+	 * line, calculate the definite integral <code>F(b)-F(a)</code>.
+	 * </p>
+	 * <a href="https://en.wikipedia.org/wiki/Integral">Wikipedia - Integral</a>
+	 * 
+	 * @param function
+	 *            a function of <code>x</code>
+	 * @param xValueList
+	 *            a list of the form <code>{x,a,b}</code> with <code>3</code> arguments
+	 * @param engine
+	 *            the evaluation engine
+	 * @return
+	 */
+	private static IExpr definiteIntegral(IExpr function, IAST xValueList, EvalEngine engine) {
+		IExpr x = xValueList.arg1();
+		IExpr a = xValueList.arg2();
+		IExpr b = xValueList.arg3();
+		IExpr Fb = engine.evaluate(F.Limit(function, F.Rule(x, b)));
+		IExpr Fa = engine.evaluate(F.Limit(function, F.Rule(x, a)));
+		if (!Fb.isFree(F.DirectedInfinity, true) || !Fb.isFree(F.Indeterminate, true)) {
+			return engine.printMessage("Not integrable: " + function + " for limit " + x + " -> " + b);
+		}
+		if (!Fa.isFree(F.DirectedInfinity, true) || !Fa.isFree(F.Indeterminate, true)) {
+			return engine.printMessage("Not integrable: " + function + " for limit " + x + " -> " + a);
+		}
+		if (a.isNegativeResult() && b.isPositiveResult()) {
+			// 0 is a value inside he given interval
+			IExpr FZero = engine.evaluate(F.Limit(function, F.Rule(x, F.C0)));
+			if (!FZero.isFree(F.DirectedInfinity, true) || !FZero.isFree(F.Indeterminate, true)) {
+				return F.Plus(F.Subtract(Fb, FZero), F.Subtract(FZero, Fa));
+			}
+		}
+		if (Fb.isAST() && Fa.isAST()) {
+			IExpr bDenominator = F.Denominator.of(engine, Fb);
+			IExpr aDenominator = F.Denominator.of(engine, Fa);
+			if (bDenominator.equals(aDenominator)) {
+				return F.Divide(F.Subtract(F.Numerator(Fb), F.Numerator(Fa)), bDenominator);
+			}
+		}
+		return F.Subtract(Fb, Fa);
 	}
 
 	private static IExpr callRestIntegrate(IAST arg1, final IExpr x, final EvalEngine engine) {
