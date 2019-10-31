@@ -602,7 +602,7 @@ public class FractionSym extends AbstractFractionSym {
 	@Override
 	public IRational normalize() {
 		if (fDenominator == 1) {
-			return F.integer(fNumerator);
+			return F.ZZ(fNumerator);
 		}
 		if (isZero()) {
 			return F.C0;

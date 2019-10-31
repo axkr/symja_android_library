@@ -1418,6 +1418,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBetaRegularized() {
+		check("BetaRegularized(1.0000001,1,1)", //
+				"BetaRegularized(1.0,1.0,1.0)");
+		check("BetaRegularized(-0.000000001,1,1)", //
+				"BetaRegularized(-1.00000*10^-9,1.0,1.0)");
+		
 		// TODO get Indeterminate
 		check("BetaRegularized(10^20., 10^30., 10.^20.)", //
 				"BetaRegularized(1.00000*10^20,1.00000*10^30,1.00000*10^20)");

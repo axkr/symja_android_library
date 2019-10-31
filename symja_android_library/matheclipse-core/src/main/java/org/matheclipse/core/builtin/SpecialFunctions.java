@@ -167,6 +167,7 @@ public class SpecialFunctions {
 						double zn = engine.evalDouble(z);
 						double an = engine.evalDouble(a);
 						double nn = engine.evalDouble(n);
+						// TODO improve with regularizedIncompleteBetaFunction() - https://github.com/haifengl/smile/blob/master/math/src/main/java/smile/math/special/Beta.java
 						return F.num(de.lab4inf.math.functions.IncompleteBeta.incBeta(zn, an, nn));
 					}
 					int ni = n.toIntDefault(Integer.MIN_VALUE);
@@ -179,7 +180,7 @@ public class SpecialFunctions {
 						// {k, 0, n - 1}
 						for (int k = 0; k < ni; k++) {
 							// (Pochhammer(a, k)*(1 - z)^k)/k!
-							IInteger kk = F.integer(k);
+							IInteger kk = F.ZZ(k);
 							sum.append(F.Times(F.Power(F.Plus(F.C1, F.Negate(z)), kk), F.Power(F.Factorial(kk), -1),
 									F.Pochhammer(a, kk)));
 						}

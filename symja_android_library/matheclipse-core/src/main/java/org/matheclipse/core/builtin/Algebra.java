@@ -1761,7 +1761,7 @@ public class Algebra {
 									final int ki = k;
 									timesAST.appendArgs(ast.size(), i -> F.Power(ast.get(i), F.integer(indices[ki])));
 								} else {
-									timesAST.append(F.Power(temp, F.integer(indices[k])));
+									timesAST.append(F.Power(temp, F.ZZ(indices[k])));
 								}
 							}
 
@@ -2284,7 +2284,7 @@ public class Algebra {
 				if (entry.getKey().isONE() && entry.getValue().equals(1L)) {
 					continue;
 				}
-				result.append(F.List(jas.integerPoly2Expr(entry.getKey()), F.integer(entry.getValue())));
+				result.append(F.List(jas.integerPoly2Expr(entry.getKey()), F.ZZ(entry.getValue())));
 			}
 			return result;
 		}
@@ -5561,7 +5561,7 @@ public class Algebra {
 				// hack: factoring -I and I out of an expression should give no new factorized expression
 				return expr;
 			}
-			result.append(F.Power(jas.complexPoly2Expr(entry.getKey()), F.integer(entry.getValue())));
+			result.append(F.Power(jas.complexPoly2Expr(entry.getKey()), F.ZZ(entry.getValue())));
 		}
 		return result;
 	}
@@ -5610,7 +5610,7 @@ public class Algebra {
 		for (SortedMap.Entry<GenPolynomial<ModLong>, Long> entry : map.entrySet()) {
 			GenPolynomial<ModLong> singleFactor = entry.getKey();
 			Long val = entry.getValue();
-			result.append(F.Power(jas.modLongPoly2Expr(singleFactor), F.integer(val)));
+			result.append(F.Power(jas.modLongPoly2Expr(singleFactor), F.ZZ(val)));
 		}
 		return result;
 	}
@@ -5635,7 +5635,7 @@ public class Algebra {
 			if (entry.getValue() == 1L) {
 				result.append(jas.integerPoly2Expr(entry.getKey()));
 			} else {
-				result.append(F.Power(jas.integerPoly2Expr(entry.getKey()), F.integer(entry.getValue())));
+				result.append(F.Power(jas.integerPoly2Expr(entry.getKey()), F.ZZ(entry.getValue())));
 			}
 		}
 		return result;

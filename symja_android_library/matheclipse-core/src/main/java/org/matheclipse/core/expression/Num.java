@@ -143,7 +143,7 @@ public class Num implements INum {
 	/** {@inheritDoc} */
 	@Override
 	public IInteger ceilFraction() {
-		return F.integer(NumberUtil.toLong(Math.ceil(fDouble)));
+		return F.ZZ(NumberUtil.toLong(Math.ceil(fDouble)));
 	}
 
 	/** {@inheritDoc} */
@@ -297,7 +297,7 @@ public class Num implements INum {
 	/** {@inheritDoc} */
 	@Override
 	public IInteger floorFraction() {
-		return F.integer(NumberUtil.toLong(Math.floor(fDouble)));
+		return F.ZZ(NumberUtil.toLong(Math.floor(fDouble)));
 	}
 
 	/** {@inheritDoc} */
