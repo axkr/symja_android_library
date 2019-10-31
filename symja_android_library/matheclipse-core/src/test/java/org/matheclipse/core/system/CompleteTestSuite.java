@@ -46,14 +46,14 @@ public class CompleteTestSuite extends TestCase {
 		suite.addTestSuite(MathMLPresentationTestCase.class);
 		suite.addTestSuite(BasicTeXTestCase.class);
 		suite.addTestSuite(TeXConverterTestCase.class);
-		
+
 		suite.addTestSuite(LastCalculationsHistoryTest.class);
 		suite.addTestSuite(ExpandTestCase.class);
 
 		suite.addTestSuite(OpenFixedSizeMapTest.class);
 		suite.addTestSuite(NumberTest.class);
 		suite.addTestSuite(JavaFormTestCase.class);
-		
+
 		suite.addTestSuite(MainTestCase.class);
 		suite.addTestSuite(LowercaseTestCase.class);
 		suite.addTestSuite(RubiIntegrationTest.class);
@@ -72,8 +72,8 @@ public class CompleteTestSuite extends TestCase {
 		suite.addTestSuite(AssumptionTestCase.class);
 		suite.addTestSuite(WXFTestCase.class);
 		suite.addTestSuite(IntegerTestCase.class);
-		suite.addTestSuite(ArchUnitTests.class);
-		
+		// suite.addTestSuite(ArchUnitTests.class);
+
 		return suite;
 
 	}

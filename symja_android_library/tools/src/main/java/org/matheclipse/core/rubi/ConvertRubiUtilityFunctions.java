@@ -34,13 +34,8 @@ public class ConvertRubiUtilityFunctions {
 			+ " * UtilityFunctions rules from the <a href=\"http://www.apmaths.uwo.ca/~arich/\">Rubi -\n"
 			+ " * rule-based integrator</a>.\n" + " *  \n" + " */\n" + "public class UtilityFunctions";
 
-	private static final String FOOTER = "}\n}\n";
+	private static final String FOOTER = "}\n";
 
-	/**
-	 * Maximum number of rules which should be generated per file.
-	 * 
-	 * See <a href="https://github.com/axkr/symja_android_library/issues/149">Github issue 149</a>
-	 */
 	private static int NUMBER_OF_RULES_PER_FILE = 25;
 
 	public static List<ASTNode> parseFileToList(String fileName) {
@@ -159,15 +154,7 @@ public class ConvertRubiUtilityFunctions {
 				for (int j = 0; j < list.size(); j++) {
 					if (cnt == 0) {
 						buffer = new StringBuffer(100000);
-						buffer.append(HEADER + fcnt //
-								+ " { \n" //
-								+ "\n" //
-								+ "	public static void initialize() {\n"//
-								+ "		Initializer.init();\n" + "	}\n" //
-								+ "\n"//
-								+ "	private static class Initializer  {\n" //
-								+ "\n"//
-								+ "		private static void init() {\n");
+						buffer.append(HEADER + fcnt + " { \n  public static IAST RULES = List( \n");
 					}
 					ASTNode astNode = list.get(j);
 
@@ -175,7 +162,7 @@ public class ConvertRubiUtilityFunctions {
 					convert(astNode, buffer, cnt == NUMBER_OF_RULES_PER_FILE || j == list.size(), functionSet);
 
 					if (cnt == NUMBER_OF_RULES_PER_FILE) {
-						buffer.append("  }\n" + FOOTER);
+						buffer.append("  );\n" + FOOTER);
 						writeFile("C:/temp/rubi/UtilityFunctions" + fcnt + ".java", buffer);
 						fcnt++;
 						cnt = 0;
@@ -183,7 +170,7 @@ public class ConvertRubiUtilityFunctions {
 				}
 				if (cnt != 0) {
 					// System.out.println(");");
-					buffer.append("  };\n" + FOOTER);
+					buffer.append("  );\n" + FOOTER);
 					writeFile("C:/temp/rubi/UtilityFunctions" + fcnt + ".java", buffer);
 				}
 				buffer = new StringBuffer(100000);
