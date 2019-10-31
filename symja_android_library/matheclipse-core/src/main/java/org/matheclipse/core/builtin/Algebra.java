@@ -1974,7 +1974,10 @@ public class Algebra {
 			try {
 
 				if (ast.isAST2()) {
-					return factorWithOption(ast, expr, varList, false, engine);
+					IExpr temp = factorWithOption(ast, expr, varList, false, engine);
+					if (temp.isPresent()) {
+						return temp;
+					}
 				}
 
 				return factorExpr(ast, expr, eVar, false, engine);
@@ -2141,13 +2144,16 @@ public class Algebra {
 				return factorModulus(expr, varList, factorSquareFree, option);
 			}
 			if (!factorSquareFree) {
-				option = options.getOption(F.GaussianIntegers);
-				if (option.isTrue()) {
-					return factorComplex(expr, varList, F.Times, engine);
-				}
 				option = options.getOption(F.Extension);
 				if (option.isImaginaryUnit()) {
 					return factorComplex(expr, varList, F.Times, engine);
+				}
+				
+				option = options.getOption(F.GaussianIntegers);
+				if (option.isPresent()) {
+					if (option.isTrue()) {
+						return factorComplex(expr, varList, F.Times, engine);
+					}
 				}
 			}
 			return F.NIL; // no evaluation
