@@ -3945,6 +3945,11 @@ public class F {
 	public static IAST CListC1;
 
 	/**
+	 * Represents <code>List(-1)</code>
+	 */
+	public static IAST CListCN1;
+
+	/**
 	 * Represents <code>List(1,1)</code>
 	 */
 	public static IAST CListC1C1;
@@ -4200,9 +4205,10 @@ public class F {
 			List.setEvaluator(ICoreFunctionEvaluator.ARGS_EVALUATOR);
 
 			CEmptyList = headAST0(List);
-			CListC0 = unaryAST1(List, C0);
-			CListC1 = unaryAST1(List, C1);
-			CListC2 = unaryAST1(List, C2);
+			CListC0 = new B1.List(C0);
+			CListC1 = new B1.List(C1);
+			CListC2 = new B1.List(C2);
+			CListCN1 = new B1.List(CN1);
 
 			CListC1C1 = new B2.List(C1, C1);
 			CListC1C2 = new B2.List(C1, C2);
@@ -8404,8 +8410,8 @@ public class F {
 
 	public static IAST Options(final IExpr a0) {
 		return new AST1(Options, a0);
-	} 
- 
+	}
+
 	public static IASTAppendable Or() {
 		return ast(Or);
 	}
