@@ -23,8 +23,6 @@ ISetDelayed(4,ReapList(u_),
 ISetDelayed(5,HalfIntegerQ($ps("u")),
     SameQ(Scan(Function(If(And(SameQ(Head(Slot1),Rational),Equal(Denominator(Slot1),C2)),Null,Return(False))),List(u)),Null)),
 ISetDelayed(6,RationalQ($ps("u")),
-    SameQ(Scan(Function(If(Or(IntegerQ(Slot1),SameQ(Head(Slot1),Rational)),Null,Return(False))),List(u)),Null)),
-ISetDelayed(7,FractionOrNegativeQ($ps("u")),
-    SameQ(Scan(Function(If(Or(FractionQ(Slot1),And(IntegerQ(Slot1),Less(Slot1,C0))),Null,Return(False))),List(u)),Null))
+    SameQ(Scan(Function(If(Or(IntegerQ(Slot1),SameQ(Head(Slot1),Rational)),Null,Return(False))),List(u)),Null))
   );
 }
