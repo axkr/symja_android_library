@@ -13,11 +13,12 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
-import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
@@ -152,6 +153,20 @@ public class WL {
 					ast.append(read());
 				}
 				// System.out.println(ast.toString());
+				IExpr head = ast.head();
+				if (head == F.Complex || //
+						head == F.Rational || //
+						head == F.Pattern || //
+						head == F.Optional) {
+					// head == F.Blank || //
+					// head == F.BlankSequence || //
+					// head == F.BlankNullSequence) {
+					IFunctionEvaluator evaluator = (IFunctionEvaluator) ((IBuiltInSymbol) head).getEvaluator();
+					IExpr temp = evaluator.evaluate(ast, EvalEngine.get());
+					if (temp.isPresent()) {
+						return temp;
+					}
+				}
 				return ast;
 			case WXF_CONSTANTS.String:
 				length = parseLength();// (int) array[position++];
