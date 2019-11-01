@@ -13,7 +13,7 @@ import org.matheclipse.core.interfaces.IAST;
 public class UtilityFunctions0 { 
   public static IAST RULES = List( 
 ISetDelayed(1,IntHide(u_,x_Symbol),
-    Block(List(Set($s("§$showsteps"),False),Set($s("§$stepcounter"),Null)),Int(u,x))),
+    Block(List(Set($s("§$showsteps"),False),Set($s("§$stepcounter"),Null)),Integrate(u,x))),
 ISetDelayed(2,EveryQ($p("func"),$p("lst")),
     Catch(CompoundExpression(Scan(Function(If($($s("func"),Slot1),Null,Throw(False))),$s("lst")),True))),
 ISetDelayed(3,Map2($p("func"),$p("lst1"),$p("lst2")),

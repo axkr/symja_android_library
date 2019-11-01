@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,7 +16,9 @@ import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.Parser;
@@ -75,16 +78,17 @@ public class ConvertRubiUtilityFunctions {
 		}
 	}
 
-	public static void convert(ASTNode node, StringBuffer buffer, boolean last, Set<String> functionSet) {
+	public static void convert(ASTNode node, StringBuffer buffer, boolean last, Set<String> functionSet,
+			IASTAppendable listOfRules) {
 		try {
 			// convert ASTNode to an IExpr node
 			IExpr expr = new AST2Expr(false, EvalEngine.get()).convert(node);
 
 			if (expr.isAST(F.CompoundExpression)) {
 				IAST ast = (IAST) expr;
-				ast.forEach(x -> convertExpr(x, buffer, last, functionSet));
+				ast.forEach(x -> convertExpr(x, buffer, last, functionSet, listOfRules));
 			} else {
-				convertExpr(expr, buffer, last, functionSet);
+				convertExpr(expr, buffer, last, functionSet, listOfRules);
 			}
 		} catch (UnsupportedOperationException uoe) {
 			System.out.println(uoe.getMessage());
@@ -94,13 +98,15 @@ public class ConvertRubiUtilityFunctions {
 		}
 	}
 
-	private static void convertExpr(IExpr expr, StringBuffer buffer, boolean last, Set<String> functionSet) {
+	private static void convertExpr(IExpr expr, StringBuffer buffer, boolean last, Set<String> functionSet,
+			IASTAppendable listOfRules) {
 		// ISymbol module = F.$s("Module");
 		// if (expr.isFree(module, true)) {
+
 		if (expr.isAST(F.SetDelayed, 3)) {
 			IAST ast = (IAST) expr;
 			addToFunctionSet(ast, functionSet);
-			ConvertRubi.appendSetDelayedToBuffer(ast, buffer, last);
+			ConvertRubi.appendSetDelayedToBuffer(ast, buffer, last, listOfRules);
 		} else if (expr.isAST(F.If, 4)) {
 			IAST ast = (IAST) expr;
 			if (ast.get(1).toString().equals("§showsteps")) {
@@ -108,7 +114,7 @@ public class ConvertRubiUtilityFunctions {
 				if (expr.isAST(F.SetDelayed, 3)) {
 					ast = (IAST) expr;
 					addToFunctionSet(ast, functionSet);
-					ConvertRubi.appendSetDelayedToBuffer(ast, buffer, last);
+					ConvertRubi.appendSetDelayedToBuffer(ast, buffer, last, listOfRules);
 				}
 			}
 		}
@@ -135,9 +141,12 @@ public class ConvertRubiUtilityFunctions {
 		Config.SERVER_MODE = false;
 		Config.PARSER_USE_LOWERCASE_SYMBOLS = false;
 		Config.RUBI_CONVERT_SYMBOLS = true;
-		EvalEngine.set(new EvalEngine(false));
+		EvalEngine engine = new EvalEngine(false);
+		engine.getContextPath().add(org.matheclipse.core.expression.Context.RUBI);
+		EvalEngine.set(engine);
 		ConvertRubi.addPredefinedSymbols();
 
+		IASTAppendable listOfRules = F.ListAlloc(10000);
 		String[] fileNames = { "./Rubi/IntegrationUtilityFunctions.m" };
 		for (int i = 0; i < fileNames.length; i++) {
 			System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>");
@@ -159,7 +168,8 @@ public class ConvertRubiUtilityFunctions {
 					ASTNode astNode = list.get(j);
 
 					cnt++;
-					convert(astNode, buffer, cnt == NUMBER_OF_RULES_PER_FILE || j == list.size(), functionSet);
+					convert(astNode, buffer, cnt == NUMBER_OF_RULES_PER_FILE || j == list.size(), functionSet,
+							listOfRules);
 
 					if (cnt == NUMBER_OF_RULES_PER_FILE) {
 						buffer.append("  );\n" + FOOTER);
@@ -173,6 +183,7 @@ public class ConvertRubiUtilityFunctions {
 					buffer.append("  );\n" + FOOTER);
 					writeFile("C:/temp/rubi/UtilityFunctions" + fcnt + ".java", buffer);
 				}
+
 				buffer = new StringBuffer(100000);
 				for (String str : functionSet) {
 					String[] spl = str.split(",");
@@ -255,5 +266,19 @@ public class ConvertRubiUtilityFunctions {
 		for (Map.Entry<String, Integer> entry : AST2Expr.RUBI_STATISTICS_MAP.entrySet()) {
 			System.out.println(entry.getKey() + "  >>>  " + entry.getValue());
 		}
+
+		File file = new File("./Rubi/IntegrationUtilityFunctions.ser");
+		byte[] byteArray = WL.serialize(listOfRules);
+		try {
+			com.google.common.io.Files.write(byteArray, file);
+
+			byteArray = com.google.common.io.Files.toByteArray(file);
+			IExpr result = WL.deserialize(byteArray);
+			System.out.println(result.toString());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 }
