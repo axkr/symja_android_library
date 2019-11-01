@@ -2,14 +2,12 @@ package org.matheclipse.core.expression;
 
 import java.io.Externalizable;
 import java.math.BigInteger;
-import java.math.RoundingMode;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
-import org.apfloat.ApfloatMath;
 import org.hipparchus.util.ArithmeticUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.NumberTheory;
@@ -28,6 +26,8 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
+import de.tilman_neumann.jml.factor.pollardRho.PollardRhoBrentMontgomery64;
+import de.tilman_neumann.util.SortedMultiset;
 import edu.jas.arith.PrimeInteger;
 
 /**
@@ -428,18 +428,21 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	public IAST factorize() {
 
 		IInteger b = this;
+		if (b.isZero()) {
+			return F.CListC0;
+		} else if (b.isOne()) {
+			return F.CListC1;
+		} else if (b.isMinusOne()) {
+			return F.CListCN1;
+		}
 		if (sign() < 0) {
 			b = b.negate();
-		} else if (b.isZero()) {
-			return F.List(F.C0);
-		} else if (b.isOne()) {
-			return F.List(F.C1);
-		}
-
+		} 
 		if (b instanceof IntegerSym) {
-			long longValue = b.longValue();
-			return factorizeLong(longValue);
+			int intValue = b.intValue();
+			return factorizeLong(intValue);
 		}
+		
 
 		BigInteger big = b.toBigNumerator();
 		try {
@@ -451,7 +454,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 			// go on with big integers
 		}
 		SortedMap<Integer, Integer> map = new TreeMap<Integer, Integer>();
-		BigInteger rest = Primality.countPrimes32749(b.toBigNumerator(), map);
+		BigInteger rest = Primality.countPrimes32749(big, map);
 
 		IASTAppendable result = F.ListAlloc(map.size() + 10);
 		if (sign() < 0) {
@@ -546,6 +549,36 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		}
 		return F.NIL;
 	}
+
+//	private IAST factorizeInt(int intValue) {
+//		IASTAppendable result = F.ListAlloc();// tdivFactors.size() + extraSize);
+//		if (intValue < 0) {
+//			intValue *= -1;
+//			result.append(F.CN1);
+//		}
+//		TDiv31Barrett TDIV31 = new TDiv31Barrett();
+//		int prime = TDIV31.findSingleFactor(intValue);
+//		while (true) {
+//			prime = TDIV31.findSingleFactor(intValue);
+//			intValue /= prime;
+//			if (prime != 1) {
+//				result.append(F.ZZ(prime));
+//			} else {
+//				break;
+//			}
+//		}
+//		if (intValue != 1) {
+//			SortedMultiset<BigInteger> tdivFactors = TDIV31.factor(BigInteger.valueOf(intValue));
+//			for (Map.Entry<BigInteger, Integer> entry : tdivFactors.entrySet()) {
+//				final IInteger is = valueOf(entry.getKey());
+//				final int value = entry.getValue();
+//				for (int i = 0; i < value; i++) {
+//					result.append(is);
+//				}
+//			}
+//		}
+//		return result;
+//	}
 
 	private IAST factorizeLong(long longValue) {
 		Map<Long, Integer> map = PrimeInteger.factors(longValue);
