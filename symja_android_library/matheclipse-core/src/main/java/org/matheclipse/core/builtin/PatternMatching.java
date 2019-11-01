@@ -1026,24 +1026,32 @@ public final class PatternMatching {
 			if (ast.head().equals(F.Pattern)) {
 				if (ast.size() == 3) {
 					if (ast.arg1().isSymbol()) {
-						if (ast.arg2().isBlank()) {
-							IPatternObject blank = (IPatternObject) ast.arg2();
-							return F.$p((ISymbol) ast.arg1(), blank.getHeadTest());
+						final ISymbol symbol = (ISymbol) ast.arg1();
+						final IExpr arg2 = ast.arg2();
+						if (arg2.isBlank()) {
+							IPatternObject blank = (IPatternObject) arg2;
+							return F.$p(symbol, blank.getHeadTest());
 						}
-						if (ast.arg2().isAST(F.Blank, 1)) {
-							return F.$p((ISymbol) ast.arg1());
-						}
-						if (ast.arg2().isAST(F.BlankSequence, 1)) {
-							return F.$ps((ISymbol) ast.arg1(), null, false, false);
-						}
-						if (ast.arg2().isAST(F.BlankNullSequence, 1)) {
-							return F.$ps((ISymbol) ast.arg1(), null, false, true);
-						}
-						if (ast.arg2().isAST(F.BlankSequence, 2)) {
-							return F.$ps((ISymbol) ast.arg1(), ast.arg2().first(), false, false);
-						}
-						if (ast.arg2().isAST(F.BlankNullSequence, 2)) {
-							return F.$ps((ISymbol) ast.arg1(), ast.arg2().first(), false, true);
+						if (arg2.size() == 1) {
+							if (arg2.isAST(F.Blank, 1)) {
+								return F.$p(symbol);
+							}
+							if (arg2.isAST(F.BlankSequence, 1)) {
+								return F.$ps(symbol, null, false, false);
+							}
+							if (arg2.isAST(F.BlankNullSequence, 1)) {
+								return F.$ps(symbol, null, false, true);
+							}
+						} else if (arg2.size() == 2) {
+							if (arg2.isAST(F.Blank, 2)) {
+								return F.$p(symbol, arg2.first());
+							}
+							if (arg2.isAST(F.BlankSequence, 2)) {
+								return F.$ps(symbol, arg2.first(), false, false);
+							}
+							if (arg2.isAST(F.BlankNullSequence, 2)) {
+								return F.$ps(symbol, arg2.first(), false, true);
+							}
 						}
 					}
 				}
