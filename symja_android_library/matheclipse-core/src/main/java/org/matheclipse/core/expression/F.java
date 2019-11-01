@@ -10007,7 +10007,9 @@ public class F {
 								"                  direction: \"UD\"\n" + //
 								"              }\n" + //
 								"          },\n" + //
-								"          nodes: {\n" + "            shape: 'box'\n" + "          },\n" + //
+								"          nodes: {\n" + //
+								"            shape: 'box'\n" + //
+								"          },\n" + //
 								"          physics:false\n" + //
 								"      }; "//
 				);
