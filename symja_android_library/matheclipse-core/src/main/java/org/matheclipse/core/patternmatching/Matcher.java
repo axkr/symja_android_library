@@ -194,7 +194,7 @@ public class Matcher implements Function<IExpr, IExpr> {
 	 * The Matcher constructor
 	 */
 	public Matcher() {
-		this.rules = new RulesData(Context.SYSTEM);
+		this.rules = new RulesData();
 	}
 
 	/**

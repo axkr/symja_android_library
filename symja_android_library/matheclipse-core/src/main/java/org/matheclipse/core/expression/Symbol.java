@@ -219,7 +219,7 @@ public class Symbol implements ISymbol, Serializable {
 	@Override
 	public final RulesData createRulesData(int[] sizes) {
 		if (fRulesData == null) {
-			fRulesData = new RulesData(EvalEngine.get().getContext(), sizes);
+			fRulesData = new RulesData(sizes);
 		}
 		return fRulesData;
 	}
@@ -740,7 +740,7 @@ public class Symbol implements ISymbol, Serializable {
 			return;
 		}
 		if (fRulesData == null) {
-			fRulesData = new RulesData(engine.getContext());
+			fRulesData = new RulesData();
 		}
 		fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
 	}
@@ -749,7 +749,7 @@ public class Symbol implements ISymbol, Serializable {
 	@Override
 	public final void putDownRule(final PatternMatcherAndInvoker pmEvaluator) {
 		if (fRulesData == null) {
-			fRulesData = new RulesData(EvalEngine.get().getContext());
+			fRulesData = new RulesData();
 		}
 		fRulesData.insertMatcher(pmEvaluator);
 	}
@@ -766,7 +766,7 @@ public class Symbol implements ISymbol, Serializable {
 
 	public void putMessage(final int setSymbol, String messageName, IStringX message) {
 		if (fRulesData == null) {
-			fRulesData = new RulesData(EvalEngine.get().getContext());
+			fRulesData = new RulesData();
 		}
 		fRulesData.getMessages().put(messageName, message);
 	}
@@ -791,7 +791,7 @@ public class Symbol implements ISymbol, Serializable {
 			engine.addModifiedVariable(this);
 		}
 		if (fRulesData == null) {
-			fRulesData = new RulesData(engine.getContext());
+			fRulesData = new RulesData();
 		}
 		return fRulesData.putUpRule(setSymbol, equalRule, leftHandSide, rightHandSide);
 	}
@@ -841,7 +841,7 @@ public class Symbol implements ISymbol, Serializable {
 		fAttributes = stream.read();
 		boolean hasDownRulesData = stream.readBoolean();
 		if (hasDownRulesData) {
-			fRulesData = new RulesData(EvalEngine.get().getContext());
+			fRulesData = new RulesData();
 			fRulesData = (RulesData) stream.readObject();
 		}
 	}
@@ -934,7 +934,7 @@ public class Symbol implements ISymbol, Serializable {
 	public void setDefaultValue(int pos, IExpr expr) {
 		// default value at this position
 		if (fRulesData == null) {
-			fRulesData = new RulesData(EvalEngine.get().getContext());
+			fRulesData = new RulesData();
 		}
 		fRulesData.putfDefaultValues(pos, expr);
 	}

@@ -108,7 +108,7 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
 	 */
 	public RulesData getRulesData() {
 		if (fRulesData == null) {
-			fRulesData = new RulesData(Context.SYSTEM);
+			fRulesData = new RulesData();
 			if (fCondition != null) {
 				fRulesData.putDownRule(IPatternMatcher.SET_DELAYED, false, F.List(fLHSPattern1, fLHSPattern2),
 						F.Condition(fRHS, fCondition));

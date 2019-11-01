@@ -24,7 +24,7 @@ public class Tester implements Predicate<IExpr> {
 	 * The constructor
 	 */
 	protected Tester(EvalEngine engine) {
-		this.rules = new RulesData(Context.SYSTEM);
+		this.rules = new RulesData();
 		this.engine = engine;
 	}
 

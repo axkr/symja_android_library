@@ -118,12 +118,12 @@ public final class RulesData implements Serializable {
 	private Map<IExpr, PatternMatcherEquals> fEqualUpRules;
 	private OpenIntToSet<IPatternMatcher> fSimplePatternUpRules;
 
-	public RulesData(Context context) {
+	public RulesData() {
 		// this.context = context;
 		clear();
 	}
 
-	public RulesData(Context context, @Nonnull int[] sizes) {
+	public RulesData(@Nonnull int[] sizes) {
 		// this.context = context;
 		clear();
 		if (sizes.length > 0) {

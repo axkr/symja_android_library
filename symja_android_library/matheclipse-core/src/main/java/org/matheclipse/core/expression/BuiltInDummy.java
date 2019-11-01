@@ -195,7 +195,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 	@Override
 	public final RulesData createRulesData(int[] sizes) {
 		if (fRulesData == null) {
-			fRulesData = new RulesData(EvalEngine.get().getContext(), sizes);
+			fRulesData = new RulesData(sizes);
 		}
 		return fRulesData;
 	}
@@ -748,7 +748,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 			EvalEngine.get().addModifiedVariable(this);
 		}
 		if (fRulesData == null) {
-			fRulesData = new RulesData(EvalEngine.get().getContext());
+			fRulesData = new RulesData();
 		}
 		fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
 	}
@@ -757,7 +757,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 	@Override
 	public final void putDownRule(final PatternMatcherAndInvoker pmEvaluator) {
 		if (fRulesData == null) {
-			fRulesData = new RulesData(EvalEngine.get().getContext());
+			fRulesData = new RulesData();
 		}
 		fRulesData.insertMatcher(pmEvaluator);
 	}
@@ -824,7 +824,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 		fAttributes = stream.read();
 		boolean hasDownRulesData = stream.readBoolean();
 		if (hasDownRulesData) {
-			fRulesData = new RulesData(EvalEngine.get().getContext());
+			fRulesData = new RulesData();
 			fRulesData = (RulesData) stream.readObject();
 		}
 	}
@@ -929,7 +929,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 	public void setDefaultValue(int pos, IExpr expr) {
 		// default value at this position
 		if (fRulesData == null) {
-			fRulesData = new RulesData(EvalEngine.get().getContext());
+			fRulesData = new RulesData();
 		}
 		fRulesData.putfDefaultValues(pos, expr);
 	}
