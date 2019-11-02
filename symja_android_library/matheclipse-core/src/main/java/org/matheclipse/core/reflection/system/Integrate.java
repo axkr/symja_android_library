@@ -702,10 +702,15 @@ public class Integrate extends AbstractFunctionEvaluator {
 		}
 		if (a.isNegativeResult() && b.isPositiveResult()) {
 			// 0 is a value inside he given interval
-			IExpr FZero = engine.evaluate(F.Limit(function, F.Rule(x, F.C0)));
-			if (!FZero.isFree(F.DirectedInfinity, true) || !FZero.isFree(F.Indeterminate, true)) {
-				return F.Plus(F.Subtract(Fb, FZero), F.Subtract(FZero, Fa));
+			IExpr FZeroAbove = engine.evaluate(F.Limit(function, F.Rule(x, F.C0), F.Rule(F.Direction, F.CN1)));
+			if (!FZeroAbove.isFree(F.DirectedInfinity, true) || !FZeroAbove.isFree(F.Indeterminate, true)) {
+				return engine.printMessage("Not integrable: " + function + " for limit " + x + " -> 0");
 			}
+			IExpr FZeroBelow = engine.evaluate(F.Limit(function, F.Rule(x, F.C0), F.Rule(F.Direction, F.C1)));
+			if (!FZeroBelow.isFree(F.DirectedInfinity, true) || !FZeroBelow.isFree(F.Indeterminate, true)) {
+				return engine.printMessage("Not integrable: " + function + " for limit " + x + " -> 0");
+			}
+			return F.Plus(F.Subtract(Fb, FZeroAbove), F.Subtract(FZeroBelow, Fa));
 		}
 		if (Fb.isAST() && Fa.isAST()) {
 			IExpr bDenominator = F.Denominator.of(engine, Fb);

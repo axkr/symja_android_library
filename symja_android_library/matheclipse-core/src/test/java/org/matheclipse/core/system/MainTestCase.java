@@ -3754,17 +3754,29 @@ public class MainTestCase extends AbstractTestCase {
 		check("Solve({3*x==2,4*x==2},{x})", "{}");
 	}
 
-	public void testIssue99() {
-		check("Limit(1/x,x->0)", "Infinity");
-		check("Limit(x^(-3),x->0, Direction->-1)", "Infinity");
-		check("Limit(x^(-3),x->0, Direction->1)", "-Infinity");
-		check("Limit(x^(-4),x->0, Direction->-1)", "Infinity");
-		check("Limit(x^(-4),x->0, Direction->1)", "Infinity");
-		check("Limit(x^(-37/4),x->0, Direction->-1)", "Infinity");
-		check("Limit(x^(-37/4),x->0, Direction->1)", "Limit(1/x^(37/4),x->0,Direction->1)");
-		check("Limit(x^(-37/4),x->0, Direction->Automatic)", "Infinity");
-		check("Limit(1/x^2,x->0)", "Infinity");
-		check("Solve(-1-4/3*Limit(1/x^2,x->0)==(2*a2)/a3+(-2*a5)/a3,a3)", "Solve(-Infinity==(2*a2)/a3+(-2*a5)/a3,a3)");
+	public void testIssue99() { 
+		check("Limit(x^(-37/4),x->0, Direction->Automatic)", //
+				"Indeterminate");
+		
+		check("Limit(1/x,x->0)", //
+				"Indeterminate");
+		check("Limit(x^(-3),x->0, Direction->-1)", //
+				"Infinity");
+		check("Limit(x^(-3),x->0, Direction->1)",//
+				"-Infinity");
+		check("Limit(x^(-4),x->0, Direction->-1)", //
+				"Infinity");
+		check("Limit(x^(-4),x->0, Direction->1)", //
+				"Infinity");
+		check("Limit(x^(-37/4),x->0, Direction->-1)", //
+				"Infinity");
+		check("Limit(x^(-37/4),x->0, Direction->1)", //
+				"Limit(1/x^(37/4),x->0,Direction->1)");
+		
+		check("Limit(1/x^2,x->0)", //
+				"Infinity");
+		check("Solve(-1-4/3*Limit(1/x^2,x->0)==(2*a2)/a3+(-2*a5)/a3,a3)", //
+				"Solve(-Infinity==(2*a2)/a3+(-2*a5)/a3,a3)");
 	}
 
 	public void testHMCLinearSolve() {
