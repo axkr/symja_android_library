@@ -10200,6 +10200,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testLimit() {
 
+		check("Limit(x^(-2/3),x->0 , Direction->-1)", //
+				"Infinity");
+		check("Limit(x^(-2/3),x->0 , Direction->1)", //
+				"Limit(1/x^(2/3),x->0,Direction->1)");
+		check("Limit(x^(-2/3),x->0)", //
+				"Indeterminate");
+
+		check("Limit(x^(-16/7),x->0 , Direction->-1)", //
+				"Infinity");
+		check("Limit(x^(-16/7),x->0 , Direction->1)", //
+				"Limit(1/x^(16/7),x->0,Direction->1)");
+		check("Limit(x^(-16/7),x->0)", //
+				"Indeterminate");
+		
 		check("Limit(x^(-37/4),x->0 , Direction->-1)", //
 				"Infinity");
 		check("Limit(x^(-37/4),x->0 , Direction->1)", //
