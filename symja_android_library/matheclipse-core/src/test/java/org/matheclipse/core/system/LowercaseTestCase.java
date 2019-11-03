@@ -7579,17 +7579,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFullSimplify() {
-		// TODO see Logarithms#test0128() Rubi rule 2447 ==> -(Sqrt(-(e/d))/(2*e)) 
+		// TODO see Logarithms#test0128() Rubi rule 2447 ==> -(Sqrt(-(e/d))/(2*e))
 		check("FullSimplify( (d-2*d*Sqrt(-e/d)*x-e*x^2)/(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^2) )", //
 				"(d-2*d*Sqrt(-e/d)*x-e*x^2)/(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^2)");
-//		check("FullSimplify((1/(d + e*x^2) * (1-((2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))) / " //
-//				+ "(-((4*e*x^2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)^2) + (2*e*x)/(d + e*x^2) + (2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))", //
-//				"(d-2*d*Sqrt(-e/d)*x-e*x^2)/(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^2)");
+		// check("FullSimplify((1/(d + e*x^2) * (1-((2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))) / " //
+		// + "(-((4*e*x^2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)^2) + (2*e*x)/(d + e*x^2) + (2*(d*Sqrt(-(e/d)) + e*x))/(d +
+		// e*x^2)))", //
+		// "(d-2*d*Sqrt(-e/d)*x-e*x^2)/(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^2)");
 		check("FullSimplify((1/(d + e*x^2) * (1-((2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))) / " //
 				+ "(-((4*e*x^2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)^2) + (2*e*x)/(d + e*x^2) + (2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))", //
-				"((d+e*x^2)*(1+(-2*x*(d*Sqrt(-e/d)+e*x))/(d+e*x^2)))/(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^\n" + 
-				"2)");
-		
+				"((d+e*x^2)*(1+(-2*x*(d*Sqrt(-e/d)+e*x))/(d+e*x^2)))/(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^\n"
+						+ "2)");
+
 		check("FullSimplify(Numerator((1/(d + e*x^2) * (1-((2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))) / " //
 				+ "(-((4*e*x^2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)^2) + (2*e*x)/(d + e*x^2) + (2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2))))", //
 				"1+(-2*x*(d*Sqrt(-e/d)+e*x))/(d+e*x^2)");
@@ -7599,9 +7600,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Together( 1+(-2*x*(d*Sqrt(-e/d)+e*x))/(d+e*x^2) )", //
 				"(d-2*d*Sqrt(-e/d)*x-e*x^2)/(d+e*x^2)");
 		check("Together( (d*(2*d*Sqrt(-e/d)+4*e*x-2*e*Sqrt(-e/d)*x^2))/(d+e*x^2) )", //
-				"(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^2)/(d+e*x^2)"); 
-		
-		
+				"(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^2)/(d+e*x^2)");
+
 		// #github #152
 		check("FullSimplify(Sqrt(-9-4*Sqrt(5)))", //
 				"I*(2+Sqrt(5))");
@@ -10310,8 +10310,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Limit(E^(3*x), x->a)", //
 				"E^(3*a)");
 
-		check("Limit((1+k/x)^x, x->Infinity)", "E^k");
-		check("Limit((1-1/x)^x, x->Infinity)", "1/E");
+		check("Limit((1+k/x)^x, x->Infinity)", //
+				"E^k");
+		check("Limit((1-1/x)^x, x->Infinity)", //
+				"1/E");
 		// check("Limit((1 + Sinh(x))/E^x, x ->Infinity)", "Infinity*Limit(E^(-x),x->Infinity)");
 
 		// issue #184
@@ -10336,7 +10338,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-Infinity");
 		check("Limit(Cot(x), x->0, Direction->-1)", //
 				"Infinity");
-		check("Limit(Cot(x+Pi), x->0)", "Indeterminate");
+		check("Limit(Cot(x+Pi), x->0)", //
+				"Indeterminate");
 		check("Limit(Cot(x+Pi), x->0, Direction->1)", //
 				"-Infinity");
 		check("Limit(Cot(x+Pi), x->0, Direction->-1)", //
@@ -10873,18 +10876,28 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Map(f, {{{{{a}}}}}, {0, Infinity})", //
 				"f({f({f({f({f({f(a)})})})})})");
 
-		check("Map(f, {{{{{a}}}}}, {2, -3})", "{{f({f({{a}})})}}");
-		check("Map(f, h0(h1(h2(h3(h4(a))))), {2, -3})", "h0(h1(f(h2(f(h3(h4(a)))))))");
-		check("Map(f, {{{{a}}}}, 2, Heads -> True)", "f(List)[f(f(List)[f({{a}})])]");
+		check("Map(f, {{{{{a}}}}}, {2, -3})", //
+				"{{f({f({{a}})})}}");
+		check("Map(f, h0(h1(h2(h3(h4(a))))), {2, -3})", //
+				"h0(h1(f(h2(f(h3(h4(a)))))))");
+		check("Map(f, {{{{a}}}}, 2, Heads -> True)", //
+				"f(List)[f(f(List)[f({{a}})])]");
 
-		check("Map(f, {a, b, c})", "{f(a),f(b),f(c)}");
-		check("Map(f, {a, b, c}, Heads -> True)", "f(List)[f(a),f(b),f(c)]");
+		check("Map(f, {a, b, c})", //
+				"{f(a),f(b),f(c)}");
+		check("Map(f, {a, b, c}, Heads -> True)", //
+				"f(List)[f(a),f(b),f(c)]");
 
-		check("f /@ {1, 2, 3}", "{f(1),f(2),f(3)}");
-		check("#^2& /@ {1, 2, 3, 4}", "{1,4,9,16}");
-		check("Map(f, {{a, b}, {c, d, e}}, {2})", "{{f(a),f(b)},{f(c),f(d),f(e)}}");
-		check("Map(f, a + b + c, Heads->True)", "f(Plus)[f(a),f(b),f(c)]");
-		check("Map(f, expr, a+b, Heads->True)", "Map(f,expr,a+b,Heads->True)");
+		check("f /@ {1, 2, 3}", //
+				"{f(1),f(2),f(3)}");
+		check("#^2& /@ {1, 2, 3, 4}", //
+				"{1,4,9,16}");
+		check("Map(f, {{a, b}, {c, d, e}}, {2})", //
+				"{{f(a),f(b)},{f(c),f(d),f(e)}}");
+		check("Map(f, a + b + c, Heads->True)", //
+				"f(Plus)[f(a),f(b),f(c)]");
+		check("Map(f, expr, a+b, Heads->True)", //
+				"Map(f,expr,a+b,Heads->True)");
 		check("Map(f, {{{{a}}}}, -1)", //
 				"{f({f({f({f(a)})})})}");
 		check("Map(f, {{{{a}}}}, -2)", //
@@ -11053,26 +11066,40 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("MatchQ(1.5,_Real)", //
 				"True");
 
-		check("MatchQ(f(2*I), f(Complex(i_Integer, r_Integer)) )", "True");
-		check("MatchQ(g(1/2), g(Rational(n_Integer, d_Integer)) )", "True");
+		check("MatchQ(f(2*I), f(Complex(i_Integer, r_Integer)) )", //
+				"True");
+		check("MatchQ(g(1/2), g(Rational(n_Integer, d_Integer)) )", //
+				"True");
 
-		check("MatchQ(Simplify(1 + 1/GoldenRatio - GoldenRatio), 0)", "True");
+		check("MatchQ(Simplify(1 + 1/GoldenRatio - GoldenRatio), 0)", //
+				"True");
 
-		check("MatchQ(Sin(Cos(x)), HoldPattern(F_(G_(v_))) /; F==Sin&&G==Cos&&v==x )", "True");
-		check("MatchQ(Sin(x*y), HoldPattern(F_(G_(v_))) /; Print(F,G,v) )", "False");
+		check("MatchQ(Sin(Cos(x)), HoldPattern(F_(G_(v_))) /; F==Sin&&G==Cos&&v==x )", //
+				"True");
+		check("MatchQ(Sin(x*y), HoldPattern(F_(G_(v_))) /; Print(F,G,v) )", //
+				"False");
 
-		check("MatchQ(Sin(Cos(x)), HoldPattern(F_(G_(v_))))", "True");
+		check("MatchQ(Sin(Cos(x)), HoldPattern(F_(G_(v_))))", //
+				"True");
 
-		check("MatchQ(Sin(3*y),Sin(u_*v_) /; IntegerQ(u))", "True");
-		check("MatchQ(123, _Integer)", "True");
-		check("MatchQ(123, _Real)", "False");
+		check("MatchQ(Sin(3*y),Sin(u_*v_) /; IntegerQ(u))", //
+				"True");
+		check("MatchQ(123, _Integer)", //
+				"True");
+		check("MatchQ(123, _Real)", //
+				"False");
 
-		check("MatchQ((-1-1*#^2-3*#)&, (a_.+c_.*#^2+b_.* #)&)", "True");
-		check("MatchQ(#-1*#^2, b_.* #+c_.*#^2)", "True");
+		check("MatchQ((-1-1*#^2-3*#)&, (a_.+c_.*#^2+b_.* #)&)", //
+				"True");
+		check("MatchQ(#-1*#^2, b_.* #+c_.*#^2)", //
+				"True");
 
-		check("MatchQ(_Integer)[123]", "True");
-		check("MatchQ(22/7, _Rational)", "True");
-		check("MatchQ(6/3, _Rational)", "False");
+		check("MatchQ(_Integer)[123]", //
+				"True");
+		check("MatchQ(22/7, _Rational)", //
+				"True");
+		check("MatchQ(6/3, _Rational)", //
+				"False");
 
 		check("MatchQ(22/7, _Rational)", //
 				"True");
@@ -11201,27 +11228,44 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMax() {
-		check("Max(Interval({1,2}))", "2");
+		check("Max(Interval({1,2}))", //
+				"2");
 
-		check("Refine(Max(Infinity,x), x>0)", "Infinity");
-		check("Refine(Max(Infinity,x,y), x>0&&y>0)", "Infinity");
-		check("Refine(Max(Infinity,x,y), x>0)", "Max(Infinity,y)");
-		check("Refine(Max(x,Infinity), x>0)", "Infinity");
-		check("Refine(Max(x,y,Infinity), x>0&&y>0)", "Infinity");
+		check("Refine(Max(Infinity,x), x>0)", //
+				 "Infinity");
+		check("Refine(Max(Infinity,x,y), x>0&&y>0)", //
+				 "Infinity");
+		check("Refine(Max(Infinity,x,y), x>0)", //
+				 "Max(Infinity,y)");
+		check("Refine(Max(x,Infinity), x>0)", //
+				 "Infinity");
+		check("Refine(Max(x,y,Infinity), x>0&&y>0)", //
+				 "Infinity");
 
-		check("Refine(Max(-Infinity,x), x>0)", "x");
-		check("Refine(Max(-Infinity,x,y), x>0&&y>0)", "Max(x,y)");
-		check("Refine(Max(x,-Infinity), x>0)", "x");
-		check("Refine(Max(x,y,-Infinity), x>0&&y>0)", "Max(x,y)");
-		check("Refine(Max(x,y,-Infinity), x>0)", "Max(x,y)");
+		check("Refine(Max(-Infinity,x), x>0)", //
+				 "x");
+		check("Refine(Max(-Infinity,x,y), x>0&&y>0)", //
+				 "Max(x,y)");
+		check("Refine(Max(x,-Infinity), x>0)", //
+				 "x");
+		check("Refine(Max(x,y,-Infinity), x>0&&y>0)", //
+				 "Max(x,y)");
+		check("Refine(Max(x,y,-Infinity), x>0)", //
+				 "Max(x,y)");
 
-		check("Max(4, -8, 1)", "4");
-		check("Max({1,2},3,{-3,3.5,-Infinity},{{1/2}})", "3.5");
-		check("Max(x, y)", "Max(x,y)");
-		check("Max(5, x, -3, y, 40)", "Max(40,x,y)");
-		check("Max()", "-Infinity");
+		check("Max(4, -8, 1)", //
+				 "4");
+		check("Max({1,2},3,{-3,3.5,-Infinity},{{1/2}})", //
+				 "3.5");
+		check("Max(x, y)", //
+				 "Max(x,y)");
+		check("Max(5, x, -3, y, 40)", //
+				 "Max(40,x,y)");
+		check("Max()", //
+				 "-Infinity");
 		check("Max(x)", "x");
-		check("Max(Abs(x), Abs(y))", "Max(Abs(x),Abs(y))");
+		check("Max(Abs(x), Abs(y))", //
+				 "Max(Abs(x),Abs(y))");
 	}
 
 	public void testMaxFilter() {
@@ -11246,35 +11290,57 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMean() {
-		check("Mean({26, 64, 36})", "42");
-		check("Mean({1, 1, 2, 3, 5, 8})", "10/3");
-		check("Mean({a, b})", "1/2*(a+b)");
+		check("Mean({26, 64, 36})", //
+				 "42");
+		check("Mean({1, 1, 2, 3, 5, 8})", //
+				 "10/3");
+		check("Mean({a, b})", //
+				 "1/2*(a+b)");
 
-		check("Mean({{a, u}, {b, v}, {c, w}})", "{1/3*(a+b+c),1/3*(u+v+w)}");
-		check("Mean({1.21, 3.4, 2.15, 4, 1.55})", "2.462");
-		check("Mean({a,b,c,d})", "1/4*(a+b+c+d)");
+		check("Mean({{a, u}, {b, v}, {c, w}})", //
+				 "{1/3*(a+b+c),1/3*(u+v+w)}");
+		check("Mean({1.21, 3.4, 2.15, 4, 1.55})",  //
+				"2.462");
+		check("Mean({a,b,c,d})",  //
+				"1/4*(a+b+c+d)");
 
 		check("Mean(BetaDistribution(a,b))", //
 				"a/(a+b)");
 		check("Mean(BernoulliDistribution(p))", //
 				"p");
-		check("Mean(BinomialDistribution(n, m))", "m*n");
+		check("Mean(BinomialDistribution(n, m))", //
+				 "m*n");
 		check("Mean(ExponentialDistribution(n))", "1/n");
-		check("Mean(PoissonDistribution(p))", "p");
-		check("Mean(BinomialDistribution(n, p))", "n*p");
-		check("Mean(DiscreteUniformDistribution({l, r}))", "1/2*(l+r)");
-		check("Mean(ErlangDistribution(n, m))", "n/m");
-		check("Mean(LogNormalDistribution(m,s))", "E^(m+s^2/2)");
-		check("Mean(NakagamiDistribution(n, m))", "(Sqrt(m)*Pochhammer(n,1/2))/Sqrt(n)");
-		check("Mean(NormalDistribution(n, p))", "n");
-		check("Mean(FrechetDistribution(n, m))", "Piecewise({{m*Gamma(1-1/n),1<n}},Infinity)");
-		check("Mean(GammaDistribution(n, m))", "m*n");
-		check("Mean(GeometricDistribution(n))", "-1+1/n");
-		check("Mean(GumbelDistribution(n, m))", "-EulerGamma*m+n");
-		check("Mean(HypergeometricDistribution(n, ns, nt))", "(n*ns)/nt");
-		check("Mean(StudentTDistribution(4))", "0");
-		check("Mean(StudentTDistribution(n))", "Piecewise({{0,n>1}},Indeterminate)");
-		check("Mean(WeibullDistribution(n, m))", "m*Gamma(1+1/n)");
+		check("Mean(PoissonDistribution(p))", //
+				 "p");
+		check("Mean(BinomialDistribution(n, p))", //
+				 "n*p");
+		check("Mean(DiscreteUniformDistribution({l, r}))", //
+				 "1/2*(l+r)");
+		check("Mean(ErlangDistribution(n, m))",  //
+				"n/m");
+		check("Mean(LogNormalDistribution(m,s))",  //
+				"E^(m+s^2/2)");
+		check("Mean(NakagamiDistribution(n, m))",  //
+				"(Sqrt(m)*Pochhammer(n,1/2))/Sqrt(n)");
+		check("Mean(NormalDistribution(n, p))",  //
+				"n");
+		check("Mean(FrechetDistribution(n, m))",  //
+				"Piecewise({{m*Gamma(1-1/n),1<n}},Infinity)");
+		check("Mean(GammaDistribution(n, m))", //
+				 "m*n");
+		check("Mean(GeometricDistribution(n))",  //
+				"-1+1/n");
+		check("Mean(GumbelDistribution(n, m))",  //
+				"-EulerGamma*m+n");
+		check("Mean(HypergeometricDistribution(n, ns, nt))",  //
+				"(n*ns)/nt");
+		check("Mean(StudentTDistribution(4))",  //
+				"0");
+		check("Mean(StudentTDistribution(n))", //
+				 "Piecewise({{0,n>1}},Indeterminate)");
+		check("Mean(WeibullDistribution(n, m))",  //
+				"m*Gamma(1+1/n)");
 	}
 
 	public void testMeanFilter() {
@@ -11289,22 +11355,33 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMeanDeviation() {
-		check("MeanDeviation({a, b, c})", "1/3*(Abs(a+1/3*(-a-b-c))+Abs(b+1/3*(-a-b-c))+Abs(1/3*(-a-b-c)+c))");
-		check("MeanDeviation({{1, 2}, {4, 8}, {5, 3}, {2, 15}})", "{3/2,9/2}");
-		check("MeanDeviation({1, 2, 3, 7})", "15/8");
-		check("MeanDeviation({Pi, E, 2})//Together", "1/9*(-8+2*E+2*Pi)");
+		check("MeanDeviation({a, b, c})",  //
+				"1/3*(Abs(a+1/3*(-a-b-c))+Abs(b+1/3*(-a-b-c))+Abs(1/3*(-a-b-c)+c))");
+		check("MeanDeviation({{1, 2}, {4, 8}, {5, 3}, {2, 15}})", //
+				 "{3/2,9/2}");
+		check("MeanDeviation({1, 2, 3, 7})",  //
+				"15/8");
+		check("MeanDeviation({Pi, E, 2})//Together",  //
+				"1/9*(-8+2*E+2*Pi)");
 	}
 
 	public void testMedian() {
-		check("Median({{100, 1, 10, 50}, {-1, 1, -2, 2}})", "{99/2,1,4,26}");
+		check("Median({{100, 1, 10, 50}, {-1, 1, -2, 2}})",  //
+				"{99/2,1,4,26}");
 
-		check("Median({26, 64, 36})", "36");
-		check("Median({-11, 38, 501, 1183})", "539/2");
-		check("Median({{100, 1, 10, 50}, {-1, 1, -2, 2}})", "{99/2,1,4,26}");
+		check("Median({26, 64, 36})",  //
+				"36");
+		check("Median({-11, 38, 501, 1183})", //
+				 "539/2");
+		check("Median({{100, 1, 10, 50}, {-1, 1, -2, 2}})",  //
+				"{99/2,1,4,26}");
 
-		check("Median({1,2,3,4,5,6,7.0})", "4.0");
-		check("Median({1,2,3,4,5,6,7.0,8})", "4.5");
-		check("Median({1,2,3,4,5,6,7})", "4");
+		check("Median({1,2,3,4,5,6,7.0})", //
+				 "4.0");
+		check("Median({1,2,3,4,5,6,7.0,8})", //
+				 "4.5");
+		check("Median({1,2,3,4,5,6,7})", //
+				 "4");
 
 		check("Median(BernoulliDistribution(p))", //
 				"Piecewise({{1,p>1/2}},0)");
@@ -11314,28 +11391,46 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Median(BinomialDistribution(n,m))");
 		check("Median(ExponentialDistribution(n))", //
 				"Log(2)/n");
-		check("Median(PoissonDistribution(p))", "Median(PoissonDistribution(p))");
+		check("Median(PoissonDistribution(p))",  //
+				"Median(PoissonDistribution(p))");
 		check("Median(DiscreteUniformDistribution({l, r}))", //
 				"-1+l+Max(1,Ceiling(1/2*(1-l+r)))");
 		check("Median(UniformDistribution({l, r}))", //
 				"1/2*(l+r)");
-		check("Median(ErlangDistribution(n, m))", "InverseGammaRegularized(n,0,1/2)/m");
-		check("Median(LogNormalDistribution(m,s))", "E^m");
-		check("Median(NakagamiDistribution(n, m))", "Sqrt((m*InverseGammaRegularized(n,0,1/2))/n)");
-		check("Median(NormalDistribution())", "0");
-		check("Median(NormalDistribution(n, p))", "n");
-		check("Median(FrechetDistribution(n, m))", "m/Log(2)^(1/n)");
-		check("Median(GammaDistribution(n, m))", "m*InverseGammaRegularized(n,0,1/2)");
-		check("Median(GammaDistribution(a,b,g,d))", "d+b*InverseGammaRegularized(a,1/2)^(1/g)");
-		check("Median(GeometricDistribution(n))", "Median(GeometricDistribution(n))");
-		check("Median(GumbelDistribution( ))", "Log(Log(2))");
-		check("Median(GumbelDistribution(n, m))", "n+m*Log(Log(2))");
-		check("Median(HypergeometricDistribution(n, ns, nt))", "Median(HypergeometricDistribution(n,ns,nt))");
-		check("Median(StudentTDistribution(4))", "0");
-		check("Median(StudentTDistribution(n))", "0");
-		check("Median(StudentTDistribution(m,s,v))", "m");
-		check("Median(WeibullDistribution(a, b))", "b*Log(2)^(1/a)");
-		check("Median(WeibullDistribution(a, b, m))", "m+b*Log(2)^(1/a)");
+		check("Median(ErlangDistribution(n, m))",  //
+				"InverseGammaRegularized(n,0,1/2)/m");
+		check("Median(LogNormalDistribution(m,s))", //
+				 "E^m");
+		check("Median(NakagamiDistribution(n, m))",  //
+				"Sqrt((m*InverseGammaRegularized(n,0,1/2))/n)");
+		check("Median(NormalDistribution())", //
+				 "0");
+		check("Median(NormalDistribution(n, p))",  //
+				"n");
+		check("Median(FrechetDistribution(n, m))", //
+				 "m/Log(2)^(1/n)");
+		check("Median(GammaDistribution(n, m))",  //
+				"m*InverseGammaRegularized(n,0,1/2)");
+		check("Median(GammaDistribution(a,b,g,d))", //
+				 "d+b*InverseGammaRegularized(a,1/2)^(1/g)");
+		check("Median(GeometricDistribution(n))", //
+				 "Median(GeometricDistribution(n))");
+		check("Median(GumbelDistribution( ))",  //
+				"Log(Log(2))");
+		check("Median(GumbelDistribution(n, m))", //
+				 "n+m*Log(Log(2))");
+		check("Median(HypergeometricDistribution(n, ns, nt))",  //
+				"Median(HypergeometricDistribution(n,ns,nt))");
+		check("Median(StudentTDistribution(4))", //
+				 "0");
+		check("Median(StudentTDistribution(n))",  //
+				"0");
+		check("Median(StudentTDistribution(m,s,v))",  //
+				"m");
+		check("Median(WeibullDistribution(a, b))",  //
+				"b*Log(2)^(1/a)");
+		check("Median(WeibullDistribution(a, b, m))",  //
+				"m+b*Log(2)^(1/a)");
 	}
 
 	public void testMedianFilter() {
@@ -11387,16 +11482,25 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"False");
 		check("MemberQ({{1, 1, 3, 0}, {2, 1, 2, 2}}, 0, 2)", //
 				"True");
-		check("MemberQ({a, b, c}, b)", "True");
-		check("MemberQ({a, b, c}, d)", "False");
-		check("MemberQ({\"a\", b, f(x)}, _?NumericQ)", "False");
-		check("MemberQ({\"a\", 42, f(x)}, _?NumericQ)", "True");
-		check("MemberQ(_List)[{{}}]", "True");
+		check("MemberQ({a, b, c}, b)", //
+				 "True");
+		check("MemberQ({a, b, c}, d)",  //
+				"False");
+		check("MemberQ({\"a\", b, f(x)}, _?NumericQ)",  //
+				"False");
+		check("MemberQ({\"a\", 42, f(x)}, _?NumericQ)", //
+				 "True");
+		check("MemberQ(_List)[{{}}]",  //
+				"True");
 
-		check("MemberQ(x^_)[{x^2, y^2, x^3}]", "True");
-		check("MemberQ({1, 3, 4, 1, 2}, 2)", "True");
-		check("MemberQ({x^2, y^2, x^3}, x^_)", "True");
-		check("MemberQ(a + b + f(c), f)", "False");
+		check("MemberQ(x^_)[{x^2, y^2, x^3}]",  //
+				"True");
+		check("MemberQ({1, 3, 4, 1, 2}, 2)",  //
+				"True");
+		check("MemberQ({x^2, y^2, x^3}, x^_)",  //
+				"True");
+		check("MemberQ(a + b + f(c), f)", //
+				 "False");
 		check("MemberQ(a + b + f(c), f, Heads->True)", //
 				"False");
 		check("MemberQ(a + b + c, a + c)", //
@@ -11406,13 +11510,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testMersennePrimeExponent() {
 		check("Table(MersennePrimeExponent(i), {i,20})",
 				"{2,3,5,7,13,17,19,31,61,89,107,127,521,607,1279,2203,2281,3217,4253,4423}");
-		check("MersennePrimeExponent(1)", "2");
-		check("MersennePrimeExponent(21)", "9689");
-		check("MersennePrimeExponent(22)", "9941");
-		check("MersennePrimeExponent(23)", "11213");
-		check("MersennePrimeExponent(44)", "32582657");
-		check("MersennePrimeExponent(45)", "37156667");
-		check("MersennePrimeExponent(46)", "MersennePrimeExponent(46)");
+		check("MersennePrimeExponent(1)",  //
+				"2");
+		check("MersennePrimeExponent(21)", //
+				 "9689");
+		check("MersennePrimeExponent(22)",  //
+				"9941");
+		check("MersennePrimeExponent(23)",  //
+				"11213");
+		check("MersennePrimeExponent(44)",  //
+				"32582657");
+		check("MersennePrimeExponent(45)",  //
+				"37156667");
+		check("MersennePrimeExponent(47)",  //
+				"43112609");
 	}
 
 	public void testMersennePrimeExponentQ() {
@@ -13329,8 +13440,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"2658455991569831744654692615953842176");
 		check("PerfectNumber(10)", //
 				"191561942608236107294793378084303638130997321548169216");
-		check("PerfectNumber(46)", //
-				"PerfectNumber(46)");
+		
+		check("PerfectNumber(48)", //
+				"PerfectNumber(48)");
 	}
 
 	public void testPerfectNumberQ() {
