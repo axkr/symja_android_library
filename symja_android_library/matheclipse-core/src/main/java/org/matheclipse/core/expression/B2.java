@@ -40,6 +40,7 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 			return new List(arg1, arg2);
 		}
 	}
+
 	public final static class And extends B2 {
 		public And() {
 			super();
@@ -52,8 +53,8 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 		@Override
 		public final IExpr head() {
 			return F.And;
-		} 
-		
+		}
+
 		public IASTMutable copy() {
 			return new And(arg1, arg2);
 		}
@@ -71,8 +72,8 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 		@Override
 		public final IExpr head() {
 			return F.Condition;
-		} 
-		
+		}
+
 		public IASTMutable copy() {
 			return new Condition(arg1, arg2);
 		}
@@ -153,7 +154,7 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 			return new GreaterEqual(arg1, arg2);
 		}
 	}
-	
+
 	public final static class Integrate extends B2 {
 		public Integrate() {
 			super();
@@ -172,7 +173,7 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 			return new Integrate(arg1, arg2);
 		}
 	}
-	
+
 	public final static class Less extends B2 {
 		public Less() {
 			super();
@@ -210,7 +211,7 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 			return new LessEqual(arg1, arg2);
 		}
 	}
-	
+
 	public final static class Or extends B2 {
 		public Or() {
 			super();
@@ -229,7 +230,7 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 			return new Or(arg1, arg2);
 		}
 	}
-	
+
 	public final static class Plus extends B2 {
 		public Plus() {
 			super();
@@ -247,8 +248,20 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 		public IASTMutable copy() {
 			return new Plus(arg1, arg2);
 		}
+		
+		public boolean isPlus() {
+			return true;
+		}
+
+		public boolean isPower() {
+			return false;
+		}
+
+		public boolean isTimes() {
+			return false;
+		}
 	}
-	
+
 	public final static class PolynomialQ extends B2 {
 		public PolynomialQ() {
 			super();
@@ -267,7 +280,7 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 			return new PolynomialQ(arg1, arg2);
 		}
 	}
-	
+
 	public final static class Power extends B2 {
 		public Power() {
 			super();
@@ -284,6 +297,18 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 
 		public IASTMutable copy() {
 			return new Power(arg1, arg2);
+		}
+
+		public boolean isPlus() {
+			return false;
+		}
+
+		public boolean isPower() {
+			return true;
+		}
+
+		public boolean isTimes() {
+			return false;
 		}
 	}
 
@@ -304,8 +329,20 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 		public IASTMutable copy() {
 			return new Times(arg1, arg2);
 		}
+		
+		public boolean isPlus() {
+			return false;
+		}
+
+		public boolean isPower() {
+			return false;
+		}
+
+		public boolean isTimes() {
+			return true;
+		}
 	}
-	
+
 	public final static class With extends B2 {
 		public With() {
 			super();
@@ -324,7 +361,7 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 			return new With(arg1, arg2);
 		}
 	}
-	
+
 	/**
 	 * The second argument of this function.
 	 */
@@ -345,12 +382,9 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 	/**
 	 * Create a function with two arguments (i.e. <code>head[arg1, arg2]</code> ).
 	 * 
-	 * @param head
-	 *            the head of the function
-	 * @param arg1
-	 *            the first argument of the function
-	 * @param arg2
-	 *            the second argument of the function
+	 * @param head the head of the function
+	 * @param arg1 the first argument of the function
+	 * @param arg2 the second argument of the function
 	 */
 	B2(IExpr arg1, IExpr arg2) {
 		this.arg1 = arg1;
@@ -358,10 +392,9 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 	}
 
 	/**
-	 * Get the first argument (i.e. the second element of the underlying list structure) of the <code>AST</code>
-	 * function (i.e. get(1) ). <br />
-	 * <b>Example:</b> for the AST representing the expression <code>Sin(x)</code>, <code>arg1()</code> returns
-	 * <code>x</code>.
+	 * Get the first argument (i.e. the second element of the underlying list structure) of the <code>AST</code> function (i.e. get(1)
+	 * ). <br />
+	 * <b>Example:</b> for the AST representing the expression <code>Sin(x)</code>, <code>arg1()</code> returns <code>x</code>.
 	 * 
 	 * @return the first argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
@@ -372,10 +405,10 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 	}
 
 	/**
-	 * Get the second argument (i.e. the third element of the underlying list structure) of the <code>AST</code>
-	 * function (i.e. get(2) ). <br />
-	 * <b>Example:</b> for the AST representing the expression <code>x^y</code> (i.e. <code>Power(x, y)</code>),
-	 * <code>arg2()</code> returns <code>y</code>.
+	 * Get the second argument (i.e. the third element of the underlying list structure) of the <code>AST</code> function (i.e. get(2)
+	 * ). <br />
+	 * <b>Example:</b> for the AST representing the expression <code>x^y</code> (i.e. <code>Power(x, y)</code>), <code>arg2()</code>
+	 * returns <code>y</code>.
 	 * 
 	 * @return the second argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
@@ -386,10 +419,9 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 	}
 
 	/**
-	 * Get the third argument (i.e. the fourth element of the underlying list structure) of the <code>AST</code>
-	 * function (i.e. get(3) ).<br />
-	 * <b>Example:</b> for the AST representing the expression <code>f(a, b, c)</code>, <code>arg3()</code> returns
-	 * <code>c</code>.
+	 * Get the third argument (i.e. the fourth element of the underlying list structure) of the <code>AST</code> function (i.e. get(3)
+	 * ).<br />
+	 * <b>Example:</b> for the AST representing the expression <code>f(a, b, c)</code>, <code>arg3()</code> returns <code>c</code>.
 	 * 
 	 * @return the third argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
@@ -401,10 +433,9 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 	}
 
 	/**
-	 * Get the fourth argument (i.e. the fifth element of the underlying list structure) of the <code>AST</code>
-	 * function (i.e. get(4) ).<br />
-	 * <b>Example:</b> for the AST representing the expression <code>f(a, b ,c, d)</code>, <code>arg4()</code> returns
-	 * <code>d</code>.
+	 * Get the fourth argument (i.e. the fifth element of the underlying list structure) of the <code>AST</code> function (i.e. get(4)
+	 * ).<br />
+	 * <b>Example:</b> for the AST representing the expression <code>f(a, b ,c, d)</code>, <code>arg4()</code> returns <code>d</code>.
 	 * 
 	 * @return the fourth argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
@@ -416,10 +447,10 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 	}
 
 	/**
-	 * Get the fifth argument (i.e. the sixth element of the underlying list structure) of the <code>AST</code> function
-	 * (i.e. get(5) ).<br />
-	 * <b>Example:</b> for the AST representing the expression <code>f(a, b ,c, d, e)</code>, <code>arg5()</code>
-	 * returns <code>e</code> .
+	 * Get the fifth argument (i.e. the sixth element of the underlying list structure) of the <code>AST</code> function (i.e. get(5)
+	 * ).<br />
+	 * <b>Example:</b> for the AST representing the expression <code>f(a, b ,c, d, e)</code>, <code>arg5()</code> returns <code>e</code>
+	 * .
 	 * 
 	 * @return the fifth argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
@@ -740,7 +771,7 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isPlus() {
+	public boolean isPlus() {
 		return head() == F.Plus;
 	}
 
@@ -770,7 +801,7 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isTimes() {
+	public boolean isTimes() {
 		return head() == F.Times;
 	}
 
@@ -838,13 +869,10 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 	/**
 	 * Replaces the element at the specified location in this {@code ArrayList} with the specified object.
 	 * 
-	 * @param location
-	 *            the index at which to put the specified object.
-	 * @param object
-	 *            the object to add.
+	 * @param location the index at which to put the specified object.
+	 * @param object   the object to add.
 	 * @return the previous element at the index.
-	 * @throws IndexOutOfBoundsException
-	 *             when {@code location < 0 || >= size()}
+	 * @throws IndexOutOfBoundsException when {@code location < 0 || >= size()}
 	 */
 	@Override
 	public IExpr set(int location, IExpr object) {

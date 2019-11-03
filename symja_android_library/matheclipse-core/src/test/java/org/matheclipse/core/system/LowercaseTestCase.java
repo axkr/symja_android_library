@@ -7579,6 +7579,29 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFullSimplify() {
+		// TODO see Logarithms#test0128() Rubi rule 2447 ==> -(Sqrt(-(e/d))/(2*e)) 
+		check("FullSimplify( (d-2*d*Sqrt(-e/d)*x-e*x^2)/(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^2) )", //
+				"(d-2*d*Sqrt(-e/d)*x-e*x^2)/(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^2)");
+//		check("FullSimplify((1/(d + e*x^2) * (1-((2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))) / " //
+//				+ "(-((4*e*x^2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)^2) + (2*e*x)/(d + e*x^2) + (2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))", //
+//				"(d-2*d*Sqrt(-e/d)*x-e*x^2)/(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^2)");
+		check("FullSimplify((1/(d + e*x^2) * (1-((2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))) / " //
+				+ "(-((4*e*x^2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)^2) + (2*e*x)/(d + e*x^2) + (2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))", //
+				"((d+e*x^2)*(1+(-2*x*(d*Sqrt(-e/d)+e*x))/(d+e*x^2)))/(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^\n" + 
+				"2)");
+		
+		check("FullSimplify(Numerator((1/(d + e*x^2) * (1-((2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))) / " //
+				+ "(-((4*e*x^2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)^2) + (2*e*x)/(d + e*x^2) + (2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2))))", //
+				"1+(-2*x*(d*Sqrt(-e/d)+e*x))/(d+e*x^2)");
+		check("FullSimplify(Denominator((1/(d + e*x^2) * (1-((2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))) / " //
+				+ "(-((4*e*x^2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)^2) + (2*e*x)/(d + e*x^2) + (2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2))))", //
+				"(d*(2*d*Sqrt(-e/d)+4*e*x-2*e*Sqrt(-e/d)*x^2))/(d+e*x^2)");
+		check("Together( 1+(-2*x*(d*Sqrt(-e/d)+e*x))/(d+e*x^2) )", //
+				"(d-2*d*Sqrt(-e/d)*x-e*x^2)/(d+e*x^2)");
+		check("Together( (d*(2*d*Sqrt(-e/d)+4*e*x-2*e*Sqrt(-e/d)*x^2))/(d+e*x^2) )", //
+				"(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^2)/(d+e*x^2)"); 
+		
+		
 		// #github #152
 		check("FullSimplify(Sqrt(-9-4*Sqrt(5)))", //
 				"I*(2+Sqrt(5))");
@@ -10213,14 +10236,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Limit(1/x^(16/7),x->0,Direction->1)");
 		check("Limit(x^(-16/7),x->0)", //
 				"Indeterminate");
-		
+
 		check("Limit(x^(-37/4),x->0 , Direction->-1)", //
 				"Infinity");
 		check("Limit(x^(-37/4),x->0 , Direction->1)", //
 				"Limit(1/x^(37/4),x->0,Direction->1)");
 		check("Limit(x^(-37/4),x->0)", //
 				"Indeterminate");
-		
+
 		check("Limit((x^2-1)/(x-1)^2, x->1)", //
 				"Indeterminate");
 		check("Limit((3*x^2-6)^(-1/3), x->-Infinity)", //
