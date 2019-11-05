@@ -3,10 +3,10 @@ package org.matheclipse.core.builtin;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.util.AbstractMap.*;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
@@ -17,6 +17,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.form.output.DoubleFormFactory;
 import org.matheclipse.core.form.output.JavaDoubleFormFactory;
 import org.matheclipse.core.form.output.JavaScriptFormFactory;
@@ -408,6 +409,10 @@ public final class OutputFunctions {
 					String manipulateStr = ((IAST) arg1).arg1().toString();
 					return F.$str(manipulateStr, IStringX.APPLICATION_JAVASCRIPT);
 				}
+
+				if (arg1 instanceof GraphExpr) {
+					return F.$str(GraphFunctions.graphToJSForm((GraphExpr) arg1), IStringX.APPLICATION_JAVASCRIPT);
+				}
 				return F.$str(toJavaScript(arg1), IStringX.APPLICATION_JAVASCRIPT);
 			} catch (Exception rex) {
 				if (Config.SHOW_STACKTRACE) {
@@ -579,7 +584,8 @@ public final class OutputFunctions {
 		}
 
 		private static void treeToGraph(IAST tree, final int level, final int maxLevel, int[] currentCount,
-				List<SimpleImmutableEntry<String, Integer>> vertexList, List<SimpleImmutableEntry<Integer, Integer>> edgeList) {
+				List<SimpleImmutableEntry<String, Integer>> vertexList,
+				List<SimpleImmutableEntry<Integer, Integer>> edgeList) {
 			vertexList.add(new SimpleImmutableEntry<String, Integer>(tree.head().toString(), Integer.valueOf(level)));
 			int currentNode = vertexList.size();
 			final int nextLevel = level + 1;
