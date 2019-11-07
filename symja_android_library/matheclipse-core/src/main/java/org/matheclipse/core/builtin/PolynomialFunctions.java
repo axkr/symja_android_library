@@ -921,10 +921,15 @@ public class PolynomialFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			// TODO allow multinomials
+			IExpr arg1 = ast.arg1();
+			IExpr arg2 = ast.arg2();
+			if (arg1.isZero()||arg2.isZero()) {
+				return F.C0;
+			}
 			IExpr arg3 = Validate.checkSymbolType(ast, 3);
 			ISymbol x = (ISymbol) arg3;
-			IExpr a = F.evalExpandAll(ast.arg1(), engine);
-			IExpr b = F.evalExpandAll(ast.arg2(), engine);
+			IExpr a = F.evalExpandAll(arg1, engine);
+			IExpr b = F.evalExpandAll(arg2, engine);
 			ExprPolynomialRing ring = new ExprPolynomialRing(F.List(x));
 			try {
 				// check if a is a polynomial otherwise check ArithmeticException, ClassCastException
