@@ -1710,10 +1710,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 				break;
 			}
 		}
-		ExprPolynomial[] ret = new ExprPolynomial[2];
-		ret[0] = q;
-		ret[1] = r;
-		return ret;
+		return new ExprPolynomial[] { q, r };
 	}
 
 	/**
