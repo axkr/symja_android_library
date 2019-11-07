@@ -4147,230 +4147,248 @@ public class Algebra {
 			}
 
 			private IExpr tryTransformations(IExpr expr) {
-				// IExpr result = F.NIL;
-				if (expr.isAST()) {
-					// try ExpandAll, Together, Apart, Factor to reduce the expression
-					// long minCounter = fComplexityFunction.apply(expr);
-					SimplifiedResult sResult = new SimplifiedResult(F.NIL, fComplexityFunction.apply(expr));
-					IExpr temp;
-					// long count;
-					long expandAllCounter = 0;
-					if (expr.isTimes()) {
-						temp = tryTimesLog((IAST) expr);
-						if (temp.isPresent()) {
-							sResult.checkLessEqual(temp, fComplexityFunction.apply(temp));
-						}
-					} else if (expr.isPlus()) {
-						temp = FactorTerms.factorTermsPlus((IAST) expr, EvalEngine.get());
-						if (temp.isPresent()) {
-							sResult.checkLessEqual(temp, fComplexityFunction.apply(temp));
-						}
-
-						IExpr[] commonFactors = InternalFindCommonFactorPlus.findCommonFactors((IAST) expr);
-						if (commonFactors != null) {
-							temp = fEngine.evaluate(F.Times(commonFactors[0], commonFactors[1]));
-							// commonFactors[1] = F.Simplify.of(EvalEngine.get(), commonFactors[1]);
-							// temp = F.Times.of(commonFactors[0], commonFactors[1]);
-							sResult.checkLessEqual(temp, fComplexityFunction.apply(temp));
-						}
-
-						if (sResult.result.isPlus()) {
-							temp = tryPlusLog((IAST) sResult.result);
-						} else {
-							temp = tryPlusLog((IAST) expr);
-						}
-						if (temp.isPresent()) {
-							temp = fEngine.evaluate(temp);
-							// commonFactors[1] = F.Simplify.of(EvalEngine.get(), commonFactors[1]);
-							// temp = F.Times.of(commonFactors[0], commonFactors[1]);
-							sResult.checkLessEqual(temp, fComplexityFunction.apply(temp));
-						}
-						// } else if (expr.isExp() && expr.second().isTimes()) {
-						// IAST times = (IAST) expr.second();
-						// IExpr i = Times.of(times, F.CNI, F.Power(F.Pi, F.CN1));
-						// if (i.isRational()) {
-						// IRational rat = (IRational) i;
-						// if (rat.isGT(F.C1) || rat.isLE(F.CN1)) {
-						// IInteger t = rat.trunc();
-						// t = t.add(t.mod(F.C2));
-						// // exp(I*(i - t)*Pi)
-						// return F.Exp.of(F.Times(F.CI, F.Pi, F.Subtract(i, t)));
-						// } else {
-						// IRational t1 = rat.multiply(F.C6).normalize();
-						// IRational t2 = rat.multiply(F.C4).normalize();
-						// if (t1.isInteger() || t2.isInteger()) {
-						// // Cos(- I*times) + I*Sin(- I*times)
-						// return F.Plus.of(F.Cos(F.Times(F.CNI, times)),
-						// F.Times(F.CI, F.Sin(F.Times(F.CNI, times))));
-						// }
-						// }
-						// }
+				if (!expr.isAST()) {
+					return F.NIL;
+				}
+				// try ExpandAll, Together, Apart, Factor to reduce the expression
+				// long minCounter = fComplexityFunction.apply(expr);
+				SimplifiedResult sResult = new SimplifiedResult(F.NIL, fComplexityFunction.apply(expr));
+				IExpr temp;
+				// long count;
+				long expandAllCounter = 0;
+				if (expr.isTimes()) {
+					temp = tryTimesLog((IAST) expr);
+					if (temp.isPresent()) {
+						sResult.checkLessEqual(temp, fComplexityFunction.apply(temp));
+					}
+				} else if (expr.isPlus()) {
+					temp = FactorTerms.factorTermsPlus((IAST) expr, EvalEngine.get());
+					if (temp.isPresent()) {
+						sResult.checkLessEqual(temp, fComplexityFunction.apply(temp));
 					}
 
-					if (sResult.result.isAST()) {
-						expr = sResult.result;
+					IExpr[] commonFactors = InternalFindCommonFactorPlus.findCommonFactors((IAST) expr);
+					if (commonFactors != null) {
+						temp = fEngine.evaluate(F.Times(commonFactors[0], commonFactors[1]));
+						sResult.checkLessEqual(temp, fComplexityFunction.apply(temp));
 					}
+
+					if (sResult.result.isPlus()) {
+						temp = tryPlusLog((IAST) sResult.result);
+					} else {
+						temp = tryPlusLog((IAST) expr);
+					}
+					if (temp.isPresent()) {
+						temp = fEngine.evaluate(temp);
+						sResult.checkLessEqual(temp, fComplexityFunction.apply(temp));
+					}
+					// } else if (expr.isExp() && expr.second().isTimes()) {
+					// IAST times = (IAST) expr.second();
+					// IExpr i = Times.of(times, F.CNI, F.Power(F.Pi, F.CN1));
+					// if (i.isRational()) {
+					// IRational rat = (IRational) i;
+					// if (rat.isGT(F.C1) || rat.isLE(F.CN1)) {
+					// IInteger t = rat.trunc();
+					// t = t.add(t.mod(F.C2));
+					// // exp(I*(i - t)*Pi)
+					// return F.Exp.of(F.Times(F.CI, F.Pi, F.Subtract(i, t)));
+					// } else {
+					// IRational t1 = rat.multiply(F.C6).normalize();
+					// IRational t2 = rat.multiply(F.C4).normalize();
+					// if (t1.isInteger() || t2.isInteger()) {
+					// // Cos(- I*times) + I*Sin(- I*times)
+					// return F.Plus.of(F.Cos(F.Times(F.CNI, times)),
+					// F.Times(F.CI, F.Sin(F.Times(F.CNI, times))));
+					// }
+					// }
+					// }
+				}
+
+				if (sResult.result.isAST()) {
+					expr = sResult.result;
+				}
+
+				try {
+					temp = F.evalExpandAll(expr);
+					expandAllCounter = fComplexityFunction.apply(temp);
+					sResult.checkLess(temp, expandAllCounter);
+				} catch (WrongArgumentType wat) {
+					//
+				}
+
+				if (sResult.result.isAST()) {
+					expr = sResult.result;
+				}
+
+				if (((IAST) expr).hasTrigonometricFunction()) {
 
 					try {
-						temp = F.evalExpandAll(expr);
-						expandAllCounter = fComplexityFunction.apply(temp);
-						sResult.checkLess(temp, expandAllCounter);
-					} catch (WrongArgumentType wat) {
-						//
-					}
-
-					if (sResult.result.isAST()) {
-						expr = sResult.result;
-					}
-
-					if (((IAST) expr).hasTrigonometricFunction()) {
-
-						try {
-							temp = F.eval(F.TrigExpand(expr));
-							sResult.checkLess(temp, fComplexityFunction.apply(temp));
-						} catch (WrongArgumentType wat) {
-							//
-						}
-
-						try {
-							temp = F.eval(F.TrigToExp(expr));
-							if (!sResult.checkLess(temp, fComplexityFunction.apply(temp))) {
-								if (fFullSimplify) {
-									temp = F.eval(F.Factor(temp));
-									sResult.checkLess(temp, fComplexityFunction.apply(temp));
-								}
-							}
-						} catch (WrongArgumentType wat) {
-							//
-						}
-
-						try {
-							temp = F.eval(F.TrigReduce(expr));
-							sResult.checkLess(temp, fComplexityFunction.apply(temp));
-						} catch (WrongArgumentType wat) {
-							//
-						}
-
-					}
-
-					try {
-						temp = F.eval(F.ExpToTrig(expr));
+						temp = F.eval(F.TrigExpand(expr));
 						sResult.checkLess(temp, fComplexityFunction.apply(temp));
 					} catch (WrongArgumentType wat) {
 						//
 					}
 
 					try {
-						IExpr together = expr;
-						if (sResult.minCounter < Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT) {
-							together = F.eval(F.Together(expr));
-							sResult.checkLess(together, fComplexityFunction.apply(together));
-						}
-
-						if (fFullSimplify) {
-							if (together.isTimes()) {
-								IExpr[] parts = Algebra.getNumeratorDenominator((IAST) together, EvalEngine.get());
-								IExpr numerator = parts[0];
-								IExpr denominator = parts[1];
-
-								if (!numerator.isOne() && //
-										!denominator.isOne()) {
-									VariablesSet variables = new VariablesSet(together);
-									List<IExpr> vars = variables.getArrayList();
-									boolean evaled = false;
-									for (int i = 0; i < vars.size(); i++) {
-										temp = EvalEngine.get().evaluate(
-												F.PolynomialQuotientRemainder(numerator, denominator, vars.get(i)));
-										if (temp.isAST(F.List, 3) && //
-												temp.second().isZero()) {
-											IExpr arg1 = temp.first();
-											if (sResult.checkLess(arg1, fComplexityFunction.apply(arg1))) {
-												evaled = true;
-												break;
-											}
-										}
-									}
-									if (!evaled) {
-										for (int i = 0; i < vars.size(); i++) {
-											temp = EvalEngine.get().evaluate(
-													F.PolynomialQuotientRemainder(denominator, numerator, vars.get(i)));
-											if (temp.isAST(F.List, 3) && //
-													temp.second().isZero()) {
-												IExpr arg1 = temp.first().reciprocal();
-												if (sResult.checkLess(arg1, fComplexityFunction.apply(arg1))) {
-													break;
-												}
-											}
-										}
-									}
-								}
-
+						temp = F.eval(F.TrigToExp(expr));
+						if (!sResult.checkLess(temp, fComplexityFunction.apply(temp))) {
+							if (fFullSimplify) {
+								temp = F.eval(F.Factor(temp));
+								sResult.checkLess(temp, fComplexityFunction.apply(temp));
 							}
 						}
-
 					} catch (WrongArgumentType wat) {
 						//
 					}
 
 					try {
-						// System.out.println(expr.toString());
-						// TODO: Factor is not fast enough for large expressions!
-						// Maybe restricting factoring to smaller expressions is necessary here
-						temp = F.NIL;
-						if (fFullSimplify && expandAllCounter < 50) {// Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT) {
-							temp = F.eval(F.Factor(expr));
-							sResult.checkLess(temp, fComplexityFunction.apply(temp));
-						}
-						// if (fFullSimplify
-						// && (minCounter >= Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT || !temp.equals(expr))) {
-						// if (expandAllCounter < (Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT / 2) && !fFullSimplify) {
-						// temp = F.eval(F.Factor(expr));
-						// count = fComplexityFunction.apply(temp);
-						// if (count < minCounter) {
-						// minCounter = count;
-						// result = temp;
-						// }
-						// } else
-						if (expandAllCounter < Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT) {
-							temp = F.eval(F.FactorSquareFree(expr));
-							sResult.checkLess(temp, fComplexityFunction.apply(temp));
-						}
-
+						temp = F.eval(F.TrigReduce(expr));
+						sResult.checkLess(temp, fComplexityFunction.apply(temp));
 					} catch (WrongArgumentType wat) {
 						//
 					}
 
-					try {
-						if (sResult.minCounter < Config.MAX_SIMPLIFY_APART_LEAFCOUNT) {
-							temp = F.eval(F.Apart(expr));
-							sResult.checkLess(temp, fComplexityFunction.apply(temp));
-						}
-					} catch (WrongArgumentType wat) {
-						//
-					}
-					return sResult.result;
 				}
-				return F.NIL;
 
+				try {
+					temp = F.eval(F.ExpToTrig(expr));
+					sResult.checkLess(temp, fComplexityFunction.apply(temp));
+				} catch (WrongArgumentType wat) {
+					//
+				}
+
+				try {
+					IExpr together = expr;
+					if (sResult.minCounter < Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT) {
+						together = F.eval(F.Together(expr));
+						sResult.checkLess(together, fComplexityFunction.apply(together));
+					}
+
+					if (fFullSimplify) {
+						if (together.isTimes()) {
+							IExpr[] parts = Algebra.getNumeratorDenominator((IAST) together, EvalEngine.get());
+							IExpr numerator = parts[0];
+							IExpr denominator = parts[1];
+
+							if (!numerator.isOne() && //
+									!denominator.isOne()) {
+								tryPolynomialQuotientRemainder(numerator, denominator, sResult);
+							}
+
+						}
+					}
+
+				} catch (WrongArgumentType wat) {
+					//
+				}
+
+				try {
+					// System.out.println(expr.toString());
+					// TODO: Factor is not fast enough for large expressions!
+					// Maybe restricting factoring to smaller expressions is necessary here
+					temp = F.NIL;
+					if (fFullSimplify && expandAllCounter < 50) {// Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT) {
+						temp = F.eval(F.Factor(expr));
+						sResult.checkLess(temp, fComplexityFunction.apply(temp));
+					}
+					// if (fFullSimplify
+					// && (minCounter >= Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT || !temp.equals(expr))) {
+					// if (expandAllCounter < (Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT / 2) && !fFullSimplify) {
+					// temp = F.eval(F.Factor(expr));
+					// count = fComplexityFunction.apply(temp);
+					// if (count < minCounter) {
+					// minCounter = count;
+					// result = temp;
+					// }
+					// } else
+					if (expandAllCounter < Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT) {
+						temp = F.eval(F.FactorSquareFree(expr));
+						sResult.checkLess(temp, fComplexityFunction.apply(temp));
+					}
+
+				} catch (WrongArgumentType wat) {
+					//
+				}
+
+				try {
+					if (sResult.minCounter < Config.MAX_SIMPLIFY_APART_LEAFCOUNT) {
+						temp = F.eval(F.Apart(expr));
+						sResult.checkLess(temp, fComplexityFunction.apply(temp));
+					}
+				} catch (WrongArgumentType wat) {
+					//
+				}
+				return sResult.result;
+			}
+
+			/**
+			 * Try <code>F.PolynomialQuotientRemainder(numerator, denominator, variable)</code> for differnt variables
+			 * and numerator, denominator combinations.
+			 * 
+			 * @param numerator
+			 * @param denominator
+			 * @param sResult
+			 */
+			private void tryPolynomialQuotientRemainder(IExpr numerator, IExpr denominator, SimplifiedResult sResult) {
+				IExpr temp;
+				VariablesSet variables = new VariablesSet(numerator);
+				variables.addVarList(denominator);
+				List<IExpr> vars = variables.getArrayList();
+				boolean evaled = false;
+				for (int i = 0; i < vars.size(); i++) {
+					temp = EvalEngine.get()
+							.evaluate(F.PolynomialQuotientRemainder(numerator, denominator, vars.get(i)));
+					if (temp.isAST(F.List, 3) && //
+							temp.second().isZero()) {
+						// the remainder is 0 here:
+						IExpr arg1 = temp.first();
+						if (sResult.checkLess(arg1, fComplexityFunction.apply(arg1))) {
+							evaled = true;
+							break;
+						}
+					}
+				}
+				if (!evaled) {
+					for (int i = 0; i < vars.size(); i++) {
+						temp = EvalEngine.get()
+								.evaluate(F.PolynomialQuotientRemainder(denominator, numerator, vars.get(i)));
+						if (temp.isAST(F.List, 3) && //
+								temp.second().isZero()) {
+							// the remainder is 0 here:
+							IExpr arg1 = temp.first().reciprocal();
+							if (sResult.checkLess(arg1, fComplexityFunction.apply(arg1))) {
+								break;
+							}
+						}
+					}
+				}
 			}
 
 			@Override
 			public IExpr visit(IASTMutable ast) {
-				IExpr result = F.NIL;
-				long[] minCounter = new long[] { fComplexityFunction.apply(ast) };
+				SimplifiedResult sResult = new SimplifiedResult(F.NIL, fComplexityFunction.apply(ast));
+
 				IExpr temp = visitAST(ast);
 				if (temp.isPresent()) {
 					temp = fEngine.evaluate(temp);
-					long count = fComplexityFunction.apply(temp);
-					if (count <= minCounter[0]) {
-						minCounter[0] = count;
+					if (sResult.checkLessEqual(temp, fComplexityFunction.apply(temp))) {
 						if (temp.isAST()) {
 							ast = (IASTMutable) temp;
-							result = temp;
+							// result = temp;
 						} else {
 							return temp;
 						}
 					}
+					// long count = fComplexityFunction.apply(temp);
+					// if (count <= minCounter[0]) {
+					// minCounter[0] = count;
+					// if (temp.isAST()) {
+					// ast = (IASTMutable) temp;
+					// result = temp;
+					// } else {
+					// return temp;
+					// }
+					// }
 				}
 
 				if (ast.isPlus()) {
@@ -4407,11 +4425,10 @@ public class Algebra {
 								return fEngine.evaluate(temp);
 							}
 						}
-
-						result = functionExpand(ast, minCounter[0], result);
+						functionExpand(ast, sResult);
 					}
 
-					return result;
+					return sResult.result;
 				} else if (ast.isTimes()) {
 
 					final IExpr denominator = F.Denominator.of(ast);
@@ -4443,8 +4460,9 @@ public class Algebra {
 
 					temp = reduceNumberFactor(ast);
 					if (temp.isPresent()) {
-						result = temp;
-						minCounter[0] = fComplexityFunction.apply(result);
+
+						sResult.result = temp;
+						sResult.minCounter = fComplexityFunction.apply(temp);
 					}
 
 					IASTAppendable newTimes = F.NIL;
@@ -4467,14 +4485,10 @@ public class Algebra {
 						}
 					}
 					if (newTimes.isPresent()) {
-						result = ast;
-						long count;
+						sResult.result = ast;
 						try {
 							temp = F.eval(F.Expand(newTimes));
-							count = fComplexityFunction.apply(temp);
-							if (count < minCounter[0]) {
-								minCounter[0] = count;
-								result = temp;
+							if (sResult.checkLess(temp, fComplexityFunction.apply(temp))) {
 								if (temp.isAtom()) {
 									return temp;
 								}
@@ -4487,13 +4501,13 @@ public class Algebra {
 					// temp = tryTransformations(result);
 					// return temp.orElse(result);
 
-					temp = tryTransformations(result.orElse(ast));
+					temp = tryTransformations(sResult.result.orElse(ast));
 					if (temp.isPresent()) {
-						result = temp;
+						sResult.result = temp;
 					}
-					temp = result.orElse(ast);
-					minCounter[0] = fComplexityFunction.apply(temp);
-					result = functionExpand(temp, minCounter[0], result);
+					temp = sResult.result.orElse(ast);
+					sResult.minCounter = fComplexityFunction.apply(temp);
+					functionExpand(temp, sResult);// minCounter[0], result);
 				} else if (ast.isPowerReciprocal() && ast.base().isPlus() && ast.base().size() == 3) {
 					// example 1/(5+Sqrt(17)) => 1/8*(5-Sqrt(17))
 					IAST plus1 = (IAST) ast.base();
@@ -4502,10 +4516,7 @@ public class Algebra {
 					IExpr expr = F.eval(F.Expand(F.Times(plus1, plus2)));
 					if (expr.isNumber() && !expr.isZero()) {
 						IExpr powerSimplified = F.Times.of(expr.inverse(), plus2);
-						long count = fComplexityFunction.apply(powerSimplified);
-						if (count < minCounter[0]) {
-							minCounter[0] = count;
-							result = temp;
+						if (sResult.checkLess(powerSimplified, fComplexityFunction.apply(powerSimplified))) {
 							return powerSimplified;
 						}
 					}
@@ -4521,13 +4532,10 @@ public class Algebra {
 				}
 
 				temp = F.evalExpandAll(ast);
-				long count = fComplexityFunction.apply(temp);
-				if (count < minCounter[0]) {
-					minCounter[0] = count;
-					result = temp;
-				}
+				sResult.checkLess(temp, fComplexityFunction.apply(temp));
 
-				return functionExpand(ast, minCounter[0], result);
+				functionExpand(ast, sResult);
+				return sResult.result;
 			}
 
 			/**
@@ -4581,7 +4589,7 @@ public class Algebra {
 						if (temp.isLog() && temp.first().isReal()) {
 							IASTAppendable result = timesAST.removeAtClone(i);
 							result.append(F.Log(F.Power.of(temp.first(), timesAST.first())));
-							return result.removeAtClone(1);
+							return result.removeAtClone(1).oneIdentity0();
 						}
 
 					}
@@ -4589,35 +4597,24 @@ public class Algebra {
 				return F.NIL;
 			}
 
-			private IExpr functionExpand(IExpr expr, long minCounter, IExpr result) {
+			private void functionExpand(IExpr expr, SimplifiedResult sResult) {// long minCounter, IExpr result) {
 				if (fFullSimplify) {
 					try {
-						long count;
 						expr = F.eval(F.FunctionExpand(expr));
-						count = fComplexityFunction.apply(expr);
-						if (count < minCounter) {
-							// minCounter = count;
-							result = expr;
-						}
+						sResult.checkLess(expr, fComplexityFunction.apply(expr));
 					} catch (WrongArgumentType wat) {
 						//
 					}
 				} else {
 					if (expr.isLog()) {
 						try {
-							long count;
 							expr = F.eval(F.FunctionExpand(expr));
-							count = fComplexityFunction.apply(expr);
-							if (count <= minCounter) {
-								// minCounter = count;
-								result = expr;
-							}
+							sResult.checkLessEqual(expr, fComplexityFunction.apply(expr));
 						} catch (WrongArgumentType wat) {
 							//
 						}
 					}
 				}
-				return result;
 			}
 
 			private IExpr reduceNumberFactor(IASTMutable timesAST) {

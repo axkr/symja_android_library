@@ -17724,7 +17724,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// "(-2*x^(3/2))/(-Sqrt(x) + (1 + x)*ArcTan(Sqrt(x)))");
 	// }
 
-	public void testSimplify() {
+	public void testSimplify() { 
+		
 		// https://github.com/axkr/symja_android_library/issues/142
 		check("Simplify({{x+y+x*y==9},{x*y*(x+y)==20}})", //
 				"{{x+y+x*y==9},{x*y*(x+y)==20}}");
