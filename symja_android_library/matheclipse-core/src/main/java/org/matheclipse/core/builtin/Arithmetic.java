@@ -5183,8 +5183,8 @@ public final class Arithmetic {
 				}
 			}
 			if (size == 3) {
-				if ((ast1.arg1().isNumeric() || ast1.arg1().isOne() || ast1.arg1().isMinusOne())
-						&& ast1.arg2().isPlus()) {
+				// if ((ast1.arg1().isNumeric() || ast1.arg1().isOne() || ast1.arg1().isMinusOne())
+				if ((ast1.arg1().isOne() || ast1.arg1().isMinusOne()) && ast1.arg2().isPlus()) {
 					if (ast1.arg1().isOne()) {
 						return ast1.arg2();
 					}

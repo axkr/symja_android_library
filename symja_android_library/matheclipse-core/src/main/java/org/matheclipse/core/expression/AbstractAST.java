@@ -2783,7 +2783,11 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNumericArgument() {
-		return isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG);
+		if (isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG)) {
+			return forAll(x -> x.isNumericFunction() || //
+					(x.isList() && ((IAST) x).forAll(y -> y.isNumericFunction())));
+		}
+		return false;
 	}
 
 	/** {@inheritDoc} */
