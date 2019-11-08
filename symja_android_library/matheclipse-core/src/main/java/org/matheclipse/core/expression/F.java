@@ -3980,6 +3980,26 @@ public class F {
 	public static IAST CInfinity;
 
 	/**
+	 * Represents <code>Return(False)</code>
+	 */
+	public static IAST CReturnFalse;
+	
+	/**
+	 * Represents <code>Return(True)</code>
+	 */
+	public static IAST CReturnTrue;
+	
+	/**
+	 * Represents <code>Throw(False)</code>
+	 */
+	public static IAST CThrowFalse;
+	
+	/**
+	 * Represents <code>Throw(True)</code>
+	 */
+	public static IAST CThrowTrue;
+	
+	/**
 	 * Alias for CInfinity. Represents <code>Infinity</code> (i.e. <code>Infinity-&gt;DirectedInfinity(1)</code>)
 	 */
 	public static IAST oo;
@@ -4215,6 +4235,11 @@ public class F {
 			CListC2C1 = new B2.List(C2, C1);
 			CListC2C2 = new B2.List(C2, C2);
 
+			CReturnFalse = new B1.Return(False);
+			CReturnTrue = new B1.Return(True);
+			CThrowFalse = new B1.Throw(False);
+			CThrowTrue = new B1.Throw(True);
+			
 			CInfinity = unaryAST1(DirectedInfinity, C1);
 			oo = CInfinity;
 			CNInfinity = unaryAST1(DirectedInfinity, CN1);
@@ -9060,6 +9085,12 @@ public class F {
 	}
 
 	public static IAST Return(final IExpr a) {
+		if (a.isFalse()) {
+			return CReturnFalse;
+		}
+		if (a.isTrue()) {
+			return CReturnTrue;
+		}
 		return new AST1(Return, a);
 	}
 
@@ -9560,6 +9591,12 @@ public class F {
 	}
 
 	public static IAST Throw(final IExpr a) {
+		if (a.isFalse()) {
+			return CThrowFalse;
+		}
+		if (a.isTrue()) {
+			return CThrowTrue;
+		}
 		return new AST1(Throw, a);
 	}
 

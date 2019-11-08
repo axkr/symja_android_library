@@ -219,7 +219,6 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-
 			try {
 				return engine.evaluate(ast.arg1());
 			} catch (final ThrowException e) {
@@ -2167,15 +2166,14 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast == F.CReturnFalse) {
+				throw ReturnException.RETURN_FALSE;
+			}
+			if (ast == F.CReturnTrue) {
+				throw ReturnException.RETURN_TRUE;
+			}
 			if (ast.isAST1()) {
-				IExpr arg1 = ast.arg1();
-				if (arg1.isFalse()) {
-					throw ReturnException.RETURN_FALSE;
-				}
-				if (arg1.isTrue()) {
-					throw ReturnException.RETURN_TRUE;
-				}
-				arg1 = engine.evaluate(arg1);
+				IExpr arg1 = engine.evaluate(ast.arg1());
 				if (arg1.isFalse()) {
 					throw ReturnException.RETURN_FALSE;
 				}
@@ -2516,15 +2514,14 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast == F.CThrowFalse) {
+				throw ThrowException.THROW_FALSE;
+			}
+			if (ast == F.CThrowTrue) {
+				throw ThrowException.THROW_TRUE;
+			}
 			if (ast.isAST1()) {
-				IExpr arg1 = ast.arg1();
-				if (arg1.isFalse()) {
-					throw ThrowException.THROW_FALSE;
-				}
-				if (arg1.isTrue()) {
-					throw ThrowException.THROW_TRUE;
-				}
-				arg1 = engine.evaluate(arg1);
+				IExpr arg1 = engine.evaluate(ast.arg1());
 				if (arg1.isFalse()) {
 					throw ThrowException.THROW_FALSE;
 				}

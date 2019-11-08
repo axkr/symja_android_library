@@ -7584,8 +7584,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1/(2*d*Sqrt(-e/d))");
 		check("PolynomialQuotientRemainder((d-2*d*Sqrt(-e/d)*x-e*x^2),(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^2),x)", //
 				"{1/(2*d*Sqrt(-e/d)),0}");
-		
-		
+
 		// check("FullSimplify((1/(d + e*x^2) * (1-((2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))) / " //
 		// + "(-((4*e*x^2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)^2) + (2*e*x)/(d + e*x^2) + (2*(d*Sqrt(-(e/d)) + e*x))/(d +
 		// e*x^2)))", //
@@ -11475,6 +11474,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMemberQ() {
+		check("MemberQ({Sin, Cos, Tan, Cot, Sec, Csc}, If(AtomQ(Cos),Cos,Head(Cos)))", //
+				"True");
 		check("MemberQ(x,x)", //
 				"False");
 		check("MemberQ({{x^2, y^2}}, x^_)", //
@@ -17724,8 +17725,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// "(-2*x^(3/2))/(-Sqrt(x) + (1 + x)*ArcTan(Sqrt(x)))");
 	// }
 
-	public void testSimplify() { 
-		
+	public void testSimplify() {
+
 		// https://github.com/axkr/symja_android_library/issues/142
 		check("Simplify({{x+y+x*y==9},{x*y*(x+y)==20}})", //
 				"{{x+y+x*y==9},{x*y*(x+y)==20}}");
@@ -20174,9 +20175,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testTogether() {
 		check("Together[(2 + 2*x)/(2*Sqrt[2])]", //
 				"(1+x)/Sqrt(2)");
-		
-//		check("Together(-(5*c*f+5*b*g+2*c*f*m+b*g*m+2*c*f*n+3*b*g*n+30*c*g*x+10*c*g*m*x+15*c*g*n*x)^5/(3125*c^4*g^4*(6+2*m+3*n)^4))", //
-//				"");
+
+		// check("Together(-(5*c*f+5*b*g+2*c*f*m+b*g*m+2*c*f*n+3*b*g*n+30*c*g*x+10*c*g*m*x+15*c*g*n*x)^5/(3125*c^4*g^4*(6+2*m+3*n)^4))",
+		// //
+		// "");
 		check("Together(1/2+a)", //
 				"1/2*(1+2*a)");
 
