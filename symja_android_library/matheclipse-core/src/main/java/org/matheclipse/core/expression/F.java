@@ -5038,7 +5038,7 @@ public class F {
 	}
 
 	public static IExpr and(IExpr a, java.math.BigInteger i) {
-		return And(a, integer(i));
+		return And(a, ZZ(i));
 	}
 
 	public static IExpr and(Integer i, IExpr b) {
@@ -5046,7 +5046,7 @@ public class F {
 	}
 
 	public static IExpr and(java.math.BigInteger i, IExpr b) {
-		return And(integer(i), b);
+		return And(ZZ(i), b);
 	}
 
 	public static IASTAppendable And() {
@@ -5789,11 +5789,11 @@ public class F {
 
 	public static int compareTo(IExpr a, java.math.BigInteger i) throws UnsupportedOperationException {
 		if (a instanceof ISignedNumber) {
-			return a.compareTo(integer(i));
+			return a.compareTo(ZZ(i));
 		}
 		IExpr temp = eval(a);
 		if (temp instanceof ISignedNumber) {
-			return temp.compareTo(integer(i));
+			return temp.compareTo(ZZ(i));
 		}
 		throw new UnsupportedOperationException(
 				"compareTo() - first argument could not be converted into a signed number.");
@@ -5813,11 +5813,11 @@ public class F {
 
 	public static int compareTo(java.math.BigInteger i, IExpr b) throws UnsupportedOperationException {
 		if (b instanceof ISignedNumber) {
-			return integer(i).compareTo(b);
+			return ZZ(i).compareTo(b);
 		}
 		IExpr temp = eval(b);
 		if (temp instanceof ISignedNumber) {
-			return integer(i).compareTo(temp);
+			return ZZ(i).compareTo(temp);
 		}
 		throw new UnsupportedOperationException(
 				"compareTo() - second argument could not be converted into a signed number.");
@@ -6245,7 +6245,7 @@ public class F {
 	}
 
 	public static IExpr div(IExpr a, java.math.BigInteger i) {
-		return Times(a, Power(integer(i), CN1));
+		return Times(a, Power(ZZ(i), CN1));
 	}
 
 	public static IExpr div(Integer i, IExpr b) {
@@ -8103,7 +8103,7 @@ public class F {
 	}
 
 	public static IExpr minus(IExpr a, java.math.BigInteger i) {
-		return Plus(integer(i.negate()), a);
+		return Plus(ZZ(i.negate()), a);
 	}
 
 	public static IExpr minus(Integer i, IExpr b) {
@@ -8152,7 +8152,7 @@ public class F {
 	}
 
 	public static IExpr mod(IExpr a, java.math.BigInteger i) {
-		return Mod(a, integer(i));
+		return Mod(a, ZZ(i));
 	}
 
 	public static IExpr mod(Integer i, IExpr b) {
@@ -8160,7 +8160,7 @@ public class F {
 	}
 
 	public static IExpr mod(java.math.BigInteger i, IExpr b) {
-		return Mod(integer(i), b);
+		return Mod(ZZ(i), b);
 	}
 
 	public static IExpr Mod(final IExpr a0, final IExpr a1) {
@@ -8514,7 +8514,7 @@ public class F {
 	}
 
 	public static IExpr plus(IExpr a, java.math.BigInteger i) {
-		return Plus(a, integer(i));
+		return Plus(a, ZZ(i));
 	}
 
 	public static IExpr plus(Integer i, IExpr b) {
@@ -8522,7 +8522,7 @@ public class F {
 	}
 
 	public static IExpr plus(java.math.BigInteger i, IExpr b) {
-		return Plus(integer(i), b);
+		return Plus(ZZ(i), b);
 	}
 
 	/**
@@ -9237,11 +9237,11 @@ public class F {
 	}
 
 	public static IAST Slot(final int i) {
-		return new AST1(Slot, integer(i));
+		return new AST1(Slot, ZZ(i));
 	}
 
 	public static IAST SlotSequence(final int i) {
-		return new AST1(SlotSequence, integer(i));
+		return new AST1(SlotSequence, ZZ(i));
 	}
 
 	public static IAST Solve(final IExpr a0, final IExpr a1) {
