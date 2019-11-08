@@ -7,12 +7,6 @@ test0042 - Integrate[(a + I*b*ArcSin[1 - I*d*x^2])^(-2), x]
 test0045 - Integrate[Sqrt[a + I*b*ArcSin[1 - I*d*x^2]], x]
 InverseTrigFunctions
 Logarithms
-test0128 - Integrate[Log[(2*x*(d*Sqrt[-(e/d)] + e*x))/(d + e*x^2)]/(d + e*x^2), x]
-test0129 - Integrate[Log[(-2*x*(d*Sqrt[-(e/d)] - e*x))/(d + e*x^2)]/(d + e*x^2), x]
-test0130 - Integrate[Log[(2*x*((d*Sqrt[e])/Sqrt[-d] + e*x))/(d + e*x^2)]/(d + e*x^2), x]
-test0131 - Integrate[Log[(-2*x*((d*Sqrt[e])/Sqrt[-d] - e*x))/(d + e*x^2)]/(d + e*x^2), x]
-test0132 - Integrate[Log[(2*x*(Sqrt[d]*Sqrt[-e] + e*x))/(d + e*x^2)]/(d + e*x^2), x]
-test0133 - Integrate[Log[(-2*x*(Sqrt[d]*Sqrt[-e] - e*x))/(d + e*x^2)]/(d + e*x^2), x]
 SpecialFunctions
 TrigFunctions
 test0255 - Integrate[(1 + Cos[c + d*x])/(Cos[c + d*x]^(3/2)*Sqrt[2 + 3*Cos[c + d*x]]), x]
