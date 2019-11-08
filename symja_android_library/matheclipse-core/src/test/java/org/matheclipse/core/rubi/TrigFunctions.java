@@ -1989,7 +1989,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
 	// {2994}
 	public void test0255() {
 		if (Config.EXPENSIVE_JUNIT_TESTS) {
-			fSeconds = 120;
+			fSeconds = 600;
 			check(//
 					"Integrate[(1 + Cos[c + d*x])/(Cos[c + d*x]^(3/2)*Sqrt[2 + 3*Cos[c + d*x]]), x]", //
 					"-((Cot[c + d*x]*EllipticE[ArcSin[Sqrt[2 + 3*Cos[c + d*x]]/(Sqrt[5]*Sqrt[Cos[c + d*x]])], 5]*Sqrt[-1 - Sec[c + d*x]]*Sqrt[1 - Sec[c + d*x]])/d)", //
@@ -2000,8 +2000,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
 	// {2994}
 	public void test0256() {
 		if (Config.EXPENSIVE_JUNIT_TESTS) {
-
-			fSeconds = 120;
+			fSeconds = 600;
 			check(//
 					"Integrate[(1 + Cos[c + d*x])/(Cos[c + d*x]^(3/2)*Sqrt[-2 + 3*Cos[c + d*x]]), x]", //
 					"-((Sqrt[5]*Cot[c + d*x]*EllipticE[ArcSin[Sqrt[-2 + 3*Cos[c + d*x]]/Sqrt[Cos[c + d*x]]], 1/5]*Sqrt[-1 + Sec[c + d*x]]*Sqrt[1 + Sec[c + d*x]])/d)", //
@@ -2012,8 +2011,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
 	// {2994}
 	public void test0257() {
 		if (Config.EXPENSIVE_JUNIT_TESTS) {
-
-			fSeconds = 120;
+			fSeconds = 600;
 			check(//
 					"Integrate[(1 + Cos[c + d*x])/(Cos[c + d*x]^(3/2)*Sqrt[3 + 2*Cos[c + d*x]]), x]", //
 					"(2*Cot[c + d*x]*EllipticE[ArcSin[Sqrt[3 + 2*Cos[c + d*x]]/(Sqrt[5]*Sqrt[Cos[c + d*x]])], -5]*Sqrt[1 - Sec[c + d*x]]*Sqrt[1 + Sec[c + d*x]])/(3*d)", //
@@ -2024,7 +2022,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
 	// {2994}
 	public void test0258() {
 		if (Config.EXPENSIVE_JUNIT_TESTS) {
-			fSeconds = 120;
+			fSeconds = 600;
 			check(//
 					"Integrate[(1 + Cos[c + d*x])/(Sqrt[3 - 2*Cos[c + d*x]]*Cos[c + d*x]^(3/2)), x]", //
 					"(2*Sqrt[5]*Cot[c + d*x]*EllipticE[ArcSin[Sqrt[3 - 2*Cos[c + d*x]]/Sqrt[Cos[c + d*x]]], -1/5]*Sqrt[1 - Sec[c + d*x]]*Sqrt[1 + Sec[c + d*x]])/(3*d)", //

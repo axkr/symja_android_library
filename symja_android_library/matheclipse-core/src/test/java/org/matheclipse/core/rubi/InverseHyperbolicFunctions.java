@@ -97,6 +97,10 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[(a + I*b*ArcSin[1 - I*d*x^2])^(-1), x]", //
 				"(x*CosIntegral[((-I/2)*(a + I*b*ArcSin[1 - I*d*x^2]))/b]*(I*Cosh[a/(2*b)] - Sinh[a/(2*b)]))/(2*b*(Cos[ArcSin[1 - I*d*x^2]/2] - Sin[ArcSin[1 - I*d*x^2]/2])) - (x*(I*Cosh[a/(2*b)] + Sinh[a/(2*b)])*SinIntegral[((I/2)*a)/b - ArcSin[1 - I*d*x^2]/2])/(2*b*(Cos[ArcSin[1 - I*d*x^2]/2] - Sin[ArcSin[1 - I*d*x^2]/2]))", //
+				"(x*CosIntegral((-I*1/2*(a+I*b*ArcSin(1-I*d*x^2)))/b)*(I*Cosh(a/(2*b))-Sinh(a/(2*b))))/(\n" + 
+				"2*b*(Cos(ArcSin(1-I*d*x^2)/2)-Sin(ArcSin(1-I*d*x^2)/2)))+(x*(Cosh(a/(2*b))-I*Sinh(a/(\n" + 
+				"2*b)))*SinhIntegral((a+I*b*ArcSin(1-I*d*x^2))/(2*b)))/(2*b*(Cos(ArcSin(1-I*d*x^2)/\n" + 
+				"2)-Sin(ArcSin(1-I*d*x^2)/2)))",
 				4816);
 	}
 

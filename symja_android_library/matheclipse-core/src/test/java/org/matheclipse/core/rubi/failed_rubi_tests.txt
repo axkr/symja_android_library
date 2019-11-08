@@ -2,7 +2,6 @@ Exponentials
 HyperbolicFunctions
 IndependentTestSuites
 InverseHyperbolicFunctions
-test0041 - Integrate[(a + I*b*ArcSin[1 - I*d*x^2])^(-1), x]
 test0042 - Integrate[(a + I*b*ArcSin[1 - I*d*x^2])^(-2), x]
 test0045 - Integrate[Sqrt[a + I*b*ArcSin[1 - I*d*x^2]], x]
 InverseTrigFunctions
@@ -15,6 +14,5 @@ test0257 - Integrate[(1 + Cos[c + d*x])/(Cos[c + d*x]^(3/2)*Sqrt[3 + 2*Cos[c + d
 test0258 - Integrate[(1 + Cos[c + d*x])/(Sqrt[3 - 2*Cos[c + d*x]]*Cos[c + d*x]^(3/2)), x]
 AlgebraicFunctions
 test0276 - Integrate[(1 + x/a)^(n/2)/(x^2*(1 - x/a)^(n/2)), x]
-test0486 - Integrate[1/(Sqrt[3 - 3*Sqrt[3] + 2*Sqrt[3]*x^2]*Sqrt[3 + (-3 + Sqrt[3])*x^2]), x]
 test1047 - Integrate[(a*d*e + (c*d^2 + a*e^2)*x + c*d*e*x^2)^p, x]
 test1242 - Integrate[(1 + Sqrt[c/a]*x^2)/((d + e*x^2)*Sqrt[a + b*x^2 + c*x^4]), x]

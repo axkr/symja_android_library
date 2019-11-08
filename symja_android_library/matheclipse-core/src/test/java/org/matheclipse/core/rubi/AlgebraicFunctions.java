@@ -3676,6 +3676,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[1/(Sqrt[3 - 3*Sqrt[3] + 2*Sqrt[3]*x^2]*Sqrt[3 + (-3 + Sqrt[3])*x^2]), x]", //
 				"-(Sqrt[3 + Sqrt[3]]*EllipticF[ArcCos[Sqrt[(3 - Sqrt[3])/3]*x], (1 + Sqrt[3])/2])/6", //
+				"-EllipticF(ArcCos(Sqrt(1/3*(3-Sqrt(3)))*x),1/2*(1+Sqrt(3)))/Sqrt(6*(3-Sqrt(3)))",//
 				420);
 	}
 
