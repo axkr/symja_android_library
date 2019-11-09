@@ -1010,7 +1010,7 @@ public class ManipulateFunction {
 
 		// xmin, ymax, xmax, ymin
 		double[] boundingbox = new double[] { Double.MAX_VALUE, Double.MIN_VALUE, Double.MIN_VALUE, Double.MAX_VALUE };
-		String js = JSXGRAPH;
+
 		JavaScriptFormFactory toJS = new JavaScriptFormFactory(true, false, -1, -1, JavaScriptFormFactory.USE_MATHCELL);
 
 		jsxgraphSliderNamesFromList(ast, toJS);
@@ -1107,7 +1107,7 @@ public class ManipulateFunction {
 			if (!F.isFuzzyEquals(Double.MAX_VALUE, plotRangeYMin, 1e-10)) {
 				boundingbox[3] = plotRangeYMin;
 			}
-			return jsxgraphBoundingBox(ast, boundingbox, js, function.toString(), toJS);
+			return jsxgraphBoundingBox(ast, boundingbox, function.toString(), toJS);
 
 		}
 
@@ -1159,7 +1159,7 @@ public class ManipulateFunction {
 		if (!F.isFuzzyEquals(Double.MAX_VALUE, plotRangeYMin, 1e-10)) {
 			boundingbox[3] = plotRangeYMin;
 		}
-		return jsxgraphBoundingBox(ast, boundingbox, js, function.toString(), toJS);
+		return jsxgraphBoundingBox(ast, boundingbox, function.toString(), toJS);
 
 	}
 
@@ -1213,8 +1213,8 @@ public class ManipulateFunction {
 			return F.NIL;
 		}
 		// xmin, ymax, xmax, ymin
-		double[] boundingbox = new double[] { -5.0, 5.0, 5.0, -5.0 };
-		String js = JSXGRAPH;
+		// double[] boundingbox = new double[] { -5.0, 5.0, 5.0, -5.0 };
+
 		JavaScriptFormFactory toJS = new JavaScriptFormFactory(true, false, -1, -1, JavaScriptFormFactory.USE_MATHCELL);
 		jsxgraphSliderNamesFromList(ast, toJS);
 		IExpr arg1 = plot.arg1();
@@ -1226,20 +1226,57 @@ public class ManipulateFunction {
 			int[] dimension = pointList.isMatrix();
 			if (dimension != null) {
 				if (dimension[1] == 2) {
-					// plot a list of 2D points
-					StringBuilder function = new StringBuilder();
-					boundingbox = new double[] { Double.MAX_VALUE, Double.MIN_VALUE, Double.MIN_VALUE,
-							Double.MAX_VALUE };
-					if (ast.arg1().isAST(F.ListLinePlot) && pointList.size() > 2) {
-						IAST lastPoint = (IAST) pointList.arg1();
-						xBoundingBox(engine, boundingbox, lastPoint.arg1());
-						yBoundingBox(engine, boundingbox, lastPoint.arg2());
-						for (int i = 2; i < pointList.size(); i++) {
-							function.append("board.create('line',");
-							IAST point = (IAST) pointList.get(i);
-							xBoundingBox(engine, boundingbox, point.arg1());
-							yBoundingBox(engine, boundingbox, point.arg2());
-							function.append("[[");
+					return sequencePointListPlot(ast, pointList, toJS, engine);
+				}
+				return F.NIL;
+			} else {
+				return sequenceYValuesListPlot(ast, pointList, toJS, engine);
+			}
+		}
+		return F.NIL;
+	}
+
+	/**
+	 * Plot a list of 2D points.
+	 * 
+	 * @param ast
+	 * @param pointList
+	 * @param toJS
+	 * @param engine
+	 * @return
+	 */
+	private static IExpr sequencePointListPlot(final IAST ast, IAST pointList, JavaScriptFormFactory toJS,
+			EvalEngine engine) {
+		double[] boundingbox;
+		// plot a list of 2D points
+		StringBuilder function = new StringBuilder();
+		boundingbox = new double[] { Double.MAX_VALUE, Double.MIN_VALUE, Double.MIN_VALUE, Double.MAX_VALUE };
+		if (ast.arg1().isAST(F.ListLinePlot) && pointList.size() > 2) {
+			// IAST lastPoint = (IAST) pointList.arg1();
+			IAST lastPoint = F.NIL;
+			boolean isConnected = false;
+			int start = Integer.MAX_VALUE;
+			for (int i = 1; i < pointList.size(); i++) {
+				IAST point = (IAST) pointList.get(i);
+				if (isNonReal(point.arg1(), point.arg2())) {
+					continue;
+				}
+				lastPoint = point;
+				start = i + 1;
+				break;
+			}
+
+			if (start < Integer.MAX_VALUE) {
+				xBoundingBox(engine, boundingbox, lastPoint.arg1());
+				yBoundingBox(engine, boundingbox, lastPoint.arg2());
+				for (int i = start; i < pointList.size(); i++) {
+
+					IAST point = (IAST) pointList.get(i);
+					if (isNonReal(point.arg1(), point.arg2())) {
+						if (!isConnected && lastPoint.isPresent()) {
+							xBoundingBox(engine, boundingbox, lastPoint.arg1());
+							yBoundingBox(engine, boundingbox, lastPoint.arg2());
+							function.append("board.create('point', [");
 							function.append("function() {return ");
 							toJS.convert(function, lastPoint.arg1());
 							function.append(";}");
@@ -1247,106 +1284,169 @@ public class ManipulateFunction {
 							function.append("function() {return ");
 							toJS.convert(function, lastPoint.arg2());
 							function.append(";}");
-							function.append("],");
-							function.append("[");
-							function.append("function() {return ");
-							toJS.convert(function, point.arg1());
-							function.append(";}");
-							function.append(",");
-							function.append("function() {return ");
-							toJS.convert(function, point.arg2());
-							function.append(";}");
-							function.append("]]");
-							function.append(", {straightFirst:false, straightLast:false, strokeWidth:2});\n");
-							lastPoint = point;
+							function.append("], ");
+							function.append(" {name:'', face:'o', size: 2 } );\n");
 						}
-					} else {
-						for (int i = 1; i < pointList.size(); i++) {
-							IAST point = (IAST) pointList.get(i);
-							xBoundingBox(engine, boundingbox, point.arg1());
-							yBoundingBox(engine, boundingbox, point.arg2());
+						lastPoint = F.NIL;
+						isConnected = false;
+						continue;
+					}
+					if (lastPoint.isPresent()) {
+						function.append("board.create('line',");
+						xBoundingBox(engine, boundingbox, point.arg1());
+						yBoundingBox(engine, boundingbox, point.arg2());
+						function.append("[[");
+						function.append("function() {return ");
+						toJS.convert(function, lastPoint.arg1());
+						function.append(";}");
+						function.append(",");
+						function.append("function() {return ");
+						toJS.convert(function, lastPoint.arg2());
+						function.append(";}");
+						function.append("],");
+						function.append("[");
+						function.append("function() {return ");
+						toJS.convert(function, point.arg1());
+						function.append(";}");
+						function.append(",");
+						function.append("function() {return ");
+						toJS.convert(function, point.arg2());
+						function.append(";}");
+						function.append("]]");
+						function.append(", {straightFirst:false, straightLast:false, strokeWidth:2});\n");
+						isConnected = true;
+					}
+					lastPoint = point;
+				}
+			}
+		} else {
+			for (int i = 1; i < pointList.size(); i++) {
+				IAST point = (IAST) pointList.get(i);
+				if (isNonReal(point.arg1(), point.arg2())) {
+					continue;
+				}
+				xBoundingBox(engine, boundingbox, point.arg1());
+				yBoundingBox(engine, boundingbox, point.arg2());
+				function.append("board.create('point', [");
+				function.append("function() {return ");
+				toJS.convert(function, point.arg1());
+				function.append(";}");
+				function.append(",");
+				function.append("function() {return ");
+				toJS.convert(function, point.arg2());
+				function.append(";}");
+				function.append("], ");
+				function.append(" {name:'', face:'o', size: 2 } );\n");
+			}
+		}
+		return jsxgraphBoundingBox(ast, boundingbox, function.toString(), toJS);
+	}
+
+	/**
+	 * Plot a list of points for Y-values for the X-values <code>1,2,3,...</code>.
+	 * 
+	 * @param ast
+	 * @param pointList
+	 * @param toJS
+	 * @param engine
+	 * @return
+	 */
+	private static IExpr sequenceYValuesListPlot(final IAST ast, IAST pointList, JavaScriptFormFactory toJS,
+			EvalEngine engine) {
+		double[] boundingbox;
+
+		StringBuilder function = new StringBuilder();
+		boundingbox = new double[] { 0.0, Double.MIN_VALUE, pointList.size(), Double.MAX_VALUE };
+		if (ast.arg1().isAST(F.ListLinePlot)) {
+			IExpr lastPoint = F.NIL;
+			int lastPosition = -1;
+			boolean isConnected = false;
+			int start = Integer.MAX_VALUE;
+			for (int i = 1; i < pointList.size(); i++) {
+				IExpr currentPointY = pointList.get(i);
+				if (isNonReal(currentPointY)) {
+					continue;
+				}
+				lastPoint = currentPointY;
+				lastPosition = i;
+				start = i + 1;
+				break;
+			}
+			if (start < Integer.MAX_VALUE) {
+				yBoundingBox(engine, boundingbox, lastPoint);
+				for (int i = start; i < pointList.size(); i++) {
+					IExpr currentPointY = pointList.get(i);
+					if (isNonReal(currentPointY)) {
+						if (!isConnected && lastPoint.isPresent()) {
+							yBoundingBox(engine, boundingbox, lastPoint);
 							function.append("board.create('point', [");
-							function.append("function() {return ");
-							toJS.convert(function, point.arg1());
-							function.append(";}");
+							function.append("function() {return " + lastPosition + ";}");
 							function.append(",");
 							function.append("function() {return ");
-							toJS.convert(function, point.arg2());
+							toJS.convert(function, lastPoint);
 							function.append(";}");
 							function.append("], ");
 							function.append(" {name:'', face:'o', size: 2 } );\n");
 						}
+						lastPoint = F.NIL;
+						lastPosition = -1;
+						isConnected = false;
+						continue;
 					}
-					return jsxgraphBoundingBox(ast, boundingbox, js, function.toString(), toJS);
-				}
-				return F.NIL;
-			} else {
-				// plot a list of points for X-values 1,2,3,...
-				StringBuilder function = new StringBuilder();
-				boundingbox = new double[] { 0.0, Double.MIN_VALUE, pointList.size(), Double.MAX_VALUE };
-				if (ast.arg1().isAST(F.ListLinePlot)) {
-					IExpr lastPoint = pointList.arg1();
-					int start = Integer.MAX_VALUE;
-					for (int i = 1; i < pointList.size(); i++) {
-						if (isNonReal(lastPoint)) {
-							continue;
-						}
-						lastPoint = pointList.get(i);
-						start = i + 1;
-						break;
-					}
-					if (start < Integer.MAX_VALUE) {
-						yBoundingBox(engine, boundingbox, lastPoint);
-						for (int i = start; i < pointList.size(); i++) {
-							IExpr currentPoint = pointList.get(i);
-							if (isNonReal(currentPoint)) {
-								lastPoint = F.NIL;
-								continue;
-							}
-							if (lastPoint.isPresent()) {
-								yBoundingBox(engine, boundingbox, currentPoint);
-								function.append("board.create('line',");
-								function.append("[[");
-								function.append("function() {return " + (i - 1) + ";}");
-								function.append(",");
-								function.append("function() {return ");
-								toJS.convert(function, lastPoint);
-								function.append(";}");
-								function.append("],");
-								function.append("[");
-								function.append("function() {return " + (i) + ";}");
-								function.append(",");
-								function.append("function() {return ");
-								toJS.convert(function, currentPoint);
-								function.append(";}");
-								function.append("]]");
-								function.append(", {straightFirst:false, straightLast:false, strokeWidth:2});\n");
-							}
-							lastPoint = currentPoint;
-						}
-					}
-				} else {
-					for (int i = 1; i < pointList.size(); i++) {
-						yBoundingBox(engine, boundingbox, pointList.get(i));
-						function.append("board.create('point', [");
+					if (lastPoint.isPresent()) {
+						yBoundingBox(engine, boundingbox, currentPointY);
+						function.append("board.create('line',");
+						function.append("[[");
+						function.append("function() {return " + lastPosition + ";}");
+						function.append(",");
+						function.append("function() {return ");
+						toJS.convert(function, lastPoint);
+						function.append(";}");
+						function.append("],");
+						function.append("[");
 						function.append("function() {return " + i + ";}");
 						function.append(",");
 						function.append("function() {return ");
-						toJS.convert(function, pointList.get(i));
+						toJS.convert(function, currentPointY);
 						function.append(";}");
-						function.append("], ");
-						function.append(" {name:'', face:'o', size: 2 } );\n");
+						function.append("]]");
+						function.append(", {straightFirst:false, straightLast:false, strokeWidth:2});\n");
+						isConnected = true;
 					}
+					lastPoint = currentPointY;
+					lastPosition = i;
 				}
-
-				return jsxgraphBoundingBox(ast, boundingbox, js, function.toString(), toJS);
+			}
+		} else {
+			for (int i = 1; i < pointList.size(); i++) {
+				IExpr currentPointY = pointList.get(i);
+				if (isNonReal(currentPointY)) {
+					continue;
+				}
+				yBoundingBox(engine, boundingbox, currentPointY);
+				function.append("board.create('point', [");
+				function.append("function() {return " + i + ";}");
+				function.append(",");
+				function.append("function() {return ");
+				toJS.convert(function, pointList.get(i));
+				function.append(";}");
+				function.append("], ");
+				function.append(" {name:'', face:'o', size: 2 } );\n");
 			}
 		}
-		return F.NIL;
+
+		return jsxgraphBoundingBox(ast, boundingbox, function.toString(), toJS);
 	}
 
 	private static boolean isNonReal(IExpr lastPoint) {
-		return lastPoint == F.None || lastPoint.isAST(F.Missing);
+		return lastPoint == F.Indeterminate || //
+				lastPoint == F.None || //
+				lastPoint.isAST(F.Missing);
+	}
+
+	private static boolean isNonReal(IExpr lastPointX, IExpr lastPointY) {
+		return isNonReal(lastPointX) || //
+				isNonReal(lastPointY);
 	}
 
 	/**
@@ -1357,16 +1457,15 @@ public class ManipulateFunction {
 	 * @param boundingbox
 	 *            an array of double values (length 4) which describes the bounding box
 	 *            <code>[xMin, yMAx, xMax, yMin]</code>
-	 * @param js
-	 *            the JSXGraph JavaScript template
 	 * @param function
 	 *            the generated JavaScript function
 	 * @param toJS
 	 *            the Symja to JavaScript converter factory
 	 * @return
 	 */
-	private static IExpr jsxgraphBoundingBox(IAST ast, double[] boundingbox, String js, String function,
+	private static IExpr jsxgraphBoundingBox(IAST ast, double[] boundingbox, String function,
 			JavaScriptFormFactory toJS) {
+		String js = JSXGRAPH;
 		if (F.isFuzzyEquals(Double.MAX_VALUE, boundingbox[0], 1e-10)) {
 			boundingbox[0] = -5.0;
 		}
