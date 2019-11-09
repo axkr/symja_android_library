@@ -127,7 +127,7 @@ public class F {
 	 * <p>
 	 * In computing, memoization or memoisation is an optimization technique used primarily to speed up computer
 	 * programs by storing the results of expensive function calls and returning the cached result when the same inputs
-	 * occur again. This cache is especially useed for recursive integer functions to remember the results of the
+	 * occur again. This cache is especially used for recursive integer functions to remember the results of the
 	 * recursive call.
 	 * </p>
 	 * 
@@ -135,6 +135,20 @@ public class F {
 	 */
 	public static Cache<IAST, IExpr> REMEMBER_INTEGER_CACHE = CacheBuilder.newBuilder().maximumSize(500).build();
 
+	/**
+	 * <p>
+	 * In computing, memoization or memoisation is an optimization technique used primarily to speed up computer
+	 * programs by storing the results of expensive function calls and returning the cached result when the same inputs
+	 * occur again.
+	 * </p>
+	 * <p>
+	 * This cache is especially used for expensive functions like <code>FullSimplify, Factor,...</code> to remember the
+	 * results of the function call. It often also stores the <code>F.NIL</code> result to indicate that a new
+	 * evaluation of a function is unnecessary.
+	 * </p>
+	 * 
+	 * See: <a href="https://en.wikipedia.org/wiki/Memoization">Wikipedia - Memoization</a>
+	 */
 	public static Cache<IAST, IExpr> REMEMBER_AST_CACHE = CacheBuilder.newBuilder().maximumSize(500).build();
 
 	/**
@@ -3983,22 +3997,22 @@ public class F {
 	 * Represents <code>Return(False)</code>
 	 */
 	public static IAST CReturnFalse;
-	
+
 	/**
 	 * Represents <code>Return(True)</code>
 	 */
 	public static IAST CReturnTrue;
-	
+
 	/**
 	 * Represents <code>Throw(False)</code>
 	 */
 	public static IAST CThrowFalse;
-	
+
 	/**
 	 * Represents <code>Throw(True)</code>
 	 */
 	public static IAST CThrowTrue;
-	
+
 	/**
 	 * Alias for CInfinity. Represents <code>Infinity</code> (i.e. <code>Infinity-&gt;DirectedInfinity(1)</code>)
 	 */
@@ -4239,7 +4253,7 @@ public class F {
 			CReturnTrue = new B1.Return(True);
 			CThrowFalse = new B1.Throw(False);
 			CThrowTrue = new B1.Throw(True);
-			
+
 			CInfinity = unaryAST1(DirectedInfinity, C1);
 			oo = CInfinity;
 			CNInfinity = unaryAST1(DirectedInfinity, CN1);
