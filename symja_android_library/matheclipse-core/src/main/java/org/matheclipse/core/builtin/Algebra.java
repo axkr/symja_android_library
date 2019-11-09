@@ -2766,7 +2766,7 @@ public class Algebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			ISymbol x = Validate.checkSymbolType(ast, 3);
+			IExpr x = ast.arg3();// Validate.checkSymbolType(ast, 3);
 			IExpr expr1 = F.evalExpandAll(ast.arg1(), engine);
 			IExpr expr2 = F.evalExpandAll(ast.arg2(), engine);
 			VariablesSet eVar = new VariablesSet();
@@ -3206,6 +3206,10 @@ public class Algebra {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST2()) {
+				IExpr cached = F.REMEMBER_AST_CACHE.getIfPresent(ast);
+				if (cached != null) {
+					return cached;
+				}
 				IExpr arg1 = engine.evaluate(ast.arg1());
 				IExpr arg2 = engine.evaluate(ast.arg2());
 
@@ -3216,17 +3220,14 @@ public class Algebra {
 					variablesList = F.List(arg2);
 				}
 				IAST subst = substituteVariablesInPolynomial(arg1, variablesList, "§PolynomialQ");
-				return F.bool(subst.arg1().isPolynomial((IAST) subst.arg2()));
+				IExpr result = F.bool(subst.arg1().isPolynomial((IAST) subst.arg2()));
+				F.REMEMBER_AST_CACHE.put(ast, result);
+				return result;
 			}
 			if (ast.isAST1()) {
 				return F.True;
 			}
 			return F.False;
-			// if (ast.isAST2()) {
-			// IAST temp = engine.evalArgs(ast, ISymbol.NOATTRIBUTE).orElse(ast);
-			// return F.bool(temp.arg1().isPolynomial(temp.arg2().orNewList()));
-			// }
-			// return F.NIL;
 		}
 
 		@Override
@@ -3273,7 +3274,7 @@ public class Algebra {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
 			if (ast.size() == 4 || ast.size() == 5) {
-				ISymbol variable = Validate.checkSymbolType(ast, 3);
+				IExpr variable = ast.arg3();
 				IExpr arg1 = F.evalExpandAll(ast.arg1(), engine);
 				IExpr arg2 = F.evalExpandAll(ast.arg2(), engine);
 
@@ -3333,18 +3334,21 @@ public class Algebra {
 	 * </blockquote>
 	 */
 	private static class PolynomialQuotientRemainder extends AbstractFunctionEvaluator {
-		public static IExpr[] quotientRemainder(final IExpr arg1, IExpr arg2, IExpr variable) {
 
+		public static IExpr[] quotientRemainder(final IExpr arg1, IExpr arg2, IExpr variable) {
+			if (arg1.isFree(variable) && //
+					arg2.isFree(variable)) {
+				return new IExpr[] { //
+						F.Divide(arg1, arg2), //
+						F.C0 };
+			}
 			try {
 				JASConvert<BigRational> jas = new JASConvert<BigRational>(variable, BigRational.ZERO);
 				GenPolynomial<BigRational> poly1 = jas.expr2JAS(arg1, false);
 				GenPolynomial<BigRational> poly2 = jas.expr2JAS(arg2, false);
 				GenPolynomial<BigRational>[] divRem = poly1.quotientRemainder(poly2);
-				// IExpr[] result = new IExpr[2];
-				// result[0] = jas.rationalPoly2Expr(divRem[0], false);
-				// result[1] = jas.rationalPoly2Expr(divRem[1], false);
-				// return result;
-				return new IExpr[] { jas.rationalPoly2Expr(divRem[0], false), //
+				return new IExpr[] { //
+						jas.rationalPoly2Expr(divRem[0], false), //
 						jas.rationalPoly2Expr(divRem[1], false) };
 			} catch (JASConversionException e1) {
 				try {
@@ -3355,10 +3359,8 @@ public class Algebra {
 					if (divRem == null) {
 						return null;
 					}
-					// IExpr[] result = new IExpr[2];
-					// result[0] = divRem[0].getExpr();
-					// result[1] = divRem[1].getExpr();
-					return new IExpr[] { divRem[0].getExpr(), //
+					return new IExpr[] { //
+							divRem[0].getExpr(), //
 							divRem[1].getExpr() };
 				} catch (LimitException le) {
 					throw le;
@@ -3373,34 +3375,40 @@ public class Algebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			ISymbol variable = Validate.checkSymbolType(ast, 3);
+			IExpr temp = F.REMEMBER_AST_CACHE.getIfPresent(ast);
+			if (temp != null) {
+				return temp;
+			}
+			IExpr variable = ast.arg3();
 			IExpr arg1 = F.evalExpandAll(ast.arg1(), engine);
 			IExpr arg2 = F.evalExpandAll(ast.arg2(), engine);
 
+			IExpr result = F.NIL;
 			if (ast.size() == 5) {
 				final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
 				IExpr option = options.getOption(F.Modulus);
 				if (option.isInteger() && !option.isZero()) {
-					IExpr[] result = quotientRemainderModInteger(arg1, arg2, variable, option);
-					if (result == null) {
-						return F.NIL;
+					IExpr[] quotientRemainderModInteger = quotientRemainderModInteger(arg1, arg2, variable, option);
+					if (quotientRemainderModInteger != null) {
+						result = F.List(quotientRemainderModInteger[0], quotientRemainderModInteger[1]);
 					}
-					return F.List(result[0], result[1]);
 				}
-				return F.NIL;
+				F.REMEMBER_AST_CACHE.put(ast, result);
+				return result;
 			}
-			IExpr[] result = quotientRemainder(arg1, arg2, variable);
-			if (result == null) {
-				return F.NIL;
+			IExpr[] quotientRemainder = quotientRemainder(arg1, arg2, variable);
+			if (quotientRemainder != null) {
+				result = F.List(quotientRemainder[0], quotientRemainder[1]);
 			}
-			return F.List(result[0], result[1]);
+			F.REMEMBER_AST_CACHE.put(ast, result);
+			return result;
 		}
 
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_3_4;
 		}
 
-		public IExpr[] quotientRemainderModInteger(IExpr arg1, IExpr arg2, ISymbol variable, IExpr option) {
+		public IExpr[] quotientRemainderModInteger(IExpr arg1, IExpr arg2, IExpr variable, IExpr option) {
 			try {
 				// found "Modulus" option => use ModIntegerRing
 				ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((ISignedNumber) option);
@@ -3457,7 +3465,7 @@ public class Algebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			ISymbol variable = Validate.checkSymbolType(ast, 3);
+			IExpr variable = ast.arg3();
 			IExpr arg1 = F.evalExpandAll(ast.arg1(), engine);
 			IExpr arg2 = F.evalExpandAll(ast.arg2(), engine);
 
@@ -4728,6 +4736,7 @@ public class Algebra {
 
 			}
 
+			// note: this should also cache FullSimplify calls
 			IExpr result = F.REMEMBER_AST_CACHE.getIfPresent(ast);
 			if (result != null) {
 				return result;
