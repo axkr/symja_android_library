@@ -284,6 +284,10 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 			buf.append(symbol.toString() + ".Value()");
 			return;
 		}
+		if (symbol == F.Indeterminate) {
+			buf.append("Number.NaN");
+			return;
+		}
 		super.convertSymbol(buf, symbol);
 	}
 
@@ -601,6 +605,11 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 				buf.append("Number.NaN");
 			}
 			buf.append(" ))");
+			return;
+		}
+		if (function.isAST(F.Missing)) {
+			// Missing value
+			buf.append("Number.NaN");
 			return;
 		}
 		if (function.headID() > 0) {

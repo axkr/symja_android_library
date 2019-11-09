@@ -8,11 +8,12 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
-public class ListLinePlotExample  extends BasePlotExample {
+public class ListLinePlotExample extends BasePlotExample {
 
 	@Override
 	public String exampleFunction() {
-		return "Manipulate(ListLinePlot(Table({Sin(t), Cos(t*a)}, {t, 50})), {a,1,4,1})";
+		return "ListLinePlot(Table(ElementData(z, \"MeltingPoint\"), {z, 118}))";
+		// return "Manipulate(ListLinePlot(Table({Sin(t), Cos(t*a)}, {t, 50})), {a,1,4,1})";
 	}
 
 	public static void main(String[] args) {

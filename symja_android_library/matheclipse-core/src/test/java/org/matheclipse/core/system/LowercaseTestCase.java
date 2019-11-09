@@ -14124,6 +14124,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialExtendedGCD() {
+		check("PolynomialExtendedGCD(2*x^2+3,3*x,f(x,y))", //
+				"{1,{0,1/(3*x)}}");
 		check("PolynomialExtendedGCD(a[x],b[x],x)", //
 				"{b(x),{0,1}}");
 		check("PolynomialExtendedGCD(a[x],b,x)", //
@@ -14331,6 +14333,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialQuotientRemainder() {
+		check("PolynomialQuotientRemainder(2*x^2+3,3*x,f(x,y))", //
+				"{(3+2*x^2)/(3*x),0}");
 		check("PolynomialQuotientRemainder(x^2 + 7*x + 6, x^2-5*x-6, x)", //
 				"{1,12+12*x}");
 		check("PolynomialQuotientRemainder[a,b,x]", //

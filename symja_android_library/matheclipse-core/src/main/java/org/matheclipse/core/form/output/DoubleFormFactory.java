@@ -63,7 +63,7 @@ public abstract class DoubleFormFactory {
 	 */
 	private boolean fQuotes = false;
 	private boolean fEmpty = true;
-	private int fColumnCounter;
+	// private int fColumnCounter;
 	private int fExponentFigures;
 	private int fSignificantFigures;
 
@@ -76,7 +76,7 @@ public abstract class DoubleFormFactory {
 	}
 
 	public void reset() {
-		fColumnCounter = 0;
+		// fColumnCounter = 0;
 	}
 
 	public void convertDouble(final StringBuilder buf, final INum d, final int precedence, boolean caller) {
@@ -235,23 +235,23 @@ public abstract class DoubleFormFactory {
 			append(buf, "(");
 		}
 		final String str = i.toBigNumerator().toString();
-		if ((str.length() + getColumnCounter() > 80)) {
-			if (getColumnCounter() > 40) {
-				newLine(buf);
-			}
-			final int len = str.length();
-			for (int j = 0; j < len; j += 79) {
-				if (j + 79 < len) {
-					append(buf, str.substring(j, j + 79));
-					append(buf, '\\');
-					newLine(buf);
-				} else {
-					append(buf, str.substring(j, len));
-				}
-			}
-		} else {
-			append(buf, str);
-		}
+		// if ((str.length() + getColumnCounter() > 80)) {
+		// if (getColumnCounter() > 40) {
+		// newLine(buf);
+		// }
+		// final int len = str.length();
+		// for (int j = 0; j < len; j += 79) {
+		// if (j + 79 < len) {
+		// append(buf, str.substring(j, j + 79));
+		// append(buf, '\\');
+		// newLine(buf);
+		// } else {
+		// append(buf, str.substring(j, len));
+		// }
+		// }
+		// } else {
+		append(buf, str);
+		// }
 		if (isNegative && (ASTNodeFactory.PLUS_PRECEDENCE < precedence)) {
 			append(buf, ")");
 		}
@@ -277,43 +277,43 @@ public abstract class DoubleFormFactory {
 		}
 
 		String str = numerator.toString();
-		if ((str.length() + getColumnCounter() > 80)) {
-			if (getColumnCounter() > 40) {
-				newLine(buf);
-			}
-			final int len = str.length();
-			for (int j = 0; j < len; j += 79) {
-				if (j + 79 < len) {
-					append(buf, str.substring(j, j + 79));
-					append(buf, '\\');
-					newLine(buf);
-				} else {
-					append(buf, str.substring(j, len));
-				}
-			}
-		} else {
-			append(buf, str);
-		}
+		// if ((str.length() + getColumnCounter() > 80)) {
+		// if (getColumnCounter() > 40) {
+		// newLine(buf);
+		// }
+		// final int len = str.length();
+		// for (int j = 0; j < len; j += 79) {
+		// if (j + 79 < len) {
+		// append(buf, str.substring(j, j + 79));
+		// append(buf, '\\');
+		// newLine(buf);
+		// } else {
+		// append(buf, str.substring(j, len));
+		// }
+		// }
+		// } else {
+		append(buf, str);
+		// }
 		if (!isInteger) {
 			append(buf, "/");
 			str = denominator.toString();
-			if ((str.length() + getColumnCounter() > 80)) {
-				if (getColumnCounter() > 40) {
-					newLine(buf);
-				}
-				final int len = str.length();
-				for (int j = 0; j < len; j += 79) {
-					if (j + 79 < len) {
-						append(buf, str.substring(j, j + 79));
-						append(buf, '\\');
-						newLine(buf);
-					} else {
-						append(buf, str.substring(j, len));
-					}
-				}
-			} else {
-				append(buf, str);
-			}
+			// if ((str.length() + getColumnCounter() > 80)) {
+			// if (getColumnCounter() > 40) {
+			// newLine(buf);
+			// }
+			// final int len = str.length();
+			// for (int j = 0; j < len; j += 79) {
+			// if (j + 79 < len) {
+			// append(buf, str.substring(j, j + 79));
+			// append(buf, '\\');
+			// newLine(buf);
+			// } else {
+			// append(buf, str.substring(j, len));
+			// }
+			// }
+			// } else {
+			append(buf, str);
+			// }
 		}
 		if (prec < precedence) {
 			append(buf, ")");
@@ -349,7 +349,7 @@ public abstract class DoubleFormFactory {
 			append(buf, "-I");
 		} else {
 			final IRational im = c.getImaginaryPart();
-			int oldColumnCounter = fColumnCounter;
+			// int oldColumnCounter = fColumnCounter;
 			StringBuilder imagBuf = new StringBuilder();
 			try {
 				if (im.isNegative()) {
@@ -357,8 +357,8 @@ public abstract class DoubleFormFactory {
 						append(buf, "(");
 					}
 					append(buf, "-");
-					oldColumnCounter = fColumnCounter;
-					fColumnCounter = 0;
+					// oldColumnCounter = fColumnCounter;
+					// fColumnCounter = 0;
 					append(imagBuf, "I*");
 					convertFraction(imagBuf, im.negate(), ASTNodeFactory.TIMES_PRECEDENCE, NO_PLUS_CALL);
 				} else {
@@ -369,25 +369,25 @@ public abstract class DoubleFormFactory {
 						if (ASTNodeFactory.TIMES_PRECEDENCE < precedence) {
 							append(buf, "(");
 						}
-						oldColumnCounter = fColumnCounter;
-						fColumnCounter = 0;
+						// oldColumnCounter = fColumnCounter;
+						// fColumnCounter = 0;
 						append(imagBuf, "I*");
 					} else {
 						append(buf, "+");
-						oldColumnCounter = fColumnCounter;
-						fColumnCounter = 0;
+						// oldColumnCounter = fColumnCounter;
+						// fColumnCounter = 0;
 						append(imagBuf, "I*");
 					}
 					convertFraction(imagBuf, im, ASTNodeFactory.TIMES_PRECEDENCE, NO_PLUS_CALL);
 				}
 
 			} finally {
-				fColumnCounter = oldColumnCounter;
+				// fColumnCounter = oldColumnCounter;
 			}
 			String str = imagBuf.toString();
-			if ((str.length() + getColumnCounter() > 80)) {
-				newLine(buf);
-			}
+			// if ((str.length() + getColumnCounter() > 80)) {
+			// newLine(buf);
+			// }
 			append(buf, str);
 			if (isReZero && (ASTNodeFactory.TIMES_PRECEDENCE < precedence)) {
 				append(buf, ")");
@@ -421,6 +421,9 @@ public abstract class DoubleFormFactory {
 			return;
 		} else if (symbol == F.True) {
 			buf.append("true");
+			return;
+		} else if (symbol == F.Indeterminate) {
+			buf.append("Double.NaN");
 			return;
 		}
 		if (symbol.isConstantAttribute()) {
@@ -1407,22 +1410,22 @@ public abstract class DoubleFormFactory {
 	 * 
 	 */
 	private void newLine(StringBuilder buf) {
-		if (!fIgnoreNewLine) {
-			append(buf, '\n');
-		}
-		fColumnCounter = 0;
+		// if (!fIgnoreNewLine) {
+		append(buf, '\n');
+		// }
+		// fColumnCounter = 0;
 		fEmpty = false;
 	}
 
 	private void append(StringBuilder buf, String str) {
 		buf.append(str);
-		fColumnCounter += str.length();
+		// fColumnCounter += str.length();
 		fEmpty = false;
 	}
 
 	private void append(StringBuilder buf, char c) {
 		buf.append(c);
-		fColumnCounter += 1;
+		// fColumnCounter += 1;
 		fEmpty = false;
 	}
 
@@ -1450,15 +1453,15 @@ public abstract class DoubleFormFactory {
 	/**
 	 * @return Returns the columnCounter.
 	 */
-	public int getColumnCounter() {
-		return fColumnCounter;
-	}
+	// public int getColumnCounter() {
+	// return fColumnCounter;
+	// }
 
 	/**
 	 * @param columnCounter
 	 *            The columnCounter to set.
 	 */
-	public void setColumnCounter(final int columnCounter) {
-		fColumnCounter = columnCounter;
-	}
+	// public void setColumnCounter(final int columnCounter) {
+	// fColumnCounter = columnCounter;
+	// }
 }
