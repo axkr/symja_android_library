@@ -258,7 +258,7 @@ public class MainTestCase extends AbstractTestCase {
 				"(1-0.1*i)/(1.0-0.1*i)");
 		check("((1 - ((i * 1.0) / 10)) / (1.0 - ((i * 1.0) / 10))) // Simplify", //
 				"1");
-		
+
 		check("Simplify((i * (1.0 - 0.1 * i)) / (1.0 - 0.1 * i))", "i");
 		check("a-2*I", "-I*2+a");
 		check("Complex(2,1/3)", "2+I*1/3");
@@ -2797,26 +2797,37 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem387a() {
-		check("JavaForm(Pi*x_NumberQ)", "Times(Pi,$p(x,NumberQ))");
-		check("JavaForm(x_NumberQ)", "$p(x,NumberQ)");
-		check("JavaForm(Cosh(Im(x))*Cos(Re(x))+I*Sinh(Im(x))*Sin(Re(x)))",
+		check("JavaForm(Pi*x_NumberQ)", //
+				"Times(Pi,$p(x,NumberQ))");
+		check("JavaForm(x_NumberQ)", //
+				"$p(x,NumberQ)");
+		check("JavaForm(Cosh(Im(x))*Cos(Re(x))+I*Sinh(Im(x))*Sin(Re(x)))", //
 				"Plus(Times(Cos(Re(x)),Cosh(Im(x))),Times(CI,Sin(Re(x)),Sinh(Im(x))))");
 		check("JavaForm((1/2 * (m + n^(1/2))) ^ (1/3))", //
 				"Times(Power(C2,CN1D3),Power(Plus(m,Sqrt(n)),C1D3))");
 
-		check("JavaForm(-1/4+ #2+b+c*3)", "Plus(CN1D4,b,Times(C3,c),Slot2)");
+		check("JavaForm(-1/4+ #2+b+c*3)", //
+				"Plus(CN1D4,b,Times(C3,c),Slot2)");
 
-		check("JavaForm(11+a)", "Plus(ZZ(11L),a)");
-		check("JavaForm(1/11+a)", "Plus(QQ(1L,11L),a)");
+		check("JavaForm(11+a)", //
+				"Plus(ZZ(11L),a)");
+		check("JavaForm(1/11+a)", //
+				"Plus(QQ(1L,11L),a)");
 
-		check("$a=1+I;JavaForm($a)", "CC(1L,1L,1L,1L)");
-		check("JavaForm(1/3+I)", "CC(1L,3L,1L,1L)");
+		check("$a=1+I;JavaForm($a)", //
+				"CC(1L,1L,1L,1L)");
+		check("JavaForm(1/3+I)", //
+				"CC(1L,3L,1L,1L)");
 
-		check("JavaForm(ff(x_*y_))", "$(ff,Times(x_,y_))");
-		check("JavaForm(Log(b*x+c)/b)", "Times(Power(b,CN1),Log(Plus(c,Times(b,x))))");
+		check("JavaForm(ff(x_*y_))", //
+				"$(ff,Times(x_,y_))");
+		check("JavaForm(Log(b*x+c)/b)", //
+				"Times(Power(b,CN1),Log(Plus(c,Times(b,x))))");
 
-		check("JavaForm(B)", "B");
-		check("JavaForm(B*Log(p*x+q)/p)", "Times(B,Power(p,CN1),Log(Plus(q,Times(p,x))))");
+		check("JavaForm(B)", //
+				"B");
+		check("JavaForm(B*Log(p*x+q)/p)", //
+				"Times(B,Power(p,CN1),Log(Plus(q,Times(p,x))))");
 		// check(
 		// "JavaForm(B*((2*a*x+b)/((k-1)*(4*a*c-b^2)*(a*x^2+b*x+c)^(k-1))+
 		// (4*k*a-6*a)/((k-1)*(4*a*c-b^2))*Integrate((a*x^2+b*x+c)^(-k+1),x)))",
@@ -2824,115 +2835,177 @@ public class MainTestCase extends AbstractTestCase {
 		// check(
 		// "JavaForm((-A)/(2*a*(k-1)*(a*x^2+b*x+c)^(k-1))+(B-A*b/(2*a))*Integrate((a*x^2+b*x+c)^(-k),x))",
 		// "Plus(Times(Integrate(Power(Plus(c,Times(b,x),Times(a,Power(x,C2))),Times(CN1,k)),x),Plus(B,Times(CN1D2,A,Power(a,CN1),b))),Times(CN1D2,A,Power(a,CN1),Power(Plus(CN1,k),CN1),Power(Plus(c,Times(b,x),Times(a,Power(x,C2))),Plus(C1,Times(CN1,k)))))");
-		check("JavaForm(A/2*Log(x^2+p*x+q)+(2*B-A*p)/(4*q-p^2)^(1/2)*ArcTan((2*x+p)/(4*q-p^2)^(1/2)))",
+		check("JavaForm(A/2*Log(x^2+p*x+q)+(2*B-A*p)/(4*q-p^2)^(1/2)*ArcTan((2*x+p)/(4*q-p^2)^(1/2)))", //
 				"Plus(Times(Plus(Times(C2,B),Times(CN1,A,p)),Power(Plus(Negate(Sqr(p)),Times(C4,q)),CN1D2),ArcTan(Times(Power(Plus(Negate(Sqr(p)),Times(C4,q)),CN1D2),Plus(p,Times(C2,x))))),Times(C1D2,A,Log(Plus(q,Times(p,x),Sqr(x)))))");
 	}
 
 	public void testSystem388() {
-		check("ff(Times(Pattern(x, Blank()), Pattern(y, Blank())))", "ff(x_*y_)");
+		check("ff(Times(Pattern(x, Blank()), Pattern(y, Blank())))", //
+				"ff(x_*y_)");
 	}
 
 	public void testSystem389() {
-		check("$f389(a_):={a}; Clear($f389); $f389($test)", "$f389($test)");
-		check("$f389(a_):={a}; ClearAll($f389); $f389(a_):=g(a)", "");
-		check("$f389($test)", "g($test)");
+		check("$f389(a_):={a}; Clear($f389); $f389($test)", //
+				"$f389($test)");
+		check("$f389(a_):={a}; ClearAll($f389); $f389(a_):=g(a)", //
+				"");
+		check("$f389($test)", //
+				"g($test)");
 	}
 
 	public void testSystem390() {
-		check("Apply((1 + 1/#) &, 10)", "11/10");
-		check("FixedPoint((1 + 1/#) &, 10, 3)", "32/21");
-		checkNumeric("FixedPoint((Cos(#))&,0.8)", "0.7390851332151607");
+		check("Apply((1 + 1/#) &, 10)", //
+				"11/10");
+		check("FixedPoint((1 + 1/#) &, 10, 3)", //
+				"32/21");
+		checkNumeric("FixedPoint((Cos(#))&,0.8)", //
+				"0.7390851332151607");
 	}
 
 	public void testSystem391() {
-		check("StringJoin(\"Hello\", \" World\")", "Hello World");
+		check("StringJoin(\"Hello\", \" World\")", //
+				"Hello World");
 	}
 
 	public void testSystem392() {
-		check("StringDrop(\"Hello\", 2)", "llo");
-		check("StringDrop(\"Hello\", -2)", "Hel");
+		check("StringDrop(\"Hello\", 2)", //
+				"llo");
+		check("StringDrop(\"Hello\", -2)", //
+				"Hel");
 	}
 
 	public void testSystem393() {
-		check("EulerPhi(EulerPhi(25))", "8");
-		check("EulerPhi(10)", "4");
+		check("EulerPhi(EulerPhi(25))", //
+				"8");
+		check("EulerPhi(10)", //
+				"4");
 	}
 
 	public void testSystem393a() {
 		// http://exploringnumbertheory.wordpress.com/2013/09/09/finding-primitive-roots/
-		check("PrimitiveRootList(127)",
+		check("PrimitiveRootList(127)", //
 				"{3,6,7,12,14,23,29,39,43,45,46,48,53,55,56,57,58,65,67,78,83,85,86,91,92,93,96,\n"
 						+ "97,101,106,109,110,112,114,116,118}");
 		// http://exploringnumbertheory.wordpress.com/2013/09/12/an-elementary-algorithm-for-finding-primitive-roots/
-		check("PrimitiveRootList(11)", "{2,6,7,8}");
+		check("PrimitiveRootList(11)", //
+				"{2,6,7,8}");
 		// http://exploringnumbertheory.wordpress.com/2013/10/25/more-about-checking-for-primitive-roots/
-		check("PrimitiveRootList(37)", "{2,5,13,15,17,18,19,20,22,24,32,35}");
-		check("PrimitiveRootList(17)", "{3,5,6,7,10,11,12,14}");
+		check("PrimitiveRootList(37)", //
+				"{2,5,13,15,17,18,19,20,22,24,32,35}");
+		check("PrimitiveRootList(17)", //
+				"{3,5,6,7,10,11,12,14}");
 	}
 
 	public void testSystem394() {
-		check("PrimitiveRootList(8)", "{}");
-		check("PrimitiveRootList(9)", "{2,5}");
-		check("PrimitiveRootList(13)", "{2,6,7,11}");
-		check("PrimitiveRootList(25)", "{2,3,8,12,13,17,22,23}");
+		check("PrimitiveRootList(8)", //
+				"{}");
+		check("PrimitiveRootList(9)", //
+				"{2,5}");
+		check("PrimitiveRootList(13)", //
+				"{2,6,7,11}");
+		check("PrimitiveRootList(25)", //
+				"{2,3,8,12,13,17,22,23}");
 	}
 
 	public void testSystem395() {
-		check("MoebiusMu(990)", "0");
-		check("MoebiusMu(991)", "-1");
-		check("MoebiusMu(992)", "0");
-		check("MoebiusMu(993)", "1");
-		check("MoebiusMu(994)", "-1");
-		check("MoebiusMu(995)", "1");
-		check("MoebiusMu(996)", "0");
-		check("MoebiusMu(997)", "-1");
-		check("MoebiusMu(998)", "1");
-		check("MoebiusMu(999)", "0");
-		check("MoebiusMu(1000)", "0");
+		check("MoebiusMu(990)", //
+				"0");
+		check("MoebiusMu(991)", //
+				"-1");
+		check("MoebiusMu(992)", //
+				"0");
+		check("MoebiusMu(993)", //
+				"1");
+		check("MoebiusMu(994)", //
+				"-1");
+		check("MoebiusMu(995)", //
+				"1");
+		check("MoebiusMu(996)", //
+				"0");
+		check("MoebiusMu(997)", //
+				"-1");
+		check("MoebiusMu(998)", //
+				"1");
+		check("MoebiusMu(999)", //
+				"0");
+		check("MoebiusMu(1000)", //
+				"0");
 	}
 
 	public void testSystem396() {
-		check("JacobiSymbol(1,111)", "1");
-		check("JacobiSymbol(2,13)", "-1");
-		check("JacobiSymbol(4,13)", "1");
+		check("JacobiSymbol(1,111)", //
+				"1");
+		check("JacobiSymbol(2,13)", //
+				"-1");
+		check("JacobiSymbol(4,13)", //
+				"1");
 	}
 
 	public void testSystem397() {
-		check("Re(42+I)", "42");
-		check("Im(1/3+I)", "1");
-		check("Re(0.5+I)", "0.5");
-		check("Im(0.5+I*1.5)", "1.5");
-		check("Re(42)", "42");
-		check("Im(42)", "0");
-		check("Re(-x)", "-Re(x)");
-		check("Im(-x)", "-Im(x)");
+		check("Re(42+I)", //
+				"42");
+		check("Im(1/3+I)", //
+				"1");
+		check("Re(0.5+I)", //
+				"0.5");
+		check("Im(0.5+I*1.5)", //
+				"1.5");
+		check("Re(42)", //
+				"42");
+		check("Im(42)", //
+				"0");
+		check("Re(-x)", //
+				"-Re(x)");
+		check("Im(-x)", //
+				"-Im(x)");
 	}
 
 	public void testSystem398() {
-		check("Numerator(3/4)", "3");
-		check("Denominator(3/4)", "4");
-		check("Numerator(42)", "42");
-		check("Denominator(42)", "1");
-		check("Numerator(3/4*x^(-3))", "3");
-		check("Denominator(3/4*x^(-3))", "4*x^3");
-		check("Numerator(x+3/4*x^(-3))", "3/4*1/x^3+x");
-		check("Denominator(x+3/4*x^(-3))", "1");
-		check("Numerator((x - 1)*(x - 2)/(x - 3)^2)", "(-2+x)*(-1+x)");
-		check("Numerator(1/3*(3*a-1/2*b))", "3*a-b/2");
-		check("Denominator(1/3*(3*a-1/2*b))", "3");
+		check("Numerator(3/4)", //
+				"3");
+		check("Denominator(3/4)", //
+				"4");
+		check("Numerator(42)", //
+				"42");
+		check("Denominator(42)", //
+				"1");
+		check("Numerator(3/4*x^(-3))", //
+				"3");
+		check("Denominator(3/4*x^(-3))", //
+				"4*x^3");
+		check("Numerator(x+3/4*x^(-3))", //
+				"3/4*1/x^3+x");
+		check("Denominator(x+3/4*x^(-3))", //
+				"1");
+		check("Numerator((x - 1)*(x - 2)/(x - 3)^2)", //
+				"(-2+x)*(-1+x)");
+		check("Numerator(1/3*(3*a-1/2*b))", //
+				"3*a-b/2");
+		check("Denominator(1/3*(3*a-1/2*b))", //
+				"3");
 
-		check("Denominator(Csc(x))", "1");
-		check("Denominator(Csc(x)^4)", "1");
-		check("Denominator(42*Csc(x))", "1");
-		check("Denominator(42*Csc(x)^3)", "1");
+		check("Denominator(Csc(x))", //
+				"1");
+		check("Denominator(Csc(x)^4)", //
+				"1");
+		check("Denominator(42*Csc(x))", //
+				"1");
+		check("Denominator(42*Csc(x)^3)", //
+				"1");
 
-		check("Numerator(E^(-x)*x^(1/2))", "Sqrt(x)");
-		check("Denominator(E^(-x)*x^(1/2))", "E^x");
+		check("Numerator(E^(-x)*x^(1/2))", //
+				"Sqrt(x)");
+		check("Denominator(E^(-x)*x^(1/2))", //
+				"E^x");
 
-		check("Together(x+3/4*x^(-3))", "(3+4*x^4)/(4*x^3)");
-		check("Together((x^2-2)^3/(x^2-2)+(x^2-2)^2/(x^2-2))", "2-3*x^2+x^4");
-		check("Together(a/b+c/d)", "(b*c+a*d)/(b*d)");
-		check("Together((-x+3)*(x^2+2)^(-1)+6*x*(x^2+2)^(-2)+x^(-1))", "(4+6*x+8*x^2+3*x^3)/(4*x+4*x^3+x^5)");
+		check("Together(x+3/4*x^(-3))", //
+				"(3+4*x^4)/(4*x^3)");
+		check("Together((x^2-2)^3/(x^2-2)+(x^2-2)^2/(x^2-2))", //
+				"2-3*x^2+x^4");
+		check("Together(a/b+c/d)", //
+				"(b*c+a*d)/(b*d)");
+		check("Together((-x+3)*(x^2+2)^(-1)+6*x*(x^2+2)^(-2)+x^(-1))", //
+				"(4+6*x+8*x^2+3*x^3)/(4*x+4*x^3+x^5)");
 	}
 
 	public void testSystem399() {
