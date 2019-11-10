@@ -1861,7 +1861,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCancel() {
-
+//		check("Cancel(((1+x)*f(x))/x^2)", //
+//				"x/(-1+x)");
+//		check("Cancel((x*(1+x))/(-1+x^2))", //
+//				"x/(-1+x)");
 		// see rubi rule 27:
 		check("Cancel(d/(c*d+d^2*x))", //
 				"1/(c+d*x)");
@@ -10224,7 +10227,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testLimit() {
-
+		// gitlab #107
+		check("Limit(x^2-1/x-2, x->0)", //
+				"Indeterminate");
+		
+		check("Limit((x^2) /(3*x), x->Infinity)", //
+				"Infinity");
 		check("Limit(x^(-2/3),x->0 , Direction->-1)", //
 				"Infinity");
 		check("Limit(x^(-2/3),x->0 , Direction->1)", //
@@ -14158,6 +14166,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialGCD() {
+		check("PolynomialGCD(f(x),f(x)*x^2)", //
+				"f(x)");
+
 		// wikipedia example https://en.wikipedia.org/wiki/Polynomial_greatest_common_divisor
 		check("PolynomialGCD(x^2 + 7*x + 6, x^2-5*x-6)", //
 				"1+x");
@@ -14204,6 +14215,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialLCM() {
+		check("PolynomialLCM(f(x)*y^3,f(x)*x^2)", //
+				"x^2*y^3*f(x)");
 		// wikipedia example https://en.wikipedia.org/wiki/Polynomial_greatest_common_divisor
 		check("PolynomialLCM(x^2 + 7*x + 6, x^2-5*x-6)", //
 				"-36-36*x+x^2+x^3");
@@ -20177,6 +20190,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTogether() {
+		// TODO ((1+x)*f(x))/x^2
+		check("f(x)/x+f(x)/x^2//Together", //
+				"(f(x)+x*f(x))/x^2");
+		check("together(x^2/(x^2 - 1) + x/(x^2 - 1))", //
+				"x/(-1+x)");
 		check("Together[(2 + 2*x)/(2*Sqrt[2])]", //
 				"(1+x)/Sqrt(2)");
 

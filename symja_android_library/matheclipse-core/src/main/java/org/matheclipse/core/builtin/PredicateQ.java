@@ -780,7 +780,7 @@ public class PredicateQ {
 			}
 			if (expr.isAST()) {
 				if (expr.isPlus()) {
-					IExpr[] commonFactors = InternalFindCommonFactorPlus.findCommonFactors((IAST) expr);
+					IExpr[] commonFactors = InternalFindCommonFactorPlus.findCommonFactors((IAST) expr, true);
 					if (commonFactors != null) {
 						temp = engine.evaluate(F.Simplify(F.Times(commonFactors[0], commonFactors[1])));
 						if (temp.isNumber()) {

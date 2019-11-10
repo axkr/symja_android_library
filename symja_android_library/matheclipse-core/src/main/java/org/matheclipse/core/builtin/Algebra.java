@@ -279,16 +279,19 @@ public class Algebra {
 		 * Determine common factors in a <code>Plus(...)</code> expression. Index <code>[0]</code> contains the common
 		 * factor. Index <code>[1]</code> contains the rest <code>Plus(...)</code> factor;
 		 * 
-		 * @param plusAST
+		 * @param list
+		 *            a <code>List(...)</code> or <code>Plus(...)</code> AST of terms
+		 * @param reduceOneIdentityRest
+		 *            reduce the rest expression if only 1 argument is assigned
 		 * @return <code>null</code> if no common factor was found.
 		 */
-		public static IExpr[] findCommonFactors(IAST plusAST) {
-			if (plusAST.size() > 2) {
+		public static IExpr[] findCommonFactors(IAST list, boolean reduceOneIdentityRest) {
+			if (list.size() > 2) {
 				HashMap<IExpr, IInteger> map = new HashMap<IExpr, IInteger>();
-				splitTimesArg1(plusAST.arg1(), map);
+				splitTimesArg1(list.arg1(), map);
 				if (map.size() != 0) {
-					for (int i = 2; i < plusAST.size(); i++) {
-						if (!splitTimesRest(plusAST.get(i), map)) {
+					for (int i = 2; i < list.size(); i++) {
+						if (!splitTimesRest(list.get(i), map)) {
 							// fail fast
 							return null;
 						}
@@ -310,13 +313,14 @@ public class Algebra {
 					if (!result[0].isOne()) {
 						IExpr inverse = result[0].inverse();
 
-						IASTAppendable commonPlus = F.PlusAlloc(plusAST.size());
-						plusAST.forEach(x -> commonPlus.append(F.Times(inverse, x)));
+						IASTAppendable commonPlus = F.PlusAlloc(list.size());
+						list.forEach(x -> commonPlus.append(F.Times(inverse, x)));
 						// for (int i = 1; i < plusAST.size(); i++) {
 						// commonPlus.append(F.Times(inverse, plusAST.get(i)));
 						// }
-
-						result[1] = commonPlus.oneIdentity1();
+						if (reduceOneIdentityRest) {
+							result[1] = commonPlus.oneIdentity1();
+						}
 						return result;
 					}
 				}
@@ -2974,10 +2978,14 @@ public class Algebra {
 					if (Config.DEBUG) {
 						e.printStackTrace();
 					}
-					return F.C1;
 				}
-
 			}
+			IAST list = ast.setAtCopy(0, F.List);
+			IExpr[] result = InternalFindCommonFactorPlus.findCommonFactors(list, false);
+			if (result != null) {
+				return result[0];
+			}
+			return F.C1;
 		}
 
 		private IExpr gcdWithOption(final IAST ast, IExpr expr, VariablesSet eVar, final EvalEngine engine) {
@@ -3024,7 +3032,7 @@ public class Algebra {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
+			// newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
 
 		@Override
@@ -3127,6 +3135,7 @@ public class Algebra {
 							}
 						}
 					}
+					return F.NIL;
 				}
 			}
 			try {
@@ -3151,18 +3160,22 @@ public class Algebra {
 				if (evaled) {
 					return jas.integerPoly2Expr(poly.monic());
 				}
-				return ast.setAtCopy(0, F.Times);
 			} catch (JASConversionException e) {
 				if (Config.DEBUG) {
 					e.printStackTrace();
 				}
+				IAST list = ast.setAtCopy(0, F.List);
+				IExpr[] result = InternalFindCommonFactorPlus.findCommonFactors(list, true);
+				if (result != null) {
+					return F.Times(result[0], ((IAST) result[1]).setAtCopy(0, F.Times));
+				}
 			}
-			return F.NIL;
+			return ast.setAtCopy(0, F.Times);
 		}
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
+			// newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
 
 		@Override
@@ -4175,7 +4188,7 @@ public class Algebra {
 						sResult.checkLessEqual(temp, fComplexityFunction.apply(temp));
 					}
 
-					IExpr[] commonFactors = InternalFindCommonFactorPlus.findCommonFactors((IAST) expr);
+					IExpr[] commonFactors = InternalFindCommonFactorPlus.findCommonFactors((IAST) expr, true);
 					if (commonFactors != null) {
 						temp = fEngine.evaluate(F.Times(commonFactors[0], commonFactors[1]));
 						sResult.checkLessEqual(temp, fComplexityFunction.apply(temp));
@@ -5207,6 +5220,18 @@ public class Algebra {
 							return F.Times(arg1.first(), together(times, engine));
 						}
 					}
+					// } else if (arg1.isPlus()) {
+					// IExpr[] result = InternalFindCommonFactorPlus.findCommonFactors((IAST) arg1, true);
+					// if (result != null && !result[0].isOne()) {
+					// IExpr temp = togetherNull((IAST) result[1], engine).orElse(result[1]);
+					// if (temp.isPresent()) {
+					// temp = engine.evaluate(F.Times(result[0], reduceFactorConstant(temp, engine)));
+					// }
+					// if (temp.isTimes() || temp.isPower()) {
+					// return F.Cancel(temp);
+					// }
+					// return temp;
+					// }
 				}
 				IExpr temp = togetherNull((IAST) arg1, engine).orElse(arg1);
 				if (temp.isPresent()) {
