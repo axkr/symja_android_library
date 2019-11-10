@@ -8641,6 +8641,9 @@ public class F {
 	}
 
 	public static IExpr Power(final IExpr a0, final long exp) {
+		if (exp == 1L) {
+			return a0;
+		}
 		if (a0.isNumber()) {
 			if (exp > 0L) {
 				return a0.power(exp);
@@ -8656,7 +8659,7 @@ public class F {
 				return C1;
 			}
 		}
-		return new B2.Power(a0, integer(exp));
+		return new B2.Power(a0, ZZ(exp));
 	}
 
 	public static IAST PowerExpand(final IExpr a0) {
