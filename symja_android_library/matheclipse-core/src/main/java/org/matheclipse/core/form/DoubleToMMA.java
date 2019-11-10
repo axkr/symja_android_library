@@ -124,8 +124,9 @@ public class DoubleToMMA {
 		}
 		s = s.substring(0, start);
 		buf.append(s.trim());
-		buf.append("*10^");
+		buf.append("*10^{");
 		buf.append(Integer.toString(exp));
+		buf.append("}");
 	}
 
 	/**
