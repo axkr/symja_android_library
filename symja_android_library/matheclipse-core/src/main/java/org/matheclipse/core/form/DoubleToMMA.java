@@ -22,14 +22,16 @@ public class DoubleToMMA {
 	 *            use scientific notation for all numbers with exponents outside the range <code>-exponent</code> to
 	 *            <code>exponent</code>.
 	 * @param significantFigures
+	 * @param texScientificNotation
+	 *            TODO
 	 */
-	public static void doubleToMMA(Appendable buf, double value, int exponent, int significantFigures)
-			throws IOException {
+	public static void doubleToMMA(Appendable buf, double value, int exponent, int significantFigures,
+			boolean texScientificNotation) throws IOException {
 		String s = String.format(Locale.US, "%16.16E", value);
 		int start = s.indexOf('E');
 		String expStr = s.substring(start + 1);
 		// on Android you may receive a '+' sign: 1.2345123456789000E+04
-		if (expStr.startsWith("+")){
+		if (expStr.startsWith("+")) {
 			expStr = expStr.substring(1);
 		}
 		int exp = Integer.parseInt(expStr);
@@ -89,7 +91,7 @@ public class DoubleToMMA {
 			}
 			return;
 		}
-		doubleToScientific(buf, value, significantFigures - 1, exp);
+		doubleToScientific(buf, value, significantFigures - 1, exp, texScientificNotation);
 	}
 
 	/**
@@ -107,26 +109,42 @@ public class DoubleToMMA {
 	 */
 	public static void doubleToMMA(StringBuilder buf, double value, int exponent, int significantFigures) {
 		try {
-			doubleToMMA((Appendable) buf, value, exponent, significantFigures);
+			doubleToMMA((Appendable) buf, value, exponent, significantFigures, false);
 		} catch (IOException ioex) {
 			ioex.printStackTrace();
 		}
 	}
 
-	public static void doubleToScientific(Appendable buf, double value, int significantFigures, int exp)
-			throws IOException {
+	/**
+	 * Write a Java double value in scientific notation.
+	 * 
+	 * @param buf
+	 * @param value
+	 * @param significantFigures
+	 * @param exponent
+	 * @param texScientificNotation
+	 *            if <code>true</code> use <code>123^{456}</code> style to write the exponent
+	 * @throws IOException
+	 */
+	public static void doubleToScientific(Appendable buf, double value, int significantFigures, int exponent,
+			boolean texScientificNotation) throws IOException {
 		String s;
 		int start;
 		s = String.format(Locale.US, "%1." + (significantFigures - 1) + "E", value);
 		start = s.indexOf('E');
-		if (exp == Integer.MIN_VALUE) {
-			exp = Integer.parseInt(s.substring(start + 1));
+		if (exponent == Integer.MIN_VALUE) {
+			exponent = Integer.parseInt(s.substring(start + 1));
 		}
 		s = s.substring(0, start);
 		buf.append(s.trim());
-		buf.append("*10^{");
-		buf.append(Integer.toString(exp));
-		buf.append("}");
+		if (texScientificNotation) {
+			buf.append("*10^{");
+			buf.append(Integer.toString(exponent));
+			buf.append("}");
+		} else {
+			buf.append("*10^");
+			buf.append(Integer.toString(exponent));
+		}
 	}
 
 	/**
@@ -141,7 +159,7 @@ public class DoubleToMMA {
 	 */
 	public static void doubleToScientific(StringBuilder buf, double value, int significantFigures) {
 		try {
-			doubleToScientific(buf, value, significantFigures, Integer.MIN_VALUE);
+			doubleToScientific(buf, value, significantFigures, Integer.MIN_VALUE, false);
 		} catch (IOException ioex) {
 			ioex.printStackTrace();
 		}

@@ -337,6 +337,13 @@ public class BasicTeXTestCase extends TestCase {
 				"f(\\text{$\\#$1},\\text{$\\#$3},\\text{$\\#\\#$1})"); 
 	} 
 	
+	public void testTeX038() {
+		// gitlab #108
+		IExpr expr = EvalEngine.get().evaluate("Solve({Log10(x)==21.69},{x})");
+		check(expr, //
+				"\\{\\{x\\to 4.89779*10^{21}\\}\\}"); 
+    }
+
 	public void check(String strEval, String strResult) {
 		StringWriter stw = new StringWriter();
 		texUtil.toTeX(strEval, stw);
