@@ -201,7 +201,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 			if (ast.isTimes()) {
 				for (int i = 1; i < ast.size(); i++) {
 					if (ast.get(i).equals(period)) {
-						result.set(2, ast.removeAtCopy(i).oneIdentity1());
+						result.set(2, ast.splice(i).oneIdentity1());
 						return result;
 					}
 				}
@@ -211,7 +211,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 				for (int i = 1; i < ast.size(); i++) {
 					IAST temp = getPeriodicParts(ast.get(i), period);
 					if (temp.isPresent() && temp.arg1().isZero()) {
-						result.set(1, ast.removeAtCopy(i).oneIdentity0());
+						result.set(1, ast.splice(i).oneIdentity0());
 						result.set(2, temp.arg2());
 						return result;
 					}
@@ -318,7 +318,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 	public static IExpr peelOfTimes(final IAST astTimes, final IExpr period) {
 		for (int i = 1; i < astTimes.size(); i++) {
 			if (astTimes.get(i).equals(period)) {
-				return astTimes.removeAtCopy(i).oneIdentity1();
+				return astTimes.splice(i).oneIdentity1();
 			}
 		}
 		return F.NIL;

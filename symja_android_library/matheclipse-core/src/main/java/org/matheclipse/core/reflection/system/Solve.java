@@ -285,7 +285,7 @@ public class Solve extends AbstractFunctionEvaluator {
 								} else {
 									sym = (ISymbol) expr;
 									if (fEquationType == LINEAR) {
-										IAST cloned = arg.removeAtCopy(i);
+										IAST cloned = arg.splice(i);
 										fMatrixRow.set(j, F.Plus(fMatrixRow.get(j), cloned));
 									}
 								}
@@ -482,7 +482,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		 */
 		private IExpr rewriteInverseFunction(IAST plusAST, int position) {
 			IAST ast = (IAST) plusAST.get(position);
-			IExpr plus = plusAST.removeAtCopy(position).oneIdentity0();
+			IExpr plus = plusAST.splice(position).oneIdentity0();
 			if (ast.isAbs()) {
 				if (plus.isNegative() || plus.isZero()) {
 					if (plus.isFree(Predicates.in(fListOfVariables), true)) {
@@ -551,7 +551,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			if (exponent.isFraction() || (exponent.isReal() && !exponent.isNumIntValue())) {
 				ISignedNumber arg2 = (ISignedNumber) exponent;
 				if (arg2.isPositive()) {
-					IExpr plus = plusAST.removeAtCopy(i).oneIdentity0();
+					IExpr plus = plusAST.splice(i).oneIdentity0();
 					if (plus.isPositiveResult()) {
 						// no solution possible
 						return NO_EQUATION_SOLUTION;
@@ -1070,7 +1070,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			IAST[] reduced = Eliminate.eliminateOneVariable(F.List(F.Equal(firstEquation, F.C0)), firstVariable,
 					engine);
 			if (reduced != null) {
-				variables = variables.removeAtCopy(1);
+				variables = variables.splice(1);
 				termsEqualZeroList = termsEqualZeroList.removeAtCopy(1);
 				// oneVariableRule = ( firstVariable -> reducedExpression )
 				IAST oneVariableRule = reduced[1];

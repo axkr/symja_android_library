@@ -1174,7 +1174,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				IExpr patternArg = lhsPatternFinal.get(i);
 				if (!(patternArg instanceof IPatternObject)) {
 					final int index = i;
-					IAST reduced = lhsPatternFinal.removeAtCopy(index);
+					IAST reduced = lhsPatternFinal.splice(index);
 					boolean evaled = false;
 					for (int k = 1; k < lhsEvalFinal.size(); k++) {
 						try {

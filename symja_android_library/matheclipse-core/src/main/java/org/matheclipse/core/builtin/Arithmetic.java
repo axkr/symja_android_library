@@ -1882,7 +1882,7 @@ public final class Arithmetic {
 				IAST timesAST = (IAST) arg1;
 				int position = timesAST.indexOf(x -> x.isRealResult());
 				if (position > 0) {
-					return F.Times(timesAST.get(position), F.Im(timesAST.removeAtClone(position)));
+					return F.Times(timesAST.get(position), F.Im(timesAST.splice(position)));
 				}
 				// for (int i = 1; i < timesAST.size(); i++) {
 				// IExpr temp = timesAST.get(i);
@@ -4119,7 +4119,7 @@ public final class Arithmetic {
 				IAST timesAST = (IAST) expr;
 				int position = timesAST.indexOf(x -> x.isRealResult());
 				if (position > 0) {
-					return F.Times(timesAST.get(position), F.Re(timesAST.removeAtClone(position)));
+					return F.Times(timesAST.get(position), F.Re(timesAST.splice(position)));
 				}
 				// for (int i = 1; i < timesAST.size(); i++) {
 				// IExpr temp = timesAST.get(i);
@@ -5223,7 +5223,7 @@ public final class Arithmetic {
 									((IASTAppendable) astTimes).remove(j);
 								} else {
 									// creates an IASTAppendable
-									astTimes = astTimes.removeAtClone(j);
+									astTimes = astTimes.splice(j);
 									isIASTAppendable = true;
 								}
 								break;

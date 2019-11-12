@@ -1649,7 +1649,7 @@ public final class ListFunctions {
 						if (indx == 0) {
 							return list.setAtCopy(0, F.Sequence);
 						}
-						return list.removeAtCopy(indx);
+						return list.splice(indx);
 					} catch (final RuntimeException rex) {
 						if (Config.DEBUG) {
 							rex.printStackTrace();
@@ -1726,7 +1726,7 @@ public final class ListFunctions {
 				if (position == 0) {
 					return list.setAtCopy(0, F.Sequence);
 				}
-				return list.removeAtCopy(position);
+				return list.splice(position);
 			}
 			IExpr temp = list.get(position);
 			if (temp.isAST()) {
@@ -3094,7 +3094,7 @@ public final class ListFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			if (arg1.isAST() && ((IAST) arg1).size() > 1) {
-				return ((IAST) arg1).removeAtCopy(((IAST) arg1).argSize());
+				return ((IAST) arg1).splice(((IAST) arg1).argSize());
 			}
 			engine.printMessage("Most: Nonatomic expression expected");
 			return F.NIL;

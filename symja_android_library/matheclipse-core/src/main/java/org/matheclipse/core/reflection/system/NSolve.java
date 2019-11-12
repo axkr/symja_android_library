@@ -208,7 +208,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 								} else {
 									sym = (ISymbol) expr;
 									if (equationType == LINEAR) {
-										IAST cloned = arg.removeAtCopy(i);
+										IAST cloned = arg.splice(i);
 										row.set(j, F.Plus(row.get(j), cloned));
 									}
 								}

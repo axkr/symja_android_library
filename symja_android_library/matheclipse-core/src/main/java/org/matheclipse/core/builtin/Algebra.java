@@ -1070,7 +1070,7 @@ public class Algebra {
 				IAST timesAST = (IAST) expr;
 				return timesAST.exists((x, i) -> {
 					if (matcher.test(x) || isPowerMatched(x, matcher)) {
-						IAST clone = timesAST.removeAtCopy(i);
+						IAST clone = timesAST.splice(i);
 						addOneIdentityPowerFactor(x, clone, map);
 						return true;
 					}
@@ -4608,9 +4608,8 @@ public class Algebra {
 					for (int i = 2; i < timesAST.size(); i++) {
 						IExpr temp = timesAST.get(i);
 						if (temp.isLog() && temp.first().isReal()) {
-							IASTAppendable result = timesAST.removeAtClone(i);
-							result.append(F.Log(F.Power.of(temp.first(), timesAST.first())));
-							return result.removeAtClone(1).oneIdentity0();
+							IAST result = timesAST.splice(i, 1, F.Log(F.Power.of(temp.first(), timesAST.first())));
+							return result.splice(1).oneIdentity0();
 						}
 
 					}
@@ -5215,7 +5214,7 @@ public class Algebra {
 					}
 				} else if (arg1.isTimes()) {
 					if (arg1.first().isAtom()) {
-						IExpr times = ((IAST) arg1).removeAtCopy(1).oneIdentity0();
+						IExpr times = ((IAST) arg1).splice(1).oneIdentity0();
 						if (times.isPower()) {
 							return F.Times(arg1.first(), together(times, engine));
 						}
