@@ -1,26 +1,51 @@
 ## Plotting graphs and functions
 
-There are some functions integrated in Symja, which allows the output of some "JavaScript control". Here are some examples:
+These are some functions integrated in Symja, which allow the output of a graphical "JavaScript control".  
 
-With the [Manipulate](functions/Manipulate.md) function
+* [ListLinePlot](functions/ListLinePlot.md)
+* [ListPlot](functions/ListPlot.md)
+* [ListPlot3D](functions/ListPlot3D.md)
+* [Manipulate](functions/Manipulate.md)
+* [ParametricPlot](functions/ParametricPlot.md) 
+* [Plot](functions/Plot.md) 
+* [Plot3D](functions/Plot3D.md)
+ 
+Here are some corresponding examples:
 
-```
->> Manipulate(plot, {x, min, max})
-```
-
-you can generate a JavaScript control for the expression `plot` which can be manipulated by a visual range slider `{x, min, max}`.
-
-
-
-```
->> Plot(function, {x, xMin, xMax}, PlotRange->{yMin,yMax})  
-```
-
-The [Plot](functions/Plot.md) function plots the expression `function` in the `x` range `{x, xMin, xMax}` and `{yMin, yMax}` in the `y` range.
-
-
-```
->> ParametricPlot({function1, function2}, {t, tMin, tMax})
+```			
+>> ListLinePlot(Table({n, n ^ 0.5}, {n, 10})) 
 ```
 
-The [ParametricPlot](functions/ParametricPlot.md) function plots the parametric expressions `function1`, `function2` in the t range `{t, tMin, tMax}`.
+
+```			
+>> Manipulate(ListPlot(Table({Sin(t), Cos(t*a)}, {t, 100})), {a,1,4,1})
+```
+
+
+```			
+>> Manipulate(ListPlot3D(Table({Sin(t), Cos(t*a), Cos(t^2) }, {t, 500})), {a,1,4,1})
+```
+
+```			
+>> Manipulate(Plot3D(Sin(a*x*y), {x, -1.5, 1.5}, {y, -1.5, 1.5}), {a,1,5})
+```
+
+```			
+>> ParametricPlot({Sin(t), Cos(t^2)}, {t, 0, 2*Pi}) 
+```
+
+```			
+>> Plot(Sin(x)*Cos(1 + x), {x, 0, 2*Pi})
+```
+ 
+The following example displays an undirected weighted [Graph](functions/Graph.md) from graph theory functions:
+
+```			
+>> Graph({1 <-> 2, 2 <-> 3, 3 <-> 4, 4 <-> 1},{EdgeWeight->{2.0,3.0,4.0, 5.0}})   
+```
+
+[TreeForm](functions/TreeForm.md) visualizes the structure of an expression:
+
+```
+>> TreeForm(a+(b*q*s)^(2*y)+Sin(c)^(3-z)) 
+```
