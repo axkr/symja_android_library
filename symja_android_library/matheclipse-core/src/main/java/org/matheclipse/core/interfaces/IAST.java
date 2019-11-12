@@ -519,36 +519,12 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	}
 
 	/**
-	 * Copy of sub <code>AST</code> fromIndex (inclusive) to toIndex (exclusive).
 	 * 
-	 * @param fromIndex
-	 * @param toIndex
-	 * @return copy of sub <code>AST</code> fromIndex (inclusive) to toIndex (exclusive)
+	 * @deprecated use {@link #slice(int, int)} instead
 	 */
 	default IASTAppendable extract(int fromIndex, int toIndex) {
-		if (0 < fromIndex && fromIndex <= size() && fromIndex < toIndex && toIndex <= size()) {
-			IASTAppendable ast = F.ast(head(), toIndex - fromIndex, false);
-			for (int i = fromIndex; i < toIndex; i++) {
-				ast.append(get(i));
-			}
-			return ast;
-		}
-		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(fromIndex) + ", Size: " + size());
-
+		return slice(fromIndex, toIndex);
 	}
-
-	/**
-	 * Select all elements by applying the <code>function</code> to each argument in this <code>AST</code> and append
-	 * the result elements for which the function returns non <code>F.NIL</code> elements to the
-	 * <code>0th element</code> of the result array, or otherwise append it to the <code>1st element</code> of the
-	 * result array.
-	 * 
-	 * @param function
-	 *            the function which filters each argument in this AST by returning a <code>result != F.NIL</code> .
-	 * @return the resulting ASTs in the 0-th and 1-st element of the array
-	 * @see F#NIL
-	 */
-	public IASTAppendable[] filterNIL(final Function<IExpr, IExpr> function);
 
 	/**
 	 * Select all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and append
@@ -614,6 +590,28 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return the resulting ASTs in the 0-th and 1-st element of the array
 	 */
 	public IAST[] filter(Predicate<? super IExpr> predicate);
+
+	/**
+	 * Select all elements by applying the <code>function</code> to each argument in this <code>AST</code> and append
+	 * the result elements for which the function returns non <code>F.NIL</code> elements to the
+	 * <code>0th element</code> of the result array, or otherwise append it to the <code>1st element</code> of the
+	 * result array.
+	 * 
+	 * @param function
+	 *            the function which filters each argument in this AST by returning a <code>result != F.NIL</code> .
+	 * @return the resulting ASTs in the 0-th and 1-st element of the array
+	 * @see F#NIL
+	 */
+	public IASTAppendable[] filterNIL(final Function<IExpr, IExpr> function);
+
+	/**
+	 * Find the first argument position, where the the <code>function</code> doesn't return <code>F.NIL</code>. The
+	 * search starts at index <code>1</code>.
+	 * 
+	 * @param predicate
+	 * @return <code>F.NIL</code> if no position was found
+	 */
+	public IExpr findFirst(Function<IExpr, IExpr> function);
 
 	/**
 	 * Find the first argument position, which equals <code>expr</code>. The search starts at index <code>1</code>.
@@ -797,7 +795,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @throws IndexOutOfBoundsException
 	 *             if {@code location < 0 || >= size()}
 	 */
-	public IExpr get(int location);
+	public IExpr get(IInteger location);
 
 	/**
 	 * Returns the element at the specified location in this {@code IAST}.
@@ -808,7 +806,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @throws IndexOutOfBoundsException
 	 *             if {@code location < 0 || >= size()}
 	 */
-	public IExpr get(IInteger location);
+	public IExpr get(int location);
 
 	/**
 	 * Casts an <code>IExpr</code> at position <code>index</code> to an <code>IAST</code>.
@@ -938,15 +936,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public int indexOf(Predicate<? super IExpr> predicate);
 
 	/**
-	 * Find the first argument position, where the the <code>function</code> doesn't return <code>F.NIL</code>. The
-	 * search starts at index <code>1</code>.
-	 * 
-	 * @param predicate
-	 * @return <code>F.NIL</code> if no position was found
-	 */
-	public IExpr findFirst(Function<IExpr, IExpr> function);
-
-	/**
 	 * Test if this AST contains no argument
 	 * 
 	 * @return
@@ -1071,19 +1060,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public IAST map(IASTAppendable resultAST, IAST secondAST, BiFunction<IExpr, IExpr, IExpr> function);
 
 	/**
-	 * Set the head element of this list
-	 */
-	// public void setHeader(IExpr expr);
-
-	/**
-	 * Returns an iterator over the elements in this list starting with offset <b>0</b>.
-	 * 
-	 * 
-	 * @return an iterator over this list values.
-	 */
-	// public Iterator<IExpr> iterator0();
-
-	/**
 	 * Append the mapped ranges elements directly to the given <code>list</code>
 	 * 
 	 * @param astResult
@@ -1104,6 +1080,19 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return
 	 */
 	public IAST map(final IASTMutable clonedResultAST, final Function<IExpr, IExpr> functor);
+
+	/**
+	 * Set the head element of this list
+	 */
+	// public void setHeader(IExpr expr);
+
+	/**
+	 * Returns an iterator over the elements in this list starting with offset <b>0</b>.
+	 * 
+	 * 
+	 * @return an iterator over this list values.
+	 */
+	// public Iterator<IExpr> iterator0();
 
 	/**
 	 * Maps the elements of this IAST with the unary functor. If the function returns <code>null</code> the original
@@ -1283,19 +1272,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public IASTAppendable remove(Predicate<? super IExpr> predicate);
 
 	/**
-	 * Removes the object at the specified location from this {@code IAST}.
-	 * 
-	 * @param location
-	 *            the index of the object to remove.
-	 * @return the removed object.
-	 * @throws UnsupportedOperationException
-	 *             if removing from this {@code IAST} is not supported.
-	 * @throws IndexOutOfBoundsException
-	 *             if {@code location < 0 || >= size()}
-	 */
-	// public IExpr remove(int location);
-
-	/**
 	 * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and remove the
 	 * element at the given <code>position</code>.
 	 * 
@@ -1312,6 +1288,19 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return an IAST with removed element at the given position.
 	 */
 	public IASTMutable removeAtCopy(int position);
+
+	/**
+	 * Removes the object at the specified location from this {@code IAST}.
+	 * 
+	 * @param location
+	 *            the index of the object to remove.
+	 * @return the removed object.
+	 * @throws UnsupportedOperationException
+	 *             if removing from this {@code IAST} is not supported.
+	 * @throws IndexOutOfBoundsException
+	 *             if {@code location < 0 || >= size()}
+	 */
+	// public IExpr remove(int location);
 
 	/**
 	 * Create a new <code>IAST</code> and remove all arguments from position <code>fromPosition</code> inclusive to the
@@ -1467,21 +1456,47 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public int size();
 
 	/**
+	 * Copy of a sub <code>AST</code> from <code>start</code> (inclusive) to <code>end</code> (exclusive). The
+	 * <code>slice()</code> method selects the elements starting at the given <code>start</code> argument, and ends at,
+	 * but does not include, the given <code>end</code> argument.
+	 * 
+	 * @param start
+	 *            An integer that specifies where to start the selection (the first argument has an index of
+	 *            <code>1</code>, the head of the AST is at index <code>0</code>).
+	 * @param end
+	 *            An integer that specifies where to end the selection.
+	 * @return a copy of sub <code>AST</code> from <code>start</code> (inclusive) to <code>end</code> (exclusive).
+	 */
+	default IASTAppendable slice(int start, int end) {
+		if (0 < start && start <= size() && start < end && end <= size()) {
+			IASTAppendable ast = F.ast(head(), end - start, false);
+			for (int i = start; i < end; i++) {
+				ast.append(get(i));
+			}
+			return ast;
+		}
+		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(start) + ", Size: " + size());
+	}
+
+	/**
+	 * The <code>splice()</code> method adds/removes items to/from an AST copy, and returns the copy.
+	 * 
+	 * @param index
+	 *            An integer that specifies at what position to add/remove items.
+	 * @param howMany
+	 *            The number of items to be removed. If set to 0, no items will be removed
+	 * @param items
+	 *            Optional. The new item(s) to be added to the AST copy
+	 * @return an IAST with removed element at the given position.
+	 */
+	public IAST splice(int index, int howMany, IExpr... items);
+
+	/**
 	 * Returns a sequential {@link Stream} which starts at index <code>1</code>of the specified array as its source.
 	 *
 	 * @return a {@code Stream} for the internal array range
 	 */
 	public Stream<IExpr> stream();
-
-	/**
-	 * Returns a sequential {@link Stream} which starts at index <code>0</code> of the specified array.
-	 * 
-	 * @return a {@code Stream} for the internal array range
-	 * @throws ArrayIndexOutOfBoundsException
-	 */
-	default Stream<IExpr> stream0() {
-		return stream(0, size());
-	}
 
 	/**
 	 * Returns a sequential {@link Stream} with the specified range of the specified array as its source.
@@ -1496,6 +1511,16 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *             {@code endExclusive} is greater than the array size
 	 */
 	public Stream<IExpr> stream(int startInclusive, int endExclusive);
+
+	/**
+	 * Returns a sequential {@link Stream} which starts at index <code>0</code> of the specified array.
+	 * 
+	 * @return a {@code Stream} for the internal array range
+	 * @throws ArrayIndexOutOfBoundsException
+	 */
+	default Stream<IExpr> stream0() {
+		return stream(0, size());
+	}
 
 	/**
 	 * Returns an array containing all elements contained in this {@code List}.

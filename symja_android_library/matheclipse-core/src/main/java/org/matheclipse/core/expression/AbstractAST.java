@@ -3840,6 +3840,19 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
+	public IAST splice(int index, int howMany, IExpr... items) {
+		IASTAppendable ast = copyAppendable();
+		if (howMany > 0) {
+			ast.removeRange(index, index + howMany);
+		}
+		for (int i = 0; i < items.length; i++) {
+			ast.append(index++, items[i]);
+		}
+		return ast;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public final IASTMutable removeAtCopy(int position) {
 		int size = size();
 		if (position < size) {

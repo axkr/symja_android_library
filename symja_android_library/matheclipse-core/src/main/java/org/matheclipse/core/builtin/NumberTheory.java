@@ -2876,8 +2876,8 @@ public final class NumberTheory {
 			if (position == argSize && !ast.get(argSize).isNumber()) {
 				// recurrence: Multinomial(n1, n2, n3,..., ni, k) =>
 				// Multinomial(n1+n2+n3+...+ni, k) * Multinomial(n1, n2, n3,..., ni)
-				IAST reducedPlus = ast.removeFromEnd(argSize).apply(F.Plus);
 				IAST reducedMultinomial = ast.removeFromEnd(argSize);
+				IAST reducedPlus = reducedMultinomial.apply(F.Plus);
 				return F.Times(F.Multinomial(reducedPlus, ast.get(argSize)), multinomial(reducedMultinomial));
 			}
 			return F.NIL;

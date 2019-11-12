@@ -3830,20 +3830,20 @@ public final class Arithmetic {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			final int size = ast.size();
-			if (size == 3) {
-				return binaryOperator(ast, ast.arg1(), ast.arg2());
-			}
 			if (ast.head() == F.Power) {
-				if (size == 1) {
+				switch (size) {
+				case 0:
+					break;
+				case 1:
 					return F.C1;
-				}
-				if (size == 2) {
+				case 2:
 					return ast.arg1();
+				case 3:
+					return binaryOperator(ast, ast.arg1(), ast.arg2());
+				default:
+					// Power(a,b,c,d) ==> Power(a, b, Power(c, d)))
+					return ast.splice(size - 2, 2, F.Power(ast.get(size - 2), ast.get(size - 1)));
 				}
-				// size > 3
-				IASTAppendable temp = ast.removeAtClone(size - 1);
-				temp.set(temp.size() - 1, F.Power(ast.get(size - 2), ast.get(size - 1)));
-				return temp;
 			}
 			return F.NIL;
 		}

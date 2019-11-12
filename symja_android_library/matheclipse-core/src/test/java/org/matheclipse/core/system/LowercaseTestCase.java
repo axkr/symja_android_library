@@ -14478,6 +14478,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPower() {
+		check("Power(a,b,c,d) // FullForm", //
+				"Power(a, Power(b, Power(c, d)))");
 		check("(I)^(-0.5)", //
 				"0.707107+I*(-0.707107)");
 		check("(I)^(-1/2)", //
@@ -14507,8 +14509,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "1");
 		check("0^(-1)", //
 				"ComplexInfinity");
-		check("Power(a,b,c,d) // FullForm", //
-				"Power(a, Power(b, Power(c, d)))");
 
 		check("Refine(Exp(I*k*Pi),Element(k,Integers))", //
 				"(-1)^k");

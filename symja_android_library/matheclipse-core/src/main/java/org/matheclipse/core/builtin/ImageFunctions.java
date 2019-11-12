@@ -55,7 +55,7 @@ public class ImageFunctions {
 			list.forEach((x, i) -> result.set(i, engine.evaluate(//
 					F.unaryAST1(//
 							filterHead, //
-							list.extract(Math.max(1, i - radius), Math.min(size, i + radius + 1))//
+							list.slice(Math.max(1, i - radius), Math.min(size, i + radius + 1))//
 					))));
 			return result;
 		}
