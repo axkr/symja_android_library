@@ -4,7 +4,7 @@
 ParametricPlot({function1, function2}, {t, tMin, tMax})  
 ```
 
-> generate a JavaScript control for the parametric expressions `function1`, `function1` in the `t` range `{t, tMin, tMax}`.
+> generate a JavaScript control for the parametric expressions `function1`, `function2` in the `t` range `{t, tMin, tMax}`.
 	 
 **Note**: This feature is available in the console app and in the web interface.
 

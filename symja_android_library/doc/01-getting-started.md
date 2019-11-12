@@ -159,6 +159,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Functions and patterns](07-functions-and-patterns.md)
 * [Control statements](08-control-statements.md)
 * [Scoping](09-scoping.md)
+* [Plotting graphs and functions](10-plotting.md)
 
 ## Reference
 
