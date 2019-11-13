@@ -79,17 +79,12 @@ public class ExprParserFactory implements IParserFactory {
 				final IExpr rhs) {
 			if (fOperatorString.equals("@")) {
 				return F.unaryAST1(lhs, rhs);
-			}
-			IASTAppendable fn = F.ast(F.Apply);
-			fn.append(lhs);
-			fn.append(rhs);
-
+			} 
 			if (fOperatorString.equals("@@")) {
-				return fn;
+				return F.Apply(lhs,rhs);
 			}
 			// case "@@@"
-			fn.append(F.List(F.C1));
-			return fn;
+			return F.ApplyListC1(lhs,rhs); 
 		}
 
 	}

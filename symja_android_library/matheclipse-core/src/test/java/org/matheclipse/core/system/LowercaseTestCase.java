@@ -1861,10 +1861,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCancel() {
-//		check("Cancel(((1+x)*f(x))/x^2)", //
-//				"x/(-1+x)");
-//		check("Cancel((x*(1+x))/(-1+x^2))", //
-//				"x/(-1+x)");
+		// check("Cancel(((1+x)*f(x))/x^2)", //
+		// "x/(-1+x)");
+		// check("Cancel((x*(1+x))/(-1+x^2))", //
+		// "x/(-1+x)");
 		// see rubi rule 27:
 		check("Cancel(d/(c*d+d^2*x))", //
 				"1/(c+d*x)");
@@ -6189,6 +6189,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testFactorInteger() {
+		check("FactorInteger(10, GaussianIntegers->True)", //
+				"{{-1,1},{1+I,2},{1+I*2,1},{2+I,1}}");
+		check("Power @@@ FactorInteger(10, GaussianIntegers->True)", //
+				"{-1,I*2,1+I*2,2+I}");
+		check("Times @@ (Power @@@ FactorInteger(10, GaussianIntegers->True))", //
+				"10");
 		// 147 seconds on notebook
 		// check("FactorInteger(10^79+5923)", "");
 		// 32 seconds on notebook
@@ -10230,7 +10236,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// gitlab #107
 		check("Limit(x^2-1/x-2, x->0)", //
 				"Indeterminate");
-		
+
 		check("Limit((x^2) /(3*x), x->Infinity)", //
 				"Infinity");
 		check("Limit(x^(-2/3),x->0 , Direction->-1)", //
