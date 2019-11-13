@@ -486,19 +486,19 @@ public class F {
 	public final static IBuiltInSymbol BernoulliDistribution = F.initFinalSymbol("BernoulliDistribution",
 			ID.BernoulliDistribution);
 
-	/***/
+	/** BesselI(n, z) - modified Bessel function of the first kind. */
 	public final static IBuiltInSymbol BesselI = F.initFinalSymbol("BesselI", ID.BesselI);
 
 	/** BesselJ(n, z) - Bessel function of the first kind. */
 	public final static IBuiltInSymbol BesselJ = F.initFinalSymbol("BesselJ", ID.BesselJ);
 
-	/***/
+	/** BesselJZero(n, z) - is the `k`th zero of the `BesselJ(n,z)` function. */
 	public final static IBuiltInSymbol BesselJZero = F.initFinalSymbol("BesselJZero", ID.BesselJZero);
 
-	/***/
+	/** BesselK(n, z) - > modified Bessel function of the second kind. */
 	public final static IBuiltInSymbol BesselK = F.initFinalSymbol("BesselK", ID.BesselK);
 
-	/***/
+	/** BesselY(n, z) - Bessel function of the second kind. */
 	public final static IBuiltInSymbol BesselY = F.initFinalSymbol("BesselY", ID.BesselY);
 
 	/***/
@@ -655,6 +655,9 @@ public class F {
 	/** Ceiling(expr) - gives the first integer greater than or equal `expr`. */
 	public final static IBuiltInSymbol Ceiling = F.initFinalSymbol("Ceiling", ID.Ceiling);
 
+	/***/
+	public final static IBuiltInSymbol CenterDot = F.initFinalSymbol("CenterDot", ID.CenterDot);
+
 	/** CentralMoment(list, r) - gives the the `r`th central moment (i.e. the `r`th moment about the mean) of `list`. */
 	public final static IBuiltInSymbol CentralMoment = F.initFinalSymbol("CentralMoment", ID.CentralMoment);
 
@@ -706,6 +709,9 @@ public class F {
 	 * value `0`.
 	 */
 	public final static IBuiltInSymbol Chop = F.initFinalSymbol("Chop", ID.Chop);
+
+	/***/
+	public final static IBuiltInSymbol CircleDot = F.initFinalSymbol("CircleDot", ID.CircleDot);
 
 	/** CirclePoints(i) - gives the `i` points on the unit circle for a positive integer `i`. */
 	public final static IBuiltInSymbol CirclePoints = F.initFinalSymbol("CirclePoints", ID.CirclePoints);
@@ -2199,7 +2205,7 @@ public class F {
 			ID.MersennePrimeExponent);
 
 	/**
-	 * MersennePrimeExponentQ(n) - returns `True` if `2^n - 1` is a prime number. Currently `0 <= n <= 45` can be
+	 * MersennePrimeExponentQ(n) - returns `True` if `2^n - 1` is a prime number. Currently `0 <= n <= 47` can be
 	 * computed in reasonable time.
 	 */
 	public final static IBuiltInSymbol MersennePrimeExponentQ = F.initFinalSymbol("MersennePrimeExponentQ",
@@ -2560,7 +2566,7 @@ public class F {
 
 	/**
 	 * ParametricPlot({function1, function2}, {t, tMin, tMax}) - generate a JavaScript control for the parametric
-	 * expressions `function1`, `function1` in the `t` range `{t, tMin, tMax}`.
+	 * expressions `function1`, `function2` in the `t` range `{t, tMin, tMax}`.
 	 */
 	public final static IBuiltInSymbol ParametricPlot = F.initFinalSymbol("ParametricPlot", ID.ParametricPlot);
 
