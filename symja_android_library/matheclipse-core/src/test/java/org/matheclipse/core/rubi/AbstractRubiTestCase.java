@@ -50,7 +50,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
 		}
 
 		if (result.isFree(F.Integrate)) {
-			if (manuallyCheckedResult != null&& !Algebra.DEBUG) {
+			if (manuallyCheckedResult != null && !Algebra.DEBUG) {
 				manuallyCheckedResult = manuallyCheckedResult.trim();
 				if (manuallyCheckedResult.length() > 0) {
 					if (manuallyCheckedResult.equals(result.toString())) {
@@ -84,6 +84,8 @@ public abstract class AbstractRubiTestCase extends TestCase {
 				if (expected.isTrue()) {
 					// the expressions are structurally equal
 					return expectedResult;
+				} else {
+					System.out.println("PossibleZeroQ failed:" + temp.toString());
 				}
 				// IExpr resultTogether= F.Together.of(F.ExpandAll(result));
 				// IExpr expectedTogether = F.Together.of(F.ExpandAll(expected));

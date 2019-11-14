@@ -3567,7 +3567,7 @@ public class MainTestCase extends AbstractTestCase {
 						+ "1048577/1048576+I*1/524288}}");
 	}
 
-	public void testSystem999() {
+	public void testSystem999() { 
 		// check("Roots(x^6 - 4*x^3 + 8==0, x)",
 		// "x==-1-I||x==-1+I||x==1/2-I*1/2-Sqrt(I*6)/2||x==1/2-I*1/2+Sqrt(I*6)/2||x==1/2+I*1/\n"
 		// + "2-Sqrt(-I*6)/2||x==1/2+I*1/2+Sqrt(-I*6)/2");

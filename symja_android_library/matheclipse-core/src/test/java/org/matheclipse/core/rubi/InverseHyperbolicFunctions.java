@@ -1,19 +1,19 @@
 package org.matheclipse.core.rubi;
 
 public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
-	static boolean init=true;
-	
+	static boolean init = true;
+
 	public InverseHyperbolicFunctions(String name) {
 		super(name, false);
 	}
-	
+
 	@Override
 	protected void setUp() {
 		try {
 			super.setUp();
 			if (init) {
 				System.out.println("InverseHyperbolicFunctions");
-				init=false;
+				init = false;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -97,10 +97,10 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[(a + I*b*ArcSin[1 - I*d*x^2])^(-1), x]", //
 				"(x*CosIntegral[((-I/2)*(a + I*b*ArcSin[1 - I*d*x^2]))/b]*(I*Cosh[a/(2*b)] - Sinh[a/(2*b)]))/(2*b*(Cos[ArcSin[1 - I*d*x^2]/2] - Sin[ArcSin[1 - I*d*x^2]/2])) - (x*(I*Cosh[a/(2*b)] + Sinh[a/(2*b)])*SinIntegral[((I/2)*a)/b - ArcSin[1 - I*d*x^2]/2])/(2*b*(Cos[ArcSin[1 - I*d*x^2]/2] - Sin[ArcSin[1 - I*d*x^2]/2]))", //
-				"(x*CosIntegral((-I*1/2*(a+I*b*ArcSin(1-I*d*x^2)))/b)*(I*Cosh(a/(2*b))-Sinh(a/(2*b))))/(\n" + 
-				"2*b*(Cos(ArcSin(1-I*d*x^2)/2)-Sin(ArcSin(1-I*d*x^2)/2)))+(x*(Cosh(a/(2*b))-I*Sinh(a/(\n" + 
-				"2*b)))*SinhIntegral((a+I*b*ArcSin(1-I*d*x^2))/(2*b)))/(2*b*(Cos(ArcSin(1-I*d*x^2)/\n" + 
-				"2)-Sin(ArcSin(1-I*d*x^2)/2)))",
+				"(x*CosIntegral((-I*1/2*(a+I*b*ArcSin(1-I*d*x^2)))/b)*(I*Cosh(a/(2*b))-Sinh(a/(2*b))))/(\n"
+						+ "2*b*(Cos(ArcSin(1-I*d*x^2)/2)-Sin(ArcSin(1-I*d*x^2)/2)))+(x*(Cosh(a/(2*b))-I*Sinh(a/(\n"
+						+ "2*b)))*SinhIntegral((a+I*b*ArcSin(1-I*d*x^2))/(2*b)))/(2*b*(Cos(ArcSin(1-I*d*x^2)/\n"
+						+ "2)-Sin(ArcSin(1-I*d*x^2)/2)))",
 				4816);
 	}
 
@@ -109,6 +109,10 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[(a + I*b*ArcSin[1 - I*d*x^2])^(-2), x]", //
 				"-Sqrt[(2*I)*d*x^2 + d^2*x^4]/(2*b*d*x*(a + I*b*ArcSin[1 - I*d*x^2])) + (x*CosIntegral[((-I/2)*(a + I*b*ArcSin[1 - I*d*x^2]))/b]*(Cosh[a/(2*b)] - I*Sinh[a/(2*b)]))/(4*b^2*(Cos[ArcSin[1 - I*d*x^2]/2] - Sin[ArcSin[1 - I*d*x^2]/2])) + (x*(Cosh[a/(2*b)] + I*Sinh[a/(2*b)])*SinIntegral[((I/2)*a)/b - ArcSin[1 - I*d*x^2]/2])/(4*b^2*(Cos[ArcSin[1 - I*d*x^2]/2] - Sin[ArcSin[1 - I*d*x^2]/2]))", //
+				"-Sqrt(I*2*d*x^2+d^2*x^4)/(2*b*d*x*(a+I*b*ArcSin(1-I*d*x^2)))+(x*CosIntegral((-\n"
+						+ "I*1/2*(a+I*b*ArcSin(1-I*d*x^2)))/b)*(Cosh(a/(2*b))-I*Sinh(a/(2*b))))/(4*b^2*(Cos(ArcSin(\n"
+						+ "1-I*d*x^2)/2)-Sin(ArcSin(1-I*d*x^2)/2)))+(x*(I*Cosh(a/(2*b))-Sinh(a/(2*b)))*SinhIntegral((a+I*b*ArcSin(\n"
+						+ "1-I*d*x^2))/(2*b)))/(4*b^2*(Cos(ArcSin(1-I*d*x^2)/2)-Sin(ArcSin(1-I*d*x^2)/2)))",
 				4825);
 	}
 
@@ -133,6 +137,11 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[Sqrt[a + I*b*ArcSin[1 - I*d*x^2]], x]", //
 				"x*Sqrt[a + I*b*ArcSin[1 - I*d*x^2]] + (Sqrt[Pi]*x*FresnelS[(Sqrt[(-I)/b]*Sqrt[a + I*b*ArcSin[1 - I*d*x^2]])/Sqrt[Pi]]*(Cosh[a/(2*b)] + I*Sinh[a/(2*b)]))/(Sqrt[(-I)/b]*(Cos[ArcSin[1 - I*d*x^2]/2] - Sin[ArcSin[1 - I*d*x^2]/2])) - (Sqrt[(-I)/b]*b*Sqrt[Pi]*x*FresnelC[(Sqrt[(-I)/b]*Sqrt[a + I*b*ArcSin[1 - I*d*x^2]])/Sqrt[Pi]]*(I*Cosh[a/(2*b)] + Sinh[a/(2*b)]))/(Cos[ArcSin[1 - I*d*x^2]/2] - Sin[ArcSin[1 - I*d*x^2]/2])", //
+				"x*Sqrt(a+I*b*ArcSin(1-I*d*x^2))+(-Sqrt(Pi)*x*FresnelC((Sqrt(-I/b)*Sqrt(a+I*b*ArcSin(\n"
+						+ "1-I*d*x^2)))/Sqrt(Pi))*(Cosh(a/(2*b))-I*Sinh(a/(2*b))))/(Sqrt(-I/b)*(Cos(ArcSin(\n"
+						+ "1-I*d*x^2)/2)-Sin(ArcSin(1-I*d*x^2)/2)))+(Sqrt(Pi)*x*FresnelS((Sqrt(-I/b)*Sqrt(a+I*b*ArcSin(\n"
+						+ "1-I*d*x^2)))/Sqrt(Pi))*(Cosh(a/(2*b))+I*Sinh(a/(2*b))))/(Sqrt(-I/b)*(Cos(ArcSin(\n"
+						+ "1-I*d*x^2)/2)-Sin(ArcSin(1-I*d*x^2)/2)))",
 				4811);
 	}
 

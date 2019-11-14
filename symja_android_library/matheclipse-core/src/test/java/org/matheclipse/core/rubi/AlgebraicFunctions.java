@@ -9638,6 +9638,11 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[(1 + Sqrt[c/a]*x^2)/((d + e*x^2)*Sqrt[a + b*x^2 + c*x^4]), x]", //
 				"-((Sqrt[c/a]*d - e)*ArcTan[(Sqrt[c*d^2 - b*d*e + a*e^2]*x)/(Sqrt[d]*Sqrt[e]*Sqrt[a + b*x^2 + c*x^4])])/(2*Sqrt[d]*Sqrt[e]*Sqrt[c*d^2 - b*d*e + a*e^2]) + ((Sqrt[c/a]*d + e)*(1 + Sqrt[c/a]*x^2)*Sqrt[(a + b*x^2 + c*x^4)/(a*(1 + Sqrt[c/a]*x^2)^2)]*EllipticPi[-(Sqrt[c/a]*d - e)^2/(4*Sqrt[c/a]*d*e), 2*ArcTan[(c/a)^(1/4)*x], (2 - (b*Sqrt[c/a])/c)/4])/(4*(c/a)^(1/4)*d*e*Sqrt[a + b*x^2 + c*x^4])", //
+				"((-Sqrt(c/a)*d+e)*ArcTan((Sqrt(c*d^2-b*d*e+a*e^2)*x)/(Sqrt(d)*Sqrt(e)*Sqrt(a+b*x^\n" + 
+				"2+c*x^4))))/(2*Sqrt(d)*Sqrt(e)*Sqrt(c*d^2-b*d*e+a*e^2))+((Sqrt(c/a)*d+e)*(1+Sqrt(c/a)*x^\n" + 
+				"2)*Sqrt((a+b*x^2+c*x^4)/(a*(1+Sqrt(c/a)*x^2)^2))*EllipticPi(1/4*(2+(-c*d)/(a*Sqrt(c/a)*e)-e/(Sqrt(c/a)*d)),\n" + 
+				"2*ArcTan((c/a)^(1/4)*x),1/4*(2-b/(a*Sqrt(c/a)))))/(4*(c/a)^(1/4)*d*e*Sqrt(a+b*x^\n" + 
+				"2+c*x^4))",
 				1706);
 	}
 
