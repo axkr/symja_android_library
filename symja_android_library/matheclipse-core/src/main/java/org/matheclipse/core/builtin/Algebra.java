@@ -5014,7 +5014,7 @@ public class Algebra {
 		/**
 		 * 
 		 * @param plusAST
-		 *            a <code>Plus[...]</code> expresion
+		 *            a <code>Plus[...]</code> expression
 		 * @return <code>null</code> couldn't be transformed by <code>ExpandAll(()</code> od <code>togetherAST()</code>
 		 */
 		private static IExpr togetherPlus(IAST plusAST) {
@@ -5191,14 +5191,17 @@ public class Algebra {
 			if (list.isPresent()) {
 				return list;
 			}
-			return together(arg1, engine);
+			if (arg1.isAST()) {
+				return togetherExpr((IAST) arg1, engine);
+			}
+			return arg1;
 		}
 
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_1;
 		}
 
-		private IExpr together(IExpr arg1, EvalEngine engine) {
+		private static IExpr togetherExpr(IExpr arg1, EvalEngine engine) {
 			if (arg1.isPlusTimesPower()) {
 				if (arg1.isPower()) {
 					if (arg1.base().isAtom() && arg1.exponent().isAtom()) {
@@ -5207,16 +5210,16 @@ public class Algebra {
 					if (!arg1.exponent().isMinusOne()) {
 						if (arg1.base().isPlusTimesPower()) {
 							if (arg1.exponent().isNegative()) {
-								return F.Power(together(arg1.base().inverse(), engine), arg1.exponent().negate());
+								return F.Power(togetherExpr(arg1.base().inverse(), engine), arg1.exponent().negate());
 							}
-							return F.Power(together(arg1.base(), engine), arg1.exponent());
+							return F.Power(togetherExpr(arg1.base(), engine), arg1.exponent());
 						}
 					}
 				} else if (arg1.isTimes()) {
 					if (arg1.first().isAtom()) {
 						IExpr times = ((IAST) arg1).splice(1).oneIdentity0();
 						if (times.isPower()) {
-							return F.Times(arg1.first(), together(times, engine));
+							return F.Times(arg1.first(), togetherExpr(times, engine));
 						}
 					}
 					// } else if (arg1.isPlus()) {
@@ -6138,17 +6141,22 @@ public class Algebra {
 	}
 
 	public static IExpr together(IAST ast, EvalEngine engine) {
-		IExpr temp = expandAll(ast, null, true, false, engine);
-		if (!temp.isPresent()) {
-			temp = ast;
+		IExpr result = Together.togetherExpr(ast, engine);
+		if (result.isPresent()) {
+			return engine.evaluate(result);
 		}
-		if (temp.isAST()) {
-			IExpr result = Together.togetherPlusTimesPower((IAST) temp, engine);
-			if (result.isPresent()) {
-				return engine.evaluate(result);
-			}
-		}
-		return temp;
+		return ast;
+//		IExpr temp = expandAll(ast, null, true, false, engine);
+//		if (!temp.isPresent()) {
+//			temp = ast;
+//		}
+//		if (temp.isAST()) {
+//			IExpr result = Together.togetherPlusTimesPower((IAST) temp, engine);
+//			if (result.isPresent()) {
+//				return engine.evaluate(result);
+//			}
+//		}
+//		return temp;
 	}
 
 	/**
