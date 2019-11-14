@@ -6,6 +6,18 @@ Factor(expr)
 
 > factors the polynomial expression `expr`
 
+```
+Factor(expr, GaussianIntegers->True)
+```
+
+> for gaussian integers you can set the option `GaussianIntegers->True`
+
+```
+Factor(expr, Modulus->p)
+```
+
+> to treat integers modulo an integer number `p`, you can set the option `Modulus->p`.
+
 See: 
 * [Wikipedia - Factorization of polynomials](https://en.wikipedia.org/wiki/Factorization_of_polynomials)
 * [Wikipedia - Quadratic formula](https://en.wikipedia.org/wiki/Quadratic_formula)

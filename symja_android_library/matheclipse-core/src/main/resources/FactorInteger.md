@@ -37,7 +37,7 @@ To get back the original number:
 2010
 ```
     
-`FactorInteger` factors rationals using negative exponents:
+`FactorInteger` factors rational numbers using negative exponents:
 
 ```
 >> FactorInteger(2010 / 2011)
@@ -47,9 +47,9 @@ To get back the original number:
 Gaussian integers:
 
 ```
-FactorInteger(10+30*I, GaussianIntegers->True)
->> {{-1,1},{1+I,3},{1+I*2,1},{2+I,2}}
+>> FactorInteger(10+30*I, GaussianIntegers->True)
+{{-1,1},{1+I,3},{1+I*2,1},{2+I,2}}
 
-FactorInteger(11+14*I, GaussianIntegers->True)
->> {{11+I*14,1}}
+>> FactorInteger(11+14*I, GaussianIntegers->True)
+{{11+I*14,1}}
 ```
