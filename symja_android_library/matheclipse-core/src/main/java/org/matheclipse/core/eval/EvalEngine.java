@@ -17,6 +17,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.Programming;
+import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.IllegalArgument;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
@@ -1138,12 +1139,13 @@ public class EvalEngine implements Serializable {
 			}
 			RecursionLimitExceeded.throwIt(fRecursionLimit, expr);
 		}
+		IExpr result = expr;
 		try {
-			IExpr result, temp;
+			IExpr temp;
 			fRecursionCounter++;
 			if (fTraceMode) {
 				fTraceStack.setUp(expr, fRecursionCounter);
-				temp = expr.evaluate(this);
+				temp = result.evaluate(this);
 				if (temp.isPresent()) {
 					if (fStopRequested) {
 						throw TimeoutException.TIMED_OUT;
@@ -1168,7 +1170,7 @@ public class EvalEngine implements Serializable {
 					}
 				}
 			} else {
-				temp = expr.evaluate(this);
+				temp = result.evaluate(this);
 				if (temp.isPresent()) {
 					if (fStopRequested) {
 						throw TimeoutException.TIMED_OUT;
@@ -1213,6 +1215,12 @@ public class EvalEngine implements Serializable {
 			}
 
 			return F.NIL;
+		} catch (UnsupportedOperationException uoe) {
+			if (Config.SHOW_STACKTRACE) {
+				uoe.printStackTrace();
+			}
+			printMessage("Evaluation aborted:" + result.toString());
+			throw AbortException.ABORTED;
 		} finally {
 			if (fTraceMode) {
 				fTraceStack.tearDown(fRecursionCounter);
