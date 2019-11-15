@@ -237,6 +237,22 @@ public abstract class Scanner {
 		return "";
 	}
 
+	/**
+	 * Call method <code>balanceCode()</code>, and if missing closing &quot;( )&quot;, &quot;[ ]&quot;, &quot;{ }&quot;
+	 * brackets are found, append them to the end of <code>sourceCode</code>.
+	 * 
+	 * @param sourceCode
+	 *            the (unbalanced) source code string
+	 * @return
+	 */
+	public static String appendMissingBrackets(String sourceCode) {
+		String balanceCode = balanceCode(sourceCode);
+		if (balanceCode != null && balanceCode.length() > 0) {
+			return sourceCode + balanceCode;
+		}
+		return sourceCode;
+	}
+
 	public static boolean isBalancedCode(CharSequence sourceCode) {
 		Stack<Character> openBracketStack = new Stack<Character>();
 
@@ -284,7 +300,7 @@ public abstract class Scanner {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * Current parser input string
 	 */
@@ -958,8 +974,6 @@ public abstract class Scanner {
 	}
 
 	abstract protected boolean isOperatorCharacters();
-	
-
 
 	protected static final boolean isComparatorOperator(String operatorString) {
 		return operatorString.equals("==") || operatorString.equals("!=") || //
