@@ -1762,7 +1762,11 @@ public class TeXFormFactory {
 				ASTNodeFactory.MMA_STYLE_FACTORY.get("UndirectedEdge").getPrecedence(), "\\leftrightarrow "));
 		operTab.put(F.TwoWayRule, new AbstractOperator(this,
 				ASTNodeFactory.MMA_STYLE_FACTORY.get("TwoWayRule").getPrecedence(), "\\leftrightarrow "));
-
+		operTab.put(F.CenterDot, new AbstractOperator(this,
+				ASTNodeFactory.MMA_STYLE_FACTORY.get("CenterDot").getPrecedence(), "\\cdot "));
+		operTab.put(F.CircleDot, new AbstractOperator(this,
+				ASTNodeFactory.MMA_STYLE_FACTORY.get("CircleDot").getPrecedence(), "\\odot "));
+		
 		operTab.put(F.Sin, new TeXFunction(this, "sin "));
 		operTab.put(F.Cos, new TeXFunction(this, "cos "));
 		operTab.put(F.Tan, new TeXFunction(this, "tan "));
