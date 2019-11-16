@@ -14482,6 +14482,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPower() {
+		check("Power((-x)^(1/2), 2)", //
+				"-x");
+		check("Power((-x)^(1/3), 3)", //
+				"-x");
+		check("( (-11)^(1/3))^3", //
+				"-11");
+		check("(-(-89)^(1/3))^3-89", //
+				"0");
 		check("Power(a,b,c,d) // FullForm", //
 				"Power(a, Power(b, Power(c, d)))");
 		check("(I)^(-0.5)", //
@@ -16055,6 +16063,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Abs(x)");
 		check("Refine(Sqrt(x^2), x>=0)", //
 				"x");
+		check("Refine(Power((-x)^(1/2), 2), Element(x, Reals))", //
+				"-x"); 
 
 		check("Refine((x^3)^(1/3), x >= 0)", //
 				"x");
@@ -18134,12 +18144,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		check("ReplaceAll(x^3-89, {{x->-(-89)^(1/3)},{x->(-89)^(1/3)*(-1)^(1/3)},{x->-(-89)^(1/3)*(-1)^(2/3)}})", //
+				"{0,0,0}");
+		check("Solve(x^3-89==0, x)", //
+				"{{x->-(-89)^(1/3)},{x->(-89)^(1/3)*(-1)^(1/3)},{x->-(-89)^(1/3)*(-1)^(2/3)}}");
+		
 		check("Solve((5.0*x)/y==(0.8*y)/x,x)", //
 				"{{x->-0.4*y},{x->0.4*y}}");
-		// TODO improve method QuarticSolver#quadraticSolve()
-		// check("Solve(a*x^2+b==0,x)", //
-		// "");
-
 		check("Solve(x==0,x)", //
 				"{{x->0}}");
 		check("Solve(5*y^x==8,x)", //
@@ -18246,7 +18257,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{x->10}}");
 
 		check("Solve(Sin((x+1)*(x-1))==2,x)", //
-				"{{x->-Sqrt(1+ArcSin(2))},{x->Sqrt(1+ArcSin(2))}}");// 
+				"{{x->-Sqrt(1+ArcSin(2))},{x->Sqrt(1+ArcSin(2))}}");//
 		check("Solve(Log((x+1)*(x-1))==2,x)", //
 				"{{x->-Sqrt(1+E^2)},{x->Sqrt(1+E^2)}}");
 		check("Solve(Log(x^2-1)==3,x)", //
@@ -20194,7 +20205,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTogether() {
-		
+
 		// TODO ((1+x)*f(x))/x^2
 		check("f(x)/x+f(x)/x^2//Together", //
 				"(f(x)+x*f(x))/x^2");
@@ -20205,7 +20216,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		// check("Together(-(5*c*f+5*b*g+2*c*f*m+b*g*m+2*c*f*n+3*b*g*n+30*c*g*x+10*c*g*m*x+15*c*g*n*x)^5/(3125*c^4*g^4*(6+2*m+3*n)^4))",
 		// //
-		// ""); 
+		// "");
 
 		check("Together[(x+2*Sqrt(x)+1)/(1+Sqrt(x))]", //
 				"1+Sqrt(x)");
