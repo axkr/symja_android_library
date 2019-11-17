@@ -1,5 +1,7 @@
 package org.matheclipse.core.builtin;
 
+import static org.matheclipse.core.expression.F.Power;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,17 +15,23 @@ import org.hipparchus.optim.linear.NonNegativeConstraint;
 import org.hipparchus.optim.linear.PivotSelectionRule;
 import org.hipparchus.optim.linear.SimplexSolver;
 import org.hipparchus.optim.nonlinear.scalar.GoalType;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Expr2LP;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrappedException;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.visit.VisitorExpr;
 
 public class MinMaxFunctions {
 	/**
@@ -36,6 +44,7 @@ public class MinMaxFunctions {
 		private static void init() {
 			F.ArgMax.setEvaluator(new ArgMax());
 			F.ArgMin.setEvaluator(new ArgMin());
+			F.FunctionRange.setEvaluator(new FunctionRange());
 			F.Maximize.setEvaluator(new Maximize());
 			F.Minimize.setEvaluator(new Minimize());
 			F.NMaximize.setEvaluator(new NMaximize());
@@ -89,16 +98,152 @@ public class MinMaxFunctions {
 		}
 	}
 
+	private final static class FunctionRange extends AbstractCoreFunctionEvaluator {
+
+		private final static class FunctionRangeRealsVisitor extends VisitorExpr {
+			final EvalEngine engine;
+
+			public FunctionRangeRealsVisitor(EvalEngine engine) {
+				super();
+				this.engine = engine;
+			}
+
+			/** {@inheritDoc} */
+			@Override
+			public IExpr visit3(IExpr head, IExpr arg1, IExpr arg2) {
+				boolean evaled = false;
+				IExpr x1 = arg1;
+				IExpr result = arg1.accept(this);
+				if (result.isPresent()) {
+					evaled = true;
+					x1 = result;
+				}
+				IExpr x2 = arg2;
+				result = arg2.accept(this);
+				if (result.isPresent()) {
+					evaled = true;
+					x2 = result;
+				}
+				if (head.equals(Power)) {
+					if (x1.isInterval1()) {
+						IAST interval = (IAST) x1;
+						IExpr l = interval.lower();
+						IExpr u = interval.upper();
+						if (x2.isMinusOne()) {
+							if (F.GreaterEqual.ofQ(engine, l, F.C1)) {
+								// [>= 1, u]
+								return F.Interval(F.Power(u, x2), F.Power(l, x2));
+							}
+						}
+						if (l.isNegativeResult() && u.isPositiveResult()) {
+							if (x2.isPositiveResult()) {
+								return F.Interval(F.C0, F.Power(u, x2));
+							}
+							if (x2.isEvenResult()) {
+								return F.Interval(F.C0, F.Power(u, x2));
+							} else if (x2.isFraction() && ((IFraction) x2).denominator().isEven()) {
+								return F.Interval(F.C0, F.Power(u, x2));
+							}
+						}
+					}
+				}
+				if (evaled) {
+					return F.binaryAST2(head, x1, x2);
+				}
+				return F.NIL;
+			}
+
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr function = ast.arg1();
+			IExpr xExpr = ast.arg2();
+			IExpr yExpr = ast.arg3();
+			IBuiltInSymbol domain = F.Reals;
+			try {
+				if (xExpr.isSymbol() && yExpr.isSymbol()) {
+					boolean evaled = true;
+					ISymbol x = (ISymbol) xExpr;
+					ISymbol y = (ISymbol) yExpr;
+					IExpr min = F.Minimize.of(engine, function, xExpr);
+					IExpr max = F.Maximize.of(engine, function, xExpr);
+					IASTMutable minMaxList = F.binaryAST2(F.List, F.CNInfinity, F.CInfinity);
+					if (min.isAST(F.List, 3)) {
+						minMaxList.set(1, min.first());
+					} else {
+						evaled = false;
+					}
+					if (max.isAST(F.List, 3)) {
+						minMaxList.set(2, max.first());
+					} else {
+						evaled = false;
+					}
+					if (evaled) {
+						return convertMinMaxList(minMaxList, y);
+					}
+					IExpr f = function.replaceAll(F.Rule(x, F.Interval(F.CNInfinity, F.CInfinity))).orElse(function);
+					IExpr result = engine.evaluate(f);
+					if (result.isInterval1()) {
+						return convertInterval(result, y);
+					} else if (domain.equals(F.Reals)) {
+						IExpr temp = result;
+						while (temp.isPresent()) {
+							temp = temp.accept(new FunctionRangeRealsVisitor(engine));
+							if (temp.isPresent()) {
+								result = engine.evaluate(temp);
+								temp = result;
+							}
+						}
+						if (result.isInterval1()) {
+							return convertInterval(result, y);
+						}
+					}
+				}
+			} catch (RuntimeException rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
+			}
+			return F.NIL;
+		}
+
+		private IExpr convertInterval(IExpr result, ISymbol y) {
+			IAST list = (IAST) result.first();
+			return convertMinMaxList(list, y);
+		}
+
+		private IExpr convertMinMaxList(IAST list, ISymbol y) {
+			if (list.arg1().isRealResult()) {
+				if (list.arg2().isRealResult()) {
+					return F.LessEqual(list.arg1(), y, list.arg2());
+				} else if (list.arg2().isInfinity()) {
+					return F.GreaterEqual(y, list.arg1());
+				}
+			} else if (list.arg2().isRealResult()) {
+				if (list.arg1().isNegativeInfinity()) {
+					return F.LessEqual(y, list.arg2());
+				}
+			}
+			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_3;
+		}
+
+	}
+
 	private final static class Maximize extends AbstractFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() == 3) {
-				IExpr unaryFunction = ast.arg1();
+				IExpr function = ast.arg1();
 				IExpr x = ast.arg2();
 				ISymbol head = ast.topHead();
 				if (x.isSymbol() || (x.isAST() && !x.isList())) {
-					return maximize(head, unaryFunction, x, engine);
+					return maximize(head, function, x, engine);
 				}
 			}
 			return F.NIL;
@@ -115,11 +260,11 @@ public class MinMaxFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() == 3) {
-				IExpr unaryFunction = ast.arg1();
+				IExpr function = ast.arg1();
 				IExpr x = ast.arg2();
 				ISymbol head = ast.topHead();
 				if (x.isSymbol() || (x.isAST() && !x.isList())) {
-					return minimize(head, unaryFunction, x, engine);
+					return minimize(head, function, x, engine);
 				}
 			}
 			return F.NIL;
@@ -323,23 +468,23 @@ public class MinMaxFunctions {
 		}
 	}
 
-	private static IExpr maximize(ISymbol head, IExpr unaryFunction, IExpr x, EvalEngine engine) {
-		VariablesSet varSet = new VariablesSet(unaryFunction);
+	private static IExpr maximize(ISymbol head, IExpr function, IExpr x, EvalEngine engine) {
+		VariablesSet varSet = new VariablesSet(function);
 		IAST vars = varSet.getVarList();
 		if (vars.size() == 2 && vars.arg1().equals(x)) {
 			try {
-				IExpr yNInf = F.Limit.of(unaryFunction, F.Rule(x, F.CNInfinity));
+				IExpr yNInf = F.Limit.of(function, F.Rule(x, F.CNInfinity));
 				if (yNInf.isInfinity()) {
 					engine.printMessage(head.toString() + ": the maximum cannot be found.");
 					return F.List(F.CInfinity, F.List(F.Rule(x, F.CNInfinity)));
 				}
-				IExpr yInf = F.Limit.of(unaryFunction, F.Rule(x, F.CInfinity));
+				IExpr yInf = F.Limit.of(function, F.Rule(x, F.CInfinity));
 				if (yInf.isInfinity()) {
 					engine.printMessage(head.toString() + ": the maximum cannot be found.");
 					return F.List(F.CInfinity, F.List(F.Rule(x, F.CInfinity)));
 				}
 
-				IExpr first_derivative = F.D.of(engine, unaryFunction, x);
+				IExpr first_derivative = F.D.of(engine, function, x);
 				IExpr second_derivative = F.D.of(engine, first_derivative, x);
 				IExpr candidates = F.Solve.of(engine, F.Equal(first_derivative, F.C0), x, F.Reals);
 				if (candidates.isFree(F.Solve)) {
@@ -350,7 +495,7 @@ public class MinMaxFunctions {
 							IExpr candidate = ((IAST) candidates).get(i).first().second();
 							IExpr value = engine.evaluate(F.subs(second_derivative, x, candidate));
 							if (value.isNegative()) {
-								IExpr functionValue = engine.evaluate(F.subs(unaryFunction, x, candidate));
+								IExpr functionValue = engine.evaluate(F.subs(function, x, candidate));
 								if (F.Greater.ofQ(functionValue, maxValue)) {
 									maxValue = functionValue;
 									maxCandidate = candidate;
@@ -370,23 +515,23 @@ public class MinMaxFunctions {
 		return engine.printMessage(head.toString() + ": only unary functions in " + x + " are supported.");
 	}
 
-	private final static IExpr minimize(ISymbol head, IExpr unaryFunction, IExpr x, EvalEngine engine) {
-		VariablesSet varSet = new VariablesSet(unaryFunction);
+	private final static IExpr minimize(ISymbol head, IExpr function, IExpr x, EvalEngine engine) {
+		VariablesSet varSet = new VariablesSet(function);
 		IAST vars = varSet.getVarList();
 		if (vars.size() == 2 && vars.arg1().equals(x)) {
 			try {
-				IExpr yNInf = F.Limit.of(unaryFunction, F.Rule(x, F.CNInfinity));
+				IExpr yNInf = F.Limit.of(function, F.Rule(x, F.CNInfinity));
 				if (yNInf.isNegativeInfinity()) {
 					engine.printMessage(head.toString() + ": the maximum cannot be found.");
 					return F.List(F.CNInfinity, F.List(F.Rule(x, F.CNInfinity)));
 				}
-				IExpr yInf = F.Limit.of(unaryFunction, F.Rule(x, F.CInfinity));
+				IExpr yInf = F.Limit.of(function, F.Rule(x, F.CInfinity));
 				if (yInf.isNegativeInfinity()) {
 					engine.printMessage(head.toString() + ": the maximum cannot be found.");
 					return F.List(F.CNInfinity, F.List(F.Rule(x, F.CInfinity)));
 				}
 
-				IExpr first_derivative = F.D.of(engine, unaryFunction, x);
+				IExpr first_derivative = F.D.of(engine, function, x);
 				IExpr second_derivative = F.D.of(engine, first_derivative, x);
 				IExpr candidates = F.Solve.of(engine, F.Equal(first_derivative, F.C0), x, F.Reals);
 				if (candidates.isFree(F.Solve)) {
@@ -396,8 +541,8 @@ public class MinMaxFunctions {
 						for (int i = 1; i < candidates.size(); i++) {
 							IExpr candidate = ((IAST) candidates).get(i).first().second();
 							IExpr value = engine.evaluate(F.subs(second_derivative, x, candidate));
-							if (value.isPositive()) {
-								IExpr functionValue = engine.evaluate(F.subs(unaryFunction, x, candidate));
+							if (value.isPositiveResult()) {
+								IExpr functionValue = engine.evaluate(F.subs(function, x, candidate));
 								if (F.Less.ofQ(functionValue, minValue)) {
 									minValue = functionValue;
 									minCandidate = candidate;

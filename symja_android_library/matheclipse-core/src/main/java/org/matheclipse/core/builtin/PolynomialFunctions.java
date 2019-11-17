@@ -923,7 +923,7 @@ public class PolynomialFunctions {
 			// TODO allow multinomials
 			IExpr arg1 = ast.arg1();
 			IExpr arg2 = ast.arg2();
-			if (arg1.isZero()||arg2.isZero()) {
+			if (arg1.isZero() || arg2.isZero()) {
 				return F.C0;
 			}
 			IExpr arg3 = Validate.checkSymbolType(ast, 3);
@@ -2571,7 +2571,7 @@ public class PolynomialFunctions {
 					}
 				} else {
 					polyRat = jas.expr2JAS(temp, numericSolutions);
-					IAST factorComplex = Algebra.factorComplex(temp, polyRat, jas, F.List);
+					IAST factorComplex = Algebra.factorRational(polyRat, jas, F.List);
 					for (int k = 1; k < factorComplex.size(); k++) {
 						temp = F.evalExpand(factorComplex.get(k));
 						quarticResultList = QuarticSolver.solve(temp, variables.arg1());
