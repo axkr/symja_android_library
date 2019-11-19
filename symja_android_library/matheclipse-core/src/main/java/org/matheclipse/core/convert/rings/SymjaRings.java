@@ -171,6 +171,12 @@ public final class SymjaRings {
 		}
 		Ring<R> ring = converter.getRing();
 		FactorDecomposition<R> factors = squareFree ? ring.factorSquareFree(rExpr) : ring.factor(rExpr);
+		if ( factors.size() == 1 && //
+				(factors.unit.equals(F.CN1) || //
+						factors.unit.equals(F.CNI) || //
+						factors.unit.equals(F.CI))) {
+			factors = FactorDecomposition.of(ring, rExpr);
+		}
 		IASTAppendable result = F.TimesAlloc(factors.size());
 		for (int i = 0; i <= factors.size(); ++i) {
 			IExpr factor = converter.toIExpr(i == factors.size() ? factors.unit : factors.get(i));
