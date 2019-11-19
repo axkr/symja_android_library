@@ -349,14 +349,16 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 		if (scalar instanceof IQuantity) {
 			IQuantity quantity = (IQuantity) scalar;
 			if (!unit.equals(quantity.unit())) {
-				quantity =  (IQuantity) UnitConvert.SI().to(unit).apply(quantity);
+				return UnitSystem.SI().apply(this).add(UnitSystem.SI().apply(quantity));
+				// quantity = (IQuantity) UnitConvert.SI().to(unit).apply(quantity);
 			}
-			if (unit.equals(quantity.unit()))
+			if (unit.equals(quantity.unit())) {
 				return ofUnit(arg1.add(quantity.value())); // 0[m] + 0[m] gives 0[m]
-			else if (azero)
+			} else if (azero) {
 				// explicit addition of zeros to ensure symmetry
 				// for instance when numeric precision is different
 				return arg1.add(quantity.value()); // 0[m] + 0[s] gives 0
+			}
 		} else // <- scalar is not an instance of Quantity
 		if (azero)
 			// return of value.add(scalar) is not required for symmetry

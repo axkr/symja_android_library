@@ -9548,30 +9548,31 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// Mathcell syntax / generate TeX for MathJAX
 		check("JSForm(Manipulate(Factor(x^n + 1), {n, 1, 5, 1}))", //
 				"MathCell( id, [ { type: 'slider', min: 1, max: 5, step: 1, name: 'n', label: 'n' }\n" + //
-				" ] );\n" + //
-				"\n" + //
-				"parent.update = function( id ) {\n" + //
-				"\n" + //
-				"var n = getVariable(id, 'n');\n" + //
-				"\n" + //
-				"\n" + //
-				"var expressions = [ '1+x',\n" + //
-				"'1+{x}^{2}',\n" + //
-				"'\\\\\\\\left( 1+x\\\\\\\\right) \\\\\\\\,\\\\\\\\left( 1 - x+{x}^{2}\\\\\\\\right) ',\n" + //
-				"'1+{x}^{4}',\n" + //
-				"'\\\\\\\\left( 1+x\\\\\\\\right) \\\\\\\\,\\\\\\\\left( 1 - x+{x}^{2} - {x}^{3}+{x}^{4}\\\\\\\\right) ' ];\n" + //
-				"\n" + //
-				"  var data = '\\\\\\\\[' + expressions[n-1] + '\\\\\\\\]';\n" + //
-				"\n" + //
-				"  data = data.replace( /\\\\\\\\/g, '&#92;' );\n" + //
-				"\n" + //
-				"  var config = {type: 'text', center: true };\n" + //
-				"\n" + //
-				"  evaluate( id, data, config );\n" + //
-				"\n" + //
-				"  MathJax.Hub.Queue( [ 'Typeset', MathJax.Hub, id ] );\n" + //
-				"\n" + //
-				"}");
+						" ] );\n" + //
+						"\n" + //
+						"parent.update = function( id ) {\n" + //
+						"\n" + //
+						"var n = getVariable(id, 'n');\n" + //
+						"\n" + //
+						"\n" + //
+						"var expressions = [ '1+x',\n" + //
+						"'1+{x}^{2}',\n" + //
+						"'\\\\\\\\left( 1+x\\\\\\\\right) \\\\\\\\,\\\\\\\\left( 1 - x+{x}^{2}\\\\\\\\right) ',\n" + //
+						"'1+{x}^{4}',\n" + //
+						"'\\\\\\\\left( 1+x\\\\\\\\right) \\\\\\\\,\\\\\\\\left( 1 - x+{x}^{2} - {x}^{3}+{x}^{4}\\\\\\\\right) ' ];\n"
+						+ //
+						"\n" + //
+						"  var data = '\\\\\\\\[' + expressions[n-1] + '\\\\\\\\]';\n" + //
+						"\n" + //
+						"  data = data.replace( /\\\\\\\\/g, '&#92;' );\n" + //
+						"\n" + //
+						"  var config = {type: 'text', center: true };\n" + //
+						"\n" + //
+						"  evaluate( id, data, config );\n" + //
+						"\n" + //
+						"  MathJax.Hub.Queue( [ 'Typeset', MathJax.Hub, id ] );\n" + //
+						"\n" + //
+						"}");
 		// JSXGraph syntax
 		check("JSForm(ListPlot(Prime(Range(25))))", //
 				"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-1.3,101.75,27.3,-2.75]});\n" + //
@@ -15517,6 +15518,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testQuantity() {
 		if (ToggleFeature.QUANTITY) {
+			check("Quantity(50, \"s\") + Quantity(1, \"min\")", //
+					"110[s]");
+			check("Quantity(1, \"min\") + Quantity(50, \"s\")", //
+					"110[s]");
+			// TODO return unevaluated and print "compat" message that types are incompatible
+			check("Quantity(0, \"kg\") + Quantity(0, \"A\") + Quantity(0, \"m\")", //
+					"0[A]");
 			check("Quantity(1, \"min\") + Quantity(120, \"min\")", //
 					"121[min]");
 			check("Quantity(1, \"min\") + Quantity(50, \"s\")", //
@@ -15525,7 +15533,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 					"110[s]");
 
 			check("Quantity(50, \"min\") + Quantity(1, \"s\")", //
-					"3001/60[min]");
+					"3001[s]");
 
 			check("Table(i, {i, Quantity(5, \"s\"), Quantity(1, \"m\"), Quantity(4, \"s\")})", //
 					"Table(i,{i,Quantity(5,s),Quantity(1,m),Quantity(4,s)})");
