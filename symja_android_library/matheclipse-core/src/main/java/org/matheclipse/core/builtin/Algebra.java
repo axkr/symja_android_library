@@ -2702,65 +2702,69 @@ public class Algebra {
 							e.printStackTrace();
 						}
 					}
-					return F.NIL;
 				}
+				return F.NIL;
 			}
 
+			IExpr temp = SymjaRings.PolynomialExtendedGCDOverQ(expr1, expr2, x);
+			if (temp.isPresent()) {
+				return temp;
+			}
+			// try {
+			// List<IExpr> varList = eVar.getVarList().copyTo();
+			// JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
+			// GenPolynomial<BigRational> poly1 = jas.expr2JAS(expr1, false);
+			// GenPolynomial<BigRational> poly2 = jas.expr2JAS(expr2, false);
+			// GenPolynomial<BigRational>[] result = poly1.egcd(poly2);
+			// IASTAppendable list = F.ListAlloc(2);
+			// list.append(jas.rationalPoly2Expr(result[0], true));
+			// IASTAppendable subList = F.ListAlloc(2);
+			// subList.append(jas.rationalPoly2Expr(result[1], true));
+			// subList.append(jas.rationalPoly2Expr(result[2], true));
+			// list.append(subList);
+			// return list;
+			// } catch (RuntimeException e0) {
 			try {
-				List<IExpr> varList = eVar.getVarList().copyTo();
-				JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
-				GenPolynomial<BigRational> poly1 = jas.expr2JAS(expr1, false);
-				GenPolynomial<BigRational> poly2 = jas.expr2JAS(expr2, false);
-				GenPolynomial<BigRational>[] result = poly1.egcd(poly2);
-				IASTAppendable list = F.ListAlloc(2);
-				list.append(jas.rationalPoly2Expr(result[0], true));
-				IASTAppendable subList = F.ListAlloc(2);
-				subList.append(jas.rationalPoly2Expr(result[1], true));
-				subList.append(jas.rationalPoly2Expr(result[2], true));
-				list.append(subList);
-				return list;
-			} catch (JASConversionException e0) {
-				try {
-					ExprPolynomialRing ring = new ExprPolynomialRing(eVar.getVarList());
-					ExprPolynomial poly1 = ring.create(expr1);
-					ExprPolynomial poly2 = ring.create(expr2);
-					ExprPolynomial[] result = poly1.egcd(poly2);
-					if (result != null) {
-						IASTAppendable list = F.ListAlloc(2);
-						list.append(result[0].getExpr());
-						IASTAppendable subList = F.ListAlloc(2);
-						subList.append(F.Together.of(engine, result[1].getExpr()));
-						subList.append(F.Together.of(engine, result[2].getExpr()));
-						list.append(subList);
-						return list;
-					}
-					return F.NIL;
-				} catch (RuntimeException rex) {
-					if (Config.SHOW_STACKTRACE) {
-						rex.printStackTrace();
-					}
+				ExprPolynomialRing ring = new ExprPolynomialRing(eVar.getVarList());
+				ExprPolynomial poly1 = ring.create(expr1);
+				ExprPolynomial poly2 = ring.create(expr2);
+				ExprPolynomial[] result = poly1.egcd(poly2);
+				if (result != null) {
+					IASTAppendable list = F.ListAlloc(2);
+					list.append(result[0].getExpr());
+					IASTAppendable subList = F.ListAlloc(2);
+					subList.append(F.Together.of(engine, result[1].getExpr()));
+					subList.append(F.Together.of(engine, result[2].getExpr()));
+					list.append(subList);
+					return list;
 				}
-				if (!expr1.isPolynomial(eVar.getVarList())) {
-					if (!expr2.isPolynomial(eVar.getVarList())) {
-						IASTAppendable list = F.ListAlloc(2);
-						list.append(expr2);
-						IASTAppendable subList = F.ListAlloc(2);
-						subList.append(F.C0);
-						subList.append(F.C1);
-						list.append(subList);
-						return list;
-					}
-					if (expr2.isFree(eVar.getVarList())) {
-						IASTAppendable list = F.ListAlloc(2);
-						list.append(F.C1);
-						IASTAppendable subList = F.ListAlloc(2);
-						subList.append(F.C0);
-						subList.append(F.Power(expr2, F.CN1));
-						list.append(subList);
-						return list;
-					}
+				return F.NIL;
+			} catch (RuntimeException rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
 				}
 			}
+			if (!expr1.isPolynomial(eVar.getVarList())) {
+				if (!expr2.isPolynomial(eVar.getVarList())) {
+					IASTAppendable list = F.ListAlloc(2);
+					list.append(expr2);
+					IASTAppendable subList = F.ListAlloc(2);
+					subList.append(F.C0);
+					subList.append(F.C1);
+					list.append(subList);
+					return list;
+				}
+				if (expr2.isFree(eVar.getVarList())) {
+					IASTAppendable list = F.ListAlloc(2);
+					list.append(F.C1);
+					IASTAppendable subList = F.ListAlloc(2);
+					subList.append(F.C0);
+					subList.append(F.Power(expr2, F.CN1));
+					list.append(subList);
+					return list;
+				}
+			}
+			// }
 			return F.NIL;
 		}
 

@@ -14159,6 +14159,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialExtendedGCD() {
+		check("PolynomialExtendedGCD((x - 1)^2*(x - 2)^2, (x - 1)*(x^2 - 3), x)", //
+				"{-1+x,{1/2*(19+11*x),1/2*(-26+36*x-11*x^2)}}");
+		
 		check("PolynomialExtendedGCD(2*x^2+3,3*x,f(x,y))", //
 				"{1,{0,1/(3*x)}}");
 		check("PolynomialExtendedGCD(a[x],b[x],x)", //
@@ -14169,8 +14172,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{1,{0,1/b}}");
 
 		// TODO make result consistent with PolynomiaGCD
-		check("PolynomialExtendedGCD(e*x^2 + d, ( -2*d*e^2*Sqrt(-e/d) )*x + 2*d*e^2, x )", //
-				"{-1/Sqrt(-e/d)+x,{0,-1/(2*d*e^2*Sqrt(-e/d))}}");
+//		check("PolynomialExtendedGCD(e*x^2 + d, ( -2*d*e^2*Sqrt(-e/d) )*x + 2*d*e^2, x )", //
+//				"{-1/Sqrt(-e/d)+x,{0,-1/(2*d*e^2*Sqrt(-e/d))}}");
 
 		// Wikipedia: finite field GF(28) - p = x8 + x4 + x3 + x + 1, and a = x6 + x4 +
 		// x + 1

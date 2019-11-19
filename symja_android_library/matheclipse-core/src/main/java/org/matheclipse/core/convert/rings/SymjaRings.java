@@ -382,7 +382,7 @@ public final class SymjaRings {
 		Rational<MultivariatePolynomial<E>> ra = converter.toRingElement(a), rb = converter.toRingElement(b),
 				rv = converter.toRingElement(variable);
 		if (ra == null || rb == null || rv == null) {
-			return null;
+			return F.NIL;
 		}
 		if (!rv.isIntegral()
 				|| !(rv.numerator().isMonomial() && rv.numerator().degree() == 1 && rv.numerator().isMonic())) {
