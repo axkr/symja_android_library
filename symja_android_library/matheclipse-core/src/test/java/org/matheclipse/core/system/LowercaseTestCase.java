@@ -9548,31 +9548,30 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// Mathcell syntax / generate TeX for MathJAX
 		check("JSForm(Manipulate(Factor(x^n + 1), {n, 1, 5, 1}))", //
 				"MathCell( id, [ { type: 'slider', min: 1, max: 5, step: 1, name: 'n', label: 'n' }\n" + //
-						" ] );\n" + //
-						"\n" + //
-						"parent.update = function( id ) {\n" + //
-						"\n" + //
-						"var n = getVariable(id, 'n');\n" + //
-						"\n" + //
-						"\n" + //
-						"var expressions = [ '1+x',\n" + //
-						"'1+x^{2}',\n" + //
-						"'\\\\\\\\left( 1+x\\\\\\\\right) \\\\\\\\,\\\\\\\\left( 1 - x+x^{2}\\\\\\\\right) ',\n" + //
-						"'1+x^{4}',\n" + //
-						"'\\\\\\\\left( 1+x\\\\\\\\right) \\\\\\\\,\\\\\\\\left( 1 - x+x^{2} - x^{3}+x^{4}\\\\\\\\right) ' ];\n"
-						+ //
-						"\n" + //
-						"  var data = '\\\\\\\\[' + expressions[n-1] + '\\\\\\\\]';\n" + //
-						"\n" + //
-						"  data = data.replace( /\\\\\\\\/g, '&#92;' );\n" + //
-						"\n" + //
-						"  var config = {type: 'text', center: true };\n" + //
-						"\n" + //
-						"  evaluate( id, data, config );\n" + //
-						"\n" + //
-						"  MathJax.Hub.Queue( [ 'Typeset', MathJax.Hub, id ] );\n" + //
-						"\n" + //
-						"}");
+				" ] );\n" + //
+				"\n" + //
+				"parent.update = function( id ) {\n" + //
+				"\n" + //
+				"var n = getVariable(id, 'n');\n" + //
+				"\n" + //
+				"\n" + //
+				"var expressions = [ '1+x',\n" + //
+				"'1+{x}^{2}',\n" + //
+				"'\\\\\\\\left( 1+x\\\\\\\\right) \\\\\\\\,\\\\\\\\left( 1 - x+{x}^{2}\\\\\\\\right) ',\n" + //
+				"'1+{x}^{4}',\n" + //
+				"'\\\\\\\\left( 1+x\\\\\\\\right) \\\\\\\\,\\\\\\\\left( 1 - x+{x}^{2} - {x}^{3}+{x}^{4}\\\\\\\\right) ' ];\n" + //
+				"\n" + //
+				"  var data = '\\\\\\\\[' + expressions[n-1] + '\\\\\\\\]';\n" + //
+				"\n" + //
+				"  data = data.replace( /\\\\\\\\/g, '&#92;' );\n" + //
+				"\n" + //
+				"  var config = {type: 'text', center: true };\n" + //
+				"\n" + //
+				"  evaluate( id, data, config );\n" + //
+				"\n" + //
+				"  MathJax.Hub.Queue( [ 'Typeset', MathJax.Hub, id ] );\n" + //
+				"\n" + //
+				"}");
 		// JSXGraph syntax
 		check("JSForm(ListPlot(Prime(Range(25))))", //
 				"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-1.3,101.75,27.3,-2.75]});\n" + //
@@ -19863,11 +19862,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("TeXForm(2+I*3)", //
 				"2 + 3\\,i ");
 		check("TeXForm(a+b^2)", //
-				"a+b^{2}");
+				"a+{b}^{2}");
 		check("TeXForm(Expand((x+y)^3))", //
-				"x^{3} + 3\\,x^{2}\\,y + 3\\,x\\,y^{2}+y^{3}");
+				"{x}^{3} + 3\\,{x}^{2}\\,y + 3\\,x\\,{y}^{2}+{y}^{3}");
 		check("TeXForm(3*a+b^2)", //
-				"3\\,a+b^{2}");
+				"3\\,a+{b}^{2}");
 		check("TeXForm(x/Sqrt(5))", //
 				"\\frac{x}{\\sqrt{5}}");
 		check("TeXForm(x^(1/3))", //
@@ -19889,12 +19888,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"\\sum_{n = 1}^{m} {f(n)}");
 		check("TeXForm(Product(f(n), {n, 1, m}))", //
 				"\\prod_{n = 1}^{m} {f(n)}");
-		check("TeXForm(Subscript(a,b))", "a_b");
-		check("TeXForm(Superscript(a,b))", "a^b");
+		check("TeXForm(Subscript(a,b))", //
+				"{a}_{b}");
+		check("TeXForm(Superscript(a,b))", //
+				"{a}^{b}");
 		check("TeXForm(Subscript(x,2*k+1))", //
-				"x_{1 + 2\\,k}");
+				"{x}_{1 + 2\\,k}");
 		check("TeXForm(Subsuperscript(a,b,c))", //
-				"a_b^c");
+				"{a}_{b}^{c}");
 		check("TeXForm(HarmonicNumber(n))", //
 				"H_n");
 		check("TeXForm(HarmonicNumber(m,n))", //
