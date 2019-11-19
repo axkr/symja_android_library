@@ -13,6 +13,10 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>cc.redberry</groupId>
+			<artifactId>rings</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.atlassian.commonmark</groupId>
 			<artifactId>commonmark</artifactId>
 		</dependency>

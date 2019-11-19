@@ -5865,9 +5865,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFactor() {
+		check("Factor(1+2*x+2*x^2+x^3)",//
+				"(1+x)*(1+x+x^2)");
+		check("Factor(x-I*y)", //
+				"-I*(I*x+y)");
+		
+		check("Factor(x^2+2*x+1)", //
+				"(1+x)^2");
+		check("Factor(x+2*Sqrt(x)+1)", //
+				"(1+Sqrt(x))^2");
+		
 		check("Factor(1+x^2, Extension->I)", //
 				"(-I+x)*(I+x)");
-
+		check("Factor(x+y)", //
+				"x+y");
+		check("Factor(x-I*y)", //
+				"-I*(I*x+y)");
+		
 		check("Factor(x^(-6)+1)", //
 				"((1+x^2)*(1-x^2+x^4))/x^6");
 		System.out.println();
@@ -5887,7 +5901,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"((a*e+c*d*x)*(d+e*x))^(3/2)");
 		System.out.print('.');
 		check("Factor(Cos(x)-I*Sin(x) )", //
-				"Cos(x)-I*Sin(x)");
+				"-I*(I*Cos(x)+Sin(x))");
 		System.out.print('.');
 		check("Factor((Cos(x)-I*Sin(x))/(I*Cos(x)-Sin(x)))", //
 				"(Cos(x)-I*Sin(x))/(I*Cos(x)-Sin(x))");
@@ -5905,7 +5919,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
 		System.out.print('.');
 		check("Factor(Log(2,x)+4*Log(x,2)-5)", //
-				"((-4*Log(2)+Log(x))*(-Log(2)+Log(x)))/(Log(2)*Log(x))");
+				"((Log(2)-Log(x))*(4*Log(2)-Log(x)))/(Log(2)*Log(x))");
 		// TODO reduce negative signs
 		// ((Log(2) - Log(x))*(4*Log(2) - Log(x)))/(Log(2)*Log(x))
 		System.out.print('.');
@@ -5922,8 +5936,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "I*3*x)+E^(I*3*x))");
 		System.out.print('.');
 		check("Factor(2+(-I*(E^(-I*x)-E^(I*x)))/(E^(-I*x)+E^(I*x))+(I*3*(E^(-I*3*x)-E^(I*3*x)))/(E^(-I*3*x)+E^(I*3*x)))", //
-				"((2-I*2)*(I+(-1/2-I*1/2)*E^(I*2*x)+E^(I*4*x)))/((-1-I*E^(I*x)+E^(I*2*x))*(-1+I*E^(I*x)+E^(\n"
-						+ "I*2*x)))");
+				"(I*2*(1-I+I*E^(I*2*x)+(-1-I)*E^(I*4*x)))/((-1-I*E^(I*x)+E^(I*2*x))*(-1+I*E^(I*x)+E^(\n" + 
+				"I*2*x)))");
 
 		// example from paper
 		System.out.print('.');
@@ -5991,7 +6005,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		System.out.print('.');
 		check("Factor(a*Cosh(x) + I*b*Cosh(x) - I*a*Sinh(x) + b*Sinh(x))", //
-				"(-I*a+b)*(I*Cosh(x)+Sinh(x))");
+				"(a+I*b)*(Cosh(x)-I*Sinh(x))");
 		System.out.print('.');
 		check("Factor(a*b+(4+4*x+x^2)^2)", //
 				"16+a*b+32*x+24*x^2+8*x^3+x^4");
@@ -5999,10 +6013,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// github #121
 		System.out.print('.');
 		check("Factor(x^(12)-y^(12), GaussianIntegers->True)", //
-				"-(-x+y)*(x+y)*(-I*x+y)*(I*x+y)*(x^2+x*y+y^2)*(x^2-x*y+y^2)*(-x^2-I*x*y+y^2)*(-x^\n" + "2+I*x*y+y^2)");
+				"(x-y)*(x+y)*(x-I*y)*(x+I*y)*(x^2-I*x*y-y^2)*(x^2+I*x*y-y^2)*(x^2+x*y+y^2)*(x^2-x*y+y^\n" + //
+				"2)");
 		System.out.print('.');
 		check("Factor(x^(2)+y^(2), GaussianIntegers->True)", //
-				"(-I*x+y)*(I*x+y)");
+				"(x-I*y)*(x+I*y)");
 		System.out.print('.');
 		check("Factor(Sin(x), GaussianIntegers->True)", //
 				"Sin(x)");
@@ -6035,7 +6050,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		System.out.print('.');
 		check("Factor(b*c*n-a*d*n)", //
-				"(b*c-a*d)*n");
+				"-(-b*c+a*d)*n");
 		System.out.print('.');
 		check("Factor(a*b*(4+4*x+x^2)^2)", //
 				"a*b*(2+x)^4");
@@ -6189,6 +6204,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testFactorInteger() {
+		check("FactorInteger(1024)", //
+				"{{2,10}}");
+		check("FactorInteger(1024, GaussianIntegers->True)", //
+				"{{-1,1},{1+I,20}}");
 		check("FactorInteger(10, GaussianIntegers->True)", //
 				"{{-1,1},{1+I,2},{1+I*2,1},{2+I,1}}");
 		check("Power @@@ FactorInteger(10, GaussianIntegers->True)", //
@@ -15518,6 +15537,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testQuantity() {
 		if (ToggleFeature.QUANTITY) {
+			check("Quantity(1, \"min\") + Quantity(50, \"s\")", //
+					"110[s]");
+			check("Quantity(0, \"kg\") + Quantity(0, \"A\") + Quantity(0, \"m\")", //
+					"0[A]+0[kg]+0[m]");
 			check("Quantity(1, \"min\") + Quantity(120, \"min\")", //
 					"121[min]");
 			check("Quantity(1, \"min\") + Quantity(50, \"s\")", //
@@ -19863,11 +19886,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("TeXForm(2+I*3)", //
 				"2 + 3\\,i ");
 		check("TeXForm(a+b^2)", //
-				"a+b^{2}");
+				"a+{b}^{2}");
 		check("TeXForm(Expand((x+y)^3))", //
-				"x^{3} + 3\\,x^{2}\\,y + 3\\,x\\,y^{2}+y^{3}");
+				"{x}^{3} + 3\\,{x}^{2}\\,y + 3\\,x\\,{y}^{2}+{y}^{3}");
 		check("TeXForm(3*a+b^2)", //
-				"3\\,a+b^{2}");
+				"3\\,a+{b}^{2}");
 		check("TeXForm(x/Sqrt(5))", //
 				"\\frac{x}{\\sqrt{5}}");
 		check("TeXForm(x^(1/3))", //
@@ -19889,12 +19912,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"\\sum_{n = 1}^{m} {f(n)}");
 		check("TeXForm(Product(f(n), {n, 1, m}))", //
 				"\\prod_{n = 1}^{m} {f(n)}");
-		check("TeXForm(Subscript(a,b))", "a_b");
-		check("TeXForm(Superscript(a,b))", "a^b");
+		check("TeXForm(Subscript(a,b))", //
+				"{a}_{b}");
+		check("TeXForm(Superscript(a,b))", //
+				"{a}^{b}");
 		check("TeXForm(Subscript(x,2*k+1))", //
-				"x_{1 + 2\\,k}");
+				"{x}_{1 + 2\\,k}");
 		check("TeXForm(Subsuperscript(a,b,c))", //
-				"a_b^c");
+				"{a}_{b}^{c}");
 		check("TeXForm(HarmonicNumber(n))", //
 				"H_n");
 		check("TeXForm(HarmonicNumber(m,n))", //

@@ -40,6 +40,7 @@ import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.convert.rings.SymjaRings;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
@@ -2040,87 +2041,95 @@ public class Algebra {
 			if (Config.MAX_FACTOR_LEAFCOUNT > 0 && expr.leafCount() > Config.MAX_FACTOR_LEAFCOUNT) {
 				return expr;
 			}
+			if (expr.isPolynomial(eVar.getVarList())) {
+				boolean gaussianIntegers = !expr.isFree(x -> x.isComplex() || x.isComplexNumeric(), false);
+				return factorComplex(expr, eVar.getArrayList(), F.Times, gaussianIntegers, factorSquareFree, engine);
+			}
+			return factorWithPolynomialHomogenization(expr, null, factorSquareFree, engine);
+
 			// use TermOrderByName.INVLEX here!
 			// See https://github.com/kredel/java-algebra-system/issues/8
-			Object[] objects = null;
-			JASConvert<BigRational> jas = new JASConvert<BigRational>(eVar.getArrayList(), BigRational.ZERO,
-					TermOrderByName.INVLEX);
-			try {
-				GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, false);
-				if (polyRat.length() <= 1) {
-					return expr;
-				}
-				objects = jas.factorTerms(polyRat);
-			} catch (JASConversionException e) {
-				// return F.NIL;
-				return factorWithPolynomialHomogenization(expr, eVar, engine);
-			}
-
-			if (objects != null) {
-
-				SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
-				try {
-					GenPolynomial<edu.jas.arith.BigInteger> poly = (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
-					FactorAbstract<edu.jas.arith.BigInteger> factorAbstract = FactorFactory
-							.getImplementation(edu.jas.arith.BigInteger.ONE);
-					if (factorSquareFree) {
-						map = factorAbstract.squarefreeFactors(poly);// factors(poly);
-					} else {
-						// System.out.println("Variable: " + varList.toString() + " -- " + expr.fullFormString());
-						// System.out.println(poly);
-						map = factorAbstract.factors(poly);
-					}
-				} catch (RuntimeException rex) {
-					// System.out.println("Factor failed: " + expr.toString());
-					if (Config.SHOW_STACKTRACE) {
-						rex.printStackTrace();
-					}
-					return expr;
-				}
-				IASTAppendable result = F.TimesAlloc(map.size() + 1);
-				java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
-				java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
-				IRational f = F.C1;
-				if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
-					f = F.fraction(gcd, lcm).normalize();
-				}
-				for (SortedMap.Entry<GenPolynomial<edu.jas.arith.BigInteger>, Long> entry : map.entrySet()) {
-					if (entry.getKey().isONE() && entry.getValue().equals(1L)) {
-						continue;
-					}
-					IExpr base = jas.integerPoly2Expr(entry.getKey());
-					if (entry.getValue() == 1L) {
-						if (f.isMinusOne() && base.isPlus()) {
-							base = ((IAST) base).map(x -> x.negate(), 1);
-							f = F.C1;
-						}
-						result.append(base);
-					} else {
-						result.append(F.Power(base, F.integer(entry.getValue())));
-					}
-				}
-				if (!f.isOne()) {
-					result.append(f);
-				}
-				// System.out.println("Factor: " + expr.toString() + " ==> " + result.toString());
-				return engine.evaluate(result);
-			}
-			return F.NIL;
+			// Object[] objects = null;
+			// JASConvert<BigRational> jas = new JASConvert<BigRational>(eVar.getArrayList(), BigRational.ZERO,
+			// TermOrderByName.INVLEX);
+			// try {
+			// GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, false);
+			// if (polyRat.length() <= 1) {
+			// return expr;
+			// }
+			// objects = jas.factorTerms(polyRat);
+			// } catch (JASConversionException e) {
+			// // return F.NIL;
+			// return factorWithPolynomialHomogenization(expr, eVar, engine);
+			// }
+			//
+			// if (objects != null) {
+			//
+			// SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
+			// try {
+			// GenPolynomial<edu.jas.arith.BigInteger> poly = (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
+			// FactorAbstract<edu.jas.arith.BigInteger> factorAbstract = FactorFactory
+			// .getImplementation(edu.jas.arith.BigInteger.ONE);
+			// if (factorSquareFree) {
+			// map = factorAbstract.squarefreeFactors(poly);// factors(poly);
+			// } else {
+			// // System.out.println("Variable: " + varList.toString() + " -- " + expr.fullFormString());
+			// // System.out.println(poly);
+			// map = factorAbstract.factors(poly);
+			// }
+			// } catch (RuntimeException rex) {
+			// // System.out.println("Factor failed: " + expr.toString());
+			// if (Config.SHOW_STACKTRACE) {
+			// rex.printStackTrace();
+			// }
+			// return expr;
+			// }
+			// IASTAppendable result = F.TimesAlloc(map.size() + 1);
+			// java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
+			// java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
+			// IRational f = F.C1;
+			// if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
+			// f = F.fraction(gcd, lcm).normalize();
+			// }
+			// for (SortedMap.Entry<GenPolynomial<edu.jas.arith.BigInteger>, Long> entry : map.entrySet()) {
+			// if (entry.getKey().isONE() && entry.getValue().equals(1L)) {
+			// continue;
+			// }
+			// IExpr base = jas.integerPoly2Expr(entry.getKey());
+			// if (entry.getValue() == 1L) {
+			// if (f.isMinusOne() && base.isPlus()) {
+			// base = ((IAST) base).map(x -> x.negate(), 1);
+			// f = F.C1;
+			// }
+			// result.append(base);
+			// } else {
+			// result.append(F.Power(base, F.integer(entry.getValue())));
+			// }
+			// }
+			// if (!f.isOne()) {
+			// result.append(f);
+			// }
+			// // System.out.println("Factor: " + expr.toString() + " ==> " + result.toString());
+			// return engine.evaluate(result);
+			// }
+			// return F.NIL;
 		}
 
-		private static IExpr factorWithPolynomialHomogenization(IAST expr, VariablesSet eVar, EvalEngine engine) {
+		private static IExpr factorWithPolynomialHomogenization(IAST expr, VariablesSet eVar1, boolean factorSquareFree,
+				EvalEngine engine) {
 			boolean gaussianIntegers = !expr.isFree(x -> x.isComplex() || x.isComplexNumeric(), false);
 
+			VariablesSet eVar = eVar1 == null ? new VariablesSet() : eVar1;
 			PolynomialHomogenization substitutions = new PolynomialHomogenization(eVar.getVarList(), engine);
 			IExpr subsPolynomial = substitutions.replaceForward(expr);
 			if (substitutions.size() == 0) {
-				return factorComplex(expr, eVar.getArrayList(), F.Times, gaussianIntegers, engine);
+				return factorComplex(expr, eVar.getArrayList(), F.Times, gaussianIntegers, factorSquareFree, engine);
 			}
 			// System.out.println(subsPolynomial.toString());
 			if (subsPolynomial.isAST()) {
 				eVar.addAll(substitutions.substitutedVariablesSet());
 				IExpr factorization = factorComplex(subsPolynomial, eVar.getArrayList(), F.Times, gaussianIntegers,
-						engine);
+						factorSquareFree, engine);
 				// IExpr factorization = factor((IAST) subsPolynomial, eVar, factorSquareFree);
 				if (factorization.isPresent()) {
 					return substitutions.replaceBackward(factorization);
@@ -2150,13 +2159,13 @@ public class Algebra {
 				option = options.getOption(F.Extension);
 				if (option.isImaginaryUnit()) {
 					// Exptension->I is like gaussian integers
-					return factorComplex(expr, varList, F.Times, false, true, engine);
+					return factorComplex(expr, varList, F.Times, false, true, false, engine);
 				}
 
 				option = options.getOption(F.GaussianIntegers);
 				if (option.isPresent()) {
 					if (option.isTrue()) {
-						return factorComplex(expr, varList, F.Times, false, true, engine);
+						return factorComplex(expr, varList, F.Times, false, true, false, engine);
 					}
 				}
 			}
@@ -5410,14 +5419,16 @@ public class Algebra {
 	 *            the head of the factorization result AST (typically <code>F.Times</code> or <code>F.List</code>)
 	 * @param gaussianIntegers
 	 *            if <code>true</code> use Gaussian integers
+	 * @param factorSquareFree
+	 *            TODO
 	 * @param engine
 	 *            the evaluation engine
 	 * @return
 	 * @throws JASConversionException
 	 */
 	public static IExpr factorComplex(IExpr expr, List<IExpr> varList, ISymbol head, boolean gaussianIntegers,
-			EvalEngine engine) {
-		return factorComplex(expr, varList, head, false, gaussianIntegers, engine);
+			boolean factorSquareFree, EvalEngine engine) {
+		return factorComplex(expr, varList, head, false, gaussianIntegers, factorSquareFree, engine);
 	}
 
 	/**
@@ -5433,26 +5444,28 @@ public class Algebra {
 	 *            transform numerical values to symbolic rational numbers
 	 * @param gaussianIntegers
 	 *            if <code>true</code> use Gaussian integers
+	 * @param factorSquareFree
+	 *            TODO
 	 * @param engine
 	 * @return
 	 * @throws JASConversionException
 	 */
 	private static IExpr factorComplex(IExpr expr, List<IExpr> varList, ISymbol head, boolean numeric2Rational,
-			boolean gaussianIntegers, EvalEngine engine) {
+			boolean gaussianIntegers, boolean factorSquareFree, EvalEngine engine) {
 		try {
+			IExpr temp;
 			if (gaussianIntegers) {
-				ComplexRing<BigRational> cfac = new ComplexRing<BigRational>(BigRational.ZERO);
-				JASConvert<Complex<BigRational>> jas = new JASConvert<Complex<BigRational>>(varList, cfac);
-				GenPolynomial<Complex<BigRational>> polyRat = jas.expr2JAS(expr, numeric2Rational);
-				return engine.evaluate(factorComplex((IAST) expr, polyRat, jas, head, cfac));
+				IExpr[] extensions = { F.CI };
+				temp = SymjaRings.FactorOverExtension(expr, extensions, true, factorSquareFree);
+				// ComplexRing<BigRational> cfac = new ComplexRing<BigRational>(BigRational.ZERO);
+				// JASConvert<Complex<BigRational>> jas = new JASConvert<Complex<BigRational>>(varList, cfac);
+				// GenPolynomial<Complex<BigRational>> polyRat = jas.expr2JAS(expr, numeric2Rational);
+				// return engine.evaluate(factorComplex((IAST) expr, polyRat, jas, head, cfac));
 			} else {
-				JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
-				GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, numeric2Rational);
-				return factorRational(polyRat, jas, head);
-				// IExpr temp = SymjaRings.FactorOverQ((IAST) expr, false);
-				// if (temp != null && temp.isPresent()) {
-				// return temp;
-				// }
+				temp = SymjaRings.FactorOverQ((IAST) expr, factorSquareFree);
+			}
+			if (temp != null && temp.isPresent()) {
+				return temp;
 			}
 		} catch (RuntimeException rex) {
 			if (Config.SHOW_STACKTRACE) {
