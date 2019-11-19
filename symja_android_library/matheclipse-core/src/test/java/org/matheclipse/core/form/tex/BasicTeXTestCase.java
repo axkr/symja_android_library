@@ -42,48 +42,58 @@ public class BasicTeXTestCase extends TestCase {
 	}
 
 	public void testTeX004() {
-		check("Sum(a,{x,1,z})", "\\sum_{x = 1}^{z} a");
-		check("Sum(a,{x,z})", "\\sum_{x = 1}^{z} a");
-		check("Sum(a,{x,1,n},{y,1,m})", "\\sum_{x = 1}^{n}\\sum_{y = 1}^{m} a");
-		check("Sum(f,i)", "\\sum_{i} f");
+		check("Sum(a,{x,1,z})", //
+				"\\sum_{x = 1}^{z} a");
+		check("Sum(a,{x,z})", //
+				"\\sum_{x = 1}^{z} a");
+		check("Sum(a,{x,1,n},{y,1,m})", //
+				"\\sum_{x = 1}^{n}\\sum_{y = 1}^{m} a");
+		check("Sum(f,i)", //
+				"\\sum_{i} f");
 	}
 
 	public void testTeX005() {
-		check("Product(a,{x,1,z})", "\\prod_{x = 1}^{z} a");
-		check("Product(f,i)", "\\prod_{i} f");
+		check("Product(a,{x,1,z})", //
+				"\\prod_{x = 1}^{z} a");
+		check("Product(f,i)", //
+				"\\prod_{i} f");
 	}
 
 	public void testTeX006() {
-		check("Integrate(f(x),y)", "\\int  f(x)\\,\\mathrm{d}y");
+		check("Integrate(f(x),y)", //
+				"\\int  f(x)\\,\\mathrm{d}y");
 	}
 
 	public void testTeX007() {
 		check("Integrate(f(x),{x,1,10})", //
 				"\\int_{1}^{10} f(x)\\,\\mathrm{d}x");
 		check("Integrate(E^(-x),{x,0,Infinity})", //
-				"\\int_{0}^{\\infty} e^{ - x}\\,\\mathrm{d}x");
+				"\\int_{0}^{\\infty} {e}^{ - x}\\,\\mathrm{d}x");
 	}
 
 	public void testTeX008() {
-		check("alpha + beta", "\\alpha+\\beta");
+		check("alpha + beta", //
+				"\\alpha+\\beta");
 	}
 
 	public void testTeX009() {
-		check("Limit(Sin(x),x->0)", "\\lim_{x\\to 0 }\\,{\\sin (x)}");
+		check("Limit(Sin(x),x->0)", //
+				"\\lim_{x\\to 0 }\\,{\\sin (x)}");
 	}
 
 	public void testTeX010() {
-		check("3+x*(4+x*(5+(33+x^2)*x^4))",
-				"3 + x\\,\\left( 4 + x\\,\\left( 5 + \\left( 33+x^{2}\\right) \\,x^{4}\\right) \\right) ");
+		check("3+x*(4+x*(5+(33+x^2)*x^4))", //
+				"3 + x\\,\\left( 4 + x\\,\\left( 5 + \\left( 33+{x}^{2}\\right) \\,{x}^{4}\\right) \\right) ");
 	}
 
 	public void testTeX011() {
-		check("x^(3/4*y)", "x^{\\frac{3\\,y}{4}}");
+		check("x^(3/4*y)", //
+				"{x}^{\\frac{3\\,y}{4}}");
 	}
 
 	public void testTeX012a() {
 		// check("{{{1,2,3},{4,5,6}}}", "\\begin{pmatrix} 1 & 2 & 3 \\\\\n" + " 4 & 5 & 6 \\\\\n" + "\\end{pmatrix}");
-		check("MatrixForm({{1,2,3},{4,5,6}})",
+		check("MatrixForm({{1,2,3},{4,5,6}})", //
 				"\\begin{pmatrix}\n 1 & 2 & 3 \\\\\n" + " 4 & 5 & 6 \\\\\n" + "\\end{pmatrix}");
 	}
 
@@ -98,12 +108,15 @@ public class BasicTeXTestCase extends TestCase {
 	}
 
 	public void testTeX013() {
-		check("a*b+c; a*b+c", "a\\,b+c;a\\,b+c");
+		check("a*b+c; a*b+c",//
+				"a\\,b+c;a\\,b+c");
 	}
 
 	public void testTeX014() {
-		check("Sin(x)^2", "{\\sin (x)}^{2}");
-		check("Sin(2*x)^2", "{\\sin (2\\,x)}^{2}");
+		check("Sin(x)^2", //
+				"{\\sin (x)}^{2}");
+		check("Sin(2*x)^2", //
+				"{\\sin (2\\,x)}^{2}");
 	}
 
 	public void testTeX015() {
@@ -182,35 +195,49 @@ public class BasicTeXTestCase extends TestCase {
 
 	public void testTeX018() {
 		check("1/4*a^2*b^(-1)*f^(-1)", //
-				"\\frac{a^{2}}{4\\,b\\,f}");
+				"\\frac{{a}^{2}}{4\\,b\\,f}");
 	}
 
 	public void testTeX019() {
-		check("n!", "n ! ");
-		check("n!!", "n !! ");
+		check("n!", //
+				"n ! ");
+		check("n!!", //
+				"n !! ");
 	}
 
 	public void testTeX020() {
-		check("Hold(++x)", "\\text{Hold}(\\text{++}x)");
-		check("Hold(y^2/.x->3)", "\\text{Hold}(y^{2}\\text{/.}\\,x\\to 3)");
-		check("Hold(y^2//.x->3)", "\\text{Hold}(y^{2}\\text{//.}\\,x\\to 3)");
+		check("Hold(++x)",//
+				"\\text{Hold}(\\text{++}x)");
+		check("Hold(y^2/.x->3)", //
+				"\\text{Hold}({y}^{2}\\text{/.}\\,x\\to 3)");
+		check("Hold(y^2//.x->3)", //
+				"\\text{Hold}({y}^{2}\\text{//.}\\,x\\to 3)");
 		check("Hold(1 * 5 * x + 1 * 63)", //
 				"\\text{Hold}(5\\,x + 63)");
-		check("10*f(x)", "10\\,f(x)");
-		check("Hold((5*3)/2)", "\\text{Hold}(\\frac{3\\cdot 5}{2})");
+		check("10*f(x)", //
+				"10\\,f(x)");
+		check("Hold((5*3)/2)", //
+				"\\text{Hold}(\\frac{3\\cdot 5}{2})");
 		check("Integrate(8+5*x, {x, 5, 10})", //
 				"\\int_{5}^{10} 8 + 5\\,x\\,\\mathrm{d}x");
 	}
 
 	public void testTeX021() {
-		check("\\[Alpha]", "\\alpha");
-		check("-Infinity", " - \\infty");
-		check("GoldenRatio", "\\phi");
-		check("Infinity", "\\infty");
+		check("\\[Alpha]", //
+				"\\alpha");
+		check("-Infinity",//
+				 " - \\infty");
+		check("GoldenRatio", //
+				"\\phi");
+		check("Infinity", //
+				"\\infty");
 
-		check("EulerGamma", "\\gamma");
-		check("Pi", "\\pi");
-		check("E", "e");
+		check("EulerGamma", //
+				"\\gamma");
+		check("Pi",//
+				 "\\pi");
+		check("E", //
+				"e");
 
 		// check("Catalan", "");
 		// check("Degree", "");
@@ -232,7 +259,7 @@ public class BasicTeXTestCase extends TestCase {
 	public void testTeX023() {
 		// issue #117
 		check("5*3^(5*x)*Log(3)", //
-				"5\\cdot 3^{5\\,x}\\,\\log (3)");
+				"5\\cdot {3}^{5\\,x}\\,\\log (3)");
 	}
 
 	public void testTeX024() {
@@ -251,8 +278,10 @@ public class BasicTeXTestCase extends TestCase {
 	}
 
 	public void testTeX026() {
-		check("DirectedEdge(a,b)", "a\\to b");
-		check("UndirectedEdge(a,b)", "a\\leftrightarrow b");
+		check("DirectedEdge(a,b)",//
+				 "a\\to b");
+		check("UndirectedEdge(a,b)",//
+				 "a\\leftrightarrow b");
 		check("Graph({1,2,3},{1<->2,2<->3})", //
 				"\\text{Graph}(\\{1,2,3\\},\\{1\\leftrightarrow 2,2\\leftrightarrow 3\\})");
 		check("Graph({1,2,3},{1->2,2->3})", //
@@ -262,9 +291,9 @@ public class BasicTeXTestCase extends TestCase {
 	public void testTeX027() {
 		check(new ASTRealMatrix(new double[][] { { 1.0, 2.0, 3.0 }, { 3.3, 4.4, 5.5 } }, false), //
 				"\\begin{pmatrix}\n" + //
-				" 1.0 & 2.0 & 3.0 \\\\\n" + //
-				" 3.3 & 4.4 & 5.5 \\\\\n" + //
-				"\\end{pmatrix}");
+						" 1.0 & 2.0 & 3.0 \\\\\n" + //
+						" 3.3 & 4.4 & 5.5 \\\\\n" + //
+						"\\end{pmatrix}");
 	}
 
 	public void testTeX028() {
@@ -275,74 +304,80 @@ public class BasicTeXTestCase extends TestCase {
 	public void testTeX029() {
 		check("Inequality(c,Greater,0,GreaterEqual,a)", //
 				"c > 0\\geq a");
-		
+
 		check("Inequality(a,Less,0,LessEqual,b, Equal,c, Unequal,d)", //
 				"a < 0\\leq b == c\\neq d");
 
 	}
-	
+
 	public void testTeX30() {
 		check("Quantity(3,\"m\")", //
 				"\\text{Quantity}(3,\\textnormal{m})");
 	}
-	
+
 	public void testTeX31() {
 		check("a&&b||c", //
 				"a \\land b \\lor c");
 	}
-	 
+
 	public void testTeX32() {
 		check("{{a,b,c},{a,c,b},{c,a,b}}", //
 				"\\{\\{a,b,c\\},\\{a,c,b\\},\\{c,a,b\\}\\}");
 	}
-	
 
 	public void testTeX033() {
 		IExpr expr = EvalEngine.get().evaluate("2.7*6");
 		check(expr, //
-				"16.2"); 
+				"16.2");
 	}
-	
+
 	public void testTeX034() {
 		IExpr expr = EvalEngine.get().evaluate("ComplexInfinity");
 		check(expr, //
-				"ComplexInfinity"); 
+				"ComplexInfinity");
 	}
-	
+
 	public void testTeX035() {
 		IExpr expr = EvalEngine.get().evaluate("a[[1]]");
 		check(expr, //
-				"a[[1]]"); 
+				"a[[1]]");
 		expr = EvalEngine.get().evaluate("test[[1,2,3]]");
 		check(expr, //
-				"\\text{test}[[1,2,3]]"); 
+				"\\text{test}[[1,2,3]]");
 	}
-	
+
 	public void testTeX036() {
 		try {
-		IExpr expr = new EvalEngine(true).evaluate("HoldForm(f(x,y))");
-		check(expr, //
-				"f(x,y)"); 
-		expr = new EvalEngine(true).evaluate("Defer(f(x,y))");
-		check(expr, //
-				"f(x,y)"); 
+			IExpr expr = new EvalEngine(true).evaluate("HoldForm(f(x,y))");
+			check(expr, //
+					"f(x,y)");
+			expr = new EvalEngine(true).evaluate("Defer(f(x,y))");
+			check(expr, //
+					"f(x,y)");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void testTeX037() {
 		IExpr expr = EvalEngine.get().evaluate("f(#,#3,##)");
 		check(expr, //
-				"f(\\text{$\\#$1},\\text{$\\#$3},\\text{$\\#\\#$1})"); 
-	} 
-	
+				"f(\\text{$\\#$1},\\text{$\\#$3},\\text{$\\#\\#$1})");
+	}
+
 	public void testTeX038() {
 		// gitlab #108
 		IExpr expr = EvalEngine.get().evaluate("Solve({Log10(x)==21.69},{x})");
 		check(expr, //
-				"\\{\\{x\\to 4.89779*10^{21}\\}\\}"); 
-    }
+				"\\{\\{x\\to 4.89779*10^{21}\\}\\}");
+	}
+	
+	public void testTeX039() {
+		// gitlab #108
+		IExpr expr = EvalEngine.get().evaluate("SuperScript(2,10)");
+		check(expr, //
+				"{2}^{10}");
+	}
 
 	public void check(String strEval, String strResult) {
 		StringWriter stw = new StringWriter();
