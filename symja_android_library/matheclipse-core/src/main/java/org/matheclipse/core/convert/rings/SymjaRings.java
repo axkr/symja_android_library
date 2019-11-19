@@ -1,16 +1,13 @@
 package org.matheclipse.core.convert.rings;
 
 import static cc.redberry.rings.Rings.Frac;
-import static cc.redberry.rings.Rings.GaussianRationals;
 import static cc.redberry.rings.Rings.MultivariateRing;
 import static cc.redberry.rings.Rings.Q;
 import static cc.redberry.rings.Rings.Z;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -33,6 +30,7 @@ import cc.redberry.rings.bigint.BigInteger;
 import cc.redberry.rings.poly.MultipleFieldExtension;
 import cc.redberry.rings.poly.MultivariateRing;
 import cc.redberry.rings.poly.Util;
+import cc.redberry.rings.poly.multivar.AMultivariatePolynomial;
 import cc.redberry.rings.poly.multivar.Monomial;
 import cc.redberry.rings.poly.multivar.MultivariateConversions;
 import cc.redberry.rings.poly.multivar.MultivariatePolynomial;
@@ -146,11 +144,12 @@ public final class SymjaRings {
 	 */
 	public static IExpr FactorOverExtension(IExpr expr, IExpr[] extensions, boolean automatic, boolean squareFree) {
 		IExpr[] algebraicNumbers = guessExtensions(automatic ? ArraysUtil.addAll(extensions, expr) : extensions);
-		if (algebraicNumbers.length == 0)
+		if (algebraicNumbers.length == 0) {
 			return FactorOverZp(expr, java.math.BigInteger.ZERO, squareFree);
-		else
+		} else {
 			return Factor(expr, mkConverterForOperationsInExtensions(new IExpr[] { expr }, algebraicNumbers),
 					squareFree);
+		}
 	}
 
 	/**
@@ -171,7 +170,7 @@ public final class SymjaRings {
 		}
 		Ring<R> ring = converter.getRing();
 		FactorDecomposition<R> factors = squareFree ? ring.factorSquareFree(rExpr) : ring.factor(rExpr);
-		if ( factors.size() == 1 && //
+		if (factors.size() == 1 && //
 				(factors.unit.equals(F.CN1) || //
 						factors.unit.equals(F.CNI) || //
 						factors.unit.equals(F.CI))) {
@@ -191,9 +190,6 @@ public final class SymjaRings {
 				result.append(F.Power(factor, exponent));
 			}
 		}
-		// if (result.isEmpty()) {
-		// result.append(F.C1);
-		// }
 		return result.oneIdentity1();
 	}
 
@@ -240,17 +236,18 @@ public final class SymjaRings {
 	 */
 	public static IExpr TogetherOverExtension(IExpr expr, IExpr[] extensions, boolean automatic) {
 		IExpr[] algebraicNumbers = guessExtensions(automatic ? ArraysUtil.addAll(extensions, expr) : extensions);
-		if (algebraicNumbers.length == 0)
+		if (algebraicNumbers.length == 0) {
 			return TogetherOverZp(expr, java.math.BigInteger.ZERO);
-		else
-			return Together(expr, mkConverterForOperationsInExtensions(new IExpr[] { expr }, algebraicNumbers));
+		}
+		return Together(expr, mkConverterForOperationsInExtensions(new IExpr[] { expr }, algebraicNumbers));
 	}
 
 	/** Together */
 	public static <R> IExpr Together(IExpr a, IConverter<R> converter) {
 		R ra = converter.toRingElement(a);
-		if (ra == null)
+		if (ra == null) {
 			return null;
+		}
 		return converter.toIExpr(ra);
 	}
 
@@ -291,17 +288,18 @@ public final class SymjaRings {
 	 */
 	public static IExpr PolynomialGCDOverExtension(IExpr a, IExpr b, IExpr[] extensions, boolean automatic) {
 		IExpr[] algebraicNumbers = guessExtensions(automatic ? ArraysUtil.addAll(extensions, a, b) : extensions);
-		if (algebraicNumbers.length == 0)
+		if (algebraicNumbers.length == 0) {
 			return PolynomialGCDOverQ(a, b);
-		else
-			return PolynomialGCD(a, b, mkConverterForOperationsInExtensions(new IExpr[] { a, b }, algebraicNumbers));
+		}
+		return PolynomialGCD(a, b, mkConverterForOperationsInExtensions(new IExpr[] { a, b }, algebraicNumbers));
 	}
 
 	/** Polynomial GCD */
 	public static <R> IExpr PolynomialGCD(IExpr a, IExpr b, IConverter<Rational<R>> converter) {
 		Rational<R> ra = converter.toRingElement(a), rb = converter.toRingElement(b);
-		if (ra == null || rb == null)
+		if (ra == null || rb == null) {
 			return null;
+		}
 		Rationals<R> ring = (Rationals<R>) converter.getRing();
 		return converter.toIExpr(ring.mkNumerator(ring.ring.gcd(ra.numerator(), rb.numerator())));
 	}
@@ -356,11 +354,11 @@ public final class SymjaRings {
 	public static IExpr PolynomialExtendedGCDOverExtension(IExpr a, IExpr b, IExpr var, IExpr[] extensions,
 			boolean automatic) {
 		IExpr[] algebraicNumbers = guessExtensions(automatic ? ArraysUtil.addAll(extensions, a, b) : extensions);
-		if (algebraicNumbers.length == 0)
+		if (algebraicNumbers.length == 0) {
 			return PolynomialExtendedGCDOverQ(a, b, var);
-		else
-			return PolynomialExtendedGCD(a, b, var,
-					mkConverterForOperationsInExtensions(new IExpr[] { a, b }, algebraicNumbers));
+		}
+		return PolynomialExtendedGCD(a, b, var,
+				mkConverterForOperationsInExtensions(new IExpr[] { a, b }, algebraicNumbers));
 	}
 
 	/** Polynomial Extended GCD */
@@ -369,17 +367,18 @@ public final class SymjaRings {
 			IConverter<Rational<MultivariatePolynomial<E>>> converter) {
 		Rational<MultivariatePolynomial<E>> ra = converter.toRingElement(a), rb = converter.toRingElement(b),
 				rv = converter.toRingElement(variable);
-		if (ra == null || rb == null || rv == null)
+		if (ra == null || rb == null || rv == null) {
 			return null;
-
+		}
 		if (!rv.isIntegral()
-				|| !(rv.numerator().isMonomial() && rv.numerator().degree() == 1 && rv.numerator().isMonic()))
+				|| !(rv.numerator().isMonomial() && rv.numerator().degree() == 1 && rv.numerator().isMonic())) {
 			throw new IllegalArgumentException("simple variable should be specified");
+		}
 
 		int iVariable = rv.numerator().univariateVariable();
-		if (ra.denominator().degree(iVariable) != 0 || rb.denominator().degree(iVariable) != 0)
+		if (ra.denominator().degree(iVariable) != 0 || rb.denominator().degree(iVariable) != 0) {
 			throw new IllegalArgumentException("not a polynomial expressions");
-
+		}
 		Rationals<MultivariatePolynomial<E>> ring = (Rationals<MultivariatePolynomial<E>>) converter.getRing();
 		MultivariatePolynomial<E> raDen = ra.denominator().asUnivariateEliminate(iVariable).cc(),
 				rbDen = rb.denominator().asUnivariateEliminate(iVariable).cc(), factory = raDen;
@@ -404,13 +403,13 @@ public final class SymjaRings {
 									cf -> qRing.mk(factory.createConstant(cf.numerator()),
 											factory.createConstant(cf.denominator()))))
 					.toArray(UnivariatePolynomial[]::new);
-		} else
+		} else {
 			xgcd = UnivariateGCD.PolynomialExtendedGCD(ura, urb);
-
+		}
 		IExpr[] result = Arrays.stream(xgcd).map(p -> {
 			Util.Tuple2<UnivariatePolynomial<MultivariatePolynomial<E>>, MultivariatePolynomial<E>> cd = Util
 					.toCommonDenominator(p);
-			return converter.toIExpr(ring.mk(MultivariatePolynomial.asMultivariate(cd._1, iVariable, true),
+			return converter.toIExpr(ring.mk(AMultivariatePolynomial.asMultivariate(cd._1, iVariable, true),
 					cd._2.insertVariable(iVariable)));
 		}).toArray(IExpr[]::new);
 
@@ -421,27 +420,30 @@ public final class SymjaRings {
 	///////////////////////////////////////////////////// /////////////////////////////////////////////////////
 
 	/** Symja's I */
-	private static final IExpr imaginaryUnit = F.complex(F.integer(0), F.integer(1));
+	private static final IExpr imaginaryUnit = F.CI;
 
 	/** Returns a set of symbols that occur in the expression considered as multivariate polynomial */
 	private static Set<IExpr> findSymbols(IExpr... expressions) {
 		Set<IExpr> seen = new HashSet<>();
-		for (IExpr expr : expressions)
+		for (IExpr expr : expressions) {
 			findSymbols(expr, seen);
+		}
 		return seen;
 	}
 
 	/** Fills the set with symbols that occur in the expression considered as multivariate polynomial */
 	private static void findSymbols(IExpr expr, Set<IExpr> seen) {
-		if (expr.isPlus() || expr.isTimes())
-			for (int i = 1; i < expr.size(); ++i)
+		if (expr.isPlus() || expr.isTimes()) {
+			for (int i = 1; i < expr.size(); ++i) {
 				findSymbols(((IAST) expr).get(i), seen);
-		else if (expr.isPower() && expr.exponent().isInteger())
+			}
+		} else if (expr.isPower() && expr.exponent().isInteger()) {
 			findSymbols(expr.base(), seen);
-		else if (expr.isComplex())
+		} else if (expr.isComplex()) {
 			seen.add(imaginaryUnit);
-		else if (!expr.isInteger() && !expr.isRational())
+		} else if (!expr.isInteger() && !expr.isRational()) {
 			seen.add(expr);
+		}
 	}
 
 	/**
@@ -530,22 +532,24 @@ public final class SymjaRings {
 			if (base == null)
 				return null;
 			return helper.qRing.pow(base, expr.exponent().toIntDefault(Integer.MAX_VALUE));
-		} else if (expr.isInteger())
+		} else if (expr.isInteger()) {
 			return helper.qRing.valueOfBigInteger(new BigInteger(((IInteger) expr).toBigNumerator()));
-		else if (expr.isRational()) {
+		} else if (expr.isRational()) {
 			java.math.BigInteger num = ((IRational) expr).numerator().toBigNumerator(),
 					den = ((IRational) expr).denominator().toBigNumerator();
 			return helper.qRing.divideExact(helper.qRing.valueOfBigInteger(new BigInteger(num)),
 					helper.qRing.valueOfBigInteger(new BigInteger(den)));
 		} else if (expr.isComplex()) {
 			Integer i = helper.fromExprToVar.get(imaginaryUnit);
-			if (i == null)
+			if (i == null) {
 				return null;
+			}
 			IComplex c = (IComplex) expr;
 			Rational<MultivariatePolynomial<BigInteger>> re = toRationalFuncOrNull(c.re(), helper),
 					im = toRationalFuncOrNull(c.im(), helper);
-			if (re == null || im == null)
+			if (re == null || im == null) {
 				return null;
+			}
 
 			return helper.qRing.add(re, helper.qRing.multiply(im, helper.qRing.mkNumerator(helper.pRing.variable(i))));
 		} else {
@@ -573,18 +577,24 @@ public final class SymjaRings {
 			E coeff = monomial.coefficient;
 			int[] exponents = monomial.exponents;
 
-			List<IExpr> parts = new ArrayList<>();
-			if (!poly.ring.isOne(coeff) || monomial.totalDegree == 0)
-				parts.add(cfConverter.apply(coeff));
+			IASTAppendable parts;
+			if (!poly.ring.isOne(coeff) || monomial.totalDegree == 0) {
+				parts = F.TimesAlloc(exponents.length + 1);
+				parts.append(cfConverter.apply(coeff));
+			} else {
+				parts = F.TimesAlloc(exponents.length);
+			}
 
-			for (int i = 0; i < exponents.length; i++)
-				if (exponents[i] != 0)
-					if (exponents[i] == 1)
-						parts.add(helper.fromVarToExpr.get(i));
-					else
-						parts.add(F.Power(helper.fromVarToExpr.get(i), exponents[i]));
-
-			plus.append(parts.size() == 1 ? parts.get(0) : F.Times(parts.toArray(new IExpr[parts.size()])));
+			for (int i = 0; i < exponents.length; i++) {
+				if (exponents[i] != 0) {
+					if (exponents[i] == 1) {
+						parts.append(helper.fromVarToExpr.get(i));
+					} else {
+						parts.append(F.Power(helper.fromVarToExpr.get(i), exponents[i]));
+					}
+				}
+			}
+			plus.append(parts.oneIdentity1());
 		}
 		return plus.oneIdentity0();
 	}
@@ -609,7 +619,7 @@ public final class SymjaRings {
 
 	/** BigInteger -> IExpr */
 	private static IExpr int2expr(BigInteger cf) {
-		return F.integer(new java.math.BigInteger(cf.toByteArray()));
+		return F.ZZ(new java.math.BigInteger(cf.toByteArray()));
 	}
 
 	/** Rational[BigInteger] -> IExpr */
@@ -695,9 +705,9 @@ public final class SymjaRings {
 
 		for (IExpr el : algebraicNumbers) {
 			UnivariatePolynomial<Rational<BigInteger>> minPoly;
-			if (el.isImaginaryUnit())
+			if (el.isImaginaryUnit()) {
 				minPoly = Rings.GaussianRationals.getMinimalPolynomial();
-			else if (isRootAlgebraicNumber(el)) {
+			} else if (isRootAlgebraicNumber(el)) {
 				// x = (a/b) ^ (c/d)
 				// b^c x^d - a^c = 0
 				BigInteger a = new BigInteger(((IRational) el.base()).numerator().toBigNumerator()),
@@ -711,13 +721,14 @@ public final class SymjaRings {
 				minPoly = UnivariatePolynomial.zero(Q);
 				minPoly.set(0, Q.mkNumerator(Z.pow(a, c).negate()));
 				minPoly.set(d.intValueExact(), Q.mkNumerator(Z.pow(b, c)));
-			} else
+			} else {
 				return null;
-
-			if (field == null)
+			}
+			if (field == null) {
 				field = MultipleFieldExtension.mkMultipleExtension(minPoly);
-			else
+			} else {
 				field = field.joinAlgebraicElement(minPoly);
+			}
 		}
 
 		return field;
@@ -741,10 +752,10 @@ public final class SymjaRings {
 		Rational<MultivariatePolynomial<BigInteger>>[] ringsExpressions = Arrays.stream(expressions)
 				.map(e -> toRationalFuncOrNull(e, helper)).toArray(Rational[]::new);
 
-		if (Arrays.stream(ringsExpressions).anyMatch(Objects::isNull))
+		if (Arrays.stream(ringsExpressions).anyMatch(Objects::isNull)) {
 			// if any conversion failed
 			return null;
-
+		}
 		// variables used to designate algebraic elements
 		int[] extensionVars = ArraysUtil
 				.getSortedDistinct(Arrays.stream(extensions).mapToInt(helper.fromExprToVar::get).toArray());
@@ -753,9 +764,10 @@ public final class SymjaRings {
 		MultipleFieldExtension<Monomial<Rational<BigInteger>>, MultivariatePolynomial<Rational<BigInteger>>, UnivariatePolynomial<Rational<BigInteger>>> fieldExtension = mkFieldExtension(
 				extensions);
 
-		if (fieldExtension == null)
+		if (fieldExtension == null) {
 			// non-trivial algebraic numbers
 			return null;
+		}
 
 		// actual polynomial ring with coefficients from extension
 		MultivariateRing<MultivariatePolynomial<MultivariatePolynomial<Rational<BigInteger>>>> pRing = MultivariateRing(
