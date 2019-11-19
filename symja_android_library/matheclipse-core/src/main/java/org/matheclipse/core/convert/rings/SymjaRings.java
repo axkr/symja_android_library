@@ -189,7 +189,7 @@ public final class SymjaRings {
 			}
 		}
 		if (!evaled && result.size() == 3) {
-			// avoid "pseudo-factorizations", where only -1,-I,I is factored out 
+			// avoid "pseudo-factorizations", where only -1,-I,I is factored out
 			IExpr last = result.arg2();
 			if (last.equals(F.CN1)) {
 				return F.NIL;
@@ -260,7 +260,7 @@ public final class SymjaRings {
 	public static <R> IExpr Together(IExpr a, IConverter<R> converter) {
 		R ra = converter.toRingElement(a);
 		if (ra == null) {
-			return null;
+			return F.NIL;
 		}
 		return converter.toIExpr(ra);
 	}
@@ -312,7 +312,7 @@ public final class SymjaRings {
 	public static <R> IExpr PolynomialGCD(IExpr a, IExpr b, IConverter<Rational<R>> converter) {
 		Rational<R> ra = converter.toRingElement(a), rb = converter.toRingElement(b);
 		if (ra == null || rb == null) {
-			return null;
+			return F.NIL;
 		}
 		Rationals<R> ring = (Rationals<R>) converter.getRing();
 		return converter.toIExpr(ring.mkNumerator(ring.ring.gcd(ra.numerator(), rb.numerator())));
@@ -526,8 +526,9 @@ public final class SymjaRings {
 			Rational<MultivariatePolynomial<BigInteger>> result = helper.qRing.getZero();
 			for (int i = 1; i < plus.size(); i++) {
 				Rational<MultivariatePolynomial<BigInteger>> summand = toRationalFuncOrNull(plus.get(i), helper);
-				if (summand == null)
+				if (summand == null) {
 					return null;
+				}
 				result = result.add(summand);
 			}
 			return result;
@@ -536,15 +537,17 @@ public final class SymjaRings {
 			Rational<MultivariatePolynomial<BigInteger>> result = helper.qRing.getOne();
 			for (int i = 1; i < times.size(); i++) {
 				Rational<MultivariatePolynomial<BigInteger>> multiplier = toRationalFuncOrNull(times.get(i), helper);
-				if (multiplier == null)
+				if (multiplier == null) {
 					return null;
+				}
 				result = result.multiply(multiplier);
 			}
 			return result;
 		} else if (expr.isPower() && expr.exponent().isInteger()) {
 			Rational<MultivariatePolynomial<BigInteger>> base = toRationalFuncOrNull(expr.base(), helper);
-			if (base == null)
+			if (base == null) {
 				return null;
+			}
 			return helper.qRing.pow(base, expr.exponent().toIntDefault(Integer.MAX_VALUE));
 		} else if (expr.isInteger()) {
 			return helper.qRing.valueOfBigInteger(new BigInteger(((IInteger) expr).toBigNumerator()));
@@ -730,8 +733,9 @@ public final class SymjaRings {
 						c = new BigInteger(((IRational) el.exponent()).numerator().toBigNumerator()),
 						d = new BigInteger(((IRational) el.exponent()).denominator().toBigNumerator());
 
-				if (!d.isInt() || d.intValueExact() < 0)
+				if (!d.isInt() || d.intValueExact() < 0) {
 					return null;
+				}
 
 				minPoly = UnivariatePolynomial.zero(Q);
 				minPoly.set(0, Q.mkNumerator(Z.pow(a, c).negate()));

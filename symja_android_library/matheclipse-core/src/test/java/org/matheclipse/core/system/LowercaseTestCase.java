@@ -14208,9 +14208,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PolynomialGCD(e*x^2 + d, ( -2*d*e^2*Sqrt(-e/d) )*x + 2*d*e^2 )", //
 				"1");
 
-		// TODO difference to MMA handle Extension->Automatic correctly
 		check("PolynomialGCD(x^2 - 2, x - Sqrt(2))", //
-				"-Sqrt(2)+x");
+				"1");
 
 		// check("PolynomialGCD(I*2,12)", "2");
 		check("PolynomialGCD(a+b*x,c+d*x)", //

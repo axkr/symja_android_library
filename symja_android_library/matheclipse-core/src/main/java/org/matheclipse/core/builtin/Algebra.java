@@ -2827,30 +2827,40 @@ public class Algebra {
 			VariablesSet eVar = new VariablesSet();
 			eVar.addVarList(ast, 1);
 
-			IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 			if (ast.size() > 3 && ast.last().isRuleAST()) {
+				IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 				return gcdWithOption(ast, expr, eVar, engine);
 			}
 			try {
-				// ASTRange r = new ASTRange(eVar.getVarList(), 1);
-				List<IExpr> varList = eVar.getVarList().copyTo();
-				JASConvert<BigInteger> jas = new JASConvert<BigInteger>(varList, BigInteger.ZERO);
-				GenPolynomial<BigInteger> poly = jas.expr2JAS(expr, false);
-				GenPolynomial<BigInteger> temp;
-				GreatestCommonDivisorAbstract<BigInteger> factory = GCDFactory.getImplementation(BigInteger.ZERO);
+				IExpr poly = ast.arg1();
 				for (int i = 2; i < ast.size(); i++) {
-					expr = F.evalExpandAll(ast.get(i), engine);
-					temp = jas.expr2JAS(expr, false);
-					poly = factory.gcd(poly, temp);
+					IExpr temp = SymjaRings.PolynomialGCDOverQ(poly, ast.get(i));
+					if (temp.isPresent()) {
+						poly = temp;
+					} else {
+						return F.NIL;
+					}
 				}
-				return jas.integerPoly2Expr(poly.monic());
-			} catch (JASConversionException e) {
+				return poly;
+
+//				List<IExpr> varList = eVar.getVarList().copyTo();
+//				JASConvert<BigInteger> jas = new JASConvert<BigInteger>(varList, BigInteger.ZERO);
+//				GenPolynomial<BigInteger> poly = jas.expr2JAS(expr, false);
+//				GenPolynomial<BigInteger> temp;
+//				GreatestCommonDivisorAbstract<BigInteger> factory = GCDFactory.getImplementation(BigInteger.ZERO);
+//				for (int i = 2; i < ast.size(); i++) {
+//					expr = F.evalExpandAll(ast.get(i), engine);
+//					temp = jas.expr2JAS(expr, false);
+//					poly = factory.gcd(poly, temp);
+//				}
+//				return jas.integerPoly2Expr(poly.monic());
+			} catch (RuntimeException rex1) {
 				try {
 					if (eVar.size() == 0) {
 						return F.NIL;
 					}
 					IAST vars = eVar.getVarList();
-					expr = F.evalExpandAll(ast.arg1(), engine);
+					IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 
 					ExprPolynomialRing ring = new ExprPolynomialRing(vars);
 					ExprPolynomial p1 = ring.create(expr);
@@ -2878,9 +2888,9 @@ public class Algebra {
 					// p1 = factory.gcd(p1, p2);
 					// }
 					// return jas.exprPoly2Expr(p1);
-				} catch (RuntimeException rex) {
+				} catch (RuntimeException rex2) {
 					if (Config.DEBUG) {
-						e.printStackTrace();
+						rex2.printStackTrace();
 					}
 				}
 			}
