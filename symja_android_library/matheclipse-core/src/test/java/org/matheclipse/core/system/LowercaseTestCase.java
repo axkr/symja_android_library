@@ -5904,7 +5904,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Cos(x)-I*Sin(x)");
 		System.out.print('.');
 		check("Factor((Cos(x)-I*Sin(x))/(I*Cos(x)-Sin(x)))", //
-				"(-I*(I*Cos(x)+Sin(x)))/(I*Cos(x)-Sin(x))");
+				"(Cos(x)-I*Sin(x))/(I*Cos(x)-Sin(x))");
 
 		// example from paper
 		// https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf

@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -170,16 +171,12 @@ public final class SymjaRings {
 		}
 		Ring<R> ring = converter.getRing();
 		FactorDecomposition<R> factors = squareFree ? ring.factorSquareFree(rExpr) : ring.factor(rExpr);
-		if (factors.size() == 1 && //
-				(factors.unit.equals(F.CN1) || //
-						factors.unit.equals(F.CNI) || //
-						factors.unit.equals(F.CI))) {
-			factors = FactorDecomposition.of(ring, rExpr);
-		}
 		IASTAppendable result = F.TimesAlloc(factors.size());
+		int exponent = 1;
+		boolean evaled = false;
 		for (int i = 0; i <= factors.size(); ++i) {
 			IExpr factor = converter.toIExpr(i == factors.size() ? factors.unit : factors.get(i));
-			int exponent = i == factors.size() ? 1 : factors.getExponent(i);
+			exponent = i == factors.size() ? 1 : factors.getExponent(i);
 
 			if (factor.isOne()) {
 				continue;
@@ -188,6 +185,23 @@ public final class SymjaRings {
 				result.append(factor);
 			} else {
 				result.append(F.Power(factor, exponent));
+				evaled = true;
+			}
+		}
+		if (!evaled && result.size() == 3) {
+			// avoid "pseudo-factorizations", where only -1,-I,I is factored out 
+			IExpr last = result.arg2();
+			if (last.equals(F.CN1)) {
+				return F.NIL;
+			}
+			if (last.isTimes() && last.size() == 3 && //
+					last.first().isNumber() && last.second().isNumber()) {
+				last = last.first().times(last.second());
+			}
+			if (last.equals(F.CN1) || //
+					last.equals(F.CNI) || //
+					last.equals(F.CI)) {
+				return F.NIL;
 			}
 		}
 		return result.oneIdentity1();
@@ -612,8 +626,9 @@ public final class SymjaRings {
 	public static <E> IExpr toIExpr(Rational<MultivariatePolynomial<E>> rational, RingsConversionHelper helper,
 			Function<E, IExpr> cfConverter) {
 		IExpr num = toIExpr(rational.numerator(), helper, cfConverter);
-		if (rational.isIntegral())
+		if (rational.isIntegral()) {
 			return num;
+		}
 		return F.Times(num, F.Power(toIExpr(rational.denominator(), helper, cfConverter), -1));
 	}
 
