@@ -5865,23 +5865,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFactor() {
-		check("Factor(1+2*x+2*x^2+x^3)",//
+		check("Factor(1+2*x+2*x^2+x^3)", //
 				"(1+x)*(1+x+x^2)");
 		check("Factor(x-I*y)", //
 				"x-I*y");
-		
+
 		check("Factor(x^2+2*x+1)", //
 				"(1+x)^2");
 		check("Factor(x+2*Sqrt(x)+1)", //
 				"(1+Sqrt(x))^2");
-		
+
 		check("Factor(1+x^2, Extension->I)", //
 				"(-I+x)*(I+x)");
 		check("Factor(x+y)", //
 				"x+y");
 		check("Factor(x-I*y)", //
 				"x-I*y");
-		
+
 		check("Factor(x^(-6)+1)", //
 				"((1+x^2)*(1-x^2+x^4))/x^6");
 		System.out.println();
@@ -5936,8 +5936,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "I*3*x)+E^(I*3*x))");
 		System.out.print('.');
 		check("Factor(2+(-I*(E^(-I*x)-E^(I*x)))/(E^(-I*x)+E^(I*x))+(I*3*(E^(-I*3*x)-E^(I*3*x)))/(E^(-I*3*x)+E^(I*3*x)))", //
-				"(I*2*(1-I+I*E^(I*2*x)+(-1-I)*E^(I*4*x)))/((-1-I*E^(I*x)+E^(I*2*x))*(-1+I*E^(I*x)+E^(\n" + 
-				"I*2*x)))");
+				"(I*2*(1-I+I*E^(I*2*x)+(-1-I)*E^(I*4*x)))/((-1-I*E^(I*x)+E^(I*2*x))*(-1+I*E^(I*x)+E^(\n" + "I*2*x)))");
 
 		// example from paper
 		System.out.print('.');
@@ -6014,7 +6013,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		System.out.print('.');
 		check("Factor(x^(12)-y^(12), GaussianIntegers->True)", //
 				"(x-y)*(x+y)*(x-I*y)*(x+I*y)*(x^2-I*x*y-y^2)*(x^2+I*x*y-y^2)*(x^2+x*y+y^2)*(x^2-x*y+y^\n" + //
-				"2)");
+						"2)");
 		System.out.print('.');
 		check("Factor(x^(2)+y^(2), GaussianIntegers->True)", //
 				"(x-I*y)*(x+I*y)");
@@ -9567,30 +9566,31 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// Mathcell syntax / generate TeX for MathJAX
 		check("JSForm(Manipulate(Factor(x^n + 1), {n, 1, 5, 1}))", //
 				"MathCell( id, [ { type: 'slider', min: 1, max: 5, step: 1, name: 'n', label: 'n' }\n" + //
-				" ] );\n" + //
-				"\n" + //
-				"parent.update = function( id ) {\n" + //
-				"\n" + //
-				"var n = getVariable(id, 'n');\n" + //
-				"\n" + //
-				"\n" + //
-				"var expressions = [ '1+x',\n" + //
-				"'1+{x}^{2}',\n" + //
-				"'\\\\\\\\left( 1+x\\\\\\\\right) \\\\\\\\,\\\\\\\\left( 1 - x+{x}^{2}\\\\\\\\right) ',\n" + //
-				"'1+{x}^{4}',\n" + //
-				"'\\\\\\\\left( 1+x\\\\\\\\right) \\\\\\\\,\\\\\\\\left( 1 - x+{x}^{2} - {x}^{3}+{x}^{4}\\\\\\\\right) ' ];\n" + //
-				"\n" + //
-				"  var data = '\\\\\\\\[' + expressions[n-1] + '\\\\\\\\]';\n" + //
-				"\n" + //
-				"  data = data.replace( /\\\\\\\\/g, '&#92;' );\n" + //
-				"\n" + //
-				"  var config = {type: 'text', center: true };\n" + //
-				"\n" + //
-				"  evaluate( id, data, config );\n" + //
-				"\n" + //
-				"  MathJax.Hub.Queue( [ 'Typeset', MathJax.Hub, id ] );\n" + //
-				"\n" + //
-				"}");
+						" ] );\n" + //
+						"\n" + //
+						"parent.update = function( id ) {\n" + //
+						"\n" + //
+						"var n = getVariable(id, 'n');\n" + //
+						"\n" + //
+						"\n" + //
+						"var expressions = [ '1+x',\n" + //
+						"'1+{x}^{2}',\n" + //
+						"'\\\\\\\\left( 1+x\\\\\\\\right) \\\\\\\\,\\\\\\\\left( 1 - x+{x}^{2}\\\\\\\\right) ',\n" + //
+						"'1+{x}^{4}',\n" + //
+						"'\\\\\\\\left( 1+x\\\\\\\\right) \\\\\\\\,\\\\\\\\left( 1 - x+{x}^{2} - {x}^{3}+{x}^{4}\\\\\\\\right) ' ];\n"
+						+ //
+						"\n" + //
+						"  var data = '\\\\\\\\[' + expressions[n-1] + '\\\\\\\\]';\n" + //
+						"\n" + //
+						"  data = data.replace( /\\\\\\\\/g, '&#92;' );\n" + //
+						"\n" + //
+						"  var config = {type: 'text', center: true };\n" + //
+						"\n" + //
+						"  evaluate( id, data, config );\n" + //
+						"\n" + //
+						"  MathJax.Hub.Queue( [ 'Typeset', MathJax.Hub, id ] );\n" + //
+						"\n" + //
+						"}");
 		// JSXGraph syntax
 		check("JSForm(ListPlot(Prime(Range(25))))", //
 				"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-1.3,101.75,27.3,-2.75]});\n" + //
@@ -14159,9 +14159,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialExtendedGCD() {
+		// see https://github.com/PoslavskySV/rings/issues/63
 		check("PolynomialExtendedGCD((x - 1)^2*(x - 2)^2, (x - 1)*(x^2 - 3), x)", //
 				"{-1+x,{1/2*(19+11*x),1/2*(-26+36*x-11*x^2)}}");
-		
+
 		check("PolynomialExtendedGCD(2*x^2+3,3*x,f(x,y))", //
 				"{1,{0,1/(3*x)}}");
 		check("PolynomialExtendedGCD(a[x],b[x],x)", //
@@ -14172,8 +14173,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{1,{0,1/b}}");
 
 		// TODO make result consistent with PolynomiaGCD
-//		check("PolynomialExtendedGCD(e*x^2 + d, ( -2*d*e^2*Sqrt(-e/d) )*x + 2*d*e^2, x )", //
-//				"{-1/Sqrt(-e/d)+x,{0,-1/(2*d*e^2*Sqrt(-e/d))}}");
+		// check("PolynomialExtendedGCD(e*x^2 + d, ( -2*d*e^2*Sqrt(-e/d) )*x + 2*d*e^2, x )", //
+		// "{-1/Sqrt(-e/d)+x,{0,-1/(2*d*e^2*Sqrt(-e/d))}}");
 
 		// Wikipedia: finite field GF(28) - p = x8 + x4 + x3 + x + 1, and a = x6 + x4 +
 		// x + 1
@@ -14196,6 +14197,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialGCD() {
+		check("PolynomialGCD((x - 1)^2*(x - 2)^2, (x - 1)*(x^2 - 3))", //
+				"-1+x");
+
 		check("PolynomialGCD(f(x),f(x)*x^2)", //
 				"f(x)");
 
@@ -15538,10 +15542,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testQuantity() {
 		if (ToggleFeature.QUANTITY) {
-//			check("Quantity(1, \"min\") + Quantity(50, \"s\")", //
-//					"110[s]");
-//			check("Quantity(0, \"kg\") + Quantity(0, \"A\") + Quantity(0, \"m\")", //
-//					"0[A]+0[kg]+0[m]");
+			// check("Quantity(1, \"min\") + Quantity(50, \"s\")", //
+			// "110[s]");
+			// check("Quantity(0, \"kg\") + Quantity(0, \"A\") + Quantity(0, \"m\")", //
+			// "0[A]+0[kg]+0[m]");
 			check("Quantity(1, \"min\") + Quantity(120, \"min\")", //
 					"121[min]");
 			check("Quantity(1, \"min\") + Quantity(50, \"s\")", //
