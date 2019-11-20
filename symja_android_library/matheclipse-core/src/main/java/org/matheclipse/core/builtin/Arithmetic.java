@@ -2168,8 +2168,17 @@ public final class Arithmetic {
 					IExpr arg2 = engine.evaluateNonNumeric(ast.arg2());
 					numericPrecision = Validate.checkIntType(arg2);
 				}
+				IExpr arg1 = ast.arg1();
+				if (arg1.isNumericFunction()) {
+					engine.setNumericMode(true, numericPrecision);
+					return engine.evalWithoutNumericReset(arg1);
+				}
+
+				// first try symbolic evaluation, then numeric evaluation 
+				engine.setNumericPrecision(numericPrecision);
+				IExpr temp = engine.evaluate(arg1);
 				engine.setNumericMode(true, numericPrecision);
-				return engine.evalWithoutNumericReset(ast.arg1());
+				return engine.evalWithoutNumericReset(temp);
 			} finally {
 				engine.setNumericMode(numericMode);
 				engine.setNumericPrecision(oldPrecision);

@@ -3135,7 +3135,7 @@ public final class LinearAlgebra {
 				// absolute Value of a number
 				return ((INumber) arg1).abs();
 			}
-			if (arg1.isNumericFunction()) {
+			if (arg1.isNumericFunction()&&!arg1.isList()) {
 				if (ast.isAST2()) {
 					return F.NIL;
 				}
