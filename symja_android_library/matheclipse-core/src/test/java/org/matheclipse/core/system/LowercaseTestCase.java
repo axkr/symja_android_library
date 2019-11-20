@@ -9539,7 +9539,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"a+b");
 		check("JSForm(E^3-Cos(Pi^2/x) )", //
 				"(20.085536923187664)-Math.cos((9.869604401089358)/x)");
-		// Mathcell syntax
+		// JSXGraph.org syntax
 		check("JSForm(Manipulate(Plot(Sin(x)*Cos(1 + a*x), {x, 0, 2*Pi}, PlotRange->{-1,2}), {a,0,10}))", //
 				"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.3141592653589793,2.15,6.5973445725385655,-1.15]});\n"
 						+ "board.suspendUpdate();\n"
@@ -9575,7 +9575,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 						"  MathJax.Hub.Queue( [ 'Typeset', MathJax.Hub, id ] );\n" + //
 						"\n" + //
 						"}");
-		// JSXGraph syntax
+		// JSXGraph.org syntax
 		check("JSForm(ListPlot(Prime(Range(25))))", //
 				"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-1.3,101.75,27.3,-2.75]});\n" + //
 						"board.suspendUpdate();\n" + //

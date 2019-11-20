@@ -166,8 +166,8 @@ public class MinMaxFunctions {
 					boolean evaled = true;
 					ISymbol x = (ISymbol) xExpr;
 					ISymbol y = (ISymbol) yExpr;
-					IExpr min = F.Minimize.of(engine, function, xExpr);
-					IExpr max = F.Maximize.of(engine, function, xExpr);
+					IExpr min = engine.evalQuiet(F.Minimize(function, xExpr));
+					IExpr max = engine.evalQuiet(F.Maximize(function, xExpr));
 					IASTMutable minMaxList = F.binaryAST2(F.List, F.CNInfinity, F.CInfinity);
 					if (min.isAST(F.List, 3)) {
 						minMaxList.set(1, min.first());
