@@ -71,7 +71,7 @@ For the generation of these controls, Symja uses the following JavaScript librar
 
 If you would like to use the output from the plot or graph functions in your own web pages, you can generate the JavaScript source code with the [JSForm](functions/JSForm.md) function.
 
-You can for example display the generated JavaScript form of the `Manipulate` function:
+You can for example display the generated JavaScript form of the [Manipulate](functions/Manipulate.md) function:
 
 ```
 >> Manipulate(Plot(Sin(x)*Cos(1 + a*x), {x, 0, 2*Pi}), {a,0,10}) // JSForm
