@@ -1,5 +1,12 @@
 ## Plotting graphs and functions
 
+ 
+- [Examples](#examples) 
+- [Used JavaScript libraries](#used-javascript-libraries) 
+- [Generating JavaScript output](#generating-javascript-output) 
+
+## Examples
+
 These are some functions integrated in Symja, which allow the output of a graphical "JavaScript control".  
 
 * [ListLinePlot](functions/ListLinePlot.md)
@@ -49,3 +56,25 @@ The following example displays an undirected weighted [Graph](functions/Graph.md
 ```
 >> TreeForm(a+(b*q*s)^(2*y)+Sin(c)^(3-z)) 
 ```
+
+## Used JavaScript libraries
+
+For the generation of these controls, Symja uses the following JavaScript libraries
+
+- [Math](https://github.com/paulmasson/math) for evaluating common mathematical operations in JavaScript 
+- [JSXGraph](https://github.com/jsxgraph/jsxgraph) for  interactive function plotting and charting 
+- [MathCell](https://github.com/paulmasson/mathcell) for displaying 3D function plots
+- [vis-network](https://github.com/visjs/vis-network) for (graph) network views
+
+
+## Generating JavaScript output
+
+If you would like to use the output from the plot or graph functions in your own web pages, you can generate the JavaScript source code with the [JSForm](functions/JSForm.md) function.
+
+You can for example display the generated JavaScript form of the `Manipulate` function:
+
+```
+>> Manipulate(Plot(Sin(x)*Cos(1 + a*x), {x, 0, 2*Pi}), {a,0,10}) // JSForm
+```
+
+and insert it in a HTML template from the [JSXGraph.org](https://jsxgraph.org/wp/index.html) project.
