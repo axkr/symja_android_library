@@ -1764,7 +1764,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"x&&y&&z||!x&&!y&&!z");
 	}
 
-	public void testBooleanMinimize() {
+	public void testBooleanMinimize() { 
+		check("BooleanMinimize(Or(z,a, z))",//
+				"a||z");
 		check("BooleanMinimize((a&&b&&!c)||(a&&!b&&c)||(a&&!c&&d)||(!a&&b&&c)||(b&&c&&!d)||(b&&!c&&d)||(!b&&c&&d))", //
 				"a&&b&&!c||a&&!b&&d||a&&c&&!d||!a&&b&&d||!a&&c&&d||b&&c&&!d");
 
@@ -13098,6 +13100,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testOr() {
+		check("Or(z, z)", //
+				"z||z");
+		check("Or(a, z, z)", //
+				"a||z||z");
 		check("Attributes(Or)", //
 				"{Flat,HoldAll,OneIdentity,Protected}");
 		check("Or(p, p, p) /. Or(a_, b_) :> {a, b}", //

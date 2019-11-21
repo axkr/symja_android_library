@@ -910,7 +910,11 @@ public final class BooleanFunctions {
 						vars.append(temp);
 					}
 				}
-				formula = lf.expr2BooleanFunction(rest);
+				if (rest.size() == 1) {
+					vars = F.Or();
+				} else {
+					formula = lf.expr2BooleanFunction(rest);
+				}
 			}
 
 			formula = QuineMcCluskeyAlgorithm.compute(formula);
