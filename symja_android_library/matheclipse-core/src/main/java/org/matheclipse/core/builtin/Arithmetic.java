@@ -2166,7 +2166,10 @@ public final class Arithmetic {
 				long numericPrecision = Config.MACHINE_PRECISION;
 				if (ast.isAST2()) {
 					IExpr arg2 = engine.evaluateNonNumeric(ast.arg2());
-					numericPrecision = Validate.checkIntType(arg2);
+					numericPrecision = arg2.toIntDefault();// Validate.checkIntType(arg2);
+					if (numericPrecision < Config.MACHINE_PRECISION) {
+						numericPrecision = Config.MACHINE_PRECISION;
+					}
 				}
 				IExpr arg1 = ast.arg1();
 				if (arg1.isNumericFunction()) {
@@ -2174,7 +2177,7 @@ public final class Arithmetic {
 					return engine.evalWithoutNumericReset(arg1);
 				}
 
-				// first try symbolic evaluation, then numeric evaluation 
+				// first try symbolic evaluation, then numeric evaluation
 				engine.setNumericPrecision(numericPrecision);
 				IExpr temp = engine.evaluate(arg1);
 				engine.setNumericMode(true, numericPrecision);

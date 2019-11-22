@@ -520,8 +520,10 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		try {
-			IAST vars = Validate.checkSymbolOrSymbolList(ast, 2);
-
+			IAST vars = Validate.checkSymbolOrSymbolList(ast, 2, engine);
+			if (!vars.isPresent()) {
+				return F.NIL;
+			}
 			IAST termsEqualZeroList = checkEquations(ast, 1, engine);
 
 			IAST result = termsEqualZeroList;

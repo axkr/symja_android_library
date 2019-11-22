@@ -377,7 +377,7 @@ public class AST2Expr {
 				case ID.N:
 					if (ast.isAST2() && ast.arg2().isInteger()) {
 						try {
-							int precision = Validate.checkIntType(ast.arg2());
+							int precision = ast.arg2().toIntDefault();  
 							if (EvalEngine.isApfloat(precision)) {
 								fPrecision = precision;
 								ast.set(1, convertNode(functionNode.get(1)));

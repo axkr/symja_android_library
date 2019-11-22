@@ -265,15 +265,15 @@ public final class OutputFunctions {
 					eVar = new VariablesSet(ast.arg1());
 					variables = eVar.getVarList();
 				}
-
-				if (variables.size() >= 2) {
-					ISymbol sym = (ISymbol) variables.arg1();
-					if (poly.isPlus()) {
-						HornerScheme scheme = new HornerScheme();
-						return scheme.generate(engine.isNumericMode(), poly, sym);
+				if (variables.isPresent()) {
+					if (variables.size() >= 2) {
+						ISymbol sym = (ISymbol) variables.arg1();
+						if (poly.isPlus()) {
+							HornerScheme scheme = new HornerScheme();
+							return scheme.generate(engine.isNumericMode(), poly, sym);
+						}
 					}
 				}
-
 			}
 			return arg1;
 		}

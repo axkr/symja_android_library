@@ -744,21 +744,11 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *            block to be executed if this expression unequals <code>F.NIL</code>
 	 * @see java.util.Optional#ifPresent(Consumer)
 	 */
-	default void ifPresent(Consumer<? super IExpr> consumer) {
-		consumer.accept(this);
-	}
-
-	/**
-	 * If a value is present, performs the given <code>consumer</code> with the value, otherwise performs the given
-	 * empty-based action.
-	 * 
-	 * @param consumer
-	 *            the action to be performed, if a value is present
-	 * @param emptyAction
-	 *            the empty-based action to be performed, if no value is present
-	 */
-	default void ifPresentOrElse​(Consumer<? super IExpr> consumer, Runnable emptyAction) {
-		consumer.accept(this);
+	default IExpr ifPresent(Function<? super IExpr, IExpr> function) {
+		if (this.isPresent()) {
+			return function.apply(this);
+		}
+		return F.NIL;
 	}
 
 	/**

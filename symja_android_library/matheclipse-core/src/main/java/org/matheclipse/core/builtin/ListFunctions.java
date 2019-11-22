@@ -537,7 +537,7 @@ public final class ListFunctions {
 			}
 
 			IExpr arg1 = engine.evaluate(ast.arg1());
-			IAST arg1AST = Validate.checkASTType(arg1, engine);
+			IAST arg1AST = Validate.checkASTType(ast, arg1, engine);
 			if (!arg1AST.isPresent()) {
 				return F.NIL;
 			}
@@ -621,13 +621,13 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			ISymbol sym = Validate.checkSymbolType(ast, 1, engine);
-			if (sym == null) {
+			IExpr sym = Validate.checkSymbolType(ast, 1, engine);
+			if (!sym.isPresent()) {
 				return F.NIL;
 			}
 			IExpr arg2 = engine.evaluate(ast.arg2());
 			Function<IExpr, IExpr> function = new AppendToFunction(arg2);
-			IExpr[] results = sym.reassignSymbolValue(function, F.AppendTo, engine);
+			IExpr[] results = ((ISymbol)sym).reassignSymbolValue(function, F.AppendTo, engine);
 			if (results != null) {
 				return results[1];
 			}
@@ -2621,7 +2621,7 @@ public final class ListFunctions {
 				}
 			}
 			IExpr arg1 = engine.evaluate(ast.arg1());
-			IAST arg1AST = Validate.checkASTType(arg1, engine);
+			IAST arg1AST = Validate.checkASTType(ast, arg1, engine);
 			if (!arg1AST.isPresent()) {
 				return F.NIL;
 			}
@@ -3686,7 +3686,7 @@ public final class ListFunctions {
 			}
 
 			IExpr arg1 = engine.evaluate(ast.arg1());
-			IAST arg1AST = Validate.checkASTType(arg1, engine);
+			IAST arg1AST = Validate.checkASTType(ast, arg1, engine);
 			if (!arg1AST.isPresent()) {
 				return F.NIL;
 			}
@@ -3797,13 +3797,13 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			ISymbol sym = Validate.checkSymbolType(ast, 1, engine);
-			if (sym == null) {
+			IExpr sym = Validate.checkSymbolType(ast, 1, engine);
+			if (!sym.isPresent()) {
 				return F.NIL;
 			}
 			IExpr arg2 = engine.evaluate(ast.arg2());
 			Function<IExpr, IExpr> function = new PrependToFunction(arg2);
-			IExpr[] results = sym.reassignSymbolValue(function, F.PrependTo, engine);
+			IExpr[] results = ((ISymbol)sym).reassignSymbolValue(function, F.PrependTo, engine);
 			if (results != null) {
 				return results[1];
 			}

@@ -347,15 +347,17 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			ISymbol symbol = Validate.checkSymbolType(ast, 1);
-
-			if (ast.size() > 2) {
-				int pos = ast.arg2().toIntDefault();
-				if (pos > 0) {
-					return symbol.getDefaultValue(pos);
+			IExpr arg1 = Validate.checkSymbolType(ast, 1, engine);
+			if (arg1.isPresent()) {
+				ISymbol symbol = (ISymbol) arg1;
+				if (ast.size() > 2) {
+					int pos = ast.arg2().toIntDefault();
+					if (pos > 0) {
+						return symbol.getDefaultValue(pos);
+					}
+				} else {
+					return symbol.getDefaultValue();
 				}
-			} else {
-				return symbol.getDefaultValue();
 			}
 			return F.NIL;
 		}
@@ -424,22 +426,23 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			ISymbol symbol = Validate.checkSymbolType(ast, 1);
-
-			PrintStream stream;
-			stream = engine.getOutPrintStream();
-			if (stream == null) {
-				stream = System.out;
-			}
-			try {
-				return F.stringx(symbol.definitionToString());
-			} catch (IOException e) {
-				stream.println(e.getMessage());
-				if (Config.DEBUG) {
-					e.printStackTrace();
+			IExpr arg1 = Validate.checkSymbolType(ast, 1, engine);
+			if (arg1.isPresent()) {
+				ISymbol symbol = (ISymbol) arg1;
+				PrintStream stream;
+				stream = engine.getOutPrintStream();
+				if (stream == null) {
+					stream = System.out;
+				}
+				try {
+					return F.stringx(symbol.definitionToString());
+				} catch (IOException e) {
+					stream.println(e.getMessage());
+					if (Config.DEBUG) {
+						e.printStackTrace();
+					}
 				}
 			}
-
 			return F.Null;
 		}
 

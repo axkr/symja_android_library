@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntegerSym;
@@ -298,21 +299,6 @@ public final class Validate {
 	}
 
 	/**
-	 * Check if the argument at the given position is a integer.
-	 * 
-	 * @param position
-	 *            the position which has to be a symbol.
-	 * @throws WrongArgumentType
-	 *             if it's not a symbol.
-	 */
-	public static IInteger checkIntegerType(IAST ast, int position) {
-		if (ast.get(position).isInteger()) {
-			return (IInteger) ast.get(position);
-		}
-		throw new WrongArgumentType(ast, ast.get(position), position, "Integer expected!");
-	}
-
-	/**
 	 * If {@code ast.size() < from} throw a {@code WrongNumberOfArguments} exception.
 	 * 
 	 * @throws WrongNumberOfArguments
@@ -357,7 +343,7 @@ public final class Validate {
 	 * @throws WrongNumberOfArguments
 	 *             if {@code ast.size()-1} is not even
 	 */
-	public static IAST checkEven(IAST ast) {
+	private static IAST checkEven(IAST ast) {
 		if (((ast.argSize()) & 0x0001) == 0x0001) {
 			throw new WrongNumberOfArguments(1, ast, ast.argSize());
 		}
@@ -434,20 +420,22 @@ public final class Validate {
 	 * 
 	 * @param position
 	 *            the position which has to be a symbol or list.
-	 * @return a list of symbols defined at <code>ast.get(position)</code>.
-	 * @throws WrongArgumentType
-	 *             if it's not a symbol.
+	 * @param engine
+	 *            the evaluation engine
+	 * 
+	 * @return a list of symbols defined at <code>ast.get(position)</code> or otherwise <code>F.NIL</code>
 	 */
-	public static IAST checkSymbolOrSymbolList(IAST ast, int position) {
-		IAST vars = null;
+	public static IAST checkSymbolOrSymbolList(IAST ast, int position, EvalEngine engine) {
 		if (ast.get(position).isList()) {
-			vars = (IAST) ast.get(position);
-			for (int i = 1; i < vars.size(); i++) {
-				Validate.checkSymbolType(vars, i);
+			IAST listOfSymbols = (IAST) ast.get(position);
+			for (int i = 1; i < listOfSymbols.size(); i++) {
+				if (!Validate.checkSymbolType(listOfSymbols, i, engine).isPresent()) {
+					return F.NIL;
+				}
 			}
-			return vars;
+			return listOfSymbols;
 		} else {
-			return F.List(Validate.checkSymbolType(ast, position));
+			return F.List(Validate.checkSymbolType(ast, position, engine));
 		}
 	}
 
@@ -459,7 +447,7 @@ public final class Validate {
 	 *            the position which has to be a variable or list of variables.
 	 * @param engine
 	 *            engine to print a message if the expression is no variable
-	 * @return a list of symbols defined at <code>ast.get(position)</code> or <code>null</code> if not.
+	 * @return a list of symbols defined at <code>ast.get(position)</code> or <code>F.NIL</code> if not.
 	 */
 	public static IAST checkIsVariableOrVariableList(IAST ast, int position, EvalEngine engine) {
 		IAST vars = null;
@@ -467,16 +455,16 @@ public final class Validate {
 		if (ast.get(position).isList()) {
 			vars = (IAST) ast.get(position);
 			for (int i = 1; i < vars.size(); i++) {
-				temp = Validate.checkSymbolType(vars, i);
-				if (temp == null) {
-					return null;
+				temp = Validate.checkSymbolType(vars, i, engine);
+				if (!temp.isPresent()) {
+					return F.NIL;
 				}
 			}
 			return vars;
 		} else {
 			temp = Validate.checkIsVariable(ast, position, engine);
-			if (temp == null) {
-				return null;
+			if (!temp.isPresent()) {
+				return F.NIL;
 			}
 			return F.List(temp);
 		}
@@ -512,7 +500,7 @@ public final class Validate {
 	 * @throws WrongArgumentType
 	 *             if it's not a symbol.
 	 */
-	public static ISymbol checkAssignedVariable(IExpr expr) {
+	private static ISymbol checkAssignedVariable(IExpr expr) {
 		if (expr.isSymbol() && ((ISymbol) expr).hasAssignedSymbolValue()) {
 			return (ISymbol) expr;
 		}
@@ -523,48 +511,36 @@ public final class Validate {
 	/**
 	 * Check if the argument at the given position is a symbol.
 	 * 
+	 * @param ast
+	 *            the ast which should be evaluated
 	 * @param position
 	 *            the position which has to be a symbol.
-	 * @throws WrongArgumentType
-	 *             if it's not a symbol.
+	 * @param engine
+	 *            evaluatioin engine
+	 * @return <code>F.NIL</code> if the argument at the given position is not a symbol.
 	 */
-	public static ISymbol checkSymbolType(IAST ast, int position) {
+	public static IExpr checkSymbolType(IAST ast, int position, EvalEngine engine) {
 		if (ast.get(position).isSymbol()) {
 			return (ISymbol) ast.get(position);
 		}
-		throw new WrongArgumentType(ast, ast.get(position), position, "Symbol expected!");
-	}
-
-	/**
-	 * Check if the argument at the given position is a symbol.
-	 * 
-	 * @param position
-	 *            the position which has to be a symbol.
-	 * @return <code>null</code> if the argument at the given position is not a symbol.
-	 */
-	public static ISymbol checkSymbolType(IAST ast, int position, EvalEngine engine) {
-		if (ast.get(position).isSymbol()) {
-			return (ISymbol) ast.get(position);
-		}
-		engine.printMessage(
-				ast.get(position).toString() + " is not a variable with a value, so its value cannot be changed.");
-		return null;
+		// Argument `1` at position `2` is expected to be a symbol.
+		return IOFunctions.printMessage(ast.topHead(), "sym", F.List(ast.get(position), F.ZZ(position)), engine);
 	}
 
 	/**
 	 * Check if the argument at the given position is a variable, i.e. a symbol which doesnt't have the
-	 * <code>Constant</code> set.
+	 * <code>Constant</code> attribute set.
 	 * 
 	 * @param position
 	 *            the position which has to be a variable.
-	 * @return null if the argument is not a variable
+	 * @return <code>F.NIL</code> if the argument is not a variable
 	 */
-	public static ISymbol checkIsVariable(IAST ast, int position, EvalEngine engine) {
+	public static IExpr checkIsVariable(IAST ast, int position, EvalEngine engine) {
 		if (ast.get(position).isSymbol() && !ast.get(position).isConstantAttribute()) {
 			return (ISymbol) ast.get(position);
 		}
-		engine.printMessage(ast.get(position).toString() + " is not a valid variable");
-		return null;
+		// `1` is not a valid variable.
+		return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(ast.get(position)), engine);
 	}
 
 	/**
@@ -598,26 +574,30 @@ public final class Validate {
 	 * @throws WrongArgumentType
 	 *             if it's not an AST.
 	 */
-	public static IAST checkASTType(IAST ast, int position) {
+	private static IAST checkASTType(IAST ast, int position, EvalEngine engine) {
 		if (ast.get(position).isAST()) {
 			return (IAST) ast.get(position);
 		}
-		throw new WrongArgumentType(ast, ast.get(position), position, "Function(AST) expected!");
+		// Nonatomic expression expected.
+		return IOFunctions.printMessage(ast.topHead(), "normal", F.List(), engine);
 	}
 
 	/**
 	 * Check if the expression is an AST.
 	 * 
+	 * @param ast
+	 *            TODO
 	 * @param expr
 	 * @param engine
+	 * 
 	 * @return <code>F.NIL</code> if the expression is no <code>IAST</code> object.
 	 */
-	public static IAST checkASTType(IExpr expr, EvalEngine engine) {
+	public static IAST checkASTType(IAST ast, IExpr expr, EvalEngine engine) {
 		if (expr.isAST()) {
 			return (IAST) expr;
 		}
-		engine.printMessage("Nonatomic expression expected.");
-		return F.NIL;
+		// Nonatomic expression expected.
+		return IOFunctions.printMessage(ast.topHead(), "normal", F.List(), engine);
 	}
 
 	private Validate() {

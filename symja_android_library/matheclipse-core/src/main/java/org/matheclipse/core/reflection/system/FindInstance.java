@@ -44,7 +44,10 @@ public class FindInstance extends Solve {
 	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		IAST vars = Validate.checkSymbolOrSymbolList(ast, 2);
+		IAST vars = Validate.checkSymbolOrSymbolList(ast, 2, engine);
+		if (!vars.isPresent()) {
+			return F.NIL;
+		}
 		boolean formula = false;
 		int maxChoices = 1;
 		if (ast.size() == 4) {

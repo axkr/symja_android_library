@@ -810,13 +810,15 @@ public final class Combinatoric {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.arg1().isAST() && ast.arg2().isInteger()) {
 				final IAST listArg0 = (IAST) ast.arg1();
-				final int k = Validate.checkIntType(ast, 2);
-				final KPartitionsList iter = new KPartitionsList(listArg0, k, F.ast(F.List), 1);
-				final IASTAppendable result = F.ListAlloc(16);
-				for (IAST part : iter) {
-					result.append(part);
+				final int k = ast.get(2).toIntDefault();
+				if (k >= 0) {
+					final KPartitionsList iter = new KPartitionsList(listArg0, k, F.ast(F.List), 1);
+					final IASTAppendable result = F.ListAlloc(16);
+					for (IAST part : iter) {
+						result.append(part);
+					}
+					return result;
 				}
-				return result;
 			}
 			return F.NIL;
 		}
@@ -1527,14 +1529,14 @@ public final class Combinatoric {
 			if (ast.isAST1() && arg1.isList()) {
 				try {
 					IAST list = (IAST) arg1;
-					if (list.exists(x->!x.isAST())) {
+					if (list.exists(x -> !x.isAST())) {
 						return F.NIL;
 					}
-//					for (int i = 1; i < list.size(); i++) {
-//						if (!list.get(i).isAST()) {
-//							return F.NIL;
-//						}
-//					}
+					// for (int i = 1; i < list.size(); i++) {
+					// if (!list.get(i).isAST()) {
+					// return F.NIL;
+					// }
+					// }
 					IASTAppendable result = F.ListAlloc(16);
 					IAST temp = F.List();
 					tuplesOfLists(list, 1, result, temp);

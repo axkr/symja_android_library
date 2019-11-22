@@ -468,7 +468,10 @@ public class Algebra {
 
 			IAST variableList = null;
 			if (ast.isAST2()) {
-				variableList = Validate.checkSymbolOrSymbolList(ast, 2);
+				variableList = Validate.checkSymbolOrSymbolList(ast, 2, engine);
+				if (!variableList.isPresent()) {
+					return F.NIL;
+				}
 			} else {
 				VariablesSet eVar = new VariablesSet(arg1);
 				if (eVar.isSize(0)) {

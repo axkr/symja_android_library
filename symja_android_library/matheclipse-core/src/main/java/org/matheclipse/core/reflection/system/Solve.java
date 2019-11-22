@@ -945,49 +945,49 @@ public class Solve extends AbstractFunctionEvaluator {
 		boolean[] isNumeric = new boolean[] { false };
 		try {
 			IAST variables = Validate.checkIsVariableOrVariableList(ast, 2, engine);
-			if (variables == null) {
-				return F.NIL;
-			}
-			ISymbol domain = F.Complexes;
-			if (ast.isAST3()) {
-				if (!ast.arg3().isSymbol()) {
-					throw new WrongArgumentType(ast, ast.arg3(), 3, "Domain definition expected!");
-				}
-				domain = (ISymbol) ast.arg3();
-				if (domain.equals(F.Booleans)) {
-					return BooleanFunctions.solveInstances(ast.arg1(), variables, Integer.MAX_VALUE);
-				}
-				if (domain.equals(F.Integers)) {
-					IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast, 1);
-					try {
-						// call cream solver
-						CreamConvert converter = new CreamConvert();
-						IAST resultList = converter.integerSolve(equationsAndInequations, variables);
-						EvalAttributes.sort((IASTMutable) resultList);
-						return resultList;
-					} catch (LimitException le) {
-						throw le;
-					} catch (RuntimeException rex) {
-						if (Config.SHOW_STACKTRACE) {
-							rex.printStackTrace();
+			if (variables.isPresent()) {
+
+				ISymbol domain = F.Complexes;
+				if (ast.isAST3()) {
+					if (!ast.arg3().isSymbol()) {
+						throw new WrongArgumentType(ast, ast.arg3(), 3, "Domain definition expected!");
+					}
+					domain = (ISymbol) ast.arg3();
+					if (domain.equals(F.Booleans)) {
+						return BooleanFunctions.solveInstances(ast.arg1(), variables, Integer.MAX_VALUE);
+					}
+					if (domain.equals(F.Integers)) {
+						IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast, 1);
+						try {
+							// call cream solver
+							CreamConvert converter = new CreamConvert();
+							IAST resultList = converter.integerSolve(equationsAndInequations, variables);
+							EvalAttributes.sort((IASTMutable) resultList);
+							return resultList;
+						} catch (LimitException le) {
+							throw le;
+						} catch (RuntimeException rex) {
+							if (Config.SHOW_STACKTRACE) {
+								rex.printStackTrace();
+							}
+							return engine.printMessage("Solve: " + "Integer solution not found: " + rex.getMessage());
 						}
-						return engine.printMessage("Solve: " + "Integer solution not found: " + rex.getMessage());
+					}
+					if (!domain.equals(F.Reals) && !domain.equals(F.Complexes)) {
+						throw new WrongArgumentType(ast, ast.arg3(), 3, "Domain definition expected!");
 					}
 				}
-				if (!domain.equals(F.Reals) && !domain.equals(F.Complexes)) {
-					throw new WrongArgumentType(ast, ast.arg3(), 3, "Domain definition expected!");
+				IAST termsList = Validate.checkEquationsAndInequations(ast, 1);
+				IASTMutable[] lists = SolveUtils.filterSolveLists(termsList, F.NIL, isNumeric);
+				boolean numericFlag = isNumeric[0] || numeric;
+				if (lists[2].isPresent()) {
+					IExpr result = solveNumeric(lists[2], numericFlag, engine);
+					return checkDomain(result, domain);
 				}
-			}
-			IAST termsList = Validate.checkEquationsAndInequations(ast, 1);
-			IASTMutable[] lists = SolveUtils.filterSolveLists(termsList, F.NIL, isNumeric);
-			boolean numericFlag = isNumeric[0] || numeric;
-			if (lists[2].isPresent()) {
-				IExpr result = solveNumeric(lists[2], numericFlag, engine);
+				IASTMutable termsEqualZeroList = lists[0];
+				IExpr result = solveRecursive(termsEqualZeroList, lists[1], numericFlag, variables, engine);
 				return checkDomain(result, domain);
 			}
-			IASTMutable termsEqualZeroList = lists[0];
-			IExpr result = solveRecursive(termsEqualZeroList, lists[1], numericFlag, variables, engine);
-			return checkDomain(result, domain);
 		} catch (LimitException le) {
 			throw le;
 		} catch (RuntimeException rex) {

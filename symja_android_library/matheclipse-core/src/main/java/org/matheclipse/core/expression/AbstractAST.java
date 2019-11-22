@@ -348,12 +348,8 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 
 		@Override
-		public void ifPresent(Consumer<? super IExpr> consumer) {
-		}
-
-		@Override
-		public void ifPresentOrElse​(Consumer<? super IExpr> consumer, Runnable emptyAction) {
-			emptyAction.run();
+		public IExpr ifPresent(Function<? super IExpr, IExpr> function) {
+			return F.NIL;
 		}
 
 		@Override

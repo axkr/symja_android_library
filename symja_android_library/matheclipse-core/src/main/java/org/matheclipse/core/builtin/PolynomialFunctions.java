@@ -334,7 +334,10 @@ public class PolynomialFunctions {
 				eVar.appendToList(symbolList);
 				varList = eVar.getArrayList();
 			} else {
-				symbolList = Validate.checkSymbolOrSymbolList(ast, 2);
+				symbolList = Validate.checkSymbolOrSymbolList(ast, 2, engine);
+				if (!symbolList.isPresent()) {
+					return F.NIL;
+				}
 				varList = new ArrayList<IExpr>(symbolList.argSize());
 				symbolList.forEach(x -> varList.add(x));
 			}
@@ -926,7 +929,7 @@ public class PolynomialFunctions {
 			if (arg1.isZero() || arg2.isZero()) {
 				return F.C0;
 			}
-			IExpr arg3 = Validate.checkSymbolType(ast, 3);
+			IExpr arg3 = Validate.checkSymbolType(ast, 3, engine);
 			ISymbol x = (ISymbol) arg3;
 			IExpr a = F.evalExpandAll(arg1, engine);
 			IExpr b = F.evalExpandAll(arg2, engine);
@@ -2004,7 +2007,10 @@ public class PolynomialFunctions {
 				eVar.appendToList(symbolList);
 				varList = eVar.getArrayList();
 			} else {
-				symbolList = Validate.checkSymbolOrSymbolList(ast, 2);
+				symbolList = Validate.checkSymbolOrSymbolList(ast, 2, engine);
+				if (!symbolList.isPresent()) {
+					return F.NIL;
+				}
 				varList = new ArrayList<IExpr>(symbolList.argSize());
 				symbolList.forEach(x -> varList.add(x));
 			}

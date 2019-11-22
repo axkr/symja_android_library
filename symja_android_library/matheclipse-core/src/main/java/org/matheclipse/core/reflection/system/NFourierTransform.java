@@ -10,6 +10,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -23,20 +24,23 @@ public class NFourierTransform extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		IExpr expr = ast.arg1();
-		ISymbol t = Validate.checkSymbolType(ast, 2);
-		// IExpr omega = ast.arg3();
-		if (ast.size() > 4) {
-//			final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
-//			IExpr optionFourierParameters = options.getOption(F.FourierParameters);
-//			if (optionFourierParameters.isList()) {
-//				// analyze the parameters, if they are correct
-//			}
-		}
+		IExpr symbol = Validate.checkSymbolType(ast, 2, engine);
+		if (symbol.isPresent()) {
+			// IExpr omega = ast.arg3();
+			if (ast.size() > 4) {
+				// final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
+				// IExpr optionFourierParameters = options.getOption(F.FourierParameters);
+				// if (optionFourierParameters.isList()) {
+				// // analyze the parameters, if they are correct
+				// }
+			}
 
-		UnivariateFunction f = new UnaryNumerical(expr, t, engine);
-		FastFourierTransformer fft = new FastFourierTransformer(DftNormalization.STANDARD);
-		org.hipparchus.complex.Complex[] result = fft.transform(f, -1.0, 1.0, 8, TransformType.FORWARD);
-		return Object2Expr.convertComplex(true, result);
+			UnivariateFunction f = new UnaryNumerical(expr, (ISymbol)symbol, engine);
+			FastFourierTransformer fft = new FastFourierTransformer(DftNormalization.STANDARD);
+			org.hipparchus.complex.Complex[] result = fft.transform(f, -1.0, 1.0, 8, TransformType.FORWARD);
+			return Object2Expr.convertComplex(true, result);
+		}
+		return F.NIL;
 	}
 
 	public int[] expectedArgSize() {
