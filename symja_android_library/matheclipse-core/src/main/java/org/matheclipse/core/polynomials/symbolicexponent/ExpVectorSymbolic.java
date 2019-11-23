@@ -1,26 +1,26 @@
-package org.matheclipse.core.polynomials;
+package org.matheclipse.core.polynomials.symbolicexponent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * ExpVectorLong implements exponent vectors for polynomials using arrays of long as storage unit. This class is used by
- * ExpVectorLong internally, there is no need to use this class directly.
+ * <code>ExpVectorSymbolic</code> implements exponent vectors for polynomials using arrays of <code>IExpr</code> as storage unit.  
  * 
  */
-public final class ExpVectorLong {
+public final class ExpVectorSymbolic {
 
 	/**
 	 * The data structure is an array of longs.
 	 */
-	/* package */final long[] val;
+	/* package */final IExpr[] val;
 
 	int hash;
 
@@ -30,9 +30,12 @@ public final class ExpVectorLong {
 	 * @param n
 	 *            length of exponent vector.
 	 */
-	public ExpVectorLong(int n) {
+	public ExpVectorSymbolic(int n) {
 		super();
-		val = new long[n];
+		val = new IExpr[n];
+		for (int i = 0; i < n; i++) {
+			val[i] = F.C0;
+		}
 	}
 
 	/**
@@ -45,8 +48,8 @@ public final class ExpVectorLong {
 	 * @param e
 	 *            exponent to be set.
 	 */
-	public ExpVectorLong(int n, int i, long e) {
-		this(new long[n]);
+	public ExpVectorSymbolic(int n, int i, IExpr e) {
+		this(new IExpr[n]);
 		val[i] = e;
 	}
 
@@ -56,7 +59,7 @@ public final class ExpVectorLong {
 	 * @param v
 	 *            internal representation array.
 	 */
-	public ExpVectorLong(long[] v) {
+	public ExpVectorSymbolic(IExpr[] v) {
 		super();
 		if (v == null) {
 			throw new IllegalArgumentException("null val not allowed");
@@ -71,52 +74,52 @@ public final class ExpVectorLong {
 	 * @param s
 	 *            String representation.
 	 */
-	public ExpVectorLong(String s) throws NumberFormatException {
-		super();
-		// first format = (1,2,3,4,5,6,7)
-		List<Long> exps = new ArrayList<Long>();
-		s = s.trim();
-		int b = s.indexOf('(');
-		int e = s.indexOf(')', b + 1);
-		String teil;
-		int k;
-		long a;
-		if (b >= 0 && e >= 0) {
-			b++;
-			while ((k = s.indexOf(',', b)) >= 0) {
-				teil = s.substring(b, k);
-				a = Long.parseLong(teil);
-				exps.add(Long.valueOf(a));
-				b = k + 1;
-			}
-			if (b <= e) {
-				teil = s.substring(b, e);
-				a = Long.parseLong(teil);
-				exps.add(Long.valueOf(a));
-			}
-			int length = exps.size();
-			val = new long[length];
-			for (int j = 0; j < length; j++) {
-				val[j] = exps.get(j).longValue();
-			}
-		} else {
-			// not implemented
-			val = null;
-			// length = -1;
-			// Vector names = new Vector();
-			// vars = s;
-		}
-	}
+	// public ExpVectorExpr(String s) throws NumberFormatException {
+	// super();
+	// // first format = (1,2,3,4,5,6,7)
+	// List<Long> exps = new ArrayList<Long>();
+	// s = s.trim();
+	// int b = s.indexOf('(');
+	// int e = s.indexOf(')', b + 1);
+	// String teil;
+	// int k;
+	// long a;
+	// if (b >= 0 && e >= 0) {
+	// b++;
+	// while ((k = s.indexOf(',', b)) >= 0) {
+	// teil = s.substring(b, k);
+	// a = Long.parseLong(teil);
+	// exps.add(Long.valueOf(a));
+	// b = k + 1;
+	// }
+	// if (b <= e) {
+	// teil = s.substring(b, e);
+	// a = Long.parseLong(teil);
+	// exps.add(Long.valueOf(a));
+	// }
+	// int length = exps.size();
+	// val = new long[length];
+	// for (int j = 0; j < length; j++) {
+	// val[j] = exps.get(j).longValue();
+	// }
+	// } else {
+	// // not implemented
+	// val = null;
+	// // length = -1;
+	// // Vector names = new Vector();
+	// // vars = s;
+	// }
+	// }
 
 	/**
 	 * Clone this.
 	 * 
 	 * @see java.lang.Object#clone()
 	 */
-	public ExpVectorLong copy() {
-		long[] w = new long[val.length];
+	public ExpVectorSymbolic copy() {
+		IExpr[] w = new IExpr[val.length];
 		System.arraycopy(val, 0, w, 0, val.length);
-		return new ExpVectorLong(w);
+		return new ExpVectorSymbolic(w);
 	}
 
 	/**
@@ -125,13 +128,13 @@ public final class ExpVectorLong {
 	 * @param v
 	 *            collection of exponents.
 	 */
-	public static ExpVectorLong create(Collection<Long> v) {
-		long[] w = new long[v.size()];
+	public static ExpVectorSymbolic create(Collection<IExpr> v) {
+		IExpr[] w = new IExpr[v.size()];
 		int i = 0;
-		for (Long k : v) {
+		for (IExpr k : v) {
 			w[i++] = k;
 		}
-		return new ExpVectorLong(w);
+		return new ExpVectorSymbolic(w);
 	}
 
 	/**
@@ -139,7 +142,7 @@ public final class ExpVectorLong {
 	 * 
 	 * @return val.
 	 */
-	/* package */public long[] getVal() {
+	/* package */public IExpr[] getVal() {
 		return val;
 	}
 
@@ -151,7 +154,7 @@ public final class ExpVectorLong {
 	 * @return val[i].
 	 */
 
-	public long getVal(int i) {
+	public IExpr getVal(int i) {
 		return val[i];
 	}
 
@@ -163,8 +166,8 @@ public final class ExpVectorLong {
 	 * @return old val[i].
 	 */
 
-	protected long setVal(int i, long e) {
-		long x = val[i];
+	protected IExpr setVal(int i, IExpr e) {
+		IExpr x = val[i];
 		val[i] = e;
 		hash = 0; // beware of race condition
 		return x;
@@ -263,9 +266,9 @@ public final class ExpVectorLong {
 	 * @return extended exponent vector.
 	 */
 
-	public ExpVectorLong extend(int i, int j, long e) {
-		ExpVectorLong result = valueOf(val.length + i);
-		long[] w = result.val;
+	public ExpVectorSymbolic extend(int i, int j, IExpr e) {
+		ExpVectorSymbolic result = valueOf(val.length + i);
+		IExpr[] w = result.val;
 		System.arraycopy(val, 0, w, i, val.length);
 		if (j >= i) {
 			throw new IllegalArgumentException("i " + i + " <= j " + j + " invalid");
@@ -286,9 +289,9 @@ public final class ExpVectorLong {
 	 * @return extended exponent vector.
 	 */
 
-	public ExpVectorLong extendLower(int i, int j, long e) {
-		ExpVectorLong result = valueOf(val.length + i);
-		long[] w = result.val;
+	public ExpVectorSymbolic extendLower(int i, int j, IExpr e) {
+		ExpVectorSymbolic result = valueOf(val.length + i);
+		IExpr[] w = result.val;
 		System.arraycopy(val, 0, w, 0, val.length);
 		if (j >= i) {
 			throw new IllegalArgumentException("i " + i + " <= j " + j + " invalid");
@@ -307,12 +310,12 @@ public final class ExpVectorLong {
 	 * @return contracted exponent vector.
 	 */
 
-	public ExpVectorLong contract(int i, int len) {
+	public ExpVectorSymbolic contract(int i, int len) {
 		if (i + len > val.length) {
 			throw new IllegalArgumentException("len " + len + " > val.len " + val.length);
 		}
-		ExpVectorLong result = valueOf(len);
-		long[] w = result.val;
+		ExpVectorSymbolic result = valueOf(len);
+		IExpr[] w = result.val;
 		System.arraycopy(val, i, w, 0, len);
 		return result;
 	}
@@ -323,9 +326,9 @@ public final class ExpVectorLong {
 	 * @return reversed exponent vector.
 	 */
 
-	public ExpVectorLong reverse() {
-		ExpVectorLong result = valueOf(val.length);
-		long[] w = result.val;
+	public ExpVectorSymbolic reverse() {
+		ExpVectorSymbolic result = valueOf(val.length);
+		IExpr[] w = result.val;
 		for (int i = 0; i < val.length; i++) {
 			w[i] = val[val.length - 1 - i];
 		}
@@ -340,12 +343,12 @@ public final class ExpVectorLong {
 	 * @return reversed exponent vector.
 	 */
 
-	public ExpVectorLong reverse(int j) {
+	public ExpVectorSymbolic reverse(int j) {
 		if (j <= 0 || j > val.length) {
 			return this;
 		}
-		ExpVectorLong result = valueOf(val.length);
-		long[] w = result.val;
+		ExpVectorSymbolic result = valueOf(val.length);
+		IExpr[] w = result.val;
 		// copy first
 		for (int i = 0; i < j; i++) {
 			w[i] = val[i];
@@ -364,12 +367,12 @@ public final class ExpVectorLong {
 	 *            index of first variable not reversed.
 	 * @return reversed exponent vector.
 	 */
-	public ExpVectorLong reverseUpper(int j) {
+	public ExpVectorSymbolic reverseUpper(int j) {
 		if (j <= 0 || j > val.length) {
 			return this;
 		}
-		ExpVectorLong result = valueOf(val.length);
-		long[] w = result.val;
+		ExpVectorSymbolic result = valueOf(val.length);
+		IExpr[] w = result.val;
 		for (int i = 0; i < j; i++) {
 			w[i] = val[j - 1 - i];
 		}
@@ -388,16 +391,16 @@ public final class ExpVectorLong {
 	 * @return combined exponent vector.
 	 */
 
-	public ExpVectorLong combine(ExpVectorLong V) {
+	public ExpVectorSymbolic combine(ExpVectorSymbolic V) {
 		if (V == null || V.length() == 0) {
 			return this;
 		}
-		ExpVectorLong Vl = V;
+		ExpVectorSymbolic Vl = V;
 		if (val.length == 0) {
 			return Vl;
 		}
-		ExpVectorLong result = valueOf(val.length + Vl.val.length);
-		long[] w = result.val;
+		ExpVectorSymbolic result = valueOf(val.length + Vl.val.length);
+		IExpr[] w = result.val;
 		System.arraycopy(val, 0, w, 0, val.length);
 		System.arraycopy(Vl.val, 0, w, val.length, Vl.val.length);
 		return result;
@@ -411,9 +414,9 @@ public final class ExpVectorLong {
 	 * @return P(e).
 	 */
 
-	public ExpVectorLong permutation(List<Integer> P) {
-		ExpVectorLong result = valueOf(val.length);
-		long[] w = result.val;
+	public ExpVectorSymbolic permutation(List<Integer> P) {
+		ExpVectorSymbolic result = valueOf(val.length);
+		IExpr[] w = result.val;
 		int j = 0;
 		for (Integer i : P) {
 			w[j++] = val[i];
@@ -457,17 +460,17 @@ public final class ExpVectorLong {
 		if (r == 0) {
 			return s.toString();
 		}
-		long vi;
+		IExpr vi;
 		for (int i = r - 1; i > 0; i--) {
 			vi = getVal(i);
-			if (vi != 0) {
+			if (!vi.isZero()) {
 				s.append(vars.get(r - i));
-				if (vi != 1) {
+				if (!vi.isOne()) {
 					s.append("^" + vi);
 				}
 				pit = false;
 				for (int j = i - 1; j >= 0; j--) {
-					if (getVal(j) != 0) {
+					if (!getVal(j).isZero()) {
 						pit = true;
 					}
 				}
@@ -477,9 +480,9 @@ public final class ExpVectorLong {
 			}
 		}
 		vi = getVal(0);
-		if (vi != 0) {
+		if (!vi.isZero()) {
 			s.append(vars.get(r));
-			if (vi != 1) {
+			if (!vi.isOne()) {
 				s.append("^" + vi);
 			}
 		}
@@ -504,7 +507,7 @@ public final class ExpVectorLong {
 			if (i < vars.argSize()) {
 				s.append(",");
 			}
-		}); 
+		});
 		return s.toString();
 	}
 
@@ -532,17 +535,17 @@ public final class ExpVectorLong {
 		}
 		StringBuilder s = new StringBuilder();
 		boolean pit;
-		long vi;
+		IExpr vi;
 		for (int i = r - 1; i > 0; i--) {
 			vi = getVal(i);
-			if (vi != 0) {
+			if (!vi.isZero()) {
 				s.append(vars.get(r - i));
-				if (vi != 1) {
+				if (!vi.isOne()) {
 					s.append("**" + vi);
 				}
 				pit = false;
 				for (int j = i - 1; j >= 0; j--) {
-					if (getVal(j) != 0) {
+					if (!getVal(j).isZero()) {
 						pit = true;
 					}
 				}
@@ -552,9 +555,9 @@ public final class ExpVectorLong {
 			}
 		}
 		vi = getVal(0);
-		if (vi != 0) {
+		if (!vi.isZero()) {
 			s.append(vars.get(r));
-			if (vi != 1) {
+			if (!vi.isOne()) {
 				s.append("**" + vi);
 			}
 		}
@@ -569,12 +572,20 @@ public final class ExpVectorLong {
 
 	@Override
 	public boolean equals(Object B) {
-		if (!(B instanceof ExpVectorLong)) {
+		if (!(B instanceof ExpVectorSymbolic)) {
 			return false;
 		}
-		ExpVectorLong b = (ExpVectorLong) B;
-		int t = this.invLexCompareTo(b);
-		return (0 == t);
+		IExpr[] u = val;
+		IExpr[] v = ((ExpVectorSymbolic) B).val;
+		if (u.length != v.length) {
+			return false;
+		}
+		for (int i = 0; i < u.length; i++) {
+			if (!u[i].equals(v[i])) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -586,7 +597,7 @@ public final class ExpVectorLong {
 	public int hashCode() {
 		if (hash == 0) {
 			for (int i = 0; i < length(); i++) {
-				hash = hash << 4 + getVal(i);
+				hash = hash << 4 + getVal(i).hashCode();
 			}
 			if (hash == 0) {
 				hash = 1;
@@ -601,15 +612,16 @@ public final class ExpVectorLong {
 	 * @return abs(this).
 	 */
 
-	public ExpVectorLong abs() {
-		long[] u = val;
-		ExpVectorLong result = valueOf(u.length);
-		long[] w = result.val;
+	public ExpVectorSymbolic abs() {
+		IExpr[] u = val;
+		ExpVectorSymbolic result = valueOf(u.length);
+		IExpr[] w = result.val;
 		for (int i = 0; i < u.length; i++) {
-			if (u[i] >= 0L) {
-				w[i] = u[i];
+			if (u[i].isNegative()) {
+				w[i] = u[i].negative();
 			} else {
-				w[i] = -u[i];
+				w[i] = u[i];
+
 			}
 		}
 		return result;
@@ -621,12 +633,12 @@ public final class ExpVectorLong {
 	 * @return -this.
 	 */
 
-	public ExpVectorLong negate() {
-		long[] u = val;
-		ExpVectorLong result = valueOf(u.length);
-		long[] w = result.val;
+	public ExpVectorSymbolic negate() {
+		IExpr[] u = val;
+		ExpVectorSymbolic result = valueOf(u.length);
+		IExpr[] w = result.val;
 		for (int i = 0; i < u.length; i++) {
-			w[i] = -u[i];
+			w[i] = u[i].negate();
 		}
 		return result;
 	}
@@ -638,13 +650,13 @@ public final class ExpVectorLong {
 	 * @return this+V.
 	 */
 
-	public ExpVectorLong sum(ExpVectorLong V) {
-		long[] u = val;
-		long[] v = V.val;
-		ExpVectorLong result = valueOf(u.length);
-		long[] w = result.val;
+	public ExpVectorSymbolic sum(ExpVectorSymbolic V) {
+		IExpr[] u = val;
+		IExpr[] v = V.val;
+		ExpVectorSymbolic result = valueOf(u.length);
+		IExpr[] w = result.val;
 		for (int i = 0; i < u.length; i++) {
-			w[i] = u[i] + v[i];
+			w[i] = F.Plus.of(u[i], v[i]);
 		}
 		return result;
 	}
@@ -656,13 +668,13 @@ public final class ExpVectorLong {
 	 * @return this-V.
 	 */
 
-	public ExpVectorLong subtract(ExpVectorLong V) {
-		long[] u = val;
-		long[] v = V.val;
-		ExpVectorLong result = valueOf(u.length);
-		long[] w = result.val;
+	public ExpVectorSymbolic subtract(ExpVectorSymbolic V) {
+		IExpr[] u = val;
+		IExpr[] v = V.val;
+		ExpVectorSymbolic result = valueOf(u.length);
+		IExpr[] w = result.val;
 		for (int i = 0; i < u.length; i++) {
-			w[i] = u[i] - v[i];
+			w[i] = F.Plus.of(u[i], v[i].negate());
 		}
 		return result;
 	}
@@ -677,8 +689,8 @@ public final class ExpVectorLong {
 	 * @return substituted ExpVectorLong.
 	 */
 
-	public ExpVectorLong subst(int i, long d) {
-		ExpVectorLong V = this.copy();
+	public ExpVectorSymbolic subst(int i, IExpr d) {
+		ExpVectorSymbolic V = this.copy();
 		// long e =
 		V.setVal(i, d);
 		return V;
@@ -694,12 +706,12 @@ public final class ExpVectorLong {
 
 	public int signum() {
 		int t = 0;
-		long[] u = val;
+		IExpr[] u = val;
 		for (int i = 0; i < u.length; i++) {
-			if (u[i] < 0) {
+			if (u[i].isNegativeResult()) {
 				return -1;
 			}
-			if (u[i] > 0) {
+			if (u[i].isPositiveResult()) {
 				t = 1;
 			}
 		}
@@ -713,13 +725,13 @@ public final class ExpVectorLong {
 	 * @return sum of all exponents.
 	 */
 
-	public long totalDeg() {
-		long t = 0;
-		long[] u = val; // U.val;
+	public IExpr totalDeg() {
+		IExpr[] u = val; // U.val;
+		IASTAppendable t = F.PlusAlloc(u.length);
 		for (int i = 0; i < u.length; i++) {
-			t += u[i];
+			t.append(u[i]);
 		}
-		return t;
+		return EvalEngine.get().evaluate(t);
 		// return EVTDEG(this);
 	}
 
@@ -729,11 +741,11 @@ public final class ExpVectorLong {
 	 * @return maximal exponent.
 	 */
 
-	public long maxDeg() {
-		long t = 0;
-		long[] u = val;
+	public IExpr maxDeg() {
+		IExpr[] u = val;
+		IExpr t = F.C0;
 		for (int i = 0; i < u.length; i++) {
-			if (u[i] > t) {
+			if (F.Greater.ofQ(u[i], t)) {
 				t = u[i];
 			}
 		}
@@ -749,20 +761,20 @@ public final class ExpVectorLong {
 	 * @return weighted sum of all exponents.
 	 */
 
-	public long weightDeg(long[][] w) {
+	public IExpr weightDeg(IExpr[][] w) {
 		if (w == null || w.length == 0) {
 			return totalDeg(); // assume weight 1
 		}
-		long t = 0;
-		long[] u = val;
+
+		IExpr[] u = val;
+		IASTAppendable t = F.PlusAlloc(w.length);
 		for (int j = 0; j < w.length; j++) {
-			long[] wj = w[j];
+			IExpr[] wj = w[j];
 			for (int i = 0; i < u.length; i++) {
-				t += wj[i] * u[i];
+				t.append(F.Times(wj[i], u[i]));
 			}
 		}
-		return t;
-		// return EVWDEG( w, this );
+		return EvalEngine.get().evaluate(t);
 	}
 
 	/**
@@ -772,13 +784,17 @@ public final class ExpVectorLong {
 	 * @return component wise maximum of this and V.
 	 */
 
-	public ExpVectorLong lcm(ExpVectorLong V) {
-		long[] u = val;
-		long[] v = V.val;
-		ExpVectorLong result = valueOf(u.length);
-		long[] w = result.val;
+	public ExpVectorSymbolic lcm(ExpVectorSymbolic V) {
+		IExpr[] u = val;
+		IExpr[] v = V.val;
+		ExpVectorSymbolic result = valueOf(u.length);
+		IExpr[] w = result.val;
 		for (int i = 0; i < u.length; i++) {
-			w[i] = (u[i] >= v[i] ? u[i] : v[i]);
+			if (F.GreaterEqual.ofQ(u[i], v[i])) {
+				w[i] = u[i];
+			} else {
+				w[i] = v[i];
+			}
 		}
 		return result;
 	}
@@ -790,13 +806,17 @@ public final class ExpVectorLong {
 	 * @return component wise minimum of this and V.
 	 */
 
-	public ExpVectorLong gcd(ExpVectorLong V) {
-		long[] u = val;
-		long[] v = V.val;
-		ExpVectorLong result = valueOf(u.length);
-		long[] w = result.val;
+	public ExpVectorSymbolic gcd(ExpVectorSymbolic V) {
+		IExpr[] u = val;
+		IExpr[] v = V.val;
+		ExpVectorSymbolic result = valueOf(u.length);
+		IExpr[] w = result.val;
 		for (int i = 0; i < u.length; i++) {
-			w[i] = (u[i] <= v[i] ? u[i] : v[i]);
+			if (F.LessEqual.ofQ(u[i], v[i])) {
+				w[i] = u[i];
+			} else {
+				w[i] = v[i];
+			}
 		}
 		return result;
 	}
@@ -808,10 +828,10 @@ public final class ExpVectorLong {
 	 */
 
 	public int[] dependencyOnVariables() {
-		long[] u = val;
+		IExpr[] u = val;
 		int l = 0;
 		for (int i = 0; i < u.length; i++) {
-			if (u[i] > 0) {
+			if (u[i].isPositiveResult()) {
 				l++;
 			}
 		}
@@ -821,7 +841,7 @@ public final class ExpVectorLong {
 		}
 		int j = 0;
 		for (int i = 0; i < u.length; i++) {
-			if (u[i] > 0) {
+			if (u[i].isPositiveResult()) {
 				dep[j] = i;
 				j++;
 			}
@@ -836,17 +856,16 @@ public final class ExpVectorLong {
 	 * @return true if this is a multiple of V, else false.
 	 */
 
-	public boolean multipleOf(ExpVectorLong V) {
-		long[] u = val;
-		long[] v = V.val;
+	public boolean multipleOf(ExpVectorSymbolic V) {
+		IExpr[] u = val;
+		IExpr[] v = V.val;
 		boolean t = true;
 		for (int i = 0; i < u.length; i++) {
-			if (u[i] < v[i]) {
+			if (F.Less.ofQ(u[i], v[i])) {
 				return false;
 			}
 		}
 		return t;
-		// return EVMT(this, V);
 	}
 
 	/**
@@ -856,7 +875,7 @@ public final class ExpVectorLong {
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
 
-	public int compareTo(ExpVectorLong V) {
+	public int compareTo(ExpVectorSymbolic V) {
 		return this.invLexCompareTo(V);
 	}
 
@@ -867,7 +886,7 @@ public final class ExpVectorLong {
 	 * @param V
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
-	public static int EVILCP(ExpVectorLong U, ExpVectorLong V) {
+	public static int EVILCP(ExpVectorSymbolic U, ExpVectorSymbolic V) {
 		return U.invLexCompareTo(V);
 	}
 
@@ -880,7 +899,7 @@ public final class ExpVectorLong {
 	 * @param end
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
-	public static int EVILCP(ExpVectorLong U, ExpVectorLong V, int begin, int end) {
+	public static int EVILCP(ExpVectorSymbolic U, ExpVectorSymbolic V, int begin, int end) {
 		return U.invLexCompareTo(V, begin, end);
 	}
 
@@ -891,7 +910,7 @@ public final class ExpVectorLong {
 	 * @param V
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
-	public static int EVIGLC(ExpVectorLong U, ExpVectorLong V) {
+	public static int EVIGLC(ExpVectorSymbolic U, ExpVectorSymbolic V) {
 		return U.invGradCompareTo(V);
 	}
 
@@ -904,7 +923,7 @@ public final class ExpVectorLong {
 	 * @param end
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
-	public static int EVIGLC(ExpVectorLong U, ExpVectorLong V, int begin, int end) {
+	public static int EVIGLC(ExpVectorSymbolic U, ExpVectorSymbolic V, int begin, int end) {
 		return U.invGradCompareTo(V, begin, end);
 	}
 
@@ -915,7 +934,7 @@ public final class ExpVectorLong {
 	 * @param V
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
-	public static int EVRILCP(ExpVectorLong U, ExpVectorLong V) {
+	public static int EVRILCP(ExpVectorSymbolic U, ExpVectorSymbolic V) {
 		return U.revInvLexCompareTo(V);
 	}
 
@@ -928,7 +947,7 @@ public final class ExpVectorLong {
 	 * @param end
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
-	public static int EVRILCP(ExpVectorLong U, ExpVectorLong V, int begin, int end) {
+	public static int EVRILCP(ExpVectorSymbolic U, ExpVectorSymbolic V, int begin, int end) {
 		return U.revInvLexCompareTo(V, begin, end);
 	}
 
@@ -939,7 +958,7 @@ public final class ExpVectorLong {
 	 * @param V
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
-	public static int EVRIGLC(ExpVectorLong U, ExpVectorLong V) {
+	public static int EVRIGLC(ExpVectorSymbolic U, ExpVectorSymbolic V) {
 		return U.revInvGradCompareTo(V);
 	}
 
@@ -952,7 +971,7 @@ public final class ExpVectorLong {
 	 * @param end
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
-	public static int EVRIGLC(ExpVectorLong U, ExpVectorLong V, int begin, int end) {
+	public static int EVRIGLC(ExpVectorSymbolic U, ExpVectorSymbolic V, int begin, int end) {
 		return U.revInvGradCompareTo(V, begin, end);
 	}
 
@@ -963,7 +982,7 @@ public final class ExpVectorLong {
 	 * @param V
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
-	public static int EVITDEGLC(ExpVectorLong U, ExpVectorLong V) {
+	public static int EVITDEGLC(ExpVectorSymbolic U, ExpVectorSymbolic V) {
 		return U.invTdegCompareTo(V);
 	}
 
@@ -974,7 +993,7 @@ public final class ExpVectorLong {
 	 * @param V
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
-	public static int EVRLITDEGC(ExpVectorLong U, ExpVectorLong V) {
+	public static int EVRLITDEGC(ExpVectorSymbolic U, ExpVectorSymbolic V) {
 		return U.revLexInvTdegCompareTo(V);
 	}
 
@@ -987,7 +1006,7 @@ public final class ExpVectorLong {
 	 * @param V
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
-	public static int EVIWLC(long[][] w, ExpVectorLong U, ExpVectorLong V) {
+	public static int EVIWLC(IExpr[][] w, ExpVectorSymbolic U, ExpVectorSymbolic V) {
 		return U.invWeightCompareTo(w, V);
 	}
 
@@ -1002,7 +1021,7 @@ public final class ExpVectorLong {
 	 * @param end
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
-	public static int EVIWLC(long[][] w, ExpVectorLong U, ExpVectorLong V, int begin, int end) {
+	public static int EVIWLC(IExpr[][] w, ExpVectorSymbolic U, ExpVectorSymbolic V, int begin, int end) {
 		return U.invWeightCompareTo(w, V, begin, end);
 	}
 
@@ -1013,15 +1032,17 @@ public final class ExpVectorLong {
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
 
-	public int invLexCompareTo(ExpVectorLong V) {
-		long[] u = val;
-		long[] v = V.val;
+	public int invLexCompareTo(ExpVectorSymbolic V) {
+		IExpr[] u = val;
+		IExpr[] v = V.val;
 		int t = 0;
 		for (int i = 0; i < u.length; i++) {
-			if (u[i] > v[i])
+			if (F.Greater.ofQ(u[i], v[i])) {
 				return 1;
-			if (u[i] < v[i])
+			}
+			if (F.Less.ofQ(u[i], v[i])) {
 				return -1;
+			}
 		}
 		return t;
 		// return EVILCP(this, V);
@@ -1036,15 +1057,17 @@ public final class ExpVectorLong {
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
 
-	public int invLexCompareTo(ExpVectorLong V, int begin, int end) {
-		long[] u = val;
-		long[] v = V.val;
+	public int invLexCompareTo(ExpVectorSymbolic V, int begin, int end) {
+		IExpr[] u = val;
+		IExpr[] v = V.val;
 		int t = 0;
 		for (int i = begin; i < end; i++) {
-			if (u[i] > v[i])
+			if (F.Greater.ofQ(u[i], v[i])) {
 				return 1;
-			if (u[i] < v[i])
+			}
+			if (F.Less.ofQ(u[i], v[i])) {
 				return -1;
+			}
 		}
 		return t;
 		// return EVILCP(this, V, begin, end);
@@ -1057,17 +1080,17 @@ public final class ExpVectorLong {
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
 
-	public int invGradCompareTo(ExpVectorLong V) {
-		long[] u = val;
-		long[] v = V.val;
+	public int invGradCompareTo(ExpVectorSymbolic V) {
+		IExpr[] u = val;
+		IExpr[] v = V.val;
 		int t = 0;
 		int i;
 		for (i = 0; i < u.length; i++) {
-			if (u[i] > v[i]) {
+			if (F.Greater.ofQ(u[i], v[i])) {
 				t = 1;
 				break;
 			}
-			if (u[i] < v[i]) {
+			if (F.Less.ofQ(u[i], v[i])) {
 				t = -1;
 				break;
 			}
@@ -1075,16 +1098,18 @@ public final class ExpVectorLong {
 		if (t == 0) {
 			return t;
 		}
-		long up = 0;
-		long vp = 0;
+		IASTAppendable up = F.PlusAlloc(u.length - i);
+		IASTAppendable vp = F.PlusAlloc(u.length - i);
 		for (int j = i; j < u.length; j++) {
-			up += u[j];
-			vp += v[j];
+			up.append(u[j]);
+			vp.append(v[j]);
 		}
-		if (up > vp) {
+		IExpr upEvaled = EvalEngine.get().evaluate(up);
+		IExpr vpEvaled = EvalEngine.get().evaluate(vp);
+		if (F.Greater.ofQ(upEvaled, vpEvaled)) {
 			t = 1;
 		} else {
-			if (up < vp) {
+			if (F.Less.ofQ(upEvaled, vpEvaled)) {
 				t = -1;
 			}
 		}
@@ -1101,17 +1126,17 @@ public final class ExpVectorLong {
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
 
-	public int invGradCompareTo(ExpVectorLong V, int begin, int end) {
-		long[] u = val;
-		long[] v = V.val;
+	public int invGradCompareTo(ExpVectorSymbolic V, int begin, int end) {
+		IExpr[] u = val;
+		IExpr[] v = V.val;
 		int t = 0;
 		int i;
 		for (i = begin; i < end; i++) {
-			if (u[i] > v[i]) {
+			if (F.Greater.ofQ(u[i], v[i])) {
 				t = 1;
 				break;
 			}
-			if (u[i] < v[i]) {
+			if (F.Less.ofQ(u[i], v[i])) {
 				t = -1;
 				break;
 			}
@@ -1119,21 +1144,23 @@ public final class ExpVectorLong {
 		if (t == 0) {
 			return t;
 		}
-		long up = 0;
-		long vp = 0;
+		IASTAppendable up = F.PlusAlloc(end - i);
+		IASTAppendable vp = F.PlusAlloc(end - i);
 		for (int j = i; j < end; j++) {
-			up += u[j];
-			vp += v[j];
+			up.append(u[j]);
+			vp.append(v[j]);
 		}
-		if (up > vp) {
+		IExpr upEvaled = EvalEngine.get().evaluate(up);
+		IExpr vpEvaled = EvalEngine.get().evaluate(vp);
+
+		if (F.Greater.ofQ(upEvaled, vpEvaled)) {
 			t = 1;
 		} else {
-			if (up < vp) {
+			if (F.Less.ofQ(upEvaled, vpEvaled)) {
 				t = -1;
 			}
 		}
 		return t;
-		// return EVIGLC(this, V, begin, end);
 	}
 
 	/**
@@ -1143,15 +1170,17 @@ public final class ExpVectorLong {
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
 
-	public int revInvLexCompareTo(ExpVectorLong V) {
-		long[] u = val;
-		long[] v = V.val;
+	public int revInvLexCompareTo(ExpVectorSymbolic V) {
+		IExpr[] u = val;
+		IExpr[] v = V.val;
 		int t = 0;
 		for (int i = u.length - 1; i >= 0; i--) {
-			if (u[i] > v[i])
+			if (F.Greater.ofQ(u[i], v[i])) {
 				return 1;
-			if (u[i] < v[i])
+			}
+			if (F.Less.ofQ(u[i], v[i])) {
 				return -1;
+			}
 		}
 		return t;
 		// return EVRILCP(this, V);
@@ -1166,15 +1195,17 @@ public final class ExpVectorLong {
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
 
-	public int revInvLexCompareTo(ExpVectorLong V, int begin, int end) {
-		long[] u = val;
-		long[] v = V.val;
+	public int revInvLexCompareTo(ExpVectorSymbolic V, int begin, int end) {
+		IExpr[] u = val;
+		IExpr[] v = V.val;
 		int t = 0;
 		for (int i = end - 1; i >= begin; i--) {
-			if (u[i] > v[i])
+			if (F.Greater.ofQ(u[i], v[i])) {
 				return 1;
-			if (u[i] < v[i])
+			}
+			if (F.Less.ofQ(u[i], v[i])) {
 				return -1;
+			}
 		}
 		return t;
 		// return EVRILCP(this, V, begin, end);
@@ -1187,17 +1218,17 @@ public final class ExpVectorLong {
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
 
-	public int revInvGradCompareTo(ExpVectorLong V) {
-		long[] u = val;
-		long[] v = V.val;
+	public int revInvGradCompareTo(ExpVectorSymbolic V) {
+		IExpr[] u = val;
+		IExpr[] v = V.val;
 		int t = 0;
 		int i;
 		for (i = u.length - 1; i >= 0; i--) {
-			if (u[i] > v[i]) {
+			if (F.Greater.ofQ(u[i], v[i])) {
 				t = 1;
 				break;
 			}
-			if (u[i] < v[i]) {
+			if (F.Less.ofQ(u[i], v[i])) {
 				t = -1;
 				break;
 			}
@@ -1205,16 +1236,20 @@ public final class ExpVectorLong {
 		if (t == 0) {
 			return t;
 		}
-		long up = 0;
-		long vp = 0;
+
+		IASTAppendable up = F.PlusAlloc(i + 1);
+		IASTAppendable vp = F.PlusAlloc(i + 1);
 		for (int j = i; j >= 0; j--) {
-			up += u[j];
-			vp += v[j];
+			up.append(u[j]);
+			vp.append(v[j]);
 		}
-		if (up > vp) {
+		IExpr upEvaled = EvalEngine.get().evaluate(up);
+		IExpr vpEvaled = EvalEngine.get().evaluate(vp);
+
+		if (F.Greater.ofQ(upEvaled, vpEvaled)) {
 			t = 1;
 		} else {
-			if (up < vp) {
+			if (F.Less.ofQ(upEvaled, vpEvaled)) {
 				t = -1;
 			}
 		}
@@ -1231,17 +1266,17 @@ public final class ExpVectorLong {
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
 
-	public int revInvGradCompareTo(ExpVectorLong V, int begin, int end) {
-		long[] u = val;
-		long[] v = V.val;
+	public int revInvGradCompareTo(ExpVectorSymbolic V, int begin, int end) {
+		IExpr[] u = val;
+		IExpr[] v = V.val;
 		int t = 0;
 		int i;
 		for (i = end - 1; i >= begin; i--) {
-			if (u[i] > v[i]) {
+			if (F.Greater.ofQ(u[i], v[i])) {
 				t = 1;
 				break;
 			}
-			if (u[i] < v[i]) {
+			if (F.Less.ofQ(u[i], v[i])) {
 				t = -1;
 				break;
 			}
@@ -1249,16 +1284,19 @@ public final class ExpVectorLong {
 		if (t == 0) {
 			return t;
 		}
-		long up = 0;
-		long vp = 0;
+		IASTAppendable up = F.PlusAlloc(i - begin + 1);
+		IASTAppendable vp = F.PlusAlloc(i - begin + 1);
 		for (int j = i; j >= begin; j--) {
-			up += u[j];
-			vp += v[j];
+			up.append(u[j]);
+			vp.append(v[j]);
 		}
-		if (up > vp) {
+		IExpr upEvaled = EvalEngine.get().evaluate(up);
+		IExpr vpEvaled = EvalEngine.get().evaluate(vp);
+
+		if (F.Greater.ofQ(upEvaled, vpEvaled)) {
 			t = 1;
 		} else {
-			if (up < vp) {
+			if (F.Less.ofQ(upEvaled, vpEvaled)) {
 				t = -1;
 			}
 		}
@@ -1272,17 +1310,17 @@ public final class ExpVectorLong {
 	 * @param V
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
-	public int invTdegCompareTo(ExpVectorLong V) {
-		long[] u = val;
-		long[] v = V.val;
+	public int invTdegCompareTo(ExpVectorSymbolic V) {
+		IExpr[] u = val;
+		IExpr[] v = V.val;
 		int t = 0;
 		int i;
 		for (i = 0; i < u.length; i++) {
-			if (u[i] < v[i]) {
+			if (F.Less.ofQ(u[i], v[i])) {
 				t = 1;
 				break;
 			}
-			if (u[i] > v[i]) {
+			if (F.Greater.ofQ(u[i], v[i])) {
 				t = -1;
 				break;
 			}
@@ -1290,16 +1328,20 @@ public final class ExpVectorLong {
 		if (t == 0) {
 			return t;
 		}
-		long up = 0;
-		long vp = 0;
+
+		IASTAppendable up = F.PlusAlloc(u.length - i + 1);
+		IASTAppendable vp = F.PlusAlloc(u.length - i + 1);
 		for (int j = i; j < u.length; j++) {
-			up += u[j];
-			vp += v[j];
+			up.append(u[j]);
+			vp.append(v[j]);
 		}
-		if (up > vp) {
+		IExpr upEvaled = EvalEngine.get().evaluate(up);
+		IExpr vpEvaled = EvalEngine.get().evaluate(vp);
+
+		if (F.Greater.ofQ(upEvaled, vpEvaled)) {
 			t = 1;
 		} else {
-			if (up < vp) {
+			if (F.Less.ofQ(upEvaled, vpEvaled)) {
 				t = -1;
 			}
 		}
@@ -1312,17 +1354,17 @@ public final class ExpVectorLong {
 	 * @param V
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
-	public int revLexInvTdegCompareTo(ExpVectorLong V) {
-		long[] u = val;
-		long[] v = V.val;
+	public int revLexInvTdegCompareTo(ExpVectorSymbolic V) {
+		IExpr[] u = val;
+		IExpr[] v = V.val;
 		int t = 0;
 		int i;
 		for (i = u.length - 1; i >= 0; i--) {
-			if (u[i] < v[i]) {
+			if (F.Less.ofQ(u[i], v[i])) {
 				t = 1;
 				break;
 			}
-			if (u[i] > v[i]) {
+			if (F.Greater.ofQ(u[i], v[i])) {
 				t = -1;
 				break;
 			}
@@ -1330,16 +1372,19 @@ public final class ExpVectorLong {
 		if (t == 0) {
 			return t;
 		}
-		long up = 0;
-		long vp = 0;
+
+		IASTAppendable up = F.PlusAlloc(i + 1);
+		IASTAppendable vp = F.PlusAlloc(i + 1);
 		for (int j = i; j >= 0; j--) {
-			up += u[j];
-			vp += v[j];
+			up.append(u[j]);
+			vp.append(v[j]);
 		}
-		if (up > vp) {
+		IExpr upEvaled = EvalEngine.get().evaluate(up);
+		IExpr vpEvaled = EvalEngine.get().evaluate(vp);
+		if (F.Greater.ofQ(upEvaled, vpEvaled)) {
 			t = 1;
 		} else {
-			if (up < vp) {
+			if (F.Less.ofQ(upEvaled, vpEvaled)) {
 				t = -1;
 			}
 		}
@@ -1354,17 +1399,17 @@ public final class ExpVectorLong {
 	 * @param V
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
-	public int invWeightCompareTo(long[][] w, ExpVectorLong V) {
-		long[] u = val;
-		long[] v = V.val;
+	public int invWeightCompareTo(IExpr[][] w, ExpVectorSymbolic V) {
+		IExpr[] u = val;
+		IExpr[] v = V.val;
 		int t = 0;
 		int i;
 		for (i = 0; i < u.length; i++) {
-			if (u[i] > v[i]) {
+			if (F.Greater.ofQ(u[i], v[i])) {
 				t = 1;
 				break;
 			}
-			if (u[i] < v[i]) {
+			if (F.Less.ofQ(u[i], v[i])) {
 				t = -1;
 				break;
 			}
@@ -1373,16 +1418,20 @@ public final class ExpVectorLong {
 			return t;
 		}
 		for (int k = 0; k < w.length; k++) {
-			long[] wk = w[k];
-			long up = 0;
-			long vp = 0;
-			for (int j = i; j < u.length; j++) {
-				up += wk[j] * u[j];
-				vp += wk[j] * v[j];
+			IExpr[] wk = w[k];
+
+			IASTAppendable up = F.PlusAlloc(i + 1);
+			IASTAppendable vp = F.PlusAlloc(i + 1);
+			for (int j = i; j >= 0; j--) {
+				up.append(F.Times(wk[j], u[j]));
+				vp.append(F.Times(wk[j], v[j]));
 			}
-			if (up > vp) {
+			IExpr upEvaled = EvalEngine.get().evaluate(up);
+			IExpr vpEvaled = EvalEngine.get().evaluate(vp);
+			if (F.Greater.ofQ(upEvaled, vpEvaled)) {
 				return 1;
-			} else if (up < vp) {
+			}
+			if (F.Less.ofQ(upEvaled, vpEvaled)) {
 				return -1;
 			}
 		}
@@ -1400,17 +1449,17 @@ public final class ExpVectorLong {
 	 * @param end
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
-	public int invWeightCompareTo(long[][] w, ExpVectorLong V, int begin, int end) {
-		long[] u = val;
-		long[] v = V.val;
+	public int invWeightCompareTo(IExpr[][] w, ExpVectorSymbolic V, int begin, int end) {
+		IExpr[] u = val;
+		IExpr[] v = V.val;
 		int t = 0;
 		int i;
 		for (i = begin; i < end; i++) {
-			if (u[i] > v[i]) {
+			if (F.Greater.ofQ(u[i], v[i])) {
 				t = 1;
 				break;
 			}
-			if (u[i] < v[i]) {
+			if (F.Less.ofQ(u[i], v[i])) {
 				t = -1;
 				break;
 			}
@@ -1419,16 +1468,20 @@ public final class ExpVectorLong {
 			return t;
 		}
 		for (int k = 0; k < w.length; k++) {
-			long[] wk = w[k];
-			long up = 0;
-			long vp = 0;
+			IExpr[] wk = w[k];
+
+			IASTAppendable up = F.PlusAlloc(i - end + 1);
+			IASTAppendable vp = F.PlusAlloc(i - end + 1);
 			for (int j = i; j < end; j++) {
-				up += wk[j] * u[j];
-				vp += wk[j] * v[j];
+				up.append(F.Times(wk[j], u[j]));
+				vp.append(F.Times(wk[j], v[j]));
 			}
-			if (up > vp) {
+			IExpr upEvaled = EvalEngine.get().evaluate(up);
+			IExpr vpEvaled = EvalEngine.get().evaluate(vp);
+			if (F.Greater.ofQ(upEvaled, vpEvaled)) {
 				return 1;
-			} else if (up < vp) {
+			}
+			if (F.Less.ofQ(upEvaled, vpEvaled)) {
 				return -1;
 			}
 		}
@@ -1442,8 +1495,8 @@ public final class ExpVectorLong {
 	 * @param n
 	 *            length of exponent vector.
 	 */
-	public static ExpVectorLong valueOf(int n) {
-		return new ExpVectorLong(n);
+	public static ExpVectorSymbolic valueOf(int n) {
+		return new ExpVectorSymbolic(n);
 	}
 
 	/**

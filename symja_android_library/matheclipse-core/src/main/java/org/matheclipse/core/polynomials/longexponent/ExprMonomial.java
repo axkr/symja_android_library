@@ -1,4 +1,4 @@
-package org.matheclipse.core.polynomials;
+package org.matheclipse.core.polynomials.longexponent;
 
 import java.util.Map;
 

@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra.InternalFindCommonFactorPlus;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
@@ -1144,15 +1145,18 @@ public class PredicateQ {
 	 * False
 	 * </pre>
 	 */
-	private final static class UpperCaseQ extends AbstractCorePredicateEvaluator
+	private final static class UpperCaseQ extends AbstractCoreFunctionEvaluator
 			implements Predicate<IExpr>, IPredicate {
-
+		
+		/** {@inheritDoc} */
 		@Override
-		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
-			if (!(arg1 instanceof IStringX)) {
-				throw new WrongArgumentType(null, arg1, 1);
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = engine.evaluate(ast.arg1());
+			IExpr temp = Validate.checkStringType(ast, 1, engine);
+			if (temp.isPresent()) {
+				return F.bool(test(arg1));
 			}
-			return test(arg1);
+			return F.NIL;
 		}
 
 		@Override
@@ -1166,6 +1170,10 @@ public class PredicateQ {
 				}
 			}
 			return true;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 	}
 

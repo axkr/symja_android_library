@@ -70,13 +70,13 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcher;
 import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcherPlus;
 import org.matheclipse.core.patternmatching.hash.HashedPatternRules;
-import org.matheclipse.core.polynomials.ExprMonomial;
-import org.matheclipse.core.polynomials.ExprPolynomial;
-import org.matheclipse.core.polynomials.ExprPolynomialRing;
-import org.matheclipse.core.polynomials.ExprRingFactory;
 import org.matheclipse.core.polynomials.IPartialFractionGenerator;
 import org.matheclipse.core.polynomials.PartialFractionGenerator;
 import org.matheclipse.core.polynomials.PolynomialHomogenization;
+import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
+import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
+import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
+import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import org.matheclipse.core.visit.AbstractVisitorBoolean;
 import org.matheclipse.core.visit.VisitorExpr;
 
@@ -3783,7 +3783,7 @@ public class Algebra {
 						}
 						final IAST variables = F.List(F.Slot1);
 						ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, variables);
-						ExprPolynomial polynomial = ring.create(expr, false, true);
+						ExprPolynomial polynomial = ring.create(expr, false, true, false);
 
 						long varDegree = polynomial.degree(0);
 						if (polynomial.isConstant()) {

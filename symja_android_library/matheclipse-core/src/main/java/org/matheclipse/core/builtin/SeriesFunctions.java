@@ -27,8 +27,8 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.polynomials.ExprPolynomial;
-import org.matheclipse.core.polynomials.ExprPolynomialRing;
+import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
+import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.reflection.system.rules.LimitRules;
 import org.matheclipse.core.reflection.system.rules.SeriesCoefficientRules;
 

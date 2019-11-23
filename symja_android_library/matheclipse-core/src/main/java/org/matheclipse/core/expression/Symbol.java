@@ -28,7 +28,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
-import org.matheclipse.core.polynomials.ExprPolynomialRing;
+import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
 import org.matheclipse.core.patternmatching.RulesData;

@@ -1,4 +1,4 @@
-package org.matheclipse.core.polynomials;
+package org.matheclipse.core.polynomials.longexponent;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -29,6 +29,57 @@ import edu.jas.structure.RingElem;
  * 
  */
 public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMonomial> {
+
+	/**
+	 * Iterator over monomials of a polynomial. Adaptor for val.entrySet().iterator().
+	 * 
+	 */
+	private static class ExprPolyIterator implements Iterator<ExprMonomial> {
+
+		/**
+		 * Internal iterator over polynomial map.
+		 */
+		protected final Iterator<Map.Entry<ExpVectorLong, IExpr>> ms;
+
+		/**
+		 * Constructor of polynomial iterator.
+		 * 
+		 * @param m
+		 *            SortetMap of a polynomial.
+		 */
+		public ExprPolyIterator(SortedMap<ExpVectorLong, IExpr> m) {
+			ms = m.entrySet().iterator();
+		}
+
+		/**
+		 * Test for availability of a next monomial.
+		 * 
+		 * @return true if the iteration has more monomials, else false.
+		 */
+		@Override
+		public boolean hasNext() {
+			return ms.hasNext();
+		}
+
+		/**
+		 * Get next monomial element.
+		 * 
+		 * @return next monomial.
+		 */
+		@Override
+		public ExprMonomial next() {
+			return new ExprMonomial(ms.next());
+		}
+
+		/**
+		 * Remove the last monomial returned from underlying set if allowed.
+		 */
+		@Override
+		public void remove() {
+			ms.remove();
+		}
+
+	}
 
 	/**
 	 * 

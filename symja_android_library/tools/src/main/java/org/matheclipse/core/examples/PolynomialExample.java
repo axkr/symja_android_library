@@ -4,11 +4,11 @@ import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.polynomials.ExprMonomial;
-import org.matheclipse.core.polynomials.ExprPolynomial;
-import org.matheclipse.core.polynomials.ExprPolynomialRing;
-import org.matheclipse.core.polynomials.ExprRingFactory;
-import org.matheclipse.core.polynomials.ExprTermOrderByName;
+import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
+import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
+import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
+import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
+import org.matheclipse.core.polynomials.longexponent.ExprTermOrderByName;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
