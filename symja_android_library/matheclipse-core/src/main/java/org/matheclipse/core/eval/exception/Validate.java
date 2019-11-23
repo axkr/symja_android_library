@@ -314,18 +314,22 @@ public final class Validate {
 	}
 
 	/**
+	 * <p>
 	 * Check if the argument at the given position is a <code>IStringX</code> string object.
+	 * </p>
 	 * 
 	 * @param position
 	 *            the position which has to be a string.
-	 * @throws WrongArgumentType
-	 *             if it's not a symbol.
+	 * @param engine
+	 *            the evaluation engine
+	 * @return <code>F.NIL</code>
 	 */
-	public static IStringX checkStringType(IAST ast, int position) {
+	public static IExpr checkStringType(IAST ast, int position, EvalEngine engine) {
 		if (ast.get(position) instanceof IStringX) {
-			return (IStringX) ast.get(position);
+			return ast.get(position);
 		}
-		throw new WrongArgumentType(ast, ast.get(position), position, "String expected!");
+		// String expected at position `1` in `2`
+		return IOFunctions.printMessage(ast.topHead(), "string", F.List(F.ZZ(position), ast), engine);
 	}
 
 	/**
