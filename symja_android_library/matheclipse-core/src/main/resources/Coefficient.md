@@ -15,6 +15,9 @@ See:
 ```
 >> Coefficient(10(x^2)+2(y^2)+2*x, x, 2)
 10
+
+>> Coefficient(7*y^(3*w), y, 3*w)
+7
 ```
 
 In the next line `Coefficient` returns the coefficient of a particular term of a polynomial. In this case `(-210*c^2 * x^2*y*z^2)` is a term of `(c*x-2*y+z)^7` after it's expanded.

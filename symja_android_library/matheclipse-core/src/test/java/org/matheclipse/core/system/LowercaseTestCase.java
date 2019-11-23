@@ -2409,6 +2409,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testCoefficient() {
 		check("Coefficient(7*y^w, y, w)", //
 				"7");
+		check("Coefficient(7*y^(3*w), y, 3*w)", //
+				"7");
 		check("Coefficient(c*x^(-2)+a+b*x,x,-2)", //
 				"c");
 
