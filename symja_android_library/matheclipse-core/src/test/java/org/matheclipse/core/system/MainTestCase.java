@@ -1808,7 +1808,8 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem185() {
-		check("Function(x,(x^3))[]", "Expected number of arguments: 1 but got 0 arguments:\n" + "Function(x,x^3)[]");
+		check("Function(x,(x^3))[]", //
+				"Function(x,x^3)[]");
 	}
 
 	public void testSystem186() {

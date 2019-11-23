@@ -32,7 +32,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
-import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -2193,24 +2192,23 @@ public final class NumberTheory {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (!ast.arg1().isList()) {
-				throw new WrongNumberOfArguments(ast, 1, ast.argSize());
-			}
-			IAST list = (IAST) ast.arg1();
-			if (list.size() > 1) {
-				int size = list.argSize();
-				if (list.forAll(x -> x.isReal())) {
+			if (ast.arg1().isList()) {
+				IAST list = (IAST) ast.arg1();
+				if (list.size() > 1) {
+					int size = list.argSize();
+					if (list.forAll(x -> x.isReal())) {
+						IExpr result = list.get(size--);
+						for (int i = size; i >= 1; i--) {
+							result = list.get(i).plus(result.power(-1));
+						}
+						return result;
+					}
 					IExpr result = list.get(size--);
 					for (int i = size; i >= 1; i--) {
-						result = list.get(i).plus(result.power(-1));
+						result = F.Plus(list.get(i), F.Power(result, F.CN1));
 					}
 					return result;
 				}
-				IExpr result = list.get(size--);
-				for (int i = size; i >= 1; i--) {
-					result = F.Plus(list.get(i), F.Power(result, F.CN1));
-				}
-				return result;
 			}
 			return F.NIL;
 		}

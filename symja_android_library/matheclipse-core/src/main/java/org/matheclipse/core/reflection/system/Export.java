@@ -21,7 +21,6 @@ import org.jgrapht.io.IntegerComponentNameProvider;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.WL;
@@ -46,13 +45,13 @@ public class Export extends AbstractEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (Config.isFileSystemEnabled(engine)) {
 			if (!(ast.arg1() instanceof IStringX)) {
-				throw new WrongNumberOfArguments(ast, 1, ast.argSize());
+				return F.NIL;
 			}
 			IStringX arg1 = (IStringX) ast.arg1();
 			Extension format = Extension.exportFilename(arg1.toString());
 			if (ast.size() == 4) {
 				if (!(ast.arg3() instanceof IStringX)) {
-					throw new WrongNumberOfArguments(ast, 3, ast.argSize());
+					return F.NIL;
 				}
 				// format = ((IStringX) ast.arg3()).toString();
 				format = Extension.exportExtension(((IStringX) ast.arg3()).toString());

@@ -2106,8 +2106,10 @@ public final class BooleanFunctions {
 				return F.True;
 			}
 			try {
-				Validate.checkRange(ast, 4, Integer.MAX_VALUE);
-
+				// Validate.checkRange(ast, 4, Integer.MAX_VALUE);
+				if (ast.size() < 4) {
+					return F.NIL;
+				}
 				if (ast.size() == 4) {
 					for (IBuiltInSymbol sym : COMPARATOR_SYMBOLS) {
 						if (sym.equals(ast.arg2())) {

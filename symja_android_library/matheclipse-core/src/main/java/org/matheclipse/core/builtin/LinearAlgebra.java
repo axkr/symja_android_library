@@ -53,7 +53,6 @@ import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
-import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;

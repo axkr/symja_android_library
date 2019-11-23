@@ -9,7 +9,6 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
-import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.StringX;
@@ -142,11 +141,10 @@ public final class StringFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (!(ast.arg1() instanceof IStringX)) {
-				throw new WrongNumberOfArguments(ast, 1, ast.argSize());
+			if (ast.arg1().isString()) {
+				return F.bool(test(ast.arg1()));
 			}
-
-			return F.bool(test(ast.arg1()));
+			return F.NIL;
 		}
 
 		@Override

@@ -4,6 +4,7 @@ import static org.matheclipse.core.expression.F.NIL;
 
 import java.util.HashMap;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -106,8 +107,6 @@ public class ElementData extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkRange(ast, 2, 3);
-
 		if (ast.size() == 2) {
 			if (ast.arg1().isInteger()) {
 				IExpr temp = MAP_NUMBER_NAME.get(ast.arg1());
@@ -135,7 +134,11 @@ public class ElementData extends AbstractFunctionEvaluator {
 		return NIL;
 
 	}
-
+	
+	@Override
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_1_2;
+	}
 	private IExpr dataPoint(final IAST ast, IAST propertyList) {
 		String propertyStr = ast.arg2().toString();
 		if (propertyStr.equals("AtomicNumber")) {

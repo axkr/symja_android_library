@@ -2399,11 +2399,9 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 * Derivative of a polynomial. This method assumes that the polynomial is univariate. Throws WrongNumberOfArguments
 	 * if the polynomial is not univariate.
 	 * 
-	 * @return the derivative polynomia if the polynomial isn't univariate
+	 * @return the derivative polynomial if the polynomial is univariate
 	 */
-	public ExprPolynomial derivative() {
-		Validate.checkSize(ring.getVars(), 2);
-
+	public ExprPolynomial derivativeUnivariate() {
 		ExprPolynomial result = new ExprPolynomial(ring);
 		long exp;
 		IExpr coefficient;
@@ -2413,7 +2411,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 			if (exp != 0) {
 				copy = expArray.copy();
 				copy.val[0] = exp - 1;
-				coefficient = val.get(expArray).times(F.integer(exp));
+				coefficient = val.get(expArray).times(F.ZZ(exp));
 				result.doAddTo(coefficient, copy);
 			}
 		}

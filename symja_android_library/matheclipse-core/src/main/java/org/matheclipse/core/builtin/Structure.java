@@ -12,8 +12,6 @@ import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
-//import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
@@ -616,7 +614,8 @@ public class Structure {
 							symbolSlots = F.List(arg1);
 						}
 						if (symbolSlots.size() > ast.size()) {
-							throw new WrongNumberOfArguments(ast, symbolSlots.argSize(), ast.argSize());
+							// To many parameters in `1` to be filled from `2`.
+							return IOFunctions.printMessage(F.Function, "fpct", F.List(symbolSlots, function), engine);
 						}
 						java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables = new IdentityHashMap<ISymbol, IExpr>();
 						final int moduleCounter = engine.incModuleCounter();

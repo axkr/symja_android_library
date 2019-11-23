@@ -23,7 +23,6 @@ import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
-import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;

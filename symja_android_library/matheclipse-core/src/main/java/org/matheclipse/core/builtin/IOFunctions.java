@@ -647,6 +647,7 @@ public class IOFunctions {
 			"digit", "Digit at position `1` in `2` is too large to be used in base `3`.", //
 			"exact", "Argument `1` is not an exact number.", //
 			"fftl", "Argument `1` is not a non-empty list or rectangular array of numeric quantities.", //
+			"fpct", "To many parameters in `1` to be filled from `2`.", //
 			"fnsym", "First argument in `1` is not a symbol or a string naming a symbol.", //
 			"heads", "Heads `1` and `2` are expected to be the same.", //
 			"ilsnn", "Single or list of non-negative integers expected at position `1`.", //
