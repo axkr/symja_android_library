@@ -5,7 +5,7 @@ import org.matheclipse.parser.client.math.MathException;
 
 /**
  */
-public class WrongNumberOfArguments extends MathException {
+public class WrongNumberOfArguments extends ValidateException {
 	/**
 	 * 
 	 */
@@ -16,12 +16,12 @@ public class WrongNumberOfArguments extends MathException {
 	int fCurrent;
 
 	IAST fExpr;
-	
+
 	int fTextNumber;
 
 	/**
-	 * Expected number of arguments: {@code allowed} but got {@code current}
-	 * arguments:<br/> {@code expr}.
+	 * Expected number of arguments: {@code allowed} but got {@code current} arguments:<br/>
+	 * {@code expr}.
 	 * 
 	 * @param expr
 	 * @param allowed
@@ -35,25 +35,26 @@ public class WrongNumberOfArguments extends MathException {
 	}
 
 	/**
-	 * Expected number of arguments: {@code allowed} but got {@code current}
-	 * arguments:<br/> {@code expr}.
+	 * Expected number of arguments: {@code allowed} but got {@code current} arguments:<br/>
+	 * {@code expr}.
 	 * 
 	 * @param expr
 	 * @param allowed
 	 * @param current
 	 */
-	public WrongNumberOfArguments(final int textNumber, final IAST expr,final int current) {
+	public WrongNumberOfArguments(final int textNumber, final IAST expr, final int current) {
 		fAllowed = 0;
 		fCurrent = current;
 		fExpr = expr;
 		fTextNumber = textNumber;
 	}
-	
+
 	@Override
 	public String getMessage() {
-		switch(fTextNumber){
+		switch (fTextNumber) {
 		case 0:
-			return "Expected number of arguments: " + fAllowed + " but got " + fCurrent + " arguments:\n" + fExpr.toString();
+			return "Expected number of arguments: " + fAllowed + " but got " + fCurrent + " arguments:\n"
+					+ fExpr.toString();
 		case 1:
 			return "Expected even number of arguments but got " + fCurrent + " arguments:\n" + fExpr.toString();
 		case 2:

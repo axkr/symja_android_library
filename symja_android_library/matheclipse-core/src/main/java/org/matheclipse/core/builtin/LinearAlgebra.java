@@ -637,9 +637,9 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() != 3) {
-				throw new WrongNumberOfArguments(ast, 2, ast.argSize());
-			}
+			// if (ast.size() != 3) {
+			// throw new WrongNumberOfArguments(ast, 2, ast.argSize());
+			// }
 			IExpr u = ast.arg1();
 			IExpr v = ast.arg2();
 
@@ -658,6 +658,10 @@ public final class LinearAlgebra {
 			return F.NIL;
 		}
 
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
 	}
 
 	/**
@@ -682,9 +686,9 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST functionList, EvalEngine engine) {
-			if (functionList.size() != 3) {
-				throw new WrongNumberOfArguments(functionList, 2, functionList.argSize());
-			}
+			// if (functionList.size() != 3) {
+			// throw new WrongNumberOfArguments(functionList, 2, functionList.argSize());
+			// }
 			IExpr arg1 = functionList.arg1();
 			IExpr arg2 = functionList.arg2();
 
@@ -701,6 +705,11 @@ public final class LinearAlgebra {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 	}
@@ -789,9 +798,9 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST functionList, EvalEngine engine) {
-			if (functionList.size() != 3) {
-				throw new WrongNumberOfArguments(functionList, 2, functionList.argSize());
-			}
+			// if (functionList.size() != 3) {
+			// throw new WrongNumberOfArguments(functionList, 2, functionList.argSize());
+			// }
 			IExpr arg1 = functionList.arg1();
 			IExpr arg2 = functionList.arg2();
 
@@ -813,6 +822,11 @@ public final class LinearAlgebra {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 	}
@@ -911,9 +925,9 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST functionList, EvalEngine engine) {
-			if (functionList.size() != 3) {
-				throw new WrongNumberOfArguments(functionList, 2, functionList.argSize());
-			}
+			// if (functionList.size() != 3) {
+			// throw new WrongNumberOfArguments(functionList, 2, functionList.argSize());
+			// }
 			IExpr arg1 = functionList.arg1();
 			IExpr arg2 = functionList.arg2();
 
@@ -930,6 +944,11 @@ public final class LinearAlgebra {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 	}
@@ -2730,9 +2749,9 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() != 3) {
-				throw new WrongNumberOfArguments(ast, 2, ast.argSize());
-			}
+			// if (ast.size() != 3) {
+			// throw new WrongNumberOfArguments(ast, 2, ast.argSize());
+			// }
 			IExpr arg1 = ast.arg1();
 			IExpr arg2 = ast.arg2();
 
@@ -2755,6 +2774,11 @@ public final class LinearAlgebra {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		@Override
@@ -3135,7 +3159,7 @@ public final class LinearAlgebra {
 				// absolute Value of a number
 				return ((INumber) arg1).abs();
 			}
-			if (arg1.isNumericFunction()&&!arg1.isList()) {
+			if (arg1.isNumericFunction() && !arg1.isList()) {
 				if (ast.isAST2()) {
 					return F.NIL;
 				}
@@ -3762,9 +3786,9 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST functionList, EvalEngine engine) {
-			if (functionList.size() != 3) {
-				throw new WrongNumberOfArguments(functionList, 2, functionList.argSize());
-			}
+			// if (functionList.size() != 3) {
+			// throw new WrongNumberOfArguments(functionList, 2, functionList.argSize());
+			// }
 			IExpr arg1 = functionList.arg1();
 			IExpr arg2 = functionList.arg2();
 
@@ -3788,6 +3812,11 @@ public final class LinearAlgebra {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 	}

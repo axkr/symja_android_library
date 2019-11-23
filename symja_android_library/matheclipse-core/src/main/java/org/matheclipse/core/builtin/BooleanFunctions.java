@@ -10,20 +10,15 @@ import java.util.SortedSet;
 
 import org.logicng.datastructures.Assignment;
 import org.logicng.datastructures.Tristate;
-import org.logicng.formulas.And;
 import org.logicng.formulas.CFalse;
 import org.logicng.formulas.CTrue;
 import org.logicng.formulas.Formula;
 import org.logicng.formulas.FormulaFactory;
 import org.logicng.formulas.FormulaTransformation;
 import org.logicng.formulas.Literal;
-import org.logicng.formulas.Not;
-import org.logicng.formulas.Or;
 import org.logicng.formulas.Variable;
 import org.logicng.solvers.MiniSat;
 import org.logicng.solvers.SATSolver;
-import org.logicng.solvers.sat.MiniSatConfig;
-import org.logicng.solvers.sat.MiniSatConfig.Builder;
 import org.logicng.transformations.cnf.CNFFactorization;
 import org.logicng.transformations.dnf.DNFFactorization;
 import org.logicng.transformations.qmc.QuineMcCluskeyAlgorithm;
@@ -32,7 +27,7 @@ import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -59,7 +54,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ITernaryComparator;
 
 import ch.ethz.idsc.tensor.qty.IQuantity;
-import ch.ethz.idsc.tensor.qty.IUnit;
 
 public final class BooleanFunctions {
 	public final static Equal CONST_EQUAL = new Equal();
@@ -2193,7 +2187,7 @@ public final class BooleanFunctions {
 				return res;
 
 				// return inequality(ast, engine);
-			} catch (WrongNumberOfArguments woa) {
+			} catch (ValidateException woa) {
 				return engine.printMessage(woa.getMessage());
 			}
 		}
