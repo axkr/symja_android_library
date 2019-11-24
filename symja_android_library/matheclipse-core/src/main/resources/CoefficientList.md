@@ -4,7 +4,7 @@
 CoefficientList(polynomial, variable)
 ```
 
-> get the coefficient list of a univariate `polynomial`.
+> get the coefficient list of a  `polynomial`.
  
 
 See:  
@@ -68,7 +68,7 @@ One can't get the result above directly from CoefficientList. Instead pieces of 
 
 All other coefficients under `coeff[[6]]` are zero which agrees with the result of `Coefficient(poly, x^5)`. 
 
-
 ### Related terms
 
-[Coefficient](Coefficient.md), [Exponent](Exponent.md) 
+[Coefficient](Coefficient.md), [CoefficientRules](CoefficientRules.md), [Exponent](Exponent.md), [MonomialList](MonomialList.md)
+ 

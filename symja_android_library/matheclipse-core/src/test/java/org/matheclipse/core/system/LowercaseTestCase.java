@@ -2681,6 +2681,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCoefficientRules() {
+		check("CoefficientRules(x^3+3*x^2*y+3*x*y^2+y^3, {x,y})", //
+				"{{3,0}->1,{2,1}->3,{1,2}->3,{0,3}->1}");
 		check("CoefficientRules(x^3+3*x^2*y+3*x*y^2+y^3)", //
 				"{{3,0}->1,{2,1}->3,{1,2}->3,{0,3}->1}");
 		
