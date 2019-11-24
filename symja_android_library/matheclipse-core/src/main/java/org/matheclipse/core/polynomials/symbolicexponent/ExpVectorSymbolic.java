@@ -49,7 +49,7 @@ public final class ExpVectorSymbolic {
 	 *            exponent to be set.
 	 */
 	public ExpVectorSymbolic(int n, int i, IExpr e) {
-		this(new IExpr[n]);
+		this(n);
 		val[i] = e;
 	}
 

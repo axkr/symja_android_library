@@ -2681,6 +2681,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCoefficientRules() {
+		check("CoefficientRules(x^3+3*x^2*y+3*x*y^2+y^3)", //
+				"{{3,0}->1,{2,1}->3,{1,2}->3,{0,3}->1}");
+		
+		check("CoefficientRules(7*y^w, {y,z})", //
+				"{{0,0}->7*y^w}");
+		check("CoefficientRules(7*y^(3*w), y )", //
+				"{{0}->7*y^(3*w)}");
+		check("CoefficientRules(c*x^2+a+b*x,x)", //
+				"{{2}->c,{1}->b,{0}->a}");
+		check("CoefficientRules(c*x^(-2)+a+b*x,x)", //
+				"{{0}->a+c/x^2+b*x}");
+
+		
 		check("CoefficientRules(SeriesData(x, 0, {1, 1, 0, 1, 1, 0, 1, 1}, 0, 9, 1))", //
 				"{{0}->1+x+x^3+x^4+x^6+x^7+O(x)^9}");
 		check("CoefficientRules((x + y)^3)", //
@@ -11849,6 +11862,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMonomialList() {
+		check("MonomialList(7*y^w, {y,z})", //
+				"{7*y^w}");
+		check("MonomialList(7*y^(3*w), y )", //
+				"{7*y^(3*w)}");
+		check("MonomialList(c*x^2+a+b*x,x)", //
+				"{c*x^2,b*x,a}");
+		check("MonomialList(c*x^(-2)+a+b^2*x,b)", //
+				"{b^2*x,a+c/x^2}");
+		check("MonomialList(c*x^(-2)+a+b*x,x)", //
+				"{a+c/x^2+b*x}");
+		
 		check("MonomialList((x + y)^3)", //
 				"{x^3,3*x^2*y,3*x*y^2,y^3}");
 		check("MonomialList(x^2*y^2 + x^3, {x, y})", //

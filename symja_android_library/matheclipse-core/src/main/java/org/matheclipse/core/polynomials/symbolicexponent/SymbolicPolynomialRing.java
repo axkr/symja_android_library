@@ -544,7 +544,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
 	 */
 	public SymbolicPolynomial create(final IExpr exprPoly, boolean coefficient, boolean checkNegativeExponents,
 			boolean coefficientListMode) throws ArithmeticException, ClassCastException {
-		int ix = ExpVectorLong.indexVar(exprPoly, getVars());
+		int ix = ExpVectorSymbolic.indexVar(exprPoly, getVars());
 		if (ix >= 0) {
 			ExpVectorSymbolic e = new ExpVectorSymbolic(vars.argSize(), ix, F.C1);
 			return getOne().multiply(e);
@@ -573,7 +573,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
 				return result;
 			} else if (ast.isPower()) {
 				final IExpr base = ast.base();
-				ix = ExpVectorLong.indexVar(base, getVars());
+				ix = ExpVectorSymbolic.indexVar(base, getVars());
 				if (ix >= 0) {
 					IExpr exponent = ast.exponent(); // .toIntDefault(Integer.MIN_VALUE);
 					// int exponent = -1;
@@ -582,9 +582,10 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
 					// } catch (WrongArgumentType e) {
 					// //
 					// }
-					if (checkNegativeExponents && exponent.isNegative()) {
+					if (checkNegativeExponents && //
+							(!exponent.isInteger()||exponent.isNegative())) {
 						throw new ArithmeticException(
-								"JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
+								"SymbolicPolynomialRing - invalid exponent: " + ast.arg2().toString());
 					}
 					if (exponent.isNegative() && coefficientListMode) {
 						return new SymbolicPolynomial(this, ast);
@@ -1006,7 +1007,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
 	 *            exponent vector
 	 * @return script compatible representation for the ExpVectorLong.
 	 */
-	public String toScript(ExpVectorLong e) {
+	public String toScript(ExpVectorSymbolic e) {
 		if (vars != null) {
 			return e.toScript(vars);
 		}

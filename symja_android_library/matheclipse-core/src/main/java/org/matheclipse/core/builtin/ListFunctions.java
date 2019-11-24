@@ -622,14 +622,13 @@ public final class ListFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr sym = Validate.checkSymbolType(ast, 1, engine);
-			if (!sym.isPresent()) {
-				return F.NIL;
-			}
-			IExpr arg2 = engine.evaluate(ast.arg2());
-			Function<IExpr, IExpr> function = new AppendToFunction(arg2);
-			IExpr[] results = ((ISymbol)sym).reassignSymbolValue(function, F.AppendTo, engine);
-			if (results != null) {
-				return results[1];
+			if (sym.isPresent()) {
+				IExpr arg2 = engine.evaluate(ast.arg2());
+				Function<IExpr, IExpr> function = new AppendToFunction(arg2);
+				IExpr[] results = ((ISymbol) sym).reassignSymbolValue(function, F.AppendTo, engine);
+				if (results != null) {
+					return results[1];
+				}
 			}
 			return F.NIL;
 		}
@@ -3798,14 +3797,13 @@ public final class ListFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr sym = Validate.checkSymbolType(ast, 1, engine);
-			if (!sym.isPresent()) {
-				return F.NIL;
-			}
-			IExpr arg2 = engine.evaluate(ast.arg2());
-			Function<IExpr, IExpr> function = new PrependToFunction(arg2);
-			IExpr[] results = ((ISymbol)sym).reassignSymbolValue(function, F.PrependTo, engine);
-			if (results != null) {
-				return results[1];
+			if (sym.isPresent()) {
+				IExpr arg2 = engine.evaluate(ast.arg2());
+				Function<IExpr, IExpr> function = new PrependToFunction(arg2);
+				IExpr[] results = ((ISymbol) sym).reassignSymbolValue(function, F.PrependTo, engine);
+				if (results != null) {
+					return results[1];
+				}
 			}
 
 			return F.NIL;

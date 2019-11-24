@@ -374,8 +374,12 @@ public final class Validate {
 			}
 			return listOfSymbols;
 		} else {
-			return F.List(Validate.checkSymbolType(ast, position, engine));
+			IExpr temp = Validate.checkSymbolType(ast, position, engine);
+			if (temp.isPresent()) {
+				return F.List(temp);
+			}
 		}
+		return F.NIL;
 	}
 
 	/**

@@ -71,7 +71,6 @@ public class PredicateQ {
 			F.SymbolQ.setPredicateQ(x -> x.isSymbol());
 			F.SymmetricMatrixQ.setEvaluator(new SymmetricMatrixQ());
 			F.SyntaxQ.setEvaluator(new SyntaxQ());
-			F.UpperCaseQ.setEvaluator(new UpperCaseQ());
 			F.ValueQ.setEvaluator(new ValueQ());
 			F.VectorQ.setEvaluator(new VectorQ());
 		}
@@ -1125,57 +1124,6 @@ public class PredicateQ {
 
 	}
 
-	/**
-	 * <pre>
-	 * UpperCaseQ(str)
-	 * </pre>
-	 * 
-	 * <blockquote>
-	 * <p>
-	 * is <code>True</code> if the given <code>str</code> is a string which only contains upper case characters.
-	 * </p>
-	 * </blockquote>
-	 * <h3>Examples</h3>
-	 * 
-	 * <pre>
-	 * &gt;&gt; UpperCaseQ("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	 * True
-	 * 
-	 * &gt;&gt; UpperCaseQ("ABCDEFGHIJKLMNopqRSTUVWXYZ")
-	 * False
-	 * </pre>
-	 */
-	private final static class UpperCaseQ extends AbstractCoreFunctionEvaluator
-			implements Predicate<IExpr>, IPredicate {
-		
-		/** {@inheritDoc} */
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			IExpr arg1 = engine.evaluate(ast.arg1());
-			IExpr temp = Validate.checkStringType(ast, 1, engine);
-			if (temp.isPresent()) {
-				return F.bool(test(arg1));
-			}
-			return F.NIL;
-		}
-
-		@Override
-		public boolean test(final IExpr obj) {
-			final String str = obj.toString();
-			char ch;
-			for (int i = 0; i < str.length(); i++) {
-				ch = str.charAt(i);
-				if (!(Character.isUpperCase(ch))) {
-					return false;
-				}
-			}
-			return true;
-		}
-
-		public int[] expectedArgSize() {
-			return IOFunctions.ARGS_1_1;
-		}
-	}
 
 	/**
 	 * <pre>

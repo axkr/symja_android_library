@@ -2,7 +2,6 @@ package org.matheclipse.core.builtin;
 
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.apfloat.ApcomplexMath;
@@ -19,7 +18,7 @@ import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -2569,7 +2568,7 @@ public class StatisticsFunctions {
 						return vectorCovarianceSymbolic(arg1, arg2, arg1Length);
 					}
 				}
-			} catch (final WrongArgumentType e) {
+			} catch (final ValidateException e) {
 				// WrongArgumentType occurs in list2RealMatrix(),
 				// if the matrix elements aren't pure numerical values
 			} catch (final IndexOutOfBoundsException e) {

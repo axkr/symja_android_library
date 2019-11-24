@@ -55,6 +55,7 @@ import org.matheclipse.core.polynomials.longexponent.ExprTermOrder;
 import org.matheclipse.core.polynomials.symbolicexponent.ExpVectorSymbolic;
 import org.matheclipse.core.polynomials.symbolicexponent.SymbolicPolynomial;
 import org.matheclipse.core.polynomials.symbolicexponent.SymbolicPolynomialRing;
+import org.matheclipse.core.polynomials.symbolicexponent.SymbolicTermOrder;
 import org.matheclipse.core.reflection.system.rules.LegendrePRules;
 import org.matheclipse.core.reflection.system.rules.LegendreQRules;
 
@@ -86,10 +87,6 @@ import edu.jas.ufd.Squarefree;
 import edu.jas.ufd.SquarefreeFactory;
 
 public class PolynomialFunctions {
-	/**
-	 * Use the JAS library to represent the polynomials
-	 */
-	public final static boolean USE_JAS_POLYNOMIAL = true;
 
 	/**
 	 * 
@@ -330,13 +327,13 @@ public class PolynomialFunctions {
 		public IExpr evaluate(final IAST ast, final EvalEngine engine) {
 			IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 			VariablesSet eVar;
-			IAST symbolList = F.List();
+			IAST symbolList;
 			List<IExpr> varList;
 			if (ast.isAST1()) {
 				// extract all variables from the polynomial expression
 				eVar = new VariablesSet(ast.arg1());
-				eVar.appendToList(symbolList);
 				varList = eVar.getArrayList();
+				symbolList = eVar.getVarList();
 			} else {
 				symbolList = Validate.checkSymbolOrSymbolList(ast, 2, engine);
 				if (!symbolList.isPresent()) {
@@ -346,34 +343,47 @@ public class PolynomialFunctions {
 				symbolList.forEach(x -> varList.add(x));
 			}
 			TermOrder termOrder = TermOrderByName.Lexicographic;
-			try {
-				if (ast.size() > 3) {
-					if (ast.arg3().isSymbol()) {
-						// String orderStr = ast.arg3().toString();
-						termOrder = JASIExpr.monomialOrder((ISymbol) ast.arg3(), termOrder);
-					}
+
+			if (ast.size() > 3) {
+
+				if (ast.arg3().isSymbol()) {
+					termOrder = JASIExpr.monomialOrder((ISymbol) ast.arg3(), termOrder);
+				} else {
 					final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
 					IExpr option = options.getOption(F.Modulus);
-					if (option.isReal()) {
-						return coefficientRulesModulus(expr, varList, termOrder, option);
+					if (option.isPresent()) {
+						try {
+							if (option.isInteger()) {
+								return coefficientRulesModulus(expr, varList, termOrder, option);
+							}
+						} catch (RuntimeException rex) {
+							// toInt() conversion failed
+							if (Config.SHOW_STACKTRACE) {
+								rex.printStackTrace();
+							}
+						}
 					}
+					return F.NIL;
 				}
 
-				if (USE_JAS_POLYNOMIAL) {
-					return coefficientRules(expr, varList, termOrder);
-				} else {
-					ExprPolynomialRing ring = new ExprPolynomialRing(symbolList,
-							new ExprTermOrder(termOrder.getEvord()));
-					ExprPolynomial poly = ring.create(expr);
-					return poly.coefficientRules();
-				}
-			} catch (JASConversionException jce) {
-				// toInt() conversion failed
-				if (Config.DEBUG) {
-					jce.printStackTrace();
+			}
+
+			try {
+				SymbolicPolynomialRing ring = new SymbolicPolynomialRing(symbolList,
+						new SymbolicTermOrder(termOrder.getEvord()));
+				SymbolicPolynomial poly = ring.create(expr, false, true, true);
+				return poly.coefficientRules();
+			} catch (RuntimeException rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
 				}
 			}
-			return F.NIL;
+			// default mapping
+			IASTAppendable ruleList = F.ListAlloc(symbolList.size());
+			for (int j = 1; j < symbolList.size(); j++) {
+				ruleList.append(F.C0);
+			}
+			return F.List(F.Rule(ruleList, expr));
 		}
 
 		@Override
@@ -390,24 +400,24 @@ public class PolynomialFunctions {
 		 *            the JAS term ordering
 		 * @return the list of monomials of the univariate polynomial.
 		 */
-		public static IAST coefficientRules(IExpr polynomial, final List<IExpr> variablesList,
-				final TermOrder termOrder) throws JASConversionException {
-			JASIExpr jas = new JASIExpr(variablesList, ExprRingFactory.CONST, termOrder, false);
-			GenPolynomial<IExpr> polyExpr = jas.expr2IExprJAS(polynomial);
-			IASTAppendable resultList = F.ListAlloc(polyExpr.length());
-			for (Monomial<IExpr> monomial : polyExpr) {
-
-				IExpr coeff = monomial.coefficient();
-				ExpVector exp = monomial.exponent();
-				int len = exp.length();
-				IASTAppendable ruleList = F.ListAlloc(len);
-				for (int i = 0; i < len; i++) {
-					ruleList.append(F.integer(exp.getVal(len - i - 1)));
-				}
-				resultList.append(F.Rule(ruleList, coeff));
-			}
-			return resultList;
-		}
+		// public static IAST coefficientRules(IExpr polynomial, final List<IExpr> variablesList,
+		// final TermOrder termOrder) throws JASConversionException {
+		// JASIExpr jas = new JASIExpr(variablesList, ExprRingFactory.CONST, termOrder, false);
+		// GenPolynomial<IExpr> polyExpr = jas.expr2IExprJAS(polynomial);
+		// IASTAppendable resultList = F.ListAlloc(polyExpr.length());
+		// for (Monomial<IExpr> monomial : polyExpr) {
+		//
+		// IExpr coeff = monomial.coefficient();
+		// ExpVector exp = monomial.exponent();
+		// int len = exp.length();
+		// IASTAppendable ruleList = F.ListAlloc(len);
+		// for (int i = 0; i < len; i++) {
+		// ruleList.append(F.ZZ(exp.getVal(len - i - 1)));
+		// }
+		// resultList.append(F.Rule(ruleList, coeff));
+		// }
+		// return resultList;
+		// }
 
 		/**
 		 * Get exponent vectors and coefficients of monomials of a polynomial expression.
@@ -434,9 +444,9 @@ public class PolynomialFunctions {
 					int len = exp.length();
 					IASTAppendable ruleList = F.ListAlloc(len);
 					for (int i = 0; i < len; i++) {
-						ruleList.append(F.integer(exp.getVal(len - i - 1)));
+						ruleList.append(F.ZZ(exp.getVal(len - i - 1)));
 					}
-					resultList.append(F.Rule(ruleList, F.integer(coeff.getVal())));
+					resultList.append(F.Rule(ruleList, F.ZZ(coeff.getVal())));
 				}
 				return resultList;
 			} catch (ArithmeticException ae) {
@@ -445,7 +455,7 @@ public class PolynomialFunctions {
 					ae.printStackTrace();
 				}
 			}
-			return null;
+			return F.NIL;
 		}
 
 	}
@@ -935,19 +945,28 @@ public class PolynomialFunctions {
 				return F.C0;
 			}
 			IExpr arg3 = Validate.checkSymbolType(ast, 3, engine);
-			ISymbol x = (ISymbol) arg3;
-			IExpr a = F.evalExpandAll(arg1, engine);
-			IExpr b = F.evalExpandAll(arg2, engine);
-			ExprPolynomialRing ring = new ExprPolynomialRing(F.List(x));
-			try {
-				// check if a is a polynomial otherwise check ArithmeticException, ClassCastException
-				ring.create(a);
-				// check if b is a polynomial otherwise check ArithmeticException, ClassCastException
-				ring.create(b);
+			if (arg3.isPresent()) {
+				ISymbol x = (ISymbol) arg3;
+				IExpr a = F.evalExpandAll(arg1, engine);
+				IExpr b = F.evalExpandAll(arg2, engine);
+				ExprPolynomialRing ring = new ExprPolynomialRing(F.List(x));
+				try {
+					// check if a is a polynomial otherwise check ArithmeticException, ClassCastException
+					ring.create(a);
+				} catch (RuntimeException ex) {
+					// Polynomial expected at position `1` in `2`.
+					return IOFunctions.printMessage(F.Resultant, "polynomial", F.List(ast.get(1), F.C1), engine);
+				}
+				try {
+					// check if b is a polynomial otherwise check ArithmeticException, ClassCastException
+					ring.create(b);
+				} catch (RuntimeException ex) {
+					return IOFunctions.printMessage(F.Resultant, "polynomial", F.List(ast.get(2), F.C2), engine);
+				}
 				return F.Together(resultant(a, b, x, engine));
-			} catch (RuntimeException ex) {
-				throw new WrongArgumentType(ast, b, 2, "Polynomial expected!");
+
 			}
+			return F.NIL;
 		}
 
 		@Override
@@ -2004,13 +2023,14 @@ public class PolynomialFunctions {
 		public IExpr evaluate(final IAST ast, final EvalEngine engine) {
 			IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 			VariablesSet eVar;
-			IAST symbolList = F.List();
+			IAST symbolList;
 			List<IExpr> varList;
 			if (ast.isAST1()) {
 				// extract all variables from the polynomial expression
 				eVar = new VariablesSet(ast.arg1());
-				eVar.appendToList(symbolList);
+				// eVar.appendToList(symbolList);
 				varList = eVar.getArrayList();
+				symbolList = eVar.getVarList();
 			} else {
 				symbolList = Validate.checkSymbolOrSymbolList(ast, 2, engine);
 				if (!symbolList.isPresent()) {
@@ -2020,33 +2040,41 @@ public class PolynomialFunctions {
 				symbolList.forEach(x -> varList.add(x));
 			}
 			TermOrder termOrder = TermOrderByName.Lexicographic;
-			try {
-				if (ast.size() > 3) {
-					if (ast.arg3().isSymbol()) {
-						// String orderStr = ast.arg3().toString(); // NegativeLexicographic
-						termOrder = JASIExpr.monomialOrder((ISymbol) ast.arg3(), termOrder);
-					}
+
+			if (ast.size() > 3) {
+				if (ast.arg3().isSymbol()) {
+					// String orderStr = ast.arg3().toString(); // NegativeLexicographic
+					termOrder = JASIExpr.monomialOrder((ISymbol) ast.arg3(), termOrder);
+				} else {
 					final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
 					IExpr option = options.getOption(F.Modulus);
-					if (option.isReal()) {
-						return monomialListModulus(expr, varList, termOrder, option);
+					if (option.isPresent()) {
+						try {
+							if (option.isInteger()) {
+								return monomialListModulus(expr, varList, termOrder, option);
+							}
+						} catch (RuntimeException rex) {
+							if (Config.SHOW_STACKTRACE) {
+								rex.printStackTrace();
+							}
+						}
 					}
-				}
-				if (USE_JAS_POLYNOMIAL) {
-					return monomialList(expr, varList, termOrder);
-				} else {
-					ExprPolynomialRing ring = new ExprPolynomialRing(symbolList,
-							new ExprTermOrder(termOrder.getEvord()));
-					ExprPolynomial poly = ring.create(expr);
-					return poly.monomialList();
-				}
-			} catch (JASConversionException jce) {
-				// toInt() conversion failed
-				if (Config.DEBUG) {
-					jce.printStackTrace();
+					return F.NIL;
 				}
 			}
-			return F.NIL;
+
+			try {
+				SymbolicPolynomialRing ring = new SymbolicPolynomialRing(symbolList,
+						new SymbolicTermOrder(termOrder.getEvord()));
+				SymbolicPolynomial poly = ring.create(expr, false, true, true);
+				return poly.monomialList();
+			} catch (RuntimeException rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
+			}
+			// default mapping
+			return F.List(expr);
 		}
 
 		public int[] expectedArgSize() {
@@ -2062,23 +2090,24 @@ public class PolynomialFunctions {
 		 *            the JAS term ordering
 		 * @return the list of monomials of the univariate polynomial.
 		 */
-		private static IAST monomialList(IExpr polynomial, final List<IExpr> variablesList, final TermOrder termOrder)
-				throws JASConversionException {
-			JASIExpr jas = new JASIExpr(variablesList, ExprRingFactory.CONST, termOrder, false);
-			GenPolynomial<IExpr> polyExpr = jas.expr2IExprJAS(polynomial);
-
-			Set<Entry<ExpVector, IExpr>> set = polyExpr.getMap().entrySet();
-			IASTAppendable list = F.ListAlloc(set.size());
-			for (Map.Entry<ExpVector, IExpr> monomial : set) {
-				IExpr coeff = monomial.getValue();
-				ExpVector exp = monomial.getKey();
-				IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
-				jas.monomialToExpr(coeff, exp, monomTimes);
-				list.append(monomTimes);
-			}
-
-			return list;
-		}
+		// private static IAST monomialList(IExpr polynomial, final List<IExpr> variablesList, final TermOrder
+		// termOrder)
+		// throws JASConversionException {
+		// JASIExpr jas = new JASIExpr(variablesList, ExprRingFactory.CONST, termOrder, false);
+		// GenPolynomial<IExpr> polyExpr = jas.expr2IExprJAS(polynomial);
+		//
+		// Set<Entry<ExpVector, IExpr>> set = polyExpr.getMap().entrySet();
+		// IASTAppendable list = F.ListAlloc(set.size());
+		// for (Map.Entry<ExpVector, IExpr> monomial : set) {
+		// IExpr coeff = monomial.getValue();
+		// ExpVector exp = monomial.getKey();
+		// IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
+		// jas.monomialToExpr(coeff, exp, monomTimes);
+		// list.append(monomTimes);
+		// }
+		//
+		// return list;
+		// }
 
 		/**
 		 * Get the monomial list of a univariate polynomial with coefficients reduced by a modulo value.
@@ -2103,7 +2132,7 @@ public class PolynomialFunctions {
 					ModLong coeff = monomial.coefficient();
 					ExpVector exp = monomial.exponent();
 					IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
-					jas.monomialToExpr(F.integer(coeff.getVal()), exp, monomTimes);
+					jas.monomialToExpr(F.ZZ(coeff.getVal()), exp, monomTimes);
 					list.append(monomTimes);
 				}
 				return list;

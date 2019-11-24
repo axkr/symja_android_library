@@ -16,6 +16,8 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
 import edu.jas.kern.PrettyPrint;
+import edu.jas.poly.ExpVector;
+import edu.jas.poly.Monomial;
 import edu.jas.structure.NotInvertibleException;
 import edu.jas.structure.RingElem;
 
@@ -2342,16 +2344,50 @@ public class SymbolicPolynomial implements RingElem<SymbolicPolynomial>, Iterabl
 	 * @return the monomials of a polynomial
 	 */
 	public IAST coefficientRules() {
+//		IASTAppendable resultList = F.ListAlloc(polyExpr.length());
+//		for (Monomial<IExpr> monomial : polyExpr) {
+//
+//			IExpr coeff = monomial.coefficient();
+//			ExpVector exp = monomial.exponent();
+//			int len = exp.length();
+//			IASTAppendable ruleList = F.ListAlloc(len);
+//			for (int i = 0; i < len; i++) {
+//				ruleList.append(F.ZZ(exp.getVal(len - i - 1)));
+//			}
+//			resultList.append(F.Rule(ruleList, coeff));
+//		}
+//		return resultList;
+		
+		
+		
 		IASTAppendable result = F.ListAlloc(val.size());
 		for (Map.Entry<ExpVectorSymbolic, IExpr> monomial : val.entrySet()) {
 			IExpr coeff = monomial.getValue();
 			ExpVectorSymbolic exp = monomial.getKey();
-			int len = exp.length();
-			IASTAppendable ruleList = F.ListAlloc(len);
-			for (int i = 0; i < len; i++) {
-				ruleList.append(exp.getVal(len - i - 1));
+			IExpr[] vector = exp.getVal();
+			boolean isRealVector = true;
+			for (int i = 0; i < vector.length; i++) {
+				if (!vector[i].isInteger()||vector[i].isNegative()) {
+					// exponent is not a real number
+					isRealVector = false;
+					break;
+				}
 			}
-			result.append(F.Rule(ruleList, coeff));
+			if (isRealVector) {
+				int len = exp.length();
+				IASTAppendable ruleList = F.ListAlloc(len);
+				for (int i = 0; i < len; i++) {
+					ruleList.append(exp.getVal(len - i - 1));
+				}
+				result.append(F.Rule(ruleList, coeff));
+			} else {
+				int len = exp.length();
+				IASTAppendable ruleList = F.ListAlloc(len);
+				for (int j = 0; j < len; j++) {
+					ruleList.append(F.C0);
+				}
+				result.append(F.Rule(ruleList, toExpr(coeff, exp, ring.getVars())));
+			}
 		}
 		return result;
 	}
@@ -2389,6 +2425,28 @@ public class SymbolicPolynomial implements RingElem<SymbolicPolynomial>, Iterabl
 				}
 			}
 		}
+	}
+
+	private IExpr toExpr(IExpr coefficient, ExpVectorSymbolic expArray, IAST variables) {
+		IExpr[] arr = expArray.getVal();
+		IASTAppendable times = F.TimesAlloc(arr.length + 1);
+		if (!coefficient.isOne()) {
+			times.append(coefficient);
+		}
+		ExpVectorSymbolic leer = ring.evzero;
+		for (int i = 0; i < arr.length; i++) {
+			if (!arr[i].isZero()) {
+				int ix = leer.varIndex(i);
+				if (ix >= 0) {
+					if (arr[i].isOne()) {
+						times.append(variables.get(ix + 1));
+					} else {
+						times.append(F.Power(variables.get(ix + 1), arr[i]));
+					}
+				}
+			}
+		}
+		return times.oneIdentity1();
 	}
 
 	/**

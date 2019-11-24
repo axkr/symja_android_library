@@ -680,6 +680,7 @@ public class IOFunctions {
 			"plld", "Endpoints in `1` must be distinct machine-size real numbers.", //
 			"plln", "Limiting value `1` in `2` is not a machine-size real number.", //
 			"pspec", "Part specification `1` is neither an integer nor a list of integer.", //
+			"polynomial", "Polynomial expected at position `1` in `2`.", //
 			"pkspec1", "The expression `1` cannot be used as a part specification.", // "
 			"rvalue", "`1` is not a variable with a value, so its value cannot be changed.", //
 			"seqs", "Sequence specification expected, but got `1`.", //
@@ -757,14 +758,17 @@ public class IOFunctions {
 				message = temp.toString();
 			}
 		}
-		if (message != null) {
+		if (message == null) {
+			message = "Undefined message shortcut: " + messageShortcut;
+			engine.setMessageShortcut(messageShortcut);
+			engine.printMessage(symbol.toString() + ": " + message);
+		} else {
 			for (int i = 1; i < listOfArgs.size(); i++) {
 				message = StringUtils.replace(message, "`" + (i) + "`", listOfArgs.get(i).toString());
 			}
 			engine.setMessageShortcut(messageShortcut);
 			engine.printMessage(symbol.toString() + ": " + message);
 		}
-
 		return F.NIL;
 	}
 
