@@ -31,13 +31,13 @@ But function `f(x)` notation isn't interpreted as `f*(x)`
 >> f(x)
 ```
 
-Powers can be entered using ^:
+Powers expressions like ${3}^{4}$ can be entered using ^:
 
 ```
 >> 3 ^ 4
 ```
 
-Integer divisions yield rational numbers:
+Integer divisions yield rational numbers like $\frac{6}{4}$ :
 
 ```
 >> 6 / 4
@@ -72,7 +72,11 @@ Symja provides many common mathematical functions and constants, e.g.:
 
 When entering floating point numbers in your query, Symja will perform a numerical evaluation and present a numerical result, pretty much like if you had applied N.
 
-Of course, Symja has complex numbers:
+Of course, Symja has complex numbers and uses the equation:
+
+$$\sqrt{-1}=I$$
+
+In Symja the imaginary unit is represented by the uppercase letter `I`:
 
 ```
 >> Sqrt(-4)
