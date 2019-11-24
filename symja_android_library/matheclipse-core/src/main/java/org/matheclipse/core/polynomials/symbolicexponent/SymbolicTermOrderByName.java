@@ -9,22 +9,7 @@ import org.matheclipse.core.polynomials.longexponent.ExpVectorLong;
 
 /**
  * Term order names for ordered polynomials. Defines names for the most used
- * term orders: graded and lexicographical orders. For the definitions see for
- * example the articles <a href="http://doi.acm.org/10.1145/43882.43887">Kredel,
- * "Admissible term orderings used in computer algebra systems"</a> and <a
- * href="http://doi.acm.org/10.1145/70936.70941">Sit,
- * "Some comments on term-ordering in Gr&ouml;bner basis computations"</a>. Not
- * all algorithms may work with all term orders since not all are well-founded,
- * so watch your step.
- * 
- * <b>Note:</b> Variables in printed JAS polynomial <b>(low, ..., medium, ...,
- * high)</b> Variables in other CAS polynomial <b>(high, ..., medium, ...,
- * low)</b> with <b>low</b> &lt; <b>medium</b> &lt; <b>high</b>. Example: for
- * variables x<sub>1</sub>, ..., x<sub>r</sub> it is assumed in JAS that
- * x<sub>1</sub> &lt; ... &lt; x<sub>r</sub> in other CAS it means x<sub>1</sub>
- * &gt; ... &gt; x<sub>r</sub>.
- * 
- * @author Heinz Kredel
+ * term orders: graded and lexicographical orders. 
  */
 
 public class SymbolicTermOrderByName {

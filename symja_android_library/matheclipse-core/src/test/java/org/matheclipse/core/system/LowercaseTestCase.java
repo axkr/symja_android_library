@@ -14285,6 +14285,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialQ() {
+		check("PolynomialQ(7*y^w, y )", //
+				"False");
+		check("PolynomialQ(7*y^(3*w), y )", //
+				"False");
+		check("PolynomialQ(c*x^(-2)+a+b*x,x)", //
+				"False");
+		
+		
 		check("PolynomialQ(x^2 + 7*x + 6)", //
 				"True");
 		check("PolynomialQ(x^(1/2) + 6*Sin(x), {})", //

@@ -13,7 +13,6 @@ import edu.jas.structure.NotInvertibleException;
  * Runtime Exception to be thrown for not invertible algebraic numbers.
  * Container for the non-trivial factors found by the inversion algorithm.
  * <b>Note: </b> cannot be generic because of Throwable.
- * @author Heinz Kredel
  */
 public class AlgebraicNotInvertibleException extends NotInvertibleException {
 

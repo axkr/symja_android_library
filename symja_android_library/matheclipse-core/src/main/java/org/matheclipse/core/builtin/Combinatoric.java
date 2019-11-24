@@ -55,7 +55,6 @@ public final class Combinatoric {
 		/**
 		 * Cartesian product iterator.
 		 * 
-		 * @author Heinz Kredel
 		 */
 		final static class CartesianProductIterator implements Iterator<IAST> {
 
@@ -162,8 +161,6 @@ public final class Combinatoric {
 		 * <br/>
 		 * See <a href="http://en.wikipedia.org/wiki/Cartesian_product">Wikipedia - Cartesian product</a>
 		 * 
-		 * @author Heinz Kredel
-		 * @author Axel Kramer (Modifications for Symja)
 		 */
 		final static class CartesianProductList implements Iterable<IAST> {
 
