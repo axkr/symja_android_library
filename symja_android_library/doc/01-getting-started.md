@@ -49,6 +49,19 @@ To convert the result to a floating point number, apply the function `N`:
 >> N(6 / 4)
 ```
 
+For integer number bases other than `10` the `^^` operator can be used. Here's an example for a hexadecimal number:
+
+```
+>> 16^^abcdefff
+2882400255
+```
+
+The number can be converted back to hexadecimal form with the `BasForm` function:
+
+```
+>> BaseForm(2882400255, 16)
+```
+
 As you can see, functions are applied using the identifier `N` and parentheses `(` and `)`. 
 In general an identifier is a user-defined or built-in name for a variable, function or constant. 
 Only the identifiers which consists of only one character are case sensitive. 
@@ -122,7 +135,7 @@ Other expressions involving Infinity are evaluated:
 >> Infinity + 2 Infinity
 ```
 
-In contrast to combinatorial belief, 0^0 is undefined:
+In contrast to combinatorial belief, ${0}^{0}$ is undefined:
 
 ```
 >> 0 ^ 0

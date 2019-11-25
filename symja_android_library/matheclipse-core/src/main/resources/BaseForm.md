@@ -8,6 +8,7 @@ BaseForm(integer, radix)
 
 See:  
 * [Wikipedia - Positional notation - Base conversion](https://en.wikipedia.org/wiki/Positional_notation#Base_conversion) 
+* [Wikipedia - Hexadecimal](https://en.wikipedia.org/wiki/Hexadecimal)
 
 ### Examples 
  
