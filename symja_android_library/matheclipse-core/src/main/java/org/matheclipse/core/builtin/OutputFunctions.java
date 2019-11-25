@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.math.BigInteger;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,7 @@ import org.matheclipse.core.form.output.JavaDoubleFormFactory;
 import org.matheclipse.core.form.output.JavaScriptFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.HornerScheme;
@@ -37,6 +39,7 @@ public final class OutputFunctions {
 	private static class Initializer {
 
 		private static void init() {
+			F.BaseForm.setEvaluator(new BaseForm());
 			F.CForm.setEvaluator(new CForm());
 			F.FullForm.setEvaluator(new FullForm());
 			F.HoldForm.setEvaluator(new HoldForm());
@@ -48,6 +51,33 @@ public final class OutputFunctions {
 			F.TableForm.setEvaluator(new TableForm());
 			F.TeXForm.setEvaluator(new TeXForm());
 			F.TreeForm.setEvaluator(new TreeForm());
+		}
+	}
+
+	private static class BaseForm extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = engine.evaluate(ast.arg1());
+			IExpr arg2 = engine.evaluate(ast.arg2());
+			if (arg1.isInteger() && arg2.isInteger()) {
+				int base = arg2.toIntDefault();
+				if (base > 0 && base <= 36) {
+					BigInteger big = ((IInteger) arg1).toBigNumerator();
+					String str = big.toString(base);
+					return F.Subscript(F.$str(str), arg2);
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
 		}
 	}
 

@@ -167,7 +167,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	 *             if the specified character sequence does not contain a parsable large integer.
 	 */
 	public static IInteger valueOf(final String integerString, final int radix) {
-		if (integerString.length() >= 1) {
+		if (integerString.length() >= 1 && radix == 10) {
 			char ch = integerString.charAt(0);
 			if (ch == '-') {
 				if (integerString.length() == 2) {
@@ -437,12 +437,11 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		}
 		if (sign() < 0) {
 			b = b.negate();
-		} 
+		}
 		if (b instanceof IntegerSym) {
 			int intValue = b.intValue();
 			return factorizeLong(intValue);
 		}
-		
 
 		BigInteger big = b.toBigNumerator();
 		try {
@@ -550,35 +549,35 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		return F.NIL;
 	}
 
-//	private IAST factorizeInt(int intValue) {
-//		IASTAppendable result = F.ListAlloc();// tdivFactors.size() + extraSize);
-//		if (intValue < 0) {
-//			intValue *= -1;
-//			result.append(F.CN1);
-//		}
-//		TDiv31Barrett TDIV31 = new TDiv31Barrett();
-//		int prime = TDIV31.findSingleFactor(intValue);
-//		while (true) {
-//			prime = TDIV31.findSingleFactor(intValue);
-//			intValue /= prime;
-//			if (prime != 1) {
-//				result.append(F.ZZ(prime));
-//			} else {
-//				break;
-//			}
-//		}
-//		if (intValue != 1) {
-//			SortedMultiset<BigInteger> tdivFactors = TDIV31.factor(BigInteger.valueOf(intValue));
-//			for (Map.Entry<BigInteger, Integer> entry : tdivFactors.entrySet()) {
-//				final IInteger is = valueOf(entry.getKey());
-//				final int value = entry.getValue();
-//				for (int i = 0; i < value; i++) {
-//					result.append(is);
-//				}
-//			}
-//		}
-//		return result;
-//	}
+	// private IAST factorizeInt(int intValue) {
+	// IASTAppendable result = F.ListAlloc();// tdivFactors.size() + extraSize);
+	// if (intValue < 0) {
+	// intValue *= -1;
+	// result.append(F.CN1);
+	// }
+	// TDiv31Barrett TDIV31 = new TDiv31Barrett();
+	// int prime = TDIV31.findSingleFactor(intValue);
+	// while (true) {
+	// prime = TDIV31.findSingleFactor(intValue);
+	// intValue /= prime;
+	// if (prime != 1) {
+	// result.append(F.ZZ(prime));
+	// } else {
+	// break;
+	// }
+	// }
+	// if (intValue != 1) {
+	// SortedMultiset<BigInteger> tdivFactors = TDIV31.factor(BigInteger.valueOf(intValue));
+	// for (Map.Entry<BigInteger, Integer> entry : tdivFactors.entrySet()) {
+	// final IInteger is = valueOf(entry.getKey());
+	// final int value = entry.getValue();
+	// for (int i = 0; i < value; i++) {
+	// result.append(is);
+	// }
+	// }
+	// }
+	// return result;
+	// }
 
 	private IAST factorizeLong(long longValue) {
 		Map<Long, Integer> map = PrimeInteger.factors(longValue);

@@ -843,7 +843,7 @@ public class ExprParser extends Scanner {
 				temp = new NumStr(number);
 				// temp = fFactory.createDouble(number);
 			} else {
-				temp = F.integer(number, numFormat);
+				temp = F.ZZ(number, numFormat);
 				// temp = fFactory.createInteger(number, numFormat);
 			}
 		} catch (final Throwable e) {

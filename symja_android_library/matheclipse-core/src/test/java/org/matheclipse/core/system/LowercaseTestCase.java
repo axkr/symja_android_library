@@ -1145,6 +1145,25 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"144");
 	}
 
+	public void testBaseForm() {
+		check("36^^zZz", //
+				"46655"); 
+		check("BaseForm(46655, 36)", //
+				"Subscript(zzz,36)"); 
+		check("16^^abcdefff", //
+				"2882400255"); 
+		check("BaseForm(2882400255, 16)", //
+				"Subscript(abcdefff,16)"); 
+		check("37^^abcdefff", //
+				"Syntax error in line: 1 - Base 37^^... is invalid. Only bases between 1 and 36 are allowed\n" + 
+				"37^^abcdefff\n" + 
+				"  ^"); 
+		check("16^^6z12xy", //
+				"Syntax error in line: 1 - Number format error: 6z12xy\n" + 
+				"16^^6z12xy\n" + 
+				"         ^"); 
+	}
+	
 	public void testBegin() {
 		check("Begin(\"mytest`\")", //
 				"mytest`");

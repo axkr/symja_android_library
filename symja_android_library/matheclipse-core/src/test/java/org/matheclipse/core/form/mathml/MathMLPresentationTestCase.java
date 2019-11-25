@@ -354,7 +354,19 @@ public class MathMLPresentationTestCase extends TestCase {
 		check(expr, "<mrow><mrow><mrow><mo>(</mo><mi>z</mi><mo>+</mo><mi>x</mi><mo>)</mo></mrow></mrow><mo>&#8857;</mo><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>a</mi></mrow><mo>)</mo></mrow></mrow></mrow>");
 
 	}
-
+	
+	public void testSubscript() {
+		IExpr expr = EvalEngine.get().evaluate("Subscript(\"zzz\",36)");
+		check(expr, //
+				"<msub><mtext>zzz</mtext><mn>36</mn></msub>");
+	}
+	
+	public void testSuperscript() {
+		IExpr expr = EvalEngine.get().evaluate("Superscript(xx,yy)");
+		check(expr, //
+				"<msup><mi>xx</mi><mi>yy</mi></msup>");
+	}
+	
 	public void check(String strEval, String strResult) {
 		StringWriter stw = new StringWriter();
 		mathUtil.toMathML(strEval, stw);

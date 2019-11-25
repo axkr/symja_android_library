@@ -766,6 +766,68 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		}
 	}
 
+	private final static class Subscript extends MMLOperator {
+
+		public Subscript() {
+			super(0, "msub", "");
+		}
+
+		/**
+		 * Converts a given function into the corresponding MathML output
+		 * 
+		 * @param buf
+		 *            StringBuilder for MathML output
+		 * @param f
+		 *            The math function which should be converted to MathML
+		 */
+		@Override
+		public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+			if (f.size() != 3) {
+				return false;
+			}
+			IExpr arg1 = f.arg1();
+			IExpr arg2 = f.arg2();
+			precedenceOpen(buf, precedence);
+			fFactory.tagStart(buf, "msub");
+			fFactory.convertInternal(buf, arg1, fPrecedence, false);
+			fFactory.convertInternal(buf, arg2, fPrecedence, false);
+			fFactory.tagEnd(buf, "msub");
+			precedenceClose(buf, precedence);
+			return true;
+		}
+	}
+	
+	private final static class Superscript extends MMLOperator {
+
+		public Superscript() {
+			super(0, "msup", "");
+		}
+
+		/**
+		 * Converts a given function into the corresponding MathML output
+		 * 
+		 * @param buf
+		 *            StringBuilder for MathML output
+		 * @param f
+		 *            The math function which should be converted to MathML
+		 */
+		@Override
+		public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+			if (f.size() != 3) {
+				return false;
+			}
+			IExpr arg1 = f.arg1();
+			IExpr arg2 = f.arg2();
+			precedenceOpen(buf, precedence);
+			fFactory.tagStart(buf, "msup");
+			fFactory.convertInternal(buf, arg1, fPrecedence, false);
+			fFactory.convertInternal(buf, arg2, fPrecedence, false);
+			fFactory.tagEnd(buf, "msup");
+			precedenceClose(buf, precedence);
+			return true;
+		}
+	}
+
 	private static class Sum extends AbstractConverter {
 
 		public Sum() {
@@ -2292,6 +2354,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		CONVERTERS.put(F.SetDelayed,
 				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("SetDelayed").getPrecedence(), ":="));
 		CONVERTERS.put(F.Sqrt, new Sqrt());
+		CONVERTERS.put(F.Subscript, new Subscript());
+		CONVERTERS.put(F.Superscript, new Superscript());
 		CONVERTERS.put(F.Sum, new Sum());
 		CONVERTERS.put(F.Times, new Times());
 		CONVERTERS.put(F.TwoWayRule,

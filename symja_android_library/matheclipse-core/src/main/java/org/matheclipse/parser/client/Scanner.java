@@ -809,7 +809,37 @@ public abstract class Scanner {
 			if (dFlag) {
 				numFormat = -1;
 			}
-
+			if (numFormat == 10 && fCurrentChar == '^' && isValidPosition()) {
+				char nextChar = fInputString[fCurrentPosition];
+				if (nextChar == '^') {
+					try {
+						numFormat = Integer.parseInt(
+								new String(fInputString, startPosition, fCurrentPosition - startPosition - 1));
+						if (numFormat <= 0 || numFormat > 36) {
+							throwSyntaxError("Base " + numFormat + "^^... is invalid. Only bases between 1 and 36 are allowed");
+						}
+						fCurrentPosition++;
+						startPosition = fCurrentPosition;
+						boolean evaled = false;
+						getChar();
+						while (Character.isDigit(fCurrentChar) || //
+								(fCurrentChar >= 'a' && fCurrentChar <= 'z') || //
+								(fCurrentChar >= 'A' && fCurrentChar <= 'Z')) {
+							evaled = true;
+							getChar();
+						}
+						if (evaled && numFormat > 0 && numFormat <= 36) {
+							int endPosition = fCurrentPosition--;
+							result[0] = new String(fInputString, startPosition, (--endPosition) - startPosition);
+							result[1] = Integer.valueOf(numFormat);
+							return result;
+						}
+					} catch (RuntimeException rex) {
+						//
+					}
+					throwSyntaxError("Base " + numFormat + "^^... is invalid. Only bases between 1 and 36 are allowed");
+				}
+			}
 			if (fCurrentChar == 'E' || fCurrentChar == 'e') {
 				if (fExplicitTimes) {
 					numFormat = -1;

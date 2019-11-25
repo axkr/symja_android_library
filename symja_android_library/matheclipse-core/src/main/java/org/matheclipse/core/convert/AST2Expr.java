@@ -68,8 +68,8 @@ public class AST2Expr {
 			"AlgebraicNumber", "Alternatives", "Apart", "AppellF1", "Append", "AppendTo", "Apply", "ArcCos", "ArcCosh",
 			"ArcCot", "ArcCoth", "ArcCsc", "ArcCsch", "ArcSec", "ArcSech", "ArithmeticGeometricMean", "ArcSin",
 			"ArcSinh", "ArcTan", "ArcTanh", "Arg", "ArgMax", "ArgMin", "Array", "ArrayDepth", "ArrayPad",
-			"ArrayReshape", "Arrays", "ArrayQ", "Assumptions", "AtomQ", "Attributes", "BartlettWindow", "Begin",
-			"BeginPackage", "BellB", "BellY", "BernoulliB", "BernoulliDistribution", "BesselI", "BesselJ",
+			"ArrayReshape", "Arrays", "ArrayQ", "Assumptions", "AtomQ", "Attributes", "BartlettWindow", "BaseForm",
+			"Begin", "BeginPackage", "BellB", "BellY", "BernoulliB", "BernoulliDistribution", "BesselI", "BesselJ",
 			"BesselJZero", "BesselK", "BesselY", "BesselYZero", "Beta", "BetaDistribution", "BetaRegularized",
 			"BinarySerialize", "BinaryDeserialize", "BinCounts", "Binomial", "BinomialDistribution", "BitLength",
 			"BlackmanHarrisWindow", "BlackmanNuttallWindow", "BlackmanWindow", "Blank", "BlankSequence",
@@ -377,7 +377,7 @@ public class AST2Expr {
 				case ID.N:
 					if (ast.isAST2() && ast.arg2().isInteger()) {
 						try {
-							int precision = ast.arg2().toIntDefault();  
+							int precision = ast.arg2().toIntDefault();
 							if (EvalEngine.isApfloat(precision)) {
 								fPrecision = precision;
 								ast.set(1, convertNode(functionNode.get(1)));
