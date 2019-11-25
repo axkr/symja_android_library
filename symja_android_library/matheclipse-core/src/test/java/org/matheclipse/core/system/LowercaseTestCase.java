@@ -1147,23 +1147,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testBaseForm() {
 		check("36^^zZz", //
-				"46655"); 
+				"46655");
 		check("BaseForm(46655, 36)", //
-				"Subscript(zzz,36)"); 
+				"Subscript(zzz,36)");
 		check("16^^abcdefff", //
-				"2882400255"); 
+				"2882400255");
 		check("BaseForm(2882400255, 16)", //
-				"Subscript(abcdefff,16)"); 
+				"Subscript(abcdefff,16)");
 		check("37^^abcdefff", //
-				"Syntax error in line: 1 - Base 37^^... is invalid. Only bases between 1 and 36 are allowed\n" + 
-				"37^^abcdefff\n" + 
-				"  ^"); 
+				"Syntax error in line: 1 - Base 37^^... is invalid. Only bases between 1 and 36 are allowed\n"
+						+ "37^^abcdefff\n" + "  ^");
 		check("16^^6z12xy", //
-				"Syntax error in line: 1 - Number format error: 6z12xy\n" + 
-				"16^^6z12xy\n" + 
-				"         ^"); 
+				"Syntax error in line: 1 - Number format error: 6z12xy\n" + "16^^6z12xy\n" + "         ^");
 	}
-	
+
 	public void testBegin() {
 		check("Begin(\"mytest`\")", //
 				"mytest`");
@@ -2704,7 +2701,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{3,0}->1,{2,1}->3,{1,2}->3,{0,3}->1}");
 		check("CoefficientRules(x^3+3*x^2*y+3*x*y^2+y^3)", //
 				"{{3,0}->1,{2,1}->3,{1,2}->3,{0,3}->1}");
-		
+
 		check("CoefficientRules(7*y^w, {y,z})", //
 				"{{0,0}->7*y^w}");
 		check("CoefficientRules(7*y^(3*w), y )", //
@@ -2714,7 +2711,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("CoefficientRules(c*x^(-2)+a+b*x,x)", //
 				"{{0}->a+c/x^2+b*x}");
 
-		
 		check("CoefficientRules(SeriesData(x, 0, {1, 1, 0, 1, 1, 0, 1, 1}, 0, 9, 1))", //
 				"{{0}->1+x+x^3+x^4+x^6+x^7+O(x)^9}");
 		check("CoefficientRules((x + y)^3)", //
@@ -6882,7 +6878,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	}
 
+	public void testFindShortestPath() {
+		check("FindShortestPath(Graph({1 -> 2, 2 -> 4, 1 -> 3,  3 -> 2, 3 -> 4},{EdgeWeight->{3.0,1.0,1.0,1.0,3.0}}),1,4)", //
+				"{1,3,2,4}");
+
+		check("FindShortestPath({1 -> 2, 2 -> 3, 3 -> 1,  3 -> 4, 4 -> 5, 3 -> 5},1,4)", //
+				"{1,2,3,4}");
+	}
+
 	public void testFindShortestTour() {
+		check("FindShortestTour({{1,2},{2,3},{3,1}})", //
+				"{Sqrt(2)+2*Sqrt(5),{1,3,2,1}}");
+		
 		check("FindShortestTour({GeoPosition({41, 20}), GeoPosition({5, 20}), GeoPosition({49, 32}), " //
 				+ "GeoPosition({53, 28}), GeoPosition({47, 29})})", //
 				"{6852.02461316151[mi],{1,2,5,3,4,1}}");
@@ -6905,11 +6912,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("FindSpanningTree(g)", //
 				"Graph({1,2,3,4,6,5,7,8},{1->2,1->3,1->4,2->6,5->3,5->7,5->8})");
-	}
-
-	public void testFindShortestPath() {
-		check("FindShortestPath({1 -> 2, 2 -> 3, 3 -> 1,  3 -> 4, 4 -> 5, 3 -> 5},1,4)", //
-				"{1,2,3,4}");
 	}
 
 	public void testHamiltonianGraphQ() {
@@ -11893,7 +11895,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{b^2*x,a+c/x^2}");
 		check("MonomialList(c*x^(-2)+a+b*x,x)", //
 				"{a+c/x^2+b*x}");
-		
+
 		check("MonomialList((x + y)^3)", //
 				"{x^3,3*x^2*y,3*x*y^2,y^3}");
 		check("MonomialList(x^2*y^2 + x^3, {x, y})", //
@@ -14336,8 +14338,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"False");
 		check("PolynomialQ(c*x^(-2)+a+b*x,x)", //
 				"False");
-		
-		
+
 		check("PolynomialQ(x^2 + 7*x + 6)", //
 				"True");
 		check("PolynomialQ(x^(1/2) + 6*Sin(x), {})", //

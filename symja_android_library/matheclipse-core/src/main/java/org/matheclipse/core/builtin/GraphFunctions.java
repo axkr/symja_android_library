@@ -483,7 +483,7 @@ public class GraphFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			try {
 				if (ast.isAST1()) {
-					if (ast.arg1().isListOfLists()) {
+					 if (ast.arg1().isListOfLists()) {
 						int[] dim = ast.arg1().isMatrix();
 						if (dim != null) {
 							IAST m = (IAST) ast.arg1();
@@ -567,6 +567,29 @@ public class GraphFunctions {
 							return F.List(sum, shortestTourList);
 
 						}
+						// } else {
+						// GraphExpr<ExprEdge> gex = createGraph(ast.arg1());
+						// if (gex == null) {
+						// return F.NIL;
+						// }
+						//
+						// Graph<IExpr, ExprEdge> g = gex.toData();
+						//
+						// GraphPath<IExpr, ExprEdge> tour = new HeldKarpTSP<IExpr, ExprEdge>()
+						// .getTour(g);
+						//
+						// // calculate the shortest tour from the sum of distances and
+						// // create list of vertices for the shortest tour
+						// List<IExpr> tourPositions = tour.getVertexList();
+						// IASTAppendable shortestTourList = F.ListAlloc(tourPositions.size());
+						// IExpr lastPosition = tourPositions.get(tourPositions.size() - 1);
+						// shortestTourList.append(lastPosition);
+						// for (int i = tourPositions.size() - 2; i >= 0; i--) {
+						// IExpr position = tourPositions.get(i);
+						// shortestTourList.append(position);
+						// lastPosition = position;
+						// }
+						// return F.List(F.num(tour.getWeight()), shortestTourList);
 					}
 				}
 			} catch (RuntimeException rex) {
