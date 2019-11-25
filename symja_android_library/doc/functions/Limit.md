@@ -21,6 +21,7 @@ Limit(expr, x->x0, Direction->1)
 See:  
 * [Wikipedia - Limit of a function](https://en.wikipedia.org/wiki/Limit_of_a_function)
 * [Wikipedia - One-sided limit](https://en.wikipedia.org/wiki/One-sided_limit)
+* [Wikipedia - L'Hôpital's rule](https://en.wikipedia.org/wiki/L%27H%C3%B4pital%27s_rule)
 
 ### Examples 
 
