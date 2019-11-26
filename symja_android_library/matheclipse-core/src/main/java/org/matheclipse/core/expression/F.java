@@ -2654,6 +2654,9 @@ public class F {
 			ID.PoissonDistribution);
 
 	/***/
+	public final static IBuiltInSymbol PolarPlot = F.initFinalSymbol("PolarPlot", ID.PolarPlot);
+	
+	/***/
 	public final static IBuiltInSymbol PolyGamma = F.initFinalSymbol("PolyGamma", ID.PolyGamma);
 
 	/***/

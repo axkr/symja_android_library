@@ -146,7 +146,7 @@ public class AST2Expr {
 			"OrderedQ", "Orthogonalize", "OrthogonalMatrixQ", "Out", "Outer", "OutputForm", "OutputStream", "Package",
 			"PadLeft", "PadRight", "ParametricPlot", "Part", "Partition", "PartitionsP", "PartitionsQ", "PatternOrder",
 			"ParzenWindow", "PearsonChiSquareTest", "PerfectNumber", "PerfectNumberQ", "Pattern", "PatternTest", "PDF",
-			"Permutations", "Piecewise", "Plot", "PlotRange", "Plot3D", "Plus", "Pochhammer", "Point",
+			"Permutations", "Piecewise", "Plot", "PlotRange", "Plot3D", "Plus", "Pochhammer", "PolarPlot", "Point",
 			"PoissonDistribution", "PolyGamma", "Polygon", "PolyLog", "PolynomialExtendedGCD", "PolynomialGCD",
 			"PolynomialLCM", "PolynomialQ", "PolynomialQuotient", "PolynomialQuotientRemainder", "PolynomialRemainder",
 			"Position", "Positive", "PossibleZeroQ", "Postefix", "Power", "PowerExpand", "PowerMod", "Precision",

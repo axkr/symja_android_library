@@ -55,6 +55,7 @@ public final class FunctionDefinitions {
 			ParametricPlot.setEvaluator(new org.matheclipse.core.reflection.system.ParametricPlot());
 			Plot.setEvaluator(new org.matheclipse.core.reflection.system.Plot());
 			Plot3D.setEvaluator(new org.matheclipse.core.reflection.system.Plot3D());
+			PolarPlot.setEvaluator(new org.matheclipse.core.reflection.system.PolarPlot());
 			Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
 
 			Share.setEvaluator(new org.matheclipse.core.reflection.system.Share());
