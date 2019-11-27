@@ -6889,7 +6889,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testFindShortestTour() {
 		check("FindShortestTour({{1,2},{2,3},{3,1}})", //
 				"{Sqrt(2)+2*Sqrt(5),{1,3,2,1}}");
-		
+
 		check("FindShortestTour({GeoPosition({41, 20}), GeoPosition({5, 20}), GeoPosition({49, 32}), " //
 				+ "GeoPosition({53, 28}), GeoPosition({47, 29})})", //
 				"{6852.02461316151[mi],{1,2,5,3,4,1}}");
@@ -14564,6 +14564,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPower() {
+		check("3^3^3^3^3^3^3", //
+				"Maximum AST size 3175 exceeded");
 		check("Power((-x)^(1/2), 2)", //
 				"-x");
 		check("Power((-x)^(1/3), 3)", //

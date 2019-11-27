@@ -14,8 +14,10 @@ import java.util.TreeSet;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.hipparchus.fraction.BigFraction;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Combinatoric.Subsets;
 import org.matheclipse.core.builtin.Combinatoric.Subsets.KSubsetsList;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -100,12 +102,25 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		fBigIntValue = null;
 	}
 
+	public BigIntegerSym(long value) {
+		fBigIntValue = BigInteger.valueOf(value);
+		if (Config.MAX_BIT_COUNT < fBigIntValue.bitCount()) {
+			throw new ASTElementLimitExceeded(fBigIntValue.bitCount());
+		}
+	}
+
 	public BigIntegerSym(BigInteger value) {
 		fBigIntValue = value;
+		if (Config.MAX_BIT_COUNT < fBigIntValue.bitCount()) {
+			throw new ASTElementLimitExceeded(fBigIntValue.bitCount());
+		}
 	}
 
 	public BigIntegerSym(byte[] bytes) {
 		fBigIntValue = new BigInteger(bytes);
+		if (Config.MAX_BIT_COUNT < fBigIntValue.bitCount()) {
+			throw new ASTElementLimitExceeded(fBigIntValue.bitCount());
+		}
 	}
 
 	/** {@inheritDoc} */

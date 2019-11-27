@@ -1404,12 +1404,18 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem137() {
-		check("Fibonacci(10)", "55");
-		check("StirlingS2(6,3)", "90");
-		check("StirlingS2(1300,1300)", "1");
-		check("StirlingS2(10,2)", "511");
-		check("StirlingS2(10,6)", "22827");
-		check("StirlingS2(10,8)", "750");
+		check("Fibonacci(10)", //
+				"55");
+		check("StirlingS2(6,3)", //
+				"90");
+		check("StirlingS2(1300,1300)", //
+				"1");
+		check("StirlingS2(10,2)", //
+				"511");
+		check("StirlingS2(10,6)", //
+				"22827");
+		check("StirlingS2(10,8)", //
+				"750");
 	}
 
 	public void testSystem138() {

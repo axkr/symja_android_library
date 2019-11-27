@@ -68,6 +68,11 @@ public class Config {
 	 **/
 	public static int MAX_AST_SIZE = Integer.MAX_VALUE;
 
+	/**
+	 * Maximum number of elements which could be allocated for a BigInteger number
+	 **/
+	public static int MAX_BIT_COUNT = Integer.MAX_VALUE;
+	
 	static {
 		EXPR_CACHE = CacheBuilder.newBuilder().maximumSize(MAX_EXPR_CACHE_SIZE).weakKeys().weakValues().build();
 	}

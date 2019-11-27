@@ -4112,6 +4112,9 @@ public final class NumberTheory {
 					if (ki.greaterThan(nArg1).isTrue()) {
 						return C0;
 					}
+					if (ki.equals(nArg1)) {
+						return C1;
+					}
 					if (ki.isZero()) {
 						return C0;
 					}
