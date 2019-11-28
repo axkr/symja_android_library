@@ -306,15 +306,13 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 			}
 		}
 
-		if (fLhsPatternExpr.isAST() && leftHandSide.isAST()) {
-			patternMap = getPatternMap();
-			patternMap.initPattern();
+ 		if (fLhsPatternExpr.isAST() && leftHandSide.isAST()) {
 			return replaceSubExpressionOrderlessFlat((IAST) fLhsPatternExpr, (IAST) leftHandSide, fRightHandSide,
 					engine);
-		}
-		return F.NIL;
+ 		}
+ 	return F.NIL;
 	}
-
+ 
 	/**
 	 * Get the flags for this matcher.
 	 * 

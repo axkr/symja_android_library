@@ -470,6 +470,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	 */
 	protected IExpr replaceSubExpressionOrderlessFlat(final IAST lhsPatternAST, final IAST lhsEvalAST,
 			final IExpr rhsExpr, EvalEngine engine) {
+
 		if (lhsPatternAST.size() < lhsEvalAST.size()) {
 			if (lhsPatternAST.isOrderlessAST() && lhsPatternAST.isFlatAST()) {
 				if (!matchExpr(lhsPatternAST.head(), lhsEvalAST.head(), engine, new StackMatcher(engine))) {
@@ -526,6 +527,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				}
 			}
 		}
+
 		return F.NIL;
 	}
 
@@ -839,7 +841,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				if (temp.isOptional()) {
 					IAST optional = (IAST) temp;
 					IExpr optionalValue = (optional.isAST2()) ? optional.arg2()
-							: symbolWithDefaultValue.getDefaultValue(); 
+							: symbolWithDefaultValue.getDefaultValue();
 					if (optionalValue.isPresent()) {
 						if (!(matchExpr(temp.first(), optionalValue, engine))) {
 							return true;
@@ -1469,7 +1471,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 						continue;
 					}
 					IExpr optionalValue = (optional.isAST2()) ? optional.arg2()
-							: symbolWithDefaultValue.getDefaultValue(); 
+							: symbolWithDefaultValue.getDefaultValue();
 					if (optionalValue.isPresent()) {
 						if (!(matchExpr(optional.arg1(), optionalValue, engine))) {
 							return F.NIL;

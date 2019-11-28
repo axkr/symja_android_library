@@ -412,72 +412,11 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 					return;
 				}
 			} else if (function.head() == F.Piecewise && function.size() > 1) {
-				int[] dim = function.arg1().isMatrix();
-				if (dim != null && dim[1] == 2) {
-					IAST list = (IAST) function.arg1();
-					if (INLINE_PIECEWISE) {
-						// use the ternary operator
-						int size = list.size();
-						buf.append("(");
-						for (int i = 1; i < size; i++) {
-							IAST row = (IAST) list.get(i);
-							if (i > 1) {
-								buf.append("(");
-							}
-							buf.append("(");
-							convert(buf, row.second());
-							buf.append(") ? ");
-							convert(buf, row.first());
-							buf.append(" : ");
-						}
-						buf.append("( ");
-						if (function.isAST2()) {
-							convert(buf, function.second());
-						} else {
-							buf.append(" Number.NaN ");
-						}
-						buf.append(" )");
-						for (int i = 2; i < size; i++) {
-							buf.append(" )");
-						}
-						buf.append(")");
-						return;
-					} else {
-						// use if... statements
-						for (int i = 1; i < list.size(); i++) {
-							IAST row = (IAST) list.get(i);
-							if (i == 1) {
-								buf.append("if (");
-								convert(buf, row.second());
-								buf.append(") {");
-							} else {
-								buf.append(" else if (");
-								convert(buf, row.second());
-								buf.append(") {");
-							}
-							buf.append(" return ");
-							convert(buf, row.first());
-							buf.append("}");
-						}
-						buf.append(" else {");
-						if (function.isAST2()) {
-							convert(buf, function.second());
-						} else {
-							buf.append(" return Number.NaN; ");
-						}
-						buf.append("}");
-						return;
-					}
+				if (convertPiecewise(function, buf)) {
+					return;
 				}
 			} else if (function.head() == F.ConditionalExpression && function.size() == 3) {
-				IExpr arg1 = function.arg1();
-				IExpr arg2 = function.arg2();
-				// use the ternary operator
-				buf.append("((");
-				convert(buf, arg2);
-				buf.append(") ? (");
-				convert(buf, arg1);
-				buf.append(") : ( Number.NaN ))");
+				convertConditionalExpression(function, buf);
 				return;
 			}
 		} else {
@@ -512,72 +451,11 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 				buf.append("Number.NEGATIVE_INFINITY");
 				return;
 			} else if (function.head() == F.Piecewise && function.size() > 1) {
-				int[] dim = function.arg1().isMatrix();
-				if (dim != null && dim[1] == 2) {
-					IAST list = (IAST) function.arg1();
-					if (INLINE_PIECEWISE) {
-						// use the ternary operator
-						int size = list.size();
-						buf.append("(");
-						for (int i = 1; i < size; i++) {
-							IAST row = (IAST) list.get(i);
-							if (i > 1) {
-								buf.append("(");
-							}
-							buf.append("(");
-							convert(buf, row.second());
-							buf.append(") ? ");
-							convert(buf, row.first());
-							buf.append(" : ");
-						}
-						buf.append("( ");
-						if (function.isAST2()) {
-							convert(buf, function.second());
-						} else {
-							buf.append(" Number.NaN ");
-						}
-						buf.append(" )");
-						for (int i = 2; i < size; i++) {
-							buf.append(" )");
-						}
-						buf.append(")");
-						return;
-					} else {
-						// use if... statements
-						for (int i = 1; i < list.size(); i++) {
-							IAST row = (IAST) list.get(i);
-							if (i == 1) {
-								buf.append("if (");
-								convert(buf, row.second());
-								buf.append(") {");
-							} else {
-								buf.append(" else if (");
-								convert(buf, row.second());
-								buf.append(") {");
-							}
-							buf.append(" return ");
-							convert(buf, row.first());
-							buf.append("}");
-						}
-						buf.append(" else {");
-						if (function.isAST2()) {
-							convert(buf, function.second());
-						} else {
-							buf.append(" return Number.NaN; ");
-						}
-						buf.append("}");
-						return;
-					}
+				if (convertPiecewise(function, buf)) {
+					return;
 				}
 			} else if (function.head() == F.ConditionalExpression && function.size() == 3) {
-				IExpr arg1 = function.arg1();
-				IExpr arg2 = function.arg2();
-				// use the ternary operator
-				buf.append("((");
-				convert(buf, arg2);
-				buf.append(") ? (");
-				convert(buf, arg1);
-				buf.append(") : ( Number.NaN ))");
+				convertConditionalExpression(function, buf);
 				return;
 			} else if (function.head() == F.Cot && function.size() == 2) {
 				buf.append("(1/Math.tan(");
@@ -618,6 +496,78 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 
 		convert(buf, head);
 		convertArgs(buf, head, function);
+	}
+
+	private void convertConditionalExpression(final IAST function, final StringBuilder buf) {
+		IExpr arg1 = function.arg1();
+		IExpr arg2 = function.arg2();
+		// use the ternary operator
+		buf.append("((");
+		convert(buf, arg2);
+		buf.append(") ? (");
+		convert(buf, arg1);
+		buf.append(") : ( Number.NaN ))");
+	}
+
+	private boolean convertPiecewise(final IAST function, final StringBuilder buf) {
+		int[] dim = function.arg1().isMatrix();
+		if (dim != null && dim[1] == 2) {
+			IAST list = (IAST) function.arg1();
+			if (INLINE_PIECEWISE) {
+				// use the ternary operator
+				int size = list.size();
+				buf.append("(");
+				for (int i = 1; i < size; i++) {
+					IAST row = (IAST) list.get(i);
+					if (i > 1) {
+						buf.append("(");
+					}
+					buf.append("(");
+					convert(buf, row.second());
+					buf.append(") ? ");
+					convert(buf, row.first());
+					buf.append(" : ");
+				}
+				buf.append("( ");
+				if (function.isAST2()) {
+					convert(buf, function.second());
+				} else {
+					buf.append(" Number.NaN ");
+				}
+				buf.append(" )");
+				for (int i = 2; i < size; i++) {
+					buf.append(" )");
+				}
+				buf.append(")");
+				return true;
+			} else {
+				// use if... statements
+				for (int i = 1; i < list.size(); i++) {
+					IAST row = (IAST) list.get(i);
+					if (i == 1) {
+						buf.append("if (");
+						convert(buf, row.second());
+						buf.append(") {");
+					} else {
+						buf.append(" else if (");
+						convert(buf, row.second());
+						buf.append(") {");
+					}
+					buf.append(" return ");
+					convert(buf, row.first());
+					buf.append("}");
+				}
+				buf.append(" else {");
+				if (function.isAST2()) {
+					convert(buf, function.second());
+				} else {
+					buf.append(" return Number.NaN; ");
+				}
+				buf.append("}");
+				return true;
+			}
+		}
+		return false;
 	}
 
 	protected boolean convertOperator(final Operator operator, final IAST list, final StringBuilder buf,
