@@ -18235,6 +18235,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		check("-Log(-7)", //
+				"-I*Pi-Log(7)");
+		check("Solve(3*x^x==7,x)", //
+				"{{x->Log(7/3)/ProductLog(Log(7/3))}}");
+		check("Solve(3*x^x==-7,x)", //
+				"{{x->-(-I*Pi-Log(7/3))/ProductLog(I*Pi+Log(7/3))}}");
+		check("Solve(x^x==7,x)", //
+				"{{x->Log(7)/ProductLog(Log(7))}}");
+		check("Solve(x^x==-7,x)", //
+				"{{x->-(-I*Pi-Log(7))/ProductLog(I*Pi+Log(7))}}");
 		check("ReplaceAll(x^3-89, {{x->-(-89)^(1/3)},{x->(-89)^(1/3)*(-1)^(1/3)},{x->-(-89)^(1/3)*(-1)^(2/3)}})", //
 				"{0,0,0}");
 		check("Solve(x^3-89==0, x)", //

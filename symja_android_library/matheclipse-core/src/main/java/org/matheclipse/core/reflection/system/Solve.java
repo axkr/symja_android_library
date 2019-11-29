@@ -580,6 +580,14 @@ public class Solve extends AbstractFunctionEvaluator {
 					return fEngine.evaluate(F.Subtract(base,
 							F.Expand(F.Power(F.Times(num.inverse(), F.Negate(plus)), arg2.inverse()))));
 				}
+			} else if (base.isSymbol() && //
+					base.equals(exponent)) {
+				// rewrite num * x^x as ProductLog() (Lambert W function)
+				IExpr plus = plusAST.splice(i).oneIdentity0().negate().divide(num);
+				// Log(arg1)/ProductLog(Log(arg1))
+				IAST inverseFunction = F.Plus(base,
+						F.Times(F.Log(plus).negate(), F.Power(F.ProductLog(F.Log(plus)), F.CN1)));
+				return fEngine.evaluate(inverseFunction);
 			}
 			return F.NIL;
 		}
