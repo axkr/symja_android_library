@@ -154,7 +154,7 @@ public class NDSolve extends AbstractFunctionEvaluator {
 		}
 		return F.NIL;
 	}
-	
+
 	@Override
 	public int[] expectedArgSize() {
 		return IOFunctions.ARGS_3_3;
@@ -170,7 +170,7 @@ public class NDSolve extends AbstractFunctionEvaluator {
 	 * @param engine
 	 * @return
 	 */
-	private boolean determineSingleBoundary(IExpr equation, IAST uFunctionSymbols, IExpr xVar,
+	private static boolean determineSingleBoundary(IExpr equation, IAST uFunctionSymbols, IExpr xVar,
 			IExpr boundaryCondition[][], EvalEngine engine) {
 		if (equation.isAST()) {
 			IASTAppendable eq = ((IAST) equation).copyAppendable();
@@ -197,14 +197,7 @@ public class NDSolve extends AbstractFunctionEvaluator {
 							return false;
 						}
 						boundaryCondition[0][i - 1] = uArg1;
-						if (negate) {
-							temp = engine.evaluate(rest.oneIdentity0().negate());
-						} else {
-							temp = engine.evaluate(rest.oneIdentity0());
-						}
-						boundaryCondition[1][i - 1] = temp;
-						eq.remove(j);
-						return true;
+						return removeDeriveFromPlus(boundaryCondition[1], i - 1, eq, j, rest, negate, engine);
 					}
 				}
 				rest.append(eq.get(j));
@@ -215,8 +208,8 @@ public class NDSolve extends AbstractFunctionEvaluator {
 		return false;
 	}
 
-	private boolean determineSingleDotEquation(IExpr equation, IAST uFunctionSymbols, IExpr xVar, IExpr dotEquations[],
-			EvalEngine engine) {
+	private static boolean determineSingleDotEquation(IExpr equation, IAST uFunctionSymbols, IExpr xVar,
+			IExpr dotEquations[], EvalEngine engine) {
 		if (equation.isAST()) {
 			IASTAppendable eq = ((IAST) equation).copyAppendable();
 			if (!eq.isPlus()) {
@@ -244,15 +237,7 @@ public class NDSolve extends AbstractFunctionEvaluator {
 							if (dotEquations[i - 1] != null) {
 								return false;
 							}
-							if (negate) {
-								temp = engine.evaluate(rest.oneIdentity0().negate());
-							} else {
-								temp = engine.evaluate(rest.oneIdentity0());
-							}
-							dotEquations[i - 1] = temp;
-							// eliminate deriveExpr from Plus(...) expression
-							eq.remove(j);
-							return true;
+							return removeDeriveFromPlus(dotEquations, i - 1, eq, j, rest, negate, engine);
 						}
 					}
 				} else {
@@ -264,6 +249,29 @@ public class NDSolve extends AbstractFunctionEvaluator {
 
 		}
 		return false;
+	}
+
+	/**
+	 * 
+	 * @param dotEquations
+	 * @param i
+	 *            the index in dotEquations which should be filled with the evaluated result from <code>expr</code>
+	 * @param plusAST
+	 *            the <code>Plus(...)</code> expression
+	 * @param j
+	 *            the index which should be removed in <code>plusAST</code>
+	 * @param expr 
+	 * @param negate
+	 * @param engine
+	 * @return
+	 */
+	private static boolean removeDeriveFromPlus(IExpr[] dotEquations, int i, IASTAppendable plusAST, int j,
+			IASTAppendable expr, boolean negate, EvalEngine engine) {
+		IExpr temp = negate ? expr.oneIdentity0().negate() : expr.oneIdentity0();
+		dotEquations[i] = engine.evaluate(temp);
+		// eliminate deriveExpr from Plus(...) expression
+		plusAST.remove(j);
+		return true;
 	}
 
 }
