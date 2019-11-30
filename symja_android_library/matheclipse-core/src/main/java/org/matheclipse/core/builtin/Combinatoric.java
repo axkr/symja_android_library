@@ -260,7 +260,7 @@ public final class Combinatoric {
 					return F.NIL;
 				}
 
-				return F.Divide(F.integer((long) n10 + (long) n01), F.integer(2L * n11 + n10 + n01));
+				return F.Divide(F.ZZ((long) n10 + (long) n01), F.ZZ(2L * n11 + n10 + n01));
 			}
 			return F.NIL;
 		}
@@ -432,7 +432,7 @@ public final class Combinatoric {
 							temp = F.ListAlloc(j.length);
 							for (int i = 0; i < j.length; i++) {
 								if (j[i] != 0) {
-									temp.append(F.integer(j[i]));
+									temp.append(F.ZZ(j[i]));
 								} else {
 									break;
 								}
@@ -500,7 +500,7 @@ public final class Combinatoric {
 					return F.NIL;
 				}
 
-				return F.Divide(F.integer((long) n10 + (long) n01), F.integer((long) n11 + (long) n10 + n01));
+				return F.Divide(F.ZZ((long) n10 + (long) n01), F.ZZ((long) n11 + (long) n10 + n01));
 			}
 			return F.NIL;
 		}
@@ -856,7 +856,7 @@ public final class Combinatoric {
 					return F.NIL;
 				}
 
-				return F.Divide(F.integer((long) n10 + (long) n01), F.integer(length - 1));
+				return F.Divide(F.ZZ((long) n10 + (long) n01), F.ZZ(length - 1));
 			}
 			return F.NIL;
 		}
@@ -1258,7 +1258,7 @@ public final class Combinatoric {
 				if (r == 0L) {
 					return F.C0;
 				}
-				return F.Divide(F.integer(r), F.integer((long) n11 + (long) n00 + r));
+				return F.Divide(F.ZZ(r), F.ZZ((long) n11 + (long) n00 + r));
 			}
 			return F.NIL;
 		}
@@ -1313,7 +1313,7 @@ public final class Combinatoric {
 				if (r == 0L) {
 					return F.C0;
 				}
-				return F.Divide(F.integer(r), F.integer(length - 1));
+				return F.Divide(F.ZZ(r), F.ZZ(length - 1));
 			}
 			return F.NIL;
 		}
@@ -1371,7 +1371,7 @@ public final class Combinatoric {
 				if (r == 0L) {
 					return F.C0;
 				}
-				return F.Divide(F.integer(r), F.integer(n11 + r));
+				return F.Divide(F.ZZ(r), F.ZZ(n11 + r));
 			}
 			return F.NIL;
 		}
@@ -1658,7 +1658,7 @@ public final class Combinatoric {
 				if (r == 0L) {
 					return F.C0;
 				}
-				return F.Divide(F.integer(r), F.integer((long) n11 * (long) n00 + (long) n10 * (long) n01));
+				return F.Divide(F.ZZ(r), F.ZZ((long) n11 * (long) n00 + (long) n10 * (long) n01));
 			}
 			return F.NIL;
 		}

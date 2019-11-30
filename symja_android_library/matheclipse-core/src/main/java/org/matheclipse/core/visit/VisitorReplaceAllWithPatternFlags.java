@@ -9,6 +9,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
+import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IPatternSequence;
 
 /**
@@ -24,8 +25,7 @@ public class VisitorReplaceAllWithPatternFlags extends VisitorReplaceAll {
 		this.onlyNamedPatterns = onlyNamedPatterns;
 	}
 
-	@Override
-	public IExpr visit(IPattern element) {
+	private IExpr visitPatternObject(IPatternObject element) {
 		IExpr temp = fFunction.apply(element);
 		if (temp.isPresent()) {
 			if (temp.isOneIdentityAST1()) {
@@ -33,36 +33,17 @@ public class VisitorReplaceAllWithPatternFlags extends VisitorReplaceAll {
 			}
 			return temp;
 		}
-		// ISymbol symbol = element.getSymbol();
-		// if (symbol != null) {
-		// IExpr expr = fFunction.apply(symbol);
-		// if (expr.isPresent() && expr.isSymbol()) {
-		// if (element.isPatternDefault()) {
-		// return F.$p((ISymbol) expr, element.getHeadTest(), true);
-		// }
-		// return F.$p((ISymbol) expr, element.getHeadTest());
-		// }
-		// }
 		return F.NIL;
 	}
 
 	@Override
+	public IExpr visit(IPattern element) {
+		return visitPatternObject(element);
+	}
+
+	@Override
 	public IExpr visit(IPatternSequence element) {
-		IExpr temp = fFunction.apply(element);
-		if (temp.isPresent()) {
-			if (temp.isOneIdentityAST1()) {
-				return temp.first();
-			}
-			return temp;
-		}
-		// ISymbol symbol = element.getSymbol();
-		// if (symbol != null) {
-		// IExpr expr = fFunction.apply(symbol);
-		// if (expr.isPresent() && expr.isSymbol()) {
-		// return F.$ps((ISymbol) expr, element.getHeadTest(), element.isDefault(), element.isNullSequence());
-		// }
-		// }
-		return F.NIL;
+		return visitPatternObject(element);
 	}
 
 	@Override
@@ -107,11 +88,11 @@ public class VisitorReplaceAllWithPatternFlags extends VisitorReplaceAll {
 				// ((IASTMutable) result).setEvalFlags(ast.getEvalFlags() & IAST.CONTAINS_PATTERN_EXPR);
 				// }
 				return result;
-				
+
 			}
 			i++;
-		} 
-		
+		}
+
 		return F.NIL;
 	}
 

@@ -126,51 +126,6 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
 		return removedCounter;
 	}
 
-	@Override
-	public IExpr visit(IInteger element) {
-		return visitAtom(element);
-	}
-
-	@Override
-	public IExpr visit(IFraction element) {
-		return visitAtom(element);
-	}
-
-	@Override
-	public IExpr visit(IComplex element) {
-		return visitAtom(element);
-	}
-
-	@Override
-	public IExpr visit(INum element) {
-		return visitAtom(element);
-	}
-
-	@Override
-	public IExpr visit(IComplexNum element) {
-		return visitAtom(element);
-	}
-
-	@Override
-	public IExpr visit(ISymbol element) {
-		return visitAtom(element);
-	}
-
-	@Override
-	public IExpr visit(IPattern element) {
-		return visitAtom(element);
-	}
-
-	@Override
-	public IExpr visit(IPatternSequence element) {
-		return visitAtom(element);
-	}
-
-	@Override
-	public IExpr visit(IStringX element) {
-		return visitAtom(element);
-	}
-
 	/**
 	 * <b>Note:</b> the given AST will be modified, i.e. some elements may be removed!
 	 * 
