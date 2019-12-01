@@ -243,7 +243,7 @@ public class MainTestCase extends AbstractTestCase {
 		check(" ((1 - (i/10)) / (1.0 - (i/10)))", //
 				"(1-i/10)/(1.0-i/10)");
 		check("(1 - ((1 - (i/10)) / (1.0 - (i/10))))", //
-				"1-(1-i/10)/(1.0-i/10)");
+				"1+(-1+i/10)/(1.0-i/10)");
 		check("(1 - ((1 - (i/10)) / (1.0 - (i/10))))//Simplify", //
 				"0");
 
@@ -1617,7 +1617,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("Simplify(D(ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)+1/6*Log(x^2-x+1)-1/3*Log(x+1),x))", "x/(1+x^3)");
 
 		check("Integrate(x/(x^3+1),x)", //
-				"-ArcTan((1-2*x)/Sqrt(3))/Sqrt(3)-Log(1+x)/3+Log(1-x+x^2)/6");
+				"ArcTan((-1+2*x)/Sqrt(3))/Sqrt(3)-Log(1+x)/3+Log(1-x+x^2)/6");
 		// check("Simplify(D(ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)+1/6*Log(x^2-x+1)-1/3*Log(x+1),x))",
 		// "x*(x^3+1)^(-1)");
 		check("Integrate(x*Log(x),x)", //
@@ -1663,7 +1663,7 @@ public class MainTestCase extends AbstractTestCase {
 		// check("Simplify(Integrate(1/3*(2-x)*(x^2-x+1)^(-1),x))",
 		// "ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)-1/6*Log(x^2-x+1)");
 		check("Integrate(1/3*(2-x)*(x^2-x+1)^(-1)+1/3*(x+1)^(-1),x)", //
-				"-ArcTan((1-2*x)/Sqrt(3))/Sqrt(3)+Log(1+x)/3-Log(1-x+x^2)/6");
+				"ArcTan((-1+2*x)/Sqrt(3))/Sqrt(3)+Log(1+x)/3-Log(1-x+x^2)/6");
 		check("Integrate(E^x*(2-x^2),x)", //
 				"2*E^x*x-E^x*x^2");
 		check("D(2*E^x-Gamma(3,-x),x)", //

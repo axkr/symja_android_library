@@ -85,7 +85,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
 					// the expressions are structurally equal
 					return expectedResult;
 				} else {
-					System.out.println("PossibleZeroQ failed:" + temp.toString());
+					System.out.println("PossibleZeroQ[\n" + temp.toString()+ " \n]");
 				}
 				// IExpr resultTogether= F.Together.of(F.ExpandAll(result));
 				// IExpr expectedTogether = F.Together.of(F.ExpandAll(expected));
