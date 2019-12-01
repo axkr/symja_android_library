@@ -13,7 +13,7 @@ public interface LimitRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 41, 16 };
+  final public static int[] SIZES = { 44, 17 };
 
   final public static IAST RULES = List(
     IInit(Limit, SIZES),
@@ -170,6 +170,18 @@ public interface LimitRules {
     // Limit(Tanh(x_),x_Symbol->-Infinity)=-1
     ISet(Limit(Tanh(x_),Rule(x_Symbol,Negate(oo))),
       CN1),
+    // Limit(Gamma(x_),x_Symbol->0,Direction->1)=-Infinity
+    ISet(Limit(Gamma(x_),Rule(x_Symbol,C0),Rule(Direction,C1)),
+      Noo),
+    // Limit(Gamma(x_),x_Symbol->0,Direction->-1)=Infinity
+    ISet(Limit(Gamma(x_),Rule(x_Symbol,C0),Rule(Direction,CN1)),
+      oo),
+    // Limit(Gamma(z_,x_),x_Symbol->Infinity)=0
+    ISet(Limit(Gamma(z_,x_),Rule(x_Symbol,oo)),
+      C0),
+    // Limit(Gamma(z_,x_),x_Symbol->0):=Gamma(z)
+    ISetDelayed(Limit(Gamma(z_,x_),Rule(x_Symbol,C0)),
+      Gamma(z)),
     // Limit(x_/Abs(x_),x_Symbol->0,Direction->1):=-1
     ISetDelayed(Limit(Times(x_,Power(Abs(x_),CN1)),Rule(x_Symbol,C0),Rule(Direction,C1)),
       CN1),

@@ -1498,8 +1498,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Returns <code>true</code>, if <b>all of the elements</b> in the subexpressions or the expression itself, did not
-	 * match the given pattern. Calls <code>isFree(pattern, true)</code>.
+	 * Returns <code>true</code>, if <b>all of the elements</b> (including the head expression) in the subexpressions or
+	 * the expression itself, did not match the given pattern. Calls <code>isFree(pattern, true)</code>.
 	 * 
 	 * @param pattern
 	 *            a pattern-matching expression

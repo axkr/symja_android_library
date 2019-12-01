@@ -53,7 +53,7 @@ public interface DerivativeRules {
       Times(C1D2,Subtract(EllipticE(Slot1),EllipticK(Slot1)),Power(Slot1,CN1))),
     // EllipticK->(EllipticE(#1)-EllipticK(#1)*(1-#1))/(2*(1-#1)*#1)
     Rule(EllipticK,
-      Times(C1D2,Power(Subtract(C1,Slot1),CN1),Power(Slot1,CN1),Plus(EllipticE(Slot1),Times(CN1,EllipticK(Slot1),Subtract(C1,Slot1))))),
+      Times(C1D2,Power(Subtract(C1,Slot1),CN1),Power(Slot1,CN1),Plus(EllipticE(Slot1),Times(EllipticK(Slot1),Plus(CN1,Slot1))))),
     // Erf->2*1/(E^#1^2*Sqrt(Pi))
     Rule(Erf,
       Times(C2,Exp(Negate(Sqr(Slot1))),Power(Pi,CN1D2))),

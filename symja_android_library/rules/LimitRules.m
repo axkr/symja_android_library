@@ -55,6 +55,12 @@
  Limit(Tanh(x_), x_Symbol->Infinity)=1,  
  Limit(Tanh(x_), x_Symbol->-Infinity)=-1,
  
+  
+ Limit(Gamma(x_), x_Symbol->0, Direction->1)=-Infinity,  
+ Limit(Gamma(x_), x_Symbol->0, Direction->-1)=Infinity,  
+ Limit(Gamma(z_, x_), x_Symbol->Infinity)=0,  
+ Limit(Gamma(z_, x_), x_Symbol->0):=Gamma(z),
+ 
  Limit(x_/Abs(x_), x_Symbol->0, Direction->1):= -1,
  Limit(x_/Abs(x_), x_Symbol->0, Direction->-1):= 1,
  Limit(Tan(x_), x_Symbol->Pi/2, Direction->1):= Infinity,
