@@ -38,9 +38,19 @@ public class VisitorReplaceAllLambda extends VisitorExpr {
 		this.fOffset = offset;
 	}
 
+	private IExpr visistAtom(IExpr element) {
+		if (fPredicate.test(element)) {
+			IExpr temp = fFunction.apply(element);
+			if (temp != null && temp.isPresent()) {
+				return temp;
+			}
+		}
+		return F.NIL;
+	}
+
 	@Override
 	public IExpr visit(IInteger element) {
-		return fPredicate.test(element) ? fFunction.apply(element) : F.NIL;
+		return visistAtom(element);
 	}
 
 	/**
@@ -49,7 +59,7 @@ public class VisitorReplaceAllLambda extends VisitorExpr {
 	 */
 	@Override
 	public IExpr visit(IFraction element) {
-		return fPredicate.test(element) ? fFunction.apply(element) : F.NIL;
+		return visistAtom(element);
 	}
 
 	/**
@@ -58,7 +68,7 @@ public class VisitorReplaceAllLambda extends VisitorExpr {
 	 */
 	@Override
 	public IExpr visit(IComplex element) {
-		return fPredicate.test(element) ? fFunction.apply(element) : F.NIL;
+		return visistAtom(element);
 	}
 
 	/**
@@ -67,7 +77,7 @@ public class VisitorReplaceAllLambda extends VisitorExpr {
 	 */
 	@Override
 	public IExpr visit(INum element) {
-		return fPredicate.test(element) ? fFunction.apply(element) : F.NIL;
+		return visistAtom(element);
 	}
 
 	/**
@@ -76,7 +86,7 @@ public class VisitorReplaceAllLambda extends VisitorExpr {
 	 */
 	@Override
 	public IExpr visit(IComplexNum element) {
-		return fPredicate.test(element) ? fFunction.apply(element) : F.NIL;
+		return visistAtom(element);
 	}
 
 	/**
@@ -85,7 +95,7 @@ public class VisitorReplaceAllLambda extends VisitorExpr {
 	 */
 	@Override
 	public IExpr visit(ISymbol element) {
-		return fPredicate.test(element) ? fFunction.apply(element) : F.NIL;
+		return visistAtom(element);
 	}
 
 	/**
@@ -94,7 +104,7 @@ public class VisitorReplaceAllLambda extends VisitorExpr {
 	 */
 	@Override
 	public IExpr visit(IPattern element) {
-		return fPredicate.test(element) ? fFunction.apply(element) : F.NIL;
+		return visistAtom(element);
 	}
 
 	/**
@@ -103,7 +113,7 @@ public class VisitorReplaceAllLambda extends VisitorExpr {
 	 */
 	@Override
 	public IExpr visit(IPatternSequence element) {
-		return fPredicate.test(element) ? fFunction.apply(element) : F.NIL;
+		return visistAtom(element);
 	}
 
 	/**
@@ -112,14 +122,14 @@ public class VisitorReplaceAllLambda extends VisitorExpr {
 	 */
 	@Override
 	public IExpr visit(IStringX element) {
-		return fPredicate.test(element) ? fFunction.apply(element) : F.NIL;
+		return visistAtom(element);
 	}
 
 	@Override
 	public IExpr visit(IASTMutable ast) {
 		if (fPredicate.test(ast)) {
 			IExpr temp = fFunction.apply(ast);
-			if (temp.isPresent()) {
+			if (temp != null && temp.isPresent()) {
 				return temp;
 			}
 		}
@@ -141,7 +151,7 @@ public class VisitorReplaceAllLambda extends VisitorExpr {
 					if (t.isPresent()) {
 						result.set(j, t);
 					}
-				}); 
+				});
 				return result;
 			}
 			i++;
