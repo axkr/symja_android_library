@@ -194,9 +194,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 	 * @return
 	 */
 	public static boolean isNegativeWeighted(final IAST ast, boolean checkTimesPlus) {
-		int countWeight = countNegativeWeight(ast, checkTimesPlus);
-		int halfSize = ast.size() / 2;
-		return countWeight > halfSize;
+		return isNegativeWeighted(ast, checkTimesPlus, ast.size() / 2);
 	}
 
 	/**
@@ -207,21 +205,25 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 	 * @param ast
 	 * @param checkTimesPlus
 	 *            check <code>Times(...)</code> and <code>Plus(...)</code> expressions
+	 * @param maxNegativeExpr
+	 *            maximum number of negative valued terms which have to be found before returning <code>true</code>
 	 * @return
 	 */
-	public static int countNegativeWeight(final IAST ast, boolean checkTimesPlus) {
-		int count = 1;
+	public static boolean isNegativeWeighted(final IAST ast, boolean checkTimesPlus, int maxNegativeExpr) {
+		int count = maxNegativeExpr - 1;
 		for (int i = 1; i < ast.size(); i++) {
-			if (isNegativeWeighted(ast.get(i), checkTimesPlus)) {
-				count++;
+			if (isNegativeValued(ast.get(i), checkTimesPlus)) {
+				if (--count < 0) {
+					return true;
+				}
 			}
 		}
-		return count;
+		return false;
 	}
 
 	/**
 	 * <p>
-	 * Return <code>true</code> if the <code>expression</code> is considered having <i>negative weight</i>
+	 * Return <code>true</code> if the <code>expression</code> is considered having a <i>negative value</i>
 	 * </p>
 	 * 
 	 * @param expression
@@ -229,7 +231,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 	 *            check <code>Times(...)</code> and <code>Plus(...)</code> expressions
 	 * @return
 	 */
-	public static boolean isNegativeWeighted(final IExpr expression, boolean checkTimesPlus) {
+	private static boolean isNegativeValued(final IExpr expression, boolean checkTimesPlus) {
 		if (expression.isNumber()) {
 			return ((INumber) expression).complexSign() < 0;
 		} else if (expression.isAST()) {
@@ -252,7 +254,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 					}
 				} else if (arg1.isNegativeInfinity()) {
 					return true;
-				} else if (arg1.isTimes() && isNegativeWeighted(arg1, checkTimesPlus)) {
+				} else if (arg1.isTimes() && isNegativeValued(arg1, checkTimesPlus)) {
 					return true;
 				}
 			} else if (expression.isDirectedInfinity() && expression.isAST1()) {
