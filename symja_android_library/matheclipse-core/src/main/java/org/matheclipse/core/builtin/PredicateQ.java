@@ -5,8 +5,6 @@ import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra.InternalFindCommonFactorPlus;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
@@ -772,13 +770,18 @@ public class PredicateQ {
 			if (expr.isNumber()) {
 				return expr.isZero();
 			}
-			IExpr temp = arg1.evalNumber();
-			if (temp != null) {
-				if (temp.isZero()) {
-					return true;
-				}
-			}
 			if (expr.isAST()) {
+				IExpr temp = ((IAST) expr).replace( //
+						x -> x.isNumericFunction(), //
+						x -> x.evalNumber());
+				if (temp != null) {
+					temp = engine.evaluate(temp);
+					if (temp.isZero()) {
+						return true;
+					}
+				}
+
+
 				if (expr.isPlus()) {
 					IExpr[] commonFactors = InternalFindCommonFactorPlus.findCommonFactors((IAST) expr, true);
 					if (commonFactors != null) {
@@ -794,11 +797,10 @@ public class PredicateQ {
 						}
 					}
 				}
-				// } else {
+			 
 				return isZeroTogether(expr, engine);
-				// }
+				 
 			}
-
 			return false;
 		}
 
@@ -1123,7 +1125,6 @@ public class PredicateQ {
 		}
 
 	}
-
 
 	/**
 	 * <pre>

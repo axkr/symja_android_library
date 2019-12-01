@@ -9,7 +9,10 @@ import org.matheclipse.core.expression.F;
  */
 public interface INum extends ISignedNumber {
 	public final static double Catalan = 0.91596559417721901505460351493238411077414937428167;
-	public final static double Degree = Math.PI / 180;
+	/**
+	 * <code> Math.PI / 180.0</code>
+	 */
+	public final static double Degree = 0.01745329251994329576923690768488612713442871888541;
 	public final static double EulerGamma = 0.57721566490153286060651209008240243104215933593992;
 	public final static double Glaisher = 1.2824271291006226368753425688697917277676889273250;
 	public final static double GoldenRatio = 1.6180339887498948482045868343656381177203091798058;
@@ -20,7 +23,7 @@ public interface INum extends ISignedNumber {
 	public INum add(INum val);
 
 	public IInteger ceilFraction();
-	
+
 	public INum multiply(INum val);
 
 	default INum multiply(IRational val) {

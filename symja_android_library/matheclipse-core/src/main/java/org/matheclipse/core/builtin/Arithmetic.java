@@ -281,7 +281,7 @@ public final class Arithmetic {
 				return ((INumber) arg1).abs();
 			}
 			if (arg1.isNumericFunction()) {
-				IExpr temp = F.evaln(arg1);
+				IExpr temp = engine.evalN(arg1);
 				if (temp.isReal()) {
 					return arg1.copySign((ISignedNumber) temp);
 				}
@@ -1756,7 +1756,7 @@ public final class Arithmetic {
 							return C0;
 						}
 						IASTAppendable result = F.PlusAlloc(n);
-						return result.appendArgs(n + 1, i -> Power(integer(i), Negate(arg2)));
+						return result.appendArgs(n + 1, i -> Power(F.ZZ(i), Negate(arg2)));
 					}
 					return F.NIL;
 				}
@@ -3881,10 +3881,10 @@ public final class Arithmetic {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			if (arg1 instanceof INum) {
-				return F.integer(((INum) arg1).precision());
+				return F.ZZ(((INum) arg1).precision());
 			}
 			if (arg1 instanceof IComplexNum) {
-				return F.integer(((IComplexNum) arg1).precision());
+				return F.ZZ(((IComplexNum) arg1).precision());
 			}
 			return engine.printMessage("Precision: Numeric expression expected");
 		}
@@ -4341,7 +4341,7 @@ public final class Arithmetic {
 		public static IExpr numberSign(INumber arg1) {
 			if (arg1.isReal()) {
 				final int signum = ((ISignedNumber) arg1).sign();
-				return F.integer(signum);
+				return F.ZZ(signum);
 			} else if (arg1.isComplex()) {
 				IComplex c = (IComplex) arg1;
 				return F.Times(c, F.Power(c.abs(), F.CN1));
@@ -4371,7 +4371,7 @@ public final class Arithmetic {
 			INumber number = arg1.evalNumber();
 			if (number != null) {
 				final int signum = number.complexSign();
-				return F.integer(signum);
+				return F.ZZ(signum);
 			}
 			return F.NIL;
 		}

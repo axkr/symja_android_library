@@ -14546,6 +14546,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPossibleZeroQ() {
+		check("PossibleZeroQ(x*E^(I*Pi/4)  - x*(-1)^(1/4))", //
+				"True");
+		
+		
 		check("PossibleZeroQ(-Cos(x)/(1-Cos(x))+Sin(x)^2/(1-Cos(x))^2-1/(1-Cos(x)))", //
 				"True");
 		check("PossibleZeroQ(2^(2*I) - 2^(-2*I) - 2*I*Sin(Log(4)))", //
