@@ -2655,7 +2655,7 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol PolarPlot = F.initFinalSymbol("PolarPlot", ID.PolarPlot);
-	
+
 	/***/
 	public final static IBuiltInSymbol PolyGamma = F.initFinalSymbol("PolyGamma", ID.PolyGamma);
 
@@ -5083,16 +5083,20 @@ public class F {
 		return function(And, a);
 	}
 
+	public static IAST And(final IExpr a0, final IExpr a1) {
+		return new B2.And(a0, a1);
+	}
+
+	public static IAST And(final IExpr a0, final IExpr a1, final IExpr a3) {
+		return new AST3(F.And, a0, a1, a3);
+	}
+
 	public static IAST AngleVector(final IExpr a0) {
 		return new AST1(AngleVector, a0);
 	}
 
 	public static IAST AntiSymmetric(final IExpr a0) {
 		return new AST1(AntiSymmetric, a0);
-	}
-
-	public static IAST And(final IExpr a0, final IExpr a1) {
-		return new B2.And(a0, a1);
 	}
 
 	public static IAST Apart(final IExpr a0) {
@@ -6246,7 +6250,7 @@ public class F {
 	}
 
 	public static IAST DirectedEdge(final IExpr a0, final IExpr a1) {
-		return new AST2(DirectedEdge, a0, a1);
+		return new B2.DirectedEdge(a0, a1);
 	}
 
 	public static IAST DirectedInfinity(final IExpr a0) {
@@ -7113,7 +7117,7 @@ public class F {
 	}
 
 	public static IAST If(final IExpr a0, final IExpr a1) {
-		return new AST2(If, a0, a1);
+		return new B2.If(a0, a1);
 	}
 
 	public static IAST If(final IExpr a0, final IExpr a1, final IExpr a2) {
@@ -8115,7 +8119,7 @@ public class F {
 	}
 
 	public static IAST MemberQ(final IExpr a0, final IExpr a1) {
-		return new AST2(MemberQ, a0, a1);
+		return new B2.MemberQ(a0, a1);
 	}
 
 	public static IAST MessageName(final IExpr a0, final IExpr a1) {
@@ -8272,7 +8276,7 @@ public class F {
 		if (x.isNegativeInfinity()) {
 			return CInfinity;
 		}
-		return new AST2(Times, CN1, x);
+		return new B2.Times(CN1, x);
 	}
 
 	public static IAST Negative(final IExpr a0) {
@@ -8400,7 +8404,6 @@ public class F {
 	 * </pre>
 	 */
 	public static IAST NumberQ(final IExpr a0) {
-
 		return new AST1(NumberQ, a0);
 	}
 
@@ -8489,6 +8492,10 @@ public class F {
 		return new B2.Or(a0, a1);
 	}
 
+	public static IAST Or(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return new AST3(F.Or, a0, a1, a2);
+	}
+
 	public static IAST Or(final IExpr... a) {
 		return function(Or, a);
 	}
@@ -8503,6 +8510,14 @@ public class F {
 
 	public static IASTAppendable Part() {
 		return ast(Part);
+	}
+
+	public static IAST Part(final IExpr a0, final IExpr a1) {
+		return new B2.Part(a0, a1);
+	}
+
+	public static IAST Part(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return new AST3(Part, a0, a1, a2);
 	}
 
 	public static IASTAppendable Part(final IExpr... a) {
@@ -8601,6 +8616,10 @@ public class F {
 			return binaryASTOrderless(IExpr::isPlus, F.Plus, a1, a2);
 		}
 		return new B2.Plus(a1, a2);
+	}
+
+	public static IAST Plus(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return new AST3(Plus, a0, a1, a2);
 	}
 
 	public static IAST Plus(final long num, final IExpr... a) {
@@ -9166,15 +9185,15 @@ public class F {
 	}
 
 	public static IAST Rule(final IExpr a0, final IExpr a1) {
-		return new AST2(Rule, a0, a1);
+		return new B2.Rule(a0, a1);
 	}
 
 	public static IAST RuleDelayed(final IExpr a0, final IExpr a1) {
-		return new AST2(RuleDelayed, a0, a1);
+		return new B2.RuleDelayed(a0, a1);
 	}
 
 	public static IAST SameQ(final IExpr a0, final IExpr a1) {
-		return new AST2(SameQ, a0, a1);
+		return new B2.SameQ(a0, a1);
 	}
 
 	public static IAST SameQ(final IExpr a0, final double d) {
@@ -9227,7 +9246,7 @@ public class F {
 	}
 
 	public static IAST Set(final IExpr a0, final IExpr a1) {
-		return new AST2(Set, a0, a1);
+		return new B2.B2Set(a0, a1);
 	}
 
 	public static IAST SetAttributes(final IExpr a0) {
@@ -9526,15 +9545,6 @@ public class F {
 	 * @return
 	 */
 	public static IAST Subtract(final IExpr arg1, final IExpr arg2) {
-		// if (arg1.isPlus()) {
-		// if (arg2.isZero()) {
-		// return (IAST) arg1;
-		// }
-		// IASTAppendable clone = F.PlusAlloc(arg1.size() + 1);
-		// clone.appendArgs((IAST) arg1);
-		// clone.append(binaryAST2(Times, CN1, arg2));
-		// return clone;
-		// }
 		return new B2.Plus(arg1, new B2.Times(CN1, arg2));
 	}
 
@@ -9697,6 +9707,10 @@ public class F {
 		return new B2.Times(a1, a2);
 	}
 
+	public static IASTMutable Times(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return new AST3(Times, a0, a1, a2);
+	}
+
 	private static IASTMutable binaryASTOrderless(Predicate<IExpr> t, ISymbol symbol, final IExpr a1, final IExpr a2) {
 		final boolean test1 = t.test(a1);
 		final boolean test2 = t.test(a2);
@@ -9794,7 +9808,7 @@ public class F {
 	}
 
 	public static IAST UndirectedEdge(final IExpr a0, final IExpr a1) {
-		return new AST2(UndirectedEdge, a0, a1);
+		return new B2.UndirectedEdge(a0, a1);
 	}
 
 	public static IAST Unequal(final IExpr a0, final IExpr a1) {

@@ -3711,6 +3711,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCubeRoot() {
+		// github #158
+		check("(-1)^(1/3)  //N", //
+				"0.5+I*0.866025");
+		check("CubeRoot(-1)  //N", //
+				"-1.0");
+		
+		
 		check("CubeRoot(3 + 4*I)", //
 				"(3+I*4)^(1/3)");
 		check("CubeRoot(16)", //
@@ -6046,8 +6053,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// github #121
 		System.out.print('.');
 		check("Factor(x^(12)-y^(12), GaussianIntegers->True)", //
-				"(x-y)*(x+y)*(-I*x+y)*(I*x+y)*(x^2+x*y+y^2)*(x^2-x*y+y^2)*(-x^2-I*x*y+y^2)*(-x^2+I*x*y+y^\n" + 
-				"2)");
+				"(x-y)*(x+y)*(-I*x+y)*(I*x+y)*(x^2+x*y+y^2)*(x^2-x*y+y^2)*(-x^2-I*x*y+y^2)*(-x^2+I*x*y+y^\n" + "2)");
 		System.out.print('.');
 		check("Factor(x^(2)+y^(2), GaussianIntegers->True)", //
 				"(-I*x+y)*(I*x+y)");
@@ -10285,10 +10291,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// check("JacobianMatrix({Rr, Ttheta, Zz}, Cylindrical)", "");
 	// }
 
-	public void testLimit() { 
+	public void testLimit() {
 		check("Limit(E^(-x),x->Infinity )", //
-				"0"); 
-		
+				"0");
+
 		check("Limit(Gamma(1/t)*Cos(Sin(1/t)),t->0)", //
 				"Limit(Cos(Sin(1/t))*Gamma(1/t),t->0)");
 		check("Limit(Gamma(1/t),t->Infinity)", //
@@ -10305,7 +10311,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"E");
 		check("Limit((sin(x) - x)/x^3,x->0)", //
 				"-1/6");
-		 
+
 		check("Limit(Sqrt(x^2 - 1)/x, x->-Infinity)", //
 				"-1");
 		check("Limit(x/Sqrt(x^2 - 1), x->-Infinity)", //
@@ -14568,8 +14574,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testPossibleZeroQ() {
 		check("PossibleZeroQ(x*E^(I*Pi/4)  - x*(-1)^(1/4))", //
 				"True");
-		
-		
+
 		check("PossibleZeroQ(-Cos(x)/(1-Cos(x))+Sin(x)^2/(1-Cos(x))^2-1/(1-Cos(x)))", //
 				"True");
 		check("PossibleZeroQ(2^(2*I) - 2^(-2*I) - 2*I*Sin(Log(4)))", //

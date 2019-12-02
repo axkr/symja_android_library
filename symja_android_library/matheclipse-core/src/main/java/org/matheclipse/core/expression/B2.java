@@ -80,6 +80,25 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 		}
 	}
 
+	public final static class DirectedEdge extends B2 {
+		public DirectedEdge() {
+			super();
+		}
+
+		DirectedEdge(IExpr arg1, IExpr arg2) {
+			super(arg1, arg2);
+		}
+
+		@Override
+		public final IBuiltInSymbol head() {
+			return F.DirectedEdge;
+		}
+
+		public IASTMutable copy() {
+			return new DirectedEdge(arg1, arg2);
+		}
+	}
+	
 	public final static class Equal extends B2 {
 		public Equal() {
 			super();
@@ -156,6 +175,25 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 		}
 	}
 
+	public final static class If extends B2 {
+		public If() {
+			super();
+		}
+
+		If(IExpr arg1, IExpr arg2) {
+			super(arg1, arg2);
+		}
+
+		@Override
+		public final IBuiltInSymbol head() {
+			return F.If;
+		}
+
+		public IASTMutable copy() {
+			return new If(arg1, arg2);
+		}
+	}
+	
 	public final static class Integrate extends B2 {
 		public Integrate() {
 			super();
@@ -213,6 +251,25 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 		}
 	}
 
+	public final static class MemberQ extends B2 {
+		public MemberQ() {
+			super();
+		}
+
+		MemberQ(IExpr arg1, IExpr arg2) {
+			super(arg1, arg2);
+		}
+
+		@Override
+		public final IBuiltInSymbol head() {
+			return F.MemberQ;
+		}
+
+		public IASTMutable copy() {
+			return new MemberQ(arg1, arg2);
+		}
+	}
+	
 	public final static class Or extends B2 {
 		public Or() {
 			super();
@@ -232,6 +289,25 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 		}
 	}
 
+	public final static class Part extends B2 {
+		public Part() {
+			super();
+		}
+
+		Part(IExpr arg1, IExpr arg2) {
+			super(arg1, arg2);
+		}
+
+		@Override
+		public final IBuiltInSymbol head() {
+			return F.Part;
+		}
+
+		public IASTMutable copy() {
+			return new Part(arg1, arg2);
+		}
+	}
+	
 	public final static class Plus extends B2 {
 		public Plus() {
 			super();
@@ -322,7 +398,83 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 			return false;
 		}
 	}
+	
+	public final static class B2Set extends B2 {
+		public B2Set() {
+			super();
+		}
 
+		B2Set(IExpr arg1, IExpr arg2) {
+			super(arg1, arg2);
+		}
+
+		@Override
+		public final IBuiltInSymbol head() {
+			return F.Set;
+		}
+
+		public IASTMutable copy() {
+			return new B2Set(arg1, arg2);
+		}
+	}
+
+	public final static class Rule extends B2 {
+		public Rule() {
+			super();
+		}
+
+		Rule(IExpr arg1, IExpr arg2) {
+			super(arg1, arg2);
+		}
+
+		@Override
+		public final IBuiltInSymbol head() {
+			return F.Rule;
+		}
+
+		public IASTMutable copy() {
+			return new Rule(arg1, arg2);
+		}
+	}
+	
+	public final static class RuleDelayed extends B2 {
+		public RuleDelayed() {
+			super();
+		}
+
+		RuleDelayed(IExpr arg1, IExpr arg2) {
+			super(arg1, arg2);
+		}
+
+		@Override
+		public final IBuiltInSymbol head() {
+			return F.RuleDelayed;
+		}
+
+		public IASTMutable copy() {
+			return new RuleDelayed(arg1, arg2);
+		}
+	}
+	
+	public final static class SameQ extends B2 {
+		public SameQ() {
+			super();
+		}
+
+		SameQ(IExpr arg1, IExpr arg2) {
+			super(arg1, arg2);
+		}
+
+		@Override
+		public final IBuiltInSymbol head() {
+			return F.SameQ;
+		}
+
+		public IASTMutable copy() {
+			return new SameQ(arg1, arg2);
+		}
+	}
+	
 	public final static class Times extends B2 {
 		public Times() {
 			super();
@@ -353,7 +505,26 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 			return true;
 		}
 	}
+	
+	public final static class UndirectedEdge extends B2 {
+		public UndirectedEdge() {
+			super();
+		}
 
+		UndirectedEdge(IExpr arg1, IExpr arg2) {
+			super(arg1, arg2);
+		}
+
+		@Override
+		public final IBuiltInSymbol head() {
+			return F.UndirectedEdge;
+		}
+
+		public IASTMutable copy() {
+			return new UndirectedEdge(arg1, arg2);
+		}
+	}
+	
 	public final static class With extends B2 {
 		public With() {
 			super();
