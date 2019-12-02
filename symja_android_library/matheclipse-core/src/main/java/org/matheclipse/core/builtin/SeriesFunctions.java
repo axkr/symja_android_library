@@ -72,6 +72,12 @@ public class SeriesFunctions {
 	 */
 	private final static class Limit extends AbstractFunctionEvaluator implements LimitRules {
 
+		/**
+		 * Representing the data for the current limit.
+		 * 
+		 * @author khart
+		 *
+		 */
 		static class LimitData {
 			final ISymbol symbol;
 
@@ -81,6 +87,10 @@ public class SeriesFunctions {
 
 			int direction;
 
+			public LimitData(ISymbol symbol, IExpr limitValue, IAST rule) {
+				this(symbol, limitValue, rule, DIRECTION_TWO_SIDED);
+			}
+
 			public LimitData(ISymbol symbol, IExpr limitValue, IAST rule, int direction) {
 				this.symbol = symbol;
 				this.limitValue = limitValue;
@@ -88,6 +98,11 @@ public class SeriesFunctions {
 				this.direction = direction;
 			}
 
+			/**
+			 * Get the optional direction value. Default is DIRECTION_TWO_SIDED = 0.
+			 * 
+			 * @return
+			 */
 			public int getDirection() {
 				return direction;
 			}
@@ -114,12 +129,17 @@ public class SeriesFunctions {
 				return symbol;
 			}
 
+			/**
+			 * Set the optional direction value. Default is DIRECTION_TWO_SIDED = 0.
+			 * 
+			 * @param direction
+			 */
 			public void setDirection(int direction) {
 				this.direction = direction;
 			}
 
 			/**
-			 * Create a new <code>F.Limit( arg1, ... )</code> expression from his <code>LimitData</code> object
+			 * Create a new <code>F.Limit( arg1, ... )</code> expression from this <code>LimitData</code> object
 			 * 
 			 * @param arg1
 			 *            the first argument of the Limit expression
@@ -178,46 +198,45 @@ public class SeriesFunctions {
 		}
 
 		/**
+		 * EValuate the limit for the given limit data.
 		 * 
 		 * @param expr
 		 * @param data
 		 *            the limits data definition
-		 * @param evalExpr
 		 * @return
 		 */
-		private static IExpr evalLimit(final IExpr expr, LimitData data, boolean evalExpr) {
+		private static IExpr evalLimit(final IExpr expr, LimitData data) {
 			IExpr expression = expr;
 			final IExpr limitValue = data.getLimitValue();
-			if (evalExpr) {
-				IExpr result = F.evalQuiet(expression);
-				if (result.isNumericFunction()) {
-					return result;
-				}
-				if (!result.equals(F.Indeterminate)) {
-					expression = result;
-				}
-				if (result.isFree(data.getSymbol(), true)) {
-					// Limit[a_,sym->lim] -> a
-					return expression;
-				}
-				if (result.equals(data.getSymbol())) {
-					// Limit[x_,x_->lim] -> lim
-					return limitValue;
-				}
 
-				if (limitValue.isNumericFunction()) {
-					IExpr temp = evalReplaceAll(expression, data);
-					if (temp.isPresent()) {
-						return temp;
-					}
-				} else if ((limitValue.isInfinity() || //
-						limitValue.isNegativeInfinity()) && //
-						expression.isAST() && //
-						expression.size() > 1) {
-					IExpr temp = limitInfinityZero((IAST) expression, data, (IAST) limitValue);
-					if (temp.isPresent()) {
-						return temp;
-					}
+			IExpr result = F.evalQuiet(expression);
+			if (result.isNumericFunction()) {
+				return result;
+			}
+			if (!result.equals(F.Indeterminate)) {
+				expression = result;
+			}
+			if (result.isFree(data.getSymbol(), true)) {
+				// Limit[a_,sym->lim] -> a
+				return expression;
+			}
+			if (result.equals(data.getSymbol())) {
+				// Limit[x_,x_->lim] -> lim
+				return limitValue;
+			}
+
+			if (limitValue.isNumericFunction()) {
+				IExpr temp = evalReplaceAll(expression, data);
+				if (temp.isPresent()) {
+					return temp;
+				}
+			} else if ((limitValue.isInfinity() || //
+					limitValue.isNegativeInfinity()) && //
+					expression.isAST() && //
+					expression.size() > 1) {
+				IExpr temp = limitInfinityZero((IAST) expression, data, (IAST) limitValue);
+				if (temp.isPresent()) {
+					return temp;
 				}
 			}
 
@@ -324,7 +343,7 @@ public class SeriesFunctions {
 							IInteger exp = frac.denominator(); // == 2
 							IExpr expr = engine.evalQuiet(F.Times(F.D(F.Power(numerator, exp), x),
 									F.Power(F.D(denominator.base(), x), F.CN1)));
-							expr = evalLimit(expr, data, true);
+							expr = evalLimit(expr, data);
 							if (expr.isNumber()) {
 								// Sqrt( expr )
 								return F.Power(expr, frac);
@@ -333,7 +352,7 @@ public class SeriesFunctions {
 					}
 				}
 				IExpr expr = engine.evalQuiet(F.Times(F.D(numerator, x), F.Power(F.D(denominator, x), F.CN1)));
-				return evalLimit(expr, data, false);
+				return evalLimit(expr, data);
 			} catch (RecursionLimitExceeded rle) {
 				engine.setRecursionLimit(recursionLimit);
 			} finally {
@@ -869,7 +888,7 @@ public class SeriesFunctions {
 							"Limit: limit value contains variable symbol for rule definition!");
 				}
 				LimitData data = new LimitData(symbol, limit, rule, direction);
-				return evalLimit(arg1, data, true);
+				return evalLimit(arg1, data);
 			} finally {
 				engine.setNumericMode(numericMode);
 			}
