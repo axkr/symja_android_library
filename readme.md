@@ -8,7 +8,7 @@ maintains a **[Java 7 Android branch](https://github.com/tranleduy2000/symja_and
 <a href="https://itunes.apple.com/us/app/ncalc-scientific-calculator/id1449106995">
 	<img src="http://www.lawprose.org/wordpress/wp-content/uploads/App-Store-Badge.png" alt="App Store" width="200"></a>
 
-Or help testing the latest [Android BETA version](https://github.com/axkr/symja_android_library/wiki/BETA-tests).
+Or help testing the latest [Android BETA version](https://github.com/axkr/symja_android_library/wiki/BETA-tests) or the web demo at [matheclipse.org](http://matheclipse.org/).
 
 - [Quick start](#quick-start) 
 - [Features](#features)
