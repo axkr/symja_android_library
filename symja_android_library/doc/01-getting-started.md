@@ -56,7 +56,7 @@ For integer number bases other than `10` the `^^` operator can be used. Here's a
 2882400255
 ```
 
-The number can be converted back to hexadecimal form with the `BasForm` function:
+The number can be converted back to hexadecimal form with the `BaseForm` function:
 
 ```
 >> BaseForm(2882400255, 16)
