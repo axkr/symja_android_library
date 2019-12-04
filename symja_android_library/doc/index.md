@@ -5,10 +5,11 @@
 
 ## Installation
 
-Download the latest release from 
+For the Symja console app download the latest release from 
 * [github.com/axkr/symja_android_library/releases](https://github.com/axkr/symja_android_library/releases)
 
-unzip the download in a separate folder and modify the symja.bat file to use your Java 8 installation path to run the Symja console:
+unzip the download in a separate folder and modify the symja.bat file to use your Java 8 installation path to run the console:
+
 ```
 "C:\Program Files\Java\jdk1.8.0_25\bin\java" -classpath "lib/*" org.matheclipse.core.eval.Console 
 ```
@@ -27,6 +28,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Functions and patterns](07-functions-and-patterns.md)
 * [Control statements](08-control-statements.md)
 * [Scoping](09-scoping.md)
+* [Plotting graphs and functions](10-plotting.md)
 
 ## Reference
 
