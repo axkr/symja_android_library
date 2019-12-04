@@ -5,7 +5,7 @@ maintains a [Java 7 Android branch](https://github.com/tranleduy2000/symja_andro
 
 Use especially the "2nd" button in the following calculator interfaces:
 
-<a href="https://play.google.com/store/apps/details?id=com.duy.calc.casio.v2">
+<a href="https://play.google.com/store/apps/details?id=com.duy.calculator.free">
 	<img src="en_badge_web_generic.png" alt="Google Play" width="200"></a>
 <a href="https://itunes.apple.com/us/app/ncalc-scientific-calculator/id1449106995">
 	<img src="http://www.lawprose.org/wordpress/wp-content/uploads/App-Store-Badge.png" alt="App Store" width="200"></a>
