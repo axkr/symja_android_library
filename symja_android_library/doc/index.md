@@ -20,6 +20,7 @@ The following sections are introductions to the basic principles of the language
 A few examples and functions are presented. Only their most common usages are listed; 
 for a full description of their possible arguments, options, etc., see their entry in the "function reference" of built-in symbols.
 
+* [Getting started](01-getting-started.md)
 * [Symbols and assignments](02-symbols-and-assignments.md)
 * [Comparisons and Boolean logic](03-comparisons-and-boolean-logic.md)
 * [Strings](04-strings.md)
