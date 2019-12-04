@@ -1,9 +1,7 @@
-## Symja Library - Java Symbolic Math System
+## Symja Library - Java Symbolic Math System for Android NCalc calculator
 
 **Note**: this repository contains the **Java 8** version of the project. The [NCalc](https://github.com/tranleduy2000/ncalc) Android calculator project 
-maintains a [Java 7 Android branch](https://github.com/tranleduy2000/symja_android_library) of the [Android *.AAR library](https://github.com/tranleduy2000/symja_android_library/releases).
-
-Use especially the "2nd" button in the following calculator interfaces:
+maintains a **[Java 7 Android branch](https://github.com/tranleduy2000/symja_android_library)** of the [Android *.AAR library](https://github.com/tranleduy2000/symja_android_library/releases).
 
 <a href="https://play.google.com/store/apps/details?id=com.duy.calculator.free">
 	<img src="en_badge_web_generic.png" alt="Google Play" width="200"></a>
