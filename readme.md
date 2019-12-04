@@ -3,12 +3,14 @@
 **Note**: this repository contains the **Java 8** version of the project. The [NCalc](https://github.com/tranleduy2000/ncalc) Android calculator project 
 maintains a **[Java 7 Android branch](https://github.com/tranleduy2000/symja_android_library)** of the [Android *.AAR library](https://github.com/tranleduy2000/symja_android_library/releases).
 
+Try the Android or iOS apps:
+
 <a href="https://play.google.com/store/apps/details?id=com.duy.calculator.free">
 	<img src="en_badge_web_generic.png" alt="Google Play" width="200"></a>
 <a href="https://itunes.apple.com/us/app/ncalc-scientific-calculator/id1449106995">
 	<img src="http://www.lawprose.org/wordpress/wp-content/uploads/App-Store-Badge.png" alt="App Store" width="200"></a>
 
-Or help testing the latest [Android BETA version](https://github.com/axkr/symja_android_library/wiki/BETA-tests) or the web demo at [matheclipse.org](http://matheclipse.org/).
+or help testing the latest [Android BETA version](https://github.com/axkr/symja_android_library/wiki/BETA-tests) or the web demo at [matheclipse.org](http://matheclipse.org/).
 
 - [Quick start](#quick-start) 
 - [Features](#features)
