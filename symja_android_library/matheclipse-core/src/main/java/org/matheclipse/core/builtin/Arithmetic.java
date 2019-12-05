@@ -3173,6 +3173,10 @@ public final class Arithmetic {
 			}
 			// exponent is integer
 			IInteger exp = exponent.numerator();
+			int expInt = exp.toIntDefault();
+			if (expInt != Integer.MIN_VALUE) {
+				return base.pow(expInt);
+			}
 			if (exp.isNegative()) {
 				IInteger negExponent = exp.negate();
 				return F.Rational(base.denominator().power(negExponent), base.numerator().power(negExponent));

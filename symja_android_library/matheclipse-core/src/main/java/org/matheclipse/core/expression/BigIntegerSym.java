@@ -104,23 +104,21 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
 	public BigIntegerSym(long value) {
 		fBigIntValue = BigInteger.valueOf(value);
-		if (Config.MAX_BIT_COUNT < fBigIntValue.bitCount()) {
-			throw new ASTElementLimitExceeded(fBigIntValue.bitCount());
-		}
 	}
 
 	public BigIntegerSym(BigInteger value) {
-		fBigIntValue = value;
-		if (Config.MAX_BIT_COUNT < fBigIntValue.bitCount()) {
-			throw new ASTElementLimitExceeded(fBigIntValue.bitCount());
+		if (Config.MAX_BIT_COUNT < value.bitCount()) {
+			throw new ASTElementLimitExceeded(value.bitCount());
 		}
+		fBigIntValue = value;
 	}
 
 	public BigIntegerSym(byte[] bytes) {
-		fBigIntValue = new BigInteger(bytes);
-		if (Config.MAX_BIT_COUNT < fBigIntValue.bitCount()) {
-			throw new ASTElementLimitExceeded(fBigIntValue.bitCount());
+		if (Config.MAX_BIT_COUNT < bytes.length * 8) {
+			throw new ASTElementLimitExceeded(bytes.length * 8);
 		}
+		fBigIntValue = new BigInteger(bytes);
+
 	}
 
 	/** {@inheritDoc} */
