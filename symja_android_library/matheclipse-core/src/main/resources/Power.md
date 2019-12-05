@@ -9,12 +9,12 @@ a ^ b
 > represents `a` raised to the power of `b`.
 	
 	
-**Note:** `Power` has the `Listable` attribute.
+**Note:** `Power` has the `Listable` attribute and `Power(x,y,z)` is grouped as `x^(y^z)`
 
 You can't do matrix calculations with the `^operator`:
 
 ```
-{{2,1},{1,1}} ^ 2
+>> {{2,1},{1,1}} ^ 2
 ```
 
 is computed as:
@@ -24,6 +24,14 @@ is computed as:
 ```
 
 Use `Inverse({{2,1},{1,1}})` or `MatrixPower({{2,1},{1,1}},2)` to calculate matrix inverses and powers.
+
+Don't confuse the `^` operator with the `^^` operator, which can be used for integer number bases other than `10`. 
+Here's an example for a hexadecimal number:
+
+```
+>> 16^^abcdefff
+2882400255
+```
 
 See
 * [Wikipedia - Exponentiation](https://en.wikipedia.org/wiki/Exponentiation)
@@ -123,7 +131,11 @@ I^I
  
 >> a ^ b
 a^b
+
+>> Power(x,y,z)
+Power(x,Power(y,z))
 ```
  
-### Related terms 
-[MatrixPower](MatrixPower.md), [Times](Times.md)
+### Related terms
+
+[BaseForm](BaseForm.md), [MatrixPower](MatrixPower.md), [Times](Times.md)
