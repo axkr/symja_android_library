@@ -629,43 +629,9 @@ public class Integrate extends AbstractFunctionEvaluator {
 					return result;
 				}
 
-				if (arg1.isAbs() && x.isRealResult() && arg1.first().equals(x)) {
-					IInteger exponentPlus1 = F.C2;
-				  
-						return F.Piecewise( //
-								F.List(F.List(F.Divide(F.Power(x, exponentPlus1), exponentPlus1.negate()),
-										F.LessEqual(x, F.C0))), //
-								F.Divide(F.Power(x, exponentPlus1), exponentPlus1));
-				 
-				}
-				if (arg1.isPower() && arg1.base().isAbs() && arg1.exponent().isInteger() && x.isRealResult()
-						&& arg1.base().first().equals(x)) {
-					IAST power = (IAST) arg1;
-
-					IInteger exp = (IInteger) power.exponent();
-					IInteger exponentPlus1 = exp.inc();
-					if (exp.isNegative()) {
-						if (exp.isMinusOne()) {
-							return F.Piecewise( //
-									F.List(F.List(F.Negate(F.Log(x))), F.LessEqual(x, F.C0)), //
-									F.Log(x));
-						}
-						if (exp.isEven()) {
-							return F.Times(exponentPlus1.inverse().negate(), F.Power(x, exponentPlus1));
-						}
-						return F.Piecewise( //
-								F.List(F.List(F.Times(exponentPlus1.inverse().negate(), F.Power(x, exponentPlus1)),
-										F.LessEqual(x, F.C0))), //
-								F.Times(exponentPlus1.inverse(), F.Power(x, exponentPlus1)));
-					} else {
-						if (exp.isEven()) {
-							return F.Divide(F.Power(x, exponentPlus1), exponentPlus1);
-						}
-						return F.Piecewise( //
-								F.List(F.List(F.Divide(F.Power(x, exponentPlus1), exponentPlus1.negate()),
-										F.LessEqual(x, F.C0))), //
-								F.Divide(F.Power(x, exponentPlus1), exponentPlus1));
-					}
+				result = integrateAbs(arg1, x);
+				if (result.isPresent()) {
+					return result;
 				}
 
 				if (arg1.isTimes()) {
@@ -711,6 +677,55 @@ public class Integrate extends AbstractFunctionEvaluator {
 		} finally {
 			engine.setNumericMode(numericMode);
 		}
+	}
+
+	/**
+	 * Integrate forms of <code>Abs()</code> functions.
+	 * 
+	 * @param function
+	 * @param x
+	 * @return
+	 */
+	private static IExpr integrateAbs(IExpr function, final IExpr x) {
+		IExpr constant = F.C0;
+		// TODO analyze for a "Plus(...)" expression as argument in "Abs()" function
+		// and split Plus(...) expression in "constant part" and variable "x"
+		if (function.isAbs() && x.isRealResult() && function.first().equals(x)) {
+			// Abs(x) 
+			return F.Piecewise( //
+					F.List(F.List(F.Times(F.CN1D2, F.Power(x, F.C2)), F.LessEqual(x, constant))), //
+					F.Times(F.C1D2, F.Power(x, F.C2)));
+		}
+		if (function.isPower() && function.base().isAbs() && function.exponent().isInteger() && x.isRealResult()
+				&& function.base().first().equals(x)) {
+			// Power(Abs(),integer)
+			IAST power = (IAST) function;
+
+			IInteger exp = (IInteger) power.exponent();
+			IInteger exponentPlus1 = exp.inc();
+			if (exp.isNegative()) {
+				if (exp.isMinusOne()) {
+					return F.Piecewise( //
+							F.List(F.List(F.Negate(F.Log(x))), F.LessEqual(x, constant)), //
+							F.Log(x));
+				}
+				if (exp.isEven()) {
+					return F.Times(exponentPlus1.inverse().negate(), F.Power(x, exponentPlus1));
+				}
+				return F.Piecewise( //
+						F.List(F.List(F.Times(exponentPlus1.inverse().negate(), F.Power(x, exponentPlus1)),
+								F.LessEqual(x, constant))), //
+						F.Times(exponentPlus1.inverse(), F.Power(x, exponentPlus1)));
+			}
+			if (exp.isEven()) {
+				return F.Divide(F.Power(x, exponentPlus1), exponentPlus1);
+			}
+			return F.Piecewise( //
+					F.List(F.List(F.Divide(F.Power(x, exponentPlus1), exponentPlus1.negate()),
+							F.LessEqual(x, constant))), //
+					F.Divide(F.Power(x, exponentPlus1), exponentPlus1));
+		}
+		return F.NIL;
 	}
 
 	/**
