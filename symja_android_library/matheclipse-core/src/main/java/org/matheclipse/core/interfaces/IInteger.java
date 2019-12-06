@@ -44,6 +44,10 @@ public interface IInteger extends IRational {
 	 */
 	public IInteger charmichaelLambda();
 
+	public IInteger dec();
+ 
+	public IInteger inc();
+		 
 	/**
 	 * Returns an IInteger whose value is <code>(this / that)</code>.
 	 *

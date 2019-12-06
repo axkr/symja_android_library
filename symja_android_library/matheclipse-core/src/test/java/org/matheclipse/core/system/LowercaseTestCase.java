@@ -3711,13 +3711,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCubeRoot() {
+		check("(-8)^(-4/3)", //
+				"(-1)^(2/3)/16");
+		check("CubeRoot(((-8)^(-4)))", //
+				"1/16");
 		// github #158
 		check("(-1)^(1/3)  //N", //
 				"0.5+I*0.866025");
 		check("CubeRoot(-1)  //N", //
 				"-1.0");
-		
-		
+
 		check("CubeRoot(3 + 4*I)", //
 				"(3+I*4)^(1/3)");
 		check("CubeRoot(16)", //
@@ -8960,6 +8963,29 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIntegrate() {
+		check("Refine(Integrate(Abs(x),x), Element(x,Reals))", //
+				"Piecewise({{-x^2/2,x<=0}},x^2/2)");
+		check("Refine(Integrate(Abs(x^3),x), Element(x,Reals))", //
+				"Piecewise({{-x^4/4,x<=0}},x^4/4)");
+		check("Refine(Integrate(Abs(x^2),x), Element(x,Reals))", //
+				"x^3/3");
+		check("Refine(Integrate(Abs(x^4),x), Element(x,Reals))", //
+				"x^5/5");
+		
+		check("Refine(Integrate(Abs(x^(-1)),x), Element(x,Reals))", //
+				"Piecewise({{-Log(x)},x<=0},Log(x))");
+		check("Refine(Integrate(Abs(x^(-5)),x), Element(x,Reals))", //
+				"Piecewise({{1/(4*x^4),x<=0}},-1/(4*x^4))");
+		check("Refine(Integrate(Abs(x^(-7)),x), Element(x,Reals))", //
+				"Piecewise({{1/(6*x^6),x<=0}},-1/(6*x^6))");
+		
+		check("Refine(Integrate(Abs(x^(-2)),x), Element(x,Reals))", //
+				"-1/x");
+		check("Refine(Integrate(Abs(x^(-4)),x), Element(x,Reals))", //
+				"-1/(3*x^3)");
+		check("Refine(Integrate(Abs(x^(-6)),x), Element(x,Reals))", //
+				"-1/(5*x^5)");
+		
 		// see github #155
 		check("Integrate(x^2,{x,-2,2})", //
 				"16/3");
@@ -10292,8 +10318,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testLimit() {
-		check("Limit(E^(-x),x->Infinity )", //
-				"0");
 
 		check("Limit(Gamma(1/t)*Cos(Sin(1/t)),t->0)", //
 				"Limit(Cos(Sin(1/t))*Gamma(1/t),t->0)");
@@ -14594,8 +14618,29 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPower() {
+
+		// Test Config.MAX_BIT_COUNT = Short.MAX_VALUE;
+		// check("(3/7)^7625597484987", //
+		// "Maximum AST size 45891 exceeded");
 		// check("3^3^3^3^3^3^3", //
-		// "Maximum AST size 3175 exceeded");
+		// "Maximum AST size 52046 exceeded");
+		// check("(3/7)^762559748498700000000000", //
+		// "Maximum AST size 45891 exceeded");
+
+		check("(((3/7)^3)^3)^3", //
+				"7625597484987/65712362363534280139543");
+		check("((((3/7)^3)^3)^3)^3", //
+				"443426488243037769948249630619149892803/283753509180010707824461062763116716606126555757084586223347181136007");
+		// check("(((((3/7)^3)^3)^3)^3)^3", //
+		// "8718964248596095820291107058586077169696407240473175008552521943799096709372343\\\n" +
+		// "9943475549906831683116791055225665627/2284671285987374648044782166659234642669413233343555899898341285496111418662257\\\n"
+		// +
+		// "4870902442510049863025667206258127311451949520409822391138243055993672121915936\\\n" +
+		// "570990365106665813437806284123385754752042992343");
+
+		check("((3/7)^3)^3", //
+				"19683/40353607");
+
 		check("Power((-x)^(1/2), 2)", //
 				"-x");
 		check("Power((-x)^(1/3), 3)", //
@@ -20347,7 +20392,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTogether() {
-
 		// TODO ((1+x)*f(x))/x^2
 		check("f(x)/x+f(x)/x^2//Together", //
 				"(f(x)+x*f(x))/x^2");

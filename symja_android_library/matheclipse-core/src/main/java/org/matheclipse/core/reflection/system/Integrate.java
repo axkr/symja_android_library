@@ -28,6 +28,7 @@ import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.RulesData;
 
@@ -626,6 +627,45 @@ public class Integrate extends AbstractFunctionEvaluator {
 				result = integrateByRubiRules(fx, x, ast, engine);
 				if (result.isPresent()) {
 					return result;
+				}
+
+				if (arg1.isAbs() && x.isRealResult() && arg1.first().equals(x)) {
+					IInteger exponentPlus1 = F.C2;
+				  
+						return F.Piecewise( //
+								F.List(F.List(F.Divide(F.Power(x, exponentPlus1), exponentPlus1.negate()),
+										F.LessEqual(x, F.C0))), //
+								F.Divide(F.Power(x, exponentPlus1), exponentPlus1));
+				 
+				}
+				if (arg1.isPower() && arg1.base().isAbs() && arg1.exponent().isInteger() && x.isRealResult()
+						&& arg1.base().first().equals(x)) {
+					IAST power = (IAST) arg1;
+
+					IInteger exp = (IInteger) power.exponent();
+					IInteger exponentPlus1 = exp.inc();
+					if (exp.isNegative()) {
+						if (exp.isMinusOne()) {
+							return F.Piecewise( //
+									F.List(F.List(F.Negate(F.Log(x))), F.LessEqual(x, F.C0)), //
+									F.Log(x));
+						}
+						if (exp.isEven()) {
+							return F.Times(exponentPlus1.inverse().negate(), F.Power(x, exponentPlus1));
+						}
+						return F.Piecewise( //
+								F.List(F.List(F.Times(exponentPlus1.inverse().negate(), F.Power(x, exponentPlus1)),
+										F.LessEqual(x, F.C0))), //
+								F.Times(exponentPlus1.inverse(), F.Power(x, exponentPlus1)));
+					} else {
+						if (exp.isEven()) {
+							return F.Divide(F.Power(x, exponentPlus1), exponentPlus1);
+						}
+						return F.Piecewise( //
+								F.List(F.List(F.Divide(F.Power(x, exponentPlus1), exponentPlus1.negate()),
+										F.LessEqual(x, F.C0))), //
+								F.Divide(F.Power(x, exponentPlus1), exponentPlus1));
+					}
 				}
 
 				if (arg1.isTimes()) {

@@ -210,13 +210,13 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr dec() {
+	public IInteger dec() {
 		return add(F.CN1);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr inc() {
+	public IInteger inc() {
 		return add(F.C1);
 	}
 

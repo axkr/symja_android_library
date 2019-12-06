@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.RandomAccess;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -247,6 +248,14 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 		}
 		System.arraycopy(dumpArray, 0, this.array, lastIndex, dumpArray.length);
 		lastIndex += dumpArray.length;
+		return true;
+	}
+
+	@Override
+	public boolean appendAll(Map<? extends IExpr, ? extends IExpr> map) {
+		for (Map.Entry<? extends IExpr, ? extends IExpr> entry : map.entrySet()) {
+			append(F.Rule(entry.getKey(), entry.getValue()));
+		} 
 		return true;
 	}
 

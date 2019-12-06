@@ -1885,6 +1885,18 @@ public class EvalEngine implements Serializable {
 	}
 
 	/**
+	 * <p>
+	 * Reset the module counter to <code>0</code>. Used only in JUnit tests.
+	 * </p>
+	 * <b> Don't reset for reusable EvalEngine's.</b>
+	 * 
+	 * @return the module counter
+	 */
+	public void resetModuleCounter() {
+		fModuleCounter = 0;
+	}
+
+	/**
 	 * Increment the recursion counter by 1 and return the result.
 	 * 
 	 * @return

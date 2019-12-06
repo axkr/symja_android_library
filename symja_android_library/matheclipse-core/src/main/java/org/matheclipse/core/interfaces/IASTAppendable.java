@@ -3,6 +3,7 @@ package org.matheclipse.core.interfaces;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -12,7 +13,6 @@ import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 
-import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.F;
 
 /**
@@ -109,10 +109,11 @@ public interface IASTAppendable extends IASTMutable {
 	 * @return a {@code Collector} that appends the input expressions into the <code>appendable</code>
 	 */
 	public static Collector<IExpr, ?, IASTAppendable> toAST(final IASTAppendable appendable) {
-		return new CollectorImpl<IExpr, IASTAppendable, IASTAppendable>(() -> (IASTAppendable) appendable.copyAppendable(), IASTAppendable::append, (r1, r2) -> {
-			r1.append(r2);
-			return r1;
-		});
+		return new CollectorImpl<IExpr, IASTAppendable, IASTAppendable>(
+				() -> (IASTAppendable) appendable.copyAppendable(), IASTAppendable::append, (r1, r2) -> {
+					r1.append(r2);
+					return r1;
+				});
 	}
 
 	/**
@@ -167,6 +168,15 @@ public interface IASTAppendable extends IASTMutable {
 	 *             if an object cannot be added to this {@code List}.
 	 */
 	public boolean appendAll(Collection<? extends IExpr> collection);
+
+	/**
+	 * Adds the mappings in the specified map as <code>Rule(...)</code> to the end of this {@code List}. The objects are
+	 * added in the order in which they are returned from the map's iterator.
+	 * 
+	 * @param map 
+	 * @return
+	 */
+	public boolean appendAll(Map<? extends IExpr, ? extends IExpr> map);
 
 	/**
 	 * Appends all elements from offset <code>startPosition</code> to <code>endPosition</code> in the specified AST to

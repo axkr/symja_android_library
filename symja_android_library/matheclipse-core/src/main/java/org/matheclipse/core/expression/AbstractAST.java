@@ -199,6 +199,11 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 
 		@Override
+		public boolean appendAll(Map<? extends IExpr, ? extends IExpr> map) {
+			throw new UnsupportedOperationException();
+		}
+		
+		@Override
 		public boolean appendAll(IAST ast, int startPosition, int endPosition) {
 			throw new UnsupportedOperationException();
 		}
