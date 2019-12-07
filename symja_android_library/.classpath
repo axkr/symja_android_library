@@ -23,7 +23,6 @@
 	<classpathentry kind="lib" path="lib/jackson-databind-2.6.5.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-core-2.6.5.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-annotations-2.6.0.jar"/>
-	<classpathentry kind="lib" path="lib/guava-28.0-android.jar"/>
 	<classpathentry kind="lib" path="lib/failureaccess-1.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/jas-2.6.5988.jar"/>
 	<classpathentry kind="lib" path="lib/compiler-1.0.jar"/>
@@ -46,5 +45,6 @@
 	<classpathentry kind="lib" path="lib/hipparchus-ode-1.6.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-optim-1.6.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-stat-1.6.jar"/>
+	<classpathentry kind="lib" path="lib/guava-28.1-android.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
