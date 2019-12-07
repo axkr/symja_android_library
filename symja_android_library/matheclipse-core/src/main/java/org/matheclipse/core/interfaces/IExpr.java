@@ -2935,14 +2935,29 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * If this is a linear expression return the addedn at index 0 and the multiplicant at index 1
+	 * If this is a linear expression <code>a + b * x</code> return the addend <code>a</code> at index <code>0</code>
+	 * and the multiplicant <code>b</code> at index <code>1</code>
 	 * 
 	 * @param variable
-	 *            th variable to check for linearity
+	 *            the variable <code>x</code> to check for linearity
 	 * 
 	 * @return <code>null</code> if this is not a linear expression
 	 */
 	default IExpr[] linear(IExpr variable) {
+		return null;
+	}
+
+	/**
+	 * If this is an expression of the form <code>a + b * x^n</code> with <code>n</code> integer, return the addend at
+	 * index <code>0</code> and the multiplicant at index <code>0</code> and the exponent <code>n</code> at index
+	 * <code>2</code>.
+	 * 
+	 * @param variable
+	 *            the variable <code>x</code> in the formula
+	 * 
+	 * @return <code>null</code> if this is not an expression of the form <code>a+b*x^n</code>
+	 */
+	default IExpr[] linearPower(IExpr variable) {
 		return null;
 	}
 

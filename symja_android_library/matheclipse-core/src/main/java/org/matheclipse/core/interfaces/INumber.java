@@ -159,6 +159,11 @@ public interface INumber extends IExpr {
 	default public IExpr[] linear(IExpr variable) {
 		return new IExpr[] { this, F.C0 };
 	}
+	
+	@Override
+	default public IExpr[] linearPower(IExpr variable) {
+		return new IExpr[] { this, F.C0, F.C1 };
+	}
 
 	@Override
 	public INumber opposite();

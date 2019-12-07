@@ -427,6 +427,14 @@ public interface ISymbol extends IExpr {
 		return new IExpr[] { this, F.C0 };
 	}
 
+	@Override
+	default public IExpr[] linearPower(IExpr variable) {
+		if (this.equals(variable)) {
+			return new IExpr[] { F.C0, F.C1, F.C1 };
+		}
+		return new IExpr[] { this, F.C0, F.C1 };
+	}
+
 	/**
 	 * If this symbol has attribute <code>ISymbol.CONSTANT</code> and the symbol's evaluator is of instance
 	 * <code>INumericConstant</code>, then apply the constants double value to the given function and return the result,

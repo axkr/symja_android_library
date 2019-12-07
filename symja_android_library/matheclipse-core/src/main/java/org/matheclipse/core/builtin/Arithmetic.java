@@ -2300,35 +2300,35 @@ public final class Arithmetic {
 					continue;
 				}
 				condition = engine.evaluateNull(condition);
-				if (condition.isTrue()) {
+				if (condition.isPresent()) {
 					evaluated = true;
-					if (noBoolean) {
-						result = appendPiecewise(result, row.arg1(), F.True, matrixSize);
-						return createPiecewise(piecewiseAST, result);
+					if (condition.isTrue()) {
+						if (noBoolean) {
+							result = appendPiecewise(result, row.arg1(), F.True, matrixSize);
+							return createPiecewise(piecewiseAST, result);
+						}
+						return row.arg1();
+					} else if (condition.isFalse()) {
+						continue;
 					}
-					return row.arg1();
-				} else if (condition.isFalse()) {
-					evaluated = true;
-					continue;
-				} else {
-					IExpr rowArg1 = engine.evaluateNull(row.arg1());
-					if (rowArg1.isPresent()) {
-						evaluated = true;
-					} else {
-						rowArg1 = row.arg1();
-					}
-					result = appendPiecewise(result, rowArg1, condition.orElse(row.arg2()), matrixSize);
-					piecewiseAST = createPiecewise(piecewiseAST, result);
-					noBoolean = true;
-					continue;
 				}
+				IExpr rowArg1 = engine.evaluateNull(row.arg1());
+				if (rowArg1.isPresent()) {
+					evaluated = true;
+				} else {
+					rowArg1 = row.arg1();
+				}
+				result = appendPiecewise(result, rowArg1, condition.orElse(row.arg2()), matrixSize);
+				piecewiseAST = createPiecewise(piecewiseAST, result);
+				noBoolean = true;
+				continue;
 			}
 			if (!noBoolean) {
 				return defaultValue;
 			} else {
 				if (evaluated) {
 					piecewiseAST = createPiecewise(piecewiseAST, F.List());
-					piecewiseAST.append(defaultValue);
+					piecewiseAST.append(engine.evaluate(defaultValue));
 					return piecewiseAST;
 				}
 			}

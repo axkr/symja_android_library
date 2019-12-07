@@ -202,7 +202,7 @@ public abstract class AbstractAST implements IASTMutable {
 		public boolean appendAll(Map<? extends IExpr, ? extends IExpr> map) {
 			throw new UnsupportedOperationException();
 		}
-		
+
 		@Override
 		public boolean appendAll(IAST ast, int startPosition, int endPosition) {
 			throw new UnsupportedOperationException();
@@ -3435,7 +3435,7 @@ public abstract class AbstractAST implements IASTMutable {
 				if (get(i).isFree(variable, true)) {
 					j++;
 				} else {
-					if (counter > 0) {
+					if (counter > 0 || get(i).isPlus()) {
 						return null;
 					}
 					subLinear = get(i).linear(variable);
@@ -3475,6 +3475,78 @@ public abstract class AbstractAST implements IASTMutable {
 			return new IExpr[] { F.C0, F.C1 };
 		} else if (isFree(variable, true)) {
 			return new IExpr[] { this, F.C0 };
+		}
+		return null;
+	}
+
+	@Override
+	public IExpr[] linearPower(IExpr variable) {
+		int size = size();
+		int counter = 0;
+
+		if (isPlus()) {
+			// a + b + c....
+			IASTAppendable plusClone = copyAppendable();
+			IExpr[] subLinear = null;
+			int j = 1;
+			for (int i = 1; i < size; i++) {
+				if (get(i).isFree(variable, true)) {
+					j++;
+				} else {
+					if (counter > 0 || get(i).isPlus()) {
+						return null;
+					}
+					subLinear = get(i).linearPower(variable);
+					if (subLinear != null) {
+						counter++;
+						plusClone.remove(j);
+					} else {
+						return null;
+					}
+				}
+			}
+			if (subLinear != null) {
+				return new IExpr[] { plusClone.oneIdentity0(), subLinear[1], subLinear[2] };
+			}
+			return new IExpr[] { plusClone.oneIdentity0(), F.C0, F.C1 };
+		} else if (isTimes()) {
+			IInteger exp = F.C1;
+			// a * b * c....
+			IASTAppendable timesClone = copyAppendable();
+			int j = 1;
+			for (int i = 1; i < size; i++) {
+				if (get(i).isFree(variable, true)) {
+					j++;
+				} else {
+					if (get(i).equals(variable)) {
+						if (counter > 0) {
+							return null;
+						}
+						counter++;
+						timesClone.remove(j);
+						continue;
+					} else if (get(i).isPower()) {
+						if (counter > 0) {
+							return null;
+						}
+						IAST power = (IAST) get(i);
+						if (power.base().equals(variable) && power.exponent().isInteger()) {
+							exp = (IInteger) power.exponent();
+							counter++;
+							timesClone.remove(j);
+							continue;
+						}
+					}
+					return null;
+				}
+			}
+			return new IExpr[] { F.C0, timesClone.oneIdentity1(), exp };
+		} else if (isPower() && base().equals(variable) && exponent().isInteger()) {
+			return new IExpr[] { F.C0, F.C1, exponent() };
+		} else if (this.equals(variable)) {
+			return new IExpr[] { F.C0, F.C1, F.C1 };
+		} else if (isFree(variable, true)) {
+			return new IExpr[] { this, F.C0, F.C1 };
 		}
 		return null;
 	}

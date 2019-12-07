@@ -9,7 +9,7 @@ public class DistributionTest extends AbstractTestCase {
 		check("Mean(BernoulliDistribution(x))", //
 				"x");
 		check("Quantile(BernoulliDistribution(x), {1/4, 1/2, 3/4})", //
-				"{Piecewise({{1,1/4>1-x}},0),Piecewise({{1,1/2>1-x}},0),Piecewise({{1,3/4>1-x}},0)}");
+				"{Piecewise({{1,x>3/4}},0),Piecewise({{1,x>1/2}},0),Piecewise({{1,x>1/4}},0)}");
 	}
 
 	public void testChiSquareDistribution() {
