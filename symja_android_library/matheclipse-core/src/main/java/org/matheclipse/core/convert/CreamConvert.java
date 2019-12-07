@@ -145,7 +145,7 @@ public class CreamConvert {
 					Set<Entry<ISymbol, IntVariable>> set = map.entrySet();
 					IASTAppendable temp = F.ListAlloc(set.size());
 					for (Entry<ISymbol, IntVariable> entry : set) {
-						temp.append(F.Rule(entry.getKey(), F.integer(solution.getIntValue(entry.getValue()))));
+						temp.append(F.Rule(entry.getKey(), F.ZZ(solution.getIntValue(entry.getValue()))));
 					}
 					result.append(temp);
 				}

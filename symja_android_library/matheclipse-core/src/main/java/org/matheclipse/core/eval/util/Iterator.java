@@ -889,9 +889,9 @@ public class Iterator {
 			this.lowerLimit = lowerLimit;
 			this.upperLimit = upperLimit;
 			this.step = step;
-			this.originalLowerLimit = F.integer(lowerLimit);
-			this.originalUpperLimit = F.integer(upperLimit);
-			this.originalStep = F.integer(step);
+			this.originalLowerLimit = F.ZZ(lowerLimit);
+			this.originalUpperLimit = F.ZZ(upperLimit);
+			this.originalStep = F.ZZ(step);
 		}
 
 		public IntIterator(final int lowerLimit, final int upperLimit, final int step) {
@@ -969,7 +969,7 @@ public class Iterator {
 		 */
 		@Override
 		public IExpr next() {
-			final IExpr temp = F.integer(count);
+			final IExpr temp = F.ZZ(count);
 			if (variable != null) {
 				variable.assign(temp);
 			}

@@ -3316,7 +3316,7 @@ public class ExpTrigsFunctions {
 			if (F.isNumIntValue(res)) {
 				int r = Double.valueOf(Math.round(res)).intValue();
 				if (arg.equals(b.pow(r))) {
-					return F.integer(r);
+					return F.ZZ(r);
 				}
 			}
 		} catch (ArithmeticException ae) {

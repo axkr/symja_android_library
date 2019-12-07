@@ -2499,7 +2499,7 @@ public final class Programming {
 			if (ast.size() == 2) {
 				final long begin = System.currentTimeMillis();
 				final IExpr result = engine.evaluate(ast.arg1());
-				return List(Divide(F.num(System.currentTimeMillis() - begin), F.integer(1000L)), F.HoldForm(result));
+				return List(Divide(F.num(System.currentTimeMillis() - begin), F.ZZ(1000L)), F.HoldForm(result));
 			}
 			return F.NIL;
 		}

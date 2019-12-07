@@ -182,7 +182,7 @@ public class Share extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.arg1().isAST()) {
-			return F.integer(shareAST((IAST) ast.arg1()));
+			return F.ZZ(shareAST((IAST) ast.arg1()));
 		}
 		return F.C0;
 	}

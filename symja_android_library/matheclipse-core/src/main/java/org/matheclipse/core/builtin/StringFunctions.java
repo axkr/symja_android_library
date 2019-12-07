@@ -276,7 +276,7 @@ public final class StringFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.arg1().isString()) {
-				return F.integer(ast.arg1().toString().length());
+				return F.ZZ(ast.arg1().toString().length());
 			}
 			return F.NIL;
 		}
@@ -433,7 +433,7 @@ public final class StringFunctions {
 				return F.NIL;
 			}
 			final String str = ast.arg1().toString();
-			return F.integer(ExprParser.syntaxLength(str, engine));
+			return F.ZZ(ExprParser.syntaxLength(str, engine));
 		}
 
 		@Override
@@ -507,7 +507,7 @@ public final class StringFunctions {
 				int characterCode;
 				for (int i = 0; i < utf8String.length(); i++) {
 					characterCode = utf8String.charAt(i);
-					list.append(F.integer(characterCode));
+					list.append(F.ZZ(characterCode));
 				}
 				return list;
 			} catch (final UnsupportedEncodingException e) {

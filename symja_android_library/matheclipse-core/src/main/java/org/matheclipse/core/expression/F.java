@@ -5849,11 +5849,11 @@ public class F {
 
 	public static int compareTo(Integer i, IExpr b) throws UnsupportedOperationException {
 		if (b instanceof ISignedNumber) {
-			return integer(i.longValue()).compareTo(b);
+			return ZZ(i.longValue()).compareTo(b);
 		}
 		IExpr temp = eval(b);
 		if (temp instanceof ISignedNumber) {
-			return integer(i.longValue()).compareTo(temp);
+			return ZZ(i.longValue()).compareTo(temp);
 		}
 		throw new UnsupportedOperationException(
 				"compareTo() - second argument could not be converted into a signed number.");
@@ -7748,7 +7748,7 @@ public class F {
 	}
 
 	public static IAST Line(final IExpr a0) {
-		return new AST1(Line, a0);
+		return new B1.Line(a0);
 	}
 
 	public static IAST LinearModelFit(final IExpr a0) {
@@ -8569,7 +8569,7 @@ public class F {
 	}
 
 	public static IExpr plus(IExpr a, Integer i) {
-		return Plus(a, integer(i.longValue()));
+		return Plus(a, ZZ(i.longValue()));
 	}
 
 	public static IExpr plus(IExpr a, java.math.BigInteger i) {
@@ -8577,7 +8577,7 @@ public class F {
 	}
 
 	public static IExpr plus(Integer i, IExpr b) {
-		return Plus(integer(i.longValue()), b);
+		return Plus(ZZ(i.longValue()), b);
 	}
 
 	public static IExpr plus(java.math.BigInteger i, IExpr b) {
@@ -8634,7 +8634,7 @@ public class F {
 	}
 
 	public static IAST Point(final IAST list) {
-		return new AST1(Point, list);
+		return new B1.Point(list);
 	}
 
 	public static IAST PolyGamma(final IExpr a0) {

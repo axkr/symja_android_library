@@ -110,7 +110,7 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
 					}
 				} else {
 					for (int i = 0; i < n; i++) {
-						xv[i] = F.integer(i + 1);
+						xv[i] = F.ZZ(i + 1);
 						yv[i] = list.get(i + 1);
 					}
 				}

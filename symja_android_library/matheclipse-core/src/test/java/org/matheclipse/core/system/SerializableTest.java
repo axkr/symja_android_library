@@ -41,10 +41,10 @@ public class SerializableTest extends TestCase {
 	}
 
 	public void testInteger() {
-		equalsCopy(F.integer(Integer.MAX_VALUE));
-		equalsCopy(F.integer(Integer.MIN_VALUE));
-		equalsCopy(F.integer((Integer.MAX_VALUE) * 2L));
-		equalsCopy(F.integer((Integer.MIN_VALUE) * 2L));
+		equalsCopy(F.ZZ(Integer.MAX_VALUE));
+		equalsCopy(F.ZZ(Integer.MIN_VALUE));
+		equalsCopy(F.ZZ((Integer.MAX_VALUE) * 2L));
+		equalsCopy(F.ZZ((Integer.MIN_VALUE) * 2L));
 	}
 
 	public void testFraction() {

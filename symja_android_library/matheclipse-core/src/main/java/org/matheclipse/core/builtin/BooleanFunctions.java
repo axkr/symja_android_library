@@ -3439,7 +3439,7 @@ public final class BooleanFunctions {
 			miniSat.add(formula);
 			Variable[] vars = lf.ast2Variable(variables);
 			List<Assignment> assignments = miniSat.enumerateAllModels(vars);
-			return F.integer(assignments.size());
+			return F.ZZ(assignments.size());
 		}
 	}
 

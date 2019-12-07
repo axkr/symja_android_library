@@ -39,7 +39,7 @@ public class EasterSunday extends AbstractFunctionEvaluator {
 				int month = (h + l - 7 * m + 114) / 31;
 				int day = ((h + l - 7 * m + 114) % 31) + 1;
 
-				return F.List(F.integer(y), F.integer(month), F.integer(day));
+				return F.List(F.ZZ(y), F.ZZ(month), F.ZZ(day));
 			}
 		} catch (ArithmeticException ae) {
 			// toInt() method may throw ArithmeticException

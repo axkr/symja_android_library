@@ -138,7 +138,7 @@ public class Lists {
 		if (p_shorts != null) {
 			IASTAppendable ast = F.ListAlloc(p_shorts.length);
 			for (int i = 0, t = p_shorts.length; i < t; i++) {
-				ast.append(F.integer(p_shorts[i]));
+				ast.append(F.ZZ(p_shorts[i]));
 			}
 			return ast;
 		}
@@ -160,7 +160,7 @@ public class Lists {
 		if (p_ints != null) {
 			IASTAppendable ast = F.ListAlloc(p_ints.length);
 			for (int i = 0, t = p_ints.length; i < t; i++) {
-				ast.append(F.integer(p_ints[i]));
+				ast.append(F.ZZ(p_ints[i]));
 			}
 			return ast;
 		}
@@ -182,7 +182,7 @@ public class Lists {
 		if (p_longs != null) {
 			IASTAppendable ast = F.ListAlloc(p_longs.length);
 			for (int i = 0, t = p_longs.length; i < t; i++) {
-				ast.append(F.integer(p_longs[i]));
+				ast.append(F.ZZ(p_longs[i]));
 			}
 			return ast;
 		}

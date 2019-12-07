@@ -61,6 +61,25 @@ public abstract class B1 extends AbstractAST implements Cloneable, Externalizabl
 		}
 	}
 
+	public static class Line extends B1 {
+		public Line() {
+			super();
+		}
+
+		Line(IExpr arg1) {
+			super(arg1);
+		}
+
+		@Override
+		public final IBuiltInSymbol head() {
+			return F.Line;
+		}
+
+		public IASTMutable copy() {
+			return new Line(arg1);
+		}
+	}
+	
 	public static class List extends B1 {
 		public List() {
 			super();
@@ -118,6 +137,25 @@ public abstract class B1 extends AbstractAST implements Cloneable, Externalizabl
 		}
 	}
 
+	public static class Point extends B1 {
+		public Point() {
+			super();
+		}
+
+		Point(IExpr arg1) {
+			super(arg1);
+		}
+
+		@Override
+		public final IBuiltInSymbol head() {
+			return F.Point;
+		}
+
+		public IASTMutable copy() {
+			return new Point(arg1);
+		}
+	}
+	
 	public static class Return extends B1 {
 		public Return() {
 			super();

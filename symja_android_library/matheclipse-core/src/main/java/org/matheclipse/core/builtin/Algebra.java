@@ -1762,7 +1762,7 @@ public class Algebra {
 								if (temp.isTimes()) {
 									IAST ast = (IAST) temp;
 									final int ki = k;
-									timesAST.appendArgs(ast.size(), i -> F.Power(ast.get(i), F.integer(indices[ki])));
+									timesAST.appendArgs(ast.size(), i -> F.Power(ast.get(i), F.ZZ(indices[ki])));
 								} else {
 									timesAST.append(F.Power(temp, F.ZZ(indices[k])));
 								}
@@ -2099,7 +2099,7 @@ public class Algebra {
 						}
 						result.append(base);
 					} else {
-						result.append(F.Power(base, F.integer(entry.getValue())));
+						result.append(F.Power(base, F.ZZ(entry.getValue())));
 					}
 				}
 				if (!f.isOne()) {

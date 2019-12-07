@@ -598,7 +598,7 @@ public final class LinearAlgebra {
 				IAST list = (IAST) ast.arg1();
 				IExpr header = list.head();
 				ArrayList<Integer> dims = LinearAlgebra.dimensions(list, header, Integer.MAX_VALUE);
-				return F.integer(dims.size());
+				return F.ZZ(dims.size());
 			}
 
 			return F.C0;
@@ -1298,7 +1298,7 @@ public final class LinearAlgebra {
 			ArrayList<Integer> dims = dimensions(list, header, maximumLevel - 1);
 			int dimsSize = dims.size();
 			IASTAppendable res = F.ListAlloc(dimsSize);
-			return res.appendArgs(0, dimsSize, i -> F.integer(dims.get(i).intValue()));
+			return res.appendArgs(0, dimsSize, i -> F.ZZ(dims.get(i).intValue()));
 		}
 
 		@Override
@@ -2690,7 +2690,7 @@ public final class LinearAlgebra {
 					int size = iArr.length;
 					final IASTAppendable iList = F.ListAlloc(size);
 					// +1 because in Symja the offset is +1 compared to java arrays
-					iList.appendArgs(0, size, i -> F.integer(iArr[i] + 1));
+					iList.appendArgs(0, size, i -> F.ZZ(iArr[i] + 1));
 					// for (int i = 0; i < size; i++) {
 					// // +1 because in Symja the offset is +1 compared to java arrays
 					// iList.append(F.integer(iArr[i] + 1));
@@ -2843,11 +2843,11 @@ public final class LinearAlgebra {
 					mnm = mnm.copyAppendable();
 				}
 				while (qu.size() == 1) {
-					((IASTAppendable) mnm).append(engine.evaluate(F.Flatten(F.MatrixPower(matrix, F.integer(n)))));
+					((IASTAppendable) mnm).append(engine.evaluate(F.Flatten(F.MatrixPower(matrix, F.ZZ(n)))));
 					qu = (IAST) F.NullSpace.of(engine, F.Transpose(mnm));
 					n++;
 				}
-				return F.Dot.of(engine, qu.arg1(), F.Table(F.Power(variable, i), F.List(i, F.C0, F.integer(--n))));
+				return F.Dot.of(engine, qu.arg1(), F.Table(F.Power(variable, i), F.List(i, F.C0, F.ZZ(--n))));
 			}
 
 			return F.NIL;
@@ -3014,7 +3014,7 @@ public final class LinearAlgebra {
 					matrix = Convert.list2Matrix(astMatrix);
 					if (matrix != null) {
 						FieldReducedRowEchelonForm fmw = new FieldReducedRowEchelonForm(matrix);
-						return F.integer(fmw.getMatrixRank());
+						return F.ZZ(fmw.getMatrixRank());
 					}
 				}
 
@@ -4305,7 +4305,7 @@ public final class LinearAlgebra {
 				// }
 				// };
 				final IndexTableGenerator generator = new IndexTableGenerator(indexArray, F.List, //
-						indx -> Power(lst.get(indx[0] + 1), F.integer(indx[1])));
+						indx -> Power(lst.get(indx[0] + 1), F.ZZ(indx[1])));
 				final IAST matrix = (IAST) generator.table();
 				matrix.addEvalFlags(IAST.IS_MATRIX);
 				return matrix;

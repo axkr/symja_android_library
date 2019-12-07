@@ -135,7 +135,7 @@ public class JASIExpr {
 			for (int i = 0; i < exp.length(); i++) {
 				lExp = exp.getVal(i);
 				if (lExp != 0) {
-					monomTimes.append(F.Power(fVariables.get(i), F.integer(lExp)));
+					monomTimes.append(F.Power(fVariables.get(i), F.ZZ(lExp)));
 				}
 			}
 			if (monomTimes.isAST1()) {
@@ -323,7 +323,7 @@ public class JASIExpr {
 					if (lExp == 1L) {
 						monomTimes.append(fVariables.get(ix));
 					} else {
-						monomTimes.append(F.Power(fVariables.get(ix), F.integer(lExp)));
+						monomTimes.append(F.Power(fVariables.get(ix), F.ZZ(lExp)));
 					}
 				} else {
 					return false;
@@ -376,7 +376,7 @@ public class JASIExpr {
 			for (int i = 0; i < exp.length(); i++) {
 				lExp = exp.getVal(i);
 				if (lExp != 0) {
-					monomTimes.append(F.Power(fVariables.get(i), F.integer(lExp)));
+					monomTimes.append(F.Power(fVariables.get(i), F.ZZ(lExp)));
 				}
 			}
 			if (monomTimes.isAST1()) {

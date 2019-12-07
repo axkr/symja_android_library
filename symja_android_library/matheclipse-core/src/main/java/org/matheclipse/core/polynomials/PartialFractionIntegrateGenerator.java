@@ -103,7 +103,7 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 						IExpr ax2Plusb = F.Plus(F.Times(F.C2, a, x), b);
 						if (cmpTo == 0) {
 							// (-2) / (2*a*x+b)
-							result.append(F.Times(F.integer(-2L), F.Power(ax2Plusb, F.CN1)));
+							result.append(F.Times(F.CN2, F.Power(ax2Plusb, F.CN1)));
 						} else if (cmpTo > 0) {
 							// (b^2-4ac)^(1/2)
 							temp = F.eval(F.Power(F.Subtract(F.Sqr(b), F.Times(F.C4, a, c)), F.C1D2));
@@ -148,14 +148,14 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 				IFraction a = F.fraction(denom[2].numerator(), denom[2].denominator());
 				IFraction b = F.fraction(denom[1].numerator(), denom[1].denominator());
 				IFraction c = F.fraction(denom[0].numerator(), denom[0].denominator());
-				IInteger k = F.integer(j);
+				IInteger k = F.ZZ(j);
 				if (A.isZero()) {
 					// JavaForm[B*((2*a*x+b)/((k-1)*(4*a*c-b^2)*(a*x^2+b*x+c)^(k-1))+
 					// (4*k*a-6*a)/((k-1)*(4*a*c-b^2))*Integrate[(a*x^2+b*x+c)^(-k+1),x])]
 					temp = Times(B, Plus(
 							Times(Integrate(
 									Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Plus(C1, Times(CN1, k))), x),
-									Plus(Times(F.integer(-6L), a), Times(C4, a, k)), Power(Plus(CN1, k), CN1),
+									Plus(Times(F.ZZ(-6L), a), Times(C4, a, k)), Power(Plus(CN1, k), CN1),
 									Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)), CN1)),
 							Times(Plus(b, Times(C2, a, x)), Power(Plus(CN1, k), CN1),
 									Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)), CN1),
@@ -175,7 +175,7 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 				// Integral<BigRational> integral= ei.integrate(genPolynomial,
 				// Di_1);
 				temp = F.eval(F.Times(jas.rationalPoly2Expr(genPolynomial, false),
-						F.Power(jas.rationalPoly2Expr(Di_1, false), F.integer(j * (-1L)))));
+						F.Power(jas.rationalPoly2Expr(Di_1, false), F.ZZ(j * (-1L)))));
 				if (!temp.isZero()) {
 					if (temp.isAST()) {
 						((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);

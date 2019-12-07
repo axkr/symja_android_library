@@ -142,8 +142,8 @@ public class ConstantDefinitions {
 
 		@Override
 		public IExpr evaluate(final ISymbol symbol) {
-			return F.List(F.integer(YEAR), F.integer(MONTH), F.integer(DAY), F.integer(HOUR), F.integer(MINUTE),
-					F.integer(SECOND));
+			return F.List(F.ZZ(YEAR), F.ZZ(MONTH), F.ZZ(DAY), F.ZZ(HOUR), F.ZZ(MINUTE),
+					F.ZZ(SECOND));
 		}
 
 	}
@@ -175,7 +175,7 @@ public class ConstantDefinitions {
 
 		@Override
 		public IExpr evaluate(final ISymbol symbol) {
-			return F.integer(Config.MACHINE_PRECISION);
+			return F.ZZ(Config.MACHINE_PRECISION);
 		}
 
 	}
@@ -328,7 +328,7 @@ public class ConstantDefinitions {
 		 */
 		@Override
 		public IExpr evaluate(final ISymbol symbol) {
-			return Times(F.Pi, Power(F.integer(180), F.CN1));
+			return Times(F.Pi, Power(F.ZZ(180), F.CN1));
 		}
 
 		@Override

@@ -149,7 +149,7 @@ public class ComplexExpand extends AbstractEvaluator {
 				// ((2 I) Cos[Re[x]] Sinh[Im[x]])/(Cos[2 Re[x]]-Cosh[2
 				// Im[x]])
 				return Plus(
-						Times(integer(-2L), Cosh(imX), Sin(reX),
+						Times(F.CN2, Cosh(imX), Sin(reX),
 								Power(Plus(Cos(Times(C2, reX)), Times(CN1, Cosh(Times(C2, imX)))), CN1)),
 						Times(C2, CI, Cos(reX), Sinh(imX),
 								Power(Plus(Cos(Times(C2, reX)), Times(CN1, Cosh(Times(C2, imX)))), CN1)));

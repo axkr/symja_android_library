@@ -234,13 +234,7 @@ public class PolynomialsUtils {
 
 		IASTAppendable result = F.PlusAlloc(degree + 1);
 		return result.appendArgs(0, degree + 1,
-				i -> F.Times(F.fraction(coefficients.get(start + i)), F.Power(x, F.integer(i))));
-		// for (int i = 0; i <= degree; ++i) {
-		// result.append(F.Times(F.fraction(coefficients.get(start + i)), F.Power(x, F.integer(i))));
-		// }
-		//
-		// // build the polynomial
-		// return result;
+				i -> F.Times(F.fraction(coefficients.get(start + i)), F.Power(x, F.ZZ(i)))); 
 
 	}
 

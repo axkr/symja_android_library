@@ -298,7 +298,7 @@ public class JASModInteger {
 		for (Monomial<ModLong> monomial : poly) {
 			ModLong coeff = monomial.coefficient();
 			ExpVector exp = monomial.exponent();
-			IInteger coeffValue = F.integer(coeff.getVal());
+			IInteger coeffValue = F.ZZ(coeff.getVal());
 			IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
 			monomialToExpr(coeffValue, exp, monomTimes);
 			result.append(monomTimes.oneIdentity1());
@@ -320,7 +320,7 @@ public class JASModInteger {
 					if (lExp == 1L) {
 						monomTimes.append(fVariables.get(ix));
 					} else {
-						monomTimes.append(F.Power(fVariables.get(ix), F.integer(lExp)));
+						monomTimes.append(F.Power(fVariables.get(ix), F.ZZ(lExp)));
 					}
 				} else {
 					return false;

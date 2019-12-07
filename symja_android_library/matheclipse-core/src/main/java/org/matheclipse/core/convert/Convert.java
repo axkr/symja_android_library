@@ -361,7 +361,7 @@ public class Convert {
 		sum.append(F.num(coefficients[0]));
 		for (int i = 1; i < coefficients.length; ++i) {
 			if (coefficients[i] != 0) {
-				sum.append(F.Times(F.num(coefficients[i]), F.Power(sym, F.integer(i))));
+				sum.append(F.Times(F.num(coefficients[i]), F.Power(sym, F.ZZ(i))));
 			}
 		}
 

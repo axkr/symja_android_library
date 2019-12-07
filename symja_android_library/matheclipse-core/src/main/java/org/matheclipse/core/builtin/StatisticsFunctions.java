@@ -2585,11 +2585,11 @@ public class StatisticsFunctions {
 						F.Subtract(F.Conjugate(arg2.arg1()), F.Conjugate(arg2.arg2())));
 			}
 			IAST num1 = arg1.apply(F.Plus);
-			IExpr factor = F.integer(-1 * (arg1.size() - 2));
+			IExpr factor = F.ZZ(-1 * (arg1.size() - 2));
 			IASTAppendable v1 = F.PlusAlloc(arg1.size());
 			v1.appendArgs(arg1.size(),
 					i -> F.Times(F.CN1, num1.setAtCopy(i, F.Times(factor, arg1.get(i))), F.Conjugate(arg2.get(i))));
-			return F.Divide(v1, F.integer(((long) arg1.argSize()) * (((long) arg1.size()) - 2L)));
+			return F.Divide(v1, F.ZZ(((long) arg1.argSize()) * (((long) arg1.size()) - 2L)));
 		}
 
 		@Override
@@ -3549,7 +3549,7 @@ public class StatisticsFunctions {
 				}
 				if (arg1.isList()) {
 					final IAST list = (IAST) arg1;
-					return F.Times(list.apply(F.Plus), F.Power(F.integer(list.argSize()), F.CN1));
+					return F.Times(list.apply(F.Plus), F.Power(F.ZZ(list.argSize()), F.CN1));
 				}
 
 				if (arg1.isDistribution()) {

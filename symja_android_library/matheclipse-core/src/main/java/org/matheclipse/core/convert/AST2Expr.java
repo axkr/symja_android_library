@@ -479,9 +479,9 @@ public class AST2Expr {
 			final IntegerNode integerNode = (IntegerNode) node;
 			final String iStr = integerNode.getString();
 			if (iStr != null) {
-				return F.integer(iStr, integerNode.getNumberFormat());
+				return F.ZZ(iStr, integerNode.getNumberFormat());
 			}
-			return F.integer(integerNode.getIntValue());
+			return F.ZZ(integerNode.getIntValue());
 		}
 		if (node instanceof FractionNode) {
 			FractionNode fr = (FractionNode) node;

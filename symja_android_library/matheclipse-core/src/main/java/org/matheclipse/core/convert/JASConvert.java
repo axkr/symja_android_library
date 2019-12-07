@@ -417,7 +417,7 @@ public class JASConvert<C extends RingElem<C>> {
 					if (lExp == 1L) {
 						monomTimes.append(fVariables.get(ix));
 					} else {
-						monomTimes.append(F.Power(fVariables.get(ix), F.integer(lExp)));
+						monomTimes.append(F.Power(fVariables.get(ix), F.ZZ(lExp)));
 					}
 				} else {
 					return false;

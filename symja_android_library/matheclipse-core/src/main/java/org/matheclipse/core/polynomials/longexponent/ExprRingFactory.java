@@ -55,7 +55,7 @@ public class ExprRingFactory implements RingFactory<IExpr> {
 	 */
 	@Override
 	public IExpr fromInteger(long a) {
-		return F.integer(a);
+		return F.ZZ(a);
 	}
 
 	/**
@@ -66,7 +66,7 @@ public class ExprRingFactory implements RingFactory<IExpr> {
 	 * @return BigRational from a.
 	 */
 	public static IExpr valueOf(long a) {
-		return F.integer(a);
+		return F.ZZ(a);
 	}
 
 	@Override
@@ -81,7 +81,7 @@ public class ExprRingFactory implements RingFactory<IExpr> {
 
 	@Override
 	public IExpr fromInteger(BigInteger a) {
-		return F.integer(a);
+		return F.ZZ(a);
 	}
 
 	@Override

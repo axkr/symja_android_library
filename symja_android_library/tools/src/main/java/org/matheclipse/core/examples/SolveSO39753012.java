@@ -15,16 +15,16 @@ public class SolveSO39753012 {
 		try {
 			ExprEvaluator util = new ExprEvaluator();
 			IExpr eq = F.Equal(F.Plus(F.a, F.b), F.c);
-			IExpr eq1 = eq.replaceAll(F.Rule(F.a, F.integer(1)));
-			eq1 = eq1.replaceAll(F.Rule(F.b, F.integer(2)));
+			IExpr eq1 = eq.replaceAll(F.Rule(F.a, F.ZZ(1)));
+			eq1 = eq1.replaceAll(F.Rule(F.b, F.ZZ(2)));
 
 			// Solve(1+2==c, c)
 			IExpr result = util.eval(F.Solve(eq1, F.c));
 			// print: {{c->3}}
 			System.out.println(result.toString());
 
-			IExpr eq2 = eq.replaceAll(F.Rule(F.a, F.integer(1)));
-			eq2 = eq2.replaceAll(F.Rule(F.c, F.integer(3)));
+			IExpr eq2 = eq.replaceAll(F.Rule(F.a, F.ZZ(1)));
+			eq2 = eq2.replaceAll(F.Rule(F.c, F.ZZ(3)));
 			// Solve(1+b==3, b)
 			result = util.eval(F.Solve(eq2, F.b));
 			// print: {{b->2}}

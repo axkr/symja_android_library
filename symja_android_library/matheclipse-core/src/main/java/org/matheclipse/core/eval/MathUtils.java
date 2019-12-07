@@ -481,7 +481,7 @@ public class MathUtils {
 		if (sym instanceof ISymbol) {
 			IExpr center = parse(cen, null);
 			if (center != null) {
-				return evaluateReaplaceAll(fun, F.Taylor(F.Slot1, F.List(sym, center, F.integer(iter))));
+				return evaluateReaplaceAll(fun, F.Taylor(F.Slot1, F.List(sym, center, F.ZZ(iter))));
 			}
 		}
 		return "error in MathUtils#getPowerSeries()";

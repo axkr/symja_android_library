@@ -349,7 +349,7 @@ public final class NumberTheory {
 					IAST temp;
 					IExpr nTemp = n;
 					for (int i = 1; i <= kInt; i++) {
-						temp = F.Divide(nTemp, F.integer(i));
+						temp = F.Divide(nTemp, F.ZZ(i));
 						result.append(temp);
 						nTemp = F.eval(F.Subtract(nTemp, F.C1));
 					}
@@ -646,7 +646,7 @@ public final class NumberTheory {
 						return F.NIL;
 					}
 					try {
-						return F.integer(chineseRemainders(n, a));
+						return F.ZZ(chineseRemainders(n, a));
 					} catch (ArithmeticException ae) {
 						if (Config.SHOW_STACKTRACE) {
 							ae.printStackTrace();
@@ -3412,7 +3412,7 @@ public final class NumberTheory {
 					return F.NIL;
 				}
 				try {
-					return F.integer(Primality.prime(nthPrime));
+					return F.ZZ(Primality.prime(nthPrime));
 				} catch (RuntimeException ae) {
 					if (Config.SHOW_STACKTRACE) {
 						ae.printStackTrace();
@@ -3471,7 +3471,7 @@ public final class NumberTheory {
 						}
 						result++;
 					}
-					return F.integer(result);
+					return F.ZZ(result);
 				}
 			}
 
@@ -4021,7 +4021,7 @@ public final class NumberTheory {
 				IInteger k;
 				IASTAppendable temp = F.PlusAlloc(counter >= 0 ? counter : 0);
 				for (int i = 0; i < counter; i++) {
-					k = F.integer(i);
+					k = F.ZZ(i);
 					if ((i & 1) == 1) { // isOdd(i) ?
 						factorPlusMinus1 = F.CN1;
 					} else {

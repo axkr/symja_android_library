@@ -442,7 +442,7 @@ public class ExprParser extends Scanner {
 			getNextToken();
 			if (fToken == TT_DIGIT) {
 				countPercent = getJavaInt();
-				out.append(F.integer(countPercent));
+				out.append(F.ZZ(countPercent));
 				return out;
 			}
 
@@ -451,7 +451,7 @@ public class ExprParser extends Scanner {
 				getNextToken();
 			}
 
-			out.append(F.integer(-countPercent));
+			out.append(F.ZZ(-countPercent));
 			return parseArguments(out);
 
 		case TT_SLOT:
@@ -1344,7 +1344,7 @@ public class ExprParser extends Scanner {
 			derivativeCounter++;
 			getNextToken();
 		}
-		IAST deriv = F.$(DERIVATIVE, F.integer(derivativeCounter));
+		IAST deriv = F.$(DERIVATIVE, F.ZZ(derivativeCounter));
 		expr = F.$(deriv, expr);
 		expr = parseArguments(expr);
 		return expr;

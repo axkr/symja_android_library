@@ -587,7 +587,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default IExpr getAt(final int index) {
-		return F.Part.of(this, F.integer(index));
+		return F.Part.of(this, F.ZZ(index));
 	}
 
 	@Override
@@ -3038,9 +3038,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	@Override
 	default public IExpr multiply(int n) {
 		if (isPlus()) {
-			return F.evalExpand(times(F.integer(n)));
+			return F.evalExpand(times(F.ZZ(n)));
 		}
-		return times(F.integer(n));
+		return times(F.ZZ(n));
 	}
 
 	/**
@@ -3368,7 +3368,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 			}
 			return r;
 		}
-		return F.Power(this, F.integer(n));
+		return F.Power(this, F.ZZ(n));
 	}
 
 	/**

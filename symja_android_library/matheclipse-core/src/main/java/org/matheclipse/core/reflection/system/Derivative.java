@@ -360,7 +360,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 	 * @return
 	 */
 	public static IAST createDerivative(final int n, final IExpr header, final IExpr arg1) {
-		IAST deriv = F.Derivative(F.integer(n));
+		IAST deriv = F.Derivative(F.ZZ(n));
 		IASTAppendable fDeriv = F.ast(deriv);
 		fDeriv.append(header);
 		IASTAppendable fDerivParam = F.ast(fDeriv);
@@ -377,7 +377,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 	 * @return
 	 */
 	public static IAST createDerivative(final int n, final IExpr header) {
-		IAST deriv = F.Derivative(F.integer(n));
+		IAST deriv = F.Derivative(F.ZZ(n));
 		IASTAppendable fDeriv = F.ast(deriv);
 		fDeriv.append(header);
 		return fDeriv;

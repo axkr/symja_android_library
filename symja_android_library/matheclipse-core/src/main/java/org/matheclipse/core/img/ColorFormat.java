@@ -25,7 +25,7 @@ public enum ColorFormat {
 	 */
 	private static final IExpr[] LOOKUP = new IExpr[256];
 	static {
-		IntStream.range(0, 256).forEach(index -> LOOKUP[index] = F.integer(index));
+		IntStream.range(0, 256).forEach(index -> LOOKUP[index] = F.ZZ(index));
 	}
 	// ---
 

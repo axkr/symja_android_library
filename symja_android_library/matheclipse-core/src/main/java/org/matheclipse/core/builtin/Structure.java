@@ -302,7 +302,7 @@ public class Structure {
 			if (!(arg1.isAST())) {
 				return F.C1;
 			}
-			return F.integer(depth((IAST) ast.arg1(), 1));
+			return F.ZZ(depth((IAST) ast.arg1(), 1));
 		}
 
 		public int[] expectedArgSize() {
@@ -830,7 +830,7 @@ public class Structure {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			return F.integer(engine.evaluate(ast.arg1()).leafCount());
+			return F.ZZ(engine.evaluate(ast.arg1()).leafCount());
 		}
 
 		public int[] expectedArgSize() {

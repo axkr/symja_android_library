@@ -89,7 +89,7 @@ public class IntegerFunctions {
 			if (ast.arg1().isInteger()) {
 				IInteger iArg1 = (IInteger) ast.arg1();
 				BigInteger big = iArg1.toBigNumerator();
-				return F.integer(big.bitLength());
+				return F.ZZ(big.bitLength());
 			}
 			return F.NIL;
 		}
@@ -766,7 +766,7 @@ public class IntegerFunctions {
 				}
 				long l = iArg1.integerLength(radix);
 
-				return F.integer(l);
+				return F.ZZ(l);
 			}
 			return F.NIL;
 		}

@@ -56,7 +56,7 @@ public class UnaryVariable2Slot implements Function<IExpr, IExpr> {
 		// a variable which could be replaced by a slot:
 		IExpr result = fMap.get(firstArg);
 		if (result == null) {
-			result = Slot(F.integer(++fSlotCounter));
+			result = Slot(F.ZZ(++fSlotCounter));
 			fMap.put(firstArg, result);
 			fVariableList.add(firstArg);
 		}
