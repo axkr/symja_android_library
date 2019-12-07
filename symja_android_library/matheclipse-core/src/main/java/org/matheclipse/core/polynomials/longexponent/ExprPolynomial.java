@@ -2347,7 +2347,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 			int len = exp.length();
 			IASTAppendable ruleList = F.ListAlloc(len);
 			for (int i = 0; i < len; i++) {
-				ruleList.append(F.integer(exp.getVal(len - i - 1)));
+				ruleList.append(F.ZZ(exp.getVal(len - i - 1)));
 			}
 			result.append(F.Rule(ruleList, coeff));
 		}
@@ -2502,7 +2502,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 					if (lExp == 1L) {
 						monomTimes.append(variable);
 					} else {
-						monomTimes.append(F.Power(variable, F.integer(lExp)));
+						monomTimes.append(F.Power(variable, F.ZZ(lExp)));
 					}
 				}
 			}

@@ -337,7 +337,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 	 * @return <code>F.NIL</code> if no entry was found
 	 */
 	private static IExpr derivative(int n, int m, ISymbol symbol, EvalEngine engine) {
-		IAST listKey = F.List(symbol, F.integer(n), F.integer(m));
+		IAST listKey = F.List(symbol, F.ZZ(n), F.ZZ(m));
 		IExpr result = DERIVATIVE_N_M_MAP.get(listKey);
 		if (result != null) {
 			return F.unaryAST1(F.Function, engine.evaluate(result));
