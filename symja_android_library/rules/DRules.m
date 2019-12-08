@@ -17,6 +17,7 @@
   D(Erfc(f_),x_?NotListQ):=D(f,x)*(-2*E^(-f^(2))/Sqrt(Pi)),
   D(Erfi(f_),x_?NotListQ):=D(f,x)*(2*E^(f^(2))/Sqrt(Pi)),
   D(ExpIntegralEi(f_),x_?NotListQ):=D(f,x)*E^f/f,
+  D(Factorial(f_),x_?NotListQ):=D(f,x)*Gamma(1+f)*PolyGamma(0,1+f),
   D(Floor(f_),x_?NotListQ):=D(f,x)*Piecewise({{0, f>Floor(f)}}, Indeterminate),
   D(FractionalPart(f_),x_?NotListQ):=D(f,x)*1,
   D(FresnelC(f_),x_?NotListQ):=D(f,x)*Cos((Pi*f^2)/2),

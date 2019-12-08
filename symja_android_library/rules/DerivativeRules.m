@@ -19,6 +19,7 @@
   Erfc->(-2*E^(-#^(2))/Sqrt(Pi)),
   Erfi->(2*E^(#^(2))/Sqrt(Pi)),
   ExpIntegralEi->E^#/#,
+  Factorial->Gamma(1+#)*PolyGamma(0,1+#),
   Floor->Piecewise({{0, #>Floor(#)}}, Indeterminate),
   FractionalPart->1,
   FresnelC->Cos((Pi*#^2)/2),

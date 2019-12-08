@@ -13,7 +13,7 @@ public interface DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 82 };
+  final public static int[] SIZES = { 0, 83 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -71,6 +71,9 @@ public interface DRules {
     // D(ExpIntegralEi(f_),x_?NotListQ):=D(f,x)*E^f/f
     ISetDelayed(D(ExpIntegralEi(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),Exp(f),Power(f,CN1))),
+    // D(f_!,x_?NotListQ):=D(f,x)*Gamma(1+f)*PolyGamma(0,1+f)
+    ISetDelayed(D(Factorial(f_),PatternTest(x_,NotListQ)),
+      Times(D(f,x),Gamma(Plus(C1,f)),PolyGamma(C0,Plus(C1,f)))),
     // D(Floor(f_),x_?NotListQ):=D(f,x)*Piecewise({{0,f>Floor(f)}},Indeterminate)
     ISetDelayed(D(Floor(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),Piecewise(List(List(C0,Greater(f,Floor(f)))),Indeterminate))),

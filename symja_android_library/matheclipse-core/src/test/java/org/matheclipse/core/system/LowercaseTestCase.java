@@ -3775,6 +3775,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testD() {
+		check("D(Factorial(b*x),x)", //
+				"b*Gamma(1+b*x)*PolyGamma(0,1+b*x)");
 		check("D(E^(E^x + x),x)", //
 				"(1+E^x)*E^(E^x+x)");
 		check("D((2*x*(Sqrt(d)*Sqrt(-e)+e*x))/(d+e*x^2),x)", //

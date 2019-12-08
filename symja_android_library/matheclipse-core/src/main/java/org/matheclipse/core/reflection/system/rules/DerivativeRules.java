@@ -66,6 +66,9 @@ public interface DerivativeRules {
     // ExpIntegralEi->E^#1/#1
     Rule(ExpIntegralEi,
       Times(Exp(Slot1),Power(Slot1,CN1))),
+    // Factorial->Gamma(1+#1)*PolyGamma(0,1+#1)
+    Rule(Factorial,
+      Times(Gamma(Plus(C1,Slot1)),PolyGamma(C0,Plus(C1,Slot1)))),
     // Floor->Piecewise({{0,#1>Floor(#1)}},Indeterminate)
     Rule(Floor,
       Piecewise(List(List(C0,Greater(Slot1,Floor(Slot1)))),Indeterminate)),
@@ -131,7 +134,7 @@ public interface DerivativeRules {
       Times(CN1,Coth(Slot1),Csch(Slot1))),
     // Round->Piecewise({{0,NotElement(-1/2+Re(#1),Integers)&&NotElement(-1/2+Im(#1),Integers)}},Indeterminate)
     Rule(Round,
-      Piecewise(List(List(C0,And(NotElement(Plus(CN1D2,Re(Slot1)),Integers),NotElement(Plus(CN1D2,Im(Slot1)),Integers)))),Indeterminate)),
+      Piecewise(List(List(C0,And(Not(Element(Plus(CN1D2,Re(Slot1)),Integers)),Not(Element(Plus(CN1D2,Im(Slot1)),Integers))))),Indeterminate)),
     // Sin->Cos(#1)
     Rule(Sin,
       Cos(Slot1)),
