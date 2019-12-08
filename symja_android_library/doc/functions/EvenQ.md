@@ -22,9 +22,17 @@ See
 ```
 >> EvenQ(4)
 True
+
 >> EvenQ(-3)
 False
+
 >> EvenQ(n)
+False
+
+>> EvenQ(2+4*I, GaussianIntegers->True)
+True
+
+>> EvenQ(1+I, GaussianIntegers->True)
 False
 ```
 
