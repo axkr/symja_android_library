@@ -346,6 +346,25 @@ public class PredicateQ {
 		}
 
 		@Override
+		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine, OptionArgs options) {
+			IExpr option = options.getOption(F.GaussianIntegers);
+			if (!option.isTrue()) {
+				return evalArg1Boole(arg1, engine);
+			}
+			IInteger[] reImParts = arg1.gaussianIntegers();
+			if (reImParts == null) {
+				return false;
+			}
+			if (reImParts[1].isZero()) {
+				return reImParts[0].isEven();
+			}
+			if (reImParts[0].isZero()) {
+				return reImParts[1].isEven();
+			}
+			return reImParts[0].isEven() && reImParts[1].isEven();
+		}
+
+		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
 		}

@@ -12922,6 +12922,25 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{True,True}&&{True,True}");
 	}
 
+	public void testEvenQ() {
+		check("EvenQ(2+4*I, GaussianIntegers->True)", //
+				"True");
+		check("EvenQ(2-3*I, GaussianIntegers->True)", //
+				"False");
+		check("EvenQ(1+4*I, GaussianIntegers->True)", //
+				"False");
+		check("EvenQ(1+I, GaussianIntegers->True)", //
+				"False");
+		check("EvenQ(4*I, GaussianIntegers->True)", //
+				"True");
+		check("EvenQ(6, GaussianIntegers->True)", //
+				"True");
+		check("EvenQ(I, GaussianIntegers->True)", //
+				"False");
+		check("EvenQ(3, GaussianIntegers->True)", //
+				"False");
+	}
+
 	public void testOneIdentity() {
 		check("SetAttributes(f, OneIdentity)", //
 				"");
