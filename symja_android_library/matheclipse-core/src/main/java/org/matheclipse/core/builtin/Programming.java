@@ -724,7 +724,7 @@ public final class Programming {
 					} else if (arg3.isNegativeInfinity()) {
 						iterations = Integer.MIN_VALUE;
 					} else {
-						iterations = Validate.checkIntType(arg3, Integer.MIN_VALUE);
+						iterations = Validate.checkIntType(F.FixedPoint, arg3, Integer.MIN_VALUE, engine);
 					}
 				}
 				if (iterations < 0) {
@@ -1953,9 +1953,9 @@ public final class Programming {
 								return rightHandSide;
 							}
 						} catch (RuntimeException npe) {
-							engine.printMessage("Set: wrong argument for Part[] function: " + part.toString()
-									+ " selects no part expression.");
-							return rightHandSide;
+							engine.printMessage("Set: "+npe.getMessage());
+							return F.NIL;
+//							return rightHandSide;
 						}
 					}
 				}
@@ -3268,7 +3268,7 @@ public final class Programming {
 			}
 			return result;
 		} else if (arg2.isReal()) {
-			int indx = Validate.checkIntType(arg2, Integer.MIN_VALUE);
+			int indx = Validate.throwIntType(arg2, Integer.MIN_VALUE, engine);
 			if (indx < 0) {
 				indx = part.size() + indx;
 			}
@@ -3295,7 +3295,7 @@ public final class Programming {
 				if (listArg.isInteger()) {
 					IExpr ires = null;
 
-					final int indx = Validate.checkIntType(listArg, Integer.MIN_VALUE);
+					final int indx = Validate.throwIntType( listArg, Integer.MIN_VALUE, engine);
 					ires = assignPartValue(assignedAST, indx, value);
 					if (ires == null) {
 						return F.NIL;
@@ -3396,7 +3396,7 @@ public final class Programming {
 				if (listArg.isInteger()) {
 					IExpr ires = null;
 
-					final int indx = Validate.checkIntType(listArg, Integer.MIN_VALUE);
+					final int indx = Validate.throwIntType(listArg, Integer.MIN_VALUE, engine);
 					ires = assignPartValue(assignedAST, indx, list);
 					if (ires == null) {
 						return F.NIL;

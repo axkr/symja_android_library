@@ -37,7 +37,7 @@ public final class Validate {
 	 * 
 	 * @throws WrongArgumentType
 	 */
-	public static long checkLongType(IExpr expr) {
+	private static long checkLongType(IExpr expr) {
 		if (expr instanceof IntegerSym) {
 			// IntegerSym always fits into a long number
 			return ((IntegerSym) expr).toLong();
@@ -59,9 +59,15 @@ public final class Validate {
 	 * Check the argument, if it's an {@code IAST} of {@code long} values in the range [{@code startValue},
 	 * Long.MAX_VALUE]
 	 * 
-	 * @throws WrongArgumentType
+	 * @param ast
+	 * @param arg
+	 * @param startValue
+	 * @param quiet
+	 *            suppress error message output
+	 * @param engine
+	 * @return <code>null</code> if the conversion isn't possible
 	 */
-	public static long[] checkListOfLongs(IExpr arg, long startValue) {
+	public static long[] checkListOfLongs(IAST ast, IExpr arg, long startValue, boolean quiet, EvalEngine engine) {
 		if (arg.isList()) {
 			IAST list = (IAST) arg;
 			long[] result = new long[list.argSize()];
@@ -77,20 +83,28 @@ public final class Validate {
 						longValue = ((INum) expr).toLong();
 					}
 					if (startValue > longValue) {
-						throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
-								+ startValue + " - " + Long.MAX_VALUE);
+						if (!quiet) {
+							// List of Java long numbers expected in `1`.
+							IOFunctions.printMessage(ast.topHead(), "listoflongs", F.List(arg), engine);
+						}
+						return null;
+						// throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
+						// + startValue + " - " + Long.MAX_VALUE);
 					}
 					result[i - 1] = longValue;
 				}
 				return result;
-			} catch (ArithmeticException ae) {
+			} catch (RuntimeException rex) {
 				//
 			}
 		}
-		throw new WrongArgumentType(arg, "Trying to convert the given list into a list of long numbers: " + arg);
+		if (!quiet) {
+			IOFunctions.printMessage(ast.topHead(), "listoflongs", F.List(arg), engine);
+		}
+		return null;
 	}
 
-	public static BigInteger[] checkListOfBigIntegers(IExpr arg, boolean nonNegative) {
+	public static BigInteger[] checkListOfBigIntegers(IAST ast, IExpr arg, boolean nonNegative, EvalEngine engine) {
 		if (arg.isList()) {
 			IAST list = (IAST) arg;
 			BigInteger[] result = new BigInteger[list.argSize()];
@@ -111,26 +125,35 @@ public final class Validate {
 					// + startValue + " - " + Long.MAX_VALUE);
 					// }
 					if (nonNegative && longValue.compareTo(BigInteger.ZERO) < 0) {
-						throw new WrongArgumentType(arg,
-								"Trying to convert the given list into a list of long non-negative numbers: " + arg);
+						IOFunctions.printMessage(ast.topHead(), "listofbigints", F.List(arg), engine);
+						return null;
+						// throw new WrongArgumentType(arg,
+						// "Trying to convert the given list into a list of long non-negative numbers: " + arg);
 					}
 					result[i - 1] = longValue;
 				}
 				return result;
-			} catch (ArithmeticException ae) {
+			} catch (RuntimeException rex) {
 				//
 			}
 		}
-		throw new WrongArgumentType(arg, "Trying to convert the given list into a list of long numbers: " + arg);
+		IOFunctions.printMessage(ast.topHead(), "listofbigints", F.List(arg), engine);
+		return null;
+		// throw new WrongArgumentType(arg, "Trying to convert the given list into a list of long numbers: " + arg);
 	}
 
 	/**
 	 * Check the argument, if it's an {@code IAST} of {@code int} values in the range {@code minValue} (inclusive),
 	 * {@code maxValue} (inclusive).
 	 * 
-	 * @throws WrongArgumentType
+	 * @param ast
+	 * @param arg
+	 * @param minValue
+	 * @param maxValue
+	 * @param engine
+	 * @return <code>null</code> if the conversion isn't possible
 	 */
-	public static int[] checkListOfInts(IExpr arg, int minValue, int maxValue) {
+	public static int[] checkListOfInts(IAST ast, IExpr arg, int minValue, int maxValue, EvalEngine engine) {
 		if (arg.isList()) {
 			IAST list = (IAST) arg;
 			int[] result = new int[list.argSize()];
@@ -146,17 +169,20 @@ public final class Validate {
 						intValue = ((INum) expr).toInt();
 					}
 					if (minValue > intValue || intValue > maxValue) {
-						throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
-								+ minValue + " - " + maxValue);
+						IOFunctions.printMessage(ast.topHead(), "listofints", F.List(arg), engine);
+						return null;
+						// throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
+						// + minValue + " - " + maxValue);
 					}
 					result[i - 1] = intValue;
 				}
 				return result;
-			} catch (ArithmeticException ae) {
+			} catch (RuntimeException rex) {
 				//
 			}
 		}
-		throw new WrongArgumentType(arg, "Trying to convert the given list into a list of long numbers: " + arg);
+		IOFunctions.printMessage(ast.topHead(), "listofints", F.List(arg), engine);
+		return null;
 	}
 
 	/**
@@ -252,16 +278,7 @@ public final class Validate {
 		}
 		throw new WrongArgumentType(expr,
 				"Trying to convert the expression into the integer range: " + startValue + " - " + Integer.MAX_VALUE);
-	}
-
-	/**
-	 * Check the expression, if it's a Java {@code int} value in the range [0 , Integer.MAX_VALUE]
-	 * 
-	 * @throws WrongArgumentType
-	 */
-	public static int checkIntType(IExpr expr) {
-		return checkIntType(expr, 0);
-	}
+	} 
 
 	/**
 	 * Check the expression, if it's a Java {@code int} value in the range [ {@code startValue}, Integer.MAX_VALUE]
@@ -269,33 +286,59 @@ public final class Validate {
 	 * @param expr
 	 *            a signed number which will be converted to a Java <code>int</code> if possible, otherwise throw a
 	 *            <code>WrongArgumentType</code> exception.
-	 * @throws WrongArgumentType
+	 * @return <code>Integer.MIN_VALUE</code> if a <code>Java int</code> value couldn't be determined.
 	 */
-	public static int checkIntType(IExpr expr, int startValue) {
-		if (expr instanceof IntegerSym) {
-			// IntegerSym always fits into an int number
-			int result = ((IntegerSym) expr).toInt();
-			if (startValue > result) {
-				throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
-						+ startValue + " - " + Integer.MAX_VALUE);
-			}
-			return result;
+	public static int checkIntType(ISymbol head, IExpr expr, int startValue, EvalEngine engine) {
+		int result = expr.toIntDefault();
+		if (result == Integer.MIN_VALUE || startValue > result) {
+			// Java int value greater equal `1` expected instead of `2`.
+			IOFunctions.printMessage(head, "intjava", F.List(F.ZZ(startValue), expr), engine);
+			return Integer.MIN_VALUE;
 		}
-		if (expr.isReal()) {
-			try {
-				int result = ((ISignedNumber) expr).toInt();
-				if (startValue > result) {
-					throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
-							+ startValue + " - " + Integer.MAX_VALUE);
-				}
-				return result;
-			} catch (ArithmeticException ae) {
-				throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
-						+ startValue + " - " + Integer.MAX_VALUE);
-			}
+		return result;
+		// if (expr instanceof IntegerSym) {
+		// // IntegerSym always fits into an int number
+		// int result = ((IntegerSym) expr).toInt();
+		// if (startValue > result) {
+		// throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
+		// + startValue + " - " + Integer.MAX_VALUE);
+		// }
+		// return result;
+		// }
+		// if (expr.isReal()) {
+		// try {
+		// int result = ((ISignedNumber) expr).toInt();
+		// if (startValue > result) {
+		// throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
+		// + startValue + " - " + Integer.MAX_VALUE);
+		// }
+		// return result;
+		// } catch (ArithmeticException ae) {
+		// throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
+		// + startValue + " - " + Integer.MAX_VALUE);
+		// }
+		// }
+		// throw new WrongArgumentType(expr,
+		// "Trying to convert the expression into the integer range: " + startValue + " - " + Integer.MAX_VALUE);
+	}
+
+	/**
+	 * Check the argument, if it's a Java {@code int} value in the range [ {@code startValue}, Integer.MAX_VALUE].
+	 * 
+	 * @param expr
+	 * @param startValue
+	 * @param engine
+	 * @return
+	 * @throws ArgumentTypeException if it's not a Java int value in the range.
+	 */
+	public static int throwIntType(IExpr expr, int startValue, EvalEngine engine) {
+		int result = expr.toIntDefault();
+		if (result == Integer.MIN_VALUE || startValue > result) {
+			// Java int value greater equal `1` expected instead of `2`.
+			String str = IOFunctions.getMessage("intjava", F.List(F.ZZ(startValue), expr), engine);
+			throw new ArgumentTypeException(str);
 		}
-		throw new WrongArgumentType(expr,
-				"Trying to convert the expression into the integer range: " + startValue + " - " + Integer.MAX_VALUE);
+		return result;
 	}
 
 	/**
@@ -303,14 +346,18 @@ public final class Validate {
 	 * 
 	 * @param position
 	 *            the position which has to be a list.
+	 * @param engine
+	 *            the evaluation engine
+	 * 
 	 * @throws WrongArgumentType
 	 *             if it's not a list.
 	 */
-	public static IAST checkListType(IAST ast, int position) {
+	public static IAST checkListType(IAST ast, int position, EvalEngine engine) {
 		if (ast.get(position).isList()) {
 			return (IAST) ast.get(position);
 		}
-		throw new WrongArgumentType(ast, ast.get(position), position, "List expected!");
+		// List expected at position `1` in `2`.
+		return IOFunctions.printMessage(ast.topHead(), "list", F.List(F.ZZ(position), ast), engine);
 	}
 
 	/**

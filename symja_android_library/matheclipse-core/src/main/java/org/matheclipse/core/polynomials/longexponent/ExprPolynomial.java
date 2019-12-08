@@ -2494,11 +2494,9 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 			IExpr variable;
 			for (int i = 0; i < exp.length(); i++) {
 				lExp = exp.getVal(i);
-				if (lExp != 0L) {
-					// if (getVar) {
+				if (lExp != 0L) { 
 					ix = exp.varIndex(i);
 					variable = vars.get(ix + 1);
-					// }
 					if (lExp == 1L) {
 						monomTimes.append(variable);
 					} else {

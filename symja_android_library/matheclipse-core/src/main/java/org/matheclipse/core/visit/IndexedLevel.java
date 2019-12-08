@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -74,11 +75,11 @@ public class IndexedLevel {
 
 			if (value.isNegative()) {
 				fFromDepth = Integer.MIN_VALUE;
-				fToDepth = Validate.checkIntType(value, Integer.MIN_VALUE);
+				fToDepth = Validate.throwIntType(value, Integer.MIN_VALUE, engine);
 				fFromLevel = 1;
 				fToLevel = Integer.MAX_VALUE;
 			} else {
-				fToLevel = Validate.checkIntType(value, Integer.MIN_VALUE);
+				fToLevel = Validate.throwIntType(value, Integer.MIN_VALUE, engine);
 				fFromLevel = 1;
 				fFromDepth = Integer.MIN_VALUE;
 				fToDepth = -1;
@@ -92,7 +93,7 @@ public class IndexedLevel {
 				if (lst.arg1() instanceof IInteger) {
 					final IInteger i = (IInteger) lst.arg1();
 
-					final int level = Validate.checkIntType(i, Integer.MIN_VALUE);
+					final int level = Validate.throwIntType(i, Integer.MIN_VALUE, engine);
 					if (i.isNegative()) {
 						fFromDepth = level;
 						fToDepth = level;
@@ -112,27 +113,27 @@ public class IndexedLevel {
 						final IInteger i0 = (IInteger) lst.arg1();
 						final IInteger i1 = (IInteger) lst.arg2();
 						if (i0.isNegative() && i1.isNegative()) {
-							fFromDepth = Validate.checkIntType(i0, Integer.MIN_VALUE);
-							fToDepth = Validate.checkIntType(i1, Integer.MIN_VALUE);
+							fFromDepth = Validate.throwIntType(i0, Integer.MIN_VALUE, engine);
+							fToDepth = Validate.throwIntType(i1, Integer.MIN_VALUE, engine);
 							fFromLevel = 0;
 							fToLevel = Integer.MAX_VALUE;
 						} else if (i0.isNegative()) {
 							// all subexpressions at levels i0 or above with a depth of -i1 or less.
-							fFromDepth = Validate.checkIntType(i0, Integer.MIN_VALUE);
+							fFromDepth = Validate.throwIntType(i0, Integer.MIN_VALUE, engine);
 							fToDepth = -1;
 							fFromLevel = 0;
-							fToLevel = Validate.checkIntType(i1, Integer.MIN_VALUE);
+							fToLevel = Validate.throwIntType(i1, Integer.MIN_VALUE, engine);
 						} else if (i1.isNegative()) {
 							// all subexpressions at any level greater equal i0 that have a depth of -i1 or greater.
 							fFromDepth = Integer.MIN_VALUE;
-							fToDepth = Validate.checkIntType(i1, Integer.MIN_VALUE);
-							fFromLevel = Validate.checkIntType(i0, Integer.MIN_VALUE);
+							fToDepth = Validate.throwIntType(i1, Integer.MIN_VALUE, engine);
+							fFromLevel = Validate.throwIntType(i0, Integer.MIN_VALUE, engine);
 							fToLevel = Integer.MAX_VALUE;
 						} else {
 							fFromDepth = Integer.MIN_VALUE;
 							fToDepth = -1;
-							fFromLevel = Validate.checkIntType(i0, Integer.MIN_VALUE);
-							fToLevel = Validate.checkIntType(i1, Integer.MIN_VALUE);
+							fFromLevel = Validate.throwIntType(i0, Integer.MIN_VALUE, engine);
+							fToLevel = Validate.throwIntType(i1, Integer.MIN_VALUE, engine);
 						}
 						return;
 					} else if ((lst.arg1() instanceof IInteger) && (lst.arg2().isInfinity())) {
@@ -142,7 +143,7 @@ public class IndexedLevel {
 						} else {
 							fFromDepth = Integer.MIN_VALUE;
 							fToDepth = -1;
-							fFromLevel = Validate.checkIntType(i0, Integer.MIN_VALUE);
+							fFromLevel = Validate.throwIntType(i0, Integer.MIN_VALUE, engine);
 							fToLevel = Integer.MAX_VALUE;
 						}
 						return;

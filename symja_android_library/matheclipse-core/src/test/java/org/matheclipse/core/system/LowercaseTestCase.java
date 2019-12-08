@@ -13518,7 +13518,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("test={g,h,k}", //
 				"{g,h,k}");
 		check("test[[Position({x,v,w },{x,_,_})[[1,1]],2]] = ({a,b})[[2]]", //
-				"b");
+				"$Failed");
 		check("f(a, b, c)[[{2, 3}]]", //
 				"f(b,c)");
 		check("f(g(a, b), h(c, d))[[{1, 2}, {2}]]", //

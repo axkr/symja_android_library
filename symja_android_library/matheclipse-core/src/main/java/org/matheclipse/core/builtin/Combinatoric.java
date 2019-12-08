@@ -1174,7 +1174,7 @@ public final class Combinatoric {
 						if (!sequence.isAST1() || !sequence.arg1().isInteger()) {
 							return F.NIL;
 						}
-						parts = Validate.checkIntType(sequence.arg1());
+						parts = Validate.checkIntType(F.Permutations, sequence.arg1(), 0, engine);
 						if (parts < 0 && parts > list.argSize()) {
 							return F.NIL;
 						}

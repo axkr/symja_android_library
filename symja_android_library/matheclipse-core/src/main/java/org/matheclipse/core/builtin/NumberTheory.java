@@ -639,35 +639,39 @@ public final class NumberTheory {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.arg1().isList() && ast.arg2().isList()) {
-				try {
-					long[] a = Validate.checkListOfLongs(ast.arg1(), Long.MIN_VALUE);
-					long[] n = Validate.checkListOfLongs(ast.arg2(), Long.MIN_VALUE);
-					if (a.length != n.length) {
+				long[] a = Validate.checkListOfLongs(ast, ast.arg1(), Long.MIN_VALUE, true, engine);
+				long[] n = Validate.checkListOfLongs(ast, ast.arg2(), Long.MIN_VALUE, true, engine);
+				if (a == null || n == null) {
+					// try with BigIntegers
+					BigInteger[] aBig = Validate.checkListOfBigIntegers(ast, ast.arg1(), false, engine);
+					if (aBig == null) {
 						return F.NIL;
 					}
-					try {
-						return F.ZZ(chineseRemainders(n, a));
-					} catch (ArithmeticException ae) {
-						if (Config.SHOW_STACKTRACE) {
-							ae.printStackTrace();
-						}
+					BigInteger[] nBig = Validate.checkListOfBigIntegers(ast, ast.arg2(), false, engine);
+					if (nBig == null) {
+						return F.NIL;
 					}
-					return F.NIL;
-				} catch (WrongArgumentType wat) {
-					// try with BigIntegers
-					BigInteger[] aBig = Validate.checkListOfBigIntegers(ast.arg1(), false);
-					BigInteger[] nBig = Validate.checkListOfBigIntegers(ast.arg2(), false);
 					if (aBig.length != nBig.length) {
 						return F.NIL;
 					}
 					try {
-						return F.integer(chineseRemainders(nBig, aBig));
+						return F.ZZ(chineseRemainders(nBig, aBig));
 					} catch (ArithmeticException ae) {
 						if (Config.SHOW_STACKTRACE) {
 							ae.printStackTrace();
 						}
 					}
 					return F.NIL;
+				}
+				if (a.length != n.length) {
+					return F.NIL;
+				}
+				try {
+					return F.ZZ(chineseRemainders(n, a));
+				} catch (ArithmeticException ae) {
+					if (Config.SHOW_STACKTRACE) {
+						ae.printStackTrace();
+					}
 				}
 			}
 			return F.NIL;
@@ -1617,12 +1621,12 @@ public final class NumberTheory {
 				BigInteger gcd = extendedGCD(ast, subBezouts);
 				// convert the Bezout numbers to sublists
 				IASTAppendable subList = F.ListAlloc(subBezouts.length);
-				subList.appendArgs(0, subBezouts.length, i -> F.integer(subBezouts[i]));
+				subList.appendArgs(0, subBezouts.length, i -> F.ZZ(subBezouts[i]));
 				// for (int i = 0; i < subBezouts.length; i++) {
 				// subList.append(F.integer(subBezouts[i]));
 				// }
 				// create the output list
-				return F.List(F.integer(gcd), subList);
+				return F.List(F.ZZ(gcd), subList);
 			} catch (ArithmeticException ae) {
 				if (Config.SHOW_STACKTRACE) {
 					ae.printStackTrace();
@@ -2146,9 +2150,12 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			BigInteger[] array = Validate.checkListOfBigIntegers(ast.arg1(), true);
-			BigInteger result = org.matheclipse.core.frobenius.FrobeniusNumber.frobeniusNumber(array);
-			return F.ZZ(result);
+			BigInteger[] array = Validate.checkListOfBigIntegers(ast, ast.arg1(), true, engine);
+			if (array != null) {
+				BigInteger result = org.matheclipse.core.frobenius.FrobeniusNumber.frobeniusNumber(array);
+				return F.ZZ(result);
+			}
+			return F.NIL;
 		}
 
 		@Override
@@ -2997,7 +3004,7 @@ public final class NumberTheory {
 					// Non-negative integer expected.
 					return IOFunctions.printMessage(F.NextPrime, "intnn", F.List(), engine);
 				}
-				return F.integer(primeBase.nextProbablePrime());
+				return F.ZZ(primeBase.nextProbablePrime());
 			} else if (ast.isAST2() && ast.arg1().isInteger() && ast.arg2().isInteger()) {
 				BigInteger primeBase = ((IInteger) ast.arg1()).toBigNumerator();
 				if (primeBase.compareTo(BigInteger.ZERO) < 0) {
@@ -3014,7 +3021,7 @@ public final class NumberTheory {
 				for (int i = 0; i < n; i++) {
 					temp = temp.nextProbablePrime();
 				}
-				return F.integer(temp);
+				return F.ZZ(temp);
 
 			}
 			return F.NIL;
@@ -3615,6 +3622,7 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			// TODO
 			IExpr arg1 = ast.arg1();
 			return F.NIL;
 		}

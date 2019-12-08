@@ -4566,7 +4566,10 @@ public class StatisticsFunctions {
 								if (ast.size() == 3) {
 									IExpr arg2 = ast.arg2();
 									if (arg2.isList()) {
-										int[] indx = Validate.checkListOfInts(arg2, 0, Integer.MAX_VALUE);
+										int[] indx = Validate.checkListOfInts(ast, arg2, 0, Integer.MAX_VALUE, engine);
+										if (indx == null) {
+											return F.NIL;
+										}
 										IASTAppendable list = F.ListAlloc(indx[0]);
 										return createArray(indx, 0, list, () -> variate.randomVariate(random, dist));
 									} else {

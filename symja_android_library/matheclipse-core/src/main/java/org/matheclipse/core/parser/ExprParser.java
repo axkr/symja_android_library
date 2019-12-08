@@ -27,7 +27,7 @@ import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.NumStr;
@@ -237,7 +237,7 @@ public class ExprParser extends Scanner {
 
 	private IExpr convertN(final IASTMutable function) {
 		try {
-			int precision = Validate.checkIntType(function.arg2());
+			int precision = Validate.throwIntType(function.arg2(), 5, EvalEngine.get());
 			if (EvalEngine.isApfloat(precision)) {
 				NVisitorExpr nve = new NVisitorExpr(precision);
 				IExpr temp = function.arg1().accept(nve);
@@ -245,8 +245,8 @@ public class ExprParser extends Scanner {
 					function.set(1, temp);
 				}
 			}
-		} catch (WrongArgumentType wat) {
-
+		} catch (ValidateException wat) {
+			// checkIntType
 		}
 		return function;
 	}

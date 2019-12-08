@@ -4099,7 +4099,10 @@ public final class LinearAlgebra {
 				if (ast.arg1().isList() && ast.arg2().isList()) {
 					IAST tensor = (IAST) ast.arg1();
 					ArrayList<Integer> dims = dimensions(tensor, tensor.head(), Integer.MAX_VALUE);
-					int[] permutation = Validate.checkListOfInts(ast.arg2(), 1, dims.size());
+					int[] permutation = Validate.checkListOfInts(ast, ast.arg2(), 1, dims.size(), engine);
+					if (permutation == null) {
+						return F.NIL;
+					}
 					return new TransposePermute(tensor, dims, permutation).recursiveTranspose();
 				}
 				return F.NIL;

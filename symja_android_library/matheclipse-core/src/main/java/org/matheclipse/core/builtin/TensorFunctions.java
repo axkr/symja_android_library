@@ -127,7 +127,10 @@ public class TensorFunctions {
 			if (ast.arg1().isList() && ast.arg2().isList()) {
 				IAST list = (IAST) ast.arg1();
 				IAST dims = (IAST) ast.arg2();
-				int[] dimension = Validate.checkListOfInts(dims, 1, Integer.MAX_VALUE);
+				int[] dimension = Validate.checkListOfInts(ast, dims, 1, Integer.MAX_VALUE, engine);
+				if (dimension == null) {
+					return F.NIL;
+				}
 				IExpr padding = F.C0;
 				if (ast.size() == 4) {
 					padding = ast.arg3();

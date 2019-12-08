@@ -1068,46 +1068,52 @@ public final class ListFunctions {
 				}
 			}
 
-			if (ast.size() >= 3 && ast.size() <= 5) {
-				final IExpr arg1 = engine.evaluate(ast.arg1());
-				if (arg1.isAST()) {
-					final IExpr arg2 = engine.evalPattern(ast.arg2());
-					if (ast.isAST3() || ast.size() == 5) {
-						final IExpr arg3 = engine.evaluate(ast.arg3());
-						int maximumResults = -1;
-						if (ast.size() == 5) {
-							maximumResults = Validate.checkIntType(ast, 4);
-						}
-						IASTAppendable result = F.ListAlloc(8);
-						if (arg2.isRuleAST()) {
+			try {
+				if (ast.size() >= 3 && ast.size() <= 5) {
+					final IExpr arg1 = engine.evaluate(ast.arg1());
+					if (arg1.isAST()) {
+						final IExpr arg2 = engine.evalPattern(ast.arg2());
+						if (ast.isAST3() || ast.size() == 5) {
+							final IExpr arg3 = engine.evaluate(ast.arg3());
+							int maximumResults = -1;
+							if (ast.size() == 5) {
+								maximumResults = Validate.checkIntType(ast, 4);
+							}
+							IASTAppendable result = F.ListAlloc(8);
+							if (arg2.isRuleAST()) {
+								try {
+									Function<IExpr, IExpr> function = Functors.rules((IAST) arg2, engine);
+									CasesRulesFunctor crf = new CasesRulesFunctor(function, result, maximumResults);
+									VisitorLevelSpecification level = new VisitorLevelSpecification(crf, arg3, false,
+											engine);
+									arg1.accept(level);
+
+								} catch (StopException se) {
+									// reached maximum number of results
+								}
+								return result;
+							}
+
 							try {
-								Function<IExpr, IExpr> function = Functors.rules((IAST) arg2, engine);
-								CasesRulesFunctor crf = new CasesRulesFunctor(function, result, maximumResults);
-								VisitorLevelSpecification level = new VisitorLevelSpecification(crf, arg3, false,
+								final IPatternMatcher matcher = engine.evalPatternMatcher(arg2);
+								CasesPatternMatcherFunctor cpmf = new CasesPatternMatcherFunctor(matcher, result,
+										maximumResults);
+								VisitorLevelSpecification level = new VisitorLevelSpecification(cpmf, arg3, false,
 										engine);
 								arg1.accept(level);
-
 							} catch (StopException se) {
 								// reached maximum number of results
 							}
 							return result;
+						} else {
+							return cases((IAST) arg1, arg2, engine);
 						}
-
-						try {
-							final IPatternMatcher matcher = engine.evalPatternMatcher(arg2);
-							CasesPatternMatcherFunctor cpmf = new CasesPatternMatcherFunctor(matcher, result,
-									maximumResults);
-							VisitorLevelSpecification level = new VisitorLevelSpecification(cpmf, arg3, false, engine);
-							arg1.accept(level);
-						} catch (StopException se) {
-							// reached maximum number of results
-						}
-						return result;
-					} else {
-						return cases((IAST) arg1, arg2, engine);
 					}
+					return F.List();
 				}
-				return F.List();
+			} catch (final RuntimeException rex) {
+				// ArgumentTypeException from VisitorLevelSpecification level specification checks
+				return engine.printMessage("Cases: " + rex.getMessage());
 			}
 			return F.NIL;
 		}
@@ -1184,50 +1190,55 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			IAST list = Validate.checkListType(ast, 1);
-
-			int n = -1;
-			if (ast.isAST2()) {
-				n = Validate.checkIntType(ast.arg2());
-			}
-
-			IASTAppendable tallyResult = Tally.tally1Arg(list);
-			EvalAttributes.sort(tallyResult, new Comparator<IExpr>() {
-				@Override
-				public int compare(IExpr o1, IExpr o2) {
-					return o2.second().compareTo(o1.second());
-				}
-			});
-
-			int size = tallyResult.size();
-			if (size > 1) {
-				if (n == -1) {
-					IInteger max = (IInteger) ((IAST) tallyResult.arg1()).arg2();
-					IASTAppendable result = F.ListAlloc(size);
-					result.append(((IAST) tallyResult.arg1()).arg1());
-					tallyResult.exists(x -> {
-						if (max.equals(x.second())) {
-							result.append(x.first());
-							return false;
-						}
-						return true;
-					}, 2);
-					return result;
-				} else {
-					int counter = 0;
-					IASTAppendable result = F.ListAlloc(size);
-					for (int i = 1; i < size; i++) {
-						if (counter < n) {
-							result.append(((IAST) tallyResult.get(i)).arg1());
-							counter++;
-						} else {
-							break;
-						}
+			IAST list = Validate.checkListType(ast, 1, engine);
+			if (list.isPresent()) {
+				int n = -1;
+				if (ast.isAST2()) {
+					n = Validate.checkIntType(F.Commonest, ast.arg2(), 0, engine);
+					if (n == Integer.MIN_VALUE) {
+						return F.NIL;
 					}
-					return result;
 				}
+
+				IASTAppendable tallyResult = Tally.tally1Arg(list);
+				EvalAttributes.sort(tallyResult, new Comparator<IExpr>() {
+					@Override
+					public int compare(IExpr o1, IExpr o2) {
+						return o2.second().compareTo(o1.second());
+					}
+				});
+
+				int size = tallyResult.size();
+				if (size > 1) {
+					if (n == -1) {
+						IInteger max = (IInteger) ((IAST) tallyResult.arg1()).arg2();
+						IASTAppendable result = F.ListAlloc(size);
+						result.append(((IAST) tallyResult.arg1()).arg1());
+						tallyResult.exists(x -> {
+							if (max.equals(x.second())) {
+								result.append(x.first());
+								return false;
+							}
+							return true;
+						}, 2);
+						return result;
+					} else {
+						int counter = 0;
+						IASTAppendable result = F.ListAlloc(size);
+						for (int i = 1; i < size; i++) {
+							if (counter < n) {
+								result.append(((IAST) tallyResult.get(i)).arg1());
+								counter++;
+							} else {
+								break;
+							}
+						}
+						return result;
+					}
+				}
+				return F.List();
 			}
-			return F.List();
+			return F.NIL;
 		}
 
 		@Override
@@ -1556,17 +1567,21 @@ public final class ListFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			final IExpr arg1 = engine.evaluate(ast.arg1());
-
-			final VisitorLevelSpecification level;
-			CountFunctor mf = new CountFunctor(engine.evalPatternMatcher(ast.arg2()));
-			if (ast.isAST3()) {
-				final IExpr arg3 = engine.evaluate(ast.arg3());
-				level = new VisitorLevelSpecification(mf, arg3, false, engine);
-			} else {
-				level = new VisitorLevelSpecification(mf, 1);
+			try {
+				final VisitorLevelSpecification level;
+				CountFunctor mf = new CountFunctor(engine.evalPatternMatcher(ast.arg2()));
+				if (ast.isAST3()) {
+					final IExpr arg3 = engine.evaluate(ast.arg3());
+					level = new VisitorLevelSpecification(mf, arg3, false, engine);
+				} else {
+					level = new VisitorLevelSpecification(mf, 1);
+				}
+				arg1.accept(level);
+				return F.ZZ(mf.getCounter());
+			} catch (final RuntimeException rex) {
+				// ArgumentTypeException from VisitorLevelSpecification level specification checks
+				return engine.printMessage("Count: " + rex.getMessage());
 			}
-			arg1.accept(level);
-			return F.ZZ(mf.getCounter());
 		}
 
 		@Override
@@ -1646,7 +1661,10 @@ public final class ListFunctions {
 		private IAST deleteListOfPositions(final IAST list, final IAST listOfIntPositions, EvalEngine engine) {
 			int[] indx;
 			try {
-				indx = Validate.checkListOfInts(listOfIntPositions, Integer.MIN_VALUE, Integer.MAX_VALUE);
+				indx = Validate.checkListOfInts(list, listOfIntPositions, Integer.MIN_VALUE, Integer.MAX_VALUE, engine);
+				if (indx == null) {
+					return F.NIL;
+				}
 				return deletePartRecursive(list, indx, 0);
 			} catch (final RuntimeException rex) {
 				if (Config.DEBUG) {
@@ -1767,7 +1785,11 @@ public final class ListFunctions {
 						return arg1RemoveClone;
 					} catch (VisitorRemoveLevelSpecification.StopException se) {
 						// reached maximum number of results
+					} catch (final RuntimeException rex) {
+						// ArgumentTypeException from VisitorLevelSpecification level specification checks
+						return engine.printMessage("DeleteCases: " + rex.getMessage());
 					}
+
 					return arg1RemoveClone;
 				} else {
 					return deleteCases((IAST) arg1, matcher);
@@ -2584,7 +2606,11 @@ public final class ListFunctions {
 			IExpr arg3 = engine.evaluate(ast.arg3());
 			if (arg3.isInteger()) {
 				try {
-					int i = Validate.checkIntType(arg3, Integer.MIN_VALUE);
+					int i = Validate.checkIntType(F.Insert, arg3, Integer.MIN_VALUE, engine);
+					if (i == Integer.MIN_VALUE) {
+						return F.NIL;
+						
+					}
 					if (i < 0) {
 						i = 1 + arg1AST.size() + i;
 					}
@@ -2924,38 +2950,43 @@ public final class ListFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			int lastIndex = ast.argSize();
 			boolean heads = false;
-			final OptionArgs options = new OptionArgs(ast.topHead(), ast, lastIndex, engine);
-			IExpr option = options.getOption(F.Heads);
-			if (option.isPresent()) {
-				lastIndex--;
-				if (option.isTrue()) {
-					heads = true;
-				}
-			} else {
-				if (ast.size() < 3 || ast.size() > 4) {
-					return F.NIL;
-				}
-			}
-
-			if (!ast.arg1().isAtom()) {
-				final IAST arg1 = (IAST) ast.arg1();
-				IASTAppendable resultList;
-				if (lastIndex != 3) {
-					resultList = F.ListAlloc(8);
+			try {
+				final OptionArgs options = new OptionArgs(ast.topHead(), ast, lastIndex, engine);
+				IExpr option = options.getOption(F.Heads);
+				if (option.isPresent()) {
+					lastIndex--;
+					if (option.isTrue()) {
+						heads = true;
+					}
 				} else {
-					resultList = F.ast(ast.get(lastIndex));
+					if (ast.size() < 3 || ast.size() > 4) {
+						return F.NIL;
+					}
 				}
 
-				final VisitorLevelSpecification level = new VisitorLevelSpecification(x -> {
-					resultList.append(x);
-					return F.NIL;
-				}, ast.arg2(), heads, engine);
-				// Functors.collect(resultList.args()), ast.arg2(), heads);
-				arg1.accept(level);
+				if (!ast.arg1().isAtom()) {
+					final IAST arg1 = (IAST) ast.arg1();
+					IASTAppendable resultList;
+					if (lastIndex != 3) {
+						resultList = F.ListAlloc(8);
+					} else {
+						resultList = F.ast(ast.get(lastIndex));
+					}
 
-				return resultList;
+					final VisitorLevelSpecification level = new VisitorLevelSpecification(x -> {
+						resultList.append(x);
+						return F.NIL;
+					}, ast.arg2(), heads, engine);
+					// Functors.collect(resultList.args()), ast.arg2(), heads);
+					arg1.accept(level);
+
+					return resultList;
+				}
+				return F.List();
+			} catch (final RuntimeException rex) {
+				// ArgumentTypeException from VisitorLevelSpecification level specification checks
+				return engine.printMessage("Level: " + rex.getMessage());
 			}
-			return F.List();
 		}
 
 		@Override
@@ -3000,8 +3031,9 @@ public final class ListFunctions {
 				// throws MathException if Level isn't defined correctly
 				new VisitorLevelSpecification(null, arg1, false, engine);
 				return F.True;
-			} catch (RuntimeException rex) {
-				// thrown in VisitorLevelSpecification ctor
+			} catch (final RuntimeException rex) {
+				// ArgumentTypeException from VisitorLevelSpecification level specification checks
+				// return engine.printMessage("LevelQ: " + rex.getMessage());
 			}
 			return F.False;
 		}
@@ -4078,18 +4110,18 @@ public final class ListFunctions {
 			if (ast.size() < 3 || ast.size() > 4) {
 				return F.NIL;
 			}
+			IExpr arg1 = ast.arg1();
+			IExpr rules = engine.evaluate(ast.arg2());
 			try {
-				IExpr arg1 = ast.arg1();
-				IExpr rules = engine.evaluate(ast.arg2());
 				if (ast.isAST3()) {
 					// arg3 should contain a "level specification":
 					return replaceExprWithLevelSpecification(ast, arg1, rules, ast.arg3(), engine);
 				}
 				return replaceExpr(ast, arg1, rules, engine);
-			} catch (WrongArgumentType wat) {
-				engine.printMessage("Replace: " + wat.getMessage());
+			} catch (final RuntimeException rex) {
+				// ArgumentTypeException from VisitorLevelSpecification level specification checks
+				return engine.printMessage("Replace: " + rex.getMessage());
 			}
-			return F.NIL;
 		}
 
 		public int[] expectedArgSize() {
@@ -4741,8 +4773,10 @@ public final class ListFunctions {
 				} else {
 					IExpr arg2 = engine.evaluate(ast.arg2());
 					if (arg2.isInteger()) {
-						int n = Validate.checkIntType(arg2);
-
+						int n = Validate.checkIntType(F.RotateLeft, arg2, 0, engine);
+						if (n == Integer.MIN_VALUE) {
+							return F.NIL;
+						}
 						// ASTRange range = ((IAST) arg1).args();
 						((IAST) arg1).rotateLeft(result, n);
 						return result;
@@ -4807,7 +4841,10 @@ public final class ListFunctions {
 				} else {
 					IExpr arg2 = engine.evaluate(ast.arg2());
 					if (arg2.isInteger()) {
-						int n = Validate.checkIntType(arg2);
+						int n = Validate.checkIntType(F.RotateRight, arg2, 0, engine);
+						if (n == Integer.MIN_VALUE) {
+							return F.NIL;
+						}
 						// ASTRange range = ((IAST) arg1).args();
 						((IAST) arg1).rotateRight(result, n);
 						return result;
@@ -5399,17 +5436,17 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			IAST list = Validate.checkListType(ast, 1);
+			IAST list = Validate.checkListType(ast, 1, engine);
+			if (list.isPresent()) {
+				int size = ast.size();
 
-			int size = ast.size();
-
-			if (size == 2) {
-				return tally1Arg(list);
-			} else if (size == 3) {
-				BiPredicate<IExpr, IExpr> biPredicate = Predicates.isBinaryTrue(ast.arg2());
-				return tally2Args(list, biPredicate);
+				if (size == 2) {
+					return tally1Arg(list);
+				} else if (size == 3) {
+					BiPredicate<IExpr, IExpr> biPredicate = Predicates.isBinaryTrue(ast.arg2());
+					return tally2Args(list, biPredicate);
+				}
 			}
-
 			return F.NIL;
 		}
 
@@ -5711,33 +5748,37 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			VisitorLevelSpecification level = null;
-			Function<IExpr, IExpr> tf = x -> x.isAST() ? ((IAST) x).setAtCopy(0, F.Plus) : x;
+			try {
+				VisitorLevelSpecification level = null;
+				Function<IExpr, IExpr> tf = x -> x.isAST() ? ((IAST) x).setAtCopy(0, F.Plus) : x;
 
-			if (ast.isAST2()) {
-				level = new TotalLevelSpecification(tf, ast.arg2(), false, engine);
-				// increment level because we select only subexpressions
-			} else {
-				level = new TotalLevelSpecification(tf, 1, false);
-			}
+				if (ast.isAST2()) {
+					level = new TotalLevelSpecification(tf, ast.arg2(), false, engine);
+					// increment level because we select only subexpressions
+				} else {
+					level = new TotalLevelSpecification(tf, 1, false);
+				}
 
-			if (ast.arg1().isAST()) {
-				// increment level because we select only subexpressions
-				level.incCurrentLevel();
-				IExpr temp = ast.arg1().accept(level);
-				if (temp.isPresent()) {
-					boolean te = engine.isThrowError();
-					try {
-						engine.setThrowError(true);
-						return engine.evaluate(temp);
-					} catch (RuntimeException rex) {
-						return F.NIL;
-					} finally {
-						engine.setThrowError(te);
+				if (ast.arg1().isAST()) {
+					// increment level because we select only subexpressions
+					level.incCurrentLevel();
+					IExpr temp = ast.arg1().accept(level);
+					if (temp.isPresent()) {
+						boolean te = engine.isThrowError();
+						try {
+							engine.setThrowError(true);
+							return engine.evaluate(temp);
+						} catch (RuntimeException rex) {
+							return F.NIL;
+						} finally {
+							engine.setThrowError(te);
+						}
 					}
 				}
+			} catch (final RuntimeException rex) {
+				// ArgumentTypeException from VisitorLevelSpecification level specification checks
+				return engine.printMessage("Total: " + rex.getMessage());
 			}
-
 			return F.NIL;
 		}
 

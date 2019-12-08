@@ -227,8 +227,9 @@ public class Structure {
 						return expr;
 					}
 				}
-			} catch (final RuntimeException e) {
-				return engine.printMessage("Apply: " + e.getMessage());
+			} catch (final RuntimeException rex) {
+				// ArgumentTypeException from VisitorLevelSpecification level specification checks
+				return engine.printMessage("Apply: " + rex.getMessage());
 			}
 			return F.NIL;
 		}
@@ -1050,8 +1051,9 @@ public class Structure {
 				if (arg2.isAST()) {
 					return level.visitAST(((IAST) arg2), new int[0]).orElse(arg2);
 				}
-			} catch (final RuntimeException e) {
-				return engine.printMessage("MapIndexed: " + e.getMessage());
+			} catch (final RuntimeException rex) {
+				// ArgumentTypeException from IndexedLevel level specification checks
+				return engine.printMessage("MapIndexed: " + rex.getMessage());
 			}
 			return F.NIL;
 		}

@@ -655,6 +655,7 @@ public class IOFunctions {
 			"infy", "Infinite expression `1` encountered.", //
 			"innf", "Non-negative integer or Infinity expected at position `1`.", //
 			"int", "Integer expected.", //
+			"intjava", "Java int value greater equal `1` expected instead of `2`.", //
 			"intp", "Positive integer expected.", //
 			"intnn", "Non-negative integer expected.", //
 			"intnm", "Non-negative machine-sized integer expected at position `2` in `1`.", //
@@ -662,6 +663,10 @@ public class IOFunctions {
 			"iterb", "Iterator does not have appropriate bounds.", //
 			"ivar", "`1` is not a valid variable.", //
 			"level", "Level specification `1` is not of the form n, {n}, or {m, n}.", //
+			"list", "List expected at position `1` in `2`.", //
+			"listofbigints", "List of Java BigInteger numbers expected in `1`.", //
+			"listofints", "List of Java int numbers expected in `1`.", //
+			"listoflongs", "List of Java long numbers expected in `1`.", //
 			"locked", "Symbol `1` is locked.", //
 			"matsq", "Argument `1` is not a non-empty square matrix.", //
 			"noopen", "Cannot open `1`.", //
@@ -770,6 +775,24 @@ public class IOFunctions {
 			engine.printMessage(symbol.toString() + ": " + message);
 		}
 		return F.NIL;
+	}
+
+	public static String getMessage(String messageShortcut, final IAST listOfArgs, EvalEngine engine) {
+		IExpr temp = F.General.evalMessage(messageShortcut);
+		String message = null;
+		if (temp.isPresent()) {
+			message = temp.toString();
+		}
+		if (message == null) {
+			message = "Undefined message shortcut: " + messageShortcut;
+			engine.setMessageShortcut(messageShortcut);
+			return message;
+		}
+		for (int i = 1; i < listOfArgs.size(); i++) {
+			message = StringUtils.replace(message, "`" + (i) + "`", listOfArgs.get(i).toString());
+		}
+		engine.setMessageShortcut(messageShortcut);
+		return message;
 	}
 
 	public static IAST printMessage(ISymbol symbol, Exception ex, EvalEngine engine) {
