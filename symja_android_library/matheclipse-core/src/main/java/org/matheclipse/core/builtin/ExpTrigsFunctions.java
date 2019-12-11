@@ -52,6 +52,7 @@ import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -2097,21 +2098,8 @@ public class ExpTrigsFunctions {
 			if (arg1.isNegativeResult()) {
 				return F.Plus(F.Log(F.Negate(arg1)), F.Times(CI, F.Pi));
 			}
-			if (arg1.isInterval1()) {
-				return evalInterval(arg1);
-			}
-			return F.NIL;
-		}
-
-		private static IExpr evalInterval(final IExpr arg1) {
-			IExpr l = arg1.lower();
-			IExpr u = arg1.upper();
-			l = F.Log.of(l);
-			if (l.isRealResult() || l.isNegativeInfinity()) {
-				u = F.Log.of(u);
-				if (u.isRealResult() || u.isInfinity()) {
-					return F.Interval(F.List(l, u));
-				}
+			if (arg1.isInterval()) {
+				return IntervalSym.log((IAST)arg1);
 			}
 			return F.NIL;
 		}

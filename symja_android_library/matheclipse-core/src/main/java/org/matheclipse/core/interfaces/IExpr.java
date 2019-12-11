@@ -1708,6 +1708,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isInterval1() {
 		return false;
 	}
+	 
 
 	/**
 	 * Compares this expression with the specified expression for order. Returns true if this expression is canonical

@@ -4,14 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.parser.client.math.MathException;
 
 import ch.ethz.idsc.tensor.qty.IQuantity;
@@ -115,7 +114,7 @@ public final class PlusOp {
 		}
 		// result.addEvalFlags(IAST.IS_EVALED);
 		return result.oneIdentity0();
-	} 
+	}
 
 	/**
 	 * Test if any evaluation occurred by calling the <code>plus()</code> method
@@ -162,11 +161,25 @@ public final class PlusOp {
 					evaled = true;
 					return F.NIL;
 				} else if (numberValue.isInfinity()) {
+					if (arg.isInfinity()) {
+						evaled = true;
+						return F.NIL;
+					}
+					if (arg.isDirectedInfinity()) {
+						return F.Indeterminate;
+					}
 					if (arg.isRealResult()) {
 						evaled = true;
 						return F.NIL;
 					}
 				} else if (numberValue.isNegativeInfinity()) {
+					if (arg.isNegativeInfinity()) {
+						evaled = true;
+						return F.NIL;
+					}
+					if (arg.isDirectedInfinity()) {
+						return F.Indeterminate;
+					}
 					if (arg.isRealResult()) {
 						evaled = true;
 						return F.NIL;
@@ -193,7 +206,7 @@ public final class PlusOp {
 						EvalEngine.get().printMessage("Indeterminate expression Infinity-Infinity");
 						return F.Indeterminate;
 					}
-					numberValue = F.CInfinity; 
+					numberValue = F.CInfinity;
 					evaled = true;
 					return F.NIL;
 				}
@@ -227,7 +240,7 @@ public final class PlusOp {
 									EvalEngine.get().printMessage("Indeterminate expression Infinity-Infinity");
 									return F.Indeterminate;
 								}
-								numberValue = F.CInfinity; 
+								numberValue = F.CInfinity;
 								evaled = true;
 								return F.NIL;
 							} else if (arg.isNegativeInfinity()) {
@@ -261,12 +274,18 @@ public final class PlusOp {
 						}
 						return F.NIL;
 					case ID.Interval:
-						if (arg.isInterval1()) {
+						if (arg.isInterval()) {
 							if (numberValue == null) {
 								numberValue = arg;
 								return F.NIL;
 							}
-							numberValue = plusInterval(numberValue, arg);
+							if (numberValue.isInterval()) {
+								numberValue = IntervalSym.plus((IAST) numberValue,
+										(IAST) arg);
+							} else {
+								numberValue = IntervalSym.plus(numberValue,
+										(IAST) arg);
+							}
 							evaled = true;
 							return F.NIL;
 						}
@@ -310,7 +329,7 @@ public final class PlusOp {
 		return F.NIL;
 	}
 
-	private static IExpr plusInterval(final IExpr o0, final IExpr o1) {
-		return F.Interval(F.List(o0.lower().plus(o1.lower()), o0.upper().plus(o1.upper())));
-	}
+	// private static IExpr plusInterval(final IExpr o0, final IExpr o1) {
+	// return F.Interval(F.List(o0.lower().plus(o1.lower()), o0.upper().plus(o1.upper())));
+	// }
 }

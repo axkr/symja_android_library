@@ -26,13 +26,12 @@ import static org.matheclipse.core.expression.F.Pi;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Positive;
 import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.QQ;
 import static org.matheclipse.core.expression.F.Re;
 import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.QQ;
-import static org.matheclipse.core.expression.F.integer;
 import static org.matheclipse.core.expression.F.num;
 import static org.matheclipse.core.expression.F.x;
 import static org.matheclipse.core.expression.F.x_;
@@ -65,13 +64,13 @@ import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
-import org.matheclipse.core.expression.AST2;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
@@ -2891,13 +2890,17 @@ public final class Arithmetic {
 			}
 
 			if (base.isZero()) {
+				if (exponent.isInterval()) {
+					return org.matheclipse.core.expression.IntervalSym.power(base, (IAST) exponent);
+				}
 				return powerZeroArg1(exponent);
 			}
 			if (base.isAST()) {
-				if (base.isInterval1()) {
+				if (base.isInterval()) {
 					if (exponent.isInteger()) {
 						IInteger ii = (IInteger) exponent;
-						return powerInterval(base, ii);
+						return org.matheclipse.core.expression.IntervalSym.power((IAST) base, ii);
+						// return powerInterval(base, ii);
 					}
 				} else if (base.isQuantity()) {
 					IQuantity q = (IQuantity) base;
@@ -2908,6 +2911,12 @@ public final class Arithmetic {
 						return ((ASTSeriesData) base).pow(exp);
 					}
 					return F.NIL;
+				}
+			}
+
+			if (exponent.isInterval()) {
+				if (base.isRealResult()) {
+					return org.matheclipse.core.expression.IntervalSym.power(base, (IAST) exponent);
 				}
 			}
 
@@ -3064,31 +3073,31 @@ public final class Arithmetic {
 		 * @param exponent
 		 * @return
 		 */
-		private static IExpr powerInterval(final IExpr interval, IInteger exponent) {
-			if (exponent.isNegative()) {
-				if (exponent.isMinusOne()) {
-					// TODO implement division
-					return F.NIL;
-				}
-				return F.Power(powerIntervalPositiveExponent(interval, exponent.negate()), F.CN1);
-			}
-			return powerIntervalPositiveExponent(interval, exponent);
-		}
-
-		private static IExpr powerIntervalPositiveExponent(final IExpr interval, IInteger exponent) {
-			if (exponent.isEven()) {
-				if (interval.lower().isNonNegativeResult()) {
-					return F.Interval(F.List(interval.lower().power(exponent), interval.upper().power(exponent)));
-				} else {
-					if (interval.upper().isNegativeResult()) {
-						return F.Interval(F.List(interval.upper().power(exponent), interval.lower().power(exponent)));
-					}
-					return F.Interval(
-							F.List(F.C0, F.Max(interval.lower().power(exponent), interval.upper().power(exponent))));
-				}
-			}
-			return F.Interval(F.List(interval.lower().power(exponent), interval.upper().power(exponent)));
-		}
+		// private static IExpr powerInterval(final IExpr interval, IInteger exponent) {
+		// if (exponent.isNegative()) {
+		// if (exponent.isMinusOne()) {
+		// // TODO implement division
+		// return F.NIL;
+		// }
+		// return F.Power(powerIntervalPositiveExponent(interval, exponent.negate()), F.CN1);
+		// }
+		// return powerIntervalPositiveExponent(interval, exponent);
+		// }
+		//
+		// private static IExpr powerIntervalPositiveExponent(final IExpr interval, IInteger exponent) {
+		// if (exponent.isEven()) {
+		// if (interval.lower().isNonNegativeResult()) {
+		// return F.Interval(F.List(interval.lower().power(exponent), interval.upper().power(exponent)));
+		// } else {
+		// if (interval.upper().isNegativeResult()) {
+		// return F.Interval(F.List(interval.upper().power(exponent), interval.lower().power(exponent)));
+		// }
+		// return F.Interval(
+		// F.List(F.C0, F.Max(interval.lower().power(exponent), interval.upper().power(exponent))));
+		// }
+		// }
+		// return F.Interval(F.List(interval.lower().power(exponent), interval.upper().power(exponent)));
+		// }
 
 		/**
 		 * Split this integer into the nth-root (with prime factors less equal 1021) and the &quot;rest factor&quot;
@@ -5034,10 +5043,21 @@ public final class Arithmetic {
 			// return ((IAST) arg2).map(x -> x.negate(), 1);
 			// }
 
-			if (arg1.isInterval1() || arg2.isInterval1()) {
-				if (arg1.isRealResult() || arg2.isRealResult() || //
-						(arg1.isInterval1() && arg2.isInterval1())) {
-					return timesInterval(arg1, arg2);
+			if (arg1.isInterval()) {
+				if (arg2.isInterval()) {
+					return IntervalSym.times((IAST) arg1, (IAST) arg2);
+				}
+				if (arg2.isRealResult()) {
+					// return timesInterval(arg1, arg2);
+					return IntervalSym.times(arg2, (IAST) arg1);
+				}
+				// donn't create Power(...,...)
+				return F.NIL;
+			}
+			if (arg2.isInterval()) {
+				if (arg1.isRealResult()) {
+					// return timesInterval(arg1, arg2);
+					return IntervalSym.times(arg1, (IAST) arg2);
 				}
 				// donn't create Power(...,...)
 				return F.NIL;
@@ -5136,10 +5156,11 @@ public final class Arithmetic {
 					break;
 
 				case ID.Interval:
-					if (arg2.isInterval1()) {
-						if (arg1.isInterval1() || arg1.isReal()) {
-							return timesInterval(arg1, arg2);
+					if (arg2.isInterval()) {
+						if (arg1.isInterval()) { 
+							return IntervalSym.times((IAST) arg1, (IAST) arg2);
 						}
+						return IntervalSym.times(arg1, (IAST) arg2);
 					}
 					break;
 				case ID.Quantity:
@@ -5677,13 +5698,13 @@ public final class Arithmetic {
 			return F.NIL;
 		}
 
-		private IExpr timesInterval(final IExpr o0, final IExpr o1) {
-			return F.Interval(F.List(
-					F.Min(o0.lower().times(o1.lower()), o0.lower().times(o1.upper()), o0.upper().times(o1.lower()),
-							o0.upper().times(o1.upper())),
-					F.Max(o0.lower().times(o1.lower()), o0.lower().times(o1.upper()), o0.upper().times(o1.lower()),
-							o0.upper().times(o1.upper()))));
-		}
+		// private IExpr timesInterval(final IExpr o0, final IExpr o1) {
+		// return F.Interval(F.List(
+		// F.Min(o0.lower().times(o1.lower()), o0.lower().times(o1.upper()), o0.upper().times(o1.lower()),
+		// o0.upper().times(o1.upper())),
+		// F.Max(o0.lower().times(o1.lower()), o0.lower().times(o1.upper()), o0.upper().times(o1.lower()),
+		// o0.upper().times(o1.upper()))));
+		// }
 
 	}
 

@@ -7394,6 +7394,17 @@ public class F {
 	public static IAST InterpolatingPolynomial(final IExpr a0, final IExpr a1) {
 		return new AST2(InterpolatingPolynomial, a0, a1);
 	}
+	
+	/**
+	 * Create a new <code>List</code> with the given <code>capacity</code>.
+	 * 
+	 * @param capacity
+	 *            the assumed number of arguments (+ 1 for the header expression is added internally).
+	 * @return
+	 */
+	public static IASTAppendable IntervalAlloc(int capacity) {
+		return ast(Interval, capacity, false);
+	}
 
 	/**
 	 * Create an "interval" expression: <code>Interval(list)</code>.

@@ -215,14 +215,16 @@ public class MinMaxFunctions {
 
 		private IExpr convertMinMaxList(IAST list, ISymbol y) {
 			if (list.arg1().isRealResult()) {
-				if (list.arg2().isRealResult()) {
-					return F.LessEqual(list.arg1(), y, list.arg2());
-				} else if (list.arg2().isInfinity()) {
+				if (list.arg2().isInfinity()) {
 					return F.GreaterEqual(y, list.arg1());
+				} else if (list.arg2().isRealResult()) {
+					return F.LessEqual(list.arg1(), y, list.arg2());
 				}
 			} else if (list.arg2().isRealResult()) {
 				if (list.arg1().isNegativeInfinity()) {
-					return F.LessEqual(y, list.arg2());
+					if (!list.arg2().isInfinity()) {
+						return F.LessEqual(y, list.arg2());
+					}
 				}
 			}
 			return F.NIL;

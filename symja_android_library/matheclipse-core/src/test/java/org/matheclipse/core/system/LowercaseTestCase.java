@@ -4491,6 +4491,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDirectedInfinity() {
+		check("DirectedInfinity(1) + DirectedInfinity(-1)", //
+				"Indeterminate");
 		check("DirectedInfinity(-2000)", //
 				"-Infinity");
 		check("DirectedInfinity(2001)", //
@@ -4509,8 +4511,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("DirectedInfinity(Sqrt(3))", //
 				"Infinity");
-		check("DirectedInfinity(1) + DirectedInfinity(-1)", //
-				"Indeterminate");
 
 		check("DirectedInfinity(1)", //
 				"Infinity");
@@ -7781,10 +7781,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// TODO
 		// check("FunctionRange(Sqrt(x^2 - 1)/x, x, y)", //
 		// "");
-		check("FunctionRange(x/(1 + x^2), x, y)", //
-				"-1/2<=y<=1/2");
+
 		check("FunctionRange(x^2-1, x, y)", //
 				"y>=-1");
+		check("FunctionRange(x/(1 + x^2), x, y)", //
+				"-1/2<=y<=1/2");
 
 		check("FunctionRange(1/(1 + x^2), x, y)", //
 				"0<=y<=1");
@@ -8970,13 +8971,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Refine(Integrate(Abs(Pi+42*x^6),x), Element(x,Reals))", //
 				"Pi*x+6*x^7");
 		check("Refine(Integrate(Abs(E+Pi*x^(-1)),x), Element(x,Reals))", //
-				"Piecewise({{E*x+Pi*Log(x),x<=-Pi/E},{-E*x+2*Pi*(-2+I*Pi+Log(Pi))-Pi*Log(x),-Pi/E<x&&x<=\n" + 
-				"0}},E*x+Pi*Log(x))");
+				"Piecewise({{E*x+Pi*Log(x),x<=-Pi/E},{-E*x+2*Pi*(-2+I*Pi+Log(Pi))-Pi*Log(x),-Pi/E<x&&x<=\n"
+						+ "0}},E*x+Pi*Log(x))");
 		check("Refine(Integrate(Abs(E+2*x^(-1)),x), Element(x,Reals))", //
-				"Piecewise({{E*x+2*Log(x),x<=-2/E},{-E*x+4*(-2+I*2+Log(2))-2*Log(x),-2/E<x&&x<=0}},E*x+\n" + 
-				"2*Log(x))");
-		
-		
+				"Piecewise({{E*x+2*Log(x),x<=-2/E},{-E*x+4*(-2+I*2+Log(2))-2*Log(x),-2/E<x&&x<=0}},E*x+\n"
+						+ "2*Log(x))");
+
 		check("Refine(Integrate(Abs(E+2*x),x), Element(x,Reals))", //
 				"Piecewise({{-E*x-x^2,x<=-E/2}},E^2/Pi+E*x+x^2)");
 		check("Refine(Integrate(Abs(E+Pi*x),x), Element(x,Reals))", //
@@ -8991,7 +8991,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"x^3/3");
 		check("Refine(Integrate(Abs(x^4),x), Element(x,Reals))", //
 				"x^5/5");
- 
+
 		check("Refine(Integrate(Abs(x^(-1)),x), Element(x,Reals))", //
 				"Piecewise({{-Log(x),x<=0}},Log(x))");
 		check("Refine(Integrate(Abs(x^(-5)),x), Element(x,Reals))", //
@@ -9242,10 +9242,84 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("Sin(Interval({4, 7}))", "Interval({-1,Sin(7)})");
 		// check("Sin(Interval({2, 7}))", "Interval({-1,Sin(2)})");
 		// check("Sin(Interval({2, 8}))", "Interval({-1,1})");
+
+		check("Interval({6,9},{12,14})*Interval({5,8},{11,13})", //
+				"Interval({30,117},{132,182})");
+		check("3/4*Interval({5,8},{11,13})", //
+				"Interval({15/4,6},{33/4,39/4})");
+		
+		check("Interval({6,9},{12,14})+Interval({5,8},{11,13})", //
+				"Interval({11,22},{23,27})");
+		check("3/4+Interval({5,8},{11,13})", //
+				"Interval({23/4,35/4},{47/4,55/4})");
+		
+		check("Log(Interval({11,Infinity},{7,4}))",
+				"Interval({Log(4),Log(7)},{Log(11),Infinity})");
+		check("Log(Interval({3,Infinity},{-7,-4}))",
+				"Log(Interval({-7,-4},{3,Infinity}))");
+		check("Interval({3,Infinity},{-7,-4})",
+				"Interval({-7,-4},{3,Infinity})");
+		
+		
+		check("(0)^Interval({2,4},{-42,43})",
+				"Indeterminate");
+		
+		check("(0)^Interval({2,4},{-42,43})",
+				"Indeterminate");
+		check("(0)^Interval({2,4},{42,43})",
+				"Interval({0,0})");
+		
+		check("Interval({-7,11},{27,31},{1,17})", //
+				"Interval({-7,17},{27,31})");
+		check("Interval({-7,11},{9,13},{1,17})", //
+				"Interval({-7,17})");
+		check("Interval({7,11},{9,13},{1,17})", //
+				"Interval({1,17})");
+		check("Interval({7,11},{9,13})", //
+				"Interval({7,13})");
+		check("Interval({7,11},{9,10})", //
+				"Interval({7,11})");
+		
+		check("(1/2)^Interval({-3, 4},{42, 43})", //
+				"Interval({1/8796093022208,1/4398046511104},{1/16,8})");
+
+		check("E^Interval({3, 4},{42, 43})", //
+				"Interval({E^3,E^4},{E^42,E^43})");
+		check("(-Pi)^Interval({-3, 4},{42, 43})", //
+				"(-1)^Interval({-3,4},{42,43})*Interval({1/Pi^3,Pi^4},{Pi^42,Pi^43})");
+
+		check("Interval({-Infinity,Infinity})^2", //
+				"Interval({0,Infinity})");
+
+		check("Interval({-2, 5})^(-2)", //
+				"Interval({1/25,Infinity})");
+		check("Interval({0, 0})^(-1)", //
+				"Interval({-Infinity,Infinity})");
+		check("Interval({-2, 0})^(-1)", //
+				"Interval({-Infinity,-1/2})");
+		check("Interval({-2, 1})^(-1)", //
+				"Interval({-Infinity,-1/2},{1,Infinity})");
+		check("Interval({-2, 5})^(-1)", //
+				"Interval({-Infinity,-1/2},{1/5,Infinity})");
+
+		check("Interval({-2, 5})^2", //
+				"Interval({0,25})");
+		check("Interval({-7, 5})^2", //
+				"Interval({0,49})");
+		check("Interval({-2, 5})^2", //
+				"Interval({0,25})");
+		check("Interval({2, 5})^2", //
+				"Interval({4,25})");
+		check("Interval({-2, 5})^3", //
+				"Interval({-8,125})");
+		check("Interval({-10, -5})^2", //
+				"Interval({25,100})");
+
+		check("Interval(42,43,44)", //
+				"Interval({42,42},{43,43},{44,44})");
+
 		check("Interval({3,-1})", //
 				"Interval({-1,3})");
-		check("Interval({-1,1})*Interval({-1,1})", //
-				"Interval({-1,1})");
 		check("Interval({-1,1})/Infinity", //
 				"0");
 		check("Interval({1,1})", //
@@ -9257,18 +9331,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Interval({0,12})");
 		check("Interval({1, 6}) + Interval({0, 2})", //
 				"Interval({1,8})");
-		check("Interval({-2, 5})^2", //
-				"Interval({0,25})");
-		check("Interval({-7, 5})^2", //
-				"Interval({0,49})");
-		check("Interval({-2, 5})^(-2)", //
-				"1/Interval({0,25})");
-		check("Interval({2, 5})^2", //
-				"Interval({4,25})");
-		check("Interval({-2, 5})^3", //
-				"Interval({-8,125})");
-		check("Interval({-10, -5})^2", //
-				"Interval({25,100})");
 		check("Pi>3", //
 				"True");
 		check("3>Pi", //
