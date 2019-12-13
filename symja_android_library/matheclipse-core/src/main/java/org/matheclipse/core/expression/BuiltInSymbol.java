@@ -240,6 +240,22 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 		return this == F.Pi;
 	}
 
+	@Override
+	final public boolean isNegative() {
+		if (isRealConstant()) {
+			return ((ISignedNumberConstant) fEvaluator).isNegative();
+		}
+		return false;
+	}
+
+	@Override
+	final public boolean isPositive() {
+		if (isRealConstant()) {
+			return ((ISignedNumberConstant) fEvaluator).isPositive();
+		}
+		return false;
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	final public boolean isRealConstant() {
@@ -249,13 +265,13 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	/** {@inheritDoc} */
 	final public boolean isSymbolID(int... ids) {
 		for (int i = 0; i < ids.length; i++) {
-			if (fOrdinal==ids[i]) {
+			if (fOrdinal == ids[i]) {
 				return true;
 			}
 		}
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	final public boolean isTrue() {
@@ -329,6 +345,6 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
 	private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
 		stream.writeInt(fOrdinal);
-	} 
+	}
 
 }

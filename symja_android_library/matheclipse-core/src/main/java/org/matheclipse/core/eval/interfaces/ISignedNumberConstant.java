@@ -15,4 +15,12 @@ public interface ISignedNumberConstant {
 	 * @see org.matheclipse.core.eval.DoubleStackEvaluator
 	 */
 	double evalReal();
+
+	default boolean isNegative() {
+		return false;
+	}
+
+	default boolean isPositive() {
+		return true;
+	}
 }
