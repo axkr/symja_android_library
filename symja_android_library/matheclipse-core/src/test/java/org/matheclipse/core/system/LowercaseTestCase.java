@@ -9234,6 +9234,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInterval() {
+		check("ArcCot(Interval({-1, Infinity}))", //
+				"Interval({-Pi/2,-Pi/4},{0,Pi/2})");
+		check("ArcCot(Interval({1-Sqrt(2), 1+Sqrt(2)}))", //
+				"Interval({-Pi/2,-3/8*Pi},{Pi/8,Pi/2})");
+		check("ArcCot(Interval({1, Infinity}))", //
+				"Interval({0,Pi/4})");
+		check("ArcCot(Interval({-Pi,-1}))", //
+				"Interval({-Pi/4,-ArcCot(Pi)})");
+		
+		check("ArcTan(Interval({-1, 1-Sqrt(2)}))", //
+				"Interval({-Pi/4,-Pi/8})");
+	
+		check("ArcSin(Interval({-1/2,1/2}))", //
+				"Interval({-Pi/6,Pi/6})");
+		check("ArcSin(Interval({-1,1}))", //
+				"Interval({-Pi/2,Pi/2})");
+		
 		check("Cot(Interval({3*Pi/4,6*Pi/5}))", //
 				"Interval({-Infinity,-1},{Sqrt(1+2/Sqrt(5)),Infinity})");
 		check("Cot(Interval({Pi/4,3*Pi/4}))", //

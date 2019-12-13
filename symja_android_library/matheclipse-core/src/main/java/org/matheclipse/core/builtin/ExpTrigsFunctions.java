@@ -414,6 +414,10 @@ public class ExpTrigsFunctions {
 				// ArcCot(Cot(z))
 				return arcTanArcCotInverse(arg1);
 			}
+			
+			if (arg1.isInterval()) {
+				return IntervalSym.arccot((IAST) arg1);
+			}
 			return F.NIL;
 		}
 
@@ -793,6 +797,10 @@ public class ExpTrigsFunctions {
 				// ArcSin(Sin(z))
 				return arcSinSin(arg1);
 			}
+			
+			if (arg1.isInterval()) {
+				return IntervalSym.arcsin((IAST) arg1);
+			}
 			return F.NIL;
 		}
 
@@ -915,6 +923,10 @@ public class ExpTrigsFunctions {
 			if (arg1.isTan() && arg1.first().isPositive()) {
 				// ArcTan(Tan(z))
 				return arcTanArcCotInverse(arg1);
+			}
+			
+			if (arg1.isInterval()) {
+				return IntervalSym.arctan((IAST) arg1);
 			}
 			return F.NIL;
 		}
