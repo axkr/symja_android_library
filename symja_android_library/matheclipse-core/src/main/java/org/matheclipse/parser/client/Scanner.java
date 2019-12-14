@@ -599,6 +599,12 @@ public abstract class Scanner {
 					fToken = TT_DIGIT;
 					return;
 				}
+				if (fCurrentChar == '.') {
+					if (Character.isDigit(charAtPosition())) {
+						fToken = TT_DIGIT;
+						return;
+					}
+				}
 				if (fCurrentChar == '(') {
 					if (isValidPosition()) {
 						if (charAtPosition() == '*') {
@@ -697,23 +703,23 @@ public abstract class Scanner {
 						fToken = TT_OPERATOR;
 						return;
 					}
-					if (fCurrentChar == '.') {
-						if (isValidPosition()) {
-							if (Character.isDigit(fCurrentChar)) {
-								// don't increment fCurrentPosition (see
-								// getNumberString())
-								fToken = TT_DIGIT; // floating-point number
-								break;
-							}
-						}
-						break;
-					} else {
-						if (Characters.CharacterNamesMap.containsKey(String.valueOf(fCurrentChar))) {
-							fToken = TT_IDENTIFIER;
-							return;
-						}
-						throwSyntaxError("unexpected character: '" + fCurrentChar + "'");
+					// if (fCurrentChar == '.') {
+					// if (isValidPosition()) {
+					// if (Character.isDigit(fCurrentChar)) {
+					// // don't increment fCurrentPosition (see
+					// // getNumberString())
+					// fToken = TT_DIGIT; // floating-point number
+					// break;
+					// }
+					// }
+					// break;
+					// } else {
+					if (Characters.CharacterNamesMap.containsKey(String.valueOf(fCurrentChar))) {
+						fToken = TT_IDENTIFIER;
+						return;
 					}
+					throwSyntaxError("unexpected character: '" + fCurrentChar + "'");
+					// }
 				}
 
 				if (fToken == TT_EOF) {
@@ -816,7 +822,8 @@ public abstract class Scanner {
 						numFormat = Integer.parseInt(
 								new String(fInputString, startPosition, fCurrentPosition - startPosition - 1));
 						if (numFormat <= 0 || numFormat > 36) {
-							throwSyntaxError("Base " + numFormat + "^^... is invalid. Only bases between 1 and 36 are allowed");
+							throwSyntaxError(
+									"Base " + numFormat + "^^... is invalid. Only bases between 1 and 36 are allowed");
 						}
 						fCurrentPosition++;
 						startPosition = fCurrentPosition;

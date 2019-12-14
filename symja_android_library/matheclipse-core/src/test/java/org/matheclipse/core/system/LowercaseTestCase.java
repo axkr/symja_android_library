@@ -4809,6 +4809,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDot() {
+		check("0.17583681.41125407852.0 // HoldForm // FullForm", //
+				"HoldForm(Times(Times(0.17583681, 0.41125407852), 0.0))");
+		
 		check("Dot({a,b,c})", //
 				"{a,b,c}");
 		check("Dot({{1, 2}, {3, 4}, {5, 6}})", //
