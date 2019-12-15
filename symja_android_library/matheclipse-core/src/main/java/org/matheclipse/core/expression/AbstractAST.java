@@ -1114,7 +1114,7 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public final IASTAppendable copyHead(final int intialCapacity) {
-		return AST.newInstance(intialCapacity, head());
+		return AST.newInstance(intialCapacity, head(), false);
 	}
 
 	/** {@inheritDoc} */

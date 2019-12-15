@@ -5295,20 +5295,23 @@ public class F {
 	public static IAST ast(final IAST f, final IExpr head, final boolean include, final int first, final int last) {
 		AST ast = null;
 		if (include) {
-			ast = AST.newInstance(last - first, head);
+			ast = AST.newInstance(last - first, head, false);
 			// range include
-			for (int i = first; i < last; i++) {
-				ast.append(f.get(i));
-			}
+			ast.appendAll(f, first, last);
+			// for (int i = first; i < last; i++) {
+			// ast.append(f.get(i));
+			// }
 		} else {
-			ast = AST.newInstance(f.size() - last + first - 1, head);
+			ast = AST.newInstance(f.size() - last + first - 1, head, false);
 			// range exclude
-			for (int i = 1; i < first; i++) {
-				ast.append(f.get(i));
-			}
-			for (int j = last; j < f.size(); j++) {
-				ast.append(f.get(j));
-			}
+			ast.appendAll(f, 1, first);
+//			for (int i = 1; i < first; i++) {
+//				ast.append(f.get(i));
+//			}
+			ast.appendAll(f, last, f.size());
+//			for (int j = last; j < f.size(); j++) {
+//				ast.append(f.get(j));
+//			}
 		}
 		return ast;
 	}
@@ -5338,13 +5341,7 @@ public class F {
 	 * @return
 	 */
 	public static IASTAppendable ast(final IExpr head, final int initialCapacity, final boolean initNull) {
-		final AST ast = AST.newInstance(initialCapacity, head);
-		if (initNull) {
-			for (int i = 0; i < initialCapacity; i++) {
-				ast.append(null);
-			}
-		}
-		return ast;
+		return AST.newInstance(initialCapacity, head, initNull); 
 	}
 
 	/**
@@ -6452,21 +6449,18 @@ public class F {
 	 * @return the evaluated expression
 	 * @see EvalEngine#evaluate(IExpr)
 	 */
-	public static IExpr evalExpand(IExpr a) {
-		IExpr result = EvalEngine.get().evaluate(a);
+	public static IExpr evalExpand(IExpr result) {
+		EvalEngine engine = EvalEngine.get(); 
 		if (result.isAST()) {
 			IAST ast = (IAST) result;
 			if (ast.isPlus()) {
-				for (int i = 1; i < ast.size(); i++) {
-					IExpr temp = ast.get(i);
-					if (temp.isTimes() || temp.isPower() || temp.isPlus()) {
-						return EvalEngine.get().evaluate(Expand(result));
-					}
+				if (ast.exists(x -> x.isPlusTimesPower())) {
+					return engine.evaluate(Expand(result));
 				}
 				return ast;
 			}
 			if (ast.isTimes() || ast.isPower()) {
-				return EvalEngine.get().evaluate(Expand(result));
+				return engine.evaluate(Expand(result));
 			}
 		}
 		return result;
@@ -7394,7 +7388,7 @@ public class F {
 	public static IAST InterpolatingPolynomial(final IExpr a0, final IExpr a1) {
 		return new AST2(InterpolatingPolynomial, a0, a1);
 	}
-	
+
 	/**
 	 * Create a new <code>List</code> with the given <code>capacity</code>.
 	 * 
@@ -8305,7 +8299,7 @@ public class F {
 	 * @return
 	 */
 	public static IAST newInstance(final int intialArgumentsCapacity, final IExpr head) {
-		return AST.newInstance(intialArgumentsCapacity, head);
+		return AST.newInstance(intialArgumentsCapacity, head, false);
 	}
 
 	public static IAST NMaximize(final IExpr a0, final IExpr a1) {

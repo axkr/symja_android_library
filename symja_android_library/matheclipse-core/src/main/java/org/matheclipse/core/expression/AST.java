@@ -189,14 +189,22 @@ public class AST extends HMArrayList implements Externalizable {
 
 	/**
 	 * 
-	 * @param intialCapacity
+	 * @param initialCapacity
 	 *            the initial capacity (i.e. number of arguments without the header element) of the list.
 	 * @param head
+	 *            the header expression of the function. If the ast represents a function like
+	 *            <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
+	 * @param initNull
+	 *            initialize all elements with <code>null</code>.
 	 * @return
 	 */
-	public static AST newInstance(final int intialCapacity, final IExpr head) {
-		AST ast = new AST(intialCapacity + 1, false);
-		ast.append(head);
+	public static AST newInstance(final int initialCapacity, final IExpr head, boolean initNull) {
+		AST ast = new AST(initialCapacity, initNull);
+		if (initNull) {
+			ast.set(0, head);
+		} else {
+			ast.append(head);
+		}
 		return ast;
 	}
 
@@ -323,7 +331,7 @@ public class AST extends HMArrayList implements Externalizable {
 		super(0);
 	}
 
-	/*package private */ AST(IExpr head, IExpr... es) {
+	/* package private */ AST(IExpr head, IExpr... es) {
 		super(head, es);
 	}
 
@@ -332,7 +340,7 @@ public class AST extends HMArrayList implements Externalizable {
 	 * 
 	 * @param es
 	 */
-	/*package private */ AST(IExpr[] es) {
+	/* package private */ AST(IExpr[] es) {
 		super(es);
 	}
 
