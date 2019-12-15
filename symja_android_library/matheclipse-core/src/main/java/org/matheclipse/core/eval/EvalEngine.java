@@ -544,7 +544,7 @@ public class EvalEngine implements Serializable {
 	 * 
 	 * @param ast
 	 * @param attr
-	 * @return
+	 * @return <code>F.NIL</code> is no evaluation was possible
 	 */
 	public IASTMutable evalArgs(final IAST ast, final int attr) {
 		final int astSize = ast.size();
@@ -564,7 +564,7 @@ public class EvalEngine implements Serializable {
 			rlist[0] = F.NIL;
 			IExpr x = ast.arg1();
 			if ((ISymbol.HOLDFIRST & attr) == ISymbol.NOATTRIBUTE) {
-				// the HoldFirst attribute isn't set here
+				// the HoldFirst attribute is disabled
 				try {
 					if (!x.isAST(F.Unevaluated)) {
 						selectNumericMode(attr, ISymbol.NHOLDFIRST, localNumericMode);
@@ -597,7 +597,7 @@ public class EvalEngine implements Serializable {
 
 			if (astSize > 2) {
 				if ((ISymbol.HOLDREST & attr) == ISymbol.NOATTRIBUTE) {
-					// the HoldRest attribute isn't set here
+					// the HoldRest attribute is disabled
 					numericMode = fNumericMode;
 					try {
 						selectNumericMode(attr, ISymbol.NHOLDREST, localNumericMode);
