@@ -3969,7 +3969,8 @@ public class MainTestCase extends AbstractTestCase {
 					check("1/(a+b)2 // FullForm", "Times(2, Power(Plus(a, b), -1))");
 					check("a^(b)(c) // FullForm", "Times(Power(a, b), c)");
 				}
-
+				check("0.1758368*0.4112540785271148*0.0*9.986163076795545E-11", //
+						"-11.0");
 				check("2(b+c) // FullForm", //
 						"Times(2, Plus(b, c))");
 				check("2(b+c)3 // FullForm", //
@@ -3995,6 +3996,8 @@ public class MainTestCase extends AbstractTestCase {
 			}
 			Config.EXPLICIT_TIMES_OPERATOR = true;
 			if (Config.EXPLICIT_TIMES_OPERATOR) {
+				check("0.1758368*0.4112540785271148*0.0*9.986163076795545E-11", //
+						"0.0");
 				check("2(b+c)", //
 						"Syntax error in line: 1 - End-of-file not reached.\n" + "2(b+c)\n" + " ^");
 				check("2(b+c)3 // FullForm",
