@@ -1248,4 +1248,37 @@ public abstract class Scanner {
 		throw new SyntaxError(fCurrentPosition - errorLength, fRowCounter,
 				fCurrentPosition - fCurrentColumnStartPosition, getErrorLine(), error, errorLength);
 	}
+
+	/**
+	 * Shows the current line for debugging purposes.
+	 */
+	public String toString() {
+		if (fInputString == null || //
+				fCurrentPosition < 0) {
+			return "<undefined scanner>";
+		}
+		// read until end-of-line
+		try {
+			int eol = fCurrentPosition;
+			while (fInputString.length > eol) {
+				char ch = fInputString[eol++];
+				if (ch == '\n') {
+					eol--;
+					break;
+				}
+			}
+			String line = new String(fInputString, fCurrentColumnStartPosition, eol - fCurrentColumnStartPosition);
+			final StringBuilder buf = new StringBuilder(line.length() + 256);
+			buf.append(line + "\n");
+			int indx = fCurrentPosition - fCurrentColumnStartPosition;
+			for (int i = 0; i < indx; i++) {
+				buf.append(' ');
+			}
+			buf.append("^\n");
+			return buf.toString();
+		} catch (IndexOutOfBoundsException ioob) {
+			// thrown by new String(...)
+		}
+		return "<end-of-line>";
+	}
 }
