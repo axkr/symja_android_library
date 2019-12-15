@@ -4042,14 +4042,14 @@ public class Algebra {
 				fFullSimplify = fullSimplify;
 			}
 
-			private IExpr tryExpandAllTransformation(IAST plusAST, IExpr test) {
+			private IExpr tryExpandTransformation(IAST plusAST, IExpr test) {
 				IExpr result = F.NIL;
 				long minCounter = fComplexityFunction.apply(plusAST);
 				IExpr temp;
 				long count;
 
 				try {
-					temp = F.evalExpandAll(test);
+					temp = F.evalExpand(test);
 					count = fComplexityFunction.apply(temp);
 					if (count < minCounter) {
 						result = temp;
@@ -4571,10 +4571,10 @@ public class Algebra {
 						if (i != 1 && number != null) {
 							if (temp.isPlus()) {
 								// <number> * Plus[.....]
-								reduced = tryExpandAll(timesAST, (IAST) temp, number, i, false);
+								reduced = tryExpand(timesAST, (IAST) temp, number, i, false);
 							} else if (temp.isPowerReciprocal() && temp.base().isPlus()) {
 								// <number> * Power[Plus[...], -1 ]
-								reduced = tryExpandAll(timesAST, (IAST) temp.base(), number.inverse(), i, true);
+								reduced = tryExpand(timesAST, (IAST) temp.base(), number.inverse(), i, true);
 							}
 							if (reduced.isPresent()) {
 								return reduced;
@@ -4598,8 +4598,8 @@ public class Algebra {
 				return F.NIL;
 			}
 
-			private IExpr tryExpandAll(IAST timesAST, IAST plusAST, IExpr arg1, int i, boolean isPowerReciprocal) {
-				IExpr expandedAst = tryExpandAllTransformation((IAST) plusAST, F.Times(arg1, plusAST));
+			private IExpr tryExpand(IAST timesAST, IAST plusAST, IExpr arg1, int i, boolean isPowerReciprocal) {
+				IExpr expandedAst = tryExpandTransformation((IAST) plusAST, F.Times(arg1, plusAST));
 				if (expandedAst.isPresent()) {
 					IASTAppendable result = F.TimesAlloc(timesAST.size());
 					// ast.range(2, ast.size()).toList(result.args());
