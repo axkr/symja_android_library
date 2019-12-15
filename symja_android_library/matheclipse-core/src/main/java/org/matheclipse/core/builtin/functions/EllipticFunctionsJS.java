@@ -9,6 +9,10 @@ import org.matheclipse.core.expression.F;
  * "https://github.com/paulmasson/math/blob/master/src/functions/elliptic-functions.js">elliptic-functions.js</a>
  */
 public class EllipticFunctionsJS {
+	public static double trunc(double value) {
+		return value < 0 ? Math.ceil(value) : Math.floor(value);
+	}
+
 	public static Complex jacobiTheta(int n, double x, double q) {
 		return jacobiTheta(n, x, q, 1e-10);
 	}
@@ -35,7 +39,7 @@ public class EllipticFunctionsJS {
 		// dlmf.nist.gov/20.2 to reduce overflow
 		if (Math.abs(x) > Math.PI) {
 
-			double p = Math.round(x / Math.PI);
+			double p = trunc(x / Math.PI);
 			x = x - p * Math.PI;
 
 			switch (n) {
@@ -138,16 +142,16 @@ public class EllipticFunctionsJS {
 				return Complex.ONE;
 			}
 		}
-		
+
 		Complex piTau = q.log().divide(Complex.I);
 
 		// dlmf.nist.gov/20.2 to reduce overflow
 		if (Math.abs(x.getImaginary()) > Math.abs(piTau.getImaginary()) || Math.abs(x.getReal()) > Math.PI) {
 
-			long pt = Math.round(x.getImaginary() / piTau.getImaginary());
+			double pt = trunc(x.getImaginary() / piTau.getImaginary());
 			x = x.subtract(piTau.multiply(pt));
 
-			long p = Math.round(x.getReal() / Math.PI);
+			double p = trunc(x.getReal() / Math.PI);
 			x = x.subtract(p * Math.PI);
 
 			Complex qFactor = q.pow(-pt * pt);
