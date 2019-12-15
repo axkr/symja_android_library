@@ -4811,7 +4811,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testDot() {
 		check("0.17583681.41125407852.0 // HoldForm // FullForm", //
 				"HoldForm(Times(Times(0.17583681, 0.41125407852), 0.0))");
-		
+
 		check("Dot({a,b,c})", //
 				"{a,b,c}");
 		check("Dot({{1, 2}, {3, 4}, {5, 6}})", //
@@ -9245,15 +9245,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Interval({0,Pi/4})");
 		check("ArcCot(Interval({-Pi,-1}))", //
 				"Interval({-Pi/4,-ArcCot(Pi)})");
-		
+
 		check("ArcTan(Interval({-1, 1-Sqrt(2)}))", //
 				"Interval({-Pi/4,-Pi/8})");
-	
+
 		check("ArcSin(Interval({-1/2,1/2}))", //
 				"Interval({-Pi/6,Pi/6})");
 		check("ArcSin(Interval({-1,1}))", //
 				"Interval({-Pi/2,Pi/2})");
-		
+
 		check("Cot(Interval({3*Pi/4,6*Pi/5}))", //
 				"Interval({-Infinity,-1},{Sqrt(1+2/Sqrt(5)),Infinity})");
 		check("Cot(Interval({Pi/4,3*Pi/4}))", //
@@ -9270,7 +9270,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Interval({-Infinity,Infinity})");
 		check("Cot(Interval({Pi/4,5*Pi/2}))", //
 				"Interval({-Infinity,Infinity})");
-		
+
 		check("Tan(Interval({Pi/4,3*Pi/5}))", //
 				"Interval({-Infinity,-Sqrt(5+2*Sqrt(5))},{1,Infinity})");
 		check("Tan(Interval({-Pi/4,2*Pi/3}))", //
@@ -9285,8 +9285,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Interval({-Infinity,Infinity})");
 		check("Tan(Interval({Pi/4,5*Pi/2}))", //
 				"Interval({-Infinity,Infinity})");
-		
-		
+
 		check("Cos(Interval({0, Pi}))", //
 				"Interval({-1,1})");
 		check("Cos(Interval({0, 2*Pi}))", //
@@ -20337,6 +20336,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "10))*x^2))*EllipticF(ArcSin(x/(Sqrt(2)*Sqrt(1/(4*Sqrt(10)))*Sqrt(-2+(2+Sqrt(10))*x^\n" +
 		// "2))),1/10*(5+Sqrt(10))))/(Sqrt(2)*Sqrt(-2+4*x^2+3*x^4)*Sqrt(1/(2-(2+Sqrt(10))*x^\n" +
 		// "2)))");
+		
+//		check("Sin(0.1851851851851852*Pi*x)", //
+//				"Sin(0.581776*x)");
+		
 		check("-a*(2-x)", //
 				"a*(-2+x)");
 		check("False*Log(x+y)", //

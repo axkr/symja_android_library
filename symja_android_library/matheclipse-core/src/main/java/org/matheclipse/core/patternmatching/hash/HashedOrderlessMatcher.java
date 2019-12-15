@@ -155,7 +155,7 @@ public class HashedOrderlessMatcher {
 	 */
 	protected static boolean exists2ASTArguments(IAST ast) {
 		final int[] counter = { 0 };
-		return ast.exists(x -> x.isAST() && ++counter[0] == 2);
+		return ast.exists(x -> x.isAST() && x.size() < 4 && ++counter[0] == 2);
 	}
 
 	/**
@@ -166,8 +166,6 @@ public class HashedOrderlessMatcher {
 	 * @see HashedPatternRules
 	 */
 	public IAST evaluate(final IAST orderlessAST, EvalEngine engine) {
-		// TODO Performance hotspot
-
 		// Compute hash values for each argument of the orderlessAST
 		// if hashValues[i]==0 then the corresponding argument is evaluated and not
 		// available anymore
@@ -275,8 +273,8 @@ public class HashedOrderlessMatcher {
 		return F.NIL;
 	}
 
-	protected boolean updateHashValues(IASTAppendable result, final IAST orderlessAST, AbstractHashedPatternRules hashRule,
-			int[] hashValues, int i, int j, EvalEngine engine) {
+	protected boolean updateHashValues(IASTAppendable result, final IAST orderlessAST,
+			AbstractHashedPatternRules hashRule, int[] hashValues, int i, int j, EvalEngine engine) {
 		IExpr temp;
 		if ((temp = hashRule.evalDownRule(orderlessAST.get(i + 1), null, orderlessAST.get(j + 1), null, engine))
 				.isPresent()) {
