@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -37,6 +38,8 @@ public class HomogenizationTest extends AbstractTestCase {
 				Map<ISymbol, IExpr> map = substitutions.substitutedVariables();
 				IASTAppendable list = F.ListAlloc(substitutions.size());
 				list.appendAll(map);
+				// sort for canonical expressions:
+				EvalAttributes.sort(list);
 				return F.List(temp, list);
 			}
 			return arg1;
