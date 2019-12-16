@@ -15,6 +15,13 @@ import org.matheclipse.core.visit.HashValueVisitor;
  * 
  */
 public class HashedOrderlessMatcher {
+	/**
+	 * Maximum size of an argument in an <code>Orderless</code> expression (i.e. <code>Times(...), Plus(...)</code>),
+	 * which should be matched with these matching rules. This pruning reduces the number of tries in the search tree of
+	 * matching rules.
+	 */
+	private static int MAX_AST_SIZE_ARGUMENT = 4;
+
 	protected OpenIntToList<AbstractHashedPatternRules> fHashRuleMap;
 	protected OpenIntToList<AbstractHashedPatternRules> fPatternHashRuleMap;
 
@@ -155,7 +162,8 @@ public class HashedOrderlessMatcher {
 	 */
 	protected static boolean exists2ASTArguments(IAST ast) {
 		final int[] counter = { 0 };
-		return ast.exists(x -> x.isAST() && x.size() < 4 && ++counter[0] == 2);
+		// x -> x.isAST() &&
+		return ast.exists(x -> x.size() < MAX_AST_SIZE_ARGUMENT && ++counter[0] == 2);
 	}
 
 	/**
@@ -201,13 +209,13 @@ public class HashedOrderlessMatcher {
 		boolean evaled = false;
 		IASTAppendable result = orderlessAST.copyHead();
 		for (int i = 0; i < hashValues.length - 1; i++) {
-			if (hashValues[i] == 0) {
-				// already used entry
+			if (hashValues[i] == 0 || orderlessAST.get(i + 1).size() >= MAX_AST_SIZE_ARGUMENT) {
+				// already used entry OR size() of expression to big
 				continue;
 			}
 			evaled: for (int j = i + 1; j < hashValues.length; j++) {
-				if (hashValues[j] == 0) {
-					// already used entry
+				if (hashValues[j] == 0 || orderlessAST.get(j + 1).size() >= MAX_AST_SIZE_ARGUMENT) {
+					// already used entry OR size() of expression to big
 					continue;
 				}
 				final List<AbstractHashedPatternRules> hashRuleList = hashRuleMap
