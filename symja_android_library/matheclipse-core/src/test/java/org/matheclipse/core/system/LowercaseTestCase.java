@@ -14260,6 +14260,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPlus() {
+		check("Sin(0.1851851851851852*Cos(7/11)*x)", //
+				"Sin(0.148937*x)");
+		
 		check("1-{0,1,2}", //
 				"{1,0,-1}");
 		check("-Infinity+0.0", //
@@ -20336,10 +20339,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "10))*x^2))*EllipticF(ArcSin(x/(Sqrt(2)*Sqrt(1/(4*Sqrt(10)))*Sqrt(-2+(2+Sqrt(10))*x^\n" +
 		// "2))),1/10*(5+Sqrt(10))))/(Sqrt(2)*Sqrt(-2+4*x^2+3*x^4)*Sqrt(1/(2-(2+Sqrt(10))*x^\n" +
 		// "2)))");
-		
-//		check("Sin(0.1851851851851852*Pi*x)", //
-//				"Sin(0.581776*x)");
-		
+
+		check("Sin(0.1851851851851852*Pi*x)", //
+				"Sin(0.581776*x)");
+
 		check("-a*(2-x)", //
 				"a*(-2+x)");
 		check("False*Log(x+y)", //

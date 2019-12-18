@@ -2550,12 +2550,19 @@ public final class Arithmetic {
 		 * @return the evaluated object or <code>null</code>, if evaluation isn't possible
 		 */
 		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			if (ast.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
 				return F.NIL;
 			}
 			final int size = ast.size();
 			if (size > 2) {
+				if (ast.isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG)) {
+					IAST temp = engine.evalArgsOrderlessN(ast);
+					if (temp.isPresent()) {
+						ast = temp;
+					}
+				}
+
 				PlusOp plusOp = new PlusOp(size);
 				IExpr temp = ast.findFirst(x -> plusOp.plus(x));
 				if (temp.isPresent()) {
@@ -5157,7 +5164,7 @@ public final class Arithmetic {
 
 				case ID.Interval:
 					if (arg2.isInterval()) {
-						if (arg1.isInterval()) { 
+						if (arg1.isInterval()) {
 							return IntervalSym.times((IAST) arg1, (IAST) arg2);
 						}
 						return IntervalSym.times(arg1, (IAST) arg2);
@@ -5250,7 +5257,7 @@ public final class Arithmetic {
 		}
 
 		@Override
-		public IExpr evaluate(final IAST ast1, EvalEngine engine) {
+		public IExpr evaluate(IAST ast1, EvalEngine engine) {
 			int size = ast1.size();
 			if (size == 1) {
 				return F.C1;
@@ -5266,6 +5273,12 @@ public final class Arithmetic {
 				IAST temp = evaluateHashsRepeated(ast1, engine);
 				if (temp.isPresent()) {
 					return temp.oneIdentity1();
+				}
+			}
+			if (ast1.isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG)) {
+				IAST temp = engine.evalArgsOrderlessN(ast1);
+				if (temp.isPresent()) {
+					ast1 = temp;
 				}
 			}
 			if (size == 3) {

@@ -1269,6 +1269,26 @@ public class EvalEngine implements Serializable {
 		return evaluate(F.N(expr));
 	}
 
+	final public IAST evalArgsOrderlessN(IAST ast1) {
+		IASTMutable copy = F.NIL;
+		for (int i = 1; i < ast1.size(); i++) {
+			IExpr temp = ast1.get(i);
+			if (!temp.isNumeric() && temp.isNumericFunction()) {
+				temp = evalLoop(F.N(temp));
+				if (temp.isPresent()) {
+					if (!copy.isPresent()) {
+						copy = ast1.copy();
+					}
+					copy.set(i, evalN(temp));
+				}
+			}
+		}
+		if (copy.isPresent()) {
+			EvalAttributes.sort(copy);
+		}
+		return copy;
+	}
+
 	/**
 	 * <p>
 	 * Store the current numeric mode and evaluate the expression <code>expr</code>. After evaluation reset the numeric
