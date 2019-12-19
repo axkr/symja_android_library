@@ -1602,6 +1602,15 @@ public final class NumberTheory {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if(ast.size() ==4){
+				final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
+				IExpr option = options.getOption(F.GaussianIntegers);
+				if (option.isTrue()){
+					IExpr arg1 = ast.arg1();
+					IExpr arg2 = ast.arg2();
+					return GaussianGCD(arg1,arg2);
+				}
+			}
 			IExpr arg;
 			for (int i = 1; i < ast.size(); i++) {
 				arg = ast.get(i);
@@ -1639,6 +1648,33 @@ public final class NumberTheory {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_INFINITY;
 		}
+
+		public static IExpr GaussianGCD(IExpr arg1, IExpr arg2){
+			IExpr temp1 = arg1.abs();
+			IExpr temp2 = arg2.abs();
+			if(temp1.abs().evalDouble()<temp2.abs().evalDouble()){
+				IExpr temp = arg1;
+				arg1 = arg2;
+				arg2 = temp;
+			}
+			IExpr argR=arg1.divide(arg2);
+
+			IExpr re = argR.re();
+			IExpr im = argR.im();
+
+			if(!re.isFraction() && !im.isFraction()){
+				if(arg2.isNegative()){
+					return arg2.negate();
+				}
+				return arg2;
+			}
+			re = F.Round(re);
+			im = F.Round(im);
+			argR=F.Complex(re,im);;
+
+			return GaussianGCD(arg1.minus(argR.multiply(arg2)),arg2);
+		}
+
 
 		public static BigInteger extendedGCD(final IAST ast, BigInteger[] subBezouts) {
 			BigInteger factor;

@@ -5865,6 +5865,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testExtendedGCD() {
+		check("ExtendedGCD(30,18+4*I,GaussianIntegers->True)", //
+				"4+I*2");
+		check("ExtendedGCD(1+3*I,4+5*I,GaussianIntegers->True)", //
+				"1");
+		check("ExtendedGCD(5,2+I,GaussianIntegers->True)", //
+				"2+I");
+		check("ExtendedGCD(30,18,GaussianIntegers->True)", //
+				"6");
 		check("ExtendedGCD(2,3)", //
 				"{1,{-1,1}}");
 		check("ExtendedGCD(6,15,30)", //
