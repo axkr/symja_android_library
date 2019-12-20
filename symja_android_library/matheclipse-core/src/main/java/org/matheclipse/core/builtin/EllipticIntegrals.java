@@ -30,6 +30,9 @@ public class EllipticIntegrals {
 			F.EllipticTheta.setEvaluator(new EllipticTheta());
 
 			// F.InverseWeierstrassP.setEvaluator(new InverseWeierstrassP());
+			F.JacobiCN.setEvaluator(new JacobiCN());
+			F.JacobiDN.setEvaluator(new JacobiDN());
+			F.JacobiSN.setEvaluator(new JacobiSN());
 			F.JacobiZeta.setEvaluator(new JacobiZeta());
 
 			F.WeierstrassHalfPeriods.setEvaluator(new WeierstrassHalfPeriods());
@@ -612,6 +615,117 @@ public class EllipticIntegrals {
 	// }
 	// }
 
+	private static class JacobiCN extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			IExpr z = ast.arg1();
+			IExpr m = ast.arg1();
+			if (m.isZero()) {
+				return F.Cos(z);
+			}
+			if (m.isOne()) {
+				return F.Sech(z);
+			}
+			if (z.isNumeric() && m.isNumeric()) {
+				try {
+					if (z.isReal() && m.isReal()) {
+						return F.complexNum(EllipticFunctionsJS.jacobiCN(z.evalDouble(), m.evalDouble()));
+					}
+					return F.complexNum(EllipticFunctionsJS.jacobiCN(z.evalComplex(), m.evalComplex()));
+				} catch (RuntimeException rte) {
+					return engine.printMessage("JacobiCN: " + rte.getMessage());
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
+
+	private static class JacobiDN extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			IExpr z = ast.arg1();
+			IExpr m = ast.arg1();
+			if (m.isZero()) {
+				return F.C1;
+			}
+			if (m.isOne()) {
+				return F.Sech(z);
+			}
+			if (z.isNumeric() && m.isNumeric()) {
+				try {
+					if (z.isReal() && m.isReal()) {
+						return F.complexNum(EllipticFunctionsJS.jacobiDN(z.evalDouble(), m.evalDouble()));
+					}
+					return F.complexNum(EllipticFunctionsJS.jacobiDN(z.evalComplex(), m.evalComplex()));
+				} catch (RuntimeException rte) {
+					return engine.printMessage("JacobiDN: " + rte.getMessage());
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
+
+	private static class JacobiSN extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			IExpr z = ast.arg1();
+			IExpr m = ast.arg1();
+			if (m.isZero()) {
+				return F.Sin(z);
+			}
+			if (m.isOne()) {
+				return F.Tanh(z);
+			}
+			if (z.isNumeric() && m.isNumeric()) {
+				try {
+					if (z.isReal() && m.isReal()) {
+						return F.complexNum(EllipticFunctionsJS.jacobiSN(z.evalDouble(), m.evalDouble()));
+					}
+					return F.complexNum(EllipticFunctionsJS.jacobiSN(z.evalComplex(), m.evalComplex()));
+				} catch (RuntimeException rte) {
+					return engine.printMessage("JacobiSN: " + rte.getMessage());
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
+
 	private static class JacobiZeta extends AbstractFunctionEvaluator {
 
 		@Override
@@ -784,7 +898,8 @@ public class EllipticIntegrals {
 				}
 				if (g2.isNumEqualInteger(F.C3) && g3.isOne()) {
 					// -3 * Sqrt(3/2) * Cot(Sqrt(3/2)*u) * Csc(Sqrt(3/2)*u)^2
-					return F.Times(F.CN3, F.Sqrt(F.C3D2), F.Cot(F.Times(F.Sqrt(F.C3D2), u)), F.Sqr(F.Csc(F.Times(F.Sqrt(F.C3D2), u))));
+					return F.Times(F.CN3, F.Sqrt(F.C3D2), F.Cot(F.Times(F.Sqrt(F.C3D2), u)),
+							F.Sqr(F.Csc(F.Times(F.Sqrt(F.C3D2), u))));
 				}
 				if (u.isNumeric() && g2.isNumeric() && g3.isNumeric()) {
 					try {

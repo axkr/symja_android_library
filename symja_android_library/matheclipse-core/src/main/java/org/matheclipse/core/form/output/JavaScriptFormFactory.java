@@ -86,6 +86,9 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		FUNCTIONS_STR_MATHCELL.put(F.EllipticPi, "ellipticPi");
 		FUNCTIONS_STR_MATHCELL.put(F.EllipticTheta, "jacobiTheta");
 
+		FUNCTIONS_STR_MATHCELL.put(F.JacobiCN, "cn");
+		FUNCTIONS_STR_MATHCELL.put(F.JacobiDN, "dn");
+		FUNCTIONS_STR_MATHCELL.put(F.JacobiSN, "sn");
 		FUNCTIONS_STR_MATHCELL.put(F.JacobiZeta, "jacobiZeta");
 		FUNCTIONS_STR_MATHCELL.put(F.Factorial, "factorial");
 		FUNCTIONS_STR_MATHCELL.put(F.Factorial2, "factorial2");
