@@ -627,6 +627,9 @@ public class EllipticIntegrals {
 			if (m.isOne()) {
 				return F.Sech(z);
 			}
+			if (z.isZero()) {
+				return F.C1;
+			}
 			if (z.isNumeric() && m.isNumeric()) {
 				try {
 					if (z.isReal() && m.isReal()) {
@@ -647,7 +650,7 @@ public class EllipticIntegrals {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 			super.setUp(newSymbol);
 		}
 	}
@@ -663,6 +666,9 @@ public class EllipticIntegrals {
 			}
 			if (m.isOne()) {
 				return F.Sech(z);
+			}
+			if (z.isZero()) {
+				return F.C1;
 			}
 			if (z.isNumeric() && m.isNumeric()) {
 				try {
@@ -684,7 +690,7 @@ public class EllipticIntegrals {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 			super.setUp(newSymbol);
 		}
 	}
@@ -700,6 +706,9 @@ public class EllipticIntegrals {
 			}
 			if (m.isOne()) {
 				return F.Tanh(z);
+			}
+			if (z.isZero()) {
+				return F.C0;
 			}
 			if (z.isNumeric() && m.isNumeric()) {
 				try {
@@ -721,7 +730,7 @@ public class EllipticIntegrals {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 			super.setUp(newSymbol);
 		}
 	}

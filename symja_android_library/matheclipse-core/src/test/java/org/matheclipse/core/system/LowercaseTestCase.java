@@ -5307,10 +5307,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testJacobiCN() {
+		check("JacobiCN(2.5,0.3)", //
+				"-0.626032");
+		check("JacobiCN(10.0,1/3)", //
+				"-0.92107");
 		check("JacobiCN(z, 0)", //
 				"Cos(z)");
+		check("JacobiCN(0,z)", //
+				"1");
 		check("JacobiCN(-5/4, 1)", //
 				"Sech(5/4)");
+		check("JacobiCN({a,b},m)", //
+				"{JacobiCN(a,m),JacobiCN(b,m)}");
+		check("JacobiCN(2.5 + I, 1 - I)", //
+				"1.21224+I*0.0342293");
 		check("Table(JacobiCN(x, 1/3), {x,-10.0, 10, 1/4})", //
 				"{-0.92107,-0.802493,-0.645663,-0.463929,-0.268079,-0.0656354,0.138241,0.339016,0.530857,0.705115,"//
 				+ "0.8499,0.951524,0.997932,0.982878,0.908441,0.784163,0.623417,0.439332,0.242275,0.0393903,-0.16435,"//
@@ -5325,10 +5335,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 	
 	public void testJacobiDN() {
+		check("JacobiDN(4.0,2/3)", //
+				"0.998883");
+		check("JacobiDN(10.0,1/3)", //
+				"0.974401");
 		check("JacobiDN(z, 0)", //
+				"1");
+		check("JacobiDN(0,z)", //
 				"1");
 		check("JacobiDN(-5/4, 1)", //
 				"Sech(5/4)");
+		check("JacobiDN({a,b},m)", //
+				"{JacobiDN(a,m),JacobiDN(b,m)}");
+		check("JacobiDN(2.5 - I, 1 - I)", //
+				"0.999167+I*0.217359");
 		check("Table(JacobiDN(x, 1/3), {x,-10.0, 10, 1/4})", //
 				"{0.974401,0.938793,0.897567,0.859308,0.831037,0.817375,0.820388,0.839629,0.872126,0.912357,0.952598,0.984107,"//
 				+ "0.999311,0.994326,0.970441,0.933615,0.892309,0.854988,0.828391,0.816813,0.821992,0.843159,0.877013,0.917716,"//
@@ -5342,10 +5362,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 	
 	public void testJacobiSN() {
+		check("JacobiSN(2.5,0.5)", //
+				"0.890615");
+		check("JacobiSN(10.0,1/3)", //
+				"0.389397");
 		check("JacobiSN(z, 0)", //
 				"Sin(z)");
+		check("JacobiSN(0,z)", //
+				"0");
 		check("JacobiSN(-5/4, 1)", //
 				"-Tanh(5/4)");
+		check("JacobiSN({a,b},m)", //
+				"{JacobiSN(a,m),JacobiSN(b,m)}");
+		check("JacobiSN(2.5 + I, 1 - I)", //
+				"-0.0603969+I*0.687023");
 		check("Table(JacobiSN(x, 1/3), {x,-10.0, 10, 1/4})", //
 				"{-0.389397,-0.596662,-0.763622,-0.885872,-0.963397,-0.997844,-0.990399,-0.940781,-0.847461,-0.709093,-0.526945," //
 				+ "-0.307575,-0.0642733,0.184256,0.418013,0.620554,0.78189,0.898325,0.970208,0.999224,0.986402,0.931262,0.832194," //
