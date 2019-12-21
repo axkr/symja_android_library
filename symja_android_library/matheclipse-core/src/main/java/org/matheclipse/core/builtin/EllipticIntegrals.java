@@ -620,7 +620,7 @@ public class EllipticIntegrals {
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			IExpr z = ast.arg1();
-			IExpr m = ast.arg1();
+			IExpr m = ast.arg2();
 			if (m.isZero()) {
 				return F.Cos(z);
 			}
@@ -657,7 +657,7 @@ public class EllipticIntegrals {
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			IExpr z = ast.arg1();
-			IExpr m = ast.arg1();
+			IExpr m = ast.arg2();
 			if (m.isZero()) {
 				return F.C1;
 			}
@@ -694,7 +694,7 @@ public class EllipticIntegrals {
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			IExpr z = ast.arg1();
-			IExpr m = ast.arg1();
+			IExpr m = ast.arg2();
 			if (m.isZero()) {
 				return F.Sin(z);
 			}
