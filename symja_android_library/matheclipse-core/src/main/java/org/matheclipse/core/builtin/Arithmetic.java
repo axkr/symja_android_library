@@ -1683,7 +1683,40 @@ public final class Arithmetic {
 					return F.C1;
 				}
 			}
-			return F.NIL;
+
+			// Change the order
+			IComplex t0 = c0;
+			IComplex t1 = c1;
+			IComplex quotient, remainder;
+			if (c0.abs().compareTo(c1.abs()) < 0) {
+				IComplex temp = t0;
+				t0 = t1;
+				t1 = temp;
+			}
+
+			// Till remainder is 0
+			while (!t1.isZero()) {
+				// quotient = t0 / t1
+				quotient = t0.multiply(t1.pow(-1));
+				IRational re = quotient.getRealPart().round();
+				IRational im = quotient.getImaginaryPart().round();
+				quotient = F.complex(re, im);
+				// remainder = t0 - quotient * t1
+				remainder = t0.add(quotient.multiply(t1).multiply(F.complex(-1, 0)));
+				t0 = t1;
+				t1 = remainder;
+			}
+
+			// Refine the result
+			if (t0.re().isNegativeSigned())
+				t0 = F.complex(t0.getRealPart().negate(), t0.getImaginaryPart().negate());
+			if (t0.re().isZero() && t0.im().isNegativeSigned())
+				t0 = F.complex(t0.getRealPart(), t0.getImaginaryPart().negate());
+			if (t0.re().isZero() && t0.im().isOne())
+				return F.C1;
+
+
+			return t0;
 		}
 
 		@Override

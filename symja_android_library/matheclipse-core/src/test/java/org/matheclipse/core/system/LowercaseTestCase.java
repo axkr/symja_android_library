@@ -8164,6 +8164,24 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGCD() {
+		// In the example, the four possible GCD's for Gaussian integers are
+		// 4-I*8, -4+I*8, 8+I*4, -8-I*4
+		check("GCD(4-8*I,4-8*I)", //
+				"4-I*8");
+		check("GCD(-4-8*I,-4-8*I)", //
+				"4+I*8");
+		check("GCD(-I,4+8*I)", //
+				"1");
+		check("GCD(I,5+8*I,4+8*I)", //
+				"1");
+		check("GCD(3+2*I,5+8*I,4+8*I)", //
+				"1");
+		check("GCD(30,18+4*I,3+5*I)", //
+				"1+I");
+		check("GCD(61-3*I,-16-64*I)", //
+				"1-I");
+		check("GCD(30,18+4*I)", //
+				"4+I*2");
 		check("GCD(0,Cos(b*x)[[2]])", //
 				"GCD(0,Cos(b*x)[[2]])");
 		check("GCD(0, CoshIntegral(b*x))", //
