@@ -658,7 +658,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	}
 
 	@Override
-	public ISignedNumber roundClosest(ISignedNumber multiple) {
+	public IRational roundClosest(ISignedNumber multiple) {
 		if (!multiple.isRational()) {
 			multiple = F.fraction(multiple.doubleValue(), Config.DOUBLE_EPSILON);
 		}

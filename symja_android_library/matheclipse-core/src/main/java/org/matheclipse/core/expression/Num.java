@@ -584,13 +584,13 @@ public class Num implements INum {
 
 	@Override
 	public IInteger round() {
-		return F.integer(DoubleMath.roundToBigInteger(fDouble, RoundingMode.HALF_EVEN));
+		return F.ZZ(DoubleMath.roundToBigInteger(fDouble, RoundingMode.HALF_EVEN));
 	}
 
 	@Override
 	public ISignedNumber roundClosest(ISignedNumber multiple) { 
 		if (multiple.isRational()) {
-			return F.integer(DoubleMath.roundToBigInteger(fDouble / multiple.doubleValue(), RoundingMode.HALF_EVEN))
+			return F.ZZ(DoubleMath.roundToBigInteger(fDouble / multiple.doubleValue(), RoundingMode.HALF_EVEN))
 					.multiply((IRational) multiple);
 		}
 		double factor = multiple.doubleValue();

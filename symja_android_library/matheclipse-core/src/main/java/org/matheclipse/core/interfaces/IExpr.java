@@ -3692,6 +3692,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Convert this object into a <code>Complex[]</code> vector.
+	 * 
+	 * @return <code>null</code> if this object can not be converted into a <code>Complex[]</code> vector
+	 */
+	default Complex[] toComplexVector() {
+		return null;
+	}
+	
+	/**
 	 * Converts this number to an <code>int</code> value; unlike {@link #intValue} this method returns
 	 * <code>defaultValue</code> if the value of this integer isn't in the range <code>Integer.MIN_VALUE</code> to
 	 * <code>Integer.MAX_VALUE</code> or the expression is not convertible to the int range.

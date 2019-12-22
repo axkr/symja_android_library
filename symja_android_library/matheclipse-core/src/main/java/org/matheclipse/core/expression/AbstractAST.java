@@ -4143,20 +4143,31 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public double[] toDoubleVector() {
-		if (Config.MAX_AST_SIZE < size()) {
-			throw new ASTElementLimitExceeded(size());
-		}
-		double[] result = new double[argSize()];
-		ISignedNumber signedNumber;
-		for (int i = 1; i < size(); i++) {
-			signedNumber = get(i).evalReal();
-			if (signedNumber != null) {
-				result[i - 1] = signedNumber.doubleValue();
-			} else {
-				return null;
+		try {
+			double[] result = new double[argSize()];
+			for (int i = 1; i < size(); i++) {
+				result[i - 1] = get(i).evalDouble();
 			}
+			return result;
+		} catch (RuntimeException rex) {
+
 		}
-		return result;
+		return null;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public Complex[] toComplexVector() {
+		try {
+			Complex[] result = new Complex[argSize()];
+			for (int i = 1; i < size(); i++) {
+				result[i - 1] = get(i).evalComplex();
+			}
+			return result;
+		} catch (RuntimeException rex) {
+
+		}
+		return null;
 	}
 
 	private final String toFullFormString() {

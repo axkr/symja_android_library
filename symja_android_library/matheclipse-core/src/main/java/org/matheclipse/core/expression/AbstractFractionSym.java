@@ -432,7 +432,7 @@ public abstract class AbstractFractionSym implements IFraction {
 	}
 
 	@Override
-	public ISignedNumber roundClosest(ISignedNumber multiple) {
+	public IRational roundClosest(ISignedNumber multiple) {
 		if (!multiple.isRational()) {
 			multiple = F.fraction(multiple.doubleValue(), Config.DOUBLE_EPSILON);
 		}

@@ -11,7 +11,8 @@ import static org.matheclipse.core.expression.F.Times;
 
 import java.util.function.DoubleUnaryOperator;
 
-import org.matheclipse.core.builtin.functions.EllipticFunctionsJS;
+import org.hipparchus.complex.Complex;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -22,6 +23,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.Hypergeometric0F1Rules;
@@ -46,6 +48,7 @@ public class HypergeometricFunctions {
 			F.Hypergeometric0F1.setEvaluator(new Hypergeometric0F1());
 			F.Hypergeometric1F1.setEvaluator(new Hypergeometric1F1());
 			F.Hypergeometric2F1.setEvaluator(new Hypergeometric2F1());
+			F.HypergeometricPFQ.setEvaluator(new HypergeometricPFQ());
 			// F.HypergeometricU.setEvaluator(new HypergeometricU());
 			F.LogIntegral.setEvaluator(new LogIntegral());
 			F.SinIntegral.setEvaluator(new SinIntegral());
@@ -652,6 +655,52 @@ public class HypergeometricFunctions {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
+
+	private static class HypergeometricPFQ extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			IExpr a = ast.arg1();
+			IExpr b = ast.arg2();
+			IExpr c = ast.arg3();
+			if (c.isList()) {
+				// thread elementwise over list in arg3
+				return ((IAST) c).mapThread(ast.setAtCopy(3, F.Null), 3);
+			}
+
+			if (a.isVector() > 0 && b.isVector() > 0) {
+				try {
+					double A[] = a.toDoubleVector();
+					double B[] = b.toDoubleVector();
+					if (A == null || B == null) {
+						Complex AC[] = a.toComplexVector();
+						Complex BC[] = b.toComplexVector();
+						return F.complexNum(
+								HypergeometricJS.hypergeometricPFQ(AC, BC, c.evalComplex(), Config.DOUBLE_EPSILON));
+					} else {
+						INum result = F
+								.num(HypergeometricJS.hypergeometricPFQ(A, B, c.evalDouble(), Config.DOUBLE_EPSILON));
+
+						return result;
+					}
+				} catch (RuntimeException rex) {
+					// rex.printStackTrace();
+					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+				}
+			}
+			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_3;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
 			super.setUp(newSymbol);
 		}
 	}

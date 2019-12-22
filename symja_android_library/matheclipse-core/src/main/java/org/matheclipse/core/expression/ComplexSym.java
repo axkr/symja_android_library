@@ -320,7 +320,7 @@ public class ComplexSym implements IComplex {
 	@Override
 	public INumber floorFraction() {
 		return valueOf((IRational) fReal.floorFraction(), (IRational) fImaginary.floorFraction());
-	}
+	} 
 
 	@Override
 	public String fullFormString() {
@@ -434,7 +434,7 @@ public class ComplexSym implements IComplex {
 	}
 
 	@Override
-	public ISignedNumber im() {
+	public IRational im() {
 		return imRational();
 	}
 
@@ -643,7 +643,7 @@ public class ComplexSym implements IComplex {
 	}
 
 	@Override
-	public ISignedNumber re() {
+	public IRational re() {
 		return reRational();
 	}
 

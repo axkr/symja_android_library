@@ -210,6 +210,7 @@ public interface ISignedNumber extends INumber {
 	 * 
 	 * @param factor
 	 * @return the closest integer to the argument.
+	 * @throws ArithmeticException
 	 */
 	public ISignedNumber roundClosest(ISignedNumber factor);
 

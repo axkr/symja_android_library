@@ -10,6 +10,7 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.hipparchus.complex.Complex;
 import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.basic.Config;
@@ -581,6 +582,17 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 	@Override
 	public double[] toDoubleVector() {
 		return vector.toArray();
+	}
+
+	@Override
+	public Complex[] toComplexVector() { 
+		double[] array = vector.toArray();
+		final int size = array.length;
+		Complex[] result = new Complex[size];
+		for (int i = 0; i < size; i++) {
+			result[i] = Complex.valueOf(array[i]);
+		}
+		return result;
 	}
 
 	/** {@inheritDoc} */
