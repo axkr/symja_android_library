@@ -41,7 +41,7 @@ public class DoubleToMMA {
 			int hashSize;
 			if (exp > 0) {
 				hashSize = significantFigures - exp - 1;
-				if (hashSize < 0) {
+				if (hashSize <= 0) {
 					hashSize = 1;
 				}
 				if (hashSize >= HASH_STR.length()) {
@@ -54,7 +54,7 @@ public class DoubleToMMA {
 						usSymbols);
 			} else {
 				hashSize = -exp + significantFigures - 2;
-				if (hashSize < 0) {
+				if (hashSize <= 0) {
 					hashSize = 1;
 				}
 				if (hashSize >= HASH_STR.length()) {
