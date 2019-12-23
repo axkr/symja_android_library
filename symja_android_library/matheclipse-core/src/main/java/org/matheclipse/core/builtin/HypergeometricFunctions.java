@@ -194,8 +194,6 @@ public class HypergeometricFunctions {
 	}
 
 	private static class ExpIntegralEi extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperator {
-		final static ExpIntegralEi CONST = new ExpIntegralEi();
-
 		@Override
 		public double applyAsDouble(double operand) {
 			if (F.isZero(operand)) {
@@ -675,14 +673,19 @@ public class HypergeometricFunctions {
 				try {
 					double A[] = a.toDoubleVector();
 					double B[] = b.toDoubleVector();
-					if (A == null || B == null) {
+					double cDouble = Double.NaN;
+					try {
+						cDouble = c.evalDouble();
+					} catch (RuntimeException rex) {
+
+					}
+					if (A == null || B == null || Double.isNaN(cDouble)) {
 						Complex AC[] = a.toComplexVector();
 						Complex BC[] = b.toComplexVector();
 						return F.complexNum(
 								HypergeometricJS.hypergeometricPFQ(AC, BC, c.evalComplex(), Config.DOUBLE_EPSILON));
 					} else {
-						INum result = F
-								.num(HypergeometricJS.hypergeometricPFQ(A, B, c.evalDouble(), Config.DOUBLE_EPSILON));
+						INum result = F.num(HypergeometricJS.hypergeometricPFQ(A, B, cDouble, Config.DOUBLE_EPSILON));
 
 						return result;
 					}

@@ -452,10 +452,11 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default Complex evalComplex() {
-		if (isNumber()) {
-			return ((INumber) this).complexNumValue().complexValue();
-		}
-		throw new WrongArgumentType(this, "Conversion into a complex numeric value is not possible!");
+		return EvalEngine.get().evalComplex(this);
+//		if (isNumber()) {
+//			return ((INumber) this).complexNumValue().complexValue();
+//		}
+//		throw new WrongArgumentType(this, "Conversion into a complex numeric value is not possible!");
 	}
 
 	/**
