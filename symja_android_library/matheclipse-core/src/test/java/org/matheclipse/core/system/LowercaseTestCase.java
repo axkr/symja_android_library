@@ -13233,6 +13233,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{(1/(b-a*c))[[2]],-1},True}");
 		check("OddQ({1,3}) && OddQ({5,7})", //
 				"{True,True}&&{True,True}");
+		check("OddQ(2+4*I, GaussianIntegers->True)", //
+				"False");
+		check("OddQ(2-3*I, GaussianIntegers->True)", //
+				"True");
+		check("OddQ(1+4*I, GaussianIntegers->True)", //
+				"True");
+		check("OddQ(1+I, GaussianIntegers->True)", //
+				"False");
+		check("OddQ(4*I, GaussianIntegers->True)", //
+				"False");
+		check("OddQ(6, GaussianIntegers->True)", //
+				"False");
+		check("OddQ(I, GaussianIntegers->True)", //
+				"True");
+		check("OddQ(3, GaussianIntegers->True)", //
+				"True");
 	}
 
 	public void testEvenQ() {
