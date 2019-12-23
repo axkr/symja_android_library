@@ -1,13 +1,13 @@
 package org.matheclipse.core.builtin.functions;
 
-import java.util.stream.DoubleStream;
-
 import org.hipparchus.complex.Complex;
 import org.hipparchus.special.Gamma;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
-import org.matheclipse.core.expression.F;
 
 import com.google.common.math.DoubleMath;
+
+import de.lab4inf.math.util.Accuracy;
 
 /**
  * 
@@ -216,7 +216,7 @@ public class HypergeometricJS {
 		return s;
 	}
 
-	// function hypergeometric2F1( a, b, c, x, tolerance=1e-10 ) {
+	// public static Complex hypergeometric2F1( Complex a, Complex b, Complex c, Complex x, double tolerance ) {
 	//
 	// if ( isComplex(a) || isComplex(b) || isComplex(c) || isComplex(x) ) {
 	//
@@ -309,46 +309,59 @@ public class HypergeometricJS {
 	//
 	// return s;
 	//
-	// } else {
-	//
-	// if ( Number.isInteger(c) && c <= 0 ) throw Error( 'Hypergeometric function pole' );
-	//
-	// // transformation from Abramowitz & Stegun p.559
-	// if ( x < -1 ) {
-	//
-	// var t1 = gamma(c) * gamma(b-a) / gamma(b) / gamma(c-a)
-	// * (-x)**(-a) * hypergeometric2F1( a, 1-c+a, 1-b+a, 1/x );
-	// var t2 = gamma(c) * gamma(a-b) / gamma(a) / gamma(c-b)
-	// * (-x)**(-b) * hypergeometric2F1( b, 1-c+b, 1-a+b, 1/x );
-	//
-	// return t1 + t2;
-	//
 	// }
-	//
-	// if ( x === -1 ) throw Error( 'Unsupported real hypergeometric argument' );
-	//
-	// if ( x === 1 ) return gamma(c) * gamma(c-a-b) / gamma(c-a) / gamma(c-b);
-	//
-	// if ( x > 1 ) return hypergeometric2F1( a, b, c, complex(x) );
-	//
-	// var s = 1;
-	// var p = 1;
-	// var i = 1;
-	//
-	// while ( Math.abs(p) > tolerance ) {
-	// p *= x * a * b / c / i;
-	// s += p;
-	// a++;
-	// b++;
-	// c++;
-	// i++;
 	// }
-	//
-	// return s;
-	//
-	// }
-	//
-	// }
+
+	public static double hypergeometric2F1(double a, double b, double c, double x) {
+		return hypergeometric2F1(a, b, c, x, Config.DOUBLE_EPSILON);
+	}
+
+	public static double hypergeometric2F1(double a, double b, double c, double x, double tolerance) {
+		if (c <= 0 && Accuracy.isInteger(c)) {
+			throw new ArithmeticException("Hypergeometric function pole");
+		}
+
+		// transformation from Abramowitz & Stegun p.559
+		if (x < -1) {
+
+			double t1 = Gamma.gamma(c) * Gamma.gamma(b - a) / Gamma.gamma(b) / Gamma.gamma(c - a) * Math.pow(-x, -a)
+					* hypergeometric2F1(a, 1 - c + a, 1 - b + a, 1 / x);
+			double t2 = Gamma.gamma(c) * Gamma.gamma(a - b) / Gamma.gamma(a) / Gamma.gamma(c - b) * Math.pow(-x, -b)
+					* hypergeometric2F1(b, 1 - c + b, 1 - a + b, 1 / x);
+
+			return t1 + t2;
+
+		}
+
+		if (x == -1) {
+			throw new ArithmeticException("Unsupported real hypergeometric argument");
+		}
+
+		if (x == 1) {
+			return Gamma.gamma(c) * Gamma.gamma(c - a - b) / Gamma.gamma(c - a) / Gamma.gamma(c - b);
+		}
+
+		if (x > 1) {
+			throw new ArithmeticException("Hypergeometric2F1 not implemented for Complex numbers");
+			// return hypergeometric2F1( a, b, c, new Complex(x) );
+		}
+
+		double s = 1;
+		double p = 1;
+		double i = 1;
+
+		while (Math.abs(p) > tolerance) {
+			p *= x * a * b / c / i;
+			s += p;
+			a++;
+			b++;
+			c++;
+			i++;
+		}
+
+		return s;
+
+	}
 
 	public static Complex hypergeometricPFQ(Complex[] A, Complex[] B, Complex x, double tolerance) {
 		Complex s = Complex.ONE;

@@ -959,6 +959,13 @@ public class EvalEngine implements Serializable {
 		throw new WrongArgumentType(expr, "Conversion into a double numeric value is not possible!");
 	}
 
+	/**
+	 * Evaluates <code>expr</code> numerically and return the result a Java <code>org.hipparchus.complex.Complex</code> value.
+	 * 
+	 * @param expr
+	 * @return
+	 * @throws WrongArgumentType
+	 */
 	final public Complex evalComplex(final IExpr expr) {
 		if (expr.isReal()) {
 			return new Complex(((ISignedNumber) expr).doubleValue());
