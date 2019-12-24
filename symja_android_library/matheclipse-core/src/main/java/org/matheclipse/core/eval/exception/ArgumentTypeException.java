@@ -19,6 +19,7 @@ public class ArgumentTypeException extends ValidateException {
 		return fMessage;
 	}
 
+	@Override
 	public String getMessage(ISymbol symbol) {
 		return symbol.toString() + ": " + fMessage;
 	}

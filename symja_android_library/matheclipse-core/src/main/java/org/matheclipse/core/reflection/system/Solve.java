@@ -22,6 +22,7 @@ import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.SolveUtils;
@@ -998,6 +999,8 @@ public class Solve extends AbstractFunctionEvaluator {
 			}
 		} catch (LimitException le) {
 			throw le;
+		} catch (ValidateException ve) {
+			return engine.printMessage(ve.getMessage(F.Solve));
 		} catch (RuntimeException rex) {
 			if (Config.SHOW_STACKTRACE) {
 				rex.printStackTrace();

@@ -4597,9 +4597,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Resultant(f+g*x+h*x^2,g+2*h*x, x)", //
 				"-g^2*h+4*f*h^2");
-		check("Discriminant(x^(1/2), x)",
-				"The function: Discriminant(Sqrt(x),x) has wrong argument Sqrt(x) at position:1:\n"
-						+ "Polynomial expected!");
+		// print message Discriminant: the function: Discriminant(Sqrt(x),x) has wrong argument Sqrt(x) at position:1:
+		// Polynomial expected!
+		check("Discriminant(x^(1/2), x)", "Discriminant(Sqrt(x),x)");
 
 		check("Discriminant(f+g*x+h*x^2, x)", //
 				"g^2-4*f*h");
@@ -6669,6 +6669,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFactorSquareFree() {
+		check("FactorSquareFree(c^(1/4)*g^(1/4)*(5+2*m+3*n)^(1/4)*x)", //
+				"c^(1/4)*g^(1/4)*(5+2*m+3*n)^(1/4)*x");
 		check("p = Expand((x + 1)^2 (x + 2)^2 (x + 3)^3)", //
 				"108+432*x+711*x^2+625*x^3+318*x^4+94*x^5+15*x^6+x^7");
 		check("FactorSquareFree(p)", //
@@ -19454,7 +19456,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Sqrt(2/Pi)*Sqrt(1/x)*Sin(x)");
 		check("StruveH(a,-x)", //
 				"(-(-x)^a*StruveH(a,x))/x^a");
-		// TODO values > 30 
+		// TODO values > 30
 		check("Table(StruveH(0,x), {x, 0, 30.0})", //
 				"{0.0,0.568657,0.790859,0.574306,0.135015,-0.185217,-0.184555,0.063383,0.301988,0.319876,0.118744,-0.111421,"//
 						+ "-0.172534,-0.0295133,0.172443,0.247724,0.135449,-0.0553148,-0.152291,-0.076104,0.0943937,0.20045,0.148766,"//
@@ -19792,7 +19794,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Sum(c*(i-j+1), {j,i+1,n}, {i,1,n})", //
 				"c*n*(-i+n)+1/2*c*(i-n)*n*(1+i+n)+c*(1/2*(i-n)+1/2*(i-n)*n+1/2*(-i+n)+n*(-i+n)+1/\n" + "2*(-i+n)*n^2)");
 		check("Simplify(1/2*c*(n-i)*n^2-1/2*c*n*(n+i+1)*(n-i)+3/2*c*n*(n-i))", //
-				"1/2*c*n*(-2*i+i^2+2*n-i*n)");
+				"1/2*c*(2-i)*n*(-i+n)");
 
 		check("Sum(c*(n-1), {j,i,n-1})", //
 				"c*(i-n)+c*n*(-i+n)");

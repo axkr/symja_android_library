@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
@@ -103,6 +104,10 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
 			IExpr result = F.NIL;
 			try {
 				result = (IExpr) fMethod.invoke(fInstance);
+			} catch (ValidateException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
 			} catch (IllegalArgumentException e) {
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();

@@ -37,23 +37,23 @@ public final class Validate {
 	 * 
 	 * @throws WrongArgumentType
 	 */
-	private static long checkLongType(IExpr expr) {
-		if (expr instanceof IntegerSym) {
-			// IntegerSym always fits into a long number
-			return ((IntegerSym) expr).toLong();
-		}
-		try {
-			// the following may throw ArithmeticException
-			if (expr instanceof IInteger) {
-				return ((IInteger) expr).toLong();
-			} else if (expr instanceof INum) {
-				return ((INum) expr).toLong();
-			}
-		} catch (ArithmeticException ae) {
-			//
-		}
-		throw new WrongArgumentType(expr, "Trying to convert the argument into a Java long number: " + expr);
-	}
+	// private static long checkLongType(IExpr expr) {
+	// if (expr instanceof IntegerSym) {
+	// // IntegerSym always fits into a long number
+	// return ((IntegerSym) expr).toLong();
+	// }
+	// try {
+	// // the following may throw ArithmeticException
+	// if (expr instanceof IInteger) {
+	// return ((IInteger) expr).toLong();
+	// } else if (expr instanceof INum) {
+	// return ((INum) expr).toLong();
+	// }
+	// } catch (ArithmeticException ae) {
+	// //
+	// }
+	// throw new WrongArgumentType(expr, "Trying to convert the argument into a Java long number: " + expr);
+	// }
 
 	/**
 	 * Check the argument, if it's an {@code IAST} of {@code long} values in the range [{@code startValue},
@@ -195,28 +195,26 @@ public final class Validate {
 			// IntegerSym always fits into an int number
 			int result = ((IntegerSym) ast.get(pos)).toInt();
 			if (startValue > result) {
-				throw new WrongArgumentType(ast.get(pos), "Trying to convert the expression into the integer range: "
-						+ startValue + " - " + Integer.MAX_VALUE);
+				// Java int value greater equal `1` expected instead of `2`.
+				String str = IOFunctions.getMessage("intjava", F.List(F.ZZ(startValue), ast.get(pos)),
+						EvalEngine.get());
+				throw new ArgumentTypeException(str);
 			}
 			return result;
 		}
 		if (ast.get(pos).isReal()) {
-			try {
-				int result = ((ISignedNumber) ast.get(pos)).toInt();
-				if (startValue > result) {
-					throw new WrongArgumentType(ast, ast.get(pos), pos,
-							"Trying to convert the argument into the integer range: " + startValue + " - "
-									+ Integer.MAX_VALUE);
-				}
-				return result;
-			} catch (ArithmeticException ae) {
-				throw new WrongArgumentType(ast, ast.get(pos), pos,
-						"Trying to convert the argument into the integer range: " + startValue + " - "
-								+ Integer.MAX_VALUE);
+			int result = ast.get(pos).toIntDefault();
+			if (result == Integer.MIN_VALUE || startValue > result) {
+				// Java int value greater equal `1` expected instead of `2`.
+				String str = IOFunctions.getMessage("intjava", F.List(F.ZZ(startValue), ast.get(pos)),
+						EvalEngine.get());
+				throw new ArgumentTypeException(str);
 			}
+			return result;
 		}
-		throw new WrongArgumentType(ast, ast.get(pos), pos,
-				"Trying to convert the argument into the integer range: " + startValue + " - " + Integer.MAX_VALUE);
+		// Java int value greater equal `1` expected instead of `2`.
+		String str = IOFunctions.getMessage("intjava", F.List(F.ZZ(startValue), ast.get(pos)), EvalEngine.get());
+		throw new ArgumentTypeException(str);
 	}
 
 	/**
@@ -238,47 +236,40 @@ public final class Validate {
 	 */
 	public static int checkIntLevelType(IExpr expr, int startValue) {
 		if (expr.isInfinity()) {
-			try {
-				int result = Integer.MAX_VALUE;
-				if (startValue > result) {
-					throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
-							+ startValue + " - " + Integer.MAX_VALUE);
-				}
-				return result;
-			} catch (ArithmeticException ae) {
-				throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
-						+ startValue + " - " + Integer.MAX_VALUE);
+			// maximum possible level in Symja
+			int result = Integer.MAX_VALUE;
+			if (startValue > result) {
+				// Level value greater equal `1` expected instead of `2`.
+				String str = IOFunctions.getMessage("intlevel", F.List(F.ZZ(startValue), F.CInfinity),
+						EvalEngine.get());
+				throw new ArgumentTypeException(str);
 			}
+			return result;
 		}
 		if (expr.isReal()) {
-			try {
-				int result = ((ISignedNumber) expr).toInt();
-				if (startValue > result) {
-					throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
-							+ startValue + " - " + Integer.MAX_VALUE);
-				}
-				return result;
-			} catch (ArithmeticException ae) {
-				throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
-						+ startValue + " - " + Integer.MAX_VALUE);
+			int result = expr.toIntDefault();
+			if (result == Integer.MIN_VALUE || startValue > result) {
+				// Level specification value greater equal `1` expected instead of `2`.
+				String str = IOFunctions.getMessage("intlevel", F.List(F.ZZ(startValue), expr), EvalEngine.get());
+				throw new ArgumentTypeException(str);
 			}
+			return result;
 		}
 		if (expr.isNegativeInfinity()) {
-			try {
-				int result = Integer.MIN_VALUE;
-				if (startValue > result) {
-					throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
-							+ startValue + " - " + Integer.MAX_VALUE);
-				}
-				return result;
-			} catch (ArithmeticException ae) {
-				throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
-						+ startValue + " - " + Integer.MAX_VALUE);
+			// maximum possible level in Symja
+			int result = Integer.MIN_VALUE;
+			if (startValue > result) {
+				// Level specification value greater equal `1` expected instead of `2`.
+				String str = IOFunctions.getMessage("intlevel", F.List(F.ZZ(startValue), F.CNInfinity),
+						EvalEngine.get());
+				throw new ArgumentTypeException(str);
 			}
+			return result;
 		}
-		throw new WrongArgumentType(expr,
-				"Trying to convert the expression into the integer range: " + startValue + " - " + Integer.MAX_VALUE);
-	} 
+		// Level specification value greater equal `1` expected instead of `2`.
+		String str = IOFunctions.getMessage("intlevel", F.List(F.ZZ(startValue), expr), EvalEngine.get());
+		throw new ArgumentTypeException(str);
+	}
 
 	/**
 	 * Check the expression, if it's a Java {@code int} value in the range [ {@code startValue}, Integer.MAX_VALUE]
@@ -329,7 +320,8 @@ public final class Validate {
 	 * @param startValue
 	 * @param engine
 	 * @return
-	 * @throws ArgumentTypeException if it's not a Java int value in the range.
+	 * @throws ArgumentTypeException
+	 *             if it's not a Java int value in the range.
 	 */
 	public static int throwIntType(IExpr expr, int startValue, EvalEngine engine) {
 		int result = expr.toIntDefault();
@@ -393,12 +385,19 @@ public final class Validate {
 			IStringX strX = (IStringX) ast.get(position);
 			String contextName = strX.toString();
 			if (contextName.charAt(contextName.length() - 1) != '`') {
-				throw new WrongArgumentType(ast, ast.get(position), position,
-						"Contextname must be prepended by a '`' character!");
+
+				// `1` is not a valid context name.
+				String str = IOFunctions.getMessage("cxt", F.List(strX), EvalEngine.get());
+				throw new ArgumentTypeException(str);
+				// throw new WrongArgumentType(ast, ast.get(position), position,
+				// "Contextname must be prepended by a '`' character!");
 			}
 			return contextName;
 		}
-		throw new WrongArgumentType(ast, ast.get(position), position, "String expected!");
+		// `1` is not a valid context name.
+		String str = IOFunctions.getMessage("cxt", F.List(ast.get(position)), EvalEngine.get());
+		throw new ArgumentTypeException(str);
+		// throw new WrongArgumentType(ast, ast.get(position), position, "String expected!");
 	}
 
 	/**
@@ -490,13 +489,13 @@ public final class Validate {
 	 * @throws WrongArgumentType
 	 *             if it's not a symbol.
 	 */
-	private static ISymbol checkAssignedVariable(IExpr expr) {
-		if (expr.isSymbol() && ((ISymbol) expr).hasAssignedSymbolValue()) {
-			return (ISymbol) expr;
-		}
-		throw new WrongArgumentType(expr,
-				"Expecting assigned value for variable expression: " + expr.toString() + " !");
-	}
+	// private static ISymbol checkAssignedVariable(IExpr expr) {
+	// if (expr.isSymbol() && ((ISymbol) expr).hasAssignedSymbolValue()) {
+	// return (ISymbol) expr;
+	// }
+	// throw new WrongArgumentType(expr,
+	// "Expecting assigned value for variable expression: " + expr.toString() + " !");
+	// }
 
 	/**
 	 * Check if the argument at the given position is a symbol.
@@ -553,23 +552,7 @@ public final class Validate {
 			// }
 			return ast;
 		}
-		throw new WrongArgumentType(expr, "Function(AST) in left-hand-side of UpSet[] or UpSetDelayed[] expected!");
-	}
-
-	/**
-	 * Check if the argument at the given position is an AST.
-	 * 
-	 * @param position
-	 *            the position which has to be an AST.
-	 * @throws WrongArgumentType
-	 *             if it's not an AST.
-	 */
-	private static IAST checkASTType(IAST ast, int position, EvalEngine engine) {
-		if (ast.get(position).isAST()) {
-			return (IAST) ast.get(position);
-		}
-		// Nonatomic expression expected.
-		return IOFunctions.printMessage(ast.topHead(), "normal", F.List(), engine);
+		throw new ArgumentTypeException("Function(AST) in left-hand-side of UpSet() or UpSetDelayed() expected!");
 	}
 
 	/**
@@ -648,16 +631,6 @@ public final class Validate {
 				}
 			}
 			return termsEqualZeroList;
-			// } else {
-			// if (expr.isAST()) {
-			// termsEqualZeroList = F.ListAlloc(1);
-			// termsEqualZeroList.append(checkEquationAndInequation((IAST) expr));
-			// return termsEqualZeroList;
-			// } else if (expr.isTrue()) {
-			// return F.List(F.True);
-			// } else if (expr.isFalse()) {
-			// return F.List(F.False);
-			// }
 		}
 		return F.ListAlloc(checkEquationAndInequation(expr));
 	}
@@ -696,7 +669,7 @@ public final class Validate {
 	 *            the expression which should be an equation
 	 * @return
 	 */
-	public static IExpr checkEquation(IExpr expr) {
+	private static IExpr checkEquation(IExpr expr) {
 		if (expr.isEqual()) {
 			IAST equal = (IAST) expr;
 			return F.evalExpandAll(F.Subtract(equal.arg1(), equal.arg2()));

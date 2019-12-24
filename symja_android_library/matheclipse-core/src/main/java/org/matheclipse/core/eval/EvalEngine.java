@@ -22,6 +22,7 @@ import org.matheclipse.core.eval.exception.IllegalArgument;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.TimeoutException;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
@@ -749,24 +750,29 @@ public class EvalEngine implements Serializable {
 		if (symbol.isBuiltInSymbol()) {
 			final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
 			if (module instanceof IFunctionEvaluator) {
-				// evaluate a built-in function.
-				final IFunctionEvaluator functionEvaluator = (IFunctionEvaluator) module;
-				int[] expected;
-				if ((expected = functionEvaluator.expectedArgSize()) != null) {
-					if (ast.argSize() < expected[0] || ast.argSize() > expected[1]) {
-						return IOFunctions.printArgMessage(ast, expected, this);
+				try {
+					// evaluate a built-in function.
+					final IFunctionEvaluator functionEvaluator = (IFunctionEvaluator) module;
+					int[] expected;
+					if ((expected = functionEvaluator.expectedArgSize()) != null) {
+						if (ast.argSize() < expected[0] || ast.argSize() > expected[1]) {
+							return IOFunctions.printArgMessage(ast, expected, this);
+						}
 					}
-				}
-				if (!fNumericMode && ((ast.getEvalFlags() & IAST.BUILT_IN_EVALED) == IAST.BUILT_IN_EVALED)
-						&& fAssumptions == null) {
-					return F.NIL;
-				}
-				IExpr result = fNumericMode ? //
-						functionEvaluator.numericEval(ast, this) : //
-						functionEvaluator.evaluate(ast, this);
-				if (result.isPresent()) {
-					return result;
 
+					if (!fNumericMode && ((ast.getEvalFlags() & IAST.BUILT_IN_EVALED) == IAST.BUILT_IN_EVALED)
+							&& fAssumptions == null) {
+						return F.NIL;
+					}
+					IExpr result = fNumericMode ? //
+							functionEvaluator.numericEval(ast, this) : //
+							functionEvaluator.evaluate(ast, this);
+					if (result.isPresent()) {
+						return result;
+
+					}
+				} catch (ValidateException ve) {
+					return printMessage(ve.getMessage(ast.topHead()));
 				}
 				if (((ISymbol.DELAYED_RULE_EVALUATION & attr) == ISymbol.DELAYED_RULE_EVALUATION)) {
 					return symbol.evalDownRule(this, ast);
@@ -960,7 +966,8 @@ public class EvalEngine implements Serializable {
 	}
 
 	/**
-	 * Evaluates <code>expr</code> numerically and return the result a Java <code>org.hipparchus.complex.Complex</code> value.
+	 * Evaluates <code>expr</code> numerically and return the result a Java <code>org.hipparchus.complex.Complex</code>
+	 * value.
 	 * 
 	 * @param expr
 	 * @return
