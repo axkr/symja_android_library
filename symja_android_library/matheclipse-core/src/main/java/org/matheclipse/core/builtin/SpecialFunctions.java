@@ -35,6 +35,7 @@ import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.special.Gamma;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.functions.BesselJS;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractArg12;
@@ -167,7 +168,8 @@ public class SpecialFunctions {
 						double zn = engine.evalDouble(z);
 						double an = engine.evalDouble(a);
 						double nn = engine.evalDouble(n);
-						// TODO improve with regularizedIncompleteBetaFunction() - https://github.com/haifengl/smile/blob/master/math/src/main/java/smile/math/special/Beta.java
+						// TODO improve with regularizedIncompleteBetaFunction() -
+						// https://github.com/haifengl/smile/blob/master/math/src/main/java/smile/math/special/Beta.java
 						return F.num(de.lab4inf.math.functions.IncompleteBeta.incBeta(zn, an, nn));
 					}
 					int ni = n.toIntDefault(Integer.MIN_VALUE);
@@ -1247,53 +1249,60 @@ public class SpecialFunctions {
 
 	private final static class StruveH extends AbstractFunctionEvaluator implements StruveHRules {
 
-		public IExpr e2DblArg(final INum d0, final INum d1) {
-			double v = d0.reDoubleValue();
-			double z = d1.reDoubleValue();
-			try {
-				final double iterationSum = 100;
-				double fraction = 0;
-				double fractionFactor = Math.pow((0.5 * z), v + 1);
-				for (int i = 0; i < iterationSum; ++i) {
-					double fractionTopPart = Math.pow(-1, i) * Math.pow(0.5 * z, 2.0 * i);
-					double fractionBottomPart = gammaEuler(i + 1.5) * gammaEuler(i + v + 1.5);
-					fraction = fraction + (fractionTopPart / fractionBottomPart);
-				}
-				return F.num(fractionFactor * fraction);
-			} catch (Exception e) {
-				throw e;
-			}
-		}
+		// public IExpr e2DblArg(final INum d0, final INum d1) {
+		// double v = d0.reDoubleValue();
+		// double z = d1.reDoubleValue();
+		// try {
+		// final double iterationSum = 100;
+		// double fraction = 0;
+		// double fractionFactor = Math.pow((0.5 * z), v + 1);
+		// for (int i = 0; i < iterationSum; ++i) {
+		// double fractionTopPart = Math.pow(-1, i) * Math.pow(0.5 * z, 2.0 * i);
+		// double fractionBottomPart = Gamma.gamma(i + 1.5) * Gamma.gamma(i + v + 1.5);
+		// fraction = fraction + (fractionTopPart / fractionBottomPart);
+		// }
+		// return F.num(fractionFactor * fraction);
+		// } catch (Exception e) {
+		// throw e;
+		// }
+		// }
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr arg1 = ast.arg1();
 			IExpr arg2 = ast.arg2();
-			if (arg2.isZero()) {
-				IExpr re = arg1.re();
-				if (re.isMinusOne()) {
-					// StruveH(n_,0):=Indeterminate/;Re(n)==(-1)
-					return F.Indeterminate;
+			try {
+				if (arg2.isZero()) {
+					IExpr re = arg1.re();
+					if (re.isMinusOne()) {
+						// StruveH(n_,0):=Indeterminate/;Re(n)==(-1)
+						return F.Indeterminate;
+					}
+					IExpr temp = re.greaterThan(F.CN1);
+					if (temp.isTrue()) {
+						// StruveH(n_,0):=0/;Re(n)>(-1)
+						return F.C0;
+					}
+					if (temp.isFalse()) {
+						// StruveH(n_,0):=ComplexInfinity/;Re(n)<(-1)
+						return F.CComplexInfinity;
+					}
+				} else if (arg1 instanceof INum && arg2 instanceof INum) {
+					return F.num(BesselJS.struveH(arg1.evalDouble(), arg2.evalDouble()));
+					// return e2DblArg((INum) arg1, (INum) arg2);
+				} else if (arg1.isComplexNumeric() || arg2.isComplexNumeric()) {
+					return F.complexNum(BesselJS.struveH(arg1.evalComplex(), arg2.evalComplex()));
+				} else {
+					IExpr negArg2 = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg2);
+					if (negArg2.isPresent()) {
+						// StruveH(n_, arg2_)) := ((-(arg2)^n) StruveH(n,
+						// negArg2))/negArg2^n
+						return F.Times(F.CN1, F.Power(arg2, arg1), F.Power(negArg2, F.Negate(arg1)),
+								F.StruveH(arg1, negArg2));
+					}
 				}
-				IExpr temp = re.greaterThan(F.CN1);
-				if (temp.isTrue()) {
-					// StruveH(n_,0):=0/;Re(n)>(-1)
-					return F.C0;
-				}
-				if (temp.isFalse()) {
-					// StruveH(n_,0):=ComplexInfinity/;Re(n)<(-1)
-					return F.CComplexInfinity;
-				}
-			} else if (arg1 instanceof INum && arg2 instanceof INum) {
-				return e2DblArg((INum) arg1, (INum) arg2);
-			} else {
-				IExpr negArg2 = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg2);
-				if (negArg2.isPresent()) {
-					// StruveH(n_, arg2_)) := ((-(arg2)^n) StruveH(n,
-					// negArg2))/negArg2^n
-					return F.Times(F.CN1, F.Power(arg2, arg1), F.Power(negArg2, F.Negate(arg1)),
-							F.StruveH(arg1, negArg2));
-				}
+			} catch (RuntimeException rex) {
+
 			}
 			return F.NIL;
 		}
@@ -1301,23 +1310,6 @@ public class SpecialFunctions {
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_2;
-		}
-
-		protected static double gammaEuler(double z) {
-			try {
-				double gamma = 1;
-				if (z > 0) {
-					final int iterationSum = 10000;
-					for (int i = 1; i < iterationSum; ++i) {
-						gamma = gamma * (Math.pow((1 + ((double) 1 / i)), z) * Math.pow((1 + (z / i)), -1));
-					}
-					gamma = (1 / z) * gamma;
-				} else
-					return 0;
-				return gamma;
-			} catch (Exception e) {
-				throw e;
-			}
 		}
 
 		@Override
@@ -1335,53 +1327,60 @@ public class SpecialFunctions {
 
 	private final static class StruveL extends AbstractFunctionEvaluator implements StruveLRules {
 
-		public IExpr e2DblArg(final INum d0, final INum d1) {
-			double v = d0.reDoubleValue();
-			double z = d1.reDoubleValue();
-			try {
-				final int iterationSum = 100;
-				double fraction = 0;
-				double fractionFactor = Math.pow((0.5 * z), v + 1);
-				for (int i = 0; i < iterationSum; ++i) {
-					double fractionTopPart = 1 * Math.pow((0.5 * z), (2.0 * i));
-					double fractionBottomPart = StruveH.gammaEuler(i + (1.5)) * StruveH.gammaEuler(i + v + (1.5));
-					fraction = fraction + (fractionTopPart / fractionBottomPart);
-				}
-				return F.num(fractionFactor * fraction);
-			} catch (Exception e) {
-				throw e;
-			}
-		}
+		// public IExpr e2DblArg(final INum d0, final INum d1) {
+		// double v = d0.reDoubleValue();
+		// double z = d1.reDoubleValue();
+		// try {
+		// final int iterationSum = 100;
+		// double fraction = 0;
+		// double fractionFactor = Math.pow((0.5 * z), v + 1);
+		// for (int i = 0; i < iterationSum; ++i) {
+		// double fractionTopPart = 1 * Math.pow((0.5 * z), (2.0 * i));
+		// double fractionBottomPart = Gamma.gamma (i + (1.5)) * Gamma.gamma(i + v + (1.5));
+		// fraction = fraction + (fractionTopPart / fractionBottomPart);
+		// }
+		// return F.num(fractionFactor * fraction);
+		// } catch (Exception e) {
+		// throw e;
+		// }
+		// }
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr arg1 = ast.arg1();
 			IExpr arg2 = ast.arg2();
-			if (arg2.isZero()) {
-				IExpr re = arg1.re();
-				if (re.isMinusOne()) {
-					// StruveL(n_,0):=Indeterminate/;Re(n)==(-1)
-					return F.Indeterminate;
+			try {
+				if (arg2.isZero()) {
+					IExpr re = arg1.re();
+					if (re.isMinusOne()) {
+						// StruveL(n_,0):=Indeterminate/;Re(n)==(-1)
+						return F.Indeterminate;
+					}
+					IExpr temp = re.greaterThan(F.CN1);
+					if (temp.isTrue()) {
+						// StruveL(n_,0):=0/;Re(n)>(-1)
+						return F.C0;
+					}
+					if (temp.isFalse()) {
+						// StruveL(n_,0):=ComplexInfinity/;Re(n)<(-1)
+						return F.CComplexInfinity;
+					}
+				} else if (arg1 instanceof INum && arg2 instanceof INum) {
+					return F.num(BesselJS.struveL(arg1.evalDouble(), arg2.evalDouble()));
+					// return e2DblArg((INum) arg1, (INum) arg2);
+				} else if (arg1.isComplexNumeric() || arg2.isComplexNumeric()) {
+					return F.complexNum(BesselJS.struveL(arg1.evalComplex(), arg2.evalComplex()));
+				} else {
+					IExpr negArg2 = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg2);
+					if (negArg2.isPresent()) {
+						// StruveL(n_, arg2_)) := ((-(arg2)^n) StruveL(n,
+						// negArg2))/negArg2^n
+						return F.Times(F.CN1, F.Power(arg2, arg1), F.Power(negArg2, F.Negate(arg1)),
+								F.StruveL(arg1, negArg2));
+					}
 				}
-				IExpr temp = re.greaterThan(F.CN1);
-				if (temp.isTrue()) {
-					// StruveL(n_,0):=0/;Re(n)>(-1)
-					return F.C0;
-				}
-				if (temp.isFalse()) {
-					// StruveL(n_,0):=ComplexInfinity/;Re(n)<(-1)
-					return F.CComplexInfinity;
-				}
-			} else if (arg1 instanceof INum && arg2 instanceof INum) {
-				return e2DblArg((INum) arg1, (INum) arg2);
-			} else {
-				IExpr negArg2 = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg2);
-				if (negArg2.isPresent()) {
-					// StruveL(n_, arg2_)) := ((-(arg2)^n) StruveL(n,
-					// negArg2))/negArg2^n
-					return F.Times(F.CN1, F.Power(arg2, arg1), F.Power(negArg2, F.Negate(arg1)),
-							F.StruveL(arg1, negArg2));
-				}
+			} catch (RuntimeException rex) {
+
 			}
 			return F.NIL;
 		}

@@ -6,6 +6,7 @@ import java.math.RoundingMode;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatRuntimeException;
+import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
@@ -274,6 +275,12 @@ public class Num implements INum {
 		return this;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public double evalDouble() {
+		return fDouble; 
+	}
+	
 	@Override
 	public ISignedNumber evalReal() {
 		return this;

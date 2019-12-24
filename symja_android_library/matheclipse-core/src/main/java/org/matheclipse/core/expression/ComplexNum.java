@@ -341,6 +341,12 @@ public class ComplexNum implements IComplexNum {
 		// }
 		return F.NIL;
 	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public Complex evalComplex() {
+		return fComplex; 
+	}
 
 	@Override
 	public INumber evalNumber() {

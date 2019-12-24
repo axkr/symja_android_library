@@ -19428,8 +19428,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStruveH() {
+		// TODO wrong result
+		check("StruveH(0, 50.0)", //
+				"-1012.348");
+		check("StruveH(0, 5.2)", //
+				"-0.212448");
+		check("StruveH(0, 4.0)", //
+				"0.135015");
+		check("StruveH(7/3 + I, 4.5 - I)", //
+				"2.35765+I*(-1.40054)");
+		check("StruveH(1,{0.5, 1.0, 1.5})", //
+				"{0.0521737,0.198457,0.410288}");
+
 		check("StruveH(1.5, 3.5)", //
-				"1.13199");
+				"1.13192");
 		check("StruveH(I,0)", //
 				"0");
 		check("StruveH(-1+I,0)", //
@@ -19442,11 +19454,25 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Sqrt(2/Pi)*Sqrt(1/x)*Sin(x)");
 		check("StruveH(a,-x)", //
 				"(-(-x)^a*StruveH(a,x))/x^a");
+		// TODO values > 30 
+		check("Table(StruveH(0,x), {x, 0, 30.0})", //
+				"{0.0,0.568657,0.790859,0.574306,0.135015,-0.185217,-0.184555,0.063383,0.301988,0.319876,0.118744,-0.111421,"//
+						+ "-0.172534,-0.0295133,0.172443,0.247724,0.135449,-0.0553148,-0.152291,-0.076104,0.0943937,0.20045,0.148766,"//
+						+ "-0.00835413,-0.126354,-0.101825,0.036494,0.158762,0.154545,0.031404,-0.0961004}");
 	}
 
 	public void testStruveL() {
+		check("StruveL(0, 2.5)", //
+				"3.01121");
 		check("StruveL(1.5, 3.5)", //
-				"4.41417");
+				"4.41126");
+		check("StruveL(0, 4.0)", //
+				"11.13105");
+		check("StruveL(7/3 + I, 4.5 - I)", //
+				"-0.977295+I*(-10.82588)");
+		check("StruveL(1,{0.5, 1.0, 1.5})", //
+				"{0.0539422,0.226764,0.553857}");
+
 		check("StruveL(I,0)", //
 				"0");
 		check("StruveL(-1+I,0)", //
@@ -19459,6 +19485,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Sqrt(2/Pi)*Sqrt(1/x)*Sinh(x)");
 		check("StruveL(a,-x)", //
 				"(-(-x)^a*StruveL(a,x))/x^a");
+		check("StruveL(1/2, ComplexInfinity)", //
+				"Indeterminate");
+		check("Table(StruveL(0,x), {x, 0, 5,0.25})", //
+				"{0.0,0.160263,0.327241,0.507986,0.710243,0.942845,1.21616,1.54264,1.93743,2.41923,3.01121," //
+						+ "3.7423,4.64869,5.77582,7.18085,8.9357,11.13105,13.88131,17.33089,21.66224,27.10592}");
 	}
 
 	public void testSubdivide() {

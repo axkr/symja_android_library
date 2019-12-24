@@ -683,9 +683,9 @@ public class HypergeometricFunctions {
 						Complex AC[] = a.toComplexVector();
 						Complex BC[] = b.toComplexVector();
 						return F.complexNum(
-								HypergeometricJS.hypergeometricPFQ(AC, BC, c.evalComplex(), Config.DOUBLE_EPSILON));
+								HypergeometricJS.hypergeometricPFQ(AC, BC, c.evalComplex(), Config.DOUBLE_TOLERANCE));
 					} else {
-						INum result = F.num(HypergeometricJS.hypergeometricPFQ(A, B, cDouble, Config.DOUBLE_EPSILON));
+						INum result = F.num(HypergeometricJS.hypergeometricPFQ(A, B, cDouble, Config.DOUBLE_TOLERANCE));
 
 						return result;
 					}

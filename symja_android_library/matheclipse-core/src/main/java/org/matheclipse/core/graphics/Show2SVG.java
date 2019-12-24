@@ -228,8 +228,8 @@ public class Show2SVG {
 		double x1 = ((ISignedNumber) point.arg1()).doubleValue();
 		double y1 = ((ISignedNumber) point.arg2()).doubleValue();
 
-		dim.minMax(x1 - Config.DOUBLE_EPSILON, x1 + Config.DOUBLE_EPSILON, y1 - Config.DOUBLE_EPSILON,
-				y1 + Config.DOUBLE_EPSILON);
+		dim.minMax(x1 - Config.DOUBLE_TOLERANCE, x1 + Config.DOUBLE_TOLERANCE, y1 - Config.DOUBLE_TOLERANCE,
+				y1 + Config.DOUBLE_TOLERANCE);
 	}
 
 	private static void pointToSVG(IAST ast, StringBuilder buf, Dimensions2D dim) {
