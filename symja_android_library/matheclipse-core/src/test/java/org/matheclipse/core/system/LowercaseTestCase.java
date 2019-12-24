@@ -12297,6 +12297,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testN() {
+		// imaginary part is zero
+		check("I^I //N", //
+				"0.20788");
+		check("I^(3*I)//N", //
+				"0.00898329");
+		check("I^(2+3*I)//N", //
+				"-0.00898329");
 		// TODO don't switch to numeric mode for Sqrt(10)
 		check("(0.25)^x", //
 				"0.25^x");

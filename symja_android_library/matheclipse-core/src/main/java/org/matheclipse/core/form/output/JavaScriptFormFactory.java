@@ -69,7 +69,9 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		FUNCTIONS_STR_MATHCELL.put(F.BesselY, "besselY");
 		FUNCTIONS_STR_MATHCELL.put(F.BesselI, "besselI");
 		FUNCTIONS_STR_MATHCELL.put(F.BesselK, "besselK");
-
+		FUNCTIONS_STR_MATHCELL.put(F.StruveH, "struveH");
+		FUNCTIONS_STR_MATHCELL.put(F.StruveL, "struveL");
+		
 		// TODO see math.js - https://github.com/paulmasson/math
 		// FUNCTIONS_STR_MATHCELL.put(F.BesselJZero, "besselJZero ");
 		// FUNCTIONS_STR_MATHCELL.put(F.BesselYZero, "besselYZero ");
@@ -103,7 +105,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		FUNCTIONS_STR_MATHCELL.put(F.Hypergeometric1F1, "hypergeometric1F1");
 		// FUNCTIONS_STR_MATHCELL.put(F.Hypergeometric2??, "hypergeometric2F0");
 		FUNCTIONS_STR_MATHCELL.put(F.Hypergeometric2F1, "hypergeometric2F1");
-
+		FUNCTIONS_STR_MATHCELL.put(F.HypergeometricPFQ, "hypergeometricPFQ");
 		FUNCTIONS_STR_MATHCELL.put(F.Exp, "exp");
 		FUNCTIONS_STR_MATHCELL.put(F.Im, "im");
 		FUNCTIONS_STR_MATHCELL.put(F.Log, "log");
