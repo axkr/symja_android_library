@@ -363,6 +363,8 @@ public class SeriesTest extends AbstractTestCase {
 	public void testSeriesCoefficient() {
 		// check("SeriesCoefficient(x^x,{x,2,4})", //
 		// " ");
+		check("SeriesCoefficient(1/x,{x,0,n})",//
+				"0");
 		check("SeriesCoefficient(f(x),{x,a,7/3})",//
 				"0");
 		check("SeriesCoefficient(f(x),{x,0,4})",//
