@@ -10632,7 +10632,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testLimit() {
-
+		check("Limit((Cosh(t)-1)/t^2,t->0)", //
+				"1/2");
 		check("Limit(Gamma(1/t)*Cos(Sin(1/t)),t->0)", //
 				"Limit(Cos(Sin(1/t))*Gamma(1/t),t->0)");
 		check("Limit(Gamma(1/t),t->Infinity)", //

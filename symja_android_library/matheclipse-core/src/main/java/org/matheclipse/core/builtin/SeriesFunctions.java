@@ -198,7 +198,7 @@ public class SeriesFunctions {
 		}
 
 		/**
-		 * EValuate the limit for the given limit data.
+		 * Evaluate the limit for the given limit data.
 		 * 
 		 * @param expr
 		 * @param data
@@ -209,7 +209,7 @@ public class SeriesFunctions {
 			IExpr expression = expr;
 			final IExpr limitValue = data.getLimitValue();
 
-			IExpr result = F.evalQuiet(expression);
+			IExpr result = EvalEngine.get().evalQuiet(expression);
 			if (result.isNumericFunction()) {
 				return result;
 			}
@@ -267,7 +267,7 @@ public class SeriesFunctions {
 		private static IExpr evalReplaceAll(IExpr expression, LimitData data) {
 			IExpr result = expression.replaceAll(data.getRule());
 			if (result.isPresent()) {
-				result = F.evalQuiet(result);
+				result = EvalEngine.get().evalQuiet(result);
 				if (result.isNumericFunction() || result.isInfinity() || result.isNegativeInfinity()) {
 					return result;
 				}
@@ -1409,6 +1409,14 @@ public class SeriesFunctions {
 
 		private static IExpr functionCoefficient(final IAST ast, IExpr function, IExpr x, IExpr x0, IExpr n,
 				EvalEngine engine) {
+			if (n.isReal()) {
+				if (n.isFraction() && !((IFraction) n).denominator().isOne()) {
+					return F.C0;
+				}
+				if (!n.isInteger()) {
+					return F.NIL;
+				} 
+			}
 			if (function.isFree(x)) {
 				if (n.isZero()) {
 					return function;
@@ -1420,10 +1428,12 @@ public class SeriesFunctions {
 				return temp;
 			}
 			if (function.isPower()) {
-				if (function.base().equals(x)) {
-					if (function.exponent().isNumber()) {
+				IExpr b = function.base();
+				IExpr exponent = function.exponent();
+				if (b.equals(x)) {
+					if (exponent.isNumber()) {
 						// x^exp
-						INumber exp = (INumber) function.exponent();
+						INumber exp = (INumber) exponent;
 						if (exp.isInteger()) {
 							if (x0.isZero()) {
 								return F.Piecewise(F.List(F.List(F.C1, F.Equal(n, exp))), F.C0);
@@ -1434,24 +1444,46 @@ public class SeriesFunctions {
 									F.C0);
 						}
 					}
-					if (!x0.isZero() && function.exponent().isFree(x)) {
-						IExpr exp = function.exponent();
+					if (!x0.isZero() && exponent.isFree(x)) {
+						IExpr exp = exponent;
 						return F.Piecewise(
 								F.List(F.List(F.Times(F.Power(x0, F.Plus(exp, n.negate())), F.Binomial(exp, n)),
 										F.GreaterEqual(n, F.C0))),
 								F.C0);
 					}
 				}
-				if (function.exponent().equals(x) && //
-						(function.base().isFree(x) || //
-								(x0.isZero() && function.base().equals(function.exponent())))) {
-					// x^x or b^x with b is free of x
-					IExpr b = function.base();
-					return F.Piecewise(
-							F.List(F.List(F.Times(F.Power(b, x0), F.Power(F.Factorial(n), F.CN1), F.Power(F.Log(b), n)),
-									F.GreaterEqual(n, F.C0))),
-							F.C0);
+				if (b.isFree(x)) {
+					IExpr[] linear = exponent.linear(x);
+					if (linear != null) {
+						if (x0.isZero()) {
+							// b^(a+c*x)
+							IExpr a = linear[0];
+							IExpr c = linear[1];
+							return
+							// [$ Piecewise({{(b^a*(c*Log(b))^n)/n!, n >= 0}}, 0) $]
+							F.Piecewise(F.List(F.List(F.Times(F.Power(b, a), F.Power(F.Factorial(n), F.CN1),
+									F.Power(F.Times(c, F.Log(b)), n)), F.GreaterEqual(n, F.C0))), F.C0); // $$;
+						}
+						if (linear[0].isZero() && linear[1].isOne()) {
+							// b^x with b is free of x
+
+							return F.Piecewise(F.List(F.List(
+									F.Times(F.Power(b, x0), F.Power(F.Factorial(n), F.CN1), F.Power(F.Log(b), n)),
+									F.GreaterEqual(n, F.C0))), F.C0);
+						}
+					}
+				} else if (b.equals(exponent) && x0.isZero()) {
+					// x^x
+					if (exponent.equals(x)) {
+						// x^x or b^x with b is free of x
+
+						return F.Piecewise(F.List(
+								F.List(F.Times(F.Power(b, x0), F.Power(F.Factorial(n), F.CN1), F.Power(F.Log(b), n)),
+										F.GreaterEqual(n, F.C0))),
+								F.C0);
+					}
 				}
+
 			}
 
 			if (x0.isReal()) {
