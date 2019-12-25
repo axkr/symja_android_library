@@ -1,5 +1,9 @@
 package org.matheclipse.core.builtin;
 
+import static org.matheclipse.core.expression.F.ArcCot;
+import static org.matheclipse.core.expression.F.Negate;
+import static org.matheclipse.core.expression.F.Plus;
+
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.builtin.functions.EllipticFunctionsJS;
 import org.matheclipse.core.builtin.functions.EllipticIntegralsJS;
@@ -30,6 +34,7 @@ public class EllipticIntegrals {
 			F.EllipticTheta.setEvaluator(new EllipticTheta());
 
 			// F.InverseWeierstrassP.setEvaluator(new InverseWeierstrassP());
+			F.JacobiAmplitude.setEvaluator(new JacobiAmplitude());
 			F.JacobiCN.setEvaluator(new JacobiCN());
 			F.JacobiDN.setEvaluator(new JacobiDN());
 			F.JacobiSN.setEvaluator(new JacobiSN());
@@ -614,6 +619,53 @@ public class EllipticIntegrals {
 	// super.setUp(newSymbol);
 	// }
 	// }
+
+	private static class JacobiAmplitude extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			IExpr z = ast.arg1();
+			IExpr m = ast.arg2();
+			if (m.isZero()) {
+				return z;
+			}
+			if (m.isOne()) {
+				return F.Plus(F.CNPiHalf, F.Times(2, F.ArcTan(F.Power(F.E, z))));
+			}
+			if (z.isZero()) {
+				return F.C0;
+			}
+			if (F.EllipticK(m).equals(z)) {
+				return F.CPiHalf;
+			}
+			if (z.isNumeric() && m.isNumeric()) {
+				try {
+					if (z.isReal() && m.isReal()) {
+						return F.complexNum(EllipticFunctionsJS.jacobiAmplitude(z.evalDouble(), m.evalDouble()));
+					}
+					return F.complexNum(EllipticFunctionsJS.jacobiAmplitude(z.evalComplex(), m.evalComplex()));
+				} catch (RuntimeException rte) {
+					return engine.printMessage("JacobiAmplitude: " + rte.getMessage());
+				}
+			}
+			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
+			if (negExpr.isPresent()) {
+				return F.Negate(F.JacobiAmplitude(negExpr, m));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
 
 	private static class JacobiCN extends AbstractFunctionEvaluator {
 

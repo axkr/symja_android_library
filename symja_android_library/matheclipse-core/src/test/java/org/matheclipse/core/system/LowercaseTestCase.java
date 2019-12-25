@@ -3954,7 +3954,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{(2*x)/E^w,(15*y^2)/E^w},{(4*z^3)/E^w,-(x^2+5*y^3+z^4)/E^w}}");
 		check("D(ExpIntegralEi(b*x),x)", //
 				"E^(b*x)/x");
-		
+
 		check("D(StruveH(n,x),x)", //
 				"1/2*(x^n/(2^n*Sqrt(Pi)*Gamma(3/2+n))+StruveH(-1+n,x)-StruveH(1+n,x))");
 		check("D(StruveH(x,y),x)", //
@@ -3963,6 +3963,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1/2*(x^n/(2^n*Sqrt(Pi)*Gamma(3/2+n))+StruveL(-1+n,x)+StruveL(1+n,x))");
 		check("D(StruveL(x,y),x)", //
 				"Derivative(1,0)[StruveL][x,y]");
+		
+		check("D(JacobiAmplitude(x,y),x)", //
+				"JacobiDN(x,y)");
+		check("D(JacobiAmplitude(x,y),y)", //
+				"((x*(-1+y)+EllipticE(JacobiAmplitude(x,y),y))*JacobiDN(x,y)-y*JacobiCN(x,y)*JacobiSN(x,y))/(\n" + //
+				"2*(-1+y)*y)");
+		
 	}
 
 	public void testDefault() {
@@ -5313,6 +5320,40 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// TODO: improve for case "EllipticTheta: Unsupported elliptic nome"
 		check("EllipticTheta(3, 0.4+I, 0.5+I)", //
 				"EllipticTheta(3,0.4+I*1.0,0.5+I*1.0)");
+	}
+
+	public void testJacobiAmplitude() {
+		check("JacobiAmplitude(-z, m)", //
+				"-JacobiAmplitude(z,m)");
+		check("JacobiAmplitude(4.0, 2/3)", //
+				"3.0837");
+		check("JacobiAmplitude(0.2+0.1*I, 0.2*I)", //
+				"0.200364+I*0.0999307");
+		check("JacobiAmplitude(Pi/3, 0.2)", //
+				"1.01656");
+		check("{JacobiAmplitude(z,0), JacobiAmplitude(z,1),JacobiAmplitude(0,m), JacobiAmplitude(EllipticK(m),m)}", //
+				"{z,-Pi/2+2*ArcTan(E^z),0,Pi/2}");
+		check("{JacobiAmplitude(Infinity,0), JacobiAmplitude(Infinity,1) }", //
+				"{Infinity,Pi/2}");
+		check("{JacobiAmplitude(z,0), JacobiAmplitude(z,1)}", //
+				"{z,-Pi/2+2*ArcTan(E^z)}");
+		check("JacobiAmplitude({a,b},c)", //
+				"{JacobiAmplitude(a,c),JacobiAmplitude(b,c)}");
+		check("Table(JacobiAmplitude(x, 2/3), {x,-4.0, 4.0, 1/4})", //
+				"{-3.0837,-2.83685,-2.60166,-2.38451,-2.18786,-2.01066,-1.8494,-1.69911,-1.55408+I*7.77156*10^-16,"//
+						+ "-1.40835,-1.256,-1.09146,-0.909994,-0.708571,-0.486877,-0.248289,"//
+						+ "0.0,0.248289,0.486877,0.708571,"//
+						+ "0.909994,1.09146,1.256,1.40835,1.55408+I*(-1.11022*10^-15),1.69911,1.8494,2.01066,2.18786,2.38451,2.60166,2.83685,3.0837}");
+		check("Table(JacobiAmplitude(x, 4.0), {x,-4.0, 4.0, 1/4})", //
+				"{-0.484111+I*7.89147*10^-13,-0.344254+I*1.92035*10^-12,-0.127094+I*2.57538*10^-12,0.120312+I*2.58848*10^-12,0.339059+I*2.03271*10^-12," //
+				+ "0.481513+I*1.18350*10^-12,0.522889+I*2.94764*10^-13,0.457272+I*(-4.86944*10^-13),0.294331+I*(-1.05849*10^-12),0.0640731+I*(-1.32094*10^-12)," //
+				+ "-0.181535+I*(-1.24833*10^-12),-0.384344+I*(-9.49241*10^-13),-0.502307+I*(-5.92193*10^-13),-0.516139+I*(-2.93099*10^-13)," //
+				+ "-0.423899+I*(-9.94760*10^-14),-0.239834+I*(-1.35447*10^-14),0.0,0.239834+I*1.36557*10^-14,0.423899+I*9.93650*10^-14," //
+				+ "0.516139+I*2.93099*10^-13,0.502307+I*5.92082*10^-13,0.384344+I*9.49130*10^-13,0.181535+I*1.24822*10^-12,-0.0640731+I*1.32094*10^-12," //
+				+ "-0.294331+I*1.05860*10^-12,-0.457272+I*4.86833*10^-13,-0.522889+I*(-2.94653*10^-13),-0.481513+I*(-1.18372*10^-12)," //
+				+ "-0.339059+I*(-2.03282*10^-12),-0.120312+I*(-2.58837*10^-12),0.127094+I*(-2.57550*10^-12),0.344254+I*(-1.92024*10^-12)," //
+				+ "0.484111+I*(-7.88924*10^-13)}");
+
 	}
 
 	public void testJacobiCN() {
