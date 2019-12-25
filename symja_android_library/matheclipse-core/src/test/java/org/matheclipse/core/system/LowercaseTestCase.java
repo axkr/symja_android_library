@@ -3954,6 +3954,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{(2*x)/E^w,(15*y^2)/E^w},{(4*z^3)/E^w,-(x^2+5*y^3+z^4)/E^w}}");
 		check("D(ExpIntegralEi(b*x),x)", //
 				"E^(b*x)/x");
+		
+		check("D(StruveH(n,x),x)", //
+				"1/2*(x^n/(2^n*Sqrt(Pi)*Gamma(3/2+n))+StruveH(-1+n,x)-StruveH(1+n,x))");
+		check("D(StruveH(x,y),x)", //
+				"Derivative(1,0)[StruveH][x,y]");
+		check("D(StruveL(n,x),x)", //
+				"1/2*(x^n/(2^n*Sqrt(Pi)*Gamma(3/2+n))+StruveL(-1+n,x)+StruveL(1+n,x))");
+		check("D(StruveL(x,y),x)", //
+				"Derivative(1,0)[StruveL][x,y]");
 	}
 
 	public void testDefault() {
