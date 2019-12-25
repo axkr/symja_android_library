@@ -9,5 +9,5 @@ JacobiAmplitude(x, m)
 
 See
 * [Wikipedia - Jacobi elliptic functions](https://en.wikipedia.org/wiki/Jacobi_elliptic_functions)
-* [NIST - Jacobian elliptic functions](https://dlmf.nist.gov/22.5)
+* [NIST - Jacobi’s Amplitude (am) Function](https://dlmf.nist.gov/22.16)
 
