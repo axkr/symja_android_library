@@ -286,7 +286,7 @@ public class FunctionExpand extends AbstractEvaluator {
 	/**
 	 * <p>
 	 * Denests <code>Sqrt()</code> in an expression that contain other square roots if possible, otherwise returns the
-	 * expr unchanged. This is based on the algorithms of
+	 * expr unchanged.  
 	 * </p>
 	 * 
 	 * <pre>
@@ -295,11 +295,12 @@ public class FunctionExpand extends AbstractEvaluator {
 	 *   >> sqrtDenest(5, 2*Sqrt(6))
 	 *   sqrt(2) + sqrt(3)
 	 * </pre>
-	 * 
+	 * <p>
 	 * See: <a href="// https://en.wikipedia.org/wiki/Nested_radical#Two_nested_square_roots">Wikipedia - Nested radical
 	 * - Two nested square roots</a>
+	 * </p>
 	 * 
-	 * References for improvements of this method:
+	 * Github #166. References for possible improvements of this method:
 	 * <pre>
 	 *  
 	 * .. [1] http://researcher.watson.ibm.com/researcher/files/us-fagin/symb85.pdf
