@@ -285,8 +285,8 @@ public class FunctionExpand extends AbstractEvaluator {
 
 	/**
 	 * <p>
-	 * Denests <code>Sqrt()</code> in an expression that contain other square roots if possible, otherwise returns the
-	 * expr unchanged.  
+	 * Denests <code>Sqrt()</code> in an expression that contain other square roots if possible, otherwise returns
+	 * <code>F.NIL</code>.
 	 * </p>
 	 * 
 	 * <pre>
@@ -301,6 +301,7 @@ public class FunctionExpand extends AbstractEvaluator {
 	 * </p>
 	 * 
 	 * Github #166. References for possible improvements of this method:
+	 * 
 	 * <pre>
 	 *  
 	 * .. [1] http://researcher.watson.ibm.com/researcher/files/us-fagin/symb85.pdf
@@ -310,7 +311,7 @@ public class FunctionExpand extends AbstractEvaluator {
 	 * 
 	 * @param arg1
 	 * @param arg2
-	 * @return
+	 * @return <code>F.NIL</code> if no change could be applied
 	 */
 	private static IExpr sqrtDenest(IRational arg1, IExpr arg2) {
 		if (arg1.isNegative()) {
