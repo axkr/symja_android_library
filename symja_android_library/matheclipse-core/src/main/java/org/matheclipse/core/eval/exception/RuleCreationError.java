@@ -2,9 +2,10 @@ package org.matheclipse.core.eval.exception;
 
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.math.MathException;
 
-public class RuleCreationError extends MathException {
+public class RuleCreationError extends ValidateException {
 	/**
 	 * 
 	 */
@@ -30,6 +31,17 @@ public class RuleCreationError extends MathException {
 		// }
 		Context context = fLHS.topHead().getContext();
 		return "Not allowed left-hand-side expression: \"" + fLHS.toString() + "\" from context \"" + context.toString()
+				+ "\"\nPlease use names which aren't predefined by the system.";
+	}
+
+	@Override
+	public String getMessage(ISymbol symbol) {
+		if (fLHS == null) {
+			return symbol.toString() + ": " + "Operation not allowed in server mode.";
+		}
+		Context context = fLHS.topHead().getContext();
+		return symbol.toString() + ": " + "Not allowed left-hand-side expression: \"" + fLHS.toString()
+				+ "\" from context \"" + context.toString()
 				+ "\"\nPlease use names which aren't predefined by the system.";
 	}
 

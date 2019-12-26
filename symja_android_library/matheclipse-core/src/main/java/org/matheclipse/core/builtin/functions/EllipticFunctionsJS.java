@@ -385,7 +385,7 @@ public class EllipticFunctionsJS {
 
 	}
 
-	public static Complex am(Complex x, Complex m) {
+	public static Complex jacobiAmplitude(Complex x, Complex m) {
 
 		// if ( m > 1 || isComplex(x) || isComplex(m) ) {
 
@@ -416,9 +416,9 @@ public class EllipticFunctionsJS {
 		// }
 	}
 
-	public static Complex am(double x, double m) {
+	public static Complex jacobiAmplitude(double x, double m) {
 		if (m > 1) {
-			return am(new Complex(x), new Complex(m));
+			return jacobiAmplitude(new Complex(x), new Complex(m));
 		}
 
 		Complex K = EllipticIntegralsJS.ellipticK(m);

@@ -2187,10 +2187,10 @@ public class Algebra {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			VariablesSet eVar = new VariablesSet(ast.arg1());
-			if (!eVar.isSize(1)) {
-				throw new WrongArgumentType(ast, ast.arg1(), 1,
-						"Factorization only implemented for univariate polynomials");
-			}
+			// if (!eVar.isSize(1)) {
+			// throw new WrongArgumentType(ast, ast.arg1(), 1,
+			// "Factorization only implemented for univariate polynomials");
+			// }
 			try {
 				IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 				// ASTRange r = new ASTRange(eVar.getVarList(), 1);
@@ -2239,10 +2239,10 @@ public class Algebra {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
 			VariablesSet eVar = new VariablesSet(ast.arg1());
-			if (!eVar.isSize(1)) {
-				throw new WrongArgumentType(ast, ast.arg1(), 1,
-						"Factorization only implemented for univariate polynomials");
-			}
+			// if (!eVar.isSize(1)) {
+			// throw new WrongArgumentType(ast, ast.arg1(), 1,
+			// "Factorization only implemented for univariate polynomials");
+			// }
 			try {
 				IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 				// ASTRange r = new ASTRange(eVar.getVarList(), 1);
@@ -4054,7 +4054,7 @@ public class Algebra {
 					if (count < minCounter) {
 						result = temp;
 					}
-				} catch (WrongArgumentType wat) {
+				} catch (RuntimeException rex) {
 					//
 				}
 
@@ -4127,7 +4127,7 @@ public class Algebra {
 					temp = F.evalExpandAll(expr);
 					expandAllCounter = fComplexityFunction.apply(temp);
 					sResult.checkLess(temp, expandAllCounter);
-				} catch (WrongArgumentType wat) {
+				} catch (RuntimeException rex) {
 					//
 				}
 
@@ -4408,7 +4408,7 @@ public class Algebra {
 									return temp;
 								}
 							}
-						} catch (WrongArgumentType wat) {
+						} catch (RuntimeException rex) {
 							//
 						}
 					}
@@ -4516,7 +4516,7 @@ public class Algebra {
 					try {
 						expr = F.eval(F.FunctionExpand(expr));
 						sResult.checkLess(expr, fComplexityFunction.apply(expr));
-					} catch (WrongArgumentType wat) {
+					} catch (RuntimeException rex) {
 						//
 					}
 				} else {
@@ -4524,7 +4524,7 @@ public class Algebra {
 						try {
 							expr = F.eval(F.FunctionExpand(expr));
 							sResult.checkLessEqual(expr, fComplexityFunction.apply(expr));
-						} catch (WrongArgumentType wat) {
+						} catch (RuntimeException rex) {
 							//
 						}
 					}

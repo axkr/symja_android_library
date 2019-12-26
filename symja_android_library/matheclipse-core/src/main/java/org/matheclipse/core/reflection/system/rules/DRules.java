@@ -13,7 +13,7 @@ public interface DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 83 };
+  final public static int[] SIZES = { 0, 86 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -268,6 +268,15 @@ public interface DRules {
       Times(D(f,x),ProductLog(f),Power(Times(f,Plus(C1,ProductLog(f))),CN1))),
     // D(ProductLog(f_,g_),x_?NotListQ):=ProductLog(f,g)*D(g,x)/(g*(1+ProductLog(f,g)))+D(f,x)*Derivative(1,0)[ProductLog][f,g]
     ISetDelayed(D(ProductLog(f_,g_),PatternTest(x_,NotListQ)),
-      Plus(Times(ProductLog(f,g),D(g,x),Power(Times(g,Plus(C1,ProductLog(f,g))),CN1)),Times(D(f,x),$($(Derivative(C1,C0),ProductLog),f,g))))
+      Plus(Times(ProductLog(f,g),D(g,x),Power(Times(g,Plus(C1,ProductLog(f,g))),CN1)),Times(D(f,x),$($(Derivative(C1,C0),ProductLog),f,g)))),
+    // D(JacobiAmplitude(f_,g_),x_?NotListQ):=JacobiDN(f,g)*D(f,x)+(D(g,x)*((EllipticE(JacobiAmplitude(f,g),g)+f*(-1+g))*JacobiDN(f,g)-g*JacobiCN(f,g)*JacobiSN(f,g)))/(2*(-1+g)*g)
+    ISetDelayed(D(JacobiAmplitude(f_,g_),PatternTest(x_,NotListQ)),
+      Plus(Times(JacobiDN(f,g),D(f,x)),Times(Power(Times(C2,Plus(CN1,g),g),CN1),D(g,x),Plus(Times(Plus(EllipticE(JacobiAmplitude(f,g),g),Times(f,Plus(CN1,g))),JacobiDN(f,g)),Times(CN1,g,JacobiCN(f,g),JacobiSN(f,g)))))),
+    // D(StruveH(f_,g_),x_?NotListQ):=1/2*(g^f/(2^f*Sqrt(Pi)*Gamma(3/2+f))+StruveH(-1+f,g)-StruveH(1+f,g))*D(g,x)+D(f,x)*Derivative(1,0)[StruveH][f,g]
+    ISetDelayed(D(StruveH(f_,g_),PatternTest(x_,NotListQ)),
+      Plus(Times(C1D2,Plus(Times(Power(g,f),Power(Times(Power(C2,f),Sqrt(Pi),Gamma(Plus(QQ(3L,2L),f))),CN1)),StruveH(Plus(CN1,f),g),Negate(StruveH(Plus(C1,f),g))),D(g,x)),Times(D(f,x),$($(Derivative(C1,C0),StruveH),f,g)))),
+    // D(StruveL(f_,g_),x_?NotListQ):=1/2*(g^f/(2^f*Sqrt(Pi)*Gamma(3/2+f))+StruveL(-1+f,g)+StruveL(1+f,g))*D(g,x)+D(f,x)*Derivative(1,0)[StruveL][f,g]
+    ISetDelayed(D(StruveL(f_,g_),PatternTest(x_,NotListQ)),
+      Plus(Times(C1D2,Plus(Times(Power(g,f),Power(Times(Power(C2,f),Sqrt(Pi),Gamma(Plus(QQ(3L,2L),f))),CN1)),StruveL(Plus(CN1,f),g),StruveL(Plus(C1,f),g)),D(g,x)),Times(D(f,x),$($(Derivative(C1,C0),StruveL),f,g))))
   );
 }

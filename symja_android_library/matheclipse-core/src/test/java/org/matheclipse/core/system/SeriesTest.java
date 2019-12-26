@@ -363,7 +363,19 @@ public class SeriesTest extends AbstractTestCase {
 	public void testSeriesCoefficient() {
 		// check("SeriesCoefficient(x^x,{x,2,4})", //
 		// " ");
-
+		check("SeriesCoefficient(1/x,{x,0,n})",//
+				"0");
+		check("SeriesCoefficient(f(x),{x,a,7/3})",//
+				"0");
+		check("SeriesCoefficient(f(x),{x,0,4})",//
+				"Derivative(4)[f][0]/24");
+		check("SeriesCoefficient(b^(a+c*x), {x, 0, n})", //
+				"Piecewise({{(b^a*(c*Log(b))^n)/n!,n>=0}},0)");
+		check("SeriesCoefficient(E^x, {x, 0, n})", //
+				"Piecewise({{1/n!,n>=0}},0)");
+		check("SeriesCoefficient(E^(-x), {x, 0, n})",//
+				"Piecewise({{(-1)^n/n!,n>=0}},0)");
+		
 		check("SeriesCoefficient(Series(Exp(Sin(x)), {x, 0, 10}), 8)", //
 				"31/5760");
 		check("SeriesCoefficient(Series(Exp(Sin(x)), {x, 0, 10}), 10)", //
@@ -371,10 +383,10 @@ public class SeriesTest extends AbstractTestCase {
 		check("SeriesCoefficient(Series(Exp(Sin(x)), {x, 0, 10}), 11)", //
 				"Indeterminate");
 		check("SeriesCoefficient(a^x, {x, 0, n})", "Piecewise({{Log(a)^n/n!,n>=0}},0)");
-		check("SeriesCoefficient(E^x, {x, 0, n})", "Piecewise({{1/n!,n>=0}},0)");
+		 
 		check("SeriesCoefficient(x^x,{x,0,4})", //
 				"Log(x)^4/24");
-
+		
 		check("SeriesCoefficient(ChebyshevT(k, x), {x, 0, 2})", //
 				"((-1+k)*(1+k)*k^2*Pi)/(8*Gamma(1/2*(3-k))*Gamma(1/2*(3+k)))");
 		check("SeriesCoefficient(d+4*x^e+7*x^f,{x, a, n})", //

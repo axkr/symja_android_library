@@ -2,6 +2,7 @@ package org.matheclipse.core.eval.exception;
 
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.math.MathException;
 
 /**
@@ -64,6 +65,24 @@ public class WrongArgumentType extends ValidateException {
 			}
 			return "The function: " + fExpr.toString() + " has wrong argument " + fArg.toString() + " at position:"
 					+ Integer.toString(fPosition) + ":\n" + fMessage;
+		}
+	}
+
+	@Override
+	public String getMessage(ISymbol symbol) {
+		// return symbol.toString() + ": " + fMessage;
+		if (fExpr == null) {
+			return symbol.toString() + ": " + "the expression: " + fArg.toString() + " has a wrong type:\n" + fMessage;
+		}
+		if (fMessage == null) {
+			return symbol.toString() + ": " + "the function: " + fExpr.toString() + " has wrong argument "
+					+ fArg.toString() + " at position:" + Integer.toString(fPosition);
+		} else {
+			if (fPosition < 0) {
+				return symbol.toString() + ": " + "the function: " + fExpr.toString() + " has wrong type:\n" + fMessage;
+			}
+			return symbol.toString() + ": " + "the function: " + fExpr.toString() + " has wrong argument "
+					+ fArg.toString() + " at position:" + Integer.toString(fPosition) + ":\n" + fMessage;
 		}
 	}
 

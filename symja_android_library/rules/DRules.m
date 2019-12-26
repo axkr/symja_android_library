@@ -72,7 +72,7 @@
   D(Tan(x_), {x_, 2}) := 2*Sec(x)^2*Tan(x),
   D(Csc(x_), {x_, 2}) := Csc(x)^3+Csc(x)*Cot(x)^2,
   D(Sec(x_), {x_, 2}) := Sec(x)^3+Sec(x)*Tan(x)^2,
-     
+  
   D(x_^a_, {x_, n_Integer}) := Pochhammer(a - n + 1, n)*x^(a - n)
     /; n >= 0 && FreeQ(a,x),
   D(a_^x_, {x_, n_Integer}) := a^x*Log(x)^n
@@ -107,5 +107,11 @@
   D(BesselJ(f_, g_),x_?NotListQ):= 1/2*(BesselJ(-1+f, g)-BesselJ(1+f, g))*D(g,x)+D(f,x)*Derivative(1,0)[BesselJ][f,g],
   D(PolyLog(f_, g_),x_?NotListQ):= (PolyLog(-1 + f, g)*D(g,x))/g + D(f,x)*Derivative(1, 0)[PolyLog][f, g],
   D(ProductLog(f_),x_?NotListQ) := (ProductLog[f]*D(f, x))/(f*(1 + ProductLog[f])),
-  D(ProductLog(f_, g_),x_?NotListQ):= ProductLog(f,g)*D(g,x)/(g*(1+ProductLog(f,g)))+D(f,x)*Derivative(1,0)[ProductLog][f,g] 
+  D(ProductLog(f_, g_),x_?NotListQ):= ProductLog(f,g)*D(g,x)/(g*(1+ProductLog(f,g)))+D(f,x)*Derivative(1,0)[ProductLog][f,g],
+  
+  D(JacobiAmplitude(f_, g_),x_?NotListQ) := JacobiDN(f, g)*D(f,x)+(((EllipticE(JacobiAmplitude(f, g), g) + f*(-1 + g))*JacobiDN(f, g) - g*JacobiCN(f, g)*JacobiSN(f, g))*D(g,x))/(2*(-1 + g)*g),
+  
+  D(StruveH(f_, g_),x_?NotListQ):=(1/2)*(g^f /(2^f *(Sqrt(Pi)*Gamma(3/2+f))) + StruveH(-1 + f, g)-StruveH(1 + f, g))*D(g,x) + D(f,x)*Derivative(1, 0)[StruveH][f, g],
+  D(StruveL(f_, g_),x_?NotListQ):=(1/2)*(g^f /(2^f *(Sqrt(Pi)*Gamma(3/2+f))) + StruveL(-1 + f, g)+StruveL(1 + f, g))*D(g,x) + D(f,x)*Derivative(1, 0)[StruveL][f, g]
+  
 }

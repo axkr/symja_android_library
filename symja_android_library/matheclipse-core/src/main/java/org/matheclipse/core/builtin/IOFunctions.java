@@ -656,6 +656,7 @@ public class IOFunctions {
 			"innf", "Non-negative integer or Infinity expected at position `1`.", //
 			"int", "Integer expected.", //
 			"intjava", "Java int value greater equal `1` expected instead of `2`.", //
+			"intlevel", "Level specification value greater equal `1` expected instead of `2`.", //
 			"intp", "Positive integer expected.", //
 			"intnn", "Non-negative integer expected.", //
 			"intnm", "Non-negative machine-sized integer expected at position `2` in `1`.", //

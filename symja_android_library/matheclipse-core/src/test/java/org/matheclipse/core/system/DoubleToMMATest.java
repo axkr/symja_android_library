@@ -91,6 +91,12 @@ public class DoubleToMMATest extends TestCase {
 		DoubleToMMA.doubleToMMA(buf, Math.pow(6.7, 8), 3, 7);
 		assertEquals("4.06068*10^6", buf.toString());
 	}
+ 
+	public void test0014() {
+		StringBuilder buf = new StringBuilder();
+		DoubleToMMA.doubleToMMA(buf, 1234567.8, 6, 7);
+		assertEquals("1234567.8", buf.toString());
+	}
 
 	public void testScientific0001() {
 		StringBuilder buf = new StringBuilder();

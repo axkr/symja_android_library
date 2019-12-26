@@ -104,20 +104,20 @@ public class BesselJS {
 	 * @param m
 	 * @return
 	 */
-//	public static double besselYZero(double n, int m) {
-//		// if ( n < 0 ) throw Error( 'Negative order for Bessel zero' );
-//		// if ( !Number.isInteger(m) ) throw Error( 'Nonintegral index for Bessel zero' );
-//
-//		// approximations from dlmf.nist.gov/10.21#vi
-//		double delta = .9 * Math.PI / 2.0;
-//
-//		double a = (m + n / 2 - 3 / 4) * Math.PI;
-//		double e = a - (4 * (n * n) - 1) / (8 * a);
-//		BisectionSolver solver = new BisectionSolver();
-//		ISymbol x = F.Dummy("x");
-//		UnivariateDifferentiableFunction f = new UnaryNumerical(F.BesselY(F.num(n), x), x, EvalEngine.get(), true);
-//		return solver.solve(100, f, e - delta, e + delta);
-//	}
+	// public static double besselYZero(double n, int m) {
+	// // if ( n < 0 ) throw Error( 'Negative order for Bessel zero' );
+	// // if ( !Number.isInteger(m) ) throw Error( 'Nonintegral index for Bessel zero' );
+	//
+	// // approximations from dlmf.nist.gov/10.21#vi
+	// double delta = .9 * Math.PI / 2.0;
+	//
+	// double a = (m + n / 2 - 3 / 4) * Math.PI;
+	// double e = a - (4 * (n * n) - 1) / (8 * a);
+	// BisectionSolver solver = new BisectionSolver();
+	// ISymbol x = F.Dummy("x");
+	// UnivariateDifferentiableFunction f = new UnaryNumerical(F.BesselY(F.num(n), x), x, EvalEngine.get(), true);
+	// return solver.solve(100, f, e - delta, e + delta);
+	// }
 
 	public static Complex besselI(double n, double x) {
 		if (DoubleMath.isMathematicalInteger(n) && n < 0)
@@ -287,6 +287,46 @@ public class BesselJS {
 	public static Complex sphericalHankel2(double n, double x) {
 
 		return sphericalBesselJ(n, x).add(Complex.I.multiply(sphericalBesselY(n, x).negate()));
+
+	}
+
+	public static double struveH(double n, double x) {
+		// can also evaluate from hypergeometric0F1
+		// could use to test hypergeometricPFQ
+		double[] A = { 1.0 };
+		double[] B = { 1.5, n + 1.5 };
+		return Math.pow(x, n + 1.0) * 1 / (Math.pow(2.0, n) * Math.sqrt(Math.PI) * Gamma.gamma(n + 1.5)) * //
+				HypergeometricJS.hypergeometricPFQ(A, B, (-0.25) * x * x);
+	}
+
+	public static Complex struveH(Complex n, Complex x) {
+		// can also evaluate from hypergeometric0F1
+		// could use to test hypergeometricPFQ
+		Complex[] A = { Complex.ONE };
+		Complex[] B = { Complex.valueOf(1.5), n.add(1.5) };
+		return x.pow(n.add(1.0))
+				.multiply(Complex.valueOf(2.0).pow(n).multiply(Math.sqrt(Math.PI))
+						.multiply(Arithmetic.lanczosApproxGamma(n.add(1.5))).reciprocal())
+				.multiply(HypergeometricJS.hypergeometricPFQ(A, B, x.multiply(x).multiply(-0.25)));
+
+	}
+
+	public static double struveL(double n, double x) {
+		double[] A = { 1.0 };
+		double[] B = { 1.5, n + 1.5 };
+		// one sign different in 0.25 from struveH
+		return Math.pow(x, n + 1.0) * 1 / (Math.pow(2.0, n) * Math.sqrt(Math.PI) * Gamma.gamma(n + 1.5)) * //
+				HypergeometricJS.hypergeometricPFQ(A, B, 0.25 * x * x);
+	}
+
+	public static Complex struveL(Complex n, Complex x) {
+		Complex[] A = { Complex.ONE };
+		Complex[] B = { Complex.valueOf(1.5), n.add(1.5) };
+		// one sign different in 0.25 from struveH
+		return x.pow(n.add(1.0))
+				.multiply(Complex.valueOf(2.0).pow(n).multiply(Math.sqrt(Math.PI))
+						.multiply(Arithmetic.lanczosApproxGamma(n.add(1.5))).reciprocal())
+				.multiply(HypergeometricJS.hypergeometricPFQ(A, B, x.multiply(x).multiply(0.25)));
 
 	}
 

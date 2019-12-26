@@ -69,16 +69,18 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		FUNCTIONS_STR_MATHCELL.put(F.BesselY, "besselY");
 		FUNCTIONS_STR_MATHCELL.put(F.BesselI, "besselI");
 		FUNCTIONS_STR_MATHCELL.put(F.BesselK, "besselK");
+		FUNCTIONS_STR_MATHCELL.put(F.StruveH, "struveH");
+		FUNCTIONS_STR_MATHCELL.put(F.StruveL, "struveL");
+
+		FUNCTIONS_STR_MATHCELL.put(F.BesselJZero, "besselJZero ");
+		FUNCTIONS_STR_MATHCELL.put(F.BesselYZero, "besselYZero ");
 
 		// TODO see math.js - https://github.com/paulmasson/math
-		// FUNCTIONS_STR_MATHCELL.put(F.BesselJZero, "besselJZero ");
-		// FUNCTIONS_STR_MATHCELL.put(F.BesselYZero, "besselYZero ");
-
 		// FUNCTIONS_STR_MATHCELL.put(F.Hankel1, "hankel1");
 		// FUNCTIONS_STR_MATHCELL.put(F.Hankel2, "hankel2");
 
-		// FUNCTIONS_STR_MATHCELL.put(F.AiryAi, "airyAi");
-		// FUNCTIONS_STR_MATHCELL.put(F.AiryBi, "airyBi");
+		FUNCTIONS_STR_MATHCELL.put(F.AiryAi, "airyAi");
+		FUNCTIONS_STR_MATHCELL.put(F.AiryBi, "airyBi");
 
 		FUNCTIONS_STR_MATHCELL.put(F.EllipticF, "ellipticF");
 		FUNCTIONS_STR_MATHCELL.put(F.EllipticK, "ellipticK");
@@ -86,6 +88,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		FUNCTIONS_STR_MATHCELL.put(F.EllipticPi, "ellipticPi");
 		FUNCTIONS_STR_MATHCELL.put(F.EllipticTheta, "jacobiTheta");
 
+		FUNCTIONS_STR_MATHCELL.put(F.JacobiAmplitude, "am");
 		FUNCTIONS_STR_MATHCELL.put(F.JacobiCN, "cn");
 		FUNCTIONS_STR_MATHCELL.put(F.JacobiDN, "dn");
 		FUNCTIONS_STR_MATHCELL.put(F.JacobiSN, "sn");
@@ -103,7 +106,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		FUNCTIONS_STR_MATHCELL.put(F.Hypergeometric1F1, "hypergeometric1F1");
 		// FUNCTIONS_STR_MATHCELL.put(F.Hypergeometric2??, "hypergeometric2F0");
 		FUNCTIONS_STR_MATHCELL.put(F.Hypergeometric2F1, "hypergeometric2F1");
-
+		FUNCTIONS_STR_MATHCELL.put(F.HypergeometricPFQ, "hypergeometricPFQ");
 		FUNCTIONS_STR_MATHCELL.put(F.Exp, "exp");
 		FUNCTIONS_STR_MATHCELL.put(F.Im, "im");
 		FUNCTIONS_STR_MATHCELL.put(F.Log, "log");

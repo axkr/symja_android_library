@@ -27,6 +27,7 @@ import org.matheclipse.core.eval.exception.FlowControlException;
 import org.matheclipse.core.eval.exception.IllegalArgument;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.ValidateException;
 //import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -1620,6 +1621,8 @@ public final class ListFunctions {
 							return list.setAtCopy(0, F.Sequence);
 						}
 						return list.splice(indx);
+					} catch (final ValidateException ve) {
+						return engine.printMessage(ve.getMessage(F.Delete));
 					} catch (final RuntimeException rex) {
 						if (Config.DEBUG) {
 							rex.printStackTrace();

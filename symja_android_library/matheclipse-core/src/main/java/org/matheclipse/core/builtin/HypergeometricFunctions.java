@@ -15,6 +15,7 @@ import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
@@ -676,18 +677,24 @@ public class HypergeometricFunctions {
 					double cDouble = Double.NaN;
 					try {
 						cDouble = c.evalDouble();
-					} catch (RuntimeException rex) {
-
+					} catch (ValidateException ve) { 
 					}
 					if (A == null || B == null || Double.isNaN(cDouble)) {
 						Complex AC[] = a.toComplexVector();
 						Complex BC[] = b.toComplexVector();
-						return F.complexNum(
-								HypergeometricJS.hypergeometricPFQ(AC, BC, c.evalComplex(), Config.DOUBLE_EPSILON));
+						if (AC != null && BC != null) {
+							return F.complexNum(HypergeometricJS.hypergeometricPFQ(AC, BC, c.evalComplex(),
+									Config.DOUBLE_TOLERANCE));
+						}
 					} else {
-						INum result = F.num(HypergeometricJS.hypergeometricPFQ(A, B, cDouble, Config.DOUBLE_EPSILON));
+						INum result = F.num(HypergeometricJS.hypergeometricPFQ(A, B, cDouble, Config.DOUBLE_TOLERANCE));
 
 						return result;
+					}
+
+				} catch (ValidateException ve) {
+					if (Config.SHOW_STACKTRACE) {
+						ve.printStackTrace();
 					}
 				} catch (RuntimeException rex) {
 					// rex.printStackTrace();

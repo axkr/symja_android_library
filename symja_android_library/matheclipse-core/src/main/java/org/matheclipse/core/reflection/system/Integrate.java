@@ -542,7 +542,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 		boolean numericMode = engine.isNumericMode();
 		try {
 			engine.setNumericMode(false);
-			if (holdallAST.size() < 3) {
+			if (holdallAST.size() < 3 || holdallAST.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
 				return F.NIL;
 			}
 			final IExpr a1 = NumberTheory.rationalize(holdallAST.arg1()).orElse(holdallAST.arg1());
@@ -634,7 +634,15 @@ public class Integrate extends AbstractFunctionEvaluator {
 
 				result = integrateByRubiRules(fx, x, ast, engine);
 				if (result.isPresent()) {
-					return result;
+					IExpr temp = result.replaceAll(f -> {
+						if (f.isAST(F.$rubi("Unintegrable"), 3)) {
+							IAST integrate = F.Integrate(f.first(), f.second());
+							integrate.addEvalFlags(IAST.BUILT_IN_EVALED);
+							return integrate;
+						}
+						return F.NIL;
+					});
+					return temp.orElse(result);
 				}
 
 				if (arg1.isTimes()) {

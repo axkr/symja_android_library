@@ -313,7 +313,7 @@ public class HypergeometricJS {
 	// }
 
 	public static double hypergeometric2F1(double a, double b, double c, double x) {
-		return hypergeometric2F1(a, b, c, x, Config.DOUBLE_EPSILON);
+		return hypergeometric2F1(a, b, c, x, Config.DOUBLE_TOLERANCE);
 	}
 
 	public static double hypergeometric2F1(double a, double b, double c, double x, double tolerance) {
@@ -363,6 +363,10 @@ public class HypergeometricJS {
 
 	}
 
+	public static Complex hypergeometricPFQ(Complex[] A, Complex[] B, Complex x) {
+		return hypergeometricPFQ(A, B, x, Config.DOUBLE_TOLERANCE);
+	}
+
 	public static Complex hypergeometricPFQ(Complex[] A, Complex[] B, Complex x, double tolerance) {
 		Complex s = Complex.ONE;
 		Complex p = Complex.ONE;
@@ -390,6 +394,10 @@ public class HypergeometricJS {
 		}
 
 		return s;
+	}
+
+	public static double hypergeometricPFQ(double[] A, double[] B, double x) {
+		return hypergeometricPFQ(A, B, x, Config.DOUBLE_TOLERANCE);
 	}
 
 	public static double hypergeometricPFQ(double[] A, double[] B, double x, double tolerance) {

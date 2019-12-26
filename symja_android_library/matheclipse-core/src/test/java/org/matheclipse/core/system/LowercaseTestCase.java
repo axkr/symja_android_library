@@ -3954,6 +3954,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{(2*x)/E^w,(15*y^2)/E^w},{(4*z^3)/E^w,-(x^2+5*y^3+z^4)/E^w}}");
 		check("D(ExpIntegralEi(b*x),x)", //
 				"E^(b*x)/x");
+
+		check("D(StruveH(n,x),x)", //
+				"1/2*(x^n/(2^n*Sqrt(Pi)*Gamma(3/2+n))+StruveH(-1+n,x)-StruveH(1+n,x))");
+		check("D(StruveH(x,y),x)", //
+				"Derivative(1,0)[StruveH][x,y]");
+		check("D(StruveL(n,x),x)", //
+				"1/2*(x^n/(2^n*Sqrt(Pi)*Gamma(3/2+n))+StruveL(-1+n,x)+StruveL(1+n,x))");
+		check("D(StruveL(x,y),x)", //
+				"Derivative(1,0)[StruveL][x,y]");
+
+		check("D(JacobiAmplitude(x,y),x)", //
+				"JacobiDN(x,y)");
+		check("D(JacobiAmplitude(x,y),y)", //
+				"((x*(-1+y)+EllipticE(JacobiAmplitude(x,y),y))*JacobiDN(x,y)-y*JacobiCN(x,y)*JacobiSN(x,y))/(\n" + //
+						"2*(-1+y)*y)");
+
 	}
 
 	public void testDefault() {
@@ -4597,9 +4613,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Resultant(f+g*x+h*x^2,g+2*h*x, x)", //
 				"-g^2*h+4*f*h^2");
-		check("Discriminant(x^(1/2), x)",
-				"The function: Discriminant(Sqrt(x),x) has wrong argument Sqrt(x) at position:1:\n"
-						+ "Polynomial expected!");
+		// print message Discriminant: the function: Discriminant(Sqrt(x),x) has wrong argument Sqrt(x) at position:1:
+		// Polynomial expected!
+		check("Discriminant(x^(1/2), x)", "Discriminant(Sqrt(x),x)");
 
 		check("Discriminant(f+g*x+h*x^2, x)", //
 				"g^2-4*f*h");
@@ -5304,6 +5320,40 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// TODO: improve for case "EllipticTheta: Unsupported elliptic nome"
 		check("EllipticTheta(3, 0.4+I, 0.5+I)", //
 				"EllipticTheta(3,0.4+I*1.0,0.5+I*1.0)");
+	}
+
+	public void testJacobiAmplitude() {
+		check("JacobiAmplitude(-z, m)", //
+				"-JacobiAmplitude(z,m)");
+		check("JacobiAmplitude(4.0, 2/3)", //
+				"3.0837");
+		check("JacobiAmplitude(0.2+0.1*I, 0.2*I)", //
+				"0.200364+I*0.0999307");
+		check("JacobiAmplitude(Pi/3, 0.2)", //
+				"1.01656");
+		check("{JacobiAmplitude(z,0), JacobiAmplitude(z,1),JacobiAmplitude(0,m), JacobiAmplitude(EllipticK(m),m)}", //
+				"{z,-Pi/2+2*ArcTan(E^z),0,Pi/2}");
+		check("{JacobiAmplitude(Infinity,0), JacobiAmplitude(Infinity,1) }", //
+				"{Infinity,Pi/2}");
+		check("{JacobiAmplitude(z,0), JacobiAmplitude(z,1)}", //
+				"{z,-Pi/2+2*ArcTan(E^z)}");
+		check("JacobiAmplitude({a,b},c)", //
+				"{JacobiAmplitude(a,c),JacobiAmplitude(b,c)}");
+		check("Table(JacobiAmplitude(x, 2/3), {x,-4.0, 4.0, 1/4})", //
+				"{-3.0837,-2.83685,-2.60166,-2.38451,-2.18786,-2.01066,-1.8494,-1.69911,-1.55408+I*7.77156*10^-16,"//
+						+ "-1.40835,-1.256,-1.09146,-0.909994,-0.708571,-0.486877,-0.248289,"//
+						+ "0.0,0.248289,0.486877,0.708571,"//
+						+ "0.909994,1.09146,1.256,1.40835,1.55408+I*(-1.11022*10^-15),1.69911,1.8494,2.01066,2.18786,2.38451,2.60166,2.83685,3.0837}");
+		check("Table(JacobiAmplitude(x, 4.0), {x,-4.0, 4.0, 1/4})", //
+				"{-0.484111+I*7.89147*10^-13,-0.344254+I*1.92035*10^-12,-0.127094+I*2.57538*10^-12,0.120312+I*2.58848*10^-12,0.339059+I*2.03271*10^-12," //
+						+ "0.481513+I*1.18350*10^-12,0.522889+I*2.94764*10^-13,0.457272+I*(-4.86944*10^-13),0.294331+I*(-1.05849*10^-12),0.0640731+I*(-1.32094*10^-12)," //
+						+ "-0.181535+I*(-1.24833*10^-12),-0.384344+I*(-9.49241*10^-13),-0.502307+I*(-5.92193*10^-13),-0.516139+I*(-2.93099*10^-13)," //
+						+ "-0.423899+I*(-9.94760*10^-14),-0.239834+I*(-1.35447*10^-14),0.0,0.239834+I*1.36557*10^-14,0.423899+I*9.93650*10^-14," //
+						+ "0.516139+I*2.93099*10^-13,0.502307+I*5.92082*10^-13,0.384344+I*9.49130*10^-13,0.181535+I*1.24822*10^-12,-0.0640731+I*1.32094*10^-12," //
+						+ "-0.294331+I*1.05860*10^-12,-0.457272+I*4.86833*10^-13,-0.522889+I*(-2.94653*10^-13),-0.481513+I*(-1.18372*10^-12)," //
+						+ "-0.339059+I*(-2.03282*10^-12),-0.120312+I*(-2.58837*10^-12),0.127094+I*(-2.57550*10^-12),0.344254+I*(-1.92024*10^-12)," //
+						+ "0.484111+I*(-7.88924*10^-13)}");
+
 	}
 
 	public void testJacobiCN() {
@@ -6669,6 +6719,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFactorSquareFree() {
+		check("FactorSquareFree(c^(1/4)*g^(1/4)*(5+2*m+3*n)^(1/4)*x)", //
+				"c^(1/4)*g^(1/4)*(5+2*m+3*n)^(1/4)*x");
 		check("p = Expand((x + 1)^2 (x + 2)^2 (x + 3)^3)", //
 				"108+432*x+711*x^2+625*x^3+318*x^4+94*x^5+15*x^6+x^7");
 		check("FactorSquareFree(p)", //
@@ -9062,6 +9114,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIntegrate() {
+		check("Integrate((Sinh(x)-x)/(x^2*Sinh(x)),x)", //
+				"-1/x-Integrate(Csch(x)/x,x)");
 		check("Refine(Integrate(Abs(E+Pi*x^(-8)),x), Element(x,Reals))", //
 				"-Pi/(7*x^7)+E*x");
 		check("Refine(Integrate(Abs(Pi+42*x^6),x), Element(x,Reals))", //
@@ -10580,7 +10634,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testLimit() {
-
+		check("Limit((Cosh(t)-1)/t^2,t->0)", //
+				"1/2");
 		check("Limit(Gamma(1/t)*Cos(Sin(1/t)),t->0)", //
 				"Limit(Cos(Sin(1/t))*Gamma(1/t),t->0)");
 		check("Limit(Gamma(1/t),t->Infinity)", //
@@ -12295,6 +12350,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testN() {
+		// imaginary part is zero
+		check("I^I //N", //
+				"0.20788");
+		check("I^(3*I)//N", //
+				"0.00898329");
+		check("I^(2+3*I)//N", //
+				"-0.00898329");
 		// TODO don't switch to numeric mode for Sqrt(10)
 		check("(0.25)^x", //
 				"0.25^x");
@@ -19428,8 +19490,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStruveH() {
+		// TODO wrong result
+		check("StruveH(0, 50.0)", //
+				"-1012.348");
+		check("StruveH(0, 5.2)", //
+				"-0.212448");
+		check("StruveH(0, 4.0)", //
+				"0.135015");
+		check("StruveH(7/3 + I, 4.5 - I)", //
+				"2.35765+I*(-1.40054)");
+		check("StruveH(1,{0.5, 1.0, 1.5})", //
+				"{0.0521737,0.198457,0.410288}");
+
 		check("StruveH(1.5, 3.5)", //
-				"1.13199");
+				"1.13192");
 		check("StruveH(I,0)", //
 				"0");
 		check("StruveH(-1+I,0)", //
@@ -19442,11 +19516,25 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Sqrt(2/Pi)*Sqrt(1/x)*Sin(x)");
 		check("StruveH(a,-x)", //
 				"(-(-x)^a*StruveH(a,x))/x^a");
+		// TODO values > 30
+		check("Table(StruveH(0,x), {x, 0, 30.0})", //
+				"{0.0,0.568657,0.790859,0.574306,0.135015,-0.185217,-0.184555,0.063383,0.301988,0.319876,0.118744,-0.111421,"//
+						+ "-0.172534,-0.0295133,0.172443,0.247724,0.135449,-0.0553148,-0.152291,-0.076104,0.0943937,0.20045,0.148766,"//
+						+ "-0.00835413,-0.126354,-0.101825,0.036494,0.158762,0.154545,0.031404,-0.0961004}");
 	}
 
 	public void testStruveL() {
+		check("StruveL(0, 2.5)", //
+				"3.01121");
 		check("StruveL(1.5, 3.5)", //
-				"4.41417");
+				"4.41126");
+		check("StruveL(0, 4.0)", //
+				"11.13105");
+		check("StruveL(7/3 + I, 4.5 - I)", //
+				"-0.977295+I*(-10.82588)");
+		check("StruveL(1,{0.5, 1.0, 1.5})", //
+				"{0.0539422,0.226764,0.553857}");
+
 		check("StruveL(I,0)", //
 				"0");
 		check("StruveL(-1+I,0)", //
@@ -19459,6 +19547,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Sqrt(2/Pi)*Sqrt(1/x)*Sinh(x)");
 		check("StruveL(a,-x)", //
 				"(-(-x)^a*StruveL(a,x))/x^a");
+		check("StruveL(1/2, ComplexInfinity)", //
+				"Indeterminate");
+		check("Table(StruveL(0,x), {x, 0, 5,0.25})", //
+				"{0.0,0.160263,0.327241,0.507986,0.710243,0.942845,1.21616,1.54264,1.93743,2.41923,3.01121," //
+						+ "3.7423,4.64869,5.77582,7.18085,8.9357,11.13105,13.88131,17.33089,21.66224,27.10592}");
 	}
 
 	public void testSubdivide() {
@@ -19761,7 +19854,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Sum(c*(i-j+1), {j,i+1,n}, {i,1,n})", //
 				"c*n*(-i+n)+1/2*c*(i-n)*n*(1+i+n)+c*(1/2*(i-n)+1/2*(i-n)*n+1/2*(-i+n)+n*(-i+n)+1/\n" + "2*(-i+n)*n^2)");
 		check("Simplify(1/2*c*(n-i)*n^2-1/2*c*n*(n+i+1)*(n-i)+3/2*c*n*(n-i))", //
-				"1/2*c*n*(-2*i+i^2+2*n-i*n)");
+				"1/2*c*(2-i)*n*(-i+n)");
 
 		check("Sum(c*(n-1), {j,i,n-1})", //
 				"c*(i-n)+c*n*(-i+n)");
