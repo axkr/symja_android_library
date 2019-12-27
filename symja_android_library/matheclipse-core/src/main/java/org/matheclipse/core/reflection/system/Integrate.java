@@ -11,6 +11,7 @@ import static org.matheclipse.core.expression.F.Times;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
@@ -92,8 +93,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 		@Override
 		public void run() {
 			// long start = System.currentTimeMillis();
-			if (!INTEGRATE_RULES_READ) {
-				INTEGRATE_RULES_READ = true;
+			if (!INTEGRATE_RULES_READ.get()) {
+				INTEGRATE_RULES_READ.set(true);
 				final EvalEngine engine = EvalEngine.get();
 				ContextPath path = engine.getContextPath();
 				try {
@@ -526,16 +527,23 @@ public class Integrate extends AbstractFunctionEvaluator {
 
 	public final static Set<IExpr> DEBUG_EXPR = new HashSet<IExpr>(64);
 
-	public static volatile boolean INTEGRATE_RULES_READ = false;
+	public static final AtomicBoolean INTEGRATE_RULES_READ = new AtomicBoolean(false);
 
 	public Integrate() {
 	}
 
 	@Override
 	public IExpr evaluate(final IAST holdallAST, EvalEngine engine) {
+		if (Config.JAS_NO_THREADS) {
+			// Android changed: call static initializer in evaluate() method.
+			new IntegrateInitializer().run();
+		} else {
+			// see #setUp() method
+		}
 		try {
+			// wait for initializer runs completely, no matter how many threads call evaluate() method
 			await();
-		} catch (InterruptedException e) {
+		} catch (InterruptedException ignored) {
 		}
 		boolean evaled = false;
 		IExpr result;
@@ -1100,16 +1108,17 @@ public class Integrate extends AbstractFunctionEvaluator {
 		newSymbol.setAttributes(ISymbol.HOLDALL);
 		super.setUp(newSymbol);
 
+	
 		if (Config.THREAD_FACTORY != null) {
 			INIT_THREAD = Config.THREAD_FACTORY.newThread(new IntegrateInitializer());
 		} else {
 			INIT_THREAD = new Thread(new IntegrateInitializer());
 		}
 
-		if (Config.JAS_NO_THREADS) {
-			INIT_THREAD.run();
-		} else {
+		if (!Config.JAS_NO_THREADS) {
 			INIT_THREAD.start();
+		} else {
+			// see #evaluate() method
 		}
 
 		F.ISet(F.$s("§simplifyflag"), F.False);
