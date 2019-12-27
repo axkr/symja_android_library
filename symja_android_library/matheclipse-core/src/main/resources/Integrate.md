@@ -27,4 +27,4 @@ x^3/3
 ```
 
 ### Related terms 
-[Int](Int.md) 
+[D](D.md),[Int](Int.md), [NIntegrate](NIntegrate.md) 

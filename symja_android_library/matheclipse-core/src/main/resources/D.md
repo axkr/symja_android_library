@@ -116,3 +116,6 @@ f''(2*x)
 >> D({#^2}, #)
 {2*#1}
 ```
+
+### Related terms 
+[D](D.md),[Integrate](Integrate.md), [NIntegrate](NIntegrate.md) 
