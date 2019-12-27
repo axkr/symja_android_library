@@ -571,7 +571,7 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 	 * @param arg2
 	 *            the second argument of the function
 	 */
-	B2(IExpr arg1, IExpr arg2) {
+	public B2(IExpr arg1, IExpr arg2) {
 		this.arg1 = arg1;
 		this.arg2 = arg2;
 	}
@@ -694,7 +694,7 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 		}
 		if (obj instanceof AbstractAST) {
 			final IAST list = (IAST) obj;
-			IBuiltInSymbol head = head();
+			ISymbol head = head();
 			if (head != ((AbstractAST) list).head()) {
 				// compared with ISymbol object identity
 				return false;
@@ -923,7 +923,7 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 	}
 
 	@Override
-	public abstract IBuiltInSymbol head();
+	public abstract ISymbol head();
 
 	@Override
 	public int hashCode() {

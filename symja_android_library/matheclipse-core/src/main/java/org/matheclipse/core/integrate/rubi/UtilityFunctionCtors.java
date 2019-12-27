@@ -9,10 +9,15 @@ import static org.matheclipse.core.expression.F.senary;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
+import org.matheclipse.core.expression.B1;
 import org.matheclipse.core.expression.B2;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.B1.Cos;
+import org.matheclipse.core.expression.B2.List;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -67,6 +72,14 @@ public class UtilityFunctionCtors {
 	public static ISymbol NeQ = F.$rubi("NeQ");
 	public static ISymbol PolyQ = F.$rubi("PolyQ");
 	public static ISymbol PosQ = F.$rubi("PosQ");
+
+	public static ISymbol BinomialQ = F.$rubi("BinomialQ");
+	public static ISymbol ExpandTrig = F.$rubi("ExpandTrig");
+	public static ISymbol FixSimplify = F.$rubi("FixSimplify");
+	public static ISymbol FracPart = F.$rubi("FracPart");
+	public static ISymbol IntPart = F.$rubi("IntPart");
+	public static ISymbol Simp = F.$rubi("Simp");
+	public static ISymbol Unintegrable = F.$rubi("Unintegrable");
 
 	public static ISymbol ReapList = org.matheclipse.core.expression.F.$rubi("ReapList");
 
@@ -190,18 +203,6 @@ public class UtilityFunctionCtors {
 		return quaternary(H, a0, a1, a2, a3);
 	}
 
-	/**
-	 * Convert to Integrate[]
-	 * 
-	 * @param a0
-	 * @param a1
-	 * @return
-	 */
-	public static IAST Int(final IExpr a0, final IExpr a1) {
-		// Integrate.setAttributes(ISymbol.CONSOLE_OUTPUT);
-		return F.Integrate(a0, a1); 
-	}
-
 	public static IAST IntBinomialQ(final IExpr... a) {
 		return function(F.$rubi("IntBinomialQ"), a);
 	}
@@ -218,17 +219,9 @@ public class UtilityFunctionCtors {
 		return function(F.$rubi("IntQuadraticQ"), a);
 	}
 
-	public static IAST Dist(final IExpr a0, final IExpr a1) {
-		return F.binaryAST2(Dist, a0, a1);
-	}
-
 	public static IAST Dist(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return F.ternaryAST3(Dist, a0, a1, a2);
 	}
-
-	// private static ISymbol $sDBG(final String symbolName) {
-	// return $s(symbolName, false);
-	// }
 
 	public static IAST AbsorbMinusSign(final IExpr a0) {
 		return F.unaryAST1(F.$rubi("AbsorbMinusSign"), a0);
@@ -291,11 +284,11 @@ public class UtilityFunctionCtors {
 	}
 
 	public static IAST BinomialQ(final IExpr a0, final IExpr a1) {
-		return F.binaryAST2(F.$rubi("BinomialQ"), a0, a1);
+		return F.binaryAST2(BinomialQ, a0, a1);
 	}
 
 	public static IAST BinomialQ(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return F.ternaryAST3(F.$rubi("BinomialQ"), a0, a1, a2);
+		return F.ternaryAST3(BinomialQ, a0, a1, a2);
 	}
 
 	public static IAST BinomialTest(final IExpr a0, final IExpr a1) {
@@ -362,30 +355,6 @@ public class UtilityFunctionCtors {
 		return F.unaryAST1(F.$rubi("ContentFactorAux"), a0);
 	}
 
-	public static IAST CosQ(final IExpr a0) {
-		return F.unaryAST1(F.$rubi("CosQ"), a0);
-	}
-
-	public static IAST CoshQ(final IExpr a0) {
-		return F.unaryAST1(F.$rubi("CoshQ"), a0);
-	}
-
-	public static IAST CotQ(final IExpr a0) {
-		return F.unaryAST1(F.$rubi("CotQ"), a0);
-	}
-
-	public static IAST CothQ(final IExpr a0) {
-		return F.unaryAST1(F.$rubi("CothQ"), a0);
-	}
-
-	public static IAST CscQ(final IExpr a0) {
-		return F.unaryAST1(F.$rubi("CscQ"), a0);
-	}
-
-	public static IAST CschQ(final IExpr a0) {
-		return F.unaryAST1(F.$rubi("CschQ"), a0);
-	}
-
 	public static IAST CubicMatchQ(final IExpr a0, final IExpr a1) {
 		return F.binaryAST2(F.$rubi("CubicMatchQ"), a0, a1);
 	}
@@ -426,8 +395,27 @@ public class UtilityFunctionCtors {
 		return F.unaryAST1(EqQ, a0);
 	}
 
+	private final static class EqQ extends B2 {
+		public EqQ() {
+			super();
+		}
+
+		EqQ(IExpr arg1, IExpr arg2) {
+			super(arg1, arg2);
+		}
+
+		@Override
+		public final ISymbol head() {
+			return EqQ;
+		}
+
+		public IASTMutable copy() {
+			return new EqQ(arg1, arg2);
+		}
+	}
+
 	public static IAST EqQ(final IExpr a0, final IExpr a1) {
-		return F.binaryAST2(EqQ, a0, a1);
+		return new EqQ(a0, a1);
 	}
 
 	public static IAST EqQ(final IExpr a0, final IExpr a1, final IExpr a2) {
@@ -444,10 +432,6 @@ public class UtilityFunctionCtors {
 
 	public static IAST EvenQuotientQ(final IExpr a0, final IExpr a1) {
 		return F.binaryAST2(F.$rubi("EvenQuotientQ"), a0, a1);
-	}
-
-	public static IAST ExpQ(final IExpr a0) {
-		return F.unaryAST1(F.$rubi("ExpQ"), a0);
 	}
 
 	public static IAST ExpandAlgebraicFunction(final IExpr a0, final IExpr a1) {
@@ -489,11 +473,11 @@ public class UtilityFunctionCtors {
 	}
 
 	public static IAST ExpandTrig(final IExpr a0, final IExpr a1) {
-		return F.binaryAST2(F.$rubi("ExpandTrig"), a0, a1);
+		return F.binaryAST2(ExpandTrig, a0, a1);
 	}
 
 	public static IAST ExpandTrig(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return F.ternaryAST3(F.$rubi("ExpandTrig"), a0, a1, a2);
+		return F.ternaryAST3(ExpandTrig, a0, a1, a2);
 	}
 
 	public static IAST ExpandTrigExpand(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4,
@@ -549,8 +533,27 @@ public class UtilityFunctionCtors {
 		return F.binaryAST2(F.$rubi("FactorOrder"), a0, a1);
 	}
 
+	private static final class FalseQ extends B1 {
+		public FalseQ() {
+			super();
+		}
+
+		FalseQ(IExpr arg1) {
+			super(arg1);
+		}
+
+		@Override
+		public final ISymbol head() {
+			return FalseQ;
+		}
+
+		public IASTMutable copy() {
+			return new FalseQ(arg1);
+		}
+	}
+
 	public static IAST FalseQ(final IExpr a0) {
-		return F.unaryAST1(FalseQ, a0);
+		return new FalseQ(a0);
 	}
 
 	public static IAST FindTrigFactor(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4) {
@@ -582,15 +585,34 @@ public class UtilityFunctionCtors {
 	}
 
 	public static IAST FixSimplify(final IExpr a0) {
-		return F.unaryAST1(F.$rubi("FixSimplify"), a0);
+		return F.unaryAST1(FixSimplify, a0);
+	}
+
+	private static final class FracPart extends B1 {
+		public FracPart() {
+			super();
+		}
+
+		FracPart(IExpr arg1) {
+			super(arg1);
+		}
+
+		@Override
+		public final ISymbol head() {
+			return FracPart;
+		}
+
+		public IASTMutable copy() {
+			return new FracPart(arg1);
+		}
 	}
 
 	public static IAST FracPart(final IExpr a0) {
-		return F.unaryAST1(F.$rubi("FracPart"), a0);
+		return new FracPart(a0);
 	}
 
 	public static IAST FracPart(final IExpr a0, final IExpr a1) {
-		return F.binaryAST2(F.$rubi("FracPart"), a0, a1);
+		return F.binaryAST2(FracPart, a0, a1);
 	}
 
 	public static IAST FractionOrNegativeQ(final IExpr... a) {
@@ -771,32 +793,54 @@ public class UtilityFunctionCtors {
 		return F.ternaryAST3(F.$rubi("FunctionOfTrigQ"), a0, a1, a2);
 	}
 
-	// public static IAST GE(final IExpr a0, final IExpr a1) {
-	// return F.binaryAST2(F.$rubi("GE"), a0, a1);
-	// }
-	//
-	// public static IAST GE(final IExpr a0, final IExpr a1, final IExpr a2) {
-	// return F.ternaryAST3(F.$rubi("GE"), a0, a1, a2);
-	// }
-	//
-	// public static IAST GT(final IExpr a0, final IExpr a1) {
-	// return F.binaryAST2(F.$rubi("GT"), a0, a1);
-	// }
-	//
-	// public static IAST GT(final IExpr a0, final IExpr a1, final IExpr a2) {
-	// return F.ternaryAST3(F.$rubi("GT"), a0, a1, a2);
-	// }
+	private final static class GtQ extends B2 {
+		public GtQ() {
+			super();
+		}
+
+		GtQ(IExpr arg1, IExpr arg2) {
+			super(arg1, arg2);
+		}
+
+		@Override
+		public final ISymbol head() {
+			return GtQ;
+		}
+
+		public IASTMutable copy() {
+			return new GtQ(arg1, arg2);
+		}
+	}
 
 	public static IAST GtQ(final IExpr a0, final IExpr a1) {
-		return F.binaryAST2(GtQ, a0, a1);
+		return new GtQ(a0, a1);
 	}
 
 	public static IAST GtQ(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return F.ternaryAST3(GtQ, a0, a1, a2);
 	}
 
+	private final static class GeQ extends B2 {
+		public GeQ() {
+			super();
+		}
+
+		GeQ(IExpr arg1, IExpr arg2) {
+			super(arg1, arg2);
+		}
+
+		@Override
+		public final ISymbol head() {
+			return GeQ;
+		}
+
+		public IASTMutable copy() {
+			return new GeQ(arg1, arg2);
+		}
+	}
+
 	public static IAST GeQ(final IExpr a0, final IExpr a1) {
-		return F.binaryAST2(GeQ, a0, a1);
+		return new GeQ(a0, a1);
 	}
 
 	public static IAST GeQ(final IExpr a0, final IExpr a1, final IExpr a2) {
@@ -863,16 +907,54 @@ public class UtilityFunctionCtors {
 		return F.unaryAST1(F.$rubi("HyperbolicQ"), a0);
 	}
 
+	private final static class IGtQ extends B2 {
+		public IGtQ() {
+			super();
+		}
+
+		IGtQ(IExpr arg1, IExpr arg2) {
+			super(arg1, arg2);
+		}
+
+		@Override
+		public final ISymbol head() {
+			return IGtQ;
+		}
+
+		public IASTMutable copy() {
+			return new IGtQ(arg1, arg2);
+		}
+	}
+
 	public static IAST IGtQ(final IExpr a0, final IExpr a1) {
-		return F.binaryAST2(IGtQ, a0, a1);
+		return new IGtQ(a0, a1);
 	}
 
 	public static IAST IGeQ(final IExpr a0, final IExpr a1) {
 		return F.binaryAST2(IGeQ, a0, a1);
 	}
 
+	private final static class ILtQ extends B2 {
+		public ILtQ() {
+			super();
+		}
+
+		ILtQ(IExpr arg1, IExpr arg2) {
+			super(arg1, arg2);
+		}
+
+		@Override
+		public final ISymbol head() {
+			return ILtQ;
+		}
+
+		public IASTMutable copy() {
+			return new ILtQ(arg1, arg2);
+		}
+	}
+
 	public static IAST ILtQ(final IExpr a0, final IExpr a1) {
-		return F.binaryAST2(ILtQ, a0, a1);
+		return new ILtQ(a0, a1);
 	}
 
 	public static IAST ILeQ(final IExpr a0, final IExpr a1) {
@@ -915,12 +997,31 @@ public class UtilityFunctionCtors {
 		return F.ternaryAST3(F.$rubi("InertTrigSumQ"), a0, a1, a2);
 	}
 
+	private static final class IntPart extends B1 {
+		public IntPart() {
+			super();
+		}
+
+		IntPart(IExpr arg1) {
+			super(arg1);
+		}
+
+		@Override
+		public final ISymbol head() {
+			return IntPart;
+		}
+
+		public IASTMutable copy() {
+			return new IntPart(arg1);
+		}
+	}
+
 	public static IAST IntPart(final IExpr a0) {
-		return F.unaryAST1(F.$rubi("IntPart"), a0);
+		return new IntPart(a0);
 	}
 
 	public static IAST IntPart(final IExpr a0, final IExpr a1) {
-		return F.binaryAST2(F.$rubi("IntPart"), a0, a1);
+		return F.binaryAST2(IntPart, a0, a1);
 	}
 
 	public static IAST IntSum(final IExpr a0, final IExpr a1) {
@@ -1003,37 +1104,59 @@ public class UtilityFunctionCtors {
 		return F.ternaryAST3(F.$rubi("KnownTrigIntegrandQ"), a0, a1, a2);
 	}
 
-	// public static IAST LE(final IExpr a0, final IExpr a1) {
-	// return F.binaryAST2(F.$rubi("LE"), a0, a1);
-	// }
-	//
-	// public static IAST LE(final IExpr a0, final IExpr a1, final IExpr a2) {
-	// return F.ternaryAST3(F.$rubi("LE"), a0, a1, a2);
-	// }
+	private final static class LtQ extends B2 {
+		public LtQ() {
+			super();
+		}
+
+		LtQ(IExpr arg1, IExpr arg2) {
+			super(arg1, arg2);
+		}
+
+		@Override
+		public final ISymbol head() {
+			return LtQ;
+		}
+
+		public IASTMutable copy() {
+			return new LtQ(arg1, arg2);
+		}
+	}
 
 	public static IAST LtQ(final IExpr a0, final IExpr a1) {
-		return F.binaryAST2(LtQ, a0, a1);
+		return new LtQ(a0, a1);
 	}
 
 	public static IAST LtQ(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return F.ternaryAST3(LtQ, a0, a1, a2);
 	}
 
+	private final static class LeQ extends B2 {
+		public LeQ() {
+			super();
+		}
+
+		LeQ(IExpr arg1, IExpr arg2) {
+			super(arg1, arg2);
+		}
+
+		@Override
+		public final ISymbol head() {
+			return LeQ;
+		}
+
+		public IASTMutable copy() {
+			return new LeQ(arg1, arg2);
+		}
+	}
+
 	public static IAST LeQ(final IExpr a0, final IExpr a1) {
-		return F.binaryAST2(LeQ, a0, a1);
+		return new LeQ(a0, a1);
 	}
 
 	public static IAST LeQ(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return F.ternaryAST3(LeQ, a0, a1, a2);
 	}
-
-	// public static IAST LT(final IExpr a0, final IExpr a1) {
-	// return F.binaryAST2(F.$rubi("LT"), a0, a1);
-	// }
-	//
-	// public static IAST LT(final IExpr a0, final IExpr a1, final IExpr a2) {
-	// return F.ternaryAST3(F.$rubi("LT"), a0, a1, a2);
-	// }
 
 	public static IAST LeadBase(final IExpr a0) {
 		return F.unaryAST1(F.$rubi("LeadBase"), a0);
@@ -1151,7 +1274,7 @@ public class UtilityFunctionCtors {
 		return F.unaryAST1(F.$rubi("NegativeQ"), a0);
 	}
 
-	public static IAST NegQ(final IExpr a0) { 
+	public static IAST NegQ(final IExpr a0) {
 		return F.unaryAST1(NegQ, a0);
 	}
 
@@ -1167,8 +1290,27 @@ public class UtilityFunctionCtors {
 		return F.unaryAST1(NeQ, a0);
 	}
 
+	private final static class NeQ extends B2 {
+		public NeQ() {
+			super();
+		}
+
+		NeQ(IExpr arg1, IExpr arg2) {
+			super(arg1, arg2);
+		}
+
+		@Override
+		public final ISymbol head() {
+			return NeQ;
+		}
+
+		public IASTMutable copy() {
+			return new NeQ(arg1, arg2);
+		}
+	}
+
 	public static IAST NeQ(final IExpr a0, final IExpr a1) {
-		return F.binaryAST2(NeQ, a0, a1);
+		return new NeQ(a0, a1);
 	}
 
 	public static IAST NiceSqrtAuxQ(final IExpr a0) {
@@ -1327,8 +1469,27 @@ public class UtilityFunctionCtors {
 		return F.ternaryAST3(F.$rubi("PolyGCD"), a0, a1, a2);
 	}
 
+	private final static class PolyQ extends B2 {
+		public PolyQ() {
+			super();
+		}
+
+		PolyQ(IExpr arg1, IExpr arg2) {
+			super(arg1, arg2);
+		}
+
+		@Override
+		public final ISymbol head() {
+			return PolyQ;
+		}
+
+		public IASTMutable copy() {
+			return new PolyQ(arg1, arg2);
+		}
+	}
+
 	public static IAST PolyQ(final IExpr a0, final IExpr a1) {
-		return F.binaryAST2(PolyQ, a0, a1);
+		return new PolyQ(a0, a1);
 	}
 
 	public static IAST PolyQ(final IExpr a0, final IExpr a1, final IExpr a2) {
@@ -1377,22 +1538,6 @@ public class UtilityFunctionCtors {
 
 	public static IAST PositiveFactors(final IExpr a0) {
 		return F.unaryAST1(F.$rubi("PositiveFactors"), a0);
-	}
-
-	public static IAST PositiveIntegerPowerQ(final IExpr a0) {
-		return F.unaryAST1(F.$rubi("PositiveIntegerPowerQ"), a0);
-	}
-
-	public static IAST PositiveIntegerQ(final IExpr... a) {
-		return function(F.$rubi("PositiveIntegerQ"), a);
-	}
-
-	public static IAST PositiveOrZeroQ(final IExpr a0) {
-		return F.unaryAST1(F.$rubi("PositiveOrZeroQ"), a0);
-	}
-
-	public static IAST PositiveQ(final IExpr a0) {
-		return F.unaryAST1(F.$rubi("PositiveQ"), a0);
 	}
 
 	public static IAST PowerOfLinearMatchQ(final IExpr a0, final IExpr a1) {
@@ -1612,8 +1757,27 @@ public class UtilityFunctionCtors {
 		return F.unaryAST1(F.$rubi("SignOfFactor"), a0);
 	}
 
+	private final static class Simp extends B2 {
+		public Simp() {
+			super();
+		}
+
+		Simp(IExpr arg1, IExpr arg2) {
+			super(arg1, arg2);
+		}
+
+		@Override
+		public final ISymbol head() {
+			return Simp;
+		}
+
+		public IASTMutable copy() {
+			return new Simp(arg1, arg2);
+		}
+	}
+
 	public static IAST Simp(final IExpr a0, final IExpr a1) {
-		return F.binaryAST2(F.$rubi("Simp"), a0, a1);
+		return new Simp(a0, a1);
 	}
 
 	public static IAST SimpFixFactor(final IExpr a0, final IExpr a1) {
@@ -1650,22 +1814,6 @@ public class UtilityFunctionCtors {
 
 	public static IAST SimplifyTerm(final IExpr a0, final IExpr a1) {
 		return F.binaryAST2(F.$rubi("SimplifyTerm"), a0, a1);
-	}
-
-	public static IAST SinCosQ(final IExpr a0) {
-		return F.unaryAST1(F.$rubi("SinCosQ"), a0);
-	}
-
-	public static IAST SinQ(final IExpr a0) {
-		return F.unaryAST1(F.$rubi("SinQ"), a0);
-	}
-
-	public static IAST SinhCoshQ(final IExpr a0) {
-		return F.unaryAST1(F.$rubi("SinhCoshQ"), a0);
-	}
-
-	public static IAST SinhQ(final IExpr a0) {
-		return F.unaryAST1(F.$rubi("SinhQ"), a0);
 	}
 
 	public static IAST Smallest(final IExpr a0) {
@@ -1718,10 +1866,6 @@ public class UtilityFunctionCtors {
 
 	public static IAST SqrtNumberSumQ(final IExpr a0) {
 		return F.unaryAST1(F.$rubi("SqrtNumberSumQ"), a0);
-	}
-
-	public static IAST SqrtQ(final IExpr a0) {
-		return F.unaryAST1(F.$rubi("SqrtQ"), a0);
 	}
 
 	public static IAST SquareRootOfQuadraticSubst(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
@@ -1910,8 +2054,27 @@ public class UtilityFunctionCtors {
 		return F.binaryAST2(F.$rubi("UnifyTerms"), a0, a1);
 	}
 
+	private final static class Unintegrable extends B2 {
+		public Unintegrable() {
+			super();
+		}
+
+		Unintegrable(IExpr arg1, IExpr arg2) {
+			super(arg1, arg2);
+		}
+
+		@Override
+		public final ISymbol head() {
+			return Unintegrable;
+		}
+
+		public IASTMutable copy() {
+			return new Unintegrable(arg1, arg2);
+		}
+	}
+
 	public static IAST Unintegrable(final IExpr a0, final IExpr a1) {
-		return F.binaryAST2(F.$rubi("Unintegrable"), a0, a1);
+		return new Unintegrable(a0, a1);
 	}
 
 	public static IAST UnifyInertTrigFunction(final IExpr a0, final IExpr a1) {

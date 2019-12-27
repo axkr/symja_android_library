@@ -643,7 +643,11 @@ public class Integrate extends AbstractFunctionEvaluator {
 				result = integrateByRubiRules(fx, x, ast, engine);
 				if (result.isPresent()) {
 					IExpr temp = result.replaceAll(f -> {
-						if (f.isAST(F.$rubi("Unintegrable"), 3)) {
+						if (f.isAST(UtilityFunctionCtors.Unintegrable, 3)) {
+							IAST integrate = F.Integrate(f.first(), f.second());
+							integrate.addEvalFlags(IAST.BUILT_IN_EVALED);
+							return integrate;
+						} else if (f.isAST(F.$rubi("CannotIntegrate"), 3)) {
 							IAST integrate = F.Integrate(f.first(), f.second());
 							integrate.addEvalFlags(IAST.BUILT_IN_EVALED);
 							return integrate;
@@ -1108,7 +1112,6 @@ public class Integrate extends AbstractFunctionEvaluator {
 		newSymbol.setAttributes(ISymbol.HOLDALL);
 		super.setUp(newSymbol);
 
-	
 		if (Config.THREAD_FACTORY != null) {
 			INIT_THREAD = Config.THREAD_FACTORY.newThread(new IntegrateInitializer());
 		} else {
@@ -1134,7 +1137,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 		F.ISet(F.$s("§$calculusfunctions"), F.List(F.D, F.Sum, F.Product, F.Integrate, F.$rubi("Unintegrable"),
 				F.$rubi("CannotIntegrate"), F.$rubi("Dif"), F.$rubi("Subst")));
 		F.ISet(F.$s("§$stopfunctions"), F.List(F.Hold, F.HoldForm, F.Defer, F.Pattern, F.If, F.Integrate,
-				F.$rubi("Unintegrable"), F.$rubi("CannotIntegrate")));
+				UtilityFunctionCtors.Unintegrable, F.$rubi("CannotIntegrate")));
 		F.ISet(F.$s("§$heldfunctions"), F.List(F.Hold, F.HoldForm, F.Defer, F.Pattern));
 
 		F.ISet(UtilityFunctionCtors.IntegerPowerQ, //
