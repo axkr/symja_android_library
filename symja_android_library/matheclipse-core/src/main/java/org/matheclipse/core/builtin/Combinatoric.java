@@ -412,6 +412,7 @@ public final class Combinatoric {
 		/** {@inheritDoc} */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			// TODO github #167: generalize IntegerPartitions with the use of FrobeniusSolver
 			IntRangeSpec range = IntRangeSpec.createNonNegative(ast, 2);
 			if (range != null) {
 				IExpr arg1 = ast.arg1();

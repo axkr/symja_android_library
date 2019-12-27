@@ -18,3 +18,7 @@ See:
 >> FrobeniusNumber({1000, 1476, 3764, 4864, 4871, 7773})
 47350
 ```
+
+
+### Related terms 
+[FrobeniusSolve](FrobeniusSolve.md), [IntegerPartitions](IntegerPartitions.md) 
