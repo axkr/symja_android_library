@@ -137,6 +137,28 @@ public class IntervalSym {
 		return F.List(argOfIntervalList, argOfIntervalList);
 	}
 
+	private static IExpr mag(IExpr inf, IExpr sup, EvalEngine engine) {
+		if (engine.evalTrue(F.GreaterEqual(inf, F.C0))) {
+			// inf >= 0
+			return sup;
+		} else if (engine.evalTrue(F.LessEqual(sup, F.C0))) {
+			// sup <= 0
+			return inf.negate();
+		}
+		return F.Max(inf.negate(), sup);
+	}
+
+	private static IExpr mig(IExpr inf, IExpr sup, EvalEngine engine) {
+		if (engine.evalTrue(F.Greater(inf, F.C0))) {
+			// inf > 0
+			return inf;
+		} else if (engine.evalTrue(F.Less(sup, F.C0))) {
+			// sup < 0
+			return sup.negate();
+		}
+		return F.C0;
+	}
+
 	public static IExpr abs(final IAST ast) {
 		IAST interval = normalize(ast);
 		if (interval.isPresent()) {
@@ -146,15 +168,8 @@ public class IntervalSym {
 				IAST list = (IAST) interval.get(i);
 				IExpr min = list.arg1();
 				IExpr max = list.arg2();
-				if (engine.evalTrue(F.Less(min, F.C0)) && //
-						engine.evalTrue(F.GreaterEqual(max, F.C0))) {
-					result.append(F.List(F.C0, F.Max(F.Abs(min), F.Abs(max))));
-				} else if (engine.evalTrue(F.GreaterEqual(min, F.C0)) && //
-						engine.evalTrue(F.GreaterEqual(max, F.C0))) {
-					result.append(F.List(F.Abs(min), F.Abs(max)));
-				} else if (engine.evalTrue(F.Less(min, F.C0)) && //
-						engine.evalTrue(F.Less(max, F.C0))) {
-					result.append(F.List(F.Abs(max), F.Abs(min)));
+				if (min.isRealResult() && max.isRealResult()) {
+					result.append(F.List(mig(min, max, engine), mag(min, max, engine)));
 				} else {
 					return F.NIL;
 				}
