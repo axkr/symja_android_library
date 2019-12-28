@@ -1,10 +1,10 @@
 ## ArithmeticGeometricMean
 
 ```
-ArithmeticGeometricMean(a, b)
+ArithmeticGeometricMean({a, b, c,...})
 ```
 
-> returns the arithmetic geometric mean of `a` and `b`. 
+> returns the arithmetic geometric mean of `{a, b, c,...}`. 
    
 
 See:
@@ -17,3 +17,6 @@ See:
 >> ArithmeticGeometricMean({1.0, 2.0, 3.0, 4.0}, 42.0)
 {12.874,14.88314,16.37375,17.62155}
 ```
+
+### Related terms 
+[GeometricMean](GeometricMean.md), [HarmonicMean](HarmonicMean.md),, [Mean](Mean.md), [Median](Median.md)
