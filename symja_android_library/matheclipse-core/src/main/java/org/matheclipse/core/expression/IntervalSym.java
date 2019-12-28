@@ -11,6 +11,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.ISymbol;
 
 public class IntervalSym {
 	private final static Comparator<IExpr> INTERVAL_COMPARATOR = new Comparator<IExpr>() {
@@ -134,6 +135,34 @@ public class IntervalSym {
 			throw new ArgumentTypeException(str);
 		}
 		return F.List(argOfIntervalList, argOfIntervalList);
+	}
+
+	public static IExpr abs(final IAST ast) {
+		IAST interval = normalize(ast);
+		if (interval.isPresent()) {
+			IASTAppendable result = F.IntervalAlloc(interval.size());
+			EvalEngine engine = EvalEngine.get();
+			for (int i = 1; i < interval.size(); i++) {
+				IAST list = (IAST) interval.get(i);
+				IExpr min = list.arg1();
+				IExpr max = list.arg2();
+				if (engine.evalTrue(F.Less(min, F.C0)) && //
+						engine.evalTrue(F.GreaterEqual(max, F.C0))) {
+					result.append(F.List(F.C0, F.Max(F.Abs(min), F.Abs(max))));
+				} else if (engine.evalTrue(F.GreaterEqual(min, F.C0)) && //
+						engine.evalTrue(F.GreaterEqual(max, F.C0))) {
+					result.append(F.List(F.Abs(min), F.Abs(max)));
+				} else if (engine.evalTrue(F.Less(min, F.C0)) && //
+						engine.evalTrue(F.Less(max, F.C0))) {
+					result.append(F.List(F.Abs(max), F.Abs(min)));
+				} else {
+					return F.NIL;
+				}
+
+			}
+			return result;
+		}
+		return F.NIL;
 	}
 
 	public static IExpr arccos(final IAST ast) {
@@ -352,6 +381,32 @@ public class IntervalSym {
 			} catch (RuntimeException rex) {
 				//
 			}
+		}
+		return F.NIL;
+	}
+
+	/**
+	 * 
+	 * @param symbol
+	 * @param ast
+	 * @return
+	 */
+	public static IExpr mapSymbol(ISymbol symbol, final IAST ast) {
+		IAST interval = normalize(ast);
+		if (interval.isPresent()) {
+			IASTAppendable result = F.IntervalAlloc(interval.size());
+			for (int i = 1; i < interval.size(); i++) {
+				IAST list = (IAST) interval.get(i);
+				IExpr min = list.arg1();
+				IExpr max = list.arg2();
+				if (min.isRealResult() && max.isRealResult()) {
+					result.append(F.List(F.unaryAST1(symbol, min), F.unaryAST1(symbol, max)));
+				} else {
+					return F.NIL;
+				}
+
+			}
+			return result;
 		}
 		return F.NIL;
 	}

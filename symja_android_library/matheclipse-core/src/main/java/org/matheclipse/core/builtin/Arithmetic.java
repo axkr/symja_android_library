@@ -317,6 +317,9 @@ public final class Arithmetic {
 					}
 				}
 			}
+			if (arg1.isInterval()) {
+				return IntervalSym.abs((IAST) arg1);
+			}
 			return F.NIL;
 		}
 
@@ -1143,6 +1146,9 @@ public final class Arithmetic {
 					return F.Subtract(arg1, F.Times(F.C2, F.CI, im));
 				}
 			}
+			if (arg1.isInterval()) {
+				return IntervalSym.mapSymbol(F.Conjugate, (IAST) arg1);
+			}
 			return F.NIL;
 		}
 
@@ -1921,6 +1927,15 @@ public final class Arithmetic {
 						return imPowerComplex(base, a, b);
 					}
 				}
+			}
+			if (arg1.isInterval()) {
+				if (arg1.size() == 2) {
+					IAST list = (IAST) arg1.first();
+					if (list.first().isRealResult() && list.second().isRealResult()) {
+						return F.C0;
+					}
+				}
+				return IntervalSym.mapSymbol(F.Im, (IAST) arg1);
 			}
 			return F.NIL;
 		}
@@ -4193,6 +4208,9 @@ public final class Arithmetic {
 					return rePowerComplex(base, exponent.re(), exponent.im());
 				}
 			}
+			if (expr.isInterval()) {
+				return IntervalSym.mapSymbol(F.Re, (IAST) expr);
+			}
 			return F.NIL;
 		}
 
@@ -4349,6 +4367,19 @@ public final class Arithmetic {
 					// (x + I*y)/Sqrt(x^2 + y^2)
 					return F.Times(F.Plus(x, F.Times(F.CI, y)), F.Power(F.Plus(F.Sqr(x), F.Sqr(y)), F.CN1D2));
 				}
+			}
+			if (arg1.isInterval()) {
+				if (arg1.size() == 2) {
+					IAST list = (IAST) arg1.first();
+					if (list.first().isNegativeResult() && list.second().isNegativeResult()) {
+						return F.CN1;
+					} else if (list.first().isPositiveResult() && list.second().isPositiveResult()) {
+						return F.C1;
+					} else if (list.first().isZero() && list.second().isZero()) {
+						return F.C0;
+					}
+				}
+				return IntervalSym.mapSymbol(F.Sign, (IAST) arg1);
 			}
 			return result;
 		}

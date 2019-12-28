@@ -7418,6 +7418,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFloor() {
+		check("Floor(-Infinity)", //
+				"-Infinity");
+		check("Floor(Infinity)", //
+				"Infinity");
 		check("Floor(-9/4)", //
 				"-3");
 		check("Floor(1/3)", //
@@ -7552,6 +7556,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFractionalPart() {
+		check("FractionalPart(-Infinity)", //
+				"Interval({-1,0})");
 		check("FractionalPart(test)", //
 				"FractionalPart(test)");
 		check("FractionalPart({-2.4, -2.5, -3.0})", //
@@ -9384,6 +9390,55 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInterval() {
+		check("Sign(Interval({-Infinity, Infinity}))", //
+				"Interval({-1,1})");
+		check("Sign(Interval({-43, -42}))", //
+				"-1");
+		check("Sign(Interval({0,0}))", //
+				"0");
+		check("Sign(Interval({17,2^12}))", //
+				"1");
+		check("Sign(Interval({0,-14}))", //
+				"Interval({-1,0})");
+		
+		check("Conjugate(Interval({-Infinity, Infinity}))", //
+				"Interval({-Infinity,Infinity})");
+		
+		check("Re(Interval({-43, -42}))", //
+				"Interval({-43,-42})");
+		check("Re(Interval({3/4, 13/3}))", //
+				"Interval({3/4,13/3})");
+		check("Re(Interval({-2, Infinity}))", //
+				"Interval({-2,Infinity})");
+		check("Re(Interval({1, Infinity}))", //
+				"Interval({1,Infinity})");
+		check("Re(Interval({-Infinity, Infinity}))", //
+				"Interval({-Infinity,Infinity})");
+		
+		check("Im(Interval({-43, -42}))", //
+				"0");  
+		check("Im(Interval({-Infinity, Infinity}))", //
+				"0");
+		
+		check("IntegerPart(Interval({-Infinity,Infinity}))", //
+				"Interval({-Infinity,Infinity})");
+		 
+		check("Floor(Interval({-1/3, 3/4}))", //
+				"Interval({-1,0})");
+		check("Floor(Interval({-Infinity, 3/4}))", //
+				"Interval({-Infinity,0})");
+		
+		check("Abs(Interval({-43, -42}))", //
+				"Interval({42,43})");
+		check("Abs(Interval({3/4, 13/3}))", //
+				"Interval({3/4,13/3})");
+		check("Abs(Interval({-2, Infinity}))", //
+				"Interval({0,Infinity})");
+		check("Abs(Interval({1, Infinity}))", //
+				"Interval({1,Infinity})");
+		check("Abs(Interval({-Infinity, Infinity}))", //
+				"Interval({0,Infinity})");
+		
 		check("ArcCot(Interval({-1, Infinity}))", //
 				"Interval({-Pi/2,-Pi/4},{0,Pi/2})");
 		check("ArcCot(Interval({1-Sqrt(2), 1+Sqrt(2)}))", //

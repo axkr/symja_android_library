@@ -17,6 +17,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -216,6 +217,9 @@ public class IntegerFunctions {
 			if (arg1.isIntegerResult()) {
 				return arg1;
 			}
+			if (arg1.isInfinity() || arg1.isNegativeInfinity()) {
+				return arg1;
+			}
 
 			if (arg1.isPlus()) {
 				IASTAppendable[] splittedPlus = ((IAST) arg1).filterNIL(new CeilingPlusFunction());
@@ -229,6 +233,9 @@ public class IntegerFunctions {
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
 				return Negate(Floor(negExpr));
+			}
+			if (arg1.isInterval()) {
+				return IntervalSym.mapSymbol(F.Ceiling,(IAST) arg1);
 			}
 			return F.NIL;
 		}
@@ -516,6 +523,9 @@ public class IntegerFunctions {
 			if (arg1.isIntegerResult()) {
 				return arg1;
 			}
+			if (arg1.isInfinity() || arg1.isNegativeInfinity()) {
+				return arg1;
+			}
 			if (arg1.isPlus()) {
 				IASTAppendable[] splittedPlus = ((IAST) arg1).filterNIL(new FloorPlusFunction());
 				if (splittedPlus[0].size() > 1) {
@@ -528,6 +538,9 @@ public class IntegerFunctions {
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
 				return Negate(Ceiling(negExpr));
+			}
+			if (arg1.isInterval()) {
+				return IntervalSym.mapSymbol(F.Floor,(IAST) arg1);
 			}
 			return F.NIL;
 		}
@@ -570,7 +583,7 @@ public class IntegerFunctions {
 				return F.Interval(F.List(F.C0, F.C1));
 			}
 			if (arg1.isNegativeInfinity()) {
-				return F.Interval(F.List(F.CN1, F.C1));
+				return F.Interval(F.List(F.CN1, F.C0));
 			}
 			if (arg1.isDirectedInfinity(F.CI)) {
 				return F.Times(F.CI, F.Interval(F.List(F.C0, F.C1)));
@@ -822,6 +835,9 @@ public class IntegerFunctions {
 				IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 				if (negExpr.isPresent()) {
 					return Negate(IntegerPart(negExpr));
+				}
+				if (arg1.isInterval()) {
+					return IntervalSym.mapSymbol(F.IntegerPart,(IAST) arg1);
 				}
 			} catch (ArithmeticException ae) {
 				// ISignedNumber#floor() or #ceil() may throw ArithmeticException
@@ -1160,7 +1176,7 @@ public class IntegerFunctions {
 				if (ast.isAST2()) {
 					// Round(z, a)
 					ISignedNumber multiple = ast.arg2().evalReal();
-					if (multiple!=null) {
+					if (multiple != null) {
 						if (multiple.isZero()) {
 							return F.Indeterminate;
 						}
@@ -1180,18 +1196,14 @@ public class IntegerFunctions {
 							ISignedNumber im = cmp.im().roundClosest(multiple);
 							return F.Complex(re, im);
 						}
-						
-						if (arg1.isInfinity()) {
-							return F.CInfinity;
-						}
-						if (arg1.isNegativeInfinity()) {
-							return F.CNInfinity;
+						if (arg1.isInfinity() || arg1.isNegativeInfinity()) {
+							return arg1;
 						}
 					}
 
 					return F.NIL;
 				}
-				
+
 				if (arg1.isIntegerResult()) {
 					return arg1;
 				}
@@ -1212,13 +1224,9 @@ public class IntegerFunctions {
 					return F.complex(re, im);
 				}
 
-				if (arg1.isInfinity()) {
-					return F.CInfinity;
+				if (arg1.isInfinity() || arg1.isNegativeInfinity()) {
+					return arg1;
 				}
-				if (arg1.isNegativeInfinity()) {
-					return F.CNInfinity;
-				}
-
 				if (arg1.isPlus()) {
 					IASTAppendable[] result = ((IAST) arg1).filterNIL(new RoundPlusFunction());
 					if (result[0].size() > 1) {
@@ -1231,6 +1239,9 @@ public class IntegerFunctions {
 				IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 				if (negExpr.isPresent()) {
 					return Negate(Round(negExpr));
+				}
+				if (arg1.isInterval()) {
+					return IntervalSym.mapSymbol(F.Round,(IAST) arg1);
 				}
 			} catch (ArithmeticException ae) {
 				// ISignedNumber#round() may throw ArithmeticException

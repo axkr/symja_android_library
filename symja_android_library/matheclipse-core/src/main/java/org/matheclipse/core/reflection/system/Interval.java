@@ -23,7 +23,10 @@ public class Interval extends AbstractEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.isEvalFlagOff(IAST.BUILT_IN_EVALED)) {
-			return IntervalSym.normalize(ast, engine);
+			IAST result = IntervalSym.normalize(ast, engine);
+			if (result.isPresent()) {
+				return result;
+			}
 		}
 		return F.NIL;
 	}
