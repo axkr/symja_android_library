@@ -137,6 +137,16 @@ public class IntervalSym {
 		return F.List(argOfIntervalList, argOfIntervalList);
 	}
 
+	/**
+	 * The absolute value of the magnitude of an interval.
+	 * 
+	 * @param inf
+	 *            infimum
+	 * @param sup
+	 *            supremum
+	 * @param engine
+	 * @return
+	 */
 	private static IExpr mag(IExpr inf, IExpr sup, EvalEngine engine) {
 		if (engine.evalTrue(F.GreaterEqual(inf, F.C0))) {
 			// inf >= 0
@@ -148,6 +158,16 @@ public class IntervalSym {
 		return F.Max(inf.negate(), sup);
 	}
 
+	/**
+	 * The absolute value of the mignitude of an interval.
+	 * 
+	 * @param inf
+	 *            infimum
+	 * @param sup
+	 *            supremum
+	 * @param engine
+	 * @return
+	 */
 	private static IExpr mig(IExpr inf, IExpr sup, EvalEngine engine) {
 		if (engine.evalTrue(F.Greater(inf, F.C0))) {
 			// inf > 0
