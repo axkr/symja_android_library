@@ -16133,6 +16133,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{E,Pi,3,4}");
 		check("Quantile({{1,2},{ E, Pi, Sqrt(2),Sqrt(3)}}, 0.75)", //
 				"Quantile({{1,2},{E,Pi,Sqrt(2),Sqrt(3)}},0.75)");
+		// Quantile[{5, 10, 4, 25, 2, 1}, 1/5, {{1/2, 0}, {0, 1}}]
+		check("Quantile({5, 10, 4, 25, 2, 1}, 1/5, {{1/2, 0}, {0, 1}})", //
+				"17/10");
 	}
 
 	public void testQuantity() {

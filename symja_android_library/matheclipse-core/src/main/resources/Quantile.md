@@ -12,6 +12,12 @@ Quantile(list, {q1, q2, ...})
 
 > returns a list of the `q`-Quantiles of `list`. 
 
+```
+Quantile(list, q, {{a,b},{c,d}})
+```
+
+> returns the `q`-Quantile of `list` with the quantile definition `{{a,b},{c,d}}`. The default parameters for the quantile definition are `{{0,0},{1,0}}` . 
+
 See
 * [Wikipedia - Quantile](https://en.wikipedia.org/wiki/Quantile)
 
