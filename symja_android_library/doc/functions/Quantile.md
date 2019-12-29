@@ -16,7 +16,7 @@ Quantile(list, {q1, q2, ...})
 Quantile(list, q, {{a,b},{c,d}})
 ```
 
-> returns the `q`-Quantile of `list` with the quantile definition `{{a,b},{c,d}}`. The default parameters for the quantile definition are `{{0,0},{1,0}}` . 
+> returns the `q`-Quantile of `list` with the quantile definition `{{a,b},{c,d}}`. The default parameters for the quantile definition are `{{0,0},{1,0}}`. 
 
 See
 * [Wikipedia - Quantile](https://en.wikipedia.org/wiki/Quantile)
@@ -36,3 +36,6 @@ See
 >> Quantile(NormalDistribution(m, s), q) 
 ConditionalExpression(m-Sqrt(2)*s*InverseErfc(2*q),0<=q<=1)
 ```
+
+### Related terms 
+[FiveNum](FiveNum.md), [Quartiles](Quartiles.md)

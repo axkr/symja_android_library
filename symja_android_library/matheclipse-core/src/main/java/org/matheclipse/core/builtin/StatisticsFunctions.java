@@ -100,6 +100,7 @@ public class StatisticsFunctions {
 			F.PoissonDistribution.setEvaluator(new PoissonDistribution());
 			F.Probability.setEvaluator(new Probability());
 			F.Quantile.setEvaluator(new Quantile());
+			F.Quartiles.setEvaluator(new Quartiles());
 			F.RandomVariate.setEvaluator(new RandomVariate());
 			F.Rescale.setEvaluator(new Rescale());
 			F.Skewness.setEvaluator(new Skewness());
@@ -4465,9 +4466,10 @@ public class StatisticsFunctions {
 						int dim2 = q.isVector();
 						if (dim2 >= 0) {
 							final IAST vector = ((IAST) q);
-							if (vector.forAll(x -> x.isReal())) {
-								return vector.map(scalar -> of(s, length, (ISignedNumber) scalar), 1);
-							}
+							return vector.mapThread(ast.copy(), 2);
+							// if (vector.forAll(x -> x.isReal())) {
+							// return vector.map(scalar -> of(s, length, (ISignedNumber) scalar), 1);
+							// }
 						} else {
 							if (q.isReal()) {
 								// x = a + (length + b) * q
@@ -4547,6 +4549,37 @@ public class StatisticsFunctions {
 		public void setUp(final ISymbol newSymbol) {
 			super.setUp(newSymbol);
 		}
+	}
+
+	private static class Quartiles extends AbstractFunctionEvaluator {
+
+		private final static IAST Q = F.List(F.C1D4, F.C1D2, F.C3D4);
+
+		private final static IAST PARAMETER = F.List(F.List(F.C1D2, F.C0), F.List(F.C0, F.C1));
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = ast.arg1();
+			if ((arg1.isList() && arg1.size() > 1) || arg1.isDistribution()) {
+				IAST list = (IAST) arg1;
+				if (ast.size()==3) {
+					IExpr arg2 = ast.arg2();
+					int[] dimParameters = arg2.isMatrix();
+					if (dimParameters == null || dimParameters[0] != 2 || dimParameters[1] != 2) {
+						return F.NIL;
+					}
+					return F.Quantile(list, Q, arg2);
+				}
+				return F.Quantile(list, Q, PARAMETER);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
+
 	}
 
 	private final static class RandomVariate extends AbstractEvaluator {

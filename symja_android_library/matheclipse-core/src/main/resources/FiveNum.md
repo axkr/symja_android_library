@@ -23,3 +23,5 @@ See:
 {0,1/2,15/2,44,63}
 ```
 
+### Related terms 
+[Median](Median.md), [Quantile](Quantile.md), [Quartiles](Quartiles.md)

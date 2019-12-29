@@ -2841,6 +2841,9 @@ public class F {
 	/***/
 	public final static IBuiltInSymbol QuantityQ = F.initFinalSymbol("QuantityQ", ID.QuantityQ);
 
+	/***/
+	public final static IBuiltInSymbol Quartiles = F.initFinalSymbol("Quartiles", ID.Quartiles);
+
 	/** Quiet(expr) - evaluates `expr` in "quiet" mode (i.e. no warning messages are shown during evaluation). */
 	public final static IBuiltInSymbol Quiet = F.initFinalSymbol("Quiet", ID.Quiet);
 

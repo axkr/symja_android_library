@@ -37,3 +37,6 @@ Passing a matrix returns the medians of the respective columns:
 >> Median(LogNormalDistribution(m,s))
 E^m
 ```
+
+### Related terms 
+[FiveNum](FiveNum.md), [Quantile](Quantile.md), [Quartiles](Quartiles.md)

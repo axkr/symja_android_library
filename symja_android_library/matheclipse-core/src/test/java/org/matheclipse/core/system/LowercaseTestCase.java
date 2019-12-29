@@ -16101,7 +16101,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testQuantile() {
 		check("Quantile(WeibullDistribution(2, 5), N(1/4,25))", //
 				"2.68180010651325822971629");
-		
+
 		check("Quantile({10, 50, 10, 15, 20}, 3/4, {{1/2, 0}, {0, 1}})", //
 				"55/2");
 		check("Quantile(NormalDistribution(m, s))", //
@@ -16267,6 +16267,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 			check("QuantityMagnitude(Quantity(3.4, \"km\"), \"m\")", //
 					"3400.0");
 		}
+	}
+
+	public void testQuartiles() {
+		// method 1 from Wikipedia
+		check("Quartiles({6, 7, 15, 36, 39, 40, 41, 42, 43, 47, 49}, {{0, 0}, {1, 0}}) // N", //
+				"{15.0,40.0,43.0}"); 
+		// method 3 from Wikipedia
+		check("Quartiles({6, 7, 15, 36, 39, 40, 41, 42, 43, 47, 49}) // N", //
+				"{20.25,40.0,42.75}");
+		
+		check("Quartiles({-1, 5, 10, 4, 25, 2, 1}, {{0, 0}, {1, 0}})", //
+				"{1,4,10}");
+		check("Quartiles(ExponentialDistribution(x))", //
+				"{Log(4/3)/x,Log(2)/x,Log(4)/x}");
+		check("Quartiles({1, 3, 4, 2, 5, 6})", //
+				"{2,7/2,5}");
+
 	}
 
 	public void testQuiet() {
