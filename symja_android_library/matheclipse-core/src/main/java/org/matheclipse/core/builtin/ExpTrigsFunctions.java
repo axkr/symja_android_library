@@ -250,6 +250,9 @@ public class ExpTrigsFunctions {
 				// ArcCos(Cos(z))
 				return arcCosCos(arg1);
 			}
+			if (arg1.isInterval()) {
+				return IntervalSym.arccos((IAST) arg1);
+			}
 			return F.NIL;
 		}
 
@@ -322,6 +325,9 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+			if (arg1.isInterval()) {
+				return IntervalSym.arccosh((IAST) arg1);
+			}
 			return F.NIL;
 		}
 
@@ -861,6 +867,9 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+			if (arg1.isInterval()) {
+				return IntervalSym.arcsinh((IAST) arg1);
+			}
 			IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CNI);
 			if (imPart.isPresent()) {
 				return F.Times(F.CI, F.ArcSin(imPart));
@@ -1087,6 +1096,9 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+			if (arg1.isInterval()) {
+				return IntervalSym.arctanh((IAST) arg1);
+			}
 			IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CNI);
 			if (imPart.isPresent()) {
 				return F.Times(F.CI, F.ArcTan(imPart));

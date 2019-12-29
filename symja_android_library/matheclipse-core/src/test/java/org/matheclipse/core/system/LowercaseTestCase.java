@@ -9392,6 +9392,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInterval() {
+		check("Cos(Interval({0, Pi}))", //
+				"Interval({-1,1})");
+		
 		check("Interval(0.)", //
 				"Interval({-4.90000*10^-324,4.90000*10^-324})");
 		check("Interval(0.1)-0.1", //
@@ -9467,6 +9470,30 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ArcSin(Interval({-1,1}))", //
 				"Interval({-Pi/2,Pi/2})");
 
+		check("ArcCos(Interval({-1/2,1/2}))", //
+				"Interval({Pi/3,2/3*Pi})");
+		check("ArcCos(Interval({-1,1}))", //
+				"Interval({0,Pi})");
+		
+		check("ArcCosh(Interval({-1/2,1/2}))", //
+				"ArcCosh(Interval({-1/2,1/2}))");
+		check("ArcCosh(Interval({2,42}))", //
+				"Interval({ArcCosh(2),ArcCosh(42)})");
+		
+		check("ArcSinh(Interval({-1, Infinity}))", //
+				"Interval({-ArcSinh(1),Infinity})");
+		check("ArcSinh(Interval({1-Sqrt(2), 1+Sqrt(2)}))", //
+				"Interval({ArcSinh(1-Sqrt(2)),ArcSinh(1+Sqrt(2))})");
+		check("ArcSinh(Interval({1, Infinity}))", //
+				"Interval({ArcSinh(1),Infinity})");
+		check("ArcSinh(Interval({-Pi,-1}))", //
+				"Interval({-ArcSinh(Pi),-ArcSinh(1)})");
+		
+		check("ArcTanh(Interval({-1/2,1/2}))", //
+				"Interval({-ArcTanh(1/2),ArcTanh(1/2)})");
+		check("ArcTanh(Interval({-1,1}))", //
+				"Interval({-Infinity,Infinity})");
+		
 		check("Cot(Interval({3*Pi/4,6*Pi/5}))", //
 				"Interval({-Infinity,-1},{Sqrt(1+2/Sqrt(5)),Infinity})");
 		check("Cot(Interval({Pi/4,3*Pi/4}))", //

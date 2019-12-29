@@ -207,6 +207,78 @@ public class IntervalSym {
 		return F.NIL;
 	}
 
+	public static IExpr arccosh(final IAST ast) {
+		IAST interval = normalize(ast);
+		if (interval.isPresent()) {
+			try {
+				EvalEngine engine = EvalEngine.get();
+				IASTMutable result = interval.copy();
+				for (int i = 1; i < interval.size(); i++) {
+					IAST list = (IAST) interval.get(i);
+					IExpr min = list.arg1();
+					IExpr max = list.arg2();
+					if (engine.evalTrue(F.GreaterEqual(min, F.C1)) && //
+							engine.evalTrue(F.LessEqual(max, F.CInfinity))) {
+						result.set(i, F.List(F.ArcCosh(min), F.ArcCosh(max)));
+					} else {
+						return F.NIL;
+					}
+				}
+				return result;
+			} catch (RuntimeException rex) {
+				//
+			}
+		}
+		return F.NIL;
+	}
+
+	public static IExpr arcsinh(final IAST ast) {
+		IAST interval = normalize(ast);
+		if (interval.isPresent()) {
+			try {
+				IASTMutable result = interval.copy();
+				for (int i = 1; i < interval.size(); i++) {
+					IAST list = (IAST) interval.get(i);
+					IExpr min = list.arg1();
+					IExpr max = list.arg2();
+					if (min.isRealResult() && //
+							max.isRealResult()) {
+						result.set(i, F.List(F.ArcSinh(min), F.ArcSinh(max)));
+					}
+				}
+				return result;
+			} catch (RuntimeException rex) {
+				//
+			}
+		}
+		return F.NIL;
+	}
+
+	public static IExpr arctanh(final IAST ast) {
+		IAST interval = normalize(ast);
+		if (interval.isPresent()) {
+			try {
+				EvalEngine engine = EvalEngine.get();
+				IASTMutable result = interval.copy();
+				for (int i = 1; i < interval.size(); i++) {
+					IAST list = (IAST) interval.get(i);
+					IExpr min = list.arg1();
+					IExpr max = list.arg2();
+					if (engine.evalTrue(F.GreaterEqual(min, F.CN1)) && //
+							engine.evalTrue(F.LessEqual(max, F.C1))) {
+						result.set(i, F.List(F.ArcTanh(min), F.ArcTanh(max)));
+					} else {
+						return F.NIL;
+					}
+				}
+				return result;
+			} catch (RuntimeException rex) {
+				//
+			}
+		}
+		return F.NIL;
+	}
+
 	public static IExpr arccos(final IAST ast) {
 		IAST interval = normalize(ast);
 		if (interval.isPresent()) {
@@ -295,7 +367,9 @@ public class IntervalSym {
 					IAST list = (IAST) interval.get(i);
 					IExpr min = list.arg1();
 					IExpr max = list.arg2();
-					result.set(i, F.List(F.ArcTan(min), F.ArcTan(max)));
+					if (min.isRealResult() && max.isRealResult()) {
+						result.set(i, F.List(F.ArcTan(min), F.ArcTan(max)));
+					}
 				}
 				return result;
 			} catch (RuntimeException rex) {
