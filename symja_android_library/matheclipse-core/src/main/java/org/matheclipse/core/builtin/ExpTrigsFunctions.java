@@ -50,6 +50,7 @@ import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntervalSym;
@@ -420,7 +421,7 @@ public class ExpTrigsFunctions {
 				// ArcCot(Cot(z))
 				return arcTanArcCotInverse(arg1);
 			}
-			
+
 			if (arg1.isInterval()) {
 				return IntervalSym.arccot((IAST) arg1);
 			}
@@ -803,7 +804,7 @@ public class ExpTrigsFunctions {
 				// ArcSin(Sin(z))
 				return arcSinSin(arg1);
 			}
-			
+
 			if (arg1.isInterval()) {
 				return IntervalSym.arcsin((IAST) arg1);
 			}
@@ -933,7 +934,7 @@ public class ExpTrigsFunctions {
 				// ArcTan(Tan(z))
 				return arcTanArcCotInverse(arg1);
 			}
-			
+
 			if (arg1.isInterval()) {
 				return IntervalSym.arctan((IAST) arg1);
 			}
@@ -1826,7 +1827,7 @@ public class ExpTrigsFunctions {
 			if (arg1.isInterval()) {
 				return IntervalSym.cot((IAST) arg1);
 			}
-			
+
 			return F.NIL;
 		}
 
@@ -2029,6 +2030,16 @@ public class ExpTrigsFunctions {
 		}
 
 		@Override
+		public IExpr e1ApfloatArg(Apfloat arg1) {
+			return F.num(ApfloatMath.log(arg1));
+		}
+
+		@Override
+		public IExpr e1ApcomplexArg(Apcomplex arg1) {
+			return F.complexNum(ApcomplexMath.log(arg1));
+		}
+
+		@Override
 		public IExpr e1DblArg(final INum arg1) {
 			return Num.valueOf(Math.log(arg1.getRealPart()));
 		}
@@ -2038,6 +2049,17 @@ public class ExpTrigsFunctions {
 				return F.Negate(F.Log(f.inverse()));
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public IExpr e2ApfloatArg(final ApfloatNum d0, final ApfloatNum d1) {
+			long precision = d0.precision();
+			return F.complexNum(ApcomplexMath.log(d0.apfloatValue(precision), d1.apfloatValue(precision)));
+		}
+
+		@Override
+		public IExpr e2ApcomplexArg(final ApcomplexNum c0, final ApcomplexNum c1) {
+			return F.complexNum(ApcomplexMath.log(c0.apcomplexValue(), c1.apcomplexValue()));
 		}
 
 		@Override
@@ -2950,7 +2972,7 @@ public class ExpTrigsFunctions {
 			if (arg1.isInterval()) {
 				return IntervalSym.tan((IAST) arg1);
 			}
-			
+
 			// IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 			// if (imPart.isPresent()) {
 			// return F.Times(F.CI, F.Tanh(imPart));

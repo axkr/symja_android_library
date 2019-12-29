@@ -9394,7 +9394,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testInterval() {
 		check("Cos(Interval({0, Pi}))", //
 				"Interval({-1,1})");
-		
+
 		check("Interval(0.)", //
 				"Interval({-4.90000*10^-324,4.90000*10^-324})");
 		check("Interval(0.1)-0.1", //
@@ -9403,7 +9403,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Interval({-1.42109*10^-14,1.42109*10^-14})");
 		check("Sin(Interval(N(Pi)))", //
 				"Interval({-3.21625*10^-16,5.66554*10^-16})");
-		
+
 		check("Sign(Interval({-Infinity, Infinity}))", //
 				"Interval({-1,1})");
 		check("Sign(Interval({-43, -42}))", //
@@ -9474,12 +9474,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Interval({Pi/3,2/3*Pi})");
 		check("ArcCos(Interval({-1,1}))", //
 				"Interval({0,Pi})");
-		
+
 		check("ArcCosh(Interval({-1/2,1/2}))", //
 				"ArcCosh(Interval({-1/2,1/2}))");
 		check("ArcCosh(Interval({2,42}))", //
 				"Interval({ArcCosh(2),ArcCosh(42)})");
-		
+
 		check("ArcSinh(Interval({-1, Infinity}))", //
 				"Interval({-ArcSinh(1),Infinity})");
 		check("ArcSinh(Interval({1-Sqrt(2), 1+Sqrt(2)}))", //
@@ -9488,12 +9488,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Interval({ArcSinh(1),Infinity})");
 		check("ArcSinh(Interval({-Pi,-1}))", //
 				"Interval({-ArcSinh(Pi),-ArcSinh(1)})");
-		
+
 		check("ArcTanh(Interval({-1/2,1/2}))", //
 				"Interval({-ArcTanh(1/2),ArcTanh(1/2)})");
 		check("ArcTanh(Interval({-1,1}))", //
 				"Interval({-Infinity,Infinity})");
-		
+
 		check("Cot(Interval({3*Pi/4,6*Pi/5}))", //
 				"Interval({-Infinity,-1},{Sqrt(1+2/Sqrt(5)),Infinity})");
 		check("Cot(Interval({Pi/4,3*Pi/4}))", //
@@ -16099,6 +16099,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testQuantile() {
+		check("Quantile(WeibullDistribution(2, 5), N(1/4,25))", //
+				"2.68180010651325822971629");
+		
 		check("Quantile({10, 50, 10, 15, 20}, 3/4, {{1/2, 0}, {0, 1}})", //
 				"55/2");
 		check("Quantile(NormalDistribution(m, s))", //
