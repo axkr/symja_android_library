@@ -16,6 +16,77 @@ import de.lab4inf.math.util.Accuracy;
  */
 public class HypergeometricJS {
 
+	public static Complex hypergeometricSeries(Complex[] A, Complex[] B, Complex x) {
+		return hypergeometricSeries(A, B, x, Config.DOUBLE_TOLERANCE);
+	}
+
+	// function hypergeometricSeries( A, B, x, complexArguments=false, tolerance=1e-10 ) {
+	public static Complex hypergeometricSeries(Complex[] A, Complex[] B, Complex x, // boolean complexArguments,
+			double tolerance) {
+
+		// if (complexArguments) {
+
+		Complex s = Complex.ONE;
+		Complex p = Complex.ONE;
+		int i = 1;
+
+		while (Math.abs(p.getReal()) > tolerance || //
+				Math.abs(p.getImaginary()) > tolerance) {
+
+			for (int j = 0; j < A.length; j++) {
+				p = p.multiply(A[j]);
+				A[j] = A[j].add(1.0);
+			}
+
+			for (int j = 0; j < B.length; j++) {
+				p = p.divide(B[j]);
+				B[j] = B[j].add(1.0);
+			}
+
+			p = p.multiply(x.divide(i));
+			s = s.add(p);
+			i++;
+
+		}
+
+		return s;
+
+		// }
+	}
+
+	public static double hypergeometricSeries(double[] A, double[] B, double x) {
+		return hypergeometricSeries(A, B, x, Config.DOUBLE_TOLERANCE);
+	}
+
+	public static double hypergeometricSeries(double[] A, double[] B, double x, // boolean complexArguments,
+			double tolerance) {
+
+		double s = 1;
+		double p = 1;
+		double i = 1;
+
+		while (Math.abs(p) > tolerance) {
+
+			for (int j = 0; j < A.length; j++) {
+				p *= A[j];
+				A[j]++;
+			}
+
+			for (int j = 0; j < B.length; j++) {
+				p /= B[j];
+				B[j]++;
+			}
+
+			p *= x / i;
+			s += p;
+			i++;
+
+		}
+
+		return s;
+
+	}
+
 	static double hypergeometric0F1(double n, double x) {
 		try {
 			return de.lab4inf.math.functions.HypergeometricLimitFunction.limitSeries(n, x);
@@ -368,32 +439,45 @@ public class HypergeometricJS {
 	}
 
 	public static Complex hypergeometricPFQ(Complex[] A, Complex[] B, Complex x, double tolerance) {
-		Complex s = Complex.ONE;
-		Complex p = Complex.ONE;
-		int i = 1;
-
-		while (Math.abs(p.getReal()) > tolerance || //
-				Math.abs(p.getImaginary()) > tolerance) {
-			Complex aReduced = A[0];
-			for (int j = 1; j < A.length; j++) {
-				aReduced = aReduced.multiply(A[j]);
-			}
-			Complex bReduced = B[0];
-			for (int j = 1; j < B.length; j++) {
-				bReduced = bReduced.multiply(B[j]);
-			}
-			p = p.multiply(x).multiply(aReduced).multiply(bReduced.reciprocal()).divide(i);
-			s = s.add(p);
-			for (int j = 0; j < A.length; j++) {
-				A[j] = A[j].add(1);
-			}
-			for (int j = 0; j < B.length; j++) {
-				B[j] = B[j].add(1);
-			}
-			i++;
+		// dlmf.nist.gov/16.11 for general transformations
+		if (x.abs() > 1.0) {
+			throw new ArithmeticException("HypergeometricPFQ: General hypergeometric argument currently restricted");
 		}
+		return hypergeometricSeries(A, B, x);
+		// Complex s = Complex.ONE;
+		// Complex p = Complex.ONE;
+		// int i = 1;
+		//
+		// while (Math.abs(p.getReal()) > tolerance || //
+		// Math.abs(p.getImaginary()) > tolerance) {
+		// Complex aReduced = A[0];
+		// for (int j = 1; j < A.length; j++) {
+		// aReduced = aReduced.multiply(A[j]);
+		// }
+		// Complex bReduced = B[0];
+		// for (int j = 1; j < B.length; j++) {
+		// bReduced = bReduced.multiply(B[j]);
+		// }
+		// p = p.multiply(x).multiply(aReduced).multiply(bReduced.reciprocal()).divide(i);
+		// s = s.add(p);
+		// for (int j = 0; j < A.length; j++) {
+		// A[j] = A[j].add(1);
+		// }
+		// for (int j = 0; j < B.length; j++) {
+		// B[j] = B[j].add(1);
+		// }
+		// i++;
+		// }
+		//
+		// return s;
+	}
 
-		return s;
+	public static Complex hypergeometric1F2(Complex a, Complex b, Complex c, Complex x) {
+		return hypergeometricSeries(new Complex[] { a }, new Complex[] { b, c }, x);
+	}
+
+	public static double hypergeometric1F2(double a, double b, double c, double x) {
+		return hypergeometricSeries(new double[] { a }, new double[] { b, c }, x);
 	}
 
 	public static double hypergeometricPFQ(double[] A, double[] B, double x) {
@@ -401,30 +485,35 @@ public class HypergeometricJS {
 	}
 
 	public static double hypergeometricPFQ(double[] A, double[] B, double x, double tolerance) {
-		double s = 1;
-		double p = 1;
-		double i = 1;
-		while (Math.abs(p) > tolerance) {
-			double aReduced = A[0];
-			for (int j = 1; j < A.length; j++) {
-				aReduced = aReduced * A[j];
-			}
-			double bReduced = B[0];
-			for (int j = 1; j < B.length; j++) {
-				bReduced = bReduced * B[j];
-			}
-			p *= x * aReduced / bReduced / i;
-			s += p;
-			for (int j = 0; j < A.length; j++) {
-				A[j]++;
-			}
-			for (int j = 0; j < B.length; j++) {
-				B[j]++;
-			}
-			i++;
+		// dlmf.nist.gov/16.11 for general transformations
+		if (Math.abs(x) > 1.0) {
+			throw new ArithmeticException("HypergeometricPFQ: General hypergeometric argument currently restricted");
 		}
-
-		return s;
+		return hypergeometricSeries(A, B, x);
+		// double s = 1;
+		// double p = 1;
+		// double i = 1;
+		// while (Math.abs(p) > tolerance) {
+		// double aReduced = A[0];
+		// for (int j = 1; j < A.length; j++) {
+		// aReduced = aReduced * A[j];
+		// }
+		// double bReduced = B[0];
+		// for (int j = 1; j < B.length; j++) {
+		// bReduced = bReduced * B[j];
+		// }
+		// p *= x * aReduced / bReduced / i;
+		// s += p;
+		// for (int j = 0; j < A.length; j++) {
+		// A[j]++;
+		// }
+		// for (int j = 0; j < B.length; j++) {
+		// B[j]++;
+		// }
+		// i++;
+		// }
+		//
+		// return s;
 
 	}
 

@@ -293,40 +293,34 @@ public class BesselJS {
 	public static double struveH(double n, double x) {
 		// can also evaluate from hypergeometric0F1
 		// could use to test hypergeometricPFQ
-		double[] A = { 1.0 };
-		double[] B = { 1.5, n + 1.5 };
 		return Math.pow(x, n + 1.0) * 1 / (Math.pow(2.0, n) * Math.sqrt(Math.PI) * Gamma.gamma(n + 1.5)) * //
-				HypergeometricJS.hypergeometricPFQ(A, B, (-0.25) * x * x);
+				HypergeometricJS.hypergeometric1F2(1, 1.5, n + 1.5, (-0.25) * x * x);
 	}
 
 	public static Complex struveH(Complex n, Complex x) {
 		// can also evaluate from hypergeometric0F1
 		// could use to test hypergeometricPFQ
-		Complex[] A = { Complex.ONE };
-		Complex[] B = { Complex.valueOf(1.5), n.add(1.5) };
 		return x.pow(n.add(1.0))
 				.multiply(Complex.valueOf(2.0).pow(n).multiply(Math.sqrt(Math.PI))
 						.multiply(Arithmetic.lanczosApproxGamma(n.add(1.5))).reciprocal())
-				.multiply(HypergeometricJS.hypergeometricPFQ(A, B, x.multiply(x).multiply(-0.25)));
+				.multiply(HypergeometricJS.hypergeometric1F2(Complex.ONE, new Complex(1.5), n.add(1.5),
+						x.multiply(x).multiply(-0.25)));
 
 	}
 
 	public static double struveL(double n, double x) {
-		double[] A = { 1.0 };
-		double[] B = { 1.5, n + 1.5 };
 		// one sign different in 0.25 from struveH
 		return Math.pow(x, n + 1.0) * 1 / (Math.pow(2.0, n) * Math.sqrt(Math.PI) * Gamma.gamma(n + 1.5)) * //
-				HypergeometricJS.hypergeometricPFQ(A, B, 0.25 * x * x);
+				HypergeometricJS.hypergeometric1F2(1, 1.5, n + 1.5, 0.25 * x * x);
 	}
 
 	public static Complex struveL(Complex n, Complex x) {
-		Complex[] A = { Complex.ONE };
-		Complex[] B = { Complex.valueOf(1.5), n.add(1.5) };
 		// one sign different in 0.25 from struveH
 		return x.pow(n.add(1.0))
 				.multiply(Complex.valueOf(2.0).pow(n).multiply(Math.sqrt(Math.PI))
 						.multiply(Arithmetic.lanczosApproxGamma(n.add(1.5))).reciprocal())
-				.multiply(HypergeometricJS.hypergeometricPFQ(A, B, x.multiply(x).multiply(0.25)));
+				.multiply(HypergeometricJS.hypergeometric1F2(Complex.ONE, new Complex(1.5), n.add(1.5),
+						x.multiply(x).multiply(0.25)));
 
 	}
 

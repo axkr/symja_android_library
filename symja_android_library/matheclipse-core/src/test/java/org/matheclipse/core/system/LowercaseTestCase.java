@@ -8271,8 +8271,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"2.213363839400643");
 		check("GeometricMean({Pi,E,2})", //
 				"(2*E*Pi)^(1/3)");
-		check("GeometricMean({1, 2, 3, 4})", //
-				"2^(3/4)*3^(1/4)");
+		check("GeometricMean({1, 2, 3, 4,5, 6, 7})", //
+				"2^(4/7)*3^(2/7)*35^(1/7)");
 
 		check("GeometricMean({})", //
 				"GeometricMean({})");
@@ -8430,6 +8430,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHarmonicMean() {
+		check("HarmonicMean({1, 2, 3, 4,5, 6, 7})", //
+				"980/363");
 		check("HarmonicMean({a,b,c,d})", //
 				"4/(1/a+1/b+1/c+1/d)");
 		check("HarmonicMean({{1, 2}, {5, 10}, {5, 2}, {4, 8}})", //
@@ -8722,9 +8724,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testHypergeometricPFQ() {
 		check("HypergeometricPFQ({1, 1, 1}, {3/2, 3/2, 3/2}, 10.0)", //
-				"530.1919");
+				"HypergeometricPFQ({1.0,1.0,1.0},{1.5,1.5,1.5},10.0)");
 		check("HypergeometricPFQ({1, 1}, {3, 3, 3}, 2.)", //
-				"1.07893");
+				"HypergeometricPFQ({1.0,1.0},{3.0,3.0,3.0},2.0)");
 		check("HypergeometricPFQ({I, I, I}, {2, 2 , 2}, -1.0*I)", //
 				"0.870032+I*(-0.00484538)");
 		check("HypergeometricPFQ({1, 2, 3, 4}, {5, 6, 7}, {0.1, 0.3, 0.5})", //
@@ -9390,6 +9392,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInterval() {
+		check("Interval(0.)", //
+				"Interval({-4.90000*10^-324,4.90000*10^-324})");
+		check("Interval(0.1)-0.1", //
+				"Interval({-1.38778*10^-17,1.38778*10^-17})");
+		check("Interval(100.)-100.0", //
+				"Interval({-1.42109*10^-14,1.42109*10^-14})");
+		check("Sin(Interval(N(Pi)))", //
+				"Interval({-3.21625*10^-16,5.66554*10^-16})");
+		
 		check("Sign(Interval({-Infinity, Infinity}))", //
 				"Interval({-1,1})");
 		check("Sign(Interval({-43, -42}))", //
@@ -9400,10 +9411,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1");
 		check("Sign(Interval({0,-14}))", //
 				"Interval({-1,0})");
-		
+
 		check("Conjugate(Interval({-Infinity, Infinity}))", //
 				"Interval({-Infinity,Infinity})");
-		
+
 		check("Re(Interval({-43, -42}))", //
 				"Interval({-43,-42})");
 		check("Re(Interval({3/4, 13/3}))", //
@@ -9414,20 +9425,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Interval({1,Infinity})");
 		check("Re(Interval({-Infinity, Infinity}))", //
 				"Interval({-Infinity,Infinity})");
-		
+
 		check("Im(Interval({-43, -42}))", //
-				"0");  
+				"0");
 		check("Im(Interval({-Infinity, Infinity}))", //
 				"0");
-		
+
 		check("IntegerPart(Interval({-Infinity,Infinity}))", //
 				"Interval({-Infinity,Infinity})");
-		 
+
 		check("Floor(Interval({-1/3, 3/4}))", //
 				"Interval({-1,0})");
 		check("Floor(Interval({-Infinity, 3/4}))", //
 				"Interval({-Infinity,0})");
-		
+
 		check("Abs(Interval({-43, -42}))", //
 				"Interval({42,43})");
 		check("Abs(Interval({3/4, 13/3}))", //
@@ -9438,7 +9449,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Interval({1,Infinity})");
 		check("Abs(Interval({-Infinity, Infinity}))", //
 				"Interval({0,Infinity})");
-		
+
 		check("ArcCot(Interval({-1, Infinity}))", //
 				"Interval({-Pi/2,-Pi/4},{0,Pi/2})");
 		check("ArcCot(Interval({1-Sqrt(2), 1+Sqrt(2)}))", //
@@ -9685,8 +9696,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"4");
 		check("Min(Interval({2,4}))", //
 				"2");
+		check("Max(Interval({-43/3,4}))", //
+				"4");
+		check("Min(Interval({-43/3,-4}))", //
+				"-43/3");
 		check("u=Interval({-1,1});u+u^2", //
 				"Interval({-1,2})");
+
 	}
 
 	public void testInverse() {
@@ -19547,7 +19563,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testStruveH() {
 		// TODO wrong result
 		check("StruveH(0, 50.0)", //
-				"-1012.348");
+				"-1664.432");
 		check("StruveH(0, 5.2)", //
 				"-0.212448");
 		check("StruveH(0, 4.0)", //
@@ -19573,9 +19589,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"(-(-x)^a*StruveH(a,x))/x^a");
 		// TODO values > 30
 		check("Table(StruveH(0,x), {x, 0, 30.0})", //
-				"{0.0,0.568657,0.790859,0.574306,0.135015,-0.185217,-0.184555,0.063383,0.301988,0.319876,0.118744,-0.111421,"//
-						+ "-0.172534,-0.0295133,0.172443,0.247724,0.135449,-0.0553148,-0.152291,-0.076104,0.0943937,0.20045,0.148766,"//
-						+ "-0.00835413,-0.126354,-0.101825,0.036494,0.158762,0.154545,0.031404,-0.0961004}");
+				"{0.0,0.568657,0.790859,0.574306,0.135015,-0.185217,-0.184555,0.063383,0.301988,0.319876,0.118744,-0.111421,-0.172534,"//
+						+ "-0.0295133,0.172443,0.247724,0.135449,-0.0553148,-0.152291,-0.076104,0.0943937,0.20045,0.148766,-0.00835413,"//
+						+ "-0.126354,-0.101825,0.0364945,0.15876,0.154544,0.0314033,-0.09608}");//
 	}
 
 	public void testStruveL() {
