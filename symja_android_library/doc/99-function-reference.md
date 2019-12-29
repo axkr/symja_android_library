@@ -518,6 +518,7 @@
 * [Quantile](functions/Quantile.md)
 * [Quantity](functions/Quantity.md)
 * [QuantityMagnitude](functions/QuantityMagnitude.md)
+* [Quartiles](functions/Quartiles.md)
 * [Quiet](functions/Quiet.md)
 * [Quotient](functions/Quotient.md)
 * [QuotientRemainder](functions/QuotientRemainder.md)
