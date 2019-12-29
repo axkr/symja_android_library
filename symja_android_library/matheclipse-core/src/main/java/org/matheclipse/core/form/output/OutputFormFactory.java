@@ -20,6 +20,7 @@ import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.interfaces.IAST;
@@ -987,6 +988,38 @@ public class OutputFormFactory {
 							return;
 						}
 						break;
+					case ID.Interval:
+						if (list.size() > 1 && list.first().isASTSizeGE(F.List, 2)) {
+							IAST interval = IntervalSym.normalize(list);
+							buf.append("Interval");
+							append(buf, fRelaxedSyntax ? "(" : "[");
+							for (int i = 1; i < interval.size(); i++) {
+								append(buf, "{");
+								IAST subList = (IAST) interval.get(i);
+								IExpr min = subList.arg1();
+								IExpr max = subList.arg2();
+								if (min instanceof INum) {
+									convertDoubleString(buf, convertDoubleToFormattedString(min.evalDouble()), 0,
+											false);
+								} else {
+									convert(buf, min);
+								}
+								append(buf, ",");
+								if (max instanceof INum) {
+									convertDoubleString(buf, convertDoubleToFormattedString(max.evalDouble()), 0,
+											false);
+								} else {
+									convert(buf, max);
+								}
+								append(buf, "}");
+								if (i < interval.size() - 1) {
+									append(buf, ",");
+								}
+							}
+							append(buf, fRelaxedSyntax ? ")" : "]");
+							return;
+						}
+						break;
 					}
 				}
 
@@ -1524,10 +1557,8 @@ public class OutputFormFactory {
 	public void convertArgs(final Appendable buf, IExpr head, final IAST function) throws IOException {
 		if (head.isAST()) {
 			append(buf, "[");
-		} else if (fRelaxedSyntax) {
-			append(buf, "(");
 		} else {
-			append(buf, "[");
+			append(buf, fRelaxedSyntax ? "(" : "[");
 		}
 		final int functionSize = function.size();
 		if (functionSize > 1) {
@@ -1539,10 +1570,8 @@ public class OutputFormFactory {
 		}
 		if (head.isAST()) {
 			append(buf, "]");
-		} else if (fRelaxedSyntax) {
-			append(buf, ")");
 		} else {
-			append(buf, "]");
+			append(buf, fRelaxedSyntax ? ")" : "]"); 
 		}
 	}
 

@@ -3622,11 +3622,12 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		if (that.isZero()) {
 			return this;
 		}
-		EvalEngine engine = EvalEngine.get();
-		if (engine.isTogetherMode() && (this.isPlusTimesPower() || that.isPlusTimesPower())) {
-			return engine.evaluate(F.Together(F.Plus(this, F.Times(F.CN1, that))));
-		}
-		return engine.evaluate(F.Plus(this, F.Times(F.CN1, that)));
+		return plus(that.negate());
+		// EvalEngine engine = EvalEngine.get();
+		// if (engine.isTogetherMode() && (this.isPlusTimesPower() || that.isPlusTimesPower())) {
+		// return engine.evaluate(F.Together(F.Plus(this, F.Times(F.CN1, that))));
+		// }
+		// return engine.evaluate(F.Plus(this, F.Times(F.CN1, that)));
 	}
 
 	@Override

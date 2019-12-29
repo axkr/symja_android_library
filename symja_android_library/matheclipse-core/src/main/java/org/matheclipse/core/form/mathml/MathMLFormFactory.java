@@ -22,6 +22,7 @@ import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -796,7 +797,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			return true;
 		}
 	}
-	
+
 	private final static class Superscript extends MMLOperator {
 
 		public Superscript() {
@@ -1335,6 +1336,9 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		}
 		if (list.isList() || list instanceof ASTRealVector || list instanceof ASTRealMatrix) {
 			convertList(buf, list);
+			return;
+		}
+		if (list.isInterval() && convertInterval(buf, list)) {
 			return;
 		}
 		int functionID = ((ISymbol) list.head()).ordinal();
@@ -1876,6 +1880,63 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		tag(buf, "mo", "}");
 		tagEnd(buf, "mrow");
 
+	}
+
+	public boolean convertInterval(final StringBuilder buf, final IAST f) {
+		if (f.size() > 1 && f.first().isASTSizeGE(F.List, 2)) {
+			IAST interval = IntervalSym.normalize(f);
+			
+			tagStart(buf, "mrow");
+			tagStart(buf, "mi");
+			buf.append("Interval");
+			tagEnd(buf, "mi");
+			// &af; &#x2061;
+			tag(buf, "mo", "&#x2061;");
+			tagStart(buf, "mrow");
+			if (fRelaxedSyntax) {
+				tag(buf, "mo", "(");
+			} else {
+				tag(buf, "mo", "[");
+			}
+			
+			for (int i = 1; i < interval.size(); i++) {
+				tagStart(buf, "mrow");
+				tag(buf, "mo", "{");
+ 
+				IAST subList = (IAST) interval.get(i);
+				IExpr min = subList.arg1();
+				IExpr max = subList.arg2();
+				if (min instanceof INum) {
+					tagStart(buf, "mn");
+					buf.append(convertDoubleToFormattedString(min.evalDouble()));
+					tagEnd(buf, "mn");
+				} else {
+					convertInternal(buf, min, 0, false);
+				}
+				tag(buf, "mo", ",");
+				if (max instanceof INum) {
+					tagStart(buf, "mn");
+					buf.append(convertDoubleToFormattedString(max.evalDouble()));
+					tagEnd(buf, "mn");
+				} else {
+					convertInternal(buf, max, 0, false);
+				}
+				tag(buf, "mo", "}");
+				tagEnd(buf, "mrow");
+				if (i < interval.size() - 1) {
+					tag(buf, "mo", ",");
+				}
+			}
+			if (fRelaxedSyntax) {
+				tag(buf, "mo", ")");
+			} else {
+				tag(buf, "mo", "]");
+			}
+			tagEnd(buf, "mrow");
+			tagEnd(buf, "mrow");
+			return true;
+		}
+		return false;
 	}
 
 	public boolean convertNumber(final StringBuilder buf, final IExpr o, final int precedence, boolean caller) {

@@ -11,6 +11,8 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class IntervalSym {
@@ -38,7 +40,7 @@ public class IntervalSym {
 	 * @param intervalList
 	 * @return
 	 */
-	private static IAST normalize(final IAST intervalList) {
+	public static IAST normalize(final IAST intervalList) {
 		if (isNormalized(intervalList)) {
 			return intervalList;
 		}
@@ -133,6 +135,11 @@ public class IntervalSym {
 			// The expression `1` is not a valid interval.
 			String str = IOFunctions.getMessage("nvld", F.List(argOfIntervalList), engine);
 			throw new ArgumentTypeException(str);
+		}
+		if (argOfIntervalList instanceof INum) {
+			double value = ((ISignedNumber) argOfIntervalList).doubleValue();
+			return F.List(F.num(Math.nextDown(value)), //
+					F.num(Math.nextUp(value)));
 		}
 		return F.List(argOfIntervalList, argOfIntervalList);
 	}

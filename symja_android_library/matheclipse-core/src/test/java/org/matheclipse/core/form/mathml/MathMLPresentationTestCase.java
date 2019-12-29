@@ -367,6 +367,18 @@ public class MathMLPresentationTestCase extends TestCase {
 				"<msup><mi>xx</mi><mi>yy</mi></msup>");
 	}
 	
+	public void testInterval001() { 
+		IExpr expr = EvalEngine.get().evaluate("Interval({-3.21625*10^-16,5.66554*10^-16})");
+		check(expr, //
+				"<mrow><mi>Interval</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mo>{</mo><mn>-3.2162499999999998E-16</mn><mo>,</mo><mn>5.66554E-16</mn><mo>}</mo></mrow><mo>)</mo></mrow></mrow>");
+	} 
+	
+	public void testInterval002()  { 
+		IExpr expr = EvalEngine.get().evaluate("Cot(Interval({3*Pi/4,6*Pi/5}))");
+		check(expr, //
+				"<mrow><mi>Interval</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mo>{</mo><mrow><mo>-</mo><mi>&#x221E;</mi></mrow><mo>,</mo><mn>-1</mn><mo>}</mo></mrow><mo>,</mo><mrow><mo>{</mo><msqrt><mrow><mfrac><mn>2</mn><msqrt><mn>5</mn></msqrt></mfrac><mo>+</mo><mn>1</mn></mrow></msqrt><mo>,</mo><mi>&#x221E;</mi><mo>}</mo></mrow><mo>)</mo></mrow></mrow>");
+	} 
+	
 	public void check(String strEval, String strResult) {
 		StringWriter stw = new StringWriter();
 		mathUtil.toMathML(strEval, stw);

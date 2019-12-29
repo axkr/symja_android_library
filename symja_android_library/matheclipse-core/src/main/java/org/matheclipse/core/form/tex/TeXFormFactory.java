@@ -19,6 +19,7 @@ import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.interfaces.IAST;
@@ -1305,6 +1306,36 @@ public class TeXFormFactory {
 			switch (functionID) {
 			case ID.Inequality:
 				if (f.size() > 3 && convertInequality(buf, f, precedence)) {
+					return;
+				}
+				break;
+			case ID.Interval:
+				if (f.size() > 1 && f.first().isASTSizeGE(F.List, 2)) {
+					IAST interval = IntervalSym.normalize(f);
+					buf.append("Interval(");
+					for (int i = 1; i < interval.size(); i++) {
+						buf.append("\\{");
+
+						IAST subList = (IAST) interval.get(i);
+						IExpr min = subList.arg1();
+						IExpr max = subList.arg2();
+						if (min instanceof INum) {
+							convertDoubleString(buf, convertDoubleToFormattedString(min.evalDouble()), 0, false);
+						} else {
+							convertInternal(buf, min, 0);
+						}
+						buf.append(",");
+						if (max instanceof INum) {
+							convertDoubleString(buf, convertDoubleToFormattedString(max.evalDouble()), 0, false);
+						} else {
+							convertInternal(buf, max, 0);
+						}
+						buf.append("\\}");
+						if (i < interval.size() - 1) {
+							buf.append(",");
+						}
+					}
+					buf.append(")");
 					return;
 				}
 				break;

@@ -385,6 +385,18 @@ public class BasicTeXTestCase extends TestCase {
 				"{\\textnormal{zzz}}_{36}");
 	} 
 	
+	public void testTeX041() { 
+		IExpr expr = EvalEngine.get().evaluate("Interval({-3.21625*10^-16,5.66554*10^-16})");
+		check(expr, //
+				"Interval(\\{-3.21625*10^{-16},5.66554*10^{-16}\\})");
+	} 
+	
+	public void testTeX042() { 
+		IExpr expr = EvalEngine.get().evaluate("Cot(Interval({3*Pi/4,6*Pi/5}))");
+		check(expr, //
+				"Interval(\\{-\\infty,-1\\},\\{\\sqrt{\\left( 1+\\frac{2}{\\sqrt{5}}\\right) },\\infty\\})");
+	} 
+
 	public void check(String strEval, String strResult) {
 		StringWriter stw = new StringWriter();
 		texUtil.toTeX(strEval, stw);
