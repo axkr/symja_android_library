@@ -10,7 +10,7 @@ Try the Android or iOS apps:
 <a href="https://itunes.apple.com/us/app/ncalc-scientific-calculator/id1449106995">
 	<img src="http://www.lawprose.org/wordpress/wp-content/uploads/App-Store-Badge.png" alt="App Store" width="200"></a>
 
-or help testing the latest [Android BETA version](https://github.com/axkr/symja_android_library/wiki/BETA-tests) or the web demo at [matheclipse.org](http://matheclipse.org/).
+or help testing the latest [Android BETA version](https://github.com/axkr/symja_android_library/wiki/BETA-tests) or the web demo at [matheclipse.org](http://matheclipse.org/). **Tip**: You can use the [Genymobile/scrcpy](https://github.com/Genymobile/scrcpy) tool for faster testing your Symja script inputs on your android device with BETA version installed.
 
 Read the [Symja Manual](symja_android_library/doc/index.md) for the description of the Symja language or [browse the available functions](symja_android_library/doc/functions/). We encourage everyone to participate in our [Wiki](https://github.com/axkr/symja_android_library/wiki).
 
