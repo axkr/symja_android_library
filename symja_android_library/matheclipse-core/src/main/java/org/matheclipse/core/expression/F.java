@@ -108,6 +108,7 @@ import org.matheclipse.parser.client.SyntaxError;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.math.DoubleMath;
 
 import ch.ethz.idsc.tensor.QuantityParser;
 import edu.jas.kern.ComputerThreads;
@@ -7571,7 +7572,7 @@ public class F {
 	public static boolean isNumEqualRational(double value, IRational rational) throws ArithmeticException {
 		return isZero(value - rational.doubleValue(), Config.DOUBLE_TOLERANCE);
 	}
-
+	
 	public static boolean isNumIntValue(double value) {
 		return isZero(value - Math.rint(value), Config.DOUBLE_TOLERANCE);
 	}
@@ -7649,7 +7650,7 @@ public class F {
 	}
 
 	/**
-	 * Test if the absolute value is less <code>Config.DOUBLE_EPSILON</code>.
+	 * Test if the absolute value is less <code>Config.MACHINE_EPSILON</code>.
 	 * 
 	 * @param value
 	 * @return

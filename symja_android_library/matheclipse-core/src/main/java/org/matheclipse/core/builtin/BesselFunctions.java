@@ -336,7 +336,7 @@ public class BesselFunctions {
 			IExpr z = ast.arg2();
 			final int k = z.toIntDefault(Integer.MIN_VALUE);
 
-			if (k > 0 && n.isNumeric()) {
+			if (k > 0 && engine.isNumericMode()) {
 				try {
 					// numeric mode evaluation
 					if (n.isReal()) {
@@ -540,15 +540,15 @@ public class BesselFunctions {
 			IExpr z = ast.arg2();
 			final int k = z.toIntDefault(Integer.MIN_VALUE);
 
-			if (k > 0 && n.isNumeric()) {
-				// try {
-				// // numeric mode evaluation
-				// if (n.isReal()) {
-				// return F.num(BesselJS.besselYZero(n.evalDouble(), k));
-				// }
-				// } catch (RuntimeException rte) {
-				// return engine.printMessage("BesselYZero: " + rte.getMessage());
-				// }
+			if (k > 0 && engine.isNumericMode()) {
+				try {
+					// numeric mode evaluation
+					if (n.isReal()) {
+						return F.num(BesselJS.besselYZero(n.evalDouble(), k));
+					}
+				} catch (RuntimeException rte) {
+					return engine.printMessage("BesselYZero: " + rte.getMessage());
+				}
 			}
 
 			return F.NIL;

@@ -1340,15 +1340,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testBesselJZero() {
 		checkNumeric("BesselJZero(0.0,1)", //
-				"2.404825524156817");
+				"2.404825644181194");
 		checkNumeric("BesselJZero(0.0,2)", //
-				"5.520077944691967");
+				"5.520078312817899");
 		checkNumeric("BesselJZero(1.0,5)", //
-				"16.470629751205134");
+				"16.470630066749596");
 		checkNumeric("BesselJZero(0, {1, 2, 3}) // N", //
-				"{2.404825524156817,5.520077944691967,8.653727993213547}");
+				"{2.404825644181194,5.520078312817899,8.653728099453915}");
 		checkNumeric("BesselJZero(1, 1)/Pi // N", //
-				"1.2196698399880057");
+				"1.219669841825786");
 	}
 
 	public void testBesselK() {
@@ -1394,10 +1394,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBesselYZero() {
-		// checkNumeric("BesselYZero(0.0,2)", //
-		// " ");
-		// checkNumeric("BesselYZero(0.0,1)", //
-		// " ");
+		// TODO improve evaluation for double values in BesselY
+		checkNumeric("BesselYZero(0.0,1)", //
+				"BesselYZero(0.0,1.0)");
+		checkNumeric("BesselYZero(0.0,2)", //
+				"3.9576781734933237");
 	}
 
 	public void testBeta() {
@@ -8663,6 +8664,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHypergeometric1F1() {
+		check("Hypergeometric1F1(2 + I, {2,3,4}, 0.5)", //
+				"{1.61833+I*0.379258,1.391+I*0.228543,1.28402+I*0.161061}");
+
 		check("Hypergeometric1F1(1,b,z)", //
 				"(-1+b)*E^z*z^(1-b)*(Gamma(-1+b)-Gamma(-1+b,z))");
 		check("Hypergeometric1F1(2,b,z)", //
@@ -8691,7 +8695,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Hypergeometric1F1(1,2,3.0)", //
 				"6.36185");
 		checkNumeric("Hypergeometric1F1(1,{2,3,4},5.0)", //
-				"{29.4826318205153,11.393052728206118,6.235831636923671}");
+				"{29.48263182051029,11.393052728194332,6.2358316369166005}");
 	}
 
 	public void testHypergeometric2F1() {
@@ -11260,6 +11264,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLogGamma() {
+		checkNumeric("LogGamma(2.5 + 3*I)", //
+				"-1.4709546103488411+I*2.8226156382607996");
+		checkNumeric("LogGamma({2.0+ 3*I, 3+ 3.0*I, 4.0+ 3*I, 5.0+ 3*I, 6.0+ 3*I})", //
+				"{-2.0928517530927335+I*2.302396543466867," //
+						+ "-0.810377074361964+I*3.285190266714197," //
+						+ "0.6348088045861146+I*4.070588430111645," //
+						+ "2.244246717020216+I*4.714089538904929," //
+						+ "4.007426979328297+I*5.254509039175513}");
 		check("LogGamma(-11/2)", //
 				"LogGamma(-11/2)");
 		check("LogGamma(1/2)", //
@@ -16272,11 +16284,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testQuartiles() {
 		// method 1 from Wikipedia
 		check("Quartiles({6, 7, 15, 36, 39, 40, 41, 42, 43, 47, 49}, {{0, 0}, {1, 0}}) // N", //
-				"{15.0,40.0,43.0}"); 
+				"{15.0,40.0,43.0}");
 		// method 3 from Wikipedia
 		check("Quartiles({6, 7, 15, 36, 39, 40, 41, 42, 43, 47, 49}) // N", //
 				"{20.25,40.0,42.75}");
-		
+
 		check("Quartiles({-1, 5, 10, 4, 25, 2, 1}, {{0, 0}, {1, 0}})", //
 				"{1,4,10}");
 		check("Quartiles(ExponentialDistribution(x))", //
@@ -19611,37 +19623,52 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStruveH() {
+		System.out.println("testStruveH: ");
 		// TODO wrong result
+		check("StruveH(0, 30.0)", //
+				"-0.0961063");
+
 		check("StruveH(0, 50.0)", //
-				"-1664.432");
+				"-0.0853402");
+		System.out.print(".");
 		check("StruveH(0, 5.2)", //
 				"-0.212448");
+		System.out.print(".");
 		check("StruveH(0, 4.0)", //
 				"0.135015");
+		System.out.print(".");
 		check("StruveH(7/3 + I, 4.5 - I)", //
 				"2.35765+I*(-1.40054)");
+		System.out.print(".");
 		check("StruveH(1,{0.5, 1.0, 1.5})", //
 				"{0.0521737,0.198457,0.410288}");
-
+		System.out.print(".");
 		check("StruveH(1.5, 3.5)", //
 				"1.13192");
+		System.out.print(".");
 		check("StruveH(I,0)", //
 				"0");
+		System.out.print(".");
 		check("StruveH(-1+I,0)", //
 				"Indeterminate");
+		System.out.print(".");
 		check("StruveH(-2+I,0)", //
 				"ComplexInfinity");
+		System.out.print(".");
 		check("StruveH(1/2,x)", //
 				"Sqrt(2/Pi)*Sqrt(1/x)*(1-Cos(x))");
+		System.out.print(".");
 		check("StruveH(-1/2,x)", //
 				"Sqrt(2/Pi)*Sqrt(1/x)*Sin(x)");
+		System.out.print(".");
 		check("StruveH(a,-x)", //
 				"(-(-x)^a*StruveH(a,x))/x^a");
+		System.out.print(".");
 		// TODO values > 30
 		check("Table(StruveH(0,x), {x, 0, 30.0})", //
-				"{0.0,0.568657,0.790859,0.574306,0.135015,-0.185217,-0.184555,0.063383,0.301988,0.319876,0.118744,-0.111421,-0.172534,"//
-						+ "-0.0295133,0.172443,0.247724,0.135449,-0.0553148,-0.152291,-0.076104,0.0943937,0.20045,0.148766,-0.00835413,"//
-						+ "-0.126354,-0.101825,0.0364945,0.15876,0.154544,0.0314033,-0.09608}");//
+				"{0.0,0.568657,0.790859,0.574306,0.135015,-0.185217,-0.184555,0.063383,0.301988,0.319876,0.118744,-0.111421,"//
+						+ "-0.172534,-0.0295133,0.172443,0.247724,0.135449,-0.0553148,-0.152291,-0.076104,"//
+						+ "0.0943937,0.20045,0.148766,-0.00835413,-0.126354,-0.101825,0.0364945,0.15876,0.154544,0.0314088,-0.0961063}");//
 	}
 
 	public void testStruveL() {

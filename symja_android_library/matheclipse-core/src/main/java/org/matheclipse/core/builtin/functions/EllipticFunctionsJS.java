@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin.functions;
 
 import org.hipparchus.complex.Complex;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 
 /**
@@ -14,7 +15,7 @@ public class EllipticFunctionsJS {
 	}
 
 	public static Complex jacobiTheta(int n, double x, double q) {
-		return jacobiTheta(n, x, q, 1e-10);
+		return jacobiTheta(n, x, q, Config.SPECIAL_FUNCTIONS_TOLERANCE);
 	}
 
 	public static Complex jacobiTheta(int n, double x, double q, double tolerance) {
@@ -119,7 +120,7 @@ public class EllipticFunctionsJS {
 	}
 
 	public static Complex jacobiTheta(int n, Complex x, Complex q) {
-		return jacobiTheta(n, x, q, 1e-10);
+		return jacobiTheta(n, x, q, Config.SPECIAL_FUNCTIONS_TOLERANCE);
 	}
 
 	public static Complex jacobiTheta(int n, Complex x, Complex q, double tolerance) {
@@ -490,7 +491,7 @@ public class EllipticFunctionsJS {
 		Complex g2 = w1.multiply(2).pow(-4).multiply(a.pow(8).add(a.pow(4).multiply(b.pow(4)).negate()).add(b.pow(8)))
 				.multiply(4.0 / 3.0 * Math.pow(Math.PI, 4));
 
-		Complex g3 = w1.multiply(2).pow(-6).multiply(8.0 / 27.0 * Math.pow(Math.PI, 6))
+		Complex g3 = w1.multiply(2.0).pow(-6.0).multiply(8.0 / 27.0 * Math.pow(Math.PI, 6.0))
 				.multiply(a.pow(12).add(a.pow(8).multiply(b.pow(4)).multiply(-1.5))
 						.add(a.pow(4).multiply(b.pow(8)).multiply(-1.5)).add(b.pow(12)));
 

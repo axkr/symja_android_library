@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin.functions;
 import org.gavaghan.geodesy.GeodeticMeasurement;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
+import org.matheclipse.core.basic.Config;
 
 /**
  * 
@@ -54,7 +55,7 @@ public class EllipticIntegralsJS {
 	}
 
 	public static Complex carlsonRF(Complex x, Complex y, Complex z) {
-		return carlsonRF(x, y, z, 1e-10);
+		return carlsonRF(x, y, z, Config.SPECIAL_FUNCTIONS_TOLERANCE);
 	}
 
 	public static Complex carlsonRF(Complex x, Complex y, Complex z, double tolerance) {
@@ -66,7 +67,7 @@ public class EllipticIntegralsJS {
 		Complex zm = z;
 		Complex A0 = x.add(y).add(z).divide(3.0);
 		Complex Am = A0;
-		double Q = Math.pow(3 * tolerance, -1.0 / 6.0)
+		double Q = Math.pow(3.0 * tolerance, -1.0 / 6.0)
 				* Math.max(A0.subtract(x).abs(), Math.max(A0.subtract(y).abs(), A0.subtract(z).abs()));
 		double g = 0.25;
 		double pow4 = 1.0;
@@ -103,7 +104,7 @@ public class EllipticIntegralsJS {
 	}
 
 	public static Complex carlsonRF(double x, double y, double z) {
-		return carlsonRF(x, y, z, 1e-10);
+		return carlsonRF(x, y, z, Config.SPECIAL_FUNCTIONS_TOLERANCE);
 	}
 
 	public static Complex carlsonRF(double x, double y, double z, double tolerance) {
@@ -125,8 +126,8 @@ public class EllipticIntegralsJS {
 		double Q = Math.pow(3 * tolerance, -1.0 / 6.0)
 				* Math.max(Math.max(Math.abs(A0 - x), Math.abs(A0 - y)), Math.abs(A0 - z));
 		double g = .25;
-		double pow4 = 1;
-		double m = 0;
+		double pow4 = 1.0;
+		double m = 0.0;
 
 		while (true) {
 			double xs = Math.sqrt(xm);
@@ -164,7 +165,7 @@ public class EllipticIntegralsJS {
 	}
 
 	public static Complex carlsonRJ(Complex x, Complex y, Complex z, Complex p) {
-		return carlsonRJ(x, y, z, p, 1e-10);
+		return carlsonRJ(x, y, z, p, Config.SPECIAL_FUNCTIONS_TOLERANCE);
 	}
 
 	public static Complex carlsonRJ(Complex x, Complex y, Complex z, Complex p, double tolerance) {
@@ -231,7 +232,7 @@ public class EllipticIntegralsJS {
 	}
 
 	public static Complex carlsonRJ(double x, double y, double z, double p) {
-		return carlsonRJ(x, y, z, p, 1e-10);
+		return carlsonRJ(x, y, z, p, Config.SPECIAL_FUNCTIONS_TOLERANCE);
 	}
 
 	public static Complex carlsonRJ(double x, double y, double z, double p, double tolerance) {
@@ -309,7 +310,7 @@ public class EllipticIntegralsJS {
 		if (Math.abs(x.getReal()) > (Math.PI / 2) ) {
 			long p = Math.round(x.getReal() / Math.PI);
 			x = new Complex(x.getReal() - p * Math.PI, x.getImaginary());
-			period = ellipticK(m).multiply(2 * p);
+			period = ellipticK(m).multiply(p+p);
 		}
 
 		return x.sin().multiply(carlsonRF(x.cos().pow(2), m.multiply(x.sin().pow(2)).negate().add(1), Complex.ONE))
@@ -327,7 +328,7 @@ public class EllipticIntegralsJS {
 		if (Math.abs(x) > Math.PI / 2.0) {
 			long p = Math.round(x / Math.PI);
 			x = x - p * Math.PI;
-			period = ellipticK(m).multiply(2 * p);
+			period = ellipticK(m).multiply(p+p);
 		}
 
 		return carlsonRF(Math.pow(Math.cos(x), 2), 1 - m * Math.pow(Math.sin(x), 2), 1).multiply(Math.sin(x))
@@ -359,7 +360,7 @@ public class EllipticIntegralsJS {
 		if (Math.abs(x.getReal()) > Math.PI / 2.0) {
 			long p = Math.round(x.getReal() / Math.PI);
 			x = new Complex(x.getReal() - p * Math.PI, x.getImaginary());
-			period = ellipticE(new Complex(Math.PI / 2.0), m).multiply(2 * p);
+			period = ellipticE(new Complex(Math.PI / 2.0), m).multiply(p+p);
 		}
 
 		Complex diff = m.multiply(x.sin().pow(2.0)).negate().add(1.0);
@@ -379,12 +380,12 @@ public class EllipticIntegralsJS {
 		if (Math.abs(x) > Math.PI / 2.0) {
 			long p = Math.round(x / Math.PI);
 			x = x - p * Math.PI;
-			period = ellipticE(Math.PI / 2.0, m).multiply(2 * p);
+			period = ellipticE(Math.PI / 2.0, m).multiply(p+p);
 		}
 
 		return period
-				.add(carlsonRF(Math.pow(Math.cos(x), 2), 1 - m * Math.pow(Math.sin(x), 2.0), 1).multiply(Math.sin(x))
-						.subtract(carlsonRD(Math.pow(Math.cos(x), 2), 1 - m * Math.pow(Math.sin(x), 2), 1.0)
+				.add(carlsonRF(Math.pow(Math.cos(x), 2), 1.0 - m * Math.pow(Math.sin(x), 2.0), 1.0).multiply(Math.sin(x))
+						.subtract(carlsonRD(Math.pow(Math.cos(x), 2.0), 1 - m * Math.pow(Math.sin(x), 2.0), 1.0)
 								.multiply(m / 3.0 * Math.pow(Math.sin(x), 3.0))));
 
 	}
@@ -404,7 +405,7 @@ public class EllipticIntegralsJS {
 		if (Math.abs(x.getReal()) > Math.PI / 2.0) {
 			long p = Math.round(x.getReal() / Math.PI);
 			x = new Complex(x.getReal() - p * Math.PI, x.getImaginary());
-			period = ellipticPi(n, new Complex(Math.PI), m).multiply(2 * p);
+			period = ellipticPi(n, new Complex(Math.PI), m).multiply(p+p);
 		}
 
 		return carlsonRF(x.cos().pow(2), x.sin().pow(2).multiply(m).negate().add(1), Complex.ONE).multiply(x.sin())

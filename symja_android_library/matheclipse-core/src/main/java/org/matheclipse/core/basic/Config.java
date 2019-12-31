@@ -72,7 +72,7 @@ public class Config {
 	 * Maximum number of elements which could be allocated for a BigInteger number
 	 **/
 	public static int MAX_BIT_COUNT = Integer.MAX_VALUE;
-	
+
 	static {
 		EXPR_CACHE = CacheBuilder.newBuilder().maximumSize(MAX_EXPR_CACHE_SIZE).weakKeys().weakValues().build();
 	}
@@ -198,6 +198,12 @@ public class Config {
 	 * Replace <code>double</code> values in root algorithms by 0 if they are below this tolerance.
 	 */
 	public static double DEFAULT_ROOTS_CHOP_DELTA = 1.0e-5;
+
+	/**
+	 * Tolerance used in special function algorithms ported from
+	 * <a href="https://github.com/paulmasson/math">math.js</a> and in the JavaScript based plot functions.
+	 */
+	public static double SPECIAL_FUNCTIONS_TOLERANCE = 1.0e-10;
 
 	/**
 	 * Define the recursion limit for <code>Integrate#integrateByParts()</code> method.
@@ -332,255 +338,140 @@ public class Config {
 	public static boolean USE_VISJS = false;
 
 	public final static String TRACEFORM_PAGE = //
-			"<!doctype html>\n" + 
-			"<html>\n" + 
-			"	<head>\n" + 
-			"       <meta charset=\"utf-8\">\n" + //
-			"		<title>JSLists - Very simple nested list [Example 1]</title>\n" + 
-			"		\n" + 
-			"<style>\n" + 
-			"*, *:before, *:after {box-sizing: border-box;}\n" + 
-			"ul, ol {margin: 0; padding: 0;}\n" + 
-			"li {list-style: none; line-height: 1.6rem;}\n" + 
-			"\n" + 
-			"/* List styling */\n" + 
-			".jslists{\n" + 
-			"	font-size: 1.3rem;\n" + 
-			"	font-family: Arial, Helvetica, sans-serif;\n" + 
-			"}\n" + 
-			".jslist-ul, .jslist-ol, .jslist-li {margin-left: 12px;}		/* Unordered lists */\n" + 
-			".jsl-collapsed {display: none;}\n" + 
-			".jsl-list-closed {\n" + 
-			"	float: left;\n" + 
-			"	clear: both;\n" + 
-			"	margin: 2px 4px 2px 0px;\n" + 
-			"	width: 18px;\n" + 
-			"	height: 18px;\n" + 
-			"	cursor: pointer;\n" + 
-			"	background-image: url('data:image/svg+xml;utf8,<svg aria-hidden=\"true\" data-prefix=\"far\" data-icon=\"plus-square\" class=\"svg-inline--fa fa-plus-square fa-w-14\" role=\"img\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 448 512\"><path fill=\"currentColor\" d=\"M352 240v32c0 6.6-5.4 12-12 12h-88v88c0 6.6-5.4 12-12 12h-32c-6.6 0-12-5.4-12-12v-88h-88c-6.6 0-12-5.4-12-12v-32c0-6.6 5.4-12 12-12h88v-88c0-6.6 5.4-12 12-12h32c6.6 0 12 5.4 12 12v88h88c6.6 0 12 5.4 12 12zm96-160v352c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V80c0-26.5 21.5-48 48-48h352c26.5 0 48 21.5 48 48zm-48 346V86c0-3.3-2.7-6-6-6H54c-3.3 0-6 2.7-6 6v340c0 3.3 2.7 6 6 6h340c3.3 0 6-2.7 6-6z\"></path></svg>');\n" + 
-			"    background-repeat: no-repeat;\n" + 
-			"    background-position: center; \n" + 
-			"}\n" + 
-			".jsl-open {display: block;}\n" + 
-			".jsl-list-open {background-image: url('data:image/svg+xml;utf8,<svg aria-hidden=\"true\" data-prefix=\"far\" data-icon=\"minus-square\" class=\"svg-inline--fa fa-minus-square fa-w-14\" role=\"img\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 448 512\"><path fill=\"currentColor\" d=\"M108 284c-6.6 0-12-5.4-12-12v-32c0-6.6 5.4-12 12-12h232c6.6 0 12 5.4 12 12v32c0 6.6-5.4 12-12 12H108zM448 80v352c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V80c0-26.5 21.5-48 48-48h352c26.5 0 48 21.5 48 48zm-48 346V86c0-3.3-2.7-6-6-6H54c-3.3 0-6 2.7-6 6v340c0 3.3 2.7 6 6 6h340c3.3 0 6-2.7 6-6z\"></path></svg>');}\n" + 
-			"\n" + 
-			"			html, body {\n" + 
-			"				width: 100%;\n" + 
-			"				height: 100%;\n" + 
-			"				margin: 0;\n" + 
-			"				padding: 0;\n" + 
-			"			}\n" + 
-			"			body {\n" + 
-			"				font-family: Arial, Helvetica, sans-serif;\n" + 
-			"				font-size: 16px;\n" + 
-			"			}\n" + 
-			"			header {\n" + 
-			"				position: absolute;\n" + 
-			"				top: 0;\n" + 
-			"				left: 0;\n" + 
-			"				width: 100%;\n" + 
-			"				height: 90px;\n" + 
-			"				background-color: rgb(156, 158, 160);\n" + 
-			"				padding-left: 18px;\n" + 
-			"			}\n" + 
-			"			header > div {\n" + 
-			"				position: relative;\n" + 
-			"				display: inline-block;\n" + 
-			"				top: 50%;\n" + 
-			"				transform: translateY(-50%);\n" + 
-			"				font-size: 3.4rem;\n" + 
-			"				font-weight: 900;\n" + 
-			"			}\n" + 
-			"			main {\n" + 
-			"				position: absolute;\n" + 
-			"				top: 90px;\n" + 
-			"				height: calc(100vh - 90px);\n" + 
-			"			}\n" + 
-			"			main > div:nth-child(1) {\n" + 
-			"				padding: 16px;\n" + 
-			"			}\n" + 
-			"			main > div:nth-child(2) {\n" + 
-			"				padding: 18px;\n" + 
-			"</style>\n" + 
-			"	</head>\n" + 
-			"	<body> \n" + 
-			"				<ul id='traceform' class='jslists'>\n" + 
-			"					<li>TraceForm\n" + 
-			"`1`\n" + //
-			"					</li>\n" + 
-			"				</ul>\n" + 
-			"			</div>\n" + 
-			" \n" + 
-			"		<script>\n" + 
-			"var blackCircle = '&#9679; ';\n" + 
-			"var openCircle = '&#9678; ';\n" + 
-			"\n" + 
-			"(function() {\n" + 
-			"	\"use strict\";\n" + 
-			"    function define_JSLists() {\n" + 
-			"		var JSLists = {};\n" + 
-			"\n" + 
-			"		var JSLists_Error = function(error, alertType) {\n" + 
-			"			console.log(error);\n" + 
-			"		}\n" + 
-			"		var getUl = function(){\n" + 
-			"			return document.getElementsByTagName(\"UL\");\n" + 
-			"		};\n" + 
-			"\n" + 
-			"		var getOl = function(){\n" + 
-			"			return document.getElementsByTagName(\"OL\");\n" + 
-			"		};\n" + 
-			"\n" + 
-			"		var getAllLists = function(){\n" + 
-			"			var olLists = Array.prototype.slice.call(document.getElementsByTagName(\"UL\")),\n" + 
-			"				ulLists = Array.prototype.slice.call(document.getElementsByTagName(\"OL\"))\n" + 
-			"			var gLists = olLists.concat(ulLists);\n" + 
-			"			return gLists;\n" + 
-			"		}\n" + 
-			"\n" + 
-			"		JSLists.searchList = function(listId, searchTerm) {\n" + 
-			"			var i, j, lilNodes, liItems = document.getElementsByTagName(\"LI\");\n" + 
-			"			for(i=0; i<liItems.length; i++) {\n" + 
-			"                if(liItems[i].hasChildNodes()) {\n" + 
-			"                    for(j=0; j<liItems[i].childNodes.length; j++) {\n" + 
-			"                        if(liItems[i].childNodes[j].innerHTML == searchTerm) {\n" + 
-			"							//?????\n" + 
-			"                        }\n" + 
-			"                    }\n" + 
-			"                }\n" + 
-			"			}\n" + 
-			"		}\n" + 
-			"\n" + 
-			"		JSLists.collapseAll = function(listId) {\n" + 
-			"			var i, ulLists = document.getElementsByTagName(\"UL\");\n" + 
-			"			for(i=0; i<ulLists.length; i++) {\n" + 
-			"               if(ulLists[i].className == \"jsl-collapsed\") {\n" + 
-			"                    console.log(ulLists[i].className + '\\n' + '@');\n" + 
-			"               }\n" + 
-			"			};\n" + 
-			"		};\n" + 
-			"\n" + 
-			"		JSLists.openAll = function(listId){\n" + 
-			"			var i, olLists = Array.prototype.slice.call(document.getElementsByTagName(\"UL\")),\n" + 
-			"				ulLists = Array.prototype.slice.call(document.getElementsByTagName(\"OL\"))\n" + 
-			"			var gLists = olLists.concat(ulLists);\n" + 
-			"\n" + 
-			"			for(i=1; i<gLists.length; i++) {\n" + 
-			"				gLists[i].setAttribute('class', 'jsl-open');\n" + 
-			"			};\n" + 
-			"		};\n" + 
-			"\n" + 
-			"		JSLists.padUnorderedLists = function(listId) {\n" + 
-			"			var i, listItems = document.getElementById(listId).getElementsByTagName(\"UL\");\n" + 
-			"			for(i=0; i<listItems.length; i++) {\n" + 
-			"				listItems[i].classList.add('jslist-ul');\n" + 
-			"			}\n" + 
-			"		};\n" + 
-			"\n" + 
-			"		JSLists.padOrderedLists = function(listId) {\n" + 
-			"			var i, listItems = document.getElementById(listId).getElementsByTagName(\"UL\");\n" + 
-			"			for(i=0; i<listItems.length; i++) {\n" + 
-			"				listItems[i].classList.add('jslist-ol');\n" + 
-			"			}\n" + 
-			"		};\n" + 
-			"\n" + 
-			"		JSLists.padLists = function(listId) {\n" + 
-			"			var i, listItems = document.getElementById(listId).getElementsByTagName(\"LI\");\n" + 
-			"			for(i=0; i<listItems.length; i++) {\n" + 
-			"				if(listItems[i].childNodes[0].className != \"jsl-collapsed-arrow\") {\n" + 
-			"					listItems[i].classList.add('jslist-li');\n" + 
-			"				}\n" + 
-			"			}\n" + 
-			"			for(i=1; i<listItems.length; i++) {\n" + 
-			"				// console.log(listItems[i].childNodes.length);\n" + 
-			"				if(listItems[i].classList = \"jslist-li\" && listItems[i].childNodes.length < 2) {\n" + 
-			"					listItems[i].innerHTML = blackCircle + listItems[i].innerHTML\n" + 
-			"				}\n" + 
-			"			}\n" + 
-			"			this.padUnorderedLists(listId);\n" + 
-			"			this.padOrderedLists(listId);\n" + 
-			"		};\n" + 
-			"\n" + 
-			"        JSLists.createTree = function(listId, bulletPoint) {\n" + 
-			"			document.getElementById(listId).style.display = \"none;\"\n" + 
-			"			var i, j, curElem, ulCount, olCount, listItems = document.getElementById(listId).getElementsByTagName('LI'); //this should be the main parent\n" + 
-			"			for(i=0; i<listItems.length; i++) {\n" + 
-			"				if(listItems[i].id.length > 0) {\n" + 
-			"					curElem = document.getElementById(listItems[i].id);\n" + 
-			"                    ulCount = document.getElementById(listItems[i].id).getElementsByTagName(\"UL\");\n" + 
-			"                    if(ulCount.length > 0){\n" + 
-			"                        for(j=0; j<ulCount.length; j++) {\n" + 
-			"                            if(ulCount[j].nodeName == \"UL\") {\n" + 
-			"                                break;\n" + 
-			"                            }\n" + 
-			"                        }\n" + 
-			"                        ulCount[j].setAttribute('class', 'jsl-collapsed');\n" + 
-			"                        var tglDiv = document.createElement(\"div\");\n" + 
-			"                        tglDiv.setAttribute('class', 'jsl-list-closed');\n" + 
-			"                        tglDiv.setAttribute(\"id\", listItems[i].id + i +'_tgl');\n" + 
-			"                        curElem.insertBefore(tglDiv, curElem.childNodes[0]);\n" + 
-			"\n" + 
-			"                        document.getElementById(listItems[i].id + i +'_tgl').addEventListener('click', function(e) {\n" + 
-			"                            document.getElementById(e.target.id).classList.toggle('jsl-list-open');\n" + 
-			"                            document.getElementById(e.target.id).parentElement.lastElementChild.classList.toggle('jsl-open');\n" + 
-			"                            e.stopPropagation();\n" + 
-			"                        },true);\n" + 
-			"                    }\n" + 
-			"                } else {\n" + 
-			"					listItems[i].setAttribute(\"id\", listId+\"tmp\"+i);\n" + 
-			"					curElem = document.getElementById(listId+\"tmp\"+i);\n" + 
-			"					ulCount = document.getElementById(listItems[i].id).getElementsByTagName(\"UL\");\n" + 
-			"\n" + 
-			"					if(ulCount.length > 0) { //There is a nested UL in this LI element, now find the position of the UL\n" + 
-			"						for(j=0; j<ulCount.length; j++) {\n" + 
-			"							if(ulCount[j].nodeName == \"UL\") {\n" + 
-			"								break; //Multiple UL's? //Set class collapseAll here\n" + 
-			"							}\n" + 
-			"						}\n" + 
-			"						ulCount[j].setAttribute('class', 'jsl-collapsed');\n" + 
-			"						var tglDiv = document.createElement(\"div\");\n" + 
-			"						tglDiv.setAttribute('class', 'jsl-list-closed');\n" + 
-			"						tglDiv.setAttribute(\"id\", listItems[i].id + i +'_tgl');\n" + 
-			"						curElem.insertBefore(tglDiv, curElem.childNodes[0]);\n" + 
-			"\n" + 
-			"						document.getElementById(listItems[i].id + i +'_tgl').addEventListener('click', function(e){\n" + 
-			"							document.getElementById(e.target.id).classList.toggle('jsl-list-open');\n" + 
-			"							document.getElementById(e.target.id).parentElement.lastElementChild.classList.toggle('jsl-open');\n" + 
-			"							e.stopPropagation();\n" + 
-			"						},true);\n" + 
-			"					}\n" + 
-			"					listItems[i].removeAttribute(\"id\");\n" + 
-			"				}\n" + 
-			"			}\n" + 
-			"			setTimeout(function() {\n" + 
-			"				document.getElementById(listId).style.display = \"block;\"\n" + 
-			"			}, 50); // stops FOUC!\n" + 
-			"			this.padLists(listId);\n" + 
-			"		};\n" + 
-			"\n" + 
-			"		// JSLists.applyToList = function(listId, listType, applyIcons, applyTheme, themeNumber){\n" + 
-			"		//Check the params here\n" + 
-			"		// does the id exist?\n" + 
-			"		JSLists.applyToList = function(listId, bulletPoint) {\n" + 
-			"            this.createTree(listId, \"UL\");\n" + 
-			"		};\n" + 
-			"	return JSLists;\n" + 
-			"    }\n" + 
-			"\n" + 
-			"	//define the JSLists library in the global namespace if it doesn't already exist\n" + 
-			"	if(typeof(JSLists) === 'undefined') {\n" + 
-			"		window.JSLists = define_JSLists();\n" + 
-			"	}else{\n" + 
-			"		console.log(\"JSLists already defined.\");\n" + 
-			"	}\n" + 
-			"})();		\n" + 
-			"		</script>\n" + 
-			"		<script> \n" + 
-			"			JSLists.createTree(\"traceform\");\n" + 
-			"		</script>\n" + 
-			"	</body>\n" + 
-			"</html>";//
-	
+			"<!doctype html>\n" + "<html>\n" + "	<head>\n" + "       <meta charset=\"utf-8\">\n" + //
+					"		<title>JSLists - Very simple nested list [Example 1]</title>\n" + "		\n" + "<style>\n"
+					+ "*, *:before, *:after {box-sizing: border-box;}\n" + "ul, ol {margin: 0; padding: 0;}\n"
+					+ "li {list-style: none; line-height: 1.6rem;}\n" + "\n" + "/* List styling */\n" + ".jslists{\n"
+					+ "	font-size: 1.3rem;\n" + "	font-family: Arial, Helvetica, sans-serif;\n" + "}\n"
+					+ ".jslist-ul, .jslist-ol, .jslist-li {margin-left: 12px;}		/* Unordered lists */\n"
+					+ ".jsl-collapsed {display: none;}\n" + ".jsl-list-closed {\n" + "	float: left;\n"
+					+ "	clear: both;\n" + "	margin: 2px 4px 2px 0px;\n" + "	width: 18px;\n" + "	height: 18px;\n"
+					+ "	cursor: pointer;\n"
+					+ "	background-image: url('data:image/svg+xml;utf8,<svg aria-hidden=\"true\" data-prefix=\"far\" data-icon=\"plus-square\" class=\"svg-inline--fa fa-plus-square fa-w-14\" role=\"img\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 448 512\"><path fill=\"currentColor\" d=\"M352 240v32c0 6.6-5.4 12-12 12h-88v88c0 6.6-5.4 12-12 12h-32c-6.6 0-12-5.4-12-12v-88h-88c-6.6 0-12-5.4-12-12v-32c0-6.6 5.4-12 12-12h88v-88c0-6.6 5.4-12 12-12h32c6.6 0 12 5.4 12 12v88h88c6.6 0 12 5.4 12 12zm96-160v352c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V80c0-26.5 21.5-48 48-48h352c26.5 0 48 21.5 48 48zm-48 346V86c0-3.3-2.7-6-6-6H54c-3.3 0-6 2.7-6 6v340c0 3.3 2.7 6 6 6h340c3.3 0 6-2.7 6-6z\"></path></svg>');\n"
+					+ "    background-repeat: no-repeat;\n" + "    background-position: center; \n" + "}\n"
+					+ ".jsl-open {display: block;}\n"
+					+ ".jsl-list-open {background-image: url('data:image/svg+xml;utf8,<svg aria-hidden=\"true\" data-prefix=\"far\" data-icon=\"minus-square\" class=\"svg-inline--fa fa-minus-square fa-w-14\" role=\"img\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 448 512\"><path fill=\"currentColor\" d=\"M108 284c-6.6 0-12-5.4-12-12v-32c0-6.6 5.4-12 12-12h232c6.6 0 12 5.4 12 12v32c0 6.6-5.4 12-12 12H108zM448 80v352c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V80c0-26.5 21.5-48 48-48h352c26.5 0 48 21.5 48 48zm-48 346V86c0-3.3-2.7-6-6-6H54c-3.3 0-6 2.7-6 6v340c0 3.3 2.7 6 6 6h340c3.3 0 6-2.7 6-6z\"></path></svg>');}\n"
+					+ "\n" + "			html, body {\n" + "				width: 100%;\n" + "				height: 100%;\n"
+					+ "				margin: 0;\n" + "				padding: 0;\n" + "			}\n"
+					+ "			body {\n" + "				font-family: Arial, Helvetica, sans-serif;\n"
+					+ "				font-size: 16px;\n" + "			}\n" + "			header {\n"
+					+ "				position: absolute;\n" + "				top: 0;\n" + "				left: 0;\n"
+					+ "				width: 100%;\n" + "				height: 90px;\n"
+					+ "				background-color: rgb(156, 158, 160);\n" + "				padding-left: 18px;\n"
+					+ "			}\n" + "			header > div {\n" + "				position: relative;\n"
+					+ "				display: inline-block;\n" + "				top: 50%;\n"
+					+ "				transform: translateY(-50%);\n" + "				font-size: 3.4rem;\n"
+					+ "				font-weight: 900;\n" + "			}\n" + "			main {\n"
+					+ "				position: absolute;\n" + "				top: 90px;\n"
+					+ "				height: calc(100vh - 90px);\n" + "			}\n"
+					+ "			main > div:nth-child(1) {\n" + "				padding: 16px;\n" + "			}\n"
+					+ "			main > div:nth-child(2) {\n" + "				padding: 18px;\n" + "</style>\n"
+					+ "	</head>\n" + "	<body> \n" + "				<ul id='traceform' class='jslists'>\n"
+					+ "					<li>TraceForm\n" + "`1`\n" + //
+					"					</li>\n" + "				</ul>\n" + "			</div>\n" + " \n"
+					+ "		<script>\n" + "var blackCircle = '&#9679; ';\n" + "var openCircle = '&#9678; ';\n" + "\n"
+					+ "(function() {\n" + "	\"use strict\";\n" + "    function define_JSLists() {\n"
+					+ "		var JSLists = {};\n" + "\n" + "		var JSLists_Error = function(error, alertType) {\n"
+					+ "			console.log(error);\n" + "		}\n" + "		var getUl = function(){\n"
+					+ "			return document.getElementsByTagName(\"UL\");\n" + "		};\n" + "\n"
+					+ "		var getOl = function(){\n" + "			return document.getElementsByTagName(\"OL\");\n"
+					+ "		};\n" + "\n" + "		var getAllLists = function(){\n"
+					+ "			var olLists = Array.prototype.slice.call(document.getElementsByTagName(\"UL\")),\n"
+					+ "				ulLists = Array.prototype.slice.call(document.getElementsByTagName(\"OL\"))\n"
+					+ "			var gLists = olLists.concat(ulLists);\n" + "			return gLists;\n" + "		}\n"
+					+ "\n" + "		JSLists.searchList = function(listId, searchTerm) {\n"
+					+ "			var i, j, lilNodes, liItems = document.getElementsByTagName(\"LI\");\n"
+					+ "			for(i=0; i<liItems.length; i++) {\n"
+					+ "                if(liItems[i].hasChildNodes()) {\n"
+					+ "                    for(j=0; j<liItems[i].childNodes.length; j++) {\n"
+					+ "                        if(liItems[i].childNodes[j].innerHTML == searchTerm) {\n"
+					+ "							//?????\n" + "                        }\n" + "                    }\n"
+					+ "                }\n" + "			}\n" + "		}\n" + "\n"
+					+ "		JSLists.collapseAll = function(listId) {\n"
+					+ "			var i, ulLists = document.getElementsByTagName(\"UL\");\n"
+					+ "			for(i=0; i<ulLists.length; i++) {\n"
+					+ "               if(ulLists[i].className == \"jsl-collapsed\") {\n"
+					+ "                    console.log(ulLists[i].className + '\\n' + '@');\n" + "               }\n"
+					+ "			};\n" + "		};\n" + "\n" + "		JSLists.openAll = function(listId){\n"
+					+ "			var i, olLists = Array.prototype.slice.call(document.getElementsByTagName(\"UL\")),\n"
+					+ "				ulLists = Array.prototype.slice.call(document.getElementsByTagName(\"OL\"))\n"
+					+ "			var gLists = olLists.concat(ulLists);\n" + "\n"
+					+ "			for(i=1; i<gLists.length; i++) {\n"
+					+ "				gLists[i].setAttribute('class', 'jsl-open');\n" + "			};\n" + "		};\n"
+					+ "\n" + "		JSLists.padUnorderedLists = function(listId) {\n"
+					+ "			var i, listItems = document.getElementById(listId).getElementsByTagName(\"UL\");\n"
+					+ "			for(i=0; i<listItems.length; i++) {\n"
+					+ "				listItems[i].classList.add('jslist-ul');\n" + "			}\n" + "		};\n" + "\n"
+					+ "		JSLists.padOrderedLists = function(listId) {\n"
+					+ "			var i, listItems = document.getElementById(listId).getElementsByTagName(\"UL\");\n"
+					+ "			for(i=0; i<listItems.length; i++) {\n"
+					+ "				listItems[i].classList.add('jslist-ol');\n" + "			}\n" + "		};\n" + "\n"
+					+ "		JSLists.padLists = function(listId) {\n"
+					+ "			var i, listItems = document.getElementById(listId).getElementsByTagName(\"LI\");\n"
+					+ "			for(i=0; i<listItems.length; i++) {\n"
+					+ "				if(listItems[i].childNodes[0].className != \"jsl-collapsed-arrow\") {\n"
+					+ "					listItems[i].classList.add('jslist-li');\n" + "				}\n"
+					+ "			}\n" + "			for(i=1; i<listItems.length; i++) {\n"
+					+ "				// console.log(listItems[i].childNodes.length);\n"
+					+ "				if(listItems[i].classList = \"jslist-li\" && listItems[i].childNodes.length < 2) {\n"
+					+ "					listItems[i].innerHTML = blackCircle + listItems[i].innerHTML\n"
+					+ "				}\n" + "			}\n" + "			this.padUnorderedLists(listId);\n"
+					+ "			this.padOrderedLists(listId);\n" + "		};\n" + "\n"
+					+ "        JSLists.createTree = function(listId, bulletPoint) {\n"
+					+ "			document.getElementById(listId).style.display = \"none;\"\n"
+					+ "			var i, j, curElem, ulCount, olCount, listItems = document.getElementById(listId).getElementsByTagName('LI'); //this should be the main parent\n"
+					+ "			for(i=0; i<listItems.length; i++) {\n"
+					+ "				if(listItems[i].id.length > 0) {\n"
+					+ "					curElem = document.getElementById(listItems[i].id);\n"
+					+ "                    ulCount = document.getElementById(listItems[i].id).getElementsByTagName(\"UL\");\n"
+					+ "                    if(ulCount.length > 0){\n"
+					+ "                        for(j=0; j<ulCount.length; j++) {\n"
+					+ "                            if(ulCount[j].nodeName == \"UL\") {\n"
+					+ "                                break;\n" + "                            }\n"
+					+ "                        }\n"
+					+ "                        ulCount[j].setAttribute('class', 'jsl-collapsed');\n"
+					+ "                        var tglDiv = document.createElement(\"div\");\n"
+					+ "                        tglDiv.setAttribute('class', 'jsl-list-closed');\n"
+					+ "                        tglDiv.setAttribute(\"id\", listItems[i].id + i +'_tgl');\n"
+					+ "                        curElem.insertBefore(tglDiv, curElem.childNodes[0]);\n" + "\n"
+					+ "                        document.getElementById(listItems[i].id + i +'_tgl').addEventListener('click', function(e) {\n"
+					+ "                            document.getElementById(e.target.id).classList.toggle('jsl-list-open');\n"
+					+ "                            document.getElementById(e.target.id).parentElement.lastElementChild.classList.toggle('jsl-open');\n"
+					+ "                            e.stopPropagation();\n" + "                        },true);\n"
+					+ "                    }\n" + "                } else {\n"
+					+ "					listItems[i].setAttribute(\"id\", listId+\"tmp\"+i);\n"
+					+ "					curElem = document.getElementById(listId+\"tmp\"+i);\n"
+					+ "					ulCount = document.getElementById(listItems[i].id).getElementsByTagName(\"UL\");\n"
+					+ "\n"
+					+ "					if(ulCount.length > 0) { //There is a nested UL in this LI element, now find the position of the UL\n"
+					+ "						for(j=0; j<ulCount.length; j++) {\n"
+					+ "							if(ulCount[j].nodeName == \"UL\") {\n"
+					+ "								break; //Multiple UL's? //Set class collapseAll here\n"
+					+ "							}\n" + "						}\n"
+					+ "						ulCount[j].setAttribute('class', 'jsl-collapsed');\n"
+					+ "						var tglDiv = document.createElement(\"div\");\n"
+					+ "						tglDiv.setAttribute('class', 'jsl-list-closed');\n"
+					+ "						tglDiv.setAttribute(\"id\", listItems[i].id + i +'_tgl');\n"
+					+ "						curElem.insertBefore(tglDiv, curElem.childNodes[0]);\n" + "\n"
+					+ "						document.getElementById(listItems[i].id + i +'_tgl').addEventListener('click', function(e){\n"
+					+ "							document.getElementById(e.target.id).classList.toggle('jsl-list-open');\n"
+					+ "							document.getElementById(e.target.id).parentElement.lastElementChild.classList.toggle('jsl-open');\n"
+					+ "							e.stopPropagation();\n" + "						},true);\n"
+					+ "					}\n" + "					listItems[i].removeAttribute(\"id\");\n"
+					+ "				}\n" + "			}\n" + "			setTimeout(function() {\n"
+					+ "				document.getElementById(listId).style.display = \"block;\"\n"
+					+ "			}, 50); // stops FOUC!\n" + "			this.padLists(listId);\n" + "		};\n" + "\n"
+					+ "		// JSLists.applyToList = function(listId, listType, applyIcons, applyTheme, themeNumber){\n"
+					+ "		//Check the params here\n" + "		// does the id exist?\n"
+					+ "		JSLists.applyToList = function(listId, bulletPoint) {\n"
+					+ "            this.createTree(listId, \"UL\");\n" + "		};\n" + "	return JSLists;\n"
+					+ "    }\n" + "\n"
+					+ "	//define the JSLists library in the global namespace if it doesn't already exist\n"
+					+ "	if(typeof(JSLists) === 'undefined') {\n" + "		window.JSLists = define_JSLists();\n"
+					+ "	}else{\n" + "		console.log(\"JSLists already defined.\");\n" + "	}\n" + "})();		\n"
+					+ "		</script>\n" + "		<script> \n" + "			JSLists.createTree(\"traceform\");\n"
+					+ "		</script>\n" + "	</body>\n" + "</html>";//
+
 	/**
 	 * HTML template for the <a href="https://visjs.org/">VIS-network</a>
 	 */

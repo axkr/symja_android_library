@@ -768,6 +768,11 @@ public class SpecialFunctions {
 	private static class LogGamma extends AbstractTrigArg1 implements INumeric {
 
 		@Override
+		public IExpr e1ComplexArg(final Complex c) {
+			return F.complexNum(BesselJS.logGamma(c));
+		}
+		
+		@Override
 		public IExpr e1DblArg(final double arg1) {
 			try {
 				if (F.isZero(arg1)) {

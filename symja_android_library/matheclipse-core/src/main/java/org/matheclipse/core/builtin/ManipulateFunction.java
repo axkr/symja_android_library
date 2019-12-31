@@ -1147,18 +1147,18 @@ public class ManipulateFunction {
 				function.append(", { } );\n");
 			}
 
-			if (!F.isFuzzyEquals(Double.MAX_VALUE, plotRangeXMin, 1e-10)
-					&& F.isFuzzyEquals(Double.MAX_VALUE, boundingbox[0], 1e-10)) {
+			if (!F.isFuzzyEquals(Double.MAX_VALUE, plotRangeXMin, Config.SPECIAL_FUNCTIONS_TOLERANCE)
+					&& F.isFuzzyEquals(Double.MAX_VALUE, boundingbox[0], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
 				boundingbox[0] = plotRangeXMin;
 			}
-			if (!F.isFuzzyEquals(Double.MIN_VALUE, plotRangeYMax, 1e-10)) {
+			if (!F.isFuzzyEquals(Double.MIN_VALUE, plotRangeYMax, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
 				boundingbox[1] = plotRangeYMax;
 			}
-			if (!F.isFuzzyEquals(Double.MIN_VALUE, plotRangeXMax, 1e-10)
-					&& F.isFuzzyEquals(Double.MIN_VALUE, boundingbox[2], 1e-10)) {
+			if (!F.isFuzzyEquals(Double.MIN_VALUE, plotRangeXMax, Config.SPECIAL_FUNCTIONS_TOLERANCE)
+					&& F.isFuzzyEquals(Double.MIN_VALUE, boundingbox[2], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
 				boundingbox[2] = plotRangeXMax;
 			}
-			if (!F.isFuzzyEquals(Double.MAX_VALUE, plotRangeYMin, 1e-10)) {
+			if (!F.isFuzzyEquals(Double.MAX_VALUE, plotRangeYMin, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
 				boundingbox[3] = plotRangeYMin;
 			}
 
@@ -1217,16 +1217,16 @@ public class ManipulateFunction {
 			}
 		}
 		function.append(" ];\n");
-		if (!F.isFuzzyEquals(Double.MAX_VALUE, plotRangeXMin, 1e-10)) {
+		if (!F.isFuzzyEquals(Double.MAX_VALUE, plotRangeXMin, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
 			boundingbox[0] = plotRangeXMin;
 		}
-		if (!F.isFuzzyEquals(Double.MIN_VALUE, plotRangeYMax, 1e-10)) {
+		if (!F.isFuzzyEquals(Double.MIN_VALUE, plotRangeYMax, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
 			boundingbox[1] = plotRangeYMax;
 		}
-		if (!F.isFuzzyEquals(Double.MIN_VALUE, plotRangeXMax, 1e-10)) {
+		if (!F.isFuzzyEquals(Double.MIN_VALUE, plotRangeXMax, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
 			boundingbox[2] = plotRangeXMax;
 		}
-		if (!F.isFuzzyEquals(Double.MAX_VALUE, plotRangeYMin, 1e-10)) {
+		if (!F.isFuzzyEquals(Double.MAX_VALUE, plotRangeYMin, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
 			boundingbox[3] = plotRangeYMin;
 		}
 		return jsxgraphBoundingBox(ast, boundingbox, function.toString(), toJS);
@@ -1536,16 +1536,16 @@ public class ManipulateFunction {
 	private static IExpr jsxgraphBoundingBox(IAST ast, double[] boundingbox, String function,
 			JavaScriptFormFactory toJS) {
 		String js = JSXGRAPH;
-		if (F.isFuzzyEquals(Double.MAX_VALUE, boundingbox[0], 1e-10)) {
+		if (F.isFuzzyEquals(Double.MAX_VALUE, boundingbox[0], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
 			boundingbox[0] = -5.0;
 		}
-		if (F.isFuzzyEquals(Double.MIN_VALUE, boundingbox[1], 1e-10)) {
+		if (F.isFuzzyEquals(Double.MIN_VALUE, boundingbox[1], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
 			boundingbox[1] = 5.0;
 		}
-		if (F.isFuzzyEquals(Double.MIN_VALUE, boundingbox[2], 1e-10)) {
+		if (F.isFuzzyEquals(Double.MIN_VALUE, boundingbox[2], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
 			boundingbox[2] = 5.0;
 		}
-		if (F.isFuzzyEquals(Double.MAX_VALUE, boundingbox[3], 1e-10)) {
+		if (F.isFuzzyEquals(Double.MAX_VALUE, boundingbox[3], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
 			boundingbox[3] = -5.0;
 		}
 

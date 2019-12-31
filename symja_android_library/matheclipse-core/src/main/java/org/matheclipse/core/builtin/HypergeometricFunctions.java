@@ -548,24 +548,59 @@ public class HypergeometricFunctions {
 				// LaguerreL(-a, z)
 				return F.LaguerreL(a.negate(), z);
 			}
-
-			if (a.isReal() && b.isReal()) {
-				ISignedNumber n = (ISignedNumber) a;
-				ISignedNumber m = (ISignedNumber) b;
-				if (n.isInteger() && m.isInteger() && n.isNegative() && m.isNegative() && m.isGT(n)) {
-					return F.CComplexInfinity;
-				}
-				if (z.isReal()) {
-					double aDouble = n.doubleValue();
-					double bDoube = m.doubleValue();
-					double zDouble = ((ISignedNumber) z).doubleValue();
+			if (a.isInteger() && b.isInteger() && a.isNegative() && b.isNegative()
+					&& ((IInteger) b).isGT((IInteger) a)) {
+				return F.CComplexInfinity;
+			}
+			if (engine.isNumericMode()) {
+				try {
+					double aDouble = Double.NaN;
+					double bDouble = Double.NaN;
+					double zDouble = Double.NaN;
 					try {
-						return F.num(de.lab4inf.math.functions.KummerFunction.kummer(aDouble, bDoube, zDouble));
-					} catch (RuntimeException rex) {
-						return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+						aDouble = a.evalDouble();
+						bDouble = b.evalDouble();
+						zDouble = z.evalDouble();
+					} catch (ValidateException ve) {
 					}
+					if (Double.isNaN(aDouble) || Double.isNaN(bDouble) || Double.isNaN(zDouble)) {
+						Complex ac = a.evalComplex();
+						Complex bc = b.evalComplex();
+						Complex zc = z.evalComplex();
+
+						return F.complexNum(HypergeometricJS.hypergeometric1F1(ac, bc, zc));
+
+					} else {
+						return F.num(HypergeometricJS.hypergeometric1F1(aDouble, bDouble, zDouble));
+					}
+
+				} catch (ValidateException ve) {
+					if (Config.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
+				} catch (RuntimeException rex) {
+					// rex.printStackTrace();
+					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
 				}
 			}
+			// if (a.isReal() && b.isReal()) {
+			// ISignedNumber n = (ISignedNumber) a;
+			// ISignedNumber m = (ISignedNumber) b;
+			// if (n.isInteger() && m.isInteger() && n.isNegative() && m.isNegative() && m.isGT(n)) {
+			// return F.CComplexInfinity;
+			// }
+			// if (z.isReal()) {
+			// double aDouble = n.doubleValue();
+			// double bDouble = m.doubleValue();
+			// double zDouble = ((ISignedNumber) z).doubleValue();
+			// try {
+			// return F.num(HypergeometricJS.hypergeometric1F1(aDouble, bDouble, zDouble));
+			// // return F.num(de.lab4inf.math.functions.KummerFunction.kummer(aDouble, bDoube, zDouble));
+			// } catch (RuntimeException rex) {
+			// return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+			// }
+			// }
+			// }
 			if (a.equals(b)) {
 				// E^z
 				return F.Power(F.E, z);
@@ -677,7 +712,7 @@ public class HypergeometricFunctions {
 					double cDouble = Double.NaN;
 					try {
 						cDouble = c.evalDouble();
-					} catch (ValidateException ve) { 
+					} catch (ValidateException ve) {
 					}
 					if (A == null || B == null || Double.isNaN(cDouble)) {
 						Complex AC[] = a.toComplexVector();
