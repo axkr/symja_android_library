@@ -36,7 +36,10 @@ import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.special.Gamma;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.BesselJS;
+import org.matheclipse.core.builtin.functions.GammaJS;
+import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractArg12;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -102,14 +105,35 @@ public class SpecialFunctions {
 				IExpr z = ast.arg1();
 				IExpr a = ast.arg2();
 				IExpr b = ast.arg3();
-				if (engine.isDoubleMode() && z.isReal() && a.isReal() && b.isReal()) {
-					double zDouble = ((ISignedNumber) z).doubleValue();
-					double aDouble = ((ISignedNumber) a).doubleValue();
-					double bDouble = ((ISignedNumber) b).doubleValue();
-					if (zDouble >= 0 && zDouble <= 1 && aDouble >= 0 && bDouble >= 0) {
-						// TODO improve bad precision
-						// double d = de.lab4inf.math.functions.IncompleteBeta.incBeta(zDouble, aDouble, bDouble);
-						// return F.num(d);
+				if (engine.isNumericMode()) {
+					try {
+						double aDouble = Double.NaN;
+						double bDouble = Double.NaN;
+						double zDouble = Double.NaN;
+						try {
+							zDouble = z.evalDouble();
+							aDouble = a.evalDouble();
+							bDouble = b.evalDouble();
+						} catch (ValidateException ve) {
+						}
+						if (Double.isNaN(aDouble) || Double.isNaN(bDouble) || Double.isNaN(zDouble)) {
+							Complex zc = z.evalComplex();
+							Complex ac = a.evalComplex();
+							Complex bc = b.evalComplex();
+							
+							return F.complexNum(GammaJS.beta(zc, ac, bc)); 
+
+						} else {
+							return GammaJS.incompleteBeta(zDouble, aDouble, bDouble); 
+						}
+
+					} catch (ValidateException ve) {
+						if (Config.SHOW_STACKTRACE) {
+							ve.printStackTrace();
+						}
+					} catch (RuntimeException rex) {
+						// rex.printStackTrace();
+						return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
 					}
 				}
 				return F.NIL;
@@ -131,7 +155,7 @@ public class SpecialFunctions {
 				}
 				return F.Times(F.Gamma(a), F.Gamma(b), F.Power(F.Gamma(F.Plus(a, b)), -1));
 			}
-			IExpr s = a.plus(F.C1).subtract(b);
+			IExpr s = a.inc().subtract(b);
 			if (s.isZero()) {
 				return F.Power(F.Times(a, b, F.CatalanNumber(a)), -1);
 			}
@@ -771,7 +795,7 @@ public class SpecialFunctions {
 		public IExpr e1ComplexArg(final Complex c) {
 			return F.complexNum(BesselJS.logGamma(c));
 		}
-		
+
 		@Override
 		public IExpr e1DblArg(final double arg1) {
 			try {

@@ -1402,8 +1402,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBeta() {
-		// TODO improve bad precision
-		// check("Beta(0.5, 3.2, 1.5)", "0.19168");
+		check("Beta( 2.5 + I, 1 - I, 0.5)", //
+				"1.83058+I*3.75044");
+		check("Beta(0.5, 2.5 + I, 1 - I)", //
+				"0.0506278+I*(-0.0346442)");
+		check("Beta(0.5, 3.2, 1.5)", //
+				"0.0266833");
+		check("Beta(2.5 + I, 1 - I)", //
+				"0.0831078+I*0.142164");
+
 		check("Beta(1,b) // FunctionExpand", //
 				"1/b");
 		check("Beta(10,b) // FunctionExpand", //
@@ -6000,6 +6007,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testExtendedGCD() {
 		check("ExtendedGCD(2,3)", //
 				"{1,{-1,1}}");
+		check("ExtendedGCD(550,420,3515)", //
+				"{5,{-4563,5967,1}}");
 		check("ExtendedGCD(6,15,30)", //
 				"{3,{-2,1,0}}");
 		check("ExtendedGCD(3,{5,15})", //
@@ -18807,6 +18816,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		// check("Roots(x^4 == 1 - I, x)", //
+		// "x==-(-1+I)^(1/4)||x==(-1+I)^(1/4)||x==I*(-1+I)^(1/4)||x==-I*(-1+I)^(1/4)");
+		// check("Solve(x^3 == 1 - I, x)", //
+		// "{{x->-(-1+I)^(1/3)},{x->(-1+I)^(1/3)},{x->-(-1)^(2/3)*(-1+I)^(1/3)}}");
+
 		check("-(-I*Pi-f(a))/b", //
 				"(I*Pi+f(a))/b");
 		check("Solve(3*x^x==7,x)", //

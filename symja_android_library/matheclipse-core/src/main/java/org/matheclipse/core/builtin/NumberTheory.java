@@ -1545,6 +1545,17 @@ public final class NumberTheory {
 		}
 	}
 
+//	public static void main(String[] args) {
+//		BigInteger[] gcdArgs = new BigInteger[] { BigInteger.valueOf(550), BigInteger.valueOf(420),
+//				BigInteger.valueOf(3515) };
+//		BigInteger[] bezoutCoefficients = new BigInteger[3];
+//		BigInteger gcd = ExtendedGCD.extendedGCD(gcdArgs, bezoutCoefficients);
+//		System.out.println("GCD: " + gcd.toString());
+//		System.out.println("Bezout Coefficients: ");
+//		for (int i = 0; i < bezoutCoefficients.length; i++) {
+//			System.out.print(" " + bezoutCoefficients[i].toString());
+//		}
+//	}
 	/**
 	 * <pre>
 	 * ExtendedGCD(n1, n2, ...)
@@ -1603,6 +1614,7 @@ public final class NumberTheory {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr arg;
+			BigInteger[] gcdArgs = new BigInteger[ast.argSize()];
 			for (int i = 1; i < ast.size(); i++) {
 				arg = ast.get(i);
 				if (!arg.isInteger()) {
@@ -1611,17 +1623,16 @@ public final class NumberTheory {
 				if (!((IInteger) arg).isPositive()) {
 					return F.NIL;
 				}
+				gcdArgs[i - 1] = ((IInteger) ast.get(i)).toBigNumerator();
 			}
 			// all arguments are positive integers now
 
 			try {
-
-				// BigInteger factor = BigInteger.ONE;
-				BigInteger[] subBezouts = new BigInteger[ast.argSize()];
-				BigInteger gcd = extendedGCD(ast, subBezouts);
+				BigInteger[] bezoutCoefficients = new BigInteger[ast.argSize()];
+				BigInteger gcd = extendedGCD(gcdArgs, bezoutCoefficients);
 				// convert the Bezout numbers to sublists
-				IASTAppendable subList = F.ListAlloc(subBezouts.length);
-				subList.appendArgs(0, subBezouts.length, i -> F.ZZ(subBezouts[i]));
+				IASTAppendable subList = F.ListAlloc(bezoutCoefficients.length);
+				subList.appendArgs(0, bezoutCoefficients.length, i -> F.ZZ(bezoutCoefficients[i]));
 				// for (int i = 0; i < subBezouts.length; i++) {
 				// subList.append(F.integer(subBezouts[i]));
 				// }
@@ -1640,23 +1651,32 @@ public final class NumberTheory {
 			return IOFunctions.ARGS_2_INFINITY;
 		}
 
-		public static BigInteger extendedGCD(final IAST ast, BigInteger[] subBezouts) {
+		/**
+		 * Calculate the extended GCD
+		 * 
+		 * @param gcdArgs
+		 *            an array of positive BigInteger numbers
+		 * @param bezoutsCoefficients
+		 *            returns the Bezout Coefficients
+		 * @return
+		 */
+		public static BigInteger extendedGCD(final BigInteger[] gcdArgs, BigInteger[] bezoutsCoefficients) {
 			BigInteger factor;
-			BigInteger gcd = ((IInteger) ast.arg1()).toBigNumerator();
-			Object[] stepResult = extendedGCD(((IInteger) ast.arg2()).toBigNumerator(), gcd);
+			BigInteger gcd = gcdArgs[0];
+			Object[] stepResult = extendedGCD(gcdArgs[1], gcd);
 
 			gcd = (BigInteger) stepResult[0];
-			subBezouts[0] = ((BigInteger[]) stepResult[1])[0];
-			subBezouts[1] = ((BigInteger[]) stepResult[1])[1];
+			bezoutsCoefficients[0] = ((BigInteger[]) stepResult[1])[0];
+			bezoutsCoefficients[1] = ((BigInteger[]) stepResult[1])[1];
 
-			for (int i = 3; i < ast.size(); i++) {
-				stepResult = extendedGCD(((IInteger) ast.get(i)).toBigNumerator(), gcd);
+			for (int i = 2; i < gcdArgs.length; i++) {
+				stepResult = extendedGCD(gcdArgs[i], gcd);
 				gcd = (BigInteger) stepResult[0];
 				factor = ((BigInteger[]) stepResult[1])[0];
-				for (int j = 0; j < i - 1; j++) {
-					subBezouts[j] = subBezouts[j].multiply(factor);
+				for (int j = 0; j < i; j++) {
+					bezoutsCoefficients[j] = bezoutsCoefficients[j].multiply(factor);
 				}
-				subBezouts[i - 1] = ((BigInteger[]) stepResult[1])[1];
+				bezoutsCoefficients[i] = ((BigInteger[]) stepResult[1])[1];
 			}
 			return gcd;
 		}
