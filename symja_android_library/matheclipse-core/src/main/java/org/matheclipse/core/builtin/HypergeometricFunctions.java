@@ -13,6 +13,7 @@ import java.util.function.DoubleUnaryOperator;
 
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.functions.GammaJS;
 import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -258,6 +259,11 @@ public class HypergeometricFunctions {
 		public double applyAsDouble(double operand) {
 			return de.lab4inf.math.functions.FresnelC.fresnelC(operand);
 		}
+		
+		@Override
+		public IExpr e1ComplexArg(final Complex c) {
+			return F.complexNum(GammaJS.fresnelC(c));
+		}
 
 		@Override
 		public IExpr e1DblArg(final double arg1) {
@@ -318,6 +324,11 @@ public class HypergeometricFunctions {
 		@Override
 		public double applyAsDouble(double operand) {
 			return de.lab4inf.math.functions.FresnelS.fresnelS(operand);
+		}
+		
+		@Override
+		public IExpr e1ComplexArg(final Complex c) {
+			return F.complexNum(GammaJS.fresnelS(c));
 		}
 
 		@Override

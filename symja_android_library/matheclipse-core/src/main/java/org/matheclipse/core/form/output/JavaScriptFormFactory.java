@@ -101,7 +101,9 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		FUNCTIONS_STR_MATHCELL.put(F.Beta, "beta");
 		FUNCTIONS_STR_MATHCELL.put(F.Erf, "erf");
 		FUNCTIONS_STR_MATHCELL.put(F.Erfc, "erfc");
-
+		FUNCTIONS_STR_MATHCELL.put(F.FresnelC, "fresnelC");
+		FUNCTIONS_STR_MATHCELL.put(F.FresnelS, "fresnelS");
+		
 		FUNCTIONS_STR_MATHCELL.put(F.Hypergeometric0F1, "hypergeometric0F1");
 		FUNCTIONS_STR_MATHCELL.put(F.Hypergeometric1F1, "hypergeometric1F1");
 		// FUNCTIONS_STR_MATHCELL.put(F.Hypergeometric2??, "hypergeometric2F0");

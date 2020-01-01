@@ -7645,6 +7645,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFresnelC() {
+		check("FresnelC(1.8)", //
+				"0.333633");
+		check("FresnelC(2.0)", //
+				"0.488253");
+		check("FresnelC(2.5+I)", //
+				"116.6481+I*(-105.2287)");
+		check("FresnelC({1.5, 2.5, 3.5})", //
+				"{0.445261,0.457413,0.532572}");
+		 
 		check("FresnelC(0)", //
 				"0");
 		check("FresnelC(Infinity)", //
@@ -7668,6 +7677,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFresnelS() {
+		check("FresnelS(1.8)", //
+				"0.450939");
+		check("FresnelS(2.0)", //
+				"0.343416");
+		check("FresnelS(2.5+I)", //
+				"105.7287+I*116.148");
+		check("FresnelS({1.5, 2.5, 3.5})", //
+				"{0.697505,0.619182,0.415248}");
+		 
+		
 		check("FresnelS(0)", //
 				"0");
 		check("FresnelS(Infinity)", //
