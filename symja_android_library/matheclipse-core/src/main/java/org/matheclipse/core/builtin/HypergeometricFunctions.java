@@ -259,7 +259,7 @@ public class HypergeometricFunctions {
 		public double applyAsDouble(double operand) {
 			return de.lab4inf.math.functions.FresnelC.fresnelC(operand);
 		}
-		
+
 		@Override
 		public IExpr e1ComplexArg(final Complex c) {
 			return F.complexNum(GammaJS.fresnelC(c));
@@ -325,7 +325,7 @@ public class HypergeometricFunctions {
 		public double applyAsDouble(double operand) {
 			return de.lab4inf.math.functions.FresnelS.fresnelS(operand);
 		}
-		
+
 		@Override
 		public IExpr e1ComplexArg(final Complex c) {
 			return F.complexNum(GammaJS.fresnelS(c));
@@ -563,7 +563,7 @@ public class HypergeometricFunctions {
 					&& ((IInteger) b).isGT((IInteger) a)) {
 				return F.CComplexInfinity;
 			}
-			if (engine.isNumericMode()) {
+			if (engine.isDoubleMode()) {
 				try {
 					double aDouble = Double.NaN;
 					double bDouble = Double.NaN;
@@ -593,25 +593,7 @@ public class HypergeometricFunctions {
 					// rex.printStackTrace();
 					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
 				}
-			}
-			// if (a.isReal() && b.isReal()) {
-			// ISignedNumber n = (ISignedNumber) a;
-			// ISignedNumber m = (ISignedNumber) b;
-			// if (n.isInteger() && m.isInteger() && n.isNegative() && m.isNegative() && m.isGT(n)) {
-			// return F.CComplexInfinity;
-			// }
-			// if (z.isReal()) {
-			// double aDouble = n.doubleValue();
-			// double bDouble = m.doubleValue();
-			// double zDouble = ((ISignedNumber) z).doubleValue();
-			// try {
-			// return F.num(HypergeometricJS.hypergeometric1F1(aDouble, bDouble, zDouble));
-			// // return F.num(de.lab4inf.math.functions.KummerFunction.kummer(aDouble, bDoube, zDouble));
-			// } catch (RuntimeException rex) {
-			// return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
-			// }
-			// }
-			// }
+			} 
 			if (a.equals(b)) {
 				// E^z
 				return F.Power(F.E, z);
@@ -678,18 +660,54 @@ public class HypergeometricFunctions {
 				// Pochhammer(c-b, n) / Pochhammer(c, n)
 				return F.Divide(F.Expand(F.Pochhammer(F.Subtract(c, b), n)), F.Pochhammer(c, n));
 			}
-			if (a.isReal() && b.isReal() && c.isReal() && z.isReal()) {
-				double aDouble = ((ISignedNumber) a).doubleValue();
-				double bDouble = ((ISignedNumber) b).doubleValue();
-				double cDouble = ((ISignedNumber) c).doubleValue();
-				double zDouble = ((ISignedNumber) z).doubleValue();
+			 
+			if (engine.isDoubleMode()) {
 				try {
-					return F.num(de.lab4inf.math.functions.HypergeometricGaussSeries.gaussSeries(aDouble, bDouble,
-							cDouble, zDouble));
+					double aDouble = Double.NaN;
+					double bDouble = Double.NaN;
+					double cDouble = Double.NaN;
+					double zDouble = Double.NaN;
+					try {
+						aDouble = a.evalDouble();
+						bDouble = b.evalDouble();
+						cDouble = c.evalDouble();
+						zDouble = z.evalDouble();
+					} catch (ValidateException ve) {
+					}
+					if (Double.isNaN(aDouble) || Double.isNaN(bDouble) || Double.isNaN(zDouble)) {
+						Complex ac = a.evalComplex();
+						Complex bc = b.evalComplex();
+						Complex cc = c.evalComplex();
+						Complex zc = z.evalComplex();
+
+						return F.complexNum(HypergeometricJS.hypergeometric2F1(ac, bc, cc, zc));
+
+					} else {
+						return F.num(HypergeometricJS.hypergeometric2F1(aDouble, bDouble, cDouble, zDouble));
+					}
+
+				} catch (ValidateException ve) {
+					if (Config.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
 				} catch (RuntimeException rex) {
+					// rex.printStackTrace();
 					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
 				}
-			}
+			} 
+//			
+//			if (a.isReal() && b.isReal() && c.isReal() && z.isReal()) {
+//				double aDouble = ((ISignedNumber) a).doubleValue();
+//				double bDouble = ((ISignedNumber) b).doubleValue();
+//				double cDouble = ((ISignedNumber) c).doubleValue();
+//				double zDouble = ((ISignedNumber) z).doubleValue();
+//				try {
+//					return F.num(de.lab4inf.math.functions.HypergeometricGaussSeries.gaussSeries(aDouble, bDouble,
+//							cDouble, zDouble));
+//				} catch (RuntimeException rex) {
+//					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+//				}
+//			}
 			return F.NIL;
 		}
 
@@ -716,7 +734,7 @@ public class HypergeometricFunctions {
 				return ((IAST) c).mapThread(ast.setAtCopy(3, F.Null), 3);
 			}
 
-			if (a.isVector() > 0 && b.isVector() > 0) {
+			if (engine.isDoubleMode() && a.isVector() > 0 && b.isVector() > 0) {
 				try {
 					double A[] = a.toDoubleVector();
 					double B[] = b.toDoubleVector();

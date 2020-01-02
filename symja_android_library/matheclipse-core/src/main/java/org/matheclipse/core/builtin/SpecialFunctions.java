@@ -33,11 +33,9 @@ import org.apfloat.ApfloatMath;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
-import org.hipparchus.special.Gamma;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.BesselJS;
 import org.matheclipse.core.builtin.functions.GammaJS;
-import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
@@ -105,7 +103,7 @@ public class SpecialFunctions {
 				IExpr z = ast.arg1();
 				IExpr a = ast.arg2();
 				IExpr b = ast.arg3();
-				if (engine.isNumericMode()) {
+				if (engine.isDoubleMode()) {
 					try {
 						double aDouble = Double.NaN;
 						double bDouble = Double.NaN;
@@ -120,11 +118,11 @@ public class SpecialFunctions {
 							Complex zc = z.evalComplex();
 							Complex ac = a.evalComplex();
 							Complex bc = b.evalComplex();
-							
-							return F.complexNum(GammaJS.beta(zc, ac, bc)); 
+
+							return F.complexNum(GammaJS.beta(zc, ac, bc));
 
 						} else {
-							return GammaJS.incompleteBeta(zDouble, aDouble, bDouble); 
+							return GammaJS.incompleteBeta(zDouble, aDouble, bDouble);
 						}
 
 					} catch (ValidateException ve) {
@@ -143,11 +141,34 @@ public class SpecialFunctions {
 			if (a.isZero() || b.isZero()) {
 				return F.CComplexInfinity;
 			}
-			if (engine.isDoubleMode() && a.isReal() && b.isReal() && a.isPositive() && b.isPositive()) {
-				double d = de.lab4inf.math.functions.Beta.beta(((ISignedNumber) a).doubleValue(),
-						((ISignedNumber) b).doubleValue());
-				return F.num(d);
-			}
+			if (engine.isDoubleMode()) {
+				try {
+					double aDouble = Double.NaN;
+					double bDouble = Double.NaN;
+					try {
+						aDouble = a.evalDouble();
+						bDouble = b.evalDouble();
+					} catch (ValidateException ve) {
+					}
+					if (Double.isNaN(aDouble) || Double.isNaN(bDouble)) {
+						Complex ac = a.evalComplex();
+						Complex bc = b.evalComplex();
+
+						return F.complexNum(GammaJS.beta(ac, bc));
+
+					} else {
+						return F.num(GammaJS.beta(aDouble, bDouble));
+					}
+
+				} catch (ValidateException ve) {
+					if (Config.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
+				} catch (RuntimeException rex) {
+					// rex.printStackTrace();
+					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+				}
+			} 
 			if (a.isNumber() && b.isNumber()) {
 				if (a.isInteger() && a.isPositive() && b.isInteger() && b.isPositive()) {
 					return Times(Factorial(Plus(CN1, a)), Factorial(Plus(CN1, b)),

@@ -5985,16 +5985,6 @@ public final class Arithmetic {
 	 * @return
 	 */
 	public static org.hipparchus.complex.Complex lanczosApproxGamma(org.hipparchus.complex.Complex z) {
-		// if (z.abs() <= 1.0) {
-		// de.lab4inf.math.sets.ComplexNumber cc = new de.lab4inf.math.sets.ComplexNumber(z.getReal(),
-		// z.getImaginary());
-		// de.lab4inf.math.Complex gResult = de.lab4inf.math.functions.Gamma.gamma(cc);
-		// return new org.hipparchus.complex.Complex(gResult.real(), gResult.imag());
-		// }
-
-		// if (F.isZero(z.getImaginary())) {
-		// return new org.hipparchus.complex.Complex(org.hipparchus.special.Gamma.gamma(z.getReal()));
-		// }
 		if (z.getReal() < 0.5) {
 			// Pi / ( Sin(Pi * z) * Gamma(1 - z) )
 			return lanczosApproxGamma(z.negate().add(1.0)).multiply(z.multiply(Math.PI).sin()).pow(-1.0)

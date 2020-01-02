@@ -8,12 +8,7 @@ import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.UnaryNumerical;
-import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
-
-import com.google.common.math.DoubleMath;
-
-import de.lab4inf.math.functions.Bessel;
 
 /**
  * 
@@ -66,10 +61,6 @@ public class BesselJS {
 		return solver.solve(100, f, e - delta, e + delta);
 	}
 
-	// private static double diffBesselJ(int n, double x) {
-	// return Bessel.jn(-1 + n, x) - Bessel.jn(1 + n, x) * 0.5;
-	// }
-
 	public static Complex besselY(double n, double x) {
 		// for averaging over integer orders until write code for limit
 		double delta = 1e-5;
@@ -78,7 +69,6 @@ public class BesselJS {
 			return besselY(new Complex(n), new Complex(x));
 		}
 		if (F.isNumIntValue(n)) {
-			// return new Complex((diffBesselJ((int) n, x) + diffBesselJ((int) -n, x) * Math.pow(-1, n)) / Math.PI);
 			return (besselY(n + delta, x).add(besselY(n - delta, x))).divide(2.0);
 		}
 		return besselJ(n, x).multiply(Math.cos(n * Math.PI)).subtract(besselJ(-n, x)).divide(Math.sin(n * Math.PI));
@@ -382,20 +372,5 @@ public class BesselJS {
 		return t + Math.log(2.5066282746310005 * s / x);
 
 	}
-
-	// public static Complex gamma(Complex x) {
-	// return logGamma(x).exp();
-	// }
-	//
-	// public static double gamma(double x) {
-	//
-	// // logGamma complex on negative axis
-	// if (x < 0.0) {
-	// return logGamma(new Complex(x)).exp().getReal();
-	// }
-	//
-	// return Math.exp(de.lab4inf.math.functions.Gamma.lngamma(x));
-	//
-	// }
 
 }
