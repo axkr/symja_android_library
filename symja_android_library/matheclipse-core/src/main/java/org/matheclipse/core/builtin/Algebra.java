@@ -1689,8 +1689,8 @@ public class Algebra {
 						evalAndExpandAST(x, y, result);
 					});
 				});
-				return flattenOneIdentity(result, F.C0);
-				// return PlusOp.plus(result);
+				return EvalEngine.get().evaluate(result);
+				// return flattenOneIdentity(result, F.C0);
 			}
 
 			/**
@@ -1706,8 +1706,8 @@ public class Algebra {
 					// evaluate to flatten out Times() exprs
 					evalAndExpandAST(expr1, x, result);
 				});
-				return flattenOneIdentity(result, F.C0);
-				// return PlusOp.plus(result);
+				return EvalEngine.get().evaluate(result);
+				// return flattenOneIdentity(result, F.C0);
 			}
 
 			/**
