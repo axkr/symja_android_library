@@ -16,6 +16,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.GammaJS;
 import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
@@ -686,6 +687,11 @@ public class HypergeometricFunctions {
 						return F.num(HypergeometricJS.hypergeometric2F1(aDouble, bDouble, cDouble, zDouble));
 					}
 
+				} catch (ThrowException te) {
+					if (Config.SHOW_STACKTRACE) {
+						te.printStackTrace();
+					}
+					return te.getValue();
 				} catch (ValidateException ve) {
 					if (Config.SHOW_STACKTRACE) {
 						ve.printStackTrace();

@@ -7,6 +7,7 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.special.Gamma;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
+import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.expression.F;
 
 /**
@@ -88,7 +89,7 @@ public class HypergeometricJS {
 			throw new ArithmeticException("Hypergeometric0F1: " + rex.getMessage());
 		}
 	}
- 
+
 	public static Complex hypergeometric0F1(Complex a, Complex x) {
 		return hypergeometric0F1(a, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
 	}
@@ -437,7 +438,12 @@ public class HypergeometricJS {
 		}
 
 		if (x == 1) {
-			return Gamma.gamma(c) * Gamma.gamma(c - a - b) / Gamma.gamma(c - a) / Gamma.gamma(c - b);
+			if (c - a - b > 0) {
+				return Gamma.gamma(c) * Gamma.gamma(c - a - b) / Gamma.gamma(c - a) / Gamma.gamma(c - b);
+			} else {
+				throw new ThrowException(F.CComplexInfinity);
+//				throw new ArithmeticException("Divergent Gauss hypergeometric function");
+			}
 		}
 
 		if (x > 1) {

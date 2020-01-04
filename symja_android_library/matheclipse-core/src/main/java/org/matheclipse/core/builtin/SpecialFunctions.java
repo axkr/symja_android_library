@@ -37,6 +37,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.BesselJS;
 import org.matheclipse.core.builtin.functions.GammaJS;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractArg12;
@@ -124,7 +125,11 @@ public class SpecialFunctions {
 						} else {
 							return GammaJS.incompleteBeta(zDouble, aDouble, bDouble);
 						}
-
+					} catch (ThrowException te) {
+						if (Config.SHOW_STACKTRACE) {
+							te.printStackTrace();
+						}
+						return te.getValue();
 					} catch (ValidateException ve) {
 						if (Config.SHOW_STACKTRACE) {
 							ve.printStackTrace();
@@ -159,7 +164,11 @@ public class SpecialFunctions {
 					} else {
 						return F.num(GammaJS.beta(aDouble, bDouble));
 					}
-
+				} catch (ThrowException te) {
+					if (Config.SHOW_STACKTRACE) {
+						te.printStackTrace();
+					}
+					return te.getValue();
 				} catch (ValidateException ve) {
 					if (Config.SHOW_STACKTRACE) {
 						ve.printStackTrace();

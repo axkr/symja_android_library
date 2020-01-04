@@ -60,6 +60,8 @@ public class UnaryNumerical implements Function<IExpr, IExpr>, UnivariateDiffere
 		try {
 			fVariable.assign(Num.valueOf(x));
 			result = DoubleStackEvaluator.eval(stack, 0, fFunction);
+		} catch(RuntimeException rex) {
+			return Double.NaN;
 		} finally {
 			fVariable.assign(value);
 		}
