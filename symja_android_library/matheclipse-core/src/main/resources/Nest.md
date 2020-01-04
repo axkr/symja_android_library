@@ -14,4 +14,6 @@ f(f(f(x)))
 >> Nest((1+#) ^ 2 &, x, 2)
 (1+(1+x)^2)^2
 ```
- 
+
+### Related terms 
+[FixedPoint](FixedPoint.md), [FixedPointList](FixedPointList.md), [NestWhile](NestWhile.md)

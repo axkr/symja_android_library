@@ -40,4 +40,4 @@ FixedPoint(f, x, -1)
 ```
 
 ### Related terms 
-[FixedPointList](FixedPointList.md) 
+[FixedPointList](FixedPointList.md), [Nest](Nest.md), [NestWhile](NestWhile.md)

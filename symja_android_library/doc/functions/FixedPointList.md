@@ -57,4 +57,4 @@ FixedPointList(f,x,-1)
 ```
 
 ### Related terms 
-[FixedPoint](FixedPoint.md) 
+[FixedPoint](FixedPoint.md), [Nest](Nest.md), [NestWhile](NestWhile.md)
