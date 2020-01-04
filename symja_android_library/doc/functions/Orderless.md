@@ -34,3 +34,6 @@ True
 >> f(a, b, c) /. f(a, c) -> d    
 f(b, d)    
 ```
+
+### Related terms 
+[Constant](Constant.md),  [Flat](Flat.md), [HoldAll](HoldAll.md), [HoldFirst](HoldFirst.md), [HoldRest](HoldRest.md), [Listable](Listable.md), [NHoldAll](NHoldAll.md), [NHoldFirst](NHoldFirst.md), [NHoldRest](NHoldRest.md)

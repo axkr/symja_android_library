@@ -12,6 +12,10 @@ FixedPoint(f, expr, n)
 
 > performs at most `n` iterations.
 
+See:
+* [Wikipedia - Fixed-point iteration](https://en.wikipedia.org/wiki/Fixed-point_iteration)
+* [Wikipedia - Newton's method](https://en.wikipedia.org/wiki/Newton%27s_method)
+
 ### Examples
 
 ```
@@ -34,3 +38,6 @@ FixedPoint(f, x, -1)
 >> FixedPoint(Cos, 1.0, Infinity)
 0.739085
 ```
+
+### Related terms 
+[FixedPointList](FixedPointList.md) 
