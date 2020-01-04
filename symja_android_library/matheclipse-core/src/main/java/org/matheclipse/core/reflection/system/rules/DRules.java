@@ -13,7 +13,7 @@ public interface DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 86 };
+  final public static int[] SIZES = { 0, 87 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -260,6 +260,9 @@ public interface DRules {
     // D(BesselJ(f_,g_),x_?NotListQ):=1/2*(BesselJ(-1+f,g)-BesselJ(1+f,g))*D(g,x)+D(f,x)*Derivative(1,0)[BesselJ][f,g]
     ISetDelayed(D(BesselJ(f_,g_),PatternTest(x_,NotListQ)),
       Plus(Times(C1D2,Subtract(BesselJ(Plus(CN1,f),g),BesselJ(Plus(C1,f),g)),D(g,x)),Times(D(f,x),$($(Derivative(C1,C0),BesselJ),f,g)))),
+    // D(BesselY(f_,g_),x_?NotListQ):=1/2*(BesselY(-1+f,g)-BesselY(1+f,g))*D(g,x)+D(f,x)*Derivative(1,0)[BesselY][f,g]
+    ISetDelayed(D(BesselY(f_,g_),PatternTest(x_,NotListQ)),
+      Plus(Times(C1D2,Subtract(BesselY(Plus(CN1,f),g),BesselY(Plus(C1,f),g)),D(g,x)),Times(D(f,x),$($(Derivative(C1,C0),BesselY),f,g)))),
     // D(PolyLog(f_,g_),x_?NotListQ):=(D(g,x)*PolyLog(-1+f,g))/g+D(f,x)*Derivative(1,0)[PolyLog][f,g]
     ISetDelayed(D(PolyLog(f_,g_),PatternTest(x_,NotListQ)),
       Plus(Times(Power(g,CN1),D(g,x),PolyLog(Plus(CN1,f),g)),Times(D(f,x),$($(Derivative(C1,C0),PolyLog),f,g)))),

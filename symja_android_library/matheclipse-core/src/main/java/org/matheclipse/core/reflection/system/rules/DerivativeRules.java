@@ -207,6 +207,9 @@ public interface DerivativeRules {
     // {BesselJ,0,1}->1/2*(BesselJ(-1+#1,#2)-BesselJ(1+#1,#2))
     Rule(List(BesselJ,C0,C1),
       Times(C1D2,Subtract(BesselJ(Plus(CN1,Slot1),Slot2),BesselJ(Plus(C1,Slot1),Slot2)))),
+    // {BesselY,0,1}->1/2*(BesselY(-1+#1,#2)-BesselY(1+#1,#2))
+    Rule(List(BesselY,C0,C1),
+      Times(C1D2,Subtract(BesselY(Plus(CN1,Slot1),Slot2),BesselY(Plus(C1,Slot1),Slot2)))),
     // {Gamma,0,1}->-E^(-#2)/#2^(1-#1)
     Rule(List(Gamma,C0,C1),
       Times(CN1,Exp(Negate(Slot2)),Power(Slot2,Plus(CN1,Slot1)))),

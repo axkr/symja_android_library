@@ -385,11 +385,13 @@ public class EvalAttributes {
 	 * @return <code>true</code> if the sort algorithm was used; <code>false</code> otherwise
 	 */
 	public static final void sort(final IASTMutable ast, Comparator<IExpr> comparator) {
-		final IExpr[] a = ast.toArray();
-		int end = a.length;
-		Arrays.sort(a, 1, ast.size(), comparator);
-		for (int j = 1; j < end; j++) {
-			ast.set(j, a[j]);
+		if (ast.size() > 2) {
+			final IExpr[] a = ast.toArray();
+			int end = a.length;
+			Arrays.sort(a, 1, ast.size(), comparator);
+			for (int j = 1; j < end; j++) {
+				ast.set(j, a[j]);
+			}
 		}
 	}
 
