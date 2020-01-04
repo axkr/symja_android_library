@@ -11,6 +11,9 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.BesselIRules;
+import org.matheclipse.core.reflection.system.rules.BesselKRules;
+import org.matheclipse.core.reflection.system.rules.BesselYRules;
 
 public class BesselFunctions {
 	/**
@@ -285,7 +288,7 @@ public class BesselFunctions {
 					// (-n,z) => (-1)^n*BesselJ(n,z)
 					return F.Times(F.Power(F.CN1, n), F.BesselJ(n.negate(), z));
 				}
-			} 
+			}
 
 			if (engine.isDoubleMode()) {
 				try {
@@ -296,12 +299,12 @@ public class BesselFunctions {
 						zDouble = z.evalDouble();
 					} catch (ValidateException ve) {
 					}
-					if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
+					if (Double.isNaN(nDouble) || Double.isNaN(zDouble) || zDouble < 0.0) {
 						Complex nc = n.evalComplex();
 						Complex zc = z.evalComplex();
 						return F.complexNum(BesselJS.besselJ(nc, zc));
 					} else {
-						return F.complexNum(BesselJS.besselJ(nDouble, zDouble));
+						return F.num(BesselJS.besselJDouble(nDouble, zDouble));
 					}
 
 				} catch (ValidateException ve) {
@@ -361,7 +364,13 @@ public class BesselFunctions {
 		}
 	}
 
-	private final static class BesselI extends AbstractFunctionEvaluator {
+	private final static class BesselI extends AbstractFunctionEvaluator implements BesselIRules {
+
+		@Override
+		public IAST getRuleAST() {
+			return RULES;
+		}
+
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr n = ast.arg1();
@@ -389,7 +398,7 @@ public class BesselFunctions {
 					(z.isDirectedInfinity(F.CI) || //
 							z.isDirectedInfinity(F.CNI))) {
 				return F.C0;
-			} 
+			}
 			if (engine.isDoubleMode()) {
 				try {
 					double nDouble = Double.NaN;
@@ -399,12 +408,12 @@ public class BesselFunctions {
 						zDouble = z.evalDouble();
 					} catch (ValidateException ve) {
 					}
-					if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
+					if (Double.isNaN(nDouble) || Double.isNaN(zDouble) || zDouble < 0.0) {
 						Complex nc = n.evalComplex();
 						Complex zc = z.evalComplex();
 						return F.complexNum(BesselJS.besselI(nc, zc));
 					} else {
-						return F.complexNum(BesselJS.besselI(nDouble, zDouble));
+						return F.num(BesselJS.besselIDouble(nDouble, zDouble));
 					}
 
 				} catch (ValidateException ve) {
@@ -427,11 +436,18 @@ public class BesselFunctions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
+			super.setUp(newSymbol);
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		}
 	}
 
-	private final static class BesselK extends AbstractFunctionEvaluator {
+	private final static class BesselK extends AbstractFunctionEvaluator implements BesselKRules {
+
+		@Override
+		public IAST getRuleAST() {
+			return RULES;
+		}
+
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr n = ast.arg1();
@@ -463,12 +479,12 @@ public class BesselFunctions {
 						zDouble = z.evalDouble();
 					} catch (ValidateException ve) {
 					}
-					if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
+					if (Double.isNaN(nDouble) || Double.isNaN(zDouble) || zDouble < 0.0) {
 						Complex nc = n.evalComplex();
 						Complex zc = z.evalComplex();
 						return F.complexNum(BesselJS.besselK(nc, zc));
 					} else {
-						return F.complexNum(BesselJS.besselK(nDouble, zDouble));
+						return F.num(BesselJS.besselKDouble(nDouble, zDouble));
 					}
 
 				} catch (ValidateException ve) {
@@ -490,11 +506,18 @@ public class BesselFunctions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
+			super.setUp(newSymbol);
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		}
 	}
 
-	private final static class BesselY extends AbstractFunctionEvaluator {
+	private final static class BesselY extends AbstractFunctionEvaluator implements BesselYRules {
+
+		@Override
+		public IAST getRuleAST() {
+			return RULES;
+		}
+
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr n = ast.arg1();
@@ -505,7 +528,7 @@ public class BesselFunctions {
 				if (n.isZero()) {
 					return F.CNInfinity;
 				}
-				IExpr re = n.re();
+				IExpr re = F.Re.of(engine, n);
 				if (re.isZero() && n.isNumber() && !n.isZero()) {
 					return F.Indeterminate;
 				}
@@ -518,23 +541,6 @@ public class BesselFunctions {
 							z.isNegativeInfinity())) {
 				return F.C0;
 			}
-			// if (n.isReal() && z.isReal()) {
-			// try {
-			// return F.complexNum(BesselJS.besselY(n.evalDouble(), z.evalDouble()));
-			// } catch (NegativeArraySizeException nae) {
-			// return engine.printMessage("BesselY: " + ast.toString() + " caused NegativeArraySizeException");
-			// } catch (RuntimeException rte) {
-			// return engine.printMessage("BesselY: " + rte.getMessage());
-			// }
-			// } else if (n.isNumeric() && z.isNumeric()) {
-			// try {
-			// return F.complexNum(BesselJS.besselY(n.evalComplex(), z.evalComplex()));
-			// } catch (NegativeArraySizeException nae) {
-			// return engine.printMessage("BesselY: " + ast.toString() + " caused NegativeArraySizeException");
-			// } catch (RuntimeException rte) {
-			// return engine.printMessage("BesselY: " + rte.getMessage());
-			// }
-			// }
 			if (engine.isDoubleMode()) {
 				try {
 					double nDouble = Double.NaN;
@@ -544,12 +550,12 @@ public class BesselFunctions {
 						zDouble = z.evalDouble();
 					} catch (ValidateException ve) {
 					}
-					if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
+					if (Double.isNaN(nDouble) || Double.isNaN(zDouble) || zDouble < 0.0) {
 						Complex nc = n.evalComplex();
 						Complex zc = z.evalComplex();
 						return F.complexNum(BesselJS.besselY(nc, zc));
 					} else {
-						return F.complexNum(BesselJS.besselY(nDouble, zDouble));
+						return F.num(BesselJS.besselYDouble(nDouble, zDouble));
 					}
 
 				} catch (ValidateException ve) {
@@ -572,6 +578,7 @@ public class BesselFunctions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
+			super.setUp(newSymbol);
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		}
 	}

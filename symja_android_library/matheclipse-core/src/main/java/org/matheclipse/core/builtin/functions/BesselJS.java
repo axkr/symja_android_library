@@ -8,6 +8,7 @@ import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.UnaryNumerical;
+import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -26,6 +27,16 @@ public class BesselJS {
 		}
 		return new Complex(
 				Math.pow(x / 2.0, n) * HypergeometricJS.hypergeometric0F1(n + 1, -0.25 * x * x) / Gamma.gamma(n + 1));
+	}
+
+	public static double besselJDouble(double n, double x) {
+		if (F.isNumIntValue(n) && n < 0.0) {
+			return besselJDouble(-n, x) * (Math.pow(-1.0, n));
+		}
+		if (!F.isNumIntValue(n) && x < 0.0) {
+			throw new ArithmeticException("x<0 for BesselJ");
+		}
+		return Math.pow(x / 2.0, n) * HypergeometricJS.hypergeometric0F1(n + 1, -0.25 * x * x) / Gamma.gamma(n + 1);
 	}
 
 	public static Complex besselJ(Complex n, Complex x) {
@@ -51,7 +62,7 @@ public class BesselJS {
 		}
 
 		// approximations from dlmf.nist.gov/10.21#vi
-		double delta = .9 * Math.PI / 2.0;
+		double delta = Math.PI / 4.0;
 
 		double a = (m + n / 2.0 - 0.25) * Math.PI;
 		double e = a - (4.0 * (n * n) - 1.0) / (8.0 * a);
@@ -72,6 +83,20 @@ public class BesselJS {
 			return (besselY(n + delta, x).add(besselY(n - delta, x))).divide(2.0);
 		}
 		return besselJ(n, x).multiply(Math.cos(n * Math.PI)).subtract(besselJ(-n, x)).divide(Math.sin(n * Math.PI));
+
+	}
+
+	public static double besselYDouble(double n, double x) {
+		// for averaging over integer orders until write code for limit
+		double delta = 1e-5;
+
+		if (x < 0) {
+			throw new ArithmeticException("x<0 for BesselY");
+		}
+		if (F.isNumIntValue(n)) {
+			return (besselYDouble(n + delta, x) + besselYDouble(n - delta, x)) / 2.0;
+		}
+		return (besselJDouble(n, x) * Math.cos(n * Math.PI) - besselJDouble(-n, x)) / Math.sin(n * Math.PI);
 
 	}
 
@@ -100,25 +125,49 @@ public class BesselJS {
 			throw new ArithmeticException("Negative order for BesselYZero");
 		}
 		// approximations from dlmf.nist.gov/10.21#vi
-		double delta = .9 * Math.PI / 2.0;
-
+		double delta = Math.PI / 4.0;
+		// if (false) {
+		// // use derivative
+		// double b = (m + n / 2.0 - 0.25) * Math.PI;
+		// double e = b - (4.0 * (n * n) + 3.0) / (8.0 * b);
+		//
+		// // return findRoot( x => diff( x => besselY(n,x), x ), [ e-delta, e+delta ] );
+		// BisectionSolver solver = new BisectionSolver();
+		// ISymbol x = F.Dummy("x");
+		// IExpr function= F.Times(F.C1D2,F.Subtract(F.BesselY(F.num(-1.0 + n), x),F.BesselY(F.num(1.0 + n), x)));
+		// UnivariateDifferentiableFunction f = new UnaryNumerical(function, x, EvalEngine.get(), true);
+		// return solver.solve(200, f, e - delta, e + delta);
+		// } else {
 		double a = (m + n / 2.0 - 0.75) * Math.PI;
 		double e = a - (4.0 * (n * n) - 1.0) / (8.0 * a);
 		BisectionSolver solver = new BisectionSolver();
 		ISymbol x = F.Dummy("x");
 		UnivariateDifferentiableFunction f = new UnaryNumerical(F.BesselY(F.num(n), x), x, EvalEngine.get(), true);
 		return solver.solve(100, f, e - delta, e + delta);
+		// }
 	}
 
 	public static Complex besselI(double n, double x) {
 		if (F.isNumIntValue(n) && n < 0)
 			return besselI(-n, x);
 
-		if (!F.isNumIntValue(n) && x < 0)
+		if (!F.isNumIntValue(n) && x < 0) {
 			return besselI(new Complex(n), new Complex(x));
+		}
 
 		return new Complex(Math.pow(x / 2.0, n) * HypergeometricJS.hypergeometric0F1(n + 1.0, 0.25 * x * x)
 				/ Gamma.gamma(n + 1.0));
+	}
+
+	public static double besselIDouble(double n, double x) {
+		if (F.isNumIntValue(n) && n < 0)
+			return besselIDouble(-n, x);
+
+		if (!F.isNumIntValue(n) && x < 0) {
+			throw new ArithmeticException("x<0 for BesselI");
+		}
+
+		return Math.pow(x / 2.0, n) * HypergeometricJS.hypergeometric0F1(n + 1.0, 0.25 * x * x) / Gamma.gamma(n + 1.0);
 	}
 
 	public static Complex besselI(Complex n, Complex x) {
@@ -147,6 +196,26 @@ public class BesselJS {
 			return besselK(n + delta, x).add(besselK(n - delta, x)).divide(2.0);
 		}
 		return (besselI(-n, x).subtract(besselI(n, x))).multiply(Math.PI / 2.0).divide(Math.sin(n * Math.PI));
+
+	}
+
+	public static double besselKDouble(double n, double x) {
+		int useAsymptotic = 5;
+
+		// for averaging over integer orders until write code for limit
+		double delta = 1e-5;
+
+		if (x > useAsymptotic) {
+			return Math.sqrt((Math.PI / 2.0) / x) * Math.exp(-x)
+					* HypergeometricJS.hypergeometric2F0(n + 0.5, 0.5 - n, -0.5 / x);
+		}
+		if (x < 0) {
+			throw new ArithmeticException("x<0 for BesselJ");
+		}
+		if (F.isNumIntValue(n)) {
+			return (besselKDouble(n + delta, x) + besselKDouble(n - delta, x)) / 2.0;
+		}
+		return (besselIDouble(-n, x) - besselIDouble(n, x)) * Math.PI / (2.0 * Math.sin(n * Math.PI));
 
 	}
 
