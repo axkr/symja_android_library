@@ -19,4 +19,4 @@ f(2,3)
 
 
 ### Related terms 
-[Constant](Constant.md), [Flat](Flat.md), [HoldAll](HoldAll.md), [HoldFirst](HoldFirst.md), [HoldRest](HoldRest.md), [Listable](Listable.md), [NHoldFirst](NHoldFirst.md), [NHoldRest](NHoldRest.md),  [Orderless](Orderless.md)
+[Attributes](Attributes.md), [ClearAttributes](ClearAttributes.md), [Constant](Constant.md), [Flat](Flat.md), [HoldAll](HoldAll.md), [HoldFirst](HoldFirst.md), [HoldRest](HoldRest.md), [Listable](Listable.md), [NHoldFirst](NHoldFirst.md), [NHoldRest](NHoldRest.md),  [Orderless](Orderless.md), [SetAttributes](SetAttributes.md)

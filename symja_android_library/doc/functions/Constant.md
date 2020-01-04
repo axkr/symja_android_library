@@ -6,6 +6,9 @@ Constant
 
 > is an attribute that indicates that a symbol is a constant.
 		
+See:
+* [Wikipedia - Constant (mathematics](https://en.wikipedia.org/wiki/Constant_(mathematics))
+
 ### Examples
 ```	  
 Mathematical constants like `E` have attribute `Constant`:
@@ -23,4 +26,4 @@ Solve(E+x==0,E)
 ```
 
 ### Related terms 
-[Flat](Flat.md), [HoldAll](HoldAll.md), [HoldFirst](HoldFirst.md), [HoldRest](HoldRest.md), [Listable](Listable.md), [NHoldAll](NHoldAll.md), [NHoldFirst](NHoldFirst.md), [NHoldRest](NHoldRest.md),  [Orderless](Orderless.md)
+[Attributes](Attributes.md), [ClearAttributes](ClearAttributes.md), [Flat](Flat.md), [HoldAll](HoldAll.md), [HoldFirst](HoldFirst.md), [HoldRest](HoldRest.md), [Listable](Listable.md), [NHoldAll](NHoldAll.md), [NHoldFirst](NHoldFirst.md), [NHoldRest](NHoldRest.md),  [Orderless](Orderless.md), [SetAttributes](SetAttributes.md)

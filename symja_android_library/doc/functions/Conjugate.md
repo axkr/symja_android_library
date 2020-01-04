@@ -5,6 +5,9 @@ Conjugate(z)
 ```
 > returns the complex conjugate of the complex number `z`.
  
+See 
+* [Wikipedia - Complex number](https://en.wikipedia.org/wiki/Complex_number) 
+* [Wikipedia - Complex conjugation](http://en.wikipedia.org/wiki/Complex_conjugation)
 
 ### Examples
 ```
