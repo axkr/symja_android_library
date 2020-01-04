@@ -1259,6 +1259,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBesselI() {
+		check("BesselI(-1/2, z)", //
+				"(Sqrt(2/Pi)*Cosh(z))/Sqrt(z)");
+		check("BesselI(1/2, z)", //
+				"(Sqrt(2/Pi)*Sinh(z))/Sqrt(z)");
+		
 		checkNumeric("BesselI(I+1, -I*Infinity)", //
 				"0");
 		checkNumeric("BesselI(42, I*Infinity)", //
@@ -1341,19 +1346,26 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBesselJZero() {
+		checkNumeric("BesselJZero(1.3, 3)", //
+				"10.613804865461777");
 		checkNumeric("BesselJZero(0.0,1)", //
-				"2.404825644181194");
+				"2.4048258314347084");
 		checkNumeric("BesselJZero(0.0,2)", //
-				"5.520078312817899");
+				"5.520078275367197");
 		checkNumeric("BesselJZero(1.0,5)", //
-				"16.470630066749596");
+				"16.470629879496084");
 		checkNumeric("BesselJZero(0, {1, 2, 3}) // N", //
-				"{2.404825644181194,5.520078312817899,8.653728099453915}");
+				"{2.4048258314347084,5.520078275367197,8.653728211806023}");
 		checkNumeric("BesselJZero(1, 1)/Pi // N", //
-				"1.219669841825786");
+				"1.2196698060629994");
 	}
 
 	public void testBesselK() {
+		check("BesselK(-1/2, z)", //
+				"Sqrt(2/Pi)/(E^z*Sqrt(z))");
+		check("BesselK(1/2, z)", //
+				"Sqrt(2/Pi)/(E^z*Sqrt(z))");
+		
 		checkNumeric("BesselK(I+1, -I*Infinity)", //
 				"0");
 		checkNumeric("BesselK(42, I*Infinity)", //
@@ -1382,6 +1394,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("BesselY(42, Infinity)", //
 				"0");
 
+		check("BesselY(-5/2, z)", //
+				"(Sqrt(2/Pi)*((-3*Cos(z))/z-Sin(z)+(3*Sin(z))/z^2))/Sqrt(z)");
+		check("BesselY(5/2, z)", //
+				"(Sqrt(2/Pi)*(Cos(z)+(-3*Cos(z))/z^2+(-3*Sin(z))/z))/Sqrt(z)");
+		check("BesselY(-3/2, z)", //
+				"(Sqrt(2/Pi)*(Cos(z)-Sin(z)/z))/Sqrt(z)");
+		check("BesselY(3/2, z)", //
+				"(Sqrt(2/Pi)*(-Cos(z)/z-Sin(z)))/Sqrt(z)");
+		check("BesselY(-1/2, z)", //
+				"(Sqrt(2/Pi)*Sin(z))/Sqrt(z)");
+		check("BesselY(1/2, z)", //
+				"(-Sqrt(2/Pi)*Cos(z))/Sqrt(z)");
 		checkNumeric("BesselY(0, 0)", //
 				"-Infinity");
 		checkNumeric("BesselY(4, 0)", //
@@ -1400,11 +1424,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBesselYZero() {
-		// TODO improve evaluation for double values in BesselY
+		// https://github.com/paulmasson/math/issues/11
 		checkNumeric("BesselYZero(0.0,1)", //
-				"BesselYZero(0.0,1.0)");
+				"0.8935770823333244");
+		
+		checkNumeric("BesselYZero(1.3, 3)", //
+				"9.031260842335175");
 		checkNumeric("BesselYZero(0.0,2)", //
-				"3.9576781734933237");
+				"3.957678435648244");
 	}
 
 	public void testBeta() {
@@ -8731,20 +8758,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{29.48263182051029,11.393052728194332,6.2358316369166005}");
 	}
 
-	public void testHypergeometric2F1() { 
+	public void testHypergeometric2F1() {
 		check("Hypergeometric2F1(-5, b, c, 1)", //
 				"(-24*b+50*b^2-35*b^3+10*b^4-b^5+24*c-100*b*c+105*b^2*c-40*b^3*c+5*b^4*c+50*c^2\n" + //
-				"-105*b*c^2+60*b^2*c^2-10*b^3*c^2+35*c^3-40*b*c^3+10*b^2*c^3+10*c^4-5*b*c^4+c^5)/(c*(\n" + //
-				"1+c)*(2+c)*(3+c)*(4+c))");
+						"-105*b*c^2+60*b^2*c^2-10*b^3*c^2+35*c^3-40*b*c^3+10*b^2*c^3+10*c^4-5*b*c^4+c^5)/(c*(\n" + //
+						"1+c)*(2+c)*(3+c)*(4+c))");
 		check("Hypergeometric2F1(-n, b, c, 1)", //
 				"Hypergeometric2F1(b,-n,c,1)");
-		
-		// TODO should return ComplexInfinity
+
+		// https://github.com/paulmasson/math/issues/10 - uses ThrowException
 		check("Hypergeometric2F1(0.5,0.333,0.666,1)", //
-				"-0.611282");
+				"ComplexInfinity");
+		
 		check("Hypergeometric2F1(2 + I, -I, 3/4, 0.5-0.5*I)", //
 				"-0.972167+I*(-0.181659)");
-				
+
 		// Hypergeometric2F1(1 - n, -n, 2, 1) == CatalanNumber(n)
 		check("Hypergeometric2F1(-3, -4, 2, 1)==CatalanNumber(4)", //
 				"True");
@@ -9437,9 +9465,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInterval() {
+		check("Interval({-1,1})", //
+				"Interval({-1,1})");
 		check("Cos(Interval({0, Pi}))", //
 				"Interval({-1,1})");
-
+		
 		check("Interval(0.)", //
 				"Interval({-4.90000*10^-324,4.90000*10^-324})");
 		check("Interval(0.1)-0.1", //
@@ -14685,12 +14715,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"(b-c)*(1+b-c)");
 		check("Pochhammer(b-c, 3)", //
 				"(b-c)*(1+b-c)*(2+b-c)");
- 		check("Pochhammer(c-b,42)", //
-				"(-b+c)*(1-b+c)*(2-b+c)*(3-b+c)*(4-b+c)*(5-b+c)*(6-b+c)*(7-b+c)*(8-b+c)*(9-b+c)*(\n" +  //
-				"10-b+c)*(11-b+c)*(12-b+c)*(13-b+c)*(14-b+c)*(15-b+c)*(16-b+c)*(17-b+c)*(18-b+c)*(\n" +  //
-				"19-b+c)*(20-b+c)*(21-b+c)*(22-b+c)*(23-b+c)*(24-b+c)*(25-b+c)*(26-b+c)*(27-b+c)*(\n" +  //
-				"28-b+c)*(29-b+c)*(30-b+c)*(31-b+c)*(32-b+c)*(33-b+c)*(34-b+c)*(35-b+c)*(36-b+c)*(\n" +  //
-				"37-b+c)*(38-b+c)*(39-b+c)*(40-b+c)*(41-b+c)");
+		check("Pochhammer(c-b,42)", //
+				"(-b+c)*(1-b+c)*(2-b+c)*(3-b+c)*(4-b+c)*(5-b+c)*(6-b+c)*(7-b+c)*(8-b+c)*(9-b+c)*(\n" + //
+						"10-b+c)*(11-b+c)*(12-b+c)*(13-b+c)*(14-b+c)*(15-b+c)*(16-b+c)*(17-b+c)*(18-b+c)*(\n" + //
+						"19-b+c)*(20-b+c)*(21-b+c)*(22-b+c)*(23-b+c)*(24-b+c)*(25-b+c)*(26-b+c)*(27-b+c)*(\n" + //
+						"28-b+c)*(29-b+c)*(30-b+c)*(31-b+c)*(32-b+c)*(33-b+c)*(34-b+c)*(35-b+c)*(36-b+c)*(\n" + //
+						"37-b+c)*(38-b+c)*(39-b+c)*(40-b+c)*(41-b+c)");
 		check("Pochhammer(2,3)", //
 				"24");
 
@@ -19673,12 +19703,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testStruveH() {
 		System.out.println("testStruveH: ");
-		// TODO wrong result
-		check("StruveH(0, 30.0)", //
-				"-0.0961063");
-
+		// https://github.com/paulmasson/math/issues/9  
 		check("StruveH(0, 50.0)", //
 				"-0.0853402");
+		check("StruveH(0, 30.0)", //
+				"-0.0961063");
+		
+		
 		System.out.print(".");
 		check("StruveH(0, 5.2)", //
 				"-0.212448");
