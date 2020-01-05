@@ -82,9 +82,33 @@ public class HypergeometricJS {
 
 	}
 
-	static double hypergeometric0F1(double n, double x) {
+//	public static double hypergeometric0F1(double a, double x) {
+//		return hypergeometric0F1(a, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
+//	}
+
+	public static double hypergeometric0F1(double a, double x) {//, double tolerance) {
+		// if (F.isNumIntValue(a) && a <= 0) {
+		// throw new ArithmeticException("Hypergeometric function pole");
+		// }
+		// final double useAsymptotic = 100;
+		// // asymptotic form is complex
+		// if (Math.abs(x) > useAsymptotic) {
+		// return hypergeometric0F1(new Complex(a), new Complex(x)).getReal();
+		// }
+		// double s = 1;
+		// double p = 1;
+		// double i = 1;
+		//
+		// while (Math.abs(p) > tolerance) {
+		// p *= x / a / i;
+		// s += p;
+		// a++;
+		// i++;
+		// }
+		//
+		// return s;
 		try {
-			return de.lab4inf.math.functions.HypergeometricLimitFunction.limitSeries(n, x);
+			return de.lab4inf.math.functions.HypergeometricLimitFunction.limitSeries(a, x);
 		} catch (RuntimeException rex) {
 			throw new ArithmeticException("Hypergeometric0F1: " + rex.getMessage());
 		}
@@ -442,7 +466,7 @@ public class HypergeometricJS {
 				return Gamma.gamma(c) * Gamma.gamma(c - a - b) / Gamma.gamma(c - a) / Gamma.gamma(c - b);
 			} else {
 				throw new ThrowException(F.CComplexInfinity);
-//				throw new ArithmeticException("Divergent Gauss hypergeometric function");
+				// throw new ArithmeticException("Divergent Gauss hypergeometric function");
 			}
 		}
 

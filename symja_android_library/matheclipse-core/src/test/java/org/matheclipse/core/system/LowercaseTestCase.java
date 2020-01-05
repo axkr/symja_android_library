@@ -1291,6 +1291,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBesselJ() {
+		checkNumeric("BesselJ(-1.9999999999999998,3.0)", //
+				"0.4860912605858912"); 
+		checkNumeric("BesselJ(-1.999888,3.0)", //
+				"0.48604418359704343"); 
 		checkNumeric("BesselJ(0,0.001)", //
 				"0.9999997500000156"); 
 		checkNumeric("BesselJ(0,5.2)", //
@@ -1381,13 +1385,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Indeterminate");
 
 		checkNumeric("BesselK(0,0.53)", //
-				"0.876560380458217");
+				"0.8765603804164854");
 		checkNumeric("BesselK(0,4.0)", //
-				"0.011159676384823675");
+				"0.011159676085778308");
 		checkNumeric("BesselK(1 + I, 3.0  - 2* I)", //
 				"-0.022510755137173245+I*0.016960737347051183");
+		checkNumeric("BesselK(23, 1.0)", //
+				"4.6611455737443917E27");
 		checkNumeric("BesselK({1, 2, 3}, 1.0)", //
-				"{0.6019072302327098,1.6248388988224218,7.101262825926591}");
+				"{0.6019072301972264,1.6248388986351678,7.101262824737944}");
 	}
 
 	public void testBesselY() {
@@ -1414,15 +1420,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"ComplexInfinity");
 		checkNumeric("BesselY(I, 0)", //
 				"Indeterminate");
-
+		
+		checkNumeric("BesselY(10.0,1.0)", //
+				"-1.2161801427868839E8");
 		checkNumeric("BesselY(0,2.5)", //
-				"0.49807035955610557");
+				"0.49807035961522855");
 		checkNumeric("BesselY(0,1.0)", //
-				"0.08825696423952921");
+				"0.08825696421567769");
 		checkNumeric("BesselY(0.5*I, 3.0 - I)", //
 				"1.0468646059976179+I*0.8847844476971232");
 		checkNumeric("BesselY(0, {1.0, 2.0, 3.0})", //
-				"{0.08825696423952921,0.5103756725944453,0.37685000996649565}");
+				"{0.08825696421567769,0.5103756726497478,0.3768500100127994}");
 	}
 
 	public void testBesselYZero() {
@@ -7121,23 +7129,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHankelH1() {
-		checkNumeric("HankelH1(3,1.2)", //
-				"0.03287433692499494+I*(-3.5898996300536705)");
 		checkNumeric("HankelH1(2.0,3)", //
-				"0.4860912605858912+I*(-0.1604003934801459)");
+				"0.4860912605858912+I*(-0.160400393484928)");
+		checkNumeric("HankelH1(3,1.2)", //
+				"0.03287433692499494+I*(-3.5898996296131864)");
 		checkNumeric("HankelH1(4.0,Pi)", //
-				"0.15142457763134973+I*(-0.8284254758327632)");
+				"0.15142457763134973+I*(-0.8284254758009467)");
 		checkNumeric("HankelH1(23/47,5.0-I)", //
 				"-0.8840126453738697+I*(-0.37582703842509163)");
 	}
 
 	public void testHankelH2() {
 		checkNumeric("HankelH2(3,1.2)", //
-				"0.03287433692499494+I*3.5898996300536705");
+				"0.03287433692499494+I*3.5898996296131864");
 		checkNumeric("HankelH2(0.2,3)", //
 				"-0.13378696772476814+I*(-0.4383481561882018)");
 		checkNumeric("HankelH2(4.0,3*Pi)", //
-				"-0.2721262441569784+I*0.01563182604674291");
+				"-0.2721262441569784+I*0.01563182651281588");
 		checkNumeric("HankelH2(23/47,5.0-I)", //
 				"-0.1272388528903579+I*0.026410835310926417");
 	}
@@ -19423,7 +19431,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"I*(-0.2943723749617645)");
 
 		checkNumeric("SphericalBesselY(-0.5,1)", //
-				"0.1106137009979505");
+				"0.11061370096805705");
 		checkNumeric("SphericalBesselY(2.0+I,5.0+I)", //
 				"0.15456969798535944+I*(-0.050557879794783156)");
 		checkNumeric("SphericalBesselY(2.0,-5)", //
