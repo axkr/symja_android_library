@@ -533,6 +533,25 @@ public abstract class Scanner {
 		getNextToken();
 		return intValue;
 	}
+	
+	/**
+	 * Parse a Java <code>int</code> value.
+	 * 
+	 * @return
+	 * @throws SyntaxError
+	 *             if the number couldn't be parsed as Java <code>int</code> value.
+	 */
+	protected long getJavaLong() throws SyntaxError {
+		final String number = getIntegerString();
+		long longValue = 0;
+		try {
+			longValue = Long.parseLong(number, 10);
+		} catch (final NumberFormatException e) {
+			throwSyntaxError("Number format error (not an int type): " + number, number.length());
+		}
+		getNextToken();
+		return longValue;
+	}
 
 	/**
 	 * Parse a Java <code>string</code> from the digits <code>0,1,2,3,4,5,6,7,8,9</code>.
@@ -1024,7 +1043,7 @@ public abstract class Scanner {
 	 * @return <code>true</code> if the current position in the parsed input string is less than the input strings
 	 *         length.
 	 */
-	private boolean isValidPosition() {
+	protected boolean isValidPosition() {
 		return fInputString.length > fCurrentPosition;
 	}
 

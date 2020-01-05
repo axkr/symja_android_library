@@ -2,6 +2,7 @@ package org.matheclipse.core.expression;
 
 import java.util.Comparator;
 
+import org.apfloat.Apfloat;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -137,6 +138,13 @@ public class IntervalSym {
 			throw new ArgumentTypeException(str);
 		}
 		if (argOfIntervalList instanceof INum) {
+			if (argOfIntervalList instanceof ApfloatNum) {
+				Apfloat v = ((ApfloatNum) argOfIntervalList).fApfloat;
+				// return F.List(F.num(v.nextDown()), //
+				// F.num(v.nextUp()));
+				return F.List(F.num(v), //
+						F.num(v));
+			}
 			double value = ((ISignedNumber) argOfIntervalList).doubleValue();
 			return F.List(F.num(Math.nextDown(value)), //
 					F.num(Math.nextUp(value)));

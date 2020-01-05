@@ -832,14 +832,28 @@ public class ExprParser extends Scanner {
 		IExpr temp = null;
 		final Object[] result = getNumberString();
 		String number = (String) result[0];
-		final int numFormat = ((Integer) result[1]).intValue();
+		int numFormat = ((Integer) result[1]).intValue();
 		try {
 			if (negative) {
 				number = '-' + number;
 			}
+			if (numFormat == 10 && fCurrentChar == '`') {
+				numFormat = -1;
+			}
 			if (numFormat < 0) {
-				// TODO use getReal() if apfloat problems are fixed
-				// temp = getReal(number);
+				if (fCurrentChar == '`' && isValidPosition()) {
+					fCurrentPosition++;
+					if (isValidPosition() && fInputString[fCurrentPosition] == '`') {
+						fCurrentPosition += 2;
+						long precision = getJavaLong();
+						if (precision < Config.MACHINE_PRECISION) {
+							precision = Config.MACHINE_PRECISION;
+						}
+						return F.num(new Apfloat(number, precision));
+					}else {
+						fCurrentPosition--;
+					}
+				}
 				temp = new NumStr(number);
 				// temp = fFactory.createDouble(number);
 			} else {

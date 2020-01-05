@@ -9478,6 +9478,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInterval() {
+		check("Interval(0.0``500)", //
+				"Interval({0.0,0.0})");
 		check("Interval({-1,1})", //
 				"Interval({-1,1})");
 		check("Cos(Interval({0, Pi}))", //
