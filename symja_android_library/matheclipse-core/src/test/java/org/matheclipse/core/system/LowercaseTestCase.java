@@ -205,7 +205,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAiryBi() {
-		checkNumeric("AiryBi(1.8)", //
+		checkNumeric("AiryBi(1.8)",  
 				"2.595869356743907");
 		checkNumeric("AiryBi(2.0)", //
 				"3.2980949999782143");
@@ -1421,7 +1421,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("BesselY(I, 0)", //
 				"Indeterminate");
 		
-		checkNumeric("BesselY(10.0,1.0)", //
+		checkNumeric("BesselY(10.0,1.0)", //-1.2161801427868038E8
 				"-1.2161801427868839E8");
 		checkNumeric("BesselY(0,2.5)", //
 				"0.49807035961522855");

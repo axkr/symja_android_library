@@ -1,5 +1,8 @@
 package org.matheclipse.core.builtin.functions;
 
+import static de.lab4inf.math.util.Accuracy.hasConverged;
+import static java.lang.Math.abs;
+
 import java.util.ArrayList;
 import java.util.function.IntFunction;
 
@@ -82,36 +85,55 @@ public class HypergeometricJS {
 
 	}
 
-//	public static double hypergeometric0F1(double a, double x) {
-//		return hypergeometric0F1(a, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
-//	}
-
-	public static double hypergeometric0F1(double a, double x) {//, double tolerance) {
-		// if (F.isNumIntValue(a) && a <= 0) {
-		// throw new ArithmeticException("Hypergeometric function pole");
-		// }
-		// final double useAsymptotic = 100;
-		// // asymptotic form is complex
-		// if (Math.abs(x) > useAsymptotic) {
-		// return hypergeometric0F1(new Complex(a), new Complex(x)).getReal();
-		// }
-		// double s = 1;
-		// double p = 1;
-		// double i = 1;
-		//
-		// while (Math.abs(p) > tolerance) {
-		// p *= x / a / i;
-		// s += p;
-		// a++;
-		// i++;
-		// }
-		//
-		// return s;
-		try {
-			return de.lab4inf.math.functions.HypergeometricLimitFunction.limitSeries(a, x);
-		} catch (RuntimeException rex) {
-			throw new ArithmeticException("Hypergeometric0F1: " + rex.getMessage());
+	/**
+	 * Indicate if xn and xo have the relative/absolute accuracy epsilon. In case that the true value is less than one
+	 * this is based on the absolute difference, otherwise on the relative difference:
+	 * 
+	 * <pre>
+	 *     2*|x[n]-x[n-1]|/|x[n]+x[n-1]| &lt; eps
+	 * </pre>
+	 *
+	 * @param xn
+	 *            the actual argument x[n]
+	 * @param xo
+	 *            the older argument x[n-1]
+	 * @param eps
+	 *            accuracy to reach
+	 * @return flag indicating if accuracy is reached.
+	 */
+	public static boolean hasReachedAccuracy(final double xn, final double xo, final double eps) {
+		final double z = abs(xn + xo) / 2;
+		double error = abs(xn - xo);
+		if (z > 1) {
+			error /= z;
 		}
+		return error <= eps;
+	}
+
+	public static double hypergeometric0F1(double a, double x) {
+		if (F.isNumIntValue(a) && a <= 0) {
+			throw new ArithmeticException("Hypergeometric function pole");
+		}
+		final double useAsymptotic = 100;
+		// asymptotic form is complex
+		if (Math.abs(x) > useAsymptotic) {
+			return hypergeometric0F1(new Complex(a), new Complex(x)).getReal();
+		}
+		int i = 0;
+		double sOld1 = 0.0, sOld2;
+		double s = 1.0;
+		double p = 1.0;
+		do {
+			sOld2 = sOld1;
+			sOld1 = s;
+			p *= x / ((a++) * (++i));
+			s += p;
+			if (i > 500) {
+				throw new ArithmeticException("Hypergeometric0F1. maximum iteration reached");
+			}
+		} while (!hasReachedAccuracy(s, sOld1, 5.E-14) || //
+				!hasReachedAccuracy(sOld1, sOld2, 5.E-14));
+		return s;
 	}
 
 	public static Complex hypergeometric0F1(Complex a, Complex x) {
