@@ -2307,6 +2307,9 @@ public class F {
 	public final static IBuiltInSymbol N = F.initFinalSymbol("N", ID.N);
 
 	/***/
+	public final static IBuiltInSymbol ND = F.initFinalSymbol("ND", ID.ND);
+	
+	/***/
 	public final static IBuiltInSymbol NDSolve = F.initFinalSymbol("NDSolve", ID.NDSolve);
 
 	/***/

@@ -205,8 +205,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAiryBi() {
-		checkNumeric("AiryBi(1.8)",  
-				"2.595869356743907");
+		checkNumeric("AiryBi(1.8)", "2.595869356743907");
 		checkNumeric("AiryBi(2.0)", //
 				"3.2980949999782143");
 		checkNumeric("AiryBi(2.5+I)", //
@@ -1263,7 +1262,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"(Sqrt(2/Pi)*Cosh(z))/Sqrt(z)");
 		check("BesselI(1/2, z)", //
 				"(Sqrt(2/Pi)*Sinh(z))/Sqrt(z)");
-		
+
 		checkNumeric("BesselI(I+1, -I*Infinity)", //
 				"0");
 		checkNumeric("BesselI(42, I*Infinity)", //
@@ -1292,11 +1291,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testBesselJ() {
 		checkNumeric("BesselJ(-1.9999999999999998,3.0)", //
-				"0.4860912605858912"); 
+				"0.4860912605858912");
 		checkNumeric("BesselJ(-1.999888,3.0)", //
-				"0.48604418359704343"); 
+				"0.48604418359704343");
 		checkNumeric("BesselJ(0,0.001)", //
-				"0.9999997500000156"); 
+				"0.9999997500000156");
 		checkNumeric("BesselJ(0,5.2)", //
 				"-0.1102904397909862");
 		checkNumeric("BesselJ(0,4.0)", //
@@ -1371,7 +1370,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Sqrt(2/Pi)/(E^z*Sqrt(z))");
 		check("BesselK(1/2, z)", //
 				"Sqrt(2/Pi)/(E^z*Sqrt(z))");
-		
+
 		checkNumeric("BesselK(I+1, -I*Infinity)", //
 				"0");
 		checkNumeric("BesselK(42, I*Infinity)", //
@@ -1397,6 +1396,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBesselY() {
+		check("BesselY(3.5,-5)", //
+				"I*(-0.0275521)");
+		checkNumeric("BesselY(2.5,-5.0)", //
+				"I*(-0.2943723749617645)");
 		checkNumeric("BesselY(I+1, -Infinity)", //
 				"0");
 		checkNumeric("BesselY(42, Infinity)", //
@@ -1420,8 +1423,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"ComplexInfinity");
 		checkNumeric("BesselY(I, 0)", //
 				"Indeterminate");
-		
-		checkNumeric("BesselY(10.0,1.0)", //-1.2161801427868038E8
+
+		checkNumeric("BesselY(10.0,1.0)", // -1.2161801427868038E8
 				"-1.2161801427868839E8");
 		checkNumeric("BesselY(0,2.5)", //
 				"0.49807035961522855");
@@ -1437,7 +1440,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// https://github.com/paulmasson/math/issues/11
 		checkNumeric("BesselYZero(0.0,1)", //
 				"0.8935770823333244");
-		
+
 		checkNumeric("BesselYZero(1.3, 3)", //
 				"9.031260842335175");
 		checkNumeric("BesselYZero(0.0,2)", //
@@ -8779,7 +8782,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// https://github.com/paulmasson/math/issues/10 - uses ThrowException
 		check("Hypergeometric2F1(0.5,0.333,0.666,1)", //
 				"ComplexInfinity");
-		
+
 		check("Hypergeometric2F1(2 + I, -I, 3/4, 0.5-0.5*I)", //
 				"-0.972167+I*(-0.181659)");
 
@@ -9479,7 +9482,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Interval({-1,1})");
 		check("Cos(Interval({0, Pi}))", //
 				"Interval({-1,1})");
-		
+
 		check("Interval(0.)", //
 				"Interval({-4.90000*10^-324,4.90000*10^-324})");
 		check("Interval(0.1)-0.1", //
@@ -12603,6 +12606,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"False");
 	}
 
+	public void testND() {
+		check("ND(Exp(x), x, 1)", //
+				"2.71828");
+		check("ND(Cos(x)^3, {x,2}, 0)", //
+				"-3.0");
+		check("ND(Cos(x)^3, {x,2}, 1)", //
+				"1.82226");
+		check("ND(BesselY(10.0,x), x, 1)", //
+				"1.20940*10^9");
+		
+	}
 	public void testNDSolve() {
 
 		check("NDSolve({ y(x)*Cos(x + y(x))== (y'(x)), y(0)==1}, y, {x, 0, 30})", //
@@ -19412,10 +19426,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSphericalBesselJ() {
+		check("SphericalBesselJ(2.5,-5)", //
+				"I*0.204488");
 		checkNumeric("SphericalBesselJ(1,5.2)", //
 				"-0.12277149950007821");
 		checkNumeric("BesselJ(2.5,-5)", //
 				"I*0.2403772011113174");
+		checkNumeric("SphericalBesselJ(2.5,-5)", //I*0.20448758430717914
+				"I*0.20448758430572492");
 		checkNumeric("SphericalBesselJ(2.0,-5)", //
 				"0.1347312100888303");
 		checkNumeric("SphericalBesselJ(-0.5,1)", //
@@ -19425,6 +19443,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSphericalBesselY() {
+		// TODO improve this value
+		check("SphericalBesselY(2.5,-5)", //
+				"-0.613462+I*0.122973");
+		
 		checkNumeric("SphericalBesselY(1,5.5)", //
 				"0.10485295921804552");
 		checkNumeric("BesselY(2.5,-5)", //
@@ -19713,13 +19735,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testStruveH() {
 		System.out.println("testStruveH: ");
-		// https://github.com/paulmasson/math/issues/9  
+		// https://github.com/paulmasson/math/issues/9
 		check("StruveH(0, 50.0)", //
 				"-0.0853402");
 		check("StruveH(0, 30.0)", //
 				"-0.0961063");
-		
-		
+
 		System.out.print(".");
 		check("StruveH(0, 5.2)", //
 				"-0.212448");

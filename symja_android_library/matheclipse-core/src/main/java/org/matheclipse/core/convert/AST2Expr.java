@@ -137,7 +137,7 @@ public class AST2Expr {
 			"Maximize", "Mean", "MeanFilter", "MeanDeviation", "Median", "MedianFilter", "MeijerG", "MemberQ",
 			"MeshRange", "MessageName", "Message", "Messages", "MersennePrimeExponent", "MersennePrimeExponentQ", "Min",
 			"MinFilter", "MinimalPolynomial", "Minimize", "Minus", "Missing", "MissingQ", "Mod", "Module", "MoebiusMu",
-			"MonomialList", "Most", "Multinomial", "MultiplicativeOrder", "NakagamiDistribution", "Names", "Nand",
+			"MonomialList", "Most", "Multinomial", "MultiplicativeOrder", "NakagamiDistribution", "Names", "Nand", "ND",
 			"NDSolve", "Nearest", "Negative", "Nest", "NestList", "NestWhile", "NestWhileList", "NextPrime",
 			"NFourierTransform", "NIntegrate", "NMaximize", "NMinimize", "NonCommutativeMultiply", "NonNegative",
 			"NonPositive", "NoneTrue", "Nor", "Normal", "Normalize", "Norm", "NormalDistribution", "Not", "NotElement",

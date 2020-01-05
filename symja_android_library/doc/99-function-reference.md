@@ -423,6 +423,7 @@
 * [N](functions/N.md)
 * [NakagamiDistribution](functions/NakagamiDistribution.md)
 * [Nand](functions/Nand.md)
+* [ND](functions/ND.md)
 * [Negative](functions/Negative.md)
 * [Nest](functions/Nest.md)
 * [NestList](functions/NestList.md)
@@ -586,6 +587,8 @@
 * [SortBy](functions/SortBy.md)
 * [Sow](functions/Sow.md)
 * [Span](functions/Span.md)
+* [SphericalBesselJ](functions/SphericalBesselJ.md)
+* [SphericalBesselY](functions/SphericalBesselY.md)
 * [Split](functions/Split.md)
 * [SplitBy](functions/SplitBy.md)
 * [Sqrt](functions/Sqrt.md)
@@ -672,4 +675,3 @@
 * [Xor](functions/Xor.md)
 * [YuleDissimilarity](functions/YuleDissimilarity.md)
 * [Zeta](functions/Zeta.md)
-
