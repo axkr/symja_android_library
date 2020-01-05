@@ -1291,6 +1291,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBesselJ() {
+		checkNumeric("BesselJ(0,0.001)", //
+				"0.9999997500000156"); 
 		checkNumeric("BesselJ(0,5.2)", //
 				"-0.1102904397909862");
 		checkNumeric("BesselJ(0,4.0)", //

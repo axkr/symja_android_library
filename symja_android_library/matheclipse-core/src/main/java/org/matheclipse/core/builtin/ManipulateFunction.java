@@ -246,7 +246,9 @@ public class ManipulateFunction {
 				mathcellRange(graphicControl, plotRangeX, -1, toJS);
 				graphicControl.append(", ");
 				mathcellRange(graphicControl, plotRangeY, -1, toJS);
-				graphicControl.append(", { colormap: (x,y) => ( 1 - Math.sin(x*y) ) / 2 } );\n");
+
+				graphicControl.append(", { colormap: 'hot', reverseColormap: false } );\n");
+				// graphicControl.append(", { colormap: (x,y) => ( 1 - Math.sin(x*y) ) / 2 } );\n");
 			}
 			graphicControl.append("\n  var config = { type: 'threejs' };\n");
 			graphicControl.append("  var data = [");
@@ -834,7 +836,8 @@ public class ManipulateFunction {
 	// jsxgraphRange(graphicControl, plotRangeX, -1, toJS);
 	// graphicControl.append(", ");
 	// jsxgraphRange(graphicControl, plotRangeY, -1, toJS);
-	// graphicControl.append(", { colormap: (x,y) => ( 1 - Math.sin(x*y) ) / 2 } );\n\n\n");
+	// graphicControl.append(", { colormap: 'hot', reverseColormap: false } );\n\n\n");
+	//// graphicControl.append(", { colormap: (x,y) => ( 1 - Math.sin(x*y) ) / 2 } );\n\n\n");
 	//
 	// graphicControl.append(" var config = { type: 'threejs' };\n");
 	// graphicControl.append(" var data = [ p1 ];\n");
@@ -1121,8 +1124,7 @@ public class ManipulateFunction {
 				toJS.convert(function, plotRangeX.arg2());
 				function.append(", ");
 				toJS.convert(function, plotRangeX.arg3());
-				 
-				
+
 				function.append("]");
 				function.append(", {curveType:'polar'} );\n");
 			} else {
