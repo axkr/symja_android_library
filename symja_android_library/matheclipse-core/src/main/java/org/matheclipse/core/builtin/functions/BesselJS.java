@@ -1,7 +1,7 @@
 package org.matheclipse.core.builtin.functions;
 
 import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FDSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.analysis.solvers.BisectionSolver;
@@ -33,7 +33,7 @@ public class BesselJS {
 	}
 
 	public static double besselJDouble(double n, double x) {
-		if (F.isNumIntValue(n) && n < 0.0) { 
+		if (F.isNumIntValue(n) && n < 0.0) {
 			return besselJDouble(-n, x) * (Math.pow(-1.0, Math.rint(n)));
 		}
 		if (!F.isNumIntValue(n) && x < 0.0) {
@@ -44,7 +44,7 @@ public class BesselJS {
 	}
 
 	public static Complex besselJ(Complex n, Complex x) {
-		if (F.isNumIntValue(n.getReal()) && n.getReal() < 0.0 && n.getImaginary() == 0.0) {
+		if (F.isNumIntValue(n.getReal()) && n.getReal() < 0.0 && F.isZero(n.getImaginary())) {
 			return new Complex(-1.0).pow(n).multiply(besselJ(n.negate(), x));
 		}
 
@@ -120,7 +120,8 @@ public class BesselJS {
 	public static Complex besselY(Complex n, Complex x) {
 		// for averaging over integer orders until write code for limit
 		double delta = 1e-5;
-		if (F.isNumIntValue(n.getReal()) && n.getImaginary() == 0.0) {
+		if (F.isNumIntValue(n.getReal()) && F.isZero(n.getImaginary())) {
+			// TODO use differentiator here
 			return besselY(new Complex(n.getReal() + delta), x)
 					.add(besselY(new Complex(n.getReal() - delta), x).divide(2.0));
 		}
@@ -266,6 +267,7 @@ public class BesselJS {
 
 		double nRe = n.getReal();
 		if (F.isNumIntValue(nRe) && F.isZero(n.getImaginary())) {
+			// TODO use differentiator here
 			return besselK(new Complex(nRe + delta), x).add(besselK(new Complex(nRe - delta), x)).divide(2.0);
 		}
 		Complex product = new Complex(Math.PI / 2.0).divide(n.multiply(Math.PI).sin());
@@ -360,7 +362,7 @@ public class BesselJS {
 
 	public static Complex sphericalBesselY(double n, double x) {
 		Complex besselY = besselY(n + 0.5, x);
-		return besselY.multiply(new Complex(Math.sqrt(Math.PI / 2.0)).divide(new Complex(x).sqrt()));
+		return new Complex(Math.sqrt(Math.PI / 2.0)).divide(new Complex(x).sqrt()).multiply(besselY);
 	}
 
 	public static Complex sphericalBesselY(Complex n, Complex x) {
@@ -373,9 +375,7 @@ public class BesselJS {
 	}
 
 	public static Complex sphericalHankel2(double n, double x) {
-
 		return sphericalBesselJ(n, x).add(Complex.I.multiply(sphericalBesselY(n, x).negate()));
-
 	}
 
 	public static double struveH(double n, double x) {

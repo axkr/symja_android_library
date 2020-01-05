@@ -695,27 +695,52 @@ public class BesselFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr n = ast.arg1();
 			IExpr z = ast.arg2();
+			if (engine.isDoubleMode()) {
+				try {
+					double nDouble = Double.NaN;
+					double zDouble = Double.NaN;
+					try {
+						nDouble = n.evalDouble();
+						zDouble = z.evalDouble();
+					} catch (ValidateException ve) {
+					}
+					if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
+						Complex nc = n.evalComplex();
+						Complex zc = z.evalComplex();
+						return F.complexNum(BesselJS.sphericalBesselJ(nc, zc));
+					} else {
+						return F.complexNum(BesselJS.sphericalBesselJ(nDouble, zDouble));
+					}
 
-			if (n.isReal() && z.isReal()) {
-				try {
-					return F.complexNum(BesselJS.sphericalBesselJ(n.evalDouble(), z.evalDouble()));
-				} catch (NegativeArraySizeException nae) {
-					return engine
-							.printMessage("SphericalBesselJ: " + ast.toString() + " caused NegativeArraySizeException");
-				} catch (RuntimeException rte) {
-					return engine.printMessage("SphericalBesselJ: " + rte.getMessage());
+				} catch (ValidateException ve) {
+					if (Config.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
+				} catch (RuntimeException rex) {
+					// rex.printStackTrace();
+					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
 				}
 			}
-			if (n.isNumeric() && z.isNumeric()) {
-				try {
-					return F.complexNum(BesselJS.sphericalBesselJ(n.evalComplex(), z.evalComplex()));
-				} catch (NegativeArraySizeException nae) {
-					return engine
-							.printMessage("SphericalBesselJ: " + ast.toString() + " caused NegativeArraySizeException");
-				} catch (RuntimeException rte) {
-					return engine.printMessage("SphericalBesselJ: " + rte.getMessage());
-				}
-			}
+			// if (n.isReal() && z.isReal()) {
+			// try {
+			// return F.complexNum(BesselJS.sphericalBesselJ(n.evalDouble(), z.evalDouble()));
+			// } catch (NegativeArraySizeException nae) {
+			// return engine
+			// .printMessage("SphericalBesselJ: " + ast.toString() + " caused NegativeArraySizeException");
+			// } catch (RuntimeException rte) {
+			// return engine.printMessage("SphericalBesselJ: " + rte.getMessage());
+			// }
+			// }
+			// if (n.isNumeric() && z.isNumeric()) {
+			// try {
+			// return F.complexNum(BesselJS.sphericalBesselJ(n.evalComplex(), z.evalComplex()));
+			// } catch (NegativeArraySizeException nae) {
+			// return engine
+			// .printMessage("SphericalBesselJ: " + ast.toString() + " caused NegativeArraySizeException");
+			// } catch (RuntimeException rte) {
+			// return engine.printMessage("SphericalBesselJ: " + rte.getMessage());
+			// }
+			// }
 			return F.NIL;
 		}
 
@@ -736,24 +761,30 @@ public class BesselFunctions {
 			IExpr n = ast.arg1();
 			IExpr z = ast.arg2();
 
-			if (n.isReal() && z.isReal()) {
+			if (engine.isDoubleMode()) {
 				try {
-					return F.complexNum(BesselJS.sphericalBesselY(n.evalDouble(), z.evalDouble()));
-				} catch (NegativeArraySizeException nae) {
-					return engine
-							.printMessage("SphericalBesselY: " + ast.toString() + " caused NegativeArraySizeException");
-				} catch (RuntimeException rte) {
-					return engine.printMessage("SphericalBesselY: " + rte.getMessage());
-				}
-			}
-			if (n.isNumeric() && z.isNumeric()) {
-				try {
-					return F.complexNum(BesselJS.sphericalBesselY(n.evalComplex(), z.evalComplex()));
-				} catch (NegativeArraySizeException nae) {
-					return engine
-							.printMessage("SphericalBesselY: " + ast.toString() + " caused NegativeArraySizeException");
-				} catch (RuntimeException rte) {
-					return engine.printMessage("SphericalBesselY: " + rte.getMessage());
+					double nDouble = Double.NaN;
+					double zDouble = Double.NaN;
+					try {
+						nDouble = n.evalDouble();
+						zDouble = z.evalDouble();
+					} catch (ValidateException ve) {
+					}
+					if (Double.isNaN(nDouble) || Double.isNaN(zDouble) || zDouble < 0.0) {
+						Complex nc = n.evalComplex();
+						Complex zc = z.evalComplex();
+						return F.complexNum(BesselJS.sphericalBesselY(nc, zc));
+					} else {
+						return F.complexNum(BesselJS.sphericalBesselY(nDouble, zDouble));
+					}
+
+				} catch (ValidateException ve) {
+					if (Config.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
+				} catch (RuntimeException rex) {
+					// rex.printStackTrace();
+					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
 				}
 			}
 			return F.NIL;
