@@ -20,19 +20,17 @@ import org.matheclipse.core.expression.F;
  */
 public class HypergeometricJS {
 
-	public static Complex hypergeometricSeries(Complex[] A, Complex[] B, Complex x) {
-		return hypergeometricSeries(A, B, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
-	}
+	// public static Complex hypergeometricSeries(Complex[] A, Complex[] B, Complex x) {
+	// return hypergeometricSeries(A, B, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
+	// }
 
-	public static Complex hypergeometricSeries(Complex[] A, Complex[] B, Complex x, double tolerance) {
-
+	public static Complex hypergeometricSeries(Complex[] A, Complex[] B, Complex x) { // , double tolerance
+		// see https://github.com/paulmasson/math/issues/12
 		Complex s = Complex.ONE;
 		Complex p = Complex.ONE;
-		double i = 1;
-
-		while (Math.abs(p.getReal()) > tolerance || //
-				Math.abs(p.getImaginary()) > tolerance) {
-
+		int i = 0;
+		while (Math.abs(p.getReal()) > 1.E-12 || //
+				Math.abs(p.getImaginary()) > 1.E-12) {
 			for (int j = 0; j < A.length; j++) {
 				p = p.multiply(A[j]);
 				A[j] = A[j].add(1.0);
@@ -43,28 +41,31 @@ public class HypergeometricJS {
 				B[j] = B[j].add(1.0);
 			}
 
-			p = p.multiply(x.divide(i));
+			p = p.multiply(x.divide(++i));
 			s = s.add(p);
-			i++;
 
+			if (i > 500) {
+				throw new ArithmeticException("hypergeometricSeries: maximum iteration exceeded (Complex)");
+			}
 		}
-
 		return s;
 	}
 
-	public static double hypergeometricSeries(double[] A, double[] B, double x) {
-		return hypergeometricSeries(A, B, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
-	}
+	// public static double hypergeometricSeries(double[] A, double[] B, double x) {
+	// return hypergeometricSeries(A, B, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
+	// }
 
-	public static double hypergeometricSeries(double[] A, double[] B, double x, // boolean complexArguments,
-			double tolerance) {
-
+	public static double hypergeometricSeries(double[] A, double[] B, double x) { // boolean complexArguments,
+		// double tolerance) {
+		// see https://github.com/paulmasson/math/issues/12
+		double sOld1 = 0.0, sOld2;
 		double s = 1;
 		double p = 1;
-		double i = 1;
+		int i = 0;
 
-		while (Math.abs(p) > tolerance) {
-
+		do {
+			sOld2 = sOld1;
+			sOld1 = s;
 			for (int j = 0; j < A.length; j++) {
 				p *= A[j];
 				A[j]++;
@@ -75,11 +76,14 @@ public class HypergeometricJS {
 				B[j]++;
 			}
 
-			p *= x / i;
+			p *= x / (++i);
 			s += p;
-			i++;
 
-		}
+			if (i > 500) {
+				throw new ArithmeticException("hypergeometricSeries: maximum iteration exceeded");
+			}
+		} while (!hasReachedAccuracy(s, sOld1, 1.E-12) || //
+				!hasReachedAccuracy(sOld1, sOld2, 1.E-12));
 
 		return s;
 
@@ -119,28 +123,21 @@ public class HypergeometricJS {
 		if (Math.abs(x) > useAsymptotic) {
 			return hypergeometric0F1(new Complex(a), new Complex(x)).getReal();
 		}
-		int i = 0;
-		double sOld1 = 0.0, sOld2;
-		double s = 1.0;
-		double p = 1.0;
-		do {
-			sOld2 = sOld1;
-			sOld1 = s;
-			p *= x / ((a++) * (++i));
-			s += p;
-			if (i > 500) {
-				throw new ArithmeticException("Hypergeometric0F1. maximum iteration reached");
-			}
-		} while (!hasReachedAccuracy(s, sOld1, 5.E-14) || //
-				!hasReachedAccuracy(sOld1, sOld2, 5.E-14));
-		return s;
+
+		return hypergeometricSeries(new double[0], new double[] { a }, x);
+		/*
+		 * int i = 0; double sOld1 = 0.0, sOld2; double s = 1.0; double p = 1.0; do { sOld2 = sOld1; sOld1 = s; p *= x /
+		 * ((a++) * (++i)); s += p; if (i > 500) { throw new
+		 * ArithmeticException("Hypergeometric0F1: maximum iteration reached"); } } while (!hasReachedAccuracy(s, sOld1,
+		 * 5.E-14) || // !hasReachedAccuracy(sOld1, sOld2, 5.E-14)); return s;
+		 */
 	}
+
+	// public static Complex hypergeometric0F1(Complex a, Complex x) {
+	// return hypergeometric0F1(a, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
+	// }
 
 	public static Complex hypergeometric0F1(Complex a, Complex x) {
-		return hypergeometric0F1(a, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
-	}
-
-	public static Complex hypergeometric0F1(Complex a, Complex x, double tolerance) {
 
 		double useAsymptotic = 100;
 		if (F.isNumIntValue(a.getReal()) && a.getReal() <= 0 && a.getImaginary() == 0) {
@@ -157,36 +154,39 @@ public class HypergeometricJS {
 			// copied from hypergeometric1F1
 			Complex t1 = Arithmetic.lanczosApproxGamma(b).multiply(x.negate().pow(a.negate()))
 					.divide(Arithmetic.lanczosApproxGamma(b.subtract(a)));
-			t1 = t1.multiply(hypergeometric2F0(a, a.subtract(b).add(1), x.reciprocal().negate()));
+			t1 = t1.multiply(hypergeometricSeries(new Complex[] { a, a.subtract(b).add(1) }, new Complex[0],
+					x.reciprocal().negate()));
 
 			Complex t2 = Arithmetic.lanczosApproxGamma(b).multiply(x.pow(a.subtract(b)).multiply(x.exp()))
 					.divide(Arithmetic.lanczosApproxGamma(a));
-			t2 = t2.multiply(hypergeometric2F0(b.subtract(a), Complex.ONE.subtract(a), x.reciprocal()));
+			t2 = t2.multiply(hypergeometricSeries(new Complex[] { b.subtract(a), Complex.ONE.subtract(a) },
+					new Complex[0], x.reciprocal()));
 
 			return x.divide(-2).exp().multiply(t1.add(t2));
 
 		}
 
-		Complex s = Complex.ONE;
-		Complex p = Complex.ONE;
-		int i = 1;
-
-		while (Math.abs(p.getReal()) > tolerance || Math.abs(p.getImaginary()) > tolerance) {
-			p = p.multiply(x.divide(a).divide(i));
-			s = s.add(p);
-			a = a.add(1);
-			i++;
-		}
-
-		return s;
+		return hypergeometricSeries(new Complex[0], new Complex[] { a }, x);
+		// Complex s = Complex.ONE;
+		// Complex p = Complex.ONE;
+		// int i = 1;
+		//
+		// while (Math.abs(p.getReal()) > tolerance || Math.abs(p.getImaginary()) > tolerance) {
+		// p = p.multiply(x.divide(a).divide(i));
+		// s = s.add(p);
+		// a = a.add(1);
+		// i++;
+		// }
+		//
+		// return s;
 
 	}
+
+	// public static Complex hypergeometric1F1(Complex a, Complex b, Complex x) {
+	// return hypergeometric1F1(a, b, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
+	// }
 
 	public static Complex hypergeometric1F1(Complex a, Complex b, Complex x) {
-		return hypergeometric1F1(a, b, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
-	}
-
-	public static Complex hypergeometric1F1(Complex a, Complex b, Complex x, double tolerance) {
 
 		final double useAsymptotic = 30;
 		if (F.isNumIntValue(b.getReal()) && b.getReal() <= 0 && F.isZero(b.getImaginary())) {
@@ -201,37 +201,40 @@ public class HypergeometricJS {
 		if (x.abs() > useAsymptotic) {
 			Complex t1 = Arithmetic.lanczosApproxGamma(b).multiply(x.negate().pow(a.negate()))
 					.multiply(Arithmetic.lanczosApproxGamma(b.subtract(a)).reciprocal());
-			t1 = t1.multiply(hypergeometric2F0(a, a.add(b.negate()).add(1), new Complex(-1.0).divide(x)));
+			t1 = t1.multiply(hypergeometricSeries(new Complex[] { a }, new Complex[] { a.add(b.negate()).add(1) },
+					new Complex(-1.0).divide(x)));
 
 			Complex t2 = Arithmetic.lanczosApproxGamma(b).multiply(x.pow(a.subtract(b))).multiply(x.exp())
 					.multiply(Arithmetic.lanczosApproxGamma(a).reciprocal());
-			t2 = t2.multiply(hypergeometric2F0(b.subtract(a), Complex.ONE.subtract(a), Complex.ONE.divide(x)));
+			t2 = t2.multiply(hypergeometricSeries(new Complex[] { b.subtract(a) },
+					new Complex[] { Complex.ONE.subtract(a) }, Complex.ONE.divide(x)));
 
 			return t1.add(t2);
 		}
 
-		Complex s = Complex.ONE;
-		Complex p = Complex.ONE;
-		int i = 1;
-
-		while (Math.abs(p.getReal()) > tolerance || //
-				Math.abs(p.getImaginary()) > tolerance) {
-			p = p.multiply(x).multiply(a).divide(b).divide(i);
-			s = s.add(p);
-			a = a.add(1);
-			b = b.add(1);
-			i++;
-		}
-
-		return s;
+		return hypergeometricSeries(new Complex[] { a }, new Complex[] { b }, x);
+		// Complex s = Complex.ONE;
+		// Complex p = Complex.ONE;
+		// int i = 1;
+		//
+		// while (Math.abs(p.getReal()) > tolerance || //
+		// Math.abs(p.getImaginary()) > tolerance) {
+		// p = p.multiply(x).multiply(a).divide(b).divide(i);
+		// s = s.add(p);
+		// a = a.add(1);
+		// b = b.add(1);
+		// i++;
+		// }
+		//
+		// return s;
 
 	}
+
+	// public static double hypergeometric1F1(double a, double b, double x) {
+	// return hypergeometric1F1(a, b, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
+	// }
 
 	public static double hypergeometric1F1(double a, double b, double x) {
-		return hypergeometric1F1(a, b, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
-	}
-
-	public static double hypergeometric1F1(double a, double b, double x, double tolerance) {
 		double useAsymptotic = 30;
 		if (F.isNumIntValue(b) && b <= 0) {
 			throw new ArithmeticException("Hypergeometric function pole");
@@ -246,95 +249,91 @@ public class HypergeometricJS {
 		if (Math.abs(x) > useAsymptotic) {
 			return hypergeometric1F1(new Complex(a), new Complex(b), new Complex(x)).getReal();
 		}
-		double s = 1;
-		double p = 1;
-		double i = 1;
 
-		while (Math.abs(p) > tolerance) {
-			p *= x * a / b / i;
-			s += p;
-			a++;
-			b++;
-			i++;
-		}
-
-		return s;
-
-	}
-
-	public static double hypergeometric2F0(double a, double b, double x) {
-		return hypergeometric2F0(a, b, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
-	}
-
-	public static Complex hypergeometric2F0(Complex a, Complex b, Complex x) {
-		return hypergeometric2F0(a, b, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
-	}
-
-	public static Complex hypergeometric2F0(Complex a, Complex b, Complex x, double tolerance) {
-		int terms = 50;
-
-		Complex s = Complex.ONE;
-		Complex p = Complex.ONE;
-		Complex pLast = p;
-		boolean converging = false;
-		int i = 1;
-
-		while (Math.abs(p.getReal()) > tolerance || Math.abs(p.getImaginary()) > tolerance) {
-
-			p = p.multiply(x.multiply(a).multiply(b).divide(i));
-
-			if (p.abs() > pLast.abs() && converging) {
-				break; // prevent runaway sum
-			}
-			if (p.abs() < pLast.abs()) {
-				converging = true;
-			}
-			if (i > terms) {
-				throw new ArithmeticException("Hypergeometric2F0: not converging after " + terms + " terms");
-			}
-
-			s = s.add(s);
-			a = a.add(a);
-			b = b.add(b);
-			i++;
-			pLast = p;
-
-		}
-
-		return s;
+		return hypergeometricSeries(new double[] { a }, new double[] { b }, x);
+		// double s = 1;
+		// double p = 1;
+		// double i = 1;
+		//
+		// while (Math.abs(p) > tolerance) {
+		// p *= x * a / b / i;
+		// s += p;
+		// a++;
+		// b++;
+		// i++;
+		// }
+		//
+		// return s;
 
 	}
 
-	public static double hypergeometric2F0(double a, double b, double x, double tolerance) {
-		int terms = 50;
-		double s = 1;
-		double p = 1, pLast = p;
-		boolean converging = false;
-		double i = 1;
+	// public static Complex hypergeometric2F0(Complex a, Complex b, Complex x ) {
+	// console.warn( 'hypergeometric2F0 is deprecated: use hypergeometricSeries' );
+	// int terms = 50;
+	//
+	// Complex s = Complex.ONE;
+	// Complex p = Complex.ONE;
+	// Complex pLast = p;
+	// boolean converging = false;
+	// int i = 1;
+	//
+	// while (Math.abs(p.getReal()) > tolerance || Math.abs(p.getImaginary()) > tolerance) {
+	//
+	// p = p.multiply(x.multiply(a).multiply(b).divide(i));
+	//
+	// if (p.abs() > pLast.abs() && converging) {
+	// break; // prevent runaway sum
+	// }
+	// if (p.abs() < pLast.abs()) {
+	// converging = true;
+	// }
+	// if (i > terms) {
+	// throw new ArithmeticException("Hypergeometric2F0: not converging after " + terms + " terms");
+	// }
+	//
+	// s = s.add(s);
+	// a = a.add(a);
+	// b = b.add(b);
+	// i++;
+	// pLast = p;
+	//
+	// }
+	//
+	// return s;
+	//
+	// }
 
-		while (Math.abs(p) > tolerance) {
-
-			p *= (x * a * b) / i;
-
-			if (Math.abs(p) > Math.abs(pLast) && converging) {
-				break; // prevent runaway sum
-			}
-			if (Math.abs(p) < Math.abs(pLast)) {
-				converging = true;
-			}
-			if (i > terms) {
-				throw new ArithmeticException("Hypergeometric2F0: not converging after " + terms + " terms");
-			}
-			s += p;
-			a++;
-			b++;
-			i++;
-			pLast = p;
-
-		}
-
-		return s;
-	}
+	// public static double hypergeometric2F0(double a, double b, double x, double tolerance) {
+	// console.warn( 'hypergeometric2F0 is deprecated: use hypergeometricSeries' );
+	// int terms = 50;
+	// double s = 1;
+	// double p = 1, pLast = p;
+	// boolean converging = false;
+	// double i = 1;
+	//
+	// while (Math.abs(p) > tolerance) {
+	//
+	// p *= (x * a * b) / i;
+	//
+	// if (Math.abs(p) > Math.abs(pLast) && converging) {
+	// break; // prevent runaway sum
+	// }
+	// if (Math.abs(p) < Math.abs(pLast)) {
+	// converging = true;
+	// }
+	// if (i > terms) {
+	// throw new ArithmeticException("Hypergeometric2F0: not converging after " + terms + " terms");
+	// }
+	// s += p;
+	// a++;
+	// b++;
+	// i++;
+	// pLast = p;
+	//
+	// }
+	//
+	// return s;
+	// }
 
 	public static Complex hypergeometric2F1(Complex a, Complex b, Complex c, Complex x) {
 		return hypergeometric2F1(a, b, c, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
@@ -610,11 +609,11 @@ public class HypergeometricJS {
 		return hypergeometricSeries(new double[] { a }, new double[] { b, c }, x);
 	}
 
-	public static double hypergeometricPFQ(double[] A, double[] B, double x) {
-		return hypergeometricPFQ(A, B, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
-	}
+	// public static double hypergeometricPFQ(double[] A, double[] B, double x) {
+	// return hypergeometricPFQ(A, B, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
+	// }
 
-	public static double hypergeometricPFQ(double[] A, double[] B, double x, double tolerance) {
+	public static double hypergeometricPFQ(double[] A, double[] B, double x) {
 		// dlmf.nist.gov/16.11 for general transformations
 		if (Math.abs(x) > 1.0) {
 			throw new ArithmeticException("HypergeometricPFQ: General hypergeometric argument currently restricted");

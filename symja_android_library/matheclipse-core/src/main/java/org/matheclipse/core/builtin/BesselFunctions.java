@@ -622,23 +622,31 @@ public class BesselFunctions {
 			IExpr n = ast.arg1();
 			IExpr z = ast.arg2();
 
-			if (n.isReal() && z.isReal()) {
+			try {
+				double nDouble = Double.NaN;
+				double zDouble = Double.NaN;
 				try {
-					return F.complexNum(BesselJS.hankelH1(n.evalDouble(), z.evalDouble()));
-				} catch (NegativeArraySizeException nae) {
-					return engine.printMessage("HankelH1: " + ast.toString() + " caused NegativeArraySizeException");
-				} catch (RuntimeException rte) {
-					return engine.printMessage("HankelH1: " + rte.getMessage());
+					nDouble = n.evalDouble();
+					zDouble = z.evalDouble();
+				} catch (ValidateException ve) {
 				}
-			} else if (n.isNumeric() && z.isNumeric()) {
-				try {
-					return F.complexNum(BesselJS.hankelH1(n.evalComplex(), z.evalComplex()));
-				} catch (NegativeArraySizeException nae) {
-					return engine.printMessage("HankelH1: " + ast.toString() + " caused NegativeArraySizeException");
-				} catch (RuntimeException rte) {
-					return engine.printMessage("HankelH1: " + rte.getMessage());
+				if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
+					Complex nc = n.evalComplex();
+					Complex zc = z.evalComplex();
+					return F.complexNum(BesselJS.hankelH1(nc, zc));
+				} else {
+					return F.complexNum(BesselJS.hankelH1(nDouble, zDouble));
 				}
+
+			} catch (ValidateException ve) {
+				if (Config.SHOW_STACKTRACE) {
+					ve.printStackTrace();
+				}
+			} catch (RuntimeException rex) {
+				// rex.printStackTrace();
+				return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
 			}
+
 			return F.NIL;
 		}
 
@@ -659,23 +667,31 @@ public class BesselFunctions {
 			IExpr n = ast.arg1();
 			IExpr z = ast.arg2();
 
-			if (n.isReal() && z.isReal()) {
+			try {
+				double nDouble = Double.NaN;
+				double zDouble = Double.NaN;
 				try {
-					return F.complexNum(BesselJS.hankelH2(n.evalDouble(), z.evalDouble()));
-				} catch (NegativeArraySizeException nae) {
-					return engine.printMessage("HankelH2: " + ast.toString() + " caused NegativeArraySizeException");
-				} catch (RuntimeException rte) {
-					return engine.printMessage("HankelH2: " + rte.getMessage());
+					nDouble = n.evalDouble();
+					zDouble = z.evalDouble();
+				} catch (ValidateException ve) {
 				}
-			} else if (n.isNumeric() && z.isNumeric()) {
-				try {
-					return F.complexNum(BesselJS.hankelH2(n.evalComplex(), z.evalComplex()));
-				} catch (NegativeArraySizeException nae) {
-					return engine.printMessage("HankelH2: " + ast.toString() + " caused NegativeArraySizeException");
-				} catch (RuntimeException rte) {
-					return engine.printMessage("HankelH2: " + rte.getMessage());
+				if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
+					Complex nc = n.evalComplex();
+					Complex zc = z.evalComplex();
+					return F.complexNum(BesselJS.hankelH2(nc, zc));
+				} else {
+					return F.complexNum(BesselJS.hankelH2(nDouble, zDouble));
 				}
+
+			} catch (ValidateException ve) {
+				if (Config.SHOW_STACKTRACE) {
+					ve.printStackTrace();
+				}
+			} catch (RuntimeException rex) {
+				// rex.printStackTrace();
+				return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
 			}
+
 			return F.NIL;
 		}
 

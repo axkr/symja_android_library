@@ -204,8 +204,8 @@ public class BesselJS {
 		// double delta = 1e-5;
 
 		if (x > useAsymptotic) {
-			return new Complex(Math.sqrt((Math.PI / 2.0) / x) * Math.exp(-x)
-					* HypergeometricJS.hypergeometric2F0(n + 0.5, 0.5 - n, -0.5 / x));
+			return new Complex(Math.sqrt(0.5 * Math.PI / x) * Math.exp(-x) * HypergeometricJS
+					.hypergeometricSeries(new double[] { n + 0.5, 0.5 - n }, new double[0], -0.5 / x));
 		}
 		if (x < 0) {
 			return besselK(new Complex(n), new Complex(x));
@@ -226,7 +226,8 @@ public class BesselJS {
 
 		if (x > useAsymptotic) {
 			return Math.sqrt((Math.PI / 2.0) / x) * Math.exp(-x)
-					* HypergeometricJS.hypergeometric2F0(n + 0.5, 0.5 - n, -0.5 / x);
+					* HypergeometricJS.hypergeometricSeries(new double[] { n + 0.5, 0.5 - n }, new double[0], -0.5 / x);
+
 		}
 		if (x < 0) {
 			throw new ArithmeticException("x<0 for BesselK");
@@ -256,13 +257,10 @@ public class BesselJS {
 
 		// asymptotic form as per Johansson
 		if (x.abs() > useAsymptotic) {
-
 			Complex t1 = new Complex(Math.PI / 2.0).divide(x).sqrt().multiply(x.negate().exp());
-			Complex t2 = HypergeometricJS.hypergeometric2F0(n.add(0.5), n.negate().add(0.5),
-					x.multiply(2.5).reciprocal().negate());
-
+			Complex t2 = HypergeometricJS.hypergeometricSeries(new Complex[] { n.add(0.5), n.negate().add(0.5) },
+					new Complex[0], new Complex(-0.5).divide(x));
 			return t1.multiply(t2);
-
 		}
 
 		double nRe = n.getReal();

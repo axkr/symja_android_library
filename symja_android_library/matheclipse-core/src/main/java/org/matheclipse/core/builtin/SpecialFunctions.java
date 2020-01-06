@@ -177,7 +177,7 @@ public class SpecialFunctions {
 					// rex.printStackTrace();
 					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
 				}
-			} 
+			}
 			if (a.isNumber() && b.isNumber()) {
 				if (a.isInteger() && a.isPositive() && b.isInteger() && b.isPositive()) {
 					return Times(Factorial(Plus(CN1, a)), Factorial(Plus(CN1, b)),
@@ -1361,7 +1361,9 @@ public class SpecialFunctions {
 					}
 				}
 			} catch (RuntimeException rex) {
-
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
 			}
 			return F.NIL;
 		}
@@ -1439,7 +1441,9 @@ public class SpecialFunctions {
 					}
 				}
 			} catch (RuntimeException rex) {
-
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
 			}
 			return F.NIL;
 		}

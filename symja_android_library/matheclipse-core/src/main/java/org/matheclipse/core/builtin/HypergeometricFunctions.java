@@ -757,7 +757,7 @@ public class HypergeometricFunctions {
 									Config.DOUBLE_TOLERANCE));
 						}
 					} else {
-						INum result = F.num(HypergeometricJS.hypergeometricPFQ(A, B, cDouble, Config.DOUBLE_TOLERANCE));
+						INum result = F.num(HypergeometricJS.hypergeometricPFQ(A, B, cDouble));
 
 						return result;
 					}

@@ -188,7 +188,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("AiryAi(2.0)", //
 				"0.03492413042327471");
 		checkNumeric("AiryAi(2.5+I)", //
-				"-0.001912089270597423+I*(-0.018032905765072448)");
+				"-0.001912089271378016+I*(-0.01803290576534943)");
 		checkNumeric("AiryAi({1.2, 1.5, 1.8})", //
 				"{0.10612576226331269,0.07174949700810541,0.04703621686684607}");
 	}
@@ -199,7 +199,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("AiryAiPrime(2.5)", //
 				"-0.026250881035902635");
 		checkNumeric("AiryAiPrime(2.5+I)", //
-				"-0.001879208610072348+I*0.031027624283794165");
+				"-0.0018792086096334022+I*0.03102762428411613");
 		checkNumeric("AiryAiPrime({1.2, 1.5, 1.8})", //
 				"{-0.13278537855722639,-0.0973820128423013,-0.06852478011861125}");
 	}
@@ -209,7 +209,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("AiryBi(2.0)", //
 				"3.2980949999782143");
 		checkNumeric("AiryBi(2.5+I)", //
-				"0.5125437840155836+I*5.3349955792709824");
+				"0.5125437840170133+I*5.334995579271628");
 		checkNumeric("AiryBi({1.2, 1.5, 1.8})", //
 				"{1.421133675610348,1.8789415037478954,2.595869356743907}");
 	}
@@ -220,7 +220,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("AiryBiPrime(2.5)", //
 				"9.421423317334302");
 		checkNumeric("AiryBiPrime(2.5+I)", //
-				"-1.20504840498167+I*8.290971678095266");
+				"-1.2050484049806545+I*8.29097167809637");
 		checkNumeric("AiryBiPrime({1.2, 1.5, 1.8})", //
 				"{1.221231398704895,1.8862122548481661,2.9855400508465997}");
 	}
@@ -1284,7 +1284,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("BesselI(0,2.0 )", //
 				"2.279585302336067");
 		checkNumeric("BesselI(3 + I, 1.5 - I)", //
-				"-0.2566499289085075+I*0.04927707435312517");
+				"-0.2566499289084417+I*0.04927707435297661");
 		checkNumeric("BesselI({0, 1, 2}, 1.)", //
 				"{1.2660658777520082,0.565159103992485,0.1357476697670383}");
 	}
@@ -1293,7 +1293,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("BesselJ(-1.9999999999999998,3.0)", //
 				"0.4860912605858912");
 		checkNumeric("BesselJ(-1.999888,3.0)", //
-				"0.48604418359704343");
+				"0.4860441835970433");
 		checkNumeric("BesselJ(0,0.001)", //
 				"0.9999997500000156");
 		checkNumeric("BesselJ(0,5.2)", //
@@ -1301,9 +1301,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("BesselJ(0,4.0)", //
 				"-0.3971498098638473");
 		checkNumeric("BesselJ(1,3.6 )", //
-				"0.09546554717787638");
+				"0.09546554717787617");
 		checkNumeric("BesselJ(7/3 + I, 4.5 - I)", //
-				"1.1890836033637917+I*0.7156530815945776");
+				"1.189083603364107+I*0.715653081595722");
 
 		check("BesselJ(-42, z)", //
 				"BesselJ(42,z)");
@@ -1386,20 +1386,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("BesselK(0,0.53)", //
 				"0.8765603804164854");
 		checkNumeric("BesselK(0,4.0)", //
-				"0.011159676085778308");
+				"0.01115967608594316");
 		checkNumeric("BesselK(1 + I, 3.0  - 2* I)", //
-				"-0.022510755137173245+I*0.016960737347051183");
+				"-0.022510755136980077+I*0.016960737347229977");
 		checkNumeric("BesselK(23, 1.0)", //
 				"4.6611455737443917E27");
 		checkNumeric("BesselK({1, 2, 3}, 1.0)", //
-				"{0.6019072301972264,1.6248388986351678,7.101262824737944}");
+				"{0.6019072301972264,1.6248388986351676,7.101262824737944}");
 	}
 
 	public void testBesselY() {
 		check("BesselY(3.5,-5)", //
 				"I*(-0.0275521)");
 		checkNumeric("BesselY(2.5,-5.0)", //
-				"I*(-0.2943723749617645)");
+				"I*(-0.29437237496179347)");
 		checkNumeric("BesselY(I+1, -Infinity)", //
 				"0");
 		checkNumeric("BesselY(42, Infinity)", //
@@ -1427,13 +1427,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("BesselY(10.0,1.0)", // -1.2161801427868038E8
 				"-1.2161801427868839E8");
 		checkNumeric("BesselY(0,2.5)", //
-				"0.49807035961522855");
+				"0.49807035961522833");
 		checkNumeric("BesselY(0,1.0)", //
 				"0.08825696421567769");
 		checkNumeric("BesselY(0.5*I, 3.0 - I)", //
-				"1.0468646059976179+I*0.8847844476971232");
+				"1.0468646059974482+I*0.8847844476974761");
 		checkNumeric("BesselY(0, {1.0, 2.0, 3.0})", //
-				"{0.08825696421567769,0.5103756726497478,0.3768500100127994}");
+				"{0.08825696421567769,0.5103756726497495,0.37685001001279916}");
 	}
 
 	public void testBesselYZero() {
@@ -7133,24 +7133,24 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testHankelH1() {
 		checkNumeric("HankelH1(2.0,3)", //
-				"0.4860912605858912+I*(-0.160400393484928)");
+				"0.4860912605858912+I*(-0.16040039348492902)");
 		checkNumeric("HankelH1(3,1.2)", //
 				"0.03287433692499494+I*(-3.5898996296131864)");
 		checkNumeric("HankelH1(4.0,Pi)", //
-				"0.15142457763134973+I*(-0.8284254758009467)");
+				"0.15142457763134967+I*(-0.8284254758009438)");
 		checkNumeric("HankelH1(23/47,5.0-I)", //
-				"-0.8840126453738697+I*(-0.37582703842509163)");
+				"-0.8840126453742236+I*(-0.3758270384252581)");
 	}
 
 	public void testHankelH2() {
 		checkNumeric("HankelH2(3,1.2)", //
 				"0.03287433692499494+I*3.5898996296131864");
 		checkNumeric("HankelH2(0.2,3)", //
-				"-0.13378696772476814+I*(-0.4383481561882018)");
+				"-0.13378696772476814+I*(-0.43834815618820155)");
 		checkNumeric("HankelH2(4.0,3*Pi)", //
-				"-0.2721262441569784+I*0.01563182651281588");
+				"-0.27212624415695746+I*0.015631826514348263");
 		checkNumeric("HankelH2(23/47,5.0-I)", //
-				"-0.1272388528903579+I*0.026410835310926417");
+				"-0.12723885289072728+I*0.02641083531089733");
 	}
 
 	public void testGraph() {
@@ -8768,7 +8768,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Hypergeometric1F1(1,2,3.0)", //
 				"6.36185");
 		checkNumeric("Hypergeometric1F1(1,{2,3,4},5.0)", //
-				"{29.48263182051029,11.393052728194332,6.2358316369166005}");
+				"{29.482631820514502,11.393052728205792,6.235831636923476}");
 	}
 
 	public void testHypergeometric2F1() {
@@ -19437,11 +19437,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("SphericalBesselJ(2.5,-5)", //I*0.20448758430717914
 				"I*0.20448758430572492");
 		checkNumeric("SphericalBesselJ(2.0,-5)", //
-				"0.1347312100888303");
+				"0.13473121008512762");
 		checkNumeric("SphericalBesselJ(-0.5,1)", //
 				"0.9590330784042144");
 		checkNumeric("SphericalBesselJ(2.0+I,5.0+I)", //
-				"0.1416392453449182+I*0.0050700991107376255");
+				"0.1416392453448185+I*0.005070099110616646");
 	}
 
 	public void testSphericalBesselY() {
@@ -19450,16 +19450,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-0.613462+I*0.122973");
 		
 		checkNumeric("SphericalBesselY(1,5.5)", //
-				"0.10485295921804552");
+				"0.10485295921804556");
 		checkNumeric("BesselY(2.5,-5)", //
-				"I*(-0.2943723749617645)");
+				"I*(-0.29437237496179347)");
 
 		checkNumeric("SphericalBesselY(-0.5,1)", //
 				"0.11061370096805705");
 		checkNumeric("SphericalBesselY(2.0+I,5.0+I)", //
-				"0.15456969798535944+I*(-0.050557879794783156)");
+				"0.15456969798523884+I*(-0.0505578797946807)");
 		checkNumeric("SphericalBesselY(2.0,-5)", //
-				"-0.16499545760108872");
+				"-0.16499545760110496");
 	}
 
 	public void testSplit() {
@@ -19736,7 +19736,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStruveH() {
-		System.out.println("testStruveH: ");
+		System.out.println("testStruveH: "); 
+		
 		// https://github.com/paulmasson/math/issues/9
 		check("StruveH(0, 50.0)", //
 				"-0.0853402");
