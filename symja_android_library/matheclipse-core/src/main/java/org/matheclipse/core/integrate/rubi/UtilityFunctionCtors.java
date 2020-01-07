@@ -391,10 +391,6 @@ public class UtilityFunctionCtors {
 		return F.binaryAST2(F.$rubi("EasyDQ"), a0, a1);
 	}
 
-	public static IAST EqQ(final IExpr a0) {
-		return F.unaryAST1(EqQ, a0);
-	}
-
 	private final static class EqQ extends B2 {
 		public EqQ() {
 			super();
@@ -1284,10 +1280,6 @@ public class UtilityFunctionCtors {
 
 	public static IAST NegSumBaseQ(final IExpr a0) {
 		return F.unaryAST1(F.$rubi("NegSumBaseQ"), a0);
-	}
-
-	public static IAST NeQ(final IExpr a0) {
-		return F.unaryAST1(NeQ, a0);
 	}
 
 	private final static class NeQ extends B2 {
