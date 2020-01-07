@@ -590,7 +590,7 @@ public class HypergeometricJS {
 			Complex t2 = Arithmetic.lanczosApproxGamma(b.subtract(a)).reciprocal()
 					.multiply(Arithmetic.lanczosApproxGamma(c.subtract(a)).reciprocal())
 					.multiply(x.negate().pow(a.negate())).multiply(
-							hypergeometricPFQ(new Complex[] { a, a.add(b.negate()).add(1), a.add(c.negate().add(1.0)) },
+							hypergeometricSeries(new Complex[] { a, a.add(b.negate()).add(1), a.add(c.negate().add(1.0)) },
 									new Complex[] {}, x.reciprocal()));// , true ) );
 
 			return Arithmetic.lanczosApproxGamma(b).multiply(Arithmetic.lanczosApproxGamma(c)).multiply(t1.add(t2));
