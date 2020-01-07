@@ -9093,9 +9093,6 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[1/Sqrt[3 + 9*x^2 + 2*x^4], x]", //
 				"(Sqrt[(6 + (9 - Sqrt[57])*x^2)/(6 + (9 + Sqrt[57])*x^2)]*(6 + (9 + Sqrt[57])*x^2)*EllipticF[ArcTan[Sqrt[(9 + Sqrt[57])/6]*x], (-19 + 3*Sqrt[57])/4])/(Sqrt[6*(9 + Sqrt[57])]*Sqrt[3 + 9*x^2 + 2*x^4])", //
-				"((6+(9+Sqrt(57))*x^2)*Sqrt((6+(9-Sqrt(57))*x^2)/(6+(9+Sqrt(57))*x^2))*EllipticF(ArcTan(\n"
-						+ "1/6*Sqrt(6*(9+Sqrt(57)))*x),1/4*(-19+3*Sqrt(57))))/(Sqrt(6*(9+Sqrt(57)))*Sqrt(3+\n"
-						+ "9*x^2+2*x^4))", //
 				1099);
 	}
 
