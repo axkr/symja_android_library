@@ -27,7 +27,6 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
-import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.Hypergeometric0F1Rules;
 import org.matheclipse.core.reflection.system.rules.Hypergeometric2F1Rules;
@@ -516,15 +515,34 @@ public class HypergeometricFunctions {
 			if (z.isInfinity()) {
 				return F.CComplexInfinity;
 			}
-			if (b.isReal() && z.isReal()) {
-				double bDouble = ((ISignedNumber) b).doubleValue();
-				double zDouble = ((ISignedNumber) z).doubleValue();
+			if (engine.isDoubleMode()) {
 				try {
-					return F.num(de.lab4inf.math.functions.HypergeometricLimitFunction.limitSeries(bDouble, zDouble));
+					double bDouble = Double.NaN;
+					double zDouble = Double.NaN;
+					try {
+						bDouble = b.evalDouble();
+						zDouble = z.evalDouble();
+					} catch (ValidateException ve) {
+					}
+					if (Double.isNaN(bDouble) || Double.isNaN(zDouble)) {
+						Complex bc = b.evalComplex();
+						Complex zc = z.evalComplex();
+
+						return F.complexNum(HypergeometricJS.hypergeometric0F1(bc, zc));
+
+					} else {
+						return F.num(HypergeometricJS.hypergeometric0F1(bDouble, zDouble));
+					}
+
+				} catch (ValidateException ve) {
+					if (Config.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
 				} catch (RuntimeException rex) {
+					// rex.printStackTrace();
 					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
 				}
-			}
+			} 
 			return F.NIL;
 		}
 
@@ -594,7 +612,7 @@ public class HypergeometricFunctions {
 					// rex.printStackTrace();
 					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
 				}
-			} 
+			}
 			if (a.equals(b)) {
 				// E^z
 				return F.Power(F.E, z);
@@ -661,7 +679,7 @@ public class HypergeometricFunctions {
 				// Pochhammer(c-b, n) / Pochhammer(c, n)
 				return F.Divide(F.Expand(F.Pochhammer(F.Subtract(c, b), n)), F.Pochhammer(c, n));
 			}
-			 
+
 			if (engine.isDoubleMode()) {
 				try {
 					double aDouble = Double.NaN;
@@ -700,20 +718,20 @@ public class HypergeometricFunctions {
 					// rex.printStackTrace();
 					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
 				}
-			} 
-//			
-//			if (a.isReal() && b.isReal() && c.isReal() && z.isReal()) {
-//				double aDouble = ((ISignedNumber) a).doubleValue();
-//				double bDouble = ((ISignedNumber) b).doubleValue();
-//				double cDouble = ((ISignedNumber) c).doubleValue();
-//				double zDouble = ((ISignedNumber) z).doubleValue();
-//				try {
-//					return F.num(de.lab4inf.math.functions.HypergeometricGaussSeries.gaussSeries(aDouble, bDouble,
-//							cDouble, zDouble));
-//				} catch (RuntimeException rex) {
-//					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
-//				}
-//			}
+			}
+			//
+			// if (a.isReal() && b.isReal() && c.isReal() && z.isReal()) {
+			// double aDouble = ((ISignedNumber) a).doubleValue();
+			// double bDouble = ((ISignedNumber) b).doubleValue();
+			// double cDouble = ((ISignedNumber) c).doubleValue();
+			// double zDouble = ((ISignedNumber) z).doubleValue();
+			// try {
+			// return F.num(de.lab4inf.math.functions.HypergeometricGaussSeries.gaussSeries(aDouble, bDouble,
+			// cDouble, zDouble));
+			// } catch (RuntimeException rex) {
+			// return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+			// }
+			// }
 			return F.NIL;
 		}
 
