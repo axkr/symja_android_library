@@ -851,7 +851,12 @@ public class ExprParser extends Scanner {
 						}
 						return F.num(new Apfloat(number, precision));
 					}else {
-						fCurrentPosition--;
+						fCurrentPosition++;
+						long precision = getJavaLong();
+						if (precision < Config.MACHINE_PRECISION) {
+							precision = Config.MACHINE_PRECISION;
+						}
+						return F.num(new Apfloat(number, precision));
 					}
 				}
 				temp = new NumStr(number);

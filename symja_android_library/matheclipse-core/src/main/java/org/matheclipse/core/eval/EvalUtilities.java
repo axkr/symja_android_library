@@ -72,7 +72,6 @@ public class EvalUtilities extends MathMLUtilities {
 			IExpr parsedExpression = fEvalEngine.parse(inputExpression);
 			if (parsedExpression != null) {
 				// F.join();
-				fEvalEngine.reset();
 				IExpr temp = fEvalEngine.evaluate(parsedExpression);
 				fEvalEngine.addOut(temp);
 				return temp;

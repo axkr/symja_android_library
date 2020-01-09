@@ -234,6 +234,10 @@ public class ApfloatNum implements INum {
 	public Apfloat apfloatValue(long precision) {
 		return fApfloat;
 	}
+	
+	public Apfloat apfloatValue( ) {
+		return fApfloat;
+	}
 
 	@Override
 	public boolean equals(final Object arg0) {
@@ -553,6 +557,10 @@ public class ApfloatNum implements INum {
 
 	@Override
 	public ApfloatNum apfloatNumValue(long precision) {
+		return this;
+	}
+
+	public ApfloatNum apfloatNumValue() {
 		return this;
 	}
 

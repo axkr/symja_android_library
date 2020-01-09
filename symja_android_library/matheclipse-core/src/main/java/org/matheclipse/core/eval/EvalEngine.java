@@ -33,6 +33,7 @@ import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -51,6 +52,7 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.visit.ModuleReplaceAll;
+import org.matheclipse.core.visit.VisitorPrecision;
 import org.matheclipse.parser.client.math.MathException;
 
 import com.google.common.cache.Cache;
@@ -556,7 +558,7 @@ public class EvalEngine implements Serializable {
 			final boolean isNumericFunction = (ISymbol.NUMERICFUNCTION & attr) == ISymbol.NUMERICFUNCTION;
 			boolean isNumericArgument = ast.isNumericArgument();
 			if (!fNumericMode) {
-				if (isNumericFunction && ast.isNumericArgument()) {
+				if (isNumericFunction && isNumericArgument) {
 					localNumericMode = true;
 				}
 			}
@@ -1285,6 +1287,26 @@ public class EvalEngine implements Serializable {
 
 	final public IAST evalArgsOrderlessN(IAST ast1) {
 		IASTMutable copy = F.NIL;
+		// EvalEngine engine = EvalEngine.get();
+		// long precision = engine.getNumericPrecision();
+		// for (int i = 1; i < ast1.size(); i++) {
+		// IExpr temp = ast1.get(i);
+		// if (temp instanceof ApfloatNum) {
+		// if (((ApfloatNum) temp).precision() > precision) {
+		// precision = ((ApfloatNum) temp).precision();
+		// }
+		// } else if (temp instanceof ApcomplexNum) {
+		// if (((ApcomplexNum) temp).precision() > precision) {
+		// precision = ((ApcomplexNum) temp).precision();
+		// }
+		// } else if (temp.isAST(F.Interval)) {
+		// long p = IntervalSym.precision((IAST) temp);
+		// if (p > precision) {
+		// precision = p;
+		// }
+		// }
+		// }
+		// engine.setNumericPrecision(precision);
 		for (int i = 1; i < ast1.size(); i++) {
 			IExpr temp = ast1.get(i);
 			if (!temp.isNumeric() && temp.isNumericFunction()) {
@@ -2100,8 +2122,6 @@ public class EvalEngine implements Serializable {
 	 */
 	final public IExpr parse(String expression) {
 		return parse(expression, Config.EXPLICIT_TIMES_OPERATOR);
-		// final ExprParser parser = new ExprParser(this, fRelaxedSyntax);
-		// return parser.parse(expression);
 	}
 
 	/**
@@ -2119,7 +2139,15 @@ public class EvalEngine implements Serializable {
 	final public IExpr parse(String expression, boolean explicitTimes) {
 		final ExprParser parser = new ExprParser(this, ExprParserFactory.RELAXED_STYLE_FACTORY, fRelaxedSyntax, false,
 				explicitTimes);
-		return parser.parse(expression);
+		IExpr temp = parser.parse(expression);
+		// determine the precision of the input before evaluation
+		VisitorPrecision visitor = new VisitorPrecision();
+		temp.accept(visitor);
+		long precision = visitor.getNumericPrecision();
+		if (precision > fNumericPrecision) {
+			fNumericPrecision=precision;
+		}
+		return temp;
 	}
 
 	/**

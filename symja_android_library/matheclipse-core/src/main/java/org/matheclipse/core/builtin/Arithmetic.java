@@ -2178,7 +2178,7 @@ public final class Arithmetic {
 			final boolean numericMode = engine.isNumericMode();
 			final long oldPrecision = engine.getNumericPrecision();
 			try {
-				long numericPrecision = Config.MACHINE_PRECISION;
+				long numericPrecision = engine.getNumericPrecision();//Config.MACHINE_PRECISION;
 				if (ast.isAST2()) {
 					IExpr arg2 = engine.evaluateNonNumeric(ast.arg2());
 					numericPrecision = arg2.toIntDefault();// Validate.checkIntType(arg2);

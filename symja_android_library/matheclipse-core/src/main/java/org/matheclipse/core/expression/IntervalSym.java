@@ -3,6 +3,7 @@ package org.matheclipse.core.expression;
 import java.util.Comparator;
 
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -116,14 +117,14 @@ public class IntervalSym {
 	 * If the argument is a list of 2 elements, try sorting the elements. If the argument is not a list return a new
 	 * <code>{argOfIntervalList, argOfIntervalList]</code>
 	 * 
-	 * @param argOfIntervalList
+	 * @param arg
 	 * @param engine
 	 * @return
 	 */
-	private static IAST normalizeArgument(final IExpr argOfIntervalList, final EvalEngine engine) {
-		if (argOfIntervalList.isList()) {
-			if (argOfIntervalList.size() == 3) {
-				IAST list = (IAST) argOfIntervalList;
+	private static IAST normalizeArgument(final IExpr arg, final EvalEngine engine) {
+		if (arg.isList()) {
+			if (arg.size() == 3) {
+				IAST list = (IAST) arg;
 				IExpr min = list.arg1();
 				IExpr max = list.arg2();
 				if (min.isRealResult() && max.isRealResult()) {
@@ -134,22 +135,25 @@ public class IntervalSym {
 				return F.NIL;
 			}
 			// The expression `1` is not a valid interval.
-			String str = IOFunctions.getMessage("nvld", F.List(argOfIntervalList), engine);
+			String str = IOFunctions.getMessage("nvld", F.List(arg), engine);
 			throw new ArgumentTypeException(str);
 		}
-		if (argOfIntervalList instanceof INum) {
-			if (argOfIntervalList instanceof ApfloatNum) {
-				Apfloat v = ((ApfloatNum) argOfIntervalList).fApfloat;
-				// return F.List(F.num(v.nextDown()), //
-				// F.num(v.nextUp()));
-				return F.List(F.num(v), //
-						F.num(v));
-			}
-			double value = ((ISignedNumber) argOfIntervalList).doubleValue();
+		if (arg instanceof INum) {
+			// if (arg instanceof ApfloatNum) {
+			// // if (arg.isZero()) {
+			// // test
+			// // return F.List(F.num(new Apfloat("-1e-59", 60)), //
+			// // F.num(new Apfloat("1e-59", 60)));
+			// // }
+			// Apfloat v = ((ApfloatNum) arg).fApfloat;
+			// return F.List(F.num(ApfloatMath.nextDown(v)), //
+			// F.num(ApfloatMath.nextUp(v)));
+			// }
+			double value = ((ISignedNumber) arg).doubleValue();
 			return F.List(F.num(Math.nextDown(value)), //
 					F.num(Math.nextUp(value)));
 		}
-		return F.List(argOfIntervalList, argOfIntervalList);
+		return F.List(arg, arg);
 	}
 
 	/**
@@ -193,6 +197,50 @@ public class IntervalSym {
 		}
 		return F.C0;
 	}
+
+	// public static long precision(final IAST interval) {
+	// EvalEngine engine = EvalEngine.get();
+	// long precision = engine.getNumericPrecision();
+	// if (interval.isPresent()) {
+	// for (int i = 1; i < interval.size(); i++) {
+	// IExpr arg = interval.get(i);
+	// if (arg.isAST()) {
+	// IAST list = (IAST) arg;
+	// IExpr min = list.arg1();
+	// if (min instanceof ApfloatNum) {
+	// if (((ApfloatNum) min).precision() > precision) {
+	// precision = ((ApfloatNum) min).precision();
+	// }
+	// } else if (min instanceof ApcomplexNum) {
+	// if (((ApcomplexNum) min).precision() > precision) {
+	// precision = ((ApcomplexNum) min).precision();
+	// }
+	// }
+	// IExpr max = list.arg2();
+	// if (max instanceof ApfloatNum) {
+	// if (((ApfloatNum) min).precision() > precision) {
+	// precision = ((ApfloatNum) min).precision();
+	// }
+	// } else if (max instanceof ApcomplexNum) {
+	// if (((ApcomplexNum) min).precision() > precision) {
+	// precision = ((ApcomplexNum) min).precision();
+	// }
+	// }
+	// }else {
+	// if (arg instanceof ApfloatNum) {
+	// if (((ApfloatNum) arg).precision() > precision) {
+	// precision = ((ApfloatNum) arg).precision();
+	// }
+	// } else if (arg instanceof ApcomplexNum) {
+	// if (((ApcomplexNum) arg).precision() > precision) {
+	// precision = ((ApcomplexNum) arg).precision();
+	// }
+	// }
+	// }
+	// }
+	// }
+	// return precision;
+	// }
 
 	public static IExpr abs(final IAST ast) {
 		IAST interval = normalize(ast);
@@ -879,4 +927,62 @@ public class IntervalSym {
 		return F.NIL;
 	}
 
+	// /**
+	// * Returns the number adjacent to the first argument in the direction of the second argument, considering the
+	// scale
+	// * and precision of the first argument. If the precision of the first argument is infinite, the first argument is
+	// * returned. If both arguments compare as equal then the first argument is returned.
+	// *
+	// * @param start
+	// * The starting value.
+	// * @param direction
+	// * Value indicating which of <code>start</code>'s neighbors or <code>start</code> should be returned.
+	// *
+	// * @return The number adjacent to <code>start</code> in the direction of <code>direction</code>.
+	// *
+	// * @since 1.10.0
+	// */
+	// public static Apfloat nextAfter(Apfloat start, Apfloat direction) {
+	// return nextInDirection(start, direction.compareTo(start));
+	// }
+	//
+	// /**
+	// * Returns the number adjacent to the argument in the direction of positive infinity, considering the scale and
+	// * precision of the argument. If the precision of the argument is infinite, the argument is returned.
+	// *
+	// * @param start
+	// * The starting value.
+	// *
+	// * @return The adjacent value closer to positive infinity.
+	// *
+	// * @since 1.10.0
+	// */
+	//
+	// public static Apfloat nextUp(Apfloat x) {
+	// return nextInDirection(x, 1);
+	// }
+	//
+	// /**
+	// * Returns the number adjacent to the argument in the direction of negative infinity, considering the scale and
+	// * precision of the argument. If the precision of the argument is infinite, the argument is returned.
+	// *
+	// * @param start
+	// * The starting value.
+	// *
+	// * @return The adjacent value closer to negative infinity.
+	// *
+	// * @since 1.10.0
+	// */
+	//
+	// public static Apfloat nextDown(Apfloat x) {
+	// return nextInDirection(x, -1);
+	// }
+	//
+	// private static Apfloat nextInDirection(Apfloat x, int direction) {
+	// long scale = x.scale() - x.precision();
+	// if (x.precision() == Apfloat.INFINITE || x.scale() < 0 && scale >= 0) {// Detect overflow
+	// return x;
+	// }
+	// return x.add(ApfloatMath.scale(new Apfloat(direction, 1, x.radix()), scale));
+	// }
 }

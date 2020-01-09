@@ -151,6 +151,14 @@ public class OutputFormFactory {
 
 	private void convertDouble(final Appendable buf, final double doubleValue, final INum d, final int precedence,
 			boolean caller) throws IOException {
+		if (d instanceof ApfloatNum) {
+			final boolean isNegative = d.isNegative();
+			if (!isNegative && caller == PLUS_CALL) {
+				append(buf, "+");
+			}
+			convertDoubleString(buf, convertApfloat(d.apfloatValue(d.precision())), precedence, isNegative);
+			return;
+		}
 		if (F.isZero(doubleValue, Config.MACHINE_EPSILON)) {
 			convertDoubleString(buf, convertDoubleToFormattedString(0.0), precedence, false);
 			return;
@@ -161,8 +169,6 @@ public class OutputFormFactory {
 		}
 		if (d instanceof Num) {
 			convertDoubleString(buf, convertDoubleToFormattedString(doubleValue), precedence, isNegative);
-		} else {
-			convertDoubleString(buf, convertApfloat(d.apfloatValue(d.precision())), precedence, isNegative);
 		}
 	}
 
@@ -999,15 +1005,13 @@ public class OutputFormFactory {
 								IExpr min = subList.arg1();
 								IExpr max = subList.arg2();
 								if (min instanceof INum) {
-									convertDoubleString(buf, convertDoubleToFormattedString(min.evalDouble()), 0,
-											false);
+									convertDouble(buf, (INum)min, 0, false);
 								} else {
 									convert(buf, min);
 								}
 								append(buf, ",");
 								if (max instanceof INum) {
-									convertDoubleString(buf, convertDoubleToFormattedString(max.evalDouble()), 0,
-											false);
+									convertDouble(buf, (INum)max, 0, false);
 								} else {
 									convert(buf, max);
 								}

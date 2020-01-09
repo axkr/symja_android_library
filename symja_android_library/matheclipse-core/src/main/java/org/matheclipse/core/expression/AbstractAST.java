@@ -2800,7 +2800,9 @@ public abstract class AbstractAST implements IASTMutable {
 			return forAll(x -> x.isNumericFunction() || //
 					(x.isList() && ((IAST) x).forAll(y -> y.isNumericFunction())));
 		}
-		return false;
+		// TODO optimize this expression:
+		return isAST(F.Interval)&&forAll(x -> x.isNumericArgument() || //
+				(x.isList() && ((IAST) x).forAll(y -> y.isNumericArgument())));
 	}
 
 	/** {@inheritDoc} */
