@@ -62,7 +62,7 @@ public class AST2Expr {
 			"Rationals", "ReadProtected", "Real", "Reals", "SameTest", "Second", "SequenceHold", "Slot", "SlotSequence",
 			"Strict", "String", "Symbol", "TooLarge", "Trig", "True", "Variable", "White", "Unknown", "ViewPoint" };
 
-	public final static String[] FUNCTION_STRINGS = { "Abort", "Abs", "AbsArg", "Accumulate", "AddTo",
+	public final static String[] FUNCTION_STRINGS = { "Abort", "Abs", "AbsArg", "AbsoluteCorrelation", "Accumulate", "AddTo",
 			"AdjacencyMatrix", "AiryAi", "AiryAiPrime", "AiryBi", "AiryBiPrime", "AllTrue", "And", "AngleVector",
 			"AnyTrue", "AntihermitianMatrixQ", "AntiSymmetric", "AntisymmetricMatrixQ", "Annuity", "AnnuityDue",
 			"AlgebraicNumber", "Alternatives", "Apart", "AppellF1", "Append", "AppendTo", "Apply", "ArcCos", "ArcCosh",

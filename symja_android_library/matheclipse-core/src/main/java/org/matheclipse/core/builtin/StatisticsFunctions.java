@@ -64,6 +64,7 @@ public class StatisticsFunctions {
 	private static class Initializer {
 
 		private static void init() {
+			F.AbsoluteCorrelation.setEvaluator(new AbsoluteCorrelation());
 			F.ArithmeticGeometricMean.setEvaluator(new ArithmeticGeometricMean());
 			F.CDF.setEvaluator(new CDF());
 			F.PDF.setEvaluator(new PDF());
@@ -178,6 +179,26 @@ public class StatisticsFunctions {
 		// return F.NIL;
 		// }
 
+	}
+
+	private final static class AbsoluteCorrelation extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr a = ast.arg1();
+			IExpr b = ast.arg2();
+			int dim1 = a.isVector();
+			int dim2 = b.isVector();
+			if (dim1 >= 0 && dim1 == dim2) {
+				return F.Divide(F.Dot(a, F.Conjugate(b)), F.Length(a));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
 	}
 
 	private static class InverseCDF extends AbstractFunctionEvaluator {
@@ -2552,19 +2573,21 @@ public class StatisticsFunctions {
 			return IOFunctions.ARGS_1_2;
 		}
 
-		private IExpr evaluateArg2(final IAST arg1, final IAST arg2, EvalEngine engine) {
+		private static IExpr evaluateArg2(final IAST arg1, final IAST arg2, EvalEngine engine) {
 			try {
 				int arg1Length = arg1.isVector();
 				if (arg1Length > 1) {
 					int arg2Length = arg2.isVector();
 					if (arg1Length == arg2Length) {
-						try {
-							double[] arg1DoubleArray = arg1.toDoubleVector();
-							double[] arg2DoubleArray = arg2.toDoubleVector();
-							org.hipparchus.stat.correlation.Covariance cov = new org.hipparchus.stat.correlation.Covariance();
-							return F.num(cov.covariance(arg1DoubleArray, arg2DoubleArray, true));
-						} catch (Exception ex) {
-							//
+						if (engine.isNumericMode()) {
+							try {
+								double[] arg1DoubleArray = arg1.toDoubleVector();
+								double[] arg2DoubleArray = arg2.toDoubleVector();
+								org.hipparchus.stat.correlation.Covariance cov = new org.hipparchus.stat.correlation.Covariance();
+								return F.num(cov.covariance(arg1DoubleArray, arg2DoubleArray, true));
+							} catch (Exception ex) {
+								//
+							}
 						}
 						return vectorCovarianceSymbolic(arg1, arg2, arg1Length);
 					}
@@ -2580,7 +2603,7 @@ public class StatisticsFunctions {
 			return F.NIL;
 		}
 
-		public static IExpr vectorCovarianceSymbolic(final IAST arg1, final IAST arg2, int arg1Length) {
+		private static IExpr vectorCovarianceSymbolic(final IAST arg1, final IAST arg2, int arg1Length) {
 			if (arg1Length == 2) {
 				return F.Times(F.C1D2, F.Subtract(arg1.arg1(), arg1.arg2()),
 						F.Subtract(F.Conjugate(arg2.arg1()), F.Conjugate(arg2.arg2())));
@@ -2987,24 +3010,24 @@ public class StatisticsFunctions {
 								sum.append(F.subst(xExpr, F.Rule(x, data.get(i))));
 							}
 							return sum.divide(F.ZZ(data.argSize()));
-							// } else if (distribution.isDiscreteDistribution()) {
-							// IDiscreteDistribution dist = getDiscreteDistribution(distribution);
-							// int[] interval = new int[] { dist.getSupportLowerBound(distribution),
-							// dist.getSupportUpperBound(distribution) };
-							// // int[] interval = dist.range(distribution, xExpr, x);
-							// if (interval != null) {
-							// IExpr pdf = F.PDF.of(engine, distribution, x);
-							// // for discrete distributions take the sum:
-							// IASTAppendable sum = F.PlusAlloc(100);
-							//
-							// for (int i = interval[0]; i <= interval[1]; i++) {
-							// IExpr temp = engine.evaluate(F.subst(pdf, F.Rule(x, F.ZZ(i))));
-							// if (!temp.isZero()) {
-							// sum.append( F.Times(F.subst(xExpr, F.Rule(x, F.ZZ(i))), temp) );
-							// }
-							// }
-							// return sum;
-							// }
+//						} else if (distribution.isDiscreteDistribution()) {
+//							IDiscreteDistribution dist = getDiscreteDistribution(distribution);
+//							int[] interval = new int[] { dist.getSupportLowerBound(distribution),
+//									dist.getSupportUpperBound(distribution) };
+//							// int[] interval = dist.range(distribution, xExpr, x);
+//							if (interval != null) {
+//								IExpr pdf = F.PDF.of(engine, distribution, x);
+//								// for discrete distributions take the sum:
+//								IASTAppendable sum = F.PlusAlloc(100);
+//
+//								for (int i = interval[0]; i <= interval[1]; i++) {
+//									IExpr temp = engine.evaluate(F.subst(pdf, F.Rule(x, F.ZZ(i))));
+//									if (!temp.isZero()) {
+//										sum.append(F.Times(F.subst(xExpr, F.Rule(x, F.ZZ(i))), temp));
+//									}
+//								}
+//								return sum;
+//							}
 						}
 					}
 				} catch (Exception ex) {
@@ -4562,7 +4585,7 @@ public class StatisticsFunctions {
 			IExpr arg1 = ast.arg1();
 			if ((arg1.isList() && arg1.size() > 1) || arg1.isDistribution()) {
 				IAST list = (IAST) arg1;
-				if (ast.size()==3) {
+				if (ast.size() == 3) {
 					IExpr arg2 = ast.arg2();
 					int[] dimParameters = arg2.isMatrix();
 					if (dimParameters == null || dimParameters[0] != 2 || dimParameters[1] != 2) {
