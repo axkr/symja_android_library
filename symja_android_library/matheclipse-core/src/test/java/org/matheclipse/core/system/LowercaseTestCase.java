@@ -118,6 +118,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{1,1,0},{0,Pi/2,0}}");
 	}
 
+	public void testAbsoluteCorrelation() {
+		check("AbsoluteCorrelation({5, 3/4, 1}, {2, 1/2, 1})", //
+				"91/24");
+		check("AbsoluteCorrelation({1.5, 3, 5, 10}, {2, 1.25, 15, 8})", //
+				"40.4375");
+		check("AbsoluteCorrelation(N({1, 2, 5, 6}, 20), N({2, 3, 6, 8}, 20))", //
+				"2.15*10^1");
+		check("AbsoluteCorrelation({2 + I, 3 - 2*I, 5 + 4* I}, {I, 1 + 2*I, 10 - 5*I})", //
+				"10+I*55/3");
+	}
+
 	public void testAccumulate() {
 		check("Accumulate({{a, b}, {c, d}, {e, f}})", //
 				"{{a,b},{a+c,b+d},{a+c+e,b+d+f}}");
@@ -3547,8 +3558,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCorrelation() {
+		check("Correlation({a,b},{c,d})", //
+				"((a-b)*(Conjugate(c)-Conjugate(d)))/(Sqrt((a-b)*(Conjugate(a)-Conjugate(b)))*Sqrt((c-d)*(Conjugate(c)-Conjugate(d))))");
 		check("Correlation({10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5}, {8.04, 6.95, 7.58, 8.81, 8.33, 9.96, 7.24, 4.26, 10.84, 4.82, 5.68})", //
 				"0.816421");
+		check("Correlation({5, 3/4, 1}, {2, 1/2, 1})", //
+				"2*Sqrt(3/13)");
 	}
 
 	public void testCosineDistance() {
@@ -3653,6 +3668,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCovariance() {
+		check("Covariance({10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5}, {8.04, 6.95, 7.58, 8.81, 8.33, 9.96, 7.24, 4.26, 10.84, 4.82, 5.68})", //
+				"5.501");
 		check("Covariance({0.2, 0.3, 0.1}, {0.3, 0.3, -0.2})", //
 				"0.025");
 		check("Covariance({a, b, c,d,e}, {x, y, z,v,w})", //
@@ -9478,17 +9495,24 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInterval() {
-		check("Interval(0.0``500)", //
-				"Interval({0.0,0.0})");
+//		check("Interval(0.0``40)", //
+//				"Interval({0,0})");
+//		check("Interval(N(Pi,60))-Pi", //
+//				"Interval({-1*10^-59,1*10^-59})");
+//		check("Interval(N(Pi,60))+Pi", //
+//				"Interval({6.28318530717958647692528676655900576839433879875021164194987,6.28318530717958647692528676655900576839433879875021164194989})");
+//		check("Interval(1.0``40)", //
+//				"Interval({9.99999999999999999999999999999999999999*10^-1,1.000000000000000000000000000000000000001})");
+
 		check("Interval({-1,1})", //
 				"Interval({-1,1})");
 		check("Cos(Interval({0, Pi}))", //
 				"Interval({-1,1})");
 
 		check("Interval(0.)", //
-				"Interval({-4.90000*10^-324,4.90000*10^-324})");
+				"Interval({0.0,0.0})");
 		check("Interval(0.1)-0.1", //
-				"Interval({-1.38778*10^-17,1.38778*10^-17})");
+				"Interval({0.0,0.0})");
 		check("Interval(100.)-100.0", //
 				"Interval({-1.42109*10^-14,1.42109*10^-14})");
 		check("Sin(Interval(N(Pi)))", //
@@ -12546,6 +12570,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testN() {
+		// test precision 30
+		check("2/3 + Pi + 5.5`30", //
+				"9.30825932025645990512931004994");
+		check("2/3 + Pi + 5.5``30", //
+				"9.30825932025645990512931004994");
+		
 		// imaginary part is zero
 		check("I^I //N", //
 				"0.20788");
@@ -12617,8 +12647,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1.82226");
 		check("ND(BesselY(10.0,x), x, 1)", //
 				"1.20940*10^9");
-		
+
 	}
+
 	public void testNDSolve() {
 
 		check("NDSolve({ y(x)*Cos(x + y(x))== (y'(x)), y(0)==1}, y, {x, 0, 30})", //
@@ -14672,7 +14703,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("N(Pi, 30) + I", //
 				"3.14159265358979323846264338327+I*1");
 		check("N(Pi, 30) + E", //
-				"5.85987448204883832925824168169");
+				"5.85987448204883847382293085463");
 		// }
 		check("1 + 2", //
 				"3");
@@ -19434,7 +19465,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-0.12277149950007821");
 		checkNumeric("BesselJ(2.5,-5)", //
 				"I*0.2403772011113174");
-		checkNumeric("SphericalBesselJ(2.5,-5)", //I*0.20448758430717914
+		checkNumeric("SphericalBesselJ(2.5,-5)", // I*0.20448758430717914
 				"I*0.20448758430572492");
 		checkNumeric("SphericalBesselJ(2.0,-5)", //
 				"0.13473121008512762");
@@ -19448,7 +19479,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// TODO improve this value
 		check("SphericalBesselY(2.5,-5)", //
 				"-0.613462+I*0.122973");
-		
+
 		checkNumeric("SphericalBesselY(1,5.5)", //
 				"0.10485295921804556");
 		checkNumeric("BesselY(2.5,-5)", //
@@ -19736,8 +19767,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStruveH() {
-		System.out.println("testStruveH: "); 
-		
+		System.out.println("testStruveH: ");
+
 		// https://github.com/paulmasson/math/issues/9
 		check("StruveH(0, 50.0)", //
 				"-0.0853402");
@@ -20893,7 +20924,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("N(Pi, 30) * N(E, 30)", //
 				"8.53973422267356706546355086954");
 		check("N(Pi, 30) * E", //
-				"8.53973422267356661130018539536");
+				"8.53973422267356706546355086954");
 		check("N(Pi, 30) * E // Precision", //
 				"30");
 
