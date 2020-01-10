@@ -1,6 +1,7 @@
 package org.matheclipse.core.expression;
 
 import org.apfloat.Apfloat;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
@@ -36,9 +37,15 @@ public final class NumStr extends Num {
 		} else {
 			fDouble = Double.parseDouble(fFloatStr);
 		}
+
 		fPrecision = fFloatStr.length();
 		if (fFloatStr.startsWith("0.")) {
 			fPrecision -= 2;
+		} else if (fFloatStr.indexOf(".") > 0) {
+			fPrecision--;
+		}
+		if (fPrecision < Config.MACHINE_PRECISION) {
+			fPrecision = Config.MACHINE_PRECISION;
 		}
 	}
 
@@ -62,12 +69,9 @@ public final class NumStr extends Num {
 
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
-		if (engine.isNumericMode() && engine.isApfloat()) { // EvalEngine.isApfloat(fPrecision)) {
-			long precision = fPrecision;
-			if (engine.isApfloat()) {
-				precision = fPrecision < engine.getNumericPrecision() ? fPrecision : engine.getNumericPrecision();
-			}
-			engine.setNumericPrecision(precision);
+		if (engine.isNumericMode() && engine.isApfloat()) {
+			long precision = fPrecision < engine.getNumericPrecision() ? engine.getNumericPrecision() : fPrecision;
+			// engine.setNumericPrecision(precision);
 			if (fExponent == 0) {
 				return ApfloatNum.valueOf(fFloatStr, precision);
 			}
@@ -77,12 +81,13 @@ public final class NumStr extends Num {
 	}
 
 	public INumber evaluatePrecision(EvalEngine engine) {
-		if (EvalEngine.isApfloat(fPrecision)) {
-			long precision = fPrecision;
-			if (engine.isApfloat()) {
-				precision = fPrecision < engine.getNumericPrecision() ? fPrecision : engine.getNumericPrecision();
-			}
-			engine.setNumericPrecision(precision);
+		if (engine.isApfloat()) {
+			long precision = fPrecision < engine.getNumericPrecision() ? engine.getNumericPrecision() : fPrecision;
+			// long precision = fPrecision;
+			// if (engine.isApfloat()) {
+			// precision = fPrecision < engine.getNumericPrecision() ? fPrecision : engine.getNumericPrecision();
+			// }
+			// engine.setNumericPrecision(precision);
 			if (fExponent == 0) {
 				return ApfloatNum.valueOf(fFloatStr, precision);
 			}
@@ -147,6 +152,10 @@ public final class NumStr extends Num {
 
 	public String getFloatStr() {
 		return fFloatStr;
+	}
+
+	public long getNumericfPrecision() {
+		return fPrecision;
 	}
 
 }

@@ -3433,7 +3433,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testCos() {
 		check("Cos(1.20000000000000000000000)", //
-				"3.623577544766735776383733*10^-1");
+				"3.62357754476673577638373*10^-1");
 
 		// print argx message
 		check("Cos( )", //
@@ -6966,6 +6966,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testFindRoot() {
+		check("Exp(1.243624090168953 * E - 16) - 1", //
+				"-0.999997");
+		
 		checkNumeric("FindRoot(30*x/0.000002==30, {x, 0, 5}, Method->brent)", //
 				"{x->2.0E-6}");
 		// github issue #60
@@ -6995,12 +6998,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{x->0.0}");
 		if (!Config.EXPLICIT_TIMES_OPERATOR) {
 			// implicit times operator '*' allowed
-			check("Exp(1.2436240901689538 * E - 16) - 1", //
+			check("Exp(1.243624090168953 * E - 16) - 1", //
 					"-0.999997");
-			check("Exp(1.2436240901689538E-16) - 1", //
+			check("Exp(1.243624090168953E-16) - 1", //
 					"-0.999997");
 		} else {
-			check("Exp(1.2436240901689538E-16) - 1", //
+			check("Exp(1.243624090168953E-16) - 1", //
 					"0.0");
 		}
 
@@ -8153,7 +8156,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Gamma(2.3 + I)", //
 				"0.719141+I*0.540614");
 		check("Gamma(2.20000000000000000000000000000000000000000)", //
-				"1.101802490879712732769141986222996480824186");
+				"1.10180249087971273276914198622299648082418");
 		check("N(Gamma(100.000000000000000000000000000+374.000000000000000000000000000*I), 30)", //
 				"4.74294943677064514689542753376*10^1+I*(-3.27488916473624576880974867017*10^1)");
 		check("Gamma(1/2, a*x)", //
@@ -10068,7 +10071,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("ArcSin(1.3038404810405297)",
 		// "1.5707963267948966+I*(-7.610396837318266e-1)");
 		checkNumeric("ArcSin(1.3038404810405297)", //
-				"1.5707963267948966+I*(-7.6103968373182658*10^-1)");
+				"1.570796326794896+I*(-7.610396837318266*10^-1)");
 		checkNumeric("InverseHaversine(1.7)", //
 				"3.141592653589793+I*(-1.5220793674636532)");
 	}
@@ -14743,12 +14746,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPochhammer() {
+		check("Pochhammer(1.011111111111000000000000000, 8)", //
+				"4.15522758490877803808882957*10^4");
 		check("Pochhammer(m, n) // FunctionExpand", //
 				"Gamma(m+n)/Gamma(m)");
 		check("Pochhammer(2.4, 8.5)", //
 				"2.31022*10^6");
-		check("Pochhammer(1.011111111111000000000000000, 8)", //
-				"4.1552275849087711206044715725*10^4");
 
 		// http://oeis.org/A054654
 		check("crow(n_) := Reverse( CoefficientList( (-1)^n*Pochhammer(-x, n), x) ); Flatten( Table(crow(n), {n, 0, 8}))", //

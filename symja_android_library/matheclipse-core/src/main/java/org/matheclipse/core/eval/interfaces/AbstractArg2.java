@@ -141,7 +141,7 @@ public abstract class AbstractArg2 extends AbstractFunctionEvaluator {
 			if (result.isPresent()) {
 				return result;
 			}
-			return e2ObjArg(null, o0, o1);
+			return e2ObjArg(ast, o0, o1);
 		} catch (RuntimeException rex) {
 			// EvalEngine.get().printMessage(ast.topHead().toString() + ": " + rex.getMessage());
 		}

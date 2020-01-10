@@ -2135,19 +2135,10 @@ public class EvalEngine implements Serializable {
 	 * @throws org.matheclipse.parser.client.SyntaxError
 	 *             if a parsing error occurs
 	 */
-
 	final public IExpr parse(String expression, boolean explicitTimes) {
 		final ExprParser parser = new ExprParser(this, ExprParserFactory.RELAXED_STYLE_FACTORY, fRelaxedSyntax, false,
 				explicitTimes);
-		IExpr temp = parser.parse(expression);
-		// determine the precision of the input before evaluation
-		VisitorPrecision visitor = new VisitorPrecision();
-		temp.accept(visitor);
-		long precision = visitor.getNumericPrecision();
-		if (precision > fNumericPrecision) {
-			fNumericPrecision=precision;
-		}
-		return temp;
+		return parser.parse(expression);
 	}
 
 	/**

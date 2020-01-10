@@ -40,6 +40,7 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorExpr;
+import org.matheclipse.core.visit.VisitorPrecision;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.IParserFactory;
@@ -72,7 +73,7 @@ public class ExprParser extends Scanner {
 				}
 				return F.num(apfloatValue);
 			}
-			return element;
+			return F.NIL;
 		}
 	}
 
@@ -1055,8 +1056,14 @@ public class ExprParser extends Scanner {
 			}
 
 			throwSyntaxError("End-of-file not reached.");
+		} 
+		// determine the precision of the input before evaluation
+		VisitorPrecision visitor = new VisitorPrecision();
+		temp.accept(visitor);
+		long precision = visitor.getNumericPrecision();
+		if (precision > fEngine.getNumericPrecision()) {
+			fEngine.setNumericPrecision(precision);
 		}
-
 		return temp;
 	}
 

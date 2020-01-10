@@ -1,10 +1,14 @@
 package org.matheclipse.core.visit;
 
+import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
+import org.apfloat.Apint;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntervalSym;
+import org.matheclipse.core.expression.NumStr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -55,6 +59,12 @@ public class VisitorPrecision extends AbstractVisitor {
 		if (element instanceof ApfloatNum) {
 			if (((ApfloatNum) element).precision() > precision) {
 				precision = ((ApfloatNum) element).precision();
+			}
+		}
+		if (element instanceof NumStr) {
+			long p = ((NumStr) element).getNumericfPrecision();
+			if (p > precision) {
+				precision = p;
 			}
 		}
 		return F.NIL;
