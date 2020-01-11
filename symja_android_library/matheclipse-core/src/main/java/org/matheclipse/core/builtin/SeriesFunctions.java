@@ -234,6 +234,13 @@ public class SeriesFunctions {
 					limitValue.isNegativeInfinity()) && //
 					expression.isAST() && //
 					expression.size() > 1) {
+				if (limitValue.isInfinity()|| //
+						limitValue.isNegativeInfinity()) {
+					IExpr temp = evalReplaceAll(expression, data);
+					if (temp.isNumericFunction()) {
+						return temp;
+					}
+				} 
 				IExpr temp = limitInfinityZero((IAST) expression, data, (IAST) limitValue);
 				if (temp.isPresent()) {
 					return temp;
@@ -886,10 +893,6 @@ public class SeriesFunctions {
 				} else {
 					throw new WrongArgumentType(ast, arg2, 2,
 							"Limit: limit value contains variable symbol for rule definition!");
-				}
-				IExpr result = EvalEngine.get().evalQuiet(F.subst(arg1, rule));
-				if (result.isNumericFunction()) {
-					return result;
 				} 
 				
 				LimitData data = new LimitData(symbol, limit, rule, direction);
