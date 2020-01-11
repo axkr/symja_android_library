@@ -740,10 +740,10 @@ public abstract class DoubleFormFactory {
 				return;
 			}
 		}
-		convertInfixOperator(buf, list, oper, precedence);
+		convertInfixOperator(F.Power, buf, list, oper, precedence);
 	}
 
-	public void convertInfixOperator(final StringBuilder buf, final IAST list, final InfixOperator oper,
+	public void convertInfixOperator(ISymbol head, final StringBuilder buf, final IAST list, final InfixOperator oper,
 			final int precedence) {
 
 		if (list.isAST2()) {
@@ -791,13 +791,28 @@ public abstract class DoubleFormFactory {
 		if (oper.getPrecedence() < precedence) {
 			append(buf, "(");
 		}
-		if (list.size() > 1) {
+		if (list.size() > 3 && //
+				(head.equals(F.Equal) || head.equals(F.Unequal) || head.equals(F.Greater) || head.equals(F.GreaterEqual)
+						|| head.equals(F.Less) || head.equals(F.LessEqual))) {
 			convert(buf, list.arg1(), oper.getPrecedence(), false);
-		}
+			for (int i = 2; i < list.size(); i++) {
+				append(buf, oper.getOperatorString());
+				convert(buf, list.get(i), oper.getPrecedence(), false);
 
-		for (int i = 2; i < list.size(); i++) {
-			append(buf, oper.getOperatorString());
-			convert(buf, list.get(i), oper.getPrecedence(), false);
+				if (i < list.size() - 1) {
+					buf.append(" && ");
+					convert(buf, list.get(i), oper.getPrecedence(), false);
+				}
+			}
+		} else {
+			if (list.size() > 1) {
+				convert(buf, list.arg1(), oper.getPrecedence(), false);
+			}
+
+			for (int i = 2; i < list.size(); i++) {
+				append(buf, oper.getOperatorString());
+				convert(buf, list.get(i), oper.getPrecedence(), false);
+			}
 		}
 		if (oper.getPrecedence() < precedence) {
 			append(buf, ")");
@@ -914,7 +929,7 @@ public abstract class DoubleFormFactory {
 					}
 				}
 
-				int functionID = head.ordinal();
+				// int functionID = head.ordinal();
 				// if (functionID > ID.UNKNOWN) {
 				// switch (functionID) {
 				// case ID.Quantity:
@@ -1056,18 +1071,18 @@ public abstract class DoubleFormFactory {
 				return true;
 			} else if (list.isAST(F.Apply)) {
 				if (list.size() == 3) {
-					convertInfixOperator(buf, list, ASTNodeFactory.APPLY_OPERATOR, precedence);
+					convertInfixOperator(head, buf, list, ASTNodeFactory.APPLY_OPERATOR, precedence);
 					return true;
 				}
 				if (list.size() == 4 && list.arg2().equals(F.List(F.C1))) {
-					convertInfixOperator(buf, list, ASTNodeFactory.APPLY_LEVEL_OPERATOR, precedence);
+					convertInfixOperator(head, buf, list, ASTNodeFactory.APPLY_LEVEL_OPERATOR, precedence);
 					return true;
 				}
 				return false;
 			} else if (list.size() != 3 && infixOperator.getGrouping() != InfixOperator.NONE) {
 				return false;
 			}
-			convertInfixOperator(buf, list, (InfixOperator) operator, precedence);
+			convertInfixOperator(head, buf, list, (InfixOperator) operator, precedence);
 			return true;
 		}
 		if ((operator instanceof PostfixOperator) && (list.isAST1())) {

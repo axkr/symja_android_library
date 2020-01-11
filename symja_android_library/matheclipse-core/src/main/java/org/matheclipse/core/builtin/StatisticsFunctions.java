@@ -34,6 +34,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplexNum;
+import org.matheclipse.core.interfaces.IContinuousDistribution;
 import org.matheclipse.core.interfaces.IDiscreteDistribution;
 import org.matheclipse.core.interfaces.IDistribution;
 import org.matheclipse.core.interfaces.IEvaluator;
@@ -3010,23 +3011,11 @@ public class StatisticsFunctions {
 								sum.append(F.subst(xExpr, F.Rule(x, data.get(i))));
 							}
 							return sum.divide(F.ZZ(data.argSize()));
-//						} else if (distribution.isDiscreteDistribution()) {
-//							IDiscreteDistribution dist = getDiscreteDistribution(distribution);
-//							int[] interval = new int[] { dist.getSupportLowerBound(distribution),
-//									dist.getSupportUpperBound(distribution) };
-//							// int[] interval = dist.range(distribution, xExpr, x);
-//							if (interval != null) {
-//								IExpr pdf = F.PDF.of(engine, distribution, x);
-//								// for discrete distributions take the sum:
-//								IASTAppendable sum = F.PlusAlloc(100);
-//
-//								for (int i = interval[0]; i <= interval[1]; i++) {
-//									IExpr temp = engine.evaluate(F.subst(pdf, F.Rule(x, F.ZZ(i))));
-//									if (!temp.isZero()) {
-//										sum.append(F.Times(F.subst(xExpr, F.Rule(x, F.ZZ(i))), temp));
-//									}
-//								}
-//								return sum;
+//						} else if (distribution.isContinuousDistribution()) {
+//							IExpr pdf = F.PDF.of(engine, distribution, x);
+//							if (pdf.isFree(F.Piecewise)) {
+//								// TODO improve integration for piecewise functions
+//								return F.Integrate(F.Times(ast.arg1(), pdf), F.List(x, F.CNInfinity, F.CInfinity));
 //							}
 						}
 					}
@@ -3042,7 +3031,7 @@ public class StatisticsFunctions {
 	}
 
 	private final static class ExponentialDistribution extends AbstractEvaluator
-			implements ICDF, IDistribution, IPDF, IVariance, IRandomVariate {
+			implements ICDF, IContinuousDistribution, IPDF, IVariance, IRandomVariate {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -3951,7 +3940,7 @@ public class StatisticsFunctions {
 	 * </pre>
 	 */
 	private final static class NormalDistribution extends AbstractEvaluator
-			implements IDistribution, IVariance, IRandomVariate, IPDF, ICDF {
+			implements IContinuousDistribution, IVariance, IRandomVariate, IPDF, ICDF {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {

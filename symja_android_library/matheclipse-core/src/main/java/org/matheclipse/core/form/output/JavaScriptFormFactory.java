@@ -103,7 +103,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 		FUNCTIONS_STR_MATHCELL.put(F.Erfc, "erfc");
 		FUNCTIONS_STR_MATHCELL.put(F.FresnelC, "fresnelC");
 		FUNCTIONS_STR_MATHCELL.put(F.FresnelS, "fresnelS");
-		
+
 		FUNCTIONS_STR_MATHCELL.put(F.Hypergeometric0F1, "hypergeometric0F1");
 		FUNCTIONS_STR_MATHCELL.put(F.Hypergeometric1F1, "hypergeometric1F1");
 		// FUNCTIONS_STR_MATHCELL.put(F.Hypergeometric2??, "hypergeometric2F0");
@@ -537,10 +537,10 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 					buf.append(" : ");
 				}
 				buf.append("( ");
-				if (function.isAST2()) {
+				if (function.size() > 2) {
 					convert(buf, function.second());
 				} else {
-					buf.append(" Number.NaN ");
+					buf.append(" 0 ");
 				}
 				buf.append(" )");
 				for (int i = 2; i < size; i++) {
@@ -566,10 +566,10 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 					buf.append("}");
 				}
 				buf.append(" else {");
-				if (function.isAST2()) {
+				if (function.size() > 2) {
 					convert(buf, function.second());
 				} else {
-					buf.append(" return Number.NaN; ");
+					buf.append(" return 0; ");
 				}
 				buf.append("}");
 				return true;

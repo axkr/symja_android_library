@@ -2284,6 +2284,9 @@ public final class Arithmetic {
 			}
 			IAST matrix = (IAST) arg1;
 			IExpr defaultValue = F.C0;
+			if (ast.isAST1()) {
+				return ast.appendClone(F.C0);
+			}
 			if (ast.isAST2()) {
 				defaultValue = ast.arg2();
 			}
@@ -2305,8 +2308,10 @@ public final class Arithmetic {
 						return F.NIL;
 					}
 					if (noBoolean) {
-						result = appendPiecewise(result, row.arg1(), F.True, matrixSize);
-						return createPiecewise(piecewiseAST, result);
+//						result = appendPiecewise(result, row.arg1(), F.True, matrixSize);
+						piecewiseAST= createPiecewise(piecewiseAST, result);
+						piecewiseAST.append(row.arg1());
+						return piecewiseAST;
 					}
 					return row.arg1();
 				} else if (condition.isFalse()) {

@@ -3846,6 +3846,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testD() {
+		check("D(Piecewise({{x^2, x < 0}, {x, x > 0}}),x)", //
+				"Piecewise({{2*x,x<0},{1,x>0}},0)");
+		check("D(Piecewise({{(x^2 - 1)/(x - 1), x != 1}},2),x)", //
+				"Piecewise({{(2*x)/(-1+x)+(1-x^2)/(1-x)^2,x!=1}},0)");
+		
+		// TODO simplify result to 1
+		check("D(Piecewise({{(x^2 - 1)/(x - 1), x < 1 || x > 1}},2),x)", //
+				"Piecewise({{(2*x)/(-1+x)+(1-x^2)/(1-x)^2,x<1||x>1}},0)"); 
+
 		check("D(Factorial(b*x),x)", //
 				"b*Gamma(1+b*x)*PolyGamma(0,1+b*x)");
 		check("D(E^(E^x + x),x)", //
@@ -6968,7 +6977,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testFindRoot() {
 		check("Exp(1.243624090168953 * E - 16) - 1", //
 				"-0.999997");
-		
+
 		checkNumeric("FindRoot(30*x/0.000002==30, {x, 0, 5}, Method->brent)", //
 				"{x->2.0E-6}");
 		// github issue #60
@@ -9228,6 +9237,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIntegrate() {
+		check("Integrate(Piecewise({{1/(2 x^2), Abs(x) > 1} },4),x)", //
+				"Piecewise({{-1/(2*x),Abs(x)>1}},4*x)");
+		check("Integrate(Piecewise({{x^2, x <= 0}, {x, x > 0}}),x)", //
+				"Piecewise({{x^3/3,x<=0},{x^2/2,x>0}},0)");
+
 		check("Integrate((Sinh(x)-x)/(x^2*Sinh(x)),x)", //
 				"-1/x-Integrate(Csch(x)/x,x)");
 		check("Refine(Integrate(Abs(E+Pi*x^(-8)),x), Element(x,Reals))", //
@@ -9498,14 +9512,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInterval() {
-//		check("Interval(0.0``40)", //
-//				"Interval({0,0})");
-//		check("Interval(N(Pi,60))-Pi", //
-//				"Interval({-1*10^-59,1*10^-59})");
-//		check("Interval(N(Pi,60))+Pi", //
-//				"Interval({6.28318530717958647692528676655900576839433879875021164194987,6.28318530717958647692528676655900576839433879875021164194989})");
-//		check("Interval(1.0``40)", //
-//				"Interval({9.99999999999999999999999999999999999999*10^-1,1.000000000000000000000000000000000000001})");
+		// check("Interval(0.0``40)", //
+		// "Interval({0,0})");
+		// check("Interval(N(Pi,60))-Pi", //
+		// "Interval({-1*10^-59,1*10^-59})");
+		// check("Interval(N(Pi,60))+Pi", //
+		// "Interval({6.28318530717958647692528676655900576839433879875021164194987,6.28318530717958647692528676655900576839433879875021164194989})");
+		// check("Interval(1.0``40)", //
+		// "Interval({9.99999999999999999999999999999999999999*10^-1,1.000000000000000000000000000000000000001})");
 
 		check("Interval({-1,1})", //
 				"Interval({-1,1})");
@@ -10139,7 +10153,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Plus(CC(31L,4L,1L,1L),a,b,x,Sqr(x),y)");
 	}
 
-	public void testJSForm() {
+	public void testJSForm() {  
+		check("Piecewise({{x, 0 < x < 1}, {x^3, 1 < x < 2}}) // JSForm", //
+				"((0<x && x<1) ? x : ((1<x && x<2) ? Math.pow(x,3) : ( 0 ) ))");
+		
 		check("JSForm(Cot(x))", //
 				"(1/Math.tan(x))");
 		check("JSForm(ArcCot(x))", //
@@ -10147,7 +10164,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("JSForm( Piecewise({{x^2, x < 0}, {x, x >= 0&&x<1},{Cos(x-1), x >= 1}}) )", //
 				"((x<0) ? Math.pow(x,2) : ((x>=0&&x<1) ? x : ((x>=1) ? Math.cos(1-x) : ( 0 ) ) ))");
 		check("JSForm(ConditionalExpression(Log(1- q), 0 <=q<=1))", //
-				"((0<=q<=1) ? (Math.log(1-q)) : ( Number.NaN ))");
+				"((0<=q && q<=1) ? (Math.log(1-q)) : ( Number.NaN ))");
 		check("JSForm(x < 10 && y > 1)", //
 				"x<10&&y>1");
 		check("JSForm(a<b)", //
@@ -10849,6 +10866,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testLimit() {
+
+		check("Limit(Erf(x/Sqrt(2)),x->Infinity,Direction->Reals)", //
+				"1");
+		check("Limit(Erf(x/Sqrt(2)),x->-Infinity,Direction->Reals)", //
+				"-1");
 		check("Limit((Cosh(t)-1)/t^2,t->0)", //
 				"1/2");
 		check("Limit(Gamma(1/t)*Cos(Sin(1/t)),t->0)", //
@@ -12578,7 +12600,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"9.30825932025645990512931004994");
 		check("2/3 + Pi + 5.5``30", //
 				"9.30825932025645990512931004994");
-		
+
 		// imaginary part is zero
 		check("I^I //N", //
 				"0.20788");
@@ -14643,6 +14665,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPiecewise() {
+		check("Piecewise({{x^2, x < 0}, {x, x > 0}})", //
+				"Piecewise({{x^2,x<0},{x,x>0}},0)");
 		check("Piecewise({{-Log(x),x<=(0+(-1)*0)*1/1}},Log(x))", //
 				"Piecewise({{-Log(x),x<=0}},Log(x))");
 		check("Piecewise({{x^2, x < 0}, {x, x > 0}}) /. x->3", //
@@ -14664,7 +14688,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Piecewise({{e1, True}, {e2, d2}, {e3, d3}}, e0)", //
 				"e1");
 		check("Piecewise({{e1, d1}, {e2, d2}, {e3, True}, {e4, d4}, {e5, d5}}, e0)", //
-				"Piecewise({{e1,d1},{e2,d2},{e3,True}})");
+				"Piecewise({{e1,d1},{e2,d2}},e3)");
 		check("Piecewise({{e1, d1}, {e2, d2}, {e3, d2 && d3}, {e4, d4}}, e0)", //
 				"Piecewise({{e1,d1},{e2,d2},{e3,d2&&d3},{e4,d4}},e0)");
 		check("Piecewise({{e1, d1}, {e2, d2}, {e3, False}, {e4, d4}, {e5, d5}}, e0)", //
@@ -16478,6 +16502,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testExpectation() {
+		// TODO improve integration for piecewise functions
+//		check("Expectation((x + 3)/(x + 5), Distributed(x, ExponentialDistribution(2)))", //
+//				"Expectation((3+x)/(5+x),Distributed(x,ExponentialDistribution(2)))");
+//		check("Expectation(3*x^2 + 5, Distributed(x, NormalDistribution()))", //
+//				"8");
+
 		check("Expectation((#^3)&, {a,b,c})", //
 				"1/3*(a^3+b^3+c^3)");
 		check("Expectation(2*x+3,Distributed(x,{a,b,c,d}))", //

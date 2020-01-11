@@ -1243,6 +1243,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return false;
 	}
 
+
+	/**
+	 * Test if this expression is a continuous distribution AST (i.e. NormalDistribution(), ExponentialDistribution(),...)
+	 * 
+	 * @return
+	 */
+	default boolean isContinuousDistribution() {
+		return false;
+	}
+	
 	/**
 	 * Test if this expression is a <code>IBuiltInSymbol</code> symbol and the evaluator implements
 	 * <code>IBooleanFormula</code>.

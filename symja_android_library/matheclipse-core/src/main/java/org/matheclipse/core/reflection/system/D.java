@@ -181,7 +181,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 	 * @param engine
 	 * @return
 	 */
-	private IExpr getDerivativeArg1(IExpr x, final IExpr a1, final IExpr head, EvalEngine engine) {
+	private static IExpr getDerivativeArg1(IExpr x, final IExpr a1, final IExpr head, EvalEngine engine) {
 		if (head.isSymbol()) {
 			ISymbol header = (ISymbol) head;
 			IAST fDerivParam = Derivative.createDerivative(1, header, a1);
@@ -202,7 +202,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 	 * @param head
 	 * @return
 	 */
-	private IExpr getDerivativeArgN(IExpr x, final IAST ast, final IExpr head) {
+	private static IExpr getDerivativeArgN(IExpr x, final IAST ast, final IExpr head) {
 		IAST[] deriv = ast.isDerivative();
 		int size = ast.size();
 		if (deriv != null) {
@@ -231,7 +231,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 	 * @param args
 	 * @return
 	 */
-	private IAST createDerivative(final int pos, final IExpr header, final IAST args) {
+	private static IAST createDerivative(final int pos, final IExpr header, final IAST args) {
 		final int size = args.size();
 		IASTAppendable derivativeHead1 = F.ast(F.Derivative, size, false);
 		for (int i = 1; i < size; i++) {
@@ -245,7 +245,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 		return derivativeAST;
 	}
 
-	private IAST addDerivative(final int pos, IAST deriveHead, final IExpr header, final IAST args) {
+	private static IAST addDerivative(final int pos, IAST deriveHead, final IExpr header, final IAST args) {
 		IASTMutable derivativeHead1 = deriveHead.copyAppendable();
 		for (int i = 1; i < derivativeHead1.size(); i++) {
 			if (i == pos) {
@@ -318,6 +318,10 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 		}
 
 		if (!(x.isList())) {
+			if (fx.isAST(F.Piecewise) && fx.size() >= 2 && fx.first().isList()) {
+				return dPiecewise(fx, ast, engine);
+			}
+
 			if (fx instanceof ASTSeriesData) {
 				ASTSeriesData series = ((ASTSeriesData) fx);
 				if (series.getX().equals(x)) {
@@ -423,6 +427,33 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 
 		}
 
+		return F.NIL;
+	}
+
+	private static IExpr dPiecewise(final IExpr piecewiseFunction, final IAST ast, EvalEngine engine) {
+		int[] dim = piecewiseFunction.first().isMatrix(false);
+		if (dim != null && dim[0] > 0 && dim[1] == 2) {
+			IAST list = (IAST) piecewiseFunction.first();
+			if (list.size() > 1) {
+				IASTAppendable pwResult = F.ListAlloc(list.size());
+				for (int i = 1; i < list.size(); i++) {
+					IASTMutable diff = ((IAST) ast).copy();
+					diff.set(1, list.get(i).first());
+					pwResult.append(F.List(diff, list.get(i).second()));
+				}
+				if (piecewiseFunction.size() > 2) {
+					IASTMutable diff = ((IAST) ast).copy();
+					diff.set(1, piecewiseFunction.second());
+					pwResult.append(F.List(engine.evaluate(diff), F.True));
+				}
+				IASTMutable piecewise = ((IAST) piecewiseFunction).copy();
+				piecewise.set(1, pwResult);
+				if (piecewise.size()>2) {
+					piecewise.set(2, F.Indeterminate);
+				}
+				return piecewise;
+			}
+		}
 		return F.NIL;
 	}
 

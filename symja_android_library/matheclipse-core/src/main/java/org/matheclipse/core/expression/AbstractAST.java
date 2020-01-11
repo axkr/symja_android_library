@@ -1,6 +1,5 @@
 package org.matheclipse.core.expression;
 
-import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,7 +34,6 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.Structure.LeafCount;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
@@ -49,6 +47,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IContinuousDistribution;
 import org.matheclipse.core.interfaces.IDiscreteDistribution;
 import org.matheclipse.core.interfaces.IDistribution;
 import org.matheclipse.core.interfaces.IEvaluator;
@@ -2337,6 +2336,14 @@ public abstract class AbstractAST implements IASTMutable {
 	@Override
 	public final boolean isDirectedInfinity(IExpr x) {
 		return isSameHead(F.DirectedInfinity, 2) && arg1().equals(x);
+	}
+	
+	public boolean isContinuousDistribution() {
+		if (head().isBuiltInSymbol()) {
+			IEvaluator evaluator = ((IBuiltInSymbol) head()).getEvaluator();
+			return evaluator instanceof IContinuousDistribution;
+		}
+		return false;
 	}
 
 	public boolean isDiscreteDistribution() {

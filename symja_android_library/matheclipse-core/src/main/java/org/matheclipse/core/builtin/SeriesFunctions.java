@@ -887,6 +887,11 @@ public class SeriesFunctions {
 					throw new WrongArgumentType(ast, arg2, 2,
 							"Limit: limit value contains variable symbol for rule definition!");
 				}
+				IExpr result = EvalEngine.get().evalQuiet(F.subst(arg1, rule));
+				if (result.isNumericFunction()) {
+					return result;
+				} 
+				
 				LimitData data = new LimitData(symbol, limit, rule, direction);
 				return evalLimit(arg1, data);
 			} finally {

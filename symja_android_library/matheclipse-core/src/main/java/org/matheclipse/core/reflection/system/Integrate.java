@@ -28,6 +28,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -632,6 +633,9 @@ public class Integrate extends AbstractFunctionEvaluator {
 					return F.NIL;
 				}
 
+				if (fx.isAST(F.Piecewise) && fx.size() >= 2 && fx.arg1().isList()) {
+					return integratePiecewise(fx, ast);
+				}
 				result = integrateAbs(arg1, x);
 				if (result.isPresent()) {
 					if (result == F.Undefined) {
@@ -700,6 +704,30 @@ public class Integrate extends AbstractFunctionEvaluator {
 		} finally {
 			engine.setNumericMode(numericMode);
 		}
+	}
+
+	private static IExpr integratePiecewise(final IAST piecewiseFunction, final IAST integrateFunction) {
+		int[] dim = piecewiseFunction.arg1().isMatrix(false);
+		if (dim != null && dim[0] > 0 && dim[1] == 2) {
+			IAST list = (IAST) piecewiseFunction.arg1();
+			if (list.size() > 1) {
+				IASTAppendable pwResult = F.ListAlloc(list.size());
+				for (int i = 1; i < list.size(); i++) {
+					IASTMutable integrate = ((IAST) integrateFunction).copy();
+					integrate.set(1, list.get(i).first());
+					pwResult.append(F.List(integrate, list.get(i).second()));
+				}
+				IASTMutable piecewise = ((IAST) piecewiseFunction).copy();
+				piecewise.set(1, pwResult);
+				if (piecewiseFunction.size() > 2) {
+					IASTMutable integrate = ((IAST) integrateFunction).copy();
+					integrate.set(1, piecewiseFunction.second());
+					piecewise.set(2, integrate);
+				}
+				return piecewise;
+			}
+		}
+		return F.NIL;
 	}
 
 	/**
