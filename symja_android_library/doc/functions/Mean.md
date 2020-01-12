@@ -9,6 +9,9 @@ Mean(list)
 See:
 * [Wikipedia - Mean](https://en.wikipedia.org/wiki/Mean)
 
+Implementation:
+* [Geeksforgeeks - program for mean and median of an unsorted array](https://www.geeksforgeeks.org/program-for-mean-and-median-of-an-unsorted-array/)
+
 `Mean` can be applied to the following distributions:
 
 > [BernoulliDistribution](BernoulliDistribution.md), [BinomialDistribution](BinomialDistribution.md), [DiscreteUniformDistribution](DiscreteUniformDistribution.md), [ErlangDistribution](ErlangDistribution.md), [ExponentialDistribution](ExponentialDistribution.md), [FrechetDistribution](FrechetDistribution.md), 
