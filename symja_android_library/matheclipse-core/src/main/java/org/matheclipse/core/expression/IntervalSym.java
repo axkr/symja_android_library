@@ -177,6 +177,20 @@ public class IntervalSym {
 		return F.Max(inf.negate(), sup);
 	}
 
+	public static IExpr max(final IAST ast) {
+		IAST interval = normalize(ast);
+		if (interval.isPresent()) {
+			IASTAppendable result = F.ast(F.Max, interval.size(), false);
+			// EvalEngine engine = EvalEngine.get();
+			for (int i = 1; i < interval.size(); i++) {
+				IAST list = (IAST) interval.get(i);
+				result.append(list.arg2());
+			}
+			return result;
+		}
+		return F.NIL;
+	}
+
 	/**
 	 * The absolute value of the mignitude of an interval.
 	 * 
@@ -196,6 +210,20 @@ public class IntervalSym {
 			return sup.negate();
 		}
 		return F.C0;
+	}
+
+	public static IExpr min(final IAST ast) {
+		IAST interval = normalize(ast);
+		if (interval.isPresent()) {
+			IASTAppendable result = F.ast(F.Min, interval.size(), false);
+			// EvalEngine engine = EvalEngine.get();
+			for (int i = 1; i < interval.size(); i++) {
+				IAST list = (IAST) interval.get(i);
+				result.append(list.arg1());
+			}
+			return result;
+		}
+		return F.NIL;
 	}
 
 	// public static long precision(final IAST interval) {
@@ -425,6 +453,121 @@ public class IntervalSym {
 					IExpr max = list.arg2();
 					if (min.isRealResult() && max.isRealResult()) {
 						result.set(i, F.List(F.ArcTan(min), F.ArcTan(max)));
+					}
+				}
+				return result;
+			} catch (RuntimeException rex) {
+				//
+			}
+		}
+		return F.NIL;
+	}
+
+	public static IExpr coth(final IAST ast) {
+		IAST interval = normalize(ast);
+		if (interval.isPresent()) {
+			try {
+				EvalEngine engine = EvalEngine.get();
+				IASTAppendable result = F.IntervalAlloc(interval.size());
+				for (int i = 1; i < interval.size(); i++) {
+					IAST list = (IAST) interval.get(i);
+					IExpr min = list.arg1();
+					IExpr max = list.arg2();
+					if (engine.evalTrue(F.GreaterEqual(min, F.C0)) && //
+							engine.evalTrue(F.GreaterEqual(max, F.C0))) {
+						result.append(F.List(F.Coth(min), F.Coth(max)));
+					} else if (engine.evalTrue(F.Less(min, F.C0)) && //
+							engine.evalTrue(F.GreaterEqual(max, F.C0))) {
+						result.append(F.List(F.CNInfinity, F.Coth(min)));
+						result.append(F.List(F.Coth(max), F.CInfinity));
+					} else if (engine.evalTrue(F.Less(min, F.C0)) && //
+							engine.evalTrue(F.Less(max, F.C0))) {
+						result.append(F.List(F.Coth(min), F.Coth(max)));
+					} else {
+						return F.NIL;
+					}
+				}
+				return result;
+			} catch (RuntimeException rex) {
+				//
+			}
+		}
+		return F.NIL;
+	}
+
+	public static IExpr cosh(final IAST ast) {
+		IAST interval = normalize(ast);
+		if (interval.isPresent()) {
+			try {
+				EvalEngine engine = EvalEngine.get();
+				IASTAppendable result = F.IntervalAlloc(interval.size());
+				for (int i = 1; i < interval.size(); i++) {
+					IAST list = (IAST) interval.get(i);
+					IExpr min = list.arg1();
+					IExpr max = list.arg2();
+					if (min.isRealResult() && max.isRealResult()) {
+						if (engine.evalTrue(F.GreaterEqual(min, F.C0)) && //
+								engine.evalTrue(F.GreaterEqual(max, F.C0))) {
+							result.append(F.List(F.Cosh(min), F.Cosh(max)));
+						} else if (engine.evalTrue(F.Less(min, F.C0)) && //
+								engine.evalTrue(F.GreaterEqual(max, F.C0))) {
+							result.append(F.List(F.C1, F.Max(F.Cosh(min), F.Cosh(max))));
+						} else if (engine.evalTrue(F.Less(min, F.C0)) && //
+								engine.evalTrue(F.Less(max, F.C0))) {
+							result.append(F.List(F.Cosh(min), F.Cosh(max)));
+						} else {
+							return F.NIL;
+						}
+					} else {
+						return F.NIL;
+					}
+				}
+				return result;
+			} catch (RuntimeException rex) {
+				//
+			}
+		}
+		return F.NIL;
+	}
+
+	public static IExpr sinh(final IAST ast) {
+		IAST interval = normalize(ast);
+		if (interval.isPresent()) {
+			try {
+				// EvalEngine engine = EvalEngine.get();
+				IASTMutable result = interval.copy();
+				for (int i = 1; i < interval.size(); i++) {
+					IAST list = (IAST) interval.get(i);
+					IExpr min = list.arg1();
+					IExpr max = list.arg2();
+					if (min.isRealResult() && max.isRealResult()) {
+						result.set(i, F.List(F.Sinh(min), F.Sinh(max)));
+					} else {
+						return F.NIL;
+					}
+				}
+				return result;
+			} catch (RuntimeException rex) {
+				//
+			}
+		}
+		return F.NIL;
+	}
+
+	public static IExpr tanh(final IAST ast) {
+		IAST interval = normalize(ast);
+		if (interval.isPresent()) {
+			try {
+				// EvalEngine engine = EvalEngine.get();
+				IASTMutable result = interval.copy();
+				for (int i = 1; i < interval.size(); i++) {
+					IAST list = (IAST) interval.get(i);
+					IExpr min = list.arg1();
+					IExpr max = list.arg2();
+					if (min.isRealResult() && max.isRealResult()) {
+						result.set(i, F.List(F.Tanh(min), F.Tanh(max)));
+					} else {
+						return F.NIL;
 					}
 				}
 				return result;

@@ -453,10 +453,10 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default Complex evalComplex() {
 		return EvalEngine.get().evalComplex(this);
-//		if (isNumber()) {
-//			return ((INumber) this).complexNumValue().complexValue();
-//		}
-//		throw new WrongArgumentType(this, "Conversion into a complex numeric value is not possible!");
+		// if (isNumber()) {
+		// return ((INumber) this).complexNumValue().complexValue();
+		// }
+		// throw new WrongArgumentType(this, "Conversion into a complex numeric value is not possible!");
 	}
 
 	/**
@@ -1243,16 +1243,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return false;
 	}
 
-
 	/**
-	 * Test if this expression is a continuous distribution AST (i.e. NormalDistribution(), ExponentialDistribution(),...)
+	 * Test if this expression is a continuous distribution AST (i.e. NormalDistribution(),
+	 * ExponentialDistribution(),...)
 	 * 
 	 * @return
 	 */
 	default boolean isContinuousDistribution() {
 		return false;
 	}
-	
+
 	/**
 	 * Test if this expression is a <code>IBuiltInSymbol</code> symbol and the evaluator implements
 	 * <code>IBooleanFormula</code>.
@@ -1719,7 +1719,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isInterval1() {
 		return false;
 	}
-	 
 
 	/**
 	 * Compares this expression with the specified expression for order. Returns true if this expression is canonical
@@ -3711,7 +3710,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default Complex[] toComplexVector() {
 		return null;
 	}
-	
+
 	/**
 	 * Converts this number to an <code>int</code> value; unlike {@link #intValue} this method returns
 	 * <code>defaultValue</code> if the value of this integer isn't in the range <code>Integer.MIN_VALUE</code> to

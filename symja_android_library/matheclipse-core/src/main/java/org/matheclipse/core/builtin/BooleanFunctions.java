@@ -35,6 +35,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Comparators.ExprComparator;
@@ -2429,13 +2430,8 @@ public final class BooleanFunctions {
 				return F.CNInfinity;
 			}
 
-			if (ast.arg1().isInterval1()) {
-				IAST list = (IAST) ast.arg1().first();
-				try {
-					return list.arg2();
-				} catch (ClassCastException cca) {
-					// do nothing
-				}
+			if (ast.arg1().isInterval()) {
+				return IntervalSym.max((IAST)ast.arg1());
 			}
 
 			IAST resultList = EvalAttributes.flattenDeep(F.List, ast);
@@ -2568,14 +2564,9 @@ public final class BooleanFunctions {
 				return F.CInfinity;
 			}
 
-			if (ast.arg1().isInterval1()) {
-				IAST list = (IAST) ast.arg1().first();
-				try {
-					return list.arg1();
-				} catch (ClassCastException cca) {
-					// do nothing
-				}
-			}
+			if (ast.arg1().isInterval()) {
+				return IntervalSym.min((IAST)ast.arg1());
+			} 
 
 			IAST resultList = EvalAttributes.flattenDeep(F.List, ast);
 			if (resultList.isPresent()) {

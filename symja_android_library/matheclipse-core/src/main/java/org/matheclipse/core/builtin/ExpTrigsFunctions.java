@@ -1413,7 +1413,9 @@ public class ExpTrigsFunctions {
 					}
 				}
 			}
-
+			if (arg1.isInterval()) {
+				return IntervalSym.coth((IAST) arg1);
+			}
 			return F.NIL;
 		}
 
@@ -1673,6 +1675,9 @@ public class ExpTrigsFunctions {
 			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 			if (imPart.isPresent()) {
 				return F.Cos(imPart);
+			}
+			if (arg1.isInterval()) {
+				return IntervalSym.cosh((IAST) arg1);
 			}
 			return F.NIL;
 		}
@@ -2819,28 +2824,28 @@ public class ExpTrigsFunctions {
 					}
 				}
 			}
-			if (arg1.isInterval1()) {
-				return evalInterval(arg1);
+			if (arg1.isInterval()) {
+				return IntervalSym.sinh((IAST) arg1);
 			}
 			return F.NIL;
 		}
 
-		private static IExpr evalInterval(final IExpr arg1) {
-			IExpr l = arg1.lower();
-			IExpr u = arg1.upper();
-			if (l.isReal() || l.isNegativeInfinity()) {
-				l = F.Sinh.of(l);
-				if (l.isReal() || l.isNegativeInfinity()) {
-					if (u.isReal() || u.isInfinity()) {
-						u = F.Sinh.of(u);
-						if (u.isReal() || u.isInfinity()) {
-							return F.Interval(F.List(l, u));
-						}
-					}
-				}
-			}
-			return F.NIL;
-		}
+//		private static IExpr evalInterval(final IExpr arg1) {
+//			IExpr l = arg1.lower();
+//			IExpr u = arg1.upper();
+//			if (l.isReal() || l.isNegativeInfinity()) {
+//				l = F.Sinh.of(l);
+//				if (l.isReal() || l.isNegativeInfinity()) {
+//					if (u.isReal() || u.isInfinity()) {
+//						u = F.Sinh.of(u);
+//						if (u.isReal() || u.isInfinity()) {
+//							return F.Interval(F.List(l, u));
+//						}
+//					}
+//				}
+//			}
+//			return F.NIL;
+//		}
 
 		@Override
 		public IAST getRuleAST() {
@@ -3082,7 +3087,9 @@ public class ExpTrigsFunctions {
 					}
 				}
 			}
-
+			if (arg1.isInterval()) {
+				return IntervalSym.tanh((IAST) arg1);
+			}
 			return F.NIL;
 		}
 
