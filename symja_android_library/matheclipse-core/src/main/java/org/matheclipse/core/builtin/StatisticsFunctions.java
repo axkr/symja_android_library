@@ -3011,12 +3011,12 @@ public class StatisticsFunctions {
 								sum.append(F.subst(xExpr, F.Rule(x, data.get(i))));
 							}
 							return sum.divide(F.ZZ(data.argSize()));
-//						} else if (distribution.isContinuousDistribution()) {
-//							IExpr pdf = F.PDF.of(engine, distribution, x);
-//							if (pdf.isFree(F.Piecewise)) {
-//								// TODO improve integration for piecewise functions
-//								return F.Integrate(F.Times(ast.arg1(), pdf), F.List(x, F.CNInfinity, F.CInfinity));
-//							}
+						} else if (distribution.isContinuousDistribution()) {
+							IExpr pdf = F.PDF.of(engine, distribution, x);
+							if (pdf.isFree(F.Piecewise)) {
+								// TODO improve integration for piecewise functions
+								return F.Integrate(F.Times(ast.arg1(), pdf), F.List(x, F.CNInfinity, F.CInfinity));
+							}
 						}
 					}
 				} catch (Exception ex) {
