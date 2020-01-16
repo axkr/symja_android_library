@@ -4,7 +4,7 @@
 BesselK(n, z) 
 ```
 
-> > modified Bessel function of the second kind.
+> modified Bessel function of the second kind.
 
 See
 * [Wikipedia - Bessel function](https://en.wikipedia.org/wiki/Bessel_function)

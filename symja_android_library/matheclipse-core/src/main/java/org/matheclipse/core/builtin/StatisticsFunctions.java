@@ -1424,7 +1424,8 @@ public class StatisticsFunctions {
 
 	/**
 	 * <pre>
-	 * Correlation(a, b)
+	 * <code>Correlation(a, b)
+	 * </code>
 	 * </pre>
 	 * 
 	 * <blockquote>
@@ -1432,11 +1433,22 @@ public class StatisticsFunctions {
 	 * computes Pearson's correlation of two equal-sized vectors <code>a</code> and <code>b</code>.
 	 * </p>
 	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Pearson_correlation_coefficient">Wikipedia - Pearson correlation
+	 * coefficient</a></li>
+	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
 	 * <pre>
+	 * <code>&gt;&gt; Correlation({a,b},{c,d})
+	 * ((a-b)*(Conjugate(c)-Conjugate(d)))/(Sqrt((a-b)*(Conjugate(a)-Conjugate(b)))*Sqrt((c-d)*(Conjugate(c)-Conjugate(d))))
+	 * 				
 	 * &gt;&gt; Correlation({10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5}, {8.04, 6.95, 7.58, 8.81, 8.33, 9.96, 7.24, 4.26, 10.84, 4.82, 5.68})
 	 * 0.81642
+	 * </code>
 	 * </pre>
 	 */
 	private final static class Correlation extends AbstractFunctionEvaluator {
@@ -2538,7 +2550,8 @@ public class StatisticsFunctions {
 
 	/**
 	 * <pre>
-	 * Covariance(a, b)
+	 * <code>Covariance(a, b)
+	 * </code>
 	 * </pre>
 	 * 
 	 * <blockquote>
@@ -2546,11 +2559,21 @@ public class StatisticsFunctions {
 	 * computes the covariance between the equal-sized vectors <code>a</code> and <code>b</code>.
 	 * </p>
 	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Covariance">Wikipedia - Covariance</a></li>
+	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
 	 * <pre>
+	 * <code>&gt;&gt; Covariance({10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5}, {8.04, 6.95, 7.58, 8.81, 8.33, 9.96, 7.24, 4.26, 10.84, 4.82, 5.68})
+	 * 5.501
+	 * 				
 	 * &gt;&gt; Covariance({0.2, 0.3, 0.1}, {0.3, 0.3, -0.2})
 	 * 0.025
+	 * </code>
 	 * </pre>
 	 */
 	private final static class Covariance extends AbstractMatrix1Expr {

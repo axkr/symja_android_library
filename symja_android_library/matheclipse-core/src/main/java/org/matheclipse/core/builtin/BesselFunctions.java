@@ -187,7 +187,8 @@ public class BesselFunctions {
 
 	/**
 	 * <pre>
-	 * BesselJ(n, z)
+	 * <code>BesselJ(n, z) 
+	 * </code>
 	 * </pre>
 	 * 
 	 * <blockquote>
@@ -204,8 +205,9 @@ public class BesselFunctions {
 	 * <h3>Examples</h3>
 	 * 
 	 * <pre>
-	 * &gt;&gt; BesselJ(1, 3.6)
-	 * 0.09547
+	 * <code>&gt;&gt; BesselJ(1, 3.6)
+	 * 0.0954655
+	 * </code>
 	 * </pre>
 	 */
 	private final static class BesselJ extends AbstractFunctionEvaluator {
@@ -331,6 +333,31 @@ public class BesselFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>BesselJZero(n, z) 
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * is the <code>k</code>th zero of the <code>BesselJ(n,z)</code> function.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Bessel_function">Wikipedia - Bessel function</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; BesselJZero(1.3, 3)
+	 * 10.61381
+	 * </code>
+	 * </pre>
+	 */
 	private final static class BesselJZero extends AbstractFunctionEvaluator {
 
 		@Override
@@ -364,6 +391,31 @@ public class BesselFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>BesselI(n, z) 
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * modified Bessel function of the first kind.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Bessel_function">Wikipedia - Bessel function</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; BesselI(1, 3.6)
+	 * 6.79271
+	 * </code>
+	 * </pre>
+	 */
 	private final static class BesselI extends AbstractFunctionEvaluator implements BesselIRules {
 
 		@Override
@@ -441,6 +493,31 @@ public class BesselFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>BesselK(n, z) 
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * modified Bessel function of the second kind.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Bessel_function">Wikipedia - Bessel function</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; BesselK(1, 3.6)
+	 * 0.019795
+	 * </code>
+	 * </pre>
+	 */
 	private final static class BesselK extends AbstractFunctionEvaluator implements BesselKRules {
 
 		@Override
@@ -511,6 +588,31 @@ public class BesselFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>BesselY(n, z) 
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * Bessel function of the second kind.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Bessel_function">Wikipedia - Bessel function</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; BesselY(1, 3.6)
+	 * 0.415392
+	 * </code>
+	 * </pre>
+	 */
 	private final static class BesselY extends AbstractFunctionEvaluator implements BesselYRules {
 
 		@Override
@@ -706,6 +808,32 @@ public class BesselFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>SphericalBesselJ(n, z) 
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * spherical Bessel function <code>J(n, x)</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Bessel_function#Spherical_Bessel_functions">Wikipedia - Bessel
+	 * function - Spherical Bessel function</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; SphericalBesselJ(2.5,-5) 
+	 * I*0.204488
+	 * </code>
+	 * </pre>
+	 */
 	private final static class SphericalBesselJ extends AbstractFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -771,6 +899,26 @@ public class BesselFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>SphericalBesselY(n, z) 
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * spherical Bessel function <code>Y(n, x)</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Bessel_function#Spherical_Bessel_functions">Wikipedia - Bessel
+	 * function - Spherical Bessel function</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 */
 	private final static class SphericalBesselY extends AbstractFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
