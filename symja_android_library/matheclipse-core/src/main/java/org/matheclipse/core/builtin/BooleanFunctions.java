@@ -2431,7 +2431,7 @@ public final class BooleanFunctions {
 			}
 
 			if (ast.arg1().isInterval()) {
-				return IntervalSym.max((IAST)ast.arg1());
+				return IntervalSym.max((IAST) ast.arg1());
 			}
 
 			IAST resultList = EvalAttributes.flattenDeep(F.List, ast);
@@ -2565,8 +2565,8 @@ public final class BooleanFunctions {
 			}
 
 			if (ast.arg1().isInterval()) {
-				return IntervalSym.min((IAST)ast.arg1());
-			} 
+				return IntervalSym.min((IAST) ast.arg1());
+			}
 
 			IAST resultList = EvalAttributes.flattenDeep(F.List, ast);
 			if (resultList.isPresent()) {
@@ -2748,8 +2748,8 @@ public final class BooleanFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
 			IExpr arg1 = ast.arg1();
-			if (arg1.isReal()) {
-				return F.bool(arg1.isNegative());
+			if (arg1.isNegativeResult()) {
+				return F.True;
 			}
 			if (arg1.isNumber()) {
 				return F.False;
@@ -2898,8 +2898,8 @@ public final class BooleanFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
 			IExpr arg1 = ast.arg1();
-			if (arg1.isReal()) {
-				return F.bool(!arg1.isNegative());
+			if (arg1.isNonNegativeResult()) {
+				return F.True;
 			}
 			if (arg1.isNumber()) {
 				return F.False;
@@ -2952,15 +2952,15 @@ public final class BooleanFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
 			IExpr arg1 = ast.arg1();
-			if (arg1.isReal()) {
-				return F.bool(!arg1.isPositive());
+			if (arg1.isNegativeResult() || arg1.isZero()) {
+				return F.True;
 			}
 			if (arg1.isNumber()) {
 				return F.False;
 			}
 			ISignedNumber signedNumber = arg1.evalReal();
 			if (signedNumber != null) {
-				return F.bool(!signedNumber.isPositive());
+				return F.bool(signedNumber.isNegative() || signedNumber.isZero());
 			}
 			return F.NIL;
 		}
@@ -3272,8 +3272,8 @@ public final class BooleanFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
 			IExpr arg1 = ast.arg1();
-			if (arg1.isNumber()) {
-				return F.bool(arg1.isPositive());
+			if (arg1.isPositiveResult()) {
+				return F.True;
 			}
 			if (arg1.isNumber()) {
 				return F.False;
