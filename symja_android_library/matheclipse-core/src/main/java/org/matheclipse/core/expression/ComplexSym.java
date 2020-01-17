@@ -23,7 +23,6 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
@@ -41,10 +40,12 @@ public class ComplexSym implements IComplex {
 	 */
 	private static final long serialVersionUID = 1489050560741527824L;
 
-	private final static ComplexSym ZERO = ComplexSym.valueOf(F.C0);
-	private final static ComplexSym MINUS_ONE = ComplexSym.valueOf(F.CN1);
-	private final static ComplexSym ONE = ComplexSym.valueOf(F.C1);
-
+	private final static ComplexSym ZERO = ComplexSym.valueOf(0, 1, 0, 1);
+	private final static ComplexSym MINUS_ONE = ComplexSym.valueOf(-1, 1, 0, 1);
+	private final static ComplexSym ONE = ComplexSym.valueOf(1, 1, 0, 1);
+	private final static ComplexSym POSITIVE_I = ComplexSym.valueOf(0, 1, 1, 1);
+	private final static ComplexSym NEGATIVE_I = ComplexSym.valueOf(0, 1, -1, 1);
+	
 	public static ComplexSym valueOf(final BigFraction real, final BigFraction imaginary) {
 		final ComplexSym c = new ComplexSym();
 		c.fReal = AbstractFractionSym.valueOf(real);
@@ -115,6 +116,12 @@ public class ComplexSym implements IComplex {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr abs() {
+		if (fReal.isZero()) {
+			return fImaginary.abs();
+		}
+		if (fImaginary.isZero()) {
+			return fReal.abs();
+		}
 		return F.Sqrt(fReal.multiply(fReal).add(fImaginary.multiply(fImaginary)));
 	}
 
@@ -320,7 +327,7 @@ public class ComplexSym implements IComplex {
 	@Override
 	public INumber floorFraction() {
 		return valueOf((IRational) fReal.floorFraction(), (IRational) fImaginary.floorFraction());
-	} 
+	}
 
 	@Override
 	public String fullFormString() {
@@ -604,6 +611,33 @@ public class ComplexSym implements IComplex {
 	 * @return
 	 */
 	private IComplex powPositive(final long n) {
+		if (fReal.isZero()) {
+			long modN = n % 4;
+			if (fImaginary.isOne()) {
+				if (modN == 0) {
+					return ONE;
+				}
+				if (modN == 1) {
+					return this;
+				}
+				if (modN == 2) {
+					return MINUS_ONE;
+				}
+				return NEGATIVE_I;
+			}
+			if (fImaginary.isMinusOne()) {
+				if (modN == 0) {
+					return ONE;
+				}
+				if (modN == 1) {
+					return NEGATIVE_I;
+				}
+				if (modN == 2) {
+					return MINUS_ONE;
+				}
+				return POSITIVE_I;
+			}
+		}
 		long exp = n;
 		long b2pow = 0;
 
