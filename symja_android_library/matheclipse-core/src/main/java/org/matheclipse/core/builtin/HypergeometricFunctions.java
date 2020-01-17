@@ -542,7 +542,7 @@ public class HypergeometricFunctions {
 					// rex.printStackTrace();
 					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
 				}
-			} 
+			}
 			return F.NIL;
 		}
 
@@ -674,10 +674,52 @@ public class HypergeometricFunctions {
 				newAST.set(2, a);
 				return newAST;
 			}
-			if (a.isInteger() && a.isNegative() && z.isOne()) {
-				IInteger n = (IInteger) a.negate();
-				// Pochhammer(c-b, n) / Pochhammer(c, n)
-				return F.Divide(F.Expand(F.Pochhammer(F.Subtract(c, b), n)), F.Pochhammer(c, n));
+			if (a.isInteger()) {
+				if (a.isNegative() && z.isOne()) {
+					IInteger n = (IInteger) a.negate();
+					// Pochhammer(c-b, n) / Pochhammer(c, n)
+					return F.Divide(F.Expand(F.Pochhammer(F.Subtract(c, b), n)), F.Pochhammer(c, n));
+				}
+				if (a.isOne() && c.isNumEqualInteger(F.C2)) {
+					return
+					// [$ ((1-z)^(1-b)-1)/((-1 + b)*z) $]
+					F.Times(F.Plus(F.CN1, F.Power(F.Subtract(F.C1, z), F.Subtract(F.C1, b))),
+							F.Power(F.Times(F.Plus(F.CN1, b), z), F.CN1)); // $$;
+				}
+			}
+
+			if (a.equals(c)) {
+				return
+				// [$ (1 - z)^(-b) $]
+				F.Power(F.Subtract(F.C1, z), F.Negate(b)); // $$;
+			}
+			if (a.equals(b)) {
+				return
+				// [$ (1 - z)^(-a) $]
+				F.Power(F.Subtract(F.C1, z), F.Negate(a)); // $$;
+			}
+
+			IExpr temp = engine.evaluate(F.ExpandAll(F.Subtract(c, b)));
+			int diff = temp.toIntDefault();
+			if (diff != Integer.MIN_VALUE) {
+				if (diff == 0) {
+					return
+					// [$ (1 - z)^(-a) $]
+					F.Power(F.Subtract(F.C1, z), F.Negate(a)); // $$;
+				}
+				// if (diff == 1 && !a.isOne()) {
+				// return
+				// // [$ (b*Beta(z, b, 1 - a))/z^b $]
+				// F.Times(b, F.Power(F.Power(z, b), F.CN1), F.Beta(z, b, F.Subtract(F.C1, a))); // $$;
+				// }
+				if (diff == -1) {
+					return
+					// [$ ((1-z)^(-1-a)*(z*(a-b+1)+b-1))/(b-1) $]
+					F.Times(F.Power(F.Plus(F.CN1, b), F.CN1),
+							F.Plus(F.CN1, F.Times(z, F.Plus(a, F.Negate(b), F.C1)), b),
+							F.Power(F.Subtract(F.C1, z), F.Subtract(F.CN1, a))); // $$;
+				}
+
 			}
 
 			if (engine.isDoubleMode()) {

@@ -139,6 +139,24 @@ public class SpecialFunctions {
 						return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
 					}
 				}
+
+				int bInt = b.toIntDefault();
+				if (bInt > 0) {
+					IInteger n = (IInteger) b;
+					if (a.isOne()) {
+						return
+						// [$ ( (1/n)*(1 - (1 - z)^n) ) $]
+						F.Times(F.Power(n, F.CN1), F.Subtract(F.C1, F.Power(F.Subtract(F.C1, z), n))); // $$;
+					}
+					// if (bInt <= 1) {
+					// ISymbol k = F.Dummy("k");
+					// return
+					// // [$ (Beta(a,n)*z^a*Sum((Pochhammer(a, k)*(1-z)^k)/k!, {k, 0, n - 1})) $]
+					// F.Times(F.Beta(a, n), F.Power(z, a),
+					// F.Sum(F.Times(F.Power(F.Subtract(F.C1, z), k), F.Power(F.Factorial(k), F.CN1),
+					// F.Pochhammer(a, k)), F.List(k, F.C0, F.Plus(F.CN1, n)))); // $$;
+					// }
+				}
 				return F.NIL;
 			}
 			IExpr a = ast.arg1();
