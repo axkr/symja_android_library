@@ -293,7 +293,10 @@ public final class ListFunctions {
 									return createGenericTable(iter, index, iter.allocHint(), temp, null);
 								}
 							}
-							return fDefaultValue;
+							if (iter.isInvalidNumeric()) {
+								return fDefaultValue;
+							}
+							return F.NIL;
 						}
 						return createGenericTable(iter, index, iter.allocHint(), null, null);
 					} finally {
@@ -2612,7 +2615,7 @@ public final class ListFunctions {
 					int i = Validate.checkIntType(F.Insert, arg3, Integer.MIN_VALUE, engine);
 					if (i == Integer.MIN_VALUE) {
 						return F.NIL;
-						
+
 					}
 					if (i < 0) {
 						i = 1 + arg1AST.size() + i;

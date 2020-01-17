@@ -224,7 +224,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 			try {
 				temp = F.NIL;
 				IAST resultList = Times();
-				temp = evaluateLast(ast.arg1(), iterator, resultList, F.NIL);
+				temp = evaluateLast(ast.arg1(), iterator, resultList, F.C1);
 				if (!temp.isPresent() || temp.equals(resultList)) {
 					return F.NIL;
 				}

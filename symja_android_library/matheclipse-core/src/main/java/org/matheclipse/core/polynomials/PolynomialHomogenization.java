@@ -128,7 +128,7 @@ public class PolynomialHomogenization {
 	/**
 	 * Forward substitution - transforming the numerator and denominator expression into polynomial expressions by
 	 * introducing &quot;substitution variables&quot;. After transforming the polynomial expression may be solvable by a
-	 * polynomial factorization. 
+	 * polynomial factorization.
 	 * 
 	 * @param numerator
 	 * @param denominator
@@ -376,7 +376,7 @@ public class PolynomialHomogenization {
 				return F.Power(symbol, exp);
 			}
 
-			IRational rat = ((ISignedNumber) exp).rationalFactor();
+			IRational rat = exp.rationalFactor();
 			IInteger intExp = rat.multiply(lcm).numerator();
 			int exponent = intExp.toIntDefault(Integer.MIN_VALUE);
 			if (exponent != Integer.MIN_VALUE) {

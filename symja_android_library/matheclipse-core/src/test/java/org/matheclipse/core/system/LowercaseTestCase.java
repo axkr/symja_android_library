@@ -1459,6 +1459,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBeta() {
+		check("Beta(z, 1, 12)", //
+				"1/12*(1-(1-z)^12)");
+		
 		check("Beta( 2.5 + I, 1 - I, 0.5)", //
 				"1.83058+I*3.75044");
 		check("Beta(0.5, 2.5 + I, 1 - I)", //
@@ -8801,6 +8804,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHypergeometric2F1() {
+//		check("Hypergeometric2F1(-3, 1, 2, z)", //
+//				"(1-(1-z)^4)/(4*z)");
+		check("Hypergeometric2F1(1, b, 2, z)", //
+				"(-1+(1-z)^(1-b))/((-1+b)*z)");
+		check("Hypergeometric2F1(a, b, a, z)", //
+				"(1-z)^(-b)");
+		check("Hypergeometric2F1(a, b, b-1, z)", //
+				"(-1+b+(1+a-b)*z)/((-1+b)*(1-z)^(1+a))");
+		check("Hypergeometric2F1(a, b, b, z)", //
+				"(1-z)^(-a)");
+		// check("Hypergeometric2F1(a, b, b+1, z)", //
+		// "(b*Beta(z,b,1-a))/z^b");
+
 		check("Hypergeometric2F1(-5, b, c, 1)", //
 				"(-24*b+50*b^2-35*b^3+10*b^4-b^5+24*c-100*b*c+105*b^2*c-40*b^3*c+5*b^4*c+50*c^2\n" + //
 						"-105*b*c^2+60*b^2*c^2-10*b^3*c^2+35*c^3-40*b*c^3+10*b^2*c^3+10*c^4-5*b*c^4+c^5)/(c*(\n" + //
@@ -9520,11 +9536,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "Interval({6.28318530717958647692528676655900576839433879875021164194987,6.28318530717958647692528676655900576839433879875021164194989})");
 		// check("Interval(1.0``40)", //
 		// "Interval({9.99999999999999999999999999999999999999*10^-1,1.000000000000000000000000000000000000001})");
-		
+
 		// TODO return Interval({-1,1}) for -Infinity, Infinity
 		check("Limit(Sin(1/x), x -> 0)", //
 				"Indeterminate");
-		
+
 		check("Max(Interval({3, 5},{11, 37/2}))", //
 				"37/2");
 		check("Min(Interval({3, 5},{11, 37/2}))", //
@@ -9598,29 +9614,29 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Interval({1,Infinity})");
 		check("Abs(Interval({-Infinity, Infinity}))", //
 				"Interval({0,Infinity})");
-		
+
 		check("Cosh(Interval({-1, 1}))", //
 				"Interval({1,Cosh(1)})");
 		check("Cosh(Interval({0, Log(3)}))", //
 				"Interval({1,5/3})");
- 
+
 		check("Coth(Interval({-1, 1}))", //
 				"Interval({-Infinity,-Coth(1)},{Coth(1),Infinity})");
 		check("Coth(Interval({1.0, 2.0}))", //
 				"Interval({1.03731,1.31304})");
 		check("Coth(Interval({-1.0, 2.0}))", //
 				"Interval({-Infinity,-1.31304},{1.03731,Infinity})");
-		
+
 		check("Sinh(Interval({-1, 1}))", //
 				"Interval({-Sinh(1),Sinh(1)})");
 		check("Sinh(Interval({0, Log(3)}))", //
 				"Interval({0,4/3})");
-		
+
 		check("Tanh(Interval({-1, 1}))", //
 				"Interval({-Tanh(1),Tanh(1)})");
 		check("Tanh(Interval({-1.0, 2.0}))", //
 				"Interval({-0.761594,0.964028})");
-		
+
 		check("ArcCot(Interval({-1, Infinity}))", //
 				"Interval({-Pi/2,-Pi/4},{0,Pi/2})");
 		check("ArcCot(Interval({1-Sqrt(2), 1+Sqrt(2)}))", //
@@ -16049,6 +16065,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testProduct() {
+		check("Product(f(x), {k,n, n-1})", //
+				"1");
+		check("Product(f(x), {k,3, 1/2})", //
+				"1");
 
 		// prints RecursionLimitExeceeded
 		check("Product(f(x), {x, x, x+1})", //
@@ -16057,8 +16077,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Product(f(x), {x, x, x})", //
 				"f(x)");
 		check("Product(f(x), {x, a, a+1})", //
-				"f(a)*f(1+a)");
-
+				"f(a)*f(1+a)"); 
 		check("Product(k^3, {k, 1, n})", //
 				"(n!)^3");
 
@@ -20056,6 +20075,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSum() {
+		check("Sum(f(x), {k,n, n-1})", //
+				"0");
+		check("Sum(f(x), {k,3, 1/2})", //
+				"0");
+		
 		check("Sum((b+i*d)*a^i, {i,0,n})", //
 				"((-1+a^(1+n))*b)/(-1+a)+(d*(a+a^(1+n)*(-1-n+a*n)))/(1-a)^2");
 

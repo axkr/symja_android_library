@@ -3,6 +3,7 @@ package org.matheclipse.core.interfaces;
 import java.util.Iterator;
 
 import org.matheclipse.core.eval.exception.NoEvalException;
+import org.matheclipse.core.expression.F;
 
 /**
  * Interface for an iterator with additional tearDown() method, to run the iterator again
@@ -99,6 +100,21 @@ public interface IIterator<E> extends Iterator<E> {
 	 * @return
 	 */
 	default boolean isValidVariable() {
+		return false;
+	}
+
+	default boolean isInvalidNumeric() {
+		if (!isSetIterator()) {
+			if (getStep().isNonNegativeResult()) {
+				if (F.Negative.ofQ(F.Subtract(getUpperLimit(), getLowerLimit()))) {
+					return true;
+				}
+			} else if (getStep().isNegativeResult()) {
+				if (F.Negative.ofQ(F.Subtract(getLowerLimit(), getUpperLimit()))) {
+					return true;
+				}
+			}
+		}
 		return false;
 	}
 

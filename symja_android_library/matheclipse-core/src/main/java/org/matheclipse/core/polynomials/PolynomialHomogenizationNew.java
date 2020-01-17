@@ -380,7 +380,7 @@ public class PolynomialHomogenizationNew {
 				return F.Power(symbol, exp);
 			}
 
-			IRational rat = ((ISignedNumber) exp).rationalFactor();
+			IRational rat = exp.rationalFactor();
 			IInteger intExp = rat.multiply(lcm).numerator();
 			int exponent = intExp.toIntDefault(Integer.MIN_VALUE);
 			if (exponent != Integer.MIN_VALUE) {
