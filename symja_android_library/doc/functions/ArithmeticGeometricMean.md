@@ -19,4 +19,4 @@ See:
 ```
 
 ### Related terms 
-[GeometricMean](GeometricMean.md), [HarmonicMean](HarmonicMean.md),, [Mean](Mean.md), [Median](Median.md)
+[GeometricMean](GeometricMean.md), [HarmonicMean](HarmonicMean.md), [Mean](Mean.md), [Median](Median.md)
