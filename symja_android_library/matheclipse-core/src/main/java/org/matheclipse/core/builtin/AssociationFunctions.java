@@ -33,7 +33,7 @@ public class AssociationFunctions {
 
 		@Override
 		public int[] expectedArgSize() {
-			return IOFunctions.ARGS_1_1;
+			return IOFunctions.ARGS_1_INFINITY;
 		}
 	}
 
