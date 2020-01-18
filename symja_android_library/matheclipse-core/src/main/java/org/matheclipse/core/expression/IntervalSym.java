@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import java.math.RoundingMode;
 import java.util.Comparator;
 
 import org.apfloat.Apfloat;
@@ -113,6 +114,11 @@ public class IntervalSym {
 		return F.NIL;
 	}
 
+	public static Apfloat[] interval(Apfloat x, long precision) {
+		// x = ApfloatMath.round(x, precision, RoundingMode.HALF_EVEN);
+		return new Apfloat[] { ApfloatMath.nextDown(x), ApfloatMath.nextUp(x) };
+	}
+
 	/**
 	 * If the argument is a list of 2 elements, try sorting the elements. If the argument is not a list return a new
 	 * <code>{argOfIntervalList, argOfIntervalList]</code>
@@ -139,16 +145,18 @@ public class IntervalSym {
 			throw new ArgumentTypeException(str);
 		}
 		if (arg instanceof INum) {
-			// if (arg instanceof ApfloatNum) {
-			// // if (arg.isZero()) {
-			// // test
-			// // return F.List(F.num(new Apfloat("-1e-59", 60)), //
-			// // F.num(new Apfloat("1e-59", 60)));
-			// // }
-			// Apfloat v = ((ApfloatNum) arg).fApfloat;
-			// return F.List(F.num(ApfloatMath.nextDown(v)), //
-			// F.num(ApfloatMath.nextUp(v)));
-			// }
+			if (arg instanceof ApfloatNum) {
+				// if (arg.isZero()) {
+				// test
+				// return F.List(F.num(new Apfloat("-1e-59", 60)), //
+				// F.num(new Apfloat("1e-59", 60)));
+				// }
+				// Apfloat v = ((ApfloatNum) arg).fApfloat;
+				Apfloat apfloat = ((ApfloatNum) arg).fApfloat;
+				Apfloat[] values = interval(apfloat, apfloat.precision());
+				return F.List(F.num(values[0]), //
+						F.num(values[1]));
+			}
 			double value = ((ISignedNumber) arg).doubleValue();
 			return F.List(F.num(Math.nextDown(value)), //
 					F.num(Math.nextUp(value)));

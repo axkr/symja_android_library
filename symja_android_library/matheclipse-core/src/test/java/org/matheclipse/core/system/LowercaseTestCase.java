@@ -1461,7 +1461,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testBeta() {
 		check("Beta(z, 1, 12)", //
 				"1/12*(1-(1-z)^12)");
-		
+
 		check("Beta( 2.5 + I, 1 - I, 0.5)", //
 				"1.83058+I*3.75044");
 		check("Beta(0.5, 2.5 + I, 1 - I)", //
@@ -8804,8 +8804,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHypergeometric2F1() {
-//		check("Hypergeometric2F1(-3, 1, 2, z)", //
-//				"(1-(1-z)^4)/(4*z)");
+		// check("Hypergeometric2F1(-3, 1, 2, z)", //
+		// "(1-(1-z)^4)/(4*z)");
 		check("Hypergeometric2F1(1, b, 2, z)", //
 				"(-1+(1-z)^(1-b))/((-1+b)*z)");
 		check("Hypergeometric2F1(a, b, a, z)", //
@@ -9528,14 +9528,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInterval() {
-		// check("Interval(0.0``40)", //
-		// "Interval({0,0})");
-		// check("Interval(N(Pi,60))-Pi", //
-		// "Interval({-1*10^-59,1*10^-59})");
-		// check("Interval(N(Pi,60))+Pi", //
-		// "Interval({6.28318530717958647692528676655900576839433879875021164194987,6.28318530717958647692528676655900576839433879875021164194989})");
-		// check("Interval(1.0``40)", //
-		// "Interval({9.99999999999999999999999999999999999999*10^-1,1.000000000000000000000000000000000000001})");
+		check("Interval(0.0``40)", //
+				"Interval({0,0})");
+		check("Interval(N(Pi,60))-Pi", //
+				"Interval({-1*10^-59,1*10^-59})");
+		check("Interval(N(Pi,60))+Pi", //
+				"Interval({6.28318530717958647692528676655900576839433879875021164194987,6.28318530717958647692528676655900576839433879875021164194989})");
+		check("Interval(1.0``40)", //
+				"Interval({9.99999999999999999999999999999999999999*10^-1,1.000000000000000000000000000000000000001})");
 
 		// TODO return Interval({-1,1}) for -Infinity, Infinity
 		check("Limit(Sin(1/x), x -> 0)", //
@@ -16077,7 +16077,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Product(f(x), {x, x, x})", //
 				"f(x)");
 		check("Product(f(x), {x, a, a+1})", //
-				"f(a)*f(1+a)"); 
+				"f(a)*f(1+a)");
 		check("Product(k^3, {k, 1, n})", //
 				"(n!)^3");
 
@@ -20079,7 +20079,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"0");
 		check("Sum(f(x), {k,3, 1/2})", //
 				"0");
-		
+
 		check("Sum((b+i*d)*a^i, {i,0,n})", //
 				"((-1+a^(1+n))*b)/(-1+a)+(d*(a+a^(1+n)*(-1-n+a*n)))/(1-a)^2");
 
