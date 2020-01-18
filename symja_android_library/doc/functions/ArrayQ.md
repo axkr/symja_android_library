@@ -1,6 +1,7 @@
 ## ArrayQ
+
 ```
-'ArrayQ(expr)
+ArrayQ(expr)
 ```
 
 > tests whether expr is a full array.
@@ -18,6 +19,7 @@
 > furthermore tests whether `test` yields `True` for all elements of expr. 
  
 ### Examples
+
 ```
 >> ArrayQ(a)
 False

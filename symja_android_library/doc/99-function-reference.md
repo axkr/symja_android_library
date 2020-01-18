@@ -39,6 +39,7 @@
 * [ArrayPad](functions/ArrayPad.md)
 * [ArrayQ](functions/ArrayQ.md)
 * [ArrayReshape](functions/ArrayReshape.md)
+* [Association](functions/Association.md)
 * [AtomQ](functions/AtomQ.md)
 * [Attributes](functions/Attributes.md)
 * [BaseForm](functions/BaseForm.md)

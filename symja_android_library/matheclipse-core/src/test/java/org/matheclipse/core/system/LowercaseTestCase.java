@@ -1071,6 +1071,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAssociation() {
+		check("Association({ahey->avalue, bkey->bvalue, ckey->cvalue})", //
+				"<|ahey->avalue,bkey->bvalue,ckey->cvalue|>");
+		
 		check("<|a->x, b->y, c->z|>[b]", //
 				"y");
 		check("<|a->x, b->y, c->z|>", //
