@@ -28,6 +28,7 @@ import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.Arithmetic;
+import org.matheclipse.core.builtin.AssociationFunctions;
 import org.matheclipse.core.builtin.AssumptionFunctions;
 import org.matheclipse.core.builtin.AttributeFunctions;
 import org.matheclipse.core.builtin.BesselFunctions;
@@ -438,6 +439,9 @@ public class F {
 	/***/
 	public final static IBuiltInSymbol Arrays = F.initFinalSymbol("Arrays", ID.Arrays);
 
+	/***/
+	public final static IBuiltInSymbol Association = F.initFinalSymbol("Association", ID.Association);
+	
 	/***/
 	public final static IBuiltInSymbol Assumptions = F.initFinalSymbol("Assumptions", ID.Assumptions);
 
@@ -4493,10 +4497,12 @@ public class F {
 			MinMaxFunctions.initialize();
 			GraphFunctions.initialize();
 			GraphDataFunctions.initialize();
+			AssociationFunctions.initialize();
 			GeodesyFunctions.initialize();
 			ManipulateFunction.initialize();
 			ImageFunctions.initialize();
 			ComputationalGeometryFunctions.initialize();
+			
 
 			F.Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
 			COUNT_DOWN_LATCH.countDown();

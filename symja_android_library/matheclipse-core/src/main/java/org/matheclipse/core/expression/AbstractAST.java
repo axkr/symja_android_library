@@ -1248,6 +1248,9 @@ public abstract class AbstractAST implements IASTMutable {
 
 			return functionEvaluator.evaluate(this, engine);
 		}
+		if (head instanceof AssociationAST && size() == 2) {
+			return ((AssociationAST) head).getValue(arg1());
+		}
 
 		final ISymbol symbol = topHead();
 		IExpr temp = engine.evalAttributes(symbol, this).orElseGet(() -> engine.evalRules(symbol, this));
@@ -2337,7 +2340,7 @@ public abstract class AbstractAST implements IASTMutable {
 	public final boolean isDirectedInfinity(IExpr x) {
 		return isSameHead(F.DirectedInfinity, 2) && arg1().equals(x);
 	}
-	
+
 	public boolean isContinuousDistribution() {
 		if (head().isBuiltInSymbol()) {
 			IEvaluator evaluator = ((IBuiltInSymbol) head()).getEvaluator();
@@ -2808,7 +2811,7 @@ public abstract class AbstractAST implements IASTMutable {
 					(x.isList() && ((IAST) x).forAll(y -> y.isNumericFunction())));
 		}
 		// TODO optimize this expression:
-		return isAST(F.Interval)&&forAll(x -> x.isNumericArgument() || //
+		return isAST(F.Interval) && forAll(x -> x.isNumericArgument() || //
 				(x.isList() && ((IAST) x).forAll(y -> y.isNumericArgument())));
 	}
 

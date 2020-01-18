@@ -479,7 +479,40 @@ public class ExprParser extends Scanner {
 				slotSequencce.append(F.C1);
 			}
 			return parseArguments(slotSequencce);
+		case TT_ASSOCIATION_OPEN:
+			final IASTAppendable function = F.ast(F.List);
+			fRecursionDepth++;
+			try {
+				getNextToken();
+				do {
+					function.append(parseExpression());
+					if (fToken != TT_COMMA) {
+						break;
+					}
 
+					getNextToken();
+				} while (true);
+
+				if (fToken != TT_ASSOCIATION_CLOSE) {
+					throwSyntaxError("\'|>\' expected.");
+				}
+				temp = F.unaryAST1(F.Association, function);
+				getNextToken();
+				if (fToken == TT_PRECEDENCE_OPEN) {
+					if (!fExplicitTimes) {
+						Operator oper = fFactory.get("Times");
+						if (Config.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
+							return getTimes(temp);
+						}
+					}
+				}
+				if (fToken == TT_ARGUMENTS_OPEN) {
+					return getFunctionArguments(temp);
+				}
+				return temp;
+			} finally {
+				fRecursionDepth--;
+			}
 		case TT_PRECEDENCE_CLOSE:
 			throwSyntaxError("Too much closing ) in factor.");
 			break;
@@ -490,6 +523,10 @@ public class ExprParser extends Scanner {
 
 		case TT_ARGUMENTS_CLOSE:
 			throwSyntaxError("Too much closing ] in factor.");
+			break;
+
+		case TT_ASSOCIATION_CLOSE:
+			throwSyntaxError("Too much closing |> in factor.");
 			break;
 		}
 
@@ -851,7 +888,7 @@ public class ExprParser extends Scanner {
 							precision = Config.MACHINE_PRECISION;
 						}
 						return F.num(new Apfloat(number, precision));
-					}else {
+					} else {
 						fCurrentPosition++;
 						long precision = getJavaLong();
 						if (precision < Config.MACHINE_PRECISION) {
@@ -1056,7 +1093,7 @@ public class ExprParser extends Scanner {
 			}
 
 			throwSyntaxError("End-of-file not reached.");
-		} 
+		}
 		// determine the precision of the input before evaluation
 		VisitorPrecision visitor = new VisitorPrecision();
 		temp.accept(visitor);
@@ -1135,8 +1172,8 @@ public class ExprParser extends Scanner {
 			if (fToken == TT_NEWLINE) {
 				return lhs;
 			}
-			if ((fToken == TT_LIST_OPEN) || (fToken == TT_PRECEDENCE_OPEN) || (fToken == TT_IDENTIFIER)
-					|| (fToken == TT_STRING) || (fToken == TT_DIGIT) || (fToken == TT_SLOT)
+			if ((fToken == TT_LIST_OPEN) || (fToken == TT_PRECEDENCE_OPEN) || (fToken == TT_ASSOCIATION_OPEN)
+					|| (fToken == TT_IDENTIFIER) || (fToken == TT_STRING) || (fToken == TT_DIGIT) || (fToken == TT_SLOT)
 					|| (fToken == TT_SLOTSEQUENCE)) {
 				// if (fPackageMode && fRecursionDepth < 1) {
 				// return lhs;
@@ -1300,8 +1337,9 @@ public class ExprParser extends Scanner {
 			if (fToken == TT_NEWLINE) {
 				return rhs;
 			}
-			if ((fToken == TT_LIST_OPEN) || (fToken == TT_PRECEDENCE_OPEN) || (fToken == TT_IDENTIFIER)
-					|| (fToken == TT_STRING) || (fToken == TT_DIGIT) || (fToken == TT_SLOT)) {
+			if ((fToken == TT_LIST_OPEN) || (fToken == TT_PRECEDENCE_OPEN) || (fToken == TT_ASSOCIATION_OPEN)
+					|| (fToken == TT_IDENTIFIER) || (fToken == TT_STRING) || (fToken == TT_DIGIT)
+					|| (fToken == TT_SLOT)) {
 				if (!fExplicitTimes) {
 					// lazy evaluation of multiplication
 					InfixExprOperator timesOperator = (InfixExprOperator) fFactory.get("Times");

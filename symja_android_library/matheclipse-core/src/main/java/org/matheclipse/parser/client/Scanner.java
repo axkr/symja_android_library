@@ -28,6 +28,16 @@ public abstract class Scanner {
 	final static protected int TT_EOF = 0;
 
 	/**
+	 * Token type: opening bracket for associations
+	 */
+	final static protected int TT_ASSOCIATION_OPEN = 10;
+
+	/**
+	 * Token type: closing bracket for associations
+	 */
+	final static protected int TT_ASSOCIATION_CLOSE = 11;
+
+	/**
 	 * Token type: opening bracket for function arguments
 	 */
 	final static protected int TT_ARGUMENTS_OPEN = 12;
@@ -533,7 +543,7 @@ public abstract class Scanner {
 		getNextToken();
 		return intValue;
 	}
-	
+
 	/**
 	 * Parse a Java <code>int</code> value.
 	 * 
@@ -664,6 +674,35 @@ public abstract class Scanner {
 					break;
 				case ']':
 					fToken = TT_ARGUMENTS_CLOSE;
+					break;
+				case '<':
+					if (isValidPosition()) {
+						if (charAtPosition() == '|') {
+							fCurrentPosition++;
+							fToken = TT_ASSOCIATION_OPEN;
+							break;
+						}
+					}
+					if (isOperatorCharacters()) {
+						fOperList = getOperator();
+						fToken = TT_OPERATOR;
+						return;
+					}
+
+					break;
+				case '|':
+					if (isValidPosition()) {
+						if (charAtPosition() == '>') {
+							fCurrentPosition++;
+							fToken = TT_ASSOCIATION_CLOSE;
+							break;
+						}
+					}
+					if (isOperatorCharacters()) {
+						fOperList = getOperator();
+						fToken = TT_OPERATOR;
+						return;
+					}
 					break;
 				case ',':
 					fToken = TT_COMMA;

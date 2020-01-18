@@ -17,6 +17,7 @@ import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.expression.AssociationAST;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -938,6 +939,10 @@ public class OutputFormFactory {
 	private void convert(final Appendable buf, final IExpr o, final int precedence, boolean isASTHead)
 			throws IOException {
 		if (o instanceof IAST) {
+			if (o instanceof AssociationAST) {
+				convertAssociation(buf, (AssociationAST) o);
+				return;
+			}
 			final IAST list = (IAST) o;
 			IExpr header = list.head();
 			if (!header.isSymbol()) {
@@ -1005,13 +1010,13 @@ public class OutputFormFactory {
 								IExpr min = subList.arg1();
 								IExpr max = subList.arg2();
 								if (min instanceof INum) {
-									convertDouble(buf, (INum)min, 0, false);
+									convertDouble(buf, (INum) min, 0, false);
 								} else {
 									convert(buf, min);
 								}
 								append(buf, ",");
 								if (max instanceof INum) {
-									convertDouble(buf, (INum)max, 0, false);
+									convertDouble(buf, (INum) max, 0, false);
 								} else {
 									convert(buf, max);
 								}
@@ -1165,6 +1170,26 @@ public class OutputFormFactory {
 		}
 
 		convertString(buf, o.toString());
+	}
+
+	private void convertAssociation(final Appendable buf, final AssociationAST association) throws IOException {
+		IAST list = association.normal();
+		append(buf, "<|");
+		final int listSize = list.size();
+		if (listSize > 1) {
+			convert(buf, list.arg1(), Integer.MIN_VALUE, false);
+		}
+		for (int i = 2; i < listSize; i++) {
+			append(buf, ",");
+			if (list.isEvalFlagOn(IAST.IS_MATRIX)) {
+				newLine(buf);
+				append(buf, ' ');
+
+			}
+			convert(buf, list.get(i), Integer.MIN_VALUE, false);
+		}
+		append(buf, "|>");
+		return;
 	}
 
 	private boolean convertInequality(final Appendable buf, final IAST inequality, final int precedence)
@@ -1575,7 +1600,7 @@ public class OutputFormFactory {
 		if (head.isAST()) {
 			append(buf, "]");
 		} else {
-			append(buf, fRelaxedSyntax ? ")" : "]"); 
+			append(buf, fRelaxedSyntax ? ")" : "]");
 		}
 	}
 

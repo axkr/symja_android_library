@@ -1070,6 +1070,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1.83462883815328396810218573046+I*(-1.91461625197137083440493535055*10^-1)");
 	}
 
+	public void testAssociation() {
+		check("<|a->x, b->y, c->z|>[b]", //
+				"y");
+		check("<|a->x, b->y, c->z|>", //
+				"<|a->x,b->y,c->z|>");
+		check("Normal(<|a->x, b->y, c->z|>)", //
+				"{a->x,b->y,c->z}");
+		
+		check("<|a->x, b->y, c->z|> // FullForm", //
+				"Association(Rule(a, x), Rule(b, y), Rule(c, z))");
+	}
+
 	public void testAttributes() {
 		check("Attributes(fun) = {ReadProtected, Protected}", //
 				"{ReadProtected,Protected}");
@@ -1461,7 +1473,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testBeta() {
 		check("Beta(z, 1, 12)", //
 				"1/12*(1-(1-z)^12)");
-		
+
 		check("Beta( 2.5 + I, 1 - I, 0.5)", //
 				"1.83058+I*3.75044");
 		check("Beta(0.5, 2.5 + I, 1 - I)", //
@@ -8804,8 +8816,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHypergeometric2F1() {
-//		check("Hypergeometric2F1(-3, 1, 2, z)", //
-//				"(1-(1-z)^4)/(4*z)");
+		// check("Hypergeometric2F1(-3, 1, 2, z)", //
+		// "(1-(1-z)^4)/(4*z)");
 		check("Hypergeometric2F1(1, b, 2, z)", //
 				"(-1+(1-z)^(1-b))/((-1+b)*z)");
 		check("Hypergeometric2F1(a, b, a, z)", //
@@ -16077,7 +16089,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Product(f(x), {x, x, x})", //
 				"f(x)");
 		check("Product(f(x), {x, a, a+1})", //
-				"f(a)*f(1+a)"); 
+				"f(a)*f(1+a)");
 		check("Product(k^3, {k, 1, n})", //
 				"(n!)^3");
 
@@ -20079,7 +20091,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"0");
 		check("Sum(f(x), {k,3, 1/2})", //
 				"0");
-		
+
 		check("Sum((b+i*d)*a^i, {i,0,n})", //
 				"((-1+a^(1+n))*b)/(-1+a)+(d*(a+a^(1+n)*(-1-n+a*n)))/(1-a)^2");
 

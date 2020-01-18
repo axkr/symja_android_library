@@ -15,6 +15,7 @@ import org.matheclipse.core.eval.util.Assumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
+import org.matheclipse.core.expression.AssociationAST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.interfaces.IAST;
@@ -234,13 +235,13 @@ public class SeriesFunctions {
 					limitValue.isNegativeInfinity()) && //
 					expression.isAST() && //
 					expression.size() > 1) {
-				if (limitValue.isInfinity()|| //
+				if (limitValue.isInfinity() || //
 						limitValue.isNegativeInfinity()) {
 					IExpr temp = evalReplaceAll(expression, data);
 					if (temp.isNumericFunction()) {
 						return temp;
 					}
-				} 
+				}
 				IExpr temp = limitInfinityZero((IAST) expression, data, (IAST) limitValue);
 				if (temp.isPresent()) {
 					return temp;
@@ -893,8 +894,8 @@ public class SeriesFunctions {
 				} else {
 					throw new WrongArgumentType(ast, arg2, 2,
 							"Limit: limit value contains variable symbol for rule definition!");
-				} 
-				
+				}
+
 				LimitData data = new LimitData(symbol, limit, rule, direction);
 				return evalLimit(arg1, data);
 			} finally {
@@ -943,6 +944,10 @@ public class SeriesFunctions {
 			IExpr arg1 = ast.arg1();
 			if (arg1 instanceof ASTSeriesData) {
 				return ((ASTSeriesData) arg1).normal();
+			}
+			if (arg1 instanceof AssociationAST) {
+				IAST list= ((AssociationAST) arg1).normal();
+				return list;
 			}
 			if (WXFFunctions.isByteArray(arg1)) {
 				byte[] bArray = (byte[]) ((IDataExpr) arg1).toData();
@@ -1423,7 +1428,7 @@ public class SeriesFunctions {
 				}
 				if (!n.isInteger()) {
 					return F.NIL;
-				} 
+				}
 			}
 			if (function.isFree(x)) {
 				if (n.isZero()) {
