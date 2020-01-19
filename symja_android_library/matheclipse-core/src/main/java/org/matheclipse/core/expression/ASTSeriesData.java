@@ -12,6 +12,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
@@ -807,7 +808,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 	 * 
 	 * @return the standard expression generated from this series <code>Plus(....)</code>.
 	 */
-	public IExpr normal() {
+	public IASTMutable normal() {
 		IExpr x = getX();
 		IExpr x0 = getX0();
 		int nMin = getNMin();

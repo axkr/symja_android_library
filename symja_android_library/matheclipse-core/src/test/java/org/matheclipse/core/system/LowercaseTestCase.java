@@ -1,10 +1,19 @@
 package org.matheclipse.core.system;
 
+import java.util.SortedMap;
+
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.ConstantDefinitions;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
+
+import edu.jas.arith.BigRational;
+import edu.jas.poly.GenPolynomial;
+import edu.jas.poly.GenPolynomialRing;
+import edu.jas.poly.TermOrder;
+import edu.jas.ufd.FactorAbstract;
+import edu.jas.ufd.FactorFactory;
 
 /**
  * Tests system.reflection classes
@@ -1071,18 +1080,35 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAssociation() {
+		check("Sort( <|a -> 4, b -> 2, c -> 1, d -> 5|> )", //
+				"<|c->1,b->2,a->4,d->5|>");
+		check("Select(<|a -> 4, b -> 2, c -> 1, d -> 5|>, # > 3 &)", //
+				"<|a->4,d->5|>");
+
+		check(" <|a :> 1 + 1, b -> Nothing|> ", //
+				"<|a:>1+1,b->Nothing|>");
+		check("<|a->b, b->x,{}, a->d, b->y, a->e, {}|>", //
+				"<|a->e,b->y|>");
+		check("Total( <|a -> 4, b -> 2, c -> 1, d -> 5|> )", //
+				"12");
+		
+		check("Map(f, <|a -> 4, b -> 2, c -> 1, d -> 5|>)", //
+				"<|a->f(4),b->f(2),c->f(1),d->f(5)|>");
 		check("Association({ahey->avalue, bkey->bvalue, ckey->cvalue})", //
 				"<|ahey->avalue,bkey->bvalue,ckey->cvalue|>");
-		
 		check("<|a->x, b->y, c->z|>[b]", //
 				"y");
 		check("<|a->x, b->y, c->z|>", //
 				"<|a->x,b->y,c->z|>");
 		check("Normal(<|a->x, b->y, c->z|>)", //
 				"{a->x,b->y,c->z}");
-		
+
 		check("<|a->x, b->y, c->z|> // FullForm", //
 				"Association(Rule(a, x), Rule(b, y), Rule(c, z))");
+		check("Level(<|a -> x, b -> y|>, {1})", //
+				"{x,y}");
+		check("Depth(<|a -> x, b -> y|>)", //
+				"2");
 	}
 
 	public void testAttributes() {
@@ -6159,6 +6185,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFactor() {
+		System.out.println();
+
+		// https://github.com/kredel/java-algebra-system/issues/12
+		// for (int i = 0; i < 100000; i++) {
+		// System.out.println(i);
+		// String[] vars = new String[] { "a", "c", "d", "e", "x" };
+		// GenPolynomialRing<edu.jas.arith.BigInteger> fac;
+		// fac = new GenPolynomialRing<edu.jas.arith.BigInteger>(edu.jas.arith.BigInteger.ZERO, vars.length,
+		// new TermOrder(TermOrder.INVLEX), vars);
+		//
+		// GenPolynomial<edu.jas.arith.BigInteger> poly = fac.parse("a*d*e + c*d^2*x + a*e^2*x + c*d*e*x^2");
+		// System.out.println("A: " + poly.toString());
+		// FactorAbstract<edu.jas.arith.BigInteger> factorAbstract = FactorFactory
+		// .getImplementation(edu.jas.arith.BigInteger.ZERO);
+		// SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map = factorAbstract.factors(poly);
+		// }
+		// System.out.println();
 		check("Factor(1+x^2, Extension->I)", //
 				"(-I+x)*(I+x)");
 
@@ -10366,6 +10409,28 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{a,b,x,y,z}");
 		check("Join({{a, b}, {x, y}}, {{1, 2}, {3, 4}})", //
 				"{{a,b},{x,y},{1,2},{3,4}}");
+	}
+
+	public void testKeys() {
+		check("Keys( <|a -> 2, Nothing -> 2|>, Hold )", //
+				"{Hold(a),Hold(Nothing)}");
+		check("Keys( <|a -> 4, b -> 2, c -> 1, d -> 5|> )", //
+				"{a,b,c,d}");
+		check("Keys({ahey->avalue, bkey->bvalue, ckey->cvalue})", //
+				"{ahey,bkey,ckey}");
+		check("Keys({<|a -> 1, b -> 2|>, {w -> 3, {}}})", //
+				"{{a,b},{w,{}}}");
+	}
+
+	public void testValues() {
+		check("Values(<|a :> 1 + 1, b -> Nothing|>, Hold)", //
+				"{Hold(1+1),Hold(Nothing)}");
+		check("Values( <|a -> 4, b -> 2, c -> 1, d -> 5|> )", //
+				"{4,2,1,5}");
+		check("Values({ahey->avalue, bkey->bvalue, ckey->cvalue})", //
+				"{avalue,bvalue,cvalue}");
+		check("Values({<|a -> 1, b -> 2|>, {w -> 3, {}}})", //
+				"{{1,2},{3,{}}}");
 	}
 
 	public void testKolmogorovSmirnovTest() {

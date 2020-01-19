@@ -464,7 +464,7 @@ public abstract class AbstractAST implements IASTMutable {
 
 		/** {@inheritDoc} */
 		@Override
-		public final boolean isListOfRules() {
+		public final boolean isListOfRules(boolean ignoreEmptyList) {
 			return false;
 		}
 
@@ -1112,7 +1112,7 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IASTAppendable copyHead(final int intialCapacity) {
+	public IASTAppendable copyHead(final int intialCapacity) {
 		return AST.newInstance(intialCapacity, head(), false);
 	}
 
@@ -2673,10 +2673,14 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isListOfRules() {
+	public boolean isListOfRules(boolean ignoreEmptyList) {
 		if (head().equals(F.List)) {
 			for (int i = 1; i < size(); i++) {
 				if (!get(i).isRuleAST()) {
+					if (ignoreEmptyList && get(i).isAST(F.List, 1)) {
+						// ignore empty list entries
+						continue;
+					}
 					// the row is no list
 					return false;
 				}
@@ -3721,6 +3725,13 @@ public abstract class AbstractAST implements IASTMutable {
 	public final IASTMutable mapThread(final IAST replacement, int position) {
 		EvalEngine engine = EvalEngine.get();
 		final Function<IExpr, IExpr> function = x -> engine.evaluate(replacement.setAtCopy(position, x));
+		return (IASTMutable) map(function, 1);
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public final IASTMutable mapThread(Function<IExpr, IExpr> function ) {
+// 		final Function<IExpr, IExpr> function = x ->  replacement.setAtCopy(position, x );
 		return (IASTMutable) map(function, 1);
 	}
 

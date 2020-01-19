@@ -1180,12 +1180,7 @@ public class OutputFormFactory {
 			convert(buf, list.arg1(), Integer.MIN_VALUE, false);
 		}
 		for (int i = 2; i < listSize; i++) {
-			append(buf, ",");
-			if (list.isEvalFlagOn(IAST.IS_MATRIX)) {
-				newLine(buf);
-				append(buf, ' ');
-
-			}
+			append(buf, ","); 
 			convert(buf, list.get(i), Integer.MIN_VALUE, false);
 		}
 		append(buf, "|>");

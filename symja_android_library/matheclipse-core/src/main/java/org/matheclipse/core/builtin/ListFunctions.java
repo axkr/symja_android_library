@@ -4195,13 +4195,13 @@ public final class ListFunctions {
 					IExpr arg1 = ast.arg1();
 					IExpr arg2 = ast.arg2();
 
-					if (arg2.isListOfRules()) {
+					if (arg2.isListOfRules(false)) {
 						return arg1.replaceAll((IAST) arg2).orElse(arg1);
 					} else if (arg2.isListOfLists()) {
 						IAST list = (IAST) arg2;
 						IASTAppendable result = F.ListAlloc(list.size());
 						for (IExpr subList : list) {
-							if (subList.isListOfRules()) {
+							if (subList.isListOfRules(false)) {
 								result.append(F.subst(arg1, (IAST) subList));
 							} else {
 								WrongArgumentType wat = new WrongArgumentType(ast, ast, -1,
@@ -5755,7 +5755,7 @@ public final class ListFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			try {
-				VisitorLevelSpecification level = null;
+				VisitorLevelSpecification level = null; 
 				Function<IExpr, IExpr> tf = x -> x.isAST() ? ((IAST) x).setAtCopy(0, F.Plus) : x;
 
 				if (ast.isAST2()) {
@@ -5768,7 +5768,7 @@ public final class ListFunctions {
 				if (ast.arg1().isAST()) {
 					// increment level because we select only subexpressions
 					level.incCurrentLevel();
-					IExpr temp = ast.arg1().accept(level);
+					IExpr temp = ((IAST)ast.arg1()).copyAST().accept(level);
 					if (temp.isPresent()) {
 						boolean te = engine.isThrowError();
 						try {

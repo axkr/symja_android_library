@@ -79,7 +79,7 @@ public class OptionArgs {
 			for (int i = startIndex; i < size; i++) {
 				IExpr arg = currentOptionsList.get(i);
 				arg = evaluate ? engine.evaluate(arg) : arg;
-				if (arg.isListOfRules()) {
+				if (arg.isListOfRules(false)) {
 					IAST listOfRules = (IAST) arg;
 					this.fCurrentOptionsList.appendAll(listOfRules, 1, listOfRules.size());
 				} else if (arg.isRule()) {

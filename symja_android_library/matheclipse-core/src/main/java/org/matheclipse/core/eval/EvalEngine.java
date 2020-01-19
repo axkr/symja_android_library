@@ -1807,6 +1807,7 @@ public class EvalEngine implements Serializable {
 	 * @return
 	 */
 	public IAST flattenSequences(final IAST ast) {
+		int attr = ast.topHead().getAttributes();
 		IASTAppendable[] seqResult = new IASTAppendable[] { F.NIL };
 
 		ast.forEach((x, i) -> {
@@ -1817,12 +1818,17 @@ public class EvalEngine implements Serializable {
 					seqResult[0].appendArgs(ast, i);
 				}
 				seqResult[0].appendArgs(seq);
+				return;
 			} else if (x.equals(F.Nothing)) {
-				if (!seqResult[0].isPresent()) {
-					seqResult[0] = F.ast(ast.head(), ast.size() - 1, false);
-					seqResult[0].appendArgs(ast, i);
+				if ((ISymbol.HOLDALL & attr) == ISymbol.NOATTRIBUTE) {
+					if (!seqResult[0].isPresent()) {
+						seqResult[0] = F.ast(ast.head(), ast.size() - 1, false);
+						seqResult[0].appendArgs(ast, i);
+					}
+					return;
 				}
-			} else if (seqResult[0].isPresent()) {
+			}
+			if (seqResult[0].isPresent()) {
 				seqResult[0].append(x);
 			}
 		});

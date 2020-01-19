@@ -302,7 +302,7 @@ public final class StringFunctions {
 				}
 				String str = ((IStringX) ast.arg1()).toString();
 				IExpr arg2 = ast.arg2();
-				if (!arg2.isListOfRules()) {
+				if (!arg2.isListOfRules(false)) {
 					if (arg2.isRuleAST()) {
 						arg2 = F.List(arg2);
 					} else {

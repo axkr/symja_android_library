@@ -1784,6 +1784,20 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @see #isVector()
 	 */
 	default boolean isListOfRules() {
+		return isListOfRules(false);
+	}
+
+	/**
+	 * Test if this expression is a list of rules (head Rule or RuleDelayed)
+	 * 
+	 * @param ignoreEmptyList
+	 *            if <code>true</code>, ignore elements which equals an empty list <code>{ }</code>
+	 * @return
+	 * @see #isList()
+	 * @see #isMatrix(boolean)
+	 * @see #isVector()
+	 */
+	default boolean isListOfRules(boolean ignoreEmptyList) {
 		return false;
 	}
 

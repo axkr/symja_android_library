@@ -1930,6 +1930,9 @@ public class F {
 	public final static IBuiltInSymbol Join = F.initFinalSymbol("Join", ID.Join);
 
 	/***/
+	public final static IBuiltInSymbol Keys = F.initFinalSymbol("Keys", ID.Keys);
+	
+	/***/
 	public final static IBuiltInSymbol KOrderlessPartitions = F.initFinalSymbol("KOrderlessPartitions",
 			ID.KOrderlessPartitions);
 
@@ -3586,6 +3589,9 @@ public class F {
 	/** ValueQ(expr) - returns `True` if and only if `expr` is defined. */
 	public final static IBuiltInSymbol ValueQ = F.initFinalSymbol("ValueQ", ID.ValueQ);
 
+	/***/
+	public final static IBuiltInSymbol Values = F.initFinalSymbol("Values", ID.Values);
+	
 	/** VandermondeMatrix(n) - gives the Vandermonde matrix with `n` rows and columns. */
 	public final static IBuiltInSymbol VandermondeMatrix = F.initFinalSymbol("VandermondeMatrix", ID.VandermondeMatrix);
 

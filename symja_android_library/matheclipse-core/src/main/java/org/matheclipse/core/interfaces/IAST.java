@@ -360,6 +360,17 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public IASTMutable copy();
 
 	/**
+	 * Return a copy of the pure <code>IAST</code> instance (the elements themselves are not copied). Additionally to
+	 * the <code>copy()</code> method, this method tries to transform <code>AssociatioinAST</code> objects to
+	 * <code>AST</code> if possible.
+	 * 
+	 * @return a copy of this <code>IAST</code> instance.
+	 */
+	default IASTMutable copyAST() {
+		return copy();
+	}
+
+	/**
 	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied). In contrast
 	 * to the <code>clone()</code> method, this method returns exactly the same type for
 	 * <code>AST0, AST1, AST2,AST3</code>.
@@ -1194,6 +1205,18 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public IASTMutable mapThread(final IAST replacement, int position);
 
 	/**
+	 * Maps the elements of this IAST with the unary <code>function)</code>.
+	 * 
+	 * <br /> 
+	 * 
+	 * @param function
+	 *            an IAST there the argument at the given position is replaced by the currently mapped argument of this
+	 *            IAST.
+	 * @return
+	 */
+	public IASTMutable mapThread(Function<IExpr, IExpr> function);
+
+	/**
 	 * Maps the elements of this IAST with the unary functor <code>Functors.replaceArg(replacement, position)</code>,
 	 * there <code>replacement</code> is an IAST at which the argument at the given position will be replaced by the
 	 * currently mapped element and appends the element to <code>appendAST</code>.
@@ -1482,7 +1505,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * The <code>splice()</code> method removes the item from an AST copy, and returns the copy.
 	 * 
 	 * @param index
-	 *            An integer that specifies at what position to add/remove items. 
+	 *            An integer that specifies at what position to add/remove items.
 	 * @return an IAST with removed element at the given position.
 	 */
 	default IAST splice(int index) {

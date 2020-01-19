@@ -1048,7 +1048,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * @return
 	 */
 	private static boolean isComplex(IAST listOfRules) {
-		if (listOfRules.isListOfRules()) {
+		if (listOfRules.isListOfRules(false)) {
 			return listOfRules.exists(x -> !x.second().isRealResult());
 		}
 		return false;
