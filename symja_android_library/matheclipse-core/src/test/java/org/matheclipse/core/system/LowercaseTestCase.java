@@ -10430,6 +10430,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Keys({<|a -> 1, b -> 2|>, {w -> 3, {}}})", //
 				"{{a,b},{w,{}}}");
 	}
+	
+	public void testKeyExistsQ() {
+		check("KeyExistsQ(<|a -> x, b -> y, c -> z|>)[a]", //
+				"True");
+		check("KeyExistsQ(<|a -> x, b -> y, c -> z|>, a)", //
+				"True");
+		check("KeyExistsQ(<|a -> x, b -> y, c -> z|>, d)", //
+				"False");
+		
+		check("KeyExistsQ({a -> x, b -> y, c -> z}, a)", //
+				"True");
+		check("KeyExistsQ({a -> x, b -> y, c -> z}, d)", //
+				"False");
+	}
 
 	public void testValues() {
 		check("Values(<|a :> 1 + 1, b -> Nothing|>, Hold)", //

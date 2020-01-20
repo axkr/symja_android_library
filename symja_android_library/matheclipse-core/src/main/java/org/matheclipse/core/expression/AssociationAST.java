@@ -194,6 +194,10 @@ public class AssociationAST extends AST {
 		return list;
 	}
 
+	public boolean isKey(IExpr key) {
+		return map.get(key) != null;
+	}
+
 	public IASTMutable keys() {
 		return keys(F.List);
 	}

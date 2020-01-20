@@ -1930,6 +1930,12 @@ public class F {
 	public final static IBuiltInSymbol Join = F.initFinalSymbol("Join", ID.Join);
 
 	/***/
+	public final static IBuiltInSymbol Key = F.initFinalSymbol("Key", ID.Key);
+	
+	/***/
+	public final static IBuiltInSymbol KeyExistsQ = F.initFinalSymbol("KeyExistsQ", ID.KeyExistsQ);
+	
+	/***/
 	public final static IBuiltInSymbol Keys = F.initFinalSymbol("Keys", ID.Keys);
 	
 	/***/

@@ -24,6 +24,7 @@ public class AssociationFunctions {
 		private static void init() {
 			F.Association.setEvaluator(new Association());
 			F.Keys.setEvaluator(new Keys());
+			F.KeyExistsQ.setEvaluator(new KeyExistsQ());
 			F.Values.setEvaluator(new Values());
 		}
 	}
@@ -72,7 +73,7 @@ public class AssociationFunctions {
 							AssociationAST assoc = ((AssociationAST) lhsHead);
 							assoc = assoc.copy();
 							assoc.appendRule(F.Rule(((IAST) leftHandSide).arg1(), rightHandSide));
-							symbol.assign(assoc);  
+							symbol.assign(assoc);
 							return rightHandSide;
 						}
 					} catch (RuntimeException npe) {
@@ -82,6 +83,44 @@ public class AssociationFunctions {
 				}
 			}
 			return F.NIL;
+		}
+	}
+
+	private static class KeyExistsQ extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				ast = F.operatorFormPrepend(ast);
+				if (!ast.isPresent()) {
+					return F.NIL;
+				}
+			}
+			if (ast.isAST2()) {
+				IExpr arg1 = ast.arg1();
+				IExpr arg2 = ast.arg2();
+				if (arg1 instanceof AssociationAST) {
+					return ((AssociationAST) arg1).isKey(arg2) ? F.True : F.False;
+				}
+				if (arg1.isListOfRules(true)) {
+					IAST listOfRules = (IAST) arg1;
+					for (int i = 1; i < listOfRules.size(); i++) {
+						IExpr rule = listOfRules.get(i);
+						if (rule.isRule() || rule.isRuleDelayed()) {
+							if (arg2.equals(rule.first())) {
+								return F.True;
+							}
+						}
+					}
+				}
+				return F.False;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 	}
 
@@ -101,7 +140,7 @@ public class AssociationFunctions {
 					IASTAppendable list = F.ast(F.List, listOfRules.argSize(), false);
 					for (int i = 1; i < listOfRules.size(); i++) {
 						IExpr rule = listOfRules.get(i);
-						if (rule.isRule()) {
+						if (rule.isRule() || rule.isRuleDelayed()) {
 							list.append(rule.first());
 						} else if (rule.isAST(F.List, 1)) {
 							list.append(rule);
@@ -138,7 +177,7 @@ public class AssociationFunctions {
 					IASTAppendable list = F.ast(F.List, listOfRules.argSize(), false);
 					for (int i = 1; i < listOfRules.size(); i++) {
 						IExpr rule = listOfRules.get(i);
-						if (rule.isRule()) {
+						if (rule.isRule() || rule.isRuleDelayed()) {
 							list.append(rule.second());
 						} else if (rule.isAST(F.List, 1)) {
 							list.append(rule);
