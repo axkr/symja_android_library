@@ -28,8 +28,8 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OptionArgs;
+import org.matheclipse.core.expression.AssociationAST;
 import org.matheclipse.core.expression.Context;
-import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -1336,8 +1336,10 @@ public final class PatternMatching {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			final IExpr leftHandSide = ast.arg1();
-			final IExpr head = leftHandSide.head();
-
+			IExpr head = engine.evaluate(leftHandSide.head());
+			if (head instanceof AssociationAST) {
+				head = F.Association;
+			}
 			IExpr rightHandSide = ast.arg2();
 			try {
 				rightHandSide = engine.evaluate(rightHandSide);

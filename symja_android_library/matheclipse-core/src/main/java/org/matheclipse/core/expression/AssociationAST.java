@@ -158,7 +158,7 @@ public class AssociationAST extends AST {
 	}
 
 	@Override
-	public IASTMutable copy() {
+	public AssociationAST copy() {
 		AssociationAST ast = new AssociationAST();
 		// ast.fProperties = null;
 		ast.array = array.clone();

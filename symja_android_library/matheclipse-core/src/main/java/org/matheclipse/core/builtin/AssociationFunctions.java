@@ -2,6 +2,8 @@ package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.ISetEvaluator;
+import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.AssociationAST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -9,6 +11,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 
 public class AssociationFunctions {
 	/**
@@ -25,7 +28,7 @@ public class AssociationFunctions {
 		}
 	}
 
-	private static class Association extends AbstractEvaluator {
+	private static class Association extends AbstractEvaluator implements ISetEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -49,6 +52,36 @@ public class AssociationFunctions {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+
+		public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide, EvalEngine engine) {
+			if (leftHandSide.head().isSymbol()) {
+				ISymbol symbol = (ISymbol) leftHandSide.head();
+
+				IExpr temp = symbol.assignedValue();
+				if (temp == null) {
+					// `1` is not a variable with a value, so its value cannot be changed.
+					return IOFunctions.printMessage(F.Set, "rvalue", F.List(symbol), engine);
+				} else {
+					if (symbol.isProtected()) {
+						return IOFunctions.printMessage(F.Set, "write", F.List(symbol), EvalEngine.get());
+					}
+					try {
+						IExpr lhsHead = engine.evaluate(symbol);
+						if (lhsHead instanceof AssociationAST) {
+							AssociationAST assoc = ((AssociationAST) lhsHead);
+							assoc = assoc.copy();
+							assoc.appendRule(F.Rule(((IAST) leftHandSide).arg1(), rightHandSide));
+							symbol.assign(assoc);  
+							return rightHandSide;
+						}
+					} catch (RuntimeException npe) {
+						engine.printMessage("Set: " + npe.getMessage());
+						return F.NIL;
+					}
+				}
+			}
+			return F.NIL;
 		}
 	}
 

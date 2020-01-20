@@ -1080,8 +1080,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAssociation() {
-		check("Sort( <|a -> 4, b -> 2, c -> 1, d -> 5|> )", //
-				"<|c->1,b->2,a->4,d->5|>");
+		//
+		check("ref = <|a -> x, b -> y, c -> z|>", //
+				"<|a->x,b->y,c->z|>");
+		check("ref[b]=w", //
+				"w");
+		check("ref", //
+				"<|a->x,b->w,c->z|>");
+		check("<|a :> (Print(z); 1), b :> (Print(y); 2), c :> (Print(z); 3)|>", //
+				"<|a:>(Print(z);1),b:>(Print(y);2),c:>(Print(z);3)|>");
+		check("<|a :> (Print(z); 1), b :> (Print(y); 2), c :> (Print(z); 3)|>[b]", //
+				"2");
 		check("Select(<|a -> 4, b -> 2, c -> 1, d -> 5|>, # > 3 &)", //
 				"<|a->4,d->5|>");
 
@@ -1091,7 +1100,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"<|a->e,b->y|>");
 		check("Total( <|a -> 4, b -> 2, c -> 1, d -> 5|> )", //
 				"12");
-		
+
 		check("Map(f, <|a -> 4, b -> 2, c -> 1, d -> 5|>)", //
 				"<|a->f(4),b->f(2),c->f(1),d->f(5)|>");
 		check("Association({ahey->avalue, bkey->bvalue, ckey->cvalue})", //
