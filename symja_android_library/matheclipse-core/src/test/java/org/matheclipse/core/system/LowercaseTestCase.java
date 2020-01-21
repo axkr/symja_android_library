@@ -1080,6 +1080,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAssociation() {
+		check("KeySort(<|2 -> y, 3 -> z, 1 -> x|>)", //
+				"<|1->x,2->y,3->z|>");
+		check("KeySort(<|2 -> y, 3 -> z, 1 -> x|>, Greater)", //
+				"<|3->z,2->y,1->x|>");
+		
+		// TODO
+		// check("<|a -> 6, b -> 2, c -> 3|> + 500", //
+		// " ");
+		check("Counts({1,2,3,4,5,6,7,8,9,7,5,4,5,6,7,3,2,1,3,4,5,2,2,2,3,3,3,3,3})", //
+				"<|1->2,2->5,3->8,4->3,5->4,6->2,7->3,8->1,9->1|>");
+		check("Counts({a,b,c,a})", //
+				"<|a->2,b->1,c->1|>");
+		// check("Counts(RandomInteger({0, 1}, 100))", //
+		// "<|0->55,1->45|>");
+
 		//
 		check("ref = <|a -> x, b -> y, c -> z|>", //
 				"<|a->x,b->y,c->z|>");
@@ -1118,6 +1133,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{x,y}");
 		check("Depth(<|a -> x, b -> y|>)", //
 				"2");
+		check("Count(<|1 -> 1 + x^2, 2 -> x^4, 3 -> a + (1 + x^2)^2|>, x^_, Infinity)", //
+				"3");
+
 	}
 
 	public void testAttributes() {
@@ -10430,7 +10448,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Keys({<|a -> 1, b -> 2|>, {w -> 3, {}}})", //
 				"{{a,b},{w,{}}}");
 	}
-	
+
 	public void testKeyExistsQ() {
 		check("KeyExistsQ(<|a -> x, b -> y, c -> z|>)[a]", //
 				"True");
@@ -10438,7 +10456,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"True");
 		check("KeyExistsQ(<|a -> x, b -> y, c -> z|>, d)", //
 				"False");
-		
+
 		check("KeyExistsQ({a -> x, b -> y, c -> z}, a)", //
 				"True");
 		check("KeyExistsQ({a -> x, b -> y, c -> z}, d)", //

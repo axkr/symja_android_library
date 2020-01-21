@@ -1,19 +1,39 @@
 package org.matheclipse.core.builtin;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
-import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.AssociationAST;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.patternmatching.IPatternMatcher;
 
 public class AssociationFunctions {
+	private final static class MutableInt {
+		int value;
+
+		public MutableInt(int value) {
+			this.value = value;
+		}
+
+		public MutableInt increment() {
+			value++;
+			return this;
+		}
+
+		public int value() {
+			return value;
+		}
+	}
+
 	/**
 	 * 
 	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
@@ -23,8 +43,10 @@ public class AssociationFunctions {
 
 		private static void init() {
 			F.Association.setEvaluator(new Association());
-			F.Keys.setEvaluator(new Keys());
+			F.Counts.setEvaluator(new Counts());
 			F.KeyExistsQ.setEvaluator(new KeyExistsQ());
+			F.Keys.setEvaluator(new Keys());
+			F.KeySort.setEvaluator(new KeySort());
 			F.Values.setEvaluator(new Values());
 		}
 	}
@@ -83,6 +105,33 @@ public class AssociationFunctions {
 				}
 			}
 			return F.NIL;
+		}
+	}
+
+	private static class Counts extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = ast.arg1();
+			if (arg1.isList()) {
+				IAST list = (IAST) arg1;
+				HashMap<IExpr, MutableInt> map = new HashMap<IExpr, MutableInt>();
+				for (int i = 1; i < list.size(); i++) {
+					IExpr key = list.get(i);
+					map.compute(key, (k, v) -> (v == null) ? new MutableInt(1) : v.increment());
+				}
+				AssociationAST assoc = new AssociationAST(map.size(), false);
+				for (Map.Entry<IExpr, AssociationFunctions.MutableInt> elem : map.entrySet()) {
+					assoc.appendRule(F.Rule(elem.getKey(), F.ZZ(elem.getValue().value())));
+				}
+				return assoc;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 	}
 
@@ -152,6 +201,29 @@ public class AssociationFunctions {
 				// thread over Lists in first argument
 				return ((IAST) arg1).mapThread(ast.setAtCopy(1, F.Null), 1);
 			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
+	}
+
+	private static class KeySort extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.arg1().isAST()) {
+				IAST arg1 = (IAST) ast.arg1();
+				if (arg1 instanceof AssociationAST) {
+					if (ast.isAST2()) {
+						return ((AssociationAST) arg1).keySort(new Predicates.IsBinaryFalse(ast.arg2()));
+					}
+					return ((AssociationAST) arg1).keySort();
+				} 
+			}
+
 			return F.NIL;
 		}
 

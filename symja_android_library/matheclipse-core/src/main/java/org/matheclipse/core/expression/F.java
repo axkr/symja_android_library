@@ -901,6 +901,8 @@ public class F {
 
 	/** Count(list, pattern) - returns the number of times `pattern` appears in `list`. */
 	public final static IBuiltInSymbol Count = F.initFinalSymbol("Count", ID.Count);
+	
+	public final static IBuiltInSymbol Counts = F.initFinalSymbol("Counts", ID.Counts);
 
 	/** Covariance(a, b) - computes the covariance between the equal-sized vectors `a` and `b`. */
 	public final static IBuiltInSymbol Covariance = F.initFinalSymbol("Covariance", ID.Covariance);
@@ -1937,6 +1939,9 @@ public class F {
 	
 	/***/
 	public final static IBuiltInSymbol Keys = F.initFinalSymbol("Keys", ID.Keys);
+	
+	/***/
+	public final static IBuiltInSymbol KeySort = F.initFinalSymbol("KeySort", ID.KeySort);
 	
 	/***/
 	public final static IBuiltInSymbol KOrderlessPartitions = F.initFinalSymbol("KOrderlessPartitions",

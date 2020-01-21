@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.interfaces.IAST;
@@ -105,7 +106,7 @@ public class AssociationAST extends AST {
 		}
 	}
 
-	protected AssociationAST(final int initialCapacity, final boolean setLength) {
+	public AssociationAST(final int initialCapacity, final boolean setLength) {
 		super(initialCapacity, setLength);
 		map = new HashMap<IExpr, Integer>();
 		append(F.Association);
@@ -299,5 +300,30 @@ public class AssociationAST extends AST {
 			result.map.put(element.getKey(), newValue);
 		}
 		return result;
+	}
+
+	public AssociationAST keySort() {
+		return keySort(null);
+	}
+
+	public AssociationAST keySort(Comparator<IExpr> comparator) {
+		IASTMutable list = keys();
+		if (comparator == null) {
+			EvalAttributes.sort(list);
+		} else {
+			EvalAttributes.sort(list, comparator);
+		}
+		AssociationAST assoc = new AssociationAST(list.argSize(), false);
+		for (int i = 1; i < list.size(); i++) {
+			IExpr key = list.get(i);
+			Integer value = map.get(key);
+			if (value < 0) {
+				value *= -1;
+				assoc.appendRule(F.RuleDelayed(key, get(value)));
+			} else {
+				assoc.appendRule(F.Rule(key, get(value)));
+			}
+		}
+		return assoc;
 	}
 }
