@@ -397,6 +397,12 @@ public class BasicTeXTestCase extends TestCase {
 				"Interval(\\{-\\infty,-1\\},\\{\\sqrt{\\left( 1+\\frac{2}{\\sqrt{5}}\\right) },\\infty\\})");
 	} 
 
+	public void testTeX043() { 
+		IExpr expr = EvalEngine.get().evaluate("<|a -> x, b -> y, c -> z|>");
+		check(expr, //
+				"\\langle|a\\to x,b\\to y,c\\to z|\\rangle");
+	} 
+	
 	public void check(String strEval, String strResult) {
 		StringWriter stw = new StringWriter();
 		texUtil.toTeX(strEval, stw);

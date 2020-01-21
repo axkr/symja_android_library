@@ -16,6 +16,7 @@ import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.expression.AssociationAST;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -127,7 +128,6 @@ public class TeXFormFactory {
 		/** {@inheritDoc} */
 		@Override
 		public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
-			// "<mrow><mo>(</mo><mfrac linethickness=\"0\">{0}{1}</mfrac><mo>)</mo></mrow>"
 			if (f.size() != 3) {
 				return false;
 			}
@@ -1342,6 +1342,10 @@ public class TeXFormFactory {
 			}
 		}
 
+		if (f instanceof AssociationAST) {
+			convertAssociation(buf, (AssociationAST) f, 0);
+			return;
+		}
 		convertHead(buf, f.head());
 		buf.append("(");
 		for (int i = 1; i < f.size(); i++) {
@@ -1352,6 +1356,31 @@ public class TeXFormFactory {
 		}
 		buf.append(")");
 
+	}
+
+	/**
+	 * Convert an association to TeX. <br />
+	 * <code>&lt;|a -> x, b -> y, c -> z|&gt;</code> gives <br />
+	 * <code>\langle|a\to x,b\to y,c\to z|\rangle</code>
+	 * 
+	 * @param buf
+	 * @param assoc
+	 * @param precedence
+	 * @return
+	 */
+	public boolean convertAssociation(final StringBuilder buf, final AssociationAST assoc, final int precedence) {
+		IAST ast = assoc.normal();
+		buf.append("\\langle|");
+		if (ast.size() > 1) {
+			convertInternal(buf, ast.arg1(), 0);
+			for (int i = 2; i < ast.size(); i++) {
+				buf.append(',');
+				convertInternal(buf, ast.get(i), 0);
+			}
+		}
+		buf.append("|\\rangle");
+
+		return true;
 	}
 
 	private boolean convertInequality(final StringBuilder buf, final IAST inequality, final int precedence) {

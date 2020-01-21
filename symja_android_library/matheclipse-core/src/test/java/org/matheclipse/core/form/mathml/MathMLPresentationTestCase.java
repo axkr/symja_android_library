@@ -244,6 +244,12 @@ public class MathMLPresentationTestCase extends TestCase {
 				"<msub><mi>c</mi><mn>1</mn></msub>");
 	}
 
+	public void testAssociation() {
+		IExpr expr = EvalEngine.get().evaluate("<|a -> x, b -> y, c -> z|>");
+		check(expr, //
+				"<mrow><mo>&lt;|</mo><mrow><mrow><mi>a</mi><mo>-&gt;</mo><mi>x</mi></mrow><mo>,</mo><mrow><mi>b</mi><mo>-&gt;</mo><mi>y</mi></mrow><mo>,</mo><mrow><mi>c</mi><mo>-&gt;</mo><mi>z</mi></mrow></mrow><mo>|&gt;</mo></mrow>");
+	}
+
 	public void testCeiling() {
 		IExpr expr = EvalEngine.get().evaluate("Ceiling(f(x))");
 		check(expr, //
@@ -341,44 +347,47 @@ public class MathMLPresentationTestCase extends TestCase {
 	public void testInequality() {
 		IExpr expr = EvalEngine.get().evaluate("Inequality(c,Less,0,Less,a)");
 		check(expr, "<mrow><mi>c</mi><mo>&lt;</mo><mn>0</mn><mo>&lt;</mo><mi>a</mi></mrow>");
-		
+
 		expr = EvalEngine.get().evaluate("Inequality(a,Less,0,LessEqual,b, Equal,c, Unequal,d)");
-		check(expr, "<mrow><mi>a</mi><mo>&lt;</mo><mn>0</mn><mo>&lt;=</mo><mi>b</mi><mo>==</mo><mi>c</mi><mo>!=</mo><mi>d</mi></mrow>");
+		check(expr,
+				"<mrow><mi>a</mi><mo>&lt;</mo><mn>0</mn><mo>&lt;=</mo><mi>b</mi><mo>==</mo><mi>c</mi><mo>!=</mo><mi>d</mi></mrow>");
 	}
-	
+
 	public void testCenterDot() {
 		IExpr expr = EvalEngine.get().evaluate("CenterDot(x+z, f(a))");
-		check(expr, "<mrow><mrow><mrow><mo>(</mo><mi>z</mi><mo>+</mo><mi>x</mi><mo>)</mo></mrow></mrow><mo>&#183;</mo><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>a</mi></mrow><mo>)</mo></mrow></mrow></mrow>");
+		check(expr,
+				"<mrow><mrow><mrow><mo>(</mo><mi>z</mi><mo>+</mo><mi>x</mi><mo>)</mo></mrow></mrow><mo>&#183;</mo><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>a</mi></mrow><mo>)</mo></mrow></mrow></mrow>");
 
 		expr = EvalEngine.get().evaluate("CircleDot(x+z, f(a))");
-		check(expr, "<mrow><mrow><mrow><mo>(</mo><mi>z</mi><mo>+</mo><mi>x</mi><mo>)</mo></mrow></mrow><mo>&#8857;</mo><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>a</mi></mrow><mo>)</mo></mrow></mrow></mrow>");
+		check(expr,
+				"<mrow><mrow><mrow><mo>(</mo><mi>z</mi><mo>+</mo><mi>x</mi><mo>)</mo></mrow></mrow><mo>&#8857;</mo><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>a</mi></mrow><mo>)</mo></mrow></mrow></mrow>");
 
 	}
-	
+
 	public void testSubscript() {
 		IExpr expr = EvalEngine.get().evaluate("Subscript(\"zzz\",36)");
 		check(expr, //
 				"<msub><mtext>zzz</mtext><mn>36</mn></msub>");
 	}
-	
+
 	public void testSuperscript() {
 		IExpr expr = EvalEngine.get().evaluate("Superscript(xx,yy)");
 		check(expr, //
 				"<msup><mi>xx</mi><mi>yy</mi></msup>");
 	}
-	
-	public void testInterval001() { 
+
+	public void testInterval001() {
 		IExpr expr = EvalEngine.get().evaluate("Interval({-3.21625*10^-16,5.66554*10^-16})");
 		check(expr, //
 				"<mrow><mi>Interval</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mo>{</mo><mn>-3.2162499999999998E-16</mn><mo>,</mo><mn>5.66554E-16</mn><mo>}</mo></mrow><mo>)</mo></mrow></mrow>");
-	} 
-	
-	public void testInterval002()  { 
+	}
+
+	public void testInterval002() {
 		IExpr expr = EvalEngine.get().evaluate("Cot(Interval({3*Pi/4,6*Pi/5}))");
 		check(expr, //
 				"<mrow><mi>Interval</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mo>{</mo><mrow><mo>-</mo><mi>&#x221E;</mi></mrow><mo>,</mo><mn>-1</mn><mo>}</mo></mrow><mo>,</mo><mrow><mo>{</mo><msqrt><mrow><mfrac><mn>2</mn><msqrt><mn>5</mn></msqrt></mfrac><mo>+</mo><mn>1</mn></mrow></msqrt><mo>,</mo><mi>&#x221E;</mi><mo>}</mo></mrow><mo>)</mo></mrow></mrow>");
-	} 
-	
+	}
+
 	public void check(String strEval, String strResult) {
 		StringWriter stw = new StringWriter();
 		mathUtil.toMathML(strEval, stw);
@@ -402,7 +411,7 @@ public class MathMLPresentationTestCase extends TestCase {
 		check(expr,
 				"<mrow><mi>Missing</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mtext>test1</mtext><mo>,</mo><mtext>test2</mtext></mrow><mo>)</mo></mrow></mrow>");
 	}
-	
+
 	/**
 	 * The JUnit setup method
 	 */
