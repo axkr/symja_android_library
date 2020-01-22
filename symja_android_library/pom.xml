@@ -60,12 +60,12 @@
 			<dependency>
 				<groupId>com.atlassian.commonmark</groupId>
 				<artifactId>commonmark</artifactId>
-				<version>0.13.1</version>
+				<version>0.14.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.atlassian.commonmark</groupId>
 				<artifactId>commonmark-ext-gfm-tables</artifactId>
-				<version>0.13.0</version>
+				<version>0.14.0</version>
 			</dependency>
 			<dependency>
 				<groupId>de.uni-mannheim.rz.krum</groupId>
