@@ -1,5 +1,8 @@
 package org.matheclipse.core.expression;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -25,14 +28,14 @@ public class AssociationAST extends AST {
 	 * the index is less 0 and must be multiplied by -1 and <code>get(index * (-1))</code> returns the value of the
 	 * <code>RuleDelayed()</code>.
 	 */
-	private HashMap<IExpr, Integer> map;
+	private transient HashMap<IExpr, Integer> map;
 
 	/**
 	 * Public no-arg constructor only needed for serialization
 	 * 
 	 */
 	public AssociationAST() {
-		super();
+		super(10, false);
 		map = new HashMap<IExpr, Integer>();
 	}
 
@@ -325,5 +328,20 @@ public class AssociationAST extends AST {
 			}
 		}
 		return assoc;
+	}
+
+	@Override
+	public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
+		append(F.Association);
+		IAST ast = (IAST) objectInput.readObject();
+		for (int i = 1; i < ast.size(); i++) {
+			appendRule((IAST) ast.get(i));
+		}
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		IAST ast = normal();
+		objectOutput.writeObject(ast);
 	}
 }

@@ -10,6 +10,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ASTSeriesData;
+import org.matheclipse.core.expression.AssociationAST;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
@@ -26,6 +27,11 @@ public class SerializableTest extends TestCase {
 		super.setUp();
 		// wait for initializing of Integrate() rules:
 		F.await();
+	}
+
+	public void testAssociation() {
+		AssociationAST assoc = new AssociationAST(F.List(F.Rule(F.a, F.b)));
+		equalsCopy(assoc);
 	}
 
 	public void testNum() {
@@ -204,6 +210,10 @@ public class SerializableTest extends TestCase {
 			ois.close();
 			assertEquals(original, copy);
 
+			// if (!original.toString().equals(copy.toString())) {
+			// System.out.println(copy.toString());
+			// }
+			// assertEquals(original.toString(), copy.toString());
 		} catch (ClassNotFoundException cnfe) {
 			cnfe.printStackTrace();
 			assertEquals("", cnfe.toString());
