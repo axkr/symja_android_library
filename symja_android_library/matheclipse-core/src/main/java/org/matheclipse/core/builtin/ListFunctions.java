@@ -442,7 +442,7 @@ public final class ListFunctions {
 
 		@Override
 		public int toInt(final IExpr position) {
-			int val = position.toIntDefault(Integer.MIN_VALUE);
+			int val = position.toIntDefault();
 			if (val < 0) {
 				return -1;
 			}
@@ -2060,7 +2060,13 @@ public final class ListFunctions {
 	private final static class Extract extends AbstractFunctionEvaluator {
 
 		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				ast = F.operatorFormAppend(ast);
+				if (!ast.isPresent()) {
+					return F.NIL;
+				}
+			}
 			if (ast.arg1().isAST()) {
 				IAST list = (IAST) ast.arg1();
 
@@ -2102,20 +2108,13 @@ public final class ListFunctions {
 
 		@Override
 		public int[] expectedArgSize() {
-			return IOFunctions.ARGS_2_3;
+			return IOFunctions.ARGS_1_3;
 		}
 
 		private static IExpr extract(final IAST list, final IAST position) {
-			final PositionConverter converter = new PositionConverter();
-			if ((position.size() > 1) && (position.arg1().isReal())) {
-				return extract(list, position, converter, 1);
-			} else {
-				// construct an array
-				// final IAST resultList = List();
-				// NestedFinding.position(list, resultList, pos, 1);
-				// return resultList;
-			}
-			return F.NIL;
+			IASTAppendable part = F.Part(list);
+			part.appendAll(position, 1, position.size());
+			return part;
 		}
 
 		@Override
@@ -2129,28 +2128,38 @@ public final class ListFunctions {
 		 * 
 		 * @param list
 		 * @param positions
-		 * @param positionConverter
-		 *            the <code>positionConverter</code> creates an <code>int</code> value from the given position
-		 *            objects in <code>positions</code>.
 		 * @param headOffset
 		 */
-		private static IExpr extract(final IAST list, final IAST positions,
-				final IPositionConverter<? super IExpr> positionConverter, int headOffset) {
+		private static IExpr extract(final IAST list, final IAST positions, int headOffset) {
 			int p = 0;
 			IAST temp = list;
+			if (!temp.isPresent()) {
+				return F.NIL;
+			}
 			int posSize = positions.argSize();
 			IExpr expr = list;
 			for (int i = headOffset; i <= posSize; i++) {
-				p = positionConverter.toInt(positions.get(i));
-				if (!temp.isPresent() || temp.size() <= p || p < 0) {
-					return F.NIL;
-				}
-				expr = temp.get(p);
-				if (expr.isAST()) {
-					temp = (IAST) expr;
-				} else {
-					if (i < positions.size()) {
-						temp = F.NIL;
+				p = positions.get(i).toIntDefault(); // positionConverter.toInt(positions.get(i));
+				if (p >= 0) {
+					if (temp.size() <= p) {
+						return F.NIL;
+					}
+					expr = temp.get(p);
+					if (expr.isAST()) {
+						temp = (IAST) expr;
+					} else {
+						if (i < positions.size()) {
+							temp = F.NIL;
+						}
+					}
+				} else if (positions.get(i).isAST(F.Key, 2)) {
+					expr = temp.get(p);
+					if (expr.isAST()) {
+						temp = (IAST) expr;
+					} else {
+						if (i < positions.size()) {
+							temp = F.NIL;
+						}
 					}
 				}
 			}
@@ -5755,7 +5764,7 @@ public final class ListFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			try {
-				VisitorLevelSpecification level = null; 
+				VisitorLevelSpecification level = null;
 				Function<IExpr, IExpr> tf = x -> x.isAST() ? ((IAST) x).setAtCopy(0, F.Plus) : x;
 
 				if (ast.isAST2()) {
@@ -5768,7 +5777,7 @@ public final class ListFunctions {
 				if (ast.arg1().isAST()) {
 					// increment level because we select only subexpressions
 					level.incCurrentLevel();
-					IExpr temp = ((IAST)ast.arg1()).copyAST().accept(level);
+					IExpr temp = ((IAST) ast.arg1()).copyAST().accept(level);
 					if (temp.isPresent()) {
 						boolean te = engine.isThrowError();
 						try {

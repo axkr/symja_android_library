@@ -32,6 +32,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
+import org.matheclipse.core.expression.AssociationAST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.data.CompiledFunctionExpr;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -1953,9 +1954,9 @@ public final class Programming {
 								return rightHandSide;
 							}
 						} catch (RuntimeException npe) {
-							engine.printMessage("Set: "+npe.getMessage());
+							engine.printMessage("Set: " + npe.getMessage());
 							return F.NIL;
-//							return rightHandSide;
+							// return rightHandSide;
 						}
 					}
 				}
@@ -3186,6 +3187,26 @@ public final class Programming {
 			}
 			return result;
 		}
+		if (arg1 instanceof AssociationAST) {
+			IExpr result = F.NIL;
+			if (arg2.isAST(F.Key, 2)) {
+				result = ((AssociationAST) arg1).getValue(arg2.first());
+			} else if (arg2.isString()) {
+				result = ((AssociationAST) arg1).getValue(arg2);
+			}
+
+			if (result.isPresent()) {
+				if (p1 < ast.size()) {
+					if (result.isAST()) {
+						return part((IAST) result, ast, p1, engine);
+					} else {
+						// Part specification `1` is longer than depth of object.
+						return IOFunctions.printMessage(F.Part, "partd", F.List(result), engine);
+					}
+				}
+				return result;
+			}
+		}
 		// The expression `1` cannot be used as a part specification.
 		return IOFunctions.printMessage(F.Part, "pkspec1", F.List(arg2), engine);
 	}
@@ -3295,7 +3316,7 @@ public final class Programming {
 				if (listArg.isInteger()) {
 					IExpr ires = null;
 
-					final int indx = Validate.throwIntType( listArg, Integer.MIN_VALUE, engine);
+					final int indx = Validate.throwIntType(listArg, Integer.MIN_VALUE, engine);
 					ires = assignPartValue(assignedAST, indx, value);
 					if (ires == null) {
 						return F.NIL;

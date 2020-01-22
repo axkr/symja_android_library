@@ -1080,11 +1080,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAssociation() {
+		check("Extract(<|a -> 1, b -> 2|>, {{Key(a)}, {Key(b)}})", //
+				"{1,2}");
+		check("{<|\"a\" -> x, \"b\" -> z|>}[[1, \"b\"]]", //
+				"z");
+		check("{<|a -> x, b -> {y, z}|>, w}[[1, Key(b), 2]]", //
+				"z");
+		check("<|a -> b, c -> d|>[[Key(a)]]", //
+				"b");
+		check("<|\"a\" -> b, \"c\" -> d|>[[\"c\"]]", //
+				"d");
+
 		check("KeySort(<|2 -> y, 3 -> z, 1 -> x|>)", //
 				"<|1->x,2->y,3->z|>");
 		check("KeySort(<|2 -> y, 3 -> z, 1 -> x|>, Greater)", //
 				"<|3->z,2->y,1->x|>");
-		
+
 		// TODO
 		// check("<|a -> 6, b -> 2, c -> 3|> + 500", //
 		// " ");
@@ -6197,6 +6208,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testExtract() {
+		check("Extract(2)[{a, b, c, d}]", //
+				"b");
 		check("Extract(a+b+c,2)", //
 				"b");
 		check("Extract(a+b+c,0)", //
