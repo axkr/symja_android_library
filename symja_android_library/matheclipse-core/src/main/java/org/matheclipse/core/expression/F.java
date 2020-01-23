@@ -84,6 +84,7 @@ import org.matheclipse.core.graphics.Show2SVG;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -441,7 +442,7 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol Association = F.initFinalSymbol("Association", ID.Association);
-	
+
 	/***/
 	public final static IBuiltInSymbol Assumptions = F.initFinalSymbol("Assumptions", ID.Assumptions);
 
@@ -901,7 +902,7 @@ public class F {
 
 	/** Count(list, pattern) - returns the number of times `pattern` appears in `list`. */
 	public final static IBuiltInSymbol Count = F.initFinalSymbol("Count", ID.Count);
-	
+
 	public final static IBuiltInSymbol Counts = F.initFinalSymbol("Counts", ID.Counts);
 
 	/** Covariance(a, b) - computes the covariance between the equal-sized vectors `a` and `b`. */
@@ -1933,16 +1934,16 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol Key = F.initFinalSymbol("Key", ID.Key);
-	
+
 	/***/
 	public final static IBuiltInSymbol KeyExistsQ = F.initFinalSymbol("KeyExistsQ", ID.KeyExistsQ);
-	
+
 	/***/
 	public final static IBuiltInSymbol Keys = F.initFinalSymbol("Keys", ID.Keys);
-	
+
 	/***/
 	public final static IBuiltInSymbol KeySort = F.initFinalSymbol("KeySort", ID.KeySort);
-	
+
 	/***/
 	public final static IBuiltInSymbol KOrderlessPartitions = F.initFinalSymbol("KOrderlessPartitions",
 			ID.KOrderlessPartitions);
@@ -3602,7 +3603,7 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol Values = F.initFinalSymbol("Values", ID.Values);
-	
+
 	/** VandermondeMatrix(n) - gives the Vandermonde matrix with `n` rows and columns. */
 	public final static IBuiltInSymbol VandermondeMatrix = F.initFinalSymbol("VandermondeMatrix", ID.VandermondeMatrix);
 
@@ -4519,7 +4520,6 @@ public class F {
 			ManipulateFunction.initialize();
 			ImageFunctions.initialize();
 			ComputationalGeometryFunctions.initialize();
-			
 
 			F.Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
 			COUNT_DOWN_LATCH.countDown();
@@ -5335,6 +5335,10 @@ public class F {
 
 	public static IAST ArithmeticGeometricMean(final IExpr a0, final IExpr a1) {
 		return new AST2(ArithmeticGeometricMean, a0, a1);
+	}
+
+	public static IAssociation assoc(final IAST listOfRules) {
+		return new AssociationAST(listOfRules);
 	}
 
 	/**
@@ -7725,6 +7729,10 @@ public class F {
 
 	public static IAST Join(final IExpr a0, final IExpr a1) {
 		return new AST2(Join, a0, a1);
+	}
+
+	public static IAST Key(final IExpr a0) {
+		return new AST1(Key, a0);
 	}
 
 	public static IAST KroneckerDelta(final IExpr a0) {

@@ -924,6 +924,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return false;
 	}
 
+
+	/**
+	 * Test if this AST is an association <code>&lt;|a-&gt;b, c-&gt;d|&gt;</code>(i.e. type <code>AssociationAST</code>)
+	 * 
+	 * @return
+	 */
+	default boolean isAssociation() {
+		return false;
+	}
+	
 	/**
 	 * Test if this expression is an AST list, which contains a <b>header element</b> (i.e. the function name) at index
 	 * position <code>0</code> and some optional <b>argument elements</b> at the index positions <code>1..n</code>.

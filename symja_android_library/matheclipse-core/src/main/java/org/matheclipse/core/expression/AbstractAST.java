@@ -46,6 +46,7 @@ import org.matheclipse.core.generic.UnaryVariable2Slot;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IContinuousDistribution;
 import org.matheclipse.core.interfaces.IDiscreteDistribution;
@@ -1248,8 +1249,8 @@ public abstract class AbstractAST implements IASTMutable {
 
 			return functionEvaluator.evaluate(this, engine);
 		}
-		if (head instanceof AssociationAST && size() == 2) {
-			return ((AssociationAST) head).getValue(arg1());
+		if (head.isAssociation() && size() == 2) {
+			return ((IAssociation) head).getValue(arg1());
 		}
 
 		final ISymbol symbol = topHead();
@@ -3727,11 +3728,11 @@ public abstract class AbstractAST implements IASTMutable {
 		final Function<IExpr, IExpr> function = x -> engine.evaluate(replacement.setAtCopy(position, x));
 		return (IASTMutable) map(function, 1);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
-	public final IASTMutable mapThread(Function<IExpr, IExpr> function ) {
-// 		final Function<IExpr, IExpr> function = x ->  replacement.setAtCopy(position, x );
+	public final IASTMutable mapThread(Function<IExpr, IExpr> function) {
+		// final Function<IExpr, IExpr> function = x -> replacement.setAtCopy(position, x );
 		return (IASTMutable) map(function, 1);
 	}
 

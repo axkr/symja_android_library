@@ -1207,7 +1207,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	/**
 	 * Maps the elements of this IAST with the unary <code>function)</code>.
 	 * 
-	 * <br /> 
+	 * <br />
 	 * 
 	 * @param function
 	 *            an IAST there the argument at the given position is replaced by the currently mapped argument of this

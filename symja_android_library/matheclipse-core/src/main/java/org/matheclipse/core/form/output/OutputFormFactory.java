@@ -2,7 +2,6 @@ package org.matheclipse.core.form.output;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.text.NumberFormat;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -26,6 +25,7 @@ import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -939,8 +939,8 @@ public class OutputFormFactory {
 	private void convert(final Appendable buf, final IExpr o, final int precedence, boolean isASTHead)
 			throws IOException {
 		if (o instanceof IAST) {
-			if (o instanceof AssociationAST) {
-				convertAssociation(buf, (AssociationAST) o);
+			if (o.isAssociation()) {
+				convertAssociation(buf, (IAssociation) o);
 				return;
 			}
 			final IAST list = (IAST) o;
@@ -1172,7 +1172,7 @@ public class OutputFormFactory {
 		convertString(buf, o.toString());
 	}
 
-	private void convertAssociation(final Appendable buf, final AssociationAST association) throws IOException {
+	private void convertAssociation(final Appendable buf, final IAssociation association) throws IOException {
 		IAST list = association.normal();
 		append(buf, "<|");
 		final int listSize = list.size();
@@ -1180,7 +1180,7 @@ public class OutputFormFactory {
 			convert(buf, list.arg1(), Integer.MIN_VALUE, false);
 		}
 		for (int i = 2; i < listSize; i++) {
-			append(buf, ","); 
+			append(buf, ",");
 			convert(buf, list.get(i), Integer.MIN_VALUE, false);
 		}
 		append(buf, "|>");

@@ -46,6 +46,7 @@ import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
@@ -427,16 +428,6 @@ public final class ListFunctions {
 	private static class PositionConverter implements IPositionConverter<IExpr> {
 		@Override
 		public IExpr toObject(final int i) {
-			if (i < 3) {
-				switch (i) {
-				case 0:
-					return F.C0;
-				case 1:
-					return F.C1;
-				case 2:
-					return F.C2;
-				}
-			}
 			return F.ZZ(i);
 		}
 
@@ -3525,7 +3516,11 @@ public final class ListFunctions {
 				if (ast.get(i).isAST()) {
 					// clone = (INestedList<IExpr>) prototypeList.clone();
 					clone = prototypeList.copyAppendable();
-					clone.append(positionConverter.toObject(i));
+					if (ast.isAssociation()) {
+						clone.append(((IAssociation) ast).getKey(i));
+					} else {
+						clone.append(positionConverter.toObject(i));
+					}
 					position((IAST) ast.get(i), clone, resultCollection, Integer.MAX_VALUE, level, matcher,
 							positionConverter, headOffset);
 					if (level.getCurrentDepth() < minDepth) {
@@ -3535,8 +3530,11 @@ public final class ListFunctions {
 				if (matcher.test(ast.get(i))) {
 					if (level.isInRange()) {
 						clone = prototypeList.copyAppendable();
-						IExpr IExpr = positionConverter.toObject(i);
-						clone.append(IExpr);
+						if (ast.isAssociation()) {
+							clone.append(((IAssociation) ast).getKey(i));
+						} else {
+							clone.append(positionConverter.toObject(i));
+						}
 						if (maxResults >= resultCollection.size()) {
 							resultCollection.append(clone);
 						} else {

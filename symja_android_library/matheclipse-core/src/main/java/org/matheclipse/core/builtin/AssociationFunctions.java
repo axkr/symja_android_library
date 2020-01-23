@@ -3,7 +3,6 @@ package org.matheclipse.core.builtin;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
@@ -13,6 +12,7 @@ import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -55,13 +55,18 @@ public class AssociationFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast instanceof AssociationAST) {
+			if (ast.isAssociation()) {
 				return F.NIL;
 			}
 			if (ast.isAST1()) {
 				IExpr arg1 = engine.evaluate(ast.arg1());
 				if (arg1.isListOfRules(true)) {
-					return new AssociationAST((IAST) arg1);
+					return F.assoc((IAST) arg1);
+				} else if (arg1.isAST(F.List, 2)) {
+					arg1 = arg1.first();
+					if (arg1.isListOfRules(true)) {
+						return F.assoc((IAST) arg1);
+					}
 				}
 			}
 			return F.NIL;
@@ -91,8 +96,8 @@ public class AssociationFunctions {
 					}
 					try {
 						IExpr lhsHead = engine.evaluate(symbol);
-						if (lhsHead instanceof AssociationAST) {
-							AssociationAST assoc = ((AssociationAST) lhsHead);
+						if (lhsHead.isAssociation()) {
+							IAssociation assoc = ((IAssociation) lhsHead);
 							assoc = assoc.copy();
 							assoc.appendRule(F.Rule(((IAST) leftHandSide).arg1(), rightHandSide));
 							symbol.assign(assoc);
@@ -120,7 +125,7 @@ public class AssociationFunctions {
 					IExpr key = list.get(i);
 					map.compute(key, (k, v) -> (v == null) ? new MutableInt(1) : v.increment());
 				}
-				AssociationAST assoc = new AssociationAST(map.size(), false);
+				IAssociation assoc = new AssociationAST(map.size(), false);
 				for (Map.Entry<IExpr, AssociationFunctions.MutableInt> elem : map.entrySet()) {
 					assoc.appendRule(F.Rule(elem.getKey(), F.ZZ(elem.getValue().value())));
 				}
@@ -148,8 +153,8 @@ public class AssociationFunctions {
 			if (ast.isAST2()) {
 				IExpr arg1 = ast.arg1();
 				IExpr arg2 = ast.arg2();
-				if (arg1 instanceof AssociationAST) {
-					return ((AssociationAST) arg1).isKey(arg2) ? F.True : F.False;
+				if (arg1.isAssociation()) {
+					return ((IAssociation) arg1).isKey(arg2) ? F.True : F.False;
 				}
 				if (arg1.isListOfRules(true)) {
 					IAST listOfRules = (IAST) arg1;
@@ -179,8 +184,8 @@ public class AssociationFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr arg1 = ast.arg1();
 			final IExpr head = ast.isAST2() ? ast.arg2() : F.NIL;
-			if (arg1 instanceof AssociationAST) {
-				IASTMutable list = ((AssociationAST) arg1).keys();
+			if (arg1.isAssociation()) {
+				IASTMutable list = ((IAssociation) arg1).keys();
 				return mapHeadIfPresent(list, head);
 			}
 			if (arg1.isList()) {
@@ -216,12 +221,12 @@ public class AssociationFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.arg1().isAST()) {
 				IAST arg1 = (IAST) ast.arg1();
-				if (arg1 instanceof AssociationAST) {
+				if (arg1.isAssociation()) {
 					if (ast.isAST2()) {
-						return ((AssociationAST) arg1).keySort(new Predicates.IsBinaryFalse(ast.arg2()));
+						return ((IAssociation) arg1).keySort(new Predicates.IsBinaryFalse(ast.arg2()));
 					}
-					return ((AssociationAST) arg1).keySort();
-				} 
+					return ((IAssociation) arg1).keySort();
+				}
 			}
 
 			return F.NIL;
@@ -239,8 +244,8 @@ public class AssociationFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr arg1 = ast.arg1();
 			final IExpr head = ast.isAST2() ? ast.arg2() : F.NIL;
-			if (arg1 instanceof AssociationAST) {
-				IASTMutable list = ((AssociationAST) arg1).values();
+			if (arg1.isAssociation()) {
+				IASTMutable list = ((IAssociation) arg1).values();
 				return mapHeadIfPresent(list, head);
 			}
 			if (arg1.isList()) {

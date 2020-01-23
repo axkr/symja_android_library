@@ -10,13 +10,9 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.ASTRealMatrix;
-import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ApcomplexNum;
-import org.matheclipse.core.expression.ApfloatNum;
-import org.matheclipse.core.expression.AssociationAST;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -24,6 +20,7 @@ import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -1342,8 +1339,8 @@ public class TeXFormFactory {
 			}
 		}
 
-		if (f instanceof AssociationAST) {
-			convertAssociation(buf, (AssociationAST) f, 0);
+		if (f.isAssociation()) {
+			convertAssociation(buf, (IAssociation) f, 0);
 			return;
 		}
 		convertHead(buf, f.head());
@@ -1368,7 +1365,7 @@ public class TeXFormFactory {
 	 * @param precedence
 	 * @return
 	 */
-	public boolean convertAssociation(final StringBuilder buf, final AssociationAST assoc, final int precedence) {
+	public boolean convertAssociation(final StringBuilder buf, final IAssociation assoc, final int precedence) {
 		IAST ast = assoc.normal();
 		buf.append("\\langle|");
 		if (ast.size() > 1) {

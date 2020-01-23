@@ -10,9 +10,9 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ASTSeriesData;
-import org.matheclipse.core.expression.AssociationAST;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.reflection.system.Share;
@@ -30,7 +30,7 @@ public class SerializableTest extends TestCase {
 	}
 
 	public void testAssociation() {
-		AssociationAST assoc = new AssociationAST(F.List(F.Rule(F.a, F.b)));
+		IAssociation assoc = F.assoc(F.List(F.Rule(F.a, F.b)));
 		equalsCopy(assoc);
 	}
 

@@ -15336,6 +15336,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPosition() {
+		check("Position(<|{1 -> 1 + x^2, 2 -> <|\"a\" -> x^2|>, 3 -> x^4, 4 -> a + (1 + x^2)^2}|>, x^_)", //
+				"{{Key(1),2},{Key(2),Key(a)},{Key(3)},{Key(4),2,1,2}}");
+		check("Position(<|\"a\" -> 1, \"b\" -> 2, \"c\" -> 3, \"d\" -> 4|>, _Integer?PrimeQ)", //
+				"{{Key(b)},{Key(c)}}");
 		check("Count({1, \"f\", g, \"h\", \"7\"}, _?StringQ)", //
 				"3");
 		check("Length(Position({1, \"f\", g, \"h\", \"7\"}, _?StringQ))", //

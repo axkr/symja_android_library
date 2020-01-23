@@ -32,13 +32,13 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
-import org.matheclipse.core.expression.AssociationAST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.data.CompiledFunctionExpr;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IIterator;
@@ -3187,12 +3187,12 @@ public final class Programming {
 			}
 			return result;
 		}
-		if (arg1 instanceof AssociationAST) {
+		if (arg1.isAssociation()) {
 			IExpr result = F.NIL;
 			if (arg2.isAST(F.Key, 2)) {
-				result = ((AssociationAST) arg1).getValue(arg2.first());
+				result = ((IAssociation) arg1).getValue(arg2.first());
 			} else if (arg2.isString()) {
-				result = ((AssociationAST) arg1).getValue(arg2);
+				result = ((IAssociation) arg1).getValue(arg2);
 			}
 
 			if (result.isPresent()) {

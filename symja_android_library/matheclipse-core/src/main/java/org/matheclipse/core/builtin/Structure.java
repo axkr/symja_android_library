@@ -17,12 +17,12 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
 import org.matheclipse.core.eval.util.OptionArgs;
-import org.matheclipse.core.expression.AssociationAST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -1628,8 +1628,8 @@ public class Structure {
 					if (arg1.isEvalFlagOn(IAST.IS_SORTED)) {
 						return arg1;
 					}
-					if (arg1 instanceof AssociationAST) {
-						return ((AssociationAST) arg1).sort();
+					if (arg1.isAssociation()) {
+						return ((IAssociation) arg1).sort();
 					}
 				}
 				final IASTMutable shallowCopy = ((IAST) ast.arg1()).copy();

@@ -19,13 +19,13 @@ import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
-import org.matheclipse.core.expression.AssociationAST;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -1342,8 +1342,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		if (list.isInterval() && convertInterval(buf, list)) {
 			return;
 		}
-		if (list instanceof AssociationAST) {
-			convertAssociation(buf, (AssociationAST) list);
+		if (list.isAssociation()) {
+			convertAssociation(buf, (IAssociation) list);
 			return;
 		}
 		int functionID = ((ISymbol) list.head()).ordinal();
@@ -1886,7 +1886,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		tagEnd(buf, "mrow");
 	}
 
-	public void convertAssociation(final StringBuilder buf, final AssociationAST association) {
+	public void convertAssociation(final StringBuilder buf, final IAssociation association) {
 		IAST list = association.normal();
 		tagStart(buf, "mrow");
 		tag(buf, "mo", "&lt;|");
@@ -1900,7 +1900,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			tagEnd(buf, "mrow");
 		}
 		tag(buf, "mo", "|&gt;");
-		tagEnd(buf, "mrow"); 
+		tagEnd(buf, "mrow");
 	}
 
 	public boolean convertInterval(final StringBuilder buf, final IAST f) {

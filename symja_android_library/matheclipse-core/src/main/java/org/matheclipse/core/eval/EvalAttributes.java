@@ -386,7 +386,7 @@ public class EvalAttributes {
 	 * @return <code>true</code> if the sort algorithm was used; <code>false</code> otherwise
 	 */
 	public static final void sort(final IASTMutable ast, Comparator<IExpr> comparator) {
-		if (ast instanceof AssociationAST) {
+		if (ast.isAssociation()) {
 			throw new UnsupportedOperationException("Sort(list, comparator) not implemented for associations.");
 		}
 		if (ast.size() > 2) {

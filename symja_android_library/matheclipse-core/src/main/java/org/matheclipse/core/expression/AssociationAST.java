@@ -17,10 +17,11 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 
-public class AssociationAST extends AST {
+public class AssociationAST extends AST implements IAssociation {
 
 	/**
 	 * Map the <code>IExpr()</code> keys to the index of the values in this AST. For <code>Rule()</code> the index is
@@ -29,6 +30,8 @@ public class AssociationAST extends AST {
 	 * <code>RuleDelayed()</code>.
 	 */
 	private transient HashMap<IExpr, Integer> map;
+
+	private transient IAST normalCache = null;
 
 	/**
 	 * Public no-arg constructor only needed for serialization
@@ -92,6 +95,7 @@ public class AssociationAST extends AST {
 				set(value, rule.second());
 				map.put(rule.first(), value);
 			}
+			normalCache = null;
 		} else if (rule.isRuleDelayed()) {
 			Integer value = getIndex(rule.first());
 			if (value == null) {
@@ -102,6 +106,7 @@ public class AssociationAST extends AST {
 				set(value, rule.second());
 				map.put(rule.first(), -value);
 			}
+			normalCache = null;
 		} else if (rule.isAST(F.List, 1)) {
 			// ignore empty list entries
 		} else {
@@ -178,12 +183,25 @@ public class AssociationAST extends AST {
 		return super.copy();
 	}
 
-	public IASTMutable normal() {
-		IASTMutable list = normal(F.List);
-		return list;
+	/**
+	 * Test if this AST is an association <code>&lt;|a-&gt;b, c-&gt;d|&gt;</code>(i.e. type <code>AssociationAST</code>)
+	 * 
+	 * @return
+	 */
+	@Override
+	public boolean isAssociation() {
+		return true;
 	}
 
-	protected IASTMutable normal(IBuiltInSymbol symbol) {
+	public IAST normal() {
+		if (normalCache != null) {
+			return normalCache;
+		}
+		normalCache = normal(F.List);
+		return normalCache;
+	}
+
+	protected IAST normal(IBuiltInSymbol symbol) {
 		IASTMutable list = F.ast(symbol, argSize(), true);
 
 		for (Map.Entry<IExpr, Integer> element : map.entrySet()) {
@@ -226,6 +244,11 @@ public class AssociationAST extends AST {
 		IASTMutable list = copyAST();
 		list.set(0, symbol);
 		return list;
+	}
+
+	public IExpr getKey(int position) {
+		IAST ast = normal();
+		return F.Key(ast.get(position).first());
 	}
 
 	public IExpr getValue(IExpr key) {
@@ -281,7 +304,7 @@ public class AssociationAST extends AST {
 		return normal(F.Association).fullFormString();
 	}
 
-	public AssociationAST sort() {
+	public IAssociation sort() {
 		List<Integer> indices = new ArrayList<Integer>(argSize());
 		for (int i = 1; i < size(); i++) {
 			indices.add(i);
@@ -305,11 +328,11 @@ public class AssociationAST extends AST {
 		return result;
 	}
 
-	public AssociationAST keySort() {
+	public IAssociation keySort() {
 		return keySort(null);
 	}
 
-	public AssociationAST keySort(Comparator<IExpr> comparator) {
+	public IAssociation keySort(Comparator<IExpr> comparator) {
 		IASTMutable list = keys();
 		if (comparator == null) {
 			EvalAttributes.sort(list);

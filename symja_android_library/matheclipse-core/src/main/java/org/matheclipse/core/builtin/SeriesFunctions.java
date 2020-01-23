@@ -2,25 +2,21 @@ package org.matheclipse.core.builtin;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.util.Assumptions;
-import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
-import org.matheclipse.core.expression.AssociationAST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -945,8 +941,8 @@ public class SeriesFunctions {
 			if (arg1 instanceof ASTSeriesData) {
 				return ((ASTSeriesData) arg1).normal();
 			}
-			if (arg1 instanceof AssociationAST) {
-				IAST list= ((AssociationAST) arg1).normal();
+			if (arg1.isAssociation()) {
+				IAST list= ((IAssociation) arg1).normal();
 				return list;
 			}
 			if (WXFFunctions.isByteArray(arg1)) {
