@@ -167,22 +167,22 @@ public class AST2Expr {
 			"SinhIntegral", "Skewness", "SokalSneathDissimilarity", "Solve", "Sort", "SortBy", "Sow", "Span",
 			"SphericalBesselJ", "SphericalBesselY", "SphericalHankelH1", "SphericalHankelH2", "Split", "SplitBy",
 			"Sqrt", "SquaredEuclideanDistance", "SquareFreeQ", "SquareMatrixQ", "StandardDeviation", "StandardForm",
-			"Standardize", "StieltjesGamma", "StirlingS1", "StirlingS2", "StringDrop", "StringJoin", "StringLength",
-			"StringRiffle", "StringTake", "StringQ", "StringReplace", "StruveH", "StruveL", "StudentTDistribution",
-			"Subdivide", "Subfactorial", "Subscript", "Subsuperscript", "SubsetQ", "Subsets", "Subtract",
-			"SubtractFrom", "Sum", "Superscript", "SurfaceGraphics", "SurvivalFunction", "Switch", "SyntaxLength",
-			"SymbolName", "SymbolQ", "Symmetric", "SymmetricMatrixQ", "SyntaxQ", "SystemDialogInput", "Table",
-			"TableForm", "TagSet", "TagSetDelayed", "Take", "Tally", "Tan", "Tanh", "TautologyQ", "Taylor",
-			"TensorDimensions", "TensorProduct", "TensorRank", "TensorSymmetry", "TextCell", "TextString", "TeXForm",
-			"Thread", "Through", "Throw", "TimeConstrained", "Times", "TimesBy", "TimeValue", "Timing",
-			"ToCharacterCode", "ToExpression", "ToeplitzMatrix", "Together", "ToPolarCoordinates", "ToRadicals",
-			"ToString", "Total", "ToUnicode", "Tr", "Trace", "TraceForm", "TraditionalForm", "Transpose", "TreeForm",
-			"TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "TukeyWindow", "Tuples", "TwoWayRule", "Undefined",
-			"Underoverscript", "UndirectedEdge", "Unequal", "Unevaluated", "UniformDistribution", "Union", "Unique",
-			"UnitaryMatrixQ", "UnitConvert", "Unitize", "UnitStep", "UnitVector", "Unprotect", "UnsameQ", "Unset",
-			"UpperCaseQ", "UpperTriangularize", "UpSet", "UpSetDelayed", "ValueQ", "Values", "VandermondeMatrix",
-			"Variables", "Variance", "VectorAngle", "VectorQ", "VertexEccentricity", "VertexList", "VertexQ",
-			"WeibullDistribution", "WeierstrassHalfPeriods", "WeierstrassInvariants", "WeierstrassP",
+			"Standardize", "StieltjesGamma", "StirlingS1", "StirlingS2", "StringDrop", "StringExpression",
+			"StringJoin", "StringLength", "StringRiffle", "StringTake", "StringQ", "StringReplace", "StruveH",
+			"StruveL", "StudentTDistribution", "Subdivide", "Subfactorial", "Subscript", "Subsuperscript", "SubsetQ",
+			"Subsets", "Subtract", "SubtractFrom", "Sum", "Superscript", "SurfaceGraphics", "SurvivalFunction",
+			"Switch", "SyntaxLength", "SymbolName", "SymbolQ", "Symmetric", "SymmetricMatrixQ", "SyntaxQ",
+			"SystemDialogInput", "Table", "TableForm", "TagSet", "TagSetDelayed", "Take", "Tally", "Tan", "Tanh",
+			"TautologyQ", "Taylor", "TensorDimensions", "TensorProduct", "TensorRank", "TensorSymmetry", "TextCell",
+			"TextString", "TeXForm", "Thread", "Through", "Throw", "TimeConstrained", "Times", "TimesBy", "TimeValue",
+			"Timing", "ToCharacterCode", "ToExpression", "ToeplitzMatrix", "Together", "ToPolarCoordinates",
+			"ToRadicals", "ToString", "Total", "ToUnicode", "Tr", "Trace", "TraceForm", "TraditionalForm", "Transpose",
+			"TreeForm", "TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "TukeyWindow", "Tuples", "TwoWayRule",
+			"Undefined", "Underoverscript", "UndirectedEdge", "Unequal", "Unevaluated", "UniformDistribution", "Union",
+			"Unique", "UnitaryMatrixQ", "UnitConvert", "Unitize", "UnitStep", "UnitVector", "Unprotect", "UnsameQ",
+			"Unset", "UpperCaseQ", "UpperTriangularize", "UpSet", "UpSetDelayed", "ValueQ", "Values",
+			"VandermondeMatrix", "Variables", "Variance", "VectorAngle", "VectorQ", "VertexEccentricity", "VertexList",
+			"VertexQ", "WeibullDistribution", "WeierstrassHalfPeriods", "WeierstrassInvariants", "WeierstrassP",
 			"WeierstrassPPrime", "WeightedAdjacencyMatrix", "Which", "While", "With", "WriteString", "Xor",
 			"YuleDissimilarity", "ZeroSymmetric", "Zeta" };
 
@@ -375,6 +375,19 @@ public class AST2Expr {
 			if (functionID > ID.UNKNOWN) {
 				IExpr expr;
 				switch (functionID) {
+				case ID.Association:
+					if (ast.isAST1() && ast.arg1().isList()) {
+						IExpr arg1 = ast.arg1();
+						if (arg1.isListOfRules(true)) {
+							return F.assoc((IAST) arg1);
+						} else if (arg1.isAST(F.List, 2)) {
+							arg1 = arg1.first();
+							if (arg1.isListOfRules(true)) {
+								return F.assoc((IAST) arg1);
+							}
+						}
+					}
+					break;
 				case ID.N:
 					if (ast.isAST2() && ast.arg2().isInteger()) {
 						try {

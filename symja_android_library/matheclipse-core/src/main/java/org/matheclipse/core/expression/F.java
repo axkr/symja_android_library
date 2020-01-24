@@ -3271,6 +3271,9 @@ public class F {
 	/***/
 	public final static IBuiltInSymbol StringDrop = F.initFinalSymbol("StringDrop", ID.StringDrop);
 
+	/***/
+	public final static IBuiltInSymbol StringExpression = F.initFinalSymbol("StringExpression", ID.StringExpression);
+	 
 	/** StringJoin(str1, str2, ... strN) - concatenate the strings `str1, str2, ... strN` into one string. */
 	public final static IBuiltInSymbol StringJoin = F.initFinalSymbol("StringJoin", ID.StringJoin);
 

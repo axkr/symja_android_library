@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FunctionNode;
@@ -213,7 +214,16 @@ public class Parser extends Scanner {
 	private ASTNode getFactor(final int min_precedence) throws SyntaxError {
 		ASTNode temp = null;
 
-		if (fToken == TT_PRECEDENCE_OPEN) {
+		switch (fToken) {
+		case TT_IDENTIFIER:
+			final SymbolNode symbol = getSymbol();
+			if (fToken >= TT_BLANK && fToken <= TT_BLANK_COLON) {
+				temp = getBlankPatterns(symbol);
+			} else {
+				temp = symbol;
+			}
+			return parseArguments(temp);
+		case TT_PRECEDENCE_OPEN:
 			fRecursionDepth++;
 			try {
 				getNextToken();
@@ -240,24 +250,20 @@ public class Parser extends Scanner {
 			}
 			return temp;
 
-		} else if (fToken == TT_LIST_OPEN) {
-			return getList();
-		} else if (fToken == TT_IDENTIFIER) {
-			final SymbolNode symbol = getSymbol();
-			if (fToken >= TT_BLANK && fToken <= TT_BLANK_COLON) {
-				temp = getBlankPatterns(symbol);
-			} else {
-				temp = symbol;
-			}
-			return parseArguments(temp);
-		} else if (fToken >= TT_BLANK && fToken <= TT_BLANK_COLON) {
+		case TT_LIST_OPEN:
+			return parseArguments(getList());
+		case TT_BLANK:
+		case TT_BLANK_BLANK:
+		case TT_BLANK_BLANK_BLANK:
+		case TT_BLANK_OPTIONAL:
+		case TT_BLANK_COLON:
 			return getBlanks(temp);
-		} else if (fToken == TT_DIGIT) {
+		case TT_DIGIT:
 			return getNumber(false);
-
-		} else if (fToken == TT_STRING) {
-			return getString();
-		} else if (fToken == TT_PERCENT) {
+		case TT_STRING:
+			ASTNode str = getString();
+			return parseArguments(str);
+		case TT_PERCENT:
 
 			final FunctionNode out = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Out));
 
@@ -276,7 +282,7 @@ public class Parser extends Scanner {
 
 			out.add(fFactory.createInteger(-countPercent));
 			return parseArguments(out);
-		} else if (fToken == TT_SLOT) {
+		case TT_SLOT:
 
 			getNextToken();
 			final FunctionNode slot = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Slot));
@@ -286,7 +292,7 @@ public class Parser extends Scanner {
 				slot.add(fFactory.createInteger(1));
 			}
 			return parseArguments(slot);
-		} else if (fToken == TT_SLOTSEQUENCE) {
+		case TT_SLOTSEQUENCE:
 
 			getNextToken();
 			final FunctionNode slotSequencce = fFactory
@@ -297,8 +303,44 @@ public class Parser extends Scanner {
 				slotSequencce.add(fFactory.createInteger(1));
 			}
 			return parseArguments(slotSequencce);
-		}
-		switch (fToken) {
+		case TT_ASSOCIATION_OPEN:
+			final FunctionNode function = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.List));
+			fRecursionDepth++;
+			try {
+				getNextToken();
+				do {
+					function.add(parseExpression());
+					if (fToken != TT_COMMA) {
+						break;
+					}
+
+					getNextToken();
+				} while (true);
+
+				if (fToken != TT_ASSOCIATION_CLOSE) {
+					throwSyntaxError("\'|>\' expected.");
+				}
+				final FunctionNode assoc = fFactory
+						.createFunction(fFactory.createSymbol(IConstantOperators.Association));
+				assoc.add(function);
+				temp = assoc;
+				getNextToken();
+				if (fToken == TT_PRECEDENCE_OPEN) {
+					if (!fExplicitTimes) {
+						Operator oper = fFactory.get("Times");
+						if (Config.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
+							return getTimes(temp);
+						}
+					}
+				}
+				if (fToken == TT_ARGUMENTS_OPEN) {
+					return getFunctionArguments(temp);
+				}
+
+			} finally {
+				fRecursionDepth--;
+			}
+			return temp;
 
 		case TT_PRECEDENCE_CLOSE:
 			throwSyntaxError("Too much closing ) in factor.");
@@ -308,6 +350,9 @@ public class Parser extends Scanner {
 			break;
 		case TT_ARGUMENTS_CLOSE:
 			throwSyntaxError("Too much closing ] in factor.");
+			break;
+		case TT_ASSOCIATION_CLOSE:
+			throwSyntaxError("Too much closing |> in factor.");
 			break;
 		}
 
@@ -843,7 +888,55 @@ public class Parser extends Scanner {
 	}
 
 	private ASTNode parseExpression() {
-		return parseExpression(parsePrimary(0), 0);
+		if (fToken == TT_SPAN) {
+			FunctionNode span = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Span));
+			span.add(fFactory.createInteger(1));
+			getNextToken();
+			if (fToken == TT_SPAN) {
+				span.add(fFactory.createSymbol(IConstantOperators.All));
+				getNextToken();
+				if (fToken == TT_COMMA || fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
+						|| fToken == TT_PRECEDENCE_CLOSE) {
+					return span;
+				}
+			} else if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
+					|| fToken == TT_PRECEDENCE_CLOSE) {
+				span.add(fFactory.createSymbol(IConstantOperators.All));
+				return span;
+			}
+			span.add(parseExpression(parsePrimary(0), 0));
+			return span;
+		}
+		ASTNode temp = parseExpression(parsePrimary(0), 0);
+
+		if (fToken == TT_SPAN) {
+			FunctionNode span = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Span));
+			span.add(temp);
+			getNextToken();
+			if (fToken == TT_SPAN) {
+				span.add(fFactory.createSymbol(IConstantOperators.All));
+				getNextToken();
+				if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
+						|| fToken == TT_PRECEDENCE_CLOSE) {
+					return span;
+				}
+			} else if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
+					|| fToken == TT_PRECEDENCE_CLOSE) {
+				span.add(fFactory.createSymbol(IConstantOperators.All));
+				return span;
+			}
+			span.add(parseExpression(parsePrimary(0), 0));
+			if (fToken == TT_SPAN) {
+				getNextToken();
+				if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
+						|| fToken == TT_PRECEDENCE_CLOSE) {
+					return span;
+				}
+				span.add(parseExpression(parsePrimary(0), 0));
+			}
+			return span;
+		}
+		return temp;
 	}
 
 	/**
@@ -1120,21 +1213,6 @@ public class Parser extends Scanner {
 
 	private ASTNode parsePrimary(final int min_precedence) {
 		if (fToken == TT_OPERATOR) {
-			if (";;".equals(fOperatorString)) {
-				FunctionNode function = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Span));
-				function.add(fFactory.createInteger(1));
-				getNextToken();
-				if (fToken == TT_COMMA || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_PRECEDENCE_CLOSE) {
-					function.add(fFactory.createSymbol(IConstantOperators.All));
-					return function;
-				}
-				function.add(parsePrimary(0));
-				if (fToken == TT_OPERATOR && ";;".equals(fOperatorString)) {
-					function.add(fFactory.createSymbol(IConstantOperators.All));
-					getNextToken();
-				}
-				return function;
-			}
 			if (".".equals(fOperatorString)) {
 				fCurrentChar = '.';
 				return getNumber(false);

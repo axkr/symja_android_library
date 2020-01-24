@@ -601,20 +601,44 @@ public class ParserTestCase extends TestCase {
 	public void testParse43() {
 		try {
 			Parser p = new Parser();
- 			ASTNode obj = p.parse("MakeAssocList[u_,x_Symbol,alst_List:{}] ");
+			ASTNode obj = p.parse("MakeAssocList[u_,x_Symbol,alst_List:{}] ");
 			assertEquals(obj.toString(), "MakeAssocList(u_, x_Symbol, Optional(alst_List, List()))");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParser44() {
 		try {
 			Parser p = new Parser();
 			ASTNode obj = p.parse("-1<0<=a<4<5<b<10<11");
 			assertEquals(obj.toString(),
 					"Inequality(-1, Less, 0, LessEqual, a, Less, 4, Less, 5, Less, b, Less, 10, Less, 11)");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+
+	public void testParser45() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("\"array\"[x] ");
+			assertEquals(obj.toString(), //
+					"array(x)");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+	
+	public void testParser46() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("{a,b,c}[x] ");
+			assertEquals(obj.toString(), //
+					"List(a, b, c)[x]");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());

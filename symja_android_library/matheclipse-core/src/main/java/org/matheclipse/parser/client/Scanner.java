@@ -78,6 +78,11 @@ public abstract class Scanner {
 	final static protected int TT_PARTCLOSE = 19;
 
 	/**
+	 * Token type: operator ';;'
+	 */
+	final static protected int TT_SPAN = 30;
+
+	/**
 	 * Token type: operator found in input string
 	 */
 	final static protected int TT_OPERATOR = 31;
@@ -690,6 +695,21 @@ public abstract class Scanner {
 					}
 
 					break;
+				case ';':
+					if (isValidPosition()) {
+						if (charAtPosition() == ';') {
+							fCurrentPosition++;
+							fToken = TT_SPAN;
+							break;
+						}
+					}
+					if (isOperatorCharacters()) {
+						fOperList = getOperator();
+						fToken = TT_OPERATOR;
+						return;
+					}
+
+					break;
 				case '|':
 					if (isValidPosition()) {
 						if (charAtPosition() == '>') {
@@ -720,16 +740,20 @@ public abstract class Scanner {
 								}
 							}
 							fToken = TT_BLANK_BLANK;
-							break;
 						} else if (charAtPosition() == '.') {
 							fCurrentPosition++;
 							fToken = TT_BLANK_OPTIONAL;
-							break;
 						} else if (charAtPosition() == ':') {
 							fCurrentPosition++;
-							fToken = TT_BLANK_COLON;
-							break;
+							if (isValidPosition()) {
+								if (charAtPosition() == '>') {
+									fCurrentPosition--;
+								} else {
+									fToken = TT_BLANK_COLON;
+								}
+							}
 						}
+						break;
 					}
 
 					break;
@@ -1021,7 +1045,7 @@ public abstract class Scanner {
 						}
 						throwSyntaxError("string - unknown character after back-slash.");
 					default:
-						throwSyntaxError("string - unknown character after back-slash.");
+						// throwSyntaxError("string - unknown character after back-slash.");
 					}
 				} else {
 					throwSyntaxError("string - unknown character after back-slash.");

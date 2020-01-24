@@ -8975,7 +8975,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("D(Identity(Sin(x)),x)", //
 				"Cos(x)");
 		check("Composition(f,g,Identity,h,Identity,g)", //
-				"Composition(f,g,h,g)");
+				"f@*g@*h@*g");
 		check("Identity(0)", //
 				"0");
 	}
@@ -11407,6 +11407,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testList() {
+		check("{a,b,c}(x) // FullForm", //
+				"List(a, b, c)[x]");
 		// prints error
 		check("{1,2}+{4,5,6}", //
 				"{1,2}+{4,5,6}");
@@ -14235,7 +14237,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{{{a,b},{x,y,z}},{{2*a,2*b},{2*x,2*y,2*z}}}}");
 
 		check("trigs = Outer(Composition, {Sin, Cos, Tan}, {ArcSin, ArcCos, ArcTan})", //
-				"{{Composition(Sin,ArcSin),Composition(Sin,ArcCos),Composition(Sin,ArcTan)},{Composition(Cos,ArcSin),Composition(Cos,ArcCos),Composition(Cos,ArcTan)},{Composition(Tan,ArcSin),Composition(Tan,ArcCos),Composition(Tan,ArcTan)}}");
+				"{{Sin@*ArcSin,Sin@*ArcCos,Sin@*ArcTan},{Cos@*ArcSin,Cos@*ArcCos,Cos@*ArcTan},{Tan@*ArcSin,Tan@*ArcCos,Tan@*ArcTan}}");
 		check("Map(#(0) &, trigs, {2})", //
 				"{{0,1,0},{1,0,1},{0,ComplexInfinity,0}}");
 		check("Outer(StringJoin, {\"\", \"re\", \"un\"}, {\"cover\", \"draw\", \"wind\"}, {\"\", \"ing\", \"s\"})", //
@@ -14303,7 +14305,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		}
 	}
 
-	public void testPart() {
+	public void testPart() { 
+		check("{a, b, c, d, e, f, g, h, i, j, k}[[3 ;; -3 ;; 2]]", //
+				"{c,e,g,i}");
+		check("{a, b, c, d, e, f, g, h, i, j, k}[[;; ;; 2]]", //
+				"{a,c,e,g,i,k}");
+		check("test[[i;;]] // FullForm", //
+				"Part(test, Span(i, All))");
 		check("test={g,h,k}", //
 				"{g,h,k}");
 		check("test[[Position({x,v,w },{x,_,_})[[1,1]],2]] = ({a,b})[[2]]", //
@@ -14366,10 +14374,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"b");
 		check("{{a, b, c}, {d, e, f}, {g, h, i}}[[{1, 3}, {2, 3}]]", //
 				"{{b,c},{h,i}}");
-		check("{a, b, c, d, e, f, g, h, i, j, k}[[3 ;; -3 ;; 2]]", //
-				"{c,e,g,i}");
-		check("{a, b, c, d, e, f, g, h, i, j, k}[[;; ;; 2]]", //
-				"{a,c,e,g,i,k}");
 
 		check("{{a, b, c}, {d, e, f}, {g, h, i}}[[All, 2]]", //
 				"{b,e,h}");
@@ -19824,7 +19828,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSpan() {
-
+		check("FullForm(1;;4;;2)", //
+				"Span(1, 4, 2)");
+		
+		
+		
 		check("{a, b, c, d, e, f, g, h}[[2 ;; -3]]", //
 				"{b,c,d,e,f}");
 
@@ -19929,6 +19937,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testString() {
+		check("\"test\"(x)", //
+				"test[x]");
 		check("\"Hello world!\\\n" //
 				+ "next line\"", //
 				"Hello world!\n" + "next line");
@@ -19964,7 +19974,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("StringQ(\"a\")", //
 				"True");
 	}
-
+	
+	public void testStringExpresion() {
+		check("\"ab\" ~~ _", //
+				"ab~~_");
+	}
+	
 	public void testStringReplace() {
 		check("StringReplace(\"abbaabbaa\", \"ab\" -> \"X\")", //
 				"XbaXbaa");

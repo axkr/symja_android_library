@@ -43,6 +43,7 @@ import org.matheclipse.core.visit.VisitorExpr;
 import org.matheclipse.core.visit.VisitorPrecision;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
+import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.IParserFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
@@ -419,7 +420,7 @@ public class ExprParser extends Scanner {
 		case TT_LIST_OPEN:
 			fRecursionDepth++;
 			try {
-				return getList();
+				return parseArguments(getList());
 			} finally {
 				fRecursionDepth--;
 			}
@@ -435,8 +436,8 @@ public class ExprParser extends Scanner {
 			return getNumber(false);
 
 		case TT_STRING:
-			return getString();
-
+			IStringX str = getString();
+			return parseArguments(str);
 		case TT_PERCENT:
 			final IASTAppendable out = F.ast(F.Out);
 			int countPercent = 1;
@@ -980,13 +981,85 @@ public class ExprParser extends Scanner {
 				do {
 					getNextToken();
 
+					// if (fToken == TT_SPAN) {
+					// IASTAppendable span = F.ast(F.Span);
+					// function.append(span);
+					// span.append(F.C1);
+					// getNextToken();
+					// if (fToken == TT_SPAN) {
+					// span.append(F.All);
+					// getNextToken();
+					// if (fToken == TT_COMMA) {
+					// continue;
+					// }
+					// if (fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
+					// || fToken == TT_PRECEDENCE_CLOSE) {
+					// break;
+					// }
+					// } else if (fToken == TT_COMMA) {
+					// span.append(F.All);
+					// continue;
+					// } else if (fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
+					// || fToken == TT_PRECEDENCE_CLOSE) {
+					// span.append(F.All);
+					// break;
+					// }
+					// span.append(parseExpression());
+					// if (fToken == TT_COMMA) {
+					// continue;
+					// }
+					// break;
+					// }
 					if (fToken == TT_ARGUMENTS_CLOSE) {
 						if (fInputString.length > fCurrentPosition && fInputString[fCurrentPosition] == ']') {
 							throwSyntaxError("Statement (i.e. index) expected in [[ ]].");
 						}
 					}
 
-					function.append(parseExpression());
+					temp = parseExpression();
+					function.append(temp);
+					// if (fToken == TT_SPAN) {
+					// IASTAppendable span = F.ast(F.Span);
+					// function.append(span);
+					// span.append(temp);
+					// getNextToken();
+					// if (fToken == TT_SPAN) {
+					// span.append(F.All);
+					// getNextToken();
+					// if (fToken == TT_COMMA) {
+					// continue;
+					// }
+					// if (fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
+					// || fToken == TT_PRECEDENCE_CLOSE) {
+					// break;
+					// }
+					// } else if (fToken == TT_COMMA) {
+					// span.append(F.All);
+					// continue;
+					// } else if (fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
+					// || fToken == TT_PRECEDENCE_CLOSE) {
+					// span.append(F.All);
+					// break;
+					// }
+					// span.append(parseExpression());
+					// if (fToken == TT_SPAN) {
+					// getNextToken();
+					// if (fToken == TT_COMMA) {
+					// continue;
+					// }
+					// if ( fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
+					// || fToken == TT_PRECEDENCE_CLOSE) {
+					// break;
+					// }
+					// span.append(parseExpression());
+					// }
+					// if (fToken == TT_COMMA) {
+					// continue;
+					// }
+					// break;
+					// } else {
+					// function.append(temp);
+					// }
 				} while (fToken == TT_COMMA);
 
 				if (fToken == TT_ARGUMENTS_CLOSE) {
@@ -1151,7 +1224,55 @@ public class ExprParser extends Scanner {
 	}
 
 	private IExpr parseExpression() {
-		return parseExpression(parsePrimary(0), 0);
+		if (fToken == TT_SPAN) {
+			IASTAppendable span = F.ast(F.Span);
+			span.append(F.C1);
+			getNextToken();
+			if (fToken == TT_SPAN) {
+				span.append(F.All);
+				getNextToken();
+				if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
+						|| fToken == TT_PRECEDENCE_CLOSE) {
+					return span;
+				}
+			} else if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
+					|| fToken == TT_PRECEDENCE_CLOSE) {
+				span.append(F.All);
+				return span;
+			}
+			span.append(parseExpression(parsePrimary(0), 0));
+			return span;
+		}
+		IExpr temp = parseExpression(parsePrimary(0), 0);
+
+		if (fToken == TT_SPAN) {
+			IASTAppendable span = F.ast(F.Span);
+			span.append(temp);
+			getNextToken();
+			if (fToken == TT_SPAN) {
+				span.append(F.All);
+				getNextToken();
+				if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
+						|| fToken == TT_PRECEDENCE_CLOSE) {
+					return span;
+				}
+			} else if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
+					|| fToken == TT_PRECEDENCE_CLOSE) {
+				span.append(F.All);
+				return span;
+			}
+			span.append(parseExpression(parsePrimary(0), 0));
+			if (fToken == TT_SPAN) {
+				getNextToken();
+				if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
+						|| fToken == TT_PRECEDENCE_CLOSE) {
+					return span;
+				}
+				span.append(parseExpression(parsePrimary(0), 0));
+			}
+			return span;
+		}
+		return temp;
 	}
 
 	/**
@@ -1450,21 +1571,6 @@ public class ExprParser extends Scanner {
 
 	private IExpr parsePrimary(final int min_precedence) {
 		if (fToken == TT_OPERATOR) {
-			if (";;".equals(fOperatorString)) {
-				IASTAppendable span = F.ast(F.Span);
-				span.append(F.C1);
-				getNextToken();
-				if (fToken == TT_COMMA || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_PRECEDENCE_CLOSE) {
-					span.append(F.All);
-					return span;
-				}
-				if (fToken == TT_OPERATOR && ";;".equals(fOperatorString)) {
-					span.append(F.All);
-					getNextToken();
-				}
-				span.append(parsePrimary(0));
-				return span;
-			}
 			if (fOperatorString.equals(".")) {
 				fCurrentChar = '.';
 				// fToken = TT_DIGIT;
