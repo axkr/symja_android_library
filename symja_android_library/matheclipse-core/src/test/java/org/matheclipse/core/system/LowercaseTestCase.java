@@ -9626,6 +9626,30 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInterval() {
+		check("1/Interval(-Infinity,Infinity)", //
+				"Interval({0,0})");
+		check("1/Interval(-Infinity,-1/2)", //
+				"Interval({-2,-2},{0,0})");
+		check("1/Interval(-Infinity,-2)", //
+				"Interval({-1/2,-1/2},{0,0})");
+		check("1/Interval(1/3,Infinity)", //
+				"Interval({0,0},{3,3})");
+		check("1/Interval(2,Infinity)", //
+				"Interval({0,0},{1/2,1/2})");
+		
+		check("1/Interval({-Infinity,Infinity})", //
+				"Interval({-Infinity,Infinity})");
+		check("1/Interval({-Infinity,-1/2})", //
+				"Interval({-2,0})");
+		check("1/Interval({-Infinity,-2})", //
+				"Interval({-1/2,0})");
+		check("1/Interval({1/3,Infinity})", //
+				"Interval({0,3})");
+		check("1/Interval({2,Infinity})", //
+				"Interval({0,1/2})");
+		check("1/Interval({3/7,Infinity})", //
+				"Interval({0,7/3})");
+		
 		// check("Interval(0.0``40)", //
 		// "Interval({0,0})");
 		// check("Interval(N(Pi,60))-Pi", //
@@ -9725,6 +9749,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Coth(Interval({-1.0, 2.0}))", //
 				"Interval({-Infinity,-1.31304},{1.03731,Infinity})");
 
+		check("Csch(Interval({-1, 1}))", //
+				"Interval({-Infinity,-Csch(1)},{Csch(1),Infinity})");
+		check("Csch(Interval({1.0, 2.0}))", //
+				"Interval({0.275721,0.850918})");
+		check("Csch(Interval({-1.0, 2.0}))", //
+				"Interval({-Infinity,-0.850918},{0.275721,Infinity})");
+
 		check("Sinh(Interval({-1, 1}))", //
 				"Interval({-Sinh(1),Sinh(1)})");
 		check("Sinh(Interval({0, Log(3)}))", //
@@ -9776,6 +9807,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ArcTanh(Interval({-1,1}))", //
 				"Interval({-Infinity,Infinity})");
 
+		check("Csc(Interval({Pi/4,3*Pi/5}))", //
+				"Interval({1,Sqrt(2)})");
+		check("Csc(Interval({-Pi/4,2*Pi/3}))", //
+				"Interval({-Infinity,-Sqrt(2)},{1,Infinity})");
+		check("Csc(Interval({4,7}))", //
+				"Interval({-Infinity,-1},{Csc(7),Infinity})");
+		check("Csc(Interval({4,8}))", //
+				"Interval({-Infinity,-1},{1,Infinity})");
+		check("Csc(Interval({2,3}))", //
+				"Interval({Csc(2),Csc(3)})");
+		check("Csc(Interval({Pi/4,5*Pi/4}))", //
+				"Interval({-Infinity,-Sqrt(2)},{1,Infinity})");
+		check("Csc(Interval({Pi/4,5*Pi/2}))", //
+				"Interval({-Infinity,-1},{1,Infinity})");
+
 		check("Cot(Interval({3*Pi/4,6*Pi/5}))", //
 				"Interval({-Infinity,-1},{Sqrt(1+2/Sqrt(5)),Infinity})");
 		check("Cot(Interval({Pi/4,3*Pi/4}))", //
@@ -9793,6 +9839,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Cot(Interval({Pi/4,5*Pi/2}))", //
 				"Interval({-Infinity,Infinity})");
 
+		check("Sec(Interval({Pi/4,3*Pi/5}))", //
+				"Interval({-Infinity,4/(1-Sqrt(5))},{Sqrt(2),Infinity})");
+		check("Sec(Interval({-Pi/4,2*Pi/3}))", //
+				"Interval({-Infinity,-2},{1,Infinity})");
+		check("Sec(Interval({4,7}))", //
+				"Interval({-Infinity,Sec(4)},{1,Infinity})");
+		check("Sec(Interval({4,8}))", //
+				"Interval({-Infinity,Sec(4)},{1,Infinity})");
+		check("Sec(Interval({2,3}))", //
+				"Interval({Sec(2),Sec(3)})");
+		check("Sec(Interval({Pi/4,5*Pi/4}))", //
+				"Interval({-Infinity,-1},{Sqrt(2),Infinity})");
+		check("Sec(Interval({Pi/4,5*Pi/2}))", //
+				"Interval({-Infinity,-1},{1,Infinity})");
+		
 		check("Tan(Interval({Pi/4,3*Pi/5}))", //
 				"Interval({-Infinity,-Sqrt(5+2*Sqrt(5))},{1,Infinity})");
 		check("Tan(Interval({-Pi/4,2*Pi/3}))", //
@@ -14305,7 +14366,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		}
 	}
 
-	public void testPart() { 
+	public void testPart() {
 		check("{a, b, c, d, e, f, g, h, i, j, k}[[3 ;; -3 ;; 2]]", //
 				"{c,e,g,i}");
 		check("{a, b, c, d, e, f, g, h, i, j, k}[[;; ;; 2]]", //
@@ -19830,9 +19891,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testSpan() {
 		check("FullForm(1;;4;;2)", //
 				"Span(1, 4, 2)");
-		
-		
-		
+
 		check("{a, b, c, d, e, f, g, h}[[2 ;; -3]]", //
 				"{b,c,d,e,f}");
 
@@ -19974,12 +20033,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("StringQ(\"a\")", //
 				"True");
 	}
-	
+
 	public void testStringExpresion() {
 		check("\"ab\" ~~ _", //
 				"ab~~_");
 	}
-	
+
 	public void testStringReplace() {
 		check("StringReplace(\"abbaabbaa\", \"ab\" -> \"X\")", //
 				"XbaXbaa");

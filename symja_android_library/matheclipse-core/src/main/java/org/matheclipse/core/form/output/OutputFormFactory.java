@@ -977,8 +977,8 @@ public class OutputFormFactory {
 				convertFunctionArgs(buf, list);
 				return;
 			}
-			if (list.head().isSymbol()) {
-				ISymbol head = (ISymbol) list.head();
+			if (header.isSymbol()) {
+				ISymbol head = (ISymbol) header;
 				int functionID = head.ordinal();
 				if (functionID > ID.UNKNOWN) {
 					switch (functionID) {
@@ -996,36 +996,6 @@ public class OutputFormFactory {
 							convert(buf, list.arg1(), Integer.MIN_VALUE, false);
 							buf.append("->");
 							convert(buf, list.arg2(), Integer.MIN_VALUE, false);
-							return;
-						}
-						break;
-					case ID.Interval:
-						if (list.size() > 1 && list.first().isASTSizeGE(F.List, 2)) {
-							IAST interval = IntervalSym.normalize(list);
-							buf.append("Interval");
-							append(buf, fRelaxedSyntax ? "(" : "[");
-							for (int i = 1; i < interval.size(); i++) {
-								append(buf, "{");
-								IAST subList = (IAST) interval.get(i);
-								IExpr min = subList.arg1();
-								IExpr max = subList.arg2();
-								if (min instanceof INum) {
-									convertDouble(buf, (INum) min, 0, false);
-								} else {
-									convert(buf, min);
-								}
-								append(buf, ",");
-								if (max instanceof INum) {
-									convertDouble(buf, (INum) max, 0, false);
-								} else {
-									convert(buf, max);
-								}
-								append(buf, "}");
-								if (i < interval.size() - 1) {
-									append(buf, ",");
-								}
-							}
-							append(buf, fRelaxedSyntax ? ")" : "]");
 							return;
 						}
 						break;
