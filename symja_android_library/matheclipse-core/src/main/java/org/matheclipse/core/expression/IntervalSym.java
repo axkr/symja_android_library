@@ -475,7 +475,7 @@ public class IntervalSym {
 					IExpr max = list.arg2();
 					if (engine.evalTrue(F.GreaterEqual(min, F.C0)) && //
 							engine.evalTrue(F.GreaterEqual(max, F.C0))) {
-						result.append(F.List(F.Coth(min), F.Coth(max)));
+						result.append(F.List(F.Coth(max), F.Coth(min)));
 					} else if (engine.evalTrue(F.Less(min, F.C0)) && //
 							engine.evalTrue(F.GreaterEqual(max, F.C0))) {
 						result.append(F.List(F.CNInfinity, F.Coth(min)));
@@ -530,6 +530,73 @@ public class IntervalSym {
 		return F.NIL;
 	}
 
+	public static IExpr csch(final IAST ast) {
+		IAST interval = normalize(ast);
+		if (interval.isPresent()) {
+			try {
+				EvalEngine engine = EvalEngine.get();
+				IASTAppendable result = F.IntervalAlloc(interval.size());
+				for (int i = 1; i < interval.size(); i++) {
+					IAST list = (IAST) interval.get(i);
+					IExpr min = list.arg1();
+					IExpr max = list.arg2();
+					if (engine.evalTrue(F.GreaterEqual(min, F.C0)) && //
+							engine.evalTrue(F.GreaterEqual(max, F.C0))) {
+						result.append(F.List(F.Csch(max), F.Csch(min)));
+					} else if (engine.evalTrue(F.Less(min, F.C0)) && //
+							engine.evalTrue(F.GreaterEqual(max, F.C0))) {
+						result.append(F.List(F.CNInfinity, F.Csch(min)));
+						result.append(F.List(F.Csch(max), F.CInfinity));
+					} else if (engine.evalTrue(F.Less(min, F.C0)) && //
+							engine.evalTrue(F.Less(max, F.C0))) {
+						result.append(F.List(F.Csch(min), F.Csch(max)));
+					} else {
+						return F.NIL;
+					}
+				}
+				return result;
+			} catch (RuntimeException rex) {
+				//
+			}
+		}
+		return F.NIL;
+	}
+
+	public static IExpr sech(final IAST ast) {
+		IAST interval = normalize(ast);
+		if (interval.isPresent()) {
+			try {
+				EvalEngine engine = EvalEngine.get();
+				IASTAppendable result = F.IntervalAlloc(interval.size());
+				for (int i = 1; i < interval.size(); i++) {
+					IAST list = (IAST) interval.get(i);
+					IExpr min = list.arg1();
+					IExpr max = list.arg2();
+					if (min.isRealResult() && max.isRealResult()) {
+						if (engine.evalTrue(F.GreaterEqual(min, F.C0)) && //
+								engine.evalTrue(F.GreaterEqual(max, F.C0))) {
+							result.append(F.List(F.Sech(max), F.Sech(min)));
+						} else if (engine.evalTrue(F.Less(min, F.C0)) && //
+								engine.evalTrue(F.GreaterEqual(max, F.C0))) {
+							result.append(F.List(F.Min(F.Sech(min), F.Sech(max)), F.C1));
+						} else if (engine.evalTrue(F.Less(min, F.C0)) && //
+								engine.evalTrue(F.Less(max, F.C0))) {
+							result.append(F.List(F.Sech(min), F.Sech(max)));
+						} else {
+							return F.NIL;
+						}
+					} else {
+						return F.NIL;
+					}
+				}
+				return result;
+			} catch (RuntimeException rex) {
+				//
+			}
+		}
+		return F.NIL;
+	}
+
 	public static IExpr sinh(final IAST ast) {
 		IAST interval = normalize(ast);
 		if (interval.isPresent()) {
@@ -568,6 +635,71 @@ public class IntervalSym {
 						result.set(i, F.List(F.Tanh(min), F.Tanh(max)));
 					} else {
 						return F.NIL;
+					}
+				}
+				return result;
+			} catch (RuntimeException rex) {
+				//
+			}
+		}
+		return F.NIL;
+	}
+
+	public static IExpr csc(final IAST ast) {
+		IAST interval = normalize(ast);
+		if (interval.isPresent()) {
+			try {
+				IASTAppendable result = F.IntervalAlloc(interval.size());
+				EvalEngine engine = EvalEngine.get();
+				for (int i = 1; i < interval.size(); i++) {
+					IAST list = (IAST) interval.get(i);
+					IExpr min = list.arg1();
+					IExpr max = list.arg2();
+					IAST difference = F.Subtract(max, min);
+					if (engine.evalTrue(F.GreaterEqual(difference, F.C2Pi))) {
+						// >= 2*Pi
+						result.append(F.List(F.CNInfinity, F.CInfinity));
+						continue;
+					}
+					double dMin = engine.evalDouble(F.Csc(min));
+					double dMax = engine.evalDouble(F.Csc(max));
+					if (engine.evalTrue(F.LessEqual(difference, F.Pi))) {
+						// difference <= Pi
+						if (dMin >= 0) {
+							if (dMax < 0) {
+								result.append(F.List(F.CNInfinity, F.Csc(max)));
+								result.append(F.List(F.Csc(min), F.CInfinity));
+							} else {
+								result.append(F.List(F.Csc(min), F.Csc(max)));
+							}
+						} else {
+							result.append(F.List(F.Csc(min), F.Csc(max)));
+						}
+					} else {// difference between {Pi, 2*Pi}
+						if (dMin >= 0) {
+							if (dMax < 0) {
+								result.append(F.List(F.CNInfinity, F.Csc(max)));
+								result.append(F.List(F.Csc(min), F.CInfinity));
+							} else {
+								if (dMin <= dMax) {
+									result.append(F.List(F.CNInfinity, F.CInfinity));
+								} else {
+									result.append(F.List(F.CNInfinity, F.Csc(max)));
+									result.append(F.List(F.Csc(min), F.CInfinity));
+								}
+							}
+						} else {
+							if (dMax < 0) {
+								if (dMin <= dMax) {
+									result.append(F.List(F.CNInfinity, F.CInfinity));
+								} else {
+									result.append(F.List(F.CNInfinity, F.Csc(max)));
+									result.append(F.List(F.Csc(min), F.CInfinity));
+								}
+							} else {
+								result.append(F.List(F.Csc(min), F.Csc(max)));
+							}
+						}
 					}
 				}
 				return result;
@@ -744,6 +876,71 @@ public class IntervalSym {
 				}
 			}
 			return result;
+		}
+		return F.NIL;
+	}
+
+	public static IExpr sec(final IAST ast) {
+		IAST interval = normalize(ast);
+		if (interval.isPresent()) {
+			try {
+				IASTAppendable result = F.IntervalAlloc(interval.size());
+				EvalEngine engine = EvalEngine.get();
+				for (int i = 1; i < interval.size(); i++) {
+					IAST list = (IAST) interval.get(i);
+					IExpr min = list.arg1();
+					IExpr max = list.arg2();
+					IAST difference = F.Subtract(max, min);
+					if (engine.evalTrue(F.GreaterEqual(difference, F.C2Pi))) {
+						// >= 2*Pi
+						result.append(F.List(F.CNInfinity, F.CInfinity));
+						continue;
+					}
+					double dMin = engine.evalDouble(F.Sec(min));
+					double dMax = engine.evalDouble(F.Sec(max));
+					if (engine.evalTrue(F.LessEqual(difference, F.Pi))) {
+						// difference <= Pi
+						if (dMin >= 0) {
+							if (dMax < 0) {
+								result.append(F.List(F.CNInfinity, F.Sec(max)));
+								result.append(F.List(F.Sec(min), F.CInfinity));
+							} else {
+								result.append(F.List(F.Sec(min), F.Sec(max)));
+							}
+						} else {
+							result.append(F.List(F.Sec(min), F.Sec(max)));
+						}
+					} else {// difference between {Pi, 2*Pi}
+						if (dMin >= 0) {
+							if (dMax < 0) {
+								result.append(F.List(F.CNInfinity, F.Sec(max)));
+								result.append(F.List(F.Sec(min), F.CInfinity));
+							} else {
+								if (dMin <= dMax) {
+									result.append(F.List(F.CNInfinity, F.CInfinity));
+								} else {
+									result.append(F.List(F.CNInfinity, F.Sec(max)));
+									result.append(F.List(F.Sec(min), F.CInfinity));
+								}
+							}
+						} else {
+							if (dMax < 0) {
+								if (dMin <= dMax) {
+									result.append(F.List(F.CNInfinity, F.CInfinity));
+								} else {
+									result.append(F.List(F.CNInfinity, F.Sec(max)));
+									result.append(F.List(F.Sec(min), F.CInfinity));
+								}
+							} else {
+								result.append(F.List(F.Sec(min), F.Sec(max)));
+							}
+						}
+					}
+				}
+				return result;
+			} catch (RuntimeException rex) {
+				//
+			}
 		}
 		return F.NIL;
 	}
