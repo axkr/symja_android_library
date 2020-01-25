@@ -32,15 +32,21 @@ public class IntervalSym {
 
 	};
 
-	private static boolean isNormalized(final IAST ast) {
-		return ast.isEvalFlagOn(IAST.BUILT_IN_EVALED);
+	/**
+	 * Test if the <code>IAST.BUILT_IN_EVALED</code> flag is set for the interval
+	 * 
+	 * @param interval
+	 * @return
+	 */
+	private static boolean isNormalized(final IAST interval) {
+		return interval.isEvalFlagOn(IAST.BUILT_IN_EVALED);
 	}
 
 	/**
 	 * The list of intervals are sorted and overlapping intervals are merged.
 	 * 
 	 * @param intervalList
-	 * @return
+	 * @return <code>F.NIL</code> if the interval could not be normalized
 	 */
 	public static IAST normalize(final IAST intervalList) {
 		if (isNormalized(intervalList)) {
@@ -54,7 +60,7 @@ public class IntervalSym {
 	 * 
 	 * @param intervalList
 	 * @param engine
-	 * @return
+	 * @return <code>F.NIL</code> if the interval could not be normalized
 	 */
 	public static IAST normalize(final IAST intervalList, EvalEngine engine) {
 		try {
@@ -69,7 +75,7 @@ public class IntervalSym {
 			}
 			EvalAttributes.sort(result, INTERVAL_COMPARATOR);
 			result.addEvalFlags(IAST.BUILT_IN_EVALED);
-			if (intervalList.size() > 2) {
+			if (result.size() > 2) {
 				int j = 1;
 				IAST list1 = (IAST) result.arg1();
 				IExpr min1 = list1.arg1();
@@ -572,7 +578,7 @@ public class IntervalSym {
 		return F.NIL;
 	}
 
-	public static IAST sech(final IAST ast) {
+	public static IAST sech(final IAST ast) { 
 		IAST interval = normalize(ast);
 		if (interval.isPresent()) {
 			try {

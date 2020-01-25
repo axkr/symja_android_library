@@ -9756,6 +9756,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Csch(Interval({-1.0, 2.0}))", //
 				"Interval({-Infinity,-0.850918},{0.275721,Infinity})");
 
+		check("Sech(Interval({-1, 1}))", //
+				"Interval({Sech(1),1})");
+		check("Sech(Interval({1.0, 2.0}))", //
+				"Interval({0.265802,0.648054})");
+		check("Sech(Interval({-1.0, 2.0}))", //
+				"Interval({0.265802,1})");
+		
 		check("Sinh(Interval({-1, 1}))", //
 				"Interval({-Sinh(1),Sinh(1)})");
 		check("Sinh(Interval({0, Log(3)}))", //
