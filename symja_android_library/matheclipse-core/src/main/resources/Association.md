@@ -10,5 +10,8 @@ Association(list-of-rules)
 
 ```
 >> Association({ahey->avalue, bkey->bvalue, ckey->cvalue}) 
-<|ahey->avalue,bkey->bvalue,ckey->cvalue|> 
+<|akey->avalue,bkey->bvalue,ckey->cvalue|> 
 ```
+
+### Related terms  
+AssociationQ, [Counts](Counts.md), Keys, Values, [KeySort](KeySort.md)
