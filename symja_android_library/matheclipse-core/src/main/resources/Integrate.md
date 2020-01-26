@@ -15,6 +15,7 @@ Integrate(f, {x,a,b})
 See: 
 - [Wikipedia: Integral](https://en.wikipedia.org/wiki/Integral)
 - [Wikipedia: Antiderivative](https://en.wikipedia.org/wiki/Antiderivative)
+- [Rubi: Rule-based Integration](https://rulebasedintegration.org/)
 
 ### Examples
 
