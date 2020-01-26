@@ -1,10 +1,10 @@
 package org.matheclipse.core.builtin;
 
+import java.io.IOException;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hipparchus.stat.StatUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
@@ -13,11 +13,11 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
-import org.matheclipse.core.form.output.DoubleFormFactory;
 import org.matheclipse.core.form.output.JavaScriptFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class ManipulateFunction {
@@ -52,7 +52,46 @@ public class ManipulateFunction {
 		private static void init() {
 			if (Config.USE_MANIPULATE_JS) {
 				F.Manipulate.setEvaluator(new Manipulate());
+				F.BarChart.setEvaluator(new BarChart());
+				// TODO improve
+				// F.Histogram.setEvaluator(new Histogram());
 			}
+		}
+	}
+
+	private final static class BarChart extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (Config.USE_MANIPULATE_JS) {
+				IExpr temp = F.Manipulate.of(engine, ast);
+				if (temp.headID() == ID.JSFormData) {
+					return temp;
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+	}
+
+	private final static class Histogram extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (Config.USE_MANIPULATE_JS) {
+				IExpr temp = F.Manipulate.of(engine, ast);
+				if (temp.headID() == ID.JSFormData) {
+					return temp;
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
 		}
 	}
 
@@ -61,7 +100,11 @@ public class ManipulateFunction {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			try {
-				if (ast.arg1().isAST(F.ListLinePlot) || //
+				if (ast.arg1().isAST(F.BarChart) || //
+						ast.arg1().isAST(F.Histogram)) {
+					IAST chart = (IAST) ast.arg1();
+					return jsxgraphBarChart(ast, chart, engine);
+				} else if (ast.arg1().isAST(F.ListLinePlot) || //
 						ast.arg1().isAST(F.ListPlot)) {
 					IAST plot = (IAST) ast.arg1();
 					return jsxgraphSliderWithListPlot(ast, plot, engine);
@@ -1179,7 +1222,7 @@ public class ManipulateFunction {
 				}
 			}
 
-			return jsxgraphBoundingBox(ast, boundingbox, function.toString(), toJS);
+			return jsxgraphBoundingBox(ast, boundingbox, function.toString(), toJS, false, true);
 
 		}
 
@@ -1231,7 +1274,7 @@ public class ManipulateFunction {
 		if (!F.isFuzzyEquals(Double.MAX_VALUE, plotRangeYMin, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
 			boundingbox[3] = plotRangeYMin;
 		}
-		return jsxgraphBoundingBox(ast, boundingbox, function.toString(), toJS);
+		return jsxgraphBoundingBox(ast, boundingbox, function.toString(), toJS, false, true);
 
 	}
 
@@ -1411,7 +1454,7 @@ public class ManipulateFunction {
 				function.append(" {name:'', face:'o', size: 2 } );\n");
 			}
 		}
-		return jsxgraphBoundingBox(ast, boundingbox, function.toString(), toJS);
+		return jsxgraphBoundingBox(ast, boundingbox, function.toString(), toJS, false, true);
 	}
 
 	/**
@@ -1507,7 +1550,7 @@ public class ManipulateFunction {
 			}
 		}
 
-		return jsxgraphBoundingBox(ast, boundingbox, function.toString(), toJS);
+		return jsxgraphBoundingBox(ast, boundingbox, function.toString(), toJS, false, true);
 	}
 
 	private static boolean isNonReal(IExpr lastPoint) {
@@ -1519,6 +1562,107 @@ public class ManipulateFunction {
 	private static boolean isNonReal(IExpr lastPointX, IExpr lastPointY) {
 		return isNonReal(lastPointX) || //
 				isNonReal(lastPointY);
+	}
+
+	private static IExpr jsxgraphBarChart(final IAST ast, IAST plot, EvalEngine engine) {
+		if (plot.size() < 2) {
+			return F.NIL;
+		}
+		JavaScriptFormFactory toJS = new JavaScriptFormFactory(true, false, -1, -1, JavaScriptFormFactory.USE_MATHCELL);
+		jsxgraphSliderNamesFromList(ast, toJS);
+		IExpr arg1 = plot.arg1();
+		if (!arg1.isList()) {
+			arg1 = engine.evaluate(arg1);
+		}
+		if (arg1.isList() && arg1.size() > 1) {
+			IAST pointList = (IAST) arg1;
+			// int[] dimension = pointList.isMatrix();
+			// if (dimension != null) {
+			// if (dimension[1] == 2) {
+			// return sequencePointListPlot(ast, pointList, toJS, engine);
+			// }
+			// return F.NIL;
+			// } else {
+			return sequenceBarChart(ast, pointList, toJS, engine);
+			// }
+		}
+		return F.NIL;
+	}
+
+	private static int[] calcHistogram(double[] data, double min, double max, int numBins) {
+		final int[] result = new int[numBins];
+		final double binSize = (max - min) / numBins;
+
+		for (double d : data) {
+			int bin = (int) ((d - min) / binSize);
+			if (bin < 0) {
+				/* this data is smaller than min */
+			} else if (bin >= numBins) {
+				/* this data point is bigger than max */
+			} else {
+				result[bin] += 1;
+			}
+		}
+		return result;
+	}
+
+	private static IExpr sequenceBarChart(final IAST ast, IAST pointList, JavaScriptFormFactory toJS,
+			EvalEngine engine) {
+		double[] boundingbox;
+
+		StringBuilder function = new StringBuilder();
+		boundingbox = new double[] { 0.0, 0.0, pointList.size() - 0.5, 0.0 };
+
+		if (ast.arg1().isAST(F.Histogram)) {
+			function.append("var dataArr = [");
+			double[] dData = pointList.toDoubleVector();
+			double min = StatUtils.min(dData);
+			double max = StatUtils.max(dData);
+			double defaultRange = (max - min) / (0.5);
+			int nRanges = (int) Math.ceil(defaultRange);
+			if (nRanges < 10) {
+				nRanges = 10;
+			}
+			if (nRanges > 100) {
+				nRanges = 100;
+			}
+			defaultRange = (max - min) / (nRanges);
+			int[] buckets = calcHistogram(dData, min, max, nRanges);
+
+			boundingbox = new double[] { min, 0.0, max, 0.0 };
+			for (int i = 0; i < buckets.length; i++) {
+				IInteger value = F.ZZ(buckets[i]);
+				toJS.convert(function, value);
+				yBoundingBox(engine, boundingbox, value);
+				if (i < buckets.length - 1) {
+					function.append(",");
+				}
+			}
+			function.append("];\n");
+		} else if (ast.arg1().isAST(F.BarChart)) {
+			function.append("var dataArr = [");
+			boundingbox = new double[] { 0.0, 0.0, pointList.size() - 0.5, 0.0 };
+			for (int i = 1; i < pointList.size(); i++) {
+				IExpr currentPointY = pointList.get(i);
+				if (isNonReal(currentPointY)) {
+					continue;
+				}
+				toJS.convert(function, currentPointY);
+				yBoundingBox(engine, boundingbox, currentPointY);
+				if (i < pointList.size() - 1) {
+					function.append(",");
+				}
+			}
+			function.append("];\n");
+		}
+
+		function.append("board.create('chart', dataArr,");
+		if (ast.arg1().isAST(F.Histogram)) {
+			function.append(" {chartStyle:'bar',width:1.0,labels:dataArr} );\n");
+			return jsxgraphBoundingBox(ast, boundingbox, function.toString(), toJS, true, true);
+		}
+		function.append(" {chartStyle:'bar',width:0.6,labels:dataArr} );\n");
+		return jsxgraphBoundingBox(ast, boundingbox, function.toString(), toJS, false, true);
 	}
 
 	/**
@@ -1533,22 +1677,28 @@ public class ManipulateFunction {
 	 *            the generated JavaScript function
 	 * @param toJS
 	 *            the Symja to JavaScript converter factory
+	 * @param fixedBounds
+	 *            if <code>false</code> recalculate <code>boundingbox</code> min and max values
+	 * @param axes
+	 *            define <code>axes: true</code>
 	 * @return
 	 */
 	private static IExpr jsxgraphBoundingBox(IAST ast, double[] boundingbox, String function,
-			JavaScriptFormFactory toJS) {
+			JavaScriptFormFactory toJS, boolean fixedBounds, boolean axes) {
 		String js = JSXGRAPH;
-		if (F.isFuzzyEquals(Double.MAX_VALUE, boundingbox[0], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-			boundingbox[0] = -5.0;
-		}
-		if (F.isFuzzyEquals(Double.MIN_VALUE, boundingbox[1], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-			boundingbox[1] = 5.0;
-		}
-		if (F.isFuzzyEquals(Double.MIN_VALUE, boundingbox[2], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-			boundingbox[2] = 5.0;
-		}
-		if (F.isFuzzyEquals(Double.MAX_VALUE, boundingbox[3], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-			boundingbox[3] = -5.0;
+		if (!fixedBounds) {
+			if (F.isFuzzyEquals(Double.MAX_VALUE, boundingbox[0], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+				boundingbox[0] = -5.0;
+			}
+			if (F.isFuzzyEquals(Double.MIN_VALUE, boundingbox[1], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+				boundingbox[1] = 5.0;
+			}
+			if (F.isFuzzyEquals(Double.MIN_VALUE, boundingbox[2], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+				boundingbox[2] = 5.0;
+			}
+			if (F.isFuzzyEquals(Double.MAX_VALUE, boundingbox[3], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+				boundingbox[3] = -5.0;
+			}
 		}
 
 		// add some "padding" around bounding box
@@ -1568,7 +1718,11 @@ public class ManipulateFunction {
 		js = js.replace("`3`", graphicControl.toString());
 
 		StringBuilder jsControl = new StringBuilder();
-		jsControl.append("var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[");
+		if (axes) {
+			jsControl.append("var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[");
+		} else {
+			jsControl.append("var board = JXG.JSXGraph.initBoard('jxgbox', {axis:false,boundingbox:[");
+		}
 
 		for (int i = 0; i < boundingbox.length; i++) {
 			jsControl.append(boundingbox[i]);

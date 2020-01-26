@@ -40,6 +40,7 @@ public class PredicateQ {
 			F.AntisymmetricMatrixQ.setEvaluator(new AntisymmetricMatrixQ());
 			F.AntihermitianMatrixQ.setEvaluator(new AntihermitianMatrixQ());
 			F.ArrayQ.setEvaluator(new ArrayQ());
+			F.AssociationQ.setPredicateQ(x -> x.isAssociation());
 			F.AtomQ.setPredicateQ(x -> x.isAtom());
 			F.BooleanQ.setPredicateQ(x -> x.isTrue() || x.isFalse());
 			F.ByteArrayQ.setPredicateQ(WXFFunctions::isByteArray);
@@ -822,7 +823,6 @@ public class PredicateQ {
 					}
 				}
 
-
 				if (expr.isPlus()) {
 					IExpr[] commonFactors = InternalFindCommonFactorPlus.findCommonFactors((IAST) expr, true);
 					if (commonFactors != null) {
@@ -838,9 +838,9 @@ public class PredicateQ {
 						}
 					}
 				}
-			 
+
 				return isZeroTogether(expr, engine);
-				 
+
 			}
 			return false;
 		}

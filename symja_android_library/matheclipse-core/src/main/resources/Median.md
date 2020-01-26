@@ -9,6 +9,9 @@ Median(list)
 See:
 * [Wikipedia - Median](https://en.wikipedia.org/wiki/Median)
 
+Implementation:
+* [Geeksforgeeks - program for mean and median of an unsorted array](https://www.geeksforgeeks.org/program-for-mean-and-median-of-an-unsorted-array/)
+
 `Median` can be applied to the following distributions:
 
 > [BernoulliDistribution](BernoulliDistribution.md), [BinomialDistribution](BinomialDistribution.md), [DiscreteUniformDistribution](DiscreteUniformDistribution.md),  [ErlangDistribution](ErlangDistribution.md), [ExponentialDistribution](ExponentialDistribution.md), [FrechetDistribution](FrechetDistribution.md), 

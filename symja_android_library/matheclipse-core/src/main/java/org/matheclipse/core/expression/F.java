@@ -442,6 +442,9 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol Association = F.initFinalSymbol("Association", ID.Association);
+	
+	/***/
+	public final static IBuiltInSymbol AssociationQ = F.initFinalSymbol("AssociationQ", ID.AssociationQ);
 
 	/***/
 	public final static IBuiltInSymbol Assumptions = F.initFinalSymbol("Assumptions", ID.Assumptions);
@@ -469,6 +472,9 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol Background = F.initFinalSymbol("Background", ID.Background);
+
+	/***/
+	public final static IBuiltInSymbol BarChart = F.initFinalSymbol("BarChart", ID.BarChart);
 
 	/***/
 	public final static IBuiltInSymbol BartlettWindow = F.initFinalSymbol("BartlettWindow", ID.BartlettWindow);
@@ -1652,6 +1658,9 @@ public class F {
 
 	/** HilbertMatrix(n) - gives the hilbert matrix with `n` rows and columns. */
 	public final static IBuiltInSymbol HilbertMatrix = F.initFinalSymbol("HilbertMatrix", ID.HilbertMatrix);
+
+	/***/
+	public final static IBuiltInSymbol Histogram = F.initFinalSymbol("Histogram", ID.Histogram);
 
 	/** Hold(expr) - `Hold` doesn't evaluate `expr`. */
 	public final static IBuiltInSymbol Hold = F.initFinalSymbol("Hold", ID.Hold);
@@ -3273,7 +3282,7 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol StringExpression = F.initFinalSymbol("StringExpression", ID.StringExpression);
-	 
+
 	/** StringJoin(str1, str2, ... strN) - concatenate the strings `str1, str2, ... strN` into one string. */
 	public final static IBuiltInSymbol StringJoin = F.initFinalSymbol("StringJoin", ID.StringJoin);
 
@@ -5341,6 +5350,9 @@ public class F {
 	}
 
 	public static IAssociation assoc(final IAST listOfRules) {
+		if (listOfRules.isAST1() && listOfRules.arg1().isListOfRules(true)) {
+			return new AssociationAST((IAST) listOfRules.arg1());
+		}
 		return new AssociationAST(listOfRules);
 	}
 

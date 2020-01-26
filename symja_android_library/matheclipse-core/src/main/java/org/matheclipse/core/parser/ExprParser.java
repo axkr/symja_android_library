@@ -468,6 +468,12 @@ public class ExprParser extends Scanner {
 				final IASTAppendable slot = F.ast(F.Slot);
 				slot.append(F.ZZ(slotNumber));
 				return parseArguments(slot);
+			} else if (fToken == TT_IDENTIFIER) {
+				String[] identifierContext = getIdentifier();
+				final IASTAppendable slot = F.ast(F.Slot);
+				slot.append(F.stringx(identifierContext[0]));
+				getNextToken();
+				return parseArguments(slot);
 			}
 			return parseArguments(F.Slot1);
 
@@ -497,7 +503,13 @@ public class ExprParser extends Scanner {
 				if (fToken != TT_ASSOCIATION_CLOSE) {
 					throwSyntaxError("\'|>\' expected.");
 				}
-				temp = F.unaryAST1(F.Association, function);
+				try {
+					temp = F.assoc(function);// F.unaryAST1(F.Association, function);
+				} catch (RuntimeException rex) {
+					// fallback if no rules were parsed
+					function.set(0, F.Association);
+					temp = function;
+				}
 				getNextToken();
 				if (fToken == TT_PRECEDENCE_OPEN) {
 					if (!fExplicitTimes) {

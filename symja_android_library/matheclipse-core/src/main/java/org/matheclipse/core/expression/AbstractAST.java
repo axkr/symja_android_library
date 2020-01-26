@@ -3215,7 +3215,8 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isSlot() {
-		return isSameHead(F.Slot, 2) && arg1().isInteger();
+		return isSameHead(F.Slot, 2) && //
+				(arg1().isInteger() || arg1().isString());
 	}
 
 	/** {@inheritDoc} */

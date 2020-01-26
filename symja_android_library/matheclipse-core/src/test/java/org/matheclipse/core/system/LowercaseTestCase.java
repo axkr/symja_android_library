@@ -1080,6 +1080,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAssociation() {
+		
+		check("f[#u, #v, #u] &[<|\"u\" -> x, \"v\" -> y|>]", //
+				"f(x,y,x)");
+		check("#y &[<|\"x\" -> 1, \"y\" -> 2|>, <|\"x\" -> 3, \"y\" -> 4|>]", //
+				"2");
+		check("#2[\"y\"] &[<|\"x\" -> 1, \"y\" -> 2|>, <|\"x\" -> 3, \"y\" -> 4|>]", //
+				"4");
+		check("#2 &[<|\"x\" -> 1, \"y\" -> 2|>, <|\"x\" -> 3, \"y\" -> 4|>]", //
+				"<|x->3,y->4|>");
+
 		check("Extract(<|a -> 1, b -> 2|>, {{Key(a)}, {Key(b)}})", //
 				"{1,2}");
 		check("{<|\"a\" -> x, \"b\" -> z|>}[[1, \"b\"]]", //
@@ -1146,6 +1156,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"2");
 		check("Count(<|1 -> 1 + x^2, 2 -> x^4, 3 -> a + (1 + x^2)^2|>, x^_, Infinity)", //
 				"3");
+
+		check("AssociationQ(<|a->x, b->y, c->z|>)", //
+				"True");
+		check("AssociationQ(<|a, b|>)", //
+				"False");
+		check("AssociationQ(<|ahey->avalue, bkey->bvalue, ckey->cvalue|>)",
+				"True");
+		// Fall back if no rules were parsed
+		check("<|a, b|>", //
+				"Association(a,b)");
 
 	}
 
@@ -9636,7 +9656,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Interval({0,0},{3,3})");
 		check("1/Interval(2,Infinity)", //
 				"Interval({0,0},{1/2,1/2})");
-		
+
 		check("1/Interval({-Infinity,Infinity})", //
 				"Interval({-Infinity,Infinity})");
 		check("1/Interval({-Infinity,-1/2})", //
@@ -9649,7 +9669,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Interval({0,1/2})");
 		check("1/Interval({3/7,Infinity})", //
 				"Interval({0,7/3})");
-		
+
 		// check("Interval(0.0``40)", //
 		// "Interval({0,0})");
 		// check("Interval(N(Pi,60))-Pi", //
@@ -9762,7 +9782,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Interval({0.265802,0.648054})");
 		check("Sech(Interval({-1.0, 2.0}))", //
 				"Interval({0.265802,1})");
-		
+
 		check("Sinh(Interval({-1, 1}))", //
 				"Interval({-Sinh(1),Sinh(1)})");
 		check("Sinh(Interval({0, Log(3)}))", //
@@ -9860,7 +9880,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Interval({-Infinity,-1},{Sqrt(2),Infinity})");
 		check("Sec(Interval({Pi/4,5*Pi/2}))", //
 				"Interval({-Infinity,-1},{1,Infinity})");
-		
+
 		check("Tan(Interval({Pi/4,3*Pi/5}))", //
 				"Interval({-Infinity,-Sqrt(5+2*Sqrt(5))},{1,Infinity})");
 		check("Tan(Interval({-Pi/4,2*Pi/3}))", //
@@ -10520,6 +10540,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testKeys() {
+		check("Keys(<|ahey->avalue, bkey->bvalue, ckey->cvalue|>)", //
+				"{ahey,bkey,ckey}");
 		check("Keys( <|a -> 2, Nothing -> 2|>, Hold )", //
 				"{Hold(a),Hold(Nothing)}");
 		check("Keys( <|a -> 4, b -> 2, c -> 1, d -> 5|> )", //
@@ -10545,6 +10567,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testValues() {
+		check("Values(<|ahey->avalue, bkey->bvalue, ckey->cvalue|>)", //
+				"{avalue,bvalue,cvalue}");
 		check("Values(<|a :> 1 + 1, b -> Nothing|>, Hold)", //
 				"{Hold(1+1),Hold(Nothing)}");
 		check("Values( <|a -> 4, b -> 2, c -> 1, d -> 5|> )", //
