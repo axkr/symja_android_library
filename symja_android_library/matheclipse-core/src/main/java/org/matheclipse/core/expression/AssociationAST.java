@@ -252,9 +252,13 @@ public class AssociationAST extends AST implements IAssociation {
 	}
 
 	public IExpr getValue(IExpr key) {
+		return getValue(key, F.Missing(F.stringx("KeyAbsent"), key));
+	}
+	
+	public IExpr getValue(IExpr key, IExpr defaultValue) {
 		Integer index = map.get(key);
 		if (index == null) {
-			return F.Missing(F.stringx("KeyAbsent"), key);
+			return defaultValue;//F.Missing(F.stringx("KeyAbsent"), key);
 		}
 		if (index < 0) {
 			index *= -1;

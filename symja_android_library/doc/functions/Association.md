@@ -14,4 +14,4 @@ Association(list-of-rules)
 ```
 
 ### Related terms  
-[AssociationQ](AssociationQ.md), [Counts](Counts.md), [Keys](Keys.md), [KeySort](KeySort.md), [Values](Values.md)
+[AssociationQ](AssociationQ.md), [Counts](Counts.md), [Keys](Keys.md), [KeySort](KeySort.md), [Lookup](Lookup.md), [Values](Values.md)

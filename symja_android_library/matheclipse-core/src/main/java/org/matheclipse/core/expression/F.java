@@ -2125,6 +2125,9 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol LongForm = F.initFinalSymbol("LongForm", ID.LongForm);
+	
+	/***/
+	public final static IBuiltInSymbol Lookup = F.initFinalSymbol("Lookup", ID.Lookup);
 
 	/***/
 	public final static IBuiltInSymbol LowerCaseQ = F.initFinalSymbol("LowerCaseQ", ID.LowerCaseQ);

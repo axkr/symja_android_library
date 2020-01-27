@@ -1080,7 +1080,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAssociation() {
-		
 		check("f[#u, #v, #u] &[<|\"u\" -> x, \"v\" -> y|>]", //
 				"f(x,y,x)");
 		check("#y &[<|\"x\" -> 1, \"y\" -> 2|>, <|\"x\" -> 3, \"y\" -> 4|>]", //
@@ -1100,6 +1099,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"b");
 		check("<|\"a\" -> b, \"c\" -> d|>[[\"c\"]]", //
 				"d");
+		check("<|a -> b, c -> d|>[k]", //
+				"Missing(KeyAbsent,k)");
 
 		check("KeySort(<|2 -> y, 3 -> z, 1 -> x|>)", //
 				"<|1->x,2->y,3->z|>");
@@ -1161,8 +1162,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"True");
 		check("AssociationQ(<|a, b|>)", //
 				"False");
-		check("AssociationQ(<|ahey->avalue, bkey->bvalue, ckey->cvalue|>)",
-				"True");
+		check("AssociationQ(<|ahey->avalue, bkey->bvalue, ckey->cvalue|>)", "True");
 		// Fall back if no rules were parsed
 		check("<|a, b|>", //
 				"Association(a,b)");
@@ -11746,6 +11746,33 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1.0647505893884985+I*0.8081774171575826");
 		checkNumeric("LogisticSigmoid({-0.2, 0.1, 0.3})", //
 				"{0.45016600268752216,0.52497918747894,0.574442516811659}");
+	}
+
+	public void testLookup() {
+		check("Lookup(a)@ <|a -> 1|>", //
+				"1");
+		check("Lookup({a -> 1, b -> 2}, b)", //
+				"2");
+		check("Lookup({{a -> 1, b -> 2}, {a -> 3}}, a)", //
+				"{1,3}");
+		check("Lookup(<|a -> 1, b -> 2|>, a)", //
+				"1");
+		check("Lookup(<|a -> 1, b -> 2|>, c)", //
+				"Missing(KeyAbsent,c)");
+		check("Lookup(<|a -> 1, b -> 2|>, c, 42)", //
+				"42");
+		check("Lookup(<|a -> 1, b -> 2|>, b, Print(\"unevaluated\"))", //
+				"2");
+		check("Lookup({<|a -> 1, b -> 2|>,<|a -> 3, b -> 4|>,<|a -> 5, b -> 6|>}, a)", //
+				"{1,3,5}");
+		check("Lookup({<|a -> 1, b -> 2|>,<|a -> 3, b -> 4|>,<|a -> 5, b -> 6|>}, b)", //
+				"{2,4,6}");
+		check("Lookup({<|a -> 1, b -> 2|>,<|a -> 3, b -> 4|>,<|a -> 5, b -> 6|>}, {a,b})", //
+				"{{1,2},{3,4},{5,6}}");
+		check("Lookup(<|a -> 1, b -> 2|>, a)", //
+				"1");
+		check("Lookup(<|a -> 1, b -> 2|>, a)", //
+				"1");
 	}
 
 	public void testLowerTriangularize() {

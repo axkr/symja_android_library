@@ -384,6 +384,7 @@
 * [Log2](functions/Log2.md)
 * [LogisticSigmoid](functions/LogisticSigmoid.md)
 * [LogNormalDistribution](functions/LogNormalDistribution.md)
+* [Lookup](functions/Lookup.md)
 * [LowerTriangularize](functions/LowerTriangularize.md)
 * [LucasL](functions/LucasL.md)
 * [LUDecomposition](functions/LUDecomposition.md)

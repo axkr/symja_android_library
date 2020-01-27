@@ -14,4 +14,4 @@ True
 ```
 
 ### Related terms  
-[Association](Association.md), [Counts](Counts.md), [Keys](Keys.md), [KeySort](KeySort.md), [Values](Values.md)
+[Association](Association.md), [Counts](Counts.md), [Keys](Keys.md), [KeySort](KeySort.md), [Lookup](Lookup.md), [Values](Values.md)

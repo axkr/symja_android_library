@@ -47,6 +47,7 @@ public class AssociationFunctions {
 			F.KeyExistsQ.setEvaluator(new KeyExistsQ());
 			F.Keys.setEvaluator(new Keys());
 			F.KeySort.setEvaluator(new KeySort());
+			F.Lookup.setEvaluator(new Lookup());
 			F.Values.setEvaluator(new Values());
 		}
 	}
@@ -235,6 +236,67 @@ public class AssociationFunctions {
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_1_2;
+		}
+	}
+
+	private static class Lookup extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				ast = F.operatorFormAppend(ast);
+				if (!ast.isPresent()) {
+					return F.NIL;
+				}
+			}
+			IExpr arg1 = engine.evaluate(ast.arg1());
+			if (arg1.isList()) {
+				if (ast.size() > 2) {
+					if (arg1.isListOfRules(true)) {
+						IExpr key = engine.evaluate(ast.arg2());
+						IAST listOfRules = (IAST) arg1;
+						for (int i = 1; i < listOfRules.size(); i++) {
+							IExpr rule = listOfRules.get(i);
+							if (rule.isRule() || rule.isRuleDelayed()) {
+								if (rule.first().equals(key)) {
+									return rule.second();
+								}
+							}
+						}
+						if (ast.isAST3()) {
+							return ast.arg3();
+						}
+						return F.Missing(F.stringx("KeyAbsent"), key);
+					}
+				}
+				return ((IAST) arg1).mapThread(ast, 1);
+			} else if (arg1.isAssociation()) {
+				if (ast.isAST2()) {
+					IExpr key = engine.evaluate(ast.arg2());
+					if (key.isList()) {
+						return ((IAST) key).mapThread(ast, 2);
+					}
+					return ((IAssociation) arg1).getValue(key);
+				}
+				if (ast.isAST3()) {
+					IExpr key = engine.evaluate(ast.arg2());
+					if (key.isList()) {
+						return ((IAST) key).mapThread(ast, 2);
+					}
+					return ((IAssociation) arg1).getValue(key, ast.arg3());
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_3;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
 	}
 

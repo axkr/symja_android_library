@@ -130,7 +130,7 @@ public class AST2Expr {
 			"LessEqual", "LetterQ", "Level", "LevelQ", "Limit", "Line", "LinearModelFit", "LinearProgramming",
 			"LinearRecurrence", "LinearSolve", "LiouvilleLambda", "List", "ListConvolve", "ListCorrelate",
 			"ListLinePlot", "ListPlot", "ListPlot3D", "ListQ", "Literal", "Log", "Log2", "Log10", "LogGamma",
-			"LogNormalDistribution", "LogicalExpand", "LogisticSigmoid", "LogIntegral", "LowerCaseQ",
+			"LogNormalDistribution", "LogicalExpand", "LogisticSigmoid", "LogIntegral", "Lookup","LowerCaseQ",
 			"LowerTriangularize", "LucasL", "LUDecomposition", "MachineNumberQ", "MangoldtLambda", "ManhattanDistance",
 			"Manipulate", "MantissaExponent", "Map", "MapAt", "MapAll", "MapIndexed", "MapThread",
 			"MatchingDissimilarity", "MatchQ", "MathMLForm", "MatrixExp", "MatrixForm", "MatrixMinimalPolynomial",

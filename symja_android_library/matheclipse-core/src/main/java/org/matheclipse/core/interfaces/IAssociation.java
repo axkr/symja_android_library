@@ -27,12 +27,23 @@ public interface IAssociation extends IASTMutable {
 	public IExpr getKey(int position);
 
 	/**
-	 * Return the value associated to the <code>key</code>
+	 * Return the value associated to the <code>key</code>. If no value is available return
+	 * <code>Missing("KeyAbsent", key)</code>
 	 * 
 	 * @param key
 	 * @return
 	 */
 	public IExpr getValue(IExpr key);
+
+	/**
+	 * Return the value associated to the <code>key</code>. If no value is available return the
+	 * <code>defaultValue</code>
+	 * 
+	 * @param key
+	 * @param defaultValue
+	 * @return
+	 */
+	public IExpr getValue(IExpr key, IExpr defaultValue);
 
 	/**
 	 * Test if the <code>expr</code> is a key in this association.

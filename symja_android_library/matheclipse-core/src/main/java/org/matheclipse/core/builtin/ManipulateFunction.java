@@ -53,8 +53,7 @@ public class ManipulateFunction {
 			if (Config.USE_MANIPULATE_JS) {
 				F.Manipulate.setEvaluator(new Manipulate());
 				F.BarChart.setEvaluator(new BarChart());
-				// TODO improve
-				// F.Histogram.setEvaluator(new Histogram());
+				F.Histogram.setEvaluator(new Histogram());
 			}
 		}
 	}

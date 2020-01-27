@@ -14,4 +14,4 @@ Values(association)
 ```
 
 ### Related terms  
-[Association](Association.md), [AssociationQ](AssociationQ.md), [Counts](Counts.md), [Keys](Keys.md), [KeySort](KeySort.md)
+[Association](Association.md), [AssociationQ](AssociationQ.md), [Counts](Counts.md), [Keys](Keys.md), [KeySort](KeySort.md), [Lookup](Lookup.md)
