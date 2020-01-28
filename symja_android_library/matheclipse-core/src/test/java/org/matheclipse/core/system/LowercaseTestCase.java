@@ -1080,6 +1080,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAssociation() {
+		// TODO
+		// check("f(<|1 -> 2, 3 -> 4|>) /. f(<|a_ -> b_, ___|>) -> f(a, b)", //
+		// "");
+		check("<|a -> 6, b -> 2, c -> 3|> +x+2*y+z^3", //
+				"<|a->6+x+2*y+z^3,b->2+x+2*y+z^3,c->3+x+2*y+z^3|>");
+		check("Sin(<|a -> 6, b -> 2, c -> 3|>)", //
+				"<|a->Sin(6),b->Sin(2),c->Sin(3)|>");
+
 		check("f[#u, #v, #u] &[<|\"u\" -> x, \"v\" -> y|>]", //
 				"f(x,y,x)");
 		check("#y &[<|\"x\" -> 1, \"y\" -> 2|>, <|\"x\" -> 3, \"y\" -> 4|>]", //
@@ -1107,9 +1115,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("KeySort(<|2 -> y, 3 -> z, 1 -> x|>, Greater)", //
 				"<|3->z,2->y,1->x|>");
 
-		// TODO
-		// check("<|a -> 6, b -> 2, c -> 3|> + 500", //
-		// " ");
 		check("Counts({1,2,3,4,5,6,7,8,9,7,5,4,5,6,7,3,2,1,3,4,5,2,2,2,3,3,3,3,3})", //
 				"<|1->2,2->5,3->8,4->3,5->4,6->2,7->3,8->1,9->1|>");
 		check("Counts({a,b,c,a})", //

@@ -33,11 +33,11 @@ import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IEvaluator;
@@ -52,7 +52,6 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.visit.ModuleReplaceAll;
-import org.matheclipse.core.visit.VisitorPrecision;
 import org.matheclipse.parser.client.math.MathException;
 
 import com.google.common.cache.Cache;
@@ -701,6 +700,9 @@ public class EvalEngine implements Serializable {
 				if (arg1.isList()) {
 					// thread over the list
 					return EvalAttributes.threadList(ast, F.List, ast.head(), ((IAST) arg1).argSize());
+				} else if (arg1.isAssociation()) {
+					// thread over the association
+					return ((IAssociation) arg1).mapThread(ast, 1);
 				}
 			}
 		}
@@ -853,6 +855,11 @@ public class EvalEngine implements Serializable {
 				resultList = threadASTListArgs(tempAST);
 				if (resultList.isPresent()) {
 					return evalArgs(resultList, ISymbol.NOATTRIBUTE).orElse(resultList);
+				}
+				for (int i = 1; i < tempAST.size(); i++) {
+					if (tempAST.get(i).isAssociation()) {
+						return ((IAssociation) tempAST.get(i)).mapThread(tempAST, i);
+					}
 				}
 			}
 
