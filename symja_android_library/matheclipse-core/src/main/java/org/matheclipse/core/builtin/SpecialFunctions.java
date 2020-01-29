@@ -26,6 +26,8 @@ import static org.matheclipse.core.expression.F.Zeta;
 import java.math.BigDecimal;
 import java.util.function.DoubleUnaryOperator;
 
+import javax.annotation.Nonnull;
+
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
@@ -624,9 +626,11 @@ public class SpecialFunctions {
 
 	}
 
-	private final static class HurwitzZeta extends AbstractArg2 {
+	private final static class HurwitzZeta extends AbstractFunctionEvaluator {
 		@Override
-		public IExpr e2ObjArg(IAST ast, final IExpr s, final IExpr a) {
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr s = ast.arg1();
+			IExpr a = ast.arg2();
 			if (s.isNumber()) {
 				if (s.isZero()) {
 					// http://fungrim.org/entry/d99808/
@@ -660,8 +664,60 @@ public class SpecialFunctions {
 						return F.Plus(F.Times(F.CN8, F.Catalan), F.Sqr(Pi));
 					}
 				}
+				if (s.isInteger() && a.isInteger() && a.isPositive()) {
+					IInteger sInt = (IInteger) s;
+					if (sInt.isNegative() || sInt.isEven()) {
+						// http://fungrim.org/entry/6e69fc/
+						int n = a.toIntDefault();
+						int sNegate = sInt.negate().toIntDefault();
+						if (n > Integer.MIN_VALUE && sNegate > Integer.MIN_VALUE) {
+							return F.Subtract(F.Zeta(s), F.sum(k -> {
+								return k.power(sNegate);
+							}, 1, n - 1));
+						}
+					}
+				}
 			}
+
+			// if (engine.isDoubleMode()) {
+			// try {
+			// double sDouble = Double.NaN;
+			// double aDouble = Double.NaN;
+			// try {
+			// sDouble = s.evalDouble();
+			// aDouble = a.evalDouble();
+			// } catch (ValidateException ve) {
+			// }
+			// if (Double.isNaN(sDouble) || Double.isNaN(aDouble)) {
+			// Complex sc = s.evalComplex();
+			// Complex ac = a.evalComplex();
+			//
+			// return F.complexNum(ZetaJS.hurwitzZeta(sc, ac));
+			//
+			// } else {
+			// return ZetaJS.hurwitzZeta(sDouble, aDouble);
+			// }
+			// } catch (ThrowException te) {
+			// if (Config.SHOW_STACKTRACE) {
+			// te.printStackTrace();
+			// }
+			// return te.getValue();
+			// } catch (ValidateException ve) {
+			// if (Config.SHOW_STACKTRACE) {
+			// ve.printStackTrace();
+			// }
+			// } catch (RuntimeException rex) {
+			// // rex.printStackTrace();
+			// return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+			// }
+			// }
+
 			return NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
 		}
 
 		@Override
@@ -1568,15 +1624,15 @@ public class SpecialFunctions {
 					if (n.isEven()) {
 						return F.C0;
 					}
-					// Zeta(-n) :=
-					// ((-1)^n/(n + 1))*BernoulliB(n + 1)
+					// http://fungrim.org/entry/51fd98/
+					// Zeta(-n) := ((-1)^n/(n + 1))*BernoulliB(n + 1)
 					n = n.negate();
 					IExpr n1 = n.add(C1);
 					return Times(Power(CN1, n), Power(n1, -1), BernoulliB(n1));
 				}
 				if (n.isEven()) {
-					// Zeta(2*n) :=
-					// ((((-1)^(n-1)*2^(-1+2*n)*Pi^(2*n))/(2*n)!)*BernoulliB(2*n)
+					// http://fungrim.org/entry/72ccda/
+					// Zeta(2*n) := ((((-1)^(n-1)*2^(-1+2*n)*Pi^(2*n))/(2*n)!)*BernoulliB(2*n)
 					n = n.shiftRight(1);
 					return Times(Power(CN1, Plus(CN1, n)), Power(C2, Plus(CN1, Times(C2, n))), Power(Pi, Times(C2, n)),
 							Power(Factorial(Times(C2, n)), -1), BernoulliB(Times(C2, n)));
@@ -1620,6 +1676,7 @@ public class SpecialFunctions {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 			super.setUp(newSymbol);
 		}
+
 	}
 
 	public static void initialize() {

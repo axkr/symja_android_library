@@ -8860,6 +8860,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHurwitzZeta() {
+		// http://fungrim.org/entry/6e69fc/
+		check("HurwitzZeta(6,11)", //
+				"-52107472322919827957/51219253009612800000+Pi^6/945");
+		check("HurwitzZeta(-4,42)", //
+				"-24607093");
+		
 		// http://fungrim.org/entry/af23f7/
 		check("HurwitzZeta(s,1)", //
 				"Zeta(s)");
@@ -22704,9 +22710,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"0.582158+I*(-0.926849)");
 		check("Zeta(-3.0+I*1.0^(-100))", //
 				"0.0143825+I*0.0103497");
-
-		check("Zeta(-1)", //
-				"-1/12");
+		check("Table(Zeta(2*x),{x,1,5,1})", //
+				"{Pi^2/6,Pi^4/90,Pi^6/945,Pi^8/9450,Pi^10/93555}");
+		check("Table(Zeta(x),{x,0,-20,-1})", //
+				"{-1/2,-1/12,0,1/120,0,-1/252,0,1/240,0,-1/132,0,691/32760,0,-1/12,0,3617/8160,0,\n" + //
+				"-43867/14364,0,174611/6600,0}");
 		check("Zeta(2)", //
 				"Pi^2/6");
 		// TODO add implementation
