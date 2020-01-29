@@ -8875,9 +8875,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("HurwitzZeta(2,3/4)", //
 				"-8*Catalan+Pi^2");
 
+		// http://fungrim.org/entry/7dab87/
+		check("HurwitzZeta(-9, 0)", //
+				"-1/132");
+		check("HurwitzZeta(-10, 0)", //
+				"0");
+		check("HurwitzZeta(-11, 0)", //
+				"691/32760");
+
 		// http://fungrim.org/entry/532f31/
 		check("HurwitzZeta(1,a)", //
 				"ComplexInfinity");
+		// http://fungrim.org/entry/d99808/
+		check("HurwitzZeta(0,a)", //
+				"1/2-a");
 	}
 
 	public void testHypergeometric0F1() {

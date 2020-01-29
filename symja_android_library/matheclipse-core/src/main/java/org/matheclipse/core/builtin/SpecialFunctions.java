@@ -626,28 +626,36 @@ public class SpecialFunctions {
 
 	private final static class HurwitzZeta extends AbstractArg2 {
 		@Override
-		public IExpr e2ObjArg(IAST ast, final IExpr s, final IExpr arg2) {
+		public IExpr e2ObjArg(IAST ast, final IExpr s, final IExpr a) {
 			if (s.isNumber()) {
+				if (s.isZero()) {
+					// http://fungrim.org/entry/d99808/
+					return F.Subtract(F.C1D2, a);
+				}
 				if (s.isOne()) {
 					// http://fungrim.org/entry/532f31/
 					return F.CComplexInfinity;
 				}
 			}
-			if (arg2.isNumber()) {
-				if (arg2.isOne()) {
+			if (a.isNumber()) {
+				if (a.isZero() && s.isInteger() && s.isNegative()) {
+					// http://fungrim.org/entry/7dab87/
+					return F.Times(F.CN1, F.Divide(F.BernoulliB(F.Plus(1, s.negate())), F.Plus(1, s.negate())));
+				}
+				if (a.isOne()) {
 					// http://fungrim.org/entry/af23f7/
 					return F.Zeta(s);
 				}
-				if (arg2.isNumEqualInteger(F.C2)) {
+				if (a.isNumEqualInteger(F.C2)) {
 					// http://fungrim.org/entry/b721b4/
 					return F.Plus(F.CN1, F.Zeta(s));
 				}
-				if (arg2.isNumEqualRational(F.C1D2)) {
+				if (a.isNumEqualRational(F.C1D2)) {
 					// http://fungrim.org/entry/af7d3d/
 					return F.Times(F.Plus(F.CN1, F.Power(F.C2, s)), F.Zeta(s));
 				}
-				if (arg2.isNumEqualRational(F.C3D4)) {
-					if (arg2.isNumEqualRational(F.C3D4)) {
+				if (a.isNumEqualRational(F.C3D4)) {
+					if (a.isNumEqualRational(F.C3D4)) {
 						// http://fungrim.org/entry/951f86/
 						return F.Plus(F.Times(F.CN8, F.Catalan), F.Sqr(Pi));
 					}
