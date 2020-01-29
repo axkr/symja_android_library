@@ -41,6 +41,7 @@ import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractArg12;
+import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
@@ -79,6 +80,7 @@ public class SpecialFunctions {
 			F.Erfc.setEvaluator(new Erfc());
 			F.Erfi.setEvaluator(new Erfi());
 			F.GammaRegularized.setEvaluator(new GammaRegularized());
+			F.HurwitzZeta.setEvaluator(new HurwitzZeta());
 			F.HypergeometricPFQRegularized.setEvaluator(new HypergeometricPFQRegularized());
 			F.InverseErf.setEvaluator(new InverseErf());
 			F.InverseErfc.setEvaluator(new InverseErfc());
@@ -620,6 +622,45 @@ public class SpecialFunctions {
 			super.setUp(newSymbol);
 		}
 
+	}
+
+	private final static class HurwitzZeta extends AbstractArg2 {
+		@Override
+		public IExpr e2ObjArg(IAST ast, final IExpr s, final IExpr arg2) {
+			if (s.isNumber()) {
+				if (s.isOne()) {
+					// http://fungrim.org/entry/532f31/
+					return F.CComplexInfinity;
+				}
+			}
+			if (arg2.isNumber()) {
+				if (arg2.isOne()) {
+					// http://fungrim.org/entry/af23f7/
+					return F.Zeta(s);
+				}
+				if (arg2.isNumEqualInteger(F.C2)) {
+					// http://fungrim.org/entry/b721b4/
+					return F.Plus(F.CN1, F.Zeta(s));
+				}
+				if (arg2.isNumEqualRational(F.C1D2)) {
+					// http://fungrim.org/entry/af7d3d/
+					return F.Times(F.Plus(F.CN1, F.Power(F.C2, s)), F.Zeta(s));
+				}
+				if (arg2.isNumEqualRational(F.C3D4)) {
+					if (arg2.isNumEqualRational(F.C3D4)) {
+						// http://fungrim.org/entry/951f86/
+						return F.Plus(F.Times(F.CN8, F.Catalan), F.Sqr(Pi));
+					}
+				}
+			}
+			return NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
 	}
 
 	/**

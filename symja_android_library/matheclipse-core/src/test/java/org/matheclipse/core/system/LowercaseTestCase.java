@@ -1,19 +1,10 @@
 package org.matheclipse.core.system;
 
-import java.util.SortedMap;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.ConstantDefinitions;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
-
-import edu.jas.arith.BigRational;
-import edu.jas.poly.GenPolynomial;
-import edu.jas.poly.GenPolynomialRing;
-import edu.jas.poly.TermOrder;
-import edu.jas.ufd.FactorAbstract;
-import edu.jas.ufd.FactorFactory;
 
 /**
  * Tests system.reflection classes
@@ -8866,6 +8857,27 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"2+x*(7+x*(-4+11*x))");
 		check("HornerForm(a+b*x+c*x^2,x)", //
 				"a+x*(b+c*x)");
+	}
+
+	public void testHurwitzZeta() {
+		// http://fungrim.org/entry/af23f7/
+		check("HurwitzZeta(s,1)", //
+				"Zeta(s)");
+		// http://fungrim.org/entry/b721b4/
+		check("HurwitzZeta(s,2)", //
+				"-1+Zeta(s)");
+		// http://fungrim.org/entry/af7d3d/
+		check("HurwitzZeta(s,1/2)", //
+				"(-1+2^s)*Zeta(s)");
+		check("HurwitzZeta(3,1/2)", //
+				"7*Zeta(3)");
+		// http://fungrim.org/entry/951f86/
+		check("HurwitzZeta(2,3/4)", //
+				"-8*Catalan+Pi^2");
+
+		// http://fungrim.org/entry/532f31/
+		check("HurwitzZeta(1,a)", //
+				"ComplexInfinity");
 	}
 
 	public void testHypergeometric0F1() {
