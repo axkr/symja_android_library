@@ -1355,12 +1355,28 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBernoulliB() {
+		check("BernoulliB(18, 1/2)", //
+				"-5749691557/104595456");
+		check("BernoulliB(17, 1/2)", //
+				"0");
+		check("BernoulliB(n, 0)", //
+				"BernoulliB(n)");
+		check("BernoulliB(18, 1)", //
+				"43867/798");
+
+		check("BernoulliB(51)", //
+				"0");
 		check("BernoulliB(42)", //
 				"1520097643918070802691/1806");
 		check("BernoulliB(2)", //
 				"1/6");
 		check("Table(BernoulliB(k), {k, 0, 10})", //
 				"{1,-1/2,1/6,0,-1/30,0,1/42,0,-1/30,0,5/66}");
+
+		// http://fungrim.org/entry/555e10/
+		check("Table(BernoulliB(k,x), {k, 0, 5})", //
+				"{1,-1/2+x,1/6-x+x^2,x/2-3/2*x^2+x^3,-1/30+x^2-2*x^3+x^4,-x/6+5/3*x^3-5/2*x^4+x^5}");
+
 	}
 
 	public void testBesselI() {
@@ -8865,7 +8881,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-52107472322919827957/51219253009612800000+Pi^6/945");
 		check("HurwitzZeta(-4,42)", //
 				"-24607093");
-		
+
 		// http://fungrim.org/entry/af23f7/
 		check("HurwitzZeta(s,1)", //
 				"Zeta(s)");
@@ -15172,6 +15188,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolyGamma() {
+		// http://fungrim.org/entry/ea2482/
+		check("PolyGamma(1)", //
+				"-EulerGamma");
+		// http://fungrim.org/entry/ada157/
+		check("PolyGamma(2)", //
+				"1-EulerGamma");
+		check("PolyGamma(3)", //
+				"3/2-EulerGamma");
+
 		check("PolyGamma(0,-42)", //
 				"ComplexInfinity");
 		check("PolyGamma(-1,z)", //
@@ -15188,12 +15213,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"0");
 		check("PolyGamma(-2)", //
 				"ComplexInfinity");
-		check("PolyGamma(1)", //
-				"-EulerGamma");
-		check("PolyGamma(2)", //
-				"1-EulerGamma");
-		check("PolyGamma(3)", //
-				"3/2-EulerGamma");
 		check("PolyGamma(1,1/4)", //
 				"8*Catalan+Pi^2");
 		check("PolyGamma(1,3/4)", //
@@ -22714,7 +22733,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{Pi^2/6,Pi^4/90,Pi^6/945,Pi^8/9450,Pi^10/93555}");
 		check("Table(Zeta(x),{x,0,-20,-1})", //
 				"{-1/2,-1/12,0,1/120,0,-1/252,0,1/240,0,-1/132,0,691/32760,0,-1/12,0,3617/8160,0,\n" + //
-				"-43867/14364,0,174611/6600,0}");
+						"-43867/14364,0,174611/6600,0}");
 		check("Zeta(2)", //
 				"Pi^2/6");
 		// TODO add implementation

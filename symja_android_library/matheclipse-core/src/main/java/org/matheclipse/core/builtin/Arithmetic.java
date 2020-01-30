@@ -1890,12 +1890,6 @@ public final class Arithmetic {
 				if (position > 0) {
 					return F.Times(timesAST.get(position), F.Im(timesAST.splice(position)));
 				}
-				// for (int i = 1; i < timesAST.size(); i++) {
-				// IExpr temp = timesAST.get(i);
-				// if (temp.isRealResult()) {
-				// return F.Times(temp, F.Im(timesAST.removeAtClone(i)));
-				// }
-				// }
 				IExpr first = timesAST.arg1();
 				if (first.isNumber()) {
 					IExpr rest = timesAST.rest().oneIdentity1();
@@ -2178,7 +2172,7 @@ public final class Arithmetic {
 			final boolean numericMode = engine.isNumericMode();
 			final long oldPrecision = engine.getNumericPrecision();
 			try {
-				long numericPrecision = engine.getNumericPrecision();//Config.MACHINE_PRECISION;
+				long numericPrecision = engine.getNumericPrecision();// Config.MACHINE_PRECISION;
 				if (ast.isAST2()) {
 					IExpr arg2 = engine.evaluateNonNumeric(ast.arg2());
 					numericPrecision = arg2.toIntDefault();// Validate.checkIntType(arg2);
@@ -2308,8 +2302,8 @@ public final class Arithmetic {
 						return F.NIL;
 					}
 					if (noBoolean) {
-//						result = appendPiecewise(result, row.arg1(), F.True, matrixSize);
-						piecewiseAST= createPiecewise(piecewiseAST, result);
+						// result = appendPiecewise(result, row.arg1(), F.True, matrixSize);
+						piecewiseAST = createPiecewise(piecewiseAST, result);
 						piecewiseAST.append(row.arg1());
 						return piecewiseAST;
 					}
@@ -4176,23 +4170,12 @@ public final class Arithmetic {
 				if (position > 0) {
 					return F.Times(timesAST.get(position), F.Re(timesAST.splice(position)));
 				}
-				// for (int i = 1; i < timesAST.size(); i++) {
-				// IExpr temp = timesAST.get(i);
-				// if (temp.isRealResult()) {
-				// return F.Times(temp, F.Re(timesAST.removeAtClone(i)));
-				// }
-				// }
 				IExpr first = timesAST.arg1();
 				if (first.isNumber()) {
 					IExpr rest = timesAST.rest().oneIdentity1();
 					if (first.isReal()) {
 						return F.Times(first, F.Re(expr.rest()));
 					}
-					// if (first.isImaginaryUnit()) {
-					// // Re(I*temp) -> -Im(temp)
-					// return F.Times(F.CN1, F.Im(expr.rest()));
-					// }
-
 					return F.Subtract(F.Times(first.re(), F.Re(rest)), F.Times(first.im(), F.Im(rest)));
 				}
 

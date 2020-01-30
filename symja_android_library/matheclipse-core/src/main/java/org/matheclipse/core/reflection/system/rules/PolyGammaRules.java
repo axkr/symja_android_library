@@ -38,8 +38,8 @@ public interface PolyGammaRules {
     // PolyGamma(2,5/6)=4*Sqrt(3)*Pi^3-182*Zeta(3)
     ISet(PolyGamma(C2,QQ(5L,6L)),
       Plus(Times(C4,CSqrt3,Power(Pi,C3)),Times(ZZ(-182L),Zeta(C3)))),
-    // PolyGamma(0,n_Integer):=-EulerGamma+Sum(1/k,{k,1,-1+n})/;n>0
+    // PolyGamma(0,n_Integer):=-EulerGamma+HarmonicNumber(-1+n)/;n>0
     ISetDelayed(PolyGamma(C0,$p(n, Integer)),
-      Condition(Plus(Negate(EulerGamma),Sum(Power(k,CN1),List(k,C1,Plus(CN1,n)))),Greater(n,C0)))
+      Condition(Plus(Negate(EulerGamma),HarmonicNumber(Plus(CN1,n))),Greater(n,C0)))
   );
 }

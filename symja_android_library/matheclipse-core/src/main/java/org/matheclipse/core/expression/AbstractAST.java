@@ -1135,21 +1135,40 @@ public abstract class AbstractAST implements IASTMutable {
 			return true;
 		}
 		if (obj instanceof AbstractAST) {
-			if (hashCode() != obj.hashCode()) {
+			final IAST ast = (AbstractAST) obj;
+			if (size() != ast.size()) {
 				return false;
 			}
-			final IAST list = (IAST) obj;
-			if (size() != list.size()) {
-				return false;
-			}
-			IExpr head = head();
-			if (head != ((AbstractAST) obj).head()) {
-				if (head instanceof ISymbol) {
+			final IExpr head = head();
+			if (head instanceof ISymbol) {
+				if (head != ast.head()) {
+					// compared with ISymbol object identity
 					return false;
 				}
+			} else if (!head.equals(ast.head())) {
+				return false;
 			}
-			return forAll((x, i) -> x.equals(list.get(i)), 0);
+			if (hashCode() != ast.hashCode()) {
+				return false;
+			}
+			return forAll((x, i) -> x.equals(ast.get(i)), 1);
 		}
+		// if (obj instanceof AbstractAST) {
+		// if (hashCode() != obj.hashCode()) {
+		// return false;
+		// }
+		// final IAST list = (IAST) obj;
+		// if (size() != list.size()) {
+		// return false;
+		// }
+		// IExpr head = head();
+		// if (head != ((AbstractAST) obj).head()) {
+		// if (head instanceof ISymbol) {
+		// return false;
+		// }
+		// }
+		// return forAll((x, i) -> x.equals(list.get(i)), 0);
+		// }
 		return false;
 	}
 

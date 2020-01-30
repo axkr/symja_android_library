@@ -773,6 +773,28 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * If this is of type {@link IAST}, find the first argument position, which equals <code>expr</code>. The search
+	 * starts at index <code>1</code>. Otherwise return <code>-1</code>.
+	 * 
+	 * @param expr
+	 * @return <code>-1</code> if no position was found
+	 */
+	default int indexOf(final IExpr expr) {
+		return -1;
+	}
+
+	/**
+	 * If this is of type {@link IAST}, find the first argument position, which fulfills the <code>predicate</code>. The
+	 * search starts at index <code>1</code>. Otherwise return <code>-1</code>.
+	 * 
+	 * @param predicate
+	 * @return <code>-1</code> if no position was found
+	 */
+	default int indexOf(Predicate<? super IExpr> predicate) {
+		return -1;
+	}
+
+	/**
 	 * Return the internal Java form of this expression.
 	 * 
 	 * @param symbolsAsFactoryMethod
@@ -924,7 +946,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return false;
 	}
 
-
 	/**
 	 * Test if this AST is an association <code>&lt;|a-&gt;b, c-&gt;d|&gt;</code>(i.e. type <code>AssociationAST</code>)
 	 * 
@@ -933,7 +954,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isAssociation() {
 		return false;
 	}
-	
+
 	/**
 	 * Test if this expression is an AST list, which contains a <b>header element</b> (i.e. the function name) at index
 	 * position <code>0</code> and some optional <b>argument elements</b> at the index positions <code>1..n</code>.

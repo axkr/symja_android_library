@@ -202,9 +202,11 @@ public class SpecialFunctions {
 			}
 			if (a.isNumber() && b.isNumber()) {
 				if (a.isInteger() && a.isPositive() && b.isInteger() && b.isPositive()) {
+					// http://fungrim.org/entry/082a69/
 					return Times(Factorial(Plus(CN1, a)), Factorial(Plus(CN1, b)),
 							Power(Factorial(Plus(CN1, a, b)), -1));
 				}
+				// http://fungrim.org/entry/888581/
 				return F.Times(F.Gamma(a), F.Gamma(b), F.Power(F.Gamma(F.Plus(a, b)), -1));
 			}
 			IExpr s = a.inc().subtract(b);

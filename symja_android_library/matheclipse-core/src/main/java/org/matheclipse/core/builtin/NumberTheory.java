@@ -232,10 +232,51 @@ public final class NumberTheory {
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			if (ast.isAST1()) {
 				try {
-					int bn = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+					int bn = ast.arg1().toIntDefault();
 					if (bn != Integer.MIN_VALUE) {
 						return bernoulliNumber(bn);
 					}
+					IExpr temp = engine.evaluate(F.Subtract(ast.arg1(), F.C3));
+					if (temp.isIntegerResult() && temp.isPositiveResult() && temp.isEvenResult()) {
+						// http://fungrim.org/entry/a98234/
+						return F.C0;
+					}
+
+				} catch (RuntimeException rex) {
+					if (Config.SHOW_STACKTRACE) {
+						rex.printStackTrace();
+					}
+				}
+				return F.NIL;
+			}
+			if (ast.isAST2()) {
+				try {
+					IExpr n = ast.arg1();
+					IExpr x = ast.arg2();
+					int xInt = x.toIntDefault();
+					if (xInt != Integer.MIN_VALUE) {
+						if (xInt == 0) {
+							// http://fungrim.org/entry/a1d2d7/
+							return F.BernoulliB(ast.arg1());
+						}
+						if (xInt == 1 && n.isIntegerResult()) {
+							// http://fungrim.org/entry/829185/
+							return F.Times(F.Power(F.CN1, n), F.BernoulliB(n));
+						}
+
+						return F.NIL;
+					}
+					if (x.isNumEqualRational(F.C1D2)) {
+						// http://fungrim.org/entry/03ee0b/
+						return F.Times(F.Subtract(F.Power(F.C2, F.Subtract(F.C1, n)), F.C1), F.BernoulliB(n));
+					}
+					int bn = n.toIntDefault();
+					if (bn >= 0) {
+						// http://fungrim.org/entry/555e10/
+						return F.sum(k -> F.Times(F.Binomial(n, k), F.BernoulliB(F.Subtract(n, k)), F.Power(x, k)), 0,
+								bn);
+					}
+
 				} catch (RuntimeException rex) {
 					if (Config.SHOW_STACKTRACE) {
 						rex.printStackTrace();
@@ -1545,17 +1586,17 @@ public final class NumberTheory {
 		}
 	}
 
-//	public static void main(String[] args) {
-//		BigInteger[] gcdArgs = new BigInteger[] { BigInteger.valueOf(550), BigInteger.valueOf(420),
-//				BigInteger.valueOf(3515) };
-//		BigInteger[] bezoutCoefficients = new BigInteger[3];
-//		BigInteger gcd = ExtendedGCD.extendedGCD(gcdArgs, bezoutCoefficients);
-//		System.out.println("GCD: " + gcd.toString());
-//		System.out.println("Bezout Coefficients: ");
-//		for (int i = 0; i < bezoutCoefficients.length; i++) {
-//			System.out.print(" " + bezoutCoefficients[i].toString());
-//		}
-//	}
+	// public static void main(String[] args) {
+	// BigInteger[] gcdArgs = new BigInteger[] { BigInteger.valueOf(550), BigInteger.valueOf(420),
+	// BigInteger.valueOf(3515) };
+	// BigInteger[] bezoutCoefficients = new BigInteger[3];
+	// BigInteger gcd = ExtendedGCD.extendedGCD(gcdArgs, bezoutCoefficients);
+	// System.out.println("GCD: " + gcd.toString());
+	// System.out.println("Bezout Coefficients: ");
+	// for (int i = 0; i < bezoutCoefficients.length; i++) {
+	// System.out.print(" " + bezoutCoefficients[i].toString());
+	// }
+	// }
 	/**
 	 * <pre>
 	 * ExtendedGCD(n1, n2, ...)
@@ -2893,7 +2934,7 @@ public final class NumberTheory {
 			if (ast.isAST2()) {
 				return F.Binomial(F.Plus(ast.arg1(), ast.arg2()), ast.arg2());
 			}
-			int position = ast.indexOf(x -> (!x.isInteger()) || ((IInteger) x).isNegative());
+			int position = ast.indexOf(x -> (!x.isInteger()) || x.isNegative());
 			if (position < 0) {
 				return multinomial(ast);
 			}
@@ -4535,10 +4576,11 @@ public final class NumberTheory {
 			return F.C1;
 		} else if (n == 1) {
 			return F.CN1D2;
-		} else if (n % 2 != 0) {
-			return F.C0;
 		} else if (n < 0) {
 			throw new ArithmeticException("BernoulliB(n): n is not a positive int number");
+		} else if (n % 2 != 0) {
+			// http://fungrim.org/entry/a98234/
+			return F.C0;
 		}
 		IFraction[] bernoulli = new IFraction[n + 1];
 		bernoulli[0] = AbstractFractionSym.ONE;

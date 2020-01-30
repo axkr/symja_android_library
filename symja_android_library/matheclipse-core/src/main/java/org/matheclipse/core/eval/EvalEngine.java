@@ -856,10 +856,9 @@ public class EvalEngine implements Serializable {
 				if (resultList.isPresent()) {
 					return evalArgs(resultList, ISymbol.NOATTRIBUTE).orElse(resultList);
 				}
-				for (int i = 1; i < tempAST.size(); i++) {
-					if (tempAST.get(i).isAssociation()) {
-						return ((IAssociation) tempAST.get(i)).mapThread(tempAST, i);
-					}
+				int indx = tempAST.indexOf(x -> x.isAssociation());
+				if (indx > 0) {
+					return ((IAssociation) tempAST.get(indx)).mapThread(tempAST, indx);
 				}
 			}
 

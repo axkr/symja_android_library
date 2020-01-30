@@ -442,7 +442,7 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol Association = F.initFinalSymbol("Association", ID.Association);
-	
+
 	/***/
 	public final static IBuiltInSymbol AssociationQ = F.initFinalSymbol("AssociationQ", ID.AssociationQ);
 
@@ -2125,7 +2125,7 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol LongForm = F.initFinalSymbol("LongForm", ID.LongForm);
-	
+
 	/***/
 	public final static IBuiltInSymbol Lookup = F.initFinalSymbol("Lookup", ID.Lookup);
 
@@ -5538,6 +5538,10 @@ public class F {
 
 	public static IAST BernoulliB(final IExpr a0) {
 		return new AST1(F.BernoulliB, a0);
+	}
+
+	public static IAST BernoulliB(final IExpr a0, final IExpr a1) {
+		return new AST2(F.BernoulliB, a0, a1);
 	}
 
 	public static IAST BernoulliDistribution(final IExpr a0) {

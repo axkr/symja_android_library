@@ -26,11 +26,6 @@ public class VisitorReplaceArgs extends VisitorExpr {
 		if (position > 0) {
 			return F.Slot(F.ZZ(position));
 		}
-		// for (int i = 1; i < astSlots.size(); i++) {
-		// if (astSlots.get(i).equals(element)) {
-		// return F.Slot(F.ZZ(i));
-		// }
-		// }
 		return F.NIL;
 	}
 

@@ -212,10 +212,10 @@ public interface CosRules {
     // Cos(ComplexInfinity)=Indeterminate
     ISet(Cos(CComplexInfinity),
       Indeterminate),
-    // Cos(Infinity)=Interval()
+    // Cos(Infinity)=Interval({-1,1})
     ISet(Cos(oo),
       Interval(List(CN1,C1))),
-    // Cos(-Infinity)=Interval()
+    // Cos(-Infinity)=Interval({-1,1})
     ISet(Cos(Noo),
       Interval(List(CN1,C1)))
   );

@@ -930,23 +930,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public boolean hasTrigonometricFunction();
 
 	/**
-	 * Find the first argument position, which equals <code>expr</code>. The search starts at index <code>1</code>.
-	 * 
-	 * @param expr
-	 * @return <code>-1</code> if no position was found
-	 */
-	public int indexOf(final IExpr expr);
-
-	/**
-	 * Find the first argument position, which fulfills the <code>predicate</code>. The search starts at index
-	 * <code>1</code>.
-	 * 
-	 * @param predicate
-	 * @return <code>-1</code> if no position was found
-	 */
-	public int indexOf(Predicate<? super IExpr> predicate);
-
-	/**
 	 * Test if this AST contains no argument
 	 * 
 	 * @return
