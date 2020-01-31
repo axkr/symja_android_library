@@ -391,12 +391,12 @@ public final class RulesData implements Serializable {
 					patternHash = ((IAST) expr).patternHashCode();
 				}
 				for (IPatternMatcher patternEvaluator : fPatternDownRules) {
-					// if (patternEvaluator.fLhsPatternExpr.isAST(F.Integrate)) {
-					// System.out.println(((IPatternMatcher) patternEvaluator).getLHSPriority());
-					// if (((IPatternMatcher) patternEvaluator).getLHSPriority() == 2932) {
-					// System.out.println("Debug from this line");
-					// }
-					// }
+					 if (patternEvaluator.fLhsPatternExpr.isAST(F.Integrate)) {
+					 System.out.println(((IPatternMatcher) patternEvaluator).getLHSPriority());
+					 if (((IPatternMatcher) patternEvaluator).getLHSPriority() == 131) {
+					 System.out.println("Debug from this line");
+					 }
+					 }
 					if (patternEvaluator.isPatternHashAllowed(patternHash)) {
 						pmEvaluator = (IPatternMatcher) patternEvaluator.clone();
 						if (showSteps) {
@@ -424,13 +424,13 @@ public final class RulesData implements Serializable {
 
 						result = pmEvaluator.eval(expr, engine);
 						if (result.isPresent()) {
-							// if (patternEvaluator.fLhsPatternExpr.isAST(F.Integrate)) {
-							// System.out.println(((IPatternMatcher) patternEvaluator).toString());
-							// // if (((IPatternMatcher) patternEvaluator).getLHSPriority() == 6686) {
-							// System.out.println("Rule number: "+((IPatternMatcher)
-							// patternEvaluator).getLHSPriority());
-							// // }
-							// }
+							 if (patternEvaluator.fLhsPatternExpr.isAST(F.Integrate)) {
+							 System.out.println(((IPatternMatcher) patternEvaluator).toString());
+							 // if (((IPatternMatcher) patternEvaluator).getLHSPriority() == 131) {
+							 System.out.println("Rule number: "+((IPatternMatcher)
+							 patternEvaluator).getLHSPriority());
+							 // }
+							 }
 							if (Config.SHOW_STACKTRACE) {
 								if (isShowPriority(pmEvaluator)) {
 									System.out.println(

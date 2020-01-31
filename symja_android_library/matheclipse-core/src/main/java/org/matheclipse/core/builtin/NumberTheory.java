@@ -3168,33 +3168,37 @@ public final class NumberTheory {
 			if (arg1.isZero()) {
 				return F.C1;
 			}
-			if (arg1.isInteger() && arg1.isPositive()) {
-				if (arg1.isOne()) {
-					return F.C1;
-				}
-				if (arg1.equals(F.C2)) {
-					return F.C2;
-				}
-				if (arg1.equals(F.C3)) {
-					return F.C3;
-				}
-				try {
-					IExpr result = F.REMEMBER_INTEGER_CACHE.get(ast, new Callable<IExpr>() {
-						@Override
-						public IExpr call() throws Exception {
-							return sumPartitionsP(engine, (IInteger) arg1);
-						}
-
-					});
-					if (result != null) {
-						return result;
+			if (arg1.isInteger()) {
+				if (arg1.isPositive()) {
+					if (arg1.isOne()) {
+						return F.C1;
 					}
-				} catch (RuntimeException rex) {
-					// e.printStackTrace();
-				} catch (ExecutionException e) {
-					// e.printStackTrace();
+					if (arg1.equals(F.C2)) {
+						return F.C2;
+					}
+					if (arg1.equals(F.C3)) {
+						return F.C3;
+					}
+					try {
+						IExpr result = F.REMEMBER_INTEGER_CACHE.get(ast, new Callable<IExpr>() {
+							@Override
+							public IExpr call() throws Exception {
+								return sumPartitionsP(engine, (IInteger) arg1);
+							}
+
+						});
+						if (result != null) {
+							return result;
+						}
+					} catch (RuntimeException rex) {
+						// e.printStackTrace();
+					} catch (ExecutionException e) {
+						// e.printStackTrace();
+					}
+					return F.NIL;
 				}
-				return F.NIL;
+				// http://fungrim.org/entry/cd3013/
+				return F.C0;
 			}
 			if (arg1.isInfinity()) {
 				return F.CInfinity;
@@ -3259,39 +3263,42 @@ public final class NumberTheory {
 			if (arg1.isZero()) {
 				return F.C1;
 			}
-			if (arg1.isInteger() && arg1.isPositive()) {
-				if (arg1.isOne()) {
-					return F.C1;
-				}
-				if (arg1.equals(F.C2)) {
-					return F.C1;
-				}
-				if (arg1.equals(F.C3)) {
-					return F.C2;
-				}
-
-				try {
-					IInteger n = (IInteger) arg1;
-					if (n.isLT(F.ZZ(201))) {
-						IExpr result = F.REMEMBER_INTEGER_CACHE.get(ast, new Callable<IExpr>() {
-							@Override
-							public IExpr call() throws Exception {
-								return partitionsQ(engine, (IInteger) arg1);
-							}
-
-						});
-						if (result != null) {
-							return result;
-						}
+			if (arg1.isInteger()) {
+				if (arg1.isPositive()) {
+					if (arg1.isOne()) {
+						return F.C1;
 					}
-				} catch (ArithmeticException e) {
-					// e.printStackTrace();
-				} catch (RuntimeException rex) {
-					// e.printStackTrace();
-				} catch (ExecutionException e) {
-					// e.printStackTrace();
+					if (arg1.equals(F.C2)) {
+						return F.C1;
+					}
+					if (arg1.equals(F.C3)) {
+						return F.C2;
+					}
+
+					try {
+						IInteger n = (IInteger) arg1;
+						if (n.isLT(F.ZZ(201))) {
+							IExpr result = F.REMEMBER_INTEGER_CACHE.get(ast, new Callable<IExpr>() {
+								@Override
+								public IExpr call() throws Exception {
+									return partitionsQ(engine, (IInteger) arg1);
+								}
+
+							});
+							if (result != null) {
+								return result;
+							}
+						}
+					} catch (ArithmeticException e) {
+						// e.printStackTrace();
+					} catch (RuntimeException rex) {
+						// e.printStackTrace();
+					} catch (ExecutionException e) {
+						// e.printStackTrace();
+					}
+					return F.NIL;
 				}
-				return F.NIL;
+				return F.C0;
 			}
 			if (arg1.isInfinity()) {
 				return F.CInfinity;

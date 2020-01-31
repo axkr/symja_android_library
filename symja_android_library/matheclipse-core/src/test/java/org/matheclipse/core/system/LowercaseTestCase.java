@@ -11719,6 +11719,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLog2() {
+		check("Log(2, 0)", //
+				"-Infinity");
+		check("Log2(0)", //
+				"-Infinity");
+		
 		check("Log2(4 ^ 8)", //
 				"16");
 		checkNumeric("Log2(5.6)", //
@@ -14695,8 +14700,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPartitionsP() {
-		check("PartitionsP({1,2,3,4,5,6,7})", //
-				"{1,2,3,5,7,11,15}");
+		check("PartitionsP(0)", //
+				"1");
+		check("PartitionsP(-5)", //
+				"0");
+		check("Table(PartitionsP(k), {k, 0, 12})", //
+				"{1,1,2,3,5,7,11,15,22,30,42,56,77}");
 		check("PartitionsP(5)", //
 				"7");
 		check("PartitionsP(6)", //
@@ -14715,6 +14724,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPartitionsQ() {
+		check("PartitionsQ(0)", //
+				"1");
+		check("PartitionsQ(-5)", //
+				"0");
 		check("PartitionsQ(3)", //
 				"2");
 		check("PartitionsQ(5)", //
