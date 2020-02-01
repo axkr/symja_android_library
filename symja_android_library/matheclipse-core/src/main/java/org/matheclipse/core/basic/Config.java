@@ -588,5 +588,20 @@ public class Config {
 					"</body>\n" + //
 					"</html>";//
 
+	/**
+	 * HTML template for Plotly
+	 */
+	public final static String PLOTLY_PAGE = //
+			"<html>\n" + //
+					"<head>\n" + //
+					"<meta charset=\"utf-8\">\n" + //
+					"<title>Plotly</title>\n" + //
+					"    <script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>\r\n" + "</head>\r\n"
+					+ "<body>\n" + //
+					"    <div id='plotly' ></div>" + //
+					"`1`\n" + //
+					"</body>\n" + //
+					"</html>";//
+
 	public final static double DEFAULT_CHOP_DELTA = 1.0e-10;
 }
