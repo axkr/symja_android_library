@@ -1,6 +1,6 @@
 package org.matheclipse.core.builtin;
 
-import static org.matheclipse.core.expression.F.*; 
+import static org.matheclipse.core.expression.F.*;
 
 import org.matheclipse.core.expression.F;
 
@@ -59,6 +59,7 @@ public final class FunctionDefinitions {
 			PolarPlot.setEvaluator(new org.matheclipse.core.reflection.system.PolarPlot());
 			Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
 
+			SemanticImport.setEvaluator(new org.matheclipse.core.reflection.system.SemanticImport());
 			Share.setEvaluator(new org.matheclipse.core.reflection.system.Share());
 			Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
 			Sum.setEvaluator(new org.matheclipse.core.reflection.system.Sum());

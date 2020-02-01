@@ -11723,7 +11723,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-Infinity");
 		check("Log2(0)", //
 				"-Infinity");
-		
+
 		check("Log2(4 ^ 8)", //
 				"16");
 		checkNumeric("Log2(5.6)", //
@@ -18757,6 +18757,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"f(1,2,3)");
 		check("Select(Range(100), Mod(#, 3) == 1 && Mod(#, 5) == 1 &)", //
 				"{1,16,31,46,61,76,91}");
+	}
+
+	public void testSemanticImport() {
+		Config.FILESYSTEM_ENABLED = false;
+		if (Config.FILESYSTEM_ENABLED) {
+			check("SemanticImport(\"./tornadoes_1950-2014.csv\")", //
+					" ");
+		}
 	}
 
 	public void testSequence() {
