@@ -938,6 +938,9 @@ public class F {
 	/** D(f, x) - gives the partial derivative of `f` with respect to `x`. */
 	public final static IBuiltInSymbol D = F.initFinalSymbol("D", ID.D);
 
+	/***/
+	public final static IBuiltInSymbol DataSet = F.initFinalSymbol("DataSet", ID.DefaultButton);
+	
 	/**
 	 * DSolve(equation, f(var), var) - attempts to solve a linear differential `equation` for the function `f(var)` and
 	 * variable `var`.
@@ -3114,6 +3117,9 @@ public class F {
 	/** Select({e1, e2, ...}, f) - returns a list of the elements `ei` for which `f(ei)` returns `True`. */
 	public final static IBuiltInSymbol Select = F.initFinalSymbol("Select", ID.Select);
 
+	/***/
+	public final static IBuiltInSymbol SemanticImport = F.initFinalSymbol("SemanticImport", ID.SemanticImport);
+	
 	/***/
 	public final static IBuiltInSymbol Sequence = F.initFinalSymbol("Sequence", ID.Sequence);
 
