@@ -4213,6 +4213,22 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 		return null;
 	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public int[] toIntVector() {
+		try {
+			int[] result = new int[argSize()];
+			for (int i = 1; i < size(); i++) {
+				result[i - 1] = get(i).toIntDefault();
+			}
+			return result;
+		} catch (RuntimeException rex) {
+
+		}
+		return null;
+	}
+
 
 	private final String toFullFormString() {
 		final String sep = ", ";

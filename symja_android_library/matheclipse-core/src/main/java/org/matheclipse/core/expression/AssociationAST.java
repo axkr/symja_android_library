@@ -6,7 +6,6 @@ import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -21,6 +20,9 @@ import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+
 public class AssociationAST extends AST implements IAssociation {
 
 	/**
@@ -29,7 +31,8 @@ public class AssociationAST extends AST implements IAssociation {
 	 * the index is less 0 and must be multiplied by -1 and <code>get(index * (-1))</code> returns the value of the
 	 * <code>RuleDelayed()</code>.
 	 */
-	private transient HashMap<IExpr, Integer> map;
+	private transient Object2IntOpenHashMap<IExpr> map;
+	// private transient HashMap<IExpr, Integer> map;
 
 	private transient IAST normalCache = null;
 
@@ -39,20 +42,20 @@ public class AssociationAST extends AST implements IAssociation {
 	 */
 	public AssociationAST() {
 		super(10, false);
-		map = new HashMap<IExpr, Integer>();
+		map = new Object2IntOpenHashMap<IExpr>();
 	}
 
 	public AssociationAST(IAST listOfRules) {
 		super(listOfRules.size(), false);
-		map = new HashMap<IExpr, Integer>();
+		map = new Object2IntOpenHashMap<IExpr>();
 		append(F.Association);
 
 		int index = 1;
 		for (int i = 1; i < listOfRules.size(); i++) {
 			IExpr rule = listOfRules.get(i);
 			if (rule.isRule()) {
-				Integer value = getIndex(rule.first());
-				if (value == null) {
+				int value = getIndex(rule.first());
+				if (value == 0) {
 					append(rule.second());
 					map.put(rule.first(), index++);
 				} else {
@@ -60,8 +63,8 @@ public class AssociationAST extends AST implements IAssociation {
 					map.put(rule.first(), value);
 				}
 			} else if (rule.isRuleDelayed()) {
-				Integer value = getIndex(rule.first());
-				if (value == null) {
+				int value = getIndex(rule.first());
+				if (value == 0) {
 					append(rule.second());
 					map.put(rule.first(), -index);
 					index++;
@@ -87,8 +90,8 @@ public class AssociationAST extends AST implements IAssociation {
 	public final void appendRule(IAST rule) {
 		int index = size();
 		if (rule.isRule()) {
-			Integer value = getIndex(rule.first());
-			if (value == null) {
+			int value = getIndex(rule.first());
+			if (value == 0) {
 				append(rule.second());
 				map.put(rule.first(), index++);
 			} else {
@@ -97,8 +100,8 @@ public class AssociationAST extends AST implements IAssociation {
 			}
 			normalCache = null;
 		} else if (rule.isRuleDelayed()) {
-			Integer value = getIndex(rule.first());
-			if (value == null) {
+			int value = getIndex(rule.first());
+			if (value == 0) {
 				append(rule.second());
 				map.put(rule.first(), -index);
 				index++;
@@ -116,18 +119,13 @@ public class AssociationAST extends AST implements IAssociation {
 
 	public AssociationAST(final int initialCapacity, final boolean setLength) {
 		super(initialCapacity, setLength);
-		map = new HashMap<IExpr, Integer>();
+		map = new Object2IntOpenHashMap<IExpr>();
 		append(F.Association);
 	}
 
 	private Integer getIndex(IExpr expr) {
-		Integer value = map.get(expr);
-		if (value != null) {
-			if (value < 0) {
-				return -value;
-			}
-		}
-		return value;
+		int value = map.getInt(expr);
+		return value < 0 ? -value : value;
 	}
 
 	@Override
@@ -138,7 +136,7 @@ public class AssociationAST extends AST implements IAssociation {
 		ast.hashValue = 0;
 		ast.firstIndex = firstIndex;
 		ast.lastIndex = lastIndex;
-		ast.map = (HashMap<IExpr, Integer>) map.clone();
+		ast.map = (Object2IntOpenHashMap<IExpr>) map.clone();
 		return ast;
 	}
 
@@ -150,7 +148,7 @@ public class AssociationAST extends AST implements IAssociation {
 		ast.hashValue = 0;
 		ast.firstIndex = firstIndex;
 		ast.lastIndex = lastIndex;
-		ast.map = (HashMap<IExpr, Integer>) map.clone();
+		ast.map = (Object2IntOpenHashMap<IExpr>) map.clone();
 		return ast;
 	}
 
@@ -174,7 +172,7 @@ public class AssociationAST extends AST implements IAssociation {
 		ast.hashValue = 0;
 		ast.firstIndex = firstIndex;
 		ast.lastIndex = lastIndex;
-		ast.map = (HashMap<IExpr, Integer>) map.clone();
+		ast.map = (Object2IntOpenHashMap<IExpr>) map.clone();
 		return ast;
 	}
 
@@ -204,8 +202,9 @@ public class AssociationAST extends AST implements IAssociation {
 	protected IAST normal(IBuiltInSymbol symbol) {
 		IASTMutable list = F.ast(symbol, argSize(), true);
 
-		for (Map.Entry<IExpr, Integer> element : map.entrySet()) {
-			Integer value = element.getValue();
+		for (Object2IntMap.Entry<IExpr> element : map.object2IntEntrySet()) {
+			// for (Map.Entry<IExpr, Integer> element : map.entrySet()) {
+			int value = element.getIntValue();
 			if (value < 0) {
 				value *= -1;
 				list.set(value, F.RuleDelayed(element.getKey(), get(value)));
@@ -217,7 +216,7 @@ public class AssociationAST extends AST implements IAssociation {
 	}
 
 	public boolean isKey(IExpr key) {
-		return map.get(key) != null;
+		return map.containsKey(key);
 	}
 
 	public IASTMutable keys() {
@@ -226,8 +225,9 @@ public class AssociationAST extends AST implements IAssociation {
 
 	protected IASTMutable keys(IBuiltInSymbol symbol) {
 		IASTMutable list = F.ast(symbol, argSize(), true);
-		for (Map.Entry<IExpr, Integer> element : map.entrySet()) {
-			Integer value = element.getValue();
+		for (Object2IntMap.Entry<IExpr> element : map.object2IntEntrySet()) {
+			// for (Map.Entry<IExpr, Integer> element : map.entrySet()) {
+			int value = element.getIntValue();
 			if (value < 0) {
 				value *= -1;
 			}
@@ -254,11 +254,11 @@ public class AssociationAST extends AST implements IAssociation {
 	public IExpr getValue(IExpr key) {
 		return getValue(key, F.Missing(F.stringx("KeyAbsent"), key));
 	}
-	
+
 	public IExpr getValue(IExpr key, IExpr defaultValue) {
-		Integer index = map.get(key);
-		if (index == null) {
-			return defaultValue;//F.Missing(F.stringx("KeyAbsent"), key);
+		int index = map.getInt(key);
+		if (index == 0) {
+			return defaultValue;// F.Missing(F.stringx("KeyAbsent"), key);
 		}
 		if (index < 0) {
 			index *= -1;
@@ -320,12 +320,13 @@ public class AssociationAST extends AST implements IAssociation {
 		};
 		Collections.sort(indices, comparator);
 		AssociationAST result = new AssociationAST(size(), false);
-		for (Map.Entry<IExpr, Integer> element : map.entrySet()) {
-			Integer value = element.getValue();
+		for (Object2IntMap.Entry<IExpr> element : map.object2IntEntrySet()) {
+			// for (Map.Entry<IExpr, Integer> element : map.entrySet()) {
+			int value = element.getIntValue();
 			if (value < 0) {
 				value *= -1;
 			}
-			Integer newValue = indices.get(value - 1);
+			int newValue = indices.get(value - 1);
 			result.append(get(newValue));
 			result.map.put(element.getKey(), newValue);
 		}
@@ -346,7 +347,7 @@ public class AssociationAST extends AST implements IAssociation {
 		AssociationAST assoc = new AssociationAST(list.argSize(), false);
 		for (int i = 1; i < list.size(); i++) {
 			IExpr key = list.get(i);
-			Integer value = map.get(key);
+			int value = map.getInt(key);
 			if (value < 0) {
 				value *= -1;
 				assoc.appendRule(F.RuleDelayed(key, get(value)));

@@ -123,6 +123,14 @@
 			<groupId>org.gavaghan</groupId>
 			<artifactId>geodesy</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>tech.tablesaw</groupId>
+			<artifactId>tablesaw-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>tech.tablesaw</groupId>
+			<artifactId>tablesaw-jsplot</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

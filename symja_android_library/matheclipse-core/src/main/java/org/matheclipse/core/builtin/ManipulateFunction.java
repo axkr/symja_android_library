@@ -17,8 +17,12 @@ import org.matheclipse.core.form.output.JavaScriptFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
+
+import tech.tablesaw.plotly.Plot;
+import tech.tablesaw.plotly.components.Figure;
+import tech.tablesaw.plotly.components.Layout;
+import tech.tablesaw.plotly.traces.HistogramTrace;
 
 public class ManipulateFunction {
 	private final static String JSXGRAPH = //
@@ -1567,23 +1571,36 @@ public class ManipulateFunction {
 		if (plot.size() < 2) {
 			return F.NIL;
 		}
-		JavaScriptFormFactory toJS = new JavaScriptFormFactory(true, false, -1, -1, JavaScriptFormFactory.USE_MATHCELL);
-		jsxgraphSliderNamesFromList(ast, toJS);
 		IExpr arg1 = plot.arg1();
 		if (!arg1.isList()) {
 			arg1 = engine.evaluate(arg1);
 		}
-		if (arg1.isList() && arg1.size() > 1) {
-			IAST pointList = (IAST) arg1;
-			// int[] dimension = pointList.isMatrix();
-			// if (dimension != null) {
-			// if (dimension[1] == 2) {
-			// return sequencePointListPlot(ast, pointList, toJS, engine);
-			// }
-			// return F.NIL;
-			// } else {
-			return sequenceBarChart(ast, pointList, toJS, engine);
-			// }
+		if (ast.arg1().isAST(F.Histogram)) {
+			double[] vector = arg1.toDoubleVector();
+			Layout layout = Layout.builder().autosize(true).build();// .title("Histogram").build();
+
+			HistogramTrace trace = HistogramTrace.builder(vector).build();
+			Figure figure = new Figure(layout, trace);
+			// System.out.println(figure.asJavascript("plotly"));
+			// Plot.show(figure);
+			return F.JSFormData(figure.asJavascript("plotly"), "plotly");
+		} else {
+
+			JavaScriptFormFactory toJS = new JavaScriptFormFactory(true, false, -1, -1,
+					JavaScriptFormFactory.USE_MATHCELL);
+			jsxgraphSliderNamesFromList(ast, toJS);
+			if (arg1.isList() && arg1.size() > 1) {
+				IAST pointList = (IAST) arg1;
+				// int[] dimension = pointList.isMatrix();
+				// if (dimension != null) {
+				// if (dimension[1] == 2) {
+				// return sequencePointListPlot(ast, pointList, toJS, engine);
+				// }
+				// return F.NIL;
+				// } else {
+				return sequenceBarChart(ast, pointList, toJS, engine);
+				// }
+			}
 		}
 		return F.NIL;
 	}

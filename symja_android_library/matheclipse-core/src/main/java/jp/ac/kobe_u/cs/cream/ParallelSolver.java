@@ -4,9 +4,8 @@
 package jp.ac.kobe_u.cs.cream;
 
 /**
- * Parallel solver.
- * Only useful for the optimization problems containing {@link Serialized} constraints
- * in the current implementation.
+ * Parallel solver. Only useful for the optimization problems containing {@link Serialized} constraints in the current
+ * implementation.
  * 
  * @since 1.0
  * @version 1.4
@@ -28,6 +27,7 @@ public class ParallelSolver extends Solver implements SolutionHandler {
 
 	/**
 	 * Returns the sub-solvers.
+	 * 
 	 * @return the sub-solvers
 	 */
 	public synchronized Solver[] getSolvers() {
@@ -77,9 +77,7 @@ public class ParallelSolver extends Solver implements SolutionHandler {
 	public synchronized void allStart() {
 		for (Solver solver : solvers) {
 			synchronized (solver) {
-				if (solver != null) {
-					solver.start(this, totalTimeout);
-				}
+				solver.start(this, totalTimeout);
 			}
 		}
 	}
@@ -87,9 +85,7 @@ public class ParallelSolver extends Solver implements SolutionHandler {
 	public synchronized void allJoin() {
 		for (Solver solver : solvers) {
 			synchronized (solver) {
-				if (solver != null) {
-					solver.join();
-				}
+				solver.join();
 			}
 		}
 	}

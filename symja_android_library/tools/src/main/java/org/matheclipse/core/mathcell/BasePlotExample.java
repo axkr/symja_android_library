@@ -52,6 +52,10 @@ public abstract class BasePlotExample {
 					String jsStr = ((IAST) result).arg1().toString();
 					js = Config.TRACEFORM_PAGE;
 					js = StringUtils.replace(js, "`1`", jsStr);
+				} else if (result.second().toString().equals("plotly")) {
+					String manipulateStr = ((IAST) result).arg1().toString();
+					js = Config.PLOTLY_PAGE;
+					js = StringUtils.replace(js, "`1`", manipulateStr);
 				} else {
 					String manipulateStr = ((IAST) result).arg1().toString();
 					js = Config.JSXGRAPH_PAGE;

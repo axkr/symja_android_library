@@ -18760,10 +18760,89 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSemanticImport() {
-		Config.FILESYSTEM_ENABLED = false;
+		Config.FILESYSTEM_ENABLED = true;
 		if (Config.FILESYSTEM_ENABLED) {
-			check("SemanticImport(\"./tornadoes_1950-2014.csv\")", //
-					" ");
+			String s = System.getProperty("os.name");
+			if (s.contains("Windows")) {
+				check("Normal(SemanticImport(\"./data/test.csv\"))", //
+						"DataSet(<|Products->a,Sales->5500,Market_Share->3|>,<|Products->b,Sales->12200,Market_Share->\n"
+								+ "4|>,<|Products->c,Sales->60000,Market_Share->33|>)");
+				check("ds=SemanticImport(\"./data/test.csv\");", //
+						"");
+				// check("ds(All, 2)", //
+				// "DataSet[test.csv \n" +
+				// " Sales |\n" +
+				// "---------\n" +
+				// " 5500 |\n" +
+				// " 12200 |\n" +
+				// " 60000 |]");
+				check("ds(All,{1,2})", //
+						"DataSet[       test.csv       \r\n" + //
+								" Products  |  Sales  |\r\n" + //
+								"----------------------\r\n" + //
+								"        a  |   5500  |\r\n" + //
+								"        b  |  12200  |\r\n" + //
+								"        c  |  60000  |]");
+				check("ds(All,{\"Products\", \"Market Share\"})", //
+						"DataSet[       test.csv       \r\n" + 
+						" Products  |  Sales  |\r\n" + 
+						"----------------------\r\n" + 
+						"        a  |   5500  |\r\n" + 
+						"        b  |  12200  |\r\n" + 
+						"        c  |  60000  |][All,{Products,Market Share}]");
+
+				check("ds=SemanticImport(\"./data/tornadoes_1950-2014.csv\");", //
+						"");
+			}
+		}
+	}
+
+	public void testSemanticImportString() {
+		String s = System.getProperty("os.name");
+		if (s.contains("Windows")) {
+			check("SemanticImportString(\"Products,Sales,Market_Share\n" + //
+					"a,5500,3\n" + //
+					"b,12200,4\n" + //
+					"c,60000,33\n" + //
+					"\")", //
+					"DataSet[                                       \r\n" + //
+							" Products  |  Sales  |  Market_Share  |\r\n" + //
+							"---------------------------------------\r\n" + //
+							"        a  |   5500  |             3  |\r\n" + //
+							"        b  |  12200  |             4  |\r\n" + //
+							"        c  |  60000  |            33  |]");
+			check("SemanticImportString(\"Date\\tCity\\tSales\r\n" + //
+					" 2014/1/1\\tBoston\\t198\r\n" + //
+					" 2014/1/1\\tNew York\\t220\r\n" + //
+					" 2014/1/1\\tParis\\t215\r\n" + //
+					" 2014/1/1\\tLondon\\t225\r\n" + //
+					" 2014/1/1\\tShanghai\\t241\r\n" + //
+					" 2014/1/1\\tTokio\\t218\r\n" + //
+					" 2014/1/2\\tBoston\\t189\r\n" + //
+					" 2014/1/2\\tNew York\\t232\r\n" + //
+					" 2014/1/2\\tParis\\t211\r\n" + //
+					" 2014/1/2\\tLondon\\t228\r\n" + //
+					" 2014/1/2\\tShanghai\\t242\r\n" + //
+					" 2014/1/2\\tTokio\\t229\r\n" + //
+					" 2014/1/3\\tBoston\\t196\r\n" + //
+					" 2014/1/3\\tNew York\\t235\")", //
+					"DataSet[                         \r\n" + //
+							"    Date	City	Sales     |\r\n" + //
+							"-------------------------\r\n" + //
+							"   2014/1/1	Boston	198  |\r\n" + //
+							" 2014/1/1	New York	220  |\r\n" + //
+							"    2014/1/1	Paris	215  |\r\n" + //
+							"   2014/1/1	London	225  |\r\n" + //
+							" 2014/1/1	Shanghai	241  |\r\n" + //
+							"    2014/1/1	Tokio	218  |\r\n" + //
+							"   2014/1/2	Boston	189  |\r\n" + //
+							" 2014/1/2	New York	232  |\r\n" + //
+							"    2014/1/2	Paris	211  |\r\n" + //
+							"   2014/1/2	London	228  |\r\n" + //
+							" 2014/1/2	Shanghai	242  |\r\n" + //
+							"    2014/1/2	Tokio	229  |\r\n" + //
+							"   2014/1/3	Boston	196  |\r\n" + //
+							" 2014/1/3	New York	235  |]");
 		}
 	}
 
