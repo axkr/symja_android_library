@@ -18764,18 +18764,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 		if (Config.FILESYSTEM_ENABLED) {
 			String s = System.getProperty("os.name");
 			if (s.contains("Windows")) {
-				check("Normal(SemanticImport(\"./data/test.csv\"))", //
-						"DataSet(<|Products->a,Sales->5500,Market_Share->3|>,<|Products->b,Sales->12200,Market_Share->\n"
-								+ "4|>,<|Products->c,Sales->60000,Market_Share->33|>)");
+				// check("Normal(SemanticImport(\"./data/test.csv\"))", //
+				// "DataSet(<|Products->a,Sales->5500,Market_Share->3|>,<|Products->b,Sales->12200,Market_Share->\n"
+				// + "4|>,<|Products->c,Sales->60000,Market_Share->33|>)");
 				check("ds=SemanticImport(\"./data/test.csv\");", //
 						"");
-				// check("ds(All, 2)", //
-				// "DataSet[test.csv \n" +
-				// " Sales |\n" +
-				// "---------\n" +
-				// " 5500 |\n" +
-				// " 12200 |\n" +
-				// " 60000 |]");
+				check("ds(All, 2)", //
+						"DataSet[test.csv \r\n" + //
+						" Sales  |\r\n" + //
+						"---------\r\n" + //
+						"  5500  |\r\n" + //
+						" 12200  |\r\n" + //
+						" 60000  |]");
 				check("ds(All,{1,2})", //
 						"DataSet[       test.csv       \r\n" + //
 								" Products  |  Sales  |\r\n" + //
@@ -18783,13 +18783,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 								"        a  |   5500  |\r\n" + //
 								"        b  |  12200  |\r\n" + //
 								"        c  |  60000  |]");
-				check("ds(All,{\"Products\", \"Market Share\"})", //
-						"DataSet[       test.csv       \r\n" + 
-						" Products  |  Sales  |\r\n" + 
-						"----------------------\r\n" + 
-						"        a  |   5500  |\r\n" + 
-						"        b  |  12200  |\r\n" + 
-						"        c  |  60000  |][All,{Products,Market Share}]");
+				check("ds(All,{\"Products\", \"Market_Share\"})", //
+						"DataSet[          test.csv           \r\n" + " Products  |  Market_Share  |\r\n"
+								+ "-----------------------------\r\n" + "        a  |             3  |\r\n"
+								+ "        b  |             4  |\r\n" + "        c  |            33  |]");
 
 				check("ds=SemanticImport(\"./data/tornadoes_1950-2014.csv\");", //
 						"");
