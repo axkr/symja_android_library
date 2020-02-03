@@ -45,8 +45,6 @@ public class SemanticImport extends AbstractEvaluator {
 
 				} catch (IOException ioe) {
 					return engine.printMessage("SemanticImport: file " + fileName + " not found!");
-				} catch (SyntaxError se) {
-					return engine.printMessage("SemanticImport: file " + fileName + " syntax error!");
 				} catch (RuntimeException rex) {
 					return engine.printMessage("SemanticImport: file " + fileName + " - " + rex.getMessage());
 				} finally {

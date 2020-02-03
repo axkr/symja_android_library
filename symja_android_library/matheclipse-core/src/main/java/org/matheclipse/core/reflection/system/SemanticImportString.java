@@ -35,8 +35,6 @@ public class SemanticImportString extends AbstractEvaluator {
 		try {
 			Table table = Table.read().csv(arg1.toString(), "");
 			return DataSetExpr.newInstance(table);
-		} catch (SyntaxError se) {
-			return engine.printMessage("SemanticImportString: " + " syntax error!");
 		} catch (RuntimeException rex) {
 			return engine.printMessage("SemanticImportString: " + " - " + rex.getMessage());
 		} finally {

@@ -4,7 +4,7 @@
 SemanticImportString("string-content")
 ```
  
-> if the file system is enabled, import the data from CSV files and do a semantic interpretation of the columns.
+> import the data from a content string in CSV format and do a semantic interpretation of the columns.
  
 
 
