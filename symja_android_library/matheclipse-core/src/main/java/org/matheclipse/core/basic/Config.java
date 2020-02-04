@@ -531,7 +531,7 @@ public class Config {
 					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.6/build/math.js\"></script>" + //
 					"\n" + //
 					"\n" + //
-					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.8.6/build/mathcell.js\"></script>\n"
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.8.7/build/mathcell.js\"></script>\n"
 					+ //
 					"<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
 					+ //
