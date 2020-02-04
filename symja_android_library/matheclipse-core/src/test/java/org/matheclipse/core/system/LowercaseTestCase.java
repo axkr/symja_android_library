@@ -18769,6 +18769,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				// + "4|>,<|Products->c,Sales->60000,Market_Share->33|>)");
 				check("ds=SemanticImport(\"./data/test.csv\");", //
 						"");
+				check("ds(3, 2)", //
+						"60000");
 				check("ds(All, 2)", //
 						"DataSet[test.csv \r\n" + //
 						" Sales  |\r\n" + //

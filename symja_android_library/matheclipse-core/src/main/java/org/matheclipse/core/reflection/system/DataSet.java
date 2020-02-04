@@ -34,15 +34,18 @@ public class DataSet extends AbstractEvaluator {
 				try {
 					if (ast.isAST2()) {
 						IExpr arg2 = ast.arg2();
+						int rowPosition = arg1.toIntDefault();
+						int columnPosition = arg2.toIntDefault();
 						if (arg1.equals(F.All)) {
 							if (arg2.isList()) {
 								IAST list = (IAST) arg2;
 								return dataSet.selectColumns(list);
 							}
-							int columnPosition = arg2.toIntDefault();
 							if (columnPosition > 0) {
 								return dataSet.selectColumns(columnPosition);
 							}
+						} else if (rowPosition > 0 && columnPosition > 0) {
+							return dataSet.select(rowPosition, arg2.toIntDefault());
 						}
 					}
 				} catch (RuntimeException rex) {

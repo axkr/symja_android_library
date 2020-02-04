@@ -3,6 +3,7 @@ package org.matheclipse.core.expression.data;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.expression.AssociationAST;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
@@ -50,7 +51,7 @@ public class DataSetExpr extends DataExpr<Table> {
 		if (vector == null) {
 			for (int i = 0; i < strList.length; i++) {
 				strList[i] = list.get(i + 1).toString();
-			} 
+			}
 			return newInstance(table.select(strList));
 		}
 		for (int i = 0; i < vector.length; i++) {
@@ -68,8 +69,13 @@ public class DataSetExpr extends DataExpr<Table> {
 	public DataSetExpr selectColumns(int column) {
 		String[] strList = new String[1];
 		Table table = fData;
-		strList[0] = table.columnNames().get(column - 1); 
+		strList[0] = table.columnNames().get(column - 1);
 		return newInstance(table.select(strList));
+	}
+
+	public IExpr select(int row, int column) {
+		Table table = fData;
+		return Object2Expr.convert(table.column(column-1).get(row-1));
 	}
 
 	@Override
