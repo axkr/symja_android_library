@@ -43,7 +43,7 @@ public class DataSetExpr extends DataExpr<Table> {
 	 * @param list
 	 * @return
 	 */
-	public DataSetExpr selectColumns(IAST list) {
+	private DataSetExpr selectColumns(IAST list) {
 		// System.out.println(fData.columnNames().toString());
 		String[] strList = new String[list.argSize()];
 		int[] vector = list.toIntVector();
@@ -54,8 +54,9 @@ public class DataSetExpr extends DataExpr<Table> {
 			}
 			return newInstance(table.select(strList));
 		}
+		List<String> columnNames = table.columnNames();
 		for (int i = 0; i < vector.length; i++) {
-			strList[i] = table.columnNames().get(vector[i] - 1);
+			strList[i] = columnNames.get(vector[i] - 1);
 		}
 		return newInstance(table.select(strList));
 	}
@@ -66,16 +67,93 @@ public class DataSetExpr extends DataExpr<Table> {
 	 * @param column
 	 * @return
 	 */
-	public DataSetExpr selectColumns(int column) {
+	private DataSetExpr selectColumns(int column) {
 		String[] strList = new String[1];
 		Table table = fData;
 		strList[0] = table.columnNames().get(column - 1);
 		return newInstance(table.select(strList));
 	}
 
-	public IExpr select(int row, int column) {
+	private IExpr select(int row, int column) {
 		Table table = fData;
-		return Object2Expr.convert(table.column(column-1).get(row-1));
+		return Object2Expr.convert(table.column(column - 1).get(row - 1));
+	}
+
+	public IExpr select(IExpr row, IExpr column) {
+		Table table = fData;
+
+		int[] span = column.isSpan(table.columnCount() - 1);
+		if (span != null && span[2] == 1) {
+			int columnStart = span[0] - 1;
+			int columnEnd = span[1];
+			String[] strList = new String[columnEnd - columnStart];
+			List<String> columnNames = table.columnNames();
+			for (int i = 0; i < strList.length; i++) {  
+				strList[i] = columnNames.get(i + columnStart);
+			}
+			table = table.select(strList);
+		} else if (column.equals(F.All)) {
+		} else if (column.isString()) {
+			table = table.select(column.toString());
+		} else if (column.isList()) {
+			IAST list = (IAST) column;
+			String[] strList = new String[list.argSize()];
+			int[] vector = list.toIntVector();
+			if (vector == null) {
+				for (int i = 0; i < strList.length; i++) {
+					strList[i] = list.get(i + 1).toString();
+				}
+			} else {
+				List<String> columnNames = table.columnNames();
+				for (int i = 0; i < vector.length; i++) {
+					strList[i] = columnNames.get(vector[i] - 1);
+				}
+			}
+			table = table.select(strList);
+		} else {
+			int colIndex = column.toIntDefault();
+			if (colIndex > 0) {
+				table = fData;
+				table = table.select(table.columnNames().get(colIndex - 1));
+			} else {
+				return F.NIL;
+			}
+		}
+
+		span = row.isSpan(table.rowCount() - 1);
+		if (span != null && span[2] == 1) {
+			int rowStart = span[0] - 1;
+			int rowEnd = span[1];
+			table = table.inRange(rowStart, rowEnd);
+			return newInstance(table);
+		} else if (row.equals(F.All)) {
+			return newInstance(table);
+		} else if (row.isList()) {
+			IAST list = (IAST) row;
+			int[] iList = new int[list.argSize()];
+			for (int i = 1; i < list.size(); i++) {
+				iList[i - 1] = list.get(i).toIntDefault();
+				if (iList[i - 1] <= 0) {
+					return F.NIL;
+				}
+				iList[i - 1]--;
+			}
+			table = table.rows(iList);
+			if (table.columnCount() == 1) {
+				return Object2Expr.convert(table.get(0, 0));
+			}
+			return newInstance(table);
+		} else {
+			int rowIndex = row.toIntDefault();
+			if (rowIndex > 0) {
+				table = table.rows(rowIndex - 1);
+				if (table.columnCount() == 1) {
+					return Object2Expr.convert(table.get(0, 0));
+				}
+				return newInstance(table);
+			}
+		}
+		return F.NIL;
 	}
 
 	@Override
@@ -130,6 +208,9 @@ public class DataSetExpr extends DataExpr<Table> {
 					IExpr valueStr = F.stringx(obj.toString());
 					ruleCache(cache, assoc, F.Rule(colName, valueStr));
 				}
+			}
+			if (size == 1) {
+				return assoc;
 			}
 			dataSet.append(assoc);
 		}

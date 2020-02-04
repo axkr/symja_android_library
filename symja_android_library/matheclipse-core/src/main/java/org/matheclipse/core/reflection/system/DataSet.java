@@ -32,21 +32,12 @@ public class DataSet extends AbstractEvaluator {
 				DataSetExpr dataSet = (DataSetExpr) ast.head();
 				IExpr arg1 = ast.arg1();
 				try {
+					if (ast.isAST1()) {
+						return dataSet.select(arg1, F.All); 
+					}
 					if (ast.isAST2()) {
 						IExpr arg2 = ast.arg2();
-						int rowPosition = arg1.toIntDefault();
-						int columnPosition = arg2.toIntDefault();
-						if (arg1.equals(F.All)) {
-							if (arg2.isList()) {
-								IAST list = (IAST) arg2;
-								return dataSet.selectColumns(list);
-							}
-							if (columnPosition > 0) {
-								return dataSet.selectColumns(columnPosition);
-							}
-						} else if (rowPosition > 0 && columnPosition > 0) {
-							return dataSet.select(rowPosition, arg2.toIntDefault());
-						}
+						return dataSet.select(arg1, arg2); 
 					}
 				} catch (RuntimeException rex) {
 					return engine.printMessage("DataSet: " + rex.getMessage());
