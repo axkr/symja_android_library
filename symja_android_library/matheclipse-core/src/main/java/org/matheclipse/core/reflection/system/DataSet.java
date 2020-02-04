@@ -37,11 +37,11 @@ public class DataSet extends AbstractEvaluator {
 						if (arg1.equals(F.All)) {
 							if (arg2.isList()) {
 								IAST list = (IAST) arg2;
-								return dataSet.retainColumns(list);
+								return dataSet.selectColumns(list);
 							}
 							int columnPosition = arg2.toIntDefault();
 							if (columnPosition > 0) {
-								return dataSet.retainColumns(columnPosition);
+								return dataSet.selectColumns(columnPosition);
 							}
 						}
 					}

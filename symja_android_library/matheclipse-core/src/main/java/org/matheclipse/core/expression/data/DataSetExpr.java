@@ -42,23 +42,21 @@ public class DataSetExpr extends DataExpr<Table> {
 	 * @param list
 	 * @return
 	 */
-	public DataSetExpr retainColumns(IAST list) {
+	public DataSetExpr selectColumns(IAST list) {
 		// System.out.println(fData.columnNames().toString());
 		String[] strList = new String[list.argSize()];
 		int[] vector = list.toIntVector();
-		Table table = fData.copy();
+		Table table = fData;
 		if (vector == null) {
 			for (int i = 0; i < strList.length; i++) {
 				strList[i] = list.get(i + 1).toString();
-			}
-			table.retainColumns(strList);
-			return newInstance(table);
+			} 
+			return newInstance(table.select(strList));
 		}
 		for (int i = 0; i < vector.length; i++) {
 			strList[i] = table.columnNames().get(vector[i] - 1);
 		}
-		table.retainColumns(strList);
-		return newInstance(table);
+		return newInstance(table.select(strList));
 	}
 
 	/**
@@ -67,12 +65,11 @@ public class DataSetExpr extends DataExpr<Table> {
 	 * @param column
 	 * @return
 	 */
-	public DataSetExpr retainColumns(int column) {
+	public DataSetExpr selectColumns(int column) {
 		String[] strList = new String[1];
-		Table table = fData.copy();
-		strList[0] = table.columnNames().get(column - 1);
-		table.retainColumns(strList);
-		return newInstance(table);
+		Table table = fData;
+		strList[0] = table.columnNames().get(column - 1); 
+		return newInstance(table.select(strList));
 	}
 
 	@Override
