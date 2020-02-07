@@ -161,6 +161,11 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public final static int CONTAINS_NUMERIC_ARG = 0x00010000;
 
 	public final static int BUILT_IN_EVALED = 0x00040000;
+	
+	/**
+	 * This List expression args should be printed in multi-line style
+	 */
+	public final static int OUTPUT_MULTILINE = 0x00100000;
 
 	/**
 	 * Add an evaluation flag to the existing ones.

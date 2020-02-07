@@ -328,6 +328,11 @@ public class TeXFormFactory {
 		@Override
 		public boolean convert(final StringBuilder buf, final IAST ast, final int precedence) {
 
+			if ((ast.getEvalFlags() & IAST.OUTPUT_MULTILINE) == IAST.OUTPUT_MULTILINE) {
+				if (convertMultiline(buf, ast)) {
+					return true;
+				}
+			}
 			if ((ast instanceof ASTRealMatrix) || //
 					(ast.getEvalFlags() & IAST.IS_MATRIX) == IAST.IS_MATRIX) {
 				int[] dims = ast.isMatrix();
@@ -406,6 +411,25 @@ public class TeXFormFactory {
 			}
 			return true;
 		}
+
+		private boolean convertMultiline(final StringBuilder buf, final IAST list) {
+
+			buf.append("\\begin{array}{c}\n");
+			IExpr element;
+			for (int i = 1; i < list.size(); i++) {
+				element = list.get(i);
+				buf.append(' ');
+				fFactory.convertInternal(buf, element, 0);
+				buf.append(' ');
+				if (i < list.argSize()) {
+					buf.append("\\\\\n");
+				}
+			}
+			buf.append("\n\\end{array}");
+
+			return true;
+		}
+
 	}
 
 	private final static class MatrixForm extends AbstractConverter {
@@ -486,7 +510,7 @@ public class TeXFormFactory {
 							buf.append("\\\\\n");
 						}
 					}
-					buf.append("\\end{array}");
+					buf.append("\n\\end{array}");
 				}
 			} else {
 				final IAST matrix = (IAST) f.arg1();
