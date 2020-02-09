@@ -19,6 +19,7 @@ import com.google.common.cache.CacheBuilder;
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
+import tech.tablesaw.columns.Column;
 
 public class DataSetExpr extends DataExpr<Table> {
 
@@ -88,7 +89,7 @@ public class DataSetExpr extends DataExpr<Table> {
 			int columnEnd = span[1];
 			String[] strList = new String[columnEnd - columnStart];
 			List<String> columnNames = table.columnNames();
-			for (int i = 0; i < strList.length; i++) {  
+			for (int i = 0; i < strList.length; i++) {
 				strList[i] = columnNames.get(i + columnStart);
 			}
 			table = table.select(strList);
@@ -168,6 +169,46 @@ public class DataSetExpr extends DataExpr<Table> {
 		for (int i = 0; i < names.size(); i++) {
 			namesStr.add(F.stringx(names.get(i)));
 		}
+		if (names.size() == 1) {
+			Column<?> column = fData.column(names.get(0));
+			ColumnType t = column.type();
+			IASTAppendable resultList = F.ListAlloc(column.size());
+			for (int j = 0; j < column.size(); j++) {
+				Object obj = column.get(j);
+				if (t.equals(ColumnType.BOOLEAN)) {
+					Boolean b = (Boolean) obj;
+					if (b.booleanValue()) {
+						resultList.append(F.True);
+					} else {
+						resultList.append(F.False);
+					}
+				} else if (t.equals(ColumnType.SHORT)) {
+					short sValue = (Short) obj;
+					resultList.append(F.ZZ(sValue));
+				} else if (t.equals(ColumnType.INTEGER)) {
+					int iValue = (Integer) obj;
+					resultList.append(F.ZZ(iValue));
+				} else if (t.equals(ColumnType.LONG)) {
+					long lValue = (Long) obj;
+					resultList.append(F.ZZ(lValue));
+				} else if (t.equals(ColumnType.FLOAT)) {
+					float fValue = (Float) obj;
+					resultList.append(F.num(fValue));
+				} else if (t.equals(ColumnType.DOUBLE)) {
+					double dValue = (Double) obj;
+					resultList.append(F.num(dValue));
+				} else if (t.equals(ColumnType.STRING)) {
+					resultList.append(F.stringx((String) obj));
+				} else if (t.equals(ColumnType.SKIP)) {
+					// ruleCache(cache, assoc, F.Rule(colName, F.Missing));
+				} else {
+					IExpr valueStr = F.stringx(obj.toString());
+					resultList.append(valueStr);
+				}
+			}
+			return resultList;
+		}
+
 		IASTAppendable dataSet = F.ast(F.DataSet, names.size() + 1, false);
 		int size = fData.rowCount();
 		for (int k = 0; k < size; k++) {

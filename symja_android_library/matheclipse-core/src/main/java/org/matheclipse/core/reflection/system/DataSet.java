@@ -1,7 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import java.io.IOException;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
@@ -10,11 +8,8 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.data.DataSetExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IStringX;
-import org.matheclipse.core.io.Extension;
-import org.matheclipse.parser.client.SyntaxError;
-
-import tech.tablesaw.api.Table;
+import org.matheclipse.core.interfaces.ISymbol;
+import jdk.nashorn.internal.ir.ExpressionStatement;
 
 /**
  * Import semantic data into a DataSet
@@ -33,11 +28,21 @@ public class DataSet extends AbstractEvaluator {
 				IExpr arg1 = ast.arg1();
 				try {
 					if (ast.isAST1()) {
-						return dataSet.select(arg1, F.All); 
+						return dataSet.select(arg1, F.All);
 					}
 					if (ast.isAST2()) {
 						IExpr arg2 = ast.arg2();
-						return dataSet.select(arg1, arg2); 
+						IExpr result= dataSet.select(arg1, arg2);
+						if (result.isPresent()) {
+							return result;
+						}
+						if (ast.arg2().isString() && !arg1.equals(F.All)) {
+							IExpr expr = dataSet.select(F.All, arg2);
+							if (expr instanceof DataSetExpr) {
+								return F.unaryAST1(arg1, ((DataSetExpr) expr).normal());
+							}
+						}
+						
 					}
 				} catch (RuntimeException rex) {
 					return engine.printMessage("DataSet: " + rex.getMessage());
