@@ -26,9 +26,9 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
-import de.tilman_neumann.jml.factor.pollardRho.PollardRhoBrentMontgomery64;
-import de.tilman_neumann.util.SortedMultiset;
 import edu.jas.arith.PrimeInteger;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
 
 /**
  * Abstract base class for IntegerSym and BigIntegerSym
@@ -149,7 +149,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 			return valueOf((int) newnum);
 		}
 		BigIntegerSym z = new BigIntegerSym(newnum);
-//		z.fBigIntValue = BigInteger.valueOf(newnum);
+		// z.fBigIntValue = BigInteger.valueOf(newnum);
 		return z;
 	}
 
@@ -452,17 +452,17 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		} catch (ArithmeticException aex) {
 			// go on with big integers
 		}
-		SortedMap<Integer, Integer> map = new TreeMap<Integer, Integer>();
+		Int2IntMap map = new Int2IntRBTreeMap();
+		// SortedMap<Integer, Integer> map = new TreeMap<Integer, Integer>();
 		BigInteger rest = Primality.countPrimes32749(big, map);
-
 		IASTAppendable result = F.ListAlloc(map.size() + 10);
 		if (sign() < 0) {
 			result.append(F.CN1);
 		}
-		for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
-			int key = entry.getKey();
+			for (Int2IntMap.Entry entry : map.int2IntEntrySet()) {
+			int key = entry.getIntKey();
 			AbstractIntegerSym is = valueOf(key);
-			for (int i = 0; i < entry.getValue(); i++) {
+			for (int i = 0; i < entry.getIntValue(); i++) {
 				result.append(is);
 			}
 		}
@@ -492,8 +492,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	/** {@inheritDoc} */
 	@Override
 	public IAST factorSmallPrimes(int numerator, int root) {
-		SortedMap<Integer, Integer> map = new TreeMap<Integer, Integer>();
-		IASTAppendable result = F.NIL;
+		// SortedMap<Integer, Integer> map = new TreeMap<Integer, Integer>();
+		Int2IntMap map = new Int2IntRBTreeMap();
 		IInteger b = this;
 		boolean isNegative = false;
 		if (sign() < 0) {
@@ -512,7 +512,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	}
 
 	protected static IAST factorBigInteger(BigInteger number, boolean isNegative, int numerator, int denominator,
-			SortedMap<Integer, Integer> map) {
+			Int2IntMap map) {
 		if (number.compareTo(BigInteger.valueOf(7)) <= 0) {
 			return F.NIL;
 		}
@@ -522,9 +522,9 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		}
 		IASTAppendable result = F.TimesAlloc(map.size());
 		boolean evaled = false;
-		for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
-			int key = entry.getKey();
-			int value = entry.getValue();
+		for (Int2IntMap.Entry entry : map.int2IntEntrySet()) {
+			int key = entry.getIntKey();
+			int value = entry.getIntValue();
 			int mod = value % denominator;
 			int div = value / denominator;
 			if (div != 0) {

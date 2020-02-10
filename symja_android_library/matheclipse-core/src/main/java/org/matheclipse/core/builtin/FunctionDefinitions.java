@@ -16,6 +16,7 @@ public final class FunctionDefinitions {
 			ComplexExpand.setEvaluator(new org.matheclipse.core.reflection.system.ComplexExpand());
 			Compile.setEvaluator(new org.matheclipse.core.reflection.system.Compile());
 			CreateDirectory.setEvaluator(new org.matheclipse.core.reflection.system.CreateDirectory());
+			DataSet.setEvaluator(new org.matheclipse.core.reflection.system.DataSet());
 			D.setEvaluator(new org.matheclipse.core.reflection.system.D());
 			Derivative.setEvaluator(new org.matheclipse.core.reflection.system.Derivative());
 			DSolve.setEvaluator(new org.matheclipse.core.reflection.system.DSolve());
@@ -60,6 +61,7 @@ public final class FunctionDefinitions {
 			Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
 
 			SemanticImport.setEvaluator(new org.matheclipse.core.reflection.system.SemanticImport());
+			SemanticImportString.setEvaluator(new org.matheclipse.core.reflection.system.SemanticImportString());
 			Share.setEvaluator(new org.matheclipse.core.reflection.system.Share());
 			Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
 			Sum.setEvaluator(new org.matheclipse.core.reflection.system.Sum());

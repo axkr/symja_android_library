@@ -944,12 +944,12 @@ public class SeriesFunctions {
 			if (arg1.isAssociation()) {
 				IAST list= ((IAssociation) arg1).normal();
 				return list;
-			}
+			} 
 			if (WXFFunctions.isByteArray(arg1)) {
 				byte[] bArray = (byte[]) ((IDataExpr) arg1).toData();
 				return WL.toList(bArray);
 			}
-			return F.NIL;
+			return arg1.normal();
 		}
 
 		@Override

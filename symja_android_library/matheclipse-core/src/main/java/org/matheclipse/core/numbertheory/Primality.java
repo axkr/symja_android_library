@@ -4,7 +4,6 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,6 +28,7 @@ import com.google.common.math.LongMath;
 import de.tilman_neumann.jml.factor.CombinedFactorAlgorithm;
 import de.tilman_neumann.jml.factor.ecm.EllipticCurveMethod;
 import de.tilman_neumann.util.SortedMultiset;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
 
 /**
  * Provides primality probabilistic methods.
@@ -545,21 +545,17 @@ public class Primality {
 	 *            a map which counts the prime integer factors less equal than 32749
 	 * @return the rest factor or zero, if the number could be factored completely into primes less equal then 1021
 	 */
-	public static BigInteger countPrimes32749(final BigInteger val, Map<Integer, Integer> map) {
+	public static BigInteger countPrimes32749(final BigInteger val, Int2IntMap map) {
 		BigInteger[] divRem;
 		BigInteger result = val;
-		int count = 0;
+		// int count = 0;
 		for (int i = 0; i < primes.length; i++) {
 			if (result.compareTo(BIprimes[i]) < 0) {
 				break;
 			}
 			divRem = result.divideAndRemainder(BIprimes[i]);
 			if (divRem[1].equals(BigInteger.ZERO)) {
-				count = 0;
-				Integer iCount = map.get(primes[i]);
-				if (iCount != null) {
-					count = iCount;
-				}
+				int count = map.get(primes[i]);
 				do {
 					count++;
 					result = divRem[0];// quotient
@@ -585,11 +581,7 @@ public class Primality {
 			}
 			divRem = result.divideAndRemainder(b);
 			if (divRem[1].equals(BigInteger.ZERO)) {
-				count = 0;
-				Integer iCount = map.get(prime);
-				if (iCount != null) {
-					count = iCount;
-				}
+				int count = map.get(prime);
 				do {
 					count++;
 					result = divRem[0];// quotient

@@ -40,8 +40,8 @@ import org.matheclipse.parser.client.operator.PrefixOperator;
  * Create an expression of the <code>ASTNode</code> class-hierarchy from a math formulas string representation
  * </p>
  * <p>
- * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser">Operator -precedence parser</a> for the idea,
- * how to parse the operators depending on their precedence.
+ * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser">Operator -precedence parser</a> for the idea, how to parse
+ * the operators depending on their precedence.
  * </p>
  */
 public class Parser extends Scanner {
@@ -71,12 +71,11 @@ public class Parser extends Scanner {
 	 * Create an expression of the <code>ASTNode</code> class-hierarchy from a math formulas string representation
 	 * </p>
 	 * <p>
-	 * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser"> Operator -precedence parser</a> for the
-	 * idea, how to parse the operators depending on their precedence.
+	 * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser"> Operator -precedence parser</a> for the idea, how to parse
+	 * the operators depending on their precedence.
 	 * </p>
 	 * 
-	 * @param relaxedSyntax
-	 *            if <code>true</code>, use '('...')' as brackets for function arguments
+	 * @param relaxedSyntax if <code>true</code>, use '('...')' as brackets for function arguments
 	 */
 	public Parser(final boolean relaxedSyntax) {
 		this(ASTNodeFactory.MMA_STYLE_FACTORY, relaxedSyntax);
@@ -87,14 +86,12 @@ public class Parser extends Scanner {
 	 * Create an expression of the <code>ASTNode</code> class-hierarchy from a math formulas string representation
 	 * </p>
 	 * <p>
-	 * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser"> Operator -precedence parser</a> for the
-	 * idea, how to parse the operators depending on their precedence.
+	 * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser"> Operator -precedence parser</a> for the idea, how to parse
+	 * the operators depending on their precedence.
 	 * </p>
 	 * 
-	 * @param relaxedSyntax
-	 *            if <code>true</code>, use '('...')' as brackets for function arguments
-	 * @param packageMode
-	 *            parse in &quot;package mode&quot; and initialize an internal list of ASTNodes
+	 * @param relaxedSyntax if <code>true</code>, use '('...')' as brackets for function arguments
+	 * @param packageMode   parse in &quot;package mode&quot; and initialize an internal list of ASTNodes
 	 */
 	public Parser(final boolean relaxedSyntax, boolean packageMode) {
 		this(ASTNodeFactory.MMA_STYLE_FACTORY, relaxedSyntax, packageMode);
@@ -105,14 +102,12 @@ public class Parser extends Scanner {
 	 * Create an expression of the <code>ASTNode</code> class-hierarchy from a math formulas string representation
 	 * </p>
 	 * <p>
-	 * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser"> Operator -precedence parser</a> for the
-	 * idea, how to parse the operators depending on their precedence.
+	 * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser"> Operator -precedence parser</a> for the idea, how to parse
+	 * the operators depending on their precedence.
 	 * </p>
 	 * 
-	 * @param factory
-	 *            a parser factory
-	 * @param relaxedSyntax
-	 *            if <code>true</code>, use '('...')' as brackets for function arguments
+	 * @param factory       a parser factory
+	 * @param relaxedSyntax if <code>true</code>, use '('...')' as brackets for function arguments
 	 */
 	public Parser(INodeParserFactory factory, final boolean relaxedSyntax) {
 		this(factory, relaxedSyntax, false);
@@ -123,16 +118,13 @@ public class Parser extends Scanner {
 	 * Create an expression of the <code>ASTNode</code> class-hierarchy from a math formulas string representation
 	 * </p>
 	 * <p>
-	 * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser"> Operator -precedence parser</a> for the
-	 * idea, how to parse the operators depending on their precedence.
+	 * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser"> Operator -precedence parser</a> for the idea, how to parse
+	 * the operators depending on their precedence.
 	 * </p>
 	 * 
-	 * @param factory
-	 *            a parser factory
-	 * @param relaxedSyntax
-	 *            if <code>true</code>, use '('...')' as brackets for function arguments
-	 * @param packageMode
-	 *            parse in &quot;package mode&quot; and initialize an internal list of ASTNodes
+	 * @param factory       a parser factory
+	 * @param relaxedSyntax if <code>true</code>, use '('...')' as brackets for function arguments
+	 * @param packageMode   parse in &quot;package mode&quot; and initialize an internal list of ASTNodes
 	 */
 	public Parser(INodeParserFactory factory, final boolean relaxedSyntax, boolean packageMode) {
 		super(packageMode, Config.EXPLICIT_TIMES_OPERATOR);
@@ -522,8 +514,7 @@ public class Parser extends Scanner {
 	}
 
 	/**
-	 * The current token is <code>TT_IDENTIFIER</code> and it is not followed by a <code>_</code> &quot;pattern
-	 * character&quot;.
+	 * The current token is <code>TT_IDENTIFIER</code> and it is not followed by a <code>_</code> &quot;pattern character&quot;.
 	 * 
 	 * @return
 	 */
@@ -829,8 +820,7 @@ public class Parser extends Scanner {
 	/**
 	 * Parse the given <code>expression</code> String into an ASTNode.
 	 * 
-	 * @param expression
-	 *            a formula string which should be parsed.
+	 * @param expression a formula string which should be parsed.
 	 * @return the parsed ASTNode representation of the given formula string
 	 * @throws SyntaxError
 	 */
@@ -895,7 +885,7 @@ public class Parser extends Scanner {
 			if (fToken == TT_SPAN) {
 				span.add(fFactory.createSymbol(IConstantOperators.All));
 				getNextToken();
-				if (fToken == TT_COMMA || fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
+				if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
 						|| fToken == TT_PRECEDENCE_CLOSE) {
 					return span;
 				}
@@ -940,11 +930,10 @@ public class Parser extends Scanner {
 	}
 
 	/**
-	 * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser"> Operator -precedence parser</a> for the
-	 * idea, how to parse the operators depending on their precedence.
+	 * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser"> Operator -precedence parser</a> for the idea, how to parse
+	 * the operators depending on their precedence.
 	 * 
-	 * @param lhs
-	 *            the already parsed left-hand-side of the operator
+	 * @param lhs            the already parsed left-hand-side of the operator
 	 * @param min_precedence
 	 * @return
 	 */
@@ -1066,8 +1055,7 @@ public class Parser extends Scanner {
 	/**
 	 * Rewrite a chain of different comparator operators to an <code>Inequality(...)</code> expression.
 	 * 
-	 * @param ast
-	 *            the ast which should be rewritten
+	 * @param ast           the ast which should be rewritten
 	 * @param infixOperator
 	 * @return
 	 */

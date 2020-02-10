@@ -1,13 +1,9 @@
 package org.matheclipse.core.expression;
 
 import java.math.BigInteger;
-import java.math.RoundingMode;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
-import org.apfloat.ApfloatMath;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
@@ -30,6 +26,9 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
+
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
 
 /**
  * Abstract base class for FractionSym and BigFractionSym
@@ -376,9 +375,11 @@ public abstract class AbstractFractionSym implements IFraction {
 		if (numerator != 1) {
 			d = d.pow(numerator);
 		}
-		SortedMap<Integer, Integer> bMap = new TreeMap<Integer, Integer>();
+		// SortedMap<Integer, Integer> bMap = new TreeMap<Integer, Integer>();
+		Int2IntMap bMap = new Int2IntRBTreeMap();
 		IAST bAST = AbstractIntegerSym.factorBigInteger(b, isNegative, numerator, root, bMap);
-		SortedMap<Integer, Integer> dMap = new TreeMap<Integer, Integer>();
+		// SortedMap<Integer, Integer> dMap = new TreeMap<Integer, Integer>();
+		Int2IntMap dMap = new Int2IntRBTreeMap();
 		IAST dAST = AbstractIntegerSym.factorBigInteger(d, false, numerator, root, dMap);
 		if (bAST.isPresent()) {
 			if (dAST.isPresent()) {

@@ -3121,6 +3121,9 @@ public class F {
 	public final static IBuiltInSymbol SemanticImport = F.initFinalSymbol("SemanticImport", ID.SemanticImport);
 	
 	/***/
+	public final static IBuiltInSymbol SemanticImportString = F.initFinalSymbol("SemanticImportString", ID.SemanticImportString);
+	
+	/***/
 	public final static IBuiltInSymbol Sequence = F.initFinalSymbol("Sequence", ID.Sequence);
 
 	/***/
