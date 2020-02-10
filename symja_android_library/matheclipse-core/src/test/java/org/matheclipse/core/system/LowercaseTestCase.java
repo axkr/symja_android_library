@@ -18776,6 +18776,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 						"<|60000->1,12200->1,5500->1|>");
 				check("ds(Total, \"Sales\")", //
 						"77700");
+				check("ds(StringJoin, \"Products\")", //
+						"abc");
 				check("ds(3, \"Sales\")", //
 						"60000");
 				check("ds(All, \"Market_Share\")", //
