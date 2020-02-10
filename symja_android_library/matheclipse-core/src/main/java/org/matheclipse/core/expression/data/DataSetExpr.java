@@ -35,7 +35,7 @@ public class DataSetExpr extends DataExpr<Table> {
 	}
 
 	protected DataSetExpr(final Table value) {
-		super(F.DataSet, value);
+		super(F.Dataset, value);
 	}
 
 	/**
@@ -209,7 +209,7 @@ public class DataSetExpr extends DataExpr<Table> {
 			return resultList;
 		}
 
-		IASTAppendable dataSet = F.ast(F.DataSet, names.size() + 1, false);
+		IASTAppendable dataSet = F.ast(F.Dataset, names.size() + 1, false);
 		int size = fData.rowCount();
 		for (int k = 0; k < size; k++) {
 			Row row = fData.row(k);

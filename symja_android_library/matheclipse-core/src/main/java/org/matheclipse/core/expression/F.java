@@ -939,7 +939,7 @@ public class F {
 	public final static IBuiltInSymbol D = F.initFinalSymbol("D", ID.D);
 
 	/***/
-	public final static IBuiltInSymbol DataSet = F.initFinalSymbol("DataSet", ID.DefaultButton);
+	public final static IBuiltInSymbol Dataset = F.initFinalSymbol("Dataset", ID.Dataset);
 	
 	/**
 	 * DSolve(equation, f(var), var) - attempts to solve a linear differential `equation` for the function `f(var)` and

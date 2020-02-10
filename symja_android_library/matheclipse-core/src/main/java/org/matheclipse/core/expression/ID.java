@@ -224,7 +224,7 @@ public class ID {
     public final static int Cyclotomic = 215;
     public final static int D = 216;
     public final static int DSolve = 217;
-    public final static int DataSet = 218;
+    public final static int Dataset = 218;
     public final static int Decrement = 219;
     public final static int Default = 220;
     public final static int DefaultButton = 221;

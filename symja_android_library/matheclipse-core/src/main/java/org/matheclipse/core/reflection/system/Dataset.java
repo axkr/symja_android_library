@@ -15,9 +15,9 @@ import jdk.nashorn.internal.ir.ExpressionStatement;
  * Import semantic data into a DataSet
  *
  */
-public class DataSet extends AbstractEvaluator {
+public class Dataset extends AbstractEvaluator {
 
-	public DataSet() {
+	public Dataset() {
 	}
 
 	@Override
@@ -45,7 +45,7 @@ public class DataSet extends AbstractEvaluator {
 						
 					}
 				} catch (RuntimeException rex) {
-					return engine.printMessage("DataSet: " + rex.getMessage());
+					return engine.printMessage("Dataset: " + rex.getMessage());
 				} finally {
 				}
 

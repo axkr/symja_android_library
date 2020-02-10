@@ -87,7 +87,7 @@ public class AST2Expr {
 			"ContainsOnly", "Context", "Continue", "ContinuedFraction", "Convergents", "ConvexHullMesh", "CoprimeQ",
 			"Correlation", "Cos", "Cosh", "CosineDistance", "CosIntegral", "CoshIntegral", "Cot", "Coth", "Count",
 			"Counts", "Covariance", "CreateDirectory", "Cross", "Csc", "Csch", "CubeRoot", "Curl", "Cyclotomic",
-			"DataSet", "Decrement", "Default", "DefaultButton", "Defer", "Definition", "Delete", "DeleteCases",
+			"Dataset", "Decrement", "Default", "DefaultButton", "Defer", "Definition", "Delete", "DeleteCases",
 			"DeleteDuplicates", "Denominator", "Depth", "Derivative", "DesignMatrix", "Det", "Diagonal",
 			"DiagonalMatrix", "DialogInput", "DialogNotebook", "DialogReturn", "DiceDissimilarity", "Differences",
 			"DigitQ", "Dimensions", "DiracDelta", "DirichletEta", "DiscreteDelta", "DiscreteUniformDistribution",
