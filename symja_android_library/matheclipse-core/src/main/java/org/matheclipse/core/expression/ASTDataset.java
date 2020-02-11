@@ -10,8 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.MemoryLimitExceeded;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IAssociation;
@@ -474,6 +476,10 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table>, Externa
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		StringWriter sw = new StringWriter();
 		this.fTable.write().csv(sw);
-		objectOutput.writeUTF(sw.toString());
+		String str = sw.toString();
+		if (str.length() >= Config.MAX_OUTPUT_SIZE) {
+			throw new MemoryLimitExceeded("String length to big: " + str.length());
+		}
+		objectOutput.writeUTF(str);
 	}
 }
