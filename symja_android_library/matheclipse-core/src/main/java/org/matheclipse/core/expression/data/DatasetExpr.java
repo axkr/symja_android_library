@@ -41,23 +41,23 @@ public class DatasetExpr extends AbstractAST implements IDataExpr<Table> {
 	 * @return
 	 * @deprecated szub only
 	 */
-	private static DatasetExpr newInstance(IAST listOfAssociations) {
-		Table table = Table.create();
-		if (listOfAssociations.size() > 1) {
-			// for (int i = 1; i < listOfAssociations.size(); i++) {
-			// IAssociation assoc = (IAssociation) listOfAssociations.get(i);
-			// // Row row = table.appendRow();
-			// }
-			IAssociation assoc = (IAssociation) listOfAssociations.get(1);
-			ArrayList<String> names = assoc.keyNames();
-
-			for (int i = 1; i < listOfAssociations.size(); i++) {
-				assoc = (IAssociation) listOfAssociations.get(i);
-
-			}
-		}
-		return new DatasetExpr(table);
-	}
+//	private static DatasetExpr newInstance(IAST listOfAssociations) {
+//		Table table = Table.create();
+//		if (listOfAssociations.size() > 1) {
+//			// for (int i = 1; i < listOfAssociations.size(); i++) {
+//			// IAssociation assoc = (IAssociation) listOfAssociations.get(i);
+//			// // Row row = table.appendRow();
+//			// }
+//			IAssociation assoc = (IAssociation) listOfAssociations.get(1);
+//			ArrayList<String> names = assoc.keyNames();
+//
+//			for (int i = 1; i < listOfAssociations.size(); i++) {
+//				assoc = (IAssociation) listOfAssociations.get(i);
+//
+//			}
+//		}
+//		return new DatasetExpr(table);
+//	}
 
 	/**
 	 * 

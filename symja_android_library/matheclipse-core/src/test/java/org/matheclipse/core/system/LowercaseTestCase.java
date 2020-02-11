@@ -18773,106 +18773,28 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testSemanticImport() {
 		Config.FILESYSTEM_ENABLED = true;
-		if (Config.FILESYSTEM_ENABLED) {
-			String s = System.getProperty("os.name");
-			if (s.contains("Windows")) {
-				// check("dset = Dataset({\n" + //
-				// "<|\"a\" -> 1, \"b\" -> \"x\", \"c\" -> {1}|>,\n" + //
-				// "<|\"a\" -> 2, \"b\" -> \"y\", \"c\" -> {2, 3}|>,\n" + //
-				// "<|\"a\" -> 3, \"b\" -> \"z\", \"c\" -> {3}|>,\n" + //
-				// "<|\"a\" -> 4, \"b\" -> \"x\", \"c\" -> {4, 5}|>,\n" + //
-				// "<|\"a\" -> 5, \"b\" -> \"y\", \"c\" -> {5, 6, 7}|>,\n" + //
-				// "<|\"a\" -> 6, \"b\" -> \"z\", \"c\" -> {}|>})", //
-				// "");
-				check("Normal(SemanticImport(\"./data/test.csv\"))", //
-						"{<|Products->a,Sales->5500,Market_Share->3|>,<|Products->b,Sales->12200,Market_Share->\n" + //
-								"4|>,<|Products->c,Sales->60000,Market_Share->33|>}");
+		String s = System.getProperty("os.name");
+		if (s.contains("Windows")) {
+			// check("dset = Dataset({\n" + //
+			// "<|\"a\" -> 1, \"b\" -> \"x\", \"c\" -> {1}|>,\n" + //
+			// "<|\"a\" -> 2, \"b\" -> \"y\", \"c\" -> {2, 3}|>,\n" + //
+			// "<|\"a\" -> 3, \"b\" -> \"z\", \"c\" -> {3}|>,\n" + //
+			// "<|\"a\" -> 4, \"b\" -> \"x\", \"c\" -> {4, 5}|>,\n" + //
+			// "<|\"a\" -> 5, \"b\" -> \"y\", \"c\" -> {5, 6, 7}|>,\n" + //
+			// "<|\"a\" -> 6, \"b\" -> \"z\", \"c\" -> {}|>})", //
+			// "");
 
-				check("ds=SemanticImport(\"./data/test.csv\");", //
-						"");
+			// check("Normal(SemanticImport(\"./data/test.csv\"))", //
+			// "{<|Products->a,Sales->5500,Market_Share->3|>,<|Products->b,Sales->12200,Market_Share->\n" + //
+			// "4|>,<|Products->c,Sales->60000,Market_Share->33|>}");
+			//
+			// check("ds=SemanticImport(\"./data/test.csv\");", //
+			// "");
 
-				check("ds(Select(#Sales < 13000 &), {\"Products\", \"Market_Share\"})", //
-						"Dataset[          test.csv           \r\n" + //
-								" Products  |  Market_Share  |\r\n" + //
-								"-----------------------------\r\n" + //
-								"        a  |             3  |\r\n" + //
-								"        b  |             4  |]");
-
-				check("ds(All, \"Sales\") // Normal", //
-						"{5500,12200,60000}");
-
-				check("ds(Counts, \"Sales\")", //
-						"<|60000->1,12200->1,5500->1|>");
-
-				check("ds(Total, \"Sales\")", //
-						"77700");
-
-				check("ds(StringJoin, \"Products\")", //
-						"abc");
-
-				check("ds(3, \"Sales\")", //
-						"60000");
-
-				check("ds(All, \"Market_Share\")", //
-						"Dataset[    test.csv    \r\n" + //
-								" Market_Share  |\r\n" + //
-								"----------------\r\n" + //
-								"            3  |\r\n" + //
-								"            4  |\r\n" + //
-								"           33  |]");
-
-				check("ds(All,1;;2)", //
-						"Dataset[       test.csv       \r\n" + //
-								" Products  |  Sales  |\r\n" + //
-								"----------------------\r\n" + //
-								"        a  |   5500  |\r\n" + //
-								"        b  |  12200  |\r\n" + //
-								"        c  |  60000  |]");
-
-				check("ds(2;;3)", //
-						"Dataset[               test.csv                \r\n" + //
-								" Products  |  Sales  |  Market_Share  |\r\n" + //
-								"---------------------------------------\r\n" + //
-								"        b  |  12200  |             4  |\r\n" + //
-								"        c  |  60000  |            33  |]");
-
-				check("ds(2)", //
-						"Dataset[               test.csv                \r\n" + //
-								" Products  |  Sales  |  Market_Share  |\r\n" + //
-								"---------------------------------------\r\n" + //
-								"        b  |  12200  |             4  |]");
-
-				check("ds(2) // Normal", //
-						"<|Products->b,Sales->12200,Market_Share->4|>");
-
-				check("ds(3, 2)", //
-						"60000");
-
-				check("ds(All, 2)", //
-						"Dataset[test.csv \r\n" + //
-								" Sales  |\r\n" + //
-								"---------\r\n" + //
-								"  5500  |\r\n" + //
-								" 12200  |\r\n" + //
-								" 60000  |]");
-
-				check("ds(All,{1,2})", //
-						"Dataset[       test.csv       \r\n" + //
-								" Products  |  Sales  |\r\n" + //
-								"----------------------\r\n" + //
-								"        a  |   5500  |\r\n" + //
-								"        b  |  12200  |\r\n" + //
-								"        c  |  60000  |]");
-
-				check("ds(All,{\"Products\", \"Market_Share\"})", //
-						"Dataset[          test.csv           \r\n" + " Products  |  Market_Share  |\r\n"
-								+ "-----------------------------\r\n" + "        a  |             3  |\r\n"
-								+ "        b  |             4  |\r\n" + "        c  |            33  |]");
-
-				check("ds=SemanticImport(\"./data/tornadoes_1950-2014.csv\");", //
-						"");
-			}
+			check("ds=SemanticImport(\"./data/tornadoes_1950-2014.csv\");", //
+					"");
 		}
+
 	}
 
 	public void testSemanticImportString() {
@@ -18921,6 +18843,99 @@ public class LowercaseTestCase extends AbstractTestCase {
 							"    2014/1/2	Tokio	229  |\r\n" + //
 							"   2014/1/3	Boston	196  |\r\n" + //
 							" 2014/1/3	New York	235  |]");
+
+			check("ds=SemanticImportString(\"Products,Sales,Market_Share\n" + //
+					"a,5500,3\n" + //
+					"b,12200,4\n" + //
+					"c,60000,33\n" + //
+					"\")", //
+					"Dataset[                                       \r\n" + //
+							" Products  |  Sales  |  Market_Share  |\r\n" + //
+							"---------------------------------------\r\n" + //
+							"        a  |   5500  |             3  |\r\n" + //
+							"        b  |  12200  |             4  |\r\n" + //
+							"        c  |  60000  |            33  |]");
+
+			check("ds(Select(#Sales < 13000 &), {\"Products\", \"Market_Share\"})", //
+					"Dataset[                             \r\n" + //
+							" Products  |  Market_Share  |\r\n" + //
+							"-----------------------------\r\n" + //
+							"        a  |             3  |\r\n" + //
+							"        b  |             4  |]");
+
+			check("ds(All, \"Sales\") // Normal", //
+					"{5500,12200,60000}");
+
+			check("ds(Counts, \"Sales\")", //
+					"<|60000->1,12200->1,5500->1|>");
+
+			check("ds(Total, \"Sales\")", //
+					"77700");
+
+			check("ds(StringJoin, \"Products\")", //
+					"abc");
+
+			check("ds(3, \"Sales\")", //
+					"60000");
+
+			check("ds(All, \"Market_Share\")", //
+					"Dataset[                \r\n" + //
+							" Market_Share  |\r\n" + //
+							"----------------\r\n" + //
+							"            3  |\r\n" + //
+							"            4  |\r\n" + //
+							"           33  |]");
+
+			check("ds(All,1;;2)", //
+					"Dataset[                      \r\n" + //
+							" Products  |  Sales  |\r\n" + //
+							"----------------------\r\n" + //
+							"        a  |   5500  |\r\n" + //
+							"        b  |  12200  |\r\n" + //
+							"        c  |  60000  |]");
+
+			check("ds(2;;3)", //
+					"Dataset[                                       \r\n" + //
+							" Products  |  Sales  |  Market_Share  |\r\n" + //
+							"---------------------------------------\r\n" + //
+							"        b  |  12200  |             4  |\r\n" + //
+							"        c  |  60000  |            33  |]");
+
+			check("ds(2)", //
+					"Dataset[                                       \r\n" + //
+							" Products  |  Sales  |  Market_Share  |\r\n" + //
+							"---------------------------------------\r\n" + //
+							"        b  |  12200  |             4  |]");
+
+			check("ds(2) // Normal", //
+					"<|Products->b,Sales->12200,Market_Share->4|>");
+
+			check("ds(3, 2)", //
+					"60000");
+
+			check("ds(All, 2)", //
+					"Dataset[         \r\n" + //
+							" Sales  |\r\n" + //
+							"---------\r\n" + //
+							"  5500  |\r\n" + //
+							" 12200  |\r\n" + //
+							" 60000  |]");
+
+			check("ds(All,{1,2})", //
+					"Dataset[                      \r\n" + //
+							" Products  |  Sales  |\r\n" + //
+							"----------------------\r\n" + //
+							"        a  |   5500  |\r\n" + //
+							"        b  |  12200  |\r\n" + //
+							"        c  |  60000  |]");
+
+			check("ds(All,{\"Products\", \"Market_Share\"})", //
+					"Dataset[                             \r\n" + //
+							" Products  |  Market_Share  |\r\n" + //
+							"-----------------------------\r\n" + //
+							"        a  |             3  |\r\n" + //
+							"        b  |             4  |\r\n" + //
+							"        c  |            33  |]");
 		}
 	}
 
