@@ -1,23 +1,24 @@
 package org.matheclipse.core.expression;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Predicate;
 
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IAssociation;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.visit.IVisitor;
-import org.matheclipse.core.visit.IVisitorBoolean;
-import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
 import com.google.common.cache.Cache;
@@ -28,7 +29,7 @@ import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.columns.Column;
 
-public class ASTDataset extends AbstractAST implements IDataExpr<Table> {
+public class ASTDataset extends AbstractAST implements IDataExpr<Table>, Externalizable {
 
 	private static final long serialVersionUID = 7276828936929270780L;
 
@@ -38,23 +39,23 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table> {
 	 * @return
 	 * @deprecated szub only
 	 */
-//	private static DatasetExpr newInstance(IAST listOfAssociations) {
-//		Table table = Table.create();
-//		if (listOfAssociations.size() > 1) {
-//			// for (int i = 1; i < listOfAssociations.size(); i++) {
-//			// IAssociation assoc = (IAssociation) listOfAssociations.get(i);
-//			// // Row row = table.appendRow();
-//			// }
-//			IAssociation assoc = (IAssociation) listOfAssociations.get(1);
-//			ArrayList<String> names = assoc.keyNames();
-//
-//			for (int i = 1; i < listOfAssociations.size(); i++) {
-//				assoc = (IAssociation) listOfAssociations.get(i);
-//
-//			}
-//		}
-//		return new DatasetExpr(table);
-//	}
+	// private static DatasetExpr newInstance(IAST listOfAssociations) {
+	// Table table = Table.create();
+	// if (listOfAssociations.size() > 1) {
+	// // for (int i = 1; i < listOfAssociations.size(); i++) {
+	// // IAssociation assoc = (IAssociation) listOfAssociations.get(i);
+	// // // Row row = table.appendRow();
+	// // }
+	// IAssociation assoc = (IAssociation) listOfAssociations.get(1);
+	// ArrayList<String> names = assoc.keyNames();
+	//
+	// for (int i = 1; i < listOfAssociations.size(); i++) {
+	// assoc = (IAssociation) listOfAssociations.get(i);
+	//
+	// }
+	// }
+	// return new DatasetExpr(table);
+	// }
 
 	/**
 	 * 
@@ -75,7 +76,11 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table> {
 		assoc.appendRule(rule);
 	}
 
-	protected Table fTable;
+	protected transient Table fTable;
+
+	public ASTDataset() {
+		// default ctor for serialization
+	}
 
 	protected ASTDataset(final Table table) {
 		fTable = table;
@@ -457,5 +462,18 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table> {
 	@Override
 	public ASTDataset clone() throws CloneNotSupportedException {
 		return copy();
+	}
+
+	@Override
+	public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
+		String str = objectInput.readUTF();
+		this.fTable = Table.read().csv(new StringReader(str));
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		StringWriter sw = new StringWriter();
+		this.fTable.write().csv(sw);
+		objectOutput.writeUTF(sw.toString());
 	}
 }
