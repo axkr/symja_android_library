@@ -79,7 +79,7 @@ public abstract class B1 extends AbstractAST implements Cloneable, Externalizabl
 			return new Line(arg1);
 		}
 	}
-	
+
 	public static class List extends B1 {
 		public List() {
 			super();
@@ -155,7 +155,7 @@ public abstract class B1 extends AbstractAST implements Cloneable, Externalizabl
 			return new Point(arg1);
 		}
 	}
-	
+
 	public static class Return extends B1 {
 		public Return() {
 			super();
@@ -547,6 +547,19 @@ public abstract class B1 extends AbstractAST implements Cloneable, Externalizabl
 		default:
 			throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 2");
 		}
+	}
+
+	@Override
+	public IAST getItems(int[] items, int length) {
+		if (length == 0) {
+			return this;
+		}
+		AST result = new AST(length, true);
+		result.set(0, head());
+		for (int i = 0; i < length; i++) {
+			result.set(i + 1, get(items[i]));
+		}
+		return result;
 	}
 
 	@Override

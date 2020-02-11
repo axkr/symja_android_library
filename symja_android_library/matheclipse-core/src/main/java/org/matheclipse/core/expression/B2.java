@@ -98,7 +98,7 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 			return new DirectedEdge(arg1, arg2);
 		}
 	}
-	
+
 	public final static class Equal extends B2 {
 		public Equal() {
 			super();
@@ -193,7 +193,7 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 			return new If(arg1, arg2);
 		}
 	}
-	
+
 	public final static class Integrate extends B2 {
 		public Integrate() {
 			super();
@@ -269,7 +269,7 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 			return new MemberQ(arg1, arg2);
 		}
 	}
-	
+
 	public final static class Or extends B2 {
 		public Or() {
 			super();
@@ -307,7 +307,7 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 			return new Part(arg1, arg2);
 		}
 	}
-	
+
 	public final static class Plus extends B2 {
 		public Plus() {
 			super();
@@ -398,7 +398,7 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 			return false;
 		}
 	}
-	
+
 	public final static class B2Set extends B2 {
 		public B2Set() {
 			super();
@@ -436,7 +436,7 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 			return new Rule(arg1, arg2);
 		}
 	}
-	
+
 	public final static class RuleDelayed extends B2 {
 		public RuleDelayed() {
 			super();
@@ -455,7 +455,7 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 			return new RuleDelayed(arg1, arg2);
 		}
 	}
-	
+
 	public final static class SameQ extends B2 {
 		public SameQ() {
 			super();
@@ -474,7 +474,7 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 			return new SameQ(arg1, arg2);
 		}
 	}
-	
+
 	public final static class Times extends B2 {
 		public Times() {
 			super();
@@ -505,7 +505,7 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 			return true;
 		}
 	}
-	
+
 	public final static class UndirectedEdge extends B2 {
 		public UndirectedEdge() {
 			super();
@@ -524,7 +524,7 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 			return new UndirectedEdge(arg1, arg2);
 		}
 	}
-	
+
 	public final static class With extends B2 {
 		public With() {
 			super();
@@ -920,6 +920,19 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 		default:
 			throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 3");
 		}
+	}
+
+	@Override
+	public IAST getItems(int[] items, int length) {
+		if (length == 0) {
+			return this;
+		}
+		AST result = new AST(length, true);
+		result.set(0, head());
+		for (int i = 0; i < length; i++) {
+			result.set(i + 1, get(items[i]));
+		}
+		return result;
 	}
 
 	@Override

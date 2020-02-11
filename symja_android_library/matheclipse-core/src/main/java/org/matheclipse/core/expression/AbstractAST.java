@@ -339,6 +339,16 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 
 		@Override
+		public IExpr get(int location) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public IAST getItems(int[] items, int length) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
 		public int hashCode() {
 			return -1;
 		}
@@ -1372,9 +1382,35 @@ public abstract class AbstractAST implements IASTMutable {
 		return filterAST;
 	}
 
+	public IAST select(Predicate<? super IExpr> predicate) {
+		int[] items = new int[size()];
+		int length = 0;
+		for (int i = 1; i < size(); i++) {
+			if (predicate.test(get(i))) {
+				items[length++] = i;
+			}
+		} 
+		return getItems(items, length);
+	};
+
+	public IAST select(Predicate<? super IExpr> predicate, int maxMatches) {
+		maxMatches = size()>maxMatches?maxMatches:size();
+		int[] items = new int[maxMatches];
+		int length = 0;
+		for (int i = 1; i < size(); i++) {
+			if (predicate.test(get(i))) {
+				items[length++] = i;
+				if (maxMatches==length) {
+					break;
+				}
+			}
+		} 
+		return getItems(items, length);
+	};
+
 	/** {@inheritDoc} */
 	@Override
-	public final IAST[] filter(Predicate<? super IExpr> predicate) {
+	public IAST[] filter(Predicate<? super IExpr> predicate) {
 		IASTAppendable[] result = new IASTAppendable[2];
 		result[0] = copyHead();
 		result[1] = copyHead();
@@ -1558,9 +1594,10 @@ public abstract class AbstractAST implements IASTMutable {
 	}
 
 	@Override
-	public IExpr get(int location) {
-		throw new UnsupportedOperationException();
-	}
+	public abstract IExpr get(int location);
+	// {
+	// throw new UnsupportedOperationException();
+	// }
 
 	@Override
 	public IExpr get(IInteger location) {

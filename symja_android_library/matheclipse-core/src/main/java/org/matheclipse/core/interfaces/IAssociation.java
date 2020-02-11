@@ -1,10 +1,9 @@
 package org.matheclipse.core.interfaces;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 
-import org.matheclipse.core.expression.AssociationAST;
-
-public interface IAssociation extends IASTMutable {
+public interface IAssociation extends IASTAppendable {
 
 	/**
 	 * Append a <code>Rule(a,b)</code> or <code>RuleDelayed(a,b)</code> expression.
@@ -59,6 +58,13 @@ public interface IAssociation extends IASTMutable {
 	 * @return
 	 */
 	public IASTMutable keys();
+	
+	/**
+	 * Get the key names of this association as an ArrayList<code>key1, key2,...</code>
+	 * 
+	 * @return
+	 */
+	public ArrayList<String> keyNames();
 
 	/**
 	 * Return a new association sorted by the keys of the association.

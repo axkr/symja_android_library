@@ -116,6 +116,19 @@ public class AST extends HMArrayList implements Externalizable {
 			return fDelegate.get(fFirstIndex + location - 1);
 		}
 
+		@Override
+		public IAST getItems(int[] items, int length) {
+			if (length == 0) {
+				return this;
+			}
+			AST result = new AST(length, true);
+			result.set(0, head());
+			for (int i = 0; i < length; i++) {
+				result.set(i + 1, get(items[i]));
+			}
+			return result;
+		}
+
 		public int size() {
 			return fDelegate.size() - fFirstIndex + 1;
 		}
@@ -393,6 +406,16 @@ public class AST extends HMArrayList implements Externalizable {
 		ast.firstIndex = firstIndex;
 		ast.lastIndex = lastIndex;
 		return ast;
+	}
+
+	@Override
+	public IAST getItems(int[] items, int length) {
+		AST result = new AST(length, true);
+		result.set(0,head());
+		for (int i = 0; i < length; i++) {
+			result.set(i + 1, get(items[i]));
+		}
+		return result;
 	}
 
 	@Override

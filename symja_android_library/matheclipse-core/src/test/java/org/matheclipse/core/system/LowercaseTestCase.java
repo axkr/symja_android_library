@@ -3,6 +3,7 @@ package org.matheclipse.core.system;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.ConstantDefinitions;
+import org.matheclipse.core.expression.data.DatasetExpr;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
@@ -2260,6 +2261,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{1,2,3,4,5}");
 		check("Catenate({{1,2,3},{a,b,c},{4,5,6}})", //
 				"{1,2,3,a,b,c,4,5,6}");
+		check("Catenate({{1, 2}, <|a -> 1, b -> 2|>})", //
+				"{1,2,1,2}");
+		check("Catenate({<|a -> 1, b -> 2|>, <|c -> 3, a -> 5|>})", //
+				"{1,2,3,5}");
 	}
 
 	public void testCDF() {
@@ -18737,6 +18742,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSelect() {
+		check("Select(<|a -> 1, b -> 2, c -> 3, d -> 4|>, # > 2 &)", //
+				"<|c->3,d->4|>");
 		check("Select(Accumulate(Table({1,Prime(x)},{x,900,1000})), PrimeQ( #[[2]] )& )", //
 				"{{1,6997},{3,21011},{7,49139},{11,77447},{87,644377},{93,691333}}");
 		check("Select(# > 4 &) [{1, 2.2, 3, 4.5, 5, 6, 7.5, 8}]", //
@@ -18769,22 +18776,43 @@ public class LowercaseTestCase extends AbstractTestCase {
 		if (Config.FILESYSTEM_ENABLED) {
 			String s = System.getProperty("os.name");
 			if (s.contains("Windows")) {
+				// check("dset = Dataset({\n" + //
+				// "<|\"a\" -> 1, \"b\" -> \"x\", \"c\" -> {1}|>,\n" + //
+				// "<|\"a\" -> 2, \"b\" -> \"y\", \"c\" -> {2, 3}|>,\n" + //
+				// "<|\"a\" -> 3, \"b\" -> \"z\", \"c\" -> {3}|>,\n" + //
+				// "<|\"a\" -> 4, \"b\" -> \"x\", \"c\" -> {4, 5}|>,\n" + //
+				// "<|\"a\" -> 5, \"b\" -> \"y\", \"c\" -> {5, 6, 7}|>,\n" + //
+				// "<|\"a\" -> 6, \"b\" -> \"z\", \"c\" -> {}|>})", //
+				// "");
 				check("Normal(SemanticImport(\"./data/test.csv\"))", //
-						"Dataset(<|Products->a,Sales->5500,Market_Share->3|>,<|Products->b,Sales->12200,Market_Share->\n"
-								+ "4|>,<|Products->c,Sales->60000,Market_Share->33|>)");
-				
+						"{<|Products->a,Sales->5500,Market_Share->3|>,<|Products->b,Sales->12200,Market_Share->\n" + //
+								"4|>,<|Products->c,Sales->60000,Market_Share->33|>}");
+
 				check("ds=SemanticImport(\"./data/test.csv\");", //
 						"");
+
+				check("ds(Select(#Sales < 13000 &), {\"Products\", \"Market_Share\"})", //
+						"Dataset[          test.csv           \r\n" + //
+								" Products  |  Market_Share  |\r\n" + //
+								"-----------------------------\r\n" + //
+								"        a  |             3  |\r\n" + //
+								"        b  |             4  |]");
+
 				check("ds(All, \"Sales\") // Normal", //
 						"{5500,12200,60000}");
+
 				check("ds(Counts, \"Sales\")", //
 						"<|60000->1,12200->1,5500->1|>");
+
 				check("ds(Total, \"Sales\")", //
 						"77700");
+
 				check("ds(StringJoin, \"Products\")", //
 						"abc");
+
 				check("ds(3, \"Sales\")", //
 						"60000");
+
 				check("ds(All, \"Market_Share\")", //
 						"Dataset[    test.csv    \r\n" + //
 								" Market_Share  |\r\n" + //
@@ -18792,6 +18820,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 								"            3  |\r\n" + //
 								"            4  |\r\n" + //
 								"           33  |]");
+
 				check("ds(All,1;;2)", //
 						"Dataset[       test.csv       \r\n" + //
 								" Products  |  Sales  |\r\n" + //
@@ -18799,21 +18828,26 @@ public class LowercaseTestCase extends AbstractTestCase {
 								"        a  |   5500  |\r\n" + //
 								"        b  |  12200  |\r\n" + //
 								"        c  |  60000  |]");
+
 				check("ds(2;;3)", //
 						"Dataset[               test.csv                \r\n" + //
 								" Products  |  Sales  |  Market_Share  |\r\n" + //
 								"---------------------------------------\r\n" + //
 								"        b  |  12200  |             4  |\r\n" + //
 								"        c  |  60000  |            33  |]");
+
 				check("ds(2)", //
 						"Dataset[               test.csv                \r\n" + //
 								" Products  |  Sales  |  Market_Share  |\r\n" + //
 								"---------------------------------------\r\n" + //
 								"        b  |  12200  |             4  |]");
+
 				check("ds(2) // Normal", //
 						"<|Products->b,Sales->12200,Market_Share->4|>");
+
 				check("ds(3, 2)", //
 						"60000");
+
 				check("ds(All, 2)", //
 						"Dataset[test.csv \r\n" + //
 								" Sales  |\r\n" + //
@@ -18821,6 +18855,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 								"  5500  |\r\n" + //
 								" 12200  |\r\n" + //
 								" 60000  |]");
+
 				check("ds(All,{1,2})", //
 						"Dataset[       test.csv       \r\n" + //
 								" Products  |  Sales  |\r\n" + //
@@ -18828,6 +18863,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 								"        a  |   5500  |\r\n" + //
 								"        b  |  12200  |\r\n" + //
 								"        c  |  60000  |]");
+
 				check("ds(All,{\"Products\", \"Market_Share\"})", //
 						"Dataset[          test.csv           \r\n" + " Products  |  Market_Share  |\r\n"
 								+ "-----------------------------\r\n" + "        a  |             3  |\r\n"
@@ -18847,7 +18883,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 					"b,12200,4\n" + //
 					"c,60000,33\n" + //
 					"\")", //
-					"DataSet[                                       \r\n" + //
+					"Dataset[                                       \r\n" + //
 							" Products  |  Sales  |  Market_Share  |\r\n" + //
 							"---------------------------------------\r\n" + //
 							"        a  |   5500  |             3  |\r\n" + //
@@ -18868,7 +18904,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 					" 2014/1/2\\tTokio\\t229\r\n" + //
 					" 2014/1/3\\tBoston\\t196\r\n" + //
 					" 2014/1/3\\tNew York\\t235\")", //
-					"DataSet[                         \r\n" + //
+					"Dataset[                         \r\n" + //
 							"    Date	City	Sales     |\r\n" + //
 							"-------------------------\r\n" + //
 							"   2014/1/1	Boston	198  |\r\n" + //

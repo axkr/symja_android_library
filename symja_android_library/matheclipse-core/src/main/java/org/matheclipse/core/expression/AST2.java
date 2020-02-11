@@ -63,7 +63,7 @@ public class AST2 extends AST1 {
 	 * @param arg2
 	 *            the second argument of the function
 	 */
-	/*package private */ AST2(IExpr head, IExpr arg1, IExpr arg2) {
+	/* package private */ AST2(IExpr head, IExpr arg1, IExpr arg2) {
 		super(head, arg1);
 		this.arg2 = arg2;
 	}
@@ -332,7 +332,7 @@ public class AST2 extends AST1 {
 
 	/** {@inheritDoc} */
 	@Override
-	public   int indexOf(Predicate<? super IExpr> predicate) {
+	public int indexOf(Predicate<? super IExpr> predicate) {
 		if (predicate.test(arg1)) {
 			return 1;
 		}
@@ -344,7 +344,7 @@ public class AST2 extends AST1 {
 
 	/** {@inheritDoc} */
 	@Override
-	public   IExpr findFirst(Function<IExpr, IExpr> function) {
+	public IExpr findFirst(Function<IExpr, IExpr> function) {
 		IExpr temp = function.apply(arg1);
 		if (temp.isPresent()) {
 			return temp;
@@ -364,6 +364,17 @@ public class AST2 extends AST1 {
 		default:
 			throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 3");
 		}
+	}
+
+	@Override
+	public IAST getItems(int[] items, int length) {
+		if (length == 0 || length == 2) {
+			return this;
+		}
+		if (length == 1) {
+			return new AST1(head(), get(items[0]));
+		}
+		throw new IndexOutOfBoundsException("Index: 1, Size: " + size());
 	}
 
 	@Override

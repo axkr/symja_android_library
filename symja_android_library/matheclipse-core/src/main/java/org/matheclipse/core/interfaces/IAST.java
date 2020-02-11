@@ -161,7 +161,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public final static int CONTAINS_NUMERIC_ARG = 0x00010000;
 
 	public final static int BUILT_IN_EVALED = 0x00040000;
-	
+
 	/**
 	 * This List expression args should be printed in multi-line style
 	 */
@@ -598,6 +598,28 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 
 	/**
 	 * Select all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and append
+	 * the arguments which satisfy the predicate.
+	 * 
+	 * @param predicate
+	 *            the predicate which filters each argument in this <code>AST</code>
+	 * @return the selected ast
+	 */
+	public IAST select(Predicate<? super IExpr> predicate);
+
+	/**
+	 * Select all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and append
+	 * up to <code>maxMatches</code> arguments which satisfy the predicate.
+	 * 
+	 * @param predicate
+	 *            the predicate which filters each argument in this <code>AST</code>
+	 * @param maxMatches
+	 *            the maximum number of matches
+	 * @return the selected ast
+	 */
+	public IAST select(Predicate<? super IExpr> predicate, int maxMatches);
+
+	/**
+	 * Select all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and append
 	 * the arguments which satisfy the predicate to the <code>0th element</code> of the result array, or otherwise
 	 * append it to the <code>1st element</code> of the result array.
 	 * 
@@ -823,6 +845,15 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *             if {@code location < 0 || >= size()}
 	 */
 	public IExpr get(int location);
+
+	/**
+	 * Returns <code>length</code> number of elements specified in the <code>items</code> in this {@code IAST}.
+	 * 
+	 * @param items
+	 * @param length
+	 * @return
+	 */
+	public IAST getItems(int[] items, int length);
 
 	/**
 	 * Casts an <code>IExpr</code> at position <code>index</code> to an <code>IAST</code>.

@@ -7,7 +7,7 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.data.DataSetExpr;
+import org.matheclipse.core.expression.data.DatasetExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
@@ -34,7 +34,7 @@ public class SemanticImportString extends AbstractEvaluator {
 		IStringX arg1 = (IStringX) ast.arg1(); 
 		try {
 			Table table = Table.read().csv(arg1.toString(), "");
-			return DataSetExpr.newInstance(table);
+			return DatasetExpr.newInstance(table);
 		} catch (RuntimeException rex) {
 			return engine.printMessage("SemanticImportString: " + " - " + rex.getMessage());
 		} finally {

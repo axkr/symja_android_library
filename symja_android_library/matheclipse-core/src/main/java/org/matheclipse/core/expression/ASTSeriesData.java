@@ -140,14 +140,16 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 	}
 
 	/**
-	 * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity as this {@code HMArrayList}.
+	 * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity as this
+	 * {@code HMArrayList}.
 	 * 
 	 * @return a shallow copy of this {@code ArrayList}
 	 * @see java.lang.Cloneable
 	 */
 	@Override
 	public IAST clone() {
-		return new ASTSeriesData(x, x0, nMin, nMax, order, denominator, new OpenIntToIExprHashMap<IExpr>(coefficientValues));
+		return new ASTSeriesData(x, x0, nMin, nMax, order, denominator,
+				new OpenIntToIExprHashMap<IExpr>(coefficientValues));
 	}
 
 	/**
@@ -257,7 +259,8 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 	/** {@inheritDoc} */
 	@Override
 	public ASTSeriesData copy() {
-		return new ASTSeriesData(x, x0, nMin, nMax, order, denominator, new OpenIntToIExprHashMap<IExpr>(coefficientValues));
+		return new ASTSeriesData(x, x0, nMin, nMax, order, denominator,
+				new OpenIntToIExprHashMap<IExpr>(coefficientValues));
 	}
 
 	@Override
@@ -268,8 +271,8 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 	/**
 	 * Differentiation of a power series.
 	 * 
-	 * See <a href="https://en.wikipedia.org/wiki/Power_series#Differentiation_and_integration">Wikipedia: Power series -
-	 * Differentiation and integration</a>
+	 * See <a href="https://en.wikipedia.org/wiki/Power_series#Differentiation_and_integration">Wikipedia: Power series
+	 * - Differentiation and integration</a>
 	 * 
 	 * @param x
 	 * @return
@@ -334,9 +337,9 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
-//		if ((getEvalFlags() & IAST.DEFER_AST) == IAST.DEFER_AST) {
-//			return F.NIL;
-//		}
+		// if ((getEvalFlags() & IAST.DEFER_AST) == IAST.DEFER_AST) {
+		// return F.NIL;
+		// }
 		return F.NIL;
 	}
 
@@ -398,6 +401,19 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 1");
 	}
 
+	@Override
+	public IAST getItems(int[] items, int length) {
+		if (length == 0) {
+			return this;
+		}
+		AST result = new AST(length, true);
+		result.set(0, head());
+		for (int i = 0; i < length; i++) {
+			result.set(i + 1, get(items[i]));
+		}
+		return result;
+	}
+
 	public int getDenominator() {
 		return denominator;
 	}
@@ -448,8 +464,8 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 	/**
 	 * Integration of a power series.
 	 * 
-	 * See <a href="https://en.wikipedia.org/wiki/Power_series#Differentiation_and_integration">Wikipedia: Power series -
-	 * Differentiation and integration</a>
+	 * See <a href="https://en.wikipedia.org/wiki/Power_series#Differentiation_and_integration">Wikipedia: Power series
+	 * - Differentiation and integration</a>
 	 * 
 	 * @param x
 	 * @return
@@ -556,7 +572,8 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 			// System.out.println(gList.toString());
 			// }
 
-			ASTSeriesData ps = new ASTSeriesData(x, x0, nMin, nMin, order, denominator, new OpenIntToIExprHashMap<IExpr>());
+			ASTSeriesData ps = new ASTSeriesData(x, x0, nMin, nMin, order, denominator,
+					new OpenIntToIExprHashMap<IExpr>());
 			if (!this.x0.isZero()) {
 				ps.setCoeff(0, this.x0);
 			}
@@ -856,8 +873,8 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 	/**
 	 * Add two power series.
 	 * 
-	 * See <a href="https://en.wikipedia.org/wiki/Power_series#Addition_and_subtraction">Wikipedia: Power series - Addition and
-	 * subtraction</a>
+	 * See <a href="https://en.wikipedia.org/wiki/Power_series#Addition_and_subtraction">Wikipedia: Power series -
+	 * Addition and subtraction</a>
 	 * 
 	 * @param b
 	 * @return
@@ -902,9 +919,9 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 			return this;
 		}
 
-//		if (n == -1L) {
-//			return inverse();
-//		}
+		// if (n == -1L) {
+		// return inverse();
+		// }
 		long exp = n;
 		if (n < 0) {
 			if (n == Long.MIN_VALUE) {
@@ -1081,8 +1098,8 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 	/**
 	 * Subtract two power series.
 	 * 
-	 * See <a href="https://en.wikipedia.org/wiki/Power_series#Addition_and_subtraction">Wikipedia: Power series - Addition and
-	 * subtraction</a>
+	 * See <a href="https://en.wikipedia.org/wiki/Power_series#Addition_and_subtraction">Wikipedia: Power series -
+	 * Addition and subtraction</a>
 	 * 
 	 * @param b
 	 * @return
@@ -1128,8 +1145,8 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 	/**
 	 * Multiply two power series.
 	 * 
-	 * See <a href="https://en.wikipedia.org/wiki/Power_series#Multiplication_and_division">Wikipedia: Power series - Multiplication and
-	 * Division</a>
+	 * See <a href="https://en.wikipedia.org/wiki/Power_series#Multiplication_and_division">Wikipedia: Power series -
+	 * Multiplication and Division</a>
 	 * 
 	 * @param b
 	 * @return

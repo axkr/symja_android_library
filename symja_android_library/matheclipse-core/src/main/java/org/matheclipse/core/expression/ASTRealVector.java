@@ -393,6 +393,18 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 		return F.num(val);
 	}
 
+	@Override
+	public IAST getItems(int[] items, int length) {
+		if (length == 0) {
+			return this;
+		}
+		double[] v = new double[length];
+		for (int i = 0; i < length; i++) {
+			v[i] = vector.getEntry(items[i] - 1);
+		}
+		return new ASTRealVector(v, false);
+	}
+
 	public double getEntry(int location) {
 		return vector.getEntry(location - 1);
 	}
@@ -585,7 +597,7 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 	}
 
 	@Override
-	public Complex[] toComplexVector() { 
+	public Complex[] toComplexVector() {
 		double[] array = vector.toArray();
 		final int size = array.length;
 		Complex[] result = new Complex[size];

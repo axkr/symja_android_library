@@ -306,6 +306,14 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	}
 
 	@Override
+	public IAST getItems(int[] items, int length) {
+		if (length == 0) {
+			return this;
+		}
+		throw new IndexOutOfBoundsException("Index: 0, Size: " + size()); 
+	}
+
+	@Override
 	public int hashCode() {
 		if (hashValue == 0 && arg0 != null) {
 			hashValue = 0x811c9dc5;// decimal 2166136261;

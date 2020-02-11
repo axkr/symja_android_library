@@ -1160,7 +1160,7 @@ public final class ListFunctions {
 				IAST list = (IAST) ast.arg1();
 				int[] size = { 1 };
 				if (list.exists(x -> {
-					if (!x.isList()) {
+					if (!(x.isList() || x.isAssociation())) {
 						return true;
 					}
 					size[0] += list.argSize();
@@ -4924,13 +4924,12 @@ public final class ListFunctions {
 			if (ast.arg1().isAST()) {
 				IAST list = (IAST) ast.arg1();
 				IExpr predicateHead = ast.arg2();
-				int allocSize = list.size() > 4 ? list.size() / 4 : 4;
+				// int allocSize = list.size() > 4 ? list.size() / 4 : 4;
 				if (size == 3) {
-					return list.filter(list.copyHead(allocSize), x -> engine.evalTrue(F.unaryAST1(predicateHead, x)));
+					return list.select(x -> engine.evalTrue(F.unaryAST1(predicateHead, x)));
 				} else if ((size == 4) && ast.arg3().isInteger()) {
 					final int resultLimit = Validate.checkIntType(ast, 3);
-					return list.filter(list.copyHead(allocSize), x -> engine.evalTrue(F.unaryAST1(predicateHead, x)),
-							resultLimit);
+					return list.select(x -> engine.evalTrue(F.unaryAST1(predicateHead, x)), resultLimit);
 				}
 			}
 			return F.NIL;
