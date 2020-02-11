@@ -6,7 +6,7 @@ import java.util.Map;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
-import org.matheclipse.core.expression.AssociationAST;
+import org.matheclipse.core.expression.ASTAssociation;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
@@ -126,7 +126,7 @@ public class AssociationFunctions {
 					IExpr key = list.get(i);
 					map.compute(key, (k, v) -> (v == null) ? new MutableInt(1) : v.increment());
 				}
-				IAssociation assoc = new AssociationAST(map.size(), false);
+				IAssociation assoc = new ASTAssociation(map.size(), false);
 				for (Map.Entry<IExpr, AssociationFunctions.MutableInt> elem : map.entrySet()) {
 					assoc.appendRule(F.Rule(elem.getKey(), F.ZZ(elem.getValue().value())));
 				}

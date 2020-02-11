@@ -17,10 +17,10 @@ import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
+import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
-import org.matheclipse.core.expression.data.DatasetExpr;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -938,7 +938,7 @@ public class OutputFormFactory {
 	private void convert(final Appendable buf, final IExpr o, final int precedence, boolean isASTHead)
 			throws IOException {
 		if (o instanceof IAST) {
-			if (o instanceof DatasetExpr) {
+			if (o instanceof ASTDataset) {
 				// TODO improve output
 				buf.append(o.toString());
 				return;

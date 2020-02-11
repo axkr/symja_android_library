@@ -3,7 +3,7 @@ package org.matheclipse.core.system;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.ConstantDefinitions;
-import org.matheclipse.core.expression.data.DatasetExpr;
+import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 

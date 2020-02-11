@@ -1,8 +1,8 @@
 package org.matheclipse.core.visit;
 
+import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntegerSym;
-import org.matheclipse.core.expression.data.DatasetExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -33,8 +33,8 @@ public class VisitorReplaceSlots extends VisitorExpr {
 	}
 
 	private IExpr getSlot(IStringX str) {
-		if (astSlots.arg1() instanceof DatasetExpr) {
-			return ((DatasetExpr) astSlots.arg1()).getValue(str);
+		if (astSlots.arg1() instanceof ASTDataset) {
+			return ((ASTDataset) astSlots.arg1()).getValue(str);
 		}
 		if (astSlots.arg1().isAssociation()) {
 			return ((IAssociation) astSlots.arg1()).getValue(str);

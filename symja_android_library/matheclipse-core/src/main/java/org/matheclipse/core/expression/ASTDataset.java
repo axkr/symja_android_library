@@ -1,4 +1,4 @@
-package org.matheclipse.core.expression.data;
+package org.matheclipse.core.expression;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,9 +7,6 @@ import java.util.function.Predicate;
 
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.expression.AbstractAST;
-import org.matheclipse.core.expression.AssociationAST;
-import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IAssociation;
@@ -31,7 +28,7 @@ import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.columns.Column;
 
-public class DatasetExpr extends AbstractAST implements IDataExpr<Table> {
+public class ASTDataset extends AbstractAST implements IDataExpr<Table> {
 
 	private static final long serialVersionUID = 7276828936929270780L;
 
@@ -64,8 +61,8 @@ public class DatasetExpr extends AbstractAST implements IDataExpr<Table> {
 	 * @param value
 	 * @return
 	 */
-	public static DatasetExpr newInstance(Table value) {
-		return new DatasetExpr(value);
+	public static ASTDataset newInstance(Table value) {
+		return new ASTDataset(value);
 	}
 
 	private static void ruleCache(Cache<IAST, IAST> cache, IAssociation assoc, IAST rule) {
@@ -80,7 +77,7 @@ public class DatasetExpr extends AbstractAST implements IDataExpr<Table> {
 
 	protected Table fTable;
 
-	protected DatasetExpr(final Table table) {
+	protected ASTDataset(final Table table) {
 		fTable = table;
 	}
 
@@ -91,8 +88,8 @@ public class DatasetExpr extends AbstractAST implements IDataExpr<Table> {
 	}
 
 	@Override
-	public DatasetExpr copy() {
-		return new DatasetExpr(fTable);
+	public ASTDataset copy() {
+		return new ASTDataset(fTable);
 	}
 
 	@Override
@@ -100,8 +97,8 @@ public class DatasetExpr extends AbstractAST implements IDataExpr<Table> {
 		if (this == obj) {
 			return true;
 		}
-		if (obj instanceof DatasetExpr) {
-			return fTable.equals(((DatasetExpr) obj).fTable);
+		if (obj instanceof ASTDataset) {
+			return fTable.equals(((ASTDataset) obj).fTable);
 		}
 		return false;
 	}
@@ -233,7 +230,7 @@ public class DatasetExpr extends AbstractAST implements IDataExpr<Table> {
 		int size = fTable.rowCount();
 		for (int k = 0; k < size; k++) {
 			Row row = fTable.row(k);
-			IAssociation assoc = new AssociationAST(row.columnCount(), false);
+			IAssociation assoc = new ASTAssociation(row.columnCount(), false);
 			for (int j = 0; j < row.columnCount(); j++) {
 				String columnName = names.get(j);
 				IStringX colName = namesStr.get(j);
@@ -366,7 +363,7 @@ public class DatasetExpr extends AbstractAST implements IDataExpr<Table> {
 	 * @param list
 	 * @return
 	 */
-	private DatasetExpr selectColumns(IAST list) {
+	private ASTDataset selectColumns(IAST list) {
 		// System.out.println(fData.columnNames().toString());
 		String[] strList = new String[list.argSize()];
 		int[] vector = list.toIntVector();
@@ -390,7 +387,7 @@ public class DatasetExpr extends AbstractAST implements IDataExpr<Table> {
 	 * @param column
 	 * @return
 	 */
-	private DatasetExpr selectColumns(int column) {
+	private ASTDataset selectColumns(int column) {
 		String[] strList = new String[1];
 		Table table = fTable;
 		strList[0] = table.columnNames().get(column - 1);
@@ -458,7 +455,7 @@ public class DatasetExpr extends AbstractAST implements IDataExpr<Table> {
 	}
 
 	@Override
-	public DatasetExpr clone() throws CloneNotSupportedException {
+	public ASTDataset clone() throws CloneNotSupportedException {
 		return copy();
 	}
 }

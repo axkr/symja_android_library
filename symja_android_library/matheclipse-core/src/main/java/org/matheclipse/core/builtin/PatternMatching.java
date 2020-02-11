@@ -28,7 +28,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OptionArgs;
-import org.matheclipse.core.expression.AssociationAST;
+import org.matheclipse.core.expression.ASTAssociation;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.Documentation;

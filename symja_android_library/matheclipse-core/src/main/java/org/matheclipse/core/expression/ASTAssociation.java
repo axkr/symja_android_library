@@ -23,7 +23,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
-public class AssociationAST extends AST implements IAssociation {
+public class ASTAssociation extends AST implements IAssociation {
 
 	/**
 	 * Map the <code>IExpr()</code> keys to the index of the values in this AST. For <code>Rule()</code> the index is
@@ -40,12 +40,12 @@ public class AssociationAST extends AST implements IAssociation {
 	 * Public no-arg constructor only needed for serialization
 	 * 
 	 */
-	public AssociationAST() {
+	public ASTAssociation() {
 		super(10, false);
 		map = new Object2IntOpenHashMap<IExpr>();
 	}
 
-	public AssociationAST(IAST listOfRules) {
+	public ASTAssociation(IAST listOfRules) {
 		super(listOfRules.size(), false);
 		map = new Object2IntOpenHashMap<IExpr>();
 		append(F.Association);
@@ -117,7 +117,7 @@ public class AssociationAST extends AST implements IAssociation {
 		}
 	}
 
-	public AssociationAST(final int initialCapacity, final boolean setLength) {
+	public ASTAssociation(final int initialCapacity, final boolean setLength) {
 		super(initialCapacity, setLength);
 		map = new Object2IntOpenHashMap<IExpr>();
 		append(F.Association);
@@ -130,7 +130,7 @@ public class AssociationAST extends AST implements IAssociation {
 
 	@Override
 	public IAST clone() {
-		AssociationAST ast = new AssociationAST();
+		ASTAssociation ast = new ASTAssociation();
 		// ast.fProperties = null;
 		ast.array = array.clone();
 		ast.hashValue = 0;
@@ -142,7 +142,7 @@ public class AssociationAST extends AST implements IAssociation {
 
 	@Override
 	public IASTAppendable copyAppendable() {
-		AssociationAST ast = new AssociationAST();
+		ASTAssociation ast = new ASTAssociation();
 		// ast.fProperties = null;
 		ast.array = array.clone();
 		ast.hashValue = 0;
@@ -155,7 +155,7 @@ public class AssociationAST extends AST implements IAssociation {
 	/** {@inheritDoc} */
 	@Override
 	public IASTAppendable copyHead(final int intialCapacity) {
-		return new AssociationAST(intialCapacity, false);
+		return new ASTAssociation(intialCapacity, false);
 	}
 
 	/** {@inheritDoc} */
@@ -165,8 +165,8 @@ public class AssociationAST extends AST implements IAssociation {
 	}
 
 	@Override
-	public AssociationAST copy() {
-		AssociationAST ast = new AssociationAST();
+	public ASTAssociation copy() {
+		ASTAssociation ast = new ASTAssociation();
 		// ast.fProperties = null;
 		ast.array = array.clone();
 		ast.hashValue = 0;
@@ -275,7 +275,7 @@ public class AssociationAST extends AST implements IAssociation {
 	}
 
 	public IAST getItems(int[] items, int length) {
-		AssociationAST assoc = new AssociationAST(length, false);
+		ASTAssociation assoc = new ASTAssociation(length, false);
 
 		int j = 0;
 		for (Object2IntMap.Entry<IExpr> element : map.object2IntEntrySet()) {
@@ -306,11 +306,11 @@ public class AssociationAST extends AST implements IAssociation {
 	/** {@inheritDoc} */
 	@Override
 	public IAST filter(IASTAppendable filterAST, Predicate<? super IExpr> predicate) {
-		if (filterAST instanceof AssociationAST) {
+		if (filterAST instanceof ASTAssociation) {
 			IAST list = normal();
 			for (int i = 1; i < size(); i++) {
 				if (predicate.test(get(i))) {
-					((AssociationAST) filterAST).appendRule((IAST) list.get(i));
+					((ASTAssociation) filterAST).appendRule((IAST) list.get(i));
 				}
 			}
 			return filterAST;
@@ -321,7 +321,7 @@ public class AssociationAST extends AST implements IAssociation {
 	/** {@inheritDoc} */
 	@Override
 	public IAST filter(IASTAppendable filterAST, Predicate<? super IExpr> predicate, int maxMatches) {
-		if (filterAST instanceof AssociationAST) {
+		if (filterAST instanceof ASTAssociation) {
 			int[] count = new int[1];
 			if (count[0] >= maxMatches) {
 				return filterAST;
@@ -330,10 +330,10 @@ public class AssociationAST extends AST implements IAssociation {
 			for (int i = 1; i < size(); i++) {
 				if (predicate.test(get(i))) {
 					if (++count[0] == maxMatches) {
-						((AssociationAST) filterAST).appendRule((IAST) list.get(i));
+						((ASTAssociation) filterAST).appendRule((IAST) list.get(i));
 						break;
 					}
-					((AssociationAST) filterAST).appendRule((IAST) list.get(i));
+					((ASTAssociation) filterAST).appendRule((IAST) list.get(i));
 				}
 			}
 			return filterAST;
@@ -356,7 +356,7 @@ public class AssociationAST extends AST implements IAssociation {
 			}
 		};
 		Collections.sort(indices, comparator);
-		AssociationAST result = new AssociationAST(size(), false);
+		ASTAssociation result = new ASTAssociation(size(), false);
 		for (Object2IntMap.Entry<IExpr> element : map.object2IntEntrySet()) {
 			// for (Map.Entry<IExpr, Integer> element : map.entrySet()) {
 			int value = element.getIntValue();
@@ -381,7 +381,7 @@ public class AssociationAST extends AST implements IAssociation {
 		} else {
 			EvalAttributes.sort(list, comparator);
 		}
-		AssociationAST assoc = new AssociationAST(list.argSize(), false);
+		ASTAssociation assoc = new ASTAssociation(list.argSize(), false);
 		for (int i = 1; i < list.size(); i++) {
 			IExpr key = list.get(i);
 			int value = map.getInt(key);

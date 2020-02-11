@@ -6,7 +6,7 @@ import java.util.Comparator;
 import javax.annotation.Nonnull;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.expression.AssociationAST;
+import org.matheclipse.core.expression.ASTAssociation;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Predicates;

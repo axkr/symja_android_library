@@ -5363,9 +5363,9 @@ public class F {
 
 	public static IAssociation assoc(final IAST listOfRules) {
 		if (listOfRules.isAST1() && listOfRules.arg1().isListOfRules(true)) {
-			return new AssociationAST((IAST) listOfRules.arg1());
+			return new ASTAssociation((IAST) listOfRules.arg1());
 		}
-		return new AssociationAST(listOfRules);
+		return new ASTAssociation(listOfRules);
 	}
 
 	/**

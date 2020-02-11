@@ -6,8 +6,8 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.data.DatasetExpr;
 //import org.matheclipse.core.expression.data.DataSetExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -41,7 +41,7 @@ public class SemanticImport extends AbstractEvaluator {
 
 					// System.out.println(table.printAll());
 					// System.out.println(table.structure().printAll());
-					return DatasetExpr.newInstance(table);
+					return ASTDataset.newInstance(table);
 
 				} catch (IOException ioe) {
 					return engine.printMessage("SemanticImport: file " + fileName + " not found!");
