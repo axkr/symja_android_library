@@ -98,11 +98,11 @@
 				<version>2.5</version>
 			</dependency>
 			<!-- see github issues #63 -->
-			<dependency>
+			<!-- <dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-android</artifactId>
 				<version>1.7.25</version>
-			</dependency>
+			</dependency> -->
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-simple</artifactId>
@@ -205,6 +205,11 @@
 			<dependency>
 				<groupId>tech.tablesaw</groupId>
 				<artifactId>tablesaw-core</artifactId>
+				<version>0.37.3</version>
+			</dependency>
+			<dependency>
+				<groupId>tech.tablesaw</groupId>
+				<artifactId>tablesaw-html</artifactId>
 				<version>0.37.3</version>
 			</dependency>
 			<dependency>

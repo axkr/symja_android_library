@@ -1,9 +1,11 @@
 package org.matheclipse.core.expression;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -28,8 +30,10 @@ import com.google.common.cache.CacheBuilder;
 
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Row;
+import tech.tablesaw.api.StringColumn;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.columns.Column;
+import tech.tablesaw.io.html.HtmlWriteOptions;
 
 public class ASTDataset extends AbstractAST implements IDataExpr<Table>, Externalizable {
 
@@ -481,5 +485,12 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table>, Externa
 			throw new MemoryLimitExceeded("String length to big: " + str.length());
 		}
 		objectOutput.writeUTF(str);
+	}
+
+	public static String datasetToJSForm(ASTDataset dataset) throws IOException {
+		Table table = dataset.fTable;
+		OutputStream baos = new ByteArrayOutputStream();
+		table.write().usingOptions(HtmlWriteOptions.builder(baos).escapeText(true).build());
+		return baos.toString();
 	}
 }

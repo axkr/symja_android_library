@@ -40,10 +40,9 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-android</artifactId>
-		</dependency>
+		<!-- see github issues #63 -->
+		<!-- <dependency> <groupId>org.slf4j</groupId> <artifactId>slf4j-android</artifactId> 
+			</dependency> -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>log4j-over-slf4j</artifactId>
@@ -126,6 +125,10 @@
 		<dependency>
 			<groupId>tech.tablesaw</groupId>
 			<artifactId>tablesaw-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>tech.tablesaw</groupId>
+			<artifactId>tablesaw-html</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>tech.tablesaw</groupId>

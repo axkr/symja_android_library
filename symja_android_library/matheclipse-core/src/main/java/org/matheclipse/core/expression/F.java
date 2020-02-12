@@ -940,7 +940,7 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol Dataset = F.initFinalSymbol("Dataset", ID.Dataset);
-	
+
 	/**
 	 * DSolve(equation, f(var), var) - attempts to solve a linear differential `equation` for the function `f(var)` and
 	 * variable `var`.
@@ -3119,10 +3119,11 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol SemanticImport = F.initFinalSymbol("SemanticImport", ID.SemanticImport);
-	
+
 	/***/
-	public final static IBuiltInSymbol SemanticImportString = F.initFinalSymbol("SemanticImportString", ID.SemanticImportString);
-	
+	public final static IBuiltInSymbol SemanticImportString = F.initFinalSymbol("SemanticImportString",
+			ID.SemanticImportString);
+
 	/***/
 	public final static IBuiltInSymbol Sequence = F.initFinalSymbol("Sequence", ID.Sequence);
 
@@ -10165,37 +10166,40 @@ public class F {
 	 * @throws IOException
 	 */
 	public static String show(IExpr expr) {
-		if (expr.isSameHeadSizeGE(Show, 2)) {
-			try {
+		try {
+			if (expr.isSameHeadSizeGE(Show, 2)) {
 				IAST show = (IAST) expr;
 				if (show.size() > 1 && show.arg1().isSameHeadSizeGE(Graphics, 2)) {
 					return openSVGOnDesktop(show);
 				}
-			} catch (Exception ex) {
-				if (Config.SHOW_STACKTRACE) {
-					ex.printStackTrace();
-				}
-			}
-		} else if (expr.head().equals(Graph) && expr instanceof IDataExpr) {
-			String javaScriptStr = GraphFunctions.graphToJSForm((IDataExpr) expr);
-			if (javaScriptStr != null) {
-				try {
+			} else if (expr.head().equals(Graph) && expr instanceof IDataExpr) {
+				String javaScriptStr = GraphFunctions.graphToJSForm((IDataExpr) expr);
+				if (javaScriptStr != null) {
 					String html = Config.VISJS_PAGE;
 					html = StringUtils.replace(html, "`1`", javaScriptStr);
 					html = StringUtils.replace(html, "`2`", "var options = {};");
 					return openHTMLOnDesktop(html);
-				} catch (Exception ex) {
-					if (Config.SHOW_STACKTRACE) {
-						ex.printStackTrace();
-					}
 				}
+			} else if (expr.isAST(JSFormData, 3)) {
+				return printJSFormData(expr);
+			} else if (expr.isString()) {
+				IStringX str = (IStringX) expr;
+				if (str.getMimeType() == IStringX.TEXT_HTML) {
+					String htmlSnippet = str.toString();
+					String htmlPage = Config.HTML_PAGE;
+					htmlPage = StringUtils.replace(htmlPage, "`1`", htmlSnippet);
+					System.out.println(htmlPage);
+					return F.openHTMLOnDesktop(htmlPage);
+				}
+			} else if (expr.isList(x -> x.isAST(JSFormData, 3))) {
+				StringBuilder buf = new StringBuilder();
+				((IAST) expr).forEach(x -> buf.append(printJSFormData(x)));
+				return buf.toString();
 			}
-		} else if (expr.isAST(JSFormData, 3)) {
-			return printJSFormData(expr);
-		} else if (expr.isList(x -> x.isAST(JSFormData, 3))) {
-			StringBuilder buf = new StringBuilder();
-			((IAST) expr).forEach(x -> buf.append(printJSFormData(x)));
-			return buf.toString();
+		} catch (Exception ex) {
+			if (Config.SHOW_STACKTRACE) {
+				ex.printStackTrace();
+			}
 		}
 		return null;
 	}

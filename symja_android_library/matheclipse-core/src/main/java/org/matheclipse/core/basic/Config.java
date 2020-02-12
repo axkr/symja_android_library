@@ -603,5 +603,19 @@ public class Config {
 					"</body>\n" + //
 					"</html>";//
 
+	/**
+	 * HTML template  
+	 */
+	public final static String HTML_PAGE = //
+			"<html>\n" + //
+					"<head>\n" + //
+					"<meta charset=\"utf-8\">\n" + //
+					"<title>HTML</title>\n" + //  
+					"</head>\n"
+					+ "<body>\n" + // 
+					"`1`\n" + //
+					"</body>\n" + //
+					"</html>";//
+	
 	public final static double DEFAULT_CHOP_DELTA = 1.0e-10;
 }
