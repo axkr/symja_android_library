@@ -403,15 +403,8 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 
 	@Override
 	public IAST getItems(int[] items, int length) {
-		if (length == 0) {
-			return this;
-		}
-		AST result = new AST(length, true);
-		result.set(0, head());
-		for (int i = 0; i < length; i++) {
-			result.set(i + 1, get(items[i]));
-		}
-		return result;
+		IAST result = normal();
+		return result.getItems(items, length);
 	}
 
 	public int getDenominator() {

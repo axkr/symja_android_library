@@ -1389,22 +1389,28 @@ public abstract class AbstractAST implements IASTMutable {
 			if (predicate.test(get(i))) {
 				items[length++] = i;
 			}
-		} 
+		}
+		if (length == argSize()) {
+			return this;
+		}
 		return getItems(items, length);
 	};
 
 	public IAST select(Predicate<? super IExpr> predicate, int maxMatches) {
-		maxMatches = size()>maxMatches?maxMatches:size();
+		maxMatches = size() > maxMatches ? maxMatches : size();
 		int[] items = new int[maxMatches];
 		int length = 0;
 		for (int i = 1; i < size(); i++) {
 			if (predicate.test(get(i))) {
 				items[length++] = i;
-				if (maxMatches==length) {
+				if (maxMatches == length) {
 					break;
 				}
 			}
-		} 
+		}
+		if (length == argSize()) {
+			return this;
+		}
 		return getItems(items, length);
 	};
 

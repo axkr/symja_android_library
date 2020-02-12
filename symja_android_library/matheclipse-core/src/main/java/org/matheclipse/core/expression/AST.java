@@ -117,10 +117,7 @@ public class AST extends HMArrayList implements Externalizable {
 		}
 
 		@Override
-		public IAST getItems(int[] items, int length) {
-			if (length == 0) {
-				return this;
-			}
+		public IAST getItems(int[] items, int length) { 
 			AST result = new AST(length, true);
 			result.set(0, head());
 			for (int i = 0; i < length; i++) {

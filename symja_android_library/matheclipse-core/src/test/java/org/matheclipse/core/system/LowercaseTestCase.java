@@ -18742,6 +18742,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSelect() {
+		check("Select({-3, 0}, #>10&)", //
+				"{}");
+		check("Select(<|a -> 1, b -> 2, c -> 3, d -> 4|>, # > 6 &)", //
+				"<||>");
 		check("Select(<|a -> 1, b -> 2, c -> 3, d -> 4|>, # > 2 &)", //
 				"<|c->3,d->4|>");
 		check("Select(Accumulate(Table({1,Prime(x)},{x,900,1000})), PrimeQ( #[[2]] )& )", //

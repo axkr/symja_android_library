@@ -392,10 +392,7 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	}
 	
 	@Override
-	public IAST getItems(int[] items, int length) {
-		if (length == 0) {
-			return this;
-		}
+	public IAST getItems(int[] items, int length) { 
 		double[][] m = new double[length][];
 		for (int i = 0; i < length; i++) {
 			m[i] = matrix.getRow(items[i] - 1);

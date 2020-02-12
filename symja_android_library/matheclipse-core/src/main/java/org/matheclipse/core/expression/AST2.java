@@ -368,7 +368,10 @@ public class AST2 extends AST1 {
 
 	@Override
 	public IAST getItems(int[] items, int length) {
-		if (length == 0 || length == 2) {
+		if (length == 0) {
+			return new AST0(head());
+		}
+		if (length == 2 && items[0] == 1 && items[1] == 2) {
 			return this;
 		}
 		if (length == 1) {

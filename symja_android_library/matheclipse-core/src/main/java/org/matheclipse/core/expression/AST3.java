@@ -437,7 +437,10 @@ public final class AST3 extends AST2 {
 
 	@Override
 	public IAST getItems(int[] items, int length) {
-		if (length == 0 || length == 3) {
+		if (length == 0) {
+			return new AST0(head());
+		}
+		if (length == 3 && items[0] == 1 && items[1] == 2 && items[2] == 3) {
 			return this;
 		}
 		if (length == 1) {

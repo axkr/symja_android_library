@@ -394,10 +394,7 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 	}
 
 	@Override
-	public IAST getItems(int[] items, int length) {
-		if (length == 0) {
-			return this;
-		}
+	public IAST getItems(int[] items, int length) { 
 		double[] v = new double[length];
 		for (int i = 0; i < length; i++) {
 			v[i] = vector.getEntry(items[i] - 1);
