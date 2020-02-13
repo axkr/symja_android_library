@@ -59,7 +59,7 @@ public final class FunctionDefinitions {
 			Plot3D.setEvaluator(new org.matheclipse.core.reflection.system.Plot3D());
 			PolarPlot.setEvaluator(new org.matheclipse.core.reflection.system.PolarPlot());
 			Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
-
+			Ramp.setEvaluator(new org.matheclipse.core.reflection.system.Ramp());
 			SemanticImport.setEvaluator(new org.matheclipse.core.reflection.system.SemanticImport());
 			SemanticImportString.setEvaluator(new org.matheclipse.core.reflection.system.SemanticImportString());
 			Share.setEvaluator(new org.matheclipse.core.reflection.system.Share());

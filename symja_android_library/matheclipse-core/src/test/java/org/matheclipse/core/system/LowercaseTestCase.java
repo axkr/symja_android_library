@@ -3762,6 +3762,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCount() {
+		check("Count(<|a -> 1, b -> 2, c -> 2|>, 2)", //
+				"2");
 		check("Count({3, 7, 10, 7, 5, 3, 7, 10}, 3)", //
 				"2");
 		check("Count({{a, a}, {a, a, a}, a}, a, {2})", //
@@ -3783,6 +3785,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("count({a, b, f(g(b,a)), a, b, c, b}, b, {-1})", //
 				"4");
 		check("count({3, 4, x, x^2, x^3}, x^_)", //
+				"2");
+	}
+
+	public void testCountDistinct() {
+		check("CountDistinct({a, b, b, c, a})", //
+				"3");
+		check("CountDistinct(<|a -> 1, b -> 2, c -> 2|>)", //
 				"2");
 	}
 
@@ -12677,6 +12686,32 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Min(Abs(x),Abs(y))");
 	}
 
+	public void testMinMax() {
+		check("MinMax({1, 2, 3, 4})", //
+				"{1,4}");
+		check("MinMax({1, 2, 3, 4},.2)", //
+				"{0.8,4.2}");
+		check("MinMax({1, 2, 3, 4}, Scaled(.2))", //
+				"{0.4,4.6}");
+		check("MinMax({Pi, 1.3, E, Sqrt(10)})", //
+				"{1.3,Sqrt(10)}");
+		check("MinMax({Pi, 1.3, E, Sqrt(10)}, 1)", //
+				"{0.3,1+Sqrt(10)}");
+		check("MinMax({Pi, 1.3, E, Sqrt(10)}, Scaled(1/4))", //
+				"{0.834431,3.62785}");
+		check("MinMax({Pi, 1.3, E, Sqrt(10)}, {0, 1})", //
+				"{1.3,1+Sqrt(10)}");
+		check("MinMax({{1, 2}, {a, b}, {3, 2}})", //
+				"{Min(1,a,b),Max(3,a,b)}");
+
+		check("MinMax({ })", //
+				"{Infinity,-Infinity}");
+		check("MinMax({3, 1, 2, 5, 4})", //
+				"{1,5}");
+		check("Quantile({3, 1, 2, 5, 4}, {0, 1})", //
+				"{1,5}");
+	}
+
 	public void testMinFilter() {
 		check("MinFilter({1, 2, 3, 2, 1}, 1)", //
 				"{1,1,2,1,1}");
@@ -16872,22 +16907,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-5");
 	}
 
-	public void testQuotientRemainder() {
-		check("QuotientRemainder(13, 0)", //
-				"QuotientRemainder(13,0)");
-		check("QuotientRemainder(-17, 7)", //
-				"{-3,4}");
-		check("QuotientRemainder(15, -5)", //
-				"{-3,0}");
-		check("QuotientRemainder(17, 5)", //
-				"{3,2}");
-		check("QuotientRemainder(-17, -4)", //
-				"{4,-1}");
-		check("QuotientRemainder(-14, 7)", //
-				"{-2,0}");
-		check("QuotientRemainder(19, -4)", //
-				"{-5,-1}");
-	}
+	
 
 	public void testExpectation() {
 		// TODO improve integration for piecewise functions
@@ -16916,7 +16936,33 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("Expectation(2*x+3,Distributed(x, DiscreteUniformDistribution({4, 10})))", "17");
 
 	}
-
+	
+	public void testQuotientRemainder() {
+		check("QuotientRemainder(13, 0)", //
+				"QuotientRemainder(13,0)");
+		check("QuotientRemainder(-17, 7)", //
+				"{-3,4}");
+		check("QuotientRemainder(15, -5)", //
+				"{-3,0}");
+		check("QuotientRemainder(17, 5)", //
+				"{3,2}");
+		check("QuotientRemainder(-17, -4)", //
+				"{4,-1}");
+		check("QuotientRemainder(-14, 7)", //
+				"{-2,0}");
+		check("QuotientRemainder(19, -4)", //
+				"{-5,-1}");
+	}
+	
+	public void testRamp() {
+		check("Ramp(-1)", //
+				"0"); 
+		check("Ramp(3.7)", //
+				"3.7"); 
+		check("Ramp(Pi-E)", //
+				"-E+Pi"); 
+	}
+	
 	public void testRandom() {
 
 		// message: RandomPrime: Positive integer value expected.

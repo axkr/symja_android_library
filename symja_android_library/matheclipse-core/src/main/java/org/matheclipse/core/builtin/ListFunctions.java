@@ -109,6 +109,7 @@ public final class ListFunctions {
 			F.ComposeList.setEvaluator(new ComposeList());
 			F.ConstantArray.setEvaluator(new ConstantArray());
 			F.Count.setEvaluator(new Count());
+			F.CountDistinct.setEvaluator(new CountDistinct());
 			F.Delete.setEvaluator(new Delete());
 			F.DeleteDuplicates.setEvaluator(new DeleteDuplicates());
 			F.DeleteCases.setEvaluator(new DeleteCases());
@@ -1582,6 +1583,25 @@ public final class ListFunctions {
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_3;
+		}
+	}
+
+	private final static class CountDistinct extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			final IExpr arg1 = engine.evaluate(ast.arg1());
+			if (arg1.isAST()) {
+				final Set<IExpr> map = new HashSet<IExpr>();
+				((IAST) arg1).forEach(x -> map.add(x));
+				return F.ZZ(map.size());
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 	}
 
