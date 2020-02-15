@@ -8,6 +8,7 @@ import java.io.ObjectOutput;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -30,7 +31,6 @@ import com.google.common.cache.CacheBuilder;
 
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Row;
-import tech.tablesaw.api.StringColumn;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.columns.Column;
 import tech.tablesaw.io.html.HtmlWriteOptions;
@@ -90,6 +90,10 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table>, Externa
 
 	protected ASTDataset(final Table table) {
 		fTable = table;
+	}
+
+	public void csv(Writer writer) throws IOException {
+		fTable.write().csv(writer);
 	}
 
 	/** {@inheritDoc} */
@@ -433,7 +437,7 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table>, Externa
 	public int size() {
 		return fTable.rowCount() + 1;
 	}
-	
+
 	@Override
 	public IExpr arg1() {
 		return get(1);

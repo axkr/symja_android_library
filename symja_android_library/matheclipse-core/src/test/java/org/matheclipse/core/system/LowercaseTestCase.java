@@ -9159,13 +9159,24 @@ public class LowercaseTestCase extends AbstractTestCase {
 			check("Export(\"c:\\\\temp\\\\dotgraph.dot\",Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1}))", //
 					"c:\\temp\\dotgraph.dot");
 			check("Import(\"c:\\\\temp\\\\dotgraph.dot\")", //
-					"Graph[([1, 2, 3], [(1,2), (2,3), (3,1)])]");
+					"Graph({1,2,3},{1->2,2->3,3->1})");
 
 			check("Export(\"c:\\\\temp\\\\dotgraph.graphml\",Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1}),\"GraphML\")", //
 					"c:\\temp\\dotgraph.graphml");
-			check("Import(\"c:\\\\temp\\\\dotgraph.graphml\", \"GraphML\")", //
-					"Graph[([1, 2, 3], [(1,2), (2,3), (3,1)])]");
-
+			check("gr=Import(\"c:\\\\temp\\\\dotgraph.graphml\", \"GraphML\")", //
+					"Graph({1,2,3},{1->2,2->3,3->1})");
+			check("ExportString(gr, \"GraphML\")", //
+					"<?xml version=\"1.0\" encoding=\"UTF-8\"?><graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\r\n" + // 
+					"<graph edgedefault=\"directed\">\r\n" +  //
+					"<node id=\"1\"/>\r\n" +  //
+					"<node id=\"2\"/>\r\n" +  //
+					"<node id=\"3\"/>\r\n" +  //
+					"<edge id=\"1\" source=\"1\" target=\"2\"/>\r\n" +  //
+					"<edge id=\"2\" source=\"2\" target=\"3\"/>\r\n" +  //
+					"<edge id=\"3\" source=\"3\" target=\"1\"/>\r\n" +  //
+					"</graph>\r\n" +  //
+					"</graphml>\r\n" +  //
+					"");
 			check("Export(\"c:\\\\temp\\\\out.wxf\", {{5.7, 4.3}, {-1.2, 7.8}, {a, f(x)}}, \"WXF\")", //
 					"c:\\temp\\out.wxf");
 			check("Import(\"c:\\\\temp\\\\out.wxf\", \"WXF\")", //
@@ -18827,7 +18838,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSemanticImport() {
-		Config.FILESYSTEM_ENABLED = true;
 		String s = System.getProperty("os.name");
 		if (s.contains("Windows")) {
 			// check("dset = Dataset({\n" + //
@@ -18846,8 +18856,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 			// check("ds=SemanticImport(\"./data/test.csv\");", //
 			// "");
 
-			check("ds=SemanticImport(\"./data/tornadoes_1950-2014.csv\");", //
-					"");
+//			check("ds=SemanticImport(\"./data/tornadoes_1950-2014.csv\");", //
+//					"");
+//			check("ExportString(ds, \"csv\");", //
+//					"");
 		}
 
 	}

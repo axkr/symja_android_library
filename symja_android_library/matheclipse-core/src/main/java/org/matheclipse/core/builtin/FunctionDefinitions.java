@@ -24,6 +24,7 @@ public final class FunctionDefinitions {
 			ElementData.setEvaluator(new org.matheclipse.core.data.ElementData());
 			Eliminate.setEvaluator(new org.matheclipse.core.reflection.system.Eliminate());
 			Export.setEvaluator(new org.matheclipse.core.reflection.system.Export());
+			ExportString.setEvaluator(new org.matheclipse.core.reflection.system.ExportString());
 			ExpToTrig.setEvaluator(new org.matheclipse.core.reflection.system.ExpToTrig());
 			FindInstance.setEvaluator(new org.matheclipse.core.reflection.system.FindInstance());
 			FindRoot.setEvaluator(new org.matheclipse.core.reflection.system.FindRoot());
