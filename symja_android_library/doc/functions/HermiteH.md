@@ -11,6 +11,7 @@ See:
 * [Wikipedia - Hermite polynomials](https://en.wikipedia.org/wiki/Hermite_polynomials)
 
 ### Examples
+
 ```   
 >> HermiteH(8, x)    
 1680-13440*x^2+13440*x^4-3584*x^6+256*x^8 

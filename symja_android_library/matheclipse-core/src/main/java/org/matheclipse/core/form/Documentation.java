@@ -12,6 +12,39 @@ import org.matheclipse.core.interfaces.IExpr;
 
 public class Documentation {
 
+	/**
+	 * Get the pure <code>markdown</code> formatted information about the <code>builinFunctionName</code>
+	 * 
+	 * @param out
+	 * @param builinFunctionName
+	 * @return
+	 */
+	public static boolean getMarkdown(Appendable out, String builinFunctionName) {
+		// read markdown file
+		String fileName = builinFunctionName + ".md";
+
+		// Get file from resources folder
+		ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+
+		try {
+			InputStream is = classloader.getResourceAsStream(fileName);
+			if (is != null) {
+				final BufferedReader f = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+				String line;
+				while ((line = f.readLine()) != null) {
+					out.append(line);
+					out.append("\n");
+				}
+				f.close();
+				is.close();
+				return true;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
 	public static void findDocumentation(Appendable out, String trimmedInput) {
 		String name = trimmedInput.substring(1);
 		usageDocumentation(out, name);
@@ -22,7 +55,7 @@ public class Documentation {
 		String name = trimmedInput.substring(1);
 		usageDocumentation(out, name);
 		String str = out.toString();
-		if (str.length()==0) {
+		if (str.length() == 0) {
 			return F.Missing(F.stringx("UnknownSymbol"), F.stringx(trimmedInput));
 		}
 		return F.stringx(str);
@@ -51,7 +84,7 @@ public class Documentation {
 	}
 
 	/**
-	 * Load the documentation from ressource folder if available and print to output.
+	 * Load the documentation from resource folder if available and print to output.
 	 * 
 	 * @param symbolName
 	 */

@@ -8469,6 +8469,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-1/5+10*z^2-80*z^4+224*z^6-256*z^8+512/5*z^10");
 		check("GegenbauerC(11,-z)", //
 				"2*z-40*z^3+224*z^5-512*z^7+512*z^9-2048/11*z^11");
+		check("GegenbauerC(8,z)", //
+				"1/4-8*z^2+40*z^4-64*z^6+32*z^8");
+		check("GegenbauerC(3, 1 + I)", //
+				"-22/3+I*10/3");
+		check("GegenbauerC(2,a,z)", //
+				"-a+2*a*(1+a)*z^2");
+		
 	}
 
 	public void testGCD() {
