@@ -175,6 +175,15 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table>, Externa
 		return newInstance(table);
 	}
 
+	public IExpr groupBy(List<String> group) {
+		String[] strings = new String[group.size()];
+		for (int i = 0; i < strings.length; i++) {
+			strings[i] = group.get(i);
+		}
+		Table table = fTable.sortAscendingOn(strings);
+		return newInstance(table);
+	}
+
 	@Override
 	public int hashCode() {
 		return (fTable == null) ? 59 : 59 + fTable.hashCode();
@@ -424,7 +433,7 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table>, Externa
 	public int size() {
 		return fTable.rowCount() + 1;
 	}
-
+	
 	@Override
 	public IExpr arg1() {
 		return get(1);

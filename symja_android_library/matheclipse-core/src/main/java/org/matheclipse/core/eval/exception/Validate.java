@@ -3,7 +3,6 @@ package org.matheclipse.core.eval.exception;
 import java.io.IOException;
 import java.math.BigInteger;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -13,7 +12,6 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
-import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -403,6 +401,7 @@ public final class Validate {
 	/**
 	 * Check if the argument at the given position is a single symbol or a list of symbols.
 	 * 
+	 * @param ast
 	 * @param position
 	 *            the position which has to be a symbol or list.
 	 * @param engine
@@ -510,7 +509,7 @@ public final class Validate {
 	 */
 	public static IExpr checkSymbolType(IAST ast, int position, EvalEngine engine) {
 		if (ast.get(position).isSymbol()) {
-			return (ISymbol) ast.get(position);
+			return ast.get(position);
 		}
 		// Argument `1` at position `2` is expected to be a symbol.
 		return IOFunctions.printMessage(ast.topHead(), "sym", F.List(ast.get(position), F.ZZ(position)), engine);
@@ -526,7 +525,7 @@ public final class Validate {
 	 */
 	public static IExpr checkIsVariable(IAST ast, int position, EvalEngine engine) {
 		if (ast.get(position).isSymbol() && !ast.get(position).isConstantAttribute()) {
-			return (ISymbol) ast.get(position);
+			return ast.get(position);
 		}
 		// `1` is not a valid variable.
 		return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(ast.get(position)), engine);

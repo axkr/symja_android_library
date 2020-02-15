@@ -1,6 +1,8 @@
 package org.matheclipse.core.convert;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
@@ -27,6 +29,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -251,7 +254,7 @@ public class Convert {
 		final Complex[] elements = new Complex[size];
 		EvalEngine engine = EvalEngine.get();
 		for (int i = 0; i < size; i++) {
-			IExpr element = vector.get(i + 1); 
+			IExpr element = vector.get(i + 1);
 			elements[i] = engine.evalComplex(element);
 		}
 		return elements;
@@ -494,6 +497,36 @@ public class Convert {
 	}
 
 	private Convert() {
+	}
+
+	/**
+	 * Convert the <code>expr</code> into a list of IStringX.
+	 * 
+	 * @param expr
+	 *            the <code>expr</code> which has to be a IStringX or list of IStringX
+	 * 
+	 * @return a list of String or <code>null</code> otherwise
+	 */
+	public static List<String> toStringList(IExpr expr) {
+		if (expr.isList()) {
+			List<String> result = new ArrayList<String>(expr.size() - 1);
+			IAST listOfStrings = (IAST) expr;
+			for (int i = 1; i < listOfStrings.size(); i++) {
+				if (listOfStrings.get(i) instanceof IStringX) {
+					result.add(listOfStrings.get(i).toString());
+					continue;
+				}
+				return null;
+			}
+			return result;
+		} else {
+			List<String> result = new ArrayList<String>(1);
+			if (expr instanceof IStringX) {
+				result.add(expr.toString());
+				return result;
+			}
+		}
+		return null;
 	}
 
 }

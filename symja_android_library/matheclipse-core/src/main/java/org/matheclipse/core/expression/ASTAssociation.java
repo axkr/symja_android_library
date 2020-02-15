@@ -203,7 +203,6 @@ public class ASTAssociation extends AST implements IAssociation {
 		IASTMutable list = F.ast(symbol, argSize(), true);
 
 		for (Object2IntMap.Entry<IExpr> element : map.object2IntEntrySet()) {
-			// for (Map.Entry<IExpr, Integer> element : map.entrySet()) {
 			int value = element.getIntValue();
 			if (value < 0) {
 				value *= -1;
@@ -276,30 +275,31 @@ public class ASTAssociation extends AST implements IAssociation {
 
 	public IAST getItems(int[] items, int length) {
 		ASTAssociation assoc = new ASTAssociation(length, false);
-
 		if (length > 0) {
-			int j = 0;
-			for (Object2IntMap.Entry<IExpr> element : map.object2IntEntrySet()) {
-				// for (Map.Entry<IExpr, Integer> element : map.entrySet()) {
-				int value = element.getIntValue();
-				if (value < 0) {
-					value *= -1;
-					if (items[j] == value) {
-						assoc.appendRule(F.RuleDelayed(element.getKey(), get(value)));
-						j++;
-						if (length <= j) {
-							break;
-						}
-					}
-				} else {
-					if (items[j] == value) {
-						assoc.appendRule(F.Rule(element.getKey(), get(value)));
-						j++;
-						if (length <= j) {
-							break;
+			if (length <= 5) {
+				for (int i = 0; i < length; i++) {
+					for (Object2IntMap.Entry<IExpr> element : map.object2IntEntrySet()) {
+						int value = element.getIntValue();
+						if (value < 0) {
+							value *= -1;
+							if (value == items[i]) {
+								assoc.appendRule(F.RuleDelayed(element.getKey(), get(value)));
+								break;
+							}
+						} else {
+							if (value == items[i]) {
+								assoc.appendRule(F.Rule(element.getKey(), get(value)));
+								break;
+							}
 						}
 					}
 				}
+				return assoc;
+			}
+
+			IAST ast = normal();
+			for (int i = 0; i < length; i++) {
+				assoc.appendRule((IAST) ast.get(items[i]));
 			}
 		}
 		return assoc;

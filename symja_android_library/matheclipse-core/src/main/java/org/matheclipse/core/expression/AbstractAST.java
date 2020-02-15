@@ -3871,11 +3871,6 @@ public abstract class AbstractAST implements IASTMutable {
 		// return F.eval(F.Times(F.CN1, this));
 	}
 
-	@Override
-	public final IExpr or(final IExpr that) {
-		return F.Or(this, that);
-	}
-
 	public IAST orElse(final IAST other) {
 		return this;
 	}

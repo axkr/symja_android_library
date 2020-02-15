@@ -2174,6 +2174,26 @@ public class EvalEngine implements Serializable {
 	}
 
 	/**
+	 * Print a message to the <code>Out</code> stream, if the engine is not in &quot;quiet mode&quot;.
+	 * 
+	 * @param rex
+	 *            the RuntimeException which should be printed
+	 */
+	public IAST printMessage(RuntimeException rex) {
+		if (!isQuietMode()) {
+			PrintStream stream = getErrorPrintStream();
+			if (stream == null) {
+				stream = System.err;
+			}
+			stream.println(rex.getMessage());
+		}
+		if (fThrowError) {
+			throw new IllegalArgument(rex.getMessage());
+		}
+		return F.NIL;
+	}
+
+	/**
 	 * Reset the numeric mode flag and the recursion counter
 	 * 
 	 */

@@ -28,6 +28,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
+import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ComplexNum;
@@ -187,6 +188,11 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return power(that);
 	}
 
+	/**
+	 * Evaluate the absolute value of this.
+	 * 
+	 * @return
+	 */
 	@Override
 	default IExpr abs() {
 		return F.eval(F.Abs(this));
@@ -229,6 +235,13 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return plus(that);
 	}
 
+	/**
+	 * Apply the <code>And</code> operator
+	 * 
+	 * @param that
+	 * @return
+	 * @deprecated use {@link F#And(IExpr, IExpr)}
+	 */
 	default IExpr and(final IExpr that) {
 		return F.And(this, that);
 	}
@@ -1340,6 +1353,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default boolean isCosh() {
 		return false;
+	}
+
+	/**
+	 * Test if this AST is a <code>Dataset</code> (i.e. instance of <code>ASTDataset</code>).
+	 * 
+	 * @return
+	 */
+	default boolean isDataSet() {
+		return this instanceof ASTDataset;
 	}
 
 	/**
@@ -3150,15 +3172,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Converts a special expression (like a series) into a standard expression.
-	 * 
+	 * Converts a <b>special expression</b> (like a series, association, dataset, ...) into a standard <i>normalized</i>
+	 * expression.
 	 * 
 	 * <pre>
 	 * &gt;&gt; Normal(SeriesData(x, 0, {1, 0, -1, -4, -17, -88, -549}, -1, 6, 1))
 	 * 1/x-x-4*x^2-17*x^3-88*x^4-549*x^5
 	 * </pre>
 	 * 
-	 * @return the standard expression for special expressions ot <code>this</code> for the other expressions
+	 * @return the standard expression for <b>special expression</b> or <code>this</code> otherwise
 	 */
 	default IExpr normal() {
 		return this;
@@ -3192,6 +3214,13 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return this;
 	}
 
+	/**
+	 * Apply the <code>Or</code> operator
+	 * 
+	 * @param that
+	 * @return
+	 * @deprecated use {@link F#Or(IExpr, IExpr)}
+	 */
 	default IExpr or(final IExpr that) {
 		return F.Or(this, that);
 	}
@@ -3764,6 +3793,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default int[] toIntVector() {
 		return null;
 	}
+
 	/**
 	 * Converts this number to an <code>int</code> value; unlike {@link #intValue} this method returns
 	 * <code>defaultValue</code> if the value of this integer isn't in the range <code>Integer.MIN_VALUE</code> to

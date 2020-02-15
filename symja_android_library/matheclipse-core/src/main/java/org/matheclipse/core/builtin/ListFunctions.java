@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 import static org.matheclipse.core.expression.F.List;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,6 +21,7 @@ import javax.annotation.Nonnull;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
+import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -39,6 +41,7 @@ import org.matheclipse.core.eval.util.LevelSpec;
 import org.matheclipse.core.eval.util.LevelSpecification;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.eval.util.Sequence;
+import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Functors;
@@ -60,6 +63,43 @@ import org.matheclipse.core.visit.VisitorLevelSpecification;
 import org.matheclipse.core.visit.VisitorRemoveLevelSpecification;
 
 public final class ListFunctions {
+	/**
+	 * See <a href="https://stackoverflow.com/a/4859279/24819">Get the indices of an array after sorting?</a>
+	 *
+	 */
+	private final static class ArrayIndexComparator implements Comparator<Integer> {
+		protected final IAST ast;
+		protected EvalEngine engine;
+
+		public ArrayIndexComparator(IAST ast, EvalEngine engine) {
+			this.ast = ast;
+			this.engine = engine;
+		}
+
+		public Integer[] createIndexArray() {
+			int size = ast.size();
+			Integer[] indexes = new Integer[size - 1];
+			for (int i = 1; i < size; i++) {
+				indexes[i - 1] = i;
+			}
+			return indexes;
+		}
+
+		@Override
+		public int compare(Integer index1, Integer index2) {
+			IExpr arg1 = ast.get(index1);
+			IExpr arg2 = ast.get(index2);
+			if (arg1.isNumericFunction() && arg2.isNumericFunction()) {
+				if (engine.evalTrue(F.Greater(arg1, arg2))) {
+					return -1;
+				}
+				if (engine.evalTrue(F.Less(arg1, arg2))) {
+					return 1;
+				}
+			}
+			return (-1) * arg1.compareTo(arg2);
+		}
+	}
 
 	private interface IVariablesFunction {
 		public IExpr evaluate(final ISymbol[] variables, final IExpr[] index);
@@ -116,6 +156,7 @@ public final class ListFunctions {
 			F.Drop.setEvaluator(new Drop());
 			F.Extract.setEvaluator(new Extract());
 			F.First.setEvaluator(new First());
+			F.GroupBy.setEvaluator(new GroupBy());
 			F.Fold.setEvaluator(new Fold());
 			F.FoldList.setEvaluator(new FoldList());
 			F.Gather.setEvaluator(new Gather());
@@ -151,6 +192,8 @@ public final class ListFunctions {
 			F.Subdivide.setEvaluator(new Subdivide());
 			F.Table.setEvaluator(new Table());
 			F.Take.setEvaluator(new Take());
+			F.TakeLargest.setEvaluator(new TakeLargest());
+			F.TakeLargestBy.setEvaluator(new TakeLargestBy());
 			F.Tally.setEvaluator(new Tally());
 			F.Total.setEvaluator(new Total());
 			F.Union.setEvaluator(new Union());
@@ -2501,6 +2544,43 @@ public final class ListFunctions {
 					}
 				}
 				return result;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	private final static class GroupBy extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				ast = F.operatorFormAppend(ast);
+				if (!ast.isPresent()) {
+					return F.NIL;
+				}
+			}
+			if (ast.isAST2()) {
+				try {
+					if (ast.arg1().isDataSet()) {
+						List<String> listOfStrings = Convert.toStringList(ast.arg2());
+						if (listOfStrings != null) {
+							ASTDataset dataset = (ASTDataset) ast.arg1();
+							return dataset.groupBy(listOfStrings);
+						}
+					}
+				} catch (RuntimeException rex) {
+					return engine.printMessage(rex);
+				}
 			}
 			return F.NIL;
 		}
@@ -5711,6 +5791,98 @@ public final class ListFunctions {
 		}
 	}
 
+	private final static class TakeLargest extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				ast = F.operatorFormAppend(ast);
+				if (!ast.isPresent()) {
+					return F.NIL;
+				}
+			}
+			if (ast.isAST2()) {
+				try {
+					if (ast.arg1().isAST()) {
+						IAST list = (IAST) ast.arg1();
+						list = cleanList(list);
+						int n = ast.arg2().toIntDefault();
+						if (n > 0 && n <= list.size()) {
+							ArrayIndexComparator largestComparator = new ArrayIndexComparator(list, engine);
+							Integer[] indexes = largestComparator.createIndexArray();
+							Arrays.sort(indexes, largestComparator);
+							int[] largestIndexes = new int[n];
+							for (int i = 0; i < n; i++) {
+								largestIndexes[i] = indexes[i];
+							}
+							return list.getItems(largestIndexes, largestIndexes.length);
+
+						}
+					}
+				} catch (RuntimeException rex) {
+					return engine.printMessage(rex);
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	private final static class TakeLargestBy extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			if (ast.isAST2()) {
+				ast = F.operatorFormAppend(ast);
+				if (!ast.isPresent()) {
+					return F.NIL;
+				}
+			}
+			if (ast.isAST3()) {
+				try {
+					if (ast.arg1().isAST()) {
+						IAST cleanedList = cleanList((IAST) ast.arg1());
+						int n = ast.arg3().toIntDefault();
+						if (n > 0 && n <= cleanedList.size()) {
+							IAST list = cleanedList.mapThread(F.unary(ast.arg2(), F.Slot1), 1);
+							ArrayIndexComparator largestComparator = new ArrayIndexComparator(list, engine);
+							Integer[] indexes = largestComparator.createIndexArray();
+							Arrays.sort(indexes, largestComparator);
+							int[] largestIndexes = new int[n];
+							for (int i = 0; i < n; i++) {
+								largestIndexes[i] = indexes[i];
+							}
+							return cleanedList.getItems(largestIndexes, largestIndexes.length);
+
+						}
+					}
+				} catch (RuntimeException rex) {
+					return engine.printMessage(rex);
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
 	/**
 	 * <pre>
 	 * Total(list)
@@ -5949,6 +6121,19 @@ public final class ListFunctions {
 			});
 		}
 		return resultCollection;
+	}
+
+	/**
+	 * Exclude <code>Indeterminate, Missing(), None, Null</code> and other symbolic expressions from list.
+	 * 
+	 * @param list
+	 * @return
+	 */
+	private static IAST cleanList(IAST list) {
+		return list.select(x -> !(x.equals(F.Indeterminate) || //
+				x.equals(F.Null) || //
+				x.equals(F.None) || //
+				x.isAST(F.Missing)));
 	}
 
 	/**

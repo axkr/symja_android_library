@@ -42,7 +42,9 @@ public class Dataset extends AbstractEvaluator {
 						return result;
 					}
 					if (!arg1.equals(F.All)) {
-						if (arg1.isBuiltInSymbol()) {
+						if (arg1.isBuiltInSymbol() || //
+								arg1.isAST(F.TakeLargest, 2)|| //
+								arg1.isAST(F.TakeLargestBy, 3)) {
 							IExpr expr = dataSet.select(F.All, arg2);
 							if (expr instanceof ASTDataset) {
 								return F.unaryAST1(arg1, ((ASTDataset) expr).normal());

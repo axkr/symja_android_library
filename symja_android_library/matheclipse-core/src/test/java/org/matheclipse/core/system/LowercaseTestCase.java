@@ -16907,8 +16907,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-5");
 	}
 
-	
-
 	public void testExpectation() {
 		// TODO improve integration for piecewise functions
 		check("Expectation((x + 3)/(x + 5), Distributed(x, ExponentialDistribution(2)))", //
@@ -16936,7 +16934,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("Expectation(2*x+3,Distributed(x, DiscreteUniformDistribution({4, 10})))", "17");
 
 	}
-	
+
 	public void testQuotientRemainder() {
 		check("QuotientRemainder(13, 0)", //
 				"QuotientRemainder(13,0)");
@@ -16953,16 +16951,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("QuotientRemainder(19, -4)", //
 				"{-5,-1}");
 	}
-	
+
 	public void testRamp() {
 		check("Ramp(-1)", //
-				"0"); 
+				"0");
 		check("Ramp(3.7)", //
-				"3.7"); 
+				"3.7");
 		check("Ramp(Pi-E)", //
-				"-E+Pi"); 
+				"-E+Pi");
 	}
-	
+
 	public void testRandom() {
 
 		// message: RandomPrime: Positive integer value expected.
@@ -18895,26 +18893,34 @@ public class LowercaseTestCase extends AbstractTestCase {
 							" 2014/1/3	New York	235  |]");
 
 			check("ds=SemanticImportString(\"Products,Sales,Market_Share\n" + //
-					"a,5500,3\n" + //
-					"b,12200,4\n" + //
+					"a,12200,4\n" + //
+					"b,5500,3\n" + //
 					"c,60000,33\n" + //
 					"\")", //
 					"Dataset[                                       \r\n" + //
 							" Products  |  Sales  |  Market_Share  |\r\n" + //
 							"---------------------------------------\r\n" + //
-							"        a  |   5500  |             3  |\r\n" + //
-							"        b  |  12200  |             4  |\r\n" + //
+							"        a  |  12200  |             4  |\r\n" + //
+							"        b  |   5500  |             3  |\r\n" + //
 							"        c  |  60000  |            33  |]");
-
+			check("ds(TakeLargest(2), \"Sales\") ", //
+					"{60000,12200}");
+			check("ds(GroupBy(\"Sales\"), \"Sales\") ", //
+					"Dataset[         \r\n" + //
+							" Sales  |\r\n" + //
+							"---------\r\n" + //
+							"  5500  |\r\n" + //
+							" 12200  |\r\n" + //
+							" 60000  |]");
 			check("ds(Select(#Sales < 13000 &), {\"Products\", \"Market_Share\"})", //
 					"Dataset[                             \r\n" + //
 							" Products  |  Market_Share  |\r\n" + //
 							"-----------------------------\r\n" + //
-							"        a  |             3  |\r\n" + //
-							"        b  |             4  |]");
+							"        a  |             4  |\r\n" + //
+							"        b  |             3  |]");
 
 			check("ds(All, \"Sales\") // Normal", //
-					"{5500,12200,60000}");
+					"{12200,5500,60000}");
 
 			check("ds(Counts, \"Sales\")", //
 					"<|60000->1,12200->1,5500->1|>");
@@ -18932,33 +18938,33 @@ public class LowercaseTestCase extends AbstractTestCase {
 					"Dataset[                \r\n" + //
 							" Market_Share  |\r\n" + //
 							"----------------\r\n" + //
-							"            3  |\r\n" + //
 							"            4  |\r\n" + //
+							"            3  |\r\n" + //
 							"           33  |]");
 
 			check("ds(All,1;;2)", //
 					"Dataset[                      \r\n" + //
 							" Products  |  Sales  |\r\n" + //
 							"----------------------\r\n" + //
-							"        a  |   5500  |\r\n" + //
-							"        b  |  12200  |\r\n" + //
+							"        a  |  12200  |\r\n" + //
+							"        b  |   5500  |\r\n" + //
 							"        c  |  60000  |]");
 
 			check("ds(2;;3)", //
 					"Dataset[                                       \r\n" + //
 							" Products  |  Sales  |  Market_Share  |\r\n" + //
 							"---------------------------------------\r\n" + //
-							"        b  |  12200  |             4  |\r\n" + //
+							"        b  |   5500  |             3  |\r\n" + //
 							"        c  |  60000  |            33  |]");
 
 			check("ds(2)", //
 					"Dataset[                                       \r\n" + //
 							" Products  |  Sales  |  Market_Share  |\r\n" + //
 							"---------------------------------------\r\n" + //
-							"        b  |  12200  |             4  |]");
+							"        b  |   5500  |             3  |]");
 
 			check("ds(2) // Normal", //
-					"<|Products->b,Sales->12200,Market_Share->4|>");
+					"<|Products->b,Sales->5500,Market_Share->3|>");
 
 			check("ds(3, 2)", //
 					"60000");
@@ -18967,24 +18973,24 @@ public class LowercaseTestCase extends AbstractTestCase {
 					"Dataset[         \r\n" + //
 							" Sales  |\r\n" + //
 							"---------\r\n" + //
-							"  5500  |\r\n" + //
 							" 12200  |\r\n" + //
+							"  5500  |\r\n" + //
 							" 60000  |]");
 
 			check("ds(All,{1,2})", //
 					"Dataset[                      \r\n" + //
 							" Products  |  Sales  |\r\n" + //
 							"----------------------\r\n" + //
-							"        a  |   5500  |\r\n" + //
-							"        b  |  12200  |\r\n" + //
+							"        a  |  12200  |\r\n" + //
+							"        b  |   5500  |\r\n" + //
 							"        c  |  60000  |]");
 
 			check("ds(All,{\"Products\", \"Market_Share\"})", //
 					"Dataset[                             \r\n" + //
 							" Products  |  Market_Share  |\r\n" + //
 							"-----------------------------\r\n" + //
-							"        a  |             3  |\r\n" + //
-							"        b  |             4  |\r\n" + //
+							"        a  |             4  |\r\n" + //
+							"        b  |             3  |\r\n" + //
 							"        c  |            33  |]");
 		}
 	}
@@ -21208,6 +21214,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Take({a, b, c, d, e, f}, None)", //
 				"{}");
 
+	}
+
+	public void testTakeLargest() {
+		check("TakeLargest[{1, 3, 5, None, Indeterminate, Missing[]}, 2]", //
+				"{5,3}");
+		check("TakeLargest(<|a -> 1, b -> 2, c -> 3, d -> 4|>, 2)", //
+				"<|d->4,c->3|>");
+		check("TakeLargest(3) @ {1, 3, 5, 4, 2}", //
+				"{5,4,3}");
+	}
+	
+	public void testTakeLargestBy() {
+		check("TakeLargestBy({-5, -2, 4, 3, 1, 9, 2, -4}, Abs, 4)", //
+				"{9,-5,4,-4}");
+		check("TakeLargestBy(<|a -> \"\", b -> \"xxx\", c -> \"xx\"|>, StringLength, 2)", //
+				"<|b->xxx,c->xx|>");
 	}
 
 	public void testTally() {
