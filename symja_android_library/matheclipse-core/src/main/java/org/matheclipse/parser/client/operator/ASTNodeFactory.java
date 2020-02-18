@@ -60,9 +60,7 @@ public class ASTNodeFactory implements INodeParserFactory {
 		@Override
 		public ASTNode createFunction(final INodeParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
 			if (fOperatorString.equals("@")) {
-				FunctionNode fn = factory.createAST(lhs);
-				fn.add(rhs);
-				return fn;
+				return factory.unaryAST(lhs, rhs);
 			}
 			FunctionNode fn = factory.createFunction(factory.createSymbol("Apply"), lhs, rhs);
 			if (fOperatorString.equals("@@")) {
@@ -484,6 +482,11 @@ public class ASTNodeFactory implements INodeParserFactory {
 		return new FunctionNode(headExpr);
 	}
 
+	@Override
+	public FunctionNode unaryAST(final ASTNode head, final ASTNode arg0) {
+		return new FunctionNode(head, arg0);
+	} 
+	
 	@Override
 	public IntegerNode createInteger(final String integerString, final int numberFormat) {
 		return new IntegerNode(integerString, numberFormat);

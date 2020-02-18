@@ -300,7 +300,7 @@ public class ExprParser extends Scanner {
 	private IExpr createInfixFunction(InfixExprOperator infixOperator, IExpr lhs, IExpr rhs) {
 		IASTMutable temp = infixOperator.createFunction(fFactory, this, lhs, rhs);
 		if (temp.isAST()) {
-			return convert((IASTMutable) temp);
+			return convert(temp);
 		}
 		return temp;
 		// if (infixOperator.getOperatorString().equals("//")) {

@@ -496,19 +496,15 @@ public class Parser extends Scanner {
 			// read '_:'
 			getNextToken();
 			ASTNode defaultValue = parseExpression();
-			final FunctionNode function = fFactory.createAST(fFactory.createSymbol("Optional"));
-			function.add(fFactory.createPattern(symbol, null, false));
-			function.add(defaultValue);
-			temp = function;
+			temp = fFactory.createFunction(fFactory.createSymbol("Optional"),//
+					fFactory.createPattern(symbol, null, false),//
+					defaultValue);
 		}
 
 		if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
 			getNextToken();
 			ASTNode defaultValue = parseExpression();
-			final FunctionNode function = fFactory.createAST(fFactory.createSymbol("Optional"));
-			function.add(temp);
-			function.add(defaultValue);
-			temp = function;
+			temp = fFactory.createFunction(fFactory.createSymbol("Optional"), temp, defaultValue);
 		}
 		return temp;
 	}
@@ -1156,8 +1152,7 @@ public class Parser extends Scanner {
 			getNextToken();
 		}
 		FunctionNode head = fFactory.createFunction(DERIVATIVE, new IntegerNode(derivativeCounter));
-		FunctionNode deriv = fFactory.createAST(head);
-		deriv.add(expr);
+		FunctionNode deriv = fFactory.unaryAST(head, expr);
 		expr = parseArguments(deriv);
 		return expr;
 	}

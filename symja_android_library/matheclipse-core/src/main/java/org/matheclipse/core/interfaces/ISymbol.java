@@ -27,7 +27,7 @@ public interface ISymbol extends IExpr {
 	/**
 	 * ISymbol attribute to indicate that a symbols evaluation should be printed to Console with System.out.println();
 	 */
-	public final static int CONSOLE_OUTPUT = 0x1000;
+//	public final static int CONSOLE_OUTPUT = 0x1000;
 
 	/**
 	 * ISymbol attribute to indicate that a symbol has a constant value
@@ -35,8 +35,7 @@ public interface ISymbol extends IExpr {
 	public final static int CONSTANT = 0x0002;
 
 	/**
-	 * ISymbol attribute for an associative function transformation. The evaluation of the function will flatten the
-	 * arguments list
+	 * ISymbol attribute for an associative function transformation. The evaluation of the function will flatten the arguments list
 	 * 
 	 */
 	public final static int FLAT = 0x0008;
@@ -121,8 +120,7 @@ public interface ISymbol extends IExpr {
 	public final static int ONEIDENTITY = 0x0001;
 
 	/**
-	 * ISymbol attribute for a commutative function transformation. The evaluation of the function will sort the
-	 * arguments.
+	 * ISymbol attribute for a commutative function transformation. The evaluation of the function will sort the arguments.
 	 * 
 	 */
 	public final static int ORDERLESS = 0x0004;
@@ -173,16 +171,14 @@ public interface ISymbol extends IExpr {
 	/**
 	 * Clear the associated rules for this symbol
 	 * 
-	 * @param engine
-	 *            the evaluation engine
+	 * @param engine the evaluation engine
 	 */
 	public void clear(EvalEngine engine);
 
 	/**
 	 * Clear all associated rules and attributes for this symbol.
 	 * 
-	 * @param engine
-	 *            the evaluation engine
+	 * @param engine the evaluation engine
 	 */
 	public void clearAll(EvalEngine engine);
 
@@ -285,21 +281,20 @@ public interface ISymbol extends IExpr {
 	public Context getContext();
 
 	/**
-	 * Get the <i>general default value</i> for this symbol (i.e. <code>1</code> is the default value for
-	 * <code>Times</code>, <code>0</code> is the default value for <code>Plus</code>). The general default value is used
-	 * in pattern-matching for expressions like <code>a_. * b_. + c_</code>
+	 * Get the <i>general default value</i> for this symbol (i.e. <code>1</code> is the default value for <code>Times</code>,
+	 * <code>0</code> is the default value for <code>Plus</code>). The general default value is used in pattern-matching for expressions
+	 * like <code>a_. * b_. + c_</code>
 	 * 
 	 * @return the default value or <code>F.NIL</code> if undefined.
 	 */
 	public IExpr getDefaultValue();
 
 	/**
-	 * Get the <i>default value</i> at the arguments position for this symbol (i.e. <code>1</code> is the default value
-	 * for <code>Power</code> at <code>position</code> <code>2</code>). The default value is used in pattern-matching
-	 * for expressions like <code>a ^ b_.</code>
+	 * Get the <i>default value</i> at the arguments position for this symbol (i.e. <code>1</code> is the default value for
+	 * <code>Power</code> at <code>position</code> <code>2</code>). The default value is used in pattern-matching for expressions like
+	 * <code>a ^ b_.</code>
 	 * 
-	 * @param position
-	 *            the position for the default value
+	 * @param position the position for the default value
 	 * @return the default value or <code>F.NIL</code> if undefined.
 	 */
 	public IExpr getDefaultValue(int position);
@@ -348,8 +343,7 @@ public interface ISymbol extends IExpr {
 	/**
 	 * Does this symbols attribute set contains the <code>Flat</code> and <code>Orderless</code> attribute?
 	 * 
-	 * @return <code>true</code> if this symbols attribute set contains the <code>Flat</code> and the
-	 *         <code>Orderless</code> attribute.
+	 * @return <code>true</code> if this symbols attribute set contains the <code>Flat</code> and the <code>Orderless</code> attribute.
 	 */
 	boolean hasOrderlessFlatAttribute();
 
@@ -398,11 +392,10 @@ public interface ISymbol extends IExpr {
 	public boolean isString(String symbolName);
 
 	/**
-	 * Returns <code>true</code>, if this symbol has the given name. The comparison of the symbols name with the given
-	 * name is done according to the <code>Config.PARSER_USE_LOWERCASE_SYMBOLS</code> setting.
+	 * Returns <code>true</code>, if this symbol has the given name. The comparison of the symbols name with the given name is done
+	 * according to the <code>Config.PARSER_USE_LOWERCASE_SYMBOLS</code> setting.
 	 * 
-	 * @param name
-	 *            the symbol name
+	 * @param name the symbol name
 	 * @return
 	 */
 	public boolean isSymbolName(String name);
@@ -410,8 +403,7 @@ public interface ISymbol extends IExpr {
 	/**
 	 * Returns <code>true</code>, if this symbol is in the set of defined <code>ids</code>.
 	 * 
-	 * @param ids
-	 *            the symbol ordinal number
+	 * @param ids the symbol ordinal number
 	 * @return
 	 * @see org.matheclipse.core.expression.ID
 	 */
@@ -437,11 +429,10 @@ public interface ISymbol extends IExpr {
 
 	/**
 	 * If this symbol has attribute <code>ISymbol.CONSTANT</code> and the symbol's evaluator is of instance
-	 * <code>INumericConstant</code>, then apply the constants double value to the given function and return the result,
-	 * otherwise return <code>F.NIL</code>.
+	 * <code>INumericConstant</code>, then apply the constants double value to the given function and return the result, otherwise
+	 * return <code>F.NIL</code>.
 	 * 
-	 * @param function
-	 *            applys the function to a <code>double</code> value, resulting in an object of type {@code IExpr}.
+	 * @param function applys the function to a <code>double</code> value, resulting in an object of type {@code IExpr}.
 	 * @return the resulting expression from the function or <code>F.NIL</code>.
 	 * @see org.matheclipse.core.reflection.system.Abs
 	 * @see org.matheclipse.core.reflection.system.Ceiling
@@ -454,10 +445,8 @@ public interface ISymbol extends IExpr {
 	/**
 	 * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>.
 	 * 
-	 * @param engine
-	 *            the current evaluation engine
-	 * @param args
-	 *            the arguments for which this function symbol should be evaluated
+	 * @param engine the current evaluation engine
+	 * @param args   the arguments for which this function symbol should be evaluated
 	 * @return
 	 */
 	public IExpr of(EvalEngine engine, IExpr... args);
@@ -465,8 +454,7 @@ public interface ISymbol extends IExpr {
 	/**
 	 * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>.
 	 * 
-	 * @param args
-	 *            the arguments for which this function symbol should be evaluated
+	 * @param args the arguments for which this function symbol should be evaluated
 	 * @return
 	 */
 	public IExpr of(IExpr... args);
@@ -496,42 +484,37 @@ public interface ISymbol extends IExpr {
 	}
 
 	/**
-	 * This method returns <code>F.NIL</code> if no evaluation was possible. Evaluate this symbol for the arguments as
-	 * function <code>symbol(arg1, arg2, .... ,argN)</code>.
+	 * This method returns <code>F.NIL</code> if no evaluation was possible. Evaluate this symbol for the arguments as function
+	 * <code>symbol(arg1, arg2, .... ,argN)</code>.
 	 * 
-	 * @param engine
-	 *            the current evaluation engine
-	 * @param args
-	 *            the arguments for which this function symbol should be evaluated
+	 * @param engine the current evaluation engine
+	 * @param args   the arguments for which this function symbol should be evaluated
 	 * @return <code>F.NIL</code> if no evaluation was possible.
 	 */
 	public IExpr ofNIL(EvalEngine engine, IExpr... args);
 
 	/**
-	 * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code> to a boolean
-	 * value. If the result isn't a boolean value return <code>false</code>.
+	 * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code> to a boolean value. If the result
+	 * isn't a boolean value return <code>false</code>.
 	 * 
-	 * @param engine
-	 *            the current evaluation engine
-	 * @param args
-	 *            the arguments for which this function symbol should be evaluated
+	 * @param engine the current evaluation engine
+	 * @param args   the arguments for which this function symbol should be evaluated
 	 * @return if the result isn't a boolean value return <code>false</code>.
 	 */
 	public boolean ofQ(EvalEngine engine, IExpr... args);
 
 	/**
-	 * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code> to a boolean
-	 * value. If the result isn't a boolean value return <code>false</code>.
+	 * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code> to a boolean value. If the result
+	 * isn't a boolean value return <code>false</code>.
 	 * 
-	 * @param args
-	 *            the arguments for which this function symbol should be evaluated
+	 * @param args the arguments for which this function symbol should be evaluated
 	 * @return if the result isn't a boolean value return <code>false</code>.
 	 */
 	public boolean ofQ(IExpr... args);
 
 	/**
-	 * Get the ordinal number of this built-in symbol in the enumeration of built-in symbols. If this is no built-in
-	 * symbol return <code>-1</code> (ID.UNKNOWN)
+	 * Get the ordinal number of this built-in symbol in the enumeration of built-in symbols. If this is no built-in symbol return
+	 * <code>-1</code> (ID.UNKNOWN)
 	 * 
 	 * @return
 	 */
@@ -542,14 +525,11 @@ public interface ISymbol extends IExpr {
 	/**
 	 * Associate a new &quot;down value&quot; rule with default priority to this symbol.
 	 * 
-	 * @param setSymbol
-	 *            which of the symbols <code>Set, SetDelayed, UpSet, UpSetDelayed</code> was used for defining this rule
-	 * @param equalRule
-	 *            <code>true</code> if the leftHandSide could be matched with equality
+	 * @param setSymbol     which of the symbols <code>Set, SetDelayed, UpSet, UpSetDelayed</code> was used for defining this rule
+	 * @param equalRule     <code>true</code> if the leftHandSide could be matched with equality
 	 * @param leftHandSide
 	 * @param rightHandSide
-	 * @param packageMode
-	 *            <code>true</code> if we are on &quot;package mode&quot;
+	 * @param packageMode   <code>true</code> if we are on &quot;package mode&quot;
 	 * 
 	 * @return
 	 * 
@@ -562,16 +542,12 @@ public interface ISymbol extends IExpr {
 	 * Associate a new rule with the given priority to this symbol.<br/>
 	 * Rules with lower numbers have higher priorities.
 	 * 
-	 * @param setSymbol
-	 *            which of the symbols <code>Set, SetDelayed, UpSet, UpSetDelayed</code> was used for defining this rule
-	 * @param equalRule
-	 *            <code>true</code> if the leftHandSide could be matched with equality
+	 * @param setSymbol     which of the symbols <code>Set, SetDelayed, UpSet, UpSetDelayed</code> was used for defining this rule
+	 * @param equalRule     <code>true</code> if the leftHandSide could be matched with equality
 	 * @param leftHandSide
 	 * @param rightHandSide
-	 * @param priority
-	 *            the priority of the rule
-	 * @param packageMode
-	 *            <code>true</code> if we are on &quot;package mode&quot;
+	 * @param priority      the priority of the rule
+	 * @param packageMode   <code>true</code> if we are on &quot;package mode&quot;
 	 * 
 	 * 
 	 * @return
@@ -594,10 +570,8 @@ public interface ISymbol extends IExpr {
 	/**
 	 * Associate a new &quot;up value&quot; rule with default priority to this symbol.
 	 * 
-	 * @param setSymbol
-	 *            which of the symbols <code>Set, SetDelayed, UpSet, UpSetDelayed</code> was used for defining this rule
-	 * @param equalRule
-	 *            <code>true</code> if the leftHandSide could be matched with equality
+	 * @param setSymbol     which of the symbols <code>Set, SetDelayed, UpSet, UpSetDelayed</code> was used for defining this rule
+	 * @param equalRule     <code>true</code> if the leftHandSide could be matched with equality
 	 * @param leftHandSide
 	 * @param rightHandSide
 	 * @return
@@ -610,14 +584,11 @@ public interface ISymbol extends IExpr {
 	 * Associate a new &quot;up value&quot; rule with the given priority to this symbol.<br/>
 	 * Rules with lower numbers have higher priorities.
 	 * 
-	 * @param setSymbol
-	 *            which of the symbols <code>Set, SetDelayed, UpSet, UpSetDelayed</code> was used for defining this rule
-	 * @param equalRule
-	 *            <code>true</code> if the leftHandSide could be matched with equality
+	 * @param setSymbol     which of the symbols <code>Set, SetDelayed, UpSet, UpSetDelayed</code> was used for defining this rule
+	 * @param equalRule     <code>true</code> if the leftHandSide could be matched with equality
 	 * @param leftHandSide
 	 * @param rightHandSide
-	 * @param priority
-	 *            the priority of the rule
+	 * @param priority      the priority of the rule
 	 * 
 	 * @return
 	 * 
@@ -635,37 +606,29 @@ public interface ISymbol extends IExpr {
 	public void readRules(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException;
 
 	/**
-	 * Apply the function to the currently assigned value of the symbol and reassign the result value to the symbol.
-	 * Used for functions like AppendTo, Decrement, Increment,...
+	 * Apply the function to the currently assigned value of the symbol and reassign the result value to the symbol. Used for functions
+	 * like AppendTo, Decrement, Increment,...
 	 * 
-	 * @param function
-	 *            the function which should be applied
-	 * @param functionSymbol
-	 *            if this method throws a WrongArgumentType exception the symbol will be displayed in the exceptions
-	 *            message
-	 * @param engine
-	 *            the evaluation engine
-	 * @return an array with the currently assigned value of the symbol and the new calculated value of the symbol or
-	 *         <code>null</code> if the reassignment isn't possible.
+	 * @param function       the function which should be applied
+	 * @param functionSymbol if this method throws a WrongArgumentType exception the symbol will be displayed in the exceptions message
+	 * @param engine         the evaluation engine
+	 * @return an array with the currently assigned value of the symbol and the new calculated value of the symbol or <code>null</code>
+	 *         if the reassignment isn't possible.
 	 * 
 	 * @see WrongArgumentType
 	 */
 	public IExpr[] reassignSymbolValue(Function<IExpr, IExpr> function, ISymbol functionSymbol, EvalEngine engine);
 
 	/**
-	 * Apply the ast to the currently assigned value of the symbol and reassign the result value to the symbol. Used for
-	 * functions like AppendTo, Decrement, Increment,...
+	 * Apply the ast to the currently assigned value of the symbol and reassign the result value to the symbol. Used for functions like
+	 * AppendTo, Decrement, Increment,...
 	 * 
 	 * @param ast
-	 * @param ast
-	 *            the ast which should be evaluated by replacing the first argument with the current value of the symbol
-	 * @param functionSymbol
-	 *            if this method throws a WrongArgumentType exception the symbol will be displayed in the exceptions
-	 *            message
-	 * @param engine
-	 *            the evaluation engine
-	 * @return an array with the currently assigned value of the symbol and the new calculated value of the symbol or
-	 *         <code>null</code> if the reassignment isn't possible.
+	 * @param ast            the ast which should be evaluated by replacing the first argument with the current value of the symbol
+	 * @param functionSymbol if this method throws a WrongArgumentType exception the symbol will be displayed in the exceptions message
+	 * @param engine         the evaluation engine
+	 * @return an array with the currently assigned value of the symbol and the new calculated value of the symbol or <code>null</code>
+	 *         if the reassignment isn't possible.
 	 */
 	public IExpr[] reassignSymbolValue(IASTMutable ast, ISymbol functionSymbol, EvalEngine engine);
 
@@ -694,31 +657,27 @@ public interface ISymbol extends IExpr {
 	/**
 	 * Set the Attributes of this symbol (i.e. LISTABLE, FLAT, ORDERLESS,...)
 	 * 
-	 * @param attributes
-	 *            the Attributes of this symbol
+	 * @param attributes the Attributes of this symbol
 	 */
 	public void setAttributes(int attributes);
 
 	/**
-	 * Set the <i>general default value</i> for this symbol (i.e. <code>1</code> is the default value for
-	 * <code>Times</code>, <code>0</code> is the default value for <code>Plus</code>). The general default value is used
-	 * in pattern-matching for expressions like <code>a_. * b_. + c_</code>
+	 * Set the <i>general default value</i> for this symbol (i.e. <code>1</code> is the default value for <code>Times</code>,
+	 * <code>0</code> is the default value for <code>Plus</code>). The general default value is used in pattern-matching for expressions
+	 * like <code>a_. * b_. + c_</code>
 	 * 
-	 * @param expr
-	 *            the general default value
+	 * @param expr the general default value
 	 * @see IBuiltInSymbol#getDefaultValue()
 	 */
 	public void setDefaultValue(IExpr expr);
 
 	/**
-	 * Set the <i>default value</i> at the arguments position for this symbol (i.e. <code>1</code> is the default value
-	 * for <code>Power</code> at <code>position</code> <code>2</code>). The default value is used in pattern-matching
-	 * for expressions like <code>a ^ b_.</code>
+	 * Set the <i>default value</i> at the arguments position for this symbol (i.e. <code>1</code> is the default value for
+	 * <code>Power</code> at <code>position</code> <code>2</code>). The default value is used in pattern-matching for expressions like
+	 * <code>a ^ b_.</code>
 	 * 
-	 * @param position
-	 *            the position for the default value
-	 * @param expr
-	 *            the default value for the given position
+	 * @param position the position for the default value
+	 * @param expr     the default value for the given position
 	 * @see IBuiltInSymbol#getDefaultValue(int)
 	 */
 	public void setDefaultValue(int position, IExpr expr);

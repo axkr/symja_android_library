@@ -24,8 +24,7 @@ public interface INodeParserFactory extends IParserFactory {
 	/**
 	 * Creates a new function with head <code>head</code> and 0 arguments.
 	 * 
-	 * @param head
-	 *            the head of the function
+	 * @param head the head of the function
 	 * @return
 	 */
 	public FunctionNode createFunction(SymbolNode head);
@@ -33,10 +32,8 @@ public interface INodeParserFactory extends IParserFactory {
 	/**
 	 * Creates a new function with head <code>head</code> and 1 argument.
 	 * 
-	 * @param head
-	 *            the head of the function
-	 * @param arg
-	 *            the argument of the function
+	 * @param head the head of the function
+	 * @param arg  the argument of the function
 	 * @return
 	 */
 	public FunctionNode createFunction(SymbolNode head, ASTNode arg);
@@ -44,26 +41,19 @@ public interface INodeParserFactory extends IParserFactory {
 	/**
 	 * Creates a new function with head <code>head</code> and 2 arguments.
 	 * 
-	 * @param head
-	 *            the head of the function
-	 * @param arg1
-	 *            the first argument of the function
-	 * @param arg2
-	 *            the second argument of the function
+	 * @param head the head of the function
+	 * @param arg1 the first argument of the function
+	 * @param arg2 the second argument of the function
 	 * @return
 	 */
 	public FunctionNode createFunction(SymbolNode head, ASTNode arg1, ASTNode arg2);
 
 	/**
 	 * 
-	 * @param head
-	 *            the head of the function
-	 * @param arg1
-	 *            the first argument of the function
-	 * @param arg2
-	 *            the second argument of the function
-	 * @param arg3
-	 *            the third argument of the function
+	 * @param head the head of the function
+	 * @param arg1 the first argument of the function
+	 * @param arg2 the second argument of the function
+	 * @param arg3 the third argument of the function
 	 * @return
 	 */
 	public FunctionNode createFunction(SymbolNode head, ASTNode arg1, ASTNode arg2, ASTNode arg3);
@@ -71,17 +61,24 @@ public interface INodeParserFactory extends IParserFactory {
 	/**
 	 * Creates a new function with no arguments from the given header expression .
 	 * 
-	 * @param headExpr
-	 *            the head of the function
+	 * @param headExpr the head of the function
 	 * @return
 	 */
 	public FunctionNode createAST(ASTNode headExpr);
 
 	/**
+	 * Creates a new function with head <code>head</code> and 1 argument.
+	 * 
+	 * @param head the head of the function
+	 * @param arg  the argument of the function
+	 * @return
+	 */
+	public FunctionNode unaryAST(final ASTNode head, final ASTNode arg0);
+
+	/**
 	 * Create an double node from the given double value string
 	 * 
-	 * @param doubleString
-	 *            the double string
+	 * @param doubleString the double string
 	 * @return
 	 */
 	public ASTNode createDouble(String doubleString);
@@ -89,10 +86,8 @@ public interface INodeParserFactory extends IParserFactory {
 	/**
 	 * Create an integer node from the given string
 	 * 
-	 * @param integerString
-	 *            the integer number represented as a String
-	 * @param numberFormat
-	 *            the format of the number (usually 10)
+	 * @param integerString the integer number represented as a String
+	 * @param numberFormat  the format of the number (usually 10)
 	 * @return IInteger
 	 */
 	public IntegerNode createInteger(String integerString, int numberFormat);
@@ -100,8 +95,7 @@ public interface INodeParserFactory extends IParserFactory {
 	/**
 	 * Create an integer node from the given value
 	 * 
-	 * @param integerValue
-	 *            the integer number's value
+	 * @param integerValue the integer number's value
 	 * @return IInteger
 	 */
 	public IntegerNode createInteger(int integerValue);
@@ -109,10 +103,8 @@ public interface INodeParserFactory extends IParserFactory {
 	/**
 	 * Create a "fractional" number
 	 * 
-	 * @param numerator
-	 *            numerator of the fractional number
-	 * @param denominator
-	 *            denominator of the fractional number
+	 * @param numerator   numerator of the fractional number
+	 * @param denominator denominator of the fractional number
 	 * @return IFraction
 	 */
 	public abstract FractionNode createFraction(IntegerNode numerator, IntegerNode denominator);
@@ -120,8 +112,7 @@ public interface INodeParserFactory extends IParserFactory {
 	/**
 	 * Create a pattern from the given symbol node (i.e. <code>_</code> or <code>x_</code>)
 	 * 
-	 * @param patternName
-	 *            the name of the pattern
+	 * @param patternName the name of the pattern
 	 * @param check
 	 * @return
 	 */
@@ -148,12 +139,9 @@ public interface INodeParserFactory extends IParserFactory {
 	/**
 	 * Create a pattern from the given symbol node
 	 * 
-	 * @param patternName
-	 *            the pattern name
-	 * @param check
-	 *            the pattern head to check for
-	 * @param optional
-	 *            <code>true</code> if the pattern is optional
+	 * @param patternName the pattern name
+	 * @param check       the pattern head to check for
+	 * @param optional    <code>true</code> if the pattern is optional
 	 * @return
 	 */
 	public PatternNode createPattern(SymbolNode patternName, ASTNode check, boolean optional);
@@ -161,12 +149,9 @@ public interface INodeParserFactory extends IParserFactory {
 	/**
 	 * Create a pattern from the given symbol node
 	 * 
-	 * @param patternName
-	 *            the pattern name
-	 * @param check
-	 *            the pattern head to check for
-	 * @param defaultValue
-	 *            the default value for this pattern
+	 * @param patternName  the pattern name
+	 * @param check        the pattern head to check for
+	 * @param defaultValue the default value for this pattern
 	 * @return
 	 */
 	public PatternNode createPattern(SymbolNode patternName, ASTNode check, ASTNode defaultValue);
@@ -174,8 +159,7 @@ public interface INodeParserFactory extends IParserFactory {
 	/**
 	 * Create a string node from the scanned double quoted string
 	 * 
-	 * @param buffer
-	 *            the buffer which contains the parsed string
+	 * @param buffer the buffer which contains the parsed string
 	 * @return
 	 */
 	public StringNode createString(StringBuilder buffer);
@@ -184,8 +168,7 @@ public interface INodeParserFactory extends IParserFactory {
 	 * Create a symbol from the scanned identifier string
 	 * 
 	 * @param symbolName
-	 * @param context
-	 *            the name of the context the symbol should be created in
+	 * @param context    the name of the context the symbol should be created in
 	 * @return
 	 */
 	public SymbolNode createSymbol(String symbolName, String context);

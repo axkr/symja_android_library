@@ -45,9 +45,7 @@ public class InfixOperator extends Operator {
 	public ASTNode createFunction(final INodeParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
 		if (fOperatorString.equals("//")) {
 			//   lhs // rhs ==> rhs[lhs]
-			FunctionNode function =factory.createAST(rhs);
-			function.add(lhs);
-			return function;
+			return factory.unaryAST(rhs, lhs);
 		}
 		return factory.createFunction(factory.createSymbol(getFunctionName()), lhs, rhs);
 	}
