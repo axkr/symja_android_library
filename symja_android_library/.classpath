@@ -60,5 +60,6 @@
 	<classpathentry kind="lib" path="lib/jackson-annotations-2.10.2.jar"/>
 	<classpathentry kind="lib" path="lib/poi-ooxml-4.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/tablesaw-excel-0.37.3.jar"/>
+	<classpathentry kind="lib" path="lib/poi-ooxml-schemas-4.1.1.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
