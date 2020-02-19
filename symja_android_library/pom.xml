@@ -217,7 +217,16 @@
 				<artifactId>tablesaw-jsplot</artifactId>
 				<version>0.37.3</version>
 			</dependency>
-
+			<dependency>
+				<groupId>tech.tablesaw</groupId>
+				<artifactId>tablesaw-json</artifactId>
+				<version>0.37.3</version>
+			</dependency>
+			<dependency>
+				<groupId>tech.tablesaw</groupId>
+				<artifactId>tablesaw-excel</artifactId>
+				<version>0.37.3</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 

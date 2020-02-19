@@ -134,6 +134,14 @@
 			<groupId>tech.tablesaw</groupId>
 			<artifactId>tablesaw-jsplot</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>tech.tablesaw</groupId>
+			<artifactId>tablesaw-json</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>tech.tablesaw</groupId>
+			<artifactId>tablesaw-excel</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
