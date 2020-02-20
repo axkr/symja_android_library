@@ -10,6 +10,8 @@ import static org.matheclipse.core.expression.F.Round;
 import java.math.BigInteger;
 import java.util.function.Function;
 
+import javax.annotation.Nonnull;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -235,7 +237,7 @@ public class IntegerFunctions {
 				return Negate(Floor(negExpr));
 			}
 			if (arg1.isInterval()) {
-				return IntervalSym.mapSymbol(F.Ceiling,(IAST) arg1);
+				return IntervalSym.mapSymbol(F.Ceiling, (IAST) arg1);
 			}
 			return F.NIL;
 		}
@@ -540,7 +542,7 @@ public class IntegerFunctions {
 				return Negate(Ceiling(negExpr));
 			}
 			if (arg1.isInterval()) {
-				return IntervalSym.mapSymbol(F.Floor,(IAST) arg1);
+				return IntervalSym.mapSymbol(F.Floor, (IAST) arg1);
 			}
 			return F.NIL;
 		}
@@ -837,7 +839,7 @@ public class IntegerFunctions {
 					return Negate(IntegerPart(negExpr));
 				}
 				if (arg1.isInterval()) {
-					return IntervalSym.mapSymbol(F.IntegerPart,(IAST) arg1);
+					return IntervalSym.mapSymbol(F.IntegerPart, (IAST) arg1);
 				}
 			} catch (ArithmeticException ae) {
 				// ISignedNumber#floor() or #ceil() may throw ArithmeticException
@@ -885,36 +887,61 @@ public class IntegerFunctions {
 	 * Mod(5, 0)
 	 * </pre>
 	 */
-	private static class Mod extends AbstractArg2 {
+	private static class Mod extends AbstractFunctionEvaluator {
 
 		/**
 		 * 
 		 * See: <a href="http://en.wikipedia.org/wiki/Modular_arithmetic">Wikipedia - Modular arithmetic</a>
 		 */
-		public IExpr e2ObjArg(IAST ast, final IExpr arg1, final IExpr arg2) {
-			if (arg2.isZero()) {
+		public IExpr evaluate(final IAST ast, @Nonnull EvalEngine engine) {
+			IExpr m = ast.arg1();
+			IExpr n = ast.arg2();
+			if (n.isZero()) {
 				EvalEngine.get().printMessage("Mod: Modulus 0 encountered");
 				return F.Indeterminate;
 			}
-			if (arg1.isInteger() && arg2.isInteger()) {
-				final IInteger i0 = (IInteger) arg1;
-				final IInteger i1 = (IInteger) arg2;
+			if (ast.isAST3()) {
+				IExpr d = ast.arg3();
+				if (m.isNumber() && n.isNumber() && d.isNumber()) {
+					if (m.isInteger() && n.isInteger() && d.isInteger()) {
+						IExpr subExpr = ((ISignedNumber) m.subtract(d).divide(n)).floorFraction();
+						return m.plus(F.CN1.times(n).times(subExpr));
+					}
+					if (m.isComplex() || n.isComplex() || d.isComplex() || //
+							m.isComplexNumeric() || n.isComplexNumeric() || d.isComplexNumeric()) {
+						// https://mathematica.stackexchange.com/a/114373/21734
+						IExpr subExpr = engine.evaluate(F.Divide(F.Subtract(m, d), n));
+						IExpr re = ((ISignedNumber) subExpr.re()).round();
+						IExpr im = ((ISignedNumber) subExpr.im()).round();
+						return F.Plus(m, F.Times(F.CN1, n, re), F.Times(F.CI, im));
+					}
+				}
+				return F.NIL;
+			}
+			if (m.isInteger() && n.isInteger()) {
+				final IInteger i0 = (IInteger) m;
+				final IInteger i1 = (IInteger) n;
 				if (i1.isNegative()) {
 					return i0.negate().mod(i1.negate()).negate();
 				}
 				return i0.mod(i1);
 			}
-			if (arg1.isReal() && arg2.isReal()) {
-				return F.Subtract(arg1, F.Times(arg2, F.Floor(((ISignedNumber) arg1).divideBy((ISignedNumber) arg2))));
-			}
-			if (arg1.isRealResult() && arg2.isRealResult()) {
-				return F.Subtract(arg1, F.Times(arg2, F.Floor(F.num(arg1.evalDouble() / arg2.evalDouble()))));
-			}
-			if (arg1.isNumericFunction() && arg2.isNumericFunction()) {
-				return F.Subtract(arg1,
-						F.Times(arg2, F.Floor(F.complexNum(arg1.evalComplex().divide(arg2.evalComplex())))));
+			if (ast.isAST2()) {
+				if (m.isReal() && n.isReal()) {
+					return F.Subtract(m, F.Times(n, F.Floor(((ISignedNumber) m).divideBy((ISignedNumber) n))));
+				}
+				if (m.isRealResult() && n.isRealResult()) {
+					return F.Subtract(m, F.Times(n, F.Floor(F.num(m.evalDouble() / n.evalDouble()))));
+				}
+				if (m.isNumericFunction() && n.isNumericFunction()) {
+					return F.Subtract(m, F.Times(n, F.Floor(F.complexNum(m.evalComplex().divide(n.evalComplex())))));
+				}
 			}
 			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
 		}
 
 		@Override
@@ -1025,26 +1052,42 @@ public class IntegerFunctions {
 	 * -5
 	 * </pre>
 	 */
-	private static class Quotient extends AbstractArg2 {
+	private static class Quotient extends AbstractFunctionEvaluator {
 
-		public IExpr e2ObjArg(IAST ast, final IExpr arg1, final IExpr arg2) {
-			if (arg2.isZero()) {
+		public IExpr evaluate(final IAST ast, @Nonnull EvalEngine engine) {
+			IExpr z = ast.arg1();
+			IExpr n = ast.arg2();
+			if (n.isZero()) {
 				EvalEngine.get().printMessage("Quotient: division by zero");
 				return F.CComplexInfinity;
 			}
-			if (arg1.isInteger() && arg2.isInteger()) {
-				return ((IInteger) arg1).quotient((IInteger) arg2);
+			if (ast.isAST2()) {
+				if (z.isInteger() && n.isInteger()) {
+					return ((IInteger) z).quotient((IInteger) n);
+				}
+				if (z.isReal() && n.isReal()) {
+					return F.Floor(((ISignedNumber) z).divideBy((ISignedNumber) n));
+				}
+				if (z.isRealResult() && n.isRealResult()) {
+					return F.Floor(F.num(z.evalDouble() / n.evalDouble()));
+				}
+				if (z.isNumericFunction() && n.isNumericFunction()) {
+					return F.Floor(F.complexNum(z.evalComplex().divide(n.evalComplex())));
+				}
+				return F.NIL;
 			}
-			if (arg1.isReal() && arg2.isReal()) {
-				return F.Floor(((ISignedNumber) arg1).divideBy((ISignedNumber) arg2));
-			}
-			if (arg1.isRealResult() && arg2.isRealResult()) {
-				return F.Floor(F.num(arg1.evalDouble() / arg2.evalDouble()));
-			}
-			if (arg1.isNumericFunction() && arg2.isNumericFunction()) {
-				return F.Floor(F.complexNum(arg1.evalComplex().divide(arg2.evalComplex())));
+			if (ast.isAST3()) {
+				IExpr d = ast.arg3();
+				if (z.isInteger() && n.isInteger() && d.isInteger()) {
+					// TODO implement for 3 args
+				}
+				return F.NIL;
 			}
 			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
 		}
 
 		@Override
@@ -1241,7 +1284,7 @@ public class IntegerFunctions {
 					return Negate(Round(negExpr));
 				}
 				if (arg1.isInterval()) {
-					return IntervalSym.mapSymbol(F.Round,(IAST) arg1);
+					return IntervalSym.mapSymbol(F.Round, (IAST) arg1);
 				}
 			} catch (ArithmeticException ae) {
 				// ISignedNumber#round() may throw ArithmeticException

@@ -9016,6 +9016,10 @@ public class F {
 	public static IAST Quotient(final IExpr a0, final IExpr a1) {
 		return new AST2(Quotient, a0, a1);
 	}
+	
+	public static IAST Quotient(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return new AST3(Quotient, a0, a1, a2);
+	}
 
 	public static IAST RandomReal(final IExpr a0) {
 		return new AST1(RandomReal, a0);

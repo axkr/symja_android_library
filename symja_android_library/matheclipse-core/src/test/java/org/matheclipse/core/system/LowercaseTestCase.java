@@ -8475,7 +8475,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-22/3+I*10/3");
 		check("GegenbauerC(2,a,z)", //
 				"-a+2*a*(1+a)*z^2");
-		
+
 	}
 
 	public void testGCD() {
@@ -9166,17 +9166,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 			check("gr=Import(\"c:\\\\temp\\\\dotgraph.graphml\", \"GraphML\")", //
 					"Graph({1,2,3},{1->2,2->3,3->1})");
 			check("ExportString(gr, \"GraphML\")", //
-					"<?xml version=\"1.0\" encoding=\"UTF-8\"?><graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\r\n" + // 
-					"<graph edgedefault=\"directed\">\r\n" +  //
-					"<node id=\"1\"/>\r\n" +  //
-					"<node id=\"2\"/>\r\n" +  //
-					"<node id=\"3\"/>\r\n" +  //
-					"<edge id=\"1\" source=\"1\" target=\"2\"/>\r\n" +  //
-					"<edge id=\"2\" source=\"2\" target=\"3\"/>\r\n" +  //
-					"<edge id=\"3\" source=\"3\" target=\"1\"/>\r\n" +  //
-					"</graph>\r\n" +  //
-					"</graphml>\r\n" +  //
-					"");
+					"<?xml version=\"1.0\" encoding=\"UTF-8\"?><graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\r\n"
+							+ //
+							"<graph edgedefault=\"directed\">\r\n" + //
+							"<node id=\"1\"/>\r\n" + //
+							"<node id=\"2\"/>\r\n" + //
+							"<node id=\"3\"/>\r\n" + //
+							"<edge id=\"1\" source=\"1\" target=\"2\"/>\r\n" + //
+							"<edge id=\"2\" source=\"2\" target=\"3\"/>\r\n" + //
+							"<edge id=\"3\" source=\"3\" target=\"1\"/>\r\n" + //
+							"</graph>\r\n" + //
+							"</graphml>\r\n" + //
+							"");
 			check("Export(\"c:\\\\temp\\\\out.wxf\", {{5.7, 4.3}, {-1.2, 7.8}, {a, f(x)}}, \"WXF\")", //
 					"c:\\temp\\out.wxf");
 			check("Import(\"c:\\\\temp\\\\out.wxf\", \"WXF\")", //
@@ -12766,6 +12767,26 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMod() {
+
+		check("{a, b, c}[[Mod(Range(10), 3, 1)]]", //
+				"{a,b,c,a,b,c,a,b,c,a}");
+		check("Mod(Range(10), 3, I)", //
+				"{1,-1,0,1,-1,0,1,-1,0,1}");
+		check("Mod({1, 2, 3, 4, 5, 6, 7}, 3)", //
+				"{1,2,0,1,2,0,1}");
+		check("Mod({1, 2, 3, 4, 5, 6, 7}, -3, 1)", //
+				"{1,-1,0,1,-1,0,1}");
+		check("Mod({1, 2, 3, 4, 5, 6, 7}, -3, 4)", //
+				"{4,2,3,4,2,3,4}");
+		check("Mod({1, 2, 3, 4, 5, 6, 7}, -3, -2)", //
+				"{-2,-4,-3,-2,-4,-3,-2}");
+		check("Mod({-3, -2, -1, 0, 1, 2, 3}, -3)", //
+				"{0,-2,-1,0,-2,-1,0}");
+	 
+		check("Mod(7,2,3)", //
+				"3");
+		check("Mod(I,2,3)", //
+				"4+I");
 		check("Mod(5-Pi/2,Pi)", //
 				"5-3/2*Pi");
 		check("Mod(Sqrt(-113), 2)", //
@@ -18856,10 +18877,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 			// check("ds=SemanticImport(\"./data/test.csv\");", //
 			// "");
 
-//			check("ds=SemanticImport(\"./data/tornadoes_1950-2014.csv\");", //
-//					"");
-//			check("ExportString(ds, \"csv\");", //
-//					"");
+			// check("ds=SemanticImport(\"./data/tornadoes_1950-2014.csv\");", //
+			// "");
+			// check("ExportString(ds, \"csv\");", //
+			// "");
 		}
 
 	}
@@ -21243,7 +21264,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("TakeLargest(3) @ {1, 3, 5, 4, 2}", //
 				"{5,4,3}");
 	}
-	
+
 	public void testTakeLargestBy() {
 		check("TakeLargestBy({-5, -2, 4, 3, 1, 9, 2, -4}, Abs, 4)", //
 				"{9,-5,4,-4}");

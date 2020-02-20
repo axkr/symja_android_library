@@ -4,7 +4,7 @@ public class PlotExample extends BasePlotExample {
 
 	@Override
 	public String exampleFunction() {
-		return "Plot(Sin(x), {x, 0, 4 Pi}, PlotRange->{{0, 4 Pi}, {0, 1.5}})";
+		return "Plot(Sin(x), {x, 0, 4*Pi}, PlotRange->{{0, 4*Pi}, {0, 1.5}})";
 		// return "Manipulate(Plot(Sin(x), {x, 0, 6*Pi} ))";
 		// return "Plot(Evaluate(Table(BesselJ(n, x), {n, 4})), {x, 0, 10})";
 		// return "Manipulate(Plot(Sin(x), {x, -2*Pi, 2*Pi} ))";

@@ -79,7 +79,7 @@ public final class RandomFunctions {
 		}
 
 	}
-
+	
 	/**
 	 * <pre>
 	 * RandomInteger(n)
