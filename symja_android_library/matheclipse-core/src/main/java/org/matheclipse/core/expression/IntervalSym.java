@@ -33,15 +33,21 @@ public class IntervalSym {
 
 	};
 
-	private static boolean isNormalized(final IAST ast) {
-		return ast.isEvalFlagOn(IAST.BUILT_IN_EVALED);
+	/**
+	 * Test if the <code>IAST.BUILT_IN_EVALED</code> flag is set for the interval
+	 * 
+	 * @param interval
+	 * @return
+	 */
+	private static boolean isNormalized(final IAST interval) {
+		return interval.isEvalFlagOn(IAST.BUILT_IN_EVALED);
 	}
 
 	/**
 	 * The list of intervals are sorted and overlapping intervals are merged.
 	 * 
 	 * @param intervalList
-	 * @return
+	 * @return <code>F.NIL</code> if the interval could not be normalized
 	 */
 	public static IAST normalize(final IAST intervalList) {
 		if (isNormalized(intervalList)) {
@@ -55,7 +61,7 @@ public class IntervalSym {
 	 * 
 	 * @param intervalList
 	 * @param engine
-	 * @return
+	 * @return <code>F.NIL</code> if the interval could not be normalized
 	 */
 	public static IAST normalize(final IAST intervalList, EvalEngine engine) {
 		try {
@@ -70,7 +76,7 @@ public class IntervalSym {
 			}
 			EvalAttributes.sort(result, INTERVAL_COMPARATOR);
 			result.addEvalFlags(IAST.BUILT_IN_EVALED);
-			if (intervalList.size() > 2) {
+			if (result.size() > 2) {
 				int j = 1;
 				IAST list1 = (IAST) result.arg1();
 				IExpr min1 = list1.arg1();
@@ -108,6 +114,7 @@ public class IntervalSym {
 				EvalAttributes.sort((IASTMutable) intervalList, INTERVAL_COMPARATOR);
 				intervalList.addEvalFlags(IAST.BUILT_IN_EVALED);
 			}
+			return intervalList;
 		} catch (RuntimeException rex) {
 			engine.printMessage("Interval: " + rex.getMessage());
 		}
@@ -131,12 +138,21 @@ public class IntervalSym {
 		if (arg.isList()) {
 			if (arg.size() == 3) {
 				IAST list = (IAST) arg;
-				IExpr min = list.arg1();
-				IExpr max = list.arg2();
+				IExpr arg1 = list.arg1();
+				IExpr arg2 = list.arg2();
+				if (arg1.isReal() && arg2.isReal()) {
+					if (arg1.greaterThan(arg2).isTrue()) {
+						return F.List(arg2, arg1);
+					}
+					return F.NIL;
+				}
+				IExpr min = arg1.isNumber() ? arg1 : engine.evaluate(arg1);
+				IExpr max = arg2.isNumber() ? arg2 : engine.evaluate(arg2);
 				if (min.isRealResult() && max.isRealResult()) {
 					if (min.greaterThan(max).isTrue()) {
 						return F.List(max, min);
 					}
+					return F.List(min, max);
 				}
 				return F.NIL;
 			}
@@ -471,7 +487,7 @@ public class IntervalSym {
 		return F.NIL;
 	}
 
-	public static IExpr coth(final IAST ast) {
+	public static IAST coth(final IAST ast) {
 		IAST interval = normalize(ast);
 		if (interval.isPresent()) {
 			try {
@@ -483,7 +499,7 @@ public class IntervalSym {
 					IExpr max = list.arg2();
 					if (engine.evalTrue(F.GreaterEqual(min, F.C0)) && //
 							engine.evalTrue(F.GreaterEqual(max, F.C0))) {
-						result.append(F.List(F.Coth(min), F.Coth(max)));
+						result.append(F.List(F.Coth(max), F.Coth(min)));
 					} else if (engine.evalTrue(F.Less(min, F.C0)) && //
 							engine.evalTrue(F.GreaterEqual(max, F.C0))) {
 						result.append(F.List(F.CNInfinity, F.Coth(min)));
@@ -503,7 +519,7 @@ public class IntervalSym {
 		return F.NIL;
 	}
 
-	public static IExpr cosh(final IAST ast) {
+	public static IAST cosh(final IAST ast) {
 		IAST interval = normalize(ast);
 		if (interval.isPresent()) {
 			try {
@@ -538,7 +554,74 @@ public class IntervalSym {
 		return F.NIL;
 	}
 
-	public static IExpr sinh(final IAST ast) {
+	public static IAST csch(final IAST ast) {
+		IAST interval = normalize(ast);
+		if (interval.isPresent()) {
+			try {
+				EvalEngine engine = EvalEngine.get();
+				IASTAppendable result = F.IntervalAlloc(interval.size());
+				for (int i = 1; i < interval.size(); i++) {
+					IAST list = (IAST) interval.get(i);
+					IExpr min = list.arg1();
+					IExpr max = list.arg2();
+					if (engine.evalTrue(F.GreaterEqual(min, F.C0)) && //
+							engine.evalTrue(F.GreaterEqual(max, F.C0))) {
+						result.append(F.List(F.Csch(max), F.Csch(min)));
+					} else if (engine.evalTrue(F.Less(min, F.C0)) && //
+							engine.evalTrue(F.GreaterEqual(max, F.C0))) {
+						result.append(F.List(F.CNInfinity, F.Csch(min)));
+						result.append(F.List(F.Csch(max), F.CInfinity));
+					} else if (engine.evalTrue(F.Less(min, F.C0)) && //
+							engine.evalTrue(F.Less(max, F.C0))) {
+						result.append(F.List(F.Csch(min), F.Csch(max)));
+					} else {
+						return F.NIL;
+					}
+				}
+				return result;
+			} catch (RuntimeException rex) {
+				//
+			}
+		}
+		return F.NIL;
+	}
+
+	public static IAST sech(final IAST ast) { 
+		IAST interval = normalize(ast);
+		if (interval.isPresent()) {
+			try {
+				EvalEngine engine = EvalEngine.get();
+				IASTAppendable result = F.IntervalAlloc(interval.size());
+				for (int i = 1; i < interval.size(); i++) {
+					IAST list = (IAST) interval.get(i);
+					IExpr min = list.arg1();
+					IExpr max = list.arg2();
+					if (min.isRealResult() && max.isRealResult()) {
+						if (engine.evalTrue(F.GreaterEqual(min, F.C0)) && //
+								engine.evalTrue(F.GreaterEqual(max, F.C0))) {
+							result.append(F.List(F.Sech(max), F.Sech(min)));
+						} else if (engine.evalTrue(F.Less(min, F.C0)) && //
+								engine.evalTrue(F.GreaterEqual(max, F.C0))) {
+							result.append(F.List(F.Min(F.Sech(min), F.Sech(max)), F.C1));
+						} else if (engine.evalTrue(F.Less(min, F.C0)) && //
+								engine.evalTrue(F.Less(max, F.C0))) {
+							result.append(F.List(F.Sech(min), F.Sech(max)));
+						} else {
+							return F.NIL;
+						}
+					} else {
+						return F.NIL;
+					}
+				}
+				return result;
+			} catch (RuntimeException rex) {
+				//
+			}
+		}
+		return F.NIL;
+	}
+
+	public static IAST sinh(final IAST ast) {
 		IAST interval = normalize(ast);
 		if (interval.isPresent()) {
 			try {
@@ -562,7 +645,7 @@ public class IntervalSym {
 		return F.NIL;
 	}
 
-	public static IExpr tanh(final IAST ast) {
+	public static IAST tanh(final IAST ast) {
 		IAST interval = normalize(ast);
 		if (interval.isPresent()) {
 			try {
@@ -586,7 +669,57 @@ public class IntervalSym {
 		return F.NIL;
 	}
 
-	public static IExpr cos(final IAST ast) {
+	/**
+	 * Compute <code>1 / interval(min,max)</code>.
+	 * 
+	 * @param interval
+	 * @return
+	 */
+	public static IAST inverse(final IAST interval) {
+		IAST normalizedInterval = normalize(interval);
+		if (normalizedInterval.isPresent()) {
+			IASTAppendable result = F.IntervalAlloc(normalizedInterval.size());
+			for (int i = 1; i < normalizedInterval.size(); i++) {
+				IAST list = (IAST) normalizedInterval.get(i);
+				if (list.arg1().isRealResult() && list.arg2().isRealResult()) {
+					if (list.arg1().isNegativeResult()) {
+						if (list.arg2().isNegativeResult()) {
+							result.append(F.List(list.arg1().inverse(), list.arg2().inverse()));
+						} else {
+							result.append(F.List(F.CNInfinity, list.arg1().inverse()));
+							if (!list.arg2().isZero()) {
+								result.append(F.List(list.arg2().inverse(), F.CInfinity));
+							}
+						}
+					} else {
+						if (list.arg1().isZero()) {
+							if (list.arg2().isZero()) {
+								result.append(F.List(F.CNInfinity, F.CInfinity));
+							} else {
+								result.append(F.List(list.arg2().inverse(), F.CInfinity));
+							}
+						} else {
+							result.append(F.List(list.arg1().inverse(), list.arg2().inverse()));
+						}
+					}
+				} else {
+					return F.NIL;
+				}
+			}
+			return result;
+		}
+		return F.NIL;
+	}
+
+	public static IAST csc(final IAST ast) {
+		IAST interval = sin(ast);
+		if (interval.isPresent()) {
+			return inverse(interval);
+		}
+		return F.NIL;
+	}
+
+	public static IAST cos(final IAST ast) {
 		IAST interval = normalize(ast);
 		if (interval.isPresent()) {
 			try {
@@ -643,7 +776,7 @@ public class IntervalSym {
 		return F.NIL;
 	}
 
-	public static IExpr cot(final IAST ast) {
+	public static IAST cot(final IAST ast) {
 		IAST interval = normalize(ast);
 		if (interval.isPresent()) {
 			try {
@@ -756,7 +889,15 @@ public class IntervalSym {
 		return F.NIL;
 	}
 
-	public static IExpr sin(final IAST ast) {
+	public static IAST sec(final IAST ast) {
+		IAST interval = cos(ast);
+		if (interval.isPresent()) {
+			return inverse(interval);
+		}
+		return F.NIL;
+	}
+
+	public static IAST sin(final IAST ast) {
 		IAST interval = normalize(ast);
 		if (interval.isPresent()) {
 			try {
@@ -990,36 +1131,37 @@ public class IntervalSym {
 			}
 			if (exp.isOne()) {
 				if (negative) {
-					IASTAppendable result = F.IntervalAlloc(ast.size());
-					for (int i = 1; i < interval.size(); i++) {
-						IAST list = (IAST) interval.get(i);
-						if (list.arg1().isRealResult() && list.arg2().isRealResult()) {
-							if (list.arg1().isNegativeResult()) {
-								if (list.arg2().isNegativeResult()) {
-									result.append(F.List(list.arg1().inverse(), list.arg2().inverse()));
-								} else {
-									result.append(F.List(F.CNInfinity, list.arg1().inverse()));
-									if (!list.arg2().isZero()) {
-										result.append(F.List(list.arg2().inverse(), F.CInfinity));
-									}
-
-								}
-							} else {
-								if (list.arg1().isZero()) {
-									if (list.arg2().isZero()) {
-										result.append(F.List(F.CNInfinity, F.CInfinity));
-									} else {
-										result.append(F.List(list.arg2().inverse(), F.CInfinity));
-									}
-								} else {
-									result.append(F.List(list.arg1().inverse(), list.arg2().inverse()));
-								}
-							}
-						} else {
-							return F.NIL;
-						}
-					}
-					return result;
+					return inverse(interval);
+					// IASTAppendable result = F.IntervalAlloc(interval.size());
+					// for (int i = 1; i < interval.size(); i++) {
+					// IAST list = (IAST) interval.get(i);
+					// if (list.arg1().isRealResult() && list.arg2().isRealResult()) {
+					// if (list.arg1().isNegativeResult()) {
+					// if (list.arg2().isNegativeResult()) {
+					// result.append(F.List(list.arg1().inverse(), list.arg2().inverse()));
+					// } else {
+					// result.append(F.List(F.CNInfinity, list.arg1().inverse()));
+					// if (!list.arg2().isZero()) {
+					// result.append(F.List(list.arg2().inverse(), F.CInfinity));
+					// }
+					//
+					// }
+					// } else {
+					// if (list.arg1().isZero()) {
+					// if (list.arg2().isZero()) {
+					// result.append(F.List(F.CNInfinity, F.CInfinity));
+					// } else {
+					// result.append(F.List(list.arg2().inverse(), F.CInfinity));
+					// }
+					// } else {
+					// result.append(F.List(list.arg1().inverse(), list.arg2().inverse()));
+					// }
+					// }
+					// } else {
+					// return F.NIL;
+					// }
+					// }
+					// return result;
 				}
 				return ast;
 			}

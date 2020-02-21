@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 import static org.matheclipse.core.expression.F.List;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,6 +21,7 @@ import javax.annotation.Nonnull;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
+import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -39,6 +41,7 @@ import org.matheclipse.core.eval.util.LevelSpec;
 import org.matheclipse.core.eval.util.LevelSpecification;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.eval.util.Sequence;
+import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Functors;
@@ -46,6 +49,7 @@ import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
@@ -59,6 +63,43 @@ import org.matheclipse.core.visit.VisitorLevelSpecification;
 import org.matheclipse.core.visit.VisitorRemoveLevelSpecification;
 
 public final class ListFunctions {
+	/**
+	 * See <a href="https://stackoverflow.com/a/4859279/24819">Get the indices of an array after sorting?</a>
+	 *
+	 */
+	private final static class ArrayIndexComparator implements Comparator<Integer> {
+		protected final IAST ast;
+		protected EvalEngine engine;
+
+		public ArrayIndexComparator(IAST ast, EvalEngine engine) {
+			this.ast = ast;
+			this.engine = engine;
+		}
+
+		public Integer[] createIndexArray() {
+			int size = ast.size();
+			Integer[] indexes = new Integer[size - 1];
+			for (int i = 1; i < size; i++) {
+				indexes[i - 1] = i;
+			}
+			return indexes;
+		}
+
+		@Override
+		public int compare(Integer index1, Integer index2) {
+			IExpr arg1 = ast.get(index1);
+			IExpr arg2 = ast.get(index2);
+			if (arg1.isNumericFunction() && arg2.isNumericFunction()) {
+				if (engine.evalTrue(F.Greater(arg1, arg2))) {
+					return -1;
+				}
+				if (engine.evalTrue(F.Less(arg1, arg2))) {
+					return 1;
+				}
+			}
+			return (-1) * arg1.compareTo(arg2);
+		}
+	}
 
 	private interface IVariablesFunction {
 		public IExpr evaluate(final ISymbol[] variables, final IExpr[] index);
@@ -108,12 +149,14 @@ public final class ListFunctions {
 			F.ComposeList.setEvaluator(new ComposeList());
 			F.ConstantArray.setEvaluator(new ConstantArray());
 			F.Count.setEvaluator(new Count());
+			F.CountDistinct.setEvaluator(new CountDistinct());
 			F.Delete.setEvaluator(new Delete());
 			F.DeleteDuplicates.setEvaluator(new DeleteDuplicates());
 			F.DeleteCases.setEvaluator(new DeleteCases());
 			F.Drop.setEvaluator(new Drop());
 			F.Extract.setEvaluator(new Extract());
 			F.First.setEvaluator(new First());
+			F.GroupBy.setEvaluator(new GroupBy());
 			F.Fold.setEvaluator(new Fold());
 			F.FoldList.setEvaluator(new FoldList());
 			F.Gather.setEvaluator(new Gather());
@@ -149,6 +192,8 @@ public final class ListFunctions {
 			F.Subdivide.setEvaluator(new Subdivide());
 			F.Table.setEvaluator(new Table());
 			F.Take.setEvaluator(new Take());
+			F.TakeLargest.setEvaluator(new TakeLargest());
+			F.TakeLargestBy.setEvaluator(new TakeLargestBy());
 			F.Tally.setEvaluator(new Tally());
 			F.Total.setEvaluator(new Total());
 			F.Union.setEvaluator(new Union());
@@ -427,22 +472,12 @@ public final class ListFunctions {
 	private static class PositionConverter implements IPositionConverter<IExpr> {
 		@Override
 		public IExpr toObject(final int i) {
-			if (i < 3) {
-				switch (i) {
-				case 0:
-					return F.C0;
-				case 1:
-					return F.C1;
-				case 2:
-					return F.C2;
-				}
-			}
 			return F.ZZ(i);
 		}
 
 		@Override
 		public int toInt(final IExpr position) {
-			int val = position.toIntDefault(Integer.MIN_VALUE);
+			int val = position.toIntDefault();
 			if (val < 0) {
 				return -1;
 			}
@@ -1169,7 +1204,7 @@ public final class ListFunctions {
 				IAST list = (IAST) ast.arg1();
 				int[] size = { 1 };
 				if (list.exists(x -> {
-					if (!x.isList()) {
+					if (!(x.isList() || x.isAssociation())) {
 						return true;
 					}
 					size[0] += list.argSize();
@@ -1591,6 +1626,25 @@ public final class ListFunctions {
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_3;
+		}
+	}
+
+	private final static class CountDistinct extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			final IExpr arg1 = engine.evaluate(ast.arg1());
+			if (arg1.isAST()) {
+				final Set<IExpr> map = new HashSet<IExpr>();
+				((IAST) arg1).forEach(x -> map.add(x));
+				return F.ZZ(map.size());
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 	}
 
@@ -2060,7 +2114,13 @@ public final class ListFunctions {
 	private final static class Extract extends AbstractFunctionEvaluator {
 
 		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				ast = F.operatorFormAppend(ast);
+				if (!ast.isPresent()) {
+					return F.NIL;
+				}
+			}
 			if (ast.arg1().isAST()) {
 				IAST list = (IAST) ast.arg1();
 
@@ -2102,20 +2162,13 @@ public final class ListFunctions {
 
 		@Override
 		public int[] expectedArgSize() {
-			return IOFunctions.ARGS_2_3;
+			return IOFunctions.ARGS_1_3;
 		}
 
 		private static IExpr extract(final IAST list, final IAST position) {
-			final PositionConverter converter = new PositionConverter();
-			if ((position.size() > 1) && (position.arg1().isReal())) {
-				return extract(list, position, converter, 1);
-			} else {
-				// construct an array
-				// final IAST resultList = List();
-				// NestedFinding.position(list, resultList, pos, 1);
-				// return resultList;
-			}
-			return F.NIL;
+			IASTAppendable part = F.Part(list);
+			part.appendAll(position, 1, position.size());
+			return part;
 		}
 
 		@Override
@@ -2129,28 +2182,38 @@ public final class ListFunctions {
 		 * 
 		 * @param list
 		 * @param positions
-		 * @param positionConverter
-		 *            the <code>positionConverter</code> creates an <code>int</code> value from the given position
-		 *            objects in <code>positions</code>.
 		 * @param headOffset
 		 */
-		private static IExpr extract(final IAST list, final IAST positions,
-				final IPositionConverter<? super IExpr> positionConverter, int headOffset) {
+		private static IExpr extract(final IAST list, final IAST positions, int headOffset) {
 			int p = 0;
 			IAST temp = list;
+			if (!temp.isPresent()) {
+				return F.NIL;
+			}
 			int posSize = positions.argSize();
 			IExpr expr = list;
 			for (int i = headOffset; i <= posSize; i++) {
-				p = positionConverter.toInt(positions.get(i));
-				if (!temp.isPresent() || temp.size() <= p || p < 0) {
-					return F.NIL;
-				}
-				expr = temp.get(p);
-				if (expr.isAST()) {
-					temp = (IAST) expr;
-				} else {
-					if (i < positions.size()) {
-						temp = F.NIL;
+				p = positions.get(i).toIntDefault(); // positionConverter.toInt(positions.get(i));
+				if (p >= 0) {
+					if (temp.size() <= p) {
+						return F.NIL;
+					}
+					expr = temp.get(p);
+					if (expr.isAST()) {
+						temp = (IAST) expr;
+					} else {
+						if (i < positions.size()) {
+							temp = F.NIL;
+						}
+					}
+				} else if (positions.get(i).isAST(F.Key, 2)) {
+					expr = temp.get(p);
+					if (expr.isAST()) {
+						temp = (IAST) expr;
+					} else {
+						if (i < positions.size()) {
+							temp = F.NIL;
+						}
 					}
 				}
 			}
@@ -2481,6 +2544,43 @@ public final class ListFunctions {
 					}
 				}
 				return result;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	private final static class GroupBy extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				ast = F.operatorFormAppend(ast);
+				if (!ast.isPresent()) {
+					return F.NIL;
+				}
+			}
+			if (ast.isAST2()) {
+				try {
+					if (ast.arg1().isDataSet()) {
+						List<String> listOfStrings = Convert.toStringList(ast.arg2());
+						if (listOfStrings != null) {
+							ASTDataset dataset = (ASTDataset) ast.arg1();
+							return dataset.groupBy(listOfStrings);
+						}
+					}
+				} catch (RuntimeException rex) {
+					return engine.printMessage(rex);
+				}
 			}
 			return F.NIL;
 		}
@@ -3516,7 +3616,11 @@ public final class ListFunctions {
 				if (ast.get(i).isAST()) {
 					// clone = (INestedList<IExpr>) prototypeList.clone();
 					clone = prototypeList.copyAppendable();
-					clone.append(positionConverter.toObject(i));
+					if (ast.isAssociation()) {
+						clone.append(((IAssociation) ast).getKey(i));
+					} else {
+						clone.append(positionConverter.toObject(i));
+					}
 					position((IAST) ast.get(i), clone, resultCollection, Integer.MAX_VALUE, level, matcher,
 							positionConverter, headOffset);
 					if (level.getCurrentDepth() < minDepth) {
@@ -3526,8 +3630,11 @@ public final class ListFunctions {
 				if (matcher.test(ast.get(i))) {
 					if (level.isInRange()) {
 						clone = prototypeList.copyAppendable();
-						IExpr IExpr = positionConverter.toObject(i);
-						clone.append(IExpr);
+						if (ast.isAssociation()) {
+							clone.append(((IAssociation) ast).getKey(i));
+						} else {
+							clone.append(positionConverter.toObject(i));
+						}
 						if (maxResults >= resultCollection.size()) {
 							resultCollection.append(clone);
 						} else {
@@ -4195,13 +4302,13 @@ public final class ListFunctions {
 					IExpr arg1 = ast.arg1();
 					IExpr arg2 = ast.arg2();
 
-					if (arg2.isListOfRules()) {
+					if (arg2.isListOfRules(false)) {
 						return arg1.replaceAll((IAST) arg2).orElse(arg1);
 					} else if (arg2.isListOfLists()) {
 						IAST list = (IAST) arg2;
 						IASTAppendable result = F.ListAlloc(list.size());
 						for (IExpr subList : list) {
-							if (subList.isListOfRules()) {
+							if (subList.isListOfRules(false)) {
 								result.append(F.subst(arg1, (IAST) subList));
 							} else {
 								WrongArgumentType wat = new WrongArgumentType(ast, ast, -1,
@@ -4917,13 +5024,12 @@ public final class ListFunctions {
 			if (ast.arg1().isAST()) {
 				IAST list = (IAST) ast.arg1();
 				IExpr predicateHead = ast.arg2();
-				int allocSize = list.size() > 4 ? list.size() / 4 : 4;
+				// int allocSize = list.size() > 4 ? list.size() / 4 : 4;
 				if (size == 3) {
-					return list.filter(list.copyHead(allocSize), x -> engine.evalTrue(F.unaryAST1(predicateHead, x)));
+					return list.select(x -> engine.evalTrue(F.unaryAST1(predicateHead, x)));
 				} else if ((size == 4) && ast.arg3().isInteger()) {
 					final int resultLimit = Validate.checkIntType(ast, 3);
-					return list.filter(list.copyHead(allocSize), x -> engine.evalTrue(F.unaryAST1(predicateHead, x)),
-							resultLimit);
+					return list.select(x -> engine.evalTrue(F.unaryAST1(predicateHead, x)), resultLimit);
 				}
 			}
 			return F.NIL;
@@ -5685,6 +5791,98 @@ public final class ListFunctions {
 		}
 	}
 
+	private final static class TakeLargest extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				ast = F.operatorFormAppend(ast);
+				if (!ast.isPresent()) {
+					return F.NIL;
+				}
+			}
+			if (ast.isAST2()) {
+				try {
+					if (ast.arg1().isAST()) {
+						IAST list = (IAST) ast.arg1();
+						list = cleanList(list);
+						int n = ast.arg2().toIntDefault();
+						if (n > 0 && n <= list.size()) {
+							ArrayIndexComparator largestComparator = new ArrayIndexComparator(list, engine);
+							Integer[] indexes = largestComparator.createIndexArray();
+							Arrays.sort(indexes, largestComparator);
+							int[] largestIndexes = new int[n];
+							for (int i = 0; i < n; i++) {
+								largestIndexes[i] = indexes[i];
+							}
+							return list.getItems(largestIndexes, largestIndexes.length);
+
+						}
+					}
+				} catch (RuntimeException rex) {
+					return engine.printMessage(rex);
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	private final static class TakeLargestBy extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			if (ast.isAST2()) {
+				ast = F.operatorFormAppend(ast);
+				if (!ast.isPresent()) {
+					return F.NIL;
+				}
+			}
+			if (ast.isAST3()) {
+				try {
+					if (ast.arg1().isAST()) {
+						IAST cleanedList = cleanList((IAST) ast.arg1());
+						int n = ast.arg3().toIntDefault();
+						if (n > 0 && n <= cleanedList.size()) {
+							IAST list = cleanedList.mapThread(F.unary(ast.arg2(), F.Slot1), 1);
+							ArrayIndexComparator largestComparator = new ArrayIndexComparator(list, engine);
+							Integer[] indexes = largestComparator.createIndexArray();
+							Arrays.sort(indexes, largestComparator);
+							int[] largestIndexes = new int[n];
+							for (int i = 0; i < n; i++) {
+								largestIndexes[i] = indexes[i];
+							}
+							return cleanedList.getItems(largestIndexes, largestIndexes.length);
+
+						}
+					}
+				} catch (RuntimeException rex) {
+					return engine.printMessage(rex);
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
 	/**
 	 * <pre>
 	 * Total(list)
@@ -5768,7 +5966,7 @@ public final class ListFunctions {
 				if (ast.arg1().isAST()) {
 					// increment level because we select only subexpressions
 					level.incCurrentLevel();
-					IExpr temp = ast.arg1().accept(level);
+					IExpr temp = ((IAST) ast.arg1()).copyAST().accept(level);
 					if (temp.isPresent()) {
 						boolean te = engine.isThrowError();
 						try {
@@ -5923,6 +6121,19 @@ public final class ListFunctions {
 			});
 		}
 		return resultCollection;
+	}
+
+	/**
+	 * Exclude <code>Indeterminate, Missing(), None, Null</code> and other symbolic expressions from list.
+	 * 
+	 * @param list
+	 * @return
+	 */
+	private static IAST cleanList(IAST list) {
+		return list.select(x -> !(x.equals(F.Indeterminate) || //
+				x.equals(F.Null) || //
+				x.equals(F.None) || //
+				x.isAST(F.Missing)));
 	}
 
 	/**

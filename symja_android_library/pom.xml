@@ -60,12 +60,12 @@
 			<dependency>
 				<groupId>com.atlassian.commonmark</groupId>
 				<artifactId>commonmark</artifactId>
-				<version>0.13.1</version>
+				<version>0.14.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.atlassian.commonmark</groupId>
 				<artifactId>commonmark-ext-gfm-tables</artifactId>
-				<version>0.13.0</version>
+				<version>0.14.0</version>
 			</dependency>
 			<dependency>
 				<groupId>de.uni-mannheim.rz.krum</groupId>
@@ -98,11 +98,11 @@
 				<version>2.5</version>
 			</dependency>
 			<!-- see github issues #63 -->
-			<dependency>
+			<!-- <dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-android</artifactId>
 				<version>1.7.25</version>
-			</dependency>
+			</dependency> -->
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-simple</artifactId>
@@ -201,6 +201,31 @@
 				<groupId>org.gavaghan</groupId>
 				<artifactId>geodesy</artifactId>
 				<version>1.1.3</version>
+			</dependency>
+			<dependency>
+				<groupId>tech.tablesaw</groupId>
+				<artifactId>tablesaw-core</artifactId>
+				<version>0.37.3</version>
+			</dependency>
+			<dependency>
+				<groupId>tech.tablesaw</groupId>
+				<artifactId>tablesaw-html</artifactId>
+				<version>0.37.3</version>
+			</dependency>
+			<dependency>
+				<groupId>tech.tablesaw</groupId>
+				<artifactId>tablesaw-jsplot</artifactId>
+				<version>0.37.3</version>
+			</dependency>
+			<dependency>
+				<groupId>tech.tablesaw</groupId>
+				<artifactId>tablesaw-json</artifactId>
+				<version>0.37.3</version>
+			</dependency>
+			<dependency>
+				<groupId>tech.tablesaw</groupId>
+				<artifactId>tablesaw-excel</artifactId>
+				<version>0.37.3</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

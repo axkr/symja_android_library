@@ -19,11 +19,11 @@ import com.google.common.escape.Escaper;
 import com.google.common.escape.UnicodeEscaper;
 
 public abstract class Operator {
-	protected String fFunctionName;
+	private final String fFunctionName;
 
-	protected String fOperatorString;
+	protected final String fOperatorString;
 
-	protected int fPrecedence;
+	private final int fPrecedence;
 
 	public Operator(final String oper, final String functionName, final int precedence) {
 		fOperatorString = oper;

@@ -28,6 +28,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
+import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ComplexNum;
@@ -187,6 +188,11 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return power(that);
 	}
 
+	/**
+	 * Evaluate the absolute value of this.
+	 * 
+	 * @return
+	 */
 	@Override
 	default IExpr abs() {
 		return F.eval(F.Abs(this));
@@ -229,6 +235,13 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return plus(that);
 	}
 
+	/**
+	 * Apply the <code>And</code> operator
+	 * 
+	 * @param that
+	 * @return
+	 * @deprecated use {@link F#And(IExpr, IExpr)}
+	 */
 	default IExpr and(final IExpr that) {
 		return F.And(this, that);
 	}
@@ -773,6 +786,28 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * If this is of type {@link IAST}, find the first argument position, which equals <code>expr</code>. The search
+	 * starts at index <code>1</code>. Otherwise return <code>-1</code>.
+	 * 
+	 * @param expr
+	 * @return <code>-1</code> if no position was found
+	 */
+	default int indexOf(final IExpr expr) {
+		return -1;
+	}
+
+	/**
+	 * If this is of type {@link IAST}, find the first argument position, which fulfills the <code>predicate</code>. The
+	 * search starts at index <code>1</code>. Otherwise return <code>-1</code>.
+	 * 
+	 * @param predicate
+	 * @return <code>-1</code> if no position was found
+	 */
+	default int indexOf(Predicate<? super IExpr> predicate) {
+		return -1;
+	}
+
+	/**
 	 * Return the internal Java form of this expression.
 	 * 
 	 * @param symbolsAsFactoryMethod
@@ -921,6 +956,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default boolean isArcTanh() {
+		return false;
+	}
+
+	/**
+	 * Test if this AST is an association <code>&lt;|a-&gt;b, c-&gt;d|&gt;</code>(i.e. type <code>AssociationAST</code>)
+	 * 
+	 * @return
+	 */
+	default boolean isAssociation() {
 		return false;
 	}
 
@@ -1309,6 +1353,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default boolean isCosh() {
 		return false;
+	}
+
+	/**
+	 * Test if this AST is a <code>Dataset</code> (i.e. instance of <code>ASTDataset</code>).
+	 * 
+	 * @return
+	 */
+	default boolean isDataSet() {
+		return this instanceof ASTDataset;
 	}
 
 	/**
@@ -1784,6 +1837,20 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @see #isVector()
 	 */
 	default boolean isListOfRules() {
+		return isListOfRules(false);
+	}
+
+	/**
+	 * Test if this expression is a list of rules (head Rule or RuleDelayed)
+	 * 
+	 * @param ignoreEmptyList
+	 *            if <code>true</code>, ignore elements which equals an empty list <code>{ }</code>
+	 * @return
+	 * @see #isList()
+	 * @see #isMatrix(boolean)
+	 * @see #isVector()
+	 */
+	default boolean isListOfRules(boolean ignoreEmptyList) {
 		return false;
 	}
 
@@ -3105,15 +3172,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Converts a special expression (like a series) into a standard expression.
-	 * 
+	 * Converts a <b>special expression</b> (like a series, association, dataset, ...) into a standard <i>normalized</i>
+	 * expression.
 	 * 
 	 * <pre>
 	 * &gt;&gt; Normal(SeriesData(x, 0, {1, 0, -1, -4, -17, -88, -549}, -1, 6, 1))
 	 * 1/x-x-4*x^2-17*x^3-88*x^4-549*x^5
 	 * </pre>
 	 * 
-	 * @return the standard expression for special expressions ot <code>this</code> for the other expressions
+	 * @return the standard expression for <b>special expression</b> or <code>this</code> otherwise
 	 */
 	default IExpr normal() {
 		return this;
@@ -3147,6 +3214,13 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return this;
 	}
 
+	/**
+	 * Apply the <code>Or</code> operator
+	 * 
+	 * @param that
+	 * @return
+	 * @deprecated use {@link F#Or(IExpr, IExpr)}
+	 */
 	default IExpr or(final IExpr that) {
 		return F.Or(this, that);
 	}
@@ -3708,6 +3782,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>null</code> if this object can not be converted into a <code>Complex[]</code> vector
 	 */
 	default Complex[] toComplexVector() {
+		return null;
+	}
+
+	/**
+	 * Convert this object into a <code>int[]</code> vector.
+	 * 
+	 * @return
+	 */
+	default int[] toIntVector() {
 		return null;
 	}
 

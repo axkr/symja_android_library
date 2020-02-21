@@ -33,11 +33,11 @@ import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IEvaluator;
@@ -52,7 +52,6 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.visit.ModuleReplaceAll;
-import org.matheclipse.core.visit.VisitorPrecision;
 import org.matheclipse.parser.client.math.MathException;
 
 import com.google.common.cache.Cache;
@@ -701,6 +700,9 @@ public class EvalEngine implements Serializable {
 				if (arg1.isList()) {
 					// thread over the list
 					return EvalAttributes.threadList(ast, F.List, ast.head(), ((IAST) arg1).argSize());
+				} else if (arg1.isAssociation()) {
+					// thread over the association
+					return ((IAssociation) arg1).mapThread(ast, 1);
 				}
 			}
 		}
@@ -853,6 +855,10 @@ public class EvalEngine implements Serializable {
 				resultList = threadASTListArgs(tempAST);
 				if (resultList.isPresent()) {
 					return evalArgs(resultList, ISymbol.NOATTRIBUTE).orElse(resultList);
+				}
+				int indx = tempAST.indexOf(x -> x.isAssociation());
+				if (indx > 0) {
+					return ((IAssociation) tempAST.get(indx)).mapThread(tempAST, indx);
 				}
 			}
 
@@ -1807,6 +1813,7 @@ public class EvalEngine implements Serializable {
 	 * @return
 	 */
 	public IAST flattenSequences(final IAST ast) {
+		int attr = ast.topHead().getAttributes();
 		IASTAppendable[] seqResult = new IASTAppendable[] { F.NIL };
 
 		ast.forEach((x, i) -> {
@@ -1817,12 +1824,17 @@ public class EvalEngine implements Serializable {
 					seqResult[0].appendArgs(ast, i);
 				}
 				seqResult[0].appendArgs(seq);
+				return;
 			} else if (x.equals(F.Nothing)) {
-				if (!seqResult[0].isPresent()) {
-					seqResult[0] = F.ast(ast.head(), ast.size() - 1, false);
-					seqResult[0].appendArgs(ast, i);
+				if ((ISymbol.HOLDALL & attr) == ISymbol.NOATTRIBUTE) {
+					if (!seqResult[0].isPresent()) {
+						seqResult[0] = F.ast(ast.head(), ast.size() - 1, false);
+						seqResult[0].appendArgs(ast, i);
+					}
+					return;
 				}
-			} else if (seqResult[0].isPresent()) {
+			}
+			if (seqResult[0].isPresent()) {
 				seqResult[0].append(x);
 			}
 		});
@@ -2157,6 +2169,26 @@ public class EvalEngine implements Serializable {
 		}
 		if (fThrowError) {
 			throw new IllegalArgument(str);
+		}
+		return F.NIL;
+	}
+
+	/**
+	 * Print a message to the <code>Out</code> stream, if the engine is not in &quot;quiet mode&quot;.
+	 * 
+	 * @param rex
+	 *            the RuntimeException which should be printed
+	 */
+	public IAST printMessage(RuntimeException rex) {
+		if (!isQuietMode()) {
+			PrintStream stream = getErrorPrintStream();
+			if (stream == null) {
+				stream = System.err;
+			}
+			stream.println(rex.getMessage());
+		}
+		if (fThrowError) {
+			throw new IllegalArgument(rex.getMessage());
 		}
 		return F.NIL;
 	}

@@ -37,6 +37,7 @@ public final class StringFunctions {
 			F.LetterQ.setEvaluator(new LetterQ());
 			F.LowerCaseQ.setEvaluator(new LowerCaseQ());
 			F.StringDrop.setEvaluator(new StringDrop());
+			F.StringExpression.setEvaluator(new StringExpression());
 			F.StringJoin.setEvaluator(new StringJoin());
 			F.StringLength.setEvaluator(new StringLength());
 			F.StringReplace.setEvaluator(new StringReplace());
@@ -236,6 +237,27 @@ public final class StringFunctions {
 		}
 	}
 
+	private static class StringExpression extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			// if (ast.arg1().isString()) {
+			// String s = ast.arg1().toString();
+			// }
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.FLAT);
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_INFINITY;
+		}
+	}
+
 	private static class StringJoin extends AbstractFunctionEvaluator {
 
 		@Override
@@ -302,7 +324,7 @@ public final class StringFunctions {
 				}
 				String str = ((IStringX) ast.arg1()).toString();
 				IExpr arg2 = ast.arg2();
-				if (!arg2.isListOfRules()) {
+				if (!arg2.isListOfRules(false)) {
 					if (arg2.isRuleAST()) {
 						arg2 = F.List(arg2);
 					} else {

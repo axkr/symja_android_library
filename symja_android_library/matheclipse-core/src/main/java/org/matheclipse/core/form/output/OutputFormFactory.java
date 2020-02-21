@@ -2,7 +2,6 @@ package org.matheclipse.core.form.output;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.text.NumberFormat;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -18,13 +17,14 @@ import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
+import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
-import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -938,6 +938,15 @@ public class OutputFormFactory {
 	private void convert(final Appendable buf, final IExpr o, final int precedence, boolean isASTHead)
 			throws IOException {
 		if (o instanceof IAST) {
+			if (o instanceof ASTDataset) {
+				// TODO improve output
+				buf.append(o.toString());
+				return;
+			}
+			if (o.isAssociation()) {
+				convertAssociation(buf, (IAssociation) o);
+				return;
+			}
 			final IAST list = (IAST) o;
 			IExpr header = list.head();
 			if (!header.isSymbol()) {
@@ -972,8 +981,8 @@ public class OutputFormFactory {
 				convertFunctionArgs(buf, list);
 				return;
 			}
-			if (list.head().isSymbol()) {
-				ISymbol head = (ISymbol) list.head();
+			if (header.isSymbol()) {
+				ISymbol head = (ISymbol) header;
 				int functionID = head.ordinal();
 				if (functionID > ID.UNKNOWN) {
 					switch (functionID) {
@@ -991,36 +1000,6 @@ public class OutputFormFactory {
 							convert(buf, list.arg1(), Integer.MIN_VALUE, false);
 							buf.append("->");
 							convert(buf, list.arg2(), Integer.MIN_VALUE, false);
-							return;
-						}
-						break;
-					case ID.Interval:
-						if (list.size() > 1 && list.first().isASTSizeGE(F.List, 2)) {
-							IAST interval = IntervalSym.normalize(list);
-							buf.append("Interval");
-							append(buf, fRelaxedSyntax ? "(" : "[");
-							for (int i = 1; i < interval.size(); i++) {
-								append(buf, "{");
-								IAST subList = (IAST) interval.get(i);
-								IExpr min = subList.arg1();
-								IExpr max = subList.arg2();
-								if (min instanceof INum) {
-									convertDouble(buf, (INum)min, 0, false);
-								} else {
-									convert(buf, min);
-								}
-								append(buf, ",");
-								if (max instanceof INum) {
-									convertDouble(buf, (INum)max, 0, false);
-								} else {
-									convert(buf, max);
-								}
-								append(buf, "}");
-								if (i < interval.size() - 1) {
-									append(buf, ",");
-								}
-							}
-							append(buf, fRelaxedSyntax ? ")" : "]");
 							return;
 						}
 						break;
@@ -1165,6 +1144,21 @@ public class OutputFormFactory {
 		}
 
 		convertString(buf, o.toString());
+	}
+
+	private void convertAssociation(final Appendable buf, final IAssociation association) throws IOException {
+		IAST list = association.normal();
+		append(buf, "<|");
+		final int listSize = list.size();
+		if (listSize > 1) {
+			convert(buf, list.arg1(), Integer.MIN_VALUE, false);
+		}
+		for (int i = 2; i < listSize; i++) {
+			append(buf, ",");
+			convert(buf, list.get(i), Integer.MIN_VALUE, false);
+		}
+		append(buf, "|>");
+		return;
 	}
 
 	private boolean convertInequality(final Appendable buf, final IAST inequality, final int precedence)
@@ -1575,7 +1569,7 @@ public class OutputFormFactory {
 		if (head.isAST()) {
 			append(buf, "]");
 		} else {
-			append(buf, fRelaxedSyntax ? ")" : "]"); 
+			append(buf, fRelaxedSyntax ? ")" : "]");
 		}
 	}
 

@@ -22,6 +22,7 @@ import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -303,7 +304,7 @@ public class Structure {
 			if (!(arg1.isAST())) {
 				return F.C1;
 			}
-			return F.ZZ(depth((IAST) ast.arg1(), 1));
+			return F.ZZ(depth((IAST) arg1, 1));
 		}
 
 		public int[] expectedArgSize() {
@@ -1623,8 +1624,13 @@ public class Structure {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.arg1().isAST()) {
 				IAST arg1 = (IAST) ast.arg1();
-				if (ast.isAST1() && arg1.isEvalFlagOn(IAST.IS_SORTED)) {
-					return arg1;
+				if (ast.isAST1()) {
+					if (arg1.isEvalFlagOn(IAST.IS_SORTED)) {
+						return arg1;
+					}
+					if (arg1.isAssociation()) {
+						return ((IAssociation) arg1).sort();
+					}
 				}
 				final IASTMutable shallowCopy = ((IAST) ast.arg1()).copy();
 				if (shallowCopy.size() <= 2) {
@@ -1638,8 +1644,10 @@ public class Structure {
 						EvalAttributes.sort(shallowCopy, new Predicates.IsBinaryFalse(ast.arg2()));
 					}
 					return shallowCopy;
-				} catch (Exception ex) {
-
+				} catch (RuntimeException rex) {
+					// if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+					// }
 				}
 			}
 

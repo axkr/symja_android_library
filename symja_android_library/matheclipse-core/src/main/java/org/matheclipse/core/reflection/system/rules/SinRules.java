@@ -209,10 +209,10 @@ public interface SinRules {
     // Sin(ComplexInfinity)=Indeterminate
     ISet(Sin(CComplexInfinity),
       Indeterminate),
-    // Sin(Infinity)=Interval()
+    // Sin(Infinity)=Interval({-1,1})
     ISet(Sin(oo),
       Interval(List(CN1,C1))),
-    // Sin(-Infinity)=Interval()
+    // Sin(-Infinity)=Interval({-1,1})
     ISet(Sin(Noo),
       Interval(List(CN1,C1)))
   );

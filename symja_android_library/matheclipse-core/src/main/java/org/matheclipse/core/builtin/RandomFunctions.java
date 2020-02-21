@@ -79,7 +79,7 @@ public final class RandomFunctions {
 		}
 
 	}
-
+	
 	/**
 	 * <pre>
 	 * RandomInteger(n)
@@ -104,6 +104,25 @@ public final class RandomFunctions {
 			if (ast.isAST0()) {
 				ThreadLocalRandom tlr = ThreadLocalRandom.current();
 				return randomBigInteger(BigInteger.ONE, false, tlr);
+			}
+			if (ast.arg1().isAST(F.List, 3)) {
+				int min = ast.arg1().first().toIntDefault();
+				int max = ast.arg1().second().toIntDefault();
+				if (min != Integer.MIN_VALUE && max != Integer.MIN_VALUE) {
+					ThreadLocalRandom tlr = ThreadLocalRandom.current();
+					if (ast.isAST2()) {
+						int size = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+						if (size >= 0) {
+							IASTAppendable list = F.ListAlloc(size);
+							for (int i = 0; i < size; i++) {
+								list.append(F.ZZ(tlr.nextInt((max - min) + 1) + min));
+							}
+							return list;
+						}
+					}
+					return F.ZZ(tlr.nextInt((max - min) + 1) + min);
+				}
+				return F.NIL;
 			}
 			if (ast.arg1().isInteger()) {
 				// RandomInteger(100) gives an integer between 0 and 100
@@ -138,7 +157,7 @@ public final class RandomFunctions {
 			do {
 				r = new BigInteger(nlen, tlr);
 			} while (r.compareTo(upperLimit) > 0);
-			return F.integer(negative ? r.negate() : r);
+			return F.ZZ(negative ? r.negate() : r);
 		}
 
 		public int[] expectedArgSize() {

@@ -9,6 +9,7 @@ PartitionsP(n)
 
 See
 * [Wikipedia - Partition (number theory)](https://en.wikipedia.org/wiki/Partition_(number_theory))
+* [Fungrim - Partition function](http://fungrim.org/topic/Partition_function/)
 
 ### Examples
 

@@ -31,7 +31,7 @@ public interface IParserFactory {
 	 * The default set of characters, which could form an operator
 	 * 
 	 */
-	public final static String BASIC_OPERATOR_CHARACTERS = ".-:=<>*+;!^|&/@?";
+	public final static String BASIC_OPERATOR_CHARACTERS = ".-:=<>*+;!^|&/@?~";
 
 	/**
 	 * Check if the ch is in the set of operator characters.

@@ -28,6 +28,7 @@ import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.Arithmetic;
+import org.matheclipse.core.builtin.AssociationFunctions;
 import org.matheclipse.core.builtin.AssumptionFunctions;
 import org.matheclipse.core.builtin.AttributeFunctions;
 import org.matheclipse.core.builtin.BesselFunctions;
@@ -83,6 +84,7 @@ import org.matheclipse.core.graphics.Show2SVG;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -426,7 +428,7 @@ public class F {
 	/** ArrayPad(list, n) - adds `n` times `0` on the left and right of the `list`. */
 	public final static IBuiltInSymbol ArrayPad = F.initFinalSymbol("ArrayPad", ID.ArrayPad);
 
-	/** 'ArrayQ(expr) - tests whether expr is a full array. */
+	/** ArrayQ(expr) - tests whether expr is a full array. */
 	public final static IBuiltInSymbol ArrayQ = F.initFinalSymbol("ArrayQ", ID.ArrayQ);
 
 	/**
@@ -437,6 +439,12 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol Arrays = F.initFinalSymbol("Arrays", ID.Arrays);
+
+	/** Association(list-of-rules) - create a `key->value` association map from the `list-of-rules`. */
+	public final static IBuiltInSymbol Association = F.initFinalSymbol("Association", ID.Association);
+
+	/** AssociationQ(expr) - returns `True` if `expr` is an association, and `False` otherwise. */
+	public final static IBuiltInSymbol AssociationQ = F.initFinalSymbol("AssociationQ", ID.AssociationQ);
 
 	/***/
 	public final static IBuiltInSymbol Assumptions = F.initFinalSymbol("Assumptions", ID.Assumptions);
@@ -464,6 +472,9 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol Background = F.initFinalSymbol("Background", ID.Background);
+
+	/***/
+	public final static IBuiltInSymbol BarChart = F.initFinalSymbol("BarChart", ID.BarChart);
 
 	/***/
 	public final static IBuiltInSymbol BartlettWindow = F.initFinalSymbol("BartlettWindow", ID.BartlettWindow);
@@ -502,7 +513,7 @@ public class F {
 	/** BesselJZero(n, z) - is the `k`th zero of the `BesselJ(n,z)` function. */
 	public final static IBuiltInSymbol BesselJZero = F.initFinalSymbol("BesselJZero", ID.BesselJZero);
 
-	/** BesselK(n, z) - > modified Bessel function of the second kind. */
+	/** BesselK(n, z) - modified Bessel function of the second kind. */
 	public final static IBuiltInSymbol BesselK = F.initFinalSymbol("BesselK", ID.BesselK);
 
 	/** BesselY(n, z) - Bessel function of the second kind. */
@@ -898,6 +909,15 @@ public class F {
 	/** Count(list, pattern) - returns the number of times `pattern` appears in `list`. */
 	public final static IBuiltInSymbol Count = F.initFinalSymbol("Count", ID.Count);
 
+	/***/
+	public final static IBuiltInSymbol CountDistinct = F.initFinalSymbol("CountDistinct", ID.CountDistinct);
+
+	/**
+	 * Counts({elem1, elem2, elem3, ...}) - count the number of each distinct element in the list `{elem1, elem2, elem3,
+	 * ...}` and return the result as an association `<|elem1->counter1, ...|>`.
+	 */
+	public final static IBuiltInSymbol Counts = F.initFinalSymbol("Counts", ID.Counts);
+
 	/** Covariance(a, b) - computes the covariance between the equal-sized vectors `a` and `b`. */
 	public final static IBuiltInSymbol Covariance = F.initFinalSymbol("Covariance", ID.Covariance);
 
@@ -930,6 +950,9 @@ public class F {
 	 * variable `var`.
 	 */
 	public final static IBuiltInSymbol DSolve = F.initFinalSymbol("DSolve", ID.DSolve);
+
+	/***/
+	public final static IBuiltInSymbol Dataset = F.initFinalSymbol("Dataset", ID.Dataset);
 
 	/** Decrement(x) - decrements `x` by `1`, returning the original value of `x`. */
 	public final static IBuiltInSymbol Decrement = F.initFinalSymbol("Decrement", ID.Decrement);
@@ -1600,6 +1623,9 @@ public class F {
 	 */
 	public final static IBuiltInSymbol GroebnerBasis = F.initFinalSymbol("GroebnerBasis", ID.GroebnerBasis);
 
+	/***/
+	public final static IBuiltInSymbol GroupBy = F.initFinalSymbol("GroupBy", ID.GroupBy);
+
 	/** GumbelDistribution(a, b) - returns a Gumbel distribution. */
 	public final static IBuiltInSymbol GumbelDistribution = F.initFinalSymbol("GumbelDistribution",
 			ID.GumbelDistribution);
@@ -1646,6 +1672,9 @@ public class F {
 	/** HilbertMatrix(n) - gives the hilbert matrix with `n` rows and columns. */
 	public final static IBuiltInSymbol HilbertMatrix = F.initFinalSymbol("HilbertMatrix", ID.HilbertMatrix);
 
+	/***/
+	public final static IBuiltInSymbol Histogram = F.initFinalSymbol("Histogram", ID.Histogram);
+
 	/** Hold(expr) - `Hold` doesn't evaluate `expr`. */
 	public final static IBuiltInSymbol Hold = F.initFinalSymbol("Hold", ID.Hold);
 
@@ -1678,7 +1707,7 @@ public class F {
 	/** HornerForm(polynomial) - Generate the horner scheme for a univariate `polynomial`. */
 	public final static IBuiltInSymbol HornerForm = F.initFinalSymbol("HornerForm", ID.HornerForm);
 
-	/***/
+	/** HurwitzZeta(s, a) - returns the Hurwitz zeta function. */
 	public final static IBuiltInSymbol HurwitzZeta = F.initFinalSymbol("HurwitzZeta", ID.HurwitzZeta);
 
 	/** Hypergeometric0F1(b, z) - return the `Hypergeometric0F1` function */
@@ -1932,6 +1961,18 @@ public class F {
 	/***/
 	public final static IBuiltInSymbol KPartitions = F.initFinalSymbol("KPartitions", ID.KPartitions);
 
+	/***/
+	public final static IBuiltInSymbol Key = F.initFinalSymbol("Key", ID.Key);
+
+	/***/
+	public final static IBuiltInSymbol KeyExistsQ = F.initFinalSymbol("KeyExistsQ", ID.KeyExistsQ);
+
+	/** KeySort(<|key1->value1, ...|>) - sort the `<|key1->value1, ...|>` entries by the `key` values. */
+	public final static IBuiltInSymbol KeySort = F.initFinalSymbol("KeySort", ID.KeySort);
+
+	/** Keys(association) - return a list of keys of the `association`. */
+	public final static IBuiltInSymbol Keys = F.initFinalSymbol("Keys", ID.Keys);
+
 	/** Khinchin - Khinchin's constant */
 	public final static IBuiltInSymbol Khinchin = F.initFinalSymbol("Khinchin", ID.Khinchin);
 
@@ -2098,6 +2139,12 @@ public class F {
 	/***/
 	public final static IBuiltInSymbol LongForm = F.initFinalSymbol("LongForm", ID.LongForm);
 
+	/**
+	 * Lookup(association, key) - return the value in the `association` which is associated with the `key`. If no value
+	 * is available return `Missing("KeyAbsent",key)`.
+	 */
+	public final static IBuiltInSymbol Lookup = F.initFinalSymbol("Lookup", ID.Lookup);
+
 	/***/
 	public final static IBuiltInSymbol LowerCaseQ = F.initFinalSymbol("LowerCaseQ", ID.LowerCaseQ);
 
@@ -2256,6 +2303,9 @@ public class F {
 
 	/** MinFilter(list, r) - filter which evaluates the `Min` of `list` for the radius `r`. */
 	public final static IBuiltInSymbol MinFilter = F.initFinalSymbol("MinFilter", ID.MinFilter);
+
+	/***/
+	public final static IBuiltInSymbol MinMax = F.initFinalSymbol("MinMax", ID.MinMax);
 
 	/***/
 	public final static IBuiltInSymbol MinimalPolynomial = F.initFinalSymbol("MinimalPolynomial", ID.MinimalPolynomial);
@@ -2866,6 +2916,9 @@ public class F {
 	/** QuotientRemainder(m, n) - computes a list of the quotient and remainder from division of `m` and `n`. */
 	public final static IBuiltInSymbol QuotientRemainder = F.initFinalSymbol("QuotientRemainder", ID.QuotientRemainder);
 
+	/***/
+	public final static IBuiltInSymbol Ramp = F.initFinalSymbol("Ramp", ID.Ramp);
+	
 	/** RandomChoice({arg1, arg2, arg3,...}) - chooses a random `arg` from the list. */
 	public final static IBuiltInSymbol RandomChoice = F.initFinalSymbol("RandomChoice", ID.RandomChoice);
 
@@ -3071,6 +3124,9 @@ public class F {
 	/** Scan(f, expr) - applies `f` to each element of `expr` and returns 'Null'. */
 	public final static IBuiltInSymbol Scan = F.initFinalSymbol("Scan", ID.Scan);
 
+	/***/
+	public final static IBuiltInSymbol Scaled = F.initFinalSymbol("Scaled", ID.Scaled);
+	
 	/** Sec(z) - returns the secant of `z`. */
 	public final static IBuiltInSymbol Sec = F.initFinalSymbol("Sec", ID.Sec);
 
@@ -3082,6 +3138,19 @@ public class F {
 
 	/** Select({e1, e2, ...}, f) - returns a list of the elements `ei` for which `f(ei)` returns `True`. */
 	public final static IBuiltInSymbol Select = F.initFinalSymbol("Select", ID.Select);
+
+	/**
+	 * SemanticImport("path-to-filename") - if the file system is enabled, import the data from CSV files and do a
+	 * semantic interpretation of the columns.
+	 */
+	public final static IBuiltInSymbol SemanticImport = F.initFinalSymbol("SemanticImport", ID.SemanticImport);
+
+	/**
+	 * SemanticImportString("string-content") - import the data from a content string in CSV format and do a semantic
+	 * interpretation of the columns.
+	 */
+	public final static IBuiltInSymbol SemanticImportString = F.initFinalSymbol("SemanticImportString",
+			ID.SemanticImportString);
 
 	/***/
 	public final static IBuiltInSymbol Sequence = F.initFinalSymbol("Sequence", ID.Sequence);
@@ -3252,6 +3321,9 @@ public class F {
 	/***/
 	public final static IBuiltInSymbol StringDrop = F.initFinalSymbol("StringDrop", ID.StringDrop);
 
+	/***/
+	public final static IBuiltInSymbol StringExpression = F.initFinalSymbol("StringExpression", ID.StringExpression);
+
 	/** StringJoin(str1, str2, ... strN) - concatenate the strings `str1, str2, ... strN` into one string. */
 	public final static IBuiltInSymbol StringJoin = F.initFinalSymbol("StringJoin", ID.StringJoin);
 
@@ -3363,6 +3435,12 @@ public class F {
 
 	/** Take(expr, n) - returns `expr` with all but the first `n` leaves removed. */
 	public final static IBuiltInSymbol Take = F.initFinalSymbol("Take", ID.Take);
+
+	/***/
+	public final static IBuiltInSymbol TakeLargest = F.initFinalSymbol("TakeLargest", ID.TakeLargest);
+
+	/***/
+	public final static IBuiltInSymbol TakeLargestBy = F.initFinalSymbol("TakeLargestBy", ID.TakeLargestBy);
 
 	/***/
 	public final static IBuiltInSymbol Tally = F.initFinalSymbol("Tally", ID.Tally);
@@ -3581,6 +3659,9 @@ public class F {
 
 	/** ValueQ(expr) - returns `True` if and only if `expr` is defined. */
 	public final static IBuiltInSymbol ValueQ = F.initFinalSymbol("ValueQ", ID.ValueQ);
+
+	/** Values(association) - return a list of values of the `association`. */
+	public final static IBuiltInSymbol Values = F.initFinalSymbol("Values", ID.Values);
 
 	/** VandermondeMatrix(n) - gives the Vandermonde matrix with `n` rows and columns. */
 	public final static IBuiltInSymbol VandermondeMatrix = F.initFinalSymbol("VandermondeMatrix", ID.VandermondeMatrix);
@@ -4493,6 +4574,7 @@ public class F {
 			MinMaxFunctions.initialize();
 			GraphFunctions.initialize();
 			GraphDataFunctions.initialize();
+			AssociationFunctions.initialize();
 			GeodesyFunctions.initialize();
 			ManipulateFunction.initialize();
 			ImageFunctions.initialize();
@@ -5314,6 +5396,13 @@ public class F {
 		return new AST2(ArithmeticGeometricMean, a0, a1);
 	}
 
+	public static IAssociation assoc(final IAST listOfRules) {
+		if (listOfRules.isAST1() && listOfRules.arg1().isListOfRules(true)) {
+			return new ASTAssociation((IAST) listOfRules.arg1());
+		}
+		return new ASTAssociation(listOfRules);
+	}
+
 	/**
 	 * Creates a new AST from the given <code>ast</code> and <code>head</code>. if <code>include</code> is set to
 	 * <code>true </code> all arguments from index first to last-1 are copied in the new list if <code>include</code> is
@@ -5493,6 +5582,10 @@ public class F {
 
 	public static IAST BernoulliB(final IExpr a0) {
 		return new AST1(F.BernoulliB, a0);
+	}
+
+	public static IAST BernoulliB(final IExpr a0, final IExpr a1) {
+		return new AST2(F.BernoulliB, a0, a1);
 	}
 
 	public static IAST BernoulliDistribution(final IExpr a0) {
@@ -7704,6 +7797,10 @@ public class F {
 		return new AST2(Join, a0, a1);
 	}
 
+	public static IAST Key(final IExpr a0) {
+		return new AST1(Key, a0);
+	}
+
 	public static IAST KroneckerDelta(final IExpr a0) {
 		return new AST1(KroneckerDelta, a0);
 	}
@@ -8919,6 +9016,10 @@ public class F {
 	public static IAST Quotient(final IExpr a0, final IExpr a1) {
 		return new AST2(Quotient, a0, a1);
 	}
+	
+	public static IAST Quotient(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return new AST3(Quotient, a0, a1, a2);
+	}
 
 	public static IAST RandomReal(final IExpr a0) {
 		return new AST1(RandomReal, a0);
@@ -10103,37 +10204,40 @@ public class F {
 	 * @throws IOException
 	 */
 	public static String show(IExpr expr) {
-		if (expr.isSameHeadSizeGE(Show, 2)) {
-			try {
+		try {
+			if (expr.isSameHeadSizeGE(Show, 2)) {
 				IAST show = (IAST) expr;
 				if (show.size() > 1 && show.arg1().isSameHeadSizeGE(Graphics, 2)) {
 					return openSVGOnDesktop(show);
 				}
-			} catch (Exception ex) {
-				if (Config.SHOW_STACKTRACE) {
-					ex.printStackTrace();
-				}
-			}
-		} else if (expr.head().equals(Graph) && expr instanceof IDataExpr) {
-			String javaScriptStr = GraphFunctions.graphToJSForm((IDataExpr) expr);
-			if (javaScriptStr != null) {
-				try {
+			} else if (expr.head().equals(Graph) && expr instanceof IDataExpr) {
+				String javaScriptStr = GraphFunctions.graphToJSForm((IDataExpr) expr);
+				if (javaScriptStr != null) {
 					String html = Config.VISJS_PAGE;
 					html = StringUtils.replace(html, "`1`", javaScriptStr);
 					html = StringUtils.replace(html, "`2`", "var options = {};");
 					return openHTMLOnDesktop(html);
-				} catch (Exception ex) {
-					if (Config.SHOW_STACKTRACE) {
-						ex.printStackTrace();
-					}
 				}
+			} else if (expr.isAST(JSFormData, 3)) {
+				return printJSFormData(expr);
+			} else if (expr.isString()) {
+				IStringX str = (IStringX) expr;
+				if (str.getMimeType() == IStringX.TEXT_HTML) {
+					String htmlSnippet = str.toString();
+					String htmlPage = Config.HTML_PAGE;
+					htmlPage = StringUtils.replace(htmlPage, "`1`", htmlSnippet);
+					System.out.println(htmlPage);
+					return F.openHTMLOnDesktop(htmlPage);
+				}
+			} else if (expr.isList(x -> x.isAST(JSFormData, 3))) {
+				StringBuilder buf = new StringBuilder();
+				((IAST) expr).forEach(x -> buf.append(printJSFormData(x)));
+				return buf.toString();
 			}
-		} else if (expr.isAST(JSFormData, 3)) {
-			return printJSFormData(expr);
-		} else if (expr.isList(x -> x.isAST(JSFormData, 3))) {
-			StringBuilder buf = new StringBuilder();
-			((IAST) expr).forEach(x -> buf.append(printJSFormData(x)));
-			return buf.toString();
+		} catch (Exception ex) {
+			if (Config.SHOW_STACKTRACE) {
+				ex.printStackTrace();
+			}
 		}
 		return null;
 	}

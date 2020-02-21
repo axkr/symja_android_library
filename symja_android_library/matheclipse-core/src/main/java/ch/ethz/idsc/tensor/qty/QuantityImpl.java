@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.AbstractAST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -187,6 +188,14 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 			}
 		}
 		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 1");
+	}
+
+	@Override
+	public IAST getItems(int[] items, int length) {
+		if (length == 0) {
+			return this;
+		}
+		throw new IndexOutOfBoundsException("Index: " + items[0]);
 	}
 
 	@Override

@@ -25,6 +25,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -1341,6 +1342,10 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		if (list.isInterval() && convertInterval(buf, list)) {
 			return;
 		}
+		if (list.isAssociation()) {
+			convertAssociation(buf, (IAssociation) list);
+			return;
+		}
 		int functionID = ((ISymbol) list.head()).ordinal();
 		if (functionID > ID.UNKNOWN) {
 			switch (functionID) {
@@ -1879,13 +1884,29 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		}
 		tag(buf, "mo", "}");
 		tagEnd(buf, "mrow");
+	}
 
+	public void convertAssociation(final StringBuilder buf, final IAssociation association) {
+		IAST list = association.normal();
+		tagStart(buf, "mrow");
+		tag(buf, "mo", "&lt;|");
+		if (list.size() > 1) {
+			tagStart(buf, "mrow");
+			convertInternal(buf, list.arg1(), 0, false);
+			for (int i = 2; i < list.size(); i++) {
+				tag(buf, "mo", ",");
+				convertInternal(buf, list.get(i), 0, false);
+			}
+			tagEnd(buf, "mrow");
+		}
+		tag(buf, "mo", "|&gt;");
+		tagEnd(buf, "mrow");
 	}
 
 	public boolean convertInterval(final StringBuilder buf, final IAST f) {
 		if (f.size() > 1 && f.first().isASTSizeGE(F.List, 2)) {
 			IAST interval = IntervalSym.normalize(f);
-			
+
 			tagStart(buf, "mrow");
 			tagStart(buf, "mi");
 			buf.append("Interval");
@@ -1898,11 +1919,11 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			} else {
 				tag(buf, "mo", "[");
 			}
-			
+
 			for (int i = 1; i < interval.size(); i++) {
 				tagStart(buf, "mrow");
 				tag(buf, "mo", "{");
- 
+
 				IAST subList = (IAST) interval.get(i);
 				IExpr min = subList.arg1();
 				IExpr max = subList.arg2();

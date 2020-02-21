@@ -28,6 +28,16 @@ public abstract class Scanner {
 	final static protected int TT_EOF = 0;
 
 	/**
+	 * Token type: opening bracket for associations
+	 */
+	final static protected int TT_ASSOCIATION_OPEN = 10;
+
+	/**
+	 * Token type: closing bracket for associations
+	 */
+	final static protected int TT_ASSOCIATION_CLOSE = 11;
+
+	/**
 	 * Token type: opening bracket for function arguments
 	 */
 	final static protected int TT_ARGUMENTS_OPEN = 12;
@@ -66,6 +76,11 @@ public abstract class Scanner {
 	 * Token type: closing brackets for ending the &quot;index part&quot; of an expression
 	 */
 	final static protected int TT_PARTCLOSE = 19;
+
+	/**
+	 * Token type: operator ';;'
+	 */
+	final static protected int TT_SPAN = 30;
 
 	/**
 	 * Token type: operator found in input string
@@ -533,7 +548,7 @@ public abstract class Scanner {
 		getNextToken();
 		return intValue;
 	}
-	
+
 	/**
 	 * Parse a Java <code>int</code> value.
 	 * 
@@ -665,6 +680,50 @@ public abstract class Scanner {
 				case ']':
 					fToken = TT_ARGUMENTS_CLOSE;
 					break;
+				case '<':
+					if (isValidPosition()) {
+						if (charAtPosition() == '|') {
+							fCurrentPosition++;
+							fToken = TT_ASSOCIATION_OPEN;
+							break;
+						}
+					}
+					if (isOperatorCharacters()) {
+						fOperList = getOperator();
+						fToken = TT_OPERATOR;
+						return;
+					}
+
+					break;
+				case ';':
+					if (isValidPosition()) {
+						if (charAtPosition() == ';') {
+							fCurrentPosition++;
+							fToken = TT_SPAN;
+							break;
+						}
+					}
+					if (isOperatorCharacters()) {
+						fOperList = getOperator();
+						fToken = TT_OPERATOR;
+						return;
+					}
+
+					break;
+				case '|':
+					if (isValidPosition()) {
+						if (charAtPosition() == '>') {
+							fCurrentPosition++;
+							fToken = TT_ASSOCIATION_CLOSE;
+							break;
+						}
+					}
+					if (isOperatorCharacters()) {
+						fOperList = getOperator();
+						fToken = TT_OPERATOR;
+						return;
+					}
+					break;
 				case ',':
 					fToken = TT_COMMA;
 					break;
@@ -681,16 +740,20 @@ public abstract class Scanner {
 								}
 							}
 							fToken = TT_BLANK_BLANK;
-							break;
 						} else if (charAtPosition() == '.') {
 							fCurrentPosition++;
 							fToken = TT_BLANK_OPTIONAL;
-							break;
 						} else if (charAtPosition() == ':') {
 							fCurrentPosition++;
-							fToken = TT_BLANK_COLON;
-							break;
+							if (isValidPosition()) {
+								if (charAtPosition() == '>') {
+									fCurrentPosition--;
+								} else {
+									fToken = TT_BLANK_COLON;
+								}
+							}
 						}
+						break;
 					}
 
 					break;
@@ -982,7 +1045,7 @@ public abstract class Scanner {
 						}
 						throwSyntaxError("string - unknown character after back-slash.");
 					default:
-						throwSyntaxError("string - unknown character after back-slash.");
+						// throwSyntaxError("string - unknown character after back-slash.");
 					}
 				} else {
 					throwSyntaxError("string - unknown character after back-slash.");

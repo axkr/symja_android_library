@@ -1,6 +1,6 @@
 package org.matheclipse.core.builtin;
 
-import static org.matheclipse.core.expression.F.*; 
+import static org.matheclipse.core.expression.F.*;
 
 import org.matheclipse.core.expression.F;
 
@@ -16,6 +16,7 @@ public final class FunctionDefinitions {
 			ComplexExpand.setEvaluator(new org.matheclipse.core.reflection.system.ComplexExpand());
 			Compile.setEvaluator(new org.matheclipse.core.reflection.system.Compile());
 			CreateDirectory.setEvaluator(new org.matheclipse.core.reflection.system.CreateDirectory());
+			Dataset.setEvaluator(new org.matheclipse.core.reflection.system.Dataset());
 			D.setEvaluator(new org.matheclipse.core.reflection.system.D());
 			Derivative.setEvaluator(new org.matheclipse.core.reflection.system.Derivative());
 			DSolve.setEvaluator(new org.matheclipse.core.reflection.system.DSolve());
@@ -23,6 +24,7 @@ public final class FunctionDefinitions {
 			ElementData.setEvaluator(new org.matheclipse.core.data.ElementData());
 			Eliminate.setEvaluator(new org.matheclipse.core.reflection.system.Eliminate());
 			Export.setEvaluator(new org.matheclipse.core.reflection.system.Export());
+			ExportString.setEvaluator(new org.matheclipse.core.reflection.system.ExportString());
 			ExpToTrig.setEvaluator(new org.matheclipse.core.reflection.system.ExpToTrig());
 			FindInstance.setEvaluator(new org.matheclipse.core.reflection.system.FindInstance());
 			FindRoot.setEvaluator(new org.matheclipse.core.reflection.system.FindRoot());
@@ -58,7 +60,9 @@ public final class FunctionDefinitions {
 			Plot3D.setEvaluator(new org.matheclipse.core.reflection.system.Plot3D());
 			PolarPlot.setEvaluator(new org.matheclipse.core.reflection.system.PolarPlot());
 			Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
-
+			Ramp.setEvaluator(new org.matheclipse.core.reflection.system.Ramp());
+			SemanticImport.setEvaluator(new org.matheclipse.core.reflection.system.SemanticImport());
+			SemanticImportString.setEvaluator(new org.matheclipse.core.reflection.system.SemanticImportString());
 			Share.setEvaluator(new org.matheclipse.core.reflection.system.Share());
 			Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
 			Sum.setEvaluator(new org.matheclipse.core.reflection.system.Sum());

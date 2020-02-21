@@ -2,17 +2,13 @@ package org.matheclipse.core.builtin;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.util.Assumptions;
-import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
@@ -20,6 +16,7 @@ import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -234,13 +231,13 @@ public class SeriesFunctions {
 					limitValue.isNegativeInfinity()) && //
 					expression.isAST() && //
 					expression.size() > 1) {
-				if (limitValue.isInfinity()|| //
+				if (limitValue.isInfinity() || //
 						limitValue.isNegativeInfinity()) {
 					IExpr temp = evalReplaceAll(expression, data);
 					if (temp.isNumericFunction()) {
 						return temp;
 					}
-				} 
+				}
 				IExpr temp = limitInfinityZero((IAST) expression, data, (IAST) limitValue);
 				if (temp.isPresent()) {
 					return temp;
@@ -893,8 +890,8 @@ public class SeriesFunctions {
 				} else {
 					throw new WrongArgumentType(ast, arg2, 2,
 							"Limit: limit value contains variable symbol for rule definition!");
-				} 
-				
+				}
+
 				LimitData data = new LimitData(symbol, limit, rule, direction);
 				return evalLimit(arg1, data);
 			} finally {
@@ -944,11 +941,15 @@ public class SeriesFunctions {
 			if (arg1 instanceof ASTSeriesData) {
 				return ((ASTSeriesData) arg1).normal();
 			}
+			if (arg1.isAssociation()) {
+				IAST list= ((IAssociation) arg1).normal();
+				return list;
+			} 
 			if (WXFFunctions.isByteArray(arg1)) {
 				byte[] bArray = (byte[]) ((IDataExpr) arg1).toData();
 				return WL.toList(bArray);
 			}
-			return F.NIL;
+			return arg1.normal();
 		}
 
 		@Override
@@ -1423,7 +1424,7 @@ public class SeriesFunctions {
 				}
 				if (!n.isInteger()) {
 					return F.NIL;
-				} 
+				}
 			}
 			if (function.isFree(x)) {
 				if (n.isZero()) {

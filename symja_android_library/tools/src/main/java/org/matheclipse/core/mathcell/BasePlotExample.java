@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
@@ -31,7 +32,7 @@ public abstract class BasePlotExample {
 					String manipulateStr = ((IAST) result).arg1().toString();
 					js = Config.VISJS_PAGE;
 					js = StringUtils.replace(js, "`1`", manipulateStr);
-					js = StringUtils.replace(js, "`2`",   //
+					js = StringUtils.replace(js, "`2`", //
 							"  var options = {\n" + //
 									"		  edges: {\n" + //
 									"              smooth: {\n" + //
@@ -52,6 +53,10 @@ public abstract class BasePlotExample {
 					String jsStr = ((IAST) result).arg1().toString();
 					js = Config.TRACEFORM_PAGE;
 					js = StringUtils.replace(js, "`1`", jsStr);
+				} else if (result.second().toString().equals("plotly")) {
+					String manipulateStr = ((IAST) result).arg1().toString();
+					js = Config.PLOTLY_PAGE;
+					js = StringUtils.replace(js, "`1`", manipulateStr);
 				} else {
 					String manipulateStr = ((IAST) result).arg1().toString();
 					js = Config.JSXGRAPH_PAGE;
@@ -60,6 +65,17 @@ public abstract class BasePlotExample {
 				System.out.println(js);
 				F.openHTMLOnDesktop(js);
 			} else {
+				if (result.isString()) {
+					IStringX str = (IStringX) result;
+					if (str.getMimeType() == IStringX.TEXT_HTML) {
+						String htmlSnippet = str.toString();
+						String htmlPage = Config.HTML_PAGE;
+						htmlPage = StringUtils.replace(htmlPage, "`1`", htmlSnippet);
+						System.out.println(htmlPage);
+						F.openHTMLOnDesktop(htmlPage);
+						return;
+					}
+				}
 				System.out.println(result.toString());
 			}
 		} catch (SyntaxError e) {

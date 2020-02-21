@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 import junit.framework.TestCase;
@@ -98,17 +99,27 @@ public class BasicTeXTestCase extends TestCase {
 	}
 
 	public void testTeX012b() {
-		check("TableForm({1,2,3,4,5,6})", "\\begin{array}{c}\n" + " 1 \\\\\n" + " 2 \\\\\n" + " 3 \\\\\n" + " 4 \\\\\n"
-				+ " 5 \\\\\n" + " 6 \\end{array}");
+		check("TableForm({1,2,3,4,5,6})", //
+				"\\begin{array}{c}\n" + //
+						" 1 \\\\\n" + //
+						" 2 \\\\\n" + //
+						" 3 \\\\\n" + //
+						" 4 \\\\\n" + //
+						" 5 \\\\\n" + //
+						" 6 \n"
+						+ "\\end{array}");
 	}
 
 	public void testTeX012c() {
-		check("TableForm({{1,2,3},{4,5,6}})",
-				"\\begin{array}{ccc}\n" + " 1 & 2 & 3 \\\\\n" + " 4 & 5 & 6 \\\\\n" + "\\end{array}");
+		check("TableForm({{1,2,3},{4,5,6}})", //
+				"\\begin{array}{ccc}\n" + //
+						" 1 & 2 & 3 \\\\\n" + //
+						" 4 & 5 & 6 \\\\\n" + //
+						"\\end{array}");
 	}
 
 	public void testTeX013() {
-		check("a*b+c; a*b+c",//
+		check("a*b+c; a*b+c", //
 				"a\\,b+c;a\\,b+c");
 	}
 
@@ -206,7 +217,7 @@ public class BasicTeXTestCase extends TestCase {
 	}
 
 	public void testTeX020() {
-		check("Hold(++x)",//
+		check("Hold(++x)", //
 				"\\text{Hold}(\\text{++}x)");
 		check("Hold(y^2/.x->3)", //
 				"\\text{Hold}({y}^{2}\\text{/.}\\,x\\to 3)");
@@ -225,8 +236,8 @@ public class BasicTeXTestCase extends TestCase {
 	public void testTeX021() {
 		check("\\[Alpha]", //
 				"\\alpha");
-		check("-Infinity",//
-				 " - \\infty");
+		check("-Infinity", //
+				" - \\infty");
 		check("GoldenRatio", //
 				"\\phi");
 		check("Infinity", //
@@ -234,8 +245,8 @@ public class BasicTeXTestCase extends TestCase {
 
 		check("EulerGamma", //
 				"\\gamma");
-		check("Pi",//
-				 "\\pi");
+		check("Pi", //
+				"\\pi");
 		check("E", //
 				"e");
 
@@ -278,10 +289,10 @@ public class BasicTeXTestCase extends TestCase {
 	}
 
 	public void testTeX026() {
-		check("DirectedEdge(a,b)",//
-				 "a\\to b");
-		check("UndirectedEdge(a,b)",//
-				 "a\\leftrightarrow b");
+		check("DirectedEdge(a,b)", //
+				"a\\to b");
+		check("UndirectedEdge(a,b)", //
+				"a\\leftrightarrow b");
 		check("Graph({1,2,3},{1<->2,2<->3})", //
 				"\\text{Graph}(\\{1,2,3\\},\\{1\\leftrightarrow 2,2\\leftrightarrow 3\\})");
 		check("Graph({1,2,3},{1->2,2->3})", //
@@ -371,31 +382,47 @@ public class BasicTeXTestCase extends TestCase {
 		check(expr, //
 				"\\{\\{x\\to 4.89779*10^{21}\\}\\}");
 	}
-	
-	public void testTeX039() { 
+
+	public void testTeX039() {
 		// gitlab #108
 		IExpr expr = EvalEngine.get().evaluate("Superscript(2,10)");
 		check(expr, //
 				"{2}^{10}");
 	}
-	
-	public void testTeX040() { 
+
+	public void testTeX040() {
 		IExpr expr = EvalEngine.get().evaluate("Subscript(\"zzz\",36)");
 		check(expr, //
 				"{\\textnormal{zzz}}_{36}");
-	} 
-	
-	public void testTeX041() { 
+	}
+
+	public void testTeX041() {
 		IExpr expr = EvalEngine.get().evaluate("Interval({-3.21625*10^-16,5.66554*10^-16})");
 		check(expr, //
 				"Interval(\\{-3.21625*10^{-16},5.66554*10^{-16}\\})");
-	} 
-	
-	public void testTeX042() { 
+	}
+
+	public void testTeX042() {
 		IExpr expr = EvalEngine.get().evaluate("Cot(Interval({3*Pi/4,6*Pi/5}))");
 		check(expr, //
 				"Interval(\\{-\\infty,-1\\},\\{\\sqrt{\\left( 1+\\frac{2}{\\sqrt{5}}\\right) },\\infty\\})");
-	} 
+	}
+
+	public void testTeX043() {
+		IExpr expr = EvalEngine.get().evaluate("<|a -> x, b -> y, c -> z|>");
+		check(expr, //
+				"\\langle|a\\to x,b\\to y,c\\to z|\\rangle");
+	}
+
+	public void testTeX044() {
+		IExpr expr = EvalEngine.get().evaluate("{{{a->b},{c:>d}},{4,5,6}}");
+		((IAST) expr).setEvalFlags(IAST.OUTPUT_MULTILINE);
+		check(expr, //
+				"\\begin{array}{c}\n" + //
+						" \\{\\{a\\to b\\},\\{c:\\to d\\}\\} \\\\\n" + //
+						" \\{4,5,6\\} \n" + //
+						"\\end{array}");
+	}
 
 	public void check(String strEval, String strResult) {
 		StringWriter stw = new StringWriter();

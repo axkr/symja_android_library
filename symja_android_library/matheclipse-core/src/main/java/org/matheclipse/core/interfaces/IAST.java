@@ -163,6 +163,11 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public final static int BUILT_IN_EVALED = 0x00040000;
 
 	/**
+	 * This List expression args should be printed in multi-line style
+	 */
+	public final static int OUTPUT_MULTILINE = 0x00100000;
+
+	/**
 	 * Add an evaluation flag to the existing ones.
 	 * 
 	 * @param i
@@ -358,6 +363,17 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	@Override
 	public IASTMutable copy();
+
+	/**
+	 * Return a copy of the pure <code>IAST</code> instance (the elements themselves are not copied). Additionally to
+	 * the <code>copy()</code> method, this method tries to transform <code>AssociatioinAST</code> objects to
+	 * <code>AST</code> if possible.
+	 * 
+	 * @return a copy of this <code>IAST</code> instance.
+	 */
+	default IASTMutable copyAST() {
+		return copy();
+	}
 
 	/**
 	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied). In contrast
@@ -579,6 +595,28 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return the <code>filterAST</code>
 	 */
 	public IAST filter(IASTAppendable filterAST, Predicate<? super IExpr> predicate, int maxMatches);
+
+	/**
+	 * Select all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and append
+	 * the arguments which satisfy the predicate.
+	 * 
+	 * @param predicate
+	 *            the predicate which filters each argument in this <code>AST</code>
+	 * @return the selected ast
+	 */
+	public IAST select(Predicate<? super IExpr> predicate);
+
+	/**
+	 * Select all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and append
+	 * up to <code>maxMatches</code> arguments which satisfy the predicate.
+	 * 
+	 * @param predicate
+	 *            the predicate which filters each argument in this <code>AST</code>
+	 * @param maxMatches
+	 *            the maximum number of matches
+	 * @return the selected ast
+	 */
+	public IAST select(Predicate<? super IExpr> predicate, int maxMatches);
 
 	/**
 	 * Select all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and append
@@ -809,6 +847,19 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public IExpr get(int location);
 
 	/**
+	 * Returns <code>length</code> number of elements specified in the <code>items</code> position array in this
+	 * {@code IAST}.
+	 * 
+	 * @param items
+	 *            ascending ordered array of positions which should be selected from this {@code IAST}.
+	 * @param length
+	 *            the end position (exclusive) to which the <code>items</code> array is filled with valid element
+	 *            positions
+	 * @return
+	 */
+	public IAST getItems(int[] items, int length);
+
+	/**
 	 * Casts an <code>IExpr</code> at position <code>index</code> to an <code>IAST</code>.
 	 * 
 	 * @param index
@@ -917,23 +968,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return <code>true</code>, if one of the headers of this AST contains a trigonometric function.
 	 */
 	public boolean hasTrigonometricFunction();
-
-	/**
-	 * Find the first argument position, which equals <code>expr</code>. The search starts at index <code>1</code>.
-	 * 
-	 * @param expr
-	 * @return <code>-1</code> if no position was found
-	 */
-	public int indexOf(final IExpr expr);
-
-	/**
-	 * Find the first argument position, which fulfills the <code>predicate</code>. The search starts at index
-	 * <code>1</code>.
-	 * 
-	 * @param predicate
-	 * @return <code>-1</code> if no position was found
-	 */
-	public int indexOf(Predicate<? super IExpr> predicate);
 
 	/**
 	 * Test if this AST contains no argument
@@ -1192,6 +1226,18 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @see IAST#map(Function, int)
 	 */
 	public IASTMutable mapThread(final IAST replacement, int position);
+
+	/**
+	 * Maps the elements of this IAST with the unary <code>function)</code>.
+	 * 
+	 * <br />
+	 * 
+	 * @param function
+	 *            an IAST there the argument at the given position is replaced by the currently mapped argument of this
+	 *            IAST.
+	 * @return
+	 */
+	public IASTMutable mapThread(Function<IExpr, IExpr> function);
 
 	/**
 	 * Maps the elements of this IAST with the unary functor <code>Functors.replaceArg(replacement, position)</code>,
@@ -1482,7 +1528,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * The <code>splice()</code> method removes the item from an AST copy, and returns the copy.
 	 * 
 	 * @param index
-	 *            An integer that specifies at what position to add/remove items. 
+	 *            An integer that specifies at what position to add/remove items.
 	 * @return an IAST with removed element at the given position.
 	 */
 	default IAST splice(int index) {

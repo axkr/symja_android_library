@@ -6,6 +6,7 @@ import java.util.Comparator;
 import javax.annotation.Nonnull;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.expression.ASTAssociation;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Predicates;
@@ -385,6 +386,9 @@ public class EvalAttributes {
 	 * @return <code>true</code> if the sort algorithm was used; <code>false</code> otherwise
 	 */
 	public static final void sort(final IASTMutable ast, Comparator<IExpr> comparator) {
+		if (ast.isAssociation()) {
+			throw new UnsupportedOperationException("Sort(list, comparator) not implemented for associations.");
+		}
 		if (ast.size() > 2) {
 			final IExpr[] a = ast.toArray();
 			int end = a.length;

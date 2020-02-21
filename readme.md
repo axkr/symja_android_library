@@ -17,7 +17,7 @@ Read the [Symja Manual](symja_android_library/doc/index.md) for the description 
 [![Join the chat at https://gitter.im/symja_android_library/Lobby](https://badges.gitter.im/symja_android_library/Lobby.svg)](https://gitter.im/symja_android_library/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 - [Features](#features)
-- [Demos](#demos)
+- [Applications](#applications)
 - [Examples](#examples)
 - [Maven Usage](#maven-usage)
 - [Getting started](#getting-started)
@@ -29,7 +29,7 @@ Read the [Symja Manual](symja_android_library/doc/index.md) for the description 
 
 Features of the Symja language:
 
-* arbitrary precision integers, rational and complex numbers
+* arbitrary precision integers, rational and complex numbers. Polynomial, list functions and [Association](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Association.md)s
 * [differentiation](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/D.md), [integration](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Integrate.md), [equation solving](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Solve.md), [linear algebra](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/linear-algebra.md), [number theory](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/number-theoretic-functions.md), [combinatorial](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/combinatorial.md), [logic](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/logic.md) and polynomial functions...
 * a general purpose [Term Rewriting System and Pattern Matching engine](symja_android_library/doc/functions-and-patterns.md)
 * use human readable math expression strings or the internal abstract syntax tree (AST) representation to code in Java. See the [Unit test examples](symja_android_library/matheclipse-core/src/test/java/org/matheclipse/core/system/LowercaseTestCase.java)
@@ -38,11 +38,13 @@ Features of the Symja language:
 * Symja can also be used interactively in the [Java jshell](https://github.com/axkr/symja_android_library/wiki/JShell-usage)
 * the [Rubi symbolic integration rules](https://github.com/axkr/symja_android_library/wiki/Porting-Rubi-Integration-rules-to-Symja) are used to implement the [Integrate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Integrate.md) function, they can be systematically applied to determine the antiderivative of a wide variety of mathematical expressions. 
 
-### Demos
+### Applications
 
 * [Appengine web interface symjaweb.appspot.com](http://symjaweb.appspot.com/) - available as open source in this [Github repository](https://github.com/axkr/symja_web) 
 
 * [Android App Calculator N+ on Google play store](https://play.google.com/store/apps/details?id=com.duy.calculator.free) - available as open source in this [Github repository](https://github.com/tranleduy2000/ncalc) provides an **IDE mode** to calculate arbitrary Symja expressions.
+
+* [Eclipse EASE extension - use Symja as a REPL in Eclipse](https://github.com/axkr/ease_symja)
 
 ### Examples
 

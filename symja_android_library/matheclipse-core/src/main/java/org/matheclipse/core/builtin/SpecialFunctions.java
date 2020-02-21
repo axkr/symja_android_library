@@ -26,6 +26,8 @@ import static org.matheclipse.core.expression.F.Zeta;
 import java.math.BigDecimal;
 import java.util.function.DoubleUnaryOperator;
 
+import javax.annotation.Nonnull;
+
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
@@ -41,6 +43,7 @@ import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractArg12;
+import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
@@ -79,6 +82,7 @@ public class SpecialFunctions {
 			F.Erfc.setEvaluator(new Erfc());
 			F.Erfi.setEvaluator(new Erfi());
 			F.GammaRegularized.setEvaluator(new GammaRegularized());
+			F.HurwitzZeta.setEvaluator(new HurwitzZeta());
 			F.HypergeometricPFQRegularized.setEvaluator(new HypergeometricPFQRegularized());
 			F.InverseErf.setEvaluator(new InverseErf());
 			F.InverseErfc.setEvaluator(new InverseErfc());
@@ -198,9 +202,11 @@ public class SpecialFunctions {
 			}
 			if (a.isNumber() && b.isNumber()) {
 				if (a.isInteger() && a.isPositive() && b.isInteger() && b.isPositive()) {
+					// http://fungrim.org/entry/082a69/
 					return Times(Factorial(Plus(CN1, a)), Factorial(Plus(CN1, b)),
 							Power(Factorial(Plus(CN1, a, b)), -1));
 				}
+				// http://fungrim.org/entry/888581/
 				return F.Times(F.Gamma(a), F.Gamma(b), F.Power(F.Gamma(F.Plus(a, b)), -1));
 			}
 			IExpr s = a.inc().subtract(b);
@@ -620,6 +626,107 @@ public class SpecialFunctions {
 			super.setUp(newSymbol);
 		}
 
+	}
+
+	private final static class HurwitzZeta extends AbstractFunctionEvaluator {
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr s = ast.arg1();
+			IExpr a = ast.arg2();
+			if (s.isNumber()) {
+				if (s.isZero()) {
+					// http://fungrim.org/entry/d99808/
+					return F.Subtract(F.C1D2, a);
+				}
+				if (s.isOne()) {
+					// http://fungrim.org/entry/532f31/
+					return F.CComplexInfinity;
+				}
+			}
+			if (a.isNumber()) {
+				if (a.isZero() && s.isInteger() && s.isNegative()) {
+					// http://fungrim.org/entry/7dab87/
+					return F.Times(F.CN1, F.Divide(F.BernoulliB(F.Plus(1, s.negate())), F.Plus(1, s.negate())));
+				}
+				if (a.isOne()) {
+					// http://fungrim.org/entry/af23f7/
+					return F.Zeta(s);
+				}
+				if (a.isNumEqualInteger(F.C2)) {
+					// http://fungrim.org/entry/b721b4/
+					return F.Plus(F.CN1, F.Zeta(s));
+				}
+				if (a.isNumEqualRational(F.C1D2)) {
+					// http://fungrim.org/entry/af7d3d/
+					return F.Times(F.Plus(F.CN1, F.Power(F.C2, s)), F.Zeta(s));
+				}
+				if (a.isNumEqualRational(F.C3D4)) {
+					if (a.isNumEqualRational(F.C3D4)) {
+						// http://fungrim.org/entry/951f86/
+						return F.Plus(F.Times(F.CN8, F.Catalan), F.Sqr(Pi));
+					}
+				}
+				if (s.isInteger() && a.isInteger() && a.isPositive()) {
+					IInteger sInt = (IInteger) s;
+					if (sInt.isNegative() || sInt.isEven()) {
+						// http://fungrim.org/entry/6e69fc/
+						int n = a.toIntDefault();
+						int sNegate = sInt.negate().toIntDefault();
+						if (n > Integer.MIN_VALUE && sNegate > Integer.MIN_VALUE) {
+							return F.Subtract(F.Zeta(s), F.sum(k -> {
+								return k.power(sNegate);
+							}, 1, n - 1));
+						}
+					}
+				}
+			}
+
+			// if (engine.isDoubleMode()) {
+			// try {
+			// double sDouble = Double.NaN;
+			// double aDouble = Double.NaN;
+			// try {
+			// sDouble = s.evalDouble();
+			// aDouble = a.evalDouble();
+			// } catch (ValidateException ve) {
+			// }
+			// if (Double.isNaN(sDouble) || Double.isNaN(aDouble)) {
+			// Complex sc = s.evalComplex();
+			// Complex ac = a.evalComplex();
+			//
+			// return F.complexNum(ZetaJS.hurwitzZeta(sc, ac));
+			//
+			// } else {
+			// return ZetaJS.hurwitzZeta(sDouble, aDouble);
+			// }
+			// } catch (ThrowException te) {
+			// if (Config.SHOW_STACKTRACE) {
+			// te.printStackTrace();
+			// }
+			// return te.getValue();
+			// } catch (ValidateException ve) {
+			// if (Config.SHOW_STACKTRACE) {
+			// ve.printStackTrace();
+			// }
+			// } catch (RuntimeException rex) {
+			// // rex.printStackTrace();
+			// return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+			// }
+			// }
+
+			return NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
 	}
 
 	/**
@@ -1519,15 +1626,15 @@ public class SpecialFunctions {
 					if (n.isEven()) {
 						return F.C0;
 					}
-					// Zeta(-n) :=
-					// ((-1)^n/(n + 1))*BernoulliB(n + 1)
+					// http://fungrim.org/entry/51fd98/
+					// Zeta(-n) := ((-1)^n/(n + 1))*BernoulliB(n + 1)
 					n = n.negate();
 					IExpr n1 = n.add(C1);
 					return Times(Power(CN1, n), Power(n1, -1), BernoulliB(n1));
 				}
 				if (n.isEven()) {
-					// Zeta(2*n) :=
-					// ((((-1)^(n-1)*2^(-1+2*n)*Pi^(2*n))/(2*n)!)*BernoulliB(2*n)
+					// http://fungrim.org/entry/72ccda/
+					// Zeta(2*n) := ((((-1)^(n-1)*2^(-1+2*n)*Pi^(2*n))/(2*n)!)*BernoulliB(2*n)
 					n = n.shiftRight(1);
 					return Times(Power(CN1, Plus(CN1, n)), Power(C2, Plus(CN1, Times(C2, n))), Power(Pi, Times(C2, n)),
 							Power(Factorial(Times(C2, n)), -1), BernoulliB(Times(C2, n)));
@@ -1571,6 +1678,7 @@ public class SpecialFunctions {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 			super.setUp(newSymbol);
 		}
+
 	}
 
 	public static void initialize() {

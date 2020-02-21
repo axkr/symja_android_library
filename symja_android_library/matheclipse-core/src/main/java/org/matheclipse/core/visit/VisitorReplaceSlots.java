@@ -1,11 +1,15 @@
 package org.matheclipse.core.visit;
 
+import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntegerSym;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.IStringX;
 
 /**
  * Replace all occurrences of Slot[] expressions.
@@ -20,10 +24,20 @@ public class VisitorReplaceSlots extends VisitorExpr {
 		this.astSlots = ast;
 	}
 
-	private IExpr getSlot(IntegerSym ii) {
+	private IExpr getSlot(IInteger ii) {
 		int i = ii.toIntDefault(Integer.MIN_VALUE);
 		if (i >= 0 && i < astSlots.size()) {
 			return astSlots.get(i);
+		}
+		return F.NIL;
+	}
+
+	private IExpr getSlot(IStringX str) {
+		if (astSlots.arg1() instanceof ASTDataset) {
+			return ((ASTDataset) astSlots.arg1()).getValue(str);
+		}
+		if (astSlots.arg1().isAssociation()) {
+			return ((IAssociation) astSlots.arg1()).getValue(str);
 		}
 		return F.NIL;
 	}
@@ -53,8 +67,12 @@ public class VisitorReplaceSlots extends VisitorExpr {
 
 	@Override
 	public IExpr visit(IASTMutable ast) {
-		if (ast.isSlot() && ast.arg1().isInteger()) {
-			return getSlot((IntegerSym) ast.arg1());
+		if (ast.isSlot()) {
+			if (ast.arg1().isInteger()) {
+				return getSlot((IInteger) ast.arg1());
+			} else if (ast.arg1().isString()) {
+				return getSlot((IStringX) ast.arg1());
+			}
 		}
 		if (ast.isSlotSequence() && ast.arg1().isInteger()) {
 			return getSlotSequence((IntegerSym) ast.arg1());

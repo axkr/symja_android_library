@@ -478,7 +478,7 @@ public class HypergeometricJS {
 		}
 
 		if (x == -1) {
-			new ArithmeticException("Unsupported real hypergeometric argument");
+			throw  new ArithmeticException("Unsupported real hypergeometric argument");
 		}
 
 		if (x == 1) {

@@ -28,6 +28,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.WL;
+import org.matheclipse.core.expression.data.ExprEdge;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -140,39 +141,38 @@ public class Import extends AbstractEvaluator {
 		return ast2Expr.convert(node);
 	}
 
-	private GraphMLImporter<IExpr, DefaultEdge> createGraphImporter(Graph<IExpr, DefaultEdge> g,
+	private GraphMLImporter<IExpr, ExprEdge> createGraphImporter(Graph<IExpr, ExprEdge> g,
 			Map<String, Map<String, Attribute>> vertexAttributes,
-			Map<DefaultEdge, Map<String, Attribute>> edgeAttributes, EvalEngine engine) {
+			Map<ExprEdge, Map<String, Attribute>> edgeAttributes, EvalEngine engine) {
 		return createGraphImporter(g, (label, attributes) -> {
 			vertexAttributes.put(label, attributes);
 			return engine.parse(label);
 		}, (from, to, label, attributes) -> {
-			DefaultEdge e = g.getEdgeSupplier().get();
+			ExprEdge e = g.getEdgeSupplier().get();
 			edgeAttributes.put(e, attributes);
 			return e;
 		});
 	}
 
-	private GraphMLImporter<IExpr, DefaultEdge> createGraphImporter(Graph<IExpr, DefaultEdge> g,
-			VertexProvider<IExpr> vp, EdgeProvider<IExpr, DefaultEdge> ep) {
-		return new GraphMLImporter<IExpr, DefaultEdge>(vp, ep);
+	private GraphMLImporter<IExpr, ExprEdge> createGraphImporter(Graph<IExpr, ExprEdge> g,
+			VertexProvider<IExpr> vp, EdgeProvider<IExpr, ExprEdge> ep) {
+		return new GraphMLImporter<IExpr, ExprEdge>(vp, ep);
 	}
 
 	private IExpr graphImport(Reader reader, Extension format, EvalEngine engine) throws ImportException {
-		Graph<IExpr, DefaultEdge> result;
+		Graph<IExpr, ExprEdge> result;
 		switch (format) {
 		case DOT:
-			DOTImporter<IExpr, DefaultEdge> dotImporter = new DOTImporter<IExpr, DefaultEdge>(
-					(label, attributes) -> engine.parse(label), (from, to, label, attributes) -> new DefaultEdge());
-
-			result = new DefaultDirectedGraph<IExpr, DefaultEdge>(DefaultEdge.class);
+			DOTImporter<IExpr, ExprEdge> dotImporter = new DOTImporter<IExpr, ExprEdge>(
+					(label, attributes) -> engine.parse(label), (from, to, label, attributes) -> new ExprEdge());
+			result = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
 			dotImporter.importGraph(result, reader);
 			return GraphExpr.newInstance(result);
 		case GRAPHML:
-			result = new DefaultDirectedGraph<IExpr, DefaultEdge>(DefaultEdge.class);
+			result = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
 			Map<String, Map<String, Attribute>> vertexAttributes = new HashMap<>();
-			Map<DefaultEdge, Map<String, Attribute>> edgeAttributes = new HashMap<DefaultEdge, Map<String, Attribute>>();
-			GraphMLImporter<IExpr, DefaultEdge> graphmlImporter = createGraphImporter(result, vertexAttributes,
+			Map<ExprEdge, Map<String, Attribute>> edgeAttributes = new HashMap<ExprEdge, Map<String, Attribute>>();
+			GraphMLImporter<IExpr, ExprEdge> graphmlImporter = createGraphImporter(result, vertexAttributes,
 					edgeAttributes, engine);
 			graphmlImporter.importGraph(result, reader);
 			return GraphExpr.newInstance(result);

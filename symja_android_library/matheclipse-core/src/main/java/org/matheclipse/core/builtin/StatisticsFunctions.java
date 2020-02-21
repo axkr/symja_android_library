@@ -4110,9 +4110,8 @@ public class StatisticsFunctions {
 			if (dist.isAST0()) {
 				return F.num(random.nextGaussian());
 			}
-			// return protected_quantile(dist, F.num(ThreadLocalRandom.current().nextDouble()));
 			if (dist.isAST2()) {
-				if (dist.arg1().isReal() && dist.arg1().isPositiveResult()) {
+				if (dist.arg1().isReal() && dist.arg2().isPositiveResult()) {
 					double mean = dist.arg1().evalDouble();
 					double sigma = dist.arg2().evalDouble();
 					return F.num(new GaussianGenerator(mean, sigma, random).nextValue());

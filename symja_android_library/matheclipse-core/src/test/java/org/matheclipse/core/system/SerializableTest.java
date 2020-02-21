@@ -7,17 +7,20 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.reflection.system.Share;
 import org.matheclipse.core.visit.AbstractVisitor;
 
 import junit.framework.TestCase;
+import tech.tablesaw.api.Table;
 
 public class SerializableTest extends TestCase {
 
@@ -26,6 +29,22 @@ public class SerializableTest extends TestCase {
 		super.setUp();
 		// wait for initializing of Integrate() rules:
 		F.await();
+	}
+
+	public void testAssociation() {
+		IAssociation assoc = F.assoc(F.List(F.Rule(F.a, F.b)));
+		equalsCopy(assoc);
+	}
+
+	public void testDataset() {
+		Table table = Table.read().csv("Products,Sales,Market_Share\n" + //
+				"a,5500,3\n" + //
+				"b,12200,4\n" + //
+				"c,60000,33\n", "");
+
+		ASTDataset ds = ASTDataset.newInstance(table);
+		equalsStringCopy(ds);
+
 	}
 
 	public void testNum() {
@@ -204,6 +223,10 @@ public class SerializableTest extends TestCase {
 			ois.close();
 			assertEquals(original, copy);
 
+			// if (!original.toString().equals(copy.toString())) {
+			// System.out.println(copy.toString());
+			// }
+			// assertEquals(original.toString(), copy.toString());
 		} catch (ClassNotFoundException cnfe) {
 			cnfe.printStackTrace();
 			assertEquals("", cnfe.toString());

@@ -21,9 +21,14 @@ package org.matheclipse.parser.client.ast;
  */
 public interface IConstantOperators {
 	public final static String All = "All";
-	
+
 	public final static String Inequality = "Inequality";
-	
+
+	/**
+	 * Head for lists (i.e. &lt;|a->,b,...|&gt; )
+	 */
+	public final static String Association = "Association";
+
 	/**
 	 * Head for lists (i.e. {a,b,c,...} )
 	 */
@@ -37,7 +42,7 @@ public interface IConstantOperators {
 	public final static String Part = "Part";
 
 	public final static String Slot = "Slot";
-	
+
 	public final static String Span = "Span";
 
 	public final static String SlotSequence = "SlotSequence";

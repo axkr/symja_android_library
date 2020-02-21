@@ -1565,7 +1565,9 @@ public class ExpTrigsFunctions {
 				}
 
 			}
-
+			if (arg1.isInterval()) {
+				return IntervalSym.csc((IAST) arg1);
+			}
 			// IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 			// if (imPart.isPresent()) {
 			// return F.Times(F.CNI, F.Csch(imPart));
@@ -1937,6 +1939,9 @@ public class ExpTrigsFunctions {
 						return F.Times(F.Power(F.CN1, k), F.Csch(F.Subtract(arg1, list.arg2())));
 					}
 				}
+			}
+			if (arg1.isInterval()) {
+				return IntervalSym.csch((IAST) arg1);
 			}
 			return F.NIL;
 		}
@@ -2344,7 +2349,9 @@ public class ExpTrigsFunctions {
 				}
 
 			}
-
+			if (arg1.isInterval()) {
+				return IntervalSym.sec((IAST) arg1);
+			}
 			// IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 			// if (imPart.isPresent()) {
 			// return F.Sech(imPart);
@@ -2452,6 +2459,9 @@ public class ExpTrigsFunctions {
 						return F.Times(F.Power(F.CN1, k), F.Sech(F.Subtract(arg1, list.arg2())));
 					}
 				}
+			}
+			if (arg1.isInterval()) {
+				return IntervalSym.sech((IAST) arg1);
 			}
 			return F.NIL;
 		}

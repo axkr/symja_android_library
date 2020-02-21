@@ -436,6 +436,23 @@ public final class AST3 extends AST2 {
 	}
 
 	@Override
+	public IAST getItems(int[] items, int length) {
+		if (length == 0) {
+			return new AST0(head());
+		}
+		if (length == 3 && items[0] == 1 && items[1] == 2 && items[2] == 3) {
+			return this;
+		}
+		if (length == 1) {
+			return new AST1(head(), get(items[0]));
+		}
+		if (length == 2) {
+			return new AST2(head(), get(items[0]), get(items[1]));
+		}
+		throw new IndexOutOfBoundsException("Index: 2, Size: " + size());
+	}
+
+	@Override
 	public int hashCode() {
 		if (hashValue == 0 && arg3 != null) {
 			hashValue = 0x811c9dc5;// decimal 2166136261;

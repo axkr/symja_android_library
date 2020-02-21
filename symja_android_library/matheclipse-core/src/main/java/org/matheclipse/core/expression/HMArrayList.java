@@ -255,7 +255,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	public boolean appendAll(Map<? extends IExpr, ? extends IExpr> map) {
 		for (Map.Entry<? extends IExpr, ? extends IExpr> entry : map.entrySet()) {
 			append(F.Rule(entry.getKey(), entry.getValue()));
-		} 
+		}
 		return true;
 	}
 
@@ -606,37 +606,24 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 			return true;
 		}
 		if (obj instanceof AbstractAST) {
-			// if (obj instanceof AST0) {
-			// return obj.equals(this);
-			// }
-			IExpr head = array[firstIndex];
-			if (head != ((AbstractAST) obj).head() && head instanceof ISymbol) {
-				// compared with ISymbol object identity
-				return false;
-			}
-			if (hashCode() != obj.hashCode()) {
-				return false;
-			}
+			final IAST ast = (AbstractAST) obj;
 			final int size = lastIndex - firstIndex;
-			if (obj instanceof HMArrayList) {
-				final HMArrayList ast = (HMArrayList) obj;
-				if (size != ast.size()) {
-					return false;
-				}
-				int i1 = firstIndex + 1;
-				int i2 = ast.firstIndex + 1;
-				for (int i = 1; i < size; i++) {
-					if (!array[i1++].equals(ast.array[i2++])) {
-						return false;
-					}
-				}
-				return head instanceof ISymbol || head.equals(ast.array[ast.firstIndex]);
-			}
-			final AbstractAST ast = (AbstractAST) obj;
 			if (size != ast.size()) {
 				return false;
 			}
-			return forAll((x, i) -> x.equals(ast.get(i)), 0);
+			final IExpr head = array[firstIndex];
+			if (head instanceof ISymbol) {
+				if (head != ast.head()) {
+					// compared with ISymbol object identity
+					return false;
+				}
+			} else if (!head.equals(ast.head())) {
+				return false;
+			}
+			if (hashCode() != ast.hashCode()) {
+				return false;
+			}
+			return forAll((x, i) -> x.equals(ast.get(i)), 1);
 		}
 		return false;
 	}

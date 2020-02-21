@@ -390,6 +390,15 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	public IExpr get(int location) {
 		return new ASTRealVector(matrix.getRowVector(location - 1), false);
 	}
+	
+	@Override
+	public IAST getItems(int[] items, int length) { 
+		double[][] m = new double[length][];
+		for (int i = 0; i < length; i++) {
+			m[i] = matrix.getRow(items[i] - 1);
+		}
+		return new ASTRealMatrix(m, false);
+	}
 
 	@Override
 	public final IExpr getPart(final int... positions) {

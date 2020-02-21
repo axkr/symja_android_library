@@ -91,6 +91,7 @@ public final class BooleanFunctions {
 			F.LessEqual.setEvaluator(new LessEqual());
 			F.Max.setEvaluator(new Max());
 			F.Min.setEvaluator(new Min());
+			F.MinMax.setEvaluator(new MinMax());
 			F.Nand.setEvaluator(new Nand());
 			F.Negative.setEvaluator(new Negative());
 			F.NoneTrue.setEvaluator(new NoneTrue());
@@ -2460,6 +2461,10 @@ public final class BooleanFunctions {
 			if (!evaled) {
 				evaled = flattenedList;
 			}
+			
+			if (list.size() == 1) {
+				return F.CNInfinity;
+			}
 			IExpr max1;
 			IExpr max2;
 			max1 = list.arg1();
@@ -2594,6 +2599,9 @@ public final class BooleanFunctions {
 				evaled = flattenedList;
 			}
 
+			if (list.size() == 1) {
+				return F.CInfinity;
+			}
 			IExpr min1;
 			IExpr min2;
 			min1 = list.arg1();
@@ -2642,6 +2650,45 @@ public final class BooleanFunctions {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.NUMERICFUNCTION);
+		}
+	}
+
+	private static class MinMax extends AbstractFunctionEvaluator {
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = ast.arg1();
+			if (ast.isAST1()) {
+				if (arg1.isList() || arg1.isAssociation()) {
+					return F.List(F.Min(arg1), F.Max(arg1));
+				}
+			} else if (ast.isAST2()) {
+				IExpr arg2 = ast.arg2();
+				if (arg1.isList() || arg1.isAssociation()) {
+					if (arg2.isList()) {
+						if (arg2.size() == 3 && //
+								arg2.first().isNumericFunction() && //
+								arg2.second().isNumericFunction()) {
+							return F.List(F.Subtract(F.Min(arg1), arg2.first()), F.Plus(F.Max(arg1), arg2.second()));
+						}
+					} else if (arg2.isNumericFunction()) {
+						return F.List(F.Subtract(F.Min(arg1), arg2), F.Plus(F.Max(arg1), arg2));
+					} else if (arg2.isAST(F.Scaled, 2) && //
+							arg2.first().isNumericFunction()) {
+						IExpr delta = engine.evaluate(F.Times(arg2.first(), F.Subtract(F.Max(arg1), F.Min(arg1))));
+						return F.List(F.Subtract(F.Min(arg1), delta), F.Plus(F.Max(arg1), delta));
+					}
+				}
+			}
+
+			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
 		}
 	}
 
@@ -3472,11 +3519,20 @@ public final class BooleanFunctions {
 			IAST userDefinedVariables;
 			IExpr arg1 = ast.arg1();
 			try {
+				VariablesSet vSet = new VariablesSet(arg1);
+				IAST variablesInFormula = vSet.getVarList();
 				// currently only SAT is available
 				String method = "SAT";
 				int maxChoices = 1;
 				if (ast.size() > 2) {
 					userDefinedVariables = ast.arg2().orNewList();
+					IExpr complement = F.Complement.of(engine, userDefinedVariables, variablesInFormula);
+					if (complement.size() > 1) {
+						IASTAppendable or = F.Or();
+						or.append(arg1);
+						arg1 = or;
+						or.appendArgs((IAST) complement);
+					}
 					if (ast.size() > 3) {
 						final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
 						// "BDD" (binary decision diagram), "SAT", "TREE" ?
@@ -3491,11 +3547,10 @@ public final class BooleanFunctions {
 						maxChoices = Integer.MAX_VALUE;
 					} else if (argN.isReal()) {
 						ISignedNumber sn = (ISignedNumber) argN;
-						maxChoices = sn.toIntDefault(0);
+						maxChoices = sn.toIntDefault(1);
 					}
 				} else {
-					VariablesSet vSet = new VariablesSet(arg1);
-					userDefinedVariables = vSet.getVarList();
+					userDefinedVariables = variablesInFormula;
 				}
 				return satisfiabilityInstances(arg1, userDefinedVariables, maxChoices);
 			} catch (ClassCastException cce) {

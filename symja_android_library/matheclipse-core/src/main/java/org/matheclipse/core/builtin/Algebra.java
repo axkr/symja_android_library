@@ -1956,14 +1956,16 @@ public class Algebra {
 
 			IExpr expr = ast.arg1();
 			if (ast.isAST1() && !ast.arg1().isTimes() && !ast.arg1().isPower()) {
-				expr = F.Together.of(engine, ast.arg1());
+				expr = F.Together.of(engine, expr);
 				if (expr.isAST()) {
 					IExpr[] parts = Algebra.getNumeratorDenominator((IAST) expr, engine);
 					if (!parts[1].isOne()) {
 						try {
 							IExpr numerator = factorExpr(F.Factor(parts[0]), parts[0], eVar, false, engine);
 							IExpr denomimator = factorExpr(F.Factor(parts[1]), parts[1], eVar, false, engine);
-							return F.Divide(numerator, denomimator);
+							IExpr temp = F.Divide(numerator, denomimator);
+							F.REMEMBER_AST_CACHE.put(ast, temp);
+							return temp;
 						} catch (JASConversionException e) {
 							if (Config.DEBUG) {
 								e.printStackTrace();
@@ -1975,16 +1977,15 @@ public class Algebra {
 			}
 
 			try {
-
 				if (ast.isAST2()) {
 					IExpr temp = factorWithOption(ast, expr, varList, false, engine);
 					if (temp.isPresent()) {
 						return temp;
 					}
 				}
-
-				return factorExpr(ast, expr, eVar, false, engine);
-
+				IExpr temp = factorExpr(ast, expr, eVar, false, engine);
+				F.REMEMBER_AST_CACHE.put(ast, temp);
+				return temp;
 			} catch (JASConversionException e) {
 				if (Config.DEBUG) {
 					e.printStackTrace();
@@ -2026,13 +2027,10 @@ public class Algebra {
 						}
 						return F.NIL;
 					}, 1);
+					return temp;
 				} else {
 					// System.out.println("leafCount " + expr.leafCount());
-					temp = factor((IAST) expr, eVar, factorSquareFree, engine);
-				}
-				if (temp.isPresent()) {
-					F.REMEMBER_AST_CACHE.put(ast, temp);
-					return temp;
+					return factor((IAST) expr, eVar, factorSquareFree, engine);
 				}
 			}
 			return expr;
@@ -2187,6 +2185,10 @@ public class Algebra {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			VariablesSet eVar = new VariablesSet(ast.arg1());
+			IExpr result = F.REMEMBER_AST_CACHE.getIfPresent(ast);
+			if (result != null) {
+				return result;
+			}
 			// if (!eVar.isSize(1)) {
 			// throw new WrongArgumentType(ast, ast.arg1(), 1,
 			// "Factorization only implemented for univariate polynomials");
@@ -2201,7 +2203,9 @@ public class Algebra {
 					return factorWithOption(ast, expr, varList, true, engine);
 				}
 				if (expr.isAST()) {
-					return factorExpr((IAST) expr, (IAST) expr, eVar, true, engine);
+					IExpr temp = factorExpr((IAST) expr, (IAST) expr, eVar, true, engine);
+					F.REMEMBER_AST_CACHE.put(ast, temp);
+					return temp;
 				}
 				return expr;
 
