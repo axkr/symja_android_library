@@ -6,7 +6,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * Contains the last <code>N</code> entries of the calculation history.
+ * Contains the last <code>n</code> entries of the calculation history.
  * 
  */
 public class LastCalculationsHistory implements Serializable {
@@ -24,7 +24,7 @@ public class LastCalculationsHistory implements Serializable {
 	private int fAllEntriesCounter;
 
 	/**
-	 * Contains the last <code>N</code> output entries of the calculation history.
+	 * Contains the last <code>n</code> output entries of the calculation history.
 	 * 
 	 * @param n
 	 *            maximum capacity of the last calculated entries which the history could contain.
@@ -89,6 +89,20 @@ public class LastCalculationsHistory implements Serializable {
 		return F.NIL;
 	}
 
+	/**
+	 * Get the last <code>In[], Out[]</code> evaluation counter
+	 * 
+	 * @return
+	 */
+	public int getCounter() {
+		return fAllEntriesCounter;
+	}
+
+	/**
+	 * Get the size of the last history entry array.
+	 * 
+	 * @return
+	 */
 	public int size() {
 		return fOutHistory.length;
 	}
