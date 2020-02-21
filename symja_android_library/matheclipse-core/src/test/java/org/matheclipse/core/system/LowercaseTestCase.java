@@ -9729,6 +9729,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInterval() {
+
+		check("Interval(0.0``40)", //
+				"Interval({0,0})");
+		check("Interval(N(Pi,60))-Pi", //
+				"Interval({-1*10^-59,1*10^-59})");
+		check("Interval(N(Pi,60))+Pi", //
+				"Interval({6.28318530717958647692528676655900576839433879875021164194987,6.28318530717958647692528676655900576839433879875021164194989})");
+		check("Interval(1.0``40)", //
+				"Interval({9.99999999999999999999999999999999999999*10^-1,1.000000000000000000000000000000000000001})");
+
 		check("1/Interval(-Infinity,Infinity)", //
 				"Interval({0,0})");
 		check("1/Interval(-Infinity,-1/2)", //
@@ -9752,15 +9762,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Interval({0,1/2})");
 		check("1/Interval({3/7,Infinity})", //
 				"Interval({0,7/3})");
-
-		// check("Interval(0.0``40)", //
-		// "Interval({0,0})");
-		// check("Interval(N(Pi,60))-Pi", //
-		// "Interval({-1*10^-59,1*10^-59})");
-		// check("Interval(N(Pi,60))+Pi", //
-		// "Interval({6.28318530717958647692528676655900576839433879875021164194987,6.28318530717958647692528676655900576839433879875021164194989})");
-		// check("Interval(1.0``40)", //
-		// "Interval({9.99999999999999999999999999999999999999*10^-1,1.000000000000000000000000000000000000001})");
 
 		// TODO return Interval({-1,1}) for -Infinity, Infinity
 		check("Limit(Sin(1/x), x -> 0)", //
