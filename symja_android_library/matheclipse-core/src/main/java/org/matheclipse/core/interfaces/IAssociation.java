@@ -86,6 +86,11 @@ public interface IAssociation extends IASTAppendable {
 	public IAST normal();
 
 	/**
+	 * Return the list of rules as a matrix or list
+	 */
+	public IAST matrixOrList();
+	
+	/**
 	 * Return a new association sorted by the values of the association.
 	 * 
 	 * @return the sorted association

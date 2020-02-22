@@ -15,11 +15,11 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.form.output.JavaScriptFormFactory;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 
-import tech.tablesaw.plotly.Plot;
 import tech.tablesaw.plotly.components.Figure;
 import tech.tablesaw.plotly.components.Layout;
 import tech.tablesaw.plotly.traces.HistogramTrace;
@@ -1338,6 +1338,10 @@ public class ManipulateFunction {
 		IExpr arg1 = plot.arg1();
 		if (!arg1.isList()) {
 			arg1 = engine.evaluate(arg1);
+		}
+		if (arg1.isAssociation()) {
+			IAssociation assoc = ((IAssociation) arg1);
+			arg1 = assoc.matrixOrList();
 		}
 		if (arg1.isList() && arg1.size() > 1) {
 			IAST pointList = (IAST) arg1;

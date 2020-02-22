@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.EvalAttributes;
@@ -212,6 +211,42 @@ public class ASTAssociation extends AST implements IAssociation {
 			}
 		}
 		return list;
+	}
+
+	public IAST matrixOrList() {
+		
+
+		boolean numericKeys = true;
+		try {
+			for (Object2IntMap.Entry<IExpr> element : map.object2IntEntrySet()) {
+				IExpr key = element.getKey();
+				if (!key.isReal()) {
+					double d = key.evalDouble();
+					numericKeys = false;
+					break;
+				} 
+			}
+		} catch (RuntimeException rex) {
+			numericKeys = false;
+		}
+		if (numericKeys) {
+			IASTAppendable list = F.ListAlloc(map.size());
+			for (Object2IntMap.Entry<IExpr> element : map.object2IntEntrySet()) {
+				IExpr key = element.getKey();
+				int value = element.getIntValue();
+				if (value < 0) {
+					value *= -1;
+				}
+				list.append(F.List(key, get(value))); 
+			}
+			return list;
+		} else {
+			IASTAppendable list = F.ListAlloc(size());
+			for (int i = 1; i < size(); i++) {
+				list.append(get(i));
+			} 
+			return list;
+		}
 	}
 
 	public boolean isKey(IExpr key) {

@@ -10266,6 +10266,17 @@ public class F {
 					ex.printStackTrace();
 				}
 			}
+		} else if (jsFormData.arg2().toString().equals("plotly")) {
+			try {
+				String manipulateStr = jsFormData.arg1().toString();
+				String html = Config.PLOTLY_PAGE;
+				html = StringUtils.replace(html, "`1`", manipulateStr);
+				return openHTMLOnDesktop(html);
+			} catch (Exception ex) {
+				if (Config.SHOW_STACKTRACE) {
+					ex.printStackTrace();
+				}
+			} 
 		} else if (jsFormData.arg2().toString().equals("treeform")) {
 			try {
 				String manipulateStr = jsFormData.arg1().toString();
