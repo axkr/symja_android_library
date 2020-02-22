@@ -44,7 +44,7 @@ Features of the Symja language:
 
 * [Android App Calculator N+ on Google play store](https://play.google.com/store/apps/details?id=com.duy.calculator.free) - available as open source in this [Github repository](https://github.com/tranleduy2000/ncalc) provides an **IDE mode** to calculate arbitrary Symja expressions.
 
-* [Eclipse EASE extension - use Symja as a REPL in Eclipse](https://github.com/axkr/ease_symja)
+* [Eclipse EASE extension - use Symja as a REPL in Eclipse](https://github.com/axkr/ease_symja) with this [example Github repository](https://github.com/axkr/symja_examples) which contains some Symja example scripts.
 
 ### Examples
 
