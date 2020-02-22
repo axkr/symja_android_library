@@ -22,7 +22,11 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 import tech.tablesaw.plotly.components.Figure;
 import tech.tablesaw.plotly.components.Layout;
+import tech.tablesaw.plotly.traces.BarTrace;
+import tech.tablesaw.plotly.traces.BoxTrace;
+import tech.tablesaw.plotly.traces.HeatmapTrace;
 import tech.tablesaw.plotly.traces.HistogramTrace;
+import tech.tablesaw.plotly.traces.PieTrace;
 
 public class ManipulateFunction {
 	private final static String JSXGRAPH = //
@@ -54,10 +58,13 @@ public class ManipulateFunction {
 	private static class Initializer {
 
 		private static void init() {
-			if (Config.USE_MANIPULATE_JS) {
-				F.Manipulate.setEvaluator(new Manipulate());
+			if (Config.USE_MANIPULATE_JS) { 
 				F.BarChart.setEvaluator(new BarChart());
+				F.BoxWhiskerChart.setEvaluator(new BoxWhiskerChart());
 				F.Histogram.setEvaluator(new Histogram());
+				F.PieChart.setEvaluator(new PieChart());
+				F.Manipulate.setEvaluator(new Manipulate());
+				F.MatrixPlot.setEvaluator(new MatrixPlot());
 			}
 		}
 	}
@@ -66,36 +73,53 @@ public class ManipulateFunction {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (Config.USE_MANIPULATE_JS) {
-				IExpr temp = F.Manipulate.of(engine, ast);
-				if (temp.headID() == ID.JSFormData) {
-					return temp;
-				}
-			}
-			return F.NIL;
-		}
-
-		@Override
-		public void setUp(final ISymbol newSymbol) {
+			return redirectToManipulate(ast, engine);
 		}
 	}
 
+	private final static class BoxWhiskerChart extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			return redirectToManipulate(ast, engine);
+		}
+
+	}
+	
 	private final static class Histogram extends AbstractEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (Config.USE_MANIPULATE_JS) {
-				IExpr temp = F.Manipulate.of(engine, ast);
-				if (temp.headID() == ID.JSFormData) {
-					return temp;
-				}
-			}
-			return F.NIL;
+			return redirectToManipulate(ast, engine);
 		}
+	}
+
+	private final static class MatrixPlot extends AbstractEvaluator {
 
 		@Override
-		public void setUp(final ISymbol newSymbol) {
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			return redirectToManipulate(ast, engine);
 		}
+
+	}
+
+	private final static class PieChart extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			return redirectToManipulate(ast, engine);
+		}
+
+	}
+
+	private static IExpr redirectToManipulate(final IAST ast, EvalEngine engine) {
+		if (Config.USE_MANIPULATE_JS) {
+			IExpr temp = F.Manipulate.of(engine, ast);
+			if (temp.headID() == ID.JSFormData) {
+				return temp;
+			}
+		}
+		return F.NIL;
 	}
 
 	private static class Manipulate extends AbstractEvaluator {
@@ -104,7 +128,10 @@ public class ManipulateFunction {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			try {
 				if (ast.arg1().isAST(F.BarChart) || //
-						ast.arg1().isAST(F.Histogram)) {
+						ast.arg1().isAST(F.BoxWhiskerChart) || //
+						ast.arg1().isAST(F.Histogram) || //
+						ast.arg1().isAST(F.MatrixPlot) || //
+						ast.arg1().isAST(F.PieChart)) {
 					IAST chart = (IAST) ast.arg1();
 					return jsxgraphBarChart(ast, chart, engine);
 				} else if (ast.arg1().isAST(F.ListLinePlot) || //
@@ -1581,29 +1608,70 @@ public class ManipulateFunction {
 		}
 		if (ast.arg1().isAST(F.Histogram)) {
 			double[] vector = arg1.toDoubleVector();
-			Layout layout = Layout.builder().autosize(true).build();// .title("Histogram").build();
+			if (vector != null && vector.length > 0) {
+				Layout layout = Layout.builder().autosize(true).build();// .title("Histogram").build();
 
-			HistogramTrace trace = HistogramTrace.builder(vector).build();
-			Figure figure = new Figure(layout, trace);
-			// System.out.println(figure.asJavascript("plotly"));
-			// Plot.show(figure);
-			return F.JSFormData(figure.asJavascript("plotly"), "plotly");
-		} else {
+				HistogramTrace trace = HistogramTrace.builder(vector).build();
+				Figure figure = new Figure(layout, trace);
+				// System.out.println(figure.asJavascript("plotly"));
+				// Plot.show(figure);
+				return F.JSFormData(figure.asJavascript("plotly"), "plotly");
+			}
+		} else if (ast.arg1().isAST(F.BarChart)) {
+			double[] vector = arg1.toDoubleVector();
+			if (vector != null && vector.length > 0) {
+				String[] strs = new String[vector.length];
+				for (int i = 0; i < vector.length; i++) {
+					strs[i] = Integer.toString(i + 1);
+				}
 
-			JavaScriptFormFactory toJS = new JavaScriptFormFactory(true, false, -1, -1,
-					JavaScriptFormFactory.USE_MATHCELL);
-			jsxgraphSliderNamesFromList(ast, toJS);
-			if (arg1.isList() && arg1.size() > 1) {
-				IAST pointList = (IAST) arg1;
-				// int[] dimension = pointList.isMatrix();
-				// if (dimension != null) {
-				// if (dimension[1] == 2) {
-				// return sequencePointListPlot(ast, pointList, toJS, engine);
-				// }
-				// return F.NIL;
-				// } else {
-				return sequenceBarChart(ast, pointList, toJS, engine);
-				// }
+				Layout layout = Layout.builder().autosize(true).build();
+				BarTrace trace = BarTrace.builder(strs, vector).build();
+				Figure figure = new Figure(layout, trace);
+				return F.JSFormData(figure.asJavascript("plotly"), "plotly");
+			}
+		} else if (ast.arg1().isAST(F.BoxWhiskerChart)) {
+			double[] vector = arg1.toDoubleVector();
+			if (vector != null && vector.length > 0) {
+				String[] strs = new String[vector.length];
+				for (int i = 0; i < vector.length; i++) {
+					strs[i] = Integer.toString(i + 1);
+				}
+				Layout layout = Layout.builder().autosize(true).build();
+				BoxTrace trace = BoxTrace.builder(strs, vector).build();
+				Figure figure = new Figure(layout, trace);
+				return F.JSFormData(figure.asJavascript("plotly"), "plotly");
+			}
+		} else if (ast.arg1().isAST(F.PieChart)) {
+			double[] vector = arg1.toDoubleVector();
+			if (vector != null && vector.length > 0) {
+				String[] strs = new String[vector.length];
+				for (int i = 0; i < vector.length; i++) {
+					strs[i] = Integer.toString(i + 1);
+				}
+
+				Layout layout = Layout.builder().autosize(true).build();
+				PieTrace trace = PieTrace.builder(strs, vector).build();
+				Figure figure = new Figure(layout, trace);
+				return F.JSFormData(figure.asJavascript("plotly"), "plotly");
+			}
+		} else if (ast.arg1().isAST(F.MatrixPlot)) {
+			double[][] matrix = arg1.toDoubleMatrix();
+			if (matrix != null && matrix.length > 0) {
+				final int rowCount = matrix.length;
+				String[] yStrs = new String[rowCount];
+				for (int i = 0; i < rowCount; i++) {
+					yStrs[i] = Integer.toString(i + 1);
+				}
+				String[] xStrs = new String[rowCount];
+				final int colCount = matrix[0].length;
+				for (int i = 0; i < colCount; i++) {
+					xStrs[i] = Integer.toString(i + 1);
+				}
+				Layout layout = Layout.builder().autosize(true).build();
+				HeatmapTrace trace = HeatmapTrace.builder(xStrs, yStrs, matrix).build();
+				Figure figure = new Figure(layout, trace);
+				return F.JSFormData(figure.asJavascript("plotly"), "plotly");
 			}
 		}
 		return F.NIL;
