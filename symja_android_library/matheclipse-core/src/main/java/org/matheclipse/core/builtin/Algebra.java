@@ -2273,6 +2273,12 @@ public class Algebra {
 
 		private static IExpr factorList(IExpr expr, List<IExpr> varList, boolean factorSquareFree)
 				throws JASConversionException {
+			if (!expr.isAST()) {
+				if (expr.isNumber()) {
+					return F.List(F.List(expr, F.C1));
+				}
+				return F.List(F.List(F.C1, F.C1), F.List(expr, F.C1));
+			}
 			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
 			GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, false);
 			Object[] objects = jas.factorTerms(polyRat);
@@ -3185,7 +3191,15 @@ public class Algebra {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
 			if (ast.size() == 4 || ast.size() == 5) {
-				IExpr variable = ast.arg3();
+				IExpr variable;
+				if (ast.arg3().isAST()) {
+					variable = ast.arg3();
+				} else {
+					variable = Validate.checkSymbolType(ast, 3, engine);
+					if (!variable.isPresent()) {
+						return F.NIL;
+					}
+				}
 				IExpr arg1 = F.evalExpandAll(ast.arg1(), engine);
 				IExpr arg2 = F.evalExpandAll(ast.arg2(), engine);
 
@@ -3290,29 +3304,43 @@ public class Algebra {
 			if (temp != null) {
 				return temp;
 			}
-			IExpr variable = ast.arg3();
+			IExpr variable;
+			if (ast.arg3().isAST()) {
+				variable = ast.arg3();
+			} else {
+				variable = Validate.checkSymbolType(ast, 3, engine);
+				if (!variable.isPresent()) {
+					return F.NIL;
+				}
+			}
 			IExpr arg1 = F.evalExpandAll(ast.arg1(), engine);
 			IExpr arg2 = F.evalExpandAll(ast.arg2(), engine);
-
-			IExpr result = F.NIL;
-			if (ast.size() == 5) {
-				final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
-				IExpr option = options.getOption(F.Modulus);
-				if (option.isInteger() && !option.isZero()) {
-					IExpr[] quotientRemainderModInteger = quotientRemainderModInteger(arg1, arg2, variable, option);
-					if (quotientRemainderModInteger != null) {
-						result = F.List(quotientRemainderModInteger[0], quotientRemainderModInteger[1]);
+			try {
+				IExpr result = F.NIL;
+				if (ast.size() == 5) {
+					final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
+					IExpr option = options.getOption(F.Modulus);
+					if (option.isInteger() && !option.isZero()) {
+						IExpr[] quotientRemainderModInteger = quotientRemainderModInteger(arg1, arg2, variable, option);
+						if (quotientRemainderModInteger != null) {
+							result = F.List(quotientRemainderModInteger[0], quotientRemainderModInteger[1]);
+						}
 					}
+					F.REMEMBER_AST_CACHE.put(ast, result);
+					return result;
+				}
+				IExpr[] quotientRemainder = quotientRemainder(arg1, arg2, variable);
+				if (quotientRemainder != null) {
+					result = F.List(quotientRemainder[0], quotientRemainder[1]);
 				}
 				F.REMEMBER_AST_CACHE.put(ast, result);
 				return result;
+			} catch (RuntimeException rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
+				return F.NIL;
 			}
-			IExpr[] quotientRemainder = quotientRemainder(arg1, arg2, variable);
-			if (quotientRemainder != null) {
-				result = F.List(quotientRemainder[0], quotientRemainder[1]);
-			}
-			F.REMEMBER_AST_CACHE.put(ast, result);
-			return result;
 		}
 
 		public int[] expectedArgSize() {
@@ -3376,27 +3404,41 @@ public class Algebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			IExpr variable = ast.arg3();
+			IExpr variable;
+			if (ast.arg3().isAST()) {
+				variable = ast.arg3();
+			} else {
+				variable = Validate.checkSymbolType(ast, 3, engine);
+				if (!variable.isPresent()) {
+					return F.NIL;
+				}
+			}
 			IExpr arg1 = F.evalExpandAll(ast.arg1(), engine);
 			IExpr arg2 = F.evalExpandAll(ast.arg2(), engine);
-
-			if (ast.size() == 5) {
-				final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
-				IExpr option = options.getOption(F.Modulus);
-				if (option.isInteger() && !option.isZero()) {
-					IExpr[] result = quotientRemainderModInteger(arg1, arg2, variable, option);
-					if (result == null) {
-						return F.NIL;
+			try {
+				if (ast.size() == 5) {
+					final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
+					IExpr option = options.getOption(F.Modulus);
+					if (option.isInteger() && !option.isZero()) {
+						IExpr[] result = quotientRemainderModInteger(arg1, arg2, variable, option);
+						if (result == null) {
+							return F.NIL;
+						}
+						return result[1];
 					}
-					return result[1];
+					return F.NIL;
+				}
+				IExpr[] result = quotientRemainder(arg1, arg2, variable);
+				if (result == null) {
+					return F.NIL;
+				}
+				return result[1];
+			} catch (RuntimeException rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
 				}
 				return F.NIL;
 			}
-			IExpr[] result = quotientRemainder(arg1, arg2, variable);
-			if (result == null) {
-				return F.NIL;
-			}
-			return result[1];
 		}
 
 		public int[] expectedArgSize() {

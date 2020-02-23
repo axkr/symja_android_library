@@ -2,12 +2,13 @@ package org.matheclipse.core.visit;
 
 import java.util.function.Function;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -18,7 +19,6 @@ import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.math.MathException;
 
 /**
  * A level specification visitor for levels in abstract syntax trees (AST).
@@ -73,11 +73,11 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 
 			if (value.isNegative()) {
 				fFromDepth = Integer.MIN_VALUE;
-				fToDepth = Validate.throwIntType(value,Integer.MIN_VALUE, engine);
+				fToDepth = Validate.throwIntType(value, Integer.MIN_VALUE, engine);
 				fFromLevel = 1;
 				fToLevel = Integer.MAX_VALUE;
 			} else {
-				fToLevel = Validate.throwIntType(value,Integer.MIN_VALUE, engine);
+				fToLevel = Validate.throwIntType(value, Integer.MIN_VALUE, engine);
 				fFromLevel = 1;
 				fFromDepth = Integer.MIN_VALUE;
 				fToDepth = -1;
@@ -91,7 +91,7 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 				if (lst.arg1() instanceof IInteger) {
 					final IInteger i = (IInteger) lst.arg1();
 
-					final int level = Validate.throwIntType(i,Integer.MIN_VALUE, engine);
+					final int level = Validate.throwIntType(i, Integer.MIN_VALUE, engine);
 					if (i.isNegative()) {
 						fFromDepth = level;
 						fToDepth = level;
@@ -111,37 +111,40 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 						final IInteger i0 = (IInteger) lst.arg1();
 						final IInteger i1 = (IInteger) lst.arg2();
 						if (i0.isNegative() && i1.isNegative()) {
-							fFromDepth = Validate.throwIntType(i0,Integer.MIN_VALUE, engine);
-							fToDepth = Validate.throwIntType(i1,Integer.MIN_VALUE, engine);
+							fFromDepth = Validate.throwIntType(i0, Integer.MIN_VALUE, engine);
+							fToDepth = Validate.throwIntType(i1, Integer.MIN_VALUE, engine);
 							fFromLevel = 0;
 							fToLevel = Integer.MAX_VALUE;
 						} else if (i0.isNegative()) {
 							// all subexpressions at levels i0 or above with a depth of -i1 or less.
-							fFromDepth = Validate.throwIntType(i0,Integer.MIN_VALUE, engine);
+							fFromDepth = Validate.throwIntType(i0, Integer.MIN_VALUE, engine);
 							fToDepth = -1;
 							fFromLevel = 0;
-							fToLevel = Validate.throwIntType(i1,Integer.MIN_VALUE, engine);
+							fToLevel = Validate.throwIntType(i1, Integer.MIN_VALUE, engine);
 						} else if (i1.isNegative()) {
 							// all subexpressions at any level greater equal i0 that have a depth of -i1 or greater.
 							fFromDepth = Integer.MIN_VALUE;
-							fToDepth = Validate.throwIntType(i1,Integer.MIN_VALUE, engine);
-							fFromLevel = Validate.throwIntType(i0,Integer.MIN_VALUE, engine);
+							fToDepth = Validate.throwIntType(i1, Integer.MIN_VALUE, engine);
+							fFromLevel = Validate.throwIntType(i0, Integer.MIN_VALUE, engine);
 							fToLevel = Integer.MAX_VALUE;
 						} else {
 							fFromDepth = Integer.MIN_VALUE;
 							fToDepth = -1;
-							fFromLevel = Validate.throwIntType(i0,Integer.MIN_VALUE, engine);
-							fToLevel = Validate.throwIntType(i1,Integer.MIN_VALUE, engine);
+							fFromLevel = Validate.throwIntType(i0, Integer.MIN_VALUE, engine);
+							fToLevel = Validate.throwIntType(i1, Integer.MIN_VALUE, engine);
 						}
 						return;
 					} else if ((lst.arg1() instanceof IInteger) && (lst.arg2().isInfinity())) {
 						final IInteger i0 = (IInteger) lst.arg1();
 						if (i0.isNegative()) {
-							throw new MathException("Invalid Level specification: " + levelExpr.toString());
+							// Level specification `1` is not of the form n, {n}, or {m, n}.
+							String str = IOFunctions.getMessage("level", F.List(levelExpr), EvalEngine.get());
+							throw new ArgumentTypeException(str);
+							// throw new MathException("Invalid Level specification: " + levelExpr.toString());
 						} else {
 							fFromDepth = Integer.MIN_VALUE;
 							fToDepth = -1;
-							fFromLevel = Validate.throwIntType(i0,Integer.MIN_VALUE, engine);
+							fFromLevel = Validate.throwIntType(i0, Integer.MIN_VALUE, engine);
 							fToLevel = Integer.MAX_VALUE;
 						}
 						return;
@@ -164,7 +167,10 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 			fToDepth = -1;
 			return;
 		}
-		throw new MathException("Invalid Level specification: " + levelExpr.toString());
+		// Level specification `1` is not of the form n, {n}, or {m, n}.
+		String str = IOFunctions.getMessage("level", F.List(levelExpr), EvalEngine.get());
+		throw new ArgumentTypeException(str);
+		// throw new MathException("Invalid Level specification: " + levelExpr.toString());
 	}
 
 	/**
@@ -235,7 +241,7 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 	 */
 	@Override
 	public IExpr visit(IInteger element) {
-		return visitAtom( element); 
+		return visitAtom(element);
 	}
 
 	/**
@@ -243,7 +249,7 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 	 */
 	@Override
 	public IExpr visit(IFraction element) {
-		return visitAtom( element); 
+		return visitAtom(element);
 	}
 
 	/**
@@ -251,7 +257,7 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 	 */
 	@Override
 	public IExpr visit(IComplex element) {
-		return visitAtom( element); 
+		return visitAtom(element);
 	}
 
 	/**
@@ -259,7 +265,7 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 	 */
 	@Override
 	public IExpr visit(INum element) {
-		return visitAtom( element); 
+		return visitAtom(element);
 	}
 
 	/**
@@ -267,7 +273,7 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 	 */
 	@Override
 	public IExpr visit(IComplexNum element) {
-		return visitAtom( element); 
+		return visitAtom(element);
 	}
 
 	/**
@@ -275,7 +281,7 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 	 */
 	@Override
 	public IExpr visit(ISymbol element) {
-		return visitAtom( element); 
+		return visitAtom(element);
 	}
 
 	/**
@@ -283,7 +289,7 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 	 */
 	@Override
 	public IExpr visit(IPattern element) {
-		return visitAtom( element); 
+		return visitAtom(element);
 	}
 
 	/**
@@ -291,7 +297,7 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 	 */
 	@Override
 	public IExpr visit(IPatternSequence element) {
-		return visitAtom( element); 
+		return visitAtom(element);
 	}
 
 	/**
@@ -299,7 +305,7 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 	 */
 	@Override
 	public IExpr visit(IStringX element) {
-		return visitAtom( element); 
+		return visitAtom(element);
 	}
 
 	protected final IExpr visitAtom(IExpr element) {

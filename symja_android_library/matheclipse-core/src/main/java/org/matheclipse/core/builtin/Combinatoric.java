@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.matheclipse.core.combinatoric.KSubsets;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -1467,40 +1468,44 @@ public final class Combinatoric {
 				return F.NIL;
 			}
 			if (ast.arg1().isAST()) {
-				final IAST f = (IAST) ast.arg1();
-				int n = f.argSize();
-				final LevelSpecification level;
-				if (ast.isAST2()) {
-					if (ast.arg2().isInteger()) {
-						n = ((IInteger) ast.arg2()).toIntDefault(Integer.MIN_VALUE);
-						if (n > Integer.MIN_VALUE) {
-							level = new LevelSpecification(0, n);
+				try {
+					final IAST f = (IAST) ast.arg1();
+					int n = f.argSize();
+					final LevelSpecification level;
+					if (ast.isAST2()) {
+						if (ast.arg2().isInteger()) {
+							n = ((IInteger) ast.arg2()).toIntDefault(Integer.MIN_VALUE);
+							if (n > Integer.MIN_VALUE) {
+								level = new LevelSpecification(0, n);
+							} else {
+								return F.NIL;
+							}
 						} else {
-							return F.NIL;
+							level = new LevelSpecification(ast.arg2(), false);
 						}
 					} else {
-						level = new LevelSpecification(ast.arg2(), false);
+						level = new LevelSpecification(0, n);
 					}
-				} else {
-					level = new LevelSpecification(0, n);
-				}
 
-				int k;
-				final IASTAppendable result = F.ast(f.head());
-				level.setFromLevelAsCurrent();
-				while (level.isInRange()) {
-					k = level.getCurrentLevel();
-					final KSubsetsList iter = createKSubsets(f, k, F.ast(F.List), 1);
-					for (IAST part : iter) {
-						if (part == null) {
-							break;
+					int k;
+					final IASTAppendable result = F.ast(f.head());
+					level.setFromLevelAsCurrent();
+					while (level.isInRange()) {
+						k = level.getCurrentLevel();
+						final KSubsetsList iter = createKSubsets(f, k, F.ast(F.List), 1);
+						for (IAST part : iter) {
+							if (part == null) {
+								break;
+							}
+							result.append(part);
 						}
-						result.append(part);
+						level.incCurrentLevel();
 					}
-					level.incCurrentLevel();
-				}
 
-				return result;
+					return result;
+				} catch (ArgumentTypeException ate) {
+					// see LevelSpecification
+				}
 			}
 			return F.NIL;
 		}

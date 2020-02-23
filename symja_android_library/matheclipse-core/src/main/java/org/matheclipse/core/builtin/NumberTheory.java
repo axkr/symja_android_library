@@ -707,6 +707,9 @@ public final class NumberTheory {
 				if (a.length != n.length) {
 					return F.NIL;
 				}
+				if (a.length == 0) {
+					return F.NIL;
+				}
 				try {
 					return F.ZZ(chineseRemainders(n, a));
 				} catch (ArithmeticException ae) {
@@ -2212,7 +2215,7 @@ public final class NumberTheory {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			BigInteger[] array = Validate.checkListOfBigIntegers(ast, ast.arg1(), true, engine);
-			if (array != null) {
+			if (array != null && array.length > 0) {
 				BigInteger result = org.matheclipse.core.frobenius.FrobeniusNumber.frobeniusNumber(array);
 				return F.ZZ(result);
 			}

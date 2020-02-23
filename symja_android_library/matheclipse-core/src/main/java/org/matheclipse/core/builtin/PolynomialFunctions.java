@@ -1155,7 +1155,13 @@ public class PolynomialFunctions {
 				}
 				variables = eVar.getVarList();
 			} else {
-				variables = ast.arg2().orNewList();
+				variables = Validate.checkSymbolOrSymbolList(ast, 2, engine);
+				if (!variables.isPresent()) {
+					return F.NIL;
+				}
+			}
+			if (variables.size() <= 1) {
+				return F.NIL;
 			}
 			IExpr temp = roots(ast.arg1(), variables, engine);
 			if (!temp.isList()) {
@@ -1626,18 +1632,22 @@ public class PolynomialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				int[] dim = ast.arg1().isMatrix();
+				if (dim != null) {
+					if (dim[0] == 0 && dim[1] == 0) {
+						return F.C0;
+					}
+					IAST matrixArg1 = (IAST) ast.arg1();
 
-			int[] dim = ast.arg1().isMatrix();
-			if (ast.isAST1() && dim != null) {
-				IAST matrixArg1 = (IAST) ast.arg1();
-
-				if (dim[0] == 1) {
-					if (dim[1] == 1) {
-						IAST row = (IAST) matrixArg1.arg1();
-						return row.arg1();
-					} else if (dim[1] >= 2) {
-						IAST row = (IAST) matrixArg1.arg1();
-						return row.apply(F.Times);
+					if (dim[0] == 1) {
+						if (dim[1] == 1) {
+							IAST row = (IAST) matrixArg1.arg1();
+							return row.arg1();
+						} else if (dim[1] >= 2) {
+							IAST row = (IAST) matrixArg1.arg1();
+							return row.apply(F.Times);
+						}
 					}
 				}
 				return F.NIL;

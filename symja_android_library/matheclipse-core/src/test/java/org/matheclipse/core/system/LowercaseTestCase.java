@@ -991,6 +991,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArrayQ() {
+		check("ArrayQ({ })", //
+				"True");
 		check("ArrayQ({1, 2, 3, 4})", //
 				"True");
 		check("ArrayQ({1, 2, {3}, 4})", //
@@ -1018,6 +1020,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArrayReshape() {
+		check("ArrayReshape({}, {})", //
+				"0");
+		check("ArrayReshape({a,b,c}, { })", //
+				"a");
+		check("ArrayReshape({}, {1,2,3})", //
+				"{{{0,0,0},{0,0,0}}}");
 		check("ArrayReshape(Range(1000), {3, 2, 2})", //
 				"{{{1,2},{3,4}},{{5,6},{7,8}},{{9,10},{11,12}}}");
 		check("ArrayReshape({a, b, c, d, e, f}, {2, 3})", //
@@ -1961,6 +1969,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBooleanMinimize() {
+		check("BooleanMinimize(f(x))", //
+				"f(x)");
 		check("BooleanMinimize(Or(z,a, z))", //
 				"a||z");
 		check("BooleanMinimize((a&&b&&!c)||(a&&!b&&c)||(a&&!c&&d)||(!a&&b&&c)||(b&&c&&!d)||(b&&!c&&d)||(!b&&c&&d))", //
@@ -3290,6 +3300,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testConstantArray() {
+		check("ConstantArray({},{})", //
+				"{}");
 		check("ConstantArray(a, 3)", //
 				"{a,a,a}");
 		check("ConstantArray(a, {2, 3})", //
@@ -6959,6 +6971,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFactorSquareFreeList() {
+		check("FactorSquareFreeList(42)", //
+				"{{42,1}}");
+		check("FactorSquareFreeList(x)", //
+				"{{1,1},{x,1}}");
 		check("FactorSquareFreeList(x^5 - x^3 - x^2 + 1)", //
 				"{{-1+x,2},{1+2*x+2*x^2+x^3,1}}");
 		check("FactorSquareFreeList(x^8 + 11*x^7 + 43*x^6 + 59*x^5 - 35*x^4 - 151*x^3 - 63*x^2 + 81*x + 54)", //
@@ -7458,8 +7474,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFixedPoint() {
-//		check("FixedPoint(Null, Null)", //
-//				"Recursion limit 256 exceeded at: Null");
+		// check("FixedPoint(Null, Null)", //
+		// "Recursion limit 256 exceeded at: Null");
 		check("FixedPoint(Cos, 1.0)", //
 				"0.739085");
 		check("FixedPoint(#+1 &, 1, 20)", //
@@ -10483,11 +10499,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testJSForm() {
-//		check("JSForm(Ramp(x))", //
-//				"((x>=0) ? x : ( 0 ))");
+		// check("JSForm(Ramp(x))", //
+		// "((x>=0) ? x : ( 0 ))");
 		check("Piecewise({{x, 0 < x < 1}, {x^3, 1 < x < 2}}) // JSForm", //
 				"((0<x && x<1) ? x : ((1<x && x<2) ? Math.pow(x,3) : ( 0 ) ))");
-		
+
 		check("JSForm(Cot(x))", //
 				"(1/Math.tan(x))");
 		check("JSForm(ArcCot(x))", //
@@ -15159,10 +15175,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testPiecewiseExpand() {
 		check("PiecewiseExpand(If(x, y, z))", //
 				"Piecewise({{y,x},z})");
-		
+
 		check("PiecewiseExpand(UnitStep(x, y, z))", //
 				"Piecewise({{1,x>=0&&y>=0&&z>=0},0})");
-		
+
 		check("PiecewiseExpand(Ramp(x))", //
 				"Piecewise({{x,x>=0},0})");
 	}
@@ -16368,9 +16384,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPrimePowerQ() {
+		check("PrimePowerQ(0)", //
+				"False");
 		check("PrimePowerQ(1)", //
 				"False");
-
+		check("PrimePowerQ(-1)", //
+				"False");
+		
 		check("13^9", //
 				"10604499373");
 		check("PrimePowerQ(10604499373)", //
@@ -16673,6 +16693,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testProjection() {
+		check("Projection({},{})", //
+				"{}");
 		check("Projection({5, 6, 7}, {1, 0, 0})", //
 				"{5,0,0}");
 		check("Projection({5, 6, 7}, {1, 1, 1})", //
@@ -18148,6 +18170,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRotateLeft() {
+		check("RotateLeft({})", //
+				"{}");
+		check("RotateLeft({a,b,c}, 5)", //
+				"{c,a,b}");
 		check("RotateLeft({1, 2, 3})", //
 				"{2,3,1}");
 		check("RotateLeft(Range(10),3)", //
@@ -18161,6 +18187,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRotateRight() {
+		check("RotateRight({})", //
+				"{}");
+		check("RotateRight({a,b,c}, 5)", //
+				"{b,c,a}");
 		check("RotateRight({1, 2, 3})", //
 				"{3,1,2}");
 		check("RotateRight(Range(10),3)", //

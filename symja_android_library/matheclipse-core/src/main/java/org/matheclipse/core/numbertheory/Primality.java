@@ -1052,6 +1052,9 @@ public class Primality {
 		if (value.compareTo(BigInteger.ZERO) < 0) {
 			value = value.negate();
 		}
+		if (value.equals(BigInteger.ZERO)) {
+			return false;
+		}
 		try {
 			SortedMap<BigInteger, Integer> map = new PrimePowerTreedMap();
 			factorInteger(value, map);

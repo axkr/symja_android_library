@@ -18,6 +18,7 @@ import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.AbortException;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.BreakException;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ContinueException;
@@ -641,7 +642,7 @@ public final class Programming {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			try {
 				final java.util.List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
-				ast.forEach(2, ast.size(), x -> iterList.add(Iterator.create((IAST) x, engine)));
+				ast.forEach(2, ast.size(), (x, i) -> iterList.add(Iterator.create((IAST) x, i, engine)));
 				final DoIterator generator = new DoIterator(iterList, engine);
 				return generator.doIt(ast.arg1());
 			} catch (final NoEvalException e) {
@@ -846,7 +847,7 @@ public final class Programming {
 					} else if (ast.arg3().isNegativeInfinity()) {
 						iterations = Integer.MIN_VALUE;
 					} else {
-						iterations = Validate.checkIntType(ast, 3, Integer.MIN_VALUE);
+						iterations = Validate.checkNonNegativeIntType(ast, 3);
 					}
 				}
 				if (iterations < 0) {
@@ -864,7 +865,8 @@ public final class Programming {
 					} while ((!current.isSame(last)) && (--iterations > 0));
 				}
 				return list;
-
+			} catch (ArgumentTypeException ate) {
+				return F.NIL;
 			} finally {
 				engine.setNumericMode(numericMode);
 			}

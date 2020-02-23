@@ -17,6 +17,7 @@ import java.util.List;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.ReturnException;
@@ -107,7 +108,7 @@ public final class PatternMatching {
 			// completeContextName = packageName.substring(0, packageName.length() - 1) + contextName;
 			// }
 			Context context = engine.begin(contextName, pack);
-			return F.stringx(context.completeContextName());
+			return F.stringx(context.completeContextName()); 
 		}
 
 		@Override
@@ -1904,20 +1905,25 @@ public final class PatternMatching {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			final IExpr leftHandSide = ast.arg1();
 			IExpr rightHandSide = ast.arg2();
-			if (leftHandSide.isList()) {
-				// thread over lists
-				try {
-					rightHandSide = engine.evaluate(rightHandSide);
-				} catch (final ReturnException e) {
-					rightHandSide = e.getValue();
+			try {
+				if (leftHandSide.isList()) {
+					// thread over lists
+					try {
+						rightHandSide = engine.evaluate(rightHandSide);
+					} catch (final ReturnException e) {
+						rightHandSide = e.getValue();
+					}
+					IExpr temp = engine.threadASTListArgs((IASTMutable) F.UpSet(leftHandSide, rightHandSide));
+					if (temp.isPresent()) {
+						return engine.evaluate(temp);
+					}
 				}
-				IExpr temp = engine.threadASTListArgs((IASTMutable) F.UpSet(leftHandSide, rightHandSide));
-				if (temp.isPresent()) {
-					return engine.evaluate(temp);
-				}
+				Object[] result = createPatternMatcher(leftHandSide, rightHandSide, false, engine);
+				return (IExpr) result[1];
+			} catch (ArgumentTypeException ate) {
+
 			}
-			Object[] result = createPatternMatcher(leftHandSide, rightHandSide, false, engine);
-			return (IExpr) result[1];
+			return F.NIL;
 		}
 
 		@Override
@@ -1973,10 +1979,14 @@ public final class PatternMatching {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			final IExpr leftHandSide = ast.arg1();
 			final IExpr rightHandSide = ast.arg2();
+			try {
+				createPatternMatcher(leftHandSide, rightHandSide, false, engine);
 
-			createPatternMatcher(leftHandSide, rightHandSide, false, engine);
+				return F.Null;
+			} catch (ArgumentTypeException ate) {
 
-			return F.Null;
+			}
+			return F.NIL;
 		}
 
 		@Override

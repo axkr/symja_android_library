@@ -2584,7 +2584,7 @@ public class StatisticsFunctions {
 				return super.evaluate(ast, engine);
 			}
 
-			if (ast.size() == 3) {
+			if (ast.size() == 3 && ast.arg1().isAST() && ast.arg2().isAST()) {
 				final IAST arg1 = (IAST) ast.arg1();
 				final IAST arg2 = (IAST) ast.arg2();
 				return evaluateArg2(arg1, arg2, engine);
@@ -3249,11 +3249,12 @@ public class StatisticsFunctions {
 			if (ast.isAST1()) {
 				// KolmogorovSmirnovTest(data1)
 				double[] data1 = ast.arg1().toDoubleVector();
-				org.hipparchus.stat.inference.KolmogorovSmirnovTest test = new org.hipparchus.stat.inference.KolmogorovSmirnovTest();
-				double d = test.kolmogorovSmirnovTest(new org.hipparchus.distribution.continuous.NormalDistribution(),
-						data1, false);
-				return F.num(d);
-
+				if (data1 != null && data1.length > 0) {
+					org.hipparchus.stat.inference.KolmogorovSmirnovTest test = new org.hipparchus.stat.inference.KolmogorovSmirnovTest();
+					double d = test.kolmogorovSmirnovTest(
+							new org.hipparchus.distribution.continuous.NormalDistribution(), data1, false);
+					return F.num(d);
+				}
 			} else if (ast.size() == 3 || ast.size() == 4) {
 				int property = 0;
 				if (ast.size() == 4) {

@@ -8,6 +8,7 @@ import static org.matheclipse.core.expression.F.Times;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.util.Iterator;
@@ -129,7 +130,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 			boolean flag = true;
 			// Prod( i^a, {i,from,to},... )
 			for (int i = 2; i < ast.size(); i++) {
-				IIterator<IExpr> iterator = Iterator.create((IAST) ast.get(i), engine);
+				IIterator<IExpr> iterator = Iterator.create((IAST) ast.get(i), i, engine);
 				if (iterator.isValidVariable() && exponent.isFree(iterator.getVariable())) {
 					continue;
 				}
@@ -144,90 +145,91 @@ public class Product extends ListFunctions.Table implements ProductRules {
 		}
 		IExpr argN = ast.last();
 		if (ast.size() >= 3 && argN.isList()) {
-			if (arg1.isZero()) {
-				// Product(0, {k, n, m})
-				return F.C0;
-			}
-			IIterator<IExpr> iterator = Iterator.create((IAST) argN, engine);
-			if (iterator.isValidVariable() && iterator.getUpperLimit().isInfinity()) {
-				if (arg1.isOne()) {
-					// Product(1, {k, a, Infinity})
-					return F.C1;
+			try {
+				if (arg1.isZero()) {
+					// Product(0, {k, n, m})
+					return F.C0;
 				}
-				if (arg1.isPositiveResult() && arg1.isIntegerResult()) {
-					// Product(n, {k, a, Infinity}) ;n is positive integer
-					return F.CInfinity;
+				IIterator<IExpr> iterator = Iterator.create((IAST) argN, ast.argSize(), engine);
+				if (iterator.isValidVariable() && iterator.getUpperLimit().isInfinity()) {
+					if (arg1.isOne()) {
+						// Product(1, {k, a, Infinity})
+						return F.C1;
+					}
+					if (arg1.isPositiveResult() && arg1.isIntegerResult()) {
+						// Product(n, {k, a, Infinity}) ;n is positive integer
+						return F.CInfinity;
+					}
 				}
-			}
-			if (iterator.isValidVariable() && !iterator.isNumericFunction()) {
-				// if (iterator.getLowerLimit().isInteger() && iterator.getUpperLimit().isSymbol()
-				// && iterator.getStep().isOne()) {
-				if (iterator.getUpperLimit().isSymbol() && iterator.getStep().isOne()) {
-					final ISymbol var = iterator.getVariable();
-					final IExpr from = iterator.getLowerLimit();
-					final ISymbol to = (ISymbol) iterator.getUpperLimit();
-					if (arg1.isPower()) {
-						IExpr base = arg1.base();
-						if (base.isFree(var)) {
-							if (iterator.getLowerLimit().isOne()) {
-								IExpr exponent = arg1.exponent();
-								if (exponent.equals(var)) {
-									// Prod( a^i, ..., {i,from,to} )
-									if (ast.isAST2()) {
-										return F.Power(base, Times(C1D2, to, Plus(C1, to)));
+				if (iterator.isValidVariable() && !iterator.isNumericFunction()) {
+					// if (iterator.getLowerLimit().isInteger() && iterator.getUpperLimit().isSymbol()
+					// && iterator.getStep().isOne()) {
+					if (iterator.getUpperLimit().isSymbol() && iterator.getStep().isOne()) {
+						final ISymbol var = iterator.getVariable();
+						final IExpr from = iterator.getLowerLimit();
+						final ISymbol to = (ISymbol) iterator.getUpperLimit();
+						if (arg1.isPower()) {
+							IExpr base = arg1.base();
+							if (base.isFree(var)) {
+								if (iterator.getLowerLimit().isOne()) {
+									IExpr exponent = arg1.exponent();
+									if (exponent.equals(var)) {
+										// Prod( a^i, ..., {i,from,to} )
+										if (ast.isAST2()) {
+											return F.Power(base, Times(C1D2, to, Plus(C1, to)));
+										}
+										IASTAppendable result = ast.removeAtClone(ast.argSize());
+										// result.remove(ast.argSize());
+										result.set(1, F.Power(base, Times(C1D2, to, Plus(C1, to))));
+										return result;
 									}
-									IASTAppendable result = ast.removeAtClone(ast.argSize());
-									// result.remove(ast.argSize());
-									result.set(1, F.Power(base, Times(C1D2, to, Plus(C1, to))));
-									return result;
 								}
 							}
 						}
-					}
 
-					if (arg1.isFree(var)) {
+						if (arg1.isFree(var)) {
 
-						if (ast.isAST2()) {
-							if (from.isOne()) {
-								return F.Power(ast.arg1(), to);
-							}
-							if (from.isZero()) {
-								return F.Power(ast.arg1(), Plus(to, C1));
-							}
-							if (from.isSymbol()) {
-								// 2^(1-from+to)
-								return F.Power(arg1, F.Plus(F.C1, from.negate(), to));
-							}
-						} else {
-							IASTAppendable result = ast.removeAtClone(ast.argSize());
-							// result.remove(ast.argSize());
-							if (from.isOne()) {
-								result.set(1, F.Power(ast.arg1(), to));
-								return result;
-							}
-							if (from.isZero()) {
-								result.set(1, F.Power(ast.arg1(), Plus(to, C1)));
-								return result;
-							}
-							if (from.isSymbol()) {
-								// 2^(1-from+to)
-								result.set(1, F.Power(arg1, F.Plus(F.C1, from.negate(), to)));
-								return result;
-							}
+							if (ast.isAST2()) {
+								if (from.isOne()) {
+									return F.Power(ast.arg1(), to);
+								}
+								if (from.isZero()) {
+									return F.Power(ast.arg1(), Plus(to, C1));
+								}
+								if (from.isSymbol()) {
+									// 2^(1-from+to)
+									return F.Power(arg1, F.Plus(F.C1, from.negate(), to));
+								}
+							} else {
+								IASTAppendable result = ast.removeAtClone(ast.argSize());
+								// result.remove(ast.argSize());
+								if (from.isOne()) {
+									result.set(1, F.Power(ast.arg1(), to));
+									return result;
+								}
+								if (from.isZero()) {
+									result.set(1, F.Power(ast.arg1(), Plus(to, C1)));
+									return result;
+								}
+								if (from.isSymbol()) {
+									// 2^(1-from+to)
+									result.set(1, F.Power(arg1, F.Plus(F.C1, from.negate(), to)));
+									return result;
+								}
 
+							}
 						}
-					}
 
+					}
 				}
-			}
-			
-			try {
+
 				temp = F.NIL;
 				IAST resultList = Times();
 				temp = evaluateLast(ast.arg1(), iterator, resultList, F.C1);
 				if (!temp.isPresent() || temp.equals(resultList)) {
 					return F.NIL;
 				}
+			} catch (final ArgumentTypeException e) {
 			} catch (RecursionLimitExceeded rle) {
 				return engine.printMessage("Product: Recursionlimit exceeded");
 			}
@@ -243,11 +245,11 @@ public class Product extends ListFunctions.Table implements ProductRules {
 		}
 		return F.NIL;
 	}
-	
+
 	public int[] expectedArgSize() {
 		return IOFunctions.ARGS_2_INFINITY;
 	}
-	
+
 	@Override
 	public IExpr numericEval(final IAST functionList, EvalEngine engine) {
 		return evaluate(functionList, engine);

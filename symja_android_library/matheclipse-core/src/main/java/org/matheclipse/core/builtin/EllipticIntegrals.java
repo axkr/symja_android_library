@@ -863,6 +863,11 @@ public class EllipticIntegrals {
 		}
 
 		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+		
+		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 			super.setUp(newSymbol);

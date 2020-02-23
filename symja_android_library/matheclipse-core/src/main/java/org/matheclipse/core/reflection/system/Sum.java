@@ -24,6 +24,7 @@ import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.builtin.ListFunctions.TableGenerator;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.IArrayFunction;
@@ -168,22 +169,26 @@ public class Sum extends ListFunctions.Table implements SumRules {
 		IIterator<IExpr> iterator = null;
 
 		if (argN.isList()) {
-			argN = evalBlockWithoutReap(argN, varList);
-			iterator = Iterator.create((IAST) argN, engine);
-			// if (iterator.isSetIterator() || iterator.isNumericFunction()) {
-			// IAST resultList = Plus();
-			// temp = evaluateLast(ast.arg1(), iterator, resultList, C0);
-			// if (temp.isPresent() && !temp.equals(resultList)) {
-			// if (ast.isAST2()) {
-			// return temp;
-			// } else {
-			// IAST result = ast.clone();
-			// result.remove(ast.argSize());
-			// result.set(1, temp);
-			// return result;
-			// }
-			// }
-			// }
+			try {
+				argN = evalBlockWithoutReap(argN, varList);
+				iterator = Iterator.create((IAST) argN, ast.argSize(), engine);
+				// if (iterator.isSetIterator() || iterator.isNumericFunction()) {
+				// IAST resultList = Plus();
+				// temp = evaluateLast(ast.arg1(), iterator, resultList, C0);
+				// if (temp.isPresent() && !temp.equals(resultList)) {
+				// if (ast.isAST2()) {
+				// return temp;
+				// } else {
+				// IAST result = ast.clone();
+				// result.remove(ast.argSize());
+				// result.set(1, temp);
+				// return result;
+				// }
+				// }
+				// }
+			} catch (ArgumentTypeException ate) {
+				return F.NIL;
+			}
 		}
 
 		// arg1 = evalBlockExpandWithoutReap(ast.arg1(), varList);

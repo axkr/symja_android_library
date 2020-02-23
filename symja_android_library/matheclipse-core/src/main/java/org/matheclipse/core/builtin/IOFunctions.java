@@ -662,6 +662,7 @@ public class IOFunctions {
 			"intnm", "Non-negative machine-sized integer expected at position `2` in `1`.", //
 			"intpm", "Positive integer (less equal 2147483647) expected at position `2` in `1`.", //
 			"iterb", "Iterator does not have appropriate bounds.", //
+			"itform", "Argument `1` at position `2` does not have the correct form for an iterator.", //
 			"ivar", "`1` is not a valid variable.", //
 			"level", "Level specification `1` is not of the form n, {n}, or {m, n}.", //
 			"list", "List expected at position `1` in `2`.", //

@@ -200,6 +200,9 @@ public class PredicateQ {
 			if (expr.isList()) {
 				IAST ast = (IAST) expr;
 				int size = ast.size();
+				if (size==1) {
+					return depth;
+				}
 				IExpr arg1AST = ast.arg1();
 				boolean isList = arg1AST.isList();
 				int arg1Size = 0;

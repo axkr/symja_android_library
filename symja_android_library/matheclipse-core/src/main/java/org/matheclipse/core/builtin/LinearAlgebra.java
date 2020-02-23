@@ -1388,6 +1388,12 @@ public final class LinearAlgebra {
 		@Override
 		public IExpr e2ObjArg(IAST ast, final IExpr arg1, final IExpr arg2) {
 
+			if (arg1.size() == 1 && arg2.size() == 1) {
+				if (arg1.isList() && arg2.isList()) {
+					return F.C0;
+				}
+				return F.NIL;
+			}
 			IExpr temp = numericalDot(arg1, arg2);
 			if (temp.isPresent()) {
 				return temp;
@@ -1452,7 +1458,7 @@ public final class LinearAlgebra {
 				// e.printStackTrace();
 				// }
 			} catch (final RuntimeException e) {
-				engine.printMessage(ast.topHead() + ": " + e.getMessage());
+				engine.printMessage(ast.topHead() + ": " + e.toString());
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
@@ -1829,7 +1835,7 @@ public final class LinearAlgebra {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.arg1().isInteger()) {
 				final int m = ast.arg1().toIntDefault(Integer.MIN_VALUE);
-				if (m < 0) {
+				if (m <= 0) {
 					// Positive integer (less equal 2147483647) expected at position `2` in `1`.
 					return IOFunctions.printMessage(F.FourierMatrix, "intpm", F.List(ast, F.C1), engine);
 				}
@@ -3431,6 +3437,9 @@ public final class LinearAlgebra {
 				return v.times(dotProduct(head, u, v, engine).divide(dotProduct(head, v, v, engine)));
 			}
 			if (dim1 >= 0 && dim1 == dim2) {
+				if (dim1 == 0) {
+					return F.CEmptyList;
+				}
 				FieldVector<IExpr> u = Convert.list2Vector((IAST) ast.arg1());
 				FieldVector<IExpr> v = Convert.list2Vector((IAST) ast.arg2());
 				FieldVector<IExpr> vConjugate = v.copy();
@@ -4199,13 +4208,15 @@ public final class LinearAlgebra {
 			if (ast.isAST2()) {
 				int n = ast.arg1().toIntDefault(Integer.MIN_VALUE);
 				if (n < 0) {
+					return F.NIL;
 					// Positive integer (less equal 2147483647) expected at position `2` in `1`.
-					return IOFunctions.printMessage(F.UnitVector, "intpm", F.List(ast, F.C1), engine);
+					// return IOFunctions.printMessage(F.UnitVector, "intpm", F.List(ast, F.C1), engine);
 				}
 				int k = ast.arg2().toIntDefault(Integer.MIN_VALUE);
 				if (k < 0) {
+					return F.NIL;
 					// Positive integer (less equal 2147483647) expected at position `2` in `1`.
-					return IOFunctions.printMessage(F.UnitVector, "intpm", F.List(ast, F.C2), engine);
+					// return IOFunctions.printMessage(F.UnitVector, "intpm", F.List(ast, F.C2), engine);
 				}
 
 				if (k <= n) {

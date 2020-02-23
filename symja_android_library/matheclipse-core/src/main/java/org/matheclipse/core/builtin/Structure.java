@@ -10,6 +10,7 @@ import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -228,9 +229,10 @@ public class Structure {
 						return expr;
 					}
 				}
-			} catch (final RuntimeException rex) {
-				// ArgumentTypeException from VisitorLevelSpecification level specification checks
-				return engine.printMessage("Apply: " + rex.getMessage());
+			} catch (final ArgumentTypeException ate) {
+				// } catch (final RuntimeException rex) {
+				// // ArgumentTypeException from VisitorLevelSpecification level specification checks
+				// return engine.printMessage("Apply: " + rex.getMessage());
 			}
 			return F.NIL;
 		}
@@ -476,34 +478,38 @@ public class Structure {
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			if (arg1.isAST()) {
 				IAST arg1AST = (IAST) arg1;
-				if (ast.isAST1()) {
-					IAST resultList = EvalAttributes.flattenDeep(arg1AST.topHead(), (IAST) arg1);
-					if (resultList.isPresent()) {
-						return resultList;
-					}
-					return arg1AST;
-				} else if (ast.isAST2()) {
-					IExpr arg2 = engine.evaluate(ast.arg2());
-
-					int level = Validate.checkIntLevelType(arg2);
-					if (level > 0) {
-						IASTAppendable resultList = F.ast(arg1AST.topHead());
-						if (EvalAttributes.flatten(arg1AST.topHead(), (IAST) arg1, resultList, 0, level)) {
+				try {
+					if (ast.isAST1()) {
+						IAST resultList = EvalAttributes.flattenDeep(arg1AST.topHead(), (IAST) arg1);
+						if (resultList.isPresent()) {
 							return resultList;
 						}
-					}
-					return arg1;
-				} else if (ast.isAST3() && ast.arg3().isSymbol()) {
-					IExpr arg2 = engine.evaluate(ast.arg2());
+						return arg1AST;
+					} else if (ast.isAST2()) {
+						IExpr arg2 = engine.evaluate(ast.arg2());
 
-					int level = Validate.checkIntLevelType(arg2);
-					if (level > 0) {
-						IASTAppendable resultList = F.ast(arg1AST.topHead());
-						if (EvalAttributes.flatten((ISymbol) ast.arg3(), (IAST) arg1, resultList, 0, level)) {
-							return resultList;
+						int level = Validate.checkIntLevelType(arg2);
+						if (level > 0) {
+							IASTAppendable resultList = F.ast(arg1AST.topHead());
+							if (EvalAttributes.flatten(arg1AST.topHead(), (IAST) arg1, resultList, 0, level)) {
+								return resultList;
+							}
 						}
+						return arg1;
+					} else if (ast.isAST3() && ast.arg3().isSymbol()) {
+						IExpr arg2 = engine.evaluate(ast.arg2());
+
+						int level = Validate.checkIntLevelType(arg2);
+						if (level > 0) {
+							IASTAppendable resultList = F.ast(arg1AST.topHead());
+							if (EvalAttributes.flatten((ISymbol) ast.arg3(), (IAST) arg1, resultList, 0, level)) {
+								return resultList;
+							}
+						}
+						return arg1;
 					}
-					return arg1;
+				} catch (ArgumentTypeException ate) {
+
 				}
 			}
 			return F.NIL;
@@ -927,8 +933,10 @@ public class Structure {
 					level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), 1, heads);
 				}
 				return arg2.accept(level).orElse(arg2);
-			} catch (final RuntimeException e) {
-				return engine.printMessage("Map: " + e.getMessage());
+			} catch (final ArgumentTypeException ate) {
+				return F.NIL;
+				// } catch (final RuntimeException e) {
+				// return engine.printMessage("Map: " + e.getMessage());
 			}
 		}
 
@@ -1582,6 +1590,7 @@ public class Structure {
 						}
 					}
 					return F.Null;
+				} catch (final ArgumentTypeException ate) {
 				} catch (final ReturnException e) {
 					return e.getValue();
 					// don't catch Throw[] here !

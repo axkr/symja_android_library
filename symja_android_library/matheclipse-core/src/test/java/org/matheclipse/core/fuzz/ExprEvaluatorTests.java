@@ -5,9 +5,12 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
+import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.math.MathException;
 
 import junit.framework.TestCase;
@@ -34,48 +37,48 @@ public class ExprEvaluatorTests extends TestCase {
 			if (evaluator instanceof IFunctionEvaluator) {
 				int[] argSize = ((IFunctionEvaluator) evaluator).expectedArgSize();
 				if (argSize != null) {
-					if (argSize[1] <= 10) {
-//						System.out.println(sym.toString() + "[" + argSize[0] + "," + argSize[1] + "]");
-						IASTAppendable ast = F.ast(sym);
-						for (int j = 0; j < argSize[0]; j++) {
-							ast.append(F.Null);
-						}
-						eval = new ExprEvaluator(engine, true, 20); 
-						try {
-							System.out.println(ast.toString());
-							eval.eval(ast);
-						} catch (MathException mex) {
-							mex.printStackTrace();
-						} catch (RuntimeException rex) {
-							System.out.println(ast.toString());
-							rex.printStackTrace();
-							fail();
-						}
-						for (int j = argSize[0]; j < argSize[1]; j++) {
-							eval = new ExprEvaluator(engine, true, 20);
-							ast.append(F.Null);
-							try {
-								System.out.println(ast.toString());
-								eval.eval(ast);
-							} catch (MathException mex) {
-								mex.printStackTrace();
-							} catch (RuntimeException rex) {
-								System.out.println(ast.toString());
-								rex.printStackTrace();
-								fail();
-							}
-						}
+					int end = argSize[1];
+					if (end <= 10) {
+						int start = argSize[0];
+						generateASTs(sym, start, end,  F.C0, engine);
+						generateASTs(sym, start, end,  F.Null, engine);
+						generateASTs(sym, start, end,  F.List(), engine);
+						continue;
 					}
 
 				}
 			}
-
+			generateASTs(sym, 1, 5, F.C0, engine);
+			generateASTs(sym, 1, 5, F.Null, engine);
+			generateASTs(sym, 1, 5, F.List(), engine);
 		}
-		// String str = "sin(x)";
-		// IExpr e = eval.eval(str);
-		// int i = 100;
-		// eval.defineVariable("x", (double) i);
-		// double result = e.evalDouble();
-		// assertEquals(-0.5063656411097588, result, 0E-10);
+	}
+
+	private void generateASTs(IBuiltInSymbol sym, int start, int end, IExpr arg, EvalEngine engine) {
+		ExprEvaluator eval;
+		for (int j = start; j <= end; j++) {
+			eval = new ExprEvaluator(engine, true, 20);
+			IAST ast = generate(sym, j,arg);
+			try {
+				 System.out.println(ast.toString());
+				eval.eval(ast);
+			} catch (MathException mex) {
+				System.out.println(ast.toString());
+				mex.printStackTrace();
+				System.out.println();
+			} catch (RuntimeException rex) {
+				System.out.println(ast.toString());
+				rex.printStackTrace();
+				fail();
+			}
+		}
+	}
+
+	private IAST generate(ISymbol sym, int numberOfArgs, IExpr arg) {
+		IASTAppendable ast = F.ast(sym);
+		for (int j = 0; j < numberOfArgs; j++) {
+			ast.append(arg);
+		}
+		return ast;
 	}
 }

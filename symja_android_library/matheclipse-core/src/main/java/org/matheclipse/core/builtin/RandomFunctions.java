@@ -58,6 +58,9 @@ public final class RandomFunctions {
 				IAST list = (IAST) ast.arg1();
 				ThreadLocalRandom random = ThreadLocalRandom.current();
 				int listSize = list.argSize();
+				if (listSize == 0) {
+					return F.NIL;
+				}
 				int randomIndex = random.nextInt(listSize);
 				if (ast.size() == 2) {
 					return list.get(randomIndex + 1);
@@ -79,7 +82,7 @@ public final class RandomFunctions {
 		}
 
 	}
-	
+
 	/**
 	 * <pre>
 	 * RandomInteger(n)

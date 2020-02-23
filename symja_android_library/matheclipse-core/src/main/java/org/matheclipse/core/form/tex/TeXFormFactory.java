@@ -10,6 +10,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ApcomplexNum;
@@ -861,21 +862,26 @@ public class TeXFormFactory {
 				return true;
 			}
 			if (f.get(i).isList()) {
-				IIterator<IExpr> iterator = Iterator.create((IAST) f.get(i), EvalEngine.get());
-				if (iterator.isValidVariable() && iterator.getStep().isOne()) {
-					buf.append(mathSymbol);
-					buf.append("_{");
-					fFactory.convertSubExpr(buf, iterator.getVariable(), 0);
-					buf.append(" = ");
-					fFactory.convertSubExpr(buf, iterator.getLowerLimit(), 0);
-					buf.append("}^{");
-					fFactory.convertInternal(buf, iterator.getUpperLimit(), 0);
-					buf.append('}');
-					if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
-						return false;
+				try {
+					IIterator<IExpr> iterator = Iterator.create((IAST) f.get(i), i, EvalEngine.get());
+					if (iterator.isValidVariable() && iterator.getStep().isOne()) {
+						buf.append(mathSymbol);
+						buf.append("_{");
+						fFactory.convertSubExpr(buf, iterator.getVariable(), 0);
+						buf.append(" = ");
+						fFactory.convertSubExpr(buf, iterator.getLowerLimit(), 0);
+						buf.append("}^{");
+						fFactory.convertInternal(buf, iterator.getUpperLimit(), 0);
+						buf.append('}');
+						if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
+							return false;
+						}
+						return true;
 					}
-					return true;
+				} catch (ArgumentTypeException ate) {
+					// see Ietrator definition
 				}
+				return false;
 			} else if (f.get(i).isSymbol()) {
 				ISymbol symbol = (ISymbol) f.get(i);
 				buf.append(mathSymbol);

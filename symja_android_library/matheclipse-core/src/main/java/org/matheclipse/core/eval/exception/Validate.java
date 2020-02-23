@@ -215,6 +215,32 @@ public final class Validate {
 		throw new ArgumentTypeException(str);
 	}
 
+	public static int checkNonNegativeIntType(IAST ast, int pos ) {
+		if (ast.get(pos) instanceof IntegerSym) {
+			// IntegerSym always fits into an int number
+			int result = ((IntegerSym) ast.get(pos)).toInt();
+			if (0 > result) {
+				// Non-negative machine-sized integer expected at position `2` in `1`.
+				String str = IOFunctions.getMessage("intnm", F.List(ast, F.ZZ(pos)),
+						EvalEngine.get());
+				throw new ArgumentTypeException(str);
+			}
+			return result;
+		}
+		if (ast.get(pos).isReal()) {
+			int result = ast.get(pos).toIntDefault();
+			if (result == Integer.MIN_VALUE || 0 > result) {
+				// Non-negative machine-sized integer expected at position `2` in `1`.
+				String str = IOFunctions.getMessage("intnm", F.List(ast, F.ZZ(pos)),
+						EvalEngine.get());
+				throw new ArgumentTypeException(str);
+			}
+			return result;
+		}
+		// Non-negative machine-sized integer expected at position `2` in `1`.
+		String str = IOFunctions.getMessage("intnm", F.List(ast, F.ZZ(pos)), EvalEngine.get());
+		throw new ArgumentTypeException(str);
+	}
 	/**
 	 * Check the expression, if it's a Java {@code int} value in the range [0 , Integer.MAX_VALUE]
 	 * 

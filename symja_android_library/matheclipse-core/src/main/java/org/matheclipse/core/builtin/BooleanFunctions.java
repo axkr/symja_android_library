@@ -888,47 +888,52 @@ public final class BooleanFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			FormulaFactory factory = new FormulaFactory();
-			LogicFormula lf = new LogicFormula(factory);
-			Formula formula = lf.expr2BooleanFunction(ast.arg1());
-			// only DNF form can be used in QuineMcCluskeyAlgorithm at the moment
-			formula = formula.transform(new DNFFactorization());
-			IExpr ex = lf.booleanFunction2Expr(formula);
-			IASTAppendable vars = F.Or();
-			if (ex.isOr()) {
-				IAST orAST = (IAST) ex;
-				IASTAppendable rest = F.Or();
-				for (int i = 1; i < orAST.size(); i++) {
-					IExpr temp = orAST.get(i);
-					if (temp.isAnd()) {
-						rest.append(temp);
+			try {
+				FormulaFactory factory = new FormulaFactory();
+				LogicFormula lf = new LogicFormula(factory);
+				Formula formula = lf.expr2BooleanFunction(ast.arg1());
+				// only DNF form can be used in QuineMcCluskeyAlgorithm at the moment
+				formula = formula.transform(new DNFFactorization());
+				IExpr ex = lf.booleanFunction2Expr(formula);
+				IASTAppendable vars = F.Or();
+				if (ex.isOr()) {
+					IAST orAST = (IAST) ex;
+					IASTAppendable rest = F.Or();
+					for (int i = 1; i < orAST.size(); i++) {
+						IExpr temp = orAST.get(i);
+						if (temp.isAnd()) {
+							rest.append(temp);
+						} else {
+							vars.append(temp);
+						}
+					}
+					if (rest.size() == 1) {
+						vars = F.Or();
 					} else {
-						vars.append(temp);
+						formula = lf.expr2BooleanFunction(rest);
 					}
 				}
-				if (rest.size() == 1) {
-					vars = F.Or();
-				} else {
-					formula = lf.expr2BooleanFunction(rest);
-				}
-			}
 
-			formula = QuineMcCluskeyAlgorithm.compute(formula);
-			// System.out.println(formula.toString());
-			IExpr result = lf.booleanFunction2Expr(formula);
-			if (result.isOr()) {
-				vars.appendArgs((IAST) result);
-				EvalAttributes.sort(vars);
-				result = vars;
-			} else {
-				vars.append(result);
-				EvalAttributes.sort(vars);
-				result = vars;
+				formula = QuineMcCluskeyAlgorithm.compute(formula);
+				// System.out.println(formula.toString());
+				IExpr result = lf.booleanFunction2Expr(formula);
+				if (result.isOr()) {
+					vars.appendArgs((IAST) result);
+					EvalAttributes.sort(vars);
+					result = vars;
+				} else {
+					vars.append(result);
+					EvalAttributes.sort(vars);
+					result = vars;
+				}
+				return result;
+				// TODO CNF form after minimizing blows up the formula.
+				// FormulaTransformation transformation = BooleanConvert.transformation(ast, engine);
+				// return lf.booleanFunction2Expr(formula.transform(transformation));
+			} catch (RuntimeException rex) {
+
 			}
-			return result;
-			// TODO CNF form after minimizing blows up the formula.
-			// FormulaTransformation transformation = BooleanConvert.transformation(ast, engine);
-			// return lf.booleanFunction2Expr(formula.transform(transformation));
+			return ast.arg1();
 		}
 
 		public int[] expectedArgSize() {
@@ -2461,7 +2466,7 @@ public final class BooleanFunctions {
 			if (!evaled) {
 				evaled = flattenedList;
 			}
-			
+
 			if (list.size() == 1) {
 				return F.CNInfinity;
 			}

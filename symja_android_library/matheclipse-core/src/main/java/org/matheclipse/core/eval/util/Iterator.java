@@ -4,8 +4,10 @@ import static org.matheclipse.core.expression.F.Divide;
 import static org.matheclipse.core.expression.F.Less;
 import static org.matheclipse.core.expression.F.Subtract;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
@@ -1029,7 +1031,7 @@ public class Iterator {
 	 *            the evaluation engine
 	 * @return the iterator
 	 */
-	public static IIterator<IExpr> create(final IAST list, final EvalEngine engine) {
+	public static IIterator<IExpr> create(final IAST list, int position, final EvalEngine engine) {
 
 		EvalEngine evalEngine = engine;
 		IExpr lowerLimit;
@@ -1183,16 +1185,22 @@ public class Iterator {
 				}
 
 				break;
-			default:
-				lowerLimit = null;
-				upperLimit = null;
-				step = null;
-				variable = null;
+			default: 
+					// Argument `1` at position `2` does not have the correct form for an iterator.
+					String str = IOFunctions.getMessage("itform", F.List(list, F.ZZ(position)), EvalEngine.get());
+					throw new ArgumentTypeException(str);
+				 
+				// lowerLimit = null;
+				// upperLimit = null;
+				// step = null;
+				// variable = null;
 			}
 
 			return new ExprIterator(variable, evalEngine, lowerLimit, upperLimit, step, fNumericMode);
 		} catch (RuntimeException rex) {
-			throw new ClassCastException();
+			// Argument `1` at position `2` does not have the correct form for an iterator.
+			String str = IOFunctions.getMessage("itform", F.List(list, F.ZZ(position)), EvalEngine.get());
+			throw new ArgumentTypeException(str);
 		} finally {
 			evalEngine.setNumericMode(localNumericMode);
 		}

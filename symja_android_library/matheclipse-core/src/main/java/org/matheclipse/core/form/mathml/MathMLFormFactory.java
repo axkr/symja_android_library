@@ -13,6 +13,7 @@ import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
@@ -852,23 +853,27 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			}
 			fFactory.tagStart(buf, "mrow");
 			if (f.get(i).isList()) {
-				IIterator<IExpr> iterator = Iterator.create((IAST) f.get(i), EvalEngine.get());
-				if (iterator.isValidVariable() && iterator.getStep().isOne()) {
-					fFactory.tagStart(buf, "munderover");
-					fFactory.tag(buf, "mo", mathSymbol);
+				try {
+					IIterator<IExpr> iterator = Iterator.create((IAST) f.get(i), i, EvalEngine.get());
+					if (iterator.isValidVariable() && iterator.getStep().isOne()) {
+						fFactory.tagStart(buf, "munderover");
+						fFactory.tag(buf, "mo", mathSymbol);
 
-					fFactory.tagStart(buf, "mrow");
-					fFactory.convertSymbol(buf, iterator.getVariable());
-					fFactory.tag(buf, "mo", "=");
-					fFactory.convertInternal(buf, iterator.getLowerLimit(), Integer.MIN_VALUE, false);
-					fFactory.tagEnd(buf, "mrow");
-					fFactory.convertInternal(buf, iterator.getUpperLimit(), Integer.MIN_VALUE, false);
-					fFactory.tagEnd(buf, "munderover");
-					if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
-						return false;
+						fFactory.tagStart(buf, "mrow");
+						fFactory.convertSymbol(buf, iterator.getVariable());
+						fFactory.tag(buf, "mo", "=");
+						fFactory.convertInternal(buf, iterator.getLowerLimit(), Integer.MIN_VALUE, false);
+						fFactory.tagEnd(buf, "mrow");
+						fFactory.convertInternal(buf, iterator.getUpperLimit(), Integer.MIN_VALUE, false);
+						fFactory.tagEnd(buf, "munderover");
+						if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
+							return false;
+						}
+						fFactory.tagEnd(buf, "mrow");
+						return true;
 					}
-					fFactory.tagEnd(buf, "mrow");
-					return true;
+				} catch (final ArgumentTypeException e) {
+					return false;
 				}
 			} else if (f.get(i).isSymbol()) {
 				ISymbol symbol = (ISymbol) f.get(i);
