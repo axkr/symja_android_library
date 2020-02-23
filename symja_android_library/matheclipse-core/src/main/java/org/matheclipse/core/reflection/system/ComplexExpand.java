@@ -186,7 +186,7 @@ public class ComplexExpand extends AbstractEvaluator {
 	}
 
 	public int[] expectedArgSize() {
-		return IOFunctions.ARGS_0_1;
+		return IOFunctions.ARGS_1_2;
 	}
 
 	private static IExpr complexExpand(IExpr arg1, EvalEngine engine) {

@@ -49,7 +49,7 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 	public int[] expectedArgSize() {
 		return IOFunctions.ARGS_1_1;
 	}
-	
+
 	@Override
 	public IExpr numericEval(final IAST ast, EvalEngine engine) {
 		RealMatrix matrix;
@@ -67,11 +67,13 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 				fieldMatrix = matrixEval(fieldMatrix);
 				return Convert.matrix2List(fieldMatrix);
 			}
-			final IAST list = (IAST) ast.arg1();
-			matrix = list.toRealMatrix();
-			if (matrix != null) {
-				matrix = realMatrixEval(matrix);
-				return Convert.realMatrix2List(matrix);
+			if (ast.arg1().isAST()) {
+				final IAST list = (IAST) ast.arg1();
+				matrix = list.toRealMatrix();
+				if (matrix != null) {
+					matrix = realMatrixEval(matrix);
+					return Convert.realMatrix2List(matrix);
+				}
 			}
 			return F.NIL;
 		} catch (final IndexOutOfBoundsException e) {

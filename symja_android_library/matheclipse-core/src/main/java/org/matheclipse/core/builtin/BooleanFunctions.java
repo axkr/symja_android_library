@@ -1002,7 +1002,7 @@ public final class BooleanFunctions {
 			if (ast.isAST2()) {
 				variables = ast.arg2().orNewList();
 			} else {
-				variables = BooleanVariables.booleanVariables(ast.arg2());
+				variables = BooleanVariables.booleanVariables(ast.arg1());
 			}
 
 			BooleanTableParameter btp = new BooleanTableParameter(variables, engine);

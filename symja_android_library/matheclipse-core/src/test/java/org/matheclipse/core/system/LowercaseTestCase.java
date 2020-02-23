@@ -2014,6 +2014,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBooleanTable() {
+		check("BooleanTable(Xor(p, q, r))", //
+				"{True,False,False,True,False,True,True,False}");
 		check("BooleanTable(Xor(p, q, r), {p, q, r})", //
 				"{True,False,False,True,False,True,True,False}");
 		check("BooleanTable(Implies(Implies(p, q), r), {p, q, r})", //
@@ -7456,6 +7458,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFixedPoint() {
+//		check("FixedPoint(Null, Null)", //
+//				"Recursion limit 256 exceeded at: Null");
 		check("FixedPoint(Cos, 1.0)", //
 				"0.739085");
 		check("FixedPoint(#+1 &, 1, 20)", //
@@ -7939,6 +7943,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFrobeniusSolve() {
+		check("FrobeniusSolve(Null, Null)", //
+				"FrobeniusSolve(Null,Null)");
 		check("FrobeniusSolve({1000, 1476, 3764, 4864, 4871, 7773}, 47349)", //
 				"{{5,2,4,2,3,0},{6,1,0,4,1,2},{7,5,1,3,3,0},{15,9,3,0,0,1},{17,12,0,1,0,1}}");
 		check("FrobeniusSolve({1000, 1476, 3764, 4864, 4871, 7773}, 47350)", //

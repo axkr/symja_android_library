@@ -94,7 +94,7 @@ public class FrobeniusSolve extends AbstractEvaluator {
 				}
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 	public int[] expectedArgSize() {
 		return IOFunctions.ARGS_2_3;

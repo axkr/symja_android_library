@@ -1288,7 +1288,11 @@ public class Structure {
 	private final static class OrderedQ extends AbstractFunctionEvaluator implements Predicate<IAST> {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			return F.bool(test(((IAST) ast.arg1())));
+			IAST arg1AST = Validate.checkASTType(ast, ast.arg1(), 1, engine);
+			if (arg1AST.isPresent()) {
+				return F.bool(test(arg1AST));
+			}
+			return F.NIL;
 		}
 
 		public int[] expectedArgSize() {

@@ -576,7 +576,7 @@ public final class ListFunctions {
 			}
 
 			IExpr arg1 = engine.evaluate(ast.arg1());
-			IAST arg1AST = Validate.checkASTType(ast, arg1, engine);
+			IAST arg1AST = Validate.checkASTType(ast, arg1, 1, engine);
 			if (!arg1AST.isPresent()) {
 				return F.NIL;
 			}
@@ -2704,7 +2704,7 @@ public final class ListFunctions {
 				}
 			}
 			IExpr arg1 = engine.evaluate(ast.arg1());
-			IAST arg1AST = Validate.checkASTType(ast, arg1, engine);
+			IAST arg1AST = Validate.checkASTType(ast, arg1, 1, engine);
 			if (!arg1AST.isPresent()) {
 				return F.NIL;
 			}
@@ -3786,7 +3786,7 @@ public final class ListFunctions {
 			}
 
 			IExpr arg1 = engine.evaluate(ast.arg1());
-			IAST arg1AST = Validate.checkASTType(ast, arg1, engine);
+			IAST arg1AST = Validate.checkASTType(ast, arg1, 1, engine);
 			if (!arg1AST.isPresent()) {
 				return F.NIL;
 			}

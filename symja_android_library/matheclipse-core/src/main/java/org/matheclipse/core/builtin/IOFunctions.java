@@ -674,6 +674,7 @@ public class IOFunctions {
 			"nonopt",
 			"Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule or a list of rules.", //
 			"nord", "Invalid comparison with `1` attempted.", //
+			"normal", "Nonatomic expression expected at position `1` in `2`.",
 			"nvld", "The expression `1` is not a valid interval.", //
 			"notunicode",
 			"A character unicode, which should be a non-negative integer less than 1114112, is expected at position `2` in `1`.", //

@@ -559,17 +559,17 @@ public final class Validate {
 	 * 
 	 * @param ast
 	 *            TODO
-	 * @param expr
+	 * @param position
 	 * @param engine
 	 * 
 	 * @return <code>F.NIL</code> if the expression is no <code>IAST</code> object.
 	 */
-	public static IAST checkASTType(IAST ast, IExpr expr, EvalEngine engine) {
-		if (expr.isAST()) {
-			return (IAST) expr;
+	public static IAST checkASTType(IAST ast, IExpr arg1, int position, EvalEngine engine) {
+		if (arg1.isAST()) {
+			return (IAST) arg1;
 		}
 		// Nonatomic expression expected.
-		return IOFunctions.printMessage(ast.topHead(), "normal", F.List(), engine);
+		return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.ZZ(position), ast), engine);
 	}
 
 	private Validate() {
