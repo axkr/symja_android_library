@@ -173,19 +173,19 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
 				IExpr exponent = function.exponent();
 				if (exponent.isMinusOne()) {
 					buf.append("(1.0/");
-					convert(buf, base);
+					convertInternal(buf, base);
 					buf.append(")");
 					return;
 				}
 				if (exponent.isNumEqualRational(F.C1D2)) {
 					buf.append("Math.sqrt(");
-					convert(buf, base);
+					convertInternal(buf, base);
 					buf.append(")");
 					return;
 				}
 				if (exponent.isNumEqualRational(F.C1D3)) {
 					buf.append("Math.cbrt(");
-					convert(buf, base);
+					convertInternal(buf, base);
 					buf.append(")");
 					return;
 				}
@@ -208,7 +208,7 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
 			buf.append("Double.NEGATIVE_INFINITY");
 			return;
 		}
-		convert(buf, head);
+		convertInternal(buf, head);
 		convertArgs(buf, head, function);
 	}
 

@@ -2329,6 +2329,9 @@ public class F {
     /** Piecewise({{expr1, cond1}, ...}) - represents a piecewise function. */
     public final static IBuiltInSymbol Piecewise = F.initFinalSymbol("Piecewise", ID.Piecewise);
 
+    /***/
+    public final static IBuiltInSymbol PiecewiseExpand = F.initFinalSymbol("PiecewiseExpand", ID.PiecewiseExpand);
+    
     /** Plot(function, {x, xMin, xMax}, PlotRange->{yMin,yMax}) - generate a JavaScript control for the expression `function` in the `x` range `{x, xMin, xMax}` and `{yMin, yMax}` in the `y` range.*/
     public final static IBuiltInSymbol Plot = F.initFinalSymbol("Plot", ID.Plot);
 
@@ -8170,7 +8173,11 @@ public class F {
 	public static IAST Piecewise(final IExpr a0) {
 		return new AST1(Piecewise, a0);
 	}
-
+	
+	public static IAST PiecewiseExpand(final IExpr a0) {
+		return new AST1(PiecewiseExpand, a0);
+	}
+	
 	public static IAST Piecewise(final IExpr a0, final IExpr a1) {
 		return new AST2(Piecewise, a0, a1);
 	}

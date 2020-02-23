@@ -99,6 +99,7 @@ import org.matheclipse.core.reflection.system.rules.AbsRules;
 import org.matheclipse.core.reflection.system.rules.ConjugateRules;
 import org.matheclipse.core.reflection.system.rules.GammaRules;
 import org.matheclipse.core.reflection.system.rules.PowerRules;
+import org.matheclipse.core.visit.VisitorExpr;
 
 import ch.ethz.idsc.tensor.qty.IQuantity;
 
@@ -165,6 +166,7 @@ public final class Arithmetic {
 			F.LCM.setEvaluator(new LCM());
 			F.N.setEvaluator(new N());
 			F.Piecewise.setEvaluator(new Piecewise());
+			F.PiecewiseExpand.setEvaluator(new PiecewiseExpand());
 			F.Pochhammer.setEvaluator(new Pochhammer());
 			F.Precision.setEvaluator(new Precision());
 			F.PreDecrement.setEvaluator(new PreDecrement());
@@ -2375,6 +2377,68 @@ public final class Arithmetic {
 		public void setUp(final ISymbol newSymbol) {
 			// don't set NUMERICFUNCTION
 			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
+	private final static class PiecewiseExpand extends AbstractFunctionEvaluator {
+		static class PiecewiseExpandVisitor extends VisitorExpr {
+			private final EvalEngine fEngine;
+
+			public PiecewiseExpandVisitor(EvalEngine engine) {
+				super();
+				fEngine = engine;
+			}
+
+			@Override
+			public IExpr visit(IASTMutable ast) {
+				if (ast.isAST(F.If, 3)) {
+					IExpr a1 = ast.arg1();
+					IExpr a2 = ast.arg2();
+					return F.Piecewise(F.List(F.List(a2, a1), F.C0));
+				}
+				if (ast.isAST(F.If, 4)) {
+					IExpr a1 = ast.arg1();
+					IExpr a2 = ast.arg2();
+					IExpr a3 = ast.arg3();
+					return F.Piecewise(F.List(F.List(a2, a1), a3));
+				}
+				if (ast.isAST(F.Ramp, 2)) {
+					IExpr x = ast.arg1();
+					return F.Piecewise(F.List(F.List(x, F.GreaterEqual(x, F.C0)), F.C0));
+				}
+				if (ast.isAST(F.UnitStep) && ast.size() > 1) {
+					// Piecewise[{{1, x >= 0 && y >= 0 && z >= 0}}, 0]
+					final int size = ast.size();
+					IASTAppendable andAST = F.ast(F.And, size, false);
+					for (int i = 1; i < size; i++) {
+						andAST.append(F.GreaterEqual(ast.get(i), F.C0));
+					}
+					return F.Piecewise(F.List(F.List(F.C1, andAST), F.C0));
+				}
+
+				return visitAST(ast);
+			}
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				PiecewiseExpandVisitor visitor = new PiecewiseExpandVisitor(engine);
+				IExpr arg1 = ast.arg1();
+				if (arg1.isAST()) {
+					IExpr temp = arg1.accept(visitor);
+					if (temp.isPresent()) {
+						return temp;
+					}
+				}
+				return arg1;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_3;
 		}
 	}
 

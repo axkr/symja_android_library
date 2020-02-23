@@ -10477,9 +10477,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testJSForm() {
+//		check("JSForm(Ramp(x))", //
+//				"((x>=0) ? x : ( 0 ))");
 		check("Piecewise({{x, 0 < x < 1}, {x^3, 1 < x < 2}}) // JSForm", //
 				"((0<x && x<1) ? x : ((1<x && x<2) ? Math.pow(x,3) : ( 0 ) ))");
-
+		
 		check("JSForm(Cot(x))", //
 				"(1/Math.tan(x))");
 		check("JSForm(ArcCot(x))", //
@@ -12783,7 +12785,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{-2,-4,-3,-2,-4,-3,-2}");
 		check("Mod({-3, -2, -1, 0, 1, 2, 3}, -3)", //
 				"{0,-2,-1,0,-2,-1,0}");
-	 
+
 		check("Mod(7,2,3)", //
 				"3");
 		check("Mod(I,2,3)", //
@@ -15146,6 +15148,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Piecewise({{e1,d1},{e2,d2},{e3,d2&&d3},{e4,d4}},e0)");
 		check("Piecewise({{e1, d1}, {e2, d2}, {e3, False}, {e4, d4}, {e5, d5}}, e0)", //
 				"Piecewise({{e1,d1},{e2,d2},{e4,d4},{e5,d5}},e0)");
+	}
+
+	public void testPiecewiseExpand() {
+		check("PiecewiseExpand(If(x, y, z))", //
+				"Piecewise({{y,x},z})");
+		
+		check("PiecewiseExpand(UnitStep(x, y, z))", //
+				"Piecewise({{1,x>=0&&y>=0&&z>=0},0})");
+		
+		check("PiecewiseExpand(Ramp(x))", //
+				"Piecewise({{x,x>=0},0})");
 	}
 
 	public void testPlus() {
