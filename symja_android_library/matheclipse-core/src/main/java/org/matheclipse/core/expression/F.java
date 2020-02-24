@@ -3409,57 +3409,57 @@ public class F {
 	/**
 	 * Constant integer &quot;0&quot;
 	 */
-	public final static IntegerSym C0 = AbstractIntegerSym.valueOf(0);
+	public final static IInteger C0 = AbstractIntegerSym.valueOf(0);
 
 	/**
 	 * Constant integer &quot;1&quot;
 	 */
-	public final static IntegerSym C1 = AbstractIntegerSym.valueOf(1);
+	public final static IInteger C1 = AbstractIntegerSym.valueOf(1);
 
 	/**
 	 * Constant integer &quot;2&quot;
 	 */
-	public final static IntegerSym C2 = AbstractIntegerSym.valueOf(2);
+	public final static IInteger C2 = AbstractIntegerSym.valueOf(2);
 
 	/**
 	 * Constant integer &quot;3&quot;
 	 */
-	public final static IntegerSym C3 = AbstractIntegerSym.valueOf(3);
+	public final static IInteger C3 = AbstractIntegerSym.valueOf(3);
 
 	/**
 	 * Constant integer &quot;4&quot;
 	 */
-	public final static IntegerSym C4 = AbstractIntegerSym.valueOf(4);
+	public final static IInteger C4 = AbstractIntegerSym.valueOf(4);
 
 	/**
 	 * Constant integer &quot;5&quot;
 	 */
-	public final static IntegerSym C5 = AbstractIntegerSym.valueOf(5);
+	public final static IInteger C5 = AbstractIntegerSym.valueOf(5);
 
 	/**
 	 * Constant integer &quot;6&quot;
 	 */
-	public final static IntegerSym C6 = AbstractIntegerSym.valueOf(6);
+	public final static IInteger C6 = AbstractIntegerSym.valueOf(6);
 
 	/**
 	 * Constant integer &quot;7&quot;
 	 */
-	public final static IntegerSym C7 = AbstractIntegerSym.valueOf(7);
+	public final static IInteger C7 = AbstractIntegerSym.valueOf(7);
 
 	/**
 	 * Constant integer &quot;8&quot;
 	 */
-	public final static IntegerSym C8 = AbstractIntegerSym.valueOf(8);
+	public final static IInteger C8 = AbstractIntegerSym.valueOf(8);
 
 	/**
 	 * Constant integer &quot;9&quot;
 	 */
-	public final static IntegerSym C9 = AbstractIntegerSym.valueOf(9);
+	public final static IInteger C9 = AbstractIntegerSym.valueOf(9);
 
 	/**
 	 * Constant integer &quot;10&quot;
 	 */
-	public final static IntegerSym C10 = AbstractIntegerSym.valueOf(10);
+	public final static IInteger C10 = AbstractIntegerSym.valueOf(10);
 
 	/**
 	 * Complex imaginary unit. The parsed symbol &quot;I&quot; is converted on input to this constant.
@@ -3734,52 +3734,52 @@ public class F {
 	/**
 	 * Constant integer &quot;-1&quot;
 	 */
-	public final static IntegerSym CN1 = AbstractIntegerSym.valueOf(-1);
+	public final static IInteger CN1 = AbstractIntegerSym.valueOf(-1);
 
 	/**
 	 * Constant integer &quot;-2&quot;
 	 */
-	public final static IntegerSym CN2 = AbstractIntegerSym.valueOf(-2);
+	public final static IInteger CN2 = AbstractIntegerSym.valueOf(-2);
 
 	/**
 	 * Constant integer &quot;-3&quot;
 	 */
-	public final static IntegerSym CN3 = AbstractIntegerSym.valueOf(-3);
+	public final static IInteger CN3 = AbstractIntegerSym.valueOf(-3);
 
 	/**
 	 * Constant integer &quot;-4&quot;
 	 */
-	public final static IntegerSym CN4 = AbstractIntegerSym.valueOf(-4);
+	public final static IInteger CN4 = AbstractIntegerSym.valueOf(-4);
 
 	/**
 	 * Constant integer &quot;-5&quot;
 	 */
-	public final static IntegerSym CN5 = AbstractIntegerSym.valueOf(-5);
+	public final static IInteger CN5 = AbstractIntegerSym.valueOf(-5);
 
 	/**
 	 * Constant integer &quot;-6&quot;
 	 */
-	public final static IntegerSym CN6 = AbstractIntegerSym.valueOf(-6);
+	public final static IInteger CN6 = AbstractIntegerSym.valueOf(-6);
 
 	/**
 	 * Constant integer &quot;-7&quot;
 	 */
-	public final static IntegerSym CN7 = AbstractIntegerSym.valueOf(-7);
+	public final static IInteger CN7 = AbstractIntegerSym.valueOf(-7);
 
 	/**
 	 * Constant integer &quot;-8&quot;
 	 */
-	public final static IntegerSym CN8 = AbstractIntegerSym.valueOf(-8);
+	public final static IInteger CN8 = AbstractIntegerSym.valueOf(-8);
 
 	/**
 	 * Constant integer &quot;-9&quot;
 	 */
-	public final static IntegerSym CN9 = AbstractIntegerSym.valueOf(-9);
+	public final static IInteger CN9 = AbstractIntegerSym.valueOf(-9);
 
 	/**
 	 * Constant integer &quot;-10&quot;
 	 */
-	public final static IntegerSym CN10 = AbstractIntegerSym.valueOf(-10);
+	public final static IInteger CN10 = AbstractIntegerSym.valueOf(-10);
 
 	/**
 	 * Global map of predefined constant expressions.

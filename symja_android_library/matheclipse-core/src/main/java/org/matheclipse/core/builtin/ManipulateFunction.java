@@ -58,7 +58,7 @@ public class ManipulateFunction {
 	private static class Initializer {
 
 		private static void init() {
-			if (Config.USE_MANIPULATE_JS) { 
+			if (Config.USE_MANIPULATE_JS) {
 				F.BarChart.setEvaluator(new BarChart());
 				F.BoxWhiskerChart.setEvaluator(new BoxWhiskerChart());
 				F.Histogram.setEvaluator(new Histogram());
@@ -85,7 +85,7 @@ public class ManipulateFunction {
 		}
 
 	}
-	
+
 	private final static class Histogram extends AbstractEvaluator {
 
 		@Override
@@ -178,7 +178,7 @@ public class ManipulateFunction {
 							return mathcellSliderWithPlot(ast, plot, plotRangeX, plotRangeY, engine);
 						}
 					}
-				} else if (ast.arg2().isList() && ast.isAST2()) {
+				} else if (ast.isAST2() && ast.arg2().isList()) {
 					IExpr formula = ast.arg1();
 					IAST sliderRange = (IAST) ast.arg2();
 					IExpr step = F.C1;

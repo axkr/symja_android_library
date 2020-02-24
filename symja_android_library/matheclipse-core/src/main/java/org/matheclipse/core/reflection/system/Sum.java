@@ -27,6 +27,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.IArrayFunction;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
@@ -186,8 +187,9 @@ public class Sum extends ListFunctions.Table implements SumRules {
 				// }
 				// }
 				// }
-			} catch (ArgumentTypeException ate) {
-				return F.NIL;
+			} catch (final ValidateException ve) {
+				// see level specification
+				return engine.printMessage(ve.getMessage(ast.topHead()));
 			}
 		}
 

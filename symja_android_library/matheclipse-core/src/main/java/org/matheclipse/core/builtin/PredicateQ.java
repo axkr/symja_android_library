@@ -5,6 +5,8 @@ import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra.InternalFindCommonFactorPlus;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
@@ -200,7 +202,7 @@ public class PredicateQ {
 			if (expr.isList()) {
 				IAST ast = (IAST) expr;
 				int size = ast.size();
-				if (size==1) {
+				if (size == 1) {
 					return depth;
 				}
 				IExpr arg1AST = ast.arg1();
@@ -667,34 +669,40 @@ public class PredicateQ {
 					return F.NIL;
 				}
 			}
+			try {
+				boolean heads = false;
+				int size = ast.size();
+				if (ast.size() > 3) {
+					final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, size, engine);
+					if (options.isTrue(F.Heads)) {
+						heads = true;
+					}
+					int pos = options.getLastPosition();
+					if (pos != -1) {
+						size = pos;
+					}
+				}
 
-			boolean heads = false;
-			int size = ast.size();
-			if (ast.size() > 3) {
-				final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, size, engine);
-				if (options.isTrue(F.Heads)) {
-					heads = true;
-				}
-				int pos = options.getLastPosition();
-				if (pos != -1) {
-					size = pos;
-				}
-			}
-			if (size >= 3) {
-				final IExpr arg1 = engine.evaluate(ast.arg1());
-				if (arg1.isAST()) {
-					final IExpr arg2 = engine.evaluate(ast.arg2());
-					if (size == 3) {
-						return F.bool(arg1.isMember(arg2, heads, null));
+				if (size >= 3) {
+					final IExpr arg1 = engine.evaluate(ast.arg1());
+					if (arg1.isAST()) {
+						final IExpr arg2 = engine.evaluate(ast.arg2());
+						if (size == 3) {
+							return F.bool(arg1.isMember(arg2, heads, null));
+						}
+
+						Predicate<IExpr> predicate = memberPredicate(arg2);
+						IVisitorBoolean level = new VisitorBooleanLevelSpecification(predicate, ast.arg3(), heads,
+								engine);
+
+						return F.bool(arg1.accept(level));
 					}
 
-					Predicate<IExpr> predicate = memberPredicate(arg2);
-					IVisitorBoolean level = new VisitorBooleanLevelSpecification(predicate, ast.arg3(), heads, engine);
-
-					return F.bool(arg1.accept(level));
+					return F.False;
 				}
-
-				return F.False;
+			} catch (final ValidateException ve) {
+				// see level specification
+				return engine.printMessage(ve.getMessage(ast.topHead()));
 			}
 			return F.NIL;
 		}

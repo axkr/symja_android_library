@@ -3,7 +3,9 @@ package org.matheclipse.core.visit;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -18,7 +20,6 @@ import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.math.MathException;
 
 /**
  * A level specification visitor for levels in abstract syntax trees (AST).
@@ -137,7 +138,9 @@ public class VisitorBooleanLevelSpecification extends AbstractVisitorBoolean {
 					} else if ((lst.arg1() instanceof IInteger) && (lst.arg2().isInfinity())) {
 						final IInteger i0 = (IInteger) lst.arg1();
 						if (i0.isNegative()) {
-							throw new MathException("Invalid Level specification: " + levelExpr.toString());
+							String str = IOFunctions.getMessage("level", F.List(levelExpr), EvalEngine.get());
+							throw new ArgumentTypeException(str);
+//							throw new MathException("Invalid Level specification: " + levelExpr.toString());
 						} else {
 							fFromDepth = Integer.MIN_VALUE;
 							fToDepth = -1;
@@ -164,7 +167,9 @@ public class VisitorBooleanLevelSpecification extends AbstractVisitorBoolean {
 			fToDepth = -1;
 			return;
 		}
-		throw new MathException("Invalid Level specification: " + levelExpr.toString());
+		String str = IOFunctions.getMessage("level", F.List(levelExpr), EvalEngine.get());
+		throw new ArgumentTypeException(str);
+		// throw new MathException("Invalid Level specification: " + levelExpr.toString());
 	}
 
 	/**

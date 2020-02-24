@@ -11,6 +11,7 @@ import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ApcomplexNum;
@@ -878,8 +879,8 @@ public class TeXFormFactory {
 						}
 						return true;
 					}
-				} catch (ArgumentTypeException ate) {
-					// see Ietrator definition
+				} catch (final ValidateException ve) { 
+					EvalEngine.get().printMessage(ve.getMessage(F.Sum));
 				}
 				return false;
 			} else if (f.get(i).isSymbol()) {

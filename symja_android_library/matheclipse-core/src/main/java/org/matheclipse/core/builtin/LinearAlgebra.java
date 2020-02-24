@@ -2685,25 +2685,26 @@ public final class LinearAlgebra {
 			boolean togetherMode = engine.isTogetherMode();
 			try {
 				engine.setTogetherMode(true);
-				final IAST list = (IAST) ast.arg1();
-				matrix = Convert.list2Matrix(list);
-				if (matrix != null) {
-					final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix);
-					final FieldMatrix<IExpr> lMatrix = lu.getL();
-					final FieldMatrix<IExpr> uMatrix = lu.getU();
-					final int[] iArr = lu.getPivot();
-					// final int permutationCount = lu.getPermutationCount();
-					int size = iArr.length;
-					final IASTAppendable iList = F.ListAlloc(size);
-					// +1 because in Symja the offset is +1 compared to java arrays
-					iList.appendArgs(0, size, i -> F.ZZ(iArr[i] + 1));
-					// for (int i = 0; i < size; i++) {
-					// // +1 because in Symja the offset is +1 compared to java arrays
-					// iList.append(F.integer(iArr[i] + 1));
-					// }
-					return F.List(Convert.matrix2List(lMatrix), Convert.matrix2List(uMatrix), iList);
+				if (ast.arg1().isList()) {
+					final IAST list = (IAST) ast.arg1();
+					matrix = Convert.list2Matrix(list);
+					if (matrix != null) {
+						final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix);
+						final FieldMatrix<IExpr> lMatrix = lu.getL();
+						final FieldMatrix<IExpr> uMatrix = lu.getU();
+						final int[] iArr = lu.getPivot();
+						// final int permutationCount = lu.getPermutationCount();
+						int size = iArr.length;
+						final IASTAppendable iList = F.ListAlloc(size);
+						// +1 because in Symja the offset is +1 compared to java arrays
+						iList.appendArgs(0, size, i -> F.ZZ(iArr[i] + 1));
+						// for (int i = 0; i < size; i++) {
+						// // +1 because in Symja the offset is +1 compared to java arrays
+						// iList.append(F.integer(iArr[i] + 1));
+						// }
+						return F.List(Convert.matrix2List(lMatrix), Convert.matrix2List(uMatrix), iList);
+					}
 				}
-
 			} catch (final ClassCastException e) {
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
@@ -2906,56 +2907,59 @@ public final class LinearAlgebra {
 			boolean togetherMode = engine.isTogetherMode();
 			try {
 				engine.setTogetherMode(true);
-				matrix = Convert.list2Matrix((IAST) ast.arg1());
-				if (matrix == null) {
-					return F.NIL;
-				}
-				int p = ast.arg2().toIntDefault(Integer.MIN_VALUE);
-				if (p == Integer.MIN_VALUE) {
-					return F.NIL;
-				}
-				if (p == 1) {
-					((IAST) ast.arg1()).addEvalFlags(IAST.IS_MATRIX);
-					return ast.arg1();
-				}
-				if (p == 0) {
-					resultMatrix = new BlockFieldMatrix<IExpr>(ExprField.CONST, matrix.getRowDimension(),
-							matrix.getColumnDimension());
-					int min = matrix.getRowDimension();
-					if (min > matrix.getColumnDimension()) {
-						min = matrix.getColumnDimension();
+				if (ast.arg1().isList()) {
+					matrix = Convert.list2Matrix((IAST) ast.arg1());
+					if (matrix == null) {
+						return F.NIL;
 					}
-					for (int i = 0; i < min; i++) {
-						resultMatrix.setEntry(i, i, F.C1);
+					int p = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+					if (p == Integer.MIN_VALUE) {
+						return F.NIL;
 					}
+					if (p == 1) {
+						((IAST) ast.arg1()).addEvalFlags(IAST.IS_MATRIX);
+						return ast.arg1();
+					}
+					if (p == 0) {
+						resultMatrix = new BlockFieldMatrix<IExpr>(ExprField.CONST, matrix.getRowDimension(),
+								matrix.getColumnDimension());
+						int min = matrix.getRowDimension();
+						if (min > matrix.getColumnDimension()) {
+							min = matrix.getColumnDimension();
+						}
+						for (int i = 0; i < min; i++) {
+							resultMatrix.setEntry(i, i, F.C1);
+						}
 
+						return Convert.matrix2List(resultMatrix);
+					}
+					if (p < 0) {
+						resultMatrix = Inverse.inverseMatrix(matrix);
+						matrix = resultMatrix;
+						p *= (-1);
+					} else {
+						resultMatrix = matrix;
+					}
+					for (int i = 1; i < p; i++) {
+						resultMatrix = resultMatrix.multiply(matrix);
+					}
 					return Convert.matrix2List(resultMatrix);
-				}
-				if (p < 0) {
-					resultMatrix = Inverse.inverseMatrix(matrix);
-					matrix = resultMatrix;
-					p *= (-1);
-				} else {
-					resultMatrix = matrix;
-				}
-				for (int i = 1; i < p; i++) {
-					resultMatrix = resultMatrix.multiply(matrix);
-				}
-				return Convert.matrix2List(resultMatrix);
 
-				// } catch (final ClassCastException e) {
-				// if (Config.SHOW_STACKTRACE) {
-				// e.printStackTrace();
-				// }
-				// } catch (final ArithmeticException e) {
-				// if (Config.SHOW_STACKTRACE) {
-				// e.printStackTrace();
-				// }
-				// throw new NonNegativeIntegerExpected(ast, 2);
-				// } catch (final IndexOutOfBoundsException e) {
-				// if (Config.SHOW_STACKTRACE) {
-				// e.printStackTrace();
-				// }
+					// } catch (final ClassCastException e) {
+					// if (Config.SHOW_STACKTRACE) {
+					// e.printStackTrace();
+					// }
+					// } catch (final ArithmeticException e) {
+					// if (Config.SHOW_STACKTRACE) {
+					// e.printStackTrace();
+					// }
+					// throw new NonNegativeIntegerExpected(ast, 2);
+					// } catch (final IndexOutOfBoundsException e) {
+					// if (Config.SHOW_STACKTRACE) {
+					// e.printStackTrace();
+					// }
+				}
+				return F.NIL;
 			} catch (final RuntimeException e) {
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
@@ -3299,20 +3303,21 @@ public final class LinearAlgebra {
 			boolean togetherMode = engine.isTogetherMode();
 			try {
 				engine.setTogetherMode(true);
+				if (ast.arg1().isList()) {
+					final IAST list = (IAST) ast.arg1();
+					matrix = Convert.list2Matrix(list);
+					if (matrix != null) {
+						FieldReducedRowEchelonForm fmw = new FieldReducedRowEchelonForm(matrix);
+						FieldMatrix<IExpr> nullspace = fmw.getNullSpace(F.CN1);
+						if (nullspace == null) {
+							return F.List();
+						}
 
-				final IAST list = (IAST) ast.arg1();
-				matrix = Convert.list2Matrix(list);
-				if (matrix != null) {
-					FieldReducedRowEchelonForm fmw = new FieldReducedRowEchelonForm(matrix);
-					FieldMatrix<IExpr> nullspace = fmw.getNullSpace(F.CN1);
-					if (nullspace == null) {
-						return F.List();
+						IASTMutable list2 = Convert.matrix2List(nullspace);
+						// rows in descending orders
+						EvalAttributes.sort(list2, ExprReverseComparator.CONS);
+						return list2;
 					}
-
-					IASTMutable list2 = Convert.matrix2List(nullspace);
-					// rows in descending orders
-					EvalAttributes.sort(list2, ExprReverseComparator.CONS);
-					return list2;
 				}
 			} catch (final ClassCastException e) {
 				if (Config.SHOW_STACKTRACE) {
@@ -3651,14 +3656,14 @@ public final class LinearAlgebra {
 			boolean togetherMode = engine.isTogetherMode();
 			try {
 				engine.setTogetherMode(true);
-
-				final IAST list = (IAST) ast.arg1();
-				matrix = Convert.list2Matrix(list);
-				if (matrix != null) {
-					FieldReducedRowEchelonForm fmw = new FieldReducedRowEchelonForm(matrix);
-					return Convert.matrix2List(fmw.getRowReducedMatrix());
+				if (ast.arg1().isList()) {
+					final IAST list = (IAST) ast.arg1();
+					matrix = Convert.list2Matrix(list);
+					if (matrix != null) {
+						FieldReducedRowEchelonForm fmw = new FieldReducedRowEchelonForm(matrix);
+						return Convert.matrix2List(fmw.getRowReducedMatrix());
+					}
 				}
-
 			} catch (final ClassCastException e) {
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();

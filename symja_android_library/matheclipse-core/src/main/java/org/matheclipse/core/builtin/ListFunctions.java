@@ -1127,8 +1127,9 @@ public final class ListFunctions {
 									VisitorLevelSpecification level = new VisitorLevelSpecification(crf, arg3, false,
 											engine);
 									arg1.accept(level);
-								} catch (ArgumentTypeException ate) {
-									return F.NIL;
+								} catch (final ValidateException ve) {
+									// see level specification
+									return engine.printMessage(ve.getMessage(F.Cases));
 								} catch (StopException se) {
 									// reached maximum number of results
 								}
@@ -1142,8 +1143,9 @@ public final class ListFunctions {
 								VisitorLevelSpecification level = new VisitorLevelSpecification(cpmf, arg3, false,
 										engine);
 								arg1.accept(level);
-							} catch (ArgumentTypeException ate) {
-								return F.NIL;
+							} catch (final ValidateException ve) {
+								// see level specification
+								return engine.printMessage(ve.getMessage(ast.topHead()));
 							} catch (StopException se) {
 								// reached maximum number of results
 							}
@@ -1629,9 +1631,10 @@ public final class ListFunctions {
 				}
 				arg1.accept(level);
 				return F.ZZ(mf.getCounter());
-			} catch (ArgumentTypeException ate) {
+			} catch (final ValidateException ve) {
+				// see level specification
+				return engine.printMessage(ve.getMessage(ast.topHead()));
 			}
-			return F.NIL;
 		}
 
 		@Override
@@ -1840,12 +1843,17 @@ public final class ListFunctions {
 				if (ast.isAST3() || ast.size() == 5) {
 					final IExpr arg3 = engine.evaluate(ast.arg3());
 					int maximumRemoveOperations = -1;
-					if (ast.size() == 5) {
-						maximumRemoveOperations = Validate.checkIntType(ast, 4);
-					}
 					IASTAppendable arg1RemoveClone = ((IAST) arg1).copyAppendable();
-
 					try {
+						if (ast.size() == 5) {
+							if (ast.arg4().isInfinity()) {
+								maximumRemoveOperations = Integer.MAX_VALUE;
+							} else {
+								maximumRemoveOperations = Validate.checkIntType(ast, 4);
+							}
+						}
+						
+
 						DeleteCasesPatternMatcherFunctor cpmf = new DeleteCasesPatternMatcherFunctor(matcher);
 						VisitorRemoveLevelSpecification level = new VisitorRemoveLevelSpecification(cpmf, arg3,
 								maximumRemoveOperations, false, engine);
@@ -1856,14 +1864,12 @@ public final class ListFunctions {
 						return arg1RemoveClone;
 					} catch (VisitorRemoveLevelSpecification.StopException se) {
 						// reached maximum number of results
-					} catch (final ArgumentTypeException ate) {
-						return F.NIL;
-						// } catch (final RuntimeException rex) {
-						// // ArgumentTypeException from VisitorLevelSpecification level specification checks
-						// return engine.printMessage("DeleteCases: " + rex.getMessage());
+					} catch (final ValidateException ve) {
+						// see level specification
+						return engine.printMessage(ve.getMessage(ast.topHead()));
 					}
 
-					return arg1RemoveClone;
+ 					return arg1RemoveClone;
 				} else {
 					return deleteCases((IAST) arg1, matcher);
 				}
@@ -2150,7 +2156,7 @@ public final class ListFunctions {
 							return F.NIL;
 						}
 					}
-					if (indx <= list.size()) {
+					if (indx < list.size()) {
 						return list.get(indx);
 					}
 				} else if (ast.arg2().isList()) {
@@ -3102,8 +3108,9 @@ public final class ListFunctions {
 					return resultList;
 				}
 				return F.List();
-			} catch (ArgumentTypeException ate) {
-				return F.NIL;
+			} catch (final ValidateException ve) {
+				// see level specification
+				return engine.printMessage(ve.getMessage(ast.topHead()));
 			}
 		}
 
@@ -3730,8 +3737,9 @@ public final class ListFunctions {
 						final IExpr arg3 = engine.evaluate(ast.arg3());
 						final LevelSpec level = new LevelSpecification(arg3, true);
 						return position((IAST) arg1, arg2, level, maxResults, engine);
-					} catch (ArgumentTypeException ate) {
-						// see LevelSpecification
+					} catch (final ValidateException ve) {
+						// see level specification
+						return engine.printMessage(ve.getMessage(ast.topHead()));
 					}
 				}
 			}
@@ -5419,7 +5427,13 @@ public final class ListFunctions {
 							new TableFunction(engine, ast.arg1()), defaultValue);
 					return generator.table();
 				}
-			} catch (final ArgumentTypeException e) {
+			} catch (final ArrayIndexOutOfBoundsException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			} catch (final ValidateException ve) {
+				// see iterator specification
+				return engine.printMessage(ve.getMessage(ast.topHead()));
 			} catch (final NoEvalException e) {
 			} catch (final ClassCastException e) {
 				// the iterators are generated only from IASTs
@@ -5445,7 +5459,9 @@ public final class ListFunctions {
 							new TableFunction(engine, ast.arg1()), defaultValue);
 					return generator.tableThrow();
 				}
-			} catch (final ArgumentTypeException e) {
+			} catch (final ValidateException ve) {
+				// see iterator specification
+				return engine.printMessage(ve.getMessage(ast.topHead()));
 			} catch (final NoEvalException e) {
 			} catch (final ClassCastException e) {
 				// the iterators are generated only from IASTs
@@ -6013,8 +6029,9 @@ public final class ListFunctions {
 						}
 					}
 				}
-			} catch (ArgumentTypeException ate) {
-				return F.NIL;
+			} catch (final ValidateException ve) {
+				// see level specification
+				return engine.printMessage(ve.getMessage(ast.topHead()));
 				// } catch (final RuntimeException rex) {
 				// // ArgumentTypeException from VisitorLevelSpecification level specification checks
 				// return engine.printMessage("Total: " + rex.getMessage());

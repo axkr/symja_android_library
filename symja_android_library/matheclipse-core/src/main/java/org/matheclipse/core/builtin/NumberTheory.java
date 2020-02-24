@@ -266,17 +266,18 @@ public final class NumberTheory {
 
 						return F.NIL;
 					}
-					if (x.isNumEqualRational(F.C1D2)) {
-						// http://fungrim.org/entry/03ee0b/
-						return F.Times(F.Subtract(F.Power(F.C2, F.Subtract(F.C1, n)), F.C1), F.BernoulliB(n));
+					if (n.isInteger() && n.isNonNegativeResult()) {
+						if (x.isNumEqualRational(F.C1D2)) {
+							// http://fungrim.org/entry/03ee0b/
+							return F.Times(F.Subtract(F.Power(F.C2, F.Subtract(F.C1, n)), F.C1), F.BernoulliB(n));
+						}
+						int bn = n.toIntDefault();
+						if (bn >= 0) {
+							// http://fungrim.org/entry/555e10/
+							return F.sum(k -> F.Times(F.Binomial(n, k), F.BernoulliB(F.Subtract(n, k)), F.Power(x, k)),
+									0, bn);
+						}
 					}
-					int bn = n.toIntDefault();
-					if (bn >= 0) {
-						// http://fungrim.org/entry/555e10/
-						return F.sum(k -> F.Times(F.Binomial(n, k), F.BernoulliB(F.Subtract(n, k)), F.Power(x, k)), 0,
-								bn);
-					}
-
 				} catch (RuntimeException rex) {
 					if (Config.SHOW_STACKTRACE) {
 						rex.printStackTrace();

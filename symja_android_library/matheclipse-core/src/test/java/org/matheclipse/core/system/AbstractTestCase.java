@@ -1,11 +1,17 @@
 package org.matheclipse.core.system;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.StringWriter;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.TimeConstrainedEvaluator;
@@ -25,6 +31,20 @@ public abstract class AbstractTestCase extends TestCase {
 	protected ScriptEngine fScriptEngine;
 	protected ScriptEngine fNumericScriptEngine;
 	protected static ScriptEngineManager fScriptManager = new ScriptEngineManager();
+	public static boolean FUZZ_HARVESTER = false;
+	public static BufferedWriter fuzzBuffer = null;
+
+	static {
+		if (FUZZ_HARVESTER) {
+			File file = new File("./data/harvest.sym");
+			try {
+				fuzzBuffer = new BufferedWriter(new FileWriter(file));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
 
 	public AbstractTestCase(String name) {
 		super(name);
@@ -68,6 +88,10 @@ public abstract class AbstractTestCase extends TestCase {
 				evaledResult = evaledResult.substring(0, resultLength) + "<<SHORT>>";
 				assertEquals(expectedResult, evaledResult);
 			} else {
+				if (FUZZ_HARVESTER) {
+					fuzzBuffer.append(evalString);
+					fuzzBuffer.append("\n\n\n");
+				}
 				assertEquals(expectedResult, evaledResult);
 			}
 		} catch (Exception e) {
@@ -178,4 +202,15 @@ public abstract class AbstractTestCase extends TestCase {
 
 	}
 
+	public static void writeFile(String fileName, StringBuffer buffer) {
+		try {
+			File file = new File(fileName);
+			final BufferedWriter f = new BufferedWriter(new FileWriter(file));
+			f.append(buffer);
+			f.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			// assertEquals("", e.getMessage());
+		}
+	}
 }

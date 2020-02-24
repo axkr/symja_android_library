@@ -380,6 +380,9 @@ public class JASConvert<C extends RingElem<C>> {
 			}
 		} else if (exprPoly instanceof ISymbol) {
 			try {
+				if (exprPoly.isIndeterminate()) {
+					throw new JASConversionException();
+				}
 				return fPolyFactory.univariate(((ISymbol) exprPoly).getSymbolName(), 1L);
 			} catch (IllegalArgumentException iae) {
 				// fall through

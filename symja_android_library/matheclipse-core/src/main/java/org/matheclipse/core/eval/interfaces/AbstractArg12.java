@@ -2,6 +2,7 @@ package org.matheclipse.core.eval.interfaces;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.ApcomplexNum;
@@ -291,8 +292,13 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 			}
 			return binaryOperator(ast, ast.arg1(), ast.arg2());
 		}
-		return engine.printMessage(ast.topHead() + ": " + ast.topHead()
-				+ " function requires 1 or 2 arguments, but number of args equals: " + ast.argSize());
+		return F.NIL;
+//		return engine.printMessage(ast.topHead() + ": " + ast.topHead()
+//				+ " function requires 1 or 2 arguments, but number of args equals: " + ast.argSize());
 	}
 
+	@Override
+	public int[] expectedArgSize() {
+		return IOFunctions.ARGS_1_2;
+	}
 }

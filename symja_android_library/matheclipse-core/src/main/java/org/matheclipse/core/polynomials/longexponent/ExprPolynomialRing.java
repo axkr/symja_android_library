@@ -532,6 +532,9 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 				}
 			}
 		} else if (exprPoly instanceof ISymbol) {
+			if (exprPoly.isIndeterminate()) {
+				throw new ClassCastException(exprPoly.toString());
+			}
 			if (coefficient) {
 				return new ExprPolynomial(this, exprPoly);
 			}

@@ -652,15 +652,15 @@ public abstract class Scanner {
 
 				case '(':
 					fToken = TT_PRECEDENCE_OPEN;
-
+					skipWhitespace();
 					break;
 				case ')':
 					fToken = TT_PRECEDENCE_CLOSE;
-
+					
 					break;
 				case '{':
 					fToken = TT_LIST_OPEN;
-
+					skipWhitespace();
 					break;
 				case '}':
 					fToken = TT_LIST_CLOSE;
@@ -685,6 +685,7 @@ public abstract class Scanner {
 						if (charAtPosition() == '|') {
 							fCurrentPosition++;
 							fToken = TT_ASSOCIATION_OPEN;
+							skipWhitespace();
 							break;
 						}
 					}

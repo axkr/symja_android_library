@@ -172,7 +172,7 @@ public final class RandomFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.arg1().isInteger()) {
+			if (ast.arg1().isInteger() && ((IInteger) ast.arg1()).isGE(F.C2)) {
 				try {
 					// RandomPrime(100) gives a prime integer between 2 and 100
 					BigInteger upperLimit = ((IInteger) ast.arg1()).toBigNumerator();

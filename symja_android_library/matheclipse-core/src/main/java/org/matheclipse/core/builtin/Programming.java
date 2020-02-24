@@ -27,6 +27,7 @@ import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -865,8 +866,9 @@ public final class Programming {
 					} while ((!current.isSame(last)) && (--iterations > 0));
 				}
 				return list;
-			} catch (ArgumentTypeException ate) {
-				return F.NIL;
+			} catch (final ValidateException ve) {
+				// see level specification
+				return engine.printMessage(ve.getMessage(ast.topHead()));
 			} finally {
 				engine.setNumericMode(numericMode);
 			}

@@ -180,7 +180,7 @@ public abstract class AbstractFractionSym implements IFraction {
 			}
 		}
 
-		if (Integer.MIN_VALUE <= newnum && newnum <= Integer.MAX_VALUE && newdenom <= Integer.MAX_VALUE) {
+		if (Integer.MIN_VALUE < newnum && newnum <= Integer.MAX_VALUE && newdenom <= Integer.MAX_VALUE) {
 			return new FractionSym((int) newnum, (int) newdenom);
 		}
 		return new BigFractionSym(BigInteger.valueOf(newnum), BigInteger.valueOf(newdenom));

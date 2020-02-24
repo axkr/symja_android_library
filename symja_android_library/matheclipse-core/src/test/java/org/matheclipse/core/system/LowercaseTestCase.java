@@ -1,11 +1,15 @@
 package org.matheclipse.core.system;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.ConstantDefinitions;
 import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
+
+import junit.framework.TestResult;
 
 /**
  * Tests system.reflection classes
@@ -1364,6 +1368,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBernoulliB() {
+		check("BernoulliB(-2147483648,1/2)", //
+				"BernoulliB(-2147483648,1/2)");
 		check("BernoulliB(18, 1/2)", //
 				"-5749691557/104595456");
 		check("BernoulliB(17, 1/2)", //
@@ -3054,6 +3060,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testComplexExpand() {
+		check("ComplexExpand(Sin(x), x)", //
+				"Cosh(Im(x))*Sin(Re(x))+I*Cos(Re(x))*Sinh(Im(x))");
+		check("ComplexExpand(Tan(x+i*y))", //
+				"Sin(2*(x+i*y))/(1+Cos(2*(x+i*y)))");
 		check("ComplexExpand(a)", //
 				"a");
 		check("ComplexExpand(42)", //
@@ -4304,6 +4314,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDeleteCases() {
+		check("DeleteCases(Sqrt(Range(10)),_Integer,{1},Infinity)", //
+				"{Sqrt(2),Sqrt(3),Sqrt(5),Sqrt(6),Sqrt(7),2*Sqrt(2),Sqrt(10)}");
+		check("DeleteCases(Sqrt(Range(10)),_Integer,{1},-1)", //
+				"DeleteCases(Sqrt(Range(10)),_Integer,{1},-1)");
 		check("DeleteCases({a, 1, 2.5, \"string\"}, _Integer|_Real)", //
 				"{a,string}");
 		check("DeleteCases({a, b, 1, c, 2, 3}, _Symbol)", //
@@ -6268,6 +6282,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testExtract() {
+
+		check("Extract(2)[Infinity]", //
+				"Extract(2)[Infinity]");
 		check("Extract(2)[{a, b, c, d}]", //
 				"b");
 		check("Extract(a+b+c,2)", //
@@ -15606,6 +15623,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialQuotientRemainder() {
+		// test with Integer.MIN_VALUE
+		check("PolynomialQuotientRemainder(1+b*x+x^2,-2147483648,x)", //
+				"{-1/2147483648-1/2147483648*b*x-x^2/2147483648,0}");
+		check("PolynomialQuotientRemainder(1+b*x+x^2,-2147483646,x)", //
+				"{-1/2147483646-1/2147483646*b*x-x^2/2147483646,0}");
+
+		check("PolynomialQuotientRemainder(6+7*x+x^2,Indeterminate,x)", //
+				"PolynomialQuotientRemainder(6+7*x+x^2,Indeterminate,x)");
+
 		check("PolynomialQuotientRemainder(2*x^2+3,3*x,f(x,y))", //
 				"{(3+2*x^2)/(3*x),0}");
 		check("PolynomialQuotientRemainder(x^2 + 7*x + 6, x^2-5*x-6, x)", //
@@ -16390,7 +16416,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"False");
 		check("PrimePowerQ(-1)", //
 				"False");
-		
+
 		check("13^9", //
 				"10604499373");
 		check("PrimePowerQ(10604499373)", //
@@ -22643,6 +22669,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testUnset() {
+		check("0=.", //
+				"$Failed");
 		check("a=.", //
 				"");
 		check("$x=5;$x=.;$x", //
@@ -23119,4 +23147,5 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Zeta(Infinity)", //
 				"1");
 	}
+
 }

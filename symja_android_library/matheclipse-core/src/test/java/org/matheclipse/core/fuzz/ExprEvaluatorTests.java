@@ -1,21 +1,130 @@
 package org.matheclipse.core.fuzz;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
+import org.matheclipse.core.eval.exception.FlowControlException;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.Parser;
+import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.math.MathException;
+import org.matheclipse.parser.client.operator.ASTNodeFactory;
 
 import junit.framework.TestCase;
 
 public class ExprEvaluatorTests extends TestCase {
+
+	private static List<ASTNode> parseFileToList() {
+		try {
+			File file = new File("./data/harvest.sym");
+			final BufferedReader f = new BufferedReader(new FileReader(file));
+			final StringBuffer buff = new StringBuffer(1024);
+			String line;
+			while ((line = f.readLine()) != null) {
+				buff.append(line);
+				buff.append('\n');
+				// Insert newlines to let the parser see that a new rule starts
+				buff.append('\n');
+				buff.append('\n');
+			}
+			f.close();
+			String inputString = buff.toString();
+			Parser p = new Parser(ASTNodeFactory.RELAXED_STYLE_FACTORY, true, true);
+			return p.parsePackage(inputString);
+			// return p.parsePackage(inputString);
+
+			// assertEquals(obj.toString(),
+			// "Plus[Plus[Times[-1, a], Times[-1, Times[b, Factorial2[c]]]], d]");
+		} catch (Exception e) {
+			e.printStackTrace();
+			// assertEquals("", e.getMessage());
+		}
+		return null;
+	}
+
+	public void testFuzzUnits() {
+		EvalEngine engine = EvalEngine.get();
+		List<ASTNode> node = parseFileToList();
+		IExpr temp;
+		int i = 0;
+
+		AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
+		IAST seedList = F.List(//
+				F.C0, //
+				F.C1, //
+				F.CN1, //
+				F.CN1D2, //
+				F.C1D2, //
+				F.CNI, //
+				F.CI, //
+				F.ZZ(Integer.MIN_VALUE), //
+				F.CInfinity, //
+				F.CNInfinity, //
+				F.Indeterminate, //
+				F.ComplexInfinity, //
+				F.CEmptyList, F.Subtract(F.C1, F.C1));
+		while (i < node.size()) {
+			temp = ast2Expr.convert(node.get(i++));
+			if (temp.isAST() && temp.size() > 1) {
+				for (int j = 1; j < seedList.size(); j++) {
+					IExpr seed = seedList.get(j);
+
+					IASTMutable mutant = ((IAST) temp).copy();
+					ThreadLocalRandom random = ThreadLocalRandom.current();
+					int randomIndex = random.nextInt(1, mutant.size());
+					mutant.set(randomIndex, seed);
+
+					engine.init();
+					ExprEvaluator eval = new ExprEvaluator(engine, true, 20);
+					try {
+ 					    System.out.println(">> "+mutant.toString());
+						eval.eval(mutant);
+					} catch (FlowControlException mex) {
+						System.out.println(mutant.toString());
+						mex.printStackTrace();
+						System.out.println();
+					} catch (IterationLimitExceeded mex) {
+						System.out.println(mutant.toString());
+						mex.printStackTrace();
+						System.out.println();
+					} catch (MathException mex) {
+						System.out.println(mutant.toString());
+						mex.printStackTrace();
+						System.out.println();
+						fail();
+					} catch (RuntimeException rex) {
+						System.out.println(mutant.toString());
+						rex.printStackTrace();
+						fail();
+					} catch (Error rex) {
+						System.out.println(mutant.toString());
+						if (rex instanceof StackOverflowError) {
+							System.err.println("java.lang.StackOverflowError");
+						} else {
+							System.out.println(mutant.toString());
+							rex.printStackTrace();
+						}
+					}
+				}
+			}
+		}
+		// return result;
+	}
 
 	@Override
 	protected void setUp() throws Exception {
@@ -40,14 +149,16 @@ public class ExprEvaluatorTests extends TestCase {
 					int end = argSize[1];
 					if (end <= 10) {
 						int start = argSize[0];
-						generateASTs(sym, start, end,  F.C0, engine);
-						generateASTs(sym, start, end,  F.Null, engine);
-						generateASTs(sym, start, end,  F.List(), engine);
+						generateASTs(sym, start, end, F.CN1, engine);
+						generateASTs(sym, start, end, F.C0, engine);
+						generateASTs(sym, start, end, F.Null, engine);
+						generateASTs(sym, start, end, F.List(), engine);
 						continue;
 					}
 
 				}
 			}
+			generateASTs(sym, 1, 5, F.CN1, engine);
 			generateASTs(sym, 1, 5, F.C0, engine);
 			generateASTs(sym, 1, 5, F.Null, engine);
 			generateASTs(sym, 1, 5, F.List(), engine);
@@ -58,9 +169,9 @@ public class ExprEvaluatorTests extends TestCase {
 		ExprEvaluator eval;
 		for (int j = start; j <= end; j++) {
 			eval = new ExprEvaluator(engine, true, 20);
-			IAST ast = generate(sym, j,arg);
+			IAST ast = generate(sym, j, arg);
 			try {
-				 System.out.println(ast.toString());
+				// System.out.println(ast.toString());
 				eval.eval(ast);
 			} catch (MathException mex) {
 				System.out.println(ast.toString());

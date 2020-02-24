@@ -13,6 +13,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
@@ -229,10 +230,9 @@ public class Structure {
 						return expr;
 					}
 				}
-			} catch (final ArgumentTypeException ate) {
-				// } catch (final RuntimeException rex) {
-				// // ArgumentTypeException from VisitorLevelSpecification level specification checks
-				// return engine.printMessage("Apply: " + rex.getMessage());
+			} catch (final ValidateException ve) {
+				// see level specification
+				return engine.printMessage(ve.getMessage(F.Apply));
 			}
 			return F.NIL;
 		}
@@ -508,8 +508,9 @@ public class Structure {
 						}
 						return arg1;
 					}
-				} catch (ArgumentTypeException ate) {
-
+				} catch (final ValidateException ve) {
+					// see level specification
+					return engine.printMessage(ve.getMessage(ast.topHead()));
 				}
 			}
 			return F.NIL;
@@ -933,8 +934,9 @@ public class Structure {
 					level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), 1, heads);
 				}
 				return arg2.accept(level).orElse(arg2);
-			} catch (final ArgumentTypeException ate) {
-				return F.NIL;
+			} catch (final ValidateException ve) {
+				// see level specification
+				return engine.printMessage(ve.getMessage(ast.topHead()));
 				// } catch (final RuntimeException e) {
 				// return engine.printMessage("Map: " + e.getMessage());
 			}
@@ -1590,7 +1592,9 @@ public class Structure {
 						}
 					}
 					return F.Null;
-				} catch (final ArgumentTypeException ate) {
+				} catch (final ValidateException ve) {
+					// see level specification
+					return engine.printMessage(ve.getMessage(ast.topHead()));
 				} catch (final ReturnException e) {
 					return e.getValue();
 					// don't catch Throw[] here !

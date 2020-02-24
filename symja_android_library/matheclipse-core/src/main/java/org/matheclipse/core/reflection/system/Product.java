@@ -11,6 +11,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -229,7 +230,8 @@ public class Product extends ListFunctions.Table implements ProductRules {
 				if (!temp.isPresent() || temp.equals(resultList)) {
 					return F.NIL;
 				}
-			} catch (final ArgumentTypeException e) {
+			} catch (final ValidateException ve) { 
+				return EvalEngine.get().printMessage(ve.getMessage(F.Sum));
 			} catch (RecursionLimitExceeded rle) {
 				return engine.printMessage("Product: Recursionlimit exceeded");
 			}
