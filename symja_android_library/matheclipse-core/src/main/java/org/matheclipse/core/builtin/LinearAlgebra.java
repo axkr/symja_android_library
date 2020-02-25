@@ -1394,22 +1394,25 @@ public final class LinearAlgebra {
 				}
 				return F.NIL;
 			}
-			IExpr temp = numericalDot(arg1, arg2);
-			if (temp.isPresent()) {
-				return temp;
-			}
 
-			FieldMatrix<IExpr> matrix0;
-			FieldMatrix<IExpr> matrix1;
-			FieldVector<IExpr> vector0;
-			FieldVector<IExpr> vector1;
 			EvalEngine engine = EvalEngine.get();
 			boolean togetherMode = engine.isTogetherMode();
+			engine.setTogetherMode(true);
 			try {
-				engine.setTogetherMode(true);
+				IExpr temp = numericalDot(arg1, arg2);
+				if (temp.isPresent()) {
+					return temp;
+				}
+
+				FieldMatrix<IExpr> matrix0;
+				FieldMatrix<IExpr> matrix1;
+				FieldVector<IExpr> vector0;
+				FieldVector<IExpr> vector1;
+
 				IAST list;
 
-				if (arg1.isMatrix() != null) {
+				int[] dim1 = arg1.isMatrix();
+				if (dim1 != null && dim1[1] != 0) {
 					list = (IAST) arg1;
 					matrix0 = Convert.list2Matrix(list);
 					if (matrix0 != null) {
@@ -1432,21 +1435,27 @@ public final class LinearAlgebra {
 					return engine.printMessage(ast.topHead() + ": Error in matrix");
 				} else if (arg1.isVector() != (-1)) {
 					list = (IAST) arg1;
-					vector0 = Convert.list2Vector(list);
-					if (vector0 != null) {
-						if (arg2.isMatrix() != null) {
-							list = (IAST) arg2;
-							matrix1 = Convert.list2Matrix(list);
-							return Convert.vector2List(matrix1.preMultiply(vector0));
-						} else if (arg2.isVector() != (-1)) {
-							list = (IAST) arg2;
-							vector1 = Convert.list2Vector(list);
-							if (vector1 != null) {
-								return vector0.dotProduct(vector1);
+					if (list.size() == 1) {
+						if (arg2.isVector() == 0) {
+							return F.C0;
+						}
+					} else {
+						vector0 = Convert.list2Vector(list);
+						if (vector0 != null) {
+							if (arg2.isMatrix() != null) {
+								list = (IAST) arg2;
+								matrix1 = Convert.list2Matrix(list);
+								return Convert.vector2List(matrix1.preMultiply(vector0));
+							} else if (arg2.isVector() != (-1)) {
+								list = (IAST) arg2;
+								vector1 = Convert.list2Vector(list);
+								if (vector1 != null) {
+									return vector0.dotProduct(vector1);
+								}
 							}
 						}
+						return engine.printMessage(ast.topHead() + ": Error in vector");
 					}
-					return engine.printMessage(ast.topHead() + ": Error in vector");
 				}
 
 				// } catch (final ClassCastException e) {
@@ -1528,7 +1537,9 @@ public final class LinearAlgebra {
 					RealVector v0 = o0.toRealVector();
 					if (v0 != null) {
 						RealVector v1 = o1.toRealVector();
-						return F.num(v0.dotProduct(v1));
+						if (v0.getDimension() == v1.getDimension()) {
+							return F.num(v0.dotProduct(v1));
+						}
 					}
 				}
 			}
@@ -2140,8 +2151,10 @@ public final class LinearAlgebra {
 				if (!list1.head().equals(head2)) {
 					return F.NIL;
 				}
-				InnerAlgorithm ic = new InnerAlgorithm(f, list1, list2, g);
-				return ic.inner();
+				if (list1.size() == list2.size()) {
+					InnerAlgorithm ic = new InnerAlgorithm(f, list1, list2, g);
+					return ic.inner();
+				}
 			}
 			return F.NIL;
 		}

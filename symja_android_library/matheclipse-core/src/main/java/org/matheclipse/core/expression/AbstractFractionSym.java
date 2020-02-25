@@ -10,8 +10,10 @@ import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.ArithmeticUtils;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -158,7 +160,9 @@ public abstract class AbstractFractionSym implements IFraction {
 	public static IFraction valueOf(long newnum, long newdenom) {
 		if (newdenom != 1) {
 			if (newdenom == 0) {
-				throw new MathIllegalArgumentException(LocalizedCoreFormats.ZERO_DENOMINATOR);
+				String str = IOFunctions.getMessage("infy", F.List(F.Rational(F.ZZ(newnum), F.ZZ(newdenom))),
+						EvalEngine.get());
+				throw new ArgumentTypeException(str);
 			}
 			long gcd2 = Math.abs(ArithmeticUtils.gcd(newnum, newdenom));
 			if (newdenom < 0) {

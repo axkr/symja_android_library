@@ -100,16 +100,20 @@ public final class PatternMatching {
 	private final static class Begin extends AbstractCoreFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			String contextName = Validate.checkContextName(ast, 1);
-			Context pack = EvalEngine.get().getContextPath().currentContext();
-			// String packageName = pack.getContextName();
-			// if (packageName.equals(Context.GLOBAL_CONTEXT_NAME)) {
-			// completeContextName = contextName;
-			// } else {
-			// completeContextName = packageName.substring(0, packageName.length() - 1) + contextName;
-			// }
-			Context context = engine.begin(contextName, pack);
-			return F.stringx(context.completeContextName());
+			try {
+				String contextName = Validate.checkContextName(ast, 1);
+				Context pack = EvalEngine.get().getContextPath().currentContext();
+				// String packageName = pack.getContextName();
+				// if (packageName.equals(Context.GLOBAL_CONTEXT_NAME)) {
+				// completeContextName = contextName;
+				// } else {
+				// completeContextName = packageName.substring(0, packageName.length() - 1) + contextName;
+				// }
+				Context context = engine.begin(contextName, pack);
+				return F.stringx(context.completeContextName());
+			} catch (ValidateException ve) {
+				return engine.printMessage(ve.getMessage(ast.topHead()));
+			}
 		}
 
 		@Override
@@ -127,25 +131,30 @@ public final class PatternMatching {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() > 1) {
-				String contextName = Validate.checkContextName(ast, 1);
-				engine.beginPackage(contextName);
-				if (Config.isFileSystemEnabled(engine)) {
-					try {
-						for (int j = 2; j < ast.size(); j++) {
-							// FileReader reader = new FileReader(ast.get(j).toString());
-							FileInputStream fis = new FileInputStream(ast.get(j).toString());
-							BufferedReader reader = new BufferedReader(new InputStreamReader(fis, "UTF-8"));
-							Get.loadPackage(engine, reader);
-							reader.close();
-							fis.close();
-						}
-					} catch (IOException e) {
-						if (Config.SHOW_STACKTRACE) {
-							e.printStackTrace();
+				try {
+					String contextName = Validate.checkContextName(ast, 1);
+					engine.beginPackage(contextName);
+					if (Config.isFileSystemEnabled(engine)) {
+						try {
+							for (int j = 2; j < ast.size(); j++) {
+								// FileReader reader = new FileReader(ast.get(j).toString());
+								FileInputStream fis = new FileInputStream(ast.get(j).toString());
+								BufferedReader reader = new BufferedReader(new InputStreamReader(fis, "UTF-8"));
+								Get.loadPackage(engine, reader);
+								reader.close();
+								fis.close();
+							}
+						} catch (IOException e) {
+							if (Config.SHOW_STACKTRACE) {
+								e.printStackTrace();
+							}
 						}
 					}
+					return F.Null;
+
+				} catch (ValidateException ve) {
+					return engine.printMessage(ve.getMessage(ast.topHead()));
 				}
-				return F.Null;
 			}
 			return F.NIL;
 		}

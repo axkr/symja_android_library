@@ -242,6 +242,27 @@ public class SpecialFunctions {
 					IExpr z = ast.arg1();
 					IExpr a = ast.arg2();
 					IExpr n = ast.arg3();
+					if (a.isZero() || (a.isInteger() && a.isNegative())) {
+						if (n.isZero() || (n.isInteger() && n.isNegative())) {
+							return F.Indeterminate;
+						}
+						return F.C1;
+					}
+					if (n.isZero() || (n.isInteger() && n.isNegative())) {
+						return F.C0;
+					}
+					if (z.isZero()) {
+						if (engine.evalTrue(F.Greater(F.Re(a), F.C0))) {
+							return F.C0;
+						}
+						if (engine.evalTrue(F.Less(F.Re(a), F.C0))) {
+							return F.CComplexInfinity;
+						}
+						 } else if (z.isOne()) {
+						 if (engine.evalTrue(F.Greater(F.Re(n), F.C0))) {
+						 return F.C1;
+						 }
+					}
 					if (engine.isDoubleMode()) {
 						double zn = engine.evalDouble(z);
 						double an = engine.evalDouble(a);

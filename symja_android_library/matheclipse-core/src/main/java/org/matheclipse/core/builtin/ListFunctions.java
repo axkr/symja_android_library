@@ -300,7 +300,7 @@ public final class ListFunctions {
 
 		public TableGenerator(final List<? extends IIterator<IExpr>> iterList, final IAST prototypeList,
 				final IVariablesFunction function) {
-			this(iterList, prototypeList, function, (IExpr) null);
+			this(iterList, prototypeList, function, F.NIL);
 		}
 
 		public TableGenerator(final List<? extends IIterator<IExpr>> iterList, final IAST prototypeList,
@@ -811,12 +811,12 @@ public final class ListFunctions {
 					final List<ArrayIterator> iterList = new ArrayList<ArrayIterator>();
 					if (ast.size() >= 4) {
 						if (ast.arg2().isInteger() && ast.arg3().isInteger()) {
-							indx1 = Validate.checkIntType(ast, 3);
+							indx1 = Validate.checkIntType(ast, 3, Integer.MIN_VALUE + 1);
 							indx2 = Validate.checkIntType(ast, 2);
 							iterList.add(new ArrayIterator(indx1, indx2));
 						} else if (ast.arg2().isList() && ast.arg3().isInteger()) {
 							final IAST dimIter = (IAST) ast.arg2(); // dimensions
-							indx1 = Validate.checkIntType(ast, 3);
+							indx1 = Validate.checkIntType(ast, 3, Integer.MIN_VALUE + 1);
 							for (int i = 1; i < dimIter.size(); i++) {
 								indx2 = Validate.checkIntType(dimIter, i);
 								iterList.add(new ArrayIterator(indx1, indx2));
@@ -854,6 +854,8 @@ public final class ListFunctions {
 					}
 
 				}
+			} catch (final ValidateException ve) {
+				return engine.printMessage(ve.getMessage(ast.topHead()));
 			} catch (final ClassCastException e) {
 				// the iterators are generated only from IASTs
 			} catch (final ArithmeticException e) {
@@ -1852,7 +1854,6 @@ public final class ListFunctions {
 								maximumRemoveOperations = Validate.checkIntType(ast, 4);
 							}
 						}
-						
 
 						DeleteCasesPatternMatcherFunctor cpmf = new DeleteCasesPatternMatcherFunctor(matcher);
 						VisitorRemoveLevelSpecification level = new VisitorRemoveLevelSpecification(cpmf, arg3,
@@ -1869,7 +1870,7 @@ public final class ListFunctions {
 						return engine.printMessage(ve.getMessage(ast.topHead()));
 					}
 
- 					return arg1RemoveClone;
+					return arg1RemoveClone;
 				} else {
 					return deleteCases((IAST) arg1, matcher);
 				}
@@ -3995,16 +3996,20 @@ public final class ListFunctions {
 			if (ast.arg1().isAST(F.List, 1)) {
 				return ast.arg1();
 			}
-			if (ast.isAST1() && ast.arg1().isReal()) {
-				int size = ast.arg1().toIntDefault(Integer.MIN_VALUE);
-				if (size != Integer.MIN_VALUE) {
-					return range(size);
+			try {
+				if (ast.isAST1() && ast.arg1().isReal()) {
+					int size = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+					if (size != Integer.MIN_VALUE) {
+						return range(size);
+					}
+					engine.printMessage("Range: argument " + ast.arg1()
+							+ " is greater than Javas Integer.MAX_VALUE or no integer number.");
+					return F.NIL;
 				}
-				engine.printMessage("Range: argument " + ast.arg1()
-						+ " is greater than Javas Integer.MAX_VALUE or no integer number.");
-				return F.NIL;
+				return evaluateTable(ast, List(), engine);
+			} catch (final ValidateException ve) {
+				return engine.printMessage(ve.getMessage(ast.topHead()));
 			}
-			return evaluateTable(ast, List(), engine);
 		}
 
 		/**
@@ -4043,7 +4048,7 @@ public final class ListFunctions {
 					iterList = new ArrayList<IIterator<IExpr>>();
 					iterList.add(Iterator.create(ast, null, engine));
 
-					final TableGenerator generator = new TableGenerator(iterList, resultList, new UnaryRangeFunction());
+					final TableGenerator generator = new TableGenerator(iterList, resultList, new UnaryRangeFunction(), F.CEmptyList);
 					return generator.table();
 				}
 			} catch (final ArithmeticException e) {

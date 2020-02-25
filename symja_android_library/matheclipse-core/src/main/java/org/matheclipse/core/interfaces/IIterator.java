@@ -105,13 +105,16 @@ public interface IIterator<E> extends Iterator<E> {
 
 	default boolean isInvalidNumeric() {
 		if (!isSetIterator()) {
-			if (getStep().isNonNegativeResult()) {
-				if (F.Negative.ofQ(F.Subtract(getUpperLimit(), getLowerLimit()))) {
-					return true;
-				}
-			} else if (getStep().isNegativeResult()) {
-				if (F.Negative.ofQ(F.Subtract(getLowerLimit(), getUpperLimit()))) {
-					return true;
+			IExpr step = getStep();
+			if (step != null) {
+				if (step.isNonNegativeResult()) {
+					if (F.Negative.ofQ(F.Subtract(getUpperLimit(), getLowerLimit()))) {
+						return true;
+					}
+				} else if (step.isNegativeResult()) {
+					if (F.Negative.ofQ(F.Subtract(getLowerLimit(), getUpperLimit()))) {
+						return true;
+					}
 				}
 			}
 		}

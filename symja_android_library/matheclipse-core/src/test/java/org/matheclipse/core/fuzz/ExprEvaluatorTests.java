@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
@@ -13,6 +14,7 @@ import org.matheclipse.core.eval.exception.FlowControlException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -63,6 +65,8 @@ public class ExprEvaluatorTests extends TestCase {
 		IExpr temp;
 		int i = 0;
 
+		OutputFormFactory fInputFactory = OutputFormFactory.get(true, false, 5, 7);
+		fInputFactory.setQuotes(true);
 		AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
 		IAST seedList = F.List(//
 				F.C0, //
@@ -72,7 +76,7 @@ public class ExprEvaluatorTests extends TestCase {
 				F.C1D2, //
 				F.CNI, //
 				F.CI, //
-				F.ZZ(Integer.MIN_VALUE), //
+//				F.ZZ(Integer.MIN_VALUE), //
 				F.CInfinity, //
 				F.CNInfinity, //
 				F.Indeterminate, //
@@ -91,32 +95,33 @@ public class ExprEvaluatorTests extends TestCase {
 
 					engine.init();
 					ExprEvaluator eval = new ExprEvaluator(engine, true, 20);
+					final String mutantStr = fInputFactory.toString(mutant);
 					try {
- 					    System.out.println(">> "+mutant.toString());
-						eval.eval(mutant);
+						System.out.println(">> " + mutantStr);
+						eval.eval(mutantStr);
 					} catch (FlowControlException mex) {
-						System.out.println(mutant.toString());
+						System.out.println(mutantStr);
 						mex.printStackTrace();
 						System.out.println();
 					} catch (IterationLimitExceeded mex) {
-						System.out.println(mutant.toString());
+						System.out.println(mutantStr);
 						mex.printStackTrace();
 						System.out.println();
 					} catch (MathException mex) {
-						System.out.println(mutant.toString());
+						System.out.println(mutantStr);
 						mex.printStackTrace();
 						System.out.println();
 						fail();
 					} catch (RuntimeException rex) {
-						System.out.println(mutant.toString());
+						System.out.println(mutantStr);
 						rex.printStackTrace();
 						fail();
 					} catch (Error rex) {
-						System.out.println(mutant.toString());
+						System.out.println(mutantStr);
 						if (rex instanceof StackOverflowError) {
 							System.err.println("java.lang.StackOverflowError");
 						} else {
-							System.out.println(mutant.toString());
+							System.out.println(mutantStr);
 							rex.printStackTrace();
 						}
 					}
@@ -134,6 +139,10 @@ public class ExprEvaluatorTests extends TestCase {
 	}
 
 	public void testFuzz001() {
+		Config.MAX_AST_SIZE = 100;
+		Config.MAX_BIT_COUNT = 1000;
+		Config.MAX_OUTPUT_SIZE = 10000; 
+		
 		EvalEngine engine = new EvalEngine(true);
 		engine.setRecursionLimit(256);
 		engine.setIterationLimit(1000);

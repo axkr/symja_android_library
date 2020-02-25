@@ -938,6 +938,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArray() {
+
+		// TODO return 0
+		// check("Array(f,0,1,Plus)", //
+		// "0");
+
+		check("Array(Cos(#1/4)&,12,-1)", //
+				"{Cos(1/4),1,Cos(1/4),Cos(1/2),Cos(3/4),Cos(1),Cos(5/4),Cos(3/2),Cos(7/4),Cos(2),Cos(\n"
+						+ "9/4),Cos(5/2)}");
+		check("Array(Cos(#1/4)&,12)", //
+				"{Cos(1/4),Cos(1/2),Cos(3/4),Cos(1),Cos(5/4),Cos(3/2),Cos(7/4),Cos(2),Cos(9/4),Cos(\n"
+						+ "5/2),Cos(11/4),Cos(3)}");
 		check("Array(Cos(#/4)&, 12, 4)", //
 				"{Cos(1),Cos(5/4),Cos(3/2),Cos(7/4),Cos(2),Cos(9/4),Cos(5/2),Cos(11/4),Cos(3),Cos(\n"
 						+ "13/4),Cos(7/2),Cos(15/4)}");
@@ -1628,6 +1639,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBetaRegularized() {
+		check("BetaRegularized(2,-2147483648,17)", //
+				"1");
+		check("BetaRegularized(0,1+I,b)", //
+				"0");
+		check("BetaRegularized(0,-1+I,b)", //
+				"ComplexInfinity");
+		check("BetaRegularized(z,a,-10)", //
+				"0");
+		check("BetaRegularized(1,a,42)", //
+				"1");
+
 		check("BetaRegularized(1.0000001,1,1)", //
 				"BetaRegularized(1.0,1.0,1.0)");
 		check("BetaRegularized(-0.000000001,1,1)", //
@@ -5035,6 +5057,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDo() {
+		check("Do(Print(i0),{})", //
+				"Do(Print(i0),{})");
+
 		check("g(x_) := (Do(If(x < 0, Return(0)), {i, {2, 1, 0, -1}}); x)", //
 				"");
 		check("g(-1)", //
@@ -5061,6 +5086,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDot() {
+		check("{}.{{}}", //
+				"{}.\n" + //
+						"{{}}");
+		check("{{}}.{{}}", //
+				"{{}}.\n" + //
+						"{{}}");
+		check("{}.{ }", //
+				"0");
+		check("{}.{4,5.0,6}", //
+				"{}.{4,5.0,6}");
 		check("0.17583681.41125407852.0 // HoldForm // FullForm", //
 				"HoldForm(Times(Times(0.17583681, 0.41125407852), 0.0))");
 
@@ -9306,6 +9341,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInner() {
+		check("Inner(Times,{},{ })", //
+				"0");
+		check("Inner(f,{},{ })", //
+				"0");
+		check("Inner(Times,{},{x,y})", //
+				"Inner(Times,{},{x,y})");
 		check("Inner(Times, {a, b}, {x, y}, Plus)", //
 				"a*x+b*y");
 		check("Inner(Times, {a, b}, {x, y})", //
@@ -17154,6 +17195,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRange() {
+		check("Range(1,-1 )", //
+				"{}");
+		check("Range(1,-1,1/2)", //
+				"{}");
+		check("Range(1,1+1/2,0)", //
+				"Range(1,1/2+1,0)");
 		check("Range(1,1+1/2,1/2)", //
 				"{1,3/2}");
 		check("Range(1,1.25,0.1)", //
@@ -19727,7 +19774,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{}");
 		check("Solve({50*y+2*z==20, -6*x-12*y+20*z==8, 6*x+62*y-18*z==13},{x,y,z}) // N", //
 				"{}");
-		
+
 		check("-(-I*Pi-f(a))/b", //
 				"(I*Pi+f(a))/b");
 		check("Solve(3*x^x==7,x)", //
