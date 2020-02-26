@@ -215,14 +215,13 @@ public final class Validate {
 		throw new ArgumentTypeException(str);
 	}
 
-	public static int checkNonNegativeIntType(IAST ast, int pos ) {
+	public static int checkNonNegativeIntType(IAST ast, int pos) {
 		if (ast.get(pos) instanceof IntegerSym) {
 			// IntegerSym always fits into an int number
 			int result = ((IntegerSym) ast.get(pos)).toInt();
 			if (0 > result) {
 				// Non-negative machine-sized integer expected at position `2` in `1`.
-				String str = IOFunctions.getMessage("intnm", F.List(ast, F.ZZ(pos)),
-						EvalEngine.get());
+				String str = IOFunctions.getMessage("intnm", F.List(ast, F.ZZ(pos)), EvalEngine.get());
 				throw new ArgumentTypeException(str);
 			}
 			return result;
@@ -231,8 +230,7 @@ public final class Validate {
 			int result = ast.get(pos).toIntDefault();
 			if (result == Integer.MIN_VALUE || 0 > result) {
 				// Non-negative machine-sized integer expected at position `2` in `1`.
-				String str = IOFunctions.getMessage("intnm", F.List(ast, F.ZZ(pos)),
-						EvalEngine.get());
+				String str = IOFunctions.getMessage("intnm", F.List(ast, F.ZZ(pos)), EvalEngine.get());
 				throw new ArgumentTypeException(str);
 			}
 			return result;
@@ -241,6 +239,7 @@ public final class Validate {
 		String str = IOFunctions.getMessage("intnm", F.List(ast, F.ZZ(pos)), EvalEngine.get());
 		throw new ArgumentTypeException(str);
 	}
+
 	/**
 	 * Check the expression, if it's a Java {@code int} value in the range [0 , Integer.MAX_VALUE]
 	 * 
@@ -469,7 +468,7 @@ public final class Validate {
 		if (ast.get(position).isList()) {
 			vars = (IAST) ast.get(position);
 			for (int i = 1; i < vars.size(); i++) {
-				temp = Validate.checkSymbolType(vars, i, engine);
+				temp = Validate.checkIsVariable(vars, i, engine);
 				if (!temp.isPresent()) {
 					return F.NIL;
 				}
@@ -550,11 +549,15 @@ public final class Validate {
 	 * @return <code>F.NIL</code> if the argument is not a variable
 	 */
 	public static IExpr checkIsVariable(IAST ast, int position, EvalEngine engine) {
-		if (ast.get(position).isSymbol() && !ast.get(position).isConstantAttribute()) {
-			return ast.get(position);
+		IExpr arg = ast.get(position);
+		if (arg.isSymbol() && !arg.isConstantAttribute()) {
+			ISymbol sym = (ISymbol) arg;
+			if (sym != F.Indeterminate) {
+				return arg;
+			}
 		}
 		// `1` is not a valid variable.
-		return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(ast.get(position)), engine);
+		return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(arg), engine);
 	}
 
 	/**

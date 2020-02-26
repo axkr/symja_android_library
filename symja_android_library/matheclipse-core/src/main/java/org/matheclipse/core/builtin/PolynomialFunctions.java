@@ -335,7 +335,7 @@ public class PolynomialFunctions {
 				varList = eVar.getArrayList();
 				symbolList = eVar.getVarList();
 			} else {
-				symbolList = Validate.checkSymbolOrSymbolList(ast, 2, engine);
+				symbolList = Validate.checkIsVariableOrVariableList(ast, 2, engine);
 				if (!symbolList.isPresent()) {
 					return F.NIL;
 				}
@@ -1155,7 +1155,7 @@ public class PolynomialFunctions {
 				}
 				variables = eVar.getVarList();
 			} else {
-				variables = Validate.checkSymbolOrSymbolList(ast, 2, engine);
+				variables = Validate.checkIsVariableOrVariableList(ast, 2, engine);
 				if (!variables.isPresent()) {
 					return F.NIL;
 				}
@@ -2042,7 +2042,7 @@ public class PolynomialFunctions {
 				varList = eVar.getArrayList();
 				symbolList = eVar.getVarList();
 			} else {
-				symbolList = Validate.checkSymbolOrSymbolList(ast, 2, engine);
+				symbolList = Validate.checkIsVariableOrVariableList(ast, 2, engine);
 				if (!symbolList.isPresent()) {
 					return F.NIL;
 				}

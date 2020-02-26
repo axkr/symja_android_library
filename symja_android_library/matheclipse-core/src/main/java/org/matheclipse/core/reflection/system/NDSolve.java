@@ -76,7 +76,7 @@ public class NDSolve extends AbstractFunctionEvaluator {
 		}
 		if (ast.arg3().isAST(F.List, 4)) {
 			try {
-				IAST uFunctionSymbols = Validate.checkSymbolOrSymbolList(ast, 2, engine);
+				IAST uFunctionSymbols = Validate.checkIsVariableOrVariableList(ast, 2, engine);
 				if (!uFunctionSymbols.isPresent()) {
 					return F.NIL;
 				}

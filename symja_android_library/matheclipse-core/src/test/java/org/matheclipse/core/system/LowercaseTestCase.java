@@ -17201,7 +17201,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"a");
 		check("Range(a,b,Infinity)", //
 				"a");
-		
+
 		check("Range(1,1.25,0)", //
 				"Range(1,1.25,0)");
 		check("Range(1,-1 )", //
@@ -19767,6 +19767,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("Solve(x^3 == 1 - I, x)", //
 		// "{{x->-(-1+I)^(1/3)},{x->(-1+I)^(1/3)},{x->-(-1)^(2/3)*(-1+I)^(1/3)}}");
 
+		check("Solve(1-1/10*i*1==0,Indeterminate,Integers)", //
+				"Solve(i==10,Indeterminate,Integers)");
 		// https://github.com/tranleduy2000/ncalc/issues/79
 		// 0x + 50y + 2z = 20
 		// -6x - 12y + 20z = 8
