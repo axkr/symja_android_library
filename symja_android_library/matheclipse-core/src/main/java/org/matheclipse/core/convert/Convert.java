@@ -80,7 +80,7 @@ public class Convert {
 	 */
 	public static FieldMatrix<IExpr> list2Matrix(final IAST listMatrix)
 			throws ClassCastException, IndexOutOfBoundsException {
-		if (listMatrix == null || listMatrix.size() == 1) {
+		if (listMatrix == null || listMatrix.isEmpty()) {
 			return null;
 		}
 		if (!listMatrix.isList()) {

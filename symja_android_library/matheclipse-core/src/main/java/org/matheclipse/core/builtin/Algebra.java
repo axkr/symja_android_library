@@ -4531,7 +4531,7 @@ public class Algebra {
 						logPlus.append(a2);
 					}
 					if (evaled) {
-						if (logPlus.size() == 1) {
+						if (logPlus.isEmpty()) {
 							return Log.of(a1);
 						} else {
 							logPlus.append(Log(a1));
@@ -5221,7 +5221,7 @@ public class Algebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			return VariablesSet.getVariables(ast.arg1());
+			return VariablesSet.getAlgebraicVariables(ast.arg1());
 		}
 
 		public int[] expectedArgSize() {

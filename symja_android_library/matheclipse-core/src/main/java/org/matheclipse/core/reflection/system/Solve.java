@@ -16,6 +16,7 @@ import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.builtin.PolynomialFunctions;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.CreamConvert;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
@@ -953,8 +954,14 @@ public class Solve extends AbstractFunctionEvaluator {
 	public static IExpr of(final IAST ast, boolean numeric, EvalEngine engine) {
 		boolean[] isNumeric = new boolean[] { false };
 		try {
+			if (ast.arg1().isAST(F.List,1)) {
+				return F.List(F.CEmptyList);
+			}
 			IAST variables = Validate.checkIsVariableOrVariableList(ast, 2, engine);
 			if (variables.isPresent()) {
+				if (variables.isEmpty()) {
+					variables = VariablesSet.getVariables(ast.arg1());
+				}
 
 				ISymbol domain = F.Complexes;
 				if (ast.isAST3()) {
@@ -966,21 +973,25 @@ public class Solve extends AbstractFunctionEvaluator {
 						return BooleanFunctions.solveInstances(ast.arg1(), variables, Integer.MAX_VALUE);
 					}
 					if (domain.equals(F.Integers)) {
-						IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast, 1);
-						try {
-							// call cream solver
-							CreamConvert converter = new CreamConvert();
-							IAST resultList = converter.integerSolve(equationsAndInequations, variables);
-							EvalAttributes.sort((IASTMutable) resultList);
-							return resultList;
-						} catch (LimitException le) {
-							throw le;
-						} catch (RuntimeException rex) {
-							if (Config.SHOW_STACKTRACE) {
-								rex.printStackTrace();
+						if (!variables.isEmpty()) {
+							IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast, 1);
+							try {
+								// call cream solver
+								CreamConvert converter = new CreamConvert();
+								IAST resultList = converter.integerSolve(equationsAndInequations, variables);
+								EvalAttributes.sort((IASTMutable) resultList);
+								return resultList;
+							} catch (LimitException le) {
+								throw le;
+							} catch (RuntimeException rex) {
+								if (Config.SHOW_STACKTRACE) {
+									rex.printStackTrace();
+								}
+								return engine
+										.printMessage("Solve: " + "Integer solution not found: " + rex.getMessage());
 							}
-							return engine.printMessage("Solve: " + "Integer solution not found: " + rex.getMessage());
 						}
+						return F.NIL;
 					}
 					if (!domain.equals(F.Reals) && !domain.equals(F.Complexes)) {
 						throw new WrongArgumentType(ast, ast.arg3(), 3, "Domain definition expected!");
@@ -997,7 +1008,9 @@ public class Solve extends AbstractFunctionEvaluator {
 				IExpr result = solveRecursive(termsEqualZeroList, lists[1], numericFlag, variables, engine);
 				return checkDomain(result, domain);
 			}
-		} catch (LimitException le) {
+		} catch (
+
+		LimitException le) {
 			throw le;
 		} catch (ValidateException ve) {
 			return engine.printMessage(ve.getMessage(F.Solve));

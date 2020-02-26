@@ -1435,7 +1435,7 @@ public final class LinearAlgebra {
 					return engine.printMessage(ast.topHead() + ": Error in matrix");
 				} else if (arg1.isVector() != (-1)) {
 					list = (IAST) arg1;
-					if (list.size() == 1) {
+					if (list.isEmpty()) {
 						if (arg2.isVector() == 0) {
 							return F.C0;
 						}
@@ -2862,7 +2862,7 @@ public final class LinearAlgebra {
 				if (!(mnm instanceof IASTAppendable)) {
 					mnm = mnm.copyAppendable();
 				}
-				while (qu.size() == 1) {
+				while (qu.isEmpty()) {
 					((IASTAppendable) mnm).append(engine.evaluate(F.Flatten(F.MatrixPower(matrix, F.ZZ(n)))));
 					qu = (IAST) F.NullSpace.of(engine, F.Transpose(mnm));
 					n++;

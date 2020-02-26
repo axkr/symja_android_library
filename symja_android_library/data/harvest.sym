@@ -8530,12 +8530,6 @@ Head(f(x)[y][z])
 Head({3, 4, 5})
 
 
-FixedPoint(Head, f(x)[y][z])
-
-
-FixedPoint(Head, {3, 4, 5})
-
-
 Head(a * b)
 
 

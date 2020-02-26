@@ -635,7 +635,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				if (!matchExpr(lhsPatternAST.head(), lhsEvalAST.head(), engine)) {
 					return false;
 				}
-				if (lhsPatternAST.size() == 1 && lhsEvalAST.size() == 1) {
+				if (lhsPatternAST.isEmpty() && lhsEvalAST.isEmpty()) {
 					return true;
 				}
 				final int lastPosition = lhsPatternAST.argSize();
@@ -797,7 +797,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 							}
 							matched = stackMatcher.matchRest();
 							return matched;
-						} else if (lhsPatternAST.size() == 1) {
+						} else if (lhsPatternAST.isEmpty()) {
 							matched = stackMatcher.matchRest();
 							return matched;
 						}
@@ -1155,7 +1155,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 						matched = matchExpr(lhsPatternAST.arg1(), lhsEvalAST, engine, stackMatcher);
 						return matched;
 					}
-					if (lhsPatternAST.size() == 1 && lhsEvalAST.size() > 1) {
+					if (lhsPatternAST.isEmpty() && lhsEvalAST.size() > 1) {
 						matched = false;
 						return matched;
 					}
@@ -1245,7 +1245,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			if (removed == null) {
 				return false;
 			}
-			if (removed[0].size() == 1) {
+			if (removed[0].isEmpty()) {
 				return false;
 			}
 			IAST lhsPatternAST = removed[0];

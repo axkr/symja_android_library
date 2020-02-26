@@ -8964,10 +8964,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHornerForm() {
-		
+
 		check("Horner(Infinity)", //
 				"Infinity");
-		
+
 		check("HornerForm(11*x^3 - 4*x^2 + 7*x + 2)", //
 				"2+x*(7+x*(-4+11*x))");
 		check("HornerForm(a+b*x+c*x^2,x)", //
@@ -19771,6 +19771,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("Solve(x^3 == 1 - I, x)", //
 		// "{{x->-(-1+I)^(1/3)},{x->(-1+I)^(1/3)},{x->-(-1)^(2/3)*(-1+I)^(1/3)}}");
 
+		check("Solve({},{x,y},Integers)", //
+				"{{}}");
+		check("Solve(1-1/10*i*1==0,{},Integers)", //
+				"{{i->10}}");
 		check("Solve(1-1/10*i*1==0,Indeterminate,Integers)", //
 				"Solve(i==10,Indeterminate,Integers)");
 		// https://github.com/tranleduy2000/ncalc/issues/79
@@ -20444,6 +20448,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSpan() {
+		check("Infinity[[2;;4]]", //
+				"Infinity[[2;;4]]");
+
 		check("FullForm(1;;4;;2)", //
 				"Span(1, 4, 2)");
 

@@ -128,7 +128,7 @@ public class TensorFunctions {
 				IAST list = (IAST) ast.arg1();
 				IAST dims = (IAST) ast.arg2();
 				if (dims.size() == 1) {
-					if (list.size() == 1) {
+					if (list.isEmpty()) {
 						return F.C0;
 					}
 					if (list.size() > 1) {

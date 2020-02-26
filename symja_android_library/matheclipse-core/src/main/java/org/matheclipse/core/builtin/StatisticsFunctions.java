@@ -5235,7 +5235,7 @@ public class StatisticsFunctions {
 					IExpr r = list.arg2();
 					return new IExpr[] { l, r };
 				}
-			} else if (dist.size() == 1) {
+			} else if (dist.isAST0()) {
 				return new IExpr[] { F.C0, F.C1 };
 			}
 			return null;

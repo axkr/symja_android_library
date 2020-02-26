@@ -2373,7 +2373,7 @@ public final class ListFunctions {
 			if (temp.isAST()) {
 				IAST list = (IAST) temp;
 				IExpr arg1 = engine.evaluate(ast.arg1());
-				if (list.size() == 1 || list.size() == 2) {
+				if (list.isEmpty() || list.size() == 2) {
 					return list;
 				}
 				final IASTAppendable resultList = F.ast(list.head(), list.size(), false);
@@ -2391,7 +2391,7 @@ public final class ListFunctions {
 				final IAST list = (IAST) temp;
 				IExpr arg1 = engine.evaluate(ast.arg1());
 				IExpr arg2 = engine.evaluate(ast.arg2());
-				if (list.size() == 1) {
+				if (list.isEmpty()) {
 					return F.unaryAST1(list.head(), arg2);
 				}
 				final IASTAppendable resultList = F.ast(list.head(), list.size(), false);
@@ -2684,7 +2684,7 @@ public final class ListFunctions {
 		 * @return
 		 */
 		public static IAST intersection(IAST ast1, IAST ast2, final IASTAppendable result) {
-			if (ast1.size() == 1 || ast2.size() == 1) {
+			if (ast1.isEmpty() || ast2.isEmpty()) {
 				return F.CEmptyList;
 			}
 			Set<IExpr> set1 = new HashSet<IExpr>(ast1.size() + ast2.size() / 10);

@@ -21,7 +21,7 @@ public class SolveSO43024172 {
 			System.out.println(expr.toString());
 			
 			// determine the variables used in the expression
-			IAST variableList = VariablesSet.getVariables(expr);
+			IAST variableList = VariablesSet.getAlgebraicVariables(expr);
 			System.out.println(variableList.toString());
 			
 			IExpr a = util.eval("a");

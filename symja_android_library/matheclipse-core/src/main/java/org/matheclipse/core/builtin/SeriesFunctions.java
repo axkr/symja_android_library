@@ -1193,12 +1193,12 @@ public class SeriesFunctions {
 			// IInteger ni = F.ZZ(n + Math.abs(shift));
 			int ni = n + Math.abs(shift);
 			ASTSeriesData series;
-			if (timesAST.size() == 1) {
+			if (timesAST.isEmpty()) {
 				ASTSeriesData temp = seriesFromMap(x, x0, n, coefficientMap, rest);
-				if (temp != null && rest.size() == 1) {
+				if (temp != null && rest.isEmpty()) {
 					return temp;
 				}
-				if (rest.size() == 1) {
+				if (rest.isEmpty()) {
 					return null;
 				}
 				timesAST = rest;
@@ -1251,7 +1251,7 @@ public class SeriesFunctions {
 
 			ASTSeriesData temp = polynomialSeries(plusAST, x, x0, n, coefficientMap, rest);
 			if (temp != null) {
-				if (rest.size() == 1) {
+				if (rest.isEmpty()) {
 					return temp;
 				}
 			}

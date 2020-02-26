@@ -907,7 +907,7 @@ public final class BooleanFunctions {
 							vars.append(temp);
 						}
 					}
-					if (rest.size() == 1) {
+					if (rest.isEmpty()) {
 						vars = F.Or();
 					} else {
 						formula = lf.expr2BooleanFunction(rest);
@@ -2184,7 +2184,7 @@ public final class BooleanFunctions {
 						lastOp = op;
 					}
 				}
-				if (res.size() == 1) {
+				if (res.isEmpty()) {
 					return F.True;
 				}
 				if (res.size() == 4) {
@@ -2467,7 +2467,7 @@ public final class BooleanFunctions {
 				evaled = flattenedList;
 			}
 
-			if (list.size() == 1) {
+			if (list.isEmpty()) {
 				return F.CNInfinity;
 			}
 			IExpr max1;
@@ -2604,7 +2604,7 @@ public final class BooleanFunctions {
 				evaled = flattenedList;
 			}
 
-			if (list.size() == 1) {
+			if (list.isEmpty()) {
 				return F.CInfinity;
 			}
 			IExpr min1;
@@ -4050,7 +4050,7 @@ public final class BooleanFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() == 1) {
+			if (ast.isEmpty()) {
 				return F.False;
 			}
 			if (ast.size() == 2) {

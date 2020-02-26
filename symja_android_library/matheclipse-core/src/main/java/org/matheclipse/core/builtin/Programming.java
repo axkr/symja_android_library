@@ -3217,17 +3217,27 @@ public final class Programming {
 		return IOFunctions.printMessage(F.Part, "pkspec1", F.List(arg2), engine);
 	}
 
-	private static IExpr spanPart(final IAST ast, int pos, IAST arg1, final IExpr arg2, int start, int last, int step,
-			int p1, EvalEngine engine) {
+	private static IExpr spanPart(final IAST ast, int pos, final IAST arg1, final IExpr arg2, int start, int last,
+			int step, int p1, EvalEngine engine) {
 		IASTAppendable result = arg1.copyHead();
-
+		final int size = arg1.size();
 		if (step < 0 && start >= last) {
 			for (int i = start; i >= last; i += step) {
 				if (p1 >= ast.size()) {
+					if (i >= size) {
+						// Cannot take positions `1` through `2` in `3`.
+						return IOFunctions.printMessage(F.Part, "take", F.List(F.ZZ(start), F.ZZ(last), arg1),
+								engine);
+					}
 					result.append(arg1.get(i));
 					continue;
 				}
 				if (arg1.get(i).isAST()) {
+					if (i >= size) {
+						// Cannot take positions `1` through `2` in `3`.
+						return IOFunctions.printMessage(F.Part, "take", F.List(F.ZZ(start), F.ZZ(last), arg1 ),
+								engine);
+					}
 					IExpr temp = part((IAST) arg1.get(i), ast, p1, engine);
 					if (temp.isPresent()) {
 						result.append(temp);
@@ -3240,11 +3250,20 @@ public final class Programming {
 		} else if (step > 0 && (last != 1 || start <= last)) {
 			for (int i = start; i <= last; i += step) {
 				if (p1 >= ast.size()) {
+					if (i >= size) {
+						// Cannot take positions `1` through `2` in `3`.
+						return IOFunctions.printMessage(F.Part, "take", F.List(F.ZZ(start), F.ZZ(last), arg1 ),
+								engine);
+					}
 					result.append(arg1.get(i));
 					continue;
 				}
 				if (arg1.get(i).isAST()) {
-
+					if (i >= size) {
+						// Cannot take positions `1` through `2` in `3`.
+						return IOFunctions.printMessage(F.Part, "take", F.List(F.ZZ(start), F.ZZ(last), arg1 ),
+								engine);
+					}
 					IExpr temp = part((IAST) arg1.get(i), ast, p1, engine);
 					if (temp.isPresent()) {
 						result.append(temp);
