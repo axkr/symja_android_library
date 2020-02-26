@@ -33,7 +33,7 @@
 	</scm>
 
 	<issueManagement>
-		<system>Github</system>
+		<system>Bitbucket</system>
 		<url>https://github.com/axkr/symja_android_library/issues</url>
 	</issueManagement>
 
@@ -190,12 +190,12 @@
 			<dependency>
 				<groupId>org.jgrapht</groupId>
 				<artifactId>jgrapht-core</artifactId>
-				<version>1.3.1</version>
+				<version>1.4.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jgrapht</groupId>
 				<artifactId>jgrapht-io</artifactId>
-				<version>1.3.1</version>
+				<version>1.4.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.gavaghan</groupId>
