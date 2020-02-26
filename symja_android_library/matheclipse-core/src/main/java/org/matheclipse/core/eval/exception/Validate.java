@@ -550,11 +550,8 @@ public final class Validate {
 	 */
 	public static IExpr checkIsVariable(IAST ast, int position, EvalEngine engine) {
 		IExpr arg = ast.get(position);
-		if (arg.isSymbol() && !arg.isConstantAttribute()) {
-			ISymbol sym = (ISymbol) arg;
-			if (sym != F.Indeterminate) {
-				return arg;
-			}
+		if (arg.isSymbol() && arg.isVariable()) {
+			return arg;
 		}
 		// `1` is not a valid variable.
 		return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(arg), engine);

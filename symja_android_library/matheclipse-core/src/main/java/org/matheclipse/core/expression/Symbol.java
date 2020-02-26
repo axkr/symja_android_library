@@ -678,7 +678,11 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isVariable() {
-		return (fAttributes & CONSTANT) != CONSTANT;
+		return ((fAttributes & CONSTANT) != CONSTANT) && //
+				(this != F.ComplexInfinity) && //
+				(this != F.Indeterminate) && //
+				(this != F.DirectedInfinity) && //
+				(this != F.Infinity);
 	}
 
 	/** {@inheritDoc} */

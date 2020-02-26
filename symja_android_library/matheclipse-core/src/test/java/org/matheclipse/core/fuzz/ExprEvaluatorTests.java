@@ -158,6 +158,8 @@ public class ExprEvaluatorTests extends TestCase {
 					int end = argSize[1];
 					if (end <= 10) {
 						int start = argSize[0];
+						generateASTs(sym, start, end, F.Infinity, engine);
+						generateASTs(sym, start, end, F.Indeterminate, engine);
 						generateASTs(sym, start, end, F.CN1, engine);
 						generateASTs(sym, start, end, F.C0, engine);
 						generateASTs(sym, start, end, F.Null, engine);
@@ -167,6 +169,8 @@ public class ExprEvaluatorTests extends TestCase {
 
 				}
 			}
+			generateASTs(sym, 1, 5, F.Infinity, engine);
+			generateASTs(sym, 1, 5, F.Indeterminate, engine);
 			generateASTs(sym, 1, 5, F.CN1, engine);
 			generateASTs(sym, 1, 5, F.C0, engine);
 			generateASTs(sym, 1, 5, F.Null, engine);

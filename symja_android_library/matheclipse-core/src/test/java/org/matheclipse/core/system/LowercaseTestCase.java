@@ -8964,6 +8964,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHornerForm() {
+		
+		check("Horner(Infinity)", //
+				"Infinity");
+		
 		check("HornerForm(11*x^3 - 4*x^2 + 7*x + 2)", //
 				"2+x*(7+x*(-4+11*x))");
 		check("HornerForm(a+b*x+c*x^2,x)", //

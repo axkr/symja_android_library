@@ -28,7 +28,6 @@ public class Horner extends AbstractFunctionEvaluator {
 	@Deprecated
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.arg1().isAST()) {
-
 			IAST poly = (IAST) ast.arg1();
 			VariablesSet eVar = new VariablesSet(ast.arg1());
 			IAST variables = eVar.getVarList();
