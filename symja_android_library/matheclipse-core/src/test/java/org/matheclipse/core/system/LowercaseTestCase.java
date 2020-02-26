@@ -17195,12 +17195,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRange() {
+		
+		check("Range(1,1.25,0)", //
+				"Range(1,1.25,0)");
 		check("Range(1,-1 )", //
 				"{}");
 		check("Range(1,-1,1/2)", //
 				"{}");
 		check("Range(1,1+1/2,0)", //
-				"Range(1,1/2+1,0)");
+				"Range(1,1+1/2,0)");
 		check("Range(1,1+1/2,1/2)", //
 				"{1,3/2}");
 		check("Range(1,1.25,0.1)", //

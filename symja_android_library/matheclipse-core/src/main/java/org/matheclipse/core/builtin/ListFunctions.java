@@ -4006,6 +4006,10 @@ public final class ListFunctions {
 							+ " is greater than Javas Integer.MAX_VALUE or no integer number.");
 					return F.NIL;
 				}
+				if (ast.isAST3() && ast.arg3().isZero()) {
+					// Infinite expression `1` encountered.
+					return IOFunctions.printMessage(ast.topHead(), "infy", F.List(F.Divide(ast.arg2(), F.C0)), engine);
+				}
 				return evaluateTable(ast, List(), engine);
 			} catch (final ValidateException ve) {
 				return engine.printMessage(ve.getMessage(ast.topHead()));
@@ -4048,7 +4052,8 @@ public final class ListFunctions {
 					iterList = new ArrayList<IIterator<IExpr>>();
 					iterList.add(Iterator.create(ast, null, engine));
 
-					final TableGenerator generator = new TableGenerator(iterList, resultList, new UnaryRangeFunction(), F.CEmptyList);
+					final TableGenerator generator = new TableGenerator(iterList, resultList, new UnaryRangeFunction(),
+							F.CEmptyList);
 					return generator.table();
 				}
 			} catch (final ArithmeticException e) {

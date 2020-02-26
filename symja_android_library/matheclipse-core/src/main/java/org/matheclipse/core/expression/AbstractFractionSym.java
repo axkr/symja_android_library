@@ -160,6 +160,7 @@ public abstract class AbstractFractionSym implements IFraction {
 	public static IFraction valueOf(long newnum, long newdenom) {
 		if (newdenom != 1) {
 			if (newdenom == 0) {
+				// Infinite expression `1` encountered.
 				String str = IOFunctions.getMessage("infy", F.List(F.Rational(F.ZZ(newnum), F.ZZ(newdenom))),
 						EvalEngine.get());
 				throw new ArgumentTypeException(str);
