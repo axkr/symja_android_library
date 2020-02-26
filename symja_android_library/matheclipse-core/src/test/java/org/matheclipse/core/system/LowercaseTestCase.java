@@ -17195,6 +17195,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRange() {
+		check("Range(a,b,ComplexInfinity)", //
+				"a");
+		check("Range(a,b,-Infinity)", //
+				"a");
+		check("Range(a,b,Infinity)", //
+				"a");
 		
 		check("Range(1,1.25,0)", //
 				"Range(1,1.25,0)");
@@ -17203,7 +17209,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Range(1,-1,1/2)", //
 				"{}");
 		check("Range(1,1+1/2,0)", //
-				"Range(1,1+1/2,0)");
+				"Range(1,3/2,0)");
 		check("Range(1,1+1/2,1/2)", //
 				"{1,3/2}");
 		check("Range(1,1.25,0.1)", //

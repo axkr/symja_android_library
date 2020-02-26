@@ -4006,9 +4006,15 @@ public final class ListFunctions {
 							+ " is greater than Javas Integer.MAX_VALUE or no integer number.");
 					return F.NIL;
 				}
-				if (ast.isAST3() && ast.arg3().isZero()) {
-					// Infinite expression `1` encountered.
-					return IOFunctions.printMessage(ast.topHead(), "infy", F.List(F.Divide(ast.arg2(), F.C0)), engine);
+				if (ast.isAST3()) {
+					if (ast.arg3().isZero()) {
+						// Infinite expression `1` encountered.
+						return IOFunctions.printMessage(ast.topHead(), "infy", F.List(F.Divide(ast.arg2(), F.C0)),
+								engine);
+					}
+					if (ast.arg3().isDirectedInfinity()) { 
+						return ast.arg1();
+					}
 				}
 				return evaluateTable(ast, List(), engine);
 			} catch (final ValidateException ve) {
@@ -4070,7 +4076,7 @@ public final class ListFunctions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
+			newSymbol.setAttributes(ISymbol.LISTABLE);
 		}
 	}
 
