@@ -618,6 +618,12 @@ public class Symbol implements ISymbol, Serializable {
 		return ring.isPolynomial(this);
 		// return true;
 	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean isPolynomialStruct() {
+		return isVariable();
+	}
 
 	/** {@inheritDoc} */
 	@Override

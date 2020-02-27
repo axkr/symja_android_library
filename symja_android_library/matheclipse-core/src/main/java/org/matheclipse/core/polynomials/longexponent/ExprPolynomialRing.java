@@ -478,6 +478,9 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 		}
 		if (exprPoly instanceof IAST) {
 			final IAST ast = (IAST) exprPoly;
+			if (ast.isDirectedInfinity()) {
+				throw new ClassCastException(exprPoly.toString());
+			}
 			ExprPolynomial result = getZero();
 			ExprPolynomial p = getZero();
 			if (ast.isPlus()) {

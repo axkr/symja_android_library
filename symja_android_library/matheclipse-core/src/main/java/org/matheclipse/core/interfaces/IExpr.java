@@ -2378,6 +2378,18 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isPolynomial(IAST variables) {
 		return isNumber();
 	}
+	
+	/**
+	 * <p>
+	 * Test if this expression has a polynomial structiure, i.e. no built-in function as head 
+	 * </p> 
+	 * 
+	 * @return <code>true</code> if this expression has a polynomial structure; <code>false</code>otherwise
+	 * 
+	 */
+	default boolean isPolynomialStruct( ) {
+		return isNumber();
+	}
 
 	/**
 	 * <p>

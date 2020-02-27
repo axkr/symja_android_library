@@ -45,6 +45,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -1144,7 +1145,7 @@ public class Algebra {
 				if (ast.isAST2()) {
 					final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine, true);
 					if (options.isInvalidPosition()) {
-						return IOFunctions.printMessage(F.Denominator, "nonopt",
+						return IOFunctions.printMessage(ast.topHead(), "nonopt",
 								F.List(ast.arg2(), F.ZZ(options.getInvalidPosition() - 1), ast), engine);
 					}
 					IExpr option = options.getOption(F.Trig);
@@ -2673,17 +2674,25 @@ public class Algebra {
 	private static class PolynomialExtendedGCD extends AbstractFunctionEvaluator {
 
 		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			IExpr x = ast.arg3();// Validate.checkSymbolType(ast, 3);
+		public IExpr evaluate(final IAST ast, EvalEngine engine) { 
+			IAST variables = VariablesSet.getAlgebraicVariables(ast.arg3());
+			if (variables.size() != 2) {
+				// `1` is not a valid variable.
+				return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(ast.arg3()), engine);
+			}
 			IExpr expr1 = F.evalExpandAll(ast.arg1(), engine);
 			IExpr expr2 = F.evalExpandAll(ast.arg2(), engine);
-			VariablesSet eVar = new VariablesSet();
-			eVar.add(x);
-
-			// ASTRange r = new ASTRange(eVar.getVarList(), 1);
+			if (!expr1.isPolynomialStruct() ) {
+				// `1` is not a polynomial.
+				return IOFunctions.printMessage(ast.topHead(), "poly", F.List(expr1), engine);
+			}
+			if (!expr2.isPolynomialStruct() ) {
+				// `1` is not a polynomial.
+				return IOFunctions.printMessage(ast.topHead(), "poly", F.List(expr2), engine);
+			}
 			if (ast.size() == 5) {
 				// List<IExpr> varList = r;
-				List<IExpr> varList = eVar.getVarList().copyTo();
+				List<IExpr> varList = variables.copyTo();
 				final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
 				IExpr option = options.getOption(F.Modulus);
 				if (option.isInteger() && !option.isZero()) {
@@ -2711,7 +2720,7 @@ public class Algebra {
 			}
 
 			try {
-				List<IExpr> varList = eVar.getVarList().copyTo();
+				List<IExpr> varList = variables.copyTo();
 				JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
 				GenPolynomial<BigRational> poly1 = jas.expr2JAS(expr1, false);
 				GenPolynomial<BigRational> poly2 = jas.expr2JAS(expr2, false);
@@ -2725,7 +2734,7 @@ public class Algebra {
 				return list;
 			} catch (JASConversionException e0) {
 				try {
-					ExprPolynomialRing ring = new ExprPolynomialRing(eVar.getVarList());
+					ExprPolynomialRing ring = new ExprPolynomialRing(variables);
 					ExprPolynomial poly1 = ring.create(expr1);
 					ExprPolynomial poly2 = ring.create(expr2);
 					ExprPolynomial[] result = poly1.egcd(poly2);
@@ -2744,8 +2753,8 @@ public class Algebra {
 						rex.printStackTrace();
 					}
 				}
-				if (!expr1.isPolynomial(eVar.getVarList())) {
-					if (!expr2.isPolynomial(eVar.getVarList())) {
+				if (!expr1.isPolynomial(variables)) {
+					if (!expr2.isPolynomial(variables)) {
 						IASTAppendable list = F.ListAlloc(2);
 						list.append(expr2);
 						IASTAppendable subList = F.ListAlloc(2);
@@ -2754,7 +2763,7 @@ public class Algebra {
 						list.append(subList);
 						return list;
 					}
-					if (expr2.isFree(eVar.getVarList())) {
+					if (expr2.isFree(variables)) {
 						IASTAppendable list = F.ListAlloc(2);
 						list.append(F.C1);
 						IASTAppendable subList = F.ListAlloc(2);
@@ -2765,6 +2774,7 @@ public class Algebra {
 					}
 				}
 			}
+
 			return F.NIL;
 		}
 

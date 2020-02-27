@@ -676,6 +676,7 @@ public class IOFunctions {
 			"Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule or a list of rules.", //
 			"nord", "Invalid comparison with `1` attempted.", //
 			"normal", "Nonatomic expression expected at position `1` in `2`.",
+			"nquan", "The Quantile specification `1` should be a number between `2` and `3`.",
 			"nvld", "The expression `1` is not a valid interval.", //
 			"notunicode",
 			"A character unicode, which should be a non-negative integer less than 1114112, is expected at position `2` in `1`.", //
@@ -689,11 +690,13 @@ public class IOFunctions {
 			"plld", "Endpoints in `1` must be distinct machine-size real numbers.", //
 			"plln", "Limiting value `1` in `2` is not a machine-size real number.", //
 			"pspec", "Part specification `1` is neither an integer nor a list of integer.", //
+			"poly", "`1` is not a polynomial.", //
 			"polynomial", "Polynomial expected at position `1` in `2`.", //
 			"pkspec1", "The expression `1` cannot be used as a part specification.", // "
 			"rvalue", "`1` is not a variable with a value, so its value cannot be changed.", //
 			"seqs", "Sequence specification expected, but got `1`.", //
 			"setp", "Part assignment to `1` could not be made", //
+			"setraw", "Cannot assign to raw object `1`.", //
 			"setps", "`1` in the part assignment is not a symbol.", //
 			"span", "`1` is not a valid Span specification.", //
 			"stream", "`1` is not string, InputStream[], or OutputStream[]", //

@@ -577,7 +577,10 @@ public final class Validate {
 			// }
 			return ast;
 		}
-		throw new ArgumentTypeException("Function(AST) in left-hand-side of UpSet() or UpSetDelayed() expected!");
+		// Cannot assign to raw object `1`.
+		String str = IOFunctions.getMessage("setraw", F.List(expr),
+				EvalEngine.get());
+		throw new ArgumentTypeException(str);
 	}
 
 	/**

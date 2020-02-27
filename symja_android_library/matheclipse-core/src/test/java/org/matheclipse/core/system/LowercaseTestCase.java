@@ -14861,6 +14861,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPartition() {
+		check("Partition({a,b,c,d,e,f},3,0)", //
+				"Partition({a,b,c,d,e,f},3,0)");
 		check("Partition({a, b, c, d, e, f}, -1)", //
 				"Partition({a,b,c,d,e,f},-1)");
 		check("Partition({a, b, c, d, e, f}, 2)", //
@@ -15453,6 +15455,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialExtendedGCD() {
+		check("PolynomialExtendedGCD(e*x^2+d,-2*d*e^2*Sqrt(-e/d)*x+2*d*e^2,Infinity)", //
+				"PolynomialExtendedGCD(e*x^2+d,-2*d*e^2*Sqrt(-e/d)*x+2*d*e^2,Infinity)");
+		check("PolynomialExtendedGCD({},3*x,f(x,y))", //
+				"PolynomialExtendedGCD({},3*x,f(x,y))");
+		check("PolynomialExtendedGCD(e*x^2+d,-2*d*e^2*Sqrt(-e/d)*x+2*d*e^2,0)", //
+				"PolynomialExtendedGCD(e*x^2+d,-2*d*e^2*Sqrt(-e/d)*x+2*d*e^2,0)");
+		check("PolynomialExtendedGCD(Infinity,3*x,f(x,y))", //
+				"PolynomialExtendedGCD(Infinity,3*x,f(x,y))");
 		check("PolynomialExtendedGCD(2*x^2+3,3*x,f(x,y))", //
 				"{1,{0,1/(3*x)}}");
 		check("PolynomialExtendedGCD(a[x],b[x],x)", //
@@ -16854,6 +16864,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testQuantile() {
+		
+		check("Quantile({1,2,3,4,5,6,7},-1/2)", //
+				"Quantile({1,2,3,4,5,6,7},-1/2)");
 		check("Quantile(WeibullDistribution(2, 5), N(1/4,25))", //
 				"2.68180010651325822971629");
 
@@ -20858,7 +20871,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"8");
 	}
 
-	public void testSum() { 
+	public void testSum() {
 		check("Sum(i^2,x)", //
 				"i^2*x");
 		check("Sum(i^2,Indeterminate)", //
@@ -21465,6 +21478,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTagSetDelayed() {
+		check("TagSetDelayed(g,0,\"TagSetDelayed test\")", //
+				"TagSetDelayed(g,0,TagSetDelayed test)");
 		check("g/: Format(a_,g(x)) := \"TagSetDelayed test\"", //
 				"");
 		// check("Definition(g)", //

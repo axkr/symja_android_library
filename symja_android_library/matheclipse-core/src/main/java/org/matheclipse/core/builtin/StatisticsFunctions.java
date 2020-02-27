@@ -4507,6 +4507,11 @@ public class StatisticsFunctions {
 							// }
 						} else {
 							if (q.isReal()) {
+								ISignedNumber qi = (ISignedNumber) q;
+								if (!qi.isRange(F.C0, F.C1)) {
+									return IOFunctions.printMessage(ast.topHead(), "nquan", F.List(qi, F.C0, F.C1),
+											engine);
+								}
 								// x = a + (length + b) * q
 								IExpr x = q.isZero() ? a : F.Plus.of(engine, a, F.Times(F.Plus(length, b), q));
 								if (x.isNumIntValue()) {
@@ -4522,8 +4527,8 @@ public class StatisticsFunctions {
 								}
 								if (x.isReal()) {
 									ISignedNumber xi = (ISignedNumber) x;
-									int xFloor = xi.floorFraction().toIntDefault(Integer.MIN_VALUE);
-									int xCeiling = xi.ceilFraction().toIntDefault(Integer.MIN_VALUE);
+									int xFloor = xi.floorFraction().toIntDefault();
+									int xCeiling = xi.ceilFraction().toIntDefault();
 									if (xFloor != Integer.MIN_VALUE && xCeiling != Integer.MIN_VALUE) {
 										if (xFloor < 1) {
 											xFloor = 1;

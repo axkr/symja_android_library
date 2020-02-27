@@ -49,8 +49,10 @@ public class VariablesSet {
 					fCollection.add(list);
 				}
 			} else {
-				if (!list.isNumericFunction()) {
-					fCollection.add(list);
+				if (!list.head().isBuiltInSymbol() || ((ISymbol) list.head()).isNumericFunctionAttribute()) {
+					if (!list.isNumericFunction()) {
+						fCollection.add(list);
+					}
 				}
 			}
 			return true;

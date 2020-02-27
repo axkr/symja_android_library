@@ -641,6 +641,12 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isPolynomialStruct() {
+		return isVariable();
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public boolean isPolynomialOfMaxDegree(ISymbol variable, long maxDegree) {
 		if (maxDegree == 0L) {
 			if (this.equals(variable)) {

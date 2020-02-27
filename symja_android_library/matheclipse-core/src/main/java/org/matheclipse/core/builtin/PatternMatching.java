@@ -1652,8 +1652,12 @@ public final class PatternMatching {
 						return engine.evaluate(temp);
 					}
 				}
-				Object[] result = createPatternMatcher(symbol, leftHandSide, rightHandSide, false, engine);
-				return (IExpr) result[1];
+				try {
+					Object[] result = createPatternMatcher(symbol, leftHandSide, rightHandSide, false, engine);
+					return (IExpr) result[1];
+				} catch (final ValidateException ve) {
+					return engine.printMessage(ve.getMessage(ast.topHead()));
+				}
 			}
 			return F.NIL;
 		}
@@ -1706,13 +1710,16 @@ public final class PatternMatching {
 				final IExpr leftHandSide = ast.arg2();
 				final IExpr rightHandSide = ast.arg3();
 				if (symbol.isProtected()) {
-					IOFunctions.printMessage(F.SetDelayed, "write", F.List(symbol, leftHandSide), EvalEngine.get());
+					IOFunctions.printMessage(ast.topHead(), "write", F.List(symbol, leftHandSide), EvalEngine.get());
 					throw new FailedException();
 				}
+				try {
+					createPatternMatcher(symbol, leftHandSide, rightHandSide, false, engine);
 
-				createPatternMatcher(symbol, leftHandSide, rightHandSide, false, engine);
-
-				return F.Null;
+					return F.Null;
+				} catch (final ValidateException ve) {
+					return engine.printMessage(ve.getMessage(ast.topHead()));
+				}
 			}
 			return F.NIL;
 		}
@@ -2040,7 +2047,6 @@ public final class PatternMatching {
 			result[1] = rightHandSide;
 
 			IAST lhsAST = Validate.checkASTUpRuleType(leftHandSide);
-
 			for (int i = 1; i < lhsAST.size(); i++) {
 				IExpr temp = lhsAST.get(i);
 				if (temp instanceof IPatternObject) {

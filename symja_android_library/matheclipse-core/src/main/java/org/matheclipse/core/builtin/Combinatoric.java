@@ -895,18 +895,20 @@ public final class Combinatoric {
 					int i = n;
 					int v = n;
 					if ((ast.isAST3()) && ast.arg3().isInteger()) {
-						v = ((IInteger) ast.arg3()).toBigNumerator().intValue();
+						v = ast.arg3().toIntDefault();
 					}
-					while (i <= f.argSize()) {
-						temp = F.ast(f.head());
-						for (int j = i - n; j < i; j++) {
-							temp.append(f.get(j + 1));
-						}
-						i += v;
-						result.append(temp);
+					if (v > 0) {
+						while (i <= f.argSize()) {
+							temp = F.ast(f.head());
+							for (int j = i - n; j < i; j++) {
+								temp.append(f.get(j + 1));
+							}
+							i += v;
+							result.append(temp);
 
+						}
+						return result;
 					}
-					return result;
 				}
 			}
 			return F.NIL;
