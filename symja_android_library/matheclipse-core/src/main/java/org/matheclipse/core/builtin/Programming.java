@@ -1950,13 +1950,17 @@ public final class Programming {
 						try {
 							if (rightHandSide.isList()) {
 								IExpr res = Programming.assignPart(temp, part, 2, (IAST) rightHandSide, 1, engine);
-								// symbol.putDownRule(IPatternMatcher.SET, true, symbol, res, false);
-								symbol.assign(res);
+								if (res.isPresent()) {
+									// symbol.putDownRule(IPatternMatcher.SET, true, symbol, res, false);
+									symbol.assign(res);
+								}
 								return rightHandSide;
 							} else {
 								IExpr res = Programming.assignPart(temp, part, 2, rightHandSide, engine);
-								// symbol.putDownRule(IPatternMatcher.SET, true, symbol, res, false);
-								symbol.assign(res);
+								if (res.isPresent()) {
+									// symbol.putDownRule(IPatternMatcher.SET, true, symbol, res, false);
+									symbol.assign(res);
+								}
 								return rightHandSide;
 							}
 						} catch (RuntimeException npe) {
@@ -3226,8 +3230,7 @@ public final class Programming {
 				if (p1 >= ast.size()) {
 					if (i >= size) {
 						// Cannot take positions `1` through `2` in `3`.
-						return IOFunctions.printMessage(F.Part, "take", F.List(F.ZZ(start), F.ZZ(last), arg1),
-								engine);
+						return IOFunctions.printMessage(F.Part, "take", F.List(F.ZZ(start), F.ZZ(last), arg1), engine);
 					}
 					result.append(arg1.get(i));
 					continue;
@@ -3235,8 +3238,7 @@ public final class Programming {
 				if (arg1.get(i).isAST()) {
 					if (i >= size) {
 						// Cannot take positions `1` through `2` in `3`.
-						return IOFunctions.printMessage(F.Part, "take", F.List(F.ZZ(start), F.ZZ(last), arg1 ),
-								engine);
+						return IOFunctions.printMessage(F.Part, "take", F.List(F.ZZ(start), F.ZZ(last), arg1), engine);
 					}
 					IExpr temp = part((IAST) arg1.get(i), ast, p1, engine);
 					if (temp.isPresent()) {
@@ -3252,8 +3254,7 @@ public final class Programming {
 				if (p1 >= ast.size()) {
 					if (i >= size) {
 						// Cannot take positions `1` through `2` in `3`.
-						return IOFunctions.printMessage(F.Part, "take", F.List(F.ZZ(start), F.ZZ(last), arg1 ),
-								engine);
+						return IOFunctions.printMessage(F.Part, "take", F.List(F.ZZ(start), F.ZZ(last), arg1), engine);
 					}
 					result.append(arg1.get(i));
 					continue;
@@ -3261,8 +3262,7 @@ public final class Programming {
 				if (arg1.get(i).isAST()) {
 					if (i >= size) {
 						// Cannot take positions `1` through `2` in `3`.
-						return IOFunctions.printMessage(F.Part, "take", F.List(F.ZZ(start), F.ZZ(last), arg1 ),
-								engine);
+						return IOFunctions.printMessage(F.Part, "take", F.List(F.ZZ(start), F.ZZ(last), arg1), engine);
 					}
 					IExpr temp = part((IAST) arg1.get(i), ast, p1, engine);
 					if (temp.isPresent()) {
@@ -3282,8 +3282,13 @@ public final class Programming {
 
 	private static IExpr assignPart(final IExpr assignedExpr, final IAST part, int partPosition, IExpr value,
 			EvalEngine engine) {
-		if (!assignedExpr.isAST() || partPosition >= part.size()) {
+		if (partPosition >= part.size()) {
+			// stop recursion
 			return value;
+		}
+		if (!assignedExpr.isAST()) {
+			// Part specification `1` is longer than depth of object.
+			return IOFunctions.printMessage(F.Part, "partd", F.List(part), engine);
 		}
 		IAST assignedAST = (IAST) assignedExpr;
 		final IExpr arg2 = engine.evaluate(part.get(partPosition));
@@ -3309,8 +3314,10 @@ public final class Programming {
 							engine);
 				}
 			} else {
-				throw new WrongArgumentType(part, arg2, partPosition,
-						"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
+				// Part `1` of `2` does not exist.
+				return IOFunctions.printMessage(F.Part, "partw", F.List(F.ZZ(partPosition), arg2), engine);
+				// throw new WrongArgumentType(part, arg2, partPosition,
+				// "Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
 			}
 			return result;
 		} else if (arg2.isReal()) {
@@ -3319,8 +3326,10 @@ public final class Programming {
 				indx = part.size() + indx;
 			}
 			if ((indx < 0) || (indx >= part.size())) {
-				throw new WrappedException(new IndexOutOfBoundsException(
-						"Part[] index " + indx + " of " + part.toString() + " is out of bounds."));
+				// Part `1` of `2` does not exist.
+				return IOFunctions.printMessage(F.Part, "partw", F.List(F.ZZ(indx), part), engine);
+				// throw new WrappedException(new IndexOutOfBoundsException(
+				// "Part[] index " + indx + " of " + part.toString() + " is out of bounds."));
 			}
 			IASTAppendable result = F.NIL;
 			IExpr temp = assignPart(assignedAST.get(indx), part, partPositionPlus1, value, engine);
@@ -3351,8 +3360,11 @@ public final class Programming {
 							temp = assignPart(ires, part, partPositionPlus1, value, engine);
 							result.append(temp);
 						} else {
-							throw new WrongArgumentType(part, assignedAST, partPosition,
-									"Wrong argument for Part[] function. Function or list expected.");
+							// Part `1` of `2` does not exist.
+							return IOFunctions.printMessage(F.Part, "partw", F.List(F.ZZ(partPosition), assignedAST),
+									engine);
+							// throw new WrongArgumentType(part, assignedAST, partPosition,
+							// "Wrong argument for Part[] function. Function or list expected.");
 						}
 					} else {
 						result.append(ires);
@@ -3361,8 +3373,10 @@ public final class Programming {
 			}
 			return result;
 		}
-		throw new WrongArgumentType(part, assignedAST, partPosition,
-				"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
+		// Part `1` of `2` does not exist.
+		return IOFunctions.printMessage(F.Part, "partw", F.List(arg2, assignedAST), engine);
+		// throw new WrongArgumentType(part, assignedAST, partPosition,
+		// "Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
 	}
 
 	private static IExpr assignPart(final IExpr assignedExpr, final IAST part, int partPosition, IAST rhs, int rhsPos,
@@ -3415,8 +3429,10 @@ public final class Programming {
 					}
 				}
 			} else {
-				throw new WrongArgumentType(part, arg2, partPosition,
-						"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
+				// Part `1` of `2` does not exist.
+				return IOFunctions.printMessage(F.Part, "partw", F.List(arg2, assignedAST), engine);
+				// throw new WrongArgumentType(part, arg2, partPosition,
+				// "Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
 			}
 			return result;
 		} else if (arg2.isReal()) {
@@ -3427,8 +3443,10 @@ public final class Programming {
 				if (ires.isAST()) {
 					return assignPart(ires, part, partPositionPlus1, rhs, rhsPos++, engine);
 				} else {
-					throw new WrongArgumentType(part, assignedAST, partPosition,
-							"Wrong argument for Part[] function. Function or list expected.");
+					// Part `1` of `2` does not exist.
+					return IOFunctions.printMessage(F.Part, "partw", F.List(F.ZZ(partPosition), assignedAST), engine);
+					// throw new WrongArgumentType(part, assignedAST, partPosition,
+					// "Wrong argument for Part[] function. Function or list expected.");
 				}
 			}
 			return ires;
@@ -3452,8 +3470,11 @@ public final class Programming {
 							temp = assignPart(ires, part, partPositionPlus1, rhs, rhsPos++, engine);
 							result.append(temp);
 						} else {
-							throw new WrongArgumentType(part, assignedAST, partPosition,
-									"Wrong argument for Part[] function. Function or list expected.");
+							// Part `1` of `2` does not exist.
+							return IOFunctions.printMessage(F.Part, "partw", F.List(F.ZZ(partPosition), assignedAST),
+									engine);
+							// throw new WrongArgumentType(part, assignedAST, partPosition,
+							// "Wrong argument for Part[] function. Function or list expected.");
 						}
 					} else {
 						result.append(ires);
@@ -3462,8 +3483,10 @@ public final class Programming {
 			}
 			return result;
 		}
-		throw new WrongArgumentType(part, assignedAST, partPosition,
-				"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
+		// Part `1` of `2` does not exist.
+		return IOFunctions.printMessage(F.Part, "partw", F.List(arg2, assignedAST), engine);
+		// throw new WrongArgumentType(part, assignedAST, partPosition,
+		// "Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
 	}
 
 	/**

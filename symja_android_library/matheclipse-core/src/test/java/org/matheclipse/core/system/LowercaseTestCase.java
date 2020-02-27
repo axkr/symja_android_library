@@ -14646,6 +14646,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPart() {
+		 
+//		check("m = {a, b, c, d};", //
+//				"");
+//		check("m[[2]] += x", //
+//				"b+x");
+//		check("m", //
+//				"{a,b+x,c,d}");
+		
+		
+		check("lhs=10;lhs[[1;;All,2;;3,2]]=-I;lhs", //
+				"10");
 		check("{a, b, c, d, e, f, g, h, i, j, k}[[3 ;; -3 ;; 2]]", //
 				"{c,e,g,i}");
 		check("{a, b, c, d, e, f, g, h, i, j, k}[[;; ;; 2]]", //
@@ -14655,7 +14666,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("test={g,h,k}", //
 				"{g,h,k}");
 		check("test[[Position({x,v,w },{x,_,_})[[1,1]],2]] = ({a,b})[[2]]", //
-				"$Failed");
+				"b");
 		check("f(a, b, c)[[{2, 3}]]", //
 				"f(b,c)");
 		check("f(g(a, b), h(c, d))[[{1, 2}, {2}]]", //
