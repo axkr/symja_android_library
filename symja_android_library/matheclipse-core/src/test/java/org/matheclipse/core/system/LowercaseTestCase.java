@@ -14646,15 +14646,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPart() {
-		 
-//		check("m = {a, b, c, d};", //
-//				"");
-//		check("m[[2]] += x", //
-//				"b+x");
-//		check("m", //
-//				"{a,b+x,c,d}");
-		
-		
+		check("{}[[-3;;-7;;-3]]", //
+				"{}[[-3;;-7;;-3]]");
 		check("lhs=10;lhs[[1;;All,2;;3,2]]=-I;lhs", //
 				"10");
 		check("{a, b, c, d, e, f, g, h, i, j, k}[[3 ;; -3 ;; 2]]", //
@@ -14868,6 +14861,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPartition() {
+		check("Partition({a, b, c, d, e, f}, -1)", //
+				"Partition({a,b,c,d,e,f},-1)");
 		check("Partition({a, b, c, d, e, f}, 2)", //
 				"{{a,b},{c,d},{e,f}}");
 		check("Partition({a, b, c, d, e, f}, 3, 1)", //
@@ -16593,6 +16588,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testProduct() {
+		check("Product(i^2,x)", //
+				"(i^2)^(-1+x)");
+		check("Product(i^2,Indeterminate)", //
+				"Product(i^2,Indeterminate)");
 		check("Product(f(x), {k,n, n-1})", //
 				"1");
 		check("Product(f(x), {k,3, 1/2})", //
@@ -20859,7 +20858,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"8");
 	}
 
-	public void testSum() {
+	public void testSum() { 
+		check("Sum(i^2,x)", //
+				"i^2*x");
+		check("Sum(i^2,Indeterminate)", //
+				"Sum(i^2,Indeterminate)");
 		check("Sum(f(x), {k,n, n-1})", //
 				"0");
 		check("Sum(f(x), {k,3, 1/2})", //

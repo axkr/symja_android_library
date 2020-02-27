@@ -117,6 +117,21 @@ public class Product extends ListFunctions.Table implements ProductRules {
 			IASTMutable prod = ast.setAtCopy(1, null);
 			return ((IAST) arg1).mapThread(prod, 1);
 		}
+		if (ast.size() > 2) {
+			IAST list;
+			if (ast.last().isList()) {
+				list = (IAST) ast.last();
+			} else {
+				list = F.List(ast.last());
+			}
+			if (list.isAST1()) {
+				// indefinite product case
+				IExpr variable = list.arg1();
+				if (ast.arg1().isFree(variable) && variable.isVariable()) {
+					return indefiniteProduct(ast, variable);
+				}
+			}
+		}
 
 		IExpr temp = evaluateTableThrow(ast, Times(), Times(), engine);
 		if (temp.isPresent()) {
@@ -131,7 +146,12 @@ public class Product extends ListFunctions.Table implements ProductRules {
 			boolean flag = true;
 			// Prod( i^a, {i,from,to},... )
 			for (int i = 2; i < ast.size(); i++) {
-				IIterator<IExpr> iterator = Iterator.create((IAST) ast.get(i), i, engine);
+				IIterator<IExpr> iterator;
+				if (ast.get(i).isList()) {
+					iterator = Iterator.create((IAST) ast.get(i), i, engine);
+				} else {
+					iterator = Iterator.create(F.List(ast.get(i)), i, engine);
+				}
 				if (iterator.isValidVariable() && exponent.isFree(iterator.getVariable())) {
 					continue;
 				}
@@ -230,7 +250,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 				if (!temp.isPresent() || temp.equals(resultList)) {
 					return F.NIL;
 				}
-			} catch (final ValidateException ve) { 
+			} catch (final ValidateException ve) {
 				return EvalEngine.get().printMessage(ve.getMessage(F.Sum));
 			} catch (RecursionLimitExceeded rle) {
 				return engine.printMessage("Product: Recursionlimit exceeded");
@@ -246,6 +266,25 @@ public class Product extends ListFunctions.Table implements ProductRules {
 
 		}
 		return F.NIL;
+	}
+
+	/**
+	 * Create a new Product() by removing last iterator or return result of indefinite sum case for Product(a, x)
+	 * 
+	 * @param ast
+	 * @param variable
+	 *            the iterator variable
+	 * @return
+	 */
+	private static IExpr indefiniteProduct(final IAST ast, IExpr variable) {
+		IExpr result = F.Power(ast.arg1(), F.Plus(F.CN1, variable));
+		int argSize = ast.argSize();
+		if (argSize == 2) {
+			return result;
+		}
+		IASTAppendable newSum = ast.removeAtClone(argSize);
+		newSum.set(1, result);
+		return newSum;
 	}
 
 	public int[] expectedArgSize() {

@@ -523,11 +523,11 @@ public final class Combinatoric {
 		/** {@inheritDoc} */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.arg1().isAST() && ast.arg2().isInteger()) {
+			final int k = ast.arg2().toIntDefault();
+			if (ast.arg1().isAST() && k > 0) {
 				final IAST listArg0 = (IAST) ast.arg1();
 				final ISymbol sym = listArg0.topHead();
 				final int n = listArg0.argSize();
-				final int k = ((IInteger) ast.arg2()).toBigNumerator().intValue();
 				final IASTAppendable result = F.ast(F.List);
 				final Permutations.KPermutationsIterable permutationIterator = new Permutations.KPermutationsIterable(
 						listArg0, n, 1);
@@ -881,18 +881,15 @@ public final class Combinatoric {
 	 */
 	private static class Partition extends AbstractFunctionEvaluator {
 
-		public Partition() {
-		}
-
 		/**
 		 * {@inheritDoc}
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.arg1().isAST()) {
-				if (ast.arg2().isInteger()) {
+				final int n = ast.arg2().toIntDefault();
+				if (n > 0) {
 					final IAST f = (IAST) ast.arg1();
-					final int n = ((IInteger) ast.arg2()).toBigNumerator().intValue();
 					final IASTAppendable result = F.ast(f.head());
 					IASTAppendable temp;
 					int i = n;
@@ -1160,7 +1157,7 @@ public final class Combinatoric {
 				int parts = list.argSize();
 				if (ast.isAST2()) {
 					if (ast.arg2().isInteger()) {
-						int maxPart = ((IInteger) ast.arg2()).toIntDefault(-1);
+						int maxPart = ast.arg2().toIntDefault();
 						if (maxPart >= 0) {
 							maxPart = maxPart < parts ? maxPart : parts;
 							final IASTAppendable result = F.ListAlloc(100);

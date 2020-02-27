@@ -158,8 +158,22 @@ public class Sum extends ListFunctions.Table implements SumRules {
 			IAST sum = ast.setAtCopy(1, null);
 			return ((IAST) arg1).mapThread(sum, 1);
 		}
-		IExpr temp;
-		temp = evaluateTableThrow(ast, Plus(), Plus(), engine);
+		if (ast.size() > 2) {
+			IAST list;
+			if (ast.last().isList()) {
+				list = (IAST) ast.last();
+			} else {
+				list = F.List(ast.last());
+			}
+			if (list.isAST1()) {
+				// indefinite sum case
+				IExpr variable = list.arg1();
+				if (ast.arg1().isFree(variable) && variable.isVariable()) {
+					return indefiniteSum(ast, variable);
+				}
+			}
+		}
+		IExpr temp = evaluateTableThrow(ast, Plus(), Plus(), engine);
 		if (temp.isPresent()) {
 			return temp;
 		}
@@ -172,7 +186,12 @@ public class Sum extends ListFunctions.Table implements SumRules {
 		if (argN.isList()) {
 			try {
 				argN = evalBlockWithoutReap(argN, varList);
-				iterator = Iterator.create((IAST) argN, ast.argSize(), engine);
+				if (argN.isList()) {
+					iterator = Iterator.create((IAST) argN, ast.argSize(), engine);
+				} else {
+					iterator = Iterator.create(F.List(argN), ast.argSize(), engine);
+				}
+
 				// if (iterator.isSetIterator() || iterator.isNumericFunction()) {
 				// IAST resultList = Plus();
 				// temp = evaluateLast(ast.arg1(), iterator, resultList, C0);
@@ -267,6 +286,25 @@ public class Sum extends ListFunctions.Table implements SumRules {
 		}
 
 		return F.NIL;
+	}
+
+	/**
+	 * Create a new Sum() by removing last iterator or return result of indefinite sum case for Sum(a, x)
+	 * 
+	 * @param ast
+	 * @param variable
+	 *            the iterator variable
+	 * @return
+	 */
+	private static IExpr indefiniteSum(final IAST ast, IExpr variable) {
+		IExpr result = F.Times(ast.arg1(), variable);
+		int argSize = ast.argSize();
+		if (argSize == 2) {
+			return result;
+		}
+		IASTAppendable newSum = ast.removeAtClone(argSize);
+		newSum.set(1, result);
+		return newSum;
 	}
 
 	public int[] expectedArgSize() {

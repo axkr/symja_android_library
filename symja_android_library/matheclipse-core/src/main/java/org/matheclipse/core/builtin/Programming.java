@@ -3228,12 +3228,12 @@ public final class Programming {
 		if (step < 0 && start >= last) {
 			for (int i = start; i >= last; i += step) {
 				if (p1 >= ast.size()) {
-					if (i >= size) {
-						// Cannot take positions `1` through `2` in `3`.
-						return IOFunctions.printMessage(F.Part, "take", F.List(F.ZZ(start), F.ZZ(last), arg1), engine);
+					IExpr temp = getIndex(arg1, i, engine);
+					if (temp.isPresent()) {
+						result.append(temp);
+						continue;
 					}
-					result.append(arg1.get(i));
-					continue;
+					return F.NIL;
 				}
 				if (arg1.get(i).isAST()) {
 					if (i >= size) {
@@ -3252,12 +3252,12 @@ public final class Programming {
 		} else if (step > 0 && (last != 1 || start <= last)) {
 			for (int i = start; i <= last; i += step) {
 				if (p1 >= ast.size()) {
-					if (i >= size) {
-						// Cannot take positions `1` through `2` in `3`.
-						return IOFunctions.printMessage(F.Part, "take", F.List(F.ZZ(start), F.ZZ(last), arg1), engine);
+					IExpr temp = getIndex(arg1, i, engine);
+					if (temp.isPresent()) {
+						result.append(temp);
+						continue;
 					}
-					result.append(arg1.get(i));
-					continue;
+					return F.NIL;
 				}
 				if (arg1.get(i).isAST()) {
 					if (i >= size) {
