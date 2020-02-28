@@ -2179,13 +2179,13 @@ public class EvalEngine implements Serializable {
 	 * @param rex
 	 *            the RuntimeException which should be printed
 	 */
-	public IAST printMessage(RuntimeException rex) {
+	public IAST printMessage(ISymbol symbol, RuntimeException rex) {
 		if (!isQuietMode()) {
 			PrintStream stream = getErrorPrintStream();
 			if (stream == null) {
 				stream = System.err;
 			}
-			stream.println(rex.getMessage());
+			stream.println(symbol + ": " + rex.getMessage());
 		}
 		if (fThrowError) {
 			throw new IllegalArgument(rex.getMessage());

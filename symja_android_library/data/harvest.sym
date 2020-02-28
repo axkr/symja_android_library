@@ -15440,9 +15440,6 @@ Attributes(E)
 Solve(x + E == 0, E) 
 
 
-For(i=1, i<=8, i=i+1, If(Mod(i,2) == 0, Continue()); Print(i))
-
-
 N(Catalan)
 
 

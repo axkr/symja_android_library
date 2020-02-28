@@ -6678,6 +6678,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testFactorInteger() {
+		check("4711\\\n" + //
+				"0815", //
+				"47110815");
+		check("4711\\\n" + //
+				"  0815", //
+				"Syntax error in line: 2 - error in number - unknown character after back-slash.\n" + //
+						"  0815\n" + //
+						"^");
 		check("FactorInteger(21) // N", //
 				"{{3.0,1.0},{7.0,1.0}}");
 		check("FactorInteger(10, GaussianIntegers->True)", //
@@ -7528,6 +7536,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testFixedPoint() {
 		// check("FixedPoint(Null, Null)", //
 		// "Recursion limit 256 exceeded at: Null");
+		check("FixedPoint(-1/2,14)", //
+				"FixedPoint(-1/2,14)");
+		
 		check("FixedPoint(Cos, 1.0)", //
 				"0.739085");
 		check("FixedPoint(#+1 &, 1, 20)", //
@@ -7558,6 +7569,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFixedPointList() {
+		check("FixedPointList(-1/2,14)", //
+				"FixedPointList(-1/2,14)");
 		check("FixedPointList(Cos, 1.0, 4)", //
 				"{1.0,0.540302,0.857553,0.65429,0.79348}");
 		checkNumeric("newton(n_) := FixedPointList(.5*(# + n/#) &, 1.);  newton(9)", //
@@ -9464,6 +9477,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIntegerLength() {
+		check("IntegerLength(8,1)", //
+				"IntegerLength(8,1)");
 		check("IntegerLength(123456)", //
 				"6");
 		check("IntegerLength(10^10000)", //
@@ -11555,6 +11570,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLinearProgramming() {
+		check("LinearProgramming({},{{1,2}},{{3,0}})", //
+				"LinearProgramming({},{{1,2}},{{3,0}})");
 		check("LinearProgramming({1, 1}, {{1, 2}}, {3})", //
 				"{0.0,1.5}");
 		check("LinearProgramming({1, 1}, {{1, 2}}, {{3,0}})", //
@@ -15667,6 +15684,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialQuotient() {
+		check("PolynomialQuotient(x^2+4*x+1,Indeterminate,x,Modulus->3)", //
+				"PolynomialQuotient(1+4*x+x^2,Indeterminate,x,Modulus->3)");
+		check("PolynomialQuotient(x^2,1+(-1)*1,x)", //
+				"PolynomialQuotient(x^2,0,x)");
 		check("PolynomialQuotient(x^2 + 7*x + 6, x^2-5*x-6, x)", //
 				"1");
 		check("PolynomialQuotient(a+b*x,1,x)^3", //
@@ -15684,6 +15705,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialQuotientRemainder() {
+		check("PolynomialQuotientRemainder(x^2,1+(-1)*1,x)", //
+				"PolynomialQuotientRemainder(x^2,0,x)");
 		// test with Integer.MIN_VALUE
 		check("PolynomialQuotientRemainder(1+b*x+x^2,-2147483648,x)", //
 				"{-1/2147483648-1/2147483648*b*x-x^2/2147483648,0}");
@@ -15832,7 +15855,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPower() {
-
+		check("0^I", //
+				"Indeterminate");
+		check("0^(-I)", //
+				"Indeterminate");
 		// Test Config.MAX_BIT_COUNT = Short.MAX_VALUE;
 		// check("(3/7)^7625597484987", //
 		// "Maximum AST size 45891 exceeded");
@@ -16864,7 +16890,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testQuantile() {
-		
+
 		check("Quantile({1,2,3,4,5,6,7},-1/2)", //
 				"Quantile({1,2,3,4,5,6,7},-1/2)");
 		check("Quantile(WeibullDistribution(2, 5), N(1/4,25))", //
@@ -16908,6 +16934,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testQuantity() {
 		if (ToggleFeature.QUANTITY) {
+			check("1/Quantity(0,\"s\")^I", //
+					"1/0[s]()^I");
 			check("Quantity(50, \"s\") + Quantity(1, \"min\")", //
 					"110[s]");
 			check("Quantity(1, \"min\") + Quantity(50, \"s\")", //
@@ -20523,6 +20551,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStieltjesGamma() {
+		check("StieltjesGamma(8,Indeterminate)", //
+				"Indeterminate");
 		check("StieltjesGamma(0)", //
 				"EulerGamma");
 		check("StieltjesGamma(0,a)", //

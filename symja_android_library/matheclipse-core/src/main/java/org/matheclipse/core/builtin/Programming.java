@@ -715,11 +715,11 @@ public final class Programming {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			boolean numericMode = engine.isNumericMode();
 			try {
-				// use EvalEngine's iterationLimit only for evaluation control
-				// final int iterationLimit = engine.getIterationLimit();
-				// int iterationCounter = 1;
-
 				IExpr f = ast.arg1();
+				if (f.isAtom() && !f.isSymbol()) {
+					// Nonatomic expression expected at position `1` in `2`.
+					return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
+				}
 				IExpr current = ast.arg2();
 				int iterations = Integer.MAX_VALUE;
 				if (ast.isAST3()) {
@@ -729,38 +729,36 @@ public final class Programming {
 					} else if (arg3.isNegativeInfinity()) {
 						iterations = Integer.MIN_VALUE;
 					} else {
-						iterations = Validate.checkIntType(F.FixedPoint, arg3, Integer.MIN_VALUE, engine);
+						iterations = Validate.checkNonNegativeIntType(ast, 3);
 					}
 				}
 				if (iterations < 0) {
-					return engine.printMessage("FixedPoint: Non-negative integer expected.");
+					// Non-negative machine-sized integer expected at position `2` in `1`.
+					return IOFunctions.printMessage(ast.topHead(), "intnm", F.List(ast, F.ZZ(3)), EvalEngine.get());
 				}
 				if (iterations > 0) {
 					IExpr last;
 					do {
 						last = current;
 						current = engine.evaluate(F.Apply(f, F.List(current)));
-						// if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
-						// IterationLimitExceeded.throwIt(iterationCounter, ast);
-						// }
 					} while ((!current.isSame(last)) && (--iterations > 0));
 				}
 				return current;
-
+			} catch (final ValidateException ve) {
+				return engine.printMessage(ve.getMessage(ast.topHead()));
 			} finally {
 				engine.setNumericMode(numericMode);
 			}
-
 		}
 
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_3;
 		}
 
-		@Override
-		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
-		}
+		// @Override
+		// public void setUp(final ISymbol newSymbol) {
+		// newSymbol.setAttributes(ISymbol.HOLDALL);
+		// }
 
 	}
 
@@ -835,11 +833,11 @@ public final class Programming {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			boolean numericMode = engine.isNumericMode();
 			try {
-				// use EvalEngine's iterationLimit only for evaluation control
-				// final int iterationLimit = engine.getIterationLimit();
-				// int iterationCounter = 1;
-
 				IExpr f = ast.arg1();
+				if (f.isNumber()) {
+					// Nonatomic expression expected at position `1` in `2`.
+					return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
+				}
 				IASTAppendable list = F.ListAlloc(32);
 				IExpr current = ast.arg2();
 				list.append(current);
@@ -862,14 +860,10 @@ public final class Programming {
 						last = current;
 						current = engine.evaluate(F.Apply(f, F.List(current)));
 						list.append(current);
-						// if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
-						// IterationLimitExceeded.throwIt(iterationCounter, ast);
-						// }
 					} while ((!current.isSame(last)) && (--iterations > 0));
 				}
 				return list;
 			} catch (final ValidateException ve) {
-				// see level specification
 				return engine.printMessage(ve.getMessage(ast.topHead()));
 			} finally {
 				engine.setNumericMode(numericMode);
@@ -879,11 +873,6 @@ public final class Programming {
 
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_3;
-		}
-
-		@Override
-		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
 
 	}

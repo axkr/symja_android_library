@@ -2599,7 +2599,7 @@ public final class ListFunctions {
 						}
 					}
 				} catch (RuntimeException rex) {
-					return engine.printMessage(rex);
+					return engine.printMessage(ast.topHead(), rex);
 				}
 			}
 			return F.NIL;
@@ -4012,7 +4012,7 @@ public final class ListFunctions {
 						return IOFunctions.printMessage(ast.topHead(), "infy", F.List(F.Divide(ast.arg2(), F.C0)),
 								engine);
 					}
-					if (ast.arg3().isDirectedInfinity()) { 
+					if (ast.arg3().isDirectedInfinity()) {
 						return ast.arg1();
 					}
 				}
@@ -5886,7 +5886,7 @@ public final class ListFunctions {
 						}
 					}
 				} catch (RuntimeException rex) {
-					return engine.printMessage(rex);
+					return engine.printMessage(ast.topHead(), rex);
 				}
 			}
 			return F.NIL;
@@ -5932,7 +5932,7 @@ public final class ListFunctions {
 						}
 					}
 				} catch (RuntimeException rex) {
-					return engine.printMessage(rex);
+					return engine.printMessage(ast.topHead(), rex);
 				}
 			}
 			return F.NIL;

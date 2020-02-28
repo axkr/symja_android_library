@@ -1,6 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
-import org.hipparchus.exception.MathIllegalStateException;
+import java.util.ArrayList;
+import java.util.Collection;
+
+import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.optim.PointValuePair;
 import org.hipparchus.optim.linear.LinearConstraint;
 import org.hipparchus.optim.linear.LinearConstraintSet;
@@ -10,14 +13,10 @@ import org.hipparchus.optim.linear.PivotSelectionRule;
 import org.hipparchus.optim.linear.Relationship;
 import org.hipparchus.optim.linear.SimplexSolver;
 import org.hipparchus.optim.nonlinear.scalar.GoalType;
-import java.util.ArrayList;
-import java.util.Collection;
-
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.Expr2Object;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -91,7 +90,7 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
 	public IExpr numericEval(final IAST ast, EvalEngine engine) {
 		try {
 			if (ast.arg1().isList() && ast.arg2().isList() && ast.arg3().isList()) {
-				double[] arg1D =   ast.arg1().toDoubleVector();
+				double[] arg1D = ast.arg1().toDoubleVector();
 				LinearObjectiveFunction f = new LinearObjectiveFunction(arg1D, 0);
 				Collection<LinearConstraint> constraints = new ArrayList<LinearConstraint>();
 
@@ -138,16 +137,17 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
 				double[] values = solution.getPointRef();
 				return F.List(values);
 			}
-		} catch (MathIllegalStateException oe) {
-			throw new WrappedException(oe);
+		} catch (MathRuntimeException mre) {
+			// throw new WrappedException(oe);
+			return engine.printMessage(ast.topHead(), mre);
 			// if (Config.SHOW_STACKTRACE) {
-			// oe.printStackTrace();
+			// mre.printStackTrace();
 			// }
 		}
 
 		return F.NIL;
 	}
-	
+
 	@Override
 	public int[] expectedArgSize() {
 		return IOFunctions.ARGS_3_3;

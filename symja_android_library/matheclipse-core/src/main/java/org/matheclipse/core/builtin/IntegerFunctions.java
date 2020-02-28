@@ -772,7 +772,7 @@ public class IntegerFunctions {
 						return F.NIL;
 					}
 				}
-				if (radix.isLT(F.C1)) {
+				if (radix.isLT(F.C2)) {
 					return engine.printMessage("IntegerLength: The base must be greater than 1");
 				}
 				IInteger iArg1 = (IInteger) ast.arg1();

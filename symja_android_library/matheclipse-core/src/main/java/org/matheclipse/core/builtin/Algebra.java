@@ -2674,7 +2674,7 @@ public class Algebra {
 	private static class PolynomialExtendedGCD extends AbstractFunctionEvaluator {
 
 		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) { 
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IAST variables = VariablesSet.getAlgebraicVariables(ast.arg3());
 			if (variables.size() != 2) {
 				// `1` is not a valid variable.
@@ -2682,11 +2682,11 @@ public class Algebra {
 			}
 			IExpr expr1 = F.evalExpandAll(ast.arg1(), engine);
 			IExpr expr2 = F.evalExpandAll(ast.arg2(), engine);
-			if (!expr1.isPolynomialStruct() ) {
+			if (!expr1.isPolynomialStruct()) {
 				// `1` is not a polynomial.
 				return IOFunctions.printMessage(ast.topHead(), "poly", F.List(expr1), engine);
 			}
-			if (!expr2.isPolynomialStruct() ) {
+			if (!expr2.isPolynomialStruct()) {
 				// `1` is not a polynomial.
 				return IOFunctions.printMessage(ast.topHead(), "poly", F.List(expr2), engine);
 			}
@@ -3212,7 +3212,17 @@ public class Algebra {
 				}
 				IExpr arg1 = F.evalExpandAll(ast.arg1(), engine);
 				IExpr arg2 = F.evalExpandAll(ast.arg2(), engine);
-
+				if (arg2.isZero()) {
+					return F.NIL;
+				}
+				if (!arg1.isPolynomialStruct()) {
+					// `1` is not a polynomial.
+					return IOFunctions.printMessage(ast.topHead(), "poly", F.List(arg1), engine);
+				}
+				if (!arg2.isPolynomialStruct()) {
+					// `1` is not a polynomial.
+					return IOFunctions.printMessage(ast.topHead(), "poly", F.List(arg2), engine);
+				}
 				if (ast.size() == 5) {
 					final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
 					IExpr option = options.getOption(F.Modulus);
@@ -3325,6 +3335,17 @@ public class Algebra {
 			}
 			IExpr arg1 = F.evalExpandAll(ast.arg1(), engine);
 			IExpr arg2 = F.evalExpandAll(ast.arg2(), engine);
+			if (arg2.isZero()) {
+				return F.NIL;
+			}
+			if (!arg1.isPolynomialStruct()) {
+				// `1` is not a polynomial.
+				return IOFunctions.printMessage(ast.topHead(), "poly", F.List(arg1), engine);
+			}
+			if (!arg2.isPolynomialStruct()) {
+				// `1` is not a polynomial.
+				return IOFunctions.printMessage(ast.topHead(), "poly", F.List(arg2), engine);
+			}
 			try {
 				IExpr result = F.NIL;
 				if (ast.size() == 5) {
@@ -3425,6 +3446,17 @@ public class Algebra {
 			}
 			IExpr arg1 = F.evalExpandAll(ast.arg1(), engine);
 			IExpr arg2 = F.evalExpandAll(ast.arg2(), engine);
+			if (arg2.isZero()) {
+				return F.NIL;
+			}
+			if (!arg1.isPolynomialStruct()) {
+				// `1` is not a polynomial.
+				return IOFunctions.printMessage(ast.topHead(), "poly", F.List(arg1), engine);
+			}
+			if (!arg2.isPolynomialStruct()) {
+				// `1` is not a polynomial.
+				return IOFunctions.printMessage(ast.topHead(), "poly", F.List(arg2), engine);
+			}
 			try {
 				if (ast.size() == 5) {
 					final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);

@@ -100,6 +100,7 @@ import org.matheclipse.core.reflection.system.rules.ConjugateRules;
 import org.matheclipse.core.reflection.system.rules.GammaRules;
 import org.matheclipse.core.reflection.system.rules.PowerRules;
 import org.matheclipse.core.visit.VisitorExpr;
+import org.matheclipse.parser.client.math.MathException;
 
 import ch.ethz.idsc.tensor.qty.IQuantity;
 
@@ -2988,8 +2989,12 @@ public final class Arithmetic {
 						// return powerInterval(base, ii);
 					}
 				} else if (base.isQuantity()) {
-					IQuantity q = (IQuantity) base;
-					return q.power(exponent);
+					try {
+						IQuantity q = (IQuantity) base;
+						return q.power(exponent);
+					} catch (MathException mex) {
+						return F.NIL;
+					}
 				} else if (base instanceof ASTSeriesData) {
 					int exp = exponent.toIntDefault(Integer.MIN_VALUE);
 					if (exp != Integer.MIN_VALUE) {
