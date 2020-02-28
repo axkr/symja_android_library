@@ -485,8 +485,8 @@ public class ASTNodeFactory implements INodeParserFactory {
 	@Override
 	public FunctionNode unaryAST(final ASTNode head, final ASTNode arg0) {
 		return new FunctionNode(head, arg0);
-	} 
-	
+	}
+
 	@Override
 	public IntegerNode createInteger(final String integerString, final int numberFormat) {
 		return new IntegerNode(integerString, numberFormat);
@@ -536,7 +536,9 @@ public class ASTNodeFactory implements INodeParserFactory {
 	public SymbolNode createSymbol(final String symbolName, final String context) {
 		String name = symbolName;
 		if (fIgnoreCase) {
-			name = symbolName.toLowerCase();
+			if (name.length() > 1) {
+				name = symbolName.toLowerCase();
+			}
 		}
 		if (Config.RUBI_CONVERT_SYMBOLS) {
 			name = toRubiString(name);
