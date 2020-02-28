@@ -131,7 +131,48 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table>, Externa
 
 	@Override
 	public IExpr get(int location) {
+		if (location == 0) {
+			return head();
+		}
+		if (fTable.rowCount() == 1) {
+			return getColumnValue(0, location - 1);
+		}
 		return newInstance(fTable.rows(location - 1));
+	}
+
+	private IExpr getColumnValue(int rowPosition, int columnPosition) {
+		Column<?> column = fTable.column(columnPosition);
+		ColumnType t = column.type();
+		Object obj = fTable.get(rowPosition, columnPosition);
+		if (t.equals(ColumnType.BOOLEAN)) {
+			Boolean b = (Boolean) obj;
+			if (b.booleanValue()) {
+				return F.True;
+			} else {
+				return F.False;
+			}
+		} else if (t.equals(ColumnType.SHORT)) {
+			short sValue = (Short) obj;
+			return F.ZZ(sValue);
+		} else if (t.equals(ColumnType.INTEGER)) {
+			int iValue = (Integer) obj;
+			return F.ZZ(iValue);
+		} else if (t.equals(ColumnType.LONG)) {
+			long lValue = (Long) obj;
+			return F.ZZ(lValue);
+		} else if (t.equals(ColumnType.FLOAT)) {
+			float fValue = (Float) obj;
+			return F.num(fValue);
+		} else if (t.equals(ColumnType.DOUBLE)) {
+			double dValue = (Double) obj;
+			return F.num(dValue);
+		} else if (t.equals(ColumnType.STRING)) {
+			return F.stringx((String) obj);
+			// } else if (t.equals(ColumnType.SKIP)) {
+			// ruleCache(cache, assoc, F.Rule(colName, F.Missing));
+		}
+		IExpr valueStr = F.stringx(obj.toString());
+		return valueStr;
 	}
 
 	@Override
@@ -435,6 +476,9 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table>, Externa
 
 	@Override
 	public int size() {
+		if (fTable.rowCount() == 1) {
+			return fTable.columnCount() + 1;
+		}
 		return fTable.rowCount() + 1;
 	}
 

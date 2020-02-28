@@ -91,51 +91,59 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
 		try {
 			if (ast.arg1().isList() && ast.arg2().isList() && ast.arg3().isList()) {
 				double[] arg1D = ast.arg1().toDoubleVector();
-				LinearObjectiveFunction f = new LinearObjectiveFunction(arg1D, 0);
-				Collection<LinearConstraint> constraints = new ArrayList<LinearConstraint>();
+				if (arg1D != null) {
+					LinearObjectiveFunction f = new LinearObjectiveFunction(arg1D, 0);
+					Collection<LinearConstraint> constraints = new ArrayList<LinearConstraint>();
 
-				IAST arg2 = (IAST) ast.arg2();
-				IAST arg3 = (IAST) ast.arg3();
-				if (arg2.size() != arg3.size()) {
-					return F.NIL;
-				}
-				double[] arg2D;
-				double[] arg3D;
-				for (int i = 1; i < arg2.size(); i++) {
-					arg2D = Expr2Object.toDoubleVector((IAST) arg2.get(i));
-					if (arg2.get(i).isList()) {
-						if (arg3.get(i).isList()) {
-							arg3D = Expr2Object.toDoubleVector((IAST) arg3.get(i));
-							if (arg3D.length >= 2) {
-								double val = arg3D[1];
-								if (val == 0.0) {
-									constraints.add(new LinearConstraint(arg2D, Relationship.EQ, arg3D[0]));
-								} else if (val < 0.0) {
-									constraints.add(new LinearConstraint(arg2D, Relationship.LEQ, arg3D[0]));
-								} else if (val > 0.0) {
+					IAST arg2 = (IAST) ast.arg2();
+					IAST arg3 = (IAST) ast.arg3();
+					if (arg2.size() != arg3.size()) {
+						return F.NIL;
+					}
+					double[] arg2D;
+					double[] arg3D;
+					for (int i = 1; i < arg2.size(); i++) {
+						if (arg2.get(i).isList()) {
+							arg2D = arg2.get(i).toDoubleVector( );
+							if (arg2D==null) {
+								return F.NIL;
+							}
+							if (arg3.get(i).isList()) {
+								arg3D =   arg3.get(i).toDoubleVector();
+								if (arg3D==null) {
+									return F.NIL;
+								}
+								if (arg3D.length >= 2) {
+									double val = arg3D[1];
+									if (val == 0.0) {
+										constraints.add(new LinearConstraint(arg2D, Relationship.EQ, arg3D[0]));
+									} else if (val < 0.0) {
+										constraints.add(new LinearConstraint(arg2D, Relationship.LEQ, arg3D[0]));
+									} else if (val > 0.0) {
+										constraints.add(new LinearConstraint(arg2D, Relationship.GEQ, arg3D[0]));
+									}
+								} else if (arg3D.length == 1) {
 									constraints.add(new LinearConstraint(arg2D, Relationship.GEQ, arg3D[0]));
 								}
-							} else if (arg3D.length == 1) {
-								constraints.add(new LinearConstraint(arg2D, Relationship.GEQ, arg3D[0]));
+							} else {
+								ISignedNumber sn = arg3.get(i).evalReal();
+								if (sn != null) {
+									constraints.add(new LinearConstraint(arg2D, Relationship.GEQ, sn.doubleValue()));
+								} else {
+									return engine.printMessage( "LinearProgramming: numeric vector or number expected!");
+								}
 							}
 						} else {
-							ISignedNumber sn = arg3.get(i).evalReal();
-							if (sn != null) {
-								constraints.add(new LinearConstraint(arg2D, Relationship.GEQ, sn.doubleValue()));
-							} else {
-								throw new WrongArgumentType(arg3, arg3.get(i), i, "Numeric vector or number expected!");
-							}
+							return engine.printMessage( "LinearProgramming: numeric vector expected!"); 
 						}
-					} else {
-						throw new WrongArgumentType(ast, ast.get(i), i, "Numeric vector expected!");
 					}
+					SimplexSolver solver = new SimplexSolver();
+					// PointValuePair solution = solver.optimize(f, constraints, GoalType.MINIMIZE, true);
+					PointValuePair solution = solver.optimize(f, new LinearConstraintSet(constraints),
+							GoalType.MINIMIZE, new NonNegativeConstraint(true), PivotSelectionRule.BLAND);
+					double[] values = solution.getPointRef();
+					return F.List(values);
 				}
-				SimplexSolver solver = new SimplexSolver();
-				// PointValuePair solution = solver.optimize(f, constraints, GoalType.MINIMIZE, true);
-				PointValuePair solution = solver.optimize(f, new LinearConstraintSet(constraints), GoalType.MINIMIZE,
-						new NonNegativeConstraint(true), PivotSelectionRule.BLAND);
-				double[] values = solution.getPointRef();
-				return F.List(values);
 			}
 		} catch (MathRuntimeException mre) {
 			// throw new WrappedException(oe);

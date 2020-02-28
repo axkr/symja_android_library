@@ -9920,9 +9920,6 @@ With({e = Expand((1 + x)^5)}, Function @@ {x, e})
 x=5;With({x = x}, Hold(x))
 
 
-newton(f_, x0_) := With({fp = f'}, FixedPoint(# - f(#)/fp(#) &, x0))
-
-
 newton(Cos,1.33)
 
 
@@ -17368,12 +17365,6 @@ LowerTriangularize({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}})
 LowerTriangularize({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}, {l,m,n,o}})
 
 
-FixedPointList(Cos, 1.0, 4)
-
-
-newton(n_) := FixedPointList(.5*(# + n/#) &, 1.);  newton(9)
-
-
 collatz(1) := 1
 
 
@@ -17381,18 +17372,6 @@ collatz(x_ ? EvenQ) := x / 2
 
 
 collatz(x_) := 3*x + 1
-
-
-FixedPointList(collatz, 14)
-
-
-FixedPointList(f, x, 0)
-
-
-FixedPointList(f, x, -1) 
-
-
-Last(FixedPointList(Cos, 1.0, Infinity))
 
 
 Composition(Through, {Identity, Sqrt}) /@ {0, 1.0, 2.0, 3.0, 4.0}
@@ -18812,27 +18791,6 @@ f(x_) := x^2
 ReplaceAll(Unevaluated(f(3)), 3 -> 1)
 
 
-FixedPoint(Cos, 1.0)
-
-
-FixedPoint(#+1 &, 1, 20)
-
-
-FixedPoint(f, x, 0)
-
-
-FixedPoint(f, x, -1)
-
-
-FixedPoint(Cos, 1.0, Infinity)
-
-
-FixedPoint((# + 2/#)/2 &, 1.)
-
-
-FixedPoint(1 + Floor(#/2) &, 1000)
-
-
 21!=0
 
 
@@ -18847,8 +18805,6 @@ FixedPoint(1 + Floor(#/2) &, 1000)
 
 {7, 0} /. {a_, b_} /; b != 0 -> {b, Mod(a, b)}
 
-
-FixedPoint(# /. {a_, b_} /; b != 0 -> {b, Mod(a, b)} &, {28, 21})
 
 
 ArithmeticGeometricMean({1.0, 2.0, 3.0, 4.0}, 42.0)
@@ -19139,13 +19095,8 @@ StringRiffle({"a", "b", "c", "d", "e"}, {"(", " ", ")"})
 StringRiffle({{"a", "b", "c"}, {"d", "e", "f"}})
 
 
-StringRiffle({{"a", "b", "c"}, {"d", "e", "f"}}, "\n", "\t")
-
-
 StringRiffle(Range(10), ", ")
 
-
-StringRiffle({{"a", "b", "c"}, {"d", "e", "f"}}, {"(", "\n", ")"},"-")
 
 
 a = 10

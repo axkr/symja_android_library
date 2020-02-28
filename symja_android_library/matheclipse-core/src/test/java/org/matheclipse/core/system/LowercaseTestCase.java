@@ -1072,6 +1072,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArithmeticGeometricMean() {
+		check("ArithmeticGeometricMean(1/2,42.0)", //
+				"11.34094");
 		check("ArithmeticGeometricMean({1.0, 2.0, 3.0, 4.0}, 42.0)", //
 				"{12.874,14.88314,16.37375,17.62155}");
 		check("ArithmeticGeometricMean(a, 1/a)", // orderless
@@ -5184,7 +5186,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testDSolve() {
-
+		check("DSolve({},y,t)", //
+				"DSolve({},y,t)");
 		check("DSolve(y'(t)==t+y(t), y, t)", //
 				"{{y->Function({t},-1-t+E^t*C(1))}}");
 		check("DSolve(y'(t)==y(t), y, t)", "{{y->Function({t},E^t*C(1))}}");
@@ -7538,7 +7541,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "Recursion limit 256 exceeded at: Null");
 		check("FixedPoint(-1/2,14)", //
 				"FixedPoint(-1/2,14)");
-		
+
 		check("FixedPoint(Cos, 1.0)", //
 				"0.739085");
 		check("FixedPoint(#+1 &, 1, 20)", //
@@ -10295,9 +10298,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Inverse({{1, 2, 0}, {2, 3, 0}, {3, 4, 1}})", //
 				"{{-3,2,0},\n" + " {2,-1,0},\n" + " {1,-2,1}}");
 		check("Inverse({{1, 0}, {0, 0}})", //
-				"Inverse({{1,0},{0,0}})");
+				"Inverse(\n" + //
+						"{{1,0},\n" + //
+						" {0,0}})");
 		check("Inverse({{1, 0, 0}, {0, Sqrt(3)/2, 1/2}, {0,-1 / 2, Sqrt(3)/2}})", //
-				"{{1,0,0},\n" + " {0,Sqrt(3)/2,-1/2},\n" + " {0,1/2,Sqrt(3)/2}}");
+				"{{1,0,0},\n" + //
+						" {0,Sqrt(3)/2,-1/2},\n" + //
+						" {0,1/2,Sqrt(3)/2}}");
 		check("Inverse({{u, v}, {v, u}})", //
 				"{{u/(u^2-v^2),-v/(u^2-v^2)},\n" + //
 						" {-v/(u^2-v^2),u/(u^2-v^2)}}");
@@ -10313,7 +10320,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Inverse({{u, v}, {v, u}}).{{u, v}, {v, u}}  // Simplify", //
 				"{{1,0},{0,1}}");
 		check("Inverse({{1,2}, {1,2}})", //
-				"Inverse({{1,2},{1,2}})");
+				"Inverse(\n" + //
+						"{{1,2},\n" + //
+						" {1,2}})");
 	}
 
 	public void testInverseBetaRegularized() {
@@ -11570,6 +11579,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLinearProgramming() {
+		check("LinearProgramming(Indeterminate,{{1,2}},{{3,0}})", //
+				"LinearProgramming(Indeterminate,{{1,2}},{{3,0}})");
 		check("LinearProgramming({},{{1,2}},{{3,0}})", //
 				"LinearProgramming({},{{1,2}},{{3,0}})");
 		check("LinearProgramming({1, 1}, {{1, 2}}, {3})", //
@@ -12346,12 +12357,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testMatrixPower() {
 		// github #121 - print error
 		check("MatrixPower({{2},{1}},2)", //
-				"MatrixPower({{2},{1}},2)");
+				"MatrixPower(\n" + //
+						"{{2},\n" + //
+						" {1}},2)");
 
 		check("MatrixPower({{1, 2}, {2, 5}}, -3)", //
-				"{{169,-70},\n" + " {-70,29}}");
+				"{{169,-70},\n" + //
+						" {-70,29}}");
 		check("MatrixPower({{1, 2}, {1, 1}}, 10)", //
-				"{{3363,4756},\n" + " {2378,3363}}");
+				"{{3363,4756},\n" + //
+						" {2378,3363}}");
 		check("MatrixPower({{1, 0}, {0}}, 2)", //
 				"MatrixPower({{1,0},{0}},2)");
 	}
@@ -16880,6 +16895,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testQRDecomposition() {
+		check("QRDecomposition(Indeterminate)", //
+				"QRDecomposition(Indeterminate)");
 		check("QRDecomposition({{1, 2}, {3, 4}, {5, 6}})", //
 				"{{{-0.169031,0.897085,0.408248},\n" + " {-0.507093,0.276026,-0.816497},\n"
 						+ " {-0.845154,-0.345033,0.408248}},{{-5.91608,-7.43736},\n" + " {0.0,0.828079},\n"
@@ -17679,7 +17696,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testReplaceAll() {
-
+		check("Indeterminate/.x->3", //
+				"Indeterminate");
 		check("{x,y,z}/.x -> 1", //
 				"{1,y,z}");
 		check("{x(x),y}/.x -> 1", //
@@ -19130,6 +19148,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 							"        a  |  12200  |             4  |\r\n" + //
 							"        b  |   5500  |             3  |\r\n" + //
 							"        c  |  60000  |            33  |]");
+			check("ds[[1,2]]", //
+					"12200");
 			check("ds(TakeLargest(2), \"Sales\") ", //
 					"{60000,12200}");
 			check("ds(GroupBy(\"Sales\"), \"Sales\") ", //
@@ -19219,6 +19239,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 							"        a  |             4  |\r\n" + //
 							"        b  |             3  |\r\n" + //
 							"        c  |            33  |]");
+			check("ds/.x->3", //
+					"Dataset[                                       \r\n" + //
+							" Products  |  Sales  |  Market_Share  |\r\n" + //
+							"---------------------------------------\r\n" + //
+							"        a  |  12200  |             4  |\r\n" + //
+							"        b  |   5500  |             3  |\r\n" + //
+							"        c  |  60000  |            33  |]");
 		}
 	}
 
@@ -20660,6 +20687,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStringRiffle() {
+		check("StringRiffle({{\"a\", \"b\", \"c\"}, {\"d\", \"e\", \"f\"}}, \"test\",0)", //
+				"StringRiffle({{a,b,c},{d,e,f}},test,0)");
 		check("StringRiffle({\"a\", \"b\", \"c\", \"d\", \"e\"})", //
 				"a b c d e");
 		check("StringRiffle({\"a\", \"b\", \"c\", \"d\", \"e\"}, {\"(\", \" \", \")\"})", //

@@ -111,7 +111,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 	private IExpr unaryODE(IAST uFunction1Arg, IExpr arg2, IExpr xVar, IASTAppendable listOfEquations,
 			IExpr[] boundaryCondition, EvalEngine engine) {
 		IAST listOfVariables = F.List(uFunction1Arg);
-		if (listOfEquations.size() <= 2) {
+		if (listOfEquations.size() == 2) {
 			IExpr C_1 = F.unaryAST1(F.C, F.C1); // constant C(1)
 			IExpr equation = listOfEquations.arg1();
 			IExpr temp = solveSingleODE(equation, xVar, listOfVariables, C_1, engine);

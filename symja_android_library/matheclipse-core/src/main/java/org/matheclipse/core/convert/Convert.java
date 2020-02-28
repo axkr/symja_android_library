@@ -73,32 +73,33 @@ public class Convert {
 	/**
 	 * Returns a FieldMatrix if possible.
 	 * 
-	 * @param listMatrix
+	 * @param expr
 	 * @return <code>null</code> if the conversion isn't possible.
 	 * @throws ClassCastException
 	 * @throws IndexOutOfBoundsException
 	 */
-	public static FieldMatrix<IExpr> list2Matrix(final IAST listMatrix)
+	public static FieldMatrix<IExpr> list2Matrix(final IExpr expr)
 			throws ClassCastException, IndexOutOfBoundsException {
-		if (listMatrix == null || listMatrix.isEmpty()) {
+		if (expr == null) {
 			return null;
 		}
-		if (!listMatrix.isList()) {
+		int[] dim = expr.isMatrix();
+		if (dim == null || dim[0] == 0 || dim[1] == 0) {
 			return null;
 		}
-
-		IAST currInRow = (IAST) listMatrix.arg1();
+		IAST list = (IAST) expr;
+		IAST currInRow = (IAST) list.arg1();
 		if (currInRow.isAST0()) {
 			// special case 0-Matrix
 			IExpr[][] array = new IExpr[0][0];
 			return new Array2DRowFieldMatrix<IExpr>(array, false);
 		}
-		final int rowSize = listMatrix.argSize();
+		final int rowSize = expr.argSize();
 		final int colSize = currInRow.argSize();
 
 		final IExpr[][] elements = new IExpr[rowSize][colSize];
 		for (int i = 1; i < rowSize + 1; i++) {
-			currInRow = (IAST) listMatrix.get(i);
+			currInRow = (IAST) list.get(i);
 			if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
 				return null;
 			}
@@ -218,24 +219,24 @@ public class Convert {
 	/**
 	 * Returns a FieldVector if possible.
 	 * 
-	 * @param listVector
+	 * @param expr
 	 * @return <code>null</code> if the conversion isn't possible.
 	 * @throws ClassCastException
 	 */
-	public static FieldVector<IExpr> list2Vector(final IAST listVector) throws ClassCastException {
-		if (listVector == null) {
+	public static FieldVector<IExpr> list2Vector(final IExpr expr) throws ClassCastException {
+		if (expr == null) {
 			return null;
 		}
-		final Object header = listVector.head();
-		if (header != F.List) {
+		int dim = expr.isVector();
+		if (dim <= 0) {
 			return null;
 		}
 
-		final int rowSize = listVector.argSize();
-
+		final int rowSize = expr.argSize();
+		IAST list = (IAST) expr;
 		final IExpr[] elements = new IExpr[rowSize];
 		for (int i = 0; i < rowSize; i++) {
-			elements[i] = listVector.get(i + 1);
+			elements[i] = list.get(i + 1);
 		}
 		return new ArrayFieldVector<IExpr>(elements, false);
 	}

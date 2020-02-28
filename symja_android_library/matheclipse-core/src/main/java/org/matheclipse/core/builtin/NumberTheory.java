@@ -189,11 +189,13 @@ public final class NumberTheory {
 						return bellB;
 					}
 				}
-
+			} catch(MathRuntimeException mre) {
+				return engine.printMessage(ast.topHead(), mre);
 			} catch (RuntimeException rex) {
 				if (Config.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
+				return engine.printMessage(ast.topHead(), rex);
 			}
 			return F.NIL;
 		}
@@ -4212,10 +4214,13 @@ public final class NumberTheory {
 						return stirlingS2((IInteger) nArg1, ki, k);
 					}
 				}
+			} catch(MathRuntimeException mre) {
+				return engine.printMessage(ast.topHead(), mre);
 			} catch (RuntimeException rex) {
 				if (Config.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
+				return engine.printMessage(ast.topHead(), rex);
 			}
 			return F.NIL;
 		}
@@ -4737,17 +4742,17 @@ public final class NumberTheory {
 	 * @return {@code S2(nArg1,kArg2)} or throw <code>ArithmeticException</code> if <code>n</code> cannot be converted
 	 *         into a positive int number
 	 */
-	public static IInteger stirlingS2(IInteger n, IInteger k, int ki) {
-		try {
-			int ni = n.toIntDefault(0);
-			if (ni != 0 && ni <= 25) {// S(26,9) = 11201516780955125625 is larger than Long.MAX_VALUE
-				return F.ZZ(CombinatoricsUtils.stirlingS2(ni, ki));
-			}
-		} catch (MathRuntimeException mre) {
-			if (Config.DEBUG) {
-				mre.printStackTrace();
-			}
+	public static IInteger stirlingS2(IInteger n, IInteger k, int ki) throws MathRuntimeException {
+		// try {
+		int ni = n.toIntDefault(0);
+		if (ni != 0 && ni <= 25) {// S(26,9) = 11201516780955125625 is larger than Long.MAX_VALUE
+			return F.ZZ(CombinatoricsUtils.stirlingS2(ni, ki));
 		}
+		// } catch (MathRuntimeException mre) {
+		// if (Config.DEBUG) {
+		// mre.printStackTrace();
+		// }
+		// }
 		IInteger sum = F.C0;
 		int nInt = n.toIntDefault(-1);
 		if (nInt < 0) {

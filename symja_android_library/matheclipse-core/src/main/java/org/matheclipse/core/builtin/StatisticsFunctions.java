@@ -4,9 +4,12 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
 
+import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
+import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.hipparchus.distribution.RealDistribution;
+import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.RandomDataGenerator;
@@ -326,28 +329,33 @@ public class StatisticsFunctions {
 
 		@Override
 		public IExpr e2DblComArg(final IComplexNum a, final IComplexNum b) {
-			IComplexNum a1 = a;
-			IComplexNum b1 = b;
-			while (a1.subtract(b1).abs().evalDouble() >= Config.DOUBLE_TOLERANCE) {
-				IComplexNum arith = a1.add(b1).multiply(F.complexNum(1 / 2.0));
-				IComplexNum geom = a1.multiply(b1).pow(F.complexNum(1 / 2.0));
-				a1 = arith;
-				b1 = geom;
-			}
-			return a1;
+			ApcomplexNum a1 = a.apcomplexNumValue(Config.MACHINE_PRECISION);
+			ApcomplexNum b1 = b.apcomplexNumValue(Config.MACHINE_PRECISION);
+			Apcomplex agm = ApcomplexMath.agm(a1.apcomplexValue(), b1.apcomplexValue());
+			return F.complex(agm.real().doubleValue(), agm.imag().doubleValue());
+			// IComplexNum a1 = a;
+			// IComplexNum b1 = b;
+			// while (a1.subtract(b1).abs().evalDouble() >= Config.DOUBLE_TOLERANCE) {
+			// IComplexNum arith = a1.add(b1).multiply(F.complexNum(1 / 2.0));
+			// IComplexNum geom = a1.multiply(b1).pow(F.complexNum(1 / 2.0));
+			// a1 = arith;
+			// b1 = geom;
+			// }
+			// return a1;
 		}
 
 		@Override
 		public IExpr e2DblArg(final INum a, final INum b) {
-			double a1 = a.doubleValue();
-			double b1 = b.doubleValue();
-			while (Math.abs(a1 - b1) >= Config.DOUBLE_TOLERANCE) {
-				double arith = (a1 + b1) / 2.0;
-				double geom = Math.sqrt(a1 * b1);
-				a1 = arith;
-				b1 = geom;
-			}
-			return F.num(a1);
+			return F.num(ApfloatMath.agm(new Apfloat(a.doubleValue()), new Apfloat(b.doubleValue())).doubleValue());
+			// double a1 = a.doubleValue();
+			// double b1 = b.doubleValue();
+			// while (Math.abs(a1 - b1) >= Config.DOUBLE_TOLERANCE) {
+			// double arith = (a1 + b1) / 2.0;
+			// double geom = Math.sqrt(a1 * b1);
+			// a1 = arith;
+			// b1 = geom;
+			// }
+			// return F.num(a1);
 		}
 
 		public IExpr e2ObjArg(IAST ast, final IExpr a, final IExpr b) {
@@ -3246,78 +3254,82 @@ public class StatisticsFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST1()) {
-				// KolmogorovSmirnovTest(data1)
-				double[] data1 = ast.arg1().toDoubleVector();
-				if (data1 != null && data1.length > 0) {
-					org.hipparchus.stat.inference.KolmogorovSmirnovTest test = new org.hipparchus.stat.inference.KolmogorovSmirnovTest();
-					double d = test.kolmogorovSmirnovTest(
-							new org.hipparchus.distribution.continuous.NormalDistribution(), data1, false);
-					return F.num(d);
-				}
-			} else if (ast.size() == 3 || ast.size() == 4) {
-				int property = 0;
-				if (ast.size() == 4) {
-					IExpr arg3 = ast.arg3();
-					if (!arg3.isString()) {
-						return F.NIL;
-					}
-					IStringX str = (IStringX) arg3;
-					if (str.toString().equals("PValue")) {
-						// KolmogorovSmirnovTest(data1, data2, "PValue")
-						property = 0;
-					} else if (str.toString().equals("TestData")) {
-						// KolmogorovSmirnovTest(data1, data2, "TestData")
-						property = 1;
-					} else {
-						return F.NIL;
-					}
-				}
-				int len1 = ast.arg1().isVector();
-				if (len1 > 0) {
+			try {
+				if (ast.isAST1()) {
+					// KolmogorovSmirnovTest(data1)
 					double[] data1 = ast.arg1().toDoubleVector();
-					if (data1 != null) {
-						double d, p;
-						int len2 = ast.arg2().isVector();
-						if (len2 > 0) {
-							double[] data2 = ast.arg2().toDoubleVector();
-							if (data2 != null) {
-								// KolmogorovSmirnovTest(data1, data2)
-								org.hipparchus.stat.inference.KolmogorovSmirnovTest test = new org.hipparchus.stat.inference.KolmogorovSmirnovTest();
-								switch (property) {
-								case 0:
-									p = test.kolmogorovSmirnovTest(data1, data2, false);
-									return F.num(p);
-								case 1:
-									p = test.kolmogorovSmirnovTest(data1, data2, false);
-									d = test.kolmogorovSmirnovStatistic(data1, data2);
-									return new ASTRealVector(new double[] { d, p }, false);
-								}
-							}
+					if (data1 != null && data1.length > 0) {
+						org.hipparchus.stat.inference.KolmogorovSmirnovTest test = new org.hipparchus.stat.inference.KolmogorovSmirnovTest();
+						double d = test.kolmogorovSmirnovTest(
+								new org.hipparchus.distribution.continuous.NormalDistribution(), data1, false);
+						return F.num(d);
+					}
+				} else if (ast.size() == 3 || ast.size() == 4) {
+					int property = 0;
+					if (ast.size() == 4) {
+						IExpr arg3 = ast.arg3();
+						if (!arg3.isString()) {
 							return F.NIL;
 						}
-						IExpr head = ast.arg2().head();
-						if (head instanceof IBuiltInSymbol) {
-							IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
-							if (evaluator instanceof IDistribution) {
-								RealDistribution dist = ((IDistribution) evaluator).dist();
-								if (dist != null) {
-									// KolmogorovSmirnovTest(data1, dist)
+						IStringX str = (IStringX) arg3;
+						if (str.toString().equals("PValue")) {
+							// KolmogorovSmirnovTest(data1, data2, "PValue")
+							property = 0;
+						} else if (str.toString().equals("TestData")) {
+							// KolmogorovSmirnovTest(data1, data2, "TestData")
+							property = 1;
+						} else {
+							return F.NIL;
+						}
+					}
+					int len1 = ast.arg1().isVector();
+					if (len1 > 0) {
+						double[] data1 = ast.arg1().toDoubleVector();
+						if (data1 != null) {
+							double d, p;
+							int len2 = ast.arg2().isVector();
+							if (len2 > 0) {
+								double[] data2 = ast.arg2().toDoubleVector();
+								if (data2 != null) {
+									// KolmogorovSmirnovTest(data1, data2)
 									org.hipparchus.stat.inference.KolmogorovSmirnovTest test = new org.hipparchus.stat.inference.KolmogorovSmirnovTest();
 									switch (property) {
 									case 0:
-										p = test.kolmogorovSmirnovTest(dist, data1, false);
+										p = test.kolmogorovSmirnovTest(data1, data2, false);
 										return F.num(p);
 									case 1:
-										p = test.kolmogorovSmirnovTest(dist, data1, false);
-										d = test.kolmogorovSmirnovStatistic(dist, data1);
+										p = test.kolmogorovSmirnovTest(data1, data2, false);
+										d = test.kolmogorovSmirnovStatistic(data1, data2);
 										return new ASTRealVector(new double[] { d, p }, false);
+									}
+								}
+								return F.NIL;
+							}
+							IExpr head = ast.arg2().head();
+							if (head instanceof IBuiltInSymbol) {
+								IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
+								if (evaluator instanceof IDistribution) {
+									RealDistribution dist = ((IDistribution) evaluator).dist();
+									if (dist != null) {
+										// KolmogorovSmirnovTest(data1, dist)
+										org.hipparchus.stat.inference.KolmogorovSmirnovTest test = new org.hipparchus.stat.inference.KolmogorovSmirnovTest();
+										switch (property) {
+										case 0:
+											p = test.kolmogorovSmirnovTest(dist, data1, false);
+											return F.num(p);
+										case 1:
+											p = test.kolmogorovSmirnovTest(dist, data1, false);
+											d = test.kolmogorovSmirnovStatistic(dist, data1);
+											return new ASTRealVector(new double[] { d, p }, false);
+										}
 									}
 								}
 							}
 						}
 					}
 				}
+			} catch (MathRuntimeException mre) {
+				return engine.printMessage(ast.topHead(), mre);
 			}
 			return F.NIL;
 		}

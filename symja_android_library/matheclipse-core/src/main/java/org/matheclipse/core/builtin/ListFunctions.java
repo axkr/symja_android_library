@@ -2360,10 +2360,17 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() == 3) {
-				return evaluateNestList3(ast, engine);
-			} else if (ast.size() == 4) {
-				return evaluateNestList4(ast, engine);
+			try {
+				if (ast.size() == 3) {
+					return evaluateNestList3(ast, engine);
+				} else if (ast.size() == 4) {
+					return evaluateNestList4(ast, engine);
+				}
+			} catch (RuntimeException rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
+				return engine.printMessage(ast.topHead(), rex);
 			}
 			return F.NIL;
 		}

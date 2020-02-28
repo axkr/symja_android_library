@@ -375,12 +375,18 @@ public final class StringFunctions {
 					left = list.arg1().toString();
 					sep1 = list.arg2().toString();
 					right = list.arg3().toString();
+				} else {
+					// String expected at position `1` in `2`.
+					return IOFunctions.printMessage(ast.topHead(), "string", F.List(F.C2, ast), engine);
 				}
 			}
 			if (ast.isAST3()) {
 				IExpr arg3 = ast.arg3();
 				if (arg3.isString()) {
-					sep2 = arg3.toString();
+					sep2 = arg3.toString(); 
+				} else {
+					// String expected at position `1` in `2`.
+					return IOFunctions.printMessage(ast.topHead(), "string", F.List(F.C3, ast), engine);
 				}
 			}
 			if (isListOfLists) {
