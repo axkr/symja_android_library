@@ -954,13 +954,14 @@ public class Solve extends AbstractFunctionEvaluator {
 	public static IExpr of(final IAST ast, boolean numeric, EvalEngine engine) {
 		boolean[] isNumeric = new boolean[] { false };
 		try {
-			if (ast.arg1().isAST(F.List,1)) {
+			if (ast.arg1().isAST(F.List, 1)) {
 				return F.List(F.CEmptyList);
 			}
-			IAST variables = Validate.checkIsVariableOrVariableList(ast, 2, engine);
-			if (variables.isPresent()) {
-				if (variables.isEmpty()) {
-					variables = VariablesSet.getVariables(ast.arg1());
+			IAST userDefinedVariables = Validate.checkIsVariableOrVariableList(ast, 2, engine);
+			if (userDefinedVariables.isPresent()) {
+				IAST equationVariables = VariablesSet.getVariables(ast.arg1());
+				if (userDefinedVariables.isEmpty()) {
+					userDefinedVariables = equationVariables;
 				}
 
 				ISymbol domain = F.Complexes;
@@ -970,15 +971,16 @@ public class Solve extends AbstractFunctionEvaluator {
 					}
 					domain = (ISymbol) ast.arg3();
 					if (domain.equals(F.Booleans)) {
-						return BooleanFunctions.solveInstances(ast.arg1(), variables, Integer.MAX_VALUE);
+						return BooleanFunctions.solveInstances(ast.arg1(), userDefinedVariables, Integer.MAX_VALUE);
 					}
 					if (domain.equals(F.Integers)) {
-						if (!variables.isEmpty()) {
+						if (!userDefinedVariables.isEmpty()) {
 							IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast, 1);
 							try {
 								// call cream solver
 								CreamConvert converter = new CreamConvert();
-								IAST resultList = converter.integerSolve(equationsAndInequations, variables);
+								IAST resultList = converter.integerSolve(equationsAndInequations, equationVariables,
+										userDefinedVariables, engine);
 								EvalAttributes.sort((IASTMutable) resultList);
 								return resultList;
 							} catch (LimitException le) {
@@ -1005,7 +1007,7 @@ public class Solve extends AbstractFunctionEvaluator {
 					return checkDomain(result, domain);
 				}
 				IASTMutable termsEqualZeroList = lists[0];
-				IExpr result = solveRecursive(termsEqualZeroList, lists[1], numericFlag, variables, engine);
+				IExpr result = solveRecursive(termsEqualZeroList, lists[1], numericFlag, userDefinedVariables, engine);
 				return checkDomain(result, domain);
 			}
 		} catch (

@@ -1,9 +1,10 @@
 package org.matheclipse.core.convert;
 
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.Map.Entry;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -20,7 +21,7 @@ import jp.ac.kobe_u.cs.cream.SolutionHandler;
 import jp.ac.kobe_u.cs.cream.Solver;
 
 /**
- * Convert <code>IExpr</code> classes from and to <a herf="http://bach.istc.kobe-u.ac.jp/cream/">Cream: Class Library
+ * Convert <code>IExpr</code> expressions from and to <a herf="http://bach.istc.kobe-u.ac.jp/cream/">Cream: Class Library
  * for Constraint Programming in Java</a>
  *
  */
@@ -30,10 +31,6 @@ public class CreamConvert {
 	public CreamConvert() {
 
 	}
-
-	// public IExpr cream2Expr(final Formula formula) throws ClassCastException {
-	// return F.NIL;
-	// }
 
 	public Network expr2Cream(final IAST list, final IAST variables) throws ClassCastException {
 		// Create a constraint network
@@ -75,7 +72,12 @@ public class CreamConvert {
 
 	private IntVariable integerVariable(Network net, IExpr expr) throws ArithmeticException {
 		if (expr instanceof ISymbol) {
-			return map.get(expr);
+			IntVariable temp = map.get(expr);
+			if (temp == null) {
+				temp = new IntVariable(net);
+				map.put((ISymbol) expr, temp);
+			}
+			return temp;
 		}
 		if (expr instanceof IInteger) {
 			int value = ((IInteger) expr).toInt(); // throws ArithmeticException
@@ -133,31 +135,50 @@ public class CreamConvert {
 		return map;
 	}
 
-	public  IAST integerSolve(final IAST list, final IAST variables) {
+	/**
+	 * Create a cream integer solver.
+	 * 
+	 * @param list
+	 * @param equationVariables
+	 *            all variables which are defined in the equations
+	 * @param userDefinedVariables
+	 *            all variables which are defined by the user. May contain additional variables which aren't available
+	 *            in <code>equationVariables</code>
+	 * @param engine
+	 * @return a list of rules with the integer solutions
+	 */
+	public IAST integerSolve(final IAST list, final IAST equationVariables, final IAST userDefinedVariables,
+			final EvalEngine engine) {
 		IASTAppendable result = F.ListAlloc();
-		
-		Solver solver = new DefaultSolver( expr2Cream(list, variables));
+
+		Solver solver = new DefaultSolver(expr2Cream(list, equationVariables));
 
 		solver.findAll(new SolutionHandler() {
 			@Override
 			public void solved(Solver solver, Solution solution) {
 				if (solution != null) {
+					IExpr listOfZZVariables = F.NIL;
+					IExpr complement = F.Complement.of(engine, userDefinedVariables, equationVariables);
+					if (complement.size() > 1 && complement.isList()) {
+						listOfZZVariables = F.Apply.of(engine, F.And,
+								((IAST) complement).mapThread(F.Element(F.Slot1, F.Integers), 1)); 
+					}
+
 					Set<Entry<ISymbol, IntVariable>> set = map.entrySet();
 					IASTAppendable temp = F.ListAlloc(set.size());
 					for (Entry<ISymbol, IntVariable> entry : set) {
-						temp.append(F.Rule(entry.getKey(), F.ZZ(solution.getIntValue(entry.getValue()))));
+						ISymbol variable = entry.getKey();
+						if (listOfZZVariables.isPresent()) {
+							temp.append(F.Rule(variable, F.ConditionalExpression(
+									F.ZZ(solution.getIntValue(entry.getValue())), listOfZZVariables)));
+						} else {
+							temp.append(F.Rule(variable, F.ZZ(solution.getIntValue(entry.getValue()))));
+						}
 					}
 					result.append(temp);
 				}
 			}
 		}, 10000);
-
-		// szenario for FindInstance ?
-		// Solution solution = solver.findFirst();
-		// for (Entry<ISymbol, IntVariable> entry : map.entrySet()) {
-		// result.append(F.Rule(entry.getKey(),
-		// F.integer(solution.getIntValue(entry.getValue()))));
-		// }
 		return result;
 	}
 }

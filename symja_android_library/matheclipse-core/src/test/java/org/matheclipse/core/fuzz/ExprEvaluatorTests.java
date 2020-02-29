@@ -79,9 +79,12 @@ public class ExprEvaluatorTests extends TestCase {
 //				F.ZZ(Integer.MIN_VALUE), //
 				F.CInfinity, //
 				F.CNInfinity, //
-				F.Indeterminate, //
+				F.Null,
+				F.Power(F.x,F.C2),
+//				F.Indeterminate, //
 				F.ComplexInfinity, //
-				F.CEmptyList, F.Subtract(F.C1, F.C1));
+				F.CEmptyList, //
+				F.Subtract(F.C1, F.C1));
 		while (i < node.size()) {
 			temp = ast2Expr.convert(node.get(i++));
 			if (temp.isAST() && temp.size() > 1) {

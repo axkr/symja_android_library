@@ -3532,7 +3532,7 @@ public final class BooleanFunctions {
 				if (ast.size() > 2) {
 					userDefinedVariables = ast.arg2().orNewList();
 					IExpr complement = F.Complement.of(engine, userDefinedVariables, variablesInFormula);
-					if (complement.size() > 1) {
+					if (complement.size() > 1 && complement.isList()) {
 						IASTAppendable or = F.Or();
 						or.append(arg1);
 						arg1 = or;
