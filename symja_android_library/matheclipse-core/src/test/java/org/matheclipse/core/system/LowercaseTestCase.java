@@ -8569,6 +8569,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGCD() {
+		check("GCD(-1/2, 5)", //
+				"1/2");
 		check("GCD(0,Cos(b*x)[[2]])", //
 				"GCD(0,Cos(b*x)[[2]])");
 		check("GCD(0, CoshIntegral(b*x))", //
@@ -15222,6 +15224,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// TODO
 		// check("Permutations({1, 2, 1} )", //
 		// "");
+		check("Permutations(x^2,{3})", //
+				"{}");
+		check("Permutations(x^2,{2})", //
+				"{x^2,2^x}");
+		check("Permutations(x^2,{1})", //
+				"{x,2}");
+		check("Permutations(x^2,{0})", //
+				"{{}}");
+		check("Permutations(x^2,{-1})", //
+				"Permutations(x^2,{-1})");
 		check("Permutations({1, 2, 3}, 2)", //
 				"{{},{1},{2},{3},{1,2},{1,3},{2,1},{2,3},{3,1},{3,2}}");
 		check("Permutations({1, 2, 3}, {2})", //
@@ -15491,6 +15503,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialExtendedGCD() {
+		check("PolynomialExtendedGCD(e*x^2+d,-2*d*e^2*Sqrt(-e/d)*x+2*d*e^2,z)", //
+				"{1,{0,1/(2*d*e^2-2*d*e^2*Sqrt(-e/d)*x)}}");
 		check("PolynomialExtendedGCD(e*x^2+d,-2*d*e^2*Sqrt(-e/d)*x+2*d*e^2,Infinity)", //
 				"PolynomialExtendedGCD(e*x^2+d,-2*d*e^2*Sqrt(-e/d)*x+2*d*e^2,Infinity)");
 		check("PolynomialExtendedGCD({},3*x,f(x,y))", //
@@ -15533,6 +15547,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialGCD() {
+		// TODO https://github.com/kredel/java-algebra-system/issues/15
+//		check("PolynomialGCD(-1/2,x^2-5*x+(-1)*6)", //
+//				"1/2");
 		check("PolynomialGCD(f(x),f(x)*x^2)", //
 				"f(x)");
 
@@ -21454,6 +21471,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTake() {
+		check("Take(x^2,{8,2,-1})", //
+				"Take(x^2,{8,2,-1})");
 		check("Take({a, b, c, d}, -2)", //
 				"{c,d}");
 		check("Take({a, b, c, d}, 3)", //

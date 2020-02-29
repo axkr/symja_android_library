@@ -141,7 +141,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	}
 
 	public static IInteger valueOf(final int newnum) {
-		if (newnum==Integer.MIN_VALUE) {
+		if (newnum == Integer.MIN_VALUE) {
 			return new BigIntegerSym(newnum);
 		}
 		return (newnum >= low && newnum <= high) ? cache[newnum + (-low)] : new IntegerSym(newnum);
@@ -462,7 +462,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		if (sign() < 0) {
 			result.append(F.CN1);
 		}
-			for (Int2IntMap.Entry entry : map.int2IntEntrySet()) {
+		for (Int2IntMap.Entry entry : map.int2IntEntrySet()) {
 			int key = entry.getIntKey();
 			IInteger is = valueOf(key);
 			for (int i = 0; i < entry.getIntValue(); i++) {
@@ -646,6 +646,9 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	public IExpr gcd(IExpr that) {
 		if (that instanceof IInteger) {
 			return gcd((IInteger) that);
+		}
+		if (that instanceof IFraction) {
+			((IFraction) that).gcd(F.fraction(toBigNumerator(), BigInteger.ONE));
 		}
 		return F.C1;
 	}

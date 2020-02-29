@@ -3513,7 +3513,8 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem994() {
-		check("PolynomialGCD(3+3*x^3,3+3*x^3)", "3+3*x^3");
+		check("PolynomialGCD(3+3*x^3,3+3*x^3)", //
+				"3+3*x^3");
 		check("PolynomialExtendedGCD(3+3*x^3,3+3*x^3,x)", "{1+x^3,{0,1/3}}");
 		check("PolynomialGCD(x^2-1,x-1)", "-1+x");
 		check("PolynomialGCD(x+1,x^2-1)", "1+x");

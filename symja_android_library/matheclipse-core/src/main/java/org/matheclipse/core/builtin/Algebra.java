@@ -2690,6 +2690,7 @@ public class Algebra {
 				// `1` is not a polynomial.
 				return IOFunctions.printMessage(ast.topHead(), "poly", F.List(expr2), engine);
 			}
+
 			if (ast.size() == 5) {
 				// List<IExpr> varList = r;
 				List<IExpr> varList = variables.copyTo();
@@ -2718,9 +2719,28 @@ public class Algebra {
 					return F.NIL;
 				}
 			}
-
 			try {
 				List<IExpr> varList = variables.copyTo();
+				IExpr variable = varList.get(0);
+				if (expr1.isFree(variable) || expr2.isFree(variable)) {
+					IASTAppendable list = F.ListAlloc(2);
+					list.append(F.C1);
+					IASTAppendable subList = F.ListAlloc(2);
+					subList.append(F.C0);
+					subList.append(F.Power(expr2, F.CN1));
+					list.append(subList);
+					return list;
+				}
+				if (!expr1.isPolynomial(variables) && !expr2.isPolynomial(variables)) {
+					IASTAppendable list = F.ListAlloc(2);
+					list.append(expr2);
+					IASTAppendable subList = F.ListAlloc(2);
+					subList.append(F.C0);
+					subList.append(F.C1);
+					list.append(subList);
+					return list;
+				}
+
 				JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
 				GenPolynomial<BigRational> poly1 = jas.expr2JAS(expr1, false);
 				GenPolynomial<BigRational> poly2 = jas.expr2JAS(expr2, false);
@@ -2751,26 +2771,6 @@ public class Algebra {
 				} catch (RuntimeException rex) {
 					if (Config.SHOW_STACKTRACE) {
 						rex.printStackTrace();
-					}
-				}
-				if (!expr1.isPolynomial(variables)) {
-					if (!expr2.isPolynomial(variables)) {
-						IASTAppendable list = F.ListAlloc(2);
-						list.append(expr2);
-						IASTAppendable subList = F.ListAlloc(2);
-						subList.append(F.C0);
-						subList.append(F.C1);
-						list.append(subList);
-						return list;
-					}
-					if (expr2.isFree(variables)) {
-						IASTAppendable list = F.ListAlloc(2);
-						list.append(F.C1);
-						IASTAppendable subList = F.ListAlloc(2);
-						subList.append(F.C0);
-						subList.append(F.Power(expr2, F.CN1));
-						list.append(subList);
-						return list;
 					}
 				}
 			}
@@ -2848,12 +2848,21 @@ public class Algebra {
 				GenPolynomial<BigInteger> poly = jas.expr2JAS(expr, false);
 				GenPolynomial<BigInteger> temp;
 				GreatestCommonDivisorAbstract<BigInteger> factory = GCDFactory.getImplementation(BigInteger.ZERO);
+
+				// TODO https://github.com/kredel/java-algebra-system/issues/15
+				// JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
+				// GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
+				// GenPolynomial<BigRational> temp;
+				// GreatestCommonDivisorAbstract<BigRational> factory = GCDFactory.getImplementation(BigRational.ZERO);
 				for (int i = 2; i < ast.size(); i++) {
 					expr = F.evalExpandAll(ast.get(i), engine);
 					temp = jas.expr2JAS(expr, false);
 					poly = factory.gcd(poly, temp);
 				}
+				// TODO https://github.com/kredel/java-algebra-system/issues/15
+				// return jas.rationalPoly2Expr(poly.monic(), true);
 				return jas.integerPoly2Expr(poly.monic());
+			} catch (ClassCastException cce) {
 			} catch (JASConversionException e) {
 				try {
 					if (eVar.size() == 0) {
