@@ -140,7 +140,7 @@ public abstract class AbstractFractionSym implements IFraction {
 			return MONE;
 		}
 
-		if (Integer.MIN_VALUE <= newnum && newnum <= Integer.MAX_VALUE) {
+		if (Integer.MIN_VALUE < newnum && newnum <= Integer.MAX_VALUE) {
 			return new FractionSym((int) newnum, 1);
 		}
 		return new BigFractionSym(BigInteger.valueOf(newnum), BigInteger.ONE);
