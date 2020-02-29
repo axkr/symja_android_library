@@ -10,6 +10,7 @@ import org.hipparchus.analysis.integration.gauss.GaussIntegratorFactory;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
+import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.Precision;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
@@ -193,6 +194,8 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 								maxPoints, maxIterations);
 						result = Precision.round(result, precisionGoal);
 						return Num.valueOf(result);
+					} catch (MathRuntimeException mre) {
+						engine.printMessage(ast.topHead(), mre);
 					} catch (Exception e) {
 						if (Config.SHOW_STACKTRACE) {
 							e.printStackTrace();

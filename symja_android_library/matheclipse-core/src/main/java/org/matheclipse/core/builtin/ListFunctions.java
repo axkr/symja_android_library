@@ -5786,8 +5786,8 @@ public final class ListFunctions {
 				} else {
 					return engine.printMessage("Take: Nonatomic expression expected at position 1");
 				}
-			} catch (final IllegalArgument e) {
-				return engine.printMessage("Take: " + e.getMessage());
+			} catch (final ValidateException ve) {
+				return engine.printMessage(ve.getMessage(ast.topHead()));
 			} catch (final Exception e) {
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
@@ -5823,11 +5823,12 @@ public final class ListFunctions {
 			int step = sequ.getStep();
 			if (step < 0) {
 				end--;
-				if (start < end || end <= 0) {
-					throw new IllegalArgument(
-							"Cannot execute take positions " + start + " through " + end + " in " + list);
-					// return F.NIL;
+				if (start < end || end <= 0 || start >= list.size()) {
+					// Cannot take positions `1` through `2` in `3`.
+					String str = IOFunctions.getMessage("take", F.List(F.ZZ(start), F.ZZ(end), list), EvalEngine.get());
+					throw new ArgumentTypeException(str);
 				}
+				// negative step used here
 				for (int i = start; i >= end; i += step) {
 					if (sequenceSpecifications.length > newLevel) {
 						if (list.get(i).isAST()) {
@@ -5843,12 +5844,20 @@ public final class ListFunctions {
 				if (start == 0) {
 					return resultList;
 				}
+				if (end > list.size()) {
+					// Cannot take positions `1` through `2` in `3`.
+					String str = IOFunctions.getMessage("take", F.List(F.ZZ(start), F.ZZ(end - 1), list),
+							EvalEngine.get());
+					throw new ArgumentTypeException(str);
+				}
 				for (int i = start; i < end; i += step) {
 					if (sequenceSpecifications.length > newLevel) {
 						if (list.get(i).isAST()) {
 							resultList.append(take((IAST) list.get(i), newLevel, sequenceSpecifications));
 						} else {
-							throw new IllegalArgument("Cannot execute take for argument: " + list.get(i).toString());
+							// List expected at position `1` in `2`.
+							String str = IOFunctions.getMessage("list", F.List(F.ZZ(i), list), EvalEngine.get());
+							throw new ArgumentTypeException(str);
 						}
 					} else {
 						resultList.append(list.get(i));

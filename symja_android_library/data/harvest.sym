@@ -23112,9 +23112,6 @@ NIntegrate(1/x, {x,0,5}, Method->Simpson)
 NIntegrate(1/x, {x,0,5}, Method->Trapezoid)
 
 
-NIntegrate(ln(x^2), {x, -5, 99}, Method->Romberg, MaxPoints->400, MaxIterations->10000000)
-
-
 NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1})
 
 
@@ -23125,9 +23122,6 @@ NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Simpson)
 
 
 NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Trapezoid)
-
-
-NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Trapezoid, MaxIterations->5000)
 
 
 NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Romberg)

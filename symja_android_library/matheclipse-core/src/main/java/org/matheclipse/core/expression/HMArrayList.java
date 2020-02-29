@@ -744,13 +744,16 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 
 	@Override
 	public final IExpr get(int location) {
+		if (Config.SHOW_STACKTRACE) {
+			int index;
+			if ((index = firstIndex + location) < lastIndex) {
+				return array[index];
+			}
+			throw new IndexOutOfBoundsException(
+					"Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(lastIndex - firstIndex));
+		}
 		return array[firstIndex + location];
-		// int index;
-		// if ((index = firstIndex + location) < lastIndex) {
-		// return array[index];
-		// }
-		// throw new IndexOutOfBoundsException(
-		// "Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(lastIndex - firstIndex));
+
 	}
 
 	private void growAtEnd(int required) {

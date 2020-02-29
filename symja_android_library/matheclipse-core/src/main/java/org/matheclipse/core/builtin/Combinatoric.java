@@ -1182,7 +1182,12 @@ public final class Combinatoric {
 						}
 					}
 				}
-
+				if (parts < 0) {
+					return F.NIL;
+				}
+				if (parts > list.argSize()) {
+					return F.CEmptyList;
+				}
 				final IASTAppendable result = F.ListAlloc(100);
 				return createPermutationsWithNParts(list, parts, result);
 			}
@@ -1194,6 +1199,14 @@ public final class Combinatoric {
 			return IOFunctions.ARGS_1_2;
 		}
 
+		/**
+		 * All permutations with exactly <code>parts</code>.
+		 * 
+		 * @param list
+		 * @param parts
+		 * @param result
+		 * @return
+		 */
 		private IAST createPermutationsWithNParts(final IAST list, int parts, final IASTAppendable result) {
 			if (parts == 0) {
 				result.append(F.List());
