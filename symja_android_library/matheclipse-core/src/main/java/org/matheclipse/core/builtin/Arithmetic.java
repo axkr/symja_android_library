@@ -2772,10 +2772,7 @@ public final class Arithmetic {
 			int ni = n.toIntDefault(Integer.MIN_VALUE);
 			if (a.isRational() && ni > Integer.MIN_VALUE) {
 				BigFraction bf = ((IRational) a).toBigFraction();
-				return pochhammer(bf, ni);
-//				if (ph != null) {
-//					return F.fraction(ph);
-//				}
+				return pochhammer(bf, ni); 
 			}
 			if (a.isInteger() && a.isPositive()) {
 				IExpr temp = EvalEngine.get().evaluate(F.Plus(((IInteger) a).subtract(F.C1), n));
