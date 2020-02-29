@@ -2772,10 +2772,10 @@ public final class Arithmetic {
 			int ni = n.toIntDefault(Integer.MIN_VALUE);
 			if (a.isRational() && ni > Integer.MIN_VALUE) {
 				BigFraction bf = ((IRational) a).toBigFraction();
-				BigFraction ph = pochhammer(bf, ni);
-				if (ph != null) {
-					return F.fraction(ph);
-				}
+				return pochhammer(bf, ni);
+//				if (ph != null) {
+//					return F.fraction(ph);
+//				}
 			}
 			if (a.isInteger() && a.isPositive()) {
 				IExpr temp = EvalEngine.get().evaluate(F.Plus(((IInteger) a).subtract(F.C1), n));
@@ -2811,24 +2811,27 @@ public final class Arithmetic {
 		 *            The number of product terms in the evaluation.
 		 * @return Gamma(that+n)/Gamma(that) = that*(that+1)*...*(that+n-1).
 		 */
-		public static BigFraction pochhammer(BigFraction that, final int n) {
+		public static IExpr pochhammer(BigFraction that, final int n) {
 			if (n < 0) {
 				BigFraction res = BigFraction.ONE;
 				for (int i = (-1); i >= n; i--) {
 					res = res.multiply(that.add(i));
 				}
-				return res.reciprocal();
+				if (res.equals(BigFraction.ZERO)) {
+					return F.CComplexInfinity;
+				}
+				return F.fraction(res.reciprocal());
 			} else if (n == 0) {
-				return BigFraction.ONE;
+				return F.C1;
 			} else {
 				if (that.equals(BigFraction.ZERO)) {
-					return BigFraction.ZERO;
+					return F.C0;
 				}
 				BigFraction res = that;
 				for (int i = 1; i < n; i++) {
 					res = res.multiply(that.add(i));
 				}
-				return res;
+				return F.fraction(res);
 			}
 		}
 

@@ -15360,6 +15360,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPochhammer() {
+		check("Pochhammer({-7,-6,-5,-4,-3,-2,-1,0,1,2,3},-5)", //
+				"{-1/95040,-1/55440,-1/30240,-1/15120,-1/6720,-1/2520,-1/720,-1/120,ComplexInfinity,ComplexInfinity,ComplexInfinity}");
+		check("Pochhammer({-2,-1,0,1,2,3},-2)", //
+				"{1/12,1/6,1/2,ComplexInfinity,ComplexInfinity,1/2}");
 		check("Pochhammer(1.011111111111000000000000000, 8)", //
 				"4.15522758490877803808882957*10^4");
 		check("Pochhammer(m, n) // FunctionExpand", //
@@ -19854,7 +19858,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{}}");
 		check("Solve(1-1/10*i*1==0,{},Integers)", //
 				"{{i->10}}");
-		
+
 		// https://github.com/tranleduy2000/ncalc/issues/79
 		// 0x + 50y + 2z = 20
 		// -6x - 12y + 20z = 8
