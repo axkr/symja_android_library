@@ -5188,6 +5188,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testDSolve() {
+		check("DSolve(y'(x)==2*x*y(x)^2,Null,x)", //
+				"DSolve(y'(x)==2*x*y(x)^2,Null,x)");
 		check("DSolve({},y,t)", //
 				"DSolve({},y,t)");
 		check("DSolve(y'(t)==t+y(t), y, t)", //
@@ -5522,6 +5524,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEllipticPi() {
+		// TODO https://github.com/axkr/symja_android_library/issues/172
+		check("EllipticPi(I,1+(-1)*1,0.3)", //
+				"0.0");
 		check("Table(EllipticPi(x+I,0.5), {x,-2.0, 2.0, 1/4})", //
 				"{0.978856+I*0.171427,1.01788+I*0.193752,1.06089+I*0.221026,1.10832+I*0.254803,1.16047+I*0.297252," //
 						+ "1.21733+I*0.351426,1.27808+I*0.421604,1.34015+I*0.513624,1.39738+I*0.63483,1.437+I*0.79243," //
@@ -8986,7 +8991,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHornerForm() {
-
+		check("HornerForm(#2)", //
+				"#2");
 		check("Horner(Infinity)", //
 				"Infinity");
 
@@ -12061,6 +12067,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMap() {
+		check("Map(#2,1/Sqrt(5),2,Heads->True)", //
+				"#2[Power][#2[5],#2[-1/2]]");
 		check("Map(f, {{{{a}}}}, -2)", //
 				"{f({f({f({a})})})}");
 
@@ -13155,6 +13163,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Select(Range(2,200), MultiplicativeOrder(10, # )== # - 1 &)", //
 				"{7,17,19,23,29,47,59,61,97,109,113,131,149,167,179,181,193}");
 
+		check("MultiplicativeOrder(-1,0)", //
+				"MultiplicativeOrder(-1,0)");
 		check("MultiplicativeOrder(7, 108)", //
 				"18");
 		check("MultiplicativeOrder(10^100 + 1, Prime(1000))", //
@@ -20931,7 +20941,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{ComplexInfinity,Infinity}");
 		check("Subsets(Infinity,-Infinity)", //
 				"Subsets(Infinity,-Infinity)");
-		
+
 		// https://oeis.org/A018900 - Sum of two distinct powers of 2
 		check("Union(Total/@Subsets(2^Range(0, 10), {2}))", //
 				"{3,5,6,9,10,12,17,18,20,24,33,34,36,40,48,65,66,68,72,80,96,129,130,132,136,144,\n"

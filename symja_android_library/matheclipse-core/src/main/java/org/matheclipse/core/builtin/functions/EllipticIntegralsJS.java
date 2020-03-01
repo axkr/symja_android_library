@@ -7,8 +7,8 @@ import org.matheclipse.core.basic.Config;
 
 /**
  * 
- * Ported from JavaScript file
- * <a href="https://github.com/paulmasson/math/blob/master/src/functions/elliptic-integrals.js">elliptic-integrals.js</a>
+ * Ported from JavaScript file <a href=
+ * "https://github.com/paulmasson/math/blob/master/src/functions/elliptic-integrals.js">elliptic-integrals.js</a>
  */
 public class EllipticIntegralsJS {
 
@@ -307,10 +307,10 @@ public class EllipticIntegralsJS {
 		// if ( !isComplex(x) ) x = complex(x);
 
 		Complex period = Complex.ZERO;
-		if (Math.abs(x.getReal()) > (Math.PI / 2) ) {
+		if (Math.abs(x.getReal()) > (Math.PI / 2)) {
 			long p = Math.round(x.getReal() / Math.PI);
 			x = new Complex(x.getReal() - p * Math.PI, x.getImaginary());
-			period = ellipticK(m).multiply(p+p);
+			period = ellipticK(m).multiply(p + p);
 		}
 
 		return x.sin().multiply(carlsonRF(x.cos().pow(2), m.multiply(x.sin().pow(2)).negate().add(1), Complex.ONE))
@@ -328,7 +328,7 @@ public class EllipticIntegralsJS {
 		if (Math.abs(x) > Math.PI / 2.0) {
 			long p = Math.round(x / Math.PI);
 			x = x - p * Math.PI;
-			period = ellipticK(m).multiply(p+p);
+			period = ellipticK(m).multiply(p + p);
 		}
 
 		return carlsonRF(Math.pow(Math.cos(x), 2), 1 - m * Math.pow(Math.sin(x), 2), 1).multiply(Math.sin(x))
@@ -360,7 +360,7 @@ public class EllipticIntegralsJS {
 		if (Math.abs(x.getReal()) > Math.PI / 2.0) {
 			long p = Math.round(x.getReal() / Math.PI);
 			x = new Complex(x.getReal() - p * Math.PI, x.getImaginary());
-			period = ellipticE(new Complex(Math.PI / 2.0), m).multiply(p+p);
+			period = ellipticE(new Complex(Math.PI / 2.0), m).multiply(p + p);
 		}
 
 		Complex diff = m.multiply(x.sin().pow(2.0)).negate().add(1.0);
@@ -380,11 +380,11 @@ public class EllipticIntegralsJS {
 		if (Math.abs(x) > Math.PI / 2.0) {
 			long p = Math.round(x / Math.PI);
 			x = x - p * Math.PI;
-			period = ellipticE(Math.PI / 2.0, m).multiply(p+p);
+			period = ellipticE(Math.PI / 2.0, m).multiply(p + p);
 		}
 
-		return period
-				.add(carlsonRF(Math.pow(Math.cos(x), 2), 1.0 - m * Math.pow(Math.sin(x), 2.0), 1.0).multiply(Math.sin(x))
+		return period.add(
+				carlsonRF(Math.pow(Math.cos(x), 2), 1.0 - m * Math.pow(Math.sin(x), 2.0), 1.0).multiply(Math.sin(x))
 						.subtract(carlsonRD(Math.pow(Math.cos(x), 2.0), 1 - m * Math.pow(Math.sin(x), 2.0), 1.0)
 								.multiply(m / 3.0 * Math.pow(Math.sin(x), 3.0))));
 
@@ -405,14 +405,21 @@ public class EllipticIntegralsJS {
 		if (Math.abs(x.getReal()) > Math.PI / 2.0) {
 			long p = Math.round(x.getReal() / Math.PI);
 			x = new Complex(x.getReal() - p * Math.PI, x.getImaginary());
-			period = ellipticPi(n, new Complex(Math.PI), m).multiply(p+p);
+			period = ellipticPi(n, new Complex(Math.PI), m).multiply(p + p);
 		}
-
-		return carlsonRF(x.cos().pow(2), x.sin().pow(2).multiply(m).negate().add(1), Complex.ONE).multiply(x.sin())
-				.add(n.multiply(x.sin().pow(3)
-						.multiply(carlsonRJ(x.cos().multiply(x.cos()),
-								Complex.ONE.subtract(m.multiply(x.sin()).multiply(x.sin())), Complex.ONE,
-								Complex.ONE.subtract(n.multiply(x.sin()).multiply(x.sin()))).multiply(1.0 / 3.0))))
+		Complex a2;
+		Complex aAdd1;
+		if (x.equals(Complex.ZERO)) {
+			a2 = Complex.ONE;
+			aAdd1 = Complex.ZERO;
+		} else {
+			a2 = x.sin().pow(2.0).multiply(m).negate().add(1.0);
+			aAdd1 = x.sin().pow(3);
+		}
+		return carlsonRF(x.cos().pow(2), a2, Complex.ONE).multiply(x.sin())
+				.add(n.multiply(aAdd1.multiply(carlsonRJ(x.cos().multiply(x.cos()),
+						Complex.ONE.subtract(m.multiply(x.sin()).multiply(x.sin())), Complex.ONE,
+						Complex.ONE.subtract(n.multiply(x.sin()).multiply(x.sin()))).multiply(1.0 / 3.0))))
 				.add(period);
 
 		// }
