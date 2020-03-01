@@ -385,6 +385,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAppendTo() {
+		check("AppendTo(Null,1)", //
+				"AppendTo(Null,1)");
 		check("s = {}", //
 				"{}");
 		check("AppendTo(s, 1)", //
@@ -7154,6 +7156,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFindInstance() {
+		check("FindInstance(1,{a,b,c,d},Booleans)", //
+				"FindInstance(1,{a,b,c,d},Booleans)");
 		check("FindInstance(-1+4*Sin(x)==0,x)", //
 				"{{x->ArcSin(1/4)}}");
 		check("FindInstance(2*Sin(x)==1/2,x)", //
@@ -11045,6 +11049,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// {-1577780898195/827587904419-11087326045520/827587904419*I,
 		// 35583840059240/5793115330933+275839049310660/5793115330933*I,
 		// -3352155369084/827587904419-28321055437140/827587904419*I}
+		check("LeastSquares({{1,1},{1,2},{1,3.0}},{})", //
+				"LeastSquares(\n" + //
+						"{{1,1},\n" + //
+						" {1,2},\n" + //
+						" {1,3.0}},{})");
 		check("Table(Complex(i,Rational(2 * i + 2 + j, 1 + 9 * i + j)),{i,0,3},{j,0,2})", //
 				"{{I*2,I*3/2,I*4/3},{1+I*2/5,1+I*5/11,1+I*1/2},{2+I*6/19,2+I*7/20,2+I*8/21},{3+\n"
 						+ "I*2/7,3+I*9/29,3+I*1/3}}");
@@ -15548,8 +15557,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testPolynomialGCD() {
 		// TODO https://github.com/kredel/java-algebra-system/issues/15
-//		check("PolynomialGCD(-1/2,x^2-5*x+(-1)*6)", //
-//				"1/2");
+		// check("PolynomialGCD(-1/2,x^2-5*x+(-1)*6)", //
+		// "1/2");
 		check("PolynomialGCD(f(x),f(x)*x^2)", //
 				"f(x)");
 
@@ -15599,6 +15608,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialLCM() {
+		// TODO https://github.com/kredel/java-algebra-system/issues/15
+		// check("PolynomialLCM(x^2+7*x+6,-1/2)", //
+		// "");
+
 		check("PolynomialLCM(f(x)*y^3,f(x)*x^2)", //
 				"x^2*y^3*f(x)");
 		// wikipedia example https://en.wikipedia.org/wiki/Polynomial_greatest_common_divisor
@@ -19051,6 +19064,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSelect() {
+		check("Select({1,2,4,7,6,2},#1>2&,0)", //
+				"{}");
 		check("Select({-3, 0}, #>10&)", //
 				"{}");
 		check("Select(<|a -> 1, b -> 2, c -> 3, d -> 4|>, # > 6 &)", //
@@ -20910,6 +20925,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSubsets() {
+		check("Subsets(Infinity,4)", //
+				"{ComplexInfinity,Infinity}");
+		
 		// https://oeis.org/A018900 - Sum of two distinct powers of 2
 		check("Union(Total/@Subsets(2^Range(0, 10), {2}))", //
 				"{3,5,6,9,10,12,17,18,20,24,33,34,36,40,48,65,66,68,72,80,96,129,130,132,136,144,\n"
@@ -21553,6 +21571,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTagSet() {
+		check("f/:format(f)=0", //
+				"0");
+		check("f/:format(f)/:0", //
+				"Syntax error in line: 1 - Operator: '/:' not created properly (no grouping defined)\n" + //
+						"f/:format(f)/:0\n" + //
+						"             ^");
 		check("f/: Format(f) = \"TagSet test\"", //
 				"TagSet test");
 		check("Format(f)", //

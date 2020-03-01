@@ -22,11 +22,10 @@ import org.logicng.solvers.SATSolver;
 import org.logicng.transformations.cnf.CNFFactorization;
 import org.logicng.transformations.dnf.DNFFactorization;
 import org.logicng.transformations.qmc.QuineMcCluskeyAlgorithm;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -144,18 +143,17 @@ public final class BooleanFunctions {
 			this.factory = factory;
 		}
 
-		public Variable[] ast2Variable(final IAST listOfSymbols) throws ClassCastException {
+		public Variable[] ast2Variable(final IAST listOfSymbols) {
 			if (listOfSymbols instanceof IAST) {
 				Variable[] result = new Variable[listOfSymbols.argSize()];
 				for (int i = 1; i < listOfSymbols.size(); i++) {
 					IExpr temp = listOfSymbols.get(i);
 					if (temp instanceof ISymbol) {
 						ISymbol symbol = (ISymbol) temp;
-						if (symbol.isFalse()) {
-							throw new ClassCastException(F.False.toString());
-						}
-						if (symbol.isTrue()) {
-							throw new ClassCastException(F.True.toString());
+						if (symbol.isFalse() || symbol.isTrue()) {
+							// `1` is not a valid variable.
+							String str = IOFunctions.getMessage("ivar", F.List(symbol), EvalEngine.get());
+							throw new ArgumentTypeException(str);
 						}
 						Variable v = symbol2variableMap.get(symbol);
 						if (v == null) {
@@ -167,15 +165,20 @@ public final class BooleanFunctions {
 							result[i - 1] = v;
 						}
 					} else {
-						throw new ClassCastException(temp.toString());
+						// `1` is not a valid variable.
+						String str = IOFunctions.getMessage("ivar", F.List(temp), EvalEngine.get());
+						throw new ArgumentTypeException(str);
 					}
 				}
 				return result;
 			}
-			throw new ClassCastException(listOfSymbols.toString());
+
+			// `1` is not a valid variable.
+			String str = IOFunctions.getMessage("ivar", F.List(listOfSymbols), EvalEngine.get());
+			throw new ArgumentTypeException(str);
 		}
 
-		public IExpr booleanFunction2Expr(final Formula formula) throws ClassCastException {
+		public IExpr booleanFunction2Expr(final Formula formula) {
 			if (formula instanceof org.logicng.formulas.And) {
 				org.logicng.formulas.And a = (org.logicng.formulas.And) formula;
 				IExpr[] result = new IExpr[a.numberOfOperands()];
@@ -209,7 +212,10 @@ public final class BooleanFunctions {
 				}
 				return F.Not(mapToSymbol(a.variable()));
 			}
-			throw new ClassCastException(formula.toString());
+			// illegal arguments: \"`1`\" in `2`
+			String str = IOFunctions.getMessage("argillegal",
+					F.List(F.stringx(formula.toString()), F.stringx("LogicFormula")), EvalEngine.get());
+			throw new ArgumentTypeException(str);
 		}
 
 		private ISymbol mapToSymbol(Variable v) {
@@ -246,7 +252,7 @@ public final class BooleanFunctions {
 			return factory.or(factory.and(arg1, factory.not(arg2)), factory.and(factory.not(arg1), arg2));
 		}
 
-		public Formula expr2BooleanFunction(final IExpr logicExpr) throws ClassCastException {
+		public Formula expr2BooleanFunction(final IExpr logicExpr) {
 			if (logicExpr instanceof IAST) {
 				final IAST ast = (IAST) logicExpr;
 				int functionID = ast.headID();
@@ -341,19 +347,24 @@ public final class BooleanFunctions {
 				}
 				return v;
 			}
-			throw new ClassCastException(logicExpr.toString());
+			// illegal arguments: \"`1`\" in `2`
+			String str = IOFunctions.getMessage("argillegal", F.List(logicExpr, F.stringx("LogicFormula")),
+					EvalEngine.get());
+			throw new ArgumentTypeException(str);
 		}
 
 		public FormulaFactory getFactory() {
 			return factory;
 		}
 
-		public Collection<Variable> list2LiteralCollection(final IAST list) throws ClassCastException {
+		private Collection<Variable> list2LiteralCollection(final IAST list) {
 			Collection<Variable> arr = new ArrayList<Variable>(list.argSize());
 			for (int i = 1; i < list.size(); i++) {
 				IExpr temp = list.get(i);
 				if (!temp.isSymbol()) {
-					throw new ClassCastException(temp.toString());
+					// illegal arguments: \"`1`\" in `2`
+					String str = IOFunctions.getMessage("argillegal", F.List(temp, list), EvalEngine.get());
+					throw new ArgumentTypeException(str);
 				}
 
 				ISymbol symbol = (ISymbol) temp;
@@ -827,10 +838,9 @@ public final class BooleanFunctions {
 					return lf.booleanFunction2Expr(formula.transform(transformation));
 				}
 
-			} catch (ClassCastException cce) {
-				if (Config.DEBUG) {
-					cce.printStackTrace();
-				}
+			} catch (final ValidateException ve) {
+				// int number validation
+				return engine.printMessage(ve.getMessage(ast.topHead()));
 			}
 			return F.NIL;
 		}
@@ -3452,12 +3462,10 @@ public final class BooleanFunctions {
 					userDefinedVariables = vSet.getVarList();
 				}
 				return logicNGSatisfiabilityCount(arg1, userDefinedVariables);
-			} catch (ClassCastException cce) {
-				if (Config.DEBUG) {
-					cce.printStackTrace();
-				}
+			} catch (final ValidateException ve) {
+				// int number validation
+				return engine.printMessage(ve.getMessage(ast.topHead()));
 			}
-			return F.NIL;
 		}
 
 		public int[] expectedArgSize() {
@@ -3558,12 +3566,10 @@ public final class BooleanFunctions {
 					userDefinedVariables = variablesInFormula;
 				}
 				return satisfiabilityInstances(arg1, userDefinedVariables, maxChoices);
-			} catch (ClassCastException cce) {
-				if (Config.DEBUG) {
-					cce.printStackTrace();
-				}
+			} catch (final ValidateException ve) {
+				// int number validation
+				return engine.printMessage(ve.getMessage(ast.topHead()));
 			}
-			return F.NIL;
 		}
 
 		public int[] expectedArgSize() {
@@ -3623,12 +3629,11 @@ public final class BooleanFunctions {
 					return logicNGSatisfiableQ(arg1);
 				}
 				return bruteForceSatisfiableQ(arg1, userDefinedVariables, 1) ? F.True : F.False;
-			} catch (ClassCastException cce) {
-				if (Config.DEBUG) {
-					cce.printStackTrace();
-				}
+
+			} catch (final ValidateException ve) {
+				// int number validation
+				return engine.printMessage(ve.getMessage(ast.topHead()));
 			}
-			return F.NIL;
 		}
 
 		public int[] expectedArgSize() {
@@ -3736,12 +3741,10 @@ public final class BooleanFunctions {
 				}
 
 				return bruteForceTautologyQ(arg1, userDefinedVariables, 1) ? F.True : F.False;
-			} catch (ClassCastException cce) {
-				if (Config.DEBUG) {
-					cce.printStackTrace();
-				}
+			} catch (final ValidateException ve) {
+				// int number validation
+				return engine.printMessage(ve.getMessage(ast.topHead()));
 			}
-			return F.NIL;
 		}
 
 		public int[] expectedArgSize() {

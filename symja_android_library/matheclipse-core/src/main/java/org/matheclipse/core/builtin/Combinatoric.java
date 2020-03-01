@@ -1447,7 +1447,12 @@ public final class Combinatoric {
 				}
 
 				IASTAppendable temp = fResultList.copyAppendable();
-				return temp.appendArgs(0, fK, i -> fList.get(j[i] + fOffset));
+				return temp.appendArgs(0, fK, i -> {
+					if (j.length > i && fList.size() > (j[i] + fOffset)) {
+						return fList.get(j[i] + fOffset);
+					}
+					return F.NIL;
+				});
 				// for (int i = 0; i < fK; i++) {
 				// temp.append(fList.get(j[i] + fOffset));
 				// }
@@ -1487,9 +1492,9 @@ public final class Combinatoric {
 					final LevelSpecification level;
 					if (ast.isAST2()) {
 						if (ast.arg2().isInteger()) {
-							n = ((IInteger) ast.arg2()).toIntDefault(Integer.MIN_VALUE);
+							n = ast.arg2().toIntDefault();
 							if (n > Integer.MIN_VALUE) {
-								level = new LevelSpecification(0, n);
+								level = new LevelSpecification(0, n > f.argSize() ? f.argSize() : n);
 							} else {
 								return F.NIL;
 							}
@@ -1501,11 +1506,11 @@ public final class Combinatoric {
 					}
 
 					int k;
-					final IASTAppendable result = F.ast(f.head());
+					final IASTAppendable result = F.ast(F.List);
 					level.setFromLevelAsCurrent();
 					while (level.isInRange()) {
 						k = level.getCurrentLevel();
-						final KSubsetsList iter = createKSubsets(f, k, F.ast(F.List), 1);
+						final KSubsetsList iter = createKSubsets(f, k, F.ast(f.head()), 1);
 						for (IAST part : iter) {
 							if (part == null) {
 								break;

@@ -23,6 +23,7 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.Parser;
+import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.math.MathException;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
@@ -76,12 +77,11 @@ public class ExprEvaluatorTests extends TestCase {
 				F.C1D2, //
 				F.CNI, //
 				F.CI, //
-//				F.ZZ(Integer.MIN_VALUE), //
+				// F.ZZ(Integer.MIN_VALUE), //
 				F.CInfinity, //
 				F.CNInfinity, //
-				F.Null,
-				F.Power(F.x,F.C2),
-//				F.Indeterminate, //
+				F.Null, F.Power(F.x, F.C2),
+				// F.Indeterminate, //
 				F.ComplexInfinity, //
 				F.CEmptyList, //
 				F.Subtract(F.C1, F.C1));
@@ -110,6 +110,11 @@ public class ExprEvaluatorTests extends TestCase {
 						System.out.println(mutantStr);
 						mex.printStackTrace();
 						System.out.println();
+					} catch (SyntaxError se) {
+						System.out.println(mutantStr);
+						se.printStackTrace();
+						System.out.println();
+						// fail();
 					} catch (MathException mex) {
 						System.out.println(mutantStr);
 						mex.printStackTrace();
@@ -144,8 +149,8 @@ public class ExprEvaluatorTests extends TestCase {
 	public void testFuzz001() {
 		Config.MAX_AST_SIZE = 100;
 		Config.MAX_BIT_COUNT = 1000;
-		Config.MAX_OUTPUT_SIZE = 10000; 
-		
+		Config.MAX_OUTPUT_SIZE = 10000;
+
 		EvalEngine engine = new EvalEngine(true);
 		engine.setRecursionLimit(256);
 		engine.setIterationLimit(1000);

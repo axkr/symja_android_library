@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval.interfaces;
 
+import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
@@ -38,6 +39,9 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 //			if (Config.SHOW_STACKTRACE) {
 //				e.printStackTrace();
 //			}
+		} catch (final MathRuntimeException mre) {
+			// org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
+			return engine.printMessage(ast.topHead(), mre);
 		} catch (final RuntimeException e) {
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();
@@ -85,7 +89,10 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 						return matrixEval(fieldMatrix);
 					}
 				}
-			} catch (final IndexOutOfBoundsException e) {
+			} catch (final MathRuntimeException mre) {
+				// org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
+				return engine.printMessage(ast.topHead(), mre);
+			} catch (final RuntimeException e) {
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}

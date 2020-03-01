@@ -426,7 +426,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	}
 
 	/** {@inheritDoc} */
-	public IASTAppendable appendArgs(int start, int end, IntFunction<IExpr> function) {
+	public IASTAppendable appendArgs(final int start, final int end, IntFunction<IExpr> function) {
 		if (start >= end) {
 			return this;
 		}
@@ -436,7 +436,12 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 			growAtEnd(length);
 		}
 		for (int i = start; i < end; i++) {
-			array[lastIndex++] = function.apply(i);
+			IExpr temp = function.apply(i);
+			if (temp.isPresent()) {
+				array[lastIndex++] = temp;
+				continue;
+			}
+			break;
 		}
 		return this;
 	}

@@ -35,8 +35,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.BlockFieldMatrix;
-import org.hipparchus.linear.BlockRealMatrix;
 import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.EigenDecomposition;
 import org.hipparchus.linear.FieldDecompositionSolver;
@@ -51,6 +51,7 @@ import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -851,7 +852,9 @@ public final class LinearAlgebra {
 					// Returns the transpose of the matrix L of the decomposition.
 					return new ASTRealMatrix(dcomposition.getLT(), false);
 				}
-
+			} catch (final MathRuntimeException mre) {
+				// org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
+				return engine.printMessage(ast.topHead(), mre);
 			} catch (final WrongArgumentType e) {
 				// WrongArgumentType occurs in list2RealMatrix(),
 				// if the matrix elements aren't pure numerical values
@@ -1220,13 +1223,17 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.arg1().isAST()) {
-				IAST vector = (IAST) ast.arg1();
-				int m = vector.size();
-				final int offset = ast.isAST2() ? Validate.checkIntType(ast, 2, Integer.MIN_VALUE) : 0;
-				return F.matrix((i, j) -> (i + offset) == j ? vector.get(i + 1) : F.C0, m - 1, m - 1);
+			try {
+				if (ast.arg1().isAST()) {
+					IAST vector = (IAST) ast.arg1();
+					int m = vector.size();
+					final int offset = ast.isAST2() ? Validate.checkIntType(ast, 2, Integer.MIN_VALUE) : 0;
+					return F.matrix((i, j) -> (i + offset) == j ? vector.get(i + 1) : F.C0, m - 1, m - 1);
+				}
+			} catch (final ValidateException ve) {
+				// int number validation
+				return engine.printMessage(ve.getMessage(ast.topHead()));
 			}
-
 			return F.NIL;
 
 		}
@@ -1466,6 +1473,9 @@ public final class LinearAlgebra {
 				// if (Config.SHOW_STACKTRACE) {
 				// e.printStackTrace();
 				// }
+			} catch (final MathRuntimeException mre) {
+				// org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
+				return engine.printMessage(ast.topHead(), mre);
 			} catch (final RuntimeException e) {
 				engine.printMessage(ast.topHead() + ": " + e.toString());
 				if (Config.SHOW_STACKTRACE) {
@@ -1641,22 +1651,17 @@ public final class LinearAlgebra {
 
 		@Override
 		public IAST realMatrixEval(RealMatrix matrix) {
-			try {
-
-				EigenDecomposition ed = new EigenDecomposition(matrix);
-				double[] realValues = ed.getRealEigenvalues();
-				double[] imagValues = ed.getImagEigenvalues();
-				int size = realValues.length;
-				IASTAppendable list = F.ListAlloc(size);
-				return list.appendArgs(0, size, (int i) -> {
-					if (F.isZero(imagValues[i])) {
-						return F.num(realValues[i]);
-					}
-					return F.complexNum(realValues[i], imagValues[i]);
-				});
-			} catch (Exception ime) {
-				throw new WrappedException(ime);
-			}
+			EigenDecomposition ed = new EigenDecomposition(matrix);
+			double[] realValues = ed.getRealEigenvalues();
+			double[] imagValues = ed.getImagEigenvalues();
+			int size = realValues.length;
+			IASTAppendable list = F.ListAlloc(size);
+			return list.appendArgs(0, size, (int i) -> {
+				if (F.isZero(imagValues[i])) {
+					return F.num(realValues[i]);
+				}
+				return F.complexNum(realValues[i], imagValues[i]);
+			});
 		}
 	}
 
@@ -1731,7 +1736,9 @@ public final class LinearAlgebra {
 						}
 
 					}
-
+				} catch (final MathRuntimeException mre) {
+					// org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
+					return engine.printMessage(ast.topHead(), mre);
 				} catch (final ClassCastException e) {
 					if (Config.SHOW_STACKTRACE) {
 						e.printStackTrace();
@@ -1754,22 +1761,13 @@ public final class LinearAlgebra {
 
 		@Override
 		public IAST realMatrixEval(RealMatrix matrix) {
-			try {
-				EigenDecomposition ed = new EigenDecomposition(matrix);
-				int size = matrix.getColumnDimension();
-				IASTAppendable list = F.ListAlloc(size);
-				return list.appendArgs(0, size, i -> {
-					RealVector rv = ed.getEigenvector(i);
-					return Convert.vector2List(rv);
-				});
-				// for (int i = 0; i < size; i++) {
-				// RealVector rv = ed.getEigenvector(i);
-				// list.append(Convert.vector2List(rv));
-				// }
-				// return list;
-			} catch (Exception ime) {
-				throw new WrappedException(ime);
-			}
+			EigenDecomposition ed = new EigenDecomposition(matrix);
+			int size = matrix.getColumnDimension();
+			IASTAppendable list = F.ListAlloc(size);
+			return list.appendArgs(0, size, i -> {
+				RealVector rv = ed.getEigenvector(i);
+				return Convert.vector2List(rv);
+			});
 		}
 	}
 
@@ -2319,6 +2317,9 @@ public final class LinearAlgebra {
 							}
 						}
 					}
+				} catch (final MathRuntimeException mre) {
+					// org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
+					return engine.printMessage(ast.topHead(), mre);
 				} catch (final ClassCastException e) {
 					if (Config.SHOW_STACKTRACE) {
 						e.printStackTrace();
@@ -2642,13 +2643,18 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			int[] dim = ast.arg1().isMatrix();
-			if (dim != null) {
-				IAST matrix = (IAST) ast.arg1();
-				final int k = (ast.size() == 3 && ast.arg2().isInteger())
-						? Validate.checkIntType(ast, 2, Integer.MIN_VALUE)
-						: 0;
-				return F.matrix((i, j) -> i >= j - k ? matrix.getPart(i + 1, j + 1) : F.C0, dim[0], dim[1]);
+			try {
+				int[] dim = ast.arg1().isMatrix();
+				if (dim != null) {
+					IAST matrix = (IAST) ast.arg1();
+					final int k = (ast.size() == 3 && ast.arg2().isInteger())
+							? Validate.checkIntType(ast, 2, Integer.MIN_VALUE)
+							: 0;
+					return F.matrix((i, j) -> i >= j - k ? matrix.getPart(i + 1, j + 1) : F.C0, dim[0], dim[1]);
+				}
+			} catch (final ValidateException ve) {
+				// int number validation
+				return engine.printMessage(ve.getMessage(ast.topHead()));
 			}
 			return F.NIL;
 		}
@@ -3609,12 +3615,8 @@ public final class LinearAlgebra {
 
 		@Override
 		public IAST realMatrixEval(RealMatrix matrix) {
-			try {
-				org.hipparchus.linear.QRDecomposition ed = new org.hipparchus.linear.QRDecomposition(matrix);
-				return F.List(Convert.realMatrix2List(ed.getQ()), Convert.realMatrix2List(ed.getR()));
-			} catch (Exception ime) {
-				throw new WrappedException(ime);
-			}
+			org.hipparchus.linear.QRDecomposition ed = new org.hipparchus.linear.QRDecomposition(matrix);
+			return F.List(Convert.realMatrix2List(ed.getQ()), Convert.realMatrix2List(ed.getR()));
 		}
 	}
 
@@ -4274,13 +4276,18 @@ public final class LinearAlgebra {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			int[] dim = ast.arg1().isMatrix();
 			if (dim != null) {
-				IAST matrix = (IAST) ast.arg1();
-				final int k = (ast.size() == 3 && ast.arg2().isInteger())
-						? Validate.checkIntType(ast, 2, Integer.MIN_VALUE)
-						: 0;
-				int m = dim[0];
-				int n = dim[1];
-				return F.matrix((i, j) -> i <= j - k ? matrix.getPart(i + 1, j + 1) : F.C0, m, n);
+				try {
+					IAST matrix = (IAST) ast.arg1();
+					final int k = (ast.size() == 3 && ast.arg2().isInteger())
+							? Validate.checkIntType(ast, 2, Integer.MIN_VALUE)
+							: 0;
+					int m = dim[0];
+					int n = dim[1];
+					return F.matrix((i, j) -> i <= j - k ? matrix.getPart(i + 1, j + 1) : F.C0, m, n);
+				} catch (final ValidateException ve) {
+					// int number validation
+					return engine.printMessage(ve.getMessage(ast.topHead()));
+				}
 			}
 			return F.NIL;
 		}

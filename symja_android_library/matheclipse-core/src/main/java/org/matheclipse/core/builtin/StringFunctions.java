@@ -8,6 +8,7 @@ import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -218,16 +219,20 @@ public final class StringFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.arg1().isString()) {
-				String s = ast.arg1().toString();
-				final int n = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
-				if (n >= 0) {
-					return F.$str(s.substring(n, s.length()));
-				} else {
-					return F.$str(s.substring(0, s.length() + n));
+			try {
+				if (ast.arg1().isString()) {
+					String s = ast.arg1().toString();
+					final int n = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
+					if (n >= 0) {
+						return F.$str(s.substring(n, s.length()));
+					} else {
+						return F.$str(s.substring(0, s.length() + n));
+					}
 				}
+			} catch (final ValidateException ve) {
+				// int number validation
+				return engine.printMessage(ve.getMessage(ast.topHead()));
 			}
-
 			return F.NIL;
 		}
 
@@ -383,7 +388,7 @@ public final class StringFunctions {
 			if (ast.isAST3()) {
 				IExpr arg3 = ast.arg3();
 				if (arg3.isString()) {
-					sep2 = arg3.toString(); 
+					sep2 = arg3.toString();
 				} else {
 					// String expected at position `1` in `2`.
 					return IOFunctions.printMessage(ast.topHead(), "string", F.List(F.C3, ast), engine);
@@ -434,16 +439,20 @@ public final class StringFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.arg1().isString()) {
-				String s = ast.arg1().toString();
-				final int n = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
-				if (n >= 0) {
-					return F.$str(s.substring(0, n));
-				} else {
-					return F.$str(s.substring(s.length() + n, s.length()));
+			try {
+				if (ast.arg1().isString()) {
+					String s = ast.arg1().toString();
+					final int n = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
+					if (n >= 0) {
+						return F.$str(s.substring(0, n));
+					} else {
+						return F.$str(s.substring(s.length() + n, s.length()));
+					}
 				}
+			} catch (final ValidateException ve) {
+				// int number validation
+				return engine.printMessage(ve.getMessage(ast.topHead()));
 			}
-
 			return F.NIL;
 		}
 

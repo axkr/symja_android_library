@@ -51,6 +51,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractArg12;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
@@ -1738,61 +1739,65 @@ public final class Arithmetic {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr arg1 = ast.arg1();
-			if (ast.isAST2()) {
-				IExpr arg2 = ast.arg2();
-				if (arg2.isOne()) {
-					return F.HarmonicNumber(arg1);
-				} else {
-					// generalized harmonic number
-					if (arg2.isInteger()) {
-						if (arg1.isInfinity()) {
-							if (arg2.isPositive() && ((IInteger) arg2).isEven()) {
-								// Module({v=s/2},((2*Pi)^(2*v)*(-1)^(v+1)*BernoulliB(2*v))/(2*(2*v)!))
-								IExpr v = Times(C1D2, arg2);
-								return Times(Power(Times(C2, Pi), Times(C2, v)), Power(CN1, Plus(v, C1)),
-										BernoulliB(Times(C2, v)), Power(Times(C2, Factorial(Times(C2, v))), CN1));
+			try {
+				if (ast.isAST2()) {
+					IExpr arg2 = ast.arg2();
+					if (arg2.isOne()) {
+						return F.HarmonicNumber(arg1);
+					} else {
+						// generalized harmonic number
+						if (arg2.isInteger()) {
+							if (arg1.isInfinity()) {
+								if (arg2.isPositive() && ((IInteger) arg2).isEven()) {
+									// Module({v=s/2},((2*Pi)^(2*v)*(-1)^(v+1)*BernoulliB(2*v))/(2*(2*v)!))
+									IExpr v = Times(C1D2, arg2);
+									return Times(Power(Times(C2, Pi), Times(C2, v)), Power(CN1, Plus(v, C1)),
+											BernoulliB(Times(C2, v)), Power(Times(C2, Factorial(Times(C2, v))), CN1));
+								}
+								return F.NIL;
 							}
-							return F.NIL;
 						}
+						if (arg1.isInteger()) {
+							int n = Validate.checkIntType(ast, 1, Integer.MIN_VALUE);
+							if (n < 0) {
+								return F.NIL;
+							}
+							if (n == 0) {
+								return C0;
+							}
+							IASTAppendable result = F.PlusAlloc(n);
+							return result.appendArgs(n + 1, i -> Power(F.ZZ(i), Negate(arg2)));
+						}
+						return F.NIL;
 					}
-					if (arg1.isInteger()) {
-						int n = Validate.checkIntType(ast, 1, Integer.MIN_VALUE);
-						if (n < 0) {
-							return F.NIL;
-						}
-						if (n == 0) {
-							return C0;
-						}
-						IASTAppendable result = F.PlusAlloc(n);
-						return result.appendArgs(n + 1, i -> Power(F.ZZ(i), Negate(arg2)));
-					}
-					return F.NIL;
 				}
-			}
-			if (arg1.isInteger()) {
-				if (arg1.isNegative()) {
+				if (arg1.isInteger()) {
+					if (arg1.isNegative()) {
+						return F.CComplexInfinity;
+					}
+					int n = Validate.checkIntType(ast, 1, Integer.MIN_VALUE);
+					if (n < 0) {
+						return F.NIL;
+					}
+					if (n == 0) {
+						return C0;
+					}
+					if (n == 1) {
+						return C1;
+					}
+
+					return QQ(harmonicNumber(n));
+				}
+				if (arg1.isInfinity()) {
+					return arg1;
+				}
+				if (arg1.isNegativeInfinity()) {
 					return F.CComplexInfinity;
 				}
-				int n = Validate.checkIntType(ast, 1, Integer.MIN_VALUE);
-				if (n < 0) {
-					return F.NIL;
-				}
-				if (n == 0) {
-					return C0;
-				}
-				if (n == 1) {
-					return C1;
-				}
-
-				return QQ(harmonicNumber(n));
+			} catch (final ValidateException ve) {
+				// int number validation
+				return engine.printMessage(ve.getMessage(ast.topHead()));
 			}
-			if (arg1.isInfinity()) {
-				return arg1;
-			}
-			if (arg1.isNegativeInfinity()) {
-				return F.CComplexInfinity;
-			}
-
 			return F.NIL;
 		}
 
@@ -2772,7 +2777,7 @@ public final class Arithmetic {
 			int ni = n.toIntDefault(Integer.MIN_VALUE);
 			if (a.isRational() && ni > Integer.MIN_VALUE) {
 				BigFraction bf = ((IRational) a).toBigFraction();
-				return pochhammer(bf, ni); 
+				return pochhammer(bf, ni);
 			}
 			if (a.isInteger() && a.isPositive()) {
 				IExpr temp = EvalEngine.get().evaluate(F.Plus(((IInteger) a).subtract(F.C1), n));

@@ -618,7 +618,7 @@ public class Symbol implements ISymbol, Serializable {
 		return ring.isPolynomial(this);
 		// return true;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPolynomialStruct() {
@@ -871,7 +871,8 @@ public class Symbol implements ISymbol, Serializable {
 				return result;
 			}
 		}
-		engine.printMessage(toString() + " is not a variable with a value, so its value cannot be changed.");
+		engine.printMessage(functionSymbol.toString() + ": " + toString()
+				+ " is not a variable with a value, so its value cannot be changed.");
 		return null;
 	}
 

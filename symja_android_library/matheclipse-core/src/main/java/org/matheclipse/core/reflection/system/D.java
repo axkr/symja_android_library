@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
@@ -267,166 +268,169 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 		if (ast.size() < 3) {
 			return F.NIL;
 		}
-
-		final IExpr fx = ast.arg1();
-		if (fx.isIndeterminate()) {
-			return F.Indeterminate;
-		}
-		if (ast.size() > 3) {
-			// reduce arguments by folding D[fxy, x, y] to D[ D[fxy, x], y] ...
-			return ast.foldLeft((x, y) -> engine.evaluate(F.D(x, y)), fx, 2);
-		}
-
-		if (fx.isList()) {
-			IAST list = (IAST) fx;
-			// thread over first list
-			return list.mapThread(F.ListAlloc(list.size()), ast, 1);
-		}
-
-		IExpr x = ast.arg2();
-		if (x.isList()) {
-			// D[fx_, {...}]
-			IAST xList = (IAST) x;
-			if (xList.isAST1() && xList.arg1().isListOfLists()) {
-				IAST subList = (IAST) xList.arg1();
-				IASTAppendable result = F.ListAlloc(subList.size());
-				result.appendArgs(subList.size(), i -> F.D(fx, F.List(subList.get(i))));
-				return result;
-			} else if (xList.isAST1() && xList.arg1().isList()) {
-				IAST subList = (IAST) xList.arg1();
-				return subList.mapLeft(F.ListAlloc(), (a, b) -> engine.evaluate(F.D(a, b)), fx);
-			} else if (xList.isAST2() && xList.arg2().isInteger()) {
-				if (ast.isEvalFlagOn(IAST.IS_DERIVATIVE_EVALED)) {
-					return F.NIL;
-				}
-				int n = Validate.checkIntType(xList, 2, 1);
-				if (n >= 0) {
-					if (xList.arg1().isList()) {
-						x = F.List(xList.arg1());
-					} else {
-						x = xList.arg1();
-					}
-					IExpr temp = fx;
-					for (int i = 0; i < n; i++) {
-						temp = F.D.of(engine, temp, x);
-					}
-					return temp;
-				}
+		try {
+			final IExpr fx = ast.arg1();
+			if (fx.isIndeterminate()) {
+				return F.Indeterminate;
 			}
-			return F.NIL;
-
-		}
-
-		if (!(x.isList())) {
-			if (fx.isAST(F.Piecewise) && fx.size() >= 2 && fx.first().isList()) {
-				return dPiecewise(fx, ast, engine);
+			if (ast.size() > 3) {
+				// reduce arguments by folding D[fxy, x, y] to D[ D[fxy, x], y] ...
+				return ast.foldLeft((x, y) -> engine.evaluate(F.D(x, y)), fx, 2);
 			}
 
-			if (fx instanceof ASTSeriesData) {
-				ASTSeriesData series = ((ASTSeriesData) fx);
-				if (series.getX().equals(x)) {
-					final IExpr temp = ((ASTSeriesData) fx).derive(x);
-					if (temp != null) {
+			if (fx.isList()) {
+				IAST list = (IAST) fx;
+				// thread over first list
+				return list.mapThread(F.ListAlloc(list.size()), ast, 1);
+			}
+
+			IExpr x = ast.arg2();
+			if (x.isList()) {
+				// D[fx_, {...}]
+				IAST xList = (IAST) x;
+				if (xList.isAST1() && xList.arg1().isListOfLists()) {
+					IAST subList = (IAST) xList.arg1();
+					IASTAppendable result = F.ListAlloc(subList.size());
+					result.appendArgs(subList.size(), i -> F.D(fx, F.List(subList.get(i))));
+					return result;
+				} else if (xList.isAST1() && xList.arg1().isList()) {
+					IAST subList = (IAST) xList.arg1();
+					return subList.mapLeft(F.ListAlloc(), (a, b) -> engine.evaluate(F.D(a, b)), fx);
+				} else if (xList.isAST2() && xList.arg2().isInteger()) {
+					if (ast.isEvalFlagOn(IAST.IS_DERIVATIVE_EVALED)) {
+						return F.NIL;
+					}
+					int n = Validate.checkIntType(xList, 2, 1);
+					if (n >= 0) {
+						if (xList.arg1().isList()) {
+							x = F.List(xList.arg1());
+						} else {
+							x = xList.arg1();
+						}
+						IExpr temp = fx;
+						for (int i = 0; i < n; i++) {
+							temp = F.D.of(engine, temp, x);
+						}
 						return temp;
 					}
-					return F.NIL;
 				}
-				return F.C0;
+				return F.NIL;
+
 			}
-			if (!(x.isList()) && fx.isFree(x, true)) {
-				return F.C0;
-			}
-		}
-		if (fx.isNumber()) {
-			// D[x_?NumberQ,y_] -> 0
-			return F.C0;
-		}
-		if (fx.equals(x)) {
-			// D[x_,x_] -> 1
-			return F.C1;
-		}
 
-		if (fx.isAST()) {
-			final IAST listArg1 = (IAST) fx;
-			final IExpr header = listArg1.head();
-			if (listArg1.isPlus()) {
-				// D[a_+b_+c_,x_] -> D[a,x]+D[b,x]+D[c,x]
-				return listArg1.mapThread(F.D(F.Null, x), 1);
-			} else if (listArg1.isTimes()) {
-				return listArg1.map(F.PlusAlloc(16), new BinaryBindIth1st(listArg1, F.D(F.Null, x)));
-			} else if (listArg1.isPower()) {
-				// f ^ g
-				final IExpr f = listArg1.base();
-				final IExpr g = listArg1.exponent();
-				final IExpr y = ast.arg2();
-				if (g.isFree(x)) {
-					// g*D(f,y)*f^(g-1)
-					return F.Times(g, F.D(f, y), F.Power(f, g.dec()));
-				}
-				if (f.isFree(x)) {
-					// D(g,y)*Log(f)*f^g
-					return F.Times(F.D(g, y), F.Log(f), F.Power(f, g));
+			if (!(x.isList())) {
+				if (fx.isAST(F.Piecewise) && fx.size() >= 2 && fx.first().isList()) {
+					return dPiecewise(fx, ast, engine);
 				}
 
-				// D[f_^g_,y_]:= f^g*(((g*D[f,y])/f)+Log[f]*D[g,y])
-				final IASTAppendable resultList = F.TimesAlloc(2);
-				resultList.append(F.Power(f, g));
-				resultList.append(F.Plus(F.Times(g, F.D(f, y), F.Power(f, F.CN1)), F.Times(F.Log(f), F.D(g, y))));
-				return resultList;
-			} else if ((header == F.Log) && (listArg1.isAST2())) {
-				if (listArg1.isFreeAt(1, x)) {
-					// D[Log[i_FreeQ(x), x_], z_]:= (x*Log[a])^(-1)*D[x,z];
-					return F.Times(F.Power(F.Times(listArg1.arg2(), F.Log(listArg1.arg1())), F.CN1),
-							F.D(listArg1.arg2(), x));
-				}
-				// } else if (header == F.LaplaceTransform && (listArg1.size()
-				// == 4)) {
-				// if (listArg1.arg3().equals(x) && listArg1.arg1().isFree(x,
-				// true)) {
-				// // D(LaplaceTransform(c,t,s), s) -> -c / s^2
-				// return F.Times(-1L, listArg1.arg2(), F.Power(x, -2L));
-				// } else if (listArg1.arg1().equals(x)) {
-				// // D(LaplaceTransform(c,t,s), c) -> 1/s
-				// return F.Power(x, -1L);
-				// } else if (listArg1.arg1().isFree(x, true) &&
-				// listArg1.arg2().isFree(x, true) && listArg1.arg3().isFree(x,
-				// true))
-				// {
-				// // D(LaplaceTransform(c,t,s), w) -> 0
-				// return F.C0;
-				// } else if (listArg1.arg2().equals(x)) {
-				// // D(LaplaceTransform(c,t,s), t) -> 0
-				// return F.C0;
-				// }
-			} else if (listArg1.isAST1() && ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
-				IAST[] derivStruct = listArg1.isDerivativeAST1();
-				if (derivStruct != null && derivStruct[2] != null) {
-					IAST headAST = derivStruct[1];
-					IAST a1Head = derivStruct[0];
-					if (a1Head.isAST1() && a1Head.arg1().isInteger()) {
-						try {
-							int n = ((IInteger) a1Head.arg1()).toInt();
-							IExpr arg1 = listArg1.arg1();
-							if (n > 0) {
-								IAST fDerivParam = Derivative.createDerivative(n + 1, headAST.arg1(), arg1);
-								if (x.equals(arg1)) {
-									return fDerivParam;
-								}
-								return F.Times(F.D(arg1, x), fDerivParam);
-							}
-						} catch (ArithmeticException ae) {
-
+				if (fx instanceof ASTSeriesData) {
+					ASTSeriesData series = ((ASTSeriesData) fx);
+					if (series.getX().equals(x)) {
+						final IExpr temp = ((ASTSeriesData) fx).derive(x);
+						if (temp != null) {
+							return temp;
 						}
+						return F.NIL;
 					}
-					return F.NIL;
+					return F.C0;
 				}
-				return getDerivativeArg1(x, listArg1.arg1(), header, engine);
-			} else if (listArg1.isAST() && ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
-				return getDerivativeArgN(x, listArg1, header);
+				if (!(x.isList()) && fx.isFree(x, true)) {
+					return F.C0;
+				}
+			}
+			if (fx.isNumber()) {
+				// D[x_?NumberQ,y_] -> 0
+				return F.C0;
+			}
+			if (fx.equals(x)) {
+				// D[x_,x_] -> 1
+				return F.C1;
 			}
 
-		}
+			if (fx.isAST()) {
+				final IAST listArg1 = (IAST) fx;
+				final IExpr header = listArg1.head();
+				if (listArg1.isPlus()) {
+					// D[a_+b_+c_,x_] -> D[a,x]+D[b,x]+D[c,x]
+					return listArg1.mapThread(F.D(F.Null, x), 1);
+				} else if (listArg1.isTimes()) {
+					return listArg1.map(F.PlusAlloc(16), new BinaryBindIth1st(listArg1, F.D(F.Null, x)));
+				} else if (listArg1.isPower()) {
+					// f ^ g
+					final IExpr f = listArg1.base();
+					final IExpr g = listArg1.exponent();
+					final IExpr y = ast.arg2();
+					if (g.isFree(x)) {
+						// g*D(f,y)*f^(g-1)
+						return F.Times(g, F.D(f, y), F.Power(f, g.dec()));
+					}
+					if (f.isFree(x)) {
+						// D(g,y)*Log(f)*f^g
+						return F.Times(F.D(g, y), F.Log(f), F.Power(f, g));
+					}
 
+					// D[f_^g_,y_]:= f^g*(((g*D[f,y])/f)+Log[f]*D[g,y])
+					final IASTAppendable resultList = F.TimesAlloc(2);
+					resultList.append(F.Power(f, g));
+					resultList.append(F.Plus(F.Times(g, F.D(f, y), F.Power(f, F.CN1)), F.Times(F.Log(f), F.D(g, y))));
+					return resultList;
+				} else if ((header == F.Log) && (listArg1.isAST2())) {
+					if (listArg1.isFreeAt(1, x)) {
+						// D[Log[i_FreeQ(x), x_], z_]:= (x*Log[a])^(-1)*D[x,z];
+						return F.Times(F.Power(F.Times(listArg1.arg2(), F.Log(listArg1.arg1())), F.CN1),
+								F.D(listArg1.arg2(), x));
+					}
+					// } else if (header == F.LaplaceTransform && (listArg1.size()
+					// == 4)) {
+					// if (listArg1.arg3().equals(x) && listArg1.arg1().isFree(x,
+					// true)) {
+					// // D(LaplaceTransform(c,t,s), s) -> -c / s^2
+					// return F.Times(-1L, listArg1.arg2(), F.Power(x, -2L));
+					// } else if (listArg1.arg1().equals(x)) {
+					// // D(LaplaceTransform(c,t,s), c) -> 1/s
+					// return F.Power(x, -1L);
+					// } else if (listArg1.arg1().isFree(x, true) &&
+					// listArg1.arg2().isFree(x, true) && listArg1.arg3().isFree(x,
+					// true))
+					// {
+					// // D(LaplaceTransform(c,t,s), w) -> 0
+					// return F.C0;
+					// } else if (listArg1.arg2().equals(x)) {
+					// // D(LaplaceTransform(c,t,s), t) -> 0
+					// return F.C0;
+					// }
+				} else if (listArg1.isAST1() && ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
+					IAST[] derivStruct = listArg1.isDerivativeAST1();
+					if (derivStruct != null && derivStruct[2] != null) {
+						IAST headAST = derivStruct[1];
+						IAST a1Head = derivStruct[0];
+						if (a1Head.isAST1() && a1Head.arg1().isInteger()) {
+							try {
+								int n = ((IInteger) a1Head.arg1()).toInt();
+								IExpr arg1 = listArg1.arg1();
+								if (n > 0) {
+									IAST fDerivParam = Derivative.createDerivative(n + 1, headAST.arg1(), arg1);
+									if (x.equals(arg1)) {
+										return fDerivParam;
+									}
+									return F.Times(F.D(arg1, x), fDerivParam);
+								}
+							} catch (ArithmeticException ae) {
+
+							}
+						}
+						return F.NIL;
+					}
+					return getDerivativeArg1(x, listArg1.arg1(), header, engine);
+				} else if (listArg1.isAST() && ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
+					return getDerivativeArgN(x, listArg1, header);
+				}
+
+			}
+		} catch (final ValidateException ve) {
+			// int number validation
+			return engine.printMessage(ve.getMessage(ast.topHead()));
+		}
 		return F.NIL;
 	}
 
@@ -448,7 +452,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 				}
 				IASTMutable piecewise = ((IAST) piecewiseFunction).copy();
 				piecewise.set(1, pwResult);
-				if (piecewise.size()>2) {
+				if (piecewise.size() > 2) {
 					piecewise.set(2, F.Indeterminate);
 				}
 				return piecewise;

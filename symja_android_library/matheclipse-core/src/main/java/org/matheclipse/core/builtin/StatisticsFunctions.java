@@ -2591,11 +2591,23 @@ public class StatisticsFunctions {
 			if (ast.size() == 2) {
 				return super.evaluate(ast, engine);
 			}
-
-			if (ast.size() == 3 && ast.arg1().isAST() && ast.arg2().isAST()) {
-				final IAST arg1 = (IAST) ast.arg1();
-				final IAST arg2 = (IAST) ast.arg2();
-				return evaluateArg2(arg1, arg2, engine);
+			try {
+				if (ast.size() == 3 && ast.arg1().isAST() && ast.arg2().isAST()) {
+					final IAST arg1 = (IAST) ast.arg1();
+					final IAST arg2 = (IAST) ast.arg2();
+					return evaluateArg2(arg1, arg2, engine);
+				}
+			} catch (final MathRuntimeException mre) {
+				// org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3 
+				return engine.printMessage(F.Covariance, mre);
+			} catch (final ValidateException ve) {
+				// WrongArgumentType occurs in list2RealMatrix(),
+				// if the matrix elements aren't pure numerical values
+				return engine.printMessage(ve.getMessage(ast.topHead()));
+			} catch (final IndexOutOfBoundsException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
 			}
 			return F.NIL;
 		}
@@ -2606,30 +2618,17 @@ public class StatisticsFunctions {
 		}
 
 		private static IExpr evaluateArg2(final IAST arg1, final IAST arg2, EvalEngine engine) {
-			try {
-				int arg1Length = arg1.isVector();
-				if (arg1Length > 1) {
-					int arg2Length = arg2.isVector();
-					if (arg1Length == arg2Length) {
-						if (engine.isNumericMode()) {
-							try {
-								double[] arg1DoubleArray = arg1.toDoubleVector();
-								double[] arg2DoubleArray = arg2.toDoubleVector();
-								org.hipparchus.stat.correlation.Covariance cov = new org.hipparchus.stat.correlation.Covariance();
-								return F.num(cov.covariance(arg1DoubleArray, arg2DoubleArray, true));
-							} catch (Exception ex) {
-								//
-							}
-						}
-						return vectorCovarianceSymbolic(arg1, arg2, arg1Length);
+			int arg1Length = arg1.isVector();
+			if (arg1Length > 1) {
+				int arg2Length = arg2.isVector();
+				if (arg1Length == arg2Length) {
+					if (engine.isNumericMode()) {
+						double[] arg1DoubleArray = arg1.toDoubleVector();
+						double[] arg2DoubleArray = arg2.toDoubleVector();
+						org.hipparchus.stat.correlation.Covariance cov = new org.hipparchus.stat.correlation.Covariance();
+						return F.num(cov.covariance(arg1DoubleArray, arg2DoubleArray, true));
 					}
-				}
-			} catch (final ValidateException e) {
-				// WrongArgumentType occurs in list2RealMatrix(),
-				// if the matrix elements aren't pure numerical values
-			} catch (final IndexOutOfBoundsException e) {
-				if (Config.SHOW_STACKTRACE) {
-					e.printStackTrace();
+					return vectorCovarianceSymbolic(arg1, arg2, arg1Length);
 				}
 			}
 			return F.NIL;

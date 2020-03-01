@@ -644,7 +644,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 	public boolean isPolynomialStruct() {
 		return isVariable();
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPolynomialOfMaxDegree(ISymbol variable, long maxDegree) {
@@ -851,7 +851,8 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 				return result;
 			}
 		}
-		engine.printMessage(toString() + " is not a variable with a value, so its value cannot be changed.");
+		engine.printMessage(functionSymbol.toString() + ": " + toString()
+				+ " is not a variable with a value, so its value cannot be changed.");
 		return null;
 	}
 

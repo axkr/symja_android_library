@@ -3083,6 +3083,9 @@ public class Algebra {
 				if (evaled) {
 					return jas.integerPoly2Expr(poly.monic());
 				}
+				
+			} catch (java.lang.ClassCastException cce) {
+				cce.printStackTrace();
 			} catch (JASConversionException e) {
 				if (Config.DEBUG) {
 					e.printStackTrace();

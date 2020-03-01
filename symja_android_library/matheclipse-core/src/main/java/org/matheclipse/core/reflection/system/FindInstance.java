@@ -5,6 +5,7 @@ import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -48,40 +49,43 @@ public class FindInstance extends Solve {
 		if (!vars.isPresent()) {
 			return F.NIL;
 		}
-		boolean formula = false;
-		int maxChoices = 1;
-		if (ast.size() == 4) {
-			maxChoices = ast.arg3().toIntDefault(Integer.MIN_VALUE);
-			if (maxChoices < 0) {
-				maxChoices = 1;
-			}
-		} else if (ast.size() >= 3) {
-			maxChoices = ast.arg2().toIntDefault(Integer.MIN_VALUE);
-			if (maxChoices < 0) {
-				maxChoices = 1;
-			}
-		}
-		if (ast.size() > 2) {
-			try {
-				if (ast.arg1().isBooleanFormula()) {
-					formula = ast.arg1().isBooleanFormula();
-					if (ast.isAST2()) {
-						return BooleanFunctions.solveInstances(ast.arg1(), vars, maxChoices);
-					}
-				}
-			} catch (RuntimeException rex) {
-			}
-		}
-		if (ast.isAST3()) {
-			if (ast.arg3().equals(F.Booleans) || formula) {
-				return BooleanFunctions.solveInstances(ast.arg1(), vars, maxChoices);
-			}
-			throw new WrongArgumentType(ast, ast.arg3(), 3, "Booleans expected!");
-		}
-		IASTMutable termsEqualZeroList = Validate.checkEquations(ast, 1);
-
 		try {
+			boolean formula = false;
+			int maxChoices = 1;
+			if (ast.size() == 4) {
+				maxChoices = ast.arg3().toIntDefault(Integer.MIN_VALUE);
+				if (maxChoices < 0) {
+					maxChoices = 1;
+				}
+			} else if (ast.size() >= 3) {
+				maxChoices = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+				if (maxChoices < 0) {
+					maxChoices = 1;
+				}
+			}
+			if (ast.size() > 2) {
+				try {
+					if (ast.arg1().isBooleanFormula()) {
+						formula = ast.arg1().isBooleanFormula();
+						if (ast.isAST2()) {
+							return BooleanFunctions.solveInstances(ast.arg1(), vars, maxChoices);
+						}
+					}
+				} catch (RuntimeException rex) {
+				}
+			}
+			if (ast.isAST3()) {
+				if (ast.arg3().equals(F.Booleans) || formula) {
+					return BooleanFunctions.solveInstances(ast.arg1(), vars, maxChoices);
+				}
+				throw new WrongArgumentType(ast, ast.arg3(), 3, "Booleans expected!");
+			}
+			IASTMutable termsEqualZeroList = Validate.checkEquations(ast, 1);
+
 			return solveEquations(termsEqualZeroList, F.List(), vars, maxChoices, engine);
+		} catch (final ValidateException ve) {
+			// int number validation
+			return engine.printMessage(ve.getMessage(ast.topHead()));
 		} catch (RuntimeException rex) {
 			if (Config.SHOW_STACKTRACE) {
 				rex.printStackTrace();
