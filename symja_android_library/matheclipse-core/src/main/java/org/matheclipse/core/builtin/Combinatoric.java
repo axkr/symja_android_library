@@ -6,13 +6,12 @@ import java.util.List;
 
 import org.matheclipse.core.combinatoric.KSubsets;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.IntRangeSpec;
-import org.matheclipse.core.eval.util.LevelSpecification;
+import org.matheclipse.core.eval.util.SetSpecification;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -1489,27 +1488,28 @@ public final class Combinatoric {
 				try {
 					final IAST f = (IAST) ast.arg1();
 					int n = f.argSize();
-					final LevelSpecification level;
+					SetSpecification level = new SetSpecification(0, n);
 					if (ast.isAST2()) {
-						if (ast.arg2().isInteger()) {
-							n = ast.arg2().toIntDefault();
-							if (n > Integer.MIN_VALUE) {
-								level = new LevelSpecification(0, n > f.argSize() ? f.argSize() : n);
+						IExpr arg2 = ast.arg2();
+						if (arg2!=F.All&&!arg2.isInfinity()) {
+							if (arg2.isInteger()) {
+								n = arg2.toIntDefault();
+								if (n > Integer.MIN_VALUE) {
+									level = new SetSpecification(0, n > f.argSize() ? f.argSize() : n);
+								} else {
+									return F.NIL;
+								}
 							} else {
-								return F.NIL;
+								level = new SetSpecification(arg2);
 							}
-						} else {
-							level = new LevelSpecification(ast.arg2(), false);
 						}
-					} else {
-						level = new LevelSpecification(0, n);
 					}
 
 					int k;
 					final IASTAppendable result = F.ast(F.List);
-					level.setFromLevelAsCurrent();
+					level.setMinCountAsCurrent();
 					while (level.isInRange()) {
-						k = level.getCurrentLevel();
+						k = level.getCurrentCounter();
 						final KSubsetsList iter = createKSubsets(f, k, F.ast(f.head()), 1);
 						for (IAST part : iter) {
 							if (part == null) {
@@ -1517,7 +1517,7 @@ public final class Combinatoric {
 							}
 							result.append(part);
 						}
-						level.incCurrentLevel();
+						level.incCurrentCounter();
 					}
 
 					return result;

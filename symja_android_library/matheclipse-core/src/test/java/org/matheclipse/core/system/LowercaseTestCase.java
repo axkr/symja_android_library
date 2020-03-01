@@ -20925,8 +20925,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSubsets() {
-		check("Subsets(Infinity,4)", //
+		check("Subsets(Infinity,All)", //
 				"{ComplexInfinity,Infinity}");
+		check("Subsets(Infinity,Infinity)", //
+				"{ComplexInfinity,Infinity}");
+		check("Subsets(Infinity,-Infinity)", //
+				"Subsets(Infinity,-Infinity)");
 		
 		// https://oeis.org/A018900 - Sum of two distinct powers of 2
 		check("Union(Total/@Subsets(2^Range(0, 10), {2}))", //

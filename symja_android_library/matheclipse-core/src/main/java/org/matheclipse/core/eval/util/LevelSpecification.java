@@ -133,7 +133,7 @@ public class LevelSpecification extends LevelSpec {
 				}
 			}
 		}
-		if (expr.equals(F.CInfinity)) {
+		if (expr.isInfinity() ) {
 			fToLevel = Integer.MAX_VALUE;
 			fFromLevel = 1;
 			fFromDepth = Integer.MIN_VALUE;
