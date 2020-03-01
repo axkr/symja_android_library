@@ -146,9 +146,9 @@ public class SpecialFunctions {
 
 				int bInt = b.toIntDefault();
 				if (bInt > 0) {
-					IInteger n = (IInteger) b;
+ 					IInteger n = F.ZZ(bInt);
 					if (a.isOne()) {
-						return
+						return 
 						// [$ ( (1/n)*(1 - (1 - z)^n) ) $]
 						F.Times(F.Power(n, F.CN1), F.Subtract(F.C1, F.Power(F.Subtract(F.C1, z), n))); // $$;
 					}

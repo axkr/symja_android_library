@@ -3000,7 +3000,7 @@ public final class NumberTheory {
 				try {
 					IInteger k = ast.getInt(1);
 					IInteger n = ast.getInt(2);
-					if (n.isNegative()) {
+					if (!n.isPositive()) {
 						return F.NIL;
 					}
 

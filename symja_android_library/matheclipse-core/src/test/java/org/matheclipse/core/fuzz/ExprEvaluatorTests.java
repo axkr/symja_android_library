@@ -61,6 +61,7 @@ public class ExprEvaluatorTests extends TestCase {
 	}
 
 	public void testFuzzUnits() {
+		boolean quietMode = true;
 		EvalEngine engine = EvalEngine.get();
 		List<ASTNode> node = parseFileToList();
 		IExpr temp;
@@ -80,40 +81,63 @@ public class ExprEvaluatorTests extends TestCase {
 				// F.ZZ(Integer.MIN_VALUE), //
 				F.CInfinity, //
 				F.CNInfinity, //
-				F.Null, F.Power(F.x, F.C2),
+				F.Null, //
+				F.Power(F.x, F.C2), //
 				// F.Indeterminate, //
 				F.ComplexInfinity, //
 				F.CEmptyList, //
+				F.C1DSqrt5, //
+				F.Slot2, //
 				F.Subtract(F.C1, F.C1));
+		int counter = 0;
 		while (i < node.size()) {
 			temp = ast2Expr.convert(node.get(i++));
 			if (temp.isAST() && temp.size() > 1) {
-				for (int j = 1; j < seedList.size(); j++) {
-					IExpr seed = seedList.get(j);
+				ThreadLocalRandom random = ThreadLocalRandom.current();
+				for (int j = 1; j < 100; j++) {
+					int seedIndex = random.nextInt(1, seedList.size());
+					IExpr seed = seedList.get(seedIndex);
 
 					IASTMutable mutant = ((IAST) temp).copy();
-					ThreadLocalRandom random = ThreadLocalRandom.current();
 					int randomIndex = random.nextInt(1, mutant.size());
 					mutant.set(randomIndex, seed);
 
+					for (int k = 0; k < 1; k++) {
+						seedIndex = random.nextInt(1, seedList.size());
+						seed = seedList.get(seedIndex);
+						randomIndex = random.nextInt(1, mutant.size());
+						mutant.set(randomIndex, seed);
+					}
+
 					engine.init();
+					engine.setQuietMode(quietMode);
 					ExprEvaluator eval = new ExprEvaluator(engine, true, 20);
 					final String mutantStr = fInputFactory.toString(mutant);
 					try {
-						System.out.println(">> " + mutantStr);
+						 System.out.println(">> " + mutantStr);
+//						System.out.print(".");
+ 						if (counter++ > 80) {
+//							System.out.println("");
+ 							counter = 0;
+ 							System.out.flush();
+ 						}
 						eval.eval(mutantStr);
 					} catch (FlowControlException mex) {
-						System.out.println(mutantStr);
-						mex.printStackTrace();
-						System.out.println();
+						if (!quietMode) {
+							System.out.println(mutantStr);
+							mex.printStackTrace();
+							System.out.println();
+						}
 					} catch (IterationLimitExceeded mex) {
 						System.out.println(mutantStr);
 						mex.printStackTrace();
 						System.out.println();
 					} catch (SyntaxError se) {
-						System.out.println(mutantStr);
-						se.printStackTrace();
-						System.out.println();
+						if (!quietMode) {
+							System.out.println(mutantStr);
+							se.printStackTrace();
+							System.out.println();
+						}
 						// fail();
 					} catch (MathException mex) {
 						System.out.println(mutantStr);
@@ -131,6 +155,7 @@ public class ExprEvaluatorTests extends TestCase {
 						} else {
 							System.out.println(mutantStr);
 							rex.printStackTrace();
+							fail();
 						}
 					}
 				}

@@ -3683,7 +3683,7 @@ public abstract class AbstractAST implements IASTMutable {
 			temp = function.apply(get(i));
 			if (temp.isPresent()) {
 				// something was evaluated - return a new IAST:
-				result = copy();
+				result = copyAppendable();
 				result.set(i++, temp);
 				break;
 			}

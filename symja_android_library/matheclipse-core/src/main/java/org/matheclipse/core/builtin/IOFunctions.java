@@ -645,6 +645,7 @@ public class IOFunctions {
 			"cxt", "`1` is not a valid context name.", //
 			"divz", "The argument `1` should be nonzero.", //
 			"digit", "Digit at position `1` in `2` is too large to be used in base `3`.", //
+			"eqf", "`1` is not a well-formed equation.", //
 			"exact", "Argument `1` is not an exact number.", //
 			"fftl", "Argument `1` is not a non-empty list or rectangular array of numeric quantities.", //
 			"fpct", "To many parameters in `1` to be filled from `2`.", //

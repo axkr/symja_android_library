@@ -9,7 +9,6 @@ import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
@@ -250,7 +249,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	 * 
 	 * @param ast
 	 * @param position
-	 * @return
+	 * @return <code>F.NIL</code> if one of the elements is not a well-formed equation.
 	 */
 	private static IAST checkEquations(final IAST ast, int position, EvalEngine engine) {
 		IExpr arg = ast.get(position);
@@ -264,8 +263,8 @@ public class Eliminate extends AbstractFunctionEvaluator {
 					// F.evalExpandAll(eq.arg2())));
 					equalList.append(BooleanFunctions.equals(equalAST));
 				} else {
-					// not an equation
-					throw new WrongArgumentType(list, list.get(i), i, "Equal[] expression (a==b) expected");
+					// `1` is not a well-formed equation.
+					return IOFunctions.printMessage(ast.topHead(), "eqf", F.List(list.get(i)), engine);
 				}
 			}
 			return equalList;
@@ -275,8 +274,8 @@ public class Eliminate extends AbstractFunctionEvaluator {
 			return F.List(F.Equal(F.evalExpandAll(equalAST.arg1(), engine), F.evalExpandAll(equalAST.arg2(), engine)));
 			// return equalList;
 		}
-		// not an equation
-		throw new WrongArgumentType(ast, ast.arg1(), 1, "Equal[] expression (a==b) expected");
+		// `1` is not a well-formed equation.
+		return IOFunctions.printMessage(ast.topHead(), "eqf", F.List(arg), engine);
 	}
 
 	/**
@@ -520,12 +519,15 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		try {
+			IAST termsEqualZeroList = checkEquations(ast, 1, engine);
+			if (!termsEqualZeroList.isPresent()) {
+				return F.NIL;
+			}
 			IAST vars = Validate.checkIsVariableOrVariableList(ast, 2, engine);
 			if (!vars.isPresent()) {
 				return F.NIL;
 			}
-			IAST termsEqualZeroList = checkEquations(ast, 1, engine);
-
+			
 			IAST result = termsEqualZeroList;
 			IAST[] temp;
 			// IAST equalAST;

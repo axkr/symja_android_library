@@ -60,11 +60,18 @@ public class DSolve extends AbstractFunctionEvaluator {
 			return F.NIL;
 		}
 		IAST uFunction1Arg = F.NIL;
+		IExpr arg1 = ast.arg1();
 		IExpr arg2 = ast.arg2();
 		IExpr xVar = ast.arg3();
 		if (arg2.isAST1() && arg2.first().equals(xVar)) {
 			uFunction1Arg = (IAST) arg2;
-		} else if (arg2.isSymbol() && ast.arg3().isSymbol()) {
+			if (arg1.isFree(arg2.head())||arg1.isFree(xVar)) {
+				return F.NIL;
+			}
+		} else if (arg2.isSymbol() && xVar.isSymbol()) {
+			if (arg1.isFree(arg2)||arg1.isFree(xVar)) {
+				return F.NIL;
+			}
 			uFunction1Arg = F.unaryAST1(arg2, xVar);
 		}
 

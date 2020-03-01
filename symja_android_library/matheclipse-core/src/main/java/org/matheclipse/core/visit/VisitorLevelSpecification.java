@@ -361,6 +361,6 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 	}
 
 	public IASTMutable createResult(IASTMutable ast, final IExpr x) {
-		return ast.copy();
+		return ast.copyAppendable();
 	}
 }

@@ -298,10 +298,9 @@ public final class OutputFunctions {
 				}
 				if (variables.isPresent()) {
 					if (variables.size() >= 2) {
-						ISymbol sym = (ISymbol) variables.arg1();
 						if (poly.isPlus()) {
 							HornerScheme scheme = new HornerScheme();
-							return scheme.generate(engine.isNumericMode(), poly, sym);
+							return scheme.generate(engine.isNumericMode(), poly, variables.arg1());
 						}
 					}
 				}
@@ -441,7 +440,7 @@ public final class OutputFunctions {
 					return F.$str(manipulateStr, IStringX.APPLICATION_JAVASCRIPT);
 				}
 				if (arg1 instanceof ASTDataset) {
-  					return F.$str(ASTDataset.datasetToJSForm((ASTDataset) arg1), IStringX.TEXT_HTML);
+					return F.$str(ASTDataset.datasetToJSForm((ASTDataset) arg1), IStringX.TEXT_HTML);
 				}
 				if (arg1 instanceof GraphExpr) {
 					return F.$str(GraphFunctions.graphToJSForm((GraphExpr) arg1), IStringX.APPLICATION_JAVASCRIPT);

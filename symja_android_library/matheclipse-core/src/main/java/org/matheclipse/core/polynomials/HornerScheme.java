@@ -36,7 +36,7 @@ public class HornerScheme {
 		map = new TreeMap<ISignedNumber, IASTAppendable>(comp);
 	}
 
-	public IAST generate(boolean numericMode, IAST poly, ISymbol sym) {
+	public IAST generate(boolean numericMode, IAST poly, IExpr sym) {
 		if (numericMode) {
 			poly.forEach(x -> collectTermN(sym, x));
 			// for (int i = 1; i < poly.size(); i++) {
@@ -122,7 +122,7 @@ public class HornerScheme {
 		return coefficient;
 	}
 
-	private void collectTerm(ISymbol sym, IExpr expr) {
+	private void collectTerm(IExpr sym, IExpr expr) {
 		if (expr instanceof IAST) {
 			IAST term = (IAST) expr;
 			if (term.isTimes()) {
@@ -153,7 +153,7 @@ public class HornerScheme {
 		addToMap(F.C0, expr);
 	}
 
-	private void collectTermN(ISymbol sym, IExpr expr) {
+	private void collectTermN(IExpr sym, IExpr expr) {
 		if (expr instanceof IAST) {
 			IAST term = (IAST) expr;
 			if (term.isTimes()) {
