@@ -96,8 +96,10 @@ public class EllipticIntegralsJS {
 		Complex Z = X.add(Y).negate();
 		Complex E2 = X.multiply(Y).subtract(Z.multiply(Z));
 		Complex E3 = X.multiply(Y).multiply(Z);
+		// Am.pow(-0.5)
+		Complex sqrtAmReciprocal = Am.reciprocal().sqrt();
 
-		return Am.pow(-0.5).multiply(E2.multiply(-924).add(E2.multiply(E2).multiply(385)).add(E3.multiply(660))
+		return sqrtAmReciprocal.multiply(E2.multiply(-924).add(E2.multiply(E2).multiply(385)).add(E3.multiply(660))
 				.add(E2.multiply(E3).multiply(-630)).add(9240)).multiply(1.0 / 9240.0);
 
 		// }
@@ -313,10 +315,11 @@ public class EllipticIntegralsJS {
 			period = ellipticK(m).multiply(p + p);
 		}
 
-		return x.sin().multiply(carlsonRF(x.cos().pow(2), m.multiply(x.sin().pow(2)).negate().add(1), Complex.ONE))
-				.add(period);
-
-		// }
+		Complex sinX = x.sin();
+		Complex cosX = x.cos();
+		Complex sqrSinX = sinX.multiply(sinX);
+		Complex sqrCosX = cosX.multiply(cosX);
+		return sinX.multiply(carlsonRF(sqrCosX, m.multiply(sqrSinX).negate().add(1), Complex.ONE)).add(period);
 	}
 
 	public static Complex ellipticF(double x, double m) {
@@ -331,8 +334,11 @@ public class EllipticIntegralsJS {
 			period = ellipticK(m).multiply(p + p);
 		}
 
-		return carlsonRF(Math.pow(Math.cos(x), 2), 1 - m * Math.pow(Math.sin(x), 2), 1).multiply(Math.sin(x))
-				.add(period);
+		double sinX = Math.sin(x);
+		double cosX = Math.cos(x);
+		double sqrSinX = sinX * sinX;
+		double sqrCosX = cosX * cosX;
+		return carlsonRF(sqrCosX, 1 - m * sqrSinX, 1).multiply(sinX).add(period);
 
 	}
 
@@ -363,12 +369,14 @@ public class EllipticIntegralsJS {
 			period = ellipticE(new Complex(Math.PI / 2.0), m).multiply(p + p);
 		}
 
-		Complex diff = m.multiply(x.sin().pow(2.0)).negate().add(1.0);
-		return period.add(x.sin().multiply(carlsonRF(x.cos().pow(2.0), diff, Complex.ONE)))
-				.add(m.multiply(x.sin().pow(3)).multiply(carlsonRD(x.cos().pow(2.0), diff, Complex.ONE))
-						.multiply(-1.0 / 3.0));
-
-		// }
+		Complex sinX = x.sin();
+		Complex cosX = x.cos();
+		Complex sqrSinX = sinX.multiply(sinX);
+		Complex sqrCosX = cosX.multiply(cosX);
+		Complex p3SinX = sqrSinX.multiply(sinX);
+		Complex diff = m.multiply(sqrSinX).negate().add(1.0);
+		return period.add(sinX.multiply(carlsonRF(sqrCosX, diff, Complex.ONE)))
+				.add(m.multiply(p3SinX).multiply(carlsonRD(sqrCosX, diff, Complex.ONE)).multiply(-1.0 / 3.0));
 	}
 
 	public static Complex ellipticE(double x, double m) {
@@ -383,10 +391,12 @@ public class EllipticIntegralsJS {
 			period = ellipticE(Math.PI / 2.0, m).multiply(p + p);
 		}
 
-		return period.add(
-				carlsonRF(Math.pow(Math.cos(x), 2), 1.0 - m * Math.pow(Math.sin(x), 2.0), 1.0).multiply(Math.sin(x))
-						.subtract(carlsonRD(Math.pow(Math.cos(x), 2.0), 1 - m * Math.pow(Math.sin(x), 2.0), 1.0)
-								.multiply(m / 3.0 * Math.pow(Math.sin(x), 3.0))));
+		double sinX = Math.sin(x);
+		double cosX = Math.cos(x);
+		double sqrSinX = sinX * sinX;
+		double sqrCosX = cosX * cosX;
+		return period.add(carlsonRF(sqrCosX, 1.0 - m * sqrSinX, 1.0).multiply(sinX)
+				.subtract(carlsonRD(sqrCosX, 1 - m * sqrSinX, 1.0).multiply(m / 3.0 * Math.pow(sinX, 3.0))));
 
 	}
 
@@ -407,20 +417,23 @@ public class EllipticIntegralsJS {
 			x = new Complex(x.getReal() - p * Math.PI, x.getImaginary());
 			period = ellipticPi(n, new Complex(Math.PI), m).multiply(p + p);
 		}
+		Complex sinX = x.sin();
+		Complex cosX = x.cos();
+		Complex sqrSinX = sinX.multiply(sinX);
+		Complex sqrCosX = cosX.multiply(cosX);
+		Complex p3SinX = sqrSinX.multiply(sinX);
 		Complex a2;
-		Complex aAdd1;
-		if (x.equals(Complex.ZERO)) {
+		if (sinX.equals(Complex.ZERO)) {
 			a2 = Complex.ONE;
-			aAdd1 = Complex.ZERO;
 		} else {
-			a2 = x.sin().pow(2.0).multiply(m).negate().add(1.0);
-			aAdd1 = x.sin().pow(3);
+			a2 = sqrSinX.multiply(m).negate().add(1.0);
 		}
-		return carlsonRF(x.cos().pow(2), a2, Complex.ONE).multiply(x.sin())
-				.add(n.multiply(aAdd1.multiply(carlsonRJ(x.cos().multiply(x.cos()),
-						Complex.ONE.subtract(m.multiply(x.sin()).multiply(x.sin())), Complex.ONE,
-						Complex.ONE.subtract(n.multiply(x.sin()).multiply(x.sin()))).multiply(1.0 / 3.0))))
-				.add(period);
+		return carlsonRF(sqrCosX, a2,
+				Complex.ONE)
+						.multiply(sinX)
+						.add(n.multiply(p3SinX.multiply(carlsonRJ(sqrCosX, Complex.ONE.subtract(m.multiply(sqrSinX)),
+								Complex.ONE, Complex.ONE.subtract(n.multiply(sqrSinX))).multiply(1.0 / 3.0))))
+						.add(period);
 
 		// }
 	}
@@ -441,9 +454,12 @@ public class EllipticIntegralsJS {
 			period = ellipticPi(n, Math.PI / 2.0, m).multiply(2 * p);
 		}
 
-		return carlsonRF(Math.pow(Math.cos(x), 2), 1 - m * Math.pow(Math.sin(x), 2), 1).multiply(Math.sin(x))
-				.add(carlsonRJ(Math.pow(Math.cos(x), 2), 1 - m * Math.pow(Math.sin(x), 2), 1,
-						1 - n * Math.pow(Math.sin(x), 2)).multiply(n / 3.0 * Math.pow(Math.sin(x), 3)))
+		double sinX = Math.sin(x);
+		double cosX = Math.cos(x);
+		double sqrSinX = sinX * sinX;
+		double p3SqrSinX = sqrSinX * sinX;
+		return carlsonRF(cosX * cosX, 1 - m * sqrSinX, 1).multiply(sinX)
+				.add(carlsonRJ(cosX * cosX, 1 - m * sqrSinX, 1, 1 - n * sqrSinX).multiply(n / 3.0 * p3SqrSinX))
 				.add(period);
 
 	}

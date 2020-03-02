@@ -247,7 +247,9 @@ public class EllipticFunctionsJS {
 
 		// if ( m > 1 || isComplex(x) || isComplex(m) ) {
 
-		Complex t = x.divide(jacobiTheta(3, Complex.ZERO, q).pow(2));
+		Complex a2 = jacobiTheta(3, Complex.ZERO, q);
+		a2 = a2.multiply(a2);
+		Complex t = x.divide(a2);
 
 		return jacobiTheta(3, Complex.ZERO, q).divide(jacobiTheta(2, Complex.ZERO, q))
 				.multiply(jacobiTheta(1, t, q).divide(jacobiTheta(4, t, q)));
@@ -276,7 +278,9 @@ public class EllipticFunctionsJS {
 		}
 
 		Complex q = ellipticNome(new Complex(m));
-		Complex t = new Complex(x).divide(jacobiTheta(3, Complex.ZERO, q).pow(2));
+		Complex a2 = jacobiTheta(3, Complex.ZERO, q);
+		a2 = a2.multiply(a2);
+		Complex t = new Complex(x).divide(a2);
 
 		if (m < 0) {
 			return jacobiTheta(3, Complex.ZERO, q).divide(jacobiTheta(4, t, q))
@@ -297,13 +301,15 @@ public class EllipticFunctionsJS {
 	public static Complex jacobiCN(Complex x, Complex m) {
 		Complex q = ellipticNome(m);
 		// if ( m > 1 || isComplex(x) || isComplex(m) ) {
-		Complex t = x.divide(jacobiTheta(3, Complex.ZERO, q).pow(2));
+		Complex a2 = jacobiTheta(3, Complex.ZERO, q);
+		a2 = a2.multiply(a2);
+		Complex t = x.divide(a2);
 
 		return jacobiTheta(4, Complex.ZERO, q).divide(jacobiTheta(2, Complex.ZERO, q))
 				.multiply(jacobiTheta(2, t, q).divide(jacobiTheta(4, t, q)));
 		// }
 	}
-	
+
 	/**
 	 * JacobiCN function for real values.
 	 * 
@@ -326,7 +332,9 @@ public class EllipticFunctionsJS {
 		}
 
 		Complex q = ellipticNome(new Complex(m));
-		Complex t = new Complex(x).divide(jacobiTheta(3, Complex.ZERO, q).pow(2));
+		Complex a2 = jacobiTheta(3, Complex.ZERO, q);
+		a2 = a2.multiply(a2);
+		Complex t = new Complex(x).divide(a2);
 
 		if (m < 0) {
 			return jacobiTheta(4, Complex.ZERO, q).divide(jacobiTheta(4, t, q))
@@ -349,7 +357,9 @@ public class EllipticFunctionsJS {
 
 		// if ( m > 1 || isComplex(x) || isComplex(m) ) {
 
-		Complex t = x.divide(jacobiTheta(3, Complex.ZERO, q).pow(2));
+		Complex a2 = jacobiTheta(3, Complex.ZERO, q);
+		a2 = a2.multiply(a2);
+		Complex t = x.divide(a2);
 
 		return jacobiTheta(4, Complex.ZERO, q).divide(jacobiTheta(3, Complex.ZERO, q))
 				.multiply(jacobiTheta(3, t, q).divide(jacobiTheta(4, t, q)));
@@ -379,7 +389,9 @@ public class EllipticFunctionsJS {
 		}
 
 		Complex q = ellipticNome(new Complex(m));
-		Complex t = new Complex(x).divide(jacobiTheta(3, Complex.ZERO, q).pow(2));
+		Complex a2 = jacobiTheta(3, Complex.ZERO, q);
+		a2 = a2.multiply(a2);
+		Complex t = new Complex(x).divide(a2);
 
 		return jacobiTheta(4, Complex.ZERO, q).divide(jacobiTheta(3, Complex.ZERO, q))
 				.multiply(jacobiTheta(3, t, q).divide(jacobiTheta(4, t, q)));
@@ -516,7 +528,9 @@ public class EllipticFunctionsJS {
 
 		Complex m = e2.subtract(e3).divide(e1.subtract(e3));
 
-		return e3.add(e1.subtract(e3).multiply(jacobiSN(x.multiply(e1.subtract(e3).sqrt()), m).pow(-2)));
+		Complex pow = jacobiSN(x.multiply(e1.subtract(e3).sqrt()), m).reciprocal();
+		pow = pow.multiply(pow);
+		return e3.add(e1.subtract(e3).multiply(pow));
 
 	}
 
