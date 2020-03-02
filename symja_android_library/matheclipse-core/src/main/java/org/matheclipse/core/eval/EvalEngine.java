@@ -1813,6 +1813,9 @@ public class EvalEngine implements Serializable {
 	 * @return
 	 */
 	public IAST flattenSequences(final IAST ast) {
+		if (ast.isEvalFlagOn(IAST.SEQUENCE_FLATTENED)) {
+			return F.NIL;
+		}
 		int attr = ast.topHead().getAttributes();
 		IASTAppendable[] seqResult = new IASTAppendable[] { F.NIL };
 
@@ -1838,7 +1841,11 @@ public class EvalEngine implements Serializable {
 				seqResult[0].append(x);
 			}
 		});
-		return seqResult[0];
+		if (seqResult[0].isPresent()) {
+			return seqResult[0];
+		}
+		ast.addEvalFlags(IAST.SEQUENCE_FLATTENED);
+		return F.NIL;
 	}
 
 	/**

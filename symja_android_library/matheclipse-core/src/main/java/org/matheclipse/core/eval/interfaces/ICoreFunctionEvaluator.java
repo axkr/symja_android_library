@@ -1,6 +1,7 @@
 package org.matheclipse.core.eval.interfaces;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -17,12 +18,12 @@ public interface ICoreFunctionEvaluator extends IFunctionEvaluator {
 
 		@Override
 		public final IExpr evaluate(IAST ast, EvalEngine engine) {
-			return engine.evalAttributes(ast.topHead(), ast);
+			return F.NIL;// engine.evalAttributes(ast.topHead(), ast);
 		}
 
 		@Override
 		public final IExpr numericEval(IAST ast, EvalEngine engine) {
-			return engine.evalAttributes(ast.topHead(), ast);
+			return F.NIL;// engine.evalAttributes(ast.topHead(), ast);
 		}
 
 		@Override

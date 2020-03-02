@@ -1283,14 +1283,6 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			return evaluateNestList(ast, F.ListAlloc(), engine);
-		}
-
-		public int[] expectedArgSize() {
-			return IOFunctions.ARGS_3_3;
-		}
-
-		public static IExpr evaluateNestList(final IAST ast, final IASTAppendable resultList, EvalEngine engine) {
 			IExpr arg3 = engine.evaluate(ast.arg3());
 			if (arg3.isInteger()) {
 				int n = arg3.toIntDefault(Integer.MIN_VALUE);
@@ -1298,8 +1290,10 @@ public final class Programming {
 					// Positive integer (less equal 2147483647) expected at position `2` in `1`.
 					return IOFunctions.printMessage(F.Nest, "intpm", F.List(ast, F.C3), engine);
 				}
-				IExpr arg1 = ast.arg1();
-				nestList(ast.arg2(), n, x -> F.unaryAST1(arg1, x), resultList, engine);
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				IExpr arg2 = engine.evaluate(ast.arg2());
+				final IASTAppendable resultList = F.ListAlloc();
+				nestList(arg2, n, x -> F.unaryAST1(arg1, x), resultList, engine);
 				return resultList;
 			}
 			return F.NIL;
@@ -1310,9 +1304,14 @@ public final class Programming {
 			IExpr temp = expr;
 			resultList.append(temp);
 			for (int i = 0; i < n; i++) {
-				temp = engine.evaluate(fn.apply(temp));
+				// temp = engine.evaluate(fn.apply(temp));
+				temp = fn.apply(temp);
 				resultList.append(temp);
 			}
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_3_3;
 		}
 
 		@Override

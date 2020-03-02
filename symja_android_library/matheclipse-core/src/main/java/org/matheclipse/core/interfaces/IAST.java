@@ -162,6 +162,8 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 
 	public final static int BUILT_IN_EVALED = 0x00040000;
 
+	public final static int SEQUENCE_FLATTENED = 0x00080000;
+
 	/**
 	 * This List expression args should be printed in multi-line style
 	 */
