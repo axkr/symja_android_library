@@ -49,7 +49,8 @@ public class BesselJS {
 		}
 
 		Complex product = x.divide(2.0).pow(n).divide(Arithmetic.lanczosApproxGamma(n.add(1.0)));
-		return product.multiply(HypergeometricJS.hypergeometric0F1(n.add(1), x.pow(2).multiply(-0.25)));
+		Complex sqrX = x.multiply(x);
+		return product.multiply(HypergeometricJS.hypergeometric0F1(n.add(1), sqrX.multiply(-0.25)));
 
 	}
 
@@ -193,7 +194,8 @@ public class BesselJS {
 			return besselI(n.negate(), x);
 		}
 		Complex product = x.divide(2).pow(n).divide(Arithmetic.lanczosApproxGamma(n.add(1)));
-		return product.multiply(HypergeometricJS.hypergeometric0F1(n.add(1), x.pow(2).multiply(.25)));
+		Complex sqrX = x.multiply(x);
+		return product.multiply(HypergeometricJS.hypergeometric0F1(n.add(1), sqrX.multiply(.25)));
 
 	}
 

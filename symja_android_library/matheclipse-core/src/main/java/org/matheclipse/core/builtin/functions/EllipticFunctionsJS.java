@@ -500,12 +500,20 @@ public class EllipticFunctionsJS {
 		Complex a = jacobiTheta(2, Complex.ZERO, q);
 		Complex b = jacobiTheta(3, Complex.ZERO, q);
 
-		Complex g2 = w1.multiply(2).pow(-4).multiply(a.pow(8).add(a.pow(4).multiply(b.pow(4)).negate()).add(b.pow(8)))
+		Complex aPow4 = a.multiply(a);
+		aPow4 = aPow4.multiply(aPow4);
+		Complex aPow8 = aPow4.multiply(aPow4);
+		
+		Complex bPow4 = b.multiply(b);
+		bPow4 = bPow4.multiply(bPow4);
+		Complex bPow8 = bPow4.multiply(bPow4);
+		
+		Complex g2 = w1.multiply(2).pow(-4).multiply(aPow8.add(aPow4.multiply(bPow4).negate()).add(bPow8))
 				.multiply(4.0 / 3.0 * Math.pow(Math.PI, 4));
 
 		Complex g3 = w1.multiply(2.0).pow(-6.0).multiply(8.0 / 27.0 * Math.pow(Math.PI, 6.0))
-				.multiply(a.pow(12).add(a.pow(8).multiply(b.pow(4)).multiply(-1.5))
-						.add(a.pow(4).multiply(b.pow(8)).multiply(-1.5)).add(b.pow(12)));
+				.multiply(a.pow(12).add(aPow8.multiply(bPow4).multiply(-1.5))
+						.add(aPow4.multiply(bPow8).multiply(-1.5)).add(b.pow(12)));
 
 		if (conjugate) {
 			g2 = g2.conjugate();

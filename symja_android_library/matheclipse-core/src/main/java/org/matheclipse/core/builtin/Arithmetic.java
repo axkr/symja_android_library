@@ -6049,7 +6049,7 @@ public final class Arithmetic {
 	public static org.hipparchus.complex.Complex lanczosApproxGamma(org.hipparchus.complex.Complex z) {
 		if (z.getReal() < 0.5) {
 			// Pi / ( Sin(Pi * z) * Gamma(1 - z) )
-			return lanczosApproxGamma(z.negate().add(1.0)).multiply(z.multiply(Math.PI).sin()).pow(-1.0)
+			return lanczosApproxGamma(z.negate().add(1.0)).multiply(z.multiply(Math.PI).sin()).reciprocal()
 					.multiply(Math.PI);
 		} else {
 			z = z.subtract(1.0);
