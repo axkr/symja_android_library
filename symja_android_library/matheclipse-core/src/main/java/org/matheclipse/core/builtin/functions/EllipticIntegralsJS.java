@@ -99,8 +99,8 @@ public class EllipticIntegralsJS {
 		// Am.pow(-0.5)
 		Complex sqrtAmReciprocal = Am.reciprocal().sqrt();
 
-		return sqrtAmReciprocal.multiply(E2.multiply(-924).add(E2.multiply(E2).multiply(385)).add(E3.multiply(660))
-				.add(E2.multiply(E3).multiply(-630)).add(9240)).multiply(1.0 / 9240.0);
+		return sqrtAmReciprocal.multiply(E2.multiply(-924.0).add(E2.multiply(E2).multiply(385.0))
+				.add(E3.multiply(660.0)).add(E2.multiply(E3).multiply(-630.0)).add(9240.0)).multiply(1.0 / 9240.0);
 
 		// }
 	}
@@ -110,12 +110,15 @@ public class EllipticIntegralsJS {
 	}
 
 	public static Complex carlsonRF(double x, double y, double z, double tolerance) {
-		if (y == z)
+		if (y == z) {
 			return carlsonRC(x, y);
-		if (x == z)
+		}
+		if (x == z) {
 			return carlsonRC(y, x);
-		if (x == y)
+		}
+		if (x == y) {
 			return carlsonRC(z, x);
+		}
 
 		// adapted from mpmath / elliptic.py
 
@@ -125,11 +128,11 @@ public class EllipticIntegralsJS {
 		double A0 = (x + y + z) / 3.0;
 		double Am = A0;
 
-		double Q = Math.pow(3 * tolerance, -1.0 / 6.0)
+		double Q = Math.pow(3.0 * tolerance, -1.0 / 6.0)
 				* Math.max(Math.max(Math.abs(A0 - x), Math.abs(A0 - y)), Math.abs(A0 - z));
 		double g = .25;
 		double pow4 = 1.0;
-		double m = 0.0;
+		int m = 0;
 
 		while (true) {
 			double xs = Math.sqrt(xm);
@@ -152,19 +155,17 @@ public class EllipticIntegralsJS {
 		double X = (A0 - x) * t;
 		double Y = (A0 - y) * t;
 		double Z = -X - Y;
-		double E2 = X * Y - Math.pow(Z, 2);
+		double E2 = X * Y - Z * Z;
 		double E3 = X * Y * Z;
 
 		return new Complex(
-				Math.pow(Am, -0.5) * (9240 - 924 * E2 + 385 * Math.pow(E2, 2) + 660.0 * E3 - 630 * E2 * E3) / 9240.0);
+				Math.pow(Am, -0.5) * (9240.0 - 924.0 * E2 + 385.0 * E2 * E2 + 660.0 * E3 - 630.0 * E2 * E3) / 9240.0);
 
 	}
 
-	public static double carlsonRG(Complex x, Complex y, Complex z) {
-
-		return 1;
-
-	}
+	// private static double carlsonRG(Complex x, Complex y, Complex z) {
+	// throw new ArithmeticException("carlsonRG: not implemented");
+	// }
 
 	public static Complex carlsonRJ(Complex x, Complex y, Complex z, Complex p) {
 		return carlsonRJ(x, y, z, p, Config.SPECIAL_FUNCTIONS_TOLERANCE);
@@ -338,7 +339,11 @@ public class EllipticIntegralsJS {
 		double cosX = Math.cos(x);
 		double sqrSinX = sinX * sinX;
 		double sqrCosX = cosX * cosX;
-		return carlsonRF(sqrCosX, 1 - m * sqrSinX, 1).multiply(sinX).add(period);
+		double mSqrSinX = 1 - m * sqrSinX;
+//		if (mSqrSinX < 0) {
+//			return carlsonRF(new Complex(sqrCosX), new Complex(mSqrSinX), Complex.ONE).multiply(sinX).add(period);
+//		}
+		return carlsonRF(sqrCosX, mSqrSinX, 1).multiply(sinX).add(period);
 
 	}
 
@@ -457,10 +462,18 @@ public class EllipticIntegralsJS {
 		double sinX = Math.sin(x);
 		double cosX = Math.cos(x);
 		double sqrSinX = sinX * sinX;
+		double sqrCosX = cosX * cosX;
 		double p3SqrSinX = sqrSinX * sinX;
-		return carlsonRF(cosX * cosX, 1 - m * sqrSinX, 1).multiply(sinX)
-				.add(carlsonRJ(cosX * cosX, 1 - m * sqrSinX, 1, 1 - n * sqrSinX).multiply(n / 3.0 * p3SqrSinX))
-				.add(period);
+		double mSqrSinX = 1.0 - m * sqrSinX;
+		double nSqrSinX = 1.0 - n * sqrSinX;
+		if (mSqrSinX < 0) {
+			return carlsonRF(new Complex(sqrCosX), new Complex(mSqrSinX), Complex.ONE).multiply(sinX)
+					.add(carlsonRJ(new Complex(sqrCosX), new Complex(mSqrSinX), Complex.ONE, new Complex(nSqrSinX))
+							.multiply(n / 3.0 * p3SqrSinX))
+					.add(period);
+		}
+		return carlsonRF(sqrCosX, mSqrSinX, 1).multiply(sinX)
+				.add(carlsonRJ(sqrCosX, mSqrSinX, 1, nSqrSinX).multiply(n / 3.0 * p3SqrSinX)).add(period);
 
 	}
 

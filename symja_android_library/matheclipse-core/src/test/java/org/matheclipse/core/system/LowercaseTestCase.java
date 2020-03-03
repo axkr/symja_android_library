@@ -5482,7 +5482,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testEllipticF() {
 		// TODO https://github.com/paulmasson/math/issues/13
 		// check("EllipticF(-1.5708,1.5708)", //
-		// "");
+		// "-1.58877+I*(-4.19593)");
 
 		// see github #109
 		check("EllipticF(3,1/2)//N", //
@@ -5528,6 +5528,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEllipticPi() {
+		
+		check("EllipticPi(0,-1,1.5708)", //
+				"-1.58877+I*0.451013");
 		// TODO https://github.com/axkr/symja_android_library/issues/172
 		check("EllipticPi(I,1+(-1)*1,0.3)", //
 				"0.0");
