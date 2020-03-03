@@ -3515,32 +3515,45 @@ public class MainTestCase extends AbstractTestCase {
 	public void testSystem994() {
 		check("PolynomialGCD(3+3*x^3,3+3*x^3)", //
 				"3+3*x^3");
-		check("PolynomialExtendedGCD(3+3*x^3,3+3*x^3,x)", "{1+x^3,{0,1/3}}");
-		check("PolynomialGCD(x^2-1,x-1)", "-1+x");
-		check("PolynomialGCD(x+1,x^2-1)", "1+x");
-		check("PolynomialExtendedGCD(x+1,x^2-1,x)", "{1+x,{1,0}}");
-		check("PolynomialGCD(-1+x^16,(x^2-1)*((1+x^4)))", "-1+x^2-x^4+x^6");
-		check("PolynomialGCD(8*x^5+28*x^4+34*x^3+41*x^2+35*x-14,12*x^5+4*x^4-27*x^3-9*x^2-84*x-28)",
+		check("PolynomialExtendedGCD(3+3*x^3,3+3*x^3,x)", //
+				"{1+x^3,{0,1/3}}");
+		check("PolynomialGCD(x^2-1,x-1)", //
+				"-1+x");
+		check("PolynomialGCD(x+1,x^2-1)", //
+				"1+x");
+		check("PolynomialExtendedGCD(x+1,x^2-1,x)", //
+				"{1+x,{1,0}}");
+		check("PolynomialGCD(-1+x^16,(x^2-1)*((1+x^4)))", //
+				"-1+x^2-x^4+x^6");
+		check("PolynomialGCD(8*x^5+28*x^4+34*x^3+41*x^2+35*x-14,12*x^5+4*x^4-27*x^3-9*x^2-84*x-28)", //
 				"14+7*x+8*x^2+4*x^3");
 
-		check("PolynomialGCD(2*x^5-2*x,(x^2-1)^2)", "-1+x^2");
-		check("PolynomialGCD(2*x^5-2*x,(x^2-1)^2,Modulus->2)", "(1+x)^4");
+		check("PolynomialGCD(2*x^5-2*x,(x^2-1)^2)", //
+				"-1+x^2");
+		check("PolynomialGCD(2*x^5-2*x,(x^2-1)^2,Modulus->2)", //
+				"(1+x)^4");
 		check("PolynomialExtendedGCD(2*x^5-2*x,(x^2-1)^2,x)", //
 				"{-1+x^2,{x/4,1/2*(-2-x^2)}}");
-		check("PolynomialExtendedGCD(2*x^5-2*x,(x^2-1)^2,x, Modulus->2)", "{1+x^4,{0,1}}");
+		check("PolynomialExtendedGCD(2*x^5-2*x,(x^2-1)^2,x, Modulus->2)", //
+				"{1+x^4,{0,1}}");
 
-		check("ExpandAll((1+x)^2*(7+x)*(11+x)*(17+x))", "1309+3001*x+2110*x^2+454*x^3+37*x^4+x^5");
-		check("PolynomialLCM((1+x)^2*(7+x)*(17+x),(1+x)*(7+x)*(11+x))", "1309+3001*x+2110*x^2+454*x^3+37*x^4+x^5");
-		check("PolynomialLCM((1+x)^2*(7+x)*(17+x),(1+x)*(7+x)*(11+x), Modulus->31)", "(7+x)*(11+x)*(17+x)*(1+x)^2");
+		check("ExpandAll((1+x)^2*(7+x)*(11+x)*(17+x))", //
+				"1309+3001*x+2110*x^2+454*x^3+37*x^4+x^5");
+		check("PolynomialLCM((1+x)^2*(7+x)*(17+x),(1+x)*(7+x)*(11+x))", //
+				"1309+3001*x+2110*x^2+454*x^3+37*x^4+x^5");
+		check("PolynomialLCM((1+x)^2*(7+x)*(17+x),(1+x)*(7+x)*(11+x), Modulus->31)", //
+				"(7+x)*(11+x)*(17+x)*(1+x)^2");
 	}
 
 	public void testSystem996() {
-		check("FactorTerms(3+3*x^3)", "3*(1+x^3)");
-		check("FactorTerms(3+3/4*x^3+12/17*x^2,x)", "3/68*(68+16*x^2+17*x^3)");
+		check("FactorTerms(3+3*x^3)", //
+				"3*(1+x^3)");
+		check("FactorTerms(3+3/4*x^3+12/17*x^2,x)", //
+				"3/68*(68+16*x^2+17*x^3)");
 	}
 
 	public void testSystem997() {
-		check("GroebnerBasis({a+b+c+d, a*b+a*d+b*c+c*d, a*b*c+a*b*d+a*c*d+b*c*d,1-a*b*c*d}, {d,c,b,a})",
+		check("GroebnerBasis({a+b+c+d, a*b+a*d+b*c+c*d, a*b*c+a*b*d+a*c*d+b*c*d,1-a*b*c*d}, {d,c,b,a})",//
 				"{1-a^4-a^2*b^2+a^6*b^2,-a-b+a^3*b^2+a^2*b^3,-a+a^5-c+a^4*c,-2*a^2+a*b+a^4*b^2-a*c+b*c,a^\n"
 						+ "2+2*a*c+c^2,a+b+c+d}");
 		check("GroebnerBasis({a+b+c+d, a*b+a*d+b*c+c*d, a*b*c+a*b*d+a*c*d+b*c*d,1-a*b*c*d}, {d,c,b,a},MonomialOrder ->DegreeReverseLexicographic)",
@@ -3575,7 +3588,7 @@ public class MainTestCase extends AbstractTestCase {
 						+ "1048577/1048576+I*1/524288}}");
 	}
 
-	public void testSystem999() { 
+	public void testSystem999() {
 		// check("Roots(x^6 - 4*x^3 + 8==0, x)",
 		// "x==-1-I||x==-1+I||x==1/2-I*1/2-Sqrt(I*6)/2||x==1/2-I*1/2+Sqrt(I*6)/2||x==1/2+I*1/\n"
 		// + "2-Sqrt(-I*6)/2||x==1/2+I*1/2+Sqrt(-I*6)/2");

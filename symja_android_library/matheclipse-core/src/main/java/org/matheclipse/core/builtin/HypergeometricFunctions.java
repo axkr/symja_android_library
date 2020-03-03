@@ -735,7 +735,8 @@ public class HypergeometricFunctions {
 						zDouble = z.evalDouble();
 					} catch (ValidateException ve) {
 					}
-					if (Double.isNaN(aDouble) || Double.isNaN(bDouble) || Double.isNaN(zDouble)) {
+					if (Double.isNaN(aDouble) || Double.isNaN(bDouble) || Double.isNaN(zDouble) || (zDouble > 1.0)
+							|| (zDouble == -1.0)) {
 						Complex ac = a.evalComplex();
 						Complex bc = b.evalComplex();
 						Complex cc = c.evalComplex();

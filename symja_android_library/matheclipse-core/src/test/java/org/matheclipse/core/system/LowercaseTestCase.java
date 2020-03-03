@@ -5480,6 +5480,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEllipticF() {
+		// TODO https://github.com/paulmasson/math/issues/13
+		// check("EllipticF(-1.5708,1.5708)", //
+		// "");
+
 		// see github #109
 		check("EllipticF(3,1/2)//N", //
 				"3.56632");
@@ -9095,6 +9099,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testHypergeometric2F1() {
 		// check("Hypergeometric2F1(-3, 1, 2, z)", //
 		// "(1-(1-z)^4)/(4*z)");
+
+		// TODO currently unsupported
+		check("Hypergeometric2F1(0.5,0.333,1,1.5708)", //
+				"1.12923+I*(-0.568083)");
+		
 		check("Hypergeometric2F1(1, b, 2, z)", //
 				"(-1+(1-z)^(1-b))/((-1+b)*z)");
 		check("Hypergeometric2F1(a, b, a, z)", //
@@ -15567,6 +15576,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// TODO https://github.com/kredel/java-algebra-system/issues/15
 		// check("PolynomialGCD(-1/2,x^2-5*x+(-1)*6)", //
 		// "1/2");
+
+		check("PolynomialGCD({},0.5,x^4+(-1)*1,x^5+(-1)*1,x^6+(-1)*1,x^7+(-1)*1)", //
+				"PolynomialGCD({},0.5,-1+x^4,-1+x^5,-1+x^6,-1+x^7)");
 		check("PolynomialGCD(f(x),f(x)*x^2)", //
 				"f(x)");
 
@@ -15620,6 +15632,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("PolynomialLCM(x^2+7*x+6,-1/2)", //
 		// "");
 
+		check("PolynomialLCM({},0.5,x^4+(-1)*1,x^5+(-1)*1,x^6+(-1)*1,x^7+(-1)*1)", //
+				"PolynomialLCM({},0.5,-1+x^4,-1+x^5,-1+x^6,-1+x^7)");
 		check("PolynomialLCM(f(x)*y^3,f(x)*x^2)", //
 				"x^2*y^3*f(x)");
 		// wikipedia example https://en.wikipedia.org/wiki/Polynomial_greatest_common_divisor

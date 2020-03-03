@@ -478,7 +478,7 @@ public class HypergeometricJS {
 		}
 
 		if (x == -1) {
-			throw  new ArithmeticException("Unsupported real hypergeometric argument");
+			throw new ArithmeticException("Unsupported real hypergeometric argument");
 		}
 
 		if (x == 1) {
@@ -491,7 +491,7 @@ public class HypergeometricJS {
 		}
 
 		if (x > 1) {
-			new ArithmeticException("Unsupported real hypergeometric argument");
+			throw new ArithmeticException("Unsupported real hypergeometric argument");
 			// return hypergeometric2F1( new Complex(a), new Complex(b), new Complex(c), new Complex(x) );
 		}
 
@@ -588,11 +588,12 @@ public class HypergeometricJS {
 
 			Complex t2 = Arithmetic.lanczosApproxGamma(b.subtract(a)).reciprocal()
 					.multiply(Arithmetic.lanczosApproxGamma(c.subtract(a)).reciprocal())
-					.multiply(x.negate().pow(a.negate())).multiply(
-							hypergeometricSeries(new Complex[] { a, a.add(b.negate()).add(1), a.add(c.negate().add(1.0)) },
-									new Complex[] {}, x.reciprocal()));// , true ) );
-//			   var t2 = mul( inv(gamma(sub(b,a))), inv(gamma(sub(c,a))), pow(neg(x),neg(a)),
-//	                    hypergeometricSeries( [ a, add(a,neg(b),1), add(a,neg(c),1) ], [], inv(x), true ) );
+					.multiply(x.negate().pow(a.negate()))
+					.multiply(hypergeometricSeries(
+							new Complex[] { a, a.add(b.negate()).add(1), a.add(c.negate().add(1.0)) }, new Complex[] {},
+							x.reciprocal()));// , true ) );
+			// var t2 = mul( inv(gamma(sub(b,a))), inv(gamma(sub(c,a))), pow(neg(x),neg(a)),
+			// hypergeometricSeries( [ a, add(a,neg(b),1), add(a,neg(c),1) ], [], inv(x), true ) );
 			return Arithmetic.lanczosApproxGamma(b).multiply(Arithmetic.lanczosApproxGamma(c)).multiply(t1.add(t2));
 
 		}

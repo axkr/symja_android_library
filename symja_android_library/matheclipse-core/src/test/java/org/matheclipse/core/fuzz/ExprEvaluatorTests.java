@@ -65,12 +65,15 @@ public class ExprEvaluatorTests extends TestCase {
 		EvalEngine engine = EvalEngine.get();
 		List<ASTNode> node = parseFileToList();
 		IExpr temp;
-		int i = 0;
 
 		OutputFormFactory fInputFactory = OutputFormFactory.get(true, false, 5, 7);
 		fInputFactory.setQuotes(true);
 		AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
 		IAST seedList = F.List(//
+				F.num(-0.5), //
+				F.num(0.5), //
+				F.num(Math.PI * (-0.5)), //
+				F.num(Math.PI * 0.5), //
 				F.C0, //
 				F.C1, //
 				F.CN1, //
@@ -90,11 +93,12 @@ public class ExprEvaluatorTests extends TestCase {
 				F.Slot2, //
 				F.Subtract(F.C1, F.C1));
 		int counter = 0;
-		while (i < node.size()) {
-			temp = ast2Expr.convert(node.get(i++));
-			if (temp.isAST() && temp.size() > 1) {
-				ThreadLocalRandom random = ThreadLocalRandom.current();
-				for (int j = 1; j < 100; j++) {
+		for (int j = 1; j < 100; j++) {
+			int i = 0;
+			while (i < node.size()) {
+				temp = ast2Expr.convert(node.get(i++));
+				if (temp.isAST() && temp.size() > 1) {
+					ThreadLocalRandom random = ThreadLocalRandom.current();
 					int seedIndex = random.nextInt(1, seedList.size());
 					IExpr seed = seedList.get(seedIndex);
 
@@ -114,13 +118,13 @@ public class ExprEvaluatorTests extends TestCase {
 					ExprEvaluator eval = new ExprEvaluator(engine, true, 20);
 					final String mutantStr = fInputFactory.toString(mutant);
 					try {
-						 System.out.println(">> " + mutantStr);
-//						System.out.print(".");
- 						if (counter++ > 80) {
-//							System.out.println("");
- 							counter = 0;
- 							System.out.flush();
- 						}
+						System.out.println(">> " + mutantStr);
+						// System.out.print(".");
+						if (counter++ > 80) {
+							// System.out.println("");
+							counter = 0;
+							System.out.flush();
+						}
 						eval.eval(mutantStr);
 					} catch (FlowControlException mex) {
 						if (!quietMode) {
