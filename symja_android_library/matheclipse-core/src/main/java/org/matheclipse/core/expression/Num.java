@@ -44,20 +44,20 @@ public class Num implements INum {
 	 */
 	public static Num valueOf(final double d) {
 		int i = (int) d;
-		if (i > (-2) && i < 2) {
+		if (i >= (-1) && i <= 1) {
 			switch (i) {
 			case -1:
-				if (d == (-1.0)) {
+				if (d == (-1.0d)) {
 					return F.CND1;
 				}
 				break;
 			case 0:
-				if (d == 0.0) {
+				if (d == 0.0d || d == -0.0d) {
 					return F.CD0;
 				}
 				break;
 			case 1:
-				if (d == 1.0) {
+				if (d == 1.0d) {
 					return F.CD1;
 				}
 				break;
@@ -80,7 +80,7 @@ public class Num implements INum {
 		fDouble = 0.0;
 	}
 
-	Num(final double value) {
+	/* package private */ Num(final double value) {
 		fDouble = value;
 	}
 
@@ -116,14 +116,14 @@ public class Num implements INum {
 
 	@Override
 	public INum add(final INum val) {
-//		if (val instanceof ApfloatNum) {
-//			return ApfloatNum.valueOf(fDouble, ((ApfloatNum) val).precision()).add(val);
-//		}
+		// if (val instanceof ApfloatNum) {
+		// return ApfloatNum.valueOf(fDouble, ((ApfloatNum) val).precision()).add(val);
+		// }
 		if (val instanceof ApfloatNum) {
-			Apfloat arg2 = ((ApfloatNum) val).apfloatValue( );
-			return F.num(arg2.add(apfloatValue(arg2.precision()))); 
-		} 
-		
+			Apfloat arg2 = ((ApfloatNum) val).apfloatValue();
+			return F.num(arg2.add(apfloatValue(arg2.precision())));
+		}
+
 		return valueOf(fDouble + val.getRealPart());
 	}
 
@@ -275,17 +275,17 @@ public class Num implements INum {
 		}
 		return F.NIL;
 	}
- 
-	public INumber evaluatePrecision(EvalEngine engine) { 
+
+	public INumber evaluatePrecision(EvalEngine engine) {
 		return this;
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public double evalDouble() {
-		return fDouble; 
+		return fDouble;
 	}
-	
+
 	@Override
 	public ISignedNumber evalReal() {
 		return this;
@@ -551,7 +551,7 @@ public class Num implements INum {
 	}
 
 	@Override
-	public IExpr plus(final IExpr that) {   
+	public IExpr plus(final IExpr that) {
 		if (that instanceof Num) {
 			return valueOf(fDouble + ((Num) that).fDouble);
 		}
@@ -559,12 +559,12 @@ public class Num implements INum {
 			return ComplexNum.valueOf(fDouble).add((ComplexNum) that);
 		}
 		if (that instanceof ApfloatNum) {
-			Apfloat arg2 = ((ApfloatNum) that).apfloatValue( );
-			return F.num(arg2.add(apfloatValue(arg2.precision()))); 
-		} 
+			Apfloat arg2 = ((ApfloatNum) that).apfloatValue();
+			return F.num(arg2.add(apfloatValue(arg2.precision())));
+		}
 		if (that instanceof ApcomplexNum) {
 			Apcomplex arg2 = ((ApcomplexNum) that).apcomplexValue();
-			return F.complexNum(arg2.add(apcomplexValue(arg2.precision()))); 
+			return F.complexNum(arg2.add(apcomplexValue(arg2.precision())));
 		}
 		return INum.super.plus(that);
 	}
@@ -584,7 +584,7 @@ public class Num implements INum {
 	public double pow(final int exp) {
 		return Math.pow(fDouble, exp);
 	}
- 
+
 	@Override
 	public INum pow(final INum val) {
 		return valueOf(Math.pow(fDouble, val.getRealPart()));
@@ -601,7 +601,7 @@ public class Num implements INum {
 	}
 
 	@Override
-	public ISignedNumber roundClosest(ISignedNumber multiple) { 
+	public ISignedNumber roundClosest(ISignedNumber multiple) {
 		if (multiple.isRational()) {
 			return F.ZZ(DoubleMath.roundToBigInteger(fDouble / multiple.doubleValue(), RoundingMode.HALF_EVEN))
 					.multiply((IRational) multiple);
@@ -631,11 +631,11 @@ public class Num implements INum {
 	public ISignedNumber subtractFrom(ISignedNumber that) {
 		if (that instanceof Num) {
 			return valueOf(fDouble + ((Num) that).fDouble);
-		} 
+		}
 		if (that instanceof ApfloatNum) {
-			Apfloat arg2 = ((ApfloatNum) that).apfloatValue( );
-			return F.num(arg2.add(apfloatValue(arg2.precision()))); 
-		}  
+			Apfloat arg2 = ((ApfloatNum) that).apfloatValue();
+			return F.num(arg2.add(apfloatValue(arg2.precision())));
+		}
 		return valueOf(doubleValue() - that.doubleValue());
 	}
 
@@ -648,21 +648,21 @@ public class Num implements INum {
 	}
 
 	@Override
-	public IExpr times(final IExpr that) { 
+	public IExpr times(final IExpr that) {
 		if (that instanceof Num) {
 			return valueOf(fDouble * ((Num) that).fDouble);
-		} 
+		}
 		if (that instanceof ComplexNum) {
 			return ComplexNum.valueOf(fDouble).multiply((ComplexNum) that);
 		}
 		if (that instanceof ApfloatNum) {
 			ApfloatNum arg2 = (ApfloatNum) that;
-			return F.num(arg2.apfloatValue( ).multiply(apfloatValue(arg2.precision()))); 
+			return F.num(arg2.apfloatValue().multiply(apfloatValue(arg2.precision())));
 		}
 		if (that instanceof ApcomplexNum) {
 			Apcomplex arg2 = ((ApcomplexNum) that).apcomplexValue();
-			return F.complexNum(arg2.multiply(apcomplexValue(arg2.precision()))); 
-		} 
+			return F.complexNum(arg2.multiply(apcomplexValue(arg2.precision())));
+		}
 		return INum.super.times(that);
 	}
 

@@ -92,26 +92,54 @@ public class ComplexNum implements IComplexNum {
 	 *            a double complex numeric value
 	 * @return
 	 */
-	protected static ComplexNum newInstance(final Complex value) {
+	private static ComplexNum newInstance(final Complex value) {
 		ComplexNum d = new ComplexNum(0.0, 0.0);
 		d.fComplex = value;
 		return d;
 	}
 
 	public static ComplexNum valueOf(final Complex c) {
+		double real = c.getReal();
+		double imaginary = c.getImaginary();
+		if (real == 0.0d || real == -0.0d) {
+			if (imaginary == 0.0d || imaginary == -0.0d) {
+				return ZERO;
+			}
+			return newInstance(new Complex(0.0d, imaginary));
+		}
+		if (imaginary == 0.0d || imaginary == -0.0d) {
+			return newInstance(new Complex(real, 0.0d));
+		}
 		return newInstance(c);
 	}
 
 	public static ComplexNum valueOf(final double real) {
+		if (real == 0.0d || real == -0.0d) {
+			return ZERO;
+		}
 		return newInstance(new Complex(real, 0.0));
 	}
 
 	public static ComplexNum valueOf(final double real, final double imaginary) {
+		if (real == 0.0d || real == -0.0d) {
+			if (imaginary == 0.0d || imaginary == -0.0d) {
+				// Complex.ZERO constructor
+				return newInstance(new Complex(0.0d, 0.0d));
+			}
+			return newInstance(new Complex(0.0d, imaginary));
+		}
+		if (imaginary == 0.0d || imaginary == -0.0d) {
+			return newInstance(new Complex(real, 0.0d));
+		}
 		return newInstance(new Complex(real, imaginary));
 	}
 
 	public static ComplexNum valueOf(final INum d) {
-		return newInstance(new Complex(d.getRealPart(), 0.0));
+		double real = d.getRealPart();
+		if (real == 0.0d || real == -0.0d) {
+			return ZERO;
+		}
+		return newInstance(new Complex(real, 0.0));
 	}
 
 	Complex fComplex;
@@ -341,11 +369,11 @@ public class ComplexNum implements IComplexNum {
 		// }
 		return F.NIL;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public Complex evalComplex() {
-		return fComplex; 
+		return fComplex;
 	}
 
 	@Override
