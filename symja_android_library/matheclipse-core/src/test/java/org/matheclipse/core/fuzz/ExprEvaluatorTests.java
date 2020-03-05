@@ -74,6 +74,11 @@ public class ExprEvaluatorTests extends TestCase {
 				F.num(0.5), //
 				F.num(Math.PI * (-0.5)), //
 				F.num(Math.PI * 0.5), //
+				F.num(-Math.PI  ), //
+				F.num(Math.PI ), //
+
+				F.num(-Math.E  ), //
+				F.num(Math.E ), //
 				F.C0, //
 				F.C1, //
 				F.CN1, //
