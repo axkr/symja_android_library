@@ -32,6 +32,9 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+
 public class IntegerFunctions {
 	/**
 	 * 
@@ -43,6 +46,7 @@ public class IntegerFunctions {
 		private static void init() {
 			F.BitLength.setEvaluator(new BitLength());
 			F.Ceiling.setEvaluator(new Ceiling());
+			F.DigitCount.setEvaluator(new DigitCount());
 			F.Floor.setEvaluator(new Floor());
 			F.FractionalPart.setEvaluator(new FractionalPart());
 			F.FromDigits.setEvaluator(new FromDigits());
@@ -246,6 +250,69 @@ public class IntegerFunctions {
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 			super.setUp(newSymbol);
+		}
+	}
+
+	private static class DigitCount extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr result = F.NIL;
+			int radix = 10;
+			if (ast.isAST1()) {
+				result = F.IntegerDigits.of(engine, ast.arg1());
+			} else if (ast.size() >= 3) {
+				radix = ast.arg2().toIntDefault();
+				if (radix <= 0) {
+					return F.NIL;
+				}
+				result = F.IntegerDigits.of(engine, ast.arg1(), ast.arg2());
+			}
+			if (result.isList()) {
+				IAST list = (IAST) result;
+
+				Object2IntOpenHashMap<IExpr> map = new Object2IntOpenHashMap<IExpr>();
+				for (int i = 1; i < list.size(); i++) {
+					map.addTo((IExpr) list.get(i), 1);
+				}
+				if (ast.isAST3()) {
+					int index = ast.arg3().toIntDefault();
+					if (index > 0 && index < radix) {
+						int count = map.getInt(F.ZZ(index));
+						return F.ZZ(count);
+					}
+					return F.NIL;
+				}
+				IExpr[] arr = new IExpr[radix];
+				for (int i = 0; i < arr.length; i++) {
+					arr[i] = F.C0;
+				}
+				for (Object2IntMap.Entry<IExpr> element : map.object2IntEntrySet()) {
+					IExpr key = element.getKey();
+					int k = key.toIntDefault();
+					if (k == 0) {
+						arr[9] = F.ZZ(element.getIntValue());
+					} else if (k >= 1 && k <= 9) {
+						arr[k - 1] = F.ZZ(element.getIntValue());
+					} else if (k >= 11 && k <= 99) {
+						arr[k - 1] = F.ZZ(element.getIntValue());
+					} else {
+						return F.NIL;
+					}
+				}
+				return F.ast(arr, F.List);
+
+			}
+			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_3;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
 		}
 	}
 

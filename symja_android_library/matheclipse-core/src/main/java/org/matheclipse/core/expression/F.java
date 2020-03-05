@@ -937,6 +937,9 @@ public class F {
     /***/
     public final static IBuiltInSymbol Differences = F.initFinalSymbol("Differences", ID.Differences);
 
+    /***/
+    public final static IBuiltInSymbol DigitCount = F.initFinalSymbol("DigitCount", ID.DigitCount);
+
     /** DigitQ(str) - returns `True` if `str` is a string which contains only digits.*/
     public final static IBuiltInSymbol DigitQ = F.initFinalSymbol("DigitQ", ID.DigitQ);
 
@@ -1938,7 +1941,7 @@ public class F {
 
     /***/
     public final static IBuiltInSymbol MatrixPlot = F.initFinalSymbol("MatrixPlot", ID.MatrixPlot);
-    
+
     /** MatrixPower(matrix, n) - computes the `n`th power of a `matrix`*/
     public final static IBuiltInSymbol MatrixPower = F.initFinalSymbol("MatrixPower", ID.MatrixPower);
 
@@ -2331,7 +2334,7 @@ public class F {
 
     /***/
     public final static IBuiltInSymbol PiecewiseExpand = F.initFinalSymbol("PiecewiseExpand", ID.PiecewiseExpand);
-    
+
     /** Plot(function, {x, xMin, xMax}, PlotRange->{yMin,yMax}) - generate a JavaScript control for the expression `function` in the `x` range `{x, xMin, xMax}` and `{yMin, yMax}` in the `y` range.*/
     public final static IBuiltInSymbol Plot = F.initFinalSymbol("Plot", ID.Plot);
 
