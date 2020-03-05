@@ -2388,7 +2388,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 */
 	default boolean isPolynomialStruct( ) {
-		return isNumber();
+		return isExactNumber();
 	}
 
 	/**
