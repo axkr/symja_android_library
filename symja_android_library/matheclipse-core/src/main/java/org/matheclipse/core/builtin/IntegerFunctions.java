@@ -291,10 +291,8 @@ public class IntegerFunctions {
 					IExpr key = element.getKey();
 					int k = key.toIntDefault();
 					if (k == 0) {
-						arr[9] = F.ZZ(element.getIntValue());
-					} else if (k >= 1 && k <= 9) {
-						arr[k - 1] = F.ZZ(element.getIntValue());
-					} else if (k >= 11 && k <= 99) {
+						arr[radix - 1] = F.ZZ(element.getIntValue());
+					} else if (k < radix) {
 						arr[k - 1] = F.ZZ(element.getIntValue());
 					} else {
 						return F.NIL;
