@@ -61,7 +61,9 @@ public class EllipticIntegralsJS {
 	public static Complex carlsonRF(Complex x, Complex y, Complex z, double tolerance) {
 
 		// if ( isComplex(x) || isComplex(y) || isComplex(z) ) {
-
+		if (y.getImaginary()==0.0) {
+			y = new Complex(y.getReal());
+		}
 		Complex xm = x;
 		Complex ym = y;
 		Complex zm = z;
@@ -318,13 +320,16 @@ public class EllipticIntegralsJS {
 
 		Complex sinX = x.sin();
 		Complex cosX = x.cos();
+		if (cosX.getImaginary()==0.0) {
+			cosX = new Complex(cosX.getReal());
+		}
 		Complex sqrSinX = sinX.multiply(sinX);
 		Complex sqrCosX = cosX.multiply(cosX);
 		return sinX.multiply(carlsonRF(sqrCosX, m.multiply(sqrSinX).negate().add(1), Complex.ONE)).add(period);
 	}
 
 	public static Complex ellipticF(double x, double m) {
-		if (m > 1 && x > Math.asin(1 / Math.sqrt(m))) {
+		if (m > 1 && Math.abs(x) > Math.asin(1 / Math.sqrt(m))) {
 			return ellipticF(new Complex(x), new Complex(m));
 		}
 
@@ -348,7 +353,7 @@ public class EllipticIntegralsJS {
 	}
 
 	public static Complex ellipticK(double m) {
-		return ellipticF(Math.PI / 2.0, m);
+		return ellipticF( Math.PI / 2.0, m);
 	}
 
 	public static Complex ellipticK(Complex m) {
@@ -385,7 +390,7 @@ public class EllipticIntegralsJS {
 	}
 
 	public static Complex ellipticE(double x, double m) {
-		if (m > 1 && x > Math.asin(1 / Math.sqrt(m))) {
+		if (m > 1 && Math.abs(x) > Math.asin(1 / Math.sqrt(m))) {
 			return ellipticE(new Complex(x), new Complex(m));
 		}
 
@@ -444,11 +449,11 @@ public class EllipticIntegralsJS {
 	}
 
 	public static Complex ellipticPi(double n, double x, double m) {
-		if (n > 1 && x > Math.asin(1 / Math.sqrt(n))) {
+		if (n > 1 && Math.abs(x) > Math.asin(1 / Math.sqrt(n))) {
 			return ellipticPi(new Complex(n), new Complex(x), new Complex(m));
 		}
 
-		if (m > 1 && x > Math.asin(1 / Math.sqrt(m))) {
+		if (m > 1 && Math.abs(x) > Math.asin(1 / Math.sqrt(m))) {
 			return ellipticPi(new Complex(n), new Complex(x), new Complex(m));
 		}
 
