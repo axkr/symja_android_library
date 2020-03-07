@@ -3093,9 +3093,12 @@ public class Algebra {
 					}
 
 				} catch (java.lang.ClassCastException cce) {
-					cce.printStackTrace();
+					if (Config.SHOW_STACKTRACE) {
+						cce.printStackTrace();
+					}
+					return F.NIL;
 				} catch (JASConversionException e) {
-					if (Config.DEBUG) {
+					if (Config.SHOW_STACKTRACE) {
 						e.printStackTrace();
 					}
 					IAST list = ast.setAtCopy(0, F.List);

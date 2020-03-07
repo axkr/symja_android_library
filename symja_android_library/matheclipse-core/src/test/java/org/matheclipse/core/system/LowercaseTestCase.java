@@ -13241,6 +13241,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testN() {
+		
+		check("N(Null)", //
+				"");
 		// test precision 30
 		check("2/3 + Pi + 5.5`30", //
 				"9.30825932025645990512931004994");

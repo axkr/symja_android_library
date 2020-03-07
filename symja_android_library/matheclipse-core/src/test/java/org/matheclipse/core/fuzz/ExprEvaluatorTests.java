@@ -10,8 +10,10 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.FlowControlException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
+import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -74,11 +76,11 @@ public class ExprEvaluatorTests extends TestCase {
 				F.num(0.5), //
 				F.num(Math.PI * (-0.5)), //
 				F.num(Math.PI * 0.5), //
-				F.num(-Math.PI  ), //
-				F.num(Math.PI ), //
+				F.num(-Math.PI), //
+				F.num(Math.PI), //
 
-				F.num(-Math.E  ), //
-				F.num(Math.E ), //
+				F.num(-Math.E), //
+				F.num(Math.E), //
 				F.C0, //
 				F.C1, //
 				F.CN1, //
@@ -87,12 +89,14 @@ public class ExprEvaluatorTests extends TestCase {
 				F.CNI, //
 				F.CI, //
 				// F.ZZ(Integer.MIN_VALUE), //
- 				F.CInfinity, //
- 				F.CNInfinity, //
+				F.CInfinity, //
+				F.CNInfinity, //
 				F.Null, //
 				F.Power(F.x, F.C2), //
 				// F.Indeterminate, //
- 				F.ComplexInfinity, //
+				F.ComplexInfinity, //
+				F.x_, //
+				F.y_, //
 				F.CEmptyList, //
 				F.C1DSqrt5, //
 				F.Slot2, //
@@ -120,10 +124,12 @@ public class ExprEvaluatorTests extends TestCase {
 
 					engine.init();
 					engine.setQuietMode(quietMode);
+					engine.setRecursionLimit(256);
+					engine.setIterationLimit(1000);
 					ExprEvaluator eval = new ExprEvaluator(engine, true, 20);
 					final String mutantStr = fInputFactory.toString(mutant);
 					try {
-						System.out.println(">> " + mutantStr);
+						// System.out.println(">> " + mutantStr);
 						// System.out.print(".");
 						if (counter++ > 80) {
 							// System.out.println("");
@@ -137,9 +143,13 @@ public class ExprEvaluatorTests extends TestCase {
 							mex.printStackTrace();
 							System.out.println();
 						}
-					} catch (IterationLimitExceeded mex) {
+					} catch (IterationLimitExceeded ile) {
 						System.out.println(mutantStr);
-						mex.printStackTrace();
+						ile.printStackTrace();
+						System.out.println();
+					} catch (final RecursionLimitExceeded rle) {
+						System.out.println(mutantStr);
+						rle.printStackTrace();
 						System.out.println();
 					} catch (SyntaxError se) {
 						if (!quietMode) {
@@ -148,6 +158,10 @@ public class ExprEvaluatorTests extends TestCase {
 							System.out.println();
 						}
 						// fail();
+					} catch (final ASTElementLimitExceeded aele) {
+						System.out.println(mutantStr);
+						aele.printStackTrace();
+						System.out.println();
 					} catch (MathException mex) {
 						System.out.println(mutantStr);
 						mex.printStackTrace();
