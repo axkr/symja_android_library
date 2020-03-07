@@ -87,18 +87,18 @@ public class ExprEvaluatorTests extends TestCase {
 				F.CNI, //
 				F.CI, //
 				// F.ZZ(Integer.MIN_VALUE), //
-				F.CInfinity, //
-				F.CNInfinity, //
+ 				F.CInfinity, //
+ 				F.CNInfinity, //
 				F.Null, //
 				F.Power(F.x, F.C2), //
 				// F.Indeterminate, //
-				F.ComplexInfinity, //
+ 				F.ComplexInfinity, //
 				F.CEmptyList, //
 				F.C1DSqrt5, //
 				F.Slot2, //
 				F.Subtract(F.C1, F.C1));
 		int counter = 0;
-		for (int j = 1; j < 100; j++) {
+		for (int j = 1; j < 1000; j++) {
 			int i = 0;
 			while (i < node.size()) {
 				temp = ast2Expr.convert(node.get(i++));

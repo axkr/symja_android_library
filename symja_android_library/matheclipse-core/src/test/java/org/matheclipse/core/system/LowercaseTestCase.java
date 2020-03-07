@@ -15873,6 +15873,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialRemainder() {
+		
+		check("PolynomialRemainder(Indeterminate,Indeterminate,Indeterminate)", //
+				"PolynomialRemainder(Indeterminate,Indeterminate,Indeterminate)");
 		check("PolynomialRemainder(x^2 + 7*x + 6, x^2-5*x-6, x)", //
 				"12+12*x");
 		check("PolynomialRemainder(1,Sin(e+f*x),x)", //

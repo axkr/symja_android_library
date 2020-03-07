@@ -955,15 +955,18 @@ public class PolynomialFunctions {
 					ring.create(a);
 				} catch (RuntimeException ex) {
 					// Polynomial expected at position `1` in `2`.
-					return IOFunctions.printMessage(F.Resultant, "polynomial", F.List(ast.get(1), F.C1), engine);
+					return IOFunctions.printMessage(ast.topHead(), "polynomial", F.List(ast.get(1), F.C1), engine);
 				}
 				try {
 					// check if b is a polynomial otherwise check ArithmeticException, ClassCastException
 					ring.create(b);
 				} catch (RuntimeException ex) {
-					return IOFunctions.printMessage(F.Resultant, "polynomial", F.List(ast.get(2), F.C2), engine);
+					return IOFunctions.printMessage(ast.topHead(), "polynomial", F.List(ast.get(2), F.C2), engine);
 				}
-				return F.Together(resultant(a, b, x, engine));
+				IExpr resultant = resultant(a, b, x, engine);
+				if (resultant.isPresent()) {
+					return F.Together(resultant);
+				}
 
 			}
 			return F.NIL;
@@ -975,23 +978,35 @@ public class PolynomialFunctions {
 		}
 
 		private IExpr resultant(IExpr a, IExpr b, ISymbol x, EvalEngine engine) {
-			IExpr aExp = F.Exponent.of(engine, a, x);
-			IExpr bExp = F.Exponent.of(engine, b, x);
-			if (b.isFree(x)) {
-				return F.Power(b, aExp);
-			}
-			IExpr abExp = aExp.times(bExp);
-			if (F.Less.ofQ(engine, aExp, bExp)) {
-				return F.Times(F.Power(F.CN1, abExp), resultant(b, a, x, engine));
-			}
+			IExpr aExp = F.Exponent.ofNIL(engine, a, x);
+			IExpr bExp = F.Exponent.ofNIL(engine, b, x);
+			if (aExp.isPresent() && bExp.isPresent()) {
+				if (b.isFree(x)) {
+					return F.Power(b, aExp);
+				}
+				IExpr abExp = aExp.times(bExp);
+				if (F.Less.ofQ(engine, aExp, bExp)) {
+					IExpr resultant = resultant(b, a, x, engine);
+					if (!resultant.isPresent()) {
+						return F.NIL;
+					}
+					return F.Times(F.Power(F.CN1, abExp), resultant);
+				}
 
-			IExpr r = F.PolynomialRemainder.of(engine, a, b, x);
-			IExpr rExp = r;
-			if (!r.isZero()) {
-				rExp = F.Exponent.of(engine, r, x);
+				IExpr r = F.PolynomialRemainder.ofNIL(engine, a, b, x);
+				if (r.isPresent()) {
+					IExpr rExp = r;
+					if (!r.isZero()) {
+						rExp = F.Exponent.ofNIL(engine, r, x);
+						if (!rExp.isPresent()) {
+							return F.NIL;
+						}
+					}
+					return F.Times(F.Power(F.CN1, abExp), F.Power(F.Coefficient(b, x, bExp), F.Subtract(aExp, rExp)),
+							resultant(b, r, x, engine));
+				}
 			}
-			return F.Times(F.Power(F.CN1, abExp), F.Power(F.Coefficient(b, x, bExp), F.Subtract(aExp, rExp)),
-					resultant(b, r, x, engine));
+			return F.NIL;
 		}
 
 		private IExpr jasResultant(IExpr a, IExpr b, ISymbol x, EvalEngine engine) {
