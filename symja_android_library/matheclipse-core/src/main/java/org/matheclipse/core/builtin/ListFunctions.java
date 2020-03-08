@@ -448,7 +448,7 @@ public final class ListFunctions {
 		private IExpr createGenericTable(final IIterator<IExpr> iter, final int index, final int allocationHint,
 				IExpr arg1, IExpr arg2) {
 			final IASTAppendable result = fPrototypeList
-					.copyHead(fPrototypeList.size() + (allocationHint > 0 ? allocationHint : 0));
+					.copyHead(fPrototypeList.size() + (allocationHint > 0 ? allocationHint + 8 : 8));
 			result.appendArgs(fPrototypeList);
 			if (arg1 != null) {
 				result.append(arg1);
@@ -954,7 +954,7 @@ public final class ListFunctions {
 		}
 
 		private static IExpr arrayPadAtom(IAST ast, int m, int n, IExpr atom) {
-			IASTAppendable result = ast.copyHead();
+			IASTAppendable result = ast.copyHead(m + n + ast.argSize());
 			result.appendArgs(0, m, i -> atom);
 			result.appendArgs(ast);
 			result.appendArgs(0, n, i -> atom);
@@ -1156,9 +1156,9 @@ public final class ListFunctions {
 			} catch (final ValidateException ve) {
 				// see level specification and int number validation
 				return engine.printMessage(ve.getMessage(ast.topHead()));
-			} catch (final RuntimeException rex) {
-				// ArgumentTypeException from VisitorLevelSpecification level specification checks
-				return engine.printMessage("Cases: " + rex.getMessage());
+//			} catch (final RuntimeException rex) {
+//				// ArgumentTypeException from VisitorLevelSpecification level specification checks
+//				return engine.printMessage("Cases: " + rex.getMessage());
 			}
 			return F.NIL;
 		}
@@ -2184,7 +2184,7 @@ public final class ListFunctions {
 		}
 
 		private static IExpr extract(final IAST list, final IAST position) {
-			IASTAppendable part = F.Part(list);
+			IASTAppendable part = F.Part(position.argSize(), list);
 			part.appendAll(position, 1, position.size());
 			return part;
 		}
@@ -3397,7 +3397,7 @@ public final class ListFunctions {
 		public static IExpr padLeftAtom(IAST ast, int n, IExpr atom) {
 			int length = n - ast.size() + 1;
 			if (length > 0) {
-				IASTAppendable result = ast.copyHead();
+				IASTAppendable result = ast.copyHead(length + ast.argSize());
 				result.appendArgs(0, length, i -> atom);
 				// for (int i = 0; i < length; i++) {
 				// result.append(atom);
@@ -3414,7 +3414,7 @@ public final class ListFunctions {
 		public static IAST padLeftAST(IAST ast, int n, IAST arg2) {
 			int length = n - ast.size() + 1;
 			if (length > 0) {
-				IASTAppendable result = ast.copyHead();
+				IASTAppendable result = ast.copyHead(length + ast.argSize());
 				if (arg2.size() < 2) {
 					return ast;
 				}
@@ -3541,7 +3541,7 @@ public final class ListFunctions {
 		public static IExpr padRightAtom(IAST ast, int n, IExpr atom) {
 			int length = n - ast.size() + 1;
 			if (length > 0) {
-				IASTAppendable result = ast.copyHead();
+				IASTAppendable result = ast.copyHead(length + ast.argSize());
 				result.appendArgs(ast);
 				return result.appendArgs(0, length, i -> atom);
 			}
@@ -3554,7 +3554,7 @@ public final class ListFunctions {
 		public static IAST padRightAST(IAST ast, int n, IAST arg2) {
 			int length = n - ast.size() + 1;
 			if (length > 0) {
-				IASTAppendable result = ast.copyHead();
+				IASTAppendable result = ast.copyHead(length + ast.argSize());
 				result.appendArgs(ast);
 				if (arg2.size() < 2) {
 					return ast;
@@ -4945,9 +4945,11 @@ public final class ListFunctions {
 				if (argSize == 0) {
 					return arg1;
 				}
-				final IASTAppendable result = F.ast(arg1.head());
+				IAST list = (IAST) arg1;
+				
 				if (ast.isAST1()) {
-					((IAST) arg1).rotateLeft(result, 1);
+					final IASTAppendable result = F.ast(list.head(),list.size()+1,false);
+					list.rotateLeft(result, 1);
 					// Rotating.rotateLeft((IAST) list.arg1(), result, 2, 1);
 					return result;
 				} else {
@@ -4958,7 +4960,8 @@ public final class ListFunctions {
 							return F.NIL;
 						}
 						n = n % argSize;
-						((IAST) arg1).rotateLeft(result, n);
+						final IASTAppendable result = F.ast(list.head(),list.size()+n,false);
+						list.rotateLeft(result, n);
 						return result;
 					}
 				}
@@ -6071,6 +6074,9 @@ public final class ListFunctions {
 							engine.setThrowError(true);
 							return engine.evaluate(temp);
 						} catch (RuntimeException rex) {
+							if (Config.SHOW_STACKTRACE) {
+								rex.printStackTrace();
+							}
 							return F.NIL;
 						} finally {
 							engine.setThrowError(te);

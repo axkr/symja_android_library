@@ -1292,15 +1292,14 @@ public final class Programming {
 				}
 				IExpr arg1 = engine.evaluate(ast.arg1());
 				IExpr arg2 = engine.evaluate(ast.arg2());
-				final IASTAppendable resultList = F.ListAlloc();
-				nestList(arg2, n, x -> F.unaryAST1(arg1, x), resultList, engine);
-				return resultList;
+				return nestList(arg2, n, x -> F.unaryAST1(arg1, x), F.List, engine);
 			}
 			return F.NIL;
 		}
 
-		public static void nestList(final IExpr expr, final int n, final Function<IExpr, IExpr> fn,
-				final IASTAppendable resultList, EvalEngine engine) {
+		public static IAST nestList(final IExpr expr, final int n, final Function<IExpr, IExpr> fn,
+				final IExpr resultHead, EvalEngine engine) {
+			IASTAppendable resultList = F.ast(resultHead, n + 1, false);
 			IExpr temp = expr;
 			resultList.append(temp);
 			for (int i = 0; i < n; i++) {
@@ -1308,6 +1307,7 @@ public final class Programming {
 				temp = fn.apply(temp);
 				resultList.append(temp);
 			}
+			return resultList;
 		}
 
 		public int[] expectedArgSize() {

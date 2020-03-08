@@ -1429,7 +1429,7 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public final IAST removeIf(Predicate<? super IExpr> predicate) {
-		IASTAppendable result = copyHead();
+		IASTAppendable result = copyHead(argSize());
 		for (int i = 1; i < size(); i++) {
 			IExpr arg = get(i);
 			if (predicate.test(arg)) {

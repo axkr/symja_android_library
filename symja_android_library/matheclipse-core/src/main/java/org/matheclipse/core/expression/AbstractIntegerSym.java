@@ -523,7 +523,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		if (map.size() == 0) {
 			return F.NIL;
 		}
-		IASTAppendable result = F.TimesAlloc(map.size());
+		IASTAppendable result = F.TimesAlloc(map.size()+1);
 		boolean evaled = false;
 		for (Int2IntMap.Entry entry : map.int2IntEntrySet()) {
 			int key = entry.getIntKey();

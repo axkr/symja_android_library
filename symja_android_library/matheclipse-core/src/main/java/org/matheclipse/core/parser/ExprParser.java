@@ -858,7 +858,7 @@ public class ExprParser extends Scanner {
 				getNextToken();
 				return F.CEmptyList;
 			}
-			function = F.ListAlloc(10);
+			function = F.ListAlloc(16);
 			getArguments(function);
 		} finally {
 			fRecursionDepth--;

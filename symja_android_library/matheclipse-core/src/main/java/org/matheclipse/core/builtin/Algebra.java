@@ -1750,7 +1750,7 @@ public class Algebra {
 				IInteger multinomial = NumberTheory.multinomial(j, n);
 				IExpr temp;
 				for (int[] indices : perm) {
-					final IASTAppendable timesAST = F.TimesAlloc(m + 1);
+					final IASTAppendable timesAST = F.TimesAlloc(m + 2);
 					if (!multinomial.isOne()) {
 						timesAST.append(multinomial);
 					}

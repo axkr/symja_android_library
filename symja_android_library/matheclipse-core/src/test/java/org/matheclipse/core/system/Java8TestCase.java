@@ -28,7 +28,7 @@ public class Java8TestCase extends AbstractTestCase {
 
 	public void testForeach() {
 		IAST ast = List(C10, a, b, c, d, e);
-		IASTAppendable result = F.ListAlloc();
+		IASTAppendable result = F.ListAlloc(ast.argSize());
 		ast.forEach(x -> result.append(x));
 		assertEquals("{10,a,b,c,d,e}", result.toString());
 	}

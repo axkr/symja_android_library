@@ -490,7 +490,7 @@ public class Structure {
 
 						int level = Validate.checkIntLevelType(arg2);
 						if (level > 0) {
-							IASTAppendable resultList = F.ast(arg1AST.topHead());
+							IASTAppendable resultList = F.ast(arg1AST.topHead(), arg1AST.size(), false);
 							if (EvalAttributes.flatten(arg1AST.topHead(), (IAST) arg1, resultList, 0, level)) {
 								return resultList;
 							}

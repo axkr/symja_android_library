@@ -189,7 +189,7 @@ public final class NumberTheory {
 						return bellB;
 					}
 				}
-			} catch(MathRuntimeException mre) {
+			} catch (MathRuntimeException mre) {
 				return engine.printMessage(ast.topHead(), mre);
 			} catch (RuntimeException rex) {
 				if (Config.SHOW_STACKTRACE) {
@@ -849,7 +849,7 @@ public final class NumberTheory {
 			IInteger q = F.C1;
 			IInteger a = F.ZZ(BigIntegerMath.sqrt(d.toBigNumerator(), RoundingMode.FLOOR));
 			IInteger last = a;
-			IASTAppendable result = F.ListAlloc();
+			IASTAppendable result = F.ListAlloc(10);
 
 			do {
 				p = last.multiply(q).subtract(p);
@@ -928,14 +928,13 @@ public final class NumberTheory {
 
 		private static IAST realToContinuedFraction(INum value, int iterationLimit, EvalEngine engine) {
 			final double doubleValue = value.getRealPart();
-			IASTAppendable continuedFractionList = F.ListAlloc(10);
-			int ip = (int) doubleValue;
 			if (value.isNumIntValue()) {
-				continuedFractionList.append(F.ZZ((int) Math.rint(doubleValue)));
-				return continuedFractionList;
+				return F.List(F.ZZ((int) Math.rint(doubleValue)));
 			}
-
-			int aNow = ip;
+//			int ip = (int) doubleValue;
+			IASTAppendable continuedFractionList = F
+					.ListAlloc(iterationLimit > 0 && iterationLimit < 1000 ? iterationLimit + 10 : 10);
+			int aNow = (int) doubleValue;
 			double tNow = doubleValue - aNow;
 			double tNext;
 			int aNext;
@@ -4214,7 +4213,7 @@ public final class NumberTheory {
 						return stirlingS2((IInteger) nArg1, ki, k);
 					}
 				}
-			} catch(MathRuntimeException mre) {
+			} catch (MathRuntimeException mre) {
 				return engine.printMessage(ast.topHead(), mre);
 			} catch (RuntimeException rex) {
 				if (Config.SHOW_STACKTRACE) {

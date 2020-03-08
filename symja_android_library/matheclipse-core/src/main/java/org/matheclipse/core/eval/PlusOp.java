@@ -93,7 +93,7 @@ public final class PlusOp {
 	 */
 	public IExpr getSum() {
 
-		IASTAppendable result = F.PlusAlloc(plusMap.size());
+		IASTAppendable result = F.PlusAlloc(plusMap.size()+1);
 		if (numberValue != null && !numberValue.isZero()) {
 			if (numberValue.isComplexInfinity()) {
 				return numberValue;
