@@ -74,9 +74,9 @@ public interface CschRules {
     // Csch(ArcCsch(x_)):=x
     ISetDelayed(Csch(ArcCsch(x_)),
       x),
-    // Csch(Log(x_)):=2/(-1/x+x)
+    // Csch(Log(x_)):=2*x/(-1+x^2)
     ISetDelayed(Csch(Log(x_)),
-      Times(C2,Power(Plus(Negate(Power(x,CN1)),x),CN1))),
+      Times(C2,x,Power(Plus(CN1,Sqr(x)),CN1))),
     // Csch(Infinity)=0
     ISet(Csch(oo),
       C0),

@@ -3942,6 +3942,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCsch() {
+		// gitbub #173
+		check("Csch(Log(5/3))", //
+				"15/8");
 		check("Refine(Csch(x+I*k*Pi), Element(k, Integers))", //
 				"(-1)^k*Csch(x)");
 		check("Refine(Csch(x-I*k*Pi), Element(k, Integers))", //
@@ -13241,7 +13244,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testN() {
-		
+
 		check("N(Null)", //
 				"");
 		// test precision 30
@@ -15876,7 +15879,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialRemainder() {
-		
+
 		check("PolynomialRemainder(Indeterminate,Indeterminate,Indeterminate)", //
 				"PolynomialRemainder(Indeterminate,Indeterminate,Indeterminate)");
 		check("PolynomialRemainder(x^2 + 7*x + 6, x^2-5*x-6, x)", //
@@ -19134,6 +19137,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSech() {
+		// gitbub #173
+		check("Sech(Log(5/3))", //
+				"15/17");
+
 		check("Refine(Sech(x+I*k*Pi), Element(k, Integers))", //
 				"(-1)^k*Sech(x)");
 		check("Refine(Sech(x-I*k*Pi), Element(k, Integers))", //

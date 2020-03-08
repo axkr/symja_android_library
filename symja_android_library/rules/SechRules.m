@@ -30,7 +30,7 @@
  Sech(ArcCoth(x_)):=1/x*Sqrt(x-1)*Sqrt(x+1),
  Sech(ArcSech(x_)):=x,
  Sech(ArcCsch(x_)):=1/Sqrt(1 + x^(-2)),
- Sech(Log(x_)):=(2*x)/(x+x^2),
+ Sech(Log(x_)):=(2*x)/(1+x^2),
  
  Sech(Infinity) = 0,
  Sech(ComplexInfinity) = Indeterminate 
