@@ -523,10 +523,17 @@ public final class Combinatoric {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			final int k = ast.arg2().toIntDefault();
-			if (ast.arg1().isAST() && k > 0) {
+			if (ast.arg1().size() > 1 && k > 0) {
 				final IAST listArg0 = (IAST) ast.arg1();
-				final ISymbol sym = listArg0.topHead();
+				if (k == 1) {
+					return F.List(listArg0);
+				}
 				final int n = listArg0.argSize();
+				if (k > n) {
+					return F.NIL;
+				}
+				final ISymbol sym = listArg0.topHead();
+
 				final IASTAppendable result = F.ast(F.List);
 				final Permutations.KPermutationsIterable permutationIterator = new Permutations.KPermutationsIterable(
 						listArg0, n, 1);
@@ -659,6 +666,9 @@ public final class Combinatoric {
 
 			public KPartitionsIterable(final int length, final int parts) {
 				super();
+				if (parts > length || parts < 1) {
+					throw new IllegalArgumentException("KPartitionsIterable: parts " + parts + " > " + length);
+				}
 				fLength = length;
 				fNumberOfParts = parts;
 				fPartitionsIndex = new int[fNumberOfParts];
@@ -810,7 +820,7 @@ public final class Combinatoric {
 			if (ast.arg1().isAST() && ast.arg2().isInteger()) {
 				final IAST listArg0 = (IAST) ast.arg1();
 				final int k = ast.get(2).toIntDefault();
-				if (k >= 0) {
+				if (k > 0&&k<=listArg0.argSize()) {
 					final KPartitionsList iter = new KPartitionsList(listArg0, k, F.ast(F.List), 1);
 					final IASTAppendable result = F.ListAlloc(16);
 					for (IAST part : iter) {
@@ -956,6 +966,9 @@ public final class Combinatoric {
 				super();
 				n = fun.size() - headOffset;
 				k = parts;
+				if (parts > n || parts < 1) {
+					throw new IllegalArgumentException("KPermutationsIterable: parts " + parts + " > " + n);
+				}
 
 				fPermutationsIndex = new int[n];
 				y = new int[n];
@@ -1006,6 +1019,9 @@ public final class Combinatoric {
 				super();
 				n = len;
 				k = parts;
+				if (parts > n || parts < 1) {
+					throw new IllegalArgumentException("KPermutationsIterable: parts " + parts + " > " + n);
+				}
 				fPermutationsIndex = new int[n];
 				y = new int[n];
 				fCopiedResultIndex = new int[n];
@@ -1491,7 +1507,7 @@ public final class Combinatoric {
 					SetSpecification level = new SetSpecification(0, n);
 					if (ast.isAST2()) {
 						IExpr arg2 = ast.arg2();
-						if (arg2!=F.All&&!arg2.isInfinity()) {
+						if (arg2 != F.All && !arg2.isInfinity()) {
 							if (arg2.isInteger()) {
 								n = arg2.toIntDefault();
 								if (n > Integer.MIN_VALUE) {

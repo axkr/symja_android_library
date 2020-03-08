@@ -73,6 +73,9 @@ public class RosenNumberPartitionIterator implements Iterator<int[]> {
 	public RosenNumberPartitionIterator(final int n, final int k) {
 		this.n = n - 1;
 		this.k = k - 1;
+		if (k > n || k < 1) {
+			throw new IllegalArgumentException("RosenNumberPartitionIterator: k " + k + " > " + n);
+		}
 		this.count = count(this.n, this.k);
 	}
 

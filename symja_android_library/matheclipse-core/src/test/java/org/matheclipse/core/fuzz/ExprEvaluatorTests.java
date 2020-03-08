@@ -62,7 +62,7 @@ public class ExprEvaluatorTests extends TestCase {
 		return null;
 	}
 
-	public void testFuzzUnits() {
+	public void testSmartFuzz() {
 		boolean quietMode = true;
 		EvalEngine engine = EvalEngine.get();
 		List<ASTNode> node = parseFileToList();
@@ -102,12 +102,12 @@ public class ExprEvaluatorTests extends TestCase {
 				F.Slot2, //
 				F.Subtract(F.C1, F.C1));
 		int counter = 0;
+		ThreadLocalRandom random = ThreadLocalRandom.current();
 		for (int j = 1; j < 1000; j++) {
 			int i = 0;
 			while (i < node.size()) {
 				temp = ast2Expr.convert(node.get(i++));
 				if (temp.isAST() && temp.size() > 1) {
-					ThreadLocalRandom random = ThreadLocalRandom.current();
 					int seedIndex = random.nextInt(1, seedList.size());
 					IExpr seed = seedList.get(seedIndex);
 
@@ -194,8 +194,8 @@ public class ExprEvaluatorTests extends TestCase {
 		F.await();
 	}
 
-	public void testFuzz001() {
-		Config.MAX_AST_SIZE = 100;
+	public void testBuiltinFunctionFuzz() {
+		Config.MAX_AST_SIZE = 10000;
 		Config.MAX_BIT_COUNT = 1000;
 		Config.MAX_OUTPUT_SIZE = 10000;
 
@@ -204,52 +204,168 @@ public class ExprEvaluatorTests extends TestCase {
 		engine.setIterationLimit(1000);
 		ExprEvaluator eval = new ExprEvaluator(engine, true, 20);
 
+		IAST seedList = F.List(//
+				F.num(-0.5), //
+				F.num(0.5), //
+				F.num(Math.PI * (-0.5)), //
+				F.num(Math.PI * 0.5), //
+				F.num(-Math.PI), //
+				F.num(Math.PI), //
+
+				F.num(-Math.E), //
+				F.num(Math.E), //
+				F.C0, //
+				F.C1, //
+				F.CN1, //
+				F.CN1D2, //
+				F.C1D2, //
+				F.CNI, //
+				F.CI, //
+				// F.ZZ(Integer.MIN_VALUE), //
+				F.CInfinity, //
+				F.CNInfinity, //
+				F.Null, //
+				F.Power(F.x, F.C2), //
+				F.Indeterminate, //
+				F.ComplexInfinity, //
+				F.x_, //
+				F.y_, //
+				F.CEmptyList, //
+				F.C1DSqrt5, //
+				F.Slot2, //
+				F.Subtract(F.C1, F.C1));
+		ThreadLocalRandom random = ThreadLocalRandom.current();
 		String[] functionStrs = AST2Expr.FUNCTION_STRINGS;
+		for (int loop = 0; loop < 1000; loop++) {
+			for (int i = 0; i < functionStrs.length; i++) {
+				IBuiltInSymbol sym = (IBuiltInSymbol) F.symbol(functionStrs[i]);
+				IEvaluator evaluator = sym.getEvaluator();
+				if (evaluator instanceof IFunctionEvaluator) {
+					int[] argSize = ((IFunctionEvaluator) evaluator).expectedArgSize();
+					if (argSize != null) {
+						int end = argSize[1];
+						if (end <= 10) {
+							int start = argSize[0];
+							generateASTs(sym, start, end, seedList, random, engine);
+							continue;
+						}
+					} else {
+						generateASTs(sym, 1, 5, seedList, random, engine);
+					}
+				}
+			}
+		}
+	}
+
+	public void testNonBuiltinFunctionFuzz() {
+		Config.MAX_AST_SIZE = 10000;
+		Config.MAX_BIT_COUNT = 1000;
+		Config.MAX_OUTPUT_SIZE = 10000;
+
+		EvalEngine engine = new EvalEngine(true);
+		engine.setRecursionLimit(256);
+		engine.setIterationLimit(1000);
+		ExprEvaluator eval = new ExprEvaluator(engine, true, 20);
+
+		IAST seedList = F.List(//
+				F.num(-0.5), //
+				F.num(0.5), //
+				F.num(Math.PI * (-0.5)), //
+				F.num(Math.PI * 0.5), //
+				F.num(-Math.PI), //
+				F.num(Math.PI), //
+
+				F.num(-Math.E), //
+				F.num(Math.E), //
+				F.C0, //
+				F.C1, //
+				F.CN1, //
+				F.CN1D2, //
+				F.C1D2, //
+				F.CNI, //
+				F.CI, //
+				// F.ZZ(Integer.MIN_VALUE), //
+				F.CInfinity, //
+				F.CNInfinity, //
+				F.Null, //
+				F.Power(F.x, F.C2), //
+				F.Indeterminate, //
+				F.ComplexInfinity, //
+				F.x_, //
+				F.y_, //
+				F.CEmptyList, //
+				F.C1DSqrt5, //
+				F.Slot2, //
+				F.Subtract(F.C1, F.C1));
+
+		String[] functionStrs = AST2Expr.FUNCTION_STRINGS;
+		ThreadLocalRandom random = ThreadLocalRandom.current();
 		for (int i = 0; i < functionStrs.length; i++) {
 			IBuiltInSymbol sym = (IBuiltInSymbol) F.symbol(functionStrs[i]);
 			IEvaluator evaluator = sym.getEvaluator();
 			if (evaluator instanceof IFunctionEvaluator) {
-				int[] argSize = ((IFunctionEvaluator) evaluator).expectedArgSize();
-				if (argSize != null) {
-					int end = argSize[1];
-					if (end <= 10) {
-						int start = argSize[0];
-						generateASTs(sym, start, end, F.Infinity, engine);
-						generateASTs(sym, start, end, F.Indeterminate, engine);
-						generateASTs(sym, start, end, F.CN1, engine);
-						generateASTs(sym, start, end, F.C0, engine);
-						generateASTs(sym, start, end, F.Null, engine);
-						generateASTs(sym, start, end, F.List(), engine);
-						continue;
-					}
-
-				}
+				continue;
 			}
-			generateASTs(sym, 1, 5, F.Infinity, engine);
-			generateASTs(sym, 1, 5, F.Indeterminate, engine);
-			generateASTs(sym, 1, 5, F.CN1, engine);
-			generateASTs(sym, 1, 5, F.C0, engine);
-			generateASTs(sym, 1, 5, F.Null, engine);
-			generateASTs(sym, 1, 5, F.List(), engine);
+			generateASTs(sym, 1, 5, seedList, random, engine);
 		}
 	}
 
-	private void generateASTs(IBuiltInSymbol sym, int start, int end, IExpr arg, EvalEngine engine) {
+	private void generateASTs(IBuiltInSymbol sym, int start, int end, IAST seedList, ThreadLocalRandom random,
+			EvalEngine engine) {
 		ExprEvaluator eval;
 		for (int j = start; j <= end; j++) {
+
 			eval = new ExprEvaluator(engine, true, 20);
-			IAST ast = generate(sym, j, arg);
+			IASTAppendable ast = F.ast(sym);
+			for (int k = 0; k < j; k++) {
+				int seedIndex = random.nextInt(1, seedList.size());
+				IExpr seed = seedList.get(seedIndex);
+				ast.append(seed);
+			}
 			try {
 				// System.out.println(ast.toString());
 				eval.eval(ast);
+			} catch (FlowControlException mex) {
+				System.out.println(ast.toString());
+				mex.printStackTrace();
+				System.out.println();
+			} catch (IterationLimitExceeded ile) {
+				System.out.println(ast.toString());
+				ile.printStackTrace();
+				System.out.println();
+			} catch (final RecursionLimitExceeded rle) {
+				System.out.println(ast.toString());
+				rle.printStackTrace();
+				System.out.println();
+			} catch (SyntaxError se) {
+
+				System.out.println(ast.toString());
+				se.printStackTrace();
+				System.out.println();
+
+				// fail();
+			} catch (final ASTElementLimitExceeded aele) {
+				System.out.println(ast.toString());
+				aele.printStackTrace();
+				System.out.println();
 			} catch (MathException mex) {
 				System.out.println(ast.toString());
 				mex.printStackTrace();
 				System.out.println();
+				fail();
 			} catch (RuntimeException rex) {
 				System.out.println(ast.toString());
 				rex.printStackTrace();
 				fail();
+			} catch (Error rex) {
+				System.out.println(ast.toString());
+				if (rex instanceof StackOverflowError) {
+					System.err.println("java.lang.StackOverflowError");
+				} else {
+					System.out.println(ast.toString());
+					rex.printStackTrace();
+					fail();
+				}
 			}
 		}
 	}

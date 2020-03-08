@@ -9051,8 +9051,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Cases({a -> b, c -> d}, HoldPattern(a -> _))", //
 				"{a->b}");
 	}
-
+	
+	public void testHorner() {
+		check("Horner(1/Sqrt(5))", //
+				"1/Sqrt(5)");
+	}
+	
 	public void testHornerForm() {
+		check("HornerForm(1/Sqrt(5))", //
+				"1/Sqrt(5)");
 		check("HornerForm(#2)", //
 				"#2");
 		check("Horner(Infinity)", //
@@ -14988,6 +14995,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPartition() {
+		check("Partition(f(),1)", //
+				"f()");
+		check("Partition(f(x),1)", //
+				"f(f(x))");
 		check("Partition({a,b,c,d,e,f},3,0)", //
 				"Partition({a,b,c,d,e,f},3,0)");
 		check("Partition({a, b, c, d, e, f}, -1)", //

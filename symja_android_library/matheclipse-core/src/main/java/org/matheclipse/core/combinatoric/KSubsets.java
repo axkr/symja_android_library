@@ -22,6 +22,9 @@ public class KSubsets {
 			super();
 			n = len;
 			k = parts;
+			if (k > n || k < 0) {
+				throw new IllegalArgumentException("KSubsets: k " + k + " > " + n);
+			}
 			// f = fun;
 			x = new int[n];
 			for (int a = 0; a < n; a++) {

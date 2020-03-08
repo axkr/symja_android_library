@@ -70,6 +70,9 @@ public class MultisetCombinationIterator implements Iterator<int[]> {
 		this.multiset = multiset;
 		this.n = multiset.length;
 		this.k = k;
+		if (k > n || k < 1) {
+			throw new IllegalArgumentException("MultisetCombinationIterator: k " + k + " > " + n);
+		}
 		this.result = null;
 	}
 

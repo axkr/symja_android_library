@@ -2256,8 +2256,8 @@ public class PolynomialFunctions {
 		}
 		IExpr expr = evalExpandAll(arg1, engine);
 
-		ISymbol sym = (ISymbol) variables.arg1();
-		double[] coefficients = Expr2Object.toPolynomial(expr, sym);
+		IExpr variable =  variables.arg1();
+		double[] coefficients = Expr2Object.toPolynomial(expr, variable);
 
 		if (coefficients != null) {
 			LaguerreSolver solver = new LaguerreSolver(Config.DEFAULT_ROOTS_CHOP_DELTA);

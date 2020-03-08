@@ -24,6 +24,9 @@ public class MultisetPartitionsIterator {
 	public MultisetPartitionsIterator(IStepVisitor visitor, final int k) {
 		int[] mset = visitor.getMultisetArray();
 		this.n = mset.length;
+		if (k > n || k < 1) {
+			throw new IllegalArgumentException("MultisetPartitionsIterator: k " + k + " > " + n);
+		}
 		this.multiset = mset;
 		this.result = new int[k][];
 		this.rosen = new RosenNumberPartitionIterator(n, k);

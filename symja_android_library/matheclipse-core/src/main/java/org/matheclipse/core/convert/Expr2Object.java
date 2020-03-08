@@ -67,7 +67,7 @@ public class Expr2Object {
 		return result;
 	}
 
-	public static double[] toPolynomial(IExpr expr, ISymbol sym) {
+	public static double[] toPolynomial(IExpr expr, IExpr sym) {
 		OpenIntToDoubleHashMap map = toPolynomialMap(expr, sym);
 		if (map == null) {
 			return null;
@@ -109,11 +109,11 @@ public class Expr2Object {
 	/**
 	 * 
 	 * @param expr
-	 * @param sym
+	 * @param variable
 	 * @return <code>null</code> if the expression couldn't be converted to a
 	 *         polynomial.
 	 */
-	public static OpenIntToDoubleHashMap toPolynomialMap(IExpr expr, ISymbol sym) {
+	public static OpenIntToDoubleHashMap toPolynomialMap(IExpr expr, IExpr variable) {
 		try {
 			OpenIntToDoubleHashMap map = new OpenIntToDoubleHashMap();
 			if (expr.isPlus()) {
@@ -126,7 +126,7 @@ public class Expr2Object {
 						for (int j = 1; j < times.size(); j++) {
 							if (times.get(j).isPower()) {
 								IAST power = (IAST) times.get(j);
-								if (power.base().equals(sym)) {
+								if (power.base().equals(variable)) {
 									if (exp != (-1)) {
 										return null;
 									}
@@ -141,7 +141,7 @@ public class Expr2Object {
 									continue;
 								}
 							} else if (times.get(j).isSymbol()) {
-								if (times.get(j).equals(sym)) {
+								if (times.get(j).equals(variable)) {
 									if (exp != (-1)) {
 										return null;
 									}
@@ -166,7 +166,7 @@ public class Expr2Object {
 						continue;
 					} else if (plus.get(i).isPower()) {
 						IAST power = (IAST) plus.get(i);
-						if (power.arg1().equals(sym)) {
+						if (power.arg1().equals(variable)) {
 							IExpr res = F.evaln(power.arg2());
 							if (!(res instanceof INum)) {
 								return null;
@@ -180,7 +180,7 @@ public class Expr2Object {
 						}
 						return null;
 					} else if (plus.get(i).isSymbol()) {
-						if (plus.equalsAt(i, sym)) {
+						if (plus.equalsAt(i, variable)) {
 							addCoefficient(map, 1.0, 1);
 							continue;
 						}

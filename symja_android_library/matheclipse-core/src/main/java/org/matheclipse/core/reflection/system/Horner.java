@@ -32,10 +32,10 @@ public class Horner extends AbstractFunctionEvaluator {
 			VariablesSet eVar = new VariablesSet(ast.arg1());
 			IAST variables = eVar.getVarList();
 			if (variables.size() >= 2) {
-				ISymbol sym = (ISymbol) variables.arg1();
+				IExpr variable = variables.arg1();
 				if (poly.isPlus()) {
 					HornerScheme scheme = new HornerScheme();
-					return scheme.generate(engine.isNumericMode(), poly, sym);
+					return scheme.generate(engine.isNumericMode(), poly, variable);
 				}
 			}
 
