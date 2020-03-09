@@ -31,9 +31,8 @@ public class VisitorReplaceAllWithPatternFlags extends VisitorReplaceAll {
 			if (temp.isOneIdentityAST1()) {
 				return temp.first();
 			}
-			return temp;
 		}
-		return F.NIL;
+		return temp;
 	}
 
 	@Override
@@ -80,6 +79,7 @@ public class VisitorReplaceAllWithPatternFlags extends VisitorReplaceAll {
 					} else if (result.isOrderlessAST()) {
 						EvalAttributes.sort((IASTMutable) result);
 					}
+					((IAST) result).addEvalFlags(ast.getEvalFlags() & IAST.CONTAINS_PATTERN_EXPR);
 					// if (onlyNamedPatterns) {
 					// System.out.println(" " + lhsPatternExpr.toString() + " -> " + result.toString());
 					// }

@@ -158,14 +158,14 @@ public interface IPatternMap extends Cloneable {
 		public IPatternMap clone() {
 			PatternMap1 result = new PatternMap1();
 			result.evaluatedRHS = false;
-			result.fSymbol1 = fSymbol1;
-			result.fValue1 = fValue1;
+			result.fSymbol1 = this.fSymbol1;
+			result.fValue1 = this.fValue1;
 			return result;
 		};
 
 		@Override
 		public IExpr[] copyPattern() {
-			return new IExpr[] { fValue1 };
+			return new IExpr[] { this.fValue1 };
 		}
 
 		@Override
@@ -355,16 +355,16 @@ public interface IPatternMap extends Cloneable {
 		public IPatternMap clone() {
 			PatternMap2 result = new PatternMap2();
 			result.evaluatedRHS = false;
-			result.fSymbol1 = fSymbol1;
-			result.fValue1 = fValue1;
-			result.fSymbol2 = fSymbol2;
-			result.fValue2 = fValue2;
+			result.fSymbol1 = this.fSymbol1;
+			result.fValue1 = this.fValue1;
+			result.fSymbol2 = this.fSymbol2;
+			result.fValue2 = this.fValue2;
 			return result;
 		};
 
 		@Override
 		public IExpr[] copyPattern() {
-			return new IExpr[] { fValue1, fValue2 };
+			return new IExpr[] { this.fValue1, this.fValue2 };
 		}
 
 		@Override
@@ -607,18 +607,18 @@ public interface IPatternMap extends Cloneable {
 		public IPatternMap clone() {
 			PatternMap3 result = new PatternMap3();
 			result.evaluatedRHS = false;
-			result.fSymbol1 = fSymbol1;
-			result.fValue1 = fValue1;
-			result.fSymbol2 = fSymbol2;
-			result.fValue2 = fValue2;
-			result.fSymbol3 = fSymbol3;
-			result.fValue3 = fValue3;
+			result.fSymbol1 = this.fSymbol1;
+			result.fValue1 = this.fValue1;
+			result.fSymbol2 = this.fSymbol2;
+			result.fValue2 = this.fValue2;
+			result.fSymbol3 = this.fSymbol3;
+			result.fValue3 = this.fValue3;
 			return result;
 		};
 
 		@Override
 		public IExpr[] copyPattern() {
-			return new IExpr[] { fValue1, fValue2, fValue3 };
+			return new IExpr[] { this.fValue1, this.fValue2, this.fValue3 };
 		}
 
 		@Override
@@ -939,12 +939,12 @@ public interface IPatternMap extends Cloneable {
 			PatternMap result = new PatternMap(null);
 			result.evaluatedRHS = false;
 			// don't clone the fSymbolsOrPattern array which is final after the #determinePatterns() method
-			result.fSymbolsOrPattern = fSymbolsOrPattern;
+			result.fSymbolsOrPattern = this.fSymbolsOrPattern;
 			// avoid Arrays.copyOf because of Android version
-			final int length = fSymbolsOrPatternValues.length;
+			final int length = this.fSymbolsOrPatternValues.length;
 			result.fSymbolsOrPatternValues = new IExpr[length];
-			System.arraycopy(fSymbolsOrPatternValues, 0, result.fSymbolsOrPatternValues, 0, length);
-			result.fRuleWithoutPattern = fRuleWithoutPattern;
+			System.arraycopy(this.fSymbolsOrPatternValues, 0, result.fSymbolsOrPatternValues, 0, length);
+			result.fRuleWithoutPattern = this.fRuleWithoutPattern;
 			return result;
 		}
 
@@ -955,9 +955,9 @@ public interface IPatternMap extends Cloneable {
 		 * @see PatternMap#resetPattern(IExpr[])
 		 */
 		public IExpr[] copyPattern() {
-			final int length = fSymbolsOrPatternValues.length;
+			final int length = this.fSymbolsOrPatternValues.length;
 			IExpr[] patternValuesArray = new IExpr[length];
-			System.arraycopy(fSymbolsOrPatternValues, 0, patternValuesArray, 0, length);
+			System.arraycopy(this.fSymbolsOrPatternValues, 0, patternValuesArray, 0, length);
 			return patternValuesArray;
 		}
 
@@ -1557,7 +1557,7 @@ public interface IPatternMap extends Cloneable {
 		return lhsPatternExpr;
 	}
 
-	default IAST substituteASTPatternOrSymbols(final IAST lhsPatternExpr, boolean onlyNamedPatterns) {
+	default IExpr substituteASTPatternOrSymbols(final IAST lhsPatternExpr, boolean onlyNamedPatterns) {
 		VisitorReplaceAllWithPatternFlags visitor = new VisitorReplaceAllWithPatternFlags(input -> {
 			if (input instanceof IPatternObject) {
 				if (onlyNamedPatterns && !(input instanceof Pattern)) {
@@ -1588,22 +1588,26 @@ public interface IPatternMap extends Cloneable {
 		}
 
 		if (result.isPresent()) {
-			if (result.isFlatAST()) {
-				IASTMutable temp = EvalAttributes.flattenDeep((IAST) result);
-				if (temp.isPresent()) {
-					result = temp;
-				}
-			}
-			// don't test for OneIdentity attribute here !
-			if (result.isOrderlessAST()) {
-				EvalAttributes.sort(result);
-			}
+			IExpr temp=  EvalEngine.get().evaluate(result);
 			// set the eval flags
-			result.isFreeOfPatterns();
-			// System.out.println(" " + lhsPatternExpr.toString() + " -> " + result.toString());
-			return result;
+			temp.isFreeOfPatterns();
+			return temp;
+//			if (result.isFlatAST()) {
+//				IASTMutable temp = EvalAttributes.flattenDeep((IAST) result);
+//				if (temp.isPresent()) {
+//					result = temp;
+//				}
+//			}
+//			// don't test for OneIdentity attribute here !
+//			if (result.isOrderlessAST()) {
+//				EvalAttributes.sort(result);
+//			}
+//			// set the eval flags
+//			result.isFreeOfPatterns();
+//			// System.out.println(" " + lhsPatternExpr.toString() + " -> " + result.toString());
+//			return result;
 		}
-		return lhsPatternExpr;
+		return F.NIL;
 	}
 
 	/**
