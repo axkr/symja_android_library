@@ -976,8 +976,8 @@ public class IntegerFunctions {
 							m.isComplexNumeric() || n.isComplexNumeric() || d.isComplexNumeric()) {
 						// https://mathematica.stackexchange.com/a/114373/21734
 						IExpr subExpr = engine.evaluate(F.Divide(F.Subtract(m, d), n));
-						IExpr re = ((ISignedNumber) subExpr.re()).round();
-						IExpr im = ((ISignedNumber) subExpr.im()).round();
+						IExpr re = F.Round.of(subExpr.re());
+						IExpr im = F.Round.of(subExpr.im());
 						return F.Plus(m, F.Times(F.CN1, n, re), F.Times(F.CI, im));
 					}
 				}

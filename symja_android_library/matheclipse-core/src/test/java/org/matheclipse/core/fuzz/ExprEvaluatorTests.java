@@ -313,6 +313,7 @@ public class ExprEvaluatorTests extends TestCase {
 	private void generateASTs(IBuiltInSymbol sym, int start, int end, IAST seedList, ThreadLocalRandom random,
 			EvalEngine engine) {
 		ExprEvaluator eval;
+		System.out.flush();
 		for (int j = start; j <= end; j++) {
 
 			eval = new ExprEvaluator(engine, true, 20);
@@ -322,6 +323,7 @@ public class ExprEvaluatorTests extends TestCase {
 				IExpr seed = seedList.get(seedIndex);
 				ast.append(seed);
 			}
+			
 			try {
 				// System.out.println(ast.toString());
 				eval.eval(ast);
