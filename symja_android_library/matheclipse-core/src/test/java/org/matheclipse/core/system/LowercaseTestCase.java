@@ -1442,7 +1442,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{1.2660658777519989,0.5651591039923343,0.13574766976702993}");
 	}
 
-	public void testBesselJ() {
+	public void testBesselJ() { 
+		check("BesselJ(-1/2,-Infinity)", //
+				"0");
 		checkNumeric("BesselJ(-1.9999999999999998,3.0)", //
 				"0.486091260585958");
 		checkNumeric("BesselJ(-1.999888,3.0)", //
@@ -12979,7 +12981,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMod() {
-
+		check("Mod(-1,I-1)", //
+				"-1");
 		check("{a, b, c}[[Mod(Range(10), 3, 1)]]", //
 				"{a,b,c,a,b,c,a,b,c,a}");
 		check("Mod(Range(10), 3, I)", //
@@ -16010,6 +16013,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPower() {
+		check("(-Infinity)^(-3/5)", //
+				"0");
+		check("1/Sqrt(-Infinity)", //
+				"0");
 		check("0^I", //
 				"Indeterminate");
 		check("0^(-I)", //
@@ -17269,8 +17276,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testExpectation() {
 		// TODO improve integration for piecewise functions
-		check("Expectation((x + 3)/(x + 5), Distributed(x, ExponentialDistribution(2)))", //
-				"Expectation((3+x)/(5+x),Distributed(x,ExponentialDistribution(2)))");
+//		check("Expectation((x + 3)/(x + 5), Distributed(x, ExponentialDistribution(2)))", //
+//				"Expectation((3+x)/(5+x),Distributed(x,ExponentialDistribution(2)))");
 		check("Expectation(3*x^2 + 5, Distributed(x, NormalDistribution()))", //
 				"8");
 

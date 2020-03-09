@@ -3413,42 +3413,37 @@ public final class Arithmetic {
 					// return temp;
 					// }
 					// }
-					ISignedNumber is1 = (ISignedNumber) exponent;
+					ISignedNumber realExponent = (ISignedNumber) exponent;
 					if (base.isInfinity()) {
-						if (is1.isNegative()) {
+						if (realExponent.isNegative()) {
 							return F.C0;
 						} else {
 							return F.CInfinity;
 						}
-					} else if (base.isPower() && is1.isNumIntValue() && is1.isPositive()) {
+					} else if (base.isPower() && realExponent.isNumIntValue() && realExponent.isPositive()) {
 						final IExpr baseExponent = base.exponent();
 						if (baseExponent.isNumIntValue() && baseExponent.isPositive()) {
 							// (x*n)^m => x ^(n*m)
-							return Power(base.base(), is1.times(baseExponent));
+							return Power(base.base(), realExponent.times(baseExponent));
 						}
 					} else if (base.isNegativeInfinity()) {
-						if (exponent.isInteger()) {
-							IInteger ii = (IInteger) exponent;
-							if (ii.isNegative()) {
-								return F.C0;
+						if (realExponent.isNegative()) {
+							return F.C0;
+						}
+						if (realExponent.isInteger()) {
+							IInteger ii = (IInteger) realExponent;
+							if (ii.isOdd()) {
+								return F.CNInfinity;
 							} else {
-								if (ii.isOdd()) {
+								return F.CInfinity;
+							}
+						} else {
+							int exp = realExponent.toIntDefault(Integer.MIN_VALUE);
+							if (exp != Integer.MIN_VALUE) {
+								if ((exp & 0x1) == 0x1) {
 									return F.CNInfinity;
 								} else {
 									return F.CInfinity;
-								}
-							}
-						} else {
-							int exp = exponent.toIntDefault(Integer.MIN_VALUE);
-							if (exp != Integer.MIN_VALUE) {
-								if (exp < 0) {
-									return F.C0;
-								} else {
-									if ((exp & 0x1) == 0x1) {
-										return F.CNInfinity;
-									} else {
-										return F.CInfinity;
-									}
 								}
 							}
 						}
@@ -3501,6 +3496,20 @@ public final class Arithmetic {
 				if (base.isReal() && base.isNegative() && exponent.isNumEqualRational(F.C1D2)) {
 					// extract I for sqrt
 					return F.Times(F.CI, F.Power(F.Negate(base), exponent));
+				}
+			}
+			if (base.isDirectedInfinity() && !exponent.isReal()) {
+				// check negative/positive assumptions about exponent
+				if (base.isInfinity()) {
+					if (exponent.isNegativeResult()) {
+						return F.C0;
+					}
+					if (exponent.isPositiveResult()) {
+						return F.CInfinity;
+					}
+				}
+				if (base.isNegativeInfinity() && exponent.isNegativeResult()) {
+					return F.C0;
 				}
 			}
 

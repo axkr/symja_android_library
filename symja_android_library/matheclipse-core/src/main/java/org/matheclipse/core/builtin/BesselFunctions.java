@@ -271,6 +271,9 @@ public class BesselFunctions {
 			if (n.isReal()) {
 				IExpr in = engine.evaluate(((ISignedNumber) n).add(F.CN1D2));
 				if (in.isNumIntValue()) {
+					if (z.isInfinity() || z.isNegativeInfinity()) {
+						return F.C0;
+					}
 					return besselJHalf(n, z);
 					// if (n.equals(F.CN1D2) || n.equals(F.num(-0.5))) {
 					// // (Sqrt(2/Pi)* Cos(z))/Sqrt(z)
@@ -282,9 +285,7 @@ public class BesselFunctions {
 					// }
 				}
 			}
-			if (z.isInfinity() || z.isNegativeInfinity()) {
-				return F.C0;
-			}
+
 			if (n.isInteger() || order != Integer.MIN_VALUE) {
 				if (n.isNegative()) {
 					// (-n,z) => (-1)^n*BesselJ(n,z)
