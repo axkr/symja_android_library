@@ -566,10 +566,13 @@ public class HypergeometricFunctions {
 				return F.C1;
 			}
 			IExpr b = ast.arg2();
+			IExpr z = ast.arg3();
 			if (b.isZero()) {
+				if (z.isZero()) {
+					return F.Indeterminate;
+				}
 				return F.CComplexInfinity;
 			}
-			IExpr z = ast.arg3();
 			if (z.isZero()) {
 				return F.C1;
 			}
@@ -581,6 +584,11 @@ public class HypergeometricFunctions {
 			if (a.isInteger() && b.isInteger() && a.isNegative() && b.isNegative()
 					&& ((IInteger) b).isGT((IInteger) a)) {
 				return F.CComplexInfinity;
+			}
+			IExpr bPlus1 = engine.evaluate(b.plus(F.C1));
+			if (a.equals(bPlus1)) {
+				// (E^z * (-1 + a + z)) / (-1 + a)
+				return F.Times(F.Power(F.E, z), F.Divide(F.Plus(F.CN1,a,z), F.Plus(a, F.CN1)));
 			}
 			if (engine.isDoubleMode()) {
 				try {
