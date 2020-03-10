@@ -228,7 +228,11 @@ public class Iterator {
 				}
 			}
 			if (maxCounterOrList.isList()) {
-				count = maxCounterOrList.getAt(maxCounterOrListIndex++);
+				if (maxCounterOrListIndex < maxCounterOrList.size()) {
+					count = maxCounterOrList.getAt(maxCounterOrListIndex++);
+				} else {
+					return false;
+				}
 			} else {
 				count = lowerLimit;
 			}
@@ -1185,11 +1189,11 @@ public class Iterator {
 				}
 
 				break;
-			default: 
-					// Argument `1` at position `2` does not have the correct form for an iterator.
-					String str = IOFunctions.getMessage("itform", F.List(list, F.ZZ(position)), EvalEngine.get());
-					throw new ArgumentTypeException(str);
-				 
+			default:
+				// Argument `1` at position `2` does not have the correct form for an iterator.
+				String str = IOFunctions.getMessage("itform", F.List(list, F.ZZ(position)), EvalEngine.get());
+				throw new ArgumentTypeException(str);
+
 				// lowerLimit = null;
 				// upperLimit = null;
 				// step = null;

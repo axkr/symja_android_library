@@ -23,7 +23,7 @@ public class KSubsets {
 			n = len;
 			k = parts;
 			if (k > n || k < 0) {
-				throw new IllegalArgumentException("KSubsets: k " + k + " > " + n);
+				throw new IllegalArgumentException("KSubsets: k>n - " + k + " > " + n);
 			}
 			// f = fun;
 			x = new int[n];

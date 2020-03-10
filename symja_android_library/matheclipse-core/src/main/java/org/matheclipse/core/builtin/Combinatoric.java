@@ -820,7 +820,7 @@ public final class Combinatoric {
 			if (ast.arg1().isAST() && ast.arg2().isInteger()) {
 				final IAST listArg0 = (IAST) ast.arg1();
 				final int k = ast.get(2).toIntDefault();
-				if (k > 0&&k<=listArg0.argSize()) {
+				if (k > 0 && k <= listArg0.argSize()) {
 					final KPartitionsList iter = new KPartitionsList(listArg0, k, F.ast(F.List), 1);
 					final IASTAppendable result = F.ListAlloc(16);
 					for (IAST part : iter) {
@@ -1526,6 +1526,9 @@ public final class Combinatoric {
 					level.setMinCountAsCurrent();
 					while (level.isInRange()) {
 						k = level.getCurrentCounter();
+						if (k > f.argSize()) {
+							return F.CEmptyList;
+						}
 						final KSubsetsList iter = createKSubsets(f, k, F.ast(f.head()), 1);
 						for (IAST part : iter) {
 							if (part == null) {
