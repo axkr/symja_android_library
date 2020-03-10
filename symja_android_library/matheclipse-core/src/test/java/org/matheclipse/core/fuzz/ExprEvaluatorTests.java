@@ -78,7 +78,6 @@ public class ExprEvaluatorTests extends TestCase {
 				F.num(Math.PI * 0.5), //
 				F.num(-Math.PI), //
 				F.num(Math.PI), //
-
 				F.num(-Math.E), //
 				F.num(Math.E), //
 				F.C0, //
@@ -88,7 +87,7 @@ public class ExprEvaluatorTests extends TestCase {
 				F.C1D2, //
 				F.CNI, //
 				F.CI, //
-				// F.ZZ(Integer.MIN_VALUE), //
+				F.ZZ(Integer.MIN_VALUE), //
 				F.CInfinity, //
 				F.CNInfinity, //
 				F.Null, //
@@ -103,7 +102,7 @@ public class ExprEvaluatorTests extends TestCase {
 				F.Subtract(F.C1, F.C1));
 		int counter = 0;
 		ThreadLocalRandom random = ThreadLocalRandom.current();
-		for (int j = 1; j < 1000; j++) {
+		for (int j = 1; j < 10000; j++) {
 			int i = 0;
 			while (i < node.size()) {
 				temp = ast2Expr.convert(node.get(i++));

@@ -12,6 +12,7 @@ import org.hipparchus.util.ArithmeticUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -523,7 +524,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		if (map.size() == 0) {
 			return F.NIL;
 		}
-		IASTAppendable result = F.TimesAlloc(map.size()+1);
+		IASTAppendable result = F.TimesAlloc(map.size() + 1);
 		boolean evaled = false;
 		for (Int2IntMap.Entry entry : map.int2IntEntrySet()) {
 			int key = entry.getIntKey();
@@ -931,9 +932,14 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	@Override
 	public IInteger[] primitiveRootList() throws ArithmeticException {
 		IInteger phi = eulerPhi();
-		int size = phi.eulerPhi().toInt();
+		int size = phi.eulerPhi().toIntDefault();
 		if (size <= 0) {
 			return null;
+		}
+		if (isEven() && !equals(F.C2) && !equals(F.C4)) {
+			if (quotient(F.C2).isEven()) {
+				return new IInteger[0];
+			}
 		}
 
 		IAST ast = phi.factorInteger();
@@ -947,6 +953,9 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		IInteger n = this;
 		IInteger m = F.C1;
 
+		if (Config.MAX_AST_SIZE < size) {
+			throw new ASTElementLimitExceeded(size);
+		}
 		IInteger resultArray[] = new IInteger[size];
 		boolean b;
 		while (m.compareTo(n) < 0) {

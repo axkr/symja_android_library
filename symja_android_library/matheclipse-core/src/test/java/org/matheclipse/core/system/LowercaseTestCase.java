@@ -16734,11 +16734,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPrimitiveRoot() {
+		check("PrimitiveRoot(12)", //
+				"PrimitiveRoot(12)");
 		// check("Select(Range(100), PrimitiveRoot(#) != {} &)", //
 		// "");
 	}
 
 	public void testPrimitiveRootList() {
+		check("PrimitiveRootList(-2147483648)", //
+				"{}");
 		check("PrimitiveRootList(14)", //
 				"{3,5}");
 		check("PrimitiveRootList(2*Prime(5))", //
@@ -16755,6 +16759,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{2,3,10,13,14,15}");
 		check("PrimitiveRootList(43)", //
 				"{3,5,12,18,19,20,26,28,29,30,33,34}");
+		check("PrimitiveRootList(127)", //
+				"{3,6,7,12,14,23,29,39,43,45,46,48,53,55,56,57,58,65,67,78,83,85,86,91,92,93,96,\n" + 
+				"97,101,106,109,110,112,114,116,118}");
 	}
 
 	public void testPrint() {

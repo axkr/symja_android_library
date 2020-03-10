@@ -30,6 +30,7 @@ import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
+import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
@@ -931,7 +932,7 @@ public final class NumberTheory {
 			if (value.isNumIntValue()) {
 				return F.List(F.ZZ((int) Math.rint(doubleValue)));
 			}
-//			int ip = (int) doubleValue;
+			// int ip = (int) doubleValue;
 			IASTAppendable continuedFractionList = F
 					.ListAlloc(iterationLimit > 0 && iterationLimit < 1000 ? iterationLimit + 10 : 10);
 			int aNow = (int) doubleValue;
@@ -3697,6 +3698,22 @@ public final class NumberTheory {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			// TODO
 			IExpr arg1 = ast.arg1();
+			if (arg1.isInteger()) {
+				try {
+					IInteger ii = (IInteger) arg1;
+					if (ii.isEven() && !equals(F.C2) && !equals(F.C4)) {
+						if (ii.quotient(F.C2).isEven()) {
+							return F.NIL;
+						}
+					}
+				} catch (LimitException le) {
+					throw le;
+				} catch (RuntimeException rex) {
+					if (Config.SHOW_STACKTRACE) {
+						rex.printStackTrace();
+					}
+				}
+			}
 			return F.NIL;
 		}
 
@@ -3747,8 +3764,12 @@ public final class NumberTheory {
 						IASTAppendable list = F.ListAlloc(size);
 						return list.appendArgs(0, size, i -> roots[i]);
 					}
-				} catch (ArithmeticException e) {
-					// integer to large?
+				} catch (LimitException le) {
+					throw le;
+				} catch (RuntimeException rex) {
+					if (Config.SHOW_STACKTRACE) {
+						rex.printStackTrace();
+					}
 				}
 			}
 			return F.NIL;
