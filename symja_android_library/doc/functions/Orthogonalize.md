@@ -7,7 +7,8 @@ Orthogonalize(matrix)
 > returns a basis for the orthogonalized set of vectors defined by `matrix`.
  
 See
-* [Wikipedia - Gram–Schmidt process (linear algebra](https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process)
+* [Wikipedia - Gram–Schmidt process (linear algebra)](https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process)
+* [Wikipedia - Orthogonal_matrix](https://en.wikipedia.org/wiki/Orthogonal_matrix)
 
 ### Examples
 

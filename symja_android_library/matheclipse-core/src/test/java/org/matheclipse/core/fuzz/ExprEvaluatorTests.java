@@ -87,7 +87,7 @@ public class ExprEvaluatorTests extends TestCase {
 				F.C1D2, //
 				F.CNI, //
 				F.CI, //
-				F.ZZ(Integer.MIN_VALUE), //
+				// F.ZZ(Integer.MIN_VALUE), //
 				F.CInfinity, //
 				F.CNInfinity, //
 				F.Null, //

@@ -63,6 +63,7 @@ public class PredicateQ {
 			F.NumberQ.setPredicateQ(x -> x.isNumber());
 			F.NumericQ.setPredicateQ(x -> x.isNumericFunction());
 			F.OddQ.setEvaluator(new OddQ());
+			F.OrthogonalMatrixQ.setEvaluator(new OrthogonalMatrixQ());
 			F.PossibleZeroQ.setEvaluator(new PossibleZeroQ());
 			F.PrimeQ.setEvaluator(new PrimeQ());
 			F.QuantityQ.setEvaluator(new QuantityQ());
@@ -793,6 +794,59 @@ public class PredicateQ {
 			return expr.isQuantity();
 		}
 
+	}
+
+	private final static class OrthogonalMatrixQ extends AbstractCoreFunctionEvaluator implements IPredicate {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+			final IExpr arg1 = engine.evaluate(ast.arg1());
+			int[] dims = arg1.isMatrix();
+			if (dims == null ) {
+				// no square matrix
+				return F.False;
+			}
+			IExpr identityMatrix = F.NIL;
+			int[] identityMatrixDims = null;
+			if (dims[0] >= dims[1]) {
+				identityMatrix = F.Dot.of(engine, F.Transpose(arg1), arg1);
+				identityMatrixDims = identityMatrix.isMatrix();
+				if (identityMatrixDims == null || //
+						identityMatrixDims[0] != dims[1] || //
+						identityMatrixDims[1] != dims[1]) {
+					return F.False;
+				}
+			} else {
+				identityMatrix = F.Dot.of(engine, arg1, F.Transpose(arg1));
+				identityMatrixDims = identityMatrix.isMatrix();
+				if (identityMatrixDims == null || //
+						identityMatrixDims[0] != dims[0] || //
+						identityMatrixDims[1] != dims[0]) {
+					return F.False;
+				}
+			}
+			IAST matrix = (IAST) identityMatrix;
+			for (int i = 1; i <= identityMatrixDims[0]; i++) {
+				IAST row = (IAST) matrix.get(i);
+				for (int j = 1; j <= identityMatrixDims[1]; j++) {
+					if (i == j) {
+						if (!F.PossibleZeroQ.ofQ(engine, F.Plus(F.CN1, row.get(j)))) {
+							return F.False;
+						}
+					} else {
+						if (!F.PossibleZeroQ.ofQ(engine, row.get(j))) {
+							return F.False;
+						}
+					}
+				}
+			}
+			return F.True;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
 	}
 
 	/**

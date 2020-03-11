@@ -14695,6 +14695,30 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{1,0,0},{0,0,1}}");
 	}
 
+	public void testOrthogonalMatrixQ() {
+		// https://en.wikipedia.org/wiki/Orthogonal_matrix 
+		check("OrthogonalMatrixQ({{0, 0, 0, 1}, {0, 0, 1, 0}, {1, 0, 0, 0}, {0, 1, 0, 0}})", //
+				"True");
+		
+		// rectangular 
+		check("OrthogonalMatrixQ(1/2*{{1, 1, 1, -1}, {-1, 1, 1, 1}})", //
+				"True");
+		check("OrthogonalMatrixQ(N(1/Sqrt(5)*{{2, -1}, {1, 2}}, 25))", //
+				"True");
+		check("OrthogonalMatrixQ({{0.8660254037844386, -0.5}, {0.5, 0.8660254037844386}})", //
+				"True");
+		check("OrthogonalMatrixQ(1/Sqrt(3)*{{2, -I}, {I, 2}})", //
+				"True");
+		check("OrthogonalMatrixQ({{Cos[a], -Sin[a]}, {Sin[a], Cos[a]}})", //
+				"True");
+		check("OrthogonalMatrixQ({{1,0,0},{0,Cos[a], -Sin[a]}, {0,Sin[a], Cos[a]}})", //
+				"True");
+		check("OrthogonalMatrixQ({{a, b}, {c, d}}/Sqrt(a^2 + b^2))", //
+				"False");
+		check("Block({c = b, d = -a}, OrthogonalMatrixQ({{a, b}, {c, d}}/Sqrt(a^2 + b^2)))", //
+				"True");
+	}
+
 	public void testOuter() {
 		check("Outer(f, {a, b}, {x, y, z})", //
 				"{{f(a,x),f(a,y),f(a,z)},{f(b,x),f(b,y),f(b,z)}}");
@@ -16760,8 +16784,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PrimitiveRootList(43)", //
 				"{3,5,12,18,19,20,26,28,29,30,33,34}");
 		check("PrimitiveRootList(127)", //
-				"{3,6,7,12,14,23,29,39,43,45,46,48,53,55,56,57,58,65,67,78,83,85,86,91,92,93,96,\n" + 
-				"97,101,106,109,110,112,114,116,118}");
+				"{3,6,7,12,14,23,29,39,43,45,46,48,53,55,56,57,58,65,67,78,83,85,86,91,92,93,96,\n"
+						+ "97,101,106,109,110,112,114,116,118}");
 	}
 
 	public void testPrint() {
