@@ -13,7 +13,7 @@ public interface SincRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 15, 3 };
+  final public static int[] SIZES = { 17, 3 };
 
   final public static IAST RULES = List(
     IInit(Sinc, SIZES),
@@ -65,6 +65,12 @@ public interface SincRules {
     // Sinc(ArcTan(x_)):=x/(Sqrt(1+x^2)*ArcTan(x))
     ISetDelayed(Sinc(ArcTan(x_)),
       Times(x,Power(Plus(C1,Sqr(x)),CN1D2),Power(ArcTan(x),CN1))),
+    // Sinc(-Infinity)=0
+    ISet(Sinc(Noo),
+      C0),
+    // Sinc(Infinity)=0
+    ISet(Sinc(oo),
+      C0),
     // Sinc(I*Infinity)=Infinity
     ISet(Sinc(DirectedInfinity(CI)),
       oo),

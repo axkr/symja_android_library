@@ -14696,11 +14696,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testOrthogonalMatrixQ() {
-		// https://en.wikipedia.org/wiki/Orthogonal_matrix 
+		// https://en.wikipedia.org/wiki/Orthogonal_matrix
 		check("OrthogonalMatrixQ({{0, 0, 0, 1}, {0, 0, 1, 0}, {1, 0, 0, 0}, {0, 1, 0, 0}})", //
 				"True");
-		
-		// rectangular 
+
+		// rectangular
 		check("OrthogonalMatrixQ(1/2*{{1, 1, 1, -1}, {-1, 1, 1, 1}})", //
 				"True");
 		check("OrthogonalMatrixQ(N(1/Sqrt(5)*{{2, -1}, {1, 2}}, 25))", //
@@ -19864,6 +19864,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSinc() {
+		check("Sinc(-x)", //
+				"Sinc(x)");
+		check("Table(Sinc(n*Pi/3), {n, 0, 6})", //
+				"{1,3/2*Sqrt(3)/Pi,3/4*Sqrt(3)/Pi,0,-3/8*Sqrt(3)/Pi,-3/10*Sqrt(3)/Pi,0}");
 		check("Sinc(3.5)", //
 				"-0.100224");
 		check("Sinc(1.0+3.5*I)", //

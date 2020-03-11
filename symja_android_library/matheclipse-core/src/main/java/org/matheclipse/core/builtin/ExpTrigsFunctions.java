@@ -2666,7 +2666,7 @@ public class ExpTrigsFunctions {
 			if (F.isZero(operand)) {
 				return 1.0;
 			}
-			return Math.sin(operand) / operand;
+			return new org.hipparchus.analysis.function.Sinc(false).value(operand);
 		}
 
 		@Override
@@ -2698,7 +2698,8 @@ public class ExpTrigsFunctions {
 			if (F.isZero(arg1)) {
 				return CD1;
 			}
-			return num(Math.sin(arg1) / arg1);
+			return num(new org.hipparchus.analysis.function.Sinc(false).value(arg1));
+			// return num(Math.sin(arg1) / arg1);
 		}
 
 		@Override
@@ -2710,7 +2711,7 @@ public class ExpTrigsFunctions {
 			if (a1 == 0.0) {
 				return 1.0;
 			}
-			return Math.sin(a1) / a1;
+			return new org.hipparchus.analysis.function.Sinc(false).value(a1);
 		}
 
 		@Override
@@ -2721,6 +2722,10 @@ public class ExpTrigsFunctions {
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
 				return Sinc(negExpr);
+			}
+			IExpr sin = F.Sin.ofNIL(engine, arg1);
+			if (sin.isPresent()&&!sin.isSin()) {
+				return sin.divide(arg1);
 			}
 			return F.NIL;
 		}
@@ -2840,22 +2845,22 @@ public class ExpTrigsFunctions {
 			return F.NIL;
 		}
 
-//		private static IExpr evalInterval(final IExpr arg1) {
-//			IExpr l = arg1.lower();
-//			IExpr u = arg1.upper();
-//			if (l.isReal() || l.isNegativeInfinity()) {
-//				l = F.Sinh.of(l);
-//				if (l.isReal() || l.isNegativeInfinity()) {
-//					if (u.isReal() || u.isInfinity()) {
-//						u = F.Sinh.of(u);
-//						if (u.isReal() || u.isInfinity()) {
-//							return F.Interval(F.List(l, u));
-//						}
-//					}
-//				}
-//			}
-//			return F.NIL;
-//		}
+		// private static IExpr evalInterval(final IExpr arg1) {
+		// IExpr l = arg1.lower();
+		// IExpr u = arg1.upper();
+		// if (l.isReal() || l.isNegativeInfinity()) {
+		// l = F.Sinh.of(l);
+		// if (l.isReal() || l.isNegativeInfinity()) {
+		// if (u.isReal() || u.isInfinity()) {
+		// u = F.Sinh.of(u);
+		// if (u.isReal() || u.isInfinity()) {
+		// return F.Interval(F.List(l, u));
+		// }
+		// }
+		// }
+		// }
+		// return F.NIL;
+		// }
 
 		@Override
 		public IAST getRuleAST() {

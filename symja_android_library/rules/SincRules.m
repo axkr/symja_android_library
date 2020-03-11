@@ -15,6 +15,8 @@
 	 Sinc(ArcSin(x_)):=x/ArcSin(x),
 	 Sinc(ArcCos(x_)):=((1-x^2)^(1/2))/ArcCos(x),
 	 Sinc(ArcTan(x_)):=(x/(1+x^2)^(1/2))/ArcTan(x),
+	 Sinc(-Infinity)=0,
+	 Sinc(Infinity)=0,
 	 Sinc(I*Infinity)=Infinity,
 	 Sinc(ComplexInfinity)=Indeterminate
 }
