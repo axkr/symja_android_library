@@ -927,13 +927,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArgMax() {
+		check("ArgMax(x*10-x^2 , x)", //
+				"5");
 		check("Maximize(-2*x^2 - 3*x + 5, x)", //
 				"{49/8,{x->-3/4}}");
 		check("ArgMax(-2*x^2 - 3*x + 5, x)", //
 				"-3/4");
 	}
 
-	public void testArgMin() {
+	public void testArgMin() { 
+		check("ArgMin(x*10+x^2 , x)", //
+				"-5");
 		check("Minimize(2*x^2 - 3*x + 5, x)", //
 				"{31/8,{x->3/4}}");
 		check("ArgMin(2*x^2 - 3*x + 5, x)", //

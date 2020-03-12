@@ -52,6 +52,31 @@ public class MinMaxFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>ArgMax(function, variable)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns a maximizer point for a univariate <code>function</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Arg_max">Wikipedia - Arg max</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; ArgMax(x*10-x^2, x) 
+	 * 5
+	 * </code>
+	 * </pre>
+	 */
 	private static class ArgMax extends AbstractEvaluator {
 
 		@Override
@@ -75,6 +100,31 @@ public class MinMaxFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>ArgMin(function, variable)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns a minimizer point for a univariate <code>function</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Arg_max">Wikipedia - Arg max</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; ArgMin(x*10+x^2, x)
+	 * -5
+	 * </code>
+	 * </pre>
+	 */
 	private static class ArgMin extends AbstractEvaluator {
 
 		@Override
@@ -236,6 +286,45 @@ public class MinMaxFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * <code>Maximize(unary-function, variable) 
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the maximum of the unary function for the given <code>variable</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Derivative_test">Wikipedia - Derivative test</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Maximize(-x^4-7*x^3+2*x^2 - 42,x) 
+	 * {-42-7*(-21/8-Sqrt(505)/8)^3+2*(21/8+Sqrt(505)/8)^2-(21/8+Sqrt(505)/8)^4,{x-&gt;-21/8-Sqrt(505)/8}}
+	 * </code>
+	 * </pre>
+	 * <p>
+	 * Print a message if no maximum can be found
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Maximize(x^4+7*x^3-2*x^2 + 42, x) 
+	 * {Infinity,{x-&gt;-Infinity}}
+	 * </code>
+	 * </pre>
+	 * 
+	 * <h3>Related terms</h3>
+	 * <p>
+	 * <a href="Minimize.md">Minimize</a>
+	 * </p>
+	 */
 	private final static class Maximize extends AbstractFunctionEvaluator {
 
 		@Override
@@ -257,6 +346,36 @@ public class MinMaxFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * <code>Minimize(unary-function, variable) 
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the minimum of the unary function for the given <code>variable</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Derivative_test">Wikipedia - Derivative test</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Minimize(x^4+7*x^3-2*x^2 + 42, x) 
+	 * {42+7*(-21/8-Sqrt(505)/8)^3-2*(21/8+Sqrt(505)/8)^2+(21/8+Sqrt(505)/8)^4,{x-&gt;-21/8-Sqrt(505)/8}}
+	 * </code>
+	 * </pre>
+	 * 
+	 * <h3>Related terms</h3>
+	 * <p>
+	 * <a href="Maximize.md">Maximize</a>
+	 * </p>
+	 */
 	private final static class Minimize extends AbstractFunctionEvaluator {
 
 		@Override
