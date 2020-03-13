@@ -16,18 +16,10 @@ public class EllipticIntegralsJS {
 
 	public static Complex carlsonRC(Complex x, Complex y) {
 
-		// if ( x < 0 || y < 0 || isComplex(x) || isComplex(y) ) {
-
-		// if ( !isComplex(x) ) x = complex(x);
-		// if ( !isComplex(y) ) y = complex(y);
-
-		if (x.getReal() == y.getReal() && x.getImaginary() == y.getImaginary()) {
+		if (x.equals(y)) {
 			return x.sqrt().reciprocal();
 		}
-
-		return x.divide(y).sqrt().acos().divide(y.subtract(x).sqrt());
-
-		// }
+		return x.sqrt().divide(y.sqrt()).acos().divide(y.sqrt().multiply(Complex.ONE.subtract(x.divide(y)).sqrt()));
 
 	}
 
@@ -41,9 +33,10 @@ public class EllipticIntegralsJS {
 
 		if (x < y) {
 			return new Complex(Math.acos(Math.sqrt(x / y)) / Math.sqrt(y - x));
-		} else {
-			return new Complex(FastMath.acosh(Math.sqrt(x / y)) / Math.sqrt(x - y));
 		}
+
+		return new Complex(FastMath.acosh(Math.sqrt(x / y)) / Math.sqrt(x - y));
+
 	}
 
 	public static Complex carlsonRD(Complex x, Complex y, Complex z) {
@@ -165,9 +158,15 @@ public class EllipticIntegralsJS {
 
 	}
 
-	// private static double carlsonRG(Complex x, Complex y, Complex z) {
-	// throw new ArithmeticException("carlsonRG: not implemented");
-	// }
+	private static Complex carlsonRG(Complex x, Complex y, Complex z) {
+
+		Complex t1 = carlsonRF(x, y, z).multiply(z);
+		Complex t2 = x.subtract(z).multiply(y.subtract(z)).multiply(carlsonRD(x, y, z)).multiply(-1.0 / 3.0);
+		Complex t3 = x.multiply(y).multiply(z.reciprocal()).sqrt();
+
+		return t1.add(t2).add(t3).multiply(0.5);
+
+	}
 
 	public static Complex carlsonRJ(Complex x, Complex y, Complex z, Complex p) {
 		return carlsonRJ(x, y, z, p, Config.SPECIAL_FUNCTIONS_TOLERANCE);
@@ -229,11 +228,8 @@ public class EllipticIntegralsJS {
 		P = E2.multiply(-5148).add(E2.multiply(E2).multiply(2457)).add(E3.multiply(4004))
 				.add(E2.multiply(E3).multiply(-4158)).add(E4.multiply(-3276)).add(E5.multiply(2772)).add(24024);
 		Complex v1 = Am.pow(-1.5).multiply(Math.pow(g, m)).multiply(P).multiply(1.0 / 24024.0);
-		// Complex v2 = mul(6,S);
-
-		// return add( v1, v2 );
+		 
 		return S.multiply(6.0).add(v1);
-		// }
 	}
 
 	public static Complex carlsonRJ(double x, double y, double z, double p) {
@@ -291,8 +287,7 @@ public class EllipticIntegralsJS {
 		double E4 = (2 * X * Y * Z + E2 * P + 3 * Math.pow(P, 3)) * P;
 		double E5 = X * Y * Z * Math.pow(P, 2);
 		P = 24024 - 5148 * E2 + 2457 * Math.pow(E2, 2) + 4004 * E3 - 4158 * E2 * E3 - 3276 * E4 + 2772 * E5;
-		double v1 = Math.pow(g, m) * Math.pow(Am, -1.5) * P / 24024.0;
-		// double v2 = S.multiply(6.0);
+		double v1 = Math.pow(g, m) * Math.pow(Am, -1.5) * P / 24024.0; 
 
 		return S.multiply(6.0).add(v1);
 
@@ -300,16 +295,7 @@ public class EllipticIntegralsJS {
 
 	// elliptic integrals
 
-	public static Complex ellipticF(Complex x, Complex m) {
-
-		// if ( arguments.length === 1 ) {
-		// m = x;
-		// x = pi / 2;
-		// }
-
-		// if ( isComplex(x) || isComplex(m) ) {
-
-		// if ( !isComplex(x) ) x = complex(x);
+	public static Complex ellipticF(Complex x, Complex m) { 
 
 		Complex period = Complex.ZERO;
 		if (Math.abs(x.getReal()) > (Math.PI / 2)) {
@@ -361,17 +347,6 @@ public class EllipticIntegralsJS {
 	}
 
 	public static Complex ellipticE(Complex x, Complex m) {
-
-		// if ( arguments.length === 1 ) {
-		// m = x;
-		// x = pi / 2;
-		// }
-
-		// if ( isComplex(x) || isComplex(m) ) {
-
-		// if (!isComplex(x))
-		// x = complex(x);
-
 		Complex period = Complex.ZERO;
 		if (Math.abs(x.getReal()) > Math.PI / 2.0) {
 			long p = Math.round(x.getReal() / Math.PI);
@@ -410,16 +385,7 @@ public class EllipticIntegralsJS {
 
 	}
 
-	public static Complex ellipticPi(Complex n, Complex x, Complex m) {
-
-		// if ( arguments.length === 2 ) {
-		// m = x;
-		// x = pi / 2;
-		// }
-
-		// if ( isComplex(n) || isComplex(x) || isComplex(m) ) {
-
-		// if ( !isComplex(x) ) x = complex(x);
+	public static Complex ellipticPi(Complex n, Complex x, Complex m) { 
 
 		Complex period = Complex.ZERO;
 		if (Math.abs(x.getReal()) > Math.PI / 2.0) {
@@ -443,8 +409,7 @@ public class EllipticIntegralsJS {
 						.multiply(carlsonRJ(sqrCosX, Complex.ONE.subtract(m.multiply(sqrSinX)), Complex.ONE,
 								Complex.ONE.subtract(n.multiply(sqrSinX)))))
 				.add(period);
-
-		// }
+ 
 	}
 
 	public static Complex ellipticPi(double n, double x, double m) {
