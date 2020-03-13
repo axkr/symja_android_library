@@ -1,5 +1,7 @@
 package org.matheclipse.core.builtin.functions;
 
+import java.util.Arrays;
+
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
@@ -463,12 +465,21 @@ public class EllipticFunctionsJS {
 
 		Complex[] sol = weierstrassRoots(g2, g3);
 		Complex e1 = sol[0];
-		// Complex e2 = sol[1];
+		Complex e2 = sol[1];
 		Complex e3 = sol[2];
 		Complex w1 = inverseWeierstrassP(e1, g2, g3);
+		Complex w2 = inverseWeierstrassP(e2, g2, g3);
 		Complex w3 = inverseWeierstrassP(e3, g2, g3);
 
-		return new Complex[] { w1, w3 };
+		Complex[] w = new Complex[] { w1, w2, w3 };
+		Arrays.sort(w, (a, b) -> (int) Math.signum((a.abs() - b.abs())));
+		// w.sort( (a,b) => abs(a) - abs(b) );
+		Complex smallest = w[0];
+		Complex[] v = new Complex[] { w[1], w[2], //
+				w[1].subtract(smallest), w[2].subtract(smallest) };
+		// w.sort( (a,b) => abs(a) - abs(b) );
+		Arrays.sort(v, (a, b) -> (int) Math.signum((a.abs() - b.abs())));
+		return new Complex[] { smallest, v[0] };
 
 	}
 
@@ -503,17 +514,16 @@ public class EllipticFunctionsJS {
 		Complex aPow4 = a.multiply(a);
 		aPow4 = aPow4.multiply(aPow4);
 		Complex aPow8 = aPow4.multiply(aPow4);
-		
+
 		Complex bPow4 = b.multiply(b);
 		bPow4 = bPow4.multiply(bPow4);
 		Complex bPow8 = bPow4.multiply(bPow4);
-		
+
 		Complex g2 = w1.multiply(2).pow(-4).multiply(aPow8.add(aPow4.multiply(bPow4).negate()).add(bPow8))
 				.multiply(4.0 / 3.0 * Math.pow(Math.PI, 4));
 
-		Complex g3 = w1.multiply(2.0).pow(-6.0).multiply(8.0 / 27.0 * Math.pow(Math.PI, 6.0))
-				.multiply(a.pow(12).add(aPow8.multiply(bPow4).multiply(-1.5))
-						.add(aPow4.multiply(bPow8).multiply(-1.5)).add(b.pow(12)));
+		Complex g3 = w1.multiply(2.0).pow(-6.0).multiply(8.0 / 27.0 * Math.pow(Math.PI, 6.0)).multiply(a.pow(12)
+				.add(aPow8.multiply(bPow4).multiply(-1.5)).add(aPow4.multiply(bPow8).multiply(-1.5)).add(b.pow(12)));
 
 		if (conjugate) {
 			g2 = g2.conjugate();
