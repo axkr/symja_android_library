@@ -12,6 +12,24 @@ import org.matheclipse.core.basic.Config;
  */
 public class EllipticIntegralsJS {
 
+	public static Complex kleinJ(Complex x) {
+		// from mpmath / elliptic.py
+
+		Complex q = new Complex(0, Math.PI).multiply(x).exp();
+		// TODO add Chop()
+		Complex t2 = EllipticFunctionsJS.jacobiTheta(2, Complex.ZERO, q);
+		Complex t3 = EllipticFunctionsJS.jacobiTheta(3, Complex.ZERO, q);
+		Complex t4 = EllipticFunctionsJS.jacobiTheta(4, Complex.ZERO, q);
+		Complex P = t2.pow(8.0).add(t3.pow(8.0)).add(t4.pow(8)).pow(3.0);
+		Complex Q = t2.multiply(t3).multiply(t4).pow(8.0).multiply(54.0);
+
+		return P.divide(Q);
+	}
+
+	public static Complex kleinJ(double x) { 
+		return kleinJ(new Complex(x));
+	}
+	
 	// Carlson symmetric integrals
 
 	public static Complex carlsonRC(Complex x, Complex y) {

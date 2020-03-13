@@ -36,6 +36,8 @@ public class EllipticIntegrals {
 			F.JacobiSN.setEvaluator(new JacobiSN());
 			F.JacobiZeta.setEvaluator(new JacobiZeta());
 
+			F.KleinInvariantJ.setEvaluator(new KleinInvariantJ());
+
 			F.WeierstrassHalfPeriods.setEvaluator(new WeierstrassHalfPeriods());
 			F.WeierstrassInvariants.setEvaluator(new WeierstrassInvariants());
 			F.WeierstrassP.setEvaluator(new WeierstrassP());
@@ -119,7 +121,7 @@ public class EllipticIntegrals {
 						return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
 					}
 				}
- 
+
 				IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
 				if (negExpr.isPresent()) {
 					// EllipticE(-z,m) = -EllipticE(z,m)
@@ -348,17 +350,26 @@ public class EllipticIntegrals {
 				// (8 Pi^(3/2))/Gamma(-(1/4))^2
 				return F.Times(F.C8, F.Power(F.Pi, F.QQ(3L, 2L)), F.Power(F.Gamma(F.CN1D4), -2));
 			}
-			if (m.isReal()) {
+
+			if (engine.isDoubleMode()) {
 				try {
-					return F.complexNum(EllipticIntegralsJS.ellipticK(m.evalDouble()));
-				} catch (RuntimeException rte) {
-					return engine.printMessage("EllipticK: " + rte.getMessage());
-				}
-			} else if (m.isNumeric()) {
-				try {
-					return F.complexNum(EllipticIntegralsJS.ellipticK(m.evalComplex()));
-				} catch (RuntimeException rte) {
-					return engine.printMessage("EllipticK: " + rte.getMessage());
+					double mDouble = Double.NaN;
+					try {
+						mDouble = m.evalDouble();
+					} catch (ValidateException ve) {
+					}
+					if (Double.isNaN(mDouble)) {
+						Complex mComplex = m.evalComplex();
+						return F.complexNum(EllipticIntegralsJS.ellipticK(mComplex));
+					} else {
+						return F.complexNum(EllipticIntegralsJS.ellipticK(mDouble));
+					}
+				} catch (ValidateException ve) {
+					if (Config.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
+				} catch (RuntimeException rex) {
+					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
 				}
 			}
 			if (m.isNumber()) {
@@ -866,7 +877,53 @@ public class EllipticIntegrals {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_2;
 		}
-		
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
+
+	private static class KleinInvariantJ extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			IExpr t = ast.arg1();
+			if (t.isImaginaryUnit()) {
+				return F.C1;
+			}
+			if (engine.isDoubleMode()) {
+				try {
+					double tDouble = Double.NaN;
+					try {
+						tDouble = t.evalDouble();
+					} catch (ValidateException ve) {
+					}
+					if (Double.isNaN(tDouble)) {
+						Complex tComplex = t.evalComplex();
+						return F.complexNum(EllipticIntegralsJS.kleinJ(tComplex));
+					} else {
+						return F.complexNum(EllipticIntegralsJS.kleinJ(tDouble));
+					}
+				} catch (ArithmeticException ae) {
+					// unevaluated
+					return F.NIL;
+				} catch (ValidateException ve) {
+					if (Config.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
+				} catch (RuntimeException rex) {
+					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+				}
+			}
+			return F.NIL;
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
