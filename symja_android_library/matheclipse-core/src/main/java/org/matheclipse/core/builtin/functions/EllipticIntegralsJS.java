@@ -16,7 +16,7 @@ public class EllipticIntegralsJS {
 
 	public static Complex carlsonRC(Complex x, Complex y) {
 
-		if (x.equals(y)) {
+		if (Complex.equals(x, y, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
 			return x.sqrt().reciprocal();
 		}
 		return x.sqrt().divide(y.sqrt()).acos().divide(y.sqrt().multiply(Complex.ONE.subtract(x.divide(y)).sqrt()));
@@ -228,7 +228,7 @@ public class EllipticIntegralsJS {
 		P = E2.multiply(-5148).add(E2.multiply(E2).multiply(2457)).add(E3.multiply(4004))
 				.add(E2.multiply(E3).multiply(-4158)).add(E4.multiply(-3276)).add(E5.multiply(2772)).add(24024);
 		Complex v1 = Am.pow(-1.5).multiply(Math.pow(g, m)).multiply(P).multiply(1.0 / 24024.0);
-		 
+
 		return S.multiply(6.0).add(v1);
 	}
 
@@ -287,7 +287,7 @@ public class EllipticIntegralsJS {
 		double E4 = (2 * X * Y * Z + E2 * P + 3 * Math.pow(P, 3)) * P;
 		double E5 = X * Y * Z * Math.pow(P, 2);
 		P = 24024 - 5148 * E2 + 2457 * Math.pow(E2, 2) + 4004 * E3 - 4158 * E2 * E3 - 3276 * E4 + 2772 * E5;
-		double v1 = Math.pow(g, m) * Math.pow(Am, -1.5) * P / 24024.0; 
+		double v1 = Math.pow(g, m) * Math.pow(Am, -1.5) * P / 24024.0;
 
 		return S.multiply(6.0).add(v1);
 
@@ -295,7 +295,7 @@ public class EllipticIntegralsJS {
 
 	// elliptic integrals
 
-	public static Complex ellipticF(Complex x, Complex m) { 
+	public static Complex ellipticF(Complex x, Complex m) {
 
 		Complex period = Complex.ZERO;
 		if (Math.abs(x.getReal()) > (Math.PI / 2)) {
@@ -385,7 +385,7 @@ public class EllipticIntegralsJS {
 
 	}
 
-	public static Complex ellipticPi(Complex n, Complex x, Complex m) { 
+	public static Complex ellipticPi(Complex n, Complex x, Complex m) {
 
 		Complex period = Complex.ZERO;
 		if (Math.abs(x.getReal()) > Math.PI / 2.0) {
@@ -409,7 +409,7 @@ public class EllipticIntegralsJS {
 						.multiply(carlsonRJ(sqrCosX, Complex.ONE.subtract(m.multiply(sqrSinX)), Complex.ONE,
 								Complex.ONE.subtract(n.multiply(sqrSinX)))))
 				.add(period);
- 
+
 	}
 
 	public static Complex ellipticPi(double n, double x, double m) {
