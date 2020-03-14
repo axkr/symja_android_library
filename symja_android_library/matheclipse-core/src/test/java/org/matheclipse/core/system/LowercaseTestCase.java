@@ -16069,6 +16069,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPower() {
+		check("Power(<|x->y|>,5,-1/2)", //
+				"<|x->y^(1/Sqrt(5))|>");
+		check("Power(<|x->y|>,5)", //
+				"<|x->y^5|>");
+		
 		check("(-Infinity)^(-3/5)", //
 				"0");
 		check("1/Sqrt(-Infinity)", //
@@ -16600,6 +16605,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPrepend() {
+		check("Prepend(1/Sqrt(5),<|x->y|>)", //
+				"<|x->y^(1/Sqrt(5))|>");
 		check("Prepend({2, 3, 4}, 1)", //
 				"{1,2,3,4}");
 		check("Prepend(f(b, c), a)", //

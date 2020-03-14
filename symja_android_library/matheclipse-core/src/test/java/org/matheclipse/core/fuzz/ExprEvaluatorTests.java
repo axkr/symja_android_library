@@ -72,6 +72,8 @@ public class ExprEvaluatorTests extends TestCase {
 		fInputFactory.setQuotes(true);
 		AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
 		IAST seedList = F.List(//
+				F.assoc(F.CEmptyList), //
+				F.assoc(F.List(F.Rule(F.x, F.y))), //
 				F.num(-0.5), //
 				F.num(0.5), //
 				F.num(Math.PI * (-0.5)), //
@@ -322,7 +324,7 @@ public class ExprEvaluatorTests extends TestCase {
 				IExpr seed = seedList.get(seedIndex);
 				ast.append(seed);
 			}
-			
+
 			try {
 				// System.out.println(ast.toString());
 				eval.eval(ast);

@@ -725,11 +725,13 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	/** {@inheritDoc} */
 	@Override
 	public final int indexOf(Predicate<? super IExpr> predicate) {
-		int start = firstIndex + 1;
+		int index = 1;
+		int start = firstIndex + index;
 		for (int i = start; i < lastIndex; i++) {
 			if (predicate.test(array[i])) {
-				return i;
+				return index;
 			}
+			index++;
 		}
 		return -1;
 	}
