@@ -7279,7 +7279,11 @@ public class F {
 	public static IAST Key(final IExpr a0) {
 		return new AST1(Key, a0);
 	}
-
+	
+	public static IAST KleinInvariantJ(final IExpr a0) {
+		return new AST1(KleinInvariantJ, a0);
+	}
+	
 	public static IAST KroneckerDelta(final IExpr a0) {
 		return new AST1(KroneckerDelta, a0);
 	}

@@ -401,6 +401,7 @@ public class BigFractionSym extends AbstractFractionSym {
 			boolean noSymbolPrefix) {
 		String prefix = usePrefix ? "F." : "";
 		try {
+			// toInt throws ArithmeticException if conversion is not possible
 			int numerator = NumberUtil.toInt(fFraction.getNumerator());
 			int denominator = NumberUtil.toInt(fFraction.getDenominator());
 			if (numerator == 1) {

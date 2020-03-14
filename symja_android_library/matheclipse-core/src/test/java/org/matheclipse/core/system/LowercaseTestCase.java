@@ -10858,7 +10858,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testKleinInvariantJ() {
+		check("KleinInvariantJ( (1 + I*3*Sqrt(3))/2 )", //
+				"-64000/9");
+		check("KleinInvariantJ( (1 + I*Sqrt(163))/2 )", //
+				"-151931373056000");
+		check("KleinInvariantJ(I*Infinity)", //
+				"Infinity");
+		check("KleinInvariantJ(E^(2*Pi*(I/3)))", //
+				"0");
 		check("KleinInvariantJ(I)", //
+				"1");
+		check("KleinInvariantJ(I-42)", //
+				"1");
+		check("KleinInvariantJ(I+42)", //
 				"1");
 		check("KleinInvariantJ(1 + 2.0*I) // Chop", //
 				"166.375");

@@ -13,6 +13,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.KleinInvariantJRules;
 
 public class EllipticIntegrals {
 	/**
@@ -885,13 +886,27 @@ public class EllipticIntegrals {
 		}
 	}
 
-	private static class KleinInvariantJ extends AbstractFunctionEvaluator {
+	private static class KleinInvariantJ extends AbstractFunctionEvaluator implements KleinInvariantJRules {
+		@Override
+		public IAST getRuleAST() {
+			return RULES;
+		}
 
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			IExpr t = ast.arg1();
-			if (t.isImaginaryUnit()) {
-				return F.C1;
+			IExpr im = F.Im.of(engine, t);
+			if (im.isOne()) {
+				IExpr re = F.Re.of(engine, t);
+				if (re.isInteger()) {
+					// KleinInvariantJ(re+I) = 1 and re is Integer
+					return F.C1;
+				}
+				int r = re.toIntDefault();
+				if (r != Integer.MIN_VALUE) {
+					// KleinInvariantJ(re+I) = 1 and re is Integer
+					return F.C1;
+				}
 			}
 			if (engine.isDoubleMode()) {
 				try {

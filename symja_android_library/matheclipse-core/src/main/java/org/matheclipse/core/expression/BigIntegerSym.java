@@ -426,54 +426,57 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators, boolean usePrefix,
 			boolean noSymbolPrefix) {
 		String prefix = usePrefix ? "F." : "";
-		int value = NumberUtil.toInt(fBigIntValue);
-		switch (value) {
-		case -1:
-			return prefix + "CN1";
-		case -2:
-			return prefix + "CN2";
-		case -3:
-			return prefix + "CN3";
-		case -4:
-			return prefix + "CN4";
-		case -5:
-			return prefix + "CN5";
-		case -6:
-			return prefix + "CN6";
-		case -7:
-			return prefix + "CN7";
-		case -8:
-			return prefix + "CN8";
-		case -9:
-			return prefix + "CN9";
-		case -10:
-			return prefix + "CN10";
-		case 0:
-			return prefix + "C0";
-		case 1:
-			return prefix + "C1";
-		case 2:
-			return prefix + "C2";
-		case 3:
-			return prefix + "C3";
-		case 4:
-			return prefix + "C4";
-		case 5:
-			return prefix + "C5";
-		case 6:
-			return prefix + "C6";
-		case 7:
-			return prefix + "C7";
-		case 8:
-			return prefix + "C8";
-		case 9:
-			return prefix + "C9";
-		case 10:
-			return prefix + "C10";
-		default:
-			return prefix + "ZZ(" + value + "L)";
+		int value = toIntDefault(); // NumberUtil.toInt(fBigIntValue);
+		if (value != Integer.MIN_VALUE) {
+			switch (value) {
+			case -1:
+				return prefix + "CN1";
+			case -2:
+				return prefix + "CN2";
+			case -3:
+				return prefix + "CN3";
+			case -4:
+				return prefix + "CN4";
+			case -5:
+				return prefix + "CN5";
+			case -6:
+				return prefix + "CN6";
+			case -7:
+				return prefix + "CN7";
+			case -8:
+				return prefix + "CN8";
+			case -9:
+				return prefix + "CN9";
+			case -10:
+				return prefix + "CN10";
+			case 0:
+				return prefix + "C0";
+			case 1:
+				return prefix + "C1";
+			case 2:
+				return prefix + "C2";
+			case 3:
+				return prefix + "C3";
+			case 4:
+				return prefix + "C4";
+			case 5:
+				return prefix + "C5";
+			case 6:
+				return prefix + "C6";
+			case 7:
+				return prefix + "C7";
+			case 8:
+				return prefix + "C8";
+			case 9:
+				return prefix + "C9";
+			case 10:
+				return prefix + "C10";
+			default:
+				return prefix + "ZZ(" + value + "L)";
+			}
+		} else {
+			return prefix + "ZZ(\"" + fBigIntValue.toString() + "\", 10)";
 		}
-
 	}
 
 	@Override
