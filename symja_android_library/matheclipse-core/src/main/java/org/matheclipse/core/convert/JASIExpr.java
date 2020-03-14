@@ -212,13 +212,7 @@ public class JASIExpr {
 					ExpVector leer = fPolyFactory.evzero;
 					int ix = leer.indexVar(base.toString(), fPolyFactory.getVars());
 					if (ix >= 0) {
-						int exponent = ast.exponent().toIntDefault(Integer.MIN_VALUE);
-						// int exponent = -1;
-						// try {
-						// exponent = Validate.checkPowerExponent(ast);
-						// } catch (WrongArgumentType e) {
-						// //
-						// }
+						int exponent = ast.exponent().toIntDefault(Integer.MIN_VALUE); 
 						if (exponent < 0) {
 							throw new ArithmeticException(
 									"JASConvert:expr2Poly - invalid exponent: " + ast.exponent().toString());

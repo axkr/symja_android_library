@@ -11,7 +11,7 @@ import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -74,7 +74,7 @@ public class ASTAssociation extends AST implements IAssociation {
 			} else if (rule.isAST(F.List, 1)) {
 				// ignore empty list entries
 			} else {
-				throw new WrongArgumentType(F.Association, "Rule expected");
+				throw new ArgumentTypeException("rule expression expected instead of "+rule.toString()); 
 			}
 		}
 	}
@@ -112,7 +112,7 @@ public class ASTAssociation extends AST implements IAssociation {
 		} else if (rule.isAST(F.List, 1)) {
 			// ignore empty list entries
 		} else {
-			throw new WrongArgumentType(F.Association, "Rule expected");
+			throw new ArgumentTypeException("rule expression expected instead of "+rule.toString());  
 		}
 	}
 

@@ -24,7 +24,6 @@ import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
@@ -852,7 +851,8 @@ public final class PatternMatching {
 							return arg1;
 						}
 						if (!arg1.isSymbol()) {
-							throw new WrongArgumentType(ast, ast.arg1(), 1, "");
+							return engine.printMessage(
+									ast.topHead() + ": symbol expected at position 1 instead of " + arg1.toString());
 						}
 						symbol = (ISymbol) arg1;
 					} else {
@@ -911,13 +911,11 @@ public final class PatternMatching {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			// Here we only validate the arguments
-			// Assignment of the message is handled in the Set() function
+			// The assignment of the message is handled in the Set() function
 			if (!ast.arg1().isSymbol()) {
-				throw new WrongArgumentType(ast, ast.arg1(), 1, "");
-			}
-			// if (!ast.arg2().isAST(F.Set, 3)) {
-			// throw new WrongArgumentType(ast, ast.arg2(), 2, "");
-			// }
+				return engine.printMessage(
+						ast.topHead() + ": symbol expected at position 1 instead of " + ast.arg1().toString());
+			} 
 			IExpr arg2 = engine.evaluate(ast.arg2());
 			if (arg2 instanceof IStringX || arg2.isSymbol()) {
 				return F.NIL;

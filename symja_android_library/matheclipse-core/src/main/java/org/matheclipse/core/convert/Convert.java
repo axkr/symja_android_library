@@ -15,8 +15,7 @@ import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.eval.EvalEngine; 
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 //import org.matheclipse.commons.math.linear.Array2DRowFieldMatrix;
@@ -158,9 +157,7 @@ public class Convert {
 	 * Returns a RealMatrix if possible.
 	 * 
 	 * @param listMatrix
-	 * @return a RealMatrix or <code>null</code> if the given list is no matrix.
-	 * @throws WrongArgumentType
-	 *             if not all elements are convertable to a <code>double</code> value.
+	 * @return a RealMatrix or <code>null</code> if the given list is no matrix. 
 	 * @throws ClassCastException
 	 * @throws IndexOutOfBoundsException
 	 * @deprecated use {@link IExpr#toRealMatrix()}
@@ -197,9 +194,7 @@ public class Convert {
 	 * Returns a RealVector if possible.
 	 * 
 	 * @param listVector
-	 * @return a RealVector or <code>null</code> if the given list is no matrix.
-	 * @throws WrongArgumentType
-	 *             if not all elements are convertible to a <code>double</code> value.
+	 * @return a RealVector or <code>null</code> if the given list is no matrix. 
 	 * @throws ClassCastException
 	 * @throws IndexOutOfBoundsException
 	 * @deprecated use {@link IExpr#toRealVector()}

@@ -25,34 +25,10 @@ public final class Validate {
 	/**
 	 * Check the argument, if it's a Java {@code int} value in the range [0, Integer.MAX_VALUE]
 	 * 
-	 * @throws WrongArgumentType
 	 */
 	public static int checkIntType(IAST ast, int pos) {
 		return checkIntType(ast, pos, 0);
 	}
-
-	/**
-	 * Check the argument, if it's a Java {@code long} value.
-	 * 
-	 * @throws WrongArgumentType
-	 */
-	// private static long checkLongType(IExpr expr) {
-	// if (expr instanceof IntegerSym) {
-	// // IntegerSym always fits into a long number
-	// return ((IntegerSym) expr).toLong();
-	// }
-	// try {
-	// // the following may throw ArithmeticException
-	// if (expr instanceof IInteger) {
-	// return ((IInteger) expr).toLong();
-	// } else if (expr instanceof INum) {
-	// return ((INum) expr).toLong();
-	// }
-	// } catch (ArithmeticException ae) {
-	// //
-	// }
-	// throw new WrongArgumentType(expr, "Trying to convert the argument into a Java long number: " + expr);
-	// }
 
 	/**
 	 * Check the argument, if it's an {@code IAST} of {@code long} values in the range [{@code startValue},
@@ -87,8 +63,6 @@ public final class Validate {
 							IOFunctions.printMessage(ast.topHead(), "listoflongs", F.List(arg), engine);
 						}
 						return null;
-						// throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
-						// + startValue + " - " + Long.MAX_VALUE);
 					}
 					result[i - 1] = longValue;
 				}
@@ -137,7 +111,6 @@ public final class Validate {
 		}
 		IOFunctions.printMessage(ast.topHead(), "listofbigints", F.List(arg), engine);
 		return null;
-		// throw new WrongArgumentType(arg, "Trying to convert the given list into a list of long numbers: " + arg);
 	}
 
 	/**
@@ -169,8 +142,6 @@ public final class Validate {
 					if (minValue > intValue || intValue > maxValue) {
 						IOFunctions.printMessage(ast.topHead(), "listofints", F.List(arg), engine);
 						return null;
-						// throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
-						// + minValue + " - " + maxValue);
 					}
 					result[i - 1] = intValue;
 				}
@@ -186,7 +157,6 @@ public final class Validate {
 	/**
 	 * Check the argument, if it's a Java {@code int} value in the range [ {@code startValue}, Integer.MAX_VALUE]
 	 * 
-	 * @throws WrongArgumentType
 	 */
 	public static int checkIntType(IAST ast, int pos, int startValue) {
 		if (ast.get(pos) instanceof IntegerSym) {
@@ -243,7 +213,6 @@ public final class Validate {
 	/**
 	 * Check the expression, if it's a Java {@code int} value in the range [0 , Integer.MAX_VALUE]
 	 * 
-	 * @throws WrongArgumentType
 	 */
 	public static int checkIntLevelType(IExpr expr) {
 		return checkIntLevelType(expr, 0);
@@ -254,8 +223,8 @@ public final class Validate {
 	 * 
 	 * @param expr
 	 *            a signed number which will be converted to a Java <code>int</code> if possible, otherwise throw a
-	 *            <code>WrongArgumentType</code> exception.
-	 * @throws WrongArgumentType
+	 *            <code>ArgumentTypeException</code> exception.
+	 * @throws ArgumentTypeException
 	 */
 	public static int checkIntLevelType(IExpr expr, int startValue) {
 		if (expr.isInfinity()) {
@@ -298,8 +267,8 @@ public final class Validate {
 	 * Check the expression, if it's a Java {@code int} value in the range [ {@code startValue}, Integer.MAX_VALUE]
 	 * 
 	 * @param expr
-	 *            a signed number which will be converted to a Java <code>int</code> if possible, otherwise throw a
-	 *            <code>WrongArgumentType</code> exception.
+	 *            a signed number which will be converted to a Java <code>int</code> if possible, otherwise return
+	 *            <code>Integer.MIN_VALUE</code>
 	 * @return <code>Integer.MIN_VALUE</code> if a <code>Java int</code> value couldn't be determined.
 	 */
 	public static int checkIntType(ISymbol head, IExpr expr, int startValue, EvalEngine engine) {
@@ -310,30 +279,6 @@ public final class Validate {
 			return Integer.MIN_VALUE;
 		}
 		return result;
-		// if (expr instanceof IntegerSym) {
-		// // IntegerSym always fits into an int number
-		// int result = ((IntegerSym) expr).toInt();
-		// if (startValue > result) {
-		// throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
-		// + startValue + " - " + Integer.MAX_VALUE);
-		// }
-		// return result;
-		// }
-		// if (expr.isReal()) {
-		// try {
-		// int result = ((ISignedNumber) expr).toInt();
-		// if (startValue > result) {
-		// throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
-		// + startValue + " - " + Integer.MAX_VALUE);
-		// }
-		// return result;
-		// } catch (ArithmeticException ae) {
-		// throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
-		// + startValue + " - " + Integer.MAX_VALUE);
-		// }
-		// }
-		// throw new WrongArgumentType(expr,
-		// "Trying to convert the expression into the integer range: " + startValue + " - " + Integer.MAX_VALUE);
 	}
 
 	/**
@@ -363,9 +308,7 @@ public final class Validate {
 	 *            the position which has to be a list.
 	 * @param engine
 	 *            the evaluation engine
-	 * 
-	 * @throws WrongArgumentType
-	 *             if it's not a list.
+	 * @return <code>F.NIL</code> if the check failed
 	 */
 	public static IAST checkListType(IAST ast, int position, EvalEngine engine) {
 		if (ast.get(position).isList()) {
@@ -399,7 +342,7 @@ public final class Validate {
 	 * 
 	 * @param position
 	 *            the position which has to be a string.
-	 * @throws WrongArgumentType
+	 * @throws ArgumentTypeException
 	 *             if it's not a symbol.
 	 */
 	public static String checkContextName(IAST ast, int position) {
@@ -412,15 +355,12 @@ public final class Validate {
 				// `1` is not a valid context name.
 				String str = IOFunctions.getMessage("cxt", F.List(strX), EvalEngine.get());
 				throw new ArgumentTypeException(str);
-				// throw new WrongArgumentType(ast, ast.get(position), position,
-				// "Contextname must be prepended by a '`' character!");
 			}
 			return contextName;
 		}
 		// `1` is not a valid context name.
 		String str = IOFunctions.getMessage("cxt", F.List(ast.get(position)), EvalEngine.get());
 		throw new ArgumentTypeException(str);
-		// throw new WrongArgumentType(ast, ast.get(position), position, "String expected!");
 	}
 
 	/**
@@ -484,44 +424,6 @@ public final class Validate {
 	}
 
 	/**
-	 * Check if the argument at the given position is a single symbol or a list of symbols.
-	 * 
-	 * @param position
-	 *            the position which has to be a symbol or list.
-	 * @throws WrongArgumentType
-	 *             if it's not a symbol.
-	 */
-	// public static IAST checkSymbolList(IAST ast, int position) {
-	// IAST vars = null;
-	// if (ast.get(position).isList()) {
-	// vars = (IAST) ast.get(position);
-	// for (int i = 1; i < vars.size(); i++) {
-	// Validate.checkSymbolType(vars, i);
-	// }
-	// return vars;
-	// }
-	// throw new WrongArgumentType(ast, ast.get(position), position, "List of
-	// symbols expected!");
-	// }
-
-	/**
-	 * Check if the argument is a symbol and has an assigned value.
-	 * 
-	 * @param expr
-	 *            the expr which has to be a symbol.
-	 * @return <code>expr</code> if it's a Symbol
-	 * @throws WrongArgumentType
-	 *             if it's not a symbol.
-	 */
-	// private static ISymbol checkAssignedVariable(IExpr expr) {
-	// if (expr.isSymbol() && ((ISymbol) expr).hasAssignedSymbolValue()) {
-	// return (ISymbol) expr;
-	// }
-	// throw new WrongArgumentType(expr,
-	// "Expecting assigned value for variable expression: " + expr.toString() + " !");
-	// }
-
-	/**
 	 * Check if the argument at the given position is a symbol.
 	 * 
 	 * @param ast
@@ -562,20 +464,12 @@ public final class Validate {
 	 * 
 	 * @param position
 	 *            the position which has to be an AST.
-	 * @throws WrongArgumentType
+	 * @throws ArgumentTypeException
 	 *             if it's not an AST.
 	 */
 	public static IAST checkASTUpRuleType(IExpr expr) {
 		if (expr.isAST()) {
-			IAST ast = (IAST) expr;
-			// for (int i = 0; i < ast.size(); i++) {
-			// if (!(ast.get(i) instanceof IPatternObject)) {
-			// throw new WrongArgumentType(ast, ast.get(i), i,
-			// "Pattern objects are not allowed in left-hand-side of UpSet[] or
-			// UpSetDelayed[]!");
-			// }
-			// }
-			return ast;
+			return (IAST) expr;
 		}
 		// Cannot assign to raw object `1`.
 		String str = IOFunctions.getMessage("setraw", F.List(expr), EvalEngine.get());
@@ -654,7 +548,7 @@ public final class Validate {
 					termsEqualZeroList.append(checkEquationAndInequation(eq));
 				} else {
 					// not an equation or inequation
-					throw new WrongArgumentType(eqns, eqns.get(i), i, "Equation or inequation expression expected");
+					throw new ArgumentTypeException("equation or inequation expression expected at position " + i);
 				}
 			}
 			return termsEqualZeroList;
@@ -686,7 +580,7 @@ public final class Validate {
 			return F.False;
 		}
 		// not an equation or inequation
-		throw new WrongArgumentType(eq, "Equation or inequation expression expected");
+		throw new ArgumentTypeException("equation or inequation expression expected instead of " + eq.toString());
 	}
 
 	/**
@@ -706,7 +600,7 @@ public final class Validate {
 			return F.False;
 		} else {
 			// not an equation
-			throw new WrongArgumentType(expr, "Equal[] expression (a==b) expected");
+			throw new ArgumentTypeException("Equal[] expression (a==b) expected instead of " + expr.toString());
 		}
 	}
 

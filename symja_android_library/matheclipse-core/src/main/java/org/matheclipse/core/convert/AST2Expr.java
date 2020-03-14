@@ -12,7 +12,7 @@ import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.interfaces.IAST;
@@ -375,88 +375,94 @@ public class AST2Expr {
 
 			int functionID = ast.headID();
 			if (functionID > ID.UNKNOWN) {
-				IExpr expr;
-				switch (functionID) {
-				case ID.Association:
-					if (ast.isAST1() && ast.arg1().isList()) {
-						IExpr arg1 = ast.arg1();
-						if (arg1.isListOfRules(true)) {
-							return F.assoc((IAST) arg1);
-						} else if (arg1.isAST(F.List, 2)) {
-							arg1 = arg1.first();
+				try {
+					IExpr expr;
+					switch (functionID) {
+					case ID.Association:
+						if (ast.isAST1() && ast.arg1().isList()) {
+							IExpr arg1 = ast.arg1();
 							if (arg1.isListOfRules(true)) {
 								return F.assoc((IAST) arg1);
+							} else if (arg1.isAST(F.List, 2)) {
+								arg1 = arg1.first();
+								if (arg1.isListOfRules(true)) {
+									return F.assoc((IAST) arg1);
+								}
 							}
 						}
-					}
-					break;
-				case ID.N:
-					if (ast.isAST2() && ast.arg2().isInteger()) {
-						try {
-							int precision = ast.arg2().toIntDefault();
-							if (EvalEngine.isApfloat(precision)) {
-								fPrecision = precision;
-								ast.set(1, convertNode(functionNode.get(1)));
-							}
-							return ast;
-						} catch (WrongArgumentType wat) {
+						break;
+					case ID.N:
+						if (ast.isAST2() && ast.arg2().isInteger()) {
+							try {
+								int precision = ast.arg2().toIntDefault();
+								if (EvalEngine.isApfloat(precision)) {
+									fPrecision = precision;
+									ast.set(1, convertNode(functionNode.get(1)));
+								}
+								return ast;
+							} catch (ValidateException ve) {
 
+							}
 						}
-					}
-					break;
-				case ID.Sqrt:
-					if (ast.isAST1()) {
-						// rewrite from input: Sqrt(x) => Power(x, 1/2)
-						return F.Power(ast.arg1(), F.C1D2);
-					}
-					break;
-				case ID.Exp:
-					if (ast.isAST1()) {
-						// rewrite from input: Exp(x) => E^x
-						return F.Power(F.E, ast.arg1());
-					}
-					break;
-				case ID.Power:
-					if (ast.isPower() && ast.base().isPower() && ast.exponent().isMinusOne()) {
-						IAST arg1Power = (IAST) ast.base();
-						if (arg1Power.exponent().isNumber()) {
-							// Division operator
-							// rewrite from input: Power(Power(x, <number>),-1) =>
-							// Power(x, - <number>)
-							return F.Power(arg1Power.base(), ((INumber) arg1Power.exponent()).negate());
+						break;
+					case ID.Sqrt:
+						if (ast.isAST1()) {
+							// rewrite from input: Sqrt(x) => Power(x, 1/2)
+							return F.Power(ast.arg1(), F.C1D2);
 						}
+						break;
+					case ID.Exp:
+						if (ast.isAST1()) {
+							// rewrite from input: Exp(x) => E^x
+							return F.Power(F.E, ast.arg1());
+						}
+						break;
+					case ID.Power:
+						if (ast.isPower() && ast.base().isPower() && ast.exponent().isMinusOne()) {
+							IAST arg1Power = (IAST) ast.base();
+							if (arg1Power.exponent().isNumber()) {
+								// Division operator
+								// rewrite from input: Power(Power(x, <number>),-1) =>
+								// Power(x, - <number>)
+								return F.Power(arg1Power.base(), ((INumber) arg1Power.exponent()).negate());
+							}
+						}
+						break;
+					case ID.Pattern:
+						expr = PatternMatching.Pattern.CONST.evaluate(ast, fEngine);
+						if (expr.isPresent()) {
+							return expr;
+						}
+						break;
+					case ID.Optional:
+						expr = PatternMatching.Optional.CONST.evaluate(ast, fEngine);
+						if (expr.isPresent()) {
+							return expr;
+						}
+						break;
+					case ID.Blank:
+						expr = PatternMatching.Blank.CONST.evaluate(ast, fEngine);
+						if (expr.isPresent()) {
+							return expr;
+						}
+						break;
+					case ID.Complex:
+						expr = Arithmetic.CONST_COMPLEX.evaluate(ast, fEngine);
+						if (expr.isPresent()) {
+							return expr;
+						}
+						break;
+					case ID.Rational:
+						expr = Arithmetic.CONST_RATIONAL.evaluate(ast, fEngine);
+						if (expr.isPresent()) {
+							return expr;
+						}
+						break;
 					}
-					break;
-				case ID.Pattern:
-					expr = PatternMatching.Pattern.CONST.evaluate(ast, fEngine);
-					if (expr.isPresent()) {
-						return expr;
-					}
-					break;
-				case ID.Optional:
-					expr = PatternMatching.Optional.CONST.evaluate(ast, fEngine);
-					if (expr.isPresent()) {
-						return expr;
-					}
-					break;
-				case ID.Blank:
-					expr = PatternMatching.Blank.CONST.evaluate(ast, fEngine);
-					if (expr.isPresent()) {
-						return expr;
-					}
-					break;
-				case ID.Complex:
-					expr = Arithmetic.CONST_COMPLEX.evaluate(ast, fEngine);
-					if (expr.isPresent()) {
-						return expr;
-					}
-					break;
-				case ID.Rational:
-					expr = Arithmetic.CONST_RATIONAL.evaluate(ast, fEngine);
-					if (expr.isPresent()) {
-						return expr;
-					}
-					break;
+				} catch (ValidateException ve) {
+					if (Config.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					} 
 				}
 			}
 			return ast;

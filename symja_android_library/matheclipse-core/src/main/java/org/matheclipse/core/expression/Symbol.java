@@ -15,8 +15,8 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.AttributeFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.RuleCreationError;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
 import org.matheclipse.core.interfaces.IAST;
@@ -277,7 +277,7 @@ public class Symbol implements ISymbol, Serializable {
 		if (number != null) {
 			return number.complexNumValue().complexValue();
 		}
-		throw new WrongArgumentType(this, "Conversion into a complex numeric value is not possible!");
+		throw new ArgumentTypeException("conversion into a complex numeric value is not possible!");
 	}
 
 	/** {@inheritDoc} */
@@ -892,7 +892,7 @@ public class Symbol implements ISymbol, Serializable {
 				return result;
 			}
 		}
-		throw new WrongArgumentType(this, functionSymbol.toString() + " - Symbol: " + toString()
+		throw new ArgumentTypeException(functionSymbol.toString() + " - Symbol: " + toString()
 				+ " has no value! Reassignment with a new value is not possible");
 	}
 

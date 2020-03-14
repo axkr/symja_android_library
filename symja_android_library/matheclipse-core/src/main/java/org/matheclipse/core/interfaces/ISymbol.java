@@ -8,8 +8,7 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 
 import org.matheclipse.core.convert.Object2Expr;
-import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.eval.EvalEngine; 
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -610,12 +609,11 @@ public interface ISymbol extends IExpr {
 	 * like AppendTo, Decrement, Increment,...
 	 * 
 	 * @param function       the function which should be applied
-	 * @param functionSymbol if this method throws a WrongArgumentType exception the symbol will be displayed in the exceptions message
+	 * @param functionSymbol if this method throws an exception the symbol will be displayed in the exceptions message
 	 * @param engine         the evaluation engine
 	 * @return an array with the currently assigned value of the symbol and the new calculated value of the symbol or <code>null</code>
 	 *         if the reassignment isn't possible.
 	 * 
-	 * @see WrongArgumentType
 	 */
 	public IExpr[] reassignSymbolValue(Function<IExpr, IExpr> function, ISymbol functionSymbol, EvalEngine engine);
 
@@ -625,7 +623,7 @@ public interface ISymbol extends IExpr {
 	 * 
 	 * @param ast
 	 * @param ast            the ast which should be evaluated by replacing the first argument with the current value of the symbol
-	 * @param functionSymbol if this method throws a WrongArgumentType exception the symbol will be displayed in the exceptions message
+	 * @param functionSymbol if this method throws an exception the symbol will be displayed in the exceptions message
 	 * @param engine         the evaluation engine
 	 * @return an array with the currently assigned value of the symbol and the new calculated value of the symbol or <code>null</code>
 	 *         if the reassignment isn't possible.

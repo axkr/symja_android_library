@@ -4,7 +4,7 @@ package org.matheclipse.core.eval.util;
  * A sequence specification.
  * 
  */
-public class ListSizeSequence extends AbstractSequence {
+public abstract class ListSizeSequence extends AbstractSequence {
 	protected final int fHeadOffset;
 
 	protected int fListSize;

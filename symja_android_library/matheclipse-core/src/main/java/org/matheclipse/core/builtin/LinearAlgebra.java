@@ -52,8 +52,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
-import org.matheclipse.core.eval.exception.WrappedException;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.eval.exception.WrappedException; 
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
@@ -855,12 +854,11 @@ public final class LinearAlgebra {
 			} catch (final MathRuntimeException mre) {
 				// org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
 				return engine.printMessage(ast.topHead(), mre);
-			} catch (final WrongArgumentType e) {
-				// WrongArgumentType occurs in list2RealMatrix(),
-				// if the matrix elements aren't pure numerical values
-				if (Config.SHOW_STACKTRACE) {
-					e.printStackTrace();
+			} catch (final ValidateException ve) {
+				if (Config.SHOW_STACKTRACE) { 
+					ve.printStackTrace();
 				}
+				return engine.printMessage(ast.topHead(), ve);
 			} catch (final IndexOutOfBoundsException e) {
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
@@ -3772,12 +3770,11 @@ public final class LinearAlgebra {
 							new ASTRealMatrix(svd.getV(), false));
 				}
 
-			} catch (final WrongArgumentType e) {
-				// WrongArgumentType occurs in list2RealMatrix(),
-				// if the matrix elements aren't pure numerical values
+			} catch (final ValidateException ve) {
 				if (Config.SHOW_STACKTRACE) {
-					e.printStackTrace();
+					ve.printStackTrace();
 				}
+				return engine.printMessage(ast.topHead(), ve);
 			} catch (final IndexOutOfBoundsException e) {
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();

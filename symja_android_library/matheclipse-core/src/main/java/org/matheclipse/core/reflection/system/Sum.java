@@ -207,6 +207,9 @@ public class Sum extends ListFunctions.Table implements SumRules {
 				// }
 				// }
 			} catch (final ValidateException ve) {
+				if (Config.SHOW_STACKTRACE) {
+					ve.printStackTrace();
+				}
 				// see level specification
 				return engine.printMessage(ve.getMessage(ast.topHead()));
 			}

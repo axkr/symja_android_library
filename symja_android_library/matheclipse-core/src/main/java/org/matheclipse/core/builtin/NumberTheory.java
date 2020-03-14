@@ -31,8 +31,7 @@ import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.LimitException;
-import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.eval.exception.Validate; 
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -3971,8 +3970,7 @@ public final class NumberTheory {
 				}
 			}
 			if (!eVar.isSize(1)) {
-				throw new WrongArgumentType(ast, ast.arg1(), 1,
-						"SquareFreeQ only implemented for univariate polynomials");
+				return engine.printMessage(ast.topHead()+": only implemented for univariate polynomials at position 1"); 
 			}
 			try {
 				IExpr expr = F.evalExpandAll(ast.arg1(), engine);

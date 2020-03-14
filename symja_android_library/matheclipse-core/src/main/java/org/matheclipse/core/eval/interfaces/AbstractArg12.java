@@ -2,9 +2,11 @@ package org.matheclipse.core.eval.interfaces;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ComplexNum;
@@ -117,8 +119,8 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 		if (o0.isNumeric() || o1.isNumeric()) {
 			try {
 				EvalEngine engine = EvalEngine.get();
-				INumber arg1=  ((INumber) o0).evaluatePrecision(engine);
-				INumber arg2=  ((INumber) o1).evaluatePrecision(engine);
+				INumber arg1 = ((INumber) o0).evaluatePrecision(engine);
+				INumber arg2 = ((INumber) o1).evaluatePrecision(engine);
 				if (arg1 instanceof ApcomplexNum) {
 					if (arg2.isNumber()) {
 						result = e2ApcomplexArg((ApcomplexNum) arg1,
@@ -286,15 +288,22 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (ast.size() == 2 || ast.size() == 3) {
-			if (ast.size() != 3) {
-				return unaryOperator(ast.arg1());
+		try {
+			if (ast.size() == 2 || ast.size() == 3) {
+				if (ast.size() != 3) {
+					return unaryOperator(ast.arg1());
+				}
+				return binaryOperator(ast, ast.arg1(), ast.arg2());
 			}
-			return binaryOperator(ast, ast.arg1(), ast.arg2());
+		} catch (ValidateException ve) {
+			if (Config.SHOW_STACKTRACE) {
+				ve.printStackTrace();
+			}
+			return engine.printMessage(ast.topHead(), ve);
 		}
 		return F.NIL;
-//		return engine.printMessage(ast.topHead() + ": " + ast.topHead()
-//				+ " function requires 1 or 2 arguments, but number of args equals: " + ast.argSize());
+		// return engine.printMessage(ast.topHead() + ": " + ast.topHead()
+		// + " function requires 1 or 2 arguments, but number of args equals: " + ast.argSize());
 	}
 
 	@Override

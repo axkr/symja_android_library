@@ -28,8 +28,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrappedException;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.eval.exception.WrappedException; 
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
@@ -256,65 +255,8 @@ public class PolynomialFunctions {
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_2;
-		}
-		// private static long univariateCoefficientList(IExpr polynomial, final ISymbol variable, List<IExpr>
-		// resultList)
-		// throws JASConversionException {
-		// try {
-		// ExprPolynomialRing ring = new ExprPolynomialRing(F.List(variable));
-		// ExprPolynomial poly = ring.create(polynomial);
-		// IAST list = poly.coefficientList();
-		// int degree = list.size() - 2;
-		// if (degree >= Short.MAX_VALUE) {
-		// return degree;
-		// }
-		// for (int i = 0; i <= degree; i++) {
-		// IExpr temp = list.get(i + 1);
-		// resultList.add(temp);
-		// }
-		// return degree;
-		// } catch (RuntimeException ex) {
-		// throw new WrongArgumentType(polynomial, "Polynomial expected!");
-		// }
-		// }
+		} 
 
-		/**
-		 * 
-		 * @param polynomial
-		 * @param variable
-		 * @param resultList
-		 *            the coefficient list of the given univariate polynomial in increasing order
-		 * @param resultListDiff
-		 *            the coefficient list of the derivative of the given univariate polynomial
-		 * @return the degree of the univariate polynomial; if <code>degree >= Short.MAX_VALUE</code>, the result list
-		 *         will be empty.
-		 */
-		// private static long univariateCoefficientList(IExpr polynomial, ISymbol variable, List<IExpr> resultList,
-		// List<IExpr> resultListDiff) throws JASConversionException {
-		// try {
-		// ExprPolynomialRing ring = new ExprPolynomialRing(F.List(variable));
-		// ExprPolynomial poly = ring.create(polynomial);
-		// IAST polyExpr = poly.coefficientList();
-		//
-		// int degree = polyExpr.size() - 2;
-		// if (degree >= Short.MAX_VALUE) {
-		// return degree;
-		// }
-		// for (int i = 0; i <= degree; i++) {
-		// IExpr temp = polyExpr.get(i + 1);
-		// resultList.add(temp);
-		// }
-		// IAST polyDiff = poly.derivative().coefficientList();
-		// int degreeDiff = polyDiff.size() - 2;
-		// for (int i = 0; i <= degreeDiff; i++) {
-		// IExpr temp = polyDiff.get(i + 1);
-		// resultListDiff.add(temp);
-		// }
-		// return degree;
-		// } catch (RuntimeException ex) {
-		// throw new WrongArgumentType(polynomial, "Polynomial expected!");
-		// }
-		// }
 	}
 
 	/**
@@ -728,7 +670,8 @@ public class PolynomialFunctions {
 				return F.Divide(F.Times(F.Power(F.CN1, (n * (n - 1) / 2)),
 						F.Resultant(poly.getExpr(), polyDiff.getExpr(), arg2)), fN);
 			} catch (RuntimeException ex) {
-				throw new WrongArgumentType(ast, expr, 1, "Polynomial expected!");
+				return engine.printMessage(
+						ast.topHead() + ": polynomial expected at position 1 instead of " + ast.arg1().toString());
 			}
 		}
 
@@ -1434,7 +1377,8 @@ public class PolynomialFunctions {
 					arg1 = engine.evaluate(F.Subtract(equalAST.arg1(), equalAST.arg2()));
 				}
 			} else {
-				throw new WrongArgumentType(ast, ast.arg1(), 1, "Equal() expression expected!");
+				return engine.printMessage(ast.topHead() + ": Equal() expression expected at position 1 instead of "
+						+ ast.arg1().toString());
 			}
 			VariablesSet eVar = null;
 			if (ast.arg2().isList()) {
@@ -1445,7 +1389,10 @@ public class PolynomialFunctions {
 			}
 			if (!eVar.isSize(1)) {
 				// factorization only possible for univariate polynomials
-				throw new WrongArgumentType(ast, ast.arg2(), 2, "Only one variable expected");
+
+				return engine.printMessage(ast.topHead()
+						+ ": factorization only possible for univariate polynomials at position 2 instead of "
+						+ ast.arg2().toString());
 			}
 			IAST variables = eVar.getVarList();
 			IExpr variable = variables.arg1();
@@ -2208,11 +2155,7 @@ public class PolynomialFunctions {
 	private static double[] coefficients(IExpr polynomial, final ISymbol variable) throws JASConversionException {
 		try {
 			ExprPolynomialRing ring = new ExprPolynomialRing(F.List(variable));
-			ExprPolynomial poly = ring.create(polynomial);
-			// PolynomialOld poly = new PolynomialOld(polynomial, (ISymbol) variable);
-			// if (!poly.isPolynomial()) {
-			// throw new WrongArgumentType(polynomial, "Polynomial expected!");
-			// }
+			ExprPolynomial poly = ring.create(polynomial); 
 
 			IAST list = poly.coefficientList();
 			int degree = list.size() - 2;
@@ -2227,7 +2170,8 @@ public class PolynomialFunctions {
 			}
 			return result;
 		} catch (RuntimeException ex) {
-			throw new WrongArgumentType(polynomial, "Polynomial expected!");
+			// Polynomial expected!
+			return null; 
 		}
 	}
 
@@ -2256,7 +2200,7 @@ public class PolynomialFunctions {
 		}
 		IExpr expr = evalExpandAll(arg1, engine);
 
-		IExpr variable =  variables.arg1();
+		IExpr variable = variables.arg1();
 		double[] coefficients = Expr2Object.toPolynomial(expr, variable);
 
 		if (coefficients != null) {

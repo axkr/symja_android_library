@@ -2,8 +2,7 @@ package org.matheclipse.core.convert;
 
 import org.hipparchus.util.OpenIntToDoubleHashMap;
 import java.math.RoundingMode;
-
-import org.matheclipse.core.eval.exception.WrongArgumentType;
+ 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -14,58 +13,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import com.google.common.math.DoubleMath;
 
 public class Expr2Object {
-	/**
-	 * 
-	 * @param ast
-	 * @return
-	 * @throws WrongArgumentType
-	 * @deprecated use {@link IExpr#toDoubleVector()}
-	 */
-	@Deprecated
-	private static double[] toDoubleVector(IAST ast) throws WrongArgumentType {
-		double[] result = new double[ast.argSize()];
-		ISignedNumber signedNumber;
-		for (int i = 1; i < ast.size(); i++) {
-			signedNumber = ast.get(i).evalReal();
-			if (signedNumber != null) {
-				result[i - 1] = signedNumber.doubleValue();
-			} else {
-				throw new WrongArgumentType(ast, ast.get(i), i,
-						"Conversion into a vector of double values not possible!");
-			}
-		}
-		return result;
-	}
-
-	/**
-	 * 
-	 * @param ast
-	 * @return <code>null</code> if ast is no matrix
-	 * @throws WrongArgumentType
-	 * @deprecated use {@link IExpr#toDoubleMatrix()}
-	 */
-	@Deprecated
-	private static double[][] toDoubleMatrix(IAST ast) throws WrongArgumentType {
-		int[] dim = ast.isMatrix();
-		if (dim == null) {
-			return null;
-		}
-		double[][] result = new double[dim[0]][dim[1]];
-		ISignedNumber signedNumber;
-		for (int i = 1; i <= dim[0]; i++) {
-			IAST row = (IAST) ast.get(i);
-			for (int j = 1; j <= dim[1]; j++) {
-				signedNumber = row.get(j).evalReal();
-				if (signedNumber != null) {
-					result[i - 1][j - 1] = signedNumber.doubleValue();
-				} else {
-					throw new WrongArgumentType(ast, ast.get(i), i,
-							"Conversion into a matrix of double values not possible!");
-				}
-			}
-		}
-		return result;
-	}
 
 	public static double[] toPolynomial(IExpr expr, IExpr sym) {
 		OpenIntToDoubleHashMap map = toPolynomialMap(expr, sym);

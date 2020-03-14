@@ -24,7 +24,6 @@ import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.SolveUtils;
 import org.matheclipse.core.expression.F;
@@ -967,7 +966,8 @@ public class Solve extends AbstractFunctionEvaluator {
 				ISymbol domain = F.Complexes;
 				if (ast.isAST3()) {
 					if (!ast.arg3().isSymbol()) {
-						throw new WrongArgumentType(ast, ast.arg3(), 3, "Domain definition expected!");
+						return engine.printMessage(ast.topHead()
+								+ ": domain definition expected at position 3 instead of " + ast.arg3().toString());
 					}
 					domain = (ISymbol) ast.arg3();
 					if (domain.equals(F.Booleans)) {
@@ -996,7 +996,8 @@ public class Solve extends AbstractFunctionEvaluator {
 						return F.NIL;
 					}
 					if (!domain.equals(F.Reals) && !domain.equals(F.Complexes)) {
-						throw new WrongArgumentType(ast, ast.arg3(), 3, "Domain definition expected!");
+						return engine.printMessage(ast.topHead()
+								+ ": domain definition expected at position 3 instead of " + domain.toString());
 					}
 				}
 				IAST termsList = Validate.checkEquationsAndInequations(ast, 1);
@@ -1010,12 +1011,10 @@ public class Solve extends AbstractFunctionEvaluator {
 				IExpr result = solveRecursive(termsEqualZeroList, lists[1], numericFlag, userDefinedVariables, engine);
 				return checkDomain(result, domain);
 			}
-		} catch (
-
-		LimitException le) {
+		} catch (LimitException le) {
 			throw le;
 		} catch (ValidateException ve) {
-			return engine.printMessage(ve.getMessage(F.Solve));
+			return engine.printMessage(F.Solve, ve);
 		} catch (RuntimeException rex) {
 			if (Config.SHOW_STACKTRACE) {
 				rex.printStackTrace();

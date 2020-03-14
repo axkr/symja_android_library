@@ -9,6 +9,7 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.special.Gamma;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.expression.F;
 
@@ -44,7 +45,7 @@ public class HypergeometricJS {
 			s = s.add(p);
 
 			if (i > 500) {
-				throw new ArithmeticException("hypergeometricSeries: maximum iteration exceeded (Complex)");
+				throw new ArgumentTypeException("maximum iteration exceeded in hypergeometricSeries (Complex)");
 			}
 		}
 		return s;
@@ -79,7 +80,7 @@ public class HypergeometricJS {
 			s += p;
 
 			if (i > 500) {
-				throw new ArithmeticException("hypergeometricSeries: maximum iteration exceeded");
+				throw new ArgumentTypeException("maximum iteration exceeded in hypergeometricSeries (double)");
 			}
 		} while (!hasReachedAccuracy(s, sOld1, 1.E-12) || //
 				!hasReachedAccuracy(sOld1, sOld2, 1.E-12));
@@ -115,7 +116,7 @@ public class HypergeometricJS {
 
 	public static double hypergeometric0F1(double a, double x) {
 		if (F.isNumIntValue(a) && a <= 0) {
-			throw new ArithmeticException("Hypergeometric function pole");
+			throw new ArgumentTypeException("Hypergeometric function pole");
 		}
 		final double useAsymptotic = 100.0;
 		// asymptotic form is complex
@@ -145,7 +146,7 @@ public class HypergeometricJS {
 
 		final double useAsymptotic = 100;
 		if (F.isNumIntValue(a.getReal()) && a.getReal() <= 0 && a.getImaginary() == 0) {
-			throw new IllegalArgumentException("Hypergeometric0F1: hypergeometric function pole");
+			throw new ArgumentTypeException("hypergeometric function pole");
 		}
 
 		// asymptotic form as per Johansson
@@ -192,7 +193,7 @@ public class HypergeometricJS {
 
 		final double useAsymptotic = 30;
 		if (F.isNumIntValue(b.getReal()) && b.getReal() <= 0 && F.isZero(b.getImaginary())) {
-			throw new ArithmeticException("Hypergeometric function pole");
+			throw new ArgumentTypeException("hypergeometric function pole");
 		}
 		// Kummer transformation
 		if (x.getReal() < 0) {
@@ -236,7 +237,7 @@ public class HypergeometricJS {
 	public static double hypergeometric1F1(double a, double b, double x) {
 		final double useAsymptotic = 30;
 		if (F.isNumIntValue(b) && b <= 0) {
-			throw new ArithmeticException("Hypergeometric function pole");
+			throw new ArgumentTypeException("hypergeometric function pole");
 		}
 
 		// Kummer transformation
@@ -289,7 +290,7 @@ public class HypergeometricJS {
 				converging = true;
 			}
 			if (i > terms) {
-				throw new ArithmeticException("Hypergeometric2F0: not converging after " + terms + " terms");
+				throw new ArgumentTypeException("not converging after " + terms + " terms");
 			}
 
 			s = s.add(p);
@@ -326,7 +327,7 @@ public class HypergeometricJS {
 				converging = true;
 			}
 			if (i > terms) {
-				throw new ArithmeticException("Hypergeometric2F0: not converging after " + terms + " terms");
+				throw new ArgumentTypeException("not converging after " + terms + " terms");
 			}
 			s += p;
 			a++;
@@ -442,7 +443,7 @@ public class HypergeometricJS {
 		}
 
 		if (F.isNumIntValue(c.getReal()) && c.getReal() <= 0 && F.isZero(c.getImaginary())) {
-			throw new ArithmeticException("Hypergeometric function pole");
+			throw new ArgumentTypeException("hypergeometric function pole");
 		}
 		Complex s = Complex.ONE;
 		Complex p = Complex.ONE;
@@ -469,7 +470,7 @@ public class HypergeometricJS {
 	public static double hypergeometric2F1(double a, double b, double c, double x, double tolerance) {
 
 		if (F.isNumIntValue(c) && c <= 0) {
-			throw new ArithmeticException("Hypergeometric function pole");
+			throw new ArgumentTypeException("hypergeometric function pole");
 		}
 
 		// transformation from Abramowitz & Stegun p.559
@@ -483,7 +484,7 @@ public class HypergeometricJS {
 		}
 
 		if (x == -1) {
-			throw new ArithmeticException("Unsupported real hypergeometric argument");
+			throw new ArgumentTypeException("unsupported real hypergeometric argument");
 		}
 
 		if (x == 1) {
@@ -496,7 +497,8 @@ public class HypergeometricJS {
 		}
 
 		if (x > 1) {
-			throw new ArithmeticException("Unsupported real hypergeometric argument");
+
+			throw new ArgumentTypeException("unsupported real hypergeometric argument");
 			// return hypergeometric2F1( new Complex(a), new Complex(b), new Complex(c), new Complex(x) );
 		}
 
@@ -532,7 +534,8 @@ public class HypergeometricJS {
 	public static Complex hypergeometricPFQ(Complex[] A, Complex[] B, Complex x, double tolerance) {
 		// dlmf.nist.gov/16.11 for general transformations
 		if (x.abs() > 1.0) {
-			throw new ArithmeticException("HypergeometricPFQ: General hypergeometric argument currently restricted");
+
+			throw new ArgumentTypeException("general hypergeometric argument currently restricted");
 		}
 		return hypergeometricSeries(A, B, x);
 	}
@@ -622,7 +625,7 @@ public class HypergeometricJS {
 	public static double hypergeometricPFQ(double[] A, double[] B, double x) {
 		// dlmf.nist.gov/16.11 for general transformations
 		if (Math.abs(x) > 1.0) {
-			throw new ArithmeticException("HypergeometricPFQ: General hypergeometric argument currently restricted");
+			throw new ArgumentTypeException("general hypergeometric argument currently restricted");
 		}
 		return hypergeometricSeries(A, B, x);
 	}

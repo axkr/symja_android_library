@@ -5,8 +5,7 @@ import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.ValidateException;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.eval.exception.ValidateException; 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -78,7 +77,8 @@ public class FindInstance extends Solve {
 				if (ast.arg3().equals(F.Booleans) || formula) {
 					return BooleanFunctions.solveInstances(ast.arg1(), vars, maxChoices);
 				}
-				throw new WrongArgumentType(ast, ast.arg3(), 3, "Booleans expected!");
+				return engine.printMessage(ast.topHead()
+						+ ": Booleans domain expected at position 3 instead of " + ast.arg3().toString()); 
 			}
 			IASTMutable termsEqualZeroList = Validate.checkEquations(ast, 1);
 

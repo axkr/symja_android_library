@@ -5,6 +5,7 @@ import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Times;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.eval.EvalEngine;
@@ -251,6 +252,9 @@ public class Product extends ListFunctions.Table implements ProductRules {
 					return F.NIL;
 				}
 			} catch (final ValidateException ve) {
+				if (Config.SHOW_STACKTRACE) {
+					ve.printStackTrace();
+				}
 				return EvalEngine.get().printMessage(ve.getMessage(F.Sum));
 			} catch (RecursionLimitExceeded rle) {
 				return engine.printMessage("Product: Recursionlimit exceeded");

@@ -29,7 +29,6 @@ import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.exception.WrappedException;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
@@ -3304,8 +3303,6 @@ public final class Programming {
 			} else {
 				// Part `1` of `2` does not exist.
 				return IOFunctions.printMessage(F.Part, "partw", F.List(F.ZZ(partPosition), arg2), engine);
-				// throw new WrongArgumentType(part, arg2, partPosition,
-				// "Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
 			}
 			return result;
 		} else if (arg2.isReal()) {
@@ -3351,8 +3348,6 @@ public final class Programming {
 							// Part `1` of `2` does not exist.
 							return IOFunctions.printMessage(F.Part, "partw", F.List(F.ZZ(partPosition), assignedAST),
 									engine);
-							// throw new WrongArgumentType(part, assignedAST, partPosition,
-							// "Wrong argument for Part[] function. Function or list expected.");
 						}
 					} else {
 						result.append(ires);
@@ -3363,8 +3358,6 @@ public final class Programming {
 		}
 		// Part `1` of `2` does not exist.
 		return IOFunctions.printMessage(F.Part, "partw", F.List(arg2, assignedAST), engine);
-		// throw new WrongArgumentType(part, assignedAST, partPosition,
-		// "Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
 	}
 
 	private static IExpr assignPart(final IExpr assignedExpr, final IAST part, int partPosition, IAST rhs, int rhsPos,
@@ -3419,8 +3412,6 @@ public final class Programming {
 			} else {
 				// Part `1` of `2` does not exist.
 				return IOFunctions.printMessage(F.Part, "partw", F.List(arg2, assignedAST), engine);
-				// throw new WrongArgumentType(part, arg2, partPosition,
-				// "Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
 			}
 			return result;
 		} else if (arg2.isReal()) {
@@ -3433,8 +3424,6 @@ public final class Programming {
 				} else {
 					// Part `1` of `2` does not exist.
 					return IOFunctions.printMessage(F.Part, "partw", F.List(F.ZZ(partPosition), assignedAST), engine);
-					// throw new WrongArgumentType(part, assignedAST, partPosition,
-					// "Wrong argument for Part[] function. Function or list expected.");
 				}
 			}
 			return ires;
@@ -3461,8 +3450,6 @@ public final class Programming {
 							// Part `1` of `2` does not exist.
 							return IOFunctions.printMessage(F.Part, "partw", F.List(F.ZZ(partPosition), assignedAST),
 									engine);
-							// throw new WrongArgumentType(part, assignedAST, partPosition,
-							// "Wrong argument for Part[] function. Function or list expected.");
 						}
 					} else {
 						result.append(ires);
@@ -3473,8 +3460,6 @@ public final class Programming {
 		}
 		// Part `1` of `2` does not exist.
 		return IOFunctions.printMessage(F.Part, "partw", F.List(arg2, assignedAST), engine);
-		// throw new WrongArgumentType(part, assignedAST, partPosition,
-		// "Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
 	}
 
 	/**

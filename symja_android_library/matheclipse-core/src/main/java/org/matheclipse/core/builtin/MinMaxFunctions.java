@@ -19,6 +19,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Expr2LP;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -446,22 +447,29 @@ public class MinMaxFunctions {
 
 		@Override
 		public IExpr numericEval(final IAST ast, EvalEngine engine) {
-			if (ast.arg1().isList() && ast.arg2().isList()) {
-				IAST list1 = (IAST) ast.arg1();
-				IAST list2 = (IAST) ast.arg2();
-				VariablesSet vars = new VariablesSet(list2);
-				if (list1.isAST2()) {
-					IExpr function = list1.arg1();
-					IExpr listOfconstraints = list1.arg2();
-					if (listOfconstraints.isAnd()) {
-						// lc1 && lc2 && lc3...
-						LinearObjectiveFunction objectiveFunction = getObjectiveFunction(vars, function);
-						List<LinearConstraint> constraints = getConstraints(vars, (IAST) listOfconstraints);
-						return simplexSolver(vars, objectiveFunction, objectiveFunction,
-								new LinearConstraintSet(constraints), GoalType.MAXIMIZE,
-								new NonNegativeConstraint(true), PivotSelectionRule.BLAND);
+			try {
+				if (ast.arg1().isList() && ast.arg2().isList()) {
+					IAST list1 = (IAST) ast.arg1();
+					IAST list2 = (IAST) ast.arg2();
+					VariablesSet vars = new VariablesSet(list2);
+					if (list1.isAST2()) {
+						IExpr function = list1.arg1();
+						IExpr listOfconstraints = list1.arg2();
+						if (listOfconstraints.isAnd()) {
+							// lc1 && lc2 && lc3...
+							LinearObjectiveFunction objectiveFunction = getObjectiveFunction(vars, function);
+							List<LinearConstraint> constraints = getConstraints(vars, (IAST) listOfconstraints);
+							return simplexSolver(vars, objectiveFunction, objectiveFunction,
+									new LinearConstraintSet(constraints), GoalType.MAXIMIZE,
+									new NonNegativeConstraint(true), PivotSelectionRule.BLAND);
+						}
 					}
 				}
+			} catch (ValidateException ve) {
+				if (Config.SHOW_STACKTRACE) {
+					ve.printStackTrace();
+				}
+				return engine.printMessage(ast.topHead(), ve);
 			}
 			return F.NIL;
 		}
@@ -528,22 +536,29 @@ public class MinMaxFunctions {
 
 		@Override
 		public IExpr numericEval(final IAST ast, EvalEngine engine) {
-			if (ast.arg1().isList() && ast.arg2().isList()) {
-				IAST list1 = (IAST) ast.arg1();
-				IAST list2 = (IAST) ast.arg2();
-				VariablesSet vars = new VariablesSet(list2);
-				if (list1.isAST2()) {
-					IExpr function = list1.arg1();
-					IExpr listOfconstraints = list1.arg2();
-					if (listOfconstraints.isAnd()) {
-						// lc1 && lc2 && lc3...
-						LinearObjectiveFunction objectiveFunction = getObjectiveFunction(vars, function);
-						List<LinearConstraint> constraints = getConstraints(vars, (IAST) listOfconstraints);
-						return simplexSolver(vars, objectiveFunction, objectiveFunction,
-								new LinearConstraintSet(constraints), GoalType.MINIMIZE,
-								new NonNegativeConstraint(true), PivotSelectionRule.BLAND);
+			try {
+				if (ast.arg1().isList() && ast.arg2().isList()) {
+					IAST list1 = (IAST) ast.arg1();
+					IAST list2 = (IAST) ast.arg2();
+					VariablesSet vars = new VariablesSet(list2);
+					if (list1.isAST2()) {
+						IExpr function = list1.arg1();
+						IExpr listOfconstraints = list1.arg2();
+						if (listOfconstraints.isAnd()) {
+							// lc1 && lc2 && lc3...
+							LinearObjectiveFunction objectiveFunction = getObjectiveFunction(vars, function);
+							List<LinearConstraint> constraints = getConstraints(vars, (IAST) listOfconstraints);
+							return simplexSolver(vars, objectiveFunction, objectiveFunction,
+									new LinearConstraintSet(constraints), GoalType.MINIMIZE,
+									new NonNegativeConstraint(true), PivotSelectionRule.BLAND);
+						}
 					}
 				}
+			} catch (ValidateException ve) {
+				if (Config.SHOW_STACKTRACE) {
+					ve.printStackTrace();
+				}
+				return engine.printMessage(ast.topHead(), ve);
 			}
 			return F.NIL;
 		}

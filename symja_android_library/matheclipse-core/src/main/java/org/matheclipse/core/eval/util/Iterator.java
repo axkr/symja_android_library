@@ -9,7 +9,7 @@ import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.NoEvalException;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IAST;
@@ -138,7 +138,7 @@ public class Iterator {
 				try {
 					double d = sub.evalDouble();
 					return !(d < 0.0);
-				} catch (WrongArgumentType wt) {
+				} catch (ValidateException ve) {
 					// return false;
 				}
 				return false;

@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -174,12 +173,7 @@ public class JASModInteger {
 				final IExpr base = ast.base();
 				for (int i = 0; i < fVariables.size(); i++) {
 					if (fVariables.get(i).equals(base)) {
-						int exponent = ast.exponent().toIntDefault(Integer.MIN_VALUE);
-						// int exponent = -1;
-						// try {
-						// exponent = Validate.checkPowerExponent(ast);
-						// } catch (WrongArgumentType e) {
-						// }
+						int exponent = ast.exponent().toIntDefault(Integer.MIN_VALUE); 
 						if (exponent < 0) {
 							throw new ArithmeticException(
 									"JASConvert:expr2Poly - invalid exponent: " + ast.exponent().toString());
@@ -240,13 +234,7 @@ public class JASModInteger {
 				final IExpr base = ast.base();
 				for (int i = 0; i < fVariables.size(); i++) {
 					if (fVariables.get(i).equals(base)) {
-						int exponent = ast.exponent().toIntDefault(Integer.MIN_VALUE);
-						// int exponent = -1;
-						// try {
-						// exponent = Validate.checkPowerExponent(ast);
-						// } catch (WrongArgumentType e) {
-						// //
-						// }
+						int exponent = ast.exponent().toIntDefault(Integer.MIN_VALUE); 
 						if (exponent < 0) {
 							throw new ArithmeticException(
 									"JASConvert:expr2Poly - invalid exponent: " + ast.exponent().toString());

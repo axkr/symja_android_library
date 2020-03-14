@@ -505,13 +505,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 				final IExpr base = ast.base();
 				ix = ExpVectorLong.indexVar(base, getVars());
 				if (ix >= 0) {
-					int exponent = ast.exponent().toIntDefault(Integer.MIN_VALUE);
-					// int exponent = -1;
-					// try {
-					// exponent = Validate.checkPowerExponent(ast);
-					// } catch (WrongArgumentType e) {
-					// //
-					// }
+					int exponent = ast.exponent().toIntDefault(Integer.MIN_VALUE); 
 					if (checkNegativeExponents && exponent < 0) {
 						throw new ArithmeticException(
 								"JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
@@ -770,13 +764,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 				for (int i = 1; i < vars.size(); i++) {
 					IExpr variable = vars.get(i);
 					if (variable.equals(base)) {
-						int exponent = ast.exponent().toIntDefault(Integer.MIN_VALUE);
-						// int exponent = -1;
-						// try {
-						// exponent = Validate.checkPowerExponent(ast);
-						// } catch (WrongArgumentType e) {
-						// return false;
-						// }
+						int exponent = ast.exponent().toIntDefault(Integer.MIN_VALUE); 
 						if (exponent < 0) {
 							return false;
 						}

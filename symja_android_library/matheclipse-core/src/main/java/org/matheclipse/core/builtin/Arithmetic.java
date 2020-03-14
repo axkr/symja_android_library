@@ -413,29 +413,36 @@ public final class Arithmetic {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr leftHandSide = ast.arg1();
 			final IExpr head = leftHandSide.head();
-			if (head.isBuiltInSymbol() && leftHandSide.isAST()) {
-				IEvaluator eval = ((IBuiltInSymbol) head).getEvaluator();
-				if (eval instanceof ISetEvaluator) {
-					IExpr temp = engine.evalLoop(leftHandSide);
-					if (!temp.isPresent()) {
-						return F.NIL;
+			try {
+				if (head.isBuiltInSymbol() && leftHandSide.isAST()) {
+					IEvaluator eval = ((IBuiltInSymbol) head).getEvaluator();
+					if (eval instanceof ISetEvaluator) {
+						IExpr temp = engine.evalLoop(leftHandSide);
+						if (!temp.isPresent()) {
+							return F.NIL;
+						}
+						IExpr rhs = engine.evaluate(F.binaryAST2(getArithmeticSymbol(), temp, ast.arg2()));
+						return ((ISetEvaluator) eval).evaluateSet(leftHandSide, rhs, engine);
 					}
-					IExpr rhs = engine.evaluate(F.binaryAST2(getArithmeticSymbol(), temp, ast.arg2()));
-					return ((ISetEvaluator) eval).evaluateSet(leftHandSide, rhs, engine);
 				}
-			}
-			if (leftHandSide.isSymbol()) {
-				ISymbol sym = (ISymbol) leftHandSide;
-				if (!sym.hasAssignedSymbolValue()) {
-					// `1` is not a variable with a value, so its value cannot be changed.
-					return IOFunctions.printMessage(getFunctionSymbol(), "rvalue", F.List(sym), engine);
+				if (leftHandSide.isSymbol()) {
+					ISymbol sym = (ISymbol) leftHandSide;
+					if (!sym.hasAssignedSymbolValue()) {
+						// `1` is not a variable with a value, so its value cannot be changed.
+						return IOFunctions.printMessage(getFunctionSymbol(), "rvalue", F.List(sym), engine);
+					}
+					IExpr arg2 = engine.evaluate(ast.arg2());
+					IExpr[] results = sym.reassignSymbolValue(getAST(arg2), getFunctionSymbol(), engine);
+					if (results != null) {
+						return results[1];
+					}
+					return F.NIL;
 				}
-				IExpr arg2 = engine.evaluate(ast.arg2());
-				IExpr[] results = sym.reassignSymbolValue(getAST(arg2), getFunctionSymbol(), engine);
-				if (results != null) {
-					return results[1];
+			} catch (ValidateException ve) {
+				if (Config.SHOW_STACKTRACE) {
+					ve.printStackTrace();
 				}
-				return F.NIL;
+				return engine.printMessage(ast.topHead(), ve);
 			}
 			// `1` is not a variable with a value, so its value cannot be changed.
 			return IOFunctions.printMessage(getFunctionSymbol(), "rvalue", F.List(leftHandSide), engine);
@@ -1205,11 +1212,18 @@ public final class Arithmetic {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr symbol = ast.arg1();
-			if (symbol.isSymbol() && ((ISymbol) symbol).hasAssignedSymbolValue()) {
-				IExpr[] results = ((ISymbol) symbol).reassignSymbolValue(getAST(), getFunctionSymbol(), engine);
-				if (results != null) {
-					return getResult(results[0], results[1]);
+			try {
+				if (symbol.isSymbol() && ((ISymbol) symbol).hasAssignedSymbolValue()) {
+					IExpr[] results = ((ISymbol) symbol).reassignSymbolValue(getAST(), getFunctionSymbol(), engine);
+					if (results != null) {
+						return getResult(results[0], results[1]);
+					}
 				}
+			} catch (ValidateException ve) {
+				if (Config.SHOW_STACKTRACE) {
+					ve.printStackTrace();
+				}
+				return engine.printMessage(ast.topHead(), ve);
 			}
 			return F.NIL;
 		}
@@ -1575,10 +1589,17 @@ public final class Arithmetic {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() != 3) {
-				return unaryOperator(ast.arg1());
+			try {
+				if (ast.size() != 3) {
+					return unaryOperator(ast.arg1());
+				}
+				return binaryOperator(ast, ast.arg1(), ast.arg2());
+			} catch (ValidateException ve) {
+				if (Config.SHOW_STACKTRACE) {
+					ve.printStackTrace();
+				}
+				return engine.printMessage(ast.topHead(), ve);
 			}
-			return binaryOperator(ast, ast.arg1(), ast.arg2());
 		}
 
 		@Override

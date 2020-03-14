@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
 import static org.matheclipse.core.builtin.functions.EllipticIntegralsJS.*;
 
@@ -23,11 +24,11 @@ public class EllipticFunctionsJS {
 
 	public static Complex jacobiTheta(int n, double x, double q, double tolerance) {
 		if (Math.abs(q) >= 1) {
-			throw new ArithmeticException("Unsupported elliptic nome");
+			throw new ArgumentTypeException("unsupported elliptic nome");
 		}
 
 		if (n < 1 || n > 4) {
-			throw new ArithmeticException("Undefined Jacobi theta index");
+			throw new ArgumentTypeException("undefined Jacobi theta index");
 		}
 
 		if (F.isZero(q)) {
@@ -119,7 +120,7 @@ public class EllipticFunctionsJS {
 			return new Complex(1 + 2 * s);
 
 		}
-		throw new ArithmeticException("Undefined Jacobi theta index");
+		throw new ArgumentTypeException("undefined Jacobi theta index");
 	}
 
 	public static Complex jacobiTheta(int n, Complex x, Complex q) {
@@ -129,11 +130,11 @@ public class EllipticFunctionsJS {
 	public static Complex jacobiTheta(int n, Complex x, Complex q, double tolerance) {
 
 		if (q.abs() >= 1) {
-			throw new ArithmeticException("Unsupported elliptic nome");
+			throw new ArgumentTypeException("unsupported elliptic nome");
 		}
 
 		if (n < 1 || n > 4) {
-			throw new ArithmeticException("Undefined Jacobi theta index");
+			throw new ArgumentTypeException("undefined Jacobi theta index");
 		}
 
 		if (F.isZero(q)) {
@@ -217,7 +218,7 @@ public class EllipticFunctionsJS {
 			return s.multiply(2.0).add(1.0);
 		}
 
-		throw new ArithmeticException("Undefined Jacobi theta index");
+		throw new ArgumentTypeException("undefined Jacobi theta index");
 	}
 
 	public static Complex ellipticNome(Complex m) {

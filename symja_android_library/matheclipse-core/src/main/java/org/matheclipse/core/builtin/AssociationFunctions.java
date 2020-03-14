@@ -3,7 +3,10 @@ package org.matheclipse.core.builtin;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.expression.ASTAssociation;
@@ -60,14 +63,23 @@ public class AssociationFunctions {
 				return F.NIL;
 			}
 			if (ast.isAST1()) {
-				IExpr arg1 = engine.evaluate(ast.arg1());
-				if (arg1.isListOfRules(true)) {
-					return F.assoc((IAST) arg1);
-				} else if (arg1.isAST(F.List, 2)) {
-					arg1 = arg1.first();
+				try {
+
+					IExpr arg1 = engine.evaluate(ast.arg1());
 					if (arg1.isListOfRules(true)) {
 						return F.assoc((IAST) arg1);
+					} else if (arg1.isAST(F.List, 2)) {
+						arg1 = arg1.first();
+						if (arg1.isListOfRules(true)) {
+							return F.assoc((IAST) arg1);
+						}
 					}
+
+				} catch (ValidateException ve) {
+					if (Config.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
+					return engine.printMessage(ast.topHead(), ve);
 				}
 			}
 			return F.NIL;
@@ -104,6 +116,8 @@ public class AssociationFunctions {
 							symbol.assign(assoc);
 							return rightHandSide;
 						}
+					} catch (ValidateException ve) {
+						return engine.printMessage(F.Set, ve);
 					} catch (RuntimeException npe) {
 						engine.printMessage("Set: " + npe.getMessage());
 						return F.NIL;
@@ -121,16 +135,20 @@ public class AssociationFunctions {
 			IExpr arg1 = ast.arg1();
 			if (arg1.isList()) {
 				IAST list = (IAST) arg1;
-				HashMap<IExpr, MutableInt> map = new HashMap<IExpr, MutableInt>();
-				for (int i = 1; i < list.size(); i++) {
-					IExpr key = list.get(i);
-					map.compute(key, (k, v) -> (v == null) ? new MutableInt(1) : v.increment());
+				try {
+					HashMap<IExpr, MutableInt> map = new HashMap<IExpr, MutableInt>();
+					for (int i = 1; i < list.size(); i++) {
+						IExpr key = list.get(i);
+						map.compute(key, (k, v) -> (v == null) ? new MutableInt(1) : v.increment());
+					}
+					IAssociation assoc = new ASTAssociation(map.size(), false);
+					for (Map.Entry<IExpr, AssociationFunctions.MutableInt> elem : map.entrySet()) {
+						assoc.appendRule(F.Rule(elem.getKey(), F.ZZ(elem.getValue().value())));
+					}
+					return assoc;
+				} catch (ValidateException ve) {
+					return engine.printMessage(ast.topHead(), ve);
 				}
-				IAssociation assoc = new ASTAssociation(map.size(), false);
-				for (Map.Entry<IExpr, AssociationFunctions.MutableInt> elem : map.entrySet()) {
-					assoc.appendRule(F.Rule(elem.getKey(), F.ZZ(elem.getValue().value())));
-				}
-				return assoc;
 			}
 			return F.NIL;
 		}

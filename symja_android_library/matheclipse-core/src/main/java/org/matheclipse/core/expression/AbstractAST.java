@@ -34,8 +34,8 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.Structure.LeafCount;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
@@ -1210,19 +1210,8 @@ public abstract class AbstractAST implements IASTMutable {
 		if (number != null) {
 			return number.complexNumValue().complexValue();
 		}
-		throw new WrongArgumentType(this, "Conversion into a complex numeric value is not possible!");
-	}
-
-	/** {@inheritDoc} */
-	// @Override
-	// public final double evalDouble() {
-	// return EvalEngine.get().evalDouble(this);
-	// ISignedNumber signedNumber = evalReal();
-	// if (signedNumber != null) {
-	// return signedNumber.doubleValue();
-	// }
-	// throw new WrongArgumentType(this, "Conversion into a double numeric value is not possible!");
-	// }
+		throw new ArgumentTypeException("conversion into a complex numeric value is not possible!");
+	} 
 
 	/** {@inheritDoc} */
 	@Override
@@ -1617,7 +1606,7 @@ public abstract class AbstractAST implements IASTMutable {
 	 * 
 	 * @param index
 	 * @return
-	 * @throws WrongArgumentType
+	 * @throws IllegalArgumentException
 	 *             if the cast is not possible
 	 */
 	@Override
@@ -1626,7 +1615,7 @@ public abstract class AbstractAST implements IASTMutable {
 			return (IAST) get(index);
 		} catch (ClassCastException cce) {
 		}
-		throw new WrongArgumentType(this, get(index), index);
+		throw new IllegalArgumentException("argument "+get(index).toString()+" is not an IAST"); 
 	}
 
 	@Override
@@ -1650,7 +1639,7 @@ public abstract class AbstractAST implements IASTMutable {
 	 * 
 	 * @param index
 	 * @return
-	 * @throws WrongArgumentType
+	 * @throws IllegalArgumentException
 	 *             if the cast is not possible
 	 */
 	@Override
@@ -1659,7 +1648,8 @@ public abstract class AbstractAST implements IASTMutable {
 			return (IInteger) get(index);
 		} catch (ClassCastException cce) {
 		}
-		throw new WrongArgumentType(this, get(index), index);
+
+		throw new IllegalArgumentException("argument "+get(index).toString()+" is not an IInteger");  
 	}
 
 	/**
@@ -1667,7 +1657,7 @@ public abstract class AbstractAST implements IASTMutable {
 	 * 
 	 * @param index
 	 * @return
-	 * @throws WrongArgumentType
+	 * @throws IllegalArgumentException
 	 */
 	@Override
 	public final IAST getList(int index) {
@@ -1675,7 +1665,8 @@ public abstract class AbstractAST implements IASTMutable {
 		if (temp.isList()) {
 			return (IAST) temp;
 		}
-		throw new WrongArgumentType(this, temp, index);
+
+		throw new IllegalArgumentException("argument "+get(index).toString()+" is not a list");  
 	}
 
 	/**
@@ -1683,7 +1674,7 @@ public abstract class AbstractAST implements IASTMutable {
 	 * 
 	 * @param index
 	 * @return
-	 * @throws WrongArgumentType
+	 * @throws IllegalArgumentException
 	 *             if the cast is not possible
 	 */
 	@Override
@@ -1692,7 +1683,7 @@ public abstract class AbstractAST implements IASTMutable {
 			return (INumber) get(index);
 		} catch (ClassCastException cce) {
 		}
-		throw new WrongArgumentType(this, get(index), index);
+		throw new IllegalArgumentException("argument "+get(index).toString()+" is not an INumber"); 
 	}
 
 	/** {@inheritDoc} */

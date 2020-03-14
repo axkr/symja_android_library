@@ -2608,8 +2608,6 @@ public class StatisticsFunctions {
 				// org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
 				return engine.printMessage(F.Covariance, mre);
 			} catch (final ValidateException ve) {
-				// WrongArgumentType occurs in list2RealMatrix(),
-				// if the matrix elements aren't pure numerical values
 				return engine.printMessage(ve.getMessage(ast.topHead()));
 			} catch (final IndexOutOfBoundsException e) {
 				if (Config.SHOW_STACKTRACE) {

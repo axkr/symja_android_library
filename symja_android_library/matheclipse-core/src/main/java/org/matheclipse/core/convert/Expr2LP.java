@@ -1,11 +1,11 @@
 package org.matheclipse.core.convert;
 
+import java.util.List;
+
 import org.hipparchus.optim.linear.LinearConstraint;
 import org.hipparchus.optim.linear.LinearObjectiveFunction;
 import org.hipparchus.optim.linear.Relationship;
-import java.util.List;
-
-import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -65,7 +65,8 @@ public class Expr2LP {
 				return new LinearConstraint(coefficients, Relationship.LEQ, -1 * num.doubleValue());
 			}
 		}
-		throw new WrongArgumentType(fExpr, "Conversion from expression to linear programming expression failed");
+		throw new ArgumentTypeException(
+				"conversion from expression to linear programming expression failed for " + fExpr.toString());
 	}
 
 	public LinearObjectiveFunction expr2ObjectiveFunction() {
@@ -98,8 +99,9 @@ public class Expr2LP {
 					IExpr temp = ast.get(i);
 					if (temp.isVariable()) {
 						if (variable != null) {
-							throw new WrongArgumentType(temp,
-									"Conversion from expression to linear programming expression failed");
+							throw new ArgumentTypeException(
+									"conversion from expression to linear programming expression failed for "
+											+ temp.toString());
 						}
 						variable = (ISymbol) temp;
 						continue;
@@ -109,8 +111,10 @@ public class Expr2LP {
 						value *= num.doubleValue();
 						continue;
 					}
-					throw new WrongArgumentType(temp,
-							"Conversion from expression to linear programming expression failed");
+					throw new ArgumentTypeException(
+							"conversion from expression to linear programming expression failed for "
+									+ temp.toString());
+
 				}
 				if (variable != null) {
 					for (int i = 0; i < coefficients.length; i++) {
@@ -119,8 +123,9 @@ public class Expr2LP {
 							return null;
 						}
 					}
-					throw new WrongArgumentType(ast,
-							"Conversion from expression to linear programming expression failed");
+					throw new ArgumentTypeException(
+							"conversion from expression to linear programming expression failed for " + ast.toString());
+
 				}
 				return F.num(value);
 			}
@@ -132,14 +137,16 @@ public class Expr2LP {
 					return null;
 				}
 			}
-			throw new WrongArgumentType(expr, "Conversion from expression to linear programming expression failed");
+			throw new ArgumentTypeException(
+					"conversion from expression to linear programming expression failed for " + expr.toString());
 		}
 
 		ISignedNumber num = expr.evalReal();
 		if (num != null) {
 			return num;
 		}
-		throw new WrongArgumentType(expr, "Conversion from expression to linear programming expression failed");
+		throw new ArgumentTypeException(
+				"conversion from expression to linear programming expression failed for " + expr.toString());
 	}
 
 }

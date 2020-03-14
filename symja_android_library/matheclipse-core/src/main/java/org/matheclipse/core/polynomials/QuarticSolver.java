@@ -18,7 +18,6 @@ import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.ZZ;
 import static org.matheclipse.core.expression.F.fraction;
-import static org.matheclipse.core.expression.F.integer;
 
 import java.util.Set;
 import java.util.TreeSet;
@@ -95,10 +94,6 @@ public class QuarticSolver {
 						final IExpr base = arg.base();
 						if (x.equals(base)) {
 							exponent = arg.exponent().toIntDefault(Integer.MIN_VALUE);
-							// try {
-							// exponent = Validate.checkPowerExponent((IAST) arg);
-							// } catch (WrongArgumentType e) {
-							// }
 							if (exponent < 0 || exponent > 4) {
 								return false;
 							}

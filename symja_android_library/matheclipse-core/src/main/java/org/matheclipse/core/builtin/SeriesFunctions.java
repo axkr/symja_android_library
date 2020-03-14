@@ -6,8 +6,7 @@ import java.util.Map;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.eval.exception.RecursionLimitExceeded; 
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
@@ -843,12 +842,12 @@ public class SeriesFunctions {
 			IExpr arg1 = ast.arg1();
 			IExpr arg2 = ast.arg2();
 			if (!arg2.isRuleAST()) {
-				throw new WrongArgumentType(ast, arg2, 2, "Limit: rule definition expected!");
+				return engine.printMessage(ast.topHead()+": rule definition expected at position 2!");
 			}
 			IAST rule = (IAST) arg2;
 
 			if (!(rule.arg1().isSymbol())) {
-				throw new WrongArgumentType(ast, arg1, 2, "Limit: variable symbol for rule definition expected!");
+				return engine.printMessage(ast.topHead()+": variable symbol for rule definition expected at position 2!"); 
 			}
 			if (arg1.isList()) {
 				IASTMutable clone = ast.copy();
@@ -871,10 +870,10 @@ public class SeriesFunctions {
 								option.equals(F.Reals)) {
 							direction = DIRECTION_TWO_SIDED;
 						} else {
-							throw new WrongArgumentType(ast, arg2, 2, "Limit: direction option expected!");
+							return engine.printMessage(ast.topHead()+": direction option expected at position 2!");  
 						}
 					} else {
-						throw new WrongArgumentType(ast, arg2, 2, "Limit: direction option expected!");
+						return engine.printMessage(ast.topHead()+": direction option expected at position 2!");   
 					}
 					if (direction == DIRECTION_TWO_SIDED) {
 						IExpr temp = F.Limit.evalDownRule(engine, F.Limit(arg1, arg2));
@@ -888,8 +887,7 @@ public class SeriesFunctions {
 				if (rule.isFreeAt(2, symbol)) {
 					limit = rule.arg2();
 				} else {
-					throw new WrongArgumentType(ast, arg2, 2,
-							"Limit: limit value contains variable symbol for rule definition!");
+					return engine.printMessage(ast.topHead()+": limit value is not free of variable symbol at position 2!");   
 				}
 
 				LimitData data = new LimitData(symbol, limit, rule, direction);

@@ -31,8 +31,6 @@ import org.matheclipse.core.eval.exception.IllegalArgument;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
-//import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -1156,9 +1154,9 @@ public final class ListFunctions {
 			} catch (final ValidateException ve) {
 				// see level specification and int number validation
 				return engine.printMessage(ve.getMessage(ast.topHead()));
-//			} catch (final RuntimeException rex) {
-//				// ArgumentTypeException from VisitorLevelSpecification level specification checks
-//				return engine.printMessage("Cases: " + rex.getMessage());
+				// } catch (final RuntimeException rex) {
+				// // ArgumentTypeException from VisitorLevelSpecification level specification checks
+				// return engine.printMessage("Cases: " + rex.getMessage());
 			}
 			return F.NIL;
 		}
@@ -2026,12 +2024,11 @@ public final class ListFunctions {
 						return resultList;
 					}
 				}
-			} catch (final IllegalArgument e) {
-				engine.printMessage(e.getMessage());
-				return F.NIL;
-			} catch (final Exception e) {
+			} catch (ValidateException ve) {
+				return engine.printMessage(ast.topHead(), ve);
+			} catch (final RuntimeException rex) {
 				if (Config.SHOW_STACKTRACE) {
-					e.printStackTrace();
+					rex.printStackTrace();
 				}
 			}
 			return F.NIL;
@@ -2066,7 +2063,7 @@ public final class ListFunctions {
 			if (step < 0) {
 				end--;
 				if (j < end || end <= 0) {
-					throw new IllegalArgument("Cannot drop positions " + j + " through " + end + " in " + list);
+					throw new ArgumentTypeException("cannot drop positions " + j + " through " + end + " in " + list);
 					// return F.NIL;
 				}
 				for (int i = j; i >= end; i += step) {
@@ -2075,7 +2072,8 @@ public final class ListFunctions {
 				}
 			} else {
 				if (j == 0) {
-					throw new IllegalArgument("Cannot drop positions " + j + " through " + (end - 1) + " in " + list);
+					throw new ArgumentTypeException(
+							"cannot drop positions " + j + " through " + (end - 1) + " in " + list);
 				}
 				for (int i = j; i < end; i += step) {
 					list.remove(j);
@@ -4011,30 +4009,27 @@ public final class ListFunctions {
 			if (ast.arg1().isAST(F.List, 1)) {
 				return ast.arg1();
 			}
-			try {
-				if (ast.isAST1() && ast.arg1().isReal()) {
-					int size = ast.arg1().toIntDefault(Integer.MIN_VALUE);
-					if (size != Integer.MIN_VALUE) {
-						return range(size);
-					}
-					engine.printMessage("Range: argument " + ast.arg1()
-							+ " is greater than Javas Integer.MAX_VALUE or no integer number.");
-					return F.NIL;
+
+			if (ast.isAST1() && ast.arg1().isReal()) {
+				int size = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+				if (size != Integer.MIN_VALUE) {
+					return range(size);
 				}
-				if (ast.isAST3()) {
-					if (ast.arg3().isZero()) {
-						// Infinite expression `1` encountered.
-						return IOFunctions.printMessage(ast.topHead(), "infy", F.List(F.Divide(ast.arg2(), F.C0)),
-								engine);
-					}
-					if (ast.arg3().isDirectedInfinity()) {
-						return ast.arg1();
-					}
-				}
-				return evaluateTable(ast, List(), engine);
-			} catch (final ValidateException ve) {
-				return engine.printMessage(ve.getMessage(ast.topHead()));
+				engine.printMessage("Range: argument " + ast.arg1()
+						+ " is greater than Javas Integer.MAX_VALUE or no integer number.");
+				return F.NIL;
 			}
+			if (ast.isAST3()) {
+				if (ast.arg3().isZero()) {
+					// Infinite expression `1` encountered.
+					return IOFunctions.printMessage(ast.topHead(), "infy", F.List(F.Divide(ast.arg2(), F.C0)), engine);
+				}
+				if (ast.arg3().isDirectedInfinity()) {
+					return ast.arg1();
+				}
+			}
+			return evaluateTable(ast, List(), engine);
+
 		}
 
 		/**
@@ -4118,12 +4113,12 @@ public final class ListFunctions {
 	private final static class Replace extends AbstractEvaluator {
 
 		private static final class ReplaceFunction implements Function<IExpr, IExpr> {
-			private final IAST ast;
+			// private final IAST ast;
 			private final EvalEngine engine;
 			private IExpr rules;
 
-			public ReplaceFunction(final IAST ast, final IExpr rules, final EvalEngine engine) {
-				this.ast = ast;
+			public ReplaceFunction(final IExpr rules, final EvalEngine engine) {
+				// this.ast = ast;
 				this.rules = rules;
 				this.engine = engine;
 			}
@@ -4147,9 +4142,8 @@ public final class ListFunctions {
 								return temp;
 							}
 						} else {
-							WrongArgumentType wat = new WrongArgumentType(ast, ast, -1,
-									"Rule expression (x->y) expected: ");
-							throw wat;
+							throw new ArgumentTypeException(
+									"rule expressions (x->y) expected instead of " + element.toString());
 						}
 
 					}
@@ -4157,11 +4151,8 @@ public final class ListFunctions {
 				}
 				if (rules.isRuleAST()) {
 					return replaceRule(input, (IAST) rules, engine);
-				} else {
-					WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
-					engine.printMessage("Replace: " + wat.getMessage());
 				}
-				return F.NIL;
+				throw new ArgumentTypeException("rule expressions (x->y) expected instead of " + rules.toString());
 			}
 
 			public void setRule(IExpr rules) {
@@ -4187,9 +4178,8 @@ public final class ListFunctions {
 								break;
 							}
 						} else {
-							WrongArgumentType wat = new WrongArgumentType(ast, ast, -1,
-									"Rule expression (x->y) expected: ");
-							throw wat;
+							throw new ArgumentTypeException(
+									"rule expressions (x->y) expected instead of " + element.toString());
 						}
 					}
 					result.append(temp.orElse(arg1));
@@ -4205,9 +4195,8 @@ public final class ListFunctions {
 							return temp;
 						}
 					} else {
-						WrongArgumentType wat = new WrongArgumentType(ast, ast, -1,
-								"Rule expression (x->y) expected: ");
-						throw wat;
+						throw new ArgumentTypeException(
+								"rule expressions (x->y) expected instead of " + element.toString());
 					}
 
 				}
@@ -4215,18 +4204,16 @@ public final class ListFunctions {
 			}
 			if (rules.isRuleAST()) {
 				return replaceRule(arg1, (IAST) rules, engine);
-			} else {
-				WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
-				engine.printMessage("Replace: " + wat.getMessage());
 			}
-			return F.NIL;
+			throw new ArgumentTypeException("rule expressions (x->y) expected instead of " + rules.toString());
+
 		}
 
 		private static IExpr replaceExprWithLevelSpecification(final IAST ast, IExpr arg1, IExpr rules,
 				IExpr exprLevelSpecification, EvalEngine engine) {
 			// use replaceFunction#setRule() method to set the current rules which
-			// are initialized with null
-			ReplaceFunction replaceFunction = new ReplaceFunction(ast, null, engine);
+			// are initialized with an empty list { }
+			ReplaceFunction replaceFunction = new ReplaceFunction(F.CEmptyList, engine);
 			VisitorLevelSpecification level = new VisitorLevelSpecification(replaceFunction, exprLevelSpecification,
 					false, engine);
 
@@ -4245,9 +4232,8 @@ public final class ListFunctions {
 								break;
 							}
 						} else {
-							WrongArgumentType wat = new WrongArgumentType(ast, ast, -1,
-									"Rule expression (x->y) expected: ");
-							throw wat;
+							throw new ArgumentTypeException(
+									"rule expressions (x->y) expected instead of " + element.toString());
 						}
 					}
 					result.append(temp.orElse(arg1));
@@ -4288,16 +4274,13 @@ public final class ListFunctions {
 			}
 			IExpr arg1 = ast.arg1();
 			IExpr rules = engine.evaluate(ast.arg2());
-			try {
-				if (ast.isAST3()) {
-					// arg3 should contain a "level specification":
-					return replaceExprWithLevelSpecification(ast, arg1, rules, ast.arg3(), engine);
-				}
-				return replaceExpr(ast, arg1, rules, engine);
-			} catch (final RuntimeException rex) {
-				// ArgumentTypeException from VisitorLevelSpecification level specification checks
-				return engine.printMessage("Replace: " + rex.getMessage());
+
+			if (ast.isAST3()) {
+				// arg3 should contain a "level specification":
+				return replaceExprWithLevelSpecification(ast, arg1, rules, ast.arg3(), engine);
 			}
+			return replaceExpr(ast, arg1, rules, engine);
+
 		}
 
 		public int[] expectedArgSize() {
@@ -4361,38 +4344,30 @@ public final class ListFunctions {
 				}
 			}
 			if (ast.size() == 3) {
-				try {
-					IExpr arg1 = ast.arg1();
-					IExpr arg2 = ast.arg2();
 
-					if (arg2.isListOfRules(false)) {
-						return arg1.replaceAll((IAST) arg2).orElse(arg1);
-					} else if (arg2.isListOfLists()) {
-						IAST list = (IAST) arg2;
-						IASTAppendable result = F.ListAlloc(list.size());
-						for (IExpr subList : list) {
-							if (subList.isListOfRules(false)) {
-								result.append(F.subst(arg1, (IAST) subList));
-							} else {
-								WrongArgumentType wat = new WrongArgumentType(ast, ast, -1,
-										"List of rule expressions (x->y) expected: ");
-								return engine.printMessage(wat.getMessage());
-							}
+				IExpr arg1 = ast.arg1();
+				IExpr arg2 = ast.arg2();
+
+				if (arg2.isListOfRules(false)) {
+					return arg1.replaceAll((IAST) arg2).orElse(arg1);
+				} else if (arg2.isListOfLists()) {
+					IAST list = (IAST) arg2;
+					IASTAppendable result = F.ListAlloc(list.size());
+					for (IExpr subList : list) {
+						if (subList.isListOfRules(false)) {
+							result.append(F.subst(arg1, (IAST) subList));
+						} else {
+							throw new ArgumentTypeException(
+									"rule expressions (x->y) expected instead of " + subList.toString());
 						}
-						return result;
-					} else if (arg2.isRuleAST()) {
-						return F.subst(arg1, (IAST) arg2);
-					} else {
-						WrongArgumentType wat = new WrongArgumentType(ast, ast, -1,
-								"Rule expression (x->y) expected: ");
-						return engine.printMessage(wat.getMessage());
 					}
-				} catch (WrongArgumentType wat) {
-					if (Config.SHOW_STACKTRACE) {
-						wat.printStackTrace();
-					}
-					return engine.printMessage(wat.getMessage());
+					return result;
+				} else if (arg2.isRuleAST()) {
+					return F.subst(arg1, (IAST) arg2);
+				} else {
+					throw new ArgumentTypeException("rule expressions (x->y) expected instead of " + arg2.toString());
 				}
+
 			}
 			return F.NIL;
 		}
@@ -4447,9 +4422,8 @@ public final class ListFunctions {
 						Function<IExpr, IExpr> function = Functors.listRules(rule, result, engine);
 						function.apply(arg1);
 					} else {
-						WrongArgumentType wat = new WrongArgumentType(ast, ast, -1,
-								"Rule expression (x->y) expected: ");
-						throw wat;
+						throw new ArgumentTypeException(
+								"rule expressions (x->y) expected instead of " + element.toString());
 					}
 				}
 
@@ -4462,8 +4436,7 @@ public final class ListFunctions {
 					return temp;
 				}
 			} else {
-				WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
-				return engine.printMessage("ReplaceList: " + wat.getMessage());
+				throw new ArgumentTypeException("rule expressions (x->y) expected instead of " + rules.toString());
 			}
 			return result;
 		}
@@ -4498,8 +4471,6 @@ public final class ListFunctions {
 					return replaceExpr(ast, arg1, rules, result, maxNumberOfResults, engine);
 				} catch (ArithmeticException ae) {
 					return engine.printMessage("ReplaceList: " + ae.getMessage());
-				} catch (WrongArgumentType wat) {
-					return engine.printMessage("ReplaceList: " + wat.getMessage());
 				}
 			}
 			return F.NIL;
@@ -4593,41 +4564,38 @@ public final class ListFunctions {
 					return F.NIL;
 				}
 			}
-			try {
-				if (ast.isAST3()) {
-					if (ast.arg3().isList()) {
-						IExpr result = ast.arg1();
-						for (IExpr subList : (IAST) ast.arg3()) {
-							IExpr expr = result.replacePart(F.Rule(subList, ast.arg2()));
-							if (expr.isPresent()) {
-								result = expr;
-							}
-						}
-						return result;
-					}
-					return ast.arg1().replacePart(F.Rule(ast.arg3(), ast.arg2())).orElse(ast.arg1());
-				}
-				if (ast.arg2().isList()) {
+
+			if (ast.isAST3()) {
+				if (ast.arg3().isList()) {
 					IExpr result = ast.arg1();
-					for (IExpr subList : (IAST) ast.arg2()) {
-						if (subList.isRuleAST()) {
-							IExpr expr = result.replacePart((IAST) subList);
-							if (expr.isPresent()) {
-								result = expr;
-							}
+					for (IExpr subList : (IAST) ast.arg3()) {
+						IExpr expr = result.replacePart(F.Rule(subList, ast.arg2()));
+						if (expr.isPresent()) {
+							result = expr;
 						}
 					}
 					return result;
 				}
+				return ast.arg1().replacePart(F.Rule(ast.arg3(), ast.arg2())).orElse(ast.arg1());
+			}
+			if (ast.arg2().isList()) {
 				IExpr result = ast.arg1();
-				if (ast.arg2().isRuleAST()) {
-					return ast.arg1().replacePart((IAST) ast.arg2()).orElse(ast.arg1());
+				for (IExpr subList : (IAST) ast.arg2()) {
+					if (subList.isRuleAST()) {
+						IExpr expr = result.replacePart((IAST) subList);
+						if (expr.isPresent()) {
+							result = expr;
+						}
+					}
 				}
 				return result;
-			} catch (final ValidateException ve) {
-				// int number validation
-				return engine.printMessage(ve.getMessage(ast.topHead()));
 			}
+			IExpr result = ast.arg1();
+			if (ast.arg2().isRuleAST()) {
+				return ast.arg1().replacePart((IAST) ast.arg2()).orElse(ast.arg1());
+			}
+			return result;
+
 		}
 
 		@Override
@@ -4703,27 +4671,22 @@ public final class ListFunctions {
 				}
 			}
 
-			try {
-				IExpr arg2 = ast.arg2();
-				if (arg2.isListOfLists()) {
-					IAST list = (IAST) arg2;
-					IASTAppendable result = F.ListAlloc(list.size());
-					for (IExpr subList : list) {
-						IExpr temp = engine.evaluate(subList);
-						if (temp.isAST()) {
-							result.append(ast.arg1().replaceRepeated((IAST) temp));
-						}
+			IExpr arg2 = ast.arg2();
+			if (arg2.isListOfLists()) {
+				IAST list = (IAST) arg2;
+				IASTAppendable result = F.ListAlloc(list.size());
+				for (IExpr subList : list) {
+					IExpr temp = engine.evaluate(subList);
+					if (temp.isAST()) {
+						result.append(ast.arg1().replaceRepeated((IAST) temp));
 					}
-					return result;
 				}
-				if (arg2.isAST()) {
-					return ast.arg1().replaceRepeated((IAST) arg2);
-				} else {
-					WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
-					return engine.printMessage("ReplaceRepeated: " + wat.getMessage());
-				}
-			} catch (WrongArgumentType wat) {
-				return engine.printMessage("ReplaceRepeated: " + wat.getMessage());
+				return result;
+			}
+			if (arg2.isAST()) {
+				return ast.arg1().replaceRepeated((IAST) arg2);
+			} else {
+				throw new ArgumentTypeException("rule expressions (x->y) expected instead of " + arg2.toString());
 			}
 		}
 
@@ -4946,9 +4909,9 @@ public final class ListFunctions {
 					return arg1;
 				}
 				IAST list = (IAST) arg1;
-				
+
 				if (ast.isAST1()) {
-					final IASTAppendable result = F.ast(list.head(),list.size()+1,false);
+					final IASTAppendable result = F.ast(list.head(), list.size() + 1, false);
 					list.rotateLeft(result, 1);
 					// Rotating.rotateLeft((IAST) list.arg1(), result, 2, 1);
 					return result;
@@ -4960,7 +4923,7 @@ public final class ListFunctions {
 							return F.NIL;
 						}
 						n = n % argSize;
-						final IASTAppendable result = F.ast(list.head(),list.size()+n,false);
+						final IASTAppendable result = F.ast(list.head(), list.size() + n, false);
 						list.rotateLeft(result, n);
 						return result;
 					}
@@ -5806,10 +5769,10 @@ public final class ListFunctions {
 					return engine.printMessage("Take: Nonatomic expression expected at position 1");
 				}
 			} catch (final ValidateException ve) {
-				return engine.printMessage(ve.getMessage(ast.topHead()));
-			} catch (final Exception e) {
+				return engine.printMessage(ast.topHead(), ve);
+			} catch (final RuntimeException rex) {
 				if (Config.SHOW_STACKTRACE) {
-					e.printStackTrace();
+					rex.printStackTrace();
 				}
 			}
 
@@ -5853,7 +5816,8 @@ public final class ListFunctions {
 						if (list.get(i).isAST()) {
 							resultList.append(take((IAST) list.get(i), newLevel, sequenceSpecifications));
 						} else {
-							throw new IllegalArgument("Cannot execute take for argument: " + list.get(i).toString());
+							throw new ArgumentTypeException(
+									"cannot execute take for argument: " + list.get(i).toString());
 						}
 					} else {
 						resultList.append(list.get(i));

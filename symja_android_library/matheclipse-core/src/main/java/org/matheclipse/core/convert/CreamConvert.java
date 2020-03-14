@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -21,8 +21,8 @@ import jp.ac.kobe_u.cs.cream.SolutionHandler;
 import jp.ac.kobe_u.cs.cream.Solver;
 
 /**
- * Convert <code>IExpr</code> expressions from and to <a herf="http://bach.istc.kobe-u.ac.jp/cream/">Cream: Class Library
- * for Constraint Programming in Java</a>
+ * Convert <code>IExpr</code> expressions from and to <a herf="http://bach.istc.kobe-u.ac.jp/cream/">Cream: Class
+ * Library for Constraint Programming in Java</a>
  *
  */
 public class CreamConvert {
@@ -128,7 +128,7 @@ public class CreamConvert {
 				return integerVariable(net, ast.arg1()).sign();
 			}
 		}
-		throw new WrongArgumentType(expr, "for Solve(..., Integers)");
+		throw new ArgumentTypeException(expr.toString() + " is no int variable found for Solve(..., Integers)");
 	}
 
 	public TreeMap<ISymbol, IntVariable> variableMap() {
@@ -161,7 +161,7 @@ public class CreamConvert {
 					IExpr complement = F.Complement.of(engine, userDefinedVariables, equationVariables);
 					if (complement.size() > 1 && complement.isList()) {
 						listOfZZVariables = F.Apply.of(engine, F.And,
-								((IAST) complement).mapThread(F.Element(F.Slot1, F.Integers), 1)); 
+								((IAST) complement).mapThread(F.Element(F.Slot1, F.Integers), 1));
 					}
 
 					Set<Entry<ISymbol, IntVariable>> set = map.entrySet();

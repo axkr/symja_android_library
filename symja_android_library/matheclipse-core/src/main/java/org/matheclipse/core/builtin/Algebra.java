@@ -46,7 +46,6 @@ import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
@@ -566,32 +565,27 @@ public class Algebra {
 		 *            an integer value for the denominator
 		 * @param gcd
 		 *            the integer gcd value
-		 * @return
+		 * @return <code>null</code> if evaluation wasn't possible
 		 */
 		private static IExpr[] calculatePlusIntegerGCD(IASTAppendable numeratorPlus, IInteger denominatorInt,
 				IInteger gcd) {
+			boolean[] error = new boolean[] { false };
 			numeratorPlus.forEach((x, i) -> {
-				if (x.isInteger()) {
-					numeratorPlus.set(i, ((IInteger) x).div(gcd));
-				} else if (x.isTimes() && x.first().isInteger()) {
-					IASTMutable times = ((IAST) x).copy();
-					times.set(1, ((IInteger) times.arg1()).div(gcd));
-					numeratorPlus.set(i, times);
-				} else {
-					throw new WrongArgumentType(numeratorPlus, x, i, "unexpected argument");
+				if (!error[0]) {
+					if (x.isInteger()) {
+						numeratorPlus.set(i, ((IInteger) x).div(gcd));
+					} else if (x.isTimes() && x.first().isInteger()) {
+						IASTMutable times = ((IAST) x).copy();
+						times.set(1, ((IInteger) times.arg1()).div(gcd));
+						numeratorPlus.set(i, times);
+					} else {
+						error[0] = true; 
+					}
 				}
 			});
-			// for (int i = 1; i < numeratorPlus.size(); i++) {
-			// if (numeratorPlus.get(i).isInteger()) {
-			// numeratorPlus.set(i, ((IInteger) numeratorPlus.get(i)).div(gcd));
-			// } else if (numeratorPlus.get(i).isTimes() && numeratorPlus.get(i).first().isInteger()) {
-			// IASTMutable times = ((IAST) numeratorPlus.get(i)).copy();
-			// times.set(1, ((IInteger) times.arg1()).div(gcd));
-			// numeratorPlus.set(i, times);
-			// } else {
-			// throw new WrongArgumentType(numeratorPlus, numeratorPlus.get(i), i, "unexpected argument");
-			// }
-			// }
+			if (error[0]) {
+				return null;
+			} 
 			IExpr[] result = new IExpr[3];
 			result[0] = F.C1;
 			result[1] = numeratorPlus;
@@ -2189,11 +2183,7 @@ public class Algebra {
 			IExpr result = F.REMEMBER_AST_CACHE.getIfPresent(ast);
 			if (result != null) {
 				return result;
-			}
-			// if (!eVar.isSize(1)) {
-			// throw new WrongArgumentType(ast, ast.arg1(), 1,
-			// "Factorization only implemented for univariate polynomials");
-			// }
+			} 
 			try {
 				IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 				// ASTRange r = new ASTRange(eVar.getVarList(), 1);
@@ -2243,11 +2233,7 @@ public class Algebra {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
-			VariablesSet eVar = new VariablesSet(ast.arg1());
-			// if (!eVar.isSize(1)) {
-			// throw new WrongArgumentType(ast, ast.arg1(), 1,
-			// "Factorization only implemented for univariate polynomials");
-			// }
+			VariablesSet eVar = new VariablesSet(ast.arg1()); 
 			try {
 				IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 				// ASTRange r = new ASTRange(eVar.getVarList(), 1);
@@ -4253,7 +4239,7 @@ public class Algebra {
 					try {
 						temp = F.eval(F.TrigExpand(expr));
 						sResult.checkLess(temp, fComplexityFunction.apply(temp));
-					} catch (WrongArgumentType wat) {
+					} catch (ValidateException ve) {
 						//
 					}
 
@@ -4265,14 +4251,14 @@ public class Algebra {
 								sResult.checkLess(temp, fComplexityFunction.apply(temp));
 							}
 						}
-					} catch (WrongArgumentType wat) {
+					} catch (ValidateException ve) {
 						//
 					}
 
 					try {
 						temp = F.eval(F.TrigReduce(expr));
 						sResult.checkLess(temp, fComplexityFunction.apply(temp));
-					} catch (WrongArgumentType wat) {
+					} catch (ValidateException ve) {
 						//
 					}
 
@@ -4281,7 +4267,7 @@ public class Algebra {
 				try {
 					temp = F.eval(F.ExpToTrig(expr));
 					sResult.checkLess(temp, fComplexityFunction.apply(temp));
-				} catch (WrongArgumentType wat) {
+				} catch (ValidateException ve) {
 					//
 				}
 
@@ -4306,7 +4292,7 @@ public class Algebra {
 						}
 					}
 
-				} catch (WrongArgumentType wat) {
+				} catch (ValidateException wat) {
 					//
 				}
 
@@ -4334,7 +4320,7 @@ public class Algebra {
 						sResult.checkLess(temp, fComplexityFunction.apply(temp));
 					}
 
-				} catch (WrongArgumentType wat) {
+				} catch (ValidateException ve) {
 					//
 				}
 
@@ -4343,7 +4329,7 @@ public class Algebra {
 						temp = F.eval(F.Apart(expr));
 						sResult.checkLess(temp, fComplexityFunction.apply(temp));
 					}
-				} catch (WrongArgumentType wat) {
+				} catch (ValidateException ve) {
 					//
 				}
 				return sResult.result;

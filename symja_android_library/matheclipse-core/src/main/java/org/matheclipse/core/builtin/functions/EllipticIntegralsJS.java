@@ -26,10 +26,10 @@ public class EllipticIntegralsJS {
 		return P.divide(Q);
 	}
 
-	public static Complex kleinJ(double x) { 
+	public static Complex kleinJ(double x) {
 		return kleinJ(new Complex(x));
 	}
-	
+
 	// Carlson symmetric integrals
 
 	public static Complex carlsonRC(Complex x, Complex y) {

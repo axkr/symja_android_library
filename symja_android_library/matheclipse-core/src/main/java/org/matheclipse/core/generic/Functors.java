@@ -10,7 +10,7 @@ import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -177,9 +177,8 @@ public class Functors {
 	 * @param strRules
 	 *            array of rules of the form &quot;<code>x-&gt;y</code>&quot;
 	 * @return
-	 * @throws WrongArgumentType
 	 */
-	public static Function<IExpr, IExpr> rules(@Nonnull String[] strRules) throws WrongArgumentType {
+	public static Function<IExpr, IExpr> rules(@Nonnull String[] strRules) {
 		IASTAppendable astRules = F.ListAlloc(strRules.length);
 		final EvalEngine engine = EvalEngine.get();
 		ExprParser parser = new ExprParser(engine);
@@ -198,10 +197,9 @@ public class Functors {
 	 * 
 	 * @param astRules
 	 * @return
-	 * @throws WrongArgumentType
 	 */
 	public static Function<IExpr, IExpr> rules(@Nonnull IAST astRules, @Nonnull EvalEngine engine)
-			throws WrongArgumentType {
+			 {
 		final Map<IExpr, IExpr> equalRules;
 		IAST rule;
 		List<PatternMatcherAndEvaluator> matchers = new ArrayList<PatternMatcherAndEvaluator>();
@@ -221,7 +219,7 @@ public class Functors {
 						rule = (IAST) expr;
 						addRuleToCollection(equalRules, matchers, rule);
 					} else {
-						throw new WrongArgumentType(astRules, astRules, -1, "Rule expression (x->y) expected: ");
+						throw new ArgumentTypeException("rule expression (x->y) expected instead of "+expr.toString());
 					}
 				}
 				if (matchers.size() > 0) {
@@ -240,7 +238,7 @@ public class Functors {
 				equalRules = new OpenFixedSizeMap<IExpr, IExpr>(3);
 				addRuleToCollection(equalRules, matchers, rule);
 			} else {
-				throw new WrongArgumentType(astRules, astRules, -1, "Rule expression (x->y) expected: ");
+				throw new ArgumentTypeException("rule expression (x->y) expected instead of "+astRules.toString()); 
 			}
 			if (matchers.size() > 0) {
 				return new RulesPatternFunctor(equalRules, matchers, engine);
@@ -251,7 +249,7 @@ public class Functors {
 	}
 
 	public static Function<IExpr, IExpr> listRules(@Nonnull IAST astRules, IASTAppendable result,
-			@Nonnull EvalEngine engine) throws WrongArgumentType {
+			@Nonnull EvalEngine engine)  {
 		final Map<IExpr, IExpr> equalRules;
 		List<PatternMatcherList> matchers = new ArrayList<PatternMatcherList>();
 		if (astRules.isList()) {
@@ -270,7 +268,7 @@ public class Functors {
 						rule = (IAST) expr;
 						createPatternMatcherList(equalRules, matchers, rule);
 					} else {
-						throw new WrongArgumentType(astRules, astRules, -1, "Rule expression (x->y) expected: ");
+						throw new ArgumentTypeException("rule expression (x->y) expected instead of "+expr.toString());  
 					}
 				}
 			} else {
@@ -281,7 +279,7 @@ public class Functors {
 				equalRules = new OpenFixedSizeMap<IExpr, IExpr>(3);
 				createPatternMatcherList(equalRules, matchers, astRules);
 			} else {
-				throw new WrongArgumentType(astRules, astRules, -1, "Rule expression (x->y) expected: ");
+				throw new ArgumentTypeException("rule expression (x->y) expected instead of "+astRules.toString());   
 			}
 		}
 		if (matchers.size() > 0) {

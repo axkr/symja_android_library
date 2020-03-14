@@ -25,8 +25,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.IterationLimitExceeded;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded; 
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.ASTRealMatrix;
@@ -465,25 +464,17 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default Complex evalComplex() {
-		return EvalEngine.get().evalComplex(this);
-		// if (isNumber()) {
-		// return ((INumber) this).complexNumValue().complexValue();
-		// }
-		// throw new WrongArgumentType(this, "Conversion into a complex numeric value is not possible!");
+		return EvalEngine.get().evalComplex(this); 
 	}
 
 	/**
 	 * Evaluate the expression to a Java <code>double</code> value. If the conversion to a double value is not possible,
-	 * the method throws a <code>WrongArgumentType</code> exception.
+	 * the method throws an exception.
 	 * 
 	 * @return this expression converted to a Java <code>double</code> value.
 	 */
 	default double evalDouble() {
-		return EvalEngine.get().evalDouble(this);
-		// if (isReal()) {
-		// return ((ISignedNumber) this).doubleValue();
-		// }
-		// throw new WrongArgumentType(this, "Conversion into a double numeric value is not possible!");
+		return EvalEngine.get().evalDouble(this); 
 	}
 
 	/**
@@ -2733,7 +2724,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @param size
 	 *            the size of an AST for which <code>Span[]</code> should be applied.
 	 * @return <code>null</code> if this is no <code>Span[...]</code> expression.
-	 * @throws WrongArgumentType
 	 */
 	default int[] isSpan(int size) {
 		return null;

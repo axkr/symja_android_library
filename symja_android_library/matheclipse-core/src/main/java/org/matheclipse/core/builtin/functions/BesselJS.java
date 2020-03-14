@@ -9,6 +9,7 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.special.Gamma;
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -37,7 +38,7 @@ public class BesselJS {
 			return besselJDouble(-n, x) * (Math.pow(-1.0, Math.rint(n)));
 		}
 		if (!F.isNumIntValue(n) && x < 0.0) {
-			throw new ArithmeticException("x<0 for BesselJ");
+			throw new ArgumentTypeException(x + " is less than 0.0");
 		}
 
 		return Math.pow(x / 2.0, n) * HypergeometricJS.hypergeometric0F1(n + 1, -0.25 * x * x) / Gamma.gamma(n + 1);
@@ -63,7 +64,7 @@ public class BesselJS {
 	 */
 	public static double besselJZero(double n, int m) {
 		if (n < 0.0) {
-			throw new ArithmeticException("Negative order for BesselJZero");
+			throw new ArgumentTypeException(n + " is less than 0 (negative order)");
 		}
 
 		// approximations from dlmf.nist.gov/10.21#vi
@@ -95,7 +96,7 @@ public class BesselJS {
 		// for averaging over integer orders until write code for limit
 		// double delta = 1e-5;
 		if (x < 0) {
-			throw new ArithmeticException("x<0 for BesselY");
+			throw new ArgumentTypeException(x + " < 0.0");
 		}
 
 		// dlmf.nist.gov/10.2#E3
@@ -141,7 +142,7 @@ public class BesselJS {
 	 */
 	public static double besselYZero(double n, int m) {
 		if (n < 0.0) {
-			throw new ArithmeticException("Negative order for BesselYZero");
+			throw new ArgumentTypeException(n + " < 0 (negative order)");
 		}
 		// approximations from dlmf.nist.gov/10.21#vi
 		double delta = Math.PI / 4.0;
@@ -183,7 +184,7 @@ public class BesselJS {
 			return besselIDouble(-n, x);
 
 		if (!F.isNumIntValue(n) && x < 0) {
-			throw new ArithmeticException("x<0 for BesselI");
+			throw new ArgumentTypeException(x + " < 0.0");
 		}
 
 		return Math.pow(x / 2.0, n) * HypergeometricJS.hypergeometric0F1(n + 1.0, 0.25 * x * x) / Gamma.gamma(n + 1.0);
@@ -232,7 +233,7 @@ public class BesselJS {
 
 		}
 		if (x < 0) {
-			throw new ArithmeticException("x<0 for BesselK");
+			throw new ArgumentTypeException(x + " < 0.0");
 		}
 		if (F.isNumIntValue(n)) {
 			FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(15, 0.01);
@@ -423,7 +424,7 @@ public class BesselJS {
 		// if ( isComplex(x) ) {
 
 		if (F.isNumIntValue(x.getReal()) && x.getReal() <= 0 && F.isZero(x.getImaginary())) {
-			throw new ArithmeticException("Gamma function pole");
+			throw new ArgumentTypeException("Gamma function pole");
 		}
 
 		// reflection formula with modified Hare correction to imaginary part
@@ -459,7 +460,7 @@ public class BesselJS {
 
 	public static double logGamma(double x) {
 		if (F.isNumIntValue(x) && x <= 0) {
-			throw new ArithmeticException("Gamma function pole");
+			throw new ArgumentTypeException("Gamma function pole");
 		}
 
 		double t = x + 5.24218750000000000;

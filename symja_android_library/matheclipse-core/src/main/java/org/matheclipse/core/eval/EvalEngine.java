@@ -18,12 +18,12 @@ import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.eval.exception.AbortException;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.IllegalArgument;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.TimeoutException;
 import org.matheclipse.core.eval.exception.ValidateException;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.ASTRealMatrix;
@@ -776,7 +776,10 @@ public class EvalEngine implements Serializable {
 
 					}
 				} catch (ValidateException ve) {
-					return printMessage(ve.getMessage(ast.topHead()));
+					if (Config.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
+					return printMessage(ast.topHead(), ve);
 				}
 				if (((ISymbol.DELAYED_RULE_EVALUATION & attr) == ISymbol.DELAYED_RULE_EVALUATION)) {
 					return symbol.evalDownRule(this, ast);
@@ -958,7 +961,6 @@ public class EvalEngine implements Serializable {
 	 * @param expr
 	 * @return
 	 * @see #evaluate(IExpr)
-	 * @throws WrongArgumentType
 	 */
 	final public double evalDouble(final IExpr expr) {
 		if (expr.isReal()) {
@@ -970,7 +972,7 @@ public class EvalEngine implements Serializable {
 				return ((ISignedNumber) result).doubleValue();
 			}
 		}
-		throw new WrongArgumentType(expr, "Conversion into a double numeric value is not possible!");
+		throw new ArgumentTypeException("conversion into a double numeric value is not possible!");
 	}
 
 	/**
@@ -979,7 +981,6 @@ public class EvalEngine implements Serializable {
 	 * 
 	 * @param expr
 	 * @return
-	 * @throws WrongArgumentType
 	 */
 	final public Complex evalComplex(final IExpr expr) {
 		if (expr.isReal()) {
@@ -997,7 +998,7 @@ public class EvalEngine implements Serializable {
 				return new Complex(((INumber) result).reDoubleValue(), ((INumber) result).imDoubleValue());
 			}
 		}
-		throw new WrongArgumentType(expr, "Conversion into a double numeric value is not possible!");
+		throw new ArgumentTypeException("conversion into a double numeric value is not possible!");
 	}
 
 	/**

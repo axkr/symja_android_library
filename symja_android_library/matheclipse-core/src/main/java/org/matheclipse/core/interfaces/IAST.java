@@ -14,7 +14,6 @@ import java.util.function.Predicate;
 //import java.util.stream.Stream;
 import java.util.stream.Stream;
 
-import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.ObjIntPredicate;
 
@@ -866,8 +865,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * 
 	 * @param index
 	 * @return
-	 * @throws WrongArgumentType
-	 *             if the cast is not possible
 	 */
 	public IAST getAST(int index);
 
@@ -890,8 +887,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * 
 	 * @param index
 	 * @return
-	 * @throws WrongArgumentType
-	 *             if the cast is not possible
 	 */
 	public IInteger getInt(int index);
 
@@ -900,7 +895,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * 
 	 * @param index
 	 * @return
-	 * @throws WrongArgumentType
 	 */
 	public IAST getList(int index);
 
@@ -909,8 +903,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * 
 	 * @param index
 	 * @return
-	 * @throws WrongArgumentType
-	 *             if the cast is not possible
 	 */
 	public INumber getNumber(int index);
 
