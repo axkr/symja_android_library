@@ -5,6 +5,7 @@ import java.util.Arrays;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
+import static org.matheclipse.core.builtin.functions.EllipticIntegralsJS.*;
 
 /**
  * 
@@ -467,19 +468,30 @@ public class EllipticFunctionsJS {
 		Complex e1 = sol[0];
 		Complex e2 = sol[1];
 		Complex e3 = sol[2];
-		Complex w1 = inverseWeierstrassP(e1, g2, g3);
-		Complex w2 = inverseWeierstrassP(e2, g2, g3);
-		Complex w3 = inverseWeierstrassP(e3, g2, g3);
+		Complex lambda = e1.subtract(e3).sqrt();
+		Complex m = e2.subtract(e3).divide(e1.subtract(e3));
 
-		Complex[] w = new Complex[] { w1, w2, w3 };
-		Arrays.sort(w, (a, b) -> (int) Math.signum((a.abs() - b.abs())));
-		// w.sort( (a,b) => abs(a) - abs(b) );
-		Complex smallest = w[0];
-		Complex[] v = new Complex[] { w[1], w[2], //
-				w[1].subtract(smallest), w[2].subtract(smallest) };
-		// w.sort( (a,b) => abs(a) - abs(b) );
-		Arrays.sort(v, (a, b) -> (int) Math.signum((a.abs() - b.abs())));
-		return new Complex[] { smallest, v[0] };
+		Complex w1 = ellipticK(m).divide(lambda);
+		Complex w3 = Complex.I.multiply(ellipticK(Complex.ONE.subtract(m))).divide(lambda);
+
+		return new Complex[] { w1, w3 };
+
+		// Complex e1 = sol[0];
+		// Complex e2 = sol[1];
+		// Complex e3 = sol[2];
+		// Complex w1 = inverseWeierstrassP(e1, g2, g3);
+		// Complex w2 = inverseWeierstrassP(e2, g2, g3);
+		// Complex w3 = inverseWeierstrassP(e3, g2, g3);
+		//
+		// Complex[] w = new Complex[] { w1, w2, w3 };
+		// Arrays.sort(w, (a, b) -> (int) Math.signum((a.abs() - b.abs())));
+		// // w.sort( (a,b) => abs(a) - abs(b) );
+		// Complex smallest = w[0];
+		// Complex[] v = new Complex[] { w[1], w[2], //
+		// w[1].subtract(smallest), w[2].subtract(smallest) };
+		// // w.sort( (a,b) => abs(a) - abs(b) );
+		// Arrays.sort(v, (a, b) -> (int) Math.signum((a.abs() - b.abs())));
+		// return new Complex[] { smallest, v[0] };
 
 	}
 
