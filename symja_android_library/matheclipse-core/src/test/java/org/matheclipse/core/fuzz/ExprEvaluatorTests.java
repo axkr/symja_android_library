@@ -72,10 +72,6 @@ public class ExprEvaluatorTests extends TestCase {
 		fInputFactory.setQuotes(true);
 		AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
 		IAST seedList = F.List(//
-				F.assoc(F.CEmptyList), //
-				F.assoc(F.List(F.Rule(F.x, F.y))), //
-				F.CEmptyList, //
-				F.List(F.Rule(F.C1, F.C0)), //
 				F.num(-0.5), //
 				F.num(0.5), //
 				F.num(Math.PI * (-0.5)), //
@@ -84,6 +80,12 @@ public class ExprEvaluatorTests extends TestCase {
 				F.num(Math.PI), //
 				F.num(-Math.E), //
 				F.num(Math.E), //
+				F.True, //
+				F.False, //
+				F.assoc(F.CEmptyList), //
+				F.assoc(F.List(F.Rule(F.x, F.y))), //
+				F.CEmptyList, //
+				F.List(F.Rule(F.C1, F.C0)), //
 				F.C0, //
 				F.C1, //
 				F.CN1, //
@@ -101,7 +103,7 @@ public class ExprEvaluatorTests extends TestCase {
 				F.x_, //
 				F.y_, //
 				F.C1DSqrt5, //
-				F.Slot2, //
+				F.Slot1, //
 				F.Subtract(F.C1, F.C1));
 		int counter = 0;
 		ThreadLocalRandom random = ThreadLocalRandom.current();
