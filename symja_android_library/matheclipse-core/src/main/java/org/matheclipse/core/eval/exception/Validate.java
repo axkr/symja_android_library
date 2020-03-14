@@ -3,6 +3,7 @@ package org.matheclipse.core.eval.exception;
 import java.io.IOException;
 import java.math.BigInteger;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -109,8 +110,8 @@ public final class Validate {
 
 			try {
 				IExpr expr;
-				BigInteger longValue = BigInteger.ZERO;
 				for (int i = 1; i < list.size(); i++) {
+					BigInteger longValue = null;
 					expr = list.get(i);
 					// the following may throw an ArithmeticException
 					if (expr instanceof IInteger) {
@@ -118,21 +119,20 @@ public final class Validate {
 					} else if (expr instanceof INum) {
 						longValue = BigInteger.valueOf(((INum) expr).toLong());
 					}
-					// if (startValue > longValue) {
-					// throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
-					// + startValue + " - " + Long.MAX_VALUE);
-					// }
-					if (nonNegative && longValue.compareTo(BigInteger.ZERO) < 0) {
+					if (longValue == null) {
 						IOFunctions.printMessage(ast.topHead(), "listofbigints", F.List(arg), engine);
 						return null;
-						// throw new WrongArgumentType(arg,
-						// "Trying to convert the given list into a list of long non-negative numbers: " + arg);
+					} else if (nonNegative && longValue.compareTo(BigInteger.ZERO) < 0) {
+						IOFunctions.printMessage(ast.topHead(), "listofbigints", F.List(arg), engine);
+						return null;
 					}
 					result[i - 1] = longValue;
 				}
 				return result;
 			} catch (RuntimeException rex) {
-				//
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
 			}
 		}
 		IOFunctions.printMessage(ast.topHead(), "listofbigints", F.List(arg), engine);
@@ -578,8 +578,7 @@ public final class Validate {
 			return ast;
 		}
 		// Cannot assign to raw object `1`.
-		String str = IOFunctions.getMessage("setraw", F.List(expr),
-				EvalEngine.get());
+		String str = IOFunctions.getMessage("setraw", F.List(expr), EvalEngine.get());
 		throw new ArgumentTypeException(str);
 	}
 

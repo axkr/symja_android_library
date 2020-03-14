@@ -8097,6 +8097,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFrobeniusNumber() {
+		check("FrobeniusNumber({1->0})", //
+				"FrobeniusNumber({1->0})");
 		check("FrobeniusNumber({1000, 1476, 3764, 4864, 4871, 7773})", //
 				"47350");
 		check("FrobeniusNumber({12,16,20,27})", //

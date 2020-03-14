@@ -74,6 +74,8 @@ public class ExprEvaluatorTests extends TestCase {
 		IAST seedList = F.List(//
 				F.assoc(F.CEmptyList), //
 				F.assoc(F.List(F.Rule(F.x, F.y))), //
+				F.CEmptyList, //
+				F.List(F.Rule(F.C1, F.C0)), //
 				F.num(-0.5), //
 				F.num(0.5), //
 				F.num(Math.PI * (-0.5)), //
@@ -98,7 +100,6 @@ public class ExprEvaluatorTests extends TestCase {
 				F.ComplexInfinity, //
 				F.x_, //
 				F.y_, //
-				F.CEmptyList, //
 				F.C1DSqrt5, //
 				F.Slot2, //
 				F.Subtract(F.C1, F.C1));
