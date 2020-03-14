@@ -20937,6 +20937,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{128,0,0,1}");
 		check("StringSplit(\"128.0.0.1\", RegularExpression(\"\\\\W+\"))", //
 				"{128,0,0,1}");
+		check("StringSplit(\"a1b2.2c0.333d4444.0efghijlkm\", NumberString)", //
+				"{a,b,c,d,efghijlkm}");
 	}
 
 	public void testStringExpresion() {

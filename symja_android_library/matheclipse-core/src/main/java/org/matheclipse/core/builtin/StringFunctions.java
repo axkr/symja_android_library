@@ -494,6 +494,14 @@ public final class StringFunctions {
 			}
 			if (ast.isAST2()) {
 				IExpr arg2 = ast.arg2();
+				if (arg2.isBuiltInSymbol()) {
+					if (arg2 == F.Whitespace) {
+						return splitList(str1, str1.split("\\s+"));
+					}
+					if (arg2 == F.NumberString) {
+						return splitList(str1, str1.split("[0-9]{1,13}(\\.[0-9]+)?"));
+					}
+				}
 				if (arg2.isString()) {
 					String str2 = ((IStringX) arg2).toString();
 					return splitList(str1, str1.split(Pattern.quote(str2)));
