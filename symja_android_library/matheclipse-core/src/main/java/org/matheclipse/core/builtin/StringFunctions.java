@@ -4,6 +4,7 @@ package org.matheclipse.core.builtin;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -40,8 +41,10 @@ public final class StringFunctions {
 			F.StringExpression.setEvaluator(new StringExpression());
 			F.StringJoin.setEvaluator(new StringJoin());
 			F.StringLength.setEvaluator(new StringLength());
+			F.StringPart.setEvaluator(new StringPart());
 			F.StringReplace.setEvaluator(new StringReplace());
 			F.StringRiffle.setEvaluator(new StringRiffle());
+			F.StringSplit.setEvaluator(new StringSplit());
 			F.StringTake.setEvaluator(new StringTake());
 			F.SyntaxLength.setEvaluator(new SyntaxLength());
 			F.TextString.setEvaluator(new TextString());
@@ -318,6 +321,44 @@ public final class StringFunctions {
 		}
 	}
 
+	private static class StringPart extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+			if (!ast.arg1().isString()) {
+				return F.NIL;
+			}
+
+			IExpr arg2 = ast.arg2();
+			if (arg2.isList()) {
+				return ((IAST) arg2).mapThread(ast.setAtCopy(2, F.Null), 2);
+			}
+			String str = ((IStringX) ast.arg1()).toString();
+			int part = arg2.toIntDefault();
+			if (part > 0) {
+				if (part > str.length()) {
+					// Part `1` of `2` does not exist.
+					return IOFunctions.printMessage(ast.topHead(), "partw", F.List(F.ZZ(part), ast.arg1()), engine);
+				}
+				return F.stringx(str.charAt(part - 1));
+			}
+
+			return F.NIL;
+
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+
+		}
+	}
+
 	private static class StringReplace extends AbstractFunctionEvaluator {
 
 		@Override
@@ -348,6 +389,11 @@ public final class StringFunctions {
 			}
 			return F.NIL;
 
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_3;
 		}
 
 		@Override
@@ -432,6 +478,55 @@ public final class StringFunctions {
 			return IOFunctions.ARGS_1_3;
 		}
 
+	}
+
+	private static class StringSplit extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+			if (!ast.arg1().isString()) {
+				return F.NIL;
+			}
+			String str1 = ((IStringX) ast.arg1()).toString().trim();
+			if (ast.isAST1()) {
+				return splitList(str1, str1.split("\\s+"));
+			}
+			if (ast.isAST2()) {
+				IExpr arg2 = ast.arg2();
+				if (arg2.isString()) {
+					String str2 = ((IStringX) arg2).toString();
+					return splitList(str1, str1.split(Pattern.quote(str2)));
+				}
+				if (arg2.isAST(F.RegularExpression, 2) && arg2.first().isString()) {
+					Pattern strPattern = Pattern.compile(((IStringX) arg2.first()).toString());
+					return splitList(str1, strPattern.split(str1));
+				}
+			}
+			return F.NIL;
+
+		}
+
+		private static IExpr splitList(String str, String[] result) {
+			if (result == null || str.length() == 0) {
+				return F.CEmptyList;
+			}
+			IASTAppendable list = F.ListAlloc(result.length);
+			for (int i = 0; i < result.length; i++) {
+				list.append(F.stringx(result[i]));
+			}
+			return list;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_3;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+
+		}
 	}
 
 	private static class StringTake extends AbstractFunctionEvaluator {

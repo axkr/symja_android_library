@@ -20900,11 +20900,43 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"5");
 	}
 
+	public void testStringPart() {
+		check("StringPart(\"abcdefghijlkm\", 14)", //
+				"StringPart(abcdefghijlkm,14)");
+		check("StringPart(\"abcdefghijlkm\", 13)", //
+				"m");
+		check("StringPart(\"abcdefghijlkm\", 12)", //
+				"k");
+		check("StringPart(\"abcdefghijlkm\", 6)", //
+				"f");
+		check("StringPart(\"abcdefghijlkm\", {1, 3, 5})", //
+				"{a,c,e}");
+		check("StringPart(\"1234567890\",  {1, 3, 10})", //
+				"{1,3,0}");
+	}
+
 	public void testStringQ() {
 		check("StringQ(a)", //
 				"False");
 		check("StringQ(\"a\")", //
 				"True");
+	}
+
+	public void testStringSplit() {
+		check("StringSplit(\"\")", //
+				"{}");
+		check("StringSplit(\"test\")", //
+				"{test}");
+		check("StringSplit(\"a bbb  cccc aa   d\")", //
+				"{a,bbb,cccc,aa,d}");
+		check("StringSplit(\"A tree, an apple, four pears. And more: two sacks\", RegularExpression(\"\\\\W+\"))", //
+				"{A,tree,an,apple,four,pears,And,more,two,sacks}");
+		check("StringSplit(\"a--bbb---ccc--dddd\", \"--\")", //
+				"{a,bbb,-ccc,dddd}");
+		check("StringSplit(\"128.0.0.1\", \".\")", //
+				"{128,0,0,1}");
+		check("StringSplit(\"128.0.0.1\", RegularExpression(\"\\\\W+\"))", //
+				"{128,0,0,1}");
 	}
 
 	public void testStringExpresion() {
