@@ -18,6 +18,9 @@ StringSplit(str1, RegularExpression(str2))
 
 > split the string `str1` by the regular expression `str2` into a list of strings.
 
+See
+* [Wikipedia - Regular expression](https://en.wikipedia.org/wiki/Regular_expression)
+
 ### Examples
 
 ```
