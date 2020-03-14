@@ -186,7 +186,10 @@ public class Convert {
 			return new Array2DRowRealMatrix(array, false);
 		}
 
-		final double[][] elements = Expr2Object.toDoubleMatrix(listMatrix);
+		final double[][] elements = listMatrix.toDoubleMatrix();
+		if (elements==null) {
+			return null;
+		}
 		return new Array2DRowRealMatrix(elements, false);
 	}
 
@@ -212,7 +215,10 @@ public class Convert {
 			return null;
 		}
 
-		final double[] elements = Expr2Object.toDoubleVector(listVector);
+		final double[] elements = listVector.toDoubleVector();
+		if (elements == null) {
+			return null;
+		}
 		return new ArrayRealVector(elements, false);
 	}
 

@@ -2079,7 +2079,11 @@ public class StatisticsFunctions {
 					return matrix.mapMatrixColumns(dim, x -> F.GeometricMean(x));
 				}
 				if (arg1.isRealVector()) {
-					return F.num(StatUtils.geometricMean(arg1.toDoubleVector()));
+					double[] arg1DoubleArray = arg1.toDoubleVector();
+					if (arg1DoubleArray == null) {
+						return F.NIL;
+					}
+					return F.num(StatUtils.geometricMean(arg1DoubleArray));
 				}
 				return F.Power(list.apply(F.Times), F.fraction(1, arg1.argSize()));
 			}
@@ -2094,6 +2098,9 @@ public class StatisticsFunctions {
 		@Override
 		public IExpr numericEval(final IAST ast, EvalEngine engine) {
 			double[] values = ast.getAST(1).toDoubleVector();
+			if (values == null) {
+				return F.NIL;
+			}
 			return F.num(StatUtils.geometricMean(values));
 		}
 	}
@@ -2598,7 +2605,7 @@ public class StatisticsFunctions {
 					return evaluateArg2(arg1, arg2, engine);
 				}
 			} catch (final MathRuntimeException mre) {
-				// org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3 
+				// org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
 				return engine.printMessage(F.Covariance, mre);
 			} catch (final ValidateException ve) {
 				// WrongArgumentType occurs in list2RealMatrix(),
@@ -2625,6 +2632,9 @@ public class StatisticsFunctions {
 					if (engine.isNumericMode()) {
 						double[] arg1DoubleArray = arg1.toDoubleVector();
 						double[] arg2DoubleArray = arg2.toDoubleVector();
+						if (arg1DoubleArray == null || arg2DoubleArray == null) {
+							return F.NIL;
+						}
 						org.hipparchus.stat.correlation.Covariance cov = new org.hipparchus.stat.correlation.Covariance();
 						return F.num(cov.covariance(arg1DoubleArray, arg2DoubleArray, true));
 					}
@@ -3593,7 +3603,11 @@ public class StatisticsFunctions {
 		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 			try {
 				if (arg1.isRealVector()) {
-					return F.num(StatUtils.mean(arg1.toDoubleVector()));
+					double[] values = arg1.toDoubleVector();
+					if (values == null) {
+						return F.NIL;
+					}
+					return F.num(StatUtils.mean(values));
 				}
 				if (arg1.isList()) {
 					final IAST list = (IAST) arg1;
@@ -3724,7 +3738,11 @@ public class StatisticsFunctions {
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 			if (arg1.isRealVector()) {
-				return F.num(StatUtils.percentile(arg1.toDoubleVector(), 50));
+				double[] values = arg1.toDoubleVector();
+				if (values == null) {
+					return F.NIL;
+				}
+				return F.num(StatUtils.percentile(values, 50));
 			}
 			int[] dim = arg1.isMatrix();
 			if (dim == null && arg1.isListOfLists()) {
@@ -5413,6 +5431,9 @@ public class StatisticsFunctions {
 					if (matrixDimensions != null) {
 						if (arg1.isRealMatrix()) {
 							double[][] matrix = arg1.toDoubleMatrix();
+							if (matrix==null) {
+								return F.NIL;
+							}
 							matrix = Convert.toDoubleTransposed(matrix);
 							double[] result = new double[matrixDimensions[1]];
 							for (int i = 0; i < matrix.length; i++) {
@@ -5434,7 +5455,11 @@ public class StatisticsFunctions {
 					int dim = arg1.isVector();
 					if (dim >= 0) {
 						if (arg1.isRealVector()) {
-							return F.num(StatUtils.variance(arg1.toDoubleVector()));
+							double[] values = arg1.toDoubleVector();
+							if (values == null) {
+								return F.NIL;
+							}
+							return F.num(StatUtils.variance(values));
 						}
 						return Covariance.vectorCovarianceSymbolic(arg1, arg1, dim);
 					}

@@ -22,7 +22,7 @@ public class Expr2Object {
 	 * @deprecated use {@link IExpr#toDoubleVector()}
 	 */
 	@Deprecated
-	public static double[] toDoubleVector(IAST ast) throws WrongArgumentType {
+	private static double[] toDoubleVector(IAST ast) throws WrongArgumentType {
 		double[] result = new double[ast.argSize()];
 		ISignedNumber signedNumber;
 		for (int i = 1; i < ast.size(); i++) {
@@ -45,7 +45,7 @@ public class Expr2Object {
 	 * @deprecated use {@link IExpr#toDoubleMatrix()}
 	 */
 	@Deprecated
-	public static double[][] toDoubleMatrix(IAST ast) throws WrongArgumentType {
+	private static double[][] toDoubleMatrix(IAST ast) throws WrongArgumentType {
 		int[] dim = ast.isMatrix();
 		if (dim == null) {
 			return null;

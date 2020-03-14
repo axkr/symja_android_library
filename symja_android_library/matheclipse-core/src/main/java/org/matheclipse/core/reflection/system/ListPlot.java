@@ -59,7 +59,7 @@ public class ListPlot extends AbstractEvaluator {
 				if (ast.arg1().isVector() > 0) {
 
 					double[] allPoints = ast.arg1().toDoubleVector();
-					if (allPoints.length > 0) {
+					if (allPoints != null && allPoints.length > 0) {
 						xMaxD = 1.0;
 						xMaxD = allPoints.length;
 						points = F.ast(F.List, allPoints.length, false);
@@ -79,7 +79,7 @@ public class ListPlot extends AbstractEvaluator {
 					if (matrixDim != null && matrixDim[1] == 2) {
 
 						double[][] allPoints = ast.arg1().toDoubleMatrix();
-						if (allPoints.length > 0) {
+						if (allPoints != null && allPoints.length > 0) {
 							xMaxD = allPoints.length;
 							points = F.ast(F.List, allPoints.length, false);
 

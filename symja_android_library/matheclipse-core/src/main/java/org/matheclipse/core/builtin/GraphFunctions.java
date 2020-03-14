@@ -484,45 +484,47 @@ public class GraphFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			try {
 				if (ast.isAST1()) {
-					 if (ast.arg1().isListOfLists()) {
+					if (ast.arg1().isListOfLists()) {
 						int[] dim = ast.arg1().isMatrix();
 						if (dim != null) {
 							IAST m = (IAST) ast.arg1();
 							double[][] matrix = m.toDoubleMatrix();
-							int rowDim = dim[0];
-							int colDim = dim[1];
-							if (colDim == 2) {
-								Graph<IInteger, ExprWeightedEdge> g = new DefaultUndirectedWeightedGraph<>(
-										ExprWeightedEdge.class);
-								// define the vertices as integer numbers 1..rowDim
-								for (int i = 1; i <= rowDim; i++) {
-									g.addVertex(F.ZZ(i));
-								}
-
-								// create all possible edges between the given vertices
-								for (int i = 0; i < rowDim; i++) {
-									for (int j = i + 1; j < rowDim; j++) {
-										g.setEdgeWeight(g.addEdge(F.ZZ(i + 1), F.ZZ(j + 1)), // EuclideanDistance
-												MathArrays.distance(matrix[i], matrix[j]));
+							if (matrix != null) {
+								int rowDim = dim[0];
+								int colDim = dim[1];
+								if (colDim == 2) {
+									Graph<IInteger, ExprWeightedEdge> g = new DefaultUndirectedWeightedGraph<>(
+											ExprWeightedEdge.class);
+									// define the vertices as integer numbers 1..rowDim
+									for (int i = 1; i <= rowDim; i++) {
+										g.addVertex(F.ZZ(i));
 									}
-								}
-								GraphPath<IInteger, ExprWeightedEdge> tour = new HeldKarpTSP<IInteger, ExprWeightedEdge>()
-										.getTour(g);
 
-								// calculate the shortest tour from the sum of distances and
-								// create list of vertices for the shortest tour
-								List<IInteger> tourPositions = tour.getVertexList();
-								IASTAppendable shortestTourList = F.ListAlloc(tourPositions.size());
-								IASTAppendable sum = F.PlusAlloc(tourPositions.size());
-								IInteger lastPosition = tourPositions.get(tourPositions.size() - 1);
-								shortestTourList.append(lastPosition);
-								for (int i = tourPositions.size() - 2; i >= 0; i--) {
-									IInteger position = tourPositions.get(i);
-									shortestTourList.append(position);
-									sum.append(F.EuclideanDistance(m.get(lastPosition), m.get(position)));
-									lastPosition = position;
+									// create all possible edges between the given vertices
+									for (int i = 0; i < rowDim; i++) {
+										for (int j = i + 1; j < rowDim; j++) {
+											g.setEdgeWeight(g.addEdge(F.ZZ(i + 1), F.ZZ(j + 1)), // EuclideanDistance
+													MathArrays.distance(matrix[i], matrix[j]));
+										}
+									}
+									GraphPath<IInteger, ExprWeightedEdge> tour = new HeldKarpTSP<IInteger, ExprWeightedEdge>()
+											.getTour(g);
+
+									// calculate the shortest tour from the sum of distances and
+									// create list of vertices for the shortest tour
+									List<IInteger> tourPositions = tour.getVertexList();
+									IASTAppendable shortestTourList = F.ListAlloc(tourPositions.size());
+									IASTAppendable sum = F.PlusAlloc(tourPositions.size());
+									IInteger lastPosition = tourPositions.get(tourPositions.size() - 1);
+									shortestTourList.append(lastPosition);
+									for (int i = tourPositions.size() - 2; i >= 0; i--) {
+										IInteger position = tourPositions.get(i);
+										shortestTourList.append(position);
+										sum.append(F.EuclideanDistance(m.get(lastPosition), m.get(position)));
+										lastPosition = position;
+									}
+									return F.List(sum, shortestTourList);
 								}
-								return F.List(sum, shortestTourList);
 							}
 						}
 					} else if (ast.arg1().isList()) {

@@ -7601,6 +7601,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFit() {
+		check("Fit({1->0},1,x)", //
+				"Fit({1->0},1,x)");
 		check("Fit({{0, 1}, {1, 0}, {3, 2}, {5, 4}}, 1, x)", //
 				"0.186441+0.694915*x");
 		check("Fit({{1,1},{2,4},{3,9},{4,16}},2,x)", //
@@ -16075,7 +16077,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"<|x->y^(1/Sqrt(5))|>");
 		check("Power(<|x->y|>,5)", //
 				"<|x->y^5|>");
-		
+
 		check("(-Infinity)^(-3/5)", //
 				"0");
 		check("1/Sqrt(-Infinity)", //

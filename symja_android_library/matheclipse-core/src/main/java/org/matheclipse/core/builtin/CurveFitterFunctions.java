@@ -154,6 +154,9 @@ public class CurveFitterFunctions {
 					return false;
 				}
 				final double[] elements = data.toDoubleVector();
+				if (elements==null) {
+					return false;
+				}
 				for (int i = 0; i < elements.length; i++) {
 					obs.add(1.0, i + 1, elements[i]);
 				}

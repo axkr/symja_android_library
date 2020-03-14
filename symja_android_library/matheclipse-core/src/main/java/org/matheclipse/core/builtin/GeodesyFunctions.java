@@ -47,12 +47,14 @@ public class GeodesyFunctions {
 
 				double[] list1 = ((IAST) ast.arg1()).toDoubleVector();
 				double[] list2 = ((IAST) ast.arg2()).toDoubleVector();
+				if (list1 != null && list2 != null) {
+					GlobalPosition p1 = new GlobalPosition(list1[0], list1[1], 0.0);
+					GlobalPosition p2 = new GlobalPosition(list2[0], list2[1], 0.0);
 
-				GlobalPosition p1 = new GlobalPosition(list1[0], list1[1], 0.0);
-				GlobalPosition p2 = new GlobalPosition(list2[0], list2[1], 0.0);
-
-				GeodeticMeasurement gm = geoCalc.calculateGeodeticMeasurement(reference, p1, p2);
-				return F.UnitConvert(F.Quantity(F.num(gm.getPointToPointDistance()), F.stringx("m")), F.stringx("mi"));
+					GeodeticMeasurement gm = geoCalc.calculateGeodeticMeasurement(reference, p1, p2);
+					return F.UnitConvert(F.Quantity(F.num(gm.getPointToPointDistance()), F.stringx("m")),
+							F.stringx("mi"));
+				}
 			}
 			return F.NIL;
 		}
@@ -70,12 +72,13 @@ public class GeodesyFunctions {
 			if (ast.isAST1()) {
 				if (ast.arg1().isList()) {
 					double[] list1 = ((IAST) ast.arg1()).toDoubleVector();
-					if (list1.length == 2) {
-						return GeoPositionExpr.newInstance(new GlobalPosition(list1[0], list1[1], 0.0));
-					} else if (list1.length == 3) {
-						return GeoPositionExpr.newInstance(new GlobalPosition(list1[0], list1[1], list1[2]));
+					if (list1 != null) {
+						if (list1.length == 2) {
+							return GeoPositionExpr.newInstance(new GlobalPosition(list1[0], list1[1], 0.0));
+						} else if (list1.length == 3) {
+							return GeoPositionExpr.newInstance(new GlobalPosition(list1[0], list1[1], list1[2]));
+						}
 					}
-
 				}
 			}
 			return F.NIL;

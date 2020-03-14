@@ -1704,6 +1704,9 @@ public class ManipulateFunction {
 		if (ast.arg1().isAST(F.Histogram)) {
 			function.append("var dataArr = [");
 			double[] dData = pointList.toDoubleVector();
+			if (dData==null) {
+				return F.NIL;
+			}
 			double min = StatUtils.min(dData);
 			double max = StatUtils.max(dData);
 			double defaultRange = (max - min) / (0.5);
