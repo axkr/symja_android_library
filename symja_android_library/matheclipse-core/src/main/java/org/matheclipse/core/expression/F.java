@@ -3344,7 +3344,10 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol String = F.initFinalSymbol("String", ID.String);
-
+	
+	/***/
+	public final static IBuiltInSymbol StringContainsQ = F.initFinalSymbol("StringContainsQ", ID.StringContainsQ);
+	
 	/***/
 	public final static IBuiltInSymbol StringDrop = F.initFinalSymbol("StringDrop", ID.StringDrop);
 

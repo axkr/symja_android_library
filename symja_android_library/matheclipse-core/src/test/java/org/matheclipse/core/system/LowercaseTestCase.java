@@ -12029,8 +12029,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testLogGamma() {
 		check("Table(LogGamma(x), {x,0.0, 8.0, 0.25})", //
 				"{Infinity,1.28802,0.572365,0.203281,0.0,-0.0982718,-0.120782,-0.0844011,0.0,0.124872,0.284683,0.475215,0.693147,0.935802," //
-				+ "1.20097,1.48682,1.79176,2.11446,2.45374,2.80857,3.17805,3.56138,3.95781,4.36672,4.78749,5.2196,5.66256,6.11592,6.57925," //
-				+ "7.05219,7.53436,8.02546,8.52516}");
+						+ "1.20097,1.48682,1.79176,2.11446,2.45374,2.80857,3.17805,3.56138,3.95781,4.36672,4.78749,5.2196,5.66256,6.11592,6.57925," //
+						+ "7.05219,7.53436,8.02546,8.52516}");
 		checkNumeric("LogGamma(2.5 + 3*I)", //
 				"-1.4709546103488411+I*2.8226156382607996");
 		checkNumeric("LogGamma({2.0+ 3*I, 3+ 3.0*I, 4.0+ 3*I, 5.0+ 3*I, 6.0+ 3*I})", //
@@ -20899,6 +20899,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 						"next line");
 	}
 
+	public void testStringContainsQ() {
+		check("StringContainsQ({\"a\", \"b\", \"ab\", \"abcd\", \"bcde\"}, \"a\")", //
+				"{True,False,True,True,False}");
+		
+		// StringContainsQ: StringExpression currently not supported in StringContainsQ.
+		check("StringContainsQ(\"bcde\", \"c\" ~~ __ ~~ \"t\")", //
+				"StringContainsQ(bcde,c~~__~~t)");
+	}
+
 	public void testStringJoin() {
 		check("StringJoin(\"test\")", //
 				"test");
@@ -20966,6 +20975,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStringReplace() {
+		// operator form:
+		check("StringReplace(\"ab\" -> \"X\")[\"abbaabbaa\"]", //
+				"XbaXbaa");
+
 		check("StringReplace(\"abbaabbaa\", \"ab\" -> \"X\")", //
 				"XbaXbaa");
 	}

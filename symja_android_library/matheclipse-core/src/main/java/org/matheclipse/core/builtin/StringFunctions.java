@@ -37,6 +37,7 @@ public final class StringFunctions {
 			F.FromCharacterCode.setEvaluator(new FromCharacterCode());
 			F.LetterQ.setEvaluator(new LetterQ());
 			F.LowerCaseQ.setEvaluator(new LowerCaseQ());
+			F.StringContainsQ.setEvaluator(new StringContainsQ());
 			F.StringDrop.setEvaluator(new StringDrop());
 			F.StringExpression.setEvaluator(new StringExpression());
 			F.StringJoin.setEvaluator(new StringJoin());
@@ -217,6 +218,44 @@ public final class StringFunctions {
 		}
 	}
 
+	private static class StringContainsQ extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				ast = F.operatorFormAppend(ast);
+				if (!ast.isPresent()) {
+					return F.NIL;
+				}
+			}
+			if (ast.isAST2()) {
+				IExpr arg1 = ast.arg1();
+				if (arg1.isList()) {
+					return ((IAST) arg1).mapThread(ast.copy(), 1);
+				}
+				IExpr arg2 = ast.arg2();
+				if (arg2.isAST(F.StringExpression)) {
+					// `1` currently not supported in `2`.
+					return IOFunctions.printMessage(ast.topHead(), "unsupported", F.List(F.StringExpression, F.StringContainsQ), engine);
+
+				}
+				if (arg1.isString()) {
+					String s1 = arg1.toString();
+					if (arg2.isString()) {
+						String s2 = arg2.toString();
+						return F.bool(s1.contains(s2));
+					}
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
+	}
+
 	private static class StringDrop extends AbstractFunctionEvaluator {
 
 		@Override
@@ -332,7 +371,7 @@ public final class StringFunctions {
 
 			IExpr arg2 = ast.arg2();
 			if (arg2.isList()) {
-				return ((IAST) arg2).mapThread(ast.setAtCopy(2, F.Null), 2);
+				return ((IAST) arg2).mapThread(ast.copy(), 2);
 			}
 			String str = ((IStringX) ast.arg1()).toString();
 			int part = arg2.toIntDefault();
@@ -362,7 +401,13 @@ public final class StringFunctions {
 	private static class StringReplace extends AbstractFunctionEvaluator {
 
 		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				ast = F.operatorFormAppend(ast);
+				if (!ast.isPresent()) {
+					return F.NIL;
+				}
+			}
 			if (ast.size() == 3) {
 				if (!ast.arg1().isString()) {
 					return F.NIL;

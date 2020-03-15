@@ -705,6 +705,7 @@ public class IOFunctions {
 			"sym", "Argument `1` at position `2` is expected to be a symbol.", //
 			"tag", "Rule for `1` can only be attached to `2`.", //
 			"take", "Cannot take positions `1` through `2` in `3`.", //
+			"unsupported", "`1` currently not supported in `2`.", //
 			"usraw", "Cannot unset object `1`.", //
 			"vpow2", "Argument `1` is restricted to vectors with a length of power of 2.", //
 			"vrule", "Cannot set `1` to `2`, which is not a valid list of replacement rules.", //
