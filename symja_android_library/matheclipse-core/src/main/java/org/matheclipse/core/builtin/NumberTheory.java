@@ -31,7 +31,7 @@ import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.LimitException;
-import org.matheclipse.core.eval.exception.Validate; 
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -3700,7 +3700,7 @@ public final class NumberTheory {
 			if (arg1.isInteger()) {
 				try {
 					IInteger ii = (IInteger) arg1;
-					if (ii.isEven() && !equals(F.C2) && !equals(F.C4)) {
+					if (ii.isEven() && !ii.equals(F.C2) && !ii.equals(F.C4)) {
 						if (ii.quotient(F.C2).isEven()) {
 							return F.NIL;
 						}
@@ -3970,7 +3970,8 @@ public final class NumberTheory {
 				}
 			}
 			if (!eVar.isSize(1)) {
-				return engine.printMessage(ast.topHead()+": only implemented for univariate polynomials at position 1"); 
+				return engine
+						.printMessage(ast.topHead() + ": only implemented for univariate polynomials at position 1");
 			}
 			try {
 				IExpr expr = F.evalExpandAll(ast.arg1(), engine);
