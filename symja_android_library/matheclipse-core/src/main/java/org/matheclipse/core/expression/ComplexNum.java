@@ -333,7 +333,7 @@ public class ComplexNum implements IComplexNum {
 
 	@Override
 	public IExpr complexArg() {
-		return num(Math.atan2(imDoubleValue(), reDoubleValue()));
+		return num(fComplex.getArgument());
 	}
 
 	@Override

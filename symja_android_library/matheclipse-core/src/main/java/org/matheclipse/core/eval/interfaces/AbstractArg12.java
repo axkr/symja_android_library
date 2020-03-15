@@ -115,7 +115,11 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 	}
 
 	public IExpr binaryOperator(IAST ast, final IExpr o0, final IExpr o1) {
-		IExpr result = F.NIL;
+		IExpr result = e2ObjArg(o0, o1);
+		if (result.isPresent()) {
+			return result;
+		}
+
 		if (o0.isNumeric() || o1.isNumeric()) {
 			try {
 				EvalEngine engine = EvalEngine.get();
@@ -166,12 +170,11 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 				}
 			} catch (RuntimeException rex) {
 				// EvalEngine.get().printMessage(ast.topHead().toString() + ": " + rex.getMessage());
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
 				return F.NIL;
 			}
-		}
-		result = e2ObjArg(o0, o1);
-		if (result.isPresent()) {
-			return result;
 		}
 
 		if (o0 instanceof IInteger) {

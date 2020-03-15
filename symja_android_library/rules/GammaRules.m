@@ -11,10 +11,6 @@
   Gamma(-I*Infinity) = 0, 
   Gamma(ComplexInfinity) = Indeterminate, 
    
-  Gamma(a_, 0):=ComplexInfinity
-    /; Re(a)<0,
-  Gamma(a_, 0):=Gamma(a)
-    /; Re(a)>0,
   Gamma(a_, -1):=E*Subfactorial(a - 1),
   Gamma(a_, Infinity):=0,
   Gamma(1/2, z_?NumericQ):=Sqrt(Pi)*Erfc(Sqrt(z)),

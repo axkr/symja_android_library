@@ -30,6 +30,7 @@ public class ConstantDefinitions {
 	private static int HOUR = Calendar.getInstance().get(Calendar.HOUR);
 	private static int MINUTE = Calendar.getInstance().get(Calendar.MINUTE);
 	private static int SECOND = Calendar.getInstance().get(Calendar.SECOND);
+	final static public double EULER_GAMMA = 0.57721566490153286060651209008240243104215933593992;
 
 	/**
 	 * 
@@ -404,7 +405,7 @@ public class ConstantDefinitions {
 	 * See <a href="http://en.wikipedia.org/wiki/Euler–Mascheroni_constant">Euler– Mascheroni constant</a>
 	 */
 	private static class EulerGamma extends AbstractSymbolEvaluator implements ISignedNumberConstant {
-		final static public double EULER_GAMMA = 0.57721566490153286060651209008240243104215933593992;
+		
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {

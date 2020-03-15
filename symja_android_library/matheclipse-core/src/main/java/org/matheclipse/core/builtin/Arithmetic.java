@@ -48,6 +48,7 @@ import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.functions.GammaJS;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.exception.Validate;
@@ -1568,11 +1569,48 @@ public final class Arithmetic {
 			return num(gamma);
 		}
 
+		@Override
+		public IExpr e2DblComArg(final IComplexNum d0, final IComplexNum d1) {
+			if (d0.isZero() && d1.isZero()) {
+				return F.CInfinity;
+			}
+			return F.complexNum(GammaJS.gamma(d0.evalComplex(), d1.evalComplex()));
+		}
+
 		public IExpr e2DblArg(final INum d0, final INum d1) {
-			return F.num(de.lab4inf.math.functions.IncompleteGamma.incGammaP(d0.doubleValue(), d1.doubleValue()));
+			if (d0.isZero() && d1.isZero()) {
+				return F.CInfinity;
+			}
+			if (d0.isZero() || d0.isNegative() || d1.isNegative()) {
+				return F.complexNum(GammaJS.gamma(d0.evalComplex(), d1.evalComplex()));
+			}
+			double c = GammaJS.gamma(d0.doubleValue(), d1.doubleValue());
+			// if (F.isZero(c.getImaginary())) {
+			// return F.num(c.getReal());
+			// }
+			return F.num(c);
+			// return F.num(de.lab4inf.math.functions.IncompleteGamma.incGammaP(d0.doubleValue(), d1.doubleValue()));
 		}
 
 		public IExpr e2ObjArg(final IExpr o0, final IExpr z) {
+			if (z.isZero()) {
+				if (o0.isZero()) {
+					return F.CInfinity;
+				}
+				if (o0.isNegativeResult()) {
+					return F.CComplexInfinity;
+				}
+				if (o0.isPositiveResult()) {
+					return F.Gamma(o0);
+				}
+				IExpr re = o0.re();
+				if (re.isNegative()) {
+					return F.CComplexInfinity;
+				}
+				if (re.isPositive()) {
+					return F.Gamma(o0);
+				}
+			}
 			int n = o0.toIntDefault(Integer.MIN_VALUE);
 			if (n > 0 && z.isNumericFunction()) {
 				//

@@ -979,7 +979,8 @@ public class SpecialFunctions {
 					return F.CInfinity;
 				}
 				if (arg1 > 0.0) {
-					return Num.valueOf(de.lab4inf.math.functions.Gamma.lngamma(arg1));
+					return  Num.valueOf(BesselJS.logGamma(arg1));
+//					return Num.valueOf(de.lab4inf.math.functions.Gamma.lngamma(arg1));
 				}
 			} catch (final MathIllegalStateException e) {
 			}
@@ -995,7 +996,8 @@ public class SpecialFunctions {
 				if (F.isZero(stack[top])) {
 					return Double.POSITIVE_INFINITY;
 				}
-				return de.lab4inf.math.functions.Gamma.lngamma(stack[top]);
+				return BesselJS.logGamma(stack[top]);
+//				return de.lab4inf.math.functions.Gamma.lngamma(stack[top]);
 			} catch (final MathIllegalStateException e) {
 			}
 			throw new UnsupportedOperationException();
