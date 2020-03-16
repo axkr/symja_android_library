@@ -20899,10 +20899,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 						"next line");
 	}
 
+	public void testStringCases() { 
+//		check("StringCases(\"abcdabcdcd\", \"abc\")", //
+//				"{abc,abc}");
+		check("StringCases(\"abcdabcdcd\", \"abc\" | \"cd\")", //
+				"{abc,abc,cd}");  
+	}
+
 	public void testStringContainsQ() {
 		check("StringContainsQ({\"a\", \"b\", \"ab\", \"abcd\", \"bcde\"}, \"a\")", //
 				"{True,False,True,True,False}");
-		
+
 		// StringContainsQ: StringExpression currently not supported in StringContainsQ.
 		check("StringContainsQ(\"bcde\", \"c\" ~~ __ ~~ \"t\")", //
 				"StringContainsQ(bcde,c~~__~~t)");
@@ -20926,6 +20933,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testStringLength() {
 		check("StringLength(\"tiger\")", //
 				"5");
+	}
+
+	public void testStringMatchQ() {
+		check("StringMatchQ(\"acggtaagc\", RegularExpression(\"[acgt]+\"))", //
+				"True");
+		check("StringMatchQ({\"ability\", \"listable\", \"argument\"}, RegularExpression(\"li(.+?)le\"))", //
+				"{False,True,False}");
+
 	}
 
 	public void testStringPart() {

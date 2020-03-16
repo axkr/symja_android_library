@@ -37,11 +37,13 @@ public final class StringFunctions {
 			F.FromCharacterCode.setEvaluator(new FromCharacterCode());
 			F.LetterQ.setEvaluator(new LetterQ());
 			F.LowerCaseQ.setEvaluator(new LowerCaseQ());
+			F.StringCases.setEvaluator(new StringCases());
 			F.StringContainsQ.setEvaluator(new StringContainsQ());
 			F.StringDrop.setEvaluator(new StringDrop());
 			F.StringExpression.setEvaluator(new StringExpression());
 			F.StringJoin.setEvaluator(new StringJoin());
 			F.StringLength.setEvaluator(new StringLength());
+			F.StringMatchQ.setEvaluator(new StringMatchQ());
 			F.StringPart.setEvaluator(new StringPart());
 			F.StringReplace.setEvaluator(new StringReplace());
 			F.StringRiffle.setEvaluator(new StringRiffle());
@@ -218,6 +220,100 @@ public final class StringFunctions {
 		}
 	}
 
+	private static class StringCases extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				ast = F.operatorFormAppend(ast);
+				if (!ast.isPresent()) {
+					return F.NIL;
+				}
+			}
+			if (ast.isAST2()) {
+				IExpr arg1 = ast.arg1();
+				if (arg1.isList()) {
+					return ((IAST) arg1).mapThread(ast.copy(), 1);
+				}
+				if (arg1.isString()) {
+					final String s1 = arg1.toString();
+					IExpr arg2 = ast.arg2();
+					if (arg2.isString()) {
+						IASTAppendable result = F.ListAlloc();
+						String s2 = arg2.toString();
+						appendMatches(s1, s2, result);
+						return result;
+					} else if (arg2.isList() || arg2.isAlternatives()) {
+						IASTAppendable result = F.ListAlloc();
+						IAST list = (IAST) arg2;
+						for (int i = 1; i < list.size(); i++) {
+							if (!list.get(i).isString()) {
+								// `1` currently not supported in `2`.
+								return IOFunctions.printMessage(ast.topHead(), "unsupported",
+										F.List(list.get(i).topHead(), ast.topHead()), engine);
+							}
+						}
+						appendMatches(s1, list, result);
+						return result;
+					} else {
+						// `1` currently not supported in `2`.
+						return IOFunctions.printMessage(ast.topHead(), "unsupported",
+								F.List(arg2.topHead(), ast.topHead()), engine);
+					}
+				}
+			}
+			return F.NIL;
+		}
+
+		/**
+		 * Append matches of the <code>list</code> elements expression in <code>s1</code> into the <code>result</code>
+		 * list.
+		 * 
+		 * @param s1
+		 * @param list
+		 * @param result
+		 */
+		private static void appendMatches(String s1, IAST list, IASTAppendable result) {
+			int i = 1;
+			String s2 = list.get(i++).toString();
+			int lastIndex = -1;
+			int index = s1.indexOf(s2);
+			while (index >= 0 || i < list.size()) {
+				if (index < 0) {
+					if (i >= list.size()) {
+						return;
+					}
+					s2 = list.get(i++).toString();
+					index = s1.indexOf(s2, lastIndex + 1);
+					continue;
+				}
+				result.append(F.stringx(s2));
+				lastIndex = index + s2.length();
+				index = s1.indexOf(s2, lastIndex + 1);
+			}
+		}
+
+		/**
+		 * Append matches of the <code>s2</code> expression in <code>s1</code> into the <code>result</code> list.
+		 * 
+		 * @param s1
+		 * @param s2
+		 * @param result
+		 */
+		private static void appendMatches(String s1, String s2, IASTAppendable result) {
+			int index = s1.indexOf(s2);
+			while (index >= 0) {
+				result.append(F.stringx(s2));
+				index = s1.indexOf(s2, index + 1);
+			}
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
+		}
+	}
+
 	private static class StringContainsQ extends AbstractFunctionEvaluator {
 
 		@Override
@@ -236,7 +332,8 @@ public final class StringFunctions {
 				IExpr arg2 = ast.arg2();
 				if (arg2.isAST(F.StringExpression)) {
 					// `1` currently not supported in `2`.
-					return IOFunctions.printMessage(ast.topHead(), "unsupported", F.List(F.StringExpression, F.StringContainsQ), engine);
+					return IOFunctions.printMessage(ast.topHead(), "unsupported",
+							F.List(F.StringExpression, ast.topHead()), engine);
 
 				}
 				if (arg1.isString()) {
@@ -357,6 +454,41 @@ public final class StringFunctions {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+	}
+
+	private static class StringMatchQ extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				ast = F.operatorFormAppend(ast);
+				if (!ast.isPresent()) {
+					return F.NIL;
+				}
+			}
+			if (ast.isAST2()) {
+				IExpr arg1 = ast.arg1();
+				if (arg1.isList()) {
+					return ((IAST) arg1).mapThread(ast.copy(), 1);
+				}
+				if (arg1.isString()) {
+					IExpr arg2 = ast.arg2();
+					if (arg2.isAST(F.RegularExpression, 2) && arg2.first().isString()) {
+						return F.bool(Pattern.matches(((IStringX) arg2.first()).toString(), arg1.toString()));
+					} else {
+						// `1` currently not supported in `2`.
+						return IOFunctions.printMessage(ast.topHead(), "unsupported",
+								F.List(arg2.topHead(), ast.topHead()), engine);
+					}
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_2;
 		}
 	}
 

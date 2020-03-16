@@ -3344,10 +3344,13 @@ public class F {
 
 	/***/
 	public final static IBuiltInSymbol String = F.initFinalSymbol("String", ID.String);
-	
+
+	/***/
+	public final static IBuiltInSymbol StringCases = F.initFinalSymbol("StringCases", ID.StringCases);
+
 	/***/
 	public final static IBuiltInSymbol StringContainsQ = F.initFinalSymbol("StringContainsQ", ID.StringContainsQ);
-	
+
 	/***/
 	public final static IBuiltInSymbol StringDrop = F.initFinalSymbol("StringDrop", ID.StringDrop);
 
@@ -3361,6 +3364,9 @@ public class F {
 	public final static IBuiltInSymbol StringLength = F.initFinalSymbol("StringLength", ID.StringLength);
 
 	/***/
+	public final static IBuiltInSymbol StringMatchQ = F.initFinalSymbol("StringMatchQ", ID.StringMatchQ);
+
+	/** StringPart(str, pos) - return the character at position `pos` from the `str` string expression. */
 	public final static IBuiltInSymbol StringPart = F.initFinalSymbol("StringPart", ID.StringPart);
 
 	/** StringQ(x) - is `True` if `x` is a string object, or `False` otherwise. */
@@ -3372,7 +3378,7 @@ public class F {
 	/***/
 	public final static IBuiltInSymbol StringRiffle = F.initFinalSymbol("StringRiffle", ID.StringRiffle);
 
-	/***/
+	/** StringSplit(str) - split the string `str` by whitespaces into a list of strings. */
 	public final static IBuiltInSymbol StringSplit = F.initFinalSymbol("StringSplit", ID.StringSplit);
 
 	/***/
@@ -9593,7 +9599,7 @@ public class F {
 	final static public IStringX stringx(final char c) {
 		return StringX.valueOf(c);
 	}
-	
+
 	/**
 	 * Create a Symja string expression with mime type TEXT_PLAIN.
 	 * 
