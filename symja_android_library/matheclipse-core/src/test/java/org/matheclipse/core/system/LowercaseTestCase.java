@@ -8135,6 +8135,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFromCharacterCode() {
+		check("FromCharacterCode({97,45,51})", //
+				"a-3");
+		// undefined negative codes
 		check("FromCharacterCode(-42)", //
 				"FromCharacterCode(-42)");
 		check("FromCharacterCode({65,-10,67})", //
@@ -20900,13 +20903,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStringCases() { 
-//		check("StringCases(\"abcdabcdcd\", \"abc\")", //
-//				"{abc,abc}");
+		check("StringCases(\"abcdabcdcd\", \"abc\")", //
+				"{abc,abc}");
 		check("StringCases(\"abcdabcdcd\", \"abc\" | \"cd\")", //
 				"{abc,abc,cd}");  
+		check("StringCases(\"12341235678\", \"123\" | \"78\")", //
+				"{123,123,78}");  
 	}
 
 	public void testStringContainsQ() {
+		check("StringContainsQ({\"the quick brown fox\", \"jumps\", \"over the lazy dog\"}, \"the\")", //
+				"{True,False,True}");
 		check("StringContainsQ({\"a\", \"b\", \"ab\", \"abcd\", \"bcde\"}, \"a\")", //
 				"{True,False,True,True,False}");
 
@@ -20931,14 +20938,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStringLength() {
-		check("StringLength(\"tiger\")", //
+		check("StringLength(\"symja\")", //
 				"5");
 	}
 
 	public void testStringMatchQ() {
 		check("StringMatchQ(\"acggtaagc\", RegularExpression(\"[acgt]+\"))", //
 				"True");
-		check("StringMatchQ({\"ability\", \"listable\", \"argument\"}, RegularExpression(\"li(.+?)le\"))", //
+		check("StringMatchQ({\"ExpandAll\", \"listable\", \"test\"}, RegularExpression(\"li(.+?)le\"))", //
 				"{False,True,False}");
 
 	}
@@ -20990,6 +20997,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStringReplace() {
+		check("StringReplace(\"the quick brown fox jumps over the lazy dog\", \"the\" -> \"a\")", //
+				"a quick brown fox jumps over a lazy dog");
 		// operator form:
 		check("StringReplace(\"ab\" -> \"X\")[\"abbaabbaa\"]", //
 				"XbaXbaa");
