@@ -3223,7 +3223,7 @@ public class Algebra {
 				}
 				IExpr arg1 = F.evalExpandAll(ast.arg1(), engine);
 				IExpr arg2 = F.evalExpandAll(ast.arg2(), engine);
-				if (arg2.isZero()) {
+				if (arg1.isZero()||arg2.isZero()) {
 					return F.NIL;
 				}
 				if (!arg1.isPolynomialStruct()) {
