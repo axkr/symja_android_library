@@ -86,9 +86,13 @@ public class ExprEvaluatorTests extends TestCase {
 				F.assoc(F.List(F.Rule(F.x, F.y))), //
 				F.CEmptyList, //
 				F.List(F.Rule(F.C1, F.C0)), //
+				F.List(F.Rule(F.x, F.CN1)), //
 				F.C0, //
 				F.C1, //
 				F.CN1, //
+				F.C2, //
+				F.CN2, //
+				F.CN10, //
 				F.CN1D2, //
 				F.C1D2, //
 				F.CNI, //

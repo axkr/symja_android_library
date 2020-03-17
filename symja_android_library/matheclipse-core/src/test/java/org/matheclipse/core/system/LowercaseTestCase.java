@@ -11206,6 +11206,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLegendreP() {
+		// TODO support negative values
+		check("LegendreP(-3,x)", //
+				"LegendreP(-3,x)");
+		
 		check("Sqrt(Pi)/(Gamma((1 - Pi)/2) * Gamma(1 + Pi/2))", //
 				"Sqrt(Pi)/(Gamma(1/2*(1-Pi))*Gamma(1+Pi/2))");
 
@@ -18548,6 +18552,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRoots() {
+		check("Roots(a*x^2+b*x+c==0,2)", //
+				"Roots(c+b*x+a*x^2==0,2)");
+		
 		check("Roots(x^16-1==0,x)", //
 				"x==(-1)^(1/8)||x==-(-1)^(1/8)||x==(-1)^(1/4)||x==-(-1)^(1/4)||x==(-1)^(3/8)||x==-(\n"
 						+ "-1)^(3/8)||x==I||x==-I||x==(-1)^(5/8)||x==-(-1)^(5/8)||x==(-1)^(3/4)||x==-(-1)^(\n"

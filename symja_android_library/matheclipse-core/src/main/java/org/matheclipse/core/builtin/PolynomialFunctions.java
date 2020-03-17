@@ -28,7 +28,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrappedException; 
+import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
@@ -255,7 +255,7 @@ public class PolynomialFunctions {
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_2;
-		} 
+		}
 
 	}
 
@@ -1802,7 +1802,7 @@ public class PolynomialFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			int degree = ast.arg1().toIntDefault(Integer.MIN_VALUE);
-			if (degree > Integer.MIN_VALUE) {
+			if (degree >= 0) {
 				return PolynomialsUtils.createHermitePolynomial(degree, ast.arg2());
 			}
 			return F.NIL;
@@ -1906,7 +1906,7 @@ public class PolynomialFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			int degree = ast.arg1().toIntDefault(Integer.MIN_VALUE);
-			if (degree > Integer.MIN_VALUE) {
+			if (degree >= 0) {
 				return PolynomialsUtils.createLegendrePolynomial(degree, ast.arg2());
 			}
 			return F.NIL;
@@ -2155,7 +2155,7 @@ public class PolynomialFunctions {
 	private static double[] coefficients(IExpr polynomial, final ISymbol variable) throws JASConversionException {
 		try {
 			ExprPolynomialRing ring = new ExprPolynomialRing(F.List(variable));
-			ExprPolynomial poly = ring.create(polynomial); 
+			ExprPolynomial poly = ring.create(polynomial);
 
 			IAST list = poly.coefficientList();
 			int degree = list.size() - 2;
@@ -2171,7 +2171,7 @@ public class PolynomialFunctions {
 			return result;
 		} catch (RuntimeException ex) {
 			// Polynomial expected!
-			return null; 
+			return null;
 		}
 	}
 

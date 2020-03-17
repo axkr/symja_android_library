@@ -272,13 +272,12 @@ public class VariablesSet {
 	}
 
 	/**
-	 * Add the symbol to the set of variables.
+	 * Check if the symbol is a valid variable. If yes, add the symbol to the set of variables.
 	 * 
 	 * @param symbol
-	 * @return <tt>true</tt> if the underlying set did not already contain the symbol
 	 */
-	public boolean add(final IExpr symbol) {
-		return fVariablesSet.add(symbol);
+	public void add(final IExpr symbol) {
+		symbol.accept(new VariablesVisitor(fVariablesSet));
 	}
 
 	public boolean addAll(final Set<? extends IExpr> symbols) {
