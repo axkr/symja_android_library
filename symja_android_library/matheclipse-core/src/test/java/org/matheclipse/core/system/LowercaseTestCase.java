@@ -15927,6 +15927,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testPolynomialQuotient() {
 		check("PolynomialQuotient(0,2,x,Modulus->2)", //
 				"PolynomialQuotient(0,2,x,Modulus->2)");
+		check("PolynomialQuotient(x^2+4*x+1,-10,x,Modulus->2)", //
+				"PolynomialQuotient(1+4*x+x^2,-10,x,Modulus->2)");
 		
 		check("PolynomialQuotient(x^2+4*x+1,Indeterminate,x,Modulus->3)", //
 				"PolynomialQuotient(1+4*x+x^2,Indeterminate,x,Modulus->3)");

@@ -579,13 +579,13 @@ public class Algebra {
 						times.set(1, ((IInteger) times.arg1()).div(gcd));
 						numeratorPlus.set(i, times);
 					} else {
-						error[0] = true; 
+						error[0] = true;
 					}
 				}
 			});
 			if (error[0]) {
 				return null;
-			} 
+			}
 			IExpr[] result = new IExpr[3];
 			result[0] = F.C1;
 			result[1] = numeratorPlus;
@@ -2183,7 +2183,7 @@ public class Algebra {
 			IExpr result = F.REMEMBER_AST_CACHE.getIfPresent(ast);
 			if (result != null) {
 				return result;
-			} 
+			}
 			try {
 				IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 				// ASTRange r = new ASTRange(eVar.getVarList(), 1);
@@ -2233,7 +2233,7 @@ public class Algebra {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
-			VariablesSet eVar = new VariablesSet(ast.arg1()); 
+			VariablesSet eVar = new VariablesSet(ast.arg1());
 			try {
 				IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 				// ASTRange r = new ASTRange(eVar.getVarList(), 1);
@@ -3223,34 +3223,38 @@ public class Algebra {
 				}
 				IExpr arg1 = F.evalExpandAll(ast.arg1(), engine);
 				IExpr arg2 = F.evalExpandAll(ast.arg2(), engine);
-				if (arg1.isZero()||arg2.isZero()) {
+				if (arg1.isZero() || arg2.isZero()) {
 					return F.NIL;
 				}
-				if (!arg1.isPolynomialStruct()) {
-					// `1` is not a polynomial.
-					return IOFunctions.printMessage(ast.topHead(), "poly", F.List(arg1), engine);
-				}
-				if (!arg2.isPolynomialStruct()) {
-					// `1` is not a polynomial.
-					return IOFunctions.printMessage(ast.topHead(), "poly", F.List(arg2), engine);
-				}
-				if (ast.size() == 5) {
-					final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
-					IExpr option = options.getOption(F.Modulus);
-					if (option.isInteger() && !option.isZero()) {
-						IExpr[] result = quotientRemainderModInteger(arg1, arg2, variable, option);
-						if (result == null) {
-							return F.NIL;
-						}
-						return result[0];
+				try {
+					if (!arg1.isPolynomialStruct()) {
+						// `1` is not a polynomial.
+						return IOFunctions.printMessage(ast.topHead(), "poly", F.List(arg1), engine);
 					}
-					return F.NIL;
+					if (!arg2.isPolynomialStruct()) {
+						// `1` is not a polynomial.
+						return IOFunctions.printMessage(ast.topHead(), "poly", F.List(arg2), engine);
+					}
+					if (ast.size() == 5) {
+						final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
+						IExpr option = options.getOption(F.Modulus);
+						if (option.isInteger() && !option.isZero()) {
+							IExpr[] result = quotientRemainderModInteger(arg1, arg2, variable, option);
+							if (result == null) {
+								return F.NIL;
+							}
+							return result[0];
+						}
+						return F.NIL;
+					}
+					IExpr[] result = quotientRemainder(arg1, arg2, variable);
+					if (result == null) {
+						return F.NIL;
+					}
+					return result[0];
+				} catch (ArithmeticException ae) {
+					// division by zero
 				}
-				IExpr[] result = quotientRemainder(arg1, arg2, variable);
-				if (result == null) {
-					return F.NIL;
-				}
-				return result[0];
 			}
 			return F.NIL;
 		}
