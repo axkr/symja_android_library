@@ -991,7 +991,11 @@ public final class BooleanFunctions {
 				}
 				IExpr sym = variables.get(position);
 				if (sym.isSymbol()) {
-
+					if (sym.isBuiltInSymbol() || !sym.isVariable()) {
+						// Cannot assign to raw object `1`.
+						throw new ArgumentTypeException(
+								IOFunctions.getMessage("setraw", F.List(sym), EvalEngine.get()));
+					}
 					ISymbol symbol = (ISymbol) sym;
 					IExpr value = symbol.assignedValue();
 					try {
@@ -3676,6 +3680,10 @@ public final class BooleanFunctions {
 			}
 			IExpr sym = variables.get(position);
 			if (sym.isSymbol()) {
+				if (sym.isBuiltInSymbol() || !sym.isVariable()) {
+					// Cannot assign to raw object `1`.
+					throw new ArgumentTypeException(IOFunctions.getMessage("setraw", F.List(sym), EvalEngine.get()));
+				}
 				ISymbol symbol = (ISymbol) sym;
 				IExpr value = symbol.assignedValue();
 				try {
@@ -3784,6 +3792,10 @@ public final class BooleanFunctions {
 			}
 			IExpr sym = variables.get(position);
 			if (sym.isSymbol()) {
+				if (sym.isBuiltInSymbol() || !sym.isVariable()) {
+					// Cannot assign to raw object `1`.
+					throw new ArgumentTypeException(IOFunctions.getMessage("setraw", F.List(sym), EvalEngine.get()));
+				}
 				ISymbol symbol = (ISymbol) sym;
 				IExpr value = symbol.assignedValue();
 				try {

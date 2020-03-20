@@ -1560,7 +1560,43 @@ public final class Combinatoric {
 	}
 
 	/**
-	 * Generate tuples from elements of a list.
+	 * <pre>
+	 * <code>Tuples(list, n)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * creates a list of all <code>n</code>-tuples of elements in <code>list</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * <code>Tuples({list1, list2, ...})
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns a list of tuples with elements from the given lists.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Tuple">Wikipedia - Tuple</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Tuples({a, b, c}, 2)
+	 * {{a,a},{a,b},{a,c},{b,a},{b,b},{b,c},{c,a},{c,b},{c,c}}
+	 * 
+	 * &gt;&gt; Tuples[{{a, b}, {1, 2, 3}}]
+	 * {{a,1},{a,2},{a,3},{b,1},{b,2},{b,3}}
+	 * </code>
+	 * </pre>
 	 */
 	private final static class Tuples extends AbstractFunctionEvaluator {
 
@@ -1568,31 +1604,19 @@ public final class Combinatoric {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr arg1 = ast.arg1();
 			if (ast.isAST1() && arg1.isList()) {
-				try {
-					IAST list = (IAST) arg1;
-					if (list.exists(x -> !x.isAST())) {
-						return F.NIL;
-					}
-					// for (int i = 1; i < list.size(); i++) {
-					// if (!list.get(i).isAST()) {
-					// return F.NIL;
-					// }
-					// }
-					IASTAppendable result = F.ListAlloc(16);
-					IAST temp = F.List();
-					tuplesOfLists(list, 1, result, temp);
-					return result;
-				} catch (ArithmeticException ae) {
+
+				IAST list = (IAST) arg1;
+				if (list.exists(x -> !x.isAST())) {
 					return F.NIL;
-				} catch (RuntimeException e) {
-					e.printStackTrace();
 				}
-				return F.NIL;
+				IASTAppendable result = F.ListAlloc(16);
+				IAST temp = F.List();
+				tuplesOfLists(list, 1, result, temp);
+				return result;
 			} else if (ast.isAST2() && arg1.isAST() && ast.arg2().isInteger()) {
 				IExpr arg2 = ast.arg2();
-
 				int k = ((IInteger) arg2).toIntDefault(Integer.MIN_VALUE);
-				if (k > Integer.MIN_VALUE) {
+				if (k >= 0) {
 					IASTAppendable result = F.ListAlloc(16);
 					IAST temp = F.ast(arg1.head());
 					tuples((IAST) arg1, k, result, temp);

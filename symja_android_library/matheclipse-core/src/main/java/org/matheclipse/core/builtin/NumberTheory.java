@@ -235,7 +235,7 @@ public final class NumberTheory {
 			if (ast.isAST1()) {
 				try {
 					int bn = ast.arg1().toIntDefault();
-					if (bn != Integer.MIN_VALUE) {
+					if (bn >= 0) {
 						return bernoulliNumber(bn);
 					}
 					IExpr temp = engine.evaluate(F.Subtract(ast.arg1(), F.C3));

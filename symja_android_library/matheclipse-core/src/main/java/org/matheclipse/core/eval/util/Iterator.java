@@ -1087,7 +1087,13 @@ public class Iterator {
 				step = F.C1;
 
 				if (list.arg1() instanceof ISymbol) {
-					variable = (ISymbol) list.arg1();
+					ISymbol sym = (ISymbol) list.arg1();
+					if (!sym.isVariable() || sym.isProtected()) {
+						// Cannot assign to raw object `1`.
+						throw new ArgumentTypeException(
+								IOFunctions.getMessage("setraw", F.List(sym), EvalEngine.get()));
+					}
+					variable = sym;
 				} else {
 					variable = null;
 				}
@@ -1120,7 +1126,13 @@ public class Iterator {
 				step = F.C1;
 
 				if (list.arg1().isSymbol()) {
-					variable = (ISymbol) list.arg1();
+					ISymbol sym = (ISymbol) list.arg1();
+					if (!sym.isVariable() || sym.isProtected()) {
+						// Cannot assign to raw object `1`.
+						throw new ArgumentTypeException(
+								IOFunctions.getMessage("setraw", F.List(sym), EvalEngine.get()));
+					}
+					variable = sym;
 				} else {
 					variable = null;
 				}
@@ -1156,7 +1168,13 @@ public class Iterator {
 				upperLimit = evalEngine.evalWithoutNumericReset(list.arg3());
 				step = evalEngine.evalWithoutNumericReset(list.arg4());
 				if (list.arg1() instanceof ISymbol) {
-					variable = (ISymbol) list.arg1();
+					ISymbol sym = (ISymbol) list.arg1();
+					if (!sym.isVariable() || sym.isProtected()) {
+						// Cannot assign to raw object `1`.
+						throw new ArgumentTypeException(
+								IOFunctions.getMessage("setraw", F.List(sym), EvalEngine.get()));
+					}
+					variable = sym;
 				} else {
 					variable = null;
 				}
@@ -1228,6 +1246,11 @@ public class Iterator {
 		IExpr step;
 		ISymbol variable;
 		boolean fNumericMode;
+
+		if (symbol != null && (!symbol.isVariable() || symbol.isProtected())) {
+			// Cannot assign to raw object `1`.
+			throw new ArgumentTypeException(IOFunctions.getMessage("setraw", F.List(symbol), EvalEngine.get()));
+		}
 
 		boolean localNumericMode = evalEngine.isNumericMode();
 		try {

@@ -2,8 +2,10 @@ package org.matheclipse.core.generic;
 
 import java.util.function.BiFunction;
 
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.DoubleStackEvaluator;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
@@ -25,6 +27,14 @@ public class BinaryNumerical implements BiFunction<IExpr, IExpr, IExpr> {
 	final EvalEngine fEngine;
 
 	public BinaryNumerical(final IExpr fn, final ISymbol v1, final ISymbol v2, final EvalEngine engine) {
+		if (!v1.isVariable() || v1.isBuiltInSymbol()) {
+			// Cannot assign to raw object `1`.
+			throw new ArgumentTypeException(IOFunctions.getMessage("setraw", F.List(v1), EvalEngine.get()));
+		}
+		if (!v2.isVariable() || v2.isBuiltInSymbol()) {
+			// Cannot assign to raw object `1`.
+			throw new ArgumentTypeException(IOFunctions.getMessage("setraw", F.List(v2), EvalEngine.get()));
+		}
 		variable1 = v1;
 		variable2 = v2;
 		fun = fn;

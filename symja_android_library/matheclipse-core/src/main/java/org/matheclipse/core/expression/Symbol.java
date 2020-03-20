@@ -16,6 +16,7 @@ import org.matheclipse.core.builtin.AttributeFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
@@ -141,7 +142,7 @@ public class Symbol implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final void clearAttributes(final int attributes) {
+	public void clearAttributes(final int attributes) {
 		fAttributes &= (0xffff ^ attributes);
 		if (isLocked()) {
 			throw new RuleCreationError(this);
@@ -152,7 +153,7 @@ public class Symbol implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final void clearAll(EvalEngine engine) {
+	public void clearAll(EvalEngine engine) {
 		clear(engine);
 		fAttributes = NOATTRIBUTE;
 	}
@@ -598,8 +599,20 @@ public class Symbol implements ISymbol, Serializable {
 		}
 		if (fValue != null) {
 			IExpr temp = assignedValue();
-			if (temp != null && temp.isNumericFunction() && temp != this) {
-				return true;
+			if (temp != null) {
+				EvalEngine engine = EvalEngine.get();
+				if ((engine.getRecursionLimit() > 0) && (engine.getRecursionCounter() > engine.getRecursionLimit())) {
+					RecursionLimitExceeded.throwIt(engine.getRecursionLimit(), this);
+				}
+
+				engine.incRecursionCounter();
+				try {
+					if (temp.isNumericFunction() && temp != this) {
+						return true;
+					}
+				} finally {
+					engine.decRecursionCounter();
+				}
 			}
 		}
 		return false;
@@ -918,7 +931,7 @@ public class Symbol implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final void assign(final IExpr value) {
+	public void assign(final IExpr value) {
 		fValue = value;
 	}
 

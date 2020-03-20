@@ -143,8 +143,7 @@ public class ConstantDefinitions {
 
 		@Override
 		public IExpr evaluate(final ISymbol symbol) {
-			return F.List(F.ZZ(YEAR), F.ZZ(MONTH), F.ZZ(DAY), F.ZZ(HOUR), F.ZZ(MINUTE),
-					F.ZZ(SECOND));
+			return F.List(F.ZZ(YEAR), F.ZZ(MONTH), F.ZZ(DAY), F.ZZ(HOUR), F.ZZ(MINUTE), F.ZZ(SECOND));
 		}
 
 	}
@@ -230,7 +229,7 @@ public class ConstantDefinitions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.CONSTANT);
+			newSymbol.setAttributes(ISymbol.CONSTANT | ISymbol.PROTECTED);
 		}
 
 		@Override
@@ -351,7 +350,7 @@ public class ConstantDefinitions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.CONSTANT);
+			newSymbol.setAttributes(ISymbol.CONSTANT | ISymbol.PROTECTED);
 		}
 	}
 
@@ -379,7 +378,7 @@ public class ConstantDefinitions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.CONSTANT);
+			newSymbol.setAttributes(ISymbol.CONSTANT | ISymbol.PROTECTED);
 		}
 
 		@Override
@@ -405,11 +404,10 @@ public class ConstantDefinitions {
 	 * See <a href="http://en.wikipedia.org/wiki/Euler–Mascheroni_constant">Euler– Mascheroni constant</a>
 	 */
 	private static class EulerGamma extends AbstractSymbolEvaluator implements ISignedNumberConstant {
-		
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.CONSTANT);
+			newSymbol.setAttributes(ISymbol.CONSTANT | ISymbol.PROTECTED);
 		}
 
 		@Override
@@ -447,7 +445,7 @@ public class ConstantDefinitions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.CONSTANT);
+			newSymbol.setAttributes(ISymbol.CONSTANT | ISymbol.PROTECTED);
 		}
 
 		@Override
@@ -474,7 +472,7 @@ public class ConstantDefinitions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.CONSTANT);
+			newSymbol.setAttributes(ISymbol.CONSTANT | ISymbol.PROTECTED);
 		}
 
 		@Override
@@ -532,7 +530,7 @@ public class ConstantDefinitions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.CONSTANT);
+			newSymbol.setAttributes(ISymbol.CONSTANT | ISymbol.PROTECTED);
 		}
 
 		@Override
@@ -584,7 +582,7 @@ public class ConstantDefinitions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.CONSTANT);
+			newSymbol.setAttributes(ISymbol.CONSTANT | ISymbol.PROTECTED);
 		}
 
 		@Override
@@ -684,7 +682,7 @@ public class ConstantDefinitions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.CONSTANT);
+			newSymbol.setAttributes(ISymbol.CONSTANT | ISymbol.PROTECTED);
 		}
 
 		@Override
@@ -720,7 +718,7 @@ public class ConstantDefinitions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.CONSTANT);
+			newSymbol.setAttributes(ISymbol.CONSTANT | ISymbol.PROTECTED);
 		}
 
 		@Override

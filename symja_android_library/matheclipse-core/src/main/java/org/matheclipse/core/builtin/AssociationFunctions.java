@@ -105,7 +105,8 @@ public class AssociationFunctions {
 					return IOFunctions.printMessage(F.Set, "rvalue", F.List(symbol), engine);
 				} else {
 					if (symbol.isProtected()) {
-						return IOFunctions.printMessage(F.Set, "write", F.List(symbol), EvalEngine.get());
+						// Symbol `1` is Protected.
+						return IOFunctions.printMessage(F.Set, "wrsym", F.List(symbol), EvalEngine.get());
 					}
 					try {
 						IExpr lhsHead = engine.evaluate(symbol);
@@ -118,8 +119,8 @@ public class AssociationFunctions {
 						}
 					} catch (ValidateException ve) {
 						return engine.printMessage(F.Set, ve);
-					} catch (RuntimeException npe) {
-						engine.printMessage("Set: " + npe.getMessage());
+					} catch (RuntimeException rex) {
+						engine.printMessage("Set: " + rex.getMessage());
 						return F.NIL;
 					}
 				}

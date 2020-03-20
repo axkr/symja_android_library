@@ -294,6 +294,14 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			for (int i = 1; i < ast.size(); i++) {
+				IExpr expr = ast.get(i);
+				if (!expr.isSymbol() || ((ISymbol) expr).isProtected()) {
+					// Symbol `1` is Protected.
+					IOFunctions.printMessage(ast.topHead(), "wrsym", F.List(expr), engine);
+					return F.Null;
+				}
+			}
 			Lambda.forEach(ast, x -> x.isSymbol(), x -> ((ISymbol) x).clear(engine));
 			return F.Null;
 		}
@@ -319,6 +327,15 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			for (int i = 1; i < ast.size(); i++) {
+				IExpr expr = ast.get(i);
+				if (!expr.isSymbol() || ((ISymbol) expr).isProtected()) {
+					// Symbol `1` is Protected.
+					IOFunctions.printMessage(ast.topHead(), "wrsym", F.List(expr), engine);
+					return F.Null;
+				}
+			}
+
 			Lambda.forEach(ast, x -> x.isSymbol(), x -> ((ISymbol) x).clearAll(engine));
 			return F.Null;
 		}
@@ -915,7 +932,7 @@ public final class PatternMatching {
 			if (!ast.arg1().isSymbol()) {
 				return engine.printMessage(
 						ast.topHead() + ": symbol expected at position 1 instead of " + ast.arg1().toString());
-			} 
+			}
 			IExpr arg2 = engine.evaluate(ast.arg2());
 			if (arg2 instanceof IStringX || arg2.isSymbol()) {
 				return F.NIL;
@@ -1525,7 +1542,8 @@ public final class PatternMatching {
 		if (leftHandSide.isAST()) {
 			final ISymbol lhsSymbol = determineRuleTag(leftHandSide);
 			if (lhsSymbol.isProtected()) {
-				IOFunctions.printMessage(F.SetDelayed, "write", F.List(lhsSymbol, leftHandSide), EvalEngine.get());
+				// Symbol `1` is Protected.
+				IOFunctions.printMessage(F.SetDelayed, "wrsym", F.List(lhsSymbol), EvalEngine.get());
 				throw new FailedException();
 			}
 			lhsSymbol.putDownRule(IPatternMatcher.SET, false, leftHandSide, rightHandSide, packageMode);
@@ -1534,7 +1552,8 @@ public final class PatternMatching {
 		if (leftHandSide.isSymbol()) {
 			final ISymbol lhsSymbol = (ISymbol) leftHandSide;
 			if (lhsSymbol.isProtected()) {
-				IOFunctions.printMessage(F.SetDelayed, "write", F.List(lhsSymbol, leftHandSide), EvalEngine.get());
+				// Symbol `1` is Protected.
+				IOFunctions.printMessage(F.SetDelayed, "wrsym", F.List(lhsSymbol), EvalEngine.get());
 				throw new FailedException();
 			}
 			lhsSymbol.assign(rightHandSide);
@@ -1591,7 +1610,8 @@ public final class PatternMatching {
 			final ISymbol lhsSymbol = determineRuleTag(leftHandSide);
 			// final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
 			if (lhsSymbol.isProtected()) {
-				IOFunctions.printMessage(F.SetDelayed, "write", F.List(lhsSymbol, leftHandSide), EvalEngine.get());
+				// Symbol `1` is Protected.
+				IOFunctions.printMessage(F.SetDelayed, "wrsym", F.List(lhsSymbol), EvalEngine.get());
 				throw new FailedException();
 			}
 			lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, false, leftHandSide, rightHandSide, packageMode);
@@ -1600,7 +1620,8 @@ public final class PatternMatching {
 		if (leftHandSide.isSymbol()) {
 			final ISymbol lhsSymbol = (ISymbol) leftHandSide;
 			if (lhsSymbol.isProtected()) {
-				IOFunctions.printMessage(F.SetDelayed, "write", F.List(lhsSymbol, leftHandSide), EvalEngine.get());
+				// Symbol `1` is Protected.
+				IOFunctions.printMessage(F.SetDelayed, "wrsym", F.List(lhsSymbol), EvalEngine.get());
 				throw new FailedException();
 			}
 			((ISymbol) leftHandSide).assign(rightHandSide);

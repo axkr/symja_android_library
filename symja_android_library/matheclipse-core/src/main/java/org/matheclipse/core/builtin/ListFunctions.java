@@ -2026,10 +2026,16 @@ public final class ListFunctions {
 				}
 			} catch (ValidateException ve) {
 				return engine.printMessage(ast.topHead(), ve);
-			} catch (final RuntimeException rex) {
+			} catch (final IndexOutOfBoundsException ibe) {
 				if (Config.SHOW_STACKTRACE) {
-					rex.printStackTrace();
+					ibe.printStackTrace();
 				}
+				return engine.printMessage(ast.topHead(), ibe);
+			} catch (final NullPointerException npe) {
+				if (Config.SHOW_STACKTRACE) {
+					npe.printStackTrace();
+				}
+				return engine.printMessage(ast.topHead(), npe);
 			}
 			return F.NIL;
 		}
@@ -2086,7 +2092,7 @@ public final class ListFunctions {
 						final IASTAppendable tempList = ((IAST) list.get(j2)).copyAppendable();
 						list.set(j2, drop(tempList, newLevel, sequenceSpecifications));
 					} else {
-						throw new IllegalArgument("Cannot execute drop for argument: " + list.get(j2).toString());
+						throw new ArgumentTypeException("Cannot execute drop for argument: " + list.get(j2).toString());
 					}
 				}
 			}

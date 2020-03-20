@@ -6,8 +6,10 @@ import java.util.function.Function;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.DoubleStackEvaluator;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
@@ -38,6 +40,10 @@ public class UnaryNumerical implements Function<IExpr, IExpr>, UnivariateDiffere
 	}
 
 	public UnaryNumerical(final IExpr fn, final ISymbol v, final EvalEngine engine, boolean firstDerivative) {
+		if (!v.isVariable() || v.isBuiltInSymbol()) {
+			// Cannot assign to raw object `1`.
+			throw new ArgumentTypeException(IOFunctions.getMessage("setraw", F.List(v), EvalEngine.get()));
+		}
 		fVariable = v;
 		fFunction = fn;
 		fEngine = engine;
@@ -60,7 +66,7 @@ public class UnaryNumerical implements Function<IExpr, IExpr>, UnivariateDiffere
 		try {
 			fVariable.assign(Num.valueOf(x));
 			result = DoubleStackEvaluator.eval(stack, 0, fFunction);
-		} catch(RuntimeException rex) {
+		} catch (RuntimeException rex) {
 			return Double.NaN;
 		} finally {
 			fVariable.assign(value);

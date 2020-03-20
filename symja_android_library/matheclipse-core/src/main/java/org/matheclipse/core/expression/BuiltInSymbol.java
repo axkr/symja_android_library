@@ -10,6 +10,8 @@ import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
@@ -102,6 +104,37 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	// super(symbolName, context);
 	// fEvaluator = evaluator;
 	// }
+
+	/** {@inheritDoc} */
+	@Override
+	public final void assign(final IExpr value) {
+		fValue = value;
+		if (Config.FUZZ_TESTING) {
+			// Cannot assign to raw object `1`.
+			throw new NullPointerException();
+		}
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final void clearAttributes(final int attributes) {
+		if (Config.FUZZ_TESTING) {
+			// Cannot assign to raw object `1`.
+			throw new NullPointerException();
+		}
+		super.clearAttributes(attributes);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public void clearAll(EvalEngine engine) {
+		if (Config.FUZZ_TESTING) {
+			// Cannot assign to raw object `1`.
+			throw new NullPointerException();
+		}
+		// clear(engine);
+		// fAttributes = NOATTRIBUTE;
+	}
 
 	@Override
 	public int compareTo(IExpr expr) {

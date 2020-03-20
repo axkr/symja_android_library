@@ -147,44 +147,44 @@ public class ExprEvaluatorTests extends TestCase {
 						eval.eval(mutantStr);
 					} catch (FlowControlException mex) {
 						if (!quietMode) {
-							System.out.println(mutantStr);
+							System.err.println(mutantStr);
 							mex.printStackTrace();
-							System.out.println();
+							System.err.println();
 						}
 					} catch (IterationLimitExceeded ile) {
-						System.out.println(mutantStr);
+						System.err.println(mutantStr);
 						ile.printStackTrace();
-						System.out.println();
+						System.err.println();
 					} catch (final RecursionLimitExceeded rle) {
-						System.out.println(mutantStr);
+						System.err.println(mutantStr);
 						rle.printStackTrace();
-						System.out.println();
+						System.err.println();
 					} catch (SyntaxError se) {
 						if (!quietMode) {
-							System.out.println(mutantStr);
+							System.err.println(mutantStr);
 							se.printStackTrace();
-							System.out.println();
+							System.err.println();
 						}
 						// fail();
 					} catch (final ASTElementLimitExceeded aele) {
-						System.out.println(mutantStr);
+						System.err.println(mutantStr);
 						aele.printStackTrace();
-						System.out.println();
+						System.err.println();
 					} catch (MathException mex) {
-						System.out.println(mutantStr);
+						System.err.println(mutantStr);
 						mex.printStackTrace();
-						System.out.println();
+						System.err.println();
 						fail();
 					} catch (RuntimeException rex) {
-						System.out.println(mutantStr);
+						System.err.println(mutantStr);
 						rex.printStackTrace();
 						fail();
 					} catch (Error rex) {
-						System.out.println(mutantStr);
+						System.err.println(mutantStr);
 						if (rex instanceof StackOverflowError) {
 							System.err.println("java.lang.StackOverflowError");
+							rex.printStackTrace();
 						} else {
-							System.out.println(mutantStr);
 							rex.printStackTrace();
 							fail();
 						}
@@ -197,6 +197,8 @@ public class ExprEvaluatorTests extends TestCase {
 
 	@Override
 	protected void setUp() throws Exception {
+		// Config.FUZZ_TESTING = true;
+		Config.UNPROTECT_ALLOWED = false;
 		super.setUp();
 		// wait for initializing of Integrate() rules:
 		F.await();
@@ -371,6 +373,8 @@ public class ExprEvaluatorTests extends TestCase {
 				System.out.println(ast.toString());
 				if (rex instanceof StackOverflowError) {
 					System.err.println("java.lang.StackOverflowError");
+					rex.printStackTrace();
+					fail();
 				} else {
 					System.out.println(ast.toString());
 					rex.printStackTrace();

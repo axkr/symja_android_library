@@ -33,6 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.DialogReturnException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -461,6 +462,11 @@ public class IOFunctions {
 			int headID;
 
 			public MyDocumentListener(JTextField inputField, ISymbol dynamic, int headID) {
+				if (!dynamic.isVariable() || dynamic.isBuiltInSymbol()) {
+					// Cannot assign to raw object `1`.
+					throw new ArgumentTypeException(
+							IOFunctions.getMessage("setraw", F.List(dynamic), EvalEngine.get()));
+				}
 				this.inputField = inputField;
 				this.dynamic = dynamic;
 				this.headID = headID;
@@ -676,12 +682,11 @@ public class IOFunctions {
 			"nonopt",
 			"Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule or a list of rules.", //
 			"nord", "Invalid comparison with `1` attempted.", //
-			"normal", "Nonatomic expression expected at position `1` in `2`.",
-			"nquan", "The Quantile specification `1` should be a number between `2` and `3`.",
-			"nvld", "The expression `1` is not a valid interval.", //
+			"normal", "Nonatomic expression expected at position `1` in `2`.", "nquan",
+			"The Quantile specification `1` should be a number between `2` and `3`.", "nvld",
+			"The expression `1` is not a valid interval.", //
 			"notunicode",
 			"A character unicode, which should be a non-negative integer less than 1114112, is expected at position `2` in `1`.", //
-			"noval", "Symbol `1` in part assignment does not have an immediate value.", //
 			"noval", "Symbol `1` in part assignment does not have an immediate value.", //
 			"openx", "`1` is not open.", //
 			"optb", "Optional object `1` in `2` is not a single blank.", //
