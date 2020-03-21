@@ -23,6 +23,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import tech.tablesaw.plotly.components.Figure;
 import tech.tablesaw.plotly.components.Layout;
 import tech.tablesaw.plotly.traces.BarTrace;
+import tech.tablesaw.plotly.traces.BarTrace.Orientation;
 import tech.tablesaw.plotly.traces.BoxTrace;
 import tech.tablesaw.plotly.traces.HeatmapTrace;
 import tech.tablesaw.plotly.traces.HistogramTrace;
@@ -1620,13 +1621,23 @@ public class ManipulateFunction {
 		} else if (ast.arg1().isAST(F.BarChart)) {
 			double[] vector = arg1.toDoubleVector();
 			if (vector != null && vector.length > 0) {
+				Orientation orientation = Orientation.VERTICAL;
+				OptionArgs options = new OptionArgs(ast.topHead(), plot, 2, engine);
+				IExpr orientExpr = options.getOption(F.BarOrigin);
+				if (orientExpr == F.Bottom) {
+					orientation = Orientation.VERTICAL;
+				} else if (orientExpr == F.Left) {
+					orientation = Orientation.HORIZONTAL;
+				}
 				String[] strs = new String[vector.length];
 				for (int i = 0; i < vector.length; i++) {
 					strs[i] = Integer.toString(i + 1);
 				}
 
 				Layout layout = Layout.builder().autosize(true).build();
-				BarTrace trace = BarTrace.builder(strs, vector).build();
+				// BarBuilder barBuilder = BarTrace.builder(strs, vector).orientation(Orientation.VERTICAL)
+
+				BarTrace trace = BarTrace.builder(strs, vector).orientation(orientation).build();
 				Figure figure = new Figure(layout, trace);
 				return F.JSFormData(figure.asJavascript("plotly"), "plotly");
 			}
@@ -1704,7 +1715,7 @@ public class ManipulateFunction {
 		if (ast.arg1().isAST(F.Histogram)) {
 			function.append("var dataArr = [");
 			double[] dData = pointList.toDoubleVector();
-			if (dData==null) {
+			if (dData == null) {
 				return F.NIL;
 			}
 			double min = StatUtils.min(dData);

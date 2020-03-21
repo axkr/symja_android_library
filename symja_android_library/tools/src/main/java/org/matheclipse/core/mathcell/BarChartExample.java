@@ -11,8 +11,8 @@ import org.matheclipse.parser.client.math.MathException;
 public class BarChartExample extends BasePlotExample {
 
 	@Override
-	public String exampleFunction() { 
-		return "BarChart({1, -2, 3})";
+	public String exampleFunction() {  
+		return "BarChart({1, -2, 3}, BarOrigin -> Left)";
 	}
 
 	public static void main(String[] args) {
