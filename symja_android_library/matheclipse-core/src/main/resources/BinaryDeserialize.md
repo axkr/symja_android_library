@@ -14,4 +14,4 @@ f(g,2)
 ```
 
 ### Related terms 
-[BinarySerialize](BinarySerialize.md) 
+[BinarySerialize](BinarySerialize.md), [ByteArray](ByteArray.md), [ByteArrayQ](ByteArrayQ.md), [Export](Export.md), [Import](Import.md)

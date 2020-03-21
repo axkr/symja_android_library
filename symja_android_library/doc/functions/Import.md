@@ -34,5 +34,5 @@ Import a graph:
 Graph({1, 2, 3}, {(1,2), (2,3), (3,1)})
 ```
 
-### Related terms
-[Export](Export.md)
+### Related terms 
+[BinaryDeserialize](BinaryDeserialize.md), [BinarySerialize](BinarySerialize.md), [ByteArray](ByteArray.md), [ByteArrayQ](ByteArrayQ.md), [Export](Export.md)

@@ -32,7 +32,5 @@ Export a graph:
 c:\\temp\\dotgraph.dot
 ```
 
-
-### Related terms
-
-[Import](Import.md)
+### Related terms 
+[BinaryDeserialize](BinaryDeserialize.md), [BinarySerialize](BinarySerialize.md), [ByteArray](ByteArray.md), [ByteArrayQ](ByteArrayQ.md), [Import](Import.md)
