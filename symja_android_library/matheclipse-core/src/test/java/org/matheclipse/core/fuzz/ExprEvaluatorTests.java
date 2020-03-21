@@ -13,6 +13,7 @@ import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.FlowControlException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
+import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -72,6 +73,10 @@ public class ExprEvaluatorTests extends TestCase {
 		fInputFactory.setQuotes(true);
 		AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
 		IAST seedList = F.List(//
+				F.complex(-0.5, 0.5), //
+				F.complex(0.0, 0.5), //
+				F.complex(0.0, -1.0), //
+				F.complex(0.0, 1.0), //
 				F.num(-0.5), //
 				F.num(0.5), //
 				F.num(Math.PI * (-0.5)), //
@@ -108,6 +113,8 @@ public class ExprEvaluatorTests extends TestCase {
 				F.y_, //
 				F.C1DSqrt5, //
 				F.Slot1, //
+				F.stringx(""), //
+				F.stringx("\uffff"), //
 				F.Subtract(F.C1, F.C1));
 		int counter = 0;
 		ThreadLocalRandom random = ThreadLocalRandom.current();
@@ -151,13 +158,9 @@ public class ExprEvaluatorTests extends TestCase {
 							mex.printStackTrace();
 							System.err.println();
 						}
-					} catch (IterationLimitExceeded ile) {
+					} catch (LimitException ile) {
 						System.err.println(mutantStr);
 						ile.printStackTrace();
-						System.err.println();
-					} catch (final RecursionLimitExceeded rle) {
-						System.err.println(mutantStr);
-						rle.printStackTrace();
 						System.err.println();
 					} catch (SyntaxError se) {
 						if (!quietMode) {
@@ -166,10 +169,6 @@ public class ExprEvaluatorTests extends TestCase {
 							System.err.println();
 						}
 						// fail();
-					} catch (final ASTElementLimitExceeded aele) {
-						System.err.println(mutantStr);
-						aele.printStackTrace();
-						System.err.println();
 					} catch (MathException mex) {
 						System.err.println(mutantStr);
 						mex.printStackTrace();
@@ -215,6 +214,11 @@ public class ExprEvaluatorTests extends TestCase {
 		ExprEvaluator eval = new ExprEvaluator(engine, true, 20);
 
 		IAST seedList = F.List(//
+				F.complex(-0.5, 0.5), //
+				F.complex(0.0, 0.5), //
+				F.complex(0.0, -1.0), //
+				F.complex(0.0, 1.0), //
+				F.num(0.5), //
 				F.num(-0.5), //
 				F.num(0.5), //
 				F.num(Math.PI * (-0.5)), //
@@ -338,45 +342,37 @@ public class ExprEvaluatorTests extends TestCase {
 				// System.out.println(ast.toString());
 				eval.eval(ast);
 			} catch (FlowControlException mex) {
-				System.out.println(ast.toString());
+				System.err.println(ast.toString());
 				mex.printStackTrace();
-				System.out.println();
-			} catch (IterationLimitExceeded ile) {
-				System.out.println(ast.toString());
+				System.err.println();
+			} catch (LimitException ile) {
+				System.err.println(ast.toString());
 				ile.printStackTrace();
-				System.out.println();
-			} catch (final RecursionLimitExceeded rle) {
-				System.out.println(ast.toString());
-				rle.printStackTrace();
-				System.out.println();
+				System.err.println();
 			} catch (SyntaxError se) {
 
-				System.out.println(ast.toString());
+				System.err.println(ast.toString());
 				se.printStackTrace();
-				System.out.println();
+				System.err.println();
 
 				// fail();
-			} catch (final ASTElementLimitExceeded aele) {
-				System.out.println(ast.toString());
-				aele.printStackTrace();
-				System.out.println();
 			} catch (MathException mex) {
-				System.out.println(ast.toString());
+				System.err.println(ast.toString());
 				mex.printStackTrace();
-				System.out.println();
+				System.err.println();
 				fail();
 			} catch (RuntimeException rex) {
-				System.out.println(ast.toString());
+				System.err.println(ast.toString());
 				rex.printStackTrace();
 				fail();
 			} catch (Error rex) {
-				System.out.println(ast.toString());
+				System.err.println(ast.toString());
 				if (rex instanceof StackOverflowError) {
 					System.err.println("java.lang.StackOverflowError");
 					rex.printStackTrace();
 					fail();
 				} else {
-					System.out.println(ast.toString());
+					System.err.println(ast.toString());
 					rex.printStackTrace();
 					fail();
 				}

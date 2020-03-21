@@ -69,7 +69,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public <T> T accept(IVisitor<T> visitor) {
+	public IExpr accept(IVisitor visitor) {
 		return visitor.visit(this);
 	}
 
@@ -875,7 +875,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 			}
 		}
 		throw new ArgumentTypeException(functionSymbol.toString() + " - Symbol: " + toString()
-		+ " has no value! Reassignment with a new value is not possible");
+				+ " has no value! Reassignment with a new value is not possible");
 	}
 
 	/** {@inheritDoc} */

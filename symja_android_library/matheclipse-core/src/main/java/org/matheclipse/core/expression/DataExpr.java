@@ -35,7 +35,7 @@ public abstract class DataExpr<T> implements IDataExpr<T> {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T> T accept(IVisitor<T> visitor) {
+	public IExpr accept(IVisitor visitor) {
 		return null;
 	}
 

@@ -14,8 +14,10 @@ import java.util.function.Predicate;
 //import java.util.stream.Stream;
 import java.util.stream.Stream;
 
+import org.matheclipse.core.eval.exception.MemoryLimitExceeded;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.ObjIntPredicate;
+import org.matheclipse.core.visit.IVisitor;
 
 /**
  * 
@@ -167,6 +169,14 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * This List expression args should be printed in multi-line style
 	 */
 	public final static int OUTPUT_MULTILINE = 0x00100000;
+
+	default IExpr acceptChecked(IVisitor visitor) {
+		try {
+			return accept(visitor);
+		} catch (StackOverflowError soe) {
+			throw new MemoryLimitExceeded("StackOverflowError in visitor");
+		}
+	}
 
 	/**
 	 * Add an evaluation flag to the existing ones.

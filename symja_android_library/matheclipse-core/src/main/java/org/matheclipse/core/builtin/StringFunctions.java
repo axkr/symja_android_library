@@ -718,16 +718,26 @@ public final class StringFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			int from = 1;
+			int to = 1;
 			try {
 				if (ast.arg1().isString()) {
 					String s = ast.arg1().toString();
-					final int n = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
-					if (n >= 0) {
-						return F.$str(s.substring(0, n));
+					to = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
+					if (to >= 0) {
+						
 					} else {
-						return F.$str(s.substring(s.length() + n, s.length()));
+						from = s.length() + to+1;
+						to = s.length();
+//						return F.$str(s.substring(s.length() + to, s.length()));
 					}
+					return F.$str(s.substring(from - 1, to));
 				}
+			} catch (IndexOutOfBoundsException iob) {
+				// from substring
+				// Cannot take positions `1` through `2` in `3`.
+				return IOFunctions.printMessage(ast.topHead(), "take", F.List(F.ZZ(from), F.ZZ(to), ast.arg1()),
+						engine);
 			} catch (final ValidateException ve) {
 				// int number validation
 				return engine.printMessage(ve.getMessage(ast.topHead()));

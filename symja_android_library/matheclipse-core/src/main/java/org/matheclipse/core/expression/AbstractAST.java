@@ -839,7 +839,7 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final <T> T accept(IVisitor<T> visitor) {
+	public final IExpr accept(IVisitor visitor) {
 		return visitor.visit(this);
 	}
 
@@ -1211,7 +1211,7 @@ public abstract class AbstractAST implements IASTMutable {
 			return number.complexNumValue().complexValue();
 		}
 		throw new ArgumentTypeException("conversion into a complex numeric value is not possible!");
-	} 
+	}
 
 	/** {@inheritDoc} */
 	@Override
@@ -1615,7 +1615,7 @@ public abstract class AbstractAST implements IASTMutable {
 			return (IAST) get(index);
 		} catch (ClassCastException cce) {
 		}
-		throw new IllegalArgumentException("argument "+get(index).toString()+" is not an IAST"); 
+		throw new IllegalArgumentException("argument " + get(index).toString() + " is not an IAST");
 	}
 
 	@Override
@@ -1649,7 +1649,7 @@ public abstract class AbstractAST implements IASTMutable {
 		} catch (ClassCastException cce) {
 		}
 
-		throw new IllegalArgumentException("argument "+get(index).toString()+" is not an IInteger");  
+		throw new IllegalArgumentException("argument " + get(index).toString() + " is not an IInteger");
 	}
 
 	/**
@@ -1666,7 +1666,7 @@ public abstract class AbstractAST implements IASTMutable {
 			return (IAST) temp;
 		}
 
-		throw new IllegalArgumentException("argument "+get(index).toString()+" is not a list");  
+		throw new IllegalArgumentException("argument " + get(index).toString() + " is not a list");
 	}
 
 	/**
@@ -1683,7 +1683,7 @@ public abstract class AbstractAST implements IASTMutable {
 			return (INumber) get(index);
 		} catch (ClassCastException cce) {
 		}
-		throw new IllegalArgumentException("argument "+get(index).toString()+" is not an INumber"); 
+		throw new IllegalArgumentException("argument " + get(index).toString() + " is not an INumber");
 	}
 
 	/** {@inheritDoc} */

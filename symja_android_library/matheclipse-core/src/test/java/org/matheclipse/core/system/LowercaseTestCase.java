@@ -1300,6 +1300,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBegin() {
+		// Begin:  is not a valid context name.
+		check("Begin(\"\")", //
+				"Begin()");
+		
 		check("Begin(\"mytest`\")", //
 				"mytest`");
 		check("Context( )", //
@@ -5273,7 +5277,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("DSolve(D(f(x, y), x) == D(f(x, y), y), f, {x, y})",
 				"DSolve(Derivative(1,0)[f][x,y]==Derivative(0,1)[f][x,y],f,{x,y})");
 
-//		check("DSolve({y'(x)==y(x),y(0)==1},y(x), x)", "{{y(x)->E^x}}");
+		// check("DSolve({y'(x)==y(x),y(0)==1},y(x), x)", "{{y(x)->E^x}}");
 		check("DSolve({y'(x)==y(x)+2,y(0)==1},y(x), x)", "{{y(x)->-2+3*E^x}}");
 
 		check("DSolve({y(0)==0,y'(x) + y(x) == a*Sin(x)}, y(x), x)", "{{y(x)->a/(2*E^x)-1/2*a*Cos(x)+1/2*a*Sin(x)}}");
@@ -7653,6 +7657,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFixedPointList() {
+		check("FixedPointList(x_,Null)", //
+				"StackOverflowError in visitor");
 		check("FixedPointList(-1/2,14)", //
 				"FixedPointList(-1/2,14)");
 		check("FixedPointList(Cos, 1.0, 4)", //
@@ -17077,6 +17083,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testProjection() {
+		check("Projection({},{},Dot)", //
+				"{}");
 		check("Projection({},{})", //
 				"{}");
 		check("Projection({5, 6, 7}, {1, 0, 0})", //
@@ -21037,6 +21045,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStringTake() {
+		// StringTake: Cannot take positions 1 through 1 in .
+		check("StringTake(\"\", 1)", //
+				"StringTake(,1)");
+		// StringTake: Cannot take positions 1 through 6 in abc.
+		check("StringTake(\"abc\", 6)", //
+				"StringTake(abc,6)");
+		
 		check("StringTake(\"abcdefghijklm\", 6)", //
 				"abcdef");
 		check("StringTake(\"abcdefghijklm\", -4)", //
@@ -22985,7 +23000,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"False");
 	}
 
-	public void testTuples() { 
+	public void testTuples() {
 		check("Tuples(x^2, -10)", //
 				"Tuples(x^2,-10)");
 		check("Tuples(x^2, 0)", //

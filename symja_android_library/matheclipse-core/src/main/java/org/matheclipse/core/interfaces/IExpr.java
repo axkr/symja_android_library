@@ -203,7 +203,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @param visitor
 	 * @return <code>F.NIL</code> if no evaluation was necessary
 	 */
-	public <T> T accept(IVisitor<T> visitor);
+	public IExpr accept(IVisitor  visitor);
 
 	/**
 	 * Accept a visitor with return type <code>boolean</code>

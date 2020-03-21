@@ -17,7 +17,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * couldn't be evaluated.
  * 
  */
-public abstract class AbstractVisitor implements IVisitor<IExpr> {
+public abstract class AbstractVisitor implements IVisitor  {
 
 	/**
 	 * Abstract visitor which returns <code>F.NIL</code>, if the visitor step

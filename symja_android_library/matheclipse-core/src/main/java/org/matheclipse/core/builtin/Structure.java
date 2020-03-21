@@ -219,8 +219,8 @@ public class Structure {
 					level = new VisitorLevelSpecification(af, 0);
 				}
 
-				if (!expr.isAtom()) {
-					return expr.accept(level).orElse(expr);
+				if ( expr.isAST()) {
+					return ((IAST)expr).acceptChecked(level).orElse(expr);
 				} else {
 					// arg2 is an Atom to which the head f couldn't be applied
 					if (evaledAST.size() >= 3) {

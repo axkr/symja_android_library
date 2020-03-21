@@ -866,8 +866,7 @@ public final class Programming {
 				return engine.printMessage(ve.getMessage(ast.topHead()));
 			} finally {
 				engine.setNumericMode(numericMode);
-			}
-
+			} 
 		}
 
 		public int[] expectedArgSize() {

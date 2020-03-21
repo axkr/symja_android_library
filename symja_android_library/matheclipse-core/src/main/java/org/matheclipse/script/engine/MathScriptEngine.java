@@ -157,9 +157,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();
 			}
-			// catch parser errors here
 			return e.getMessage();
-
 		} catch (final ApfloatRuntimeException e) {
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();

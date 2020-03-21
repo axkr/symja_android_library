@@ -52,7 +52,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
-import org.matheclipse.core.eval.exception.WrappedException; 
+import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
@@ -855,7 +855,7 @@ public final class LinearAlgebra {
 				// org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
 				return engine.printMessage(ast.topHead(), mre);
 			} catch (final ValidateException ve) {
-				if (Config.SHOW_STACKTRACE) { 
+				if (Config.SHOW_STACKTRACE) {
 					ve.printStackTrace();
 				}
 				return engine.printMessage(ast.topHead(), ve);
@@ -3447,11 +3447,18 @@ public final class LinearAlgebra {
 			int dim2 = ast.arg2().isVector();
 			if (ast.size() == 4) {
 				IExpr head = ast.arg3();
-				if (head.equals(F.Dot)) {
-					if (dim1 >= 0 && dim1 == dim2) {
-						FieldVector<IExpr> u = Convert.list2Vector((IAST) ast.arg1());
-						FieldVector<IExpr> v = Convert.list2Vector((IAST) ast.arg2());
-						return Convert.vector2List(u.projection(v));
+				if (dim1 >= 0 && dim1 == dim2) {
+					if (dim1 == 0) {
+						return F.CEmptyList;
+					}
+					if (head.equals(F.Dot)) {
+						if (dim1 >= 0 && dim1 == dim2) {
+							FieldVector<IExpr> u = Convert.list2Vector((IAST) ast.arg1());
+							FieldVector<IExpr> v = Convert.list2Vector((IAST) ast.arg2());
+							if (u != null && v != null) {
+								return Convert.vector2List(u.projection(v));
+							}
+						}
 					}
 				}
 				IExpr u = ast.arg1();

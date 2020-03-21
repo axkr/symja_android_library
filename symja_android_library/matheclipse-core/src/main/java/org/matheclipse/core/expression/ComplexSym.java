@@ -45,7 +45,7 @@ public class ComplexSym implements IComplex {
 	private final static ComplexSym ONE = ComplexSym.valueOf(1, 1, 0, 1);
 	private final static ComplexSym POSITIVE_I = ComplexSym.valueOf(0, 1, 1, 1);
 	private final static ComplexSym NEGATIVE_I = ComplexSym.valueOf(0, 1, -1, 1);
-	
+
 	public static ComplexSym valueOf(final BigFraction real, final BigFraction imaginary) {
 		final ComplexSym c = new ComplexSym();
 		c.fReal = AbstractFractionSym.valueOf(real);
@@ -168,7 +168,7 @@ public class ComplexSym implements IComplex {
 
 	/** {@inheritDoc} */
 	@Override
-	public <T> T accept(IVisitor<T> visitor) {
+	public IExpr accept(IVisitor visitor) {
 		return visitor.visit(this);
 	}
 

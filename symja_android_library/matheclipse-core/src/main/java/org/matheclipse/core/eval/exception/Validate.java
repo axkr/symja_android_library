@@ -346,17 +346,17 @@ public final class Validate {
 	 *             if it's not a symbol.
 	 */
 	public static String checkContextName(IAST ast, int position) {
-
-		if (ast.get(position) instanceof IStringX) {
+		if (ast.get(position).isString()) {
 			IStringX strX = (IStringX) ast.get(position);
 			String contextName = strX.toString();
-			if (contextName.charAt(contextName.length() - 1) != '`') {
-
-				// `1` is not a valid context name.
-				String str = IOFunctions.getMessage("cxt", F.List(strX), EvalEngine.get());
-				throw new ArgumentTypeException(str);
+			if (contextName.length() > 0) {
+				if (contextName.charAt(contextName.length() - 1) != '`') {
+					// `1` is not a valid context name.
+					String str = IOFunctions.getMessage("cxt", F.List(strX), EvalEngine.get());
+					throw new ArgumentTypeException(str);
+				}
+				return contextName;
 			}
-			return contextName;
 		}
 		// `1` is not a valid context name.
 		String str = IOFunctions.getMessage("cxt", F.List(ast.get(position)), EvalEngine.get());
