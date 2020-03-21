@@ -4,7 +4,7 @@
 BinaryDeserialize(byte-array)
 ```
 
-> deserialize the `byte-array` into a Symja expression.
+> deserialize the `byte-array` from WXF format into a Symja expression.
  
 ### Examples
 

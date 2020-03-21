@@ -4,7 +4,7 @@
 BinarySerialize(expr)
 ```
 
-> serialize the `expr` into a byte array expression.
+> serialize the Symja `expr` into a byte array expression in WXF format.
  
 ### Examples
 
