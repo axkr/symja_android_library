@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.stat.StatUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
@@ -26,6 +27,8 @@ import tech.tablesaw.plotly.traces.BarTrace;
 import tech.tablesaw.plotly.traces.BarTrace.Orientation;
 import tech.tablesaw.plotly.traces.BoxTrace;
 import tech.tablesaw.plotly.traces.HeatmapTrace;
+import tech.tablesaw.plotly.traces.Histogram2DTrace;
+import tech.tablesaw.plotly.traces.Histogram2DTrace.Histogram2DBuilder;
 import tech.tablesaw.plotly.traces.HistogramTrace;
 import tech.tablesaw.plotly.traces.PieTrace;
 
@@ -62,6 +65,7 @@ public class ManipulateFunction {
 			if (Config.USE_MANIPULATE_JS) {
 				F.BarChart.setEvaluator(new BarChart());
 				F.BoxWhiskerChart.setEvaluator(new BoxWhiskerChart());
+				F.DensityHistogram.setEvaluator(new DensityHistogram());
 				F.Histogram.setEvaluator(new Histogram());
 				F.PieChart.setEvaluator(new PieChart());
 				F.Manipulate.setEvaluator(new Manipulate());
@@ -85,6 +89,13 @@ public class ManipulateFunction {
 			return redirectToManipulate(ast, engine);
 		}
 
+	}
+
+	private final static class DensityHistogram extends AbstractEvaluator {
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			return redirectToManipulate(ast, engine);
+		}
 	}
 
 	private final static class Histogram extends AbstractEvaluator {
@@ -130,11 +141,12 @@ public class ManipulateFunction {
 			try {
 				if (ast.arg1().isAST(F.BarChart) || //
 						ast.arg1().isAST(F.BoxWhiskerChart) || //
+						ast.arg1().isAST(F.DensityHistogram) || //
 						ast.arg1().isAST(F.Histogram) || //
 						ast.arg1().isAST(F.MatrixPlot) || //
 						ast.arg1().isAST(F.PieChart)) {
 					IAST chart = (IAST) ast.arg1();
-					return jsxgraphBarChart(ast, chart, engine);
+					return plotlyBarChart(ast, chart, engine);
 				} else if (ast.arg1().isAST(F.ListLinePlot) || //
 						ast.arg1().isAST(F.ListPlot)) {
 					IAST plot = (IAST) ast.arg1();
@@ -1599,7 +1611,7 @@ public class ManipulateFunction {
 				isNonReal(lastPointY);
 	}
 
-	private static IExpr jsxgraphBarChart(final IAST ast, IAST plot, EvalEngine engine) {
+	private static IExpr plotlyBarChart(final IAST ast, IAST plot, EvalEngine engine) {
 		if (plot.size() < 2) {
 			return F.NIL;
 		}
@@ -1607,7 +1619,32 @@ public class ManipulateFunction {
 		if (!arg1.isList()) {
 			arg1 = engine.evaluate(arg1);
 		}
-		if (ast.arg1().isAST(F.Histogram)) {
+
+		if (ast.arg1().isAST(F.DensityHistogram)) {
+			int[] dims = arg1.isMatrix();
+			if (dims != null) {
+				if (dims[1] == 2) {
+					RealMatrix m = arg1.toRealMatrix();
+					if (m != null) {
+						// double opacity = 1.0;
+						// if (plot.size() >= 2 && plot.arg2().isAST(F.List, 2)) {
+						// double binWidth = plot.arg2().first().evalDouble();
+						// }
+						double[] vector1 = m.getColumn(0);
+						double[] vector2 = m.getColumn(1);
+						if (vector1 != null && vector1.length > 0 && //
+								vector2 != null && vector2.length > 0) {
+							Histogram2DBuilder builder = Histogram2DTrace.builder(vector1, vector2);
+							// builder.opacity(opacity);
+
+							Figure figure = new Figure(Layout.builder("Histogram", "x", "y").autosize(true).build(),
+									builder.build());
+							return F.JSFormData(figure.asJavascript("plotly"), "plotly");
+						}
+					}
+				}
+			}
+		} else if (ast.arg1().isAST(F.Histogram)) {
 			double[] vector = arg1.toDoubleVector();
 			if (vector != null && vector.length > 0) {
 				Layout layout = Layout.builder().autosize(true).build();// .title("Histogram").build();

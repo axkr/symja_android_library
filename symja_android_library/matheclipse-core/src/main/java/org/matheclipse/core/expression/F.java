@@ -906,7 +906,10 @@ public class F {
 
     /** Denominator(expr) - gives the denominator in `expr`. Denominator collects expressions with negative exponents.*/
     public final static IBuiltInSymbol Denominator = F.initFinalSymbol("Denominator", ID.Denominator);
-
+    
+    /***/
+    public final static IBuiltInSymbol DensityHistogram = F.initFinalSymbol("DensityHistogram", ID.DensityHistogram);
+    
     /***/
     public final static IBuiltInSymbol DensityPlot = F.initFinalSymbol("DensityPlot", ID.DensityPlot);
 
