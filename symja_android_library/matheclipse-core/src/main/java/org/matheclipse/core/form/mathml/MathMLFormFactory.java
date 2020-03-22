@@ -940,6 +940,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			}
 			final IExpr numerator = parts[0];
 			final IExpr denominator = parts[1];
+			precedenceOpen(buf, precedence);
 			if (!denominator.isOne()) {
 				// found a fraction expression
 				if (caller == MathMLFormFactory.PLUS_CALL) {
@@ -948,12 +949,12 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 				fFactory.tagStart(buf, "mfrac");
 				// insert numerator in buffer:
 				if (numerator.isTimes()) {
-					convertTimesOperator(buf, (IAST) numerator, precedence, MathMLFormFactory.NO_PLUS_CALL);
+					convertTimesOperator(buf, (IAST) numerator, Integer.MIN_VALUE, MathMLFormFactory.NO_PLUS_CALL);
 				} else {
-					fFactory.convertInternal(buf, numerator, fPrecedence, false);
+					fFactory.convertInternal(buf, numerator, Integer.MIN_VALUE, false);
 				}
 				if (denominator.isTimes()) {
-					convertTimesOperator(buf, (IAST) denominator, precedence, MathMLFormFactory.NO_PLUS_CALL);
+					convertTimesOperator(buf, (IAST) denominator, Integer.MIN_VALUE, MathMLFormFactory.NO_PLUS_CALL);
 				} else {
 					fFactory.convertInternal(buf, denominator, Integer.MIN_VALUE, false);
 				}
@@ -966,7 +967,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 					convertTimesOperator(buf, f, precedence, caller);
 				}
 			}
-
+			precedenceClose(buf, precedence);
 			return true;
 		}
 
@@ -1276,40 +1277,44 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			if (derivStruct != null) {
 				IAST a1Head = derivStruct[0];
 				IAST headAST = derivStruct[1];
-				if (a1Head.isAST1() && a1Head.arg1().isInteger() && headAST.isAST1()
-						&& (headAST.arg1().isSymbol() || headAST.arg1().isAST()) && derivStruct[2] != null) {
+				if (a1Head.isAST1() && headAST.isAST1() && (headAST.arg1().isSymbol() || headAST.arg1().isAST())) {
 					try {
-						int n = ((IInteger) a1Head.arg1()).toInt();
+						int n = a1Head.arg1().toIntDefault();
 						if (n == 1 || n == 2) {
 							tagStart(buf, "mrow");
-							IExpr symbolOrAST = headAST.arg1();
-							convertInternal(buf, symbolOrAST, Integer.MIN_VALUE, false);
-							if (n == 1) {
-								tag(buf, "mo", "'");
-							} else if (n == 2) {
-								tag(buf, "mo", "''");
-							}
-							convertArgs(buf, symbolOrAST, list);
-							tagEnd(buf, "mrow");
-							return;
-						}
-						if (n > 2) {
-							tagStart(buf, "mrow");
-							IExpr symbolOrAST = headAST.arg1();
 							tagStart(buf, "msup");
-							convertInternal(buf, symbolOrAST, Integer.MIN_VALUE, false);
-							tagStart(buf, "mrow");
-							tag(buf, "mo", "(");
-							tagStart(buf, "mn");
-							buf.append(Integer.toString(n));
-							tagEnd(buf, "mn");
-							tag(buf, "mo", ")");
-							tagEnd(buf, "mrow");
+							IExpr symbolOrAST = headAST.arg1();
+							convertInternal(buf, symbolOrAST, Integer.MAX_VALUE, false);
+							if (n == 1) {
+								tag(buf, "mo", "&#8242;");
+							} else if (n == 2) {
+								tag(buf, "mo", "&#8242;&#8242;");
+							}
 							tagEnd(buf, "msup");
-							convertArgs(buf, symbolOrAST, list);
+							if (derivStruct[2] != null) {
+								convertArgs(buf, symbolOrAST, list);
+							}
 							tagEnd(buf, "mrow");
 							return;
 						}
+
+						tagStart(buf, "mrow");
+						IExpr symbolOrAST = headAST.arg1();
+						tagStart(buf, "msup");
+						convertInternal(buf, symbolOrAST, Integer.MAX_VALUE, false);
+						tagStart(buf, "mrow");
+						tag(buf, "mo", "(");
+						// supscript "(n)"
+						convertInternal(buf, a1Head.arg1(), Integer.MIN_VALUE, false);
+						tag(buf, "mo", ")");
+						tagEnd(buf, "mrow");
+						tagEnd(buf, "msup");
+						if (derivStruct[2] != null) {
+							convertArgs(buf, symbolOrAST, list);
+						}
+						tagEnd(buf, "mrow");
+						return;
+
 					} catch (ArithmeticException ae) {
 
 					}

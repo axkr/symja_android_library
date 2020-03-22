@@ -106,8 +106,7 @@ public class BasicTeXTestCase extends TestCase {
 						" 3 \\\\\n" + //
 						" 4 \\\\\n" + //
 						" 5 \\\\\n" + //
-						" 6 \n"
-						+ "\\end{array}");
+						" 6 \n" + "\\end{array}");
 	}
 
 	public void testTeX012c() {
@@ -422,6 +421,18 @@ public class BasicTeXTestCase extends TestCase {
 						" \\{\\{a\\to b\\},\\{c:\\to d\\}\\} \\\\\n" + //
 						" \\{4,5,6\\} \n" + //
 						"\\end{array}");
+	}
+
+	public void testTeX045() {
+		IExpr expr = EvalEngine.get().evaluate("Derivative(2)[10/x^4]");
+		check(expr, //
+				"\\left( \\frac{10}{{x}^{4}}\\right) ''");
+	}
+	
+	public void testTeX046() {
+		IExpr expr = EvalEngine.get().evaluate("Derivative(a)[10/x^4]");
+		check(expr, //
+				"\\left( \\frac{10}{{x}^{4}}\\right) ^{(a)}");
 	}
 
 	public void check(String strEval, String strResult) {

@@ -879,7 +879,7 @@ public class TeXFormFactory {
 						}
 						return true;
 					}
-				} catch (final ValidateException ve) { 
+				} catch (final ValidateException ve) {
 					EvalEngine.get().printMessage(ve.getMessage(F.Sum));
 				}
 				return false;
@@ -996,21 +996,23 @@ public class TeXFormFactory {
 				if (caller == PLUS_CALL) {
 					buf.append('+');
 				}
+				precedenceOpen(buf, precedence);
 				buf.append("\\frac{");
 				// insert numerator in buffer:
 				if (numerator.isTimes()) {
 					convertTimesOperator(buf, (IAST) numerator, fPrecedence, NO_SPECIAL_CALL);
 				} else {
-					fFactory.convertInternal(buf, numerator, precedence);
+					fFactory.convertInternal(buf, numerator, 0);
 				}
 				buf.append("}{");
 				// insert denominator in buffer:
 				if (denominator.isTimes()) {
 					convertTimesOperator(buf, (IAST) denominator, fPrecedence, NO_SPECIAL_CALL);
 				} else {
-					fFactory.convertInternal(buf, denominator, precedence);
+					fFactory.convertInternal(buf, denominator, 0);
 				}
 				buf.append('}');
+				precedenceClose(buf, precedence);
 			} else {
 				if (numerator.isTimes()) {
 					convertTimesOperator(buf, (IAST) numerator, fPrecedence, NO_SPECIAL_CALL);
@@ -1327,63 +1329,142 @@ public class TeXFormFactory {
 		convertString(buf, o.toString());
 	}
 
-	public void convertAST(StringBuilder buf, final IAST f, int precedence) {
+	public void convertAST(StringBuilder buf, final IAST list, int precedence) {
+		IExpr header = list.head();
+		if (!header.isSymbol()) {
+			// print expressions like: f(#1, y)& [x]
 
-		int functionID = ((ISymbol) f.head()).ordinal();
-		if (functionID > ID.UNKNOWN) {
-			switch (functionID) {
-			case ID.Inequality:
-				if (f.size() > 3 && convertInequality(buf, f, precedence)) {
-					return;
-				}
-				break;
-			case ID.Interval:
-				if (f.size() > 1 && f.first().isASTSizeGE(F.List, 2)) {
-					IAST interval = IntervalSym.normalize(f);
-					buf.append("Interval(");
-					for (int i = 1; i < interval.size(); i++) {
-						buf.append("\\{");
+			IAST[] derivStruct = list.isDerivativeAST1();
+			if (derivStruct != null) {
+				IAST a1Head = derivStruct[0];
+				IAST headAST = derivStruct[1];
+				if (a1Head.isAST1()  && headAST.isAST1()
+						&& (headAST.arg1().isSymbol() || headAST.arg1().isAST())) {
+					try {
+						IExpr symbolOrAST = headAST.arg1();
+						int n = a1Head.arg1().toIntDefault();
+						if (n == 1 || n == 2) {
+							convertInternal(buf, symbolOrAST, Integer.MAX_VALUE);
+							if (n == 1) {
+								buf.append("'");
+							} else if (n == 2) {
+								buf.append("''");
+							}
+							if (derivStruct[2] != null) {
+								convertArgs(buf, symbolOrAST, list);
+							}
+							return;
+						}
+						convertInternal(buf, symbolOrAST, Integer.MAX_VALUE);
+						buf.append("^{(");
+						convertInternal(buf, a1Head.arg1(), Integer.MIN_VALUE);
+						buf.append(")}");
+						if (derivStruct[2] != null) {
+							convertArgs(buf, symbolOrAST, list);
+						}
+						return;
 
-						IAST subList = (IAST) interval.get(i);
-						IExpr min = subList.arg1();
-						IExpr max = subList.arg2();
-						if (min instanceof INum) {
-							convertDoubleString(buf, convertDoubleToFormattedString(min.evalDouble()), 0, false);
-						} else {
-							convertInternal(buf, min, 0);
-						}
-						buf.append(",");
-						if (max instanceof INum) {
-							convertDoubleString(buf, convertDoubleToFormattedString(max.evalDouble()), 0, false);
-						} else {
-							convertInternal(buf, max, 0);
-						}
-						buf.append("\\}");
-						if (i < interval.size() - 1) {
-							buf.append(",");
-						}
+					} catch (ArithmeticException ae) {
+
 					}
-					buf.append(")");
-					return;
 				}
-				break;
+			}
+
+			convertInternal(buf, header, Integer.MIN_VALUE);
+			convertFunctionArgs(buf, list);
+			return;
+		}
+		if (header.isBuiltInSymbol()) {
+			int functionID = ((ISymbol) header).ordinal();
+			if (functionID > ID.UNKNOWN) {
+				switch (functionID) {
+				case ID.Inequality:
+					if (list.size() > 3 && convertInequality(buf, list, precedence)) {
+						return;
+					}
+					break;
+				case ID.Interval:
+					if (list.size() > 1 && list.first().isASTSizeGE(F.List, 2)) {
+						IAST interval = IntervalSym.normalize(list);
+						buf.append("Interval(");
+						for (int i = 1; i < interval.size(); i++) {
+							buf.append("\\{");
+
+							IAST subList = (IAST) interval.get(i);
+							IExpr min = subList.arg1();
+							IExpr max = subList.arg2();
+							if (min instanceof INum) {
+								convertDoubleString(buf, convertDoubleToFormattedString(min.evalDouble()), 0, false);
+							} else {
+								convertInternal(buf, min, 0);
+							}
+							buf.append(",");
+							if (max instanceof INum) {
+								convertDoubleString(buf, convertDoubleToFormattedString(max.evalDouble()), 0, false);
+							} else {
+								convertInternal(buf, max, 0);
+							}
+							buf.append("\\}");
+							if (i < interval.size() - 1) {
+								buf.append(",");
+							}
+						}
+						buf.append(")");
+						return;
+					}
+					break;
+				}
 			}
 		}
 
-		if (f.isAssociation()) {
-			convertAssociation(buf, (IAssociation) f, 0);
+		if (list.isAssociation()) {
+			convertAssociation(buf, (IAssociation) list, 0);
 			return;
 		}
-		convertHead(buf, f.head());
+		convertHead(buf, header);
 		buf.append("(");
-		for (int i = 1; i < f.size(); i++) {
-			convertInternal(buf, f.get(i), 0);
-			if (i < f.argSize()) {
+		for (int i = 1; i < list.size(); i++) {
+			convertInternal(buf, list.get(i), 0);
+			if (i < list.argSize()) {
 				buf.append(',');
 			}
 		}
 		buf.append(")");
 
+	}
+
+	public void convertArgs(final StringBuilder buf, IExpr head, final IAST function) {
+		int functionSize = function.size();
+		if (head.isAST()) {
+			buf.append("[");
+		} else {
+			buf.append("(");
+		}
+		if (functionSize > 1) {
+			convertInternal(buf, function.arg1(), Integer.MIN_VALUE);
+		}
+		for (int i = 2; i < functionSize; i++) {
+			convertInternal(buf, function.get(i), 0);
+			if (i < function.argSize()) {
+				buf.append(',');
+			}
+		}
+		if (head.isAST()) {
+			buf.append("]");
+		} else {
+			buf.append(")");
+		}
+	}
+
+	public void convertFunctionArgs(final StringBuilder buf, final IAST list) {
+		buf.append("(");
+		for (int i = 1; i < list.size(); i++) {
+			convertInternal(buf, list.get(i), Integer.MIN_VALUE);
+			if (i < list.argSize()) {
+				buf.append(",");
+			}
+		}
+		buf.append(")");
 	}
 
 	/**
