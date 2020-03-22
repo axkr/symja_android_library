@@ -30,7 +30,7 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 				return Convert.matrix2List(matrix);
 			}
 
-		} catch(MathRuntimeException mre) {
+		} catch (MathRuntimeException mre) {
 			return engine.printMessage(ast.topHead(), mre);
 		} catch (final ClassCastException e) {
 			if (Config.SHOW_STACKTRACE) {
@@ -74,7 +74,9 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 				matrix = list.toRealMatrix();
 				if (matrix != null) {
 					matrix = realMatrixEval(matrix);
-					return Convert.realMatrix2List(matrix);
+					if (matrix != null) {
+						return Convert.realMatrix2List(matrix);
+					}
 				}
 			}
 			return F.NIL;

@@ -1430,11 +1430,9 @@ public final class LinearAlgebra {
 						} else if (arg2.isVector() != (-1)) {
 							list = (IAST) arg2;
 							vector1 = Convert.list2Vector(list);
-							IAST res = Convert.vector2List(matrix0.operate(vector1));
-							if (res == null) {
-								return F.NIL;
+							if (vector1 != null) {
+								return Convert.vector2List(matrix0.operate(vector1));
 							}
-							return res;
 						}
 					}
 					return engine.printMessage(ast.topHead() + ": Error in matrix");
@@ -1450,7 +1448,9 @@ public final class LinearAlgebra {
 							if (arg2.isMatrix() != null) {
 								list = (IAST) arg2;
 								matrix1 = Convert.list2Matrix(list);
-								return Convert.vector2List(matrix1.preMultiply(vector0));
+								if (matrix1 != null) {
+									return Convert.vector2List(matrix1.preMultiply(vector0));
+								}
 							} else if (arg2.isVector() != (-1)) {
 								list = (IAST) arg2;
 								vector1 = Convert.list2Vector(list);
@@ -2311,9 +2311,12 @@ public final class LinearAlgebra {
 							if (realVector != null) {
 								// for numerical stability use: Dot(PseudoInverse(matrix), vector)
 								realMatrix = PseudoInverse.CONST.realMatrixEval(realMatrix);
-								return new ASTRealVector(realMatrix.operate(realVector), false);
+								if (realMatrix != null) {
+									return new ASTRealVector(realMatrix.operate(realVector), false);
+								}
 							}
 						}
+						return F.NIL;
 					}
 				} catch (final MathRuntimeException mre) {
 					// org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
@@ -2415,52 +2418,54 @@ public final class LinearAlgebra {
 					final IAST vec = (IAST) ast.arg2();
 					final FieldMatrix<IExpr> matrix = Convert.list2Matrix(mat);
 					final FieldVector<IExpr> vector = Convert.list2Vector(vec);
-					if (matrixDims[0] > matrixDims[1]) {
-						if (vector.getDimension() == matrix.getRowDimension()
-								&& vector.getDimension() <= matrix.getColumnDimension()) {
-							return underdeterminedSystem(mat, vec, engine);
-						}
-						return engine.printMessage("LinearSolve: first argument is not a square matrix.");
-					}
-					if (vector.getDimension() != matrix.getRowDimension()) {
-						return engine.printMessage("LinearSolve: matrix row and vector have different dimensions.");
-					}
-					if (matrixDims[0] == 1 && matrixDims[1] >= 1) {
-						IExpr temp = eval1x1Matrix(matrix, vector, engine);
-						if (temp.isPresent()) {
-							return temp;
-						}
-						return underdeterminedSystem(mat, vec, engine);
-					}
-					if (matrixDims[0] == 2 && matrixDims[1] == 2) {
-						IExpr temp = eval2x2Matrix(matrix, vector, engine);
-						if (temp.isPresent()) {
-							return temp;
-						}
-						return underdeterminedSystem(mat, vec, engine);
-					}
-					if (matrixDims[0] == 3 && matrixDims[1] == 3) {
-						IExpr temp = eval3x3Matrix(matrix, vector, engine);
-						if (temp.isPresent()) {
-							return temp;
-						}
-						return underdeterminedSystem(mat, vec, engine);
-					}
-					if (matrixDims[0] != matrixDims[1]) {
-						return underdeterminedSystem(mat, vec, engine);
-					}
-					FieldDecompositionSolver<IExpr> solver = new FieldLUDecomposition<IExpr>(matrix).getSolver();
-					if (solver.isNonSingular()) {
-						FieldVector<IExpr> resultVector = solver.solve(vector);
-						for (int i = 0; i < resultVector.getDimension(); i++) {
-							if (resultVector.getEntry(i).isIndeterminate() || //
-									resultVector.getEntry(i).isDirectedInfinity()) {
+					if (matrix != null && vector != null) {
+						if (matrixDims[0] > matrixDims[1]) {
+							if (vector.getDimension() == matrix.getRowDimension()
+									&& vector.getDimension() <= matrix.getColumnDimension()) {
 								return underdeterminedSystem(mat, vec, engine);
 							}
+							return engine.printMessage("LinearSolve: first argument is not a square matrix.");
 						}
-						return Convert.vector2List(resultVector);
-					} else {
-						return underdeterminedSystem(mat, vec, engine);
+						if (vector.getDimension() != matrix.getRowDimension()) {
+							return engine.printMessage("LinearSolve: matrix row and vector have different dimensions.");
+						}
+						if (matrixDims[0] == 1 && matrixDims[1] >= 1) {
+							IExpr temp = eval1x1Matrix(matrix, vector, engine);
+							if (temp.isPresent()) {
+								return temp;
+							}
+							return underdeterminedSystem(mat, vec, engine);
+						}
+						if (matrixDims[0] == 2 && matrixDims[1] == 2) {
+							IExpr temp = eval2x2Matrix(matrix, vector, engine);
+							if (temp.isPresent()) {
+								return temp;
+							}
+							return underdeterminedSystem(mat, vec, engine);
+						}
+						if (matrixDims[0] == 3 && matrixDims[1] == 3) {
+							IExpr temp = eval3x3Matrix(matrix, vector, engine);
+							if (temp.isPresent()) {
+								return temp;
+							}
+							return underdeterminedSystem(mat, vec, engine);
+						}
+						if (matrixDims[0] != matrixDims[1]) {
+							return underdeterminedSystem(mat, vec, engine);
+						}
+						FieldDecompositionSolver<IExpr> solver = new FieldLUDecomposition<IExpr>(matrix).getSolver();
+						if (solver.isNonSingular()) {
+							FieldVector<IExpr> resultVector = solver.solve(vector);
+							for (int i = 0; i < resultVector.getDimension(); i++) {
+								if (resultVector.getEntry(i).isIndeterminate() || //
+										resultVector.getEntry(i).isDirectedInfinity()) {
+									return underdeterminedSystem(mat, vec, engine);
+								}
+							}
+							return Convert.vector2List(resultVector);
+						} else {
+							return underdeterminedSystem(mat, vec, engine);
+						}
 					}
 				} catch (LimitException le) {
 					throw le;
@@ -3621,7 +3626,10 @@ public final class LinearAlgebra {
 		@Override
 		public IAST realMatrixEval(RealMatrix matrix) {
 			org.hipparchus.linear.QRDecomposition ed = new org.hipparchus.linear.QRDecomposition(matrix);
-			return F.List(Convert.realMatrix2List(ed.getQ()), Convert.realMatrix2List(ed.getR()));
+			if (Convert.realMatrix2List(ed.getQ()) != null && Convert.realMatrix2List(ed.getR()) != null) {
+				return F.List(Convert.realMatrix2List(ed.getQ()), Convert.realMatrix2List(ed.getR()));
+			}
+			return F.NIL;
 		}
 	}
 

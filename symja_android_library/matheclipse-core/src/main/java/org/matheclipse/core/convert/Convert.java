@@ -15,7 +15,7 @@ import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-import org.matheclipse.core.eval.EvalEngine; 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 //import org.matheclipse.commons.math.linear.Array2DRowFieldMatrix;
@@ -157,7 +157,7 @@ public class Convert {
 	 * Returns a RealMatrix if possible.
 	 * 
 	 * @param listMatrix
-	 * @return a RealMatrix or <code>null</code> if the given list is no matrix. 
+	 * @return a RealMatrix or <code>null</code> if the given list is no matrix.
 	 * @throws ClassCastException
 	 * @throws IndexOutOfBoundsException
 	 * @deprecated use {@link IExpr#toRealMatrix()}
@@ -184,7 +184,7 @@ public class Convert {
 		}
 
 		final double[][] elements = listMatrix.toDoubleMatrix();
-		if (elements==null) {
+		if (elements == null) {
 			return null;
 		}
 		return new Array2DRowRealMatrix(elements, false);
@@ -194,7 +194,7 @@ public class Convert {
 	 * Returns a RealVector if possible.
 	 * 
 	 * @param listVector
-	 * @return a RealVector or <code>null</code> if the given list is no matrix. 
+	 * @return a RealVector or <code>null</code> if the given list is no matrix.
 	 * @throws ClassCastException
 	 * @throws IndexOutOfBoundsException
 	 * @deprecated use {@link IExpr#toRealVector()}
@@ -262,13 +262,17 @@ public class Convert {
 		return elements;
 	}
 
-	public static IAST toVector(Complex[] vector) throws ClassCastException {
+	/**
+	 * 
+	 * @param vector
+	 * @return <code>F.NIL</code> if conversion is not possible
+	 */
+	public static IAST toVector(Complex[] vector) {
 		if (vector == null) {
-			return null;
+			return F.NIL;
 		}
 		IASTAppendable result = F.ListAlloc(vector.length);
-
-		EvalEngine engine = EvalEngine.get();
+ 
 		for (int i = 0; i < vector.length; i++) {
 			result.append(F.complexNum(vector[i]));
 		}
