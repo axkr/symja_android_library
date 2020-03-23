@@ -896,6 +896,10 @@ public class EllipticIntegrals {
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			IExpr t = ast.arg1();
 			IExpr im = F.Im.of(engine, t);
+
+			if (im.isZero()) {
+				return F.NIL;
+			}
 			if (im.isOne()) {
 				IExpr re = F.Re.of(engine, t);
 				if (re.isInteger()) {
