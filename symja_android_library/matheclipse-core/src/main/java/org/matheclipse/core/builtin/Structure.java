@@ -40,6 +40,7 @@ import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
 
 public class Structure {
+
 	private final static Set<ISymbol> LOGIC_EQUATION_HEADS = Collections
 			.newSetFromMap(new IdentityHashMap<ISymbol, Boolean>(29));
 	private final static Set<ISymbol> PLUS_LOGIC_EQUATION_HEADS = Collections
@@ -197,7 +198,6 @@ public class Structure {
 					return F.NIL;
 				}
 			}
-
 			IExpr arg1 = evaledAST.arg1();
 			IExpr arg2 = evaledAST.arg2();
 			return evalApply(arg1, arg2, evaledAST, lastIndex, heads, engine);
@@ -219,8 +219,8 @@ public class Structure {
 					level = new VisitorLevelSpecification(af, 0);
 				}
 
-				if ( expr.isAST()) {
-					return ((IAST)expr).acceptChecked(level).orElse(expr);
+				if (expr.isAST()) {
+					return ((IAST) expr).acceptChecked(level).orElse(expr);
 				} else {
 					// arg2 is an Atom to which the head f couldn't be applied
 					if (evaledAST.size() >= 3) {

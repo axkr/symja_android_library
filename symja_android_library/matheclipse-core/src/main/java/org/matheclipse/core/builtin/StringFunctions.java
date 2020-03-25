@@ -274,6 +274,9 @@ public final class StringFunctions {
 		 * @param result
 		 */
 		private static void appendMatches(String s1, IAST list, IASTAppendable result) {
+			if (list.isEmpty()) {
+				return;
+			}
 			int i = 1;
 			String s2 = list.get(i++).toString();
 			int lastIndex = -1;
@@ -357,16 +360,26 @@ public final class StringFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			int from = 1;
+			int to = 1;
 			try {
 				if (ast.arg1().isString()) {
 					String s = ast.arg1().toString();
-					final int n = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
-					if (n >= 0) {
-						return F.$str(s.substring(n, s.length()));
+					from = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
+					if (from >= 0) {
+						from++;
+						to = s.length();
 					} else {
-						return F.$str(s.substring(0, s.length() + n));
+						to = s.length() + from;
+						from = 1;
 					}
+					return F.$str(s.substring(from - 1, to));
 				}
+			} catch (IndexOutOfBoundsException iob) {
+				// from substring
+				// Cannot drop positions `1` through `2` in `3`.
+				return IOFunctions.printMessage(ast.topHead(), "drop", F.List(F.ZZ(from - 1), F.ZZ(to), ast.arg1()),
+						engine);
 			} catch (final ValidateException ve) {
 				// int number validation
 				return engine.printMessage(ve.getMessage(ast.topHead()));
@@ -725,11 +738,11 @@ public final class StringFunctions {
 					String s = ast.arg1().toString();
 					to = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
 					if (to >= 0) {
-						
+
 					} else {
-						from = s.length() + to+1;
+						from = s.length() + to + 1;
 						to = s.length();
-//						return F.$str(s.substring(s.length() + to, s.length()));
+						// return F.$str(s.substring(s.length() + to, s.length()));
 					}
 					return F.$str(s.substring(from - 1, to));
 				}

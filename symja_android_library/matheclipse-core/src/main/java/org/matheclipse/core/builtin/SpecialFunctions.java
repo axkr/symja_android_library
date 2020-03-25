@@ -146,9 +146,9 @@ public class SpecialFunctions {
 
 				int bInt = b.toIntDefault();
 				if (bInt > 0) {
- 					IInteger n = F.ZZ(bInt);
+					IInteger n = F.ZZ(bInt);
 					if (a.isOne()) {
-						return 
+						return
 						// [$ ( (1/n)*(1 - (1 - z)^n) ) $]
 						F.Times(F.Power(n, F.CN1), F.Subtract(F.C1, F.Power(F.Subtract(F.C1, z), n))); // $$;
 					}
@@ -258,18 +258,24 @@ public class SpecialFunctions {
 						if (engine.evalTrue(F.Less(F.Re(a), F.C0))) {
 							return F.CComplexInfinity;
 						}
-						 } else if (z.isOne()) {
-						 if (engine.evalTrue(F.Greater(F.Re(n), F.C0))) {
-						 return F.C1;
-						 }
+					} else if (z.isOne()) {
+						if (engine.evalTrue(F.Greater(F.Re(n), F.C0))) {
+							return F.C1;
+						}
 					}
 					if (engine.isDoubleMode()) {
-						double zn = engine.evalDouble(z);
-						double an = engine.evalDouble(a);
-						double nn = engine.evalDouble(n);
-						// TODO improve with regularizedIncompleteBetaFunction() -
-						// https://github.com/haifengl/smile/blob/master/math/src/main/java/smile/math/special/Beta.java
-						return F.num(de.lab4inf.math.functions.IncompleteBeta.incBeta(zn, an, nn));
+						try {
+							double zn = engine.evalDouble(z);
+							double an = engine.evalDouble(a);
+							double nn = engine.evalDouble(n);
+							// TODO improve with regularizedIncompleteBetaFunction() -
+							// https://github.com/haifengl/smile/blob/master/math/src/main/java/smile/math/special/Beta.java
+							return F.num(de.lab4inf.math.functions.IncompleteBeta.incBeta(zn, an, nn));
+						} catch (IllegalArgumentException rex) {
+							// from de.lab4inf.math.functions.IncompleteBeta.checkParameters()
+						} catch (ValidateException ve) {
+							// from org.matheclipse.core.eval.EvalEngine.evalDouble()
+						}
 					}
 					int ni = n.toIntDefault(Integer.MIN_VALUE);
 					if (ni != Integer.MIN_VALUE) {
@@ -979,8 +985,8 @@ public class SpecialFunctions {
 					return F.CInfinity;
 				}
 				if (arg1 > 0.0) {
-					return  Num.valueOf(BesselJS.logGamma(arg1));
-//					return Num.valueOf(de.lab4inf.math.functions.Gamma.lngamma(arg1));
+					return Num.valueOf(BesselJS.logGamma(arg1));
+					// return Num.valueOf(de.lab4inf.math.functions.Gamma.lngamma(arg1));
 				}
 			} catch (final MathIllegalStateException e) {
 			}
@@ -997,7 +1003,7 @@ public class SpecialFunctions {
 					return Double.POSITIVE_INFINITY;
 				}
 				return BesselJS.logGamma(stack[top]);
-//				return de.lab4inf.math.functions.Gamma.lngamma(stack[top]);
+				// return de.lab4inf.math.functions.Gamma.lngamma(stack[top]);
 			} catch (final MathIllegalStateException e) {
 			}
 			throw new UnsupportedOperationException();

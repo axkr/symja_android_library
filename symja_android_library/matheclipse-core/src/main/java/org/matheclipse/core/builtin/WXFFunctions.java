@@ -14,6 +14,7 @@ import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class WXFFunctions {
+
 	/**
 	 * 
 	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
@@ -35,7 +36,9 @@ public class WXFFunctions {
 			if (ast.isAST1()) {
 				IExpr arg1 = engine.evaluate(ast.arg1());
 				byte[] bArray = WL.serialize(arg1);
-				return ByteArrayExpr.newInstance(bArray);
+				if (bArray != null) {
+					return ByteArrayExpr.newInstance(bArray);
+				}
 			}
 			return F.NIL;
 		}

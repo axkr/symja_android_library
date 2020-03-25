@@ -10,13 +10,12 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
-import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.FlowControlException;
-import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.LimitException;
-import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -72,7 +71,14 @@ public class ExprEvaluatorTests extends TestCase {
 		OutputFormFactory fInputFactory = OutputFormFactory.get(true, false, 5, 7);
 		fInputFactory.setQuotes(true);
 		AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
+		byte[] bArray = new byte[0];
+		ByteArrayExpr ba = ByteArrayExpr.newInstance(bArray);
+		byte[] b0Array = new byte[] { 0 };
+		ByteArrayExpr b0a = ByteArrayExpr.newInstance(b0Array);
 		IAST seedList = F.List(//
+				ba, //
+				b0a, //
+				// F.NIL, //
 				F.complex(-0.5, 0.5), //
 				F.complex(0.0, 0.5), //
 				F.complex(0.0, -1.0), //
@@ -125,31 +131,33 @@ public class ExprEvaluatorTests extends TestCase {
 				if (temp.isAST() && temp.size() > 1) {
 					int seedIndex = random.nextInt(1, seedList.size());
 					IExpr seed = seedList.get(seedIndex);
-
-					IASTMutable mutant = ((IAST) temp).copy();
-					int randomIndex = random.nextInt(1, mutant.size());
-					mutant.set(randomIndex, seed);
-
-					for (int k = 0; k < 1; k++) {
-						seedIndex = random.nextInt(1, seedList.size());
-						seed = seedList.get(seedIndex);
-						randomIndex = random.nextInt(1, mutant.size());
-						mutant.set(randomIndex, seed);
-					}
-
-					engine.init();
-					engine.setQuietMode(quietMode);
-					engine.setRecursionLimit(256);
-					engine.setIterationLimit(1000);
-					ExprEvaluator eval = new ExprEvaluator(engine, true, 20);
-					final String mutantStr = fInputFactory.toString(mutant);
+					String mutantStr = "initial";
 					try {
-						// System.out.println(">> " + mutantStr);
+						IASTMutable mutant = ((IAST) temp).copy();
+						int randomIndex = random.nextInt(1, mutant.size());
+						mutant.set(randomIndex, seed);
+
+						for (int k = 0; k < 1; k++) {
+							seedIndex = random.nextInt(1, seedList.size());
+							seed = seedList.get(seedIndex);
+							randomIndex = random.nextInt(1, mutant.size());
+							mutant.set(randomIndex, seed);
+						}
+
+						engine.init();
+						engine.setQuietMode(quietMode);
+						engine.setRecursionLimit(256);
+						engine.setIterationLimit(1000);
+						ExprEvaluator eval = new ExprEvaluator(engine, true, 20);
+						mutantStr = fInputFactory.toString(mutant);
+
+						System.out.println(">> " + mutantStr);
 						// System.out.print(".");
 						if (counter++ > 80) {
 							// System.out.println("");
 							counter = 0;
 							System.out.flush();
+							System.err.flush();
 						}
 						eval.eval(mutantStr);
 					} catch (FlowControlException mex) {
@@ -161,6 +169,10 @@ public class ExprEvaluatorTests extends TestCase {
 					} catch (LimitException ile) {
 						System.err.println(mutantStr);
 						ile.printStackTrace();
+						System.err.println();
+					} catch (ValidateException ve) {
+						System.err.println(mutantStr);
+						ve.printStackTrace();
 						System.err.println();
 					} catch (SyntaxError se) {
 						if (!quietMode) {
@@ -212,8 +224,14 @@ public class ExprEvaluatorTests extends TestCase {
 		engine.setRecursionLimit(256);
 		engine.setIterationLimit(1000);
 		ExprEvaluator eval = new ExprEvaluator(engine, true, 20);
-
+		byte[] bArray = new byte[0];
+		ByteArrayExpr ba = ByteArrayExpr.newInstance(bArray);
+		byte[] b0Array = new byte[] { 0 };
+		ByteArrayExpr b0a = ByteArrayExpr.newInstance(b0Array);
 		IAST seedList = F.List(//
+				ba, //
+				b0a, //
+				// F.NIL, //
 				F.complex(-0.5, 0.5), //
 				F.complex(0.0, 0.5), //
 				F.complex(0.0, -1.0), //
@@ -247,6 +265,8 @@ public class ExprEvaluatorTests extends TestCase {
 				F.CEmptyList, //
 				F.C1DSqrt5, //
 				F.Slot2, //
+				F.stringx(""), //
+				F.stringx("\uffff"), //
 				F.Subtract(F.C1, F.C1));
 		ThreadLocalRandom random = ThreadLocalRandom.current();
 		String[] functionStrs = AST2Expr.FUNCTION_STRINGS;
@@ -328,18 +348,26 @@ public class ExprEvaluatorTests extends TestCase {
 			EvalEngine engine) {
 		ExprEvaluator eval;
 		System.out.flush();
+		int counter = 0;
 		for (int j = start; j <= end; j++) {
 
 			eval = new ExprEvaluator(engine, true, 20);
 			IASTAppendable ast = F.ast(sym);
-			for (int k = 0; k < j; k++) {
-				int seedIndex = random.nextInt(1, seedList.size());
-				IExpr seed = seedList.get(seedIndex);
-				ast.append(seed);
-			}
 
 			try {
-				// System.out.println(ast.toString());
+				for (int k = 0; k < j; k++) {
+					int seedIndex = random.nextInt(1, seedList.size());
+					IExpr seed = seedList.get(seedIndex);
+					ast.append(seed);
+				}
+
+				if (counter++ > 80) {
+					// System.out.println("");
+					counter = 0;
+					System.out.flush();
+					System.err.flush();
+				}
+				System.out.println(">> " + ast.toString());
 				eval.eval(ast);
 			} catch (FlowControlException mex) {
 				System.err.println(ast.toString());
@@ -355,6 +383,11 @@ public class ExprEvaluatorTests extends TestCase {
 				se.printStackTrace();
 				System.err.println();
 
+				// fail();
+			} catch (ValidateException ve) {
+				System.err.println(ast.toString());
+				ve.printStackTrace();
+				System.err.println();
 				// fail();
 			} catch (MathException mex) {
 				System.err.println(ast.toString());

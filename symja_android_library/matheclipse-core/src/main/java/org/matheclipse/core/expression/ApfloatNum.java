@@ -234,8 +234,8 @@ public class ApfloatNum implements INum {
 	public Apfloat apfloatValue(long precision) {
 		return fApfloat;
 	}
-	
-	public Apfloat apfloatValue( ) {
+
+	public Apfloat apfloatValue() {
 		return fApfloat;
 	}
 
@@ -414,7 +414,7 @@ public class ApfloatNum implements INum {
 	@Override
 	public IInteger round() {
 		Apfloat f = ApfloatMath.round(fApfloat, 1, RoundingMode.HALF_EVEN);
-		return F.integer(ApfloatMath.floor(f).toBigInteger());
+		return F.ZZ(ApfloatMath.floor(f).toBigInteger());
 	}
 
 	@Override

@@ -25,7 +25,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.IterationLimitExceeded; 
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.ASTRealMatrix;
@@ -203,7 +203,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @param visitor
 	 * @return <code>F.NIL</code> if no evaluation was necessary
 	 */
-	public IExpr accept(IVisitor  visitor);
+	public IExpr accept(IVisitor visitor);
 
 	/**
 	 * Accept a visitor with return type <code>boolean</code>
@@ -464,7 +464,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default Complex evalComplex() {
-		return EvalEngine.get().evalComplex(this); 
+		return EvalEngine.get().evalComplex(this);
 	}
 
 	/**
@@ -474,7 +474,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return this expression converted to a Java <code>double</code> value.
 	 */
 	default double evalDouble() {
-		return EvalEngine.get().evalDouble(this); 
+		return EvalEngine.get().evalDouble(this);
 	}
 
 	/**
@@ -2369,16 +2369,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isPolynomial(IAST variables) {
 		return isNumber();
 	}
-	
+
 	/**
 	 * <p>
-	 * Test if this expression has a polynomial structiure, i.e. no built-in function as head 
-	 * </p> 
+	 * Test if this expression has a polynomial structiure, i.e. no built-in function as head
+	 * </p>
 	 * 
 	 * @return <code>true</code> if this expression has a polynomial structure; <code>false</code>otherwise
 	 * 
 	 */
-	default boolean isPolynomialStruct( ) {
+	default boolean isPolynomialStruct() {
 		return isExactNumber();
 	}
 
@@ -3201,9 +3201,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * The <code>ExprNull.NIL#optional()</code> method always returns <code>that</code>. All other objects which
-	 * implement this method returns <code>that</code> if <code>that!=null</code> or <code>this</code> if
-	 * <code>that==null</code>
+	 * The <code>F.NIL#optional()</code> method always returns <code>that</code>. All other objects which implement this
+	 * method returns <code>that</code> if <code>that!=null</code> or <code>this</code> if <code>that==null</code>
 	 * 
 	 * @param that
 	 * @return <code>that</code> if <code>that!=null</code> or <code>this</code> in all other cases.

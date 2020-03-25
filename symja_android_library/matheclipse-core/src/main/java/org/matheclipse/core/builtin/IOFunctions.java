@@ -651,6 +651,7 @@ public class IOFunctions {
 			"cxt", "`1` is not a valid context name.", //
 			"divz", "The argument `1` should be nonzero.", //
 			"digit", "Digit at position `1` in `2` is too large to be used in base `3`.", //
+			"drop", "Cannot drop positions `1` through `2` in `3`.", //
 			"eqf", "`1` is not a well-formed equation.", //
 			"exact", "Argument `1` is not an exact number.", //
 			"fftl", "Argument `1` is not a non-empty list or rectangular array of numeric quantities.", //
@@ -677,7 +678,9 @@ public class IOFunctions {
 			"listofints", "List of Java int numbers expected in `1`.", //
 			"listoflongs", "List of Java long numbers expected in `1`.", //
 			"locked", "Symbol `1` is locked.", //
-			"matsq", "Argument `1` is not a non-empty square matrix.", //
+			"matrix", "Argument `1` at position `2` is not a non-empty rectangular matrix.", //
+			"matsq", "Argument `1` at position `2` is not a non-empty square matrix.", //
+			"nil", "unexpected NIL expression encountered.", //
 			"noopen", "Cannot open `1`.", //
 			"nonopt",
 			"Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule or a list of rules.", //
@@ -699,11 +702,13 @@ public class IOFunctions {
 			"poly", "`1` is not a polynomial.", //
 			"polynomial", "Polynomial expected at position `1` in `2`.", //
 			"pkspec1", "The expression `1` cannot be used as a part specification.", // "
+			"range", "Range specification in `1` does not have appropriate bounds.", //
 			"rvalue", "`1` is not a variable with a value, so its value cannot be changed.", //
 			"seqs", "Sequence specification expected, but got `1`.", //
 			"setp", "Part assignment to `1` could not be made", //
 			"setraw", "Cannot assign to raw object `1`.", //
 			"setps", "`1` in the part assignment is not a symbol.", //
+			"sing", "Matrix `1` is singular.", //
 			"span", "`1` is not a valid Span specification.", //
 			"stream", "`1` is not string, InputStream[], or OutputStream[]", //
 			"string", "String expected at position `1` in `2`.", //
@@ -712,6 +717,7 @@ public class IOFunctions {
 			"take", "Cannot take positions `1` through `2` in `3`.", //
 			"unsupported", "`1` currently not supported in `2`.", //
 			"usraw", "Cannot unset object `1`.", //
+			"vloc", "The variable `1` cannot be localized so that it can be assigned to numerical values.", //
 			"vpow2", "Argument `1` is restricted to vectors with a length of power of 2.", //
 			"vrule", "Cannot set `1` to `2`, which is not a valid list of replacement rules.", //
 			"write", "Tag `1` in `2` is Protected.", //

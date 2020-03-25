@@ -5567,7 +5567,7 @@ public class Algebra {
 				ComplexRing<BigRational> cfac = new ComplexRing<BigRational>(BigRational.ZERO);
 				JASConvert<Complex<BigRational>> jas = new JASConvert<Complex<BigRational>>(varList, cfac);
 				GenPolynomial<Complex<BigRational>> polyRat = jas.expr2JAS(expr, numeric2Rational);
-				return engine.evaluate(factorComplex((IAST) expr, polyRat, jas, head, cfac));
+				return engine.evaluate(factorComplex(expr, polyRat, jas, head, cfac));
 			} else {
 				JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
 				GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, numeric2Rational);
@@ -5643,7 +5643,7 @@ public class Algebra {
 	 * @param cfac
 	 * @return
 	 */
-	private static IAST factorComplex(IAST expr, GenPolynomial<Complex<BigRational>> polynomial,
+	private static IExpr factorComplex(IExpr expr, GenPolynomial<Complex<BigRational>> polynomial,
 			JASConvert<? extends RingElem<?>> jas, ISymbol head, ComplexRing<BigRational> cfac) {
 		FactorComplex<BigRational> factorAbstract = new FactorComplex<BigRational>(cfac);
 		SortedMap<GenPolynomial<Complex<BigRational>>, Long> map = factorAbstract.factors(polynomial);

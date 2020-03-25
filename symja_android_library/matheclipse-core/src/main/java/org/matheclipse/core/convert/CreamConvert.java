@@ -21,7 +21,7 @@ import jp.ac.kobe_u.cs.cream.SolutionHandler;
 import jp.ac.kobe_u.cs.cream.Solver;
 
 /**
- * Convert <code>IExpr</code> expressions from and to <a herf="http://bach.istc.kobe-u.ac.jp/cream/">Cream: Class
+ * Convert <code>IExpr</code> expressions from and to <a href="http://bach.istc.kobe-u.ac.jp/cream/">Cream: Class
  * Library for Constraint Programming in Java</a>
  *
  */

@@ -36,7 +36,7 @@ public abstract class DataExpr<T> implements IDataExpr<T> {
 	 */
 	@Override
 	public IExpr accept(IVisitor visitor) {
-		return null;
+		return F.NIL;
 	}
 
 	/**

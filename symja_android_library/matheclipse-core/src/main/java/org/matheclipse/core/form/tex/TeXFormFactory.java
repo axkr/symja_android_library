@@ -1330,6 +1330,10 @@ public class TeXFormFactory {
 	}
 
 	public void convertAST(StringBuilder buf, final IAST list, int precedence) {
+		if (!list.isPresent()) {
+			buf.append("NIL");
+			return;
+		}
 		IExpr header = list.head();
 		if (!header.isSymbol()) {
 			// print expressions like: f(#1, y)& [x]
@@ -1338,8 +1342,7 @@ public class TeXFormFactory {
 			if (derivStruct != null) {
 				IAST a1Head = derivStruct[0];
 				IAST headAST = derivStruct[1];
-				if (a1Head.isAST1()  && headAST.isAST1()
-						&& (headAST.arg1().isSymbol() || headAST.arg1().isAST())) {
+				if (a1Head.isAST1() && headAST.isAST1() && (headAST.arg1().isSymbol() || headAST.arg1().isAST())) {
 					try {
 						IExpr symbolOrAST = headAST.arg1();
 						int n = a1Head.arg1().toIntDefault();
@@ -1548,6 +1551,10 @@ public class TeXFormFactory {
 	}
 
 	public void convertAST(StringBuilder buf, final IAST f, String headString) {
+		if (!f.isPresent()) {
+			buf.append("NIL");
+			return;
+		}
 		buf.append(headString);
 		buf.append("(");
 		for (int i = 1; i < f.size(); i++) {

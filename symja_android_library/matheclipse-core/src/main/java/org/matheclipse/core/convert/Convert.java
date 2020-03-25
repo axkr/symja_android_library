@@ -15,6 +15,7 @@ import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
@@ -272,7 +273,7 @@ public class Convert {
 			return F.NIL;
 		}
 		IASTAppendable result = F.ListAlloc(vector.length);
- 
+
 		for (int i = 0; i < vector.length; i++) {
 			result.append(F.complexNum(vector[i]));
 		}
@@ -286,6 +287,18 @@ public class Convert {
 	 * @return <code>F.NIL</code> if no conversion was possible
 	 */
 	public static IASTAppendable matrix2List(final FieldMatrix<IExpr> matrix) {
+		return matrix2List(matrix, true);
+	}
+
+	/**
+	 * Converts a FieldMatrix to the list expression representation.
+	 * 
+	 * @param matrix
+	 * @param matrixFormat
+	 *            if <code>true</code> use matrix formatting in printing
+	 * @return <code>F.NIL</code> if no conversion was possible
+	 */
+	public static IASTAppendable matrix2List(final FieldMatrix<IExpr> matrix, boolean matrixFormat) {
 		if (matrix == null) {
 			return F.NIL;
 		}
@@ -311,7 +324,9 @@ public class Convert {
 				}
 			}
 		}
-		out.addEvalFlags(IAST.IS_MATRIX);
+		if (matrixFormat) {
+			out.addEvalFlags(IAST.IS_MATRIX);
+		}
 		return out;
 	}
 
@@ -322,6 +337,18 @@ public class Convert {
 	 * @return <code>F.NIL</code> if no conversion was possible
 	 */
 	public static IASTAppendable matrix2List(final RealMatrix matrix) {
+		return matrix2List(matrix, true);
+	}
+
+	/**
+	 * Converts a FieldMatrix to the list expression representation.
+	 * 
+	 * @param matrix
+	 * @param matrixFormat
+	 *            if <code>true</code> use matrix formatting in printing
+	 * @return <code>F.NIL</code> if no conversion was possible
+	 */
+	public static IASTAppendable matrix2List(final RealMatrix matrix, boolean matrixFormat) {
 		if (matrix == null) {
 			return F.NIL;
 		}
@@ -347,7 +374,9 @@ public class Convert {
 				}
 			}
 		}
-		out.addEvalFlags(IAST.IS_MATRIX);
+		if (matrixFormat) {
+			out.addEvalFlags(IAST.IS_MATRIX);
+		}
 		return out;
 	}
 
@@ -535,4 +564,33 @@ public class Convert {
 		return null;
 	}
 
+	public static int[] checkNonEmptySquareMatrix(ISymbol symbol, IExpr arg1) {
+		int[] dim = arg1.isMatrix();
+		if (dim == null || dim[0] != dim[1] || dim[1] == 0) {
+			if (arg1.isNumericFunction()) {
+				if (arg1.isAST()) {
+					((IAST) arg1).setEvalFlags(IAST.NO_FLAG);
+				}
+				// Argument `1` at position `2` is not a non-empty square matrix.
+				IOFunctions.printMessage(symbol, "matsq", F.List(arg1, F.C1), EvalEngine.get());
+			}
+			return null;
+		}
+		return dim;
+	}
+
+	public static int[] checkNonEmptyRectangularMatrix(ISymbol symbol, IExpr arg1) {
+		int[] dim = arg1.isMatrix();
+		if (dim == null || dim[1] == 0) {
+			if (arg1.isNumericFunction()) {
+				if (arg1.isAST()) {
+					((IAST) arg1).setEvalFlags(IAST.NO_FLAG);
+				}
+				// Argument `1` at position `2` is not a non-empty rectangular matrix.
+				IOFunctions.printMessage(symbol, "matrix", F.List(arg1, F.C1), EvalEngine.get());
+			}
+			return null;
+		}
+		return dim;
+	}
 }

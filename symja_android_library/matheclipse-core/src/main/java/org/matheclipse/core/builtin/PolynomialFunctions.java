@@ -2175,9 +2175,9 @@ public class PolynomialFunctions {
 		}
 	}
 
-	public static IAST coefficientList(IExpr expr, IAST coefficientList) {
+	public static IAST coefficientList(IExpr expr, IAST listOfVariables) {
 		try {
-			ExprPolynomialRing ring = new ExprPolynomialRing(coefficientList);
+			ExprPolynomialRing ring = new ExprPolynomialRing(listOfVariables);
 			ExprPolynomial poly = ring.create(expr, true, false, true);
 			if (poly.isZero()) {
 				return F.List();
@@ -2185,10 +2185,18 @@ public class PolynomialFunctions {
 			return poly.coefficientList();
 		} catch (LimitException le) {
 			throw le;
+		} catch (ClassCastException ex) {
+			// org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing.create()
+			if (Config.SHOW_STACKTRACE) {
+				ex.printStackTrace();
+			}
 		} catch (RuntimeException ex) {
 			if (Config.SHOW_STACKTRACE) {
 				ex.printStackTrace();
 			}
+		}
+		if (listOfVariables.argSize() > 0) {
+			return F.Nest(F.List, expr, listOfVariables.argSize());
 		}
 		return F.NIL;
 	}

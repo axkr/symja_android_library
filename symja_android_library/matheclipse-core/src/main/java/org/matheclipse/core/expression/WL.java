@@ -619,18 +619,20 @@ public class WL {
 	 * @return <code>null</code> if the expression couldn't be serialized
 	 */
 	public static byte[] serialize(IExpr expr) {
-		WL.WriteObject wo = new WL.WriteObject();
-		try {
-			wo.write(expr);
-			return wo.toByteArray();
-		} catch (IOException e) {
-			if (Config.SHOW_STACKTRACE) {
-				e.printStackTrace();
-			}
-		} finally {
+		if (expr.isPresent()) {
+			WL.WriteObject wo = new WL.WriteObject();
 			try {
-				wo.close();
+				wo.write(expr);
+				return wo.toByteArray();
 			} catch (IOException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			} finally {
+				try {
+					wo.close();
+				} catch (IOException e) {
+				}
 			}
 		}
 		return null;

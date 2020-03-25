@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -49,7 +50,7 @@ public final class PlusOp {
 	public PlusOp(final int size) {
 		plusMap = new HashMap<IExpr, IExpr>(size + 5 + size / 10);
 		evaled = false;
-		numberValue = null;
+		numberValue = F.NIL;
 	}
 
 	/**
@@ -93,8 +94,8 @@ public final class PlusOp {
 	 */
 	public IExpr getSum() {
 
-		IASTAppendable result = F.PlusAlloc(plusMap.size()+1);
-		if (numberValue != null && !numberValue.isZero()) {
+		IASTAppendable result = F.PlusAlloc(plusMap.size() + 1);
+		if (numberValue.isPresent() && !numberValue.isZero()) {
 			if (numberValue.isComplexInfinity()) {
 				return numberValue;
 			}
@@ -152,7 +153,7 @@ public final class PlusOp {
 		}
 
 		try {
-			if (numberValue != null && numberValue.isDirectedInfinity()) {
+			if (numberValue.isPresent() && numberValue.isDirectedInfinity()) {
 				if (numberValue.isComplexInfinity()) {
 					if (arg.isDirectedInfinity()) {
 						return F.Indeterminate;
@@ -178,6 +179,9 @@ public final class PlusOp {
 						return F.NIL;
 					}
 					if (arg.isDirectedInfinity()) {
+						// Indeterminate expression `1` encountered.
+						IOFunctions.printMessage(F.Infinity, "indet", F.List(F.Plus(numberValue, arg)),
+								EvalEngine.get());
 						return F.Indeterminate;
 					}
 					if (arg.isRealResult()) {
@@ -192,7 +196,7 @@ public final class PlusOp {
 					evaled = true;
 					return F.NIL;
 				}
-				if (numberValue == null) {
+				if (!numberValue.isPresent()) {
 					numberValue = arg;
 					return F.NIL;
 				}
@@ -203,7 +207,9 @@ public final class PlusOp {
 				}
 				if (numberValue.isInfinity()) {
 					if (arg.isNegativeInfinity()) {
-						EvalEngine.get().printMessage("Indeterminate expression Infinity-Infinity");
+						// Indeterminate expression `1` encountered.
+						IOFunctions.printMessage(F.Infinity, "indet", F.List(F.Plus(numberValue, arg)),
+								EvalEngine.get());
 						return F.Indeterminate;
 					}
 					numberValue = F.CInfinity;
@@ -226,7 +232,7 @@ public final class PlusOp {
 					switch (headID) {
 					case ID.DirectedInfinity:
 						if (arg.isDirectedInfinity()) {
-							if (numberValue == null) {
+							if (!numberValue.isPresent()) {
 								numberValue = arg;
 								if (arg.isComplexInfinity()) {
 									if (plusMap.size() > 0) {
@@ -237,7 +243,9 @@ public final class PlusOp {
 							}
 							if (arg.isInfinity()) {
 								if (numberValue.isNegativeInfinity()) {
-									EvalEngine.get().printMessage("Indeterminate expression Infinity-Infinity");
+									// Indeterminate expression `1` encountered.
+									IOFunctions.printMessage(F.Infinity, "indet", F.List(F.Plus(arg, numberValue)),
+											EvalEngine.get());
 									return F.Indeterminate;
 								}
 								numberValue = F.CInfinity;
@@ -252,6 +260,9 @@ public final class PlusOp {
 								return F.NIL;
 							} else if (arg.isComplexInfinity()) {
 								if (numberValue.isDirectedInfinity()) {
+									// Indeterminate expression `1` encountered.
+									IOFunctions.printMessage(F.Infinity, "indet", F.List(F.Plus(arg, numberValue)),
+											EvalEngine.get());
 									return F.Indeterminate;
 								}
 								numberValue = F.CComplexInfinity;
@@ -275,24 +286,26 @@ public final class PlusOp {
 						return F.NIL;
 					case ID.Interval:
 						if (arg.isInterval()) {
-							if (numberValue == null) {
+							if (!numberValue.isPresent()) {
 								numberValue = arg;
 								return F.NIL;
 							}
+							IExpr temp;
 							if (numberValue.isInterval()) {
-								numberValue = IntervalSym.plus((IAST) numberValue,
-										(IAST) arg);
+								temp = IntervalSym.plus((IAST) numberValue, (IAST) arg);
 							} else {
-								numberValue = IntervalSym.plus(numberValue,
-										(IAST) arg);
+								temp = IntervalSym.plus(numberValue, (IAST) arg);
 							}
-							evaled = true;
+							if (temp.isPresent()) {
+								numberValue = temp;
+								evaled = true;
+							}
 							return F.NIL;
 						}
 						break;
 					case ID.Quantity:
 						if (arg.isQuantity()) {
-							if (numberValue == null) {
+							if (!numberValue.isPresent()) {
 								numberValue = arg;
 								return F.NIL;
 							}
@@ -306,7 +319,7 @@ public final class PlusOp {
 						break;
 					case ID.SeriesData:
 						if (arg instanceof ASTSeriesData) {
-							if (numberValue == null) {
+							if (!numberValue.isPresent()) {
 								numberValue = arg;
 								return F.NIL;
 							}

@@ -4,6 +4,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.frobenius.FrobeniusSolver;
@@ -56,7 +57,7 @@ public class FrobeniusSolve extends AbstractEvaluator {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (ast.arg1().isList()) {
+		if (ast.arg1().isList() && ast.arg2().isInteger()) {
 			IAST list = ast.getAST(1);
 			try {
 				IInteger[][] equations = new IInteger[1][list.size()];
@@ -65,7 +66,7 @@ public class FrobeniusSolve extends AbstractEvaluator {
 				equations[0][list.argSize()] = (IInteger) ast.arg2();
 				int numberOfSolutions = -1; // all solutions
 				if (ast.size() == 4) {
-					numberOfSolutions = ((ISignedNumber) ast.arg3()).toInt();
+					numberOfSolutions = ast.arg3().toIntDefault(-1);
 				}
 
 				FrobeniusSolver solver = new FrobeniusSolver(equations);
@@ -96,9 +97,11 @@ public class FrobeniusSolve extends AbstractEvaluator {
 		}
 		return F.NIL;
 	}
+
 	public int[] expectedArgSize() {
 		return IOFunctions.ARGS_2_3;
 	}
+
 	/** {@inheritDoc} */
 	@Override
 	public void setUp(final ISymbol newSymbol) {

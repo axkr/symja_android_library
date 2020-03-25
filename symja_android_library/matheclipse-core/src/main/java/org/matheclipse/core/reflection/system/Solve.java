@@ -14,8 +14,9 @@ import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.builtin.PolynomialFunctions;
-import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.convert.ChocoConvert;
 import org.matheclipse.core.convert.CreamConvert;
+import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -978,6 +979,7 @@ public class Solve extends AbstractFunctionEvaluator {
 							IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast, 1);
 							try {
 								// call cream solver
+								// ChocoConvert converter = new ChocoConvert();
 								CreamConvert converter = new CreamConvert();
 								IAST resultList = converter.integerSolve(equationsAndInequations, equationVariables,
 										userDefinedVariables, engine);

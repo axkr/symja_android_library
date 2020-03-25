@@ -26,7 +26,11 @@ public class HashedOrderlessMatcherPlus extends HashedOrderlessMatcher {
 			if (temp.isTimes() && temp.first().isInteger() && temp.size() == 3) {
 				hashValues[i] = temp.second().head().hashCode();
 			} else {
-				hashValues[i] = temp.head().hashCode();
+				if (temp.isPresent()) {
+					hashValues[i] = temp.head().hashCode();
+				} else {
+					hashValues[i] = 0;
+				}
 			}
 		}
 	}

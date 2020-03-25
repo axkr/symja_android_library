@@ -90,9 +90,6 @@ public abstract class AbstractAST implements IASTMutable {
 		@Override
 		public void add(IExpr o) {
 			throw new UnsupportedOperationException();
-			// _table.append(_nextIndex++, o);
-			// _end++;
-			// _currentIndex = -1;
 		}
 
 		@Override
@@ -134,16 +131,6 @@ public abstract class AbstractAST implements IASTMutable {
 		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
-			// if (_currentIndex >= 0) {
-			// _table.remove(_currentIndex);
-			// _end--;
-			// if (_currentIndex < _nextIndex) {
-			// _nextIndex--;
-			// }
-			// _currentIndex = -1;
-			// } else {
-			// throw new IllegalStateException();
-			// }
 		}
 
 		@Override
@@ -161,9 +148,9 @@ public abstract class AbstractAST implements IASTMutable {
 	 * indicates in the evaluation process that no evaluation was possible (i.e. no further definition was found to
 	 * create a new expression from the existing one).
 	 * <p>
-	 * Almost every modifying method in this class throws an <tt>UnsupportedOperationException</tt>, almost every
-	 * predicate returns <code>false</code>. The main method to check if the object is valid is the
-	 * <code>isPresent()</code> method. The method is designed similar to <code>java.util.Optional#isPresent()</code>.
+	 * Almost every modifying method in this class throws an <tt>ArgumentTypeException</tt>, almost every predicate
+	 * returns <code>false</code>. The main method to check if the object is valid is the <code>isPresent()</code>
+	 * method. The method is designed similar to <code>java.util.Optional#isPresent()</code>.
 	 * </p>
 	 * 
 	 * @see org.matheclipse.core.expression.F#NIL
@@ -185,92 +172,127 @@ public abstract class AbstractAST implements IASTMutable {
 
 		@Override
 		public boolean append(IExpr object) {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return false;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public void append(int location, IExpr object) {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public boolean appendAll(Collection<? extends IExpr> collection) {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return false;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public boolean appendAll(Map<? extends IExpr, ? extends IExpr> map) {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return false;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public boolean appendAll(IAST ast, int startPosition, int endPosition) {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return false;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public boolean appendAll(IExpr[] args, int startPosition, int endPosition) {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return false;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public boolean appendAll(int location, Collection<? extends IExpr> collection) {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return false;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public boolean appendAll(List<? extends IExpr> list, int startPosition, int endPosition) {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return false;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public boolean appendArgs(IAST ast) {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return false;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public final boolean appendArgs(IAST ast, int untilPosition) {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return false;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public IASTAppendable appendArgs(int start, int end, IntFunction<IExpr> function) {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return F.NIL;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public IASTAppendable appendArgs(int end, IntFunction<IExpr> function) {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return F.NIL;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public IAST appendOneIdentity(IAST subAST) {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return F.NIL;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public IExpr arg1() {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return F.NIL;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public IExpr arg2() {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return F.NIL;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public IExpr arg3() {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return F.NIL;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public IExpr arg4() {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return F.NIL;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public IExpr arg5() {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return F.NIL;
+			// throw new UnsupportedOperationException();
 		}
 
 		/** {@inheritDoc} */
@@ -280,17 +302,22 @@ public abstract class AbstractAST implements IASTMutable {
 
 		@Override
 		public Set<IExpr> asSet() {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return null;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public void clear() {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public IAST clone() {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return F.NIL;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
@@ -300,12 +327,16 @@ public abstract class AbstractAST implements IASTMutable {
 
 		@Override
 		public IASTAppendable copy() {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return F.NIL;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public IASTAppendable copyAppendable() {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return F.NIL;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
@@ -315,7 +346,8 @@ public abstract class AbstractAST implements IASTMutable {
 
 		@Override
 		public final IExpr evaluate(EvalEngine engine) {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return F.NIL;
 		}
 
 		@Override
@@ -339,13 +371,22 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 
 		@Override
+		protected String fullFormString(IExpr head) {
+			return "NIL";
+		}
+
+		@Override
 		public IExpr get(int location) {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return F.NIL;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public IAST getItems(int[] items, int length) {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return F.NIL;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
@@ -355,7 +396,22 @@ public abstract class AbstractAST implements IASTMutable {
 
 		@Override
 		public final IExpr head() {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return F.NIL;
+		}
+
+		/**
+		 * Returns the ISymbol of the IAST. If the head itself is a IAST it will recursively call head().
+		 */
+		@Override
+		public ISymbol topHead() {
+			ArgumentTypeException.throwNIL();
+			return null;
+		}
+
+		@Override
+		public final int headID() {
+			return ID.UNKNOWN;
 		}
 
 		@Override
@@ -365,6 +421,13 @@ public abstract class AbstractAST implements IASTMutable {
 		@Override
 		public IExpr ifPresent(Function<? super IExpr, IExpr> function) {
 			return F.NIL;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public final String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
+				boolean usePrefix, boolean noSymbolPrefix) {
+			return usePrefix ? "F.NIL" : "NIL";
 		}
 
 		@Override
@@ -432,6 +495,30 @@ public abstract class AbstractAST implements IASTMutable {
 		/** {@inheritDoc} */
 		@Override
 		public boolean isBooleanResult() {
+			return false;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public boolean isCondition() {
+			return false;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public boolean isConditionalExpression() {
+			return false;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public boolean isExcept() {
+			return false;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public boolean isExpanded() {
 			return false;
 		}
 
@@ -553,6 +640,36 @@ public abstract class AbstractAST implements IASTMutable {
 			return false;
 		}
 
+		/** {@inheritDoc} */
+		@Override
+		public final boolean isRule() {
+			return false;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public final boolean isRuleAST() {
+			return false;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public final boolean isRuleDelayed() {
+			return false;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public final boolean isSame(IExpr expression) {
+			return false;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public final boolean isSame(IExpr expression, double epsilon) {
+			return false;
+		}
+
 		@Override
 		public boolean isSameHead(ISymbol head) {
 			return false;
@@ -624,7 +741,9 @@ public abstract class AbstractAST implements IASTMutable {
 
 		@Override
 		public IExpr remove(int location) {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return F.NIL;
+			// throw new UnsupportedOperationException();
 		}
 
 		/**
@@ -639,7 +758,8 @@ public abstract class AbstractAST implements IASTMutable {
 		 */
 		@Override
 		public void removeRange(int start, int end) {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			// throw new UnsupportedOperationException();
 		}
 
 		/**
@@ -655,7 +775,9 @@ public abstract class AbstractAST implements IASTMutable {
 		 */
 		@Override
 		public IExpr set(int location, IExpr object) {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return F.NIL;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
@@ -670,12 +792,14 @@ public abstract class AbstractAST implements IASTMutable {
 		 */
 		@Override
 		public IExpr[] toArray() {
-			throw new UnsupportedOperationException();
+			ArgumentTypeException.throwNIL();
+			return null;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public String toString() {
-			return "ExprNull";
+			return "NIL";
 		}
 	}
 
@@ -1007,7 +1131,7 @@ public abstract class AbstractAST implements IASTMutable {
 				// O-7
 				return 1;
 			}
-			rhsOrdinal = (rhsExpr.head() instanceof IBuiltInSymbol) ? ((IBuiltInSymbol) rhsExpr.head()).ordinal() : -1;
+			rhsOrdinal = rhsExpr.headID();
 		}
 		if (rhsExpr.isAST()) {
 			if (rhsOrdinal == ID.DirectedInfinity && rhsExpr.isDirectedInfinity()) {
@@ -1592,9 +1716,6 @@ public abstract class AbstractAST implements IASTMutable {
 
 	@Override
 	public abstract IExpr get(int location);
-	// {
-	// throw new UnsupportedOperationException();
-	// }
 
 	@Override
 	public IExpr get(IInteger location) {
@@ -1863,8 +1984,8 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
-			boolean usePrefix, boolean noSymbolPrefix) {
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators, boolean usePrefix,
+			boolean noSymbolPrefix) {
 		final String sep = ",";
 		final IExpr temp = head();
 		String prefix = usePrefix ? "F." : "";
@@ -2299,7 +2420,7 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isCondition() {
+	public boolean isCondition() {
 		return head() == F.Condition && size() == 3;
 	}
 
@@ -2446,13 +2567,13 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isExcept() {
+	public boolean isExcept() {
 		return isAST(F.Except, 2, 3);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isExpanded() {
+	public boolean isExpanded() {
 		return !(isPlusTimesPower() && (isEvalFlagOff(IAST.IS_EXPANDED)));
 	}
 
@@ -2778,7 +2899,7 @@ public abstract class AbstractAST implements IASTMutable {
 							return null;
 						}
 					}
-					if (setMatrixFormat) {
+					if (setMatrixFormat && (dim[0] != 1 || dim[1] != 0)) {
 						addEvalFlags(IAST.IS_MATRIX);
 					}
 					return dim;
@@ -3192,31 +3313,31 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isRule() {
+	public boolean isRule() {
 		return head().equals(F.Rule) && size() == 3;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isRuleAST() {
+	public boolean isRuleAST() {
 		return (head().equals(F.Rule) || head().equals(F.RuleDelayed)) && size() == 3;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isRuleDelayed() {
+	public boolean isRuleDelayed() {
 		return head().equals(F.RuleDelayed) && size() == 3;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isSame(IExpr expression) {
+	public boolean isSame(IExpr expression) {
 		return equals(expression);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isSame(IExpr expression, double epsilon) {
+	public boolean isSame(IExpr expression, double epsilon) {
 		return equals(expression);
 	}
 
@@ -3946,10 +4067,12 @@ public abstract class AbstractAST implements IASTMutable {
 				}
 				return 17 * head().hashCode() + size();
 			}
-			if (arg1() instanceof IAST) {
-				return 31 * head().hashCode() + ((IAST) arg1()).head().hashCode() + size();
+			if (arg1().isPresent()) {
+				if (arg1() instanceof IAST) {
+					return 31 * head().hashCode() + ((IAST) arg1()).head().hashCode() + size();
+				}
+				return 37 * head().hashCode() + arg1().hashCode() + size();
 			}
-			return 37 * head().hashCode() + arg1().hashCode() + size();
 		}
 		if (size() == 1) {
 			return 17 * head().hashCode();

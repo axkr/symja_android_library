@@ -141,6 +141,9 @@ public class VariablesSet {
 
 		@Override
 		public boolean visit(IAST list) {
+			if (!list.isPresent()) {
+				return false;
+			}
 			if (list instanceof ASTSeriesData) {
 				fCollection.add(((ASTSeriesData) list).getX());
 				return true;

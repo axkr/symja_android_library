@@ -120,7 +120,7 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 			return result;
 		}
 
-		if (o0.isNumeric() || o1.isNumeric()) {
+		if (o0.isNumeric() && o1.isNumeric()) {
 			try {
 				EvalEngine engine = EvalEngine.get();
 				INumber arg1 = ((INumber) o0).evaluatePrecision(engine);

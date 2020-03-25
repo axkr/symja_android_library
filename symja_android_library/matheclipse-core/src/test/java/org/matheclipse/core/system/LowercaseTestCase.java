@@ -1,15 +1,11 @@
 package org.matheclipse.core.system;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.ConstantDefinitions;
-import org.matheclipse.core.expression.ASTDataset;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
-
-import junit.framework.TestResult;
 
 /**
  * Tests system.reflection classes
@@ -1300,10 +1296,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBegin() {
-		// Begin:  is not a valid context name.
+		// Begin: is not a valid context name.
 		check("Begin(\"\")", //
 				"Begin()");
-		
+
 		check("Begin(\"mytest`\")", //
 				"mytest`");
 		check("Context( )", //
@@ -1657,6 +1653,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBetaRegularized() {
+		check("BetaRegularized(-1.5707963267948966,-I,-I)", //
+				"BetaRegularized(-1.5708,I*(-1.0),I*(-1.0))");
 		check("BetaRegularized(2,-2147483648,17)", //
 				"1");
 		check("BetaRegularized(0,1+I,b)", //
@@ -1669,9 +1667,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1");
 
 		check("BetaRegularized(1.0000001,1,1)", //
-				"BetaRegularized(1.0,1.0,1.0)");
+				"1.0");
 		check("BetaRegularized(-0.000000001,1,1)", //
-				"BetaRegularized(-1.00000*10^-9,1.0,1.0)");
+				"-1.00000*10^-9");
 
 		// TODO get Indeterminate
 		check("BetaRegularized(10^20., 10^30., 10.^20.)", //
@@ -2431,6 +2429,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCeiling() {
+		check("Ceiling(DirectedInfinity(0))", //
+				"ComplexInfinity");
+		check("Ceiling(DirectedInfinity((1/2-I*1/2)*Sqrt(2)))", //
+				"DirectedInfinity((1/2-I*1/2)*Sqrt(2))");
 		check("Ceiling(-9/4)", //
 				"-2");
 		check("Ceiling(1/3)", //
@@ -2665,6 +2667,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCoefficient() {
+		check("Coefficient(ComplexInfinity,{x,y,z})", //
+				"{0,0,0}");
+		check("Coefficient(ComplexInfinity,x)", //
+				"0");
 		check("Coefficient(7*y^w, y, w)", //
 				"7");
 		check("Coefficient(7*y^(3*w), y, 3*w)", //
@@ -2878,6 +2884,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCoefficientList() {
+		check("CoefficientList(ComplexInfinity,x)", //
+				"{ComplexInfinity}");
+		check("CoefficientList(ComplexInfinity, {x,y,z} )", //
+				"{{{ComplexInfinity}}}");
+
 		check("CoefficientList(7*y^w, y )", //
 				"{7*y^w}");
 		check("CoefficientList(2*x*y+5*x^3,2*x)", //
@@ -4666,9 +4677,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDet() {
+		check("Det(-2)", //
+				"Det(-2)");
+		check("Det({{}})", //
+				"Det({{}})");
+
 		// github #121 - print error
 		check("Det({{1, 1, 1}, {2, 2, 2}})", //
-				"Det(\n" + "{{1,1,1},\n" + " {2,2,2}})");
+				"Det({{1,1,1},{2,2,2}})");
 
 		check("Det({{42}})", //
 				"42");
@@ -6423,6 +6439,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testFactor() {
 		System.out.println();
 
+		check("Factor(I,GaussianIntegers->True)", //
+				"I");
 		// https://github.com/kredel/java-algebra-system/issues/12
 		// for (int i = 0; i < 100000; i++) {
 		// System.out.println(i);
@@ -7472,6 +7490,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHankelH1() {
+		check("HankelH1(#2,#2)", //
+				"HankelH1(#2,#2)");
 		checkNumeric("HankelH1(2.0,3)", //
 				"0.486091260585958+I*(-0.16040039348497573)");
 		checkNumeric("HankelH1(3,1.2)", //
@@ -7657,6 +7677,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFixedPointList() {
+		check("FixedPointList(x^2,1.5707963267948966)", //
+				"Recursion limit 256 exceeded at: x");
 		check("FixedPointList(x_,Null)", //
 				"StackOverflowError in visitor");
 		check("FixedPointList(-1/2,14)", //
@@ -7825,6 +7847,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFloor() {
+		check("Floor(DirectedInfinity(0))", //
+				"ComplexInfinity");
+		check("Floor(DirectedInfinity((1/2-I*1/2)*Sqrt(2)))", //
+				"DirectedInfinity((1/2-I*1/2)*Sqrt(2))");
 		check("Floor(-Infinity)", //
 				"-Infinity");
 		check("Floor(Infinity)", //
@@ -10414,6 +10440,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInverse() {
+		check("Inverse(-2)", //
+				"Inverse(-2)");
+		check("Inverse({{}})", //
+				"Inverse({{}})");
 		check("Inverse({{a,b,c}, {d,e,f}, {x,y,z}})", //
 				"{{(f*y-e*z)/(c*e*x-b*f*x-c*d*y+a*f*y+b*d*z-a*e*z),(-c*y+b*z)/(c*e*x-b*f*x-c*d*y+a*f*y+b*d*z-a*e*z),(c*e-b*f)/(c*e*x-b*f*x-c*d*y+a*f*y+b*d*z-a*e*z)},\n"
 						+ //
@@ -10886,6 +10916,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testKleinInvariantJ() {
+		//
+		check("KleinInvariantJ(-1.5707963267948966)", //
+				"KleinInvariantJ(-1.5708)");
 		check("KleinInvariantJ( (1 + I*3*Sqrt(3))/2 )", //
 				"-64000/9");
 		check("KleinInvariantJ( (1 + I*Sqrt(163))/2 )", //
@@ -12211,6 +12244,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMap() {
+		check("Map(1/Sqrt(5),ByteArray[{}],I,y_)", //
+				"ByteArray[0 Bytes]");
 		check("Map(#2,1/Sqrt(5),2,Heads->True)", //
 				"#2[Power][#2[5],#2[-1/2]]");
 		check("Map(f, {{{{a}}}}, -2)", //
@@ -13049,6 +13084,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMod() {
+		check("Mod(Infinity, 1+I)", //
+				"Indeterminate");
+		check("Mod(Infinity, 3)", //
+				"Indeterminate");
 		check("Mod(-1,I-1)", //
 				"-1");
 		check("{a, b, c}[[Mod(Range(10), 3, 1)]]", //
@@ -15497,6 +15536,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPlus() {
+		check("Infinity - Infinity", //
+				"Indeterminate");
+		check("-I+y+Interval({c,d})", //
+				"-I+y+Interval({c,d})");
+		check("-I+<|x->y|>+Interval({c,d})", //
+				"<|x->-I+y+Interval({c,d})|>");
 		check("Sin(0.1851851851851852*Cos(7/11)*x)", //
 				"Sin(0.148937*x)");
 
@@ -16005,6 +16050,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPosition() {
+		check("Position(<|1->List,2-><|\"a\"->x^2|>,3->List,4->a+(1+x^2)^2|>,x_)", //
+				"{{0},{Key(1)},{Key(2),0},{Key(2),Key(a),0},{Key(2),Key(a),1},{Key(2),Key(a),2},{Key(\n" + //
+						"2),Key(a)},{Key(2)},{Key(3)},{Key(4),0},{Key(4),1},{Key(4),2,0},{Key(4),2,1,0},{Key(\n" + //
+						"4),2,1,1},{Key(4),2,1,2,0},{Key(4),2,1,2,1},{Key(4),2,1,2,2},{Key(4),2,1,2},{Key(\n" + //
+						"4),2,1},{Key(4),2,2},{Key(4),2},{Key(4)}}");
+		check("Position(<|1->1+x^2,2-><|\"a\"->x^2|>,3->x^4,4->a+(1+x^2)^2|>,x_)", //
+				"{{0},{Key(1),0},{Key(1),1},{Key(1),2,0},{Key(1),2,1},{Key(1),2,2},{Key(1),2},{Key(\n" + //
+						"1)},{Key(2),0},{Key(2),Key(a),0},{Key(2),Key(a),1},{Key(2),Key(a),2},{Key(2),Key(a)},{Key(\n" + //
+						"2)},{Key(3),0},{Key(3),1},{Key(3),2},{Key(3)},{Key(4),0},{Key(4),1},{Key(4),2,0},{Key(\n" + //
+						"4),2,1,0},{Key(4),2,1,1},{Key(4),2,1,2,0},{Key(4),2,1,2,1},{Key(4),2,1,2,2},{Key(\n" + //
+						"4),2,1,2},{Key(4),2,1},{Key(4),2,2},{Key(4),2},{Key(4)}}");
 		check("Position(<|{1 -> 1 + x^2, 2 -> <|\"a\" -> x^2|>, 3 -> x^4, 4 -> a + (1 + x^2)^2}|>, x^_)", //
 				"{{Key(1),2},{Key(2),Key(a)},{Key(3)},{Key(4),2,1,2}}");
 		check("Position(<|\"a\" -> 1, \"b\" -> 2, \"c\" -> 3, \"d\" -> 4|>, _Integer?PrimeQ)", //
@@ -16646,6 +16702,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPrepend() {
+		check("Prepend(Infinity,-I)", //
+				"DirectedInfinity(-I,1)");
 		check("Prepend(1/Sqrt(5),<|x->y|>)", //
 				"<|x->y^(1/Sqrt(5))|>");
 		check("Prepend({2, 3, 4}, 1)", //
@@ -17113,6 +17171,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPseudoInverse() {
+		check("PseudoInverse(-2)", //
+				"PseudoInverse(-2)");
+		check("PseudoInverse({{}})", //
+				"PseudoInverse({{}})");
 		check("PseudoInverse({{1,2}, {1,2}})", //
 				"{{0.1,0.1},\n" + " {0.2,0.2}}");
 		check("PseudoInverse({1, {2}})", //
@@ -17527,6 +17589,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRange() {
+		check("Range(-Infinity,0.5)", //
+				"Range(-Infinity,0.5)");
 		check("Range(a,b,ComplexInfinity)", //
 				"a");
 		check("Range(a,b,-Infinity)", //
@@ -18633,6 +18697,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRound() {
+		check("Round(5.37 - 1.3*I)", //
+				"5-I");
+		check("Round(DirectedInfinity(0))", //
+				"ComplexInfinity");
+		check("Round(DirectedInfinity((1/2-I*1/2)*Sqrt(2)))", //
+				"DirectedInfinity((1/2-I*1/2)*Sqrt(2))");
+
 		// github #145
 		// TODO add tests for big (Apfloat) numbers
 		// Rationalize(2.1675 => 867/400
@@ -20117,16 +20188,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		check("Solve({x > 0, y > 0, x^2 + 2*y^3 == 3681}, {x, y}, Integers)", //
+				"{{x->15,y->12},{x->41,y->10},{x->57,y->6}}");
+
 		// check("Roots(x^4 == 1 - I, x)", //
 		// "x==-(-1+I)^(1/4)||x==(-1+I)^(1/4)||x==I*(-1+I)^(1/4)||x==-I*(-1+I)^(1/4)");
 		// check("Solve(x^3 == 1 - I, x)", //
 		// "{{x->-(-1+I)^(1/3)},{x->(-1+I)^(1/3)},{x->-(-1)^(2/3)*(-1+I)^(1/3)}}");
+		check("Solve(1-1/10*i*1==0,{},Integers)", //
+				"{{i->10}}");
 		check("Solve(1-1/10*i*1==0,{i,Null},Integers)", //
 				"{{i->ConditionalExpression(10,Element(Null,Integers))}}");
 		check("Solve({},{x,y},Integers)", //
 				"{{}}");
-		check("Solve(1-1/10*i*1==0,{},Integers)", //
-				"{{i->10}}");
 
 		// https://github.com/tranleduy2000/ncalc/issues/79
 		// 0x + 50y + 2z = 20
@@ -20377,8 +20451,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Solve(1 - (i*1)/10 == 0, i, Integers)", //
 				"{{i->10}}");
-		check("Solve({x^2 + 2*y^3 == 3681, x > 0, y > 0}, {x, y}, Integers)", //
-				"{{x->15,y->12},{x->41,y->10},{x->57,y->6}}");
+		// check("Solve({x^2 + 2*y^3 == 3681, x > 0, y > 0}, {x, y}, Integers)", //
+		// "{{x->15,y->12},{x->41,y->10},{x->57,y->6}}");
 		check("Solve({x>=0,y>=0,x+y==7,2*x+4*y==20},{x,y}, Integers)", //
 				"{{x->4,y->3}}");
 		check("Solve(x>=0 && y>=0 && x+y==7 && 2*x+4*y==20,{x,y}, Integers)", //
@@ -20923,6 +20997,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStringCases() {
+		check("StringCases(\"\",  {})", //
+				"{}");
 		check("StringCases(\"abcdabcdcd\", \"abc\")", //
 				"{abc,abc}");
 		check("StringCases(\"abcdabcdcd\", \"abc\" | \"cd\")", //
@@ -20940,6 +21016,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// StringContainsQ: StringExpression currently not supported in StringContainsQ.
 		check("StringContainsQ(\"bcde\", \"c\" ~~ __ ~~ \"t\")", //
 				"StringContainsQ(bcde,c~~__~~t)");
+	}
+
+	public void testStringDrop() {
+		check("StringDrop(\"abcdefghijklm\", 4)", //
+				"efghijklm");
+		check("StringDrop(\"abcdefghijklm\", -4)", //
+				"abcdefghi");
+		check("StringDrop(\"\",-1)", //
+				"StringDrop(,-1)");
 	}
 
 	public void testStringJoin() {
@@ -21051,7 +21136,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// StringTake: Cannot take positions 1 through 6 in abc.
 		check("StringTake(\"abc\", 6)", //
 				"StringTake(abc,6)");
-		
+
 		check("StringTake(\"abcdefghijklm\", 6)", //
 				"abcdef");
 		check("StringTake(\"abcdefghijklm\", -4)", //
@@ -21289,6 +21374,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSum() {
+		check("Sum(1.5708,{i,1,10},{1->0})", //
+				"Sum(1.5708,{i,1,10},{1->0})");
 		check("Sum(i^2,x)", //
 				"i^2*x");
 		check("Sum(i^2,Indeterminate)", //

@@ -1,5 +1,8 @@
 package org.matheclipse.core.eval.exception;
 
+import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -17,6 +20,12 @@ public class ArgumentTypeException extends ValidateException {
 	@Override
 	public String getMessage() {
 		return fMessage;
+	}
+
+	public static void throwNIL() {
+		// unexpected NIL expression encountered.
+		String str = IOFunctions.getMessage("nil", F.CEmptyList, EvalEngine.get());
+		throw new ArgumentTypeException(str);
 	}
 
 	@Override

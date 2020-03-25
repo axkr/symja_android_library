@@ -3,6 +3,7 @@ package org.matheclipse.core.expression;
 import static org.matheclipse.core.expression.F.num;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -22,6 +23,8 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
+
+import com.google.common.math.DoubleMath;
 
 /**
  * <code>IComplexNum</code> implementation which wraps a <code>org.apache.commons.math3.complex.Complex</code> value to
@@ -433,6 +436,12 @@ public class ComplexNum implements IComplexNum {
 	@Override
 	public double reDoubleValue() {
 		return fComplex.getReal();
+	}
+
+	@Override
+	public INumber round() throws ArithmeticException {
+		return F.complex(F.ZZ(DoubleMath.roundToBigInteger(fComplex.getReal(), RoundingMode.HALF_EVEN)), //
+				F.ZZ(DoubleMath.roundToBigInteger(fComplex.getImaginary(), RoundingMode.HALF_EVEN)));
 	}
 
 	@Override

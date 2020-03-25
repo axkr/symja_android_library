@@ -62,6 +62,7 @@ import org.matheclipse.core.visit.VisitorLevelSpecification;
 import org.matheclipse.core.visit.VisitorRemoveLevelSpecification;
 
 public final class ListFunctions {
+
 	/**
 	 * See <a href="https://stackoverflow.com/a/4859279/24819">Get the indices of an array after sorting?</a>
 	 *
@@ -324,7 +325,7 @@ public final class ListFunctions {
 								fCurrentIndex[index] = iter.next();
 								fCurrentVariable[index] = iter.getVariable();
 								IExpr temp = table();
-								if (temp == null) {
+								if (temp == null || !temp.isPresent()) {
 									temp = fDefaultValue;
 								}
 								if (temp.isNumber()) {
@@ -366,7 +367,7 @@ public final class ListFunctions {
 								fCurrentIndex[index] = iter.next();
 								fCurrentVariable[index] = iter.getVariable();
 								IExpr temp = table();
-								if (temp == null) {
+								if (temp == null || !temp.isPresent()) {
 									temp = fDefaultValue;
 								}
 								if (temp.isNumber()) {
@@ -458,7 +459,7 @@ public final class ListFunctions {
 				fCurrentIndex[index] = iter.next();
 				fCurrentVariable[index] = iter.getVariable();
 				IExpr temp = table();
-				if (temp == null) {
+				if (temp == null || !temp.isPresent()) {
 					result.append(fDefaultValue);
 				} else {
 					result.append(temp);
@@ -4078,6 +4079,9 @@ public final class ListFunctions {
 							F.CEmptyList);
 					return generator.table();
 				}
+			} catch (NoEvalException nev) {
+				// Range specification in `1` does not have appropriate bounds.
+				return IOFunctions.printMessage(ast.topHead(), "range", F.List(ast), engine);
 			} catch (final ArithmeticException e) {
 			} catch (final ClassCastException e) {
 				// the iterators are generated only from IASTs

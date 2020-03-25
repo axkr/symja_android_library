@@ -1079,7 +1079,10 @@ public class Iterator {
 				} else if (upperLimit.isReal()) {
 					return new ISignedNumberIterator(variable, F.C1, (ISignedNumber) upperLimit, F.C1);
 				}
-				break;
+				if (!list.arg1().isVariable()) {
+					throw new ArgumentTypeException(
+							IOFunctions.getMessage("vloc", F.List(list.arg1()), EvalEngine.get()));
+				}
 
 			case 3:
 				lowerLimit = F.C1;

@@ -133,12 +133,18 @@ public class Product extends ListFunctions.Table implements ProductRules {
 				}
 			}
 		}
-
-		IExpr temp = evaluateTableThrow(ast, Times(), Times(), engine);
-		if (temp.isPresent()) {
-			return temp;
+		IExpr temp = F.NIL;
+		try {
+			temp = evaluateTableThrow(ast, Times(), Times(), engine);
+			if (temp.isPresent()) {
+				return temp;
+			}
+		} catch (final ValidateException ve) {
+			if (Config.SHOW_STACKTRACE) {
+				ve.printStackTrace();
+			}
+			return EvalEngine.get().printMessage(ve.getMessage(F.Product));
 		}
-
 		// arg1 = evalBlockExpandWithoutReap(arg1,
 		// determineIteratorVariables(ast));
 
@@ -244,7 +250,6 @@ public class Product extends ListFunctions.Table implements ProductRules {
 
 					}
 				}
-
 				temp = F.NIL;
 				IAST resultList = Times();
 				temp = evaluateLast(ast.arg1(), iterator, resultList, F.C1);
@@ -255,7 +260,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 				if (Config.SHOW_STACKTRACE) {
 					ve.printStackTrace();
 				}
-				return EvalEngine.get().printMessage(ve.getMessage(F.Sum));
+				return EvalEngine.get().printMessage(ve.getMessage(F.Product));
 			} catch (RecursionLimitExceeded rle) {
 				return engine.printMessage("Product: Recursionlimit exceeded");
 			}

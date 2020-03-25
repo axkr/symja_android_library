@@ -1132,6 +1132,10 @@ public final class LinearAlgebra {
 	 */
 	private static class Det extends AbstractMatrix1Expr {
 
+		public int[] checkMatrixDimensions(IExpr arg1) {
+			return Convert.checkNonEmptySquareMatrix(F.Det, arg1);
+		}
+
 		@Override
 		public IExpr matrixEval(final FieldMatrix<IExpr> matrix) {
 			if (matrix.getRowDimension() == 2 && matrix.getColumnDimension() == 2) {
@@ -1591,6 +1595,10 @@ public final class LinearAlgebra {
 	 */
 	private static class Eigenvalues extends AbstractMatrix1Expr {
 
+		public int[] checkMatrixDimensions(IExpr arg1) {
+			return Convert.checkNonEmptySquareMatrix(F.Eigenvalues, arg1);
+		}
+
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() == 2) {
@@ -1687,6 +1695,10 @@ public final class LinearAlgebra {
 	 * </pre>
 	 */
 	private static class Eigenvectors extends AbstractMatrix1Expr {
+
+		public int[] checkMatrixDimensions(IExpr arg1) {
+			return Convert.checkNonEmptySquareMatrix(F.Eigenvectors, arg1);
+		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2201,11 +2213,17 @@ public final class LinearAlgebra {
 	 */
 	private final static class Inverse extends AbstractMatrix1Matrix {
 
+		public int[] checkMatrixDimensions(IExpr arg1) {
+			return Convert.checkNonEmptySquareMatrix(F.Inverse, arg1);
+		}
+
 		public static FieldMatrix<IExpr> inverseMatrix(FieldMatrix<IExpr> matrix) {
 			final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix);
 			FieldDecompositionSolver<IExpr> solver = lu.getSolver();
 			if (!solver.isNonSingular()) {
-				EvalEngine.get().printMessage("Inverse: the matrix is singular.");
+				// Matrix `1` is singular.
+				IOFunctions.printMessage(F.Inverse, "sing", F.List(Convert.matrix2List(matrix, false)),
+						EvalEngine.get());
 				return null;
 			}
 			return solver.getInverse();
@@ -2221,7 +2239,9 @@ public final class LinearAlgebra {
 			final org.hipparchus.linear.LUDecomposition lu = new org.hipparchus.linear.LUDecomposition(matrix);
 			DecompositionSolver solver = lu.getSolver();
 			if (!solver.isNonSingular()) {
-				EvalEngine.get().printMessage("Inverse: the matrix is singular.");
+				// Matrix `1` is singular.
+				IOFunctions.printMessage(F.Inverse, "sing", F.List(Convert.matrix2List(matrix, false)),
+						EvalEngine.get());
 				return null;
 			}
 			return solver.getInverse();
@@ -3542,6 +3562,10 @@ public final class LinearAlgebra {
 	private final static class PseudoInverse extends AbstractMatrix1Matrix {
 		protected final static PseudoInverse CONST = new PseudoInverse();
 
+		public int[] checkMatrixDimensions(IExpr arg1) {
+			return Convert.checkNonEmptyRectangularMatrix(F.PseudoInverse, arg1);
+		}
+
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			return numericEval(ast, engine);
@@ -3585,6 +3609,10 @@ public final class LinearAlgebra {
 	 * </pre>
 	 */
 	private static class QRDecomposition extends AbstractMatrix1Expr {
+
+		public int[] checkMatrixDimensions(IExpr arg1) {
+			return Convert.checkNonEmptyRectangularMatrix(F.QRDecomposition, arg1);
+		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {

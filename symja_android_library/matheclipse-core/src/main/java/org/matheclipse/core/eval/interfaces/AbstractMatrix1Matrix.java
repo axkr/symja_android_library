@@ -22,14 +22,15 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 		boolean togetherMode = engine.isTogetherMode();
 		try {
 			engine.setTogetherMode(true);
-
-			final IAST list = (IAST) ast.arg1();
-			matrix = Convert.list2Matrix(list);
-			if (matrix != null) {
-				matrix = matrixEval(matrix);
-				return Convert.matrix2List(matrix);
+			int[] dims = checkMatrixDimensions(ast.arg1());
+			if (dims != null) {
+				final IAST list = (IAST) ast.arg1();
+				matrix = Convert.list2Matrix(list);
+				if (matrix != null) {
+					matrix = matrixEval(matrix);
+					return Convert.matrix2List(matrix);
+				}
 			}
-
 		} catch (MathRuntimeException mre) {
 			return engine.printMessage(ast.topHead(), mre);
 		} catch (final ClassCastException e) {
@@ -60,16 +61,18 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 		try {
 			engine.setTogetherMode(true);
 
-			if (engine.isApfloat()) {
-				final IAST list = (IAST) ast.arg1();
-				FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(list);
-				if (fieldMatrix == null) {
-					return F.NIL;
+			int[] dims = checkMatrixDimensions(ast.arg1());
+			if (dims != null) {
+				if (engine.isApfloat()) {
+					final IAST list = (IAST) ast.arg1();
+					FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(list);
+					if (fieldMatrix == null) {
+						return F.NIL;
+					}
+					fieldMatrix = matrixEval(fieldMatrix);
+					return Convert.matrix2List(fieldMatrix);
 				}
-				fieldMatrix = matrixEval(fieldMatrix);
-				return Convert.matrix2List(fieldMatrix);
-			}
-			if (ast.arg1().isAST()) {
+
 				final IAST list = (IAST) ast.arg1();
 				matrix = list.toRealMatrix();
 				if (matrix != null) {
@@ -78,6 +81,7 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 						return Convert.realMatrix2List(matrix);
 					}
 				}
+
 			}
 			return F.NIL;
 		} catch (final IndexOutOfBoundsException e) {
@@ -88,6 +92,16 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 			engine.setTogetherMode(togetherMode);
 		}
 		return evaluate(ast, engine);
+	}
+
+	/**
+	 * Check if <code>arg1</code> is a matrix.
+	 * 
+	 * @param arg1
+	 * @return
+	 */
+	public int[] checkMatrixDimensions(IExpr arg1) {
+		return arg1.isMatrix();
 	}
 
 	/**

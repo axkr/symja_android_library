@@ -2,6 +2,7 @@ package org.matheclipse.core.expression;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
@@ -13,6 +14,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -538,14 +540,22 @@ public class ApcomplexNum implements IComplexNum {
 		return F.num(getRealPart());
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public INumber round() {
+		Apfloat re = ApfloatMath.round(fApcomplex.real(), 1, RoundingMode.HALF_EVEN);
+		Apfloat im = ApfloatMath.round(fApcomplex.imag(), 1, RoundingMode.HALF_EVEN);
+		return F.complex(F.ZZ(ApfloatMath.floor(re).toBigInteger()), F.ZZ(ApfloatMath.floor(im).toBigInteger()));
+	}
+
 	public IExpr sqrt() {
 		return valueOf(ApcomplexMath.sqrt(fApcomplex));
 	}
 
 	@Override
 	public INumber ceilFraction() throws ArithmeticException {
-		return F.complex(F.integer(ApfloatMath.ceil(fApcomplex.real()).toBigInteger()),
-				F.integer(ApfloatMath.ceil(fApcomplex.imag()).toBigInteger()));
+		return F.complex(F.ZZ(ApfloatMath.ceil(fApcomplex.real()).toBigInteger()),
+				F.ZZ(ApfloatMath.ceil(fApcomplex.imag()).toBigInteger()));
 	}
 
 	/** {@inheritDoc} */
@@ -556,8 +566,8 @@ public class ApcomplexNum implements IComplexNum {
 
 	@Override
 	public INumber floorFraction() throws ArithmeticException {
-		return F.complex(F.integer(ApfloatMath.floor(fApcomplex.real()).toBigInteger()),
-				F.integer(ApfloatMath.floor(fApcomplex.imag()).toBigInteger()));
+		return F.complex(F.ZZ(ApfloatMath.floor(fApcomplex.real()).toBigInteger()),
+				F.ZZ(ApfloatMath.floor(fApcomplex.imag()).toBigInteger()));
 	}
 
 	@Override

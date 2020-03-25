@@ -196,4 +196,14 @@ public interface INumber extends IExpr {
 	 */
 	public double reDoubleValue();
 
+	/**
+	 * Returns the closest <code>IInteger</code> real and imaginary part to the argument. The result is rounded to an
+	 * integer by adding 1/2 and taking the floor of the result by applying round separately to the real and imaginary
+	 * part . <br/>
+	 * This method raises {@link ArithmeticException} if a numeric value cannot be represented by an <code>long</code>
+	 * type.
+	 * 
+	 * @return the closest integer to the argument.
+	 */
+	public IExpr round();
 }

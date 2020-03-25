@@ -694,12 +694,14 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 		}
 		if (obj instanceof AbstractAST) {
 			final IAST list = (IAST) obj;
-			ISymbol head = head();
-			if (head != ((AbstractAST) list).head()) {
-				// compared with ISymbol object identity
-				return false;
+			if (list.isPresent()) {
+				ISymbol head = head();
+				if (head != ((AbstractAST) list).head()) {
+					// compared with ISymbol object identity
+					return false;
+				}
+				return list.size() == SIZE && arg1.equals(list.arg1()) && arg2.equals(list.arg2());
 			}
-			return list.size() == SIZE && arg1.equals(list.arg1()) && arg2.equals(list.arg2());
 		}
 		return false;
 	}

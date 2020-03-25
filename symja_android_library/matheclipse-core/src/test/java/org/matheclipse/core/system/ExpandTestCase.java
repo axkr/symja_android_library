@@ -35,9 +35,9 @@ public class ExpandTestCase extends AbstractTestCase {
 	}
 
 	public void testExpand002() {
-		IAST ast =  Times(C1D2, x, x );
+		IAST ast = Times(C1D2, x, x);
 		IExpr temp = Algebra.expand(ast, null, false, false, true);
-		assertEquals(temp.toString(), "ExprNull");
+		assertEquals(temp.toString(), "NIL");
 	}
 
 	public void testExpand003() {

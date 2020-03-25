@@ -690,6 +690,11 @@ public class ComplexSym implements IComplex {
 	}
 
 	@Override
+	public INumber round() {
+		return valueOf((IRational) fReal.round(), (IRational) fImaginary.round());
+	}
+
+	@Override
 	public IExpr times(final IExpr that) {
 		if (that instanceof ComplexSym) {
 			return multiply((ComplexSym) that);

@@ -74,7 +74,7 @@ public class ASTAssociation extends AST implements IAssociation {
 			} else if (rule.isAST(F.List, 1)) {
 				// ignore empty list entries
 			} else {
-				throw new ArgumentTypeException("rule expression expected instead of "+rule.toString()); 
+				throw new ArgumentTypeException("rule expression expected instead of " + rule.toString());
 			}
 		}
 	}
@@ -112,7 +112,7 @@ public class ASTAssociation extends AST implements IAssociation {
 		} else if (rule.isAST(F.List, 1)) {
 			// ignore empty list entries
 		} else {
-			throw new ArgumentTypeException("rule expression expected instead of "+rule.toString());  
+			throw new ArgumentTypeException("rule expression expected instead of " + rule.toString());
 		}
 	}
 
@@ -214,7 +214,6 @@ public class ASTAssociation extends AST implements IAssociation {
 	}
 
 	public IAST matrixOrList() {
-		
 
 		boolean numericKeys = true;
 		try {
@@ -224,7 +223,7 @@ public class ASTAssociation extends AST implements IAssociation {
 					double d = key.evalDouble();
 					numericKeys = false;
 					break;
-				} 
+				}
 			}
 		} catch (RuntimeException rex) {
 			numericKeys = false;
@@ -237,14 +236,14 @@ public class ASTAssociation extends AST implements IAssociation {
 				if (value < 0) {
 					value *= -1;
 				}
-				list.append(F.List(key, get(value))); 
+				list.append(F.List(key, get(value)));
 			}
 			return list;
 		} else {
 			IASTAppendable list = F.ListAlloc(size());
 			for (int i = 1; i < size(); i++) {
 				list.append(get(i));
-			} 
+			}
 			return list;
 		}
 	}
@@ -290,7 +289,11 @@ public class ASTAssociation extends AST implements IAssociation {
 
 	public IExpr getKey(int position) {
 		IAST ast = normal();
-		return F.Key(ast.get(position).first());
+		IExpr temp = ast.get(position).first();
+		if (temp.isPresent()) {
+			return F.Key(temp);
+		}
+		return F.C0;
 	}
 
 	public IExpr getValue(IExpr key) {

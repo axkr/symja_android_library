@@ -223,7 +223,10 @@ public class IntegerFunctions {
 			if (arg1.isIntegerResult()) {
 				return arg1;
 			}
-			if (arg1.isInfinity() || arg1.isNegativeInfinity()) {
+			if (arg1.isDirectedInfinity() && arg1.argSize() == 1) {
+				return arg1;
+			}
+			if (arg1.isComplexInfinity()) {
 				return arg1;
 			}
 
@@ -590,7 +593,10 @@ public class IntegerFunctions {
 			if (arg1.isIntegerResult()) {
 				return arg1;
 			}
-			if (arg1.isInfinity() || arg1.isNegativeInfinity()) {
+			if (arg1.isDirectedInfinity() && arg1.argSize() == 1) {
+				return arg1;
+			}
+			if (arg1.isComplexInfinity()) {
 				return arg1;
 			}
 			if (arg1.isPlus()) {
@@ -962,10 +968,12 @@ public class IntegerFunctions {
 			IExpr m = ast.arg1();
 			IExpr n = ast.arg2();
 			if (n.isZero()) {
-				EvalEngine.get().printMessage("Mod: Modulus 0 encountered");
+				// Indeterminate expression `1` encountered.
+				IOFunctions.printMessage(ast.topHead(), "indet", F.List(ast), engine);
 				return F.Indeterminate;
 			}
 			if (ast.isAST3()) {
+				// 3 args
 				IExpr d = ast.arg3();
 				if (m.isNumber() && n.isNumber() && d.isNumber()) {
 					if (m.isInteger() && n.isInteger() && d.isInteger()) {
@@ -983,6 +991,8 @@ public class IntegerFunctions {
 				}
 				return F.NIL;
 			}
+
+			// 2 args
 			if (m.isInteger() && n.isInteger()) {
 				final IInteger i0 = (IInteger) m;
 				final IInteger i1 = (IInteger) n;
@@ -991,17 +1001,19 @@ public class IntegerFunctions {
 				}
 				return i0.mod(i1);
 			}
-			if (ast.isAST2()) {
-				if (m.isReal() && n.isReal()) {
-					return F.Subtract(m, F.Times(n, F.Floor(((ISignedNumber) m).divideBy((ISignedNumber) n))));
-				}
-				if (m.isRealResult() && n.isRealResult()) {
-					return F.Subtract(m, F.Times(n, F.Floor(F.num(m.evalDouble() / n.evalDouble()))));
-				}
-				if (m.isNumericFunction() && n.isNumericFunction()) {
-					return F.Subtract(m, F.Times(n, F.Floor(F.complexNum(m.evalComplex().divide(n.evalComplex())))));
-				}
+
+			if (m.isReal() && n.isReal()) {
+				return F.Subtract(m, F.Times(n, F.Floor(((ISignedNumber) m).divideBy((ISignedNumber) n))));
 			}
+
+			IExpr div = F.Divide.of(engine, m, n);
+			if (div.isIndeterminate()) {
+				return F.Indeterminate;
+			}
+			if (div.isNumber() || div.isNumericFunction() || div.isDirectedInfinity() || div.isComplexInfinity()) {
+				return F.Subtract(m, F.Times(n, F.Floor(div)));
+			}
+
 			return F.NIL;
 		}
 
@@ -1315,26 +1327,17 @@ public class IntegerFunctions {
 				if (arg1.isIntegerResult()) {
 					return arg1;
 				}
-				ISignedNumber signedNumber = arg1.evalReal();
-				if (signedNumber != null) {
-					return signedNumber.round();
+				INumber number = arg1.evalNumber();
+				if (number != null) {
+					return number.round();
 				}
-				if (arg1.isComplexNumeric()) {
-					IComplexNum cmp = (IComplexNum) arg1;
-					IInteger re = cmp.re().round();
-					IInteger im = cmp.im().round();
-					return F.complex(re, im);
-				}
-				if (arg1.isComplex()) {
-					IComplex cmp = (IComplex) arg1;
-					IInteger re = cmp.re().round();
-					IInteger im = cmp.im().round();
-					return F.complex(re, im);
-				}
-
-				if (arg1.isInfinity() || arg1.isNegativeInfinity()) {
+				if (arg1.isDirectedInfinity() && arg1.argSize() == 1) {
 					return arg1;
 				}
+				if (arg1.isComplexInfinity()) {
+					return arg1;
+				}
+
 				if (arg1.isPlus()) {
 					IASTAppendable[] result = ((IAST) arg1).filterNIL(new RoundPlusFunction());
 					if (result[0].size() > 1) {

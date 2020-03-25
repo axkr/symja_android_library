@@ -713,7 +713,7 @@ public class EvalEngine implements Serializable {
 			}
 		}
 
-		if (!(arg1 instanceof IPatternObject)) {
+		if (!(arg1 instanceof IPatternObject) && arg1.isPresent()) {
 			ISymbol lhsSymbol = arg1.isSymbol() ? (ISymbol) arg1 : arg1.topHead();
 			return lhsSymbol.evalUpRule(this, ast);
 		}
@@ -1239,10 +1239,10 @@ public class EvalEngine implements Serializable {
 
 			return F.NIL;
 		} catch (UnsupportedOperationException uoe) {
-			if (Config.SHOW_STACKTRACE) {
-				uoe.printStackTrace();
+			if (Config.FUZZ_TESTING) {
+				throw new NullPointerException();
 			}
-			printMessage("Evaluation aborted:" + result.toString());
+			printMessage("Evaluation aborted: " + result.toString());
 			throw AbortException.ABORTED;
 		} finally {
 			if (fTraceMode) {
@@ -1446,7 +1446,7 @@ public class EvalEngine implements Serializable {
 		IExpr[] result = new IExpr[1];
 		result[0] = F.NIL;
 		if (ast.exists(x -> {
-			if (!(x instanceof IPatternObject)) {
+			if (!(x instanceof IPatternObject) && x.isPresent()) {
 				result[0] = x.topHead().evalUpRule(this, ast);
 				if (result[0].isPresent()) {
 					return true;

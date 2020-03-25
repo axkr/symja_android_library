@@ -17,12 +17,22 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 	public AbstractMatrix1Expr() {
 	}
 
+	/**
+	 * Check if <code>arg1</code> is a matrix.
+	 * 
+	 * @param arg1
+	 * @return
+	 */
+	public int[] checkMatrixDimensions(IExpr arg1) {
+		return arg1.isMatrix();
+	}
+
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		FieldMatrix<IExpr> matrix;
 		try {
 
-			int[] dim = ast.arg1().isMatrix();
+			int[] dim = checkMatrixDimensions(ast.arg1());
 			if (dim != null) {
 				final IAST list = (IAST) ast.arg1();
 				matrix = Convert.list2Matrix(list);
@@ -31,14 +41,14 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 				}
 			}
 
-//		} catch (final ClassCastException e) {
-//			if (Config.SHOW_STACKTRACE) {
-//				e.printStackTrace();
-//			}
-//		} catch (final IndexOutOfBoundsException e) {
-//			if (Config.SHOW_STACKTRACE) {
-//				e.printStackTrace();
-//			}
+			// } catch (final ClassCastException e) {
+			// if (Config.SHOW_STACKTRACE) {
+			// e.printStackTrace();
+			// }
+			// } catch (final IndexOutOfBoundsException e) {
+			// if (Config.SHOW_STACKTRACE) {
+			// e.printStackTrace();
+			// }
 		} catch (final MathRuntimeException mre) {
 			// org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
 			return engine.printMessage(ast.topHead(), mre);
@@ -46,12 +56,12 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();
 			}
-			return engine.printMessage(ast.topHead()+": "+e.getMessage());
+			return engine.printMessage(ast.topHead() + ": " + e.getMessage());
 		}
 
 		return F.NIL;
 	}
-	
+
 	@Override
 	public int[] expectedArgSize() {
 		return IOFunctions.ARGS_1_1;
@@ -70,7 +80,8 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 	public IExpr numericEval(final IAST ast, EvalEngine engine) {
 		RealMatrix matrix;
 		IExpr arg1 = ast.arg1();
-		if (arg1.isList()) {
+		int[] dim = checkMatrixDimensions(arg1);
+		if (dim != null && arg1.isList()) {
 			final IAST list = (IAST) arg1;
 			try {
 				if (engine.isApfloat()) {

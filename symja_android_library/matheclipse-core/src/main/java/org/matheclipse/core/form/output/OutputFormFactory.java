@@ -948,6 +948,10 @@ public class OutputFormFactory {
 				return;
 			}
 			final IAST list = (IAST) o;
+			if (!list.isPresent()) {
+				append(buf, "NIL");
+				return;
+			}
 			IExpr header = list.head();
 			if (!header.isSymbol()) {
 				// print expressions like: f(#1, y)& [x]
@@ -978,7 +982,16 @@ public class OutputFormFactory {
 				}
 
 				convert(buf, header, Integer.MIN_VALUE, true);
-				convertFunctionArgs(buf, list);
+				// avoid fast StackOverflow
+				// convertFunctionArgs(buf, list);
+				append(buf, "[");
+				for (int i = 1; i < list.size(); i++) {
+					convert(buf, list.get(i), Integer.MIN_VALUE, false);
+					if (i < list.argSize()) {
+						append(buf, ",");
+					}
+				}
+				append(buf, "]");
 				return;
 			}
 			if (header.isSymbol()) {
@@ -1528,16 +1541,16 @@ public class OutputFormFactory {
 		return call;
 	}
 
-	public void convertFunctionArgs(final Appendable buf, final IAST list) throws IOException {
-		append(buf, "[");
-		for (int i = 1; i < list.size(); i++) {
-			convert(buf, list.get(i), Integer.MIN_VALUE, false);
-			if (i < list.argSize()) {
-				append(buf, ",");
-			}
-		}
-		append(buf, "]");
-	}
+	// public void convertFunctionArgs(final Appendable buf, final IAST list) throws IOException {
+	// append(buf, "[");
+	// for (int i = 1; i < list.size(); i++) {
+	// convert(buf, list.get(i), Integer.MIN_VALUE, false);
+	// if (i < list.argSize()) {
+	// append(buf, ",");
+	// }
+	// }
+	// append(buf, "]");
+	// }
 
 	/**
 	 * Write a function into the given <code>Appendable</code>.
