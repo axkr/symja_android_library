@@ -17,6 +17,9 @@ The variance of the Weibull distribution is
 ```
 >> Variance(WeibullDistribution(n, m)) 
 m^2*(-Gamma(1+1/n)^2+Gamma(1+2/n))
+
+>> Plot(Table(PDF(WeibullDistribution(a, 2), x), {a, {0.5, 1.0, 3.0}}) // Evaluate, {x, 0, 4}, PlotRange->{-0.1,1.0})
+
 ```
 
 ### Related terms 

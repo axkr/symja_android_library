@@ -454,6 +454,18 @@ public class Convert {
 	 * @return <code>F.NIL</code> if no conversion was possible
 	 */
 	public static IASTAppendable vector2List(final RealVector vector) {
+		return vector2List(vector, true);
+	}
+
+	/**
+	 * Convert a RealVector to a IAST list.
+	 * 
+	 * @param vector
+	 * @param vectorFormat
+	 *            set flag for isVector() method
+	 * @return <code>F.NIL</code> if no conversion was possible
+	 */
+	public static IASTAppendable vector2List(final RealVector vector, boolean vectorFormat) {
 		if (vector == null) {
 			return F.NIL;
 		}

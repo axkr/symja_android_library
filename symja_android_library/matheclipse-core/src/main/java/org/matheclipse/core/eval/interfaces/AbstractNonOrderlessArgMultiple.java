@@ -8,14 +8,15 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- *
+ * 
  */
 public class AbstractNonOrderlessArgMultiple extends AbstractArg2 {
 
 	/**
 	 * Evaluate ast as function with no argument.
 	 * 
-	 * @param ast ast with <code>size()==1</code>
+	 * @param ast
+	 *            ast with <code>size()==1</code>
 	 * @param engine
 	 * @return
 	 */
@@ -26,7 +27,8 @@ public class AbstractNonOrderlessArgMultiple extends AbstractArg2 {
 	/**
 	 * Evaluate ast as function with one argument.
 	 * 
-	 * @param ast ast with <code>size()==2</code>
+	 * @param ast
+	 *            ast with <code>size()==2</code>
 	 * @param engine
 	 * @return
 	 */
@@ -37,7 +39,7 @@ public class AbstractNonOrderlessArgMultiple extends AbstractArg2 {
 	public int[] expectedArgSize() {
 		return null;
 	}
-	
+
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		int size = ast.size();
@@ -58,7 +60,7 @@ public class AbstractNonOrderlessArgMultiple extends AbstractArg2 {
 			int i = 2;
 
 			while (i < size) {
-				tres = binaryOperator(null, temp, ast.get(i));
+				tres = binaryOperator(ast, temp, ast.get(i));
 				if (!tres.isPresent()) {
 					result.append(temp);
 					if (i == size - 1) {

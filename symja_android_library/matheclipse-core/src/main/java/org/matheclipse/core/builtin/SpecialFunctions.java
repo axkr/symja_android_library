@@ -26,8 +26,6 @@ import static org.matheclipse.core.expression.F.Zeta;
 import java.math.BigDecimal;
 import java.util.function.DoubleUnaryOperator;
 
-import javax.annotation.Nonnull;
-
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
@@ -43,10 +41,12 @@ import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractArg12;
-import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
+import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IAST;
@@ -66,7 +66,10 @@ import org.matheclipse.core.reflection.system.rules.StieltjesGammaRules;
 import org.matheclipse.core.reflection.system.rules.StruveHRules;
 import org.matheclipse.core.reflection.system.rules.StruveLRules;
 
+import de.lab4inf.math.functions.Zeta;
+
 public class SpecialFunctions {
+	
 	/**
 	 * 
 	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
@@ -1360,6 +1363,9 @@ public class SpecialFunctions {
 
 		@Override
 		public IExpr e1DblArg(final INum d) {
+			if (d.isZero()) {
+				return d;
+			}
 			try {
 				return F.num(ApfloatMath.w(new Apfloat(new BigDecimal(d.doubleValue()), Config.MACHINE_PRECISION)));
 			} catch (Exception ce) {
@@ -1371,13 +1377,22 @@ public class SpecialFunctions {
 
 		@Override
 		public IExpr e1DblComArg(IComplexNum arg1) {
+			if (arg1.isZero()) {
+				return arg1;
+			}
 			Apcomplex c = new Apcomplex(new Apfloat(new BigDecimal(arg1.getRealPart()), Config.MACHINE_PRECISION),
 					new Apfloat(new BigDecimal(arg1.getImaginaryPart()), Config.MACHINE_PRECISION));
+//			if (Config.FUZZ_TESTING) {
+//				System.err.println(c.toString());
+//			}
 			return F.complexNum(ApcomplexMath.w(c));
 		}
 
 		@Override
 		public IExpr e1ApfloatArg(Apfloat arg1) {
+			if (arg1.equals(Apfloat.ZERO)) {
+				return F.C0;
+			}
 			try {
 				return F.num(ApfloatMath.w(arg1));
 			} catch (Exception ce) {
@@ -1388,6 +1403,9 @@ public class SpecialFunctions {
 
 		@Override
 		public IExpr e1ApcomplexArg(Apcomplex arg1) {
+			if (arg1.equals(Apcomplex.ZERO)) {
+				return F.C0;
+			}
 			return F.complexNum(ApcomplexMath.w(arg1));
 		}
 
@@ -1398,29 +1416,68 @@ public class SpecialFunctions {
 		}
 
 		public IExpr e1ObjArg(final IExpr o) {
+			if (o.isZero()) {
+				return F.C0;
+			}
 			return F.NIL;
 		}
 
 		@Override
 		public IExpr e2ObjArg(IExpr k, IExpr z) {
-			// ProductLog(0,z_) := ProductLog(z)
-			if (k.isZero()) {
-				return F.ProductLog(z);
-			}
-			if (k.isMinusOne()) {
-				if (z.equals(F.CNPiHalf)) {
-					// ProductLog(-1, -(Pi/2)) := -((I*Pi)/2)
-					return F.Times(F.CC(0L, 1L, -1L, 2L), F.Pi);
-				}
-				// ProductLog(-1, -(1/E)) := -1
-				if (z.equals(F.Negate(F.Power(F.E, -1)))) {
-					return F.CN1;
-				}
-			}
+			int ki = Integer.MIN_VALUE;
 			if (z.isZero()) {
 				// ProductLog(k_?NumberQ,0) := -Infinity/;k!=0
 				if (k.isNonZeroComplexResult()) {
 					return F.CNInfinity;
+				}
+			}
+			if (k.isNumber()) {
+				ki = k.toIntDefault();
+				if (ki == Integer.MIN_VALUE) {
+					// Machine-sized integer expected at position `2` in `1`.
+					return IOFunctions.printMessage(F.ProductLog, "intm", F.List(F.ProductLog(k, z), F.C1),
+							EvalEngine.get());
+				}
+				// ProductLog(0,z_) := ProductLog(z)
+				if (ki == 0) {
+					if (z.isZero()) {
+						return F.C0;
+					}
+					return F.ProductLog(z);
+				}
+				if (ki == (-1)) {
+					if (z.equals(F.CNPiHalf)) {
+						// ProductLog(-1, -(Pi/2)) := -((I*Pi)/2)
+						return F.Times(F.CC(0L, 1L, -1L, 2L), F.Pi);
+					}
+					// ProductLog(-1, -(1/E)) := -1
+					if (z.equals(F.Negate(F.Power(F.E, -1)))) {
+						return F.CN1;
+					}
+				}
+				if (z.isNumber()) {
+					if (z instanceof IComplexNum) {
+						if (z instanceof ApcomplexNum) {
+							ApcomplexNum acn = (ApcomplexNum) z;
+							return F.complexNum(ApcomplexMath.w(acn.apcomplexValue(), ki));
+						}
+						if (z instanceof ComplexNum) {
+							ComplexNum cn = (ComplexNum) z;
+							Apcomplex c = new Apcomplex(
+									new Apfloat(new BigDecimal(cn.getRealPart()), Config.MACHINE_PRECISION),
+									new Apfloat(new BigDecimal(cn.getImaginaryPart()), Config.MACHINE_PRECISION));
+							return F.complexNum(ApcomplexMath.w(c, ki));
+						}
+					}
+					if (z instanceof ApfloatNum) {
+						ApfloatNum an = (ApfloatNum) z;
+						return F.complexNum(ApcomplexMath.w(an.apfloatValue(), ki));
+					}
+					if (z instanceof Num) {
+						Num n = (Num) z;
+						return F.complexNum(ApcomplexMath
+								.w(new Apfloat(new BigDecimal(n.doubleValue()), Config.MACHINE_PRECISION), ki));
+					}
 				}
 			}
 
@@ -1633,7 +1690,7 @@ public class SpecialFunctions {
 			de.lab4inf.math.Complex c = new de.lab4inf.math.sets.ComplexNumber(cNum.reDoubleValue(),
 					cNum.imDoubleValue());
 			c = de.lab4inf.math.functions.Zeta.zeta(c);
-			return F.complex(c.real(), c.imag());
+			return F.complexNum(c.real(), c.imag());
 		}
 
 		@Override

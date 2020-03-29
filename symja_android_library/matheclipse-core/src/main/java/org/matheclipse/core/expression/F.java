@@ -121,6 +121,7 @@ import edu.jas.kern.PreemptStatus;
  * 
  */
 public class F {
+
 	// private static final Cache<IAST, IAST> PARSER_AST_CACHE = CacheBuilder.newBuilder().maximumSize(1024).build();
 
 	private final static IBuiltInSymbol[] BUILT_IN_SYMBOLS = new IBuiltInSymbol[ID.Zeta + 10];
@@ -1120,6 +1121,9 @@ public class F {
 
 	/** Divisors(n) - returns all integers that divide the integer `n`. */
 	public final static IBuiltInSymbol Divisors = F.initFinalSymbol("Divisors", ID.Divisors);
+
+	/** DivisorSum */
+	public final static IBuiltInSymbol DivisorSum = F.initFinalSymbol("DivisorSum", ID.DivisorSum);
 
 	/** Do(expr, {max}) - evaluates `expr` `max` times. */
 	public final static IBuiltInSymbol Do = F.initFinalSymbol("Do", ID.Do);
@@ -4334,6 +4338,11 @@ public class F {
 	public static IAST Slot2;
 
 	/**
+	 * Represents <code>#3</code>
+	 */
+	public static IAST Slot3;
+
+	/**
 	 * Constant integer &quot;-1&quot;
 	 */
 	public final static IInteger CN1 = AbstractIntegerSym.valueOf(-1);
@@ -4479,6 +4488,7 @@ public class F {
 
 			Slot1 = unaryAST1(Slot, C1);
 			Slot2 = unaryAST1(Slot, C2);
+			Slot3 = unaryAST1(Slot, C3);
 
 			GLOBAL_IDS = new IExpr[] { CN1, CN2, CN3, CN4, CN5, CN6, CN7, CN8, CN9, CN10, C0, C1, C2, C3, C4, C5, C6,
 					C7, C8, C9, C10, CI, CNI, C1D2, CN1D2, C1D3, CN1D3, C1D4, CN1D4, CD0, CD1, CInfinity, CNInfinity,

@@ -2879,8 +2879,10 @@ public abstract class AbstractAST implements IASTMutable {
 		if (isEvalFlagOn(IAST.IS_MATRIX)) {
 			final int[] dim = new int[2];
 			dim[0] = argSize();
-			dim[1] = ((IAST) first()).argSize();
-			return dim;
+			if (dim[0] > 0) {
+				dim[1] = ((IAST) first()).argSize();
+				return dim;
+			}
 		}
 		if (isList()) {
 			final int[] dim = new int[2];
@@ -2899,7 +2901,7 @@ public abstract class AbstractAST implements IASTMutable {
 							return null;
 						}
 					}
-					if (setMatrixFormat && (dim[0] != 1 || dim[1] != 0)) {
+					if (setMatrixFormat && (dim[0] > 1 || dim[1] > 0)) {
 						addEvalFlags(IAST.IS_MATRIX);
 					}
 					return dim;

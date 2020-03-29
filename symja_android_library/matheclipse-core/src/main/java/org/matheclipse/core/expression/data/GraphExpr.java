@@ -8,7 +8,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> {
- 
+
 	private static final long serialVersionUID = 6160043985328230156L;
 
 	/**
@@ -24,12 +24,28 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> {
 	protected GraphExpr(final Graph<IExpr, T> graph) {
 		super(F.Graph, graph);
 	}
- 
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof GraphExpr) {
+			return fData.equals(((GraphExpr) obj).fData);
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return (fData == null) ? 283 : 283 + fData.hashCode();
+	}
+
 	@Override
 	public IExpr copy() {
 		return new GraphExpr<T>(fData);
 	}
-	
+
 	/**
 	 * Test if the graph is instance of <code>DefaultDirectedWeightedGraph</code> or
 	 * <code>DefaultUndirectedWeightedGraph</code>
@@ -38,7 +54,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> {
 	 *            the graph which should be tested.
 	 * @return <code>true</code> if the graph is a weighted graph
 	 */
-	public   boolean isWeightedGraph( ) {
+	public boolean isWeightedGraph() {
 		return fData instanceof DefaultDirectedWeightedGraph || fData instanceof DefaultUndirectedWeightedGraph;
 	}
 }

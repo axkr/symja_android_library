@@ -38,19 +38,19 @@ public class Config {
 	/**
 	 * Maximum number for the leaf count of an expression so that <code>Factor()</code> will try a factoring
 	 */
-	public static final int MAX_FACTOR_LEAFCOUNT = 600;
+	public static final int MAX_FACTOR_LEAFCOUNT = 1000;
 
 	/**
 	 * Maximum number for the leaf count of an expression so that <code>Simplify()</code> will try calling
 	 * <code>Factor()</code>.
 	 */
-	public static final int MAX_SIMPLIFY_FACTOR_LEAFCOUNT = 50;
+	public static final int MAX_SIMPLIFY_FACTOR_LEAFCOUNT = 100;
 
 	/**
 	 * Maximum number for the leaf count of an expression so that <code>Simplify()</code> will try calling
 	 * <code>Apart()</code>.
 	 */
-	public static final int MAX_SIMPLIFY_APART_LEAFCOUNT = 50;
+	public static final int MAX_SIMPLIFY_APART_LEAFCOUNT = 100;
 
 	/**
 	 * Maximum number for the leaf count of an expression so that <code>Simplify()</code> will try calling

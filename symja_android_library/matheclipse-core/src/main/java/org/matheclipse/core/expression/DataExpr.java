@@ -24,6 +24,7 @@ public abstract class DataExpr<T> implements IDataExpr<T> {
 	private static final long serialVersionUID = 4987827851920443376L;
 
 	private IBuiltInSymbol fHead;
+
 	protected T fData;
 
 	protected DataExpr(final IBuiltInSymbol head, final T data) {
@@ -73,6 +74,34 @@ public abstract class DataExpr<T> implements IDataExpr<T> {
 	}
 
 	@Override
+	public int compareTo(IExpr expr) {
+		if (expr instanceof DataExpr) {
+			DataExpr<T> de = ((DataExpr<T>) expr);
+			if (fData != null) {
+				if (de.fData != null) {
+
+					if (System.identityHashCode(fData) > System.identityHashCode(de.fData)) {
+						return 1;
+					} else if (System.identityHashCode(fData) < System.identityHashCode(de.fData)) {
+						return -1;
+					}
+					return 0;
+				}
+				return 1;
+			}
+			return -1;
+		}
+		if (expr.isAST()) {
+			if (!expr.isDirectedInfinity()) {
+				return -1 * expr.compareTo(this);
+			}
+		}
+		final int x = hierarchy();
+		final int y = expr.hierarchy();
+		return (x < y) ? -1 : ((x == y) ? 0 : 1);
+	}
+
+	@Override
 	public IExpr evaluate(EvalEngine engine) {
 		return F.NIL;
 	}
@@ -91,7 +120,7 @@ public abstract class DataExpr<T> implements IDataExpr<T> {
 
 	@Override
 	public int hashCode() {
-		return (fData == null) ? 59 : 59 + fData.hashCode();
+		return (fData == null) ? 181 : 181 + fData.hashCode();
 	}
 
 	@Override

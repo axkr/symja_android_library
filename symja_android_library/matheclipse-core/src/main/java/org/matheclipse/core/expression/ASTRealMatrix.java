@@ -80,6 +80,14 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	 */
 	RealMatrix matrix;
 
+	public int getColumnDimension() {
+		return matrix.getColumnDimension();
+	}
+
+	public int getRowDimension() {
+		return matrix.getRowDimension();
+	}
+
 	/**
 	 * 
 	 * @param matrix
@@ -87,7 +95,7 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	 *            if <code>true</code> allocate new memory and copy all elements from the matrix
 	 */
 	public ASTRealMatrix(double[][] matrix, boolean deepCopy) {
-		if (Config.MAX_AST_SIZE < matrix.length|| //
+		if (Config.MAX_AST_SIZE < matrix.length || //
 				Config.MAX_AST_SIZE < matrix[0].length) {
 			throw new ASTElementLimitExceeded(matrix.length * matrix[0].length);
 		}
@@ -309,7 +317,7 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	 */
 	@Override
 	public IAST clone() {
-		return Convert.matrix2List(matrix);
+		return Convert.matrix2List(matrix, false);
 		// return new ASTRealMatrix(matrix.copy(), false);
 	}
 
@@ -335,7 +343,7 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 
 	@Override
 	public IASTAppendable copyAppendable() {
-		return Convert.matrix2List(matrix);
+		return Convert.matrix2List(matrix, false);
 	}
 
 	@Override
@@ -390,9 +398,9 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	public IExpr get(int location) {
 		return new ASTRealVector(matrix.getRowVector(location - 1), false);
 	}
-	
+
 	@Override
-	public IAST getItems(int[] items, int length) { 
+	public IAST getItems(int[] items, int length) {
 		double[][] m = new double[length][];
 		for (int i = 0; i < length; i++) {
 			m[i] = matrix.getRow(items[i] - 1);
@@ -562,7 +570,20 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 			matrix.setRowVector(location - 1, ((ASTRealVector) object).vector);
 			return value;
 		}
-		throw new UnsupportedOperationException();
+		throw new IndexOutOfBoundsException(
+				"Index: " + Integer.valueOf(location) + ", Size: " + (matrix.getRowDimension() + 1));
+	}
+
+	@Override
+	public IASTMutable setAtCopy(int i, IExpr expr) {
+		if (expr instanceof ASTRealVector) {
+			IASTMutable ast = copy();
+			ast.set(i, expr);
+			return ast;
+		}
+		IASTAppendable ast = copyAppendable();
+		ast.set(i, expr);
+		return ast;
 	}
 
 	/**

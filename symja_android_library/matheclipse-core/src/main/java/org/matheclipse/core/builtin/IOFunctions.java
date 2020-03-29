@@ -71,6 +71,7 @@ public class IOFunctions {
 				F.InputString.setEvaluator(new InputString());
 				F.SystemDialogInput.setEvaluator(new SystemDialogInput());
 			}
+			
 			// F.General.setEvaluator(new General());
 			F.Message.setEvaluator(new Message());
 			F.Names.setEvaluator(new Names());
@@ -462,7 +463,8 @@ public class IOFunctions {
 			int headID;
 
 			public MyDocumentListener(JTextField inputField, ISymbol dynamic, int headID) {
-				if (!dynamic.isVariable() || dynamic.isBuiltInSymbol()) {
+				if (dynamic != null && //
+						(!dynamic.isVariable() || dynamic.isBuiltInSymbol())) {
 					// Cannot assign to raw object `1`.
 					throw new ArgumentTypeException(
 							IOFunctions.getMessage("setraw", F.List(dynamic), EvalEngine.get()));
@@ -488,8 +490,8 @@ public class IOFunctions {
 			}
 
 			protected void updateFieldState() {
-				String text = inputField.getText();
 				if (dynamic != null) {
+					String text = inputField.getText();
 					IExpr expr = F.NIL;
 					if (headID == ID.String) {
 						expr = F.stringx(text);
@@ -646,6 +648,7 @@ public class IOFunctions {
 			"argtu", "`1` called with 1 argument; `2` or `3` arguments are expected.", //
 			"base", "Requested base `1` in `2` should be between 2 and `3`.", //
 			"boxfmt", "`1` is not a box formatting type.", //
+			"coef", "The first argument `1` of `2` should be a non-empty list of positive integers.", //
 			"color", "`1` is not a valid color or gray-level specification.", //
 			"compat", "`1` and `2` are incompatible units", //
 			"cxt", "`1` is not a valid context name.", //
@@ -668,6 +671,7 @@ public class IOFunctions {
 			"intp", "Positive integer expected.", //
 			"intnn", "Non-negative integer expected.", //
 			"intnm", "Non-negative machine-sized integer expected at position `2` in `1`.", //
+			"intm", "Machine-sized integer expected at position `2` in `1`.", //
 			"intpm", "Positive integer (less equal 2147483647) expected at position `2` in `1`.", //
 			"iterb", "Iterator does not have appropriate bounds.", //
 			"itform", "Argument `1` at position `2` does not have the correct form for an iterator.", //
@@ -696,6 +700,8 @@ public class IOFunctions {
 			"ovfl", "Overflow occurred in computation.", //
 			"partd", "Part specification `1` is longer than depth of object.", //
 			"partw", "Part `1` of `2` does not exist.", //
+			"pilist",
+			"The arguments to `1` must be two lists of integers of identical length, with the second list only containing positive integers.", //
 			"plld", "Endpoints in `1` must be distinct machine-size real numbers.", //
 			"plln", "Limiting value `1` in `2` is not a machine-size real number.", //
 			"pspec", "Part specification `1` is neither an integer nor a list of integer.", //
@@ -703,6 +709,7 @@ public class IOFunctions {
 			"polynomial", "Polynomial expected at position `1` in `2`.", //
 			"pkspec1", "The expression `1` cannot be used as a part specification.", // "
 			"range", "Range specification in `1` does not have appropriate bounds.", //
+			"rectt", "Rectangular array expected at position `1` in `2`.", //
 			"rvalue", "`1` is not a variable with a value, so its value cannot be changed.", //
 			"seqs", "Sequence specification expected, but got `1`.", //
 			"setp", "Part assignment to `1` could not be made", //
@@ -713,6 +720,7 @@ public class IOFunctions {
 			"stream", "`1` is not string, InputStream[], or OutputStream[]", //
 			"string", "String expected at position `1` in `2`.", //
 			"sym", "Argument `1` at position `2` is expected to be a symbol.", //
+			"tdlen", "Objects of unequal length in `1` cannot be combined.", //
 			"tag", "Rule for `1` can only be attached to `2`.", //
 			"take", "Cannot take positions `1` through `2` in `3`.", //
 			"unsupported", "`1` currently not supported in `2`.", //

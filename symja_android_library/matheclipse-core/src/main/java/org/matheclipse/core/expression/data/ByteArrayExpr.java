@@ -26,6 +26,22 @@ public class ByteArrayExpr extends DataExpr<byte[]> {
 	}
 
 	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof ByteArrayExpr) {
+			return fData.equals(((ByteArrayExpr) obj).fData);
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return (fData == null) ? 541 : 541 + fData.hashCode();
+	}
+
+	@Override
 	public IExpr copy() {
 		return new ByteArrayExpr(fData);
 	}

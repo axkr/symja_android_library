@@ -262,6 +262,8 @@ public class FindRoot extends AbstractFunctionEvaluator {
 					solver = new BracketingNthOrderBrentSolver();
 					return solver.solve(maxIterations, f, min.doubleValue(), max.doubleValue());
 				} catch (MathRuntimeException mex) {
+					// org.hipparchus.exception.MathIllegalArgumentException: interval does not bracket a root
+
 					// switch to BisectionSolver
 					solver = new BisectionSolver();
 				}

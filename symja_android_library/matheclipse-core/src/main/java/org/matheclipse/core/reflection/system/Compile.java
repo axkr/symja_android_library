@@ -6,6 +6,8 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -18,10 +20,11 @@ import org.matheclipse.core.interfaces.IExpr;
 import com.itranswarp.compiler.JavaStringCompiler;
 
 /**
- * 
+ * Compile an Symja expression to a java function
  *
  */
 public class Compile extends AbstractCoreFunctionEvaluator {
+
 	static final String JAVA_SOURCE_CODE = //
 			"/* an in-memory compiled function */                                      \n"//
 					+ "package org.matheclipse.core.compile;                                      \n"//
@@ -44,39 +47,38 @@ public class Compile extends AbstractCoreFunctionEvaluator {
 		if (!ToggleFeature.COMPILE) {
 			return F.NIL;
 		}
-
-		if (ast.arg1().isList()) {
-
+		try {
+			IAST variables = Validate.checkIsVariableOrVariableList(ast, 1, engine);
 			JavaStringCompiler compiler = new JavaStringCompiler();
 			Map<String, byte[]> results;
-			try {
-				IAST variables = (IAST) ast.arg1();
-				StringBuilder variablesBuf = new StringBuilder();
-				for (int i = 1; i < variables.size(); i++) {
-					variablesBuf.append("double " + variables.get(i) + " = engine.evalDouble(ast.get(" + i + "));\n");
-				}
-				IExpr expression = ast.arg2();
-				DoubleFormFactory factory = JavaDoubleFormFactory.get(true, false);
-				StringBuilder buf = new StringBuilder();
-				factory.convert(buf, expression);
-				String source = JAVA_SOURCE_CODE.replace("{$variables}", variablesBuf.toString());
-				source = source.replace("{$expression}", buf.toString());
-				// System.out.println(source);
 
-				results = compiler.compile("CompiledFunction.java", source);
-
-				Class<?> clazz = compiler.loadClass("org.matheclipse.core.compile.CompiledFunction", results);
-
-				AbstractFunctionEvaluator fun = (AbstractFunctionEvaluator) clazz.newInstance();
-				return CompiledFunctionExpr.newInstance(fun);
-			} catch (Exception rex) {
-				if (Config.SHOW_STACKTRACE) {
-					rex.printStackTrace();
-				}
-				return engine.printMessage("Compile: " + rex.getMessage());
+			// IAST variables = (IAST) ast.arg1();
+			StringBuilder variablesBuf = new StringBuilder();
+			for (int i = 1; i < variables.size(); i++) {
+				variablesBuf.append("double " + variables.get(i) + " = engine.evalDouble(ast.get(" + i + "));\n");
 			}
-		} else {
-			return engine.printMessage("Compile: The first argument should be a list of variable names.");
+			IExpr expression = ast.arg2();
+			DoubleFormFactory factory = JavaDoubleFormFactory.get(true, false);
+			StringBuilder buf = new StringBuilder();
+			factory.convert(buf, expression);
+			String source = JAVA_SOURCE_CODE.replace("{$variables}", variablesBuf.toString());
+			source = source.replace("{$expression}", buf.toString());
+			// System.out.println(source);
+
+			results = compiler.compile("CompiledFunction.java", source);
+
+			Class<?> clazz = compiler.loadClass("org.matheclipse.core.compile.CompiledFunction", results);
+
+			AbstractFunctionEvaluator fun = (AbstractFunctionEvaluator) clazz.newInstance();
+			return CompiledFunctionExpr.newInstance(fun);
+		} catch (ValidateException ve) {
+			// org.matheclipse.core.eval.exception.Validate.checkIsVariableOrVariableList( )
+			return engine.printMessage(ast.topHead(), ve);
+		} catch (Exception rex) {
+			if (Config.SHOW_STACKTRACE) {
+				rex.printStackTrace();
+			}
+			return engine.printMessage("Compile: " + rex.getMessage());
 		}
 	}
 

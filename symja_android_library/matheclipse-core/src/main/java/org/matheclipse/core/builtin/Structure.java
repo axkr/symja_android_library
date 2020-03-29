@@ -1164,7 +1164,7 @@ public class Structure {
 					return lst;
 				}
 				int size = lst.first().size() - 1;
-				IASTAppendable list;
+				IAST list;
 				if (level == recursionLevel + 1) {
 					list = EvalAttributes.threadList(lst, F.List, constant, size);
 					if (resultList != null) {
@@ -1892,7 +1892,7 @@ public class Structure {
 			}
 			final IAST list = (IAST) ast.arg1();
 			if (list.size() > 1) {
-				return threadList(list, head, list.head());
+				return threadList(list, head, list.head()).orElse(list);
 			}
 			return F.NIL;
 		}
@@ -1914,22 +1914,26 @@ public class Structure {
 		 */
 		public static IAST threadList(final IAST list, IExpr head, IExpr mapHead) {
 
-			int listLength = 0;
+			int listLength = -1;
 
 			for (int i = 1; i < list.size(); i++) {
 				if ((list.get(i).isAST()) && (((IAST) list.get(i)).head().equals(head))) {
-					if (listLength == 0) {
+					if (listLength == -1) {
 						listLength = ((IAST) list.get(i)).argSize();
 					} else {
 						if (listLength != ((IAST) list.get(i)).argSize()) {
-							listLength = 0;
+							// Objects of unequal length in `1` cannot be combined.
+							IOFunctions.printMessage(F.Thread, "tdlen", F.List(list), EvalEngine.get());
+							listLength = -1;
 							return F.NIL;
 							// for loop
 						}
 					}
 				}
 			}
-
+			if (listLength == -1) {
+				return list;
+			}
 			return EvalAttributes.threadList(list, head, mapHead, listLength);
 
 		}

@@ -304,8 +304,7 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 	 */
 	@Override
 	public IAST clone() {
-		return Convert.vector2List(vector);
-		// return new ASTRealVector(vector.copy(), false);
+		return Convert.vector2List(vector, false);
 	}
 
 	/** {@inheritDoc} */
@@ -330,7 +329,7 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 
 	@Override
 	public IASTAppendable copyAppendable() {
-		return Convert.vector2List(vector);
+		return Convert.vector2List(vector, false);
 	}
 
 	@Override
@@ -394,7 +393,7 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 	}
 
 	@Override
-	public IAST getItems(int[] items, int length) { 
+	public IAST getItems(int[] items, int length) {
 		double[] v = new double[length];
 		for (int i = 0; i < length; i++) {
 			v[i] = vector.getEntry(items[i] - 1);
@@ -551,6 +550,18 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 		}
 		throw new IndexOutOfBoundsException(
 				"Index: " + Integer.valueOf(location) + ", Size: " + (vector.getDimension() + 1));
+	}
+
+	@Override
+	public IASTMutable setAtCopy(int i, IExpr expr) {
+		if (expr instanceof Num) {
+			IASTMutable ast = copy();
+			ast.set(i, expr);
+			return ast;
+		}
+		IASTAppendable ast = copyAppendable();
+		ast.set(i, expr);
+		return ast;
 	}
 
 	public void setEntry(int location, double value) {

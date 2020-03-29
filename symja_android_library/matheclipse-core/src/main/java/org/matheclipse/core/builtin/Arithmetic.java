@@ -47,6 +47,8 @@ import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.hipparchus.fraction.BigFraction;
+import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.ArrayRealVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.GammaJS;
 import org.matheclipse.core.eval.EvalEngine;
@@ -66,6 +68,8 @@ import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
+import org.matheclipse.core.expression.ASTRealMatrix;
+import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
@@ -107,6 +111,7 @@ import org.matheclipse.parser.client.math.MathException;
 import ch.ethz.idsc.tensor.qty.IQuantity;
 
 public final class Arithmetic {
+
 	private static int g = 7;
 	// private static double[] p = { 0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313,
 	// -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6,
@@ -1069,7 +1074,7 @@ public final class Arithmetic {
 			if (arg1.isNumber()) {
 				return ((INumber) arg1).conjugate();
 			}
-			if (arg1.isRealResult()) {
+			if (arg1.isRealResult() || arg1.isRealVector() || arg1.isRealMatrix()) {
 				return arg1;
 			}
 			if (arg1.isDirectedInfinity()) {
@@ -1946,6 +1951,15 @@ public final class Arithmetic {
 			}
 			if (arg1.isRealResult()) {
 				return F.C0;
+			}
+			if (arg1.isRealVector()) {
+				// 0.0 - vector
+				return new ASTRealVector(new ArrayRealVector(arg1.size() - 1, 0.0), false);
+			}
+			if (arg1.isRealMatrix()) {
+				ASTRealMatrix matrix = (ASTRealMatrix) arg1;
+				return new ASTRealMatrix(
+						new Array2DRowRealMatrix(matrix.getRowDimension(), matrix.getColumnDimension()), false);
 			}
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
@@ -4298,7 +4312,7 @@ public final class Arithmetic {
 			if (expr.isNumber()) {
 				return ((INumber) expr).re();
 			}
-			if (expr.isRealResult()) {
+			if (expr.isRealResult() || expr.isRealVector() || expr.isRealMatrix()) {
 				return expr;
 			}
 

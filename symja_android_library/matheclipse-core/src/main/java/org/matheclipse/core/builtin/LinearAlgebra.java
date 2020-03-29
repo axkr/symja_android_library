@@ -1479,10 +1479,10 @@ public final class LinearAlgebra {
 				// org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
 				return engine.printMessage(ast.topHead(), mre);
 			} catch (final RuntimeException e) {
-				engine.printMessage(ast.topHead() + ": " + e.toString());
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
+				engine.printMessage(ast.topHead() + ": " + e.getMessage());
 				// } catch (final org.hipparchus.exception.MathRuntimeException e) {
 				// if (Config.SHOW_STACKTRACE) {
 				// e.printStackTrace();
@@ -2667,13 +2667,18 @@ public final class LinearAlgebra {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			try {
-				int[] dim = ast.arg1().isMatrix();
+				int[] dim = ast.arg1().isMatrix(false);
 				if (dim != null) {
+					final int k;
+					if (ast.size() == 3) {
+						k = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
+					} else {
+						k = 0;
+					}
+					int m = dim[0];
+					int n = dim[1];
 					IAST matrix = (IAST) ast.arg1();
-					final int k = (ast.size() == 3 && ast.arg2().isInteger())
-							? Validate.checkIntType(ast, 2, Integer.MIN_VALUE)
-							: 0;
-					return F.matrix((i, j) -> i >= j - k ? matrix.getPart(i + 1, j + 1) : F.C0, dim[0], dim[1]);
+					return F.matrix((i, j) -> i >= j - k ? matrix.getPart(i + 1, j + 1) : F.C0, m, n);
 				}
 			} catch (final ValidateException ve) {
 				// int number validation
@@ -3477,12 +3482,10 @@ public final class LinearAlgebra {
 						return F.CEmptyList;
 					}
 					if (head.equals(F.Dot)) {
-						if (dim1 >= 0 && dim1 == dim2) {
-							FieldVector<IExpr> u = Convert.list2Vector((IAST) ast.arg1());
-							FieldVector<IExpr> v = Convert.list2Vector((IAST) ast.arg2());
-							if (u != null && v != null) {
-								return Convert.vector2List(u.projection(v));
-							}
+						FieldVector<IExpr> u = Convert.list2Vector((IAST) ast.arg1());
+						FieldVector<IExpr> v = Convert.list2Vector((IAST) ast.arg2());
+						if (u != null && v != null) {
+							return Convert.vector2List(u.projection(v));
 						}
 					}
 				}
@@ -4314,15 +4317,18 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			int[] dim = ast.arg1().isMatrix();
+			int[] dim = ast.arg1().isMatrix(false);
 			if (dim != null) {
 				try {
-					IAST matrix = (IAST) ast.arg1();
-					final int k = (ast.size() == 3 && ast.arg2().isInteger())
-							? Validate.checkIntType(ast, 2, Integer.MIN_VALUE)
-							: 0;
+					final int k;
+					if (ast.size() == 3) {
+						k = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
+					} else {
+						k = 0;
+					}
 					int m = dim[0];
 					int n = dim[1];
+					IAST matrix = (IAST) ast.arg1();
 					return F.matrix((i, j) -> i <= j - k ? matrix.getPart(i + 1, j + 1) : F.C0, m, n);
 				} catch (final ValidateException ve) {
 					// int number validation
@@ -4435,7 +4441,7 @@ public final class LinearAlgebra {
 			int dim1 = arg1.isVector();
 			int dim2 = arg2.isVector();
 			if (dim1 > (-1) && dim2 > (-1)) {
-				return ArcCos(Divide(Dot(arg1, arg2), Times(Norm(arg1), Norm(arg2))));
+				return ArcCos(Divide(Dot(arg1, F.Conjugate(arg2)), Times(Norm(arg1), Norm(arg2))));
 			}
 			return F.NIL;
 		}
@@ -4444,6 +4450,7 @@ public final class LinearAlgebra {
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_2;
 		}
+
 	}
 
 	/**

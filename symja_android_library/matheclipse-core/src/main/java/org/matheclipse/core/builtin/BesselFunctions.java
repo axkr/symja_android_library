@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import org.hipparchus.complex.Complex;
+import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.BesselJS;
 import org.matheclipse.core.eval.EvalEngine;
@@ -16,6 +17,7 @@ import org.matheclipse.core.reflection.system.rules.BesselKRules;
 import org.matheclipse.core.reflection.system.rules.BesselYRules;
 
 public class BesselFunctions {
+
 	/**
 	 * 
 	 * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation in static
@@ -390,16 +392,22 @@ public class BesselFunctions {
 			IExpr n = ast.arg1();
 			IExpr z = ast.arg2();
 			final int k = z.toIntDefault(Integer.MIN_VALUE);
+			if (n.isReal()) {
+				if (k > 0 && engine.isDoubleMode()) {
+					try {
+						// numeric mode evaluation
 
-			if (k > 0 && engine.isDoubleMode()) {
-				try {
-					// numeric mode evaluation
-					if (n.isReal()) {
 						return F.num(BesselJS.besselJZero(n.evalDouble(), k));
-					}
-				} catch (ValidateException ve) {
-					if (Config.SHOW_STACKTRACE) {
-						ve.printStackTrace();
+
+					} catch (MathRuntimeException mre) {
+						// org.hipparchus.exception.MathIllegalArgumentException: interval does not bracket a root
+						if (Config.SHOW_STACKTRACE) {
+							mre.printStackTrace();
+						}
+					} catch (ValidateException ve) {
+						if (Config.SHOW_STACKTRACE) {
+							ve.printStackTrace();
+						}
 					}
 				}
 			}
@@ -725,6 +733,11 @@ public class BesselFunctions {
 					// numeric mode evaluation
 					if (n.isReal()) {
 						return F.num(BesselJS.besselYZero(n.evalDouble(), k));
+					}
+				} catch (MathRuntimeException mre) {
+					// org.hipparchus.exception.MathIllegalArgumentException: interval does not bracket a root
+					if (Config.SHOW_STACKTRACE) {
+						mre.printStackTrace();
 					}
 				} catch (ValidateException ve) {
 					if (Config.SHOW_STACKTRACE) {

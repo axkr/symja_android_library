@@ -24,6 +24,22 @@ public class CompiledFunctionExpr extends DataExpr<AbstractFunctionEvaluator> {
 		super(F.CompiledFunction, function);
 	}
 
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof CompiledFunctionExpr) {
+			return fData.equals(((CompiledFunctionExpr) obj).fData);
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return (fData == null) ? 461 : 461 + fData.hashCode();
+	}
+
 	public IExpr evaluate(IAST ast, EvalEngine engine) {
 		return fData.evaluate(ast, engine);
 	}

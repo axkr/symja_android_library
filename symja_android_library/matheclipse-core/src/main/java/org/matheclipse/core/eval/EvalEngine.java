@@ -682,19 +682,24 @@ public class EvalEngine implements Serializable {
 
 		if ((ISymbol.LISTABLE & attr) == ISymbol.LISTABLE) {
 			if (symbol.isBuiltInSymbol()) {
-				if (arg1.isRealVector() && ((IAST) arg1).size() > 1) {
-					final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
-					if (module instanceof DoubleUnaryOperator) {
-						DoubleUnaryOperator oper = (DoubleUnaryOperator) module;
-						return ASTRealVector.map((IAST) arg1, oper);
-					}
-				} else if (arg1.isRealMatrix()) {
-					final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
-					if (module instanceof DoubleUnaryOperator) {
-						DoubleUnaryOperator oper = (DoubleUnaryOperator) module;
-						return ASTRealMatrix.map((IAST) arg1, oper);
-					}
+				try {
+					if (arg1.isRealVector() && ((IAST) arg1).size() > 1) {
+						final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
+						if (module instanceof DoubleUnaryOperator) {
+							DoubleUnaryOperator oper = (DoubleUnaryOperator) module;
+							return ASTRealVector.map((IAST) arg1, oper);
+						}
+					} else if (arg1.isRealMatrix()) {
+						final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
+						if (module instanceof DoubleUnaryOperator) {
+							DoubleUnaryOperator oper = (DoubleUnaryOperator) module;
+							return ASTRealMatrix.map((IAST) arg1, oper);
+						}
 
+					}
+				} catch (RuntimeException rex) {
+					// org.matheclipse.core.eval.exception.ComplexResultException
+					// may be thrown in applAsDouble()
 				}
 
 				if (arg1.isList()) {
@@ -2457,7 +2462,8 @@ public class EvalEngine implements Serializable {
 					listLength[0] = ((IAST) x).argSize();
 				} else {
 					if (listLength[0] != ((IAST) x).argSize()) {
-						printMessage("Lists of unequal lengths cannot be combined: " + ast.toString());
+						// Objects of unequal length in `1` cannot be combined.
+						IOFunctions.printMessage(F.Thread, "tdlen", F.List(ast), EvalEngine.get());
 						// ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
 						return true;
 					}
@@ -2468,7 +2474,7 @@ public class EvalEngine implements Serializable {
 			return F.NIL;
 		}
 		if (listLength[0] != -1) {
-			IASTAppendable result = EvalAttributes.threadList(ast, F.List, ast.head(), listLength[0]);
+			IASTMutable result = EvalAttributes.threadList(ast, F.List, ast.head(), listLength[0]);
 			result.addEvalFlags(IAST.IS_LISTABLE_THREADED);
 			return result;
 		}

@@ -241,7 +241,7 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table>, Externa
 
 	@Override
 	public int hierarchy() {
-		return DATAID;
+		return DATASETID;
 	}
 
 	public IASTAppendable normal() {

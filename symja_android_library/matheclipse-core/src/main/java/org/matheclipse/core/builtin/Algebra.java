@@ -42,6 +42,7 @@ import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -1590,8 +1591,8 @@ public class Algebra {
 
 				int k = plusAST.argSize();
 				long numberOfTerms = LongMath.binomial(n + k - 1, n);
-				if (numberOfTerms > Integer.MAX_VALUE) {
-					throw new ArithmeticException("");
+				if (numberOfTerms > Config.MAX_AST_SIZE) {
+					throw new ASTElementLimitExceeded(numberOfTerms);
 				}
 				final IASTAppendable expandedResult = F.ast(F.Plus, (int) numberOfTerms, false);
 				Expand.NumberPartititon part = new Expand.NumberPartititon(plusAST, n, expandedResult);

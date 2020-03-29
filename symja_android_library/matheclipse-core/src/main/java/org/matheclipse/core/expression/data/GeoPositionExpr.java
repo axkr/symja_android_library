@@ -24,6 +24,22 @@ public class GeoPositionExpr extends DataExpr<GlobalPosition> {
 	}
 
 	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof GeoPositionExpr) {
+			return fData.equals(((GeoPositionExpr) obj).fData);
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return (fData == null) ? 353 : 353 + fData.hashCode();
+	}
+
+	@Override
 	public IExpr copy() {
 		return new GeoPositionExpr(fData);
 	}

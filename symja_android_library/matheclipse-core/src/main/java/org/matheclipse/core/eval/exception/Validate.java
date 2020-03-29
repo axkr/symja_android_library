@@ -22,6 +22,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * 
  */
 public final class Validate {
+
 	/**
 	 * Check the argument, if it's a Java {@code int} value in the range [0, Integer.MAX_VALUE]
 	 * 
@@ -78,7 +79,7 @@ public final class Validate {
 	}
 
 	public static BigInteger[] checkListOfBigIntegers(IAST ast, IExpr arg, boolean nonNegative, EvalEngine engine) {
-		if (arg.isList()) {
+		if (arg.isList() && arg.size() > 1) {
 			IAST list = (IAST) arg;
 			BigInteger[] result = new BigInteger[list.argSize()];
 
@@ -94,10 +95,12 @@ public final class Validate {
 						longValue = BigInteger.valueOf(((INum) expr).toLong());
 					}
 					if (longValue == null) {
-						IOFunctions.printMessage(ast.topHead(), "listofbigints", F.List(arg), engine);
+						// The first argument `1` of `2` should be a non-empty list of positive integers.
+						IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
 						return null;
 					} else if (nonNegative && longValue.compareTo(BigInteger.ZERO) < 0) {
-						IOFunctions.printMessage(ast.topHead(), "listofbigints", F.List(arg), engine);
+						// The first argument `1` of `2` should be a non-empty list of positive integers.
+						IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
 						return null;
 					}
 					result[i - 1] = longValue;
@@ -109,7 +112,8 @@ public final class Validate {
 				}
 			}
 		}
-		IOFunctions.printMessage(ast.topHead(), "listofbigints", F.List(arg), engine);
+		// The first argument `1` of `2` should be a non-empty list of positive integers.
+		IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
 		return null;
 	}
 
@@ -163,9 +167,8 @@ public final class Validate {
 			// IntegerSym always fits into an int number
 			int result = ((IntegerSym) ast.get(pos)).toInt();
 			if (startValue > result) {
-				// Java int value greater equal `1` expected instead of `2`.
-				String str = IOFunctions.getMessage("intjava", F.List(F.ZZ(startValue), ast.get(pos)),
-						EvalEngine.get());
+				// Machine-sized integer expected at position `2` in `1`.
+				String str = IOFunctions.getMessage("intm", F.List(ast, F.ZZ(pos)), EvalEngine.get());
 				throw new ArgumentTypeException(str);
 			}
 			return result;
@@ -173,15 +176,14 @@ public final class Validate {
 		if (ast.get(pos).isReal()) {
 			int result = ast.get(pos).toIntDefault();
 			if (result == Integer.MIN_VALUE || startValue > result) {
-				// Java int value greater equal `1` expected instead of `2`.
-				String str = IOFunctions.getMessage("intjava", F.List(F.ZZ(startValue), ast.get(pos)),
-						EvalEngine.get());
+				// Machine-sized integer expected at position `2` in `1`.
+				String str = IOFunctions.getMessage("intm", F.List(ast, F.ZZ(pos)), EvalEngine.get());
 				throw new ArgumentTypeException(str);
 			}
 			return result;
 		}
-		// Java int value greater equal `1` expected instead of `2`.
-		String str = IOFunctions.getMessage("intjava", F.List(F.ZZ(startValue), ast.get(pos)), EvalEngine.get());
+		// Machine-sized integer expected at position `2` in `1`.
+		String str = IOFunctions.getMessage("intm", F.List(ast, F.ZZ(pos)), EvalEngine.get());
 		throw new ArgumentTypeException(str);
 	}
 

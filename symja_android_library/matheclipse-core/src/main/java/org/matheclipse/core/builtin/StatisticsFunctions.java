@@ -58,6 +58,7 @@ import org.uncommons.maths.random.GaussianGenerator;
 import org.uncommons.maths.random.PoissonGenerator;
 
 public class StatisticsFunctions {
+
 	private static final double NEXTDOWNONE = Math.nextDown(1.0);
 
 	/**
@@ -2097,7 +2098,7 @@ public class StatisticsFunctions {
 
 		@Override
 		public IExpr numericEval(final IAST ast, EvalEngine engine) {
-			double[] values = ast.getAST(1).toDoubleVector();
+			double[] values = ast.get(1).toDoubleVector();
 			if (values == null) {
 				return F.NIL;
 			}
@@ -2630,11 +2631,10 @@ public class StatisticsFunctions {
 					if (engine.isNumericMode()) {
 						double[] arg1DoubleArray = arg1.toDoubleVector();
 						double[] arg2DoubleArray = arg2.toDoubleVector();
-						if (arg1DoubleArray == null || arg2DoubleArray == null) {
-							return F.NIL;
+						if (arg1DoubleArray != null && arg2DoubleArray != null) {
+							org.hipparchus.stat.correlation.Covariance cov = new org.hipparchus.stat.correlation.Covariance();
+							return F.num(cov.covariance(arg1DoubleArray, arg2DoubleArray, true));
 						}
-						org.hipparchus.stat.correlation.Covariance cov = new org.hipparchus.stat.correlation.Covariance();
-						return F.num(cov.covariance(arg1DoubleArray, arg2DoubleArray, true));
 					}
 					return vectorCovarianceSymbolic(arg1, arg2, arg1Length);
 				}
@@ -2665,7 +2665,7 @@ public class StatisticsFunctions {
 			if (ast.size() == 2) {
 				return super.numericEval(ast, engine);
 			}
-			if (ast.size() == 3) {
+			if (ast.size() == 3 && ast.arg1().isAST() && ast.arg2().isAST()) {
 				final IAST arg1 = (IAST) ast.arg1();
 				final IAST arg2 = (IAST) ast.arg2();
 				return evaluateArg2(arg1, arg2, engine);
@@ -3634,18 +3634,19 @@ public class StatisticsFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			int[] dim = ast.arg1().isMatrix();
-			if (dim == null && ast.arg1().isListOfLists()) {
+			IExpr arg1 = ast.arg1();
+			int[] dim = arg1.isMatrix();
+			if (dim == null && arg1.isListOfLists()) {
 				return F.NIL;
 			}
 			if (dim != null) {
-				IAST matrix = (IAST) ast.arg1();
+				IAST matrix = (IAST) arg1;
 				return matrix.mapMatrixColumns(dim, x -> F.MeanDeviation(x));
 			}
 
-			int length = ast.arg1().isVector();
+			int length = arg1.isVector();
 			if (length > 0) {
-				IAST vector = (IAST) ast.arg1();
+				IAST vector = (IAST) arg1;
 				int size = vector.size();
 				IASTAppendable sum = F.PlusAlloc(size);
 				final IExpr mean = F.Mean.of(engine, F.Negate(vector));
@@ -3653,6 +3654,10 @@ public class StatisticsFunctions {
 				return F.Times(F.Power(F.ZZ(size - 1), -1), sum);
 			}
 
+			if (arg1.isNumber()) {
+				// Rectangular array expected at position `1` in `2`.
+				return IOFunctions.printMessage(ast.topHead(), "rectt", F.List(F.C1, ast), engine);
+			}
 			return F.NIL;
 		}
 
@@ -5429,7 +5434,7 @@ public class StatisticsFunctions {
 					if (matrixDimensions != null) {
 						if (arg1.isRealMatrix()) {
 							double[][] matrix = arg1.toDoubleMatrix();
-							if (matrix==null) {
+							if (matrix == null) {
 								return F.NIL;
 							}
 							matrix = Convert.toDoubleTransposed(matrix);

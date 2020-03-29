@@ -29,9 +29,11 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -116,6 +118,7 @@ public final class NumberTheory {
 			if (index < BELLB_25.length) {
 				return AbstractIntegerSym.valueOf(BELLB_25[index]);
 			}
+
 			// Sum[StirlingS2[n, k], {k, 0, n}]
 			IInteger sum = F.C1;
 			for (int ki = 0; ki < index; ki++) {
@@ -619,13 +622,20 @@ public final class NumberTheory {
 		 * @return the result
 		 */
 		public static long chineseRemainders(final long[] primes, final long[] remainders) {
-			if (primes.length != remainders.length)
-				throw new IllegalArgumentException();
-
+			if (primes.length != remainders.length) {
+				// The arguments to `1` must be two lists of integers of identical length, with the second list only
+				// containing positive integers.
+				String message = IOFunctions.getMessage("pilist", F.List(F.ChineseRemainder), EvalEngine.get());
+				throw new ArgumentTypeException(message);
+			}
 			long modulus = primes[0];
 			for (int i = 1; i < primes.length; ++i) {
-				if (primes[i] <= 0)
-					throw new RuntimeException("Negative CRT input: " + primes[i]);
+				if (primes[i] <= 0) {
+					// The arguments to `1` must be two lists of integers of identical length, with the second list only
+					// containing positive integers.
+					String message = IOFunctions.getMessage("pilist", F.List(F.ChineseRemainder), EvalEngine.get());
+					throw new ArgumentTypeException(message);
+				}
 				modulus = multiplyExact(primes[i], modulus);
 			}
 
@@ -650,12 +660,20 @@ public final class NumberTheory {
 		 * @return the result
 		 */
 		private static BigInteger chineseRemainders(final BigInteger[] primes, final BigInteger[] remainders) {
-			if (primes.length != remainders.length)
-				throw new IllegalArgumentException();
+			if (primes.length != remainders.length) {
+				// The arguments to `1` must be two lists of integers of identical length, with the second list only
+				// containing positive integers.
+				String message = IOFunctions.getMessage("pilist", F.List(F.ChineseRemainder), EvalEngine.get());
+				throw new ArgumentTypeException(message);
+			}
 			BigInteger m = primes[0];
 			for (int i = 1; i < primes.length; i++) {
-				if (primes[i].signum() <= 0)
-					throw new RuntimeException("Negative CRT input: " + primes[i]);
+				if (primes[i].signum() <= 0) {
+					// The arguments to `1` must be two lists of integers of identical length, with the second list only
+					// containing positive integers.
+					String message = IOFunctions.getMessage("pilist", F.List(F.ChineseRemainder), EvalEngine.get());
+					throw new ArgumentTypeException(message);
+				}
 				m = primes[i].multiply(m);
 			}
 
@@ -683,38 +701,41 @@ public final class NumberTheory {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.arg1().isList() && ast.arg2().isList()) {
-				long[] a = Validate.checkListOfLongs(ast, ast.arg1(), Long.MIN_VALUE, true, engine);
-				long[] n = Validate.checkListOfLongs(ast, ast.arg2(), Long.MIN_VALUE, true, engine);
-				if (a == null || n == null) {
-					// try with BigIntegers
-					BigInteger[] aBig = Validate.checkListOfBigIntegers(ast, ast.arg1(), false, engine);
-					if (aBig == null) {
-						return F.NIL;
-					}
-					BigInteger[] nBig = Validate.checkListOfBigIntegers(ast, ast.arg2(), false, engine);
-					if (nBig == null) {
-						return F.NIL;
-					}
-					if (aBig.length != nBig.length) {
-						return F.NIL;
-					}
-					try {
-						return F.ZZ(chineseRemainders(nBig, aBig));
-					} catch (ArithmeticException ae) {
-						if (Config.SHOW_STACKTRACE) {
-							ae.printStackTrace();
-						}
-					}
-					return F.NIL;
-				}
-				if (a.length != n.length) {
-					return F.NIL;
-				}
-				if (a.length == 0) {
-					return F.NIL;
-				}
 				try {
+					long[] a = Validate.checkListOfLongs(ast, ast.arg1(), Long.MIN_VALUE, true, engine);
+					long[] n = Validate.checkListOfLongs(ast, ast.arg2(), Long.MIN_VALUE, true, engine);
+					if (a == null || n == null) {
+						// try with BigIntegers
+						BigInteger[] aBig = Validate.checkListOfBigIntegers(ast, ast.arg1(), false, engine);
+						if (aBig == null) {
+							return F.NIL;
+						}
+						BigInteger[] nBig = Validate.checkListOfBigIntegers(ast, ast.arg2(), false, engine);
+						if (nBig == null) {
+							return F.NIL;
+						}
+						if (aBig.length != nBig.length) {
+							return F.NIL;
+						}
+						try {
+							return F.ZZ(chineseRemainders(nBig, aBig));
+						} catch (ArithmeticException ae) {
+							if (Config.SHOW_STACKTRACE) {
+								ae.printStackTrace();
+							}
+						}
+						return F.NIL;
+					}
+					if (a.length != n.length) {
+						return F.NIL;
+					}
+					if (a.length == 0) {
+						return F.NIL;
+					}
+
 					return F.ZZ(chineseRemainders(n, a));
+				} catch (ValidateException ve) {
+					return engine.printMessage(ast.topHead(), ve);
 				} catch (ArithmeticException ae) {
 					if (Config.SHOW_STACKTRACE) {
 						ae.printStackTrace();
@@ -1335,6 +1356,50 @@ public final class NumberTheory {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
 		}
 
+	}
+
+	private static class DivisorSum extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = ast.arg1();
+			IExpr head = ast.arg2();
+			IExpr condition = F.NIL;
+			if (arg1.isInteger()) {
+				IInteger n = (IInteger) arg1;
+				if (n.isPositive()) {
+					IAST list = n.divisors();
+					if (list.isList()) {
+						if (ast.isAST3()) {
+							condition = ast.arg3();
+						}
+						// Sum( head(divisor), list-of-divisors )
+						IASTAppendable sum = F.PlusAlloc(list.size());
+						for (int i = 1; i < list.size(); i++) {
+							IExpr divisor = list.get(i);
+							// apply condition on divisor
+							if (condition.isPresent() && !engine.evalTrue(F.unaryAST1(condition, divisor))) {
+								continue;
+							}
+							sum.append(F.unaryAST1(head, divisor));
+						}
+						return sum;
+					}
+				}
+
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
 	}
 
 	/**
@@ -4411,6 +4476,7 @@ public final class NumberTheory {
 			F.DiscreteDelta.setEvaluator(new DiscreteDelta());
 			F.Divisible.setEvaluator(new Divisible());
 			F.Divisors.setEvaluator(new Divisors());
+			F.DivisorSum.setEvaluator(new DivisorSum());
 			F.DivisorSigma.setEvaluator(new DivisorSigma());
 			F.EulerE.setEvaluator(new EulerE());
 			F.EulerPhi.setEvaluator(new EulerPhi());

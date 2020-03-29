@@ -492,7 +492,7 @@ public final class PatternMatching {
 				return engine.evaluate(ast.arg1());
 			}
 			IASTMutable sequence = ast.copy();
-			sequence.set(0, F.Sequence);
+			sequence.set(0, F.Identity);
 			return engine.evaluate(sequence);
 		}
 

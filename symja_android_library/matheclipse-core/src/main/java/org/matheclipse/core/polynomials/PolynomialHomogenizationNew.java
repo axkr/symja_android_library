@@ -174,6 +174,9 @@ public class PolynomialHomogenizationNew {
 
 					IInteger lcm = F.C1;
 					IRational rat = ((ISignedNumber) exp).rationalFactor();
+					if (rat == null) {
+						return;
+					}
 					if (!rat.isInteger()) {
 						IInteger denominator = rat.denominator();
 						if (denominator.isNegative()) {
@@ -381,15 +384,16 @@ public class PolynomialHomogenizationNew {
 			}
 
 			IRational rat = exp.rationalFactor();
-			IInteger intExp = rat.multiply(lcm).numerator();
-			int exponent = intExp.toIntDefault(Integer.MIN_VALUE);
-			if (exponent != Integer.MIN_VALUE) {
-				if (exponent == 1) {
-					return symbol;
+			if (rat != null) {
+				IInteger intExp = rat.multiply(lcm).numerator();
+				int exponent = intExp.toIntDefault(Integer.MIN_VALUE);
+				if (exponent != Integer.MIN_VALUE) {
+					if (exponent == 1) {
+						return symbol;
+					}
+					return F.Power(symbol, exponent);
 				}
-				return F.Power(symbol, exponent);
 			}
-
 			return F.Power(symbol, F.Times(lcm, exp));
 		}
 		return F.NIL;

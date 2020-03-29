@@ -114,10 +114,20 @@ public class ExprEvaluatorTests extends TestCase {
 				F.Null, //
 				F.Power(F.x, F.C2), //
 				// F.Indeterminate, //
+				F.C1DSqrt5, // F.List(F.List(F.C0)), //
 				F.ComplexInfinity, //
 				F.x_, //
 				F.y_, //
-				F.C1DSqrt5, //
+				F.CEmptyList, //
+				F.List(F.List(F.C1)), //
+				F.List(F.List(F.CN1)), //
+				F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), //
+				F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), //
+				F.List(F.CN1, F.CN2, F.C3), //
+				F.List(F.CN1D2, F.CN2, F.C3), //
+				F.List(F.x, F.CN2, F.C3), //
+				F.List(F.x, F.C5, F.CN3), //
+				F.List(F.x, F.CN3, F.CN1D2), //
 				F.Slot1, //
 				F.stringx(""), //
 				F.stringx("\uffff"), //
@@ -151,10 +161,10 @@ public class ExprEvaluatorTests extends TestCase {
 						ExprEvaluator eval = new ExprEvaluator(engine, true, 20);
 						mutantStr = fInputFactory.toString(mutant);
 
-						System.out.println(">> " + mutantStr);
-						// System.out.print(".");
+						// System.out.println(">> " + mutantStr);
+						System.out.print(".");
 						if (counter++ > 80) {
-							// System.out.println("");
+							System.out.println("");
 							counter = 0;
 							System.out.flush();
 							System.err.flush();
@@ -167,13 +177,17 @@ public class ExprEvaluatorTests extends TestCase {
 							System.err.println();
 						}
 					} catch (LimitException ile) {
-						System.err.println(mutantStr);
-						ile.printStackTrace();
-						System.err.println();
+						if (!quietMode) {
+							System.err.println(mutantStr);
+							ile.printStackTrace();
+							System.err.println();
+						}
 					} catch (ValidateException ve) {
-						System.err.println(mutantStr);
-						ve.printStackTrace();
-						System.err.println();
+						if (!quietMode) {
+							System.err.println(mutantStr);
+							ve.printStackTrace();
+							System.err.println();
+						}
 					} catch (SyntaxError se) {
 						if (!quietMode) {
 							System.err.println(mutantStr);
@@ -237,8 +251,7 @@ public class ExprEvaluatorTests extends TestCase {
 				F.complex(0.0, -1.0), //
 				F.complex(0.0, 1.0), //
 				F.num(0.5), //
-				F.num(-0.5), //
-				F.num(0.5), //
+				F.num(-0.5), // 
 				F.num(Math.PI * (-0.5)), //
 				F.num(Math.PI * 0.5), //
 				F.num(-Math.PI), //
@@ -263,6 +276,18 @@ public class ExprEvaluatorTests extends TestCase {
 				F.x_, //
 				F.y_, //
 				F.CEmptyList, //
+				F.List(F.List(F.C0)), //
+				F.List(F.List(F.C1)), //
+				F.List(F.List(F.CN1)), //
+				F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), //
+				F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), //
+				F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1), F.C0), //
+				F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0), F.C0), //
+				F.List(F.CN1, F.CN2, F.C3), //
+				F.List(F.CN1D2, F.CN2, F.C3), //
+				F.List(F.x, F.CN2, F.C3), //
+				F.List(F.x, F.C5, F.CN3), //
+				F.List(F.x, F.CN3, F.CN1D2), //
 				F.C1DSqrt5, //
 				F.Slot2, //
 				F.stringx(""), //
@@ -270,9 +295,13 @@ public class ExprEvaluatorTests extends TestCase {
 				F.Subtract(F.C1, F.C1));
 		ThreadLocalRandom random = ThreadLocalRandom.current();
 		String[] functionStrs = AST2Expr.FUNCTION_STRINGS;
-		for (int loop = 0; loop < 1000; loop++) {
+		int[] counter = new int[] { 0 };
+		for (int loop = 0; loop < 10000; loop++) {
 			for (int i = 0; i < functionStrs.length; i++) {
 				IBuiltInSymbol sym = (IBuiltInSymbol) F.symbol(functionStrs[i]);
+				if (sym == F.On || sym == F.Off) {
+					continue;
+				}
 				IEvaluator evaluator = sym.getEvaluator();
 				if (evaluator instanceof IFunctionEvaluator) {
 					int[] argSize = ((IFunctionEvaluator) evaluator).expectedArgSize();
@@ -280,11 +309,11 @@ public class ExprEvaluatorTests extends TestCase {
 						int end = argSize[1];
 						if (end <= 10) {
 							int start = argSize[0];
-							generateASTs(sym, start, end, seedList, random, engine);
+							generateASTs(sym, start, end, seedList, random, counter, engine);
 							continue;
 						}
 					} else {
-						generateASTs(sym, 1, 5, seedList, random, engine);
+						generateASTs(sym, 1, 5, seedList, random, counter, engine);
 					}
 				}
 			}
@@ -334,24 +363,28 @@ public class ExprEvaluatorTests extends TestCase {
 
 		String[] functionStrs = AST2Expr.FUNCTION_STRINGS;
 		ThreadLocalRandom random = ThreadLocalRandom.current();
+		int[] counter = new int[] { 0 };
 		for (int i = 0; i < functionStrs.length; i++) {
 			IBuiltInSymbol sym = (IBuiltInSymbol) F.symbol(functionStrs[i]);
 			IEvaluator evaluator = sym.getEvaluator();
 			if (evaluator instanceof IFunctionEvaluator) {
 				continue;
 			}
-			generateASTs(sym, 1, 5, seedList, random, engine);
+			generateASTs(sym, 1, 5, seedList, random, counter, engine);
 		}
 	}
 
 	private void generateASTs(IBuiltInSymbol sym, int start, int end, IAST seedList, ThreadLocalRandom random,
-			EvalEngine engine) {
+			int[] counter, EvalEngine engine) {
+		boolean quietMode = true;
 		ExprEvaluator eval;
 		System.out.flush();
-		int counter = 0;
+
 		for (int j = start; j <= end; j++) {
 
 			eval = new ExprEvaluator(engine, true, 20);
+			engine.init();
+			engine.setQuietMode(quietMode);
 			IASTAppendable ast = F.ast(sym);
 
 			try {
@@ -361,22 +394,27 @@ public class ExprEvaluatorTests extends TestCase {
 					ast.append(seed);
 				}
 
-				if (counter++ > 80) {
-					// System.out.println("");
-					counter = 0;
+				if (counter[0]++ > 80) {
+//					System.out.println("");
+					counter[0] = 0;
 					System.out.flush();
 					System.err.flush();
 				}
-				System.out.println(">> " + ast.toString());
+				// System.out.println(">> " + ast.toString());
+//				System.out.print(".");
 				eval.eval(ast);
 			} catch (FlowControlException mex) {
-				System.err.println(ast.toString());
-				mex.printStackTrace();
-				System.err.println();
+				if (!quietMode) {
+					System.err.println(ast.toString());
+					mex.printStackTrace();
+					System.err.println();
+				}
 			} catch (LimitException ile) {
-				System.err.println(ast.toString());
-				ile.printStackTrace();
-				System.err.println();
+				if (!quietMode) {
+					System.err.println(ast.toString());
+					ile.printStackTrace();
+					System.err.println();
+				}
 			} catch (SyntaxError se) {
 
 				System.err.println(ast.toString());
