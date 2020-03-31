@@ -190,8 +190,8 @@ public final class Validate {
 	public static int checkNonNegativeIntType(IAST ast, int pos) {
 		if (ast.get(pos) instanceof IntegerSym) {
 			// IntegerSym always fits into an int number
-			int result = ((IntegerSym) ast.get(pos)).toInt();
-			if (0 > result) {
+			int result = ast.get(pos).toIntDefault();
+			if (result == Integer.MIN_VALUE || 0 > result) {
 				// Non-negative machine-sized integer expected at position `2` in `1`.
 				String str = IOFunctions.getMessage("intnm", F.List(ast, F.ZZ(pos)), EvalEngine.get());
 				throw new ArgumentTypeException(str);
@@ -209,6 +209,31 @@ public final class Validate {
 		}
 		// Non-negative machine-sized integer expected at position `2` in `1`.
 		String str = IOFunctions.getMessage("intnm", F.List(ast, F.ZZ(pos)), EvalEngine.get());
+		throw new ArgumentTypeException(str);
+	}
+
+	public static int checkPositiveIntType(IAST ast, int pos) {
+		if (ast.get(pos) instanceof IntegerSym) {
+			// IntegerSym always fits into an int number
+			int result = ast.get(pos).toIntDefault();
+			if (result == Integer.MIN_VALUE || 0 >= result) {
+				// Positive machine-sized integer expected at position `2` in `1`.
+				String str = IOFunctions.getMessage("intpm", F.List(ast.topHead(), F.ZZ(pos)), EvalEngine.get());
+				throw new ArgumentTypeException(str);
+			}
+			return result;
+		}
+		if (ast.get(pos).isReal()) {
+			int result = ast.get(pos).toIntDefault();
+			if (result == Integer.MIN_VALUE || 0 >= result) {
+				// Positive machine-sized integer expected at position `2` in `1`.
+				String str = IOFunctions.getMessage("intpm", F.List(ast.topHead(), F.ZZ(pos)), EvalEngine.get());
+				throw new ArgumentTypeException(str);
+			}
+			return result;
+		}
+		// Positive machine-sized integer expected at position `2` in `1`.
+		String str = IOFunctions.getMessage("intpm", F.List(ast.topHead(), F.ZZ(pos)), EvalEngine.get());
 		throw new ArgumentTypeException(str);
 	}
 

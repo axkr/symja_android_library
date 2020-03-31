@@ -780,6 +780,9 @@ public final class NumberTheory {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.arg1().isList()) {
 				IAST list = (IAST) ast.arg1();
+				if (list.exists(x -> x.isList())) {
+					return F.NIL;
+				}
 				if (list.size() > 1) {
 					int size = list.argSize();
 					IASTAppendable resultList = F.ListAlloc(list.size());

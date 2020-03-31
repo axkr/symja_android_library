@@ -71,7 +71,7 @@ public class IOFunctions {
 				F.InputString.setEvaluator(new InputString());
 				F.SystemDialogInput.setEvaluator(new SystemDialogInput());
 			}
-			
+
 			// F.General.setEvaluator(new General());
 			F.Message.setEvaluator(new Message());
 			F.Names.setEvaluator(new Names());
@@ -672,7 +672,7 @@ public class IOFunctions {
 			"intnn", "Non-negative integer expected.", //
 			"intnm", "Non-negative machine-sized integer expected at position `2` in `1`.", //
 			"intm", "Machine-sized integer expected at position `2` in `1`.", //
-			"intpm", "Positive integer (less equal 2147483647) expected at position `2` in `1`.", //
+			"intpm", "Positive machine-sized integer expected at position `2` in `1`.", //
 			"iterb", "Iterator does not have appropriate bounds.", //
 			"itform", "Argument `1` at position `2` does not have the correct form for an iterator.", //
 			"ivar", "`1` is not a valid variable.", //

@@ -65,13 +65,13 @@ public class Config {
 
 	/**
 	 * Maximum number of elements which could be allocated for an AST
-	 **/
+	 */
 	public static int MAX_AST_SIZE = Integer.MAX_VALUE;
 
 	/**
 	 * Maximum number of elements which could be allocated for a BigInteger number
-	 **/
-	public static int MAX_BIT_COUNT = Integer.MAX_VALUE;
+	 */
+	public static int MAX_BIT_LENGTH = Integer.MAX_VALUE;
 
 	static {
 		EXPR_CACHE = CacheBuilder.newBuilder().maximumSize(MAX_EXPR_CACHE_SIZE).weakKeys().weakValues().build();
@@ -121,7 +121,7 @@ public class Config {
 	 * Set to true if in fuzz testing mode
 	 * 
 	 */
-	public final static boolean FUZZ_TESTING = false;
+	public final static boolean FUZZ_TESTING = true;
 
 	/**
 	 * Show the console output, if an expression has a head symbol with attribute <code>ISymbol.CONSOLE_OUTPUT</code>.

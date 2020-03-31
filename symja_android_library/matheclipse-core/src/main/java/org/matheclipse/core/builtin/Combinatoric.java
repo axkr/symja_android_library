@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.combinatoric.KSubsets;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -13,11 +15,13 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.IntRangeSpec;
 import org.matheclipse.core.eval.util.SetSpecification;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.frobenius.FrobeniusSolver;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.FrobeniusSolve;
 
 public final class Combinatoric {
 	/**
@@ -282,6 +286,7 @@ public final class Combinatoric {
 	 * 
 	 */
 	private final static class IntegerPartitions extends AbstractFunctionEvaluator {
+
 		/**
 		 * Returns all partitions of a given int number (i.e. NumberPartitions(3) => [3,0,0] [2,1,0] [1,1,1] ).
 		 * 
@@ -420,6 +425,10 @@ public final class Combinatoric {
 				if (arg1.isInteger()) {
 					final int n = arg1.toIntDefault(-1);
 					if (n >= 0) {
+						if (ast.isAST3()) {
+							return frobeniusPartition(ast, engine);
+						}
+
 						if (n == 0) {
 							return F.List(F.List());
 						}
@@ -443,10 +452,7 @@ public final class Combinatoric {
 								result.append(temp);
 							}
 						}
-						return result;
-						// } catch (ArrayIndexOutOfBoundsException aiex) {
-						// System.out.println(ast.toString());
-						// }
+						return result; 
 					}
 					if (arg1.isNegative()) {
 						return F.CEmptyList;
@@ -460,9 +466,99 @@ public final class Combinatoric {
 			return F.NIL;
 		}
 
+		private static IExpr frobeniusPartition(final IAST ast, EvalEngine engine) {
+			if (ast.arg3().isList() && ast.arg3().size() > 1 && ast.arg1().isInteger()) {
+				try {
+					int[] listInt = Validate.checkListOfInts(ast, ast.arg3(), Integer.MIN_VALUE, Integer.MAX_VALUE,
+							engine);
+					if (listInt != null) {
+						IInteger lowerLimitOfCoins = F.C0;
+						IInteger upperLimitOfCoins = F.ZZ(Integer.MAX_VALUE);
+						if (ast.arg2().isInteger()) {
+							upperLimitOfCoins = (IInteger) ast.arg2();
+						} else if (ast.arg2().isAST(F.List, 3) && ast.arg2().first().isInteger()
+								&& ast.arg2().second().isInteger()) {
+							lowerLimitOfCoins = (IInteger) ast.arg2().first();
+							upperLimitOfCoins = (IInteger) ast.arg2().second();
+						} else if (ast.arg2() != F.All) {
+							return F.NIL;
+						}
+						IInteger[] solution;
+
+						FrobeniusSolver solver = FrobeniusSolve.getSolver(listInt, (IInteger) ast.arg1());
+						int numberOfSolutions = -1; // all solutions
+						if (ast.size() == 5) {
+							numberOfSolutions = ast.arg5().toIntDefault(-1);
+						}
+
+						IASTAppendable result = F.ListAlloc(8);
+						while ((solution = solver.take()) != null) {
+							if (numberOfSolutions >= 0) {
+								if (--numberOfSolutions < 0) {
+									break;
+								}
+							}
+							if (createFrobeniusSolution(solution, listInt, lowerLimitOfCoins, upperLimitOfCoins,
+									result)) {
+								continue;
+							}
+							return F.NIL;
+						}
+
+						return result;
+					}
+				} catch (LimitException le) {
+					throw le;
+				} catch (RuntimeException rex) {
+					if (Config.SHOW_STACKTRACE) {
+						rex.printStackTrace();
+					}
+				}
+			}
+			return F.NIL;
+		}
+
+		/**
+		 * 
+		 * @param frobeniusSolution
+		 *            a single solution from the FrobeniusSolver
+		 * @param numberSpecification
+		 *            original given possible numbers for the partitions
+		 * @param lowerLimitOfCoins
+		 *            minimum number of coins
+		 * @param upperLimitOfCoins
+		 *            maximum number of coins
+		 * @param result
+		 * @return
+		 */
+		private static boolean createFrobeniusSolution(IInteger[] frobeniusSolution, int[] numberSpecification,
+				IInteger lowerLimitOfCoins, IInteger upperLimitOfCoins, IASTAppendable result) {
+			IInteger sum = F.C0;
+			for (int i = 0; i < frobeniusSolution.length; i++) {
+				sum = sum.add(frobeniusSolution[i]);
+			}
+			if (sum.isGE(lowerLimitOfCoins) && sum.isLE(upperLimitOfCoins)) {
+				IASTAppendable list = F.ListAlloc();
+				for (int i = frobeniusSolution.length - 1; i >= 0; i--) {
+					int counter = frobeniusSolution[i].toIntDefault();
+					if (counter == Integer.MIN_VALUE) {
+						return false;
+					}
+					if (counter > 0) {
+						IInteger value = F.ZZ(numberSpecification[i]);
+						for (int j = 0; j < counter; j++) {
+							list.append(value);
+						}
+					}
+				}
+				result.append(list);
+			}
+			return true;
+		}
+
 		@Override
 		public int[] expectedArgSize() {
-			return IOFunctions.ARGS_1_2;
+			return IOFunctions.ARGS_1_3;
 		}
 	}
 

@@ -129,9 +129,14 @@ public class ExprEvaluatorTests extends TestCase {
 				F.List(F.x, F.C5, F.CN3), //
 				F.List(F.x, F.CN3, F.CN1D2), //
 				F.Slot1, //
+				F.C2Pi, //
+				F.CN3D2, //
+				F.C3D2, //
+				F.C3D4, //
+				F.Slot2, //
 				F.stringx(""), //
 				F.stringx("\uffff"), //
-				F.Subtract(F.C1, F.C1));
+				F.Subtract(F.C1, F.C1)); 
 		int counter = 0;
 		ThreadLocalRandom random = ThreadLocalRandom.current();
 		for (int j = 1; j < 10000; j++) {
@@ -231,7 +236,7 @@ public class ExprEvaluatorTests extends TestCase {
 
 	public void testBuiltinFunctionFuzz() {
 		Config.MAX_AST_SIZE = 10000;
-		Config.MAX_BIT_COUNT = 1000;
+		Config.MAX_BIT_LENGTH = 1000;
 		Config.MAX_OUTPUT_SIZE = 10000;
 
 		EvalEngine engine = new EvalEngine(true);
@@ -289,6 +294,10 @@ public class ExprEvaluatorTests extends TestCase {
 				F.List(F.x, F.C5, F.CN3), //
 				F.List(F.x, F.CN3, F.CN1D2), //
 				F.C1DSqrt5, //
+				F.C2Pi, //
+				F.CN3D2, //
+				F.C3D2, //
+				F.C3D4, //
 				F.Slot2, //
 				F.stringx(""), //
 				F.stringx("\uffff"), //
@@ -322,7 +331,7 @@ public class ExprEvaluatorTests extends TestCase {
 
 	public void testNonBuiltinFunctionFuzz() {
 		Config.MAX_AST_SIZE = 10000;
-		Config.MAX_BIT_COUNT = 1000;
+		Config.MAX_BIT_LENGTH = 1000;
 		Config.MAX_OUTPUT_SIZE = 10000;
 
 		EvalEngine engine = new EvalEngine(true);

@@ -26,6 +26,7 @@ import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -337,6 +338,11 @@ public final class BooleanFunctions {
 				}
 				if (symbol.isTrue()) {
 					return factory.verum();
+				}
+				if (!symbol.isVariable() || symbol.isProtected()) {
+					// `1` is not a valid variable.
+					String message = IOFunctions.getMessage("ivar", F.List(symbol), EvalEngine.get());
+					throw new ArgumentTypeException(message);
 				}
 				Variable v = symbol2variableMap.get(symbol);
 				if (v == null) {
@@ -940,6 +946,9 @@ public final class BooleanFunctions {
 				// TODO CNF form after minimizing blows up the formula.
 				// FormulaTransformation transformation = BooleanConvert.transformation(ast, engine);
 				// return lf.booleanFunction2Expr(formula.transform(transformation));
+			} catch (final ValidateException ve) {
+				// int number validation
+				engine.printMessage(ast.topHead(), ve);
 			} catch (RuntimeException rex) {
 
 			}
@@ -3560,11 +3569,12 @@ public final class BooleanFunctions {
 					}
 
 					IExpr argN = ast.last();
-					if (argN.equals(F.All)) {
-						maxChoices = Integer.MAX_VALUE;
-					} else if (argN.isReal()) {
-						ISignedNumber sn = (ISignedNumber) argN;
-						maxChoices = sn.toIntDefault(1);
+					if (!argN.isRule()) {
+						if (argN.equals(F.All)) {
+							maxChoices = Integer.MAX_VALUE;
+						} else if (argN.isNumber()) {
+							maxChoices = Validate.checkPositiveIntType(ast, ast.argSize());
+						}
 					}
 				} else {
 					userDefinedVariables = variablesInFormula;
@@ -3572,7 +3582,7 @@ public final class BooleanFunctions {
 				return satisfiabilityInstances(arg1, userDefinedVariables, maxChoices);
 			} catch (final ValidateException ve) {
 				// int number validation
-				return engine.printMessage(ve.getMessage(ast.topHead()));
+				return engine.printMessage(ast.topHead(), ve);
 			}
 		}
 

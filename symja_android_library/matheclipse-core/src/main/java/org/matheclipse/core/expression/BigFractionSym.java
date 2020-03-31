@@ -34,12 +34,12 @@ public class BigFractionSym extends AbstractFractionSym {
 
 	BigFractionSym(BigFraction fraction) {
 		BigInteger temp = fraction.getNumerator();
-		if (Config.MAX_BIT_COUNT < temp.bitCount()) {
-			throw new ASTElementLimitExceeded(temp.bitCount());
+		if (Config.MAX_BIT_LENGTH < temp.bitLength()) {
+			throw new ASTElementLimitExceeded(temp.bitLength());
 		}
 		temp = fraction.getDenominator();
-		if (Config.MAX_BIT_COUNT < temp.bitCount()) {
-			throw new ASTElementLimitExceeded(temp.bitCount());
+		if (Config.MAX_BIT_LENGTH < temp.bitLength()) {
+			throw new ASTElementLimitExceeded(temp.bitLength());
 		}
 		fFraction = fraction;
 	}
@@ -58,12 +58,12 @@ public class BigFractionSym extends AbstractFractionSym {
 	 */
 	BigFractionSym(BigInteger nom, BigInteger denom) {
 		BigInteger temp = nom;
-		if (Config.MAX_BIT_COUNT < temp.bitCount()) {
-			throw new ASTElementLimitExceeded(temp.bitCount());
+		if (Config.MAX_BIT_LENGTH < temp.bitLength()) {
+			throw new ASTElementLimitExceeded(temp.bitLength());
 		}
 		temp = denom;
-		if (Config.MAX_BIT_COUNT < temp.bitCount()) {
-			throw new ASTElementLimitExceeded(temp.bitCount());
+		if (Config.MAX_BIT_LENGTH < temp.bitLength()) {
+			throw new ASTElementLimitExceeded(temp.bitLength());
 		}
 		fFraction = new BigFraction(nom, denom);
 	}

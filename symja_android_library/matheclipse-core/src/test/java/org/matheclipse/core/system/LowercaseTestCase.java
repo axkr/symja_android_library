@@ -1938,10 +1938,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBooleanConvert() {
-		check("BooleanConvert((A && !B || !A && B) && "//
-				+ "(C && B && !A && !D && !E || C && !B && A && !D && !E || C && !B && !A && D && !E || C && !B && !A && !D && E || !C && B && A && !D && !E || !C && B && !A && D && !E || !C && B && !A && !D && E || !C && !B && A && D && !E || !C && !B && A && !D && E || !C && !B && !A && D && E) && "
-				+ "(A && !F || !A && F) && (E && !C || !E && C), \"CNF\")", //
-				"(A||B)&&(A||B||C||D)&&(A||B||C||D||E)&&(A||B||C||D||!E)&&(A||B||C||!D||E)&&(A||B||C||E)&&(A||B||!C||D||E)&&(A||B||!C||!D||!E)&&(A||B||D||E)&&(A||!B||C||D||E)&&(A||!B||C||!D||!E)&&(A||!B||!C||D||!E)&&(A||!B||!C||!D)&&(A||!B||!C||!D||E)&&(A||!B||!C||!D||!E)&&(A||!B||!C||!E)&&(A||!B||!D||!E)&&(A||C||D||E)&&(A||!C||!D||!E)&&(A||F)&&(!A||B||C||D||E)&&(!A||B||C||!D||!E)&&(!A||B||!C||D||!E)&&(!A||B||!C||!D)&&(!A||B||!C||!D||E)&&(!A||B||!C||!D||!E)&&(!A||B||!C||!E)&&(!A||B||!D||!E)&&(!A||!B)&&(!A||!B||C||D||!E)&&(!A||!B||C||!D)&&(!A||!B||C||!D||E)&&(!A||!B||C||!D||!E)&&(!A||!B||C||!E)&&(!A||!B||!C)&&(!A||!B||!C||D)&&(!A||!B||!C||D||E)&&(!A||!B||!C||D||!E)&&(!A||!B||!C||!D)&&(!A||!B||!C||!D||E)&&(!A||!B||!C||!D||!E)&&(!A||!B||!C||E)&&(!A||!B||!C||!E)&&(!A||!B||D||!E)&&(!A||!B||!D)&&(!A||!B||!D||E)&&(!A||!B||!D||!E)&&(!A||!B||!E)&&(!A||C||!D||!E)&&(!A||!C||D||!E)&&(!A||!C||!D)&&(!A||!C||!D||E)&&(!A||!C||!D||!E)&&(!A||!C||!E)&&(!A||!D||!E)&&(!A||!F)&&(B||C||D||E)&&(B||!C||!D||!E)&&(!B||C||!D||!E)&&(!B||!C||D||!E)&&(!B||!C||!D)&&(!B||!C||!D||E)&&(!B||!C||!D||!E)&&(!B||!C||!E)&&(!B||!D||!E)&&(C||E)&&(!C||!D||!E)&&(!C||!E)");
+		check("BooleanConvert((a && !b || !a && b) && "//
+				+ "(c && b && !a && !d && !e || c && !b && a && !d && !e || c && !b && !a && d && !e || c && !b && !a && !d && e || !c && b && a && !d && !e || !c && b && !a && d && !e || !c && b && !a && !d && e || !c && !b && a && d && !e || !c && !b && a && !d && e || !c && !b && !a && d && e) && "
+				+ "(a && !f || !a && f) && (e && !c || !e && c), \"CNF\")", //
+				"(a||b)&&(a||b||c||d)&&(a||b||c||d||e)&&(a||b||c||d||!e)&&(a||b||c||!d||e)&&(a||b||c||e)&&(a||b||!c||d||e)&&(a||b||!c||!d||!e)&&(a||b||d||e)&&(a||!b||c||d||e)&&(a||!b||c||!d||!e)&&(a||!b||!c||d||!e)&&(a||!b||!c||!d)&&(a||!b||!c||!d||e)&&(a||!b||!c||!d||!e)&&(a||!b||!c||!e)&&(a||!b||!d||!e)&&(a||c||d||e)&&(a||!c||!d||!e)&&(a||f)&&(!a||b||c||d||e)&&(!a||b||c||!d||!e)&&(!a||b||!c||d||!e)&&(!a||b||!c||!d)&&(!a||b||!c||!d||e)&&(!a||b||!c||!d||!e)&&(!a||b||!c||!e)&&(!a||b||!d||!e)&&(!a||!b)&&(!a||!b||c||d||!e)&&(!a||!b||c||!d)&&(!a||!b||c||!d||e)&&(!a||!b||c||!d||!e)&&(!a||!b||c||!e)&&(!a||!b||!c)&&(!a||!b||!c||d)&&(!a||!b||!c||d||e)&&(!a||!b||!c||d||!e)&&(!a||!b||!c||!d)&&(!a||!b||!c||!d||e)&&(!a||!b||!c||!d||!e)&&(!a||!b||!c||e)&&(!a||!b||!c||!e)&&(!a||!b||d||!e)&&(!a||!b||!d)&&(!a||!b||!d||e)&&(!a||!b||!d||!e)&&(!a||!b||!e)&&(!a||c||!d||!e)&&(!a||!c||d||!e)&&(!a||!c||!d)&&(!a||!c||!d||e)&&(!a||!c||!d||!e)&&(!a||!c||!e)&&(!a||!d||!e)&&(!a||!f)&&(b||c||d||e)&&(b||!c||!d||!e)&&(!b||c||!d||!e)&&(!b||!c||d||!e)&&(!b||!c||!d)&&(!b||!c||!d||e)&&(!b||!c||!d||!e)&&(!b||!c||!e)&&(!b||!d||!e)&&(c||e)&&(!c||!d||!e)&&(!c||!e)");
 
 		check("BooleanConvert((a||b)&&(c||d), \"CNF\")", //
 				"(a||b)&&(c||d)");
@@ -2047,10 +2047,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("BooleanMinimize(!e && !d && c && b && a || !c && !f && !b && a || !f && a && !c && b || !i && f && h && !a || c && d && b && a || !b && g && a || !j && !h && !a)", //
 				"a&&b&&c&&d||a&&b&&c&&!e||a&&!b&&g||a&&!c&&!f||!a&&f&&h&&!i||!a&&!h&&!j");
-		check("BooleanMinimize((A && !B || !A && B) && "//
-				+ "(C && B && !A && !D && !E || C && !B && A && !D && !E || C && !B && !A && D && !E || C && !B && !A && !D && E || !C && B && A && !D && !E || !C && B && !A && D && !E || !C && B && !A && !D && E || !C && !B && A && D && !E || !C && !B && A && !D && E || !C && !B && !A && D && E) && "
-				+ "(A && !F || !A && F) && (E && !C || !E && C))", //
-				"A&&!B&&C&&!D&&!E&&!F||A&&!B&&!C&&!D&&E&&!F||!A&&B&&C&&!D&&!E&&F||!A&&B&&!C&&!D&&E&&F");
+		check("BooleanMinimize((a && !b || !a && b) && "//
+				+ "(c && b && !a && !d && !e || c && !b && a && !d && !e || c && !b && !a && d && !e || c && !b && !a && !d && e || !c && b && a && !d && !e || !c && b && !a && d && !e || !c && b && !a && !d && e || !c && !b && a && d && !e || !c && !b && a && !d && e || !c && !b && !a && d && e) && "
+				+ "(a && !f || !a && f) && (e && !c || !e && c))", //
+				"a&&!b&&c&&!d&&!e&&!f||a&&!b&&!c&&!d&&e&&!f||!a&&b&&c&&!d&&!e&&f||!a&&b&&!c&&!d&&e&&f");
 		check("BooleanMinimize((a&&!b)||(!a&&b)||(b&&!c)||(!b&&c))", //
 				"a&&!b||!a&&c||b&&!c");
 		check("BooleanMinimize((a||b)&&(c||d))", //
@@ -3618,6 +3618,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testConvergents() {
+		check("Convergents({{1,0},{0,1},0})", //
+				"Convergents({{1,0},{0,1},0})");
 		check("Convergents({2,3,4,5})", //
 				"{2,7/3,30/13,157/68}");
 		check("Convergents({1,1,1,1,1})", //
@@ -9745,6 +9747,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIntegerPartitions() {
+		// https://oeis.org/A214772 - McNugget partitions - Number of partitions of n into parts 6, 9 or 20.
+		check("Table(Length(IntegerPartitions(i, All, {6, 9, 20})), {i,0, 100, 1})", //
+				"{1,0,0,0,0,0,1,0,0,1,0,0,1,0,0,1,0,0,2,0,1,1,0,0,2,0,1,2,0,1,2,0,1,2,0,1,3,0,2,2,\n" + 
+				"1,1,3,0,2,3,1,2,3,1,2,3,1,2,4,1,3,3,2,2,5,1,3,4,2,3,5,2,3,5,2,3,6,2,4,5,3,3,7,2,\n" + 
+				"5,6,3,4,7,3,5,7,3,5,8,3,6,7,4,5,9,3,7,8,5}");
+
+		check("IntegerPartitions(50, All, {6, 9, 20})", //
+				"{{20,9,9,6,6},{20,6,6,6,6,6}}");
+		check("IntegerPartitions(156, {9,10}, {1, 5, 10, 25})", //
+				"{{25,25,25,25,25,10,10,10,1},{25,25,25,25,25,10,10,5,5,1}}");
+		check("IntegerPartitions(156, 10, {1, 5, 10, 25})", //
+				"{{25,25,25,25,25,10,10,10,1},{25,25,25,25,25,25,5,1},{25,25,25,25,25,10,10,5,5,1}}");
 		check("IntegerPartitions(4)", //
 				"{{4},{3,1},{2,2},{2,1,1},{1,1,1,1}}");
 		check("IntegerPartitions(6)", //
@@ -11591,7 +11605,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testLimit() {
-
+		// TODO github #175
+		// check("Limit(((a^(1/x)+b^(1/x))/2)^x, x->Infinity)", //
+		// "Sqr(a)*Sqrt(b)");
 		check("Limit(Erf(x/Sqrt(2)),x->Infinity,Direction->Reals)", //
 				"1");
 		check("Limit(Erf(x/Sqrt(2)),x->-Infinity,Direction->Reals)", //
@@ -19055,6 +19071,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSatisfiabilityInstances() {
+		check("SatisfiabilityInstances(Null,{x},3)", //
+				"SatisfiabilityInstances(Null,{x},3)");
+
 		check("SatisfiabilityInstances(a || b, {a, b, c},All)", //
 				"{{True,True,True},{True,True,False},{True,False,True},{True,False,False},{False,True,True},{False,True,False},{False,False,True}}");
 		check("SatisfiabilityInstances((a || b || c) && (! a || ! b || ! c), {a, b, c},2)", //

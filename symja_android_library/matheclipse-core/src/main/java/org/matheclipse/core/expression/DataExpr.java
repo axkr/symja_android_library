@@ -79,10 +79,11 @@ public abstract class DataExpr<T> implements IDataExpr<T> {
 			DataExpr<T> de = ((DataExpr<T>) expr);
 			if (fData != null) {
 				if (de.fData != null) {
-
-					if (System.identityHashCode(fData) > System.identityHashCode(de.fData)) {
+					int lhsID = System.identityHashCode(fData);
+					int rhsID = System.identityHashCode(de.fData);
+					if (lhsID > rhsID) {
 						return 1;
-					} else if (System.identityHashCode(fData) < System.identityHashCode(de.fData)) {
+					} else if (lhsID < rhsID) {
 						return -1;
 					}
 					return 0;
