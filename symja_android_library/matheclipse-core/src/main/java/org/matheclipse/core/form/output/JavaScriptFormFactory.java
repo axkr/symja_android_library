@@ -27,10 +27,21 @@ import org.matheclipse.parser.client.operator.Operator;
  */
 public class JavaScriptFormFactory extends DoubleFormFactory {
 
+	/**
+	 * Generate pure JavaScript output
+	 */
 	public final static int USE_PURE_JS = 1;
-	public final static int USE_MATHCELL = 2;
-	public final static int USE_JSXGRAPH = 3;
 	
+	/**
+	 * Generate JavaScript output for usage with the JavaScript libraries:
+	 * <ul>
+	 * <li><a href="https://github.com/paulmasson/mathcell">github.com/paulmasson/math</a></li>
+	 * <li><a href="https://github.com/paulmasson/mathcell">github.com/paulmasson/mathcell</a></li>
+	 * </ul>
+	 */
+	public final static int USE_MATHCELL = 2;
+	// public final static int USE_JSXGRAPH = 3;
+
 	/**
 	 * If <code>true</code> the <code>Piecewise()</code> function was used in an expression, which need to do inline
 	 * operators with the JavaScript ternary operator. If <code>false</code> the converter will use
@@ -626,18 +637,18 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 				// }
 			}
 			return null;
-		} else if (javascriptFlavor == USE_JSXGRAPH) {
-			if (head.isSymbolID(ID.Plus, ID.Times, ID.Equal, ID.Unequal, ID.Less, ID.LessEqual, ID.Greater,
-					ID.GreaterEqual, ID.And, ID.Or, ID.Not)) {
-				return OutputFormFactory.getOperator(head);
-				// String str = head.toString();
-				// if (fRelaxedSyntax) {
-				// operator = ASTNodeFactory.RELAXED_STYLE_FACTORY.get(str.toLowerCase());
-				// } else {
-				// operator = ASTNodeFactory.MMA_STYLE_FACTORY.get(str);
-				// }
-			}
-			return null;
+			// } else if (javascriptFlavor == USE_JSXGRAPH) {
+			// if (head.isSymbolID(ID.Plus, ID.Times, ID.Equal, ID.Unequal, ID.Less, ID.LessEqual, ID.Greater,
+			// ID.GreaterEqual, ID.And, ID.Or, ID.Not)) {
+			// return OutputFormFactory.getOperator(head);
+			// // String str = head.toString();
+			// // if (fRelaxedSyntax) {
+			// // operator = ASTNodeFactory.RELAXED_STYLE_FACTORY.get(str.toLowerCase());
+			// // } else {
+			// // operator = ASTNodeFactory.MMA_STYLE_FACTORY.get(str);
+			// // }
+			// }
+			// return null;
 		}
 		return super.getOperator(head);
 	}

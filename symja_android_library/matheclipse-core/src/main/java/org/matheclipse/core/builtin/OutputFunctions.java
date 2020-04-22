@@ -434,6 +434,10 @@ public final class OutputFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			try {
+				int javascriptFlavor = JavaScriptFormFactory.USE_PURE_JS;
+				if (ast.isAST2() && ast.arg2().isString("Mathcell")) {
+					javascriptFlavor = JavaScriptFormFactory.USE_MATHCELL;
+				}
 				IExpr arg1 = engine.evaluate(ast.arg1());
 				if (arg1.isAST(F.JSFormData, 3)) {
 					String manipulateStr = ((IAST) arg1).arg1().toString();
@@ -445,7 +449,8 @@ public final class OutputFunctions {
 				if (arg1 instanceof GraphExpr) {
 					return F.$str(GraphFunctions.graphToJSForm((GraphExpr) arg1), IStringX.APPLICATION_JAVASCRIPT);
 				}
-				return F.$str(toJavaScript(arg1), IStringX.APPLICATION_JAVASCRIPT);
+
+				return F.$str(toJavaScript(arg1, javascriptFlavor), IStringX.APPLICATION_JAVASCRIPT);
 			} catch (Exception rex) {
 				if (Config.SHOW_STACKTRACE) {
 					rex.printStackTrace();
@@ -456,7 +461,7 @@ public final class OutputFunctions {
 
 		@Override
 		public int[] expectedArgSize() {
-			return IOFunctions.ARGS_1_1;
+			return IOFunctions.ARGS_1_2;
 		}
 
 	}
@@ -647,8 +652,8 @@ public final class OutputFunctions {
 		return buf.toString();
 	}
 
-	public static String toJavaScript(final IExpr arg1) {
-		DoubleFormFactory factory = new JavaScriptFormFactory(true, false, -1, -1, JavaScriptFormFactory.USE_PURE_JS);
+	public static String toJavaScript(final IExpr arg1, int javascriptFlavor) {
+		DoubleFormFactory factory = new JavaScriptFormFactory(true, false, -1, -1, javascriptFlavor);
 		StringBuilder buf = new StringBuilder();
 		factory.convert(buf, arg1);
 		return buf.toString();
