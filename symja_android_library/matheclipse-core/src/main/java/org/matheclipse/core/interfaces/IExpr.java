@@ -2773,6 +2773,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is a string (instanceof IStringX) and equals <code>str</code>
+	 * 
+	 * @return
+	 */
+	default boolean isString(String str) {
+		return this instanceof IStringX && toString().equals(str);
+	}
+	
+	/**
 	 * Test if this expression is a symbol (instanceof ISymbol)
 	 * 
 	 * @return
