@@ -8,6 +8,8 @@ Manipulate(plot, {x, min, max})
 	 
 **Note**: This feature is not available on all supported platforms.
 
+Manipulate generates JavaScript math functions for the [github.com/paulmasson/math](https://github.com/paulmasson/math) JavaScript library. 
+
 ### Examples
 
 In the console apps, this command shows an HTML page with a JavaScript plot control, 

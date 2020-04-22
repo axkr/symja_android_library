@@ -7,13 +7,13 @@ Log(z)
 > returns the natural logarithm of `z`.
 
 ```
-Log(z, base)
+Log(base, z)
 ```
 
 > get the logarithm of `z` for base `base`.
 
 For the natural logarithm functions `Ln(x)` or `Log(x)` the logarithms are taken with the natural base, `E`. 
-To get a logarithm of a different base `b`, use `Log(x, b)`, which is essentially a short-hand for `Log(b)/Log(x)`. Other short-hands are `Log10(x)` for `Log(x)/Log(10)` and `Log2(x)` for `Log(x)/Log(2)`.
+To get a logarithm of a different base `b`, use `Log(b, x)`, which is essentially a short-hand for `Log(x)/Log(b)`. Other short-hands are `Log10(x)` for `Log(x)/Log(10)` and `Log2(x)` for `Log(x)/Log(2)`.
 
 See
 * [Wikipedia - Logarithm](https://en.wikipedia.org/wiki/Logarithm)
