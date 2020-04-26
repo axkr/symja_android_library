@@ -301,8 +301,8 @@ public class BesselJS {
 
 		if (x < 0) {
 			return besselJ(1.0 / 3.0, 2.0 / 3.0 * Math.pow(-x, 1.5))
-					.subtract(besselY(1 / 3, 2 / 3 * Math.pow(-x, 1.5)).divide(Math.sqrt(3.0)))
-					.multiply(Math.sqrt(-x) / 2);
+					.subtract(besselY(1.0 / 3.0, 2.0 / 3.0 * Math.pow(-x, 1.5)).divide(Math.sqrt(3.0)))
+					.multiply(Math.sqrt(-x) / 2.0);
 		}
 
 		return besselK(1.0 / 3.0, 2.0 / 3.0 * Math.pow(x, 1.5)).multiply(1 / Math.PI * Math.sqrt(x / 3.0));
