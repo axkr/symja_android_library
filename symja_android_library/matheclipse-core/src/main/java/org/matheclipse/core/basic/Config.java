@@ -36,7 +36,8 @@ public class Config {
 	private static final int MAX_EXPR_CACHE_SIZE = 10000;
 
 	/**
-	 * Maximum number for the leaf count of an expression so that <code>Factor()</code> will try a factoring
+	 * Maximum number for the leaf count of an expression so that <code>Factor()</code> will try a factoring. Has to be
+	 * an int value greater 0.
 	 */
 	public static final int MAX_FACTOR_LEAFCOUNT = 1000;
 
@@ -537,7 +538,7 @@ public class Config {
 					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.7/build/math.js\"></script>" + //
 					"\n" + //
 					"\n" + //
-					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.8.7/build/mathcell.js\"></script>\n"
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.8.8/build/mathcell.js\"></script>\n"
 					+ //
 					"<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
 					+ //
