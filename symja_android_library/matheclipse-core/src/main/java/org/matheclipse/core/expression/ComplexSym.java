@@ -522,6 +522,27 @@ public class ComplexSym implements IComplex {
 				fReal.multiply(parm1.getImaginaryPart()).add(parm1.getRealPart().multiply(fImaginary)));
 	}
 
+	public IComplex integerPartDivisionGaussian (final IComplex parm1) { 
+
+		IRational numeratorReal = fReal.multiply(parm1.getRealPart()).subtract(fImaginary.multiply(parm1.getImaginaryPart().negate()));
+
+		IRational numeratorImaginary = fReal.multiply(parm1.getImaginaryPart().negate()).add(parm1.getRealPart().multiply(fImaginary));
+
+		IRational denominator = parm1.getRealPart().multiply(parm1.getRealPart()).add(parm1.getImaginaryPart().multiply(parm1.getImaginaryPart()));
+
+		if (denominator.isZero()) {
+			throw new IllegalArgumentException("Denominator can not be zero.");
+		}
+
+		IRational divisionReal = numeratorReal.divideBy(denominator).round();
+		IRational divisionImaginary = numeratorImaginary.divideBy(denominator).round();
+
+		return ComplexSym.valueOf(
+			divisionReal,
+			divisionImaginary
+		);
+	}
+
 	@Override
 	public ComplexSym negate() {
 		return ComplexSym.valueOf(fReal.negate(), fImaginary.negate());
