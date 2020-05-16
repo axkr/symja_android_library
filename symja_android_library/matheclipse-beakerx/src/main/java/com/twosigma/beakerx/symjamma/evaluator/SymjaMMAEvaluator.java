@@ -24,13 +24,13 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.concurrent.Executors;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.form.tex.TeXFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.parser.client.FEConfig;
 
 import com.twosigma.beakerx.BeakerXClient;
 import com.twosigma.beakerx.TryResult;
@@ -69,7 +69,7 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
 
 	static {
 		// distinguish between lower- and uppercase identifiers
-		Config.PARSER_USE_LOWERCASE_SYMBOLS = false;
+		FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
 		F.initSymbols(null, null, true);
 
 	}
