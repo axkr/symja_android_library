@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html PUBLIC
+  "-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN"
+  "http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<title>Symja API</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, maximum-scale=1">
+<link rel="stylesheet" href="static/css/style.css" type="text/css" />
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.js"></script>
+</head>
+<body>
+	<div class="input">
+		<form action="http://localhost:8080/" method="get" id="calc">
+			<input type="text" name="i" autocapitalize="off" autocorrect="off"
+				id="id_i" /> <input class="input_field" type="submit" value="=" />
+
+			<div>
+				<label><input type="checkbox" name="f" value="plaintext"
+					checked>Plain text</label> <label><input type="checkbox"
+					name="f" value="mathml" checked>MathML</label>
+			</div>
+		</form>
+	</div>
+	<div class="result">
+		<div class="result_card" id="root"></div>
+	</div>
+
+	<script>
+		$("#calc").submit(
+				function(event) {
+					event.preventDefault();
+					var post_url = $(this).attr("action");
+					var form_data = $(this).serialize();
+					$.getJSON(post_url, form_data, function(data) {
+						var queryresult = data.queryresult;
+						var output = '<div class="card_title">'
+								+ '</div>';
+						for (var i in queryresult.pods) {
+							var pod = queryresult.pods[i];
+							for (var j in pod.subpods) { 
+								var subpod = pod.subpods[j];
+								$.each(subpod, function(k, v) {  
+								    if (k == 'plaintext') {
+								    	output += `<div class="cell_output"><div>${v}</div></div>\n`;
+									} else if (k == 'mathml') {
+										output += `<div class="cell_output"><div>${v}</div></div>`;
+									}
+								  });
+							}
+						}
+						document.getElementById("root").innerHTML = output;
+					});
+				});
+	</script>
+</body>
+</html>

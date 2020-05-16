@@ -1,7 +1,6 @@
 proguard.map
 /bin
 /build
+/js
 /dump/
 /.classpath
-  
-/store.paldb
