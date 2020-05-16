@@ -14,7 +14,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public interface ISetEvaluator extends IFunctionEvaluator {
 	
-	default IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide, EvalEngine engine) {
+	default IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide, final EvalEngine engine) {
 		return F.NIL;
 	}
 }

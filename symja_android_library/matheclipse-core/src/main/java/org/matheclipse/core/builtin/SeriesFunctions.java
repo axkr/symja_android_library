@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
@@ -11,7 +12,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.WL;
+import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -27,6 +28,7 @@ import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.reflection.system.rules.LimitRules;
 import org.matheclipse.core.reflection.system.rules.SeriesCoefficientRules;
+import org.matheclipse.parser.client.FEConfig;
 
 public class SeriesFunctions {
 
@@ -603,7 +605,7 @@ public class SeriesFunctions {
 					// even degree
 					return evalLimitQuiet(F.Times(coeff, F.CInfinity), data);
 				} catch (RuntimeException e) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						e.printStackTrace();
 					}
 				}
@@ -943,24 +945,36 @@ public class SeriesFunctions {
 	private final static class Normal extends AbstractFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			IExpr arg1 = ast.arg1();
-			if (arg1 instanceof ASTSeriesData) {
-				return ((ASTSeriesData) arg1).normal();
+			IAST heads = F.CEmptyList;
+			if (ast.isAST2()) {
+				if (ast.arg2().isList()) {
+					heads = (IAST) ast.arg2();
+				} else {
+					heads = F.List(ast.arg2());
+				}
 			}
-			if (arg1.isAssociation()) {
-				IAST list = ((IAssociation) arg1).normal();
-				return list;
-			}
-			if (WXFFunctions.isByteArray(arg1)) {
-				byte[] bArray = (byte[]) ((IDataExpr) arg1).toData();
-				return WL.toList(bArray);
-			}
-			return arg1.normal();
+			final IExpr arg1 = ast.arg1();
+			IExpr result = arg1.replaceAll(normal(heads));
+			return result.orElse(arg1);
+		}
+
+		private Function<IExpr, IExpr> normal(final IAST heads) {
+			return x -> {
+				final int size = heads.size();
+				if (size == 1) {
+					return x.normal(true);
+				}
+				final IExpr head = x.head();
+				if (heads.exists(y -> y.equals(head))) {
+					return x.normal(true);
+				}
+				return F.NIL;
+			};
 		}
 
 		@Override
 		public int[] expectedArgSize() {
-			return IOFunctions.ARGS_1_1;
+			return IOFunctions.ARGS_1_2;
 		}
 	}
 
@@ -1037,7 +1051,7 @@ public class SeriesFunctions {
 			if (ast.isAST1() && (ast.arg1() instanceof ASTSeriesData)) {
 
 				ASTSeriesData ps = (ASTSeriesData) ast.arg1();
-				ps = ps.inverse();
+				ps = ps.reversion();
 				if (ps != null) {
 					return ps;
 				}
@@ -1101,7 +1115,8 @@ public class SeriesFunctions {
 		 *            the point to do the power expansion for
 		 * @param n
 		 *            the order of the expansion
-		 * @param denominator
+		 * @param engine
+		 *            the evaluation engine
 		 * @return
 		 */
 		private static ASTSeriesData seriesData(final IExpr function, IExpr x, IExpr x0, final int n,
@@ -1122,6 +1137,12 @@ public class SeriesFunctions {
 				}
 			} else if (function.isTimes()) {
 				ASTSeriesData temp = timesSeriesData((IAST) function, x, x0, n, engine);
+				if (temp != null) {
+					return temp;
+				}
+			} else if (function.isLog() && function.first().equals(x) && x0.isZero() && n >= 0) {
+				ASTSeriesData temp = new ASTSeriesData(x, x0, F.List(function), 0, n + 1, 1);
+
 				if (temp != null) {
 					return temp;
 				}
@@ -1146,7 +1167,7 @@ public class SeriesFunctions {
 					end = 0;
 				}
 				temp = engine.evaluate(F.SeriesCoefficient(function, F.List(x, x0, F.C0)));
-				if (temp.isFree(F.SeriesCoefficient)) {
+				if (temp.isFree(F.SeriesCoefficient) && !temp.isIndeterminate()) {
 					boolean evaled = true;
 					ASTSeriesData ps = new ASTSeriesData(x, x0, end + 1, end + denominator, denominator);
 					ps.setCoeff(0, temp);
@@ -1170,6 +1191,9 @@ public class SeriesFunctions {
 				IExpr functionPart = engine.evalQuiet(F.ReplaceAll(derivedFunction, F.Rule(x, x0)));
 				if (functionPart.isIndeterminate()) {
 					functionPart = engine.evalQuiet(F.Limit(derivedFunction, F.Rule(x, x0)));
+					if (!functionPart.isFree(F.Limit) || functionPart.isIndeterminate()) {
+						return null;
+					}
 				}
 				IExpr coefficient = F.Times.of(engine, F.Power(NumberTheory.factorial(i), F.CN1), functionPart);
 
@@ -1233,13 +1257,30 @@ public class SeriesFunctions {
 			}
 			if (timesAST.size() != 1) {
 				if (arg instanceof ASTSeriesData) {
+
 					for (int i = 2; i < timesAST.size(); i++) {
-						arg = seriesData(timesAST.get(i), x, x0, ni, engine);
+						IExpr timesArg = timesAST.get(i);
+						if (timesArg.isPower()) {
+							int exp = timesArg.exponent().toIntDefault();
+							if (exp != Integer.MIN_VALUE) {
+								if (exp == -1) {
+									// arg1.divide(arg2.base())
+									arg = seriesData(timesArg.base(), x, x0, ni, engine);
+									if (arg instanceof ASTSeriesData) {
+										series = series.dividePS((ASTSeriesData) arg);
+										continue;
+									}
+									return null;
+								}
+							}
+						}
+
+						arg = seriesData(timesArg, x, x0, ni, engine);
 						if (arg instanceof ASTSeriesData) {
 							series = series.timesPS((ASTSeriesData) arg);
-						} else {
-							return null;
+							continue;
 						}
+						return null;
 					}
 					if (shift != 0) {
 						series = series.shift(shift, coefficient, n + 1);
@@ -1633,7 +1674,7 @@ public class SeriesFunctions {
 				return coefficientPlus.oneIdentity0();
 				// }
 			} catch (RuntimeException re) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					re.printStackTrace();
 				}
 			}
@@ -1675,21 +1716,23 @@ public class SeriesFunctions {
 					return F.NIL;
 				}
 				IAST coefficients = (IAST) ast.arg3();
-				final int nMin = ast.arg4().toIntDefault(Integer.MIN_VALUE);
+				final int nMin = ast.arg4().toIntDefault();
 				if (nMin == Integer.MIN_VALUE) {
 					return F.NIL;
 				}
-				final int power = ast.arg5().toIntDefault(Integer.MIN_VALUE);
-				if (power == Integer.MIN_VALUE) {
+				final int truncate = ast.arg5().toIntDefault();
+				if (truncate == Integer.MIN_VALUE) {
 					return F.NIL;
 				}
 				if (ast.size() == 7) {
-					denominator = ast.get(6).toIntDefault(Integer.MIN_VALUE);
-					if (denominator < 1) {
-						return F.NIL;
+					denominator = ast.get(6).toIntDefault();
+					if (!ToggleFeature.SERIES_DENOMINATOR && denominator != 1) {
+						// ToggleFeature `1` is disabled.
+						return IOFunctions.printMessage(ast.topHead(), "toggle",
+								F.List(F.stringx("SERIES_DENOMINATOR")), engine);
 					}
 				}
-				return new ASTSeriesData(x, x0, coefficients, nMin, power, denominator);
+				return new ASTSeriesData(x, x0, coefficients, nMin, truncate, denominator);
 			}
 			return F.NIL;
 		}

@@ -22,13 +22,13 @@ public class ModuleReplaceAll extends VisitorExpr {
 	final EvalEngine fEngine;
 	final String moduleCounter;
 
-	public ModuleReplaceAll(IdentityHashMap<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine,
-			String moduleCounter) {
-		this(moduleVariables, engine, moduleCounter, 0);
+	public ModuleReplaceAll(IdentityHashMap<ISymbol, ? extends IExpr> moduleVariables,  
+			EvalEngine engine, String moduleCounter) {
+		this(moduleVariables,   engine, moduleCounter, 0);
 	}
 
-	public ModuleReplaceAll(IdentityHashMap<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine,
-			String moduleCounter, int offset) {
+	public ModuleReplaceAll(IdentityHashMap<ISymbol, ? extends IExpr> moduleVariables,  
+			EvalEngine engine, String moduleCounter, int offset) {
 		this.fModuleVariables = moduleVariables;
 		this.fOffset = offset;
 		this.fEngine = engine;
@@ -90,7 +90,6 @@ public class ModuleReplaceAll extends VisitorExpr {
 	 * @return
 	 */
 	private IAST visitNestedScope(IAST ast, boolean isFunction) {
-		IASTMutable result = F.NIL;
 		IAST localVariablesList = F.NIL;
 		if (ast.arg1().isSymbol()) {
 			localVariablesList = F.List(ast.arg1());
@@ -106,29 +105,24 @@ public class ModuleReplaceAll extends VisitorExpr {
 		}
 
 		IExpr temp;
-
 		int i = fOffset;
 		while (i < ast.size()) {
 			temp = ast.get(i).accept(visitor);
 			if (temp.isPresent()) {
 				// something was evaluated - return a new IAST:
-				result = ast.copy();
-				result.set(i++, temp);
-				break;
+				IASTMutable result = ast.setAtCopy(i++, temp);
+				while (i < ast.size()) {
+					temp = ast.get(i).accept(visitor);
+					if (temp.isPresent()) {
+						result.set(i, temp);
+					}
+					i++;
+				}
+				return result;
 			}
 			i++;
 		}
-		if (result.isPresent()) {
-			while (i < ast.size()) {
-				temp = ast.get(i).accept(visitor);
-				if (temp.isPresent()) {
-					result.set(i, temp);
-				}
-				i++;
-			}
-		}
-
-		return result;
+		return F.NIL;
 
 	}
 
@@ -140,36 +134,39 @@ public class ModuleReplaceAll extends VisitorExpr {
 			IExpr temp = localVariablesList.get(i);
 			if (temp.isSymbol()) {
 				ISymbol symbol = (ISymbol) temp;
-				if (isFunction || fModuleVariables.get(symbol) != null) {
-
-					if (variables == null) {
-						variables = (IdentityHashMap<ISymbol, IExpr>) fModuleVariables.clone();
-					}
-					variables.remove(symbol);
-					if (isFunction) {
-						variables.put(symbol, F.Dummy(symbol.toString() + varAppend));
-					}
-				}
+				variables = putSingleVariable(symbol, variables, varAppend, isFunction);
 			} else {
 				if (temp.isAST(F.Set, 3)) {
 					// lhs = rhs
 					final IAST setFun = (IAST) temp;
 					if (setFun.arg1().isSymbol()) {
 						ISymbol symbol = (ISymbol) setFun.arg1();
-						if (isFunction || fModuleVariables.get(symbol) != null) {
-							if (variables == null) {
-								variables = (IdentityHashMap<ISymbol, IExpr>) fModuleVariables.clone();
-							}
-							variables.remove(symbol);
-							if (isFunction) {
-								variables.put(symbol, F.Dummy(symbol.toString() + varAppend));
-							}
-						}
+						variables = putSingleVariable(symbol, variables, varAppend, isFunction);
 					}
 				}
 			}
 		}
 
+		return variables;
+	}
+
+	private IdentityHashMap<ISymbol, IExpr> putSingleVariable(ISymbol symbol, IdentityHashMap<ISymbol, IExpr> variables,
+			final String varAppend, boolean isFunction) {
+		IExpr temp = fModuleVariables.get(symbol);
+		if (isFunction) {
+			if (variables == null) {
+				variables = (IdentityHashMap<ISymbol, IExpr>) fModuleVariables.clone();
+			}
+			variables.put(symbol, F.Dummy(symbol.toString() + varAppend));
+		} else if (temp != null) {
+			if (variables == null) {
+				variables = (IdentityHashMap<ISymbol, IExpr>) fModuleVariables.clone();
+			}
+			variables.remove(symbol);
+			if (!temp.isPresent()) {
+				variables.put(symbol, F.Dummy(symbol.toString() + varAppend));
+			}
+		}
 		return variables;
 	}
 

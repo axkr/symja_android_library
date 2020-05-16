@@ -3,6 +3,7 @@ package org.matheclipse.core.visit;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
+import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -28,6 +29,15 @@ public abstract class AbstractVisitor implements IVisitor  {
 		super();
 	}
 
+	/**
+	 * 
+	 * @return <code>F.NIL</code>, if no evaluation is possible
+	 */
+	@Override
+	public IExpr visit(IDataExpr data) {
+		return F.NIL;
+	}
+	
 	/**
 	 * 
 	 * @return <code>F.NIL</code>, if no evaluation is possible

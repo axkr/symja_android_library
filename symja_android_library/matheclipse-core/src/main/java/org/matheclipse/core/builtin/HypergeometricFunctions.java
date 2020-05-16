@@ -30,6 +30,7 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.Hypergeometric0F1Rules;
 import org.matheclipse.core.reflection.system.rules.Hypergeometric2F1Rules;
+import org.matheclipse.parser.client.FEConfig;
 
 public class HypergeometricFunctions {
 	/**
@@ -58,45 +59,96 @@ public class HypergeometricFunctions {
 		}
 	}
 
-	private static class CosIntegral extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperator {
-		@Override
-		public double applyAsDouble(double operand) {
-			return de.lab4inf.math.functions.CosineIntegral.ci(operand);
-		}
+	private static class CosIntegral extends AbstractFunctionEvaluator {// implements INumeric, DoubleUnaryOperator {
+		// @Override
+		// public IExpr e1ComplexArg(final Complex c) {
+		// return F.complexNum(GammaJS.cosIntegral(c));
+		// }
+		//
+		// @Override
+		// public double applyAsDouble(double operand) {
+		// return de.lab4inf.math.functions.CosineIntegral.ci(operand);
+		// }
+		//
+		// @Override
+		// public IExpr e1DblArg(final double arg1) {
+		// if (F.isZero(arg1)) {
+		// return F.CNInfinity;
+		// }
+		// if (arg1<=0) {
+		// return F.complexNum(GammaJS.cosIntegral(new Complex(arg1)));
+		// }
+		// return F.num(de.lab4inf.math.functions.CosineIntegral.ci(arg1));
+		// }
+		//
+		// @Override
+		// public double evalReal(final double[] stack, final int top, final int size) {
+		// if (size != 1) {
+		// throw new UnsupportedOperationException();
+		// }
+		// return de.lab4inf.math.functions.CosineIntegral.ci(stack[top]);
+		// }
 
 		@Override
-		public IExpr e1DblArg(final double arg1) {
-			return F.num(de.lab4inf.math.functions.CosineIntegral.ci(arg1));
-		}
-
-		@Override
-		public double evalReal(final double[] stack, final int top, final int size) {
-			if (size != 1) {
-				throw new UnsupportedOperationException();
-			}
-			return de.lab4inf.math.functions.CosineIntegral.ci(stack[top]);
-		}
-
-		@Override
-		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
-			if (arg1.isZero()) {
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			IExpr z = ast.arg1();
+			if (z.isZero()) {
 				return F.CNInfinity;
 			}
-			if (arg1.isInfinity()) {
+			if (z.isInfinity()) {
 				return F.C0;
 			}
-			if (arg1.isNegativeInfinity()) {
+			if (z.isNegativeInfinity()) {
 				return F.Times(F.CI, F.Pi);
 			}
-			if (arg1.isDirectedInfinity(F.CI) || arg1.isDirectedInfinity(F.CNI)) {
+			if (z.isDirectedInfinity(F.CI) || z.isDirectedInfinity(F.CNI)) {
 				return F.CInfinity;
 			}
-			if (arg1.isComplexInfinity()) {
+			if (z.isComplexInfinity()) {
 				return F.Indeterminate;
+			}
+			if (engine.isDoubleMode()) {
+				try {
+					double zDouble = Double.NaN;
+					try {
+						zDouble = z.evalDouble();
+					} catch (ValidateException ve) {
+					}
+					if (Double.isNaN(zDouble)) {
+						Complex zc = z.evalComplex();
+						return F.complexNum(GammaJS.cosIntegral(zc));
+
+					} else {
+						if (F.isZero(zDouble)) {
+							return F.CNInfinity;
+						}
+						if (zDouble <= 0) {
+							return F.complexNum(GammaJS.cosIntegral(new Complex(zDouble)));
+						}
+						return F.num(de.lab4inf.math.functions.CosineIntegral.ci(zDouble));
+					}
+
+				} catch (ThrowException te) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						te.printStackTrace();
+					}
+					return te.getValue();
+				} catch (ValidateException ve) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
+				} catch (RuntimeException rex) {
+					// rex.printStackTrace();
+					return engine.printMessage(ast.topHead(), rex);
+				}
 			}
 			return F.NIL;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+		
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -104,7 +156,7 @@ public class HypergeometricFunctions {
 		}
 	}
 
-	private static class CoshIntegral extends AbstractTrigArg1 { // implements INumeric, DoubleUnaryOperator {
+	private static class CoshIntegral extends AbstractFunctionEvaluator {// implements INumeric, DoubleUnaryOperator {
 
 		// @Override
 		// public double applyAsDouble(double z) {
@@ -133,25 +185,58 @@ public class HypergeometricFunctions {
 		// }
 
 		@Override
-		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
-			if (arg1.isZero()) {
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			IExpr z = ast.arg1();
+			if (z.isZero()) {
 				return F.CNInfinity;
 			}
-			if (arg1.isInfinity()) {
+			if (z.isInfinity()) {
 				return F.CInfinity;
 			}
-			if (arg1.isNegativeInfinity()) {
+			if (z.isNegativeInfinity()) {
 				return F.CInfinity;
 			}
-			if (arg1.isDirectedInfinity(F.CI)) {
+			if (z.isDirectedInfinity(F.CI)) {
 				return F.Times(F.CPiHalf, F.CI);
 			}
-			if (arg1.isDirectedInfinity(F.CNI)) {
+			if (z.isDirectedInfinity(F.CNI)) {
 				return F.Times(F.CNPiHalf, F.CI);
 			}
-			if (arg1.isComplexInfinity()) {
+			if (z.isComplexInfinity()) {
 				return F.Indeterminate;
 			}
+			if (engine.isDoubleMode()) {
+				try {
+					double zDouble = Double.NaN;
+					try {
+						zDouble = z.evalDouble();
+					} catch (ValidateException ve) {
+					}
+					if (Double.isNaN(zDouble)) {
+						Complex zc = z.evalComplex();
+						return F.complexNum(GammaJS.coshIntegral(zc));
+					} else {
+						if (F.isZero(zDouble)) {
+							return F.CNInfinity;
+						}
+						return F.complexNum(GammaJS.coshIntegral(new Complex(zDouble)));
+					}
+
+				} catch (ThrowException te) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						te.printStackTrace();
+					}
+					return te.getValue();
+				} catch (ValidateException ve) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
+				} catch (RuntimeException rex) {
+					// rex.printStackTrace();
+					return engine.printMessage(ast.topHead(), rex);
+				}
+			}
+
 			return F.NIL;
 		}
 
@@ -159,6 +244,10 @@ public class HypergeometricFunctions {
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 			super.setUp(newSymbol);
+		}
+
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 	}
 
@@ -181,6 +270,36 @@ public class HypergeometricFunctions {
 					return F.CComplexInfinity;
 				}
 			}
+			if (engine.isDoubleMode()) {
+				try {
+					double nDouble = Double.NaN;
+					double zDouble = Double.NaN;
+					try {
+						nDouble = n.evalDouble();
+						zDouble = z.evalDouble();
+						return F.complexNum(GammaJS.expIntegralE(new Complex(nDouble), new Complex(zDouble)));
+					} catch (ValidateException ve) {
+					}
+					if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
+						Complex nc = z.evalComplex();
+						Complex zc = z.evalComplex();
+						return F.complexNum(GammaJS.expIntegralE(nc, zc));
+					}
+
+				} catch (ThrowException te) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						te.printStackTrace();
+					}
+					return te.getValue();
+				} catch (ValidateException ve) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
+				} catch (RuntimeException rex) {
+					// rex.printStackTrace();
+					return engine.printMessage(ast.topHead(), rex);
+				}
+			}
 			return F.NIL;
 		}
 
@@ -195,55 +314,100 @@ public class HypergeometricFunctions {
 		}
 	}
 
-	private static class ExpIntegralEi extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperator {
-		@Override
-		public double applyAsDouble(double operand) {
-			if (F.isZero(operand)) {
-				return Double.NEGATIVE_INFINITY;
-			}
-			return de.lab4inf.math.functions.ExponentialIntegalFunction.ei(operand);
-		}
+	private static class ExpIntegralEi extends AbstractFunctionEvaluator {// implements INumeric, DoubleUnaryOperator {
+		// @Override
+		// public double applyAsDouble(double operand) {
+		// if (F.isZero(operand)) {
+		// return Double.NEGATIVE_INFINITY;
+		// }
+		// return GammaJS.expIntegralEi(operand);
+		// // return de.lab4inf.math.functions.ExponentialIntegalFunction.ei(operand);
+		// }
+		//
+		// @Override
+		// public IExpr e1DblArg(final double arg1) {
+		// if (F.isZero(arg1)) {
+		// return F.CNInfinity;
+		// }
+		// return F.num(GammaJS.expIntegralEi(arg1));
+		//
+		// // return F.num(de.lab4inf.math.functions.ExponentialIntegalFunction.ei(arg1));
+		// }
+		//
+		// @Override
+		// public double evalReal(final double[] stack, final int top, final int size) {
+		// if (size != 1) {
+		// throw new UnsupportedOperationException();
+		// }
+		// if (F.isZero(stack[top])) {
+		// return Double.NEGATIVE_INFINITY;
+		// }
+		// return GammaJS.expIntegralEi(stack[top]);
+		// // return de.lab4inf.math.functions.ExponentialIntegalFunction.ei(stack[top]);
+		// }
+		//
+		// @Override
+		// public IExpr e1ComplexArg(final Complex c) {
+		// return F.complexNum(GammaJS.expIntegralEi(c));
+		// }
 
-		@Override
-		public IExpr e1DblArg(final double arg1) {
-			if (F.isZero(arg1)) {
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			IExpr z = ast.arg1();
+			if (z.isZero()) {
 				return F.CNInfinity;
 			}
-			return F.num(de.lab4inf.math.functions.ExponentialIntegalFunction.ei(arg1));
-		}
-
-		@Override
-		public double evalReal(final double[] stack, final int top, final int size) {
-			if (size != 1) {
-				throw new UnsupportedOperationException();
-			}
-			if (F.isZero(stack[top])) {
-				return Double.NEGATIVE_INFINITY;
-			}
-			return de.lab4inf.math.functions.ExponentialIntegalFunction.ei(stack[top]);
-		}
-
-		@Override
-		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
-			if (arg1.isZero()) {
-				return F.CNInfinity;
-			}
-			if (arg1.isInfinity()) {
+			if (z.isInfinity()) {
 				return F.CInfinity;
 			}
-			if (arg1.isNegativeInfinity()) {
+			if (z.isNegativeInfinity()) {
 				return F.C0;
 			}
-			if (arg1.isDirectedInfinity(F.CI)) {
+			if (z.isDirectedInfinity(F.CI)) {
 				return F.Times(F.CI, F.Pi);
 			}
-			if (arg1.isDirectedInfinity(F.CNI)) {
+			if (z.isDirectedInfinity(F.CNI)) {
 				return F.Times(F.CNI, F.Pi);
 			}
-			if (arg1.isComplexInfinity()) {
+			if (z.isComplexInfinity()) {
 				return F.Indeterminate;
 			}
+			if (engine.isDoubleMode()) {
+				try {
+					double zDouble = Double.NaN;
+					try {
+						zDouble = z.evalDouble();
+					} catch (ValidateException ve) {
+					}
+					if (Double.isNaN(zDouble)) {
+						Complex zc = z.evalComplex();
+						return F.complexNum(GammaJS.expIntegralEi(zc));
+
+					} else {
+						if (F.isZero(zDouble)) {
+							return F.CNInfinity;
+						}
+						return F.complexNum(GammaJS.expIntegralEi(zDouble));
+					}
+
+				} catch (ThrowException te) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						te.printStackTrace();
+					}
+					return te.getValue();
+				} catch (ValidateException ve) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
+				} catch (RuntimeException rex) {
+					// rex.printStackTrace();
+					return engine.printMessage(ast.topHead(), rex);
+				}
+			}
 			return F.NIL;
+		}
+		
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 
 		@Override
@@ -312,6 +476,10 @@ public class HypergeometricFunctions {
 			return F.NIL;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+		
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -378,6 +546,10 @@ public class HypergeometricFunctions {
 			return F.NIL;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+		
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -535,12 +707,12 @@ public class HypergeometricFunctions {
 					}
 
 				} catch (ValidateException ve) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						ve.printStackTrace();
 					}
 				} catch (RuntimeException rex) {
 					// rex.printStackTrace();
-					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+					return engine.printMessage(ast.topHead(), rex);
 				}
 			}
 			return F.NIL;
@@ -588,7 +760,7 @@ public class HypergeometricFunctions {
 			IExpr bPlus1 = engine.evaluate(b.plus(F.C1));
 			if (a.equals(bPlus1)) {
 				// (E^z * (-1 + a + z)) / (-1 + a)
-				return F.Times(F.Power(F.E, z), F.Divide(F.Plus(F.CN1,a,z), F.Plus(a, F.CN1)));
+				return F.Times(F.Power(F.E, z), F.Divide(F.Plus(F.CN1, a, z), F.Plus(a, F.CN1)));
 			}
 			if (engine.isDoubleMode()) {
 				try {
@@ -613,12 +785,12 @@ public class HypergeometricFunctions {
 					}
 
 				} catch (ValidateException ve) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						ve.printStackTrace();
 					}
 				} catch (RuntimeException rex) {
 					// rex.printStackTrace();
-					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+					return engine.printMessage(ast.topHead(), rex);
 				}
 			}
 			if (a.equals(b)) {
@@ -757,17 +929,17 @@ public class HypergeometricFunctions {
 					}
 
 				} catch (ThrowException te) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						te.printStackTrace();
 					}
 					return te.getValue();
 				} catch (ValidateException ve) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						ve.printStackTrace();
 					}
 				} catch (RuntimeException rex) {
 					// rex.printStackTrace();
-					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+					return engine.printMessage(ast.topHead(), rex);
 				}
 			}
 			//
@@ -832,12 +1004,12 @@ public class HypergeometricFunctions {
 					}
 
 				} catch (ValidateException ve) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						ve.printStackTrace();
 					}
 				} catch (RuntimeException rex) {
 					// rex.printStackTrace();
-					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+					return engine.printMessage(ast.topHead(), rex);
 				}
 			}
 			return F.NIL;
@@ -854,40 +1026,50 @@ public class HypergeometricFunctions {
 		}
 	}
 
-	private static class LogIntegral extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperator {
+	private static class LogIntegral extends AbstractFunctionEvaluator {// implements INumeric, DoubleUnaryOperator {
 
-		@Override
-		public double applyAsDouble(double operand) {
-			if (F.isZero(operand)) {
-				return 0.0;
-			}
-			if (F.isEqual(operand, 1.0)) {
-				return Double.NEGATIVE_INFINITY;
-			}
-			return de.lab4inf.math.functions.LogarithmicIntegalFunction.li(operand);
-		}
+		// @Override
+		// public double applyAsDouble(double operand) {
+		// if (F.isZero(operand)) {
+		// return 0.0;
+		// }
+		// if (F.isEqual(operand, 1.0)) {
+		// return Double.NEGATIVE_INFINITY;
+		// }
+		// return GammaJS.logIntegral(operand);
+		// // return de.lab4inf.math.functions.LogarithmicIntegalFunction.li(operand);
+		// }
+		//
+		// @Override
+		// public IExpr e1DblArg(final double arg1) {
+		// if (F.isZero(arg1)) {
+		// return F.C0;
+		// }
+		// if (F.isEqual(arg1, 1.0)) {
+		// return F.CNInfinity;
+		// }
+		// if (arg1 <= 0) {
+		// return F.complexNum(GammaJS.logIntegral(new Complex(arg1)));
+		// }
+		// return F.num(GammaJS.logIntegral(arg1));
+		// // return F.num(de.lab4inf.math.functions.LogarithmicIntegalFunction.li(arg1));
+		// }
+		//
+		// @Override
+		// public double evalReal(final double[] stack, final int top, final int size) {
+		// if (size != 1) {
+		// throw new UnsupportedOperationException();
+		// }
+		// return applyAsDouble(stack[top]);
+		// }
+		//
+		// @Override
+		// public IExpr e1ComplexArg(final Complex c) {
+		// return F.complexNum(GammaJS.logIntegral(c));
+		// }
 
-		@Override
-		public IExpr e1DblArg(final double arg1) {
-			if (F.isZero(arg1)) {
-				return F.C0;
-			}
-			if (F.isEqual(arg1, 1.0)) {
-				return F.CNInfinity;
-			}
-			return F.num(de.lab4inf.math.functions.LogarithmicIntegalFunction.li(arg1));
-		}
-
-		@Override
-		public double evalReal(final double[] stack, final int top, final int size) {
-			if (size != 1) {
-				throw new UnsupportedOperationException();
-			}
-			return applyAsDouble(stack[top]);
-		}
-
-		@Override
-		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			IExpr arg1 = ast.arg1();
 			if (arg1.isZero()) {
 				return F.C0;
 			}
@@ -900,9 +1082,51 @@ public class HypergeometricFunctions {
 			if (arg1.isComplexInfinity()) {
 				return F.CComplexInfinity;
 			}
+			if (engine.isDoubleMode()) {
+				try {
+					double zDouble = Double.NaN;
+					try {
+						zDouble = arg1.evalDouble();
+					} catch (ValidateException ve) {
+					}
+					if (Double.isNaN(zDouble)) {
+						Complex zc = arg1.evalComplex();
+						return F.complexNum(GammaJS.logIntegral(zc));
+
+					} else {
+						if (F.isZero(zDouble)) {
+							return F.C0;
+						}
+						if (F.isEqual(zDouble, 1.0)) {
+							return F.CNInfinity;
+						}
+						if (zDouble > 0.0) {
+							return F.num(GammaJS.logIntegral(zDouble));
+						}
+						return F.complexNum(GammaJS.logIntegral(new Complex(zDouble)));
+					}
+
+				} catch (ThrowException te) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						te.printStackTrace();
+					}
+					return te.getValue();
+				} catch (ValidateException ve) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
+				} catch (RuntimeException rex) {
+					// rex.printStackTrace();
+					return engine.printMessage(ast.topHead(), rex);
+				}
+			}
 			return F.NIL;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+		
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -910,58 +1134,109 @@ public class HypergeometricFunctions {
 		}
 	}
 
-	private static class SinIntegral extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperator {
+	private static class SinIntegral extends AbstractFunctionEvaluator {// implements INumeric, DoubleUnaryOperator {
+
+		// @Override
+		// public double applyAsDouble(double operand) {
+		// return de.lab4inf.math.functions.SineIntegral.si(operand);
+		// }
+		//
+		// @Override
+		// public IExpr e1ComplexArg(final Complex c) {
+		// return F.complexNum(GammaJS.sinIntegral(c));
+		// }
+		//
+		// @Override
+		// public IExpr e1DblArg(final double arg1) {
+		// if (F.isZero(arg1)) {
+		// return F.CD0;
+		// }
+		// if (arg1<=0) {
+		// return F.complexNum(GammaJS.sinIntegral(new Complex(arg1)));
+		// }
+		// return F.num(de.lab4inf.math.functions.SineIntegral.si(arg1));
+		// }
+		//
+		// @Override
+		// public double evalReal(final double[] stack, final int top, final int size) {
+		// if (size != 1) {
+		// throw new UnsupportedOperationException();
+		// }
+		// return de.lab4inf.math.functions.SineIntegral.si(stack[top]);
+		// }
 
 		@Override
-		public double applyAsDouble(double operand) {
-			return de.lab4inf.math.functions.SineIntegral.si(operand);
-		}
-
-		@Override
-		public IExpr e1DblArg(final double arg1) {
-			return F.num(de.lab4inf.math.functions.SineIntegral.si(arg1));
-		}
-
-		@Override
-		public double evalReal(final double[] stack, final int top, final int size) {
-			if (size != 1) {
-				throw new UnsupportedOperationException();
-			}
-			return de.lab4inf.math.functions.SineIntegral.si(stack[top]);
-		}
-
-		@Override
-		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
-			if (arg1.isZero()) {
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			IExpr z = ast.arg1();
+			if (z.isZero()) {
 				return F.C0;
 			}
-			if (arg1.isInfinity()) {
+			if (z.isInfinity()) {
 				return F.CPiHalf;
 			}
-			if (arg1.isNegativeInfinity()) {
+			if (z.isNegativeInfinity()) {
 				return F.CNPiHalf;
 			}
-			if (arg1.isDirectedInfinity(F.CI)) {
-				return arg1;
+			if (z.isDirectedInfinity(F.CI)) {
+				return z;
 			}
-			if (arg1.isComplexInfinity()) {
+			if (z.isComplexInfinity()) {
 				return F.Indeterminate;
 			}
-			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+			if (engine.isDoubleMode()) {
+				try {
+					double zDouble = Double.NaN;
+					try {
+						zDouble = z.evalDouble();
+					} catch (ValidateException ve) {
+					}
+					if (Double.isNaN(zDouble)) {
+						Complex zc = z.evalComplex();
+						return F.complexNum(GammaJS.sinIntegral(zc));
+
+					} else {
+						if (F.isZero(zDouble)) {
+							return F.C0;
+						}
+						if (zDouble <= 0) {
+							return F.complexNum(GammaJS.sinIntegral(new Complex(zDouble)));
+						}
+						return F.num(de.lab4inf.math.functions.SineIntegral.si(zDouble));
+					}
+
+				} catch (ThrowException te) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						te.printStackTrace();
+					}
+					return te.getValue();
+				} catch (ValidateException ve) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
+				} catch (RuntimeException rex) {
+					// rex.printStackTrace();
+					return engine.printMessage(ast.topHead(), rex);
+				}
+			}
+			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
 			if (negExpr.isPresent()) {
 				return Negate(F.SinIntegral(negExpr));
 			}
-			if (arg1.isTimes() && arg1.first().isComplex() && arg1.first().re().isZero()) {
+			if (z.isTimes() && z.first().isComplex() && z.first().re().isZero()) {
 				// I * SinhIntegral(-I*arg1)
-				return F.Times(F.I, F.SinhIntegral(F.Times(F.CNI, arg1)));
+				return F.Times(F.I, F.SinhIntegral(F.Times(F.CNI, z)));
 			}
-			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(z);
 			if (imPart.isPresent()) {
 				return F.Times(F.CI, F.SinhIntegral(imPart));
 			}
 			return F.NIL;
 		}
 
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+		
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -969,40 +1244,77 @@ public class HypergeometricFunctions {
 		}
 	}
 
-	private static class SinhIntegral extends AbstractTrigArg1 {
+	private static class SinhIntegral extends AbstractFunctionEvaluator {
 
 		@Override
-		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
-			if (arg1.isZero()) {
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			IExpr z = ast.arg1();
+			if (z.isZero()) {
 				return F.C0;
 			}
-			if (arg1.isInfinity()) {
+			if (z.isInfinity()) {
 				return F.CInfinity;
 			}
-			if (arg1.isNegativeInfinity()) {
+			if (z.isNegativeInfinity()) {
 				return F.CNInfinity;
 			}
-			if (arg1.isDirectedInfinity(F.CI)) {
+			if (z.isDirectedInfinity(F.CI)) {
 				return F.Times(F.CI, F.CPiHalf);
 			}
-			if (arg1.isComplexInfinity()) {
+			if (z.isComplexInfinity()) {
 				return F.Indeterminate;
 			}
-			if (arg1.isTimes() && arg1.first().isComplex() && arg1.first().re().isZero()) {
-				// I * SinIntegral(-I*arg1)
-				return F.Times(F.I, F.SinIntegral(F.Times(F.CNI, arg1)));
+			if (engine.isDoubleMode()) {
+				try {
+					double zDouble = Double.NaN;
+					try {
+						zDouble = z.evalDouble();
+					} catch (ValidateException ve) {
+					}
+					if (Double.isNaN(zDouble)) {
+						Complex zc = z.evalComplex();
+						return F.complexNum(GammaJS.sinhIntegral(zc));
+
+					} else {
+						if (F.isZero(zDouble)) {
+							return F.C0;
+						}
+						return F.complexNum(GammaJS.sinhIntegral(new Complex(zDouble)));
+					}
+
+				} catch (ThrowException te) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						te.printStackTrace();
+					}
+					return te.getValue();
+				} catch (ValidateException ve) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						ve.printStackTrace();
+					}
+				} catch (RuntimeException rex) {
+					// rex.printStackTrace();
+					return engine.printMessage(ast.topHead(), rex);
+				}
 			}
-			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+			if (z.isTimes() && z.first().isComplex() && z.first().re().isZero()) {
+				// I * SinIntegral(-I*arg1)
+				return F.Times(F.I, F.SinIntegral(F.Times(F.CNI, z)));
+			}
+			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
 			if (negExpr.isPresent()) {
 				return Negate(F.SinhIntegral(negExpr));
 			}
-			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(z);
 			if (imPart.isPresent()) {
 				return F.Times(F.CI, F.SinIntegral(imPart));
 			}
 			return F.NIL;
 		}
-
+		
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+		
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -1010,6 +1322,7 @@ public class HypergeometricFunctions {
 		}
 	}
 
+	
 	public static void initialize() {
 		Initializer.init();
 	}

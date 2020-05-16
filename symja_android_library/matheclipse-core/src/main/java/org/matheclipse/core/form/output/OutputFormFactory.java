@@ -11,16 +11,17 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
-import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.form.ApfloatToMMA;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -37,6 +38,7 @@ import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
@@ -94,6 +96,8 @@ public class OutputFormFactory {
 	 * @return
 	 */
 	public static OutputFormFactory get(final boolean relaxedSyntax) {
+		// int significantFigures = EvalEngine.get().getSignificantFigures();
+		// return get(relaxedSyntax, false, significantFigures - 1, significantFigures + 1);
 		return get(relaxedSyntax, false);
 	}
 
@@ -156,7 +160,8 @@ public class OutputFormFactory {
 			if (!isNegative && caller == PLUS_CALL) {
 				append(buf, "+");
 			}
-			convertDoubleString(buf, convertApfloat(d.apfloatValue(d.precision())), precedence, isNegative);
+			convertDoubleString(buf, convertApfloatToFormattedString(((ApfloatNum) d).apfloatValue()), precedence,
+					isNegative);
 			return;
 		}
 		if (F.isZero(doubleValue, Config.MACHINE_EPSILON)) {
@@ -182,6 +187,13 @@ public class OutputFormFactory {
 		// append(buf, "+");
 		// }
 		convertDoubleString(buf, convertDoubleToFormattedString(doubleValue), 0, false);
+	}
+
+	private static String convertApfloatToFormattedString(Apfloat value) {
+		StringBuilder buf = new StringBuilder();
+		int numericPrecision = (int) EvalEngine.get().getNumericPrecision();
+		ApfloatToMMA.apfloatToMMA(buf, value, numericPrecision, numericPrecision);
+		return buf.toString();
 	}
 
 	private String convertDoubleToFormattedString(double dValue) {
@@ -266,12 +278,12 @@ public class OutputFormFactory {
 			convertDoubleString(buf, "0.0", ASTNodeFactory.PLUS_PRECEDENCE, false);
 		} else {
 			if (!realZero) {
-				append(buf, convertApfloat(realPart));
+				append(buf, convertApfloatToFormattedString(realPart));
 				if (!imaginaryZero) {
 					append(buf, "+I*");
 					final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
-					convertDoubleString(buf, convertApfloat(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE,
-							isNegative);
+					convertDoubleString(buf, convertApfloatToFormattedString(imaginaryPart),
+							ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
 				}
 			} else {
 				if (caller == PLUS_CALL) {
@@ -280,7 +292,8 @@ public class OutputFormFactory {
 				}
 				append(buf, "I*");
 				final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
-				convertDoubleString(buf, convertApfloat(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
+				convertDoubleString(buf, convertApfloatToFormattedString(imaginaryPart),
+						ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
 			}
 		}
 		if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
@@ -288,16 +301,29 @@ public class OutputFormFactory {
 		}
 	}
 
-	public static String convertApfloat(Apfloat num) {
-		String str = num.toString();
-		int index = str.indexOf('e');
-		if (index > 0) {
-			String exponentStr = str.substring(index + 1);
-			String result = str.substring(0, index);
-			return result + "*10^" + exponentStr;
-		}
-		return str;
-	}
+	// public static String convertApfloat(Apfloat num) {
+	// final long precision = EvalEngine.get().getNumericPrecision();
+	// final long scale = num.scale();
+	// if (scale >= -precision && scale <= precision) {
+	// return num.toString(true);
+	// }
+	// String str = num.toString();
+	// int index = str.indexOf('e');
+	// if (index > 0) {
+	// StringWriter stw = new StringWriter();
+	// try {
+	// FormattingWriter.toMMA(num, stw, 15, false);
+	// return stw.toString();
+	// } catch (IOException e) {
+	// // TODO Auto-generated catch block
+	// e.printStackTrace();
+	// }
+	// // String exponentStr = str.substring(index + 1);
+	// // String result = str.substring(0, index);
+	// // return result + "*10^" + exponentStr;
+	// }
+	// return str;
+	// }
 
 	public void convertInteger(final Appendable buf, final IInteger i, final int precedence, boolean caller)
 			throws IOException {
@@ -491,7 +517,7 @@ public class OutputFormFactory {
 			append(buf, symbol.getSymbolName());
 			return;
 		}
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS && context.equals(Context.SYSTEM)) {
+		if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS && context.equals(Context.SYSTEM)) {
 			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(symbol.getSymbolName());
 			if (str != null) {
 				append(buf, str);
@@ -796,27 +822,35 @@ public class OutputFormFactory {
 
 	public void convertInfixOperator(final Appendable buf, final IAST list, final InfixOperator oper,
 			final int precedence) throws IOException {
-
+		final boolean isOr = list.isOr();
 		if (list.isAST2()) {
+			IExpr arg1 = list.arg1();
+			IExpr arg2 = list.arg2();
 			if (oper.getPrecedence() < precedence) {
 				append(buf, "(");
 			}
-			if (oper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE && list.arg1().head().equals(list.head())) {
+			if (oper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE && arg1.head().equals(list.head())) {
 				append(buf, "(");
 			} else {
 				if (oper.getOperatorString() == "^") {
-					final Operator operator = getOperator(list.arg1().topHead());
+					final Operator operator = getOperator(arg1.topHead());
 					if (operator instanceof PostfixOperator) {
 						append(buf, "(");
 					}
 				}
 			}
-			convert(buf, list.arg1(), oper.getPrecedence(), false);
-			if (oper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE && list.arg1().head().equals(list.head())) {
+			if (isOr && arg1.isAnd()) {
+				append(buf, "(");
+			}
+			convert(buf, arg1, oper.getPrecedence(), false);
+			if (isOr && arg1.isAnd()) {
+				append(buf, ")");
+			}
+			if (oper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE && arg1.head().equals(list.head())) {
 				append(buf, ")");
 			} else {
 				if (oper.getOperatorString() == "^") {
-					final Operator operator = getOperator(list.arg1().topHead());
+					final Operator operator = getOperator(arg1.topHead());
 					if (operator instanceof PostfixOperator) {
 						append(buf, ")");
 					}
@@ -825,11 +859,17 @@ public class OutputFormFactory {
 
 			append(buf, oper.getOperatorString());
 
-			if (oper.getGrouping() == InfixOperator.LEFT_ASSOCIATIVE && list.arg2().head().equals(list.head())) {
+			if (oper.getGrouping() == InfixOperator.LEFT_ASSOCIATIVE && arg2.head().equals(list.head())) {
 				append(buf, "(");
 			}
-			convert(buf, list.arg2(), oper.getPrecedence(), false);
-			if (oper.getGrouping() == InfixOperator.LEFT_ASSOCIATIVE && list.arg2().head().equals(list.head())) {
+			if (isOr && arg2.isAnd()) {
+				append(buf, "(");
+			}
+			convert(buf, arg2, oper.getPrecedence(), false);
+			if (isOr && arg2.isAnd()) {
+				append(buf, ")");
+			}
+			if (oper.getGrouping() == InfixOperator.LEFT_ASSOCIATIVE && arg2.head().equals(list.head())) {
 				append(buf, ")");
 			}
 
@@ -843,12 +883,24 @@ public class OutputFormFactory {
 			append(buf, "(");
 		}
 		if (list.size() > 1) {
+			if (isOr && list.arg1().isAnd()) {
+				append(buf, "(");
+			}
 			convert(buf, list.arg1(), oper.getPrecedence(), false);
+			if (isOr && list.arg1().isAnd()) {
+				append(buf, ")");
+			}
 		}
 
 		for (int i = 2; i < list.size(); i++) {
 			append(buf, oper.getOperatorString());
+			if (isOr && list.get(i).isAnd()) {
+				append(buf, "(");
+			}
 			convert(buf, list.get(i), oper.getPrecedence(), false);
+			if (isOr && list.get(i).isAnd()) {
+				append(buf, ")");
+			}
 		}
 		if (oper.getPrecedence() < precedence) {
 			append(buf, ")");
@@ -885,7 +937,7 @@ public class OutputFormFactory {
 		try {
 			convert(buf, o, Integer.MIN_VALUE, false);
 		} catch (IOException e) {
-			if (Config.SHOW_STACKTRACE) {
+			if (FEConfig.SHOW_STACKTRACE) {
 				e.printStackTrace();
 			}
 		}
@@ -903,7 +955,7 @@ public class OutputFormFactory {
 			return true;
 		} catch (IOException ioe) {
 		} catch (RuntimeException rex) {
-			if (Config.SHOW_STACKTRACE) {
+			if (FEConfig.SHOW_STACKTRACE) {
 				rex.printStackTrace();
 			}
 		} catch (OutOfMemoryError oome) {
@@ -1160,7 +1212,7 @@ public class OutputFormFactory {
 	}
 
 	private void convertAssociation(final Appendable buf, final IAssociation association) throws IOException {
-		IAST list = association.normal();
+		IAST list = association.normal(false);
 		append(buf, "<|");
 		final int listSize = list.size();
 		if (listSize > 1) {
@@ -1274,7 +1326,7 @@ public class OutputFormFactory {
 
 	public static Operator getOperator(ISymbol head) {
 		String headerStr = head.getSymbolName();
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS && head.getContext().equals(Context.SYSTEM)) {
+		if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS && head.getContext().equals(Context.SYSTEM)) {
 			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headerStr);
 			if (str != null) {
 				headerStr = str;
@@ -1498,7 +1550,7 @@ public class OutputFormFactory {
 	 * @param pow
 	 *            the power expression of the factor
 	 * @param call
-	 * @param operPrecedence
+	 * 
 	 * @return the current call status
 	 * @throws IOException
 	 */

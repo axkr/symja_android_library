@@ -15,8 +15,10 @@ import org.jgrapht.GraphPath;
 import org.jgrapht.GraphType;
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.cycle.HierholzerEulerianCycle;
+import org.jgrapht.alg.independentset.ChordalGraphIndependentSetFinder;
 import org.jgrapht.alg.interfaces.EulerianCycleAlgorithm;
 import org.jgrapht.alg.interfaces.HamiltonianCycleAlgorithm;
+import org.jgrapht.alg.interfaces.IndependentSetAlgorithm.IndependentSet;
 import org.jgrapht.alg.interfaces.ShortestPathAlgorithm.SingleSourcePaths;
 import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm;
 import org.jgrapht.alg.interfaces.VertexCoverAlgorithm;
@@ -28,10 +30,8 @@ import org.jgrapht.alg.vertexcover.GreedyVCImpl;
 import org.jgrapht.graph.AbstractBaseGraph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
-import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DefaultUndirectedGraph;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -47,6 +47,7 @@ import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.parser.client.FEConfig;
 
 /**
  * Functions for graph theory algorithms.
@@ -177,7 +178,7 @@ public class GraphFunctions {
 					}
 				}
 			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 			}
@@ -232,7 +233,7 @@ public class GraphFunctions {
 				list.appendAll(centerSet);
 				return list;
 			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 			}
@@ -286,7 +287,7 @@ public class GraphFunctions {
 				}
 				return diameter;
 			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 			}
@@ -340,7 +341,7 @@ public class GraphFunctions {
 				list.appendAll(centerSet);
 				return list;
 			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 			}
@@ -394,7 +395,7 @@ public class GraphFunctions {
 					}
 				}
 			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 			}
@@ -445,7 +446,7 @@ public class GraphFunctions {
 				}
 				return radius;
 			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 			}
@@ -651,7 +652,7 @@ public class GraphFunctions {
 					return GraphExpr.newInstance(gResult);
 				}
 			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 			}
@@ -707,7 +708,7 @@ public class GraphFunctions {
 					return graphToAdjacencyMatrix(g);
 				}
 			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 			}
@@ -759,7 +760,7 @@ public class GraphFunctions {
 					return edgesToIExpr(g)[0];
 				}
 			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 			}
@@ -815,7 +816,7 @@ public class GraphFunctions {
 					}
 				}
 			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 			}
@@ -859,7 +860,7 @@ public class GraphFunctions {
 					}
 				}
 			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 			}
@@ -918,7 +919,7 @@ public class GraphFunctions {
 					}
 				}
 			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 			}
@@ -987,7 +988,7 @@ public class GraphFunctions {
 					return list;
 				}
 			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 			}
@@ -1052,7 +1053,7 @@ public class GraphFunctions {
 					return list;
 				}
 			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 			}
@@ -1115,7 +1116,7 @@ public class GraphFunctions {
 			} catch (IllegalArgumentException iae) {
 				return engine.printMessage("Graph must be undirected");
 			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 			}
@@ -1165,7 +1166,7 @@ public class GraphFunctions {
 
 				return Object2Expr.convertList(path.getVertexList());
 			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 			}
@@ -1224,7 +1225,7 @@ public class GraphFunctions {
 				}
 
 			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 			}
@@ -1283,7 +1284,7 @@ public class GraphFunctions {
 					// return result;
 				}
 			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 			}
@@ -1337,7 +1338,7 @@ public class GraphFunctions {
 					}
 				}
 			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 			}

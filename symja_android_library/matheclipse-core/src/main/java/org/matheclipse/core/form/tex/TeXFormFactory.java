@@ -10,16 +10,17 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.form.ApfloatToMMA;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IAssociation;
@@ -35,9 +36,10 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.trie.Tries;
 import org.matheclipse.parser.client.Characters;
+import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
+import org.matheclipse.parser.trie.Tries;
 
 /**
  * <p>
@@ -95,9 +97,16 @@ public class TeXFormFactory {
 		/** {@inheritDoc} */
 		@Override
 		public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+			final boolean isOr = f.isOr();
 			precedenceOpen(buf, precedence);
 			for (int i = 1; i < f.size(); i++) {
+				if (isOr && f.get(i).isAnd()) {
+					buf.append("\\left( ");
+				}
 				fFactory.convertInternal(buf, f.get(i), fPrecedence);
+				if (isOr && f.get(i).isAnd()) {
+					buf.append("\\right) ");
+				}
 				if (i < f.argSize()) {
 					if (fOperator.compareTo("") != 0) {
 						buf.append(fOperator);
@@ -1217,12 +1226,12 @@ public class TeXFormFactory {
 			convertDoubleString(buf, "0.0", ASTNodeFactory.PLUS_PRECEDENCE, false);
 		} else {
 			if (!realZero) {
-				buf.append(convertApfloat(realPart));
+				buf.append(convertApfloatToFormattedString(realPart));
 				if (!imaginaryZero) {
 					buf.append(" + ");
 					final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
-					convertDoubleString(buf, convertApfloat(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE,
-							isNegative);
+					convertDoubleString(buf, convertApfloatToFormattedString(imaginaryPart),
+							ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
 					buf.append("\\,"); // InvisibleTimes
 					buf.append("i ");
 				}
@@ -1233,7 +1242,8 @@ public class TeXFormFactory {
 				}
 
 				final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
-				convertDoubleString(buf, convertApfloat(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
+				convertDoubleString(buf, convertApfloatToFormattedString(imaginaryPart),
+						ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
 				buf.append("\\,"); // InvisibleTimes
 				buf.append("i ");
 			}
@@ -1243,16 +1253,23 @@ public class TeXFormFactory {
 		}
 	}
 
-	public static String convertApfloat(Apfloat num) {
-		String str = num.toString();
-		int index = str.indexOf('e');
-		if (index > 0) {
-			String exponentStr = str.substring(index + 1);
-			String result = str.substring(0, index);
-			return result + "*10^" + exponentStr;
-		}
-		return str;
+	private static String convertApfloatToFormattedString(Apfloat value) {
+		StringBuilder buf = new StringBuilder();
+		int numericPrecision = (int) EvalEngine.get().getNumericPrecision();
+		ApfloatToMMA.apfloatToTeX(buf, value, numericPrecision, numericPrecision);
+		return buf.toString();
 	}
+
+	// public static String convertApfloat(Apfloat num) {
+	// String str = num.toString();
+	// int index = str.indexOf('e');
+	// if (index > 0) {
+	// String exponentStr = str.substring(index + 1);
+	// String result = str.substring(0, index);
+	// return result + "*10^" + exponentStr;
+	// }
+	// return str;
+	// }
 
 	public boolean convert(final StringBuilder buf, final IExpr o, final int precedence) {
 		try {
@@ -1262,7 +1279,7 @@ public class TeXFormFactory {
 			}
 			return true;
 		} catch (RuntimeException rex) {
-			if (Config.SHOW_STACKTRACE) {
+			if (FEConfig.SHOW_STACKTRACE) {
 				rex.printStackTrace();
 			}
 		} catch (OutOfMemoryError oome) {
@@ -1481,7 +1498,7 @@ public class TeXFormFactory {
 	 * @return
 	 */
 	public boolean convertAssociation(final StringBuilder buf, final IAssociation assoc, final int precedence) {
-		IAST ast = assoc.normal();
+		IAST ast = assoc.normal(false);
 		buf.append("\\langle|");
 		if (ast.size() > 1) {
 			convertInternal(buf, ast.arg1(), 0);
@@ -1616,7 +1633,8 @@ public class TeXFormFactory {
 		if (d instanceof Num) {
 			convertDoubleString(buf, convertDoubleToFormattedString(d.getRealPart()), precedence, isNegative);
 		} else {
-			convertDoubleString(buf, convertApfloat(((INum) d).apfloatValue(d.precision())), precedence, isNegative);
+			convertDoubleString(buf, convertApfloatToFormattedString(((ApfloatNum) d).apfloatValue()), precedence,
+					isNegative);
 		}
 	}
 
@@ -1723,7 +1741,7 @@ public class TeXFormFactory {
 		} else {
 			buf.append("\\text{");
 			String header = str;
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
 				str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(header);
 				if (str != null) {
 					header = str;
@@ -1791,7 +1809,7 @@ public class TeXFormFactory {
 			}
 		}
 		if (context.equals(Context.SYSTEM) || context.isGlobal()) {
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS && context.equals(Context.SYSTEM)) {
+			if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS && context.equals(Context.SYSTEM)) {
 				String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
 				if (str != null) {
 					headStr = str;

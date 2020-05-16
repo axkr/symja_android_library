@@ -1,12 +1,10 @@
 package org.matheclipse.core.builtin.functions;
 
 import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.FDSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.analysis.solvers.BisectionSolver;
 import org.hipparchus.complex.Complex;
-import org.hipparchus.special.Gamma;
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -20,7 +18,9 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <a href="https://github.com/paulmasson/math/blob/master/src/functions/bessel.js">bessel.js</a>
  */
 public class BesselJS {
+	private BesselJS() {
 
+	}
 	public static Complex besselJ(double n, double x) {
 		// if (F.isNumIntValue(n) && n < 0.0) {
 		// return besselJ(-n, x).multiply(new Complex(-1.0).pow(n));
@@ -41,7 +41,7 @@ public class BesselJS {
 			throw new ArgumentTypeException(x + " is less than 0.0");
 		}
 
-		return Math.pow(x / 2.0, n) * HypergeometricJS.hypergeometric0F1(n + 1, -0.25 * x * x) / Gamma.gamma(n + 1);
+		return Math.pow(x / 2.0, n) * HypergeometricJS.hypergeometric0F1(n + 1, -0.25 * x * x) / GammaJS.gamma(n + 1);
 	}
 
 	public static Complex besselJ(Complex n, Complex x) {
@@ -187,7 +187,8 @@ public class BesselJS {
 			throw new ArgumentTypeException(x + " < 0.0");
 		}
 
-		return Math.pow(x / 2.0, n) * HypergeometricJS.hypergeometric0F1(n + 1.0, 0.25 * x * x) / Gamma.gamma(n + 1.0);
+		return Math.pow(x / 2.0, n) * HypergeometricJS.hypergeometric0F1(n + 1.0, 0.25 * x * x)
+				/ GammaJS.gamma(n + 1.0);
 	}
 
 	public static Complex besselI(Complex n, Complex x) {
@@ -296,7 +297,7 @@ public class BesselJS {
 	public static Complex airyAi(double x) {
 
 		if (F.isZero(x)) {
-			return new Complex(1.0 / Math.pow(3.0, 2.0 / 3.0) / Gamma.gamma(2.0 / 3.0));
+			return new Complex(1.0 / Math.pow(3.0, 2.0 / 3.0) / GammaJS.gamma(2.0 / 3.0));
 		}
 
 		if (x < 0) {
@@ -325,7 +326,7 @@ public class BesselJS {
 
 	public static Complex airyBi(double x) {
 		if (F.isZero(x)) {
-			return new Complex(1.0 / Math.pow(3.0, 1.0 / 6.0) / Gamma.gamma(2.0 / 3.0));
+			return new Complex(1.0 / Math.pow(3.0, 1.0 / 6.0) / GammaJS.gamma(2.0 / 3.0));
 		}
 
 		if (x < 0) {
@@ -384,7 +385,7 @@ public class BesselJS {
 	public static double struveH(double n, double x) {
 		// can also evaluate from hypergeometric0F1
 		// could use to test hypergeometricPFQ
-		return Math.pow(x, n + 1.0) / (Math.pow(2.0, n) * Math.sqrt(Math.PI) * Gamma.gamma(n + 1.5)) * //
+		return Math.pow(x, n + 1.0) / (Math.pow(2.0, n) * Math.sqrt(Math.PI) * GammaJS.gamma(n + 1.5)) * //
 				HypergeometricJS.hypergeometric1F2(1, 1.5, n + 1.5, (-0.25) * x * x);
 	}
 
@@ -401,7 +402,7 @@ public class BesselJS {
 
 	public static double struveL(double n, double x) {
 		// one sign different in 0.25 from struveH
-		return Math.pow(x, n + 1.0) * 1 / (Math.pow(2.0, n) * Math.sqrt(Math.PI) * Gamma.gamma(n + 1.5)) * //
+		return Math.pow(x, n + 1.0) * 1 / (Math.pow(2.0, n) * Math.sqrt(Math.PI) * GammaJS.gamma(n + 1.5)) * //
 				HypergeometricJS.hypergeometric1F2(1, 1.5, n + 1.5, 0.25 * x * x);
 	}
 
@@ -412,64 +413,6 @@ public class BesselJS {
 						.multiply(Arithmetic.lanczosApproxGamma(n.add(1.5))).reciprocal())
 				.multiply(HypergeometricJS.hypergeometric1F2(Complex.ONE, new Complex(1.5), n.add(1.5),
 						x.multiply(x).multiply(0.25)));
-
-	}
-
-	private final static double[] c = { 57.1562356658629235, -59.5979603554754912, 14.1360979747417471,
-			-0.491913816097620199, .339946499848118887e-4, .465236289270485756e-4, -.983744753048795646e-4,
-			.158088703224912494e-3, -.210264441724104883e-3, .217439618115212643e-3, -.164318106536763890e-3,
-			.844182239838527433e-4, -.261908384015814087e-4, .368991826595316234e-5 };
-
-	public static Complex logGamma(Complex x) {
-		// if ( isComplex(x) ) {
-
-		if (F.isNumIntValue(x.getReal()) && x.getReal() <= 0 && F.isZero(x.getImaginary())) {
-			throw new ArgumentTypeException("Gamma function pole");
-		}
-
-		// reflection formula with modified Hare correction to imaginary part
-		if (x.getReal() < 0.0) {
-			Complex t = new Complex(Math.PI).divide(x.multiply(Math.PI).sin()).log()
-					.subtract(logGamma(x.negate().add(1.0)));
-			double s = x.getImaginary() < 0.0 ? -1.0 : 1.0;
-			double d = F.isZero(x.getImaginary()) ? 0.25 : 0;
-			double k = Math.ceil(x.getReal() / 2.0 - 0.75 + d);
-			return t.add(new Complex(0.0, 2.0 * s * k * Math.PI));
-		}
-
-		Complex t = x.add(5.24218750000000000);
-		t = x.add(0.5).multiply(t.log()).subtract(t);
-		Complex s = new Complex(0.999999999999997092);
-		for (int j = 0; j < 14; j++) {
-			s = s.add(x.add(j + 1).reciprocal().multiply(c[j]));
-		}
-		Complex u = t.add(s.divide(x).multiply(2.5066282746310005).log());
-
-		// adjustment to keep imaginary part on same sheet
-		if (s.getReal() < 0.0) {
-			if (x.getImaginary() < 0.0 && s.divide(x).getImaginary() < 0) {
-				u = u.add(new Complex(0.0, Math.PI + Math.PI));
-			}
-			if (x.getImaginary() > 0 && s.divide(x).getImaginary() > 0) {
-				u = u.add(new Complex(0.0, -Math.PI + Math.PI));
-			}
-		}
-
-		return u;
-	}
-
-	public static double logGamma(double x) {
-		if (F.isNumIntValue(x) && x <= 0) {
-			throw new ArgumentTypeException("Gamma function pole");
-		}
-
-		double t = x + 5.24218750000000000;
-		t = (x + 0.5) * Math.log(t) - t;
-		double s = 0.999999999999997092;
-		for (int j = 0; j < 14; j++) {
-			s += c[j] / (x + j + 1);
-		}
-		return t + Math.log(2.5066282746310005 * s / x);
 
 	}
 

@@ -10,7 +10,7 @@ import java.util.Set;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.trie.Tries;
+import org.matheclipse.parser.trie.Tries;
 
 public class Context implements Serializable {
 

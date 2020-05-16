@@ -74,8 +74,8 @@ public class Lambda {
 	 * Consume each argument of <code>ast</code> which fulfills the <code>predicate</code>.
 	 * 
 	 * @param ast
-	 * @param result
-	 * @param function
+	 * @param predicate
+	 * @param consumer
 	 * @return
 	 */
 	public static void forEach(IAST ast, Predicate<IExpr> predicate, Consumer<IExpr> consumer) {
@@ -135,8 +135,9 @@ public class Lambda {
 	}
 
 	/**
-	 * Tests each argument with the <code>predicate</code>. If the predicate gives <code>false</code> return
-	 * <code>false</code>. If the <code>predicate</code> gives <code>true</code> for each test return <code>true</code>
+	 * Tests each argument with the <code>stopPredicate</code>. If the <code>stopPredicate</code> gives
+	 * <code>false</code> return <code>false</code>. If the <code>stopPredicate</code> gives <code>true</code> for each
+	 * test, return <code>true</code>
 	 * 
 	 * @param ast
 	 * @param stopPredicate
@@ -145,10 +146,10 @@ public class Lambda {
 	 * @return
 	 * @deprecated use IAST#forAll()
 	 */
-	public static boolean forAll(IAST ast, Predicate<IExpr> predicate, int offset) {
+	public static boolean forAll(IAST ast, Predicate<IExpr> stopPredicate, int offset) {
 		int size = ast.size();
 		for (int i = offset; i < size; i++) {
-			if (!predicate.test(ast.get(i))) {
+			if (!stopPredicate.test(ast.get(i))) {
 				return false;
 			}
 		}

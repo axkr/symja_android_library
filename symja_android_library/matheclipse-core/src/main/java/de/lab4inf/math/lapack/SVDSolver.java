@@ -844,7 +844,7 @@ public final class SVDSolver extends LASolver {
 	 *            matrix U if not null it will be generated
 	 * @param v
 	 *            matrix V if not null it will be generated
-	 * @param beg
+	 * @param start
 	 *            start index
 	 * @param end
 	 *            end index
@@ -956,7 +956,7 @@ public final class SVDSolver extends LASolver {
 	 *            the upper diagonal elements
 	 * @param v
 	 *            matrix V if not null it will be generated
-	 * @param beg
+	 * @param start
 	 *            start index
 	 * @param end
 	 *            end index

@@ -98,8 +98,6 @@ public class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
 	/**
 	 * Build an empty map with default size and using zero for missing entries.
 	 * 
-	 * @param field
-	 *            field to which the elements belong
 	 */
 	public OpenIntToIExprHashMap() {
 		this(DEFAULT_EXPECTED_SIZE);
@@ -108,12 +106,8 @@ public class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
 	/**
 	 * Build an empty map with specified size.
 	 * 
-	 * @param field
-	 *            field to which the elements belong
 	 * @param expectedSize
 	 *            expected number of elements in the map
-	 * @param missingEntries
-	 *            value to return when a missing entry is fetched
 	 */
 	public OpenIntToIExprHashMap(final int expectedSize) {
 		final int capacity = computeCapacity(expectedSize);

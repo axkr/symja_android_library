@@ -74,9 +74,7 @@ public interface ISignedNumber extends INumber {
 	 * 
 	 * @return
 	 */
-	default IInteger integerPart() {
-		return isNegative() ? ceilFraction() : floorFraction();
-	}
+	public IInteger integerPart();
 
 	/** {@inheritDoc} */
 	@Override

@@ -189,6 +189,12 @@ public class ApfloatNum implements INum {
 
 	/** {@inheritDoc} */
 	@Override
+	public long determinePrecision() {
+		return precision();
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public IExpr inc() {
 		return add(F.CD1);
 	}
@@ -440,7 +446,7 @@ public class ApfloatNum implements INum {
 	/** {@inheritDoc} */
 	@Override
 	public IInteger ceilFraction() {
-		return F.integer(ApfloatMath.ceil(fApfloat).toBigInteger());
+		return F.ZZ(ApfloatMath.ceil(fApfloat).toBigInteger());
 	}
 
 	@Override
@@ -462,7 +468,13 @@ public class ApfloatNum implements INum {
 	/** {@inheritDoc} */
 	@Override
 	public IInteger floorFraction() {
-		return F.integer(ApfloatMath.floor(fApfloat).toBigInteger());
+		return F.ZZ(ApfloatMath.floor(fApfloat).toBigInteger());
+	}
+	
+
+	/** {@inheritDoc} */
+	public IInteger integerPart() {
+		return isNegative() ? ceilFraction() : floorFraction();
 	}
 
 	/**
@@ -474,10 +486,17 @@ public class ApfloatNum implements INum {
 		if (expr instanceof ApfloatNum) {
 			return fApfloat.compareTo(((ApfloatNum) expr).fApfloat);
 		}
-		if (expr.isReal()) {
-			return Double.compare(fApfloat.doubleValue(), ((ISignedNumber) expr).doubleValue());
+		if (expr.isNumber()) {
+			if (expr.isReal()) {
+				return Double.compare(fApfloat.doubleValue(), ((ISignedNumber) expr).doubleValue());
+			}
+			int c = this.compareTo(((INumber) expr).re());
+			if (c != 0) {
+				return c;
+			}
 		}
-		return INum.super.compareTo(expr);
+		return -1;
+		// return INum.super.compareTo(expr);
 	}
 
 	@Override

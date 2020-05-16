@@ -68,21 +68,20 @@ public class VisitorReplaceAllWithPatternFlags extends VisitorReplaceAll {
 				}
 
 				if (result.isAST()) {
-					if (result.isFlatAST()) {
-						IASTAppendable flattened = EvalAttributes.flattenDeep((IAST) result);
-						if (flattened.isPresent()) {
-							result = flattened;
-						}
-					}
-					if (result.isOneIdentityAST1()) {
-						return result.first();
-					} else if (result.isOrderlessAST()) {
-						EvalAttributes.sort((IASTMutable) result);
-					}
-					((IAST) result).addEvalFlags(ast.getEvalFlags() & IAST.CONTAINS_PATTERN_EXPR);
-					// if (onlyNamedPatterns) {
-					// System.out.println(" " + lhsPatternExpr.toString() + " -> " + result.toString());
-					// }
+					return EvalAttributes.simpleEval(result);
+//					if (result.isFlatAST()) {
+//						IASTAppendable flattened = EvalAttributes.flattenDeep((IAST) result);
+//						if (flattened.isPresent()) {
+//							result = flattened;
+//						}
+//					}
+//					if (result.isOneIdentityAST1()) {
+//						return result.first();
+//					} else if (result.isOrderlessAST()) {
+//						EvalAttributes.sort((IASTMutable) result);
+//					}
+//					((IAST) result).addEvalFlags(ast.getEvalFlags() & IAST.CONTAINS_PATTERN_EXPR);
+					 
 				}
 				// if (result instanceof IASTMutable) {
 				// ((IASTMutable) result).setEvalFlags(ast.getEvalFlags() & IAST.CONTAINS_PATTERN_EXPR);

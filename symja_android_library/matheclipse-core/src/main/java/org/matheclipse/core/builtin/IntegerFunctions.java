@@ -12,6 +12,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 
+import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -31,6 +32,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.FEConfig;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -197,7 +199,7 @@ public class IntegerFunctions {
 				}
 				IExpr arg1 = engine.evaluateNull(ast.arg1());
 				if (arg1.isPresent()) {
-					return evalCeiling(arg1).orElse(F.Ceiling(arg1));
+					return evalCeiling(arg1).orElseGet(() -> F.Ceiling(arg1));
 				}
 				return evalCeiling(ast.arg1());
 			} catch (ArithmeticException ae) {
@@ -295,7 +297,7 @@ public class IntegerFunctions {
 					int k = key.toIntDefault();
 					if (k == 0) {
 						arr[radix - 1] = F.ZZ(element.getIntValue());
-					} else if (k < radix) {
+					} else if (k > 0 && k < radix) {
 						arr[k - 1] = F.ZZ(element.getIntValue());
 					} else {
 						return F.NIL;
@@ -378,7 +380,7 @@ public class IntegerFunctions {
 			}
 			IExpr arg1 = ast.arg1();
 			if (arg1.isInteger()) {
-				IASTAppendable list = F.ListAlloc();
+				IASTAppendable list = F.ListAlloc(16);
 				IInteger n = ((IInteger) arg1).abs();
 				if (n.isZero()) {
 					list.append(F.C0);
@@ -568,7 +570,7 @@ public class IntegerFunctions {
 				}
 				IExpr arg1 = engine.evaluateNull(ast.arg1());
 				if (arg1.isPresent()) {
-					return evalFloor(arg1).orElse(F.Floor(arg1));
+					return evalFloor(arg1).orElseGet(() -> F.Floor(arg1));
 				}
 				return evalFloor(ast.arg1());
 			} catch (ArithmeticException ae) {
@@ -664,6 +666,9 @@ public class IntegerFunctions {
 			if (arg1.isDirectedInfinity(F.CNI)) {
 				return F.Times(F.CNI, F.Interval(F.List(F.C0, F.C1)));
 			}
+			if (arg1.isIntegerResult()) {
+				return F.C0;
+			}
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
 				return Negate(FractionalPart(negExpr));
@@ -679,9 +684,23 @@ public class IntegerFunctions {
 					}
 					IInteger intValue = signedNumber.integerPart();
 					return F.Subtract(arg1, intValue);
+				} else {
+					Complex complexNumber = arg1.evalComplex();
+					if (complexNumber != null) {
+						double re = complexNumber.getReal();
+						double im = complexNumber.getImaginary();
+						if (re > -1.0 && re < 1.0 && im > -1.0 && im < 1.0) {
+							// arg1 is in the interval ]-1, 1[
+							return arg1;
+						}
+						INumber intValue = F.complexNum(complexNumber).integerPart();
+						return F.Subtract(arg1, intValue);
+					}
 				}
-			} catch (Exception ex) {
-				ex.printStackTrace();
+			} catch (RuntimeException rex) {
+				if (FEConfig.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
 			}
 			return F.NIL;
 		}
@@ -894,9 +913,11 @@ public class IntegerFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			try {
 				IExpr arg1 = ast.arg1();
-				ISignedNumber signedNumber = arg1.evalReal();
-				if (signedNumber != null) {
-					return signedNumber.integerPart();
+				if (arg1.isNumber()) {
+					// Note: fractional part for a complex number returns a new complex number with the fractional parts
+					// of
+					// the real and imaginary part.
+					return ((INumber) arg1).integerPart();
 				}
 				if (arg1.isIntegerResult()) {
 					return arg1;
@@ -912,8 +933,21 @@ public class IntegerFunctions {
 				if (arg1.isInterval()) {
 					return IntervalSym.mapSymbol(F.IntegerPart, (IAST) arg1);
 				}
-			} catch (ArithmeticException ae) {
+
+				ISignedNumber signedNumber = arg1.evalReal();
+				if (signedNumber != null) {
+					return signedNumber.integerPart();
+				} else {
+					Complex complexNumber = arg1.evalComplex();
+					if (complexNumber != null) {
+						return F.complexNum(complexNumber).integerPart();
+					}
+				}
+			} catch (RuntimeException rex) {
 				// ISignedNumber#floor() or #ceil() may throw ArithmeticException
+				if (FEConfig.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
 			}
 			return F.NIL;
 		}
@@ -1080,7 +1114,7 @@ public class IntegerFunctions {
 				}
 				return arg1.modPow(arg2, arg3);
 			} catch (ArithmeticException ae) {
-				return engine.printMessage("PowerMod: " + ae.getMessage());
+				return engine.printMessage(ast.topHead(), ae);
 			}
 		}
 

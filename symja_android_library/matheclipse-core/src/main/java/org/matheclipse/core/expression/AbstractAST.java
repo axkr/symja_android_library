@@ -31,7 +31,7 @@ import org.jgrapht.graph.DefaultGraphType.Builder;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
-import org.matheclipse.core.builtin.Structure.LeafCount;
+import org.matheclipse.core.builtin.StructureFunctions.LeafCount;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -70,6 +70,7 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
+import org.matheclipse.parser.client.FEConfig;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -340,6 +341,13 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 
 		@Override
+		public IASTAppendable copyAppendable(int additionalCapacity) {
+			ArgumentTypeException.throwNIL();
+			return F.NIL;
+			// throw new UnsupportedOperationException();
+		}
+
+		@Override
 		public boolean equals(final Object obj) {
 			return this == obj;
 		}
@@ -500,6 +508,12 @@ public abstract class AbstractAST implements IASTMutable {
 
 		/** {@inheritDoc} */
 		@Override
+		public boolean isComparatorFunction() {
+			return false;
+		}
+
+		/** {@inheritDoc} */
+		@Override
 		public boolean isCondition() {
 			return false;
 		}
@@ -600,6 +614,12 @@ public abstract class AbstractAST implements IASTMutable {
 		@Override
 		public final boolean isOneIdentityAST1() {
 			return false;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public int[] isPiecewise() {
+			return null;
 		}
 
 		/** {@inheritDoc} */
@@ -1003,7 +1023,7 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public IASTAppendable appendClone(IExpr expr) {
-		IASTAppendable ast = copyAppendable();
+		IASTAppendable ast = copyAppendable(1);
 		ast.append(expr);
 		return ast;
 	}
@@ -1263,6 +1283,32 @@ public abstract class AbstractAST implements IASTMutable {
 		return AST.newInstance(intialCapacity, this, index);
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public long determinePrecision() {
+		long precision = -1;
+		if (isAST(F.N, 3)) {
+			long determinedPrecision = arg1().determinePrecision();
+			if (determinedPrecision > 0) {
+				if (determinedPrecision >= precision) {
+					return determinedPrecision;
+				}
+			}
+			int p = arg2().toIntDefault();
+			if (p >= Config.MACHINE_PRECISION) {
+				precision = p;
+			}
+			return precision;
+		}
+		for (int i = 1; i < size(); i++) {
+			long p = get(i).determinePrecision();
+			if (p > precision) {
+				precision = p;
+			}
+		}
+		return precision;
+	}
+
 	@Override
 	public boolean equals(final Object obj) {
 		if (obj == this) {
@@ -1377,6 +1423,12 @@ public abstract class AbstractAST implements IASTMutable {
 					return temp;
 				}
 			}
+			if (isBooleanFormula()) {
+				IExpr temp = extractConditionalExpression(false);
+				if (temp.isPresent()) {
+					return temp;
+				}
+			}
 			ICoreFunctionEvaluator functionEvaluator = (ICoreFunctionEvaluator) ((IBuiltInSymbol) head).getEvaluator();
 			int[] expected;
 			if ((expected = functionEvaluator.expectedArgSize()) != null) {
@@ -1440,8 +1492,8 @@ public abstract class AbstractAST implements IASTMutable {
 	@Override
 	public final IASTAppendable[] filterNIL(final Function<IExpr, IExpr> function) {
 		IASTAppendable[] result = new IASTAppendable[2];
-		result[0] = copyHead();
-		result[1] = copyHead();
+		result[0] = copyHead(size());
+		result[1] = copyHead(size());
 		filterFunction(result[0], result[1], function);
 		return result;
 	}
@@ -1682,7 +1734,7 @@ public abstract class AbstractAST implements IASTMutable {
 		} else {
 			text.append(head.fullFormString());
 		}
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS && head.isSymbol()) {
+		if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS && head.isSymbol()) {
 			text.append('(');
 		} else {
 			text.append('[');
@@ -1698,7 +1750,7 @@ public abstract class AbstractAST implements IASTMutable {
 				}
 			}
 		}
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS && head.isSymbol()) {
+		if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS && head.isSymbol()) {
 			text.append(')');
 		} else {
 			text.append(']');
@@ -1955,8 +2007,8 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public int indexOf(Predicate<? super IExpr> predicate) {
-		for (int i = 1; i < size(); i++) {
+	public int indexOf(Predicate<? super IExpr> predicate, int fromIndex) {
+		for (int i = fromIndex; i < size(); i++) {
 			if (predicate.test(get(i))) {
 				return i;
 			}
@@ -2089,7 +2141,7 @@ public abstract class AbstractAST implements IASTMutable {
 		if (temp.isSymbol()) {
 			ISymbol sym = (ISymbol) temp;
 			String name = null;
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
 				name = sym.toString();
 				if (name.length() > 0) {
 					name = name.toLowerCase(Locale.ENGLISH);
@@ -2346,7 +2398,7 @@ public abstract class AbstractAST implements IASTMutable {
 	 */
 	@Override
 	public final boolean isAST(final String symbol) {
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+		if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
 			String name = symbol;
 			if (name.length() > 0) {
 				name = symbol.toLowerCase(Locale.ENGLISH);
@@ -2365,7 +2417,7 @@ public abstract class AbstractAST implements IASTMutable {
 	 */
 	@Override
 	public final boolean isAST(final String symbol, final int length) {
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+		if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
 			String name = symbol;
 			if (name.length() > 0) {
 				name = symbol.toLowerCase(Locale.ENGLISH);
@@ -2579,7 +2631,7 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isFlatAST() {
+	public boolean isFlatAST() {
 		return topHead().hasFlatAttribute();
 	}
 
@@ -2721,6 +2773,12 @@ public abstract class AbstractAST implements IASTMutable {
 		return head().isPredicateFunctionSymbol() //
 				|| ((head().isBooleanFormulaSymbol() || head().isComparatorFunctionSymbol()) //
 						&& exists(x -> !x.isBooleanResult()));
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isComparatorFunction() {
+		return head().isComparatorFunctionSymbol() && size() > 2;
 	}
 
 	/** {@inheritDoc} */
@@ -3063,6 +3121,19 @@ public abstract class AbstractAST implements IASTMutable {
 	@Override
 	public final boolean isPatternTest() {
 		return isAST(F.PatternTest, 3);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public int[] isPiecewise() {
+		if (isSameHead(F.Piecewise, 2, 3) && arg1().isList()) {
+			int[] result = arg1().isMatrix(false);
+			if (result != null && (result[0] <= 0 || result[1] != 2)) {
+				return null;
+			}
+			return result;
+		}
+		return null;
 	}
 
 	/** {@inheritDoc} */
@@ -3955,6 +4026,15 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
+	public IExpr normal(boolean nilIfUnevaluated) {
+		if (isConditionalExpression()) {
+			return arg1();
+		}
+		return nilIfUnevaluated ? F.NIL : this;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public IExpr oneIdentity(IExpr defaultValue) {
 		if (size() > 2) {
 			return this;
@@ -4156,7 +4236,7 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IASTMutable removeAtCopy(int position) {
+	public IASTMutable removeAtCopy(int position) {
 		int size = size();
 		if (position < size) {
 			switch (size) {
@@ -4408,7 +4488,7 @@ public abstract class AbstractAST implements IASTMutable {
 		} else {
 			text = new StringBuilder(temp.toString());
 		}
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+		if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
 			text.append('(');
 		} else {
 			text.append('[');
@@ -4420,7 +4500,7 @@ public abstract class AbstractAST implements IASTMutable {
 				text.append(sep);
 			}
 		}
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+		if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
 			text.append(')');
 		} else {
 			text.append(']');
@@ -4497,7 +4577,7 @@ public abstract class AbstractAST implements IASTMutable {
 				return toFullFormString();
 			}
 		} catch (RuntimeException e) {
-			if (Config.SHOW_STACKTRACE) {
+			if (FEConfig.SHOW_STACKTRACE) {
 				System.out.println(fullFormString());
 			}
 			throw e;
@@ -4519,5 +4599,38 @@ public abstract class AbstractAST implements IASTMutable {
 	public final IExpr variables2Slots(final Map<IExpr, IExpr> map, final Collection<IExpr> variableCollector) {
 		return variables2Slots(this, Predicates.isUnaryVariableOrPattern(),
 				new UnaryVariable2Slot(map, variableCollector));
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr extractConditionalExpression(boolean isUnaryConditionalExpression) {
+		if (isUnaryConditionalExpression) {
+			// mergeConditionalExpression
+			IAST conditionalExpr = (IAST) arg1();
+			IASTMutable copy = copy();
+			copy.set(1, conditionalExpr.arg1());
+			return conditionalExpr.setAtCopy(1, copy);
+		}
+		int indx = indexOf(x -> x.isConditionalExpression());
+		if (indx > 0) {
+			IAST conditionalExpr = (IAST) get(indx);
+			IASTAppendable andExpr = F.And();
+			IASTMutable copy = copy();
+			copy.set(indx, conditionalExpr.arg1());
+			andExpr.append(conditionalExpr.arg2());
+			indx++;
+			for (int i = indx; i < copy.size(); i++) {
+				IExpr x = copy.get(i);
+				if (x.isConditionalExpression()) {
+					conditionalExpr = (IAST) x;
+					copy.set(i, conditionalExpr.arg1());
+					andExpr.append(conditionalExpr.arg2());
+				}
+			}
+			IASTMutable mergedResult = conditionalExpr.setAtCopy(1, copy);
+			mergedResult.set(2, andExpr);
+			return mergedResult;
+		}
+		return F.NIL;
 	}
 }

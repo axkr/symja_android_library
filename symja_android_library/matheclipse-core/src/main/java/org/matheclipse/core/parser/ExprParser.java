@@ -28,6 +28,7 @@ import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.NumStr;
@@ -35,15 +36,15 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorExpr;
-import org.matheclipse.core.visit.VisitorPrecision;
+import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
-import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.IParserFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
@@ -130,7 +131,7 @@ public class ExprParser extends Scanner {
 
 	public ExprParser(final EvalEngine engine) {
 		this(engine, ExprParserFactory.MMA_STYLE_FACTORY, engine.isRelaxedSyntax(), false,
-				Config.EXPLICIT_TIMES_OPERATOR);
+				FEConfig.EXPLICIT_TIMES_OPERATOR);
 	}
 
 	/**
@@ -159,7 +160,7 @@ public class ExprParser extends Scanner {
 	 * @throws SyntaxError
 	 */
 	public ExprParser(final EvalEngine engine, IParserFactory factory, final boolean relaxedSyntax) throws SyntaxError {
-		this(engine, factory, relaxedSyntax, false, Config.EXPLICIT_TIMES_OPERATOR);
+		this(engine, factory, relaxedSyntax, false, FEConfig.EXPLICIT_TIMES_OPERATOR);
 	}
 
 	public ExprParser(final EvalEngine engine, IParserFactory factory, final boolean relaxedSyntax, boolean packageMode,
@@ -190,11 +191,11 @@ public class ExprParser extends Scanner {
 			case ID.HoldForm:
 				return ast;
 
-			case ID.N:
-				if (ast.isAST(F.N, 3)) {
-					return convertN(ast);
-				}
-				break;
+			// case ID.N:
+			// if (ast.isAST(F.N, 3)) {
+			// return convertN(ast);
+			// }
+			// break;
 
 			case ID.Sqrt:
 				if (ast.isAST(F.Sqrt, 2)) {
@@ -407,7 +408,7 @@ public class ExprParser extends Scanner {
 			if (fToken == TT_PRECEDENCE_OPEN) {
 				if (!fExplicitTimes) {
 					Operator oper = fFactory.get("Times");
-					if (Config.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
+					if (FEConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
 						return getTimes(temp);
 					}
 				}
@@ -474,6 +475,10 @@ public class ExprParser extends Scanner {
 				slot.append(F.stringx(identifierContext[0]));
 				getNextToken();
 				return parseArguments(slot);
+			}  else if (fToken == TT_STRING) {
+				final IASTAppendable slot = F.ast(F.Slot);
+				slot.append(getString());
+				return parseArguments(slot); 
 			}
 			return parseArguments(F.Slot1);
 
@@ -514,7 +519,7 @@ public class ExprParser extends Scanner {
 				if (fToken == TT_PRECEDENCE_OPEN) {
 					if (!fExplicitTimes) {
 						Operator oper = fFactory.get("Times");
-						if (Config.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
+						if (FEConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
 							return getTimes(temp);
 						}
 					}
@@ -761,7 +766,8 @@ public class ExprParser extends Scanner {
 			}
 		}
 
-		final IASTAppendable function = F.ast(head, 10, false);
+		int size =  determineSize(head, 10);
+		final IASTAppendable function = F.ast(head, size, false);
 		fRecursionDepth++;
 		try {
 			getArguments(function);
@@ -791,6 +797,19 @@ public class ExprParser extends Scanner {
 
 		throwSyntaxError(fRelaxedSyntax ? "')' expected." : "']' expected.");
 		return null;
+	}
+
+	private static int determineSize(final IExpr head, int defaultSize) {
+		if (head.isBuiltInSymbol()) {
+			IEvaluator eval = ((IBuiltInSymbol) head).getEvaluator();
+			if (eval instanceof IFunctionEvaluator) {
+				int[] args = ((IFunctionEvaluator) eval).expectedArgSize();
+				if (args != null && args[1] < 10) {
+					defaultSize = args[1] + 1;
+				}
+			}
+		}
+		return defaultSize;
 	}
 
 	private static IASTMutable reduceAST(IASTMutable function) {
@@ -977,12 +996,12 @@ public class ExprParser extends Scanner {
 		IASTAppendable function = null;
 		do {
 			if (function == null) {
-				function = F.Part(temp);
+				function = F.Part(2, temp);
 				// function =
 				// fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part),
 				// temp);
 			} else {
-				function = F.Part(function);
+				function = F.Part(2, function);
 				// function =
 				// fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part),
 				// function);
@@ -1030,48 +1049,6 @@ public class ExprParser extends Scanner {
 
 					temp = parseExpression();
 					function.append(temp);
-					// if (fToken == TT_SPAN) {
-					// IASTAppendable span = F.ast(F.Span);
-					// function.append(span);
-					// span.append(temp);
-					// getNextToken();
-					// if (fToken == TT_SPAN) {
-					// span.append(F.All);
-					// getNextToken();
-					// if (fToken == TT_COMMA) {
-					// continue;
-					// }
-					// if (fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
-					// || fToken == TT_PRECEDENCE_CLOSE) {
-					// break;
-					// }
-					// } else if (fToken == TT_COMMA) {
-					// span.append(F.All);
-					// continue;
-					// } else if (fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
-					// || fToken == TT_PRECEDENCE_CLOSE) {
-					// span.append(F.All);
-					// break;
-					// }
-					// span.append(parseExpression());
-					// if (fToken == TT_SPAN) {
-					// getNextToken();
-					// if (fToken == TT_COMMA) {
-					// continue;
-					// }
-					// if ( fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
-					// || fToken == TT_PRECEDENCE_CLOSE) {
-					// break;
-					// }
-					// span.append(parseExpression());
-					// }
-					// if (fToken == TT_COMMA) {
-					// continue;
-					// }
-					// break;
-					// } else {
-					// function.append(temp);
-					// }
 				} while (fToken == TT_COMMA);
 
 				if (fToken == TT_ARGUMENTS_CLOSE) {
@@ -1180,9 +1157,7 @@ public class ExprParser extends Scanner {
 			throwSyntaxError("End-of-file not reached.");
 		}
 		// determine the precision of the input before evaluation
-		VisitorPrecision visitor = new VisitorPrecision();
-		temp.accept(visitor);
-		long precision = visitor.getNumericPrecision();
+		long precision = temp.determinePrecision();
 		if (precision > fEngine.getNumericPrecision()) {
 			fEngine.setNumericPrecision(precision);
 		}
@@ -1197,7 +1172,7 @@ public class ExprParser extends Scanner {
 			}
 			if (fRelaxedSyntax) {
 				if (fToken == TT_ARGUMENTS_OPEN) {
-					if (Config.PARSER_USE_STRICT_SYNTAX) {
+					if (FEConfig.PARSER_USE_STRICT_SYNTAX) {
 						if (head.isSymbolOrPattern()) {
 							throwSyntaxError("'(' expected after symbol or pattern instead of '['.");
 						}
@@ -1319,7 +1294,7 @@ public class ExprParser extends Scanner {
 				if (!fExplicitTimes) {
 					// lazy evaluation of multiplication
 					oper = fFactory.get("Times");
-					if (Config.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
+					if (FEConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
 						rhs = parseLookaheadOperator(oper.getPrecedence());
 						lhs = F.$(F.$s(oper.getFunctionName()), lhs, rhs);
 						continue;
@@ -1476,7 +1451,7 @@ public class ExprParser extends Scanner {
 				if (!fExplicitTimes) {
 					// lazy evaluation of multiplication
 					InfixExprOperator timesOperator = (InfixExprOperator) fFactory.get("Times");
-					if (Config.DOMINANT_IMPLICIT_TIMES || timesOperator.getPrecedence() > min_precedence) {
+					if (FEConfig.DOMINANT_IMPLICIT_TIMES || timesOperator.getPrecedence() > min_precedence) {
 						rhs = parseExpression(rhs, timesOperator.getPrecedence());
 						continue;
 					} else if ((timesOperator.getPrecedence() == min_precedence)
@@ -1614,33 +1589,5 @@ public class ExprParser extends Scanner {
 	public void setFactory(final IParserFactory factory) {
 		this.fFactory = factory;
 	}
-	/**
-	 * Convert less or greater relations on input. Example: convert expressions like <code>a<b<=c</code> to
-	 * <code>Less[a,b]&&LessEqual[b,c]</code>.
-	 * 
-	 * @param ast
-	 * @param compareHead
-	 * @return
-	 */
-	// private IExpr rewriteLessGreaterAST(final IASTMutable ast, ISymbol compareHead) {
-	// IExpr temp;
-	// boolean evaled = false;
-	// IASTAppendable andAST = F.ast(F.And);
-	// for (int i = 1; i < ast.size(); i++) {
-	// temp = ast.get(i);
-	// if (temp.isASTSizeGE(compareHead, 3)) {
-	// IAST lt = (IAST) temp;
-	// andAST.append(lt);
-	// ast.set(i, lt.last());
-	// evaled = true;
-	// }
-	// }
-	// if (evaled) {
-	// andAST.append(ast);
-	// return andAST;
-	// } else {
-	// return ast;
-	// }
-	// }
 
 }

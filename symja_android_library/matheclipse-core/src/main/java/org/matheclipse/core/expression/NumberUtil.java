@@ -215,17 +215,6 @@ public class NumberUtil {
 		return DoubleMath.roundToLong(d, RoundingMode.UNNECESSARY);
 	}
 
-	/**
-	 * Compares the absolute value of two rational numbers.
-	 * 
-	 * @param that
-	 *            the rational number to be compared with.
-	 * @return <code>|this| > |that|</code>
-	 */
-	public static boolean isLargerThan(BigFraction a, BigFraction b) {
-		return a.compareTo(b) > 0;
-	}
-
 	public static boolean isNegative(BigFraction a) {
 		return a.compareTo(BigFraction.ZERO) < 0;
 	}

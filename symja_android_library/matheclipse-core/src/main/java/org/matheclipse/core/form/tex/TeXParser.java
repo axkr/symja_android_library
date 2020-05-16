@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.util.Lambda;
@@ -17,12 +16,12 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParserFactory;
-import org.matheclipse.core.trie.Tries;
+import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.operator.Operator;
+import org.matheclipse.parser.trie.Tries;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import com.sun.org.apache.xerces.internal.dom.ElementImpl;
 
 import uk.ac.ed.ph.snuggletex.InputError;
 import uk.ac.ed.ph.snuggletex.SnuggleEngine;
@@ -387,7 +386,9 @@ public class TeXParser {
 	 * <code>F.Integrate()...,{x,a,b})</code> expression.
 	 * 
 	 * @param parentList
-	 * @param start
+	 * @param position
+	 * @param dummySymbol
+	 * @param symbolOrList
 	 * @return
 	 */
 	private IExpr integrate(NodeList parentList, int[] position, ISymbol dummySymbol, IExpr symbolOrList) {
@@ -521,7 +522,7 @@ public class TeXParser {
 			}
 			return F.integer(text, 10);
 		} catch (RuntimeException rex) {
-			if (Config.SHOW_STACKTRACE) {
+			if (FEConfig.SHOW_STACKTRACE) {
 				rex.printStackTrace();
 			}
 		}
@@ -548,7 +549,7 @@ public class TeXParser {
 		for (int i = 0; i < list.getLength(); i++) {
 			Node temp = list.item(i);
 			String n = temp.getNodeName();
-			if (!n.equals("mi") || !(temp instanceof ElementImpl)) {
+			if (!n.equals("mi") || !(temp instanceof Element)) {
 				isSymbol = false;
 				break;
 			}
@@ -768,7 +769,7 @@ public class TeXParser {
 				fEngine.printMessage(errors.get(i).toString());
 			}
 		} catch (Exception e) {
-			if (Config.SHOW_STACKTRACE) {
+			if (FEConfig.SHOW_STACKTRACE) {
 				e.printStackTrace();
 			}
 		}

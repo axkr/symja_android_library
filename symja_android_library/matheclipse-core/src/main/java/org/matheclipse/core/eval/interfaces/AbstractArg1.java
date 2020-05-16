@@ -24,7 +24,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
 
 	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+	public IExpr evaluate(final IAST ast, final EvalEngine engine) {
 		final IExpr arg1 = ast.arg1();
 		final IExpr result = e1ObjArg(arg1);
 		if (result.isPresent()) {

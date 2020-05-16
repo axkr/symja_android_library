@@ -520,12 +520,11 @@ public class Assumptions extends AbstractAssumptions {
 	}
 
 	/**
-	 * Add more assumptions from the given ast. If the creation is not possible return <code>null</code>
+	 * Add more assumptions from the given <code>ast</code>. If the creation is not possible return <code>null</code>
 	 * 
 	 * @param ast
 	 *            the assumptions which should be added to the <code>assumptions</code> instance.
-	 * @param assumptions
-	 * @return <code>null</code> if <code>assumptions</code> could not be added from the given expression.
+	 * @return <code>null</code> if assumptions could not be added from the given expression.
 	 */
 	@Override
 	public IAssumptions addAssumption(IAST ast) {

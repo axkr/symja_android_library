@@ -149,9 +149,8 @@ public class IntegerSym extends AbstractIntegerSym {
 			}
 		} else if (expr.isReal()) {
 			return Double.compare(fIntValue, ((ISignedNumber) expr).doubleValue());
-		}
-		return -1;
-		// return super.compareTo(expr);
+		} 
+		return super.compareTo(expr);
 	}
 
 	@Override
@@ -195,14 +194,14 @@ public class IntegerSym extends AbstractIntegerSym {
 
 		return res;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public IInteger iquo(final IInteger that) {
 		BigInteger[] largeRes = toBigNumerator().divideAndRemainder(that.toBigNumerator());
 		return valueOf(largeRes[0]);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public IInteger irem(final IInteger that) {
@@ -979,7 +978,7 @@ public class IntegerSym extends AbstractIntegerSym {
 	}
 
 	private Object writeReplace() throws ObjectStreamException {
-		return optional(F.GLOBAL_IDS_MAP.get(this));
+		return optional();
 	}
 
 }

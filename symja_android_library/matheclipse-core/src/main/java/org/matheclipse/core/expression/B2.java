@@ -59,6 +59,12 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 		public IASTMutable copy() {
 			return new And(arg1, arg2);
 		}
+
+		/** {@inheritDoc} */
+		@Override
+		public final boolean isFlatAST() {
+			return true;
+		}
 	}
 
 	public final static class Condition extends B2 {
@@ -287,6 +293,12 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 		public IASTMutable copy() {
 			return new Or(arg1, arg2);
 		}
+
+		/** {@inheritDoc} */
+		@Override
+		public final boolean isFlatAST() {
+			return true;
+		}
 	}
 
 	public final static class Part extends B2 {
@@ -336,6 +348,12 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 
 		public boolean isTimes() {
 			return false;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public final boolean isFlatAST() {
+			return true;
 		}
 	}
 
@@ -504,6 +522,12 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 		public boolean isTimes() {
 			return true;
 		}
+
+		/** {@inheritDoc} */
+		@Override
+		public final boolean isFlatAST() {
+			return true;
+		}
 	}
 
 	public final static class UndirectedEdge extends B2 {
@@ -564,8 +588,6 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 	/**
 	 * Create a function with two arguments (i.e. <code>head[arg1, arg2]</code> ).
 	 * 
-	 * @param head
-	 *            the head of the function
 	 * @param arg1
 	 *            the first argument of the function
 	 * @param arg2
@@ -685,6 +707,14 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 	@Override
 	public IASTAppendable copyAppendable() {
 		return new AST(head(), arg1, arg2);
+	}
+
+	@Override
+	public IASTAppendable copyAppendable(int additionalCapacity) {
+		IASTAppendable result = F.ast(head(), additionalCapacity + 2, false);
+		result.append(arg1);
+		result.append(arg2);
+		return result;
 	}
 
 	@Override
@@ -890,11 +920,11 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 
 	/** {@inheritDoc} */
 	@Override
-	public int indexOf(Predicate<? super IExpr> predicate) {
-		if (predicate.test(arg1)) {
+	public int indexOf(Predicate<? super IExpr> predicate, int fromIndex) {
+		if (fromIndex == 1 && predicate.test(arg1)) {
 			return 1;
 		}
-		if (predicate.test(arg2)) {
+		if ((fromIndex == 1 || fromIndex == 2) && predicate.test(arg2)) {
 			return 2;
 		}
 		return -1;
@@ -971,6 +1001,12 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isFlatAST() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public boolean isPlus() {
 		return head() == F.Plus;
 	}
@@ -1007,7 +1043,7 @@ public abstract class B2 extends AbstractAST implements Cloneable, Externalizabl
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr last() {
+	public final IExpr last() {
 		return arg2;
 	}
 

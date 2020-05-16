@@ -4,16 +4,16 @@ package org.matheclipse.core.builtin;
 import java.math.BigInteger;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.hipparchus.complex.Complex;
 import org.hipparchus.util.MathArrays;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.parser.client.FEConfig;
 
 public final class RandomFunctions {
 
@@ -28,6 +28,7 @@ public final class RandomFunctions {
 			F.RandomInteger.setEvaluator(new RandomInteger());
 			F.RandomPrime.setEvaluator(new RandomPrime());
 			F.RandomChoice.setEvaluator(new RandomChoice());
+			F.RandomComplex.setEvaluator(new RandomComplex());
 			F.RandomReal.setEvaluator(new RandomReal());
 			F.RandomSample.setEvaluator(new RandomSample());
 		}
@@ -83,6 +84,67 @@ public final class RandomFunctions {
 
 	}
 
+	private final static class RandomComplex extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			try {
+				if (ast.isAST0()) {
+					// RandomReal() gives a double value between 0.0 and 1.0
+					ThreadLocalRandom tlr = ThreadLocalRandom.current();
+					double re = tlr.nextDouble();
+					double im = tlr.nextDouble();
+					return F.complexNum(re, im);
+				} else if (ast.isAST1()) {
+					if (ast.arg1().isAST(F.List, 3)) {
+						Complex min = engine.evalComplex(ast.arg1().first());
+						Complex max = engine.evalComplex(ast.arg1().second());
+						double minRe = min.getReal();
+						double minIm = min.getImaginary();
+						double maxRe = max.getReal();
+						double maxIm = max.getImaginary();
+						if (minRe >= maxRe) {
+							double temp = minRe;
+							minRe = maxRe;
+							maxRe = temp;
+							if (minRe == maxRe) {
+								// return F.num(min);
+							}
+						}
+						if (minIm >= maxIm) {
+							double temp = minIm;
+							minIm = maxIm;
+							maxIm = temp;
+							if (minIm == maxIm && minRe == maxRe) {
+								F.complexNum(minRe, minIm);
+							}
+						}
+						ThreadLocalRandom tlr = ThreadLocalRandom.current();
+						return F.complexNum(tlr.nextDouble(minRe, maxRe), tlr.nextDouble(minIm, maxIm));
+					} else {
+						Complex max = engine.evalComplex(ast.arg1() ); 
+						ThreadLocalRandom tlr = ThreadLocalRandom.current();
+						return F.complexNum(tlr.nextDouble(max.getReal()), tlr.nextDouble(max.getImaginary()));
+					}
+				} else if (ast.isAST2()) {
+					if (ast.arg2().isList()) {
+						IAST list = (IAST) ast.arg2();
+						IExpr[] arr = new IExpr[list.size()];
+						arr[0] = F.RandomComplex(ast.arg1());
+						for (int i = 1; i < list.size(); i++) {
+							arr[i] = F.List(list.get(i));
+						}
+						return F.ast(arr, F.Table);
+					}
+				}
+			} catch (RuntimeException rex) {
+				//
+			}
+			return F.NIL;
+		}
+
+	}
+
 	/**
 	 * <pre>
 	 * RandomInteger(n)
@@ -112,6 +174,14 @@ public final class RandomFunctions {
 				int min = ast.arg1().first().toIntDefault();
 				int max = ast.arg1().second().toIntDefault();
 				if (min != Integer.MIN_VALUE && max != Integer.MIN_VALUE) {
+					if (min >= max) {
+						int temp = min;
+						min = max;
+						max = temp;
+						if (min == max) {
+							return F.ZZ(min);
+						}
+					}
 					ThreadLocalRandom tlr = ThreadLocalRandom.current();
 					if (ast.isAST2()) {
 						int size = ast.arg2().toIntDefault(Integer.MIN_VALUE);
@@ -185,9 +255,9 @@ public final class RandomFunctions {
 					do {
 						randomNumber = new BigInteger(nlen, 32, tlr);
 					} while (randomNumber.compareTo(upperLimit) > 0);
-					return F.integer(randomNumber);
+					return F.ZZ(randomNumber);
 				} catch (RuntimeException rex) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						rex.printStackTrace();
 					}
 					return engine.printMessage("RandomPrime: There are no primes in the specified interval.");
@@ -233,6 +303,15 @@ public final class RandomFunctions {
 					if (ast.arg1().isAST(F.List, 3)) {
 						double min = engine.evalDouble(ast.arg1().first());
 						double max = engine.evalDouble(ast.arg1().second());
+						if (min >= max) {
+							double temp = min;
+							min = max;
+							max = temp;
+							if (min == max) {
+								return F.num(min);
+							}
+						}
+
 						ThreadLocalRandom tlr = ThreadLocalRandom.current();
 						return F.num(tlr.nextDouble(min, max));
 					} else {

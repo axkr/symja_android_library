@@ -4,15 +4,18 @@ import static org.matheclipse.core.expression.F.List;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apfloat.Apfloat;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.data.DateObjectExpr;
+import org.matheclipse.core.expression.data.TimeObjectExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -41,6 +44,9 @@ public class Object2Expr {
 	 * Integer              Symja Integer with longValue() value
 	 * Long                 Symja Integer with longValue() value
 	 * Number               Symja <code>Num</code> with doubleValue() value
+	 * LocalDateTime        Symja DateObjectExpr
+	 * LocalTime            Symja TimeObjectExpr  
+	 * String               Parse the string as Symja expression
 	 * java.util.Collection list of elements 
 	 *                      1..nth element of the list give the elements of the List()
 	 * Object[]             a list of converted objects  
@@ -113,7 +119,28 @@ public class Object2Expr {
 			}
 			return list;
 		}
+		if (obj instanceof LocalDateTime) {
+			return DateObjectExpr.newInstance((LocalDateTime) obj);
+		}
+		if (obj instanceof LocalTime) {
+			return TimeObjectExpr.newInstance((LocalTime) obj);
+		}
 		return F.$str(obj.toString());
+	}
+
+	/**
+	 * If <code>obj instanceof String</code> return a Symja string object. Otherwise call {@link #convert(Object)}.
+	 * 
+	 * @param obj
+	 *            the object which should be converted to a Symja object
+	 * @return
+	 * @throws ConversionException
+	 */
+	public static IExpr convertString(Object obj) throws ConversionException {
+		if (obj instanceof String) {
+			return F.stringx((String) obj);
+		}
+		return convert(obj);
 	}
 
 	private static IExpr convert(Number n) {

@@ -37,7 +37,8 @@ public class IntRangeSpec {
 	 * <li>&quot;{min, max}&quot; - gives <code>[&quot;min&quot;, &quot;max&quot;]</code></li>
 	 * </ul>
 	 * 
-	 * @param specification
+	 * @param ast
+	 * @param position
 	 * @return <code>null</code> if no <code>int</code> range in the interval <code>[0, Integer.MAX_VALUE]</code> could
 	 *         be determined
 	 */

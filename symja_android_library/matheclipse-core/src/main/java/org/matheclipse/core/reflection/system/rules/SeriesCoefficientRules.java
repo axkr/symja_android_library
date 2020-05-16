@@ -29,12 +29,12 @@ public interface SeriesCoefficientRules {
     // SeriesCoefficient(Sin(x_),{x_Symbol,Pi/2,n_?NotListQ}):=Piecewise({{((1+(-1)^n)*I^n)/(2*n!),n>=0}},0)/;FreeQ(n,x)
     ISetDelayed(SeriesCoefficient(Sin(x_),List(x_Symbol,CPiHalf,PatternTest(n_,NotListQ))),
       Condition(Piecewise(List(List(Times(Plus(C1,Power(CN1,n)),Power(CI,n),Power(Times(C2,Factorial(n)),CN1)),GreaterEqual(n,C0))),C0),FreeQ(n,x))),
-    // SeriesCoefficient(Tan(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{((-1+(-1)^n)*2^n*(-1+2^(1+n))*I^(1+n)*BernoulliB(1+n))/(1+n)!,n>=1}},0)/;FreeQ(n,x)
+    // SeriesCoefficient(Tan(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{((-1+(-1)^n)*I^(1+n)*2^n*(-1+2^(1+n))*BernoulliB(1+n))/(1+n)!,n>=1}},0)/;FreeQ(n,x)
     ISetDelayed(SeriesCoefficient(Tan(x_),List(x_Symbol,C0,PatternTest(n_,NotListQ))),
-      Condition(Piecewise(List(List(Times(Plus(CN1,Power(CN1,n)),Power(C2,n),Plus(CN1,Power(C2,Plus(C1,n))),Power(CI,Plus(C1,n)),BernoulliB(Plus(C1,n)),Power(Factorial(Plus(C1,n)),CN1)),GreaterEqual(n,C1))),C0),FreeQ(n,x))),
-    // SeriesCoefficient(Tan(x_),{x_Symbol,Pi/2,n_?NotListQ}):=Piecewise({{-1,n==-1},{((-1+(-1)^n)*2^n*I^(1+n)*BernoulliB(1+n))/(1+n)!,n>=0}},0)/;FreeQ(n,x)
+      Condition(Piecewise(List(List(Times(Plus(CN1,Power(CN1,n)),Power(CI,Plus(C1,n)),Power(C2,n),Plus(CN1,Power(C2,Plus(C1,n))),BernoulliB(Plus(C1,n)),Power(Factorial(Plus(C1,n)),CN1)),GreaterEqual(n,C1))),C0),FreeQ(n,x))),
+    // SeriesCoefficient(Tan(x_),{x_Symbol,Pi/2,n_?NotListQ}):=Piecewise({{-1,n==-1},{((-1+(-1)^n)*I^(1+n)*2^n*BernoulliB(1+n))/(1+n)!,n>=0}},0)/;FreeQ(n,x)
     ISetDelayed(SeriesCoefficient(Tan(x_),List(x_Symbol,CPiHalf,PatternTest(n_,NotListQ))),
-      Condition(Piecewise(List(List(CN1,Equal(n,CN1)),List(Times(Plus(CN1,Power(CN1,n)),Power(C2,n),Power(CI,Plus(C1,n)),BernoulliB(Plus(C1,n)),Power(Factorial(Plus(C1,n)),CN1)),GreaterEqual(n,C0))),C0),FreeQ(n,x))),
+      Condition(Piecewise(List(List(CN1,Equal(n,CN1)),List(Times(Plus(CN1,Power(CN1,n)),Power(CI,Plus(C1,n)),Power(C2,n),BernoulliB(Plus(C1,n)),Power(Factorial(Plus(C1,n)),CN1)),GreaterEqual(n,C0))),C0),FreeQ(n,x))),
     // SeriesCoefficient(Cot(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{1,n==-1},{((-1)*I*(-1+(-1)^n)*(2*I)^n*BernoulliB(1+n))/(1+n)!,n>=0}},0)/;FreeQ(n,x)
     ISetDelayed(SeriesCoefficient(Cot(x_),List(x_Symbol,C0,PatternTest(n_,NotListQ))),
       Condition(Piecewise(List(List(C1,Equal(n,CN1)),List(Times(CN1,CI,Plus(CN1,Power(CN1,n)),Power(Times(C2,CI),n),BernoulliB(Plus(C1,n)),Power(Factorial(Plus(C1,n)),CN1)),GreaterEqual(n,C0))),C0),FreeQ(n,x))),
@@ -74,9 +74,9 @@ public interface SeriesCoefficientRules {
     // SeriesCoefficient(ArcTanh(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{1/n,Mod(n,2)==1&&n>=0}},0)/;FreeQ(n,x)
     ISetDelayed(SeriesCoefficient(ArcTanh(x_),List(x_Symbol,C0,PatternTest(n_,NotListQ))),
       Condition(Piecewise(List(List(Power(n,CN1),And(Equal(Mod(n,C2),C1),GreaterEqual(n,C0)))),C0),FreeQ(n,x))),
-    // SeriesCoefficient(Csc(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{1,n==-1},{((-1)*2*I*(-1+2^n)*I^n*BernoulliB(1+n))/(1+n)!,n>=0&&Mod(n,2)==1}},0)/;FreeQ(n,x)
+    // SeriesCoefficient(Csc(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{1,n==-1},{((-1)*I*2*I^n*(-1+2^n)*BernoulliB(1+n))/(1+n)!,n>=0&&Mod(n,2)==1}},0)/;FreeQ(n,x)
     ISetDelayed(SeriesCoefficient(Csc(x_),List(x_Symbol,C0,PatternTest(n_,NotListQ))),
-      Condition(Piecewise(List(List(C1,Equal(n,CN1)),List(Times(CN1,C2,CI,Plus(CN1,Power(C2,n)),Power(CI,n),BernoulliB(Plus(C1,n)),Power(Factorial(Plus(C1,n)),CN1)),And(GreaterEqual(n,C0),Equal(Mod(n,C2),C1)))),C0),FreeQ(n,x))),
+      Condition(Piecewise(List(List(C1,Equal(n,CN1)),List(Times(CN1,CI,C2,Power(CI,n),Plus(CN1,Power(C2,n)),BernoulliB(Plus(C1,n)),Power(Factorial(Plus(C1,n)),CN1)),And(GreaterEqual(n,C0),Equal(Mod(n,C2),C1)))),C0),FreeQ(n,x))),
     // SeriesCoefficient(Sec(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{(I^n*EulerE(n))/n!,Mod(n,2)==0&&n>=0}},0)/;FreeQ(n,x)
     ISetDelayed(SeriesCoefficient(Sec(x_),List(x_Symbol,C0,PatternTest(n_,NotListQ))),
       Condition(Piecewise(List(List(Times(Power(CI,n),EulerE(n),Power(Factorial(n),CN1)),And(Equal(Mod(n,C2),C0),GreaterEqual(n,C0)))),C0),FreeQ(n,x))),
@@ -128,9 +128,9 @@ public interface SeriesCoefficientRules {
     // SeriesCoefficient(ArcSec(x_),{x_Symbol,a_,1}):=1/(Sqrt(1-1/a^2)*a^2)/;FreeQ(a,x)
     ISetDelayed(SeriesCoefficient(ArcSec(x_),List(x_Symbol,a_,C1)),
       Condition(Power(Times(Sqrt(Subtract(C1,Power(a,CN2))),Sqr(a)),CN1),FreeQ(a,x))),
-    // SeriesCoefficient(Log(x_),{x_Symbol,a_,n_?NotListQ}):=Piecewise({{(-1)^(1+n)/(a^n*n),n>=1},{Log(a),n==0}},0)/;FreeQ(a,x)&&a!=0&&FreeQ(n,x)
+    // SeriesCoefficient(Log(x_),{x_Symbol,a_,n_?NotListQ}):=Piecewise({{(-1)^(1+n)/(a^n*n),n>=1},{Log(a),n==0}},0)/;FreeQ(a,x)&&a=!=0&&FreeQ(n,x)
     ISetDelayed(SeriesCoefficient(Log(x_),List(x_Symbol,a_,PatternTest(n_,NotListQ))),
-      Condition(Piecewise(List(List(Times(Power(CN1,Plus(C1,n)),Power(Times(Power(a,n),n),CN1)),GreaterEqual(n,C1)),List(Log(a),Equal(n,C0))),C0),And(FreeQ(a,x),Unequal(a,C0),FreeQ(n,x)))),
+      Condition(Piecewise(List(List(Times(Power(CN1,Plus(C1,n)),Power(Times(Power(a,n),n),CN1)),GreaterEqual(n,C1)),List(Log(a),Equal(n,C0))),C0),And(FreeQ(a,x),UnsameQ(a,C0),FreeQ(n,x)))),
     // SeriesCoefficient(ProductLog(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{1/((-n)^(1-n)*n!),n>=1}},0)/;FreeQ(n,x)
     ISetDelayed(SeriesCoefficient(ProductLog(x_),List(x_Symbol,C0,PatternTest(n_,NotListQ))),
       Condition(Piecewise(List(List(Times(Power(Negate(n),Plus(CN1,n)),Power(Factorial(n),CN1)),GreaterEqual(n,C1))),C0),FreeQ(n,x))),

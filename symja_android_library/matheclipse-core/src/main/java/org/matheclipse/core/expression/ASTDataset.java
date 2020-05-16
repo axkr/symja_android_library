@@ -9,14 +9,20 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.MemoryLimitExceeded;
+import org.matheclipse.core.expression.data.DateObjectExpr;
+import org.matheclipse.core.expression.data.TimeObjectExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IAssociation;
@@ -40,30 +46,7 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table>, Externa
 	private static final long serialVersionUID = 7276828936929270780L;
 
 	/**
-	 * 
-	 * @param listOfAssociations
-	 * @return
-	 * @deprecated szub only
-	 */
-	// private static DatasetExpr newInstance(IAST listOfAssociations) {
-	// Table table = Table.create();
-	// if (listOfAssociations.size() > 1) {
-	// // for (int i = 1; i < listOfAssociations.size(); i++) {
-	// // IAssociation assoc = (IAssociation) listOfAssociations.get(i);
-	// // // Row row = table.appendRow();
-	// // }
-	// IAssociation assoc = (IAssociation) listOfAssociations.get(1);
-	// ArrayList<String> names = assoc.keyNames();
-	//
-	// for (int i = 1; i < listOfAssociations.size(); i++) {
-	// assoc = (IAssociation) listOfAssociations.get(i);
-	//
-	// }
-	// }
-	// return new DatasetExpr(table);
-	// }
-
-	/**
+	 * Create an AST dataset from a <a href="https://github.com/jtablesaw/tablesaw">Tablesaw table</a>
 	 * 
 	 * @param value
 	 * @return
@@ -177,6 +160,9 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table>, Externa
 
 	@Override
 	public IAST getItems(int[] items, int length) {
+		if (length <= 0) {
+			return newInstance(Table.create(fTable.name()));
+		}
 		int[] rows = new int[length];
 		for (int i = 0; i < length; i++) {
 			rows[i] = items[i] - 1;
@@ -192,7 +178,7 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table>, Externa
 	 * @return
 	 */
 	public IExpr getValue(IExpr key) {
-		return getValue(key, F.Missing(F.stringx("KeyAbsent"), key));
+		return getValue(key, () -> F.Missing(F.stringx("KeyAbsent"), key));
 	}
 
 	/**
@@ -203,20 +189,29 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table>, Externa
 	 * @param defaultValue
 	 * @return
 	 */
-	public IExpr getValue(IExpr key, IExpr defaultValue) {
+	public IExpr getValue(IExpr key, Supplier<IExpr> defaultValue) {
 		final String keyName = key.toString();
 		if (fTable.rowCount() == 1) {
 			int columnIndex = fTable.columnIndex(keyName);
 			if (columnIndex < 0) {
-				return defaultValue;
+				return defaultValue.get();
 			}
 			return select(1, columnIndex + 1);
 		}
 		String[] strList = new String[] { keyName };
 		Table table = fTable.select(strList);
 		if (table.columnCount() == 0) {
-			return defaultValue;
+			return defaultValue.get();
 		}
+		return newInstance(table);
+	}
+
+	public IExpr sortBy(List<String> group) {
+		String[] strings = new String[group.size()];
+		for (int i = 0; i < strings.length; i++) {
+			strings[i] = group.get(i);
+		}
+		Table table = fTable.sortAscendingOn(strings);
 		return newInstance(table);
 	}
 
@@ -244,7 +239,16 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table>, Externa
 		return DATASETID;
 	}
 
-	public IASTAppendable normal() {
+	public IASTAppendable columnNames() {
+		final List<String> names = fTable.columnNames();
+		IASTAppendable list = F.ListAlloc(names.size());
+		for (int i = 0; i < names.size(); i++) {
+			list.append(F.stringx(names.get(i)));
+		}
+		return list;
+	}
+
+	public IASTAppendable normal(boolean nilIfUnevaluated) {
 		Cache<IAST, IAST> cache = CacheBuilder.newBuilder().maximumSize(500).build();
 		final List<String> names = fTable.columnNames();
 		List<IStringX> namesStr = new ArrayList<IStringX>(names.size());
@@ -283,6 +287,15 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table>, Externa
 					resultList.append(F.stringx((String) obj));
 				} else if (t.equals(ColumnType.SKIP)) {
 					// ruleCache(cache, assoc, F.Rule(colName, F.Missing));
+				} else if (t.equals(ColumnType.LOCAL_DATE_TIME)) {
+					LocalDateTime lDate = (LocalDateTime) obj;
+					resultList.append(DateObjectExpr.newInstance(lDate));
+				} else if (t.equals(ColumnType.LOCAL_DATE)) {
+					LocalDate date = (LocalDate) obj;
+					resultList.append(DateObjectExpr.newInstance(date.atStartOfDay()));
+				} else if (t.equals(ColumnType.LOCAL_TIME)) {
+					LocalTime lTime = (LocalTime) obj;
+					resultList.append(TimeObjectExpr.newInstance(lTime));
 				} else {
 					IExpr valueStr = F.stringx(obj.toString());
 					resultList.append(valueStr);
@@ -325,6 +338,15 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table>, Externa
 					ruleCache(cache, assoc, F.Rule(colName, F.num(dValue)));
 				} else if (t.equals(ColumnType.STRING)) {
 					ruleCache(cache, assoc, F.Rule(colName, F.stringx(row.getString(j))));
+				} else if (t.equals(ColumnType.LOCAL_DATE_TIME)) {
+					LocalDateTime lDate = row.getDateTime(j);
+					ruleCache(cache, assoc, F.Rule(colName, DateObjectExpr.newInstance(lDate)));
+				} else if (t.equals(ColumnType.LOCAL_DATE)) {
+					LocalDate lDate = row.getDate(j);
+					ruleCache(cache, assoc, F.Rule(colName, DateObjectExpr.newInstance(lDate.atStartOfDay())));
+				} else if (t.equals(ColumnType.LOCAL_TIME)) {
+					LocalTime lTime = row.getTime(j);
+					ruleCache(cache, assoc, F.Rule(colName, TimeObjectExpr.newInstance(lTime)));
 				} else if (t.equals(ColumnType.SKIP)) {
 					// ruleCache(cache, assoc, F.Rule(colName, F.Missing));
 				} else {
@@ -401,7 +423,7 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table>, Externa
 			}
 			table = table.rows(iList);
 			if (table.columnCount() == 1) {
-				return Object2Expr.convert(table.get(0, 0));
+				return Object2Expr.convertString(table.get(0, 0));
 			}
 			return newInstance(table);
 		} else {
@@ -409,7 +431,7 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table>, Externa
 			if (rowIndex > 0) {
 				table = table.rows(rowIndex - 1);
 				if (table.columnCount() == 1) {
-					return Object2Expr.convert(table.get(0, 0));
+					return Object2Expr.convertString(table.get(0, 0));
 				}
 				return newInstance(table);
 			}
@@ -419,7 +441,8 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table>, Externa
 
 	private IExpr select(int row, int column) {
 		Table table = fTable;
-		return Object2Expr.convert(table.column(column - 1).get(row - 1));
+		Object obj = table.column(column - 1).get(row - 1);
+		return Object2Expr.convertString(obj);
 	}
 
 	/**
@@ -466,7 +489,7 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table>, Externa
 
 	@Override
 	public String toString() {
-		return head() + "[" + fTable.toString() + "]";
+		return fTable.printAll();
 	}
 
 	@Override
@@ -480,6 +503,14 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table>, Externa
 			return fTable.columnCount() + 1;
 		}
 		return fTable.rowCount() + 1;
+	}
+
+	public ASTDataset structure() {
+		return newInstance(fTable.structure());
+	}
+
+	public ASTDataset summary() {
+		return newInstance(fTable.summary());
 	}
 
 	@Override
@@ -514,7 +545,12 @@ public class ASTDataset extends AbstractAST implements IDataExpr<Table>, Externa
 
 	@Override
 	public IASTAppendable copyAppendable() {
-		return normal();
+		return normal(false);
+	}
+
+	@Override
+	public IASTAppendable copyAppendable(int additionalCapacity) {
+		return normal(false);
 	}
 
 	@Override

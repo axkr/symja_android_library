@@ -13,7 +13,7 @@ public interface ArcSecRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 22, 0 };
+  final public static int[] SIZES = { 30, 0 };
 
   final public static IAST RULES = List(
     IInit(ArcSec, SIZES),
@@ -32,6 +32,18 @@ public interface ArcSecRules {
     // ArcSec(Sqrt(2)-Sqrt(6))=11/12*Pi
     ISet(ArcSec(Subtract(CSqrt2,CSqrt6)),
       Times(QQ(11L,12L),Pi)),
+    // ArcSec(Sqrt(2-2/Sqrt(5)))=Pi/10
+    ISet(ArcSec(Sqrt(Plus(C2,Times(CN2,C1DSqrt5)))),
+      Times(QQ(1L,10L),Pi)),
+    // ArcSec(-Sqrt(2-2/Sqrt(5)))=9/10*Pi
+    ISet(ArcSec(Negate(Sqrt(Plus(C2,Times(CN2,C1DSqrt5))))),
+      Times(QQ(9L,10L),Pi)),
+    // ArcSec(2/Sqrt(2+Sqrt(2)))=Pi/8
+    ISet(ArcSec(Times(C2,Power(Plus(C2,CSqrt2),CN1D2))),
+      Times(QQ(1L,8L),Pi)),
+    // ArcSec(-2/Sqrt(2+Sqrt(2)))=7/8*Pi
+    ISet(ArcSec(Times(CN2,Power(Plus(C2,CSqrt2),CN1D2))),
+      Times(QQ(7L,8L),Pi)),
     // ArcSec(2/Sqrt(3))=Pi/6
     ISet(ArcSec(Times(C2,C1DSqrt3)),
       Times(QQ(1L,6L),Pi)),
@@ -50,15 +62,27 @@ public interface ArcSecRules {
     // ArcSec(-Sqrt(2))=3/4*Pi
     ISet(ArcSec(Negate(CSqrt2)),
       Times(QQ(3L,4L),Pi)),
+    // ArcSec(Sqrt(2+2/Sqrt(5)))=3/10*Pi
+    ISet(ArcSec(Sqrt(Plus(C2,Times(C2,C1DSqrt5)))),
+      Times(QQ(3L,10L),Pi)),
+    // ArcSec(-Sqrt(2+2/Sqrt(5)))=7/10*Pi
+    ISet(ArcSec(Negate(Sqrt(Plus(C2,Times(C2,C1DSqrt5))))),
+      Times(QQ(7L,10L),Pi)),
     // ArcSec(2)=Pi/3
     ISet(ArcSec(C2),
       Times(C1D3,Pi)),
     // ArcSec(-2)=2/3*Pi
     ISet(ArcSec(CN2),
       Times(QQ(2L,3L),Pi)),
-    // ArcSec(1+Sqrt(5))=Pi/5
+    // ArcSec(Sqrt(2*(2+Sqrt(2))))=3/8*Pi
+    ISet(ArcSec(Sqrt(Times(C2,Plus(C2,CSqrt2)))),
+      Times(QQ(3L,8L),Pi)),
+    // ArcSec(-Sqrt(2*(2+Sqrt(2))))=5/8*Pi
+    ISet(ArcSec(Negate(Sqrt(Times(C2,Plus(C2,CSqrt2))))),
+      Times(QQ(5L,8L),Pi)),
+    // ArcSec(1+Sqrt(5))=2/5*Pi
     ISet(ArcSec(Plus(C1,CSqrt5)),
-      Times(QQ(1L,5L),Pi)),
+      Times(QQ(2L,5L),Pi)),
     // ArcSec(-1-Sqrt(5))=3/5*Pi
     ISet(ArcSec(Subtract(CN1,CSqrt5)),
       Times(QQ(3L,5L),Pi)),

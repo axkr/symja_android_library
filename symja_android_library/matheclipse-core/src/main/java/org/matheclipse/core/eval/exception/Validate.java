@@ -3,7 +3,6 @@ package org.matheclipse.core.eval.exception;
 import java.io.IOException;
 import java.math.BigInteger;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -15,6 +14,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.FEConfig;
 
 /**
  * Static methods to be called at the start of the built-in <code>IFunctionEvaluator#evaluate()</code> methods to verify
@@ -107,7 +107,41 @@ public final class Validate {
 				}
 				return result;
 			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
+			}
+		}
+		// The first argument `1` of `2` should be a non-empty list of positive integers.
+		IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
+		return null;
+	}
+
+	public static int[] checkListOfInts(IAST ast, IExpr arg, boolean nonNegative, EvalEngine engine) {
+		if (arg.isList() && arg.size() > 1) {
+			IAST list = (IAST) arg;
+			int[] result = new int[list.argSize()];
+
+			try {
+				IExpr expr;
+				for (int i = 1; i < list.size(); i++) {
+					expr = list.get(i);
+					int intValue = expr.toIntDefault();
+					if (intValue == Integer.MIN_VALUE) {
+						// The first argument `1` of `2` should be a non-empty list of positive integers.
+						IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
+						return null;
+					}
+					if (nonNegative && intValue < 0) {
+						// The first argument `1` of `2` should be a non-empty list of positive integers.
+						IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
+						return null;
+					}
+					result[i - 1] = intValue;
+				}
+				return result;
+			} catch (RuntimeException rex) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 			}
@@ -136,14 +170,14 @@ public final class Validate {
 			try {
 				IExpr expr;
 				for (int i = 1; i < list.size(); i++) {
-					expr = list.get(i);
-					// the following may throw an ArithmeticException
-					if (expr instanceof IInteger) {
-						intValue = ((IInteger) expr).toInt();
-					} else if (expr instanceof INum) {
-						intValue = ((INum) expr).toInt();
+					intValue = list.get(i).toIntDefault();
+					if (intValue == Integer.MIN_VALUE) {
+						// List of Java int numbers expected in `1`.
+						IOFunctions.printMessage(ast.topHead(), "listofints", F.List(arg), engine);
+						return null;
 					}
 					if (minValue > intValue || intValue > maxValue) {
+						// List of Java int numbers expected in `1`.
 						IOFunctions.printMessage(ast.topHead(), "listofints", F.List(arg), engine);
 						return null;
 					}
@@ -487,10 +521,9 @@ public final class Validate {
 	}
 
 	/**
-	 * Check if the argument at the given position is an AST.
+	 * Check if the argument is an AST, otherwise throw an <code>ArgumentTypeException</code> with message &quot;Cannot
+	 * assign to raw object `1`.&quot;
 	 * 
-	 * @param position
-	 *            the position which has to be an AST.
 	 * @throws ArgumentTypeException
 	 *             if it's not an AST.
 	 */

@@ -111,13 +111,15 @@ public interface IPatternMap extends Cloneable {
 		}
 
 		@Override
-		public void setValue(IPatternObject pattern, IExpr expr) {
-			throw new IllegalStateException("Pattern:" + pattern + " is not available");
+		public boolean setValue(IPatternObject pattern, IExpr expr) {
+			return false;
+			// throw new IllegalStateException("Pattern:" + pattern + " is not available");
 		}
 
 		@Override
-		public void setValue(IPatternSequence pattern, IAST sequence) {
-			throw new IllegalStateException("Patternsequence:" + pattern + " is not available");
+		public boolean setValue(IPatternSequence pattern, IAST sequence) {
+			return false;
+			// throw new IllegalStateException("Patternsequence:" + pattern + " is not available");
 		}
 
 		public int size() {
@@ -271,7 +273,7 @@ public interface IPatternMap extends Cloneable {
 		}
 
 		@Override
-		public void setValue(IPatternObject pattern, IExpr expr) {
+		public boolean setValue(IPatternObject pattern, IExpr expr) {
 			ISymbol sym = pattern.getSymbol();
 			IExpr temp = pattern;
 			if (sym != null) {
@@ -282,13 +284,14 @@ public interface IPatternMap extends Cloneable {
 				if (fValue1.isOneIdentityAST1()) {
 					fValue1 = fValue1.first();
 				}
-				return;
+				return true;
 			}
-			throw new IllegalStateException("Pattern:" + pattern + " is not available");
+			return false;
+			// throw new IllegalStateException("Pattern:" + pattern + " is not available");
 		}
 
 		@Override
-		public void setValue(IPatternSequence pattern, IAST sequence) {
+		public boolean setValue(IPatternSequence pattern, IAST sequence) {
 			ISymbol sym = pattern.getSymbol();
 			IExpr temp = pattern;
 			if (sym != null) {
@@ -296,9 +299,10 @@ public interface IPatternMap extends Cloneable {
 			}
 			if (temp == fSymbol1) {
 				fValue1 = sequence;
-				return;
+				return true;
 			}
-			throw new IllegalStateException("Patternsequence:" + pattern + " is not available");
+			return false;
+			// throw new IllegalStateException("Patternsequence:" + pattern + " is not available");
 		}
 
 		public int size() {
@@ -494,7 +498,7 @@ public interface IPatternMap extends Cloneable {
 		}
 
 		@Override
-		public void setValue(IPatternObject pattern, IExpr expr) {
+		public boolean setValue(IPatternObject pattern, IExpr expr) {
 			ISymbol sym = pattern.getSymbol();
 			IExpr temp = pattern;
 			if (sym != null) {
@@ -505,20 +509,21 @@ public interface IPatternMap extends Cloneable {
 				if (fValue1.isOneIdentityAST1()) {
 					fValue1 = fValue1.first();
 				}
-				return;
+				return true;
 			}
 			if (temp == fSymbol2) {
 				fValue2 = expr;
 				if (fValue2.isOneIdentityAST1()) {
 					fValue2 = fValue2.first();
 				}
-				return;
+				return true;
 			}
-			throw new IllegalStateException("Pattern:" + pattern + " is not available");
+			return false;
+			// throw new IllegalStateException("Pattern:" + pattern + " is not available");
 		}
 
 		@Override
-		public void setValue(IPatternSequence pattern, IAST sequence) {
+		public boolean setValue(IPatternSequence pattern, IAST sequence) {
 			ISymbol sym = pattern.getSymbol();
 			IExpr temp = pattern;
 			if (sym != null) {
@@ -526,13 +531,14 @@ public interface IPatternMap extends Cloneable {
 			}
 			if (temp == fSymbol1) {
 				fValue1 = sequence;
-				return;
+				return true;
 			}
 			if (temp == fSymbol2) {
 				fValue2 = sequence;
-				return;
+				return true;
 			}
-			throw new IllegalStateException("Patternsequence:" + pattern + " is not available");
+			return false;
+			// throw new IllegalStateException("Patternsequence:" + pattern + " is not available");
 		}
 
 		public int size() {
@@ -769,7 +775,7 @@ public interface IPatternMap extends Cloneable {
 		}
 
 		@Override
-		public void setValue(IPatternObject pattern, IExpr expr) {
+		public boolean setValue(IPatternObject pattern, IExpr expr) {
 			ISymbol sym = pattern.getSymbol();
 			IExpr temp = pattern;
 			if (sym != null) {
@@ -780,27 +786,28 @@ public interface IPatternMap extends Cloneable {
 				if (fValue1.isOneIdentityAST1()) {
 					fValue1 = fValue1.first();
 				}
-				return;
+				return true;
 			}
 			if (temp == fSymbol2) {
 				fValue2 = expr;
 				if (fValue2.isOneIdentityAST1()) {
 					fValue2 = fValue2.first();
 				}
-				return;
+				return true;
 			}
 			if (temp == fSymbol3) {
 				fValue3 = expr;
 				if (fValue3.isOneIdentityAST1()) {
 					fValue3 = fValue3.first();
 				}
-				return;
+				return true;
 			}
-			throw new IllegalStateException("Pattern:" + pattern + " is not available");
+			return false;
+			// throw new IllegalStateException("Pattern:" + pattern + " is not available");
 		}
 
 		@Override
-		public void setValue(IPatternSequence pattern, IAST sequence) {
+		public boolean setValue(IPatternSequence pattern, IAST sequence) {
 			ISymbol sym = pattern.getSymbol();
 			IExpr temp = pattern;
 			if (sym != null) {
@@ -808,17 +815,18 @@ public interface IPatternMap extends Cloneable {
 			}
 			if (temp == fSymbol1) {
 				fValue1 = sequence;
-				return;
+				return true;
 			}
 			if (temp == fSymbol2) {
 				fValue2 = sequence;
-				return;
+				return true;
 			}
 			if (temp == fSymbol3) {
 				fValue3 = sequence;
-				return;
+				return true;
 			}
-			throw new IllegalStateException("Patternsequence:" + pattern + " is not available");
+			// throw new IllegalStateException("Patternsequence:" + pattern + " is not available");
+			return false;
 		}
 
 		public int size() {
@@ -1164,7 +1172,7 @@ public interface IPatternMap extends Cloneable {
 			evaluatedRHS = evaluated;
 		}
 
-		public void setValue(IPatternObject pattern, IExpr expr) {
+		public boolean setValue(IPatternObject pattern, IExpr expr) {
 			ISymbol sym = pattern.getSymbol();
 			IExpr temp = pattern;
 			if (sym != null) {
@@ -1177,12 +1185,13 @@ public interface IPatternMap extends Cloneable {
 				} else {
 					fSymbolsOrPatternValues[indx] = expr;
 				}
-				return;
+				return true;
 			}
-			throw new IllegalStateException("Pattern:" + pattern + " is not available");
+			return false;
+			// throw new IllegalStateException("Pattern:" + pattern + " is not available");
 		}
 
-		public void setValue(IPatternSequence pattern, IAST sequence) {
+		public boolean setValue(IPatternSequence pattern, IAST sequence) {
 			ISymbol sym = pattern.getSymbol();
 			IExpr temp = pattern;
 			if (sym != null) {
@@ -1191,9 +1200,10 @@ public interface IPatternMap extends Cloneable {
 			int indx = get(temp);
 			if (indx >= 0) {
 				fSymbolsOrPatternValues[indx] = sequence;
-				return;
+				return true;
 			}
-			throw new IllegalStateException("Patternsequence:" + pattern + " is not available");
+			return false;
+			// throw new IllegalStateException("Patternsequence:" + pattern + " is not available");
 		}
 
 		/** {@inheritDoc} */
@@ -1506,9 +1516,25 @@ public interface IPatternMap extends Cloneable {
 
 	public void setRHSEvaluated(boolean evaluated);
 
-	public void setValue(IPatternObject pattern, IExpr expr);
+	/**
+	 * Assign the value to the pattern.
+	 * 
+	 * @param pattern
+	 *            the pattern expression
+	 * @param expr
+	 * @return <code>true</code> if assignment was successful, <code>false</code> otherwise.
+	 */
+	public boolean setValue(IPatternObject pattern, IExpr expr);
 
-	public void setValue(IPatternSequence pattern, IAST sequence);
+	/**
+	 * Assign the sequence to the pattern sequence.
+	 * 
+	 * @param pattern
+	 *            the pattern sequence expression
+	 * @param sequence
+	 * @return <code>true</code> if assignment was successful, <code>false</code> otherwise.
+	 */
+	public boolean setValue(IPatternSequence pattern, IAST sequence);
 
 	/**
 	 * Gives the number of symbols used in this map.
@@ -1558,6 +1584,17 @@ public interface IPatternMap extends Cloneable {
 	}
 
 	default IExpr substituteASTPatternOrSymbols(final IAST lhsPatternExpr, boolean onlyNamedPatterns) {
+		IExpr temp = substituteASTPatternOrSymbols2(lhsPatternExpr, onlyNamedPatterns);
+//		if (temp.isPresent()) {
+//			IExpr temp1 = EvalEngine.get().evaluate(temp);
+//			if (!temp.equals(temp1)) {
+//				System.out.println(temp + " != " + temp1);
+//			}
+//		}
+		return temp;
+	}
+
+	default IExpr substituteASTPatternOrSymbols2(final IAST lhsPatternExpr, boolean onlyNamedPatterns) {
 		VisitorReplaceAllWithPatternFlags visitor = new VisitorReplaceAllWithPatternFlags(input -> {
 			if (input instanceof IPatternObject) {
 				if (onlyNamedPatterns && !(input instanceof Pattern)) {
@@ -1581,6 +1618,7 @@ public interface IPatternMap extends Cloneable {
 			if (temp.isPresent()) {
 				if (!result.isPresent()) {
 					result = lhsPatternExpr.setAtCopy(i, temp);
+//					result.setEvalFlags(lhsPatternExpr.getEvalFlags());
 				} else {
 					result.set(i, temp);
 				}
@@ -1588,27 +1626,26 @@ public interface IPatternMap extends Cloneable {
 		}
 
 		if (result.isPresent()) {
-			IExpr temp=  EvalEngine.get().evaluate(result);
-			// set the eval flags
-			temp.isFreeOfPatterns();
-			return temp;
-//			if (result.isFlatAST()) {
-//				IASTMutable temp = EvalAttributes.flattenDeep((IAST) result);
-//				if (temp.isPresent()) {
-//					result = temp;
-//				}
-//			}
-//			// don't test for OneIdentity attribute here !
-//			if (result.isOrderlessAST()) {
-//				EvalAttributes.sort(result);
-//			}
-//			// set the eval flags
-//			result.isFreeOfPatterns();
-//			// System.out.println(" " + lhsPatternExpr.toString() + " -> " + result.toString());
-//			return result;
+			return EvalAttributes.simpleEval(result);
+
+			// if (result.isFlatAST()) {
+			// IASTMutable temp = EvalAttributes.flattenDeep((IAST) result);
+			// if (temp.isPresent()) {
+			// result = temp;
+			// }
+			// }
+			// // don't test for OneIdentity attribute here !
+			// if (result.isOrderlessAST()) {
+			// EvalAttributes.sort(result);
+			// }
+			// // set the eval flags
+			// result.isFreeOfPatterns();
+			// // System.out.println(" " + lhsPatternExpr.toString() + " -> " + result.toString());
+			// return result;
 		}
 		return F.NIL;
 	}
+
 
 	/**
 	 * Substitute all symbols in the given expression with the current value of the corresponding internal pattern

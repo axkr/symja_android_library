@@ -257,8 +257,8 @@ public class CurveFitterFunctions {
 								return convertToRulesList(listOfSymbols, values);
 							}
 						}
-					} catch (RuntimeException ex) {
-						return engine.printMessage("FindFit: " + ex.getMessage());
+					} catch (RuntimeException rex) {
+						return engine.printMessage(ast.topHead(), rex);
 					}
 				}
 			}
@@ -303,8 +303,8 @@ public class CurveFitterFunctions {
 					if (addWeightedObservedPoints(data, obs)) {
 						try {
 							return Convert.polynomialFunction2Expr(fitter.fit(obs.toList()), (ISymbol) ast.arg3());
-						} catch (RuntimeException ex) {
-							return engine.printMessage("Fit: " + ex.getMessage());
+						} catch (RuntimeException rex) {
+							return engine.printMessage(ast.topHead(), rex);
 						}
 					}
 				}

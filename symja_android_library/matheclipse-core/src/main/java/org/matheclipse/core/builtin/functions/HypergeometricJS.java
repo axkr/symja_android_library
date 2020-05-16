@@ -19,6 +19,9 @@ import org.matheclipse.core.expression.F;
  * <a href="https://github.com/paulmasson/math/blob/master/src/functions/hypergeometric.js">hypergeometric.js</a>
  */
 public class HypergeometricJS {
+	private HypergeometricJS() {
+
+	}
 
 	// public static Complex hypergeometricSeries(Complex[] A, Complex[] B, Complex x) {
 	// return hypergeometricSeries(A, B, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);

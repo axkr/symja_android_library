@@ -13,16 +13,28 @@ public interface LimitRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 44, 17 };
+  final public static int[] SIZES = { 44, 21 };
 
   final public static IAST RULES = List(
     IInit(Limit, SIZES),
     // Limit(x_*(Sqrt(2*Pi))^(1/x_)*(Sin(x_)/x_!)^(1/x_),x_Symbol->Infinity):=E
-    ISetDelayed(Limit(Times(Power(Sqrt(C2Pi),Power(x_,CN1)),x_,Power(Times(Power(Factorial(x_),CN1),Sin(x_)),Power(x_,CN1))),Rule(x_Symbol,oo)),
+    ISetDelayed(Limit(Times(Power(Sqrt(C2Pi),Power(x_,CN1)),Power(Times(Power(Factorial(x_),CN1),Sin(x_)),Power(x_,CN1)),x_),Rule(x_Symbol,oo)),
       E),
     // Limit(x_/(x_!)^(1/x_),x_Symbol->Infinity):=E
-    ISetDelayed(Limit(Times(x_,Power(Factorial(x_),Negate(Power(x_,CN1)))),Rule(x_Symbol,oo)),
+    ISetDelayed(Limit(Times(Power(Factorial(x_),Negate(Power(x_,CN1))),x_),Rule(x_Symbol,oo)),
       E),
+    // Limit(x_^(a_.*x_^n_.+b_.),x_Symbol->0):=With({r=ConditionalExpression(1,Element(a,Reals)&&b>0&&n>0)},r/;r=!=Undefined)
+    ISetDelayed(Limit(Power(x_,Plus(b_DEFAULT,Times(a_DEFAULT,Power(x_,n_DEFAULT)))),Rule(x_Symbol,C0)),
+      With(List(Set(r,ConditionalExpression(C1,And(Element(a,Reals),Greater(b,C0),Greater(n,C0))))),Condition(r,UnsameQ(r,Undefined)))),
+    // Limit(x_^(a_.*x_^n_.+b_.),x_Symbol->0):=With({r=ConditionalExpression(0,Element(b,Reals)&&a>0&&n<0&&Cos(-n*Pi)>0&&Sin(-n*Pi)>0)},r/;r=!=Undefined)
+    ISetDelayed(Limit(Power(x_,Plus(b_DEFAULT,Times(a_DEFAULT,Power(x_,n_DEFAULT)))),Rule(x_Symbol,C0)),
+      With(List(Set(r,ConditionalExpression(C0,And(Element(b,Reals),Greater(a,C0),Less(n,C0),Greater(Cos(Times(CN1,n,Pi)),C0),Greater(Sin(Times(CN1,n,Pi)),C0))))),Condition(r,UnsameQ(r,Undefined)))),
+    // Limit(x_^(a_.*x_^n_.+b_.),x_Symbol->Infinity):=With({r=ConditionalExpression(Infinity,Element(b,Reals)&&a>0&&n>0)},r/;r=!=Undefined)
+    ISetDelayed(Limit(Power(x_,Plus(b_DEFAULT,Times(a_DEFAULT,Power(x_,n_DEFAULT)))),Rule(x_Symbol,oo)),
+      With(List(Set(r,ConditionalExpression(oo,And(Element(b,Reals),Greater(a,C0),Greater(n,C0))))),Condition(r,UnsameQ(r,Undefined)))),
+    // Limit(x_^(a_.*x_^n_.),x_Symbol->Infinity):=With({r=ConditionalExpression(1,Element(a,Reals)&&n<0)},r/;r=!=Undefined)
+    ISetDelayed(Limit(Power(x_,Times(a_DEFAULT,Power(x_,n_DEFAULT))),Rule(x_Symbol,oo)),
+      With(List(Set(r,ConditionalExpression(C1,And(Element(a,Reals),Less(n,C0))))),Condition(r,UnsameQ(r,Undefined)))),
     // Limit(x_^m_?RealNumberQ,x_Symbol->Infinity):=If(m<0,0,Infinity)
     ISetDelayed(Limit(Power(x_,PatternTest(m_,RealNumberQ)),Rule(x_Symbol,oo)),
       If(Less(m,C0),C0,oo)),
@@ -53,9 +65,9 @@ public interface LimitRules {
     // Limit((1+a_/x_)^x_,x_Symbol->Infinity)=E^a/;FreeQ(a,x)
     ISet(Limit(Power(Plus(C1,Times(a_,Power(x_,CN1))),x_),Rule(x_Symbol,oo)),
       Condition(Exp(a),FreeQ(a,x))),
-    // Limit(HarmonicNumber(y_Symbol,s_Integer),x_Symbol->Infinity):=Module({v=s/2},((-1)^(v+1)*(2*Pi)^(2*v)*BernoulliB(2*v))/(2*(2*v)!))/;EvenQ(s)&&Positive(s)
+    // Limit(HarmonicNumber(y_Symbol,s_Integer),x_Symbol->Infinity):=With({v=s/2},((-1)^(v+1)*(2*Pi)^(2*v)*BernoulliB(2*v))/(2*(2*v)!))/;EvenQ(s)&&Positive(s)
     ISetDelayed(Limit(HarmonicNumber(y_Symbol,$p(s, Integer)),Rule(x_Symbol,oo)),
-      Condition(Module(List(Set(v,Times(C1D2,s))),Times(Power(CN1,Plus(v,C1)),Power(C2Pi,Times(C2,v)),BernoulliB(Times(C2,v)),Power(Times(C2,Factorial(Times(C2,v))),CN1))),And(EvenQ(s),Positive(s)))),
+      Condition(With(List(Set(v,Times(C1D2,s))),Times(Power(CN1,Plus(v,C1)),Power(C2Pi,Times(C2,v)),BernoulliB(Times(C2,v)),Power(Times(C2,Factorial(Times(C2,v))),CN1))),And(EvenQ(s),Positive(s)))),
     // Limit(Tan(x_),x_Symbol->Pi/2):=Indeterminate
     ISetDelayed(Limit(Tan(x_),Rule(x_Symbol,CPiHalf)),
       Indeterminate),
@@ -183,10 +195,10 @@ public interface LimitRules {
     ISetDelayed(Limit(Gamma(z_,x_),Rule(x_Symbol,C0)),
       Gamma(z)),
     // Limit(x_/Abs(x_),x_Symbol->0,Direction->1):=-1
-    ISetDelayed(Limit(Times(x_,Power(Abs(x_),CN1)),Rule(x_Symbol,C0),Rule(Direction,C1)),
+    ISetDelayed(Limit(Times(Power(Abs(x_),CN1),x_),Rule(x_Symbol,C0),Rule(Direction,C1)),
       CN1),
     // Limit(x_/Abs(x_),x_Symbol->0,Direction->-1):=1
-    ISetDelayed(Limit(Times(x_,Power(Abs(x_),CN1)),Rule(x_Symbol,C0),Rule(Direction,CN1)),
+    ISetDelayed(Limit(Times(Power(Abs(x_),CN1),x_),Rule(x_Symbol,C0),Rule(Direction,CN1)),
       C1),
     // Limit(Tan(x_),x_Symbol->Pi/2,Direction->1):=Infinity
     ISetDelayed(Limit(Tan(x_),Rule(x_Symbol,CPiHalf),Rule(Direction,C1)),

@@ -257,9 +257,6 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 		derivativeHead2.append(header);
 		IASTAppendable derivativeAST = F.ast(derivativeHead2, args.size(), false);
 		derivativeAST.appendArgs(args.size(), i -> args.get(i));
-		// for (int i = 1; i < args.size(); i++) {
-		// derivativeAST.append(args.get(i));
-		// }
 		return derivativeAST;
 	}
 
@@ -300,7 +297,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 					if (ast.isEvalFlagOn(IAST.IS_DERIVATIVE_EVALED)) {
 						return F.NIL;
 					}
-					int n = Validate.checkIntType(xList, 2, 1);
+					int n = Validate.checkNonNegativeIntType(xList, 2);
 					if (n >= 0) {
 						if (xList.arg1().isList()) {
 							x = F.List(xList.arg1());
@@ -319,8 +316,9 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 			}
 
 			if (!(x.isList())) {
-				if (fx.isAST(F.Piecewise) && fx.size() >= 2 && fx.first().isList()) {
-					return dPiecewise(fx, ast, engine);
+				int[] dim = fx.isPiecewise();
+				if (dim != null) {
+					return dPiecewise(dim, (IAST) fx, ast, engine);
 				}
 
 				if (fx instanceof ASTSeriesData) {
@@ -434,30 +432,30 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 		return F.NIL;
 	}
 
-	private static IExpr dPiecewise(final IExpr piecewiseFunction, final IAST ast, EvalEngine engine) {
-		int[] dim = piecewiseFunction.first().isMatrix(false);
-		if (dim != null && dim[0] > 0 && dim[1] == 2) {
-			IAST list = (IAST) piecewiseFunction.first();
-			if (list.size() > 1) {
-				IASTAppendable pwResult = F.ListAlloc(list.size());
-				for (int i = 1; i < list.size(); i++) {
-					IASTMutable diff = ((IAST) ast).copy();
-					diff.set(1, list.get(i).first());
-					pwResult.append(F.List(diff, list.get(i).second()));
-				}
-				if (piecewiseFunction.size() > 2) {
-					IASTMutable diff = ((IAST) ast).copy();
-					diff.set(1, piecewiseFunction.second());
-					pwResult.append(F.List(engine.evaluate(diff), F.True));
-				}
-				IASTMutable piecewise = ((IAST) piecewiseFunction).copy();
-				piecewise.set(1, pwResult);
-				if (piecewise.size() > 2) {
-					piecewise.set(2, F.Indeterminate);
-				}
-				return piecewise;
+	private static IExpr dPiecewise(int[] dim, final IAST piecewiseFunction, final IAST ast, EvalEngine engine) {
+		// int[] dim = piecewiseFunction.arg1().isMatrix(false);
+		// if (dim != null && dim[0] > 0 && dim[1] == 2) {
+		IAST list = (IAST) piecewiseFunction.arg1();
+		if (list.size() > 1) {
+			IASTAppendable pwResult = F.ListAlloc(list.size());
+			for (int i = 1; i < list.size(); i++) {
+				IASTMutable diff = ((IAST) ast).copy();
+				diff.set(1, list.get(i).first());
+				pwResult.append(F.List(diff, list.get(i).second()));
 			}
+			if (piecewiseFunction.size() > 2) {
+				IASTMutable diff = ((IAST) ast).copy();
+				diff.set(1, piecewiseFunction.arg2());
+				pwResult.append(F.List(engine.evaluate(diff), F.True));
+			}
+			IASTMutable piecewise = ((IAST) piecewiseFunction).copy();
+			piecewise.set(1, pwResult);
+			if (piecewise.size() > 2) {
+				piecewise.set(2, F.Indeterminate);
+			}
+			return piecewise;
 		}
+		// }
 		return F.NIL;
 	}
 

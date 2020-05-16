@@ -3,7 +3,6 @@ package org.matheclipse.core.eval;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
@@ -12,6 +11,7 @@ import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.math.MathException;
 
 import ch.ethz.idsc.tensor.qty.IQuantity;
@@ -335,7 +335,7 @@ public final class PlusOp {
 				evaled = true;
 			}
 		} catch (MathException mex) {
-			if (Config.SHOW_STACKTRACE) {
+			if (FEConfig.SHOW_STACKTRACE) {
 				mex.printStackTrace();
 			}
 		}

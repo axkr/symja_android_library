@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
@@ -14,6 +13,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
+import org.matheclipse.parser.client.FEConfig;
 
 /**
  * <pre>
@@ -188,7 +188,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 						return linearODE(p, q, xVar, C_1, engine);
 					}
 				} catch (RuntimeException rex) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						rex.printStackTrace();
 					}
 				}
@@ -208,7 +208,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 				}
 			}
 		} catch (RuntimeException rex) {
-			if (Config.SHOW_STACKTRACE) {
+			if (FEConfig.SHOW_STACKTRACE) {
 				rex.printStackTrace();
 			}
 		}

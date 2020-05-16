@@ -176,8 +176,14 @@ public class Num implements INum {
 		if (expr instanceof Num) {
 			return Double.compare(fDouble, ((Num) expr).fDouble);
 		}
-		if (expr.isReal()) {
-			return Double.compare(fDouble, ((ISignedNumber) expr).doubleValue());
+		if (expr.isNumber()) {
+			if (expr.isReal()) {
+				return Double.compare(fDouble, ((ISignedNumber) expr).doubleValue());
+			}
+			int c = this.compareTo(((INumber) expr).re());
+			if (c != 0) {
+				return c;
+			}
 		}
 		return -1; // INum.super.compareTo(expr);
 	}
@@ -307,6 +313,11 @@ public class Num implements INum {
 	}
 
 	/** {@inheritDoc} */
+	public IInteger integerPart() {
+		return isNegative() ? ceilFraction() : floorFraction();
+	}
+
+	/** {@inheritDoc} */
 	@Override
 	public IInteger floorFraction() {
 		return F.ZZ(NumberUtil.toLong(Math.floor(fDouble)));
@@ -389,6 +400,12 @@ public class Num implements INum {
 			return this;
 		}
 		return valueOf(1 / fDouble);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public long determinePrecision() {
+		return Config.MACHINE_PRECISION;
 	}
 
 	/** {@inheritDoc} */

@@ -247,12 +247,8 @@ public abstract class B1 extends AbstractAST implements Cloneable, Externalizabl
 	/**
 	 * Create a function with two arguments (i.e. <code>head[arg1, arg2]</code> ).
 	 * 
-	 * @param head
-	 *            the head of the function
 	 * @param arg1
 	 *            the first argument of the function
-	 * @param arg2
-	 *            the second argument of the function
 	 */
 	public B1(IExpr arg1) {
 		this.arg1 = arg1;
@@ -367,6 +363,13 @@ public abstract class B1 extends AbstractAST implements Cloneable, Externalizabl
 	@Override
 	public IASTAppendable copyAppendable() {
 		return new AST(head(), arg1);
+	}
+
+	@Override
+	public IASTAppendable copyAppendable(int additionalCapacity) {
+		IASTAppendable result = F.ast(head(), additionalCapacity + 1, false);
+		result.append(arg1);
+		return result;
 	}
 
 	@Override
@@ -524,8 +527,8 @@ public abstract class B1 extends AbstractAST implements Cloneable, Externalizabl
 
 	/** {@inheritDoc} */
 	@Override
-	public int indexOf(Predicate<? super IExpr> predicate) {
-		if (predicate.test(arg1)) {
+	public int indexOf(Predicate<? super IExpr> predicate, int fromIndex) {
+		if (fromIndex == 1 && predicate.test(arg1)) {
 			return 1;
 		}
 		return -1;
@@ -631,7 +634,7 @@ public abstract class B1 extends AbstractAST implements Cloneable, Externalizabl
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr last() {
+	public final IExpr last() {
 		return arg1;
 	}
 

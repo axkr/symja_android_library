@@ -53,7 +53,14 @@ public class IntervalSym {
 		if (isNormalized(intervalList)) {
 			return intervalList;
 		}
-		return normalize(intervalList, EvalEngine.get());
+		IAST norm = normalize(intervalList, EvalEngine.get());
+		if (norm.isPresent()) {
+			return norm;
+		}
+		if (isNormalized(intervalList)) {
+			return intervalList;
+		}
+		return F.NIL;
 	}
 
 	/**
@@ -74,7 +81,9 @@ public class IntervalSym {
 					result.set(i, temp);
 				}
 			}
-			EvalAttributes.sort(result, INTERVAL_COMPARATOR);
+			if (EvalAttributes.sort(result, INTERVAL_COMPARATOR)) {
+				evaled = true;
+			}
 			result.addEvalFlags(IAST.BUILT_IN_EVALED);
 			if (result.size() > 2) {
 				int j = 1;
@@ -111,10 +120,13 @@ public class IntervalSym {
 				return result;
 			}
 			if (intervalList instanceof IASTMutable) {
-				EvalAttributes.sort((IASTMutable) intervalList, INTERVAL_COMPARATOR);
 				intervalList.addEvalFlags(IAST.BUILT_IN_EVALED);
+				if (EvalAttributes.sort((IASTMutable) intervalList, INTERVAL_COMPARATOR)) {
+					return intervalList;
+				}
 			}
-			return intervalList;
+			return F.NIL;
+			// return intervalList;
 		} catch (RuntimeException rex) {
 			engine.printMessage("Interval: " + rex.getMessage());
 		}
@@ -152,7 +164,6 @@ public class IntervalSym {
 					if (min.greaterThan(max).isTrue()) {
 						return F.List(max, min);
 					}
-					return F.List(min, max);
 				}
 				return F.NIL;
 			}
@@ -586,7 +597,7 @@ public class IntervalSym {
 		return F.NIL;
 	}
 
-	public static IAST sech(final IAST ast) { 
+	public static IAST sech(final IAST ast) {
 		IAST interval = normalize(ast);
 		if (interval.isPresent()) {
 			try {

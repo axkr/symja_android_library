@@ -377,7 +377,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 
 	/**
 	 * Return a copy of the pure <code>IAST</code> instance (the elements themselves are not copied). Additionally to
-	 * the <code>copy()</code> method, this method tries to transform <code>AssociatioinAST</code> objects to
+	 * the <code>copy()</code> method, this method tries to transform <code>AssociationAST</code> objects to
 	 * <code>AST</code> if possible.
 	 * 
 	 * @return a copy of this <code>IAST</code> instance.
@@ -387,13 +387,18 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	}
 
 	/**
-	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied). In contrast
-	 * to the <code>clone()</code> method, this method returns exactly the same type for
-	 * <code>AST0, AST1, AST2,AST3</code>.
+	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied). 
 	 * 
 	 * @return a copy of this <code>IAST</code> instance.
 	 */
 	public IASTAppendable copyAppendable();
+
+	/**
+	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied).
+	 * 
+	 * @return a copy of this <code>IAST</code> instance.
+	 */
+	public IASTAppendable copyAppendable(int additionalCapacity);
 
 	/**
 	 * Create a copy of this <code>AST</code>, which contains the same head and all elements from the given
@@ -529,10 +534,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * return <code>true</code>. If the <code>stopPredicate</code> gives false for each pairwise comparison return the
 	 * <code>false</code> at the end.
 	 * 
-	 * @param ast
 	 * @param stopPredicate
-	 * @param stopExpr
-	 * @param resultExpr
 	 * @return
 	 */
 	default boolean existsLeft(BiPredicate<IExpr, IExpr> stopPredicate) {
@@ -552,6 +554,20 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	default IASTAppendable extract(int fromIndex, int toIndex) {
 		return slice(fromIndex, toIndex);
 	}
+
+	/**
+	 * <p>
+	 * Extract <code>ConditionalExpression</code> from the arguments of <code>this</code> expression.
+	 * </p>
+	 * See <a href=
+	 * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/ConditionalExpression.md">ConditionalExpression</a>
+	 * 
+	 * @param isUnaryConditionalExpression
+	 *            if <code>true</code> <code>this</code> is of the form
+	 *            <code>head( ConditionalExpression(expr, condition) )</code>
+	 * @return
+	 */
+	public IExpr extractConditionalExpression(boolean isUnaryConditionalExpression);
 
 	/**
 	 * Select all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and append
@@ -657,7 +673,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * Find the first argument position, where the the <code>function</code> doesn't return <code>F.NIL</code>. The
 	 * search starts at index <code>1</code>.
 	 * 
-	 * @param predicate
+	 * @param function
 	 * @return <code>F.NIL</code> if no position was found
 	 */
 	public IExpr findFirst(Function<IExpr, IExpr> function);
@@ -960,10 +976,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return
 	 */
 	default boolean hasOptionalArgument() {
-		if (size() > 1) {
-			return last().isPatternDefault();
-		}
-		return false;
+		return (size() > 1) && last().isPatternDefault();
 	}
 
 	/**
@@ -1338,19 +1351,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return an IAST with removed element at the given position.
 	 */
 	public IASTMutable removeAtCopy(int position);
-
-	/**
-	 * Removes the object at the specified location from this {@code IAST}.
-	 * 
-	 * @param location
-	 *            the index of the object to remove.
-	 * @return the removed object.
-	 * @throws UnsupportedOperationException
-	 *             if removing from this {@code IAST} is not supported.
-	 * @throws IndexOutOfBoundsException
-	 *             if {@code location < 0 || >= size()}
-	 */
-	// public IExpr remove(int location);
 
 	/**
 	 * Create a new <code>IAST</code> and remove all arguments from position <code>fromPosition</code> inclusive to the

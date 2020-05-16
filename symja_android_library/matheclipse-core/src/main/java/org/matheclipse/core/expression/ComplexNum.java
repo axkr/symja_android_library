@@ -13,8 +13,10 @@ import org.hipparchus.exception.NullArgumentException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -241,6 +243,15 @@ public class ComplexNum implements IComplexNum {
 		if (l1 > l2) {
 			return 1;
 		}
+
+		if (F.isZero(that.getImaginary())) {
+			if (!F.isZero(imDoubleValue())) {
+				return 1;
+			}
+		} else if (F.isZero(imDoubleValue())) {
+			return -1;
+		}
+
 		if (fComplex.getImaginary() < that.getImaginary()) {
 			return -1;
 		}
@@ -264,10 +275,18 @@ public class ComplexNum implements IComplexNum {
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
-		if (expr instanceof ComplexNum) {
-			return compareTo(((ComplexNum) expr).fComplex);
+		if (expr.isNumber()) {
+			if (expr instanceof ComplexNum) {
+				return compareTo(((ComplexNum) expr).fComplex);
+			}
+			if (expr instanceof ApcomplexNum) {
+				ApcomplexNum apcomplexNum = (ApcomplexNum) expr;
+				return -1 * apcomplexNum.compareTo(apcomplexNumValue(apcomplexNum.precision()));
+			}
+			return compareTo(new Complex(((INumber) expr).reDoubleValue(), ((INumber) expr).imDoubleValue()));
 		}
-		return IComplexNum.super.compareTo(expr);
+		return -1;
+		// return IComplexNum.super.compareTo(expr);
 	}
 
 	@Override
@@ -320,6 +339,12 @@ public class ComplexNum implements IComplexNum {
 	@Override
 	public double dabs() {
 		return dabs(fComplex);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public long determinePrecision() {
+		return Config.MACHINE_PRECISION;
 	}
 
 	public IComplexNum divide(final IComplexNum that) {
@@ -388,6 +413,27 @@ public class ComplexNum implements IComplexNum {
 	@Override
 	public INumber fractionalPart() {
 		return F.complexNum(getRealPart() % 1, getImaginaryPart() % 1);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IComplex integerPart() {
+		// isNegative() ? ceilFraction() : floorFraction();
+		double re = fComplex.getReal();
+		double im = fComplex.getImaginary();
+		IInteger reInt;
+		IInteger imInt;
+		if (re < 0.0) {
+			reInt = F.ZZ(NumberUtil.toLong(Math.ceil(re)));
+		} else {
+			reInt = F.ZZ(NumberUtil.toLong(Math.floor(re)));
+		}
+		if (im < 0.0) {
+			imInt = F.ZZ(NumberUtil.toLong(Math.ceil(im)));
+		} else {
+			imInt = F.ZZ(NumberUtil.toLong(Math.floor(im)));
+		}
+		return F.complex(reInt, imInt);
 	}
 
 	@Override

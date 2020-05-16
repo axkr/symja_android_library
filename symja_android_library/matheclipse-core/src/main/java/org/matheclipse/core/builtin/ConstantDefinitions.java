@@ -3,6 +3,8 @@ package org.matheclipse.core.builtin;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.Properties;
 
@@ -15,6 +17,8 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.data.DateObjectExpr;
+import org.matheclipse.core.expression.data.TimeObjectExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -87,6 +91,9 @@ public class ConstantDefinitions {
 			F.Infinity.setEvaluator(new Infinity());
 			F.Khinchin.setEvaluator(new Khinchin());
 			F.Pi.setEvaluator(new Pi());
+			
+			F.Now.setEvaluator(new Now());
+			F.Today.setEvaluator(new Today());
 
 			F.False.setEvaluator(NILEvaluator.CONST);
 			F.True.setEvaluator(NILEvaluator.CONST);
@@ -646,6 +653,35 @@ public class ConstantDefinitions {
 		@Override
 		public IExpr evaluate(final ISymbol symbol) {
 			return F.CInfinity;// unaryAST1(F.DirectedInfinity, F.C1);
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			// don't set CONSTANT attribute !
+		}
+	}
+
+	private static class Now extends AbstractSymbolEvaluator {
+
+		@Override
+		public IExpr evaluate(final ISymbol symbol) {
+			return DateObjectExpr
+					.newInstance(LocalDateTime.now());
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			// don't set CONSTANT attribute !
+		}
+	}
+
+	private static class Today extends AbstractSymbolEvaluator {
+
+		@Override
+		public IExpr evaluate(final ISymbol symbol) {
+			LocalDateTime now = LocalDateTime.now();
+			return DateObjectExpr
+					.newInstance(LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0));
 		}
 
 		@Override

@@ -3,7 +3,6 @@ package org.matheclipse.core.eval.interfaces;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
@@ -11,6 +10,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.parser.client.FEConfig;
 
 public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 
@@ -28,7 +28,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+	public IExpr evaluate(final IAST ast, final EvalEngine engine) {
 		FieldMatrix<IExpr> matrix;
 		try {
 
@@ -53,7 +53,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 			// org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
 			return engine.printMessage(ast.topHead(), mre);
 		} catch (final RuntimeException e) {
-			if (Config.SHOW_STACKTRACE) {
+			if (FEConfig.SHOW_STACKTRACE) {
 				e.printStackTrace();
 			}
 			return engine.printMessage(ast.topHead() + ": " + e.getMessage());
@@ -77,7 +77,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 	public abstract IExpr matrixEval(FieldMatrix<IExpr> matrix);
 
 	@Override
-	public IExpr numericEval(final IAST ast, EvalEngine engine) {
+	public IExpr numericEval(final IAST ast, final EvalEngine engine) {
 		RealMatrix matrix;
 		IExpr arg1 = ast.arg1();
 		int[] dim = checkMatrixDimensions(arg1);
@@ -104,7 +104,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 				// org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
 				return engine.printMessage(ast.topHead(), mre);
 			} catch (final RuntimeException e) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
 			}

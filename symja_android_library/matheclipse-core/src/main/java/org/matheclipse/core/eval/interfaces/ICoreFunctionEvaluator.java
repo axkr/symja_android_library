@@ -17,12 +17,12 @@ public interface ICoreFunctionEvaluator extends IFunctionEvaluator {
 	public final static ICoreFunctionEvaluator ARGS_EVALUATOR = new ICoreFunctionEvaluator() {
 
 		@Override
-		public final IExpr evaluate(IAST ast, EvalEngine engine) {
+		public final IExpr evaluate(IAST ast, final EvalEngine engine) {
 			return F.NIL;// engine.evalAttributes(ast.topHead(), ast);
 		}
 
 		@Override
-		public final IExpr numericEval(IAST ast, EvalEngine engine) {
+		public final IExpr numericEval(IAST ast, final EvalEngine engine) {
 			return F.NIL;// engine.evalAttributes(ast.topHead(), ast);
 		}
 
@@ -34,7 +34,7 @@ public interface ICoreFunctionEvaluator extends IFunctionEvaluator {
 	};
 
 	@Override
-	default IExpr numericEval(IAST ast, EvalEngine engine) {
+	default IExpr numericEval(IAST ast, final EvalEngine engine) {
 		return evaluate(ast, engine);
 	}
 }

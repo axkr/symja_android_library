@@ -13,6 +13,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.parser.client.FEConfig;
 
 /**
  * IFraction implementation which uses methods of the Apache <code>org.apache.commons.math3.fraction.BigFraction</code>
@@ -309,7 +310,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	@Override
 	public String fullFormString() {
 		StringBuilder buf = new StringBuilder("Rational");
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+		if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
 			buf.append('(');
 		} else {
 			buf.append('[');
@@ -317,7 +318,7 @@ public class BigFractionSym extends AbstractFractionSym {
 		buf.append(fFraction.getNumerator().toString());
 		buf.append(',');
 		buf.append(fFraction.getDenominator().toString());
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+		if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
 			buf.append(')');
 		} else {
 			buf.append(']');

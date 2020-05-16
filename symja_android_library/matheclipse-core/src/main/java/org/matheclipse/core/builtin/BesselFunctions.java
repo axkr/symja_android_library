@@ -2,7 +2,6 @@ package org.matheclipse.core.builtin;
 
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathRuntimeException;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.BesselJS;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -15,6 +14,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.BesselIRules;
 import org.matheclipse.core.reflection.system.rules.BesselKRules;
 import org.matheclipse.core.reflection.system.rules.BesselYRules;
+import org.matheclipse.parser.client.FEConfig;
 
 public class BesselFunctions {
 
@@ -53,20 +53,20 @@ public class BesselFunctions {
 						return F.complexNum(BesselJS.airyAi(z.evalDouble()));
 					} catch (NegativeArraySizeException nae) {
 						return engine.printMessage("AiryAi: " + ast.toString() + " caused NegativeArraySizeException");
-					} catch (RuntimeException rte) {
-						return engine.printMessage("AiryAi: " + rte.getMessage());
+					} catch (RuntimeException rex) {
+						return engine.printMessage(ast.topHead(), rex);
 					}
-				} else if (z.isNumeric()) {
+				} else if (z.isInexactNumber()) {
 					try {
 						return F.complexNum(BesselJS.airyAi(z.evalComplex()));
 					} catch (NegativeArraySizeException nae) {
 						return engine.printMessage("AiryAi: " + ast.toString() + " caused NegativeArraySizeException");
-					} catch (RuntimeException rte) {
-						return engine.printMessage("AiryAi: " + rte.getMessage());
+					} catch (RuntimeException rex) {
+						return engine.printMessage(ast.topHead(), rex);
 					}
 				}
 			} catch (ValidateException ve) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					ve.printStackTrace();
 				}
 			}
@@ -95,21 +95,21 @@ public class BesselFunctions {
 					} catch (NegativeArraySizeException nae) {
 						return engine
 								.printMessage("AiryAiPrime: " + ast.toString() + " caused NegativeArraySizeException");
-					} catch (RuntimeException rte) {
-						return engine.printMessage("AiryAiPrime: " + rte.getMessage());
+					} catch (RuntimeException rex) {
+						return engine.printMessage(ast.topHead(), rex);
 					}
-				} else if (z.isNumeric()) {
+				} else if (z.isInexactNumber()) {
 					try {
 						return F.complexNum(BesselJS.airyAiPrime(z.evalComplex()));
 					} catch (NegativeArraySizeException nae) {
 						return engine
 								.printMessage("AiryAiPrime: " + ast.toString() + " caused NegativeArraySizeException");
-					} catch (RuntimeException rte) {
-						return engine.printMessage("AiryBiPrime: " + rte.getMessage());
+					} catch (RuntimeException rex) {
+						return engine.printMessage(ast.topHead(), rex);
 					}
 				}
 			} catch (ValidateException ve) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					ve.printStackTrace();
 				}
 			}
@@ -137,20 +137,20 @@ public class BesselFunctions {
 						return F.complexNum(BesselJS.airyBi(z.evalDouble()));
 					} catch (NegativeArraySizeException nae) {
 						return engine.printMessage("AiryBi: " + ast.toString() + " caused NegativeArraySizeException");
-					} catch (RuntimeException rte) {
-						return engine.printMessage("AiryBi: " + rte.getMessage());
+					} catch (RuntimeException rex) {
+						return engine.printMessage(ast.topHead(), rex);
 					}
-				} else if (z.isNumeric()) {
+				} else if (z.isInexactNumber()) {
 					try {
 						return F.complexNum(BesselJS.airyBi(z.evalComplex()));
 					} catch (NegativeArraySizeException nae) {
 						return engine.printMessage("AiryBi: " + ast.toString() + " caused NegativeArraySizeException");
-					} catch (RuntimeException rte) {
-						return engine.printMessage("AiryBi: " + rte.getMessage());
+					} catch (RuntimeException rex) {
+						return engine.printMessage(ast.topHead(), rex);
 					}
 				}
 			} catch (ValidateException ve) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					ve.printStackTrace();
 				}
 			}
@@ -179,21 +179,21 @@ public class BesselFunctions {
 					} catch (NegativeArraySizeException nae) {
 						return engine
 								.printMessage("AiryBiPrime: " + ast.toString() + " caused NegativeArraySizeException");
-					} catch (RuntimeException rte) {
-						return engine.printMessage("AiryBiPrime: " + rte.getMessage());
+					} catch (RuntimeException rex) {
+						return engine.printMessage(ast.topHead(), rex);
 					}
-				} else if (z.isNumeric()) {
+				} else if (z.isInexactNumber()) {
 					try {
 						return F.complexNum(BesselJS.airyBiPrime(z.evalComplex()));
 					} catch (NegativeArraySizeException nae) {
 						return engine
 								.printMessage("AiryBiPrime: " + ast.toString() + " caused NegativeArraySizeException");
-					} catch (RuntimeException rte) {
-						return engine.printMessage("AiryAiPrime: " + rte.getMessage());
+					} catch (RuntimeException rex) {
+						return engine.printMessage(ast.topHead(), rex);
 					}
 				}
 			} catch (ValidateException ve) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					ve.printStackTrace();
 				}
 			}
@@ -337,12 +337,12 @@ public class BesselFunctions {
 					}
 
 				} catch (ValidateException ve) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						ve.printStackTrace();
 					}
 				} catch (RuntimeException rex) {
 					// rex.printStackTrace();
-					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+					return engine.printMessage(ast.topHead(), rex);
 				}
 			}
 
@@ -401,11 +401,11 @@ public class BesselFunctions {
 
 					} catch (MathRuntimeException mre) {
 						// org.hipparchus.exception.MathIllegalArgumentException: interval does not bracket a root
-						if (Config.SHOW_STACKTRACE) {
+						if (FEConfig.SHOW_STACKTRACE) {
 							mre.printStackTrace();
 						}
 					} catch (ValidateException ve) {
-						if (Config.SHOW_STACKTRACE) {
+						if (FEConfig.SHOW_STACKTRACE) {
 							ve.printStackTrace();
 						}
 					}
@@ -504,12 +504,12 @@ public class BesselFunctions {
 					}
 
 				} catch (ValidateException ve) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						ve.printStackTrace();
 					}
 				} catch (RuntimeException rex) {
 					// rex.printStackTrace();
-					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+					return engine.printMessage(ast.topHead(), rex);
 				}
 			}
 
@@ -600,12 +600,12 @@ public class BesselFunctions {
 					}
 
 				} catch (ValidateException ve) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						ve.printStackTrace();
 					}
 				} catch (RuntimeException rex) {
 					// rex.printStackTrace();
-					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+					return engine.printMessage(ast.topHead(), rex);
 				}
 			}
 			return F.NIL;
@@ -696,12 +696,12 @@ public class BesselFunctions {
 					}
 
 				} catch (ValidateException ve) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						ve.printStackTrace();
 					}
 				} catch (RuntimeException rex) {
 					// rex.printStackTrace();
-					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+					return engine.printMessage(ast.topHead(), rex);
 				}
 			}
 
@@ -736,11 +736,11 @@ public class BesselFunctions {
 					}
 				} catch (MathRuntimeException mre) {
 					// org.hipparchus.exception.MathIllegalArgumentException: interval does not bracket a root
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						mre.printStackTrace();
 					}
 				} catch (ValidateException ve) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						ve.printStackTrace();
 					}
 				}
@@ -783,12 +783,12 @@ public class BesselFunctions {
 				}
 
 			} catch (ValidateException ve) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					ve.printStackTrace();
 				}
 			} catch (RuntimeException rex) {
 				// rex.printStackTrace();
-				return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+				return engine.printMessage(ast.topHead(), rex);
 			}
 
 			return F.NIL;
@@ -828,12 +828,12 @@ public class BesselFunctions {
 				}
 
 			} catch (ValidateException ve) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					ve.printStackTrace();
 				}
 			} catch (RuntimeException rex) {
 				// rex.printStackTrace();
-				return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+				return engine.printMessage(ast.topHead(), rex);
 			}
 
 			return F.NIL;
@@ -899,12 +899,12 @@ public class BesselFunctions {
 					}
 
 				} catch (ValidateException ve) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						ve.printStackTrace();
 					}
 				} catch (RuntimeException rex) {
 					// rex.printStackTrace();
-					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+					return engine.printMessage(ast.topHead(), rex);
 				}
 			}
 			// if (n.isReal() && z.isReal()) {
@@ -985,12 +985,12 @@ public class BesselFunctions {
 					}
 
 				} catch (ValidateException ve) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						ve.printStackTrace();
 					}
 				} catch (RuntimeException rex) {
 					// rex.printStackTrace();
-					return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+					return engine.printMessage(ast.topHead(), rex);
 				}
 			}
 			return F.NIL;

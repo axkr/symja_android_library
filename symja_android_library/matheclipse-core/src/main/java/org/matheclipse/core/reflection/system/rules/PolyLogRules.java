@@ -35,7 +35,7 @@ public interface PolyLogRules {
     // PolyLog(2,-I)=-I*Catalan-Pi^2/48
     ISet(PolyLog(C2,CNI),
       Plus(Times(CNI,Catalan),Times(QQ(-1L,48L),Sqr(Pi)))),
-    // PolyLog(2,1-I)=-I*Catalan+Pi^2/16-I*Pi*Log(2)/4
+    // PolyLog(2,-I+1)=-I*Catalan+Pi^2/16-I*Pi*Log(2)/4
     ISet(PolyLog(C2,CC(1L,1L,-1L,1L)),
       Plus(Times(CNI,Catalan),Times(QQ(1L,16L),Sqr(Pi)),Times(CC(0L,1L,-1L,4L),Pi,Log(C2)))),
     // PolyLog(2,1+I)=Pi^2/16+I*Catalan+I*Pi*Log(2)/4

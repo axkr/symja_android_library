@@ -32,12 +32,10 @@ public abstract class DataExpr<T> implements IDataExpr<T> {
 		fData = data;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public IExpr accept(IVisitor visitor) {
-		return F.NIL;
+		return visitor.visit(this);
 	}
 
 	/**
@@ -79,14 +77,14 @@ public abstract class DataExpr<T> implements IDataExpr<T> {
 			DataExpr<T> de = ((DataExpr<T>) expr);
 			if (fData != null) {
 				if (de.fData != null) {
-					int lhsID = System.identityHashCode(fData);
-					int rhsID = System.identityHashCode(de.fData);
-					if (lhsID > rhsID) {
-						return 1;
-					} else if (lhsID < rhsID) {
-						return -1;
+					if (fData.getClass() == de.fData.getClass()) {
+						if (fData instanceof Comparable) {
+							return ((Comparable<T>) fData).compareTo(de.fData);
+						}
 					}
-					return 0;
+					final int x = hierarchy();
+					final int y = expr.hierarchy();
+					return (x < y) ? -1 : ((x == y) ? 0 : 1);
 				}
 				return 1;
 			}

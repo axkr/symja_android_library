@@ -39,6 +39,11 @@ public class CompiledFunctionExpr extends DataExpr<AbstractFunctionEvaluator> {
 	public int hashCode() {
 		return (fData == null) ? 461 : 461 + fData.hashCode();
 	}
+	
+	@Override
+	public int hierarchy() {
+		return COMPILEFUNCTONID;
+	}
 
 	public IExpr evaluate(IAST ast, EvalEngine engine) {
 		return fData.evaluate(ast, engine);

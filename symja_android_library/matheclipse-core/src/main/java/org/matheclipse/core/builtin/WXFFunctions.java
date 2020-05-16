@@ -2,16 +2,15 @@ package org.matheclipse.core.builtin;
 
 import java.util.Base64;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
-import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.parser.client.FEConfig;
 
 public class WXFFunctions {
 
@@ -63,7 +62,7 @@ public class WXFFunctions {
 
 					return engine.printMessage("ByteArray: list of byte values expected");
 				} catch (RuntimeException cce) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						cce.printStackTrace();
 					}
 				}
@@ -85,7 +84,7 @@ public class WXFFunctions {
 						// System.out.println(temp);
 						return temp;
 					} catch (RuntimeException cce) {
-						if (Config.SHOW_STACKTRACE) {
+						if (FEConfig.SHOW_STACKTRACE) {
 							cce.printStackTrace();
 						}
 					}
@@ -97,7 +96,7 @@ public class WXFFunctions {
 	}
 
 	public static boolean isByteArray(IExpr arg1) {
-		return arg1 instanceof IDataExpr && arg1.head().equals(F.ByteArray);
+		return arg1 instanceof ByteArrayExpr;
 	}
 
 	public static void initialize() {

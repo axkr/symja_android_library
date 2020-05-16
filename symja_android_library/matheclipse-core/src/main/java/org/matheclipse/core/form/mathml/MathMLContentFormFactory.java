@@ -15,8 +15,9 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.trie.Tries;
+import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
+import org.matheclipse.parser.trie.Tries;
 
 /**
  * Generates MathML presentation output
@@ -151,7 +152,7 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 			}
 			return true;
 		} catch (RuntimeException rex) {
-			if (Config.SHOW_STACKTRACE) {
+			if (FEConfig.SHOW_STACKTRACE) {
 				rex.printStackTrace();
 			}
 		} catch (OutOfMemoryError oome) {
@@ -161,21 +162,7 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 
 	public void convertInternal(final StringBuilder buf, final IExpr o, final int precedence, boolean caller) {
 		if (o instanceof IAST) {
-			final IAST f = ((IAST) o);
-			// System.out.println(f.getHeader().toString());
-			// IConverter converter = (IConverter)
-			// operTab.get(f.getHeader().toString());
-			// if (converter == null) {
-			// converter = reflection(f.getHeader().toString());
-			// if (converter == null || (converter.convert(buf, f, 0) == false))
-			// {
-			// convertHeadList(buf, f);
-			// }
-			// } else {
-			// if (converter.convert(buf, f, precedence) == false) {
-			// convertHeadList(buf, f);
-			// }
-			// }
+			final IAST f = ((IAST) o); 
 			IAST ast = f;
 			IAST temp;
 			if (f.topHead().hasFlatAttribute()) {
@@ -262,15 +249,7 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 		tagStart(buf, "cn", "type=\"real\"");
 		buf.append(convertDoubleToFormattedString(d.getRealPart()));
 		tagEnd(buf, "cn");
-	}
-
-	// public void convertFraction(final StringBuilder buf, final BigFraction f, final int precedence) {
-	// tagStart(buf, "cn", "type=\"rational\"");
-	// buf.append(String.valueOf(f.getNumerator().toString()));
-	// tagStartEnd(buf, "sep");
-	// buf.append(String.valueOf(f.getDenominator().toString()));
-	// tagEnd(buf, "cn");
-	// }
+	} 
 
 	@Override
 	public void convertDoubleComplex(final StringBuilder buf, final IComplexNum dc, final int precedence,
@@ -293,19 +272,7 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 		tagEnd(buf, "cn");
 	}
 
-	/**
-	 * Description of the Method
-	 * 
-	 * @param buf
-	 *            Description of Parameter
-	 * @param p
-	 *            Description of Parameter
-	 */
-	// public void convertPattern(StringBuilder buf, HPattern p) {
-	// buf.append(" <mi>");
-	// buf.append(p.toString());
-	// tagEnd(buf, "mi");
-	// }
+	 
 	@Override
 	public void convertHead(final StringBuilder buf, final IExpr obj) {
 		if (obj instanceof ISymbol) {
@@ -338,7 +305,7 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 	@Override
 	public void convertSymbol(final StringBuilder buf, final ISymbol sym) {
 		String headStr = sym.getSymbolName();
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+		if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
 			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
 			if (str != null) {
 				headStr = str;
@@ -485,7 +452,7 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 
 	public IConverter reflection(final String headString) {
 		String headStr = headString;
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+		if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
 			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
 			if (str != null) {
 				headStr = str;

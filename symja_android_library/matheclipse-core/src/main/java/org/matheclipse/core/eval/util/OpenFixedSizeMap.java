@@ -177,7 +177,7 @@ public class OpenFixedSizeMap<K, V> extends AbstractMap<K, V> implements Map<K, 
 		s.writeInt(table.length);
 		s.writeInt(size);
 
-		for (int j = 0; j < table.length; j += 2) {
+		for (int j = 0; j + 1 < table.length; j += 2) {
 			if (table[j] != null) {
 				s.writeObject(table[j]);
 				s.writeObject(table[j + 1]);

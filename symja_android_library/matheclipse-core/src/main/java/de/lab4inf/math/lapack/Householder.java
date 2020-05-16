@@ -65,35 +65,35 @@ public final class Householder extends L4MObject {
      * symmetry check, to be called from the LASolver
      * or classes which already made a symmetry check.
      *
-     * @param mat matrix to transform
+     * @param matrix matrix to transform
      */
-    static void householder(final float[][] a) {
+    static void householder(final float[][] matrix) {
         int i, j, k, kp;
-        final int n = a.length;
+        final int n = matrix.length;
         final float[] w = new float[n];
         double s, r, tmp, amax;
         for (k = 0, kp = k + 1; k < n - 2; kp++, k++) {
-            for (amax = 0, i = kp; i < n; amax = max(amax, abs(a[i][k])), i++)
+            for (amax = 0, i = kp; i < n; amax = max(amax, abs(matrix[i][k])), i++)
                 ;
             if (amax > 0) {
-                for (s = 0, i = kp; i < n; tmp = a[i][k] / amax, s += tmp * tmp, i++)
+                for (s = 0, i = kp; i < n; tmp = matrix[i][k] / amax, s += tmp * tmp, i++)
                     ;
                 s = amax * sqrt(s);
-                if (abs(a[kp][k]) > Accuracy.DEPS) {
-                    s *= signum(a[kp][k]);
+                if (abs(matrix[kp][k]) > Accuracy.DEPS) {
+                    s *= signum(matrix[kp][k]);
                 }
-                r = (s + a[kp][k]) * s;
+                r = (s + matrix[kp][k]) * s;
                 w[k] = 0;
-                w[kp] = a[kp][k] + (float) s;
-                for (j = kp + 1; j < n; w[j] = a[j][k], j++)
+                w[kp] = matrix[kp][k] + (float) s;
+                for (j = kp + 1; j < n; w[j] = matrix[j][k], j++)
                     ;
                 if (r != 0) {
-                    multPartial(a, kp, w, (float) r);
+                    multPartial(matrix, kp, w, (float) r);
                 } else {
                     LOGGER.error(String.format(HOUSEHOLDER_R0, k));
                     for (j = 0; j < n; j++) {
                         for (k = 0; k < n; k++) {
-                            LOGGER.error(String.format(FMT_3F, a[j][k]));
+                            LOGGER.error(String.format(FMT_3F, matrix[j][k]));
                         }
                         LOGGER.error("\n");
                     }
@@ -107,35 +107,35 @@ public final class Householder extends L4MObject {
      * symmetry check, to be called from the LASolver
      * or classes which already made a symmetry check.
      *
-     * @param mat matrix to transform
+     * @param matrix matrix to transform
      */
-    static void householder(final double[][] a) {
+    static void householder(final double[][] matrix) {
         int i, j, k, kp;
-        final int n = a.length;
+        final int n = matrix.length;
         final double[] w = new double[n];
         double s, r, tmp, amax;
         for (k = 0, kp = k + 1; k < n - 2; kp++, k++) {
-            for (amax = 0, i = kp; i < n; amax = max(amax, abs(a[i][k])), i++)
+            for (amax = 0, i = kp; i < n; amax = max(amax, abs(matrix[i][k])), i++)
                 ;
             if (amax > 0) {
-                for (s = 0, i = kp; i < n; tmp = a[i][k] / amax, s += tmp * tmp, i++)
+                for (s = 0, i = kp; i < n; tmp = matrix[i][k] / amax, s += tmp * tmp, i++)
                     ;
                 s = amax * sqrt(s);
-                if (abs(a[kp][k]) > Accuracy.DEPS) {
-                    s *= signum(a[kp][k]);
+                if (abs(matrix[kp][k]) > Accuracy.DEPS) {
+                    s *= signum(matrix[kp][k]);
                 }
-                r = (s + a[kp][k]) * s;
+                r = (s + matrix[kp][k]) * s;
                 w[k] = 0;
-                w[kp] = a[kp][k] + s;
-                for (j = kp + 1; j < n; w[j] = a[j][k], j++)
+                w[kp] = matrix[kp][k] + s;
+                for (j = kp + 1; j < n; w[j] = matrix[j][k], j++)
                     ;
                 if (r != 0) {
-                    multPartial(a, kp, w, r);
+                    multPartial(matrix, kp, w, r);
                 } else {
                     LOGGER.warn(String.format(HOUSEHOLDER_R0, k));
                     for (j = 0; j < n; j++) {
                         for (k = 0; k < n; k++) {
-                            System.err.printf(FMT_3F, a[j][k]);
+                            System.err.printf(FMT_3F, matrix[j][k]);
                         }
                         System.err.println();
                     }

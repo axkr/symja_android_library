@@ -23,7 +23,7 @@ import static org.matheclipse.core.expression.F.Times;
 import java.util.List;
 
 import org.matheclipse.core.builtin.IOFunctions;
-import org.matheclipse.core.builtin.Structure;
+import org.matheclipse.core.builtin.StructureFunctions;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -162,7 +162,7 @@ public class ComplexExpand extends AbstractEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		IExpr temp = Structure.threadLogicEquationOperators(ast.arg1(), ast, 1);
+		IExpr temp = StructureFunctions.threadLogicEquationOperators(ast.arg1(), ast, 1);
 		if (temp.isPresent()) {
 			return temp;
 		}

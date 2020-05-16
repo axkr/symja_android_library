@@ -18,7 +18,6 @@ import static org.matheclipse.core.expression.F.k;
 import java.util.ArrayList;
 import java.util.function.Predicate;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.builtin.ListFunctions.TableGenerator;
@@ -39,6 +38,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.SumRules;
+import org.matheclipse.parser.client.FEConfig;
 
 /**
  * <pre>
@@ -209,7 +209,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 
 				}
 			} catch (final ValidateException ve) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					ve.printStackTrace();
 				}
 				// see level specification
@@ -330,34 +330,37 @@ public class Sum extends ListFunctions.Table implements SumRules {
 	/**
 	 * Evaluate the definite sum: <code>Sum[arg1, {var, from, to}]</code>
 	 * 
-	 * @param arg1
+	 * @param expr
 	 *            the first argument of the <code>Sum[]</code> function.
+	 * @param iterator
+	 *            the current iterator definition for which the Sum should be evaluated
 	 * @param list
 	 *            constructed as <code>{Symbol: var, Integer: from, Symbol: to}</code>
+	 * @param engine
+	 *            the evaluation engine
 	 * @return
 	 */
 	private IExpr definiteSum(final IExpr expr, final IIterator<IExpr> iterator, IAST list, EvalEngine engine) {
 		final ISymbol var = iterator.getVariable();
-		IExpr arg1 = expr;
 		final IExpr from = iterator.getLowerLimit();
 		final IExpr to = iterator.getUpperLimit();
 
-		if (arg1.isFree(var, true)) {
+		if (expr.isFree(var, true)) {
 			if (from.isOne()) {
-				return F.Times(to, arg1);
+				return F.Times(to, expr);
 			}
 			if (from.isZero()) {
-				return F.Times(Plus(to, C1), arg1);
+				return F.Times(Plus(to, C1), expr);
 			}
 			if (!F.Greater.ofQ(engine, C1, from) && !F.Greater.ofQ(engine, from, to)) {
-				return F.Times(Plus(C1, F.Negate(from), to), arg1);
+				return F.Times(Plus(C1, F.Negate(from), to), expr);
 			}
 		} else {
-			if (arg1.isTimes()) {
+			if (expr.isTimes()) {
 				// Sum[ Times[a,b,c,...], {var, from, to} ]
 				IASTAppendable filterCollector = F.TimesAlloc(16);
 				IASTAppendable restCollector = F.TimesAlloc(16);
-				((IAST) arg1).filter(filterCollector, restCollector, new Predicate<IExpr>() {
+				((IAST) expr).filter(filterCollector, restCollector, new Predicate<IExpr>() {
 					@Override
 					public boolean test(IExpr input) {
 						return input.isFree(var, true);
@@ -373,7 +376,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 				}
 			}
 
-			if (arg1.equals(var)) {
+			if (expr.equals(var)) {
 				if ((from.isVariable() && !from.equals(var)) || (to.isVariable() && !to.equals(var))) {
 					// Sum(i, {i, from, to})
 					return Times(C1D2, Plus(Subtract(to, from), C1), Plus(from, to));
@@ -382,9 +385,9 @@ public class Sum extends ListFunctions.Table implements SumRules {
 
 			if (!engine.evalTrue(F.Greater(C0, from)) && !engine.evalTrue(F.Greater(from, to))) {
 				IExpr temp = F.NIL;
-				if (arg1.isPower()) {
-					temp = sumPower((IAST) arg1, var, from, to);
-				} else if (arg1.equals(var)) {
+				if (expr.isPower()) {
+					temp = sumPower((IAST) expr, var, from, to);
+				} else if (expr.equals(var)) {
 					temp = sumPowerFormula(from, to, F.C1);
 				}
 				if (temp.isPresent()) {
@@ -392,8 +395,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
 				}
 			}
 
-			if (arg1.isPower() && !engine.evalTrue(F.Greater(C1, from)) && !engine.evalTrue(F.Greater(from, to))) {
-				IAST powAST = (IAST) arg1;
+			if (expr.isPower() && !engine.evalTrue(F.Greater(C1, from)) && !engine.evalTrue(F.Greater(from, to))) {
+				IAST powAST = (IAST) expr;
 				if (powAST.equalsAt(1, var) && powAST.arg2().isFree(var) && to.isFree(var)) {
 					if (from.isOne()) {
 						// i^(k),{i,1,n}) ==> HarmonicNumber(n,-k)
@@ -407,7 +410,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 
 			try {
 				IAST resultList = Plus();
-				IExpr temp = evaluateLast(arg1, iterator, resultList, F.NIL);
+				IExpr temp = evaluateLast(expr, iterator, resultList, F.NIL);
 				if (temp.isPresent() && !temp.equals(resultList)) {
 					return temp;
 				}
@@ -438,9 +441,9 @@ public class Sum extends ListFunctions.Table implements SumRules {
 			// }
 		}
 		if (from.isPositive()) {
-			IExpr temp1 = engine.evalQuiet(F.Sum(arg1, F.List(var, C0, from.minus(F.C1))));
+			IExpr temp1 = engine.evalQuiet(F.Sum(expr, F.List(var, C0, from.minus(F.C1))));
 			if (!temp1.isComplexInfinity() && temp1.isFreeAST(F.Sum)) {
-				IExpr temp2 = engine.evalQuietNull(F.Sum(arg1, F.List(var, C0, to)));
+				IExpr temp2 = engine.evalQuietNull(F.Sum(expr, F.List(var, C0, to)));
 				if (temp2.isPresent() && !temp2.isComplexInfinity()) {
 					return F.Subtract(temp2, temp1);
 				}
@@ -452,10 +455,14 @@ public class Sum extends ListFunctions.Table implements SumRules {
 	/**
 	 * Evaluate the definite sum: <code>Sum[arg1, {var, from, Infinity}]</code>
 	 * 
-	 * @param arg1
+	 * @param expr
 	 *            the first argument of the <code>Sum[]</code> function.
+	 * @param iterator
+	 *            the current iterator definition for which the Sum should be evaluated
 	 * @param list
-	 *            constructed as <code>{Symbol: var, Integer: from, Infinity}</code>
+	 *            constructed as <code>{Symbol: var, Integer: from, Symbol: to}</code>
+	 * @param engine
+	 *            the evaluation engine
 	 * @return
 	 */
 	private IExpr definiteSumInfinity(final IExpr expr, final IIterator<IExpr> iterator, IAST list, EvalEngine engine) {

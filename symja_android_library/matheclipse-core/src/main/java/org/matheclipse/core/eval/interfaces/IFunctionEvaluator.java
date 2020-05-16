@@ -45,7 +45,7 @@ public interface IFunctionEvaluator extends IEvaluator {
 	 * @see IAST#arg2()
 	 * @see IAST#arg3()
 	 */
-	public IExpr evaluate(IAST ast, EvalEngine engine);
+	public IExpr evaluate(IAST ast, final EvalEngine engine);
 
 	/**
 	 * <p>
@@ -81,7 +81,7 @@ public interface IFunctionEvaluator extends IEvaluator {
 	 * @see IAST#arg2()
 	 * @see IAST#arg3()
 	 */
-	public IExpr numericEval(IAST ast, EvalEngine engine);
+	public IExpr numericEval(IAST ast, final EvalEngine engine);
 
 	/**
 	 * At index 0 return the &quot;from&quot;, at index 1 return the &quot;to&quot; number of arguments.

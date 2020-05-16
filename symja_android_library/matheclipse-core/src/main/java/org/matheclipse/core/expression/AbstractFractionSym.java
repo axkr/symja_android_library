@@ -294,6 +294,16 @@ public abstract class AbstractFractionSym implements IFraction {
 	@Override
 	public abstract IInteger ceilFraction();
 
+	public int compareTo(final IExpr expr) { 
+		if (expr.isNumber()) {
+			int c = this.compareTo(((INumber) expr).re());
+			if (c != 0) {
+				return c;
+			} 
+		}
+		return -1;
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public int complexSign() {
@@ -395,6 +405,11 @@ public abstract class AbstractFractionSym implements IFraction {
 			return F.Times(F.Power(numerator(), F.QQ(numerator, root)), F.Power(dAST, F.CN1));
 		}
 		return F.NIL;
+	}
+	
+	/** {@inheritDoc} */
+	public IInteger integerPart() {
+		return isNegative() ? ceilFraction() : floorFraction();
 	}
 
 	/**

@@ -7,7 +7,6 @@ import java.io.ObjectOutput;
 
 import javax.annotation.Nonnull;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
@@ -16,6 +15,7 @@ import org.matheclipse.core.interfaces.ExprUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.FEConfig;
 
 public class PatternMatcherAndEvaluator extends PatternMatcher implements Externalizable {
 
@@ -88,8 +88,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	 * @return
 	 * @see IAST#NO_FLAG
 	 */
-	public final boolean isFlagOff(final int i) {
-		return (fSetFlags & i) == 0;
+	public final boolean isFlagOff(final int flags) {
+		return (fSetFlags & flags) == 0;
 	}
 
 	/**
@@ -99,8 +99,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	 * @return
 	 * @see IAST#NO_FLAG
 	 */
-	public final boolean isFlagOn(int i) {
-		return (fSetFlags & i) == i;
+	public final boolean isFlagOn(int flags) {
+		return (fSetFlags & flags) == flags;
 	}
 
 	/**
@@ -253,7 +253,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 					}
 					return result;
 				} catch (final ConditionException e) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						logConditionFalse(leftHandSide, fLhsPatternExpr, fRightHandSide);
 					}
 					return F.NIL;
@@ -295,7 +295,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 					}
 					return result;
 				} catch (final ConditionException e) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						logConditionFalse(leftHandSide, fLhsPatternExpr, fRightHandSide);
 					}
 					return F.NIL;
@@ -306,13 +306,13 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 			}
 		}
 
- 		if (fLhsPatternExpr.isAST() && leftHandSide.isAST()) {
+		if (fLhsPatternExpr.isAST() && leftHandSide.isAST()) {
 			return replaceSubExpressionOrderlessFlat((IAST) fLhsPatternExpr, (IAST) leftHandSide, fRightHandSide,
 					engine);
- 		}
- 	return F.NIL;
+		}
+		return F.NIL;
 	}
- 
+
 	/**
 	 * Get the flags for this matcher.
 	 * 

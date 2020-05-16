@@ -15,7 +15,7 @@ public abstract class AbstractEvaluator implements IFunctionEvaluator {
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr numericEval(final IAST ast, @Nonnull EvalEngine engine) {
+	public IExpr numericEval(final IAST ast, @Nonnull final EvalEngine engine) {
 		return evaluate(ast, engine);
 	}
 
@@ -30,6 +30,6 @@ public abstract class AbstractEvaluator implements IFunctionEvaluator {
 
 	/** {@inheritDoc} */
 	@Override
-	abstract public IExpr evaluate(final IAST ast, @Nonnull  EvalEngine engine);
+	abstract public IExpr evaluate(final IAST ast, @Nonnull final EvalEngine engine);
 
 }

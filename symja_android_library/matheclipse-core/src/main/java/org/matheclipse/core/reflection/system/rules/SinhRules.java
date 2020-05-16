@@ -72,7 +72,7 @@ public interface SinhRules {
     ISetDelayed(Sinh(Plus(Times(CC(0L,1L,1L,2L),Pi),x_)),
       Times(CI,Cosh(x))),
     // Sinh(Complex(0,n_Integer)*Pi+x_):=(-1)^n*Sinh(x)
-    ISetDelayed(Sinh(Plus(x_,Times(Pi,Complex(C0,$p(n, Integer))))),
+    ISetDelayed(Sinh(Plus(Times(Pi,Complex(C0,$p(n, Integer))),x_)),
       Times(Power(CN1,n),Sinh(x))),
     // Sinh(ArcSinh(x_)):=x
     ISetDelayed(Sinh(ArcSinh(x_)),

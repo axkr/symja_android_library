@@ -2,7 +2,6 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.Map;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
@@ -16,6 +15,7 @@ import org.matheclipse.core.form.output.DoubleFormFactory;
 import org.matheclipse.core.form.output.JavaDoubleFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.parser.client.FEConfig;
 
 import com.itranswarp.compiler.JavaStringCompiler;
 
@@ -75,7 +75,7 @@ public class Compile extends AbstractCoreFunctionEvaluator {
 			// org.matheclipse.core.eval.exception.Validate.checkIsVariableOrVariableList( )
 			return engine.printMessage(ast.topHead(), ve);
 		} catch (Exception rex) {
-			if (Config.SHOW_STACKTRACE) {
+			if (FEConfig.SHOW_STACKTRACE) {
 				rex.printStackTrace();
 			}
 			return engine.printMessage("Compile: " + rex.getMessage());

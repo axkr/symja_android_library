@@ -447,7 +447,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
 	 * 
 	 * @param cf
 	 *            factory for coefficients of type C.
-	 * @param v
+	 * @param listOfVariables
 	 *            names for the variables.
 	 * @param n
 	 *            number of variables.
@@ -575,15 +575,15 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
 				final IExpr base = ast.base();
 				ix = ExpVectorSymbolic.indexVar(base, getVars());
 				if (ix >= 0) {
-					IExpr exponent = ast.exponent(); 
+					IExpr exponent = ast.exponent();
 					if (checkNegativeExponents && //
-							(!exponent.isInteger()||exponent.isNegative())) {
+							(!exponent.isInteger() || exponent.isNegative())) {
 						throw new ArithmeticException(
 								"SymbolicPolynomialRing - invalid exponent: " + ast.arg2().toString());
 					}
 					if (exponent.isNegative() && coefficientListMode) {
 						return new SymbolicPolynomial(this, ast);
-					} 
+					}
 					ExpVectorSymbolic e = new ExpVectorSymbolic(vars.argSize(), ix, exponent);
 					return getOne().multiply(e);
 				}
@@ -773,8 +773,6 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
 	 * 
 	 * @param expression
 	 *            the expression which should be checked if it's a polynomial
-	 * @param coefficient
-	 *            set to <code>true</code> if called by the <code>Coefficient()</code> function
 	 * @return <code>true</code> if the given expression is a polynomial
 	 */
 	public boolean isPolynomial(final IExpr expression) throws ArithmeticException, ClassCastException {
@@ -829,7 +827,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
 				for (int i = 1; i < vars.size(); i++) {
 					IExpr variable = vars.get(i);
 					if (variable.equals(base)) {
-						int exponent = ast.exponent().toIntDefault(Integer.MIN_VALUE); 
+						int exponent = ast.exponent().toIntDefault(Integer.MIN_VALUE);
 						if (exponent < 0) {
 							return false;
 						}
@@ -1396,19 +1394,6 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
 	}
 
 	/**
-	 * Extend variables. Used e.g. in module embedding. Extend number of variables by i.
-	 * 
-	 * @param i
-	 *            number of variables to extend.
-	 * @return extended polynomial ring factory.
-	 */
-	// public ExprPolynomialRing extend(int i) {
-	// // add module variable names
-	// IAST v = newVars("e", i);
-	// return extend(v);
-	// }
-
-	/**
 	 * Extend variables. Used e.g. in module embedding. Extend number of variables by length(vn).
 	 * 
 	 * @param vn
@@ -1434,26 +1419,6 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
 	}
 
 	/**
-	 * Contract variables. Used e.g. in module embedding. Contract number of variables by i.
-	 * 
-	 * @param i
-	 *            number of variables to remove.
-	 * @return contracted polynomial ring factory.
-	 */
-	// public GenPolynomialRing contract(int i) {
-	// String[] v = null;
-	// if (vars != null) {
-	// v = new String[vars.length - i];
-	// for (int j = 0; j < vars.length - i; j++) {
-	// v[j] = vars[j];
-	// }
-	// }
-	// TermOrder to = tord.contract(i, nvar - i);
-	// GenPolynomialRing pfac = new GenPolynomialRing(coFac, nvar - i, to, v);
-	// return pfac;
-	// }
-
-	/**
 	 * Distributive representation as polynomial with all main variables.
 	 * 
 	 * @return distributive polynomial ring factory.
@@ -1477,57 +1442,11 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
 	}
 
 	/**
-	 * Reverse variables. Used e.g. in opposite rings.
-	 * 
-	 * @return polynomial ring factory with reversed variables.
-	 */
-	// public GenPolynomialRing reverse() {
-	// return reverse(false);
-	// }
-
-	/**
-	 * Reverse variables. Used e.g. in opposite rings.
-	 * 
-	 * @param partial
-	 *            true for partialy reversed term orders.
-	 * @return polynomial ring factory with reversed variables.
-	 */
-	// public GenPolynomialRing reverse(boolean partial) {
-	// String[] v = null;
-	// if (vars != null) { // vars are not inversed
-	// v = new String[vars.length];
-	// int k = tord.getSplit();
-	// if (partial && k < vars.length) {
-	// // copy upper
-	// for (int j = 0; j < k; j++) {
-	// // v[vars.length - k + j] = vars[vars.length - 1 - j]; // reverse upper
-	// v[vars.length - k + j] = vars[vars.length - k + j];
-	// }
-	// // reverse lower
-	// for (int j = 0; j < vars.length - k; j++) {
-	// // v[j] = vars[j]; // copy upper
-	// v[j] = vars[vars.length - k - j - 1];
-	// }
-	// } else {
-	// for (int j = 0; j < vars.length; j++) {
-	// v[j] = vars[vars.length - 1 - j];
-	// }
-	// }
-	// // System.out.println("vars = " + Arrays.toString(vars));
-	// // System.out.println("v = " + Arrays.toString(v));
-	// }
-	// TermOrder to = tord.reverse(partial);
-	// GenPolynomialRing pfac = new GenPolynomialRing(coFac, nvar, to, v);
-	// pfac.partial = partial;
-	// return pfac;
-	// }
-
-	/**
 	 * Get PolynomialComparator.
 	 * 
 	 * @return polynomial comparator.
 	 */
-	public Comparator getComparator() {
+	public SymbolicPolynomialComparator getComparator() {
 		return new SymbolicPolynomialComparator(tord, false);
 	}
 
@@ -1538,70 +1457,9 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
 	 *            for reverse comparator.
 	 * @return polynomial comparator.
 	 */
-	public Comparator getComparator(boolean rev) {
+	public SymbolicPolynomialComparator getComparator(boolean rev) {
 		return new SymbolicPolynomialComparator(tord, rev);
 	}
-
-	/**
-	 * New variable names. Generate new names for variables,
-	 * 
-	 * @param prefix
-	 *            name prefix.
-	 * @param n
-	 *            number of variables.
-	 * @return new variable names.
-	 */
-	// public static IAST newVars(String prefix, int n) {
-	// IAST vars = F.List();
-	// synchronized (knownVars) {
-	// int m = knownVars.size();
-	// String name = prefix + m;
-	// for (int i = 0; i < n; i++) {
-	// while (knownVars.contains(name)) {
-	// m++;
-	// name = prefix + m;
-	// }
-	// ISymbol sym = F.$s(name);
-	// vars.add(sym);
-	// // System.out.println("new variable: " + name);
-	// knownVars.add(sym);
-	// m++;
-	// name = prefix + m;
-	// }
-	// }
-	// return vars;
-	// }
-
-	/**
-	 * New variable names. Generate new names for variables,
-	 * 
-	 * @param prefix
-	 *            name prefix.
-	 * @return new variable names.
-	 */
-	// public IAST newVars(String prefix) {
-	// return newVars(prefix, nvar);
-	// }
-
-	/**
-	 * New variable names. Generate new names for variables,
-	 * 
-	 * @param n
-	 *            number of variables.
-	 * @return new variable names.
-	 */
-	// public static IAST newVars(int n) {
-	// return newVars("x", n);
-	// }
-
-	/**
-	 * New variable names. Generate new names for variables,
-	 * 
-	 * @return new variable names.
-	 */
-	// public IAST newVars() {
-	// return newVars(nvar);
-	// }
 
 	/**
 	 * Add variable names.

@@ -50,7 +50,6 @@ public class FlatOrderlessStepVisitor extends FlatStepVisitor implements IStepVi
 	 * Convert the <code>sortedList</code> to an <code>int[]</code> array. Equal elements get the same index in the
 	 * resulting <code>int[]</code> array.
 	 * 
-	 * @param <T>
 	 * @param sortedList
 	 * @param start
 	 * @param end

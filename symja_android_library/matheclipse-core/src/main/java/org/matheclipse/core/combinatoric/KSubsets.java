@@ -54,18 +54,6 @@ public class KSubsets {
 			return x;
 		}
 
-		public static long binomial(final long n, final long k) {
-			long bin = 1;
-			long kSub = k;
-			if (kSub > (n / 2)) {
-				kSub = n - kSub;
-			}
-			for (long i = 1; i <= kSub; i++) {
-				bin = (bin * (n - i + 1)) / i;
-			}
-			return bin;
-		}
-
 		@Override
 		public boolean hasNext() {
 			return true;
@@ -145,5 +133,17 @@ public class KSubsets {
 	public static <E, T extends List<E>> KSubsetsList<E, T> createKSubsets(final T list, final int k,
 			final int offset) {
 		return new KSubsetsList<E, T>(new KSubsetsIterable(list.size() - offset, k), list, k, offset);
+	}
+	
+	public static long binomial(final long n, final long k) {
+		long bin = 1;
+		long kSub = k;
+		if (kSub > (n / 2)) {
+			kSub = n - kSub;
+		}
+		for (long i = 1; i <= kSub; i++) {
+			bin = (bin * (n - i + 1)) / i;
+		}
+		return bin;
 	}
 }

@@ -29,9 +29,17 @@ public class PatternSequence implements IPatternSequence {
 	private static final long serialVersionUID = 2773651826316158627L;
 
 	/**
-	 * @param nullAllowed
-	 *            TODO
+	 * Create a new PatternSequence.
 	 * 
+	 * @param symbol
+	 *            the associated symbol of the pattern sequence. Maybe <code>null</code>.
+	 * @param check
+	 *            a header check.Maybe <code>null</code>.
+	 * @param def
+	 *            if <code>true</code> replace with default value, if no matching was possible
+	 * @param zeroArgsAllowed
+	 *            if <code>true</code>, 0 arguments are allowed, otherwise the number of args has to be >= 1.
+	 * @return
 	 */
 	public static PatternSequence valueOf(final ISymbol symbol, final IExpr check, final boolean def,
 			boolean zeroArgsAllowed) {
@@ -44,8 +52,14 @@ public class PatternSequence implements IPatternSequence {
 	}
 
 	/**
+	 * Create a new PatternSequence.
 	 * 
-	 * @param numerator
+	 * @param symbol
+	 *            the associated symbol of the pattern sequence. Maybe <code>null</code>.
+	 * @param check
+	 *            a header check.Maybe <code>null</code>.
+	 * @param zeroArgsAllowed
+	 *            if <code>true</code>, 0 arguments are allowed, otherwise the number of args has to be >= 1.
 	 * @return
 	 */
 	public static PatternSequence valueOf(final ISymbol symbol, final IExpr check, boolean zeroArgsAllowed) {
@@ -56,6 +70,15 @@ public class PatternSequence implements IPatternSequence {
 		return p;
 	}
 
+	/**
+	 * Create a new PatternSequence.
+	 * 
+	 * @param symbol
+	 *            the associated symbol of the pattern sequence. Maybe <code>null</code>.
+	 * @param zeroArgsAllowed
+	 *            if <code>true</code>, 0 arguments are allowed, otherwise the number of args has to be >= 1.
+	 * @return
+	 */
 	public static PatternSequence valueOf(final ISymbol symbol, boolean zeroArgsAllowed) {
 		return valueOf(symbol, null, zeroArgsAllowed);
 	}
@@ -63,19 +86,19 @@ public class PatternSequence implements IPatternSequence {
 	/**
 	 * The expression which should check this pattern sequence
 	 */
-	IExpr fCondition;
+	private IExpr fCondition;
 
 	/**
 	 * The associated symbol for this pattern sequence
 	 */
-	ISymbol fSymbol;
+	private ISymbol fSymbol;
 
 	/**
 	 * Use default value, if no matching was found
 	 */
-	boolean fDefault = false;
+	private boolean fDefault = false;
 
-	boolean fZeroArgsAllowed = false;
+	private boolean fZeroArgsAllowed = false;
 
 	private PatternSequence() {
 	}
@@ -172,8 +195,8 @@ public class PatternSequence implements IPatternSequence {
 		if (value != null) {
 			return sequence.equals(value);
 		}
-		patternMap.setValue(this, sequence);
-		return true;
+		return patternMap.setValue(this, sequence);
+		// return true;
 	}
 
 	@Override
@@ -378,32 +401,16 @@ public class PatternSequence implements IPatternSequence {
 	@Override
 	public boolean isConditionMatchedSequence(final IAST sequence, IPatternMap patternMap) {
 		if (fCondition == null) {
-			patternMap.setValue(this, sequence);
-			return true;
+			return patternMap.setValue(this, sequence);
+			// return true;
 		}
-		// EvalEngine engine = EvalEngine.get();
-		// boolean traceMode = false;
-		// traceMode = engine.isTraceMode();
-		// final Predicate<IExpr> matcher = Predicates.isTrue(engine, fCondition);
-		// try {
 		for (int i = 1; i < sequence.size(); i++) {
 			if (!sequence.get(i).head().equals(fCondition)) {
 				return false;
 			}
-			// engine.setTraceMode(false);
-			//
-			// if (matcher.test(sequence.get(i))) {
-			// continue;
-			// }
-			// return false;
 		}
-		patternMap.setValue(this, sequence);
-		return true;
-		// } finally {
-		// if (traceMode) {
-		// engine.setTraceMode(true);
-		// }
-		// }
+		return patternMap.setValue(this, sequence);
+		// return true;
 	}
 
 	/** {@inheritDoc} */

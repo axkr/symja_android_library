@@ -8,7 +8,6 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.complex.Complex;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.PolynomialFunctions;
@@ -25,6 +24,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.QuarticSolver;
+import org.matheclipse.parser.client.FEConfig;
 
 /**
  * <pre><code>ND(function, x, value)
@@ -68,7 +68,7 @@ public class ND extends AbstractFunctionEvaluator {
 				return partialDerivative(arg1, (ISymbol) arg2, 1, arg3, engine);
 			}
 		} catch (ValidateException ve) {
-			if (Config.SHOW_STACKTRACE) {
+			if (FEConfig.SHOW_STACKTRACE) {
 				ve.printStackTrace();
 			}
 		} catch (RuntimeException rex) {

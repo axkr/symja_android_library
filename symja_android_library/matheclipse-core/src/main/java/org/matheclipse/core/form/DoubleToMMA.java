@@ -35,7 +35,7 @@ public class DoubleToMMA {
 			expStr = expStr.substring(1);
 		}
 		int exp = Integer.parseInt(expStr);
-		if (-exponent <= exp && exp <= exponent) {
+		if (exponent > 0 && -exponent <= exp && exp <= exponent) {
 			DecimalFormatSymbols usSymbols = new DecimalFormatSymbols(Locale.US);
 			DecimalFormat format;
 			int hashSize;

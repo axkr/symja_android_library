@@ -15,10 +15,10 @@ import java.util.function.Function;
 import org.apache.commons.text.StringEscapeUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.AbortException;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.BreakException;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ContinueException;
@@ -49,6 +49,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.visit.ModuleReplaceAll;
+import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
 
 import com.google.common.util.concurrent.SimpleTimeLimiter;
@@ -379,7 +380,10 @@ public final class Programming {
 				if (engine.evalTrue(ast.arg2())) {
 					return ast.arg1();
 				}
-				throw new ConditionException(ast);
+				if (FEConfig.SHOW_STACKTRACE) {
+					throw new ConditionException(ast);
+				}
+				throw ConditionException.CONDITION_NIL;
 			}
 			return F.NIL;
 		}
@@ -866,7 +870,7 @@ public final class Programming {
 				return engine.printMessage(ve.getMessage(ast.topHead()));
 			} finally {
 				engine.setNumericMode(numericMode);
-			} 
+			}
 		}
 
 		public int[] expectedArgSize() {
@@ -2364,7 +2368,7 @@ public final class Programming {
 				} catch (final ASTElementLimitExceeded re) {
 					throw re;
 				} catch (final RuntimeException rex) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						rex.printStackTrace();
 					}
 					fEngine.printMessage("TimeConstrained: " + rex.getMessage());
@@ -2381,7 +2385,7 @@ public final class Programming {
 			}
 
 			public void cancel() {
-				fEngine.setStopRequested(true);
+				fEngine.stopRequest();
 			}
 
 			public void setExpr(IExpr fExpr) {
@@ -2407,12 +2411,13 @@ public final class Programming {
 					arg2 = ((ISignedNumber) arg2).ceilFraction();
 					seconds = ((ISignedNumber) arg2).toLong();
 				} else {
-					return engine
-							.printMessage("TimeConstrained: " + ast.arg2().toString() + " is not a Java long value.");
+					// Positive machine-sized integer expected at position `2` in `1`.
+					return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(F.C2, ast), engine);
 				}
 
 			} catch (ArithmeticException ae) {
-				return engine.printMessage("TimeConstrained: " + ast.arg2().toString() + " is not a Java long value.");
+				// Positive machine-sized integer expected at position `2` in `1`.
+				return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(F.C2, ast), engine);
 			}
 			final ExecutorService executor = Executors.newSingleThreadExecutor();
 			TimeLimiter timeLimiter = SimpleTimeLimiter.create(executor);// Executors.newSingleThreadExecutor());
@@ -2422,21 +2427,25 @@ public final class Programming {
 				seconds = seconds > 1 ? seconds - 1 : seconds;
 				return timeLimiter.callWithTimeout(work, seconds, TimeUnit.SECONDS);
 			} catch (org.matheclipse.core.eval.exception.TimeoutException e) {
+				// System.out.println("TIMED_OUT "+ast.arg1());
 				if (ast.isAST3()) {
 					return ast.arg3();
 				}
 				return F.$Aborted;
 			} catch (java.util.concurrent.TimeoutException e) {
+				// System.out.println("TimeoutException "+ast.arg1());
 				if (ast.isAST3()) {
 					return ast.arg3();
 				}
 				return F.$Aborted;
 			} catch (com.google.common.util.concurrent.UncheckedTimeoutException e) {
+				// System.out.println("UncheckedTimeoutException "+ast.arg1());
 				if (ast.isAST3()) {
 					return ast.arg3();
 				}
 				return F.$Aborted;
 			} catch (RuntimeException rex) {
+				// System.out.println("RuntimeException "+ast.arg1());
 				// Appengine example: com.google.apphosting.api.DeadlineExceededException
 				if (ast.isAST3()) {
 					// e.printStackTrace();
@@ -2463,7 +2472,7 @@ public final class Programming {
 					if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
 						executor.shutdownNow(); // Cancel currently executing tasks
 						// Wait a while for tasks to respond to being cancelled
-						if (!executor.awaitTermination(2, TimeUnit.SECONDS)) {
+						if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
 							engine.printMessage("TimeConstrained: pool did not terminate");
 						}
 					}
@@ -2579,7 +2588,7 @@ public final class Programming {
 
 				return engine.evalTrace(temp, matcher, F.List());
 			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 			}
@@ -2611,7 +2620,7 @@ public final class Programming {
 					createTree(jsControl, temp);
 					return F.JSFormData(jsControl.toString(), "traceform");
 				} catch (RuntimeException rex) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						rex.printStackTrace();
 					}
 				}
@@ -2870,17 +2879,16 @@ public final class Programming {
 	private final static class With extends AbstractCoreFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-
-			if (ast.arg1().isList()) {
-				IExpr temp = withSubstVariables((IAST) ast.arg1(), ast.arg2(), engine);
+			IExpr arg1 = ast.arg1();
+			if (arg1.isList()) {
+				IExpr temp = withSubstVariables((IAST) arg1, ast.arg2(), engine);
 				if (temp.isPresent()) {
 					// System.out.println(temp);
 					return engine.evaluate(temp);
 				}
-
+				return F.NIL;
 			}
-
-			return F.NIL;
+			return IOFunctions.printMessage(ast.topHead(), "lvlist", F.List(arg1), engine);
 		}
 
 		public int[] expectedArgSize() {
@@ -2905,7 +2913,7 @@ public final class Programming {
 	 * @return
 	 */
 	private static boolean rememberWithVariables(IAST variablesList, final java.util.Map<ISymbol, IExpr> variablesMap,
-			EvalEngine engine) {
+			  EvalEngine engine) {
 		ISymbol oldSymbol;
 		for (int i = 1; i < variablesList.size(); i++) {
 			if (variablesList.get(i).isAST(F.Set, 3)) {
@@ -2914,14 +2922,19 @@ public final class Programming {
 					oldSymbol = (ISymbol) setFun.arg1();
 					IExpr rightHandSide = setFun.arg2();
 					IExpr temp = engine.evaluate(rightHandSide);
+					VariablesSet set = new VariablesSet(temp);
+					set.putAllSymbols(variablesMap);
 					variablesMap.put(oldSymbol, temp);
 				} else {
-					engine.printMessage(
-							"With: expression requires variable with value assignment: " + setFun.toString());
+					// Local variable specification `1` contains `2`, which is an assignment to `3`; only assignments to
+					// symbols are allowed.
+					IOFunctions.printMessage(F.With, "lvset",
+							F.List(variablesList, variablesList.get(i), setFun.arg1()), engine);
 					return false;
 				}
 			} else {
-				engine.printMessage("With: assignment to variable required: " + variablesList.get(i).toString());
+				// Variable `1` in local variable specification `2` requires assigning a value
+				IOFunctions.printMessage(F.With, "lvws", F.List(variablesList.get(i), variablesList), engine);
 				return false;
 			}
 		}
@@ -3050,11 +3063,11 @@ public final class Programming {
 	 * @return
 	 */
 	private static IExpr moduleSubstVariables(IAST intializerList, IExpr moduleBlock, final EvalEngine engine) {
-		final int moduleCounter = engine.incModuleCounter();
-		final String varAppend = "$" + moduleCounter;
+		// final long moduleCounter = engine.incModuleCounter();
+		final String varAppend = engine.uniqueName("$");
 		final java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables = new IdentityHashMap<ISymbol, IExpr>();
 		if (rememberModuleVariables(intializerList, varAppend, moduleVariables, engine)) {
-			IExpr result = moduleBlock.accept(new ModuleReplaceAll(moduleVariables, engine, varAppend));
+			IExpr result = moduleBlock.accept(new ModuleReplaceAll(moduleVariables,  engine, varAppend));
 			return result.orElse(moduleBlock);
 		}
 		return F.NIL;
@@ -3072,11 +3085,12 @@ public final class Programming {
 	 * @return
 	 */
 	private static IExpr withSubstVariables(IAST intializerList, IExpr withBlock, final EvalEngine engine) {
-		final int moduleCounter = engine.incModuleCounter();
-		final String varAppend = "$" + moduleCounter;
+		// final long moduleCounter = engine.incModuleCounter();
+		// final String varAppend = "$" + moduleCounter;
 		final java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables = new IdentityHashMap<ISymbol, IExpr>();
-		if (rememberWithVariables(intializerList, moduleVariables, engine)) {
-			IExpr result = withBlock.accept(new ModuleReplaceAll(moduleVariables, engine, varAppend));
+		if (rememberWithVariables(intializerList, moduleVariables,   engine)) {
+			IExpr result = withBlock
+					.accept(new ModuleReplaceAll(moduleVariables,   engine, engine.uniqueName("$")));
 			return result.orElse(withBlock);
 		}
 		return F.NIL;
@@ -3487,8 +3501,8 @@ public final class Programming {
 	 * 
 	 * @param expr
 	 * @param element
+	 * @param part
 	 * @param partPosition
-	 * @param pos
 	 * @param result
 	 *            will be cloned if an assignment occurs and returned by this method
 	 * @param position

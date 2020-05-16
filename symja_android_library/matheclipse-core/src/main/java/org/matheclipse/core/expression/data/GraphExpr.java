@@ -40,6 +40,11 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> {
 	public int hashCode() {
 		return (fData == null) ? 283 : 283 + fData.hashCode();
 	}
+	
+	@Override
+	public int hierarchy() {
+		return GRAPHEXPRID;
+	}
 
 	@Override
 	public IExpr copy() {
@@ -50,8 +55,6 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> {
 	 * Test if the graph is instance of <code>DefaultDirectedWeightedGraph</code> or
 	 * <code>DefaultUndirectedWeightedGraph</code>
 	 * 
-	 * @param graph
-	 *            the graph which should be tested.
 	 * @return <code>true</code> if the graph is a weighted graph
 	 */
 	public boolean isWeightedGraph() {

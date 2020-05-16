@@ -6,7 +6,7 @@ public class TimeoutException extends FlowControlException {
 	
 	public final static TimeoutException TIMED_OUT = new TimeoutException();
 	
-	public TimeoutException() {
+	private TimeoutException() {
 		super();
 	}
 

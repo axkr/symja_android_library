@@ -30,10 +30,8 @@ public class Functors {
 
 		/**
 		 * 
-		 * @param plusAST
-		 *            the complete AST which should be cloned in the {@code apply} method
-		 * @param position
-		 *            the position which should be replaced in the <code>apply()</code> method.
+		 * @param equalRule
+		 *            the left- and right-hand-side (i.e. arg1() and arg2()) which should be tested for equality
 		 */
 		public SingleRuleFunctor(IAST equalRule) {
 			lhs = equalRule.arg1();
@@ -68,7 +66,7 @@ public class Functors {
 		private final Map<IExpr, IExpr> fEqualRules;
 		private final List<PatternMatcherAndEvaluator> fMatchers;
 		private final EvalEngine fEngine;
- 
+
 		public RulesPatternFunctor(Map<IExpr, IExpr> equalRules, List<PatternMatcherAndEvaluator> matchers,
 				@Nonnull EvalEngine engine) {
 			fEqualRules = equalRules;
@@ -101,10 +99,10 @@ public class Functors {
 
 		/**
 		 * 
-		 * @param plusAST
-		 *            the complete AST which should be cloned in the {@code apply} method
-		 * @param position
-		 *            the position which should be replaced in the <code>apply()</code> method.
+		 * @param equalRules 
+		 * @param matchers 
+		 * @param result 
+		 * @param engine 
 		 */
 		public ListRulesPatternFunctor(Map<IExpr, IExpr> equalRules, List<PatternMatcherList> matchers,
 				IASTAppendable result, @Nonnull EvalEngine engine) {
@@ -164,7 +162,7 @@ public class Functors {
 	 * argument with the <code>#equals()</code> method. Therefore the left-hand-side shouldn't contain any pattern or
 	 * orderless expression.
 	 * 
-	 * @param rulesMap
+	 * @param rule
 	 * @return
 	 */
 	public static Function<IExpr, IExpr> equalRule(IAST rule) {
@@ -198,8 +196,7 @@ public class Functors {
 	 * @param astRules
 	 * @return
 	 */
-	public static Function<IExpr, IExpr> rules(@Nonnull IAST astRules, @Nonnull EvalEngine engine)
-			 {
+	public static Function<IExpr, IExpr> rules(@Nonnull IAST astRules, @Nonnull EvalEngine engine) {
 		final Map<IExpr, IExpr> equalRules;
 		IAST rule;
 		List<PatternMatcherAndEvaluator> matchers = new ArrayList<PatternMatcherAndEvaluator>();
@@ -219,7 +216,8 @@ public class Functors {
 						rule = (IAST) expr;
 						addRuleToCollection(equalRules, matchers, rule);
 					} else {
-						throw new ArgumentTypeException("rule expression (x->y) expected instead of "+expr.toString());
+						throw new ArgumentTypeException(
+								"rule expression (x->y) expected instead of " + expr.toString());
 					}
 				}
 				if (matchers.size() > 0) {
@@ -238,7 +236,7 @@ public class Functors {
 				equalRules = new OpenFixedSizeMap<IExpr, IExpr>(3);
 				addRuleToCollection(equalRules, matchers, rule);
 			} else {
-				throw new ArgumentTypeException("rule expression (x->y) expected instead of "+astRules.toString()); 
+				throw new ArgumentTypeException("rule expression (x->y) expected instead of " + astRules.toString());
 			}
 			if (matchers.size() > 0) {
 				return new RulesPatternFunctor(equalRules, matchers, engine);
@@ -249,7 +247,7 @@ public class Functors {
 	}
 
 	public static Function<IExpr, IExpr> listRules(@Nonnull IAST astRules, IASTAppendable result,
-			@Nonnull EvalEngine engine)  {
+			@Nonnull EvalEngine engine) {
 		final Map<IExpr, IExpr> equalRules;
 		List<PatternMatcherList> matchers = new ArrayList<PatternMatcherList>();
 		if (astRules.isList()) {
@@ -268,7 +266,8 @@ public class Functors {
 						rule = (IAST) expr;
 						createPatternMatcherList(equalRules, matchers, rule);
 					} else {
-						throw new ArgumentTypeException("rule expression (x->y) expected instead of "+expr.toString());  
+						throw new ArgumentTypeException(
+								"rule expression (x->y) expected instead of " + expr.toString());
 					}
 				}
 			} else {
@@ -279,7 +278,7 @@ public class Functors {
 				equalRules = new OpenFixedSizeMap<IExpr, IExpr>(3);
 				createPatternMatcherList(equalRules, matchers, astRules);
 			} else {
-				throw new ArgumentTypeException("rule expression (x->y) expected instead of "+astRules.toString());   
+				throw new ArgumentTypeException("rule expression (x->y) expected instead of " + astRules.toString());
 			}
 		}
 		if (matchers.size() > 0) {

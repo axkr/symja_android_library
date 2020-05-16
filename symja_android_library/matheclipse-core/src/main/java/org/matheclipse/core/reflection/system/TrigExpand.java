@@ -13,7 +13,7 @@ import static org.matheclipse.core.expression.F.evalExpandAll;
 import java.util.function.Function;
 
 import org.matheclipse.core.builtin.IOFunctions;
-import org.matheclipse.core.builtin.Structure;
+import org.matheclipse.core.builtin.StructureFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -62,10 +62,10 @@ public class TrigExpand extends AbstractEvaluator {
 		}
 
 		/**
-		 * Expand <code>f(a+b+c+...)</code> and f a trig function.
+		 * Expand <code>f(a+b+c+...)</code> and create a trig function.
 		 * 
-		 * @param n
-		 * @param theta
+		 * @param ast
+		 * @param plusAST
 		 * @return
 		 */
 		private IExpr expandPlus(IAST ast, IAST plusAST) {
@@ -100,10 +100,10 @@ public class TrigExpand extends AbstractEvaluator {
 		}
 
 		/**
-		 * Expand <code>f(n*theta)</code> and f a trig function.
+		 * Expand <code>f(n*theta)</code> and create a trig function.
 		 * 
-		 * @param n
-		 * @param theta
+		 * @param ast
+		 * @param timesAST
 		 * @return
 		 */
 		private IExpr expandTimes(IAST ast, IAST timesAST) {
@@ -349,7 +349,7 @@ public class TrigExpand extends AbstractEvaluator {
 	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		IExpr temp = Structure.threadLogicEquationOperators(ast.arg1(), ast, 1);
+		IExpr temp = StructureFunctions.threadLogicEquationOperators(ast.arg1(), ast, 1);
 		if (temp.isPresent()) {
 			return temp;
 		}

@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.Collection;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
@@ -29,14 +30,15 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
-import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
 import org.matheclipse.core.patternmatching.RulesData;
+import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
+import org.matheclipse.parser.client.FEConfig;
 
 public class Symbol implements ISymbol, Serializable {
 
@@ -230,12 +232,16 @@ public class Symbol implements ISymbol, Serializable {
 	 */
 	@Override
 	public IAST definition() {
-		IASTAppendable result = F.ListAlloc();
+		List<IAST> rules = null;
+		if (fRulesData != null) {
+			rules = fRulesData.definition();
+		}
+		IASTAppendable result = F.ListAlloc(rules == null ? 1 : rules.size());
 		if (fValue != null) {
 			result.append(F.Set(this, fValue));
 		}
-		if (fRulesData != null) {
-			result.appendAll(fRulesData.definition());
+		if (rules != null) {
+			result.appendAll(rules);
 		}
 		return result;
 	}
@@ -380,7 +386,7 @@ public class Symbol implements ISymbol, Serializable {
 	 */
 	@Override
 	public String fullFormString() {
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+		if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
 			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName);
 			if (str != null) {
 				return str;
@@ -501,7 +507,7 @@ public class Symbol implements ISymbol, Serializable {
 		if (symbolsAsFactoryMethod) {
 			return prefix + internalJavaStringAsFactoryMethod();
 		}
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+		if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
 			String name;
 			if (fSymbolName.length() == 1) {
 				name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName);
@@ -535,6 +541,9 @@ public class Symbol implements ISymbol, Serializable {
 			char ch = fSymbolName.charAt(0);
 			if ('a' <= ch && ch <= 'z') {
 				return fSymbolName;
+			}
+			if (Config.RUBI_CONVERT_SYMBOLS && 'A' <= ch && ch <= 'G'&& ch != 'D' && ch != 'E') {
+				return fSymbolName + "Symbol";
 			}
 			if ('A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E') {
 				return fSymbolName + "Symbol";
@@ -679,7 +688,7 @@ public class Symbol implements ISymbol, Serializable {
 
 	@Override
 	public final boolean isSymbolName(String name) {
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+		if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
 			if (fSymbolName.length() == 1) {
 				return fSymbolName.equals(name);
 			}
@@ -1008,7 +1017,7 @@ public class Symbol implements ISymbol, Serializable {
 	}
 
 	private Object writeReplace() throws ObjectStreamException {
-		return optional(F.GLOBAL_IDS_MAP.get(this));
+		return optional();
 	}
 
 	/** {@inheritDoc} */

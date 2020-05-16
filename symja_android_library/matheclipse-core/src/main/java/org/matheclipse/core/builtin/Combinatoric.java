@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.combinatoric.KSubsets;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -22,6 +22,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.FrobeniusSolve;
+import org.matheclipse.parser.client.FEConfig;
 
 public final class Combinatoric {
 	/**
@@ -208,15 +209,18 @@ public final class Combinatoric {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			List<IAST> la = new ArrayList<IAST>(ast.argSize());
+			int resultSize = 1;
 			for (int i = 1; i < ast.size(); i++) {
 				if (ast.get(i).isList()) {
-					la.add((IAST) ast.get(i));
+					IAST subList = (IAST) ast.get(i);
+					la.add(subList);
+					resultSize *= subList.size();
 				} else {
 					return F.NIL;
 				}
 			}
 			CartesianProductList cpi = new CartesianProductList(la, F.ListAlloc(la.size()));
-			IASTAppendable result = F.ListAlloc(cpi.size());
+			IASTAppendable result = F.ListAlloc(resultSize);
 			for (IAST iast : cpi) {
 				result.append(iast);
 			}
@@ -312,8 +316,8 @@ public final class Combinatoric {
 			 * @param n
 			 *            with <code>n > 1</code>
 			 */
-			public NumberPartitionsIterable(final int num) {
-				this(num, num);
+			public NumberPartitionsIterable(final int n) {
+				this(n, n);
 			}
 
 			/**
@@ -321,9 +325,9 @@ public final class Combinatoric {
 			 *            with <code>n > 1</code>
 			 * @param l
 			 */
-			public NumberPartitionsIterable(final int num, final int l) {
+			public NumberPartitionsIterable(final int n, final int l) {
 				super();
-				n = num;
+				this.n = n;
 				len = l;
 				int size = n;
 				if (len > n) {
@@ -337,9 +341,6 @@ public final class Combinatoric {
 				fResultIndex = nextBeforehand();
 			}
 
-			/**
-			 * 
-			 */
 			private final int[] nextBeforehand() {
 				int l;
 				int k1;
@@ -438,7 +439,7 @@ public final class Combinatoric {
 						// try {
 						IASTAppendable temp;
 						final NumberPartitionsIterable comb = new NumberPartitionsIterable(n);
-						IASTAppendable result = F.ListAlloc(16);
+						IASTAppendable result = F.ListAlloc(50);
 						for (int j[] : comb) {
 							temp = F.ListAlloc(j.length);
 							for (int i = 0; i < j.length; i++) {
@@ -452,7 +453,7 @@ public final class Combinatoric {
 								result.append(temp);
 							}
 						}
-						return result; 
+						return result;
 					}
 					if (arg1.isNegative()) {
 						return F.CEmptyList;
@@ -510,7 +511,7 @@ public final class Combinatoric {
 				} catch (LimitException le) {
 					throw le;
 				} catch (RuntimeException rex) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						rex.printStackTrace();
 					}
 				}
@@ -629,8 +630,7 @@ public final class Combinatoric {
 					return F.NIL;
 				}
 				final ISymbol sym = listArg0.topHead();
-
-				final IASTAppendable result = F.ast(F.List);
+				final IASTAppendable result = F.ListAlloc(50);
 				final Permutations.KPermutationsIterable permutationIterator = new Permutations.KPermutationsIterable(
 						listArg0, n, 1);
 				final KPartitions.KPartitionsIterable partitionIterator = new KPartitions.KPartitionsIterable(n, k);
@@ -1638,7 +1638,7 @@ public final class Combinatoric {
 					return result;
 				} catch (final ValidateException ve) {
 					// see level specification
-					return engine.printMessage(ve.getMessage(ast.topHead()));
+					return engine.printMessage(ast.topHead(), ve);
 				}
 			}
 			return F.NIL;

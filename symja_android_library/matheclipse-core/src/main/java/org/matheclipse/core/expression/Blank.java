@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
@@ -18,6 +17,7 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
+import org.matheclipse.parser.client.FEConfig;
 
 /**
  * A &quot;blank pattern&quot; with no assigned &quot;pattern name&quot; (i.e. &quot;<code>_</code>&quot;)
@@ -41,12 +41,12 @@ public class Blank implements IPattern {
 	/**
 	 * The expression which should check the head of the matched expression
 	 */
-	final IExpr fHeadTest;
+	final protected IExpr fHeadTest;
 
 	/**
 	 * Use the default value, if no matching expression was found
 	 */
-	final boolean fDefault;
+	final protected boolean fDefault;
 
 	public Blank() {
 		this(null);
@@ -196,14 +196,14 @@ public class Blank implements IPattern {
 		StringBuilder buf = new StringBuilder();
 		if (fDefault) {
 			buf.append("Optional");
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
 				buf.append('(');
 			} else {
 				buf.append('[');
 			}
 		}
 		buf.append("Blank");
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+		if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
 			buf.append('(');
 		} else {
 			buf.append('[');
@@ -211,13 +211,13 @@ public class Blank implements IPattern {
 		if (fHeadTest != null) {
 			buf.append(fHeadTest.fullFormString());
 		}
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+		if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
 			buf.append(')');
 		} else {
 			buf.append(']');
 		}
 		if (fDefault) {
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
 				buf.append(')');
 			} else {
 				buf.append(']');
@@ -307,8 +307,8 @@ public class Blank implements IPattern {
 	@Override
 	public boolean isConditionMatched(final IExpr expr, IPatternMap patternMap) {
 		if (fHeadTest == null || expr.head().equals(fHeadTest)) {
-			patternMap.setValue(this, expr);
-			return true;
+			return patternMap.setValue(this, expr);
+//			return true;
 		}
 		return false;
 	}
@@ -362,7 +362,7 @@ public class Blank implements IPattern {
 	}
 
 	private Object writeReplace() throws ObjectStreamException {
-		return optional(F.GLOBAL_IDS_MAP.get(this));
+		return optional();
 	}
 
 }

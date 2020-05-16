@@ -8,7 +8,6 @@ import java.util.TreeSet;
 import java.util.function.Predicate;
 
 import org.hipparchus.linear.FieldMatrix;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
@@ -37,6 +36,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.QuarticSolver;
+import org.matheclipse.parser.client.FEConfig;
 
 /**
  * <pre>
@@ -988,7 +988,7 @@ public class Solve extends AbstractFunctionEvaluator {
 							} catch (LimitException le) {
 								throw le;
 							} catch (RuntimeException rex) {
-								if (Config.SHOW_STACKTRACE) {
+								if (FEConfig.SHOW_STACKTRACE) {
 									rex.printStackTrace();
 								}
 								return engine
@@ -1007,10 +1007,16 @@ public class Solve extends AbstractFunctionEvaluator {
 				boolean numericFlag = isNumeric[0] || numeric;
 				if (lists[2].isPresent()) {
 					IExpr result = solveNumeric(lists[2], numericFlag, engine);
+					if (!result.isPresent()) {
+						return IOFunctions.printMessage(ast.topHead(), "nsmet", F.List(ast.topHead()), engine);
+					}
 					return checkDomain(result, domain);
 				}
 				IASTMutable termsEqualZeroList = lists[0];
 				IExpr result = solveRecursive(termsEqualZeroList, lists[1], numericFlag, userDefinedVariables, engine);
+				if (!result.isPresent()) {
+					return IOFunctions.printMessage(ast.topHead(), "nsmet", F.List(ast.topHead()), engine);
+				}
 				return checkDomain(result, domain);
 			}
 		} catch (LimitException le) {
@@ -1018,7 +1024,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		} catch (ValidateException ve) {
 			return engine.printMessage(F.Solve, ve);
 		} catch (RuntimeException rex) {
-			if (Config.SHOW_STACKTRACE) {
+			if (FEConfig.SHOW_STACKTRACE) {
 				rex.printStackTrace();
 			}
 		}
@@ -1208,7 +1214,7 @@ public class Solve extends AbstractFunctionEvaluator {
 				termsEqualZeroList = list;
 			}
 		} catch (JASConversionException e) {
-			if (Config.SHOW_STACKTRACE) {
+			if (FEConfig.SHOW_STACKTRACE) {
 				e.printStackTrace();
 			}
 		}
@@ -1348,7 +1354,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		} catch (LimitException le) {
 			throw le;
 		} catch (RuntimeException rex) {
-			if (Config.SHOW_STACKTRACE) {
+			if (FEConfig.SHOW_STACKTRACE) {
 				rex.printStackTrace();
 			}
 		}

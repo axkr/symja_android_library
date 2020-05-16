@@ -169,7 +169,7 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	}
 
 	public IRational roundClosest(ISignedNumber factor);
-	
+
 	public IRational subtract(IRational parm1);
 
 	/**

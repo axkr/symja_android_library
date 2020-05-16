@@ -3,13 +3,13 @@ package org.matheclipse.core.eval.interfaces;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.parser.client.FEConfig;
 
 public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 
@@ -17,7 +17,7 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+	public IExpr evaluate(final IAST ast, final EvalEngine engine) {
 		FieldMatrix<IExpr> matrix;
 		boolean togetherMode = engine.isTogetherMode();
 		try {
@@ -34,11 +34,11 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 		} catch (MathRuntimeException mre) {
 			return engine.printMessage(ast.topHead(), mre);
 		} catch (final ClassCastException e) {
-			if (Config.SHOW_STACKTRACE) {
+			if (FEConfig.SHOW_STACKTRACE) {
 				e.printStackTrace();
 			}
 		} catch (final IndexOutOfBoundsException e) {
-			if (Config.SHOW_STACKTRACE) {
+			if (FEConfig.SHOW_STACKTRACE) {
 				e.printStackTrace();
 			}
 		} finally {
@@ -54,7 +54,7 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr numericEval(final IAST ast, EvalEngine engine) {
+	public IExpr numericEval(final IAST ast, final EvalEngine engine) {
 		RealMatrix matrix;
 
 		boolean togetherMode = engine.isTogetherMode();
@@ -85,7 +85,7 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 			}
 			return F.NIL;
 		} catch (final IndexOutOfBoundsException e) {
-			if (Config.SHOW_STACKTRACE) {
+			if (FEConfig.SHOW_STACKTRACE) {
 				e.printStackTrace();
 			}
 		} finally {

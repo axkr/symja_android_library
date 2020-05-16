@@ -129,8 +129,8 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
 	/**
 	 * <b>Note:</b> the given AST will be modified, i.e. some elements may be removed!
 	 * 
-	 * @param clonedAST
-	 *            an AST where arguments could be removed.
+	 * @param astCopy
+	 *            a mutable copy of an AST where arguments could be removed.
 	 */
 	@Override
 	public IExpr visit(IASTMutable astCopy) {

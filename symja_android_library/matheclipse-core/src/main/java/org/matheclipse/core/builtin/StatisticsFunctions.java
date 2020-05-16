@@ -1,5 +1,7 @@
 package org.matheclipse.core.builtin;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
@@ -51,6 +53,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.QuantileRules;
 import org.matheclipse.core.reflection.system.rules.StandardDeviationRules;
+import org.matheclipse.parser.client.FEConfig;
 import org.uncommons.maths.random.BinomialGenerator;
 import org.uncommons.maths.random.DiscreteUniformGenerator;
 import org.uncommons.maths.random.ExponentialGenerator;
@@ -58,7 +61,7 @@ import org.uncommons.maths.random.GaussianGenerator;
 import org.uncommons.maths.random.PoissonGenerator;
 
 public class StatisticsFunctions {
-
+	// avoid result -Infinity when reference is close to 1.0
 	private static final double NEXTDOWNONE = Math.nextDown(1.0);
 
 	/**
@@ -91,6 +94,7 @@ public class StatisticsFunctions {
 			F.GammaDistribution.setEvaluator(new GammaDistribution());
 			F.GeometricMean.setEvaluator(new GeometricMean());
 			F.GeometricDistribution.setEvaluator(new GeometricDistribution());
+			F.GompertzMakehamDistribution.setEvaluator(new GompertzMakehamDistribution());
 			F.GumbelDistribution.setEvaluator(new GumbelDistribution());
 			F.HarmonicMean.setEvaluator(new HarmonicMean());
 			F.HypergeometricDistribution.setEvaluator(new HypergeometricDistribution());
@@ -234,7 +238,7 @@ public class StatisticsFunctions {
 						}
 					}
 				} catch (Exception ex) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						ex.printStackTrace();
 					}
 				}
@@ -463,7 +467,7 @@ public class StatisticsFunctions {
 						}
 					}
 				} catch (Exception ex) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						ex.printStackTrace();
 					}
 				}
@@ -1005,7 +1009,7 @@ public class StatisticsFunctions {
 
 				}
 			} catch (ArithmeticException rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 			}
@@ -1823,9 +1827,8 @@ public class StatisticsFunctions {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
 				if (n.isReal() && m.isReal()) {
-					// avoid result -Infinity when reference is close to 1.0
 					double reference = random.nextDouble();
-					double uniform = reference == NEXTDOWNONE ? reference : Math.nextUp(reference);
+					double uniform = reference >= NEXTDOWNONE ? NEXTDOWNONE : Math.nextUp(reference);
 					uniform = -Math.log(uniform);
 					return m.times(F.Power.of(F.num(uniform), n.reciprocal().negate()));
 				}
@@ -2184,6 +2187,139 @@ public class StatisticsFunctions {
 
 	}
 
+	private final static class GompertzMakehamDistribution extends AbstractEvaluator
+			implements ICDF, IDistribution, IPDF, IVariance, IRandomVariate {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			// 0 or 2 args
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr mean(IAST dist) {
+			if (dist.isAST2()) {
+				IExpr m = dist.arg1();
+				IExpr n = dist.arg2();
+				return
+				// [$ (E^n*Gamma(0, n))/m $]
+				F.Times(F.Exp(n), F.Power(m, F.CN1), F.Gamma(F.C0, n)); // $$;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr median(IAST dist) {
+			if (dist.isAST2()) {
+				IExpr m = dist.arg1();
+				IExpr n = dist.arg2();
+				return
+				// [$ Log(1 + Log(2)/n)/m $]
+				F.Times(F.Power(m, F.CN1), F.Log(F.Plus(F.C1, F.Times(F.Power(n, F.CN1), F.Log(F.C2))))); // $$;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+			if (dist.isAST2()) {
+				IExpr m = dist.arg1();
+				IExpr n = dist.arg2();
+				IExpr function =
+						// [$ Piecewise({{1 - E^((1 - E^(#*m))*n), # >= 0}}, 0) & $]
+						F.Function(F.Piecewise(F.List(F.List(
+								F.Subtract(F.C1, F.Exp(F.Times(F.Subtract(F.C1, F.Exp(F.Times(F.Slot1, m))), n))),
+								F.GreaterEqual(F.Slot1, F.C0))), F.C0)); // $$;
+				return callFunction(function, k);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+			if (dist.isAST2()) {
+				IExpr m = dist.arg1();
+				IExpr n = dist.arg2();
+				IExpr function =
+						// [$ ConditionalExpression( Piecewise({{Log(1 - Log(1 - #)/n)/m, 0 < # < 1}, {0, # <= 0}},
+						// Infinity), 0 <= # <= 1) & $]
+						F.Function(
+								F.ConditionalExpression(F.Piecewise(
+										F.List(F.List(
+												F.Times(F.Power(m, F.CN1),
+														F.Log(F.Plus(F.C1,
+																F.Times(F.CN1, F.Power(n, F.CN1),
+																		F.Log(F.Subtract(F.C1, F.Slot1)))))),
+												F.Less(F.C0, F.Slot1, F.C1)), F.List(F.C0, F.LessEqual(F.Slot1, F.C0))),
+										F.oo), F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
+				return callFunction(function, k);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+			if (dist.isAST2()) {
+				IExpr m = dist.arg1();
+				IExpr n = dist.arg2();
+				IExpr function =
+						// [$ Piecewise({{E^(#*m + (1 - E^(#*m))*n)*m*n, # >= 0}}, 0) & $]
+						F.Function(F.Piecewise(F.List(F.List(
+								F.Times(F.Exp(F.Plus(F.Times(F.Slot1, m),
+										F.Times(F.Subtract(F.C1, F.Exp(F.Times(F.Slot1, m))), n))), m, n),
+								F.GreaterEqual(F.Slot1, F.C0))), F.C0)); // $$;
+				return callFunction(function, k);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr variance(IAST dist) {
+			if (dist.isAST2()) {
+				IExpr m = dist.arg1();
+				IExpr n = dist.arg2();
+				return
+				// [$ -((E^n*(-6*EulerGamma^2 - Pi^2 + 6*E^n*ExpIntegralEi(-n)^2 + 12*n*HypergeometricPFQ({1, 1, 1}, {2,
+				// 2, 2}, -n) - 12*EulerGamma*Log(n) - 6*Log(n)^2))/(6*m^2)) $]
+				F.Times(F.CN1, F.Exp(n), F.Power(F.Times(F.C6, F.Sqr(m)), F.CN1),
+						F.Plus(F.Times(F.CN6, F.Sqr(F.EulerGamma)), F.Negate(F.Sqr(F.Pi)),
+								F.Times(F.C6, F.Exp(n), F.Sqr(F.ExpIntegralEi(F.Negate(n)))),
+								F.Times(F.ZZ(12L), n,
+										F.HypergeometricPFQ(F.List(F.C1, F.C1, F.C1), F.List(F.C2, F.C2, F.C2),
+												F.Negate(n))),
+								F.Times(F.ZZ(-12L), F.EulerGamma, F.Log(n)), F.Times(F.CN6, F.Sqr(F.Log(n))))); // $$;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr randomVariate(Random random, IAST dist) {
+			if (dist.isAST2()) {
+				IExpr n = dist.arg1();
+				IExpr m = dist.arg2();
+				if (n.isReal() && m.isReal()) {
+					double lambda = n.evalDouble();
+					double xi = m.evalDouble();
+					double reference = random.nextDouble();
+					double uniform = Math.nextUp(reference);
+					double result = Math.log((xi - Math.log(uniform)) / xi) / lambda;
+					return F.num(result);
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_2;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
 	/**
 	 * <pre>
 	 * <code>GumbelDistribution(a, b)
@@ -2346,9 +2482,9 @@ public class StatisticsFunctions {
 				if (n.isReal() && m.isReal()) {
 					// avoid result -Infinity when reference is close to 1.0
 					double reference = random.nextDouble();
-					double uniform = reference == NEXTDOWNONE ? reference : Math.nextUp(reference);
-					uniform = -Math.log(uniform);
-					return m.add(n.times(F.Log(F.num(uniform))));
+					double uniform = reference == NEXTDOWNONE ? NEXTDOWNONE : Math.nextUp(reference);
+					uniform = Math.log(-Math.log(uniform));
+					return m.add(n.times(F.num(uniform)));
 				}
 			}
 			return F.NIL;
@@ -2611,7 +2747,7 @@ public class StatisticsFunctions {
 			} catch (final ValidateException ve) {
 				return engine.printMessage(ve.getMessage(ast.topHead()));
 			} catch (final IndexOutOfBoundsException e) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
 			}
@@ -3058,7 +3194,7 @@ public class StatisticsFunctions {
 						}
 					}
 				} catch (Exception ex) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						ex.printStackTrace();
 					}
 				}
@@ -3405,7 +3541,7 @@ public class StatisticsFunctions {
 	 * </p>
 	 */
 	private final static class LogNormalDistribution extends AbstractEvaluator
-			implements ICDF, IDistribution, IPDF, IVariance {
+			implements ICDF, IDistribution, IPDF, IVariance, IRandomVariate {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -3535,6 +3671,18 @@ public class StatisticsFunctions {
 		public void setUp(final ISymbol newSymbol) {
 		}
 
+		@Override
+		public IExpr randomVariate(Random random, IAST dist) {
+			if (dist.isAST2()) {
+				if (dist.arg1().isReal() && dist.arg2().isPositiveResult()) {
+					double mean = dist.arg1().evalDouble();
+					double sigma = dist.arg2().evalDouble();
+					return F.num(Math.exp(new GaussianGenerator(mean, sigma, random).nextValue()));
+				}
+			}
+			return F.NIL;
+		}
+
 	}
 
 	/**
@@ -3616,7 +3764,7 @@ public class StatisticsFunctions {
 					return getDistribution(arg1).mean((IAST) arg1);
 				}
 			} catch (Exception ex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					ex.printStackTrace();
 				}
 			}
@@ -3737,6 +3885,44 @@ public class StatisticsFunctions {
 	 * </pre>
 	 */
 	private final static class Median extends AbstractTrigArg1 {
+		/**
+		 * See <a href="https://stackoverflow.com/a/4859279/24819">Get the indices of an array after sorting?</a>
+		 *
+		 */
+		private final static class ArrayIndexComparator implements Comparator<Integer> {
+			protected final IAST ast;
+			protected EvalEngine engine;
+
+			public ArrayIndexComparator(IAST ast, EvalEngine engine) {
+				this.ast = ast;
+				this.engine = engine;
+			}
+
+			public Integer[] createIndexArray() {
+				int size = ast.size();
+				Integer[] indexes = new Integer[size - 1];
+				for (int i = 1; i < size; i++) {
+					indexes[i - 1] = i;
+				}
+				return indexes;
+			}
+
+			@Override
+			public int compare(Integer index1, Integer index2) {
+				IExpr arg1 = ast.get(index1);
+				IExpr arg2 = ast.get(index2);
+				if (arg1.isNumericFunction() && arg2.isNumericFunction()) {
+					if (engine.evalTrue(F.Greater(arg1, arg2))) {
+						return 1;
+					}
+					if (engine.evalTrue(F.Less(arg1, arg2))) {
+						return -1;
+					}
+				}
+				// fall back for symbolic values
+				return arg1.compareTo(arg2);
+			}
+		}
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
@@ -3746,6 +3932,9 @@ public class StatisticsFunctions {
 					return F.NIL;
 				}
 				return F.num(StatUtils.percentile(values, 50));
+			}
+			if (arg1.isAST(F.WeightedData, 3) && arg1.first().isList() && arg1.second().isList()) {
+				return median((IAST) arg1, engine);
 			}
 			int[] dim = arg1.isMatrix();
 			if (dim == null && arg1.isListOfLists()) {
@@ -3774,6 +3963,67 @@ public class StatisticsFunctions {
 				return getDistribution(arg1).median((IAST) arg1);
 			}
 			return F.NIL;
+		}
+
+		/**
+		 * Evaluate the median value of the weighted data.
+		 * 
+		 * @param weightedData
+		 * @param engine
+		 * @return <code>F.NIL</code> if the input <code>data, weight</code> lists aren't of the same length.
+		 */
+		private static IExpr median(final IAST weightedData, EvalEngine engine) {
+			IAST data = (IAST) weightedData.arg1();
+			IAST weights = (IAST) weightedData.arg2();
+			final int size = data.size();
+			if (size > 1 && size == weights.size()) {
+				IASTAppendable[] res = sortWeightedData(data, weights, engine);
+				data = res[0];
+				weights = res[1];
+
+				IExpr denominator = engine.evaluate(weights.apply(F.Plus));
+				IASTAppendable result = F.PlusAlloc(size);
+				for (int i = 1; i < size; i++) {
+					IASTAppendable rhs = F.PlusAlloc(size);
+					for (int j = 1; j <= i; j++) {
+						rhs.append(F.Divide(weights.get(j), denominator));
+					}
+					IExpr lhs = rhs.splice(rhs.argSize());
+					// Boole( Inequality(lhs < 1/2 <= rhs) );
+					IExpr boole = engine.evaluate(F.Boole(F.Inequality(lhs, F.Less, F.C1D2, F.LessEqual, rhs)));
+					if (boole.isOne()) {
+						result.append(data.get(i));
+					} else if (!boole.isZero()) {
+						result.append(F.Times(data.get(i), boole));
+					}
+				}
+				return result;
+			}
+			return F.NIL;
+		}
+
+		/**
+		 * Sort <code>data</code> (and the associated <code>weights</code>) in order from smallest to greatest.
+		 * 
+		 * @param data
+		 * @param weights
+		 * @param engine
+		 *            the evaluation engine
+		 * @return the sorted data at offset <code>0</code> and the new associated weights in the same order at offset <code>1</code>
+		 */
+		private static IASTAppendable[] sortWeightedData(IAST data, IAST weights, EvalEngine engine) {
+			final int size = data.size();
+			ArrayIndexComparator comparator = new ArrayIndexComparator(data, engine);
+			Integer[] indexes = comparator.createIndexArray();
+			Arrays.sort(indexes, comparator);
+			IASTAppendable newData = data.copyHead(size);
+			IASTAppendable newWeights = weights.copyHead(size);
+			IASTAppendable[] result = new IASTAppendable[] { newData, newWeights };
+			for (int i = 0; i < indexes.length; i++) {
+				newData.append(data.get(indexes[i]));
+				newWeights.append(weights.get(indexes[i]));
+			}
+			return result;
 		}
 
 		@Override
@@ -4232,7 +4482,7 @@ public class StatisticsFunctions {
 						}
 					}
 				} catch (Exception ex) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						ex.printStackTrace();
 					}
 				}
@@ -4332,7 +4582,7 @@ public class StatisticsFunctions {
 						}
 					}
 				} catch (Exception ex) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						ex.printStackTrace();
 					}
 				}
@@ -4581,7 +4831,7 @@ public class StatisticsFunctions {
 						}
 					}
 				} catch (ArithmeticException ae) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						ae.printStackTrace();
 					}
 				}
@@ -4697,8 +4947,10 @@ public class StatisticsFunctions {
 								return variate.randomVariate(random, dist);
 							}
 						}
+					} catch (ValidateException ve) {
+						return engine.printMessage(ast.topHead(), ve);
 					} catch (RuntimeException ex) {
-						if (Config.SHOW_STACKTRACE) {
+						if (FEConfig.SHOW_STACKTRACE) {
 							ex.printStackTrace();
 						}
 						return engine.printMessage("RandomVariate: " + ex.getMessage());
@@ -5357,12 +5609,10 @@ public class StatisticsFunctions {
 		public IExpr randomVariate(Random random, IAST dist) {
 			IExpr[] minMax = minmax(dist);
 			if (minMax != null) {
-				ISignedNumber min = minMax[0].evalReal();
-				ISignedNumber max = minMax[1].evalReal();
-				if (min != null && max != null) {
-					RandomDataGenerator rdg = new RandomDataGenerator();
-					return F.num(rdg.nextUniform(min.doubleValue(), max.doubleValue()));
-				}
+				double min = minMax[0].evalDouble();
+				double max = minMax[1].evalDouble();
+				RandomDataGenerator rdg = new RandomDataGenerator();
+				return F.num(rdg.nextUniform(min, max));
 			}
 			return F.NIL;
 		}
@@ -5444,7 +5694,7 @@ public class StatisticsFunctions {
 							}
 							return new ASTRealVector(result, false);
 						}
-						IASTAppendable result = F.ListAlloc(matrixDimensions[0]);
+						IASTAppendable result = F.ListAlloc(matrixDimensions[0] + 1);
 						for (int i = 1; i < matrixDimensions[1] + 1; i++) {
 							final int ii = i;
 							IASTAppendable list = F.ListAlloc(matrixDimensions[1]);
@@ -5481,7 +5731,7 @@ public class StatisticsFunctions {
 						}
 					}
 				} catch (Exception ex) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						ex.printStackTrace();
 					}
 				}

@@ -2,6 +2,7 @@ package org.matheclipse.core.eval.interfaces;
 
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -15,6 +16,7 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcher;
 import org.matheclipse.core.patternmatching.hash.HashedPatternRules;
+import org.matheclipse.parser.client.FEConfig;
 
 /**
  *
@@ -22,10 +24,10 @@ import org.matheclipse.core.patternmatching.hash.HashedPatternRules;
 public abstract class AbstractArgMultiple extends AbstractArg2 {
 
 	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+	public IExpr evaluate(final IAST ast, final EvalEngine engine) {
 
 		if (ast.isAST2()) {
-			IExpr temp = binaryOperator(null, ast.arg1(), ast.arg2());
+			IExpr temp = binaryOperator(ast, ast.arg1(), ast.arg2(), engine);
 			if (temp.isPresent()) {
 				return temp;
 			}
@@ -43,12 +45,12 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 
 			while (i < tempAST.size()) {
 
-				tres = binaryOperator(null, temp, tempAST.get(i));
+				tres = binaryOperator(null, temp, tempAST.get(i), engine);
 
 				if (!tres.isPresent()) {
 
 					for (int j = i + 1; j < tempAST.size(); j++) {
-						tres = binaryOperator(null, temp, tempAST.get(j));
+						tres = binaryOperator(null, temp, tempAST.get(j), engine);
 
 						if (tres.isPresent()) {
 							evaled = true;
@@ -101,21 +103,20 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 	public int[] expectedArgSize() {
 		return null;
 	}
-	
+
 	public HashedOrderlessMatcher getHashRuleMap() {
 		return null;
 	}
 
 	/**
-	 * Evaluate an <code>Orderless</code> AST if the
-	 * <code>getHashRuleMap()</code> method returns a
+	 * Evaluate an <code>Orderless</code> AST if the <code>getHashRuleMap()</code> method returns a
 	 * <code>HashedOrderlessMatcher</code>,
 	 * 
 	 * @param orderlessAST
 	 * @return
 	 * @see HashedPatternRules
 	 */
-	public  IAST evaluateHashsRepeated(final IAST orderlessAST, EvalEngine engine) {
+	public IAST evaluateHashsRepeated(final IAST orderlessAST, final EvalEngine engine) {
 		HashedOrderlessMatcher hashRuleMap = getHashRuleMap();
 		if (hashRuleMap == null) {
 			return F.NIL;
@@ -132,8 +133,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 	 * @param rhs
 	 * @param condition
 	 * @see org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcher#defineHashRule(org.matheclipse.core.interfaces.IExpr,
-	 *      org.matheclipse.core.interfaces.IExpr,
-	 *      org.matheclipse.core.interfaces.IExpr,
+	 *      org.matheclipse.core.interfaces.IExpr, org.matheclipse.core.interfaces.IExpr,
 	 *      org.matheclipse.core.interfaces.IExpr)
 	 */
 	public void defineHashRule(IExpr lhs1, IExpr lhs2, IExpr rhs, IExpr condition) {
@@ -146,8 +146,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 	 * @param rhs
 	 * @param condition
 	 * @see org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcher#defineHashRule(org.matheclipse.core.interfaces.IExpr,
-	 *      org.matheclipse.core.interfaces.IExpr,
-	 *      org.matheclipse.core.interfaces.IExpr,
+	 *      org.matheclipse.core.interfaces.IExpr, org.matheclipse.core.interfaces.IExpr,
 	 *      org.matheclipse.core.interfaces.IExpr)
 	 */
 	public void setUpHashRule2(IExpr lhs1, IExpr lhs2, IExpr rhs, IExpr condition) {
@@ -155,121 +154,137 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 	}
 
 	@Override
-	public IExpr binaryOperator(IAST ast, final IExpr o0, final IExpr o1) {
+	public IExpr binaryOperator(IAST ast, final IExpr o0, final IExpr o1, EvalEngine engine) {
 		IExpr result = F.NIL;
-		if (o0 instanceof INum) {
-			// use specialized methods for numeric mode
-			if (o1 instanceof INum) {
-				result = e2DblArg((INum) o0, (INum) o1);
-			} else if (o1.isInteger()) {
-				result = e2DblArg((INum) o0, F.num((IInteger) o1));
-			} else if (o1.isFraction()) {
-				result = e2DblArg((INum) o0, F.num((IFraction) o1));
+		try {
+			if (o0 instanceof INum) {
+				// use specialized methods for numeric mode
+				if (o1 instanceof INum) {
+					result = e2DblArg((INum) o0, (INum) o1);
+				} else if (o1.isInteger()) {
+					result = e2DblArg((INum) o0, F.num((IInteger) o1));
+				} else if (o1.isFraction()) {
+					result = e2DblArg((INum) o0, F.num((IFraction) o1));
+				} else if (o1 instanceof IComplexNum) {
+					if (o0 instanceof ApfloatNum) {
+						result = e2DblComArg(F.complexNum(((INum) o0).apfloatValue(((INum) o0).precision())),
+								(IComplexNum) o1);
+					} else {
+						result = e2DblComArg(F.complexNum(((INum) o0).getRealPart()), (IComplexNum) o1);
+					}
+				}
+				if (result.isPresent()) {
+					return result;
+				}
+				return e2ObjArg(ast, o0, o1);
+			} else if (o1 instanceof INum) {
+				// use specialized methods for numeric mode
+				if (o0.isInteger()) {
+					result = e2DblArg(F.num((IInteger) o0), (INum) o1);
+				} else if (o0.isFraction()) {
+					result = e2DblArg(F.num((IFraction) o0), (INum) o1);
+				} else if (o0 instanceof IComplexNum) {
+					if (o1 instanceof ApfloatNum) {
+						result = e2DblComArg((IComplexNum) o0,
+								F.complexNum(((INum) o1).apfloatValue(((INum) o1).precision())));
+					} else {
+						result = e2DblComArg((IComplexNum) o0, F.complexNum(((INum) o1).getRealPart()));
+					}
+				}
+				if (result.isPresent()) {
+					return result;
+				}
+				return e2ObjArg(null, o0, o1);
+			}
+
+			if (o0 instanceof IComplexNum) {
+				// use specialized methods for complex numeric mode
+				if (o1.isInteger()) {
+					result = e2DblComArg((IComplexNum) o0, F.complexNum((IInteger) o1));
+				} else if (o1.isFraction()) {
+					result = e2DblComArg((IComplexNum) o0, F.complexNum((IFraction) o1));
+				} else if (o1 instanceof IComplexNum) {
+					result = e2DblComArg((IComplexNum) o0, (IComplexNum) o1);
+				}
+				if (result.isPresent()) {
+					return result;
+				}
+				return e2ObjArg(null, o0, o1);
 			} else if (o1 instanceof IComplexNum) {
-				if (o0 instanceof ApfloatNum) {
-					result = e2DblComArg(F.complexNum(((INum) o0).apfloatValue(((INum) o0).precision())), (IComplexNum) o1);
-				} else {
-					result = e2DblComArg(F.complexNum(((INum) o0).getRealPart()), (IComplexNum) o1);
+				// use specialized methods for complex numeric mode
+				if (o0.isInteger()) {
+					result = e2DblComArg(F.complexNum((IInteger) o0), (IComplexNum) o1);
+				} else if (o0.isFraction()) {
+					result = e2DblComArg(F.complexNum((IFraction) o0), (IComplexNum) o1);
+				}
+				if (result.isPresent()) {
+					return result;
+				}
+				return e2ObjArg(ast, o0, o1);
+			}
+
+			if (o0 instanceof IInteger) {
+				if (o1 instanceof IInteger) {
+					return e2IntArg((IInteger) o0, (IInteger) o1);
+				}
+				if (o1 instanceof IFraction) {
+					return e2FraArg(F.fraction((IInteger) o0, F.C1), (IFraction) o1);
+				}
+				if (o1 instanceof IComplex) {
+					return e2ComArg(F.complex((IInteger) o0, F.C0), (IComplex) o1);
+				}
+			} else if (o0 instanceof IFraction) {
+				if (o1 instanceof IInteger) {
+					return e2FraArg((IFraction) o0, F.fraction((IInteger) o1, F.C1));
+				}
+				if (o1 instanceof IFraction) {
+					return e2FraArg((IFraction) o0, (IFraction) o1);
+				}
+				if (o1 instanceof IComplex) {
+					return e2ComArg(F.complex((IFraction) o0), (IComplex) o1);
+				}
+			} else if (o0 instanceof IComplex) {
+				if (o1 instanceof IInteger) {
+					return eComIntArg((IComplex) o0, (IInteger) o1);
+				}
+				if (o1 instanceof IFraction) {
+					return e2ComArg((IComplex) o0, F.complex((IFraction) o1));
+				}
+				if (o1 instanceof IComplex) {
+					return e2ComArg((IComplex) o0, (IComplex) o1);
 				}
 			}
+			result = e2ObjArg(ast, o0, o1);
 			if (result.isPresent()) {
 				return result;
 			}
-			return e2ObjArg(ast, o0, o1);
-		} else if (o1 instanceof INum) {
-			// use specialized methods for numeric mode
-			if (o0.isInteger()) {
-				result = e2DblArg(F.num((IInteger) o0), (INum) o1);
-			} else if (o0.isFraction()) {
-				result = e2DblArg(F.num((IFraction) o0), (INum) o1);
-			} else if (o0 instanceof IComplexNum) {
-				if (o1 instanceof ApfloatNum) {
-					result = e2DblComArg((IComplexNum) o0, F.complexNum(((INum) o1).apfloatValue(((INum) o1).precision())));
-				} else {
-					result = e2DblComArg((IComplexNum) o0, F.complexNum(((INum) o1).getRealPart()));
+
+			if (o0 instanceof ISymbol) {
+				if (o1 instanceof ISymbol) {
+					return e2SymArg((ISymbol) o0, (ISymbol) o1);
 				}
 			}
-			if (result.isPresent()) {
-				return result;
-			}
-			return e2ObjArg(null, o0, o1);
-		}
 
-		if (o0 instanceof IComplexNum) {
-			// use specialized methods for complex numeric mode
-			if (o1.isInteger()) {
-				result = e2DblComArg((IComplexNum) o0, F.complexNum((IInteger) o1));
-			} else if (o1.isFraction()) {
-				result = e2DblComArg((IComplexNum) o0, F.complexNum((IFraction) o1));
-			} else if (o1 instanceof IComplexNum) {
-				result = e2DblComArg((IComplexNum) o0, (IComplexNum) o1);
+			if (o0 instanceof IAST) {
+				IAST a0 = (IAST) o0;
+				if (o1 instanceof IInteger) {
+					return eFunIntArg(a0, (IInteger) o1);
+				}
+				if (o1 instanceof IAST) {
+					return e2FunArg(a0, (IAST) o1);
+				}
 			}
-			if (result.isPresent()) {
-				return result;
+		} catch (ValidateException ve) {
+			if (FEConfig.SHOW_STACKTRACE) {
+				ve.printStackTrace();
 			}
-			return e2ObjArg(null, o0, o1);
-		} else if (o1 instanceof IComplexNum) {
-			// use specialized methods for complex numeric mode
-			if (o0.isInteger()) {
-				result = e2DblComArg(F.complexNum((IInteger) o0), (IComplexNum) o1);
-			} else if (o0.isFraction()) {
-				result = e2DblComArg(F.complexNum((IFraction) o0), (IComplexNum) o1);
+			return engine.printMessage(ast.topHead(), ve);
+		} catch (RuntimeException rex) {
+			if (FEConfig.SHOW_STACKTRACE) {
+				rex.printStackTrace();
 			}
-			if (result.isPresent()) {
-				return result;
-			}
-			return e2ObjArg(ast, o0, o1);
+			return engine.printMessage(ast.topHead(), rex);
 		}
-
-		if (o0 instanceof IInteger) {
-			if (o1 instanceof IInteger) {
-				return e2IntArg((IInteger) o0, (IInteger) o1);
-			}
-			if (o1 instanceof IFraction) {
-				return e2FraArg(F.fraction((IInteger) o0, F.C1), (IFraction) o1);
-			}
-			if (o1 instanceof IComplex) {
-				return e2ComArg(F.complex((IInteger) o0, F.C0), (IComplex) o1);
-			}
-		} else if (o0 instanceof IFraction) {
-			if (o1 instanceof IInteger) {
-				return e2FraArg((IFraction) o0, F.fraction((IInteger) o1, F.C1));
-			}
-			if (o1 instanceof IFraction) {
-				return e2FraArg((IFraction) o0, (IFraction) o1);
-			}
-			if (o1 instanceof IComplex) {
-				return e2ComArg(F.complex((IFraction) o0), (IComplex) o1);
-			}
-		} else if (o0 instanceof IComplex) {
-			if (o1 instanceof IInteger) {
-				return eComIntArg((IComplex) o0, (IInteger) o1);
-			}
-			if (o1 instanceof IComplex) {
-				return e2ComArg((IComplex) o0, (IComplex) o1);
-			}
-		}
-		result = e2ObjArg(ast, o0, o1);
-		if (result.isPresent()) {
-			return result;
-		}
-
-		if (o0 instanceof ISymbol) {
-			if (o1 instanceof ISymbol) {
-				return e2SymArg((ISymbol) o0, (ISymbol) o1);
-			}
-		}
-
-		if (o0 instanceof IAST) {
-			IAST a0 = (IAST) o0;
-			if (o1 instanceof IInteger) {
-				return eFunIntArg(a0, (IInteger) o1);
-			}
-			if (o1 instanceof IAST) {
-				return e2FunArg(a0, (IAST) o1);
-			}
-		}
-
 		return F.NIL;
 	}
 

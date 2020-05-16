@@ -194,6 +194,10 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 		return new AST(arg0);
 	}
 
+	public IASTAppendable copyAppendable(int additionalCapacity) {
+		return F.ast(arg0, additionalCapacity, false);
+	}
+
 	@Override
 	public boolean equals(final Object obj) {
 		if (obj == this) {
@@ -287,7 +291,7 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 
 	/** {@inheritDoc} */
 	@Override
-	public int indexOf(Predicate<? super IExpr> predicate) {
+	public int indexOf(Predicate<? super IExpr> predicate, int fromIndex) {
 		return -1;
 	}
 
@@ -310,7 +314,7 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 		if (length == 0) {
 			return this;
 		}
-		throw new IndexOutOfBoundsException("Index: 0, Size: " + size()); 
+		throw new IndexOutOfBoundsException("Index: 0, Size: " + size());
 	}
 
 	@Override
@@ -396,7 +400,7 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	/** {@inheritDoc} */
 	@Override
 	public IExpr last() {
-		return arg0;
+		return F.NIL;
 	}
 
 	/** {@inheritDoc} */
@@ -415,7 +419,7 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 			size = attributeFlags;
 			int exprIDSize = objectInput.readByte();
 			for (int i = 0; i < exprIDSize; i++) {
-				set(i, F.GLOBAL_IDS[objectInput.readShort()]);
+				set(i, F.exprID(objectInput.readShort()));// F.GLOBAL_IDS[objectInput.readShort()]);
 			}
 			for (int i = exprIDSize; i < size; i++) {
 				set(i, (IExpr) objectInput.readObject());
@@ -495,19 +499,19 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 		int size = size();
 		byte attributeFlags = (byte) 0;
 
-		ExprID temp = F.GLOBAL_IDS_MAP.get(head());
-		if (temp != null) {
-			short exprID = temp.getExprID();
+		short exprID = F.GLOBAL_IDS_MAP.getShort(head());
+		if (exprID >= 0) {
+			// short exprID = temp.getExprID();
 			if (exprID <= Short.MAX_VALUE) {
 				int exprIDSize = 1;
 				short[] exprIDArray = new short[size];
 				exprIDArray[0] = exprID;
 				for (int i = 1; i < size; i++) {
-					temp = F.GLOBAL_IDS_MAP.get(get(i));
-					if (temp == null) {
+					exprID = F.GLOBAL_IDS_MAP.getShort(get(i));
+					if (exprID < 0) {
 						break;
 					}
-					exprID = temp.getExprID();
+					// exprID = temp.getExprID();
 					if (exprID <= Short.MAX_VALUE) {
 						exprIDArray[i] = exprID;
 						exprIDSize++;
@@ -537,7 +541,7 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	}
 
 	private Object writeReplace() throws ObjectStreamException {
-		return optional(F.GLOBAL_IDS_MAP.get(this));
+		return optional(  );
 	}
 
 }

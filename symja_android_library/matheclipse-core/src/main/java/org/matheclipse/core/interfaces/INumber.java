@@ -114,11 +114,18 @@ public interface INumber extends IExpr {
 	public INumber floorFraction() throws ArithmeticException;
 
 	/**
-	 * Return the fractional part of this fraction
+	 * Return the fractional part of this number
 	 * 
 	 * @return
 	 */
 	public INumber fractionalPart();
+	
+	/**
+	 * Return the integer (real and imaginary) part of this number
+	 * 
+	 * @return
+	 */
+	public INumber integerPart();
 
 	/**
 	 * Returns the imaginary part of a complex number

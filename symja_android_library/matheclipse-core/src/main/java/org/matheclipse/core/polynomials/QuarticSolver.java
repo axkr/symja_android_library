@@ -479,10 +479,6 @@ public class QuarticSolver {
 	 * @param a
 	 * @param b
 	 * @param c
-	 * @param solution1
-	 *            TODO
-	 * @param solution2
-	 *            TODO
 	 * @return
 	 */
 	public static IASTAppendable quadraticSolve(IExpr a, IExpr b, IExpr c) {
@@ -497,9 +493,9 @@ public class QuarticSolver {
 	 * @param b
 	 * @param c
 	 * @param solution1
-	 *            TODO
+	 *            possible first solution from {@link #cubicSolve(IExpr, IExpr, IExpr, IExpr, IExpr)}
 	 * @param solution2
-	 *            TODO
+	 *            possible second solution from {@link #cubicSolve(IExpr, IExpr, IExpr, IExpr, IExpr)}
 	 * @return
 	 */
 	public static IASTAppendable quadraticSolve(IExpr a, IExpr b, IExpr c, IExpr solution1, IExpr solution2) {

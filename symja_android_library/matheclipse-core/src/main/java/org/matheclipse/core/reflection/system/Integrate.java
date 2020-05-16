@@ -16,6 +16,7 @@ import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
@@ -33,6 +34,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.RulesData;
+import org.matheclipse.parser.client.FEConfig;
 
 import com.google.common.cache.CacheBuilder;
 
@@ -554,7 +556,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 			if (holdallAST.size() < 3 || holdallAST.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
 				return F.NIL;
 			}
-			final IExpr a1 = NumberTheory.rationalize(holdallAST.arg1()).orElse(holdallAST.arg1());
+			final IExpr arg1Holdall = holdallAST.arg1();
+			final IExpr a1 = NumberTheory.rationalize(arg1Holdall).orElse(arg1Holdall);
 			IExpr arg1 = engine.evaluateNull(a1);
 			if (arg1.isPresent()) {
 				evaled = true;
@@ -632,11 +635,11 @@ public class Integrate extends AbstractFunctionEvaluator {
 					// issue #91
 					return F.NIL;
 				}
-
-				if (fx.isAST(F.Piecewise) && fx.size() >= 2 && fx.arg1().isList()) {
-					return integratePiecewise(fx, ast);
+				int[] dim = fx.isPiecewise();
+				if (dim != null) {
+					return integratePiecewise(dim, fx, ast);
 				}
-				result = integrateAbs(arg1, x);
+				result = integrateAbs(fx, x);
 				if (result.isPresent()) {
 					if (result == F.Undefined) {
 						return F.NIL;
@@ -661,8 +664,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 					return temp.orElse(result);
 				}
 
-				if (arg1.isTimes()) {
-					IAST[] temp = ((IAST) arg1).filter(arg -> arg.isFree(x));
+				if (fx.isTimes()) {
+					IAST[] temp = ((IAST) fx).filter(arg -> arg.isFree(x));
 					IExpr free = temp[0].oneIdentity1();
 					if (!free.isOne()) {
 						IExpr rest = temp[1].oneIdentity1();
@@ -670,7 +673,6 @@ public class Integrate extends AbstractFunctionEvaluator {
 						return Times(free, Integrate(rest, x));
 					}
 				}
-
 				if (fx.isPower()) {
 					// base ^ exponent
 					IExpr base = fx.base();
@@ -687,7 +689,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 					if (exponent.equals(x) && base.isFree(x)) {
 						if (base.isE()) {
 							// E^x
-							return arg1;
+							return fx;
 						}
 						// a^x / Log(a)
 						return F.Divide(fx, F.Log(base));
@@ -706,26 +708,23 @@ public class Integrate extends AbstractFunctionEvaluator {
 		}
 	}
 
-	private static IExpr integratePiecewise(final IAST piecewiseFunction, final IAST integrateFunction) {
-		int[] dim = piecewiseFunction.arg1().isMatrix(false);
-		if (dim != null && dim[0] > 0 && dim[1] == 2) {
-			IAST list = (IAST) piecewiseFunction.arg1();
-			if (list.size() > 1) {
-				IASTAppendable pwResult = F.ListAlloc(list.size());
-				for (int i = 1; i < list.size(); i++) {
-					IASTMutable integrate = ((IAST) integrateFunction).copy();
-					integrate.set(1, list.get(i).first());
-					pwResult.append(F.List(integrate, list.get(i).second()));
-				}
-				IASTMutable piecewise = ((IAST) piecewiseFunction).copy();
-				piecewise.set(1, pwResult);
-				if (piecewiseFunction.size() > 2) {
-					IASTMutable integrate = ((IAST) integrateFunction).copy();
-					integrate.set(1, piecewiseFunction.second());
-					piecewise.set(2, integrate);
-				}
-				return piecewise;
+	private static IExpr integratePiecewise(int[] dim, final IAST piecewiseFunction, final IAST integrateFunction) {
+		IAST list = (IAST) piecewiseFunction.arg1();
+		if (list.size() > 1) {
+			IASTAppendable pwResult = F.ListAlloc(list.size());
+			for (int i = 1; i < list.size(); i++) {
+				IASTMutable integrate = ((IAST) integrateFunction).copy();
+				integrate.set(1, list.get(i).first());
+				pwResult.append(F.List(integrate, list.get(i).second()));
 			}
+			IASTMutable piecewise = ((IAST) piecewiseFunction).copy();
+			piecewise.set(1, pwResult);
+			if (piecewiseFunction.size() > 2) {
+				IASTMutable integrate = ((IAST) integrateFunction).copy();
+				integrate.set(1, piecewiseFunction.arg2());
+				piecewise.set(2, integrate);
+			}
+			return piecewise;
 		}
 		return F.NIL;
 	}
@@ -1030,7 +1029,16 @@ public class Integrate extends AbstractFunctionEvaluator {
 					engine.REMEMBER_AST_CACHE.put(ast, F.NIL);
 					IExpr temp = F.Integrate.evalDownRule(EvalEngine.get(), ast);
 					if (temp.isPresent()) {
-						engine.REMEMBER_AST_CACHE.put(ast, temp);
+						if (temp.equals(ast)) {
+							// if (Config.SHOW_STACKTRACE) {
+							engine.setQuietMode(false);
+							IOFunctions.printMessage(F.Integrate, "rubiendless", F.List(temp), engine);
+							// }
+							return F.NIL;
+						}
+						if (temp.isAST()) {
+							engine.REMEMBER_AST_CACHE.put(ast, temp);
+						}
 						return temp;
 					}
 				} catch (RecursionLimitExceeded rle) {
@@ -1039,7 +1047,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 					engine.setRecursionLimit(limit);
 					return engine.printMessage("Integrate(Rubi recursion): " + rle.getMessage());
 				} catch (RuntimeException rex) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						rex.printStackTrace();
 					}
 					engine.setRecursionLimit(limit);

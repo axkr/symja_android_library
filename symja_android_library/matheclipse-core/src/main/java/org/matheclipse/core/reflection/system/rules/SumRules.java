@@ -9,7 +9,7 @@ import org.matheclipse.core.interfaces.IAST;
  */
 public interface SumRules {
   final public static IAST RULES1 = List(
-    // Sum(c_^i_,{i_Symbol,1,Infinity}):=-c/(-1+c)/;FreeQ(c,i)&&(!NumberQ(c)||c>-1&&c<1)
+    // Sum(c_^i_,{i_Symbol,1,Infinity}):=-c/(-1+c)/;FreeQ(c,i)&&(!NumberQ(c)||(c>-1&&c<1))
     ISetDelayed(Sum(Power(c_,i_),List(i_Symbol,C1,oo)),
       Condition(Times(CN1,c,Power(Plus(CN1,c),CN1)),And(FreeQ(c,i),Or(Not(NumberQ(c)),And(Greater(c,CN1),Less(c,C1)))))),
     // Sum(i_^k_Symbol,{i_Symbol,1,n_Symbol}):=HarmonicNumber(n,-k)/;FreeQ(k,i)&&FreeQ(n,i)

@@ -47,8 +47,9 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
-import org.matheclipse.core.trie.SuggestTree;
-import org.matheclipse.core.trie.SuggestTree.Node;
+import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.trie.SuggestTree;
+import org.matheclipse.parser.trie.SuggestTree.Node;
 
 public class IOFunctions {
 
@@ -665,7 +666,7 @@ public class IOFunctions {
 			"indet", "Indeterminate expression `1` encountered.", //
 			"infy", "Infinite expression `1` encountered.", //
 			"innf", "Non-negative integer or Infinity expected at position `1`.", //
-			"int", "Integer expected.", //
+			"int", "Integer expected at position `2` in `1`.", //
 			"intjava", "Java int value greater equal `1` expected instead of `2`.", //
 			"intlevel", "Level specification value greater equal `1` expected instead of `2`.", //
 			"intp", "Positive integer expected.", //
@@ -675,6 +676,7 @@ public class IOFunctions {
 			"intpm", "Positive machine-sized integer expected at position `2` in `1`.", //
 			"iterb", "Iterator does not have appropriate bounds.", //
 			"itform", "Argument `1` at position `2` does not have the correct form for an iterator.", //
+			"itendless", "Endless iteration detected in `1` in evaluation loop.", //
 			"ivar", "`1` is not a valid variable.", //
 			"level", "Level specification `1` is not of the form n, {n}, or {m, n}.", //
 			"list", "List expected at position `1` in `2`.", //
@@ -682,22 +684,29 @@ public class IOFunctions {
 			"listofints", "List of Java int numbers expected in `1`.", //
 			"listoflongs", "List of Java long numbers expected in `1`.", //
 			"locked", "Symbol `1` is locked.", //
+			"lvlist", "Local variable specification `1` is not a List.", //
+			"lvws", "Variable `1` in local variable specification `2` requires assigning a value", //
+			"lvset", "Local variable specification `1` contains `2`, which is an assignment to `3`; only assignments to symbols are allowed.", //
 			"matrix", "Argument `1` at position `2` is not a non-empty rectangular matrix.", //
 			"matsq", "Argument `1` at position `2` is not a non-empty square matrix.", //
 			"nil", "unexpected NIL expression encountered.", //
+			"noneg", "Surd is not defined for even roots of negative values.", //
 			"noopen", "Cannot open `1`.", //
 			"nonopt",
 			"Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule or a list of rules.", //
 			"nord", "Invalid comparison with `1` attempted.", //
-			"normal", "Nonatomic expression expected at position `1` in `2`.", "nquan",
-			"The Quantile specification `1` should be a number between `2` and `3`.", "nvld",
+			"normal", "Nonatomic expression expected at position `1` in `2`.", //
+			"notent", "`2` is not a known entity, class, or tag for `1`.", //
+			"nquan", "The Quantile specification `1` should be a number between `2` and `3`.", "nvld",
 			"The expression `1` is not a valid interval.", //
 			"notunicode",
 			"A character unicode, which should be a non-negative integer less than 1114112, is expected at position `2` in `1`.", //
 			"noval", "Symbol `1` in part assignment does not have an immediate value.", //
+			"nsmet", "This system cannot be solved with the methods available to `1`", //
 			"openx", "`1` is not open.", //
 			"optb", "Optional object `1` in `2` is not a single blank.", //
 			"ovfl", "Overflow occurred in computation.", //
+			"padlevel", "The padding specification `1` involves `2` levels; the list `3` has only `4` level.", //
 			"partd", "Part specification `1` is longer than depth of object.", //
 			"partw", "Part `1` of `2` does not exist.", //
 			"pilist",
@@ -707,10 +716,12 @@ public class IOFunctions {
 			"pspec", "Part specification `1` is neither an integer nor a list of integer.", //
 			"poly", "`1` is not a polynomial.", //
 			"polynomial", "Polynomial expected at position `1` in `2`.", //
-			"pkspec1", "The expression `1` cannot be used as a part specification.", // "
+			"pkspec1", "The expression `1` cannot be used as a part specification.", //
+			"precsm", "Requested precision `1` is smaller than `2`.", //
 			"range", "Range specification in `1` does not have appropriate bounds.", //
 			"rectt", "Rectangular array expected at position `1` in `2`.", //
 			"rvalue", "`1` is not a variable with a value, so its value cannot be changed.", //
+			"rubiendless", "Endless iteration detected in `1` for Rubi pattern-matching rules.", //
 			"seqs", "Sequence specification expected, but got `1`.", //
 			"setp", "Part assignment to `1` could not be made", //
 			"setraw", "Cannot assign to raw object `1`.", //
@@ -723,6 +734,7 @@ public class IOFunctions {
 			"tdlen", "Objects of unequal length in `1` cannot be combined.", //
 			"tag", "Rule for `1` can only be attached to `2`.", //
 			"take", "Cannot take positions `1` through `2` in `3`.", //
+			"toggle", "ToggleFeature `1` is disabled.", //
 			"unsupported", "`1` currently not supported in `2`.", //
 			"usraw", "Cannot unset object `1`.", //
 			"vloc", "The variable `1` cannot be localized so that it can be assigned to numerical values.", //
@@ -856,7 +868,7 @@ public class IOFunctions {
 			exact = false;
 		}
 		SuggestTree suggestTree = AST2Expr.getSuggestTree();
-		name = Config.PARSER_USE_LOWERCASE_SYMBOLS ? name.toLowerCase() : name;
+		name = FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? name.toLowerCase() : name;
 		Node n = suggestTree.getAutocompleteSuggestions(name);
 		if (n != null) {
 			IASTAppendable list = F.ListAlloc(n.listLength());
@@ -880,7 +892,7 @@ public class IOFunctions {
 			return list;
 		}
 		SuggestTree suggestTree = AST2Expr.getSuggestTree();
-		namePrefix = Config.PARSER_USE_LOWERCASE_SYMBOLS ? namePrefix.toLowerCase() : namePrefix;
+		namePrefix = FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? namePrefix.toLowerCase() : namePrefix;
 		Node n = suggestTree.getAutocompleteSuggestions(namePrefix);
 		if (n != null) {
 			for (int i = 0; i < n.listLength(); i++) {

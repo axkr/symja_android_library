@@ -8,7 +8,6 @@ import java.util.function.Supplier;
 import org.jgrapht.Graph;
 import org.jgrapht.generate.GeneralizedPetersenGraphGenerator;
 import org.jgrapht.graph.builder.GraphTypeBuilder;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
@@ -18,7 +17,8 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IStringX;
-import org.matheclipse.core.trie.Tries;
+import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.trie.Tries;
 
 /**
  * Functions for graph theory algorithms.
@@ -75,7 +75,7 @@ public class GraphDataFunctions {
 					}
 				}
 			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 			}

@@ -14,7 +14,6 @@ import java.math.BigInteger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.hipparchus.fraction.BigFraction;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IComplex;
@@ -28,6 +27,7 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
+import org.matheclipse.parser.client.FEConfig;
 
 /**
  * A symbolic complex number implementation
@@ -237,6 +237,16 @@ public class ComplexSym implements IComplex {
 			}
 			return fImaginary.compareTo(((ComplexSym) expr).fImaginary);
 		}
+		if (expr.isNumber()) {
+			int c = fReal.compareTo(((INumber) expr).re());
+			if (c != 0) {
+				return c;
+			}
+			if (expr.isReal()) {
+				return 1;
+			}
+			return fImaginary.compareTo(((INumber) expr).im());
+		}
 		return IComplex.super.compareTo(expr);
 	}
 
@@ -320,8 +330,14 @@ public class ComplexSym implements IComplex {
 
 	/** {@inheritDoc} */
 	@Override
-	public INumber fractionalPart() {
+	public IComplex fractionalPart() {
 		return valueOf(fReal.fractionalPart(), fImaginary.fractionalPart());
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IComplex integerPart() {
+		return valueOf(fReal.integerPart(), fImaginary.integerPart());
 	}
 
 	@Override
@@ -332,7 +348,7 @@ public class ComplexSym implements IComplex {
 	@Override
 	public String fullFormString() {
 		StringBuilder buf = new StringBuilder("Complex");
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+		if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
 			buf.append('(');
 		} else {
 			buf.append('[');
@@ -341,7 +357,7 @@ public class ComplexSym implements IComplex {
 			buf.append(fReal.numerator().toString());
 		} else {
 			buf.append("Rational");
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
 				buf.append('(');
 			} else {
 				buf.append('[');
@@ -349,7 +365,7 @@ public class ComplexSym implements IComplex {
 			buf.append(fReal.numerator().toString());
 			buf.append(',');
 			buf.append(fReal.denominator().toString());
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
 				buf.append(')');
 			} else {
 				buf.append(']');
@@ -361,7 +377,7 @@ public class ComplexSym implements IComplex {
 			buf.append(fImaginary.numerator().toString());
 		} else {
 			buf.append("Rational");
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
 				buf.append('(');
 			} else {
 				buf.append('[');
@@ -369,13 +385,13 @@ public class ComplexSym implements IComplex {
 			buf.append(fImaginary.numerator().toString());
 			buf.append(',');
 			buf.append(fImaginary.denominator().toString());
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
 				buf.append(')');
 			} else {
 				buf.append(']');
 			}
 		}
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+		if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
 			buf.append(')');
 		} else {
 			buf.append(']');

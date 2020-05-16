@@ -339,9 +339,7 @@ public class PolynomialHomogenization {
 				}
 				return newSymbol;
 			}
-			final int moduleCounter = engine.incModuleCounter();
-			final String varAppend = "$" + moduleCounter;
-			newSymbol = F.Dummy("jas" + varAppend);// , engine);
+			newSymbol = F.Dummy(engine.uniqueName("jas$"));
 			substitutedVariables.put(newSymbol, exprPoly);
 			substitutedExpr.put(exprPoly, newSymbol);
 

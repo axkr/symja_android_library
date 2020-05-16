@@ -109,13 +109,13 @@ public class ExprID implements IExpr {
 	}
 
 	/**
-	 * In deserialization process return the <code>F.GLOBAL_IDS[ExprID]</code> expression.
+	 * In the deserialization process return the <code>F.GLOBAL_IDS[ExprID]</code> expression.
 	 * 
 	 * @return the <code>F.GLOBAL_IDS[ExprID]</code> expression
 	 * @throws ObjectStreamException
 	 */
 	public Object readResolve() throws ObjectStreamException {
-		return F.GLOBAL_IDS[fExprID];
+		return F.exprID(fExprID); // F.GLOBAL_IDS[fExprID];
 	}
 
 }

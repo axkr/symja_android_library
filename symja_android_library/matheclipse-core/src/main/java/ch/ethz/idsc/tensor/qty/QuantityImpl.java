@@ -11,6 +11,7 @@ import java.util.Set;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.AbstractAST;
+import org.matheclipse.core.expression.ExprID;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -134,6 +135,11 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 
 	@Override
 	public IASTAppendable copyAppendable() {
+		return F.NIL;
+	}
+	
+	@Override
+	public IASTAppendable copyAppendable(int additionalCapacity) {
 		return F.NIL;
 	}
 
@@ -467,7 +473,7 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 	}
 
 	private Object writeReplace() throws ObjectStreamException {
-		return optional(F.GLOBAL_IDS_MAP.get(this));
+		return optional( );
 	}
 
 }

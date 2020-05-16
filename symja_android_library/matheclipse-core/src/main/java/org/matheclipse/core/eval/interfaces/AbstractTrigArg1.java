@@ -23,12 +23,12 @@ import org.matheclipse.core.interfaces.INumber;
 public abstract class AbstractTrigArg1 extends AbstractArg1 {
 
 	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+	public IExpr evaluate(final IAST ast, final EvalEngine engine) {
 		return evaluateArg1(ast.arg1(), engine);
 	}
 
 	@Override
-	public IExpr numericEval(final IAST ast, EvalEngine engine) {
+	public IExpr numericEval(final IAST ast, final EvalEngine engine) {
 		IExpr arg1 = ast.arg1();
 		try {
 			if (arg1 instanceof INum) {
@@ -64,7 +64,7 @@ public abstract class AbstractTrigArg1 extends AbstractArg1 {
 		return F.NIL;
 	}
 
-	public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+	public IExpr evaluateArg1(final IExpr arg1, final EvalEngine engine) {
 		return F.NIL;
 	}
 }

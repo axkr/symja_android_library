@@ -126,6 +126,12 @@ public class AST1 extends AST0 {
 		return new AST(arg0, arg1);
 	}
 
+	public IASTAppendable copyAppendable(int additionalCapacity) {
+		IASTAppendable result = F.ast(arg0, additionalCapacity + 1, false);
+		result.append(arg1);
+		return result;
+	}
+
 	@Override
 	public boolean equals(final Object obj) {
 		if (obj == this) {
@@ -283,8 +289,8 @@ public class AST1 extends AST0 {
 
 	/** {@inheritDoc} */
 	@Override
-	public int indexOf(Predicate<? super IExpr> predicate) {
-		if (predicate.test(arg1)) {
+	public int indexOf(Predicate<? super IExpr> predicate, int fromIndex) {
+		if (fromIndex == 1 && predicate.test(arg1)) {
 			return 1;
 		}
 		return -1;

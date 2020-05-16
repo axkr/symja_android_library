@@ -8,7 +8,6 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
@@ -29,6 +28,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.HornerScheme;
+import org.matheclipse.parser.client.FEConfig;
 
 public final class OutputFunctions {
 
@@ -325,7 +325,7 @@ public final class OutputFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST1()) {
 				IExpr arg1 = engine.evaluate(ast.arg1());
-				if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
 					return F.stringx(StringFunctions.inputForm(arg1, true), IStringX.APPLICATION_SYMJA);
 				}
 				return F.stringx(StringFunctions.inputForm(arg1, false), IStringX.APPLICATION_SYMJA);
@@ -411,7 +411,7 @@ public final class OutputFunctions {
 				String resultStr = javaForm(arg1, strictJava, usePrefix);
 				return F.$str(resultStr, IStringX.APPLICATION_JAVA);
 			} catch (Exception rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 				return engine.printMessage("JavaForm: " + rex.getMessage());
@@ -452,7 +452,7 @@ public final class OutputFunctions {
 
 				return F.$str(toJavaScript(arg1, javascriptFlavor), IStringX.APPLICATION_JAVASCRIPT);
 			} catch (Exception rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 				return engine.printMessage("JSForm: " + rex.getMessage());
@@ -613,7 +613,7 @@ public final class OutputFunctions {
 				}
 
 			} catch (Exception rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 				return engine.printMessage("TreeForm: " + rex.getMessage());

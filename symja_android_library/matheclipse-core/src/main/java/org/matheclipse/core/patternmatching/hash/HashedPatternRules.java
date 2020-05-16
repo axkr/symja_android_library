@@ -60,6 +60,12 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
 	}
 
 	@Override
+	public int hashCode() { 
+		// use the symmetric hash code.
+		return super.hashCode();
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		boolean test = super.equals(obj);
 		if (test && obj instanceof HashedPatternRules) {

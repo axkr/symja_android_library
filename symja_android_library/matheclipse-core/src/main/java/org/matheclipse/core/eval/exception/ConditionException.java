@@ -1,8 +1,11 @@
 package org.matheclipse.core.eval.exception;
 
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class ConditionException extends FlowControlException {
+
+	public final static ConditionException CONDITION_NIL = new ConditionException(F.NIL);
 	/**
 	 * 
 	 */
@@ -12,7 +15,7 @@ public class ConditionException extends FlowControlException {
 
 	public ConditionException(final IExpr val) {
 		super();
-		value = val;
+		value = F.NIL;
 	}
 
 	public IExpr getValue() {

@@ -115,7 +115,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
 	public BigIntegerSym(byte[] bytes) {
 		if (Config.MAX_BIT_LENGTH < bytes.length * 8) {
-			throw new ASTElementLimitExceeded(bytes.length * 8);
+			throw new ASTElementLimitExceeded(((long)bytes.length) * 8L);
 		}
 		fBigIntValue = new BigInteger(bytes);
 
@@ -193,8 +193,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		if (expr.isReal()) {
 			return Double.compare(fBigIntValue.doubleValue(), ((ISignedNumber) expr).doubleValue());
 		}
-		return -1;
-		// return super.compareTo(expr);
+		return super.compareTo(expr);
 	}
 
 	@Override
@@ -909,6 +908,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	}
 
 	private Object writeReplace() throws ObjectStreamException {
-		return optional(F.GLOBAL_IDS_MAP.get(this));
+		return optional( );
 	}
 }

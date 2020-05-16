@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
@@ -298,13 +299,15 @@ public class VariablesSet {
 	}
 
 	/**
-	 * Add the variables of the given expression
+	 * Add the variables of the arguments in <code>ast</code> starting at index <code>fromIndex</code> and stopping at
+	 * rule arguments by testing {@link IAST#isRuleAST()}.
 	 * 
-	 * @param expression
+	 * @param ast
+	 * @param fromIndex
 	 */
-	public void addVarList(final IAST rest, int fromIndex) {
-		for (int i = fromIndex; i < rest.size(); i++) {
-			IExpr temp = rest.get(i);
+	public void addVarList(final IAST ast, int fromIndex) {
+		for (int i = fromIndex; i < ast.size(); i++) {
+			IExpr temp = ast.get(i);
 			if (temp.isRuleAST()) {
 				return;
 			}
@@ -422,13 +425,13 @@ public class VariablesSet {
 	}
 
 	/**
-	 * Check if the expression contains the given number of variables.
+	 * Check if the variable set equals the given number of variables.
 	 * 
-	 * @param expr
-	 * @return <code>true</code> if the expr contains the given number of variables.
+	 * @param numberOfVars
+	 * @return <code>true</code> if the variable set equals the given number of variables.
 	 */
-	public boolean isSize(int size) {
-		return fVariablesSet.size() == size;
+	public boolean isSize(final int numberOfVars) {
+		return fVariablesSet.size() == numberOfVars;
 	}
 
 	/**
@@ -447,5 +450,17 @@ public class VariablesSet {
 	 */
 	public IExpr[] toArray(IExpr[] a) {
 		return fVariablesSet.toArray(a);
+	}
+
+	/**
+	 * Copy the variables which are symbols to the <code>scopedVariablesMap</code>
+	 * @param scopedVariablesMap
+	 */
+	public void putAllSymbols(Map<ISymbol, IExpr> scopedVariablesMap) {
+		for (IExpr expr : fVariablesSet) {
+			if (expr.isSymbol()) {
+				scopedVariablesMap.put((ISymbol) expr, F.NIL);
+			}
+		}
 	}
 }

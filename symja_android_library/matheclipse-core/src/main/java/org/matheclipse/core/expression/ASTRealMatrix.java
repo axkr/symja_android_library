@@ -97,7 +97,7 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	public ASTRealMatrix(double[][] matrix, boolean deepCopy) {
 		if (Config.MAX_AST_SIZE < matrix.length || //
 				Config.MAX_AST_SIZE < matrix[0].length) {
-			throw new ASTElementLimitExceeded(matrix.length * matrix[0].length);
+			throw new ASTElementLimitExceeded(matrix.length, matrix[0].length);
 		}
 		this.matrix = new Array2DRowRealMatrix(matrix, deepCopy);
 	}
@@ -113,7 +113,7 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	public ASTRealMatrix(RealMatrix matrix, boolean deepCopy) {
 		if (Config.MAX_AST_SIZE < matrix.getRowDimension() || //
 				Config.MAX_AST_SIZE < matrix.getColumnDimension()) {
-			throw new ASTElementLimitExceeded(matrix.getRowDimension() * matrix.getColumnDimension());
+			throw new ASTElementLimitExceeded(matrix.getRowDimension(), matrix.getColumnDimension());
 		}
 		if (deepCopy) {
 			this.matrix = matrix.copy();
@@ -121,98 +121,6 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 			this.matrix = matrix;
 		}
 	}
-
-	/**
-	 * Adds the objects in the specified collection to this {@code ArrayList}.
-	 * 
-	 * @param collection
-	 *            the collection of objects.
-	 * @return {@code true} if this {@code ArrayList} is modified, {@code false} otherwise.
-	 */
-	// @Override
-	// public boolean appendAll(Collection<? extends IExpr> collection) {
-	// hashValue = 0;
-	// throw new UnsupportedOperationException();
-	// }
-
-	// @Override
-	// public boolean appendAll(IAST ast, int startPosition, int endPosition) {
-	// throw new UnsupportedOperationException();
-	// }
-
-	/**
-	 * Inserts the objects in the specified collection at the specified location in this List. The objects are added in
-	 * the order they are returned from the collection's iterator.
-	 * 
-	 * @param location
-	 *            the index at which to insert.
-	 * @param collection
-	 *            the collection of objects.
-	 * @return {@code true} if this {@code ArrayList} is modified, {@code false} otherwise.
-	 * @throws IndexOutOfBoundsException
-	 *             when {@code location < 0 || > size()}
-	 */
-	// @Override
-	// public boolean appendAll(int location, Collection<? extends IExpr> collection) {
-	// hashValue = 0;
-	// throw new UnsupportedOperationException();
-	// }
-
-	// @Override
-	// public boolean addAll(List<? extends IExpr> ast) {
-	// throw new UnsupportedOperationException();
-	// }
-
-	// @Override
-	// public boolean appendAll(List<? extends IExpr> list, int startPosition, int endPosition) {
-	// throw new UnsupportedOperationException();
-	// }
-
-	// @Override
-	// public boolean appendArgs(IAST ast) {
-	// throw new UnsupportedOperationException();
-	// }
-
-	// @Override
-	// public final boolean appendArgs(IAST ast, int untilPosition) {
-	// throw new UnsupportedOperationException();
-	// }
-
-	// @Override
-	// public IAST appendOneIdentity(IAST subAST) {
-	// throw new UnsupportedOperationException();
-	// }
-
-	/**
-	 * Adds the specified object at the end of this {@code ArrayList}.
-	 * 
-	 * @param object
-	 *            the object to add.
-	 * @return always true
-	 */
-	// @Override
-	// public boolean append(IExpr object) {
-	// hashValue = 0;
-	// throw new UnsupportedOperationException();
-	// }
-
-	/**
-	 * Inserts the specified object into this {@code ArrayList} at the specified location. The object is inserted before
-	 * any previous element at the specified location. If the location is equal to the size of this {@code ArrayList},
-	 * the object is added at the end.
-	 * 
-	 * @param location
-	 *            the index at which to insert the object.
-	 * @param object
-	 *            the object to add.
-	 * @throws IndexOutOfBoundsException
-	 *             when {@code location < 0 || > size()}
-	 */
-	// @Override
-	// public void append(int location, IExpr object) {
-	// hashValue = 0;
-	// throw new UnsupportedOperationException();
-	// }
 
 	/**
 	 * Get the first argument (i.e. the second element of the underlying list structure) of the <code>AST</code>
@@ -347,6 +255,11 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	}
 
 	@Override
+	public IASTAppendable copyAppendable(int additionalCapacity) {
+		return copyAppendable();
+	}
+
+	@Override
 	public boolean equals(final Object obj) {
 		if (obj instanceof ASTRealMatrix) {
 			if (obj == this) {
@@ -472,6 +385,12 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 		return dim;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public int[] isPiecewise() {
+		return null;
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public boolean isRealMatrix() {

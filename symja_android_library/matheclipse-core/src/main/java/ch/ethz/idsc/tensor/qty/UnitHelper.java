@@ -28,15 +28,15 @@ import org.matheclipse.core.interfaces.IExpr;
 	};
 
 	/**
-	 * @param string,
+	 * @param str
 	 *            for instance "A*kg^-1*s^2"
 	 * @return unit
 	 */
-	IUnit lookup(String string) {
-		IUnit unit = map.get(string);
+	IUnit lookup(String str) {
+		IUnit unit = map.get(str);
 		if (Objects.isNull(unit)) {
-			unit = create(string);
-			map.put(string, unit);
+			unit = create(str);
+			map.put(str, unit);
 		}
 		return unit;
 	}

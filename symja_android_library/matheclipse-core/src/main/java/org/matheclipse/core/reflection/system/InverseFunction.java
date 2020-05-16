@@ -33,15 +33,12 @@ public class InverseFunction extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) { 
-		// ISymbol arg1 = Validate.checkSymbolType(ast, 1);
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		IExpr arg1 = ast.arg1();
 		if (arg1.isFunction()) {
 			IExpr f = arg1.first();
 			if (f.isAST()) {
-				final int moduleCounter = engine.incModuleCounter();
-				final String varAppend = "$" + moduleCounter;
-				ISymbol dummy = F.Dummy(varAppend);
+				ISymbol dummy = F.Dummy(engine);
 				IAST[] arr = Eliminate.eliminateSlot(F.Equal((IAST) f, dummy), F.Slot1, engine);
 				if (arr != null) {
 					return F.Function(F.subst(arr[1].second(), F.Rule(dummy, F.Slot1)));
@@ -58,7 +55,7 @@ public class InverseFunction extends AbstractFunctionEvaluator {
 		}
 		return F.NIL;
 	}
-	
+
 	@Override
 	public int[] expectedArgSize() {
 		return IOFunctions.ARGS_1_1;

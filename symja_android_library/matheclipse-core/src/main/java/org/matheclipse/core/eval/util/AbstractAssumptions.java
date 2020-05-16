@@ -374,6 +374,12 @@ public abstract class AbstractAssumptions implements IAssumptions {
 		if (expr.isRealConstant()) {
 			return F.True;
 		}
+		if (expr.isDirectedInfinity()) {
+			return F.False;
+		}
+		if (expr == F.Undefined) {
+			return F.Undefined;
+		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
 		if (assumptions != null) {
 			if (assumptions.isReal(expr)) {

@@ -25,6 +25,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
 import org.matheclipse.core.visit.AbstractVisitor;
+import org.matheclipse.parser.client.FEConfig;
 
 /**
  * The pattern matching rules associated with a symbol.
@@ -359,8 +360,6 @@ public final class RulesData implements Serializable {
 	 * @return <code>F.NIL</code> if no evaluation was possible
 	 */
 	public IExpr evalDownRule(final IExpr expr, @Nonnull EvalEngine engine) {
-		PatternMatcherEquals res;
-
 		if (Config.SHOW_PATTERN_EVAL_STEPS) {
 			showSteps = Config.SHOW_PATTERN_SYMBOL_STEPS.contains(expr.topHead());
 			if (showSteps) {
@@ -371,13 +370,17 @@ public final class RulesData implements Serializable {
 			// if (showSteps) {
 			// System.out.println(" EQUAL RULES");
 			// }
-			res = fEqualDownRules.get(expr);
+			PatternMatcherEquals res = fEqualDownRules.get(expr);
 			if (res != null) {
 				if (showSteps) {
 					System.out.println("\n  >>>> " + res.getRHS().toString());
 				}
 				return res.getRHS();
 			}
+		}
+
+		if (!expr.isAST()) {
+			return F.NIL;
 		}
 
 		boolean evalRHSMode = engine.isEvalRHSMode();
@@ -393,7 +396,7 @@ public final class RulesData implements Serializable {
 				for (IPatternMatcher patternEvaluator : fPatternDownRules) {
 					// if (patternEvaluator.fLhsPatternExpr.isAST(F.Integrate)) {
 					// System.out.println(((IPatternMatcher) patternEvaluator).getLHSPriority());
-					// if (((IPatternMatcher) patternEvaluator).getLHSPriority() == 2932) {
+					// if (((IPatternMatcher) patternEvaluator).getLHSPriority() == 5665) {
 					// System.out.println("Debug from this line");
 					// }
 					// }
@@ -409,7 +412,7 @@ public final class RulesData implements Serializable {
 						// if (pmEvaluator.getLHSPriority() == 6656) {
 						// System.out.println("Debug from this line");
 						// }
-						if (Config.SHOW_STACKTRACE) {
+						if (FEConfig.SHOW_STACKTRACE) {
 							if (isShowPriority(pmEvaluator)) {
 								System.out.print("try: " + pmEvaluator.getLHSPriority() + " - ");
 							}
@@ -431,7 +434,7 @@ public final class RulesData implements Serializable {
 							// patternEvaluator).getLHSPriority());
 							// // }
 							// }
-							if (Config.SHOW_STACKTRACE) {
+							if (FEConfig.SHOW_STACKTRACE) {
 								if (isShowPriority(pmEvaluator)) {
 									System.out.println(
 											"matched: " + pmEvaluator.getLHSPriority() + ": " + pmEvaluator.toString());
@@ -450,7 +453,7 @@ public final class RulesData implements Serializable {
 							}
 							return result;
 						}
-						if (Config.SHOW_STACKTRACE) {
+						if (FEConfig.SHOW_STACKTRACE) {
 							if (isShowPriority(pmEvaluator)) {
 								System.out.print("not matched: " + pmEvaluator.getLHSPriority() + " ");
 							}

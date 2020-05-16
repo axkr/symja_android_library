@@ -26,6 +26,7 @@ import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.graphics.Show2SVG;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
@@ -91,7 +92,8 @@ public class Console {
 	}
 
 	public static void main(final String args[]) {
-		Config.PARSER_USE_LOWERCASE_SYMBOLS = true;
+		Locale.setDefault(Locale.US);
+		FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
 		Config.USE_VISJS = true;
 		Config.FILESYSTEM_ENABLED = true;
 		F.initSymbols(null, null, true);
@@ -381,20 +383,16 @@ public class Console {
 				// } else if (arg.equals("-debug")) {
 				// Config.DEBUG = true;
 			} else if (arg.equals("-file")) {
-
-				try {
-					// fFile = new File(args[i + 1]);
-					fEvaluator.eval(F.Get(args[i + 1]));
-
-					// if (fFile.isFile()) {
-					//
-					// }
-					i++;
-				} catch (final ArrayIndexOutOfBoundsException aioobe) {
-					final String msg = "You must specify a file when " + "using the -file argument";
+				if (i + 1 >= args.length) {
+					final String msg = "You must specify a file when using the -file argument";
 					stdout.println(msg);
-					return;
+					throw ReturnException.RETURN_FALSE;
 				}
+
+				// fFile = new File(args[i + 1]);
+				fEvaluator.eval(F.Get(args[i + 1]));
+				i++;
+
 			} else if (arg.equals("-default") || arg.equals("-d")) {
 				if (i + 1 >= args.length) {
 					final String msg = "You must specify a file when using the -d argument";

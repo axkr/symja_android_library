@@ -3,13 +3,13 @@ package org.matheclipse.core.builtin;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.expression.ASTAssociation;
+import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
@@ -18,6 +18,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.FEConfig;
 
 public class AssociationFunctions {
 	private final static class MutableInt {
@@ -51,6 +52,8 @@ public class AssociationFunctions {
 			F.Keys.setEvaluator(new Keys());
 			F.KeySort.setEvaluator(new KeySort());
 			F.Lookup.setEvaluator(new Lookup());
+			F.Structure.setEvaluator(new Structure());
+			F.Summary.setEvaluator(new Summary());
 			F.Values.setEvaluator(new Values());
 		}
 	}
@@ -76,7 +79,7 @@ public class AssociationFunctions {
 					}
 
 				} catch (ValidateException ve) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						ve.printStackTrace();
 					}
 					return engine.printMessage(ast.topHead(), ve);
@@ -120,8 +123,10 @@ public class AssociationFunctions {
 					} catch (ValidateException ve) {
 						return engine.printMessage(F.Set, ve);
 					} catch (RuntimeException rex) {
-						engine.printMessage("Set: " + rex.getMessage());
-						return F.NIL;
+						if (FEConfig.SHOW_STACKTRACE) {
+							rex.printStackTrace();
+						}
+						return engine.printMessage(F.Set, rex);  
 					}
 				}
 			}
@@ -207,6 +212,10 @@ public class AssociationFunctions {
 			if (arg1.isAssociation()) {
 				IASTMutable list = ((IAssociation) arg1).keys();
 				return mapHeadIfPresent(list, head);
+			}
+			if (arg1.isDataSet()) {
+				ASTDataset dataset = (ASTDataset) arg1;
+				return dataset.columnNames();
 			}
 			if (arg1.isList()) {
 				if (arg1.isListOfRules(true)) {
@@ -302,7 +311,8 @@ public class AssociationFunctions {
 					if (key.isList()) {
 						return ((IAST) key).mapThread(ast, 2);
 					}
-					return ((IAssociation) arg1).getValue(key, ast.arg3());
+					final IExpr arg3 = ast.arg3();
+					return ((IAssociation) arg1).getValue(key, () -> arg3);
 				}
 			}
 			return F.NIL;
@@ -316,6 +326,42 @@ public class AssociationFunctions {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
+	private static class Structure extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = ast.arg1();
+			if (arg1.isDataSet()) {
+				ASTDataset dataset = (ASTDataset) arg1;
+				return dataset.structure();
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
+		}
+	}
+
+	private static class Summary extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			IExpr arg1 = ast.arg1();
+			if (arg1.isDataSet()) {
+				ASTDataset dataset = (ASTDataset) arg1;
+				return dataset.summary();
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_1_1;
 		}
 	}
 

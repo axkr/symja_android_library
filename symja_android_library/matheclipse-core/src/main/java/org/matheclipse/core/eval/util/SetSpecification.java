@@ -32,8 +32,6 @@ public class SetSpecification extends SetSpec {
 	 * If <code>expr</code> is a List {i0Value, i1Value} set Level {i0Value, i1Value};<br>
 	 * 
 	 * @param expr
-	 * @param includeHeads
-	 *            TODO
 	 * @throws MathException
 	 *             if the expr is not a <i>level specification</i>
 	 * @see

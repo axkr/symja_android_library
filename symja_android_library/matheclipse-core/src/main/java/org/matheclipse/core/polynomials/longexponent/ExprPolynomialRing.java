@@ -374,12 +374,13 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 * 
 	 * @param cf
 	 *            factory for coefficients of type C.
-	 * @param v
+	 * @param listOfVariables
 	 *            names for the variables.
 	 * @param n
 	 *            number of variables.
 	 * @param t
 	 *            a term order.
+	 * @param numericFunction
 	 */
 	public ExprPolynomialRing(ExprRingFactory cf, IAST listOfVariables, int n, ExprTermOrder t,
 			boolean numericFunction) {
@@ -505,7 +506,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 				final IExpr base = ast.base();
 				ix = ExpVectorLong.indexVar(base, getVars());
 				if (ix >= 0) {
-					int exponent = ast.exponent().toIntDefault(Integer.MIN_VALUE); 
+					int exponent = ast.exponent().toIntDefault(Integer.MIN_VALUE);
 					if (checkNegativeExponents && exponent < 0) {
 						throw new ArithmeticException(
 								"JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
@@ -708,8 +709,6 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 * 
 	 * @param expression
 	 *            the expression which should be checked if it's a polynomial
-	 * @param coefficient
-	 *            set to <code>true</code> if called by the <code>Coefficient()</code> function
 	 * @return <code>true</code> if the given expression is a polynomial
 	 */
 	public boolean isPolynomial(final IExpr expression) throws ArithmeticException, ClassCastException {
@@ -764,7 +763,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 				for (int i = 1; i < vars.size(); i++) {
 					IExpr variable = vars.get(i);
 					if (variable.equals(base)) {
-						int exponent = ast.exponent().toIntDefault(Integer.MIN_VALUE); 
+						int exponent = ast.exponent().toIntDefault(Integer.MIN_VALUE);
 						if (exponent < 0) {
 							return false;
 						}
@@ -1328,20 +1327,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 			pols.add(p);
 		}
 		return pols;
-	}
-
-	/**
-	 * Extend variables. Used e.g. in module embedding. Extend number of variables by i.
-	 * 
-	 * @param i
-	 *            number of variables to extend.
-	 * @return extended polynomial ring factory.
-	 */
-	// public ExprPolynomialRing extend(int i) {
-	// // add module variable names
-	// IAST v = newVars("e", i);
-	// return extend(v);
-	// }
+	} 
 
 	/**
 	 * Extend variables. Used e.g. in module embedding. Extend number of variables by length(vn).
@@ -1366,28 +1352,8 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 		ExprTermOrder to = tord.extend(nvar, i);
 		ExprPolynomialRing pfac = new ExprPolynomialRing(coFac, v, nvar + i, to);
 		return pfac;
-	}
-
-	/**
-	 * Contract variables. Used e.g. in module embedding. Contract number of variables by i.
-	 * 
-	 * @param i
-	 *            number of variables to remove.
-	 * @return contracted polynomial ring factory.
-	 */
-	// public GenPolynomialRing contract(int i) {
-	// String[] v = null;
-	// if (vars != null) {
-	// v = new String[vars.length - i];
-	// for (int j = 0; j < vars.length - i; j++) {
-	// v[j] = vars[j];
-	// }
-	// }
-	// TermOrder to = tord.contract(i, nvar - i);
-	// GenPolynomialRing pfac = new GenPolynomialRing(coFac, nvar - i, to, v);
-	// return pfac;
-	// }
-
+	} 
+	
 	/**
 	 * Distributive representation as polynomial with all main variables.
 	 * 
@@ -1462,7 +1428,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 * 
 	 * @return polynomial comparator.
 	 */
-	public Comparator getComparator() {
+	public ExprPolynomialComparator getComparator() {
 		return new ExprPolynomialComparator(tord, false);
 	}
 
@@ -1473,70 +1439,9 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 *            for reverse comparator.
 	 * @return polynomial comparator.
 	 */
-	public Comparator getComparator(boolean rev) {
+	public ExprPolynomialComparator getComparator(boolean rev) {
 		return new ExprPolynomialComparator(tord, rev);
 	}
-
-	/**
-	 * New variable names. Generate new names for variables,
-	 * 
-	 * @param prefix
-	 *            name prefix.
-	 * @param n
-	 *            number of variables.
-	 * @return new variable names.
-	 */
-	// public static IAST newVars(String prefix, int n) {
-	// IAST vars = F.List();
-	// synchronized (knownVars) {
-	// int m = knownVars.size();
-	// String name = prefix + m;
-	// for (int i = 0; i < n; i++) {
-	// while (knownVars.contains(name)) {
-	// m++;
-	// name = prefix + m;
-	// }
-	// ISymbol sym = F.$s(name);
-	// vars.add(sym);
-	// // System.out.println("new variable: " + name);
-	// knownVars.add(sym);
-	// m++;
-	// name = prefix + m;
-	// }
-	// }
-	// return vars;
-	// }
-
-	/**
-	 * New variable names. Generate new names for variables,
-	 * 
-	 * @param prefix
-	 *            name prefix.
-	 * @return new variable names.
-	 */
-	// public IAST newVars(String prefix) {
-	// return newVars(prefix, nvar);
-	// }
-
-	/**
-	 * New variable names. Generate new names for variables,
-	 * 
-	 * @param n
-	 *            number of variables.
-	 * @return new variable names.
-	 */
-	// public static IAST newVars(int n) {
-	// return newVars("x", n);
-	// }
-
-	/**
-	 * New variable names. Generate new names for variables,
-	 * 
-	 * @return new variable names.
-	 */
-	// public IAST newVars() {
-	// return newVars(nvar);
-	// }
 
 	/**
 	 * Add variable names.
@@ -1575,33 +1480,6 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 		}
 		return b;
 	}
-
-	/**
-	 * Permutation of polynomial ring variables.
-	 * 
-	 * @param P
-	 *            permutation.
-	 * @return P(this).
-	 */
-	// public GenPolynomialRing permutation(List<Integer> P) {
-	// if (nvar <= 1) {
-	// return this;
-	// }
-	// TermOrder tp = tord.permutation(P);
-	// if (vars == null) {
-	// return new GenPolynomialRing(coFac, nvar, tp);
-	// }
-	// IExpr[] v1 = new IExpr[vars.argSize()];
-	// for (int i = 0; i < v1.length; i++) {
-	// v1[i] = vars.get(v1.length - i);
-	// }
-	// String[] vp = permuteVars(P, v1);
-	// String[] v2 = new String[vp.length];
-	// for (int i = 0; i < vp.length; i++) {
-	// v2[i] = vp[vp.length - 1 - i];
-	// }
-	// return new GenPolynomialRing(coFac, nvar, tp, v2);
-	// }
 
 	/**
 	 * Get a GenPolynomial iterator.

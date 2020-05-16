@@ -3,6 +3,7 @@ package org.matheclipse.core.visit;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
+import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -20,6 +21,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * @see org.matheclipse.core.interfaces.IExpr
  */
 public interface IVisitor {
+	
+	public abstract IExpr visit(IDataExpr data);
 
 	public abstract IExpr visit(IInteger element);
 

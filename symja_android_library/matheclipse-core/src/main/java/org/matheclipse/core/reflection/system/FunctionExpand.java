@@ -5,7 +5,6 @@ import static org.matheclipse.core.expression.F.BetaRegularized;
 import static org.matheclipse.core.expression.F.Binomial;
 import static org.matheclipse.core.expression.F.ChebyshevT;
 import static org.matheclipse.core.expression.F.ChebyshevU;
-import static org.matheclipse.core.expression.F.Cos;
 import static org.matheclipse.core.expression.F.Factorial;
 import static org.matheclipse.core.expression.F.a;
 import static org.matheclipse.core.expression.F.a_;
@@ -38,6 +37,7 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.Matcher;
 import org.matheclipse.core.polynomials.QuarticSolver;
+import org.matheclipse.core.reflection.system.rules.FunctionExpandRules;
 
 /**
  * <pre>
@@ -56,7 +56,7 @@ import org.matheclipse.core.polynomials.QuarticSolver;
  * 362880/(b*(1+b)*(2+b)*(3+b)*(4+b)*(5+b)*(6+b)*(7+b)*(8+b)*(9+b))
  * </pre>
  */
-public class FunctionExpand extends AbstractEvaluator {
+public class FunctionExpand extends AbstractEvaluator implements FunctionExpandRules {
 
 	private final static Matcher MATCHER = new Matcher();
 
@@ -265,6 +265,14 @@ public class FunctionExpand extends AbstractEvaluator {
 			MATCHER.caseOf(F.ParzenWindow.of(x_), WindowFunctions.parzenWindow(x));
 			MATCHER.caseOf(F.TukeyWindow.of(x_), WindowFunctions.tukeyWindow(x));
 
+			for (int i = 1; i < RULES.size(); i++) {
+				IExpr arg = RULES.get(i);
+				if (arg.isAST(F.SetDelayed, 3)) {
+					MATCHER.caseOf(arg.first(), arg.second());
+				} else if (arg.isAST(F.Set, 3)) {
+					MATCHER.caseOf(arg.first(), arg.second());
+				}
+			}
 		}
 	}
 

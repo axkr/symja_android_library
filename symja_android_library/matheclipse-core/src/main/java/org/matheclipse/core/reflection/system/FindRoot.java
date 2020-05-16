@@ -15,7 +15,6 @@ import org.hipparchus.analysis.solvers.RiddersSolver;
 import org.hipparchus.analysis.solvers.SecantSolver;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -30,6 +29,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.FEConfig;
 
 /**
  * <pre>
@@ -197,13 +197,13 @@ public class FindRoot extends AbstractFunctionEvaluator {
 						return F.List(F.Rule(list.arg1(),
 								Num.valueOf(findRoot(method, maxIterations, list, min, max, function, engine))));
 					} catch (MathIllegalArgumentException miae) {
-						if (Config.SHOW_STACKTRACE) {
+						if (FEConfig.SHOW_STACKTRACE) {
 							miae.printStackTrace();
 						}
 						engine.printMessage("FindRoot: " + miae.getMessage());
 						return F.List();
 					} catch (MathRuntimeException mre) {
-						if (Config.SHOW_STACKTRACE) {
+						if (FEConfig.SHOW_STACKTRACE) {
 							mre.printStackTrace();
 						}
 						return engine.printMessage("FindRoot: " + mre.getMessage());

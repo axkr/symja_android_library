@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -27,11 +26,12 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.trie.Trie;
-import org.matheclipse.core.trie.Tries;
+import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.ast.IParserFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
+import org.matheclipse.parser.trie.Trie;
+import org.matheclipse.parser.trie.Tries;
 
 import com.google.common.base.CharMatcher;
 
@@ -464,39 +464,39 @@ public class ExprParserFactory implements IParserFactory {
 		return true;
 	}
 
-	private String toRubiString(final String nodeStr) {
-		if (!Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-			if (nodeStr.length() == 1) {
-				return nodeStr;
-			}
-			String lowercaseName = nodeStr.toLowerCase();
-			String temp = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(lowercaseName);
-			if (temp != null) {
-				if (!temp.equals(nodeStr)) {
-					temp = F.PREDEFINED_INTERNAL_FORM_STRINGS.get(nodeStr);
-					if (temp == null) {
-						if (lowercaseName.length() > 1) {
-							if (!lowercaseName.equals("sin") && !lowercaseName.equals("cos")
-									&& !lowercaseName.equals("tan") && !lowercaseName.equals("cot")
-									&& !lowercaseName.equals("csc") && !lowercaseName.equals("sec")) {
-								System.out.println(nodeStr + " => §" + lowercaseName);
-							}
-						}
-						return "§" + lowercaseName;
-					}
-				}
-			} else {
-				if (!nodeStr.equals(nodeStr.toLowerCase())) {
-					temp = F.PREDEFINED_INTERNAL_FORM_STRINGS.get(nodeStr);
-					if (temp == null) {
-						if (lowercaseName.length() > 1) {
-							System.out.println(nodeStr + " => §" + lowercaseName);
-						}
-						return "§" + lowercaseName;
-					}
-				}
-			}
-		}
-		return nodeStr;
-	}
+//	private String toRubiString(final String nodeStr) {
+//		if (!FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+//			if (nodeStr.length() == 1) {
+//				return nodeStr;
+//			}
+//			String lowercaseName = nodeStr.toLowerCase();
+//			String temp = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(lowercaseName);
+//			if (temp != null) {
+//				if (!temp.equals(nodeStr)) {
+//					temp = F.PREDEFINED_INTERNAL_FORM_STRINGS.get(nodeStr);
+//					if (temp == null) {
+//						if (lowercaseName.length() > 1) {
+//							if (!lowercaseName.equals("sin") && !lowercaseName.equals("cos")
+//									&& !lowercaseName.equals("tan") && !lowercaseName.equals("cot")
+//									&& !lowercaseName.equals("csc") && !lowercaseName.equals("sec")) {
+//								System.out.println(nodeStr + " => §" + lowercaseName);
+//							}
+//						}
+//						return "§" + lowercaseName;
+//					}
+//				}
+//			} else {
+//				if (!nodeStr.equals(nodeStr.toLowerCase())) {
+//					temp = F.PREDEFINED_INTERNAL_FORM_STRINGS.get(nodeStr);
+//					if (temp == null) {
+//						if (lowercaseName.length() > 1) {
+//							System.out.println(nodeStr + " => §" + lowercaseName);
+//						}
+//						return "§" + lowercaseName;
+//					}
+//				}
+//			}
+//		}
+//		return nodeStr;
+//	}
 }

@@ -11,6 +11,9 @@ import org.matheclipse.core.basic.Config;
  * "https://github.com/paulmasson/math/blob/master/src/functions/elliptic-integrals.js">elliptic-integrals.js</a>
  */
 public class EllipticIntegralsJS {
+	private EllipticIntegralsJS() {
+
+	}
 
 	public static Complex kleinJ(Complex x) {
 		// from mpmath / elliptic.py

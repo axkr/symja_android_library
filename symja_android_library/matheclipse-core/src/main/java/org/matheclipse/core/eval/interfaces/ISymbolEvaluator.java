@@ -36,5 +36,5 @@ public interface ISymbolEvaluator extends IEvaluator {
    * @return the evaluated object or <code>null</code>,
    *         if evaluation isn't possible
    */
-  public IExpr apfloatEval(ISymbol symbol, EvalEngine engine);
+  public IExpr apfloatEval(ISymbol symbol, final EvalEngine engine);
 }

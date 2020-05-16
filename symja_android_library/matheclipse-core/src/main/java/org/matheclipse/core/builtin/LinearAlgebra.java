@@ -26,10 +26,7 @@ import static org.matheclipse.core.expression.F.Slot1;
 import static org.matheclipse.core.expression.F.Sqr;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Subtract;
-import static org.matheclipse.core.expression.F.Times;
-//import static org.matheclipse.core.expression.F.g;
-//import static org.matheclipse.core.expression.F.r;
-//import static org.matheclipse.core.expression.F.y;
+import static org.matheclipse.core.expression.F.Times;  
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,14 +42,12 @@ import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
-import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
@@ -75,6 +70,7 @@ import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.FEConfig;
 
 public final class LinearAlgebra {
 
@@ -208,25 +204,6 @@ public final class LinearAlgebra {
 		}
 
 		/**
-		 * Constructor which creates row reduced echelon matrix from the given augmented <code>matrix</code> and
-		 * column-vector <code>b</code>.
-		 * 
-		 * @param matrix
-		 *            matrix which will be transformed to a row reduced echelon matrix.
-		 * 
-		 * @see #rowReduce()
-		 */
-		// public FieldReducedRowEchelonForm(FieldMatrix<IExpr> matrix, FieldVector<IExpr> b) {
-		// this.originalMatrix = matrix;
-		// this.rowReducedMatrix = matrix.copy();
-		// this.numRows = matrix.getRowDimension();
-		// this.numCols = matrix.getColumnDimension();
-		// this.matrixRankCache = -1;
-		// this.nullSpaceCache = null;
-		// rowReduce();
-		// }
-
-		/**
 		 * Test if <code>expr</code> equals the zero element.
 		 * 
 		 * @param expr
@@ -320,9 +297,9 @@ public final class LinearAlgebra {
 		}
 
 		/**
-		 * Test if the row <code>a.row</code> of the matrix contains only zero-elements.
+		 * Test if the <code>row</code> of the matrix contains only zero-elements.
 		 * 
-		 * @param a
+		 * @param row
 		 * @return
 		 */
 		private boolean isRowZeroes(int row) {
@@ -342,7 +319,7 @@ public final class LinearAlgebra {
 		 * 
 		 * @param to
 		 * @param from
-		 * @param scalar
+		 * @param factor
 		 */
 		private void multiplyAdd(RowColIndex to, RowColIndex from, IExpr factor) {
 			IExpr[] row = rowReducedMatrix.getRow(to.row);
@@ -557,10 +534,10 @@ public final class LinearAlgebra {
 		}
 
 		/**
-		 * Multiply the <code>x.row</code> elements with the scalar <code>factor</code>.
+		 * Multiply all <code>x.row</code> elements with the scalar <code>factor</code>.
 		 * 
 		 * @param x
-		 * @param d
+		 * @param factor
 		 */
 		private void scaleRow(RowColIndex x, IExpr factor) {
 			for (int i = 0; i < numCols; i++) {
@@ -762,6 +739,10 @@ public final class LinearAlgebra {
 				// a matrix with square dimensions
 				IAST matrix = (IAST) ast.arg1();
 				IExpr variable = ast.arg2();
+				if (!variable.isVariable() ) {
+					// `1` is not a valid variable.
+					return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(variable), engine);
+				}
 				return generateCharacteristicPolynomial(dimensions[0], matrix, variable);
 			}
 
@@ -855,12 +836,12 @@ public final class LinearAlgebra {
 				// org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
 				return engine.printMessage(ast.topHead(), mre);
 			} catch (final ValidateException ve) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					ve.printStackTrace();
 				}
 				return engine.printMessage(ast.topHead(), ve);
 			} catch (final IndexOutOfBoundsException e) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
 			}
@@ -1234,7 +1215,7 @@ public final class LinearAlgebra {
 				}
 			} catch (final ValidateException ve) {
 				// int number validation
-				return engine.printMessage(ve.getMessage(ast.topHead()));
+				return engine.printMessage(ast.topHead(), ve);
 			}
 			return F.NIL;
 
@@ -1479,7 +1460,7 @@ public final class LinearAlgebra {
 				// org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
 				return engine.printMessage(ast.topHead(), mre);
 			} catch (final RuntimeException e) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
 				engine.printMessage(ast.topHead() + ": " + e.getMessage());
@@ -1641,7 +1622,7 @@ public final class LinearAlgebra {
 					}
 
 				} catch (final RuntimeException e) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						e.printStackTrace();
 					}
 				}
@@ -1750,11 +1731,11 @@ public final class LinearAlgebra {
 					// org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
 					return engine.printMessage(ast.topHead(), mre);
 				} catch (final ClassCastException e) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						e.printStackTrace();
 					}
 				} catch (final IndexOutOfBoundsException e) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						e.printStackTrace();
 					}
 				}
@@ -2342,11 +2323,11 @@ public final class LinearAlgebra {
 					// org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
 					return engine.printMessage(ast.topHead(), mre);
 				} catch (final ClassCastException e) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						e.printStackTrace();
 					}
 				} catch (final IndexOutOfBoundsException e) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						e.printStackTrace();
 					}
 				}
@@ -2355,11 +2336,11 @@ public final class LinearAlgebra {
 					return F.Expand(F.LinearSolve(F.ConjugateTranspose(F.Dot(matrixTransposed, matrix)),
 							F.Dot(matrixTransposed, vector)));
 				} catch (final ClassCastException e) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						e.printStackTrace();
 					}
 				} catch (final IndexOutOfBoundsException e) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						e.printStackTrace();
 					}
 				}
@@ -2490,7 +2471,7 @@ public final class LinearAlgebra {
 				} catch (LimitException le) {
 					throw le;
 				} catch (final RuntimeException e) {
-					if (Config.SHOW_STACKTRACE) {
+					if (FEConfig.SHOW_STACKTRACE) {
 						e.printStackTrace();
 					}
 				}
@@ -2682,7 +2663,7 @@ public final class LinearAlgebra {
 				}
 			} catch (final ValidateException ve) {
 				// int number validation
-				return engine.printMessage(ve.getMessage(ast.topHead()));
+				return engine.printMessage(ast.topHead(), ve);
 			}
 			return F.NIL;
 		}
@@ -2753,11 +2734,11 @@ public final class LinearAlgebra {
 					}
 				}
 			} catch (final ClassCastException e) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
 			} catch (final IndexOutOfBoundsException e) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
 			} finally {
@@ -2883,12 +2864,16 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			int[] dimensions = ast.arg1().isMatrix();
+			int[] dimensions = ast.arg1().isMatrix(false);
 			if (dimensions != null && dimensions[0] == dimensions[1] && dimensions[0] > 0) {
 				// a matrix with square dimensions
 				IAST matrix = (IAST) ast.arg1();
 				IExpr variable = ast.arg2();
-				ISymbol i = new Symbol("§i", Context.SYSTEM);
+				if (!variable.isVariable() ) {
+					// `1` is not a valid variable.
+					return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(variable), engine);
+				}
+				ISymbol i = F.Dummy("i"); //new Symbol("§i", Context.SYSTEM);
 				int n = 1;
 				IAST qu = F.List();
 				IAST mnm = (IAST) engine
@@ -3008,7 +2993,7 @@ public final class LinearAlgebra {
 				}
 				return F.NIL;
 			} catch (final RuntimeException e) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
 				return engine.printMessage(ast.topHead() + ": " + e.getMessage());
@@ -3076,11 +3061,11 @@ public final class LinearAlgebra {
 				}
 
 			} catch (final ClassCastException e) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
 			} catch (final IndexOutOfBoundsException e) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
 			}
@@ -3366,12 +3351,17 @@ public final class LinearAlgebra {
 						return list2;
 					}
 				}
+			} catch (final MathRuntimeException mrex) {
+				// org.hipparchus.exception.MathIllegalArgumentException
+				if (FEConfig.SHOW_STACKTRACE) {
+					mrex.printStackTrace();
+				}
 			} catch (final ClassCastException e) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
 			} catch (final IndexOutOfBoundsException e) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
 			} finally {
@@ -3636,11 +3626,11 @@ public final class LinearAlgebra {
 				}
 
 			} catch (final ClassCastException e) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
 			} catch (final IndexOutOfBoundsException e) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
 			}
@@ -3724,11 +3714,11 @@ public final class LinearAlgebra {
 					}
 				}
 			} catch (final ClassCastException e) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
 			} catch (final IndexOutOfBoundsException e) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
 			} finally {
@@ -3817,12 +3807,12 @@ public final class LinearAlgebra {
 				}
 
 			} catch (final ValidateException ve) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					ve.printStackTrace();
 				}
 				return engine.printMessage(ast.topHead(), ve);
 			} catch (final IndexOutOfBoundsException e) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
 			}
@@ -4332,7 +4322,7 @@ public final class LinearAlgebra {
 					return F.matrix((i, j) -> i <= j - k ? matrix.getPart(i + 1, j + 1) : F.C0, m, n);
 				} catch (final ValidateException ve) {
 					// int number validation
-					return engine.printMessage(ve.getMessage(ast.topHead()));
+					return engine.printMessage(ast.topHead(), ve);
 				}
 			}
 			return F.NIL;

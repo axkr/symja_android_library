@@ -4,7 +4,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * Abstract step visitor for <code>java.util.List</code>s.
+ * Abstract step visitor for <code>IAST</code>s.
  * 
  */
 public abstract class AbstractListStepVisitor<T> implements IStepVisitor {
@@ -14,16 +14,13 @@ public abstract class AbstractListStepVisitor<T> implements IStepVisitor {
 	public AbstractListStepVisitor(IAST ast) {
 		this.list = ast;
 		toIntArray(ast);
-	} 
+	}
 
 	/**
 	 * Convert the <code>sortedList</code> to an <code>int[]</code> array. Equal elements get the same index in the
 	 * resulting <code>int[]</code> array.
 	 * 
-	 * @param <T>
 	 * @param sortedList
-	 * @param start
-	 * @param end
 	 * @return
 	 */
 	final private void toIntArray(IAST sortedList) {
@@ -34,32 +31,19 @@ public abstract class AbstractListStepVisitor<T> implements IStepVisitor {
 		}
 	}
 
-	
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.matheclipse.core.combinatoric.IStepVisitor#visit(int[][])
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean visit(int[][] result) {
 		return true;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.matheclipse.core.combinatoric.IStepVisitor#visit(int[][])
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean visit(int[] result) {
 		return true;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.matheclipse.core.combinatoric.IStepVisitor#getMultisetArray()
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public int[] getMultisetArray() {
 		int[] result = new int[array.length];

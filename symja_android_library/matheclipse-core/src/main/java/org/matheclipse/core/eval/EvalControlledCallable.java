@@ -3,10 +3,10 @@ package org.matheclipse.core.eval;
 import java.io.StringWriter;
 import java.util.concurrent.Callable;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
@@ -58,7 +58,7 @@ public class EvalControlledCallable implements Callable<IExpr> {
 			System.err.println(buf.toString());
 			System.err.flush();
 		} catch (final Exception e) {
-			if (Config.SHOW_STACKTRACE) {
+			if (FEConfig.SHOW_STACKTRACE) {
 				e.printStackTrace();
 			}
 			Validate.printException(buf, e);
@@ -69,7 +69,7 @@ public class EvalControlledCallable implements Callable<IExpr> {
 			System.err.println(buf.toString());
 			System.err.flush();
 		} catch (final StackOverflowError e) {
-			if (Config.SHOW_STACKTRACE) {
+			if (FEConfig.SHOW_STACKTRACE) {
 				e.printStackTrace();
 			}
 			Validate.printException(buf, e);
@@ -81,6 +81,6 @@ public class EvalControlledCallable implements Callable<IExpr> {
 
 
 	public void cancel() {
-		fEngine.setStopRequested(true);
+		fEngine.stopRequest();
 	}
 }

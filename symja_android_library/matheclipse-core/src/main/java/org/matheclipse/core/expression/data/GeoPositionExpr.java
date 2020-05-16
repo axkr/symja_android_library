@@ -40,6 +40,11 @@ public class GeoPositionExpr extends DataExpr<GlobalPosition> {
 	}
 
 	@Override
+	public int hierarchy() {
+		return GEOPOSITIONID;
+	}
+
+	@Override
 	public IExpr copy() {
 		return new GeoPositionExpr(fData);
 	}

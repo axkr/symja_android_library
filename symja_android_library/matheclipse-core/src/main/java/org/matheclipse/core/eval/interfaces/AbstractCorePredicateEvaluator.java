@@ -25,7 +25,7 @@ public abstract class AbstractCorePredicateEvaluator extends AbstractCoreFunctio
 	 * @param engine
 	 * @return
 	 */
-	abstract public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine);
+	abstract public boolean evalArg1Boole(final IExpr arg1, final EvalEngine engine);
 
 	public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine, OptionArgs options) {
 		return false;
@@ -33,7 +33,7 @@ public abstract class AbstractCorePredicateEvaluator extends AbstractCoreFunctio
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+	public IExpr evaluate(final IAST ast, final EvalEngine engine) {
 		// if (ast.size() >= 2) {
 		IExpr arg1 = engine.evaluate(ast.arg1());
 		if (arg1.isList()) {

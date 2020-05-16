@@ -213,6 +213,9 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	protected String internalJavaStringAsFactoryMethod() {
 		if (Config.RUBI_CONVERT_SYMBOLS) {
 			if (fOrdinal >= 1) {
+				if (Config.RUBI_CONVERT_SYMBOLS && "C".equals(fSymbolName)  ) {
+					return fSymbolName + "Symbol";
+				}
 				return fSymbolName;
 			}
 		}

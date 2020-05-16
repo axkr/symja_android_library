@@ -268,42 +268,13 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 	}
 
 	/**
-	 * Get the n-th derivative (<code>Derivative[n][symbol]</code>) if possible. Otherwise return <code>null</code>
 	 * 
 	 * @param n
-	 *            differentiating <code>n</code> times with respect to the 1. argument
-	 * @param symbol
-	 *            the function symbol which should be searched in the look-up table.
-	 * @return <code>null</code> if no entry was found
+	 * @param function
+	 * @param engine
+	 * @return
 	 */
-	// public static IExpr derivative(int n, ISymbol symbol, EvalEngine engine) {
-	// if (n == 1) {
-	// // Derivative[1][symbol]
-	// IExpr result = DERIVATIVE_1_MAP.get(symbol);
-	// if (result != null) {
-	// return F.unaryAST1(F.Function, engine.evaluate(result));
-	// }
-	// }
-	// if (n == 2) {
-	// // Derivative[2][symbol]
-	// IExpr result = DERIVATIVE_2_MAP.get(symbol);
-	// if (result != null) {
-	// return F.unaryAST1(F.Function, engine.evaluate(result));
-	// }
-	// }
-	// if (n > 0) {
-	// // Derivative[n][symbol]
-	// IExpr result = DERIVATIVE_N_MAP.get(symbol);
-	// if (result != null) {
-	// // replace Slot[2] with the integer number
-	// IAST slotsList = F.List(F.NIL, F.integer(n));
-	// return F.unaryAST1(F.Function, engine.evaluate(Lambda.replaceSlotsOrElse(result, slotsList, result)));
-	// }
-	// }
-	// return F.NIL;
-	// }
-
-	public static IExpr derivative(int n, IAST function, EvalEngine engine) {
+	private static IExpr derivative(int n, IAST function, EvalEngine engine) {
 		if (n == 0) {
 			return function;
 		}
@@ -373,7 +344,6 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 	 * 
 	 * @param n
 	 * @param header
-	 * @param arg1
 	 * @return
 	 */
 	public static IAST createDerivative(final int n, final IExpr header) {

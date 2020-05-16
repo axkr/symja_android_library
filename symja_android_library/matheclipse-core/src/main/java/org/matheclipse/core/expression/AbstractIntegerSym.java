@@ -18,6 +18,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -296,6 +297,16 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	public IInteger charmichaelLambda() {
 		return AbstractIntegerSym.valueOf(Primality.charmichaelLambda(toBigNumerator()));
 	}
+	
+	public int compareTo(final IExpr expr) { 
+		if (expr.isNumber()) {
+			int c = this.compareTo(((INumber) expr).re());
+			if (c != 0) {
+				return c;
+			} 
+		}
+		return -1;
+	}
 
 	@Override
 	public IExpr copy() {
@@ -423,10 +434,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	}
 
 	/**
-	 * Get all prime factors of this integer
+	 * Get all prime factors of this integer.
 	 * 
-	 * @param result
-	 *            add the prime factors to this result list
 	 * @return
 	 */
 	public IAST factorize() {
@@ -524,7 +533,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		if (map.size() == 0) {
 			return F.NIL;
 		}
-		IASTAppendable result = F.TimesAlloc(map.size() + 1);
+		IASTAppendable result = F.TimesAlloc(map.size() + 4);
 		boolean evaled = false;
 		for (Int2IntMap.Entry entry : map.int2IntEntrySet()) {
 			int key = entry.getIntKey();
@@ -585,7 +594,11 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
 	private IAST factorizeLong(long longValue) {
 		Map<Long, Integer> map = PrimeInteger.factors(longValue);
-		IASTAppendable result = F.ListAlloc(map.size() + 1);
+		int resultSize = sign() < 0 ? 1 : 0;
+		for (Map.Entry<Long, Integer> entry : map.entrySet()) {
+			resultSize += entry.getValue();
+		}
+		IASTAppendable result = F.ListAlloc(resultSize);
 		if (sign() < 0) {
 			result.append(F.CN1);
 		}
@@ -603,6 +616,11 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	@Override
 	public IRational fractionalPart() {
 		return F.C0;
+	}
+	
+	/** {@inheritDoc} */
+	public IInteger integerPart() {
+		return this;
 	}
 
 	@Override

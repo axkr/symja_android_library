@@ -57,6 +57,7 @@ import org.matheclipse.core.polynomials.symbolicexponent.SymbolicPolynomialRing;
 import org.matheclipse.core.polynomials.symbolicexponent.SymbolicTermOrder;
 import org.matheclipse.core.reflection.system.rules.LegendrePRules;
 import org.matheclipse.core.reflection.system.rules.LegendreQRules;
+import org.matheclipse.parser.client.FEConfig;
 
 import com.google.common.math.LongMath;
 
@@ -211,7 +212,7 @@ public class PolynomialFunctions {
 					}
 				}
 				ExpVectorSymbolic expArr = new ExpVectorSymbolic(exponents);
-				IExpr expr = F.evalExpandAll(ast.arg1(), engine).normal();
+				IExpr expr = F.evalExpandAll(ast.arg1(), engine).normal(false);
 				IAST subst = Algebra.substituteVariablesInPolynomial(expr, listOfVariables, "§Coefficient");
 				expr = subst.arg1();
 				listOfVariables = (IASTAppendable) subst.arg2();
@@ -223,7 +224,7 @@ public class PolynomialFunctions {
 			} catch (LimitException le) {
 				throw le;
 			} catch (RuntimeException ae) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					ae.printStackTrace();
 				}
 				return F.C0;
@@ -247,7 +248,7 @@ public class PolynomialFunctions {
 	private static class CoefficientList extends AbstractFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			IExpr expr = F.evalExpandAll(ast.arg1(), engine).normal();
+			IExpr expr = F.evalExpandAll(ast.arg1(), engine).normal(false);
 			IAST list = ast.arg2().orNewList();
 			return coefficientList(expr, list);
 		}
@@ -300,7 +301,7 @@ public class PolynomialFunctions {
 							}
 						} catch (RuntimeException rex) {
 							// toInt() conversion failed
-							if (Config.SHOW_STACKTRACE) {
+							if (FEConfig.SHOW_STACKTRACE) {
 								rex.printStackTrace();
 							}
 						}
@@ -316,7 +317,7 @@ public class PolynomialFunctions {
 				SymbolicPolynomial poly = ring.create(expr, false, true, true);
 				return poly.coefficientRules();
 			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 			}
@@ -733,7 +734,7 @@ public class PolynomialFunctions {
 			// expr = a1;
 			// }
 			// }
-			IExpr expr = F.evalExpandAll(ast.arg1(), engine).normal();
+			IExpr expr = F.evalExpandAll(ast.arg1(), engine).normal(false);
 			IAST subst = Algebra.substituteVariablesInPolynomial(expr, F.List(form), "§Exponent");
 			expr = subst.arg1();
 			form = subst.arg2().first();
@@ -1273,7 +1274,9 @@ public class PolynomialFunctions {
 		/**
 		 * Complex numeric roots intervals.
 		 * 
-		 * @param ast
+		 * @param arg
+		 * @param numeric
+		 *            if <code>true</code> create a numerically evaluated result. Otherwise return a symbolic result.
 		 * @return
 		 */
 		public static IASTAppendable croots(final IExpr arg, boolean numeric) {
@@ -1327,11 +1330,11 @@ public class PolynomialFunctions {
 				}
 				return resultList;
 			} catch (InvalidBoundaryException e) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
 			} catch (JASConversionException e) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
 			}
@@ -1398,7 +1401,7 @@ public class PolynomialFunctions {
 			IExpr variable = variables.arg1();
 			IAST list = roots(arg1, false, variables, engine);
 			if (list.isPresent()) {
-				IASTAppendable or = F.Or();
+				IASTAppendable or = F.ast(F.Or, list.size(), false);
 				for (int i = 1; i < list.size(); i++) {
 					or.append(F.Equal(variable, list.get(i)));
 				}
@@ -2026,7 +2029,7 @@ public class PolynomialFunctions {
 								return monomialListModulus(expr, varList, termOrder, option);
 							}
 						} catch (RuntimeException rex) {
-							if (Config.SHOW_STACKTRACE) {
+							if (FEConfig.SHOW_STACKTRACE) {
 								rex.printStackTrace();
 							}
 						}
@@ -2041,7 +2044,7 @@ public class PolynomialFunctions {
 				SymbolicPolynomial poly = ring.create(expr, false, true, true);
 				return poly.monomialList();
 			} catch (RuntimeException rex) {
-				if (Config.SHOW_STACKTRACE) {
+				if (FEConfig.SHOW_STACKTRACE) {
 					rex.printStackTrace();
 				}
 			}
@@ -2085,7 +2088,9 @@ public class PolynomialFunctions {
 		 * Get the monomial list of a univariate polynomial with coefficients reduced by a modulo value.
 		 * 
 		 * @param polynomial
-		 * @param variable
+		 *            a polynomial expression
+		 * @param variablesList
+		 *            list of variables
 		 * @param termOrder
 		 *            the JAS term ordering
 		 * @param option
@@ -2187,11 +2192,11 @@ public class PolynomialFunctions {
 			throw le;
 		} catch (ClassCastException ex) {
 			// org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing.create()
-			if (Config.SHOW_STACKTRACE) {
+			if (FEConfig.SHOW_STACKTRACE) {
 				ex.printStackTrace();
 			}
 		} catch (RuntimeException ex) {
-			if (Config.SHOW_STACKTRACE) {
+			if (FEConfig.SHOW_STACKTRACE) {
 				ex.printStackTrace();
 			}
 		}
@@ -2340,7 +2345,7 @@ public class PolynomialFunctions {
 				return result;
 			}
 		} catch (JASConversionException e2) {
-			if (Config.SHOW_STACKTRACE) {
+			if (FEConfig.SHOW_STACKTRACE) {
 				e2.printStackTrace();
 			}
 		}
@@ -2370,7 +2375,7 @@ public class PolynomialFunctions {
 			result = QuarticSolver.sortASTArguments(result);
 			return result;
 		} catch (JASConversionException e2) {
-			if (Config.SHOW_STACKTRACE) {
+			if (FEConfig.SHOW_STACKTRACE) {
 				e2.printStackTrace();
 			}
 		}

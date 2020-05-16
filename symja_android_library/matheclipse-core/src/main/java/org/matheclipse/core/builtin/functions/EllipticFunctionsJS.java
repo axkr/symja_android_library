@@ -14,6 +14,10 @@ import static org.matheclipse.core.builtin.functions.EllipticIntegralsJS.*;
  * "https://github.com/paulmasson/math/blob/master/src/functions/elliptic-functions.js">elliptic-functions.js</a>
  */
 public class EllipticFunctionsJS {
+	private EllipticFunctionsJS() {
+
+	}
+	
 	public static double trunc(double value) {
 		return value < 0 ? Math.ceil(value) : Math.floor(value);
 	}
