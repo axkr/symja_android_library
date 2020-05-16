@@ -6,11 +6,8 @@ package jp.ac.kobe_u.cs.cream;
 import java.util.Iterator;
 
 /**
- * Taboo Search.
- * Only useful for the optimization problems containing {@link Serialized} constraints
- * in the current implementation.
- * The default exchangeRate value for {@link ParallelSolver}  
- * is 0.8.
+ * Taboo Search. Only useful for the optimization problems containing {@link Serialized} constraints in the current
+ * implementation. The default exchangeRate value for {@link ParallelSolver} is 0.8.
  * 
  * @since 1.0
  * @version 1.4
@@ -18,8 +15,7 @@ import java.util.Iterator;
  */
 public class TabooSearch extends LocalSearch {
 	/**
-	 * The length of the taboo list.
-	 * The default value is 16.
+	 * The length of the taboo list. The default value is 16.
 	 */
 	public int tabooLength = 16;
 
@@ -57,7 +53,9 @@ public class TabooSearch extends LocalSearch {
 
 	/**
 	 * Returns true when the operation <tt>op</tt> is a taboo.
-	 * @param op the operation to be checked
+	 * 
+	 * @param op
+	 *            the operation to be checked
 	 * @return true when <tt>op</tt> is a taboo
 	 */
 	public boolean isTaboo(Operation op) {
@@ -72,7 +70,9 @@ public class TabooSearch extends LocalSearch {
 
 	/**
 	 * Adds the operation <tt>op</tt> to the taboo list.
-	 * @param op the operation to be added
+	 * 
+	 * @param op
+	 *            the operation to be added
 	 */
 	public void addTaboo(Operation op) {
 		taboo[taboo_i] = op;
@@ -103,24 +103,30 @@ public class TabooSearch extends LocalSearch {
 				code.setTo(network);
 				op.applyTo(network);
 				Solution sol = solver.findBest(iterationTimeout);
-				if (sol == null)
+				if (sol == null) {
 					continue;
+				}
 				int value = sol.getObjectiveIntValue();
-				if (!isBetter(value, locallyBest))
+				if (!isBetter(value, locallyBest)) {
 					continue;
+				}
 				locallyBest = value;
 				locallyBestOp = op;
 				locallyBestSol = sol;
 			}
-			if (locallyBestOp != null)
+			if (locallyBestOp != null) {
 				break;
+			}
 			clearTaboo();
 		}
-		if (isAborted())
+		if (isAborted()) {
 			return;
-		code.setTo(network);
-		locallyBestOp.applyTo(network);
-		solution = locallyBestSol;
-		addTaboo(locallyBestOp);
+		}
+		if (locallyBestOp != null) {
+			code.setTo(network);
+			locallyBestOp.applyTo(network);
+			solution = locallyBestSol;
+			addTaboo(locallyBestOp);
+		}
 	}
 }

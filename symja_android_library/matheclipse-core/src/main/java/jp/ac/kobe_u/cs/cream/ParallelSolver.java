@@ -19,10 +19,10 @@ public class ParallelSolver extends Solver implements SolutionHandler {
 	}
 
 	public ParallelSolver(Solver[] solvers, String name) {
-		super(null, NONE, name);
+		super(solvers[0].network, solvers[0].option, name);
 		this.solvers = solvers;
-		network = solvers[0].network;
-		option = solvers[0].option;
+		// network = solvers[0].network;
+		// option = solvers[0].option;
 	}
 
 	/**
