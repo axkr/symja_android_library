@@ -755,6 +755,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[(Cosh[x] - Sinh[x])/(Cosh[x] + Sinh[x]), x]", //
 				"-1/(2*(Cosh[x] + Sinh[x])^2)", // 
+				"-(Cosh(x)-Sinh(x))^2/2", //
 				4385);
 	}
 

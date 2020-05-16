@@ -63,8 +63,13 @@ public class ExprEvaluatorTests extends TestCase {
 	}
 
 	public void testSmartFuzz() {
+		Config.MAX_AST_SIZE = 10000;
+		Config.MAX_BIT_LENGTH = 1000;
+		Config.MAX_OUTPUT_SIZE = 10000;
 		boolean quietMode = true;
 		EvalEngine engine = EvalEngine.get();
+		engine.setRecursionLimit(256);
+		engine.setIterationLimit(1000);
 		List<ASTNode> node = parseFileToList();
 		IExpr temp;
 
@@ -135,8 +140,14 @@ public class ExprEvaluatorTests extends TestCase {
 				F.C3D4, //
 				F.Slot2, //
 				F.stringx(""), //
+				F.stringx("\\"), //
+				F.stringx("\r"), //
+				F.stringx("\t"), //
+				F.stringx("\n"), //
+				F.stringx("\r\n"), //
+				F.stringx("\n   "), //
 				F.stringx("\uffff"), //
-				F.Subtract(F.C1, F.C1)); 
+				F.Subtract(F.C1, F.C1));
 		int counter = 0;
 		ThreadLocalRandom random = ThreadLocalRandom.current();
 		for (int j = 1; j < 10000; j++) {
@@ -247,6 +258,8 @@ public class ExprEvaluatorTests extends TestCase {
 		ByteArrayExpr ba = ByteArrayExpr.newInstance(bArray);
 		byte[] b0Array = new byte[] { 0 };
 		ByteArrayExpr b0a = ByteArrayExpr.newInstance(b0Array);
+		F.x.setAttributes(ISymbol.PROTECTED);
+		F.y.setAttributes(ISymbol.PROTECTED);
 		IAST seedList = F.List(//
 				ba, //
 				b0a, //
@@ -256,7 +269,127 @@ public class ExprEvaluatorTests extends TestCase {
 				F.complex(0.0, -1.0), //
 				F.complex(0.0, 1.0), //
 				F.num(0.5), //
-				F.num(-0.5), // 
+				F.num(-0.5), //
+				F.num(Math.PI * (-0.5)), //
+				F.num(Math.PI * 0.5), //
+				F.num(-Math.PI), //
+				F.num(Math.PI), //
+
+				F.num(-Math.E), //
+				F.num(Math.E), //
+				F.C0, //
+				F.C1, //
+				F.CN1, //
+				F.CN1D2, //
+				F.C1D2, //
+				F.CNI, //
+				F.CI, //
+				// some primes
+				F.C2, F.C3, F.C5, F.C7, F.ZZ(11), F.ZZ(13), F.ZZ(17), F.ZZ(19), F.ZZ(101), F.ZZ(1009), F.ZZ(10007), //
+				// F.ZZ(Integer.MIN_VALUE), //
+				F.CInfinity, //
+				F.CNInfinity, //
+				F.Null, //
+				F.Power(F.x, F.C2), //
+				F.Indeterminate, //
+				F.ComplexInfinity, //
+				F.x_, //
+				F.y_, //
+				F.CEmptyList, //
+				F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1))), F.assoc(F.List()),
+				F.assoc(F.List(F.Rule(F.stringx("s1"), F.C0), F.RuleDelayed(F.stringx("s2"), F.C1))),
+				F.List(F.List(F.C0)), //
+				F.List(F.List(F.C1)), //
+				F.List(F.List(F.CN1)), //
+				F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), //
+				F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), //
+				F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1), F.C0), //
+				F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0), F.C0), //
+				F.List(F.CN1, F.CN2, F.C3), //
+				F.List(F.CN1D2, F.CN2, F.C3), //
+				F.List(F.x, F.CN2, F.C3), //
+				F.List(F.x, F.C5, F.CN3), //
+				F.List(F.x, F.CN3, F.CN1D2), //
+				F.C1DSqrt5, //
+				F.Divide(F.Plus(F.C1,F.Sqrt(5)), F.C2), // GoldenRatio
+				F.Divide(F.C2, F.Plus(F.C1,F.Sqrt(5))), // 1/GoldenRatio
+				F.Negate(F.Sqrt(2)), //
+				F.Divide(F.Sqrt(2),F.C2), //
+				F.Negate(F.Divide(F.Sqrt(2),F.C2)), //
+				F.Plus(F.Sqrt(2),F.C1), //
+				F.Plus(F.Sqrt(2),F.CN1), //
+				F.Exp(F.Times(F.Pi,F.CI,F.C1D3)), //
+				F.Plus(F.C1,F.CI), //
+				F.Plus(F.CN1,F.CI), //
+				F.CSqrt2, //
+				F.C2Pi, //
+				F.CN3D2, //
+				F.C3D2, //
+				F.C3D4, //
+				F.Slot2, //
+				F.stringx(""), //
+				F.stringx("\\"), //
+				F.stringx("\r"), //
+				F.stringx("\t"), //
+				F.stringx("\n"), //
+				F.stringx("\r\n"), //
+				F.stringx("\n   "), //
+				F.stringx("\uffff"), //
+				F.Subtract(F.C1, F.C1));
+		ThreadLocalRandom random = ThreadLocalRandom.current();
+		String[] functionStrs = AST2Expr.FUNCTION_STRINGS;
+		int[] counter = new int[] { 0 };
+		for (int loop = 0; loop < 10000; loop++) {
+			for (int i = 0; i < functionStrs.length; i++) {
+				IBuiltInSymbol sym = (IBuiltInSymbol) F.symbol(functionStrs[i]);
+				if (sym == F.PolynomialGCD || sym == F.On || sym == F.Off || sym == F.Compile
+						|| sym == F.CompiledFunction || sym == F.Set || sym == F.SetDelayed) {
+					continue;
+				}
+				IEvaluator evaluator = sym.getEvaluator();
+				if (evaluator instanceof IFunctionEvaluator) {
+					int[] argSize = ((IFunctionEvaluator) evaluator).expectedArgSize();
+					if (argSize != null) {
+						int end = argSize[1];
+						if (end <= 10) {
+							int start = argSize[0];
+							generateASTs(sym, start, end, seedList, random, counter, (IFunctionEvaluator) evaluator,
+									engine);
+							continue;
+						}
+					} else {
+						generateASTs(sym, 1, 5, seedList, random, counter, (IFunctionEvaluator) evaluator, engine);
+					}
+				}
+			}
+		}
+	}
+
+	public void testNonBuiltinFunctionFuzz() {
+		Config.MAX_AST_SIZE = 10000;
+		Config.MAX_BIT_LENGTH = 1000;
+		Config.MAX_OUTPUT_SIZE = 10000;
+
+		EvalEngine engine = new EvalEngine(true);
+		engine.setRecursionLimit(256);
+		engine.setIterationLimit(1000);
+		ExprEvaluator eval = new ExprEvaluator(engine, true, 20);
+		byte[] bArray = new byte[0];
+		ByteArrayExpr ba = ByteArrayExpr.newInstance(bArray);
+		byte[] b0Array = new byte[] { 0 };
+		ByteArrayExpr b0a = ByteArrayExpr.newInstance(b0Array);
+		F.x.setAttributes(ISymbol.PROTECTED);
+		F.y.setAttributes(ISymbol.PROTECTED);
+		IAST seedList = F.List(//
+				ba, //
+				b0a, //
+				// F.NIL, //
+				F.complex(-0.5, 0.5), //
+				F.complex(0.0, 0.5), //
+				F.complex(0.0, -1.0), //
+				F.complex(0.0, 1.0), //
+				F.num(0.5), //
+				F.num(-0.5), //
 				F.num(Math.PI * (-0.5)), //
 				F.num(Math.PI * 0.5), //
 				F.num(-Math.PI), //
@@ -300,74 +433,13 @@ public class ExprEvaluatorTests extends TestCase {
 				F.C3D4, //
 				F.Slot2, //
 				F.stringx(""), //
+				F.stringx("\\"), //
+				F.stringx("\r"), //
+				F.stringx("\t"), //
+				F.stringx("\n"), //
+				F.stringx("\r\n"), //
+				F.stringx("\n   "), //
 				F.stringx("\uffff"), //
-				F.Subtract(F.C1, F.C1));
-		ThreadLocalRandom random = ThreadLocalRandom.current();
-		String[] functionStrs = AST2Expr.FUNCTION_STRINGS;
-		int[] counter = new int[] { 0 };
-		for (int loop = 0; loop < 10000; loop++) {
-			for (int i = 0; i < functionStrs.length; i++) {
-				IBuiltInSymbol sym = (IBuiltInSymbol) F.symbol(functionStrs[i]);
-				if (sym == F.On || sym == F.Off) {
-					continue;
-				}
-				IEvaluator evaluator = sym.getEvaluator();
-				if (evaluator instanceof IFunctionEvaluator) {
-					int[] argSize = ((IFunctionEvaluator) evaluator).expectedArgSize();
-					if (argSize != null) {
-						int end = argSize[1];
-						if (end <= 10) {
-							int start = argSize[0];
-							generateASTs(sym, start, end, seedList, random, counter, engine);
-							continue;
-						}
-					} else {
-						generateASTs(sym, 1, 5, seedList, random, counter, engine);
-					}
-				}
-			}
-		}
-	}
-
-	public void testNonBuiltinFunctionFuzz() {
-		Config.MAX_AST_SIZE = 10000;
-		Config.MAX_BIT_LENGTH = 1000;
-		Config.MAX_OUTPUT_SIZE = 10000;
-
-		EvalEngine engine = new EvalEngine(true);
-		engine.setRecursionLimit(256);
-		engine.setIterationLimit(1000);
-		ExprEvaluator eval = new ExprEvaluator(engine, true, 20);
-
-		IAST seedList = F.List(//
-				F.num(-0.5), //
-				F.num(0.5), //
-				F.num(Math.PI * (-0.5)), //
-				F.num(Math.PI * 0.5), //
-				F.num(-Math.PI), //
-				F.num(Math.PI), //
-
-				F.num(-Math.E), //
-				F.num(Math.E), //
-				F.C0, //
-				F.C1, //
-				F.CN1, //
-				F.CN1D2, //
-				F.C1D2, //
-				F.CNI, //
-				F.CI, //
-				// F.ZZ(Integer.MIN_VALUE), //
-				F.CInfinity, //
-				F.CNInfinity, //
-				F.Null, //
-				F.Power(F.x, F.C2), //
-				F.Indeterminate, //
-				F.ComplexInfinity, //
-				F.x_, //
-				F.y_, //
-				F.CEmptyList, //
-				F.C1DSqrt5, //
-				F.Slot2, //
 				F.Subtract(F.C1, F.C1));
 
 		String[] functionStrs = AST2Expr.FUNCTION_STRINGS;
@@ -379,12 +451,12 @@ public class ExprEvaluatorTests extends TestCase {
 			if (evaluator instanceof IFunctionEvaluator) {
 				continue;
 			}
-			generateASTs(sym, 1, 5, seedList, random, counter, engine);
+			generateASTs(sym, 1, 5, seedList, random, counter, null, engine);
 		}
 	}
 
 	private void generateASTs(IBuiltInSymbol sym, int start, int end, IAST seedList, ThreadLocalRandom random,
-			int[] counter, EvalEngine engine) {
+			int[] counter, IFunctionEvaluator evaluator, EvalEngine engine) {
 		boolean quietMode = true;
 		ExprEvaluator eval;
 		System.out.flush();
@@ -404,14 +476,18 @@ public class ExprEvaluatorTests extends TestCase {
 				}
 
 				if (counter[0]++ > 80) {
-//					System.out.println("");
+					// System.out.println("");
 					counter[0] = 0;
 					System.out.flush();
 					System.err.flush();
 				}
 				// System.out.println(">> " + ast.toString());
-//				System.out.print(".");
-				eval.eval(ast);
+				// System.out.print(".");
+				if (evaluator != null) {
+					evaluator.evaluate(ast, engine);
+				} else {
+					eval.eval(ast);
+				}
 			} catch (FlowControlException mex) {
 				if (!quietMode) {
 					System.err.println(ast.toString());

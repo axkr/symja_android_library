@@ -6,13 +6,13 @@ import java.text.DecimalFormatSymbols;
 import java.util.List;
 import java.util.Locale;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
@@ -163,7 +163,7 @@ public class GetTestSingleRun extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		Config.PARSER_USE_LOWERCASE_SYMBOLS = false;
+		FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
 		// wait for initializing of Integrate() rules:
 		F.await();
 	}

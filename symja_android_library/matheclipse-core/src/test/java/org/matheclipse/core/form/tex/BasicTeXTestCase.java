@@ -282,7 +282,7 @@ public class BasicTeXTestCase extends TestCase {
 
 	public void testTeX025() {
 		StringWriter stw = new StringWriter();
-		TeXUtilities localTexUtil = new TeXUtilities(EvalEngine.get(), true, 5, 7);
+		TeXUtilities localTexUtil = new TeXUtilities(EvalEngine.get(), true);
 		localTexUtil.toTeX("1.3 - 1.0", stw);
 		assertEquals(stw.toString(), "0.3");
 	}
@@ -327,7 +327,7 @@ public class BasicTeXTestCase extends TestCase {
 
 	public void testTeX31() {
 		check("a&&b||c", //
-				"a \\land b \\lor c");
+				"\\left( a \\land b\\right)  \\lor c");
 	}
 
 	public void testTeX32() {
@@ -428,13 +428,19 @@ public class BasicTeXTestCase extends TestCase {
 		check(expr, //
 				"\\left( \\frac{10}{{x}^{4}}\\right) ''");
 	}
-	
+
 	public void testTeX046() {
 		IExpr expr = EvalEngine.get().evaluate("Derivative(a)[10/x^4]");
 		check(expr, //
 				"\\left( \\frac{10}{{x}^{4}}\\right) ^{(a)}");
 	}
 
+	public void testTeX047() {
+		IExpr expr = EvalEngine.get().evaluate("Log(b,z)");
+		check(expr, //
+				"\\frac{\\log (z)}{\\log (b)}");
+	}
+	
 	public void check(String strEval, String strResult) {
 		StringWriter stw = new StringWriter();
 		texUtil.toTeX(strEval, stw);
@@ -457,7 +463,7 @@ public class BasicTeXTestCase extends TestCase {
 		try {
 			// F.initSymbols();
 			EvalEngine engine = new EvalEngine(true);
-			texUtil = new TeXUtilities(engine, true, 5, 7);
+			texUtil = new TeXUtilities(engine, true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

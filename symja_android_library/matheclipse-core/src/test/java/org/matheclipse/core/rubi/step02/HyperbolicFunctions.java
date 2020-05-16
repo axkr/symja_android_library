@@ -1,5 +1,7 @@
 package org.matheclipse.core.rubi.step02;
 
+import org.matheclipse.core.basic.Config;
+
 public class HyperbolicFunctions extends AbstractRubiTestCase {
 
 	static boolean init = true;
@@ -82,6 +84,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[Cosh[c + d*x]/(a + I*a*Sinh[c + d*x]), x]", //
 				"((-I)*Log[I - Sinh[c + d*x]])/(a*d)", //
+				"(-I*Log(1+I*Sinh(c+d*x)))/(a*d)", //
 				2746, 31);
 	}
 
@@ -311,7 +314,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
 
 	// {2734, 2732}
 	public void test0041() {
-		fSeconds=20;
+		fSeconds = 20;
 		check(//
 				"Integrate[Sqrt[a + b*Sinh[x]], x]", //
 				"((2*I)*EllipticE[Pi/4 - (I/2)*x, (2*b)/(I*a + b)]*Sqrt[a + b*Sinh[x]])/Sqrt[(a + b*Sinh[x])/(a - I*b)]", //
@@ -560,10 +563,12 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
 
 	// {5599, 5601}
 	public void test0072() {
-		check(//
-				"Integrate[F^(c*(a + b*x))*Csch[d + e*x]^4, x]", //
-				"-(F^(c*(a + b*x))*Coth[d + e*x]*Csch[d + e*x]^2)/(3*e) - (b*c*F^(c*(a + b*x))*Csch[d + e*x]^2*Log[F])/(6*e^2) - (2*E^(2*(d + e*x))*F^(c*(a + b*x))*Hypergeometric2F1[2, 1 + (b*c*Log[F])/(2*e), 2 + (b*c*Log[F])/(2*e), E^(2*(d + e*x))]*(2*e - b*c*Log[F]))/(3*e^2)", //
-				5599, 5601);
+		if (Config.EXPENSIVE_JUNIT_TESTS) {
+			check(//
+					"Integrate[F^(c*(a + b*x))*Csch[d + e*x]^4, x]", //
+					"-(F^(c*(a + b*x))*Coth[d + e*x]*Csch[d + e*x]^2)/(3*e) - (b*c*F^(c*(a + b*x))*Csch[d + e*x]^2*Log[F])/(6*e^2) - (2*E^(2*(d + e*x))*F^(c*(a + b*x))*Hypergeometric2F1[2, 1 + (b*c*Log[F])/(2*e), 2 + (b*c*Log[F])/(2*e), E^(2*(d + e*x))]*(2*e - b*c*Log[F]))/(3*e^2)", //
+					5599, 5601);
+		}
 	}
 
 	// {3092}

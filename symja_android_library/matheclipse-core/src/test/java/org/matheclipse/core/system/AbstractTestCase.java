@@ -5,13 +5,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Locale;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.TimeConstrainedEvaluator;
@@ -48,6 +47,7 @@ public abstract class AbstractTestCase extends TestCase {
 
 	public AbstractTestCase(String name) {
 		super(name);
+		Locale.setDefault(Locale.US);
 		Config.SERVER_MODE = false;
 	}
 
@@ -185,7 +185,7 @@ public abstract class AbstractTestCase extends TestCase {
 				EvalEngine engine = new EvalEngine();
 				fScriptEngine = new MathScriptEngine(engine);// fScriptManager.getEngineByExtension("m");
 				fScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
-				fScriptEngine.put("DECIMAL_FORMAT", "0.0####");
+ 				fScriptEngine.put("DECIMAL_FORMAT", "0.0####");
 
 				fNumericScriptEngine = new MathScriptEngine();// fScriptManager.getEngineByExtension("m");
 				fNumericScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);

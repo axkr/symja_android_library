@@ -6,7 +6,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.ArraySet;
 import org.matheclipse.core.expression.F;
@@ -15,6 +14,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.patternmatching.RulesData;
+import org.matheclipse.parser.client.FEConfig;
 
 /**
  * Generate java sources for Symja rule files.
@@ -60,6 +60,25 @@ public class RulePreprocessor {
 		}
 	}
 
+	public static void convertList(IExpr expr, String rulePostfix, StringBuilder buffer, final PrintWriter out,
+			String symbolName, EvalEngine engine) {
+		try {
+			// if (expr.isListOfLists()) {
+			// IAST list = (IAST) expr;
+			// for (int i = 1; i < list.size(); i++) {
+			// convertExpr(list.get(i), Integer.toString(i), out, null);
+			// }
+			// } else {
+			convertListExpr(expr, rulePostfix, out, symbolName);
+			// }
+		} catch (UnsupportedOperationException uoe) {
+			System.out.println(uoe.getMessage());
+			System.out.println(expr.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	public static void convert(IExpr expr, String rulePostfix, StringBuilder buffer, final PrintWriter out,
 			String symbolName, EvalEngine engine) {
 		try {
@@ -82,7 +101,7 @@ public class RulePreprocessor {
 	private static void convertExpr(IExpr expr, String rulePostfix, final PrintWriter out, String symbolName) {
 		boolean last;
 		StringBuilder buffer = new StringBuilder();
-//		ArraySet<ISymbol> headerSymbols = new ArraySet<ISymbol>();
+		// ArraySet<ISymbol> headerSymbols = new ArraySet<ISymbol>();
 		if (expr.isAST()) {
 			IAST list = (IAST) expr;
 			if (symbolName != null) {
@@ -154,6 +173,81 @@ public class RulePreprocessor {
 		out.print(FOOTER0);
 	}
 
+	private static void convertListExpr(IExpr expr, String rulePostfix, final PrintWriter out, String symbolName) {
+		boolean last;
+		StringBuilder buffer = new StringBuilder();
+		// ArraySet<ISymbol> headerSymbols = new ArraySet<ISymbol>();
+		if (expr.isAST()) {
+			IAST list = (IAST) expr;
+			if (symbolName != null) {
+				int equalsRuleCounter = 0;
+				int simpleRuleCounter = 0;
+				for (int i = 1; i < list.size(); i++) {
+					last = i == (list.argSize());
+					expr = list.get(i);
+					if (expr.isAST(F.SetDelayed, 3)) {
+						IAST ast = (IAST) expr;
+						if (!RulesData.isComplicatedPatternRule(ast.arg1())) {
+							simpleRuleCounter++;
+						}
+					} else if (expr.isAST(F.Set, 3)) {
+						equalsRuleCounter++;
+					}
+				}
+				// if (equalsRuleCounter > 0 || simpleRuleCounter > 0) {
+				// out.print(SIZES);
+				// out.append(Integer.toString(equalsRuleCounter));
+				// out.append(", ");
+				// out.append(Integer.toString(simpleRuleCounter));
+				// out.append(" };\n\n");
+				// buffer.append(" IInit(");
+				// buffer.append(symbolName);
+				// buffer.append(", SIZES),\n");
+				// }
+			}
+
+			for (int i = 1; i < list.size(); i++) {
+				last = i == (list.argSize());
+				expr = list.get(i);
+				if (expr.isAST(F.SetDelayed, 3)) {
+					IAST ast = (IAST) expr;
+					buffer.append("    // " + ast.toString().replaceAll("\\n", "") + "\n");
+					buffer.append("    SetDelayed(");
+					appendSetDelayedToBuffer(ast, buffer, false, last);
+				} else if (expr.isAST(F.Set, 3)) {
+					IAST ast = (IAST) expr;
+					buffer.append("    // " + ast.toString().replaceAll("\\n", "") + "\n");
+					buffer.append("    Set(");
+					appendSetDelayedToBuffer(ast, buffer, true, last);
+					// } else if (expr.isAST(F.Rule, 3)) {
+					// IAST ast = (IAST) expr;
+					// buffer.append(" // " + ast.toString().replaceAll("\\n", "") + "\n");
+					// buffer.append(" Rule(");
+					// appendSetDelayedToBuffer(ast, buffer, true, last);
+				}
+			}
+			// } else {
+			// if (expr.isAST(F.SetDelayed, 3)) {
+			// IAST ast = (IAST) expr;
+			// buffer.append(" SetDelayed(");
+			// appendSetDelayedToBuffer(ast, buffer, false, true);
+			// } else if (expr.isAST(F.Set, 3)) {
+			// IAST ast = (IAST) expr;
+			// buffer.append(" ISet(");
+			// appendSetDelayedToBuffer(ast, buffer, true, true);
+			// } else if (expr.isAST(F.Rule, 3)) {
+			// IAST ast = (IAST) expr;
+			// buffer.append(" Rule(");
+			// appendSetDelayedToBuffer(ast, buffer, true, true);
+			// }
+		}
+		out.print(LIST0);
+		out.print(rulePostfix);
+		out.println(LIST1);
+		out.print(buffer.toString());
+		out.print(FOOTER0);
+	}
+
 	public static IExpr parseFileToList(File file, EvalEngine engine) {
 		try {
 			final BufferedReader f = new BufferedReader(new FileReader(file));
@@ -176,10 +270,13 @@ public class RulePreprocessor {
 	/**
 	 * Generate Java files (*.java) from Symja rule files (*.m)
 	 * 
-	 * @param sourceLocation  source directory for rule (*.m) files
-	 * @param targetLocation  target directory for the generated Java files
-	 * @param ignoreTimestamp if <code>false</code> only change the target file (*.java), if the source file (*.m) has a newer time
-	 *                        stamp than the target file.
+	 * @param sourceLocation
+	 *            source directory for rule (*.m) files
+	 * @param targetLocation
+	 *            target directory for the generated Java files
+	 * @param ignoreTimestamp
+	 *            if <code>false</code> only change the target file (*.java), if the source file (*.m) has a newer time
+	 *            stamp than the target file.
 	 */
 	public static void generateFunctionStrings(final File sourceLocation, File targetLocation,
 			boolean ignoreTimestamp) {
@@ -210,13 +307,23 @@ public class RulePreprocessor {
 									}
 								}
 								System.out.println(className);
-								out = new PrintWriter(targetFile.getCanonicalPath());
-								out.print(HEADER);
-								out.print(className);
-								out.print(" {\n");
-								convert(expr, "", buffer, out, symbolName, engine);
-								out.println(FOOTER1);
-								out.close();
+								if (className.equals("FunctionExpandRules")) {
+									out = new PrintWriter(targetFile.getCanonicalPath());
+									out.print(HEADER);
+									out.print(className);
+									out.print(" {\n");
+									convertList(expr, "", buffer, out, symbolName, engine);
+									out.println(FOOTER1);
+									out.close();
+								} else {
+									out = new PrintWriter(targetFile.getCanonicalPath());
+									out.print(HEADER);
+									out.print(className);
+									out.print(" {\n");
+									convert(expr, "", buffer, out, symbolName, engine);
+									out.println(FOOTER1);
+									out.close();
+								}
 							} catch (IOException e) {
 								e.printStackTrace();
 							}
@@ -230,7 +337,7 @@ public class RulePreprocessor {
 	}
 
 	public static void main(final String[] args) {
-		Config.EXPLICIT_TIMES_OPERATOR = true;
+		FEConfig.EXPLICIT_TIMES_OPERATOR = true;
 		F.initSymbols();
 		// C:\\Users\\dev\\git\\symja_android_library
 		File sourceLocation = new File("..\\symja_android_library\\rules");

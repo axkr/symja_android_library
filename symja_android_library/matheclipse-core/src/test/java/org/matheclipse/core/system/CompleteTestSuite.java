@@ -5,10 +5,7 @@ import org.matheclipse.core.form.mathml.MathMLPresentationTestCase;
 import org.matheclipse.core.form.tex.BasicTeXTestCase;
 import org.matheclipse.core.form.tex.TeXConverterTestCase;
 import org.matheclipse.core.system.archunit.ArchUnitTests;
-import org.matheclipse.parser.test.BracketBalancerTestCase;
-import org.matheclipse.parser.test.ParserTestCase;
-import org.matheclipse.parser.test.RelaxedParserTestCase;
-import org.matheclipse.parser.test.eval.EvalDoubleTestCase;
+import org.matheclipse.core.test.eval.EvalDoubleCallbackTestCase; 
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -62,10 +59,7 @@ public class CompleteTestSuite extends TestCase {
 		suite.addTestSuite(SerializableTest.class);
 		suite.addTestSuite(PatternsTest.class);
 
-		suite.addTestSuite(ParserTestCase.class);
-		suite.addTestSuite(RelaxedParserTestCase.class);
-		suite.addTestSuite(BracketBalancerTestCase.class);
-		suite.addTestSuite(EvalDoubleTestCase.class);
+		suite.addTestSuite(EvalDoubleCallbackTestCase.class);
 		suite.addTestSuite(ExprEvaluatorTest.class);
 
 		suite.addTestSuite(ConsoleTestCase.class);

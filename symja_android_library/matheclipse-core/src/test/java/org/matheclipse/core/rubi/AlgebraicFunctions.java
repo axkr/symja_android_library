@@ -2001,7 +2001,8 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 		// check("rubi`SmartSimplify[1+n/2]", //
 		// "1/2*(2+n)");
 		// check("(1 + x/a)^(n/2)/(x^2*(1 - x/a)^(n/2)) // FullForm", //
-		// "Times[Power[x, -2], Power[Plus[1, Times[Power[a, -1], x]], Times[Rational[1,2], n]], Power[Plus[1, Times[-1, Power[a, -1], x]], Times[Rational[-1,2], n]]]");
+		// "Times[Power[x, -2], Power[Plus[1, Times[Power[a, -1], x]], Times[Rational[1,2], n]], Power[Plus[1, Times[-1,
+		// Power[a, -1], x]], Times[Rational[-1,2], n]]]");
 		check(//
 				"Integrate[(1 + x/a)^(n/2)/(x^2*(1 - x/a)^(n/2)), x]", //
 				"(-4*(1 - x/a)^(1 - n/2)*(1 + x/a)^((-2 + n)/2)*Hypergeometric2F1[2, 1 - n/2, 2 - n/2, (a - x)/(a + x)])/(a*(2 - n))", //
@@ -3678,7 +3679,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[1/(Sqrt[3 - 3*Sqrt[3] + 2*Sqrt[3]*x^2]*Sqrt[3 + (-3 + Sqrt[3])*x^2]), x]", //
 				"-(Sqrt[3 + Sqrt[3]]*EllipticF[ArcCos[Sqrt[(3 - Sqrt[3])/3]*x], (1 + Sqrt[3])/2])/6", //
-				"-EllipticF(ArcCos(Sqrt(1/3*(3-Sqrt(3)))*x),1/2*(1+Sqrt(3)))/Sqrt(6*(3-Sqrt(3)))",//
+				"-EllipticF(ArcCos(Sqrt(1/3*(3-Sqrt(3)))*x),1/2*(1+Sqrt(3)))/Sqrt(6*(3-Sqrt(3)))", //
 				420);
 	}
 
@@ -6673,10 +6674,10 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 				"Integrate[(1 + Sqrt[3] - (b/a)^(1/3)*x)/Sqrt[-a + b*x^3], x]", //
 				"(2*(b/a)^(2/3)*Sqrt[-a + b*x^3])/(b*(1 - Sqrt[3] - (b/a)^(1/3)*x)) - (3^(1/4)*Sqrt[2 + Sqrt[3]]*(1 - (b/a)^(1/3)*x)*Sqrt[(1 + (b/a)^(1/3)*x + (b/a)^(2/3)*x^2)/(1 - Sqrt[3] - (b/a)^(1/3)*x)^2]*EllipticE[ArcSin[(1 + Sqrt[3] - (b/a)^(1/3)*x)/(1 - Sqrt[3] - (b/a)^(1/3)*x)], -7 + 4*Sqrt[3]])/((b/a)^(1/3)*Sqrt[-((1 - (b/a)^(1/3)*x)/(1 - Sqrt[3] - (b/a)^(1/3)*x)^2)]*Sqrt[-a + b*x^3])", //
 				"(2*Sqrt(-a+b*x^3))/(a*(b/a)^(1/3)*(1-Sqrt(3)-(b/a)^(1/3)*x))+(3^(1/4)*Sqrt(2+Sqrt(\n" + //
-				"3))*(-1+(b/a)^(1/3)*x)*Sqrt((1+(b/a)^(1/3)*x+(b/a)^(2/3)*x^2)/(1-Sqrt(3)-(b/a)^(\n" + //
-				"1/3)*x)^2)*EllipticE(ArcSin((1+Sqrt(3)-(b/a)^(1/3)*x)/(1-Sqrt(3)-(b/a)^(1/3)*x)),\n" + //
-				"-7+4*Sqrt(3)))/((b/a)^(1/3)*Sqrt(-a+b*x^3)*Sqrt((-1+(b/a)^(1/3)*x)/(1-Sqrt(3)-(b/a)^(\n" + //
-				"1/3)*x)^2))", //
+						"3))*(-1+(b/a)^(1/3)*x)*Sqrt((1+(b/a)^(1/3)*x+(b/a)^(2/3)*x^2)/(1-Sqrt(3)-(b/a)^(\n" + //
+						"1/3)*x)^2)*EllipticE(ArcSin((1+Sqrt(3)-(b/a)^(1/3)*x)/(1-Sqrt(3)-(b/a)^(1/3)*x)),\n" + //
+						"-7+4*Sqrt(3)))/((b/a)^(1/3)*Sqrt(-a+b*x^3)*Sqrt((-1+(b/a)^(1/3)*x)/(1-Sqrt(3)-(b/a)^(\n" + //
+						"1/3)*x)^2))", //
 				1879);
 	}
 
@@ -6751,10 +6752,10 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 				"Integrate[(1 - Sqrt[3] - (b/a)^(1/3)*x)/Sqrt[a - b*x^3], x]", //
 				"(-2*(b/a)^(2/3)*Sqrt[a - b*x^3])/(b*(1 + Sqrt[3] - (b/a)^(1/3)*x)) + (3^(1/4)*Sqrt[2 - Sqrt[3]]*(1 - (b/a)^(1/3)*x)*Sqrt[(1 + (b/a)^(1/3)*x + (b/a)^(2/3)*x^2)/(1 + Sqrt[3] - (b/a)^(1/3)*x)^2]*EllipticE[ArcSin[(1 - Sqrt[3] - (b/a)^(1/3)*x)/(1 + Sqrt[3] - (b/a)^(1/3)*x)], -7 - 4*Sqrt[3]])/((b/a)^(1/3)*Sqrt[(1 - (b/a)^(1/3)*x)/(1 + Sqrt[3] - (b/a)^(1/3)*x)^2]*Sqrt[a - b*x^3])", //
 				"(-2*Sqrt(a-b*x^3))/(a*(b/a)^(1/3)*(1+Sqrt(3)-(b/a)^(1/3)*x))+(3^(1/4)*Sqrt(2-Sqrt(\n" + //
-				"3))*(1-(b/a)^(1/3)*x)*Sqrt((1+(b/a)^(1/3)*x+(b/a)^(2/3)*x^2)/(1+Sqrt(3)-(b/a)^(1/\n" + //
-				"3)*x)^2)*EllipticE(ArcSin((1-Sqrt(3)-(b/a)^(1/3)*x)/(1+Sqrt(3)-(b/a)^(1/3)*x)),\n" + //
-				"-7-4*Sqrt(3)))/((b/a)^(1/3)*Sqrt(a-b*x^3)*Sqrt((1-(b/a)^(1/3)*x)/(1+Sqrt(3)-(b/a)^(\n" + //
-				"1/3)*x)^2))", //
+						"3))*(1-(b/a)^(1/3)*x)*Sqrt((1+(b/a)^(1/3)*x+(b/a)^(2/3)*x^2)/(1+Sqrt(3)-(b/a)^(1/\n" + //
+						"3)*x)^2)*EllipticE(ArcSin((1-Sqrt(3)-(b/a)^(1/3)*x)/(1+Sqrt(3)-(b/a)^(1/3)*x)),\n" + //
+						"-7-4*Sqrt(3)))/((b/a)^(1/3)*Sqrt(a-b*x^3)*Sqrt((1-(b/a)^(1/3)*x)/(1+Sqrt(3)-(b/a)^(\n" + //
+						"1/3)*x)^2))", //
 				1877);
 	}
 
@@ -8761,10 +8762,10 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[1/Sqrt[-2 + 4*x^2 + 3*x^4], x]", //
 				"(Sqrt[(2 - (2 - Sqrt[10])*x^2)/(2 - (2 + Sqrt[10])*x^2)]*Sqrt[-2 + (2 + Sqrt[10])*x^2]*EllipticF[ArcSin[(2^(3/4)*5^(1/4)*x)/Sqrt[-2 + (2 + Sqrt[10])*x^2]], (5 + Sqrt[10])/10])/(2*10^(1/4)*Sqrt[(2 - (2 + Sqrt[10])*x^2)^(-1)]*Sqrt[-2 + 4*x^2 + 3*x^4])", //
-				"(Sqrt(1/(2*Sqrt(10)))*Sqrt(-2+(2+Sqrt(10))*x^2)*Sqrt((2+(-2+Sqrt(10))*x^2)/(2-(2+Sqrt(\n" + //
-				"10))*x^2))*EllipticF(ArcSin(x/(Sqrt(2)*Sqrt(1/(4*Sqrt(10)))*Sqrt(-2+(2+Sqrt(10))*x^\n" + //
-				"2))),1/10*(5+Sqrt(10))))/(Sqrt(2)*Sqrt(-2+4*x^2+3*x^4)*Sqrt(1/(2-(2+Sqrt(10))*x^\n" + //
-				"2)))", //
+				"(Sqrt(-2+(2+Sqrt(10))*x^2)*Sqrt((2+(-2+Sqrt(10))*x^2)/(2-(2+Sqrt(10))*x^2))*EllipticF(ArcSin((Sqrt(\n"
+						+ //
+						"2)*10^(1/4)*x)/Sqrt(-2+(2+Sqrt(10))*x^2)),1/10*(5+Sqrt(10))))/(2*10^(1/4)*Sqrt(\n" + //
+						"-2+4*x^2+3*x^4)*Sqrt(1/(2-(2+Sqrt(10))*x^2)))", //
 				1098);
 	}
 
@@ -8773,9 +8774,10 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[1/Sqrt[-2 + 3*x^2 + 3*x^4], x]", //
 				"(Sqrt[(4 - (3 - Sqrt[33])*x^2)/(4 - (3 + Sqrt[33])*x^2)]*Sqrt[-4 + (3 + Sqrt[33])*x^2]*EllipticF[ArcSin[(Sqrt[2]*33^(1/4)*x)/Sqrt[-4 + (3 + Sqrt[33])*x^2]], (11 + Sqrt[33])/22])/(2*Sqrt[2]*33^(1/4)*Sqrt[(4 - (3 + Sqrt[33])*x^2)^(-1)]*Sqrt[-2 + 3*x^2 + 3*x^4])", //
-				"(Sqrt(-4+(3+Sqrt(33))*x^2)*Sqrt((4+(-3+Sqrt(33))*x^2)/(4-(3+Sqrt(33))*x^2))*EllipticF(ArcSin(x/(Sqrt(\n" + //
-				"1/(2*Sqrt(33)))*Sqrt(-4+(3+Sqrt(33))*x^2))),1/22*(11+Sqrt(33))))/(2*Sqrt(2)*33^(\n" + //
-				"1/4)*Sqrt(-2+3*x^2+3*x^4)*Sqrt(1/(4-(3+Sqrt(33))*x^2)))", //
+				"(Sqrt(-4+(3+Sqrt(33))*x^2)*Sqrt((4+(-3+Sqrt(33))*x^2)/(4-(3+Sqrt(33))*x^2))*EllipticF(ArcSin(x/(Sqrt(\n"
+						+ //
+						"1/(2*Sqrt(33)))*Sqrt(-4+(3+Sqrt(33))*x^2))),1/22*(11+Sqrt(33))))/(2*Sqrt(2)*33^(\n" + //
+						"1/4)*Sqrt(-2+3*x^2+3*x^4)*Sqrt(1/(4-(3+Sqrt(33))*x^2)))", //
 				1098);
 	}
 
@@ -8785,8 +8787,8 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 				"Integrate[1/Sqrt[-2 + 2*x^2 + 3*x^4], x]", //
 				"(Sqrt[(2 - (1 - Sqrt[7])*x^2)/(2 - (1 + Sqrt[7])*x^2)]*Sqrt[-2 + (1 + Sqrt[7])*x^2]*EllipticF[ArcSin[(Sqrt[2]*7^(1/4)*x)/Sqrt[-2 + (1 + Sqrt[7])*x^2]], (7 + Sqrt[7])/14])/(2*7^(1/4)*Sqrt[(2 - (1 + Sqrt[7])*x^2)^(-1)]*Sqrt[-2 + 2*x^2 + 3*x^4])", //
 				"(Sqrt(1/(2*Sqrt(7)))*Sqrt(-2+(1+Sqrt(7))*x^2)*Sqrt((2+(-1+Sqrt(7))*x^2)/(2-(1+Sqrt(\n" + //
-				"7))*x^2))*EllipticF(ArcSin(x/(Sqrt(2)*Sqrt(1/(4*Sqrt(7)))*Sqrt(-2+(1+Sqrt(7))*x^\n" + //
-				"2))),1/14*(7+Sqrt(7))))/(Sqrt(2)*Sqrt(-2+2*x^2+3*x^4)*Sqrt(1/(2-(1+Sqrt(7))*x^2)))", //
+						"7))*x^2))*EllipticF(ArcSin(x/(Sqrt(2)*Sqrt(1/(4*Sqrt(7)))*Sqrt(-2+(1+Sqrt(7))*x^\n" + //
+						"2))),1/14*(7+Sqrt(7))))/(Sqrt(2)*Sqrt(-2+2*x^2+3*x^4)*Sqrt(1/(2-(1+Sqrt(7))*x^2)))", //
 				1098);
 	}
 
@@ -8803,9 +8805,9 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[1/Sqrt[-2 + 3*x^4], x]", //
 				"(Sqrt[-2 + Sqrt[6]*x^2]*Sqrt[(2 + Sqrt[6]*x^2)/(2 - Sqrt[6]*x^2)]*EllipticF[ArcSin[(2^(3/4)*3^(1/4)*x)/Sqrt[-2 + Sqrt[6]*x^2]], 1/2])/(2*6^(1/4)*Sqrt[(2 - Sqrt[6]*x^2)^(-1)]*Sqrt[-2 + 3*x^4])", //
-				"(Sqrt(-2+Sqrt(6)*x^2)*Sqrt((2+Sqrt(6)*x^2)/(2-Sqrt(6)*x^2))*EllipticF(ArcSin(x/(Sqrt(\n"
-						+ "1/(2*Sqrt(6)))*Sqrt(-2+Sqrt(6)*x^2))),1/2))/(2*6^(1/4)*Sqrt(-2+3*x^4)*Sqrt(1/(2-Sqrt(\n"
-						+ "6)*x^2)))", //
+				"(Sqrt(-2+Sqrt(6)*x^2)*Sqrt((2+Sqrt(6)*x^2)/(2-Sqrt(6)*x^2))*EllipticF(ArcSin((Sqrt(\n" + //
+						"2)*6^(1/4)*x)/Sqrt(-2+Sqrt(6)*x^2)),1/2))/(2*6^(1/4)*Sqrt(-2+3*x^4)*Sqrt(1/(2-Sqrt(\n" + //
+						"6)*x^2)))", //
 				223);
 	}
 
@@ -8822,9 +8824,9 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[1/Sqrt[-2 - 2*x^2 + 3*x^4], x]", //
 				"(Sqrt[-2 - (1 - Sqrt[7])*x^2]*Sqrt[(2 + (1 + Sqrt[7])*x^2)/(2 + (1 - Sqrt[7])*x^2)]*EllipticF[ArcSin[(Sqrt[2]*7^(1/4)*x)/Sqrt[-2 - (1 - Sqrt[7])*x^2]], (7 - Sqrt[7])/14])/(2*7^(1/4)*Sqrt[(2 + (1 - Sqrt[7])*x^2)^(-1)]*Sqrt[-2 - 2*x^2 + 3*x^4])", //
-				"(Sqrt(1/(2*Sqrt(7)))*Sqrt(-2+(-1+Sqrt(7))*x^2)*Sqrt((2+(1+Sqrt(7))*x^2)/(2+(1-Sqrt(\n" +  //
-				"7))*x^2))*EllipticF(ArcSin(x/(Sqrt(2)*Sqrt(1/(4*Sqrt(7)))*Sqrt(-2+(-1+Sqrt(7))*x^\n" +  //
-				"2))),1/14*(7-Sqrt(7))))/(Sqrt(2)*Sqrt(-2-2*x^2+3*x^4)*Sqrt(1/(2+(1-Sqrt(7))*x^2)))", //
+				"(Sqrt(1/(2*Sqrt(7)))*Sqrt(-2+(-1+Sqrt(7))*x^2)*Sqrt((2+(1+Sqrt(7))*x^2)/(2+(1-Sqrt(\n" + //
+						"7))*x^2))*EllipticF(ArcSin(x/(Sqrt(2)*Sqrt(1/(4*Sqrt(7)))*Sqrt(-2+(-1+Sqrt(7))*x^\n" + //
+						"2))),1/14*(7-Sqrt(7))))/(Sqrt(2)*Sqrt(-2-2*x^2+3*x^4)*Sqrt(1/(2+(1-Sqrt(7))*x^2)))", //
 				1098);
 	}
 
@@ -8833,9 +8835,10 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[1/Sqrt[-2 - 3*x^2 + 3*x^4], x]", //
 				"(Sqrt[-4 - (3 - Sqrt[33])*x^2]*Sqrt[(4 + (3 + Sqrt[33])*x^2)/(4 + (3 - Sqrt[33])*x^2)]*EllipticF[ArcSin[(Sqrt[2]*33^(1/4)*x)/Sqrt[-4 - (3 - Sqrt[33])*x^2]], (11 - Sqrt[33])/22])/(2*Sqrt[2]*33^(1/4)*Sqrt[(4 + (3 - Sqrt[33])*x^2)^(-1)]*Sqrt[-2 - 3*x^2 + 3*x^4])", //
-				"(Sqrt(-4+(-3+Sqrt(33))*x^2)*Sqrt((4+(3+Sqrt(33))*x^2)/(4+(3-Sqrt(33))*x^2))*EllipticF(ArcSin(x/(Sqrt(\n" + // 
-				"1/(2*Sqrt(33)))*Sqrt(-4+(-3+Sqrt(33))*x^2))),1/22*(11-Sqrt(33))))/(2*Sqrt(2)*33^(\n" + // 
-				"1/4)*Sqrt(-2-3*x^2+3*x^4)*Sqrt(1/(4+(3-Sqrt(33))*x^2)))", //  
+				"(Sqrt(-4+(-3+Sqrt(33))*x^2)*Sqrt((4+(3+Sqrt(33))*x^2)/(4+(3-Sqrt(33))*x^2))*EllipticF(ArcSin(x/(Sqrt(\n"
+						+ //
+						"1/(2*Sqrt(33)))*Sqrt(-4+(-3+Sqrt(33))*x^2))),1/22*(11-Sqrt(33))))/(2*Sqrt(2)*33^(\n" + //
+						"1/4)*Sqrt(-2-3*x^2+3*x^4)*Sqrt(1/(4+(3-Sqrt(33))*x^2)))", //
 				1098);
 	}
 
@@ -8844,10 +8847,10 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[1/Sqrt[-2 - 4*x^2 + 3*x^4], x]", //
 				"(Sqrt[-2 - (2 - Sqrt[10])*x^2]*Sqrt[(2 + (2 + Sqrt[10])*x^2)/(2 + (2 - Sqrt[10])*x^2)]*EllipticF[ArcSin[(2^(3/4)*5^(1/4)*x)/Sqrt[-2 - (2 - Sqrt[10])*x^2]], (5 - Sqrt[10])/10])/(2*10^(1/4)*Sqrt[(2 + (2 - Sqrt[10])*x^2)^(-1)]*Sqrt[-2 - 4*x^2 + 3*x^4])", //
-				"(Sqrt(1/(2*Sqrt(10)))*Sqrt(-2+(-2+Sqrt(10))*x^2)*Sqrt((2+(2+Sqrt(10))*x^2)/(2+(2-Sqrt(\n" +  //
-				"10))*x^2))*EllipticF(ArcSin(x/(Sqrt(2)*Sqrt(1/(4*Sqrt(10)))*Sqrt(-2+(-2+Sqrt(10))*x^\n" +  //
-				"2))),1/10*(5-Sqrt(10))))/(Sqrt(2)*Sqrt(-2-4*x^2+3*x^4)*Sqrt(1/(2+(2-Sqrt(10))*x^\n" +  //
-				"2)))", //
+				"(Sqrt(-2+(-2+Sqrt(10))*x^2)*Sqrt((2+(2+Sqrt(10))*x^2)/(2+(2-Sqrt(10))*x^2))*EllipticF(ArcSin((Sqrt(\n"
+						+ //
+						"2)*10^(1/4)*x)/Sqrt(-2+(-2+Sqrt(10))*x^2)),1/10*(5-Sqrt(10))))/(2*10^(1/4)*Sqrt(\n" + //
+						"-2-4*x^2+3*x^4)*Sqrt(1/(2+(2-Sqrt(10))*x^2)))", //
 				1098);
 	}
 
@@ -8864,9 +8867,10 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[1/Sqrt[-3 + 7*x^2 + 2*x^4], x]", //
 				"(Sqrt[(6 - (7 - Sqrt[73])*x^2)/(6 - (7 + Sqrt[73])*x^2)]*Sqrt[-6 + (7 + Sqrt[73])*x^2]*EllipticF[ArcSin[(Sqrt[2]*73^(1/4)*x)/Sqrt[-6 + (7 + Sqrt[73])*x^2]], (73 + 7*Sqrt[73])/146])/(2*Sqrt[3]*73^(1/4)*Sqrt[(6 - (7 + Sqrt[73])*x^2)^(-1)]*Sqrt[-3 + 7*x^2 + 2*x^4])", //
-				"(Sqrt(-6+(7+Sqrt(73))*x^2)*Sqrt((6+(-7+Sqrt(73))*x^2)/(6-(7+Sqrt(73))*x^2))*EllipticF(ArcSin(x/(Sqrt(\n" +  //
-				"1/(2*Sqrt(73)))*Sqrt(-6+(7+Sqrt(73))*x^2))),1/146*(73+7*Sqrt(73))))/(2*Sqrt(3)*\n" +  //
-				"73^(1/4)*Sqrt(-3+7*x^2+2*x^4)*Sqrt(1/(6-(7+Sqrt(73))*x^2)))", //
+				"(Sqrt(-6+(7+Sqrt(73))*x^2)*Sqrt((6+(-7+Sqrt(73))*x^2)/(6-(7+Sqrt(73))*x^2))*EllipticF(ArcSin(x/(Sqrt(\n"
+						+ //
+						"1/(2*Sqrt(73)))*Sqrt(-6+(7+Sqrt(73))*x^2))),1/146*(73+7*Sqrt(73))))/(2*Sqrt(3)*\n" + //
+						"73^(1/4)*Sqrt(-3+7*x^2+2*x^4)*Sqrt(1/(6-(7+Sqrt(73))*x^2)))", //
 				1098);
 	}
 
@@ -8875,10 +8879,9 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[1/Sqrt[-3 + 6*x^2 + 2*x^4], x]", //
 				"(Sqrt[(3 - (3 - Sqrt[15])*x^2)/(3 - (3 + Sqrt[15])*x^2)]*Sqrt[-3 + (3 + Sqrt[15])*x^2]*EllipticF[ArcSin[(Sqrt[2]*15^(1/4)*x)/Sqrt[-3 + (3 + Sqrt[15])*x^2]], (5 + Sqrt[15])/10])/(Sqrt[2]*3^(3/4)*5^(1/4)*Sqrt[(3 - (3 + Sqrt[15])*x^2)^(-1)]*Sqrt[-3 + 6*x^2 + 2*x^4])", //
-				"(Sqrt(1/(2*Sqrt(15)))*Sqrt(-3+(3+Sqrt(15))*x^2)*Sqrt((3+(-3+Sqrt(15))*x^2)/(3-(3+Sqrt(\n" + //
-				"15))*x^2))*EllipticF(ArcSin(x/(Sqrt(2)*Sqrt(1/(4*Sqrt(15)))*Sqrt(-3+(3+Sqrt(15))*x^\n" + //
-				"2))),1/10*(5+Sqrt(15))))/(Sqrt(3)*Sqrt(-3+6*x^2+2*x^4)*Sqrt(1/(3-(3+Sqrt(15))*x^\n" + //
-				"2)))", //
+				"(Sqrt(Sqrt(3/5)/2)*Sqrt(-3+(3+Sqrt(15))*x^2)*Sqrt((3+(-3+Sqrt(15))*x^2)/(3-(3+Sqrt(\n" + //
+						"15))*x^2))*EllipticF(ArcSin(x/(Sqrt(1/(2*Sqrt(15)))*Sqrt(-3+(3+Sqrt(15))*x^2))),\n" + //
+						"1/10*(5+Sqrt(15))))/(3*Sqrt(-3+6*x^2+2*x^4)*Sqrt(1/(3-(3+Sqrt(15))*x^2)))", //
 				1098);
 	}
 
@@ -8896,10 +8899,10 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 				"Integrate[1/Sqrt[-3 + 4*x^2 + 2*x^4], x]", //
 				"(Sqrt[(3 - (2 - Sqrt[10])*x^2)/(3 - (2 + Sqrt[10])*x^2)]*Sqrt[-3 + (2 + Sqrt[10])*x^2]*EllipticF[ArcSin[(2^(3/4)*5^(1/4)*x)/Sqrt[-3 + (2 + Sqrt[10])*x^2]], (5 + Sqrt[10])/10])/(2^(3/4)*Sqrt[3]*5^(1/4)*Sqrt[(3 - (2 + Sqrt[10])*x^2)^(-1)]*Sqrt[-3 + 4*x^2 + 2*x^4])", //
 				// test with FullSimplify
-				"(Sqrt(1/(2*Sqrt(10)))*Sqrt(-3+(2+Sqrt(10))*x^2)*Sqrt((3+(-2+Sqrt(10))*x^2)/(3-(2+Sqrt(\n" + //
-				"10))*x^2))*EllipticF(ArcSin(x/(Sqrt(2)*Sqrt(1/(4*Sqrt(10)))*Sqrt(-3+(2+Sqrt(10))*x^\n" + //
-				"2))),1/10*(5+Sqrt(10))))/(Sqrt(3)*Sqrt(-3+4*x^2+2*x^4)*Sqrt(1/(3-(2+Sqrt(10))*x^\n" + //
-				"2)))", //
+				"(Sqrt(-3+(2+Sqrt(10))*x^2)*Sqrt((3+(-2+Sqrt(10))*x^2)/(3-(2+Sqrt(10))*x^2))*EllipticF(ArcSin((Sqrt(\n"
+						+ //
+						"2)*10^(1/4)*x)/Sqrt(-3+(2+Sqrt(10))*x^2)),1/10*(5+Sqrt(10))))/(Sqrt(6)*10^(1/4)*Sqrt(\n" + //
+						"-3+4*x^2+2*x^4)*Sqrt(1/(3-(2+Sqrt(10))*x^2)))", //
 				1098);
 	}
 
@@ -8908,9 +8911,10 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[1/Sqrt[-3 + 3*x^2 + 2*x^4], x]", //
 				"(Sqrt[(6 - (3 - Sqrt[33])*x^2)/(6 - (3 + Sqrt[33])*x^2)]*Sqrt[-6 + (3 + Sqrt[33])*x^2]*EllipticF[ArcSin[(Sqrt[2]*33^(1/4)*x)/Sqrt[-6 + (3 + Sqrt[33])*x^2]], (11 + Sqrt[33])/22])/(2*3^(3/4)*11^(1/4)*Sqrt[(6 - (3 + Sqrt[33])*x^2)^(-1)]*Sqrt[-3 + 3*x^2 + 2*x^4])", //
-				"(Sqrt(-6+(3+Sqrt(33))*x^2)*Sqrt((6+(-3+Sqrt(33))*x^2)/(6-(3+Sqrt(33))*x^2))*EllipticF(ArcSin(x/(Sqrt(\n" +  //
-				"1/(2*Sqrt(33)))*Sqrt(-6+(3+Sqrt(33))*x^2))),1/22*(11+Sqrt(33))))/(2*Sqrt(3)*33^(\n" +  //
-				"1/4)*Sqrt(-3+3*x^2+2*x^4)*Sqrt(1/(6-(3+Sqrt(33))*x^2)))", //
+				"(Sqrt(-6+(3+Sqrt(33))*x^2)*Sqrt((6+(-3+Sqrt(33))*x^2)/(6-(3+Sqrt(33))*x^2))*EllipticF(ArcSin(x/(Sqrt(\n"
+						+ //
+						"1/(2*Sqrt(33)))*Sqrt(-6+(3+Sqrt(33))*x^2))),1/22*(11+Sqrt(33))))/(2*Sqrt(3)*33^(\n" + //
+						"1/4)*Sqrt(-3+3*x^2+2*x^4)*Sqrt(1/(6-(3+Sqrt(33))*x^2)))", //
 				1098);
 	}
 
@@ -8919,9 +8923,9 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[1/Sqrt[-3 + 2*x^2 + 2*x^4], x]", //
 				"(Sqrt[(3 - (1 - Sqrt[7])*x^2)/(3 - (1 + Sqrt[7])*x^2)]*Sqrt[-3 + (1 + Sqrt[7])*x^2]*EllipticF[ArcSin[(Sqrt[2]*7^(1/4)*x)/Sqrt[-3 + (1 + Sqrt[7])*x^2]], (7 + Sqrt[7])/14])/(Sqrt[6]*7^(1/4)*Sqrt[(3 - (1 + Sqrt[7])*x^2)^(-1)]*Sqrt[-3 + 2*x^2 + 2*x^4])", //
-				"(Sqrt(1/(2*Sqrt(7)))*Sqrt(-3+(1+Sqrt(7))*x^2)*Sqrt((3+(-1+Sqrt(7))*x^2)/(3-(1+Sqrt(\n" +  //
-				"7))*x^2))*EllipticF(ArcSin(x/(Sqrt(2)*Sqrt(1/(4*Sqrt(7)))*Sqrt(-3+(1+Sqrt(7))*x^\n" +  //
-				"2))),1/14*(7+Sqrt(7))))/(Sqrt(3)*Sqrt(-3+2*x^2+2*x^4)*Sqrt(1/(3-(1+Sqrt(7))*x^2)))", //
+				"(Sqrt(1/(2*Sqrt(7)))*Sqrt(-3+(1+Sqrt(7))*x^2)*Sqrt((3+(-1+Sqrt(7))*x^2)/(3-(1+Sqrt(\n" + //
+						"7))*x^2))*EllipticF(ArcSin(x/(Sqrt(2)*Sqrt(1/(4*Sqrt(7)))*Sqrt(-3+(1+Sqrt(7))*x^\n" + //
+						"2))),1/14*(7+Sqrt(7))))/(Sqrt(3)*Sqrt(-3+2*x^2+2*x^4)*Sqrt(1/(3-(1+Sqrt(7))*x^2)))", //
 				1098);
 	}
 
@@ -8938,9 +8942,9 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[1/Sqrt[-3 + 2*x^4], x]", //
 				"(Sqrt[-3 + Sqrt[6]*x^2]*Sqrt[(3 + Sqrt[6]*x^2)/(3 - Sqrt[6]*x^2)]*EllipticF[ArcSin[(2^(3/4)*3^(1/4)*x)/Sqrt[-3 + Sqrt[6]*x^2]], 1/2])/(6^(3/4)*Sqrt[(3 - Sqrt[6]*x^2)^(-1)]*Sqrt[-3 + 2*x^4])", //
-				"(Sqrt(-3+Sqrt(6)*x^2)*Sqrt((3+Sqrt(6)*x^2)/(3-Sqrt(6)*x^2))*EllipticF(ArcSin(x/(Sqrt(\n"
-						+ "1/(2*Sqrt(6)))*Sqrt(-3+Sqrt(6)*x^2))),1/2))/(6^(3/4)*Sqrt(-3+2*x^4)*Sqrt(1/(3-Sqrt(\n"
-						+ "6)*x^2)))", //
+				"(Sqrt(-3+Sqrt(6)*x^2)*Sqrt((3+Sqrt(6)*x^2)/(3-Sqrt(6)*x^2))*EllipticF(ArcSin((Sqrt(\n" + //
+						"2)*6^(1/4)*x)/Sqrt(-3+Sqrt(6)*x^2)),1/2))/(6^(3/4)*Sqrt(-3+2*x^4)*Sqrt(1/(3-Sqrt(\n" + //
+						"6)*x^2)))", //
 				223);
 	}
 
@@ -8957,9 +8961,9 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[1/Sqrt[-3 - 2*x^2 + 2*x^4], x]", //
 				"(Sqrt[-3 - (1 - Sqrt[7])*x^2]*Sqrt[(3 + (1 + Sqrt[7])*x^2)/(3 + (1 - Sqrt[7])*x^2)]*EllipticF[ArcSin[(Sqrt[2]*7^(1/4)*x)/Sqrt[-3 - (1 - Sqrt[7])*x^2]], (7 - Sqrt[7])/14])/(Sqrt[6]*7^(1/4)*Sqrt[(3 + (1 - Sqrt[7])*x^2)^(-1)]*Sqrt[-3 - 2*x^2 + 2*x^4])", //
-				"(Sqrt(1/(2*Sqrt(7)))*Sqrt(-3+(-1+Sqrt(7))*x^2)*Sqrt((3+(1+Sqrt(7))*x^2)/(3+(1-Sqrt(\n" +  //
-				"7))*x^2))*EllipticF(ArcSin(x/(Sqrt(2)*Sqrt(1/(4*Sqrt(7)))*Sqrt(-3+(-1+Sqrt(7))*x^\n" +  //
-				"2))),1/14*(7-Sqrt(7))))/(Sqrt(3)*Sqrt(-3-2*x^2+2*x^4)*Sqrt(1/(3+(1-Sqrt(7))*x^2)))", //
+				"(Sqrt(1/(2*Sqrt(7)))*Sqrt(-3+(-1+Sqrt(7))*x^2)*Sqrt((3+(1+Sqrt(7))*x^2)/(3+(1-Sqrt(\n" + //
+						"7))*x^2))*EllipticF(ArcSin(x/(Sqrt(2)*Sqrt(1/(4*Sqrt(7)))*Sqrt(-3+(-1+Sqrt(7))*x^\n" + //
+						"2))),1/14*(7-Sqrt(7))))/(Sqrt(3)*Sqrt(-3-2*x^2+2*x^4)*Sqrt(1/(3+(1-Sqrt(7))*x^2)))", //
 				1098);
 	}
 
@@ -8968,9 +8972,10 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[1/Sqrt[-3 - 3*x^2 + 2*x^4], x]", //
 				"(Sqrt[-6 - (3 - Sqrt[33])*x^2]*Sqrt[(6 + (3 + Sqrt[33])*x^2)/(6 + (3 - Sqrt[33])*x^2)]*EllipticF[ArcSin[(Sqrt[2]*33^(1/4)*x)/Sqrt[-6 - (3 - Sqrt[33])*x^2]], (11 - Sqrt[33])/22])/(2*3^(3/4)*11^(1/4)*Sqrt[(6 + (3 - Sqrt[33])*x^2)^(-1)]*Sqrt[-3 - 3*x^2 + 2*x^4])", //
-				"(Sqrt(-6+(-3+Sqrt(33))*x^2)*Sqrt((6+(3+Sqrt(33))*x^2)/(6+(3-Sqrt(33))*x^2))*EllipticF(ArcSin(x/(Sqrt(\n" + //
-				"1/(2*Sqrt(33)))*Sqrt(-6+(-3+Sqrt(33))*x^2))),1/22*(11-Sqrt(33))))/(2*Sqrt(3)*33^(\n" + //
-				"1/4)*Sqrt(-3-3*x^2+2*x^4)*Sqrt(1/(6+(3-Sqrt(33))*x^2)))", //
+				"(Sqrt(-6+(-3+Sqrt(33))*x^2)*Sqrt((6+(3+Sqrt(33))*x^2)/(6+(3-Sqrt(33))*x^2))*EllipticF(ArcSin(x/(Sqrt(\n"
+						+ //
+						"1/(2*Sqrt(33)))*Sqrt(-6+(-3+Sqrt(33))*x^2))),1/22*(11-Sqrt(33))))/(2*Sqrt(3)*33^(\n" + //
+						"1/4)*Sqrt(-3-3*x^2+2*x^4)*Sqrt(1/(6+(3-Sqrt(33))*x^2)))", //
 				1098);
 	}
 
@@ -8979,10 +8984,10 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[1/Sqrt[-3 - 4*x^2 + 2*x^4], x]", //
 				"(Sqrt[-3 - (2 - Sqrt[10])*x^2]*Sqrt[(3 + (2 + Sqrt[10])*x^2)/(3 + (2 - Sqrt[10])*x^2)]*EllipticF[ArcSin[(2^(3/4)*5^(1/4)*x)/Sqrt[-3 - (2 - Sqrt[10])*x^2]], (5 - Sqrt[10])/10])/(2^(3/4)*Sqrt[3]*5^(1/4)*Sqrt[(3 + (2 - Sqrt[10])*x^2)^(-1)]*Sqrt[-3 - 4*x^2 + 2*x^4])", //
-				"(Sqrt(1/(2*Sqrt(10)))*Sqrt(-3+(-2+Sqrt(10))*x^2)*Sqrt((3+(2+Sqrt(10))*x^2)/(3+(2-Sqrt(\n" +  //
-				"10))*x^2))*EllipticF(ArcSin(x/(Sqrt(2)*Sqrt(1/(4*Sqrt(10)))*Sqrt(-3+(-2+Sqrt(10))*x^\n" +  //
-				"2))),1/10*(5-Sqrt(10))))/(Sqrt(3)*Sqrt(-3-4*x^2+2*x^4)*Sqrt(1/(3+(2-Sqrt(10))*x^\n" +  //
-				"2)))", //
+				"(Sqrt(-3+(-2+Sqrt(10))*x^2)*Sqrt((3+(2+Sqrt(10))*x^2)/(3+(2-Sqrt(10))*x^2))*EllipticF(ArcSin((Sqrt(\n"
+						+ //
+						"2)*10^(1/4)*x)/Sqrt(-3+(-2+Sqrt(10))*x^2)),1/10*(5-Sqrt(10))))/(Sqrt(6)*10^(1/4)*Sqrt(\n" + //
+						"-3-4*x^2+2*x^4)*Sqrt(1/(3+(2-Sqrt(10))*x^2)))", //
 				1098);
 	}
 
@@ -9652,11 +9657,11 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[(1 + Sqrt[c/a]*x^2)/((d + e*x^2)*Sqrt[a + b*x^2 + c*x^4]), x]", //
 				"-((Sqrt[c/a]*d - e)*ArcTan[(Sqrt[c*d^2 - b*d*e + a*e^2]*x)/(Sqrt[d]*Sqrt[e]*Sqrt[a + b*x^2 + c*x^4])])/(2*Sqrt[d]*Sqrt[e]*Sqrt[c*d^2 - b*d*e + a*e^2]) + ((Sqrt[c/a]*d + e)*(1 + Sqrt[c/a]*x^2)*Sqrt[(a + b*x^2 + c*x^4)/(a*(1 + Sqrt[c/a]*x^2)^2)]*EllipticPi[-(Sqrt[c/a]*d - e)^2/(4*Sqrt[c/a]*d*e), 2*ArcTan[(c/a)^(1/4)*x], (2 - (b*Sqrt[c/a])/c)/4])/(4*(c/a)^(1/4)*d*e*Sqrt[a + b*x^2 + c*x^4])", //
-				"((-Sqrt(c/a)*d+e)*ArcTan((Sqrt(c*d^2-b*d*e+a*e^2)*x)/(Sqrt(d)*Sqrt(e)*Sqrt(a+b*x^\n" + 
-				"2+c*x^4))))/(2*Sqrt(d)*Sqrt(e)*Sqrt(c*d^2-b*d*e+a*e^2))+((Sqrt(c/a)*d+e)*(1+Sqrt(c/a)*x^\n" + 
-				"2)*Sqrt((a+b*x^2+c*x^4)/(a*(1+Sqrt(c/a)*x^2)^2))*EllipticPi(1/4*(2+(-c*d)/(a*Sqrt(c/a)*e)-e/(Sqrt(c/a)*d)),\n" + 
-				"2*ArcTan((c/a)^(1/4)*x),1/4*(2-b/(a*Sqrt(c/a)))))/(4*(c/a)^(1/4)*d*e*Sqrt(a+b*x^\n" + 
-				"2+c*x^4))",
+				"((-Sqrt(c/a)*d+e)*ArcTan((Sqrt(c*d^2-b*d*e+a*e^2)*x)/(Sqrt(d)*Sqrt(e)*Sqrt(a+b*x^\n"
+						+ "2+c*x^4))))/(2*Sqrt(d)*Sqrt(e)*Sqrt(c*d^2-b*d*e+a*e^2))+((Sqrt(c/a)*d+e)*(1+Sqrt(c/a)*x^\n"
+						+ "2)*Sqrt((a+b*x^2+c*x^4)/(a*(1+Sqrt(c/a)*x^2)^2))*EllipticPi(1/4*(2+(-c*d)/(a*Sqrt(c/a)*e)-e/(Sqrt(c/a)*d)),\n"
+						+ "2*ArcTan((c/a)^(1/4)*x),1/4*(2-b/(a*Sqrt(c/a)))))/(4*(c/a)^(1/4)*d*e*Sqrt(a+b*x^\n"
+						+ "2+c*x^4))",
 				1706);
 	}
 

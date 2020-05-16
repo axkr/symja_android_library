@@ -24,7 +24,7 @@ public class MathMLPresentationTestCase extends TestCase {
 	/**
 	 * Test mathml function
 	 */
-	public void testMathMLPresentation() {
+	public void testMathMLPresentation() {		
 		check("TableForm({a,b,c,d})", //
 				"<mtable columnalign=\"center\"><mtr><mtd columnalign=\"center\"><mi>a</mi></mtd></mtr><mtr><mtd columnalign=\"center\"><mi>b</mi></mtd></mtr><mtr><mtd columnalign=\"center\"><mi>c</mi></mtd></mtr><mtr><mtd columnalign=\"center\"><mi>d</mi></mtd></mtr></mtable>");
 
@@ -69,7 +69,7 @@ public class MathMLPresentationTestCase extends TestCase {
 				"<mi>##2</mi>");
 		Apcomplex c = new Apcomplex("(-0.5,-4.0)");
 		check(F.complexNum(c), //
-				"<mrow><mrow><mn>-5</mn><mo>&#0183;</mo><msup><mn>10</mn><mn>-1</mn></msup></mrow><mo>-</mo><mn>4</mn><mo>&#0183;</mo><mi>&#x2148;</mi></mrow>");
+				"<mrow><mn>-0.5</mn><mo>-</mo><mn>4</mn><mo>&#0183;</mo><mi>&#x2148;</mi></mrow>");
 		check(F.complexNum(-0.5, -4.0), //
 				"<mrow><mn>-0.5</mn><mo>-</mo><mn>4.0</mn><mo>&#0183;</mo><mi>&#x2148;</mi></mrow>");
 		check(F.pattern(F.x), //
@@ -277,12 +277,18 @@ public class MathMLPresentationTestCase extends TestCase {
 				"<mn>2.71828182845904523536028747135</mn>");
 	}
 
+	public void testOrAnd() {
+		IExpr expr = EvalEngine.get().evaluate("a&&c||a&&d||b&&c||b&&d");
+		check(expr, //
+				"<mrow><mrow><mo>(</mo><mrow><mi>a</mi><mo>&#x2227;</mo><mi>c</mi></mrow><mo>)</mo></mrow><mo>&#x2228;</mo><mrow><mo>(</mo><mrow><mi>a</mi><mo>&#x2227;</mo><mi>d</mi></mrow><mo>)</mo></mrow><mo>&#x2228;</mo><mrow><mo>(</mo><mrow><mi>b</mi><mo>&#x2227;</mo><mi>c</mi></mrow><mo>)</mo></mrow><mo>&#x2228;</mo><mrow><mo>(</mo><mrow><mi>b</mi><mo>&#x2227;</mo><mi>d</mi></mrow><mo>)</mo></mrow></mrow>");
+	}
+	
 	public void testNot() {
 		IExpr expr = EvalEngine.get().evaluate("!f(x)");
 		check(expr, //
 				"<mrow><mo>&#x00AC;</mo><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow></mrow>");
 	}
-
+	
 	public void testRational() {
 		IExpr expr = EvalEngine.get().parse("Rational(a, b)");
 		check(expr, //
@@ -400,7 +406,7 @@ public class MathMLPresentationTestCase extends TestCase {
 	public void testInterval001() {
 		IExpr expr = EvalEngine.get().evaluate("Interval({-3.21625*10^-16,5.66554*10^-16})");
 		check(expr, //
-				"<mrow><mi>Interval</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mo>{</mo><mn>-3.2162499999999998E-16</mn><mo>,</mo><mn>5.66554E-16</mn><mo>}</mo></mrow><mo>)</mo></mrow></mrow>");
+				"<mrow><mi>Interval</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mo>{</mo><mn>-3.21625*10^-16</mn><mo>,</mo><mn>5.66554*10^-16</mn><mo>}</mo></mrow><mo>)</mo></mrow></mrow>");
 	}
 
 	public void testInterval002() {

@@ -35,7 +35,7 @@ public class Java8TestCase extends AbstractTestCase {
 
 	public void testStream001() {
 		IAST ast = List(C10, a, b, c, d, e);
-		IASTAppendable result = F.ListAlloc(2);
+		IASTAppendable result = F.ListAlloc(ast.argSize() + 7);
 		// Consumer<IExpr> action = (IExpr x) -> System.out.println(x);
 		ast.stream().forEach(x -> result.append(x));
 		ast.stream(0, 7).forEach(x -> result.append(x));

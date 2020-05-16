@@ -21,6 +21,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
@@ -53,7 +54,7 @@ public class ConvertRubiUtilityFunctions {
 			}
 			f.close();
 			String inputString = buff.toString();
-			Parser p = new Parser(false, true);
+			Parser p = new Parser(RubiASTNodeFactory.RUBI_STYLE_FACTORY, false, true);
 			return p.parsePackage(inputString);
 			// return p.parsePackage(inputString);
 
@@ -139,7 +140,7 @@ public class ConvertRubiUtilityFunctions {
 
 	public static void main(String[] args) {
 		Config.SERVER_MODE = false;
-		Config.PARSER_USE_LOWERCASE_SYMBOLS = false;
+		FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
 		Config.RUBI_CONVERT_SYMBOLS = true;
 		EvalEngine engine = new EvalEngine(false);
 		engine.getContextPath().add(org.matheclipse.core.expression.Context.RUBI);

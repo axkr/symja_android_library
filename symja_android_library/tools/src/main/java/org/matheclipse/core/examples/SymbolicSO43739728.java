@@ -35,8 +35,6 @@ public class SymbolicSO43739728 {
 
 			// print result in decimal format
 			final StringWriter buf = new StringWriter();
-			// DecimalFormatSymbols usSymbols = new DecimalFormatSymbols(Locale.US);
-			// DecimalFormat decimalFormat = new DecimalFormat("0.0####", usSymbols);
 			OutputFormFactory.get(true, false, 5, 7).convert(buf, result);
 			// I*1.41421
 			System.out.println(buf.toString());

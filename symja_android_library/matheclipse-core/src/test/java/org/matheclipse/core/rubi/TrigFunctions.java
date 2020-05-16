@@ -3981,6 +3981,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
 		check(//
 				"Integrate[(Cos[x] + I*Sin[x])/(Cos[x] - I*Sin[x]), x]", //
 				"(-I/2)/(Cos[x] - I*Sin[x])^2", //
+				"-I*1/2*(Cos(x)+I*Sin(x))^2",//
 				4385);
 	}
 

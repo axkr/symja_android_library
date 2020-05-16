@@ -5,12 +5,12 @@ import static org.matheclipse.core.expression.F.CInfinity;
 import static org.matheclipse.core.expression.F.Sinc;
 import static org.matheclipse.core.expression.F.Times;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.EvalUtilities;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.patternmatching.PatternMatcher;
+import org.matheclipse.parser.client.FEConfig;
 
 /**
  * 
@@ -22,7 +22,7 @@ public class JavaFormTestCase extends AbstractTestCase {
 
 	public void testJavaForm001() {
 		// don't distinguish between lower- and uppercase identifiers
-		Config.PARSER_USE_LOWERCASE_SYMBOLS = true;
+		FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
 		EvalUtilities util = new EvalUtilities(false, true);
 
 		IAST function = Sinc(Times(CI, CInfinity));
@@ -36,7 +36,7 @@ public class JavaFormTestCase extends AbstractTestCase {
 	
 	public void testJavaForm002() {
 		// don't distinguish between lower- and uppercase identifiers
-		Config.PARSER_USE_LOWERCASE_SYMBOLS = true;
+		FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
 		EvalUtilities util = new EvalUtilities(false, true);
 
 		IAST function = Sinc(Times(CI, CInfinity));

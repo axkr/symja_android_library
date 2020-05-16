@@ -53,19 +53,19 @@ public class HomogenizationTest extends AbstractTestCase {
 	public void testHomogenization() {
 		EvalEngine engine = EvalEngine.get();
 
-		engine.resetModuleCounter();
+		engine.resetModuleCounter4JUnit();
 		check("Homogenization(Sin(x))", //
 				"{hg$1,{hg$1->Sin(x)}}");
 
-		engine.resetModuleCounter();
+		engine.resetModuleCounter4JUnit();
 		check("Homogenization(x^2+Sin(x)+Sin(x)^3)", //
 				"{hg$1^2+hg$2+hg$2^3,{hg$1->x,hg$2->Sin(x)}}");
 
-		engine.resetModuleCounter();
+		engine.resetModuleCounter4JUnit();
 		check("Homogenization((1+x^2)^(-1))", //
 				"{1/(1+hg$1^2),{hg$1->x}}");
 
-		engine.resetModuleCounter();
+		engine.resetModuleCounter4JUnit();
 		check("Homogenization(f(x)^(-1))", //
 				"{1/hg$1,{hg$1->f(x)}}");
 	}

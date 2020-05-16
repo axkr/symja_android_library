@@ -47,6 +47,11 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
 
 	// {5778, 3382}
 	public void test0004() {
+		
+		check(//
+				"Integrate[Sinh[x]^2/x,x]", //
+				"", //
+				5778, 3382);
 		check(//
 				"Integrate[x/ArcSinh[a*x]^2, x]", //
 				"-((x*Sqrt[1 + a^2*x^2])/(a*ArcSinh[a*x])) + CoshIntegral[2*ArcSinh[a*x]]/a^2", //

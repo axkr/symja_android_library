@@ -11,7 +11,7 @@ import junit.framework.TestCase;
 public class DoubleToMMATest extends TestCase {
 
 	public DoubleToMMATest() {
-		super("DoubleToString");
+		super("DoubleToMMATest");
 	}
 
 	public void testTen() {

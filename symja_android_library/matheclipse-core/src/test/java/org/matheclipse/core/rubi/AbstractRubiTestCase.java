@@ -15,6 +15,8 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.parser.ExprParser;
+import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
@@ -38,7 +40,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
 		// System.out.println(">>>" + name);
 		this.isRelaxedSyntax = isRelaxedSyntax;
 		Config.SERVER_MODE = false;
-		Config.PARSER_USE_LOWERCASE_SYMBOLS = isRelaxedSyntax;
+		FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = isRelaxedSyntax;
 	}
 
 	private String printResult(IExpr result, String expectedResult, String manuallyCheckedResult) throws IOException {
@@ -57,8 +59,9 @@ public abstract class AbstractRubiTestCase extends TestCase {
 						// the expressions are textual equal
 						return expectedResult;
 					}
-
-					IExpr expected = fEvaluator.eval(manuallyCheckedResult);
+					ExprParser parser =new ExprParser(fEvaluator.getEvalEngine(), true);
+					IExpr expr2=parser.parse(manuallyCheckedResult);
+					IExpr expected = fEvaluator.eval(expr2);
 					if (result.equals(expected)) {
 						// the expressions are structurally equal
 						return expectedResult;
@@ -136,7 +139,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
 				System.err.flush();
 				return "";
 			}
-		} catch (final SyntaxError se) {
+		} catch (final SyntaxError se) { 
 			String msg = se.getMessage();
 			System.err.println(msg);
 			System.err.println();

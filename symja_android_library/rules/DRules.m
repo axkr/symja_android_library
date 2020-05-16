@@ -51,6 +51,11 @@
   D(SinIntegral(f_),x_?NotListQ):=D(f,x)*Sinc(f),
   D(SinhIntegral(f_),x_?NotListQ):=D(f,x)*Sinh(f)/f,
   
+  D(Hypergeometric2F1(a_, b_, c_, f_), x_?NotListQ) := (a*b*Hypergeometric2F1(1 + a, 1 + b, 1 + c, f)*D(f,x))/c
+    /; FreeQ({a,b,c},x),
+  D(Hypergeometric2F1(a_, b_, c_, f_), {x_,n_}) := (Hypergeometric2F1(a + n, b + n, c + n, x)*Pochhammer(a, n)*Pochhammer(b, n))/Pochhammer(c, n)
+    /; FreeQ({a,b,c,n},x) && Negative(n)=!=True,
+    
   D(InverseFunction(f_)[x_],x_) := 1/Derivative(1)[f][InverseFunction(f)[x]] 
     /; FreeQ(f,x),
   
