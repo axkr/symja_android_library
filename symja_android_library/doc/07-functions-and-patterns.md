@@ -1,5 +1,8 @@
 ## Functions and patterns
 
+Symja implements a [Term rewriting system](https://en.wikipedia.org/wiki/Rewriting#Term_rewriting_systems). Here we describe how the rewriting rules can be defined with function and pattern notation.
+
+
 Functions can be defined in the following way:
 
 ```
