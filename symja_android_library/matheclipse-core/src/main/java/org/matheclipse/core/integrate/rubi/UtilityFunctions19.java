@@ -12,9 +12,9 @@ import org.matheclipse.core.interfaces.IAST;
  */
 public class UtilityFunctions19 { 
   public static IAST RULES = List( 
-ISetDelayed(319,ExpandIntegrand(Times(u_,Power(Plus(a_DEFAULT,Times(b_DEFAULT,Log(Times(c_DEFAULT,Power(Times(d_DEFAULT,Power(Plus(e_DEFAULT,Times(f_DEFAULT,x_)),p_DEFAULT)),q_DEFAULT))))),n_)),x_Symbol),
+ISetDelayed(319,ExpandIntegrand(Times(Power(Plus(a_DEFAULT,Times(Log(Times(c_DEFAULT,Power(Times(d_DEFAULT,Power(Plus(e_DEFAULT,Times(f_DEFAULT,x_)),p_DEFAULT)),q_DEFAULT))),b_DEFAULT)),n_),u_),x_Symbol),
     Condition(ExpandLinearProduct(Power(Plus(a,Times(b,Log(Times(c,Power(Times(d,Power(Plus(e,Times(f,x)),p)),q))))),n),u,e,f,x),And(FreeQ(List(a,b,c,d,e,f,n,p,q),x),PolynomialQ(u,x)))),
-ISetDelayed(320,ExpandIntegrand(Times(u_,Power(Plus(a_DEFAULT,Times(b_DEFAULT,$(F_,Plus(c_DEFAULT,Times(d_DEFAULT,x_))))),n_)),x_Symbol),
+ISetDelayed(320,ExpandIntegrand(Times(Power(Plus(a_DEFAULT,Times($(F_,Plus(c_DEFAULT,Times(d_DEFAULT,x_))),b_DEFAULT)),n_),u_),x_Symbol),
     Condition(ExpandLinearProduct(Power(Plus(a,Times(b,F(Plus(c,Times(d,x))))),n),u,c,d,x),And(FreeQ(List(a,b,c,d,n),x),PolynomialQ(u,x),MemberQ(List(ArcSin,ArcCos,ArcSinh,ArcCosh),FSymbol)))),
 ISetDelayed(321,ExpandIntegrand(Times(u_DEFAULT,Power(Plus(Times(a_DEFAULT,Power(x_,n_)),Times(b_DEFAULT,Sqrt(Plus(c_,Times(d_DEFAULT,Power(x_,j_)))))),CN1)),x_Symbol),
     Condition(ExpandIntegrand(Times(u,Subtract(Times(a,Power(x,n)),Times(b,Sqrt(Plus(c,Times(d,Power(x,Times(C2,n))))))),Power(Plus(Times(CN1,Sqr(b),c),Times(Subtract(Sqr(a),Times(Sqr(b),d)),Power(x,Times(C2,n)))),CN1)),x),And(FreeQ(List(a,b,c,d,n),x),EqQ(j,Times(C2,n))))),
