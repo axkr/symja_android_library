@@ -22,7 +22,10 @@ D(f, {{x1, x2, ...}})
 > gives the vector derivative of `f` with respect to `x1`, `x2`, etc.
 		
 **Note**: the upper case identifier `D` is different from the lower case identifier `d`.
- 
+  
+See:
+* [Wikipedia - Differentiation rules](https://en.wikipedia.org/wiki/Differentiation_rules)
+
 ### Examples
 First-order derivative of a polynomial:
 
@@ -118,4 +121,4 @@ f''(2*x)
 ```
 
 ### Related terms 
-[D](D.md),[Integrate](Integrate.md), [NIntegrate](NIntegrate.md) 
+[Diff](Diff.md), [DSolve](DSolve.md), [Integrate](Integrate.md), [Limit](Limit.md), [ND](ND.md), [NIntegrate](NIntegrate.md) 

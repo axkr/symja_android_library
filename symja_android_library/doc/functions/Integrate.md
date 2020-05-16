@@ -28,4 +28,5 @@ x^3/3
 ```
 
 ### Related terms 
-[D](D.md),[Int](Int.md), [NIntegrate](NIntegrate.md), [ND](ND.md)
+[D](D.md),[DSolve](DSolve.md), [Int](Int.md), [Limit](Limit.md), [ND](ND.md), [NIntegrate](NIntegrate.md) 
+ 

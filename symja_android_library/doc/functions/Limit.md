@@ -35,3 +35,7 @@ Indeterminate
 >> Limit(x^(-2/3),x->0 , Direction->-1)
 Infinity
 ```
+
+
+### Related terms 
+[D](D.md), [DSolve](DSolve.md), [Integrate](Integrate.md), [ND](ND.md), [NIntegrate](NIntegrate.md) 

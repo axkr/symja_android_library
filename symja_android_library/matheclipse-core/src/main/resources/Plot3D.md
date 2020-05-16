@@ -5,8 +5,15 @@ Plot3D(function, {x, xMin, xMax}, {y,yMin,yMax})
 ```
 
 > generate a JavaScript control for the expression `function` in the `x` range `{x, xMin, xMax}` and `{yMin, yMax}` in the `y` range.
-	 
-**Note**: This feature is available in the console app and in the web interface.
+
+```
+Plot3D(function, {x, xMin, xMax}, {y,yMin,yMax}, ColorFunction->"color-map")  
+```
+
+> set the `color map` as: `CherryTones, Rainbow, RustTones, SunsetColors, TemperatureMap, ThermometerColors, WatermelonColors`
+
+					
+**Note**: This function is available in the console app and in the web interface.
 
 ### Examples
 
