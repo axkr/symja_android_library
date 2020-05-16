@@ -66,16 +66,16 @@ abstract public class AQPair {
 	 * This method is only called in the final test of null vectors found by the smooth solver;
 	 * but then it is needed for a whole bunch of AQPairs.
 	 */
-	abstract public SortedMultiset<Integer> getAllQFactors();
+	abstract public SortedMultiset<Long> getAllQFactors();
 
 	/**
 	 * Building block to implement the method above.
 	 * @return SortedMultiset containing all small factors of Q
 	 */
-	protected SortedMultiset<Integer> getSmallQFactors() {
-		SortedMultiset<Integer> allFactors = new SortedMultiset_BottomUp<Integer>();
+	protected SortedMultiset<Long> getSmallQFactors() {
+		SortedMultiset<Long> allFactors = new SortedMultiset_BottomUp<Long>();
 		for (int i=0; i<smallFactors.length; i++) {
-			allFactors.add(smallFactors[i], smallFactorExponents[i]);
+			allFactors.add(Long.valueOf(smallFactors[i]), smallFactorExponents[i]);
 		}
 		return allFactors;
 	}

@@ -35,13 +35,17 @@ public class BaseFilter_qk implements BaseFilter {
 	public Result filter(SolutionArrays solutionArrays, BaseArrays baseArrays, int mergedBaseSize, int[] qArray, int qCount, int k) {
 		int[] mergedPrimes = baseArrays.primes;
 		int[] mergedExponents = baseArrays.exponents;
+		double[] mergedPinvArrayD = baseArrays.pinvArrayD;
+		long[] mergedPinvArrayL = baseArrays.pinvArrayL;
 		
 		int[] filteredPrimes = solutionArrays.primes;
 		int[] filteredExponents = solutionArrays.exponents;
-		int[] filteredPowers = solutionArrays.powers;
+		int[] filteredPowers = solutionArrays.pArray;
 		int[] filteredTArray = solutionArrays.tArray;
 		byte[] filteredLogPArray = solutionArrays.logPArray;
-		
+		double[] filteredPinvArrayD = solutionArrays.pinvArrayD;
+		long[] filteredPinvArrayL = solutionArrays.pinvArrayL;
+
 		int filteredOutCount = 0;
 		int lastqIndex = -1;
 		
@@ -61,9 +65,11 @@ public class BaseFilter_qk implements BaseFilter {
 				int length = i - lastqIndex - 1;
 				System.arraycopy(mergedPrimes, srcPos, filteredPrimes, destPos, length);
 				System.arraycopy(mergedExponents, srcPos, filteredExponents, destPos, length);
-				System.arraycopy(baseArrays.powers, srcPos, filteredPowers, destPos, length);
+				System.arraycopy(baseArrays.pArray, srcPos, filteredPowers, destPos, length);
 				System.arraycopy(baseArrays.tArray, srcPos, filteredTArray, destPos, length);
 				System.arraycopy(baseArrays.logPArray, srcPos, filteredLogPArray, destPos, length);
+				System.arraycopy(mergedPinvArrayD, srcPos, filteredPinvArrayD, destPos, length);
+				System.arraycopy(mergedPinvArrayL, srcPos, filteredPinvArrayL, destPos, length);
 				lastqIndex = i;
 				if (mergedExponents[i] == 1) {
 					filteredOutBaseElementsSet.add(p); // XXX also add powers ?
@@ -78,15 +84,17 @@ public class BaseFilter_qk implements BaseFilter {
 			int length = mergedBaseSize-lastqIndex-1;
 			System.arraycopy(mergedPrimes, srcPos, filteredPrimes, destPos, length);
 			System.arraycopy(mergedExponents, srcPos, filteredExponents, destPos, length);
-			System.arraycopy(baseArrays.powers, srcPos, filteredPowers, destPos, length);
+			System.arraycopy(baseArrays.pArray, srcPos, filteredPowers, destPos, length);
 			System.arraycopy(baseArrays.tArray, srcPos, filteredTArray, destPos, length);
 			System.arraycopy(baseArrays.logPArray, srcPos, filteredLogPArray, destPos, length);
+			System.arraycopy(mergedPinvArrayD, srcPos, filteredPinvArrayD, destPos, length);
+			System.arraycopy(mergedPinvArrayL, srcPos, filteredPinvArrayL, destPos, length);
 		}
 		if (DEBUG) {
 			// qArray[] entries must be sorted bottom up
 			LOG.debug("qArray = " + Arrays.toString(qArray));
 			LOG.debug("mergedPrimes = " + Arrays.toString(mergedPrimes));
-			LOG.debug("mergedPowers = " + Arrays.toString(baseArrays.powers));
+			LOG.debug("mergedPowers = " + Arrays.toString(baseArrays.pArray));
 			LOG.debug("filteredPrimes = " + Arrays.toString(filteredPrimes));
 		}
 		

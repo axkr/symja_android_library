@@ -16,7 +16,7 @@ package de.tilman_neumann.jml.base;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * A triangle of integers.
@@ -28,8 +28,8 @@ import java.util.ArrayList;
 // TODO: Improve pretty printing
 public class BigIntTriangle {
 	
-//	@SuppressWarnings("unused")
-//	private static final Logger LOG = Logger.getLogger(BigIntTriangle.class);
+	@SuppressWarnings("unused")
+	private static final Logger LOG = Logger.getLogger(BigIntTriangle.class);
 
 	private static long count = 0;
 	private static Object syncObject = new Object();
@@ -104,7 +104,7 @@ public class BigIntTriangle {
 	/**
 	 * return n.th row, where the first row has index 1.
 	 * @param n
-	 * @return
+	 * @return n.th row
 	 */
 	public ArrayList<BigInteger> getRow(int n) {
 		return rows.get(n-1);
@@ -114,7 +114,7 @@ public class BigIntTriangle {
 	 * Returns the sum over all entries of the n.th row, 
 	 * where the first row has index 1.
 	 * @param n
-	 * @return
+	 * @return the sum over all entries of the n.th row
 	 */
 	public BigInteger getRowSum(int n) {
 		BigInteger rowSum = BigInteger.ZERO;

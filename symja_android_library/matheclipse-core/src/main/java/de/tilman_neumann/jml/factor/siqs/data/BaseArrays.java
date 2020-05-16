@@ -27,11 +27,15 @@ public class BaseArrays {
 	/** exponents of primes */
 	public int[] exponents;
 	/** powers, e.g. powers[i] = primes[i]^exponents[i] */
-	public int[] powers;
+	public int[] pArray;
 	/** the modular sqrt's t with t^2==kN (mod p) for primes p, or t^2==kN (mod power) for powers */
 	public int[] tArray;
 	/** log-values of the primes or powers */
 	public byte[] logPArray;
+	/** 1/p for all primes/powers */
+	public double[] pinvArrayD;
+	/** 2^32 / p for all primes/powers */
+	public long[] pinvArrayL;
 	
 	/**
 	 * Constructor allocating all arrays.
@@ -40,9 +44,11 @@ public class BaseArrays {
 	public BaseArrays(int solutionsCount) {
 		primes = new int[solutionsCount];
 		exponents = new int[solutionsCount];
-		powers = new int[solutionsCount];
+		pArray = new int[solutionsCount];
 		tArray = new int[solutionsCount];
 		logPArray = new byte[solutionsCount];
+		pinvArrayD = new double[solutionsCount];
+		pinvArrayL = new long[solutionsCount];
 	}
 	
 	/**
@@ -52,12 +58,16 @@ public class BaseArrays {
 	 * @param powers
 	 * @param tArray
 	 * @param logPArray
+	 * @param pinvArrayD array of 1/p values
+	 * @param pinvArrayL array of 2^32/p values
 	 */
-	public BaseArrays(int[] primes, int[] exponents, int[] powers, int[] tArray, byte[] logPArray) {
+	public BaseArrays(int[] primes, int[] exponents, int[] powers, int[] tArray, byte[] logPArray, double[] pinvArrayD, long[] pinvArrayL) {
 		this.primes = primes;
 		this.exponents = exponents;
-		this.powers = powers;
+		this.pArray = powers;
 		this.tArray = tArray;
 		this.logPArray = logPArray;
+		this.pinvArrayD = pinvArrayD;
+		this.pinvArrayL = pinvArrayL;
 	}
 }

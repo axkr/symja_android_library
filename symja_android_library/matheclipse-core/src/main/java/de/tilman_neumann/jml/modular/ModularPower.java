@@ -25,7 +25,7 @@ public class ModularPower {
 	/**
 	 * Computes a^b (mod c) for all-BigInteger arguments.</br></br>
 	 * 
-	 * <em>BigIntegers implementation is much faster!</em>.
+	 * <em>BigIntegers implementation is much faster!</em>
 	 * 
 	 * @param a
 	 * @param b

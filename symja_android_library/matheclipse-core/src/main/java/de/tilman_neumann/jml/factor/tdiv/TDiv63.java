@@ -15,15 +15,17 @@ package de.tilman_neumann.jml.factor.tdiv;
 
 import java.math.BigInteger;
 
-import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
+import de.tilman_neumann.jml.factor.FactorAlgorithm;
 import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
+import de.tilman_neumann.util.SortedMultiset;
+import de.tilman_neumann.util.SortedMultiset_BottomUp;
 
 /**
  * Trial division factor algorithm using the safe AutoExpandingPrimesArray class.
  * 
  * @author Tilman Neumann
  */
-public class TDiv63 extends FactorAlgorithmBase {
+public class TDiv63 extends FactorAlgorithm {
 	
 	private static AutoExpandingPrimesArray SMALL_PRIMES = AutoExpandingPrimesArray.get().ensurePrimeCount(NUM_PRIMES_FOR_31_BIT_TDIV);
 
@@ -44,17 +46,48 @@ public class TDiv63 extends FactorAlgorithmBase {
 	}
 
 	@Override
+	public SortedMultiset<BigInteger> factor(BigInteger Nbig) {
+		SortedMultiset<BigInteger> primeFactors = new SortedMultiset_BottomUp<>();
+		long N = Nbig.longValue();
+		
+		for (int i=0; ; i++) {
+			int p = SMALL_PRIMES.getPrime(i);
+			if (N%p == 0) {
+				int exp = 0;
+				do {
+					exp++;
+					N = N/p;
+				} while (N%p == 0);
+				primeFactors.add(BigInteger.valueOf(p), exp);
+			}
+			if (p*(long)p > N) {
+				break;
+			}
+		}
+		
+		if (N>1) {
+			primeFactors.add(BigInteger.valueOf(N));
+		}
+		return primeFactors;
+	}
+
+	@Override
 	public BigInteger findSingleFactor(BigInteger N) {
+		if (N.bitLength() > 63) throw new IllegalArgumentException("TDiv63.findSingleFactor() does not work for N>63 bit, but N=" + N);
 		return BigInteger.valueOf(findSingleFactor(N.longValue()));
 	}
 	
 	public int findSingleFactor(long N) {
-		int i=0, p;
+		if (N<0) N = -N; // sign does not matter
+		if (N<4) return 1; // prime
+		if ((N&1)==0) return 2; // N even
+		
+		int i=1, p;
 		while ((p = SMALL_PRIMES.getPrime(i++)) <= pLimit) { // upper bound avoids positive int overflow
 			if (N%p==0) return p;
 		}
 		
 		// nothing found up to pLimit
-		return 0;
+		return 1;
 	}
 }

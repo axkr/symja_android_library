@@ -26,7 +26,7 @@ import de.tilman_neumann.util.SortedMultiset;
  */
 public class Smooth_nLargeSquares extends Smooth_Simple {
 
-	private int[] bigFactors;
+	private long[] bigFactors;
 	private byte[] bigFactorExponents;
 	
 	/**
@@ -43,9 +43,9 @@ public class Smooth_nLargeSquares extends Smooth_Simple {
 	}
 
 	@Override
-	public SortedMultiset<Integer> getAllQFactors() {
+	public SortedMultiset<Long> getAllQFactors() {
 		// get small factors of Q
-		SortedMultiset<Integer> allFactors = super.getSmallQFactors();
+		SortedMultiset<Long> allFactors = super.getSmallQFactors();
 		// add large factors
 		for (int i=0; i<bigFactors.length; i++) {
 			allFactors.add(bigFactors[i], bigFactorExponents[i]);

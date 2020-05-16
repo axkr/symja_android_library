@@ -13,6 +13,8 @@
  */
 package de.tilman_neumann.jml.factor.siqs.sieve;
 
+import static de.tilman_neumann.jml.factor.base.AnalysisOptions.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,7 +42,6 @@ public class SimpleSieve implements Sieve {
 	private byte[] sieveArray_neg;
 	
 	// timings
-	private boolean profile;
 	private Timer timer = new Timer();
 	private long initDuration, sieveDuration, collectDuration;
 	
@@ -51,12 +52,10 @@ public class SimpleSieve implements Sieve {
 	}
 	
 	@Override
-	public void initializeForN(SieveParams sieveParams, int mergedBaseSize, boolean profile) {
+	public void initializeForN(SieveParams sieveParams, int mergedBaseSize) {
 		this.sieveArraySize = sieveParams.sieveArraySize;
 
-		// profiling
-		this.profile = profile;
-		initDuration = sieveDuration = collectDuration = 0;
+		if (ANALYZE) initDuration = sieveDuration = collectDuration = 0;
 	}
 
 	@Override
@@ -67,11 +66,11 @@ public class SimpleSieve implements Sieve {
 
 	@Override
 	public List<Integer> sieve() {
-		if (profile) timer.capture();
+		if (ANALYZE) timer.capture();
 		this.initializeSieveArray(sieveArraySize);
-		if (profile) initDuration += timer.capture();
+		if (ANALYZE) initDuration += timer.capture();
 
-		final int[] powers = solutionArrays.powers;
+		final int[] pArray = solutionArrays.pArray;
 		final int[] x1Array = solutionArrays.x1Array;
 		final int[] x2Array = solutionArrays.x2Array;
 		final byte[] logPArray = solutionArrays.logPArray;
@@ -91,7 +90,7 @@ public class SimpleSieve implements Sieve {
 		for (int i=1; i<primeBaseSize; i++) {
 			// solution x1
 			x1min = x1Array[i];
-			int p = powers[i];
+			int p = pArray[i];
 			logP = logPArray[i];
 			for (int x1=x1min; x1<sieveArraySize; x1+=p) {
 				sieveArray_pos[x1] += logP;
@@ -110,7 +109,7 @@ public class SimpleSieve implements Sieve {
 				}
 			} // else x2min==x1min -> do not sieve with the same x twice
 		}
-		if (profile) sieveDuration += timer.capture();
+		if (ANALYZE) sieveDuration += timer.capture();
 
 		// collect results
 		List<Integer> smoothXList = new ArrayList<Integer>();
@@ -127,7 +126,7 @@ public class SimpleSieve implements Sieve {
 				smoothXList.add(-x);
 			}
 		} // end for (x)
-		if (profile) collectDuration += timer.capture();
+		if (ANALYZE) collectDuration += timer.capture();
 		return smoothXList;
 	}
 

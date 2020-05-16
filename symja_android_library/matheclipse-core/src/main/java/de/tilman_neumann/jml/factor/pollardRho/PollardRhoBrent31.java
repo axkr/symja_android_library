@@ -21,8 +21,9 @@ import java.security.SecureRandom;
 
 import org.apache.log4j.Logger;
 
-import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
+import de.tilman_neumann.jml.factor.FactorAlgorithm;
 import de.tilman_neumann.jml.gcd.Gcd31;
+import de.tilman_neumann.util.ConfigUtil;
 import de.tilman_neumann.util.SortedMultiset;
 
 /**
@@ -32,7 +33,7 @@ import de.tilman_neumann.util.SortedMultiset;
  * 
  * @author Tilman Neumann
  */
-public class PollardRhoBrent31 extends FactorAlgorithmBase {
+public class PollardRhoBrent31 extends FactorAlgorithm {
 	private static final Logger LOG = Logger.getLogger(PollardRhoBrent31.class);
 	private static final SecureRandom RNG = new SecureRandom();
 
@@ -123,27 +124,27 @@ public class PollardRhoBrent31 extends FactorAlgorithmBase {
 	 * Test.
 	 * @param args ignored
 	 */
-//	public static void main(String[] args) {
-//    	ConfigUtil.initProject();
-//    	
-//		while(true) {
-//			String input;
-//			try {
-//				LOG.info("Please insert the integer to factor:");
-//				BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-//				String line = in.readLine();
-//				input = line.trim();
-//				LOG.debug("factoring " + input + "...");
-//			} catch (IOException ioe) {
-//				LOG.error("io-error occuring on input: " + ioe.getMessage());
-//				continue;
-//			}
-//			
-//			long start = System.currentTimeMillis();
-//			BigInteger n = new BigInteger(input);
-//			SortedMultiset<BigInteger> result = new PollardRhoBrent31().factor(n);
-//			LOG.info("Factored " + n + " = " + result.toString() + " in " + (System.currentTimeMillis()-start) + " ms");
-//
-//		} // next input...
-//	}
+	public static void main(String[] args) {
+    	ConfigUtil.initProject();
+    	
+		while(true) {
+			String input;
+			try {
+				LOG.info("Please insert the integer to factor:");
+				BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+				String line = in.readLine();
+				input = line.trim();
+				LOG.debug("factoring " + input + "...");
+			} catch (IOException ioe) {
+				LOG.error("io-error occuring on input: " + ioe.getMessage());
+				continue;
+			}
+			
+			long start = System.currentTimeMillis();
+			BigInteger n = new BigInteger(input);
+			SortedMultiset<BigInteger> result = new PollardRhoBrent31().factor(n);
+			LOG.info("Factored " + n + " = " + result.toString() + " in " + (System.currentTimeMillis()-start) + " ms");
+
+		} // next input...
+	}
 }

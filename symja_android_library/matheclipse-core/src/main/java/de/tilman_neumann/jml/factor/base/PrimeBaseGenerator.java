@@ -64,12 +64,12 @@ public class PrimeBaseGenerator {
 		for (int i=1; ; i++) {
 			int p = rawPrimesArray.getPrime(i);
 			int jacobi = jacobiEngine.jacobiSymbol(kN, p);
-//			if (DEBUG) {
-//				// ensure correctness of prime generator
-//				assertTrue(BigInteger.valueOf(p).isProbablePrime(20));
-//				// ensure that Jacobi symbol values are in the expected range -1 ... +1
-//				if (jacobi<-1 || jacobi>1) LOG.warn("kN=" + kN + ", p=" + p + " -> jacobi=" + jacobi);
-//			}
+			if (DEBUG) {
+				// ensure correctness of prime generator
+				assert (BigInteger.valueOf(p).isProbablePrime(20));
+				// ensure that Jacobi symbol values are in the expected range -1 ... +1
+				if (jacobi<-1 || jacobi>1) LOG.warn("kN=" + kN + ", p=" + p + " -> jacobi=" + jacobi);
+			}
 			// Q(x) = A(x)^2 - kN can only be divisible by p with Legendre(kN|p) >= 0.
 			// It is important to add p with Legendre(kN|p) == 0, too! Otherwise we would not find such p during trial division.
 			// On the other hand, doing a factor test here in that case makes no sense,

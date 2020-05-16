@@ -692,9 +692,9 @@ public class Primality {
 				CombinedFactorAlgorithm factorizer;
 				final int cores = Runtime.getRuntime().availableProcessors();
 				if (Config.JAVA_UNSAFE) {
-					factorizer = new CombinedFactorAlgorithm(cores / 2 + 1, true, false);
+					factorizer = new CombinedFactorAlgorithm(cores / 2 + 1, true);
 				} else {
-					factorizer = new CombinedFactorAlgorithm(1, false, false);
+					factorizer = new CombinedFactorAlgorithm(1, false);
 				}
 				SortedMultiset<BigInteger> result = factorizer.factor(rest);
 				for (Map.Entry<BigInteger, Integer> entry2 : result.entrySet()) {

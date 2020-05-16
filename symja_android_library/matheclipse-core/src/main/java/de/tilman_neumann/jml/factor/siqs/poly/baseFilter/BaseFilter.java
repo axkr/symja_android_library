@@ -49,7 +49,7 @@ public interface BaseFilter {
 	 * @param qArray
 	 * @param qCount
 	 * @param k
-	 * @return
+	 * @return filtered result
 	 */
 	public Result filter(SolutionArrays solutionArrays, BaseArrays baseArrays, int mergedBaseSize, int[] qArray, int qCount, int k);
 	

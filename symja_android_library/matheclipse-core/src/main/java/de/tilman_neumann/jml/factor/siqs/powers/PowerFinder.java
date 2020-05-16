@@ -31,9 +31,19 @@ public interface PowerFinder {
 	 * @param primes
 	 * @param tArray
 	 * @param logPArray
+	 * @param pinvArrayD
+	 * @param pinvArrayL
 	 * @param primeBaseSize
 	 * @param sieveParams basic sieve parameters
 	 * @return BaseArrays containing powers
 	 */
-	BaseArrays addPowers(BigInteger kN, int[] primes, int[] tArray, byte[] logPArray, int primeBaseSize, SieveParams sieveParams);
+	BaseArrays addPowers(
+			BigInteger kN, 
+			int[] primes, 
+			int[] tArray, 
+			byte[] logPArray,
+			double[] pinvArrayD, 
+			long[] pinvArrayL,
+			int primeBaseSize, 
+			SieveParams sieveParams);
 }

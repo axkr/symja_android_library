@@ -15,9 +15,11 @@ package de.tilman_neumann.jml.factor.psiqs;
 
 import java.math.BigInteger;
 
+import de.tilman_neumann.jml.factor.base.congruence.CongruenceCollectorParallel;
 import de.tilman_neumann.jml.factor.base.matrixSolver.MatrixSolver;
 import de.tilman_neumann.jml.factor.siqs.data.BaseArrays;
 import de.tilman_neumann.jml.factor.siqs.poly.AParamGenerator;
+import de.tilman_neumann.jml.factor.siqs.poly.AParamGenerator01;
 import de.tilman_neumann.jml.factor.siqs.powers.PowerFinder;
 import de.tilman_neumann.jml.factor.siqs.sieve.SieveParams;
 
@@ -38,26 +40,24 @@ public class PSIQS_U extends PSIQSBase {
 	 * @param numberOfThreads
 	 * @param powerFinder algorithm to add powers to the primes used for sieving
 	 * @param matrixSolver solver for smooth congruences matrix
-	 * @param profile
 	 */
-	public PSIQS_U(
-			float Cmult, float Mmult, Integer wantedQCount, Float maxQRestExponent, int numberOfThreads,
-			PowerFinder powerFinder, MatrixSolver matrixSolver, boolean profile) {
+	public PSIQS_U(float Cmult, float Mmult, Integer wantedQCount, Float maxQRestExponent, 
+				   int numberOfThreads, PowerFinder powerFinder, MatrixSolver matrixSolver) {
 		
-		super(Cmult, Mmult, wantedQCount, maxQRestExponent, numberOfThreads, null, powerFinder, matrixSolver, profile);
+		super(Cmult, Mmult, maxQRestExponent, numberOfThreads, null, powerFinder, matrixSolver, new AParamGenerator01(wantedQCount));
 	}
 
 	@Override
 	public String getName() {
 		String maxQRestExponentStr = "maxQRestExponent=" + String.format("%.3f", maxQRestExponent);
-		return "PSIQS_U(Cmult=" + Cmult + ", Mmult=" + Mmult + ", qCount=" + apg.getQCount() + ", " + maxQRestExponentStr + ", " + powerFinder.getName() + ", " + solverController.getName() + ", " + numberOfThreads + " threads)";
+		return "PSIQS_U(Cmult=" + Cmult + ", Mmult=" + Mmult + ", qCount=" + apg.getQCount() + ", " + maxQRestExponentStr + ", " + powerFinder.getName() + ", " + matrixSolver.getName() + ", " + numberOfThreads + " threads)";
 	}
 
 	@Override
 	protected PSIQSThreadBase createThread(
 			int k, BigInteger N, BigInteger kN, int d, SieveParams sieveParams, BaseArrays baseArrays,
-			AParamGenerator apg, AQPairBuffer aqPairBuffer, int threadIndex, boolean profile) {
+			AParamGenerator apg, CongruenceCollectorParallel cc, int threadIndex) {
 		
-		return new PSIQSThread_U(k, N, kN, d, sieveParams, baseArrays, apg, aqPairBuffer, threadIndex, profile);
+		return new PSIQSThread_U(k, N, kN, d, sieveParams, baseArrays, apg, cc, threadIndex);
 	}
 }

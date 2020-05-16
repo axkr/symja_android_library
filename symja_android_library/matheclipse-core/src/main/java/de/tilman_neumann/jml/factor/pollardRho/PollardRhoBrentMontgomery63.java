@@ -22,8 +22,9 @@ import java.security.SecureRandom;
 import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.base.Uint128;
-import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
+import de.tilman_neumann.jml.factor.FactorAlgorithm;
 import de.tilman_neumann.jml.gcd.Gcd63;
+import de.tilman_neumann.util.ConfigUtil;
 import de.tilman_neumann.util.SortedMultiset;
 
 /**
@@ -40,7 +41,7 @@ import de.tilman_neumann.util.SortedMultiset;
  * 
  * @author Tilman Neumann
  */
-public class PollardRhoBrentMontgomery63 extends FactorAlgorithmBase {
+public class PollardRhoBrentMontgomery63 extends FactorAlgorithm {
 	private static final Logger LOG = Logger.getLogger(PollardRhoBrentMontgomery63.class);
 	private static final boolean DEBUG = false;
 
@@ -69,6 +70,9 @@ public class PollardRhoBrentMontgomery63 extends FactorAlgorithmBase {
 	}
 	
 	public long findSingleFactor(long N) {
+		// N==9 would require to check if the gcd is 1 < gcd < N before returning it as a factor
+		if (N==9) return 3;
+		
 		this.N = N;
         long G, x, ys;
         
@@ -197,27 +201,27 @@ public class PollardRhoBrentMontgomery63 extends FactorAlgorithmBase {
 	 * 
 	 * @param args ignored
 	 */
-//	public static void main(String[] args) {
-//    	ConfigUtil.initProject();
-//    	
-//		while(true) {
-//			BigInteger n;
-//			try {
-//				LOG.info("Please insert the integer to factor:");
-//				BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-//				String line = in.readLine();
-//				String input = line.trim();
-//				n = new BigInteger(input);
-//				LOG.debug("factoring " + input + " (" + n.bitLength() + " bits) ...");
-//			} catch (IOException ioe) {
-//				LOG.error("io-error occuring on input: " + ioe.getMessage());
-//				continue;
-//			}
-//			
-//			long start = System.currentTimeMillis();
-//			SortedMultiset<BigInteger> result = new PollardRhoBrentMontgomery63().factor(n);
-//			LOG.info("Factored " + n + " = " + result.toString() + " in " + (System.currentTimeMillis()-start) + " ms");
-//
-//		} // next input...
-//	}
+	public static void main(String[] args) {
+    	ConfigUtil.initProject();
+    	
+		while(true) {
+			BigInteger n;
+			try {
+				LOG.info("Please insert the integer to factor:");
+				BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+				String line = in.readLine();
+				String input = line.trim();
+				n = new BigInteger(input);
+				LOG.debug("factoring " + input + " (" + n.bitLength() + " bits) ...");
+			} catch (IOException ioe) {
+				LOG.error("io-error occuring on input: " + ioe.getMessage());
+				continue;
+			}
+			
+			long start = System.currentTimeMillis();
+			SortedMultiset<BigInteger> result = new PollardRhoBrentMontgomery63().factor(n);
+			LOG.info("Factored " + n + " = " + result.toString() + " in " + (System.currentTimeMillis()-start) + " ms");
+
+		} // next input...
+	}
 }

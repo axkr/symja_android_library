@@ -15,7 +15,7 @@ package de.tilman_neumann.jml.modular;
 
 import java.math.BigInteger;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.modular.JacobiSymbol;
 import de.tilman_neumann.jml.modular.ModularPower;
@@ -29,8 +29,8 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
  * @author Tilman Neumann
  */
 public class ModularSqrt_BB {
-//	private static final Logger LOG = Logger.getLogger(ModularSqrt_BB.class);
-//	private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(ModularSqrt_BB.class);
+	private static final boolean DEBUG = false;
 
 	private ModularPower mpe = new ModularPower();
 	private JacobiSymbol jacobiEngine = new JacobiSymbol();

@@ -17,10 +17,10 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.base.BigIntConverter;
-//import de.tilman_neumann.util.ConfigUtil;
+import de.tilman_neumann.util.ConfigUtil;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
@@ -38,9 +38,9 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
  * @author Tilman Neumann
  */
 public class Roots {
-//	private static final Logger LOG = Logger.getLogger(Roots.class);
+	private static final Logger LOG = Logger.getLogger(Roots.class);
 	private static final SecureRandom RNG = new SecureRandom();
-//	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = false;
 	private static final boolean TEST_BITWISE = false;
 
 	/**
@@ -127,7 +127,7 @@ public class Roots {
 				//LOG.debug("next guess: " + i + ".th root(" + N + ") ~ " + guess);
 			} while (guess.subtract(lastGuess).abs().bitLength()>1); // while absolute difference > 1
 		} catch (ArithmeticException e) {
-//			LOG.debug("N=" + N + ", i=" + i + ", guess = " + guess, e);
+			LOG.debug("N=" + N + ", i=" + i + ", guess = " + guess, e);
 		}
 		
 		// final test: linear steps
@@ -207,7 +207,7 @@ public class Roots {
 				//LOG.debug("next guess: " + i + ".th root(" + N + ") ~ " + guess);
 			} while (delta.abs().bitLength()>1); // while absolute difference > 1
 		} catch (ArithmeticException e) {
-//			LOG.debug("   N=" + N + ", i=" + i + ", guess = " + guess, e);
+			LOG.debug("   N=" + N + ", i=" + i + ", guess = " + guess, e);
 		}
 		//LOG.debug("guess = " + guess);
 		
@@ -267,72 +267,72 @@ public class Roots {
 	   	return testSet;
 	}
 	
-//	private static void testCorrectness(int nCount) {
-//		for (int bits = 100; bits<=1000; bits+=100) {
-//			ArrayList<BigInteger> testSet = createTestSet(nCount, bits);
-//			// test correctness
-//		   	for (BigInteger testNum : testSet) {
-//		   		int root = 2 + RNG.nextInt(48);
-//		   		BigInteger[] linResult = Roots.ithRoot_bitwise(testNum, root);
-//		   		BigInteger[] heronResult = Roots.ithRoot_Heron1(testNum, root);
-//		   		if (!linResult[0].equals(heronResult[0])) {
-//		   			LOG.error("ERROR: Heron1: lower bound of " + root + ".th root(" + testNum + "): linear algorithm -> " + linResult[0] + ", Heron1 -> " + heronResult[0]);
-//		   		}
-//		   		if (!linResult[1].equals(heronResult[1])) {
-//		   			LOG.error("ERROR: Heron1: upper bound of " + root + ".th root(" + testNum + "): linear algorithm -> " + linResult[1] + ", Heron1 -> " + heronResult[1]);
-//		   		}
-//
-//		   		heronResult = Roots.ithRoot_Heron2(testNum, root);
-//		   		if (!linResult[0].equals(heronResult[0])) {
-//		   			LOG.error("ERROR: Heron2: lower bound of " + root + ".th root(" + testNum + "): linear algorithm -> " + linResult[0] + ", Heron2 -> " + heronResult[0]);
-//		   		}
-//		   		if (!linResult[1].equals(heronResult[1])) {
-//		   			LOG.error("ERROR: Heron2: upper bound of " + root + ".th root(" + testNum + "): linear algorithm -> " + linResult[1] + ", Heron2 -> " + heronResult[1]);
-//		   		}
-//		   	}
-//		}
-//	}
+	private static void testCorrectness(int nCount) {
+		for (int bits = 100; bits<=1000; bits+=100) {
+			ArrayList<BigInteger> testSet = createTestSet(nCount, bits);
+			// test correctness
+		   	for (BigInteger testNum : testSet) {
+		   		int root = 2 + RNG.nextInt(48);
+		   		BigInteger[] linResult = Roots.ithRoot_bitwise(testNum, root);
+		   		BigInteger[] heronResult = Roots.ithRoot_Heron1(testNum, root);
+		   		if (!linResult[0].equals(heronResult[0])) {
+		   			LOG.error("ERROR: Heron1: lower bound of " + root + ".th root(" + testNum + "): linear algorithm -> " + linResult[0] + ", Heron1 -> " + heronResult[0]);
+		   		}
+		   		if (!linResult[1].equals(heronResult[1])) {
+		   			LOG.error("ERROR: Heron1: upper bound of " + root + ".th root(" + testNum + "): linear algorithm -> " + linResult[1] + ", Heron1 -> " + heronResult[1]);
+		   		}
 
-//	private static void testPerformance(int nCount) {
-//		for (int bits = 100; ; bits+=100) {
-//			ArrayList<BigInteger> testSet = createTestSet(nCount, bits);
-//			for (int root=3; ((float)bits)/root > 4; root += 1+RNG.nextInt(10)) {
-//				// RNG reduces compiler optimizations ? -> makes test results more comparable ?
-//				LOG.info("test " + root + ".th root of " + bits + "-bit numbers:");
-//				long t0, t1;
-//				if (TEST_BITWISE) {
-//				   	t0 = System.currentTimeMillis();
-//				   	for (BigInteger testNum : testSet) {
-//				   		Roots.ithRoot_bitwise(testNum, root);
-//				   	}
-//				   	t1 = System.currentTimeMillis();
-//					LOG.info("   Bitwise ith root test with " + nCount + " numbers took " + (t1-t0) + " ms");
-//				}
-//		   		
-//			   	t0 = System.currentTimeMillis();
-//			   	for (BigInteger testNum : testSet) {
-//			   		Roots.ithRoot_Heron1(testNum, root);
-//			   	}
-//			   	t1 = System.currentTimeMillis();
-//				LOG.info("   Heron1 ith root test with " + nCount + " numbers took " + (t1-t0) + " ms");
-//		   		
-//			   	t0 = System.currentTimeMillis();
-//			   	for (BigInteger testNum : testSet) {
-//			   		Roots.ithRoot_Heron2(testNum, root);
-//			   	}
-//			   	t1 = System.currentTimeMillis();
-//				LOG.info("   Heron2 ith root test with " + nCount + " numbers took " + (t1-t0) + " ms");
-//			}
-//		}
-//	}
+		   		heronResult = Roots.ithRoot_Heron2(testNum, root);
+		   		if (!linResult[0].equals(heronResult[0])) {
+		   			LOG.error("ERROR: Heron2: lower bound of " + root + ".th root(" + testNum + "): linear algorithm -> " + linResult[0] + ", Heron2 -> " + heronResult[0]);
+		   		}
+		   		if (!linResult[1].equals(heronResult[1])) {
+		   			LOG.error("ERROR: Heron2: upper bound of " + root + ".th root(" + testNum + "): linear algorithm -> " + linResult[1] + ", Heron2 -> " + heronResult[1]);
+		   		}
+		   	}
+		}
+	}
+
+	private static void testPerformance(int nCount) {
+		for (int bits = 100; ; bits+=100) {
+			ArrayList<BigInteger> testSet = createTestSet(nCount, bits);
+			for (int root=3; ((float)bits)/root > 4; root += 1+RNG.nextInt(10)) {
+				// RNG reduces compiler optimizations ? -> makes test results more comparable ?
+				LOG.info("test " + root + ".th root of " + bits + "-bit numbers:");
+				long t0, t1;
+				if (TEST_BITWISE) {
+				   	t0 = System.currentTimeMillis();
+				   	for (BigInteger testNum : testSet) {
+				   		Roots.ithRoot_bitwise(testNum, root);
+				   	}
+				   	t1 = System.currentTimeMillis();
+					LOG.info("   Bitwise ith root test with " + nCount + " numbers took " + (t1-t0) + " ms");
+				}
+		   		
+			   	t0 = System.currentTimeMillis();
+			   	for (BigInteger testNum : testSet) {
+			   		Roots.ithRoot_Heron1(testNum, root);
+			   	}
+			   	t1 = System.currentTimeMillis();
+				LOG.info("   Heron1 ith root test with " + nCount + " numbers took " + (t1-t0) + " ms");
+		   		
+			   	t0 = System.currentTimeMillis();
+			   	for (BigInteger testNum : testSet) {
+			   		Roots.ithRoot_Heron2(testNum, root);
+			   	}
+			   	t1 = System.currentTimeMillis();
+				LOG.info("   Heron2 ith root test with " + nCount + " numbers took " + (t1-t0) + " ms");
+			}
+		}
+	}
 
 	/**
 	 * Test.
 	 * @param args ignored
 	 */
-//	public static void main(String[] args) {
-//	   	ConfigUtil.initProject();
-//	   	testCorrectness(10000);
-//	   	testPerformance(5000000);
-//	}
+	public static void main(String[] args) {
+	   	ConfigUtil.initProject();
+	   	testCorrectness(10000);
+	   	testPerformance(5000000);
+	}
 }

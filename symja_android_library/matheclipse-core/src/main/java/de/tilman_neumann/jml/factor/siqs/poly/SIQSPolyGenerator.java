@@ -13,6 +13,9 @@
  */
 package de.tilman_neumann.jml.factor.siqs.poly;
 
+import static de.tilman_neumann.jml.factor.base.AnalysisOptions.*;
+import static de.tilman_neumann.jml.base.BigIntConstants.*;
+
 import java.math.BigInteger;
 import java.util.Arrays;
 
@@ -29,17 +32,8 @@ import de.tilman_neumann.jml.factor.siqs.tdiv.TDiv_QS;
 import de.tilman_neumann.jml.gcd.EEA31;
 import de.tilman_neumann.util.Timer;
 
-import static de.tilman_neumann.jml.base.BigIntConstants.*;
-
 /**
  * A generator for SIQS polynomials.
- * 
- * A very important parameter is <code>qCount</code. Having it configurable via the constructor lets us test
- * which number of factors of <code>a</code> and thus which average factor size is most appropriate for 
- * given magnitudes of kN.
- * 
- * Since t^2 == N (mod p) equals t^2 == (N%p) (mod p), we can compute Tonelli-Shanks in all-integer arguments.
- * For SIQS this is no big improvement though, because Tonelli-Shanks is not time-critical anyway.
  * 
  * @author Tilman Neumann
  */
@@ -49,7 +43,7 @@ public class SIQSPolyGenerator implements PolyGenerator {
 
 	/** the a paramater */
 	private BigInteger a;
-	/** the a-term of the polynomial, i.e. 2a for kN == 1 mod 8), a else */
+	/** the a-term of the polynomial, i.e. 2a for kN == 1 (mod 8), a else */
 	private BigInteger da;
 	private UnsignedBigInt da_UBI;
 	/** the b-parameter */
@@ -57,7 +51,7 @@ public class SIQSPolyGenerator implements PolyGenerator {
 	
 	private int k;
 	private BigInteger kN;
-	/** the d-parameter of the polynomial Q2(x) = (d*a*x + b)^2 - kN */
+	/** the d-parameter of the polynomial Q(x) = (d*a*x + b)^2 - kN. d is 2 if kN == 1 (mod 8), otherwise 1 */
 	private int d;
 	
 	// prime base
@@ -91,7 +85,6 @@ public class SIQSPolyGenerator implements PolyGenerator {
 	private TDiv_QS tDivEngine;
 
 	// profiling
-	private boolean profile;
 	private Timer timer = new Timer();
 	private int aParamCount, bParamCount;
 	private long aDuration, firstBDuration, filterPBDuration, firstXArrayDuration, nextBDuration, nextXArrayDuration;
@@ -108,7 +101,7 @@ public class SIQSPolyGenerator implements PolyGenerator {
 	@Override
 	public void initializeForN(
 			int k, BigInteger N, BigInteger kN, int d, SieveParams sieveParams, BaseArrays baseArrays,
-			AParamGenerator aParamGenerator, Sieve sieveEngine, TDiv_QS tDivEngine, boolean profile) {
+			AParamGenerator aParamGenerator, Sieve sieveEngine, TDiv_QS tDivEngine) {
 		
 		this.k = k;
 		this.kN = kN;
@@ -119,10 +112,10 @@ public class SIQSPolyGenerator implements PolyGenerator {
 		
 		// initialize sub-engines
 		this.aParamGenerator = aParamGenerator;
-		sieveEngine.initializeForN(sieveParams, mergedBaseSize, profile);
+		sieveEngine.initializeForN(sieveParams, mergedBaseSize);
 		this.sieveEngine = sieveEngine;
 		final double N_dbl = N.doubleValue();
-		tDivEngine.initializeForN(N_dbl, kN, sieveParams.maxQRest, profile);
+		tDivEngine.initializeForN(N_dbl, kN, sieveParams.maxQRest);
 		this.tDivEngine = tDivEngine;
 
 		// B2: the array needs one more element because used indices start at 1.
@@ -136,16 +129,11 @@ public class SIQSPolyGenerator implements PolyGenerator {
 		// Allocate filtered base and solution arrays: The true size may be smaller if powers are filtered out, too.
 		solutionArrays = new SolutionArrays(mergedBaseSize - qCount, qCount);
 		
-		// profiling
-		this.profile = profile;
-		aParamCount = 0;
-		bParamCount = 0;
-		aDuration = 0;
-		firstBDuration = 0;
-		filterPBDuration = 0;
-		firstXArrayDuration = 0;
-		nextBDuration = 0;
-		nextXArrayDuration = 0;
+		// statistics
+		if (ANALYZE) {
+			aParamCount = bParamCount = 0;
+			aDuration = firstBDuration = filterPBDuration = firstXArrayDuration = nextBDuration = nextXArrayDuration = 0;
+		}
 	}
 	
 	@Override
@@ -153,7 +141,7 @@ public class SIQSPolyGenerator implements PolyGenerator {
 		if (bIndex==maxBIndex) {
 			// Incrementing bIndex would exceed the maximum value -> we need a new a-parameter.
 			// Computing a-parameters is very fast (typically 0 to 15ms) despite synchronization.
-			if (profile) timer.capture();
+			if (ANALYZE) timer.capture();
 			synchronized (aParamGenerator) {
 				a = aParamGenerator.computeNextAParameter();
 				qArray = aParamGenerator.getQArray();
@@ -161,33 +149,33 @@ public class SIQSPolyGenerator implements PolyGenerator {
 			}
 			da = BigInteger.valueOf(d).multiply(a);
 			da_UBI = new UnsignedBigInt(da);
-			aParamCount++;
+			if (ANALYZE) aParamCount++;
 			maxBIndex = 1<<(qCount-1); // 2^(qCount-1)
-			if (profile) aDuration += timer.capture();
+			if (ANALYZE) aDuration += timer.capture();
 			// compute the first b
 			computeFirstBParameter();
-			bParamCount++;
+			if (ANALYZE) bParamCount++;
 			bIndex = 1;
 			if (DEBUG) {
 				LOG.debug("first a=" + a + ", b=" + b);
 				LOG.debug("(b^2-kN)/a [" + bIndex + "] = " + b.multiply(b).subtract(kN).divide(a));
 			}
-			if (profile) firstBDuration += timer.capture();
+			if (ANALYZE) firstBDuration += timer.capture();
 			// filter prime base
 			BaseFilter.Result filterResult = baseFilter.filter(solutionArrays, baseArrays, mergedBaseSize, qArray, qCount, k);
 			filteredBaseSize = filterResult.filteredBaseSize;
-			if (profile) filterPBDuration += timer.capture();
+			if (ANALYZE) filterPBDuration += timer.capture();
 			// compute ainvp[], Bainv2[][] and solution x-arrays for a and first b
 			computeFirstXArrays();
 			// pass data to sub-engines
 			sieveEngine.initializeForAParameter(solutionArrays, filteredBaseSize);
 			tDivEngine.initializeForAParameter(da, b, solutionArrays, filteredBaseSize, filterResult.filteredOutBaseElements);
-			if (profile) firstXArrayDuration += timer.capture();
+			if (ANALYZE) firstXArrayDuration += timer.capture();
 		} else {
 			// compute the next b-parameter:
 			// the gray code v with 2^v || 2*i in [Contini97] is the exponent
 			// at which 2*i contains the 2. Here we have bIndex instead of Contini's "i".
-			if (profile) timer.capture();
+			if (ANALYZE) timer.capture();
 			int v = Integer.numberOfTrailingZeros(bIndex<<1);
 			// bIndex/2^v is a half-integer. Therefore we have ceilTerm = ceil(bIndex/2^v) = bIndex/2^v + 1.
 			// If ceilTerm is even, then (-1)^ceilTerm is positive and B_l[v] must be added.
@@ -197,7 +185,7 @@ public class SIQSPolyGenerator implements PolyGenerator {
 			// WARNING: b must not be computed (mod a) !
 			b = bParameterNeedsAddition ? b.add(B2Array[v-1]) : b.subtract(B2Array[v-1]);
 			tDivEngine.setBParameter(b);
-			bParamCount++;
+			if (ANALYZE) bParamCount++;
 //			if (DEBUG) {
 //				//LOG.debug("a = " + a + ", b = " + b);
 //				assertTrue(0<v && v<qCount); // exact
@@ -220,14 +208,14 @@ public class SIQSPolyGenerator implements PolyGenerator {
 				LOG.debug("a=" + a + ": " + bIndex + ".th b=" + b);
 				LOG.debug("(b^2-kN)/a [" + bIndex + "] = " + b.multiply(b).subtract(kN).divide(a));
 			}
-			if (profile) nextBDuration += timer.capture();
+			if (ANALYZE) nextBDuration += timer.capture();
 
 			// Update solution arrays: 
 			// Since only the array-content is modified, the x-arrays in poly are updated implicitly.
 			// This approach would work in a multi-threaded SIQS implementation too, if we create a new thread for each new a-parameter.
 			// Note that fix prime divisors depend only on a and k -> they do not change at a new b-parameter.
 			computeNextXArrays(v, bParameterNeedsAddition);
-			if (profile) nextXArrayDuration += timer.capture();
+			if (ANALYZE) nextXArrayDuration += timer.capture();
 		}
 	}
 
@@ -263,6 +251,8 @@ public class SIQSPolyGenerator implements PolyGenerator {
 //			if (DEBUG) {
 //				LOG.debug("qArray = " + Arrays.toString(qArray));
 //				LOG.debug("t = " + t + ", ql = " + ql + ", a_div_ql_modInv_ql = " + a_div_ql_modInv_ql + ", gamma = " + gamma + ", Bl = " + Bl);
+//				assertTrue(gamma >= 0);
+//				assertTrue(gamma <= ql/2);
 //				assertEquals(a_div_ql.modInverse(ql_big).longValue(), a_div_ql_modInv_ql);
 //				assertTrue(Bl.compareTo(I_0) >= 0);
 //				assertEquals(I_0, Bl.multiply(Bl).subtract(kN).mod(ql_big));
@@ -288,8 +278,9 @@ public class SIQSPolyGenerator implements PolyGenerator {
 //			if (d == 2) {
 //				// b is odd
 //				assertEquals(I_1, b.and(I_1));
-//				// with Kechlibars polynomial and multiplier k with kN == 1 (mod 8) we have b^2 == kN (mod 4a)
-//				//assertEquals(ZERO, b.multiply(b).subtract(kN).mod(a.multiply(TWO)));
+//				// With Kechlibars polynomial Q(x) = (2ax+b)^2 - kN and multiplier k with kN == 1 (mod 8)
+//				// we have b^2 == kN (mod 4a). The same could be achieved for kN == 5 (mod 8),
+//				// but in that case there is no notable performance gain.
 //				assertEquals(I_0, b.multiply(b).subtract(kN).mod(a.multiply(I_4)));
 //			} else {
 //				// we have b^2 == kN (mod a)
@@ -299,8 +290,7 @@ public class SIQSPolyGenerator implements PolyGenerator {
 	}
 
 	/**
-	 * Compute the ainvp[] required for Bainv2[][], the Bainv2[][] required to compute next b's and next x-arrays,
-	 * and the first x-arrays.
+	 * Compute ainvp[], the first x-arrays, and the Bainv2[][] required to compute next x-arrays.
 	 * 
 	 * The x-arrays contain the smallest non-negative solutions x_1,2 of (ax+b)^2-kN == 0 (mod p)
 	 * for the first b-parameter and for all p in the prime base.
@@ -309,29 +299,25 @@ public class SIQSPolyGenerator implements PolyGenerator {
 	 */
 	private void computeFirstXArrays() { // performance-critical !
 		// the first b is always positive, so we can use UnsignedBigInt here
-		UnsignedBigInt b_UBI = new UnsignedBigInt(b);
+		final UnsignedBigInt b_UBI = new UnsignedBigInt(b);
 		
-		int[] filteredPowers = solutionArrays.powers;
-		int[] filteredTArray = solutionArrays.tArray;
-		int[][] Bainv2Array = solutionArrays.Bainv2Array;
-		int[] x1Array = solutionArrays.x1Array;
-		int[] x2Array = solutionArrays.x2Array;
+		final int[] pArray = solutionArrays.pArray;
+		final int[] tArray = solutionArrays.tArray;
+		final int[][] Bainv2Array = solutionArrays.Bainv2Array;
+		final int[] x1Array = solutionArrays.x1Array;
+		final int[] x2Array = solutionArrays.x2Array;
+		final long[] ainvpArray = new long[filteredBaseSize];
+		
 		for (int pIndex=filteredBaseSize-1; pIndex>0; pIndex--) { // we do not need solutions for p[0]=2
 			// 1. compute ainvp ------------------------------------------------------------------
 			// All modular inverses 1/a % p exist because the q's whose product gives the a-parameter have been filtered out before.
 			// Since 1/a % p = 1/(a%p) % p, we can compute the modular inverse in ints, which is much faster than with BigIntegers.
 			// ainvp needs long precision in the products below.
-			final int p = filteredPowers[pIndex];
-			final long ainvp = eea.modularInverse(da_UBI.mod(p), p);
+			final int p = pArray[pIndex];
+			final long ainvp = ainvpArray[pIndex] = eea.modularInverse(da_UBI.mod(p), p);
 			
-			// 2. compute Bainv2[] -----------------------------------------------------------
-			for (int j=qCount-2; j>=0; j--) { // Contini's j=1...s-1. The maximum value of v is qCount-2 == s-1.
-				// Bainv2 = 2 * B_j * (1/a) mod p.
-				Bainv2Array[j][pIndex] = (int) ((B2Array_UBI[j].mod(p) * ainvp) % p); // much faster than BigInteger.mod(BigInteger)
-			}
-			
-			// 3. compute first x-array entries -----------------------------------------------
-			final int t = filteredTArray[pIndex];
+			// 2. compute first x-array entries --------------------------------------------------
+			final int t = tArray[pIndex];
 			final int bModP = b_UBI.mod(p);
 			// x1 = (1/a)* (+t - b) (mod p)
 			int t_minus_b_modP = t - bModP;
@@ -357,10 +343,7 @@ public class SIQSPolyGenerator implements PolyGenerator {
 //					LOG.debug("p = " + p + ", ainvp = " + ainvp + ", da = " + da + ": " + ae, ae);
 //				}
 //
-//				for (int j=qCount-2; j>=0; j--) { // Contini's j=1...s-1. The maximum value of v is qCount-2 == s-1.
-//					assertTrue(0<=Bainv2Array[j][pIndex] && Bainv2Array[j][pIndex]<p);
-//				}
-//				assertEquals(b.mod(BigInteger.valueOf(p)).intValue(), bModP);
+//				assertEquals(b.mod(p_big).intValue(), bModP);
 //				assertTrue(0 <= bModP & bModP < p);
 //				assertTrue(0 <= t & t < p);
 //
@@ -382,6 +365,25 @@ public class SIQSPolyGenerator implements PolyGenerator {
 //				if (x1<0 || x2<0) LOG.debug("p=" + p + ", ainvp=" + ainvp + ": x1 = " + x1 + ", x2 = " + x2);
 //			}
 		} // end_for (primes)
+		
+		// 3. compute Bainv2[] required for next x-arrays --------------------------------------------------
+		for (int j=qCount-2; j>=0; j--) { // Contini's j=1...s-1. The maximum value of v is qCount-2 == s-1.
+			final int[] Bainv2Row = Bainv2Array[j];
+			final UnsignedBigInt B2 = B2Array_UBI[j];
+			for (int pIndex=filteredBaseSize-1; pIndex>0; pIndex--) { // we do not need solutions for p[0]=2
+				final int p = pArray[pIndex];
+				final long ainvp = ainvpArray[pIndex];
+				// Bainv2 = 2 * B_j * (1/a) mod p.
+				Bainv2Row[pIndex] = (int) ((B2.mod(p) * ainvp) % p); // much faster than BigInteger.mod(BigInteger)
+			}
+			
+//			if (DEBUG) {
+//				for (int pIndex=filteredBaseSize-1; pIndex>0; pIndex--) {
+//					final int p = pArray[pIndex];
+//					assertTrue(0<=Bainv2Row[pIndex] && Bainv2Row[pIndex]<p);
+//				}
+//			}
+		}
 	}
 
 	/**
@@ -393,7 +395,7 @@ public class SIQSPolyGenerator implements PolyGenerator {
 		// update solution arrays:
 		// Note that trial division needs the solutions for all primes p,
 		// even if the sieve leaves out the smallest p[i] with i < pMinIndex.
-		int[] filteredPowers = solutionArrays.powers;
+		int[] filteredPowers = solutionArrays.pArray;
 		int[] Bainv2Row = solutionArrays.Bainv2Array[v-1];
 		int[] x1Array = solutionArrays.x1Array;
 		int[] x2Array = solutionArrays.x2Array;
@@ -420,27 +422,22 @@ public class SIQSPolyGenerator implements PolyGenerator {
 				x2Array[pIndex] = x2>=p ? x2-p : x2;
 			} // end for (primes)
 		}
-//		if (DEBUG) debugNextXArrays(v);
-	}
-
-//	private void debugNextXArrays(int v) {
-//		int[] filteredPowers = solutionArrays.powers;
-//		int[][] Bainv2Array = solutionArrays.Bainv2Array;
-//		int[] x1Array = solutionArrays.x1Array;
-//		int[] x2Array = solutionArrays.x2Array;
-//		for (int pIndex=filteredBaseSize-1; pIndex>0; pIndex--) {
-//			int p = filteredPowers[pIndex];
-//			int Bainv2 = Bainv2Array[v-1][pIndex];
-//			int x1 = x1Array[pIndex];
-//			int x2 = x2Array[pIndex];
-//			assertTrue(0 <= x1 && x1 < p);
-//			assertTrue(0 <= x2 && x2 < p);
-//			BigInteger p_big = BigInteger.valueOf(p);
-//			assertEquals(kN.mod(p_big), da.multiply(BigInteger.valueOf(x1)).add(b).pow(2).mod(p_big));
-//			assertEquals(kN.mod(p_big), da.multiply(BigInteger.valueOf(x2)).add(b).pow(2).mod(p_big));
-//			if (x1<0 || x2<0) LOG.debug("p=" + p + ", Bainv2=" + Bainv2 + ": x1 = " + x1 + ", x2 = " + x2);
+		
+//		if (DEBUG) {
+//			for (int pIndex=filteredBaseSize-1; pIndex>0; pIndex--) {
+//				int p = filteredPowers[pIndex];
+//				int Bainv2 = Bainv2Row[pIndex];
+//				int x1 = x1Array[pIndex];
+//				int x2 = x2Array[pIndex];
+//				assertTrue(0 <= x1 && x1 < p);
+//				assertTrue(0 <= x2 && x2 < p);
+//				BigInteger p_big = BigInteger.valueOf(p);
+//				assertEquals(kN.mod(p_big), da.multiply(BigInteger.valueOf(x1)).add(b).pow(2).mod(p_big));
+//				assertEquals(kN.mod(p_big), da.multiply(BigInteger.valueOf(x2)).add(b).pow(2).mod(p_big));
+//				if (x1<0 || x2<0) LOG.debug("p=" + p + ", Bainv2=" + Bainv2 + ": x1 = " + x1 + ", x2 = " + x2);
+//			}
 //		}
-//	}
+	}
 
 	@Override
 	public PolyReport getReport() {

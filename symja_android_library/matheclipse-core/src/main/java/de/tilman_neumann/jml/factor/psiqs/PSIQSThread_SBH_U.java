@@ -15,6 +15,7 @@ package de.tilman_neumann.jml.factor.psiqs;
 
 import java.math.BigInteger;
 
+import de.tilman_neumann.jml.factor.base.congruence.CongruenceCollectorParallel;
 import de.tilman_neumann.jml.factor.siqs.data.BaseArrays;
 import de.tilman_neumann.jml.factor.siqs.poly.AParamGenerator;
 import de.tilman_neumann.jml.factor.siqs.poly.SIQSPolyGenerator;
@@ -38,15 +39,14 @@ public class PSIQSThread_SBH_U extends PSIQSThreadBase {
 	 * @param baseArrays primes, power arrays after adding powers
 	 * @param blockSize wanted sieve block size in byte
 	 * @param apg
-	 * @param aqPairBuffer
+	 * @param cc congruence collector, also runs the matrix solver
 	 * @param threadIndex
-	 * @param profile
 	 */
 	public PSIQSThread_SBH_U(
 			int k, BigInteger N, BigInteger kN, int d, SieveParams sieveParams, BaseArrays baseArrays, int blockSize, 
-			AParamGenerator apg, AQPairBuffer aqPairBuffer, int threadIndex, boolean profile) {
+			AParamGenerator apg, CongruenceCollectorParallel cc, int threadIndex) {
 		
-		super(k, N, kN, d, sieveParams, baseArrays, apg, aqPairBuffer, new SIQSPolyGenerator(), new SingleBlockHybridSieveU(blockSize),
-			  new TDiv_QS_2Large_UBI(), threadIndex, profile);
+		super(k, N, kN, d, sieveParams, baseArrays, apg, new SIQSPolyGenerator(), new SingleBlockHybridSieveU(blockSize),
+			  new TDiv_QS_2Large_UBI(), cc, threadIndex);
 	}
 }

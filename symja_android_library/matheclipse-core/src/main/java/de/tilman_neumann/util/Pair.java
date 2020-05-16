@@ -72,4 +72,9 @@ public class Pair<U,V> implements Serializable {
 			return false;
 		return true;
 	}
+	
+	@Override
+	public String toString() {
+		return "(" + first + ", " + second + ")";
+	}
 }

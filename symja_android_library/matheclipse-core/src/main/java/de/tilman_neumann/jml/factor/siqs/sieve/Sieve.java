@@ -32,9 +32,8 @@ public interface Sieve {
 	 * Initialize for a new N. In PSIQS, this method is called for each thread, so things that can be computed before should be computed before.
 	 * @param sieveParams basic sieve parameters for a new N
 	 * @param mergedBaseSize size of prime/power base after merging, before filtering
-	 * @param profile get phase timings?
 	 */
-	void initializeForN(SieveParams sieveParams, int mergedBaseSize, boolean profile);
+	void initializeForN(SieveParams sieveParams, int mergedBaseSize);
 	
 	/**
 	 * Set (filtered) prime base and smallest x1, x2 solutions for a new a-parameter.

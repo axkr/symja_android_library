@@ -19,7 +19,7 @@ import java.util.Map;
 
 import de.tilman_neumann.jml.factor.FactorException;
 import de.tilman_neumann.jml.factor.base.congruence.AQPair;
-import de.tilman_neumann.jml.factor.base.congruence.Congruence;
+import de.tilman_neumann.jml.factor.base.congruence.Smooth;
 
 /**
  * An adapter for Dario Alpern's Block-Lanczos solver.
@@ -39,14 +39,14 @@ public class MatrixSolver02_BlockLanczos extends MatrixSolver {
 	}
 	
 	@Override
-	protected void solve(List<Congruence> congruences, Map<Integer, Integer> factors_2_columnIndices) throws FactorException {
+	protected void solve(List<Smooth> congruences, Map<Integer, Integer> factors_2_columnIndices) throws FactorException {
 		// create the matrix:
 		// * the rows are in the same order as in the congruences list
 		// * we fill a row with the column indices where the congruence has a factor with odd exponent
 		int matrixBlength = congruences.size();
 		int[][] matrixB = new int[matrixBlength][];
 		int i=0;
-		for (Congruence congruence : congruences) {
+		for (Smooth congruence : congruences) {
 			// row entry = set of column indices where the congruence has a factor with odd exponent
 			Integer[] oddExpFactors = congruence.getMatrixElements();
 			int[] matrixRow = new int[oddExpFactors.length];
@@ -54,7 +54,7 @@ public class MatrixSolver02_BlockLanczos extends MatrixSolver {
 			for (Integer oddExpFactor : oddExpFactors) {
 				// columnIndex should not be bigger than the number of congruences
 				int columnIndex = factors_2_columnIndices.get(oddExpFactor);
-//				if (DEBUG) assertTrue(columnIndex <= matrixBlength);
+				if (DEBUG) assert (columnIndex <= matrixBlength);
 				matrixRow[j++] = columnIndex;
 			}
 			matrixB[i++] = matrixRow;
@@ -74,7 +74,7 @@ public class MatrixSolver02_BlockLanczos extends MatrixSolver {
   				if ((matrixV[row] & mask) != 0) {
   					// the current row belongs to the solution encoded in matrixV by the bit addressed by mask.
   					// the row indices are the same as in my congruences list.
-  					Congruence congruence = congruences.get(row);
+  					Smooth congruence = congruences.get(row);
   					//LOG.info("mask=" + mask + ": add congruence " + congruence);
 					// add the new AQ-pairs via "xor"
 					congruence.addMyAQPairsViaXor(totalAQPairs);
@@ -85,7 +85,7 @@ public class MatrixSolver02_BlockLanczos extends MatrixSolver {
   				// Sometimes the BlockLanczos() method returns non-null-vectors (having q-factors with odd exponent),
   				// but it did not seem beneficial to test the exponents before calling processNullVector(.)
 	  			// So just "return" the AQ-pairs of the null vector:
-	  			nullVectorProcessor.processNullVector(totalAQPairs);
+	  			processNullVector(totalAQPairs);
   			}
   		}
 	}

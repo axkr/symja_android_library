@@ -15,8 +15,10 @@ package de.tilman_neumann.jml.factor.tdiv;
 
 import java.math.BigInteger;
 
-import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
+import de.tilman_neumann.jml.factor.FactorAlgorithm;
 import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
+import de.tilman_neumann.util.SortedMultiset;
+import de.tilman_neumann.util.SortedMultiset_BottomUp;
 
 /**
  * Trial division factor algorithm replacing division by multiplications.
@@ -25,22 +27,25 @@ import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
  * and multiply N by those reciprocals. Only if such a result is near to an integer we need
  * to do a division.
  * 
- * About 3 times faster than ordinary trial division.
+ * This variant abstains from testing N%primes[i] when the discriminator test indicates a neat division,
+ * and unrolls the loop in findSingleFactor().
+ * 
+ * Another bit faster than TDiv31Inverse_NoDoubleCheck.
  * 
  * @authors Thilo Harich + Tilman Neumann
  */
-public class TDiv31Inverse extends FactorAlgorithmBase {
+public class TDiv31Inverse extends FactorAlgorithm {
 	
-	private static AutoExpandingPrimesArray SMALL_PRIMES = AutoExpandingPrimesArray.get().ensurePrimeCount(NUM_PRIMES_FOR_31_BIT_TDIV);
+	private AutoExpandingPrimesArray SMALL_PRIMES = AutoExpandingPrimesArray.get();	// "static" would be slightly slower
 
 	// The allowed discriminator bit size is d <= 53 - bitLength(N/p), thus d<=23 would be safe
 	// for any integer N and p>=2. d=10 is the value that performs best, determined by experiment.
 	private static final double DISCRIMINATOR = 1.0/(1<<10);
 
-	private static int[] primes;
-	private static double[] reciprocals;
+	private int[] primes;
+	private double[] reciprocals;
 	
-	static {
+	public TDiv31Inverse() {
 		primes = new int[NUM_PRIMES_FOR_31_BIT_TDIV];
 		reciprocals = new double[NUM_PRIMES_FOR_31_BIT_TDIV];
 		for (int i=0; i<NUM_PRIMES_FOR_31_BIT_TDIV; i++) {
@@ -56,23 +61,63 @@ public class TDiv31Inverse extends FactorAlgorithmBase {
 	}
 
 	@Override
-	// TODO will not work for N > 31 bit having smallest factor > 15 bit
+	public SortedMultiset<BigInteger> factor(BigInteger Nbig) {
+		SortedMultiset<BigInteger> primeFactors = new SortedMultiset_BottomUp<>();
+		int N = Nbig.intValue();
+		
+		int q;
+		for (int i=0; ; i++) {
+			final double r = reciprocals[i];
+			final int p = primes[i];
+			int exp = 0;
+			while ((q = (int) (N*r + DISCRIMINATOR)) * p == N) {
+				exp++;
+				N = q; // avoiding a division here by storing q benefits the int version but not the long version
+			}
+			if (exp>0) {
+				primeFactors.add(BigInteger.valueOf(p), exp);
+			}
+			if (p*(long)p > N) {
+				break;
+			}
+		}
+		
+		if (N>1) {
+			// either N is prime, or we could not find all factors with p<=pLimit -> add the rest to the result
+			primeFactors.add(BigInteger.valueOf(N));
+		}
+		return primeFactors;
+	}
+
+	@Override
 	public BigInteger findSingleFactor(BigInteger N) {
+		if (N.bitLength() > 31) throw new IllegalArgumentException("TDiv31Inverse.findSingleFactor() does not work for N>31 bit, but N=" + N);
 		return BigInteger.valueOf(findSingleFactor(N.intValue()));
 	}
 	
 	public int findSingleFactor(int N) {
+		if (N<0) N = -N; // sign does not matter
+		if (N<4) return 1; // prime
+		if ((N&1)==0) return 2; // N even
+
 		// if N is odd and composite then the loop runs maximally up to prime = floor(sqrt(N))
-		for (int i=0; i<NUM_PRIMES_FOR_31_BIT_TDIV; i++) {
-			int nDivPrime = (int) (N*reciprocals[i] + DISCRIMINATOR);
-			if (nDivPrime * primes[i] == N) {
-				// nDivPrime is very near to an integer
-				if (N%primes[i]==0) {
-					return primes[i];
-				}
-			}
+		// unroll the loop
+		int i=1;
+		int unrolledLimit = NUM_PRIMES_FOR_31_BIT_TDIV-8;
+		for ( ; i<unrolledLimit; i++) {
+			if ((int) (N*reciprocals[i] + DISCRIMINATOR) * primes[i] == N) return primes[i];
+			if ((int) (N*reciprocals[++i] + DISCRIMINATOR) * primes[i] == N) return primes[i];
+			if ((int) (N*reciprocals[++i] + DISCRIMINATOR) * primes[i] == N) return primes[i];
+			if ((int) (N*reciprocals[++i] + DISCRIMINATOR) * primes[i] == N) return primes[i];
+			if ((int) (N*reciprocals[++i] + DISCRIMINATOR) * primes[i] == N) return primes[i];
+			if ((int) (N*reciprocals[++i] + DISCRIMINATOR) * primes[i] == N) return primes[i];
+			if ((int) (N*reciprocals[++i] + DISCRIMINATOR) * primes[i] == N) return primes[i];
+			if ((int) (N*reciprocals[++i] + DISCRIMINATOR) * primes[i] == N) return primes[i];
 		}
-		// otherwise N is prime!
-		throw new IllegalArgumentException("N = " + N + " is prime!");
+		for ( ; i<NUM_PRIMES_FOR_31_BIT_TDIV; i++) {
+			if ((int) (N*reciprocals[i] + DISCRIMINATOR) * primes[i] == N) return primes[i];
+		}
+		// otherwise N is prime
+		return 1;
 	}
 }

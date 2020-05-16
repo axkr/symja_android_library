@@ -25,7 +25,7 @@ import de.tilman_neumann.util.SortedMultiset;
  */
 public class Partial_1Large extends Partial {
 
-	private int bigFactor; // needs 8 byte instead of 56 byte for a Long[1]
+	private long bigFactor; // needs 8 byte instead of 56 byte for a Long[1]
 	
 	/**
 	 * Full constructor.
@@ -33,24 +33,24 @@ public class Partial_1Large extends Partial {
 	 * @param smallFactors small factors of Q
 	 * @param bigFactor the single large factor of Q
 	 */
-	public Partial_1Large(BigInteger A, SortedIntegerArray smallFactors, int bigFactor) {
+	public Partial_1Large(BigInteger A, SortedIntegerArray smallFactors, long bigFactor) {
 		super(A, smallFactors);
 		// only 1 large factor
 		this.bigFactor = bigFactor;
 	}
 
 	@Override
-	public SortedMultiset<Integer> getAllQFactors() {
+	public SortedMultiset<Long> getAllQFactors() {
 		// get small factors of Q
-		SortedMultiset<Integer> allFactors = super.getSmallQFactors();
+		SortedMultiset<Long> allFactors = super.getSmallQFactors();
 		// add single large factor
 		allFactors.add(bigFactor);
 		return allFactors;
 	}
 
 	@Override
-	public Integer[] getMatrixElements() {
-		return new Integer[] {bigFactor};
+	public Long[] getLargeFactorsWithOddExponent() {
+		return new Long[] {bigFactor};
 	}
 
 	@Override

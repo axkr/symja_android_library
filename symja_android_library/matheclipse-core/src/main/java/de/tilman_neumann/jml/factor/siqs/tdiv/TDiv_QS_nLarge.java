@@ -13,6 +13,9 @@
  */
 package de.tilman_neumann.jml.factor.siqs.tdiv;
 
+import static de.tilman_neumann.jml.factor.base.AnalysisOptions.*;
+import static de.tilman_neumann.jml.base.BigIntConstants.I_1;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +29,7 @@ import de.tilman_neumann.jml.factor.base.congruence.AQPair;
 import de.tilman_neumann.jml.factor.base.congruence.AQPairFactory;
 import de.tilman_neumann.jml.factor.base.congruence.Smooth_Perfect;
 import de.tilman_neumann.jml.factor.base.matrixSolver.MatrixSolver01_Gauss;
-import de.tilman_neumann.jml.factor.lehman.Lehman_Fast;
+import de.tilman_neumann.jml.factor.hart.Hart_TDiv_Race;
 import de.tilman_neumann.jml.factor.pollardRho.PollardRhoBrentMontgomery64;
 import de.tilman_neumann.jml.factor.pollardRho.PollardRhoBrentMontgomeryR64Mul63;
 import de.tilman_neumann.jml.factor.siqs.SIQS;
@@ -34,11 +37,11 @@ import de.tilman_neumann.jml.factor.siqs.data.SolutionArrays;
 import de.tilman_neumann.jml.factor.siqs.poly.SIQSPolyGenerator;
 import de.tilman_neumann.jml.factor.siqs.powers.PowerOfSmallPrimesFinder;
 import de.tilman_neumann.jml.factor.siqs.sieve.Sieve03g;
-import de.tilman_neumann.jml.primes.probable.BPSWTest;
+import de.tilman_neumann.jml.primes.probable.PrPTest;
+import de.tilman_neumann.util.Multiset;
 import de.tilman_neumann.util.SortedMultiset;
+import de.tilman_neumann.util.SortedMultiset_BottomUp;
 import de.tilman_neumann.util.Timer;
-
-import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
 /**
  * A trial division engine where partials can have several large factors.
@@ -61,7 +64,8 @@ public class TDiv_QS_nLarge implements TDiv_QS {
 	// prime base
 	private int[] primes;
 	private int[] exponents;
-	private int[] powers;
+	private int[] pArray;
+	private long[] pinvArrayL;
 	private int baseSize;
 	private int pMax;
 	private BigInteger pMaxSquare;
@@ -72,14 +76,14 @@ public class TDiv_QS_nLarge implements TDiv_QS {
 	private int[] pass2Powers = new int[100];
 	private int[] pass2Exponents = new int[100];
 
-	private BPSWTest bpsw = new BPSWTest();
+	private PrPTest prpTest = new PrPTest();
 	
-	private Lehman_Fast lehman = new Lehman_Fast(true);
+	private Hart_TDiv_Race hart = new Hart_TDiv_Race();
 	private PollardRhoBrentMontgomeryR64Mul63 pollardRhoR64Mul63 = new PollardRhoBrentMontgomeryR64Mul63();
 	private PollardRhoBrentMontgomery64 pollardRho64 = new PollardRhoBrentMontgomery64();
 	// Nested SIQS is required only for approximately N>310 bit.
 	// XXX For safety reasons we do not use Sieve03gU yet for the internal quadratic sieve
-	private SIQS qsInternal = new SIQS(0.32F, 0.37F, null, 0.16F, new PowerOfSmallPrimesFinder(), new SIQSPolyGenerator(), new Sieve03g(), new TDiv_QS_1Large_UBI(), 10, new MatrixSolver01_Gauss(), false);
+	private SIQS qsInternal = new SIQS(0.32F, 0.37F, null, 0.16F, new PowerOfSmallPrimesFinder(), new SIQSPolyGenerator(), new Sieve03g(), new TDiv_QS_1Large_UBI(), 10, new MatrixSolver01_Gauss());
 
 	// smallest solutions of Q(x) == A(x)^2 (mod p)
 	private int[] x1Array, x2Array;
@@ -90,10 +94,10 @@ public class TDiv_QS_nLarge implements TDiv_QS {
 	private AQPairFactory aqPairFactory = new AQPairFactory();
 
 	// statistics
-	private boolean profile;
 	private Timer timer = new Timer();
 	private long testCount, sufficientSmoothCount;
-	private long duration;
+	private long aqDuration, pass1Duration, pass2Duration, primeTestDuration, factorDuration;
+	private Multiset<Integer> qRestSizes;
 
 	@Override
 	public String getName() {
@@ -101,16 +105,15 @@ public class TDiv_QS_nLarge implements TDiv_QS {
 	}
 
 	@Override
-	public void initializeForN(double N_dbl, BigInteger kN, double maxQRest, boolean profile) {
+	public void initializeForN(double N_dbl, BigInteger kN, double maxQRest) {
 		// the biggest unfactored rest where some Q is considered smooth enough for a congruence.
 		this.maxQRest = maxQRest;
 		if (DEBUG) LOG.debug("maxQRest = " + maxQRest + " (" + (64 - Long.numberOfLeadingZeros((long)maxQRest)) + " bits)");
 		this.kN = kN;
 		// statistics
-		this.profile = profile;
-		this.testCount = 0;
-		this.sufficientSmoothCount = 0;
-		this.duration = 0;
+		if (ANALYZE) testCount = sufficientSmoothCount = 0;
+		if (ANALYZE) aqDuration = pass1Duration = pass2Duration = primeTestDuration = factorDuration = 0;
+		if (ANALYZE_LARGE_FACTOR_SIZES) qRestSizes = new SortedMultiset_BottomUp<>();
 	}
 
 	@Override
@@ -119,7 +122,8 @@ public class TDiv_QS_nLarge implements TDiv_QS {
 		bParam = b;
 		primes = solutionArrays.primes;
 		exponents = solutionArrays.exponents;
-		powers = solutionArrays.powers;
+		pArray = solutionArrays.pArray;
+		pinvArrayL = solutionArrays.pinvArrayL;
 		baseSize = filteredBaseSize;
 		x1Array = solutionArrays.x1Array;
 		x2Array = solutionArrays.x2Array;
@@ -135,28 +139,30 @@ public class TDiv_QS_nLarge implements TDiv_QS {
 
 	@Override
 	public List<AQPair> testList(List<Integer> xList) {
-		timer.capture();
+		if (ANALYZE) timer.capture();
 
 		// do trial division with sieve result
 		ArrayList<AQPair> aqPairs = new ArrayList<AQPair>();
 		for (int x : xList) {
 			smallFactors.reset();
 			bigFactors.reset();
-			testCount++;
+			if (ANALYZE) testCount++;
 			BigInteger A = da.multiply(BigInteger.valueOf(x)).add(bParam); // A(x) = d*a*x+b, with d = 1 or 2 depending on kN % 8
 			BigInteger Q = A.multiply(A).subtract(kN); // Q(x) = A(x)^2 - kN
+			if (ANALYZE) aqDuration += timer.capture();
 			AQPair aqPair = test(A, Q, x);
+			if (ANALYZE) factorDuration += timer.capture();
 			if (aqPair != null) {
 				// Q(x) was found sufficiently smooth to be considered a (partial) congruence
 				aqPairs.add(aqPair);
-				sufficientSmoothCount++;
+				if (ANALYZE) sufficientSmoothCount++;
 //				if (DEBUG) {
 //					LOG.debug("Found congruence " + aqPair);
 //					assertEquals(A.multiply(A).mod(kN), Q.mod(kN));
 //					// make sure that the product of factors gives Q
-//					SortedMultiset<Integer> allQFactors = aqPair.getAllQFactors();
+//					SortedMultiset<Long> allQFactors = aqPair.getAllQFactors();
 //					BigInteger testProduct = I_1;
-//					for (Map.Entry<Integer, Integer> entry : allQFactors.entrySet()) {
+//					for (Map.Entry<Long, Integer> entry : allQFactors.entrySet()) {
 //						BigInteger prime = BigInteger.valueOf(entry.getKey());
 //						int exponent = entry.getValue();
 //						testProduct = testProduct.multiply(prime.pow(exponent));
@@ -165,7 +171,7 @@ public class TDiv_QS_nLarge implements TDiv_QS {
 //				}
 			}
 		}
-		if (profile) duration += timer.capture();
+		if (ANALYZE) aqDuration += timer.capture();
 		return aqPairs;
 	}
 	
@@ -192,19 +198,31 @@ public class TDiv_QS_nLarge implements TDiv_QS {
 			pass2Exponents[pass2Count] = 1;
 		}
 		
-		// Pass 1: Test solution arrays ("re-sieving").
-		// Starting at the biggest prime base elements is faster because then Q_rest is reduced quicker in pass 2.
+		// Pass 1: Test solution arrays.
 		// IMPORTANT: Java gives x % p = x for |x| < p, and we have many p bigger than any sieve array entry.
 		// IMPORTANT: Not computing the modulus in these cases improves performance by almost factor 2!
-		int xAbs = Math.abs(x);
+		final int xAbs = x<0 ? -x : x;
 		for (int pIndex = baseSize-1; pIndex > 0; pIndex--) { // p[0]=2 was already tested
-			int p = powers[pIndex];
-			int xModP = xAbs<p ? x : x % p;
-			if (xModP<0) xModP += p; // make remainder non-negative for negative x
-//			if (DEBUG) {
-//				if (xModP<0) LOG.debug("x=" + x + ", p=" + p + " -> x % p = " + xModP + ", x1 = " + x1Array[pIndex] + ", x2 = " + x2Array[pIndex]);
-//				assertTrue(0<=xModP && xModP<p);
-//			}
+			int p = pArray[pIndex];
+			int xModP;
+			if (xAbs<p) {
+				xModP = x<0 ? x+p : x;
+			} else {
+				// Compute x%p using long-valued Barrett reduction, see https://en.wikipedia.org/wiki/Barrett_reduction.
+				// We can use the long-variant here because x*m will never overflow positive long values.
+				final long m = pinvArrayL[pIndex];
+				final long q = ((x*m)>>>32);
+				xModP = (int) (x - q * p);
+				if (xModP<0) xModP += p;
+				else if (xModP>=p) xModP -= p;
+//				if (DEBUG) {
+//					assertTrue(0<=xModP && xModP<p);
+//					int xModP2 = x % p;
+//					if (xModP2<0) xModP2 += p;
+//					if (xModP != xModP2) LOG.debug("x=" + x + ", p=" + p + ": xModP=" + xModP + ", but xModP2=" + xModP2);
+//					assertEquals(xModP2, xModP);
+//				}
+			}
 			if (xModP==x1Array[pIndex] || xModP==x2Array[pIndex]) {
 				pass2Primes[pass2Count] = primes[pIndex];
 				pass2Exponents[pass2Count] = exponents[pIndex];
@@ -212,7 +230,8 @@ public class TDiv_QS_nLarge implements TDiv_QS {
 				// for some reasons I do not understand it is faster to divide Q by p in pass 2 only, not here
 			}
 		}
-	
+		if (ANALYZE) pass1Duration += timer.capture();
+
 		// Pass 2: Reduce Q by the pass2Primes and collect small factors
 		BigInteger[] div;
 		for (int pass2Index = 0; pass2Index < pass2Count; pass2Index++) {
@@ -225,6 +244,7 @@ public class TDiv_QS_nLarge implements TDiv_QS {
 				Q_rest = div[0];
 			}
 		}
+		if (ANALYZE) pass2Duration += timer.capture();
 		if (Q_rest.equals(I_1)) return new Smooth_Perfect(A, smallFactors);
 		
 		// Division by all p<=pMax was not sufficient to factor Q completely.
@@ -239,21 +259,15 @@ public class TDiv_QS_nLarge implements TDiv_QS {
 	}
 
 	private boolean factor_recurrent(BigInteger Q_rest) {
-		if (Q_rest.compareTo(pMaxSquare)<0) {
-			// we divided Q_rest by all primes <= pMax and we have Q_rest < pMax^2 -> it must be prime
-//			if (DEBUG) {
-//				LOG.debug("factor_recurrent(): Q_rest = " + Q_rest + " < pMax^2 -> Q_rest is prime");
-//				assertTrue(bpsw.isProbablePrime(Q_rest));
-//			}
+		// Here we need a prime test, because factor algorithms may not return when called with a prime argument.
+		boolean restIsPrime = Q_rest.compareTo(pMaxSquare)<0 || prpTest.isProbablePrime(Q_rest);
+		if (ANALYZE) primeTestDuration += timer.capture();
+		if (restIsPrime) {
+			// Check that the simple prime test using pMaxSquare is correct
+//			if (DEBUG) assertTrue(prpTest.isProbablePrime(Q_rest));
 			if (Q_rest.bitLength() > 31) return false;
-			bigFactors.add(Q_rest.intValue());
+			bigFactors.add(Q_rest.longValue());
 			return true;
-		}
-		// now we can not do without isProbablePrime(), because calling findSingleFactor() may not return when called with a prime argument
-		if (bpsw.isProbablePrime(Q_rest)) {
-			// Q_rest is a (probable) prime >= pMax^2. Such big factors do not help to find smooth congruences, so we ignore the partial.
-			if (DEBUG) LOG.debug("factor_recurrent(): Q_rest = " + Q_rest + " is probable prime > pMax^2 -> ignore");
-			return false;
 		} // else: Q_rest is surely not prime
 		
 		// Find a factor of Q_rest, where Q_rest is odd and has two+ factors, each greater than pMax.
@@ -261,10 +275,11 @@ public class TDiv_QS_nLarge implements TDiv_QS {
 		// -> trial division is no help here.
 		BigInteger factor1;
 		int Q_rest_bits = Q_rest.bitLength();
-		if (Q_rest_bits<48) {
-			if (DEBUG) LOG.debug("factor_recurrent(): pMax^2 = " + pMaxSquare + ", Q_rest = " + Q_rest + " (" + Q_rest_bits + " bits) not prime -> use lehman");
-			factor1 = lehman.findSingleFactor(Q_rest);
-		} else if (Q_rest_bits<58) {
+		if (ANALYZE_LARGE_FACTOR_SIZES) qRestSizes.add(Q_rest_bits);
+		if (Q_rest_bits<50) {
+			if (DEBUG) LOG.debug("factor_recurrent(): pMax^2 = " + pMaxSquare + ", Q_rest = " + Q_rest + " (" + Q_rest_bits + " bits) not prime -> use hart");
+			factor1 = hart.findSingleFactor(Q_rest);
+		} else if (Q_rest_bits<57) {
 			if (DEBUG) LOG.debug("factor_recurrent(): pMax^2 = " + pMaxSquare + ", Q_rest = " + Q_rest + " (" + Q_rest_bits + " bits) not prime -> use pollardRhoR64Mul63");
 			factor1 = pollardRhoR64Mul63.findSingleFactor(Q_rest);
 		} else if (Q_rest_bits<63) {
@@ -274,6 +289,7 @@ public class TDiv_QS_nLarge implements TDiv_QS {
 			if (DEBUG) LOG.debug("factor_recurrent(): pMax^2 = " + pMaxSquare + ", Q_rest = " + Q_rest + " (" + Q_rest_bits + " bits) not prime -> use qsInternal");
 			factor1 = qsInternal.findSingleFactor(Q_rest);
 		}
+		if (ANALYZE) factorDuration += timer.capture();
 		// Here we can not exclude factors > 31 bit because they may have 2 prime factors themselves.
 		BigInteger factor2 = Q_rest.divide(factor1);
 		if (DEBUG) LOG.debug("factor_recurrent(): Q_rest = " + Q_rest + " (" + Q_rest_bits + " bits) = " + factor1 + " * " + factor2);
@@ -282,7 +298,7 @@ public class TDiv_QS_nLarge implements TDiv_QS {
 
 	@Override
 	public TDivReport getReport() {
-		return new TDivReport(testCount, sufficientSmoothCount, duration);
+		return new TDivReport(testCount, sufficientSmoothCount, aqDuration, pass1Duration, pass2Duration, primeTestDuration, factorDuration, qRestSizes);
 	}
 	
 	@Override

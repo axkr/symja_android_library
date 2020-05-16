@@ -34,7 +34,7 @@ public class Smooth_Perfect extends Smooth_Simple {
 	}
 	
 	@Override
-	public SortedMultiset<Integer> getAllQFactors() {
+	public SortedMultiset<Long> getAllQFactors() {
 		// a perfect smooth congruence has no large factors
 		return super.getSmallQFactors();
 	}

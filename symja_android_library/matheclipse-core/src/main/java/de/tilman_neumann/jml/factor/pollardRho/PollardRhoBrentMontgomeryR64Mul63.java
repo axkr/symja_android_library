@@ -22,8 +22,9 @@ import java.security.SecureRandom;
 import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.base.Uint128;
-import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
+import de.tilman_neumann.jml.factor.FactorAlgorithm;
 import de.tilman_neumann.jml.gcd.Gcd63;
+import de.tilman_neumann.util.ConfigUtil;
 import de.tilman_neumann.util.SortedMultiset;
 
 /**
@@ -33,13 +34,17 @@ import de.tilman_neumann.util.SortedMultiset;
  * PollardRhoBrentMontgomery64 for N < 58 bits, because until that size the performance advantage of 
  * mul63() vs. mul64() predominates the performance loss caused by errors in Montgomery multiplication.
  * 
+ * Another small performance gain stems from the choice of polynomials:
+ * x_(n+1) = x_n*(x_n + 1) is slightly faster than x_(n+1) = (x_n)^2 - c
+ * because it does not need another reduction (mod N) after subtracting c.
+ * 
  * @see [Richard P. Brent: An improved Monte Carlo Factorization Algorithm, 1980]
  * @see [http://projecteuler.chat/viewtopic.php?t=3776]
  * @see [http://coliru.stacked-crooked.com/a/f57f11426d06acd8]
  * 
  * @author Tilman Neumann
  */
-public class PollardRhoBrentMontgomeryR64Mul63 extends FactorAlgorithmBase {
+public class PollardRhoBrentMontgomeryR64Mul63 extends FactorAlgorithm {
 	private static final Logger LOG = Logger.getLogger(PollardRhoBrentMontgomeryR64Mul63.class);
 	private static final boolean DEBUG = false;
 
@@ -65,6 +70,9 @@ public class PollardRhoBrentMontgomeryR64Mul63 extends FactorAlgorithmBase {
 	}
 	
 	public long findSingleFactor(long N) {
+		// N==9 would require to check if the gcd is 1 < gcd < N before returning it as a factor
+		if (N==9) return 3;
+		
 		this.N = N;
         long G, x, ys;
         
@@ -84,16 +92,16 @@ public class PollardRhoBrentMontgomeryR64Mul63 extends FactorAlgorithmBase {
         	do {
 	    	    x = y;
 	    	    for (int i=r; i>0; i--) {
-	    	        y = montgomeryMult(y, y+1);
+	    	        y = montMul63(y, y+1, N, minusNInvModR);
 	    	    }
 	    	    int k = 0;
 	    	    do {
 	    	        ys = y;
 	    	        final int iMax = Math.min(m, r-k);
 	    	        for (int i=iMax; i>0; i--) {
-	    	            y = montgomeryMult(y, y+1);
+	    	            y = montMul63(y, y+1, N, minusNInvModR);
 	    	            final long diff = x<y ? y-x : x-y;
-	    	            q = montgomeryMult(diff, q);
+	    	            q = montMul63(diff, q, N, minusNInvModR);
 	    	        }
 	    	        G = gcd.gcd(q, N);
 	    	        // if q==0 then G==N -> the loop will be left and restarted with new y
@@ -105,7 +113,7 @@ public class PollardRhoBrentMontgomeryR64Mul63 extends FactorAlgorithmBase {
 	    	} while (G==1);
 	    	if (G==N) {
 	    	    do {
-	    	        ys = montgomeryMult(ys, ys+1);
+	    	        ys = montMul63(ys, ys+1, N, minusNInvModR);
     	            final long diff = x<ys ? ys-x : x-ys;
 	    	        G = gcd.gcd(diff, N);
 	    	    } while (G==1);
@@ -145,21 +153,21 @@ public class PollardRhoBrentMontgomeryR64Mul63 extends FactorAlgorithmBase {
 	}
 
 	/**
-	 * Montgomery multiplication modulo N, using reducer R=2^64.
-	 * Inputs and output are in Montgomery form and in the range [0, N).
-	 * 
+	 * Montgomery multiplication of a*b mod n with regard to R=2^63. ("mulredc63x" in Yafu)
 	 * @param a
 	 * @param b
-	 * @return
+	 * @param N
+	 * @param Nhat complement of N mod 2^63
+	 * @return Montgomery multiplication of a*b mod n
 	 */
-	private long montgomeryMult(final long a, final long b) {
+	public static long montMul63(long a, long b, long N, long Nhat) {
 		// Step 1: Compute a*b
 		Uint128 ab = Uint128.mul63(a, b);
 		// Step 2: Compute t = ab * (-1/N) mod R
 		// Since R=2^64, "x mod R" just means to get the low part of x.
 		// That would give t = Uint128.mul64(ab.getLow(), minusNInvModR).getLow();
 		// but even better, the long product just gives the low part -> we can get rid of one expensive mul64().
-		long t = ab.getLow() * minusNInvModR;
+		long t = ab.getLow() * Nhat;
 		// Step 3: Compute r = (a*b + t*N) / R
 		// Since R=2^64, "x / R" just means to get the high part of x.
 		long r = ab.add_getHigh(Uint128.mul63(t, N));
@@ -181,7 +189,7 @@ public class PollardRhoBrentMontgomeryR64Mul63 extends FactorAlgorithmBase {
 		
 		return r;
 	}
-	
+
 	/**
 	 * Test.
 	 * Test numbers:
@@ -191,27 +199,27 @@ public class PollardRhoBrentMontgomeryR64Mul63 extends FactorAlgorithmBase {
 	 * 
 	 * @param args ignored
 	 */
-//	public static void main(String[] args) {
-//    	ConfigUtil.initProject();
-//    	
-//		while(true) {
-//			BigInteger n;
-//			try {
-//				LOG.info("Please insert the integer to factor:");
-//				BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-//				String line = in.readLine();
-//				String input = line.trim();
-//				n = new BigInteger(input);
-//				LOG.debug("factoring " + input + " (" + n.bitLength() + " bits) ...");
-//			} catch (IOException ioe) {
-//				LOG.error("io-error occuring on input: " + ioe.getMessage());
-//				continue;
-//			}
-//			
-//			long start = System.currentTimeMillis();
-//			SortedMultiset<BigInteger> result = new PollardRhoBrentMontgomeryR64Mul63().factor(n);
-//			LOG.info("Factored " + n + " = " + result.toString() + " in " + (System.currentTimeMillis()-start) + " ms");
-//
-//		} // next input...
-//	}
+	public static void main(String[] args) {
+    	ConfigUtil.initProject();
+    	
+		while(true) {
+			BigInteger n;
+			try {
+				LOG.info("Please insert the integer to factor:");
+				BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+				String line = in.readLine();
+				String input = line.trim();
+				n = new BigInteger(input);
+				LOG.debug("factoring " + input + " (" + n.bitLength() + " bits) ...");
+			} catch (IOException ioe) {
+				LOG.error("io-error occuring on input: " + ioe.getMessage());
+				continue;
+			}
+			
+			long start = System.currentTimeMillis();
+			SortedMultiset<BigInteger> result = new PollardRhoBrentMontgomeryR64Mul63().factor(n);
+			LOG.info("Factored " + n + " = " + result.toString() + " in " + (System.currentTimeMillis()-start) + " ms");
+
+		} // next input...
+	}
 }

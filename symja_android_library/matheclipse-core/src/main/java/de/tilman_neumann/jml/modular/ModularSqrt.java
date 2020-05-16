@@ -15,15 +15,16 @@ package de.tilman_neumann.jml.modular;
 
 import java.math.BigInteger;
 
-//import org.apache.log4j.Logger;
-//
+import org.apache.log4j.Logger;
+
+
 /**
  * Compute modular sqrts t with t^2 == n (mod p) and u with u^2 == n (mod p^e) using Tonelli-Shanks' algorithm.
  * @author Tilman Neumann
  */
 public class ModularSqrt {
-//	private static final Logger LOG = Logger.getLogger(ModularSqrt.class);
-//	private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(ModularSqrt.class);
+	private static final boolean DEBUG = false;
 
 	private ModularPower mpe = new ModularPower();
 	private JacobiSymbol jacobiEngine = new JacobiSymbol();
@@ -55,7 +56,7 @@ public class ModularSqrt {
 		case 5:			
 			return case5Mod8(n, p);
 		default:
-//			LOG.warn("Tonelli_Shanks() has been called with even p=" + p + " -> brute force search required.");
+			LOG.warn("Tonelli_Shanks() has been called with even p=" + p + " -> brute force search required.");
 			return bruteForce(n, p);
 		}
 	}

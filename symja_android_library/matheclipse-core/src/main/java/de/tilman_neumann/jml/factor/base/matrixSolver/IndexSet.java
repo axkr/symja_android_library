@@ -17,7 +17,6 @@ import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 
-
 /**
  * BitArray implementation of an IndexSet, realized in long[], used by the Gaussian solver.
  * 

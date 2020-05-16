@@ -15,6 +15,7 @@ package de.tilman_neumann.util;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.SortedMap;
 
 /**
  * A multiset with a sort relation between elements.<br>
@@ -33,7 +34,7 @@ import java.util.Map;
  * 
  * @param <T> value class
  */
-public interface SortedMultiset<T extends Comparable<T>> extends Multiset<T>, Comparable<SortedMultiset<T>> {
+public interface SortedMultiset<T extends Comparable<T>> extends Multiset<T>, SortedMap<T, Integer>, Comparable<SortedMultiset<T>> {
 
 	/**
 	 * @return The smallest element.
@@ -53,7 +54,7 @@ public interface SortedMultiset<T extends Comparable<T>> extends Multiset<T>, Co
 	/**
 	 * Returns the multiset of elements contained in both this and in the other multiset.
 	 * @param other
-	 * @return
+	 * @return the intersection of this and the other multiset
 	 */
 	@Override // declare exact result data type
 	SortedMultiset<T> intersect(Multiset<T> other);
@@ -62,7 +63,7 @@ public interface SortedMultiset<T extends Comparable<T>> extends Multiset<T>, Co
 	 * Conversion to String, with
 	 * @param entrySep e.g. "*" for multiplicative elements
 	 * @param expSep e.g. "^" for multiplicative elements
-	 * @return
+	 * @return a string representation of this
 	 */
 	String toString(String entrySep, String expSep);
 }

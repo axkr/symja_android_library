@@ -13,6 +13,8 @@
  */
 package de.tilman_neumann.jml.factor.siqs.sieve;
 
+import static de.tilman_neumann.jml.factor.base.AnalysisOptions.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -84,7 +86,6 @@ public class Sieve03g implements Sieve {
 	private BinarySearch binarySearch = new BinarySearch();
 
 	// timings
-	private boolean profile;
 	private Timer timer = new Timer();
 	private long initDuration, sieveDuration, collectDuration;
 	
@@ -94,12 +95,12 @@ public class Sieve03g implements Sieve {
 	}
 	
 	@Override
-	public void initializeForN(SieveParams sieveParams, int mergedBaseSize, boolean profile) {
+	public void initializeForN(SieveParams sieveParams, int mergedBaseSize) {
 		this.pMinIndex = sieveParams.pMinIndex;
 		int pMax = sieveParams.pMax;
 		initializer = sieveParams.getInitializerBlock();
 
-		// Allocate sieve array: Typically SIQS adjusts such that 2.75 * sieveArraySize ~ pMax.
+		// Allocate sieve array: Typically SIQS adjusts such that pMax/sieveArraySize = 2.5 to 5.0.
 		// For large primes with 0 or 1 sieve locations we need to allocate pMax+1 entries;
 		// For primes p[i], i<p1Index, we need p[i]+sieveArraySize = 2*sieveArraySize entries.
 		this.sieveArraySize = sieveParams.sieveArraySize;
@@ -107,20 +108,18 @@ public class Sieve03g implements Sieve {
 		sieveArray = new byte[sieveAllocationSize];
 		if (DEBUG) LOG.debug("pMax = " + pMax + ", sieveArraySize = " + sieveArraySize + " --> sieveAllocationSize = " + sieveAllocationSize);
 
-		// profiling
-		this.profile = profile;
-		initDuration = sieveDuration = collectDuration = 0;
+		if (ANALYZE) initDuration = sieveDuration = collectDuration = 0;
 	}
 
 	@Override
 	public void initializeForAParameter(SolutionArrays solutionArrays, int filteredBaseSize) {
 		this.solutionArrays = solutionArrays;
-		int[] powers = solutionArrays.powers;
+		int[] pArray = solutionArrays.pArray;
 		this.primeBaseSize = filteredBaseSize;
 		
-		this.p1Index = binarySearch.getInsertPosition(powers, primeBaseSize, sieveArraySize);
-		this.p2Index = binarySearch.getInsertPosition(powers, p1Index, (sieveArraySize+1)/2);
-		this.p3Index = binarySearch.getInsertPosition(powers, p2Index, (sieveArraySize+2)/3);
+		this.p1Index = binarySearch.getInsertPosition(pArray, primeBaseSize, sieveArraySize);
+		this.p2Index = binarySearch.getInsertPosition(pArray, p1Index, (sieveArraySize+1)/2);
+		this.p3Index = binarySearch.getInsertPosition(pArray, p2Index, (sieveArraySize+2)/3);
 		if (DEBUG) LOG.debug("primeBaseSize=" + primeBaseSize + ", p1Index=" + p1Index + ", p2Index=" + p2Index + ", p3Index=" + p3Index);
 		
 		// The minimum number of x-solutions in the sieve array is floor(sieveArraySize/p).
@@ -128,19 +127,19 @@ public class Sieve03g implements Sieve {
 		// -> minSolutionCount = 2
 		this.minSolutionCounts_m3 = new int[p3Index];
 		for (int i=p3Index-1; i>=pMinIndex; i--) {
-			minSolutionCounts_m3[i] = sieveArraySize/powers[i] - 3;
+			minSolutionCounts_m3[i] = sieveArraySize/pArray[i] - 3;
 			//LOG.debug("p=" + primesArray[i] + ": minSolutionCount = " + minSolutionCounts_m3[i]);
 		}
 	}
 
 	@Override
 	public List<Integer> sieve() {
-		if (profile) timer.capture();
+		if (ANALYZE) timer.capture();
 		this.initializeSieveArray(sieveArraySize);
-		if (profile) initDuration += timer.capture();
+		if (ANALYZE) initDuration += timer.capture();
 		
 		// Sieve with positive x, large primes:
-		final int[] powers = solutionArrays.powers;
+		final int[] pArray = solutionArrays.pArray;
 		final int[] x1Array = solutionArrays.x1Array;
 		final int[] x2Array = solutionArrays.x2Array;
 		final byte[] logPArray = solutionArrays.logPArray;
@@ -153,7 +152,7 @@ public class Sieve03g implements Sieve {
 			sieveArray[x2Array[i]] += logP;
 		}
 		for ( ; i>=p2Index; i--) {
-			final int p = powers[i];
+			final int p = pArray[i];
 			final byte logP = logPArray[i];
 			x1 = x1Array[i];
 			x2 = x2Array[i];
@@ -163,7 +162,7 @@ public class Sieve03g implements Sieve {
 			sieveArray[x2+p] += logP;
 		}
 		for ( ; i>=p3Index; i--) {
-			final int p = powers[i];
+			final int p = pArray[i];
 			final byte logP = logPArray[i];
 			x1 = x1Array[i];
 			x2 = x2Array[i];
@@ -177,7 +176,7 @@ public class Sieve03g implements Sieve {
 		}
 		// Positive x, small primes:
 		for ( ; i>=pMinIndex; i--) {
-			final int p = powers[i];
+			final int p = pArray[i];
 			final byte logP = logPArray[i];
 			x1 = x1Array[i];
 			x2 = x2Array[i];
@@ -196,7 +195,7 @@ public class Sieve03g implements Sieve {
 				sieveArray[x2+=p] += logP;
 			}
 		} // end for (p)
-		if (profile) sieveDuration += timer.capture();
+		if (ANALYZE) sieveDuration += timer.capture();
 
 		// collect results
 		List<Integer> smoothXList = new ArrayList<Integer>();
@@ -212,21 +211,21 @@ public class Sieve03g implements Sieve {
 				if (sieveArray[x+4] < 0) smoothXList.add(x+4);
 			}
 		}
-		if (profile) collectDuration += timer.capture();
+		if (ANALYZE) collectDuration += timer.capture();
 		
 		// re-initialize sieve array for negative x
 		this.initializeSieveArray(sieveArraySize);
-		if (profile) initDuration += timer.capture();
+		if (ANALYZE) initDuration += timer.capture();
 
 		// negative x, large primes:
 		for (i=primeBaseSize-1; i>=p1Index; i--) {
-			final int p = powers[i];
+			final int p = pArray[i];
 			final byte logP = logPArray[i];
 			sieveArray[p-x1Array[i]] += logP;
 			sieveArray[p-x2Array[i]] += logP;
 		}
 		for (; i>=p2Index; i--) {
-			final int p = powers[i];
+			final int p = pArray[i];
 			final byte logP = logPArray[i];
 			x1 = p-x1Array[i];
 			x2 = p-x2Array[i];
@@ -236,7 +235,7 @@ public class Sieve03g implements Sieve {
 			sieveArray[x2+p] += logP;
 		}
 		for (; i>=p3Index; i--) {
-			final int p = powers[i];
+			final int p = pArray[i];
 			final byte logP = logPArray[i];
 			x1 = p-x1Array[i];
 			x2 = p-x2Array[i];
@@ -250,7 +249,7 @@ public class Sieve03g implements Sieve {
 		}
 		// negative x, small primes:
 		for (; i>=pMinIndex; i--) {
-			final int p = powers[i];
+			final int p = pArray[i];
 			final byte logP = logPArray[i];
 			x1 = p-x1Array[i];
 			x2 = p-x2Array[i];
@@ -266,7 +265,7 @@ public class Sieve03g implements Sieve {
 				sieveArray[x2+=p] += logP;
 			}
 		} // end for (p)
-		if (profile) sieveDuration += timer.capture();
+		if (ANALYZE) sieveDuration += timer.capture();
 
 		// collect results
 		// let the sieve entry counter x run down to 0 is much faster because of the simpler exit condition
@@ -281,7 +280,7 @@ public class Sieve03g implements Sieve {
 				if (sieveArray[x+4] < 0) smoothXList.add(-(x+4));
 			}
 		}
-		if (profile) collectDuration += timer.capture();
+		if (ANALYZE) collectDuration += timer.capture();
 		return smoothXList;
 	}
 

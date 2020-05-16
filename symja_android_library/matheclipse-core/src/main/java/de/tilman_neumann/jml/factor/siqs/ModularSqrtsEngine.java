@@ -36,6 +36,9 @@ public class ModularSqrtsEngine {
 	/**
 	 * For all primes p in the prime base, find the modular sqrt's of kN (mod p), i.e. the t such that t^2 == kN (mod p).
 	 *
+	 * Since t^2 == kN (mod p) equals t^2 == (kN%p) (mod p), we can compute Tonelli-Shanks in all-integer arguments.
+	 * For SIQS this is no big improvement though, because Tonelli-Shanks is not time-critical anyway.
+	 * 
 	 * @param primesArray
 	 * @param primeBaseSize
 	 * @param kN

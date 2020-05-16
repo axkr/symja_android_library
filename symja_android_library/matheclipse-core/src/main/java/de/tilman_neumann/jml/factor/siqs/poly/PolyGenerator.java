@@ -44,15 +44,13 @@ public interface PolyGenerator {
 	 * @param aParamGenerator generator for a-parameters
 	 * @param sieveEngine
 	 * @param tDivEngine
-	 * @param profile
 	 */
 	void initializeForN(
 			int k, BigInteger N, BigInteger kN, int d, SieveParams sieveParams, BaseArrays baseArrays, 
-			AParamGenerator aParamGenerator, Sieve sieveEngine, TDiv_QS tDivEngine, boolean profile);
+			AParamGenerator aParamGenerator, Sieve sieveEngine, TDiv_QS tDivEngine);
 
 	/**
 	 * Compute a new polynomial.
-	 * @return
 	 */
 	void nextPolynomial();
 

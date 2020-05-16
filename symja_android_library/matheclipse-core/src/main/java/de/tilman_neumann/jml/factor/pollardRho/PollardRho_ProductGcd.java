@@ -20,14 +20,14 @@ import java.security.SecureRandom;
 
 import org.apache.log4j.Logger;
 
-import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
+import de.tilman_neumann.jml.factor.FactorAlgorithm;
 
 /**
  * Pollard's Rho algorithm improved by doing the GCD on products.
  * 
  * @author Tilman Neumann
  */
-public class PollardRho_ProductGcd extends FactorAlgorithmBase {
+public class PollardRho_ProductGcd extends FactorAlgorithm {
 	@SuppressWarnings("unused")
 	private static final Logger LOG = Logger.getLogger(PollardRho_ProductGcd.class);
 	private static final SecureRandom RNG = new SecureRandom();

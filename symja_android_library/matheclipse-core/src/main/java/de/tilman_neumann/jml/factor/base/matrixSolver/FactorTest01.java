@@ -60,7 +60,7 @@ public class FactorTest01 implements FactorTest {
 	@Override
 	public void testForFactor(Set<AQPair> aqPairs) throws FactorException {
 		// Collect Q-factors from all AQPairs
-		SortedMultiset<Integer> totalQ_factors = new SortedMultiset_BottomUp<Integer>();
+		SortedMultiset<Long> totalQ_factors = new SortedMultiset_BottomUp<>();
 		for (AQPair aqPair : aqPairs) {
 			totalQ_factors.addAll(aqPair.getAllQFactors());
 		}
@@ -68,7 +68,7 @@ public class FactorTest01 implements FactorTest {
 		// BlockLanczos returns non-square "solutions", too, so we test on the fly if Q is really a square.
 		long t0 = System.currentTimeMillis();
 		BigInteger totalQSqrt = I_1;
-		for (int factor : totalQ_factors.keySet()) {
+		for (long factor : totalQ_factors.keySet()) {
 			if (factor == -1) continue; // sqrt(Q-product) can be positive or negative, but we want the positive solution -> skip sign
 			int exp = totalQ_factors.get(factor);
 			if ((exp&1) == 1) {
@@ -85,16 +85,16 @@ public class FactorTest01 implements FactorTest {
 			AProd = AProd.multiply(aqPair.getA()).mod(N); // reduction (mod N) is much faster
 		}
 		
-		if (DEBUG) {
-			long compositionDuration = System.currentTimeMillis() - t0;
-			LOG.debug("N = " + N + ": testForFactor(): A=" + getAString(aqPairs) + "=" + AProd + ", Q=" + getQString(aqPairs) + ", sqrt(Q)=" + totalQSqrt);
-			// verify congruence A^2 == Q (mod N)
-			BigInteger totalQ = totalQSqrt.multiply(totalQSqrt);
-			BigInteger div[] = AProd.pow(2).subtract(totalQ).divideAndRemainder(N);
+//		if (DEBUG) {
+//			long compositionDuration = System.currentTimeMillis() - t0;
+//			LOG.debug("N = " + N + ": testForFactor(): A=" + getAString(aqPairs) + "=" + AProd + ", Q=" + getQString(aqPairs) + ", sqrt(Q)=" + totalQSqrt);
+//			// verify congruence A^2 == Q (mod N)
+//			BigInteger totalQ = totalQSqrt.multiply(totalQSqrt);
+//			BigInteger div[] = AProd.pow(2).subtract(totalQ).divideAndRemainder(N);
 //			assertEquals(I_0, div[1]);
-			LOG.debug("A^2-Q = " + div[0] + " * N");
-			LOG.debug("A^2 % N = " + AProd.pow(2).mod(N) + ", Q = " + totalQ);
-		}
+//			LOG.debug("A^2-Q = " + div[0] + " * N");
+//			LOG.debug("A^2 % N = " + AProd.pow(2).mod(N) + ", Q = " + totalQ);
+//		}
 
 		// test A-sqrt(Q)
 		BigInteger minusGcd = AProd.subtract(totalQSqrt).gcd(N);

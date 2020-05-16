@@ -121,7 +121,7 @@ public class EEA31 {
 	 * @param y
 	 * @return (1/x) mod y
 	 */
-	public int modularInverse1(int x, int y) {
+	public int modularInverse_v1(int x, int y) {
 		// initialize
 		int a = 1;
 		int g = x;
@@ -158,7 +158,7 @@ public class EEA31 {
 	 * @param modulus
 	 * @return
 	 */
-	public int modularInverse/*2*/(int a, int modulus) {
+	public int modularInverse/*_v2*/(int a, int modulus) {
 		int ps, ps1, ps2, parity, dividend, divisor, rem, q, sign, aPos;
 
 		if (a == 1) return 1;

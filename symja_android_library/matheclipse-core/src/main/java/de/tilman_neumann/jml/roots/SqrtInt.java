@@ -19,10 +19,10 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.base.BigIntConverter;
-//import de.tilman_neumann.util.ConfigUtil;
+import de.tilman_neumann.util.ConfigUtil;
 
 /**
  * Fast sqrt() computation with integer solutions using Herons (or "Babylonian") method
@@ -31,7 +31,7 @@ import de.tilman_neumann.jml.base.BigIntConverter;
  * @author Tilman Neumann
  */
 public class SqrtInt {
-//	private static final Logger LOG = Logger.getLogger(SqrtInt.class);
+	private static final Logger LOG = Logger.getLogger(SqrtInt.class);
 	private static final SecureRandom RNG = new SecureRandom();
 
 	/**
@@ -139,42 +139,42 @@ public class SqrtInt {
 	   	return testSet;
 	}
 	
-//	private static void testCorrectness(int nCount) {
-//		for (int bits = 100; bits<=130; bits+=1) {
-//			LOG.info("test correctness of sqrt() implementations for " + bits + "-bit numbers...");
-//			ArrayList<BigInteger> testSet = createTestSet(nCount, bits);
-//		   	for (BigInteger testNum : testSet) {
-//		   		testCorrectness(testNum, bits, iSqrt/*_v01*/(testNum), "v01");
-//		   	}
-//		}
-//	}
+	private static void testCorrectness(int nCount) {
+		for (int bits = 100; bits<=130; bits+=1) {
+			LOG.info("test correctness of sqrt() implementations for " + bits + "-bit numbers...");
+			ArrayList<BigInteger> testSet = createTestSet(nCount, bits);
+		   	for (BigInteger testNum : testSet) {
+		   		testCorrectness(testNum, bits, iSqrt/*_v01*/(testNum), "v01");
+		   	}
+		}
+	}
 
-//	private static void testCorrectness(BigInteger testNum, int bits, BigInteger[] result, String algStr) {
-//   		BigInteger lower = result[0];
-//   		BigInteger lowerSquare = lower.multiply(lower);
-//   		if (lowerSquare.compareTo(testNum) > 0) LOG.error(algStr + ": ERROR at " + bits + " bits: lower bound of sqrt(" + testNum + ") = " + lower + " is too big");
-//   		BigInteger upper = result[1];
-//   		BigInteger upperSquare = upper.multiply(upper);
-//   		if (upperSquare.compareTo(testNum) < 0) LOG.error(algStr + ": ERROR at " + bits + " bits: upper bound of sqrt(" + testNum + ") = " + upper + " is too small");
-//   		
-//   		if (lowerSquare.equals(testNum) || upperSquare.equals(testNum)) {
-//   			if (!lower.equals(upper)) LOG.error(algStr + ": ERROR at " + bits + " bits: sqrt(" + testNum + ") is exact, but the computed bounds = [" + lower + ", " + upper + "] are different!");
-//   		} else {
-//   			if (upper.subtract(lower).compareTo(I_1)>0) LOG.error(algStr + ": ERROR at " + bits + " bits: lower and upper bound of sqrt(" + testNum + ") = [" + lower + ", " + upper + "] differ by more than 1");
-//   		}
-//	}
+	private static void testCorrectness(BigInteger testNum, int bits, BigInteger[] result, String algStr) {
+   		BigInteger lower = result[0];
+   		BigInteger lowerSquare = lower.multiply(lower);
+   		if (lowerSquare.compareTo(testNum) > 0) LOG.error(algStr + ": ERROR at " + bits + " bits: lower bound of sqrt(" + testNum + ") = " + lower + " is too big");
+   		BigInteger upper = result[1];
+   		BigInteger upperSquare = upper.multiply(upper);
+   		if (upperSquare.compareTo(testNum) < 0) LOG.error(algStr + ": ERROR at " + bits + " bits: upper bound of sqrt(" + testNum + ") = " + upper + " is too small");
+   		
+   		if (lowerSquare.equals(testNum) || upperSquare.equals(testNum)) {
+   			if (!lower.equals(upper)) LOG.error(algStr + ": ERROR at " + bits + " bits: sqrt(" + testNum + ") is exact, but the computed bounds = [" + lower + ", " + upper + "] are different!");
+   		} else {
+   			if (upper.subtract(lower).compareTo(I_1)>0) LOG.error(algStr + ": ERROR at " + bits + " bits: lower and upper bound of sqrt(" + testNum + ") = [" + lower + ", " + upper + "] differ by more than 1");
+   		}
+	}
 
 	private static void testPerformance(int nCount) {
 		for (int bits = 10; ; bits += 10 /*RNG.nextInt(50)*/) {
 			ArrayList<BigInteger> testSet = createTestSet(nCount, bits);
-//			LOG.info("test sqrt of " + bits + "-bit numbers:");
+			LOG.info("test sqrt of " + bits + "-bit numbers:");
 			long t0, t1;
 		   	t0 = System.currentTimeMillis();
 		   	for (BigInteger testNum : testSet) {
 		   		iSqrt/*_v01*/(testNum);
 		   	}
 		   	t1 = System.currentTimeMillis();
-//			LOG.info("   v01 sqrt with " + nCount + " numbers took " + (t1-t0) + " ms");
+			LOG.info("   v01 sqrt with " + nCount + " numbers took " + (t1-t0) + " ms");
 		}
 	}
 
@@ -182,9 +182,9 @@ public class SqrtInt {
 	 * Test.
 	 * @param args ignored
 	 */
-//	public static void main(String[] args) {
-//	   	ConfigUtil.initProject();
-//	   	testCorrectness(100000);
-//	   	testPerformance(1000000);
-//	}
+	public static void main(String[] args) {
+	   	ConfigUtil.initProject();
+	   	testCorrectness(100000);
+	   	testPerformance(1000000);
+	}
 }

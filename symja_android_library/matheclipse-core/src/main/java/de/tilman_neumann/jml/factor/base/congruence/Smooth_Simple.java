@@ -39,6 +39,13 @@ abstract public class Smooth_Simple extends AQPair implements Smooth {
 	}
 
 	@Override
+	public Set<AQPair> getAQPairs() {
+		Set<AQPair> set = new HashSet<>();
+		set.add(this);
+		return set;
+	}
+
+	@Override
 	public void addMyAQPairsViaXor(Set<AQPair> targetSet) {
 		if (!targetSet.remove(this)) targetSet.add(this);
 	}

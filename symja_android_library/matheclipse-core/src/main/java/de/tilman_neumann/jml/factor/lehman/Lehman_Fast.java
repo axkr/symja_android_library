@@ -17,8 +17,9 @@ import java.math.BigInteger;
 
 import org.apache.log4j.Logger;
 
-import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
+import de.tilman_neumann.jml.factor.FactorAlgorithm;
 import de.tilman_neumann.jml.gcd.Gcd63;
+import de.tilman_neumann.util.ConfigUtil;
 import de.tilman_neumann.jml.factor.tdiv.TDiv63Inverse;
 
 /**
@@ -29,21 +30,35 @@ import de.tilman_neumann.jml.factor.tdiv.TDiv63Inverse;
  * At that size, both a^2 and 4kN start to overflow Long.MAX_VALUE.
  * But the error - comparing correct results vs. long results - is just the same for both a^2 and 4kN
  * (and a multiple of 2^64).
- *  Thus <code>test</code> is correct and <code>b</code> is correct, too. <code>a</code> is correct anyway.
+ * Thus <code>test</code> is correct and <code>b</code> is correct, too. <code>a</code> is correct anyway.
+ * 
+ * Lehman_CustomKOrder is considerably faster for any kind of test numbers.
+ * This class is kept for reference as it was implemented by bSquare,
+ * see https://www.mersenneforum.org/showpost.php?p=506294&postcount=7
  * 
  * @authors Tilman Neumann + Thilo Harich
  */
-public class Lehman_Fast extends FactorAlgorithmBase {
+public class Lehman_Fast extends FactorAlgorithm {
 	private static final Logger LOG = Logger.getLogger(Lehman_Fast.class);
 
 	/** This is a constant that is below 1 for rounding up double values to long. */
 	private static final double ROUND_UP_DOUBLE = 0.9999999665;
+	
+	private long N;
+	private long fourN;
+	private double sqrt4N;
+	private boolean doTDivFirst;
+	private double[] sqrt, sqrtInv;
+	private final Gcd63 gcdEngine = new Gcd63();
+	private final TDiv63Inverse tdiv = new TDiv63Inverse(1<<21);
 
-	private static final TDiv63Inverse tdiv = new TDiv63Inverse(1<<21);
-
-	private static double[] sqrt, sqrtInv;
-
-	static {
+	/**
+	 * Full constructor.
+	 * @param doTDivFirst If true then trial division is done before the Lehman loop.
+	 * This is recommended if arguments N are known to have factors < cbrt(N) frequently.
+	 */
+	public Lehman_Fast(boolean doTDivFirst) {
+		this.doTDivFirst = doTDivFirst;
 		// Precompute sqrts for all possible k. 2^21 entries are enough for N~2^63.
 		final int kMax = 1<<21;
 		sqrt = new double[kMax + 1];
@@ -53,21 +68,6 @@ public class Lehman_Fast extends FactorAlgorithmBase {
 			sqrt[i] = sqrtI;
 			sqrtInv[i] = 1.0/sqrtI;
 		}
-	}
-
-	private long N;
-	private long fourN;
-	private double sqrt4N;
-	private boolean doTDivFirst;
-	private final Gcd63 gcdEngine = new Gcd63();
-
-	/**
-	 * Full constructor.
-	 * @param doTDivFirst If true then trial division is done before the Lehman loop.
-	 * This is recommended if arguments N are known to have factors < cbrt(N) frequently.
-	 */
-	public Lehman_Fast(boolean doTDivFirst) {
-		this.doTDivFirst = doTDivFirst;
 	}
 
 	@Override
@@ -81,6 +81,9 @@ public class Lehman_Fast extends FactorAlgorithmBase {
 	}
 
 	public long findSingleFactor(long N) {
+		// N==9 would require to check if the gcd is 1 < gcd < N before returning it as a factor
+		if (N==9) return 3;
+		
 		this.N = N;
 		final int cbrt = (int) Math.cbrt(N);
 
@@ -207,49 +210,49 @@ public class Lehman_Fast extends FactorAlgorithmBase {
 	 * Test.
 	 * @param args ignored
 	 */
-//	public static void main(String[] args) {
-//		ConfigUtil.initProject();
-//
-//		// These test number were too hard for previous versions:
-//		long[] testNumbers = new long[] {
-//				5640012124823L,
-//				7336014366011L,
-//				19699548984827L,
-//				52199161732031L,
-//				73891306919159L,
-//				112454098638991L,
-//				
-//				32427229648727L,
-//				87008511088033L,
-//				92295512906873L,
-//				338719143795073L,
-//				346425669865991L,
-//				1058244082458461L,
-//				1773019201473077L,
-//				6150742154616377L,
-//
-//				44843649362329L,
-//				67954151927287L,
-//				134170056884573L,
-//				198589283218993L,
-//				737091621253457L,
-//				1112268234497993L,
-//				2986396307326613L,
-//				
-//				26275638086419L,
-//				62246008190941L,
-//				209195243701823L,
-//				290236682491211L,
-//				485069046631849L,
-//				1239671094365611L,
-//				2815471543494793L,
-//				5682546780292609L,
-//			};
-//		
-//		Lehman_Fast lehman = new Lehman_Fast(true);
-//		for (long N : testNumbers) {
-//			long factor = lehman.findSingleFactor(N);
-//			LOG.info("N=" + N + " has factor " + factor);
-//		}
-//	}
+	public static void main(String[] args) {
+		ConfigUtil.initProject();
+
+		// These test number were too hard for previous versions:
+		long[] testNumbers = new long[] {
+				5640012124823L,
+				7336014366011L,
+				19699548984827L,
+				52199161732031L,
+				73891306919159L,
+				112454098638991L,
+				
+				32427229648727L,
+				87008511088033L,
+				92295512906873L,
+				338719143795073L,
+				346425669865991L,
+				1058244082458461L,
+				1773019201473077L,
+				6150742154616377L,
+
+				44843649362329L,
+				67954151927287L,
+				134170056884573L,
+				198589283218993L,
+				737091621253457L,
+				1112268234497993L,
+				2986396307326613L,
+				
+				26275638086419L,
+				62246008190941L,
+				209195243701823L,
+				290236682491211L,
+				485069046631849L,
+				1239671094365611L,
+				2815471543494793L,
+				5682546780292609L,
+			};
+		
+		Lehman_Fast lehman = new Lehman_Fast(true);
+		for (long N : testNumbers) {
+			long factor = lehman.findSingleFactor(N);
+			LOG.info("N=" + N + " has factor " + factor);
+		}
+	}
 }

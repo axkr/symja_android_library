@@ -22,6 +22,8 @@ public class PowerEntry implements Comparable<PowerEntry> {
 	public int power;
 	public int t;
 	public byte logPower;
+	public double pinvD;
+	public long pinvL;
 	
 	public PowerEntry(int p, int exponent, int power, int t, byte logPower) {
 		this.p = p;
@@ -29,6 +31,8 @@ public class PowerEntry implements Comparable<PowerEntry> {
 		this.power = power;
 		this.t = t;
 		this.logPower = logPower;
+		this.pinvD = 1.0 / power;
+		this.pinvL = (1L<<32) / power;
 	}
 	
 	@Override

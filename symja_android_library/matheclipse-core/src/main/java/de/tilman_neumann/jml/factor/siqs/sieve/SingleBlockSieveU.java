@@ -13,6 +13,8 @@
  */
 package de.tilman_neumann.jml.factor.siqs.sieve;
 
+import static de.tilman_neumann.jml.factor.base.AnalysisOptions.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,7 +60,6 @@ public class SingleBlockSieveU implements Sieve {
 	private BinarySearch binarySearch = new BinarySearch();
 
 	// timings
-	private boolean profile;
 	private Timer timer = new Timer();
 	private long initDuration, sieveDuration, collectDuration;
 
@@ -76,7 +77,7 @@ public class SingleBlockSieveU implements Sieve {
 	}
 	
 	@Override
-	public void initializeForN(SieveParams sieveParams, int mergedBaseSize, boolean profile) {
+	public void initializeForN(SieveParams sieveParams, int mergedBaseSize) {
 		this.pMinIndex = sieveParams.pMinIndex;
 		byte initializer = sieveParams.initializer;
 
@@ -116,9 +117,7 @@ public class SingleBlockSieveU implements Sieve {
 		dPosArray = new int[mergedBaseSize];
 		dNegArray = new int[mergedBaseSize];
 
-		// profiling
-		this.profile = profile;
-		initDuration = sieveDuration = collectDuration = 0;
+		if (ANALYZE) initDuration = sieveDuration = collectDuration = 0;
 	}
 
 	@Override
@@ -129,11 +128,11 @@ public class SingleBlockSieveU implements Sieve {
 
 	@Override
 	public List<Integer> sieve() {
-		if (profile) timer.capture();
+		if (ANALYZE) timer.capture();
 
 		// preprocessing
-		final int[] powers = solutionArrays.powers;
-		int r_s = binarySearch.getInsertPosition(powers, filteredBaseSize, effectiveBlockSize);
+		final int[] pArray = solutionArrays.pArray;
+		int r_s = binarySearch.getInsertPosition(pArray, filteredBaseSize, effectiveBlockSize);
 
 		final int[] x1Array = solutionArrays.x1Array;
 		final int[] x2Array = solutionArrays.x2Array;
@@ -144,11 +143,11 @@ public class SingleBlockSieveU implements Sieve {
 			x2 = x2Array[i];
 			if (x1<x2) {
 				xPosArray[i] = sieveBlockAddress + x1;
-				xNegArray[i] = sieveBlockAddress + powers[i] - x2;
+				xNegArray[i] = sieveBlockAddress + pArray[i] - x2;
 				dNegArray[i] = dPosArray[i] = x2 - x1;
 			} else {
 				xPosArray[i] = sieveBlockAddress + x2;
-				xNegArray[i] = sieveBlockAddress + powers[i] - x1;
+				xNegArray[i] = sieveBlockAddress + pArray[i] - x1;
 				dNegArray[i] = dPosArray[i] = x1 - x2;
 			}
 		}
@@ -157,12 +156,12 @@ public class SingleBlockSieveU implements Sieve {
 		for (int b=0; b<blockCount; b++) { // bottom-up order is required because in each block, the data for the next block is adjusted
 			// positive x: initialize block
 			UNSAFE.copyMemory(initializedBlockAddress, sieveBlockAddress, effectiveBlockSize);
-			if (profile) initDuration += timer.capture();
+			if (ANALYZE) initDuration += timer.capture();
 			
 			// positive x: sieve block [b*B, (b+1)*B] with prime index ranges 0...r_s-1 and r_s...max
 			long nextBlockAddress = sieveBlockAddress + effectiveBlockSize;
-			sievePositiveXBlock(powers, logPArray, effectiveBlockSize, pMinIndex, r_s, filteredBaseSize);
-			if (profile) sieveDuration += timer.capture();
+			sievePositiveXBlock(pArray, logPArray, effectiveBlockSize, pMinIndex, r_s, filteredBaseSize);
+			if (ANALYZE) sieveDuration += timer.capture();
 			
 			// collect block
 			// let the sieve entry counter x run down to 0 is much faster because of the simpler exit condition
@@ -198,15 +197,15 @@ public class SingleBlockSieveU implements Sieve {
 					}
 				}
 			}
-			if (profile) collectDuration += timer.capture();
+			if (ANALYZE) collectDuration += timer.capture();
 			
 			// negative x: initialize block
 			UNSAFE.copyMemory(initializedBlockAddress, sieveBlockAddress, effectiveBlockSize);
-			if (profile) initDuration += timer.capture();
+			if (ANALYZE) initDuration += timer.capture();
 			
 			// sieve block [b*B, (b+1)*B] with prime index ranges 0...r_s-1 and r_s...max
-			sieveNegativeXBlock(powers, logPArray, effectiveBlockSize, pMinIndex, r_s, filteredBaseSize);
-			if (profile) sieveDuration += timer.capture();
+			sieveNegativeXBlock(pArray, logPArray, effectiveBlockSize, pMinIndex, r_s, filteredBaseSize);
+			if (ANALYZE) sieveDuration += timer.capture();
 			
 			// collect block
 			for (long x=nextBlockAddress; x>sieveBlockAddress; ) {
@@ -239,7 +238,7 @@ public class SingleBlockSieveU implements Sieve {
 					}
 				}
 			}
-			if (profile) collectDuration += timer.capture();
+			if (ANALYZE) collectDuration += timer.capture();
 		}
 		return smoothXList;
 	}

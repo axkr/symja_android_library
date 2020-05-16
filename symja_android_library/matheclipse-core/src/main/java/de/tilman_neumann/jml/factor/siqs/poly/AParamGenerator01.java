@@ -45,15 +45,17 @@ import de.tilman_neumann.jml.BinarySearch;
  * 1. I wanted to test which size of the q_l is actually the best. It turned out that the q_l should be rather large and qCount rather small.
  * 2. Splitting the prime base and {q_l} into three sets feels like introducing some unnecessary complexity to the code.
  * 
- * The algorithm used here is mostly random, chosing the q_l from a range of about the wanted size.
+ * The algorithm used here is mostly random, choosing the q_l from a range of about the wanted size.
  * The last q_l is chosen deterministically such that the best a-parameter is matched as close as possible.
  * Therefore the algorithm is not stable for N < 50 bit, but faster for bigger N.
  * The expected best a-value is approximated quite accurately.
  * 
- * Since 2016-12-15, entries of qArray and qIndexArray are sorted bottom-up now.
- * Since 2018-02-13, the d-parameter was introduced.
+ * A very important parameter is <code>qCount</code. Having it configurable via the constructor lets us test
+ * which number of factors of <code>a</code> and thus which average factor size is most appropriate for 
+ * given magnitudes of kN. A minimum value of qCount==4 gives best stability at small N, down to 53 bits.
  * 
- * A minimum value of qCount==4 gives best stability at small N, down to 53 bits.
+ * Since 2016-12-15, entries of qArray and qIndexArray are sorted bottom-up.
+ * Since 2018-02-13, the d-parameter was introduced.
  * 
  * @author Tilman Neumann
  */

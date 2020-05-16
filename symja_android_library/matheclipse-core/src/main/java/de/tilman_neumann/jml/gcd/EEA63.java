@@ -13,8 +13,9 @@
  */
 package de.tilman_neumann.jml.gcd;
 
-//import java.math.BigInteger;
-//import org.apache.log4j.Logger;
+import java.math.BigInteger;
+
+import org.apache.log4j.Logger;
 
 /**
  * Extended Euclidean algorithm, mostly used to compute the modular inverse of x (mod y).
@@ -26,8 +27,9 @@ package de.tilman_neumann.jml.gcd;
  * @author Tilman Neumann
  */
 public class EEA63 {
-	//private static final Logger LOG = Logger.getLogger(EEA63.class);
-
+	private static final Logger LOG = Logger.getLogger(EEA63.class);
+	private static final boolean DEBUG = false;
+	
 	public static class Result {
 		/** if g==1 and y>0 then a = (1/x) mod y */
 		public long a;
@@ -41,13 +43,17 @@ public class EEA63 {
 			this.b = b;
 			this.g = g;
 		}
+		
+		public String toString() {
+			return "{" + a + ", " + b + ", " + g + "}";
+		}
 	}
 	
 	/**
 	 * Computes gcd, a = (1/x) mod y and b = (1/y) mod x.
 	 * @param x
 	 * @param y
-	 * @return
+	 * @return {a, b, gcd}
 	 */
 	public Result computeAll(long x, long y) {
 		// initialize
@@ -70,13 +76,15 @@ public class EEA63 {
 			parity = -parity;
 		}
 		
-//		LOG.debug("correctResult = " + BigInteger.valueOf(x).modInverse(BigInteger.valueOf(y)));
-//		LOG.debug("a = " + a);
-//		LOG.debug("y-a = " + (y-a));
-//		LOG.debug("y+a = " + (y+a));
-//		LOG.debug("parity = " + parity);
-//		LOG.debug("sign of x = " + Long.signum(x));
-
+		if (DEBUG) {
+			LOG.debug("correctResult = " + BigInteger.valueOf(x).modInverse(BigInteger.valueOf(y)));
+			LOG.debug("a = " + a);
+			LOG.debug("y-a = " + (y-a));
+			LOG.debug("y+a = " + (y+a));
+			LOG.debug("parity = " + parity);
+			LOG.debug("sign of x = " + Long.signum(x));
+		}
+		
 		if (Long.signum(x)==parity) {
 			a = (parity==1) ? y+a : y-a; // TODO: What about b?
 		}
@@ -87,7 +95,7 @@ public class EEA63 {
 	 * Computes only gcd and a = (1/x) mod y.
 	 * @param x
 	 * @param y
-	 * @return
+	 * @return {a, gcd}
 	 */
 	public Result computeHalf(long x, long y) {
 		// initialize
@@ -121,7 +129,7 @@ public class EEA63 {
 	 * @param y
 	 * @return (1/x) mod y
 	 */
-	public long modularInverse1(long x, long y) {
+	public long modularInverse_v1(long x, long y) {
 		// initialize
 		long a = 1;
 		long g = x;
@@ -156,9 +164,9 @@ public class EEA63 {
 	 *
 	 * @param a
 	 * @param modulus
-	 * @return
+	 * @return (1/a) mod modulus
 	 */
-	public long modularInverse/*2*/(long a, long modulus) {
+	public long modularInverse_v2(long a, long modulus) {
 		long ps, ps1, ps2, dividend, divisor, rem, q, aPos;
 		int parity, sign;
 		
@@ -189,5 +197,85 @@ public class EEA63 {
 		}
 		
 		return (sign==parity) ? modulus-ps1 : ps1;
+	}
+
+	/**
+	 * Compute the modular inverse x of a mod p, i.e. x = (1/a) mod p.
+	 * 
+	 * Taken from Ben Buhrow's tinyecm.c and modified to work for a<0 and a>=p, too.
+	 * Optimal performance is achieved by 6 "if's" in Java, compared to 9 "if's" in C.
+	 * 
+	 * Significantly faster than the versions above.
+	 * 
+	 * @param a
+	 * @param p modulus
+	 * @return (1/a) mod p
+	 */
+	public long modularInverse/*_v3*/(long a, long p) {
+
+		/* thanks to the folks at www.mersenneforum.org */
+
+		long ps1, ps2, parity, dividend, divisor, rem, q, t, sign, aPos;
+		
+		// make argument positive, remember sign
+		if (a<0) {
+			aPos = -a;
+			sign = -1;
+		} else {
+			aPos = a;
+			sign = 1;
+		}
+		
+		if (p < aPos) {
+			q = 0;
+			ps1 = 0;
+			ps2 = 1;
+			rem = p;
+			dividend = aPos;
+			divisor = p;
+			parity = 1;
+		} else {
+			q = 1;
+			ps1 = 1;
+			ps2 = 0;
+			rem = aPos;
+			dividend = p;
+			divisor = aPos;
+			parity = -1;
+		}
+		
+		while (divisor > 1) {
+			rem = dividend - divisor;
+			t = rem - divisor;
+			if (rem >= divisor) {
+				q += ps1; rem = t; t -= divisor;
+				if (rem >= divisor) {
+					q += ps1; rem = t; t -= divisor;
+					if (rem >= divisor) {
+						q += ps1; rem = t; t -= divisor;
+						if (rem >= divisor) {
+							q += ps1; rem = t; t -= divisor;
+							if (rem >= divisor) {
+								q += ps1; rem = t;
+								if (rem >= divisor) {
+									q = dividend / divisor;
+									rem = dividend % divisor;
+									q *= ps1;
+								}
+							}
+						}
+					}
+				}
+			}
+
+			q += ps2;
+			parity = -parity;
+			dividend = divisor;
+			divisor = rem;
+			ps2 = ps1;
+			ps1 = q;
+		}
+
+		return (sign==parity) ? p-ps1 : ps1;
 	}
 }

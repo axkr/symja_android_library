@@ -17,17 +17,17 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
 import java.math.BigInteger;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
-//import de.tilman_neumann.util.ConfigUtil;
+import de.tilman_neumann.util.ConfigUtil;
 
 /**
  * Sequence of multiplier * {squarefree numbers 1,2,3,5,6,7,10,11,13,...}, BigInteger implementation.
  * @author Tilman Neumann
  */
 public class SquarefreeSequence implements NumberSequence<BigInteger> {
-//	private static final Logger LOG = Logger.getLogger(SquarefreeSequence.class);
+	private static final Logger LOG = Logger.getLogger(SquarefreeSequence.class);
 
 	private AutoExpandingPrimesArray primesArray = AutoExpandingPrimesArray.get();
 	
@@ -82,16 +82,16 @@ public class SquarefreeSequence implements NumberSequence<BigInteger> {
 	}
 	
 	// standalone test
-//	public static void main(String[] args) {
-//	   	ConfigUtil.initProject();
-//	   	SquarefreeSequence seqGen = new SquarefreeSequence(I_1);
-//	   	long start = System.currentTimeMillis();
-//		seqGen.reset();
-//		for (int i=1; i<=1000000; i++) {
-//			@SuppressWarnings("unused")
-//			BigInteger squarefree = seqGen.next();
-//			//LOG.info("squarefree(" + i + ") = " + squarefree);
-//		}
-//		LOG.info("computation took " + (System.currentTimeMillis()-start) + " ms");
-//	}
+	public static void main(String[] args) {
+	   	ConfigUtil.initProject();
+	   	SquarefreeSequence seqGen = new SquarefreeSequence(I_1);
+	   	long start = System.currentTimeMillis();
+		seqGen.reset();
+		for (int i=1; i<=1000000; i++) {
+			@SuppressWarnings("unused")
+			BigInteger squarefree = seqGen.next();
+			//LOG.info("squarefree(" + i + ") = " + squarefree);
+		}
+		LOG.info("computation took " + (System.currentTimeMillis()-start) + " ms");
+	}
 }

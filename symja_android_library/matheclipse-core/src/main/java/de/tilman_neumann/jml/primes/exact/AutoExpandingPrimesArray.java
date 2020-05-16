@@ -13,8 +13,9 @@
  */
 package de.tilman_neumann.jml.primes.exact;
 
-//import org.apache.log4j.Logger;
- 
+import org.apache.log4j.Logger;
+
+import de.tilman_neumann.jml.BinarySearch;
 import de.tilman_neumann.jml.primes.bounds.NthPrimeUpperBounds;
 import de.tilman_neumann.jml.primes.bounds.PrimeCountUpperBounds;
 
@@ -26,7 +27,7 @@ import de.tilman_neumann.jml.primes.bounds.PrimeCountUpperBounds;
  * @author Tilman Neumann
  */
 public class AutoExpandingPrimesArray implements SieveCallback {
-//	private static final Logger LOG = Logger.getLogger(AutoExpandingPrimesArray.class);
+	private static final Logger LOG = Logger.getLogger(AutoExpandingPrimesArray.class);
 	private static final boolean DEBUG = false;
 	
 	// variables must be initialized to avoid exceptions in ensureMaxPrime()
@@ -34,7 +35,7 @@ public class AutoExpandingPrimesArray implements SieveCallback {
 	private int count = 1; // actual element count
 	private int capacity = 1; // maximal array capacity
 	
-//	private BinarySearch bs = new BinarySearch();
+	private BinarySearch bs = new BinarySearch();
 	
 	// singleton
 	private static final AutoExpandingPrimesArray THE_PRIMES_ARRAY = new AutoExpandingPrimesArray();
@@ -69,7 +70,7 @@ public class AutoExpandingPrimesArray implements SieveCallback {
 			// Compute upper bound for the number of primes in (0, x]
 			int countUpperBound = (int) PrimeCountUpperBounds.combinedUpperBound(x);
 			fetchPrimes(countUpperBound, x);
-//			if (DEBUG) LOG.debug("pMax = " + array[count-1] + ", x = " + x);
+			if (DEBUG) LOG.debug("pMax = " + array[count-1] + ", x = " + x);
 		}
 		return this;
 	}
@@ -78,9 +79,9 @@ public class AutoExpandingPrimesArray implements SieveCallback {
 	 * @param x
 	 * @return the index where x would be inserted into the prime array.
 	 */
-//	public int getInsertPosition(int x) {
-//		return bs.getInsertPosition(array, count, x);
-//	}
+	public int getInsertPosition(int x) {
+		return bs.getInsertPosition(array, count, x);
+	}
 
 	/**
 	 * Get the n.th prime, e.g. p[0]=2. This method is auto-expanding the prime array when required.

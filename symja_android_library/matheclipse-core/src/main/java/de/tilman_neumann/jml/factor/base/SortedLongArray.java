@@ -23,14 +23,14 @@ public class SortedLongArray {
 	@SuppressWarnings("unused")
 	private static final Logger LOG = Logger.getLogger(SortedLongArray.class);
 	
-	private int[] factors;
+	private long[] factors;
 	private byte[] exponents;
 	private int size;
 	
 	public SortedLongArray() {
 		// we will hardly get more than 3 large factors, but this is a re-used buffer, so size 10 should match
 		// any possible requirements and is no huge waste of memory.
-		this.factors = new int[10];
+		this.factors = new long[10];
 		this.exponents = new byte[10];
 	}
 	
@@ -46,7 +46,7 @@ public class SortedLongArray {
 	 * @param factor
 	 */
 	// XXX: Big factor arrays have at most 2 (QS) or 3 (CFrac) elements. Overpowered ??
-	public void add(int factor) {
+	public void add(long factor) {
 		//LOG.debug("add small factor " + factor);
 		if (size>0) {
 			// find position: for short lists a linear search is ok.
@@ -88,7 +88,7 @@ public class SortedLongArray {
 	 * @param i
 	 * @return the i.th entry
 	 */
-	public int get(int i) {
+	public long get(int i) {
 		return factors[i];
 	}
 	
@@ -104,8 +104,8 @@ public class SortedLongArray {
 		return size;
 	}
 	
-	public int[] copyFactors() {
-		int[] copy = new int[size];
+	public long[] copyFactors() {
+		long[] copy = new long[size];
 		System.arraycopy(factors, 0, copy, 0, size);
 		return copy;
 	}

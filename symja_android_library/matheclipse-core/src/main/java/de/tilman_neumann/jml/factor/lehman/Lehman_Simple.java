@@ -16,7 +16,7 @@ package de.tilman_neumann.jml.factor.lehman;
 import java.math.BigInteger;
 
 import de.tilman_neumann.jml.gcd.Gcd63;
-import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
+import de.tilman_neumann.jml.factor.FactorAlgorithm;
 import de.tilman_neumann.jml.factor.tdiv.TDiv63Inverse;
 
 /**
@@ -29,7 +29,7 @@ import de.tilman_neumann.jml.factor.tdiv.TDiv63Inverse;
  *
  * @author Tilman Neumann
  */
-public class Lehman_Simple extends FactorAlgorithmBase {
+public class Lehman_Simple extends FactorAlgorithm {
 	private final Gcd63 gcdEngine = new Gcd63();
 
 	private boolean doTDivFirst;

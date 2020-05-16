@@ -31,6 +31,7 @@ import de.tilman_neumann.jml.roots.SqrtExact;
  * 
  * @author Tilman Neumann
  */
+// TODO use Montgomery multiplication
 public class LucasTest {
 	
 	private JacobiSymbol jacobiEngine = new JacobiSymbol();

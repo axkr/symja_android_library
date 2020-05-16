@@ -16,7 +16,10 @@ package de.tilman_neumann.jml.factor.psiqs;
 import java.math.BigInteger;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import de.tilman_neumann.jml.factor.base.congruence.AQPair;
+import de.tilman_neumann.jml.factor.base.congruence.CongruenceCollectorParallel;
 import de.tilman_neumann.jml.factor.siqs.data.BaseArrays;
 import de.tilman_neumann.jml.factor.siqs.poly.AParamGenerator;
 import de.tilman_neumann.jml.factor.siqs.poly.PolyGenerator;
@@ -32,11 +35,13 @@ import de.tilman_neumann.jml.factor.siqs.tdiv.TDiv_QS;
  * @author Tilman Neumann
  */
 abstract public class PSIQSThreadBase extends Thread {
+	private static final Logger LOG = Logger.getLogger(PSIQSThreadBase.class);
+	private static final boolean DEBUG = false;
 
 	protected PolyGenerator polyGenerator;
 	protected Sieve sieve;
 	protected TDiv_QS auxFactorizer;
-	private AQPairBuffer aqPairBuffer;
+	private CongruenceCollectorParallel cc;
 	private boolean finishNow = false;
 
 	/**
@@ -48,16 +53,16 @@ abstract public class PSIQSThreadBase extends Thread {
 	 * @param sieveParams basic sieve parameters
 	 * @param baseArrays primes, power arrays after adding powers
 	 * @param apg a-parameter generator
-	 * @param aqPairBuffer buffer for newly found relations; collects results from several sieve threads
 	 * @param polyGenerator the SIQS polynomial generator
 	 * @param sieve the sieve engine
 	 * @param tdiv the trial division engine
+	 * @param cc congruence collector, also runs the matrix solver
 	 * @param threadIndex
-	 * @param profile
 	 */
 	public PSIQSThreadBase(
-			int k, BigInteger N, BigInteger kN, int d, SieveParams sieveParams, BaseArrays baseArrays, AParamGenerator apg, AQPairBuffer aqPairBuffer,
-			PolyGenerator polyGenerator, Sieve sieve, TDiv_QS tdiv, int threadIndex, boolean profile) {
+			int k, BigInteger N, BigInteger kN, int d, SieveParams sieveParams, 
+			BaseArrays baseArrays, AParamGenerator apg, PolyGenerator polyGenerator,
+			Sieve sieve, TDiv_QS tdiv, CongruenceCollectorParallel cc, int threadIndex) {
 		
 		// set thread name
 		super("T-" + threadIndex);
@@ -66,12 +71,11 @@ abstract public class PSIQSThreadBase extends Thread {
 		this.polyGenerator = polyGenerator;
 		this.sieve = sieve;
 		this.auxFactorizer = tdiv;
+		this.cc = cc;
 		
 		// initialize polynomial generator and sub-engines
 		// apg is already initialized and the same object for all threads -> a-parameter generation is synchronized on it
-		polyGenerator.initializeForN(k, N, kN, d, sieveParams, baseArrays, apg, sieve, auxFactorizer, profile);
-		// synchronized buffer to pass AQ-pairs to the main thread -> the same object for all threads
-		this.aqPairBuffer = aqPairBuffer;
+		polyGenerator.initializeForN(k, N, kN, d, sieveParams, baseArrays, apg, sieve, auxFactorizer);
 	}
 	
 	public void run() {
@@ -89,7 +93,16 @@ abstract public class PSIQSThreadBase extends Thread {
 
 			if (aqPairs.size()>0) {
 				// add all congruences synchronized and notify control thread
-				aqPairBuffer.addAll(aqPairs);
+				synchronized (cc) {
+					if (cc.factor == null) {
+						cc.collectAndProcessAQPairs(aqPairs);
+					}
+					if (cc.factor != null) {
+						finishNow = true;
+						if (DEBUG) LOG.debug("Thread " + getName() + " found factor " + cc.factor + " and is done.");
+						cc.notify();
+					}
+				}
 			}
 		}
 	}

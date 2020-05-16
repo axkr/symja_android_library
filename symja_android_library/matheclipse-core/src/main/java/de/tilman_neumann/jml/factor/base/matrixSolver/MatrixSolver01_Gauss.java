@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.factor.FactorException;
 import de.tilman_neumann.jml.factor.base.congruence.AQPair;
-import de.tilman_neumann.jml.factor.base.congruence.Congruence;
+import de.tilman_neumann.jml.factor.base.congruence.Smooth;
 
 /**
  * A simple congruence equation system solver, doing Gaussian elimination.
@@ -40,7 +40,7 @@ public class MatrixSolver01_Gauss extends MatrixSolver {
 	}
 	
 	@Override
-	protected void solve(List<Congruence> congruences, Map<Integer, Integer> factors_2_columnIndices) throws FactorException {
+	protected void solve(List<Smooth> congruences, Map<Integer, Integer> factors_2_columnIndices) throws FactorException {
 		// create matrix
 		List<MatrixRow> rows = createMatrix(congruences, factors_2_columnIndices);
 		// solve
@@ -82,12 +82,12 @@ public class MatrixSolver01_Gauss extends MatrixSolver {
 						// Found null vector -> recover the set of AQ-pairs from its row index history
 						HashSet<AQPair> totalAQPairs = new HashSet<AQPair>(); // Set required for the "xor"-operation below
 						for (int rowIndex : row.getRowIndexHistoryAsList()) {
-							Congruence congruence = congruences.get(rowIndex);
+							Smooth congruence = congruences.get(rowIndex);
 							// add the new AQ-pairs via "xor"
 							congruence.addMyAQPairsViaXor(totalAQPairs);
 						}
 						// "return" the AQ-pairs of the null vector
-						nullVectorProcessor.processNullVector(totalAQPairs);
+						processNullVector(totalAQPairs);
 						// no factor exception -> drop improper null vector
 						rowIter.remove(); 
 					} // else: current row is not a null-vector -> just keep it
@@ -102,11 +102,11 @@ public class MatrixSolver01_Gauss extends MatrixSolver {
 	 * @param factors_2_columnIndices
 	 * @return
 	 */
-	private List<MatrixRow> createMatrix(List<Congruence> congruences, Map<Integer, Integer> factors_2_columnIndices) {
+	private List<MatrixRow> createMatrix(List<Smooth> congruences, Map<Integer, Integer> factors_2_columnIndices) {
 		ArrayList<MatrixRow> matrixRows = new ArrayList<MatrixRow>(congruences.size()); // ArrayList is faster than LinkedList, even with many remove() operations
 		int rowIndex = 0;
 		int numberOfRows = congruences.size();
-		for (Congruence congruence : congruences) {
+		for (Smooth congruence : congruences) {
 			// row entries = set of column indices where the congruence has a factor with odd exponent
 			IndexSet columnIndicesFromOddExpFactors = createColumnIndexSetFromCongruence(congruence, factors_2_columnIndices);
 			// initial row history = the current row index
@@ -124,7 +124,7 @@ public class MatrixSolver01_Gauss extends MatrixSolver {
 	 * @param factors_2_columnIndices
 	 * @return set of column indices
 	 */
-	private IndexSet createColumnIndexSetFromCongruence(Congruence congruence, Map<Integer, Integer> factors_2_columnIndices) {
+	private IndexSet createColumnIndexSetFromCongruence(Smooth congruence, Map<Integer, Integer> factors_2_columnIndices) {
 		Integer[] oddExpFactors = congruence.getMatrixElements();
 		IndexSet columnIndexBitset = new IndexSet(factors_2_columnIndices.size());
 		for (Integer oddExpFactor : oddExpFactors) {

@@ -17,18 +17,18 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
 import java.math.BigInteger;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
-//import de.tilman_neumann.util.ConfigUtil;
+import de.tilman_neumann.util.ConfigUtil;
 
 /**
  * Conversion from doubles to BigInteger with minimal precision loss and no need of slow BigDecimal.
- * @see https://de.wikipedia.org/wiki/IEEE_754#Allgemeines
+ * @see <a href="https://de.wikipedia.org/wiki/IEEE_754#Allgemeines">https://de.wikipedia.org/wiki/IEEE_754#Allgemeines</a>
  * 
  * @author Tilman Neumann
  */
 public class BigIntConverter {
-//	private static final Logger LOG = Logger.getLogger(BigIntConverter.class);
+	private static final Logger LOG = Logger.getLogger(BigIntConverter.class);
 	
 	/**
 	 * Create a BigInteger from double, with minimal precision loss.
@@ -62,7 +62,7 @@ public class BigIntConverter {
 	 * 
 	 * @param d
 	 * @param e2
-	 * @return
+	 * @return a BigInteger with approximate value d * 2^e2
 	 */
 	public static BigInteger fromDoubleMulPow2(double d, int e2) {
 		long dblBitRep = Double.doubleToRawLongBits(d);
@@ -101,23 +101,23 @@ public class BigIntConverter {
 		return str;
 	}
 	
-//	private static void test(double d) {
-//		LOG.info(d + " -> " + fromDouble(d));
-//	}
+	private static void test(double d) {
+		LOG.info(d + " -> " + fromDouble(d));
+	}
 	
-//	private static void test(double d, int e2) {
-//		LOG.info(d + " * 2^" + e2 + " -> " + fromDoubleMulPow2(d, e2));
-//	}
+	private static void test(double d, int e2) {
+		LOG.info(d + " * 2^" + e2 + " -> " + fromDoubleMulPow2(d, e2));
+	}
 	
-//	public static void main(String[] args) {
-//		ConfigUtil.initProject();
-//		test(2); 
-//		test(3);
-//		test(3.1415);
-//		test(5.99);
-//		test(6.0001);
-//		test(-6.0001);
-//		test(-6.333, 4);
-//		test(101.333, -4);
-//	}
+	public static void main(String[] args) {
+		ConfigUtil.initProject();
+		test(2); 
+		test(3);
+		test(3.1415);
+		test(5.99);
+		test(6.0001);
+		test(-6.0001);
+		test(-6.333, 4);
+		test(101.333, -4);
+	}
 }

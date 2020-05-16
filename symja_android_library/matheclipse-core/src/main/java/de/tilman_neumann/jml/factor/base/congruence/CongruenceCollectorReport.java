@@ -13,7 +13,10 @@
  */
 package de.tilman_neumann.jml.factor.base.congruence;
 
+import static de.tilman_neumann.jml.factor.base.AnalysisOptions.*;
+
 import java.util.Map;
+import java.util.TreeMap;
 
 import de.tilman_neumann.util.Multiset;
 
@@ -44,14 +47,18 @@ public class CongruenceCollectorReport {
 	}
 	
 	public String getOperationDetails() {
-		String smoothFromPartialsStr = smoothFromPartialCounts[0] + " from 1-partials";
-		if (smoothFromPartialCounts[1]>0) smoothFromPartialsStr += ", " + smoothFromPartialCounts[1] + " involving 2-partials";
-		if (smoothFromPartialCounts[2]>0) smoothFromPartialsStr += ", " + smoothFromPartialCounts[2] + " involving 3-partials";
-		String partialsStr = partialCounts[0] + " 1-partials";
-		if (partialCounts[1]>0) partialsStr += ", " + partialCounts[1] + " 2-partials";
-		if (partialCounts[2]>0) partialsStr += ", " + partialCounts[2] + " 3-partials";
-		return "found " + smoothCount + " smooth congruences (" + perfectSmoothCount + " perfect, " 
-			   + smoothFromPartialsStr + ") and " + partialCount + " partials (" + partialsStr + ")";
+		if (ANALYZE) {
+			String smoothFromPartialsStr = smoothFromPartialCounts[0] + " from 1-partials";
+			if (smoothFromPartialCounts[1]>0) smoothFromPartialsStr += ", " + smoothFromPartialCounts[1] + " involving 2-partials";
+			if (smoothFromPartialCounts[2]>0) smoothFromPartialsStr += ", " + smoothFromPartialCounts[2] + " involving 3-partials";
+			String partialsStr = partialCounts[0] + " 1-partials";
+			if (partialCounts[1]>0) partialsStr += ", " + partialCounts[1] + " 2-partials";
+			if (partialCounts[2]>0) partialsStr += ", " + partialCounts[2] + " 3-partials";
+			return "found " + smoothCount + " smooth congruences (" + perfectSmoothCount + " perfect, " 
+				   + smoothFromPartialsStr + ") and " + partialCount + " partials (" + partialsStr + ")";
+		}
+		// simple report
+		return "found " + smoothCount + " smooth congruences and " + partialCount + " partials";
 	}
 	
 	public String getPartialBigFactorSizes() {
@@ -60,6 +67,26 @@ public class CongruenceCollectorReport {
 	
 	public String getSmoothBigFactorSizes() {
 		return "Big factor sizes of discovered smooths: " + oddExpBigFactorSizes4Smooth;
+	}
+	
+	public String getSmoothBigFactorPercentiles() {
+		int[] percentiles = new int[] {80, 90, 95, 98, 99};
+		int totalFactor4SmoothCount = oddExpBigFactorSizes4Smooth.totalCount();
+		TreeMap<Integer, Integer> resultMap = new TreeMap<>();
+		for (int i=0; i<percentiles.length; i++) {
+			int requiredCount = (int) Math.ceil((totalFactor4SmoothCount * percentiles[i]) / 100.0);
+			int count = 0;
+			// factor sizes are sorted bottom-up
+			for (int factorSize : oddExpBigFactorSizes4Smooth.keySet()) {
+				int sizeCount = oddExpBigFactorSizes4Smooth.get(factorSize);
+				count += sizeCount;
+				if (count > requiredCount) {
+					resultMap.put(percentiles[i], factorSize);
+					break;
+				}
+			}
+		}
+		return "Required large factor sizes for smooth percentiles = " + resultMap;
 	}
 	
 	public String getNonIntFactorPercentages() {

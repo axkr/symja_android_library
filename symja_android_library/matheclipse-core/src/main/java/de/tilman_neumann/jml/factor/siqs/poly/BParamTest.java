@@ -13,13 +13,14 @@
  */
 package de.tilman_neumann.jml.factor.siqs.poly;
 
-import static de.tilman_neumann.jml.base.BigIntConstants.I_0;
+import static de.tilman_neumann.jml.base.BigIntConstants.I_0; 
 
 import java.math.BigInteger;
 
 import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.factor.siqs.ModularSqrtsEngine;
+import de.tilman_neumann.util.ConfigUtil;
 
 /**
  * A test of the b-computation numbers reported by [Contini, p.10]

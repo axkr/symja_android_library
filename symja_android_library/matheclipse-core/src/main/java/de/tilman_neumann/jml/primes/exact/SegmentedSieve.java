@@ -13,9 +13,10 @@
  */
 package de.tilman_neumann.jml.primes.exact;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.primes.bounds.PrimeCountUpperBounds;
+import de.tilman_neumann.util.ConfigUtil;
 
 /**
  * Segmented sieve of Eratosthenes based on Kim Walisch's implementation at http://primesieve.org/segmented_sieve.html
@@ -23,7 +24,7 @@ import de.tilman_neumann.jml.primes.bounds.PrimeCountUpperBounds;
  * @author Tilman Neumann
  */
 public class SegmentedSieve {
-//	private static final Logger LOG = Logger.getLogger(SegmentedSieve.class);
+	private static final Logger LOG = Logger.getLogger(SegmentedSieve.class);
 	
 	private SieveCallback clientCallback;
 
@@ -115,16 +116,16 @@ public class SegmentedSieve {
 	 * Test performance without load caused by processPrime().
 	 * @param args ignored
 	 */
-//	public static void main(String[] args) {
-//    	ConfigUtil.initProject();
-//		long limit = 1000000;
-//		while (true) {
-//			long start = System.nanoTime();
-//			CountingCallback callback = new CountingCallback(); // initialize count=0 for each limit
-//			SegmentedSieve sieve = new SegmentedSieve(callback);
-//			sieve.sieve(limit);
-//			LOG.info("Sieving x <= " + limit + " found " + callback.getCount() + " primes in " + ((System.nanoTime()-start) / 1000000) + " ms");
-//			limit *=10;
-//		}
-//	}
+	public static void main(String[] args) {
+    	ConfigUtil.initProject();
+		long limit = 1000000;
+		while (true) {
+			long start = System.nanoTime();
+			CountingCallback callback = new CountingCallback(); // initialize count=0 for each limit
+			SegmentedSieve sieve = new SegmentedSieve(callback);
+			sieve.sieve(limit);
+			LOG.info("Sieving x <= " + limit + " found " + callback.getCount() + " primes in " + ((System.nanoTime()-start) / 1000000) + " ms");
+			limit *=10;
+		}
+	}
 }

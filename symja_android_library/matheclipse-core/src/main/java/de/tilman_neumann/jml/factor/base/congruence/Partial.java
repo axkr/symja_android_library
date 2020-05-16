@@ -14,7 +14,6 @@
 package de.tilman_neumann.jml.factor.base.congruence;
 
 import java.math.BigInteger;
-import java.util.Set;
 
 import de.tilman_neumann.jml.factor.base.SortedIntegerArray;
 
@@ -24,7 +23,7 @@ import de.tilman_neumann.jml.factor.base.SortedIntegerArray;
  * 
  * @author Tilman Neumann
  */
-abstract public class Partial extends AQPair implements Congruence {
+abstract public class Partial extends AQPair {
 
 	/**
 	 * Full constructor.
@@ -34,9 +33,9 @@ abstract public class Partial extends AQPair implements Congruence {
 	public Partial(BigInteger A, SortedIntegerArray smallFactors) {
 		super(A, smallFactors);
 	}
-
-	@Override
-	public void addMyAQPairsViaXor(Set<AQPair> targetSet) {
-		if (!targetSet.remove(this)) targetSet.add(this);
-	}
+	
+	/**
+	 * @return the large factors appearing with odd exponent.
+	 */
+	abstract public Long[] getLargeFactorsWithOddExponent();
 }

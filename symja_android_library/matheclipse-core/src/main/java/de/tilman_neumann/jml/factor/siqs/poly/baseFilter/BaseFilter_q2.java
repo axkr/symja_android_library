@@ -33,16 +33,20 @@ public class BaseFilter_q2 implements BaseFilter {
 	public Result filter(SolutionArrays solutionArrays, BaseArrays baseArrays, int mergedBaseSize, int[] qArray, int qCount, int k) {
 		int[] mergedPrimes = baseArrays.primes;
 		int[] mergedExponents = baseArrays.exponents;
-		int[] mergedPowers = baseArrays.powers;
+		int[] mergedPowers = baseArrays.pArray;
 		int[] mergedTArray = baseArrays.tArray;
 		byte[] mergedlogPArray = baseArrays.logPArray;
-		
+		double[] mergedPinvArrayD = baseArrays.pinvArrayD;
+		long[] mergedPinvArrayL = baseArrays.pinvArrayL;
+
 		int[] filteredPrimes = solutionArrays.primes;
 		int[] filteredExponents = solutionArrays.exponents;
-		int[] filteredPowers = solutionArrays.powers;
+		int[] filteredPowers = solutionArrays.pArray;
 		int[] filteredTArray = solutionArrays.tArray;
 		byte[] filteredLogPArray = solutionArrays.logPArray;
-		
+		double[] filteredPinvArrayD = solutionArrays.pinvArrayD;
+		long[] filteredPinvArrayL = solutionArrays.pinvArrayL;
+
 		// Collect q in a hash set to permit fast filtering of powers of q
 		HashSet<Integer> qSet = new HashSet<Integer>();
 		for (int q : qArray) {
@@ -58,6 +62,8 @@ public class BaseFilter_q2 implements BaseFilter {
 				filteredPowers[filteredBaseSize] = mergedPowers[i];
 				filteredTArray[filteredBaseSize] = mergedTArray[i];
 				filteredLogPArray[filteredBaseSize] = mergedlogPArray[i];
+				filteredPinvArrayD[filteredBaseSize] = mergedPinvArrayD[i];
+				filteredPinvArrayL[filteredBaseSize] = mergedPinvArrayL[i];
 				filteredBaseSize++;
 			}
 		}

@@ -41,18 +41,18 @@ public class UnsafeUtil {
 	// native memory already allocated in byte
 	private static long TOTAL_ALLOCATED = 0;
 	
-//	static {
-//		// register shutdown hook that checks release of all memory on normal shutdown
-//		Runtime.getRuntime().addShutdownHook(new Thread() {
-//		    public void run() {
-//				if(TOTAL_ALLOCATED == 0) {
-//					LOG.info("All native memory has been released.");
-//				} else {
-//					LOG.error(TOTAL_ALLOCATED + " bytes of native memory have not been released !");
-//				}
-//		    }
-//		});
-//	}
+	static {
+		// register shutdown hook that checks release of all memory on normal shutdown
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+		    public void run() {
+				if(TOTAL_ALLOCATED == 0) {
+					LOG.info("All native memory has been released.");
+				} else {
+					LOG.error(TOTAL_ALLOCATED + " bytes of native memory have not been released !");
+				}
+		    }
+		});
+	}
 	
 	private UnsafeUtil() {
 		// static class

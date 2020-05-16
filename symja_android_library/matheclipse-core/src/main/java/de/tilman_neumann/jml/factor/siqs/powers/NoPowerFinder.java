@@ -29,13 +29,13 @@ public class NoPowerFinder implements PowerFinder {
 		return "noPowers";
 	}
 	
-	public BaseArrays addPowers(BigInteger kN, int[] primes, int[] tArray, byte[] logPArray, int primeBaseSize, SieveParams sieveParams) {
+	public BaseArrays addPowers(BigInteger kN, int[] primes, int[] tArray, byte[] logPArray, double[] pinvArrayD, long[] pinvArrayL, int primeBaseSize, SieveParams sieveParams) {
 		//all exponents are 1
 		int [] exponents = new int[primeBaseSize];
 		for (int i=primeBaseSize-1; i >= 0; i--) {
 			exponents[i] = 1;
 		}
 		
-		return new BaseArrays(primes, exponents, primes, tArray, logPArray);
+		return new BaseArrays(primes, exponents, primes, tArray, logPArray, pinvArrayD, pinvArrayL);
 	}
 }

@@ -50,9 +50,14 @@ public class BigIntConstants {
 	/** 28 */				public static final BigInteger I_28 = BigInteger.valueOf(28);
 	/** 29 */				public static final BigInteger I_29 = BigInteger.valueOf(29);
 	/** 30 */				public static final BigInteger I_30 = BigInteger.valueOf(30);
-	
+	/** 31 */				public static final BigInteger I_31 = BigInteger.valueOf(31);
 	/** 32 */				public static final BigInteger I_32 = BigInteger.valueOf(32);
+	
+	/** 37 */				public static final BigInteger I_37 = BigInteger.valueOf(37);
 	/** 40 */				public static final BigInteger I_40 = BigInteger.valueOf(40);
+	/** 41 */				public static final BigInteger I_41 = BigInteger.valueOf(41);
+	/** 43 */				public static final BigInteger I_43 = BigInteger.valueOf(43);
+	/** 47 */				public static final BigInteger I_47 = BigInteger.valueOf(47);
 	/** 48 */				public static final BigInteger I_48 = BigInteger.valueOf(48);
 	/** 50 */				public static final BigInteger I_50 = BigInteger.valueOf(50);
 	/** 60 */				public static final BigInteger I_60 = BigInteger.valueOf(60);

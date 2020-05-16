@@ -13,13 +13,15 @@
  */
 package de.tilman_neumann.jml.factor.base.congruence;
 
+import java.util.Set;
+
 /**
  * A smooth congruence.
  * The matrix elements of a smooth congruence are the small factors appearing with odd exponent.
  *
  * @author Tilman Neumann
  */
-public interface Smooth extends Congruence {
+public interface Smooth {
 
 	/**
 	 * Test if the Q of this smooth congruence is an exact square.
@@ -28,4 +30,23 @@ public interface Smooth extends Congruence {
 	 * @return true if Q is square
 	 */
 	boolean isExactSquare();
+
+	/**
+	 * @return set matrix elements. For a smooth relation these are the small factors appearing with odd exponent.
+	 */
+	Integer[] getMatrixElements();
+
+	/**
+	 * @return the set of AQPairs this smooth relation consists of
+	 */
+	Set<AQPair> getAQPairs();
+	
+	/**
+	 * Add <code>this</code>'s AQPairs to the target set via xor.
+	 * This operation permits to get around without creating new array objects
+	 * for all those congruence sub-classes that represent just a single AQPair.
+	 *
+	 * @param targetSet
+	 */
+	void addMyAQPairsViaXor(Set<AQPair> targetSet);
 }

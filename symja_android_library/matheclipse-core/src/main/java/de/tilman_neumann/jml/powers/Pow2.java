@@ -23,7 +23,7 @@ public class Pow2 {
 	/**
 	 * Power of 2 with integer exponent.
 	 * @param n
-	 * @return
+	 * @return 2^n
 	 */
 	public static BigDecimal pow2(int n) {
 		if (n >= 0) {
@@ -35,6 +35,7 @@ public class Pow2 {
 	/**
 	 * Multiplication with the n.th power of 2.
 	 * 
+	 * @param x
 	 * @param n Exponent
 	 * @return x*2^n
 	 */
@@ -55,6 +56,7 @@ public class Pow2 {
 	/**
 	 * Division by the n.th power of 2.
 	 * 
+	 * @param x
 	 * @param n Exponent
 	 * @return x/2^n
 	 */

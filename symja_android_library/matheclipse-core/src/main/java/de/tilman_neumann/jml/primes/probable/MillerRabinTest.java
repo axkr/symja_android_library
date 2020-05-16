@@ -23,10 +23,14 @@ import java.util.concurrent.ThreadLocalRandom;
  * Miller-Rabin probable prime test.
  * @author Tilman Neumann
  */
+// TODO use Montgomery multiplication/exponentiation
 public class MillerRabinTest {
 	
 	private Random rng = ThreadLocalRandom.current();
 
+	private BigInteger N, Nm1, D;
+	private int lsb;
+	
 	/**
 	 * Perform up to numberOfRounds Miller-Rabin tests with random bases.
 	 * @param N
@@ -34,10 +38,7 @@ public class MillerRabinTest {
 	 * @return true if N passes all tests, false if N is composite
 	 */
 	public boolean isProbablePrime(BigInteger N, int numberOfRounds) {
-		// init
-		BigInteger N_m1 = N.subtract(I_1);
-        int lsb = N_m1.getLowestSetBit();
-        BigInteger N_m1_without2s = N_m1.shiftRight(lsb);
+		this.setInput(N);
         
 		// test rounds
 		int N_bits = N.bitLength();
@@ -49,44 +50,66 @@ public class MillerRabinTest {
             } while (x.compareTo(I_1) <= 0 || x.compareTo(N) >= 0);
             
             // do Miller-Rabin test to base x
-            int l = 0;
-            BigInteger test = x.modPow(N_m1_without2s, N);
-            if ((!test.equals(I_1)) && !test.equals(N_m1)) {
-                if (++l == lsb) return false;
-                test = test.multiply(test).mod(N);
-                while (!test.equals(N_m1)) {
-                    if (test.equals(I_1) || ++l == lsb) return false;
-                    test = test.multiply(test).mod(N);
-                }
-            }
+            if (testSingleBase(x) == false) return false; // surely composite
         }
 
-        return true;
+        return true; // probable prime
 	}
 	
 	/**
+	 * Perform Miller-Rabin test of N to several bases.
+	 * @param N
+	 * @param bases
+	 * @return true if N is probable prime, false if N is composite
+	 */
+	public boolean testBases(BigInteger N, BigInteger[] bases) {
+		this.setInput(N);
+        for (BigInteger x : bases) {
+            if (testSingleBase(x) == false) return false; // surely composite
+        }
+        return true; // probable prime
+	}
+
+	/**
 	 * Perform a single Miller-Rabin test of N to base x.
 	 * @param N
-	 * @param x
-	 * @return true if N passes the test to base x, false if N is composite
+	 * @param x the base
+	 * @return true if N is probable prime, false if N is composite
 	 */
 	public boolean testSingleBase(BigInteger N, BigInteger x) {
-		// init
-		BigInteger N_m1 = N.subtract(I_1);
-        int lsb = N_m1.getLowestSetBit();
-        BigInteger N_m1_without2s = N_m1.shiftRight(lsb);
-        
-		// test base x
-        int l = 0;
-        BigInteger test = x.modPow(N_m1_without2s, N);
-        if ((!test.equals(I_1)) && !test.equals(N_m1)) {
-            if (++l == lsb) return false;
-            test = test.multiply(test).mod(N);
-            while (!test.equals(N_m1)) {
-                if (test.equals(I_1) || ++l == lsb) return false;
-                test = test.multiply(test).mod(N);
-            }
-        }
-        return true;
+		this.setInput(N);
+		return testSingleBase(x);
+	}
+
+	/**
+	 * Set the argument N for a bunch of base tests.
+	 * @param N
+	 */
+	private void setInput(BigInteger N) {
+		this.N = N;
+		Nm1 = N.subtract(I_1);
+		// N-1 = 2^lsb * D, D odd
+        lsb = Nm1.getLowestSetBit();
+        D = Nm1.shiftRight(lsb);
+	}
+
+	/**
+	 * Perform a single Miller-Rabin test of N to base x.
+	 * setInput(N) must have been called before.
+	 * @param x the base
+	 * @return true if N passes the test to base x, false if N is composite
+	 */
+	private boolean testSingleBase(BigInteger x) {
+        //if (x.compareTo(N) >= 0) x = x.mod(N); // not required
+        BigInteger test = x.modPow(D, N);
+        if ((test.equals(I_1)) || test.equals(Nm1)) return true;
+
+		for (int i=1; i<lsb; i++) {
+	        test = test.multiply(test).mod(N);
+            if (test.equals(I_1)) return false;
+            if (test.equals(Nm1)) return true;
+		}
+
+		return false;
 	}
 }

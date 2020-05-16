@@ -17,6 +17,8 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
 import java.math.BigInteger;
 
+import org.apache.log4j.Logger;
+
 /**
  * Jacobi symbol. The basic implementation follows [Crandall, Pomerance 2005: Prime numbers];
  * then we apply some optimizations.
@@ -25,7 +27,7 @@ import java.math.BigInteger;
  */
 public class JacobiSymbol {
 	@SuppressWarnings("unused")
-//	private static final Logger LOG = Logger.getLogger(JacobiSymbol.class);
+	private static final Logger LOG = Logger.getLogger(JacobiSymbol.class);
 
 	/**
 	 * JacobiSymbol J(a|m), m an odd integer, for BigInteger arguments.

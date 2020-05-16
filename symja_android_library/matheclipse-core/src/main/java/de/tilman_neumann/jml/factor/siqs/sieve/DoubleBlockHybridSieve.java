@@ -13,6 +13,8 @@
  */
 package de.tilman_neumann.jml.factor.siqs.sieve;
 
+import static de.tilman_neumann.jml.factor.base.AnalysisOptions.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,7 +71,6 @@ public class DoubleBlockHybridSieve implements Sieve {
 	private BinarySearch binarySearch = new BinarySearch();
 
 	// timings
-	private boolean profile;
 	private Timer timer = new Timer();
 	private long initDuration, sieveDuration, collectDuration;
 
@@ -90,7 +91,7 @@ public class DoubleBlockHybridSieve implements Sieve {
 	}
 	
 	@Override
-	public void initializeForN(SieveParams sieveParams, int mergedBaseSize, boolean profile) {
+	public void initializeForN(SieveParams sieveParams, int mergedBaseSize) {
 		this.pMinIndex = sieveParams.pMinIndex;
 		int pMax = sieveParams.pMax;
 		initializer = sieveParams.getInitializerBlock();
@@ -114,7 +115,7 @@ public class DoubleBlockHybridSieve implements Sieve {
 //			assertEquals(effectiveB2, k2*effectiveB1);
 //		}
 
-		// Allocate sieve array: Typically SIQS adjusts such that 2.75 * sieveArraySize ~ pMax.
+		// Allocate sieve array: Typically SIQS adjusts such that pMax/sieveArraySize = 2.5 to 5.0.
 		// For large primes with 0 or 1 sieve locations we need to allocate pMax+1 entries;
 		// For primes p[i], i<p1Index, we need p[i]+sieveArraySize = 2*sieveArraySize entries.
 		int sieveAllocationSize = Math.max(pMax+1, 2*sieveArraySize);
@@ -122,25 +123,23 @@ public class DoubleBlockHybridSieve implements Sieve {
 		if (DEBUG) LOG.debug("pMax = " + pMax + ", sieveArraySize = " + sieveArraySize + " --> sieveAllocationSize = " + sieveAllocationSize);
 		sieveBlock = new byte[effectiveB2];
 
-		// profiling
-		this.profile = profile;
-		initDuration = sieveDuration = collectDuration = 0;
+		if (ANALYZE) initDuration = sieveDuration = collectDuration = 0;
 	}
 
 	@Override
 	public void initializeForAParameter(SolutionArrays solutionArrays, int filteredBaseSize) {
 		this.solutionArrays = solutionArrays;
-		int[] powers = solutionArrays.powers;
+		int[] pArray = solutionArrays.pArray;
 		this.solutionCount = filteredBaseSize;
 		
-		p1Index = binarySearch.getInsertPosition(powers, solutionCount, sieveArraySize);
-		p2Index = binarySearch.getInsertPosition(powers, p1Index, (sieveArraySize+1)/2);
-		p3Index = binarySearch.getInsertPosition(powers, p2Index, (sieveArraySize+2)/3);
+		p1Index = binarySearch.getInsertPosition(pArray, solutionCount, sieveArraySize);
+		p2Index = binarySearch.getInsertPosition(pArray, p1Index, (sieveArraySize+1)/2);
+		p3Index = binarySearch.getInsertPosition(pArray, p2Index, (sieveArraySize+2)/3);
 		if (DEBUG) LOG.debug("primeBaseSize=" + solutionCount + ", p1Index=" + p1Index + ", p2Index=" + p2Index + ", p3Index=" + p3Index);
 
-		r_l = binarySearch.getInsertPosition(powers, p3Index, effectiveB2);
-		r_m = binarySearch.getInsertPosition(powers, r_l, geometricMeanOfB1AndB2);
-		r_s = binarySearch.getInsertPosition(powers, r_m, effectiveB1);
+		r_l = binarySearch.getInsertPosition(pArray, p3Index, effectiveB2);
+		r_m = binarySearch.getInsertPosition(pArray, r_l, geometricMeanOfB1AndB2);
+		r_s = binarySearch.getInsertPosition(pArray, r_m, effectiveB1);
 		if (DEBUG) LOG.debug("db: r_s = " + r_s + ", r_m = " + r_m + ", r_l = " + r_l);
 
 		xPosArray = new int[p3Index];
@@ -151,12 +150,12 @@ public class DoubleBlockHybridSieve implements Sieve {
 
 	@Override
 	public List<Integer> sieve() {
-		if (profile) timer.capture();
+		if (ANALYZE) timer.capture();
 		this.initializeSieveArray(sieveArraySize);
 		
 		// prepare single-block data for smallish primes:
 		// this needs to be done in sieve(), because it depends on the the x-arrays
-		final int[] powers = solutionArrays.powers;
+		final int[] pArray = solutionArrays.pArray;
 		final int[] x1Array = solutionArrays.x1Array;
 		final int[] x2Array = solutionArrays.x2Array;
 		int x1, x2;
@@ -165,15 +164,15 @@ public class DoubleBlockHybridSieve implements Sieve {
 			x2 = x2Array[i];
 			if (x1<x2) {
 				xPosArray[i] = x1;
-				xNegArray[i] = powers[i] - x2;
+				xNegArray[i] = pArray[i] - x2;
 				dNegArray[i] = dPosArray[i] = x2 - x1;
 			} else {
 				xPosArray[i] = x2;
-				xNegArray[i] = powers[i] - x1;
+				xNegArray[i] = pArray[i] - x1;
 				dNegArray[i] = dPosArray[i] = x1 - x2;
 			}
 		}
-		if (profile) initDuration += timer.capture();
+		if (ANALYZE) initDuration += timer.capture();
 
 		// Sieve with positive x, large primes:
 		List<Integer> smoothXList = new ArrayList<Integer>();
@@ -187,7 +186,7 @@ public class DoubleBlockHybridSieve implements Sieve {
 			sieveArray[x2Array[i]] += logP;
 		}
 		for ( ; i>=p2Index; i--) {
-			final int p = powers[i];
+			final int p = pArray[i];
 			final byte logP = logPArray[i];
 			x1 = x1Array[i];
 			x2 = x2Array[i];
@@ -197,7 +196,7 @@ public class DoubleBlockHybridSieve implements Sieve {
 			sieveArray[x2+p] += logP;
 		}
 		for ( ; i>=p3Index; i--) {
-			final int p = powers[i];
+			final int p = pArray[i];
 			final byte logP = logPArray[i];
 			x1 = x1Array[i];
 			x2 = x2Array[i];
@@ -209,23 +208,23 @@ public class DoubleBlockHybridSieve implements Sieve {
 			sieveArray[x1+p2] += logP;
 			sieveArray[x2+p2] += logP;
 		}
-		if (profile) sieveDuration += timer.capture();
+		if (ANALYZE) sieveDuration += timer.capture();
 
 		// Positive x, small primes:
 		for (int b2=0; b2<k2; b2++) { // bottom-up order is required because in each block, the data for the next block is adjusted
 			// positive x: initialize block
 			final int b2Offset = b2*effectiveB2;
 			System.arraycopy(sieveArray, b2Offset, sieveBlock, 0, effectiveB2);
-			if (profile) initDuration += timer.capture();
+			if (ANALYZE) initDuration += timer.capture();
 
 			for (int b1=0; b1<k1; b1++) {
 				// sieve inner block [b1*B1, (b1+1)*B1] with prime index ranges 0...r_s-1 and r_s...r_m
 				//LOG.debug("db: b2 = " + b2 + ", b1 = " + b1);
-				sievePositiveXBlock(powers, logPArray, effectiveB1, b1*effectiveB1, pMinIndex, r_s, r_m);
+				sievePositiveXBlock(pArray, logPArray, effectiveB1, b1*effectiveB1, pMinIndex, r_s, r_m);
 			}
 			// sieve outer block [b2*B2, (b2+1)*B2] with prime index ranges r_m...r_l-1 and r_l...max
-			sievePositiveXBlock(powers, logPArray, effectiveB2, 0, r_m, r_l, p3Index);
-			if (profile) sieveDuration += timer.capture();
+			sievePositiveXBlock(pArray, logPArray, effectiveB2, 0, r_m, r_l, p3Index);
+			if (ANALYZE) sieveDuration += timer.capture();
 
 			// Collect block: We collect 4 bytes at once, thus we need 4 | effectiveB2 -> see initialize()
 			final int b2Offset1 = b2Offset+1;
@@ -243,22 +242,22 @@ public class DoubleBlockHybridSieve implements Sieve {
 					if (sieveBlock[x+4] < 0) smoothXList.add(x+b2Offset4);
 				}
 			} // end for (x)
-			if (profile) collectDuration += timer.capture();
+			if (ANALYZE) collectDuration += timer.capture();
 		}
 		
 		// re-initialize sieve array for negative x
 		this.initializeSieveArray(sieveArraySize);
-		if (profile) initDuration += timer.capture();
+		if (ANALYZE) initDuration += timer.capture();
 
 		// negative x, large primes:
 		for (i=solutionCount-1; i>=p1Index; i--) {
-			final int p = powers[i];
+			final int p = pArray[i];
 			final byte logP = logPArray[i];
 			sieveArray[p-x1Array[i]] += logP;
 			sieveArray[p-x2Array[i]] += logP;
 		}
 		for (; i>=p2Index; i--) {
-			final int p = powers[i];
+			final int p = pArray[i];
 			final byte logP = logPArray[i];
 			x1 = p-x1Array[i];
 			x2 = p-x2Array[i];
@@ -268,7 +267,7 @@ public class DoubleBlockHybridSieve implements Sieve {
 			sieveArray[x2+p] += logP;
 		}
 		for (; i>=p3Index; i--) {
-			final int p = powers[i];
+			final int p = pArray[i];
 			final byte logP = logPArray[i];
 			x1 = p-x1Array[i];
 			x2 = p-x2Array[i];
@@ -280,22 +279,22 @@ public class DoubleBlockHybridSieve implements Sieve {
 			sieveArray[x1+p2] += logP;
 			sieveArray[x2+p2] += logP;
 		}
-		if (profile) sieveDuration += timer.capture();
+		if (ANALYZE) sieveDuration += timer.capture();
 
 		// negative x, small primes:
 		for (int b2=0; b2<k2; b2++) { // bottom-up order is required because in each block, the data for the next block is adjusted
 			final int b2Offset = b2*effectiveB2;
 			System.arraycopy(sieveArray, b2Offset, sieveBlock, 0, effectiveB2);
-			if (profile) initDuration += timer.capture();
+			if (ANALYZE) initDuration += timer.capture();
 			
 			for (int b1=0; b1<k1; b1++) {
 				// sieve inner block [b1*B1, (b1+1)*B1] with prime index ranges 0...r_s-1 and r_s...r_m
 				//LOG.debug("db: b2 = " + b2 + ", b1 = " + b1);
-				sieveNegativeXBlock(powers, logPArray, effectiveB1, b1*effectiveB1, pMinIndex, r_s, r_m);
+				sieveNegativeXBlock(pArray, logPArray, effectiveB1, b1*effectiveB1, pMinIndex, r_s, r_m);
 			}
 			// sieve outer block [b2*B2, (b2+1)*B2] with prime index ranges r_m...r_l-1 and r_l...max
-			sieveNegativeXBlock(powers, logPArray, effectiveB2, 0, r_m, r_l, p3Index);
-			if (profile) sieveDuration += timer.capture();
+			sieveNegativeXBlock(pArray, logPArray, effectiveB2, 0, r_m, r_l, p3Index);
+			if (ANALYZE) sieveDuration += timer.capture();
 			
 			// collect block
 			// let the sieve entry counter x run down to 0 is much faster because of the simpler exit condition
@@ -314,7 +313,7 @@ public class DoubleBlockHybridSieve implements Sieve {
 					if (sieveBlock[x+4] < 0) smoothXList.add(-(x+b2Offset4));
 				}
 			} // end for (x)
-			if (profile) collectDuration += timer.capture();
+			if (ANALYZE) collectDuration += timer.capture();
 		}
 		return smoothXList;
 	}

@@ -55,6 +55,15 @@ public class Smooth_Composite implements Smooth {
 	}
 
 	@Override
+	public Set<AQPair> getAQPairs() {
+		Set<AQPair> set = new HashSet<>();
+		for (AQPair aqPair : aqPairs) {
+			set.add(aqPair);
+		}
+		return set;
+	}
+
+	@Override
 	public void addMyAQPairsViaXor(Set<AQPair> targetSet) {
 		for (AQPair aqPair : aqPairs) {
 			if (!targetSet.remove(aqPair)) targetSet.add(aqPair);
@@ -90,7 +99,7 @@ public class Smooth_Composite implements Smooth {
 	@Override
 	public String toString() {
 		SortedMultiset<BigInteger> allA = new SortedMultiset_BottomUp<BigInteger>();
-		SortedMultiset<Integer> allQ = new SortedMultiset_BottomUp<Integer>();
+		SortedMultiset<Long> allQ = new SortedMultiset_BottomUp<Long>();
 		for (AQPair aqPair : aqPairs) {
 			allA.add(aqPair.getA());
 			allQ.addAll(aqPair.getAllQFactors());

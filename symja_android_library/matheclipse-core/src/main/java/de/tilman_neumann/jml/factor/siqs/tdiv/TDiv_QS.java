@@ -36,9 +36,8 @@ public interface TDiv_QS {
 	 * @param N_dbl
 	 * @param kN multiplier k (typically Knuth-Schroeppel) * factor argument N
 	 * @param maxQRest the biggest QRest admitted for a smooth relation
-	 * @param profile if true then collect timings
 	 */
-	public void initializeForN(double N_dbl, BigInteger kN, double maxQRest, boolean profile);
+	public void initializeForN(double N_dbl, BigInteger kN, double maxQRest);
 
 	/**
 	 * Set prime/power base, polynomial parameters and smallest x-solutions for a new a-parameter.

@@ -28,7 +28,7 @@ import de.tilman_neumann.util.SortedMultiset;
  */
 public class Partial_nLarge extends Partial {
 
-	private int[] bigFactors; // needs about 50 byte for 3 large factors
+	private long[] bigFactors; // needs about 50 byte for 3 large factors
 	private byte[] bigFactorExponents; // needs about 36 byte for 3 large factors
 	
 	/**
@@ -45,9 +45,9 @@ public class Partial_nLarge extends Partial {
 	}
 
 	@Override
-	public SortedMultiset<Integer> getAllQFactors() {
+	public SortedMultiset<Long> getAllQFactors() {
 		// get small factors of Q
-		SortedMultiset<Integer> allFactors = super.getSmallQFactors();
+		SortedMultiset<Long> allFactors = super.getSmallQFactors();
 		// add large factors
 		for (int i=0; i<bigFactors.length; i++) {
 			allFactors.add(bigFactors[i], bigFactorExponents[i]);
@@ -56,12 +56,12 @@ public class Partial_nLarge extends Partial {
 	}
 
 	@Override
-	public Integer[] getMatrixElements() {
-		ArrayList<Integer> result = new ArrayList<Integer>();
+	public Long[] getLargeFactorsWithOddExponent() {
+		ArrayList<Long> result = new ArrayList<>();
 		for (int i=0; i<bigFactors.length; i++) {
 			if ((bigFactorExponents[i]&1)==1) result.add(bigFactors[i]);
 		}
-		return result.toArray(new Integer[result.size()]);
+		return result.toArray(new Long[result.size()]);
 	}
 
 	@Override

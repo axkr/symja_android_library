@@ -15,9 +15,10 @@ package de.tilman_neumann.jml.base;
 
 import java.math.BigInteger;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
+
 /**
  * A very limited unsigned big integer implementation.
  * Currently the only implemented arithmetic methods are division and modulus of big integers by small integers.
@@ -27,8 +28,8 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
  * @author Tilman Neumann
  */
 public class UnsignedBigInt {
-//	private static final Logger LOG = Logger.getLogger(UnsignedBigInt.class);
-//	private static final boolean DEBUG = false;
+	private static final Logger LOG = Logger.getLogger(UnsignedBigInt.class);
+	private static final boolean DEBUG = false;
 	
 	private static final BigInteger UNSIGNED_INT_MASK_BIG = BigInteger.valueOf(0xFFFFFFFFL);
 
@@ -100,7 +101,7 @@ public class UnsignedBigInt {
 			}
 		}
 		
-//		if (DEBUG) {
+		if (DEBUG) {
 //			try {
 //				// compare with slower but safer implementation
 //				int[] intArrayFromNShifts = safeConversion(N);
@@ -112,7 +113,7 @@ public class UnsignedBigInt {
 //				LOG.debug("UnsignedBigInt = " + this.toBinaryString());
 //				throw ae;
 //			}
-//		}
+		}
 	}
 
 	private int[] safeConversion(BigInteger N) {
@@ -205,9 +206,11 @@ public class UnsignedBigInt {
     }
 
     /**
-     * Mutable divide and remainder computation.
+     * Mutable divide and remainder computation. After the operation, this will be the quotient,
+     * and the remainder is returned.
+     * 
      * @param divisor
-     * @return
+     * @return remainder of this / divisor
      */
     public int divideAndRemainder(final int divisor) {
     	// A special treatment of intLength==1 is asymptotically bad
@@ -298,14 +301,14 @@ public class UnsignedBigInt {
 		}
 		BigInteger N = new BigInteger(bytes);
 		
-//		if (DEBUG) {
+		if (DEBUG) {
 //			// compare with slower but safer implementation
 //			BigInteger NfromShifts = BigInteger.valueOf(intArray[intLength-1] & 0xFFFFFFFFL);
 //			for (int i=intLength-2; i>=0; i--) {
 //				NfromShifts = NfromShifts.shiftLeft(32).add(BigInteger.valueOf(intArray[i] & 0xFFFFFFFFL));
 //			}
 //			assertEquals(NfromShifts, N);
-//		}
+		}
 		return N;
 	}
 

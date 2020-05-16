@@ -79,6 +79,7 @@ public class TDiv {
 
 				if (N.bitLength() < 63) {
 					// check if we are done
+					// TODO do also when no division occurred? the p are increasing all the time...
 					long p_i_square = p_i *(long)p_i;
 					if (p_i_square > N.longValue()) {
 						//LOG.debug("N=" + N + " < p^2=" + p_i_square);

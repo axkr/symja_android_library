@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * Sorted list.
@@ -29,8 +29,8 @@ public class SortedList<T> extends ArrayList<T> {
 
 	private static final long serialVersionUID = 7448332292916331255L;
 
-//	@SuppressWarnings("unused")
-//	private static final Logger LOG = Logger.getLogger(SortedList.class);
+	@SuppressWarnings("unused")
+	private static final Logger LOG = Logger.getLogger(SortedList.class);
 
     /** Compares list elements. if null then the elements <T> must be Comparable */
     private Comparator<T> explicitComparator = null;

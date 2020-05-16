@@ -26,7 +26,7 @@ import de.tilman_neumann.util.SortedMultiset;
 public class Smooth_1LargeSquare extends Smooth_Simple {
 
 	/** the large factor contained as a square */
-	private int bigFactor;
+	private long bigFactor;
 	
 	/**
 	 * Full constructor.
@@ -34,16 +34,16 @@ public class Smooth_1LargeSquare extends Smooth_Simple {
 	 * @param smallFactors small factors of Q
 	 * @param bigFactor the single large factor of Q contained as square
 	 */
-	public Smooth_1LargeSquare(BigInteger A, SortedIntegerArray smallFactors, int bigFactor) {
+	public Smooth_1LargeSquare(BigInteger A, SortedIntegerArray smallFactors, long bigFactor) {
 		super(A, smallFactors);
 		// the large factor contained as a square
 		this.bigFactor = bigFactor;
 	}
 
 	@Override
-	public SortedMultiset<Integer> getAllQFactors() {
+	public SortedMultiset<Long> getAllQFactors() {
 		// get small factors of Q
-		SortedMultiset<Integer> allFactors = super.getSmallQFactors();
+		SortedMultiset<Long> allFactors = super.getSmallQFactors();
 		// add single large factor square
 		allFactors.add(bigFactor, 2);
 		return allFactors;

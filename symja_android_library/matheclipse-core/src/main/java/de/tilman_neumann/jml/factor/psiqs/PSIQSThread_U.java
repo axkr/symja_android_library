@@ -15,6 +15,7 @@ package de.tilman_neumann.jml.factor.psiqs;
 
 import java.math.BigInteger;
 
+import de.tilman_neumann.jml.factor.base.congruence.CongruenceCollectorParallel;
 import de.tilman_neumann.jml.factor.siqs.data.BaseArrays;
 import de.tilman_neumann.jml.factor.siqs.poly.AParamGenerator;
 import de.tilman_neumann.jml.factor.siqs.poly.SIQSPolyGenerator;
@@ -37,15 +38,14 @@ public class PSIQSThread_U extends PSIQSThreadBase {
 	 * @param sieveParams basic sieve parameters
 	 * @param baseArrays primes, power arrays after adding powers
 	 * @param apg
-	 * @param aqPairBuffer
+	 * @param cc congruence collector, also runs the matrix solver
 	 * @param threadIndex
-	 * @param profile
 	 */
 	public PSIQSThread_U(
 			int k, BigInteger N, BigInteger kN, int d, SieveParams sieveParams, BaseArrays baseArrays,
-			AParamGenerator apg, AQPairBuffer aqPairBuffer, int threadIndex, boolean profile) {
+			AParamGenerator apg, CongruenceCollectorParallel cc, int threadIndex) {
 		
-		super(k, N, kN, d, sieveParams, baseArrays, apg, aqPairBuffer, new SIQSPolyGenerator(), new Sieve03gU(),
-			  new TDiv_QS_2Large_UBI(), threadIndex, profile);
+		super(k, N, kN, d, sieveParams, baseArrays, apg, new SIQSPolyGenerator(), new Sieve03gU(),
+			  new TDiv_QS_2Large_UBI(), cc, threadIndex);
 	}
 }

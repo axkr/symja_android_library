@@ -13,6 +13,7 @@
  */
 package de.tilman_neumann.jml.factor.siqs;
 
+import static de.tilman_neumann.jml.factor.base.AnalysisOptions.*;
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
 import java.io.BufferedReader;
@@ -23,19 +24,17 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import de.tilman_neumann.jml.factor.FactorAlgorithmBase;
+import de.tilman_neumann.jml.factor.FactorAlgorithm;
 import de.tilman_neumann.jml.factor.FactorException;
 import de.tilman_neumann.jml.factor.base.PrimeBaseGenerator;
 import de.tilman_neumann.jml.factor.base.congruence.AQPair;
 import de.tilman_neumann.jml.factor.base.congruence.CongruenceCollector;
 import de.tilman_neumann.jml.factor.base.congruence.CongruenceCollectorReport;
-import de.tilman_neumann.jml.factor.base.congruence.Partial;
 import de.tilman_neumann.jml.factor.base.congruence.Smooth;
 import de.tilman_neumann.jml.factor.base.matrixSolver.FactorTest;
 import de.tilman_neumann.jml.factor.base.matrixSolver.FactorTest01;
 import de.tilman_neumann.jml.factor.base.matrixSolver.MatrixSolver;
 import de.tilman_neumann.jml.factor.base.matrixSolver.MatrixSolver02_BlockLanczos;
-import de.tilman_neumann.jml.factor.base.matrixSolver.SmoothSolverController;
 import de.tilman_neumann.jml.factor.siqs.data.BaseArrays;
 import de.tilman_neumann.jml.factor.siqs.poly.AParamGenerator;
 import de.tilman_neumann.jml.factor.siqs.poly.AParamGenerator01;
@@ -52,6 +51,7 @@ import de.tilman_neumann.jml.factor.siqs.tdiv.TDivReport;
 import de.tilman_neumann.jml.factor.siqs.tdiv.TDiv_QS;
 import de.tilman_neumann.jml.factor.siqs.tdiv.TDiv_QS_nLarge_UBI;
 import de.tilman_neumann.jml.powers.PurePowerTest;
+import de.tilman_neumann.util.ConfigUtil;
 import de.tilman_neumann.util.SortedMultiset;
 import de.tilman_neumann.util.TimeUtil;
 import de.tilman_neumann.util.Timer;
@@ -60,13 +60,10 @@ import de.tilman_neumann.util.Timer;
  * Main class for single-threaded SIQS implementations.
  * @author Tilman Neumann
  */
-public class SIQS extends FactorAlgorithmBase {
+public class SIQS extends FactorAlgorithm {
 	private static final Logger LOG = Logger.getLogger(SIQS.class);
 	private static final boolean DEBUG = false;
 	private static final boolean TEST_SIEVE = false;
-	
-	// use profile=true to generate timing informations
-	private boolean profile;
 	
 	private PurePowerTest powerTest = new PurePowerTest();
 	private KnuthSchroeppel multiplierFinder = new KnuthSchroeppel(); // used to compute the multiplier k
@@ -89,13 +86,18 @@ public class SIQS extends FactorAlgorithmBase {
 	private CongruenceCollector congruenceCollector;
 	// extra congruences to have a bigger chance that the equation system solves. the likelihood is >= 1-2^(extraCongruences+1)
 	private int extraCongruences;
-	// A controller for the solver used for smooth congruence equation systems.
-	private SmoothSolverController solverController;
+	/** The solver used for smooth congruence equation systems. */
+	private MatrixSolver matrixSolver;
 	
 	private int foundPerfectSmoothCount;
 	private int allPerfectSmoothCount;
 	private int foundAQPairsCount;
 	private int allAQPairsCount;
+	
+	// statistics
+	private Timer timer = new Timer();
+	private long powerTestDuration, initNDuration, ccDuration, solverDuration;
+	private int solverRunCount;
 	
 	/**
 	 * Standard constructor.
@@ -110,11 +112,10 @@ public class SIQS extends FactorAlgorithmBase {
 	 * @param auxFactorizer
 	 * @param extraCongruences the number of surplus congruences we collect to have a greater chance that the equation system solves.
 	 * @param matrixSolver matrix solver for the smooth congruence equation system
-	 * @param profile use profile=true to generate timing informations
 	 */
 	public SIQS(
 			float Cmult, float Mmult, Integer wantedQCount, Float maxQRestExponent, PowerFinder powerFinder, PolyGenerator polyGenerator, 
-			Sieve sieve, TDiv_QS auxFactorizer, int extraCongruences, MatrixSolver matrixSolver, boolean profile) {
+			Sieve sieve, TDiv_QS auxFactorizer, int extraCongruences, MatrixSolver matrixSolver) {
 		
 		this.Cmult = Cmult;
 		this.Mmult = Mmult;
@@ -125,15 +126,14 @@ public class SIQS extends FactorAlgorithmBase {
 		this.congruenceCollector = new CongruenceCollector();
 		this.auxFactorizer = auxFactorizer;
 		this.extraCongruences = extraCongruences;
-		this.solverController = new SmoothSolverController(matrixSolver);
-		this.profile = profile;
+		this.matrixSolver = matrixSolver;
 		apg = new AParamGenerator01(wantedQCount);
 	}
 
 	@Override
 	public String getName() {
 		String maxQRestExponentStr = "maxQRestExponent=" + String.format("%.3f", maxQRestExponent);
-		return "SIQS(Cmult=" + Cmult + ", Mmult=" + Mmult + ", qCount=" + apg.getQCount() + ", " + maxQRestExponentStr + ", " + powerFinder.getName() + ", " + polyGenerator.getName() + ", " + sieve.getName() + ", " + auxFactorizer.getName() + ", " + solverController.getName() + ")";
+		return "SIQS(Cmult=" + Cmult + ", Mmult=" + Mmult + ", qCount=" + apg.getQCount() + ", " + maxQRestExponentStr + ", " + powerFinder.getName() + ", " + polyGenerator.getName() + ", " + sieve.getName() + ", " + auxFactorizer.getName() + ", " + matrixSolver.getName() + ")";
 	}
 	
 	/**
@@ -141,12 +141,11 @@ public class SIQS extends FactorAlgorithmBase {
 	 * @return factor, or null if no factor was found.
 	 */
 	public BigInteger findSingleFactor(BigInteger N) {
-		Timer timer = new Timer(); // start timer
-		long powerTestDuration = 0;
-		long initNDuration = 0;
-		long ccDuration = 0;
-		long solverDuration = 0;
-		long solverRunCount = 0;
+		if (ANALYZE) {
+			timer.start(); // start timer
+			powerTestDuration = initNDuration = ccDuration = solverDuration = 0;
+			solverRunCount = 0;
+		}
 
 		// the quadratic sieve does not work for pure powers; check that first:
 		PurePowerTest.Result purePower = powerTest.test(N);
@@ -154,7 +153,7 @@ public class SIQS extends FactorAlgorithmBase {
 			// N is indeed a pure power -> return a factor that is about sqrt(N)
 			return purePower.base.pow(purePower.exponent>>1);
 		} // else: no pure power, run quadratic sieve
-		if (profile) powerTestDuration += timer.capture();
+		if (ANALYZE) powerTestDuration += timer.capture();
 		
 		// Compute prime base size:
 		// http://www.mersenneforum.org/showthread.php?s=3087aa210d8d7f1852c690a45f22d2e5&t=11116&page=2:
@@ -218,19 +217,26 @@ public class SIQS extends FactorAlgorithmBase {
 		// initialize sub-algorithms for new N
 		apg.initialize(k, N, kN, d, primeBaseSize, primesArray, tArray, adjustedSieveArraySize); // must be done before polyGenerator initialization where qCount is required
 		FactorTest factorTest = new FactorTest01(N);
-		congruenceCollector.initialize(N, factorTest, profile);
-		solverController.initialize(N, factorTest);
+		congruenceCollector.initialize(N, factorTest);
+		matrixSolver.initialize(N, factorTest);
 
 		// compute some basic parameters for N
 		SieveParams sieveParams = new SieveParams(kN, primesArray, primeBaseSize, adjustedSieveArraySize, maxQRest, 127);
 		// compute logP array
 		byte[] logPArray = computeLogPArray(primesArray, primeBaseSize, sieveParams.lnPMultiplier);
+		// compute reciprocals of primes
+		double[] pinvArrayD = new double[primeBaseSize];
+		long[] pinvArrayL = new long[primeBaseSize];
+		for (int i=0; i<primeBaseSize; i++) {
+			pinvArrayD[i] = 1.0 / primesArray[i];
+			pinvArrayL[i] = (1L<<32) / primesArray[i];
+		}
 
 		// Find and add powers to the prime base
-		BaseArrays baseArrays = powerFinder.addPowers(kN, primesArray, tArray, logPArray, primeBaseSize, sieveParams);
+		BaseArrays baseArrays = powerFinder.addPowers(kN, primesArray, tArray, logPArray, pinvArrayD, pinvArrayL, primeBaseSize, sieveParams);
 
 		// initialize polynomial generator and sub-engines
-		polyGenerator.initializeForN(k, N, kN, d, sieveParams, baseArrays, apg, sieve, auxFactorizer, profile);
+		polyGenerator.initializeForN(k, N, kN, d, sieveParams, baseArrays, apg, sieve, auxFactorizer);
 
 		if (TEST_SIEVE) {
 			foundPerfectSmoothCount = 0;
@@ -238,7 +244,7 @@ public class SIQS extends FactorAlgorithmBase {
 			foundAQPairsCount = 0;
 			allAQPairsCount = 0;
 		}
-		if (profile) initNDuration += timer.capture();
+		if (ANALYZE) initNDuration += timer.capture();
 
 		try {
 			while (true) {
@@ -255,18 +261,20 @@ public class SIQS extends FactorAlgorithmBase {
 				if (TEST_SIEVE) testSieve(aqPairs, adjustedSieveArraySize);
 
 				// add all congruences
-				if (profile) timer.capture();
+				if (ANALYZE) timer.capture();
 				for (AQPair aqPair : aqPairs) {
 					boolean addedSmooth = congruenceCollector.add(aqPair);
 					if (addedSmooth) {
 						int smoothCongruenceCount = congruenceCollector.getSmoothCongruenceCount();
 						if (smoothCongruenceCount >= requiredSmoothCongruenceCount) {
 							// Try to solve equation system
-							if (profile) ccDuration += timer.capture();
-							solverRunCount++;
-							if (DEBUG) LOG.debug("Run " + solverRunCount + ": #smooths = " + smoothCongruenceCount + ", #requiredSmooths = " + requiredSmoothCongruenceCount);
+							if (ANALYZE) {
+								ccDuration += timer.capture();
+								solverRunCount++;
+								if (DEBUG) LOG.debug("Run " + solverRunCount + ": #smooths = " + smoothCongruenceCount + ", #requiredSmooths = " + requiredSmoothCongruenceCount);
+							}
 							ArrayList<Smooth> congruences = congruenceCollector.getSmoothCongruences();
-							solverController.solve(congruences); // throws FactorException
+							matrixSolver.solve(congruences); // throws FactorException
 							
 							// If we get here then there was no FactorException
 							if (DEBUG) {
@@ -277,22 +285,22 @@ public class SIQS extends FactorAlgorithmBase {
 								}
 							}
 							
-							if (profile) solverDuration += timer.capture();
+							if (ANALYZE) solverDuration += timer.capture();
 							// Extend equation system and continue searching smooth congruences
 							requiredSmoothCongruenceCount += extraCongruences;
 						}
 					}
 				}
-				if (profile) ccDuration += timer.capture();
+				if (ANALYZE) ccDuration += timer.capture();
 				if (DEBUG) {
-					PolyReport polyReport = polyGenerator.getReport();
-					LOG.debug(polyGenerator.getName() + ": " + polyReport.getOperationDetails() + ": Sieve found " + smoothXList.size() + " smooth x, tDiv let " + aqPairs.size() + " pass.");
+					if (ANALYZE) LOG.debug(polyGenerator.getName() + ": " + polyGenerator.getReport().getOperationDetails());
+					LOG.debug("Sieve found " + smoothXList.size() + " smooth x, tDiv let " + aqPairs.size() + " pass.");
 					LOG.debug("-> Now in total we have found " + congruenceCollector.getSmoothCongruenceCount() + " / " + requiredSmoothCongruenceCount + " smooth congruences and " + congruenceCollector.getPartialCongruenceCount() + " partials.");
 				}
 			} // end poly
 		} catch (FactorException fe) {
 			BigInteger factor = fe.getFactor();
-			if (profile) {
+			if (ANALYZE) {
 				solverDuration += timer.capture();
 				// get all reports
 				PolyReport polyReport = polyGenerator.getReport();
@@ -312,21 +320,29 @@ public class SIQS extends FactorAlgorithmBase {
 				LOG.info("    multiplier k = " + k + ", kN%8 = " + kN.mod(I_8) + ", primeBaseSize = " + primeBaseSize + ", pMax = " + pMax + " (" + pMaxBits + " bits), sieveArraySize = " + adjustedSieveArraySize);
 				LOG.info("    polyGenerator: " + polyReport.getOperationDetails());
 				LOG.info("    tDiv: " + tdivReport.getOperationDetails());
+				if (ANALYZE_LARGE_FACTOR_SIZES) {
+					String qRestSizes = tdivReport.getQRestSizes();
+					if (qRestSizes != null) {
+						LOG.info("        " + qRestSizes);
+					}
+				}
 				LOG.info("    cc: " + ccReport.getOperationDetails());
-				if (CongruenceCollector.ANALYZE_BIG_FACTOR_SIZES) {
+				if (ANALYZE_LARGE_FACTOR_SIZES) {
 					LOG.info("        " + ccReport.getPartialBigFactorSizes());
 					LOG.info("        " + ccReport.getSmoothBigFactorSizes());
+					LOG.info("        " + ccReport.getSmoothBigFactorPercentiles());
 					LOG.info("        " + ccReport.getNonIntFactorPercentages());
 				}
-				if (CongruenceCollector.ANALYZE_Q_SIGNS) {
+				if (ANALYZE_Q_SIGNS) {
 					LOG.info("        " + ccReport.getPartialQSignCounts());
 					LOG.info("        " + ccReport.getSmoothQSignCounts());
 				}
-				LOG.info("    #solverRuns = " + solverRunCount + ", #tested null vectors = " + solverController.getTestedNullVectorCount());
+				LOG.info("    #solverRuns = " + solverRunCount + ", #tested null vectors = " + matrixSolver.getTestedNullVectorCount());
 				LOG.info("    Approximate phase timings: powerTest=" + powerTestDuration + "ms, initN=" + initNDuration + "ms, initPoly=" + initPolyDuration + "ms, sieve=" + sieveDuration + "ms, tdiv=" + tdivDuration + "ms, cc=" + ccDuration + "ms, solver=" + solverDuration + "ms");
 				LOG.info("    -> initPoly sub-timings: " + polyReport.getPhaseTimings(1));
 				LOG.info("    -> sieve sub-timings: " + sieveReport.getPhaseTimings(1));
-				// TDiv, CC and solver have no sub-timings yet
+				LOG.info("    -> tdiv sub-timings: " + tdivReport.getPhaseTimings(1));
+				// CC and solver have no sub-timings yet
 			}
 			if (TEST_SIEVE) {
 				float perfectSmoothPercentage = foundPerfectSmoothCount*100 / (float) allPerfectSmoothCount;
@@ -355,12 +371,12 @@ public class SIQS extends FactorAlgorithmBase {
 		sieve.cleanUp();
 		auxFactorizer.cleanUp();
 		congruenceCollector.cleanUp();
-		solverController.cleanUp();
+		matrixSolver.cleanUp();
 	}
 	
 	private void testSieve(List<AQPair> foundAQPairs, int sieveArraySize) {
 		for (AQPair aqPair : foundAQPairs) {
-			if ((aqPair instanceof Smooth) || (aqPair instanceof Partial && ((Partial)aqPair).getMatrixElements().length==0)) foundPerfectSmoothCount++;
+			if (aqPair instanceof Smooth) foundPerfectSmoothCount++;
 		}
 		foundAQPairsCount += foundAQPairs.size();
 		ArrayList<Integer> allXList = new ArrayList<Integer>();
@@ -371,7 +387,7 @@ public class SIQS extends FactorAlgorithmBase {
 		}
 		List<AQPair> allAQPairs = this.auxFactorizer.testList(allXList);
 		for (AQPair aqPair : allAQPairs) {
-			if ((aqPair instanceof Smooth) || (aqPair instanceof Partial && ((Partial)aqPair).getMatrixElements().length==0)) allPerfectSmoothCount++;
+			if (aqPair instanceof Smooth) allPerfectSmoothCount++;
 		}
 		allAQPairsCount += allAQPairs.size();
 	}
@@ -390,29 +406,29 @@ public class SIQS extends FactorAlgorithmBase {
 	 * 2900608971182010301486951469292513060638582965350239259380273225053930627446289431038392125
 	 * = 33333 * 33335 * 33337 * 33339 * 33341 * 33343 * 33345 * 33347 * 33349 * 33351 * 33353 * 33355 * 33357 * 33359 * 33361 * 33363 * 33367 * 33369 * 33369 * 33371
 	 */
-//	public static void main(String[] args) {
-//    	ConfigUtil.initProject();
-//		SIQS qs = new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new Sieve03gU(), new TDiv_QS_nLarge_UBI(), 10, new MatrixSolver02_BlockLanczos(), true);
-//		Timer timer = new Timer();
-//		while(true) {
-//			try {
-//				LOG.info("Please insert the number to factor:");
-//				BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-//				String input = in.readLine().trim();
-//				//LOG.debug("input = >" + input + "<");
-//				BigInteger N = new BigInteger(input);
-//				LOG.info("Factoring " + N + " (" + N.bitLength() + " bits)...");
-//				timer.capture();
-//				SortedMultiset<BigInteger> factors = qs.factor(N);
-//				if (factors != null) {
-//					long duration = timer.capture();
-//					LOG.info("Factored N = " + factors + " in " + TimeUtil.timeStr(duration) + ".");
-//			} else {
-//					LOG.info("No factor found...");
-//				}
-//			} catch (Exception ex) {
-//				LOG.error("Error " + ex, ex);
-//			}
-//		}
-//	}
+	public static void main(String[] args) {
+    	ConfigUtil.initProject();
+		SIQS qs = new SIQS(0.32F, 0.37F, null, null, new NoPowerFinder(), new SIQSPolyGenerator(), new Sieve03gU(), new TDiv_QS_nLarge_UBI(), 10, new MatrixSolver02_BlockLanczos());
+		Timer timer = new Timer();
+		while(true) {
+			try {
+				LOG.info("Please insert the number to factor:");
+				BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+				String input = in.readLine().trim();
+				//LOG.debug("input = >" + input + "<");
+				BigInteger N = new BigInteger(input);
+				LOG.info("Factoring " + N + " (" + N.bitLength() + " bits)...");
+				timer.capture();
+				SortedMultiset<BigInteger> factors = qs.factor(N);
+				if (factors != null) {
+					long duration = timer.capture();
+					LOG.info("Factored N = " + factors + " in " + TimeUtil.timeStr(duration) + ".");
+			} else {
+					LOG.info("No factor found...");
+				}
+			} catch (Exception ex) {
+				LOG.error("Error " + ex, ex);
+			}
+		}
+	}
 }

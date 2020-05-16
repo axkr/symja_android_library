@@ -19,16 +19,17 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import de.tilman_neumann.jml.base.UnsignedBigInt;
 import de.tilman_neumann.jml.gcd.Gcd31;
 import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
 import de.tilman_neumann.jml.roots.Roots;
 import de.tilman_neumann.jml.roots.SqrtExact;
-//import de.tilman_neumann.util.ConfigUtil;
+import de.tilman_neumann.util.ConfigUtil;
 
-import static de.tilman_neumann.jml.base.BigIntConstants.*;
+import static de.tilman_neumann.jml.base.BigIntConstants.*; 
+
 /**
  * Test for pure powers (with exponent >= 2).
  * 
@@ -38,7 +39,7 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
  */
 // TODO: A p-adic implementation like in gmp would be much faster for large numbers (with thousands of digits)
 public class PurePowerTest {
-//	private static final Logger LOG = Logger.getLogger(PurePowerTest.class);
+	private static final Logger LOG = Logger.getLogger(PurePowerTest.class);
 
 	private static final double LN_2 = Math.log(2);
 	private static final double LN_3 = Math.log(3);
@@ -246,7 +247,7 @@ public class PurePowerTest {
 	   	// create test set for performance test
 	   	SecureRandom rng = new SecureRandom();
 	   	for (int bits=10; bits<=50; bits+=5) {
-//	   		LOG.info("Test correctness with " + nCount + " " + bits + "-bit numbers");
+	   		LOG.info("Test correctness with " + nCount + " " + bits + "-bit numbers");
 		   	ArrayList<BigInteger> testSet = new ArrayList<BigInteger>();
 		   	for (int i=0; i<nCount; i++) {
 		   		testSet.add(new BigInteger(bits, rng));
@@ -263,7 +264,7 @@ public class PurePowerTest {
 //	   			if (r2!=null) assertEquals(testNum, r2.base.pow(r2.exponent));
 		   	}
 	   	}
-//	   	LOG.info("");
+	   	LOG.info("");
 	}
 	
 	private static void testPerformance(int nCount) {
@@ -284,15 +285,15 @@ public class PurePowerTest {
 		   		powTest.test_v01(testNum);
 		   	}
 		   	t1 = System.currentTimeMillis();
-//			LOG.info("v01: Testing " + nCount + " " + bits + "-bit numbers took " + (t1-t0) + " ms");
+			LOG.info("v01: Testing " + nCount + " " + bits + "-bit numbers took " + (t1-t0) + " ms");
 
 		   	t0 = System.currentTimeMillis();
 		   	for (BigInteger testNum : testSet) {
 		   		powTest.test/*_v02*/(testNum);
 		   	}
 		   	t1 = System.currentTimeMillis();
-//			LOG.info("v02: Testing " + nCount + " " + bits + "-bit numbers took " + (t1-t0) + " ms");
-//			LOG.info("");
+			LOG.info("v02: Testing " + nCount + " " + bits + "-bit numbers took " + (t1-t0) + " ms");
+			LOG.info("");
 	   	}
 	}
 	
@@ -300,19 +301,19 @@ public class PurePowerTest {
 	   	PurePowerTest powTest = new PurePowerTest();
 	   	while(true) {
 			try {
-//				LOG.info("Insert test argument N:");
+				LOG.info("Insert test argument N:");
 				BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 				String input = in.readLine().trim();
 				//LOG.debug("input = >" + input + "<");
 				BigInteger N = new BigInteger(input);
 				Result purePower = powTest.test(N);
-//				if (purePower == null) {
-//					LOG.info("N = " + N + " is not a pure power.");
-//				} else {
-//					LOG.info("N = " + N + " = " + purePower.base + "^" + purePower.exponent + " is a pure power!");
-//				}
+				if (purePower == null) {
+					LOG.info("N = " + N + " is not a pure power.");
+				} else {
+					LOG.info("N = " + N + " = " + purePower.base + "^" + purePower.exponent + " is a pure power!");
+				}
 			} catch (Exception ex) {
-//				LOG.error("Error " + ex, ex);
+				LOG.error("Error " + ex, ex);
 			}
 		}
 	}
@@ -321,10 +322,10 @@ public class PurePowerTest {
 	 * Test.
 	 * @param args ignored
 	 */
-//	public static void main(String[] args) {
-//	   	ConfigUtil.initProject();
-//	   	testCorrectness(100000);
-//	   	testPerformance(1000000);
-//	   	testInputs();
-//	}
+	public static void main(String[] args) {
+	   	ConfigUtil.initProject();
+	   	testCorrectness(100000);
+	   	testPerformance(1000000);
+	   	testInputs();
+	}
 }
