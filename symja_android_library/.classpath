@@ -75,6 +75,6 @@
 	<classpathentry kind="lib" path="lib/jackson-core-2.10.3.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-databind-2.10.3.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-datatype-jsr310-2.10.3.jar"/>
-	<classpathentry kind="lib" path="lib/jas-2.6.6000.jar"/>
+	<classpathentry kind="lib" path="lib/jas-2.6.6017.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
