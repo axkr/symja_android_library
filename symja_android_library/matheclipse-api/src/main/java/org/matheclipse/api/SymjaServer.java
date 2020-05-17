@@ -2,10 +2,7 @@ package org.matheclipse.api;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.Deque;
-import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.text.StringEscapeUtils;
@@ -15,6 +12,8 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.parser.client.SyntaxError;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -62,11 +61,6 @@ public class SymjaServer {
 				String inputStr = getParam(queryParameters, "input", "i", "");
 				String[] formats = getParams(queryParameters, "format", "f", PLAIN);
 
-				final StringWriter outWriter = new StringWriter();
-				// WriterOutputStream wouts = new WriterOutputStream(outWriter);
-				final StringWriter errorWriter = new StringWriter();
-				// WriterOutputStream werrors = new WriterOutputStream(errorWriter);
-
 				// exchange.getResponseSender().send(createJSONJavaScript(inExpr.toString()));
 				ObjectMapper mapper = new ObjectMapper();
 				ObjectNode messageJSON = mapper.createObjectNode();
@@ -74,28 +68,88 @@ public class SymjaServer {
 				ObjectNode queryresult = mapper.createObjectNode();
 				messageJSON.putPOJO("queryresult", queryresult);
 
-				ArrayNode podsArray = mapper.createArrayNode();
-				queryresult.putPOJO("pods", podsArray);
-
-				ArrayNode temp = mapper.createArrayNode();
-				ObjectNode subpodsResult = mapper.createObjectNode();
-				subpodsResult.putPOJO("subpods", temp);
-				podsArray.add(subpodsResult);
-
 				IExpr inExpr = F.Null;
+				IExpr outExpr = F.Null;
 				EvalEngine engine = EvalEngine.get();
+				boolean error = false;
+				int numpods = 0;
+				queryresult.put("success", "false");
+				queryresult.put("error", "false");
+				queryresult.put("numpods", numpods);
+				queryresult.put("version", "0.1");
 				try {
+					ArrayNode podsArray = mapper.createArrayNode();
 					engine.setPackageMode(false);
-					// ExprParser parser = new ExprParser(engine, true);
-					inExpr = engine.evaluate(inputStr);
+					inExpr = engine.parse(inputStr);
+					if (inExpr.isNumber()) {
+						outExpr = inExpr;
+						if (outExpr.isInteger()) {
+							IInteger n = (IInteger) outExpr;
+							IExpr podOut = F.BaseForm.of(engine, inExpr, F.C2);
+							addPod(podsArray, inExpr, podOut, "Binary form", "Integer", formats, mapper, engine);
+							numpods++;
+							podOut = F.FactorInteger.of(engine, inExpr);
+							addPod(podsArray, inExpr, podOut, "Prime factorization", "Integer", formats, mapper,
+									engine);
+							numpods++;
+							podOut = F.Mod.of(engine, inExpr, F.Range(F.C2, F.C9));
+							addPod(podsArray, inExpr, podOut, "Residues modulo small integers", "Integer", formats,
+									mapper, engine);
+							numpods++;
+
+							addIntegerPropertiesPod(podsArray, (IInteger) inExpr, podOut, "Properties", "Integer",
+									formats, mapper, engine);
+							numpods++;
+
+							queryresult.putPOJO("pods", podsArray);
+							queryresult.put("success", "true");
+							queryresult.put("error", error ? "true" : "false");
+							queryresult.put("numpods", numpods);
+							final String jsonStr = messageJSON.toString();
+							// System.out.println(jsonStr);
+							exchange.getResponseSender().send(jsonStr);
+							return;
+						}
+					} else {
+						if (inExpr.isAST(F.D, 3)) {
+							outExpr = engine.evaluate(inExpr);
+							IExpr podOut = outExpr;
+							addPod(podsArray, inExpr, podOut, "Derivative", "Derivative", formats, mapper, engine);
+							numpods++;
+							podOut = F.TrigToExp.of(engine, outExpr);
+							if (!F.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
+								addPod(podsArray, inExpr, podOut, "Alternate form", "Simplification", formats, mapper,
+										engine);
+								numpods++;
+							}
+						} else {
+							outExpr = engine.evaluate(inExpr);
+							if (outExpr != F.Null) {
+								IExpr podOut = outExpr;
+								addPod(podsArray, inExpr, podOut, "Input", "Identity", formats, mapper, engine);
+								numpods++;
+							}
+						}
+
+						queryresult.putPOJO("pods", podsArray);
+						queryresult.put("success", "true");
+						queryresult.put("error", error ? "true" : "false");
+						queryresult.put("numpods", numpods);
+						final String jsonStr = messageJSON.toString();
+						// System.out.println(jsonStr);
+						exchange.getResponseSender().send(jsonStr);
+						return;
+					}
+				} catch (SyntaxError se) {
+					se.printStackTrace();
+					error = false;
+					outExpr = F.$Aborted;
 				} catch (RuntimeException rex) {
-					inExpr = F.$Aborted;
+					rex.printStackTrace();
+					error = true;
+					outExpr = F.$Aborted;
 				}
-				ObjectNode node = mapper.createObjectNode();
-				temp.add(node);
-				for (int i = 0; i < formats.length; i++) {
-					createJSONFormat(node, engine, inExpr, formats[i]);
-				}
+				queryresult.put("error", error ? "true" : "false");
 				final String jsonStr = messageJSON.toString();
 				// System.out.println(jsonStr);
 				exchange.getResponseSender().send(jsonStr);
@@ -104,6 +158,77 @@ public class SymjaServer {
 		}).build();
 		server.start();
 		System.out.println("started");
+	}
+
+	private static void addPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String title, String scanner,
+			String[] formats, ObjectMapper mapper, EvalEngine engine) {
+		ArrayNode temp = mapper.createArrayNode();
+		ObjectNode subpodsResult = mapper.createObjectNode();
+		subpodsResult.put("title", title);
+		subpodsResult.put("scanner", scanner);
+		subpodsResult.put("error", "false");
+		subpodsResult.put("numsubpods", 1);
+		subpodsResult.putPOJO("subpods", temp);
+		podsArray.add(subpodsResult);
+
+		ObjectNode node = mapper.createObjectNode();
+		temp.add(node);
+
+		for (int i = 0; i < formats.length; i++) {
+			createJSONFormat(node, engine, outExpr, formats[i]);
+		}
+	}
+
+	private static void addIntegerPropertiesPod(ArrayNode podsArray, IInteger inExpr, IExpr outExpr, String title,
+			String scanner, String[] formats, ObjectMapper mapper, EvalEngine engine) {
+		ArrayNode temp = mapper.createArrayNode();
+		int numsubpods = 0;
+		ObjectNode subpodsResult = mapper.createObjectNode();
+		subpodsResult.put("title", title);
+		subpodsResult.put("scanner", scanner);
+		subpodsResult.put("error", "false");
+		subpodsResult.put("numsubpods", numsubpods);
+		subpodsResult.putPOJO("subpods", temp);
+		podsArray.add(subpodsResult);
+
+		try {
+			if (inExpr.isEven()) {
+				ObjectNode node = mapper.createObjectNode();
+				temp.add(node);
+				for (int i = 0; i < formats.length; i++) {
+					createJSONFormat(node, engine, F.NIL, inExpr.toString() + " is an even number.", formats[i]);
+				}
+				numsubpods++;
+			} else {
+				ObjectNode node = mapper.createObjectNode();
+				temp.add(node);
+				for (int i = 0; i < formats.length; i++) {
+					createJSONFormat(node, engine, F.NIL, inExpr.toString() + " is an odd number.", formats[i]);
+				}
+				numsubpods++;
+			}
+			if (inExpr.isProbablePrime()) {
+				IExpr primePi = F.PrimePi.of(engine, inExpr);
+				if (primePi.isInteger()) {
+					ObjectNode node = mapper.createObjectNode();
+					temp.add(node);
+					for (int i = 0; i < formats.length; i++) {
+						createJSONFormat(node, engine, F.NIL,
+								inExpr.toString() + " the " + primePi.toString() + "th prime number.", formats[i]);
+					}
+					numsubpods++;
+				} else {
+					ObjectNode node = mapper.createObjectNode();
+					temp.add(node);
+					for (int i = 0; i < formats.length; i++) {
+						createJSONFormat(node, engine, F.NIL, inExpr.toString() + " is a prime number.", formats[i]);
+					}
+					numsubpods++;
+				}
+			}
+		} finally {
+			subpodsResult.put("numsubpods", numsubpods);
+		}
 	}
 
 	private static String getParam(Map<String, Deque<String>> queryParameters, String longParameter,
@@ -142,7 +267,7 @@ public class SymjaServer {
 		return new String[] { defaultStr };
 	}
 
-	public static ObjectNode createJSONErrorString(String str) {
+	private static ObjectNode createJSONErrorString(String str) {
 		ObjectMapper mapper = new ObjectMapper();
 
 		ObjectNode outJSON = mapper.createObjectNode();
@@ -167,7 +292,7 @@ public class SymjaServer {
 		return json;
 	}
 
-	public static String createJSONJavaScript(String script) throws IOException {
+	private static String createJSONJavaScript(String script) throws IOException {
 		script = StringEscapeUtils.escapeHtml4(script);
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -187,18 +312,36 @@ public class SymjaServer {
 	}
 
 	private static void createJSONFormat(ObjectNode json, EvalEngine engine, IExpr outExpr, String format) {
-		// DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
 		StringWriter stw = new StringWriter();
 		if (format.equals(PLAIN)) {
 			stw.append(outExpr.toString());
+			json.put(format, stw.toString());
 		} else if (format.equals(MATHML)) {
 			MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false);
 			if (!mathUtil.toMathML(outExpr, stw, true)) {
 				// return createJSONErrorString("Max. output size exceeded " + Config.MAX_OUTPUT_SIZE);
+			} else {
+				json.put(format, stw.toString());
 			}
-
 		}
-		json.put(format, stw.toString());
+	}
+
+	private static void createJSONFormat(ObjectNode json, EvalEngine engine, IExpr outExpr, String plainText,
+			String format) {
+		StringWriter stw = new StringWriter();
+		if (format.equals(PLAIN)) {
+			json.put(format, plainText);
+		} else if (format.equals(MATHML)) {
+			if (outExpr.isPresent()) {
+				MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false);
+				if (!mathUtil.toMathML(outExpr, stw, true)) {
+					// return createJSONErrorString("Max. output size exceeded " + Config.MAX_OUTPUT_SIZE);
+				} else {
+					json.put(format, stw.toString());
+				}
+			}
+		}
+
 	}
 
 	private static ObjectNode createJSONResult(EvalEngine engine, IExpr outExpr, StringWriter outWriter,
