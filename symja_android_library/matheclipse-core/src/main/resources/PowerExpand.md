@@ -14,6 +14,9 @@ a^(b*c)
 
 >> PowerExpand((a * b) ^ c)
 a^c*b^c
+
+>> PowerExpand(Log(x/y))
+Log(x)-Log(y)
 ```
 
 `PowerExpand` is not correct without certain assumptions:
