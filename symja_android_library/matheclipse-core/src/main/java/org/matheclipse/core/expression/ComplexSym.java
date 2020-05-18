@@ -553,24 +553,27 @@ public class ComplexSym implements IComplex {
 		IRational divisionReal = numeratorReal.divideBy(denominator).round();
 		IRational divisionImaginary = numeratorImaginary.divideBy(denominator).round();
 
-		IRational remainderReal = fReal.subtract(parm1[0].multiply(divisionReal)).subtract(parm1[1].multiply(divisionImaginary).negate());
-		IRational remainderImaginary = fImaginary.subtract(parm1[0].multiply(divisionImaginary)).subtract(parm1[1].multiply(divisionReal));
+		IRational remainderReal = fReal.subtract(parm1[0].multiply(divisionReal))
+				.subtract(parm1[1].multiply(divisionImaginary).negate());
+		IRational remainderImaginary = fImaginary.subtract(parm1[0].multiply(divisionImaginary))
+				.subtract(parm1[1].multiply(divisionReal));
 
-		return new IInteger[] {  (IInteger)divisionReal, (IInteger)divisionImaginary, (IInteger)remainderReal, (IInteger)remainderImaginary };
+		return new IInteger[] { (IInteger) divisionReal, (IInteger) divisionImaginary, (IInteger) remainderReal,
+				(IInteger) remainderImaginary };
 
 	}
 
 	public IInteger[] gcd(final IInteger[] dividers) {
 
 		if ((fReal.isZero() && fImaginary.isZero()) || (dividers[0].isZero() && dividers[1].isZero())) {
-			return new IInteger[] {new IntegerSym(), new IntegerSym()};
+			return new IInteger[] { F.C0, F.C0 };
 		}
 
 		IInteger[] integerAndRemainder;
 
 		ComplexSym dividend = ComplexSym.valueOf(this.fReal, this.fImaginary);
 
-		while(dividers[0].intValue() != 0 || dividers[1].intValue() != 0) {
+		while (!dividers[0].isZero() || !dividers[1].isZero()) {
 			integerAndRemainder = dividend.integerAndRemainderDivisionGuassian(dividers);
 
 			dividend.fReal = dividers[0];
@@ -580,7 +583,7 @@ public class ComplexSym implements IComplex {
 			dividers[1] = integerAndRemainder[3];
 		}
 
-		return new IInteger[] {(IInteger)dividend.fReal, (IInteger)dividend.fImaginary};
+		return new IInteger[] { (IInteger) dividend.fReal, (IInteger) dividend.fImaginary };
 
 	}
 
