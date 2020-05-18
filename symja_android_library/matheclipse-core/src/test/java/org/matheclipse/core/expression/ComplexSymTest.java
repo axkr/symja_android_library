@@ -405,13 +405,25 @@ public class ComplexSymTest {
 	public void testGcd11() {
 
 		ComplexSym one = ComplexSym.valueOf(BigInteger.ONE, BigInteger.ZERO);
-		ComplexSym minusOne = ComplexSym.valueOf(BigInteger.ONE, BigInteger.ZERO);
+		ComplexSym minusOne = ComplexSym.valueOf(BigInteger.ONE.negate(), BigInteger.ZERO);
 		ComplexSym I = ComplexSym.valueOf(BigInteger.ZERO, BigInteger.ONE);
 		ComplexSym minusI = ComplexSym.valueOf(BigInteger.ZERO, BigInteger.ONE.negate());
 
 		// gcd(1,1) ==> 1
 		IInteger[] parm = one.gaussianIntegers();
 		IInteger[] result = one.gcd(parm);
+		assertEquals(F.C1, result[0]);
+		assertEquals(F.C0, result[1]);
+
+		// gcd(1,-1) ==> 1
+		parm = minusOne.gaussianIntegers();
+		result = one.gcd(parm);
+		assertEquals(F.C1, result[0]);
+		assertEquals(F.C0, result[1]);
+
+		// gcd(-1,-1) ==> 1
+		parm = minusOne.gaussianIntegers();
+		result = minusOne.gcd(parm);
 		assertEquals(F.C1, result[0]);
 		assertEquals(F.C0, result[1]);
 
