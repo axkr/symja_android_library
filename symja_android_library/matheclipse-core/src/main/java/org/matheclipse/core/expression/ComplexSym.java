@@ -553,13 +553,10 @@ public class ComplexSym implements IComplex {
 		IRational divisionReal = numeratorReal.divideBy(denominator).round();
 		IRational divisionImaginary = numeratorImaginary.divideBy(denominator).round();
 
-		IRational remainderReal = fReal.subtract(parm1[0].multiply(divisionReal))
-				.subtract(parm1[1].multiply(divisionImaginary).negate());
-		IRational remainderImaginary = fImaginary.subtract(parm1[0].multiply(divisionImaginary))
-				.subtract(parm1[1].multiply(divisionReal));
+		IRational remainderReal = fReal.subtract(parm1[0].multiply(divisionReal)).subtract(parm1[1].multiply(divisionImaginary).negate());
+		IRational remainderImaginary = fImaginary.subtract(parm1[0].multiply(divisionImaginary)).subtract(parm1[1].multiply(divisionReal));
 
-		return new IInteger[] { (IInteger) divisionReal, (IInteger) divisionImaginary, (IInteger) remainderReal,
-				(IInteger) remainderImaginary };
+		return new IInteger[] {  (IInteger)divisionReal, (IInteger)divisionImaginary, (IInteger)remainderReal, (IInteger)remainderImaginary };
 
 	}
 

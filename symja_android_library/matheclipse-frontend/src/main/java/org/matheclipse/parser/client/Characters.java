@@ -288,7 +288,7 @@ public class Characters {
 
 	/**
 	 * Substitute all named (unicode-) characters in a string with their unicode value For example
-	 * <code>\[Alpha], \[Phi], \[Pi]</code> will be replace with unicode characters:
+	 * <code>\[Alpha], \[Phi], \[Pi]</code> will be replaced with unicode characters:
 	 * 
 	 * <pre>
 	 * f(\[Alpha])+\[Phi]*\[Pi]

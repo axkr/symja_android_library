@@ -8572,7 +8572,11 @@ public class F {
 	public static IAST Multinomial(final IExpr... a) {
 		return function(Multinomial, a);
 	}
-
+	
+	public static IAST MultiplicativeOrder(final IExpr a0, final IExpr a1) {
+		return new AST2(MultiplicativeOrder, a0, a1);
+	}
+	
 	/**
 	 * Evaluate the given expression in numeric mode
 	 * 
@@ -9060,6 +9064,10 @@ public class F {
 	public static IAST PowerExpand(final IExpr a0) {
 
 		return new AST1(PowerExpand, a0);
+	}
+	
+	public static IAST PowerMod(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return new AST3(PowerMod, a0, a1, a2);
 	}
 
 	/**

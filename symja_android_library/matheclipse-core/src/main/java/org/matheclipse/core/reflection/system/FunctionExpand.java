@@ -23,6 +23,8 @@ import static org.matheclipse.core.expression.F.y_;
 import static org.matheclipse.core.expression.F.z;
 import static org.matheclipse.core.expression.F.z_;
 
+import java.util.function.Supplier;
+
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.WindowFunctions;
 import org.matheclipse.core.eval.EvalEngine;
@@ -38,6 +40,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.Matcher;
 import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.core.reflection.system.rules.FunctionExpandRules;
+
+import com.google.common.base.Suppliers;
 
 /**
  * <pre>
@@ -58,7 +62,7 @@ import org.matheclipse.core.reflection.system.rules.FunctionExpandRules;
  */
 public class FunctionExpand extends AbstractEvaluator implements FunctionExpandRules {
 
-	private final static Matcher MATCHER = new Matcher();
+	private static Supplier<Matcher> LAZY_MATCHER;
 
 	/**
 	 * 
@@ -67,7 +71,8 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
 	 */
 	private static class Initializer {
 
-		private static void init() {
+		private static Matcher init() {
+			Matcher MATCHER = new Matcher();
 			// Beta
 			MATCHER.caseOf(Beta(z_, a_, b_), //
 					// [$ Beta(a, b)*(1 - (1 - z)^b*Sum((Pochhammer(b, k)*z^k)/k!, {k, 0, a - 1})) /; IntegerQ(a)&&a>0
@@ -273,6 +278,7 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
 					MATCHER.caseOf(arg.first(), arg.second());
 				}
 			}
+			return MATCHER;
 		}
 	}
 
@@ -354,8 +360,13 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
 		return F.NIL;
 	}
 
+	private static Matcher getMatcher() {
+		return LAZY_MATCHER.get();
+	}
+
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		 
 		IExpr result = F.REMEMBER_AST_CACHE.getIfPresent(ast);
 		if (result != null) {
 			return result;
@@ -382,7 +393,7 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
 				if (assumptions != null) {
 					try {
 						engine.setAssumptions(assumptions);
-						IExpr temp = MATCHER.replaceAll(arg1, FunctionExpand::beforeRules).orElse(arg1);
+						IExpr temp = getMatcher().replaceAll(arg1, FunctionExpand::beforeRules).orElse(arg1);
 						F.REMEMBER_AST_CACHE.put(ast, temp);
 						return temp;
 					} finally {
@@ -392,7 +403,7 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
 			}
 
 		}
-		IExpr temp = MATCHER.replaceAll(arg1, FunctionExpand::beforeRules).orElse(arg1);
+		IExpr temp = getMatcher().replaceAll(arg1, FunctionExpand::beforeRules).orElse(arg1);
 		F.REMEMBER_AST_CACHE.put(ast, temp);
 		return temp;
 	}
@@ -403,7 +414,8 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
 
 	@Override
 	public void setUp(final ISymbol newSymbol) {
-		Initializer.init();
+		// Initializer.init();
+		LAZY_MATCHER = Suppliers.memoize(Initializer::init);
 		newSymbol.setAttributes(ISymbol.LISTABLE);
 	}
 

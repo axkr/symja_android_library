@@ -17125,6 +17125,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPowerExpand() {
+		check("PowerExpand(Log(x/y))", //
+				"Log(x)-Log(y)");
 		check("PowerExpand((x*y*z)^n)", //
 				"x^n*y^n*z^n");
 		check("PowerExpand(Log(x*y))", //

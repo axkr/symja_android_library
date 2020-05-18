@@ -18,7 +18,7 @@ package org.matheclipse.parser.client;
 import org.matheclipse.parser.client.math.MathException;
 
 /**
- * Exception for a syntax error detected by the MathEclipse parser
+ * Exception for a syntax error detected by the Symja parsers
  *
  */
 public class SyntaxError extends MathException {

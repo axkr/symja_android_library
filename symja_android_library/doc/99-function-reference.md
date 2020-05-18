@@ -110,6 +110,7 @@
 * [Complexes](functions/Complexes.md)
 * [ComplexExpand](functions/ComplexExpand.md)
 * [ComplexInfinity](functions/ComplexInfinity.md)
+* [ComplexPlot3D](functions/ComplexPlot3D.md)
 * [ComposeList](functions/ComposeList.md)
 * [ComposeSeries](functions/ComposeSeries.md)
 * [Composition](functions/Composition.md)
