@@ -579,7 +579,14 @@ public class ComplexSym implements IComplex {
 			dividers[0] = integerAndRemainder[2];
 			dividers[1] = integerAndRemainder[3];
 		}
-
+		
+		IInteger fRealResult = (IInteger)dividend.fReal;
+		IInteger fImaginaryResult = (IInteger)dividend.fImaginary;
+		
+		if ((fRealResult.intValue() == -1 && fImaginaryResult.intValue() == 0) || (fRealResult.intValue() == 0 && fImaginaryResult.intValue() == 1) || (fRealResult.intValue() == 0 && fImaginaryResult.intValue() == -1)) {
+			return new IInteger[] {new IntegerSym(1), new IntegerSym(0)};
+		}
+		
 		return new IInteger[] { (IInteger) dividend.fReal, (IInteger) dividend.fImaginary };
 
 	}

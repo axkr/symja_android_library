@@ -262,7 +262,7 @@ public class ComplexSymTest {
 
 		ComplexSym c1 = ComplexSym.valueOf(BigInteger.valueOf(-3), BigInteger.valueOf(2));
 		ComplexSym c2 = ComplexSym.valueOf(BigInteger.valueOf(0), BigInteger.valueOf(-1));
-		ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(0), BigInteger.valueOf(-1));
+		ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(1), BigInteger.valueOf(0));
 
 		IInteger[] parm2 = c2.gaussianIntegers();
 		IInteger[] parm3 = c3.gaussianIntegers();
@@ -298,7 +298,7 @@ public class ComplexSymTest {
 
 		ComplexSym c1 = ComplexSym.valueOf(BigInteger.valueOf(-332323), BigInteger.valueOf(223232));
 		ComplexSym c2 = ComplexSym.valueOf(BigInteger.valueOf(-1), BigInteger.valueOf(-1));
-		ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(-1), BigInteger.valueOf(0));
+		ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(1), BigInteger.valueOf(0));
 
 		IInteger[] parm2 = c2.gaussianIntegers();
 		IInteger[] parm3 = c3.gaussianIntegers();
@@ -316,7 +316,7 @@ public class ComplexSymTest {
 
 		ComplexSym c1 = ComplexSym.valueOf(BigInteger.valueOf(32), BigInteger.valueOf(9));
 		ComplexSym c2 = ComplexSym.valueOf(BigInteger.valueOf(4), BigInteger.valueOf(11));
-		ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(0), BigInteger.valueOf(-1));
+		ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(1), BigInteger.valueOf(0));
 
 		IInteger[] parm2 = c2.gaussianIntegers();
 		IInteger[] parm3 = c3.gaussianIntegers();
@@ -388,7 +388,7 @@ public class ComplexSymTest {
 
 		ComplexSym c1 = ComplexSym.valueOf(BigInteger.valueOf(-15), BigInteger.valueOf(-7));
 		ComplexSym c2 = ComplexSym.valueOf(BigInteger.valueOf(-10), BigInteger.valueOf(11));
-		ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(0), BigInteger.valueOf(1));
+		ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(1), BigInteger.valueOf(0));
 
 		IInteger[] parm2 = c2.gaussianIntegers();
 		IInteger[] parm3 = c3.gaussianIntegers();
