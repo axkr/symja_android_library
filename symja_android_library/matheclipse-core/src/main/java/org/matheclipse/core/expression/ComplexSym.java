@@ -553,16 +553,20 @@ public class ComplexSym implements IComplex {
 		IRational divisionReal = numeratorReal.divideBy(denominator).round();
 		IRational divisionImaginary = numeratorImaginary.divideBy(denominator).round();
 
-		IRational remainderReal = fReal.subtract(parm1[0].multiply(divisionReal)).subtract(parm1[1].multiply(divisionImaginary).negate());
-		IRational remainderImaginary = fImaginary.subtract(parm1[0].multiply(divisionImaginary)).subtract(parm1[1].multiply(divisionReal));
+		IRational remainderReal = fReal.subtract(parm1[0].multiply(divisionReal))
+				.subtract(parm1[1].multiply(divisionImaginary).negate());
+		IRational remainderImaginary = fImaginary.subtract(parm1[0].multiply(divisionImaginary))
+				.subtract(parm1[1].multiply(divisionReal));
 
-		return new IInteger[] {  (IInteger)divisionReal, (IInteger)divisionImaginary, (IInteger)remainderReal, (IInteger)remainderImaginary };
+		return new IInteger[] { (IInteger) divisionReal, (IInteger) divisionImaginary, (IInteger) remainderReal,
+				(IInteger) remainderImaginary };
 
 	}
 
 	public IInteger[] gcd(final IInteger[] dividers) {
 
-		if ((fReal.isZero() && fImaginary.isZero()) || (dividers[0].isZero() && dividers[1].isZero())) {
+		if ((fReal.isZero() && fImaginary.isZero()) || //
+				(dividers[0].isZero() && dividers[1].isZero())) {
 			return new IInteger[] { F.C0, F.C0 };
 		}
 
@@ -579,14 +583,16 @@ public class ComplexSym implements IComplex {
 			dividers[0] = integerAndRemainder[2];
 			dividers[1] = integerAndRemainder[3];
 		}
-		
-		IInteger fRealResult = (IInteger)dividend.fReal;
-		IInteger fImaginaryResult = (IInteger)dividend.fImaginary;
-		
-		if ((fRealResult.intValue() == -1 && fImaginaryResult.intValue() == 0) || (fRealResult.intValue() == 0 && fImaginaryResult.intValue() == 1) || (fRealResult.intValue() == 0 && fImaginaryResult.intValue() == -1)) {
-			return new IInteger[] {new IntegerSym(1), new IntegerSym(0)};
+
+		IInteger fRealResult = (IInteger) dividend.fReal;
+		IInteger fImaginaryResult = (IInteger) dividend.fImaginary;
+
+		if ((fRealResult.isMinusOne() && fImaginaryResult.isZero()) || //
+				(fRealResult.isZero() && fImaginaryResult.isOne()) || //
+				(fRealResult.isZero() && fImaginaryResult.isMinusOne())) {
+			return new IInteger[] { F.C1, F.C0 };
 		}
-		
+
 		return new IInteger[] { (IInteger) dividend.fReal, (IInteger) dividend.fImaginary };
 
 	}
