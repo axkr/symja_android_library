@@ -74,6 +74,7 @@ import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ComplexNum;
+import org.matheclipse.core.expression.ComplexSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.IntervalSym;
@@ -1749,6 +1750,11 @@ public final class Arithmetic {
 			// TODO implement GCD for gaussian integers
 			IInteger[] gi0 = c0.gaussianIntegers();
 			IInteger[] gi1 = c1.gaussianIntegers();
+			
+			ComplexSym devidend = ComplexSym.valueOf(c0.getRealPart(), c0.getImaginaryPart());
+			
+			devidend.gcd(gi1);
+			
 			if (gi0 != null && gi1 != null) {
 				if (gi0[0].isOne() && gi0[1].isZero()) {
 					return F.C1;
@@ -1758,6 +1764,7 @@ public final class Arithmetic {
 				}
 			}
 			return F.NIL;
+
 		}
 
 		@Override
