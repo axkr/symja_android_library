@@ -15,19 +15,19 @@ public class SymjaClient {
 
 		// JSON URL to Java object
 		try {
-			JsonNode node = mapper.readTree(new URL("http://localhost:8080/?input=17&format=mathml&format=plaintext"));
+//			JsonNode node = mapper.readTree(new URL("http://localhost:8080/?input=17&format=mathml&format=plaintext"));
 			
 			// 4+4*x+x^2
 //			 JsonNode node = mapper
 //			 .readTree(new URL("http://localhost:8080/?input=x%5E2%2B4%2Ax%2B4&format=mathml&format=plaintext"));
 
-			// JsonNode node = mapper
-			// .readTree(new URL("http://localhost:8080/?input=D(sin(x)%2Cx)&format=mathml&format=plaintext"));
+//			 JsonNode node = mapper
+//			 .readTree(new URL("http://localhost:8080/?input=D(sin(x)%2Cx)&format=mathml&format=plaintext"));
 
 			// success = false
 			// ?#?
-			// JsonNode node = mapper
-			// .readTree(new URL("http://localhost:8080/?input=%3F%23%3F&format=mathml&format=plaintext"));
+			 JsonNode node = mapper
+			 .readTree(new URL("http://localhost:8080/?input=%3F%23%3F&format=mathml&format=plaintext"));
 			System.out.println(node.toPrettyString());
 		} catch (JsonParseException e) {
 			e.printStackTrace();

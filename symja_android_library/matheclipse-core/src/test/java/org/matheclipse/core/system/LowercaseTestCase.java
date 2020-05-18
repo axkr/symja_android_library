@@ -8953,8 +8953,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGCD() {
-		check("GCD(1,I)", //
-				"1");
+//		check("GCD(1,I)", //
+//				"1");
 		check("GCD(-1/2, 5)", //
 				"1/2");
 		check("GCD(0,Cos(b*x)[[2]])", //
