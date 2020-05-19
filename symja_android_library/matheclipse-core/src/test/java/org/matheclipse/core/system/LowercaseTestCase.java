@@ -8953,14 +8953,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGCD() {
-	 
+
 		check("GCD(5+3*I, 2-8*I)", //
 				"1+I");
 		check("GCD(5+3*I, 2+8*I)", //
 				"5+I*3");
 		check("GCD(1+5*I, 3+2*I)", //
 				"3+I*2");
-		
+
 		check("GCD(1,I)", //
 				"1");
 		check("GCD(I,I)", //
@@ -9586,6 +9586,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"0.870032+I*(-0.00484538)");
 		check("HypergeometricPFQ({1, 2, 3, 4}, {5, 6, 7}, {0.1, 0.3, 0.5})", //
 				"{1.01164,1.03627,1.06296}");
+	}
+
+	public void testHypergeometricU() {
+		// TODO throws hypergeometric function pole
+		// check("HypergeometricU(3, 2, 1.0)", //
+		// "0.105479");
+		check("HypergeometricU(3, 2.5, 1.0)", //
+				"0.173724");
 	}
 
 	public void testI() {
@@ -12247,14 +12255,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"False");
 	}
 
-	public void testLog() { 
+	public void testLog() {
 		check("Log(1000, 10)", //
 				"1/3");
 		check("Log(9) / Log(27)", //
 				"Log(9)/Log(27)");
 		check("Log(27) / Log(9)", //
 				"Log(27)/Log(9)");
-		
+
 		check("Log(Interval({0, 3}))", //
 				"Interval({-Infinity,Log(3)})");
 		check("Log(Interval({-1, 3}))", //

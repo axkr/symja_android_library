@@ -207,7 +207,7 @@ public class HypergeometricJS {
 		if (x.abs() > useAsymptotic) {
 			Complex t1 = Arithmetic.lanczosApproxGamma(b).multiply(x.negate().pow(a.negate()))
 					.multiply(Arithmetic.lanczosApproxGamma(b.subtract(a)).reciprocal());
-			t1 = t1.multiply(hypergeometric2F0(a, a.add(b.negate()).add(1), new Complex(-1.0).divide(x)));
+			t1 = t1.multiply(hypergeometric2F0(a, a.add(b.negate()).add(1.0), new Complex(-1.0).divide(x)));
 
 			Complex t2 = Arithmetic.lanczosApproxGamma(b).multiply(x.pow(a.subtract(b))).multiply(x.exp())
 					.multiply(Arithmetic.lanczosApproxGamma(a).reciprocal());
@@ -631,6 +631,30 @@ public class HypergeometricJS {
 			throw new ArgumentTypeException("general hypergeometric argument currently restricted");
 		}
 		return hypergeometricSeries(A, B, x);
+	}
+
+	public static Complex hypergeometricU(Complex a, Complex b, Complex x) {
+
+		double useAsymptotic = 15;
+
+		// asymptotic form as per Johansson arxiv.org/abs/1606.06977
+		if (x.abs() > useAsymptotic) {
+
+			return x.pow(a.negate())
+					.multiply(hypergeometric2F0(a, a.add(b.negate()).add(1.0), x.reciprocal().negate()));
+
+		}
+
+		Complex t1 = Arithmetic.lanczosApproxGamma(b.subtract(1))
+				.multiply(Arithmetic.lanczosApproxGamma(a).reciprocal()).multiply(x.pow(Complex.ONE.subtract(b))
+						.multiply(hypergeometric1F1(a.add(b.negate()).add(1.0), b.negate().add(2.0), x)));
+
+		Complex t2 = Arithmetic.lanczosApproxGamma(Complex.ONE.subtract(b))
+				.multiply(Arithmetic.lanczosApproxGamma(a.add(b.negate()).add(1.0)).reciprocal())
+				.multiply(hypergeometric1F1(a, b, x));
+
+		return t1.add(t2);
+
 	}
 
 }
