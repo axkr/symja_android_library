@@ -2215,7 +2215,6 @@ public class PolynomialFunctions {
 
 		IExpr variable = variables.arg1();
 		double[] coefficients = Expr2Object.toPolynomial(expr, variable);
-
 		if (coefficients != null) {
 			LaguerreSolver solver = new LaguerreSolver(Config.DEFAULT_ROOTS_CHOP_DELTA);
 			org.hipparchus.complex.Complex[] roots = solver.solveAllComplex(coefficients, 0);

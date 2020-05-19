@@ -11,8 +11,8 @@ import org.matheclipse.parser.client.math.MathException;
 public class ComplexPlot3DExample extends BasePlotExample {
 	@Override
 	public String exampleFunction() {
-		// return "Manipulate(Plot3D(Sin(a*x*y), {x, -1.5, 1.5}, {y, -1.5, 1.5}), {a,1,5})";
-		return "Manipulate(ComplexPlot3D((z^2 + 1)/(z^2 - 1),  {z, -2 - 2*I, 2 + 2*I}, PlotRange->{0,3}), {a,1,5})";
+		return "ComplexPlot3D(Gamma(z), {z, -4.999-4.9999*I,4.9999+4.9999*I}, PlotRange->{0,8.0}) ";
+//		return "ComplexPlot3D((z^2 + 1)/(z^2 - 1),  {z, -2 - 2*I, 2 + 2*I}, PlotRange->{0,3}) ";
 	}
 
 	public static void main(String[] args) {

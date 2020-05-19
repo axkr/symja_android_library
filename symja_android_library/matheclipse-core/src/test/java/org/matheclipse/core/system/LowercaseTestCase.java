@@ -12247,7 +12247,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"False");
 	}
 
-	public void testLog() {
+	public void testLog() { 
+		check("Log(1000, 10)", //
+				"1/3");
+		check("Log(9) / Log(27)", //
+				"Log(9)/Log(27)");
+		check("Log(27) / Log(9)", //
+				"Log(27)/Log(9)");
+		
 		check("Log(Interval({0, 3}))", //
 				"Interval({-Infinity,Log(3)})");
 		check("Log(Interval({-1, 3}))", //

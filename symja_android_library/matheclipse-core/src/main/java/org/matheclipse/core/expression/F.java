@@ -7827,14 +7827,37 @@ public class F {
 		return isZero(value - ii.doubleValue(), Config.DOUBLE_TOLERANCE);
 	}
 
+	/**
+	 * Test if <code>rational.doubleValue()</code> equals <code>value</code> within the tolerance
+	 * <code>Config.DOUBLE_TOLERANCE</code>.
+	 * 
+	 * @param value
+	 * @param rational
+	 * @return
+	 * @throws ArithmeticException
+	 */
 	public static boolean isNumEqualRational(double value, IRational rational) throws ArithmeticException {
 		return isZero(value - rational.doubleValue(), Config.DOUBLE_TOLERANCE);
 	}
 
+	/**
+	 * Test if the value is a Java <code>int</code> value within the tolerance <code>Config.DOUBLE_TOLERANCE</code>.
+	 * 
+	 * @param value
+	 * @return
+	 */
 	public static boolean isNumIntValue(double value) {
 		return isZero(value - Math.rint(value), Config.DOUBLE_TOLERANCE);
 	}
 
+	/**
+	 * Test if the value is a Java <code>int</code> value within the given tolerance <code>epsilon</code>.
+	 * 
+	 * @param value
+	 * @param epsilon
+	 *            the tolerance
+	 * @return
+	 */
 	public static boolean isNumIntValue(double value, double epsilon) {
 		return isZero(value - Math.rint(value), epsilon);
 	}
@@ -7914,8 +7937,10 @@ public class F {
 	 * @return
 	 */
 	public static boolean isZero(org.hipparchus.complex.Complex value) {
-		return org.hipparchus.complex.Complex.equals(value, org.hipparchus.complex.Complex.ZERO, Config.MACHINE_EPSILON);
-//		return isZero(value.getReal(), Config.MACHINE_EPSILON) && isZero(value.getImaginary(), Config.MACHINE_EPSILON);
+		return org.hipparchus.complex.Complex.equals(value, org.hipparchus.complex.Complex.ZERO,
+				Config.MACHINE_EPSILON);
+		// return isZero(value.getReal(), Config.MACHINE_EPSILON) && isZero(value.getImaginary(),
+		// Config.MACHINE_EPSILON);
 	}
 
 	/**
@@ -7929,7 +7954,7 @@ public class F {
 		return isFuzzyEquals(x, 0.0, epsilon);
 		// return -epsilon < x && x < epsilon;
 	}
-	
+
 	/**
 	 * Test if the absolute value is less <code>Config.MACHINE_EPSILON</code>.
 	 * 
@@ -8572,11 +8597,11 @@ public class F {
 	public static IAST Multinomial(final IExpr... a) {
 		return function(Multinomial, a);
 	}
-	
+
 	public static IAST MultiplicativeOrder(final IExpr a0, final IExpr a1) {
 		return new AST2(MultiplicativeOrder, a0, a1);
 	}
-	
+
 	/**
 	 * Evaluate the given expression in numeric mode
 	 * 
@@ -9065,7 +9090,7 @@ public class F {
 
 		return new AST1(PowerExpand, a0);
 	}
-	
+
 	public static IAST PowerMod(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST3(PowerMod, a0, a1, a2);
 	}
