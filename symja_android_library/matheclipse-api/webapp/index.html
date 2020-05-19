@@ -49,8 +49,20 @@
 							for (var j in pod.subpods) { 
 								var subpod = pod.subpods[j];
 								$.each(subpod, function(k, v) {  
-								    if (k == 'plaintext') {
-								    	output += `<div class="cell_output"><div>${v}</div></div>\n`;
+									if (k == 'plaintext') {
+										output += `<div class="cell_output"><div>${v}</div></div>\n`;
+									} else if (k == 'markdown') {
+										output += `<div class="cell_output"><div>${v}</div></div>`;
+									} else if (k == 'html') {
+										output += `<div class="cell_output"><div>${v}</div></div>`;
+									} else if (k == 'latex') {
+										output += `<div class="cell_output"><div>${v}</div></div>`;
+									} else if (k == 'jsxgraph') {
+										output += `<div class="cell_output"><div id="jsxgraph" style="width: 600px; height: 440px; margin: 0; padding: 0">${v}</div></div>\n`;
+									} else if (k == 'mathcell') {
+										output += `<div class="cell_output"><div id="mathcell" style="width: 600px; height: 440px; margin: 0; padding: 0">${v}</div></div>\n`;
+									} else if (k == 'plotly') {
+										output += `<div class="cell_output"><div id="plotly" style="width: 600px; height: 440px; margin: 0; padding: 0">${v}</div></div>\n`;
 									} else if (k == 'mathml') {
 										output += `<div class="cell_output"><div>${v}</div></div>`;
 									}

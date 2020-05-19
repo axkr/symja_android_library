@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
@@ -37,6 +38,8 @@ public class Pods {
 	public static final String LATEX_STR = "latex";
 	public static final String MARKDOWN_STR = "markdown";
 	public static final String MATHCELL_STR = "mathcell";
+	public static final String JSXGRAPH_STR = "jsxgraph";
+	public static final String PLOTLY_STR = "plotly";
 
 	public static final int HTML = 0x0001;
 	public static final int PLAIN = 0x0002;
@@ -45,9 +48,107 @@ public class Pods {
 	public static final int LATEX = 0x0010;
 	public static final int MARKDOWN = 0x0020;
 	public static final int MATHCELL = 0x0040;
-
+	public static final int JSXGRAPH = 0x0080;
+	public static final int PLOTLY = 0x0100;
 	// output
 	public static final String JSON = "JSON";
+
+	final static String JSXGRAPH_IFRAME = //
+			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //
+					"\n" + //
+					"<!DOCTYPE html PUBLIC\n" + //
+					"  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n" + //
+					"  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + //
+					"\n" + //
+					"<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+					+ //
+					"<head>\n" + //
+					"<meta charset=\"utf-8\">\n" + //
+					"<title>JSXGraph</title>\n" + //
+					"\n" + //
+					"<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n" + //
+					"\n" + //
+					"<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/jsxgraphcore.css\" />\n"
+					+ //
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.7/build/math.js\"></script>\n"
+					+ "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/jsxgraphcore.js\"\n" + //
+					"        type=\"text/javascript\"></script>\n" + //
+					"<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/geonext.min.js\"\n" + //
+					"        type=\"text/javascript\"></script>\n" + //
+
+					"\n" + //
+					"<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"
+					+ //
+					"<script>\n" + //
+					"`1`\n" + //
+					"</script>\n" + //
+					"</div>\n" + //
+					"\n" + //
+					"</body>\n" + //
+					"</html>";//
+
+	protected final static String MATHCELL_IFRAME = //
+			// "<html style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //
+					"\n" + //
+					"<!DOCTYPE html PUBLIC\n" + //
+					"  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n" + //
+					"  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + //
+					"\n" + //
+					"<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+					+ //
+					"<head>\n" + //
+					"<meta charset=\"utf-8\">\n" + //
+					"<title>MathCell</title>\n" + //
+					"</head>\n" + //
+					"\n" + //
+					"<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n" + //
+					"\n" + //
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.7/build/math.js\"></script>\n" + //
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.8.8/build/mathcell.js\"></script>\n"
+					+ //
+					"<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
+					+ //
+					"\n" + //
+					"<div class=\"mathcell\" style=\"display: flex; width: 100%; height: 100%; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
+					+ //
+					"<script>\n" + //
+					"\n" + //
+					"var parent = document.scripts[ document.scripts.length - 1 ].parentNode;\n" + //
+					"\n" + //
+					"var id = generateId();\n" + //
+					"parent.id = id;\n" + //
+					"\n" + //
+					"`1`\n" + //
+					"\n" + //
+					"parent.update( id );\n" + //
+					"\n" + //
+					"</script>\n" + //
+					"</div>\n" + //
+					"\n" + //
+					"</body>\n" + //
+					"</html>";//
+
+	protected final static String PLOTLY_IFRAME = //
+			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //
+					"\n" + //
+					"<!DOCTYPE html PUBLIC\n" + //
+					"  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n" + //
+					"  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + //
+					"\n" + //
+					"<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+					+ //
+					"<head>\n" + //
+					"<meta charset=\"utf-8\">\n" + //
+					"<title>Plotly</title>\n" + //
+					"\n" + //
+					"   <script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>\n" + //
+					"</head>\n" + //
+					"<body>\n" + //
+					"<div id='plotly' ></div>\n" + //
+					"`1`\n" + //
+					"</body>\n" + //
+					"</html>";//
 
 	static void addPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String title, String scanner, int formats,
 			ObjectMapper mapper, EvalEngine engine) {
@@ -127,22 +228,33 @@ public class Pods {
 		}
 	}
 
-	public static int internFormat(String[] formats) {
+	private static int internFormat(String[] formats) {
 		int intern = 0;
 		for (String str : formats) {
-			if (str.equals(HTML_STR)) {
-				intern |= HTML;
-			} else if (str.equals(PLAIN_STR)) {
-				intern |= PLAIN;
-			} else if (str.equals(SYMJA_STR)) {
-				intern |= SYMJA;
-			} else if (str.equals(MATHML_STR)) {
-				intern |= MATHML;
-			} else if (str.equals(LATEX_STR)) {
-				intern |= LATEX;
-			} else if (str.equals(MARKDOWN_STR)) {
-				intern |= MARKDOWN;
-			}
+			intern = internFormat(intern, str);
+		}
+		return intern;
+	}
+
+	private static int internFormat(int intern, String str) {
+		if (str.equals(HTML_STR)) {
+			intern |= HTML;
+		} else if (str.equals(PLAIN_STR)) {
+			intern |= PLAIN;
+		} else if (str.equals(SYMJA_STR)) {
+			intern |= SYMJA;
+		} else if (str.equals(MATHML_STR)) {
+			intern |= MATHML;
+		} else if (str.equals(LATEX_STR)) {
+			intern |= LATEX;
+		} else if (str.equals(MARKDOWN_STR)) {
+			intern |= MARKDOWN;
+		} else if (str.equals(MATHCELL_STR)) {
+			intern |= MATHCELL;
+		} else if (str.equals(JSXGRAPH_STR)) {
+			intern |= JSXGRAPH;
+		} else if (str.equals(PLOTLY_STR)) {
+			intern |= PLOTLY;
 		}
 		return intern;
 	}
@@ -194,15 +306,15 @@ public class Pods {
 							podsArray.add(subpodsResult);
 
 							ObjectNode node = mapper.createObjectNode();
-							if ((formats & HTML) != 0x00) {
+//							if ((formats & HTML) != 0x00) {
 								temp.add(node);
 								node.put("html", generateHTMLString(buf.toString()));
 								numpods++;
-							} else {
-								temp.add(node);
-								node.put("markdown", buf.toString());
-								numpods++;
-							}
+//							} else {
+//								temp.add(node);
+//								node.put("markdown", buf.toString());
+//								numpods++;
+//							}
 
 							resultStatistics(queryresult, error, numpods, podsArray);
 							return messageJSON;
@@ -225,8 +337,9 @@ public class Pods {
 							outExpr = engine.evaluate(inExpr);
 							if (outExpr.isAST(F.JSFormData, 3)) {
 								IExpr podOut = outExpr;
+								int form = internFormat(0, outExpr.second().toString());
 								addPod(podsArray, inExpr, podOut, outExpr.first().toString(), "Function", "Plotter",
-										MATHCELL, mapper, engine);
+										form, mapper, engine);
 								numpods++;
 							} else {
 								IExpr podOut = outExpr;
@@ -321,25 +434,6 @@ public class Pods {
 		return json;
 	}
 
-	private static String createJSONJavaScript(String script) throws IOException {
-		script = StringEscapeUtils.escapeHtml4(script);
-		ObjectMapper mapper = new ObjectMapper();
-
-		ObjectNode resultsJSON = mapper.createObjectNode();
-		resultsJSON.put("line", new Integer(21));
-		resultsJSON.put("result", script);
-
-		ArrayNode temp = mapper.createArrayNode();
-		resultsJSON.putPOJO("out", temp);
-
-		temp = mapper.createArrayNode();
-		temp.add(resultsJSON);
-		ObjectNode json = mapper.createObjectNode();
-		json.putPOJO("pods", temp);
-
-		return json.toString();
-	}
-
 	private static void createJSONFormat(ObjectNode json, EvalEngine engine, IExpr outExpr, int formats) {
 		createJSONFormat(json, engine, outExpr, null, formats);
 	}
@@ -392,66 +486,62 @@ public class Pods {
 		}
 		if ((formats & MATHCELL) != 0x00) {
 			if (plainText != null && plainText.length() > 0) {
-				json.put(MATHCELL_STR, plainText);
+				try {
+					String html = MATHCELL_IFRAME;
+					html = StringUtils.replace(html, "`1`", plainText);
+					html = StringEscapeUtils.escapeHtml4(html);
+					html = "<iframe srcdoc=\"" + html
+							+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
+					json.put(MATHCELL_STR, html);
+				} catch (Exception ex) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						ex.printStackTrace();
+					}
+				}
+
 			} else {
 
 			}
 		}
-	}
+		if ((formats & JSXGRAPH) != 0x00) {
+			if (plainText != null && plainText.length() > 0) {
+				try {
+					String html = JSXGRAPH_IFRAME;
+					html = StringUtils.replace(html, "`1`", plainText);
+					html = StringEscapeUtils.escapeHtml4(html);
+					html = "<iframe srcdoc=\"" + html
+							+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
+					json.put(JSXGRAPH_STR, html);
+				} catch (Exception ex) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						ex.printStackTrace();
+					}
+				}
 
-	private static ObjectNode createJSONResult(EvalEngine engine, IExpr outExpr, StringWriter outWriter,
-			StringWriter errorWriter, String format) {
-		ObjectMapper mapper = new ObjectMapper();
-		// DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
-		StringWriter stw = new StringWriter();
-		// DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
-		if (format.equals(PLAIN)) {
-			stw.append(outExpr.toString());
-		} else if (format.equals(MATHML)) {
-			MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false);
-			if (!mathUtil.toMathML(outExpr, stw, true)) {
-				return createJSONErrorString("Max. output size exceeded " + Config.MAX_OUTPUT_SIZE);
+			} else {
+
 			}
 		}
 
-		ObjectNode resultsJSON = mapper.createObjectNode();
-		resultsJSON.put("line", new Integer(21));
-		resultsJSON.put("result", stw.toString());
-		ArrayNode temp = mapper.createArrayNode();
-		String message = errorWriter.toString();
-		if (message.length() > 0) {
-			// "out": [{
-			// "prefix": "Power::infy",
-			// "message": true,
-			// "tag": "infy",
-			// "symbol": "Power",
-			// "text": "Infinite expression 1 / 0 encountered."}]}]}
-			ObjectNode messageJSON = mapper.createObjectNode();
-			messageJSON.put("prefix", "Error");
-			messageJSON.put("message", Boolean.TRUE);
-			messageJSON.put("tag", "evaluation");
-			messageJSON.put("symbol", "General");
-			messageJSON.put("text", "<math><mrow><mtext>" + message + "</mtext></mrow></math>");
-			temp.add(messageJSON);
-		}
+		if ((formats & PLOTLY) != 0x00) {
+			if (plainText != null && plainText.length() > 0) {
+				try {
+					String html = PLOTLY_IFRAME;
+					html = StringUtils.replace(html, "`1`", plainText);
+					html = StringEscapeUtils.escapeHtml4(html);
+					html = "<iframe srcdoc=\"" + html
+							+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
+					json.put(PLOTLY_STR, html);
+				} catch (Exception ex) {
+					if (FEConfig.SHOW_STACKTRACE) {
+						ex.printStackTrace();
+					}
+				}
 
-		message = outWriter.toString();
-		if (message.length() > 0) {
-			ObjectNode messageJSON = mapper.createObjectNode();
-			messageJSON.put("prefix", "Output");
-			messageJSON.put("message", Boolean.TRUE);
-			messageJSON.put("tag", "evaluation");
-			messageJSON.put("symbol", "General");
-			messageJSON.put("text", "<math><mrow><mtext>" + message + "</mtext></mrow></math>");
-			temp.add(messageJSON);
-		}
-		resultsJSON.putPOJO("out", temp);
+			} else {
 
-		temp = mapper.createArrayNode();
-		temp.add(resultsJSON);
-		ObjectNode json = mapper.createObjectNode();
-		json.putPOJO("results", temp);
-		return json;
+			}
+		}
 	}
 
 	private static String generateHTMLString(final String markdownStr) {
