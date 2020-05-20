@@ -1855,14 +1855,18 @@ public class PolynomialFunctions {
 					}
 					if (n.isOne()) {
 						// -z + l + 1
-						return F.Plus(F.C1, F.l, F.Negate(F.z));
+						return F.Plus(F.C1, l, F.Negate(z));
+					}
+					if (degree < 0) {
+						return F.NIL;
 					}
 
 					// Recurrence relation for LaguerreL polynomials
-					return F.Times(F.Power(n, -1),
-							F.Plus(F.Times(F.CN1, F.Plus(F.CN1, l, n), F.LaguerreL(F.ZZ(degree - 2), l, z)),
-									F.Times(F.Plus(F.C1, l, F.Times(F.C2, F.ZZ(degree - 1)), F.Negate(z)),
-											F.LaguerreL(F.ZZ(degree - 1), l, z))));
+					// (1/n) * (((2*n + l - z - 1) )*LaguerreL(n - 1, l, z) - ((n + l - 1) )*LaguerreL(n - 2, l, z))
+					return F.Times(F.Power(n, F.CN1),
+							F.Plus(F.Times(F.CN1, F.Plus(F.CN1, l, n), F.LaguerreL(F.Plus(F.CN2, n), l, z)),
+									F.Times(F.Plus(F.CN1, l, F.Times(F.C2, n), F.Negate(z)),
+											F.LaguerreL(F.Plus(F.CN1, n), l, z))));
 				}
 				if (degree == 0) {
 					return F.C1;
