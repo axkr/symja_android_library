@@ -1044,11 +1044,13 @@ public class ID {
     public final static int While = 1035;
     public final static int White = 1036;
     public final static int Whitespace = 1037;
-    public final static int With = 1038;
-    public final static int WriteString = 1039;
-    public final static int Xor = 1040;
-    public final static int YuleDissimilarity = 1041;
-    public final static int ZeroSymmetric = 1042;
-    public final static int Zeta = 1043;
+    public final static int WhittakerM = 1038;
+    public final static int WhittakerW = 1039;
+    public final static int With = 1040;
+    public final static int WriteString = 1041;
+    public final static int Xor = 1042;
+    public final static int YuleDissimilarity = 1043;
+    public final static int ZeroSymmetric = 1044;
+    public final static int Zeta = 1045;
 
 }

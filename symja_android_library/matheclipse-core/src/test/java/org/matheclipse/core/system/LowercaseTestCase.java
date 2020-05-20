@@ -9592,8 +9592,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// TODO throws hypergeometric function pole
 		// check("HypergeometricU(3, 2, 1.0)", //
 		// "0.105479");
+
+		check("HypergeometricU(2, b, z)", //
+				"(-1+E^z*(2-b+z)*z^(1-b)*Gamma(-1+b,z))/(2-b)");
+		check("HypergeometricU(a, a+3, z)", //
+				"(1+(a*(1+a))/z^2+(2*a)/z)/z^a");
 		check("HypergeometricU(3, 2.5, 1.0)", //
 				"0.173724");
+		check("HypergeometricU(3, 2.5, 0.0)", //
+				"ComplexInfinity");
+		check("Table( HypergeometricU(3, 2.5, x), {x,-2.0,2,0.25})", //
+				"{0.19001+I*(-0.148415),0.27603+I*(-0.141362),0.39355+I*(-0.107638),0.553199+I*(-0.0227102)," //
+						+ "0.76904+I*0.163012,1.05965+I*0.56395,1.44956+I*1.52035,1.97105+I*4.83136,ComplexInfinity," //
+						+ "2.45436,0.688641,0.312167,0.173724,0.1086,0.0732253,0.0520871,0.0385635}");
 	}
 
 	public void testI() {
@@ -11348,11 +11359,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLaguerreL() {
+		check("LaguerreL(1, 1 - b, -z)", //
+				"2-b+z");
+		check("LaguerreL(1, a, z)", //
+				"1+a-z");
 		check("LaguerreL(0, l, z)", //
 				"1");
-		check("LaguerreL(1, l, z)", //
-				"1+l-z");
-		check("LaguerreL(2, l, z)", //
+		check("LaguerreL(2, l, z)", // 1/2*(-1-l)+1/2*(1+l-z)*(3+l-z)
 				"1/2*(-1-l+(1+l-z)*(3+l-z))");
 		check("LaguerreL(3, l, z)", //
 				"1/3*(-(2+l)*(1+l-z)+1/2*(-1-l+(1+l-z)*(3+l-z))*(5+l-z))");
@@ -16183,6 +16196,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPochhammer() {
+		check("Pochhammer(2-b,1)", //
+				"2-b");
 		check("Pochhammer({-7,-6,-5,-4,-3,-2,-1,0,1,2,3},-5)", //
 				"{-1/95040,-1/55440,-1/30240,-1/15120,-1/6720,-1/2520,-1/720,-1/120,ComplexInfinity,ComplexInfinity,ComplexInfinity}");
 		check("Pochhammer({-2,-1,0,1,2,3},-2)", //
@@ -24606,6 +24621,30 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"11");
 	}
 
+	public void testWhittakerM() {
+		check("WhittakerM(2, 3, 1.7)", //
+				"4.07202");
+		// TODO
+		// check("WhittakerM(2, 0.5, 0.0)", //
+		// "0");
+		check("Table( WhittakerM(3, 2.5, x), {x,-2.0,2,0.25})", //
+				"{-21.74625+I*7.98944*10^-15,-12.85647+I*4.72339*10^-15,-7.14488+I*2.62498*10^-15,-3.64892+I*1.34059*10^-15,"//
+				+ "-1.64872+I*6.05730*10^-16,-0.613825+I*2.25515*10^-16,-0.160503,-0.0177054,Indeterminate,0.013789,0.0973501,"//
+				+ "0.28995,0.606531,1.04543,1.59424,2.23412,2.94304}");
+	}
+
+	public void testWhittakerW() {
+		// TODO
+// 		check("WhittakerW(6, 4, 1.7)", //
+// 				"4.07202");
+// 		check("WhittakerW(2, 0.5, 0.0)", //
+//	 			  "0");
+//		check("Table( WhittakerW(6, 4, x), {x,-2.0,2,0.25})", //
+//				"{-21.74625+I*7.98944*10^-15,-12.85647+I*4.72339*10^-15,-7.14488+I*2.62498*10^-15,-3.64892+I*1.34059*10^-15,"//
+//				+ "-1.64872+I*6.05730*10^-16,-0.613825+I*2.25515*10^-16,-0.160503,-0.0177054,Indeterminate,0.013789,0.0973501,"//
+//				+ "0.28995,0.606531,1.04543,1.59424,2.23412,2.94304}");
+	}
+	
 	public void testWith() {
 		EvalEngine.get().resetModuleCounter4JUnit();
 		check("With({x = 2 + y}, Hold(With({y = 4}, x + y)))", //

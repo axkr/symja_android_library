@@ -657,4 +657,14 @@ public class HypergeometricJS {
 
 	}
 
+	public static Complex whittakerM(Complex k, Complex m, Complex x) { 
+		return x.multiply(-0.5).exp().multiply(x.pow(m.add(0.5)))
+				.multiply(hypergeometric1F1(m.add(k.negate()).add(0.5), m.multiply(2.0).add(1.0), x));
+
+	}
+
+	public static Complex whittakerW(Complex k, Complex m, Complex x) { 
+		return x.multiply(-0.5).exp().multiply(x.pow(m.add(0.5)))
+				.multiply(hypergeometricU(m.add(k.negate()).add(0.5), m.multiply(2.0).add(1.0), x));
+	}
 }

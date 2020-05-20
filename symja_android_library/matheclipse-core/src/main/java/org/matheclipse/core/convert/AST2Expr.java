@@ -193,8 +193,8 @@ public class AST2Expr {
 			"UpperTriangularize", "UpSet", "UpSetDelayed", "ValueQ", "Values", "VandermondeMatrix", "Variables",
 			"Variance", "VectorAngle", "VectorQ", "VertexEccentricity", "VertexList", "VertexQ", "WeibullDistribution",
 			"WeierstrassHalfPeriods", "WeierstrassInvariants", "WeierstrassP", "WeierstrassPPrime",
-			"WeightedAdjacencyMatrix", "WeightedData", "Which", "While", "With", "WriteString", "Xor",
-			"YuleDissimilarity", "ZeroSymmetric", "Zeta" };
+			"WeightedAdjacencyMatrix", "WeightedData", "Which", "While", "With", "WhittakerM", "WhittakerW",
+			"WriteString", "Xor", "YuleDissimilarity", "ZeroSymmetric", "Zeta" };
 
 	public static Map<String, Integer> RUBI_STATISTICS_MAP;
 

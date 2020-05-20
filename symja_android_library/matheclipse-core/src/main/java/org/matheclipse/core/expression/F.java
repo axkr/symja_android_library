@@ -3870,6 +3870,12 @@ public class F {
 	public final static IBuiltInSymbol White = F.initFinalSymbol("White", ID.White);
 
 	/***/
+	public final static IBuiltInSymbol WhittakerM = F.initFinalSymbol("WhittakerM", ID.WhittakerM);
+
+	/***/
+	public final static IBuiltInSymbol WhittakerW = F.initFinalSymbol("WhittakerW", ID.WhittakerW);
+
+	/***/
 	public final static IBuiltInSymbol Whitespace = F.initFinalSymbol("Whitespace", ID.Whitespace);
 
 	/**
@@ -5773,6 +5779,10 @@ public class F {
 		return new AST2(F.Binomial, a0, a1);
 	}
 
+	public static IAST Binomial(final int a0, final int a1) {
+		return new AST2(F.Binomial, F.ZZ(a0), F.ZZ(a1));
+	}
+
 	public static IAST BlankSequence() {
 		return new AST0(BlankSequence);
 	}
@@ -7033,6 +7043,10 @@ public class F {
 		return new AST1(Factorial, a0);
 	}
 
+	public static IAST Factorial(final int a0) {
+		return new AST1(Factorial, F.ZZ(a0));
+	}
+
 	public static IAST Factorial2(final IExpr a0) {
 		return new AST1(Factorial2, a0);
 	}
@@ -7382,6 +7396,10 @@ public class F {
 		return new AST3(HypergeometricPFQRegularized, a0, a1, a2);
 	}
 
+	public static IAST HypergeometricU(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return new AST3(HypergeometricU, a0, a1, a2);
+	}
+
 	public static IAST Identity(final IExpr a0) {
 		return new AST1(Identity, a0);
 	}
@@ -7717,6 +7735,27 @@ public class F {
 		IASTAppendable result = F.ast(head, to - from + 1, false);
 		for (int i = from; i <= to; i += step) {
 			result.append(function.apply(F.ZZ(i)));
+		}
+		return result;
+	}
+
+	/**
+	 * Iterate over an integer range <code>from <= i <= to</code> with the step <code>step/code>.
+	 * 
+	 * @param head
+	 *            the header symbol of the result
+	 * @param function
+	 *            the integer function which should be applied on each iterator value
+	 * @param from
+	 * @param to
+	 * @param step
+	 * @return
+	 */
+	public static IAST intIterator(ISymbol head, final IntFunction<IExpr > function, final int from, final int to,
+			final int step) {
+		IASTAppendable result = F.ast(head, to - from + 1, false);
+		for (int i = from; i <= to; i += step) {
+			result.append(function.apply(i));
 		}
 		return result;
 	}
@@ -9964,6 +10003,10 @@ public class F {
 	public static IAST Sum(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST3(Sum, a0, a1, a2);
 	}
+	
+	public static IAST Sum(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+		return quaternary(F.Sum, a0, a1, a2, a3);
+	}
 
 	/**
 	 * Evaluate the sum from <code>iMin</code> to <code>iMax</code> and step <code>1</code>.
@@ -9974,6 +10017,10 @@ public class F {
 	 * @return
 	 */
 	public static IAST sum(final Function<IExpr, IExpr> function, final int iMin, final int iMax) {
+		return intIterator(F.Plus, function, iMin, iMax, 1);
+	}
+	
+	public static IAST intSum(final IntFunction<IExpr> function, final int iMin, final int iMax) {
 		return intIterator(F.Plus, function, iMin, iMax, 1);
 	}
 
@@ -10274,6 +10321,14 @@ public class F {
 
 	public static IAST While(final IExpr a0, final IExpr a1) {
 		return new AST2(While, a0, a1);
+	}
+
+	public static IAST WhittakerM(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return new AST3(WhittakerM, a0, a1, a2);
+	}
+
+	public static IAST WhittakerW(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return new AST3(WhittakerW, a0, a1, a2);
 	}
 
 	public static IAST With(final IExpr a0, final IExpr a1) {
