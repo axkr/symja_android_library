@@ -1,5 +1,7 @@
 {  
-WhittakerM(k_,0,0) := 0,
-WhittakerM(k_,1,0) := 0
+WhittakerM(n_,m_,0) := 0 
+ /; Re(m)>(-1/2),
+ WhittakerM(n_,m_,0) := ComplexInfinity 
+ /; Re(m)<(-1/2) 
 
 }

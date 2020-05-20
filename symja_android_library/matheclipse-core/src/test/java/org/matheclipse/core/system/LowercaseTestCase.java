@@ -24622,6 +24622,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testWhittakerM() {
+		check("WhittakerM(k, -1/2, 0)", //
+	 			  "WhittakerM(k,-1/2,0)");
+		check("WhittakerM(k, -1/3, 0)", //
+	 			  "0");
+		check("WhittakerM(k,  -2/3, 0)", //
+	 			  "ComplexInfinity");
+		check("WhittakerM(1, 1, 0)", //
+	 			  "0");
+		check("WhittakerM(0, 1, 0)", //
+	 			  "0");
+		check("WhittakerM(0, 0, 0)", //
+	 			  "0");
 		check("WhittakerM(2, 3, 1.7)", //
 				"4.07202");
 		// TODO
@@ -24633,7 +24645,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 				+ "0.28995,0.606531,1.04543,1.59424,2.23412,2.94304}");
 	}
 
-	public void testWhittakerW() {
+	public void testWhittakerW() { 
+		check("WhittakerW(0, 0, 0)", //
+	 			  "0");
 		// TODO
 // 		check("WhittakerW(6, 4, 1.7)", //
 // 				"4.07202");

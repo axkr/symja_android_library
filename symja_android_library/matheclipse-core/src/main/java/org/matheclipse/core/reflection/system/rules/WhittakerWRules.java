@@ -9,11 +9,8 @@ import org.matheclipse.core.interfaces.IAST;
  */
 public interface WhittakerWRules {
   final public static IAST RULES = List(
-    // WhittakerW(k_,0,0):=0
-    ISetDelayed(WhittakerW(k_,C0,C0),
-      C0),
-    // WhittakerW(k_,1,0):=1/Gamma(1-k)
-    ISetDelayed(WhittakerW(k_,C1,C0),
-      Power(Gamma(Subtract(C1,k)),CN1))
+    // WhittakerW(n_,m_,0):=0/;-1/2<Re(m)<1/2
+    ISetDelayed(WhittakerW(n_,m_,C0),
+      Condition(C0,Less(CN1D2,Re(m),C1D2)))
   );
 }

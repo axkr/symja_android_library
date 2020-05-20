@@ -1,5 +1,5 @@
 {  
-WhittakerW(k_,0,0) := 0,
-WhittakerW(k_,1,0) := 1/Gamma(1-k)
+WhittakerW(n_,m_,0) := 0 
+ /; -(1/2)<Re(m)< 1/2
 
 }
