@@ -55,6 +55,13 @@
     /; FreeQ({a,b,c},x),
   D(Hypergeometric2F1(a_, b_, c_, f_), {x_,n_}) := (Hypergeometric2F1(a + n, b + n, c + n, x)*Pochhammer(a, n)*Pochhammer(b, n))/Pochhammer(c, n)
     /; FreeQ({a,b,c,n},x) && Negative(n)=!=True,
+  
+  D(HypergeometricU(f_, g_, h_),x_?NotListQ) :=-f*HypergeometricU(1+f,1+g,h)*D(h,x)
+    /; FreeQ({f,g},x),
+  D(WhittakerM(f_, g_, h_),x_?NotListQ) :=((1/2 - f/h)*WhittakerM(f, g, h) + ((1/2 + f + g)*WhittakerM(1 + f, g, h))/h)*D(h,x)
+    /; FreeQ({f,g},x),
+  D(WhittakerW(f_, g_, h_),x_?NotListQ) :=((1/2 - f/h)*WhittakerW(f, g, h) - WhittakerW(1 + f, g, h)/h)*D(h,x) 
+    /; FreeQ({f,g},x),   
     
   D(InverseFunction(f_)[x_],x_) := 1/Derivative(1)[f][InverseFunction(f)[x]] 
     /; FreeQ(f,x),

@@ -18,5 +18,11 @@
   /; n>0,
   
  Sinc(z_) := Sin(z) / z 
-  /; z!=0
+  /; z!=0,
+
+
+WhittakerM(k_, m_, z_) := (z^(1/2+m) * Hypergeometric1F1(1/2-k+m, 1+ 2*m, z))/E^(z/2),
+
+WhittakerW(k_, m_, z_) := (z^(1/2+m) * HypergeometricU(1/2-k+m, 1+2*m, z))/E^(z/2)
+
 }

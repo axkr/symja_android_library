@@ -7379,6 +7379,10 @@ public class F {
 	public static IAST Hypergeometric0F1(final IExpr a0, final IExpr a1) {
 		return new AST2(Hypergeometric0F1, a0, a1);
 	}
+	
+	public static IAST Hypergeometric1F1(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return new AST3(Hypergeometric1F1, a0, a1, a2);
+	}
 
 	public static IAST Hypergeometric1F1Regularized(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST3(Hypergeometric1F1Regularized, a0, a1, a2);

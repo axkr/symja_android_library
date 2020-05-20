@@ -13,7 +13,7 @@ public interface DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 89 };
+  final public static int[] SIZES = { 0, 92 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -176,6 +176,15 @@ public interface DRules {
     // D(Hypergeometric2F1(a_,b_,c_,f_),{x_,n_}):=(Hypergeometric2F1(a+n,b+n,c+n,x)*Pochhammer(a,n)*Pochhammer(b,n))/Pochhammer(c,n)/;FreeQ({a,b,c,n},x)&&Negative(n)=!=True
     ISetDelayed(D(Hypergeometric2F1(a_,b_,c_,f_),List(x_,n_)),
       Condition(Times(Hypergeometric2F1(Plus(a,n),Plus(b,n),Plus(c,n),x),Pochhammer(a,n),Pochhammer(b,n),Power(Pochhammer(c,n),CN1)),And(FreeQ(List(a,b,c,n),x),UnsameQ(Negative(n),True)))),
+    // D(HypergeometricU(f_,g_,h_),x_?NotListQ):=-f*HypergeometricU(1+f,1+g,h)*D(h,x)/;FreeQ({f,g},x)
+    ISetDelayed(D(HypergeometricU(f_,g_,h_),PatternTest(x_,NotListQ)),
+      Condition(Times(CN1,f,HypergeometricU(Plus(C1,f),Plus(C1,g),h),D(h,x)),FreeQ(List(f,g),x))),
+    // D(WhittakerM(f_,g_,h_),x_?NotListQ):=((1/2-f/h)*WhittakerM(f,g,h)+((1/2+f+g)*WhittakerM(1+f,g,h))/h)*D(h,x)/;FreeQ({f,g},x)
+    ISetDelayed(D(WhittakerM(f_,g_,h_),PatternTest(x_,NotListQ)),
+      Condition(Times(Plus(Times(Plus(C1D2,Times(CN1,f,Power(h,CN1))),WhittakerM(f,g,h)),Times(Plus(C1D2,f,g),Power(h,CN1),WhittakerM(Plus(C1,f),g,h))),D(h,x)),FreeQ(List(f,g),x))),
+    // D(WhittakerW(f_,g_,h_),x_?NotListQ):=((1/2-f/h)*WhittakerW(f,g,h)-WhittakerW(1+f,g,h)/h)*D(h,x)/;FreeQ({f,g},x)
+    ISetDelayed(D(WhittakerW(f_,g_,h_),PatternTest(x_,NotListQ)),
+      Condition(Times(Plus(Times(Plus(C1D2,Times(CN1,f,Power(h,CN1))),WhittakerW(f,g,h)),Times(CN1,Power(h,CN1),WhittakerW(Plus(C1,f),g,h))),D(h,x)),FreeQ(List(f,g),x))),
     // D(InverseFunction(f_)[x_],x_):=1/f'(InverseFunction(f)[x])/;FreeQ(f,x)
     ISetDelayed(D($(InverseFunction(f_),x_),x_),
       Condition(Power($($(Derivative(C1),f),$(InverseFunction(f),x)),CN1),FreeQ(f,x))),

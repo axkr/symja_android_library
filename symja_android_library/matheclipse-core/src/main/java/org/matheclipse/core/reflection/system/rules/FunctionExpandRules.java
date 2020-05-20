@@ -41,6 +41,12 @@ public interface FunctionExpandRules {
       Condition(Times(Power(CN1,Plus(n,C1)),Factorial(n),Plus(CN1,Power(C2,Plus(n,C1))),Zeta(Plus(n,C1))),Greater(n,C0))),
     // Sinc(z_):=Sin(z)/z/;z!=0
     SetDelayed(Sinc(z_),
-      Condition(Times(Power(z,CN1),Sin(z)),Unequal(z,C0)))
+      Condition(Times(Power(z,CN1),Sin(z)),Unequal(z,C0))),
+    // WhittakerM(k_,m_,z_):=(z^(1/2+m)*Hypergeometric1F1(1/2-k+m,1+2*m,z))/E^(z/2)
+    SetDelayed(WhittakerM(k_,m_,z_),
+      Times(Power(Exp(Times(C1D2,z)),CN1),Power(z,Plus(C1D2,m)),Hypergeometric1F1(Plus(C1D2,Negate(k),m),Plus(C1,Times(C2,m)),z))),
+    // WhittakerW(k_,m_,z_):=(z^(1/2+m)*HypergeometricU(1/2-k+m,1+2*m,z))/E^(z/2)
+    SetDelayed(WhittakerW(k_,m_,z_),
+      Times(Power(Exp(Times(C1D2,z)),CN1),Power(z,Plus(C1D2,m)),HypergeometricU(Plus(C1D2,Negate(k),m),Plus(C1,Times(C2,m)),z)))
   );
 }

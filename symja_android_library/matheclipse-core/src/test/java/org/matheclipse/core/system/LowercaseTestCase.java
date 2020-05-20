@@ -9593,6 +9593,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("HypergeometricU(3, 2, 1.0)", //
 		// "0.105479");
 
+		check("D(HypergeometricU(a,b,x), x)", //
+				"-a*HypergeometricU(1+a,1+b,x)");
 		check("HypergeometricU(2, b, z)", //
 				"(-1+E^z*(2-b+z)*z^(1-b)*Gamma(-1+b,z))/(2-b)");
 		check("HypergeometricU(a, a+3, z)", //
@@ -24622,6 +24624,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testWhittakerM() {
+		check("D(WhittakerM(a,b,x), x)", //
+				"(1/2-a/x)*WhittakerM(a,b,x)+((1/2+a+b)*WhittakerM(1+a,b,x))/x");
 		check("WhittakerM(k, -1/2, 0)", //
 	 			  "WhittakerM(k,-1/2,0)");
 		check("WhittakerM(k, -1/3, 0)", //
@@ -24646,6 +24650,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testWhittakerW() { 
+		check("D(WhittakerW(a,b,x), x)", //
+				"(1/2-a/x)*WhittakerW(a,b,x)-WhittakerW(1+a,b,x)/x");
 		check("WhittakerW(0, 0, 0)", //
 	 			  "0");
 		// TODO
