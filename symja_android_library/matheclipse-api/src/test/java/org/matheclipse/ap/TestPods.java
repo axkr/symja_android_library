@@ -152,4 +152,60 @@ public class TestPods {
 
 		}
 	}
+	
+	@Test
+	public void testList() {
+		String s = System.getProperty("os.name");
+		ObjectNode messageJSON = Pods.createResult("1,2,3", formats);
+		final String jsonStr = messageJSON.toPrettyString();
+		System.out.println(jsonStr);
+		if (s.contains("Windows")) { 
+			assertEquals(jsonStr, //
+					"{\r\n" + //
+					"  \"queryresult\" : {\r\n" + //
+					"    \"success\" : \"true\",\r\n" + //
+					"    \"error\" : \"false\",\r\n" + //
+					"    \"numpods\" : 4,\r\n" + //
+					"    \"version\" : \"0.1\",\r\n" + //
+					"    \"pods\" : [ {\r\n" + //
+					"      \"title\" : \"Input\",\r\n" + //
+					"      \"scanner\" : \"Identity\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"{1,2,3}\",\r\n" + //
+					"        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mrow><mo>{</mo><mrow><mn>1</mn><mo>,</mo><mn>2</mn><mo>,</mo><mn>3</mn></mrow><mo>}</mo></mrow></math>\"\r\n" + //
+					"      } ]\r\n" + //
+					"    }, {\r\n" + //
+					"      \"title\" : \"Total\",\r\n" + //
+					"      \"scanner\" : \"List\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"6\",\r\n" + //
+					"        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mn>6</mn></math>\"\r\n" + //
+					"      } ]\r\n" + //
+					"    }, {\r\n" + //
+					"      \"title\" : \"Vector length\",\r\n" + //
+					"      \"scanner\" : \"List\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"3.7416573867739413\",\r\n" + //
+					"        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mn>3.74166</mn></math>\"\r\n" + //
+					"      } ]\r\n" + //
+					"    }, {\r\n" + //
+					"      \"title\" : \"Normalized vector\",\r\n" + //
+					"      \"scanner\" : \"List\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"{1/Sqrt(14),Sqrt(2/7),3/Sqrt(14)}\",\r\n" + //
+					"        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mrow><mo>{</mo><mrow><mfrac><mn>1</mn><msqrt><mn>14</mn></msqrt></mfrac><mo>,</mo><msqrt><mrow><mfrac><mn>2</mn><mn>7</mn></mfrac></mrow></msqrt><mo>,</mo><mfrac><mn>3</mn><msqrt><mn>14</mn></msqrt></mfrac></mrow><mo>}</mo></mrow></math>\"\r\n" + //
+					"      } ]\r\n" + //
+					"    } ]\r\n" + //
+					"  }\r\n" + //
+					"}");//
+		}
+	}
 }

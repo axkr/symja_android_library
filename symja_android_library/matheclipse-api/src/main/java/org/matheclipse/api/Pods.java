@@ -22,6 +22,8 @@ import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.parser.ExprParser;
+import org.matheclipse.core.parser.ExprParserFactory;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
 
@@ -282,80 +284,88 @@ public class Pods {
 		if (inputStr.length() > 0) {
 			try {
 				ArrayNode podsArray = mapper.createArrayNode();
-				engine.setPackageMode(false);
-				inExpr = engine.parse(inputStr);
-				if (inExpr.isNumber()) {
-					outExpr = inExpr;
-					if (outExpr.isInteger()) {
-						numpods = integerPods(podsArray, inExpr, outExpr, formats, mapper, engine);
-						resultStatistics(queryresult, error, numpods, podsArray);
-						return messageJSON;
-					}
-				} else {
-					if (inExpr.isSymbol() || inExpr.isString()) {
-						StringBuilder buf = new StringBuilder();
-						Documentation.printDocumentation(buf, inExpr.toString());
-						if (buf.length() > 0) {
-							ArrayNode temp = mapper.createArrayNode();
-							ObjectNode subpodsResult = mapper.createObjectNode();
-							subpodsResult.put("title", "documentation");
-							subpodsResult.put("scanner", "help");
-							subpodsResult.put("error", "false");
-							subpodsResult.put("numsubpods", 1);
-							subpodsResult.putPOJO("subpods", temp);
-							podsArray.add(subpodsResult);
-
-							ObjectNode node = mapper.createObjectNode();
-//							if ((formats & HTML) != 0x00) {
-								temp.add(node);
-								node.put("html", generateHTMLString(buf.toString()));
-								numpods++;
-//							} else {
-//								temp.add(node);
-//								node.put("markdown", buf.toString());
-//								numpods++;
-//							}
-
+				inExpr = parseInput(inputStr, engine);
+				if (inExpr.isPresent()) {
+					if (inExpr.isNumber()) {
+						outExpr = inExpr;
+						if (outExpr.isInteger()) {
+							numpods = integerPods(podsArray, inExpr, outExpr, formats, mapper, engine);
 							resultStatistics(queryresult, error, numpods, podsArray);
 							return messageJSON;
 						}
 					} else {
-						if (inExpr.isAST(F.D, 3)) {
-							outExpr = engine.evaluate(inExpr);
-							IExpr podOut = outExpr;
-							addPod(podsArray, inExpr, podOut, "Derivative", "Derivative", formats, mapper, engine);
-							numpods++;
-							podOut = F.TrigToExp.of(engine, outExpr);
-							if (!F.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
-								addPod(podsArray, inExpr, podOut, "Alternate form", "Simplification", formats, mapper,
-										engine);
-								numpods++;
+						if (inExpr.isList()) {
+							IAST list = (IAST) inExpr;
+							boolean intList = list.forAll(x -> x.isInteger());
+							outExpr = inExpr;
+							if (intList) {
+								numpods = integerListPods(podsArray, inExpr, list, formats, mapper, engine);
+								resultStatistics(queryresult, error, numpods, podsArray);
+								return messageJSON;
 							}
-							resultStatistics(queryresult, error, numpods, podsArray);
-							return messageJSON;
-						} else {
-							outExpr = engine.evaluate(inExpr);
-							if (outExpr.isAST(F.JSFormData, 3)) {
-								IExpr podOut = outExpr;
-								int form = internFormat(0, outExpr.second().toString());
-								addPod(podsArray, inExpr, podOut, outExpr.first().toString(), "Function", "Plotter",
-										form, mapper, engine);
-								numpods++;
-							} else {
-								IExpr podOut = outExpr;
-								addPod(podsArray, inExpr, podOut, "Input", "Identity", formats, mapper, engine);
-								numpods++;
-							}
+						}
 
-							resultStatistics(queryresult, error, numpods, podsArray);
-							return messageJSON;
+						if (inExpr.isSymbol() || inExpr.isString()) {
+							StringBuilder buf = new StringBuilder();
+							Documentation.printDocumentation(buf, inExpr.toString());
+							if (buf.length() > 0) {
+								ArrayNode temp = mapper.createArrayNode();
+								ObjectNode subpodsResult = mapper.createObjectNode();
+								subpodsResult.put("title", "documentation");
+								subpodsResult.put("scanner", "help");
+								subpodsResult.put("error", "false");
+								subpodsResult.put("numsubpods", 1);
+								subpodsResult.putPOJO("subpods", temp);
+								podsArray.add(subpodsResult);
+
+								ObjectNode node = mapper.createObjectNode();
+								// if ((formats & HTML) != 0x00) {
+								temp.add(node);
+								node.put("html", generateHTMLString(buf.toString()));
+								numpods++;
+								// } else {
+								// temp.add(node);
+								// node.put("markdown", buf.toString());
+								// numpods++;
+								// }
+
+								resultStatistics(queryresult, error, numpods, podsArray);
+								return messageJSON;
+							}
+						} else {
+							if (inExpr.isAST(F.D, 3)) {
+								outExpr = engine.evaluate(inExpr);
+								IExpr podOut = outExpr;
+								addPod(podsArray, inExpr, podOut, "Derivative", "Derivative", formats, mapper, engine);
+								numpods++;
+								podOut = F.TrigToExp.of(engine, outExpr);
+								if (!F.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
+									addPod(podsArray, inExpr, podOut, "Alternate form", "Simplification", formats,
+											mapper, engine);
+									numpods++;
+								}
+								resultStatistics(queryresult, error, numpods, podsArray);
+								return messageJSON;
+							} else {
+								outExpr = engine.evaluate(inExpr);
+								if (outExpr.isAST(F.JSFormData, 3)) {
+									IExpr podOut = outExpr;
+									int form = internFormat(0, outExpr.second().toString());
+									addPod(podsArray, inExpr, podOut, outExpr.first().toString(), "Function", "Plotter",
+											form, mapper, engine);
+									numpods++;
+								} else {
+									IExpr podOut = outExpr;
+									addPod(podsArray, inExpr, podOut, "Input", "Identity", formats, mapper, engine);
+									numpods++;
+								}
+
+								resultStatistics(queryresult, error, numpods, podsArray);
+								return messageJSON;
+							}
 						}
 					}
 				}
-			} catch (SyntaxError se) {
-				se.printStackTrace();
-				error = false;
-				outExpr = F.$Aborted;
 			} catch (RuntimeException rex) {
 				rex.printStackTrace();
 				error = true;
@@ -364,6 +374,32 @@ public class Pods {
 		}
 		queryresult.put("error", error ? "true" : "false");
 		return messageJSON;
+	}
+
+	private static IExpr parseInput(String inputStr, EvalEngine engine) {
+		engine.setPackageMode(false);
+		final ExprParser parser = new ExprParser(engine, ExprParserFactory.RELAXED_STYLE_FACTORY, true, false, false);
+		try {
+			IExpr inExpr = parser.parse(inputStr);
+			if (inExpr.isList() && inExpr.size() == 2) {
+				return inExpr.first();
+			}
+			return inExpr;
+		} catch (SyntaxError se) {
+			try {
+				IExpr inExpr = parser.parseFuzzyList(inputStr);
+				if (inExpr.isList() && inExpr.size() == 2) {
+					return inExpr.first();
+				}
+				return inExpr;
+			} catch (SyntaxError syntaxError) {
+			} catch (RuntimeException rex) {
+				rex.printStackTrace();
+			}
+		} catch (RuntimeException rex) {
+			rex.printStackTrace();
+		}
+		return F.NIL;
 	}
 
 	private static int integerPods(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, int formats, ObjectMapper mapper,
@@ -399,6 +435,27 @@ public class Pods {
 				numpods++;
 			}
 		}
+		return numpods;
+	}
+
+	private static int integerListPods(ArrayNode podsArray, IExpr inExpr, IAST list, int formats,
+			ObjectMapper mapper, EvalEngine engine) {
+		int numpods = 0;  
+		addPod(podsArray, inExpr, list, "Input", "Identity", formats, mapper, engine);
+		numpods++;
+
+		IExpr podOut = F.Total.of(engine, list);
+		addPod(podsArray, inExpr, podOut, "Total", "List", formats, mapper, engine);
+		numpods++;
+		
+		podOut = engine.evaluate(F.N(F.Norm(list)));
+		addPod(podsArray, inExpr, podOut, "Vector length", "List", formats, mapper, engine);
+		numpods++;
+ 
+		podOut =  F.Normalize.of(engine, list );
+		addPod(podsArray, inExpr, podOut, "Normalized vector", "List", formats, mapper, engine);
+		numpods++;
+		
 		return numpods;
 	}
 

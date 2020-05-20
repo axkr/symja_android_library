@@ -475,10 +475,10 @@ public class ExprParser extends Scanner {
 				slot.append(F.stringx(identifierContext[0]));
 				getNextToken();
 				return parseArguments(slot);
-			}  else if (fToken == TT_STRING) {
+			} else if (fToken == TT_STRING) {
 				final IASTAppendable slot = F.ast(F.Slot);
 				slot.append(getString());
-				return parseArguments(slot); 
+				return parseArguments(slot);
 			}
 			return parseArguments(F.Slot1);
 
@@ -766,7 +766,7 @@ public class ExprParser extends Scanner {
 			}
 		}
 
-		int size =  determineSize(head, 10);
+		int size = determineSize(head, 10);
 		final IASTAppendable function = F.ast(head, size, false);
 		fRecursionDepth++;
 		try {
@@ -1162,6 +1162,36 @@ public class ExprParser extends Scanner {
 			fEngine.setNumericPrecision(precision);
 		}
 		return temp;
+	}
+
+	/**
+	 * Parse a list of comma separated expressions
+	 * 
+	 * @param expression
+	 * @return
+	 * @throws SyntaxError
+	 */
+	public IExpr parseFuzzyList(final String expression) throws SyntaxError {
+		initialize(expression);
+		fRecursionDepth++;
+		IASTAppendable function = null;
+		try { 
+			function = F.ListAlloc(16);
+			do {
+				function.append(parseExpression());
+				if (fToken != TT_COMMA) {
+					break;
+				}
+				getNextToken(); 
+				if (fToken == TT_EOF) {
+					break;
+				}
+			} while (true);
+
+		} finally {
+			fRecursionDepth--;
+		}
+		return function;
 	}
 
 	private IExpr parseArguments(IExpr head) {
