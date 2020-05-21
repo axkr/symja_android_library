@@ -1360,6 +1360,9 @@ public class F {
 
 	/** Factorial(n) - returns the factorial number of the integer `n` */
 	public final static IBuiltInSymbol Factorial = F.initFinalSymbol("Factorial", ID.Factorial);
+	
+	/***/
+	public final static IBuiltInSymbol FactorialPower = F.initFinalSymbol("FactorialPower", ID.FactorialPower);
 
 	/** Factorial2(n) - returns the double factorial number of the integer `n`. */
 	public final static IBuiltInSymbol Factorial2 = F.initFinalSymbol("Factorial2", ID.Factorial2);

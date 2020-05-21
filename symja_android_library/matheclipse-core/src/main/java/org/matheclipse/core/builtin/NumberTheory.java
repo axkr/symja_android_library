@@ -1949,6 +1949,21 @@ public final class NumberTheory {
 		}
 	}
 
+	private static class FactorialPower extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			int size = ast.size();
+
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		}
+	}
+
 	/**
 	 * <pre>
 	 * Factorial2(n)
@@ -4488,6 +4503,7 @@ public final class NumberTheory {
 			F.EulerPhi.setEvaluator(new EulerPhi());
 			F.ExtendedGCD.setEvaluator(new ExtendedGCD());
 			F.Factorial.setEvaluator(new Factorial());
+			F.FactorialPower.setEvaluator(new FactorialPower());
 			F.Factorial2.setEvaluator(new Factorial2());
 			F.FactorInteger.setEvaluator(new FactorInteger());
 			F.Fibonacci.setEvaluator(new Fibonacci());
