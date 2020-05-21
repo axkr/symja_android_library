@@ -1953,11 +1953,24 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			int size = ast.size();
-
+			if (ast.isAST2()) {
+				IExpr x = ast.arg1();
+				IExpr n = ast.arg2();
+				// x*(x-1)* (x-(n-1))
+				
+				return F.NIL;
+			}
+			if (ast.isAST2()) {
+				IExpr x = ast.arg1();
+				IExpr n = ast.arg2();
+				IExpr h = ast.arg3();
+				// x*(x-h)* (x-(n-1)*h)
+				
+				return F.NIL;
+			}
 			return F.NIL;
 		}
-		
+
 		@Override
 		public int[] expectedArgSize() {
 			return IOFunctions.ARGS_2_3;
