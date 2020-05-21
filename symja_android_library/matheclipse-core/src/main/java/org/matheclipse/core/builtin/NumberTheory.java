@@ -1957,6 +1957,11 @@ public final class NumberTheory {
 
 			return F.NIL;
 		}
+		
+		@Override
+		public int[] expectedArgSize() {
+			return IOFunctions.ARGS_2_3;
+		}
 
 		@Override
 		public void setUp(ISymbol newSymbol) {
