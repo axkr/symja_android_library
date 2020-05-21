@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
+import java.util.function.Function;
 
 import org.logicng.datastructures.Assignment;
 import org.logicng.datastructures.Tristate;
@@ -2420,31 +2421,35 @@ public final class BooleanFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr arg1 = ast.arg1();
 			if (ast.arg1().isAST()) {
-				IExpr subst = ast.arg1().replaceAll(x -> {
-					if (x.isAST()) {
-						IAST formula = (IAST) x;
-						if (x.isNot() && x.first().isOr()) {
-							IASTMutable result = ((IAST) x.first()).apply(F.And);
-							for (int i = 1; i < result.size(); i++) {
-								result.set(i, F.Not(result.get(i)));
-							}
-							return engine.evaluate(result);
-						}
-						if (formula.isSameHeadSizeGE(F.Xor, 3)) {
-							return xorToDNF(formula);
-						}
-						try { 
-							return booleanConvert(F.BooleanConvert(formula,F.stringx("DNF")), engine);
-						} catch (final ValidateException ve) { 
-						}
-					}
-					return F.NIL;
-				});
+				IExpr subst = ast.arg1().replaceAll(logicalExpand(engine));
 				if (subst.isPresent()) {
 					return subst;
 				}
 			}
 			return arg1;
+		}
+
+		private static Function<IExpr, IExpr> logicalExpand(EvalEngine engine) {
+			return x -> {
+				if (x.isAST()) {
+					IAST formula = (IAST) x;
+					if (x.isNot() && x.first().isOr()) {
+						IASTMutable result = ((IAST) x.first()).apply(F.And);
+						for (int i = 1; i < result.size(); i++) {
+							result.set(i, F.Not(result.get(i)));
+						}
+						return engine.evaluate(result);
+					}
+					if (formula.isSameHeadSizeGE(F.Xor, 3)) {
+						return xorToDNF(formula);
+					}
+					try { 
+						return booleanConvert(F.BooleanConvert(formula,F.stringx("DNF")), engine);
+					} catch (final ValidateException ve) { 
+					}
+				}
+				return F.NIL;
+			};
 		}
 
 		public int[] expectedArgSize() {
