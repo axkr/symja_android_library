@@ -292,7 +292,11 @@ public class RulePreprocessor {
 					if (files[i].endsWith(".m")) {
 						IExpr expr = parseFileToList(sourceFile, engine);
 
-						if (expr != null) {
+						if (expr == null) {
+							System.err.println();
+							System.err.println("Abort after not parsed expression.");
+							return;
+						} else {
 							buffer = new StringBuilder(100000);
 							PrintWriter out;
 							try {

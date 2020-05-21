@@ -8630,6 +8630,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFunctionExpand() {
+		// TODO improve assumptions
+		// check("FunctionExpand(ProductLog(a*Log(a)), a > 1/E)", //
+		// " ");
+
+		check("FunctionExpand(Sin(4*ArcSin(x)))", //
+				"x*(-4*Sqrt(1-x^2)+8*(1-x^2)^(3/2))");
+		check("FunctionExpand(Sin(4*ArcTan(x)))", //
+				"(4*x-4*x^3)/(1+x^2)^2");
+
 		check("FunctionExpand(Cos(-7*ArcSin(x)))", //
 				"-7*Sqrt(1-x^2)+56*(1-x^2)^(3/2)-112*(1-x^2)^(5/2)+64*(1-x^2)^(7/2)");
 		check("FunctionExpand(Hypergeometric2F1(a, b, b -2, z))", //
@@ -24627,17 +24636,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("D(WhittakerM(a,b,x), x)", //
 				"(1/2-a/x)*WhittakerM(a,b,x)+((1/2+a+b)*WhittakerM(1+a,b,x))/x");
 		check("WhittakerM(k, -1/2, 0)", //
-	 			  "WhittakerM(k,-1/2,0)");
+				"WhittakerM(k,-1/2,0)");
 		check("WhittakerM(k, -1/3, 0)", //
-	 			  "0");
+				"0");
 		check("WhittakerM(k,  -2/3, 0)", //
-	 			  "ComplexInfinity");
+				"ComplexInfinity");
 		check("WhittakerM(1, 1, 0)", //
-	 			  "0");
+				"0");
 		check("WhittakerM(0, 1, 0)", //
-	 			  "0");
+				"0");
 		check("WhittakerM(0, 0, 0)", //
-	 			  "0");
+				"0");
 		check("WhittakerM(2, 3, 1.7)", //
 				"4.07202");
 		// TODO
@@ -24645,26 +24654,27 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "0");
 		check("Table( WhittakerM(3, 2.5, x), {x,-2.0,2,0.25})", //
 				"{-21.74625+I*7.98944*10^-15,-12.85647+I*4.72339*10^-15,-7.14488+I*2.62498*10^-15,-3.64892+I*1.34059*10^-15,"//
-				+ "-1.64872+I*6.05730*10^-16,-0.613825+I*2.25515*10^-16,-0.160503,-0.0177054,Indeterminate,0.013789,0.0973501,"//
-				+ "0.28995,0.606531,1.04543,1.59424,2.23412,2.94304}");
+						+ "-1.64872+I*6.05730*10^-16,-0.613825+I*2.25515*10^-16,-0.160503,-0.0177054,Indeterminate,0.013789,0.0973501,"//
+						+ "0.28995,0.606531,1.04543,1.59424,2.23412,2.94304}");
 	}
 
-	public void testWhittakerW() { 
+	public void testWhittakerW() {
 		check("D(WhittakerW(a,b,x), x)", //
 				"(1/2-a/x)*WhittakerW(a,b,x)-WhittakerW(1+a,b,x)/x");
 		check("WhittakerW(0, 0, 0)", //
-	 			  "0");
+				"0");
 		// TODO
-// 		check("WhittakerW(6, 4, 1.7)", //
-// 				"4.07202");
-// 		check("WhittakerW(2, 0.5, 0.0)", //
-//	 			  "0");
-//		check("Table( WhittakerW(6, 4, x), {x,-2.0,2,0.25})", //
-//				"{-21.74625+I*7.98944*10^-15,-12.85647+I*4.72339*10^-15,-7.14488+I*2.62498*10^-15,-3.64892+I*1.34059*10^-15,"//
-//				+ "-1.64872+I*6.05730*10^-16,-0.613825+I*2.25515*10^-16,-0.160503,-0.0177054,Indeterminate,0.013789,0.0973501,"//
-//				+ "0.28995,0.606531,1.04543,1.59424,2.23412,2.94304}");
+		// check("WhittakerW(6, 4, 1.7)", //
+		// "4.07202");
+		// check("WhittakerW(2, 0.5, 0.0)", //
+		// "0");
+		// check("Table( WhittakerW(6, 4, x), {x,-2.0,2,0.25})", //
+		// "{-21.74625+I*7.98944*10^-15,-12.85647+I*4.72339*10^-15,-7.14488+I*2.62498*10^-15,-3.64892+I*1.34059*10^-15,"//
+		// +
+		// "-1.64872+I*6.05730*10^-16,-0.613825+I*2.25515*10^-16,-0.160503,-0.0177054,Indeterminate,0.013789,0.0973501,"//
+		// + "0.28995,0.606531,1.04543,1.59424,2.23412,2.94304}");
 	}
-	
+
 	public void testWith() {
 		EvalEngine.get().resetModuleCounter4JUnit();
 		check("With({x = 2 + y}, Hold(With({y = 4}, x + y)))", //
