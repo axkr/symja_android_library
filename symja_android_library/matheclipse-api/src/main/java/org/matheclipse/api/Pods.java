@@ -15,6 +15,7 @@ import org.commonmark.renderer.html.HtmlRenderer;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
+import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -22,6 +23,7 @@ import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.parser.ExprParserFactory;
 import org.matheclipse.parser.client.FEConfig;
@@ -152,6 +154,22 @@ public class Pods {
 					"</body>\n" + //
 					"</html>";//
 
+	static void addSymjaPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String title, String scanner, int formats,
+			ObjectMapper mapper, EvalEngine engine) {
+		ArrayNode temp = mapper.createArrayNode();
+		ObjectNode subpodsResult = mapper.createObjectNode();
+		subpodsResult.put("title", title);
+		subpodsResult.put("scanner", scanner);
+		subpodsResult.put("error", "false");
+		subpodsResult.put("numsubpods", 1);
+		subpodsResult.putPOJO("subpods", temp);
+		podsArray.add(subpodsResult);
+
+		ObjectNode node = mapper.createObjectNode();
+		temp.add(node);
+		createJSONFormat(node, engine, inExpr.toString(), outExpr, formats);
+	}
+
 	static void addPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String title, String scanner, int formats,
 			ObjectMapper mapper, EvalEngine engine) {
 		ArrayNode temp = mapper.createArrayNode();
@@ -181,7 +199,7 @@ public class Pods {
 
 		ObjectNode node = mapper.createObjectNode();
 		temp.add(node);
-		createJSONFormat(node, engine, outExpr, text, formats);
+		createJSONFormat(node, engine, outExpr, text, "", formats);
 	}
 
 	static void integerPropertiesPod(ArrayNode podsArray, IInteger inExpr, IExpr outExpr, String title, String scanner,
@@ -200,13 +218,13 @@ public class Pods {
 			if (inExpr.isEven()) {
 				ObjectNode node = mapper.createObjectNode();
 				temp.add(node);
-				createJSONFormat(node, engine, F.NIL, inExpr.toString() + " is an even number.", PLAIN);
+				createJSONFormat(node, engine, F.NIL, inExpr.toString() + " is an even number.", "", PLAIN);
 
 				numsubpods++;
 			} else {
 				ObjectNode node = mapper.createObjectNode();
 				temp.add(node);
-				createJSONFormat(node, engine, F.NIL, inExpr.toString() + " is an odd number.", PLAIN);
+				createJSONFormat(node, engine, F.NIL, inExpr.toString() + " is an odd number.", "", PLAIN);
 
 				numsubpods++;
 			}
@@ -216,12 +234,12 @@ public class Pods {
 					ObjectNode node = mapper.createObjectNode();
 					temp.add(node);
 					createJSONFormat(node, engine, F.NIL,
-							inExpr.toString() + " the " + primePi.toString() + "th prime number.", PLAIN);
+							inExpr.toString() + " the " + primePi.toString() + "th prime number.", "", PLAIN);
 					numsubpods++;
 				} else {
 					ObjectNode node = mapper.createObjectNode();
 					temp.add(node);
-					createJSONFormat(node, engine, F.NIL, inExpr.toString() + " is a prime number.", PLAIN);
+					createJSONFormat(node, engine, F.NIL, inExpr.toString() + " is a prime number.", "", PLAIN);
 					numsubpods++;
 				}
 			}
@@ -288,8 +306,8 @@ public class Pods {
 				if (inExpr.isPresent()) {
 					if (inExpr.isNumber()) {
 						outExpr = inExpr;
-						if (outExpr.isInteger()) {
-							numpods = integerPods(podsArray, inExpr, outExpr, formats, mapper, engine);
+						if (inExpr.isInteger()) {
+							numpods = integerPods(podsArray, (IInteger)inExpr, outExpr, formats, mapper, engine);
 							resultStatistics(queryresult, error, numpods, podsArray);
 							return messageJSON;
 						}
@@ -336,11 +354,14 @@ public class Pods {
 							if (inExpr.isAST(F.D, 3)) {
 								outExpr = engine.evaluate(inExpr);
 								IExpr podOut = outExpr;
-								addPod(podsArray, inExpr, podOut, "Derivative", "Derivative", formats, mapper, engine);
+								addSymjaPod(podsArray, inExpr, podOut, "Derivative", "Derivative", formats, mapper,
+										engine);
 								numpods++;
-								podOut = F.TrigToExp.of(engine, outExpr);
+
+								inExpr = F.TrigToExp(outExpr);
+								podOut = engine.evaluate(inExpr);
 								if (!F.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
-									addPod(podsArray, inExpr, podOut, "Alternate form", "Simplification", formats,
+									addSymjaPod(podsArray, inExpr, podOut, "Alternate form", "Simplification", formats,
 											mapper, engine);
 									numpods++;
 								}
@@ -356,7 +377,8 @@ public class Pods {
 									numpods++;
 								} else {
 									IExpr podOut = outExpr;
-									addPod(podsArray, inExpr, podOut, "Input", "Identity", formats, mapper, engine);
+									addSymjaPod(podsArray, inExpr, podOut, "Input", "Identity", formats, mapper,
+											engine);
 									numpods++;
 								}
 
@@ -402,35 +424,40 @@ public class Pods {
 		return F.NIL;
 	}
 
-	private static int integerPods(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, int formats, ObjectMapper mapper,
+	private static int integerPods(ArrayNode podsArray, IInteger intExpr, IExpr outExpr, int formats, ObjectMapper mapper,
 			EvalEngine engine) {
 		int numpods = 0;
-		IInteger n = (IInteger) outExpr;
-		IExpr podOut = F.BaseForm.of(engine, inExpr, F.C2);
-		addPod(podsArray, inExpr, podOut, "Binary form", "Integer", formats, mapper, engine);
+		IInteger n = intExpr;
+		IExpr inExpr = F.BaseForm(intExpr, F.C2);
+		IExpr podOut = engine.evaluate(inExpr);
+		addSymjaPod(podsArray, inExpr, podOut, "Binary form", "Integer", formats, mapper, engine);
 		numpods++;
 
-		podOut = F.FactorInteger.of(engine, inExpr);
-		addPod(podsArray, inExpr, podOut, "Prime factorization", "Integer", formats, mapper, engine);
+		inExpr = F.FactorInteger(n);
+		podOut = engine.evaluate(inExpr);
+		addSymjaPod(podsArray, inExpr, podOut, "Prime factorization", "Integer", formats, mapper, engine);
 		numpods++;
 
-		podOut = F.Mod.of(engine, inExpr, F.Range(F.C2, F.C9));
-		addPod(podsArray, inExpr, podOut, "Residues modulo small integers", "Integer", formats, mapper, engine);
+		inExpr = F.Mod(n, F.Range(F.C2, F.C9));
+		podOut = engine.evaluate(inExpr);
+		addSymjaPod(podsArray, inExpr, podOut, "Residues modulo small integers", "Integer", formats, mapper, engine);
 		numpods++;
 
-		integerPropertiesPod(podsArray, (IInteger) inExpr, podOut, "Properties", "Integer", formats, mapper, engine);
+		integerPropertiesPod(podsArray,   intExpr, podOut, "Properties", "Integer", formats, mapper, engine);
 		numpods++;
 
 		if (n.isPositive() && n.isLT(F.ZZ(100))) {
-			podOut = F.Union.of(engine, F.PowerMod(F.Range(F.C0, F.QQ(n, F.C2)), F.C2, n));
-			addPod(podsArray, inExpr, podOut, "Quadratic residues modulo " + n.toString(), "Integer", formats, mapper,
+			inExpr = F.Union(F.PowerMod(F.Range(F.C0, F.QQ(n, F.C2)), F.C2, n));
+			podOut = engine.evaluate(inExpr);
+			addSymjaPod(podsArray, inExpr, podOut, "Quadratic residues modulo " + n.toString(), "Integer", formats, mapper,
 					engine);
 			numpods++;
 
 			if (n.isProbablePrime()) {
-				podOut = F.Select.of(engine, F.Range(n.add(F.CN1)),
+				inExpr = F.Select(F.Range(n.add(F.CN1)),
 						F.Function(F.Equal(F.MultiplicativeOrder(F.Slot1, n), F.EulerPhi(n))));
-				addPod(podsArray, inExpr, podOut, "Primitive roots modulo " + n.toString(), "Integer", formats, mapper,
+				podOut = engine.evaluate(inExpr);
+				addSymjaPod(podsArray, inExpr, podOut, "Primitive roots modulo " + n.toString(), "Integer", formats, mapper,
 						engine);
 				numpods++;
 			}
@@ -438,24 +465,27 @@ public class Pods {
 		return numpods;
 	}
 
-	private static int integerListPods(ArrayNode podsArray, IExpr inExpr, IAST list, int formats,
-			ObjectMapper mapper, EvalEngine engine) {
-		int numpods = 0;  
-		addPod(podsArray, inExpr, list, "Input", "Identity", formats, mapper, engine);
+	private static int integerListPods(ArrayNode podsArray, IExpr inExpr, IAST list, int formats, ObjectMapper mapper,
+			EvalEngine engine) {
+		int numpods = 0;
+		addSymjaPod(podsArray, inExpr, list, "Input", "Identity", formats, mapper, engine);
 		numpods++;
 
-		IExpr podOut = F.Total.of(engine, list);
-		addPod(podsArray, inExpr, podOut, "Total", "List", formats, mapper, engine);
+		inExpr = F.Total(list);
+		IExpr podOut = engine.evaluate(inExpr);
+		addSymjaPod(podsArray, inExpr, podOut, "Total", "List", formats, mapper, engine);
 		numpods++;
-		
-		podOut = engine.evaluate(F.N(F.Norm(list)));
-		addPod(podsArray, inExpr, podOut, "Vector length", "List", formats, mapper, engine);
+
+		inExpr = F.N(F.Norm(list));
+		podOut = engine.evaluate(inExpr);
+		addSymjaPod(podsArray, inExpr, podOut, "Vector length", "List", formats, mapper, engine);
 		numpods++;
- 
-		podOut =  F.Normalize.of(engine, list );
-		addPod(podsArray, inExpr, podOut, "Normalized vector", "List", formats, mapper, engine);
+
+		inExpr = F.Normalize(list);
+		podOut = engine.evaluate(inExpr);
+		addSymjaPod(podsArray, inExpr, podOut, "Normalized vector", "List", formats, mapper, engine);
 		numpods++;
-		
+
 		return numpods;
 	}
 
@@ -492,11 +522,27 @@ public class Pods {
 	}
 
 	private static void createJSONFormat(ObjectNode json, EvalEngine engine, IExpr outExpr, int formats) {
-		createJSONFormat(json, engine, outExpr, null, formats);
+		createJSONFormat(json, engine, outExpr, null, "", formats);
 	}
 
-	private static void createJSONFormat(ObjectNode json, EvalEngine engine, IExpr outExpr, String plainText,
+	private static void createJSONFormat(ObjectNode json, EvalEngine engine, String sinput, IExpr outExpr,
 			int formats) {
+		createJSONFormat(json, engine, outExpr, null, sinput, formats);
+	}
+
+	/**
+	 * 
+	 * @param json
+	 * @param engine
+	 * @param outExpr
+	 * @param plainText
+	 *            text which should obligatory be used for plaintext format
+	 * @param sinput
+	 *            Symja input string
+	 * @param formats
+	 */
+	private static void createJSONFormat(ObjectNode json, EvalEngine engine, IExpr outExpr, String plainText,
+			String sinput, int formats) {
 
 		if ((formats & HTML) != 0x00) {
 			if (plainText != null && plainText.length() > 0) {
@@ -514,8 +560,8 @@ public class Pods {
 			}
 		}
 		if ((formats & SYMJA) != 0x00) {
-			if (plainText != null && plainText.length() > 0) {
-				json.put(SYMJA_STR, plainText);
+			if (sinput != null && sinput.length() > 0) {
+				json.put(SYMJA_STR, sinput);
 			}
 		}
 		if ((formats & MATHML) != 0x00) {
@@ -528,10 +574,12 @@ public class Pods {
 			}
 		}
 		if ((formats & LATEX) != 0x00) {
-			if (plainText != null && plainText.length() > 0) {
-				json.put(MARKDOWN_STR, plainText);
+			StringWriter stw = new StringWriter();
+			TeXUtilities texUtil = new TeXUtilities(engine, engine.isRelaxedSyntax());
+			if (!texUtil.toTeX(outExpr, stw)) {
+				//
 			} else {
-
+				json.put(LATEX_STR, stw.toString());
 			}
 		}
 		if ((formats & MARKDOWN) != 0x00) {
