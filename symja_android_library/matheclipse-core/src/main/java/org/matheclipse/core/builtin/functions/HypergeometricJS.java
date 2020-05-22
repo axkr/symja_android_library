@@ -486,11 +486,12 @@ public class HypergeometricJS {
 
 		}
 
-		if (x == -1) {
-			throw new ArgumentTypeException("unsupported real hypergeometric argument");
+		if (F.isNumIntValue(x, -1)) {
+			return hypergeometric2F1(new Complex(a), new Complex(b), new Complex(c), new Complex(x)).getReal();
+			// throw new ArgumentTypeException("unsupported real hypergeometric argument");
 		}
 
-		if (x == 1) {
+		if (F.isNumIntValue(x, 1)) {
 			if (c - a - b > 0) {
 				return Gamma.gamma(c) * Gamma.gamma(c - a - b) / Gamma.gamma(c - a) / Gamma.gamma(c - b);
 			} else {
@@ -500,7 +501,6 @@ public class HypergeometricJS {
 		}
 
 		if (x > 1) {
-
 			throw new ArgumentTypeException("unsupported real hypergeometric argument");
 			// return hypergeometric2F1( new Complex(a), new Complex(b), new Complex(c), new Complex(x) );
 		}
@@ -657,13 +657,13 @@ public class HypergeometricJS {
 
 	}
 
-	public static Complex whittakerM(Complex k, Complex m, Complex x) { 
+	public static Complex whittakerM(Complex k, Complex m, Complex x) {
 		return x.multiply(-0.5).exp().multiply(x.pow(m.add(0.5)))
 				.multiply(hypergeometric1F1(m.add(k.negate()).add(0.5), m.multiply(2.0).add(1.0), x));
 
 	}
 
-	public static Complex whittakerW(Complex k, Complex m, Complex x) { 
+	public static Complex whittakerW(Complex k, Complex m, Complex x) {
 		return x.multiply(-0.5).exp().multiply(x.pow(m.add(0.5)))
 				.multiply(hypergeometricU(m.add(k.negate()).add(0.5), m.multiply(2.0).add(1.0), x));
 	}
