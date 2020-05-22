@@ -295,19 +295,32 @@ public class Assumptions extends AbstractAssumptions {
 		}
 
 		// arg1 > arg2
+		ISignedNumber num = null;
 		if (greaterAST.arg2().isReal()) {
-			SignedNumberRelations gla = assumptions.valueMap.get(greaterAST.arg1());
+			num = (ISignedNumber) greaterAST.arg2();
+		} else {
+			num = greaterAST.arg2().evalReal();
+		}
+		if (num != null) {
+			IExpr key = greaterAST.arg1();
+			SignedNumberRelations gla = assumptions.valueMap.get(key);
 			if (gla == null) {
 				gla = new SignedNumberRelations();
-				gla.addGreater((ISignedNumber) greaterAST.arg2());
+				gla.addGreater(num);
 			} else {
-				gla.addGreater((ISignedNumber) greaterAST.arg2());
+				gla.addGreater(num);
 			}
-			assumptions.valueMap.put(greaterAST.arg1(), gla);
+			assumptions.valueMap.put(key, gla);
 			return true;
 		}
+
+		num = null;
 		if (greaterAST.arg1().isReal()) {
-			ISignedNumber num = (ISignedNumber) greaterAST.arg1();
+			num = (ISignedNumber) greaterAST.arg1();
+		} else {
+			num = greaterAST.arg1().evalReal();
+		}
+		if (num != null) { 
 			IExpr key = greaterAST.arg2();
 			SignedNumberRelations gla = assumptions.valueMap.get(key);
 			if (gla == null) {
@@ -347,18 +360,30 @@ public class Assumptions extends AbstractAssumptions {
 		}
 
 		// arg1 >= arg2
+		ISignedNumber num = null;
 		if (greaterEqualAST.arg2().isReal()) {
-			SignedNumberRelations gla = assumptions.valueMap.get(greaterEqualAST.arg1());
+			num = (ISignedNumber) greaterEqualAST.arg2();
+		} else {
+			num = greaterEqualAST.arg2().evalReal();
+		}
+		if (num != null) { 
+			IExpr key = greaterEqualAST.arg1();
+			SignedNumberRelations gla = assumptions.valueMap.get(key);
 			if (gla == null) {
 				gla = new SignedNumberRelations();
 			}
-			gla.addGreaterEqual((ISignedNumber) greaterEqualAST.arg2());
-			assumptions.valueMap.put(greaterEqualAST.arg1(), gla);
+			gla.addGreaterEqual(num);
+			assumptions.valueMap.put(key, gla);
 			return true;
 		}
 
+		num = null;
 		if (greaterEqualAST.arg1().isReal()) {
-			ISignedNumber num = (ISignedNumber) greaterEqualAST.arg1();
+			num = (ISignedNumber) greaterEqualAST.arg1();
+		} else {
+			num = greaterEqualAST.arg1().evalReal();
+		}
+		if (num != null) { 
 			IExpr key = greaterEqualAST.arg2();
 			SignedNumberRelations gla = assumptions.valueMap.get(key);
 			if (gla == null) {
@@ -396,17 +421,29 @@ public class Assumptions extends AbstractAssumptions {
 		}
 
 		// arg1 < arg2
+		ISignedNumber num = null;
 		if (lessAST.arg2().isReal()) {
-			SignedNumberRelations gla = assumptions.valueMap.get(lessAST.arg1());
+			num = (ISignedNumber) lessAST.arg2();
+		} else {
+			num = lessAST.arg2().evalReal();
+		}
+		if (num != null) {
+			IExpr key = lessAST.arg1();
+			SignedNumberRelations gla = assumptions.valueMap.get(key);
 			if (gla == null) {
 				gla = new SignedNumberRelations();
 			}
-			gla.addLess((ISignedNumber) lessAST.arg2());
-			assumptions.valueMap.put(lessAST.arg1(), gla);
+			gla.addLess(num);
+			assumptions.valueMap.put(key, gla);
 			return true;
 		}
+		num = null;
 		if (lessAST.arg1().isReal()) {
-			ISignedNumber num = (ISignedNumber) lessAST.arg1();
+			num = (ISignedNumber) lessAST.arg1();
+		} else {
+			num = lessAST.arg1().evalReal();
+		}
+		if (num != null) { 
 			IExpr key = lessAST.arg2();
 			SignedNumberRelations gla = assumptions.valueMap.get(key);
 			if (gla == null) {
@@ -445,17 +482,29 @@ public class Assumptions extends AbstractAssumptions {
 		}
 
 		// arg1 <= arg2;
+		ISignedNumber num = null;
 		if (lessEqualAST.arg2().isReal()) {
-			SignedNumberRelations gla = assumptions.valueMap.get(lessEqualAST.arg1());
+			num = (ISignedNumber) lessEqualAST.arg2();
+		} else {
+			num = lessEqualAST.arg2().evalReal();
+		}
+		if (num != null) {
+			IExpr key = lessEqualAST.arg1();
+			SignedNumberRelations gla = assumptions.valueMap.get(key);
 			if (gla == null) {
 				gla = new SignedNumberRelations();
 			}
-			gla.addLessEqual((ISignedNumber) lessEqualAST.arg2());
-			assumptions.valueMap.put(lessEqualAST.arg1(), gla);
+			gla.addLessEqual(num);
+			assumptions.valueMap.put(key, gla);
 			return true;
 		}
+		num = null;
 		if (lessEqualAST.arg1().isReal()) {
-			ISignedNumber num = (ISignedNumber) lessEqualAST.arg1();
+			num = (ISignedNumber) lessEqualAST.arg1();
+		} else {
+			num = lessEqualAST.arg1().evalReal();
+		}
+		if (num != null) { 
 			IExpr key = lessEqualAST.arg2();
 			SignedNumberRelations gla = assumptions.valueMap.get(key);
 			if (gla == null) {

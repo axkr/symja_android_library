@@ -8630,10 +8630,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFunctionExpand() {
-		// TODO improve assumptions
-		// check("FunctionExpand(ProductLog(a*Log(a)), a > 1/E)", //
-		// " ");
-
+		check("FunctionExpand(ProductLog(a*Log(a)), a > 42)", //
+				"Log(a)");
+		check("FunctionExpand(ProductLog(a*Log(a)), a > 1/E)", //
+				"Log(a)");
+		check("FunctionExpand(ProductLog(a*Log(a)), a > 1/Pi)", //
+				"ProductLog(a*Log(a))");
+		check("FunctionExpand(ProductLog(a*Log(a)), a > 0.37)", //
+				"Log(a)");
+		check("FunctionExpand(ProductLog(a*Log(a)), a > 0.35)", //
+				"ProductLog(a*Log(a))");
+		
 		check("FunctionExpand(Sin(4*ArcSin(x)))", //
 				"x*(-4*Sqrt(1-x^2)+8*(1-x^2)^(3/2))");
 		check("FunctionExpand(Sin(4*ArcTan(x)))", //

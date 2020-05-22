@@ -21,7 +21,6 @@ import org.logicng.formulas.Variable;
 import org.logicng.solvers.MiniSat;
 import org.logicng.solvers.SATSolver;
 import org.logicng.transformations.cnf.BDDCNFTransformation;
-import org.logicng.transformations.cnf.CNFSubsumption;
 import org.logicng.transformations.dnf.DNFFactorization;
 import org.logicng.transformations.qmc.QuineMcCluskeyAlgorithm;
 import org.matheclipse.core.convert.VariablesSet;
@@ -35,6 +34,7 @@ import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -1629,10 +1629,11 @@ public final class BooleanFunctions {
 		 * @param arg1
 		 *            the left-hand-side of the comparison
 		 * @param arg2
-		 *            the right-hand-side of the comparison
+		 *            the right-hand-side of the comparison which is tested with {@link IExpr#isNumericFunction()}
+		 *            equals <code>true</code>.
 		 * @return
 		 */
-		protected IExpr checkAssumptions(IExpr arg1, ISignedNumber arg2) {
+		protected IExpr checkAssumptions(IExpr arg1, IExpr arg2) {
 			if (arg2.isNegative()) {
 				// arg1 > "negative number"
 				if (arg1.isNonNegativeResult() || arg1.isPositiveResult()) {
@@ -1651,6 +1652,15 @@ public final class BooleanFunctions {
 				if (arg1.isNegativeResult() || arg1.isZero()) {
 					return F.False;
 				}
+			}
+			ISignedNumber a2 = null;
+			if (arg2.isReal()) {
+				a2 = (ISignedNumber) arg2;
+			} else {
+				a2 = arg2.evalReal();
+			}
+			if (a2 != null && AbstractAssumptions.assumeGreaterThan(arg1, a2)) {
+				return F.True;
 			}
 			return F.NIL;
 		}
@@ -1783,11 +1793,11 @@ public final class BooleanFunctions {
 					// (i.e. Less instead of Greater)
 					return result;
 				}
-				if (arg2.isReal()) {
+				if (arg2.isNumericFunction()) {
 					// this part is used in other comparator operations like
 					// Less,
 					// GreaterEqual,...
-					IExpr temp2 = checkAssumptions(arg1, (ISignedNumber) arg2);
+					IExpr temp2 = checkAssumptions(arg1, arg2);
 					if (temp2.isPresent()) {
 						return temp2;
 					}
@@ -1993,7 +2003,7 @@ public final class BooleanFunctions {
 
 		/** {@inheritDoc} */
 		@Override
-		protected IExpr checkAssumptions(IExpr arg1, ISignedNumber arg2) {
+		protected IExpr checkAssumptions(IExpr arg1, IExpr arg2) {
 			if (arg2.isNegative()) {
 				// arg1 >= "negative number"
 				if (arg1.isNonNegativeResult() || arg1.isPositiveResult()) {
@@ -2281,7 +2291,7 @@ public final class BooleanFunctions {
 
 		/** {@inheritDoc} */
 		@Override
-		protected IExpr checkAssumptions(IExpr arg1, ISignedNumber arg2) {
+		protected IExpr checkAssumptions(IExpr arg1, IExpr arg2) {
 			if (arg2.isNegative()) {
 				// arg1 < "negative number"
 				if (arg1.isPositiveResult()) {
@@ -2362,7 +2372,7 @@ public final class BooleanFunctions {
 
 		/** {@inheritDoc} */
 		@Override
-		protected IExpr checkAssumptions(IExpr arg1, ISignedNumber arg2) {
+		protected IExpr checkAssumptions(IExpr arg1, IExpr arg2) {
 			if (arg2.isNegative()) {
 				// arg1 <= "negative number"
 				if (arg1.isNonNegativeResult() || arg1.isPositiveResult()) {
@@ -2443,9 +2453,9 @@ public final class BooleanFunctions {
 					if (formula.isSameHeadSizeGE(F.Xor, 3)) {
 						return xorToDNF(formula);
 					}
-					try { 
-						return booleanConvert(F.BooleanConvert(formula,F.stringx("DNF")), engine);
-					} catch (final ValidateException ve) { 
+					try {
+						return booleanConvert(F.BooleanConvert(formula, F.stringx("DNF")), engine);
+					} catch (final ValidateException ve) {
 					}
 				}
 				return F.NIL;
@@ -4407,7 +4417,7 @@ public final class BooleanFunctions {
 		EvalAttributes.sort(list, Comparators.ExprReverseComparator.CONS);
 		return list;
 	}
-	
+
 	/**
 	 * Get the transformation from the ast options. Default is DNF.
 	 * 
@@ -4426,12 +4436,12 @@ public final class BooleanFunctions {
 				return new BDDCNFTransformation();// new CNFFactorization( );
 			}
 			// `1` currently not supported in `2`.
-			IOFunctions.printMessage(ast.topHead(), "unsupported", F.List(arg2,F.Method), engine);
+			IOFunctions.printMessage(ast.topHead(), "unsupported", F.List(arg2, F.Method), engine);
 			return null;
 		}
 		return new DNFFactorization();
 	}
-	
+
 	private static IExpr booleanConvert(final IAST ast, EvalEngine engine) throws ValidateException {
 		FormulaTransformation transformation = transformation(ast, engine);
 		if (transformation != null) {
