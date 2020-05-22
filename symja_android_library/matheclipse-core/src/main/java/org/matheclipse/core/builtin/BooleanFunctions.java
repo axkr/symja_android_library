@@ -2023,6 +2023,15 @@ public final class BooleanFunctions {
 					return F.False;
 				}
 			}
+			ISignedNumber a2 = null;
+			if (arg2.isReal()) {
+				a2 = (ISignedNumber) arg2;
+			} else {
+				a2 = arg2.evalReal();
+			}
+			if (a2 != null && AbstractAssumptions.assumeGreaterEqual(arg1, a2)) {
+				return F.True;
+			}
 			return F.NIL;
 		}
 
@@ -2312,6 +2321,15 @@ public final class BooleanFunctions {
 					return F.True;
 				}
 			}
+			ISignedNumber a2 = null;
+			if (arg2.isReal()) {
+				a2 = (ISignedNumber) arg2;
+			} else {
+				a2 = arg2.evalReal();
+			}
+			if (a2 != null && AbstractAssumptions.assumeLessThan(arg1, a2)) {
+				return F.True;
+			}
 			return F.NIL;
 		}
 
@@ -2391,6 +2409,15 @@ public final class BooleanFunctions {
 				if (arg1.isNegativeResult() || arg1.isZero()) {
 					return F.True;
 				}
+			}
+			ISignedNumber a2 = null;
+			if (arg2.isReal()) {
+				a2 = (ISignedNumber) arg2;
+			} else {
+				a2 = arg2.evalReal();
+			}
+			if (a2 != null && AbstractAssumptions.assumeLessEqual(arg1, a2)) {
+				return F.True;
 			}
 			return F.NIL;
 		}

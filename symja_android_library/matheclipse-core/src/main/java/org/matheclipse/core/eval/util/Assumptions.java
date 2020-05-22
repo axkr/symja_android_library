@@ -320,7 +320,7 @@ public class Assumptions extends AbstractAssumptions {
 		} else {
 			num = greaterAST.arg1().evalReal();
 		}
-		if (num != null) { 
+		if (num != null) {
 			IExpr key = greaterAST.arg2();
 			SignedNumberRelations gla = assumptions.valueMap.get(key);
 			if (gla == null) {
@@ -366,7 +366,7 @@ public class Assumptions extends AbstractAssumptions {
 		} else {
 			num = greaterEqualAST.arg2().evalReal();
 		}
-		if (num != null) { 
+		if (num != null) {
 			IExpr key = greaterEqualAST.arg1();
 			SignedNumberRelations gla = assumptions.valueMap.get(key);
 			if (gla == null) {
@@ -383,7 +383,7 @@ public class Assumptions extends AbstractAssumptions {
 		} else {
 			num = greaterEqualAST.arg1().evalReal();
 		}
-		if (num != null) { 
+		if (num != null) {
 			IExpr key = greaterEqualAST.arg2();
 			SignedNumberRelations gla = assumptions.valueMap.get(key);
 			if (gla == null) {
@@ -443,7 +443,7 @@ public class Assumptions extends AbstractAssumptions {
 		} else {
 			num = lessAST.arg1().evalReal();
 		}
-		if (num != null) { 
+		if (num != null) {
 			IExpr key = lessAST.arg2();
 			SignedNumberRelations gla = assumptions.valueMap.get(key);
 			if (gla == null) {
@@ -504,7 +504,7 @@ public class Assumptions extends AbstractAssumptions {
 		} else {
 			num = lessEqualAST.arg1().evalReal();
 		}
-		if (num != null) { 
+		if (num != null) {
 			IExpr key = lessEqualAST.arg2();
 			SignedNumberRelations gla = assumptions.valueMap.get(key);
 			if (gla == null) {
@@ -713,6 +713,34 @@ public class Assumptions extends AbstractAssumptions {
 	}
 
 	@Override
+	public boolean isLessEqual(IExpr expr, ISignedNumber number) {
+		ISignedNumber num;
+		SignedNumberRelations gla = valueMap.get(expr);
+		if (gla != null) {
+			boolean result = false;
+			num = gla.getLess();
+			if (num != null) {
+				if (num.equals(number)) {
+					result = true;
+				}
+			}
+			if (!result) {
+				num = gla.getLessEqual();
+				if (num != null) {
+					if (num.equals(number)) {
+						result = true;
+					}
+				}
+			}
+			if (result) {
+				return true;
+			}
+			return isLessThan(expr, number);
+		}
+		return false;
+	}
+
+	@Override
 	public boolean isLessThan(IExpr expr, ISignedNumber number) {
 		ISignedNumber num;
 		SignedNumberRelations gla = valueMap.get(expr);
@@ -721,7 +749,7 @@ public class Assumptions extends AbstractAssumptions {
 			num = gla.getLess();
 			if (num != null) {
 				if (!num.equals(number)) {
-					if (!num.isLT(number)) {
+					if (num.isGE(number)) {
 						return false;
 					}
 				}
@@ -730,7 +758,7 @@ public class Assumptions extends AbstractAssumptions {
 			if (!result) {
 				num = gla.getLessEqual();
 				if (num != null) {
-					if (!num.isLT(number)) {
+					if (num.isGE(number)) {
 						return false;
 					}
 					result = true;
