@@ -39,8 +39,6 @@
 	<classpathentry kind="lib" path="lib/hipparchus-stat-1.6.jar"/>
 	<classpathentry kind="lib" path="lib/logicng-1.6.2.jar"/>
 	<classpathentry kind="lib" path="lib/apfloat-1.10.0-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="lib/commonmark-0.14.0.jar"/>
-	<classpathentry kind="lib" path="lib/commonmark-ext-gfm-tables-0.14.0.jar"/>
 	<classpathentry kind="lib" path="lib/pebble-3.1.2.jar"/>
 	<classpathentry kind="lib" path="lib/unbescape-1.1.6.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/classgraph-4.8.60.jar"/>
@@ -76,5 +74,7 @@
 	<classpathentry kind="lib" path="lib/jackson-databind-2.10.3.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-datatype-jsr310-2.10.3.jar"/>
 	<classpathentry kind="lib" path="lib/jas-2.6.6017.jar"/>
+	<classpathentry kind="lib" path="lib/commonmark-0.15.0.jar"/>
+	<classpathentry kind="lib" path="lib/commonmark-ext-gfm-tables-0.15.0.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
