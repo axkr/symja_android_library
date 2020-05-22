@@ -428,7 +428,7 @@ public final class Arithmetic {
 				if (head.isBuiltInSymbol() && leftHandSide.isAST()) {
 					IEvaluator eval = ((IBuiltInSymbol) head).getEvaluator();
 					if (eval instanceof ISetEvaluator) {
-						IExpr temp = engine.evalLoop(leftHandSide);
+						IExpr temp = engine.evaluateNull(leftHandSide);
 						if (!temp.isPresent()) {
 							return F.NIL;
 						}

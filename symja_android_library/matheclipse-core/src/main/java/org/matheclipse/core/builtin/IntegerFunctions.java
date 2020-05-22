@@ -10,8 +10,6 @@ import static org.matheclipse.core.expression.F.Round;
 import java.math.BigInteger;
 import java.util.function.Function;
 
-import javax.annotation.Nonnull;
-
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
@@ -998,7 +996,7 @@ public class IntegerFunctions {
 		 * 
 		 * See: <a href="http://en.wikipedia.org/wiki/Modular_arithmetic">Wikipedia - Modular arithmetic</a>
 		 */
-		public IExpr evaluate(final IAST ast, @Nonnull EvalEngine engine) {
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			IExpr m = ast.arg1();
 			IExpr n = ast.arg2();
 			if (n.isZero()) {
@@ -1165,7 +1163,7 @@ public class IntegerFunctions {
 	 */
 	private static class Quotient extends AbstractFunctionEvaluator {
 
-		public IExpr evaluate(final IAST ast, @Nonnull EvalEngine engine) {
+		public IExpr evaluate(final IAST ast,  EvalEngine engine) {
 			IExpr z = ast.arg1();
 			IExpr n = ast.arg2();
 			if (n.isZero()) {

@@ -1,7 +1,5 @@
 package org.matheclipse.core.eval.exception;
 
-import javax.annotation.Nonnull;
-
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -20,7 +18,7 @@ public class DialogReturnException extends ReturnException {
 		this(F.Null);
 	}
 
-	public DialogReturnException(@Nonnull final IExpr val) {
+	public DialogReturnException(final IExpr val) {
 		super(val);
 	} 
 }

@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
@@ -124,7 +122,7 @@ public final class RulesData implements Serializable {
 		clear();
 	}
 
-	public RulesData(@Nonnull int[] sizes) {
+	public RulesData(int[] sizes) {
 		// this.context = context;
 		clear();
 		if (sizes.length > 0) {
@@ -359,7 +357,7 @@ public final class RulesData implements Serializable {
 	 * @param expr
 	 * @return <code>F.NIL</code> if no evaluation was possible
 	 */
-	public IExpr evalDownRule(final IExpr expr, @Nonnull EvalEngine engine) {
+	public IExpr evalDownRule(final IExpr expr, EvalEngine engine) {
 		if (Config.SHOW_PATTERN_EVAL_STEPS) {
 			showSteps = Config.SHOW_PATTERN_SYMBOL_STEPS.contains(expr.topHead());
 			if (showSteps) {
@@ -483,7 +481,7 @@ public final class RulesData implements Serializable {
 		return head.equals(F.Integrate);
 	}
 
-	public IExpr evalUpRule(final IExpr expression, @Nonnull EvalEngine engine) {
+	public IExpr evalUpRule(final IExpr expression, EvalEngine engine) {
 		PatternMatcherEquals res;
 		if (fEqualUpRules != null) {
 			res = fEqualUpRules.get(expression);

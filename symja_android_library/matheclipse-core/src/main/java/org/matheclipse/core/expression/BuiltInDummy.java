@@ -715,7 +715,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 	@Override
 	public IExpr ofNIL(EvalEngine engine, IExpr... args) {
 		IAST ast = F.ast(args, this);
-		return engine.evalLoop(ast);
+		return engine.evaluateNull(ast);
 	}
 
 	/** {@inheritDoc} */

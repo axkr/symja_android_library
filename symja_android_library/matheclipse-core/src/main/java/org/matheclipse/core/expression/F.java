@@ -16,8 +16,6 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 
-import javax.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -1360,7 +1358,7 @@ public class F {
 
 	/** Factorial(n) - returns the factorial number of the integer `n` */
 	public final static IBuiltInSymbol Factorial = F.initFinalSymbol("Factorial", ID.Factorial);
-	
+
 	/***/
 	public final static IBuiltInSymbol FactorialPower = F.initFinalSymbol("FactorialPower", ID.FactorialPower);
 
@@ -4893,7 +4891,7 @@ public class F {
 	 * @param symbol
 	 * @return IPattern
 	 */
-	public static IPattern $p(@Nonnull final ISymbol symbol) {
+	public static IPattern $p(final ISymbol symbol) {
 		return org.matheclipse.core.expression.Pattern.valueOf(symbol);
 	}
 
@@ -4942,7 +4940,7 @@ public class F {
 	 * @param symbolName
 	 * @return IPattern
 	 */
-	public static IPattern $p(@Nonnull final String symbolName) {
+	public static IPattern $p(final String symbolName) {
 		// if (symbolName == null) {
 		// return org.matheclipse.core.expression.Pattern.valueOf(null);
 		// }
@@ -4969,7 +4967,7 @@ public class F {
 	 *            additional condition which should be checked in pattern-matching
 	 * @return IPattern
 	 */
-	public static IPattern $p(@Nonnull final String symbolName, final IExpr check) {
+	public static IPattern $p(final String symbolName, final IExpr check) {
 		// if (symbolName == null) {
 		// return org.matheclipse.core.expression.Pattern.valueOf(null, check);
 		// }
@@ -4986,7 +4984,7 @@ public class F {
 	 *            use a default value for this pattern if necessary
 	 * @return IPattern
 	 */
-	public static IPattern $p(@Nonnull final String symbolName, final IExpr check, boolean def) {
+	public static IPattern $p(final String symbolName, final IExpr check, boolean def) {
 		return org.matheclipse.core.expression.Pattern.valueOf($s(symbolName), check, def);
 	}
 
@@ -7382,7 +7380,7 @@ public class F {
 	public static IAST Hypergeometric0F1(final IExpr a0, final IExpr a1) {
 		return new AST2(Hypergeometric0F1, a0, a1);
 	}
-	
+
 	public static IAST Hypergeometric1F1(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST3(Hypergeometric1F1, a0, a1, a2);
 	}
@@ -7534,13 +7532,13 @@ public class F {
 		return temp;
 	}
 
-	public static IPattern initPredefinedPattern(@Nonnull final ISymbol symbol) {
+	public static IPattern initPredefinedPattern(final ISymbol symbol) {
 		IPattern temp = new Pattern(symbol);
 		PREDEFINED_PATTERN_MAP.put(symbol.toString(), temp);
 		return temp;
 	}
 
-	public static IPatternSequence initPredefinedPatternSequence(@Nonnull final ISymbol symbol) {
+	public static IPatternSequence initPredefinedPatternSequence(final ISymbol symbol) {
 		PatternSequence temp = PatternSequence.valueOf(symbol, false);
 		PREDEFINED_PATTERNSEQUENCE_MAP.put(symbol.toString(), temp);
 		return temp;
@@ -7758,7 +7756,7 @@ public class F {
 	 * @param step
 	 * @return
 	 */
-	public static IAST intIterator(ISymbol head, final IntFunction<IExpr > function, final int from, final int to,
+	public static IAST intIterator(ISymbol head, final IntFunction<IExpr> function, final int from, final int to,
 			final int step) {
 		IASTAppendable result = F.ast(head, to - from + 1, false);
 		for (int i = from; i <= to; i += step) {
@@ -10010,7 +10008,7 @@ public class F {
 	public static IAST Sum(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST3(Sum, a0, a1, a2);
 	}
-	
+
 	public static IAST Sum(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
 		return quaternary(F.Sum, a0, a1, a2, a3);
 	}
@@ -10026,7 +10024,7 @@ public class F {
 	public static IAST sum(final Function<IExpr, IExpr> function, final int iMin, final int iMax) {
 		return intIterator(F.Plus, function, iMin, iMax, 1);
 	}
-	
+
 	public static IAST intSum(final IntFunction<IExpr> function, final int iMin, final int iMax) {
 		return intIterator(F.Plus, function, iMin, iMax, 1);
 	}

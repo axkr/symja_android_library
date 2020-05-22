@@ -4,8 +4,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 
-import javax.annotation.Nullable;
-
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
@@ -157,12 +155,10 @@ public class NumberUtil {
 	}
 
 	/**
-	 * Converts this number to <code>int</code>; unlike {@link #intValue} this
-	 * method raises {@link ArithmeticException} if this integer cannot be
-	 * represented by an <code>int</code> type.
+	 * Converts this number to <code>int</code>; unlike {@link #intValue} this method raises {@link ArithmeticException}
+	 * if this integer cannot be represented by an <code>int</code> type.
 	 * 
-	 * @return the numeric value represented by this integer after conversion to
-	 *         type <code>int</code>.
+	 * @return the numeric value represented by this integer after conversion to type <code>int</code>.
 	 * @throws ArithmeticException
 	 *             if conversion to <code>int</code> is not possible.
 	 */
@@ -186,12 +182,10 @@ public class NumberUtil {
 	}
 
 	/**
-	 * Converts this number to <code>int</code>; unlike {@link #intValue} this
-	 * method raises {@link ArithmeticException} if this integer cannot be
-	 * represented by an <code>int</code> type.
+	 * Converts this number to <code>int</code>; unlike {@link #intValue} this method raises {@link ArithmeticException}
+	 * if this integer cannot be represented by an <code>int</code> type.
 	 * 
-	 * @return the numeric value represented by this number after conversion to
-	 *         type <code>int</code>.
+	 * @return the numeric value represented by this number after conversion to type <code>int</code>.
 	 * @throws ArithmeticException
 	 *             if conversion to <code>int</code> is not possible.
 	 */
@@ -201,12 +195,10 @@ public class NumberUtil {
 	}
 
 	/**
-	 * Converts this number to <code>long</code>; unlike {@link #longValue} this
-	 * method raises {@link ArithmeticException} if this integer cannot be
-	 * represented by an <code>long</code> type.
+	 * Converts this number to <code>long</code>; unlike {@link #longValue} this method raises
+	 * {@link ArithmeticException} if this integer cannot be represented by an <code>long</code> type.
 	 * 
-	 * @return the numeric value represented by this number after conversion to
-	 *         type <code>long</code>.
+	 * @return the numeric value represented by this number after conversion to type <code>long</code>.
 	 * @throws ArithmeticException
 	 *             if conversion to <code>long</code> is not possible.
 	 */
@@ -277,14 +269,13 @@ public class NumberUtil {
 	/**
 	 * Round.
 	 * <P>
-	 * Round mode is one of {
-	 * <CODE>ROUND_UP, ROUND_DOWN, ROUND_CEILING, ROUND_FLOOR,
+	 * Round mode is one of { <CODE>ROUND_UP, ROUND_DOWN, ROUND_CEILING, ROUND_FLOOR,
 	 * ROUND_HALF_UP, ROUND_HALF_DOWN, ROUND_HALF_EVEN,
 	 * ROUND_HALF_CEILING, ROUND_HALF_FLOOR, ROUND_HALF_ODD,
 	 * ROUND_UNNECESSARY, DEFAULT_ROUND_MODE (==ROUND_HALF_UP)</CODE> .
 	 * <P>
-	 * If rounding isn't necessary, i.e. this BigRational is an integer, [as an
-	 * optimization] this BigRational is returned.
+	 * If rounding isn't necessary, i.e. this BigRational is an integer, [as an optimization] this BigRational is
+	 * returned.
 	 * <P>
 	 * Possible loss of precision.
 	 */
@@ -423,11 +414,9 @@ public class NumberUtil {
 	}
 
 	/**
-	 * Test if the value is a perfect square (i.e. its square root is another
-	 * integer). See <a href=
+	 * Test if the value is a perfect square (i.e. its square root is another integer). See <a href=
 	 * "http://stackoverflow.com/questions/295579/fastest-way-to-determine-if-an-integers-square-root-is-an-integer">
-	 * Stackoverflow.com - Fastest way to determine if an integer's square root
-	 * is an integer</a>
+	 * Stackoverflow.com - Fastest way to determine if an integer's square root is an integer</a>
 	 * 
 	 * @param bi
 	 * @return <code>true</code> if the number is a perfect square.
@@ -442,11 +431,10 @@ public class NumberUtil {
 	}
 
 	/**
-	 * Test if the fraction value is a perfect square (i.e. its numerator's and
-	 * denominator's square root are integers). See <a href=
+	 * Test if the fraction value is a perfect square (i.e. its numerator's and denominator's square root are integers).
+	 * See <a href=
 	 * "http://stackoverflow.com/questions/295579/fastest-way-to-determine-if-an-integers-square-root-is-an-integer">
-	 * Stackoverflow.com - Fastest way to determine if an integer's square root
-	 * is an integer</a>
+	 * Stackoverflow.com - Fastest way to determine if an integer's square root is an integer</a>
 	 * 
 	 * @param bf
 	 * @return <code>true</code> if the number is a perfect square.
@@ -463,11 +451,10 @@ public class NumberUtil {
 	}
 
 	/**
-	 * Test if the fraction value is a perfect square (i.e. its numerator's and
-	 * denominator's square root are integers). See <a href=
+	 * Test if the fraction value is a perfect square (i.e. its numerator's and denominator's square root are integers).
+	 * See <a href=
 	 * "http://stackoverflow.com/questions/295579/fastest-way-to-determine-if-an-integers-square-root-is-an-integer">
-	 * Stackoverflow.com - Fastest way to determine if an integer's square root
-	 * is an integer</a>
+	 * Stackoverflow.com - Fastest way to determine if an integer's square root is an integer</a>
 	 * 
 	 * @param bf
 	 * @return <code>true</code> if the number is a perfect square.
@@ -484,11 +471,9 @@ public class NumberUtil {
 	}
 
 	/**
-	 * Test if a long value is a perfect square (i.e. its square root is another
-	 * integer). See <a href=
+	 * Test if a long value is a perfect square (i.e. its square root is another integer). See <a href=
 	 * "http://stackoverflow.com/questions/295579/fastest-way-to-determine-if-an-integers-square-root-is-an-integer">
-	 * Stackoverflow.com - Fastest way to determine if an integer's square root
-	 * is an integer</a>
+	 * Stackoverflow.com - Fastest way to determine if an integer's square root is an integer</a>
 	 * 
 	 * @param n
 	 * @return <code>true</code> if the number is a perfect square.
@@ -541,11 +526,10 @@ public class NumberUtil {
 	}
 
 	/**
-	 * Convert a <code>double</code> number into a reduced ratio of two
-	 * BigIntegers that mathematically represents exactly the same value.
+	 * Convert a <code>double</code> number into a reduced ratio of two BigIntegers that mathematically represents
+	 * exactly the same value.
 	 * 
-	 * See: <a href="http://stackoverflow.com/questions/27259162">http://
-	 * stackoverflow.com/questions/27259162</a>
+	 * See: <a href="http://stackoverflow.com/questions/27259162">http:// stackoverflow.com/questions/27259162</a>
 	 * 
 	 * @param value
 	 * @return
@@ -575,49 +559,49 @@ public class NumberUtil {
 		}
 	}
 
-	public static int checkPositive(@Nullable String role, int x) {
+	public static int checkPositive(String role, int x) {
 		if (x <= 0) {
 			throw new IllegalArgumentException(role + " (" + x + ") must be > 0");
 		}
 		return x;
 	}
 
-	public static long checkPositive(@Nullable String role, long x) {
+	public static long checkPositive(String role, long x) {
 		if (x <= 0) {
 			throw new IllegalArgumentException(role + " (" + x + ") must be > 0");
 		}
 		return x;
 	}
 
-	public static BigInteger checkPositive(@Nullable String role, BigInteger x) {
+	public static BigInteger checkPositive(String role, BigInteger x) {
 		if (x.signum() <= 0) {
 			throw new IllegalArgumentException(role + " (" + x + ") must be > 0");
 		}
 		return x;
 	}
 
-	public static int checkNonNegative(@Nullable String role, int x) {
+	public static int checkNonNegative(String role, int x) {
 		if (x < 0) {
 			throw new IllegalArgumentException(role + " (" + x + ") must be >= 0");
 		}
 		return x;
 	}
 
-	public static long checkNonNegative(@Nullable String role, long x) {
+	public static long checkNonNegative(String role, long x) {
 		if (x < 0) {
 			throw new IllegalArgumentException(role + " (" + x + ") must be >= 0");
 		}
 		return x;
 	}
 
-	public static BigInteger checkNonNegative(@Nullable String role, BigInteger x) {
+	public static BigInteger checkNonNegative(String role, BigInteger x) {
 		if (x.signum() < 0) {
 			throw new IllegalArgumentException(role + " (" + x + ") must be >= 0");
 		}
 		return x;
 	}
 
-	public static double checkNonNegative(@Nullable String role, double x) {
+	public static double checkNonNegative(String role, double x) {
 		if (!(x >= 0)) { // not x < 0, to work with NaN.
 			throw new IllegalArgumentException(role + " (" + x + ") must be >= 0");
 		}

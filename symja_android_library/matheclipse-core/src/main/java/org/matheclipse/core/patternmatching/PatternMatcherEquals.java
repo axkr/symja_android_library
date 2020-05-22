@@ -6,8 +6,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.ExprUtil;
@@ -56,8 +54,7 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 	 * @param rightHandSide
 	 *            the result which should be evaluated if the "pattern-matching" succeeds
 	 */
-	public PatternMatcherEquals(final int setSymbol, @Nonnull final IExpr leftHandSide,
-			@Nonnull final IExpr rightHandSide) {
+	public PatternMatcherEquals(final int setSymbol, final IExpr leftHandSide, final IExpr rightHandSide) {
 		super(leftHandSide);
 		fSetFlags = setSymbol;
 		fRightHandSide = rightHandSide;
@@ -196,7 +193,7 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 	public int getLHSPriority() {
 		return 0;
 	}
- 
+
 	public IAST getAsAST() {
 		ISymbol setSymbol = getSetSymbol();
 		IAST temp = F.binaryAST2(setSymbol, getLHS(), getRHS());

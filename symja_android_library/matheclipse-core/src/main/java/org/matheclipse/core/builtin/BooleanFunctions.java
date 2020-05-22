@@ -1653,12 +1653,7 @@ public final class BooleanFunctions {
 					return F.False;
 				}
 			}
-			ISignedNumber a2 = null;
-			if (arg2.isReal()) {
-				a2 = (ISignedNumber) arg2;
-			} else {
-				a2 = arg2.evalReal();
-			}
+			ISignedNumber a2 = arg2.evalReal();
 			if (a2 != null && AbstractAssumptions.assumeGreaterThan(arg1, a2)) {
 				return F.True;
 			}
@@ -2023,12 +2018,7 @@ public final class BooleanFunctions {
 					return F.False;
 				}
 			}
-			ISignedNumber a2 = null;
-			if (arg2.isReal()) {
-				a2 = (ISignedNumber) arg2;
-			} else {
-				a2 = arg2.evalReal();
-			}
+			ISignedNumber a2 = arg2.evalReal();
 			if (a2 != null && AbstractAssumptions.assumeGreaterEqual(arg1, a2)) {
 				return F.True;
 			}
@@ -2321,12 +2311,7 @@ public final class BooleanFunctions {
 					return F.True;
 				}
 			}
-			ISignedNumber a2 = null;
-			if (arg2.isReal()) {
-				a2 = (ISignedNumber) arg2;
-			} else {
-				a2 = arg2.evalReal();
-			}
+			ISignedNumber a2 = arg2.evalReal();
 			if (a2 != null && AbstractAssumptions.assumeLessThan(arg1, a2)) {
 				return F.True;
 			}
@@ -2410,12 +2395,7 @@ public final class BooleanFunctions {
 					return F.True;
 				}
 			}
-			ISignedNumber a2 = null;
-			if (arg2.isReal()) {
-				a2 = (ISignedNumber) arg2;
-			} else {
-				a2 = arg2.evalReal();
-			}
+			ISignedNumber a2 = arg2.evalReal();
 			if (a2 != null && AbstractAssumptions.assumeLessEqual(arg1, a2)) {
 				return F.True;
 			}

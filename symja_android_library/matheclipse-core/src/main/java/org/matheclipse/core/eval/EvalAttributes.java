@@ -3,8 +3,6 @@ package org.matheclipse.core.eval;
 import java.util.Arrays;
 import java.util.Comparator;
 
-import javax.annotation.Nonnull;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.ASTAssociation;
@@ -54,7 +52,7 @@ public class EvalAttributes {
 	 * 
 	 * @return returns the flattened list or <code>F.NIL</code>
 	 */
-	public static IASTAppendable flattenDeep(@Nonnull final IAST ast) {
+	public static IASTAppendable flattenDeep(final IAST ast) {
 		if ((ast.getEvalFlags() & IAST.IS_FLATTENED) == IAST.IS_FLATTENED) {
 			// already flattened
 			return F.NIL;
@@ -117,7 +115,7 @@ public class EvalAttributes {
 	 * @return returns the flattened list or <code>F.NIL</code>
 	 * @see #flattenDeep(IAST)
 	 */
-	public static IASTAppendable flatten(@Nonnull final IAST ast) {
+	public static IASTAppendable flatten(final IAST ast) {
 		if ((ast.getEvalFlags() & IAST.IS_FLATTENED) == IAST.IS_FLATTENED) {
 			// already flattened
 			return F.NIL;

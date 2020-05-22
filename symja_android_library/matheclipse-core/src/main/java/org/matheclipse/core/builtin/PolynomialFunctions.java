@@ -11,8 +11,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.annotation.Nonnull;
-
 import org.hipparchus.analysis.solvers.LaguerreSolver;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.EigenDecomposition;
@@ -2281,7 +2279,6 @@ public class PolynomialFunctions {
 	 *            coefficients of the polynomial.
 	 * @return the roots of the polynomial
 	 */
-	@Nonnull
 	public static IAST findRoots(double... coefficients) {
 		int N = coefficients.length - 1;
 

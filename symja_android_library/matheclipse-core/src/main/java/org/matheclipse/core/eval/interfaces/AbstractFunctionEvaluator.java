@@ -7,8 +7,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Locale;
 
-import javax.annotation.Nonnull;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.AST2;
@@ -680,7 +678,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 
 	/** {@inheritDoc} */
 	@Override
-	abstract public IExpr evaluate(final IAST ast, @Nonnull final EvalEngine engine);
+	abstract public IExpr evaluate(final IAST ast, final EvalEngine engine);
 
 	/**
 	 * Get the predefined rules for this function symbol.

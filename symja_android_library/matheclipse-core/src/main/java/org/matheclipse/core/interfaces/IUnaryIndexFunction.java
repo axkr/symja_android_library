@@ -1,18 +1,14 @@
 package org.matheclipse.core.interfaces;
 
-import javax.annotation.Nullable;
-
 /**
- * A {@code IUnaryIndexFunction} provides a transformation of an integer and an
- * object and returns the resulting object.
+ * A {@code IUnaryIndexFunction} provides a transformation of an integer and an object and returns the resulting object.
  * 
  * <p>
- * The transformation on the source object does not necessarily result in an
- * object of a different type.
+ * The transformation on the source object does not necessarily result in an object of a different type.
  * 
  * <p>
- * Implementors of BiFunction which may cause side effects upon evaluation are
- * strongly encouraged to state this fact clearly in their API documentation.
+ * Implementors of BiFunction which may cause side effects upon evaluation are strongly encouraged to state this fact
+ * clearly in their API documentation.
  * 
  * @param <F1>
  * @param <T>
@@ -22,9 +18,8 @@ import javax.annotation.Nullable;
 public interface IUnaryIndexFunction<F1, T> {
 
 	/**
-	 * Applies the function to an integer and an object of types {@code F1},
-	 * resulting in an object of type {@code T}. Note that types {@code F1} and
-	 * {@code T} may or may not be the same.
+	 * Applies the function to an integer and an object of types {@code F1}, resulting in an object of type {@code T}.
+	 * Note that types {@code F1} and {@code T} may or may not be the same.
 	 * 
 	 * @param index
 	 *            The current processed index.
@@ -32,5 +27,5 @@ public interface IUnaryIndexFunction<F1, T> {
 	 *            The first source object.
 	 * @return The resulting object.
 	 */
-	T apply(int index, @Nullable F1 from1);
+	T apply(int index, F1 from1);
 }

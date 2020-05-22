@@ -12,8 +12,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import javax.annotation.Nullable;
-
 import org.hipparchus.Field;
 import org.hipparchus.FieldElement;
 import org.hipparchus.complex.Complex;
@@ -560,7 +558,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	default IExpr evaluateHead(IAST ast, EvalEngine engine) {
-		IExpr result = engine.evalLoop(this);
+		IExpr result = engine.evaluateNull(this);
 		if (result.isPresent()) {
 			// set the new evaluated header !
 			return ast.apply(result);
@@ -2478,7 +2476,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *            the variable of the polynomial
 	 * @return
 	 */
-	default boolean isPolynomial(@Nullable IExpr variable) {
+	default boolean isPolynomial(IExpr variable) {
 		return isNumber();
 	}
 
@@ -3588,7 +3586,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *            substituted.
 	 * @return <code>this</code> if no substitution of a (sub-)expression was possible.
 	 */
-	@Nullable
 	default IExpr replace(final Predicate<IExpr> predicate, final Function<IExpr, IExpr> function) {
 		return accept(new VisitorReplaceAllLambda(predicate, function)).orElse(this);
 	}
@@ -3602,7 +3599,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *            substituted.
 	 * @return <code>F.NIL</code> if no substitution of a (sub-)expression was possible.
 	 */
-	@Nullable
 	default IExpr replaceAll(final Function<IExpr, IExpr> function) {
 		return accept(new VisitorReplaceAll(function));
 	}
@@ -3616,7 +3612,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *            rule can contain pattern objects.
 	 * @return <code>F.NIL</code> if no substitution of a (sub-)expression was possible.
 	 */
-	@Nullable
 	default IExpr replaceAll(final IAST astRules) {
 		return accept(new VisitorReplaceAll(astRules));
 	}
@@ -3629,7 +3624,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *            if the maps <code>get()</code> method returns <code>F.NIL</code> the expression isn't substituted.
 	 * @return <code>F.NIL</code> if no substitution of a (sub-)expression was possible.
 	 */
-	@Nullable
 	default IExpr replaceAll(final Map<? extends IExpr, ? extends IExpr> map) {
 		return accept(new VisitorReplaceAll(map));
 	}

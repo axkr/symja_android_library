@@ -29,8 +29,6 @@ import java.util.SortedMap;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
-import javax.annotation.Nonnull;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Combinatoric.Permutations;
 import org.matheclipse.core.convert.JASConvert;
@@ -1470,7 +1468,7 @@ public class Algebra {
 				return F.NIL;
 			}
 
-			private IExpr addExpanded(@Nonnull IExpr expr) {
+			private IExpr addExpanded(IExpr expr) {
 				if (expandNegativePowers && !distributePlus && expr.isAST()) {
 					((IAST) expr).addEvalFlags(IAST.IS_EXPANDED);
 				}
