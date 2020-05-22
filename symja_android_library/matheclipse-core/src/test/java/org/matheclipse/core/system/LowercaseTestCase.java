@@ -8632,6 +8632,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testFunctionExpand() {
 		check("FunctionExpand(ProductLog(a*Log(a)), a > 42)", //
 				"Log(a)");
+		check("FunctionExpand(ProductLog(a*Log(a)), a >= 42)", //
+				"Log(a)");
+		check("FunctionExpand(ProductLog(a*Log(a)), a < 42)", //
+				"ProductLog(a*Log(a))");
 		check("FunctionExpand(ProductLog(a*Log(a)), a > 1/E)", //
 				"Log(a)");
 		check("FunctionExpand(ProductLog(a*Log(a)), a > 1/Pi)", //
