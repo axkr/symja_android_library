@@ -1582,17 +1582,6 @@ public interface IPatternMap extends Cloneable {
 	}
 
 	default IExpr substituteASTPatternOrSymbols(final IAST lhsPatternExpr, boolean onlyNamedPatterns) {
-		IExpr temp = substituteASTPatternOrSymbols2(lhsPatternExpr, onlyNamedPatterns);
-		// if (temp.isPresent()) {
-		// IExpr temp1 = EvalEngine.get().evaluate(temp);
-		// if (!temp.equals(temp1)) {
-		// System.out.println(temp + " != " + temp1);
-		// }
-		// }
-		return temp;
-	}
-
-	default IExpr substituteASTPatternOrSymbols2(final IAST lhsPatternExpr, boolean onlyNamedPatterns) {
 		VisitorReplaceAllWithPatternFlags visitor = new VisitorReplaceAllWithPatternFlags(input -> {
 			if (input instanceof IPatternObject) {
 				if (onlyNamedPatterns && !(input instanceof Pattern)) {

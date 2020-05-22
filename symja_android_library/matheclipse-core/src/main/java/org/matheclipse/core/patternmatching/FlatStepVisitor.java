@@ -44,6 +44,13 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
 		return !matchSinglePartition(result, stackMatcher);
 	}
 
+	/** 
+	 * Set all pattern values to <code>null</code>;
+	 */
+	public void initPatternMap() {
+		fPatternMap.initPattern();
+	}
+
 	/**
 	 * Match a single partition combination
 	 * 
@@ -94,5 +101,27 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
 				fPatternMap.resetPattern(patternValues);
 			}
 		}
+	}
+
+	public String toString(int[][] result) {
+		StringBuilder buf = new StringBuilder();
+		for (int i = 0; i < result.length; i++) {
+			if (result[i] == null) {
+				buf.append("[null]");
+			} else {
+				buf.append("[");
+				buf.append(fLhsPatternAST.get(i + 1).toString());
+				buf.append(" -> ");
+				for (int j = 0; j < result[i].length; j++) {
+					buf.append(list.get(result[i][j] + 1).toString());
+					if (j < result[i].length - 1) {
+						buf.append(",");
+					}
+				}
+				buf.append("]");
+			}
+		}
+		buf.append('\n');
+		return buf.toString();
 	}
 }

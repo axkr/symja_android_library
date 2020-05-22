@@ -21,10 +21,10 @@ public class CombinatoricTestCase extends AbstractTestCase {
 	 * Test combinatorial functions
 	 */
 	public void testCombinatoric() {
-//		check("KOrderlessPartitions(f(g),1)", //
-//				"{f(g)}");
-//		check("KOrderlessPartitions(f(),1)", //
-//				"KOrderlessPartitions(f(),1)");
+		// check("KOrderlessPartitions(f(g),1)", //
+		// "{f(g)}");
+		// check("KOrderlessPartitions(f(),1)", //
+		// "KOrderlessPartitions(f(),1)");
 		check("KOrderlessPartitions(w+x+x+y+z,5)", //
 				"KOrderlessPartitions(w+2*x+y+z,5)");
 		check("KOrderlessPartitions(w+x+x+y+z,6)", //
@@ -73,8 +73,15 @@ public class CombinatoricTestCase extends AbstractTestCase {
 		FlatOrderlessStepVisitor visitor = new FlatOrderlessStepVisitor(F.Plus, lhsPatternAST, lhsEvalAST,
 				patternMatcher, patternMap);
 		MultisetPartitionsIterator iter = new MultisetPartitionsIterator(visitor, lhsPatternAST.argSize());
-		boolean b = iter.execute();
-		assertEquals(true, !b);
+		boolean b = false;
+		while (!b) {
+			b = iter.execute();
+			if (!b) {
+				System.out.println(iter.toString());
+				iter.initPatternMap();
+			}
+		}
+		assertEquals(true, b);
 	}
 
 	public static void testRosenNumberPartitionIterator() {

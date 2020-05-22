@@ -481,7 +481,7 @@ public class ExprEvaluatorTests extends TestCase {
 					System.out.flush();
 					System.err.flush();
 				}
-				// System.out.println(">> " + ast.toString());
+				 System.out.println(">> " + ast.toString());
 				// System.out.print(".");
 				if (evaluator != null) {
 					evaluator.evaluate(ast, engine);

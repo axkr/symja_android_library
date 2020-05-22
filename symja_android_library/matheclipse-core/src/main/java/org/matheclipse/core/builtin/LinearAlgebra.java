@@ -1839,8 +1839,6 @@ public final class LinearAlgebra {
 					// Positive integer (less equal 2147483647) expected at position `2` in `1`.
 					return IOFunctions.printMessage(F.FourierMatrix, "intpm", F.List(ast, F.C1), engine);
 				}
-				int[] count = new int[1];
-				count[0] = 1;
 				IAST scalar = F.Sqrt(F.QQ(1, m));
 				return F.matrix((i, j) -> unit(F.QQ(2L * ((long) i) * ((long) j), m).times(F.Pi)).times(scalar), m, m);
 			}

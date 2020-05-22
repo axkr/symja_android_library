@@ -5714,7 +5714,11 @@ public class F {
 	public static IAST Attributes(final IExpr a) {
 		return new AST1(Attributes, a);
 	}
-
+	
+	public static IAST BaseForm(final IExpr a0, final IExpr a1) {
+		return new AST2(F.BaseForm, a0, a1);
+	}
+	
 	/**
 	 * Bell number.
 	 * 
@@ -9657,6 +9661,10 @@ public class F {
 	public static IAST Select(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST3(Select, a0, a1, a2);
 	}
+	
+	public static IAST Select(final IExpr a0, final IExpr a1 ) {
+		return new AST2(Select, a0, a1);
+	}
 
 	public final static IAST senary(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3,
 			final IExpr a4, final IExpr a5) {
@@ -10280,6 +10288,14 @@ public class F {
 		return new AST1(Unevaluated, a0);
 	}
 
+	public static IAST Union(final IExpr a0) {
+		return new AST1(Union, a0);
+	}
+	
+	public static IAST Union(final IExpr a0, final IExpr a1) {
+		return new AST2(Union, a0, a1);
+	}
+	
 	public static IAST Unique(final IExpr a0) {
 		return new AST1(Unique, a0);
 	}
