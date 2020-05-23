@@ -56,6 +56,34 @@ public class TestPods {
 					"}");//
 		}
 	}
+	
+	@Test
+	public void testSoundexHelp() {
+		String s = System.getProperty("os.name");
+		ObjectNode messageJSON = Pods.createResult("cosne", formats);
+		final String jsonStr = messageJSON.toPrettyString();
+		System.out.println(jsonStr);
+		if (s.contains("Windows")) {
+			assertEquals(jsonStr, //
+					"{\r\n" + //
+					"  \"queryresult\" : {\r\n" + //
+					"    \"success\" : \"true\",\r\n" + //
+					"    \"error\" : \"false\",\r\n" + //
+					"    \"numpods\" : 1,\r\n" + //
+					"    \"version\" : \"0.1\",\r\n" + //
+					"    \"pods\" : [ {\r\n" + //
+					"      \"title\" : \"documentation\",\r\n" + //
+					"      \"scanner\" : \"help\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"html\" : \"<h2>Cos</h2>\\n<p>Cos(expr)</p>\\n<blockquote>\\n<p>returns the cosine of <code>expr</code> (measured in radians). <code>Cos(expr)</code> will evaluate automatically in the case <code>expr</code> is a multiple of <code>Pi, Pi/2, Pi/3, Pi/4</code> and <code>Pi/6</code>.</p>\\n</blockquote>\\n<p>See:</p>\\n<ul>\\n<li><a href=\\\"https://en.wikipedia.org/wiki/Trigonometric_functions\\\">Wikipedia - Trigonometric functions</a></li>\\n</ul>\\n<h3>Examples</h3>\\n<blockquote>\\n<blockquote>\\n<p>Cos(0)\\n1</p>\\n</blockquote>\\n</blockquote>\\n<blockquote>\\n<blockquote>\\n<p>Cos(3*Pi)\\n-1</p>\\n</blockquote>\\n</blockquote>\\n<blockquote>\\n<blockquote>\\n<p>Cos(1.5*Pi)<br />\\n-1.8369701987210297E-16</p>\\n</blockquote>\\n</blockquote>\\n\"\r\n" + //
+					"      } ]\r\n" + //
+					"    } ]\r\n" + //
+					"  }\r\n" + //
+					"}");//
+		}
+	}
 
 	@Test
 	public void testInteger17() {

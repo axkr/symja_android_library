@@ -1,10 +1,12 @@
 package org.matheclipse.api;
 
-import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
+import org.apache.commons.codec.language.Soundex;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.commonmark.Extension;
@@ -12,26 +14,25 @@ import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
-import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
-import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.parser.ExprParserFactory;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
+import org.matheclipse.parser.trie.Tries;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Suppliers;
 
 public class Pods {
 	// output formats
@@ -56,6 +57,26 @@ public class Pods {
 	public static final int PLOTLY = 0x0100;
 	// output
 	public static final String JSON = "JSON";
+
+	public static final Soundex SOUNDEX = new Soundex();
+	public static final Map<String, String> SOUNDEX_MAP = Tries.forStrings();
+
+	private static Map<String, String> getSoundexKeyWords() {
+		return SOUNDEX_MAP;
+	}
+
+	private static Supplier<Map<String, String>> LAZY_SOUNDEX = Suppliers.memoize(Pods::initSoundex);
+
+	private static Map<String, String> initSoundex() {
+		Map<String, String> map = AST2Expr.PREDEFINED_SYMBOLS_MAP;
+		for (Map.Entry<String, String> entry : map.entrySet()) {
+			SOUNDEX_MAP.put(SOUNDEX.encode(entry.getKey()), entry.getKey());
+			// System.out.println(entry.getKey() + " -> " + SOUNDEX.encode(entry.getKey()));
+		}
+		SOUNDEX_MAP.put(SOUNDEX.encode("cosine"), "Cos");
+		SOUNDEX_MAP.put(SOUNDEX.encode("sine"), "Sin");
+		return SOUNDEX_MAP;
+	}
 
 	final static String JSXGRAPH_IFRAME = //
 			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //
@@ -307,7 +328,7 @@ public class Pods {
 					if (inExpr.isNumber()) {
 						outExpr = inExpr;
 						if (inExpr.isInteger()) {
-							numpods = integerPods(podsArray, (IInteger)inExpr, outExpr, formats, mapper, engine);
+							numpods = integerPods(podsArray, (IInteger) inExpr, outExpr, formats, mapper, engine);
 							resultStatistics(queryresult, error, numpods, podsArray);
 							return messageJSON;
 						}
@@ -324,31 +345,23 @@ public class Pods {
 						}
 
 						if (inExpr.isSymbol() || inExpr.isString()) {
+							String inputWord = inExpr.toString();
 							StringBuilder buf = new StringBuilder();
-							Documentation.printDocumentation(buf, inExpr.toString());
+							Documentation.printDocumentation(buf, inputWord);
 							if (buf.length() > 0) {
-								ArrayNode temp = mapper.createArrayNode();
-								ObjectNode subpodsResult = mapper.createObjectNode();
-								subpodsResult.put("title", "documentation");
-								subpodsResult.put("scanner", "help");
-								subpodsResult.put("error", "false");
-								subpodsResult.put("numsubpods", 1);
-								subpodsResult.putPOJO("subpods", temp);
-								podsArray.add(subpodsResult);
-
-								ObjectNode node = mapper.createObjectNode();
-								// if ((formats & HTML) != 0x00) {
-								temp.add(node);
-								node.put("html", generateHTMLString(buf.toString()));
-								numpods++;
-								// } else {
-								// temp.add(node);
-								// node.put("markdown", buf.toString());
-								// numpods++;
-								// }
-
-								resultStatistics(queryresult, error, numpods, podsArray);
-								return messageJSON;
+								return addDocumentationPod(mapper, messageJSON, queryresult, error, numpods, podsArray,
+										buf);
+							} else {
+								Map<String, String> map = LAZY_SOUNDEX.get();
+								String soundsLike = map.get(SOUNDEX.encode(inputWord));
+								if (soundsLike != null) {
+									buf = new StringBuilder();
+									Documentation.printDocumentation(buf, soundsLike);
+									if (buf.length() > 0) {
+										return addDocumentationPod(mapper, messageJSON, queryresult, error, numpods,
+												podsArray, buf);
+									}
+								}
 							}
 						} else {
 							if (inExpr.isAST(F.D, 3)) {
@@ -398,6 +411,32 @@ public class Pods {
 		return messageJSON;
 	}
 
+	private static ObjectNode addDocumentationPod(ObjectMapper mapper, ObjectNode messageJSON, ObjectNode queryresult,
+			boolean error, int numpods, ArrayNode podsArray, StringBuilder buf) {
+		ArrayNode temp = mapper.createArrayNode();
+		ObjectNode subpodsResult = mapper.createObjectNode();
+		subpodsResult.put("title", "documentation");
+		subpodsResult.put("scanner", "help");
+		subpodsResult.put("error", "false");
+		subpodsResult.put("numsubpods", 1);
+		subpodsResult.putPOJO("subpods", temp);
+		podsArray.add(subpodsResult);
+
+		ObjectNode node = mapper.createObjectNode();
+		// if ((formats & HTML) != 0x00) {
+		temp.add(node);
+		node.put("html", generateHTMLString(buf.toString()));
+		numpods++;
+		// } else {
+		// temp.add(node);
+		// node.put("markdown", buf.toString());
+		// numpods++;
+		// }
+
+		resultStatistics(queryresult, error, numpods, podsArray);
+		return messageJSON;
+	}
+
 	private static IExpr parseInput(String inputStr, EvalEngine engine) {
 		engine.setPackageMode(false);
 		final ExprParser parser = new ExprParser(engine, ExprParserFactory.RELAXED_STYLE_FACTORY, true, false, false);
@@ -424,8 +463,8 @@ public class Pods {
 		return F.NIL;
 	}
 
-	private static int integerPods(ArrayNode podsArray, IInteger intExpr, IExpr outExpr, int formats, ObjectMapper mapper,
-			EvalEngine engine) {
+	private static int integerPods(ArrayNode podsArray, IInteger intExpr, IExpr outExpr, int formats,
+			ObjectMapper mapper, EvalEngine engine) {
 		int numpods = 0;
 		IInteger n = intExpr;
 		IExpr inExpr = F.BaseForm(intExpr, F.C2);
@@ -443,22 +482,22 @@ public class Pods {
 		addSymjaPod(podsArray, inExpr, podOut, "Residues modulo small integers", "Integer", formats, mapper, engine);
 		numpods++;
 
-		integerPropertiesPod(podsArray,   intExpr, podOut, "Properties", "Integer", formats, mapper, engine);
+		integerPropertiesPod(podsArray, intExpr, podOut, "Properties", "Integer", formats, mapper, engine);
 		numpods++;
 
 		if (n.isPositive() && n.isLT(F.ZZ(100))) {
 			inExpr = F.Union(F.PowerMod(F.Range(F.C0, F.QQ(n, F.C2)), F.C2, n));
 			podOut = engine.evaluate(inExpr);
-			addSymjaPod(podsArray, inExpr, podOut, "Quadratic residues modulo " + n.toString(), "Integer", formats, mapper,
-					engine);
+			addSymjaPod(podsArray, inExpr, podOut, "Quadratic residues modulo " + n.toString(), "Integer", formats,
+					mapper, engine);
 			numpods++;
 
 			if (n.isProbablePrime()) {
 				inExpr = F.Select(F.Range(n.add(F.CN1)),
 						F.Function(F.Equal(F.MultiplicativeOrder(F.Slot1, n), F.EulerPhi(n))));
 				podOut = engine.evaluate(inExpr);
-				addSymjaPod(podsArray, inExpr, podOut, "Primitive roots modulo " + n.toString(), "Integer", formats, mapper,
-						engine);
+				addSymjaPod(podsArray, inExpr, podOut, "Primitive roots modulo " + n.toString(), "Integer", formats,
+						mapper, engine);
 				numpods++;
 			}
 		}
