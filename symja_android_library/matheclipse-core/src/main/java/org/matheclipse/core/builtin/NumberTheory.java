@@ -4740,6 +4740,10 @@ public final class NumberTheory {
 		}
 		return bernoulli[n].normalize();
 	}
+	
+	public static double bernoulliDouble(int n) {
+		return bernoulliNumber(n).doubleValue();
+	}
 
 	/**
 	 * Compute the Bernoulli number of the first kind.

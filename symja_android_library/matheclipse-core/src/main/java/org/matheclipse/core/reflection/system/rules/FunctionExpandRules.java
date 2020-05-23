@@ -36,6 +36,9 @@ public interface FunctionExpandRules {
     // Gamma(1/2,z_):=Sqrt(Pi)*(1-Erf(Sqrt(z)))
     SetDelayed(Gamma(C1D2,z_),
       Times(Sqrt(Pi),Subtract(C1,Erf(Sqrt(z))))),
+    // HurwitzZeta(n_Integer,a_):=(-1)^n/(-1+n)!*PolyGamma(-1+n,a)/;n>1
+    SetDelayed(HurwitzZeta($p(n, Integer),a_),
+      Condition(Times(Power(CN1,n),Power(Factorial(Plus(CN1,n)),CN1),PolyGamma(Plus(CN1,n),a)),Greater(n,C1))),
     // Hypergeometric2F1(a_,b_,b_+n_Integer,z_):=Sum((z^k*Pochhammer(n,k)*Pochhammer(-a+b+n,k))/(Pochhammer(b+n,k)*k!),{k,0,-n})/(1-z)^(a-n)/;n<0
     SetDelayed(Hypergeometric2F1(a_,b_,Plus(b_,$p(n, Integer)),z_),
       Condition(Times(Power(Subtract(C1,z),Plus(Negate(a),n)),Sum(Times(Power(z,k),Power(Times(Pochhammer(Plus(b,n),k),Factorial(k)),CN1),Pochhammer(n,k),Pochhammer(Plus(Negate(a),b,n),k)),List(k,C0,Negate(n)))),Less(n,C0))),

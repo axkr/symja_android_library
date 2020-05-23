@@ -8644,7 +8644,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Log(a)");
 		check("FunctionExpand(ProductLog(a*Log(a)), a > 0.35)", //
 				"ProductLog(a*Log(a))");
-		
+
 		check("FunctionExpand(Sin(4*ArcSin(x)))", //
 				"x*(-4*Sqrt(1-x^2)+8*(1-x^2)^(3/2))");
 		check("FunctionExpand(Sin(4*ArcTan(x)))", //
@@ -9422,6 +9422,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHurwitzZeta() {
+		// TODO
+		// check("HurwitzZeta(7,5.0)", //
+		// " ");
+		check("HurwitzZeta(3,0.2)", //
+				"125.739");
+		check("HurwitzZeta(.51, .87)", //
+				"-1.32016");
+
+		check("Table(HurwitzZeta(x, 0.5), {x,-2.0,2,0.25})", //
+				"{0.0,0.00695768,0.0164748,0.0283452,0.0416667,0.0541783,0.0608885,0.0509849,0.0,"
+						+ "-0.153878,-0.604899,-2.34624,ComplexInfinity,6.33397,4.77654,4.63811,4.9348}");
+
+		check("D(HurwitzZeta(s, x), x)", //
+				"-s*HurwitzZeta(1+s,x)");
+		check("HurwitzZeta(20,a) // FunctionExpand", //
+				"PolyGamma(19,a)/121645100408832000");
+
 		// http://fungrim.org/entry/6e69fc/
 		check("HurwitzZeta(6,11)", //
 				"-52107472322919827957/51219253009612800000+Pi^6/945");
@@ -24793,6 +24810,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testZeta() {
+		check("D(Zeta(s, x), x)", //
+				"-s*Zeta(1+s,x)");
 		check("Zeta(-3.0)", //
 				"0.00833333");
 		check("Zeta(4.0)", //

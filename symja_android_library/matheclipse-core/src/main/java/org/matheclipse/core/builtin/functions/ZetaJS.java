@@ -1,6 +1,9 @@
 package org.matheclipse.core.builtin.functions;
 
 import org.hipparchus.complex.Complex;
+import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.NumberTheory;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 
 public class ZetaJS {
 	private ZetaJS() {
@@ -17,19 +20,29 @@ public class ZetaJS {
 		return s;
 
 	}
+
 	public static Complex complexSummation(java.util.function.DoubleFunction<Complex> f, double a, double b) {
 		Complex s = Complex.ZERO;
 
 		for (double i = a; i <= b; i++) {
-			s=s.add(f.apply(i));
+			s = s.add(f.apply(i));
 		}
 		return s;
 	}
-	
-	public static double summation(java.util.function.DoubleUnaryOperator f, double a, double b) {
+
+	public static double sumDouble(java.util.function.DoubleUnaryOperator f, double a, double b) {
 		double s = 0.0;
 
 		for (double i = a; i <= b; i++) {
+			s += f.applyAsDouble(i);
+		}
+		return s;
+	}
+
+	public static double sumInt(java.util.function.IntToDoubleFunction f, int a, int b) {
+		double s = 0;
+
+		for (int i = a; i <= b; i++) {
 			s += f.applyAsDouble(i);
 		}
 		return s;
@@ -78,21 +91,9 @@ public class ZetaJS {
 	// return mul( zeta(x), sub( 1, pow( 2, sub(1,x) ) ) );
 	// }
 
-	// public static Complex bernoulli( n ) {
-	//
-	// if ( !Number.isInteger(n) ) throw Error( 'Noninteger argument for Bernoulli number' );
-	//
-	// if ( n < 0 ) throw Error( 'Unsupported argument for Bernoulli number' );
-	//
-	// if ( n === 0 ) return 1;
-	//
-	// if ( n === 1 ) return -.5;
-	//
-	// if ( n & 1 ) return 0;
-	//
-	// return (-1)**(n+1) * n * zeta(-n+1);
-	//
-	// }
+	public static double bernoulliInt(int n) {
+		return NumberTheory.bernoulliDouble(n);
+	}
 
 	// public static Complex harmonic(int n ) {
 	//
@@ -102,37 +103,70 @@ public class ZetaJS {
 	//
 	// }
 
-	// public static Complex hurwitzZeta(Complex x, Complex a ) {
-	//
-	// // Johansson arxiv.org/abs/1309.2877
-	//
-	// if ( isComplex(x) || isComplex(a) ) {
-	//
-	//
-	// } else {
-	//
-	// if ( x === 1 ) throw Error( 'Hurwitz zeta pole' );
-	//
-	// // dlmf.nist.gov/25.11.4
-	//
-	// if ( a > 1 ) {
-	// var m = Math.floor(a);
-	// a -= m;
-	// return hurwitzZeta(x,a) - summation( i => 1 / (a+i)**x, [0,m-1] );
-	// }
-	//
-	// if ( a < 0 ) return hurwitzZeta( x, complex(a) );
-	//
-	// var n = Math.round( -log( tolerance, 2) ); // from bit precision
-	// var m = Math.round( -log( tolerance, 2) );
-	//
-	// var s = summation( i => 1 / (a+i)**x, [0,n-1] );
-	//
-	// var t = summation( i => bernoulli(2*i) / factorial(2*i) * gamma(x+2*i-1) / (a+n)**(2*i-1), [1,m] );
-	//
-	// return s + (a+n)**(1-x) / (x-1) + ( .5 + t / gamma(x) ) / (a+n)**x;
-	//
-	// }
-	//
-	// }
+	public static double hurwitzZeta(final double x, final double a) {
+
+		// Johansson arxiv.org/abs/1309.2877
+
+		// if ( isComplex(x) || isComplex(a) ) {
+		//
+		//
+		// } else {
+
+		if (x == 1.0) {
+			throw new ArgumentTypeException("Hurwitz zeta pole");
+		}
+		if (a < 0.0) {
+			throw new ArgumentTypeException("Hurwitz zeta a < 0.0 ");
+		}
+
+		// dlmf.nist.gov/25.11.4
+
+		if (a > 1.0) {
+			double m = Math.floor(a);
+			final double aValue = a - m;
+			return hurwitzZeta(x, aValue) - sumDouble(i -> 1.0 / Math.pow(aValue + i, x), 0, m - 1);
+		}
+
+		// if ( a < 0.0 ) {
+		// return hurwitzZeta( x, complex(a) );
+		// }
+
+		// Euler-Maclaurin has differences of large values in left-hand plane
+		// swith to difference summation: dlmf.nist.gov/25.11.9
+
+		double switchForms = -5.0;
+
+		if (x < switchForms) {
+
+			// x = 1 - x;
+			final double xValue = 1 - x;
+			double t = Math.cos(Math.PI * xValue / 2.0 - 2.0 * Math.PI * a);
+			double s = t;
+			int i = 1;
+
+			while (Math.abs(t) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
+				i++;
+				t = Math.cos(Math.PI * xValue / 2.0 - 2.0 * i * Math.PI * a) / Math.pow(i, xValue);
+				s += t;
+			}
+
+			return 2.0 * GammaJS.gamma(xValue) / Math.pow(2.0 * Math.PI, xValue) * s;
+
+		}
+
+		// Johansson arxiv.org/abs/1309.2877
+		final int n = 15; // recommendation of Vepstas, Efficient Algorithm, p.12
+		final int m = 5; // series is asymptotic, could check size of terms
+
+		double S = sumDouble(i -> 1.0 / Math.pow(a + i, x), 0, n - 1);
+
+		double I = Math.pow(a + n, 1.0 - x) / (x - 1.0);
+
+		double T = sumInt(i -> bernoulliInt(2 * i) / GammaJS.factorialInt(2.0 * i) * GammaJS.gamma(x + 2.0 * i - 1.0)
+				/ Math.pow(a + n, 2.0 * i - 1.0), 1, m);
+		T = (0.5 + T / GammaJS.gamma(x)) / Math.pow(a + n, x);
+
+		return S + I + T;
+
+	}
 }

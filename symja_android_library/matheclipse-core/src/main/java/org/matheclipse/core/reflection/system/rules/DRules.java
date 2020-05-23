@@ -13,7 +13,7 @@ public interface DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 92 };
+  final public static int[] SIZES = { 0, 94 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -170,6 +170,12 @@ public interface DRules {
     // D(SinhIntegral(f_),x_?NotListQ):=D(f,x)*Sinh(f)/f
     ISetDelayed(D(SinhIntegral(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),Power(f,CN1),Sinh(f))),
+    // D(HurwitzZeta(f_,g_),x_?NotListQ):=-f*HurwitzZeta(1+f,g)*D(g,x)/;FreeQ({f},x)
+    ISetDelayed(D(HurwitzZeta(f_,g_),PatternTest(x_,NotListQ)),
+      Condition(Times(CN1,f,HurwitzZeta(Plus(C1,f),g),D(g,x)),FreeQ(List(f),x))),
+    // D(Zeta(f_,g_),x_?NotListQ):=-f*Zeta(1+f,g)*D(g,x)/;FreeQ({f},x)
+    ISetDelayed(D(Zeta(f_,g_),PatternTest(x_,NotListQ)),
+      Condition(Times(CN1,f,Zeta(Plus(C1,f),g),D(g,x)),FreeQ(List(f),x))),
     // D(Hypergeometric2F1(a_,b_,c_,f_),x_?NotListQ):=(a*b*D(f,x)*Hypergeometric2F1(1+a,1+b,1+c,f))/c/;FreeQ({a,b,c},x)
     ISetDelayed(D(Hypergeometric2F1(a_,b_,c_,f_),PatternTest(x_,NotListQ)),
       Condition(Times(a,b,Power(c,CN1),D(f,x),Hypergeometric2F1(Plus(C1,a),Plus(C1,b),Plus(C1,c),f)),FreeQ(List(a,b,c),x))),
