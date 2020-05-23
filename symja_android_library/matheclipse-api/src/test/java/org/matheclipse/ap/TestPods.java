@@ -8,12 +8,12 @@ import org.matheclipse.api.Pods;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class TestPods {
-	final static String[] formats = new String[] { "mathml", "plaintext" };
-
+	final static String[] formatsMATHML = new String[] { "mathml", "plaintext" };
+	final static String[] formatsTEX = new String[] { "latex", "plaintext", "sinput" };
 	@Test
 	public void testSyntaxError001() {
 		String s = System.getProperty("os.name");
-		ObjectNode messageJSON = Pods.createResult("?#?", formats);
+		ObjectNode messageJSON = Pods.createResult("?#?", formatsMATHML);
 		final String jsonStr = messageJSON.toPrettyString();
 		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
@@ -32,63 +32,65 @@ public class TestPods {
 	@Test
 	public void testMarkdownHelp() {
 		String s = System.getProperty("os.name");
-		ObjectNode messageJSON = Pods.createResult("Sin", formats);
+		ObjectNode messageJSON = Pods.createResult("Sin", formatsMATHML);
 		final String jsonStr = messageJSON.toPrettyString();
 		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + //
-					"  \"queryresult\" : {\r\n" + //
-					"    \"success\" : \"true\",\r\n" + //
-					"    \"error\" : \"false\",\r\n" + //
-					"    \"numpods\" : 1,\r\n" + //
-					"    \"version\" : \"0.1\",\r\n" + //
-					"    \"pods\" : [ {\r\n" + //
-					"      \"title\" : \"documentation\",\r\n" + //
-					"      \"scanner\" : \"help\",\r\n" + //
-					"      \"error\" : \"false\",\r\n" + //
-					"      \"numsubpods\" : 1,\r\n" + //
-					"      \"subpods\" : [ {\r\n" + //
-					"        \"html\" : \"<h2>Sin</h2>\\n<p>Sin(expr)</p>\\n<blockquote>\\n<p>returns the sine of <code>expr</code> (measured in radians).</p>\\n</blockquote>\\n<p><code>Sin(expr)</code> will evaluate automatically in the case <code>expr</code> is a multiple of <code>Pi, Pi/2, Pi/3, Pi/4</code> and <code>Pi/6</code>.</p>\\n<p>See</p>\\n<ul>\\n<li><a href=\\\"https://en.wikipedia.org/wiki/Sine\\\">Wikipedia - Sine</a></li>\\n</ul>\\n<h3>Examples</h3>\\n<blockquote>\\n<blockquote>\\n<p>Sin(0)\\n0</p>\\n</blockquote>\\n</blockquote>\\n<blockquote>\\n<blockquote>\\n<p>Sin(0.5)\\n0.479425538604203</p>\\n</blockquote>\\n</blockquote>\\n<blockquote>\\n<blockquote>\\n<p>Sin(3*Pi)\\n0</p>\\n</blockquote>\\n</blockquote>\\n<blockquote>\\n<blockquote>\\n<p>Sin(1.0 + I)\\n1.2984575814159773+I*0.6349639147847361</p>\\n</blockquote>\\n</blockquote>\\n\"\r\n" + //
-					"      } ]\r\n" + //
-					"    } ]\r\n" + //
-					"  }\r\n" + //
-					"}");//
+							"  \"queryresult\" : {\r\n" + //
+							"    \"success\" : \"true\",\r\n" + //
+							"    \"error\" : \"false\",\r\n" + //
+							"    \"numpods\" : 1,\r\n" + //
+							"    \"version\" : \"0.1\",\r\n" + //
+							"    \"pods\" : [ {\r\n" + //
+							"      \"title\" : \"documentation\",\r\n" + //
+							"      \"scanner\" : \"help\",\r\n" + //
+							"      \"error\" : \"false\",\r\n" + //
+							"      \"numsubpods\" : 1,\r\n" + //
+							"      \"subpods\" : [ {\r\n" + //
+							"        \"html\" : \"<h2>Sin</h2>\\n<p>Sin(expr)</p>\\n<blockquote>\\n<p>returns the sine of <code>expr</code> (measured in radians).</p>\\n</blockquote>\\n<p><code>Sin(expr)</code> will evaluate automatically in the case <code>expr</code> is a multiple of <code>Pi, Pi/2, Pi/3, Pi/4</code> and <code>Pi/6</code>.</p>\\n<p>See</p>\\n<ul>\\n<li><a href=\\\"https://en.wikipedia.org/wiki/Sine\\\">Wikipedia - Sine</a></li>\\n</ul>\\n<h3>Examples</h3>\\n<blockquote>\\n<blockquote>\\n<p>Sin(0)\\n0</p>\\n</blockquote>\\n</blockquote>\\n<blockquote>\\n<blockquote>\\n<p>Sin(0.5)\\n0.479425538604203</p>\\n</blockquote>\\n</blockquote>\\n<blockquote>\\n<blockquote>\\n<p>Sin(3*Pi)\\n0</p>\\n</blockquote>\\n</blockquote>\\n<blockquote>\\n<blockquote>\\n<p>Sin(1.0 + I)\\n1.2984575814159773+I*0.6349639147847361</p>\\n</blockquote>\\n</blockquote>\\n\"\r\n"
+							+ //
+							"      } ]\r\n" + //
+							"    } ]\r\n" + //
+							"  }\r\n" + //
+							"}");//
 		}
 	}
-	
+
 	@Test
 	public void testSoundexHelp() {
 		String s = System.getProperty("os.name");
-		ObjectNode messageJSON = Pods.createResult("cosne", formats);
+		ObjectNode messageJSON = Pods.createResult("cosne", formatsMATHML);
 		final String jsonStr = messageJSON.toPrettyString();
 		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + //
-					"  \"queryresult\" : {\r\n" + //
-					"    \"success\" : \"true\",\r\n" + //
-					"    \"error\" : \"false\",\r\n" + //
-					"    \"numpods\" : 1,\r\n" + //
-					"    \"version\" : \"0.1\",\r\n" + //
-					"    \"pods\" : [ {\r\n" + //
-					"      \"title\" : \"documentation\",\r\n" + //
-					"      \"scanner\" : \"help\",\r\n" + //
-					"      \"error\" : \"false\",\r\n" + //
-					"      \"numsubpods\" : 1,\r\n" + //
-					"      \"subpods\" : [ {\r\n" + //
-					"        \"html\" : \"<h2>Cos</h2>\\n<p>Cos(expr)</p>\\n<blockquote>\\n<p>returns the cosine of <code>expr</code> (measured in radians). <code>Cos(expr)</code> will evaluate automatically in the case <code>expr</code> is a multiple of <code>Pi, Pi/2, Pi/3, Pi/4</code> and <code>Pi/6</code>.</p>\\n</blockquote>\\n<p>See:</p>\\n<ul>\\n<li><a href=\\\"https://en.wikipedia.org/wiki/Trigonometric_functions\\\">Wikipedia - Trigonometric functions</a></li>\\n</ul>\\n<h3>Examples</h3>\\n<blockquote>\\n<blockquote>\\n<p>Cos(0)\\n1</p>\\n</blockquote>\\n</blockquote>\\n<blockquote>\\n<blockquote>\\n<p>Cos(3*Pi)\\n-1</p>\\n</blockquote>\\n</blockquote>\\n<blockquote>\\n<blockquote>\\n<p>Cos(1.5*Pi)<br />\\n-1.8369701987210297E-16</p>\\n</blockquote>\\n</blockquote>\\n\"\r\n" + //
-					"      } ]\r\n" + //
-					"    } ]\r\n" + //
-					"  }\r\n" + //
-					"}");//
+							"  \"queryresult\" : {\r\n" + //
+							"    \"success\" : \"true\",\r\n" + //
+							"    \"error\" : \"false\",\r\n" + //
+							"    \"numpods\" : 1,\r\n" + //
+							"    \"version\" : \"0.1\",\r\n" + //
+							"    \"pods\" : [ {\r\n" + //
+							"      \"title\" : \"documentation\",\r\n" + //
+							"      \"scanner\" : \"help\",\r\n" + //
+							"      \"error\" : \"false\",\r\n" + //
+							"      \"numsubpods\" : 1,\r\n" + //
+							"      \"subpods\" : [ {\r\n" + //
+							"        \"html\" : \"<h2>Cos</h2>\\n<p>Cos(expr)</p>\\n<blockquote>\\n<p>returns the cosine of <code>expr</code> (measured in radians). <code>Cos(expr)</code> will evaluate automatically in the case <code>expr</code> is a multiple of <code>Pi, Pi/2, Pi/3, Pi/4</code> and <code>Pi/6</code>.</p>\\n</blockquote>\\n<p>See:</p>\\n<ul>\\n<li><a href=\\\"https://en.wikipedia.org/wiki/Trigonometric_functions\\\">Wikipedia - Trigonometric functions</a></li>\\n</ul>\\n<h3>Examples</h3>\\n<blockquote>\\n<blockquote>\\n<p>Cos(0)\\n1</p>\\n</blockquote>\\n</blockquote>\\n<blockquote>\\n<blockquote>\\n<p>Cos(3*Pi)\\n-1</p>\\n</blockquote>\\n</blockquote>\\n<blockquote>\\n<blockquote>\\n<p>Cos(1.5*Pi)<br />\\n-1.8369701987210297E-16</p>\\n</blockquote>\\n</blockquote>\\n\"\r\n"
+							+ //
+							"      } ]\r\n" + //
+							"    } ]\r\n" + //
+							"  }\r\n" + //
+							"}");//
 		}
 	}
 
 	@Test
 	public void testInteger17() {
 		String s = System.getProperty("os.name");
-		ObjectNode messageJSON = Pods.createResult("17", formats);
+		ObjectNode messageJSON = Pods.createResult("17", formatsMATHML);
 		final String jsonStr = messageJSON.toPrettyString();
 		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
@@ -131,9 +133,129 @@ public class TestPods {
 	}
 
 	@Test
+	public void testRationalHalf() {
+		String s = System.getProperty("os.name");
+		ObjectNode messageJSON = Pods.createResult("1/2", formatsTEX);
+		final String jsonStr = messageJSON.toPrettyString();
+		System.out.println(jsonStr);
+		if (s.contains("Windows")) {
+			assertEquals(jsonStr, //
+					"{\r\n" + //
+					"  \"queryresult\" : {\r\n" + //
+					"    \"success\" : \"true\",\r\n" + //
+					"    \"error\" : \"false\",\r\n" + //
+					"    \"numpods\" : 3,\r\n" + //
+					"    \"version\" : \"0.1\",\r\n" + //
+					"    \"pods\" : [ {\r\n" + //
+					"      \"title\" : \"Input\",\r\n" + //
+					"      \"scanner\" : \"Identity\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"1/2\",\r\n" + //
+					"        \"sinput\" : \"1/2\",\r\n" + //
+					"        \"latex\" : \"\\\\frac{1}{2}\"\r\n" + //
+					"      } ]\r\n" + //
+					"    }, {\r\n" + //
+					"      \"title\" : \"Exact result\",\r\n" + //
+					"      \"scanner\" : \"Rational\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"1/2\",\r\n" + //
+					"        \"sinput\" : \"1/2\",\r\n" + //
+					"        \"latex\" : \"\\\\frac{1}{2}\"\r\n" + //
+					"      } ]\r\n" + //
+					"    }, {\r\n" + //
+					"      \"title\" : \"Decimal form\",\r\n" + //
+					"      \"scanner\" : \"Numeric\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"0.5\",\r\n" + //
+					"        \"sinput\" : \"N(1/2)\",\r\n" + //
+					"        \"latex\" : \"0.5\"\r\n" + //
+					"      } ]\r\n" + //
+					"    } ]\r\n" + //
+					"  }\r\n" + //
+					"}");//
+		}
+	}
+	
+	@Test
+	public void testRationalPlus() {
+		String s = System.getProperty("os.name");
+		ObjectNode messageJSON = Pods.createResult("1/2+3/4", formatsTEX);
+		final String jsonStr = messageJSON.toPrettyString();
+		System.out.println(jsonStr);
+		if (s.contains("Windows")) {
+			assertEquals(jsonStr, //
+					"{\r\n" + //
+					"  \"queryresult\" : {\r\n" + //
+					"    \"success\" : \"true\",\r\n" + //
+					"    \"error\" : \"false\",\r\n" + //
+					"    \"numpods\" : 5,\r\n" + //
+					"    \"version\" : \"0.1\",\r\n" + //
+					"    \"pods\" : [ {\r\n" + //
+					"      \"title\" : \"Input\",\r\n" + //
+					"      \"scanner\" : \"Identity\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"1/2+3/4\",\r\n" + //
+					"        \"sinput\" : \"1/2+3/4\",\r\n" + //
+					"        \"latex\" : \"\\\\frac{1}{2}+\\\\frac{3}{4}\"\r\n" + //
+					"      } ]\r\n" + //
+					"    }, {\r\n" + //
+					"      \"title\" : \"Exact result\",\r\n" + //
+					"      \"scanner\" : \"Rational\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"5/4\",\r\n" + //
+					"        \"sinput\" : \"1/2+3/4\",\r\n" + //
+					"        \"latex\" : \"\\\\frac{5}{4}\"\r\n" + //
+					"      } ]\r\n" + //
+					"    }, {\r\n" + //
+					"      \"title\" : \"Decimal form\",\r\n" + //
+					"      \"scanner\" : \"Numeric\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"1.25\",\r\n" + //
+					"        \"sinput\" : \"N(5/4)\",\r\n" + //
+					"        \"latex\" : \"1.25\"\r\n" + //
+					"      } ]\r\n" + //
+					"    }, {\r\n" + //
+					"      \"title\" : \"Mixed fraction\",\r\n" + //
+					"      \"scanner\" : \"Rational\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"1 1/4\",\r\n" + //
+					"        \"sinput\" : \"{IntegerPart(5/4),FractionalPart(5/4)}\",\r\n" + //
+					"        \"latex\" : \"\\\\{1,\\\\frac{1}{4}\\\\}\"\r\n" + //
+					"      } ]\r\n" + //
+					"    }, {\r\n" + //
+					"      \"title\" : \"Continued fraction\",\r\n" + //
+					"      \"scanner\" : \"ContinuedFraction\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"[1; 4]\",\r\n" + //
+					"        \"sinput\" : \"ContinuedFraction(5/4)\",\r\n" + //
+					"        \"latex\" : \"\\\\{1,4\\\\}\"\r\n" + //
+					"      } ]\r\n" + //
+					"    } ]\r\n" + //
+					"  }\r\n" + //
+					"}");//
+		}
+	}
+
+	@Test
 	public void testPlotSin() {
 		String s = System.getProperty("os.name");
-		ObjectNode messageJSON = Pods.createResult("Plot(Sin(x), {x, 0, 6*Pi} )", formats);
+		ObjectNode messageJSON = Pods.createResult("Plot(Sin(x), {x, 0, 6*Pi} )", formatsMATHML);
 		final String jsonStr = messageJSON.toPrettyString();
 		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
@@ -153,7 +275,7 @@ public class TestPods {
 	public void testComplexPlot3D() {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods
-				.createResult("ComplexPlot3D((z^2 + 1)/(z^2 - 1),  {z, -2 - 2*I, 2 + 2*I}, PlotRange->{0,3})", formats);
+				.createResult("ComplexPlot3D((z^2 + 1)/(z^2 - 1),  {z, -2 - 2*I, 2 + 2*I}, PlotRange->{0,3})", formatsMATHML);
 		final String jsonStr = messageJSON.toPrettyString();
 		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
@@ -172,7 +294,7 @@ public class TestPods {
 	@Test
 	public void testHistogram() {
 		String s = System.getProperty("os.name");
-		ObjectNode messageJSON = Pods.createResult("Histogram(RandomVariate(NormalDistribution(0, 1), 200))", formats);
+		ObjectNode messageJSON = Pods.createResult("Histogram(RandomVariate(NormalDistribution(0, 1), 200))", formatsMATHML);
 		final String jsonStr = messageJSON.toPrettyString();
 		System.out.println(jsonStr);
 		if (s.contains("Windows")) {
@@ -180,60 +302,64 @@ public class TestPods {
 
 		}
 	}
-	
+
 	@Test
 	public void testList() {
 		String s = System.getProperty("os.name");
-		ObjectNode messageJSON = Pods.createResult("1,2,3", formats);
+		ObjectNode messageJSON = Pods.createResult("1,2,3", formatsMATHML);
 		final String jsonStr = messageJSON.toPrettyString();
 		System.out.println(jsonStr);
-		if (s.contains("Windows")) { 
+		if (s.contains("Windows")) {
 			assertEquals(jsonStr, //
 					"{\r\n" + //
-					"  \"queryresult\" : {\r\n" + //
-					"    \"success\" : \"true\",\r\n" + //
-					"    \"error\" : \"false\",\r\n" + //
-					"    \"numpods\" : 4,\r\n" + //
-					"    \"version\" : \"0.1\",\r\n" + //
-					"    \"pods\" : [ {\r\n" + //
-					"      \"title\" : \"Input\",\r\n" + //
-					"      \"scanner\" : \"Identity\",\r\n" + //
-					"      \"error\" : \"false\",\r\n" + //
-					"      \"numsubpods\" : 1,\r\n" + //
-					"      \"subpods\" : [ {\r\n" + //
-					"        \"plaintext\" : \"{1,2,3}\",\r\n" + //
-					"        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mrow><mo>{</mo><mrow><mn>1</mn><mo>,</mo><mn>2</mn><mo>,</mo><mn>3</mn></mrow><mo>}</mo></mrow></math>\"\r\n" + //
-					"      } ]\r\n" + //
-					"    }, {\r\n" + //
-					"      \"title\" : \"Total\",\r\n" + //
-					"      \"scanner\" : \"List\",\r\n" + //
-					"      \"error\" : \"false\",\r\n" + //
-					"      \"numsubpods\" : 1,\r\n" + //
-					"      \"subpods\" : [ {\r\n" + //
-					"        \"plaintext\" : \"6\",\r\n" + //
-					"        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mn>6</mn></math>\"\r\n" + //
-					"      } ]\r\n" + //
-					"    }, {\r\n" + //
-					"      \"title\" : \"Vector length\",\r\n" + //
-					"      \"scanner\" : \"List\",\r\n" + //
-					"      \"error\" : \"false\",\r\n" + //
-					"      \"numsubpods\" : 1,\r\n" + //
-					"      \"subpods\" : [ {\r\n" + //
-					"        \"plaintext\" : \"3.7416573867739413\",\r\n" + //
-					"        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mn>3.74166</mn></math>\"\r\n" + //
-					"      } ]\r\n" + //
-					"    }, {\r\n" + //
-					"      \"title\" : \"Normalized vector\",\r\n" + //
-					"      \"scanner\" : \"List\",\r\n" + //
-					"      \"error\" : \"false\",\r\n" + //
-					"      \"numsubpods\" : 1,\r\n" + //
-					"      \"subpods\" : [ {\r\n" + //
-					"        \"plaintext\" : \"{1/Sqrt(14),Sqrt(2/7),3/Sqrt(14)}\",\r\n" + //
-					"        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mrow><mo>{</mo><mrow><mfrac><mn>1</mn><msqrt><mn>14</mn></msqrt></mfrac><mo>,</mo><msqrt><mrow><mfrac><mn>2</mn><mn>7</mn></mfrac></mrow></msqrt><mo>,</mo><mfrac><mn>3</mn><msqrt><mn>14</mn></msqrt></mfrac></mrow><mo>}</mo></mrow></math>\"\r\n" + //
-					"      } ]\r\n" + //
-					"    } ]\r\n" + //
-					"  }\r\n" + //
-					"}");//
+							"  \"queryresult\" : {\r\n" + //
+							"    \"success\" : \"true\",\r\n" + //
+							"    \"error\" : \"false\",\r\n" + //
+							"    \"numpods\" : 4,\r\n" + //
+							"    \"version\" : \"0.1\",\r\n" + //
+							"    \"pods\" : [ {\r\n" + //
+							"      \"title\" : \"Input\",\r\n" + //
+							"      \"scanner\" : \"Identity\",\r\n" + //
+							"      \"error\" : \"false\",\r\n" + //
+							"      \"numsubpods\" : 1,\r\n" + //
+							"      \"subpods\" : [ {\r\n" + //
+							"        \"plaintext\" : \"{1,2,3}\",\r\n" + //
+							"        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mrow><mo>{</mo><mrow><mn>1</mn><mo>,</mo><mn>2</mn><mo>,</mo><mn>3</mn></mrow><mo>}</mo></mrow></math>\"\r\n"
+							+ //
+							"      } ]\r\n" + //
+							"    }, {\r\n" + //
+							"      \"title\" : \"Total\",\r\n" + //
+							"      \"scanner\" : \"List\",\r\n" + //
+							"      \"error\" : \"false\",\r\n" + //
+							"      \"numsubpods\" : 1,\r\n" + //
+							"      \"subpods\" : [ {\r\n" + //
+							"        \"plaintext\" : \"6\",\r\n" + //
+							"        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mn>6</mn></math>\"\r\n"
+							+ //
+							"      } ]\r\n" + //
+							"    }, {\r\n" + //
+							"      \"title\" : \"Vector length\",\r\n" + //
+							"      \"scanner\" : \"List\",\r\n" + //
+							"      \"error\" : \"false\",\r\n" + //
+							"      \"numsubpods\" : 1,\r\n" + //
+							"      \"subpods\" : [ {\r\n" + //
+							"        \"plaintext\" : \"3.7416573867739413\",\r\n" + //
+							"        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mn>3.74166</mn></math>\"\r\n"
+							+ //
+							"      } ]\r\n" + //
+							"    }, {\r\n" + //
+							"      \"title\" : \"Normalized vector\",\r\n" + //
+							"      \"scanner\" : \"List\",\r\n" + //
+							"      \"error\" : \"false\",\r\n" + //
+							"      \"numsubpods\" : 1,\r\n" + //
+							"      \"subpods\" : [ {\r\n" + //
+							"        \"plaintext\" : \"{1/Sqrt(14),Sqrt(2/7),3/Sqrt(14)}\",\r\n" + //
+							"        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mrow><mo>{</mo><mrow><mfrac><mn>1</mn><msqrt><mn>14</mn></msqrt></mfrac><mo>,</mo><msqrt><mrow><mfrac><mn>2</mn><mn>7</mn></mfrac></mrow></msqrt><mo>,</mo><mfrac><mn>3</mn><msqrt><mn>14</mn></msqrt></mfrac></mrow><mo>}</mo></mrow></math>\"\r\n"
+							+ //
+							"      } ]\r\n" + //
+							"    } ]\r\n" + //
+							"  }\r\n" + //
+							"}");//
 		}
 	}
 }

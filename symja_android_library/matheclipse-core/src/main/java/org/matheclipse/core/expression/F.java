@@ -6360,6 +6360,10 @@ public class F {
 		return new AST0(Continue);
 	}
 
+	public static IAST ContinuedFraction(final IExpr a0) {
+		return new AST1(ContinuedFraction, a0);
+	}
+	
 	public static IAST CoprimeQ(final IExpr a0, final IExpr a1) {
 		return new AST2(CoprimeQ, a0, a1);
 	}

@@ -22,6 +22,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.parser.ExprParserFactory;
@@ -191,6 +192,22 @@ public class Pods {
 		createJSONFormat(node, engine, inExpr.toString(), outExpr, formats);
 	}
 
+	static void addSymjaPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String plaintext, String title,
+			String scanner, int formats, ObjectMapper mapper, EvalEngine engine) {
+		ArrayNode temp = mapper.createArrayNode();
+		ObjectNode subpodsResult = mapper.createObjectNode();
+		subpodsResult.put("title", title);
+		subpodsResult.put("scanner", scanner);
+		subpodsResult.put("error", "false");
+		subpodsResult.put("numsubpods", 1);
+		subpodsResult.putPOJO("subpods", temp);
+		podsArray.add(subpodsResult);
+
+		ObjectNode node = mapper.createObjectNode();
+		temp.add(node);
+		createJSONFormat(node, engine, plaintext, inExpr.toString(), outExpr, formats);
+	}
+
 	static void addPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String title, String scanner, int formats,
 			ObjectMapper mapper, EvalEngine engine) {
 		ArrayNode temp = mapper.createArrayNode();
@@ -207,7 +224,7 @@ public class Pods {
 		createJSONFormat(node, engine, outExpr, formats);
 	}
 
-	static void addPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String text, String title, String scanner,
+	static void addPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String plaintext, String title, String scanner,
 			int formats, ObjectMapper mapper, EvalEngine engine) {
 		ArrayNode temp = mapper.createArrayNode();
 		ObjectNode subpodsResult = mapper.createObjectNode();
@@ -220,7 +237,7 @@ public class Pods {
 
 		ObjectNode node = mapper.createObjectNode();
 		temp.add(node);
-		createJSONFormat(node, engine, outExpr, text, "", formats);
+		createJSONFormat(node, engine, outExpr, plaintext, "", formats);
 	}
 
 	static void integerPropertiesPod(ArrayNode podsArray, IInteger inExpr, IExpr outExpr, String title, String scanner,
@@ -325,10 +342,63 @@ public class Pods {
 				ArrayNode podsArray = mapper.createArrayNode();
 				inExpr = parseInput(inputStr, engine);
 				if (inExpr.isPresent()) {
-					if (inExpr.isNumber()) {
-						outExpr = inExpr;
-						if (inExpr.isInteger()) {
+					outExpr = inExpr;
+					if (inExpr.isNumericFunction()) {
+						outExpr = engine.evaluate(inExpr);
+					}
+					if (outExpr.isNumber()) {
+						if (outExpr.isInteger()) {
 							numpods = integerPods(podsArray, (IInteger) inExpr, outExpr, formats, mapper, engine);
+							resultStatistics(queryresult, error, numpods, podsArray);
+							return messageJSON;
+						} else {
+							IExpr podOut = outExpr;
+							addSymjaPod(podsArray, inExpr, inExpr, "Input", "Identity", formats, mapper, engine);
+							numpods++;
+							if (outExpr.isRational()) {
+								addSymjaPod(podsArray, inExpr, podOut, "Exact result", "Rational", formats, mapper,
+										engine);
+								numpods++;
+							}
+
+							inExpr = F.N(outExpr);
+							podOut = engine.evaluate(inExpr);
+							addSymjaPod(podsArray, inExpr, podOut, "Decimal form", "Numeric", formats, mapper, engine);
+							numpods++;
+
+							if (outExpr.isFraction()) {
+								IFraction frac = (IFraction) outExpr;
+								if (!frac.integerPart().equals(F.C0)) {
+									inExpr = F.List(F.IntegerPart(outExpr), F.FractionalPart(outExpr));
+									podOut = engine.evaluate(inExpr);
+									String plaintext = podOut.first().toString() + " " + podOut.second().toString();
+									addSymjaPod(podsArray, inExpr, podOut, plaintext, "Mixed fraction", "Rational",
+											formats, mapper, engine);
+									numpods++;
+
+									inExpr = F.ContinuedFraction(outExpr);
+									podOut = engine.evaluate(inExpr);
+									StringBuilder plainBuf = new StringBuilder();
+									if (podOut.isList() && podOut.size() > 1) {
+										IAST list = (IAST) podOut;
+										plainBuf.append('[');
+										plainBuf.append(list.arg1().toString());
+										plainBuf.append(';');
+										for (int i = 2; i < list.size(); i++) {
+											plainBuf.append(' ');
+											plainBuf.append(list.get(i).toString());
+											if (i < list.size() - 1) {
+												plainBuf.append(',');
+											}
+										}
+										plainBuf.append(']');
+									}
+									addSymjaPod(podsArray, inExpr, podOut, plainBuf.toString(), "Continued fraction",
+											"ContinuedFraction", formats, mapper, engine);
+									numpods++;
+								}
+							}
+
 							resultStatistics(queryresult, error, numpods, podsArray);
 							return messageJSON;
 						}
@@ -569,6 +639,11 @@ public class Pods {
 		createJSONFormat(json, engine, outExpr, null, sinput, formats);
 	}
 
+	private static void createJSONFormat(ObjectNode json, EvalEngine engine, String plaintext, String sinput,
+			IExpr outExpr, int formats) {
+		createJSONFormat(json, engine, outExpr, plaintext, sinput, formats);
+	}
+
 	/**
 	 * 
 	 * @param json
@@ -606,7 +681,7 @@ public class Pods {
 		if ((formats & MATHML) != 0x00) {
 			StringWriter stw = new StringWriter();
 			MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false);
-			if (!mathUtil.toMathML(outExpr, stw, true)) {
+			if (!mathUtil.toMathML(F.HoldForm(outExpr), stw, true)) {
 				// return createJSONErrorString("Max. output size exceeded " + Config.MAX_OUTPUT_SIZE);
 			} else {
 				json.put(MATHML_STR, stw.toString());
@@ -615,7 +690,7 @@ public class Pods {
 		if ((formats & LATEX) != 0x00) {
 			StringWriter stw = new StringWriter();
 			TeXUtilities texUtil = new TeXUtilities(engine, engine.isRelaxedSyntax());
-			if (!texUtil.toTeX(outExpr, stw)) {
+			if (!texUtil.toTeX(F.HoldForm(outExpr), stw)) {
 				//
 			} else {
 				json.put(LATEX_STR, stw.toString());
