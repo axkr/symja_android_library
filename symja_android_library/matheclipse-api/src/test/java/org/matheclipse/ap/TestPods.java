@@ -272,6 +272,122 @@ public class TestPods {
 	}
 
 	@Test
+	public void testSin() {
+		String s = System.getProperty("os.name");
+		ObjectNode messageJSON = Pods.createResult("Sin(x)", formatsTEX);
+		final String jsonStr = messageJSON.toPrettyString();
+		System.out.println(jsonStr);
+		if (s.contains("Windows")) {
+			assertEquals(jsonStr, //
+					"{\r\n" + //
+					"  \"queryresult\" : {\r\n" + //
+					"    \"success\" : \"true\",\r\n" + //
+					"    \"error\" : \"false\",\r\n" + //
+					"    \"numpods\" : 5,\r\n" + //
+					"    \"version\" : \"0.1\",\r\n" + //
+					"    \"pods\" : [ {\r\n" + //
+					"      \"title\" : \"Input\",\r\n" + //
+					"      \"scanner\" : \"Identity\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"Sin(x)\",\r\n" + //
+					"        \"sinput\" : \"Sin(x)\",\r\n" + //
+					"        \"latex\" : \"\\\\sin (x)\"\r\n" + //
+					"      } ]\r\n" + //
+					"    }, {\r\n" + //
+					"      \"title\" : \"Function\",\r\n" + //
+					"      \"scanner\" : \"Plotter\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/jsxgraphcore.css&quot; /&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.8/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/jsxgraphcore.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/geonext.min.js&quot;\\n        type=&quot;text/javascript&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-7.7,1.1,7.7,-1.1]});\\nboard.suspendUpdate();\\n\\nfunction z1(x) { return sin(x); }\\nvar p1 = board.create('functiongraph',[z1, -7.0, 7.0]);\\nvar data = [ p1 ];\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + //
+					"      } ]\r\n" + //
+					"    }, {\r\n" + //
+					"      \"title\" : \"Alternate form\",\r\n" + //
+					"      \"scanner\" : \"Simplification\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"(I*1/2)/E^(I*x)-I*1/2*E^(I*x)\",\r\n" + //
+					"        \"sinput\" : \"TrigToExp(Sin(x))\",\r\n" + //
+					"        \"latex\" : \"\\\\frac{\\\\frac{1}{2}\\\\,i }{{e}^{i \\\\,x}} + \\\\left( \\\\frac{-1}{2}\\\\,i \\\\right) \\\\,{e}^{i \\\\,x}\"\r\n" + //
+					"      } ]\r\n" + //
+					"    }, {\r\n" + //
+					"      \"title\" : \"Derivative\",\r\n" + //
+					"      \"scanner\" : \"Derivative\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"Cos(x)\",\r\n" + //
+					"        \"sinput\" : \"D(Sin(x),x)\",\r\n" + //
+					"        \"latex\" : \"\\\\cos (x)\"\r\n" + //
+					"      } ]\r\n" + //
+					"    }, {\r\n" + //
+					"      \"title\" : \"Indefinite integral\",\r\n" + //
+					"      \"scanner\" : \"Integral\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"-Cos(x)\",\r\n" + //
+					"        \"sinput\" : \"Integrate(Sin(x),x)\",\r\n" + //
+					"        \"latex\" : \" - \\\\cos (x)\"\r\n" + //
+					"      } ]\r\n" + //
+					"    } ]\r\n" + //
+					"  }\r\n" + //
+					"}");//
+		}
+	}
+	
+	@Test
+	public void testSinXY() {
+		String s = System.getProperty("os.name");
+		ObjectNode messageJSON = Pods.createResult("Sin(x*y)", formatsTEX);
+		final String jsonStr = messageJSON.toPrettyString();
+		System.out.println(jsonStr);
+		if (s.contains("Windows")) {
+			assertEquals(jsonStr, //
+					"{\r\n" + //
+					"  \"queryresult\" : {\r\n" + //
+					"    \"success\" : \"true\",\r\n" + //
+					"    \"error\" : \"false\",\r\n" + //
+					"    \"numpods\" : 3,\r\n" + //
+					"    \"version\" : \"0.1\",\r\n" + //
+					"    \"pods\" : [ {\r\n" + //
+					"      \"title\" : \"Input\",\r\n" + //
+					"      \"scanner\" : \"Identity\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"Sin(x*y)\",\r\n" + //
+					"        \"sinput\" : \"Sin(x*y)\",\r\n" + //
+					"        \"latex\" : \"\\\\sin (x\\\\,y)\"\r\n" + //
+					"      } ]\r\n" + //
+					"    }, {\r\n" + //
+					"      \"title\" : \"3D plot\",\r\n" + //
+					"      \"scanner\" : \"Plot\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"mathcell\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;MathCell&lt;/title&gt;\\n&lt;/head&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.8/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.8.8/build/mathcell.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML&quot;&gt;&lt;/script&gt;\\n&lt;div class=&quot;mathcell&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\n\\nvar parent = document.scripts[ document.scripts.length - 1 ].parentNode;\\n\\nvar id = generateId();\\nparent.id = id;\\n\\nMathCell( id, [  ] );\\n\\nparent.update = function( id ) {\\n\\n\\nfunction z1(x,y) { return [ x, y, sin(mul(x,y)) ]; }\\n\\nvar p1 = parametric( z1, [-3.5, 3.5], [-3.5, 3.5], { colormap: 'hot' } );\\n\\n  var config = { type: 'threejs' };\\n  var data = [p1];\\nevaluate( id, data, config );\\n\\n}\\n\\nparent.update( id );\\n\\n&lt;/script&gt;\\n&lt;/div&gt;\\n\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\r\n" + //
+					"      } ]\r\n" + //
+					"    }, {\r\n" + //
+					"      \"title\" : \"Alternate form\",\r\n" + //
+					"      \"scanner\" : \"Simplification\",\r\n" + //
+					"      \"error\" : \"false\",\r\n" + //
+					"      \"numsubpods\" : 1,\r\n" + //
+					"      \"subpods\" : [ {\r\n" + //
+					"        \"plaintext\" : \"(I*1/2)/E^(I*x*y)-I*1/2*E^(I*x*y)\",\r\n" + //
+					"        \"sinput\" : \"TrigToExp(Sin(x*y))\",\r\n" + //
+					"        \"latex\" : \"\\\\frac{\\\\frac{1}{2}\\\\,i }{{e}^{i \\\\,x\\\\,y}} + \\\\left( \\\\frac{-1}{2}\\\\,i \\\\right) \\\\,{e}^{i \\\\,x\\\\,y}\"\r\n" + //
+					"      } ]\r\n" + //
+					"    } ]\r\n" + //
+					"  }\r\n" + //
+					"}");//
+		}
+	} 
+	
+	@Test
 	public void testComplexPlot3D() {
 		String s = System.getProperty("os.name");
 		ObjectNode messageJSON = Pods

@@ -15,6 +15,7 @@ import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
@@ -441,12 +442,14 @@ public class Pods {
 										engine);
 								numpods++;
 
-								inExpr = F.TrigToExp(outExpr);
-								podOut = engine.evaluate(inExpr);
-								if (!F.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
-									addSymjaPod(podsArray, inExpr, podOut, "Alternate form", "Simplification", formats,
-											mapper, engine);
-									numpods++;
+								if (outExpr.isFreeAST(x -> x.isTrigFunction())) {
+									inExpr = F.TrigToExp(outExpr);
+									podOut = engine.evaluate(inExpr);
+									if (!F.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
+										addSymjaPod(podsArray, inExpr, podOut, "Alternate form", "Simplification",
+												formats, mapper, engine);
+										numpods++;
+									}
 								}
 								resultStatistics(queryresult, error, numpods, podsArray);
 								return messageJSON;
@@ -454,8 +457,8 @@ public class Pods {
 								outExpr = engine.evaluate(inExpr);
 								if (outExpr.isAST(F.JSFormData, 3)) {
 									IExpr podOut = outExpr;
-									int form = internFormat(0, outExpr.second().toString());
-									addPod(podsArray, inExpr, podOut, outExpr.first().toString(), "Function", "Plotter",
+									int form = internFormat(0, podOut.second().toString());
+									addPod(podsArray, inExpr, podOut, podOut.first().toString(), "Function", "Plotter",
 											form, mapper, engine);
 									numpods++;
 								} else {
@@ -463,6 +466,57 @@ public class Pods {
 									addSymjaPod(podsArray, inExpr, podOut, "Input", "Identity", formats, mapper,
 											engine);
 									numpods++;
+
+									VariablesSet varSet = new VariablesSet(outExpr);
+									IAST variables = varSet.getVarList();
+									boolean isNumericFunction = outExpr.isNumericFunction(varSet);
+									if (isNumericFunction) {
+										if (variables.size() == 2) {
+											IExpr plot2D = F.Plot(outExpr,
+													F.List(variables.arg1(), F.num(-7), F.num(7)));
+											podOut = engine.evaluate(plot2D);
+											if (podOut.isAST(F.JSFormData, 3)) {
+												int form = internFormat(0, podOut.second().toString());
+												addPod(podsArray, inExpr, podOut, podOut.first().toString(), "Function",
+														"Plotter", form, mapper, engine);
+												numpods++;
+											}
+										} else if (variables.size() == 3) {
+											IExpr plot3D = F.Plot3D(outExpr,
+													F.List(variables.arg1(), F.num(-3.5), F.num(3.5)),
+													F.List(variables.arg2(), F.num(-3.5), F.num(3.5)));
+											podOut = engine.evaluate(plot3D);
+											if (podOut.isAST(F.JSFormData, 3)) {
+												int form = internFormat(0, podOut.second().toString());
+												addPod(podsArray, inExpr, podOut, podOut.first().toString(), "3D plot",
+														"Plot", form, mapper, engine);
+												numpods++;
+											}
+										}
+									}
+									if (outExpr.isFreeAST(x -> x.isTrigFunction())) {
+										inExpr = F.TrigToExp(outExpr);
+										podOut = engine.evaluate(inExpr);
+										if (!F.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
+											addSymjaPod(podsArray, inExpr, podOut, "Alternate form", "Simplification",
+													formats, mapper, engine);
+											numpods++;
+										}
+									}
+
+									if (isNumericFunction && variables.size() == 2) {
+										inExpr = F.D(outExpr, variables.arg1());
+										podOut = engine.evaluate(inExpr);
+										addSymjaPod(podsArray, inExpr, podOut, "Derivative", "Derivative", formats,
+												mapper, engine);
+										numpods++;
+
+										inExpr = F.Integrate(outExpr, variables.arg1());
+										podOut = engine.evaluate(inExpr);
+										addSymjaPod(podsArray, inExpr, podOut, "Indefinite integral", "Integral",
+												formats, mapper, engine);
+										numpods++;
+									}
 								}
 
 								resultStatistics(queryresult, error, numpods, podsArray);
