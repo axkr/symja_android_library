@@ -22,6 +22,7 @@ import org.jgrapht.GraphType;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.PredicateQ;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
@@ -2244,6 +2245,18 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default boolean isNumericFunction() {
 		return isNumber() || isConstantAttribute();
+	}
+
+	/**
+	 * Test if this expression is a numeric function (i.e. a number, a symbolic constant or a function (with attribute
+	 * NumericFunction) where all arguments are also &quot;numeric functions&quot;) under the assumption, that all
+	 * variables contained in <code>varSet</code> are also numeric.
+	 * 
+	 * @return <code>true</code>, if the given expression is a numeric function or value, assuming all variables contained
+	 *         in <code>varSet</code> are also numeric.
+	 */
+	default boolean isNumericFunction(VariablesSet varSet) {
+		return isNumericFunction() || varSet.contains(this);
 	}
 
 	/**

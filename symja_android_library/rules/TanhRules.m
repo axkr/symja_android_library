@@ -1,4 +1,5 @@
  {
+ Tanh(Undefined)=Undefined,
  Tanh(0)=0,
  Tanh(1/4*Pi*I)=I,
  Tanh(1/3*Pi*I)=Sqrt(3)*I,

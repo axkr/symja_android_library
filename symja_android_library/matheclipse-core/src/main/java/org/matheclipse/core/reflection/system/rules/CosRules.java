@@ -13,10 +13,13 @@ public interface CosRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 55, 12 };
+  final public static int[] SIZES = { 56, 12 };
 
   final public static IAST RULES = List(
     IInit(Cos, SIZES),
+    // Cos(Undefined)=Undefined
+    ISet(Cos(Undefined),
+      Undefined),
     // Cos(0)=1
     ISet(Cos(C0),
       C1),

@@ -1,4 +1,6 @@
-{  
+{
+ BesselY(Undefined, y_):=Undefined,
+ BesselY(x_, Undefined):=Undefined, 
  BesselY(-1/2,z_):=(Sqrt(2/Pi)*Sin(z))/Sqrt(z), 
  BesselY(1/2,z_):=(-Sqrt(2/Pi)*Cos(z))/Sqrt(z),
  

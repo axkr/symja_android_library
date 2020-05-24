@@ -13,10 +13,13 @@ public interface ArcSinRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 16, 0 };
+  final public static int[] SIZES = { 17, 0 };
 
   final public static IAST RULES = List(
     IInit(ArcSin, SIZES),
+    // ArcSin(Undefined)=Undefined
+    ISet(ArcSin(Undefined),
+      Undefined),
     // ArcSin(0)=0
     ISet(ArcSin(C0),
       C0),

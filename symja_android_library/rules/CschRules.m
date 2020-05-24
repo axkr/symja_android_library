@@ -1,4 +1,5 @@
  {
+ Csch(Undefined)=Undefined,
  Csch(0)=ComplexInfinity,
  Csch(1/6*Pi*I)=-2*I,
  Csch(1/4*Pi*I)=-Sqrt(2)*I,

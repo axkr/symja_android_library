@@ -1,4 +1,5 @@
 {
+ProductLog(Undefined)=Undefined,
 ProductLog(0)=0,
 ProductLog(-Pi/2)=I*Pi/2,
 ProductLog(-1/E) = -1,

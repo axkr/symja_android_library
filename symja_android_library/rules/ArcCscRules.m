@@ -1,4 +1,5 @@
-{ 
+{
+ ArcCsc(Undefined)=Undefined, 
  ArcCsc(0)=ComplexInfinity,
  ArcCsc(1)=1/2*Pi, 
  ArcCsc(Sqrt(6)-Sqrt(2))=5/12*Pi,

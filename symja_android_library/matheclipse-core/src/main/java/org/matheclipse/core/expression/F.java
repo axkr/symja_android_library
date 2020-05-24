@@ -5410,7 +5410,23 @@ public class F {
 	public static IASTMutable ApplyListC1(final IExpr a0, final IExpr a1) {
 		return new AST3(Apply, a0, a1, CListC1);
 	}
+	
+	public static IAST AiryAi(final IExpr a0) {
+		return new AST1(AiryAi, a0);
+	}
+	
+	public static IAST AiryAiPrime(final IExpr a0) {
+		return new AST1(AiryAiPrime, a0);
+	}
 
+	public static IAST AiryBi(final IExpr a0) {
+		return new AST1(AiryBi, a0);
+	}
+	
+	public static IAST AiryBiPrime(final IExpr a0) {
+		return new AST1(AiryBiPrime, a0);
+	}
+	
 	public static IAST Array(final IExpr a0, final IExpr a1) {
 		return new AST2(Array, a0, a1);
 	}
@@ -8991,8 +9007,8 @@ public class F {
 		return new AST2(Plot, a0, a1);
 	}
 
-	public static IAST Plot3D(final IExpr a0, final IExpr a1) {
-		return new AST2(Plot3D, a0, a1);
+	public static IAST Plot3D(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return new AST3(Plot3D, a0, a1, a2);
 	}
 
 	public static IExpr plus(IExpr a, Integer i) {

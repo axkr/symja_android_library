@@ -1,4 +1,5 @@
 {
+ ArcSinh(Undefined)=Undefined,
  ArcSinh(0)=0,
  ArcSinh(I/2)=Pi*I/6,
  ArcSinh(I/2*Sqrt(2))=Pi*I/4,

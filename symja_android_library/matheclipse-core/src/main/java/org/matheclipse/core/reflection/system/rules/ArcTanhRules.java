@@ -13,10 +13,13 @@ public interface ArcTanhRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 8, 0 };
+  final public static int[] SIZES = { 9, 0 };
 
   final public static IAST RULES = List(
     IInit(ArcTanh, SIZES),
+    // ArcTanh(Undefined)=Undefined
+    ISet(ArcTanh(Undefined),
+      Undefined),
     // ArcTanh(0)=0
     ISet(ArcTanh(C0),
       C0),

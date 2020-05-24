@@ -1,4 +1,5 @@
 { 
+ Log(Undefined)=Undefined, 
  Log(1)=0, 
  Log(E)=1, 
  Log(E^(x_?RealNumberQ)):=x, 

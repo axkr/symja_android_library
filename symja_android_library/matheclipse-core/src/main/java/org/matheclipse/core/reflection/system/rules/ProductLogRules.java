@@ -13,10 +13,13 @@ public interface ProductLogRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 11, 0 };
+  final public static int[] SIZES = { 12, 0 };
 
   final public static IAST RULES = List(
     IInit(ProductLog, SIZES),
+    // ProductLog(Undefined)=Undefined
+    ISet(ProductLog(Undefined),
+      Undefined),
     // ProductLog(0)=0
     ISet(ProductLog(C0),
       C0),

@@ -13,13 +13,25 @@ public interface DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 94 };
+  final public static int[] SIZES = { 0, 102 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
     // D(Abs(f_),x_?NotListQ):=D(f,x)*x/Abs(x)/;Element(x,Reals)
     ISetDelayed(D(Abs(f_),PatternTest(x_,NotListQ)),
       Condition(Times(D(f,x),x,Power(Abs(x),CN1)),Element(x,Reals))),
+    // D(AiryAi(f_),x_?NotListQ):=D(f,x)*AiryAiPrime(f)
+    ISetDelayed(D(AiryAi(f_),PatternTest(x_,NotListQ)),
+      Times(D(f,x),AiryAiPrime(f))),
+    // D(AiryAiPrime(f_),x_?NotListQ):=D(f,x)*AiryAi(f)*f
+    ISetDelayed(D(AiryAiPrime(f_),PatternTest(x_,NotListQ)),
+      Times(D(f,x),AiryAi(f),f)),
+    // D(AiryBi(f_),x_?NotListQ):=D(f,x)*AiryBiPrime(f)
+    ISetDelayed(D(AiryBi(f_),PatternTest(x_,NotListQ)),
+      Times(D(f,x),AiryBiPrime(f))),
+    // D(AiryBiPrime(f_),x_?NotListQ):=D(f,x)*AiryBi(f)*f
+    ISetDelayed(D(AiryBiPrime(f_),PatternTest(x_,NotListQ)),
+      Times(D(f,x),AiryBi(f),f)),
     // D(ArcCos(f_),x_?NotListQ):=(D(f,x)*(-1))/Sqrt(1-f^2)
     ISetDelayed(D(ArcCos(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),CN1,Power(Subtract(C1,Sqr(f)),CN1D2))),
@@ -59,6 +71,12 @@ public interface DRules {
     // D(Ceiling(f_),x_?NotListQ):=D(f,x)*Piecewise({{0,f<Ceiling(f)}},Indeterminate)
     ISetDelayed(D(Ceiling(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),Piecewise(List(List(C0,Less(f,Ceiling(f)))),Indeterminate))),
+    // D(EllipticE(f_),x_?NotListQ):=(D(f,x)*(EllipticE(f)-EllipticK(f)))/(2*f)
+    ISetDelayed(D(EllipticE(f_),PatternTest(x_,NotListQ)),
+      Times(Power(Times(C2,f),CN1),D(f,x),Subtract(EllipticE(f),EllipticK(f)))),
+    // D(EllipticK(f_),x_?NotListQ):=(D(f,x)*(EllipticE(f)-(1-f)*EllipticK(f)))/(2*(1-f)*f)
+    ISetDelayed(D(EllipticK(f_),PatternTest(x_,NotListQ)),
+      Times(Power(Times(C2,Subtract(C1,f),f),CN1),D(f,x),Plus(EllipticE(f),Times(CN1,Subtract(C1,f),EllipticK(f))))),
     // D(Erf(f_),x_?NotListQ):=D(f,x)*2*1/(E^f^2*Sqrt(Pi))
     ISetDelayed(D(Erf(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),C2,Exp(Negate(Sqr(f))),Power(Pi,CN1D2))),
@@ -92,6 +110,9 @@ public interface DRules {
     // D(HarmonicNumber(f_),x_?NotListQ):=D(f,x)*(Pi^2/6-HarmonicNumber(f,2))
     ISetDelayed(D(HarmonicNumber(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),Subtract(Times(QQ(1L,6L),Sqr(Pi)),HarmonicNumber(f,C2)))),
+    // D(Haversine(f_),x_?NotListQ):=1/2*Sin(f)*D(f,x)
+    ISetDelayed(D(Haversine(f_),PatternTest(x_,NotListQ)),
+      Times(C1D2,Sin(f),D(f,x))),
     // D(HeavisideTheta(f_),x_?NotListQ):=D(f,x)*DiracDelta(f)
     ISetDelayed(D(HeavisideTheta(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),DiracDelta(f))),
@@ -104,6 +125,9 @@ public interface DRules {
     // D(InverseErfc(f_),x_?NotListQ):=D(f,x)*(-1/2)*E^InverseErfc(f)^2*Sqrt(Pi)
     ISetDelayed(D(InverseErfc(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),CN1D2,Exp(Sqr(InverseErfc(f))),Sqrt(Pi))),
+    // D(InverseHaversine(f_),x_?NotListQ):=D(f,x)/Sqrt((1-f)*f)
+    ISetDelayed(D(InverseHaversine(f_),PatternTest(x_,NotListQ)),
+      Times(Power(Times(Subtract(C1,f),f),CN1D2),D(f,x))),
     // D(Log(f_),x_?NotListQ):=D(f,x)/f
     ISetDelayed(D(Log(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),Power(f,CN1))),

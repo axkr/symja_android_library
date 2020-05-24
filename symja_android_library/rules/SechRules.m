@@ -1,4 +1,5 @@
  {
+ Sech(Undefined)=Undefined,
  Sech(0) = 1,
  Sech(1/6*Pi*I) = 2/Sqrt(3), 
  Sech(1/5*Pi*I) = Sqrt(5)-1,  

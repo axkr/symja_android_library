@@ -1,4 +1,5 @@
  {
+ Sinh(Undefined)=Undefined,
  Sinh(0)=0,
  Sinh(1/6*Pi*I)=1/2*I,
  Sinh(1/4*Pi*I)=1/2*Sqrt(2)*I,

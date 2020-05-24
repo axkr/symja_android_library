@@ -13,10 +13,13 @@ public interface SecRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 43, 7 };
+  final public static int[] SIZES = { 44, 7 };
 
   final public static IAST RULES = List(
     IInit(Sec, SIZES),
+    // Sec(Undefined)=Undefined
+    ISet(Sec(Undefined),
+      Undefined),
     // Sec(0)=1
     ISet(Sec(C0),
       C1),

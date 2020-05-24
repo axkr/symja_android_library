@@ -1,4 +1,5 @@
 {
+ArcCos(Undefined)=Undefined,
 ArcCos(0)=1/2*Pi,
 ArcCos(1/2)=1/3*Pi,
 ArcCos(-1/2)=2/3*Pi,

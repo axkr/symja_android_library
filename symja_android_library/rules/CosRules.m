@@ -1,4 +1,5 @@
 {
+Cos(Undefined)=Undefined,
 Cos(0)=1,
 Cos(1/12*Pi)=(1+Sqrt(3))/(2*Sqrt(2)),
 Cos(1/10*Pi)=1/2*Sqrt((5+Sqrt(5))/2),

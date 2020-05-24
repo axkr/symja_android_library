@@ -1,4 +1,5 @@
 { 
+ ArcTan(Undefined)=Undefined,
  ArcTan(0)=0, 
  ArcTan(0,0)=Indeterminate, 
  ArcTan(2-Sqrt(3))=1/12*Pi,
@@ -18,6 +19,8 @@
  
  ArcTan(I)=I*Infinity,
  
+ ArcTan(Undefined, y_):=Undefined,
+ ArcTan(x_, Undefined):=Undefined,
  ArcTan(Infinity, y_)=0, 
  ArcTan(Infinity)=Pi/2,
  ArcTan(-Infinity)=-Pi/2,

@@ -33,6 +33,7 @@ import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.StructureFunctions.LeafCount;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -601,6 +602,12 @@ public abstract class AbstractAST implements IASTMutable {
 		/** {@inheritDoc} */
 		@Override
 		public final boolean isNumericFunction() {
+			return false;
+		}
+		
+		/** {@inheritDoc} */
+		@Override
+		public final boolean isNumericFunction(VariablesSet varSet) {
 			return false;
 		}
 
@@ -3066,6 +3073,16 @@ public abstract class AbstractAST implements IASTMutable {
 		return false;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNumericFunction(VariablesSet varSet) {
+		if (head().isSymbol() && ((ISymbol) head()).isNumericFunctionAttribute() || isList()) {
+			// check if all arguments are &quot;numeric&quot;
+			return forAll(x -> x.isNumericFunction(varSet));
+		}
+		return false;
+	}
+	 
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNumericMode() {

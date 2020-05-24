@@ -4133,6 +4133,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testD() {
+		check("D(AiryAi(Sqrt(x)),x)", //
+				"AiryAiPrime(Sqrt(x))/(2*Sqrt(x))");
+		check("D(AiryAiPrime(Sqrt(x)),x)", //
+				"AiryAi(Sqrt(x))/2");
+		
 		check("D(Piecewise({{x^2, x < 0}, {x, x > 0}}),x)", //
 				"Piecewise({{2*x,x<0},{1,x>0}},0)");
 		check("D(Piecewise({{(x^2 - 1)/(x - 1), x != 1}},2),x)", //
@@ -4658,6 +4663,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Derivative(1)[Sin]", //
 				"Cos(#1)&");
 
+		check("Derivative(1)[Haversine]", //
+				"Sin(#1)/2&");
+		check("Derivative(1)[InverseHaversine]", //
+				"1/Sqrt((1-#1)*#1)&");
 		check("Derivative(0)[#1^2&]", //
 				"#1^2&");
 		check("Derivative(1)[#1^2&]", //

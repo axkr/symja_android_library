@@ -13,10 +13,13 @@ public interface ArcCoshRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 14, 0 };
+  final public static int[] SIZES = { 15, 0 };
 
   final public static IAST RULES = List(
     IInit(ArcCosh, SIZES),
+    // ArcCosh(Undefined)=Undefined
+    ISet(ArcCosh(Undefined),
+      Undefined),
     // ArcCosh(0)=I*Pi/2
     ISet(ArcCosh(C0),
       Times(CC(0L,1L,1L,2L),Pi)),

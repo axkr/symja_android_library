@@ -1,4 +1,5 @@
- {
+{
+Sin(Undefined)=Undefined,
 Sin(0)=0,
 Sin(1/12*Pi)=(-1+Sqrt(3))/(2*Sqrt(2)),
 Sin(1/10*Pi)=1/4*(Sqrt(5)-1),

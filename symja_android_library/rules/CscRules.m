@@ -1,4 +1,5 @@
 {
+ Csc(Undefined)=Undefined,
  Csc(0)=ComplexInfinity,
  Csc(1/12*Pi)=Sqrt(2)+Sqrt(6),
  Csc(Pi/10)=1+Sqrt(5),

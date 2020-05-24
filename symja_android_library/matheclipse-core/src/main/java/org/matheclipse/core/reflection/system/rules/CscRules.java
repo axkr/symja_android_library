@@ -13,10 +13,13 @@ public interface CscRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 43, 6 };
+  final public static int[] SIZES = { 44, 6 };
 
   final public static IAST RULES = List(
     IInit(Csc, SIZES),
+    // Csc(Undefined)=Undefined
+    ISet(Csc(Undefined),
+      Undefined),
     // Csc(0)=ComplexInfinity
     ISet(Csc(C0),
       CComplexInfinity),

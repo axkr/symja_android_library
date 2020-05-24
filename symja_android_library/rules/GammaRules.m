@@ -1,4 +1,5 @@
 {
+  Gamma(Undefined)=Undefined,
   Gamma(-(5/2)) = -((8*Sqrt(Pi))/15),
   Gamma(-(3/2)) = (4*Sqrt(Pi))/3,
   Gamma(-(1/2)) = -2*Sqrt(Pi),
@@ -10,7 +11,9 @@
   Gamma(I*Infinity) = 0,
   Gamma(-I*Infinity) = 0, 
   Gamma(ComplexInfinity) = Indeterminate, 
-   
+
+  Gamma(Undefined, y_):=Undefined,
+  Gamma(x_, Undefined):=Undefined,
   Gamma(a_, -1):=E*Subfactorial(a - 1),
   Gamma(a_, Infinity):=0,
   Gamma(1/2, z_?NumericQ):=Sqrt(Pi)*Erfc(Sqrt(z)),

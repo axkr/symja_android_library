@@ -6,6 +6,8 @@ import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 
 public class ZetaJS {
+	private final static int MAX_VALUE_HALF = Integer.MAX_VALUE / 2;
+
 	private ZetaJS() {
 	}
 
@@ -156,17 +158,28 @@ public class ZetaJS {
 
 		// Johansson arxiv.org/abs/1309.2877
 		final int n = 15; // recommendation of Vepstas, Efficient Algorithm, p.12
-		final int m = 5; // series is asymptotic, could check size of terms
 
 		double S = sumDouble(i -> 1.0 / Math.pow(a + i, x), 0, n - 1);
 
 		double I = Math.pow(a + n, 1.0 - x) / (x - 1.0);
 
-		double T = sumInt(i -> bernoulliInt(2 * i) / GammaJS.factorialInt(2.0 * i) * GammaJS.gamma(x + 2.0 * i - 1.0)
-				/ Math.pow(a + n, 2.0 * i - 1.0), 1, m);
-		T = (0.5 + T / GammaJS.gamma(x)) / Math.pow(a + n, x);
+		double p = x / 2.0 / (a + n);
+		double t = bernoulliInt(2) * p;
+		int i = 1;
+
+		// converges rather quickly
+		while (Math.abs(p) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
+			i++;
+			if (i > MAX_VALUE_HALF) {
+				throw new ArgumentTypeException("Hurwitz zeta: i > MAX_VALUE_HALF");
+			}
+			int iPlusi = i + i;
+			p *= (x + iPlusi - 2.0) * (x + iPlusi - 3.0) / (iPlusi * (iPlusi - 1.0) * Math.pow(a + n, 2));
+			t += bernoulliInt(iPlusi) * p;
+		}
+
+		double T = (0.5 + t) / Math.pow(a + n, x);
 
 		return S + I + T;
-
 	}
 }
