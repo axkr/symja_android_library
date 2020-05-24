@@ -6662,6 +6662,14 @@ public class F {
 	public static IAST Element(final IExpr a0, final IExpr a1) {
 		return new AST2(Element, a0, a1);
 	}
+	
+	public static IAST ElementData(final IExpr a0) {
+		return new AST1(ElementData, a0);
+	}
+	
+	public static IAST ElementData(final IExpr a0, final IExpr a1) {
+		return new AST2(ElementData, a0, a1);
+	}
 
 	public static IAST EllipticE(final IExpr a0) {
 		return new AST1(EllipticE, a0);

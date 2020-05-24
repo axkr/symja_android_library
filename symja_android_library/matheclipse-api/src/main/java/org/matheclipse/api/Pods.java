@@ -1,27 +1,23 @@
 package org.matheclipse.api;
 
 import java.io.StringWriter;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Supplier;
 
 import org.apache.commons.codec.language.Soundex;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
-import org.commonmark.Extension;
-import org.commonmark.ext.gfm.tables.TablesExtension;
-import org.commonmark.node.Node;
-import org.commonmark.parser.Parser;
-import org.commonmark.renderer.html.HtmlRenderer;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.data.ElementData1;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -29,6 +25,7 @@ import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.parser.ExprParserFactory;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
+import org.matheclipse.parser.trie.Trie;
 import org.matheclipse.parser.trie.Tries;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -61,23 +58,57 @@ public class Pods {
 	public static final String JSON = "JSON";
 
 	public static final Soundex SOUNDEX = new Soundex();
-	public static final Map<String, String> SOUNDEX_MAP = Tries.forStrings();
+	public static final Trie<String, ArrayList<IPod>> SOUNDEX_MAP = Tries.forStrings();
 
-	private static Map<String, String> getSoundexKeyWords() {
+	private static Supplier<Trie<String, ArrayList<IPod>>> LAZY_SOUNDEX = Suppliers.memoize(Pods::initSoundex);
+
+	private static Trie<String, ArrayList<IPod>> initSoundex() {
+		Map<String, String> map = AST2Expr.PREDEFINED_SYMBOLS_MAP;
+
+		IAST[] list = ElementData1.ELEMENTS;
+		for (int i = 0; i < list.length; i++) {
+			String keyWord = list[i].arg3().toString();
+			addElementData(list[i].arg2().toString().toLowerCase(), keyWord);
+			soundexElementData(list[i].arg3().toString(), keyWord);
+		}
+
+		for (Map.Entry<String, String> entry : map.entrySet()) {
+			soundexHelp(entry.getKey(), entry.getKey());
+		}
+		// appendSoundex();
+		soundexHelp("cosine", "Cos");
+		soundexHelp("sine", "Sin");
+		soundexHelp("integral", "Integrate");
+
 		return SOUNDEX_MAP;
 	}
 
-	private static Supplier<Map<String, String>> LAZY_SOUNDEX = Suppliers.memoize(Pods::initSoundex);
-
-	private static Map<String, String> initSoundex() {
-		Map<String, String> map = AST2Expr.PREDEFINED_SYMBOLS_MAP;
-		for (Map.Entry<String, String> entry : map.entrySet()) {
-			SOUNDEX_MAP.put(SOUNDEX.encode(entry.getKey()), entry.getKey());
-			// System.out.println(entry.getKey() + " -> " + SOUNDEX.encode(entry.getKey()));
+	private static void soundexHelp(String key, String value) {
+		String soundex = SOUNDEX.encode(key);
+		ArrayList<IPod> list = SOUNDEX_MAP.get(soundex);
+		if (list == null) {
+			list = new ArrayList<IPod>();
+			list.add(new DocumentationPod(value));
+			SOUNDEX_MAP.put(soundex, list);
+		} else {
+			list.add(new DocumentationPod(value));
 		}
-		SOUNDEX_MAP.put(SOUNDEX.encode("cosine"), "Cos");
-		SOUNDEX_MAP.put(SOUNDEX.encode("sine"), "Sin");
-		return SOUNDEX_MAP;
+	}
+
+	private static void soundexElementData(String key, String value) {
+		String soundex = SOUNDEX.encode(key);
+		addElementData(soundex, value);
+	}
+
+	private static void addElementData(String soundex, String value) {
+		ArrayList<IPod> list = SOUNDEX_MAP.get(soundex);
+		if (list == null) {
+			list = new ArrayList<IPod>();
+			list.add(new ElementDataPod(value));
+			SOUNDEX_MAP.put(soundex, list);
+		} else {
+			list.add(new ElementDataPod(value));
+		}
 	}
 
 	final static String JSXGRAPH_IFRAME = //
@@ -418,20 +449,37 @@ public class Pods {
 						if (inExpr.isSymbol() || inExpr.isString()) {
 							String inputWord = inExpr.toString();
 							StringBuilder buf = new StringBuilder();
-							Documentation.printDocumentation(buf, inputWord);
-							if (buf.length() > 0) {
-								return addDocumentationPod(mapper, messageJSON, queryresult, error, numpods, podsArray,
-										buf);
+							if (Documentation.printDocumentation(buf, inputWord)) {
+								DocumentationPod.addDocumentationPod(mapper, podsArray, buf);
+								numpods++;
+								resultStatistics(queryresult, error, numpods, podsArray);
+								return messageJSON;
 							} else {
-								Map<String, String> map = LAZY_SOUNDEX.get();
-								String soundsLike = map.get(SOUNDEX.encode(inputWord));
+								ArrayList<IPod> soundsLike = listOfPods(inputWord);
 								if (soundsLike != null) {
-									buf = new StringBuilder();
-									Documentation.printDocumentation(buf, soundsLike);
-									if (buf.length() > 0) {
-										return addDocumentationPod(mapper, messageJSON, queryresult, error, numpods,
-												podsArray, buf);
+									boolean evaled = false;
+									for (int i = 0; i < soundsLike.size(); i++) {
+										IPod pod = soundsLike.get(i);
+										if (pod.keyWord().equalsIgnoreCase(inputWord)) {
+											int numberOfEntries = pod.addJSON(mapper, podsArray, formats, engine);
+											if (numberOfEntries > 0) {
+												numpods += numberOfEntries;
+												evaled = true;
+												break;
+											}
+										}
 									}
+									if (!evaled) {
+										for (int i = 0; i < soundsLike.size(); i++) {
+											IPod pod = soundsLike.get(i);
+											int numberOfEntries = pod.addJSON(mapper, podsArray, formats, engine);
+											if (numberOfEntries > 0) {
+												numpods += numberOfEntries;
+											}
+										}
+									}
+									resultStatistics(queryresult, error, numpods, podsArray);
+									return messageJSON;
 								}
 							}
 						} else {
@@ -535,30 +583,13 @@ public class Pods {
 		return messageJSON;
 	}
 
-	private static ObjectNode addDocumentationPod(ObjectMapper mapper, ObjectNode messageJSON, ObjectNode queryresult,
-			boolean error, int numpods, ArrayNode podsArray, StringBuilder buf) {
-		ArrayNode temp = mapper.createArrayNode();
-		ObjectNode subpodsResult = mapper.createObjectNode();
-		subpodsResult.put("title", "documentation");
-		subpodsResult.put("scanner", "help");
-		subpodsResult.put("error", "false");
-		subpodsResult.put("numsubpods", 1);
-		subpodsResult.putPOJO("subpods", temp);
-		podsArray.add(subpodsResult);
-
-		ObjectNode node = mapper.createObjectNode();
-		// if ((formats & HTML) != 0x00) {
-		temp.add(node);
-		node.put("html", generateHTMLString(buf.toString()));
-		numpods++;
-		// } else {
-		// temp.add(node);
-		// node.put("markdown", buf.toString());
-		// numpods++;
-		// }
-
-		resultStatistics(queryresult, error, numpods, podsArray);
-		return messageJSON;
+	private static ArrayList<IPod> listOfPods(String inputWord) {
+		Map<String, ArrayList<IPod>> map = LAZY_SOUNDEX.get();
+		ArrayList<IPod> soundsLike = map.get(inputWord.toLowerCase());
+		if (soundsLike == null) {
+			soundsLike = map.get(SOUNDEX.encode(inputWord));
+		}
+		return soundsLike;
 	}
 
 	private static IExpr parseInput(String inputStr, EvalEngine engine) {
@@ -817,11 +848,4 @@ public class Pods {
 		}
 	}
 
-	private static String generateHTMLString(final String markdownStr) {
-		Set<Extension> EXTENSIONS = Collections.singleton(TablesExtension.create());
-		Parser parser = Parser.builder().extensions(EXTENSIONS).build();
-		Node document = parser.parse(markdownStr);
-		HtmlRenderer renderer = HtmlRenderer.builder().extensions(EXTENSIONS).build();
-		return renderer.render(document); // "<p>This is <em>Sparta</em></p>\n"
-	}
 }

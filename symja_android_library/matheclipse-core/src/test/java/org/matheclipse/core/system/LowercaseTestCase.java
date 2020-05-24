@@ -5620,7 +5620,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ElementData(\"Tc\", \"SpecificHeat\")", //
 				"Missing(NotAvailable)");
 		check("ElementData(\"Properties\")", //
-				"{Abbreviation,AbsoluteBoilingPoint,AbsoluteMeltingPoint,AtomicNumber,AtomicRadius,AtomicWeight,Block,BoilingPoint,BrinellHardness,BulkModulus,CovalentRadius,CrustAbundance,Density,DiscoveryYear,ElectroNegativity,ElectronAffinity,ElectronConfiguration,ElectronConfigurationString,ElectronShellConfiguration,FusionHeat,Group,IonizationEnergies,LiquidDensity,MeltingPoint,MohsHardness,Name,Period,PoissonRatio,Series,ShearModulus,SpecificHeat,StandardName,ThermalConductivity,VanDerWaalsRadius,VaporizationHeat,VickersHardness,YoungModulus}");
+				"{StandardName,AtomicNumber,Abbreviation,AbsoluteBoilingPoint,AbsoluteMeltingPoint,AtomicRadius,AtomicWeight,Block,BoilingPoint,BrinellHardness,BulkModulus,CovalentRadius,CrustAbundance,Density,DiscoveryYear,ElectroNegativity,ElectronAffinity,ElectronConfiguration,ElectronConfigurationString,ElectronShellConfiguration,FusionHeat,Group,IonizationEnergies,LiquidDensity,MeltingPoint,MohsHardness,Name,Period,PoissonRatio,Series,ShearModulus,SpecificHeat,ThermalConductivity,VanDerWaalsRadius,VaporizationHeat,VickersHardness,YoungModulus}");
 
 		check("ElementData(6)", "Carbon");
 		check("ElementData(\"Carbon\", \"Name\")", //

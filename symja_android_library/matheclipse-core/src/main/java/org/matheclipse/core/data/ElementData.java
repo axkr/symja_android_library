@@ -1,6 +1,8 @@
 package org.matheclipse.core.data;
 
+import static org.matheclipse.core.expression.F.Missing;
 import static org.matheclipse.core.expression.F.NIL;
+import static org.matheclipse.core.expression.F.NotAvailable;
 
 import java.util.HashMap;
 
@@ -36,9 +38,9 @@ import org.matheclipse.core.interfaces.ISymbol;
  * </p>
  * </blockquote>
  * <p>
- * <code>ElementData</code> uses data from <a href=
- * "https://en.wikipedia.org/wiki/List_of_data_references_for_chemical_elements">Wikipedia
- * - List of data references for chemical elements</a>
+ * <code>ElementData</code> uses data from
+ * <a href= "https://en.wikipedia.org/wiki/List_of_data_references_for_chemical_elements">Wikipedia - List of data
+ * references for chemical elements</a>
  * </p>
  * <h3>Examples</h3>
  * 
@@ -90,12 +92,12 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class ElementData extends AbstractFunctionEvaluator {
 
-	String[] PROPERTIES_DATA = { "Abbreviation", "AbsoluteBoilingPoint", "AbsoluteMeltingPoint", "AtomicNumber",
-			"AtomicRadius", "AtomicWeight", "Block", "BoilingPoint", "BrinellHardness", "BulkModulus", "CovalentRadius",
-			"CrustAbundance", "Density", "DiscoveryYear", "ElectroNegativity", "ElectronAffinity",
+	public final static String[] PROPERTIES_DATA = { "StandardName", "AtomicNumber", "Abbreviation", "AbsoluteBoilingPoint", "AbsoluteMeltingPoint",
+			"AtomicRadius", "AtomicWeight", "Block", "BoilingPoint", "BrinellHardness", "BulkModulus",
+			"CovalentRadius", "CrustAbundance", "Density", "DiscoveryYear", "ElectroNegativity", "ElectronAffinity",
 			"ElectronConfiguration", "ElectronConfigurationString", "ElectronShellConfiguration", "FusionHeat", "Group",
 			"IonizationEnergies", "LiquidDensity", "MeltingPoint", "MohsHardness", "Name", "Period", "PoissonRatio",
-			"Series", "ShearModulus", "SpecificHeat", "StandardName", "ThermalConductivity", "VanDerWaalsRadius",
+			"Series", "ShearModulus", "SpecificHeat",  "ThermalConductivity", "VanDerWaalsRadius",
 			"VaporizationHeat", "VickersHardness", "YoungModulus" };
 
 	private static java.util.Map<IExpr, IExpr> MAP_NUMBER_NAME = new HashMap<IExpr, IExpr>();
@@ -134,11 +136,12 @@ public class ElementData extends AbstractFunctionEvaluator {
 		return NIL;
 
 	}
-	
+
 	@Override
 	public int[] expectedArgSize() {
 		return IOFunctions.ARGS_1_2;
 	}
+
 	private IExpr dataPoint(final IAST ast, IAST propertyList) {
 		String propertyStr = ast.arg2().toString();
 		if (propertyStr.equals("AtomicNumber")) {
@@ -238,19 +241,34 @@ public class ElementData extends AbstractFunctionEvaluator {
 			return propertyList.get(32);
 		}
 		if (propertyStr.equals("BulkModulus")) {
-			return propertyList.get(33);
+			if (propertyList.size() > 33) {
+				return propertyList.get(33);
+			}
+			return F.Missing(F.NotAvailable);
 		}
 		if (propertyStr.equals("ShearModulus")) {
-			return propertyList.get(34);
+			if (propertyList.size() > 34) {
+				return propertyList.get(34);
+			}
+			return F.Missing(F.NotAvailable);
 		}
 		if (propertyStr.equals("ElectronConfiguration")) {
-			return propertyList.get(35);
+			if (propertyList.size() > 35) {
+				return propertyList.get(35);
+			}
+			return F.Missing(F.NotAvailable);
 		}
 		if (propertyStr.equals("ElectronConfigurationString")) {
-			return propertyList.get(36);
+			if (propertyList.size() > 36) {
+				return propertyList.get(36);
+			}
+			return F.Missing(F.NotAvailable);
 		}
 		if (propertyStr.equals("ElectronShellConfiguration")) {
-			return propertyList.get(37);
+			if (propertyList.size() > 37) {
+				return propertyList.get(37);
+			}
+			return F.Missing(F.NotAvailable);
 		}
 		return NIL;
 	}
