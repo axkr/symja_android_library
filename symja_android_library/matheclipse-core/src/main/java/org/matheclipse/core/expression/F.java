@@ -1226,6 +1226,10 @@ public class F {
 	/** EndPackage( ) - end a package definition */
 	public final static IBuiltInSymbol EndPackage = F.initFinalSymbol("EndPackage", ID.EndPackage);
 
+	/***/
+	public final static IBuiltInSymbol Entity = F.initFinalSymbol("Entity", ID.Entity);
+
+	
 	/**
 	 * Equal(x, y) - yields `True` if `x` and `y` are known to be equal, or `False` if `x` and `y` are known to be
 	 * unequal.

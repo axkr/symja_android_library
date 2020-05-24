@@ -2,12 +2,15 @@ package org.matheclipse.api;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.function.Supplier;
 
 import org.apache.commons.codec.language.Soundex;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.data.ElementData1;
@@ -17,7 +20,6 @@ import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -583,11 +585,33 @@ public class Pods {
 		return messageJSON;
 	}
 
+	private static class LevenshteinDistanceComparator implements Comparator<IPod> {
+		static final LevenshteinDistance ld = new LevenshteinDistance(128);
+
+		String str;
+
+		public LevenshteinDistanceComparator(String str) {
+			this.str = str;
+		}
+
+		@Override
+		public int compare(IPod arg0, IPod arg1) {
+			int d0 = ld.apply(str, arg0.keyWord());
+			int d1 = ld.apply(str, arg1.keyWord());
+			return d0 > d1 ? 1 : d0 < d1 ? -1 : 0;
+		}
+
+	}
+
 	private static ArrayList<IPod> listOfPods(String inputWord) {
 		Map<String, ArrayList<IPod>> map = LAZY_SOUNDEX.get();
 		ArrayList<IPod> soundsLike = map.get(inputWord.toLowerCase());
 		if (soundsLike == null) {
 			soundsLike = map.get(SOUNDEX.encode(inputWord));
+		}
+		if (soundsLike != null) {
+			LevenshteinDistanceComparator ldc = new LevenshteinDistanceComparator(inputWord);
+			Collections.sort(soundsLike, ldc);
 		}
 		return soundsLike;
 	}
