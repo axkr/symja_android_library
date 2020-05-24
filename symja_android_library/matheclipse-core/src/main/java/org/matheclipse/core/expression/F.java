@@ -4495,7 +4495,7 @@ public class F {
 			// long start = System.currentTimeMillis();
 			// System.out.println("Start");
 			AST2Expr.initialize();
-			ExprParserFactory.initialize();
+			ExprParserFactory.initialize(Config.FUZZY_PARSER);
 
 			PreemptStatus.setNotAllow();
 			ComputerThreads.NO_THREADS = Config.JAS_NO_THREADS;

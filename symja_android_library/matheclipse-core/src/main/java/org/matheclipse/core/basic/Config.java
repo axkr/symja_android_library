@@ -125,6 +125,12 @@ public class Config {
 	public final static boolean FUZZ_TESTING = false;
 
 	/**
+	 * Set to true ifthe fuzzy parser should be used in the fre form API
+	 * 
+	 */
+	public static boolean FUZZY_PARSER = false;
+	
+	/**
 	 * Show the console output, if an expression has a head symbol with attribute <code>ISymbol.CONSOLE_OUTPUT</code>.
 	 * 
 	 */

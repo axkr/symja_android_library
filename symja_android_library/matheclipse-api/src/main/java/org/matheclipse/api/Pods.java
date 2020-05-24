@@ -519,6 +519,41 @@ public class Pods {
 
 									VariablesSet varSet = new VariablesSet(outExpr);
 									IAST variables = varSet.getVarList();
+									if (outExpr.isAST(F.Equal, 3)) {
+										IExpr arg1 = outExpr.first();
+										IExpr arg2 = outExpr.second();
+										if (arg1.isNumericFunction(varSet) && //
+												arg2.isNumericFunction(varSet)) {
+											if (variables.size() == 2) {
+												IExpr plot2D = F.Plot(F.List(arg1, arg2),
+														F.List(variables.arg1(), F.num(-20), F.num(20)));
+												podOut = engine.evaluate(plot2D);
+												if (podOut.isAST(F.JSFormData, 3)) {
+													int form = internFormat(0, podOut.second().toString());
+													addPod(podsArray, inExpr, podOut, podOut.first().toString(),
+															"Function", "Plotter", form, mapper, engine);
+													numpods++;
+												}
+											}
+											if (!arg1.isZero() && //
+													!arg2.isZero()) {
+												inExpr = F.Equal(engine.evaluate(F.Subtract(arg1, arg2)), F.C0);
+												podOut = inExpr;
+												addSymjaPod(podsArray, inExpr, podOut, "Alternate form",
+														"Simplification", formats, mapper, engine);
+												numpods++;
+											}
+											inExpr = F.Solve(F.binaryAST2(F.Equal, arg1, arg2), variables);
+											podOut = engine.evaluate(inExpr);
+											addSymjaPod(podsArray, inExpr, podOut, "Solution", "Reduce", formats,
+													mapper, engine);
+											numpods++;
+										}
+
+										resultStatistics(queryresult, error, numpods, podsArray);
+										return messageJSON;
+									}
+
 									boolean isNumericFunction = outExpr.isNumericFunction(varSet);
 									if (isNumericFunction) {
 										if (variables.size() == 2) {
@@ -618,7 +653,7 @@ public class Pods {
 
 	private static IExpr parseInput(String inputStr, EvalEngine engine) {
 		engine.setPackageMode(false);
-		final ExprParser parser = new ExprParser(engine, ExprParserFactory.RELAXED_STYLE_FACTORY, true, false, false);
+		final FuzzyParser parser = new FuzzyParser(engine);
 		try {
 			IExpr inExpr = parser.parse(inputStr);
 			if (inExpr.isList() && inExpr.size() == 2) {

@@ -43,6 +43,7 @@ public class SymjaServer {
 
 	public static void main(final String[] args) {
 		ToggleFeature.COMPILE = false;
+		Config.FUZZY_PARSER = true;
 		Config.UNPROTECT_ALLOWED = false;
 		Config.USE_MANIPULATE_JS = true;
 		Config.JAS_NO_THREADS = false;
