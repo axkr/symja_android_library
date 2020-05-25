@@ -2082,6 +2082,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBooleanTable() {
+		check("BooleanTable({a,b,c,(a&&b)||c},{a,b,c}) // TableForm", //
+				"True  True  True  True \n" + //
+				"True  True  False True \n" + //
+				"True  False True  True \n" + //
+				"True  False False False\n" + //
+				"False True  True  True \n" + //
+				"False True  False False\n" + //
+				"False False True  True \n" + //
+				"False False False False");
 		check("BooleanTable(Xor(p, q, r))", //
 				"{True,False,False,True,False,True,True,False}");
 		check("BooleanTable(Xor(p, q, r), {p, q, r})", //

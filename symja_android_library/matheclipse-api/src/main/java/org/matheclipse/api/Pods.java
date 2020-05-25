@@ -545,16 +545,18 @@ public class Pods {
 								if (head instanceof IBuiltInSymbol) {
 									IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
 									if (evaluator instanceof IDistribution) {
-//										if (evaluator instanceof IDiscreteDistribution) {
+										// if (evaluator instanceof IDiscreteDistribution) {
 										int snumpods = statisticsPods(podsArray, inExpr, podOut, formats, mapper,
 												engine);
-										
-										numpods+=snumpods;
+										numpods += snumpods;
 									}
 								}
 
 								VariablesSet varSet = new VariablesSet(outExpr);
 								IAST variables = varSet.getVarList();
+								if (outExpr.isBooleanFormula()) {
+									numpods += booleanPods(podsArray, outExpr, variables, formats, mapper, engine);
+								}
 								if (outExpr.isAST(F.Equal, 3)) {
 									IExpr arg1 = outExpr.first();
 									IExpr arg2 = outExpr.second();
@@ -662,16 +664,41 @@ public class Pods {
 		return messageJSON;
 	}
 
+	/**
+	 * Create a truth table for logic formulas with less equal 5 variables
+	 * 
+	 * @param podsArray
+	 * @param inExpr
+	 * @param variables
+	 * @param formats
+	 * @param mapper
+	 * @param engine
+	 * @return
+	 */
+	private static int booleanPods(ArrayNode podsArray, IExpr inExpr, IAST variables, int formats, ObjectMapper mapper,
+			EvalEngine engine) {
+		int numpods = 0;
+		if (variables.argSize() > 0 && variables.argSize() <= 5) {
+			IExpr podOut;
+			inExpr = F.BooleanTable(F.Append(variables, inExpr), variables);
+			podOut = engine.evaluate(inExpr);
+			// TODO generate plain text truth table
+			addSymjaPod(podsArray, inExpr, podOut, "Truth table", "Boolean", formats, mapper, engine);
+			numpods++;
+		}
+		return numpods;
+	}
+
 	private static int statisticsPods(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, int formats,
 			ObjectMapper mapper, EvalEngine engine) {
-		int numpods=0;
-		  inExpr  = F.PDF(outExpr,F.x);
-		IExpr podOut  = engine.evaluate(inExpr);
+		int numpods = 0;
+		inExpr = F.PDF(outExpr, F.x);
+		IExpr podOut = engine.evaluate(inExpr);
 		addSymjaPod(podsArray, inExpr, podOut, "Probability density function (PDF)", "Statistics", formats, mapper,
 				engine);
 		numpods++;
-		
-		inExpr = F.CDF(outExpr,F.x);
+
+		inExpr = F.CDF(outExpr, F.x);
 		podOut = engine.evaluate(inExpr);
 		addSymjaPod(podsArray, inExpr, podOut, "Cumulative distribution function (CDF)", "Statistics", formats, mapper,
 				engine);

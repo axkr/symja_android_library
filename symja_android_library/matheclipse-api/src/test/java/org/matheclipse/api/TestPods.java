@@ -890,4 +890,45 @@ public class TestPods {
 					"}");//
 		}
 	}
+	
+	@Test
+	public void testLogic001() {
+		String s = System.getProperty("os.name");
+		ObjectNode messageJSON = Pods.createResult(
+				"a&&b||c", formatsTEX);
+		final String jsonStr = messageJSON.toPrettyString();
+		System.out.println(jsonStr);
+		if (s.contains("Windows")) {
+			assertEquals(jsonStr, //
+					"{\r\n" + // 
+					"  \"queryresult\" : {\r\n" + // 
+					"    \"success\" : \"true\",\r\n" + // 
+					"    \"error\" : \"false\",\r\n" + // 
+					"    \"numpods\" : 2,\r\n" + // 
+					"    \"version\" : \"0.1\",\r\n" + // 
+					"    \"pods\" : [ {\r\n" + // 
+					"      \"title\" : \"Input\",\r\n" + // 
+					"      \"scanner\" : \"Identity\",\r\n" + // 
+					"      \"error\" : \"false\",\r\n" + // 
+					"      \"numsubpods\" : 1,\r\n" + // 
+					"      \"subpods\" : [ {\r\n" + // 
+					"        \"plaintext\" : \"(a&&b)||c\",\r\n" + // 
+					"        \"sinput\" : \"(a&&b)||c\",\r\n" + // 
+					"        \"latex\" : \"\\\\left( a \\\\land b\\\\right)  \\\\lor c\"\r\n" + // 
+					"      } ]\r\n" + // 
+					"    }, {\r\n" + // 
+					"      \"title\" : \"Truth table\",\r\n" + // 
+					"      \"scanner\" : \"Boolean\",\r\n" + // 
+					"      \"error\" : \"false\",\r\n" + // 
+					"      \"numsubpods\" : 1,\r\n" + // 
+					"      \"subpods\" : [ {\r\n" + // 
+					"        \"plaintext\" : \"{{True,True,True,True},{True,True,False,True},{True,False,True,True},{True,False,False,False},{False,True,True,True},{False,True,False,False},{False,False,True,True},{False,False,False,False}}\",\r\n" + // 
+					"        \"sinput\" : \"BooleanTable(Append({a,b,c},(a&&b)||c),{a,b,c})\",\r\n" + // 
+					"        \"latex\" : \"\\\\{\\\\{True,True,True,True\\\\},\\\\{True,True,False,True\\\\},\\\\{True,False,True,True\\\\},\\\\{True,False,False,False\\\\},\\\\{False,True,True,True\\\\},\\\\{False,True,False,False\\\\},\\\\{False,False,True,True\\\\},\\\\{False,False,False,False\\\\}\\\\}\"\r\n" + // 
+					"      } ]\r\n" + // 
+					"    } ]\r\n" + // 
+					"  }\r\n" + // 
+					"}");//
+		}
+	}
 }
