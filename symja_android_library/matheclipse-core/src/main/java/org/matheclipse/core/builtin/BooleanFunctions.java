@@ -274,7 +274,7 @@ public final class BooleanFunctions {
 		// }return factory.or(factory.and(arg1,factory.not(arg2)),factory.and(factory.not(arg1),arg2));
 		// }
 
-		public Formula expr2BooleanFunction(final IExpr logicExpr) {
+		public Formula expr2BooleanFunction(final IExpr logicExpr) throws ArgumentTypeException {
 			if (logicExpr instanceof IAST) {
 				final IAST ast = (IAST) logicExpr;
 				int functionID = ast.headID();
@@ -1009,8 +1009,18 @@ public final class BooleanFunctions {
 
 			public IAST booleanTable(IExpr expr, int position) {
 				if (variables.size() <= position) {
-					resultList.append(engine.evalTrue(expr) ? F.True : F.False);
-					return resultList;
+					if (expr.isList()) {
+						IAST list = (IAST) expr;
+						IASTAppendable newList = F.ListAlloc(list.size());
+						for (int i = 1; i < list.size(); i++) {
+							newList.append(engine.evalTrue(list.get(i)) ? F.True : F.False);
+						}
+						resultList.append(newList);
+						return resultList;
+					} else {
+						resultList.append(engine.evalTrue(expr) ? F.True : F.False);
+						return resultList;
+					}
 				}
 				IExpr sym = variables.get(position);
 				if (sym.isSymbol()) {

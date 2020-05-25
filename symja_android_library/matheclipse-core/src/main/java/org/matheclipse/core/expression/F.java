@@ -5865,6 +5865,11 @@ public class F {
 		return new AST1(BooleanQ, a);
 	}
 
+	public static IAST BooleanTable(final IExpr a0, final IExpr a1) {
+		return new AST2(BooleanTable, a0, a1);
+	}
+	
+	
 	public static IAST BesselI(final IExpr a0, final IExpr a1) {
 		return new AST2(BesselI, a0, a1);
 	}
