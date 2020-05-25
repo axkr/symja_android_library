@@ -30,16 +30,16 @@ public class DocumentationPod implements IPod {
 		return word;
 	}
 
-	public int addJSON(ObjectMapper mapper, ArrayNode podsArray,int formats, EvalEngine engine) {
+	public int addJSON(ObjectMapper mapper, ArrayNode podsArray, int formats, EvalEngine engine) {
 		StringBuilder buf = new StringBuilder();
 		if (Documentation.printDocumentation(buf, word)) {
-			addDocumentationPod(mapper, podsArray, buf);
+			addDocumentationPod(mapper, podsArray, buf, formats);
 			return 1;
 		}
 		return -1;
 	}
 
-	protected static void addDocumentationPod(ObjectMapper mapper, ArrayNode podsArray, StringBuilder buf) {
+	protected static void addDocumentationPod(ObjectMapper mapper, ArrayNode podsArray, StringBuilder buf, int formats) {
 		ArrayNode temp = mapper.createArrayNode();
 		ObjectNode subpodsResult = mapper.createObjectNode();
 		subpodsResult.put("title", "documentation");
@@ -52,7 +52,11 @@ public class DocumentationPod implements IPod {
 		ObjectNode node = mapper.createObjectNode();
 		// if ((formats & HTML) != 0x00) {
 		temp.add(node);
-		node.put("html", generateHTMLString(buf.toString()));
+		// node.put("html", generateHTMLString(buf.toString()));
+		node.put("markdown", buf.toString());
+		if ((formats & Pods.HTML) != 0x00) {
+			node.put("html", buf.toString());
+		}
 	}
 
 	private static String generateHTMLString(final String markdownStr) {

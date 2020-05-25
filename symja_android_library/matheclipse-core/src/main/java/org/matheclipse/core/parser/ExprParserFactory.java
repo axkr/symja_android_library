@@ -215,6 +215,12 @@ public class ExprParserFactory implements IParserFactory {
 	public final static InfixExprOperator EQUAL_OPERATOR = //
 			new InfixExprOperator("==", "Equal", EQUAL_PRECEDENCE, InfixExprOperator.NONE);
 
+	public final static InfixExprOperator NON_COMMUTATIVE_MULTIPLY_OPERATOR = //
+			new InfixExprOperator("**", "NonCommutativeMultiply", 510, InfixExprOperator.NONE);
+
+	public final static InfixExprOperator POWER_OPERATOR = //
+			new InfixExprOperator("^", "Power", POWER_PRECEDENCE, InfixExprOperator.RIGHT_ASSOCIATIVE);
+
 	public final static InfixExprOperator SET_OPERATOR = //
 			new InfixExprOperator("=", "Set", 40, InfixExprOperator.RIGHT_ASSOCIATIVE);
 
@@ -350,10 +356,10 @@ public class ExprParserFactory implements IParserFactory {
 					new PostfixExprOperator("++", "Increment", 660), //
 					new PostfixExprOperator("!!", "Factorial2", 610), //
 					new InfixExprOperator("<=", "LessEqual", 290, InfixExprOperator.NONE), //
-					new InfixExprOperator("**", "NonCommutativeMultiply", 510, InfixExprOperator.NONE), //
+					Config.FUZZY_PARSER ? POWER_OPERATOR : NON_COMMUTATIVE_MULTIPLY_OPERATOR, //
 					new PostfixExprOperator("!", "Factorial", FACTORIAL_PRECEDENCE), //
 					new InfixExprOperator("*", "Times", TIMES_PRECEDENCE, InfixExprOperator.NONE), //
-					new InfixExprOperator("^", "Power", POWER_PRECEDENCE, InfixExprOperator.RIGHT_ASSOCIATIVE), //
+					POWER_OPERATOR, //
 					new InfixExprOperator(".", "Dot", 490, InfixExprOperator.NONE), //
 					new PrefixExprOperator("!", "Not", 230), //
 					new PreMinusExprOperator("-", "PreMinus", 485), //
@@ -399,33 +405,31 @@ public class ExprParserFactory implements IParserFactory {
 			StringBuilder buf = new StringBuilder(BASIC_OPERATOR_CHARACTERS);
 			fOperatorMap = Tries.forStrings();
 			fOperatorTokenStartSet = Tries.forStrings();
-//			if (fuzzyParser) {
-//				for (int i = 0; i < HEADER_STRINGS.length; i++) {
-//					if (OPERATOR_STRINGS[i] == "=") {
-//						addOperator(fOperatorMap, fOperatorTokenStartSet, OPERATOR_STRINGS[i], "Equal", EQUAL_OPERATOR);
-//					} else {
-//						addOperator(fOperatorMap, fOperatorTokenStartSet, OPERATOR_STRINGS[i], HEADER_STRINGS[i],
-//								OPERATORS[i]);
-//					}
-//					String unicodeChar = org.matheclipse.parser.client.Characters.NamedCharactersMap
-//							.get(HEADER_STRINGS[i]);
-//					if (unicodeChar != null) {
-//						addOperator(fOperatorMap, fOperatorTokenStartSet, unicodeChar, HEADER_STRINGS[i], OPERATORS[i]);
-//						buf.append(unicodeChar);
-//					}
-//				}
-//			} else {
-				for (int i = 0; i < HEADER_STRINGS.length; i++) {
-					addOperator(fOperatorMap, fOperatorTokenStartSet, OPERATOR_STRINGS[i], HEADER_STRINGS[i],
-							OPERATORS[i]);
-					String unicodeChar = org.matheclipse.parser.client.Characters.NamedCharactersMap
-							.get(HEADER_STRINGS[i]);
-					if (unicodeChar != null) {
-						addOperator(fOperatorMap, fOperatorTokenStartSet, unicodeChar, HEADER_STRINGS[i], OPERATORS[i]);
-						buf.append(unicodeChar);
-					}
+			// if (fuzzyParser) {
+			// for (int i = 0; i < HEADER_STRINGS.length; i++) {
+			// if (OPERATOR_STRINGS[i] == "=") {
+			// addOperator(fOperatorMap, fOperatorTokenStartSet, OPERATOR_STRINGS[i], "Equal", EQUAL_OPERATOR);
+			// } else {
+			// addOperator(fOperatorMap, fOperatorTokenStartSet, OPERATOR_STRINGS[i], HEADER_STRINGS[i],
+			// OPERATORS[i]);
+			// }
+			// String unicodeChar = org.matheclipse.parser.client.Characters.NamedCharactersMap
+			// .get(HEADER_STRINGS[i]);
+			// if (unicodeChar != null) {
+			// addOperator(fOperatorMap, fOperatorTokenStartSet, unicodeChar, HEADER_STRINGS[i], OPERATORS[i]);
+			// buf.append(unicodeChar);
+			// }
+			// }
+			// } else {
+			for (int i = 0; i < HEADER_STRINGS.length; i++) {
+				addOperator(fOperatorMap, fOperatorTokenStartSet, OPERATOR_STRINGS[i], HEADER_STRINGS[i], OPERATORS[i]);
+				String unicodeChar = org.matheclipse.parser.client.Characters.NamedCharactersMap.get(HEADER_STRINGS[i]);
+				if (unicodeChar != null) {
+					addOperator(fOperatorMap, fOperatorTokenStartSet, unicodeChar, HEADER_STRINGS[i], OPERATORS[i]);
+					buf.append(unicodeChar);
 				}
-//			}
+			}
+			// }
 			OPERATOR_MATCHER = CharMatcher.anyOf(buf.toString());
 
 		}

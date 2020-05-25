@@ -359,139 +359,228 @@ public class Pods {
 
 		ObjectNode queryresult = mapper.createObjectNode();
 		messageJSON.putPOJO("queryresult", queryresult);
-
-		IExpr inExpr = F.Null;
-		IExpr outExpr = F.Null;
-		EvalEngine engine = EvalEngine.get();
-		boolean error = false;
-		int numpods = 0;
 		queryresult.put("success", "false");
 		queryresult.put("error", "false");
-		queryresult.put("numpods", numpods);
+		queryresult.put("numpods", 0);
 		queryresult.put("version", "0.1");
 
 		inputStr = inputStr.trim();
-		if (inputStr.length() > 0) {
-			try {
-				ArrayNode podsArray = mapper.createArrayNode();
-				inExpr = parseInput(inputStr, engine);
-				if (inExpr.isPresent()) {
-					outExpr = inExpr;
-					if (inExpr.isNumericFunction()) {
-						outExpr = engine.evaluate(inExpr);
+		if (inputStr.length() > Short.MAX_VALUE) {
+			queryresult.put("error", "false");
+			return messageJSON;
+		} else if (inputStr.length() == 0) {
+			queryresult.put("error", "false");
+			return messageJSON;
+		}
+
+		boolean error = false;
+		int numpods = 0;
+		IExpr inExpr = F.Null;
+		IExpr outExpr = F.Null;
+		EvalEngine engine = EvalEngine.get();
+		try {
+			ArrayNode podsArray = mapper.createArrayNode();
+			inExpr = parseInput(inputStr, engine);
+			if (inExpr.isPresent()) {
+				outExpr = inExpr;
+				if (inExpr.isNumericFunction()) {
+					outExpr = engine.evaluate(inExpr);
+				}
+				if (outExpr.isNumber()) {
+					if (outExpr.isInteger()) {
+						numpods = integerPods(podsArray, (IInteger) outExpr, outExpr, formats, mapper, engine);
+						resultStatistics(queryresult, error, numpods, podsArray);
+						return messageJSON;
+					} else {
+						IExpr podOut = outExpr;
+						addSymjaPod(podsArray, inExpr, inExpr, "Input", "Identity", formats, mapper, engine);
+						numpods++;
+						if (outExpr.isRational()) {
+							addSymjaPod(podsArray, inExpr, podOut, "Exact result", "Rational", formats, mapper, engine);
+							numpods++;
+						}
+
+						inExpr = F.N(outExpr);
+						podOut = engine.evaluate(inExpr);
+						addSymjaPod(podsArray, inExpr, podOut, "Decimal form", "Numeric", formats, mapper, engine);
+						numpods++;
+
+						if (outExpr.isFraction()) {
+							IFraction frac = (IFraction) outExpr;
+							if (!frac.integerPart().equals(F.C0)) {
+								inExpr = F.List(F.IntegerPart(outExpr), F.FractionalPart(outExpr));
+								podOut = engine.evaluate(inExpr);
+								String plaintext = podOut.first().toString() + " " + podOut.second().toString();
+								addSymjaPod(podsArray, inExpr, podOut, plaintext, "Mixed fraction", "Rational", formats,
+										mapper, engine);
+								numpods++;
+
+								inExpr = F.ContinuedFraction(outExpr);
+								podOut = engine.evaluate(inExpr);
+								StringBuilder plainBuf = new StringBuilder();
+								if (podOut.isList() && podOut.size() > 1) {
+									IAST list = (IAST) podOut;
+									plainBuf.append('[');
+									plainBuf.append(list.arg1().toString());
+									plainBuf.append(';');
+									for (int i = 2; i < list.size(); i++) {
+										plainBuf.append(' ');
+										plainBuf.append(list.get(i).toString());
+										if (i < list.size() - 1) {
+											plainBuf.append(',');
+										}
+									}
+									plainBuf.append(']');
+								}
+								addSymjaPod(podsArray, inExpr, podOut, plainBuf.toString(), "Continued fraction",
+										"ContinuedFraction", formats, mapper, engine);
+								numpods++;
+							}
+						}
+
+						resultStatistics(queryresult, error, numpods, podsArray);
+						return messageJSON;
 					}
-					if (outExpr.isNumber()) {
-						if (outExpr.isInteger()) {
-							numpods = integerPods(podsArray, (IInteger) inExpr, outExpr, formats, mapper, engine);
+				} else {
+					if (inExpr.isList()) {
+						IAST list = (IAST) inExpr;
+						boolean intList = list.forAll(x -> x.isInteger());
+						outExpr = inExpr;
+						if (intList) {
+							numpods = integerListPods(podsArray, inExpr, list, formats, mapper, engine);
+							resultStatistics(queryresult, error, numpods, podsArray);
+							return messageJSON;
+						}
+					}
+
+					if (inExpr.isSymbol() || inExpr.isString()) {
+						String inputWord = inExpr.toString();
+						StringBuilder buf = new StringBuilder();
+						if (Documentation.printDocumentation(buf, inputWord)) {
+							DocumentationPod.addDocumentationPod(mapper, podsArray, buf, formats);
+							numpods++;
 							resultStatistics(queryresult, error, numpods, podsArray);
 							return messageJSON;
 						} else {
-							IExpr podOut = outExpr;
-							addSymjaPod(podsArray, inExpr, inExpr, "Input", "Identity", formats, mapper, engine);
-							numpods++;
-							if (outExpr.isRational()) {
-								addSymjaPod(podsArray, inExpr, podOut, "Exact result", "Rational", formats, mapper,
-										engine);
-								numpods++;
-							}
-
-							inExpr = F.N(outExpr);
-							podOut = engine.evaluate(inExpr);
-							addSymjaPod(podsArray, inExpr, podOut, "Decimal form", "Numeric", formats, mapper, engine);
-							numpods++;
-
-							if (outExpr.isFraction()) {
-								IFraction frac = (IFraction) outExpr;
-								if (!frac.integerPart().equals(F.C0)) {
-									inExpr = F.List(F.IntegerPart(outExpr), F.FractionalPart(outExpr));
-									podOut = engine.evaluate(inExpr);
-									String plaintext = podOut.first().toString() + " " + podOut.second().toString();
-									addSymjaPod(podsArray, inExpr, podOut, plaintext, "Mixed fraction", "Rational",
-											formats, mapper, engine);
-									numpods++;
-
-									inExpr = F.ContinuedFraction(outExpr);
-									podOut = engine.evaluate(inExpr);
-									StringBuilder plainBuf = new StringBuilder();
-									if (podOut.isList() && podOut.size() > 1) {
-										IAST list = (IAST) podOut;
-										plainBuf.append('[');
-										plainBuf.append(list.arg1().toString());
-										plainBuf.append(';');
-										for (int i = 2; i < list.size(); i++) {
-											plainBuf.append(' ');
-											plainBuf.append(list.get(i).toString());
-											if (i < list.size() - 1) {
-												plainBuf.append(',');
-											}
+							ArrayList<IPod> soundsLike = listOfPods(inputWord);
+							if (soundsLike != null) {
+								boolean evaled = false;
+								for (int i = 0; i < soundsLike.size(); i++) {
+									IPod pod = soundsLike.get(i);
+									if (pod.keyWord().equalsIgnoreCase(inputWord)) {
+										int numberOfEntries = pod.addJSON(mapper, podsArray, formats, engine);
+										if (numberOfEntries > 0) {
+											numpods += numberOfEntries;
+											evaled = true;
+											break;
 										}
-										plainBuf.append(']');
 									}
-									addSymjaPod(podsArray, inExpr, podOut, plainBuf.toString(), "Continued fraction",
-											"ContinuedFraction", formats, mapper, engine);
+								}
+								if (!evaled) {
+									for (int i = 0; i < soundsLike.size(); i++) {
+										IPod pod = soundsLike.get(i);
+										int numberOfEntries = pod.addJSON(mapper, podsArray, formats, engine);
+										if (numberOfEntries > 0) {
+											numpods += numberOfEntries;
+										}
+									}
+								}
+								resultStatistics(queryresult, error, numpods, podsArray);
+								return messageJSON;
+							}
+						}
+					} else {
+						if (inExpr.isAST(F.D, 3)) {
+							outExpr = engine.evaluate(inExpr);
+							IExpr podOut = outExpr;
+							addSymjaPod(podsArray, inExpr, podOut, "Derivative", "Derivative", formats, mapper, engine);
+							numpods++;
+
+							if (outExpr.isFreeAST(x -> x.isTrigFunction())) {
+								inExpr = F.TrigToExp(outExpr);
+								podOut = engine.evaluate(inExpr);
+								if (!F.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
+									addSymjaPod(podsArray, inExpr, podOut, "Alternate form", "Simplification", formats,
+											mapper, engine);
 									numpods++;
 								}
 							}
-
 							resultStatistics(queryresult, error, numpods, podsArray);
 							return messageJSON;
-						}
-					} else {
-						if (inExpr.isList()) {
-							IAST list = (IAST) inExpr;
-							boolean intList = list.forAll(x -> x.isInteger());
-							outExpr = inExpr;
-							if (intList) {
-								numpods = integerListPods(podsArray, inExpr, list, formats, mapper, engine);
-								resultStatistics(queryresult, error, numpods, podsArray);
-								return messageJSON;
-							}
-						}
-
-						if (inExpr.isSymbol() || inExpr.isString()) {
-							String inputWord = inExpr.toString();
-							StringBuilder buf = new StringBuilder();
-							if (Documentation.printDocumentation(buf, inputWord)) {
-								DocumentationPod.addDocumentationPod(mapper, podsArray, buf);
+						} else {
+							outExpr = engine.evaluate(inExpr);
+							if (outExpr.isAST(F.JSFormData, 3)) {
+								IExpr podOut = outExpr;
+								int form = internFormat(0, podOut.second().toString());
+								addPod(podsArray, inExpr, podOut, podOut.first().toString(), "Function", "Plotter",
+										form, mapper, engine);
 								numpods++;
-								resultStatistics(queryresult, error, numpods, podsArray);
-								return messageJSON;
 							} else {
-								ArrayList<IPod> soundsLike = listOfPods(inputWord);
-								if (soundsLike != null) {
-									boolean evaled = false;
-									for (int i = 0; i < soundsLike.size(); i++) {
-										IPod pod = soundsLike.get(i);
-										if (pod.keyWord().equalsIgnoreCase(inputWord)) {
-											int numberOfEntries = pod.addJSON(mapper, podsArray, formats, engine);
-											if (numberOfEntries > 0) {
-												numpods += numberOfEntries;
-												evaled = true;
-												break;
+								IExpr podOut = outExpr;
+								addSymjaPod(podsArray, inExpr, podOut, "Input", "Identity", formats, mapper, engine);
+								numpods++;
+
+								VariablesSet varSet = new VariablesSet(outExpr);
+								IAST variables = varSet.getVarList();
+								if (outExpr.isAST(F.Equal, 3)) {
+									IExpr arg1 = outExpr.first();
+									IExpr arg2 = outExpr.second();
+									if (arg1.isNumericFunction(varSet) && //
+											arg2.isNumericFunction(varSet)) {
+										if (variables.size() == 2) {
+											IExpr plot2D = F.Plot(F.List(arg1, arg2),
+													F.List(variables.arg1(), F.num(-20), F.num(20)));
+											podOut = engine.evaluate(plot2D);
+											if (podOut.isAST(F.JSFormData, 3)) {
+												int form = internFormat(0, podOut.second().toString());
+												addPod(podsArray, inExpr, podOut, podOut.first().toString(), "Function",
+														"Plotter", form, mapper, engine);
+												numpods++;
 											}
 										}
-									}
-									if (!evaled) {
-										for (int i = 0; i < soundsLike.size(); i++) {
-											IPod pod = soundsLike.get(i);
-											int numberOfEntries = pod.addJSON(mapper, podsArray, formats, engine);
-											if (numberOfEntries > 0) {
-												numpods += numberOfEntries;
-											}
+										if (!arg1.isZero() && //
+												!arg2.isZero()) {
+											inExpr = F.Equal(engine.evaluate(F.Subtract(arg1, arg2)), F.C0);
+											podOut = inExpr;
+											addSymjaPod(podsArray, inExpr, podOut, "Alternate form", "Simplification",
+													formats, mapper, engine);
+											numpods++;
 										}
+										inExpr = F.Solve(F.binaryAST2(F.Equal, arg1, arg2), variables);
+										podOut = engine.evaluate(inExpr);
+										addSymjaPod(podsArray, inExpr, podOut, "Solution", "Reduce", formats, mapper,
+												engine);
+										numpods++;
 									}
+
 									resultStatistics(queryresult, error, numpods, podsArray);
 									return messageJSON;
 								}
-							}
-						} else {
-							if (inExpr.isAST(F.D, 3)) {
-								outExpr = engine.evaluate(inExpr);
-								IExpr podOut = outExpr;
-								addSymjaPod(podsArray, inExpr, podOut, "Derivative", "Derivative", formats, mapper,
-										engine);
-								numpods++;
 
+								boolean isNumericFunction = outExpr.isNumericFunction(varSet);
+								if (isNumericFunction) {
+									if (variables.size() == 2) {
+										IExpr plot2D = F.Plot(outExpr, F.List(variables.arg1(), F.num(-7), F.num(7)));
+										podOut = engine.evaluate(plot2D);
+										if (podOut.isAST(F.JSFormData, 3)) {
+											int form = internFormat(0, podOut.second().toString());
+											addPod(podsArray, inExpr, podOut, podOut.first().toString(), "Function",
+													"Plotter", form, mapper, engine);
+											numpods++;
+										}
+									} else if (variables.size() == 3) {
+										IExpr plot3D = F.Plot3D(outExpr,
+												F.List(variables.arg1(), F.num(-3.5), F.num(3.5)),
+												F.List(variables.arg2(), F.num(-3.5), F.num(3.5)));
+										podOut = engine.evaluate(plot3D);
+										if (podOut.isAST(F.JSFormData, 3)) {
+											int form = internFormat(0, podOut.second().toString());
+											addPod(podsArray, inExpr, podOut, podOut.first().toString(), "3D plot",
+													"Plot", form, mapper, engine);
+											numpods++;
+										}
+									}
+								}
 								if (outExpr.isFreeAST(x -> x.isTrigFunction())) {
 									inExpr = F.TrigToExp(outExpr);
 									podOut = engine.evaluate(inExpr);
@@ -501,121 +590,34 @@ public class Pods {
 										numpods++;
 									}
 								}
-								resultStatistics(queryresult, error, numpods, podsArray);
-								return messageJSON;
-							} else {
-								outExpr = engine.evaluate(inExpr);
-								if (outExpr.isAST(F.JSFormData, 3)) {
-									IExpr podOut = outExpr;
-									int form = internFormat(0, podOut.second().toString());
-									addPod(podsArray, inExpr, podOut, podOut.first().toString(), "Function", "Plotter",
-											form, mapper, engine);
-									numpods++;
-								} else {
-									IExpr podOut = outExpr;
-									addSymjaPod(podsArray, inExpr, podOut, "Input", "Identity", formats, mapper,
+
+								if (isNumericFunction && variables.size() == 2) {
+									inExpr = F.D(outExpr, variables.arg1());
+									podOut = engine.evaluate(inExpr);
+									addSymjaPod(podsArray, inExpr, podOut, "Derivative", "Derivative", formats, mapper,
 											engine);
 									numpods++;
 
-									VariablesSet varSet = new VariablesSet(outExpr);
-									IAST variables = varSet.getVarList();
-									if (outExpr.isAST(F.Equal, 3)) {
-										IExpr arg1 = outExpr.first();
-										IExpr arg2 = outExpr.second();
-										if (arg1.isNumericFunction(varSet) && //
-												arg2.isNumericFunction(varSet)) {
-											if (variables.size() == 2) {
-												IExpr plot2D = F.Plot(F.List(arg1, arg2),
-														F.List(variables.arg1(), F.num(-20), F.num(20)));
-												podOut = engine.evaluate(plot2D);
-												if (podOut.isAST(F.JSFormData, 3)) {
-													int form = internFormat(0, podOut.second().toString());
-													addPod(podsArray, inExpr, podOut, podOut.first().toString(),
-															"Function", "Plotter", form, mapper, engine);
-													numpods++;
-												}
-											}
-											if (!arg1.isZero() && //
-													!arg2.isZero()) {
-												inExpr = F.Equal(engine.evaluate(F.Subtract(arg1, arg2)), F.C0);
-												podOut = inExpr;
-												addSymjaPod(podsArray, inExpr, podOut, "Alternate form",
-														"Simplification", formats, mapper, engine);
-												numpods++;
-											}
-											inExpr = F.Solve(F.binaryAST2(F.Equal, arg1, arg2), variables);
-											podOut = engine.evaluate(inExpr);
-											addSymjaPod(podsArray, inExpr, podOut, "Solution", "Reduce", formats,
-													mapper, engine);
-											numpods++;
-										}
-
-										resultStatistics(queryresult, error, numpods, podsArray);
-										return messageJSON;
-									}
-
-									boolean isNumericFunction = outExpr.isNumericFunction(varSet);
-									if (isNumericFunction) {
-										if (variables.size() == 2) {
-											IExpr plot2D = F.Plot(outExpr,
-													F.List(variables.arg1(), F.num(-7), F.num(7)));
-											podOut = engine.evaluate(plot2D);
-											if (podOut.isAST(F.JSFormData, 3)) {
-												int form = internFormat(0, podOut.second().toString());
-												addPod(podsArray, inExpr, podOut, podOut.first().toString(), "Function",
-														"Plotter", form, mapper, engine);
-												numpods++;
-											}
-										} else if (variables.size() == 3) {
-											IExpr plot3D = F.Plot3D(outExpr,
-													F.List(variables.arg1(), F.num(-3.5), F.num(3.5)),
-													F.List(variables.arg2(), F.num(-3.5), F.num(3.5)));
-											podOut = engine.evaluate(plot3D);
-											if (podOut.isAST(F.JSFormData, 3)) {
-												int form = internFormat(0, podOut.second().toString());
-												addPod(podsArray, inExpr, podOut, podOut.first().toString(), "3D plot",
-														"Plot", form, mapper, engine);
-												numpods++;
-											}
-										}
-									}
-									if (outExpr.isFreeAST(x -> x.isTrigFunction())) {
-										inExpr = F.TrigToExp(outExpr);
-										podOut = engine.evaluate(inExpr);
-										if (!F.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
-											addSymjaPod(podsArray, inExpr, podOut, "Alternate form", "Simplification",
-													formats, mapper, engine);
-											numpods++;
-										}
-									}
-
-									if (isNumericFunction && variables.size() == 2) {
-										inExpr = F.D(outExpr, variables.arg1());
-										podOut = engine.evaluate(inExpr);
-										addSymjaPod(podsArray, inExpr, podOut, "Derivative", "Derivative", formats,
-												mapper, engine);
-										numpods++;
-
-										inExpr = F.Integrate(outExpr, variables.arg1());
-										podOut = engine.evaluate(inExpr);
-										addSymjaPod(podsArray, inExpr, podOut, "Indefinite integral", "Integral",
-												formats, mapper, engine);
-										numpods++;
-									}
+									inExpr = F.Integrate(outExpr, variables.arg1());
+									podOut = engine.evaluate(inExpr);
+									addSymjaPod(podsArray, inExpr, podOut, "Indefinite integral", "Integral", formats,
+											mapper, engine);
+									numpods++;
 								}
-
-								resultStatistics(queryresult, error, numpods, podsArray);
-								return messageJSON;
 							}
+
+							resultStatistics(queryresult, error, numpods, podsArray);
+							return messageJSON;
 						}
 					}
 				}
-			} catch (RuntimeException rex) {
-				rex.printStackTrace();
-				error = true;
-				outExpr = F.$Aborted;
 			}
+		} catch (RuntimeException rex) {
+			rex.printStackTrace();
+			error = true;
+			outExpr = F.$Aborted;
 		}
+
 		queryresult.put("error", error ? "true" : "false");
 		return messageJSON;
 	}
@@ -793,10 +795,8 @@ public class Pods {
 	 * @param json
 	 * @param engine
 	 * @param outExpr
-	 * @param plainText
-	 *            text which should obligatory be used for plaintext format
-	 * @param sinput
-	 *            Symja input string
+	 * @param plainText text which should obligatory be used for plaintext format
+	 * @param sinput    Symja input string
 	 * @param formats
 	 */
 	private static void createJSONFormat(ObjectNode json, EvalEngine engine, IExpr outExpr, String plainText,
@@ -826,7 +826,8 @@ public class Pods {
 			StringWriter stw = new StringWriter();
 			MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false);
 			if (!mathUtil.toMathML(F.HoldForm(outExpr), stw, true)) {
-				// return createJSONErrorString("Max. output size exceeded " + Config.MAX_OUTPUT_SIZE);
+				// return createJSONErrorString("Max. output size exceeded " +
+				// Config.MAX_OUTPUT_SIZE);
 			} else {
 				json.put(MATHML_STR, stw.toString());
 			}
