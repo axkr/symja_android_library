@@ -4137,7 +4137,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"AiryAiPrime(Sqrt(x))/(2*Sqrt(x))");
 		check("D(AiryAiPrime(Sqrt(x)),x)", //
 				"AiryAi(Sqrt(x))/2");
-		
+
 		check("D(Piecewise({{x^2, x < 0}, {x, x > 0}}),x)", //
 				"Piecewise({{2*x,x<0},{1,x>0}},0)");
 		check("D(Piecewise({{(x^2 - 1)/(x - 1), x != 1}},2),x)", //
@@ -16632,6 +16632,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialQuotientRemainder() {
+		check("PolynomialQuotientRemainder(x^2 + x + 1, Pi*x + 1, x)", //
+				"{-1/Pi^2+1/Pi+x/Pi,1+1/Pi^2-1/Pi}");
 		check("PolynomialQuotientRemainder(x^2,1+(-1)*1,x)", //
 				"PolynomialQuotientRemainder(x^2,0,x)");
 		// test with Integer.MIN_VALUE
